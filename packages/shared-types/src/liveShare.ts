@@ -155,3 +155,6 @@ export interface LiveView {
   /** More points than one answer holds: ask again at once. */
   more: boolean;
 }
+
+// A live share in a private message (TASK-468 part A1b).
+export * from "./messageLive.ts";

@@ -41,6 +41,14 @@ drawing somebody published, never a copy. The message keeps the drawing's id
 and nothing of it; who sends it must see the drawing, and each reader is
 shown its card only while it may open the post itself, asked again at every
 reading (drawings.drawing_seen_sql). The block «A post attached», below.
+
+A message may carry a live share too (TASK-468 part A1b, ADR-0381): its
+owner sends it from the recording («Send in MuW», POST
+/me/live-shares/{id}/send) or as an attachment, in a conversation `open` to
+it. Sending it lets the other see it in the app (live_share_recipients);
+the card says how it goes, asked at every reading, and is null once the
+share is gone or the reader may not see it: «Live ended». Only an app that
+says READS_LIVE in X-MuW-Reads receives it; the others read «[Live]».
 """
 
 from __future__ import annotations
@@ -123,7 +131,7 @@ State = Literal["open", "first", "waiting", "request"]
 Box = Literal["inbox", "requests"]
 
 # The attachments (TASK-333, ADR-0289): the user's limits of 2026-10-29.
-AttachmentKind = Literal["photo", "video", "drawing", "post"]
+AttachmentKind = Literal["photo", "video", "drawing", "post", "live"]
 VIDEO_MAX_S = 60
 VIDEO_MAX_BYTES = 40_000_000
 # A photo before the API makes it smaller: as the photos of the drawings.
@@ -136,6 +144,7 @@ OLD_APP_LABELS: dict[str, str] = {
     "video": "[Video]",
     "drawing": "[Drawing]",
     "post": "[Post]",
+    "live": "[Live]",
 }
 WITH_ATTACHMENTS = "attachments"
 # The activity of the route a message carries (FavoriteRequestBody).
@@ -204,13 +213,16 @@ class MessageAttachmentRequestBody(BaseModel):
     """The route as PUT /me/favorites/{key} takes it."""
     post_id: UUID | None = None
     """A drawing published, which who sends sees (TASK-455): its id only."""
+    live_share_id: UUID | None = None
+    """One's own live share going on (TASK-468): its id only."""
 
     @model_validator(mode="after")
     def one_of_them(self) -> MessageAttachmentRequestBody:
-        given = (self.media_id, self.drawing, self.post_id)
+        given = (self.media_id, self.drawing, self.post_id, self.live_share_id)
         if sum(one is not None for one in given) != 1:
             raise ValueError(
-                "attachment: a media_id, a drawing or a post_id, one of them"
+                "attachment: a media_id, a drawing, a post_id or a live_share_id,"
+                " one of them"
             )
         return self
 
@@ -273,6 +285,20 @@ class PostCardBody(BaseModel):
     """At most 64 points of its line; none for a post without one."""
 
 
+class LiveCardBody(BaseModel):
+    """A live share as the conversation shows it to who asks (TASK-468,
+    ADR-0381): packages/shared-types/fixtures/message-live.json. GET
+    /live-shares/{share_id} shows it whole."""
+
+    share_id: UUID
+    activity: str
+    status: Literal["live", "paused", "finished", "stopped", "expired"]
+    distance_m: int | None
+    duration_s: int | None
+    """The last numbers the phone sent; null after the end."""
+    updated_at: datetime | None
+
+
 class AttachmentBody(BaseModel):
     """What a message carries besides its text."""
 
@@ -293,6 +319,9 @@ class AttachmentBody(BaseModel):
     """A post's card while who asks may open the post; null for one it may
     not see, or gone: «This post is no longer available». Always answered
     from TASK-455; the default is for the examples written before."""
+    live: LiveCardBody | None = None
+    """A live share's card (TASK-468) while who asks may see it; null once
+    it is gone: «Live ended»."""
 
 
 class MessageBody(BaseModel):
@@ -398,7 +427,7 @@ BOX_OF: dict[Box, str] = {
 # video if it has one.
 MESSAGE_COLUMNS = (
     "m.id, m.text, m.created_at, m.sender_id, m.attachment, m.drawing_card,"
-    " m.post_id, mm.id AS media_id, mm.width, mm.height, mm.duration_ms,"
+    " m.post_id, m.live_share_id, mm.id AS media_id, mm.width, mm.height, mm.duration_ms,"
     " mm.poster_bytes, mm.stored"
 )
 WITH_MEDIA = "LEFT JOIN message_media mm ON mm.message_id = m.id"
@@ -409,7 +438,7 @@ LAST = (
 )
 LAST_COLUMNS = (
     "last.id, last.text, last.created_at, last.sender_id, last.attachment,"
-    " last.drawing_card, last.post_id, last.media_id, last.width, last.height,"
+    " last.drawing_card, last.post_id, last.live_share_id, last.media_id, last.width, last.height,"
     " last.duration_ms, last.poster_bytes, last.stored"
 )
 
@@ -519,11 +548,27 @@ def expired(created_at: datetime, now: datetime) -> bool:
 
 
 def _attachment(
-    row: DictRow, now: datetime, posts: Mapping[UUID, PostCardBody]
+    row: DictRow,
+    now: datetime,
+    posts: Mapping[UUID, PostCardBody],
+    lives: Mapping[UUID, LiveCardBody] | None = None,
 ) -> AttachmentBody | None:
     kind: AttachmentKind | None = row["attachment"]
     if kind is None:
         return None
+    if kind == "live":
+        return AttachmentBody(
+            kind=kind,
+            media_id=None,
+            width=None,
+            height=None,
+            duration_ms=None,
+            poster=False,
+            expired=False,
+            drawing=None,
+            # None once the share is gone, or who asks may not see it.
+            live=(lives or {}).get(row["live_share_id"]),
+        )
     if kind == "post":
         return AttachmentBody(
             kind=kind,
@@ -568,14 +613,18 @@ def _message(
     with_attachments: bool = True,
     reads: Reads = EVERYTHING,
     posts: Mapping[UUID, PostCardBody] | None = None,
+    lives: Mapping[UUID, LiveCardBody] | None = None,
 ) -> MessageBody:
     """`posts`: the cards of the posts who asks may open (_post_cards); None
-    for an app that does not read a post attached, which reads «[Post]»."""
+    for an app that does not read a post attached, which reads «[Post]».
+    `lives` the same for the live shares (_live_cards, «[Live]»)."""
     text: str = row["text"]
     kind = row["attachment"]
     unread = (
-        kind == "drawing" and not reads.shows(row["drawing_card"]["activity"])
-    ) or (kind == "post" and posts is None)
+        (kind == "drawing" and not reads.shows(row["drawing_card"]["activity"]))
+        or (kind == "post" and posts is None)
+        or (kind == "live" and lives is None)
+    )
     if kind is not None and (unread or not with_attachments):
         # An app of before reads its text only.
         text = f"{OLD_APP_LABELS[kind]} {text}".rstrip()
@@ -584,7 +633,7 @@ def _message(
         text=text,
         created_at=row["created_at"],
         mine=row["sender_id"] == user_id,
-        attachment=None if unread else _attachment(row, now, posts or {}),
+        attachment=None if unread else _attachment(row, now, posts or {}, lives),
     )
 
 
@@ -681,6 +730,83 @@ def _sendable_post(conn: Connection[DictRow], user_id: int, post_id: UUID) -> No
         raise AccountError(422, "invalid_request", POST_ONLY_YOU)
 
 
+# --- A live share attached (TASK-468 part A1b, ADR-0381) ---
+
+# What an app says in X-MuW-Reads when it shows a live share attached, as
+# READS_POST.
+READS_LIVE = "live"
+LIVE_NOT_YOURS = "No live share of yours with this id."
+LIVE_ENDED = "This live share has ended: make a new one."
+
+
+def reads_lives(request: Request) -> bool:
+    """True when the app of the request shows a live share attached."""
+    return any(
+        value.strip().lower() == READS_LIVE
+        for line in request.headers.getlist(READS_HEADER)
+        for value in line.split(",")
+    )
+
+
+def _live_cards(
+    conn: Connection[DictRow],
+    viewer_id: int,
+    rows: Sequence[DictRow],
+    now: datetime,
+) -> dict[UUID, LiveCardBody]:
+    """The live shares the messages of `rows` point at, as `viewer_id` may
+    see them now (live_shares.MAY_SEE_SQL: its owner, or one it was sent to
+    with no block either way). Asked at every reading."""
+    from shaperoute_api.live_shares import MAY_SEE_SQL, _status
+
+    wanted = [r["live_share_id"] for r in rows if r["live_share_id"] is not None]
+    if not wanted:
+        return {}
+    found = conn.execute(
+        "SELECT s.id, s.activity, s.expires_at, s.finished_at, s.stopped_at,"
+        " s.paused, s.stats, s.updated_at FROM live_shares s"
+        f" WHERE s.id = ANY(%(ids)s) AND {MAY_SEE_SQL}",
+        {"ids": wanted, "viewer": viewer_id},
+    ).fetchall()
+    cards: dict[UUID, LiveCardBody] = {}
+    for row in found:
+        status = _status(row, now)
+        stats: dict[str, Any] = row["stats"] or {}
+        cards[row["id"]] = LiveCardBody(
+            share_id=row["id"],
+            activity=row["activity"],
+            status=status,
+            distance_m=stats.get("distance_m"),
+            duration_s=stats.get("duration_s"),
+            updated_at=row["updated_at"],
+        )
+    return cards
+
+
+def _sendable_live(
+    conn: Connection[DictRow], user_id: int, share_id: UUID, other: int, now: datetime
+) -> None:
+    """Nothing when `user_id` may send its share `share_id`, which goes on;
+    the other may see it from now on (live_share_recipients). 404 for a
+    share not its own, as for none; 422 for one that ended."""
+    from shaperoute_api.live_shares import _status
+
+    row = conn.execute(
+        "SELECT id, expires_at, finished_at, stopped_at, paused FROM live_shares"
+        " WHERE id = %s AND user_id = %s",
+        (share_id, user_id),
+    ).fetchone()
+    if row is None:
+        raise AccountError(404, "http_error", LIVE_NOT_YOURS)
+    if _status(row, now) in ("stopped", "expired", "finished"):
+        raise AccountError(422, "invalid_request", LIVE_ENDED)
+    conn.execute(
+        "INSERT INTO live_share_recipients (share_id, user_id, sent_at)"
+        " VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
+        (share_id, other, now),
+    )
+
+
 def _forget_unseen(conn: Connection[DictRow], conversation_id: UUID) -> None:
     """Deletes the messages neither member sees any more: both cleared
     them."""
@@ -726,6 +852,7 @@ class Messages:
         with_attachments: bool = True,
         reads: Reads = EVERYTHING,
         with_posts: bool = True,
+        with_lives: bool = True,
     ) -> ConversationsBody:
         """A page of the box's conversations, the latest message first."""
         where = _box(box)
@@ -758,12 +885,15 @@ class Messages:
                 ).fetchall()
             }
             posts = _post_cards(conn, user_id, page, reads) if with_posts else None
+            lives = _live_cards(conn, user_id, page, now) if with_lives else None
         assert count is not None
         return ConversationsBody(
             conversations=[
                 ConversationBody(
                     person=_person(row),
-                    last=_message(row, user_id, now, with_attachments, reads, posts),
+                    last=_message(
+                        row, user_id, now, with_attachments, reads, posts, lives
+                    ),
                     unread=news[row["conversation_id"]] > 0,
                     unread_count=news[row["conversation_id"]],
                 )
@@ -824,6 +954,7 @@ class Messages:
         with_attachments: bool = True,
         reads: Reads = EVERYTHING,
         with_posts: bool = True,
+        with_lives: bool = True,
     ) -> MessagesBody:
         """A page of the messages with `public_id`, the latest first; none
         before the first one is written."""
@@ -855,11 +986,12 @@ class Messages:
             ).fetchall()
             page, more = rows[:limit], len(rows) > limit
             posts = _post_cards(conn, user_id, page, reads) if with_posts else None
+            lives = _live_cards(conn, user_id, page, now) if with_lives else None
         return MessagesBody(
             person=person,
             state=state,
             messages=[
-                _message(row, user_id, now, with_attachments, reads, posts)
+                _message(row, user_id, now, with_attachments, reads, posts, lives)
                 for row in page
             ],
             next=_cursor(page[-1]["created_at"], page[-1]["id"]) if more else None,
@@ -874,6 +1006,7 @@ class Messages:
         attachment: MessageAttachmentRequestBody | None = None,
         with_attachments: bool = True,
         with_posts: bool = True,
+        with_lives: bool = True,
     ) -> Sent:
         """`text` from `user` to `public_id`: the comment of State says when.
         409 while a request waits, or for an attachment outside an `open`
@@ -918,6 +1051,9 @@ class Messages:
                 kind: AttachmentKind | None = None
                 drawing = None if attachment is None else attachment.drawing
                 post_id = None if attachment is None else attachment.post_id
+                live_share_id = (
+                    None if attachment is None else attachment.live_share_id
+                )
                 if attachment is not None and attachment.media_id is not None:
                     upload = conn.execute(
                         "SELECT kind FROM message_media WHERE id = %s"
@@ -933,10 +1069,14 @@ class Messages:
                 elif post_id is not None:
                     _sendable_post(conn, user.id, post_id)
                     kind = "post"
+                elif live_share_id is not None:
+                    _sendable_live(conn, user.id, live_share_id, other, now)
+                    kind = "live"
                 inserted = conn.execute(
                     "INSERT INTO messages (conversation_id, sender_id, text,"
-                    " created_at, attachment, drawing, drawing_card, post_id)"
-                    " VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                    " created_at, attachment, drawing, drawing_card, post_id,"
+                    " live_share_id)"
+                    " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
                     (
                         conversation_id,
                         user.id,
@@ -954,6 +1094,7 @@ class Messages:
                             else Jsonb(drawing_card(drawing).model_dump(mode="json"))
                         ),
                         post_id,
+                        live_share_id,
                     ),
                 ).fetchone()
                 assert inserted is not None
@@ -972,6 +1113,9 @@ class Messages:
                     _post_cards(conn, user.id, [kept_row], EVERYTHING)
                     if with_posts
                     else None
+                )
+                lives = (
+                    _live_cards(conn, user.id, [kept_row], now) if with_lives else None
                 )
                 # Writing accepts: a reply to a request, or the first message.
                 conn.execute(
@@ -992,7 +1136,9 @@ class Messages:
             # The account was deleted while it was writing.
             raise AccountError(401, "not_signed_in", NOT_SIGNED_IN) from None
         return Sent(
-            _message(kept_row, user.id, now, with_attachments, posts=posts),
+            _message(
+                kept_row, user.id, now, with_attachments, posts=posts, lives=lives
+            ),
             other,
             state == "first",
             kind,
@@ -1110,6 +1256,8 @@ NOT_FOUND: dict[int | str, dict[str, Any]] = {404: {"model": ErrorBody}}
 With = Annotated[str | None, Query(alias="with", pattern=f"^{WITH_ATTACHMENTS}$")]
 # An app that shows a post attached (TASK-455): READS_POST in X-MuW-Reads.
 WithPosts = Annotated[bool, Depends(reads_posts)]
+# An app that shows a live share attached (TASK-468): READS_LIVE.
+WithLives = Annotated[bool, Depends(reads_lives)]
 
 
 def message_routes() -> APIRouter:
@@ -1123,13 +1271,21 @@ def message_routes() -> APIRouter:
         user: Me,
         reads: Shown,
         with_posts: WithPosts,
+        with_lives: WithLives,
         box: Box = "inbox",
         limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = PAGE_SIZE,
         cursor: Annotated[str | None, Query(pattern=CURSOR_PATTERN)] = None,
         with_: With = None,
     ) -> ConversationsBody:
         return messages.conversations(
-            user.id, box, limit, cursor, with_ is not None, reads, with_posts
+            user.id,
+            box,
+            limit,
+            cursor,
+            with_ is not None,
+            reads,
+            with_posts,
+            with_lives,
         )
 
     @router.get("/me/conversations/unread")
@@ -1143,12 +1299,20 @@ def message_routes() -> APIRouter:
         user: Me,
         reads: Shown,
         with_posts: WithPosts,
+        with_lives: WithLives,
         limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = PAGE_SIZE,
         cursor: Annotated[str | None, Query(pattern=CURSOR_PATTERN)] = None,
         with_: With = None,
     ) -> MessagesBody:
         return messages.page(
-            user.id, public_id, limit, cursor, with_ is not None, reads, with_posts
+            user.id,
+            public_id,
+            limit,
+            cursor,
+            with_ is not None,
+            reads,
+            with_posts,
+            with_lives,
         )
 
     @router.post(
@@ -1163,6 +1327,7 @@ def message_routes() -> APIRouter:
         user: Me,
         request: Request,
         with_posts: WithPosts,
+        with_lives: WithLives,
         with_: With = None,
     ) -> MessageBody:
         wait = written.wait_s(str(user.id))
@@ -1171,7 +1336,13 @@ def message_routes() -> APIRouter:
                 429, "too_many_requests", TOO_MANY_MESSAGES, math.ceil(wait)
             )
         sent = messages.send(
-            user, public_id, body.text, body.attachment, with_ is not None, with_posts
+            user,
+            public_id,
+            body.text,
+            body.attachment,
+            with_ is not None,
+            with_posts,
+            with_lives,
         )
         pushed_message(request, user, sent)
         return sent.message

@@ -401,35 +401,44 @@ class LiveShares:
         return _share(changed, now)
 
     def send(
-        self, user_id: int, share_id: str, body: LiveShareSendBody
+        self,
+        user: UserBody,
+        share_id: str,
+        body: LiveShareSendBody,
+        media: Any = None,
+        told: Callable[[Any], None] = lambda sent: None,
     ) -> LiveShareSentBody:
-        """The people who may see it from now on, by public_id. Someone with
-        no account, oneself, or kept apart from the owner is skipped, all
-        the same. Sent twice, sent once. 410 once the share has ended."""
+        """«Send in MuW» (TASK-468 part A1b): a message with the share to
+        each person, by public_id, as POST /conversations/{id}/messages
+        sends it (messages.py), and `told` pushes it. Who has no account,
+        oneself, one kept apart, or one the conversation is not `open` with
+        (a request carries no attachment) is skipped, all the same. Sent
+        twice, sent twice: each a message. 410 once the share has ended."""
+        from shaperoute_api.messages import (
+            MessageAttachmentRequestBody,
+            MessageRejected,
+            Messages,
+        )
+
         now = self.now()
         wanted = list(dict.fromkeys(body.to))
         with self.database.connect() as conn:
-            row = self._owned(conn, user_id, share_id)
+            row = self._owned(conn, user.id, share_id)
             if _ended(row, now):
                 raise HTTPException(410, SHARE_ENDED)
-            found = conn.execute(
-                "SELECT u.id, u.public_id FROM users u"
-                " WHERE u.public_id = ANY(%s) AND u.id <> %s"
-                f" AND NOT {apart_sql('%s', 'u.id')}",
-                (wanted, user_id, user_id),
-            ).fetchall()
-            ids = {r["public_id"]: r["id"] for r in found}
-            if ids:
-                with conn.cursor() as cur:
-                    cur.executemany(
-                        "INSERT INTO live_share_recipients (share_id, user_id,"
-                        " sent_at) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
-                        [(row["id"], i, now) for i in ids.values()],
-                    )
-        return LiveShareSentBody(
-            sent=[str(p) for p in wanted if p in ids],
-            skipped=[str(p) for p in wanted if p not in ids],
-        )
+        messages = Messages(self.database, self.now, media)
+        attachment = MessageAttachmentRequestBody(live_share_id=row["id"])
+        sent: list[str] = []
+        skipped: list[str] = []
+        for public_id in wanted:
+            try:
+                message = messages.send(user, str(public_id), "", attachment)
+            except (AccountError, HTTPException, MessageRejected):
+                skipped.append(str(public_id))
+                continue
+            sent.append(str(public_id))
+            told(message)
+        return LiveShareSentBody(sent=sent, skipped=skipped)
 
     def _owned(self, conn: Any, user_id: int, share_id: str) -> DictRow:
         try:
@@ -729,7 +738,15 @@ def live_share_routes() -> APIRouter:
                 TOO_MANY_SENDS,
                 **{"Retry-After": str(math.ceil(wait))},
             )
-        return shares.send(user.id, share_id, body)
+        from shaperoute_api.messages import pushed_message
+
+        return shares.send(
+            user,
+            share_id,
+            body,
+            getattr(request.app.state, "message_media", None),
+            lambda sent: pushed_message(request, user, sent),
+        )
 
     @router.get(
         "/live-shares/{share_id}",

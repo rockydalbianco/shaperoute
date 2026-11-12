@@ -212,6 +212,15 @@ Coordinatore, `feat/TASK-413-b-snowshoes-app`):
   dell'utente.
 - **Lo sport resta `ready: false`** nella PR. Si accende con una riga a
   parte, col sì dell'utente dato al Coordinatore, dopo le schermate.
+- **Anche «Record your day»**: scelta dell'utente del 2026-11-12, «Anche
+  Record your day», contro la proposta dell'agente «solo forme». Le
+  ciaspole avranno anche la giornata sulla neve da registrare intera, come
+  lo sci e lo scialpinismo. È una **parte a sé, dopo B** (la parte C):
+  - la B resta quella delle forme, con il suo «Snowshoe without a route»;
+  - la C porta la riga in Impostazioni, la giornata, i suoi numeri e i suoi
+    testi;
+  - la lista dei file e il disegno della C vanno al Coordinatore prima del
+    codice.
 
 **Accordi e scelte della parte A2** (2026-11-10, decise dall'agente su
 delega dell'utente):

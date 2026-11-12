@@ -2642,4 +2642,12 @@ export const DE: Table = {
   "Deep@@sleep": "Tief",
   "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
     "Von MuW aus den Daten von Apple Health berechnet. Er kann vom Wert in der Health-App abweichen.",
+  // src/feed/PostShareSheet.tsx, src/messages/messagePost.ts, attachmentText.ts
+  // (TASK-455: a post shared and sent in a message; texts approved 2026-11-12)
+  "Poster and video": "Poster und Video",
+  "Only people who follow {user} can open it.":
+    "Nur wer {user} folgt, kann ihn öffnen.",
+  "by {user}": "von {user}",
+  "This post is no longer available.": "Dieser Beitrag ist nicht mehr verfügbar.",
+  "🗺️ Post": "🗺️ Beitrag",
 };

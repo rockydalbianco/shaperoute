@@ -20,6 +20,7 @@ import {
 import { Tap } from "../ui/Tap";
 import type { ShownPost } from "./feedPosts";
 import { PostReactions, type PostReactionsHandle, type RowBox } from "./PostReactions";
+import { postLinkOf } from "./postLink";
 import { PostShareSheet, usePostSendable } from "./PostShareSheet";
 
 /** The actions' icons, from Lucide (ISC, assets/ui/icons/LICENSE-lucide.txt)
@@ -97,6 +98,8 @@ export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
   const [sharing, setSharing] = useState(false);
   const [shared, setShared] = useState(false);
   const sendable = usePostSendable();
+  // «Share link» (TASK-455 part E): only on a post the API says has a link.
+  const link = postLinkOf(post.drawing);
   const comments = useDrawingComments(post.drawing.id);
   const commentCount =
     comments.status === "ready" && comments.total > 0 ? ` · ${comments.total}` : "";
@@ -155,7 +158,7 @@ export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
             testID="post-comment"
           />
         )}
-        {(mine || sendable) && (
+        {(mine || sendable || link !== null) && (
           <Action
             icon={ICONS.share}
             label={t("Share")}
@@ -201,6 +204,7 @@ export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
           visible={sharing}
           post={postOfFeed(post.drawing)}
           poster={mine ? () => postOfDrawing(post) : undefined}
+          link={link}
           onClose={() => setSharing(false)}
         />
       )}

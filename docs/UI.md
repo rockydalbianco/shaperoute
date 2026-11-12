@@ -676,6 +676,17 @@ tags will show up here.».
 - **Il tocco sulla scheda già attiva** riporta la pagina in cima (Feed,
   Draw, Explore, Messages) o alla sua prima vista (il profilo).
 - Su Android il tasto indietro torna alla scheda di prima, poi esce.
+- **Indietro** (TASK-470): una pagina aperta sopra le schede (una
+  conversazione, la campanella, un profilo, un concorso, le pagine di
+  «Profile», «Play», una località o un giorno di sci, la mappa con la sua
+  «←») si chiude col tasto indietro di Android come con la sua «←», prima
+  che il tasto cambi scheda. Su iOS si chiude anche **dal bordo sinistro**
+  (ADR-0384): la pagina segue il dito e sotto si vede l'app un po' scurita;
+  lasciata oltre un terzo dello schermo, o con un colpo veloce, se ne va,
+  altrimenti torna. La tastiera si chiude quando il dito la prende. Con
+  «Riduci movimento» la pagina sfuma. Non sulle schede né sulle pagine dentro
+  una scheda (località e giorno di sci), sulla mappa, sui fogli e sulla
+  pagina di un post.
 - **«Messages»** è la lista delle conversazioni con «Message requests» in
   cima (TASK-319); una conversazione e le richieste si aprono sopra come
   prima, e «←» torna alla scheda. Si rilegge ogni volta che torna sullo

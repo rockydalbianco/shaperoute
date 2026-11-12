@@ -2514,4 +2514,10 @@ export const IT: Table = {
   "{phase}, from {time}, for {duration}": "{phase}, dalle {time}, per {duration}",
   "No heights from the phone: no phases for this tour.":
     "Il telefono non ha dato le quote: niente fasi per questa gita.",
+
+  // src/activities/ (TASK-462: the calendar of every sport)
+  Calendar: "Calendario",
+  "Last 12 months": "Ultimi 12 mesi",
+  "{count} activity": "{count} attività",
+  "{count} activities": "{count} attività",
 };

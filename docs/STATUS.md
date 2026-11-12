@@ -185,6 +185,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
   R2 (app, col turno), R3 (`site/live/`). Il pianificatore resta Proposto.
   File: — · `tasks/TASK-305.md`
+  **R1 fatta il 2026-11-12**: #1177 in main (83bbbc5d), server al passo 9
+  (migrazione 0069_paragliding). Ora R2 (app) e R3 (`site/live/`).
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
@@ -193,6 +195,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (#1162, ADR-0372), sul server col passo 9; B (app) nella #1172 in bozza,
   aspetta il server e il sì dell'utente sugli screenshot. File: `profile/ProfileHome.tsx`,
   `activities/ActivitiesList.tsx` (B) · `tasks/TASK-462.md`
+- **TASK-454 — Reazioni e super like** · parte 0 chiusa (scelte
+  dell'utente, 2026-11-11); C1, risposte e reazioni ai commenti sul server,
+  in `main` (#1180, ADR-0377, migrazione `0070`): manca il passo sul server,
+  col sì dell'utente. Poi A (le reazioni nel Feed), B (doppio tocco), C2
+  (l'app dei commenti, dopo il server). File: — · `tasks/TASK-454.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

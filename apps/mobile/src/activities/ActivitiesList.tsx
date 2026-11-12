@@ -14,9 +14,15 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { runDistanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { type RefusedRun, useActivitiesDoor } from "./activitiesDoor";
+import {
+  ActivityCalendarSheet,
+  activityCalendarTitle,
+  CalendarIcon,
+} from "./ActivityCalendar";
 import { ActivityRow } from "./ActivityRow";
 import { startedLabel } from "./activityText";
 
@@ -24,13 +30,16 @@ import { startedLabel } from "./activityText";
  * «My activities» in «Profile» (TASK-172): the runs the account recorded,
  * the latest first, a page at a time, each a row (ActivityRow.tsx). Over
  * them, the runs of this phone the API will not take, with its reason and
- * «Discard» (TASK-257); over all, «Add past activity» (TASK-312).
+ * «Discard» (TASK-257); over all, «Add past activity» (TASK-312), and over
+ * that «Calendar», the calendar of every sport of the profile (TASK-462).
  */
 export function ActivitiesList() {
   const activities = useActivitiesDoor();
   const { publicKeys, postTitles, refreshMine } = useDrawingsDoor();
   // The refused run whose «Discard» was tapped, waiting for a yes.
   const [confirming, setConfirming] = useState<string | null>(null);
+  // The calendar of every sport (TASK-462), the same as the profile's.
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const { refresh, clearProblem, list } = activities;
   // The refused ones are not waiting for a connection: they have rows.
   const waiting = activities.waiting - activities.refused.length;
@@ -46,6 +55,25 @@ export function ActivitiesList() {
 
   return (
     <View style={styles.list}>
+      {activities.list.length > 0 && (
+        <>
+          <Tap
+            style={styles.button}
+            onPress={() => setCalendarOpen(true)}
+            accessibilityRole="button"
+            testID="activities-calendar"
+          >
+            <View style={styles.named}>
+              <CalendarIcon />
+              <Text style={styles.buttonText}>{activityCalendarTitle()}</Text>
+            </View>
+          </Tap>
+          <ActivityCalendarSheet
+            visible={calendarOpen}
+            onClose={() => setCalendarOpen(false)}
+          />
+        </>
+      )}
       <WatchRunCard />
       <AddPastActivity />
       {activities.problem !== null && (
@@ -275,6 +303,11 @@ const styles = StyleSheet.create({
     backgroundColor: color.surfaceRaised,
     borderWidth: 1,
     borderColor: color.borderStrong,
+  },
+  named: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
   },
   buttonText: {
     color: color.text,

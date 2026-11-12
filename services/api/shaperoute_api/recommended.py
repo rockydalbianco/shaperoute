@@ -24,7 +24,7 @@ from itertools import groupby
 from pathlib import Path
 from typing import Any, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, SerializerFunctionWrapHandler, model_serializer
 
 log = logging.getLogger(__name__)
 
@@ -38,11 +38,23 @@ DEFAULT_PAGE = 40
 MAX_PAGE = 200
 # The preview of a line: enough to recognise the shape on a small card.
 PREVIEW_POINTS = 64
+# A word with the pen up (TASK-441): as many points for each letter, the
+# walks between them left out, up to this many letters' worth.
+PREVIEW_PIECE_POINTS = 32
+PREVIEW_PIECES = 8
 PREVIEW_DECIMALS = 5
 EARTH_RADIUS_M = 6_371_008.8
 
 LatLon = tuple[float, float]
 T = TypeVar("T")
+
+
+def _drop_none(body: dict[str, Any], field: str) -> dict[str, Any]:
+    """`body` without `field` when it is None: the answer of a route in one
+    line is what it was before the field existed."""
+    if body.get(field) is None:
+        body.pop(field, None)
+    return body
 
 
 class RecommendedRouteBody(BaseModel):
@@ -69,6 +81,14 @@ class RecommendedRouteBody(BaseModel):
     """How far its shape is turned, as RouteResult.rotation_deg (TASK-232,
     ADR-0195): the app draws it turned back. 0 for a route north up, and
     for every route of a city file that does not say."""
+    gaps: list[int] | None = None
+    """The points of `preview` the route comes to with the pen up (TASK-441,
+    ADR-0366): a card draws no segment that ends at one. Only for a word
+    written letter by letter; left out of the answer for every other route."""
+
+    @model_serializer(mode="wrap")
+    def _without_absent(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        return _drop_none(handler(self), "gaps")
 
 
 class RecommendedRoutesBody(BaseModel):
@@ -100,6 +120,15 @@ class RecommendedRouteDetailBody(BaseModel):
     license: str
     rotation_deg: float
     """As in the list."""
+    walks: list[tuple[int, int]] | None = None
+    """Where the route walks with the pen up, as RouteResult.walks (TASK-197,
+    ADR-0157): pairs of indices of `points`, in order. Only for a word
+    written letter by letter (TASK-441, ADR-0366); left out of the answer
+    for every other route."""
+
+    @model_serializer(mode="wrap")
+    def _without_absent(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        return _drop_none(handler(self), "walks")
 
 
 @dataclass(frozen=True)
@@ -115,6 +144,8 @@ class CatalogRoute:
     points: tuple[LatLon, ...]
     license: str
     rotation_deg: float = 0.0
+    walks: tuple[tuple[int, int], ...] = ()
+    """The stretches walked with the pen up, as RouteResult.walks."""
 
     @property
     def start(self) -> LatLon:
@@ -163,6 +194,58 @@ def preview(points: Sequence[LatLon], size: int = PREVIEW_POINTS) -> list[LatLon
     ]
 
 
+def pen_up_preview(
+    points: Sequence[LatLon],
+    walks: Sequence[tuple[int, int]],
+    piece_size: int = PREVIEW_PIECE_POINTS,
+    pieces: int = PREVIEW_PIECES,
+) -> tuple[list[LatLon], list[int]]:
+    """The preview of a route drawn in pieces, and its `gaps`: every piece
+    drawn thinned as `preview`, the walks left out, and the first point of
+    each piece after the first marked as come to with the pen up. Past
+    `pieces` pieces each gets fewer points, never under two."""
+    drawn, at = [], 0
+    for a, b in walks:
+        drawn.append(points[at : a + 1])
+        at = b
+    drawn.append(points[at:])
+    drawn = [d for d in drawn if len(d) >= 2]
+    if not drawn:
+        return preview(points), []
+    size = max(2, piece_size * pieces // max(pieces, len(drawn)))
+    line: list[LatLon] = []
+    gaps: list[int] = []
+    for piece in drawn:
+        if line:
+            gaps.append(len(line))
+        line += preview(piece, size)
+    return line, gaps
+
+
+def walks_of(route: dict[str, Any], points: int) -> tuple[tuple[int, int], ...]:
+    """The `walks` of a route of a city file: pairs of indices of its
+    points, each after the one before. None when it does not say, or says
+    something that does not read so: the route is then in one line."""
+    raw = route.get("walks")
+    if not isinstance(raw, list) or not raw:
+        return ()
+    walks = []
+    at = 0
+    for pair in raw:
+        if (
+            not isinstance(pair, list | tuple)
+            or len(pair) != 2
+            or not all(isinstance(i, int) and not isinstance(i, bool) for i in pair)
+        ):
+            return ()
+        a, b = pair
+        if not at <= a < b < points:
+            return ()
+        walks.append((a, b))
+        at = b
+    return tuple(walks)
+
+
 def parse_city(body: dict[str, Any]) -> list[CatalogRoute]:
     """The routes of one city file, with ids stable while the file is."""
     city = str(body["city"])
@@ -189,6 +272,7 @@ def parse_city(body: dict[str, Any]) -> list[CatalogRoute]:
                 points=points,
                 license=str(body.get("license", "")),
                 rotation_deg=turn_of(r),
+                walks=walks_of(r, len(points)),
             )
         )
     return routes
@@ -206,6 +290,11 @@ def turn_of(route: dict[str, Any]) -> float:
 
 def listed(route: CatalogRoute, away: float) -> RecommendedRouteBody:
     """One route of a list, `away` metres from the point asked about."""
+    line, gaps = (
+        pen_up_preview(route.points, route.walks)
+        if route.walks
+        else (preview(route.points), [])
+    )
     return RecommendedRouteBody(
         id=route.id,
         city=route.city,
@@ -217,8 +306,9 @@ def listed(route: CatalogRoute, away: float) -> RecommendedRouteBody:
         similarity=route.similarity,
         start=route.start,
         away_m=round(away),
-        preview=preview(route.points),
+        preview=line,
         rotation_deg=route.rotation_deg,
+        gaps=gaps or None,
     )
 
 
@@ -320,4 +410,5 @@ class RecommendedCatalog:
             points=list(r.points),
             license=r.license,
             rotation_deg=r.rotation_deg,
+            walks=list(r.walks) or None,
         )

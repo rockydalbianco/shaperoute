@@ -17,6 +17,11 @@ import { routeTrack } from "./figureLines";
  * catalog crossed themselves and made none: no button. Now such a route is
  * the loop of TASK-428 hung on a ring at its start, or the closed outline
  * `firstLineOf` finds of all its points.
+ *
+ * A word written letter by letter (TASK-441) is not a loop: it ends at its
+ * last letter, far from its start. Its drawing is its whole line, the walks
+ * between the letters too, closed by the straight side back, as the words of
+ * a city's examples are edited: it asks the route and that side, no more.
  */
 
 type RouteFile = {
@@ -24,27 +29,30 @@ type RouteFile = {
   word?: string;
   distance_m?: number;
   points: LatLon[];
+  walks?: [number, number][];
 };
+
+type CatalogRoute = { name: string; points: LatLon[]; inPieces: boolean };
 
 /** Every route of the catalog (`catalog/`): the seed of each city and
  * MuW's own drawings, by their points. */
-function catalogRoutes(): [string, LatLon[]][] {
+function catalogRoutes(): CatalogRoute[] {
   const catalog = join(__dirname, "..", "..", "..", "..", "catalog");
   const read = (path: string) => JSON.parse(readFileSync(path, "utf8"));
   const seed = readdirSync(join(catalog, "seed")).flatMap((file) =>
     (read(join(catalog, "seed", file)).routes as RouteFile[]).map(
-      (route): [string, LatLon[]] => [
-        `${file} ${route.shape ?? route.word} ${route.distance_m}`,
-        route.points,
-      ],
+      (route): CatalogRoute => ({
+        name: `${file} ${route.shape ?? route.word} ${route.distance_m}`,
+        points: route.points,
+        inPieces: route.walks !== undefined,
+      }),
     ),
   );
-  const muw = readdirSync(join(catalog, "muw_routes")).map(
-    (file): [string, LatLon[]] => [
-      file,
-      (read(join(catalog, "muw_routes", file)) as RouteFile).points,
-    ],
-  );
+  const muw = readdirSync(join(catalog, "muw_routes")).map((file): CatalogRoute => ({
+    name: file,
+    points: (read(join(catalog, "muw_routes", file)) as RouteFile).points,
+    inPieces: false,
+  }));
   return [...seed, ...muw];
 }
 
@@ -58,7 +66,8 @@ function lengthOf(points: LatLon[]): number {
 test("every route of the catalog of «Explore» has a drawing to edit, run once", () => {
   const routes = catalogRoutes();
   expect(routes.length).toBeGreaterThan(500);
-  for (const [name, points] of routes) {
+  let inPieces = 0;
+  for (const { name, points, inPieces: pieces } of routes) {
     const track = routeTrack(points);
     const drawing = track === null ? null : drawingOf(track.lines);
     if (track === null || drawing === null) {
@@ -71,9 +80,14 @@ test("every route of the catalog of «Explore» has a drawing to edit, run once"
       centre: track.centre,
       unitM: track.unitM,
     });
-    const ratio = asked / lengthOf(points);
+    // A word in pieces is closed by the side from its end back to its start.
+    const back = pieces ? metresBetween(points[points.length - 1], points[0]) : 0;
+    inPieces += pieces ? 1 : 0;
+    const ratio = asked / (lengthOf(points) + back);
     if (ratio > 1.02) {
       throw new Error(`${name} asks ${ratio.toFixed(2)} times the route`);
     }
   }
+  // The words written letter by letter are there, and were looked at.
+  expect(inPieces).toBeGreaterThan(100);
 }, 60_000);

@@ -551,8 +551,55 @@ lasciando le righe d'indice.
 - ADR-0342, precisazione A3 — La città detta subito: gli edifici contati attorno alla partenza prima di leggere la neve, sopra 280 per km² «no open snow», un conteggio che non arriva non cambia nulla · 2026-11-12 · Attiva
 - ADR-0380, precisazione B2b — Il sonno a fine palestra e a fine vasca: lo stesso interruttore di B2, e la notte aspetta l'attività nella coda sua prima di partire · 2026-11-12 · Attiva
 - ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km · 2026-11-12 · Attiva
+- ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`) · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`)
+
+**Stato**: Attiva · 2026-11-12 · TASK-463 parte A in `main` (#1242,
+`f8d91aba`), sul server col passo 12 del Coordinatore (col sì
+dell'utente). Lo sport è una scelta dell'utente dell'11 novembre 2026,
+durante TASK-462 («alpinismo: sì, registrato senza percorso»); il modo è
+deciso dall'agente su delega dell'utente, la strada «solo server» dal
+Coordinatore; numeri dal Coordinatore.
+
+**Contesto**: l'alpinismo (roccia, neve, ghiaccio) non ha una forma da
+disegnare: è come lo scialpinismo (ADR-0344) e il parapendio (ADR-0375),
+sport «Record only» (ADR-0319). La ricetta (`sports/COME-AGGIUNGERE.md`)
+vuole nella parte A anche il contratto e il profilo nascosto nell'app:
+un'attività in `shared-types` finisce subito in `X-MuW-Reads` e i test
+dell'app chiedono un profilo. Ma `sports/**` e `settings/sport.ts`
+erano occupati da TASK-414 B e TASK-413 B.
+
+**Decisione**:
+- **`alpinism` è uno sport del registro dell'API**, `record_only`, dopo
+  `paragliding` e prima di `gym` (`RunActivity`, `API_SPORTS`,
+  `NEWER_ACTIVITIES`). Niente percorsi, record personali, gioco o zone.
+- **Strava «Hike», GPX `<type>alpinism</type>`**: Strava non ha
+  l'alpinismo. Sono valori tecnici che l'utente può cambiare con una riga
+  in `sports/alpinism.py`.
+- **La migrazione `0076_alpinism.sql`** allarga solo
+  `runs_activity_check`, rileggendolo come la `0069`.
+- **Prima il server, poi il contratto**: `packages/shared-types` non
+  cambia. Così nessuna app lo dice in `X-MuW-Reads` e nessuna riceve una
+  giornata di alpinismo. La deroga sta in **una costante sola**,
+  `SERVER_FIRST` in `services/api/tests/test_sport_registry_api.py`, e i
+  test che tengono l'API al contratto leggono le sue liste con
+  `in_the_contract`. **La toglie la parte app**, che porta insieme il
+  contratto e il profilo nascosto.
+- `engine.zip` si rifà, perché il registro degli sport va sul telefono.
+
+**Alternative scartate**:
+- *Come il parapendio (#1177)*, cioè contratto e profilo nascosto
+  nell'app nella stessa PR: tocca `sports/**`, `watch/**` e
+  `PublicParts.tsx`, occupati da altri task.
+- *Aspettare TASK-414 B e TASK-413 B*: il server sarebbe rimasto fermo.
+
+**Conseguenze**: il calendario delle attività (ADR-0372) accetta già
+`sport=alpinism`. L'orologio della build 14 non ha l'alpinismo: arriva con
+una build nuova dell'orologio, dopo la parte app. I controlli dopo il passo
+sono in `out/TASK-463/SERVER-A.md`; i dettagli in `tasks/TASK-463.md`.
 
 ## ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km
 
@@ -591,6 +638,7 @@ approvate dal Coordinatore; schermate approvate dall'utente («Sì, accendi»).
 7. **Acceso** (`ready: true`) dopo lo sci di fondo (#1249) e il menu a
    griglia (#1254, la carrozzina nella famiglia «wheels»); solo JavaScript,
    l'impronta iOS non cambia; esce con l'OTA, col sì dell'utente.
+
 ## ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←»
 
 **Stato**: Attiva · 2026-11-12 · TASK-470 parte E, in `main` con la #1243 (OTA 14). Il gesto e la
@@ -1780,6 +1828,7 @@ approvate dal Coordinatore.
 8. **La città lenta** (fino a 44 s al banco) resta: un controllo «poca neve»
    prima del piazzamento toccherebbe il motore. Se i tempi del server lo
    chiedono, è un passo a parte.
+
 ## ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste
 
 **Stato**: Attiva · 2026-11-11 · TASK-441, parte A (#1149). L'utente ha
@@ -2624,6 +2673,7 @@ comincia. Una serie conta per il primo esercizio della scheda dello stesso
 tipo ancora incompleto; finito un esercizio, quello dopo diventa quello in
 corso da solo, coi valori della scheda nei campi se non ci sono serie di
 prima.
+
 ## ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py`
 
 **Stato**: Accettato · 2026-11-08 · TASK-413 A1. Deciso dall'agente su
@@ -2769,6 +2819,7 @@ dall'agente su delega dell'utente
   l'API. `?api=` (solo da `127.0.0.1`/`localhost`, solo verso un indirizzo
   locale) serve a provarla sul Mac contro un finto `/live`: l'API vera
   lascia leggere `/live` solo a `https://getmuw.app`.
+
 ## ADR-0352, precisazione B1 — L'app: lo stato fuori da React, gli invii dal task della posizione, il consenso a ogni link
 
 **Stato**: Attiva · 2026-11-10 · TASK-424 parte B1 (#1025, a25a24a9) ·
@@ -3210,6 +3261,7 @@ mostra le 94 forme nella griglia di sempre finché arriva l'OTA. Due
 migrazioni (C, E).
 
 ---
+
 ## ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono
 
 **Data**: 2026-11-08 · **Stato**: Accettata · **Task**: TASK-422 ·
@@ -3310,6 +3362,7 @@ al via.
 necessaria, come al via). B3a2 manderà i preferiti da soli col messaggio
 «routes». Il codice dell'orologio si prova con un prebuild locale
 `MUW_WATCH=1`; impronta iOS senza variabile invariata.
+
 ## ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali
 
 **Stato:** deciso dall'agente su delega dell'utente (2026-11-08); le scene

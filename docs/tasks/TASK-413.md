@@ -415,10 +415,13 @@ Tutte come la proposta, tranne la terza:
       scarica la neve di un posto nuovo (#1130; passo 8 del 2026-11-11:
       0068 e i tre vincoli, impronte attese, cuore di 1 km alle Viote in
       38,2 s la prima volta e 4,1 s la seconda, 1000 m, 0 indicazioni).
-- [ ] A3: una città è detta subito senza leggerne la neve (Trento, Belluno,
+- [x] A3: una città è detta subito senza leggerne la neve (Trento, Belluno,
       Milano), ogni posto con neve del banco va avanti come prima; un
       conteggio che non arriva non cambia nulla; impronte invariate; sul
-      server Trento 3 km in pochi secondi.
+      server Trento 3 km in pochi secondi. (#1238 e la correzione #1266;
+      passo 12, prova del 2026-11-12 17:00Z su `eee85a69`: Milano 1,1 s,
+      Trento 1,1 s e 0,65 s, tutte «no open snow»; 16170 e 8091 edifici
+      contati dalla neve in cache; `out/coordinatore/prova-passo12.out`.)
 - [ ] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
       e i testi sono in cinque lingue.
 

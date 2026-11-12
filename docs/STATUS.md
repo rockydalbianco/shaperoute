@@ -185,6 +185,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
   R2 (app, col turno), R3 (`site/live/`). Il pianificatore resta Proposto.
   File: — · `tasks/TASK-305.md`
+  **R1 fatta il 2026-11-12**: #1177 in main (83bbbc5d), server al passo 9
+  (migrazione 0069_paragliding). Ora R2 (app) e R3 (`site/live/`).
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`

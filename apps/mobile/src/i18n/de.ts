@@ -2783,6 +2783,19 @@ export const DE: Table = {
   "Updated {seconds} s ago": "Vor {seconds} s aktualisiert",
   "LIVE · {sport} · {distance}": "LIVE · {sport} · {distance}",
   "🔴 Live": "🔴 Live",
+  // The «Sleep» card of the profile (TASK-467 part B3): src/profile/OwnSleep.tsx
+  // («On your profile» is with the prizes, «Only you see this» with the VO₂ max)
+  "Show my sleep from Apple Health": "Meinen Schlaf aus Apple Health zeigen",
+  "MuW works out a sleep score from your Apple Health sleep data.":
+    "MuW berechnet aus deinen Schlafdaten in Apple Health einen Schlafwert.",
+  "Share your sleep?": "Deinen Schlaf teilen?",
+  "Your score, hours slept and sleep stages show on your profile, to everyone who can see it.":
+    "Dein Wert, die geschlafenen Stunden und die Schlafphasen sind auf deinem Profil zu sehen, für alle, die es sehen können.",
+  "No sleep data for last night in Apple Health.":
+    "Keine Schlafdaten für letzte Nacht in Apple Health.",
+  "MuW can't read your sleep. Allow it in the Health app: your profile › Apps › MuW.":
+    "MuW kann deinen Schlaf nicht lesen. Erlaube es in der Health-App: dein Profil › Apps › MuW.",
+  "Stop sharing@@sleep": "Nicht mehr teilen",
   // src/liveShare/ (TASK-468 part B2a: the «Live» row, «Live in the Feed»,
   // the stop of a share without a link; en and it approved 2026-11-12)
   "Live in the Feed": "Live im Feed",

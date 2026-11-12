@@ -220,6 +220,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   min), D (mattino), C (palestra, dopo 461 A2 e 465), E (routine
   pubblicate). File: — · `tasks/TASK-466.md`
 
+- **TASK-469 — Il look Liquid Glass** (ADR-0383) · parte 0 fatta, l'utente
+  ha scelto «Capsula». Poi A in fette via OTA, dopo l'aggiornamento
+  completo; B nativa dopo la 1.1.0. File: — ·
+  `tasks/TASK-469.md`
+
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
 la figura, 305 parapendio (il pianificatore), 336 video nei post, 341 badge, 345 calorie e

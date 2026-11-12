@@ -1,6 +1,7 @@
 import { metresBetween } from "../map/coordinates";
 import { CLIMB_STEP_M } from "../navigation/runMetrics";
 import { stepAt, type Track } from "../navigation/trackRecorder";
+import type { SkinChange } from "./skinChanges";
 import { DESCENT_MIN_DROP_M, droppedM, isLift, type Leg, legs } from "./snowDay";
 
 /**
@@ -73,6 +74,10 @@ export type MountainTour = {
   /** The highest the tour went. */
   topM: number;
 };
+
+/** A changeover marked by hand belongs to the turn nearest to it, when one
+ * is this near; else to the phase the tour is in (TASK-415 part B3). */
+export const MARK_NEAR_MS = 10 * 60_000;
 
 /** A climb shorter than this on the move gives no VAM. */
 const VAM_MIN_MS = 60_000;
@@ -200,9 +205,45 @@ function changeAt(track: Track, at: number, kind: "off" | "on"): Changeover | nu
   return ms >= CHANGE_MIN_MS ? { kind, atMs: track.fixes[first].timeMs, ms } : null;
 }
 
+/** Whether a changeover marked by hand takes the skins off or puts them
+ * on: as the turn nearest to it says, the top of a climb or its foot; at
+ * none near, as the phase it is marked in, the top of the climb still on. */
+function markedKind(
+  phases: readonly MountainPhase[],
+  fromMs: number,
+  toMs: number,
+): "off" | "on" {
+  let turn: number | null = null;
+  let nearest = MARK_NEAR_MS;
+  phases.forEach((phase, at) => {
+    const gap =
+      phase.startMs < fromMs
+        ? fromMs - phase.startMs
+        : phase.startMs > toMs
+          ? phase.startMs - toMs
+          : 0;
+    if (at > 0 && gap <= nearest) {
+      nearest = gap;
+      turn = at;
+    }
+  });
+  if (turn === null) {
+    const last = phases[phases.length - 1];
+    return last === undefined || last.kind === "climb" ? "off" : "on";
+  }
+  const before = phases[turn - 1];
+  const after = phases[turn];
+  return before.kind === "climb" ? "off" : after.kind === "climb" ? "on" : "off";
+}
+
 /** The tour of `track`: its phases, its changeovers and its numbers. Null
- * when the phone gave no height, and there are no phases to tell. */
-export function mountainTour(track: Track): MountainTour | null {
+ * when the phone gave no height, and there are no phases to tell. The
+ * changeovers marked by hand (`byHand`, TASK-415 part B3) take the place
+ * of the ones found from the track that they meet. */
+export function mountainTour(
+  track: Track,
+  byHand: readonly SkinChange[] = [],
+): MountainTour | null {
   let topM: number | null = null;
   track.fixes.forEach((_, index) => {
     const height = heightOf(track, index);
@@ -238,15 +279,35 @@ export function mountainTour(track: Track): MountainTour | null {
       vamMph: kind === "climb" && ms >= VAM_MIN_MS ? perHour(heightM, ms) : null,
     };
   });
-  const changes: Changeover[] = [];
+  const found: Changeover[] = [];
   phases.slice(1).forEach((phase, at) => {
     const before = phases[at];
     const kind = before.kind === "climb" ? "off" : phase.kind === "climb" ? "on" : null;
     const change = kind === null ? null : changeAt(track, phase.leg.from, kind);
     if (change !== null) {
-      changes.push(change);
+      found.push(change);
     }
   });
+  // An open mark lasts until the last fix.
+  const lastMs = track.fixes[track.fixes.length - 1].timeMs;
+  const marked: Changeover[] = byHand.map(({ fromMs, toMs }) => {
+    const endMs = Math.max(fromMs, toMs ?? lastMs);
+    return {
+      kind: markedKind(phases, fromMs, endMs),
+      atMs: fromMs,
+      ms: endMs - fromMs,
+    };
+  });
+  const changes = [
+    ...found.filter(
+      (change) =>
+        !byHand.some(
+          ({ fromMs, toMs }) =>
+            change.atMs <= (toMs ?? Infinity) && fromMs <= change.atMs + change.ms,
+        ),
+    ),
+    ...marked,
+  ].sort((a, b) => a.atMs - b.atMs);
   const climbs = phases.filter((phase) => phase.kind === "climb");
   const descents = phases.filter((phase) => phase.kind === "descent");
   const sum = (list: MountainPhase[], of: (phase: MountainPhase) => number) =>
@@ -270,16 +331,21 @@ export function mountainTour(track: Track): MountainTour | null {
 export type TourNow = PhaseKind | "change" | null;
 
 /**
- * The phase of `tour` at `nowMs`: a changeover once the last fix is
- * CHANGE_MIN_MS old, or the track is paused, as the skins come off or go
- * on at a turn; the last phase otherwise.
+ * The phase of `tour` at `nowMs`: a changeover while one marked by hand is
+ * open (`byHand`, TASK-415 part B3), or once the last fix is CHANGE_MIN_MS
+ * old, or the track is paused, as the skins come off or go on at a turn;
+ * the last phase otherwise.
  */
 export function tourNow(
   track: Track,
   tour: MountainTour | null,
   nowMs: number,
   paused: boolean,
+  byHand: readonly SkinChange[] = [],
 ): TourNow {
+  if (byHand.some((change) => change.toMs === null)) {
+    return "change";
+  }
   const last = tour?.phases[tour.phases.length - 1];
   if (tour === null || last === undefined) {
     return null;

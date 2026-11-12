@@ -176,6 +176,9 @@ import { StretchScreen } from "./src/stretch/StretchScreen";
 import { useSwimNotice } from "./src/swim/safetyNotice";
 import { SwimNotice } from "./src/swim/SwimNotice";
 import { isOnWater } from "./src/swim/water";
+import { isPlacedFree } from "./src/snow/snow";
+import { useSnowNotice } from "./src/snow/safetyNotice";
+import { SnowNotice } from "./src/snow/SnowNotice";
 import { PaddleExplore } from "./src/paddle/PaddleExplore";
 import { MoveShape } from "./src/paddle/MoveShape";
 import { PaddleNotice } from "./src/paddle/PaddleNotice";
@@ -750,6 +753,22 @@ function MuW() {
   const paddleNotice = usePaddleNotice();
   // A swim has its own notice, read once on this phone (TASK-323 C).
   const swimNotice = useSwimNotice();
+  // Snowshoes have the avalanche notice, read once on this phone (TASK-413 B).
+  const snowNotice = useSnowNotice();
+  /** The notice before «Start» of a route of `activity`, the first time: on
+   * the water (paddle or swim) and on the snow; none on the networks. */
+  function noticeOf(activity: Activity | undefined) {
+    switch (activity) {
+      case "paddling":
+        return paddleNotice;
+      case "swimming":
+        return swimNotice;
+      case "snowshoeing":
+        return snowNotice;
+      default:
+        return null;
+    }
+  }
   // A run opened again with the app follows the route of its file (TASK-272).
   const [exploreRun, setExploreRun] = useState<ExploreRun | null>(() =>
     reopened !== null && !isFreeRun(reopened) ? reopenedRoute(reopened) : null,
@@ -1089,8 +1108,11 @@ function MuW() {
     // Turned on the map, it stays turned while it is run (TASK-232).
     const turn =
       route.rotation_deg !== undefined ? { rotation_deg: route.rotation_deg } : {};
-    if (isOnWater(activity)) {
-      (activity === "swimming" ? swimNotice : paddleNotice).ask(() => {
+    // On the water and on the snow, no directions: the shape is placed
+    // freely (TASK-413 B: isPlacedFree).
+    const notice = noticeOf(activity);
+    if (isPlacedFree(activity) && notice !== null) {
+      notice.ask(() => {
         startDirections.reset();
         setExploreRun({
           points: route.points,
@@ -1147,12 +1169,9 @@ function MuW() {
       });
       setScreen("navigate");
     };
-    if (route.activity === "paddling") {
-      paddleNotice.ask(run);
-      return;
-    }
-    if (route.activity === "swimming") {
-      swimNotice.ask(run);
+    const notice = noticeOf(route.activity);
+    if (notice !== null) {
+      notice.ask(run);
       return;
     }
     run();
@@ -1788,13 +1807,10 @@ function MuW() {
               }
             }}
             onStart={() => {
-              if (view.status === "done" && view.request.activity === "paddling") {
-                paddleNotice.ask(() => setScreen("navigate"));
-              } else if (
-                view.status === "done" &&
-                view.request.activity === "swimming"
-              ) {
-                swimNotice.ask(() => setScreen("navigate"));
+              const notice =
+                view.status === "done" ? noticeOf(view.request.activity) : null;
+              if (notice !== null) {
+                notice.ask(() => setScreen("navigate"));
               } else {
                 setScreen("navigate");
               }
@@ -1951,6 +1967,10 @@ function MuW() {
                       Keyboard.dismiss();
                       // A workout at the gym has its own screen (TASK-385 B).
                       if (sport === "gym") startGymWorkout();
+                      // The day on snowshoes, through the avalanche notice
+                      // the first time (TASK-413 C).
+                      else if (sport === "snowshoe")
+                        snowNotice.ask(() => setScreen("run"));
                       else setScreen("run");
                     }}
                     runLabel={withoutRouteLabel(sport)}
@@ -2154,6 +2174,12 @@ function MuW() {
         visible={swimNotice.asking}
         onAccept={swimNotice.accept}
         onDismiss={swimNotice.dismiss}
+      />
+      {/* Before the first «Start» on snowshoes (TASK-413 B). */}
+      <SnowNotice
+        visible={snowNotice.asking}
+        onAccept={snowNotice.accept}
+        onDismiss={snowNotice.dismiss}
       />
       {/* A workout at the gym (TASK-385 B) and a swim in a pool (TASK-400
           B), over everything until saved. Out of the map's card, which has

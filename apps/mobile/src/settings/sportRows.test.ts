@@ -35,6 +35,8 @@ it("shows the rows of before, in their order", () => {
     },
     // Ski touring (TASK-415 part B), on with its phases and its VAM.
     { id: "skimo", emoji: "🏔️", name: "Ski touring", ready: true, recordOnly: true },
+    // Snowshoes (TASK-413 part B), «Soon» until the user's yes.
+    { id: "snowshoe", emoji: "❄️", name: "Snowshoes", ready: false },
     // A day of mountaineering (TASK-463 part B), «Soon» until it is turned on.
     {
       id: "alpinism",
@@ -75,6 +77,7 @@ it("asks and saves the activities of before", () => {
     "running",
     "running",
     "running",
+    "snowshoeing",
     "running",
     "running",
     "running",
@@ -93,6 +96,7 @@ it("asks and saves the activities of before", () => {
     "skiing",
     "xc_skiing",
     "ski_touring",
+    "snowshoeing",
     "alpinism",
     "gym",
     "paragliding",

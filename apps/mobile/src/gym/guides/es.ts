@@ -134,6 +134,18 @@ export const GUIDES_ES: Guides = {
     "Sube hasta que el cuerpo quede en línea recta.",
     "No arquees la espalda más allá de la línea recta.",
   ],
+  superman: [
+    "Túmbate boca abajo, brazos estirados hacia delante.",
+    "Levanta a la vez brazos, pecho y piernas.",
+    "Aguanta un momento y baja despacio.",
+    "Mirada al suelo, cuello largo.",
+  ],
+  bodyweight_squat: [
+    "Pies a la anchura de los hombros, brazos al frente.",
+    "Baja la cadera hacia atrás hasta que los muslos queden paralelos al suelo.",
+    "Empuja con los talones y sube.",
+    "Rodillas en la dirección de las puntas.",
+  ],
   back_squat: [
     "Barra sobre la parte alta de la espalda y pies a la anchura de los hombros.",
     "Siéntate hacia atrás y hacia abajo hasta que los muslos queden paralelos al suelo.",
@@ -205,6 +217,12 @@ export const GUIDES_ES: Guides = {
     "Sube las caderas hasta que el cuerpo quede recto de las rodillas a los hombros.",
     "Bájalas despacio.",
     "Empuja con los talones y mete la barbilla.",
+  ],
+  glute_bridge: [
+    "Túmbate boca arriba, rodillas dobladas, pies en el suelo.",
+    "Empuja con los talones y sube la cadera.",
+    "Aprieta los glúteos arriba y baja despacio.",
+    "No arquees la espalda.",
   ],
   glute_machine: [
     "De pie o de rodillas en la máquina, con las manos en las agarraderas.",
@@ -421,6 +439,12 @@ export const GUIDES_ES: Guides = {
     "Deslízate hacia abajo hasta que las rodillas formen 90°.",
     "Mantén la posición y respira.",
     "Mantén las rodillas sobre los tobillos.",
+  ],
+  mountain_climber: [
+    "En posición de flexión, brazos estirados.",
+    "Lleva una rodilla hacia el pecho.",
+    "Cambia de pierna rápido, como si corrieras.",
+    "Cadera baja, hombros sobre las manos.",
   ],
   power_clean: [
     "Empieza como en un peso muerto, con la barra sobre los pies.",

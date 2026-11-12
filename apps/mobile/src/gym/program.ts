@@ -83,6 +83,36 @@ function round(kg: number): number {
   return Math.round(kg * 100) / 100;
 }
 
+/** A held exercise grows this many seconds a week. */
+export const HOLD_STEP_S = 5;
+
+/**
+ * An exercise without kg in «more reps each week» (TASK-461 A2, the
+ * user's yes of 2026-11-12, for plans already kept too): one rep more each
+ * week, 5 s more if held; the last week of a cycle of 3 or more is lighter,
+ * a set less at the week before's values; the next cycle goes on from where
+ * the last one got to («Un ciclo di 4 settimane, poi riparte da dove sei
+ * arrivato»).
+ */
+function withoutLoadInWeek(
+  item: GymPlanItem,
+  weeks: number,
+  week: number,
+  cycle: number,
+): GymPlanItem {
+  const lighter = weeks >= 3 && week === weeks;
+  const perCycle = weeks >= 3 ? weeks - 1 : weeks;
+  const steps = cycle * perCycle + (lighter ? week - 2 : week - 1);
+  return {
+    ...item,
+    ...(lighter ? { sets: Math.max(1, item.sets - 1) } : {}),
+    ...(item.reps === undefined ? {} : { reps: item.reps + steps }),
+    ...(item.kind !== "timed" || item.duration_s === undefined
+      ? {}
+      : { duration_s: item.duration_s + HOLD_STEP_S * steps }),
+  };
+}
+
 /** An exercise of the first week, as it is in `week` (1-based) of the
  * `cycle`-th cycle. */
 export function itemInWeek(
@@ -103,6 +133,9 @@ export function itemInWeek(
       }
       return { ...item, ...heavier(cycle + w) };
     case "reps": {
+      if (item.load_kg === undefined) {
+        return withoutLoadInWeek(item, weeks, week, cycle);
+      }
       const step = cycle * weeks + w;
       return {
         ...item,

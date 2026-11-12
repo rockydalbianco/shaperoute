@@ -83,7 +83,9 @@ test("an older app keeps the days out and the target when it works out or edits 
   ).toEqual(
     program.sessions.flatMap((one) => (one.outing === undefined ? [] : [one.outing])),
   );
-  const edited = withDays(program, bike.days, naming);
+  // TASK-461 A2: the days are given by sport, the bodyweight Monday as
+  // such; a day out stays on its day.
+  const edited = withDays(program, [], naming, [], [1]);
   expect(edited.target).toEqual(program.target);
   expect(edited.sessions).toEqual(program.sessions);
 });

@@ -168,7 +168,8 @@ fly» del parapendio (`mountain/climbNotice.ts`). Si chiude con «Got it».
   `i18n/{de,es,fr,it}.ts`, più i test dei conteggi di sport e impostazioni
 - `apps/mobile/targets/watch`: `sports.json` e i cinque
   `Localizable.strings`, una riga ciascuno
-- `docs/UI.md` (la sezione «L'alpinismo»), questo file
+- `docs/UI.md` (la sezione «L'alpinismo»), `docs/API.md` (un paragrafo
+  accanto al parapendio), questo file
 
 ## Il server
 

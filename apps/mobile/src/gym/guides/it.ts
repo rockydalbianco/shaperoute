@@ -134,6 +134,18 @@ export const GUIDES_IT: Guides = {
     "Risali finché il corpo è in linea retta.",
     "Non inarcarti oltre la linea retta.",
   ],
+  superman: [
+    "Sdraiato a pancia in giù, braccia distese avanti.",
+    "Solleva insieme braccia, petto e gambe.",
+    "Tieni un attimo, poi scendi piano.",
+    "Sguardo a terra, collo lungo.",
+  ],
+  bodyweight_squat: [
+    "Piedi alla larghezza delle spalle, braccia avanti.",
+    "Scendi col bacino indietro finché le cosce sono parallele a terra.",
+    "Spingi sui talloni e torna su.",
+    "Ginocchia nella direzione delle punte.",
+  ],
   back_squat: [
     "Bilanciere sulla parte alta della schiena, piedi larghi come le spalle.",
     "Scendi indietro finché le cosce sono parallele al pavimento.",
@@ -205,6 +217,12 @@ export const GUIDES_IT: Guides = {
     "Spingi il bacino in alto finché il corpo è piatto dalle ginocchia alle spalle.",
     "Riabbassalo piano.",
     "Spingi sui talloni, mento verso il petto.",
+  ],
+  glute_bridge: [
+    "Sdraiato sulla schiena, ginocchia piegate, piedi a terra.",
+    "Spingi sui talloni e solleva il bacino.",
+    "Stringi i glutei in alto, poi scendi piano.",
+    "Non inarcare la schiena.",
   ],
   glute_machine: [
     "In piedi o in ginocchio sulla macchina, mani sulle maniglie.",
@@ -421,6 +439,12 @@ export const GUIDES_IT: Guides = {
     "Scivola giù finché le ginocchia sono a 90°.",
     "Resta così e respira.",
     "Ginocchia sopra le caviglie.",
+  ],
+  mountain_climber: [
+    "In posizione di piegamento, braccia distese.",
+    "Porta un ginocchio verso il petto.",
+    "Cambia gamba in fretta, come se corressi.",
+    "Bacino basso, spalle sopra le mani.",
   ],
   power_clean: [
     "Parti come nello stacco, il bilanciere sopra i piedi.",

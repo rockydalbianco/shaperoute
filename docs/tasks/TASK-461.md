@@ -1,11 +1,11 @@
 # TASK-461 — Il pianificatore completo: corpo libero, piani verso una distanza, gite in montagna
 
 **Stato**: In corso · 2026-11-12 · parte 0 chiusa; A1 e B1 in `main` e
-sul server (passo 9, 2026-11-12); B2a (la logica dei piani verso un
-obiettivo, solo file nuovi) in PR; A2 dopo l'app di TASK-452, poi B2b/C2
+sul server (passo 9, 2026-11-12); B2a in `main` (#1196); A2 (app del corpo
+libero) in PR bozza #1208; poi B2b/C2
 **Fase**: 5 · **Branch**: `feat/TASK-461-a1-bodyweight-catalog` (A1),
 `feat/TASK-461-b1-distance-mountain-server` (B1),
-`feat/TASK-461-b2a-target-plans` (B2a)
+`feat/TASK-461-b2a-target-plans` (B2a), `feat/TASK-461-a2-bodyweight-app` (A2)
 **Dipende da**: TASK-433 (la guida delle schede, `gym_plans.program`),
 TASK-452 (i ritmi di corsa: la parte A2 parte dopo la sua PR dell'app)
 **ADR**: ADR-0371 (proposto) · numeri dal Coordinatore il 2026-11-11
@@ -64,6 +64,27 @@ Sulla tela «Schede palestra guidate»
 15. **Obiettivo della montagna (C)**: «Sì, il dislivello» — 500, 1000, 1500,
     2000 m o Altro, con una data o «Quando sono pronto».
 16. **Riga G della tela (montagna)** e **testi della parte C**: «Approvo».
+17. **Le settimane degli esercizi senza kg (A2, 2026-11-12)**: «Sì, così»
+    alla domanda «Va bene così per tutti gli esercizi senza kg?», con
+    l'esempio piegamenti 3×10 e plank 3×40 s. Prima: 10, 11, 12, 10, 11,
+    12… e il plank fermo a 40 s. Dopo: 10, 11, 12, la 4ª settimana più
+    leggera (2 serie da 12), poi 13, 14, 15…; plank 40, 45, 50, 4ª leggera,
+    poi 55 s. Vale anche per le schede che ci sono già; gli esercizi coi kg
+    restano come prima. Il server non ha una copia del conto
+    (`gym_plans.py` e il calendario contano solo i giorni): cambia solo
+    l'app.
+18. **Testi della parte A2 e «scheda» → «piano» (2026-11-12)**: «Approvo» —
+    i testi nuovi nelle quattro lingue (ingresso, corpo libero, giorni per
+    sport, settimane senza kg) e in italiano «piano» per la scheda di più
+    settimane («Nuovo piano», «I miei piani»…), mentre il singolo
+    allenamento resta «scheda».
+19. **Schermate della A2 al simulatore (2026-11-12)**: «Approvo» —
+    l'ingresso col caso «solo palestra» (tasto spento, «Avanti · 1
+    scelto»), obiettivo e attrezzi, giorni per sport, allenamenti A e B, le
+    settimane senza kg e il prima/dopo di una scheda esistente
+    (`out/TASK-461/shots`, fuori da git). Dalla prova: alla sbarra e alle
+    parallele metà ripetizioni (3 × 8 trazioni accanto a 3 × 15
+    piegamenti).
 
 ### I testi approvati della parte A (italiano; le altre lingue con lo stesso senso)
 
@@ -148,14 +169,21 @@ Sulla tela «Schede palestra guidate»
   `gym_catalog.py`, nella fixture `gym-exercises.json` e nella tabella di
   `docs/sports/gym.md`; nessuna migrazione. Il server li conosce prima
   dell'app: le schede e gli allenamenti che li usano passano la validazione.
-- **A2 — app, corpo libero**: dopo la PR dell'app di TASK-452. Ingresso
-  «Cosa vuoi allenare?», passo 1 con gli attrezzi, piano senza kg, settimane
-  che crescono di una ripetizione e 5 s nei tenuti; i quattro esercizi nel
-  catalogo dell'app con omino e guida; «I miei piani».
+- **A2 — app, corpo libero** (branch `feat/TASK-461-a2-bodyweight-app`,
+  lista dei file col sì del Coordinatore il 2026-11-12): ingresso «Cosa vuoi
+  allenare?» (almeno due fra palestra, corpo libero e corsa; distanza e
+  montagna «Presto»), giorni per sport, obiettivi e attrezzi del corpo
+  libero, giorni «Corpo libero · A/B», settimane senza kg che crescono di una
+  ripetizione e 5 s nei tenuti con l'ultima più leggera (anche nelle schede
+  già fatte: sì dell'utente del 2026-11-12, «Sì, così», all'esempio
+  piegamenti 3×10 e plank 3×40 s); i quattro esercizi nel catalogo dell'app
+  con omino e guida; in italiano «piano» per la scheda di più settimane.
+  Prima di «pronta»: le schermate al simulatore (l'ingresso col caso «solo
+  palestra» ben visibile) e il sì dell'utente su testi e traduzioni.
 - **B1 — server di B e C insieme** (questa PR): `outing` sui giorni e
   `target` sul programma, fino a 24 settimane; il calendario segna fatto un
   giorno fuori da un'attività del suo sport.
-- **B2a — app, la logica dei piani verso un obiettivo** (questa PR, il sì
+- **B2a — app, la logica dei piani verso un obiettivo** (#1196, in `main`; il sì
   del Coordinatore il 2026-11-12): solo file nuovi in
   `apps/mobile/src/gym/`, nessun testo e niente di collegato, quindi niente
   di visibile nell'app. `targetWeeks.ts` (la scala delle settimane),
@@ -237,6 +265,10 @@ Sulla tela «Schede palestra guidate»
 - API: `test_gym_catalog.py` (95 esercizi, fixture e docs uguali),
   `test_gym_plans.py`.
 - App: `catalog.test.ts`, `setKinds.test.ts`, `Leaderboard.test.tsx`, `tsc`.
+- A2: app `bodyweight.test.ts`, `proposal.test.ts`, `program.test.ts`,
+  `catalog.test.ts`, `moves.test.ts`, `muscles.test.ts`,
+  `GymPlans.test.tsx`, `GymIntro.test.tsx`, `olderAppOutings.test.ts`,
+  `plans.test.ts`, i test di `src/i18n`, `tsc`, eslint e prettier.
 - B1: API `test_gym_plans.py` e `test_gym_calendar.py`; shared-types
   `gym.test.ts`; app `olderAppOutings.test.ts`, `plans.test.ts`,
   `GymPlans.test.tsx`, `api/gymPlans.test.ts`, `tsc`.

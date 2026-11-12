@@ -23,8 +23,11 @@ import { profileOf } from "../sports";
  * Paragliding (TASK-305 R2, ADR-0375) is a flight recorded without a
  * shape, never a route. A day of alpine skiing («Ski») or of cross-country skiing is
  * recorded without a shape (TASK-375, ADR-0319): `recordOnly`, and so is
- * a ski tour («Ski touring», TASK-415 part B, ADR-0344) and a day of
- * mountaineering («Mountaineering», TASK-463 part B, ADR-0373). A workout
+ * a ski tour («Ski touring», TASK-415 part B, ADR-0344). Snowshoes draw a
+ * small shape placed freely on the open snow, as on the water, and record
+ * a day without one (TASK-413 parts B and C, ADR-0342), «Soon» until the
+ * user's yes. A day of mountaineering («Mountaineering», TASK-463 part B,
+ * ADR-0373) is recorded without a shape too. A workout
  * at the gym («Gym», TASK-385 part B, ADR-0327) has no route and no GPS:
  * «Draw» offers only «Start workout». */
 export type Sport =
@@ -41,6 +44,7 @@ export type Sport =
   | "ski"
   | "xc_ski"
   | "skimo"
+  | "snowshoe"
   | "gym"
   | "paragliding"
   | "alpinism";
@@ -91,6 +95,7 @@ const ACTIVITY: { readonly [S in Sport]?: RunActivity } = {
   ski: "skiing",
   xc_ski: "xc_skiing",
   skimo: "ski_touring",
+  snowshoe: "snowshoeing",
   gym: "gym",
   paragliding: "paragliding",
   alpinism: "alpinism",
@@ -157,6 +162,11 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // the OTA that carries them; the server has had part A and its migration
   // 0057 since 2026-11-08.
   fromProfile("skimo", true),
+  // Snowshoes are asked as "snowshoeing" (activityOf), 0.5-3 km on the open
+  // snow of the server (TASK-413 parts A, ADR-0342); «Record your day» is
+  // their way without a shape (part C). Off until the user's yes to the
+  // screenshots, with the server's step for #1266.
+  fromProfile("snowshoe", false),
   // A day of mountaineering, saved as "alpinism", recorded without a shape
   // (TASK-463 part B, ADR-0373), with its notice «Before you climb». «Soon»
   // until the server has part A and its migration 0076 and the user says
@@ -180,6 +190,7 @@ const OFFERED_WHEN_READY: { readonly [A in Activity]?: Sport } = {
   mountain_biking: "mtb",
   inline_skating: "roller",
   wheelchair: "wheelchair",
+  snowshoeing: "snowshoe",
 };
 
 /**
@@ -188,7 +199,8 @@ const OFFERED_WHEN_READY: { readonly [A in Activity]?: Sport } = {
  * the server keeping walks (TASK-371), so the two come together, a hike
  * once «Hike» is (TASK-377), a gravel or an MTB ride once «Gravel» or «MTB»
  * is (TASK-378), a skate once «Roller» is (TASK-380), a wheelchair or a
- * stroller once «Wheelchair & stroller» is (TASK-414); every other as before.
+ * stroller once «Wheelchair & stroller» is (TASK-414), a snowshoe outing
+ * once «Snowshoes» is (TASK-413); every other as before.
  */
 export function activityOffered(
   activity: Activity,
@@ -352,6 +364,10 @@ export function withoutRouteLabel(sport: Sport): string {
     case "alpinism":
       // No shapes on the slopes (TASK-375) nor up a mountain (TASK-463):
       // the only way to go.
+      return t("Record your day");
+    case "snowshoe":
+      // Beside the shapes on the snow, the day as it comes (TASK-413 part
+      // C, the user's «Dentro le ciaspole», 2026-11-12).
       return t("Record your day");
     case "gym":
       // No route in the gym (TASK-385 part B): the workout's own start.

@@ -1626,6 +1626,40 @@ export const ES: Table = {
   "Glute stretch": "Estiramiento de glúteo",
   "Cross one ankle over the other knee. Sit back as if into a chair.":
     "Cruza un tobillo sobre la otra rodilla. Siéntate atrás como en una silla.",
+  // src/stretch, the routines (TASK-466 part B)
+  "Neck stretch": "Estiramiento de cuello",
+  "Stand tall. Let your chin drop toward your chest, shoulders low.":
+    "De pie, recto. Deja caer la barbilla hacia el pecho, hombros bajos.",
+  "Overhead reach": "Estiramiento hacia arriba",
+  "Reach both arms up high. Grow tall, chest open.":
+    "Sube los dos brazos bien alto. Estírate, pecho abierto.",
+  "Shoulder stretch": "Estiramiento de hombro",
+  "Bring one arm across your chest. Pull it in with the other hand.":
+    "Cruza un brazo delante del pecho. Acércalo con la otra mano.",
+  "Chest opener": "Apertura de pecho",
+  "Clasp your hands behind your back. Lift them a little, chest out.":
+    "Junta las manos detrás de la espalda. Súbelas un poco, pecho fuera.",
+  "Triceps stretch": "Estiramiento de tríceps",
+  "Raise one elbow, hand down your back. Press the elbow back gently.":
+    "Sube un codo, la mano hacia la espalda. Empuja el codo atrás con suavidad.",
+  "Upper back stretch": "Estiramiento de espalda alta",
+  "Reach your arms forward, hands together. Round your back, head down.":
+    "Estira los brazos al frente, manos juntas. Redondea la espalda, cabeza abajo.",
+  "Forward fold": "Flexión hacia delante",
+  "Fold forward from the hips. Let your arms hang, knees soft.":
+    "Dóblate hacia delante desde la cadera. Deja colgar los brazos, rodillas sueltas.",
+  "Cat stretch": "Postura del gato",
+  "On hands and knees. Round your back up, let your head drop.":
+    "A cuatro patas. Arquea la espalda hacia arriba, deja caer la cabeza.",
+  "Child's pose": "Postura del niño",
+  "Sit back on your heels. Reach your arms forward, forehead down.":
+    "Siéntate sobre los talones. Estira los brazos al frente, frente abajo.",
+  "Knee hug": "Rodilla al pecho",
+  "Stand on one leg. Hug the other knee to your chest.":
+    "De pie sobre una pierna. Abraza la otra rodilla contra el pecho.",
+  Morning: "Mañana",
+  "After run": "Después de correr",
+  "After gym": "Después del gimnasio",
   "{index} of {total}": "{index} de {total}",
   "Right side": "Lado derecho",
   "Left side": "Lado izquierdo",

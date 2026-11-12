@@ -21,7 +21,7 @@ import {
   space,
 } from "../theme/tokens";
 import { chime, tick } from "./chime";
-import { type Exercise, EXERCISES } from "./exercises";
+import { type Exercise, EXERCISES, READY_S, SWITCH_S } from "./exercises";
 import { Figure } from "./Figure";
 
 /**
@@ -41,10 +41,9 @@ import { Figure } from "./Figure";
 
 /** The countdown's step. */
 export const TICK_MS = 1000;
-/** «Get ready» before each exercise, in seconds. */
-export const READY_S = 5;
-/** «Switch sides» before an exercise's second side, in seconds. */
-export const SWITCH_S = 3;
+/** «Get ready» and «Switch sides», in seconds: kept with the exercises,
+ * where a routine's length is counted. */
+export { READY_S, SWITCH_S };
 /** The last seconds of a hold that tick. */
 export const COUNT_IN_S = 3;
 /** How near the end of an exercise the next one is named, in seconds. */

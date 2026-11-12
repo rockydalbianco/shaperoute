@@ -128,6 +128,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sport nel contratto e nell'API, nascosto nell'app, migrazione 0068) e
   sul server col passo 8 del 2026-11-11; l'app col decimo OTA. Prima di B,
   la città lenta (76 s per un rifiuto). File: — · `tasks/TASK-413.md`
+  **A3** in `main` (#1238, `8f5d0516`, 2026-11-12): una città è detta subito «no open snow»; sul server col passo 11. Poi B.
 - **TASK-414 — Carrozzina e passeggino** · 0 e A in `main` (#1183,
   `f614821c`: rete `wheel`, lo sport nel motore, nel contratto e nell'API,
   nascosto nell'app, migrazione 0071); sul server col passo

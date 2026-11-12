@@ -547,8 +547,64 @@ lasciando le righe d'indice.
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
 - ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app · 2026-11-12 · Attiva
 - ADR-0380, precisazione B1b/B2 — Il sonno nel post: un campo `sleep` nel disegno visto al posto di una richiesta per riga; nell'app tutto dietro `SLEEP_POSTS_ON` e nessun lettore di Salute in `main`; al server solo con l'interruttore acceso e un post che altri vedono · 2026-11-12 · Attiva
+- ADR-0342, precisazione A3 — La città detta subito: gli edifici contati attorno alla partenza prima di leggere la neve, sopra 280 per km² «no open snow», un conteggio che non arriva non cambia nulla · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0342, precisazione A3 — La città detta subito: gli edifici contati attorno alla partenza prima di leggere la neve, sopra 280 per km² «no open snow», un conteggio che non arriva non cambia nulla
+
+**Stato**: Attiva · 2026-11-12 · TASK-413 A3 (#1238, `8f5d0516`, unita
+dall'utente). Chiesta dal Coordinatore dopo il passo 8 (Trento 3 km,
+`shape_not_drawable` in 76 s); **decisa dall'agente su delega
+dell'utente**. La soglia, con Bolzano e Aosta fuori, ha il sì del
+Coordinatore. Nessuna ADR nuova.
+
+**Contesto**: una città non è un posto da ciaspole, ma prima della A3 il
+motore lo scopriva solo dopo aver scaricato e costruito la neve
+(`snow.build_area`, 16–19 s per Milano al banco, quasi tutto shapely
+elemento per elemento). Sul server, la prima volta, si aggiunge lo scarico
+da Overpass.
+
+1. **Prima di leggere la neve**, `plan_snowshoeing` conta gli edifici in un
+   riquadro fisso attorno alla partenza: `snow.town_bbox`, 4,8 km di lato,
+   lo stesso per ogni forma e distanza, sempre dentro il riquadro della
+   neve. Sopra **280 edifici per km²** (`BUILT_UP_PER_KM2`) risponde subito
+   `NoSnowError`: lo stesso «no open snow» di prima, nessun testo nuovo.
+2. **Da dove viene il conteggio**, nell'ordine:
+   - la neve già in cache che copre il riquadro;
+   - un file `<cache>/snow/count_….json`;
+   - Overpass `out count`: 5 s per Overpass, 6 s di attesa al massimo,
+     fuori dal lucchetto degli scarichi.
+
+   Il conteggio è tenuto in cache come la neve.
+3. **Un conteggio che non arriva non è un errore**: Overpass lento, 429,
+   502, file rotto. La richiesta va avanti come prima, e la volta dopo il
+   rifiuto viene dalla neve scaricata. Le sorgenti senza conteggio (i test)
+   non lo chiedono (protocollo `CountsBuildings`).
+4. **La soglia**, scelta su 21 posti contati (`sports/snowshoes.md`):
+   - il posto con neve più denso è Asiago, 180;
+   - sono dette subito Trento (350), Belluno (345) e Milano (700);
+   - **Bolzano (207) e Aosta (247) vanno avanti come prima**: per prenderle
+     servirebbe una soglia a un passo da Asiago, e conviene più l'attesa
+     che un «no» sbagliato.
+5. **In città il messaggio cambia**: prima era «the circle does not fit on
+   open snow here, even at 0.4 km» (`SnowFitError`, a volte con una
+   distanza più corta da provare); ora è «there is no open snow to walk on
+   within 2 km of here» (`NoSnowError`). Per l'app è sempre
+   `shape_not_drawable`.
+
+**Conseguenze**:
+- **Le impronte non cambiano**: `snow.py` e `snowshoeing.py` stanno in
+  `SNOW_ONLY` (codice ed efficaci `e0834d054b6e` / `8ab61d8e87f9` su
+  `8f5d0516`).
+- **`engine.zip` è rifatto** con la #1238.
+- **Il banco sul Mac** (72 richieste, dalla cache): le 60 dei cinque posti
+  con neve sono identiche, e Milano passa da 67,0 s a 3,3 s (0,3 s a
+  richiesta).
+- **Il server** la prende col passo 11; i controlli sono in
+  `out/TASK-413/SERVER-A3.md`.
+- **Bolzano e Aosta restano lente**: per loro serve la parte a sé che rende
+  `build_area` più veloce.
 
 ## ADR-0380, precisazione B1b/B2 — Il sonno nel post: un campo `sleep` nel disegno visto al posto di una richiesta per riga; nell'app tutto dietro `SLEEP_POSTS_ON` e nessun lettore di Salute in `main`; al server solo con l'interruttore acceso e un post che altri vedono
 

@@ -30,18 +30,19 @@ test("«Run» is chosen, «Bike» (TASK-190), «Paddle» (TASK-191), «Swim» (T
   // And «Gym» (TASK-385 B), on in Expo Go and preview, «Hike» (TASK-377),
   // «Gravel» and «MTB» (TASK-378), «Walk» (TASK-371), «Ski touring»
   // (TASK-415 B).
-  // And «Paragliding» (TASK-305 R2).
-  expect(screen.getAllByRole("radio")).toHaveLength(13);
+  // And «Paragliding» (TASK-305 R2), and «Cross-country ski» (TASK-375).
+  expect(screen.getAllByRole("radio")).toHaveLength(14);
   expect(screen.getByRole("radio", { name: "Walk" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Hike" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Gravel" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "MTB" })).not.toBeChecked();
   // And «Roller» (TASK-380).
   expect(screen.getByRole("radio", { name: "Roller" })).not.toBeChecked();
-  // Only «Cross-country ski» (TASK-375) and «Wheelchair & stroller»
-  // (TASK-414 B, until the server has part A) say «Soon».
-  expect(screen.getAllByText("Soon")).toHaveLength(2);
+  // «Cross-country ski» (TASK-375) is on too; only «Wheelchair & stroller»
+  // (TASK-414 B, until the server has part A) says «Soon».
+  expect(screen.getAllByText("Soon")).toHaveLength(1);
   expect(screen.getByLabelText("Wheelchair & stroller, coming soon")).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "Cross-country ski" })).not.toBeChecked();
   expect(screen.queryByLabelText("Ski, coming soon")).toBeNull();
 });
 

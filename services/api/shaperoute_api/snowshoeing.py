@@ -74,6 +74,24 @@ class ServerSnow:
                     return _logged("network", self._download(bbox), started)
         return _logged("disk", self._source.elements(bbox), started)
 
+    def buildings(self, bbox: BBox) -> int | None:
+        """The buildings of `bbox` (snow.OverpassSnowSource.buildings): the
+        engine says «no snow» at once in a town, before the snow is
+        downloaded and built (TASK-413 A3). Never an error: a count that
+        fails is None, and the request goes on as before."""
+        started = time.perf_counter()
+        try:
+            count = self._source.buildings(bbox)
+        except Exception as exc:
+            log.info("snow: no count of the buildings (%s)", type(exc).__name__)
+            return None
+        log.info(
+            "snow: %s buildings counted in %.1f s",
+            count,
+            time.perf_counter() - started,
+        )
+        return count
+
     def heights(self) -> Heights:
         """The heights for one request: the tiles of the cache, new each
         time so that the decoded tiles of every place asked are not kept in

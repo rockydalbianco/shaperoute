@@ -204,6 +204,9 @@ parole che l'app ha già («Altitude», «Max altitude», «Top speed»);
 | MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement. | MuW non è uno strumento di volo: registra il volo e lo condivide. Vola con il tuo strumento, il tuo brevetto e il tuo giudizio. | MuW ist kein Fluginstrument: Es zeichnet deinen Flug auf und teilt ihn. Flieg mit deinem eigenen Instrument, deiner Lizenz und deinem Urteilsvermögen. | MuW n'est pas un instrument de vol : il enregistre votre vol et le partage. Volez avec votre propre instrument, votre licence et votre jugement. | MuW no es un instrumento de vuelo: graba tu vuelo y lo comparte. Vuela con tu propio instrumento, tu licencia y tu criterio. |
 | Got it | Ho capito | Verstanden | Compris | Entendido |
 | Flight time | Tempo di volo | Flugzeit | Temps de vol | Tiempo de vuelo |
+| Your flight | Il tuo volo | Dein Flug | Votre vol | Tu vuelo |
+| White: where you flew. | Bianco: dove hai volato. | Weiß: wo du geflogen bist. | Blanc : là où vous avez volé. | Blanco: por donde volaste. |
+| No shapes in the air yet: MuW records your flight. | Niente forme in volo, per ora: MuW registra il tuo volo. | Noch keine Formen in der Luft: MuW zeichnet deinen Flug auf. | Pas encore de formes en vol : MuW enregistre votre vol. | Todavía no hay formas en el aire: MuW registra tu vuelo. |
 
 File, a grandi linee (la lista vera al Coordinatore prima della PR, col
 turno: `settings/sport.ts`, `sports/**` e `social/PublicParts.tsx` sono

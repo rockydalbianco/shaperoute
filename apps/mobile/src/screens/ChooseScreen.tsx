@@ -170,7 +170,17 @@ export function ChooseScreen({
               hint={t("No route in the gym: MuW times your workout.")}
             />
           ) : recordOnly ? (
-            <RecordDay label={runLabel} icon={runIcon} onPress={onRun} />
+            <RecordDay
+              label={runLabel}
+              icon={runIcon}
+              onPress={onRun}
+              // A flight is not a day on the slopes (TASK-305 part R2).
+              hint={
+                sport === "paragliding"
+                  ? t("No shapes in the air yet: MuW records your flight.")
+                  : undefined
+              }
+            />
           ) : (
             <>
               <TourPartView name={TOUR_PART.start} style={styles.startCard}>

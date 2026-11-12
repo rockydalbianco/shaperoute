@@ -19,10 +19,9 @@ import { profileOf } from "../sports";
  * ADR-0322) since the server has them, or swimming in open water
  * (TASK-323, ADR-0283) since the server swims. A wheelchair or a stroller
  * draws only a circle, a heart, a star or a moon on the ways of its own
- * network (TASK-414 part B, ADR-0343), «Soon» until the server has them.
- * Paragliding (TASK-305 D0, ADR-0265) is only «Soon» for now: never chosen,
- * so never a route, and wherever the sports are told apart it goes as a
- * run. A day of alpine skiing («Ski») or of cross-country skiing is
+ * network (TASK-414 part B, ADR-0343), since the server has them.
+ * Paragliding (TASK-305 R2, ADR-0375) is a flight recorded without a
+ * shape, never a route. A day of alpine skiing («Ski») or of cross-country skiing is
  * recorded without a shape (TASK-375, ADR-0319): `recordOnly`, and so is
  * a ski tour («Ski touring», TASK-415 part B, ADR-0344). A workout
  * at the gym («Gym», TASK-385 part B, ADR-0327) has no route and no GPS:
@@ -134,10 +133,10 @@ export const ALL_SPORTS: readonly SportOption[] = [
   fromProfile("roller", true),
   // A wheelchair or a stroller is asked as "wheelchair" (activityOf), 1-5 km
   // on the server's own network, a circle, a heart, a star or a moon
-  // (TASK-414 part B, ADR-0343). «Soon» until the server has part A and its
-  // migration 0071 and the user says yes (the user's choice 9: «appena
-  // pronto»).
-  fromProfile("wheelchair", false),
+  // (TASK-414 part B, ADR-0343). On since the server has part A and its
+  // migration 0071 (2026-11-12), the user's «Sì, accendi» to the screenshots
+  // (the user's choice 9: «appena pronto»).
+  fromProfile("wheelchair", true),
   // On the water. The swim is asked as "swimming" since TASK-323 C2
   // (activityOf); on since the server swims (TASK-323, 2026-11-04).
   fromProfile("paddle", true),
@@ -145,9 +144,11 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // On the snow, saved as "skiing" and "xc_skiing" (runActivityOf). The
   // alpine ski is on since TASK-375 D4: the server has parts A-D
   // (migrations 0044 and 0048) and the day its numbers, lifts and pistes.
-  // The cross-country ski not yet.
+  // The cross-country ski is on too, with its distance, pace and climb
+  // (TASK-375 C1): the server has kept "xc_skiing" since 0044, the user's
+  // «rendile disponibili» (2026-11-12).
   fromProfile("ski", true),
-  fromProfile("xc_ski", false),
+  fromProfile("xc_ski", true),
   // Ski touring, saved as "ski_touring": on since its phases and its VAM
   // (TASK-415 part B), the user's «Acceso con a e b» (2026-11-07), with
   // the OTA that carries them; the server has had part A and its migration

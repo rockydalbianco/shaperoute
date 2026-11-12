@@ -1,10 +1,14 @@
 import type { ActivitySleepRequest } from "@shaperoute/shared-types";
 import request from "@shaperoute/shared-types/fixtures/activity-request.json";
+import gymRequest from "@shaperoute/shared-types/fixtures/gym-session.json";
+import poolRequest from "@shaperoute/shared-types/fixtures/pool-swim.json";
 import sleepRequest from "@shaperoute/shared-types/fixtures/sleep-activity-request.json";
 import sleepKept from "@shaperoute/shared-types/fixtures/sleep-activity.json";
 
 import { answers, apiError } from "../account/testing";
 import type { ActivityRequest } from "../api/activities";
+import { type GymWaiting, keepGymWaiting, stopGymWaiting } from "../gym/gymOutbox";
+import { keepPoolWaiting, type PoolWaiting, stopPoolWaiting } from "../pool/poolOutbox";
 import { keepWaiting, type Waiting } from "./outbox";
 import {
   forgetSleepFor,
@@ -112,6 +116,41 @@ test("the night of a run still on the phone waits with it", async () => {
   expect(await sendWaitingSleep(API, "token", OWNER, { fetchFn }, NOW)).toBe("done");
   expect(fetchFn).not.toHaveBeenCalled();
   expect(keys()).toEqual(["7:a"]);
+});
+
+test("the night of a workout or of a swim waits in their outboxes too", async () => {
+  // Part B2b: to the API they are runs, with an outbox of their own each.
+  keepGymWaiting({ owner: OWNER, key: "g", request: gymRequest } as GymWaiting);
+  keepPoolWaiting({ owner: OWNER, key: "p", request: poolRequest } as PoolWaiting);
+  keepSleepFor(OWNER, "g", NIGHT, NOW);
+  keepSleepFor(OWNER, "p", NIGHT, NOW);
+  const fetchFn = replies(
+    { status: 200, body: sleepKept },
+    { status: 200, body: sleepKept },
+  );
+  // Asked before the API has them, the answer would be 404 and the nights
+  // would be dropped: nothing is asked.
+  await sendWaitingSleep(API, "token", OWNER, { fetchFn }, NOW);
+  expect(fetchFn).not.toHaveBeenCalled();
+  expect(keys()).toEqual(["7:g", "7:p"]);
+  // The workout went: its night goes, the swim's still waits.
+  stopGymWaiting(OWNER, "g");
+  await sendWaitingSleep(API, "token", OWNER, { fetchFn }, NOW);
+  expect(String(fetchFn.mock.calls[0][0])).toBe("http://api/me/activities/g/sleep");
+  expect(keys()).toEqual(["7:p"]);
+  stopPoolWaiting(OWNER, "p");
+  await sendWaitingSleep(API, "token", OWNER, { fetchFn }, NOW);
+  expect(String(fetchFn.mock.calls[1][0])).toBe("http://api/me/activities/p/sleep");
+  expect(loadSleepOutbox()).toEqual([]);
+});
+
+test("another account's workout holds nobody else's night back", async () => {
+  keepGymWaiting({ owner: 8, key: "g", request: gymRequest } as GymWaiting);
+  keepSleepFor(OWNER, "g", NIGHT, NOW);
+  const fetchFn = replies({ status: 200, body: sleepKept });
+  await sendWaitingSleep(API, "token", OWNER, { fetchFn }, NOW);
+  expect(fetchFn).toHaveBeenCalledTimes(1);
+  expect(loadSleepOutbox()).toEqual([]);
 });
 
 test("without a network the nights wait; the API's no drops one", async () => {

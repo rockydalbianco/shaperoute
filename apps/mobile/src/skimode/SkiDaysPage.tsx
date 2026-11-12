@@ -12,6 +12,7 @@ import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { Hairline } from "../ui/Hairline";
 import { Tap } from "../ui/Tap";
+import { keepSkiDay, openedSkiDay } from "./openedSkiDay";
 import { SkiDayPage } from "./SkiDayPage";
 import { SkiSeason } from "./SkiSeason";
 
@@ -47,7 +48,12 @@ type Props = {
 export function SkiDaysPage({ onLogIn }: Props) {
   const { account } = useFollowsDoor();
   const { pageOf } = useDrawingsDoor();
-  const [opened, setOpened] = useState<Drawing | null>(null);
+  // Kept out of the page: «Map» on a day takes the pages away (TASK-470 D).
+  const [opened, setOpenedHere] = useState<Drawing | null>(openedSkiDay);
+  const setOpened = (day: Drawing | null) => {
+    keepSkiDay(day);
+    setOpenedHere(day);
+  };
   const units = useUnits();
   const owner =
     account.state.status === "signedIn"

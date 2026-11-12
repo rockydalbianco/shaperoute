@@ -1,7 +1,6 @@
 import type { Person } from "@shaperoute/shared-types";
 import { useState } from "react";
 import {
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   StyleSheet,
@@ -27,6 +26,7 @@ import {
   space,
 } from "../theme/tokens";
 import { useBackCloses } from "../ui/backLayers";
+import { EdgeKeyboardAvoidingView, useEdgeBack } from "../ui/EdgeBack";
 
 type Props = {
   /** The API the account talks to (ADR-0031); null if unknown. */
@@ -72,11 +72,19 @@ export function PeopleScreen({
   const toNames = person !== null && first === null;
   // Android's «back» is the «←»; hidden behind a drawing, the drawing's.
   useBackCloses(!hidden, toNames ? () => setPerson(null) : onBack);
+  const edge = useEdgeBack(toNames ? () => setPerson(null) : onBack, !hidden);
   return (
-    <KeyboardAvoidingView
-      style={[StyleSheet.absoluteFill, styles.screen, hidden && styles.hidden]}
+    <EdgeKeyboardAvoidingView
+      style={[
+        StyleSheet.absoluteFill,
+        styles.screen,
+        hidden && styles.hidden,
+        edge.style,
+      ]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
+      {...edge.handlers}
     >
+      {edge.shade}
       {/* Hidden, a page draws no map: it would hold up every picture. */}
       {!hidden && <FeedMapShooter width={window.width} height={window.height} />}
       <SightScrollView
@@ -136,7 +144,7 @@ export function PeopleScreen({
           />
         )}
       </SightScrollView>
-    </KeyboardAvoidingView>
+    </EdgeKeyboardAvoidingView>
   );
 }
 

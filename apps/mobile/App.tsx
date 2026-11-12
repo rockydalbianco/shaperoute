@@ -155,6 +155,8 @@ import {
   FreeRunCard,
 } from "./src/screens/FreeRunScreen";
 import { MapScreen } from "./src/screens/MapScreen";
+import { showsMap } from "./src/screens/mapOver";
+import { useCoverOverApp } from "./src/screens/overAppContext";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
 import { pageTitle } from "./src/screens/pageTitles";
 import {
@@ -453,10 +455,16 @@ function MuW() {
     setScreen("choose");
   }
   const onPage = pages.includes(screenNow);
-  const screen: Screen =
-    (favorite !== null || activity !== null || drawing !== null) && onPage
-      ? "map"
-      : screenNow;
+  const screen: Screen = showsMap(
+    screenNow,
+    pages,
+    favorite !== null || activity !== null || drawing !== null,
+  )
+    ? "map"
+    : screenNow;
+  // «Play» over the pages over the app (a profile, a conversation) keeps
+  // them, out of sight, until its «←» (TASK-470 D).
+  useCoverOverApp(screen === "play");
   // The fourth page asked for from elsewhere (TASK-278 part B, the user's
   // choice): from the map or the end of a run with nobody signed in (the
   // heart, «Save»), «←» goes back there, and so does signing in, with the
@@ -846,11 +854,9 @@ function MuW() {
   // «Explore» prepared around the start until it is first opened: then
   // the page asks for itself. On the water it has its own (TASK-246).
   const [exploreSeen, setExploreSeen] = useState(false);
-  useEffect(() => {
-    if (screen === "explore") {
-      setExploreSeen(true);
-    }
-  }, [screen]);
+  if (screen === "explore" && !exploreSeen) {
+    setExploreSeen(true);
+  }
   const aheadLat = start?.point[0];
   const aheadLon = start?.point[1];
   useEffect(() => {

@@ -149,8 +149,9 @@ def test_a_few_metres_more_are_no_split() -> None:
 
 
 # A day of skiing's parts have their own example (test_ski_parts.py,
-# ski-parts-request.json, TASK-424 part C2b).
-SKI_FIELDS = {"ski_parts", "ski_descents"}
+# ski-parts-request.json, TASK-424 part C2b); a flight's figures too
+# (test_flight_bests.py, flight-stats-request.json, TASK-305 part R5a).
+SKI_FIELDS = {"ski_parts", "ski_descents", "max_alt_m", "top_speed_mps"}
 
 
 def test_the_examples_are_the_bodies() -> None:

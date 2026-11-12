@@ -6,16 +6,21 @@ No network: the downloads here are counted and fail as OSMnx's do."""
 from __future__ import annotations
 
 import urllib.error
+from collections.abc import Callable
 from email.message import Message
 from pathlib import Path
+from typing import Any
 
 import osmnx as ox
 import pytest
 import requests
 from osmnx._errors import InsufficientResponseError, ResponseStatusCodeError
+from route_engine import snow as snow_module
+from route_engine import water as water_module
 from route_engine.geo import LatLon
 from route_engine.network import BBox
 
+from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.overpass_fallback import (
     FALLBACK_VARIABLE,
     USER_AGENT,
@@ -23,7 +28,9 @@ from shaperoute_api.overpass_fallback import (
     fallback_url,
     with_second_service,
 )
+from shaperoute_api.paddling import ServerWater
 from shaperoute_api.prefetch_zones import prefetch
+from shaperoute_api.snowshoeing import ServerSnow
 
 SECOND = "https://overpass.example/api"
 SET = {FALLBACK_VARIABLE: SECOND}
@@ -199,3 +206,54 @@ def test_the_batch_downloads_never_ask_the_second_service(
     )
     assert [o.status for o in outcomes] == ["missing"]
     assert source.asked == [usual]
+
+
+AREA: BBox = (45.95, 10.95, 46.05, 11.05)
+
+
+class Busy:
+    """The engine's own request to Overpass (water.overpass, snow.overpass)
+    with the usual service answering 502: nothing there, an empty answer
+    from anyone else. Notes whom it asked."""
+
+    def __init__(self) -> None:
+        self.usual = ox.settings.overpass_url
+        self.asked: list[str] = []
+
+    def __call__(self, query: str) -> dict[str, Any]:
+        self.asked.append(ox.settings.overpass_url)
+        if ox.settings.overpass_url == self.usual:
+            raise urllib.error.HTTPError(
+                f"{self.usual}/interpreter", 502, "Bad Gateway", Message(), None
+            )
+        return {"elements": []}
+
+
+@pytest.mark.parametrize(
+    ("module", "ground", "what"),
+    [(water_module, ServerWater, "water"), (snow_module, ServerSnow, "snow")],
+    ids=["water", "snow"],
+)
+def test_the_water_and_the_snow_are_tried_once_on_the_second_service_too(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    module: Any,
+    ground: Callable[[Path], Any],
+    what: str,
+) -> None:
+    """A paddling route, a swim, a snowshoe route: the engine asks Overpass
+    by itself, at OSMnx's address. With no second service set the error is
+    the one of before, after one request; with one set, one request more,
+    there, and what it gives is the area's."""
+    busy = Busy()
+    monkeypatch.setattr(module, "overpass", busy)
+    monkeypatch.delenv(FALLBACK_VARIABLE, raising=False)
+    with pytest.raises(MapDataUnavailableError, match=f"{what} for this area"):
+        ground(tmp_path / "off").elements(AREA)
+    assert busy.asked == [busy.usual]
+
+    busy.asked.clear()
+    monkeypatch.setenv(FALLBACK_VARIABLE, SECOND)
+    assert ground(tmp_path / "on").elements(AREA) == []
+    assert busy.asked == [busy.usual, SECOND]
+    assert ox.settings.overpass_url == busy.usual

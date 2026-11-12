@@ -458,7 +458,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B1: la guida in Swift, legata al telefono dalle tracce · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte A3: il telefono · 2026-11-08 · Attiva
 - ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server · 2026-11-08 · Proposto
-- ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Proposto
+- ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Accettato (2026-11-12, parte A in `main`, vedi la precisazione A)
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Accettata (chiuso il 2026-11-10: 572 percorsi in 63 città)
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
@@ -750,6 +750,54 @@ scheda, lo copia così com'è.
 ritmi sono indicativi, non vengono dal battito. I testi e le scelte in
 `docs/tasks/TASK-452.md`; il comportamento in `sports/gym.md`; il contratto
 in `API.md`.
+- ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app · 2026-11-12 · Attiva
+
+## Voci nuove
+
+## ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app
+
+**Stato**: Attiva · 2026-11-12 · TASK-414 A (#1183, `f614821c`). Deciso
+dall'agente su delega dell'utente; lista dei file e migrazione 0071
+approvate dal Coordinatore. ADR-0343 (archiviato) passa a «Accettato»: le
+scelte dell'utente del 2026-11-08 sono in `main`, tranne l'app (parte B).
+
+1. **Una rete sua, `wheel`** (`networks/wheel.py`): il download della rete
+   foot (stesso filtro, stessa cache di Overpass) con i tag di
+   accessibilità in più (`kerb`, `wheelchair`, `smoothness`, `incline`,
+   `sidewalk`), poi le regole di `wheelcalm` del banco della parte 0
+   (`rollable`, `blocks_wheels`: niente scale, cordoli alti, superfici
+   ruvide, sentieri senza superficie, pendenze scritte oltre l'8%, strade
+   grandi senza marciapiede) e quelle della rete foot di TASK-421. Sui 30
+   download grezzi della parte 0 ha gli stessi km e le stesse vie della
+   rete del banco.
+2. **Le forme dell'attività**: un campo nuovo `Activity.shapes` (None =
+   tutto il catalogo). `wheelchair` ha cerchio, cuore, stella e luna;
+   `models.py` rifiuta con `invalid_request` ogni altra forma, le parole,
+   le immagini, i contorni e i tratti, col messaggio «wheelchair draws only
+   these shapes: …». Nessuno sport di prima cambia.
+3. **Lo sport nei registri**: `wheelchair` (1–5 km) dopo `snowshoeing` in
+   `ENGINE_ACTIVITIES`, `PLANNED_SPORTS`, `RunActivity`,
+   `reads.NEWER_ACTIVITIES` e nel gioco come una camminata
+   (`game_rules.ON_FOOT`, `RULES_VERSION` resta 3). Strava `Wheelchair`,
+   GPX `wheelchair`; zone di 8,5 × 8,5 km coi nomi delle strade, una in
+   memoria (da 2 a circa 170 MB, `sports/wheelchair.md`).
+4. **Record su 1 e 5 km** (scelta 7), con 25 km/h come tetto di un passo,
+   come un salto del GPS a piedi. Ogni corsa salvata scrive anche i record
+   `wheelchair` in `run_bests`: la migrazione `0071_wheelchair.sql`, che
+   allarga i vincoli di `runs`, `favorites`, `group_runs` e `run_bests`
+   rileggendoli (come la 0055), va applicata prima che giri il codice
+   nuovo.
+5. **L'impronta**: il registro la cambia senza cambiare un percorso. Tre
+   righe in `SAME_ROUTES_AS` (`e0834d054b6e → 427ed1a16a97`,
+   `1063cc95fea3 → d943bfbe8c44`, `4c549677eefb → f54db2ee707d`) con la
+   prova `e0834d054b6e.json` (i nove percorsi fissi identici): nessun
+   `draw_examples`. Sul server: `e0834d054b6e 8ab61d8e87f9 b9d00c37d28d
+   574fbfba41eb`.
+6. **Il profilo nell'app è nascosto** fino a B: nessuna riga in
+   «Impostazioni», fuori dalla ricerca (`searchFilters.NOT_YET`); nome in
+   inglese, calorie della camminata, Apple Salute `.wheelchairWalkPace`
+   (70), Health Connect 82. Solo JavaScript e i file del Watch generati:
+   l'impronta iOS non cambia.
 
 ## ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio
 

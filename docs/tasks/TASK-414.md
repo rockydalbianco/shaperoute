@@ -1,10 +1,10 @@
 # TASK-414 — Carrozzina e passeggino: forme semplici di pochi km, dove si spinge davvero
 
-**Stato**: In corso — parte 0 in `main` (#939); parte A in PR (motore,
-contratto, API, profilo nascosto nell'app), branch
-`feat/TASK-414-a-wheelchair`.
+**Stato**: In corso — parte 0 in `main` (#939); parte A in `main` (#1183,
+`f614821c`, 2026-11-12: motore, contratto, API, profilo nascosto
+nell'app); prossima B col via del Coordinatore.
 **Fase**: 4 · **Branch**: `docs/TASK-414-0-wheelchair` (parte 0), poi
-parte A e parte B · **ADR**: ADR-0343 (proposto) · numeri dal Coordinatore
+parte A e parte B · **ADR**: ADR-0343 (accettato 2026-11-12, precisazione A) · numeri dal Coordinatore
 · sessione dello sport, avviata dal «Coordinatore Sport»
 
 ## Obiettivo
@@ -324,3 +324,22 @@ Coordinatore Sport e il Coordinatore (dopo o prima di 413 A e 415 A).
 - **Restano**: il passo server col sì dell'utente (controlli in
   `out/TASK-414/SERVER-A.md`), la PR di documenti dopo il merge (STATUS,
   DECISIONS con ADR-0343 «Accettato», INDEX), poi la parte B.
+
+2026-11-12: la #1183 è in `main` (`f614821c`), unita dall'utente sulla
+testa `53a3b9cc`, dopo il merge di `main` col parapendio (0069) e le
+risposte ai commenti (0070): la migrazione è la `0071_wheelchair.sql`.
+Impronte invariate. ADR-0343 è accettato, con la precisazione A.
+
+## Cosa resta
+
+- **Server**: la `0071` col passo dell'aggiornamento completo, col sì
+  dell'utente; si applica all'avvio, prima del codice nuovo (ogni corsa
+  salvata scrive anche i record `wheelchair`). I controlli sono in
+  `out/TASK-414/SERVER-A.md` (impronte attese `e0834d054b6e 8ab61d8e87f9
+  b9d00c37d28d 574fbfba41eb`, un cuore di 3 km a Trento, una forma
+  rifiutata col 422).
+- **Orologio**: i file di `targets/watch/**` della parte A (`sports.json`,
+  `Localizable.strings`) non entrano nella build 14 dell'orologio già in
+  revisione; entrano con la build dopo.
+- **Parte B** (l'app): solo col via del Coordinatore e la lista dei file;
+  `settings/sport.ts` e `sports/**` adesso sono di TASK-305 R2.

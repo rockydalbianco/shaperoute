@@ -2650,4 +2650,18 @@ export const DE: Table = {
   "by {user}": "von {user}",
   "This post is no longer available.": "Dieser Beitrag ist nicht mehr verfügbar.",
   "🗺️ Post": "🗺️ Beitrag",
+  // src/liveShare/ (TASK-468 part B1: «Send in MuW», the heart rate, the
+  // live in the app; en and it approved by the user 2026-11-12)
+  "Send in MuW": "In MuW senden",
+  "Show my heart rate": "Meinen Puls zeigen",
+  "Off: nobody sees your heart rate. On: they see it when a watch sends it.":
+    "Aus: Niemand sieht deinen Puls. An: Sie sehen ihn, wenn eine Uhr ihn sendet.",
+  "Choose who gets your live": "Wähle, wer dein Live bekommt",
+  "They can follow you in the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain and calories.":
+    "Sie folgen dir in der App: deine genaue Position auf der Karte, die bisherige Strecke, Distanz, Zeit, Pace oder Tempo, Höhenmeter und Kalorien.",
+  "Send ({count})": "Senden ({count})",
+  "Live ended": "Live beendet",
+  "Finished · {distance} · {time}": "Beendet · {distance} · {time}",
+  "No update since {time}": "Keine Aktualisierung seit {time}",
+  "Updated {seconds} s ago": "Vor {seconds} s aktualisiert",
 };

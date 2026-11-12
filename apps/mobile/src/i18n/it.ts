@@ -2619,4 +2619,21 @@ export const IT: Table = {
     "Pubblica 10 disegni di corse registrate con MuW.",
   "Publish the drawing of a run of {distance} or more.":
     "Pubblica il disegno di una corsa di almeno {distance}.",
+  // «Sleep last night» in a post (TASK-467 part B2): src/health/sleepText.ts,
+  // SleepRunEnd.tsx, SleepCard.tsx
+  "Sleep last night": "Il sonno della notte scorsa",
+  "Shown in this post. Turn it off to keep it to yourself.":
+    "Si vede in questo post. Spegnilo per tenerlo per te.",
+  "Sleep score": "Punteggio del sonno",
+  "Poor@@sleep": "Scarso",
+  "Fair@@sleep": "Discreto",
+  "Good@@sleep": "Buono",
+  "Very good@@sleep": "Molto buono",
+  "Excellent@@sleep": "Eccellente",
+  "Awake@@sleep": "Sveglio",
+  "REM@@sleep": "REM",
+  "Light@@sleep": "Leggero",
+  "Deep@@sleep": "Profondo",
+  "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
+    "Calcolato da MuW dai dati di Apple Salute. Può essere diverso dal punteggio dell'app Salute.",
 };

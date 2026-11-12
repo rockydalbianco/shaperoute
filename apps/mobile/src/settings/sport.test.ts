@@ -89,6 +89,7 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
     "paddle",
     "swim",
     "ski",
+    "xc_ski",
     "skimo",
     "gym",
     "paragliding",
@@ -107,7 +108,8 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
   expect(canChoose("roller")).toBe(true);
   // And a ski tour, with its phases and its VAM (TASK-415 part B).
   expect(canChoose("skimo")).toBe(true);
-  expect(canChoose("xc_ski")).toBe(false);
+  // And a day of cross-country skiing (TASK-375, 2026-11-12).
+  expect(canChoose("xc_ski")).toBe(true);
   expect(canChoose("golf")).toBe(false);
 });
 

@@ -1,10 +1,11 @@
 # TASK-476 — Il «+» del Feed per aggiungere un'attività
 
-**Stato**: In lavorazione · parte A in PR (bozza fino al simulatore e al sì
-dell'utente su schermate e testi)
+**Stato**: Done (2026-11-12) · #1284 in `main` (`bf049887`), unita dal
+Coordinatore col sì dell'utente. Resta: l'OTA, poi la copia del sito con
+le frasi nuove (sì dell'utente al Coordinatore).
 **Fase**: 5 · **Branch**: `feat/TASK-476-feed-add-activity`
 **Dipende da**: TASK-312 B (il flusso «From a file», in `main` con la #622)
-**ADR**: ADR-0387 assegnato, per ora non serve (nessuna scelta tecnica nuova)
+**ADR**: ADR-0387 (l'eccezione ad ADR-0304 per il «+»)
 
 ## Obiettivo
 
@@ -135,7 +136,11 @@ site/privacy/**/index.html                           (rigenerate con make_privac
       dall'utente il 2026-11-12 («Approvo»): prova completa su iPhone 18
       Pro con Expo Go e un'API locale (post salvato `everyone`, fonte
       `file`); il foglio ha preso lo stile dei fogli dell'app.
-- [ ] CI verde, «#1284 pronta» al Coordinatore.
+- [x] CI verde, «#1284 pronta» al Coordinatore; in `main` il 2026-11-12.
 
 Nota a margine, fuori da questo task: la scheda del Feed (`FeedPost`) non
 mostra «Imported», solo `DrawingCard` sulla mappa.
+
+## Esito
+
+Il «+» del Feed apre «Add activity» con «From a file»; da lì l'attività parte con «Everyone» e la privacy lo dice. Il segno «Imported» che manca nella scheda del Feed è un task a parte del Coordinatore.

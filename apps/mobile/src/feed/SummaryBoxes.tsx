@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { color, font, fontWeight, space } from "../theme/tokens";
+import { color, font, fontSize, fontWeight, space } from "../theme/tokens";
 import type { PostRow } from "./postSections";
 
 /**
@@ -25,6 +25,7 @@ export function SummaryBoxes({ rows }: { rows: readonly PostRow[] }) {
             style={[styles.value, row.energy && styles.energy]}
             numberOfLines={1}
             adjustsFontSizeToFit
+            minimumFontScale={MIN_VALUE_SCALE}
           >
             {row.value}
           </Text>
@@ -37,6 +38,12 @@ export function SummaryBoxes({ rows }: { rows: readonly PostRow[] }) {
   );
 }
 
+/**
+ * How small a value may get to fit its box before it is cut: never below
+ * the size of its label (TASK-474).
+ */
+export const MIN_VALUE_SCALE = 0.8;
+
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
@@ -48,8 +55,11 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  // No fixed line height (TASK-474): iOS shrinks a value that does not fit
+  // its box, and a fixed line never fits a box a hair shorter than it — a
+  // row of four, 39.9999 pt high — so every value went to its smallest.
   value: {
-    ...font.body,
+    fontSize: fontSize.body,
     color: color.text,
     fontWeight: fontWeight.semibold,
     fontVariant: ["tabular-nums"],

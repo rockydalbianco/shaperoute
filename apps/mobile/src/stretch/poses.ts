@@ -266,7 +266,7 @@ export const GLUTE_BREATH: Breath = {
  */
 
 /** Standing, the chin down toward the chest, arms by the sides. */
-export const NECK: Pose = { ...STAND, head: 130 };
+export const NECK: Pose = { ...STAND, head: 115 };
 
 /** The head a little lower. */
 export const NECK_BREATH: Breath = { head: -8 };
@@ -315,10 +315,10 @@ export const CHEST: Pose = {
   ...STAND,
   torso: 182,
   head: 186,
-  upperArmFar: -30,
-  forearmFar: -30,
-  upperArmNear: -30,
-  forearmNear: -30,
+  upperArmFar: -45,
+  forearmFar: -50,
+  upperArmNear: -45,
+  forearmNear: -50,
 };
 
 /** The arms higher behind. */
@@ -406,16 +406,16 @@ export const CAT_BREATH: Breath = { head: -10 };
 /** Sat back on the heels, the chest low over the knees, the arms long on
  * the floor ahead, the forehead down. */
 export const CHILD: Pose = {
-  torso: 95,
-  head: 92,
-  upperArmFar: 77,
-  forearmFar: 77,
-  upperArmNear: 77,
-  forearmNear: 77,
-  thighFar: 80,
+  torso: 80,
+  head: 85,
+  upperArmFar: 76,
+  forearmFar: 76,
+  upperArmNear: 76,
+  forearmNear: 76,
+  thighFar: 60,
   shinFar: -90,
   footFar: -90,
-  thighNear: 80,
+  thighNear: 60,
   shinNear: -90,
   footNear: -90,
 };

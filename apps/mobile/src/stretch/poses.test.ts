@@ -229,7 +229,8 @@ describe("the ten stretches of the routines", () => {
   it("sits the child's pose low, hands and knees down, the head over the floor", () => {
     const { forearmNear, thighNear, head } = bones(CHILD);
     const floor = grounding(CHILD);
-    expect(floor).toBeLessThan(0.1);
+    // Sat on the heels: the hip far lower than kneeling up.
+    expect(floor).toBeLessThan(grounding(HIP_FLEXOR) * 0.6);
     expect(Math.abs(forearmNear.to.y - floor)).toBeLessThan(0.02);
     expect(Math.abs(thighNear.to.y - floor)).toBeLessThan(0.02);
     // The round head, about as wide as it is long, stays above the floor.

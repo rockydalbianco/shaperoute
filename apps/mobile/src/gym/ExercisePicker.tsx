@@ -8,7 +8,7 @@ import type { Language } from "../i18n/languages";
 import { color, space } from "../theme/tokens";
 import { GYM_EXERCISES, type GymExercise, type GymGroup } from "./catalog";
 import { ExerciseFigure } from "./ExerciseFigure";
-import { GroupGrid, GROUP_EMOJI, GuideButton, MachineGrid } from "./ExerciseGrid";
+import { GroupGrid, GuideButton, MachineGrid } from "./ExerciseGrid";
 import { ExerciseGuide } from "./ExerciseGuide";
 import { groupName } from "./groups";
 import { gymStyles } from "./gymStyles";
@@ -161,7 +161,7 @@ export function ExercisePicker({
             <Text style={gymStyles.chipText}>‹</Text>
           </Pressable>
           <Text style={gymStyles.title} accessibilityRole="header">
-            {`${GROUP_EMOJI[group]} ${groupName(group, language)}`}
+            {groupName(group, language)}
           </Text>
         </View>
       )}

@@ -384,9 +384,13 @@ dipendere dalla #1195) · PR #1199: provata nel simulatore il 2026-11-12
 («Sì, approvo», 2026-11-12), testi nuovi e traduzioni approvati.
 **In `main` il 2026-11-12** (#1199, `4a2078fe`, dopo la #1195 e con `main`
 unito); la frase della privacy, con le quattro traduzioni e le pagine di
-`site/privacy` rigenerate, in `main` con la #1200 (`1582ffb8`). Escono con
-l'aggiornamento completo; la copia di `site/privacy` sul sito la lancia il
-Coordinatore dopo l'OTA, col sì dell'utente.
+`site/privacy` rigenerate, in `main` con la #1200 (`1582ffb8`).
+**Pubblicate il 2026-11-12** dal Coordinatore, col sì dell'utente: nell'app
+con l'OTA 12 delle 12:28Z (A, C2 e la privacy); sul sito con la copia delle
+12:49Z da `1eb3e5a8`, dove sono cambiate solo le cinque pagine
+`site/privacy/**`. Quelle servite da getmuw.app sono uguali al commit nelle
+cinque lingue, con «Last updated: 12 November 2026» e la frase nuova. La
+copia di prima (`60c801aa`) è sul server in `/srv/getmuw-site.old`.
 
 Schermate in `out/TASK-454/` del checkout principale:
 `TASK-454-5-commenti.jpg` (l'elenco piatto di prima; le risposte sotto il
@@ -532,13 +536,13 @@ Scritto il 2026-11-12, con A, C1, C2 e la privacy in `main`.
 
 - **Parte B — doppio tocco = super like** (scelta 6): vedi la sezione qui
   sopra. Mancano il video dal simulatore, il sì dell'utente, «pronta».
-- **Prova sul telefono**, dopo l'OTA dell'aggiornamento completo (la
-  pubblica il Coordinatore): «Like» apre la fila sopra il pulsante senza
+- **Prova sul telefono**, ora che l'OTA 12 è uscito (2026-11-12, 12:28Z):
+  «Like» apre la fila sopra il pulsante senza
   muovere la card; un super like porta subito il commento sotto il post;
   una risposta a un commento arriva come notifica a chi l'ha scritto; una
   reazione a un commento compare solo nella campanella; la pagina della
-  privacy nell'app e sul sito porta la frase nuova e la data del 12
-  novembre 2026.
+  privacy nell'app porta la frase nuova e la data del 12 novembre 2026
+  (sul sito l'ha già controllata il Coordinatore).
 - **Chiusura**: con la parte B in `main`, la PR di soli documenti (la voce
   esce da `STATUS.md`, una riga in `docs/archive/COMPLETATI.md`, questo
   file a `Done`) e «TASK-454 fatto» al Coordinatore.

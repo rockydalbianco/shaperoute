@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { type Activity, isImported } from "../api/activities";
 import { t, tPlural } from "../i18n";
 import { AddPastActivity } from "../imports/AddPastActivity";
 import { WatchRunCard } from "../watch/WatchRunCard";
-import { ImportedMark } from "../imports/ImportedMark";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { waitingText } from "../social/PublicParts";
 import {
@@ -16,35 +14,22 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { Tap } from "../ui/Tap";
 import { runDistanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { type RefusedRun, useActivitiesDoor } from "./activitiesDoor";
-import { GymTile } from "../gym/GymTile";
-import { clockLabel } from "../navigation/freeRun";
-import { useBody } from "../body/useBody";
-import { FactsText } from "../feed/FactsText";
-import { poolKcal, poolKcalLabel } from "../pool/poolKcal";
-import { isPoolSwimRun, PoolTile } from "../pool/PoolTile";
-import { runFacts, startedLabel, whereAndWhat } from "./activityText";
-import { RunDrawing } from "./RunDrawing";
-import { isTrackless } from "./snow";
-
-/** The side of a run's drawing in the list. */
-const DRAWING = 88;
+import { ActivityRow } from "./ActivityRow";
+import { startedLabel } from "./activityText";
 
 /**
  * «My activities» in «Profile» (TASK-172): the runs the account recorded,
- * the latest first, a page at a time. A row opens its run on the map;
- * «Delete» asks first. A public run says so (TASK-117), one added from a
- * file of another app says «Imported» (TASK-312). Over them, the runs of
- * this phone the API will not take, with its reason and «Discard»
- * (TASK-257); over all, «Add past activity» (TASK-312).
+ * the latest first, a page at a time, each a row (ActivityRow.tsx). Over
+ * them, the runs of this phone the API will not take, with its reason and
+ * «Discard» (TASK-257); over all, «Add past activity» (TASK-312).
  */
 export function ActivitiesList() {
   const activities = useActivitiesDoor();
-  const { publicKeys, refreshMine } = useDrawingsDoor();
-  // The run whose «Delete» was tapped, waiting for a yes.
+  const { publicKeys, postTitles, refreshMine } = useDrawingsDoor();
+  // The refused run whose «Discard» was tapped, waiting for a yes.
   const [confirming, setConfirming] = useState<string | null>(null);
   const { refresh, clearProblem, list } = activities;
   // The refused ones are not waiting for a connection: they have rows.
@@ -101,15 +86,10 @@ export function ActivitiesList() {
               key={activity.id}
               activity={activity}
               isPublic={publicKeys.has(activity.id)}
+              title={postTitles?.get(activity.id) ?? null}
               opening={activities.opening === activity.id}
-              confirming={confirming === activity.id}
               onOpen={() => activities.open(activity)}
-              onAsk={() => setConfirming(activity.id)}
-              onKeep={() => setConfirming(null)}
-              onDelete={() => {
-                setConfirming(null);
-                activities.remove(activity.id);
-              }}
+              onDelete={() => activities.remove(activity.id)}
             />
           ))}
           {activities.more && (
@@ -231,154 +211,6 @@ function RefusedRow({
   );
 }
 
-type RowProps = {
-  activity: Activity;
-  /** Made public: a drawing in the profile (TASK-117). */
-  isPublic: boolean;
-  /** Its run is being fetched whole, for the map. */
-  opening: boolean;
-  /** «Delete» was tapped: the row asks before the run goes. */
-  confirming: boolean;
-  onOpen: () => void;
-  onAsk: () => void;
-  onKeep: () => void;
-  onDelete: () => void;
-};
-
-function ActivityRow({
-  activity,
-  isPublic,
-  opening,
-  confirming,
-  onOpen,
-  onAsk,
-  onKeep,
-  onDelete,
-}: RowProps) {
-  const when = startedLabel(activity.started_at);
-  // A swim in a pool has no line to draw nor to open on the map, and no
-  // place: «Pool swim», its metres, time and pace (TASK-400 part B).
-  const pool = isPoolSwimRun(activity);
-  const where =
-    pool && activity.place === null
-      ? t("Pool swim")
-      : whereAndWhat(activity, activity.route_preview !== null);
-  // Written again when «Settings» changes the units (TASK-182).
-  useUnits();
-  // A workout at the gym has no distance: its time (TASK-385 B0).
-  const gym = isTrackless(activity.activity);
-  // A swim in a pool ends with its energy, "· 206 kcal" (TASK-409 part A).
-  const body = useBody();
-  const kcal = pool
-    ? poolKcalLabel(
-        poolKcal(
-          activity.distance_m,
-          activity.duration_s,
-          body,
-          new Date(activity.started_at).getFullYear(),
-        ),
-      )
-    : null;
-  const facts = gym
-    ? clockLabel(activity.duration_s * 1000)
-    : kcal === null
-      ? runFacts(activity)
-      : `${runFacts(activity)} · ${kcal}`;
-  return (
-    <View style={styles.row} testID="activity-row">
-      <Tap
-        style={styles.open}
-        onPress={pool ? undefined : onOpen}
-        disabled={pool}
-        accessibilityRole={pool ? undefined : "button"}
-        accessibilityLabel={
-          pool
-            ? `${when}, ${where}, ${facts}`
-            : t(
-                isPublic
-                  ? "{when}, {where}, {facts}, public, open on the map"
-                  : "{when}, {where}, {facts}, open on the map",
-                { when, where, facts },
-              )
-        }
-      >
-        {gym ? (
-          <GymTile width={DRAWING} height={DRAWING} />
-        ) : pool ? (
-          <PoolTile width={DRAWING} height={DRAWING} />
-        ) : (
-          <RunDrawing
-            route={activity.route_preview}
-            track={activity.track_preview}
-            width={DRAWING}
-            height={DRAWING}
-            rotationDeg={activity.rotation_deg}
-          />
-        )}
-        <View style={styles.words}>
-          <Text style={styles.when} numberOfLines={1}>
-            {when}
-          </Text>
-          <Text style={styles.detail} numberOfLines={1}>
-            {where}
-          </Text>
-          <FactsText
-            style={styles.facts}
-            numberOfLines={1}
-            facts={opening ? t("Opening…") : facts}
-            kcal={opening ? null : kcal}
-          />
-          {(isPublic || isImported(activity)) && (
-            <View style={styles.marks}>
-              {isPublic && (
-                <Text style={styles.mark} testID="activity-public">
-                  {t("Public")}
-                </Text>
-              )}
-              {isImported(activity) && <ImportedMark />}
-            </View>
-          )}
-        </View>
-      </Tap>
-      {confirming ? (
-        <View style={styles.confirm}>
-          <Text style={styles.confirmText}>
-            {t("Delete this run? It cannot be undone.")}
-          </Text>
-          <View style={styles.confirmButtons}>
-            <Pressable
-              style={[styles.button, styles.half]}
-              onPress={onKeep}
-              accessibilityRole="button"
-            >
-              <Text style={styles.buttonText}>{t("Keep it")}</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.button, styles.half, styles.danger]}
-              onPress={onDelete}
-              accessibilityRole="button"
-            >
-              <Text style={[styles.buttonText, styles.dangerText]}>
-                {t("Delete run")}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      ) : (
-        <Pressable
-          style={styles.quiet}
-          onPress={onAsk}
-          accessibilityRole="button"
-          accessibilityLabel={t("Delete the run of {when}", { when })}
-          hitSlop={space.sm}
-        >
-          <Text style={styles.dangerText}>{t("Delete")}</Text>
-        </Pressable>
-      )}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   list: {
     gap: space.md,
@@ -399,11 +231,6 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.small,
   },
-  open: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
-  },
   words: {
     flex: 1,
     gap: 2,
@@ -413,35 +240,10 @@ const styles = StyleSheet.create({
     fontSize: fontSize.body,
     fontWeight: fontWeight.semibold,
   },
-  detail: {
-    color: color.textMuted,
-    fontSize: fontSize.small,
-  },
-  marks: {
-    flexDirection: "row",
-    gap: space.xs,
-  },
-  // Neutral, as every mark that is not the route's.
-  mark: {
-    alignSelf: "flex-start",
-    marginTop: 2,
-    paddingHorizontal: space.sm,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-    color: color.text,
-    fontSize: fontSize.small,
-    fontWeight: fontWeight.semibold,
-  },
   // Not yellow: that is the route's (docs/UI.md, «Il tema»).
   facts: {
     color: color.text,
     fontSize: fontSize.small,
-  },
-  quiet: {
-    alignSelf: "flex-end",
-    minHeight: MIN_TAP_SIZE - space.md,
-    justifyContent: "center",
   },
   confirm: {
     gap: space.sm,

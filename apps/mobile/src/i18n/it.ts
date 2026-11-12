@@ -68,7 +68,6 @@ export const IT: Table = {
   // «Keep it» answers two questions (a run, Strava): a word that fits both.
   "Keep it": "Annulla",
   "Delete run": "Elimina corsa",
-  "Delete the run of {when}": "Elimina la corsa di {when}",
   Delete: "Elimina",
   // A run the API will not take (TASK-257).
   "The server could not take this run: {message}":
@@ -85,6 +84,7 @@ export const IT: Table = {
     "Giallo: il percorso. Bianco: quello che hai corso.",
   "White: what you ran.": "Bianco: quello che hai corso.",
   "Back to the list": "Torna all'elenco",
+  "Edit post": "Modifica post",
 
   // src/activities/activitiesDoor.ts
   "Sign up or log in to keep your runs and share them as drawings.":

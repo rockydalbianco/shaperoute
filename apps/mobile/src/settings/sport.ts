@@ -25,7 +25,9 @@ import { profileOf } from "../sports";
  * recorded without a shape (TASK-375, ADR-0319): `recordOnly`, and so is
  * a ski tour («Ski touring», TASK-415 part B, ADR-0344). Snowshoes draw a
  * small shape placed freely on the open snow, as on the water, and record
- * a day without one (TASK-413 parts B and C, ADR-0342). A workout
+ * a day without one (TASK-413 parts B and C, ADR-0342). A day of
+ * mountaineering («Mountaineering», TASK-463 part B, ADR-0373) is recorded
+ * without a shape too, «Soon» until it is turned on. A workout
  * at the gym («Gym», TASK-385 part B, ADR-0327) has no route and no GPS:
  * «Draw» offers only «Start workout». */
 export type Sport =
@@ -44,7 +46,8 @@ export type Sport =
   | "skimo"
   | "snowshoe"
   | "gym"
-  | "paragliding";
+  | "paragliding"
+  | "alpinism";
 
 export type SportOption = {
   id: Sport;
@@ -95,6 +98,7 @@ const ACTIVITY: { readonly [S in Sport]?: RunActivity } = {
   snowshoe: "snowshoeing",
   gym: "gym",
   paragliding: "paragliding",
+  alpinism: "alpinism",
 };
 
 /** A sport of «Settings» as its profile says it (TASK-376 part B3c,
@@ -163,6 +167,11 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // their way without a shape (part C). On since the server has #1266
   // (step 12), the user's «Sì, accendi» to the screenshots (2026-11-12).
   fromProfile("snowshoe", true),
+  // A day of mountaineering, saved as "alpinism", recorded without a shape
+  // (TASK-463 part B, ADR-0373), with its notice «Before you climb». «Soon»
+  // until the server has part A and its migration 0076 and the user says
+  // yes on the screens: turning it on is a small PR of its own.
+  fromProfile("alpinism", false),
   // Saved as "gym" (runActivityOf), without a track (TASK-385 part B); on in
   // the store builds too, the user's «ok accendi» (2026-11-05): the server
   // keeps its posts from the apps that cannot read them (X-MuW-Reads).
@@ -352,7 +361,9 @@ export function withoutRouteLabel(sport: Sport): string {
     case "ski":
     case "xc_ski":
     case "skimo":
-      // No shapes on the slopes (TASK-375): the only way to go.
+    case "alpinism":
+      // No shapes on the slopes (TASK-375) nor up a mountain (TASK-463):
+      // the only way to go.
       return t("Record your day");
     case "snowshoe":
       // Beside the shapes on the snow, the day as it comes (TASK-413 part

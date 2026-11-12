@@ -108,6 +108,7 @@ Kind = Literal[
     "group_run_cancelled",
     "message",
     "message_request",
+    "planned_live_started",
 ]
 # The events of what one did oneself, or of nobody's doing: told to
 # oneself too (the shape game, TASK-296; the contest won, TASK-299; the
@@ -232,6 +233,10 @@ class PushEvent:
     # A monthly challenge (TASK-343): the app opens its page; the theme's
     # title, by language, is in `names`.
     contest_id: UUID | None = None
+    # A planned live that started (TASK-468 part A2b): the app opens its
+    # live view; its title is `text`.
+    planned_live_id: UUID | None = None
+    live_share_id: UUID | None = None
     # What a private message carries (TASK-333): "photo", "video",
     # "drawing", "post" (TASK-455) or "live" (TASK-468); its text, if any,
     # is `text`.
@@ -428,6 +433,16 @@ TEXTS: dict[str, dict[str, str]] = {
     },
     # Group runs (TASK-309, docs/EVENTI.md §8): {title} is the group run's,
     # {name} its organiser. No time: the server does not know the phone's.
+    # A planned live that started, to who asked «Remind me» (TASK-468 part
+    # A2b; en and it approved by the user 2026-11-12, the others in the same
+    # sense).
+    "planned_live_started": {
+        "en": "{name} is live: {title}",
+        "de": "{name} ist live: {title}",
+        "it": "{name} è live: {title}",
+        "es": "{name} está en directo: {title}",
+        "fr": "{name} est en live : {title}",
+    },
     "group_run_soon": {
         "en": "{title} starts soon: see you at the start!",
         "de": "{title} beginnt gleich: wir sehen uns am Start!",
@@ -568,6 +583,12 @@ def data_of(event: PushEvent, actor_public_id: UUID, actor_name: str) -> dict[st
         return {"kind": event.kind, "contest_id": str(event.contest_id)}
     if event.group_run_id is not None:
         return {"kind": event.kind, "group_run_id": str(event.group_run_id)}
+    if event.planned_live_id is not None:
+        return {
+            "kind": event.kind,
+            "planned_live_id": str(event.planned_live_id),
+            "share_id": str(event.live_share_id or ""),
+        }
     if event.challenge_id is not None:
         return {"kind": event.kind, "challenge_id": str(event.challenge_id)}
     if event.drawing_id is not None:

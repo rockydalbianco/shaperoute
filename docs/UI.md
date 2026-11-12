@@ -1459,6 +1459,20 @@ grande compare alla sua misura, senza crescere, qui e sul disegno aperto.
   your max heart rate to see your zones.». Una FC fuori dai limiti dice
   «Enter a heart rate between 100 and 230 bpm.» (a riposo 30 e 120) e non si
   tiene. Tutto resta sul telefono, in `heart.json`.
+  Sotto «Body», **«Morning stretch»** (🌅, TASK-466 parte D, ADR-0378), con
+  in fondo «Off» oppure l'ora della sveglia e la durata («7:00 · 5 min»). Un
+  tocco apre una pagina intera, «Back» in alto: «MuW can't read your phone's
+  alarm. Set here the time it rings: 5 minutes later a reminder opens your
+  Morning routine.», l'interruttore «Morning stretch» (spento all'inizio),
+  «Alarm time» con «−» e «+» per le ore e per i minuti (di 5 in 5, senza
+  tastiera), «Days» coi sette giorni (lunedì–venerdì all'inizio; l'ultimo
+  non si toglie), «Length» con «3 min», «5 min», «10 min». Accenderlo
+  chiede il permesso delle notifiche; negato, resta spento con «Notifications
+  are off for MuW on this phone. Allow them in Settings to turn this on.» e
+  «Open Settings». Nei giorni scelti, 5 minuti dopo quell'ora, il telefono
+  mostra «Morning stretch» / «5 minutes to wake up your body. Tap to
+  start.»: toccata, apre la routine «Morning» di quella durata, senza
+  chiedere «How long?»; non durante una corsa. Tutto resta sul telefono.
   **«Notifications»**: «Email
   notifications» e «Push notifications», due interruttori salvati
   nell'account (TASK-185, ADR-0206, sotto). **«Feedback»** (TASK-308,
@@ -5134,6 +5148,27 @@ Le scelte dell'utente del 2026-11-12, nei testi che ha approvato
   - A fine volo il telefono manda `max_alt_m` e `top_speed_mps` con i
     numeri del post. Se un server senza R5a li rifiuta, li rimanda senza,
     come fa con i tratti dello sci.
+
+### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
+
+«Mountaineering» 🧗 (IT «Alpinismo») sta in «Settings» e nel menu degli
+sport nella famiglia «On snow», dopo «Ski touring». Fino all'accensione,
+che è una PR a parte col sì dell'utente sulle schermate, dice «Soon» e nelle
+build per lo store non c'è. Acceso, «Draw» mostra solo **«Record your
+day»** 🧗, senza forme né percorsi. La giornata si registra come una corsa
+senza percorso, coi numeri di un'escursione (km, tempo, salita), e si
+salva come `alpinism`.
+
+- **L'avviso**, la prima volta su quel telefono, all'apertura della
+  schermata: «Before you climb» — «MuW records your climb and shares it:
+  it does not guide you. Go with your own gear, skills and judgement, and
+  check the conditions before you set off.», un solo bottone «Got it». Una
+  volta letto non torna più (il file `climb-notice.json`). Testi approvati
+  dall'utente il 2026-11-12, nelle cinque lingue in `tasks/TASK-463.md`.
+- Le calorie si contano come per un'escursione. In Apple Salute va come
+  «Climbing».
+- Nel modulo del post non è un giorno sulla neve: resta alpinismo. Sull'orologio non
+  c'è, finché una sua build non lo conosce.
 
 ## Export del GPX
 

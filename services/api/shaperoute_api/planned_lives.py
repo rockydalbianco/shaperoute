@@ -22,13 +22,14 @@ with part A2b. Never a position here: the points stay with the share.
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, Query, Request, Response
 from psycopg.rows import DictRow
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
@@ -62,7 +63,10 @@ from shaperoute_api.live_shares import (
     _status,
     insert_share,
 )
+from shaperoute_api.push import Pusher, PushEvent
 from shaperoute_api.schemas import ErrorBody
+
+log = logging.getLogger(__name__)
 
 MAX_TITLE = 60
 # When a live may be planned for, from the moment it is made or moved.
@@ -320,6 +324,25 @@ def _check_when(starts_at: datetime, now: datetime) -> None:
         raise AccountError(422, "invalid_request", WHEN_WRONG)
 
 
+def _reminded(conn: Any, row: DictRow) -> list[int]:
+    """Who asked «Remind me» and may still see the live: not its owner,
+    nobody kept apart from it, a follower for a live for the followers."""
+    values = {"id": row["planned_live_id"], "owner": row["owner_id"]}
+    follower = (
+        "TRUE"
+        if row["audience_feed"] == "everyone"
+        else follows_sql("r.user_id", "%(owner)s")
+    )
+    found = conn.execute(
+        "SELECT r.user_id FROM planned_live_reminders r"
+        " WHERE r.planned_live_id = %(id)s AND r.user_id <> %(owner)s"
+        f" AND NOT {apart_sql('r.user_id', '%(owner)s')} AND {follower}"
+        " ORDER BY r.user_id",
+        values,
+    ).fetchall()
+    return [r["user_id"] for r in found]
+
+
 def _id(planned_live_id: str) -> UUID:
     try:
         return UUID(planned_live_id)
@@ -336,6 +359,8 @@ class PlannedLives:
 
     database: Database
     now: Callable[[], datetime]
+    # The app's pusher, for «Remind me» (part A2b); None: nobody is told.
+    pusher_of: Callable[[], Pusher | None] = lambda: None
 
     def _values(self, viewer_id: int, **more: Any) -> dict[str, Any]:
         now = self.now()
@@ -547,9 +572,36 @@ class PlannedLives:
                 audience_feed=row["audience_feed"],
                 heart_visible=row["heart_visible"],
             )
-            return insert_share(
+            # «Remind me» only at its first start: a start again after a
+            # stop tells nobody twice.
+            first = row["share_id"] is None
+            made = insert_share(
                 conn, user_id, request, now, planned_live_id=row["planned_live_id"]
             )
+            told = _reminded(conn, row) if first else []
+        self._tell(user_id, row, UUID(made.id), told)
+        return made
+
+    def _tell(self, owner: int, row: DictRow, share_id: UUID, told: list[int]) -> None:
+        """The pushes of «Remind me», after the write; never raises."""
+        pusher = self.pusher_of()
+        if pusher is None:
+            return
+        for recipient in told:
+            try:
+                pusher.notify(
+                    PushEvent(
+                        "planned_live_started",
+                        owner,
+                        recipient,
+                        text=row["title"],
+                        key=str(row["planned_live_id"]),
+                        planned_live_id=row["planned_live_id"],
+                        live_share_id=share_id,
+                    )
+                )
+            except Exception:
+                log.exception("planned lives: a reminder was not sent")
 
     def post(
         self, user_id: int, planned_live_id: str, body: PlannedLivePostBody
@@ -595,10 +647,15 @@ class PlannedLives:
 
 
 def planned_lives_of(
-    accounts: Annotated[Accounts, Depends(accounts_of)],
+    request: Request, accounts: Annotated[Accounts, Depends(accounts_of)]
 ) -> PlannedLives:
-    """In the database of the accounts, on the same clock."""
-    return PlannedLives(accounts.database, accounts.now)
+    """In the database of the accounts, on the same clock, with the app's
+    pusher."""
+    return PlannedLives(
+        accounts.database,
+        accounts.now,
+        lambda: getattr(request.app.state, "pusher", None),
+    )
 
 
 Them = Annotated[PlannedLives, Depends(planned_lives_of)]

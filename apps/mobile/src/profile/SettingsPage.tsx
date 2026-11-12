@@ -22,6 +22,7 @@ import { Vo2MaxSetting } from "../settings/Vo2MaxSetting";
 import { useFeedbackService } from "../settings/useFeedbackService";
 import { BlockedPeople } from "../social/BlockedPeople";
 import { StravaSetting } from "../strava/StravaSetting";
+import { MorningStretchSetting } from "../stretch/MorningStretchSetting";
 import {
   color,
   font,
@@ -96,6 +97,8 @@ export function SettingsPage({
         <OfflineMapsSetting />
         <UnitsSetting />
         <BodySetting />
+        {/* The reminder after the alarm, kept on this phone (TASK-466 part D). */}
+        <MorningStretchSetting />
         {/* The yes of the VO₂ max on the profile, kept by the API (TASK-397). */}
         <Vo2MaxSetting account={account} />
         <ToneSetting />

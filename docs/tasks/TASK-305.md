@@ -305,6 +305,49 @@ usano le parole che l'app ha già.
 | Share live at start | Condividi dal vivo alla partenza | Beim Start live teilen | Partager en direct au départ | Compartir en directo al empezar |
 | When the countdown ends, MuW makes the link and opens the share sheet. | Finito il conto alla rovescia, MuW crea il link e apre la condivisione. | Nach dem Countdown erstellt MuW den Link und öffnet das Teilen-Menü. | À la fin du compte à rebours, MuW crée le lien et ouvre le partage. | Al terminar la cuenta atrás, MuW crea el enlace y abre el menú para compartir. |
 
+### R6 — Corsa e volo nella stessa attività (hike & fly)
+
+**Scelta dell'utente (2026-11-12)**: nelle gare di parapendio si corre e si
+vola, quindi una registrazione deve tenere tutte e due le cose. Fra
+«Dentro Paragliding» e uno sport nuovo «Hike & fly» ha scelto **«Dentro
+Paragliding»**.
+- È una sola registrazione. L'app divide da sola i tratti a piedi da quelli
+  in aria, e c'è un bottone «A piedi | In volo» per correggerla.
+- Alla fine e nel Feed ci sono il tempo totale, «A piedi» (tempo, km,
+  dislivello) e «In volo» (tempo, km, quota massima).
+- Sulla mappa la linea è bianca a piedi e gialla in aria.
+- Chi fa solo il volo lo vede come oggi.
+
+Coordinatore: «ADR-0375, precisazione R6», nessuna migrazione.
+
+**Come capisce da sola** (GPS, senza barometro):
+- **decollo**: per almeno 15 s si sale o si scende più di 1,5 m/s, oppure
+  per almeno 20 s si va oltre 25 km/h;
+- **atterraggio**: per almeno 60 s si va sotto 9 km/h e si sale o si
+  scende meno di 0,7 m/s;
+- un tratto più corto di 60 s si unisce a quello vicino;
+- il bottone corregge la fase finché il GPS non vede il cambio opposto.
+
+**Parti**:
+- **R6a, server, prima dell'app**: `flight_parts` e `flight_split` (API.md,
+  «A piedi e in volo»).
+- **R6b, app**: la divisione in tratti (`src/air/flightParts.ts`), il
+  bottone, la fine, il Feed, le calorie tratto per tratto.
+- **R6c, la mappa a due colori**: tocca i file della mappa, a turno, per
+  ultima.
+
+**Testi di R6**, approvati dall'utente il 2026-11-12 (en/it «Sì, approvo»,
+poi de/fr/es «Sì, approvo»):
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| On foot *(c'è già)* | A piedi | Zu Fuß | À pied | A pie |
+| In the air | In volo | In der Luft | En vol | En el aire |
+| Total | Totale | Gesamt | Total | Total |
+| MuW switches by itself; touch to correct it. | MuW cambia da sola; tocca per correggere. | MuW wechselt von selbst; tippe, um es zu korrigieren. | MuW change tout seul ; touchez pour corriger. | MuW cambia solo; toca para corregir. |
+| On foot {time} · In the air {time} | A piedi {time} · In volo {time} | Zu Fuß {time} · In der Luft {time} | À pied {time} · En vol {time} | A pie {time} · En el aire {time} |
+| White: on foot. Yellow: in the air. | Bianco: a piedi. Giallo: in volo. | Weiß: zu Fuß. Gelb: in der Luft. | Blanc : à pied. Jaune : en vol. | Blanco: a pie. Amarillo: en el aire. |
+
 ## Cosa fare (se l'utente decide di sì)
 
 Parti piccole, una sessione per parte, nell'ordine. Ogni parte è un branch
@@ -655,10 +698,21 @@ correzioni: i riquadri due per riga («Max altitude» si tagliava) e la riga
 del volo sotto il bottone (`ChooseScreen.tsx`, col sì del Coordinatore).
 Esce con l'aggiornamento completo del 2026-11-12.
 
+**Esito R5** (2026-11-12): server #1258 in main (291c41ff), acceso al passo
+12 (~16:56Z, server eee85a69, letture di `out/TASK-305/SERVER-R5a.md` come
+attese); app #1260 in main, in produzione con l'OTA 16 (16:42Z), dopo la
+prova nel simulatore e le schermate approvate dall'utente («Sì, approvo»).
+Dalla prova una correzione: il foglio di «Share live at start» aspettava
+«Before you fly». Decisioni: ADR-0375 precisazione R5, ADR-0352
+precisazione.
+
 **Cosa resta**:
 
 - Una prova di un volo vero, col link dal vivo aperto da un altro
   telefono, dopo l'uscita.
 - R4 (il volo sull'orologio, per il battito dal vivo): PR #1218 in bozza,
   fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
+- R6 (corsa + volo): server #1291 dopo TASK-455 C, app #1293 dopo R6a sul
+  server; poi R6c (la mappa a due colori).
+- Il fix #1302: «Save» sullo schermo alla fine del volo.
 - Le parti del pianificatore (A1…F) restano Proposte.

@@ -248,6 +248,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   manca il passo sul server (il 12, col sì dell'utente). Poi la parte app,
   dopo TASK-414 B e TASK-413 B. File: — · `tasks/TASK-463.md`
 
+- **TASK-461 — Il pianificatore completo** (ADR-0371) · A1 e B1 (server:
+  quattro esercizi, giorni fuori `outing`, `target`) in `main` e sul server;
+  B2a (settimane verso una meta) e A2 (ingresso «Cosa vuoi allenare?», corpo
+  libero) in `main` (#1196, #1208), A2 esce col prossimo OTA. Prossime B2b/C2
+  (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
+
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
 la figura, 305 parapendio (il pianificatore), 336 video nei post, 341 badge, 345 calorie e

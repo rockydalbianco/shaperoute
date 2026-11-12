@@ -553,8 +553,67 @@ lasciando le righe d'indice.
 - ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km · 2026-11-12 · Attiva
 - ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`) · 2026-11-12 · Attiva
 - ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Proposta
+- ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono · 2026-11-11 · Attiva
 
 ## Voci nuove
+
+## ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono
+
+**Stato**: Attiva · 2026-11-11 · TASK-461. A1 (#1163) e B1 (#1175, server)
+in `main` e sul server (passo 9, 2026-11-12); B2a (#1196) e A2 (#1208,
+app) in `main`, A2 esce col prossimo OTA; B2b/C2 (l'app di distanza e
+montagna) dopo. Le scelte di prodotto sono dell'utente, una alla volta con
+la proposta (2026-11-11: «B, comune a tutti», «Corpo libero», «Sì, quattro
+nuovi», «Almeno due, sempre», «Sì, il dislivello», righe E, F, G della tela
+«Schede palestra guidate» e i testi «Approvo»; 2026-11-12: «Sì, così» alle
+settimane senza kg anche per le schede già fatte, «Approvo» a testi e
+schermate della A2). Il modo è deciso dall'agente su delega dell'utente;
+numeri dal Coordinatore.
+
+**Contesto**: le schede guidate (ADR-0360, ADR-0363, ADR-0369) erano di
+palestra con giorni di corsa. L'utente ha chiesto il corpo libero, la
+camminata, la corsa e l'hike, la bici e le gite in montagna nello stesso
+pianificatore, e che ogni piano mescoli almeno due sport.
+
+**Decisione**:
+- **Un piano nuovo mescola almeno due sport.** «New plan» apre
+  «What do you want to train?»: palestra, corpo libero, corsa (distanza e
+  montagna dicono «Soon» finché non c'è B2b/C2); con meno di due il tasto
+  è spento. Le schede di prima si aprono come prima, senza ingresso.
+- **Il corpo libero non cambia il contratto.** Un giorno di corpo libero è
+  uno fatto solo di esercizi senza attrezzi della palestra (`bodyweight.ts`),
+  «Bodyweight · A» e «· B» in turno; quattro esercizi nuovi
+  (`bodyweight_squat`, `glute_bridge`, `superman`, `mountain_climber`)
+  vanno prima nel catalogo del server, che rifiuta una chiave che non ha,
+  poi nell'app. Nel modo `reps` un esercizio senza kg cresce di una
+  ripetizione a settimana (5 s se tenuto), l'ultima settimana del ciclo ha
+  una serie in meno, il ciclo dopo riparte da dove è arrivato; vale anche
+  per le schede già fatte. Il server non ha copia di questo conto.
+- **I giorni di altri sport stanno in `outing`, non in `run`**: sport
+  (walk, hike, bike, gravel, mtb, swim, paddle), tipo (easy, intervals,
+  long, brisk, climb), distanza o tempo, ripetute, salita a piedi, vasca o
+  acque libere. Un'app di prima mostrerebbe un `run` come corsa («Go to the
+  run»); un giorno senza `run` e senza esercizi invece lo salta in «Today»
+  e nella lista ne dice il nome («Long ride · 30 km»), e salvando di nuovo
+  tiene `outing` e `target`. Un giorno fuori è fatto nel calendario da
+  un'attività del suo sport (`gym_calendar.py`).
+- **La meta è `target` sul programma**: una distanza di uno sport (corsa
+  compresa) o la salita di un hike, con una data o «quando sono pronto»;
+  solo un piano con `target` supera le 12 settimane, fino a 24.
+- **Le settimane verso la meta si calcolano sul telefono**
+  (`targetWeeks.ts`), come quelle della palestra: il piano tiene la prima
+  settimana. Il lungo (o la salita) arriva alla meta l'ultima settimana, un
+  decimo in meno ogni settimana prima, ogni 4ª più leggera; le settimane
+  servite sono le meno possibili, almeno 4; oltre 24, o se la data è troppo
+  vicina, il piano propone dove si arriva. «Dove sei oggi?» viene dalle
+  attività dell'ultimo mese (`outingHistory.ts`).
+
+**Conseguenze**: nessuna migrazione (il programma è già JSONB). Chi resta
+su un'app di prima vede i giorni fuori per nome e il giro di ripetizioni
+di prima. Partendo da zero la regola del decimo dà piani lunghi (corsa da
+2 a 10 km: 23 settimane). La salita di un hike non è nell'elenco delle
+attività: finché il server non la dà, l'app la chiede. Il promemoria alle
+8 è una notifica locale del telefono (B2b).
 
 ## ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false`
 

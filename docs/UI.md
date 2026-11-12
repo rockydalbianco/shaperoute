@@ -3654,6 +3654,14 @@ cui tiene i numeri.
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra
   gialla del percorso fatto, «3.2 km to go» e «about 17 min».
+  **La scheda ripiegata** (TASK-472, scelta dell'utente del 2026-11-12;
+  codice in `screens/RunFoldedStrip.tsx`): correndo, in cima alla scheda
+  c'è una maniglia. Trascinata in giù (almeno 32 pt, più in verticale che
+  di lato), o la maniglia toccata, la scheda diventa una striscia: i tre
+  numeri su una riga e un «Pause» piccolo; la mappa prende il resto.
+  Trascinata in su, o toccata, torna intera. In pausa è sempre intera
+  («Stop», «Resume»); ripartiti torna piegata. Prima del primo fix, su
+  «Compass» e su «Data» niente maniglia.
 - **«Data»**: nessuna mappa. In alto quello che dice il banner (la svolta
   resta leggibile anche qui), poi i km in grande («2.34», «kilometres»),
   la barra del percorso, e sei riquadri: «Pace now», «Avg pace», «Time»,

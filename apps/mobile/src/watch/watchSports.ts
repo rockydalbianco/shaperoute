@@ -50,6 +50,8 @@ const INDOORS: ReadonlySet<RunActivity> = new Set<RunActivity>(["gym"]);
 const NOT_ON_WATCH: ReadonlySet<RunActivity> = new Set<RunActivity>([
   "swimming",
   "paragliding",
+  // A day of mountaineering, until a watch build knows it (TASK-463).
+  "alpinism",
 ]);
 
 export function watchSportOf(profile: SportProfile): WatchSport {

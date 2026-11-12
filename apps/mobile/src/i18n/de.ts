@@ -2914,4 +2914,10 @@ export const DE: Table = {
   "MuW can't read your sleep. Allow it in the Health app: your profile › Apps › MuW.":
     "MuW kann deinen Schlaf nicht lesen. Erlaube es in der Health-App: dein Profil › Apps › MuW.",
   "Stop sharing@@sleep": "Nicht mehr teilen",
+
+  // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
+  Mountaineering: "Bergsteigen",
+  "Before you climb": "Bevor du aufsteigst",
+  "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
+    "MuW zeichnet deinen Aufstieg auf und teilt ihn: Es führt dich nicht. Geh mit deiner Ausrüstung, deinem Können und deinem Urteil, und prüfe die Verhältnisse vor dem Start.",
 };

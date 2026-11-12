@@ -7,10 +7,8 @@ for it) and written in a GPX with its own <type>. No route request may ask
 one, it counts nothing in the shape game and gives no personal best. Its
 migration widens the check of runs only, keeping what was there before.
 
-The server has it before the contract (SERVER_FIRST in
-test_sport_registry_api.py): no app says it in X-MuW-Reads, so none
-receives one until the app part brings the contract and the app's hidden
-profile together.
+The server had it before the contract (part A); since part B the contract
+of packages/shared-types has it too, and the app of today reads it.
 """
 
 from __future__ import annotations
@@ -34,7 +32,6 @@ from test_personal_bests import (
     saved,
     signed_up,
 )
-from test_sport_registry_api import SERVER_FIRST, in_the_contract
 
 from shaperoute_api.activities import RECORD_ACTIVITIES, RunActivity
 from shaperoute_api.activity_graphs import check_supported
@@ -52,7 +49,7 @@ MIGRATION = "0076_alpinism.sql"
 CLIMB = "alpinism"
 
 
-# --- the order, and the contract that does not have it yet ----------------------
+# --- the order and the contract ------------------------------------------------
 
 
 def test_a_day_of_alpinism_is_recorded_without_a_shape_after_a_flight() -> None:
@@ -68,15 +65,13 @@ def test_a_day_of_alpinism_is_recorded_without_a_shape_after_a_flight() -> None:
     assert order.index("gym") == order.index(CLIMB) + 1
 
 
-def test_the_server_has_it_before_the_contract() -> None:
-    assert SERVER_FIRST == (CLIMB,)
+def test_the_contract_has_it_in_the_same_order() -> None:
     run_activities = json.loads((CONTRACT / "run-activities.json").read_text())
-    assert CLIMB not in run_activities["run_activities"]
-    assert CLIMB not in run_activities["record_activities"]
-    # Everything else is the contract's, in its order.
-    assert in_the_contract(get_args(RunActivity)) == run_activities["run_activities"]
+    assert run_activities["run_activities"] == list(get_args(RunActivity))
+    assert run_activities["record_activities"] == list(RECORD_ACTIVITIES)
     reads = json.loads((CONTRACT / "reads.json").read_text())
-    assert CLIMB not in reads["kinds"]
+    assert CLIMB in reads["kinds"]
+    # The contract of the routes keeps only what is drawn: no line there.
     contract = json.loads((CONTRACT / "contract.json").read_text())
     assert CLIMB not in contract["activities"]
     assert CLIMB not in contract["distance_limits_m"]
@@ -126,14 +121,14 @@ def test_a_day_of_alpinism_has_no_bests() -> None:
 # --- what an app reads ------------------------------------------------------------
 
 
-def test_no_app_of_today_reads_a_day_of_alpinism() -> None:
+def test_an_app_of_before_never_reads_a_day_of_alpinism() -> None:
     assert CLIMB in NEWER_ACTIVITIES and CLIMB in KINDS
     assert not OLD_APP.shows(CLIMB)
-    # The app of today says what the contract has: not this one.
+    before = "swimming,hiking,walking,skiing,ski_touring,paragliding,gym"
+    assert not reads_from([before]).shows(CLIMB)
+    # The app of today says it (part B).
     reads = json.loads((CONTRACT / "reads.json").read_text())
-    assert not reads_from([reads["this_app"]]).shows(CLIMB)
-    # An app that says it, the one of the app part, reads it.
-    assert reads_from([f"{reads['this_app']},{CLIMB}"]).shows(CLIMB)
+    assert reads_from([reads["this_app"]]).shows(CLIMB)
 
 
 def test_the_newer_activities_are_in_the_order_of_run_activity() -> None:

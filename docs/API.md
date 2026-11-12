@@ -1240,6 +1240,12 @@ parapendio e lo riceve come `Workout`, il GPX dice
 preferiti e corse di gruppo no (migrazione `0069`). Lo legge solo un'app
 che dice `paragliding` in `X-MuW-Reads`.
 
+**L'alpinismo** (`alpinism`, TASK-463, ADR-0373) è un quinto sport senza
+forma, dopo `paragliding`: Strava lo riceve come `Hike`, il GPX dice
+`<type>alpinism</type>`. Per il resto vale quello che vale per il
+parapendio: niente percorsi, gioco o record, e la migrazione `0076` allarga
+solo `runs`. Lo legge solo un'app che dice `alpinism` in `X-MuW-Reads`.
+
 ### Quello che un'app sa leggere: `X-MuW-Reads` (TASK-387, ADR-0328)
 
 Ogni richiesta dell'app dice nell'header `X-MuW-Reads` i tipi in più che sa

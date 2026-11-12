@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import ast
 import json
-from collections.abc import Iterable
 from pathlib import Path
 from typing import get_args
 
@@ -80,18 +79,6 @@ SINCE_GPX_TYPES = {
     "alpinism": "alpinism",
 }
 
-# The sports the API saves before the contract of packages/shared-types has
-# them (TASK-463 part A, ADR-0373): a day of alpinism. An app never reads it
-# (X-MuW-Reads), as no app says it. The app part takes it away, bringing the
-# contract and the app's hidden profile together; every test that holds the
-# API to the contract's lists reads them through `in_the_contract`.
-SERVER_FIRST: tuple[str, ...] = ("alpinism",)
-
-
-def in_the_contract(names: Iterable[str]) -> list[str]:
-    """`names` but the sports the contract does not have yet, in order."""
-    return [name for name in names if name not in SERVER_FIRST]
-
 
 def _without_since(table: dict[str, object]) -> list[tuple[str, object]]:
     """The items of `table` but the sports added since, in their order."""
@@ -102,7 +89,7 @@ def test_the_sports_are_those_of_the_contract_in_its_order() -> None:
     names = [sport.activity for sport in API_SPORTS]
     contract = json.loads(RUN_ACTIVITIES_JSON.read_text("utf-8"))
     # A workout at the gym the last of them (TASK-385).
-    assert in_the_contract(names) == contract["run_activities"]
+    assert names == contract["run_activities"]
     assert list(SPORTS_BY_ACTIVITY) == names
     planned = [s.activity for s in API_SPORTS if not s.record_only and not s.trackless]
     assert tuple(planned) == API_ACTIVITIES

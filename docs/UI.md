@@ -1303,6 +1303,23 @@ com'era, con «Your reaction wasn't saved. Check the connection.» sotto la
 riga. Senza account o senza reazioni da leggere «Like» resta e non apre
 niente.
 
+**Il doppio tocco sull'immagine di un post è il suo super like** (TASK-454
+parte B, scelta dell'utente del 2026-11-11), come sulla mappa del disegno
+aperto: **nel Feed** sull'immagine della card (il disegno, la scheda, una
+foto), **nella pagina del post** sulla mappa. Si apre il foglio «Super
+like» col suo commento, senza passare dalla barra, e **niente conta prima
+dell'invio**; mandato, «Like» mostra il cuore di MuW e «Comment · N» sale.
+**Col super like già messo** compare il cuore grande per un attimo (0,9 s)
+e non cambia niente: il doppio tocco non lo toglie mai. Vale anche su un
+post proprio, come il cuore della barra. **Il tocco singolo aspetta 300 ms**
+per sapere che è solo, poi fa quello che faceva: apre il post, la foto a
+tutto schermo, il disegno sulla mappa. Aspetta solo dove ci sono i quattro
+pulsanti: gli esempi rispondono subito, e così il nome dell'autore, «…» e i
+pulsanti. Senza account o senza reazioni da leggere il doppio tocco non fa
+niente. Con VoiceOver il doppio tocco apre il post, com'è suo, e il super
+like si mette dal cuore della barra. **Con «Riduci movimento»** il cuore
+grande compare alla sua misura, senza crescere, qui e sul disegno aperto.
+
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 
 - **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,

@@ -3,8 +3,10 @@
 **Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-11) · C1 (server) in
 `main` (#1180) e sul server (passo 9, 2026-11-12) · **A (#1195), C2
 (#1199) e la frase della privacy (#1200) in `main` il 2026-11-12**: escono
-con l'aggiornamento completo · restano B (doppio tocco) e la prova sul
-telefono: vedi «Cosa resta di questo task»
+con l'aggiornamento completo · **B (doppio tocco) in bozza nella #1231**:
+manca l'immagine nel Feed e nella pagina del post (file di TASK-467 B2
+finché non è in `main`), poi simulatore e sì dell'utente · resta la prova
+sul telefono: vedi «Cosa resta di questo task»
 **Fase**: 5 · **Branch**: una PR per parte; la parte B parte da `main`
 **Dipende da**: TASK-444 parte 1 in `main` (tocca `feed/PostActions.tsx` e
 porta l'icona a cuore di «Like»)
@@ -130,6 +132,28 @@ apps/mobile/src/social/reactionKinds.test.ts
 apps/mobile/src/i18n/{it,de,fr,es}.ts                (una chiave: la riga del foglio)
 ```
 
+Parte B (su `main` a `ef07030b`; lista approvata dal Coordinatore il
+2026-11-12, `SuperLikeSheet` aggiunto da lui per «Riduci movimento»):
+
+```
+apps/mobile/src/feed/useDoubleTap.ts                 (nuovo)
+apps/mobile/src/feed/useDoubleTap.test.ts            (nuovo)
+apps/mobile/src/feed/PostReactions.tsx               (il super like chiesto dall'immagine)
+apps/mobile/src/feed/PostReactions.test.tsx
+apps/mobile/src/feed/PostActions.tsx                 (solo il passaggio; prima di TASK-455 B)
+apps/mobile/src/feed/PostActions.test.tsx
+apps/mobile/src/feed/PostSheet.tsx                   (solo il passaggio)
+apps/mobile/src/social/SuperLikeSheet.tsx            (il cuore fermo con «Riduci movimento»)
+apps/mobile/src/social/SuperLikeSheet.test.tsx
+apps/mobile/src/feed/FeedPost.tsx                    (dopo TASK-467 B2)
+apps/mobile/src/feed/PostPage.tsx                    (dopo TASK-467 B2)
+apps/mobile/src/feed/FeedPostDoubleTap.test.tsx      (nuovo)
+apps/mobile/src/feed/PostPageDoubleTap.test.tsx      (nuovo)
+apps/mobile/src/feed/*.test.tsx                      (solo dove il tocco singolo ora aspetta)
+docs/UI.md
+docs/tasks/TASK-454.md
+```
+
 Parti B, C1, C2: la lista si manda al Coordinatore quando la parte
 comincia, su `main` di quel momento. A grandi linee: B `feed/FeedPost.tsx`,
 `feed/PostPage.tsx` e i loro test; C1 `services/api/migrations/`,
@@ -157,7 +181,19 @@ Parte A:
       «Comment · N» sale, senza ricaricare il Feed.
 - [x] Il foglio del super like dice la riga approvata, anche a VoiceOver.
 
-I criteri di B, C1 e C2 si scrivono qui quando la parte comincia.
+Parte B:
+
+- [ ] Due tocchi sull'immagine di un post, nel Feed e nella sua pagina,
+      aprono il foglio del super like; niente conta prima dell'invio.
+- [ ] Un tocco solo fa quello che faceva (apre il post, la foto, la mappa),
+      dopo 300 ms; dove nessuno può reagire non aspetta.
+- [x] Col super like già messo il doppio tocco mostra il cuore grande e non
+      cambia niente; su un post proprio fa come il cuore della fila.
+- [x] Con «Riduci movimento» il cuore grande compare fermo, alla sua misura.
+- [ ] Video dal simulatore (tocco singolo e doppio, Feed e pagina del post)
+      in `out/TASK-454/` col sì dell'utente.
+
+I criteri di C1 e C2 stanno nella loro sezione.
 
 ## Parte C1 — server (ADR-0377)
 
@@ -425,22 +461,69 @@ Test in locale (2026-11-12): `src/social` intera, `api/comments`, i vicini
 (`PostActions`, `PostPage`, `importedMarks`, `cardsInMiles`) e `i18n`: 63
 file, 454 test verdi; `tsc`, `eslint` e Prettier puliti sui file toccati.
 
+## Parte B — doppio tocco = super like (app)
+
+**Stato**: bozza #1231 dal 2026-11-12 (branch `feat/TASK-454-b-double-tap`,
+da `main` a `ef07030b`). Scritti e provati coi test: `useDoubleTap`, il
+super like chiesto dall'immagine (`PostReactions`, passato da `PostActions`
+e `PostSheet`), il cuore fermo con «Riduci movimento». **Manca**: chiamarli
+da `feed/FeedPost.tsx` e `feed/PostPage.tsx`, che sono di TASK-467 B2
+finché non è in `main` (l'avviso lo manda il Coordinatore), coi loro test;
+poi il turno del simulatore, il video per l'utente e il suo sì. La PR resta
+in bozza fino alla fine (Coordinatore, 2026-11-12): niente merge a metà.
+
+Scelta dell'utente: la 6 qui sopra. Il resto è **deciso dall'agente su
+delega dell'utente** (visto dal Coordinatore il 2026-11-12):
+
+- **Fa quello che fa già il doppio tocco sulla mappa del disegno aperto**
+  (ADR-0193): si apre il foglio «Super like» col suo commento, e niente
+  conta prima che il commento sia mandato; «Cancel» non lascia niente. Con
+  un'emoji propria già messa, il super like ne prende il posto solo quando
+  è mandato. **Col super like già messo** compare il cuore grande per 0,9 s
+  e non cambia niente: un doppio tocco non lo toglie mai (si toglie dalla
+  fila, come prima).
+- **Su un post proprio** fa come il cuore della fila, che lì c'è già: il
+  server non distingue, e un gesto che a volte non fa niente sembrerebbe
+  rotto.
+- **Qual è l'immagine**: nel Feed la pagina mostrata della card (il
+  disegno, la scheda della palestra o della piscina, una foto); nella
+  pagina del post la mappa del disegno. Un post senza linea nella sua
+  pagina non ha immagine: lì il super like resta nella fila.
+- **Il tocco singolo aspetta 300 ms solo dove due tocchi vogliono dire
+  qualcosa**: le card coi quattro pulsanti. Gli esempi e le card senza
+  azioni rispondono subito, come prima. Non aspettano il nome dell'autore,
+  «…», i quattro pulsanti, lo scorrimento delle foto.
+- **Due tocchi** sono due tocchi sulla stessa card entro 300 ms, ovunque
+  sull'immagine; il terzo ricomincia. La fine di uno scorrimento non è un
+  tocco (lo scarto di 12 pt che la card ha già).
+- **Senza reazioni da leggere** (nessun account, API di prima, risposta non
+  ancora arrivata), con la fila o il foglio aperti: il doppio tocco non fa
+  niente.
+- **VoiceOver**: il doppio tocco è il suo «attiva», e apre il post come
+  prima; il super like si mette dal cuore della fila, come sul disegno
+  aperto.
+- **Come è fatto**: `feed/useDoubleTap.ts` dà una funzione che prende ogni
+  tocco con quello che fa da solo; l'immagine chiede il super like a
+  `PostReactions` con un `handle` (`superLike()`), passato da `PostActions`
+  (`reactionsHandle`) e da `PostSheet`. Le reazioni restano lette una volta
+  per card, dove già lo erano: niente stato portato su.
+- **«Riduci movimento»** (file aggiunto dal Coordinatore: l'accessibilità
+  dichiarata sull'App Store lo chiede): il cuore grande compare alla sua
+  misura senza crescere, nel foglio e da solo. Prima cresceva comunque.
+
+Nessun testo nuovo, niente i18n, niente server, nessuna dipendenza.
+
+Test in locale (2026-11-12): `useDoubleTap`, `PostReactions`, `PostActions`,
+`SuperLikeSheet`, `DrawingReactions`, `PostPage`: 86 test verdi; i vicini
+del Feed 117; `tsc`, `eslint` e Prettier puliti.
+
 ## Cosa resta di questo task
 
 Scritto il 2026-11-12, con A, C1, C2 e la privacy in `main`.
 
-- **Parte B — doppio tocco = super like** (scelta 6), nel giro dopo
-  l'aggiornamento completo. Due tocchi sull'immagine di un post, nel Feed e
-  nella pagina del post, aprono il foglio del super like; il tocco singolo
-  aspetta 300 ms e poi fa quello che fa oggi. File previsti:
-  `feed/FeedPost.tsx`, `feed/PostPage.tsx` (oggi di TASK-467 B2: la parte B
-  viene dopo di lei), `feed/PostSheet.tsx` (nella pagina del post la fila
-  delle azioni sta lì, l'immagine in `PostPage`), `feed/PostActions.tsx` e
-  `feed/PostReactions.tsx` (il super like chiesto da fuori della fila), un
-  file nuovo `feed/useDoubleTap.ts`, i loro test e `docs/UI.md`. Prima di
-  toccarli: lista al Coordinatore e il suo sì. Poi
-  test, turno del simulatore, sì dell'utente sulle schermate, «pronta».
-  Nessun testo nuovo previsto: il foglio è quello della parte A.
+- **Parte B — doppio tocco = super like** (scelta 6): vedi la sezione qui
+  sopra. Mancano `feed/FeedPost.tsx` e `feed/PostPage.tsx` (dopo TASK-467
+  B2), il video dal simulatore, il sì dell'utente, «pronta».
 - **Prova sul telefono**, dopo l'OTA dell'aggiornamento completo (la
   pubblica il Coordinatore): «Like» apre la fila sopra il pulsante senza
   muovere la card; un super like porta subito il commento sotto il post;

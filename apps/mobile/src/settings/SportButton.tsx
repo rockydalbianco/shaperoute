@@ -21,6 +21,7 @@ import {
 } from "../theme/tokens";
 import { isSkiMode } from "../skimode/skiMode";
 import { Hairline } from "../ui/Hairline";
+import { Tap } from "../ui/Tap";
 import { saveSport, type Sport, SPORTS, type SportOption } from "./sport";
 import { groupSports } from "./sportFamilies";
 import { useSport } from "./useSport";
@@ -205,14 +206,10 @@ function SportTile({ option, size, chosen, onChoose }: TileProps) {
   }
   const skiMode = isSkiMode(option.id);
   return (
-    <Pressable
+    // It answers the finger through Tap, as the app's other controls.
+    <Tap
       testID={`sport-tile-${option.id}`}
-      style={({ pressed }) => [
-        styles.tile,
-        box,
-        chosen && styles.tileChosen,
-        pressed && styles.tilePressed,
-      ]}
+      style={[styles.tile, box, chosen && styles.tileChosen]}
       onPress={onChoose}
       accessibilityRole="radio"
       // One name for the tile: the emoji is not read on its own.
@@ -231,7 +228,7 @@ function SportTile({ option, size, chosen, onChoose }: TileProps) {
           {t("Turns MuW into your ski app")}
         </Text>
       )}
-    </Pressable>
+    </Tap>
   );
 }
 
@@ -323,9 +320,6 @@ const styles = StyleSheet.create({
   tileChosen: {
     borderWidth: 2,
     borderColor: color.text,
-  },
-  tilePressed: {
-    opacity: 0.7,
   },
   tileSoon: {
     backgroundColor: color.surface,

@@ -1816,6 +1816,16 @@ export const IT: Table = {
   "After run": "Dopo la corsa",
   "After gym": "Dopo la palestra",
   "How long?": "Quanto tempo?",
+  // «Morning stretch» in «Settings» and its reminder (TASK-466 part D).
+  "Morning stretch": "Stretching del mattino",
+  "{minutes} minutes to wake up your body. Tap to start.":
+    "{minutes} minuti per svegliare il corpo. Tocca per iniziare.",
+  "MuW can't read your phone's alarm. Set here the time it rings: {minutes} minutes later a reminder opens your Morning routine.":
+    "MuW non può leggere la sveglia del telefono. Imposta qui l'ora in cui suona: {minutes} minuti dopo un promemoria apre la tua routine del mattino.",
+  "Alarm time": "Ora della sveglia",
+  Length: "Durata",
+  Hour: "Ora",
+  Minutes: "Minuti",
   "{index} of {total}": "{index} di {total}",
   "Right side": "Lato destro",
   "Left side": "Lato sinistro",

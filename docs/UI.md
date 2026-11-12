@@ -1459,6 +1459,20 @@ grande compare alla sua misura, senza crescere, qui e sul disegno aperto.
   your max heart rate to see your zones.». Una FC fuori dai limiti dice
   «Enter a heart rate between 100 and 230 bpm.» (a riposo 30 e 120) e non si
   tiene. Tutto resta sul telefono, in `heart.json`.
+  Sotto «Body», **«Morning stretch»** (🌅, TASK-466 parte D, ADR-0378), con
+  in fondo «Off» oppure l'ora della sveglia e la durata («7:00 · 5 min»). Un
+  tocco apre una pagina intera, «Back» in alto: «MuW can't read your phone's
+  alarm. Set here the time it rings: 5 minutes later a reminder opens your
+  Morning routine.», l'interruttore «Morning stretch» (spento all'inizio),
+  «Alarm time» con «−» e «+» per le ore e per i minuti (di 5 in 5, senza
+  tastiera), «Days» coi sette giorni (lunedì–venerdì all'inizio; l'ultimo
+  non si toglie), «Length» con «3 min», «5 min», «10 min». Accenderlo
+  chiede il permesso delle notifiche; negato, resta spento con «Notifications
+  are off for MuW on this phone. Allow them in Settings to turn this on.» e
+  «Open Settings». Nei giorni scelti, 5 minuti dopo quell'ora, il telefono
+  mostra «Morning stretch» / «5 minutes to wake up your body. Tap to
+  start.»: toccata, apre la routine «Morning» di quella durata, senza
+  chiedere «How long?»; non durante una corsa. Tutto resta sul telefono.
   **«Notifications»**: «Email
   notifications» e «Push notifications», due interruttori salvati
   nell'account (TASK-185, ADR-0206, sotto). **«Feedback»** (TASK-308,

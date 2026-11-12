@@ -624,8 +624,9 @@ e il processo di calcolo ne provava un altro.
 **Conseguenze.** I percorsi e le impronte non cambiano (niente motore,
 niente `route_store.py`). Con Overpass a 502: un download fallito costa
 circa 10–20 s invece di 70–80 s, e al massimo uno per job. Acqua e neve
-non passano da osmnx: non avevano la pausa e non provano il secondo
-servizio (da decidere a parte). I servizi pubblici gratuiti sono per
+non passano da osmnx e non avevano la pausa; il secondo servizio vale
+anche per la loro richiesta («Sì, aggiungilo»), con la stessa variabile
+(`paddling.py`, `snowshoeing.py`). I servizi pubblici gratuiti sono per
 progetti piccoli e il principale chiede che l'uso commerciale passi a un
 servizio a pagamento o proprio: con la società, o se i download
 crescono, un servizio con chiave o le zone dagli estratti. Come si

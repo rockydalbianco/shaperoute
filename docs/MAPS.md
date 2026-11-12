@@ -51,7 +51,8 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   stesso job non ne prova un altro; e con
   `SHAPEROUTE_OVERPASS_FALLBACK_URL` impostata sul server, a un errore
   HTTP o di connessione del principale segue un solo tentativo sul
-  secondo servizio. Mai per il lavoro a lotti, mai per acqua e neve.
+  secondo servizio, anche per l'acqua e la neve. Mai per il lavoro a
+  lotti.
 - **Un tentativo per grafo**: se Overpass non risponde si salta e si
   riprova più tardi, non in un ciclo stretto. Il 2026-09-22 sera, dopo due
   download, Overpass ha smesso di accettare connessioni per il resto della

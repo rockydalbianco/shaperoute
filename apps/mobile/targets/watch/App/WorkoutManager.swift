@@ -172,7 +172,9 @@ final class WorkoutManager: NSObject, ObservableObject {
         heartCount = 0
         live.begin()
         if sport.gps {
-            recorder.prepare(store: store, ride: route?.ride ?? false)
+            recorder.prepare(
+                store: store, ride: route?.ride ?? false,
+                air: sport.activity == "paragliding")
         }
         self.sport = sport
         workout = next

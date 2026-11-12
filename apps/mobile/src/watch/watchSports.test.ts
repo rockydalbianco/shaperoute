@@ -61,9 +61,15 @@ describe("the watch's sports", () => {
     expect(gym).toMatchObject({ gps: false, guided: false, onWatch: true });
     const swim = WATCH_SPORTS.find((sport) => sport.activity === "swimming");
     expect(swim).toMatchObject({ pace: "swim", onWater: true, onWatch: false });
-    // A flight neither, until a part of its own (TASK-305, ADR-0375).
+    // A flight is offered since TASK-305 part R4, for its heart rate, as
+    // Apple's `.other`, outdoors, with no route to follow.
     const flight = WATCH_SPORTS.find((sport) => sport.activity === "paragliding");
-    expect(flight).toMatchObject({ appleWorkout: 3000, onWatch: false });
+    expect(flight).toMatchObject({
+      appleWorkout: 3000,
+      gps: true,
+      guided: false,
+      onWatch: true,
+    });
     expect(WATCH_SPORTS.filter((sport) => !sport.gps).map((s) => s.activity)).toEqual([
       "gym",
     ]);

@@ -231,6 +231,15 @@ pura sono i 60 s di pausa quando lo stato non si legge.
 - **(c) Cosa dice l'app.** Oggi: «Map data for this area could not be
   downloaded. Try again later.» con «Retry» (`route/problems.ts`); il
   `message` dell'API porta dentro tutta la pagina d'errore di Overpass.
+  **Scelta dell'utente, 2026-11-12: «Sì, cambiala»**. Testo nuovo: «The
+  map service is busy, so this area could not be loaded. Try again in a
+  few minutes.»; in italiano «Il servizio delle mappe è occupato e
+  questa zona non si è potuta caricare. Riprova tra qualche minuto.»
+  Dice che è temporaneo e che non dipende da chi usa l'app; «Retry»
+  resta. Parte C, PR dell'app a parte (`route/problems.ts`, le quattro
+  lingue, i test che citano la frase, `docs/UI.md`); esce con
+  l'aggiornamento completo. Il `message` dell'API si accorcia alla
+  prima riga nella PR della parte B.
 
 ### Parte B: cinque secondi invece di sessanta, e il secondo servizio (una PR)
 

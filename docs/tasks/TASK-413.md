@@ -244,6 +244,7 @@ dall'agente su delega dell'utente):
   vorrebbe una soglia a un passo da Asiago (meglio l'attesa che un «no»
   sbagliato, Coordinatore). Per loro aiuta la parte a sé che rende
   `build_area` più veloce.
+  Soglia e Bolzano e Aosta fuori: sì del Coordinatore, 2026-11-12.
 - **Nessuna impronta cambia**: `snow.py` e `snowshoeing.py` stanno in
   `SNOW_ONLY` (codice ed efficaci `427ed1a16a97` / `8ab61d8e87f9`).
   `engine.zip` li contiene: rifatto nell'ultimo commit.

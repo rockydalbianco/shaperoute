@@ -278,5 +278,10 @@ partenza (`snow.town_bbox`), dalla neve in cache del banco o da Overpass
   risposto 502, 504, 429. Col tempo massimo di 6 s il conteggio spesso non
   arriva: la richiesta va avanti come prima e la volta dopo il rifiuto
   viene dalla neve in cache.
-- **I tempi** (banco sul Mac, col turno del Mac del Coordinatore): da
-  misurare.
+- **Una misura leggera** (un processo, neve di Milano in cache, nessuna
+  rete, 2026-11-12): Milano Duomo, 1 e 3 km, detta «no open snow» in
+  0,3 s; il conteggio dalla neve in cache (16 170 edifici) chiede 0,3 s.
+  Prima della A3 solo `build_area` chiedeva 16–19 s. Asiago: 4 153 edifici
+  contati in 0,05 s, e va avanti come prima.
+- **I tempi del banco** (prima e dopo su tutti i posti, col turno del Mac
+  del Coordinatore): da misurare.

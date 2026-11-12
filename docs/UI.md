@@ -2092,6 +2092,37 @@ telefono dell'account: con un percorso o senza.
   niente di nuovo**: la linea corsa resta unita (spezzarla sulle pause è
   una scelta dell'utente).
 
+### Il calendario delle attività (TASK-462, ADR-0372)
+
+Tutte le attività salvate, di ogni sport, in un calendario: nel profilo e
+in «My activities» (scelta dell'utente «in tutti e due», 2026-11-11). Lo
+legge `GET /me/activity-calendar` (`API.md` «Il calendario delle
+attività»), con i confini dei mesi nel fuso del telefono.
+
+- **Nel profilo**, sotto i totali, una scheda con l'icona del calendario
+  (la Lucide di `assets/ui/tabs/calendar.png`, niente emoji sui tasti),
+  «Calendar ›», i sette giorni da lunedì con le icone degli sport fatti
+  (al più due per giorno, il numero del giorno se vuoto) e «This week:
+  {n} activities · km · tempo». Oggi ha il nome in grassetto; un giorno
+  fatto ha il bordo giallo, anche oggi. Un tocco apre il foglio. Finché
+  l'API non risponde (o un'API senza calendario) la scheda non c'è.
+- **In «My activities»**, se la lista non è vuota, il tasto «Calendar» con
+  la stessa icona apre lo stesso foglio.
+- **Il foglio**: il mese con «‹ ›», i totali del mese, i chip degli sport
+  («All» e quelli fatti, i più frequenti prima; riga che scorre di lato,
+  in `TabSwipeOwners.test.ts`), la griglia del mese con **solo le icone**
+  (scelta dell'utente «icone nel mese, dati nel giorno»); un giorno
+  toccato mostra le sue attività: ora, km, durata, passo e kcal quando ci
+  sono. Un'attività con una traccia apre la sua corsa; una nuotata in
+  piscina (senza traccia) no.
+- **«Last 12 months»**: dodici barre mese per mese (tempo, km, numero)
+  per lo sport del filtro, scelta dell'utente «andamento mese per mese»;
+  una barra toccata porta a quel mese. Sotto, i record personali di
+  quello sport (`personal_bests`, nessun calcolo nuovo).
+- Testi in inglese, tradotti in it/de/es/fr: «Calendar», «Last 12
+  months», «{count} activity/activities».
+- L'alpinismo come sport è un task a parte (TASK-463, ADR-0373).
+
 ## La partenza
 
 È un punto `(lat, lon)` con la sua origine, `gps` o `search` (o `map`,

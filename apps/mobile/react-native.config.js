@@ -21,6 +21,11 @@
  * build (part C), so its library is linked on no platform yet and today's
  * Android build keeps its fingerprint. The app never loads a library
  * without its native module (`src/health/healthModules.ts`).
+ *
+ * The Apple Watch app (TASK-370, A-flip at the 1.1) talks to the iPhone
+ * through react-native-watch-connectivity: an iPhone library, linked on iOS
+ * only, so that the Android build keeps its fingerprint. The app reaches it
+ * only through `src/watch/watchLink.ts`, which finds no module elsewhere.
  */
 const storeBuild = process.env.APP_VARIANT === "production";
 
@@ -36,5 +41,6 @@ module.exports = {
     "@react-native-healthkit/core": iosOnly,
     "react-native-nitro-modules": iosOnly,
     "react-native-health-connect": notYet,
+    "react-native-watch-connectivity": iosOnly,
   },
 };

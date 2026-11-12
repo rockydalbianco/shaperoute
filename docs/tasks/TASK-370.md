@@ -522,6 +522,27 @@ toglie. La linea la rifà il registratore del telefono (`watchRun.ts`:
 `addFix`, `pauseTrack`, `resumeTrack`), con i suoi metri e le sue pause. Da
 provare con l'orologio vero: l'arrivo del file e la notifica.
 
+**A-flip pronta** (2026-11-10, branch `feat/TASK-370-a-flip`, PR aperta da
+NON unire prima del «merge A-flip» del Coordinatore: cambia l'impronta nativa
+e `main` serve ancora gli OTA di produzione su `6f8bba4c`). L'utente ha detto
+«procedi per me» su A-flip e sulla prova al polso con la build 1.1 (via il
+Coordinatore, 2026-11-10). Le due dipendenze, approvate dall'utente il
+2026-10-30: `@bacons/apple-targets` 5.0.0 e `react-native-watch-connectivity`
+2.0.0 (solo iOS in `react-native.config.js`). In `app.json`
+`./plugins/withWatchCore.js` e `["@bacons/apple-targets", {"match":
+"watch"}]`; con TASK-401 B (#862) il `match` diventa
+`"{live-activity,watch}"`, una config sola. `app.config.ts` non cambia:
+`MUW_WATCH=1` ora non aggiunge niente. L'Android resta com'è (decisione
+del Coordinatore, 2026-11-10): `fingerprint.config.js` conta i plugin
+dell'orologio e le credenziali EAS che aggiungono (`extra.eas.build.
+experimental.ios`) solo nell'impronta iOS, lo specchio di `ANDROID_ONLY`, e
+non conta in nessuna i file che quei plugin caricano (test
+`__tests__/iosOnlyFingerprint.test.ts`). Il Team ID Apple (`D6WUSJZKVZ`) sta
+nelle opzioni del plugin. Impronte su copia pulita: iOS da `6f8bba4c` a
+`77a5233c` (uguale con `MUW_WATCH=1`), Android `227457f3` invariata. I passi della 1.1
+(`eas build`, TestFlight, la prova al polso, l'invio ad Apple) sono ognuno un
+sì dell'utente.
+
 ## B5, la corsa libera sull'orologio (2026-11-10)
 
 Dalla prova al polso con la build 11 l'utente ha chiesto la mappa anche

@@ -31,6 +31,46 @@ const ANDROID_ONLY = {
 /** The source only the Android fingerprint has. */
 const ANDROID_SOURCE = "expoAutolinkingConfig:android";
 
+// The Apple Watch app (TASK-370, A-flip at the 1.1): its plugins build a
+// watchOS target in the Xcode project and change nothing of Android, so
+// they count in the iPhone fingerprint only, the mirror of the Android
+// settings above: taken out of the config, and added to the iPhone's
+// native modules, which only the iPhone fingerprint reads. The Android
+// build keeps its runtime and its updates. The files those plugins load
+// (the plugin package, its own dependencies, the watch's target config)
+// count in neither: they build the watch only, whose code no update
+// reaches, and the iPhone's side of it is the native module
+// react-native-watch-connectivity, which iOS autolinking counts.
+// The Live Activity (TASK-401 B, in the 1.1 too) is built by the same
+// plugin: its widget target's files count in neither either, as no update
+// reaches them; its native module in the iPhone app
+// (modules/live-activity, Apple only) is counted by iOS autolinking.
+// So a change to the Live Activity's data goes through
+// modules/live-activity, never only targets/live-activity: else an update
+// could send data the widget of an older build does not read.
+
+/** The plugins for the iPhone only, by name, and the keys of
+ * `ios.infoPlist` an Android build never reads: the Live Activity's
+ * (TASK-401 B, in the 1.1 with the watch). */
+const IOS_ONLY = {
+  plugins: ["./plugins/withWatchCore.js", "@bacons/apple-targets"],
+  infoPlist: ["NSSupportsLiveActivities"],
+};
+
+/** The source only the iPhone fingerprint has. */
+const IOS_SOURCE = "expoAutolinkingConfig:ios";
+
+/** What the watch's plugins load, counted in neither fingerprint. */
+const WATCH_BUILD_PATHS = [
+  "targets/watch/**",
+  "targets/live-activity/**",
+  "plugins/withWatchCore.js",
+  "plugins/watchConfig.js",
+  "../../node_modules/@bacons/**",
+  "../../node_modules/balanced-match/**",
+  "../../node_modules/minipass/**",
+];
+
 /** As @expo/fingerprint writes the config (`stringifyJsonSorted`): keys in
  * order, and lists in the order of their items written out, so the config
  * without the Android settings reads as if they had never been there. */
@@ -96,11 +136,62 @@ function splitAndroidOnly(config) {
   return { config, taken };
 }
 
-/** The Android settings of the app config as it is in the project. */
-function androidOnlySettings() {
+/** The app config as it is in the project, a copy each time. */
+function appConfig() {
   const { getConfig } = require("expo/config");
   const { exp } = getConfig(__dirname, { skipSDKVersionRequirement: true });
-  return splitAndroidOnly(JSON.parse(JSON.stringify(exp))).taken;
+  return JSON.parse(JSON.stringify(exp));
+}
+
+/** The Android settings of the app config as it is in the project. */
+function androidOnlySettings() {
+  return splitAndroidOnly(appConfig()).taken;
+}
+
+/** The name of a plugin of the config. */
+function pluginName(plugin) {
+  return Array.isArray(plugin) ? plugin[0] : plugin;
+}
+
+/** `config` without the iPhone's plugins, what they add to it for EAS
+ * (the watch's credentials, `extra.eas.build.experimental.ios`) and the
+ * iPhone-only keys of `ios.infoPlist`, and what was taken out: nothing when
+ * there is none of it. */
+function splitIosOnly(config) {
+  const plugins = config.plugins ?? [];
+  const taken = plugins.filter((plugin) =>
+    IOS_ONLY.plugins.includes(pluginName(plugin)),
+  );
+  if (taken.length > 0) {
+    config.plugins = plugins.filter(
+      (plugin) => !IOS_ONLY.plugins.includes(pluginName(plugin)),
+    );
+  }
+  const build = config.extra?.eas?.build;
+  const ios = build?.experimental?.ios;
+  if (ios !== undefined) {
+    taken.push({ "extra.eas.build.experimental.ios": ios });
+    delete build.experimental.ios;
+    if (Object.keys(build.experimental).length === 0) {
+      delete build.experimental;
+    }
+    if (Object.keys(build).length === 0) {
+      delete config.extra.eas.build;
+    }
+  }
+  const plist = config.ios?.infoPlist;
+  for (const key of IOS_ONLY.infoPlist) {
+    if (plist !== undefined && plist !== null && key in plist) {
+      taken.push({ [`ios.infoPlist.${key}`]: plist[key] });
+      delete plist[key];
+    }
+  }
+  return { config, taken };
+}
+
+/** The iPhone's plugins of the app config as it is in the project. */
+function iosOnlyPlugins() {
+  return splitIosOnly(appConfig()).taken;
 }
 
 /** @type {import('expo/fingerprint').Config['fileHookTransform']} */
@@ -109,10 +200,16 @@ function fileHookTransform(source, chunk) {
     return chunk;
   }
   if (source.id === "expoConfig") {
-    return stringifyJsonSorted(splitAndroidOnly(JSON.parse(chunk)).config);
+    const config = splitAndroidOnly(JSON.parse(chunk)).config;
+    return stringifyJsonSorted(splitIosOnly(config).config);
   }
   if (source.id === ANDROID_SOURCE) {
     return `${chunk}\n${stringifyJsonSorted(androidOnlySettings())}`;
+  }
+  if (source.id === IOS_SOURCE) {
+    // Nothing added without them: the runtime of a build before A-flip.
+    const plugins = iosOnlyPlugins();
+    return plugins.length === 0 ? chunk : `${chunk}\n${stringifyJsonSorted(plugins)}`;
   }
   return chunk;
 }
@@ -120,10 +217,13 @@ function fileHookTransform(source, chunk) {
 /** @type {import('expo/fingerprint').Config} */
 const config = {
   sourceSkips: ["ExpoConfigVersions", "PackageJsonAndroidAndIosScriptsIfNotContainRun"],
-  ignorePaths: ["eas.json"],
+  ignorePaths: ["eas.json", ...WATCH_BUILD_PATHS],
   fileHookTransform,
 };
 
 module.exports = config;
 module.exports.ANDROID_ONLY = ANDROID_ONLY;
 module.exports.splitAndroidOnly = splitAndroidOnly;
+module.exports.IOS_ONLY = IOS_ONLY;
+module.exports.splitIosOnly = splitIosOnly;
+module.exports.WATCH_BUILD_PATHS = WATCH_BUILD_PATHS;

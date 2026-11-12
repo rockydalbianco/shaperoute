@@ -47,6 +47,9 @@ type Props = {
   chosen: Shape | null;
   /** Gets the shape's name as the runner reads it, as `ShapeTiles` does. */
   onPick: (name: string) => void;
+  /** The shapes of the sport (its profile's `shapes`, TASK-414); every shape
+   * of the catalogue when not said. */
+  shapes?: readonly Shape[];
 };
 
 /**
@@ -55,12 +58,12 @@ type Props = {
  * hides. The last tile, «See all», opens every shape; «Show fewer» closes.
  * Each shape by its outline (`ShapeGlyph`, TASK-444), not by an emoji.
  */
-export function ShapeGrid({ chosen, onPick }: Props) {
+export function ShapeGrid({ chosen, onPick, shapes = SHAPES }: Props) {
   const [open, setOpen] = useState(false);
   // Shown by the tour of the first opening (TASK-266).
   const tourRef = useTourPart(TOUR_PART.shapes);
-  const shown = gridShapes(chosen, open);
-  const more = !open && shown.length < SHAPES.length;
+  const shown = gridShapes(chosen, open, shapes);
+  const more = !open && shown.length < shapes.length;
   return (
     <View ref={tourRef} collapsable={false} style={styles.grid} testID="shape-grid">
       {shown.map((shape) => {
@@ -95,13 +98,13 @@ export function ShapeGrid({ chosen, onPick }: Props) {
           accessibilityLabel={
             open
               ? t("Show fewer shapes")
-              : t("See all {count} shapes", { count: SHAPES.length })
+              : t("See all {count} shapes", { count: shapes.length })
           }
           accessibilityState={{ expanded: open }}
           testID="shape-grid-more"
         >
           <Text style={styles.moreSign}>
-            {open ? "−" : `+${SHAPES.length - shown.length}`}
+            {open ? "−" : `+${shapes.length - shown.length}`}
           </Text>
           <Text style={styles.moreText}>{open ? t("Show fewer") : t("See all")}</Text>
         </Pressable>

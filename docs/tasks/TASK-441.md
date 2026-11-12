@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — parte A in `main` e sul server (1261); parte B1 (parole a penna alzata, 1546): server in `main` (#1184), app nella #1185; sul server e in OTA insieme nell'aggiornamento completo; poi B2
+**Stato**: In lavorazione — parte A in `main` e sul server (1261); parte B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); poi B2
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -309,11 +309,22 @@ apps/mobile/src/route/NearYou.tsx
       `parole-scartate.html`) **prima del merge**.
 - [x] CI verde, merge del Coordinatore (#1184, `defe1357`, 2026-11-12).
 - [x] PR dell'app (#1185).
-- [ ] Passo sul server e OTA, insieme nell'aggiornamento completo (un sì
-      dell'utente per ognuno, dal Coordinatore). Controlli di sola lettura
-      per dopo il passo: `out/TASK-441/SERVER-B1.md` (checkout principale).
+- [x] Passo sul server e OTA, insieme nell'aggiornamento completo (sì
+      dell'utente «Sì, oggi», dal Coordinatore): passo 10 alle 12:20Z del
+      2026-11-12, OTA 12 alle 12:28Z. Controlli di
+      `out/TASK-441/SERVER-B1.md` tutti come attesi (sotto).
 
 ## Dove siamo
+
+*2026-11-12, 12:28Z*: **la B1 è in produzione** («server B1 fatto e OTA
+uscito», Coordinatore). Passo 10 alle 12:20Z, server a `1eb3e5a8`; OTA 12
+di produzione alle 12:28Z con la #1185 (iOS `86033ea0`, Android
+`77e8b96b`), anteprima 12 (`4524060c`); fra passo e OTA 8 minuti. Controlli
+di sola lettura, tutti come attesi: nel log «1546 recommended routes from
+catalog/seed»; da Milano `60 50 50`, 19 parole a penna alzata,
+`milano-star-12000-0`; STAR intera con 1093 punti e i tre tratti a penna
+alzata `[[389, 506], [714, 811], [888, 912]]`; nessun aeroplano fra le
+parole; API a 362 MiB (era 330); nessun Traceback.
 
 *2026-11-12*: **il server della B1 è in `main`** (#1184), entrato col sì
 dell'utente alle 340 parole; l'app è la #1185. In produzione non c'è

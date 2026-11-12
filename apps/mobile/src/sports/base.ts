@@ -1,5 +1,5 @@
 import type { QuantityTypeIdentifierWriteable } from "@kingstinct/react-native-healthkit";
-import type { Activity, RunActivity } from "@shaperoute/shared-types";
+import type { Activity, RunActivity, Shape } from "@shaperoute/shared-types";
 
 import type { Limits } from "../units/distanceInput";
 
@@ -44,6 +44,10 @@ export interface SportProfile {
   noWords?: boolean;
   /** «Draw» offers it no image (TASK-396): a shape or a drawing by hand. */
   noImages?: boolean;
+  /** The only shapes «Draw» offers it, in this order (TASK-414, ADR-0343):
+   * no other shape of the catalogue, none typed, no drawing by hand. None,
+   * every shape. The engine refuses the others (`Activity.shapes`). */
+  shapes?: readonly Shape[];
   /** What «Draw» says over the switch of what it draws, in English: where
    * it is shown, `t(drawNote)`; none, nothing. */
   drawNote?: string;

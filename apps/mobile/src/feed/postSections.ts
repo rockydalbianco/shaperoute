@@ -192,11 +192,19 @@ export function summaryRows(
         : gymPostEnergy(post, sets);
   const profile = profileOf(post, stats);
   const climb = profile === null ? null : profileClimbM(profile);
+  // A race on foot and in the air (TASK-305 part R6b): the time of each.
+  const split = stats?.flight_split ?? null;
   const rows: (PostRow | null)[] = [
     metrics.distance && metres > 0
       ? { label: t("Distance"), value: runDistanceLabel(metres, units) }
       : null,
     seconds > 0 ? { label: t("Time"), value: clockLabel(seconds) } : null,
+    split === null
+      ? null
+      : { label: t("On foot"), value: clockLabel(split.foot.seconds) },
+    split === null
+      ? null
+      : { label: t("In the air"), value: clockLabel(split.air.seconds) },
     rate === null
       ? null
       : {

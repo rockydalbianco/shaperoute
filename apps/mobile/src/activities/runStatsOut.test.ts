@@ -2,6 +2,7 @@ import request from "@shaperoute/shared-types/fixtures/activity-request.json";
 
 import type { ActivityFix, ActivityRequest } from "../api/activities";
 import { MAX_ELEVATION_POINTS } from "../api/runStats";
+import { flightKcal } from "../air/flightSplit";
 import { NO_BODY } from "../body/bodyProfile";
 import { activeKcal } from "../body/energy";
 import type { AccountOutcome } from "../api/accounts";
@@ -11,6 +12,7 @@ import {
   flightFiguresOf,
   MAX_FLIGHT_MPS,
   MAX_SKI_PARTS,
+  racedParts,
   runStatsRequest,
   sendRunStats,
   skiPartsOf,
@@ -321,4 +323,73 @@ test("refused with a flight's figures, they go again without them", async () => 
   expect(again).not.toHaveProperty("max_alt_m");
   expect(again).not.toHaveProperty("top_speed_mps");
   expect(again.elevation).toEqual(request.elevation);
+});
+
+// TASK-305 part R6b: a race on foot and in the air sends its parts, its
+// calories counted part by part, and goes again without them when an API
+// before R6a refuses them.
+
+/** Up on foot 30 minutes at 1.5 m/s climbing 0.25 m/s, then the flight. */
+function race(): ActivityFix[] {
+  const up = Array.from({ length: 1801 }, (_, i) => north(i * 1.5, i, 1500 + i * 0.25));
+  const top = 1800 * 1.5;
+  const fly = flight()
+    .slice(1)
+    .map((fix, i) => ({
+      ...north(top + (i + 1) * 10, 1800 + i + 1, 1950 - (i + 1) * 2),
+    }));
+  return [...up, ...fly];
+}
+
+const RACING = { activity: "paragliding" as const, metres: 8700, seconds: 2400 };
+
+test("a race sends its parts on foot and in the air, and their own calories", () => {
+  const sent = runStatsRequest(run(race()), RACING, NO_BODY, 2026);
+  const parts = sent?.flight_parts ?? [];
+  expect(parts.map((part) => part.kind)).toEqual(["foot", "air"]);
+  expect(parts[0].climb_m).toBeGreaterThan(400);
+  expect(parts[1].max_alt_m).toBeGreaterThan(1900);
+  for (const part of parts) {
+    expect(part.moving_s).toBeLessThanOrEqual((part.end_ms - part.start_ms) / 1000);
+  }
+  const parted = racedParts(run(race()), RACING.metres);
+  expect(sent?.kcal).toBe(flightKcal(parted ?? [], NO_BODY, 2026));
+  // A flight alone is sent as before, without parts.
+  expect(runStatsRequest(run(flight()), FLYING, NO_BODY, 2026)).not.toHaveProperty(
+    "flight_parts",
+  );
+});
+
+test("refused with the parts of a race, the figures go again without them", async () => {
+  const save = jest
+    .fn()
+    .mockResolvedValueOnce(refused)
+    .mockResolvedValueOnce({ kind: "ok", value: STATS });
+  const request = runStatsRequest(
+    run(race()),
+    RACING,
+    NO_BODY,
+    2026,
+  ) as RunStatsRequest;
+  expect(request).toHaveProperty("flight_parts");
+  await sendRunStats("http://api", "tok", "k1", request, {}, save);
+  expect(save).toHaveBeenCalledTimes(2);
+  expect(save.mock.calls[1][3]).not.toHaveProperty("flight_parts");
+});
+
+test("a race's parts go in whole milliseconds, as the API takes them", () => {
+  // The phone's fixes have fractions of a millisecond (seen in the
+  // simulator, 2026-11-12): the API refused them (422).
+  const fractional = race().map((fix, i) => ({
+    ...fix,
+    time_ms: fix.time_ms + 0.25 + i * 1e-3,
+  }));
+  const parts =
+    runStatsRequest(run(fractional), RACING, NO_BODY, 2026)?.flight_parts ?? [];
+  expect(parts.length).toBeGreaterThan(1);
+  for (const part of parts) {
+    expect(Number.isInteger(part.start_ms)).toBe(true);
+    expect(Number.isInteger(part.end_ms)).toBe(true);
+    expect(part.moving_s).toBeLessThanOrEqual((part.end_ms - part.start_ms) / 1000);
+  }
 });

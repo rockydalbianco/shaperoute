@@ -28,6 +28,47 @@ export type RunSplit = {
 /** A point of the profile: how far along the run, how high. */
 export type ElevationPoint = { distance_m: number; altitude_m: number };
 
+/** A part of a flight on foot or in the air as the phone sends it (TASK-305
+ * part R6a, packages/shared-types/src/flightParts.ts): its times on the
+ * clock of the track's `time_ms`. */
+export type FlightPartSent = {
+  kind: "foot" | "air";
+  start_ms: number;
+  end_ms: number;
+  moving_s: number;
+  metres: number;
+  climb_m: number;
+  max_alt_m: number | null;
+};
+
+/** The parts of one kind added up, as the API gives them. */
+export type FlightSideStats = {
+  seconds: number;
+  metres: number;
+  climb_m: number;
+  max_alt_m: number | null;
+};
+
+/** A flight with parts on foot and in the air (`flight_split`): in the
+ * figures of its post and in every list of posts. */
+export type FlightSplitStats = { foot: FlightSideStats; air: FlightSideStats };
+
+function isFlightSide(value: unknown): value is FlightSideStats {
+  return (
+    isRecord(value) &&
+    isNumber(value.seconds) &&
+    isNumber(value.metres) &&
+    isNumber(value.climb_m) &&
+    isNumberOrNull(value.max_alt_m)
+  );
+}
+
+/** A flight's two kinds added up; null or missing for none (TASK-305 part
+ * R6a). */
+export function isFlightSplit(value: unknown): value is FlightSplitStats {
+  return isRecord(value) && isFlightSide(value.foot) && isFlightSide(value.air);
+}
+
 /** packages/shared-types/fixtures/run-stats.json: each field null when the
  * run has none, or when the one who asks may not see it. */
 export type RunStats = {
@@ -42,6 +83,9 @@ export type RunStats = {
   ski_parts?: SkiPart[] | null;
   /** Their descents together, what the day's calories are counted on. */
   ski_descents?: SkiDescents | null;
+  /** A flight's parts on foot and in the air added up (TASK-305 part R6a):
+   * absent from an API before it. */
+  flight_split?: FlightSplitStats | null;
 };
 
 /** PUT /me/activities/{key}/stats: packages/shared-types/fixtures/
@@ -64,6 +108,12 @@ export type RunStatsRequest = {
    */
   max_alt_m?: number;
   top_speed_mps?: number;
+  /**
+   * A race's parts on foot and in the air (TASK-305 part R6a): only to a
+   * server with it, which keeps them for a flight alone; one before it
+   * refuses the whole body (422). Left out, none.
+   */
+  flight_parts?: FlightPartSent[];
 };
 
 /** As many points as the page draws (run_stats.py MAX_ELEVATION_POINTS). */
@@ -139,6 +189,9 @@ export function isRunStats(body: unknown): body is RunStats {
     (body.ski_descents === null ||
       body.ski_descents === undefined ||
       isSkiDescents(body.ski_descents)) &&
+    (body.flight_split === null ||
+      body.flight_split === undefined ||
+      isFlightSplit(body.flight_split)) &&
     (heart === null ||
       heart === undefined ||
       (isRecord(heart) && isNumber(heart.avg_bpm) && isNumber(heart.max_bpm)))
@@ -161,6 +214,7 @@ export function statsOf(detail: DrawingDetail): RunStats | null {
     heart: stats.heart ?? null,
     ski_parts: stats.ski_parts ?? null,
     ski_descents: stats.ski_descents ?? null,
+    flight_split: stats.flight_split ?? null,
   };
 }
 

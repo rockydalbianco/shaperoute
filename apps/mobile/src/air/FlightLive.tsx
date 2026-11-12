@@ -6,7 +6,12 @@ import { climbM } from "../navigation/runMetrics";
 import { openPause, type Track } from "../navigation/trackRecorder";
 import { NO_NUMBER, Tile, TICK_MS, useNow } from "../screens/RunPanel";
 import { color, radius, space } from "../theme/tokens";
+import { paceLabel, runDistanceLabel } from "../units/format";
+import { useUnits } from "../units/useUnits";
 import { flightNow } from "./flight";
+import { flightParts, type PhaseKind, phaseNow } from "./flightParts";
+import { FlightPhaseSwitch } from "./FlightPhaseSwitch";
+import { markPhase, usePhaseMarks } from "./phaseMarks";
 
 /**
  * A flight as it goes (TASK-305 part R2, ADR-0375), over the numbers of the
@@ -15,6 +20,10 @@ import { flightNow } from "./flight";
  * speed are the recording's, under it. In metres, as the ski tour's height;
  * two to a row, as the ski tour's: «Max altitude» is cut short three
  * abreast.
+ *
+ * A race on foot and in the air (TASK-305 part R6b): over them «On foot |
+ * In the air», what the app sees now, and a touch corrects it. On foot the
+ * part's distance, its metres climbed, the altitude and the pace.
  */
 
 /** "+1.2", "-0.8", "0.0". */
@@ -39,8 +48,44 @@ export function FlightLive({ track, live }: { track: Track; live: boolean }) {
   const flight = flightNow(track, at);
   // Once per fix, not once per second.
   const climbed = useMemo(() => climbM(track), [track]);
+  const units = useUnits();
+  const flightMs = track.fixes[0]?.timeMs ?? null;
+  const marks = usePhaseMarks(flightMs);
+  const phase = phaseNow(track, marks);
+  const part = useMemo(() => {
+    const parts = flightParts(track, marks);
+    return parts[parts.length - 1] ?? null;
+  }, [track, marks]);
+  const correct = (kind: PhaseKind) => {
+    if (flightMs !== null) {
+      markPhase(flightMs, Date.now(), kind);
+    }
+  };
+  const switcher =
+    live && flightMs !== null ? (
+      <FlightPhaseSwitch phase={phase} onChange={correct} />
+    ) : null;
+  if (phase === "foot" && part !== null && part.kind === "foot") {
+    return (
+      <View style={styles.box} testID="flight-live">
+        {switcher}
+        <View style={styles.row}>
+          <Tile label={t("Distance")} value={runDistanceLabel(part.metres, units)} />
+          <Tile label={t("Elev. gain")} value={metresText(part.climbM)} unit="m" />
+        </View>
+        <View style={styles.row}>
+          <Tile label={t("Altitude")} value={metresText(flight.altM)} unit="m" />
+          <Tile
+            label={t("Avg pace")}
+            value={paceLabel(part.metres, part.movingMs, units) ?? NO_NUMBER}
+          />
+        </View>
+      </View>
+    );
+  }
   return (
     <View style={styles.box} testID="flight-live">
+      {switcher}
       <View style={styles.row}>
         <Tile label={t("Altitude")} value={metresText(flight.altM)} unit="m" />
         <Tile label={t("Vario")} value={varioText(flight.varioMps)} unit="m/s" />

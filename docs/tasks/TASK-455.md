@@ -430,3 +430,15 @@ Le altre parti scrivono i loro criteri quando partono.
   l'ultimo pulsante dice «Back to the profile»; il foglietto non scurisce
   lo sfondo, come quello di «…». Per «pronta» manca solo `main` unito dopo
   la #1231 di TASK-454 B.
+- 2026-11-12: **parte D scritta** (`feat/TASK-455-d-post-page`): la pagina
+  `site/p/` sul modello di `site/live/` (stessa mappa, stesso MapLibre,
+  nessuna copia), dieci test nuovi, la sezione «La pagina di un post» in
+  `SITO.md`. Vista nel browser a larghezza di telefono con un finto
+  `/post`: un post col titolo, uno senza (il nome fa da titolo), un link
+  che non apre niente. **L'utente sulle tre schermate: «Sì, va bene».**
+  Detto all'utente: sotto il nome la riga «Run · 4.3 km» senza etichette
+  nuove, coi nomi degli sport dell'app; nel footer solo il link alla
+  privacy; se l'API non risponde la pagina riprova tre volte e poi tace; le
+  traduzioni dei tre testi sono dell'agente. Esce dopo la parte C sul
+  server e con la copia del sito (`out/TASK-455/SITO-D.md`), che deve
+  prendere anche `site/p`.

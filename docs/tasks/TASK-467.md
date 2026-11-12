@@ -118,7 +118,7 @@ volta, ognuna con la proposta dell'agente:
 | Profilo, scheda «Sleep», prima del sì | pulsante «Show my sleep from Apple Health» · sotto: «MuW works out a sleep score from your Apple Health sleep data.» |
 | Scheda «Sleep», con i dati | «Sleep score» · «82 · Very good» · «7 h 40 min» · fasi «Awake», «REM», «Light», «Deep» · pulsante «Share» |
 | Sotto il punteggio | «Worked out by MuW from Apple Health data. It can differ from the score in the Health app.» |
-| Primo «Share» | «Share your sleep? Your score, hours slept and sleep stages become a post, seen like your other posts.» · «Share» / «Cancel» |
+| Primo «Share» | «Share your sleep? Your score, hours slept and sleep stages show on your profile, to everyone who can see it.» · «Share» / «Cancel» (riscritto e riapprovato il 2026-11-12, dopo «Sì, profilo adesso»; prima finiva «…become a post, seen like your other posts.») |
 | Post dell'attività, prima di pubblicare | interruttore «Sleep last night» · «82 · Very good · 7 h 40 min» · «Shown in this post. Turn it off to keep it to yourself.» |
 | Nessun dato | «No sleep data for last night in Apple Health.» |
 | Permesso negato o tolto | «MuW can't read your sleep. Allow it in the Health app: your profile › Apps › MuW.» |
@@ -275,11 +275,11 @@ sul server e il contratto):
   `TestClient`.
 - B1 si scrive in un contesto pulito, da `STATUS.md` e da questo file.
 
-**Testo da riapprovare**: il primo «Share» dal profilo. Proposto
-all'utente il 2026-11-12, in attesa della risposta: «Share your sleep?
-Your score, hours slept and sleep stages show on your profile, to
-everyone who can see it.» (al posto di «…become a post, seen like your
-other posts.»).
+**Testo del primo «Share» dal profilo, approvato dall'utente il
+2026-11-12 («Approvo così»)**: «Share your sleep? Your score, hours slept
+and sleep stages show on your profile, to everyone who can see it.» Prende
+il posto di «…become a post, seen like your other posts.» nella tabella
+della risposta 7; lo usa B3, con le traduzioni nelle altre tre lingue.
 
 ### Parte B1 — com'è fatta (2026-11-12, branch `feat/TASK-467-b1-sleep-server`)
 
@@ -402,4 +402,5 @@ richiesta di copia comprende il sonno. Nessun file da toccare.
 - **2026-11-12, B1**: scritta in una sessione, #1211 (migrazione `0072`,
   `sleep.py`, contratto, 42 test). Restano: il merge del Coordinatore, la
   PR di soli documenti (ADR-0380, `STATUS.md`), il passo sul server col sì
-  dell'utente, la risposta dell'utente sul testo del primo «Share».
+  dell'utente. Il testo nuovo del primo «Share» è approvato («Approvo
+  così», 2026-11-12).

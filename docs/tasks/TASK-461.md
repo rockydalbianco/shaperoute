@@ -91,6 +91,13 @@ Sulla tela «Schede palestra guidate»
     insieme (corsa, camminata e hike, bici, nuoto e canoa, montagna)? Ogni
     piano ha una sola meta». Il primo scelto ha la meta, gli altri restano
     «tenermi in forma», con giorni che non crescono verso una meta.
+21. **Schermate di B2b/C2 al simulatore (2026-11-12)**: «Approvo» — l'ingresso
+    coi sette sport, la meta in bici (60 km), «Dove sei oggi?», i giorni,
+    «Per quando?» con la data troppo vicina («Arriva a 54 km», «Sposta la
+    data»), il piano con la scala, il giorno in bici con − e +, l'ultimo
+    passo col promemoria acceso, la gita da 1000 m, e «Oggi» oltre il
+    massimo di «Draw» e per un giorno di salita (`out/TASK-461/shots-b2b`,
+    fuori da git).
 
 ### I testi approvati della parte A (italiano; le altre lingue con lo stesso senso)
 

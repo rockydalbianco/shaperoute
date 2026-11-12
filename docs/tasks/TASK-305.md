@@ -584,3 +584,23 @@ copia»; quella di prima, e60e0b35, in `/srv/getmuw-site.old`): cambiano
 solo `live/texts.js` e `live/view.js`, i cinque file serviti sono uguali al
 commit e i controlli di `out/TASK-305/SITO-R3.md` sono passati. Un volo
 vero sulla pagina si vedrà dopo l'aggiornamento completo con R2 (#1201).
+
+**Esito R2** (2026-11-12): PR #1201 in main (f0909495), con le schermate
+approvate dall'utente («Sì, approvo») dopo la prova nel simulatore
+(iPhone 17e, quota finta in salita e in discesa). «Paragliding» è uno
+sport da scegliere, anche nelle build per lo store; «Draw» mostra solo
+«Record your flight»; l'avviso «Before you fly» una volta per telefono; in
+volo quota, variometro, quota massima e dislivello sopra i numeri della
+registrazione; il link dal vivo riceve `alt_m`, `max_alt_m`, `vario_mps`
+e `speed_mps`; la fine del volo ha i suoi numeri. Dalla prova due
+correzioni: i riquadri due per riga («Max altitude» si tagliava) e la riga
+del volo sotto il bottone (`ChooseScreen.tsx`, col sì del Coordinatore).
+Esce con l'aggiornamento completo del 2026-11-12.
+
+**Cosa resta**:
+
+- Una prova di un volo vero, col link dal vivo aperto da un altro
+  telefono, dopo l'uscita.
+- R4 (il volo sull'orologio, per il battito dal vivo): PR #1218 in bozza,
+  fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
+- Le parti del pianificatore (A1…F) restano Proposte.

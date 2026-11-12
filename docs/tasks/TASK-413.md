@@ -8,7 +8,10 @@ A2 in `main` con la #1130 (`ac08ae94`, mergiata dall'utente il
 controllo in `out/TASK-413/SERVER-A2.md`), l'app nascosta col decimo OTA;
 A3 (la città detta subito) in `main` con la #1238 (`8f5d0516`, unita
 dall'utente il 2026-11-12), sul server col passo 11 (controllo in
-`out/TASK-413/SERVER-A3.md`); poi B
+`out/TASK-413/SERVER-A3.md`), corretta dalla #1266 (`b079f067`: il job
+non passava il conteggio) col passo 12; B e C in `main` con la #1280
+(`335f75f5`, `ready: false`); privacy delle quote nella #1281; accensione
+con `feat/TASK-413-snowshoes-on`
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -213,6 +216,11 @@ Coordinatore, `feat/TASK-413-b-snowshoes-app`):
   dell'utente.
 - **Lo sport resta `ready: false`** nella PR. Si accende con una riga a
   parte, col sì dell'utente dato al Coordinatore, dopo le schermate.
+- **Accensione**: l'utente ha detto «Sì, accendi» alle schermate
+  (2026-11-12, `out/TASK-413/sim/`). La PR piccola
+  `feat/TASK-413-snowshoes-on` porta `fromProfile("snowshoe", true)` e i
+  test delle liste. Si apre dopo che il Coordinatore conferma «passo 12 e
+  prova come attesi», con la riga della privacy (#1281) in `main`.
 - **Anche «Record your day»**: scelta dell'utente del 2026-11-12, «Anche
   Record your day», contro la proposta dell'agente «solo forme». Le
   ciaspole avranno anche la giornata sulla neve da registrare intera, come

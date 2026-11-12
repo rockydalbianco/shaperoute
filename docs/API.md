@@ -3597,6 +3597,27 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
     compresi.
   - **Prima il server, poi l'app**: un server senza R5a rifiuta i due campi
     (422, `extra="forbid"`).
+- **A piedi e in volo, hike & fly** (TASK-305 parte R6a, ADR-0375
+  «precisazione R6»; tipi in `packages/shared-types/src/flightParts.ts`,
+  esempi in `fixtures/flight-parts-request.json` e
+  `fixtures/flight-split.json`, test in `test_flight_parts.py`).
+  - Il telefono può mandare in più `flight_parts`, al più 200,
+    nell'ordine del volo.
+  - Ogni tratto è `{kind: "foot"|"air", start_ms, end_ms, moving_s,
+    metres, climb_m, max_alt_m}`: i tempi sono sull'orologio dei `time_ms`
+    della traccia, `moving_s` non supera la durata del tratto, e
+    `max_alt_m` è `null` senza quote.
+  - Il server li tiene in `stats` **solo per un volo**, come i tratti dello
+    sci: `start_s`/`end_s` in secondi dal primo punto tenuto. Calcola anche
+    `flight_split` `{foot, air}`, ognuno `{seconds, metres, climb_m,
+    max_alt_m}`, ma solo se il volo ha tratti di tutti e due i tipi. Per gli
+    altri sport li ignora.
+  - `GET /drawings/{id}` dà `flight_parts` e `flight_split` dentro
+    `stats`. Ogni lista di post (Feed, profilo, ricerca, gare, stazione) dà
+    `flight_split` sul post, `null` senza tratti a piedi: il Feed ci scrive
+    «On foot {time} · In the air {time}».
+  - **Prima il server, poi l'app**: un server senza R6a rifiuta
+    `flight_parts` (422).
 
 ### Ski names (TASK-375 parte D2, ADR-0319)
 

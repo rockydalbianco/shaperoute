@@ -364,3 +364,23 @@ def test_an_error_of_overpass_is_tried_once_on_the_servers_second_service(
     assert len(graph) > 0
     assert source.asked == [source.usual, "https://overpass.example/api"]
     assert ox.settings.overpass_url == source.usual
+
+
+def test_the_error_says_why_in_a_line_not_with_overpass_whole_page() -> None:
+    page = (
+        "'overpass-api.de' responded: 502 Bad Gateway # 502 Gateway Timeout\n\n"
+        "This Overpass API server is currently at capacity.\n\n## What to do\n"
+    )
+    source = FakeSource([], download=ValueError(page))
+    with pytest.raises(MapDataUnavailableError) as raised:
+        ZoneGraphs(source, read=CountingReader(source)).load(inside(ZONE_A))
+    assert str(raised.value) == (
+        "OpenStreetMap data for this area could not be downloaded: "
+        "'overpass-api.de' responded: 502 Bad Gateway # 502 Gateway Timeout"
+    )
+    # An error that says nothing is named; a long line is cut.
+    for failure, reason in [(OSError(), "OSError"), (ValueError("x" * 500), "x" * 200)]:
+        source = FakeSource([], download=failure)
+        with pytest.raises(MapDataUnavailableError) as raised:
+            ZoneGraphs(source, read=CountingReader(source)).load(inside(ZONE_A))
+        assert str(raised.value).endswith(f"downloaded: {reason}")

@@ -31,6 +31,8 @@ log = logging.getLogger(__name__)
 
 # A zone graph takes hundreds of MB in memory (Milan's pickle alone is 44 MB).
 MAX_ZONES = 2
+# Of what a failed download says, in the error the app gets.
+REASON_CHARS = 200
 
 
 _gc_guard = threading.Lock()
@@ -156,5 +158,14 @@ class ZoneGraphs:
                 return with_second_service(lambda: self._source.load(bbox))
         except Exception as exc:
             raise MapDataUnavailableError(
-                f"OpenStreetMap data for this area could not be downloaded: {exc}"
+                "OpenStreetMap data for this area could not be downloaded: "
+                f"{_reason(exc)}"
             ) from exc
+
+
+def _reason(exc: Exception) -> str:
+    """Why a download failed, in a line: OSMnx's error carries the whole
+    page Overpass answered with (its 502 page is a dozen lines), which is
+    not for the app's error nor for the request log (TASK-471)."""
+    lines = str(exc).strip().splitlines()
+    return lines[0][:REASON_CHARS] if lines else type(exc).__name__

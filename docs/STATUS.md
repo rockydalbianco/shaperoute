@@ -217,6 +217,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   in `main` (#1180, ADR-0377, migrazione `0070`): manca il passo sul server,
   col sì dell'utente. Poi A (le reazioni nel Feed), B (doppio tocco), C2
   (l'app dei commenti, dopo il server). File: — · `tasks/TASK-454.md`
+  **2026-11-12**: C1 sul server (passo 9); A (#1195), C2 (#1199) e la frase
+  della privacy (#1200) in `main`, escono con l'aggiornamento completo.
+  Restano B (doppio tocco, dopo TASK-467 B2) e la prova sul telefono.
 
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al

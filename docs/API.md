@@ -4049,7 +4049,7 @@ nuovo: sono quelli dei messaggi. Tipi in `shared-types`
 (`MessagePostRequest`, `MessagePostCard`, `MESSAGE_POST_KIND`,
 `READS_MESSAGE_POST`), esempio in `fixtures/message-post.json`; il codice
 nel blocco «A post attached» di `messages.py`, la migrazione
-`0075_message_post.sql` (`DATABASE.md`).
+`0074_message_post.sql` (`DATABASE.md`).
 
 - **Mandare**: `POST /conversations/{public_id}/messages` con
   `attachment: { "post_id": "<id del disegno>" }`, da solo: con `media_id`

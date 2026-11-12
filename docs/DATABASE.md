@@ -1268,9 +1268,9 @@ merge):
   BY r.started_at`.
 - Nessuna riga di prima cambia, nessun backfill. Test in `test_sleep.py`.
 
-Migrazione `0075_message_post.sql` (TASK-455 parte A, ADR-0382, `API.md`
-«Un post in un messaggio»; numero provvisorio del Coordinatore, quello vero
-è il primo libero al merge):
+Migrazione `0074_message_post.sql` (TASK-455 parte A, ADR-0382, `API.md`
+«Un post in un messaggio»; il numero è il primo libero in `main` al merge,
+dato dal Coordinatore):
 
 - `messages.attachment` accetta anche `post` (`messages_attachment_check`
   rifatto).

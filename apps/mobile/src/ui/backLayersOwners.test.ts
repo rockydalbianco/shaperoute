@@ -17,7 +17,7 @@ const PAGES: { file: string; closes: RegExp }[] = [
   },
   { file: "bell/BellOverlay.tsx", closes: /useBackCloses\(true, close\)/ },
   { file: "screens/PeopleScreen.tsx", closes: /useBackCloses\(!hidden,/ },
-  { file: "contest/ContestPage.tsx", closes: /useBackCloses\(true, archive \?/ },
+  { file: "contest/ContestPage.tsx", closes: /useBackCloses\(!hidden, archive \?/ },
   {
     file: "screens/ProfileScreen.tsx",
     closes: /useBackCloses\(\s*about !== null \|\| inside \|\| onBack !== undefined,/,

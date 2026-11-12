@@ -90,8 +90,9 @@ export function ContestPage({
   const [lookedFor, setLookedFor] = useState(false);
   const [rules, setRules] = useState(false);
   const [archive, setArchive] = useState(false);
-  // Android's «back» is the «←»: from the archive back to the contest.
-  useBackCloses(true, archive ? () => setArchive(false) : onBack);
+  // Android's «back» is the «←»: from the archive back to the contest;
+  // hidden behind a drawing opened from it, the drawing's.
+  useBackCloses(!hidden, archive ? () => setArchive(false) : onBack);
   const gallery = useContestGallery(contestId, { fetchFn, key: apiKey });
 
   useEffect(() => {

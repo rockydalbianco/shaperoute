@@ -245,7 +245,9 @@ c'erano già.
 - [x] Test di `src/stretch`, `src/i18n`, `src/profile`,
       `__tests__/AppStretch`, `__tests__/AppMorningStretch` verdi; `tsc`
       pulito.
-- [ ] Sì dell'utente sui testi nuovi e sulle traduzioni.
+- [x] Sì dell'utente sui testi nuovi e sulle traduzioni (2026-11-12,
+      «Sì, approvo»: la frase della pagina, «Alarm time», «Length»,
+      «Hour», «Minutes» e le traduzioni dei due testi della notifica).
 - [ ] Schermate dal simulatore, col turno del Coordinatore, e sì
       dell'utente. La notifica vera (suona, apre l'app) si prova sul
       telefono dopo l'OTA: in Expo Go non è la stessa cosa.

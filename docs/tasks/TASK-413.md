@@ -181,6 +181,38 @@ Connect: `EXERCISE_TYPE_SNOWSHOEING`, da verificare sulla libreria. Solo
 JavaScript: l'impronta iOS non si muove. La lista al Coordinatore prima del
 codice.
 
+**Parte B, accordi** (2026-11-12; lista dei file approvata dal
+Coordinatore, `feat/TASK-413-b-snowshoes-app`):
+
+- **I testi sono riapprovati dall'utente** il 2026-11-12, con le parole
+  «Sì, vanno bene». Sono:
+  - l'avviso valanghe intero nelle cinque lingue, mostrato di nuovo perché
+    è un testo di sicurezza;
+  - nome e riga sotto ogni percorso, come nella scelta 4;
+  - i testi nuovi della neve, nelle cinque lingue:
+    - «There is no open snow near this start. Start within 2 km of open
+      snow, away from towns, woods and pistes.» (in miglia, «1 mile»);
+    - «This shape does not fit on the snow here at this distance. It fits
+      at about {km} km.»;
+    - «This shape does not fit on the snow here. Try a shorter distance,
+      another shape, or another start:»;
+    - «{name} · on the snow · target {km} km».
+- **`isPlacedFree`** (`src/snow/snow.ts`, acqua o neve) è un predicato
+  nuovo: `isOnWater` non si allarga. Lo chiedono i punti dove la neve fa
+  come l'acqua:
+  - pezzi a penna alzata;
+  - nessun «Move» del punto di partenza;
+  - nessuna indicazione, né sul telefono né sull'orologio.
+
+  Gli esempi, i posti e gli avvisi dell'acqua restano `isOnWater`. Un test
+  dice che per ogni attività tranne le ciaspole `isPlacedFree` vale quanto
+  `isOnWater`.
+- **Nessun tempo sotto la distanza**: il passo di chi cammina, sulla neve,
+  prometterebbe meno tempo di quello reale. Deciso dall'agente su delega
+  dell'utente.
+- **Lo sport resta `ready: false`** nella PR. Si accende con una riga a
+  parte, col sì dell'utente dato al Coordinatore, dopo le schermate.
+
 **Accordi e scelte della parte A2** (2026-11-10, decise dall'agente su
 delega dell'utente):
 

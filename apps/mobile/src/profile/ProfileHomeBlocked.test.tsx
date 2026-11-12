@@ -7,8 +7,8 @@ import { forgetBlocked, markBlocked } from "../social/blockedNow";
 import { FollowsContext } from "../social/followsDoor";
 import { ProfileHome } from "./ProfileHome";
 
-// «Blocked people» in «Profile» (TASK-121): a row under «Settings»; after a
-// block the lists of who follows are read again.
+// After a block the lists of who follows are read again (TASK-121). The row
+// of «Blocked people» is in «Settings» since TASK-457, not on this page.
 
 const URL = "http://api";
 const signedIn: AccountState = { status: "signedIn", session: session as Session };
@@ -21,7 +21,7 @@ afterEach(() => {
   global.fetch = realFetch;
 });
 
-test("the row is under «Settings», and a block reads the follow lists again", async () => {
+test("no «Blocked people» row here, and a block reads the follow lists again", async () => {
   const fetchFn = jest.fn(async (_url: string) => Response.json(EMPTY));
   global.fetch = fetchFn as unknown as typeof fetch;
   await render(
@@ -41,7 +41,7 @@ test("the row is under «Settings», and a block reads the follow lists again", 
       />
     </FollowsContext.Provider>,
   );
-  expect(screen.getByRole("button", { name: "Blocked people" })).toBeOnTheScreen();
+  expect(screen.queryByRole("button", { name: "Blocked people" })).toBeNull();
   const lists = () =>
     fetchFn.mock.calls.filter(([url]) => String(url).includes("/me/follow")).length;
   await act(async () => {});

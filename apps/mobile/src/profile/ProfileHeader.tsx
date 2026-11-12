@@ -47,8 +47,8 @@ type Props = {
   winner?: boolean;
   /**
    * The badges it earned (TASK-341), after «Winner»; null or left out from an
-   * API older than TASK-341. On one's own (`photoButton` given) also those
-   * still to earn, dimmed.
+   * API older than TASK-341. Those still to earn are not here, on one's own
+   * neither (TASK-457): «Badges» lower down says them.
    */
   badges?: readonly ProfileBadge[] | null;
   /**
@@ -134,7 +134,7 @@ export function ProfileHeader({
       )}
       <Text style={styles.username}>{username}</Text>
       <GamePrizesRow shown={prizes} />
-      <BadgeRow winner={winner} badges={badges} own={photoButton !== undefined} />
+      <BadgeRow winner={winner} badges={badges} />
       <Text style={styles.detail}>{detail}</Text>
       {bio !== "" && <Text style={styles.bio}>{bio}</Text>}
     </View>

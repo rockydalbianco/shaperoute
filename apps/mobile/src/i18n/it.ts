@@ -1591,8 +1591,8 @@ export const IT: Table = {
   "You have not blocked anyone.": "Non hai bloccato nessuno.",
   Unblock: "Sblocca",
   "Unblock {name}": "Sblocca {name}",
-  "You blocked {user}. Unblock them from Blocked people in your profile.":
-    "Hai bloccato {user}. Puoi sbloccarlo da Persone bloccate nel tuo profilo.",
+  "You blocked {user}. Unblock them from Blocked people in Settings.":
+    "Hai bloccato {user}. Puoi sbloccarlo da Persone bloccate nelle Impostazioni.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
@@ -2570,4 +2570,16 @@ export const IT: Table = {
   "No shapes in the air yet: MuW records your flight.":
     "Niente forme in volo, per ora: MuW registra il tuo volo.",
   "White: where you flew.": "Bianco: dove hai volato.",
+
+  // src/profile/FirstStep.tsx, BadgesSection.tsx (TASK-457: a new profile)
+  "Your first drawing": "Il tuo primo disegno",
+  "Start from a route that already draws a shape near you.":
+    "Parti da un percorso che disegna già una forma vicino a te.",
+  "Find a route near you": "Trova un percorso vicino a te",
+  "Record a run with MuW and publish its drawing.":
+    "Registra una corsa con MuW e pubblica il suo disegno.",
+  "Publish 10 drawings of runs recorded with MuW.":
+    "Pubblica 10 disegni di corse registrate con MuW.",
+  "Publish the drawing of a run of {distance} or more.":
+    "Pubblica il disegno di una corsa di almeno {distance}.",
 };

@@ -1,4 +1,4 @@
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, type Ref, useRef, useState } from "react";
 import { Image, type ImageSourcePropType, StyleSheet, Text, View } from "react-native";
 
 import { t, tPlural } from "../i18n";
@@ -19,7 +19,7 @@ import {
 } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
 import type { ShownPost } from "./feedPosts";
-import { PostReactions, type RowBox } from "./PostReactions";
+import { PostReactions, type PostReactionsHandle, type RowBox } from "./PostReactions";
 import { PostShareSheet, usePostSendable } from "./PostShareSheet";
 
 /** The actions' icons, from Lucide (ISC, assets/ui/icons/LICENSE-lucide.txt)
@@ -60,6 +60,9 @@ type Props = {
   mine: boolean;
   /** «Edit & run»; none, no button (on the snow, at the gym, no line). */
   onEditRun?: () => void;
+  /** For the picture of the post, drawn by who draws this row: two taps on
+   * it are the super like (TASK-454 part B). */
+  reactionsHandle?: Ref<PostReactionsHandle>;
 };
 
 /**
@@ -78,7 +81,7 @@ type Props = {
  * reactions the post has, as «Comment» does. A super like's comment is one
  * of the post's comments, so they are read again once it went.
  */
-export function PostActions({ post, mine, onEditRun }: Props) {
+export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
   const [reacting, setReacting] = useState(false);
   // Where the row is on the screen, asked at each «Like»: the bar hangs
   // over it, in a Modal of its own.
@@ -184,6 +187,7 @@ export function PostActions({ post, mine, onEditRun }: Props) {
         row={rowBox}
         onClose={() => setReacting(false)}
         onSuperLiked={comments.reload}
+        handle={reactionsHandle}
       />
       {commented && (
         <CommentsSheet

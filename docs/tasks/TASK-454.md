@@ -156,6 +156,8 @@ apps/mobile/src/feed/PostPage.test.tsx               (idem)
 apps/mobile/src/contest/themedContest.test.tsx       (idem; sì del Coordinatore, 2026-11-12)
 apps/mobile/src/screens/FeedScreenContest.test.tsx   (idem)
 apps/mobile/src/screens/FeedScreenPosts.test.tsx     (idem)
+apps/mobile/__tests__/AppDrawAgain.test.tsx          (idem; rossi nella CI del 2026-11-12)
+apps/mobile/__tests__/AppDrawingStart.test.tsx       (idem)
 docs/UI.md
 docs/tasks/TASK-454.md
 ```
@@ -528,7 +530,10 @@ schermate del Feed, `src/contest`, `src/health`: 85 file, 606 test verdi;
 in più `SuperLikeSheet`, `DrawingReactions` e gli altri file che disegnano
 una card (47 file, 414 test); `tsc`, `eslint` e Prettier puliti. Otto test
 esistenti ora aspettano dopo il tocco singolo (una riga ciascuno, sette
-file; tre fuori dal Feed, col sì del Coordinatore).
+file; tre fuori dal Feed, col sì del Coordinatore). La CI ne ha trovati
+altri sei in due file dell'app intera (`__tests__/AppDrawAgain`,
+`AppDrawingStart`): aspettavano la descrizione del disegno, che c'è anche
+nella pagina del post, e ora aspettano «Start», che è solo sulla mappa.
 
 ## Cosa resta di questo task
 

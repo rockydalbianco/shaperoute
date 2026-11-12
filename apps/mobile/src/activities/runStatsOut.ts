@@ -2,7 +2,7 @@ import type { RunActivity, SkiPartRequest } from "@shaperoute/shared-types";
 
 import { flightNow, isFlight, topSpeedMps } from "../air/flight";
 import { type FlightPart, flightParts, flightSplit } from "../air/flightParts";
-import { flightKcal } from "../air/flightSplit";
+import { airTopSpeedMps, flightKcal } from "../air/flightSplit";
 import { phaseMarksOf } from "../air/phaseMarks";
 import type { AccountOutcome } from "../api/accounts";
 import type { ActivityPause, ActivityRequest } from "../api/activities";
@@ -91,13 +91,16 @@ export function racedParts(
   return flightSplit(parts) === null ? null : parts;
 }
 
-/** A part as the API takes it (TASK-305 part R6a). */
+/** A part as the API takes it (TASK-305 part R6a): its times in whole
+ * milliseconds, as the API wants them; the phone's fixes have fractions. */
 function sentPart(part: FlightPart): FlightPartSent {
-  const lasts = Math.max(0, part.endMs - part.startMs) / 1000;
+  const start = Math.round(part.startMs);
+  const end = Math.max(start, Math.round(part.endMs));
+  const lasts = (end - start) / 1000;
   return {
     kind: part.kind,
-    start_ms: part.startMs,
-    end_ms: part.endMs,
+    start_ms: start,
+    end_ms: end,
     moving_s: Math.min(tenth(part.movingMs / 1000), lasts),
     metres: tenth(part.metres),
     climb_m: Math.round(part.climbM ?? 0),
@@ -125,7 +128,9 @@ export function flightFiguresOf(
     return {};
   }
   const highest = flightNow(track, last.timeMs).maxAltM;
-  const top = topSpeedMps(track);
+  // A race's top speed is its parts in the air alone (TASK-305 part R6b).
+  const raced = racedParts(request, metres);
+  const top = raced === null ? topSpeedMps(track) : airTopSpeedMps(track, raced);
   return {
     ...(highest === null
       ? {}

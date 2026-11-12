@@ -21,7 +21,7 @@ import { runDistanceLabel } from "../units/format";
 import { speedUnit } from "../units/runFormat";
 import { flightNow, topSpeedMps } from "./flight";
 import { flightParts, flightSplit, type FlightSide } from "./flightParts";
-import { flightKcal } from "./flightSplit";
+import { airTopSpeedMps, flightKcal } from "./flightSplit";
 import { phaseMarksOf } from "./phaseMarks";
 
 /**
@@ -60,6 +60,8 @@ export function FlightFinishCard({ run, activity, onResume, onDone }: Props) {
     return flightParts(track, first === undefined ? [] : phaseMarksOf(first));
   }, [track]);
   const split = flightSplit(parts);
+  // A race: the speed and the time of the flight are its parts in the air.
+  const flightTop = split === null ? top : airTopSpeedMps(track, parts);
   const energy =
     split === null || numbers.energy === null
       ? numbers.energy
@@ -102,23 +104,42 @@ export function FlightFinishCard({ run, activity, onResume, onDone }: Props) {
           </View>
         </View>
       )}
-      {/* Two to a row: «Max altitude» is cut short three abreast. */}
-      <View style={styles.tiles}>
-        <Tile label={t("Flight time")} value={numbers.time} />
-        <Tile
-          label={t("Max altitude")}
-          value={highest === null ? NO_NUMBER : String(highest)}
-          unit="m"
-        />
-      </View>
-      <View style={styles.tiles}>
-        <Tile label={t("Elev. gain")} value={numbers.climb} unit="m" />
-        <Tile
-          label={t("Top speed")}
-          value={speedOf(top, numbers.units)}
-          unit={speedUnit(numbers.units)}
-        />
-      </View>
+      {/* Two to a row: «Max altitude» is cut short three abreast. A race
+          says its times and climb in its lines over them: one row less, so
+          «Save» and «Discard» stay on the screen under the card. */}
+      {split === null ? (
+        <>
+          <View style={styles.tiles}>
+            <Tile label={t("Flight time")} value={numbers.time} />
+            <Tile
+              label={t("Max altitude")}
+              value={highest === null ? NO_NUMBER : String(highest)}
+              unit="m"
+            />
+          </View>
+          <View style={styles.tiles}>
+            <Tile label={t("Elev. gain")} value={numbers.climb} unit="m" />
+            <Tile
+              label={t("Top speed")}
+              value={speedOf(flightTop, numbers.units)}
+              unit={speedUnit(numbers.units)}
+            />
+          </View>
+        </>
+      ) : (
+        <View style={styles.tiles}>
+          <Tile
+            label={t("Max altitude")}
+            value={highest === null ? NO_NUMBER : String(highest)}
+            unit="m"
+          />
+          <Tile
+            label={t("Top speed")}
+            value={speedOf(flightTop, numbers.units)}
+            unit={speedUnit(numbers.units)}
+          />
+        </View>
+      )}
       {energy !== null && (
         <View style={styles.tiles}>
           <Tile label={t("Calories")} value={energy} unit="kcal" energy />

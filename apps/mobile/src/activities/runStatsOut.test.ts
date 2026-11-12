@@ -359,3 +359,20 @@ test("refused with the parts of a race, the figures go again without them", asyn
   expect(save).toHaveBeenCalledTimes(2);
   expect(save.mock.calls[1][3]).not.toHaveProperty("flight_parts");
 });
+
+test("a race's parts go in whole milliseconds, as the API takes them", () => {
+  // The phone's fixes have fractions of a millisecond (seen in the
+  // simulator, 2026-11-12): the API refused them (422).
+  const fractional = race().map((fix, i) => ({
+    ...fix,
+    time_ms: fix.time_ms + 0.25 + i * 1e-3,
+  }));
+  const parts =
+    runStatsRequest(run(fractional), RACING, NO_BODY, 2026)?.flight_parts ?? [];
+  expect(parts.length).toBeGreaterThan(1);
+  for (const part of parts) {
+    expect(Number.isInteger(part.start_ms)).toBe(true);
+    expect(Number.isInteger(part.end_ms)).toBe(true);
+    expect(part.moving_s).toBeLessThanOrEqual((part.end_ms - part.start_ms) / 1000);
+  }
+});

@@ -8,6 +8,8 @@ import { t } from "../i18n";
 import { clockLabel } from "../navigation/freeRun";
 import { isShown } from "../feed/feedPosts";
 import type { SamplePost } from "../feed/sampleFeed";
+import type { Track } from "../navigation/trackRecorder";
+import { topSpeedMps } from "./flight";
 import type { FlightPart } from "./flightParts";
 
 /**
@@ -43,6 +45,28 @@ export function postSplit(post: SamplePost): FlightSplitStats | null {
 /** «On foot 1:58:40 · In the air 1:43:30» of a post's split. */
 export function postSplitLine(split: FlightSplitStats): string {
   return splitLine(split.foot.seconds * 1000, split.air.seconds * 1000);
+}
+
+/** The top speed of a race's parts in the air alone: the car of the
+ * retrieve, on foot, is no speed of the flight. Null without one. */
+export function airTopSpeedMps(
+  track: Track,
+  parts: readonly FlightPart[],
+): number | null {
+  let top: number | null = null;
+  for (const part of parts) {
+    if (part.kind !== "air") {
+      continue;
+    }
+    const fixes = track.fixes.filter(
+      (fix) => fix.timeMs >= part.startMs && fix.timeMs <= part.endMs,
+    );
+    const speed = topSpeedMps({ fixes, distanceM: part.metres });
+    if (speed !== null) {
+      top = top === null ? speed : Math.max(top, speed);
+    }
+  }
+  return top;
 }
 
 /** The activity a part's effort is counted as. */

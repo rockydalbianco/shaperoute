@@ -262,6 +262,27 @@ quando si cambiano. In italiano la scheda di più settimane è il «piano»
 («Nuovo piano», «I miei piani»); il singolo allenamento resta «scheda».
 `SportsDoor.tsx`, `bodyweight.ts`.
 
+**Distanza e montagna nella guida** (TASK-461 B2b/C2). L'ingresso offre
+anche Corsa («verso 5, 10, 21 o 42 km»), Camminata e hike, Bici, Nuoto e
+canoa, Montagna; se ne sceglie più d'uno, il primo ha la meta e gli altri
+restano «tenermi in forma» (scelta dell'utente del 2026-11-12, «Più
+d'uno»). Per quel primo sport: «Dove vuoi arrivare?» (le distanze
+proposte, «Altro», «Solo tenermi in forma»; per il nuoto piscina o acque
+libere) o «Che gita vuoi fare?» (500–2000 m di salita); «Dove sei oggi?»
+(il più lungo dell'ultimo mese, già scritto dalle attività, o «Comincio da
+zero»); dopo i giorni, «Per quando?» (le settimane le conta il piano, o una
+data: troppo vicina, «Per 10 km servono 8 settimane, ne hai 5» con «Arriva
+a 8 km» e «Sposta la data»). La corsa parte da «Solo tenermi in forma», come
+i giorni di corsa di prima, coi ritmi di TASK-452. Il piano mostra la scala
+(«Verso i 60 km · 11 settimane»), i giorni fuori si cambiano con − e +.
+«Oggi» di un giorno fuori compare nella pagina «Palestra» e nella pagina
+«Draw» del suo sport: entro il massimo di «Draw» «Disegna 20 km» e
+«Registra libero», oltre «Draw disegna al massimo 30 km» con «Registra
+libero · 45 km» per primo; un giorno di salita «Cerca almeno 600 m di
+salita». «Ricordamelo alle 8» all'ultimo passo: una notifica del telefono
+alle 8 nei giorni dei piani (`planReminder.ts`). `TargetSteps.tsx`,
+`outingDay.ts`, `PlanTodayCard.tsx`, `OutingDayEditor.tsx`.
+
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
 In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una

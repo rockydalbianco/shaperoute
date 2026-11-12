@@ -234,3 +234,68 @@ più volte (Asiago, Rolle, Milano): lo script riprova dopo 90 s.
 
 - La neve scaricata dal server alla prima richiesta di un posto, e i tempi
   sul server (la città sopra).
+
+## La parte A3: la città detta subito (2026-11-12)
+
+Sul server, al passo 8, Trento (cuore di 3 km, la prima volta) ha risposto
+`shape_not_drawable` in 76,4 s. Al banco sul Mac (Milano dalla cache,
+83.000 elementi) la ricerca costa 0,7 s e `snow.build_area` 16–19 s,
+quasi tutto shapely elemento per elemento; sul server c'è in più lo
+scarico della prima volta. Un controllo «poca neve» prima della ricerca
+non serve: il tempo va prima. A3 conta gli edifici attorno alla partenza
+prima di leggere la neve.
+
+**Gli edifici per km²** nel riquadro di 4,8 km di lato attorno alla
+partenza (`snow.town_bbox`), dalla neve in cache del banco o da Overpass
+(`out count`, una richiesta per volta, 2026-11-12; fixture
+`snow_built_up.json`):
+
+| Con neve | per km² | Città | per km² |
+|---|---|---|---|
+| Asiago | 180 | Milano (Duomo) | 700 |
+| Cortina d'Ampezzo | 145 | Trento | 350 |
+| Bormio | 114 | Belluno | 345 |
+| Cavalese | 100 | Aosta | 247 |
+| Pinzolo | 77 | Bolzano | 207 |
+| Ortisei | 75 | | |
+| Livigno | 63 | | |
+| Folgaria | 54 | | |
+| Selva di Val Gardena | 52 | | |
+| Moena | 45 | | |
+| Canazei | 43 | | |
+| Madonna di Campiglio | 26 | | |
+| Sestriere | 20 | | |
+| Viote del Monte Bondone | 6 | | |
+| Passo Rolle, Passo Lavazè | 2 | | |
+
+- **Soglia 280**: dette subito Milano, Trento (1,25 volte la soglia) e
+  Belluno; Asiago resta al 64%. Bolzano e Aosta vanno avanti come prima:
+  una soglia sotto 200 starebbe all'11% da Asiago.
+- **Il riquadro della richiesta non va**: cresce con la forma, e per un
+  cuore di 3 km Bolzano scendeva a 135 per km² (le montagne attorno),
+  sotto Asiago (128–170 a seconda della distanza).
+- **Overpass, stanotte**: anche un `out count` ha chiesto 30–50 s, o ha
+  risposto 502, 504, 429. Col tempo massimo di 6 s il conteggio spesso non
+  arriva: la richiesta va avanti come prima e la volta dopo il rifiuto
+  viene dalla neve in cache.
+- **Una misura leggera** (un processo, neve di Milano in cache, nessuna
+  rete, 2026-11-12): Milano Duomo, 1 e 3 km, detta «no open snow» in
+  0,3 s; il conteggio dalla neve in cache (16 170 edifici) chiede 0,3 s.
+  Prima della A3 solo `build_area` chiedeva 16–19 s. Asiago: 4 153 edifici
+  contati in 0,05 s, e va avanti come prima.
+- **Il banco** (2026-11-12, turno del Mac del Coordinatore, dalla cache,
+  `out/TASK-413/results/a3-compare.txt`): 72 richieste (6 posti, cerchio,
+  cuore e stella, da 0,5 a 3 km), prima col motore di main e dopo con la A3.
+  Le 60 dei cinque posti con neve sono **identiche** (esito, lunghezza,
+  scala, spostamento, tratto, accesso). Le 12 di Milano erano già
+  `shape_not_drawable` (la forma non ci sta) e ora lo sono subito, «no open
+  snow».
+
+| Posto | Prima | Dopo |
+|---|---|---|
+| Milano | 67,0 s (4,7–6,8 a richiesta) | 3,3 s (0,27–0,32) |
+| Asiago | 24,9 s | 24,3 s |
+| Fiemme | 19,5 s | 16,1 s |
+| Lavazè | 10,3 s | 10,4 s |
+| Bondone | 9,5 s | 9,4 s |
+| Rolle | 9,2 s | 9,5 s |

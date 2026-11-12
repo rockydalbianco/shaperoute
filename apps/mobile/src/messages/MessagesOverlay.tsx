@@ -1,12 +1,4 @@
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t } from "../i18n";
@@ -19,6 +11,7 @@ import {
   space,
 } from "../theme/tokens";
 import { useBackCloses } from "../ui/backLayers";
+import { EdgeKeyboardAvoidingView, useEdgeBack } from "../ui/EdgeBack";
 import { ConversationList } from "./ConversationList";
 import { ConversationScreen } from "./ConversationScreen";
 import { useMessagesDoor } from "./messagesDoor";
@@ -41,15 +34,19 @@ export function MessagesOverlay({ fetchFn, apiKey }: Props) {
   const { screen, back, openConversation } = useMessagesDoor();
   // Android's «back» is the «←».
   useBackCloses(screen !== null, back);
+  // And on iOS the way back from the left edge (ADR-0384).
+  const edge = useEdgeBack(back, screen !== null);
   if (screen === null) {
     return null;
   }
   const padding = { paddingTop: insets.top + space.lg, paddingBottom: insets.bottom };
   return (
-    <KeyboardAvoidingView
-      style={[StyleSheet.absoluteFill, styles.screen]}
+    <EdgeKeyboardAvoidingView
+      style={[StyleSheet.absoluteFill, styles.screen, edge.style]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
+      {...edge.handlers}
     >
+      {edge.shade}
       {screen.kind === "conversation" ? (
         <View style={[styles.conversation, padding]}>
           <ConversationScreen
@@ -90,7 +87,7 @@ export function MessagesOverlay({ fetchFn, apiKey }: Props) {
           />
         </ScrollView>
       )}
-    </KeyboardAvoidingView>
+    </EdgeKeyboardAvoidingView>
   );
 }
 

@@ -1303,6 +1303,23 @@ com'era, con «Your reaction wasn't saved. Check the connection.» sotto la
 riga. Senza account o senza reazioni da leggere «Like» resta e non apre
 niente.
 
+**Il doppio tocco sull'immagine di un post è il suo super like** (TASK-454
+parte B, scelta dell'utente del 2026-11-11), come sulla mappa del disegno
+aperto: **nel Feed** sull'immagine della card (il disegno, la scheda, una
+foto), **nella pagina del post** sulla mappa. Si apre il foglio «Super
+like» col suo commento, senza passare dalla barra, e **niente conta prima
+dell'invio**; mandato, «Like» mostra il cuore di MuW e «Comment · N» sale.
+**Col super like già messo** compare il cuore grande per un attimo (0,9 s)
+e non cambia niente: il doppio tocco non lo toglie mai. Vale anche su un
+post proprio, come il cuore della barra. **Il tocco singolo aspetta 300 ms**
+per sapere che è solo, poi fa quello che faceva: apre il post, la foto a
+tutto schermo, il disegno sulla mappa. Aspetta solo dove ci sono i quattro
+pulsanti: gli esempi rispondono subito, e così il nome dell'autore, «…» e i
+pulsanti. Senza account o senza reazioni da leggere il doppio tocco non fa
+niente. Con VoiceOver il doppio tocco apre il post, com'è suo, e il super
+like si mette dal cuore della barra. **Con «Riduci movimento»** il cuore
+grande compare alla sua misura, senza crescere, qui e sul disegno aperto.
+
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 
 - **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,
@@ -1781,6 +1798,31 @@ l'app, come «Find friends»:
   linea (`RouteThumb`), «🗺️ Drawing» e «Star · 5.1 km»; un tocco lo apre
   sulla mappa come un preferito, con «Start», «Export GPX», il cuore e
   «Draw it near me», e «Back to the list» torna alla conversazione.
+- **I post** (TASK-455 parte B, ADR-0382; scelte e testi dell'utente del
+  2026-11-12). Il disegno **di un altro** non si copia mai in un messaggio:
+  si manda come **post**, un rimando che il server risolve per chi legge.
+  Sulla scheda di un disegno altrui «Send to a friend» manda il post (anche
+  di un disegno «Followers»; sul proprio resta la copia di sopra); sotto un
+  post del Feed lo fa «Share» (sotto, «Share» sui post). «Send to…» è la
+  stessa lista; per un post «Followers» di un altro dice prima «Only people
+  who follow {user} can open it.». **Nella conversazione** il post è la
+  sua scheda (`messages/PostCard.tsx`): la linea, il titolo (o quello che
+  disegna) e «by {user} · 4.0 km»; un tocco chiude la conversazione e apre
+  il post **come lo apre una notifica**, sulla mappa con la sua scheda
+  (foto, commenti, reazioni, «Start», «Draw it near me», «Edit the
+  drawing»). Se chi legge non può vederlo, o non c'è più, al posto della
+  scheda c'è «This post is no longer available.», che non si tocca: vale
+  anche per chi l'ha mandato. Nella lista «🗺️ Post»; VoiceOver legge
+  titolo, autore e km. Il «+» della conversazione non ha i post. L'app
+  dice `post` in `X-MuW-Reads` solo nelle chiamate dei messaggi
+  (`api/messages.ts`).
+- **«Share» sui post** (TASK-455 parte B; scelta 2 dell'utente): sotto
+  ogni post «Share» apre un foglietto (`feed/PostShareSheet.tsx`) con
+  «Send to a friend» e, sui propri, «Poster and video» (quello che «Share»
+  apriva prima); «Cancel» lo chiude, e chiudere quello che una voce apre
+  chiude anche il foglietto. Senza i messaggi (nessun account, o un'API di
+  prima) sui post altrui «Share» non c'è. La voce del link arriva con la
+  parte E.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -4408,7 +4450,12 @@ acceso. Testi approvati dall'utente l'11 novembre 2026.
   settings», `health/SleepPostSwitch.tsx`): lo stesso interruttore, che va
   all'API subito (non aspetta «Save»); la scheda e la riga seguono
   all'istante.
-- Palestra e nuoto in vasca hanno un form loro: arrivano con la parte B2b.
+- **Anche a fine allenamento in palestra e a fine nuoto in vasca** (parte
+  B2b, `gym/GymEnd.tsx` e `pool/PoolSwimEnd.tsx`): lo stesso interruttore,
+  sotto il form del post e «Save to Apple Health», sopra «Save»; la notte è
+  quella prima dell'inizio dell'allenamento o del nuoto. Stesse regole:
+  parte acceso, solo con un post che altri vedono, mai una richiesta di
+  permesso. Con la costante spenta le due schermate sono com'erano.
 
 ## Il post da condividere (TASK-231, ADR-0194)
 
@@ -4658,8 +4705,9 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   distanza dell'API, per difetto al mezzo km); una che non ci sta fra 1 e
   5 km «This shape does not fit on the water here. Try a shorter distance,
   another shape, or another start:» con le forme. Senza i dati dell'acqua
-  (Overpass che rifiuta) il testo è quello della mappa, «Map data for this
-  area could not be downloaded. Try again later.».
+  (Overpass che rifiuta) il testo è quello della mappa, «The map service
+  is busy, so this area could not be loaded. Try again in a few minutes.»
+  (TASK-471).
 - **«Explore»** (scelta dell'utente; come la corsa dal TASK-233, ADR-0196):
   al posto di città, esempi di corsa e percorsi consigliati, la pagina «On
   the water», «Shapes to paddle, within 1 km of the shore», con il cuore di
@@ -4784,8 +4832,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   partenza entro 3 km dal paese.
   Altrove, per esempio al mare lontano dai posti dell'elenco,
   la scarica da Overpass, se risponde, e la prima volta
-  ci mette minuti, altrimenti «Map data for this area could not be
-  downloaded.». **Un elenco nuovo vuole prima la sua acqua sul server**
+  ci mette minuti, altrimenti «The map service is busy, so this area
+  could not be loaded.». **Un elenco nuovo vuole prima la sua acqua sul server**
   (`MAPS.md`, «I laghi di Explore»).
 - Testi nuovi **da confermare con l'utente**: «On the water, a shape of the
   catalogue.», «on the water», «Paddle without a route», i testi d'errore
@@ -4958,7 +5006,7 @@ c'è anche l'errore.
 | Forma che non ci sta, senza distanza (somiglianza bassa, o distanza fuori da quelle di «Draw»: oltre 21 km, in bici fuori da 10–30) | This shape does not fit the roads here. Try another shape, or another start: e le forme del catalogo come pulsanti |
 | Contorno di un'immagine che non ci sta (TASK-073) | come per la forma, con «This image…»; senza distanza: This outline does not fit the roads here. Try another distance, another start, or a simpler picture. (niente forme da toccare) |
 | Parola che non ci sta (TASK-057) | come per la forma, con «This word…»; senza distanza: This word does not fit the roads here. Try a shorter word, or another start. (niente forme da toccare) |
-| Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
+| Dati OSM non scaricabili (`map_data_unavailable`) | The map service is busy, so this area could not be loaded. Try again in a few minutes. (TASK-471: dice che è temporaneo e non dipende da chi usa l'app) |
 | Errore del motore (`engine_error`) | The route could not be drawn. Try again, or try another start. e «Try again» |
 | L'AI non risponde (`ai_unavailable`) | This word cannot be read right now. Try one of these: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun. |
 | `invalid_request`, `http_error`, risposta illeggibile | Something went wrong on our side. Try again in a moment. e «Try again» (anche un percorso in bici chiesto a un'API più vecchia di TASK-190, parte B, che conosce solo `running`; il codice e il testo dell'API sotto, solo nelle build di sviluppo) |
@@ -5083,7 +5131,9 @@ c'è anche l'errore.
   vedono**: spento, o con «Only me», non parte niente e niente si tiene.
   Finché l'API non ha l'attività il riassunto aspetta in
   `sleep-outbox.json` (al più 30 giorni, poi si butta); una notte che
-  l'API rifiuta si butta, non si rimanda. Il sì a leggere il sonno sta in
+  l'API rifiuta si butta, non si rimanda. Vale lo stesso per un
+  allenamento in palestra e un nuoto in vasca, che aspettano nelle loro
+  code (`gym-outbox.json`, `pool-outbox.json`): la notte parte dopo di loro. Il sì a leggere il sonno sta in
   `sleep-health.json`.
 
 ## Quando la mappa non si carica

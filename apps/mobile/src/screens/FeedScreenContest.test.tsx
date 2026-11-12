@@ -252,7 +252,8 @@ test("once the winner is proclaimed, the winning post is at the top, with the ba
   // The post as those of the page: a tap opens it whole.
   const [winner] = screen.getAllByTestId("feed-post");
   await fireEvent.press(winner);
-  expect(opens).toHaveBeenCalledWith(CLOSED.winner?.drawing);
+  // The tap waits to know it is alone (TASK-454 part B).
+  await waitFor(() => expect(opens).toHaveBeenCalledWith(CLOSED.winner?.drawing));
 });
 
 test("a contest closed without a winner, or whose winning run was deleted, shows nothing", async () => {

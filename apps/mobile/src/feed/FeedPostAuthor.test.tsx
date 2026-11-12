@@ -1,7 +1,7 @@
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { FeedPost as Post, Session } from "@shaperoute/shared-types";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 import type { AccountState } from "../account/useAccount";
 import { forgetBlocked } from "../social/blockedNow";
@@ -90,7 +90,8 @@ test("the end of a swipe across the name opens nothing", async () => {
 test("the rest of the card still opens the route", async () => {
   const { openProfile, onOpen } = await show(shownPost(OTHERS));
   await fireEvent.press(screen.getByTestId("feed-post"));
-  expect(onOpen).toHaveBeenCalledTimes(1);
+  // The tap waits to know it is alone (TASK-454 part B).
+  await waitFor(() => expect(onOpen).toHaveBeenCalledTimes(1));
   expect(openProfile).not.toHaveBeenCalled();
 });
 

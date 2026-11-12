@@ -409,3 +409,16 @@ Le altre parti scrivono i loro criteri quando partono.
   `PostPage.test.tsx` e `snowFeed.test.tsx` non sono toccati e passano:
   senza i messaggi «Share» resta solo sui propri post. Mancano gli
   screenshot col turno del simulatore e il sì dell'utente.
+- 2026-11-12: **prova al simulatore** (iPhone 17e, Expo Go, API locale con
+  la `0074` su un database usa e getta, quattro account finti). Visti
+  sullo schermo: «Share» sul post di un altro e il suo foglietto, «Send
+  to…» e «Sent to…», il foglietto sul proprio post con «Poster and video»,
+  la lista con «🗺️ Post», la chat con la scheda del post e «This post is
+  no longer available.», il post aperto dalla chat (e «←» che torna a
+  «Messages»), la nota per un post «Followers», il foglietto di «…» di
+  un'attività che si chiude dopo «Send to…». Nel database il messaggio
+  mandato dall'app ha `attachment = post`, `post_id` e nessuna copia. **Un
+  difetto trovato e corretto**: «Send to…» aperto dal foglietto del Feed
+  stava sotto l'orologio; ora ha i suoi margini dentro il Modal, come la
+  pagina del post (`SendToFriendInset.test.tsx`). Schermate in
+  `out/TASK-455/shots/`, mandate all'utente per il suo sì.

@@ -13,7 +13,11 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  initialWindowMetrics,
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { fetchFollowList } from "../api/follows";
 import { fetchConversations, messageProblem, sendMessage } from "../api/messages";
@@ -70,7 +74,20 @@ export function peopleOf(talking: Person[], following: Person[]): Person[] {
  * not as a copy; one for its owner's followers says, before it is sent,
  * that only who follows them opens it.
  */
-export function SendToFriend({ drawing, post, onClose, fetchFn, apiKey }: Props) {
+export function SendToFriend(props: Props) {
+  return (
+    <Modal visible animationType="slide" onRequestClose={props.onClose}>
+      {/* Its own edges, as the page of a post has them (TASK-410): opened
+          from a sheet of «Feed» the app's are none, and the title sat under
+          the clock (TASK-455). */}
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <Friends {...props} />
+      </SafeAreaProvider>
+    </Modal>
+  );
+}
+
+function Friends({ drawing, post, onClose, fetchFn, apiKey }: Props) {
   const insets = useSafeAreaInsets();
   const { apiUrl, account } = useMessagesDoor();
   const token =
@@ -167,73 +184,71 @@ export function SendToFriend({ drawing, post, onClose, fetchFn, apiKey }: Props)
 
   const shown = searchable(typed) ? (found ?? []) : (near ?? []);
   return (
-    <Modal visible animationType="slide" onRequestClose={onClose}>
-      <View style={[styles.screen, { paddingTop: insets.top + space.md }]}>
-        <View style={styles.titleRow}>
-          <Text style={styles.title} accessibilityRole="header">
-            {t("Send to…")}
-          </Text>
-          <Pressable
-            style={({ pressed }) => [styles.close, pressed && styles.pressed]}
-            onPress={onClose}
-            accessibilityRole="button"
-          >
-            <Text style={styles.closeText}>{t("Close")}</Text>
-          </Pressable>
-        </View>
-        <TextInput
-          style={styles.search}
-          value={typed}
-          onChangeText={setTyped}
-          placeholder={t("Search people")}
-          placeholderTextColor={color.textFaint}
-          autoCapitalize="none"
-          autoCorrect={false}
-          accessibilityLabel={t("Search people")}
-        />
-        {note !== null && <Text style={styles.note}>{note}</Text>}
-        {problem !== null && (
-          <Text style={styles.problem} accessibilityRole="alert">
-            {problem}
-          </Text>
-        )}
-        {near === null && !searchable(typed) ? (
-          <Text style={styles.note}>{t("Loading…")}</Text>
-        ) : (
-          <FlatList
-            data={shown}
-            keyExtractor={(person) => person.public_id}
-            contentContainerStyle={{ paddingBottom: insets.bottom + space.lg }}
-            renderItem={({ item }) => (
-              <Pressable
-                style={({ pressed }) => [
-                  styles.person,
-                  (pressed || sending === item.public_id) && styles.pressed,
-                ]}
-                onPress={() => send(item)}
-                disabled={sending !== null}
-                accessibilityRole="button"
-                accessibilityLabel={item.username}
-                accessibilityState={{ disabled: sending !== null }}
-              >
-                <Avatar
-                  name={item.username}
-                  size={PHOTO_SIDE}
-                  photo={personPhotoUri(item)}
-                />
-                <Text style={styles.name} numberOfLines={1}>
-                  {item.username}
-                </Text>
-                {sending === item.public_id && (
-                  <Text style={styles.note}>{t("Sending…")}</Text>
-                )}
-              </Pressable>
-            )}
-          />
-        )}
-        {island}
+    <View style={[styles.screen, { paddingTop: insets.top + space.md }]}>
+      <View style={styles.titleRow}>
+        <Text style={styles.title} accessibilityRole="header">
+          {t("Send to…")}
+        </Text>
+        <Pressable
+          style={({ pressed }) => [styles.close, pressed && styles.pressed]}
+          onPress={onClose}
+          accessibilityRole="button"
+        >
+          <Text style={styles.closeText}>{t("Close")}</Text>
+        </Pressable>
       </View>
-    </Modal>
+      <TextInput
+        style={styles.search}
+        value={typed}
+        onChangeText={setTyped}
+        placeholder={t("Search people")}
+        placeholderTextColor={color.textFaint}
+        autoCapitalize="none"
+        autoCorrect={false}
+        accessibilityLabel={t("Search people")}
+      />
+      {note !== null && <Text style={styles.note}>{note}</Text>}
+      {problem !== null && (
+        <Text style={styles.problem} accessibilityRole="alert">
+          {problem}
+        </Text>
+      )}
+      {near === null && !searchable(typed) ? (
+        <Text style={styles.note}>{t("Loading…")}</Text>
+      ) : (
+        <FlatList
+          data={shown}
+          keyExtractor={(person) => person.public_id}
+          contentContainerStyle={{ paddingBottom: insets.bottom + space.lg }}
+          renderItem={({ item }) => (
+            <Pressable
+              style={({ pressed }) => [
+                styles.person,
+                (pressed || sending === item.public_id) && styles.pressed,
+              ]}
+              onPress={() => send(item)}
+              disabled={sending !== null}
+              accessibilityRole="button"
+              accessibilityLabel={item.username}
+              accessibilityState={{ disabled: sending !== null }}
+            >
+              <Avatar
+                name={item.username}
+                size={PHOTO_SIDE}
+                photo={personPhotoUri(item)}
+              />
+              <Text style={styles.name} numberOfLines={1}>
+                {item.username}
+              </Text>
+              {sending === item.public_id && (
+                <Text style={styles.note}>{t("Sending…")}</Text>
+              )}
+            </Pressable>
+          )}
+        />
+      )}
+      {island}
+    </View>
   );
 }
 

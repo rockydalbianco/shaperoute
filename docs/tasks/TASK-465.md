@@ -1,12 +1,14 @@
 # TASK-465 — Il muscolo allenato accanto all'omino della palestra
 
-**Stato**: In corso · 2026-11-11 (PR #1173, sì dell'utente dato; manca il merge)
+**Stato**: Done · 2026-11-12 — #1173 in `main` (`55c98f8b`): accanto
+all'omino di ogni esercizio del catalogo c'è la sagoma del corpo coi
+muscoli allenati, nei quattro posti; solo app, esce con l'aggiornamento
+completo.
 **Fase**: 5 · **Branch**: `feat/TASK-465-muscle-on-figure`
 **Dipende da**: TASK-411 E (l'omino, ADR-0341); TASK-461 A1 (#1163) per i
 quattro esercizi nuovi a corpo libero
-**ADR**: ADR-0376 (dal Coordinatore, 2026-11-11; la voce va nella PR di
-sola documentazione dopo il merge) · numero del task dal Coordinatore l'11
-novembre 2026
+**ADR**: ADR-0376 (dal Coordinatore, 2026-11-11; la voce è in
+`DECISIONS.md`) · numero del task dal Coordinatore l'11 novembre 2026
 
 ## Obiettivo
 
@@ -123,9 +125,13 @@ nomi dei muscoli nelle cinque lingue?». Risposta: **«Sì, vanno bene»**.
 - [x] Screenshot prima/dopo dal simulatore in `out/TASK-465/`; il sì
       dell'utente è scritto qui sotto, in «Cronologia» (2026-11-11:
       «Vanno bene»).
-- [ ] Solo JavaScript: impronta iOS
-      `6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`.
-- [ ] PR verde, segnalata al Coordinatore («#NNNN pronta»). Niente OTA,
+- [x] Solo JavaScript: il diff di #1173 tocca solo file in
+      `apps/mobile/src/` e questo file, nessun pacchetto, file nativo o
+      `app.config.ts`. L'impronta iOS
+      (`6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`) **non è stata
+      ricalcolata** in questo task (un `npm ci` su copia pulita, regola
+      del Mac): la misura chi pubblica, prima dell'OTA.
+- [x] PR verde, segnalata al Coordinatore («#1173 pronta»). Niente OTA,
       niente server.
 
 ## Cronologia
@@ -155,3 +161,22 @@ nomi dei muscoli nelle cinque lingue?». Risposta: **«Sì, vanno bene»**.
   la PR pronta?». Risposta: **«Vanno bene»**.
   Mancano: la CI verde e «#1173 pronta» al Coordinatore; dopo il merge la
   PR di sola documentazione (ADR-0376, `STATUS.md`, `COMPLETATI.md`).
+- 2026-11-12 — **#1173 in `main`** (`55c98f8b`, unita dal Coordinatore
+  nella notte, CI verde su `8c515e86`); è nell'anteprima 11 dell'app di
+  prova. Chiusura in una PR di soli documenti (`docs/TASK-465-close`):
+  ADR-0376 in `DECISIONS.md`, la riga in `archive/COMPLETATI.md`, il
+  paragrafo in `sports/gym.md`. In `STATUS.md` il task non ha mai avuto
+  una voce (le PR di codice non lo toccano dall'8 novembre): niente da
+  togliere.
+
+## Quello che resta, non di questo task
+
+- **L'uscita in produzione**: con l'aggiornamento completo dell'app, dal
+  Coordinatore col sì dell'utente (dall'11 novembre niente aggiornamenti
+  per due giorni, scelta dell'utente). Prima dell'OTA va misurata
+  l'impronta iOS.
+- **Chi aggiunge un esercizio al catalogo** (TASK-461 A2 e seguenti)
+  aggiunge la sua riga in `gym/muscles.ts`: il test fallisce altrimenti.
+- **TASK-444 parte 2** lavora su `ExerciseGrid.tsx` ed
+  `ExercisePicker.tsx`: riquadri e righe hanno ora `<MuscleMap>` accanto a
+  `<ExerciseFigure>`.

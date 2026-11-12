@@ -2697,4 +2697,17 @@ export const IT: Table = {
   "{name} · on the snow · target {km} km": "{name} · sulla neve · obiettivo {km} km",
   "{name} · on the snow · target {mi} mi": "{name} · sulla neve · obiettivo {mi} mi",
   "White: where you walked.": "Bianco: dove hai camminato.",
+  // The «Sleep» card of the profile (TASK-467 part B3): src/profile/OwnSleep.tsx
+  // («On your profile» is with the prizes, «Only you see this» with the VO₂ max)
+  "Show my sleep from Apple Health": "Mostra il mio sonno da Apple Salute",
+  "MuW works out a sleep score from your Apple Health sleep data.":
+    "MuW calcola un punteggio del sonno dai dati sul sonno di Apple Salute.",
+  "Share your sleep?": "Condividere il tuo sonno?",
+  "Your score, hours slept and sleep stages show on your profile, to everyone who can see it.":
+    "Il punteggio, le ore dormite e le fasi del sonno si vedono sul tuo profilo, per chiunque possa vederlo.",
+  "No sleep data for last night in Apple Health.":
+    "Nessun dato sul sonno della notte scorsa in Apple Salute.",
+  "MuW can't read your sleep. Allow it in the Health app: your profile › Apps › MuW.":
+    "MuW non può leggere il tuo sonno. Consentilo nell'app Salute: il tuo profilo › App › MuW.",
+  "Stop sharing@@sleep": "Non condividere più",
 };

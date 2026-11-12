@@ -227,7 +227,9 @@ test("no night since the evening: it says so, with nothing to share", async () =
   allowed();
   const { fetchFn } = api();
   await show(reader({ samples: jest.fn(async () => []) }), fetchFn);
-  expect(screen.getByText("No sleep data for last night in Apple Health.")).toBeTruthy();
+  expect(
+    screen.getByText("No sleep data for last night in Apple Health."),
+  ).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Share" })).toBeNull();
 });
 
@@ -343,7 +345,9 @@ test("without a night today an earlier one can still be taken off the profile", 
     [STOP]: { status: 204 },
   });
   await show(reader({ samples: jest.fn(async () => []) }), fetchFn);
-  expect(screen.getByText("No sleep data for last night in Apple Health.")).toBeTruthy();
+  expect(
+    screen.getByText("No sleep data for last night in Apple Health."),
+  ).toBeTruthy();
   expect(screen.getByText("On your profile · 19 Sep")).toBeTruthy();
   await tap("Stop sharing");
   expect(sent()).toEqual([READ, STOP]);

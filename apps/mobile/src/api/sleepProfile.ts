@@ -63,7 +63,13 @@ export function stopSharingSleep(
   token: string,
   options: Options = {},
 ): Promise<AccountOutcome<null>> {
-  return ask(baseUrl, "/me/sleep/shared", { method: "DELETE", token }, isEmpty, options);
+  return ask(
+    baseUrl,
+    "/me/sleep/shared",
+    { method: "DELETE", token },
+    isEmpty,
+    options,
+  );
 }
 
 /** GET /users/{id}/sleep: the latest night the profile shares, for whoever

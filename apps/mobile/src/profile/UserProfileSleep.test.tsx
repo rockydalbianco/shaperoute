@@ -38,8 +38,11 @@ function api(night: unknown) {
   }) as jest.Mock & typeof fetch;
 }
 
+/** The page as it is drawn, without the node `testID`: to compare. */
+const drawn = (tree: unknown, testID: string) => JSON.stringify(without(tree, testID));
+
 async function show(fetchFn: typeof fetch) {
-  const shown = await render(
+  await render(
     <UserProfilePage
       apiUrl={URL}
       account={{ state: signedIn, sessionEnded: jest.fn() }}
@@ -51,7 +54,6 @@ async function show(fetchFn: typeof fetch) {
   // The profile, then what is under it.
   await act(async () => {});
   await act(async () => {});
-  return shown;
 }
 
 function asked(fetchFn: jest.Mock): string[] {
@@ -71,9 +73,9 @@ test("off: no sleep on the profile, and the API is asked nothing about it", asyn
 
 test("off, the page is drawn exactly as before: on, only the night is added", async () => {
   on.mockReturnValue(false);
-  const off = await show(api(summary));
-  const before = off.toJSON();
-  off.unmount();
+  await show(api(summary));
+  const before = screen.toJSON();
+  await screen.unmount();
 
   on.mockReturnValue(true);
   const fetchFn = api(summary);
@@ -82,11 +84,10 @@ test("off, the page is drawn exactly as before: on, only the night is added", as
   expect(screen.getByText("82 · Very good")).toBeOnTheScreen();
   expect(screen.getByText("21 Sep")).toBeOnTheScreen();
   expect(asked(fetchFn)).toContain(`${URL}/users/${ID}/sleep`);
-  // Nothing but the night moved: off, there is nothing to take away.
-  expect(without(screen.toJSON(), "profile-sleep")).toEqual(
-    without(before, "profile-sleep"),
-  );
-  expect(without(before, "profile-sleep")).toEqual(without(before, "none"));
+  // Nothing but the night moved; off, there was nothing to take away.
+  expect(drawn(screen.toJSON(), "profile-sleep")).toBe(drawn(before, "profile-sleep"));
+  expect(drawn(before, "profile-sleep")).toBe(drawn(before, "none-such"));
+  expect(drawn(screen.toJSON(), "none-such")).not.toBe(drawn(before, "none-such"));
 });
 
 test("on, a member who shares no night has no sleep on the profile", async () => {

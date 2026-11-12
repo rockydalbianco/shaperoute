@@ -84,8 +84,11 @@ function api(): jest.SpyInstance {
     });
 }
 
+/** The page as it is drawn, without the node `testID`: to compare. */
+const drawn = (tree: unknown, testID: string) => JSON.stringify(without(tree, testID));
+
 async function show() {
-  const shown = await render(
+  await render(
     <FollowsContext.Provider
       value={{
         apiUrl: URL,
@@ -105,7 +108,6 @@ async function show() {
   // The profile, the lists and the night answer.
   await act(async () => {});
   await act(async () => {});
-  return shown;
 }
 
 beforeEach(() => {
@@ -136,19 +138,20 @@ test("off: no card, the sleep is not read, the API is asked nothing about it", a
 test("off, the page is drawn exactly as before: on, only the card is added", async () => {
   on.mockReturnValue(false);
   api();
-  const off = await show();
-  const before = off.toJSON();
-  off.unmount();
+  await show();
+  const before = screen.toJSON();
+  await screen.unmount();
 
   on.mockReturnValue(true);
   await show();
   expect(await screen.findByTestId(OWN_SLEEP_TEST_ID)).toBeOnTheScreen();
   expect(screen.getByText("Only you see this")).toBeOnTheScreen();
-  // Nothing but the card moved: off, there is nothing to take away.
-  expect(without(screen.toJSON(), OWN_SLEEP_TEST_ID)).toEqual(
-    without(before, OWN_SLEEP_TEST_ID),
+  // Nothing but the card moved; off, there was nothing to take away.
+  expect(drawn(screen.toJSON(), OWN_SLEEP_TEST_ID)).toBe(
+    drawn(before, OWN_SLEEP_TEST_ID),
   );
-  expect(without(before, OWN_SLEEP_TEST_ID)).toEqual(without(before, "none"));
+  expect(drawn(before, OWN_SLEEP_TEST_ID)).toBe(drawn(before, "none-such"));
+  expect(drawn(screen.toJSON(), "none-such")).not.toBe(drawn(before, "none-such"));
 });
 
 test("without a reader, as every build until part C, the switch alone shows nothing", async () => {

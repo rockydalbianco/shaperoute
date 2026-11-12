@@ -72,16 +72,18 @@ test("every row works: only the sports to come say «Soon»", async () => {
   // (TASK-190), paddling (TASK-191), swimming in open water (TASK-323) and
   // the alpine ski (TASK-375 D4) are ready in «Sport» (TASK-189), and the
   // hike (TASK-377), gravel and MTB (TASK-378), walking (TASK-371) and the
-  // skate (TASK-380); cross-country skiing (TASK-375) and paragliding
-  // (TASK-305 D0) are the sports to come.
-  expect(screen.getAllByText("Soon")).toHaveLength(2);
-  expect(screen.getAllByLabelText(/coming soon$/)).toHaveLength(2);
+  // skate (TASK-380), paragliding (TASK-305 R2) and cross-country skiing
+  // (TASK-375); the wheelchair (TASK-414 B, until the server has part A) is
+  // the sport to come.
+  expect(screen.getAllByText("Soon")).toHaveLength(1);
+  expect(screen.getAllByLabelText(/coming soon$/)).toHaveLength(1);
+  expect(screen.queryByLabelText("Cross-country ski, coming soon")).toBeNull();
   expect(screen.queryByLabelText("Walk, coming soon")).toBeNull();
   expect(screen.queryByLabelText("Roller, coming soon")).toBeNull();
   expect(screen.queryByLabelText("MTB, coming soon")).toBeNull();
   expect(screen.queryByLabelText("Ski, coming soon")).toBeNull();
   expect(screen.queryByLabelText("Open water swim, coming soon")).toBeNull();
-  expect(screen.getByLabelText("Paragliding, coming soon")).toBeOnTheScreen();
+  expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
   // The picture (TASK-178), the email and the phone number (TASK-183), the
   // language (TASK-210), «Add a place» (TASK-334), the units (TASK-182),
   // the body (TASK-374), the tone (TASK-263), the three texts of «ABOUT»

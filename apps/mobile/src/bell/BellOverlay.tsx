@@ -1,6 +1,6 @@
 import type { NotificationLine } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { accountProblem, sessionEnded } from "../account/messages";
@@ -19,6 +19,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useBackCloses } from "../ui/backLayers";
+import { useEdgeBack } from "../ui/EdgeBack";
 import { Cascade } from "../ui/Cascade";
 import { useBell } from "./bellDoor";
 
@@ -51,6 +53,10 @@ export function BellOverlay({ opens, fetchFn, apiKey }: Props) {
 function BellList({ opens, fetchFn, apiKey }: Props) {
   const insets = useSafeAreaInsets();
   const { apiUrl, account, close, read } = useBell();
+  // Android's «back» is the «←».
+  useBackCloses(true, close);
+  // And on iOS the way back from the left edge (ADR-0384).
+  const edge = useEdgeBack(close);
   const token =
     account?.state.status === "signedIn" ? account.state.session.token : null;
   const [list, setList] = useState<List | null>(null);
@@ -127,7 +133,12 @@ function BellList({ opens, fetchFn, apiKey }: Props) {
 
   const now = new Date();
   return (
-    <View style={[StyleSheet.absoluteFill, styles.screen]} testID="bell-list">
+    <Animated.View
+      style={[StyleSheet.absoluteFill, styles.screen, edge.style]}
+      testID="bell-list"
+      {...edge.handlers}
+    >
+      {edge.shade}
       <ScrollView
         contentContainerStyle={[
           styles.content,
@@ -182,7 +193,7 @@ function BellList({ opens, fetchFn, apiKey }: Props) {
           </Pressable>
         )}
       </ScrollView>
-    </View>
+    </Animated.View>
   );
 }
 

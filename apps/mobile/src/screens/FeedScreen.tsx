@@ -364,7 +364,7 @@ function FeedList({
     [see],
   );
   // Its tab touched again: back to the newest drawings (TASK-367).
-  const scroll = useScrollToTopOnReselect<FlatList<Item>>();
+  const scroll = useScrollToTopOnReselect<FlatList<Item>>(visible);
   return (
     <View style={visible ? styles.list : styles.hidden}>
       <FlatList<Item>

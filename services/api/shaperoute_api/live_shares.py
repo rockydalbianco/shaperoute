@@ -24,6 +24,16 @@ unknown token and an expired one answer the same.
 LiveShareSweep deletes, every SWEEP_EVERY_S, the points and numbers of the
 links that expired, and the rows a day later. The log never writes a
 position (ADR-0092). Deleting the account deletes its links.
+
+In the app too (TASK-468 part A1a, ADR-0381): one share of a recording, seen
+in more ways. The link is one of them, now optional (`link`, and POST
+/me/live-shares/{id}/link makes it later); the others are the people chosen
+in the chat (POST /me/live-shares/{id}/send, live_share_recipients) and the
+Feed (`audience_feed`: the followers or everyone), changed with PATCH
+/me/live-shares/{id}. GET /live-shares/{id} is what a signed-in viewer sees,
+with the account's token: 404 to whoever may not, as for a share that is not
+there, and never across a block or a hidden account. The heart rate reaches
+those viewers only when `heart_visible` is on; the link shows it as before.
 """
 
 from __future__ import annotations
@@ -57,6 +67,7 @@ from shaperoute_api.accounts import (
 )
 from shaperoute_api.activities import CLOCK_AHEAD, RunActivity
 from shaperoute_api.db import Database
+from shaperoute_api.follows import apart_sql, follows_sql
 from shaperoute_api.schemas import ErrorBody
 
 log = logging.getLogger(__name__)
@@ -82,8 +93,13 @@ VIEWS_PER_MINUTE = 120
 # Points a little older than the link: the fix that came while it was made.
 EARLY_POINT = timedelta(minutes=5)
 SWEEP_EVERY_S = 300.0
+# The chat (TASK-468, ADR-0381): people a share goes to in one request, and
+# requests a minute for an account, as the messages' 20 a minute.
+MAX_RECIPIENTS = 20
+SENDS_PER_MINUTE = 20
 
 UNKNOWN_SHARE = "No live share with this id."
+TOO_MANY_SENDS = "Too many live shares sent in a minute: wait a moment."
 SHARE_ENDED = "This live share has ended: make a new one."
 TOO_MANY_SHARES = f"At most {MAX_SHARES_PER_DAY} live shares a day: try again tomorrow."
 TOO_MANY_VIEWS = "Too many requests for this link in a minute: wait a moment."
@@ -91,6 +107,9 @@ POINT_OUT_OF_TIME = "A point is from before the link or from the future."
 
 LiveState = Literal["live", "paused", "finished"]
 LiveStatus = Literal["live", "paused", "finished", "stopped", "expired"]
+# Who sees the share in the Feed (TASK-468, the user's choice 1): nobody,
+# the owner's followers, or everyone with an account.
+LiveAudience = Literal["none", "followers", "everyone"]
 
 
 def token_hash(token: str) -> bytes:
@@ -107,6 +126,38 @@ class LiveShareRequestBody(BaseModel):
         default=None, ge=10, le=100, allow_inf_nan=False
     )
     """A swim in a pool: its pool, and the page shows lengths with no map."""
+    link: bool = True
+    """Make the link now. False for a share only in the chat or the Feed:
+    `url` is then null, and POST /me/live-shares/{id}/link makes it later."""
+    audience_feed: LiveAudience = "none"
+    heart_visible: bool = False
+    """The heart rate to the viewers in the app; the link always shows it."""
+
+
+class LiveAudienceBody(BaseModel):
+    """PATCH /me/live-shares/{id}: what is given changes, the rest stays."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    audience_feed: LiveAudience | None = None
+    heart_visible: bool | None = None
+
+
+class LiveShareSendBody(BaseModel):
+    """POST /me/live-shares/{id}/send: fixtures/live-share-send-request.json.
+    The people, by their public_id."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    to: list[UUID] = Field(min_length=1, max_length=MAX_RECIPIENTS)
+
+
+class LiveShareSentBody(BaseModel):
+    """Who can now see the share, and who not: no such account, oneself,
+    or kept apart by a block or a hidden account (the same answer for all)."""
+
+    sent: list[str]
+    skipped: list[str]
 
 
 class LivePointBody(BaseModel):
@@ -164,10 +215,11 @@ class LiveUpdateBody(BaseModel):
 
 
 class LiveShareCreatedBody(BaseModel):
-    """The new link: `url` carries the token, never given again."""
+    """The new link: `url` carries the token, never given again; null for a
+    share made without its link."""
 
     id: str
-    url: str
+    url: str | None
     expires_at: datetime
 
 
@@ -177,6 +229,10 @@ class LiveShareBody(BaseModel):
     id: str
     status: LiveStatus
     expires_at: datetime
+    # TASK-468: who else sees it. An app of before does not read them.
+    link: bool = True
+    audience_feed: LiveAudience = "none"
+    heart_visible: bool = False
 
 
 class LiveViewBody(BaseModel):
@@ -210,8 +266,97 @@ def _status(row: DictRow, now: datetime) -> LiveStatus:
 
 SHARE_COLUMNS = (
     "id, user_id, activity, pool_length_m::float8 AS pool_length_m, created_at,"
-    " expires_at, finished_at, stopped_at, paused, stats, updated_at"
+    " expires_at, finished_at, stopped_at, paused, stats, updated_at,"
+    " token_hash IS NOT NULL AS link, audience_feed, heart_visible"
 )
+
+
+def _share(row: DictRow, now: datetime) -> LiveShareBody:
+    return LiveShareBody(
+        id=str(row["id"]),
+        status=_status(row, now),
+        expires_at=row["expires_at"],
+        link=row["link"],
+        audience_feed=row["audience_feed"],
+        heart_visible=row["heart_visible"],
+    )
+
+
+def _ended(row: DictRow, now: datetime) -> bool:
+    return _status(row, now) in ("stopped", "expired", "finished")
+
+
+# A signed-in viewer (%(viewer)s) may see the share `s`: its owner; or, not
+# kept apart from the owner, one it was sent to, a follower when the Feed
+# is for the followers, anyone when it is for everyone.
+MAY_SEE_SQL = (
+    "(s.user_id = %(viewer)s OR (NOT "
+    + apart_sql("%(viewer)s", "s.user_id")
+    + " AND (EXISTS (SELECT 1 FROM live_share_recipients r"
+    " WHERE r.share_id = s.id AND r.user_id = %(viewer)s)"
+    " OR (s.audience_feed = 'followers' AND "
+    + follows_sql("%(viewer)s", "s.user_id")
+    + ") OR s.audience_feed = 'everyone')))"
+)
+
+
+def insert_share(
+    conn: Any,
+    user_id: int,
+    body: LiveShareRequestBody,
+    now: datetime,
+    planned_live_id: UUID | None = None,
+) -> LiveShareCreatedBody:
+    """A new share in the transaction of `conn`: at most MAX_SHARES_PER_DAY a
+    day, and the account's shares of activities never finished stop. A
+    planned live (TASK-468 part A2a) starts its share here too."""
+    token = secrets.token_urlsafe(TOKEN_BYTES) if body.link else None
+    pool = body.pool_length_m if body.activity == "swimming" else None
+    # One account's links change one at a time: the count is right.
+    conn.execute("SELECT 1 FROM users WHERE id = %s FOR UPDATE", (user_id,))
+    made = conn.execute(
+        "SELECT count(*) AS n FROM live_shares"
+        " WHERE user_id = %s AND created_at > %s",
+        (user_id, now - timedelta(days=1)),
+    ).fetchone()
+    assert made is not None
+    if made["n"] >= MAX_SHARES_PER_DAY:
+        raise AccountError(429, "too_many_requests", TOO_MANY_SHARES)
+    # The links of earlier activities never finished: one at a time.
+    open_ids = [
+        r["id"]
+        for r in conn.execute(
+            "SELECT id FROM live_shares WHERE user_id = %s"
+            " AND stopped_at IS NULL AND finished_at IS NULL"
+            " AND expires_at > %s",
+            (user_id, now),
+        ).fetchall()
+    ]
+    for share_id in open_ids:
+        _stop(conn, share_id, now)
+    row = conn.execute(
+        "INSERT INTO live_shares (user_id, token_hash, activity,"
+        " pool_length_m, created_at, expires_at, audience_feed,"
+        " heart_visible, planned_live_id)"
+        " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id, expires_at",
+        (
+            user_id,
+            None if token is None else token_hash(token),
+            body.activity,
+            None if pool is None else round(pool, 2),
+            now,
+            now + LINK_LIFE,
+            body.audience_feed,
+            body.heart_visible,
+            planned_live_id,
+        ),
+    ).fetchone()
+    assert row is not None
+    return LiveShareCreatedBody(
+        id=str(row["id"]),
+        url=None if token is None else LIVE_PAGE + token,
+        expires_at=row["expires_at"],
+    )
 
 
 @dataclass
@@ -222,48 +367,81 @@ class LiveShares:
     now: Callable[[], datetime]
 
     def create(self, user_id: int, body: LiveShareRequestBody) -> LiveShareCreatedBody:
+        with self.database.connect() as conn:
+            return insert_share(conn, user_id, body, self.now())
+
+    def link(self, user_id: int, share_id: str) -> LiveShareCreatedBody:
+        """The link of a share, made now: a new token, so a link given
+        before stops working. 410 once the share has ended."""
         now = self.now()
         token = secrets.token_urlsafe(TOKEN_BYTES)
-        pool = body.pool_length_m if body.activity == "swimming" else None
         with self.database.connect() as conn:
-            # One account's links change one at a time: the count is right.
-            conn.execute("SELECT 1 FROM users WHERE id = %s FOR UPDATE", (user_id,))
-            made = conn.execute(
-                "SELECT count(*) AS n FROM live_shares"
-                " WHERE user_id = %s AND created_at > %s",
-                (user_id, now - timedelta(days=1)),
-            ).fetchone()
-            assert made is not None
-            if made["n"] >= MAX_SHARES_PER_DAY:
-                raise AccountError(429, "too_many_requests", TOO_MANY_SHARES)
-            # The links of earlier activities never finished: one at a time.
-            open_ids = [
-                r["id"]
-                for r in conn.execute(
-                    "SELECT id FROM live_shares WHERE user_id = %s"
-                    " AND stopped_at IS NULL AND finished_at IS NULL"
-                    " AND expires_at > %s",
-                    (user_id, now),
-                ).fetchall()
-            ]
-            for share_id in open_ids:
-                _stop(conn, share_id, now)
-            row = conn.execute(
-                "INSERT INTO live_shares (user_id, token_hash, activity,"
-                " pool_length_m, created_at, expires_at)"
-                " VALUES (%s, %s, %s, %s, %s, %s) RETURNING id, expires_at",
-                (
-                    user_id,
-                    token_hash(token),
-                    body.activity,
-                    None if pool is None else round(pool, 2),
-                    now,
-                    now + LINK_LIFE,
-                ),
-            ).fetchone()
-            assert row is not None
+            row = self._owned(conn, user_id, share_id)
+            if _ended(row, now):
+                raise HTTPException(410, SHARE_ENDED)
+            conn.execute(
+                "UPDATE live_shares SET token_hash = %s WHERE id = %s",
+                (token_hash(token), row["id"]),
+            )
         return LiveShareCreatedBody(
             id=str(row["id"]), url=LIVE_PAGE + token, expires_at=row["expires_at"]
+        )
+
+    def change(
+        self, user_id: int, share_id: str, body: LiveAudienceBody
+    ) -> LiveShareBody:
+        """Who sees it in the Feed, and whether they see the heart rate. 410
+        once the share has ended."""
+        now = self.now()
+        with self.database.connect() as conn:
+            row = self._owned(conn, user_id, share_id)
+            if _ended(row, now):
+                raise HTTPException(410, SHARE_ENDED)
+            changed = conn.execute(
+                "UPDATE live_shares SET audience_feed = %s, heart_visible = %s"
+                f" WHERE id = %s RETURNING {SHARE_COLUMNS}",
+                (
+                    body.audience_feed or row["audience_feed"],
+                    (
+                        row["heart_visible"]
+                        if body.heart_visible is None
+                        else body.heart_visible
+                    ),
+                    row["id"],
+                ),
+            ).fetchone()
+            assert changed is not None
+        return _share(changed, now)
+
+    def send(
+        self, user_id: int, share_id: str, body: LiveShareSendBody
+    ) -> LiveShareSentBody:
+        """The people who may see it from now on, by public_id. Someone with
+        no account, oneself, or kept apart from the owner is skipped, all
+        the same. Sent twice, sent once. 410 once the share has ended."""
+        now = self.now()
+        wanted = list(dict.fromkeys(body.to))
+        with self.database.connect() as conn:
+            row = self._owned(conn, user_id, share_id)
+            if _ended(row, now):
+                raise HTTPException(410, SHARE_ENDED)
+            found = conn.execute(
+                "SELECT u.id, u.public_id FROM users u"
+                " WHERE u.public_id = ANY(%s) AND u.id <> %s"
+                f" AND NOT {apart_sql('%s', 'u.id')}",
+                (wanted, user_id, user_id),
+            ).fetchall()
+            ids = {r["public_id"]: r["id"] for r in found}
+            if ids:
+                with conn.cursor() as cur:
+                    cur.executemany(
+                        "INSERT INTO live_share_recipients (share_id, user_id,"
+                        " sent_at) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
+                        [(row["id"], i, now) for i in ids.values()],
+                    )
+        return LiveShareSentBody(
+            sent=[str(p) for p in wanted if p in ids],
+            skipped=[str(p) for p in wanted if p not in ids],
         )
 
     def _owned(self, conn: Any, user_id: int, share_id: str) -> DictRow:
@@ -287,7 +465,7 @@ class LiveShares:
         now = self.now()
         with self.database.connect() as conn:
             row = self._owned(conn, user_id, share_id)
-            if _status(row, now) in ("stopped", "expired", "finished"):
+            if _ended(row, now):
                 raise HTTPException(410, SHARE_ENDED)
             earliest = row["created_at"] - EARLY_POINT
             if any(not earliest <= p.at <= now + CLOCK_AHEAD for p in body.points):
@@ -326,11 +504,7 @@ class LiveShares:
                 ),
             ).fetchone()
             assert updated is not None
-        return LiveShareBody(
-            id=str(updated["id"]),
-            status=_status(updated, now),
-            expires_at=updated["expires_at"],
-        )
+        return _share(updated, now)
 
     def stop(self, user_id: int, share_id: str) -> None:
         """Stopped twice, stopped once."""
@@ -351,30 +525,27 @@ class LiveShares:
             ).fetchone()
             if row is None:
                 return LiveViewBody(status="expired")
-            status = _status(row, now)
-            if status in ("stopped", "expired"):
-                return LiveViewBody(status=status)
-            points = conn.execute(
-                "SELECT id, lat, lon, extract(epoch FROM at)::float8 AS t"
-                " FROM live_share_points WHERE share_id = %s AND id > %s"
-                " ORDER BY id LIMIT %s",
-                (row["id"], after, POINTS_PER_PAGE + 1),
-            ).fetchall()
-        more = len(points) > POINTS_PER_PAGE
-        points = points[:POINTS_PER_PAGE]
-        return LiveViewBody(
-            status=status,
-            activity=row["activity"],
-            pool_length_m=row["pool_length_m"],
-            started_at=row["created_at"],
-            updated_at=row["updated_at"],
-            finished_at=row["finished_at"],
-            expires_at=row["expires_at"],
-            stats=None if row["stats"] is None else LiveStatsBody(**row["stats"]),
-            points=[(p["lat"], p["lon"], p["t"]) for p in points],
-            last_seq=points[-1]["id"] if points else after,
-            more=more,
-        )
+            return _view(conn, row, now, after, heart=True)
+
+    def view_in_app(self, viewer_id: int, share_id: str, after: int) -> LiveViewBody:
+        """What a signed-in viewer sees: 404 to whoever may not (MAY_SEE_SQL),
+        asked again at every request, so a follow taken back or a block made
+        during the activity stops the view at once."""
+        now = self.now()
+        try:
+            wanted = UUID(share_id)
+        except ValueError:
+            raise HTTPException(404, UNKNOWN_SHARE) from None
+        with self.database.connect() as conn:
+            row = conn.execute(
+                f"SELECT {SHARE_COLUMNS} FROM live_shares s"
+                f" WHERE s.id = %(share)s AND {MAY_SEE_SQL}",
+                {"share": wanted, "viewer": viewer_id},
+            ).fetchone()
+            if row is None:
+                raise HTTPException(404, UNKNOWN_SHARE)
+            heart = row["user_id"] == viewer_id or row["heart_visible"]
+            return _view(conn, row, now, after, heart=heart)
 
     def sweep(self) -> int:
         """The points and numbers of the links that ended, then the empty
@@ -395,6 +566,40 @@ class LiveShares:
                 "DELETE FROM live_shares WHERE expires_at <= %s", (now - KEEP_ROW,)
             )
         return gone
+
+
+def _view(
+    conn: Any, row: DictRow, now: datetime, after: int, *, heart: bool
+) -> LiveViewBody:
+    """The view of a share, with the points after `after`; for a share
+    stopped or expired only its status. Without `heart`, no heart rate."""
+    status = _status(row, now)
+    if status in ("stopped", "expired"):
+        return LiveViewBody(status=status)
+    points = conn.execute(
+        "SELECT id, lat, lon, extract(epoch FROM at)::float8 AS t"
+        " FROM live_share_points WHERE share_id = %s AND id > %s"
+        " ORDER BY id LIMIT %s",
+        (row["id"], after, POINTS_PER_PAGE + 1),
+    ).fetchall()
+    more = len(points) > POINTS_PER_PAGE
+    points = points[:POINTS_PER_PAGE]
+    stats = None if row["stats"] is None else LiveStatsBody(**row["stats"])
+    if stats is not None and not heart:
+        stats.heart_bpm = None
+    return LiveViewBody(
+        status=status,
+        activity=row["activity"],
+        pool_length_m=row["pool_length_m"],
+        started_at=row["created_at"],
+        updated_at=row["updated_at"],
+        finished_at=row["finished_at"],
+        expires_at=row["expires_at"],
+        stats=stats,
+        points=[(p["lat"], p["lon"], p["t"]) for p in points],
+        last_seq=points[-1]["id"] if points else after,
+        more=more,
+    )
 
 
 def _stop(conn: Any, share_id: UUID, now: datetime) -> None:
@@ -494,6 +699,75 @@ def live_share_routes() -> APIRouter:
         shares.stop(user.id, share_id)
         return Response(status_code=204)
 
+    @router.post(
+        "/me/live-shares/{share_id}/link",
+        status_code=201,
+        responses={404: {"model": ErrorBody}, 410: {"model": ErrorBody}},
+    )
+    def link_live_share(
+        share_id: str, shares: Shares, user: Me
+    ) -> LiveShareCreatedBody:
+        return shares.link(user.id, share_id)
+
+    @router.patch(
+        "/me/live-shares/{share_id}",
+        responses={404: {"model": ErrorBody}, 410: {"model": ErrorBody}},
+    )
+    def change_live_share(
+        share_id: str, body: LiveAudienceBody, shares: Shares, user: Me
+    ) -> LiveShareBody:
+        return shares.change(user.id, share_id, body)
+
+    @router.post(
+        "/me/live-shares/{share_id}/send",
+        responses={
+            404: {"model": ErrorBody},
+            410: {"model": ErrorBody},
+            429: {"model": ErrorBody},
+        },
+    )
+    def send_live_share(
+        request: Request,
+        share_id: str,
+        body: LiveShareSendBody,
+        shares: Shares,
+        user: Me,
+    ) -> Any:
+        limiter: RateLimiter = request.app.state.live_send_limiter
+        wait = limiter.wait_s(str(user.id))
+        if wait > 0:
+            return refuse(
+                429,
+                "too_many_requests",
+                TOO_MANY_SENDS,
+                **{"Retry-After": str(math.ceil(wait))},
+            )
+        return shares.send(user.id, share_id, body)
+
+    @router.get(
+        "/live-shares/{share_id}",
+        response_model=LiveViewBody,
+        responses={404: {"model": ErrorBody}, 429: {"model": ErrorBody}},
+    )
+    def view_live_share_in_app(
+        request: Request,
+        share_id: str,
+        shares: Shares,
+        user: Me,
+        after: Annotated[int, Query(ge=0)] = 0,
+    ) -> Any:
+        # Each viewer on its own: a race followed by many is not one page.
+        limiter: RateLimiter = request.app.state.live_view_limiter
+        wait = limiter.wait_s(f"app:{user.id}:{share_id}")
+        if wait > 0:
+            return refuse(
+                429,
+                "too_many_requests",
+                TOO_MANY_VIEWS,
+                **{"Retry-After": str(math.ceil(wait))},
+            )
+        return shares.view_in_app(user.id, share_id, after)
+
     @router.get(
         "/live", response_model=LiveViewBody, responses={429: {"model": ErrorBody}}
     )
@@ -527,12 +801,18 @@ def install_live_shares(app: FastAPI) -> None:
     round runs only while the app serves: started and stopped around the
     app's lifespan, before the database closes."""
     app.state.live_view_limiter = RateLimiter(VIEWS_PER_MINUTE)
+    app.state.live_send_limiter = RateLimiter(SENDS_PER_MINUTE)
     accounts: Accounts | None = app.state.accounts
     if accounts is not None:
         sweep = LiveShareSweep(LiveShares(accounts.database, accounts.now))
         app.state.live_share_sweep = sweep
         _around_lifespan(app, sweep)
     app.include_router(live_share_routes())
+    # The planned lives (TASK-468 part A2a) are mounted from here, so
+    # app.py stays as it is; imported here, as they import this module.
+    from shaperoute_api.planned_lives import planned_live_routes
+
+    app.include_router(planned_live_routes())
 
 
 def _around_lifespan(app: FastAPI, sweep: LiveShareSweep) -> None:

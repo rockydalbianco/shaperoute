@@ -24,6 +24,7 @@ import {
 
 import { color } from "../theme/tokens";
 import { pageName, tourPart, useTourPager } from "../tour/tourParts";
+import { closeTopLayer, OnScreenContext } from "../ui/backLayers";
 import { Hairline } from "../ui/Hairline";
 import { AppHeader } from "./AppHeader";
 import { type BarTab, TabBar } from "./TabBar";
@@ -211,6 +212,11 @@ export function TabShell({ pages, page, onPage, action }: Props) {
   });
   useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      // A page open over the app goes first, even one opened before the
+      // bar was built again (after the map).
+      if (closeTopLayer()) {
+        return true;
+      }
       const previous = before.current.pop();
       if (previous === undefined) {
         return false;
@@ -262,14 +268,23 @@ export function TabShell({ pages, page, onPage, action }: Props) {
       setSeen([...built, ...reached]);
     }
     // Past half way the page beside is the one on screen, and the next one
-    // takes its place beyond it, out of sight.
+    // takes its place beyond it, out of sight. Not after a tab touched: the
+    // tab's page has the strip's place, and what is left of the slide (a
+    // fling or a snap the touch has not stopped) is no swipe.
     const nearest = placeAt(x, width);
-    if (nearest !== now.place) {
+    if (nearest !== now.place && !tapped.current) {
       setStrip({ ...stripAt(now, nearest, count), asked: now.asked });
     }
   }
 
   function restOn(x: number) {
+    if (tapped.current) {
+      // The touched tab stays: the strip goes back to its page.
+      if (placeAt(x, width) !== now.place) {
+        scroller.current?.scrollTo({ x: now.place * width, y: 0, animated: true });
+      }
+      return;
+    }
     const rest = stripAt(now, placeAt(x, width), count);
     if (rest !== now) {
       setStrip({ ...rest, asked: now.asked });
@@ -348,9 +363,11 @@ export function TabShell({ pages, page, onPage, action }: Props) {
                 importantForAccessibility={onScreen ? "auto" : "no-hide-descendants"}
               >
                 {isBuilt && (
-                  <TabReselectContext.Provider value={reselectOf(each.title)}>
-                    {each.render()}
-                  </TabReselectContext.Provider>
+                  <OnScreenContext.Provider value={onScreen}>
+                    <TabReselectContext.Provider value={reselectOf(each.title)}>
+                      {each.render()}
+                    </TabReselectContext.Provider>
+                  </OnScreenContext.Provider>
                 )}
               </View>
             );

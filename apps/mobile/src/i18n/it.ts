@@ -946,6 +946,10 @@ export const IT: Table = {
   "Show more comments": "Mostra altri commenti",
   "{name}, {ago}: {text}": "{name}, {ago}: {text}",
   "Touch and hold to delete.": "Tieni premuto per eliminare.",
+  Reply: "Rispondi",
+  "Replying to {name}": "Risposta a {name}",
+  "View {count} more reply": "Vedi {count} altra risposta",
+  "View {count} more replies": "Vedi altre {count} risposte",
 
   // src/social/DrawingReactions.tsx
   React: "Reagisci",
@@ -976,6 +980,8 @@ export const IT: Table = {
   "Write a comment to send your super like":
     "Scrivi un commento per inviare il tuo super like",
   Send: "Invia",
+  "A super like comes with a comment. Everyone who sees the post can read it.":
+    "Un super like arriva con un commento. Chi vede il post può leggerlo.",
 
   // src/social/reactionKinds.ts
   "MuW heart, super like": "Cuore di MuW, super like",
@@ -1182,6 +1188,12 @@ export const IT: Table = {
   Roller: "Roller",
   "Watch for traffic and steep descents: check the route before you set off.":
     "Attento al traffico e alle discese ripide: controlla il percorso prima di partire.",
+  // src/sports/wheelchair.ts, settings/sport.ts (TASK-414 part B), approved on
+  // 2026-11-08 (the user's choice 6)
+  "Wheelchair & stroller": "Carrozzina e passeggino",
+  "Go without a route": "Vai senza percorso",
+  "Map data can miss kerbs, steps and steep slopes: check the route before you set off.":
+    "I dati della mappa possono non segnare cordoli, gradini e salite ripide: controlla il percorso prima di partire.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Sci",
   "Cross-country ski": "Sci di fondo",
@@ -1529,6 +1541,10 @@ export const IT: Table = {
   "{sport}, coming soon": "{sport}, in arrivo",
   "Sport, {sport}": "Sport, {sport}",
   "Changes the sport": "Cambia lo sport",
+  // The families of the sport panel: src/settings/sportFamilies.ts
+  "On foot": "A piedi",
+  "On wheels": "Su ruote",
+  "Other@@sport": "Altro",
   Sport: "Sport",
   Default: "Predefinita",
   "Voice language and voice: {language}, {voice}": "Lingua e voce: {language}, {voice}",
@@ -1585,8 +1601,8 @@ export const IT: Table = {
   "You have not blocked anyone.": "Non hai bloccato nessuno.",
   Unblock: "Sblocca",
   "Unblock {name}": "Sblocca {name}",
-  "You blocked {user}. Unblock them from Blocked people in your profile.":
-    "Hai bloccato {user}. Puoi sbloccarlo da Persone bloccate nel tuo profilo.",
+  "You blocked {user}. Unblock them from Blocked people in Settings.":
+    "Hai bloccato {user}. Puoi sbloccarlo da Persone bloccate nelle Impostazioni.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
@@ -2551,4 +2567,46 @@ export const IT: Table = {
   "Last 12 months": "Ultimi 12 mesi",
   "{count} activity": "{count} attività",
   "{count} activities": "{count} attività",
+
+  // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
+  "Record your flight": "Registra il volo",
+  "Before you fly": "Prima di volare",
+  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
+    "MuW non è uno strumento di volo: registra il volo e lo condivide. Vola con il tuo strumento, il tuo brevetto e il tuo giudizio.",
+  "Got it": "Ho capito",
+  Vario: "Variometro",
+  "Flight time": "Tempo di volo",
+  "Your flight": "Il tuo volo",
+  "No shapes in the air yet: MuW records your flight.":
+    "Niente forme in volo, per ora: MuW registra il tuo volo.",
+  "White: where you flew.": "Bianco: dove hai volato.",
+
+  // src/profile/FirstStep.tsx, BadgesSection.tsx (TASK-457: a new profile)
+  "Your first drawing": "Il tuo primo disegno",
+  "Start from a route that already draws a shape near you.":
+    "Parti da un percorso che disegna già una forma vicino a te.",
+  "Find a route near you": "Trova un percorso vicino a te",
+  "Record a run with MuW and publish its drawing.":
+    "Registra una corsa con MuW e pubblica il suo disegno.",
+  "Publish 10 drawings of runs recorded with MuW.":
+    "Pubblica 10 disegni di corse registrate con MuW.",
+  "Publish the drawing of a run of {distance} or more.":
+    "Pubblica il disegno di una corsa di almeno {distance}.",
+  // «Sleep last night» in a post (TASK-467 part B2): src/health/sleepText.ts,
+  // SleepRunEnd.tsx, SleepCard.tsx
+  "Sleep last night": "Il sonno della notte scorsa",
+  "Shown in this post. Turn it off to keep it to yourself.":
+    "Si vede in questo post. Spegnilo per tenerlo per te.",
+  "Sleep score": "Punteggio del sonno",
+  "Poor@@sleep": "Scarso",
+  "Fair@@sleep": "Discreto",
+  "Good@@sleep": "Buono",
+  "Very good@@sleep": "Molto buono",
+  "Excellent@@sleep": "Eccellente",
+  "Awake@@sleep": "Sveglio",
+  "REM@@sleep": "REM",
+  "Light@@sleep": "Leggero",
+  "Deep@@sleep": "Profondo",
+  "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
+    "Calcolato da MuW dai dati di Apple Salute. Può essere diverso dal punteggio dell'app Salute.",
 };

@@ -5,6 +5,7 @@ import {
   INLINE_SKATING_BEST_DISTANCES,
   RUN_ACTIVITIES,
   RUNNING_BEST_DISTANCES,
+  WHEELCHAIR_BEST_DISTANCES,
 } from "@shaperoute/shared-types";
 import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
@@ -388,6 +389,8 @@ it("gives the screens what they told apart before (part B3b)", () => {
     // A skate at the skater's pace (TASK-380 part B).
     inline_skating: "skater",
     walking: "walker",
+    // A wheelchair or a stroller at a walker's pace (TASK-414 part B).
+    wheelchair: "walker",
   });
   expect(tableOf((sport) => sport.skied)).toEqual({ skiing: true });
   expect(tableOf((sport) => sport.bests)).toEqual({
@@ -398,6 +401,8 @@ it("gives the screens what they told apart before (part B3b)", () => {
     gravel_biking: { distances: CYCLING_BEST_DISTANCES, named: "km" },
     // A run's races, kept apart from a run's (TASK-380).
     inline_skating: { distances: INLINE_SKATING_BEST_DISTANCES, named: "race" },
+    // 1 and 5 km, its own (TASK-414, the user's choice 7).
+    wheelchair: { distances: WHEELCHAIR_BEST_DISTANCES, named: "km" },
   });
   expect(tableOf((sport) => sport.partsBetween?.km)).toEqual({
     running: "{drawn} km of drawing + {between} km walking between the parts",

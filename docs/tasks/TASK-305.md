@@ -204,6 +204,9 @@ parole che l'app ha già («Altitude», «Max altitude», «Top speed»);
 | MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement. | MuW non è uno strumento di volo: registra il volo e lo condivide. Vola con il tuo strumento, il tuo brevetto e il tuo giudizio. | MuW ist kein Fluginstrument: Es zeichnet deinen Flug auf und teilt ihn. Flieg mit deinem eigenen Instrument, deiner Lizenz und deinem Urteilsvermögen. | MuW n'est pas un instrument de vol : il enregistre votre vol et le partage. Volez avec votre propre instrument, votre licence et votre jugement. | MuW no es un instrumento de vuelo: graba tu vuelo y lo comparte. Vuela con tu propio instrumento, tu licencia y tu criterio. |
 | Got it | Ho capito | Verstanden | Compris | Entendido |
 | Flight time | Tempo di volo | Flugzeit | Temps de vol | Tiempo de vuelo |
+| Your flight | Il tuo volo | Dein Flug | Votre vol | Tu vuelo |
+| White: where you flew. | Bianco: dove hai volato. | Weiß: wo du geflogen bist. | Blanc : là où vous avez volé. | Blanco: por donde volaste. |
+| No shapes in the air yet: MuW records your flight. | Niente forme in volo, per ora: MuW registra il tuo volo. | Noch keine Formen in der Luft: MuW zeichnet deinen Flug auf. | Pas encore de formes en vol : MuW enregistre votre vol. | Todavía no hay formas en el aire: MuW registra tu vuelo. |
 
 File, a grandi linee (la lista vera al Coordinatore prima della PR, col
 turno: `settings/sport.ts`, `sports/**` e `social/PublicParts.tsx` sono
@@ -256,7 +259,12 @@ il volo deve essere uno sport dell'orologio.
    `scripts/watch-sports.sh`.
 2. `WatchWakeTests.swift`: il tipo 3000 sveglia il volo; per «nessuno
    sport» il test usa un tipo che MuW non ha (1, football americano).
-3. **Cosa NON c'è al polso**: quota, quota massima e variometro restano sul
+3. Nel volo l'orologio chiede a Core Location le posizioni `.airborne`, che
+   non vengono tenute su strade e sentieri: `TrackRecorder.swift`, con una
+   riga in `WorkoutManager.swift` (sì del Coordinatore). La CI compila solo
+   WatchCore: l'App dell'orologio va compilata e provata su un orologio vero
+   prima del merge.
+4. **Cosa NON c'è al polso**: quota, quota massima e variometro restano sul
    telefono. L'orologio mostra quello che mostra per gli altri sport senza
    percorso: tempo, distanza, passo e battito. Il battito va al telefono e
    da lì al link, come per la corsa.
@@ -272,7 +280,67 @@ dell'orologio rimaste indietro.
 File: `apps/mobile/src/watch/watchSports.ts` e `watchSports.test.ts`,
 `apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json`,
 `apps/mobile/targets/watch/Core/Tests/WatchCoreTests/WatchWakeTests.swift`,
+`apps/mobile/targets/watch/App/TrackRecorder.swift`,
+`apps/mobile/targets/watch/App/WorkoutManager.swift`,
 `docs/tasks/TASK-305.md`.
+
+### R5 — Sotto «Record your flight»: i tuoi voli, i record, pronto al decollo
+
+**Scelte dell'utente (2026-11-12).** Fra quattro proposte ha scelto «I
+tuoi voli», «Record personali» e «Pronto al decollo» (non «Ultimo volo»).
+Su «Share live at start» ha scelto «Come l'ultima volta»: l'interruttore
+resta com'era al volo precedente e si vede sempre nella scheda «Pronto al
+decollo» prima di partire. Crea solo il link, come oggi (nessun pubblico di
+TASK-468), e in volo resta il segno «Sharing live». Coordinatore: nessuna
+ADR nuova, ma «ADR-0375, precisazione R5» e «ADR-0352, precisazione».
+
+**R5a — server: i record del volo.**
+- Il telefono manda in più, a fine volo, `max_alt_m` (il punto più alto
+  dal GPS) e `top_speed_mps` (la velocità massima sul suolo) con
+  `PUT /me/activities/{key}/stats`.
+- Il server li tiene solo per un volo, nella colonna JSON
+  `run_stats.stats`, quindi nessuna migrazione. Per gli altri sport li
+  **ignora** invece di rifiutarli: il telefono li può mandare senza chiedersi
+  che sport è.
+- `GET /me/flight-bests`, solo del proprietario, dà il più alto, il più
+  lungo, il più lontano e il più veloce. Ognuno è `{id, started_at, value}`
+  o `null`; a parità vince il primo volato, e un volo cancellato si porta
+  via i suoi record.
+- Codice in `run_stats.py`, nello stesso router, senza toccare `app.py`;
+  tipi in `packages/shared-types/src/flightBests.ts`.
+- **Prima il server, poi l'app**: un server senza R5a rifiuta i due campi
+  (422).
+
+**R5b — app**, dopo R5a sul server:
+- sotto «Record your flight», tre schede:
+  - «I tuoi voli»: il mese, da `GET /me/activity-calendar?sport=paragliding`;
+    si tocca e apre il calendario sui voli;
+  - i record;
+  - «Pronto al decollo»: la precisione del GPS, pronto fino a 10 m, e
+    l'interruttore;
+- a fine volo il telefono manda i due campi;
+- una riga in `FreeRunScreen.tsx` accende il link a fine conto alla
+  rovescia.
+
+**Testi di R5**, approvati dall'utente il 2026-11-12 (en/it «Sì,
+approvo», poi de/fr/es «Sì, approvo»). Quota massima e velocità massima
+usano le parole che l'app ha già.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Your flights | I tuoi voli | Deine Flüge | Vos vols | Tus vuelos |
+| 1 flight · {time} | 1 volo · {time} | 1 Flug · {time} | 1 vol · {time} | 1 vuelo · {time} |
+| {count} flights · {time} | {count} voli · {time} | {count} Flüge · {time} | {count} vols · {time} | {count} vuelos · {time} |
+| No flights this month | Nessun volo questo mese | Keine Flüge in diesem Monat | Aucun vol ce mois-ci | Ningún vuelo este mes |
+| Your best flights | I tuoi record di volo | Deine Flugrekorde | Vos records de vol | Tus récords de vuelo |
+| Longest flight | Volo più lungo | Längster Flug | Vol le plus long | Vuelo más largo |
+| Farthest flight | Volo più lontano | Weitester Flug | Vol le plus lointain | Vuelo más lejano |
+| Ready to fly | Pronto al decollo | Startbereit | Prêt à décoller | Listo para despegar |
+| Waiting for GPS… | In attesa del GPS… | Warte auf GPS… | En attente du GPS… | Esperando el GPS… |
+| GPS ready · ±{m} m | GPS pronto · ±{m} m | GPS bereit · ±{m} m | GPS prêt · ±{m} m | GPS listo · ±{m} m |
+| Weak GPS · ±{m} m: wait in the open | GPS debole · ±{m} m: aspetta all'aperto | Schwaches GPS · ±{m} m: warte im Freien | GPS faible · ±{m} m : attendez à découvert | GPS débil · ±{m} m: espera al aire libre |
+| Share live at start | Condividi dal vivo alla partenza | Beim Start live teilen | Partager en direct au départ | Compartir en directo al empezar |
+| When the countdown ends, MuW makes the link and opens the share sheet. | Finito il conto alla rovescia, MuW crea il link e apre la condivisione. | Nach dem Countdown erstellt MuW den Link und öffnet das Teilen-Menü. | À la fin du compte à rebours, MuW crée le lien et ouvre le partage. | Al terminar la cuenta atrás, MuW crea el enlace y abre el menú para compartir. |
 
 ## Cosa fare (se l'utente decide di sì)
 
@@ -611,3 +679,23 @@ copia»; quella di prima, e60e0b35, in `/srv/getmuw-site.old`): cambiano
 solo `live/texts.js` e `live/view.js`, i cinque file serviti sono uguali al
 commit e i controlli di `out/TASK-305/SITO-R3.md` sono passati. Un volo
 vero sulla pagina si vedrà dopo l'aggiornamento completo con R2 (#1201).
+
+**Esito R2** (2026-11-12): PR #1201 in main (f0909495), con le schermate
+approvate dall'utente («Sì, approvo») dopo la prova nel simulatore
+(iPhone 17e, quota finta in salita e in discesa). «Paragliding» è uno
+sport da scegliere, anche nelle build per lo store; «Draw» mostra solo
+«Record your flight»; l'avviso «Before you fly» una volta per telefono; in
+volo quota, variometro, quota massima e dislivello sopra i numeri della
+registrazione; il link dal vivo riceve `alt_m`, `max_alt_m`, `vario_mps`
+e `speed_mps`; la fine del volo ha i suoi numeri. Dalla prova due
+correzioni: i riquadri due per riga («Max altitude» si tagliava) e la riga
+del volo sotto il bottone (`ChooseScreen.tsx`, col sì del Coordinatore).
+Esce con l'aggiornamento completo del 2026-11-12.
+
+**Cosa resta**:
+
+- Una prova di un volo vero, col link dal vivo aperto da un altro
+  telefono, dopo l'uscita.
+- R4 (il volo sull'orologio, per il battito dal vivo): PR #1218 in bozza,
+  fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
+- Le parti del pianificatore (A1…F) restano Proposte.

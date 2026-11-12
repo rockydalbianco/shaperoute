@@ -1,6 +1,7 @@
 # TASK-466 — Lo stretching nuovo: animazioni, routine, palestra, mattino, routine pubblicate
 
-**Stato**: In corso · parte A in PR (bozza)
+**Stato**: In corso · parte A in `main` (#1181, `437f152f`, 2026-11-12;
+esce con l'aggiornamento completo); prossima B
 **Fase**: 4 · **Branch**: `feat/TASK-466-a-stretch-motion` (A); B, C, D, E
 ciascuna col suo branch e la sua PR
 **ADR**: ADR-0378 (una per tutte le parti; la voce va nella PR di soli
@@ -51,7 +52,7 @@ tenendo tutte le voci; nessun OTA di produzione per due giorni.
 
 ## Parte A — Animazioni e schermata
 
-*(branch `feat/TASK-466-a-stretch-motion`)*
+_(branch `feat/TASK-466-a-stretch-motion`)_
 
 1. **Respiro**: mentre la posa è tenuta, la figura va lentamente un po'
    più a fondo e torna (`Breath` in `poses.ts`, `BREATH_MS` = 4 s), pochi
@@ -151,4 +152,4 @@ nativo, niente server.
 
 ## Esito
 
-*(a fine task)*
+_(a fine task)_

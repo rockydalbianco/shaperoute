@@ -1052,9 +1052,9 @@ libero al merge):
   Fuori dalle copie notturne (`backup.sh`, `--exclude-table-data`). Test
   in `test_live_shares.py`.
 
-Migrazione `0074_live_audiences.sql` (TASK-468 parte A1a, ADR-0381, `API.md`
-«Live shares», «In chat e nel Feed»; numero provvisorio del Coordinatore,
-quello vero il primo libero al merge):
+Migrazione `0073_live_audiences.sql` (TASK-468 parte A1a, ADR-0381, `API.md`
+«Live shares», «In chat e nel Feed»; il numero è del Coordinatore, dopo
+la `0072` di TASK-467 B1):
 
 - **`live_shares`**: `token_hash` diventa facoltativo (una live solo in
   chat o nel Feed non ha link finché non lo si chiede; resta unico);

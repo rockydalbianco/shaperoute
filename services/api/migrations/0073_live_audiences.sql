@@ -1,7 +1,6 @@
 -- The live share in the chat and in the Feed (TASK-468 part A1a, ADR-0381,
--- docs/DATABASE.md): one share of a recording, seen in more ways. The
--- number is provisional: the first free one when it is merged. A migration
--- already in main is never edited: write the next one.
+-- docs/DATABASE.md): one share of a recording, seen in more ways. A
+-- migration already in main is never edited: write the next one.
 
 -- The link is now one of the ways, and optional: a share only in the chat
 -- or the Feed has no token until its owner asks for the link.

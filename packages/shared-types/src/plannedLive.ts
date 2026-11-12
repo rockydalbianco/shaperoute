@@ -84,3 +84,14 @@ export interface LivesPage {
   lives: LiveItem[];
   next: string | null;
 }
+
+/** The push to who asked «Remind me» (TASK-468 part A2b), at a planned
+ * live's first start: «{name} is live: {title}». Its data opens the live
+ * view: fixtures/planned-live-push-data.json. */
+export const PLANNED_LIVE_PUSH_KIND = "planned_live_started";
+
+export interface PlannedLivePushData {
+  kind: typeof PLANNED_LIVE_PUSH_KIND;
+  planned_live_id: string;
+  share_id: string;
+}

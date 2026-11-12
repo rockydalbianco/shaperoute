@@ -3519,8 +3519,17 @@ in `planned_lives.py`, montato da `install_live_shares`; tipi in
   o `ended`; `distance_m` e `duration_s` sono gli ultimi numeri, per la
   scheda; `reminded` è il «Remind me» di chi chiede; `can_start` vale
   solo per il proprietario.
-- **«Remind me»** tiene solo chi vuole l'avviso: la push alla partenza
-  arriva con la parte A2b. Test in `test_planned_lives.py`.
+- **«Remind me»** (parte A2b): alla **prima** partenza riuscita (`POST
+  /me/planned-lives/{id}/start`), dopo la scrittura, una push
+  `planned_live_started` a chi l'ha chiesto e la vede ancora: mai al
+  proprietario, a chi è lontano per un blocco, a chi non lo segue più per
+  una live «followers». Testo «{name} is live: {title}» (it «{name} è live:
+  {title}», più de, es, fr); dati `{kind, planned_live_id, share_id}`
+  (`fixtures/planned-live-push-data.json`, `PlannedLivePushData`) per
+  aprire la schermata dal vivo. Una ripartenza dopo uno stop non la manda
+  di nuovo; nessun giro periodico, nessuna migrazione. Le regole di
+  `push.py` valgono come per le altre (push accese, token). Test in
+  `test_planned_lives.py`.
 
 ### Run stats (TASK-410 parte C, ADR-0340)
 

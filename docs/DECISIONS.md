@@ -552,8 +552,56 @@ lasciando le righe d'indice.
 - ADR-0380, precisazione B2b — Il sonno a fine palestra e a fine vasca: lo stesso interruttore di B2, e la notte aspetta l'attività nella coda sua prima di partire · 2026-11-12 · Attiva
 - ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km · 2026-11-12 · Attiva
 - ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`) · 2026-11-12 · Attiva
+- ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Proposta
 
 ## Voci nuove
+
+## ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false`
+
+**Stato**: Proposta · 2026-11-12 · TASK-475, parte 0 (documenti). Lo sport,
+il salvataggio come attività, il nome e l'emoji sono **scelte
+dell'utente** (2026-11-12: «Diventa uno sport», «Sì, come la palestra»,
+«Sì, approvati»); il modo è deciso dall'agente su delega dell'utente,
+numero dal Coordinatore.
+
+**Contesto**: col pannello degli sport a griglia (TASK-473) l'utente ha
+chiesto di aggiungere lo stretching. Fra un quadrato che apre solo le
+routine e uno sport vero ha scelto lo sport, e una routine finita deve
+restare come una sessione di palestra. Lo stretching stesso (figura,
+esercizi, routine Morning, After run, After gym da 3, 5 e 10 minuti,
+palestra, mattino, routine pubblicate) è di TASK-466, ADR-0378.
+
+**Decisione**:
+- **Uno sport del registro**: `stretching` nel tipo `Sport` e in `ACTIVITY`
+  dell'app (TASK-376), nella famiglia «Other» del pannello; sul server
+  un'attività registrata senza percorso, come `gym` e `paragliding`
+  (migrazione provvisoria 0079 per il vincolo su `runs.activity`, se
+  serve). Nome «Stretching» (it Stretching, fr Étirements, de Dehnen, es
+  Estiramientos), emoji 🧘: un testo nuovo, separato dal tasto «Stretch»
+  di fine corsa.
+- **Nasce `ready: false`**: nel pannello dice «Soon» finché server, app e
+  routine non ci sono tutti; si accende con le schermate approvate
+  dall'utente.
+- **Prende da ADR-0378, non lo cambia**: con lo sport scelto «Draw» mostra
+  le routine di TASK-466 B e le apre in `StretchScreen`; i file di
+  `src/stretch` si toccano solo d'accordo con la sessione di TASK-466 e col
+  Coordinatore.
+- **La sessione finita è un'attività**: sport, routine, durata, senza
+  traccia, in «My activities», nel calendario e condivisibile come una
+  sessione di palestra. È diversa dalla routine pubblicata di ADR-0378 E,
+  che è una ricetta da rifare, non una sessione fatta.
+
+**Alternative scartate**: un quadrato che apre solo le routine senza
+cambiare sport (proposto, l'utente ha scelto lo sport); la sessione non
+salvata, senza server (l'utente ha scelto di salvarla); riusare la chiave
+«Stretch» come nome dello sport, che in francese, tedesco e spagnolo è un
+verbo.
+
+**Conseguenze**: parte A sul server a turno (`app.py`, shared-types,
+`docs/API.md` dopo 455 C; `sports/__init__.py`, `activities.py`,
+`reads.py` dopo 463 B; `engine.zip` dopo la #1269); parte B nell'app dopo
+la #1216 in `main` e dopo 413 (#1280) e 463 B (#1278) su `settings/sport.ts`;
+parte C accende. Dettagli in `tasks/TASK-475.md`.
 
 ## ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`)
 

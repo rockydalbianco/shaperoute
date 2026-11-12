@@ -253,6 +253,25 @@ Branch `feat/TASK-414-a-wheelchair`, sul Mac. Script e risultati in
   170 MB in una grande città, meno di una zona del Roller (452 MB a
   Milano).
 
+## La parte B nell'app (TASK-414 B, 2026-11-12)
+
+- **Le forme di uno sport**: `SportProfile.shapes` (come `Activity.shapes`
+  del motore). Con le forme, «Disegna» mostra solo quelle, tutte in vista,
+  senza «Freehand» né il campo «altra forma»; parole e immagini sono già
+  spente da `noWords`/`noImages`. Dopo `shape_not_drawable` le forme
+  proposte sono le sue.
+- **Il tempo**: al passo della camminata (`timeAt: "walker"`), 12:00 al
+  km prima che ce ne sia uno.
+- **I record**: `WHEELCHAIR_BEST_DISTANCES` (`1k`, `5k`) nel contratto,
+  scritti «1 km» e «5 km».
+- **Salute**: Apple `.wheelchairWalkPace` (70), Health Connect
+  `EXERCISE_TYPE_WHEELCHAIR` (82), anche per il passeggino (scelta 8).
+  Nessuna distanza del giorno in Apple Salute: `DistanceWheelchair`
+  conterebbe come carrozzina i metri di chi spinge un passeggino.
+- **L'energia**: quella della camminata (ACSM), per tutti e due i modi di
+  spingere: uno sport solo (scelta 1).
+- **I testi**: i tre della scelta 6, in cinque lingue.
+
 ## Cosa resta da misurare
 
 - **Le salite**: il motore non conosce le quote. Se la parte G di TASK-347

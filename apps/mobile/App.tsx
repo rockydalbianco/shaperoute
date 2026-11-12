@@ -123,6 +123,7 @@ import {
 import { ImageEditsContext } from "./src/route/imageEdits";
 import type { ChoiceKind } from "./src/route/problems";
 import { withPenUp } from "./src/route/penUpHint";
+import { drawKindOf, shapeOfSport } from "./src/route/sportDraw";
 import { shapeAsked } from "./src/route/penUpShapes";
 import { drawLabel, drawWhat } from "./src/route/drawLabel";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
@@ -608,11 +609,11 @@ function MuW() {
   // asked from the map (TASK-331).
   // On the water only a shape of the catalogue is drawn (TASK-191): a word or
   // a picture chosen before «Paddle» waits for another sport. A swim draws a
-  // shape or a drawing, a word chosen before it waits too (TASK-323).
-  const drawKind: ChoiceKind =
-    sportActivity === "paddling" || (sportActivity === "swimming" && kind === "word")
-      ? "shape"
-      : kind;
+  // shape or a drawing, a word chosen before it waits too (TASK-323). A
+  // wheelchair draws four shapes only: another chosen before waits too
+  // (TASK-414). Each sport says it in its profile.
+  const drawKind: ChoiceKind = drawKindOf(kind, sportActivity);
+  const sportShape = shapeOfSport(shape, sportActivity);
   const drawn:
     | { shape: Shape }
     | { shape: PenUpShape; pen_up: true }
@@ -620,9 +621,9 @@ function MuW() {
     | { outline: OutlinePoint[]; strokes?: OutlinePoint[][] }
     | null =
     drawKind === "shape"
-      ? shape !== null
+      ? sportShape !== null
         ? // A shape in pieces with the pen up, on the roads (TASK-223).
-          shapeAsked(shape, penUp, sportActivity)
+          shapeAsked(sportShape, penUp, sportActivity)
         : null
       : drawKind === "word"
         ? wordCheck.ok

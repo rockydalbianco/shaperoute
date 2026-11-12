@@ -1192,6 +1192,12 @@ export const ES: Table = {
   Roller: "Patines",
   "Watch for traffic and steep descents: check the route before you set off.":
     "Cuidado con el tráfico y las bajadas pronunciadas: revisa la ruta antes de salir.",
+  // src/sports/wheelchair.ts, settings/sport.ts (TASK-414 part B), approved on
+  // 2026-11-08 (the user's choice 6)
+  "Wheelchair & stroller": "Silla y carrito",
+  "Go without a route": "Salir sin ruta",
+  "Map data can miss kerbs, steps and steep slopes: check the route before you set off.":
+    "Los datos del mapa pueden no mostrar bordillos, escalones y cuestas pronunciadas: revisa la ruta antes de salir.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Esquí",
   "Cross-country ski": "Esquí de fondo",
@@ -2600,4 +2606,21 @@ export const ES: Table = {
     "Publica 10 dibujos de carreras grabadas con MuW.",
   "Publish the drawing of a run of {distance} or more.":
     "Publica el dibujo de una carrera de {distance} o más.",
+  // «Sleep last night» in a post (TASK-467 part B2): src/health/sleepText.ts,
+  // SleepRunEnd.tsx, SleepCard.tsx
+  "Sleep last night": "Sueño de anoche",
+  "Shown in this post. Turn it off to keep it to yourself.":
+    "Se ve en esta publicación. Apágalo para guardártelo.",
+  "Sleep score": "Puntuación del sueño",
+  "Poor@@sleep": "Deficiente",
+  "Fair@@sleep": "Aceptable",
+  "Good@@sleep": "Bueno",
+  "Very good@@sleep": "Muy bueno",
+  "Excellent@@sleep": "Excelente",
+  "Awake@@sleep": "Despierto",
+  "REM@@sleep": "REM",
+  "Light@@sleep": "Ligero",
+  "Deep@@sleep": "Profundo",
+  "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
+    "Calculada por MuW con los datos de Apple Salud. Puede ser distinta de la puntuación de la app Salud.",
 };

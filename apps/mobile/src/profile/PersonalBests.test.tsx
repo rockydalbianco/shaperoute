@@ -130,3 +130,23 @@ test("a skate has bests of its own, named as races, after the rides' (TASK-380)"
     .map((node) => node.props.children);
   expect(texts).toEqual(["RUN", "5K", "BIKE", "40 km", "ROLLER", "10K", "Marathon"]);
 });
+
+test("a wheelchair has bests of its own over 1 and 5 km, after the skate's (TASK-414)", async () => {
+  const oneK: PersonalBest = { ...fiveK, sport: "wheelchair", distance: "1k" };
+  const pushedFiveK: PersonalBest = { ...half, sport: "wheelchair", distance: "5k" };
+  expect(distanceName(oneK)).toBe("1 km");
+  expect(distanceName(pushedFiveK)).toBe("5 km");
+  await show([pushedFiveK, fiveK, oneK, fortyK]);
+  const texts = within(screen.getByTestId("personal-bests"))
+    .getAllByText(/^(RUN|BIKE|WHEELCHAIR & STROLLER|5K|1 km|5 km|40 km)$/)
+    .map((node) => node.props.children);
+  expect(texts).toEqual([
+    "RUN",
+    "5K",
+    "BIKE",
+    "40 km",
+    "WHEELCHAIR & STROLLER",
+    "1 km",
+    "5 km",
+  ]);
+});

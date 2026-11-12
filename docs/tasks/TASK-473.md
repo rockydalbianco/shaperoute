@@ -24,7 +24,7 @@ gli sport uno sotto l'altro.
   piedi, su ruote, sull'acqua, sulla neve, altro).
 - «No, vai alla PR»: niente prova nel simulatore prima della PR.
 
-## Testi nuovi (aspettano il sì dell'utente)
+## Testi nuovi (approvati dall'utente il 2026-11-12)
 
 | Inglese | Italiano | Francese | Tedesco | Spagnolo |
 |---|---|---|---|---|
@@ -33,7 +33,8 @@ gli sport uno sotto l'altro.
 | Other (gruppo della palestra) | Altro | Autres | Weitere | Otros |
 
 «On the water» e «On snow» esistevano già, con le loro traduzioni.
-Sì dell'utente: *(da scrivere con le sue parole)*
+Sì dell'utente (2026-11-12), viste le tre righe con le quattro
+traduzioni: «Sì, approvati».
 
 ## Cosa fare
 
@@ -66,7 +67,7 @@ Sì dell'utente: *(da scrivere con le sue parole)*
       tutti gli sport.
 - [x] `SportButton.test.tsx` e il test delle tabelle di traduzione verdi
       senza modifiche; `tsc` verde.
-- [ ] Sì dell'utente sui testi nuovi, scritto sopra.
+- [x] Sì dell'utente sui testi nuovi, scritto sopra.
 
 ## File toccati
 

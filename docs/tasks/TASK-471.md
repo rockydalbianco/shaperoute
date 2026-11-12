@@ -178,6 +178,9 @@ pura sono i 60 s di pausa quando lo stato non si legge.
 - `services/api/shaperoute_api/jobs.py`
 - `services/api/shaperoute_api/route_processes.py`
 - `services/api/tests/test_jobs_map_unavailable.py` (nuovo)
+- `apps/mobile/assets/engine/engine.zip` (rifatto: `jobs.py` è fra i
+  moduli che il motore sul telefono porta con sé; va rifatto per ultimo,
+  dopo l'ultimo merge di `main`)
 - `docs/tasks/TASK-471.md` (nuovo)
 
 ## Criteri di accettazione

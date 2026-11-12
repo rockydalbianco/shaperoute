@@ -23,8 +23,10 @@ import { isPoolLine } from "../pool/PoolTile";
 import { Avatar } from "../profile/Avatar";
 import { useFollowsDoor } from "../social/followsDoor";
 import { activityName } from "../social/PublicParts";
+import { OverAppSlot, useModalPage, useOverAppShown } from "../screens/overAppContext";
 import { ReportMenu } from "../social/ReportMenu";
 import { color, font, fontWeight, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
+import { closeTopLayer } from "../ui/backLayers";
 import { Tap } from "../ui/Tap";
 import { useUnits } from "../units/useUnits";
 import { useEditRunDoor } from "./editRunDoor";
@@ -62,12 +64,22 @@ type Props = {
  * it, as on the card.
  */
 export function PostPage({ post, onClose, onMap }: Props) {
+  // A profile opened from it comes over it, in its slot (TASK-470 D).
+  useModalPage();
+  const overShown = useOverAppShown();
   return (
-    <Modal visible animationType="slide" onRequestClose={onClose} testID="post-page">
+    <Modal
+      visible
+      animationType="slide"
+      // Android's «back»: a page opened over the post first.
+      onRequestClose={() => (overShown ? closeTopLayer() : onClose())}
+      testID="post-page"
+    >
       {/* Its own edges, as «Heart rate zones» has them (TASK-366): inside a
           Modal the app's are none, and «‹» sat under the clock (TASK-410). */}
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <Page post={post} onClose={onClose} onMap={onMap} />
+        <OverAppSlot />
       </SafeAreaProvider>
     </Modal>
   );

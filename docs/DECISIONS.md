@@ -458,7 +458,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B1: la guida in Swift, legata al telefono dalle tracce · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte A3: il telefono · 2026-11-08 · Attiva
 - ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server · 2026-11-08 · Proposto
-- ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Accettato (2026-11-12, parte A in `main`, vedi la precisazione A)
+- ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Accettato (2026-11-12, parti A e B in `main`, vedi le precisazioni A e B)
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Accettata (chiuso il 2026-11-10: 572 percorsi in 63 città)
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
@@ -549,8 +549,47 @@ lasciando le righe d'indice.
 - ADR-0380, precisazione B1b/B2 — Il sonno nel post: un campo `sleep` nel disegno visto al posto di una richiesta per riga; nell'app tutto dietro `SLEEP_POSTS_ON` e nessun lettore di Salute in `main`; al server solo con l'interruttore acceso e un post che altri vedono · 2026-11-12 · Attiva
 - ADR-0342, precisazione A3 — La città detta subito: gli edifici contati attorno alla partenza prima di leggere la neve, sopra 280 per km² «no open snow», un conteggio che non arriva non cambia nulla · 2026-11-12 · Attiva
 - ADR-0380, precisazione B2b — Il sonno a fine palestra e a fine vasca: lo stesso interruttore di B2, e la notte aspetta l'attività nella coda sua prima di partire · 2026-11-12 · Attiva
+- ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km
+
+**Stato**: Attiva · 2026-11-12 · TASK-414 B (#1234, `100624e2`) e B2 (#1257,
+`e88d491f`). Deciso dall'agente su delega dell'utente; liste dei file
+approvate dal Coordinatore; schermate approvate dall'utente («Sì, accendi»).
+
+1. **Le forme di uno sport stanno nel suo profilo**: `SportProfile.shapes`
+   (come `Activity.shapes` del motore). La carrozzina ha cerchio, cuore,
+   stella e luna; nessun altro sport ne ha, quindi tutti gli altri vedono il
+   catalogo intero come prima.
+2. **«Disegna» chiede solo quello che lo sport disegna**, letto dal profilo
+   in un punto solo (`route/sportDraw.ts`): `drawKindOf` (una parola o
+   un'immagine che lo sport non disegna aspetta, come prima sull'acqua),
+   `shapeOfSport` (una forma che lo sport non disegna non parte verso il
+   server) e `figuresOf` (la fila di figure sotto il percorso: le forme
+   dello sport, le immagini solo se lo sport le disegna, «Modifica il
+   disegno» solo a chi disegna a mano). Il caso trovato al simulatore: il
+   cavallo sotto un cuore in carrozzina chiedeva al server un 422 e lasciava
+   la scheda vuota.
+3. **Il tempo** sotto la distanza è quello della camminata (`timeAt:
+   "walker"`, 12:00 al km prima di una camminata salvata): chi spinge va
+   come chi cammina.
+4. **I record** su 1 e 5 km stanno nel contratto
+   (`WHEELCHAIR_BEST_DISTANCES`, `PersonalBest.sport` con `wheelchair`) e
+   nel profilo come «1 km» e «5 km», nel gruppo «Wheelchair & stroller» dopo
+   il Roller.
+5. **Salute**: Apple `.wheelchairWalkPace` (70), Health Connect
+   `EXERCISE_TYPE_WHEELCHAIR` (82), anche per il passeggino (scelta 8);
+   nessuna distanza del giorno in Apple Salute, che conterebbe come
+   carrozzina i metri di chi spinge un passeggino. L'energia è quella della
+   camminata, uno sport solo (scelta 1).
+6. **Import**: un file che dice «wheelchair» (MuW, Strava, Garmin
+   `wheelchair_push_*`) è una carrozzina, prima di «run». I file FIT no: i
+   codici FIT della carrozzina non sono verificati.
+7. **Acceso** (`ready: true`) dopo lo sci di fondo (#1249) e il menu a
+   griglia (#1254, la carrozzina nella famiglia «wheels»); solo JavaScript,
+   l'impronta iOS non cambia; esce con l'OTA, col sì dell'utente.
 
 ## ADR-0380, precisazione B2b — Il sonno a fine palestra e a fine vasca: lo stesso interruttore di B2, e la notte aspetta l'attività nella coda sua prima di partire
 

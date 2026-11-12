@@ -705,6 +705,51 @@ Feed (follower o tutti, scelto a ogni live) e programmarla in anticipo
 persone scelte: una frase nuova nella privacy dell'app e del sito, App
 Privacy e Data safety da rivedere, ogni live accesa solo da una scelta
 esplicita. Il link di TASK-424 non cambia.
+- ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
+
+## Voci nuove
+
+## ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate
+
+**Stato**: Accettata · 2026-11-11 · TASK-452: PR1 server e tipi (#1158,
+`30407b83`, sul server al passo 9 del 2026-11-12), PR2 l'app (#1159,
+`881489fd`). Le scelte di quello che si vede sono dell'utente, una alla
+volta sulle schermate D1–D3 della tela («Così, nella guida», «Sì, così»,
+«Dalle mie corse», «Chiedi prima», «Approvo», «Sì, procedi»); il modo è
+deciso dall'agente su delega dell'utente, numero dal Coordinatore.
+
+**Contesto**: i giorni di corsa delle schede (ADR-0363) avevano distanze
+uguali per tutti e nessun ritmo. L'utente ha chiesto di chiedere il ritmo
+sui 10 km e il lungo di ognuno e fare piani su misura.
+
+**Decisione**:
+- **Un campo, nessuna migrazione**: il programma ha `runner` facoltativo,
+  `pace_10k_s` (180–900) e uno solo fra `long_m` (1–60 km) e `long_s`
+  (10 min–6 h). Sta nel JSONB `program` di `gym_plans` (0066), lo valida
+  `gym_plans.py` (`GymPlanRunnerBody`).
+- **I ritmi li calcola il telefono** (`gym/runPace.ts`): lenta +65 s/km,
+  lungo +75 s/km, ripetute per lunghezza (200 m −30, 400 m −25, 800 m −15,
+  1000 m −10, a tempo −20). Il lungo parte dal suo e, con `runner`, cresce
+  di 1 km (o 5 min) a settimana, l'ultima settimana di un ciclo di 3 o più
+  all'80% (`runInWeek(..., personal)`); la lenta è circa metà del lungo,
+  almeno 3 km (20 min).
+- **La stima dalle corse**: a fine ciclo (l'ultima settimana) le corse
+  salvate delle ultime 4 settimane da 3 km in su, già nella lista che l'app
+  ha (`useActivitiesDoor().list`), senza chiamate nuove; il ritmo sui 10 km
+  dalla migliore con Riegel (t₂ = t₁·(d₂/d₁)^1.06), il lungo dalla più
+  lunga. Proposta solo se più veloce di almeno 5 s/km, una volta a ciclo
+  (`gym-pace-asked.json` sul telefono); cambia la scheda solo col sì.
+- **Due PR**, come per ADR-0363: lo schema vieta i campi in più (`422`),
+  quindi il server prima dell'app.
+
+**Cosa vede l'app di prima** (OTA 8): legge un programma con `runner` (la
+sua `isGymProgram` non lo guarda) e mostra le distanze scritte; se salva la
+scheda, lo copia così com'è.
+
+**Conseguenze**: la stima vale solo per chi salva le corse nell'app; i
+ritmi sono indicativi, non vengono dal battito. I testi e le scelte in
+`docs/tasks/TASK-452.md`; il comportamento in `sports/gym.md`; il contratto
+in `API.md`.
 
 ## ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio
 

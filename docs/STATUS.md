@@ -249,12 +249,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   manca il passo sul server (il 12, col sì dell'utente). Poi la parte app,
   dopo TASK-414 B e TASK-413 B. File: — · `tasks/TASK-463.md`
 
-- **TASK-471 — Overpass in errore: rispondere prima** (ADR-0385) · in
-  `main`: un download fallito per job (#1251), 5 s invece di 60 e il secondo
-  servizio spento (#1269), le frasi dell'app e della privacy (#1259, #1263,
-  OTA 14). Restano, col sì dell'utente: passo sul server, copia del sito,
-  accensione del secondo servizio. File: — · `tasks/TASK-471.md`
-
 - **TASK-461 — Il pianificatore completo** (ADR-0371) · A1 e B1 (server:
   quattro esercizi, giorni fuori `outing`, `target`) in `main` e sul server;
   B2a (settimane verso una meta) e A2 (ingresso «Cosa vuoi allenare?», corpo

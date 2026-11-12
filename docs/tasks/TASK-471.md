@@ -1,13 +1,28 @@
 # TASK-471 — Overpass in errore: rispondere prima
 
-**Stato**: In corso — tutto il codice è in `main` dal 2026-11-12: #1251
-(un download fallito per job), #1269 (`eee85a69`: 5 secondi, secondo
-servizio spento anche per acqua e neve, errore in una riga), #1259 e
-#1263 (la frase dell'app e quella della privacy, nell'OTA 14). Tutte le
-scelte dell'utente sono qui sotto, con le sue parole. Restano, ognuno col
-sì dell'utente: il passo 12 sul server (commit `eee85a69`), la copia del
-sito con la privacy, l'accensione del secondo servizio; poi le letture
-di «Dopo il passo sul server» e la chiusura.
+**Stato**: Done — 2026-11-12. Esito: con Overpass in errore l'app lo sa
+dopo secondi invece che dopo più di due minuti: un download fallito per
+job (#1251), 5 secondi invece dei 60 di osmnx quando lo stato non si
+legge e l'errore in una riga (#1269), la frase nuova dell'app (#1259);
+il secondo servizio Overpass è nel codice, **spento**, per strade, acqua
+e neve (#1269), e la privacy lo nomina già (#1263). Sul server dal passo
+12 (2026-11-12, ~16:56Z, `eee85a69`); app con l'OTA 14. Decisione:
+ADR-0385 (#1286, entrata con la #1289).
+
+**Resta** (fuori dalla chiusura, ognuno col sì dell'utente):
+- **Accensione del secondo servizio**: aspetta la copia del sito con la
+  privacy nuova. Poi, in `/root/shaperoute/deploy/.env`, la riga
+  `SHAPEROUTE_OVERPASS_FALLBACK_URL=https://overpass.private.coffee/api`
+  e il contenitore dell'API ricreato; lettura di controllo in «Accendere
+  il secondo servizio».
+- **Due letture non ancora fatte dopo il passo 12** (punti 1 e 2 di «Dopo
+  il passo sul server»): un job `done` dopo le 16:56Z, cioè una riga
+  `times total` nel log (dice che thread e processo di calcolo si parlano
+  col messaggio nuovo; in CI lo prova un processo vero), e
+  `out/TASK-471/check_once.py`. Lette al passo: server a `eee85a69`,
+  `fallback_url()` = `None`, health 200, nessun Traceback
+  (`out/coordinatore/passo12/remote.out`).
+- Da riprendere solo se i log lo chiedono: le scelte (e) e (d) qui sotto.
 **Fase**: 5 · **Branch**: `fix/TASK-471-map-unavailable-once` (#1251),
 `fix/TASK-471-b-overpass-pause` (parte B) ·
 **ADR**: ADR-0385 (la voce va nella PR di documenti dopo il merge)

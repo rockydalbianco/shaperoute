@@ -1,0 +1,48 @@
+import { keepSleepOn, loadSleepOn, SLEEP_CHOICE_FILE } from "./sleepChoice";
+
+// The phone's documents folder, in memory.
+jest.mock("expo-file-system", () => {
+  const files = new Map<string, string>();
+  class File {
+    uri: string;
+    constructor(directory: { uri: string }, name: string) {
+      this.uri = `${directory.uri}${name}`;
+    }
+    get exists(): boolean {
+      return files.has(this.uri);
+    }
+    create(): void {
+      files.set(this.uri, "");
+    }
+    write(text: string): void {
+      files.set(this.uri, text);
+    }
+    textSync(): string {
+      return files.get(this.uri) ?? "";
+    }
+  }
+  return { File, files, Paths: { document: { uri: "file:///documents/" } } };
+});
+
+const { files } = jest.requireMock<{ files: Map<string, string> }>("expo-file-system");
+
+beforeEach(() => {
+  files.clear();
+});
+
+test("never asked: off", () => {
+  expect(loadSleepOn()).toBe(false);
+});
+
+test("the yes is kept, in a file of its own", () => {
+  keepSleepOn();
+  expect(loadSleepOn()).toBe(true);
+  expect(files.get(`file:///documents/${SLEEP_CHOICE_FILE}`)).toBe('{"on":true}');
+});
+
+test("a file that does not read is no yes", () => {
+  files.set(`file:///documents/${SLEEP_CHOICE_FILE}`, "{not json");
+  expect(loadSleepOn()).toBe(false);
+  files.set(`file:///documents/${SLEEP_CHOICE_FILE}`, '{"on":"yes"}');
+  expect(loadSleepOn()).toBe(false);
+});

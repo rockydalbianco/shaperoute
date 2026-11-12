@@ -1,4 +1,8 @@
-import type { Activity, LatLon } from "@shaperoute/shared-types";
+import {
+  type Activity,
+  type LatLon,
+  SLEEP_SHOWN_DEFAULT,
+} from "@shaperoute/shared-types";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
@@ -7,6 +11,10 @@ import { loadHealthOn } from "../health/healthChoice";
 import { healthPhone } from "../health/healthModules";
 import type { HealthPhone } from "../health/healthPhone";
 import { HealthRunEnd } from "../health/HealthRunEnd";
+import { sleepReader } from "../health/sleepModules";
+import { SleepRunEnd } from "../health/SleepRunEnd";
+import type { SleepReader } from "../health/sleepSamples";
+import { useLastNight } from "../health/useLastNight";
 import { saveToHealth, useHealth } from "../health/useHealth";
 import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
@@ -53,6 +61,9 @@ type Props = {
   fetchFn?: typeof fetch;
   apiKey?: string | null;
   health?: HealthPhone | null;
+  /** The phone's reader of the sleep (TASK-467 part B2): none in every
+   * build until the native one of part C, so nothing of it shows. */
+  sleep?: SleepReader | null;
   /**
    * An activity added from a file of another app (TASK-312, ADR-0272), with
    * the sport the file says (null: the one of «Settings»): «Imported» over
@@ -103,6 +114,7 @@ export function RunEnd({
   fetchFn,
   apiKey,
   health: phoneHealth = healthPhone(),
+  sleep: phoneSleep = sleepReader(),
   imported,
 }: Props) {
   const {
@@ -114,6 +126,7 @@ export function RunEnd({
     toPhotos,
     toOrder,
     toOutfit,
+    toSleep,
     full,
     waiting,
     refused,
@@ -150,6 +163,13 @@ export function RunEnd({
   const [line] = useState<LatLon[] | null>(
     () => ended?.track.fixes.map((fix) => fix.point) ?? null,
   );
+  // «Sleep last night» (TASK-467 part B2): the night before the run began,
+  // never for an activity from a file (an old one). On until turned off
+  // (the user's choice); shown, and sent, only with a post others see.
+  const [beganMs] = useState(() => ended?.track.fixes[0]?.timeMs ?? Date.now());
+  const lastNight = useLastNight(imported === undefined ? phoneSleep : null, beganMs);
+  const [sleepShown, setSleepShown] = useState(SLEEP_SHOWN_DEFAULT);
+  const night = isSeen(choice.visibility) ? lastNight : null;
 
   function save() {
     const sending =
@@ -183,6 +203,9 @@ export function RunEnd({
     toOrder(
       post.photos.length > 0 && post.order[0] !== DRAWING_ITEM ? post.order : null,
     );
+    // The night goes only when the post shows it: off, or with a post only
+    // its owner sees, nothing of it leaves the phone (TASK-467).
+    toSleep?.(night !== null && sleepShown ? { ...night, shown: true } : null);
     // The run as the phone keeps it, read before «Save» lets the file go:
     // only after the user's yes to the phone's health data.
     const run = health !== null && loadHealthOn() ? loadRun() : null;
@@ -316,6 +339,7 @@ export function RunEnd({
           {health !== null && (
             <HealthRunEnd store={health.store} health={healthState} />
           )}
+          <SleepRunEnd night={night} shown={sleepShown} onShown={setSleepShown} />
         </View>
       </FormScroll>
       {startedSeen && isSeen(choice.visibility) && (

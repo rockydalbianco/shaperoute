@@ -282,7 +282,8 @@ File della parte B (ramo `fix/TASK-471-b-overpass-pause`, dopo la prima
 PR in `main`): `services/api/shaperoute_api/overpass_pause.py`,
 `overpass_fallback.py` e i loro test `test_overpass_pause.py`,
 `test_overpass_fallback.py` (nuovi), `services/api/shaperoute_api/graphs.py`,
-`services/api/tests/test_graphs.py`, `.env.example` (una voce),
+`paddling.py`, `snowshoeing.py`, `services/api/tests/test_graphs.py`,
+`.env.example` (una voce),
 `apps/mobile/assets/engine/engine.zip` (rifatto: anche `graphs.py` va
 sul telefono).
 
@@ -298,13 +299,21 @@ Nella stessa PR il `message` dell'errore dice il perché in una riga
 (`graphs._reason`): prima portava l'intera pagina 502 di Overpass nella
 risposta all'app e nel log delle richieste.
 
-**Cosa la parte B non copre**: l'acqua (canoa, nuoto) e la neve
-(ciaspole) non passano da osmnx né da `ZoneGraphs`
-(`paddling.ServerWater`, `snowshoeing.ServerSnow`, una richiesta sola con
-`urllib`): non hanno la pausa di 60 s (il 12 novembre alle 15:08Z una
-richiesta di neve a Milano è fallita in 0,26 s) e non provano il secondo
-servizio. Estenderlo a loro tocca `paddling.py` e `snowshoeing.py`: da
-decidere a parte, se serve.
+**Acqua e neve** (canoa, nuoto, ciaspole) non passano da osmnx né da
+`ZoneGraphs`: il motore fa una richiesta sola con `urllib`
+(`paddling.ServerWater`, `snowshoeing.ServerSnow`). Non hanno la pausa di
+60 s (il 12 novembre alle 15:08Z una richiesta di neve a Milano è fallita
+in 0,26 s), quindi i 5 secondi non le riguardano. **Scelta dell'utente,
+2026-11-12: «Sì, aggiungilo»**, alla domanda «Secondo servizio anche per
+acqua e neve (canoa, nuoto, ciaspole): lo aggiungo?»: anche la loro
+richiesta, a un errore HTTP o di connessione del principale, si prova
+una volta sul secondo servizio, con la stessa variabile (spento senza).
+Il conto degli edifici della neve (TASK-413 A3) non riprova: non fallisce
+mai. La frase della privacy vale così com'è: dice «the map of an area»,
+e acqua e neve sono dati di OpenStreetMap di quell'area. Impronte uguali
+prima e dopo (`route_store` `e0834d054b6e` → `8ab61d8e87f9`, coi nuoti
+`1063cc95fea3` → `b9d00c37d28d`, `paddle_examples` `4c549677eefb` →
+`574fbfba41eb`): nessun file del motore è toccato.
 
 ### Accendere il secondo servizio (passo a parte, col sì dell'utente)
 

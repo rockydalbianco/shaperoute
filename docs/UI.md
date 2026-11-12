@@ -51,7 +51,7 @@ ciano di «Start here».
 | `text` | `#F6F3EC` | il testo |
 | `textMuted` | `#A49D93` | etichette e righe secondarie (7,4:1 sul fondo) |
 | `textFaint` | `#908980` | il testo più tenue ancora leggibile (5,7:1), non per il corpo; i nomi delle altre pagine in alto |
-| `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
+| `warning` | `#FF7A59` | ciò che chiede attenzione senza essere un errore (la bozza, «Sharing live», l'email da confermare…); **non** gli avvisi sul percorso, che hanno un segno a linea (TASK-444) |
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
 | `energy` | `#FF6363` (scuro, fino a `#FFA3A3` al passo più chiaro); `#8F1216`–`#B71C1C` nel tono chiaro | le calorie, ovunque si vedano: riquadri della corsa e della neve, piscina, palestra, la riga del post e dell'attività, i riquadri e le righe della pagina del post (TASK-424 parte C3, scelta dell'utente del 2026-11-10: «segnate con colore rosso in tutte»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo. Sul giallo della palestra `energyOnAccent` `#8F1216` (6,3:1), sopra una foto `energyOnScrim` `#FF6363` (6,8:1 sul velo) |
@@ -69,7 +69,7 @@ di poco verso il giallo, nei due toni, con gli stessi minimi di contrasto
 Quattro regole:
 
 1. **Il giallo significa una cosa sola**: il percorso, il comando che lo
-   produce e la barra che lo mostra mentre si disegna. Gli avvisi usano `warning`, arancio: un avviso giallo
+   produce e la barra che lo mostra mentre si disegna. Ciò che chiede attenzione usa `warning`, arancio: un avviso giallo
    renderebbe il colore muto. **Un'eccezione**, scelta dall'utente
    (TASK-220, ADR-0183): «Run without a route» in cima a «Draw» è giallo,
    con il testo scuro. Per tutto il resto la regola vale.
@@ -256,15 +256,14 @@ primi 5 secondi del tour non si tocca e dice i secondi che mancano,
 tocchi sull'app aspettano la fine del tour. Il tour non torna, salvo
 «Watch the tour» nella guida (qui «Skip» si tocca subito).
 
-**«Guide»** (TASK-266): con un account è la riga subito sotto
-«Settings» sulla prima pagina di «Profile», ❓ nel cerchio come «Settings»
-(richiesta dell'utente del 2026-10-10); senza account è l'ultima riga,
+**«Guide»** (TASK-266): senza account è l'ultima riga di «Profile»,
 sotto il modulo, come le righe di «ABOUT», con l'icona a linea
-`circle-help` di Lucide in `textMuted` al posto del ❓ (TASK-444; con un
-account il ❓ resta fino a TASK-457). Apre «How MuW works» con
+`circle-help` di Lucide in `textMuted` (TASK-444). Apre «How MuW works» con
 il nome «Guide» e sopra il testo «Watch the tour», che chiude «Profile» e
-rifà il tour; «←» torna a «Profile». «Help» in «Settings» resta, con lo
-stesso pulsante.
+rifà il tour; «←» torna a «Profile». **Con un account la riga non c'è più**
+(TASK-457, scelta dell'utente del 2026-11-12: «Guide» e «Help» aprivano la
+stessa pagina): resta **«Help» in «Settings»**, sotto «ABOUT», con lo
+stesso testo e lo stesso pulsante.
 
 ## Le due schermate
 
@@ -1116,6 +1115,42 @@ vuota «No photos yet.», sul proprio «No photos yet. Add some to a public
 drawing in My activities.»; non arrivate, il motivo e «Try again». Con
 un'API senza i totali niente riquadri né schede, come prima.
 
+**Il profilo nuovo** (TASK-457, scelte dell'utente del 2026-11-12; nella
+prova dell'11 novembre un profilo appena creato mostrava nove zeri). Il
+proprio profilo, dall'alto, a blocchi: chi è (foto, nome, badge presi,
+«Edit profile»); cosa ha fatto (totali e settimana, poi record, VO₂ max,
+palestra); chi lo segue (Requests, Followers, Following); cosa tiene (le
+tessere «Favorites» e «My activities»); **«Badges»**; cosa ha pubblicato
+(«Drawings» | «Photos»).
+
+- **Finché non c'è nessuna attività** (zero in «My activities» e i tre
+  totali a zero) i totali e la striscia della settimana non ci sono: al
+  loro posto **una scheda sola**, la figura del cuore come nelle pagine
+  vuote (`EmptyState`), il titolo **«Your first drawing»**, la riga «Start
+  from a route that already draws a shape near you.» e il tasto neutro
+  **«Find a route near you»**, che porta alla scheda **«Explore»** (nella
+  modalità sci, che non ha «Explore», la scheda è senza tasto). Alla prima
+  attività la scheda sparisce e tornano totali e settimana. Mentre i numeri
+  stanno ancora arrivando non si vede né la scheda né una riga di zeri.
+- **Le tessere** «Favorites» e «My activities» con zero elementi mostrano
+  solo il nome, senza «0»; da 1 in su il numero, come prima. Il nome sta in
+  fondo alla tessera, così accanto a una tessera col numero i due nomi
+  restano sulla stessa riga. I contatori di chi segue restano come sono.
+- **I badge**: sotto il nome solo quelli **presi** («Winner» e quelli dei
+  disegni), sul proprio profilo come su quello di un altro; niente più
+  pillole grigie. Più in basso, solo sul proprio, il riquadro **«Badges»**
+  elenca i tre badge dei disegni, ognuno con un tondo (la sua emoji se
+  preso, il lucchetto 🔒 se no), il nome e la frase che dice come si
+  prende: «First drawing» — «Record a run with MuW and publish its
+  drawing.»; «10 drawings» — «Publish 10 drawings of runs recorded with
+  MuW.»; «30 km drawing» — «Publish the drawing of a run of 30 km or
+  more.» (la distanza nelle unità dell'app). VoiceOver legge «Not earned
+  yet: {badge}. {frase}» per quelli da prendere: preso o no non lo dice
+  solo il segno. Con un'API senza i badge, niente riquadro.
+- **«Guide» e «Blocked people» non sono più sul profilo**: «Blocked
+  people» è in «Settings», nella sezione «ACCOUNT», una riga come le altre
+  (🚫, il nome, «›»); la guida è «Help» in «ABOUT».
+
 **I record personali** (TASK-368, ADR-0312, testi approvati il 2026-11-04).
 Sotto i totali, sul proprio profilo e su quello di un altro, un riquadro
 **«Personal bests»** («Record personali»): due gruppi, **RUN** e **BIKE**
@@ -1186,10 +1221,35 @@ bloccato non apre niente (TASK-338). **Il
 testo è sempre solo testo**: un link non si tocca, un tag HTML si legge
 com'è scritto, e il commento non entra mai nella WebView della mappa.
 
+**Risposte e reazioni ai commenti** (TASK-454 parte C, ADR-0377, scelte
+dell'utente dell'11 novembre 2026), nello stesso foglio, dal Feed, dalla
+pagina del post e dal disegno aperto. Sotto le parole di ogni commento una
+riga bassa: **«Reply»**, poi il pulsante della propria reazione (senza, il
+cuore a linea di «Like»: «React» per VoiceOver; con, l'emoji: «Your
+reaction: Fire») e, se ce ne sono, le più usate e **il totale** («3
+reactions»). **Le risposte stanno sotto il loro commento, rientrate, a un
+livello solo**, dalla più vecchia, con la foto più piccola; ne arrivano
+due, le altre con **«View 3 more replies»** («View 1 more reply» per una).
+«Reply» su un commento o su una risposta scrive sopra il campo **«Replying
+to {name}»** con una ✕ («Cancel») che lo toglie: quello che si manda va
+sotto quel commento e compare subito lì; rispondendo a una risposta
+davanti al testo c'è **«@nome»** di chi l'ha scritta (lo dà l'API, non è
+testo scritto dall'app). Per VoiceOver «Reply» è anche un'azione della
+riga. **Le reazioni sono le cinque emoji** 🔥 👏 💪 😂 😮, una a testa su
+commenti e risposte: il pulsante trasforma la riga nelle cinque più
+«Cancel», la propria col bordo; la riga è alta uguale, niente si sposta.
+La propria toccata di nuovo si toglie; si vede subito e, se l'API non la
+tiene, torna com'era con «Your reaction wasn't saved. Check the
+connection.» sopra il campo. **Il cuore di MuW qui non c'è**: il super like
+è del post. Cancellare un commento toglie anche le sue risposte, e il
+numero dei commenti scende di tutte. Con un'API di prima delle risposte i
+commenti sono com'erano: niente «Reply», niente reazioni.
+
 **Le reazioni di un disegno** (TASK-119, ADR-0193, scelte dell'utente del
 2026-10-04): nella scheda di un disegno aperto, **sulla riga del pulsante
 dei commenti, alla sua sinistra**, un pulsante tondo neutro con la propria
-reazione (senza, una faccina 🙂 spenta: «React» per VoiceOver, poi «Your
+reazione (senza, il cuore a linea di «Like», l'icona di TASK-444, al posto
+della faccina 🙂 spenta di prima: TASK-454; «React» per VoiceOver, poi «Your
 reaction: Fire»), poi **le tre più usate** (a pari numero, l'ordine della
 barra) e **il totale** («7»; per VoiceOver «7 reactions»); senza reazioni
 solo il pulsante. Senza account, con un'API senza reazioni o se non
@@ -1206,7 +1266,10 @@ connection.», che va via alla scelta dopo. **Il cuore di Sgrava è il super
 like**: si mette con **un doppio tocco sulla mappa del disegno aperto**, o
 dal cuore nella barra (così anche con VoiceOver). Compare **il cuore
 grande** (128 pt, sul giallo) sopra il disegno e, dal basso sopra la
-tastiera, il foglio **«Super like»**: il campo «Write a comment to send
+tastiera, il foglio **«Super like»**: sotto il titolo la riga «A super like
+comes with a comment. Everyone who sees the post can read it.» (TASK-454,
+testo dell'utente: il commento è uno dei commenti del post, e chi lo
+credeva una nota privata l'ha detto), poi il campo «Write a comment to send
 your super like», sotto «At least 2 characters» finché mancano, «Cancel» e
 **«Send»**, spento sotto i 2 caratteri (senza gli spazi ai lati) e oltre i
 500 (da 450 il conto, come nei commenti). **Non conta prima che l'API lo
@@ -1221,6 +1284,41 @@ il cuore grande per un attimo (0,9 s) e non cambia niente; il proprio cuore
 toccato nella barra lo toglie, e il commento resta. **Su un disegno aperto
 il doppio tocco non fa lo zoom** della mappa (le due dita sì); altrove la
 mappa è quella di prima.
+
+**Le reazioni di un post, nel Feed e nella sua pagina** (TASK-454 parte A,
+scelte dell'utente del 2026-11-11): lì il pulsante tondo non c'è, e le
+reazioni stanno in **«Like»**, il primo dei quattro pulsanti. Un tocco
+**appende la barra delle sei sopra la riga**, in sovrimpressione: la card
+non cambia altezza e i pulsanti restano dove sono (prima si apriva una
+striscia che li spingeva giù). Una scelta, o **un tocco in qualunque altro
+punto**, la chiude. **Con una propria reazione** «Like» la mostra al posto
+del cuore (l'emoji, o il cuore di MuW sul giallo), la parola è **in
+grassetto** e accanto c'è **il totale**, come nei commenti («Like · 4»);
+senza reazioni nessun numero. Per VoiceOver «Your reaction: Fire», col
+valore «4 reactions». La propria, col suo bordo nella barra, toccata di
+nuovo si toglie. Il cuore di MuW nella barra apre lo stesso foglio «Super
+like»; mandato, **i commenti del post si rileggono**: il commento c'è
+subito e «Comment · N» sale. Una reazione che l'API non tiene torna
+com'era, con «Your reaction wasn't saved. Check the connection.» sotto la
+riga. Senza account o senza reazioni da leggere «Like» resta e non apre
+niente.
+
+**Il doppio tocco sull'immagine di un post è il suo super like** (TASK-454
+parte B, scelta dell'utente del 2026-11-11), come sulla mappa del disegno
+aperto: **nel Feed** sull'immagine della card (il disegno, la scheda, una
+foto), **nella pagina del post** sulla mappa. Si apre il foglio «Super
+like» col suo commento, senza passare dalla barra, e **niente conta prima
+dell'invio**; mandato, «Like» mostra il cuore di MuW e «Comment · N» sale.
+**Col super like già messo** compare il cuore grande per un attimo (0,9 s)
+e non cambia niente: il doppio tocco non lo toglie mai. Vale anche su un
+post proprio, come il cuore della barra. **Il tocco singolo aspetta 300 ms**
+per sapere che è solo, poi fa quello che faceva: apre il post, la foto a
+tutto schermo, il disegno sulla mappa. Aspetta solo dove ci sono i quattro
+pulsanti: gli esempi rispondono subito, e così il nome dell'autore, «…» e i
+pulsanti. Senza account o senza reazioni da leggere il doppio tocco non fa
+niente. Con VoiceOver il doppio tocco apre il post, com'è suo, e il super
+like si mette dal cuore della barra. **Con «Riduci movimento»** il cuore
+grande compare alla sua misura, senza crescere, qui e sul disegno aperto.
 
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 
@@ -1602,11 +1700,12 @@ foglio con due tasti e «Cancel»:
 Bloccato, il foglio si chiude da solo: **le schede di quella persona
 spariscono subito da «Feed»**, e alla lettura dopo l'API non le manda più;
 il suo profilo dice «You blocked {name}. Unblock them from Blocked people in
-your profile.»; gli elenchi di chi segue in «Profile» si rileggono (il
+Settings.» (TASK-457; prima «…in your profile.»); gli elenchi di chi segue in «Profile» si rileggono (il
 blocco chiude ogni follow). Se la richiesta non va, il foglio dice perché
 («This is not available any more.» per un'API di prima o una persona
-sparita). In «Profile», sotto «Settings», la riga **«Blocked people»**:
-toccata apre sotto l'elenco dei bloccati, l'ultimo per primo, con foto e
+sparita). In «Settings», nella sezione «ACCOUNT» sotto il numero di
+telefono (TASK-457; prima era una riga della prima pagina di «Profile»),
+la riga **«Blocked people»**: toccata apre sotto l'elenco dei bloccati, l'ultimo per primo, con foto e
 nome e il tasto **«Unblock»** (VoiceOver: «Unblock {name}»); vuoto, «You
 have not blocked anyone.»; venti per volta, poi «Show more». Sbloccato,
 esce dall'elenco e torna in «Feed» alla lettura dopo; il follow non
@@ -1699,6 +1798,31 @@ l'app, come «Find friends»:
   linea (`RouteThumb`), «🗺️ Drawing» e «Star · 5.1 km»; un tocco lo apre
   sulla mappa come un preferito, con «Start», «Export GPX», il cuore e
   «Draw it near me», e «Back to the list» torna alla conversazione.
+- **I post** (TASK-455 parte B, ADR-0382; scelte e testi dell'utente del
+  2026-11-12). Il disegno **di un altro** non si copia mai in un messaggio:
+  si manda come **post**, un rimando che il server risolve per chi legge.
+  Sulla scheda di un disegno altrui «Send to a friend» manda il post (anche
+  di un disegno «Followers»; sul proprio resta la copia di sopra); sotto un
+  post del Feed lo fa «Share» (sotto, «Share» sui post). «Send to…» è la
+  stessa lista; per un post «Followers» di un altro dice prima «Only people
+  who follow {user} can open it.». **Nella conversazione** il post è la
+  sua scheda (`messages/PostCard.tsx`): la linea, il titolo (o quello che
+  disegna) e «by {user} · 4.0 km»; un tocco chiude la conversazione e apre
+  il post **come lo apre una notifica**, sulla mappa con la sua scheda
+  (foto, commenti, reazioni, «Start», «Draw it near me», «Edit the
+  drawing»). Se chi legge non può vederlo, o non c'è più, al posto della
+  scheda c'è «This post is no longer available.», che non si tocca: vale
+  anche per chi l'ha mandato. Nella lista «🗺️ Post»; VoiceOver legge
+  titolo, autore e km. Il «+» della conversazione non ha i post. L'app
+  dice `post` in `X-MuW-Reads` solo nelle chiamate dei messaggi
+  (`api/messages.ts`).
+- **«Share» sui post** (TASK-455 parte B; scelta 2 dell'utente): sotto
+  ogni post «Share» apre un foglietto (`feed/PostShareSheet.tsx`) con
+  «Send to a friend» e, sui propri, «Poster and video» (quello che «Share»
+  apriva prima); «Cancel» lo chiude, e chiudere quello che una voce apre
+  chiude anche il foglietto. Senza i messaggi (nessun account, o un'API di
+  prima) sui post altrui «Share» non c'è. La voce del link arriva con la
+  parte E.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -2091,6 +2215,37 @@ telefono dell'account: con un percorso o senza.
   corsa intera, quelle della penna segnate; l'app le legge e **non mostra
   niente di nuovo**: la linea corsa resta unita (spezzarla sulle pause è
   una scelta dell'utente).
+
+### Il calendario delle attività (TASK-462, ADR-0372)
+
+Tutte le attività salvate, di ogni sport, in un calendario: nel profilo e
+in «My activities» (scelta dell'utente «in tutti e due», 2026-11-11). Lo
+legge `GET /me/activity-calendar` (`API.md` «Il calendario delle
+attività»), con i confini dei mesi nel fuso del telefono.
+
+- **Nel profilo**, sotto i totali, una scheda con l'icona del calendario
+  (la Lucide di `assets/ui/tabs/calendar.png`, niente emoji sui tasti),
+  «Calendar ›», i sette giorni da lunedì con le icone degli sport fatti
+  (al più due per giorno, il numero del giorno se vuoto) e «This week:
+  {n} activities · km · tempo». Oggi ha il nome in grassetto; un giorno
+  fatto ha il bordo giallo, anche oggi. Un tocco apre il foglio. Finché
+  l'API non risponde (o un'API senza calendario) la scheda non c'è.
+- **In «My activities»**, se la lista non è vuota, il tasto «Calendar» con
+  la stessa icona apre lo stesso foglio.
+- **Il foglio**: il mese con «‹ ›», i totali del mese, i chip degli sport
+  («All» e quelli fatti, i più frequenti prima; riga che scorre di lato,
+  in `TabSwipeOwners.test.ts`), la griglia del mese con **solo le icone**
+  (scelta dell'utente «icone nel mese, dati nel giorno»); un giorno
+  toccato mostra le sue attività: ora, km, durata, passo e kcal quando ci
+  sono. Un'attività con una traccia apre la sua corsa; una nuotata in
+  piscina (senza traccia) no.
+- **«Last 12 months»**: dodici barre mese per mese (tempo, km, numero)
+  per lo sport del filtro, scelta dell'utente «andamento mese per mese»;
+  una barra toccata porta a quel mese. Sotto, i record personali di
+  quello sport (`personal_bests`, nessun calcolo nuovo).
+- Testi in inglese, tradotti in it/de/es/fr: «Calendar», «Last 12
+  months», «{count} activity/activities».
+- L'alpinismo come sport è un task a parte (TASK-463, ADR-0373).
 
 ## La partenza
 
@@ -3263,8 +3418,8 @@ prima (`api/routes.ts` `onFirst`, `route/useRouteRequest.ts` `more`,
 ideale sotto (TASK-442).
 
 **Dove la forma viene meglio** (TASK-234, ADR-0197, scelta dell'utente):
-quando l'API manda `better_distance_m`, sotto le tessere c'è una riga
-grigia come un avviso da sapere, «This shape comes out better at about 8
+quando l'API manda `better_distance_m`, sotto le tessere c'è un riquadro
+grigio come quello di un avviso, «This shape comes out better at about 8
 km.» («This word…» per una parola, «This outline…» per un'immagine), con
 il pulsante «Try 8 km», che scrive la distanza e ridisegna come quello di
 ADR-0041. La riga è della richiesta: resta con qualunque tessera
@@ -3356,11 +3511,18 @@ TASK-232.
 
 Gli avvisi sono **in parole semplici** (TASK-054, ADR-0048): l'app
 riconosce i testi che il motore scrive e li riscrive brevi, con una
-striscia arancio (`warning`) per quelli a cui fare attenzione (scale,
-strade principali, gallerie, forma poco fedele, pochi tratti di strada) e
-grigia per quelli da sapere (partenza spostata, distanza diversa da quella
-chiesta, strade ripercorse); prima quelli a cui fare attenzione, e la
-stessa frase una volta sola. Se ne vedono **due alla volta** (TASK-337,
+segno a linea accanto al testo: un triangolo per quelli a cui fare
+attenzione (scale, strade principali, gallerie, forma poco fedele, pochi
+tratti di strada) e una «i» cerchiata, più tenue, per quelli da sapere
+(partenza spostata, distanza diversa da quella chiesta, strade
+ripercorse); prima quelli a cui fare attenzione, e la stessa frase una
+volta sola. **Nessun colore** dice la differenza, la dice la forma del
+segno (TASK-444, scelta dell'utente del 12 novembre 2026 sulle schermate):
+prima c'era una striscia `warning`, e sul tema scuro `warning` sta accanto
+a `error`, così le scale lungo la strada sembravano un errore. Il segno è
+nascosto al lettore di schermo, che legge la frase. La riga è
+`route/NoteRow.tsx`, la stessa sotto un percorso a nuoto («Within 150 m of
+the shore. Never swim alone.», col triangolo). Se ne vedono **due alla volta** (TASK-337,
 richiesta dell'utente: di più spingevano la mappa fuori dallo schermo):
 sotto, una riga grigia «Show more» apre gli altri; un altro percorso, o
 l'altro fra A e B, riparte da due. Quelli di sicurezza (scale, strade
@@ -4251,6 +4413,50 @@ mostra le lettere unite da linee dritte sulla base.
 Niente nella scheda è giallo: il giallo resta del percorso e dell'azione
 principale.
 
+### Il sonno della notte prima: «Sleep last night» (TASK-467 parte B2, ADR-0379 e ADR-0380)
+
+**Spento in ogni build di oggi** (`SLEEP_POSTS_ON = false` in
+`health/sleepModules.ts`, e nessun lettore di Salute): si accende con la
+parte C, dopo la build nativa che viene dopo la 1.1.0, la frase della
+privacy e la scheda «App Privacy». Quello che segue è com'è quando è
+acceso. Testi approvati dall'utente l'11 novembre 2026.
+
+- **A fine attività**, sotto «Save to Apple Health» e in vista sopra
+  «Save» (`health/SleepRunEnd.tsx`): l'interruttore **«Sleep last night»**,
+  la riga «82 · Very good · 7 h 40 min» (punteggio di MuW, una delle cinque
+  parole, ore dormite) e, finché è acceso, «Shown in this post. Turn it off
+  to keep it to yourself.». **Parte acceso** (scelta dell'utente,
+  `SLEEP_SHOWN_DEFAULT`). Compare solo se: l'utente ha detto sì a leggere
+  il sonno (dalla scheda «Sleep» del profilo, parte B3: qui il permesso non
+  si chiede mai), c'è una notte, e il post lo vedono altri («Everyone» o
+  «Followers»): con «Only me» non c'è niente da mostrare a nessuno e la
+  riga non compare. Mai per un'attività aggiunta da un file. Senza notte
+  non compare niente (la frase «No sleep data…» è della scheda del
+  profilo).
+- **Quale notte**: quella da cui ci si è svegliati il giorno dell'attività
+  (i campioni dalle 18 della sera prima alle 18 di quel giorno, fino
+  all'inizio dell'attività); per un'attività prima delle 6 senza aver
+  ancora dormito, quella del giorno prima. Un pisolino non è la notte.
+- **Nel Feed** (`health/SleepLine.tsx`), una riga sotto i numeri del post:
+  «Sleep score 82 · Very good · 7 h 40 min». **Nella pagina del post**
+  (`health/SleepCard.tsx`), una scheda dopo quelle della corsa: «Sleep
+  score», «82 · Very good», «7 h 40 min», le fasi «Awake», «REM», «Light»
+  (il «Core» di Salute), «Deep» quando un orologio le ha dette, e sotto
+  «Worked out by MuW from Apple Health data. It can differ from the score
+  in the Health app.». Mai l'ora in cui si è andati a letto o ci si è
+  svegliati, mai la data della notte, mai un consiglio; non si chiama mai
+  «di Apple».
+- **Dopo la pubblicazione**, nelle impostazioni del proprio post («Post
+  settings», `health/SleepPostSwitch.tsx`): lo stesso interruttore, che va
+  all'API subito (non aspetta «Save»); la scheda e la riga seguono
+  all'istante.
+- **Anche a fine allenamento in palestra e a fine nuoto in vasca** (parte
+  B2b, `gym/GymEnd.tsx` e `pool/PoolSwimEnd.tsx`): lo stesso interruttore,
+  sotto il form del post e «Save to Apple Health», sopra «Save»; la notte è
+  quella prima dell'inizio dell'allenamento o del nuoto. Stesse regole:
+  parte acceso, solo con un post che altri vedono, mai una richiesta di
+  permesso. Con la costante spenta le due schermate sono com'erano.
+
 ## Il post da condividere (TASK-231, ADR-0194)
 
 «Share» sta sulla scheda di fine corsa (con un percorso e senza) e sulla
@@ -4499,8 +4705,9 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   distanza dell'API, per difetto al mezzo km); una che non ci sta fra 1 e
   5 km «This shape does not fit on the water here. Try a shorter distance,
   another shape, or another start:» con le forme. Senza i dati dell'acqua
-  (Overpass che rifiuta) il testo è quello della mappa, «Map data for this
-  area could not be downloaded. Try again later.».
+  (Overpass che rifiuta) il testo è quello della mappa, «The map service
+  is busy, so this area could not be loaded. Try again in a few minutes.»
+  (TASK-471).
 - **«Explore»** (scelta dell'utente; come la corsa dal TASK-233, ADR-0196):
   al posto di città, esempi di corsa e percorsi consigliati, la pagina «On
   the water», «Shapes to paddle, within 1 km of the shore», con il cuore di
@@ -4625,8 +4832,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   partenza entro 3 km dal paese.
   Altrove, per esempio al mare lontano dai posti dell'elenco,
   la scarica da Overpass, se risponde, e la prima volta
-  ci mette minuti, altrimenti «Map data for this area could not be
-  downloaded.». **Un elenco nuovo vuole prima la sua acqua sul server**
+  ci mette minuti, altrimenti «The map service is busy, so this area
+  could not be loaded.». **Un elenco nuovo vuole prima la sua acqua sul server**
   (`MAPS.md`, «I laghi di Explore»).
 - Testi nuovi **da confermare con l'utente**: «On the water, a shape of the
   catalogue.», «on the water», «Paddle without a route», i testi d'errore
@@ -4733,6 +4940,32 @@ tardi si apre questa schermata, senza «Keep running». Dopo uno «Stop»,
 «Keep running» c'è solo se l'ultima posizione è di meno di 30 minuti
 prima.
 
+### Il volo: «Paragliding» (TASK-305 parte R2, ADR-0375)
+
+Con «Paragliding» 🪂 in «Settings» (pronto anche nelle build per lo store)
+«Draw» mostra solo **«Record your flight»**, con sotto «No shapes in the air
+yet: MuW records your flight.»: nessuna forma, nessun percorso. Il volo si registra come una corsa senza percorso e si salva come
+`paragliding`.
+
+- **L'avviso**, la prima volta su quel telefono, all'apertura della
+  schermata: «Before you fly» — «MuW is not a flight instrument: it records
+  your flight and shares it. Fly with your own instrument, licence and
+  judgement.», un solo bottone «Got it». Letto, non torna più (il file
+  `flight-notice.json`).
+- **In volo**, sopra i numeri della registrazione (tempo, km, velocità in
+  km/h come una bici), due per riga: «Altitude» (m), «Vario» (m/s col
+  segno, + sale, − scende), «Max altitude» e «Elev. gain». La quota è quella del GPS: niente barometro.
+  Il variometro è la salita degli ultimi 10 s (almeno 5 s), la velocità
+  del momento quella degli ultimi 5 s (almeno 2 s); un fix più vecchio di
+  20 s li spegne («–»). Le calorie col MET del volo libero (3,5).
+- **«Share live»** manda anche `alt_m`, `max_alt_m`, `vario_mps` e
+  `speed_mps` (API.md, «Live shares»); la pagina del link li mostra
+  (SITO.md). Il battito c'è solo con l'orologio, che oggi non ha il volo.
+- **La fine**: «Your flight» e «White: where you flew.»; sotto la distanza
+  in grande e, due per riga, «Flight time», «Max altitude», «Elev. gain»,
+  «Top speed», poi «Calories». Provato nel simulatore il 2026-11-12. Nel Feed il volo è un post senza percorso, come una giornata
+  sulla neve, con la velocità al posto del passo.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di
@@ -4773,7 +5006,7 @@ c'è anche l'errore.
 | Forma che non ci sta, senza distanza (somiglianza bassa, o distanza fuori da quelle di «Draw»: oltre 21 km, in bici fuori da 10–30) | This shape does not fit the roads here. Try another shape, or another start: e le forme del catalogo come pulsanti |
 | Contorno di un'immagine che non ci sta (TASK-073) | come per la forma, con «This image…»; senza distanza: This outline does not fit the roads here. Try another distance, another start, or a simpler picture. (niente forme da toccare) |
 | Parola che non ci sta (TASK-057) | come per la forma, con «This word…»; senza distanza: This word does not fit the roads here. Try a shorter word, or another start. (niente forme da toccare) |
-| Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
+| Dati OSM non scaricabili (`map_data_unavailable`) | The map service is busy, so this area could not be loaded. Try again in a few minutes. (TASK-471: dice che è temporaneo e non dipende da chi usa l'app) |
 | Errore del motore (`engine_error`) | The route could not be drawn. Try again, or try another start. e «Try again» |
 | L'AI non risponde (`ai_unavailable`) | This word cannot be read right now. Try one of these: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun. |
 | `invalid_request`, `http_error`, risposta illeggibile | Something went wrong on our side. Try again in a moment. e «Try again» (anche un percorso in bici chiesto a un'API più vecchia di TASK-190, parte B, che conosce solo `running`; il codice e il testo dell'API sotto, solo nelle build di sviluppo) |
@@ -4890,6 +5123,18 @@ c'è anche l'errore.
   l'API le cancella (ADR-0170, punto 7: scelta dell'utente). Una corsa
   cancellata le cancella anche dal telefono. Le foto di una corsa privata
   non passano mai da un telefono all'altro, e si perdono con l'app.
+- **Il sonno della notte prima** (TASK-467, spento fino alla parte C): i
+  campioni di Salute non lasciano mai il telefono, e nemmeno l'ora in cui
+  si è andati a letto o ci si è svegliati. All'API va solo il riassunto
+  (giorno del risveglio, punteggio, minuti dormiti e svegli, minuti per
+  fase), **solo con «Sleep last night» acceso e un post che altri
+  vedono**: spento, o con «Only me», non parte niente e niente si tiene.
+  Finché l'API non ha l'attività il riassunto aspetta in
+  `sleep-outbox.json` (al più 30 giorni, poi si butta); una notte che
+  l'API rifiuta si butta, non si rimanda. Vale lo stesso per un
+  allenamento in palestra e un nuoto in vasca, che aspettano nelle loro
+  code (`gym-outbox.json`, `pool-outbox.json`): la notte parte dopo di loro. Il sì a leggere il sonno sta in
+  `sleep-health.json`.
 
 ## Quando la mappa non si carica
 

@@ -638,8 +638,8 @@ export const ES: Table = {
     "Este contorno no cabe en las calles aquí. Prueba otra distancia, otro inicio o una foto más sencilla.",
   "This shape does not fit the roads here. Try another shape, or another start:":
     "Esta forma no cabe en las calles aquí. Prueba otra forma u otro inicio:",
-  "Map data for this area could not be downloaded. Try again later.":
-    "No se pudo descargar el mapa de esta zona. Inténtalo más tarde.",
+  "The map service is busy, so this area could not be loaded. Try again in a few minutes.":
+    "El servicio de mapas está ocupado y no se pudo cargar esta zona. Inténtalo de nuevo en unos minutos.",
   "The route engine cannot find one clear outline in this picture.":
     "En esta foto no se encuentra un contorno claro.",
   "Only PNG and JPEG pictures work. Choose another one.":
@@ -950,6 +950,10 @@ export const ES: Table = {
   "Show more comments": "Mostrar más comentarios",
   "{name}, {ago}: {text}": "{name}, {ago}: {text}",
   "Touch and hold to delete.": "Mantén pulsado para eliminar.",
+  Reply: "Responder",
+  "Replying to {name}": "Respuesta a {name}",
+  "View {count} more reply": "Ver {count} respuesta más",
+  "View {count} more replies": "Ver {count} respuestas más",
 
   // src/social/DrawingReactions.tsx
   React: "Reaccionar",
@@ -980,6 +984,8 @@ export const ES: Table = {
   "Write a comment to send your super like":
     "Escribe un comentario para enviar tu super like",
   Send: "Enviar",
+  "A super like comes with a comment. Everyone who sees the post can read it.":
+    "Un super like va con un comentario. Quien ve la publicación puede leerlo.",
 
   // src/social/reactionKinds.ts
   "MuW heart, super like": "Corazón de MuW, super like",
@@ -1115,6 +1121,8 @@ export const ES: Table = {
   Pause: "Pausa",
   Music: "Música",
   "Opens Spotify": "Abre Spotify",
+  "Show the numbers": "Mostrar los números",
+  "Hide the numbers": "Ocultar los números",
   Compass: "Brújula",
   Map: "Mapa",
   Data: "Datos",
@@ -1186,6 +1194,12 @@ export const ES: Table = {
   Roller: "Patines",
   "Watch for traffic and steep descents: check the route before you set off.":
     "Cuidado con el tráfico y las bajadas pronunciadas: revisa la ruta antes de salir.",
+  // src/sports/wheelchair.ts, settings/sport.ts (TASK-414 part B), approved on
+  // 2026-11-08 (the user's choice 6)
+  "Wheelchair & stroller": "Silla y carrito",
+  "Go without a route": "Salir sin ruta",
+  "Map data can miss kerbs, steps and steep slopes: check the route before you set off.":
+    "Los datos del mapa pueden no mostrar bordillos, escalones y cuestas pronunciadas: revisa la ruta antes de salir.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Esquí",
   "Cross-country ski": "Esquí de fondo",
@@ -1538,6 +1552,10 @@ export const ES: Table = {
   "{sport}, coming soon": "{sport}, próximamente",
   "Sport, {sport}": "Deporte, {sport}",
   "Changes the sport": "Cambia el deporte",
+  // The families of the sport panel: src/settings/sportFamilies.ts
+  "On foot": "A pie",
+  "On wheels": "Sobre ruedas",
+  "Other@@sport": "Otros",
   Sport: "Deporte",
   Default: "Predeterminada",
   "Voice language and voice: {language}, {voice}": "Idioma y voz: {language}, {voice}",
@@ -1594,8 +1612,8 @@ export const ES: Table = {
   "You have not blocked anyone.": "No has bloqueado a nadie.",
   Unblock: "Desbloquear",
   "Unblock {name}": "Desbloquear a {name}",
-  "You blocked {user}. Unblock them from Blocked people in your profile.":
-    "Has bloqueado a {user}. Puedes desbloquearlo en Personas bloqueadas de tu perfil.",
+  "You blocked {user}. Unblock them from Blocked people in Settings.":
+    "Has bloqueado a {user}. Puedes desbloquearlo en Personas bloqueadas, en Ajustes.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
@@ -2569,4 +2587,54 @@ export const ES: Table = {
   "Last 12 months": "Últimos 12 meses",
   "{count} activity": "{count} actividad",
   "{count} activities": "{count} actividades",
+
+  // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
+  "Record your flight": "Registra tu vuelo",
+  "Before you fly": "Antes de volar",
+  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
+    "MuW no es un instrumento de vuelo: graba tu vuelo y lo comparte. Vuela con tu propio instrumento, tu licencia y tu criterio.",
+  "Got it": "Entendido",
+  Vario: "Variómetro",
+  "Flight time": "Tiempo de vuelo",
+  "Your flight": "Tu vuelo",
+  "No shapes in the air yet: MuW records your flight.":
+    "Todavía no hay formas en el aire: MuW registra tu vuelo.",
+  "White: where you flew.": "Blanco: por donde volaste.",
+
+  // src/profile/FirstStep.tsx, BadgesSection.tsx (TASK-457: a new profile)
+  "Your first drawing": "Tu primer dibujo",
+  "Start from a route that already draws a shape near you.":
+    "Empieza con una ruta que ya dibuja una forma cerca de ti.",
+  "Find a route near you": "Buscar una ruta cerca de ti",
+  "Record a run with MuW and publish its drawing.":
+    "Graba una carrera con MuW y publica su dibujo.",
+  "Publish 10 drawings of runs recorded with MuW.":
+    "Publica 10 dibujos de carreras grabadas con MuW.",
+  "Publish the drawing of a run of {distance} or more.":
+    "Publica el dibujo de una carrera de {distance} o más.",
+  // «Sleep last night» in a post (TASK-467 part B2): src/health/sleepText.ts,
+  // SleepRunEnd.tsx, SleepCard.tsx
+  "Sleep last night": "Sueño de anoche",
+  "Shown in this post. Turn it off to keep it to yourself.":
+    "Se ve en esta publicación. Apágalo para guardártelo.",
+  "Sleep score": "Puntuación del sueño",
+  "Poor@@sleep": "Deficiente",
+  "Fair@@sleep": "Aceptable",
+  "Good@@sleep": "Bueno",
+  "Very good@@sleep": "Muy bueno",
+  "Excellent@@sleep": "Excelente",
+  "Awake@@sleep": "Despierto",
+  "REM@@sleep": "REM",
+  "Light@@sleep": "Ligero",
+  "Deep@@sleep": "Profundo",
+  "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
+    "Calculada por MuW con los datos de Apple Salud. Puede ser distinta de la puntuación de la app Salud.",
+  // src/feed/PostShareSheet.tsx, src/messages/messagePost.ts, attachmentText.ts
+  // (TASK-455: a post shared and sent in a message; texts approved 2026-11-12)
+  "Poster and video": "Póster y vídeo",
+  "Only people who follow {user} can open it.":
+    "Solo quien sigue a {user} puede abrirla.",
+  "by {user}": "de {user}",
+  "This post is no longer available.": "Esta publicación ya no está disponible.",
+  "🗺️ Post": "🗺️ Publicación",
 };

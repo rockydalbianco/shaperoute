@@ -77,8 +77,9 @@ function offsetMs(zone: string | undefined): number {
 /**
  * The sport a file names, as one of MuW's: GPX's <type> («running»,
  * «cycling», «walking», «hiking», Garmin's «gravel_cycling» and
- * «mountain_biking», MuW's «inline_skating», Strava's «9», «1», «10», «4» and
- * «6»), TCX's Sport («Running», «Biking»).
+ * «mountain_biking», MuW's «inline_skating» and «wheelchair», Strava's
+ * «Wheelchair», «9», «1», «10», «4» and «6»), TCX's Sport («Running»,
+ * «Biking»).
  * null for the others: the form starts from the sport of «Settings».
  */
 export function sportOfWord(word: string): Activity | null {
@@ -101,6 +102,11 @@ export function sportOfWord(word: string): Activity | null {
   const joined = name.replace(/[\s_-]/g, "");
   if (name === "6" || joined.includes("inlineskat") || joined.includes("rollerblad")) {
     return "inline_skating";
+  }
+  // In a wheelchair or pushing a stroller (TASK-414): MuW's and Strava's
+  // «wheelchair», before Garmin's «wheelchair_push_run» is taken for a run.
+  if (joined.includes("wheelchair")) {
+    return "wheelchair";
   }
   if (name.includes("run")) {
     return "running";

@@ -233,7 +233,7 @@ class PushEvent:
     # title, by language, is in `names`.
     contest_id: UUID | None = None
     # What a private message carries (TASK-333): "photo", "video",
-    # "drawing"; its text, if any, is `text`.
+    # "drawing", or "post" (TASK-455); its text, if any, is `text`.
     attachment: str | None = None
 
     def same(self) -> tuple[str, int, int, str, str]:
@@ -496,6 +496,20 @@ TEXTS: dict[str, dict[str, str]] = {
         for language in ("en", "de", "it", "es", "fr")
     },
     "message_drawing_text": {
+        language: "{name}" + (" : " if language == "fr" else ": ") + "🗺️ {text}"
+        for language in ("en", "de", "it", "es", "fr")
+    },
+    # A message with a post (TASK-455, ADR-0382; «🗺️ Post» approved
+    # 2026-11-12): that it carries one and nothing of it, since who receives
+    # it may not be among those who see the post.
+    "message_post": {
+        "en": "{name}: 🗺️ Post",
+        "de": "{name}: 🗺️ Beitrag",
+        "it": "{name}: 🗺️ Post",
+        "es": "{name}: 🗺️ Publicación",
+        "fr": "{name} : 🗺️ Publication",
+    },
+    "message_post_text": {
         language: "{name}" + (" : " if language == "fr" else ": ") + "🗺️ {text}"
         for language in ("en", "de", "it", "es", "fr")
     },

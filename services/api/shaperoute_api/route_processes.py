@@ -22,8 +22,10 @@ What crosses from the worker: the job's status (a zone to download), the
 plan from the user's own start as soon as it is there, with its directions
 (TASK-435: the job shows it while the nearby starts are still planned), its
 times, and the plan, an error or "dropped". What crosses to it: the
-request, and a cancel when the app forgot the job meanwhile, which the
-worker checks where the job's thread checked it, after each load.
+request, the download that already failed in the job's thread, if one did
+(jobs._Reporting.unavailable, TASK-471: the worker does not try another),
+and a cancel when the app forgot the job meanwhile, which the worker checks
+where the job's thread checked it, after each load.
 
 Never closed half-way through a route as a Pool can hang (TASK-248,
 ADR-0212): one process per worker, started by hand. A route has at most
@@ -71,6 +73,7 @@ from shaperoute_api.activity_graphs import (
     water_for,
 )
 from shaperoute_api.alongs import NamedRoads
+from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.images import AnyRequest, plan_request
 from shaperoute_api.job_times import JobTimes
 from shaperoute_api.jobs import (
@@ -168,6 +171,10 @@ class RouteProcesses:
         times: JobTimes | None = getattr(ground, "_times", None)
         # The job shows the start's own plan as soon as it is there.
         first: Callable[[Plan], None] | None = getattr(ground, "first_plan", None)
+        # A download that failed in the job's thread: not tried again there.
+        unavailable: MapDataUnavailableError | None = getattr(
+            ground, "unavailable", None
+        )
         worker = self._take()
         try:
             answer = worker.ask(
@@ -178,6 +185,7 @@ class RouteProcesses:
                 wanted,
                 self._max_job_s,
                 first,
+                unavailable,
             )
         except BaseException:
             self._drop(worker)
@@ -281,12 +289,14 @@ class _Worker:
         wanted: Callable[[], bool] | None,
         max_job_s: float,
         first: Callable[[Plan], None] | None = None,
+        unavailable: MapDataUnavailableError | None = None,
     ) -> tuple[str, Any, JobTimes | None]:
         """The worker's answer to `request`: ("done", plan, times),
         ("dropped", None, times) or ("failed", pickled error, times).
         Before it, `report` is told each status and `first` the plan from
-        the user's own start, if the worker sends one."""
-        self.conn.send(("plan", seq, request, directions))
+        the user's own start, if the worker sends one. `unavailable` is the
+        download that already failed for this job, if one did."""
+        self.conn.send(("plan", seq, request, directions, unavailable))
         began = time.monotonic()
         cancelled = False
         while True:
@@ -371,8 +381,10 @@ def _serve(conn: Connection, make_graphs: GraphsFactory, planner: Planner) -> No
             return
         if message[0] != "plan":
             continue  # a cancel that came after its route
-        _, seq, request, directions = message
-        stop, answer = _plan(conn, graphs, planner, seq, request, directions)
+        _, seq, request, directions, unavailable = message
+        stop, answer = _plan(
+            conn, graphs, planner, seq, request, directions, unavailable
+        )
         try:
             conn.send(answer)
         except (OSError, ValueError):
@@ -388,9 +400,12 @@ def _plan(
     seq: int,
     request: AnyRequest,
     directions: bool,
+    unavailable: MapDataUnavailableError | None = None,
 ) -> tuple[bool, tuple[str, int, Any, JobTimes]]:
     """What jobs.RouteJobs does in its thread for `request` from the plan
-    on, with this worker's zones; and whether the API asked to stop."""
+    on, with this worker's zones; and whether the API asked to stop. After
+    a download that failed in the job's thread (`unavailable`), a load that
+    needs one fails with it at once (jobs._Reporting)."""
     times = JobTimes()
     stop = False
     cancelled = False
@@ -429,7 +444,9 @@ def _plan(
                     alone = _with_directions(alone, ground.graphs, names)
                 conn.send(("first", seq, alone))
 
-            ground = _Reporting(roads, report, wanted, times, first=first)
+            ground = _Reporting(
+                roads, report, wanted, times, first=first, unavailable=unavailable
+            )
             plan = planner(request, ground)
             if directions:
                 plan = _with_directions(plan, ground.graphs, names)

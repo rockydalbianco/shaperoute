@@ -375,6 +375,64 @@ export const color: Palette = paletteOf(tone);
  */
 export const statusBarStyle: "light" | "dark" = tone.tone === "dark" ? "light" : "dark";
 
+/**
+ * How much of the glass is the tone's background (TASK-469, ADR-0383).
+ * The app has no blur without a native module, so whatever lies under the
+ * glass shows through as it is: at 88 % the text and the secondary text on
+ * it keep 4.5:1 even over a white photo in the dark tone and a black one in
+ * the light tone, at every step (`glass.test.ts`). The glass reads by its
+ * rim of light and its shadow more than by what shows through.
+ */
+export const GLASS_VEIL = 0.88;
+
+/** The colours of the glass in a tone (TASK-469, ADR-0383). */
+export type GlassColors = {
+  /** The tint: the tone's background. */
+  readonly tint: string;
+  /** How much of the tint covers what lies under: `GLASS_VEIL`. */
+  readonly veil: number;
+  /** The tint at `veil`, as `#RRGGBBAA`: the face of the glass. */
+  readonly fill: string;
+  /** The light caught by the top edge. */
+  readonly rimTop: string;
+  /** The thin edge all round. */
+  readonly rim: string;
+  /** The soft shadow the glass casts under it. */
+  readonly shadow: string;
+  /** What marks the chosen thing on the glass: the text, faint. Never yellow. */
+  readonly selected: string;
+};
+
+/** `share` (0–1) as the two hex digits of an alpha. */
+function alphaHex(share: number): string {
+  return Math.round(share * 255)
+    .toString(16)
+    .padStart(2, "0")
+    .toUpperCase();
+}
+
+/**
+ * The glass of `choice`'s tone. Dark: a white rim, brighter on top, and a
+ * deep shadow. Light: a near-white top rim, an edge of the text at 8 % and
+ * a light shadow. The shadow is `scrim` in both, as the rest of the dark.
+ */
+export function glassOf(choice: ToneChoice): GlassColors {
+  const palette = paletteOf(choice);
+  const dark = choice.tone === "dark";
+  return {
+    tint: palette.background,
+    veil: GLASS_VEIL,
+    fill: `${palette.background}${alphaHex(GLASS_VEIL)}`,
+    rimTop: dark ? `#FFFFFF${alphaHex(0.22)}` : `#FFFFFF${alphaHex(0.95)}`,
+    rim: dark ? `#FFFFFF${alphaHex(0.08)}` : `${palette.text}${alphaHex(0.08)}`,
+    shadow: `${FIXED.scrim}${alphaHex(dark ? 0.55 : 0.16)}`,
+    selected: `${palette.text}${alphaHex(0.12)}`,
+  };
+}
+
+/** The glass in the tone the app is shown in. */
+export const glass: GlassColors = glassOf(tone);
+
 /** Spacing, in the 4 px steps the layouts are built on. */
 export const space = {
   xs: 4,

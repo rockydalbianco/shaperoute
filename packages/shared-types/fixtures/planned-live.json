@@ -1,0 +1,21 @@
+{
+  "id": "9b2f4c6e-1a3d-4e5f-8a7b-6c5d4e3f2a10",
+  "planned_live_id": "9b2f4c6e-1a3d-4e5f-8a7b-6c5d4e3f2a10",
+  "share_id": null,
+  "owner": {
+    "public_id": "6f1e2d3c-4b5a-4987-a6b5-c4d3e2f1a0b9",
+    "username": "ada",
+    "photo": null
+  },
+  "activity": "running",
+  "title": "Milano Marathon",
+  "starts_at": "2026-11-15T08:00:00Z",
+  "state": "planned",
+  "audience_feed": "everyone",
+  "heart_visible": false,
+  "distance_m": null,
+  "duration_s": null,
+  "reminded": false,
+  "can_start": false,
+  "post_id": null
+}

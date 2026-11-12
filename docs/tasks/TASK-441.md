@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) tutta in `main` (#1184, #1185), esce con l'aggiornamento completo; **B2 (bici fino a 30 km) in lavorazione**: strumento e API scritti, giro dei disegni in corso
+**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: strumento e API scritti, app nella bozza #1248, giro dei disegni fermo ad aspettare Overpass
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -315,9 +315,10 @@ apps/mobile/src/route/NearYou.tsx
       `parole-scartate.html`) **prima del merge**.
 - [x] CI verde, merge del Coordinatore (#1184, `defe1357`, 2026-11-12).
 - [x] PR dell'app (#1185).
-- [ ] Passo sul server e OTA, insieme nell'aggiornamento completo (un sì
-      dell'utente per ognuno, dal Coordinatore). Controlli di sola lettura
-      per dopo il passo: `out/TASK-441/SERVER-B1.md` (checkout principale).
+- [x] Passo sul server e OTA, insieme nell'aggiornamento completo (sì
+      dell'utente «Sì, oggi», dal Coordinatore): passo 10 alle 12:20Z del
+      2026-11-12, OTA 12 alle 12:28Z. Controlli di
+      `out/TASK-441/SERVER-B1.md` tutti come attesi (sotto).
 
 ## Parte B2 — i disegni in bici (ADR-0366)
 
@@ -407,18 +408,20 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
 
 ## Dove siamo
 
-*2026-11-12, 13:10, B2*: **giro in pausa dalle 11:09** su richiesta del
-Coordinatore (esce l'aggiornamento completo): fatta solo Milano (12 su 12),
-restano 62 città da Trento; riparte al suo «Mac libero» con
-`caffeinate -i zsh out/TASK-441/b2/run-bike.sh >> out/TASK-441/b2/run-bike.log 2>&1`.
-Intanto **l'app della B2 è scritta** in `.claude/worktrees/TASK-441-b2-app`
-(branch `feat/TASK-441-b2-app-bike`, commit locale, non pubblicato): le due
-liste chieste con `&activity=cycling` quando lo sport è la bici, niente per
-la corsa; un'API che non conosce il parametro risponde con le corse, come
-oggi. **Test scritti e non ancora girati** (Mac occupato): da girare
-`ExploreBike`, `ExploreFartherAway`, `ExploreRecommended`, `exploreAhead`,
-`catalogList`, `recommendedRoutes` e `tsc`; manca la riga in `App.tsx`
-(`activity={sportActivity}` su `ExploreScreen`), col via del Coordinatore.
+*2026-11-12, 16:20, B2*: **il giro aspetta Overpass**, giù dalle 10:30
+(anche per il server di produzione: TASK-471). Fatta solo Milano (12 su
+12), restano 62 città da Trento. Il giro riprova da solo ogni 10 minuti
+(`out/TASK-441/b2/run-bike.sh` in un ciclo, registro `run-bike.log`); si è
+fermato due volte su richiesta del Coordinatore (11:09–13:08, 13:43–13:50)
+e una per il riavvio della sessione. **Scelta dell'utente («Aspetta il
+principale»)**: niente specchi. Quello di OpenStreetMap Francia risponde,
+ma rifiuta le richieste presentate col nome generico di OSMnx; lo
+strumento ha comunque `--overpass-url` (senza attesa del posto libero,
+pausa di un minuto fra due città) e `run-bike.sh` legge `OVERPASS_URL`.
+**App della B2: bozza #1248** (`feat/TASK-441-b2-app-bike`, CI verde): solo
+la bici chiede `&activity=cycling` (`CATALOG_ACTIVITIES`), ogni altro
+sport chiede come prima; una riga in `App.tsx`. Resta in bozza finché il
+server della B2 non è in `main` e sul server.
 
 *2026-11-12, B2*: branch `feat/TASK-441-b2-bike` (worktree
 `.claude/worktrees/TASK-441-b2`), pubblicato senza PR: strumento e API.
@@ -430,6 +433,16 @@ registri del checkout principale (`--old-log out/TASK-419/runs.jsonl
 --log out/TASK-441/bike.jsonl`) → `exploreCatalogEdit.test.ts` sul seme
 nuovo → README, `SERVER-B2.md`, PR. `docs/API.md` (il parametro) nella PR
 di soli documenti dopo il merge.
+
+*2026-11-12, 12:28Z*: **la B1 è in produzione** («server B1 fatto e OTA
+uscito», Coordinatore). Passo 10 alle 12:20Z, server a `1eb3e5a8`; OTA 12
+di produzione alle 12:28Z con la #1185 (iOS `86033ea0`, Android
+`77e8b96b`), anteprima 12 (`4524060c`); fra passo e OTA 8 minuti. Controlli
+di sola lettura, tutti come attesi: nel log «1546 recommended routes from
+catalog/seed»; da Milano `60 50 50`, 19 parole a penna alzata,
+`milano-star-12000-0`; STAR intera con 1093 punti e i tre tratti a penna
+alzata `[[389, 506], [714, 811], [888, 912]]`; nessun aeroplano fra le
+parole; API a 362 MiB (era 330); nessun Traceback.
 
 *2026-11-12*: **il server della B1 è in `main`** (#1184), entrato col sì
 dell'utente alle 340 parole; l'app è la #1185. In produzione non c'è

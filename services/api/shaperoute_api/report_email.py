@@ -250,8 +250,8 @@ def _comment(conn: Connection[DictRow], target: UUID) -> DictRow | None:
 
 def _message(conn: Connection[DictRow], target: UUID) -> DictRow | None:
     return conn.execute(
-        "SELECT m.text, m.hidden_at, m.attachment, m.drawing_card, mm.duration_ms,"
-        " mm.stored, u.username, u.public_id FROM messages m"
+        "SELECT m.text, m.hidden_at, m.attachment, m.drawing_card, m.post_id,"
+        " mm.duration_ms, mm.stored, u.username, u.public_id FROM messages m"
         " JOIN users u ON u.id = m.sender_id"
         " LEFT JOIN message_media mm ON mm.message_id = m.id WHERE m.id = %s",
         (target,),
@@ -308,6 +308,12 @@ def attachment_lines(row: DictRow) -> tuple[str, ...]:
             f"With a drawing: {_drawing_name(card)}, {km:.1f} km;"
             " the link below shows it before hiding.",
         )
+    if kind == "post":
+        # A pointer to a drawing (TASK-455, ADR-0382): the message holds
+        # nothing of it, and the post is reported on its own.
+        post_id = row["post_id"]
+        which = "deleted since" if post_id is None else f"drawing {post_id}"
+        return (f"With a post attached ({which}): the message holds nothing of it.",)
     return ()
 
 
@@ -595,6 +601,9 @@ def shown_html(row: DictRow | None, token: str) -> str:
             f'<p><video src="{source}" controls playsinline preload="metadata"'
             ' style="max-width:100%"></video></p>'
         )
+    if row["attachment"] == "post":
+        # Nothing of the post is in the message (TASK-455): nothing to show.
+        return ""
     card = row["drawing_card"]
     return (
         f"<p>{escape(_drawing_name(card))},"

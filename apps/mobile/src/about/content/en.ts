@@ -11,8 +11,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "10 November 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). */
-const PRIVACY_UPDATED = "11 November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the replies and the reactions to a comment (TASK-454 C). */
+const PRIVACY_UPDATED = "12 November 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -360,7 +360,7 @@ const privacy: AboutDocument = {
         {
           bullets: [
             "A route you keep in «Favorites» is stored whole, with its line, which often starts near your home. Only your account sees it, until you remove it or delete the account.",
-            "Your comments and reactions under a drawing are seen by the members who see that drawing. You can delete your own comments.",
+            "Your comments, replies and reactions under a drawing are seen by the members who see that drawing. A reaction to a comment is shown to them only as a number; the member who wrote that comment reads, in the bell, that it was you. You can delete your own comments and replies, and take back a reaction.",
             "Who you follow, who follows you and the requests to follow are kept with your account.",
           ],
         },
@@ -466,7 +466,7 @@ const privacy: AboutDocument = {
             "Apple on an iPhone, or Google on Android, through the phone's own address service, receives the position «Draw» starts from, to write the name of its street. MuW sends it nothing else and does not keep the name.",
             "Wikimedia serves our server the photos of towns: it sees which town, not who asked.",
             "With the «Satellite» map Esri serves the images, and with the «3D» map Amazon Web Services serves the heights: like any map service, they see which area you look at.",
-            "The Overpass service of OpenStreetMap data is asked by our server for the map of an area it does not have yet: it sees which area, not who asked.",
+            "The Overpass services of OpenStreetMap data (overpass-api.de and, when it does not answer, overpass.private.coffee) are asked by our server for the map of an area it does not have yet: they see which area, not who asked.",
             "unpkg serves the map library when the app starts.",
             "Expo serves the app's updates.",
             "Google Ireland Limited (Firebase Cloud Messaging), to deliver push notifications to Android phones. When you turn push on, the app asks Firebase for a registration token for your phone; Expo's push service hands each notification (who did what, and the beginning of a comment) to Google, which delivers it to your phone. Google sees the token and the content of each notification, not your account or your position. The token is dropped from our server when you turn push off, log out or delete your account; the one on the phone goes when you uninstall the app.",

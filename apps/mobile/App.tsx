@@ -172,6 +172,7 @@ import { type ShellPage, TabShell } from "./src/tabs/TabShell";
 import { StretchReminder } from "./src/screens/StretchReminder";
 import { clearSkiDay, queueSkiDay } from "./src/ski/skiDayStore";
 import { useSkiDayOutbox } from "./src/ski/useSkiDayOutbox";
+import { MorningStretchLayer } from "./src/stretch/MorningStretchLayer";
 import { StretchScreen } from "./src/stretch/StretchScreen";
 import { useSwimNotice } from "./src/swim/safetyNotice";
 import { SwimNotice } from "./src/swim/SwimNotice";
@@ -1852,6 +1853,11 @@ function MuW() {
             (TASK-285 part B). */}
         {stretching && <StretchScreen onLeave={() => setStretching(false)} />}
       </MapScreen>
+      {/* The morning routine, from its notification, over any page (TASK-466
+          part D): never over a run. */}
+      <MorningStretchLayer
+        blocked={stretching || screen === "run" || screen === "navigate"}
+      />
       {/* Over the map, opposite the way back: keep the route shown. */}
       <FavoriteHeart route={onMap} />
       {page !== -1 && (

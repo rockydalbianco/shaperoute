@@ -190,13 +190,85 @@ Scelte dell'utente (2026-11-12, «Sì, va bene» alla proposta intera):
   scelta, senza chiedere;
 - il permesso è quello delle notifiche push; negato, la voce lo dice.
 
-Parte dopo il merge della B (usa `routines.ts`), da `main`, branch
-`feat/TASK-466-d-morning`. File (lista mandata al Coordinatore il
-2026-11-12, turno da chiedere su `App.tsx`, `SettingsPage.tsx`,
-`notifications/`): nuovi `src/stretch/morning.ts`,
-`MorningStretchSetting.tsx` e i loro test; una o due righe in
-`src/profile/SettingsPage.tsx`, `src/notifications/notificationTap.ts`,
-`openTarget.ts` (e test), `App.tsx`; i18n; task file.
+_(branch `feat/TASK-466-d-morning`, da `main` dopo la B; lista dei file
+approvata dal Coordinatore il 2026-11-12)_
+
+1. **L'impostazione** (`morning.ts`): acceso/spento, ora e minuti della
+   sveglia, giorni (1 = lunedì), minuti della routine; tenuta solo sul
+   telefono (`morning-stretch.json`), all'inizio spenta, 7:00, lunedì–
+   venerdì, 5 minuti. Accesa senza giorni non esiste: resta spenta.
+2. **Le notifiche**: locali, una alla settimana per ogni giorno scelto,
+   5 minuti dopo la sveglia (`AFTER_ALARM_MIN`; una sveglia alle 23:57
+   cade sul giorno dopo). Ognuna ha un nome suo, `morning-stretch-<giorno>`:
+   a ogni cambio si tolgono **solo quelle con questo inizio** e si
+   rimettono, mai `cancelAll`, così il promemoria del piano
+   (`muw-plan-day-…`, TASK-461 B2b) e la pausa della palestra restano.
+   Il testo è scritto quando la notifica viene programmata: si rimettono
+   all'apertura dell'app e a ogni cambio di lingua.
+3. **Il tocco**: la notifica porta `kind: "morning_stretch"` e i minuti.
+   Lo legge un ascoltatore a parte (`onMorningTapped`), non quello delle
+   push: `tapTarget` ignora i tipi che non conosce, e l'ascoltatore delle
+   push apre solo con un account e attraverso le porte di «Profile».
+   Quella che ha aperto l'app si legge **senza cancellarla** (la cancella
+   l'ascoltatore delle push, che parte dopo); la stessa notifica torna
+   ogni settimana con lo stesso nome, quindi si distingue dalla data.
+4. **Sopra l'app** (`MorningStretchLayer`, una riga in `App.tsx`, fuori
+   da `MapScreen` che mostra i figli solo sulla mappa): apre la routine
+   «Morning» dei minuti portati, subito, senza «How long?». **Mai durante
+   una corsa** (`run`, `navigate`): la schermata dello stretching usa lo
+   stesso «schermo acceso» della corsa e lo spegnerebbe all'uscita.
+5. **La voce** (`MorningStretchSetting`, in «PREFERENCES» dopo «Body»):
+   la riga dice «Off» oppure «7:00 · 5 min»; la pagina ha l'interruttore,
+   l'ora con «−» e «+» (ore di 1, minuti di 5: niente tastiera), i sette
+   giorni, le tre durate. Accendere chiede il permesso delle notifiche;
+   negato, resta spento con la frase già usata per le push e «Open
+   Settings». Non si può togliere l'ultimo giorno.
+
+Punti 2–5 decisi dall'agente su delega dell'utente.
+
+Testi nuovi, oltre ai due approvati il 2026-11-12: la frase della pagina
+(«MuW can't read your phone's alarm. Set here the time it rings:
+{minutes} minutes later a reminder opens your Morning routine.»), «Alarm
+time», «Length», e per chi usa il lettore di schermo «Hour», «Minutes».
+«Off», «Days», «Back», «{minutes} min», i giorni e la frase del permesso
+c'erano già.
+
+**Criteri di accettazione (parte D)**
+
+- [x] La voce in Impostazioni, spenta all'inizio; ogni cambio è tenuto
+      subito e le notifiche del telefono lo seguono.
+- [x] Notifiche solo nei giorni scelti, 5 minuti dopo la sveglia; quelle
+      degli altri non si toccano (test).
+- [x] Il tocco apre «Morning» della durata scelta senza chiedere, anche
+      quando è la notifica ad aprire l'app; non durante una corsa.
+- [x] Permesso negato: resta spento e dice dove permetterle.
+- [x] Test di `src/stretch`, `src/i18n`, `src/profile`,
+      `__tests__/AppStretch`, `__tests__/AppMorningStretch` verdi; `tsc`
+      pulito.
+- [ ] Sì dell'utente sui testi nuovi e sulle traduzioni.
+- [ ] Schermate dal simulatore, col turno del Coordinatore, e sì
+      dell'utente. La notifica vera (suona, apre l'app) si prova sul
+      telefono dopo l'OTA: in Expo Go non è la stessa cosa.
+
+**File toccati (parte D)**
+
+```
+apps/mobile/src/stretch/morning.ts                       (nuovo)
+apps/mobile/src/stretch/morning.test.ts                  (nuovo)
+apps/mobile/src/stretch/MorningStretchSetting.tsx        (nuovo)
+apps/mobile/src/stretch/MorningStretchSetting.test.tsx   (nuovo)
+apps/mobile/src/stretch/MorningStretchLayer.tsx          (nuovo)
+apps/mobile/src/stretch/MorningStretchLayer.test.tsx     (nuovo)
+apps/mobile/__tests__/AppMorningStretch.test.tsx         (nuovo)
+apps/mobile/App.tsx                                      (una riga e l'import)
+apps/mobile/src/profile/SettingsPage.tsx                 (una riga e l'import)
+apps/mobile/src/i18n/{it,de,fr,es}.ts                    (voci nuove)
+docs/UI.md
+docs/tasks/TASK-466.md
+```
+
+Non tocca `src/notifications/**`, `screens/ProfileLayer.tsx`,
+`__mocks__/`. Niente dipendenze, niente nativo, niente server.
 
 ## Parte E — La tua routine, pubblicata
 

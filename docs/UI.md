@@ -4433,7 +4433,12 @@ acceso. Testi approvati dall'utente l'11 novembre 2026.
   settings», `health/SleepPostSwitch.tsx`): lo stesso interruttore, che va
   all'API subito (non aspetta «Save»); la scheda e la riga seguono
   all'istante.
-- Palestra e nuoto in vasca hanno un form loro: arrivano con la parte B2b.
+- **Anche a fine allenamento in palestra e a fine nuoto in vasca** (parte
+  B2b, `gym/GymEnd.tsx` e `pool/PoolSwimEnd.tsx`): lo stesso interruttore,
+  sotto il form del post e «Save to Apple Health», sopra «Save»; la notte è
+  quella prima dell'inizio dell'allenamento o del nuoto. Stesse regole:
+  parte acceso, solo con un post che altri vedono, mai una richiesta di
+  permesso. Con la costante spenta le due schermate sono com'erano.
 
 ## Il post da condividere (TASK-231, ADR-0194)
 
@@ -5108,7 +5113,9 @@ c'è anche l'errore.
   vedono**: spento, o con «Only me», non parte niente e niente si tiene.
   Finché l'API non ha l'attività il riassunto aspetta in
   `sleep-outbox.json` (al più 30 giorni, poi si butta); una notte che
-  l'API rifiuta si butta, non si rimanda. Il sì a leggere il sonno sta in
+  l'API rifiuta si butta, non si rimanda. Vale lo stesso per un
+  allenamento in palestra e un nuoto in vasca, che aspettano nelle loro
+  code (`gym-outbox.json`, `pool-outbox.json`): la notte parte dopo di loro. Il sì a leggere il sonno sta in
   `sleep-health.json`.
 
 ## Quando la mappa non si carica

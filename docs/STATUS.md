@@ -193,6 +193,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (#1162, ADR-0372), sul server col passo 9; B (app) nella #1172 in bozza,
   aspetta il server e il sì dell'utente sugli screenshot. File: `profile/ProfileHome.tsx`,
   `activities/ActivitiesList.tsx` (B) · `tasks/TASK-462.md`
+- **TASK-454 — Reazioni e super like** · parte 0 chiusa (scelte
+  dell'utente, 2026-11-11); C1, risposte e reazioni ai commenti sul server,
+  in `main` (#1180, ADR-0377, migrazione `0070`): manca il passo sul server,
+  col sì dell'utente. Poi A (le reazioni nel Feed), B (doppio tocco), C2
+  (l'app dei commenti, dopo il server). File: — · `tasks/TASK-454.md`
 
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al

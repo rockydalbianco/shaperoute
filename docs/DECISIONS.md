@@ -533,8 +533,76 @@ lasciando le righe d'indice.
 - ADR-0375 — Il parapendio registrato senza forma, con la condivisione dal vivo e i numeri del volo (quota, variometro, velocità del momento) · 2026-11-11 · Attiva
 - ADR-0372 — Il calendario di tutte le attività: `GET /me/activity-calendar` letto da `runs` e `run_stats`, i 12 mesi e gli sport dell'account nella stessa risposta, nessuna migrazione · 2026-11-11 · Attiva
 - ADR-0374 — Le zone a piedi calde nei processi di calcolo: un tetto in MB invece di 2 zone, le più usate rilette all'avvio in background · 2026-11-11 · Attiva
+- ADR-0377 — Risposte e reazioni ai commenti: una risposta è una riga di `comments` a un livello solo, le cinque emoji in `comment_reactions`, la lista piatta per le app di prima, la reazione solo nella campanella · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0377 — Risposte e reazioni ai commenti: una risposta è una riga di `comments` a un livello solo, le cinque emoji in `comment_reactions`, la lista piatta per le app di prima, la reazione solo nella campanella
+
+**Stato**: Accettata · 2026-11-12 · TASK-454 parte C1 in `main` (#1180,
+`02214e9b`, migrazione `0070_comment_replies.sql`); sul server col
+prossimo passo del Coordinatore, col sì dell'utente; l'app è la parte C2.
+Le scelte di quello che si vede sono dell'utente (2026-11-11, una domanda
+alla volta: «Sì adesso, dentro TASK-454», «Un solo livello», «Le sei
+reazioni anche qui» poi «Sui commenti solo le cinque emoji», «Risposte sì,
+reazioni solo nella campanella»); il modo è deciso dall'agente su delega
+dell'utente, numero dal Coordinatore.
+
+**Contesto**: nella prova del lato social dell'11 novembre 2026 (S3 e S4
+di `out/prova-app-2026-11-11/PROPOSTE.md`) l'utente ha chiesto di
+rispondere a un commento e di reagirci. Sotto un disegno c'erano solo
+commenti in fila (ADR-0193) e le sei reazioni al disegno.
+
+**Decisione**:
+- **Una risposta è una riga di `comments`** con `parent_id`: controlli,
+  filtro delle parole, limite al minuto, segnalazione, `hidden_at`, blocchi
+  e cancellazione sono quelli dei commenti, senza codice a parte.
+  Cancellare un commento cancella le sue risposte e le reazioni
+  (`ON DELETE CASCADE`).
+- **Un livello solo, tenuto dal server**: `reply_to` in `POST
+  /drawings/{id}/comments` può essere un commento o una risposta;
+  `parent_id` è sempre il commento in cima. Chi si nomina («@nome») è una
+  colonna (`mention_user_id`) e un campo (`mention`), non testo scritto
+  dall'app: il testo resta quello dell'utente, il nome segue un cambio di
+  username e sparisce per chi ha bloccato quell'iscritto.
+- **Due modi di leggere, uno per le app di prima**: senza `threads` la
+  lista è piatta e per data, risposte comprese; `?threads=true` dà i
+  commenti con le due risposte più vecchie (`REPLIES_SHOWN`) e
+  `reply_count`, le altre da `GET /comments/{id}/replies`. I campi nuovi
+  sono tutti facoltativi: un test («an app from before reads the list it
+  knew») tiene fermo quello che un'app di prima legge.
+- **Una risposta si legge col suo commento**: chi non legge il commento in
+  cima (blocco, nascosto) non legge le risposte sotto, e non contano in
+  `total`.
+- **Le reazioni ai commenti in una tabella loro**, `comment_reactions`:
+  cinque codici (`fire`, `clap`, `strong`, `laugh`, `wow`; niente
+  `super_like`), una per iscritto e commento. Si leggono dentro ogni
+  commento (`reactions`: `counts`, `total`, `mine`), senza una richiesta in
+  più per riga, e si scrivono con `PUT`/`DELETE /comments/{id}/reaction`.
+- **Avvisi**: `comment_reply` a chi ha scritto il commento o la risposta a
+  cui si risponde, con la notifica sul telefono se «Push notifications» è
+  acceso (`users.notify_push`, l'unico interruttore che c'è); il
+  proprietario del disegno riceve il solito `comment`, ma non quando è lui
+  quello a cui si risponde. `comment_reaction` passa solo agli ascoltatori
+  di `push.py` (`BELL_ONLY`): la campanella la tiene, nessun telefono
+  suona. Nessuno dei due entra nell'email delle notizie.
+
+**Scartato**: nascondere le risposte alle app di prima (la notifica
+aprirebbe un disegno dove la risposta non c'è); riusare la tabella
+`reactions` con una colonna in più (chiave e vincolo dei sei tipi sono del
+disegno, e i concorsi contano i `super_like` di quella tabella); il nome
+di chi si nomina scritto nel testo (non seguirebbe un cambio di username
+né un blocco).
+
+**Conseguenze**: il contratto in `API.md` «Risposte e reazioni ai
+commenti»; tabelle e migrazione in `DATABASE.md`; gli esempi
+`fixtures/comment-reply*.json`, `comment-threads.json`,
+`comment-reaction*.json`, controllati dall'API e da `shared-types`. Gli
+esempi di prima (`comment.json`, `comment-request.json`,
+`reaction-result.json`) restano com'erano e sono ora una parte del corpo,
+non tutto. La frase della privacy sulle reazioni ai commenti si aggiorna
+con la parte C2, col sì dell'utente. Il controllo dopo il passo sul server
+in `out/TASK-454/SERVER-C1.md`. I dettagli in `tasks/TASK-454.md`.
 
 ## ADR-0374 — Le zone a piedi calde nei processi di calcolo: un tetto in MB invece di 2 zone, le più usate rilette all'avvio in background
 

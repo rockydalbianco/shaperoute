@@ -43,5 +43,6 @@
     "metres": 2900.0,
     "moving_s": 285.0
   },
-  "sleep": null
+  "sleep": null,
+  "linkable": false
 }

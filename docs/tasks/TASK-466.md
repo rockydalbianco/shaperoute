@@ -253,7 +253,7 @@ c'erano già.
       spenta e accesa, la pagina spenta e accesa, il permesso negato,
       l'italiano). Nella prova i sette giorni sono passati su una riga
       sola.
-- [ ] Sì dell'utente sulle schermate.
+- [x] Sì dell'utente sulle schermate (2026-11-12, «Sì, approvo»).
 - [ ] La notifica vera (suona, apre l'app, anche ad app chiusa) si prova
       sul telefono dopo l'OTA: in Expo Go non è la stessa cosa.
 

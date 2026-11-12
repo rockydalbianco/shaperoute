@@ -35,7 +35,6 @@ from shaperoute_api.sleep import (
     SleepNightBody,
     SleepNightRequestBody,
     SleepSummaryBody,
-    install_sleep,
 )
 
 FIXTURES = (
@@ -66,12 +65,7 @@ SUMMARY = example("summary")
 
 @pytest.fixture
 def client(database: Database, wall: WallClock) -> TestClient:  # noqa: F811
-    app = api(database, wall)
-    # Until app.py installs the endpoints (TASK-467 B1, its last step).
-    inside: Any = app.app
-    if "/me/sleep/{night}" not in {getattr(r, "path", "") for r in inside.routes}:
-        install_sleep(inside)
-    return app
+    return api(database, wall)
 
 
 def shared(

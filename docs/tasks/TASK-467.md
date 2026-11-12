@@ -1,6 +1,6 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 scritta** (server e contratto, ADR-0380: PR di `feat/TASK-467-b1-sleep-server`, la mergia il Coordinatore; sul server col suo passo e il sì dell'utente), poi B2 e B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 scritta** (server e contratto, ADR-0380: #1211, la mergia il Coordinatore; sul server col suo passo e il sì dell'utente), poi B2 e B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
 `feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1)
 **Dipende da**: TASK-321 (Apple Salute nell'app, la stessa libreria),
@@ -294,7 +294,10 @@ ancora: può stare in `main` e sul server senza che si veda niente.
 `packages/shared-types/test/sleep.test.ts`. MODIFICATI:
 `packages/shared-types/src/index.ts` (una riga di export), `docs/API.md`
 («Sleep»), `docs/DATABASE.md` (la migrazione `0072`), questo file, e per
-ultima la riga del router in `services/api/shaperoute_api/app.py`.
+ultima la riga del router in `services/api/shaperoute_api/app.py` (import
+e `install_sleep(app)`, col via del Coordinatore del 2026-11-12: il cambio
+di TASK-441 B2 è in un altro punto del file, chi entra per secondo unisce
+`main`). Il numero `0072` è confermato: il primo libero dopo la `0071`.
 
 **Che cosa c'è** (il dettaglio in `API.md`, «Sleep»):
 
@@ -315,7 +318,12 @@ ultima la riga del router in `services/api/shaperoute_api/app.py`.
    quando `shared` si spegne (la risposta è `204` al posto della notte) e
    lo fa il database, con due trigger su `runs`, quando l'ultima attività
    la lascia o viene cancellata. Così «al server solo quello che l'utente
-   pubblica» vale anche dopo, non solo all'arrivo.
+   pubblica» vale anche dopo, non solo all'arrivo. La logica sta nel
+   database e non in `activities.py` (d'accordo il Coordinatore: è la
+   scelta che tiene meno dati); i tre casi hanno il test: attività
+   cancellata, sonno tolto dall'attività, account cancellato. Il lanciatore
+   delle migrazioni (`db.py`, `migrate`) manda il file intero a PostgreSQL
+   senza spezzarlo sui punti e virgola: il corpo `$$ … $$` passa com'è.
 2. **Nessun orario**: `night` è il giorno del risveglio; l'ora di andare a
    letto e di svegliarsi non lascia il telefono. La parola («Poor» …
    «Excellent») non si salva: la ricava l'app dal punteggio.
@@ -338,9 +346,10 @@ ultima la riga del router in `services/api/shaperoute_api/app.py`.
 **Esportazione e cancellazione dell'account**: la cancellazione è la
 cascata da `users` (c'è il test). **Un'esportazione automatica non
 esiste**: nessun file elenca le tabelle; la copia che uno chiede per email
-(policy, «ask us for a copy of your data») si fa a mano, e la query per il
-sonno è scritta in `DATABASE.md` e in `out/TASK-467/SERVER-B1.md`. Nessun
-file da toccare.
+(policy, «ask us for a copy of your data») si fa a mano, e le due query
+per il sonno (le notti, e le attività che le portano con `sleep_shown`)
+sono scritte in `DATABASE.md` e in `out/TASK-467/SERVER-B1.md`: una
+richiesta di copia comprende il sonno. Nessun file da toccare.
 
 **Da sapere per B2 e B3**:
 
@@ -363,7 +372,7 @@ file da toccare.
 - [x] A: dai campioni alla notte e dalla notte al punteggio, con test
   deterministici (22), `tsc` ed `eslint` puliti; nessun file esistente
   dell'app toccato, impronte ferme.
-- [ ] B1: `sleep_nights` e il sonno dell'attività sul server e nel
+- [x] B1: `sleep_nights` e il sonno dell'attività sul server e nel
   contratto, coi test; chi non è l'autore non legge mai una notte con
   `shared` false né il sonno di un post con `sleep_shown` false;
   esportazione e cancellazione dell'account coprono `sleep_nights`.
@@ -390,3 +399,7 @@ file da toccare.
   parte B, taglio B1/B2/B3 e strada `sleep_nights` dal Coordinatore;
   l'utente: «Resta acceso» (il sonno nel post dell'attività) e «Sì,
   profilo adesso» (la notte da sola). B1 parte in un contesto pulito.
+- **2026-11-12, B1**: scritta in una sessione, #1211 (migrazione `0072`,
+  `sleep.py`, contratto, 42 test). Restano: il merge del Coordinatore, la
+  PR di soli documenti (ADR-0380, `STATUS.md`), il passo sul server col sì
+  dell'utente, la risposta dell'utente sul testo del primo «Share».

@@ -195,6 +195,7 @@ def test_the_migration_keeps_the_walk_of_0043(
     # Each name once, in the order of RunActivity: the walk kept, then the
     # snow; the gym comes with 0047 (TASK-385), a hike with 0051 (TASK-377),
     # gravel and MTB with 0052 (TASK-378), a skate with 0055 (TASK-380), a
-    # day of ski touring with its own (TASK-415).
-    later = {*TRACKLESS_ACTIVITIES, *newer, "ski_touring"}
+    # day of ski touring with its own (TASK-415), a paragliding flight with
+    # its own (TASK-305 parts R).
+    later = {*TRACKLESS_ACTIVITIES, *newer, "ski_touring", "paragliding"}
     assert after == [a for a in get_args(RunActivity) if a not in later]

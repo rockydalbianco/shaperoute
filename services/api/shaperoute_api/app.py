@@ -45,6 +45,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from shaperoute_api.access import protect
 from shaperoute_api.accounts import Accounts, install_accounts
 from shaperoute_api.activities import PlaceNames, install_activities
+from shaperoute_api.activity_calendar import install_activity_calendar
 from shaperoute_api.activity_graphs import (
     Graphs,
     check_supported,
@@ -53,6 +54,7 @@ from shaperoute_api.activity_graphs import (
 )
 from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
+from shaperoute_api.comment_reactions import install_comment_reactions
 from shaperoute_api.comments import install_comments
 from shaperoute_api.contact import install_contact
 from shaperoute_api.contact_people import install_contact_people
@@ -395,6 +397,9 @@ def create_app(
     # The calendar of one's own workouts at the gym (TASK-411 B); it needs
     # a token.
     install_gym_calendar(app)
+    # The calendar of all one's own activities, with the twelve months up
+    # to it (TASK-462 A); it needs a token.
+    install_activity_calendar(app)
     # The plans of the gym (TASK-411 C); they need a token.
     install_gym_plans(app)
     # The swims in a pool, saved without a track, and their lengths
@@ -420,6 +425,8 @@ def create_app(
     # What the members leave under a drawing with one tap, the super like
     # with a comment (TASK-119); they need a token.
     install_reactions(app)
+    # What they leave on a comment, or on a reply (TASK-454); a token too.
+    install_comment_reactions(app)
     # The drawings the members publish, read by whoever is signed in
     # (TASK-118); it needs a token.
     install_feed(app)

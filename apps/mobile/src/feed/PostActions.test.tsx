@@ -83,6 +83,21 @@ test("«Edit & run» is the yellow word, and only when there is a line to run", 
   expect(screen.getByText("Edit & run")).toHaveStyle({ color: color.accent });
 });
 
+// TASK-444: emoji in colours stood over the words, beside the bar's lines.
+test("each action has a line icon, hidden from a screen reader; no emoji", async () => {
+  await bar(true, () => {});
+  // No «Comment» here: under jest there is no API to ask for the comments.
+  for (const id of ["post-like", "post-share", "post-edit-run"]) {
+    const icon = screen.getByTestId(`${id}-icon`, { includeHiddenElements: true });
+    expect(icon).toHaveProp("accessible", false);
+    expect(icon).toHaveProp("importantForAccessibility", "no");
+    expect(icon).toHaveStyle({
+      tintColor: id === "post-edit-run" ? color.accent : color.text,
+    });
+  }
+  expect(screen.queryByText(/\p{Extended_Pictographic}/u)).toBeNull();
+});
+
 test("every button is big enough to touch", async () => {
   await bar(true, () => {});
   for (const button of screen.getAllByRole("button")) {

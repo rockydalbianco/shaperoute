@@ -1,7 +1,9 @@
 # TASK-453 — Riepilogo palestra senza account e plurali
 
-**Stato**: In corso · 2026-11-11 · codice e test in PR; mancano gli screenshot
-dal simulatore (turno dato dal Coordinatore)
+**Stato**: Done · 2026-11-11 · #1164 in `main` (`a9ade90c`). Esito: dal
+riepilogo di palestra e piscina senza account il link mostra l'iscrizione, e
+i conteggi hanno il singolare nelle cinque lingue. Esce col prossimo
+aggiornamento completo dell'app, non con un OTA suo
 **Fase**: 5 · **Branch**: `fix/TASK-453-gym-end-no-account`
 **ADR**: nessuno · numero dal Coordinatore l'11 novembre 2026
 
@@ -68,9 +70,12 @@ il 4 novembre (TASK-385), solo divise in due; nuovi sono i singolari.
 - [x] Un test prova i plurali per 1 e per più di 1 nelle cinque lingue
       (`src/gym/ExerciseList.test.tsx`).
 - [x] `tsc` pulito; test dei file toccati verdi.
-- [ ] Screenshot dal simulatore prima e dopo in `out/TASK-453/`.
+- [x] Screenshot dal simulatore prima e dopo in `out/TASK-453/` (iPhone 17e,
+      Expo Go, senza account: palestra e piscina, nove immagini; nel
+      checkout principale, fuori dal repository).
 - [x] I testi approvati dall'utente.
-- [ ] PR aperta e «#NNN pronta» al Coordinatore.
+- [x] PR aperta e «#1164 pronta» al Coordinatore, col sì dell'utente sulle
+      immagini («Sì, pronta»).
 
 ## File toccati
 
@@ -119,4 +124,30 @@ test nuovo su tutta l'app.
 
 ## Esito
 
-*(a fine task)*
+In `main` con la #1164 l'11 novembre 2026 (CI 9/9). Nel simulatore, senza
+account: prima il riepilogo scriveva «1 exercises · 1 sets» e «1 rests» e il
+link non cambiava niente; dopo scrive «1 exercise · 1 set» e «1 rest», il
+link mostra la pagina del profilo con «Sign up» e la riga del perché, e
+lasciando la pagina il riepilogo torna. L'iscrizione vera e il ritorno con
+«Save» sono provati dal test su tutta l'app, non nel simulatore (lì non
+c'era un'API di prova).
+
+**Pubblicazione**: l'utente ha deciso col Coordinatore l'11 novembre 2026
+(«No, tra due giorni») nessun aggiornamento dell'app per due giorni, poi
+un'uscita completa: TASK-453 esce con quella, dal Coordinatore. È già
+nell'aggiornamento di prova (canale `preview`) pubblicato dal Coordinatore da
+`a9ade90c`, gruppo `149b3411-1be6-4dfb-b4dc-b0abbbde94ee`.
+
+**Rimandato**:
+
+- `docs/sports/gym.md` non è aggiornato: il ramo di TASK-452 lo sta
+  modificando. La frase da aggiungere, alla fine dell'allenamento: «Senza
+  account il riepilogo mostra "Sign up or log in…": toccarlo fa da parte il
+  riepilogo e mostra la pagina del profilo; l'allenamento resta sul telefono
+  e il riepilogo torna con "Save" dopo l'iscrizione, o com'era se la pagina
+  viene lasciata. Lo stesso alla fine di una nuotata in piscina.»
+- Nessun ADR: la scelta tecnica (`useSignUpAside`, deciso dall'agente su
+  delega dell'utente) è scritta qui sopra in «Cosa fare».
+- Richiesta nuova dell'utente arrivata in questa sessione («sulla palestra fai
+  vedere sull'omino… quale muscolo alleni»): passata al Coordinatore per
+  numero e sessione, non fatta qui.

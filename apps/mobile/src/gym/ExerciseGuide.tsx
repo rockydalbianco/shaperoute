@@ -9,9 +9,13 @@ import { groupName } from "./groups";
 import { guideOf } from "./guides";
 import { gymStyles } from "./gymStyles";
 import { moveOf } from "./moves";
+import { MuscleCaption, MuscleMap } from "./MuscleMap";
+import { musclesOf } from "./muscles";
 
 /** The side of the big figure of the guide. */
 export const GUIDE_FIGURE_SIZE = 200;
+/** The height of the bodies beside it, with the muscles worked (TASK-465). */
+export const GUIDE_BODY_HEIGHT = 132;
 
 /** Whether `key` has a guide: every exercise of the catalog does. */
 export function hasGuide(key: string, language: Language): boolean {
@@ -19,8 +23,9 @@ export function hasGuide(key: string, language: Language): boolean {
 }
 
 /**
- * How to do an exercise (TASK-411 part E, ADR-0341): the figure big, its
- * three steps and what to watch out for; «Add to workout» when it is opened
+ * How to do an exercise (TASK-411 part E, ADR-0341): the figure big, beside
+ * it the body with the muscles it works (TASK-465), its three steps and
+ * what to watch out for; «Add to workout» when it is opened
  * from «+ Exercise». In place of what was on the screen, not over it: the
  * picker and the workout are already in a sheet.
  */
@@ -37,6 +42,7 @@ export function ExerciseGuide({
 }) {
   const guide = guideOf(exercise.key, language);
   const move = moveOf(exercise.key);
+  const worked = musclesOf(exercise.key);
   return (
     <View style={styles.guide} testID={`guide-${exercise.key}`}>
       <View style={styles.top}>
@@ -59,11 +65,30 @@ export function ExerciseGuide({
       <ScrollView contentContainerStyle={styles.body}>
         {move !== null && (
           <View style={styles.stage}>
-            <ExerciseFigure
-              move={move}
-              size={GUIDE_FIGURE_SIZE}
-              testID="guide-figure"
-            />
+            <View style={styles.pictures}>
+              <ExerciseFigure
+                move={move}
+                size={GUIDE_FIGURE_SIZE}
+                testID="guide-figure"
+              />
+              {worked !== null && (
+                <MuscleMap
+                  worked={worked}
+                  height={GUIDE_BODY_HEIGHT}
+                  language={language}
+                  detail
+                  labelled={false}
+                  testID="guide-muscles"
+                />
+              )}
+            </View>
+            {worked !== null && (
+              <MuscleCaption
+                worked={worked}
+                language={language}
+                testID="guide-muscle-names"
+              />
+            )}
           </View>
         )}
         {guide !== null && (
@@ -125,9 +150,18 @@ const styles = StyleSheet.create({
   },
   stage: {
     alignItems: "center",
+    gap: space.md,
     borderRadius: radius.lg,
     backgroundColor: color.surface,
     paddingVertical: space.md,
+  },
+  // The bodies beside the figure; under it on a narrow screen.
+  pictures: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.md,
   },
   heading: {
     color: color.text,

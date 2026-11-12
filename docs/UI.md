@@ -51,7 +51,7 @@ ciano di «Start here».
 | `text` | `#F6F3EC` | il testo |
 | `textMuted` | `#A49D93` | etichette e righe secondarie (7,4:1 sul fondo) |
 | `textFaint` | `#908980` | il testo più tenue ancora leggibile (5,7:1), non per il corpo; i nomi delle altre pagine in alto |
-| `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
+| `warning` | `#FF7A59` | ciò che chiede attenzione senza essere un errore (la bozza, «Sharing live», l'email da confermare…); **non** gli avvisi sul percorso, che hanno un segno a linea (TASK-444) |
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
 | `energy` | `#FF6363` (scuro, fino a `#FFA3A3` al passo più chiaro); `#8F1216`–`#B71C1C` nel tono chiaro | le calorie, ovunque si vedano: riquadri della corsa e della neve, piscina, palestra, la riga del post e dell'attività, i riquadri e le righe della pagina del post (TASK-424 parte C3, scelta dell'utente del 2026-11-10: «segnate con colore rosso in tutte»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo. Sul giallo della palestra `energyOnAccent` `#8F1216` (6,3:1), sopra una foto `energyOnScrim` `#FF6363` (6,8:1 sul velo) |
@@ -69,7 +69,7 @@ di poco verso il giallo, nei due toni, con gli stessi minimi di contrasto
 Quattro regole:
 
 1. **Il giallo significa una cosa sola**: il percorso, il comando che lo
-   produce e la barra che lo mostra mentre si disegna. Gli avvisi usano `warning`, arancio: un avviso giallo
+   produce e la barra che lo mostra mentre si disegna. Ciò che chiede attenzione usa `warning`, arancio: un avviso giallo
    renderebbe il colore muto. **Un'eccezione**, scelta dall'utente
    (TASK-220, ADR-0183): «Run without a route» in cima a «Draw» è giallo,
    con il testo scuro. Per tutto il resto la regola vale.
@@ -3248,8 +3248,8 @@ prima (`api/routes.ts` `onFirst`, `route/useRouteRequest.ts` `more`,
 ideale sotto (TASK-442).
 
 **Dove la forma viene meglio** (TASK-234, ADR-0197, scelta dell'utente):
-quando l'API manda `better_distance_m`, sotto le tessere c'è una riga
-grigia come un avviso da sapere, «This shape comes out better at about 8
+quando l'API manda `better_distance_m`, sotto le tessere c'è un riquadro
+grigio come quello di un avviso, «This shape comes out better at about 8
 km.» («This word…» per una parola, «This outline…» per un'immagine), con
 il pulsante «Try 8 km», che scrive la distanza e ridisegna come quello di
 ADR-0041. La riga è della richiesta: resta con qualunque tessera
@@ -3341,11 +3341,18 @@ TASK-232.
 
 Gli avvisi sono **in parole semplici** (TASK-054, ADR-0048): l'app
 riconosce i testi che il motore scrive e li riscrive brevi, con una
-striscia arancio (`warning`) per quelli a cui fare attenzione (scale,
-strade principali, gallerie, forma poco fedele, pochi tratti di strada) e
-grigia per quelli da sapere (partenza spostata, distanza diversa da quella
-chiesta, strade ripercorse); prima quelli a cui fare attenzione, e la
-stessa frase una volta sola. Se ne vedono **due alla volta** (TASK-337,
+segno a linea accanto al testo: un triangolo per quelli a cui fare
+attenzione (scale, strade principali, gallerie, forma poco fedele, pochi
+tratti di strada) e una «i» cerchiata, più tenue, per quelli da sapere
+(partenza spostata, distanza diversa da quella chiesta, strade
+ripercorse); prima quelli a cui fare attenzione, e la stessa frase una
+volta sola. **Nessun colore** dice la differenza, la dice la forma del
+segno (TASK-444, scelta dell'utente del 12 novembre 2026 sulle schermate):
+prima c'era una striscia `warning`, e sul tema scuro `warning` sta accanto
+a `error`, così le scale lungo la strada sembravano un errore. Il segno è
+nascosto al lettore di schermo, che legge la frase. La riga è
+`route/NoteRow.tsx`, la stessa sotto un percorso a nuoto («Within 150 m of
+the shore. Never swim alone.», col triangolo). Se ne vedono **due alla volta** (TASK-337,
 richiesta dell'utente: di più spingevano la mappa fuori dallo schermo):
 sotto, una riga grigia «Show more» apre gli altri; un altro percorso, o
 l'altro fra A e B, riparte da due. Quelli di sicurezza (scale, strade

@@ -201,16 +201,21 @@ test("«Settings» and «Edit profile» open over the app, and «←» comes bac
   onProfilePage();
 });
 
-test("«Guide» opens over the app, and «←» comes back to the page, not to «Settings»", async () => {
+test("with an account the guide is «Help» in «Settings», and «←» comes back there", async () => {
   signedIn();
   api(ACCOUNT);
   await open();
   await fireEvent.press(circle());
-  await fireEvent.press(await screen.findByRole("button", { name: "Guide" }));
-  expect(screen.getByRole("header", { name: "Guide" })).toBeOnTheScreen();
+  expect(await screen.findByText(session.user.username)).toBeOnTheScreen();
+  // No «Guide» row on the page since TASK-457.
+  expect(screen.queryByRole("button", { name: "Guide" })).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Settings" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Help" }));
+  expect(screen.getByRole("header", { name: "Help" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Watch the tour" })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
-  expect(screen.queryByRole("header", { name: "Guide" })).toBeNull();
+  expect(screen.getByRole("header", { name: "Settings" })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.queryByRole("header", { name: "Settings" })).toBeNull();
   onProfilePage();
 });

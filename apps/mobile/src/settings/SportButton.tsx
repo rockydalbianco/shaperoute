@@ -145,8 +145,13 @@ export function SportButton({ sports = SPORTS }: Props) {
                   })}
                 >
                   <Text style={styles.emoji}>{option.emoji}</Text>
-                  <Text style={styles.rowText}>{t(option.name)}</Text>
-                  <Text style={styles.soon}>{t("Soon")}</Text>
+                  {/* «Soon» under the name, as the ski's line: beside it a
+                      long name («Wheelchair & stroller») broke its words
+                      (TASK-414). */}
+                  <View style={styles.words}>
+                    <Text style={styles.rowText}>{t(option.name)}</Text>
+                    <Text style={styles.soon}>{t("Soon")}</Text>
+                  </View>
                 </View>
               )}
             </View>

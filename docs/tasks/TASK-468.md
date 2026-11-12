@@ -1,6 +1,7 @@
 # TASK-468 — La live in chat e nel Feed, anche programmata
 
-**Stato**: In corso · parte 0 (documenti) in questa PR; poi A1, A2, B1, B2
+**Stato**: In corso · parte 0 in `main` (#1213, con la #1226); A1a in `main`
+(#1221, `9328c109`); poi A1b (dopo TASK-455 A), A2, B1, B2
 **Fase**: 5 · **Branch**: `docs/TASK-468-live-chat-feed` (parte 0) ·
 **ADR**: ADR-0381 · numeri dal Coordinatore (2026-11-12)
 **Estende**: TASK-424 (ADR-0352, «Share live activity»), che metteva fuori
@@ -182,6 +183,22 @@ Privacy dell'app (`about/content`, voce «Your position»), frase in più:
   pagina web, 10 s), limiti, chi vede attraverso blocchi e nascosti
   (`follows.apart_sql`), segnalazioni.
 
+## Avanzamento
+
+- **2026-11-12 — parte 0**: scelte, testi e ADR-0381 (proposta) in `main`
+  con la #1213 (entrata con la PR unica dei documenti #1226).
+- **2026-11-12 — A1a in `main`** (#1221, `9328c109`, migrazione
+  `0073_live_audiences`): `audience_feed`, `heart_visible`, link
+  facoltativo (`POST /me/live-shares/{id}/link`), `PATCH`, `send` verso
+  `live_share_recipients`, `GET /live-shares/{id}` col token d'account.
+  Criteri del Coordinatore coperti da `test_live_shares.py` (49 test).
+  **Resta**: il passo sul server, il prossimo dopo l'aggiornamento completo
+  del 2026-11-12, col sì dell'utente e con la riga
+  `--exclude-table-data=live_share_recipients` in `deploy/backup.sh` (del
+  Coordinatore: senza, il ripristino di una copia fallisce sulla chiave
+  esterna). Controlli di sola lettura in `out/TASK-468/SERVER-A1a.md`.
+- **Prossima**: A1b, quando TASK-455 A (#1230) è in `main`.
+
 ## Contesto da leggere
 
 - `tasks/TASK-424.md`, ADR-0352, `API.md` «Live shares» e «Messages»
@@ -208,6 +225,19 @@ docs/INDEX.md
 ```
 
 Le liste delle parti A1, A2, B1, B2 vanno al Coordinatore prima del codice.
+
+Parte A1a (#1221, approvata dal Coordinatore il 2026-11-12):
+
+```
+services/api/shaperoute_api/live_shares.py
+services/api/migrations/0073_live_audiences.sql
+services/api/tests/test_live_shares.py
+packages/shared-types/src/liveShare.ts
+packages/shared-types/test/liveShare.test.ts
+packages/shared-types/fixtures/live-share-send-request.json
+docs/API.md
+docs/DATABASE.md
+```
 
 ## Esito
 

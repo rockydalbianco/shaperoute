@@ -214,6 +214,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`
+  **2026-11-12**: parte 0 in `main`; A1a in `main` (#1221, `9328c109`,
+  migrazione `0073`), sul server col passo dopo l'uscita completa, col sì.
+  Poi A1b dopo TASK-455 A.
 
 - **TASK-454 — Reazioni e super like** · parte 0 chiusa (scelte
   dell'utente, 2026-11-11); C1, risposte e reazioni ai commenti sul server,

@@ -210,6 +210,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   scelto dal minimo disponibile dopo qualche giorno. File: — ·
   `tasks/TASK-464.md`
 
+- **TASK-466 — Lo stretching nuovo** · A (la figura che respira, si
+  rialza e si gira, «Get ready», tick, «Skip») in `main` (#1181,
+  ADR-0378), esce con l'aggiornamento completo. Poi B (routine 3/5/10
+  min), D (mattino), C (palestra, dopo 461 A2 e 465), E (routine
+  pubblicate). File: — · `tasks/TASK-466.md`
+
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
 la figura, 305 parapendio (il pianificatore), 336 video nei post, 341 badge, 345 calorie e

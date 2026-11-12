@@ -536,8 +536,70 @@ lasciando le righe d'indice.
 - ADR-0377 — Risposte e reazioni ai commenti: una risposta è una riga di `comments` a un livello solo, le cinque emoji in `comment_reactions`, la lista piatta per le app di prima, la reazione solo nella campanella · 2026-11-12 · Attiva
 - ADR-0376 — Il muscolo allenato su una sagoma accanto all'omino della palestra: la tabella esercizio → muscoli nell'app, il corpo fatto di `View`, un token `muscle` · 2026-11-11 · Attiva
 - ADR-0361, precisazione — Com'è stato costruito il primo percorso: senza `?first=1` il campo non c'è, il primo tiene la sua distanza migliore, i test dell'app che fingono il server ignorano il parametro · 2026-11-12 · Attiva
+- ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate
+
+**Stato**: Attiva · 2026-11-12 · TASK-466, parte A in `main` (#1181,
+`437f152f`), solo app; esce con l'aggiornamento completo dell'app (c'è un
+asset nuovo, `assets/stretch/tick.wav`: le impronte le misura il
+Coordinatore prima dell'OTA). Il piano in cinque parti, i testi «End» e
+«Next: {exercise}» e l'aspetto (schermate e video dal simulatore) sono
+scelte dell'utente (2026-11-11 «Sì, vai»; 2026-11-12 «Sì, approvo» due
+volte); il modo è deciso dall'agente su delega dell'utente, numero dal
+Coordinatore.
+
+**Contesto**: l'utente l'11 novembre 2026 ha chiesto di migliorare lo
+stretching e le sue animazioni, di portarlo in palestra, di farlo al
+mattino dopo la sveglia per 3, 5 o 10 minuti e di poter comporre e
+pubblicare una propria routine. Lo stretching dopo la corsa (TASK-285,
+ADR-0247) aveva cinque esercizi, una figura di `View` girate che passava
+da una posa all'altra con uno scatto al cambio lato, la tenuta che partiva
+subito e solo il «ding» alla fine.
+
+**Decisione** (parte A):
+- **La figura resta di `View` girate** (ADR-0147, ADR-0247), niente
+  librerie di disegno. Ogni giuntura ha due `rotate`: il movimento fra le
+  pose (keyframe 0..n-1 su un solo `Animated.Value`) e il respiro.
+- **Il respiro**: durante la tenuta la posa va un po' più a fondo e torna
+  ogni `BREATH_MS` = 4 s (`Animated.loop`), al massimo 12 gradi
+  (`BREATH_MAX_DEGREES`), solo sui segmenti che fanno l'allungamento: un
+  `Breath` per esercizio in `poses.ts`. Il bacino scende con la posa
+  (`grounding`). In pausa il respiro si posa in 300 ms.
+- **In piedi fra due pose piegate e al cambio lato**: `path()` passa da
+  `STAND`; in piedi la figura si gira stringendosi di profilo (`scaleX` da
+  1 a -1 attorno al momento in piedi), non più lo scatto.
+- **Il tempo**: «Get ready» 5 s prima di ogni esercizio, «Switch sides»
+  3 s fra i lati; la tenuta (20 s a lato) parte solo a figura in posa.
+- **I suoni**: un tick all'inizio della tenuta e sugli ultimi 3 s, poi il
+  «ding» di prima. `tick.wav` è nostro, fatto da `tools/stretch_chime.py`
+  come il ding, che resta identico. expo-audio si carica al primo suono.
+- **I tasti**: «Pause», «Skip» (salta l'esercizio: la chiave `Next` c'era
+  già tradotta «A seguire», quindi niente «Next» sul tasto) ed «End»;
+  all'ultimo esercizio «Pause» e «Done». «Next: {exercise}» negli ultimi
+  5 s dell'ultimo lato.
+- **«Riduci movimento»**: ogni posa subito, niente respiro.
+
+**Le parti dopo** (ciascuna con la sua PR, i testi col sì dell'utente):
+B, ~15 esercizi e le routine Morning, After run, After gym da 3, 5, 10
+minuti; C, lo stretching in palestra (dopo TASK-461 A2 e TASK-465, col
+turno su `src/gym`); D, «Morning stretch» con l'orario scritto dall'utente
+e una notifica locale (iOS non lascia leggere le sveglie dell'Orologio;
+la prossima sveglia di Android è nativa e va in una build); E, le routine
+dell'utente pubblicate nel Feed con «Do this routine» (server prima,
+segnalazione e blocco anche lì).
+
+**Alternative scartate**: una libreria di disegno (svg, Lottie) per la
+figura, una dipendenza e un'impronta nativa nuove per poco; il respiro
+come scala di tutta la figura, che non mostra dove tira; la voce che legge
+gli esercizi, rimandata.
+
+**Conseguenze**: i test della schermata simulano `./chime` (jest dà lo
+stesso stub ai due wav); `__tests__/AppStretch` conta il tempo nuovo
+(`READY_S + 20 + SWITCH_S + 20` a esercizio). Dettagli in
+`tasks/TASK-466.md`.
 
 ## ADR-0361, precisazione — Com'è stato costruito il primo percorso: senza `?first=1` il campo non c'è, il primo tiene la sua distanza migliore, i test dell'app che fingono il server ignorano il parametro
 

@@ -246,7 +246,7 @@ dall'agente su delega dell'utente):
   `build_area` più veloce.
   Soglia e Bolzano e Aosta fuori: sì del Coordinatore, 2026-11-12.
 - **Nessuna impronta cambia**: `snow.py` e `snowshoeing.py` stanno in
-  `SNOW_ONLY` (codice ed efficaci `427ed1a16a97` / `8ab61d8e87f9`).
+  `SNOW_ONLY` (codice ed efficaci uguali a main: `e0834d054b6e` / `8ab61d8e87f9` dopo la TASK-414 A).
   `engine.zip` li contiene: rifatto nell'ultimo commit.
 - **Sul server** arriva con un passo suo dopo il merge; controllo: la riga
   di Trento 3 km del passo 8 (76 s) scende a pochi secondi, con lo stesso

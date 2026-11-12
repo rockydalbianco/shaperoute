@@ -228,6 +228,13 @@ pura sono i 60 s di pausa quando lo stato non si legge.
   (overpass-api.de e, quando non risponde, overpass.private.coffee)
   ricevono dal nostro server la richiesta della mappa di una zona che
   non ha ancora: vedono quale zona, non chi l'ha chiesta.»
+  **Risposta dell'utente, 2026-11-12: «Sì, va bene»**, alla domanda
+  «Privacy: nomino anche overpass.private.coffee nella frase su
+  Overpass, come proposto?». Parte D, PR a parte col turno del
+  Coordinatore: `apps/mobile/src/about/content/{en,it,de,es,fr}.ts` e
+  `site/privacy/**` rigenerate con `site/tools/make_privacy.mjs`.
+  L'ordine: la frase esce (app e sito), poi il passo sul server che
+  accende la variabile, ognuno col sì dell'utente.
 - **(c) Cosa dice l'app.** Oggi: «Map data for this area could not be
   downloaded. Try again later.» con «Retry» (`route/problems.ts`); il
   `message` dell'API porta dentro tutta la pagina d'errore di Overpass.

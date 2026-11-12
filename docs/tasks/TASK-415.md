@@ -1,6 +1,6 @@
 # TASK-415 — Ski touring: lo scialpinismo «Record only»
 
-**Stato**: In corso — parte 0 in `main` (#932), parte A in `main` (#948) e sul server, parte B in `main` (#1160) e nella preview.
+**Stato**: In corso — parte 0 in `main` (#932), parte A in `main` (#948) e sul server, parte B in `main` (#1160), parte B3 (cambio pelli a mano) in `main` (#1202).
 **Fase**: 4 · **Branch**: `docs/TASK-415-0-skimo` (parte 0), poi
 `feat/TASK-415-a-ski-touring-api`, `feat/TASK-415-b-…` ·
 **ADR**: ADR-0344 · numeri dal Coordinatore · sessione dello sport,
@@ -278,3 +278,12 @@ cambio, né il GPS fermo durante un cambio vero: lo copre un test
 (`SkiTourFinishCard.test.tsx`, «ends by itself once the tour moves on»).
 Le impronte le misura il Coordinatore sul commit di `main` prima
 dell'OTA: il diff è solo in `apps/mobile/src/`.
+
+2026-11-12, parte B3 in `main`: #1202 (head `caa732a9`), merge
+`6477f7c0` (Coordinatore). L'utente ha visto le schermate dal simulatore
+(`out/TASK-415/b3-1.png` il pulsante e il cambio in corso,
+`b3-2.png` la fine gita coi cambi a mano) e ha risposto «Sì, va bene».
+L'utente ha deciso col Coordinatore («Sì, oggi») che l'aggiornamento
+completo esce il 2026-11-12: porta in produzione le parti B e B3 e accende
+lo scialpinismo. Restano la prova sulla neve quest'inverno (con la parte
+E), poi B2, C e D.

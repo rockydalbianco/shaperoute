@@ -135,6 +135,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `tasks/TASK-415.md`
   **2026-11-11**: B in `main` (#1160) e nella preview; in produzione con
   l'uscita completa (OTA col sì), poi la prova sul telefono; dopo B2, C, D.
+  **2026-11-12**: B3 (cambio pelli a mano) in `main` (#1202); B e B3 escono
+  con l'aggiornamento completo di oggi; prova sulla neve quest'inverno.
 - **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
   B e C («My image», #1067) in `main`, escono col prossimo OTA di
   produzione; prossime D («Together») ed E (telefono: anche il picker di

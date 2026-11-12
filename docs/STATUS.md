@@ -232,11 +232,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   rimando (ADR-0382). Resta la prova dell'utente sul telefono. Prossima C
   (server: link e interruttore), poi D sito, E app. File: — · `tasks/TASK-455.md`
 
-- **TASK-466 — Lo stretching nuovo** · A (la figura che respira, si
-  rialza e si gira, «Get ready», tick, «Skip») in `main` (#1181,
-  ADR-0378), esce con l'aggiornamento completo. Poi B (routine 3/5/10
-  min), D (mattino), C (palestra, dopo 461 A2 e 465), E (routine
-  pubblicate). File: — · `tasks/TASK-466.md`
+- **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (#1181,
+  OTA 12); B (dieci esercizi, routine Morning / After run / After gym da
+  3, 5, 10 min, e la gamba staccata alla seconda apertura corretta) in
+  `main` (#1216), col prossimo OTA. Poi D (mattino, lista al Coordinatore
+  prima del codice), C (palestra), E. File: — · `tasks/TASK-466.md`
 
 - **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
@@ -248,12 +248,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);
   manca il passo sul server (il 12, col sì dell'utente). Poi la parte app,
   dopo TASK-414 B e TASK-413 B. File: — · `tasks/TASK-463.md`
-
-- **TASK-471 — Overpass in errore: rispondere prima** (ADR-0385) · in
-  `main`: un download fallito per job (#1251), 5 s invece di 60 e il secondo
-  servizio spento (#1269), le frasi dell'app e della privacy (#1259, #1263,
-  OTA 14). Restano, col sì dell'utente: passo sul server, copia del sito,
-  accensione del secondo servizio. File: — · `tasks/TASK-471.md`
 
 - **TASK-461 — Il pianificatore completo** (ADR-0371) · A1 e B1 (server:
   quattro esercizi, giorni fuori `outing`, `target`) in `main` e sul server;

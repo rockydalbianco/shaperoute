@@ -185,6 +185,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
   R2 (app, col turno), R3 (`site/live/`). Il pianificatore resta Proposto.
   File: — · `tasks/TASK-305.md`
+  **R1 fatta il 2026-11-12**: #1177 in main (83bbbc5d), server al passo 9
+  (migrazione 0069_paragliding). Ora R2 (app) e R3 (`site/live/`).
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
@@ -198,6 +200,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   in `main` (#1180, ADR-0377, migrazione `0070`): manca il passo sul server,
   col sì dell'utente. Poi A (le reazioni nel Feed), B (doppio tocco), C2
   (l'app dei commenti, dopo il server). File: — · `tasks/TASK-454.md`
+
+- **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
+  (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
+  default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
+  scelto dal minimo disponibile dopo qualche giorno. File: — ·
+  `tasks/TASK-464.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

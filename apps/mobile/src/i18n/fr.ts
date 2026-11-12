@@ -2530,6 +2530,13 @@ export const FR: Table = {
     "{phase}, à partir de {time}, pendant {duration}",
   "No heights from the phone: no phases for this tour.":
     "Le téléphone n'a pas donné d'altitudes : pas de phases pour cette sortie.",
+
+  // src/activities/ (TASK-462: the calendar of every sport)
+  Calendar: "Calendrier",
+  "Last 12 months": "12 derniers mois",
+  "{count} activity": "{count} activité",
+  "{count} activities": "{count} activités",
+
   // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
   "Record your flight": "Enregistrer le vol",
   "Before you fly": "Avant de voler",

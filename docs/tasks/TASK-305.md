@@ -160,9 +160,8 @@ Come TASK-415 A (`23a3c23f`, lo scialpinismo):
    `run-activities.json` e `reads.json`, `reads.py` (un'app vecchia non
    riceve i voli che non sa leggere).
 2. La migrazione che allarga `runs_activity_check` leggendolo, come 0044:
-   numero provvisorio **0070** (0069 è di TASK-463); il numero vero è il
-   primo libero al merge, e la seconda delle due riparte dallo stato
-   lasciato dalla prima.
+   `0069_paragliding.sql` (il primo numero libero in main al merge; era
+   provvisoriamente 0070).
 3. `LiveStatsBody` (`live_shares.py`, `extra="forbid"`) e `LiveStats` di
    `liveShare.ts` prendono quattro campi facoltativi: `alt_m` (quota
    adesso, m, −500…9000), `max_alt_m`, `vario_mps` (m/s, −30…30, un
@@ -528,3 +527,16 @@ tenere «Soon» nelle build per lo store.
 Il 2026-11-11 l'utente ha chiesto la registrazione in volo con la
 condivisione dal vivo, prima del pianificatore: parti R (ADR-0375), da
 questa PR di documenti.
+
+**Esito R1** (2026-11-12): PR #1177 in main (83bbbc5d). `paragliding` è
+nel contratto come attività «Record only» (Strava «Workout», GPX
+`paragliding`), la migrazione `0069_paragliding` allarga solo
+`runs_activity_check`, e `LiveStatsBody` prende `alt_m`, `max_alt_m`,
+`vario_mps` e `speed_mps`. Nell'app il profilo c'è ma resta nascosto, e
+il parapendio è fuori dall'orologio (`NOT_ON_WATCH`: il tipo Apple 3000
+«other» è quello che i test dell'orologio usano per uno sport non
+offerto); un volo non è una giornata sulla neve (`SNOW_ACTIVITIES` in
+`social/PublicParts.tsx`). Server al passo 9 il 2026-11-12 alle 08:38Z
+(02214e9b), controlli di `out/TASK-305/SERVER-R1.md` passati. Nota per
+R2: `activities/snow.ts` e `sports/postMetrics.ts` trattano ogni attività
+«Record only» come neve (niente parziali al km): da rivedere per il volo.

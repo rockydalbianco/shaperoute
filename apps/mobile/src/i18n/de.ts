@@ -2544,6 +2544,13 @@ export const DE: Table = {
   "{phase}, from {time}, for {duration}": "{phase}, ab {time}, {duration} lang",
   "No heights from the phone: no phases for this tour.":
     "Das Telefon hat keine Höhen geliefert: keine Phasen für diese Tour.",
+
+  // src/activities/ (TASK-462: the calendar of every sport)
+  Calendar: "Kalender",
+  "Last 12 months": "Letzte 12 Monate",
+  "{count} activity": "{count} Aktivität",
+  "{count} activities": "{count} Aktivitäten",
+
   // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
   "Record your flight": "Flug aufzeichnen",
   "Before you fly": "Vor dem Flug",

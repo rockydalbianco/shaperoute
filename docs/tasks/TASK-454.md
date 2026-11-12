@@ -1,10 +1,11 @@
 # TASK-454 — Reazioni e super like
 
 **Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-11) · C1 (server) in
-`main` (#1180) e sul server (passo 9, 2026-11-12) · A nella #1195 e C2
-nella #1199, provate nel simulatore e approvate dall'utente (2026-11-12);
-la privacy nella #1200 · B (doppio tocco) nel giro dopo
-**Fase**: 5 · **Branch**: `feat/TASK-454-reactions` (parte A; una PR per parte)
+`main` (#1180) e sul server (passo 9, 2026-11-12) · **A (#1195), C2
+(#1199) e la frase della privacy (#1200) in `main` il 2026-11-12**: escono
+con l'aggiornamento completo · restano B (doppio tocco) e la prova sul
+telefono: vedi «Cosa resta di questo task»
+**Fase**: 5 · **Branch**: una PR per parte; la parte B parte da `main`
 **Dipende da**: TASK-444 parte 1 in `main` (tocca `feed/PostActions.tsx` e
 porta l'icona a cuore di «Like»)
 **ADR**: ADR-0377 per la parte C (risposte e reazioni ai commenti: tabelle e
@@ -270,8 +271,9 @@ Criteri di accettazione (C1):
 `feat/TASK-454-reactions` (da `main` a `02214e9b`, con TASK-444 parte 1
 dentro) · PR #1195 pronta: provata nel simulatore il 2026-11-12 (iPhone
 17e, API locale di `main` con C1), schermate prima/dopo approvate
-dall'utente («Sì, approvo», 2026-11-12), traduzioni approvate. Aspetta il
-merge del Coordinatore.
+dall'utente («Sì, approvo», 2026-11-12), traduzioni approvate.
+**In `main` il 2026-11-12** (#1195, `544fc168`): esce con l'aggiornamento
+completo.
 
 Schermate in `out/TASK-454/` del checkout principale:
 `TASK-454-1-feed-like.jpg` (la striscia che spingeva la riga, la fila in
@@ -337,8 +339,12 @@ verdi; `tsc`, `eslint` e Prettier puliti sui file toccati.
 `feat/TASK-454-c2-comment-replies` (da `main` a `29221702`, senza
 dipendere dalla #1195) · PR #1199: provata nel simulatore il 2026-11-12
 (iPhone 17e, API locale di `main` con C1), schermate approvate dall'utente
-(«Sì, approvo», 2026-11-12), testi nuovi e traduzioni approvati. Entra dopo
-la #1195, con `main` unito; la frase della privacy è nella #1200.
+(«Sì, approvo», 2026-11-12), testi nuovi e traduzioni approvati.
+**In `main` il 2026-11-12** (#1199, `4a2078fe`, dopo la #1195 e con `main`
+unito); la frase della privacy, con le quattro traduzioni e le pagine di
+`site/privacy` rigenerate, in `main` con la #1200 (`1582ffb8`). Escono con
+l'aggiornamento completo; la copia di `site/privacy` sul sito la lancia il
+Coordinatore dopo l'OTA, col sì dell'utente.
 
 Schermate in `out/TASK-454/` del checkout principale:
 `TASK-454-5-commenti.jpg` (l'elenco piatto di prima; le risposte sotto il
@@ -418,6 +424,33 @@ Criteri di accettazione (C2):
 Test in locale (2026-11-12): `src/social` intera, `api/comments`, i vicini
 (`PostActions`, `PostPage`, `importedMarks`, `cardsInMiles`) e `i18n`: 63
 file, 454 test verdi; `tsc`, `eslint` e Prettier puliti sui file toccati.
+
+## Cosa resta di questo task
+
+Scritto il 2026-11-12, con A, C1, C2 e la privacy in `main`.
+
+- **Parte B — doppio tocco = super like** (scelta 6), nel giro dopo
+  l'aggiornamento completo. Due tocchi sull'immagine di un post, nel Feed e
+  nella pagina del post, aprono il foglio del super like; il tocco singolo
+  aspetta 300 ms e poi fa quello che fa oggi. File previsti:
+  `feed/FeedPost.tsx`, `feed/PostPage.tsx` (oggi di TASK-467 B2: la parte B
+  viene dopo di lei), `feed/PostSheet.tsx` (nella pagina del post la fila
+  delle azioni sta lì, l'immagine in `PostPage`), `feed/PostActions.tsx` e
+  `feed/PostReactions.tsx` (il super like chiesto da fuori della fila), un
+  file nuovo `feed/useDoubleTap.ts`, i loro test e `docs/UI.md`. Prima di
+  toccarli: lista al Coordinatore e il suo sì. Poi
+  test, turno del simulatore, sì dell'utente sulle schermate, «pronta».
+  Nessun testo nuovo previsto: il foglio è quello della parte A.
+- **Prova sul telefono**, dopo l'OTA dell'aggiornamento completo (la
+  pubblica il Coordinatore): «Like» apre la fila sopra il pulsante senza
+  muovere la card; un super like porta subito il commento sotto il post;
+  una risposta a un commento arriva come notifica a chi l'ha scritto; una
+  reazione a un commento compare solo nella campanella; la pagina della
+  privacy nell'app e sul sito porta la frase nuova e la data del 12
+  novembre 2026.
+- **Chiusura**: con la parte B in `main`, la PR di soli documenti (la voce
+  esce da `STATUS.md`, una riga in `docs/archive/COMPLETATI.md`, questo
+  file a `Done`) e «TASK-454 fatto» al Coordinatore.
 
 ## Cosa resta (fuori da questo task)
 

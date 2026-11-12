@@ -156,10 +156,18 @@ pura sono i 60 s di pausa quando lo stato non si legge.
   codice cambia: PR separata, prova dei percorsi identici, la unisce
   l'utente. Non misurato: in quale parte dei casi con ricerca lontana il
   percorso vicino inclinato è disegnabile (serve un giro del banco, col
-  turno del Mac).
+  turno del Mac). Quanto è raro: su 93 job del server salvati prima del
+  12 novembre (`out/TASK-435/server-times.txt`, `out/TASK-436/`,
+  `out/TASK-464/`) la ricerca lontana c'è in 3 e un download in 2, mai
+  insieme; il 12 novembre due volte su due. Proposta fatta all'utente:
+  lasciarla per dopo, e riprenderla se nei log il caso torna (con i 5
+  secondi l'errore arriva molto prima, e chi riprova trova la zona
+  vicina in cache). Risposta: in attesa.
 - **(a) La pausa di osmnx quando lo stato di Overpass non si legge**: 60 s
   fissi prima di ogni download, anche del primo e anche di quelli che
   poi riescono. È la parte più grossa dell'attesa in tutti e tre i job.
+  **Scelta dell'utente, 2026-11-12: «Sì, 5 secondi»** (ADR-0385). È la
+  parte B qui sotto.
 - **(d) Un download solo invece di due** (nato dalla parte 0): quando la
   zona va scaricata, la ricerca lontana ne chiede una seconda più larga
   che contiene la prima. Scaricare subito quella larga dimezza i
@@ -172,6 +180,39 @@ pura sono i 60 s di pausa quando lo stato non si legge.
 - **(c) Cosa dice l'app.** Oggi: «Map data for this area could not be
   downloaded. Try again later.» con «Retry» (`route/problems.ts`); il
   `message` dell'API porta dentro tutta la pagina d'errore di Overpass.
+
+### Parte B: cinque secondi invece di sessanta (PR a parte)
+
+Scelta (a). Per la durata di un download chiesto dall'app
+(`graphs.ZoneGraphs._download`) la pausa di osmnx quando lo stato di
+Overpass non dice nulla di utile è di 5 s (`overpass_pause.py`, modulo
+nuovo: cambia l'argomento `default_pause` della funzione privata di
+osmnx e lo rimette com'era). Non cambiano: l'attesa che Overpass chiede
+da sé («Slot available after…»), il download (nessun limite di tempo),
+il lavoro a lotti (`prefetch_zones` usa la sorgente del motore da sola:
+resta a 60 s). Se osmnx non ha più quella funzione il download va come
+oggi, con una sola riga di avviso nel log; sul telefono, dove osmnx non
+c'è, il blocco non fa nulla. Ognuna di queste cose ha il suo test, senza
+rete.
+
+Attesa dopo la parte B, con Overpass a 502: un download fallito circa
+10–20 s invece di 70–80 s; il caso misurato il 12 novembre (zona vicina
+scaricata, zona larga fallita) circa 60 s in meno per ciascuno dei due
+download.
+
+File della parte B (ramo `fix/TASK-471-b-overpass-pause`, dopo la prima
+PR in `main`): `services/api/shaperoute_api/overpass_pause.py` (nuovo),
+`services/api/tests/test_overpass_pause.py` (nuovo),
+`services/api/shaperoute_api/graphs.py`,
+`services/api/tests/test_graphs.py`,
+`apps/mobile/assets/engine/engine.zip` (rifatto: anche `graphs.py` va
+sul telefono).
+
+Dopo il passo sul server, sola lettura: nel log nessuna riga
+`osmnx has no _get_overpass_pause` (c'è solo se l'immagine ha un osmnx
+diverso dal 2.1.1 e la funzione è cambiata); quando Overpass è pieno,
+fra `Overpass: … through …` e l'errore passano secondi, non più di un
+minuto.
 
 ## File toccati
 

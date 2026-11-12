@@ -191,6 +191,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   penna alzata lette a occhio, catalogo a 1546; server in `main` (#1184), app
   #1185; server e OTA escono insieme nell'aggiornamento completo. Poi B2
   (bici, canoa, nuoto) e C. File (#1185): `apps/mobile/src/explore/{ExploreScreen.tsx,explored.ts,recommendedRoutes.ts}`, `apps/mobile/src/route/NearYou.tsx`
+  **2026-11-12, 12:28Z**: B1 in produzione — server a 1546 (passo 10), app nell'OTA 12.
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),

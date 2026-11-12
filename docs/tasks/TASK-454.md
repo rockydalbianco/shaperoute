@@ -149,7 +149,13 @@ apps/mobile/src/feed/FeedPost.tsx                    (dopo TASK-467 B2)
 apps/mobile/src/feed/PostPage.tsx                    (dopo TASK-467 B2)
 apps/mobile/src/feed/FeedPostDoubleTap.test.tsx      (nuovo)
 apps/mobile/src/feed/PostPageDoubleTap.test.tsx      (nuovo)
-apps/mobile/src/feed/*.test.tsx                      (solo dove il tocco singolo ora aspetta)
+apps/mobile/src/feed/FeedPostPhotos.test.tsx         (una riga: il tocco singolo ora aspetta)
+apps/mobile/src/feed/FeedPostAuthor.test.tsx         (idem)
+apps/mobile/src/feed/FeedPostPhotoTap.test.tsx       (idem)
+apps/mobile/src/feed/PostPage.test.tsx               (idem)
+apps/mobile/src/contest/themedContest.test.tsx       (idem; sì del Coordinatore, 2026-11-12)
+apps/mobile/src/screens/FeedScreenContest.test.tsx   (idem)
+apps/mobile/src/screens/FeedScreenPosts.test.tsx     (idem)
 docs/UI.md
 docs/tasks/TASK-454.md
 ```

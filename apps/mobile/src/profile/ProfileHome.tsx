@@ -23,6 +23,7 @@ import { ProfileGallery } from "./ProfileGallery";
 import { ProfileHeader } from "./ProfileHeader";
 import { OwnVo2Max } from "./OwnVo2Max";
 import { GymLevels } from "../gym/GymLevels";
+import { WeekStrip } from "../activities/WeekStrip";
 import { PersonalBests } from "./PersonalBests";
 import { ProfileStats, totalsOf, useOwnProfile } from "./ProfileStats";
 import { bioOf } from "./profileFields";
@@ -132,6 +133,9 @@ export function ProfileHome({
           <Text style={styles.editText}>{t("Edit profile")}</Text>
         </Pressable>
         {totals !== null && <ProfileStats totals={totals} />}
+        {/* The week and the calendar of every sport (TASK-462): nothing from
+            an API without it. */}
+        <WeekStrip bests={own?.personal_bests} />
         {/* The personal bests (TASK-368): none from an older API. */}
         {own?.personal_bests && <PersonalBests bests={own.personal_bests} />}
         {/* The VO₂ max (TASK-397): none from an API older than it. */}

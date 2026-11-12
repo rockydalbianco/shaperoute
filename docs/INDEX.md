@@ -82,6 +82,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | I percorsi di MuW nel Feed: spenti, l'interruttore per riaccenderli | `UI.md` «Feed», ADR-0358, ADR-0310, `tasks/TASK-430.md` |
 | Il calendario di tutte le attività nel profilo e in «My activities», lo storico mese per mese | `UI.md` «Il calendario delle attività», `API.md` «Il calendario delle attività», ADR-0372, `tasks/TASK-462.md` |
 | Lo stretching: la figura che respira e si gira, «Get ready», tick, «Skip»; routine, palestra, mattino, routine pubblicate | `tasks/TASK-466.md`, ADR-0378, ADR-0247, ADR-0147 |
+| I segni a linea: il contorno delle forme nei riquadri (`ShapeGlyph`), le icone sotto i post, gli avvisi del percorso col triangolo e la «i» (`NoteRow`), le icone in `assets/ui/icons/` | `UI.md` (la griglia delle forme, «Feed», gli avvisi «in parole semplici»), `tasks/TASK-444.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

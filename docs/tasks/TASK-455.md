@@ -400,3 +400,12 @@ Le altre parti scrivono i loro criteri quando partono.
   il foglietto di «…» di un'attività dopo «Send to…». Mancano
   `feed/PostActions.tsx` (dopo la #1231 di TASK-454 B), gli screenshot col
   turno del simulatore e il sì dell'utente.
+- 2026-11-12: l'utente: «sì procedi». **«Share» sotto ogni post** collegato
+  in `feed/PostActions.tsx` (il foglietto si monta al primo «Share»; sui
+  post altrui c'è solo coi messaggi), prima che la #1231 di TASK-454 B sia
+  in `main`: quando entra si unisce `main` qui e si tengono le sue righe
+  (una prop in più, `reactionsHandle`). Test nuovo
+  `feed/PostActionsShare.test.tsx`; `PostActions.test.tsx`,
+  `PostPage.test.tsx` e `snowFeed.test.tsx` non sono toccati e passano:
+  senza i messaggi «Share» resta solo sui propri post. Mancano gli
+  screenshot col turno del simulatore e il sì dell'utente.

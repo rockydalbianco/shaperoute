@@ -1,7 +1,9 @@
 import { EXERCISES, routineSeconds, SIDE_SECONDS } from "./exercises";
 import {
   bones,
+  BREATH_MAX_DEGREES,
   CALF,
+  deepen,
   GLUTE,
   grounding,
   HAMSTRING,
@@ -110,5 +112,46 @@ describe("the five exercises", () => {
 
   it("take three minutes and twenty seconds, both sides held", () => {
     expect(routineSeconds()).toBe(200);
+  });
+});
+
+describe("the breath of a held pose", () => {
+  it("goes a few degrees deeper on every exercise, never more", () => {
+    for (const exercise of EXERCISES) {
+      const breath = exercise.breath ?? {};
+      expect(Object.keys(breath).length).toBeGreaterThan(0);
+      for (const degrees of Object.values(breath)) {
+        expect(Math.abs(degrees ?? 0)).toBeLessThanOrEqual(BREATH_MAX_DEGREES);
+      }
+    }
+  });
+
+  it("leaves the pose as it is without a breath", () => {
+    expect(deepen(QUAD, {})).toEqual(QUAD);
+  });
+
+  it("keeps a foot on the floor and the head up at the bottom of a breath", () => {
+    for (const exercise of EXERCISES) {
+      const deep = deepen(exercise.pose, exercise.breath ?? {});
+      const { footFar, footNear, head } = bones(deep);
+      const floor = grounding(deep);
+      const onFloor = (y: number) => Math.abs(y - floor) < 0.03;
+      expect({
+        key: exercise.key,
+        foot:
+          onFloor(footFar.from.y) ||
+          onFloor(footFar.to.y) ||
+          onFloor(footNear.from.y) ||
+          onFloor(footNear.to.y),
+      }).toEqual({ key: exercise.key, foot: true });
+      expect(head.to.y).toBeLessThan(-LENGTH.torso * 0.6);
+    }
+  });
+
+  it("moves the figure only a little: the hip rises or sinks by less than a tenth", () => {
+    for (const exercise of EXERCISES) {
+      const deep = deepen(exercise.pose, exercise.breath ?? {});
+      expect(Math.abs(grounding(deep) - grounding(exercise.pose))).toBeLessThan(0.1);
+    }
   });
 });

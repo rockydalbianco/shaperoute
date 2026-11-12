@@ -454,7 +454,8 @@ async function openStar(answers: Answers) {
       name: `${STAR_WHEN}, Trento · Star, 4.01 km · 19:00 · 4:45 /km, open on the map`,
     }),
   );
-  await screen.findByText("Back to the list");
+  // Strava is in the card's «…» (TASK-456).
+  await fireEvent.press(await screen.findByTestId("activity-menu"));
 }
 
 const STAR_STRAVA = `/me/activities/${STAR.id}/strava`;

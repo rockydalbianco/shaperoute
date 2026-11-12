@@ -1,6 +1,6 @@
 /**
  * The stretching after a run (TASK-285 part B): «Stretch» on the reminder
- * opens the five exercises over «Your run», and «Skip» or the end of the
+ * opens the five exercises over «Your run», and «End» or the end of the
  * last one leaves them there. The reminder itself is tested with the free
  * run (AppFreeRun.test.tsx).
  */
@@ -11,7 +11,7 @@ import * as Location from "expo-location";
 import App from "../App";
 import { skipCountdown } from "../src/navigation/runControl";
 import { clearRun } from "../src/navigation/trackStore";
-import { TICK_MS } from "../src/stretch/StretchScreen";
+import { READY_S, SWITCH_S, TICK_MS } from "../src/stretch/StretchScreen";
 
 jest.mock("react-native-webview");
 jest.mock(
@@ -142,17 +142,17 @@ async function runAndStop() {
   expect(await screen.findByText("Remember to stretch")).toBeOnTheScreen();
 }
 
-test("«Stretch» opens the five exercises, and «Skip» leaves them for «Your run»", async () => {
+test("«Stretch» opens the five exercises, and «End» leaves them for «Your run»", async () => {
   await runAndStop();
   await fireEvent.press(screen.getByText("Stretch"));
   expect(await screen.findByText("1 of 5")).toBeOnTheScreen();
   expect(screen.getByRole("header", { name: "Quad stretch" })).toBeOnTheScreen();
-  expect(screen.getByText("0:20")).toBeOnTheScreen();
+  expect(screen.getByText("Get ready")).toBeOnTheScreen();
   expect(screen.queryByText("Remember to stretch")).toBeNull();
   // The time runs on the exercise, not on the run.
-  await act(() => jest.advanceTimersByTimeAsync(TICK_MS * 3));
+  await act(() => jest.advanceTimersByTimeAsync(TICK_MS * (READY_S + 3)));
   expect(screen.getByText("0:17")).toBeOnTheScreen();
-  await fireEvent.press(screen.getByRole("button", { name: "Skip" }));
+  await fireEvent.press(screen.getByRole("button", { name: "End" }));
   expect(screen.queryByText("1 of 5")).toBeNull();
   expect(await screen.findByText("Your run")).toBeOnTheScreen();
   expect(screen.getByText("0.30 km")).toBeOnTheScreen();
@@ -162,15 +162,17 @@ test("the exercises go on to the end by themselves, then «Your run»", async ()
   await runAndStop();
   await fireEvent.press(screen.getByText("Stretch"));
   expect(await screen.findByText("1 of 5")).toBeOnTheScreen();
-  // Five exercises, each on two sides of 20 s: 200 s, and a bell at each change.
-  await act(() => jest.advanceTimersByTimeAsync(TICK_MS * 199));
+  // Five exercises, each «Get ready», 20 s, «Switch sides» and 20 s again.
+  const each = READY_S + 20 + SWITCH_S + 20;
+  await act(() => jest.advanceTimersByTimeAsync(TICK_MS * (each * 5 - 1)));
   expect(screen.getByText("5 of 5")).toBeOnTheScreen();
   expect(screen.getByText("Left side")).toBeOnTheScreen();
   // «Done» of the exercises, not the one of the card behind them.
   const stretch = within(screen.getByTestId("stretch-screen"));
   expect(stretch.getByRole("button", { name: "Done" })).toBeOnTheScreen();
   await act(() => jest.advanceTimersByTimeAsync(TICK_MS * 2));
-  expect(mockPlay).toHaveBeenCalledTimes(10);
+  // On each of the ten sides: a tick to start, three to end, then the bell.
+  expect(mockPlay).toHaveBeenCalledTimes(10 * 5);
   expect(screen.queryByText("5 of 5")).toBeNull();
   expect(await screen.findByText("Your run")).toBeOnTheScreen();
 });

@@ -70,7 +70,6 @@ export const DE: Table = {
   // «Keep it» answers two questions (a run, Strava): a word that fits both.
   "Keep it": "Abbrechen",
   "Delete run": "Lauf löschen",
-  "Delete the run of {when}": "Lauf vom {when} löschen",
   Delete: "Löschen",
   // A run the API will not take (TASK-257).
   "The server could not take this run: {message}":
@@ -87,6 +86,7 @@ export const DE: Table = {
     "Gelb: die Route. Weiß: was du gelaufen bist.",
   "White: what you ran.": "Weiß: was du gelaufen bist.",
   "Back to the list": "Zurück zur Liste",
+  "Edit post": "Beitrag bearbeiten",
 
   // src/activities/activitiesDoor.ts
   "Sign up or log in to keep your runs and share them as drawings.":
@@ -957,6 +957,10 @@ export const DE: Table = {
   "Show more comments": "Mehr Kommentare zeigen",
   "{name}, {ago}: {text}": "{name}, {ago}: {text}",
   "Touch and hold to delete.": "Zum Löschen gedrückt halten.",
+  Reply: "Antworten",
+  "Replying to {name}": "Antwort an {name}",
+  "View {count} more reply": "{count} weitere Antwort ansehen",
+  "View {count} more replies": "{count} weitere Antworten ansehen",
 
   // src/social/DrawingReactions.tsx
   React: "Reagieren",
@@ -987,6 +991,8 @@ export const DE: Table = {
   "Write a comment to send your super like":
     "Schreib einen Kommentar, um dein Super-Like zu senden",
   Send: "Senden",
+  "A super like comes with a comment. Everyone who sees the post can read it.":
+    "Ein Super-Like kommt mit einem Kommentar. Alle, die den Beitrag sehen, können ihn lesen.",
 
   // src/social/reactionKinds.ts
   "MuW heart, super like": "MuW-Herz, Super-Like",
@@ -1639,8 +1645,8 @@ export const DE: Table = {
   "You have not blocked anyone.": "Du hast niemanden blockiert.",
   Unblock: "Freigeben",
   "Unblock {name}": "{name} freigeben",
-  "You blocked {user}. Unblock them from Blocked people in your profile.":
-    "Du hast {user} blockiert. Freigeben kannst du unter Blockierte Personen in deinem Profil.",
+  "You blocked {user}. Unblock them from Blocked people in Settings.":
+    "Du hast {user} blockiert. Freigeben kannst du unter Blockierte Personen in den Einstellungen.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
@@ -1676,6 +1682,8 @@ export const DE: Table = {
   "Right side": "Rechte Seite",
   "Left side": "Linke Seite",
   "Switch sides": "Seite wechseln",
+  End: "Beenden",
+  "Next: {exercise}": "Als Nächstes: {exercise}",
   "{seconds} seconds left": "Noch {seconds} Sekunden",
   "Stop if it hurts.": "Hör auf, wenn es wehtut.",
   // «Draw»: src/route/samplePictures.ts (TASK-280)
@@ -2617,4 +2625,29 @@ export const DE: Table = {
   "Last 12 months": "Letzte 12 Monate",
   "{count} activity": "{count} Aktivität",
   "{count} activities": "{count} Aktivitäten",
+
+  // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
+  "Record your flight": "Flug aufzeichnen",
+  "Before you fly": "Vor dem Flug",
+  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
+    "MuW ist kein Fluginstrument: Es zeichnet deinen Flug auf und teilt ihn. Flieg mit deinem eigenen Instrument, deiner Lizenz und deinem Urteilsvermögen.",
+  "Got it": "Verstanden",
+  Vario: "Vario",
+  "Flight time": "Flugzeit",
+  "Your flight": "Dein Flug",
+  "No shapes in the air yet: MuW records your flight.":
+    "Noch keine Formen in der Luft: MuW zeichnet deinen Flug auf.",
+  "White: where you flew.": "Weiß: wo du geflogen bist.",
+
+  // src/profile/FirstStep.tsx, BadgesSection.tsx (TASK-457: a new profile)
+  "Your first drawing": "Deine erste Zeichnung",
+  "Start from a route that already draws a shape near you.":
+    "Starte mit einer Route, die schon eine Form in deiner Nähe zeichnet.",
+  "Find a route near you": "Route in deiner Nähe finden",
+  "Record a run with MuW and publish its drawing.":
+    "Zeichne einen Lauf mit MuW auf und veröffentliche seine Zeichnung.",
+  "Publish 10 drawings of runs recorded with MuW.":
+    "Veröffentliche 10 Zeichnungen von Läufen, die du mit MuW aufgezeichnet hast.",
+  "Publish the drawing of a run of {distance} or more.":
+    "Veröffentliche die Zeichnung eines Laufs von mindestens {distance}.",
 };

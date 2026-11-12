@@ -55,7 +55,9 @@ type Props = {
  * The super like (TASK-119, ADR-0193): the Sgrava heart, big over the
  * drawing, and under it the comment it needs, over the keyboard. «Send» is
  * off under two characters; the heart counts only once the API has kept it
- * with its comment.
+ * with its comment. Under the title, who will read that comment: it is one
+ * of the post's comments, and a member who took it for a private note said
+ * so (TASK-454, the line is the user's, 2026-11-11).
  */
 export function SuperLikeSheet({ visible, sending, problem, onSend, onCancel }: Props) {
   return (
@@ -102,6 +104,11 @@ function SheetBody({ sending, problem, onSend, onCancel }: Omit<Props, "visible"
       >
         <Text style={styles.title} accessibilityRole="header">
           {t("Super like")}
+        </Text>
+        <Text style={styles.who} testID="super-like-who-reads">
+          {t(
+            "A super like comes with a comment. Everyone who sees the post can read it.",
+          )}
         </Text>
         <TextInput
           style={styles.field}
@@ -271,6 +278,10 @@ const styles = StyleSheet.create({
   title: {
     ...font.heading,
     color: color.text,
+  },
+  who: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
   },
   field: {
     minHeight: MIN_TAP_SIZE,

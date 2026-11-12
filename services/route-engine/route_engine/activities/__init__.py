@@ -18,6 +18,7 @@ from route_engine.activities import (
     running,
     snowshoeing,
     swimming,
+    wheelchair,
 )
 from route_engine.activities.base import Activity
 
@@ -31,6 +32,8 @@ ENGINE_ACTIVITIES: tuple[Activity, ...] = (
     inline_skating.ACTIVITY,
     # On the snow (TASK-413, ADR-0342): in ENGINE_ONLY until its part A2.
     snowshoeing.ACTIVITY,
+    # A wheelchair or a stroller, on the wheel network (TASK-414, ADR-0343).
+    wheelchair.ACTIVITY,
 )
 
 # Drawn by the engine, not yet in the contract: none now (snowshoeing was,

@@ -66,7 +66,7 @@ test("blocked, the profile shows no more and says where to unblock", async () =>
   await fireEvent.press(screen.getByRole("button", { name: "Block" }));
   expect(
     await screen.findByText(
-      "You blocked Ada_runs. Unblock them from Blocked people in your profile.",
+      "You blocked Ada_runs. Unblock them from Blocked people in Settings.",
     ),
   ).toBeOnTheScreen();
   expect(screen.queryByRole("button", { name: "Follow" })).toBeNull();

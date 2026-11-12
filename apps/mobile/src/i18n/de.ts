@@ -1557,6 +1557,10 @@ export const DE: Table = {
   "{sport}, coming soon": "{sport}, demnächst verfügbar",
   "Sport, {sport}": "Sport, {sport}",
   "Changes the sport": "Ändert die Sportart",
+  // The families of the sport panel: src/settings/sportFamilies.ts
+  "On foot": "Zu Fuß",
+  "On wheels": "Auf Rädern",
+  "Other@@sport": "Weitere",
   Sport: "Sport",
   Default: "Standard",
   "Voice language and voice: {language}, {voice}":

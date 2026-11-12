@@ -42,7 +42,13 @@ import psycopg
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from psycopg import errors as pg_errors
 from psycopg.rows import DictRow
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_serializer,
+)
 from route_engine.geo import path_length_m
 
 from shaperoute_api.accounts import (
@@ -71,6 +77,7 @@ from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.recommended import preview
 from shaperoute_api.run_stats import RunStatsBody, SkiDescentsBody, seen_stats
 from shaperoute_api.schemas import ErrorBody
+from shaperoute_api.sleep_seen import SEEN_SLEEP_SQL, SleepSummaryBody, seen_sleep
 
 # A shorter track is a rounding of a fix, not a drawing.
 MIN_LEFT_M = 1.0
@@ -384,6 +391,22 @@ class SeenFields(BaseModel):
     alone, which its calories are counted on (TASK-424 part C2b,
     run_stats.py); null for any other run, and for a day whose phone sent no
     parts."""
+    sleep: SleepSummaryBody | None = None
+    """«Sleep last night» (TASK-467 part B1b, sleep_seen.py): the night
+    before the activity, while its owner shows it in the post; null for a
+    post without one and for one whose owner hides it, to the owner too."""
+
+    @field_serializer("sleep", mode="wrap")
+    def _stages_untold_are_left_out(
+        self, value: SleepSummaryBody | None, said: SerializerFunctionWrapHandler
+    ):
+        # As GET /drawings/{id}/sleep says a night no watch told the stages
+        # of: without `stages`, not with a null. No return type, so the
+        # schema stays the night's own.
+        night = said(value)
+        if isinstance(night, dict) and night.get("stages") is None:
+            night.pop("stages", None)
+        return night
 
 
 class DrawingBody(SeenFields):
@@ -430,7 +453,10 @@ _SEEN_FIELDS = (
     # The descents of a day of skiing (TASK-424 part C2b): one key of its
     # run_stats row, by its primary key.
     " (SELECT s.stats -> 'ski_descents' FROM run_stats s WHERE s.run_id = r.id)"
-    " AS ski_descents"
+    " AS ski_descents,"
+    # The night shown in the post (TASK-467 part B1b): one row of
+    # sleep_nights, by its primary key.
+    f" {SEEN_SLEEP_SQL} AS sleep"
 )
 # One drawing, its track whole.
 SEEN_COLUMNS = f"{_SEEN_FIELDS}, ST_AsGeoJSON(d.track, 15) AS track"
@@ -566,6 +592,7 @@ def _seen(row: DictRow, details: Details) -> dict[str, Any]:
         # The run's, as My activities answers it (activities._turn).
         "rotation_deg": turn_kept(row["route_rotation_deg"]),
         "ski_descents": row.get("ski_descents"),
+        "sleep": seen_sleep(row.get("sleep")),
     }
 
 

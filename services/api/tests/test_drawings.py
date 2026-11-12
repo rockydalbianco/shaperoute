@@ -88,6 +88,9 @@ NEW_FIELDS |= {"stats"}
 NEW_FIELDS |= {"ski_descents"}
 SOURCE |= {"ski_descents"}
 SOURCE |= {"stats"}
+# The night shown in the post, TASK-467 part B1b (test_sleep.py).
+NEW_FIELDS |= {"sleep"}
+SOURCE |= {"sleep"}
 THIRD_EMAIL = "third@example.com"
 
 

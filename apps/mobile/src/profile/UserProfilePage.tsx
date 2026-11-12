@@ -143,7 +143,7 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
   if (blocked === asked) {
     return (
       <Text style={styles.message} accessibilityLiveRegion="polite">
-        {t("You blocked {user}. Unblock them from Blocked people in your profile.", {
+        {t("You blocked {user}. Unblock them from Blocked people in Settings.", {
           user: profile.username,
         })}
       </Text>

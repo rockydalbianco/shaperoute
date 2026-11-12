@@ -466,6 +466,7 @@ const privacy: AboutDocument = {
             "Wikimedia liefert unserem Server die Fotos der Orte: Es sieht welchen Ort, nicht wer fragt.",
             "Bei der Karte «Satellit» liefert Esri die Bilder und bei der Karte «3D» liefert Amazon Web Services die Höhen: Wie jeder Kartendienst sehen sie, welches Gebiet du ansiehst.",
             "Die Overpass-Dienste für OpenStreetMap-Daten (overpass-api.de und, wenn er nicht antwortet, overpass.private.coffee) fragt unser Server nach der Karte einer Gegend, die er noch nicht hat: Sie sehen, welche Gegend, nicht wer gefragt hat.",
+            "Für eine Schneeschuh-Route fragt unser Server Amazon Web Services nach den Höhen einer Gegend, die er noch nicht hat: Es sieht, welche Gegend, nicht wer gefragt hat.",
             "unpkg liefert die Kartenbibliothek, wenn die App startet.",
             "Expo liefert die Updates der App.",
             "Google Ireland Limited (Firebase Cloud Messaging), um Push-Benachrichtigungen an Android-Telefone zu liefern. Wenn du Push einschaltest, fragt die App bei Firebase einen Registrierungs-Token für dein Telefon an; der Push-Dienst von Expo gibt jede Benachrichtigung (wer was getan hat, und den Anfang eines Kommentars) an Google weiter, das sie an dein Telefon liefert. Google sieht den Token und den Inhalt jeder Benachrichtigung, nicht dein Konto und nicht deine Position. Der Token wird von unserem Server entfernt, wenn du Push ausschaltest, dich abmeldest oder dein Konto löschst; der auf dem Telefon verschwindet, wenn du die App deinstallierst.",

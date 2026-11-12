@@ -1,11 +1,13 @@
 # TASK-471 — Overpass in errore: rispondere prima
 
-**Stato**: In corso — 2026-11-12: la correzione è in `main` (#1251), la
-frase dell'app (#1259) e quella della privacy (#1263) sono in `main` e
-nell'OTA 14; la parte B (5 secondi, secondo servizio spento, errore in
-una riga) è nella sua PR. Tutte le scelte dell'utente sono qui sotto, con
-le sue parole. Restano: il passo sul server (12), la copia del sito con
-la privacy, l'accensione del secondo servizio, la PR di documenti.
+**Stato**: In corso — tutto il codice è in `main` dal 2026-11-12: #1251
+(un download fallito per job), #1269 (`eee85a69`: 5 secondi, secondo
+servizio spento anche per acqua e neve, errore in una riga), #1259 e
+#1263 (la frase dell'app e quella della privacy, nell'OTA 14). Tutte le
+scelte dell'utente sono qui sotto, con le sue parole. Restano, ognuno col
+sì dell'utente: il passo 12 sul server (commit `eee85a69`), la copia del
+sito con la privacy, l'accensione del secondo servizio; poi le letture
+di «Dopo il passo sul server» e la chiusura.
 **Fase**: 5 · **Branch**: `fix/TASK-471-map-unavailable-once` (#1251),
 `fix/TASK-471-b-overpass-pause` (parte B) ·
 **ADR**: ADR-0385 (la voce va nella PR di documenti dopo il merge)
@@ -363,7 +365,7 @@ c'è `map_data_unavailable` no.
 - [x] `ruff`, `black` e i test dei file toccati verdi in locale
       (`test_jobs_map_unavailable`, `test_jobs`, `test_first_route`,
       `test_job_times`, `test_route_processes`: 57 passati).
-- [ ] CI verde.
+- [x] CI verde (#1251, #1269, #1259, #1263 in `main`).
 - [x] Nessun file del motore né `route_store.py` nel diff.
 
 ## Dopo il passo sul server (sola lettura)

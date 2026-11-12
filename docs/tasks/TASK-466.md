@@ -224,6 +224,28 @@ nativo, niente server.
 - La voce che legge gli esercizi: per ora suoni e testo.
 - Leggere le sveglie di iPhone: non si può.
 
+## Dove siamo (2026-11-12, passaggio di mano)
+
+La prima sessione si è archiviata qui; chi riprende parte da questo file.
+
+- **A**: in `main` (#1181, `437f152f`); documenti nella PR unica del
+  Coordinatore #1226 (la #1210 si chiude con lei: non toccarla).
+- **B**: PR in bozza #1216, branch `feat/TASK-466-b-routines`, testi
+  approvati. Manca solo il turno sul simulatore (coda: dopo 461 A2):
+  schermate della scelta «How long?» e di due o tre pose nuove in
+  `out/TASK-466/`, poi togliere la bozza e «#1216 pronta» con lo SHA.
+  Ricetta che ha funzionato per A: `metro.config.js` non tracciato con
+  `watchFolders` sul `node_modules` del checkout principale, un
+  `index.ts` temporaneo che monta la schermata, Metro con `CI=1` su una
+  porta propria, iPhone 17e con Expo Go; alla fine tutto via e
+  «simulatore libero». Con `exercises` non dati la schermata apre già la
+  scelta: basta montare `<StretchScreen onLeave={…} routine="morning" />`.
+- **D**: scelte dell'utente nella sezione D; parte da `main` dopo il
+  merge della B, col turno del Coordinatore su `App.tsx`,
+  `SettingsPage.tsx`, `notifications/`.
+- **C**: dopo TASK-461 A2 e TASK-465, turno su `src/gym`.
+- **E**: da proporre all'utente (server prima, privacy).
+
 ## Esito
 
 _(a fine task)_

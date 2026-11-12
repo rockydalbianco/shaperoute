@@ -2665,4 +2665,6 @@ export const FR: Table = {
   "Finished · {distance} · {time}": "Terminé · {distance} · {time}",
   "No update since {time}": "Aucune mise à jour depuis {time}",
   "Updated {seconds} s ago": "Mis à jour il y a {seconds} s",
+  "LIVE · {sport} · {distance}": "LIVE · {sport} · {distance}",
+  "🔴 Live": "🔴 Live",
 };

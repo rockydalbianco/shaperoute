@@ -140,7 +140,10 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
     );
     if (outcome.kind === "started") {
       toShare.current = outcome.url;
-      toChoose.current = !link;
+      setOpen(false);
+    } else if (outcome.kind === "started_without_link") {
+      // The people once the sheet is down: iOS shows one at a time.
+      toChoose.current = true;
       setOpen(false);
     } else if (outcome.kind === "failed") {
       setProblem(t("Couldn't create the link. Try again."));

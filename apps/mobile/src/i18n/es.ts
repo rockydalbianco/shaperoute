@@ -2666,4 +2666,6 @@ export const ES: Table = {
   "Finished · {distance} · {time}": "Terminado · {distance} · {time}",
   "No update since {time}": "Sin actualizaciones desde las {time}",
   "Updated {seconds} s ago": "Actualizado hace {seconds} s",
+  "LIVE · {sport} · {distance}": "EN DIRECTO · {sport} · {distance}",
+  "🔴 Live": "🔴 En directo",
 };

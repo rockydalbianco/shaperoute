@@ -9,7 +9,6 @@ import {
 import { clockLabel } from "../feed/postSections";
 import { t } from "../i18n";
 import { MapView } from "../map/MapView";
-import { useFollowsDoor } from "../social/followsDoor";
 import {
   color,
   fontSize,
@@ -26,6 +25,8 @@ export const QUIET_MS = 60_000;
 
 type Props = {
   shareId: string;
+  apiUrl: string;
+  token: string;
   /** Whose live it is, for the title. */
   name: string;
   onClose: () => void;
@@ -83,16 +84,19 @@ export function LiveViewScreen(props: Props) {
   );
 }
 
-function Live({ shareId, name, onClose, fetchFn, apiKey, now = Date.now }: Props) {
+function Live({
+  shareId,
+  apiUrl,
+  token,
+  name,
+  onClose,
+  fetchFn,
+  apiKey,
+  now = Date.now,
+}: Props) {
   const insets = useSafeAreaInsets();
-  const { apiUrl, account } = useFollowsDoor();
-  const token =
-    account.state.status === "signedIn" ? account.state.session.token : null;
   const api = useMemo(
-    () =>
-      apiUrl === null || token === null
-        ? null
-        : { baseUrl: apiUrl, token, fetchFn, key: apiKey },
+    () => ({ baseUrl: apiUrl, token, fetchFn, key: apiKey }),
     [apiKey, apiUrl, fetchFn, token],
   );
   const view = useLiveView(api, shareId);

@@ -102,7 +102,9 @@ export function useLiveShare(): LiveShareStatus {
 }
 
 export type StartOutcome =
-  | { kind: "started"; id: string; url: string | null }
+  | { kind: "started"; url: string }
+  /** Made for the chat only (TASK-468 part B1): no link yet. */
+  | { kind: "started_without_link" }
   /** The link could not be made: say so, and nothing is shared. */
   | { kind: "failed" }
   /** A link is already on, or on its way. */
@@ -173,7 +175,7 @@ export async function startLiveShare(
   startTimer();
   // The first update at once: the page shows the numbers from the start.
   void mine.tick();
-  return { kind: "started", id, url };
+  return url === null ? { kind: "started_without_link" } : { kind: "started", url };
 }
 
 /** «Share link» while a share made for the chat is on (TASK-468 part B1):

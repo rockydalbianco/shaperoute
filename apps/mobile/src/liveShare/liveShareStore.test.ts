@@ -117,7 +117,7 @@ test("the button makes the link: the status says it, the first update goes at on
   const seen: string[] = [];
   subscribeLiveShare(() => seen.push(liveShareStatus().kind));
   const outcome = await startLiveShare(api(fetchFn), "cycling");
-  expect(outcome).toEqual({ kind: "started", id: "s1", url: CREATED.body.url });
+  expect(outcome).toEqual({ kind: "started", url: CREATED.body.url });
   expect(seen).toEqual(["starting", "sharing"]);
   expect(JSON.parse(String(fetchFn.mock.calls[0][1]?.body))).toEqual({
     activity: "cycling",

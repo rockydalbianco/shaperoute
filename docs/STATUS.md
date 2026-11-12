@@ -211,6 +211,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **B1 in `main`** (#1211, `71e24188`, ADR-0380: migrazione `0072`, endpoint
   del sonno), sul server col passo dell'aggiornamento completo. Poi B1b
   (il campo `sleep` nel disegno visto) e B2, in una sessione a parte.
+  **B1 sul server** dal passo 10 del 2026-11-12. **B1b** (#1227,
+  `3c513355`) e **B2** (#1236, `627767a5`: il sonno nel post, spenta da
+  `SLEEP_POSTS_ON`) in `main`; B1b sul server col passo dopo, col sì. Poi
+  B2b (palestra e vasca), B3, C.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`

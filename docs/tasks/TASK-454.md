@@ -257,3 +257,59 @@ Criteri di accettazione (C1):
 - [ ] `ruff` e `black` puliti; `shared-types` typecheck e test verdi.
 - [ ] Dopo il passo sul server (dell'utente): controllo in
       `out/TASK-454/SERVER-C1.md`, senza TestClient.
+
+## Parte A — le reazioni nel Feed (app)
+
+**Stato**: codice e test scritti il 2026-11-12 sul branch
+`feat/TASK-454-reactions` (da `main` a `02214e9b`, con TASK-444 parte 1
+dentro) · PR in bozza: mancano gli screenshot prima/dopo (turno del
+simulatore dal Coordinatore) e il sì dell'utente su quelli e sulle
+traduzioni qui sotto.
+
+Le scelte 1–4 sono dell'utente. Il modo è **deciso dall'agente su delega
+dell'utente** (nessun ADR nuovo: l'app soltanto, dentro ADR-0193 e
+ADR-0340):
+
+1. **La fila sta in un `Modal` trasparente suo** (`feed/PostReactions.tsx`),
+   appesa sopra la riga dove la riga dice di essere (`measureInWindow`,
+   chiesto a ogni «Like»: la card intanto è scorsa). Solo così «toccare
+   fuori» la chiude dovunque sia il tocco, e la card (`overflow: hidden`)
+   non la taglia. Finché la riga non ha risposto la fila c'è ma non si vede.
+   Scartato: una fila assoluta dentro la card (su Android un figlio fuori
+   dal padre non riceve i tocchi, e un tocco fuori aprirebbe il post).
+2. **Il foglio del super like aspetta che la fila sia andata via** su iOS
+   (`onDismiss`), come «+» nei messaggi (TASK-358): un foglio mostrato
+   mentre un altro `Modal` si chiude non sale. Su Android subito.
+3. **Le reazioni si leggono una volta per card** (`useDrawingReactions` in
+   `PostActions`), come già i commenti: servono a «Like» prima di toccarlo
+   (la mia reazione, il totale). È una richiesta in più per card del Feed
+   (`GET /drawings/{id}/reactions`); se pesa, il totale e la propria
+   reazione possono entrare nella risposta del Feed (server, fuori da qui).
+4. **«Like» senza reazioni da leggere** (nessun account, API di prima,
+   niente rete) resta al suo posto e non apre niente, com'era.
+5. **Per VoiceOver** «Like» si chiama «Your reaction: {name}» quando c'è la
+   propria, col valore «{count} reactions»: testi che c'erano già.
+6. **Una reazione non salvata** si dice sotto la riga («Your reaction wasn't
+   saved. Check the connection.», testo di prima): è l'unico caso in cui
+   la card cambia altezza.
+7. **La fila e il segno di una reazione sono gli stessi** del disegno sulla
+   mappa (`ReactionBar`, `ReactionMark` esportati da `DrawingReactions.tsx`);
+   lì il cerchio senza reazione ha il cuore a linea di «Like»
+   (`assets/ui/icons/heart.png`, TASK-444) al posto di 🙂.
+
+Traduzioni della riga del foglio, **da far vedere all'utente**: it «Un
+super like arriva con un commento. Chi vede il post può leggerlo.» · de
+«Ein Super-Like kommt mit einem Kommentar. Alle, die den Beitrag sehen,
+können ihn lesen.» · fr «Un super like s'accompagne d'un commentaire. Tous
+ceux qui voient la publication peuvent le lire.» · es «Un super like va con
+un comentario. Quien ve la publicación puede leerlo.»
+
+File toccati davvero: quelli della lista della parte A, meno
+`reactionKinds.test.ts` (non serviva). `docs/UI.md`, «Le reazioni di un
+disegno» (la faccina spenta), è da aggiornare: non è nella lista, chiesto
+al Coordinatore.
+
+Test in locale (2026-11-12): `PostActions`, `PostReactions`, `PostPage`,
+`DrawingReactions`, `SuperLikeSheet`, `reactionKinds` 65 verdi; con i
+vicini (`snowFeed`, `hikeFeed`, `FeedPostCard`, `DrawingCard*`, `i18n`) 96
+verdi; `tsc`, `eslint` e Prettier puliti sui file toccati.

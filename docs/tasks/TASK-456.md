@@ -1,6 +1,6 @@
 # TASK-456 — Scheda dell'attività e «My activities»
 
-**Stato**: In lavorazione · 2026-11-12
+**Stato**: Done · 2026-11-12 · PR #1194 in `main` (03fddd55)
 **Fase**: 5 · **Branch**: `feat/TASK-456-activity-page`
 **Dipende da**: niente
 **ADR**: nessuno · numero dal Coordinatore l'11 novembre 2026 (S6 e S7 di
@@ -126,14 +126,23 @@ Non toccati: `App.tsx` (la prop `onList` resta), `screens/MapScreen.tsx`,
 - La tastiera di «How did it go?» è chiara sul tema scuro (manca
   `keyboardAppearance` in `PublicParts.tsx`): c'era già, fuori dal task.
 
-## Stato
+## Esito
 
-2026-11-12: proposta fatta, scelta A dell'utente; codice nella PR #1194,
-con `main` unito dopo la #1172 (il calendario di TASK-462 e la riga nuova
-insieme in `ActivitiesList.tsx`). Test dei file toccati verdi, `tsc`, lint
-e prettier puliti. Screenshot prima e dopo in `out/TASK-456/shots/` e nei
-due fogli `out/TASK-456/TASK-456-*-prima-dopo.jpg`: l'utente ha detto sì
-alle schermate e a «Edit post». «#1194 pronta» al Coordinatore. Mancano: il
-merge (al «merge 1194» del Coordinatore) e poi la PR di soli documenti
-(`STATUS.md`, `COMPLETATI.md`); esce con l'aggiornamento completo, nessun
-OTA prima.
+Done il 2026-11-12: la #1194 è in `main` (03fddd55), unita a CI verde dopo
+il sì dell'utente alle schermate e al testo «Edit post». La scheda
+dell'attività ha la mappa grande col disegno intero, il modulo del post nel
+foglio «Edit post», «Delete» nel foglietto di «…»; l'elenco mostra il titolo
+del post con la data sotto. Schermate prima e dopo in
+`out/TASK-456/shots/` e nei due fogli `out/TASK-456/TASK-456-*-prima-dopo.jpg`.
+
+## Cosa resta
+
+- **L'uscita**: con l'aggiornamento completo dell'app (nessun OTA prima), la
+  pubblica il Coordinatore col sì dell'utente.
+- **La prova sul telefono**, dopo l'uscita: aprire una corsa da «My
+  activities», «Edit post» con la tastiera e una foto, «…» → «Send to a
+  friend», Strava dentro «…» (non provato sul simulatore: l'API di prova
+  non ce l'ha), «…» → «Delete» dall'elenco.
+- Tre cose viste e non toccate, fuori dal task (sopra, «Note»): il
+  foglietto di «…» resta aperto dopo «Send to…»; la tastiera chiara di «How
+  did it go?»; `PublicRow` che non mostra mai il suo errore.

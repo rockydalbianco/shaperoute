@@ -40,6 +40,18 @@ test("open: the Sgrava heart over the drawing, and the field for its comment", a
   ).toBeTruthy();
 });
 
+// TASK-454: a member took the comment for a note to the author alone. It is
+// one of the post's comments, and the sheet says so before a word is written.
+test("under the title, who will read the comment; a screen reader reads it too", async () => {
+  await render(sheet().node);
+  const line = screen.getByText(
+    "A super like comes with a comment. Everyone who sees the post can read it.",
+  );
+  expect(line).toBeOnTheScreen();
+  // Plain text between the title and the field: nothing hides it.
+  expect(screen.getByTestId("super-like-who-reads")).toBe(line);
+});
+
 test("«Send» is off under two characters, spaces around not counted", async () => {
   const { props, node } = sheet();
   await render(node);

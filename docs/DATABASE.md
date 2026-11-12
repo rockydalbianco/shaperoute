@@ -1220,6 +1220,54 @@ merge):
   con una sottoquery sulla chiave primaria (`drawings.py`, `_SEEN_FIELDS`).
   Test in `test_ski_parts.py`.
 
+Migrazione `0072_sleep_nights.sql` (TASK-467 parte B1, ADR-0380, `API.md`
+«Sleep»; numero in bozza dal Coordinatore, quello vero è il primo libero al
+merge):
+
+- **`sleep_nights`**: una riga per notte di sonno **pubblicata**, mai i
+  campioni di Apple Salute né gli orari.
+  - `user_id` verso `users(id)` con `ON DELETE CASCADE`: un account
+    cancellato si porta via le sue notti.
+  - `night` (`date`): il giorno del risveglio. `UNIQUE (user_id, night)`.
+  - `score` (`smallint`, 0–100), `asleep_min` (1–1440), `awake_min`
+    (0–1440); `rem_min`, `light_min`, `deep_min` (null se nessun orologio
+    ha detto le fasi). Il vincolo `sleep_nights_stages_check`: le tre fasi
+    tutte o nessuna, non negative, insieme non più di `asleep_min`.
+  - `shared` (`boolean`, `NOT NULL DEFAULT false`): il sì del proprietario
+    a mostrarla nel profilo. `saved_at`.
+  - Un indice parziale `(user_id, night DESC) WHERE shared`: l'ultima notte
+    condivisa di un profilo.
+- **`runs`**: `sleep_night_id` (verso `sleep_nights(id)`, `ON DELETE SET
+  NULL`: togliere la notte lascia l'attività com'era) e `sleep_shown`
+  (`boolean`, `NOT NULL DEFAULT true`, la scelta dell'utente del
+  2026-11-12: nel post dell'attività il sonno parte acceso). Un indice
+  parziale su `sleep_night_id` dove non è null.
+- **Si tiene solo quello che è pubblicato**, e questa regola sta **nel
+  database**, non in `activities.py`: la funzione `sleep_night_left()` e
+  due trigger su `runs`, `runs_sleep_night_deleted` (`AFTER DELETE`) e
+  `runs_sleep_night_changed` (`AFTER UPDATE OF sleep_night_id`, quando il
+  riferimento cambia o si toglie). Scattano solo per una corsa che aveva
+  una notte, e cancellano quella notte se non è `shared` e nessun'altra
+  corsa la porta. Così vale per ogni strada che cancella una corsa o le
+  toglie la notte, anche quelle scritte dopo. Tre casi, coi test:
+  l'attività cancellata, il sonno tolto dall'attività (o sostituito con
+  un'altra notte), l'account cancellato (qui basta la cascata da `users`,
+  e i trigger non trovano più niente). L'altra metà è in `sleep.py`:
+  quando `shared` si spegne e nessuna attività porta la notte, la cancella.
+- È un **dato sulla salute** (GDPR art. 9): arriva solo col gesto di chi lo
+  pubblica («Share», o «Publish» con «Sleep last night» in vista). Si
+  cancella con `DELETE /me/sleep/{night}` e con l'account, per cascata.
+  **Non c'è un'esportazione automatica** dei dati di un account: la copia
+  che uno chiede per email si fa a mano, e comprende il sonno con queste
+  due query (sola lettura; `…` è `users.id`): le notti, `SELECT night,
+  score, asleep_min, awake_min, rem_min, light_min, deep_min, shared,
+  saved_at FROM sleep_nights WHERE user_id = … ORDER BY night`; e le due
+  colonne nuove di `runs`, cioè in quali attività una notte compare e se si
+  vede, `SELECT r.key, r.started_at, n.night, r.sleep_shown FROM runs r
+  JOIN sleep_nights n ON n.id = r.sleep_night_id WHERE r.user_id = … ORDER
+  BY r.started_at`.
+- Nessuna riga di prima cambia, nessun backfill. Test in `test_sleep.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

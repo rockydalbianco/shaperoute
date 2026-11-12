@@ -537,8 +537,51 @@ lasciando le righe d'indice.
 - ADR-0376 — Il muscolo allenato su una sagoma accanto all'omino della palestra: la tabella esercizio → muscoli nell'app, il corpo fatto di `View`, un token `muscle` · 2026-11-11 · Attiva
 - ADR-0361, precisazione — Com'è stato costruito il primo percorso: senza `?first=1` il campo non c'è, il primo tiene la sua distanza migliore, i test dell'app che fingono il server ignorano il parametro · 2026-11-12 · Attiva
 - ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio · 2026-11-12 · Attiva
+- ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Proposta
 
 ## Voci nuove
+
+## ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0
+
+**Stato**: Proposta · 2026-11-12 · TASK-469, nessun codice ancora. La
+direzione è scelta dell'utente (2026-11-12, «Capsula» fra tre direzioni:
+https://claude.ai/artifact/HD397UmJcu94vNZvGBH2bs); il modo è deciso
+dall'agente su delega dell'utente, coi vincoli del Coordinatore; numero
+dal Coordinatore.
+
+**Contesto**: l'utente vuole l'app più moderna, nello stile Liquid Glass
+di iOS 26. Oggi la barra è `background` al 95% e le superfici sono piene
+(TASK-339, TASK-388). Nell'app non ci sono `expo-blur` né
+`expo-glass-effect`; React Native 0.86 ha già ombre anche interne,
+sfumature e bordi di colore diverso per lato. Sull'App Store sono
+dichiarati «Sufficient Contrast» e il tema scuro.
+
+**Decisione**:
+- **«Capsula»**: la barra delle schede si stacca dai bordi e diventa una
+  capsula di vetro che galleggia, con bordo di luce e ombra morbida; la
+  scheda attiva ha una pillola chiara che scivola. I segmenti sono una
+  pillola di vetro con l'indicatore in rilievo; nelle card la riga del
+  titolo è una lastra di vetro dentro la foto, a 8 pt dal bordo. Raggi:
+  card 28, gruppi 24, il resto a capsula. L'header si dissolve in vetro
+  allo scroll.
+- **Parte A senza blur, via OTA**: il vetro è una velatura del fondo del
+  tono a circa 86–92%, più il bordo di luce e l'ombra. Si intravede
+  appena: è il prezzo per tenere testo e icone ≥ 4,5:1 sul caso peggiore
+  (foto bianca sotto il tono scuro, nera sotto il chiaro). Le icone spente
+  della barra passano da `textFaint` a `textMuted`. Colori solo da token
+  nuovi in `tokens.ts`; i valori esistenti non cambiano; il giallo mai
+  come tinta.
+- **Accessibilità**: «Riduci trasparenza» → superfici opache; «Aumenta
+  contrasto» → opache col bordo `borderStrong`; «Riduci movimento» → solo
+  dissolvenze brevi.
+- **Parte B** con `expo-glass-effect` solo in una build dopo l'uscita
+  della 1.1.0, col sì dell'utente.
+
+**Conseguenze**: la A arriva in fette piccole dopo l'aggiornamento
+completo, prima i token e `src/ui/Glass.tsx`; l'impronta iOS resta
+`6f8bba4c`. Niente blur sopra la mappa mentre si registra. `docs/UI.md`
+si aggiorna fetta per fetta.
 
 ## ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio
 
@@ -632,6 +675,63 @@ le scelte di prodotto restano quelle di ADR-0361.
 5. **Misure** (`tasks/TASK-435.md`, «Parte D»): sul Mac 0,8 s in mediana
    coi 2 processi caldi; sul server 2,7 s nella prova dopo il passo 8, e
    `wait` 2,9 s in mediana su 22 job di prima del passo.
+
+## ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple
+
+**Stato**: Attiva · 2026-11-12 · TASK-467 parte A in `main` (#1193,
+`665e408c`): solo
+funzioni pure, nessuna schermata le usa ancora. Che cosa si vede e si
+pubblica è dell'utente (parte 0 di `tasks/TASK-467.md`, 2026-11-11: «Sì,
+punteggio MuW», le cinque fasce, le fasi nel post); la formula, le soglie
+e il modo sono decisi dall'agente su delega dell'utente, numero dal
+Coordinatore.
+
+**Contesto**: l'utente ha chiesto il 2026-11-11 di pubblicare su MuW il
+punteggio del sonno di Apple Salute. Quel punteggio non si può leggere:
+HealthKit non ha un tipo per lui (header dell'SDK iPhoneOS 27.0
+controllati il 2026-11-12; un ingegnere Apple lo conferma sul forum
+sviluppatori, settembre 2025). Si leggono i campioni da cui nasce
+(`HKCategoryTypeIdentifierSleepAnalysis`), e Apple dice in pubblico le tre
+parti del suo punteggio e i loro pesi, non le soglie.
+
+**Decisione**:
+
+1. **Il punteggio si calcola sul telefono**, in `apps/mobile/src/health/`,
+   con funzioni pure e test deterministici. Al server non arrivano mai i
+   campioni: solo il riassunto che l'utente pubblica (parte B).
+2. **La notte** (`sleepNight.ts`): le sorgenti sovrapposte si uniscono
+   senza contare due volte (fase detta › sveglio › sonno senza fase; fra
+   le fasi la più profonda); un silenzio di più di 60 minuti separa i
+   tratti; la notte è il tratto con più sonno, da quando ci si addormenta
+   all'ultimo risveglio; il tempo senza campioni dentro la notte conta
+   come sveglio; sotto i 60 minuti di sonno non c'è notte. «A letto» non
+   conta. Il «Core» di Salute è `light`.
+3. **Il punteggio** (`sleepScore.ts`), intero da 0 a 100, con i pesi di
+   Apple e soglie di MuW, in linea retta fra gli estremi:
+   - durata, 50: zero fino a 240 minuti di sonno, tutti da 480;
+   - regolarità, 30: lo scarto fra l'ora in cui ci si addormenta e la
+     mediana di quelle delle notti prima, come ora del giorno: tutti entro
+     15 minuti, zero da 120;
+   - interruzioni, 20: i minuti svegli nella notte: tutti fino a 5, zero
+     da 60.
+4. **Senza storia**: con meno di 3 notti prima la regolarità non si sa, e
+   il punteggio sono le altre due parti portate a 100.
+5. **Le fasce** sono quelle dell'utente: 0–39, 40–59, 60–74, 75–89,
+   90–100.
+
+**Alternative scartate**: leggere il punteggio di Apple (non c'è l'API);
+calcolarlo sul server (porterebbe i campioni di Salute fuori dal
+telefono); contare il numero dei risvegli invece dei minuti svegli (gli
+orologi scrivono risvegli di pochi secondi, il numero cambia da un
+orologio all'altro); un obiettivo di sonno per persona al posto delle 8
+ore (MuW non lo chiede a nessuno).
+
+**Conseguenze**: il numero può differire di qualche punto da quello
+dell'app Salute, e nell'interfaccia non si chiama mai «di Apple». Un
+giorno vale 24 ore: le notti prima di un cambio d'ora leggono un'ora di
+scarto nella regolarità. Cambiare una soglia cambia i punteggi delle notti
+non ancora pubblicate; quelli pubblicati restano com'erano, perché al
+server va il numero e non i campioni. Non è una misura medica.
 
 ## ADR-0376 — Il muscolo allenato su una sagoma accanto all'omino della palestra: la tabella esercizio → muscoli nell'app, il corpo fatto di `View`, un token `muscle`
 

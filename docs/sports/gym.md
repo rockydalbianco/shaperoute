@@ -98,6 +98,19 @@ tre passi e «Watch out» con l'errore da evitare; aperta da «+ Exercise» ha
 libero non ha né omino né guida (`gym/moves.ts`, `gym/ExerciseFigure.tsx`,
 `gym/ExerciseGuide.tsx`, `gym/guides/`).
 
+## Il muscolo allenato accanto all'omino (TASK-465)
+
+Accanto all'omino c'è una sagoma del corpo, ferma, coi muscoli che
+l'esercizio allena (ADR-0376): negli stessi posti dell'omino. Piccola
+(riquadri, ricerca, esercizio in corso) mostra un lato solo, davanti o
+dietro, quello del primo muscolo principale, coi principali **pieni**; nella
+guida davanti e dietro, i muscoli che aiutano col **contorno** e sotto i
+nomi («Chest», «Also: shoulders, triceps»). Pieno o contorno, mai solo il
+colore (il rosa del token `muscle`); il lettore di schermo dice i nomi.
+I muscoli sono 17 e stanno in una tabella dell'app, non nel catalogo del
+server: chi aggiunge un esercizio aggiunge la sua riga, e un esercizio col
+nome libero non ha sagoma (`gym/muscles.ts`, `gym/MuscleMap.tsx`).
+
 ## La scelta dell'esercizio (TASK-411 A)
 
 «+ Exercise» si apre sugli otto gruppi muscolari, due per riga: ognuno con

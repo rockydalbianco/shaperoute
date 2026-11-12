@@ -3,9 +3,11 @@ import type {
   GymPlanItem,
   GymPlanRequest,
   GymPlanRun,
+  GymPlanOuting,
   GymPlanRunner,
+  GymPlanTarget,
 } from "@shaperoute/shared-types";
-import { useCallback, useEffect, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { dropGymPlan, fetchGymPlans, isGymPlan, saveGymPlan } from "../api/gymPlans";
@@ -221,6 +223,11 @@ export type TodayWorkout = {
   run?: GymPlanRun;
   /** How the plan's owner runs (TASK-452), for the run's pace. */
   runner?: GymPlanRunner;
+  /** A day out of another sport (TASK-461 B and C): this week's, and no
+   * exercises. */
+  outing?: GymPlanOuting;
+  /** What the plan leads to, for «Verso i 60 km». */
+  target?: GymPlanTarget;
 };
 
 function todayOf(plan: GymPlan, date: Date): TodayWorkout | null {
@@ -228,7 +235,9 @@ function todayOf(plan: GymPlan, date: Date): TodayWorkout | null {
     const found = sessionOn(plan.program, date);
     if (
       found === null ||
-      (found.session.items.length === 0 && found.session.run === undefined)
+      (found.session.items.length === 0 &&
+        found.session.run === undefined &&
+        found.session.outing === undefined)
     ) {
       return null;
     }
@@ -242,6 +251,8 @@ function todayOf(plan: GymPlan, date: Date): TodayWorkout | null {
       ...(plan.program.rest_s === undefined ? {} : { restS: plan.program.rest_s }),
       ...(found.session.run === undefined ? {} : { run: found.session.run }),
       ...(plan.program.runner === undefined ? {} : { runner: plan.program.runner }),
+      ...(found.session.outing === undefined ? {} : { outing: found.session.outing }),
+      ...(plan.program.target === undefined ? {} : { target: plan.program.target }),
     };
   }
   if (!plan.days.includes(isoDay(date)) || plan.items.length === 0) {
@@ -270,6 +281,15 @@ export function todayPlan(
     }
   }
   return null;
+}
+
+/** Today's workout of every plan that has one (TASK-461: a day out shows
+ * in the «Draw» of its sport). */
+export function todayPlans(plans: GymPlan[], date: Date = new Date()): TodayWorkout[] {
+  return plans.flatMap((plan) => {
+    const today = todayOf(plan, date);
+    return today === null ? [] : [today];
+  });
 }
 
 /** What a workout copies of today's workout of a plan. */
@@ -310,6 +330,23 @@ function subscribe(listener: () => void): () => void {
  * The account's plans, kept up to date with the API while shown; null
  * owner signed out. `keep` and `drop` change them here and send them.
  */
+/** The plans kept on the phone for the account, without asking the API:
+ * a day out in another sport's «Draw» (TASK-461) reads them as they are,
+ * the gym's page keeps them in step. */
+export function useKeptPlans(): KeptPlan[] {
+  const owner = useActivitiesDoor().owner ?? null;
+  const list = useSyncExternalStore(subscribe, everything, everything);
+  return useMemo(
+    () =>
+      owner === null
+        ? []
+        : list
+            .filter((plan) => plan.owner === owner && plan.state !== "dropped")
+            .sort(byOrder),
+    [list, owner],
+  );
+}
+
 export function useGymPlans(fetchFn?: typeof fetch): {
   owner: number | null;
   plans: KeptPlan[];

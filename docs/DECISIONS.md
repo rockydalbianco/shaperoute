@@ -558,8 +558,63 @@ lasciando le righe d'indice.
 - ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Proposta
 - ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende · 2026-11-12 · Accettata
 - ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono · 2026-11-11 · Attiva
+- ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo da due campi nel JSON delle statistiche, solo per il volo, `GET /me/flight-bests`, il calendario filtrato sui voli, la precisione del GPS · 2026-11-12 · Attiva
+- ADR-0352, precisazione — «Share live at start»: il link dal vivo a fine conto alla rovescia di un volo, se il pilota lo ha acceso; resta com'era l'ultima volta, solo il link · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo, i voli del mese, pronto al decollo
+
+**Stato**: Attiva · 2026-11-12 · TASK-305 parte R5 (#1258 server, #1260
+app). **Scelte dell'utente** (2026-11-12): fra quattro proposte «I tuoi
+voli», «Record personali» e «Pronto al decollo»; testi approvati nelle
+cinque lingue. Il resto è **deciso dall'agente su delega dell'utente**,
+con le liste dei file approvate dal Coordinatore.
+
+1. **I record del volo vengono dal server.** Quota massima e velocità
+   massima il server non le aveva: il profilo è ridotto a 120 punti e la
+   velocità non c'era.
+   - Il telefono le manda a fine volo (`max_alt_m`, `top_speed_mps`) con
+     `PUT …/stats`.
+   - Il server le tiene nel JSON di `run_stats.stats`, quindi **nessuna
+     migrazione**, e **solo per il volo**: per gli altri sport le ignora
+     invece di rifiutarle.
+2. **`GET /me/flight-bests`** sta nel router di `run_stats`, così `app.py`
+   non si tocca. Dà il più alto, il più lungo, il più lontano e il più
+   veloce.
+   - Solo del proprietario.
+   - A parità vince il primo volato.
+   - Un volo cancellato porta via i suoi record.
+3. **«Your flights»** usa il calendario di TASK-462 filtrato sui voli: per
+   aprirlo filtrato, un prop `sport` opzionale in `ActivityCalendarSheet`.
+4. **«Ready to fly»** legge solo l'errore del GPS (pronto fino a 10 m),
+   finché «Draw» è aperto; la posizione non esce dal telefono.
+5. **Prima il server, poi l'app**: un server senza R5a rifiuta i due campi
+   (422) e l'app rimanda le statistiche senza. L'OTA 16 è uscito prima del
+   passo 12: per poco più di un'ora i record sono rimasti nascosti, nessun
+   dato perso.
+
+## ADR-0352, precisazione — «Share live at start»
+
+**Stato**: Attiva · 2026-11-12 · TASK-305 parte R5b (#1260). **Scelta
+dell'utente** (2026-11-12), con le sue parole «Come l'ultima volta», sulla
+proposta del Coordinatore.
+
+ADR-0352 dice che il link dal vivo non si accende mai da solo. Questa
+precisazione aggiunge un caso, solo per il volo e solo se è il pilota a
+volerlo:
+
+1. Su «Ready to fly» c'è l'interruttore «Share live at start». Parte
+   spento; poi **resta com'era l'ultima volta**
+   (`flight-live-at-start.json`), e si vede sempre prima di partire.
+2. Acceso, **a fine conto alla rovescia di un volo** l'app crea il link e
+   apre il foglio di condivisione, come «Share live» a mano. Non lo fa per
+   un volo ripreso dopo la chiusura dell'app, né per gli altri sport, né
+   senza account.
+3. **Solo il link**, mandato a chi vuole il pilota; non va ai pubblici di
+   TASK-468. In volo «Sharing live» dice che è acceso.
+4. Al primo volo sul telefono il foglio aspetta che «Before you fly» sia
+   letto (trovato nel simulatore).
 
 ## ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares`
 

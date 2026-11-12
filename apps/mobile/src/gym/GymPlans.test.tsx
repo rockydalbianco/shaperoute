@@ -141,6 +141,9 @@ async function gymAndRun() {
   await fireEvent.press(screen.getByTestId("door-gym"));
   expect(screen.getByText("Next · 2 chosen")).toBeOnTheScreen();
   await fireEvent.press(screen.getByTestId("wizard-next"));
+  // Running first with a distance: «Just keep fit» as before (TASK-461 B).
+  expect(screen.getByTestId("target-keep-fit")).toBeSelected();
+  await fireEvent.press(screen.getByTestId("wizard-next"));
 }
 
 test("«New plan» is the guide: goal, days, the plan ready, the weeks, the name", async () => {
@@ -154,7 +157,7 @@ test("«New plan» is the guide: goal, days, the plan ready, the weeks, the name
   await gymAndRun();
 
   // 1. The goal, «More muscle» chosen already; more strength instead.
-  expect(screen.getByText("STEP 1 OF 6")).toBeOnTheScreen();
+  expect(screen.getByText("STEP 2 OF 7")).toBeOnTheScreen();
   expect(screen.getByTestId("wizard-goal-muscle")).toBeSelected();
   expect(screen.getByText("5 × 5 · rest 3 min")).toBeOnTheScreen();
   await fireEvent.press(screen.getByTestId("wizard-goal-strength"));
@@ -226,8 +229,9 @@ test("a bodyweight plan with running: no kg, A and B, more reps and seconds (TAS
   await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />);
   await fireEvent.press(screen.getByTestId("gym-guide-new-plan"));
   await act(async () => {});
-  // The door as it opens: bodyweight and running.
-  expect(screen.getByTestId("door-distance")).toHaveTextContent(/Soon/);
+  // The door as it opens: bodyweight and running, running to keep fit.
+  expect(screen.getByTestId("door-mountain")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("wizard-next"));
   await fireEvent.press(screen.getByTestId("wizard-next"));
 
   // 1. The goals without weights, and what one has: a bar.
@@ -286,6 +290,74 @@ test("a bodyweight plan with running: no kg, A and B, more reps and seconds (TAS
   expect(
     kept.program?.sessions.flatMap((one) => one.items).some((item) => item.load_kg),
   ).toBe(false);
+});
+
+test("toward 60 km by bike with bodyweight: the target, today, when, the ladder (TASK-461 B)", async () => {
+  const fetchFn = api([]);
+  await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />);
+  await fireEvent.press(screen.getByTestId("gym-guide-new-plan"));
+  await act(async () => {});
+  // The door: bodyweight and the bike instead of running.
+  await fireEvent.press(screen.getByTestId("door-run"));
+  await fireEvent.press(screen.getByTestId("door-bike"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // 1. Where to: 60 km chosen already.
+  expect(screen.getByText("Where do you want to get to?")).toBeOnTheScreen();
+  expect(screen.getByTestId("target-chip-60000")).toBeSelected();
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // 2. Where one is today: from zero (no rides), then 30 km.
+  expect(screen.getByTestId("target-zero")).toBeSelected();
+  for (let i = 0; i < 20; i += 1) {
+    await fireEvent.press(screen.getByTestId("target-level-more"));
+  }
+  expect(screen.getByTestId("target-level-value")).toHaveTextContent("30 km");
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // 3. The bodyweight goal, then the days: bodyweight Mon, Wed, Fri; the
+  // bike Tue and Sat.
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  expect(screen.getByTestId("wizard-count-bike-2")).toBeSelected();
+  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent("BIKE");
+  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent("BIKE");
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // 4. When I'm ready: the plan counts its weeks.
+  expect(screen.getByTestId("target-when-ready")).toBeSelected();
+  expect(
+    screen.getByText("The plan counts the weeks by itself: 11 weeks"),
+  ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // 5. The plan: toward 60 km, the ride's tab with its editor.
+  expect(screen.getByTestId("target-ladder")).toHaveTextContent(/Toward 60 km/);
+  await fireEvent.press(screen.getByTestId("wizard-tab-1"));
+  // Two days of bike: an easy ride, half the long one; the long ride.
+  expect(screen.getByTestId("outing-value")).toHaveTextContent("15 km");
+  await fireEvent.press(screen.getByTestId("outing-more"));
+  expect(screen.getByTestId("outing-value")).toHaveTextContent("16 km");
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // 6. Its name, the reminder, saved.
+  expect(screen.getByTestId("plan-name").props.value).toBe("Toward 60 km");
+  // «Remind me at 8» is on at first for a new plan.
+  expect(screen.getByTestId("wizard-remind")).toBeChecked();
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await act(async () => {});
+  const [kept] = plansOf(OWNER);
+  expect(kept.program).toMatchObject({
+    weeks: 11,
+    target: { sport: "bike", distance_m: 60_000 },
+  });
+  expect(kept.program?.sessions.map((one) => one.outing?.kind ?? one.name)).toEqual([
+    "Bodyweight · A",
+    "easy",
+    "Bodyweight · B",
+    "Bodyweight · A",
+    "long",
+  ]);
+  expect(kept.program?.sessions[1].name).toBe("Easy ride · 16 km");
 });
 
 test("a week written by hand, and a plan of before opened in the guide", async () => {
@@ -478,7 +550,7 @@ test("run days in the guide: «And running?», the week, the run's editor (TASK-
 
   // With a run, «How do you run today?» (TASK-452): 5:30/km and 12 km at
   // first; 5:25 and 14 km.
-  expect(screen.getByText("STEP 3 OF 6")).toBeOnTheScreen();
+  expect(screen.getByText("STEP 4 OF 7")).toBeOnTheScreen();
   expect(screen.getByTestId("runner-pace")).toHaveTextContent("5:30");
   await fireEvent.press(screen.getByTestId("runner-pace-less"));
   await fireEvent.press(screen.getByTestId("runner-long-more"));

@@ -172,6 +172,23 @@ test("a day of skiing sends its lifts and descents, in the order of the day", ()
   }
 });
 
+test("a day's parts go in whole milliseconds, as the API takes them", () => {
+  // The phone's fixes have fractions of a millisecond: the API refused
+  // them (422) and the day lost its parts (TASK-305, 2026-11-12).
+  const fractional = skiDay().map((fix, i) => ({
+    ...fix,
+    time_ms: fix.time_ms + 0.25 + i * 1e-3,
+  }));
+  const parts =
+    runStatsRequest(run(fractional), SKIING, NO_BODY, 2026)?.ski_parts ?? [];
+  expect(parts.length).toBeGreaterThan(1);
+  for (const part of parts) {
+    expect(Number.isInteger(part.start_ms)).toBe(true);
+    expect(Number.isInteger(part.end_ms)).toBe(true);
+    expect(part.moving_s).toBeLessThanOrEqual((part.end_ms - part.start_ms) / 1000);
+  }
+});
+
 test("no parts for another sport, nor for a day without heights", () => {
   const track = skiDay();
   expect(

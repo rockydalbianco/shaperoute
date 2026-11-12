@@ -218,10 +218,14 @@ OTA da sola.
    server. Server e sito li lancia il Coordinatore coi sì dell'utente;
    nessuna OTA di produzione fino all'aggiornamento completo.
 
-Da chiedere all'utente prima della parte C: con l'interruttore spento, il
-link che l'autore prende del **proprio** post funziona? La risposta 5 dice
-che l'autore lo può sempre prendere, il testo dell'interruttore dice che
-spento «the links stop working».
+Chiesto all'utente il 2026-11-12, prima della parte C: con l'interruttore
+spento, il link che l'autore prende del **proprio** post funziona?
+**Risposta: «No: spento vuol dire nessun link».** Una regola sola, quella
+che il testo approvato dice già («Turn this off and the links stop
+working»): spento, nessun link ai miei post funziona, nemmeno quelli che ho
+mandato io, e «Share link» sparisce anche sui miei post; per mandarne uno
+lo riaccendo. Precisa la risposta 5 («l'autore lo può sempre prendere»
+vale con l'interruttore acceso). Nessun dato in più da tenere per post.
 
 Ordine sui file dell'app (Coordinatore): `feed/PostActions.tsx` dopo la
 #1195 (TASK-454 A) e accanto a TASK-454 B (`FeedPost.tsx`, `PostPage.tsx`,
@@ -459,3 +463,8 @@ Le altre parti scrivono i loro criteri quando partono.
   funziona?), la frase della privacy e l'avviso nelle novità da approvare
   prima del passo sul server, la lista dei file al Coordinatore prima del
   codice.
+- 2026-11-12: risposta dell'utente per la parte C: con «Links to my posts»
+  spento nessun link funziona, nemmeno quelli dell'autore («No: spento
+  vuol dire nessun link»). Lista dei file della parte C mandata al
+  Coordinatore; frase della privacy e avviso nelle novità proposti
+  all'utente.

@@ -57,9 +57,10 @@ export const COMPLEXITY_LABELS: Readonly<Record<DrawingComplexity, string>> = {
   complex: tLater("Complex"),
 };
 
-/** Never snowshoeing before «Settings» has it (TASK-413 part B removes it
- * and offers it once «Snowshoes» is ready, as the others). */
-const NOT_YET: readonly Activity[] = ["snowshoeing"];
+/** Never snowshoeing nor a wheelchair route before «Settings» has it
+ * (TASK-413 and TASK-414 part B remove them and offer each once it is
+ * ready, as the others). */
+const NOT_YET: readonly Activity[] = ["snowshoeing", "wheelchair"];
 
 /** The sports the sheet offers: a walk once «Walk» is ready, a hike once
  * «Hike» is (TASK-377), a gravel or an MTB ride once «Gravel» or «MTB» is

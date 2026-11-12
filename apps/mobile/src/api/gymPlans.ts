@@ -6,6 +6,7 @@ import {
   type GymPlanItem,
   type GymPlanRequest,
   type GymPlanRun,
+  type GymPlanRunner,
   type GymPlans,
   type GymPlanSession,
   type GymProgram,
@@ -93,12 +94,27 @@ function isSessions(body: unknown): body is GymPlanSession[] {
   );
 }
 
+/** How the owner of a plan with run days runs. */
+export function isGymPlanRunner(body: unknown): body is GymPlanRunner {
+  if (typeof body !== "object" || body === null) {
+    return false;
+  }
+  const { pace_10k_s, long_m, long_s } = body as Record<string, unknown>;
+  const number = (value: unknown) =>
+    typeof value === "number" && Number.isFinite(value);
+  return (
+    number(pace_10k_s) &&
+    (long_m === undefined || number(long_m)) &&
+    (long_s === undefined || number(long_s))
+  );
+}
+
 /** The weeks of a plan made with the guide (migration 0066). */
 export function isGymProgram(body: unknown): body is GymProgram {
   if (typeof body !== "object" || body === null) {
     return false;
   }
-  const { starts_on, weeks, mode, step_kg, sessions, custom } = body as Record<
+  const { starts_on, weeks, mode, step_kg, sessions, custom, runner } = body as Record<
     string,
     unknown
   >;
@@ -111,6 +127,7 @@ export function isGymProgram(body: unknown): body is GymProgram {
     typeof step_kg === "number" &&
     Number.isFinite(step_kg) &&
     isSessions(sessions) &&
+    (runner === undefined || isGymPlanRunner(runner)) &&
     Array.isArray(custom) &&
     custom.every(
       (week) =>

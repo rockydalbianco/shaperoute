@@ -532,9 +532,172 @@ lasciando le righe d'indice.
 - ADR-0344, precisazione B — Fasi, cambi pelli e VAM sul telefono sopra i tratti della neve; il pannello sopra la scheda della corsa · 2026-11-11 · Attiva
 - ADR-0375 — Il parapendio registrato senza forma, con la condivisione dal vivo e i numeri del volo (quota, variometro, velocità del momento) · 2026-11-11 · Attiva
 - ADR-0372 — Il calendario di tutte le attività: `GET /me/activity-calendar` letto da `runs` e `run_stats`, i 12 mesi e gli sport dell'account nella stessa risposta, nessuna migrazione · 2026-11-11 · Attiva
+- ADR-0374 — Le zone a piedi calde nei processi di calcolo: un tetto in MB invece di 2 zone, le più usate rilette all'avvio in background · 2026-11-11 · Attiva
 - ADR-0377 — Risposte e reazioni ai commenti: una risposta è una riga di `comments` a un livello solo, le cinque emoji in `comment_reactions`, la lista piatta per le app di prima, la reazione solo nella campanella · 2026-11-12 · Attiva
+- ADR-0376 — Il muscolo allenato su una sagoma accanto all'omino della palestra: la tabella esercizio → muscoli nell'app, il corpo fatto di `View`, un token `muscle` · 2026-11-11 · Attiva
+- ADR-0361, precisazione — Com'è stato costruito il primo percorso: senza `?first=1` il campo non c'è, il primo tiene la sua distanza migliore, i test dell'app che fingono il server ignorano il parametro · 2026-11-12 · Attiva
+- ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio
+
+**Stato**: Attiva · 2026-11-12 · TASK-441, parte B1 (#1184 il server, #1185
+l'app). L'utente ha chiesto di rifare a penna alzata tutte le parole del
+catalogo («si procedi e ifalle», poi «Sì, rifai il giro» sulla pagina di
+prova) e ha approvato le 340 che entrano («Sì, vanno bene», viste le due
+pagine e il campione grande). Le scelte tecniche sono dell'agente su delega
+dell'utente.
+
+**Contesto**: le 702 parole a riga unica della parte A avevano le lettere
+unite e non si leggevano: tolte lo stesso giorno (ADR-0347, precisazione
+C). Gli esempi di città scrivono le parole a penna alzata, tonde, 3 km a
+lettera, e si leggono. Il seme del catalogo non aveva dove tenere i tratti
+fra le lettere, e le schede delle liste disegnano una riga sola.
+
+**Decisione**:
+
+- **Il metodo degli esempi di città**: ogni parola del catalogo è tonda, a
+  penna alzata, 3 km a lettera, da 2 a 6 lettere (a 7 la somiglianza resta
+  sotto 0,90 dovunque). Le 55 parole a riga unica di prima escono.
+- **`walks` nel seme e nel dettaglio**: coppie di indici dei punti, in
+  ordine, dei tratti camminati fra le lettere; `catalog_seed._route_body`
+  li scrive solo quando ci sono e `GET /recommended-routes/{id}` li dà
+  uguali. È lo stesso campo del risultato di un percorso: l'app lo leggeva
+  già.
+- **`gaps` nelle liste**: l'anteprima di una parola è fatta lettera per
+  lettera (fino a 32 punti a lettera, i tratti fuori) e `gaps` dice dove
+  una lettera finisce. È il campo che `RouteCard` leggeva già.
+- **I due campi mancano, non sono `null`**, in un percorso a riga unica: la
+  sua risposta resta identica byte per byte e i contratti di prima non
+  cambiano.
+- **Il filtro non basta, si legge a occhio**: per le parole il filtro
+  guarda la lunghezza del solo disegno (±10%), la somiglianza e le strade,
+  ma entra nel catalogo solo la chiave scritta in
+  `tools/catalog_pen_up_read.json`, cioè una parola letta alla grandezza di
+  una scheda, dritta e senza il nome sotto, in cui ogni lettera si
+  riconosce.
+- **L'app chiede di nuovo `pen_up`** quando un disegno del catalogo ha
+  `walks` («Use this route» ridà una parola dello stesso tipo).
+
+**Motivo**: la somiglianza del motore è la media di quanto ogni lettera è
+coperta: a Nizza YES a 0,99 non si legge, a Levico HI a 0,94 nemmeno. Una
+soglia più alta non le separa (mediana 0,98 delle tenute contro 0,94 delle
+scartate, ma si sovrappongono). Riusare `walks` e `gaps` non chiede
+contratti nuovi né codice nuovo nelle schede.
+
+**Conseguenze**: 761 parole passano il filtro, **340 entrano** (60, 117,
+132, 22 e 9 da 2 a 6 lettere; 83 parole diverse in 59 città). Il catalogo
+va a **1546 percorsi** (1206 forme, 340 parole): 24,7 MB di file, +166 MB
+residenti. Da Milano «NEAR YOU» dà 60 percorsi con 50 nomi diversi, 19 a
+penna alzata. Un'app senza l'OTA della #1185 unisce le lettere con un
+tratto dritto sulle schede (la mappa le mostra già staccate): **server e
+OTA escono insieme**, nell'aggiornamento completo. «Edit the drawing»
+prende una parola a pezzi come una riga sola, tratti compresi: modificarla
+lettera per lettera non si può, come per gli esempi di città. Una parola
+nuova vuole di nuovo la lettura a occhio: è lavoro a mano, e a 5–6 lettere
+ne resta una su cinque.
+
+## ADR-0361, precisazione — Com'è stato costruito il primo percorso: senza `?first=1` il campo non c'è, il primo tiene la sua distanza migliore, i test dell'app che fingono il server ignorano il parametro
+
+**Stato**: Attiva · 2026-11-12 · TASK-435, parti A (#1105), B (#1139) e C
+(#1161) in `main`. Deciso dall'agente su delega dell'utente, costruendo;
+le scelte di prodotto restano quelle di ADR-0361.
+
+1. **Senza `?first=1` il campo `first` non c'è**, non è `null` (ADR-0361
+   diceva «`null` di norma»). Il job letto con `?first=1` è un tipo a sé,
+   `RouteJobWithFirstBody` nell'API e `RouteJobWithFirst` in
+   `packages/shared-types`; `RouteJob` e `RouteJobBody` restano com'erano.
+   Perché: il corpo per un'app non aggiornata resta quello di prima campo
+   per campo, e i controlli del contratto (`contract.test.ts`,
+   `test_contract.py`) confrontano i campi di `RouteJob` con le risposte
+   d'esempio: un campo in più lì li faceva fallire.
+2. **Il pianificatore chiama `plan_nearby` come prima quando nessuno
+   mostra il primo percorso** (`images._plan_nearby`): `on_first` passa
+   solo se la sorgente del job lo sa mostrare (`job_times.ShowsFirst`).
+   Mostrarlo non fa mai fallire il job: un errore lì si scrive nel log e il
+   job va avanti fino alla risposta intera.
+3. **Nell'app il primo percorso tiene la sua `better_distance_m`**, e gli
+   altri non ne hanno, come le alternative del motore (`choices.withFirst`):
+   la riga «This shape comes out better at…» non cambia quando arrivano le
+   schede. Un primo percorso che non si può disegnare vale come nessuno.
+   Se l'utente annulla dopo il primo, lo stato torna vuoto come per ogni
+   annullamento.
+4. **Un server di prima ignora `?first=1`**: provato sul codice del commit
+   in produzione prima del passo 8 (`2ed26af7`), che risponde come senza
+   parametro. Quattro test dell'app (`__tests__/AppBikeNavigation`,
+   `AppEditDrawing`, `AppEditRun`, `AppFavoriteActivity`) fingevano un
+   server che rispondeva alla lettura del job solo all'indirizzo esatto:
+   ora ignorano il parametro, come fa il server vero.
+5. **Misure** (`tasks/TASK-435.md`, «Parte D»): sul Mac 0,8 s in mediana
+   coi 2 processi caldi; sul server 2,7 s nella prova dopo il passo 8, e
+   `wait` 2,9 s in mediana su 22 job di prima del passo.
+
+## ADR-0376 — Il muscolo allenato su una sagoma accanto all'omino della palestra: la tabella esercizio → muscoli nell'app, il corpo fatto di `View`, un token `muscle`
+
+**Stato**: Attiva · 2026-11-11 · TASK-465 in `main` (#1173, `55c98f8b`),
+solo app; esce con l'aggiornamento completo dell'app, niente server. Le
+scelte di quello che si vede sono dell'utente (2026-11-11, una domanda
+alla volta: «B, sagoma accanto», «Tutti e tre», «Anche i secondari»; i
+nomi «Sì, vanno bene»; gli screenshot «Vanno bene»); il modo è deciso
+dall'agente su delega dell'utente, numero dal Coordinatore.
+
+**Contesto**: l'utente l'11 novembre 2026: «sulla palestra fai vedere
+sull omino in un altro quale muscolo alleni». L'omino di un esercizio
+(TASK-411 E, ADR-0341) è fatto di `View`, sette ossa e il carico in
+giallo; il catalogo (`catalog.ts`, `gym_catalog.py`, la fixture
+`gym-exercises.json`) sa solo il gruppo di un esercizio, non il muscolo.
+
+**Decisione**:
+- **Una sagoma del corpo accanto all'omino**, ferma, non un colore
+  sull'omino che si muove (scelta dell'utente). Si vede nella guida,
+  accanto all'esercizio in corso, nei riquadri di un gruppo e nelle righe
+  della ricerca (scelta dell'utente: «Tutti e tre»).
+- **La tabella esercizio → muscoli sta nell'app** (`gym/muscles.ts`,
+  `MUSCLES_OF`), come quella dei movimenti (`MOVE_OF`): 17 muscoli (8
+  davanti, 9 dietro), per ogni esercizio uno o più principali e zero o più
+  secondari. Serve solo a disegnare: nessun campo nel contratto, nessuna
+  migrazione, niente sul server.
+- **I nomi dei muscoli e le quattro parole** («Main muscles», «Also»,
+  «Front», «Back») nelle cinque lingue stanno nello stesso file, come i
+  gruppi in `groups.ts`, non nei file di `i18n`.
+- **Il corpo è fatto di `View`** (`gym/MuscleMap.tsx`), senza
+  `react-native-svg` né altre dipendenze: blocchi arrotondati in una
+  scatola 40 × 104, scalati all'altezza chiesta.
+- **Pieno o contorno, mai solo il colore**: il corpo è un contorno vuoto,
+  un muscolo principale è pieno, uno secondario ha il contorno spesso;
+  dietro la testa è piena, così i due lati si distinguono anche in piccolo.
+- **Piccola, un lato solo**: quello del primo muscolo principale, e solo i
+  principali di quel lato; il lettore di schermo li dice tutti. **Nella
+  guida** davanti e dietro, i secondari, e sotto i nomi scritti (la figura
+  lì è nascosta al lettore di schermo: lo dicono le parole).
+- **Un token nuovo `muscle`** in `theme/tokens.ts`, un rosa nei due toni
+  (`#FF6FB5` nel tema scuro): giallo, rosso, azzurro e blu nell'app hanno
+  già un significato. `palettes.test.ts` chiede 3:1 su sfondo, carta e
+  controllo a ogni passo di luminosità.
+- **I test tengono la tabella intera**: ogni esercizio del catalogo ha un
+  principale, nessun muscolo sconosciuto o doppio, nessuna chiave fuori
+  dalla fixture condivisa, il primo principale sta nel gruppo
+  dell'esercizio (`wall_sit` a parte).
+
+**Alternative scartate**:
+- *Il muscolo in un altro colore sullo stesso omino* (la proposta A):
+  l'utente ha scelto la sagoma; sette ossa non bastano a dire petto o
+  dorsali.
+- *I muscoli nel catalogo del server* (`gym_catalog.py`, la fixture):
+  contratto e server da cambiare per un dato che serve solo al disegno;
+  si può fare dopo, se servirà altrove.
+- *`react-native-svg` o immagini*: una dipendenza nativa nuova (l'impronta
+  iOS cambierebbe) o file da tenere per tema e per muscolo.
+- *I secondari anche nelle sagome piccole*: a 18 pt di larghezza un
+  contorno non si legge.
+
+**Conseguenze**: chi aggiunge un esercizio al catalogo aggiunge la sua
+riga in `muscles.ts` (`muscles.test.ts` lo dice); la tabella ha già i
+quattro esercizi di TASK-461 A1. Un esercizio col nome libero non ha
+sagoma, come non ha omino. In un gruppo come «Chest» le sagome piccole
+sono tutte uguali: l'utente l'ha visto negli screenshot. Solo JavaScript.
+Dettagli in `tasks/TASK-465.md`.
 
 ## ADR-0377 — Risposte e reazioni ai commenti: una risposta è una riga di `comments` a un livello solo, le cinque emoji in `comment_reactions`, la lista piatta per le app di prima, la reazione solo nella campanella
 
@@ -602,6 +765,67 @@ esempi di prima (`comment.json`, `comment-request.json`,
 non tutto. La frase della privacy sulle reazioni ai commenti si aggiorna
 con la parte C2, col sì dell'utente. Il controllo dopo il passo sul server
 in `out/TASK-454/SERVER-C1.md`. I dettagli in `tasks/TASK-454.md`.
+
+## ADR-0374 — Le zone a piedi calde nei processi di calcolo: un tetto in MB invece di 2 zone, le più usate rilette all'avvio in background
+
+**Stato**: Accettata · 2026-11-11 · TASK-464 (#1167, in `main` dal
+2026-11-12; sul server col passo 9). Deciso dall'agente
+su delega dell'utente («solo percorsi identici», TASK-445), col via del
+Coordinatore.
+
+**Contesto.** TASK-445 ha misurato che leggere la zona dal disco costa
+0,6 s sul Mac (pickle da 19 MB di Trento) e 0,5–3,3 s sul server, in circa
+un percorso calcolato su quattro. Le cause, dal codice e dai log:
+- ognuno dei 2 processi di calcolo (ADR-0242) ha le sue zone;
+- vince la zona più piccola che copre la richiesta, quindi una città ha
+  molte zone (960 zone a piedi), e un processo ne teneva 2 (`MAX_ZONES`);
+- dopo ogni aggiornamento del server i processi ripartono vuoti.
+
+**Decisione.**
+
+1. Un modulo nuovo, `services/api/shaperoute_api/warm_zones.py`, solo per
+   la rete a piedi (corsa e camminata) e solo nei processi di calcolo:
+   `__main__.py` dà loro `partial(warm_graphs, cache_dir, zones_mb)`. Il
+   processo principale dell'API e gli altri sport restano come prima.
+2. **Un tetto in MB.** Ogni processo tiene le zone a piedi fino a
+   `SHAPEROUTE_ZONES_MB` (default 500, al massimo 16 zone). Una zona è
+   stimata 12 volte il suo pickle (TASK-276: Trento più Milano, 893 MB).
+   Ne restano comunque almeno 2 come prima: nessuna zona si rilegge più
+   spesso di prima. Un valore sbagliato ferma l'API all'avvio.
+3. **Le zone usate, contate** in `data/cache/zone-usage/running.json`:
+   scrittura atomica (file accanto, poi `os.replace`) sotto `flock`, per
+   due processi insieme. Un file mancante, rotto o non scrivibile non fa
+   mai fallire un percorso.
+4. **Precarico all'avvio in background.** Ogni processo rilegge le zone più
+   usate in un thread suo, finché ci stanno nel tetto: risponde subito al
+   primo percorso. Un percorso che vuole una zona in lettura aspetta quella
+   lettura invece di rifarla. Le zone precaricate escono per prime.
+5. **Percorsi identici.** Zona scelta (`covering_path`), letta
+   (`read_graph`) e ritagliata (`ZoneCrop`) come prima: cambia solo quando
+   si legge. `test_warm_zones.py` controlla lo stesso grafo e lo stesso
+   piano in un processo di calcolo vero; il motore non cambia, quindi
+   `test_same_routes` resta verde.
+
+**Alternative scartate.**
+
+- Cambiare `graphs.py` o `activity_graphs.py`: sono dentro `engine.zip`
+  del telefono, e cambiarli vorrebbe dire ricostruirlo. Con un modulo
+  nuovo si cambia una riga sola di `__main__.py`.
+- Usare una zona più grande già in memoria al posto di una più piccola dal
+  disco: il ritaglio potrebbe cambiare, quindi i percorsi.
+- Una lista fissa di zone in una variabile: invecchia quando le zone si
+  rifanno, e va tenuta a mano.
+- Un tetto alto da subito (1000 MB, ~+1,2 GB in tutto): i figli delle
+  partenze vicine partono solo se c'è memoria (`workers_that_fit`), quindi
+  con meno memoria cambierebbero i percorsi. Il valore del server si
+  sceglie dopo il passo 8 dalla memoria vera.
+
+**Conseguenze.** I percorsi e il contratto non cambiano. Col default:
+~+0,2–0,5 GB in tutto nel caso tipico; il caso peggiore (2 zone grandi)
+resta quello di prima. Nel log compaiono `zone … warmed` e `N zones
+warmed`. Per tornare indietro senza rifare l'immagine basta
+`SHAPEROUTE_ZONES_MB=0`: restano 2 zone e non si precarica niente. Le
+letture per il dopo sono in `out/TASK-464/SERVER.md`.
 
 ## ADR-0372 — Il calendario di tutte le attività: `GET /me/activity-calendar` letto da `runs` e `run_stats`, i 12 mesi e gli sport dell'account nella stessa risposta, nessuna migrazione
 

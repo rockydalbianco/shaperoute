@@ -175,16 +175,27 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il
   primo resta A»). Prossima la parte A (motore), poi B (API) e C (app).
   File: — · `tasks/TASK-435.md`
+  **Chiuso il 2026-11-12**: A (#1105), B (#1139) e C (#1161) in `main`, A e
+  B sul server dal passo 8; la C esce con l'aggiornamento completo
+  dell'app; vedi `archive/COMPLETATI.md`.
 - **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
   1963 percorsi e ordine misto in «NEAR YOU». Le 702 parole nuove a riga
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
   tornano nella B a penna alzata; il server aspetta la correzione. Poi B
   (ADR-0366) e C. File: `catalog/seed/**`, `tools/catalog_kept.json` (la correzione) · `tasks/TASK-441.md`
+  **2026-11-12**: A sul server (1261, passo 8). **B1** (ADR-0366): 340 parole a
+  penna alzata lette a occhio, catalogo a 1546; server in `main` (#1184), app
+  #1185; server e OTA escono insieme nell'aggiornamento completo. Poi B2
+  (bici, canoa, nuoto) e C. File (#1185): `apps/mobile/src/explore/{ExploreScreen.tsx,explored.ts,recommendedRoutes.ts}`, `apps/mobile/src/route/NearYou.tsx`
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
   R2 (app, col turno), R3 (`site/live/`). Il pianificatore resta Proposto.
   File: — · `tasks/TASK-305.md`
+  **R1 fatta il 2026-11-12**: #1177 in main (83bbbc5d), server al passo 9
+  (migrazione 0069_paragliding). Ora R2 (app) e R3 (`site/live/`).
+  **R3 fatta il 2026-11-12**: #1191 in main (60c801aa), sito copiato alle
+  09:33Z. R2 in bozza (#1201), aspetta il simulatore dopo il 454.
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
@@ -198,6 +209,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   in `main` (#1180, ADR-0377, migrazione `0070`): manca il passo sul server,
   col sì dell'utente. Poi A (le reazioni nel Feed), B (doppio tocco), C2
   (l'app dei commenti, dopo il server). File: — · `tasks/TASK-454.md`
+
+- **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
+  (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
+  default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
+  scelto dal minimo disponibile dopo qualche giorno. File: — ·
+  `tasks/TASK-464.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

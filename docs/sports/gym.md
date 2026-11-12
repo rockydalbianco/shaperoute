@@ -98,6 +98,19 @@ tre passi e «Watch out» con l'errore da evitare; aperta da «+ Exercise» ha
 libero non ha né omino né guida (`gym/moves.ts`, `gym/ExerciseFigure.tsx`,
 `gym/ExerciseGuide.tsx`, `gym/guides/`).
 
+## Il muscolo allenato accanto all'omino (TASK-465)
+
+Accanto all'omino c'è una sagoma del corpo, ferma, coi muscoli che
+l'esercizio allena (ADR-0376): negli stessi posti dell'omino. Piccola
+(riquadri, ricerca, esercizio in corso) mostra un lato solo, davanti o
+dietro, quello del primo muscolo principale, coi principali **pieni**; nella
+guida davanti e dietro, i muscoli che aiutano col **contorno** e sotto i
+nomi («Chest», «Also: shoulders, triceps»). Pieno o contorno, mai solo il
+colore (il rosa del token `muscle`); il lettore di schermo dice i nomi.
+I muscoli sono 17 e stanno in una tabella dell'app, non nel catalogo del
+server: chi aggiunge un esercizio aggiunge la sua riga, e un esercizio col
+nome libero non ha sagoma (`gym/muscles.ts`, `gym/MuscleMap.tsx`).
+
 ## La scelta dell'esercizio (TASK-411 A)
 
 «+ Exercise» si apre sugli otto gruppi muscolari, due per riga: ognuno con
@@ -184,6 +197,16 @@ un ciclo di 3 o più all'80% della prima. In «Draw» quel giorno «Today» dice
 la corsa e «Go to the run · 5.5 km» passa a «Run» coi km già scritti; una
 corsa fatta quel giorno conta come fatta nel calendario. La sigla «RUN» ha
 il suo colore (`runDay`). `runDay.ts`, `RunDayEditor.tsx`.
+
+**La corsa su misura** (TASK-452): con almeno una corsa la guida chiede
+«How do you run today?»: il ritmo sui 10 km (o il livello) e il lungo di oggi
+(km o minuti). I ritmi vengono da lì (lenta +1:05/km, lungo +1:15, ripetute
+da 400 m −0:25), il lungo parte dal suo e cresce di 1 km a settimana, la
+lenta è circa metà del lungo; «Your paces» li mostra prima della scheda. In
+«Draw» il giorno di corsa dice ritmo e tempo; a fine ciclo, se le corse
+salvate delle ultime 4 settimane dicono un ritmo più veloce, «Your runs say
+5:20/km over 10 km: update the paces?» li cambia solo col sì.
+`runPace.ts`, `RunnerStep.tsx`.
 
 **Il pianificatore completo** (TASK-461, ADR-0371): un piano nuovo mescola
 sempre almeno due sport (scelta dell'utente del 2026-11-11, «Almeno due,

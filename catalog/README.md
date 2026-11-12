@@ -36,7 +36,12 @@ Ogni file:
 ```
 
 Una parola (le frasi di `PHRASES`, ADR-0097) ha `"word"` e `"style"`
-(`round` o `block`) al posto di `"shape"`.
+(`round` o `block`) al posto di `"shape"`. Una parola scritta lettera per
+lettera, a penna alzata (TASK-441, ADR-0366), ha in più `"walks"`: coppie
+di indici di `points`, in ordine, i tratti che si percorrono fra una
+lettera e l'altra senza disegnare (come `RouteResult.walks`). `distance_m`
+è quella chiesta per il disegno (3 km a lettera), `route_m` tutta la strada,
+tratti fra le lettere compresi.
 Solo parole corte (ADR-0130): CIAO e TIAMO nelle città italiane, più AO e
 AMOR a Roma, BONA a Firenze, UE a Bari, UELA a Milano; a New York LOVE,
 HEY e NYC. Oltre le 4–5 lettere, al tetto dei 21 km, non si leggono.
@@ -79,6 +84,32 @@ Dall'11 novembre 2026 il seme ha **1261 percorsi in 63 città** (erano
 quel giorno, a riga unica con le lettere unite, non si leggevano e sono
 uscite: tornano a penna alzata, come gli esempi di città, quando il
 formato terrà le camminate fra le lettere (TASK-441 B).
+
+### Le parole a penna alzata (TASK-441 B1, ADR-0366)
+
+```
+bash out/TASK-441/run-pen-up.sh                        # il giro, dalle zone in cache
+python tools/catalog_words.py --pen-up --page out/TASK-441/penup/parole.html
+python tools/catalog_words.py --pen-up --propose       # le chiavi da tenere
+python tools/catalog_words.py --write                  # catalog/seed dai tre registri
+```
+
+Ogni parola è chiesta come la chiedono gli esempi di città dell'app
+(`city_examples.py`): lettere tonde, ognuna disegnata da sola, 3 km a
+lettera, al massimo 6 lettere. Il registro è `out/TASK-441/pen-up.jsonl`,
+la chiave `città/PAROLA:pen_up/distanza`. Il filtro guarda la somiglianza
+(≥ 0,90), la lunghezza del **solo disegno** (±10%: i tratti fra le lettere
+si aggiungono, in media il 20%) e le strade.
+
+**Il filtro non dice se una parola si legge.** Delle 761 parole che lo
+passavano, lette una per una alla grandezza di una scheda dell'app e senza
+il nome sotto, se ne leggevano 340: le loro chiavi sono in
+`tools/catalog_pen_up_read.json`, e solo quelle entrano. Una parola di un
+giro nuovo resta fuori finché qualcuno non la legge e ne aggiunge la
+chiave. Le parole a riga unica di prima (55) sono uscite.
+
+Dal 12 novembre 2026 il seme ha **1546 percorsi in 63 città**: 1206 forme e
+340 parole a penna alzata.
 
 ### Le città in evidenza
 

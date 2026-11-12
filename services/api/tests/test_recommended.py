@@ -17,9 +17,11 @@ from fastapi.testclient import TestClient
 from route_engine.network import FileSource
 
 from shaperoute_api.app import create_app
+from shaperoute_api.best_routes import near as _best_near
 from shaperoute_api.recommended import (
     CatalogRoute,
     RecommendedCatalog,
+    activity_of,
     distance_m,
     parse_city,
     pen_up_preview,
@@ -36,6 +38,12 @@ CATALOG = HERE / "fixtures" / "catalog"
 PEN_UP = HERE / "fixtures" / "catalog_pen_up"
 CONTRACT = REPO / "packages" / "shared-types" / "fixtures"
 PIAZZA_DUOMO = {"lat": 46.067, "lon": 11.1215}
+
+
+def best_near(
+    catalog: RecommendedCatalog, point: tuple[float, float], radius_m: float
+) -> list[CatalogRoute]:
+    return [route for route, _ in _best_near(catalog, point, radius_m)]
 
 
 def client(catalog: RecommendedCatalog | None) -> TestClient:
@@ -517,3 +525,93 @@ def test_walks_in_order_are_kept() -> None:
         (8, 10),
     )
     assert walks_of({}, 11) == ()
+
+
+# --- A ride (TASK-441 B2, ADR-0366) ---------------------------------------------
+
+# A heart of 5 km on foot and, after it in the file, one of 30 km by bike.
+BIKE = HERE / "fixtures" / "catalog_bike"
+RUN_ID, RIDE_ID = "trento-heart-5000-0", "trento-heart-30000-1"
+
+
+@pytest.fixture
+def bike() -> TestClient:
+    return client(RecommendedCatalog.from_dir(BIKE))
+
+
+def test_the_list_of_the_rides_is_the_shared_contract(bike: TestClient) -> None:
+    answer = bike.get(
+        "/recommended-routes", params={**PIAZZA_DUOMO, "activity": "cycling"}
+    )
+    assert answer.status_code == 200
+    contract = CONTRACT / "recommended-routes-bike.json"
+    assert answer.json() == json.loads(contract.read_text("utf-8"))
+
+
+def test_a_ride_whole_is_the_shared_contract(bike: TestClient) -> None:
+    answer = bike.get(f"/recommended-routes/{RIDE_ID}")
+    assert answer.status_code == 200
+    contract = CONTRACT / "recommended-route-bike.json"
+    assert answer.json() == json.loads(contract.read_text("utf-8"))
+
+
+def test_who_does_not_ask_for_an_activity_gets_the_runs_alone(
+    bike: TestClient,
+) -> None:
+    # An app from before the rides: its lists are what they were.
+    near = bike.get("/recommended-routes", params=PIAZZA_DUOMO).json()["routes"]
+    assert [r["id"] for r in near] == [RUN_ID]
+    assert "activity" not in near[0]
+    page = bike.get("/catalog", params=PIAZZA_DUOMO).json()
+    assert [r["id"] for r in page["routes"]] == [RUN_ID]
+    assert (page["total"], page["cities"]) == (1, 1)
+    said = bike.get(
+        "/recommended-routes", params={**PIAZZA_DUOMO, "activity": "running"}
+    ).json()["routes"]
+    assert said == near
+
+
+def test_the_rides_are_listed_apart_and_say_what_they_are(bike: TestClient) -> None:
+    asked = {**PIAZZA_DUOMO, "activity": "cycling"}
+    near = bike.get("/recommended-routes", params=asked).json()["routes"]
+    assert [(r["id"], r["activity"]) for r in near] == [(RIDE_ID, "cycling")]
+    page = bike.get("/catalog", params=asked).json()
+    assert [r["id"] for r in page["routes"]] == [RIDE_ID]
+    assert (page["total"], page["cities"]) == (1, 1)
+    assert page["routes"][0]["activity"] == "cycling"
+
+
+def test_only_a_ride_says_its_activity_when_opened(bike: TestClient) -> None:
+    assert bike.get(f"/recommended-routes/{RIDE_ID}").json()["activity"] == "cycling"
+    assert "activity" not in bike.get(f"/recommended-routes/{RUN_ID}").json()
+
+
+def test_an_activity_the_catalogue_does_not_have_is_an_empty_list(
+    bike: TestClient,
+) -> None:
+    asked = {**PIAZZA_DUOMO, "activity": "paddling"}
+    assert bike.get("/recommended-routes", params=asked).json() == {"routes": []}
+    page = bike.get("/catalog", params=asked).json()
+    assert page == {"total": 0, "cities": 0, "routes": []}
+
+
+def test_an_activity_too_long_is_invalid(bike: TestClient) -> None:
+    asked = {**PIAZZA_DUOMO, "activity": "x" * 41}
+    assert bike.get("/recommended-routes", params=asked).status_code == 422
+    assert bike.get("/catalog", params=asked).status_code == 422
+
+
+def test_the_catalogue_counts_every_route_and_keeps_the_runs_apart() -> None:
+    catalog = RecommendedCatalog.from_dir(BIKE)
+    assert len(catalog) == 2
+    # What best_routes.py reads: the runs, never a ride among them.
+    assert list(catalog.routes) == [RUN_ID]
+    assert [r.id for r in catalog.of("cycling")] == [RIDE_ID]
+    assert [r.id for r in best_near(catalog, (46.067, 11.1215), 5_000)] == [RUN_ID]
+
+
+@pytest.mark.parametrize("said", [None, "", 7, ["cycling"], True])
+def test_an_activity_that_does_not_read_is_a_run(said: Any) -> None:
+    assert activity_of({"activity": said}) == "running"
+    assert activity_of({}) == "running"
+    assert activity_of({"activity": "cycling"}) == "cycling"

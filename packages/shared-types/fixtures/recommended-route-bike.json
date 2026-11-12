@@ -1,0 +1,24 @@
+{
+  "id": "trento-heart-30000-1",
+  "city": "trento",
+  "shape": "heart",
+  "word": null,
+  "style": null,
+  "distance_m": 30000,
+  "route_m": 29600,
+  "similarity": 0.97,
+  "points": [
+    [46.0679, 11.1211],
+    [46.05531, 11.16367],
+    [46.0249, 11.1813],
+    [45.99449, 11.16367],
+    [45.9819, 11.1211],
+    [45.99449, 11.07853],
+    [46.0249, 11.0609],
+    [46.05531, 11.07853],
+    [46.0679, 11.1211]
+  ],
+  "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0",
+  "rotation_deg": -12.5,
+  "activity": "cycling"
+}

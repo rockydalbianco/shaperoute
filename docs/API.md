@@ -1263,6 +1263,12 @@ palestra (`gym`, TASK-385) non ha traccia: passa solo a chi dice **sia**
 `gym` **sia** `trackless`; l'app lo dirà con la parte B0, insieme alle
 schermate che mostrano un post senza linea.
 
+Nello stesso header un'app dice **`post`** quando sa mostrare un post
+allegato a un messaggio (TASK-455, ADR-0382, «Un post in un messaggio»,
+sotto). Non è un tipo di corsa: lo legge `messages.py`, non `reads.py`.
+Senza, il messaggio arriva con «[Post]» davanti al testo e `attachment`
+`null`.
+
 ### Una parola invece di una forma (TASK-056)
 
 Un `RouteRequest` ha `shape` **oppure** `word`: l'altro manca o è `null`.
@@ -4047,6 +4053,52 @@ post, ADR-0292); tipi `MessageAttachmentRequest`, `MessageDrawing`,
   l'app non mostra il «+». Un server senza la cartella (`--media-dir`, di
   solito `data/media`) risponde `404` agli endpoint dei file e offre solo
   i disegni.
+
+#### Un post in un messaggio (TASK-455, ADR-0382)
+
+Un quarto allegato, `post`: **un rimando a un disegno pubblicato, mai una
+copia** (scelte dell'utente del 2026-11-12). Il messaggio tiene l'id del
+disegno e nient'altro: né linea, né titolo, né autore. Nessun endpoint
+nuovo: sono quelli dei messaggi. Tipi in `shared-types`
+(`MessagePostRequest`, `MessagePostCard`, `MESSAGE_POST_KIND`,
+`READS_MESSAGE_POST`), esempio in `fixtures/message-post.json`; il codice
+nel blocco «A post attached» di `messages.py`, la migrazione
+`0074_message_post.sql` (`DATABASE.md`).
+
+- **Mandare**: `POST /conversations/{public_id}/messages` con
+  `attachment: { "post_id": "<id del disegno>" }`, da solo: con `media_id`
+  o `drawing` è `422`. Come ogni allegato solo in una conversazione `open`
+  (`409` in una richiesta), col testo facoltativo. **Chi manda deve vedere
+  il disegno** (`drawings.drawing_seen_sql`): altrimenti `404 http_error`
+  «No drawing with this id.», uguale a un id che non c'è. Un proprio
+  disegno `only_me` è `422 invalid_request` «Only you can see this post:
+  choose who can see it, then send it.». Un post «Followers» si manda: lo
+  apre solo chi segue l'autore.
+- **Leggere: i permessi sono di chi legge, a ogni lettura.** In `GET
+  …/messages`, in `GET /me/conversations` e nella risposta del `POST`
+  l'allegato ha `kind: "post"` e `post`: la scheda (`MessagePostCard`:
+  `id` del disegno, `author` come `Person`, `title`, `shape`, `word`,
+  `style`, `route_title`, `distance_m`, `activity`, `rotation_deg`,
+  `preview` di al più 64 punti) **solo se chi chiede può aprire il post in
+  quel momento**, con la stessa domanda di `GET /drawings/{id}`:
+  visibilità, follow accettato, nessun blocco nei due versi, niente di
+  nascosto, e uno sport che la sua app legge. Altrimenti `post` è `null`:
+  l'app dice «This post is no longer available.». Vale anche per chi l'ha
+  mandato. Niente è tenuto nel messaggio, quindi cambiare «Who can see
+  it», smettere di seguire, bloccare o cancellare agiscono dalla lettura
+  dopo. Un post cancellato lascia il messaggio, con `post` `null` per
+  sempre. Il post intero si apre con `GET /drawings/{id}`.
+- **Chi lo riceve**: solo un'app che dice `post` in `X-MuW-Reads` (sopra,
+  «Quello che un'app sa leggere»). Le app di prima chiedono già
+  `?with=attachments` e non conoscono questo tipo: a loro, e a chi non
+  chiede gli allegati, il testo arriva con davanti «[Post]» e `attachment`
+  è `null`. `MessagesPage.attachments.kinds` ha `post` solo per chi lo
+  legge: l'app sa così che il server lo accetta.
+- **La push**: «{name}: 🗺️ Post» nelle cinque lingue, o «{name}: 🗺️
+  {text}» con un testo. Mai il titolo o l'autore del post: chi la riceve
+  può non essere tra quelli che lo vedono.
+- **Un'API di prima** ignora `post` nell'header e rifiuta `post_id` con
+  `422` (campo in più).
 
 ### Shape game (TASK-296, ADR-0255)
 

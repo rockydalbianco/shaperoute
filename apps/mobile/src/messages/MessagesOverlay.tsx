@@ -18,6 +18,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useBackCloses } from "../ui/backLayers";
 import { ConversationList } from "./ConversationList";
 import { ConversationScreen } from "./ConversationScreen";
 import { useMessagesDoor } from "./messagesDoor";
@@ -38,6 +39,8 @@ type Props = {
 export function MessagesOverlay({ fetchFn, apiKey }: Props) {
   const insets = useSafeAreaInsets();
   const { screen, back, openConversation } = useMessagesDoor();
+  // Android's «back» is the «←».
+  useBackCloses(screen !== null, back);
   if (screen === null) {
     return null;
   }

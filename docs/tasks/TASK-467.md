@@ -1,6 +1,6 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server col passo dell'aggiornamento completo) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b scritta** (palestra e vasca, spenta: la unisce il Coordinatore), poi B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b scritta** (#1244: palestra e vasca, spenta: la unisce il Coordinatore), poi B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
 `feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1),
 `feat/TASK-467-b1b-sleep-in-feed` (B1b), `feat/TASK-467-b2-sleep-post` (B2),
@@ -12,7 +12,8 @@ da Salute dopo un tocco»)
 (reazioni nel Feed: `src/feed/**`), TASK-321 C (Health Connect), TASK-322
 («Accedi con Apple»: la stessa build nativa, dopo la 1.1.0)
 **ADR**: ADR-0379 (la formula e le soglie), ADR-0380 (dove sta il sonno sul
-server e il contratto: con B1)
+server e il contratto: con B1), ADR-0380 precisazione B1b/B2 (il campo
+`sleep` nel disegno visto, e come l'app resta spenta)
 
 ## Obiettivo
 
@@ -623,8 +624,21 @@ non toccati.
   quattro lingue; tutto spento da `SLEEP_POSTS_ON`. Restano: il merge del
   Coordinatore, la PR di soli documenti (le scelte di B1b e B2), il server
   di B1b col sì dell'utente, la prova nel simulatore al turno; poi B2b e B3.
-- **2026-11-12, B2 in `main` e B2b**: #1236 unita dal Coordinatore a CI
-  verde (`627767a5`), spenta. Scritta la B2b: l'interruttore a fine
-  palestra e a fine vasca, la coda che aspetta anche loro. Restano: il
-  merge del Coordinatore, B1b sul server col passo dopo quello
+- **2026-11-12, B1 sul server**: passo 10 alle 12:20Z, server a `1eb3e5a8`,
+  `0072_sleep_nights` applicata, nessun Traceback. Controlli di
+  `out/TASK-467/SERVER-B1.md` come attesi: `runs.sleep_shown` true e
+  `sleep_nights.shared` false, le due chiavi esterne (SET NULL, CASCADE), i
+  due trigger, i tre indici, `sleep_nights` vuota, `runs` 12|0|0, le cinque
+  rotte del sonno `401` senza token. Nessuna app usa ancora queste rotte.
+- **2026-11-12, B2 in `main`**: #1236 unita dal Coordinatore a CI verde
+  (`627767a5`), impronta iOS ferma a `6f8bba4c`. Resta spenta
+  (`SLEEP_POSTS_ON = false`): non è nell'OTA 12, va nel prossimo e comunque
+  non si vede. Le scelte tecniche di B1b e B2 sono in `DECISIONS.md`,
+  «ADR-0380, precisazione B1b/B2». Restano: B1b sul server col passo dopo
+  quello dell'aggiornamento completo (col sì dell'utente; controlli in
+  `out/TASK-467/SERVER-B1b.md`), la prova nel simulatore al turno, poi B2b
+  (palestra e vasca: lista dei file al Coordinatore), B3, C, D.
+- **2026-11-12, B2b**: scritta la B2b (#1244): l'interruttore a fine
+  palestra e a fine vasca, la coda che aspetta anche loro; spenta come B2.
+  Restano: il merge del Coordinatore, B1b sul server col passo dopo quello
   dell'aggiornamento completo, la prova nel simulatore al turno; poi B3.

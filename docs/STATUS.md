@@ -191,6 +191,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   penna alzata lette a occhio, catalogo a 1546; server in `main` (#1184), app
   #1185; server e OTA escono insieme nell'aggiornamento completo. Poi B2
   (bici, canoa, nuoto) e C. File (#1185): `apps/mobile/src/explore/{ExploreScreen.tsx,explored.ts,recommendedRoutes.ts}`, `apps/mobile/src/route/NearYou.tsx`
+  **2026-11-12, 12:28Z**: B1 in produzione — server a 1546 (passo 10), app nell'OTA 12.
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
@@ -211,6 +212,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **B1 in `main`** (#1211, `71e24188`, ADR-0380: migrazione `0072`, endpoint
   del sonno), sul server col passo dell'aggiornamento completo. Poi B1b
   (il campo `sleep` nel disegno visto) e B2, in una sessione a parte.
+  **B1 sul server** dal passo 10 del 2026-11-12. **B1b** (#1227,
+  `3c513355`) e **B2** (#1236, `627767a5`: il sonno nel post, spenta da
+  `SLEEP_POSTS_ON`) in `main`; B1b sul server col passo dopo, col sì. Poi
+  B2b (palestra e vasca), B3, C.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`

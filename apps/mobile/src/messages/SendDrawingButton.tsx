@@ -23,6 +23,8 @@ type Props = {
   drawing?: () => MessageDrawing | null;
   /** A post to send in its place (TASK-455): a pointer, not a copy. */
   post?: PostToSend;
+  /** «Send to…» was closed: a sheet that holds the button closes too. */
+  onClosed?: () => void;
   /** Round, beside the heart on the map; else a row of a card, with its
    * card's look. */
   round?: boolean;
@@ -42,6 +44,7 @@ type Props = {
 export function SendDrawingButton({
   drawing,
   post,
+  onClosed,
   round = false,
   style,
   textStyle,
@@ -84,7 +87,10 @@ export function SendDrawingButton({
       {sending !== null && (
         <SendToFriend
           drawing={sending}
-          onClose={() => setSending(null)}
+          onClose={() => {
+            setSending(null);
+            onClosed?.();
+          }}
           fetchFn={fetchFn}
           apiKey={apiKey}
         />
@@ -92,7 +98,10 @@ export function SendDrawingButton({
       {sendingPost && post !== undefined && (
         <SendToFriend
           post={post}
-          onClose={() => setSendingPost(false)}
+          onClose={() => {
+            setSendingPost(false);
+            onClosed?.();
+          }}
           fetchFn={fetchFn}
           apiKey={apiKey}
         />

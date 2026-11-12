@@ -306,6 +306,12 @@ fissano il comportamento di prima: `feed/PostActions.test.tsx`,
 `apps/mobile/src/feed/PostShareSheet.tsx`,
 `apps/mobile/src/messages/PostCard.tsx`,
 `apps/mobile/src/messages/messagePost.ts`, ognuno col suo test.
+Aggiunti il 2026-11-12 col sì del Coordinatore, per chiudere il foglietto
+di «…» dopo «Send to…»: `apps/mobile/src/activities/ActivityCard.tsx` e
+`apps/mobile/src/activities/ActivityCardSend.test.tsx` (nuovo). Tolti dalla
+lista: `api/reads.test.ts` (`post` non entra nella lista comune di
+`X-MuW-Reads`: lo dicono solo le chiamate dei messaggi, o l'esempio
+`reads.json` che l'API confronta coi suoi tipi si romperebbe).
 Non si toccano: `App.tsx`, `feed/FeedPost.tsx`, `feed/PostPage.tsx`,
 `feed/PostSheet.tsx`, `feed/PostReactions.tsx`,
 `messages/MessagesOverlay.tsx`, `social/drawingsDoor.ts`, `share/**`,
@@ -383,3 +389,14 @@ Le altre parti scrivono i loro criteri quando partono.
 - 2026-11-12: lista dei file della parte B approvata dal Coordinatore
   («La parte B, da dove si riparte», sopra). La B parte in un contesto
   nuovo, da questo file.
+- 2026-11-12: **risposta dell'utente sul tocco della scheda in chat: «Come
+  da una notifica»** (la chat si chiude e il post si apre sulla mappa con
+  la sua scheda, `drawingsDoor.open`); la pagina del Feed sopra la chat
+  vorrebbe `App.tsx` e `ProfileLayer.tsx`. Parte B nella **#1255 in
+  bozza**: la scheda del post in chat, «Send to a friend» col rimando, la
+  scheda di un disegno altrui che manda il post, `post` in `X-MuW-Reads`
+  solo nelle chiamate dei messaggi, il foglietto di «Share» scritto e non
+  ancora collegato, i cinque testi con le traduzioni, `UI.md`; chiuso anche
+  il foglietto di «…» di un'attività dopo «Send to…». Mancano
+  `feed/PostActions.tsx` (dopo la #1231 di TASK-454 B), gli screenshot col
+  turno del simulatore e il sì dell'utente.

@@ -957,6 +957,10 @@ export const DE: Table = {
   "Show more comments": "Mehr Kommentare zeigen",
   "{name}, {ago}: {text}": "{name}, {ago}: {text}",
   "Touch and hold to delete.": "Zum Löschen gedrückt halten.",
+  Reply: "Antworten",
+  "Replying to {name}": "Antwort an {name}",
+  "View {count} more reply": "{count} weitere Antwort ansehen",
+  "View {count} more replies": "{count} weitere Antworten ansehen",
 
   // src/social/DrawingReactions.tsx
   React: "Reagieren",

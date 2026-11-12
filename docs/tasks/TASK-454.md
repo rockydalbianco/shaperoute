@@ -259,3 +259,83 @@ Criteri di accettazione (C1):
 - [x] `ruff` e `black` puliti; `shared-types` typecheck e test verdi.
 - [ ] Dopo il passo sul server (dell'utente): controllo in
       `out/TASK-454/SERVER-C1.md`, senza TestClient.
+
+## Parte C2 — risposte e reazioni ai commenti (app)
+
+**Stato**: codice e test scritti il 2026-11-12 sul branch
+`feat/TASK-454-c2-comment-replies` (da `main` a `29221702`, senza
+dipendere dalla #1195) · PR in bozza: mancano il sì dell'utente sui testi
+nuovi, gli screenshot dal simulatore (turno dal Coordinatore) e la frase
+della privacy.
+
+Scelta 5 dell'utente. Il modo è **deciso dall'agente su delega
+dell'utente** (dentro ADR-0377, nessun ADR nuovo):
+
+1. **L'app chiede sempre `?threads=true`**: un'API di prima non conosce il
+   parametro e risponde la lista di sempre; i commenti senza `reactions`
+   non offrono né «Reply» né reazioni (`hasThreads`).
+2. **La porta dei commenti ha una parte in più, facoltativa**
+   (`CommentsDoor.threads`: le altre risposte, la reazione): tre test fuori
+   da questo task costruiscono una porta a mano e restano com'erano.
+3. **La lista è fatta da funzioni pure** (`social/commentThreads.ts`): una
+   risposta scritta compare subito sotto il suo commento, anche se ce ne
+   sono di più vecchie ancora da chiedere; le pagine delle risposte si
+   uniscono senza doppioni, per data; un commento cancellato toglie dal
+   totale anche le sue risposte.
+4. **«Reply» e le reazioni stanno fuori dalla riga del commento**, che per
+   VoiceOver è un elemento solo: così i pulsanti si raggiungono; «Reply» è
+   anche un'azione della riga.
+5. **Le cinque emoji al posto della riga, non sopra**: scegliendo, la riga
+   «Reply · reazione · totale» diventa le cinque più «Cancel», alta uguale
+   (32 pt, col tocco portato a 44): nella lista niente si sposta, e non
+   serve un `Modal` dentro il foglio.
+6. **Una reazione per volta**, mostrata subito e rimessa com'era se l'API
+   non la tiene, col testo che c'era già per i disegni.
+7. **La campanella non cambia**: mostra il testo che manda il server e apre
+   già il disegno per ogni avviso con `drawing_id`.
+
+Testi nuovi, **da far approvare all'utente prima del merge**: «Replying to
+{name}» e il singolare «View 1 more reply» (in codice «View {count} more
+reply»). Già approvati: «Reply», «View {count} more replies». Traduzioni,
+da far vedere: «Reply» it «Rispondi» · de «Antworten» · fr «Répondre» · es
+«Responder»; «Replying to {name}» it «Risposta a {name}» · de «Antwort an
+{name}» · fr «Réponse à {name}» · es «Respuesta a {name}»; «View {count}
+more reply/replies» it «Vedi {count} altra risposta» / «Vedi altre {count}
+risposte» · de «{count} weitere Antwort ansehen» / «{count} weitere
+Antworten ansehen» · fr «Voir {count} autre réponse» / «Voir {count} autres
+réponses» · es «Ver {count} respuesta más» / «Ver {count} respuestas más».
+
+File toccati (lista approvata dal Coordinatore il 2026-11-12):
+
+```
+apps/mobile/src/api/comments.ts                  + comments.test.ts
+apps/mobile/src/social/commentsDoor.ts           + commentsDoor.test.ts
+apps/mobile/src/social/useDrawingComments.ts
+apps/mobile/src/social/DrawingComments.tsx       + DrawingComments.test.tsx
+apps/mobile/src/social/CommentActions.tsx        (nuovo) + test (nuovo)
+apps/mobile/src/social/commentThreads.ts         (nuovo) + test (nuovo)
+apps/mobile/src/social/useDrawingComments.test.tsx (nuovo)
+apps/mobile/src/i18n/{it,de,fr,es}.ts            (quattro chiavi, sezione dei commenti)
+docs/UI.md                                       (solo «Risposte e reazioni ai commenti»)
+docs/tasks/TASK-454.md
+```
+
+Più avanti, a turno e col sì dell'utente sulla frase: `about/content/**` e
+`site/privacy` (le reazioni ai commenti).
+
+Criteri di accettazione (C2):
+
+- [x] Le risposte stanno sotto il loro commento, a un livello, con «@nome»
+      per la risposta a una risposta; oltre due, «View N more replies».
+- [x] «Reply» scrive «Replying to {name}» sopra il campo; mandato, la
+      risposta è sotto quel commento e il numero dei commenti sale.
+- [x] Su commenti e risposte le cinque emoji, una a testa, senza il cuore
+      di MuW; la riga non cambia altezza scegliendo.
+- [x] Con un'API o una porta di prima i commenti sono com'erano.
+- [ ] Testi nuovi e traduzioni col sì dell'utente.
+- [ ] Screenshot dal simulatore in `out/TASK-454/` col sì dell'utente.
+- [ ] Frase della privacy col sì dell'utente (file a turno).
+
+Test in locale (2026-11-12): `src/social` intera, `api/comments`, i vicini
+(`PostActions`, `PostPage`, `importedMarks`, `cardsInMiles`) e `i18n`: 63
+file, 454 test verdi; `tsc`, `eslint` e Prettier puliti sui file toccati.

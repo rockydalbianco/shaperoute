@@ -949,6 +949,10 @@ export const FR: Table = {
   "Show more comments": "Afficher plus de commentaires",
   "{name}, {ago}: {text}": "{name}, {ago} : {text}",
   "Touch and hold to delete.": "Maintiens appuyé pour supprimer.",
+  Reply: "Répondre",
+  "Replying to {name}": "Réponse à {name}",
+  "View {count} more reply": "Voir {count} autre réponse",
+  "View {count} more replies": "Voir {count} autres réponses",
 
   // src/social/DrawingReactions.tsx
   React: "Réagir",

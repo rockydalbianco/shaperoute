@@ -535,9 +535,45 @@ lasciando le righe d'indice.
 - ADR-0374 — Le zone a piedi calde nei processi di calcolo: un tetto in MB invece di 2 zone, le più usate rilette all'avvio in background · 2026-11-11 · Attiva
 - ADR-0377 — Risposte e reazioni ai commenti: una risposta è una riga di `comments` a un livello solo, le cinque emoji in `comment_reactions`, la lista piatta per le app di prima, la reazione solo nella campanella · 2026-11-12 · Attiva
 - ADR-0376 — Il muscolo allenato su una sagoma accanto all'omino della palestra: la tabella esercizio → muscoli nell'app, il corpo fatto di `View`, un token `muscle` · 2026-11-11 · Attiva
+- ADR-0361, precisazione — Com'è stato costruito il primo percorso: senza `?first=1` il campo non c'è, il primo tiene la sua distanza migliore, i test dell'app che fingono il server ignorano il parametro · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0361, precisazione — Com'è stato costruito il primo percorso: senza `?first=1` il campo non c'è, il primo tiene la sua distanza migliore, i test dell'app che fingono il server ignorano il parametro
+
+**Stato**: Attiva · 2026-11-12 · TASK-435, parti A (#1105), B (#1139) e C
+(#1161) in `main`. Deciso dall'agente su delega dell'utente, costruendo;
+le scelte di prodotto restano quelle di ADR-0361.
+
+1. **Senza `?first=1` il campo `first` non c'è**, non è `null` (ADR-0361
+   diceva «`null` di norma»). Il job letto con `?first=1` è un tipo a sé,
+   `RouteJobWithFirstBody` nell'API e `RouteJobWithFirst` in
+   `packages/shared-types`; `RouteJob` e `RouteJobBody` restano com'erano.
+   Perché: il corpo per un'app non aggiornata resta quello di prima campo
+   per campo, e i controlli del contratto (`contract.test.ts`,
+   `test_contract.py`) confrontano i campi di `RouteJob` con le risposte
+   d'esempio: un campo in più lì li faceva fallire.
+2. **Il pianificatore chiama `plan_nearby` come prima quando nessuno
+   mostra il primo percorso** (`images._plan_nearby`): `on_first` passa
+   solo se la sorgente del job lo sa mostrare (`job_times.ShowsFirst`).
+   Mostrarlo non fa mai fallire il job: un errore lì si scrive nel log e il
+   job va avanti fino alla risposta intera.
+3. **Nell'app il primo percorso tiene la sua `better_distance_m`**, e gli
+   altri non ne hanno, come le alternative del motore (`choices.withFirst`):
+   la riga «This shape comes out better at…» non cambia quando arrivano le
+   schede. Un primo percorso che non si può disegnare vale come nessuno.
+   Se l'utente annulla dopo il primo, lo stato torna vuoto come per ogni
+   annullamento.
+4. **Un server di prima ignora `?first=1`**: provato sul codice del commit
+   in produzione prima del passo 8 (`2ed26af7`), che risponde come senza
+   parametro. Quattro test dell'app (`__tests__/AppBikeNavigation`,
+   `AppEditDrawing`, `AppEditRun`, `AppFavoriteActivity`) fingevano un
+   server che rispondeva alla lettura del job solo all'indirizzo esatto:
+   ora ignorano il parametro, come fa il server vero.
+5. **Misure** (`tasks/TASK-435.md`, «Parte D»): sul Mac 0,8 s in mediana
+   coi 2 processi caldi; sul server 2,7 s nella prova dopo il passo 8, e
+   `wait` 2,9 s in mediana su 22 job di prima del passo.
 
 ## ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple
 

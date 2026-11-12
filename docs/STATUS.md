@@ -175,6 +175,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il
   primo resta A»). Prossima la parte A (motore), poi B (API) e C (app).
   File: — · `tasks/TASK-435.md`
+  **Chiuso il 2026-11-12**: A (#1105), B (#1139) e C (#1161) in `main`, A e
+  B sul server dal passo 8; la C esce con l'aggiornamento completo
+  dell'app; vedi `archive/COMPLETATI.md`.
 - **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
   1963 percorsi e ordine misto in «NEAR YOU». Le 702 parole nuove a riga
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e

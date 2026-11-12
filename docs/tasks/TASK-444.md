@@ -1,9 +1,9 @@
 # TASK-444 — Icone e colori coerenti
 
-**Stato**: In corso · 2026-11-11
-**Fase**: 5 · **Branch**: `feat/TASK-444-line-icons` (parte 1)
-**Dipende da**: parte 2 — TASK-435 C (#1161, `RoutePanel.tsx`) e TASK-465
-(`gym/ExerciseGrid.tsx`, `ExercisePicker.tsx`) in `main`
+**Stato**: Done · 2026-11-12 (con la PR #1190 in `main`)
+**Fase**: 5 · **Branch**: `feat/TASK-444-line-icons` (parte 1, #1176),
+`feat/TASK-444-2-notes-gym` (parte 2, #1190)
+**Dipende da**: —
 **ADR**: nessuno · numero dal Coordinatore l'11 novembre 2026 (P3, S11 e S12
 di `out/prova-app-2026-11-11/PROPOSTE.md`)
 
@@ -28,9 +28,14 @@ Solo app (`apps/mobile`). Nessuna dipendenza nuova, niente codice nativo
    nella prova il post era vecchio. Un testo nuovo, tra 24 e 48 ore al
    posto di «1 d ago», nel Feed e nei commenti: en `yesterday`, it `ieri`,
    de `gestern`, fr `hier`, es `ayer`.
-3. **Colore degli avvisi** (parte 2): da scegliere sugli screenshot, tra
-   cambiare il valore del token `warning` (vale per 11 schermate) e
-   togliere la striscia colorata lasciando un'icona.
+3. **Avvisi del percorso: «A · solo il segno»** (12 novembre 2026, sulle
+   schermate a confronto in chiaro e in scuro,
+   `out/TASK-444/TASK-444-6-avvisi-confronto.jpg`): un segno a linea
+   accanto al testo e nessuna striscia colorata; il token `warning` resta
+   com'è. Scartata «B · striscia ambra»: avrebbe cambiato `warning` in
+   tutta l'app (altre 9 schermate e un colore delle persone nel gioco,
+   `game/personColors.ts`), e l'ambra sta vicino al giallo `accent`, che
+   vuol dire «percorso».
 4. **La parte 1 va bene così** («Sì, va bene», sulle cinque coppie prima e
    dopo del simulatore): anche i contorni **a penna alzata** dove il
    catalogo li ha (faccina, ciambella, gatto, sole: senza la riga che
@@ -64,16 +69,26 @@ Due PR, decise col Coordinatore: i file della parte 2 sono occupati.
 - **«Guide»** (profilo senza account, `tour/GuideRow.tsx`): `circle-help`
   di Lucide in `textMuted` al posto del ❓.
 
-### Parte 2 — avvisi, palestra (dopo)
+### Parte 2 — avvisi, palestra (PR #1190)
 
-- **Avvisi su scale e tunnel** (`route/RoutePanel.tsx` `NoteRow`,
-  `route/warnings.ts`): una riga con un'icona; il colore secondo la scelta
-  3. Trovato: gli avvisi usano già il token `warning`, non `error`; è
-  `warning` che sul tema scuro è corallo (`#FF7A59`) accanto a `error`
-  (`#FF6B6B`) ed `energy` (`#FF6363`).
+- **Avvisi del percorso** (`route/NoteRow.tsx`, nuovo: la riga esce da
+  `RoutePanel.tsx`, che la importa): accanto al testo un segno a linea di
+  Lucide, `triangle-alert` in `text` per le cose a cui fare attenzione
+  (scale, gallerie, strade principali…), `info` in `textMuted` per quelle
+  da sapere. La differenza la dice la forma del segno, non un colore: la
+  striscia a sinistra non c'è più, né arancio né grigia (scelta 3). Il
+  segno è nascosto al lettore di schermo. Trovato: gli avvisi usavano già
+  il token `warning`, non `error`; è `warning` che sul tema scuro è corallo
+  (`#FF7A59`) accanto a `error` (`#FF6B6B`) ed `energy` (`#FF6363`).
+  `warnings.ts` non cambia: scale e gallerie restano due righe, ognuna
+  con la sua misura.
+- **Il riquadro di «Try 8 km»** (`BetterDistance` in `RoutePanel.tsx`)
+  perde la striscia grigia con le altre righe: resta il riquadro.
+- **Nota del nuoto** (`swim/SwimRouteNote.tsx`, col sì del Coordinatore):
+  aveva la stessa striscia `warning`; ora è la stessa riga, col triangolo.
 - **Palestra** (`gym/ExerciseGrid.tsx`, `ExercisePicker.tsx`): via le emoji
-  dei gruppi dove c'è già la figura a linea; dopo TASK-465, che in quei
-  riquadri mette la sagoma del muscolo.
+  dei gruppi (`GROUP_EMOJI`) dai riquadri di «+ Exercise» e dal titolo del
+  gruppo: resta la figura a linea, che c'era già accanto.
 
 ### Lasciato ad altri
 
@@ -110,11 +125,24 @@ docs/tasks/TASK-444.md                               (nuovo)
 docs/UI.md
 ```
 
-Parte 2 (lista da confermare col Coordinatore quando parte):
-`route/RoutePanel.tsx`, `route/warnings.ts` coi test,
-`route/RoutePanelNotes.test.tsx`, forse `theme/tokens.ts` e
-`theme/palettes.test.ts`, `gym/ExerciseGrid.tsx`, `gym/ExercisePicker.tsx`
-coi test.
+Parte 2 (lista confermata dal Coordinatore il 12 novembre 2026):
+
+```
+apps/mobile/src/route/NoteRow.tsx                    (nuovo)
+apps/mobile/src/route/NoteRow.test.tsx               (nuovo)
+apps/mobile/src/route/RoutePanel.tsx                 (solo NoteRow e i suoi stili)
+apps/mobile/src/route/RoutePanelNotes.test.tsx
+apps/mobile/src/swim/SwimRouteNote.tsx
+apps/mobile/src/swim/safetyNotice.test.tsx
+apps/mobile/src/gym/ExerciseGrid.tsx
+apps/mobile/src/gym/ExerciseGrid.test.tsx
+apps/mobile/src/gym/ExercisePicker.tsx
+apps/mobile/assets/ui/icons/triangle-alert*.png, info*.png   (nuovi, Lucide)
+docs/tasks/TASK-444.md
+docs/UI.md
+```
+
+Non toccati: `route/warnings.ts`, `theme/tokens.ts`.
 
 ## Criteri di accettazione
 
@@ -136,6 +164,19 @@ Parte 1:
       pubblicare.
 - [x] Screenshot prima e dopo in `out/TASK-444/`, visti dall'utente.
 
+Parte 2:
+
+- [x] Ogni avviso ha il suo segno, triangolo o «i», e nessuna striscia né
+      colore di avviso o di errore (`NoteRow.test.tsx`,
+      `RoutePanelNotes.test.tsx`); il segno non si legge ad alta voce.
+- [x] La nota del nuoto è la stessa riga (`safetyNotice.test.tsx`).
+- [x] Nessuna emoji nei riquadri dei gruppi né nel titolo di un gruppo
+      (`ExerciseGrid.test.tsx`).
+- [x] Solo colori dei token; `tsc` pulito; nessuna dipendenza, niente
+      nativo.
+- [x] Schermate in `out/TASK-444/` viste dall'utente: avvisi nelle tre
+      versioni in chiaro e in scuro, palestra prima e dopo.
+
 ## Cronologia
 
 - **2026-11-11** — parte 1 nella PR #1176. Prima e dopo dal simulatore
@@ -145,9 +186,24 @@ Parte 1:
   senza azioni né data: per le immagini un innesto temporaneo, non
   committato, le ha mostrate sotto gli esempi. Su un post vero la riga
   delle azioni va guardata sul telefono. Sì dell'utente lo stesso giorno.
-- Parte 2: da iniziare quando `RoutePanel.tsx` (#1161) e i riquadri della
-  palestra (TASK-465, #1173) sono in `main`.
+- **2026-11-11, 23:20** — #1176 in `main` (anteprima 11 dell'app di prova).
+- **2026-11-12** — parte 2 nella PR #1190, dopo #1161 e #1173 in `main`.
+  Schermate dal simulatore (iPhone 17e, Expo Go dal worktree) su un
+  percorso vero, il cuore da 5 km in Piazza del Duomo a Trento, percorso B
+  con «Show more»: `TASK-444-6-avvisi-confronto.jpg` (oggi, A, B; scuro e
+  chiaro), `-7-avvisi-schermo-intero.jpg`, `-8-palestra.jpg`. La versione
+  B era un innesto temporaneo solo per le immagini (ambra `#FFAA33` in
+  scuro, `#9A5600` in chiaro), mai committato. L'utente sceglie A.
 
 ## Esito
 
-(da scrivere alla chiusura, dopo la parte 2)
+Fatto in due PR, #1176 e #1190. L'app ha un solo modo di disegnare un
+segno, a linea e coi colori dei token: contorni veri per le forme, icone
+di Lucide sotto i post, su «Guide» e accanto agli avvisi del percorso,
+nessuna emoji sui gruppi della palestra. Le calorie restano rosse.
+
+Resta fuori, per altri task: «Guide» nel profilo con account
+(`profile/ProfileHome.tsx`, TASK-457, icona già pronta), «Help» in
+`about/AboutRows.tsx` e `settings/FeedbackSetting.tsx`. In produzione
+esce con l'aggiornamento completo dell'app (OTA del Coordinatore). Da
+guardare sul telefono: la riga delle azioni sotto un post vero.

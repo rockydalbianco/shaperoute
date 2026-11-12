@@ -143,3 +143,15 @@ test("in Italian too, «Mostra altro»", async () => {
     screen.getByText("Il percorso è più lungo del 12% rispetto a quanto chiesto."),
   ).toBeTruthy();
 });
+
+test("each note has its sign: a triangle to watch for, an «i» to know (TASK-444)", async () => {
+  await render(outcome(route(FOUR)));
+  // The two shown at first are the ones to watch for.
+  expect(screen.getAllByTestId("note-icon-caution")).toHaveLength(2);
+  expect(screen.queryByTestId("note-icon-info")).toBeNull();
+
+  await fireEvent.press(screen.getByRole("button", { name: "Show more" }));
+  expect(screen.getAllByTestId("note-icon-caution")).toHaveLength(3);
+  expect(screen.getAllByTestId("note-icon-info")).toHaveLength(1);
+  expect(screen.queryByText(/\p{Extended_Pictographic}/u)).toBeNull();
+});

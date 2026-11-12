@@ -1,16 +1,16 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A (il calcolo sul telefono) in PR**, senza nativo, impronte ferme · poi B (post), C (nativa, dopo la 1.1.0), D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · prossima **B1** (server e contratto, ADR-0380), poi B2 e B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
-`feat/TASK-467-a-sleep-score` (A)
+`feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1)
 **Dipende da**: TASK-321 (Apple Salute nell'app, la stessa libreria),
 TASK-345 C / TASK-409 B (la lettura del battito: il modello del «leggere
 da Salute dopo un tocco»)
 **Si incrocia con**: TASK-312 D (studio «leggere da Salute»), TASK-454
 (reazioni nel Feed: `src/feed/**`), TASK-321 C (Health Connect), TASK-322
 («Accedi con Apple»: la stessa build nativa, dopo la 1.1.0)
-**ADR**: ADR-0379 (la formula e le soglie; la voce entra in `DECISIONS.md`
-con la PR di soli documenti dopo il merge di A)
+**ADR**: ADR-0379 (la formula e le soglie), ADR-0380 (dove sta il sonno sul
+server e il contratto: con B1)
 
 ## Obiettivo
 
@@ -186,14 +186,113 @@ Coordinatore: prima dell'uscita della 1.1.0 non si tocca il nativo).
 `sleepNight.test.ts`, `sleepScore.ts`, `sleepScore.test.ts` (nuovi),
 `docs/tasks/TASK-467.md`.
 
-## Criteri di accettazione (parte 0)
+### Parte B — studio (2026-11-12, nessun codice)
+
+Che cosa c'è oggi, guardato su `main` del 2026-11-12:
+
+- **Il battito nel post esiste solo per il nuoto in vasca** (TASK-409 B):
+  colonne su `runs` (`0061_run_heart.sql`: `heart_avg_bpm`,
+  `heart_max_bpm`, `heart_shown boolean DEFAULT true`), corpo in
+  `pool_swims.py`, interruttore «Show heart rate» in
+  `pool/PoolPostForm.tsx` (acceso in partenza, `newPoolPost`), nascosto
+  agli altri dal server (`seen_stats` in `run_stats.py`, `CASE WHEN
+  r.heart_shown OR r.user_id = viewer`). Per le altre attività non c'è
+  ancora un interruttore «nascondi prima di pubblicare»
+  (`feed/PostSettings.tsx` lo rimanda a TASK-345 B).
+- **Un post senza attività non esiste.** I post di sole foto (TASK-312 C)
+  sono solo un piano: niente `drawings.user_id`, `run_id` obbligatorio,
+  ogni ricerca dell'autore passa da `JOIN runs`. L'unico modello vivo di
+  post senza traccia è la corsa «senza traccia» (palestra, vasca), che ha
+  comunque una riga in `runs`.
+- **Il profilo**: le schede stanno in `profile/ProfileHome.tsx` (accanto a
+  `OwnVo2Max`, TASK-397); «Il mio corpo» è nelle impostazioni
+  (`settings/BodyPage.tsx`), non nel profilo.
+- **Migrazioni**: l'ultima in `main` è la `0070`; la `0071` è prenotata da
+  TASK-414. Il numero lo dà il Coordinatore.
+
+**Il taglio** (approvato dal Coordinatore il 2026-11-12, che ha dato il
+modo; migrazione provvisoria `0072`, **ADR-0380** per dove sta il sonno
+sul server e il contratto):
+
+- **La notte non entra in `runs`** come attività «senza traccia»
+  (finirebbe in calendario, conteggi, Strava, record, classifiche), e non
+  si aspettano i post senza attività di TASK-312 C. Una tabella a parte,
+  **`sleep_nights`**: una riga per notte pubblicata (utente, data della
+  notte, punteggio, minuti dormiti e svegli, minuti per fase, `shared`).
+  L'attività porta solo il riferimento alla notte e il suo `sleep_shown`.
+- **Scelta dell'utente (2026-11-12): «Sì, profilo adesso»** — la notte
+  condivisa da sola compare nella scheda «Sleep» del profilo, visibile a
+  chi apre il profilo; nessun post nel Feed adesso. Il post della sola
+  notte nel Feed arriva più avanti, coi post senza attività (TASK-312 C).
+  Il testo del primo «Share» approvato l'11 novembre («…become a post,
+  seen like your other posts») va riscritto e riapprovato.
+- **B1 — Server e contratto.** NUOVI:
+  `services/api/migrations/0072_sleep_nights.sql` (la tabella, più
+  `runs.sleep_night_id` e `runs.sleep_shown boolean DEFAULT true`, coi
+  CHECK), `shaperoute_api/sleep.py` (salvare la notte e il suo `shared`;
+  attaccarla a un'attività con `sleep_shown`; leggerla per il post, nascosta
+  agli altri se spenta; leggere l'ultima notte condivisa di un profilo),
+  `tests/test_sleep.py`, `packages/shared-types/src/sleep.ts` con fixture e
+  test. MODIFICO: `shared-types/src/index.ts` (una riga di export),
+  `docs/API.md`, `docs/DATABASE.md`, e per ultima la riga del router in
+  `app.py` (oggi di TASK-441 B2: quando il Coordinatore dice che è
+  libero). Da controllare scrivendo: se l'esportazione o la cancellazione
+  dei dati dell'account elencano le tabelle a mano. B1 può stare in
+  `main` e sul server senza che nessuna app lo usi; sul server va col sì
+  dell'utente.
+- **B2 — App, il sonno nel post dell'attività**, nascosta finché non c'è
+  la build nativa: lettore di Salute (`health/sleepSamples.ts`),
+  `api/sleep.ts`, l'interruttore «Sleep last night» a fine attività (il
+  valore di partenza in una sola costante: acceso, confermato
+  dall'utente), la riga nel Feed e nella pagina del post, i testi nelle
+  quattro lingue. `src/feed/**` dopo TASK-454 (#1195) e TASK-444.
+- **B3 — App, la scheda «Sleep» nel profilo** (`profile/ProfileHome.tsx`,
+  accanto a `OwnVo2Max`; sul profilo degli altri
+  `profile/UserProfilePage.tsx`): legge `sleep_nights`, «Share» la rende
+  visibile a chi apre il profilo.
+- **C — Prima dell'OTA di B2** (ognuno col sì dell'utente): la frase
+  della privacy (`about/content` e `site/privacy`, a turno dopo la #1200
+  di TASK-454), la scheda «App Privacy» su App Store Connect (dati sulla
+  salute raccolti e collegati all'utente), le note di revisione; poi la
+  build nativa col testo del permesso, dopo l'uscita della 1.1.0.
+
+**Condizioni del Coordinatore per B1 (2026-11-12, lista dei file approvata)**:
+
+- `shared` DEFAULT **false** sulla notte: è la condivisione nel profilo,
+  spenta finché l'utente non la accende. `sleep_shown` DEFAULT **true**
+  sull'attività: è la scelta dell'utente («Resta acceso», 2026-11-12).
+- **Criterio di accettazione**: esportazione e cancellazione dei dati
+  dell'account coprono `sleep_nights` (la cancellazione la dà
+  `ON DELETE CASCADE`; l'esportazione va controllata; se serve toccare
+  quel file, prima lo si scrive al Coordinatore).
+- **Test**: chi non è l'autore non legge mai una notte con `shared` false
+  né il sonno di un post con `sleep_shown` false, nemmeno dai conteggi o
+  dagli esempi di openapi.
+- Numero della migrazione: `0072` provvisorio, quello vero è il primo
+  libero al merge (lo dice il Coordinatore). `app.py` per ultimo.
+- Sul server B1 va con un passo del Coordinatore, col sì dell'utente: i
+  controlli di sola lettura in `out/TASK-467/SERVER-B1.md`, senza
+  `TestClient`.
+- B1 si scrive in un contesto pulito, da `STATUS.md` e da questo file.
+
+**Testo da riapprovare**: il primo «Share» dal profilo. Proposto
+all'utente il 2026-11-12, in attesa della risposta: «Share your sleep?
+Your score, hours slept and sleep stages show on your profile, to
+everyone who can see it.» (al posto di «…become a post, seen like your
+other posts.»).
+
+## Criteri di accettazione
 
 - [x] Le scelte di prodotto sono dell'utente e stanno in questo file.
 - [x] I testi sono approvati dall'utente (tabella della risposta 7).
 - [x] A: dai campioni alla notte e dalla notte al punteggio, con test
   deterministici (22), `tsc` ed `eslint` puliti; nessun file esistente
   dell'app toccato, impronte ferme.
-- [ ] Parti B–D: criteri scritti qui quando partono.
+- [ ] B1: `sleep_nights` e il sonno dell'attività sul server e nel
+  contratto, coi test; chi non è l'autore non legge mai una notte con
+  `shared` false né il sonno di un post con `sleep_shown` false;
+  esportazione e cancellazione dell'account coprono `sleep_nights`.
+- [ ] Parti B2–D: criteri scritti qui quando partono.
 
 ## File toccati (documenti, questa PR)
 
@@ -212,4 +311,7 @@ Coordinatore: prima dell'uscita della 1.1.0 non si tocca il nativo).
 - **2026-11-11**: parte 0 chiusa in una sessione (sette risposte più la
   6b). Numero dal Coordinatore; nessun codice, nessun ADR ancora.
 - **2026-11-12**: parte 0 in `main` (#1182). Parte A scritta: il calcolo
-  sul telefono, ADR-0379. La PR aspetta la CI e il merge del Coordinatore.
+  sul telefono, ADR-0379 (#1193, in `main` lo stesso giorno). Studio della
+  parte B, taglio B1/B2/B3 e strada `sleep_nights` dal Coordinatore;
+  l'utente: «Resta acceso» (il sonno nel post dell'attività) e «Sì,
+  profilo adesso» (la notte da sola). B1 parte in un contesto pulito.

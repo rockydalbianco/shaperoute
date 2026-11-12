@@ -123,7 +123,7 @@ import {
 import { ImageEditsContext } from "./src/route/imageEdits";
 import type { ChoiceKind } from "./src/route/problems";
 import { withPenUp } from "./src/route/penUpHint";
-import { drawKindOf, shapeOfSport } from "./src/route/sportDraw";
+import { drawKindOf, figuresOf, shapeOfSport } from "./src/route/sportDraw";
 import { shapeAsked } from "./src/route/penUpShapes";
 import { drawLabel, drawWhat } from "./src/route/drawLabel";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
@@ -622,6 +622,7 @@ function MuW() {
   // (TASK-414). Each sport says it in its profile.
   const drawKind: ChoiceKind = drawKindOf(kind, sportActivity);
   const sportShape = shapeOfSport(shape, sportActivity);
+  const resultFigures = figuresOf(sportActivity);
   const drawn:
     | { shape: Shape }
     | { shape: PenUpShape; pen_up: true }
@@ -1813,11 +1814,15 @@ function MuW() {
                 <FigureTiles
                   chosen={resultTile}
                   onChoose={onChangeFigure}
-                  // On the water only the shapes, as in «Draw».
-                  pictures={sportActivity !== "paddling"}
+                  // As in «Draw»: on the water no picture, in a wheelchair
+                  // its four shapes and no drawing by hand (TASK-414).
+                  pictures={resultFigures.pictures}
+                  shapes={resultFigures.shapes}
                   testID="result-figures"
                 />
-                <EditDrawingButton onPress={editTrackOf(resultTrack)} />
+                {resultFigures.editDrawing && (
+                  <EditDrawingButton onPress={editTrackOf(resultTrack)} />
+                )}
               </>
             }
           />

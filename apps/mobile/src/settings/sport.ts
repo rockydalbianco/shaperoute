@@ -19,7 +19,7 @@ import { profileOf } from "../sports";
  * ADR-0322) since the server has them, or swimming in open water
  * (TASK-323, ADR-0283) since the server swims. A wheelchair or a stroller
  * draws only a circle, a heart, a star or a moon on the ways of its own
- * network (TASK-414 part B, ADR-0343), «Soon» until the server has them.
+ * network (TASK-414 part B, ADR-0343), since the server has them.
  * Paragliding (TASK-305 R2, ADR-0375) is a flight recorded without a
  * shape, never a route. A day of alpine skiing («Ski») or of cross-country skiing is
  * recorded without a shape (TASK-375, ADR-0319): `recordOnly`, and so is
@@ -133,10 +133,10 @@ export const ALL_SPORTS: readonly SportOption[] = [
   fromProfile("roller", true),
   // A wheelchair or a stroller is asked as "wheelchair" (activityOf), 1-5 km
   // on the server's own network, a circle, a heart, a star or a moon
-  // (TASK-414 part B, ADR-0343). «Soon» until the server has part A and its
-  // migration 0071 and the user says yes (the user's choice 9: «appena
-  // pronto»).
-  fromProfile("wheelchair", false),
+  // (TASK-414 part B, ADR-0343). On since the server has part A and its
+  // migration 0071 (2026-11-12), the user's «Sì, accendi» to the screenshots
+  // (the user's choice 9: «appena pronto»).
+  fromProfile("wheelchair", true),
   // On the water. The swim is asked as "swimming" since TASK-323 C2
   // (activityOf); on since the server swims (TASK-323, 2026-11-04).
   fromProfile("paddle", true),

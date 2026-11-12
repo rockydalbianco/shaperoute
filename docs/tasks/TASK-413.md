@@ -239,6 +239,21 @@ Coordinatore, `feat/TASK-413-b-snowshoes-app`):
     hai camminato.», de «Weiß: wo du gegangen bist.», fr «Blanc : là où
     tu as marché.», es «Blanco: donde caminaste.».
 
+- **Privacy delle quote** (2026-11-12): per la neve il server scarica le
+  quote da Amazon Web Services (tessere Terrarium, `heights.py`), e la
+  privacy nominava Amazon solo per la mappa «3D» del telefono. L'utente ha
+  approvato con le parole «Sì, va bene» la riga nuova da aggiungere in «Chi
+  altro riceve dati»:
+  - en: «For a snowshoe route our server asks Amazon Web Services for the
+    heights of an area it does not have yet: it sees which area, not who
+    asked.»;
+  - it: «Per un percorso con le ciaspole il nostro server chiede ad Amazon
+    Web Services le altezze di una zona che non ha ancora: vede quale zona,
+    non chi l'ha chiesta.».
+
+  Va scritta prima dell'accensione, nel turno del Coordinatore su
+  `about/content/**` e `site/privacy/**`.
+
 **Accordi e scelte della parte A2** (2026-11-10, decise dall'agente su
 delega dell'utente):
 

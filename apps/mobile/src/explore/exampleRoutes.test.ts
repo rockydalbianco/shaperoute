@@ -289,7 +289,7 @@ test("no map for the zone: every shape says so, and Try again asks again", async
   expect(new Set(examples.map((e) => e.status))).toEqual(new Set(["failed"]));
   expect(examples).toHaveLength(EVERY_SHAPE);
   expect(examples[0].status === "failed" && examples[0].message).toMatch(
-    /could not be downloaded/,
+    /The map service is busy/,
   );
   expect(asked).toHaveLength(1);
 

@@ -4680,8 +4680,9 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   distanza dell'API, per difetto al mezzo km); una che non ci sta fra 1 e
   5 km «This shape does not fit on the water here. Try a shorter distance,
   another shape, or another start:» con le forme. Senza i dati dell'acqua
-  (Overpass che rifiuta) il testo è quello della mappa, «Map data for this
-  area could not be downloaded. Try again later.».
+  (Overpass che rifiuta) il testo è quello della mappa, «The map service
+  is busy, so this area could not be loaded. Try again in a few minutes.»
+  (TASK-471).
 - **«Explore»** (scelta dell'utente; come la corsa dal TASK-233, ADR-0196):
   al posto di città, esempi di corsa e percorsi consigliati, la pagina «On
   the water», «Shapes to paddle, within 1 km of the shore», con il cuore di
@@ -4806,8 +4807,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   partenza entro 3 km dal paese.
   Altrove, per esempio al mare lontano dai posti dell'elenco,
   la scarica da Overpass, se risponde, e la prima volta
-  ci mette minuti, altrimenti «Map data for this area could not be
-  downloaded.». **Un elenco nuovo vuole prima la sua acqua sul server**
+  ci mette minuti, altrimenti «The map service is busy, so this area
+  could not be loaded.». **Un elenco nuovo vuole prima la sua acqua sul server**
   (`MAPS.md`, «I laghi di Explore»).
 - Testi nuovi **da confermare con l'utente**: «On the water, a shape of the
   catalogue.», «on the water», «Paddle without a route», i testi d'errore
@@ -4980,7 +4981,7 @@ c'è anche l'errore.
 | Forma che non ci sta, senza distanza (somiglianza bassa, o distanza fuori da quelle di «Draw»: oltre 21 km, in bici fuori da 10–30) | This shape does not fit the roads here. Try another shape, or another start: e le forme del catalogo come pulsanti |
 | Contorno di un'immagine che non ci sta (TASK-073) | come per la forma, con «This image…»; senza distanza: This outline does not fit the roads here. Try another distance, another start, or a simpler picture. (niente forme da toccare) |
 | Parola che non ci sta (TASK-057) | come per la forma, con «This word…»; senza distanza: This word does not fit the roads here. Try a shorter word, or another start. (niente forme da toccare) |
-| Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
+| Dati OSM non scaricabili (`map_data_unavailable`) | The map service is busy, so this area could not be loaded. Try again in a few minutes. (TASK-471: dice che è temporaneo e non dipende da chi usa l'app) |
 | Errore del motore (`engine_error`) | The route could not be drawn. Try again, or try another start. e «Try again» |
 | L'AI non risponde (`ai_unavailable`) | This word cannot be read right now. Try one of these: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun. |
 | `invalid_request`, `http_error`, risposta illeggibile | Something went wrong on our side. Try again in a moment. e «Try again» (anche un percorso in bici chiesto a un'API più vecchia di TASK-190, parte B, che conosce solo `running`; il codice e il testo dell'API sotto, solo nelle build di sviluppo) |

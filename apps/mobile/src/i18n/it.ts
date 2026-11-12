@@ -634,8 +634,8 @@ export const IT: Table = {
     "Qui questo contorno non sta sulle strade. Prova un'altra distanza, un'altra partenza o una foto più semplice.",
   "This shape does not fit the roads here. Try another shape, or another start:":
     "Qui questa forma non sta sulle strade. Prova un'altra forma, o un'altra partenza:",
-  "Map data for this area could not be downloaded. Try again later.":
-    "Non si è potuta scaricare la mappa di questa zona. Riprova più tardi.",
+  "The map service is busy, so this area could not be loaded. Try again in a few minutes.":
+    "Il servizio delle mappe è occupato e questa zona non si è potuta caricare. Riprova tra qualche minuto.",
   "The route engine cannot find one clear outline in this picture.":
     "In questa foto non si trova un contorno chiaro.",
   "Only PNG and JPEG pictures work. Choose another one.":

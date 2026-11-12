@@ -1,9 +1,11 @@
 # TASK-461 — Il pianificatore completo: corpo libero, piani verso una distanza, gite in montagna
 
-**Stato**: In corso · 2026-11-11 · parte 0 chiusa; A1 in `main` (#1163);
-B1 (server di B e C) in PR; A2 dopo l'app di TASK-452
+**Stato**: In corso · 2026-11-12 · parte 0 chiusa; A1 e B1 in `main` e
+sul server (passo 9, 2026-11-12); B2a (la logica dei piani verso un
+obiettivo, solo file nuovi) in PR; A2 dopo l'app di TASK-452, poi B2b/C2
 **Fase**: 5 · **Branch**: `feat/TASK-461-a1-bodyweight-catalog` (A1),
-`feat/TASK-461-b1-distance-mountain-server` (B1)
+`feat/TASK-461-b1-distance-mountain-server` (B1),
+`feat/TASK-461-b2a-target-plans` (B2a)
 **Dipende da**: TASK-433 (la guida delle schede, `gym_plans.program`),
 TASK-452 (i ritmi di corsa: la parte A2 parte dopo la sua PR dell'app)
 **ADR**: ADR-0371 (proposto) · numeri dal Coordinatore il 2026-11-11
@@ -153,9 +155,19 @@ Sulla tela «Schede palestra guidate»
 - **B1 — server di B e C insieme** (questa PR): `outing` sui giorni e
   `target` sul programma, fino a 24 settimane; il calendario segna fatto un
   giorno fuori da un'attività del suo sport.
-- **B2 — app dei piani a distanza** (corsa, camminata, hike, bici, nuoto,
-  canoa) e **C2 — app della montagna**: dopo B1 sul server. I ritmi e il
-  lungo della corsa vengono da TASK-452.
+- **B2a — app, la logica dei piani verso un obiettivo** (questa PR, il sì
+  del Coordinatore il 2026-11-12): solo file nuovi in
+  `apps/mobile/src/gym/`, nessun testo e niente di collegato, quindi niente
+  di visibile nell'app. `targetWeeks.ts` (la scala delle settimane),
+  `targetPlan.ts` (il piano dalle risposte della guida), `outingHistory.ts`
+  («Dove sei oggi?» dalle attività dell'ultimo mese), coi loro test.
+- **B2b — app dei piani a distanza** (corsa, camminata, hike, bici, nuoto,
+  canoa) e **C2 — app della montagna**: dopo la PR dell'app di TASK-452
+  (#1159) e A2, che toccano gli stessi file (la guida, «Today», le tabelle
+  delle lingue). Le schermate delle righe F e G, l'ingresso senza «Presto»,
+  la scheda «Oggi» dei giorni fuori, il promemoria alle 8, i testi;
+  `sessionsOfWeek` passa i giorni dello sport dell'obiettivo da
+  `targetDayInWeek`. I ritmi e il lungo della corsa vengono da TASK-452.
 
 ## Il disegno tecnico (ADR-0371, deciso dall'agente su delega dell'utente)
 
@@ -197,6 +209,26 @@ Sulla tela «Schede palestra guidate»
 - **Un giorno fuori è fatto da un'attività del suo sport** (camminata,
   hike, bici, gravel, MTB, nuoto in vasca o in acque libere, canoa), come
   un giorno di corsa da una corsa: `gym_calendar.py`.
+- **Le settimane verso un obiettivo si calcolano sul telefono**
+  (`targetWeeks.ts`), come quelle della palestra: il piano tiene la prima
+  settimana e il `target`. Il giorno lungo (o la salita, per un hike verso
+  un dislivello) sale una scala: l'ultima settimana è l'obiettivo, ogni
+  settimana prima un decimo in meno, ogni 4ª più leggera (4/5 della
+  precedente) e senza passo; con più settimane del necessario le prime
+  restano dove si è oggi. Le settimane servite sono le meno possibili, almeno
+  4, perché la scala parta da dove si è (da 6 a 10 km di corsa: 8, come nel
+  testo approvato «Per 10 km servono 8 settimane»); oltre 24 il piano
+  propone dove si arriva («Arriva a 8 km»). Gli altri giorni dello sport
+  crescono con il lungo, le ripetute di una ogni due passi, e sulla
+  settimana dell'obiettivo sono più leggeri. Arrotondati: mezzo km a piedi,
+  in corsa e in canoa, km in bici, 100 m in acqua, 50 m di salita.
+  Partendo da zero la regola dà molte settimane (corsa da 2 a 10 km: 23):
+  è il «un decimo a settimana» approvato.
+- **«Dove sei oggi?» viene dall'elenco delle attività** (`GET
+  /me/activities`, pagine fino a un mese fa): il più lungo dell'ultimo mese
+  dello sport (a piedi camminata e hike insieme, in bici ogni bici). La
+  salita di un hike l'elenco oggi non la dà: finché non la dà, l'app la
+  chiede invece di scriverla.
 - **Il promemoria è del telefono**: notifiche locali (`expo-notifications`,
   c'è già); il server non ne sa niente.
 
@@ -208,5 +240,7 @@ Sulla tela «Schede palestra guidate»
 - B1: API `test_gym_plans.py` e `test_gym_calendar.py`; shared-types
   `gym.test.ts`; app `olderAppOutings.test.ts`, `plans.test.ts`,
   `GymPlans.test.tsx`, `api/gymPlans.test.ts`, `tsc`.
+- B2a: app `targetWeeks.test.ts`, `targetPlan.test.ts`,
+  `outingHistory.test.ts`, `tsc`, eslint e prettier sui file nuovi.
 - Dopo il passo sul server: le righe di sola lettura in
   `out/TASK-461/SERVER.md` (fuori da git).

@@ -45,6 +45,11 @@ type Props = {
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
   apiKey?: string | null;
+  /** Opened from elsewhere (the Feed's «+», TASK-476): no button of its
+   * own, the choices from the start, and `onDone` once the run is kept or
+   * the form discarded. */
+  opened?: boolean;
+  onDone?: () => void;
 };
 
 /**
@@ -55,7 +60,8 @@ type Props = {
  * of a run, under the drawing of its track, marked «Imported»: nothing
  * leaves the phone before «Save», and the file never. In an app built
  * without the picker (the store's 1.0) there is nothing to add yet, and the
- * button is not there; «Photos only» comes with part C.
+ * button is not there; «Photos only» comes with part C. Opened from the
+ * Feed's «+» (TASK-476), it has no button and starts at the choices.
  */
 export function AddPastActivity({
   available = filePickerAvailable(),
@@ -63,9 +69,18 @@ export function AddPastActivity({
   pick,
   fetchFn,
   apiKey,
+  opened = false,
+  onDone,
 }: Props) {
   const { recordImported, alreadyKept } = useActivitiesDoor();
-  const [stage, setStage] = useState<Stage>({ kind: "closed" });
+  const [stage, setStage] = useState<Stage>(
+    opened ? { kind: "choosing", problem: null } : { kind: "closed" },
+  );
+  // Kept or discarded: closed in «My activities», back to the opener else.
+  const finish = () => {
+    setStage(opened ? { kind: "choosing", problem: null } : { kind: "closed" });
+    onDone?.();
+  };
 
   if (!available) {
     return null;
@@ -121,11 +136,11 @@ export function AddPastActivity({
           onSave={() => {
             const kept = recordImported(imported);
             if (kept) {
-              setStage({ kind: "closed" });
+              finish();
             }
             return kept;
           }}
-          onDiscard={() => setStage({ kind: "closed" })}
+          onDiscard={finish}
           pick={pick}
           fetchFn={fetchFn}
           apiKey={apiKey}
@@ -139,17 +154,19 @@ export function AddPastActivity({
   const reading = stage.kind === "reading";
   return (
     <View style={styles.add}>
-      <Pressable
-        style={styles.button}
-        onPress={() =>
-          setStage(open ? { kind: "closed" } : { kind: "choosing", problem: null })
-        }
-        disabled={reading}
-        accessibilityRole="button"
-        accessibilityState={{ expanded: open, disabled: reading }}
-      >
-        <Text style={styles.buttonText}>{t("Add past activity")}</Text>
-      </Pressable>
+      {!opened && (
+        <Pressable
+          style={styles.button}
+          onPress={() =>
+            setStage(open ? { kind: "closed" } : { kind: "choosing", problem: null })
+          }
+          disabled={reading}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: open, disabled: reading }}
+        >
+          <Text style={styles.buttonText}>{t("Add past activity")}</Text>
+        </Pressable>
+      )}
       {open && (
         <>
           <Tap

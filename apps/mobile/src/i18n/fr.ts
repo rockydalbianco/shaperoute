@@ -2689,4 +2689,6 @@ export const FR: Table = {
   "by {user}": "de {user}",
   "This post is no longer available.": "Cette publication n'est plus disponible.",
   "🗺️ Post": "🗺️ Publication",
+  // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
+  "Add activity": "Ajouter une activité",
 };

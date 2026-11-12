@@ -645,8 +645,8 @@ export const DE: Table = {
     "Dieser Umriss passt hier nicht auf die Straßen. Versuche eine andere Distanz, einen anderen Start oder ein einfacheres Bild.",
   "This shape does not fit the roads here. Try another shape, or another start:":
     "Diese Form passt hier nicht auf die Straßen. Versuche eine andere Form oder einen anderen Start:",
-  "Map data for this area could not be downloaded. Try again later.":
-    "Die Kartendaten für dieses Gebiet konnten nicht geladen werden. Versuche es später noch einmal.",
+  "The map service is busy, so this area could not be loaded. Try again in a few minutes.":
+    "Der Kartendienst ist gerade ausgelastet, daher konnte dieses Gebiet nicht geladen werden. Versuche es in ein paar Minuten noch einmal.",
   "The route engine cannot find one clear outline in this picture.":
     "In diesem Bild ist kein klarer Umriss zu finden.",
   "Only PNG and JPEG pictures work. Choose another one.":

@@ -637,8 +637,8 @@ export const FR: Table = {
     "Ce contour ne tient pas sur les routes ici. Essaie une autre distance, un autre départ ou une photo plus simple.",
   "This shape does not fit the roads here. Try another shape, or another start:":
     "Cette forme ne tient pas sur les routes ici. Essaie une autre forme ou un autre départ :",
-  "Map data for this area could not be downloaded. Try again later.":
-    "La carte de cette zone n'a pas pu être téléchargée. Réessaie plus tard.",
+  "The map service is busy, so this area could not be loaded. Try again in a few minutes.":
+    "Le service de cartes est occupé et cette zone n'a pas pu être chargée. Réessaie dans quelques minutes.",
   "The route engine cannot find one clear outline in this picture.":
     "Aucun contour net n'a été trouvé dans cette photo.",
   "Only PNG and JPEG pictures work. Choose another one.":

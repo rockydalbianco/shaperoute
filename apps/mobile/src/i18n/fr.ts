@@ -2913,4 +2913,6 @@ export const FR: Table = {
   "Before you climb": "Avant de grimper",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW enregistre ton ascension et la partage : il ne te guide pas. Pars avec ton matériel, ton expérience et ton jugement, et vérifie les conditions avant de partir.",
+  // TASK-305 part R6c: the map of a race (approved 2026-11-12).
+  "White: on foot. Yellow: in the air.": "Blanc : à pied. Jaune : en vol.",
 };

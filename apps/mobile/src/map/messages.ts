@@ -58,6 +58,10 @@ export type ToPage =
       labels?: { point: LngLat; text: string; kind: "lift" | "descent" }[];
     }
   | { type: "clearLifts" }
+  /** A race on foot and in the air (TASK-305 part R6c): white on foot,
+   * yellow in the air. */
+  | { type: "showFlight"; foot: LngLat[][]; air: LngLat[][] }
+  | { type: "clearFlight" }
   | { type: "follow"; lngLat: LngLat; heading: number | null }
   /** Where the phone points on «Compass» (TASK-431), or null off it. */
   | { type: "face"; heading: number | null }
@@ -281,6 +285,21 @@ export function showLifts(
 
 export function clearLifts(): ToPage {
   return { type: "clearLifts" };
+}
+
+/** A race on foot and in the air (TASK-305 part R6c, the user's words of
+ * 2026-11-12, «White: on foot. Yellow: in the air.»): the track white where
+ * the pilot went on foot, the flights yellow over it. */
+export function showFlight(foot: LatLon[][], air: LatLon[][]): ToPage {
+  return {
+    type: "showFlight",
+    foot: foot.map((line) => line.map(toLngLat)),
+    air: air.map((line) => line.map(toLngLat)),
+  };
+}
+
+export function clearFlight(): ToPage {
+  return { type: "clearFlight" };
 }
 
 /** Marks the places of a themed route, named when the route passes by. */

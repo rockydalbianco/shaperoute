@@ -20,6 +20,7 @@ import { type Drawn, sameLine } from "./src/activities/recordedRun";
 import { RunEnd } from "./src/activities/RunEnd";
 import { snowParts } from "./src/activities/snowDay";
 import { type Lifts, snowLiftsOf } from "./src/activities/snowLifts";
+import { flightAirOf } from "./src/air/flightLegs";
 import { apiUrl } from "./src/api/apiUrl";
 import { PickStart } from "./src/location/PickStart";
 import {
@@ -1570,6 +1571,7 @@ function MuW() {
                     : null
             }
             lifts={freeFinishing ? freeFinished.lifts : null}
+            flightAir={freeFinishing ? flightAirOf(freeFinished.run) : null}
             liftLabels={freeFinishing ? freeFinished.liftLabels : undefined}
             following={
               navigating && navigation.status === "following"

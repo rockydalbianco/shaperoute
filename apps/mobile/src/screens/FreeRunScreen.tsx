@@ -4,11 +4,12 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { isOnSnow } from "../activities/snow";
 import { isFlight } from "../air/flight";
 import { FlightFinishCard } from "../air/FlightFinishCard";
+import { flightAirOf } from "../air/flightLegs";
 import { FlightLive } from "../air/FlightLive";
 import { useFlightNotice } from "../air/flightNotice";
 import { useStartLiveAtStart } from "../air/liveAtStart";
 import { useClimbNotice } from "../mountain/climbNotice";
-import type { FreeRun } from "../navigation/freeRun";
+import { type FreeRun, pendingFreeRun } from "../navigation/freeRun";
 import { freeRunActivity } from "../navigation/freeSport";
 import { t } from "../i18n";
 import { LocationOff } from "../location/LocationOff";
@@ -190,12 +191,22 @@ export function FreeFinishBanner() {
   // skiing has its descents yellow and its lifts red and dashed on the map,
   // numbered, and the legend says so (TASK-429 part B, ADR-0357).
   const activity = runActivityOf(useSport());
+  // A race on foot and in the air, its map in two colours (TASK-305 part
+  // R6c): the run that ended, read once.
+  const race = useMemo(
+    () => isFlight(activity) && flightAirOf(pendingFreeRun()) !== null,
+    [activity],
+  );
   if (isFlight(activity)) {
     // A flight is a flight (TASK-305 part R2).
     return (
       <View style={styles.banner}>
         <Text style={styles.title}>{t("Your flight")}</Text>
-        <Text style={styles.message}>{t("White: where you flew.")}</Text>
+        <Text style={styles.message}>
+          {race
+            ? t("White: on foot. Yellow: in the air.")
+            : t("White: where you flew.")}
+        </Text>
       </View>
     );
   }

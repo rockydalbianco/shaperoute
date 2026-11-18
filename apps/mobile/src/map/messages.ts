@@ -48,12 +48,16 @@ export type ToPage =
   /** What lies over the top of the map (TASK-443), or null for nothing
    * told: the route is framed clear of it. */
   | { type: "setCover"; cover: MapCover | null }
-  | { type: "showTrack"; coordinates: LngLat[] }
+  /** `frame`: the map is framed on the line (TASK-478), at the end of a
+   * run without a route; never while following the runner. */
+  | { type: "showTrack"; coordinates: LngLat[]; frame?: true }
   | { type: "clearTrack" }
   | {
       type: "showLifts";
       skied: LngLat[][];
       lifts: LngLat[][];
+      /** As `showTrack`'s (TASK-478). */
+      frame?: true;
       /** The numbers on the lines (TASK-429 part B); none from an app before. */
       labels?: { point: LngLat; text: string; kind: "lift" | "descent" }[];
     }
@@ -254,6 +258,12 @@ export function showTrack(points: LatLon[]): ToPage {
   return { type: "showTrack", coordinates: points.map(toLngLat) };
 }
 
+/** The track, and the map framed on it (TASK-478): a run without a route
+ * that ended, or one opened again. */
+export function showTrackFramed(points: LatLon[]): ToPage {
+  return { type: "showTrack", coordinates: points.map(toLngLat), frame: true };
+}
+
 export function clearTrack(): ToPage {
   return { type: "clearTrack" };
 }
@@ -266,9 +276,11 @@ export function showLifts(
   skied: LatLon[][],
   lifts: LatLon[][],
   labels: readonly SkiLabel[] = [],
+  frame = false,
 ): ToPage {
   return {
     type: "showLifts",
+    ...(frame ? { frame: true as const } : {}),
     skied: skied.map((line) => line.map(toLngLat)),
     lifts: lifts.map((line) => line.map(toLngLat)),
     labels: labels.map((label) => ({

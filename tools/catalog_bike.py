@@ -46,6 +46,12 @@ SHAPES: tuple[str, ...] = (
     "snail",
     "dog_head",
 )
+# Those that read as a ride, seen one by one on the page of every passing
+# run (the user's choice, 2026-11-18): the others pass the filter and are a
+# tangle to the eye. Only these are drawn from now on, and only these kept.
+READS: frozenset[str] = frozenset(
+    {"heart", "star", "butterfly", "cat", "sun", "circle", "moon", "fish"}
+)
 BIKE_LOG = cs.REPO_ROOT / "out" / "TASK-441" / "bike.jsonl"
 SOURCE = "TASK-441 bike"
 # No download: a closed local port, so a zone not in the cache fails at once.
@@ -80,13 +86,16 @@ def distance_of(city_index: int, shape_index: int) -> int:
 
 
 def plan(names: Sequence[str] = ()) -> list[Case]:
-    """Every case, city by city, the longest first (its zone holds the
-    others'). `names` keeps only those cities; a city keeps its turn."""
+    """Every case of a shape that reads, city by city, the longest first
+    (its zone holds the others'). `names` keeps only those cities; a city
+    and a shape keep their turn."""
     cases: list[Case] = []
     for i, city in enumerate(cs.CITIES):
         if names and city.name not in names:
             continue
-        here = [Case(city, s, distance_of(i, j)) for j, s in enumerate(SHAPES)]
+        here = [
+            Case(city, s, distance_of(i, j)) for j, s in enumerate(SHAPES) if s in READS
+        ]
         cases += sorted(here, key=lambda c: (-c.distance_m, SHAPES.index(c.shape)))
     return cases
 
@@ -105,11 +114,12 @@ def reasons(run: cs.Run) -> list[str]:
 
 def keep(bike_runs: Iterable[cs.Run], kept: Sequence[str]) -> list[str]:
     """The keys to keep: those kept that are not by bike, as they are, then
-    every bike run that passes the filter, by key. A second run of the same
-    case replaces the first (the log is read last line wins)."""
+    every bike run of a shape that reads and passes the filter, by key. A
+    second run of the same case replaces the first (the log is read last
+    line wins)."""
     others = [k for k in kept if not is_bike_key(k)]
     last = {r["key"]: r for r in bike_runs}
-    bike = sorted(k for k, r in last.items() if not reasons(r))
+    bike = sorted(k for k, r in last.items() if r["shape"] in READS and not reasons(r))
     return list(dict.fromkeys([*others, *bike]))
 
 
@@ -497,8 +507,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(cs.summary(logs, kept), file=sys.stderr)
         return 0
     last = {r["key"]: r for r in runs}
-    passing = sum(1 for r in last.values() if not reasons(r))
-    print(f"{passing} pass of {len(last)} drawn by bike", file=sys.stderr)
+    passing = [r for r in last.values() if not reasons(r)]
+    reading = sum(1 for r in passing if r["shape"] in READS)
+    print(
+        f"{len(passing)} pass of {len(last)} drawn by bike, "
+        f"{reading} of a shape that reads",
+        file=sys.stderr,
+    )
     return 0
 
 

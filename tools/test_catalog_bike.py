@@ -41,13 +41,14 @@ def test_a_bike_key_is_not_the_same_shape_on_foot_nor_a_word() -> None:
     assert not cw.is_word_key(key)
 
 
-def test_the_plan_has_every_shape_once_a_city_longest_first() -> None:
+def test_the_plan_has_every_shape_that_reads_once_a_city_longest_first() -> None:
+    assert cb.READS < set(cb.SHAPES)
     cases = cb.plan()
-    assert len(cases) == len(cs.CITIES) * len(cb.SHAPES)
+    assert len(cases) == len(cs.CITIES) * len(cb.READS)
     assert len({c.key for c in cases}) == len(cases)
-    first = cases[: len(cb.SHAPES)]
+    first = cases[: len(cb.READS)]
     assert {c.city.name for c in first} == {cs.CITIES[0].name}
-    assert {c.shape for c in first} == set(cb.SHAPES)
+    assert {c.shape for c in first} == cb.READS
     distances = [c.distance_m for c in first]
     assert distances == sorted(distances, reverse=True)
     assert set(distances) == set(cb.DISTANCES_M)
@@ -113,6 +114,18 @@ def test_keep_adds_the_passing_bike_runs_and_touches_nothing_else() -> None:
         cb.bike_key("trento", "heart", 30_000),
         cb.bike_key("trento", "star", 25_000),
     ]
+
+
+def test_keep_leaves_out_a_shape_that_does_not_read() -> None:
+    # A snail passes the filter and is a tangle to the eye: not drawn any
+    # more, and what was drawn is not kept. Its distance stays its own.
+    runs = [_run("trento", "snail", 20_000, similarity=0.99)]
+    assert not cb.reasons(runs[0])
+    assert cb.keep(runs, []) == []
+    assert "snail" not in {c.shape for c in cb.plan()}
+    i = [c.name for c in cs.CITIES].index("trento")
+    heart = next(c for c in cb.plan(["trento"]) if c.shape == "heart")
+    assert heart.distance_m == cb.distance_of(i, cb.SHAPES.index("heart"))
 
 
 def test_keep_takes_the_last_run_of_a_case() -> None:
@@ -188,7 +201,7 @@ def test_plan_on_the_command_line(capsys, tmp_path: Path) -> None:  # type: igno
         == 0
     )
     out = capsys.readouterr()
-    assert len(out.out.splitlines()) == len(cb.SHAPES)
+    assert len(out.out.splitlines()) == len(cb.READS)
     assert all(cb.is_bike_key(line) for line in out.out.splitlines())
     assert cb.main(["--plan", "--cities", "atlantis"]) == 2
 

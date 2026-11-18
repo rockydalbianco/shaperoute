@@ -2895,4 +2895,12 @@ export const IT: Table = {
     "MuW registra la tua salita e la condivide: non ti guida. Vai con la tua attrezzatura, la tua esperienza e il tuo giudizio, e controlla le condizioni prima di partire.",
   // TASK-305 part R6c: the map of a race (approved 2026-11-12).
   "White: on foot. Yellow: in the air.": "Bianco: a piedi. Giallo: in volo.",
+  // src/liveShare/ (TASK-468 part B2a: the «Live» row, «Live in the Feed»,
+  // the stop of a share without a link; en and it approved 2026-11-12)
+  "Live in the Feed": "Live nel Feed",
+  "Who can follow": "Chi può seguirti",
+  "Remind me": "Avvisami",
+  "We'll notify you when it starts.": "Ti avvisiamo quando parte.",
+  "Nobody can follow you any more.": "Nessuno potrà più seguirti.",
+  "Live · {day} {time} · {title}": "Live · {day} {time} · {title}",
 };

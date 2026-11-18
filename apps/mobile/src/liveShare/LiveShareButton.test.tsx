@@ -182,11 +182,12 @@ test("«Sharing live» asks before it stops; «Stop sharing» sends the DELETE",
   const offered = menu as AlertButton[];
   expect(offered.map((b) => b.text)).toEqual([
     "Send in MuW",
+    "Live in the Feed",
     "Share link",
     "Stop sharing",
     "Keep sharing",
   ]);
-  await act(async () => offered[2].onPress?.());
+  await act(async () => offered[3].onPress?.());
   expect(alert).toHaveBeenCalledTimes(2);
   const [title, message, buttons] = alert.mock.calls[1];
   expect(title).toBe("Stop sharing?");
@@ -313,10 +314,59 @@ test("«Share link» while a chat-only share is on makes its link then", async (
   await fireEvent.press(screen.getByTestId("send-live-close"));
   await fireEvent.press(screen.getByRole("button", { name: "Sharing live" }));
   const menu = alert.mock.calls[0][2] as AlertButton[];
-  await act(async () => menu[1].onPress?.());
+  await act(async () => menu[2].onPress?.());
   expect(
     fetchFn.mock.calls.some(([url]) => url === `${API}/me/live-shares/s1/link`),
   ).toBe(true);
   expect(share).toHaveBeenCalledWith({ message: liveShareMessage(URL) });
   expect(liveShareStatus()).toEqual({ kind: "sharing", id: "s1", url: URL });
+});
+
+// --- «Live in the Feed» and the stop of a share without a link (TASK-468 part B2a) ---
+
+test("«Live in the Feed» asks who can follow, then makes the share for the Feed", async () => {
+  const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+  const fetchFn = chatServer();
+  await show(SIGNED_IN, fetchFn as unknown as ReturnType<typeof answers>);
+  await fireEvent.press(screen.getByRole("button", { name: "Share live" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Live in the Feed" }));
+  const [title, , buttons] = alert.mock.calls[0];
+  expect(title).toBe("Who can follow");
+  const choices = buttons as AlertButton[];
+  expect(choices.map((b) => b.text)).toEqual(["Followers", "Everyone", "Not now"]);
+  await act(async () => choices[1].onPress?.());
+  const made = fetchFn.mock.calls.find(([url]) => url === `${API}/me/live-shares`);
+  expect(JSON.parse(String(made?.[1]?.body))).toEqual({
+    activity: "running",
+    link: false,
+    audience_feed: "everyone",
+  });
+  // No people sheet: the followers see it in the Feed.
+  await act(async () => mockGone.current?.());
+  expect(screen.queryByText("Choose who gets your live")).toBeNull();
+});
+
+test("while sharing, «Live in the Feed» changes who sees it; the stop of a share without a link", async () => {
+  const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+  const fetchFn = chatServer();
+  await show(SIGNED_IN, fetchFn as unknown as ReturnType<typeof answers>);
+  await fireEvent.press(screen.getByRole("button", { name: "Share live" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Send in MuW" }));
+  await act(async () => mockGone.current?.());
+  await fireEvent.press(screen.getByTestId("send-live-close"));
+  await fireEvent.press(screen.getByRole("button", { name: "Sharing live" }));
+  const menu = alert.mock.calls[0][2] as AlertButton[];
+  await act(async () => menu[1].onPress?.());
+  const who = alert.mock.calls[1][2] as AlertButton[];
+  await act(async () => who[0].onPress?.());
+  const patched = fetchFn.mock.calls.find(([, init]) => init?.method === "PATCH");
+  expect(patched?.[0]).toBe(`${API}/me/live-shares/s1`);
+  expect(JSON.parse(String(patched?.[1]?.body))).toEqual({
+    audience_feed: "followers",
+  });
+  // The user's choice 8: no link, so nobody can follow any more.
+  await act(async () => menu[3].onPress?.());
+  const [title, message] = alert.mock.calls[2];
+  expect(title).toBe("Stop sharing?");
+  expect(message).toBe("Nobody can follow you any more.");
 });

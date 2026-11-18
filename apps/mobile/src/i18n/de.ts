@@ -2927,4 +2927,12 @@ export const DE: Table = {
     "MuW zeichnet deinen Aufstieg auf und teilt ihn: Es führt dich nicht. Geh mit deiner Ausrüstung, deinem Können und deinem Urteil, und prüfe die Verhältnisse vor dem Start.",
   // TASK-305 part R6c: the map of a race (approved 2026-11-12).
   "White: on foot. Yellow: in the air.": "Weiß: zu Fuß. Gelb: in der Luft.",
+  // src/liveShare/ (TASK-468 part B2a: the «Live» row, «Live in the Feed»,
+  // the stop of a share without a link; en and it approved 2026-11-12)
+  "Live in the Feed": "Live im Feed",
+  "Who can follow": "Wer dir folgen kann",
+  "Remind me": "Erinnere mich",
+  "We'll notify you when it starts.": "Wir benachrichtigen dich, wenn es losgeht.",
+  "Nobody can follow you any more.": "Niemand kann dir mehr folgen.",
+  "Live · {day} {time} · {title}": "Live · {day} {time} · {title}",
 };

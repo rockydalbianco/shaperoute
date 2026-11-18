@@ -559,6 +559,7 @@ lasciando le righe d'indice.
 - ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende · 2026-11-12 · Accettata
 - ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono · 2026-11-11 · Attiva
 - ADR-0387 — Il «+» del Feed: un'attività aggiunta da lì parte con «Everyone», eccezione ad ADR-0304; il foglio «Add activity» con solo «From a file» · 2026-11-12 · Attiva
+- ADR-0375, precisazione R6 — Corsa e volo nella stessa attività (hike & fly): i tratti a piedi e in aria divisi dal GPS sul telefono, corretti a mano, nel JSON delle statistiche; il riepilogo nelle liste dei post; le calorie tratto per tratto · 2026-11-18 · Attiva
 - ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo da due campi nel JSON delle statistiche, solo per il volo, `GET /me/flight-bests`, il calendario filtrato sui voli, la precisione del GPS · 2026-11-12 · Attiva
 - ADR-0352, precisazione — «Share live at start»: il link dal vivo a fine conto alla rovescia di un volo, se il pilota lo ha acceso; resta com'era l'ultima volta, solo il link · 2026-11-12 · Attiva
 - ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job · 2026-11-12 · Attiva
@@ -657,6 +658,39 @@ di ADR-0304 non cambia. Esce col prossimo OTA, poi la copia del sito (sì
 dell'utente al Coordinatore). Proposte per dopo nel task file: «Photos
 only» (TASK-312 C), «Apri in MuW» da altre app, Apple Salute, inserimento
 a mano, collegamenti diretti.
+
+## ADR-0375, precisazione R6 — Corsa e volo nella stessa attività (hike & fly)
+
+**Stato**: Attiva · 2026-11-18 · TASK-305 parte R6 (#1291 server, #1293
+app; R6c #1313 in bozza). **Scelte dell'utente** (2026-11-12): «Dentro
+Paragliding», niente sport nuovo; i testi in cinque lingue. Il resto è
+**deciso dall'agente su delega dell'utente**, con le liste dei file
+approvate dal Coordinatore.
+
+1. **La divisione la fa il telefono, dal solo GPS** (`src/air/flightParts.ts`,
+   una funzione pura).
+   - Decollo: per almeno 15 s |vario| > 1,5 m/s, oppure per almeno 20 s
+     più di 25 km/h.
+   - Atterraggio: per almeno 60 s meno di 9 km/h e |vario| < 0,7 m/s. Il
+     minuto serve per non scambiare un volo fermo controvento.
+   - Un tratto sotto il minuto si unisce al vicino.
+2. **La correzione a mano** («On foot | In the air») vale da quel momento.
+   Il GPS torna a contare solo quando smette di vedere il suo cambio. Un
+   tocco entro 5 minuti da un cambio del GPS lo annulla dall'inizio: è il
+   caso della navetta del recupero. I tocchi restano sul telefono legati
+   al volo.
+3. **Il server tiene i tratti solo per il volo**, nel JSON di
+   `run_stats.stats`, quindi **nessuna migrazione**; per gli altri sport li
+   ignora. Somma i due tipi in `flight_split` solo se ci sono tutti e due,
+   e lo dà in ogni lista di post.
+4. **Le calorie tratto per tratto**: a piedi come corsa sotto i 7:30 /km,
+   altrimenti come escursione; in aria col MET del volo. La velocità
+   massima di una gara conta solo i tratti in aria.
+5. **Tempi in millisecondi interi**: i fix del telefono hanno i decimali e
+   il server vuole interi. Trovato nel simulatore; lo stesso difetto
+   c'era nei tratti dello sci (#1304).
+6. **Prima il server, poi l'app**: su 422 l'app rimanda le statistiche
+   senza i tratti.
 
 ## ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo, i voli del mese, pronto al decollo
 

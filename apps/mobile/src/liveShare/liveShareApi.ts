@@ -5,6 +5,8 @@ import type {
   LiveShareRequest,
   LiveShareSent,
   LiveUpdate,
+  LiveAudience,
+  LivesPage,
   LiveView,
 } from "@shaperoute/shared-types";
 
@@ -42,7 +44,7 @@ export const CREATE_TIMEOUT_MS = 20_000;
 
 async function send<T>(
   { baseUrl, token, fetchFn = fetch, key = apiKey() }: LiveApiOptions,
-  method: "GET" | "POST" | "DELETE",
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   path: string,
   body: unknown,
   timeoutMs: number,
@@ -114,6 +116,10 @@ function isView(value: unknown): value is LiveView {
   return (
     isRecord(value) && typeof value.status === "string" && Array.isArray(value.points)
   );
+}
+
+function isLivesPage(value: unknown): value is LivesPage {
+  return isRecord(value) && Array.isArray(value.lives);
 }
 
 function isShare(value: unknown): value is LiveShare {
@@ -225,5 +231,55 @@ export function fetchLiveView(
     undefined,
     UPDATE_TIMEOUT_MS,
     isView,
+  );
+}
+
+/** PATCH /me/live-shares/{id}: who sees it in the Feed (TASK-468 part B2a,
+ * «Live in the Feed»). */
+export function setLiveAudience(
+  options: LiveApiOptions,
+  id: string,
+  audience: LiveAudience,
+): Promise<LiveAnswer<LiveShare>> {
+  return send(
+    options,
+    "PATCH",
+    `/me/live-shares/${encodeURIComponent(id)}`,
+    { audience_feed: audience },
+    CREATE_TIMEOUT_MS,
+    isShare,
+  );
+}
+
+/** GET /lives: the Feed's row, one's own and the followed accounts' lives
+ * (the user's choice 7), the going on first. */
+export function fetchLives(
+  options: LiveApiOptions,
+  cursor: string | null = null,
+): Promise<LiveAnswer<LivesPage>> {
+  const query = cursor === null ? "" : `?cursor=${encodeURIComponent(cursor)}`;
+  return send(
+    options,
+    "GET",
+    `/lives${query}`,
+    undefined,
+    UPDATE_TIMEOUT_MS,
+    isLivesPage,
+  );
+}
+
+/** PUT or DELETE /planned-lives/{id}/reminder: «Remind me», or not. */
+export function setReminder(
+  options: LiveApiOptions,
+  plannedLiveId: string,
+  on: boolean,
+): Promise<LiveAnswer<null>> {
+  return send(
+    options,
+    on ? "PUT" : "DELETE",
+    `/planned-lives/${encodeURIComponent(plannedLiveId)}/reminder`,
+    undefined,
+    UPDATE_TIMEOUT_MS,
+    isNothing,
   );
 }

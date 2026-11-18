@@ -1322,13 +1322,36 @@ dall'agente su delega dell'utente):
   (`drift`); oggi solo «Child's pose», che usciva dal bordo di un
   telefono da 390 pt.
 
+**Decisione** (parte D, «Morning stretch», in `main` con la #1300,
+`749a5cc7`, 2026-11-12; la voce, la notifica 5 minuti dopo la sveglia,
+i giorni e le durate sono scelte dell'utente, testi e schermate col suo
+sì; il modo deciso dall'agente su delega dell'utente):
+- **L'ora della sveglia la scrive l'utente** (iOS non lascia leggere le
+  sveglie dell'Orologio), con «−» e «+», senza tastiera; l'impostazione
+  resta sul telefono (`morning-stretch.json`), spenta all'inizio.
+- **Notifiche locali settimanali con un nome proprio**,
+  `morning-stretch-<giorno>`: a ogni cambio si tolgono solo quelle con
+  questo inizio e si rimettono, mai `cancelAll`, così il promemoria del
+  piano (`muw-plan-day-…`) e la pausa della palestra restano. Il testo si
+  scrive quando la notifica è programmata: si rimettono all'apertura
+  dell'app e a ogni cambio di lingua.
+- **Il tocco ha un ascoltatore suo** (`onMorningTapped`), non quello
+  delle push, che apre solo con un account e attraverso le porte di
+  «Profile». La notifica che ha aperto l'app si legge senza cancellarla
+  (la cancella l'ascoltatore delle push, che parte dopo); quella
+  settimanale torna con lo stesso nome e si distingue dalla data.
+- **Sopra l'app, mai durante una corsa** (`MorningStretchLayer`, una riga
+  in `App.tsx`): la schermata dello stretching usa lo stesso «schermo
+  acceso» della corsa e lo spegnerebbe all'uscita.
+- Scartato: passare da `notificationTap.ts` e `openTarget.ts`, che
+  avrebbe toccato le porte di «Profile» per una cosa che non è un
+  profilo né un disegno.
+
 **Le parti dopo** (ciascuna con la sua PR, i testi col sì dell'utente):
-C, lo stretching in palestra (dopo TASK-461 A2 e TASK-465, col
-turno su `src/gym`); D, «Morning stretch» con l'orario scritto dall'utente
-e una notifica locale (iOS non lascia leggere le sveglie dell'Orologio;
-la prossima sveglia di Android è nativa e va in una build); E, le routine
-dell'utente pubblicate nel Feed con «Do this routine» (server prima,
-segnalazione e blocco anche lì).
+C, lo stretching in palestra (col turno su `src/gym`; lo stretching come
+sport è di TASK-475, ADR-0386); la prossima sveglia letta su Android,
+nativa, in una build; E, le routine dell'utente pubblicate nel Feed con
+«Do this routine» (server prima, segnalazione e blocco anche lì).
 
 **Alternative scartate**: una libreria di disegno (svg, Lottie) per la
 figura, una dipendenza e un'impronta nativa nuove per poco; il respiro

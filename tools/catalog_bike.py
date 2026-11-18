@@ -124,6 +124,7 @@ def run(
     downloads: int = 0,
     slot_wait_max_s: float = 3600,
     mirror: str | None = None,
+    extract: Path | None = None,
     say: Callable[[str], None] = print,
 ) -> int:
     """Plans `cases` on the bike network as the API plans a ride and appends
@@ -134,8 +135,12 @@ def run(
     zone when there is one (what fails is tried again at the next run), or
     skipped and not logged. `mirror` is another Overpass to download from:
     it is not asked for a free slot (a mirror may have no status page), and
-    the pause between two cities is the only rate limit. The engine is
-    imported here. Returns how many cases were planned."""
+    the pause between two cities is the only rate limit. `extract` is an
+    OpenStreetMap extract of the roads (`osmium tags-filter ... w/highway`):
+    a zone not in the cache is cut from it, as the server makes its bike
+    zones (prefetch_zones, ADR-0153), with no request to Overpass and no
+    limit on how many. The engine is imported here. Returns how many cases were planned.
+    """
     import numpy as np
     import osmnx as ox
     from route_engine.errors import ShapeNotDrawableError
@@ -241,7 +246,18 @@ def run(
         m = cs.ZONE_MARGIN_DEG
         # With the margin a nearby start has its roads too (catalog_seed).
         zone = (s - m, w - m, n + m, e + m)
-        if not source.is_cached(zone):
+        if not source.is_cached(zone) and extract is not None:
+            from shaperoute_api.zone_extract import zone_from_extract
+
+            box = tuple(round(x, 3) for x in zone)
+            say(f"{name}: the bike zone {box} from {extract.name}")
+            try:
+                with zone_from_extract(extract, zone):
+                    source.load(zone)
+            except Exception as exc:
+                say(f"{name}: zone not loaded ({type(exc).__name__}: {exc}), skipped")
+                continue
+        elif not source.is_cached(zone):
             if downloads <= 0 or (
                 mirror is None
                 and slot_wait_max_s > 0
@@ -411,6 +427,12 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--overpass-url", help="a mirror of Overpass instead of overpass-api.de"
     )
+    p.add_argument(
+        "--extract",
+        type=Path,
+        help="an .osm.pbf of the roads: zones are cut from it, not downloaded "
+        "(needs osmium and services/api on the path)",
+    )
     p.add_argument("--page", type=Path, help="write the page of the sample here")
     p.add_argument("--whole", action="store_true", help="with --page: every run")
     p.add_argument("--propose", action="store_true", help="print the keys to keep")
@@ -447,6 +469,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.cache_dir,
             downloads=args.downloads,
             mirror=args.overpass_url,
+            extract=args.extract,
         )
         print(f"{planned} bike cases planned")
     runs = cs.read_runs(args.log)

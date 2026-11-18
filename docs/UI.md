@@ -315,7 +315,10 @@ pagine»):
    un pulsante: se toccherebbe «←», il tipo di mappa o la freccia del nord
    scende sotto la loro riga. Con lui entra la sagoma tratteggiata della
    forma chiesta (TASK-442). Quando la scheda sotto cambia altezza la mappa
-   si inquadra di nuovo, se l'utente non l'ha mossa. Dove il motore ha
+   si inquadra di nuovo, se l'utente non l'ha mossa. Una corsa senza
+   percorso finita, o riaperta, si inquadra allo stesso modo sulla sua
+   traccia, risalite dello sci comprese (TASK-478). Mentre si registra mai:
+   la mappa segue chi corre. Dove il motore ha
    spostato l'inizio c'è una bandierina in un tondo ciano (non una goccia,
    che è la partenza chiesta) con «Start here» nei colori di un controllo:
    sopra la bandierina, o sotto quando sopra finirebbe nella barra di stato

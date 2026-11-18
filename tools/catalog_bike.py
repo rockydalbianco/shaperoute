@@ -370,10 +370,11 @@ def sample(
     ]
 
 
-def page(runs: Sequence[cs.Run], whole: bool = False) -> str:
+def page(runs: Sequence[cs.Run], whole: bool = False, every: bool = False) -> str:
     """What the user looks at before the bike drawings enter the catalogue:
     the count by distance, then shape by shape a large sample of those that
-    pass (`sample`); with `whole` every run, the rejected ones with why."""
+    pass (`sample`); with `every` each one that passes, and with `whole`
+    every run, the rejected ones with why."""
     last = {r["key"]: r for r in runs}
     drawn = [r for r in last.values() if cs.drawn(r)]
     passing = [r for r in drawn if not reasons(r)]
@@ -397,14 +398,15 @@ def page(runs: Sequence[cs.Run], whole: bool = False) -> str:
         body += f"<h2>{html.escape(shape)} · {len(of_shape)}</h2>"
         bands = (
             [("tutti", sorted(of_shape, key=lambda r: (r["similarity"], r["key"])))]
-            if whole
+            if whole or every
             else sample(of_shape)
         )
         for label, band in bands:
             shown += len(band)
             cards = "".join(_card(r) for r in band)
             body += f'<h3>{label}</h3><div class="grid">{cards}</div>'
-    title = f"Disegni in bici · {'tutti' if whole else 'campione grande'} ({shown})"
+    kind = "tutti" if whole else "tutti quelli che passano" if every else "campione"
+    title = f"Disegni in bici · {kind} ({shown})"
     return PAGE.replace("__TITLE__", html.escape(title)).replace("__BODY__", body)
 
 
@@ -435,6 +437,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--page", type=Path, help="write the page of the sample here")
     p.add_argument("--whole", action="store_true", help="with --page: every run")
+    p.add_argument(
+        "--every", action="store_true", help="with --page: every run that passes"
+    )
     p.add_argument("--propose", action="store_true", help="print the keys to keep")
     p.add_argument(
         "--write", action="store_true", help="rebuild catalog/seed from every log"
@@ -481,7 +486,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"{planned} bike cases planned")
     runs = cs.read_runs(args.log)
     if args.page:
-        args.page.write_text(page(runs, args.whole), encoding="utf-8")
+        args.page.write_text(page(runs, args.whole, args.every), encoding="utf-8")
     if args.propose:
         print(json.dumps({"kept": keep(runs, cs.read_kept(args.kept))}, indent=1))
         return 0

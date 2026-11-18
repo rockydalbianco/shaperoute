@@ -177,6 +177,8 @@ def test_the_page_shows_the_passing_runs_and_with_whole_the_rejected_too() -> No
     assert sample.count("<svg") == 1
     whole = cb.page(runs, whole=True)
     assert whole.count("<svg") == 2
+    every = cb.page(runs, every=True)
+    assert every.count("<svg") == 1 and "tutti quelli che passano (1)" in every
     assert "similarity 0.70" in whole
 
 

@@ -1,10 +1,14 @@
 import type { RunActivity, SkiPartRequest } from "@shaperoute/shared-types";
 
 import { flightNow, isFlight, topSpeedMps } from "../air/flight";
+import { type FlightPart, flightParts, flightSplit } from "../air/flightParts";
+import { airTopSpeedMps, flightKcal } from "../air/flightSplit";
+import { phaseMarksOf } from "../air/phaseMarks";
 import type { AccountOutcome } from "../api/accounts";
 import type { ActivityPause, ActivityRequest } from "../api/activities";
 import {
   type ElevationPoint,
+  type FlightPartSent,
   MAX_ELEVATION_POINTS,
   type RunStats,
   type RunStatsRequest,
@@ -41,7 +45,13 @@ export function runStatsRequest(
   year: number,
 ): RunStatsRequest | null {
   const elevation = elevationProfile(request);
-  const kcal = runKcal(request, counted, body, year);
+  // A race on foot and in the air (TASK-305 part R6b): its parts, and its
+  // calories counted part by part.
+  const raced = isFlight(counted.activity) ? racedParts(request, counted.metres) : null;
+  const kcal =
+    raced === null
+      ? runKcal(request, counted, body, year)
+      : flightKcal(raced, body, year);
   // A day of skiing's lifts and descents (TASK-429 part B2, ADR-0357): what
   // the post of a saved day and the season are made of on the server.
   const parts =
@@ -61,6 +71,45 @@ export function runStatsRequest(
     kcal,
     ...(parts.length > 0 ? { ski_parts: parts } : {}),
     ...flight,
+    ...(raced === null ? {} : { flight_parts: raced.map(sentPart) }),
+  };
+}
+
+/**
+ * A flight's parts on foot and in the air, with the pilot's touches; null
+ * for a flight alone, or one only on foot: then it is sent as before.
+ */
+export function racedParts(
+  request: ActivityRequest,
+  metres: number,
+): FlightPart[] | null {
+  const first = request.track[0]?.time_ms;
+  if (first === undefined) {
+    return null;
+  }
+  const parts = flightParts(trackOf(request, metres), phaseMarksOf(first));
+  return flightSplit(parts) === null ? null : parts;
+}
+
+/** A part as the API takes it (TASK-305 part R6a): its times in whole
+ * milliseconds, as the API wants them; the phone's fixes have fractions. */
+function sentPart(part: FlightPart): FlightPartSent {
+  const start = Math.round(part.startMs);
+  const end = Math.max(start, Math.round(part.endMs));
+  const lasts = (end - start) / 1000;
+  return {
+    kind: part.kind,
+    start_ms: start,
+    end_ms: end,
+    moving_s: Math.min(tenth(part.movingMs / 1000), lasts),
+    metres: tenth(part.metres),
+    climb_m: Math.round(part.climbM ?? 0),
+    max_alt_m:
+      part.maxAltM === null
+        ? null
+        : Math.round(
+            Math.min(MAX_FLIGHT_ALT_M, Math.max(MIN_FLIGHT_ALT_M, part.maxAltM)),
+          ),
   };
 }
 
@@ -79,7 +128,9 @@ export function flightFiguresOf(
     return {};
   }
   const highest = flightNow(track, last.timeMs).maxAltM;
-  const top = topSpeedMps(track);
+  // A race's top speed is its parts in the air alone (TASK-305 part R6b).
+  const raced = racedParts(request, metres);
+  const top = raced === null ? topSpeedMps(track) : airTopSpeedMps(track, raced);
   return {
     ...(highest === null
       ? {}
@@ -144,12 +195,14 @@ export async function sendRunStats(
   const newer =
     request.ski_parts !== undefined ||
     request.max_alt_m !== undefined ||
-    request.top_speed_mps !== undefined;
+    request.top_speed_mps !== undefined ||
+    request.flight_parts !== undefined;
   if (outcome.kind === "api_error" && outcome.code === "invalid_request" && newer) {
     const {
       ski_parts: _parts,
       max_alt_m: _highest,
       top_speed_mps: _top,
+      flight_parts: _raced,
       ...without
     } = request;
     return save(baseUrl, token, key, without, options);

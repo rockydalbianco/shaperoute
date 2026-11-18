@@ -31,6 +31,7 @@ test("a post reads its figures; one without them has none", () => {
     ...runStats,
     ski_parts: null,
     ski_descents: null,
+    flight_split: null,
   });
   // Hidden by its author: the API sent the rest only.
   const hidden = { ...runStats, kcal: null, heart: null };
@@ -46,6 +47,7 @@ test("a post reads its figures; one without them has none", () => {
     heart: null,
     ski_parts: null,
     ski_descents: null,
+    flight_split: null,
   });
 });
 
@@ -87,4 +89,21 @@ test("the phone's figures go to the run's key, with the token", async () => {
   expect(init?.method).toBe("PUT");
   expect(JSON.parse(String(init?.body))).toEqual(request);
   expect(new Headers(init?.headers).get("Authorization")).toBe("Bearer tok");
+});
+
+test("a race reads its two kinds; a body that is not one is refused (TASK-305 part R6a)", () => {
+  const split = {
+    foot: { seconds: 7120, metres: 9800, climb_m: 1240, max_alt_m: 1960 },
+    air: { seconds: 6210, metres: 31200, climb_m: 620, max_alt_m: null },
+  };
+  expect(
+    statsOf({ ...DETAIL, stats: { ...runStats, flight_split: split } } as DrawingDetail)
+      ?.flight_split,
+  ).toEqual(split);
+  expect(
+    statsOf({
+      ...DETAIL,
+      stats: { ...runStats, flight_split: { foot: split.foot } },
+    } as DrawingDetail),
+  ).toBeNull();
 });

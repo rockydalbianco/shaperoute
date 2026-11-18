@@ -35,6 +35,7 @@ function runPage() {
   const sources = new Map<string, { data: Data; setData: (data: Data) => void }>();
   const layers: Layer[] = [];
   const once = new Map<string, () => void>();
+  const fits: { points: unknown[] }[] = [];
   class Map_ {
     addControl() {}
     once(event: string, handler: () => void) {
@@ -66,12 +67,19 @@ function runPage() {
       }
     }
     setFeatureState() {}
-    fitBounds() {}
+    fitBounds(bounds: { points: unknown[] }) {
+      fits.push(bounds);
+    }
     flyTo() {}
     easeTo() {}
   }
   class LngLatBounds {
-    extend() {
+    points: unknown[];
+    constructor(...corners: unknown[]) {
+      this.points = [...corners];
+    }
+    extend(point: unknown) {
+      this.points.push(point);
       return this;
     }
   }
@@ -95,6 +103,7 @@ function runPage() {
     // Through JSON, as injectJavaScript delivers it.
     send: (message: ToPage) => page.receive(JSON.parse(JSON.stringify(message))),
     data: (id: string) => sources.get(id)?.data,
+    fits,
   };
 }
 
@@ -162,4 +171,16 @@ test("a run's track has no yellow; a race sent before the style loads is drawn w
   race.styleLoads();
   expect(race.data("flight-air")?.geometry?.type).toBe("MultiLineString");
   expect(race.data("track")?.geometry?.type).toBe("MultiLineString");
+});
+
+test("a race that ended: the map framed on the parts on foot and the flights", () => {
+  const page = runPage();
+  page.styleLoads();
+  page.send(showFlight([UP, WALK], [FLY]));
+  expect(page.fits).toHaveLength(0);
+  page.send(showFlight([UP, WALK], [FLY], true));
+  expect(page.fits).toHaveLength(1);
+  expect(page.fits[0].points).toEqual(
+    expect.arrayContaining([...lngLat(UP), ...lngLat(FLY), ...lngLat(WALK)]),
+  );
 });

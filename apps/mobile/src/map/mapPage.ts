@@ -2430,6 +2430,9 @@ export function buildMapPage(language: Language = appLanguage()): string {
             properties: {},
             geometry: { type: "MultiLineString", coordinates: message.air },
           });
+          if (message.frame) {
+            frameLines(message.foot.concat(message.air));
+          }
         } else if (message.type === "clearFlight") {
           setFlightAir(noRoute);
         } else if (message.type === "clearLifts") {

@@ -64,7 +64,7 @@ export type ToPage =
   | { type: "clearLifts" }
   /** A race on foot and in the air (TASK-305 part R6c): white on foot,
    * yellow in the air. */
-  | { type: "showFlight"; foot: LngLat[][]; air: LngLat[][] }
+  | { type: "showFlight"; foot: LngLat[][]; air: LngLat[][]; frame?: true }
   | { type: "clearFlight" }
   | { type: "follow"; lngLat: LngLat; heading: number | null }
   /** Where the phone points on «Compass» (TASK-431), or null off it. */
@@ -302,9 +302,10 @@ export function clearLifts(): ToPage {
 /** A race on foot and in the air (TASK-305 part R6c, the user's words of
  * 2026-11-12, «White: on foot. Yellow: in the air.»): the track white where
  * the pilot went on foot, the flights yellow over it. */
-export function showFlight(foot: LatLon[][], air: LatLon[][]): ToPage {
+export function showFlight(foot: LatLon[][], air: LatLon[][], frame = false): ToPage {
   return {
     type: "showFlight",
+    ...(frame ? { frame: true as const } : {}),
     foot: foot.map((line) => line.map(toLngLat)),
     air: air.map((line) => line.map(toLngLat)),
   };

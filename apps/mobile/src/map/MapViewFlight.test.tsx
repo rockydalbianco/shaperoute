@@ -48,6 +48,8 @@ test("a race with flights is drawn cut at them, not as one line", async () => {
   expect(messages("showFlight")).toEqual([
     {
       type: "showFlight",
+      // Nothing followed, no route: framed on the race (TASK-478).
+      frame: true,
       foot: [lngLat(LINE.slice(0, 3)), lngLat(LINE.slice(4))],
       air: [lngLat(LINE.slice(2, 5))],
     },

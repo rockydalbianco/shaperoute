@@ -466,6 +466,20 @@ che non lo dice (il catalogo di oggi è di prima della parte A: tutti `0`);
 lo scrive `seed_catalog` del motore quando il motore inclina, e un valore
 che non è un numero fra −180 e 180 si legge `0`.
 
+**`activity`** (TASK-441 B2, ADR-0366 precisazione): facoltativo nella
+query di `/recommended-routes` e di `/catalog`. **Senza, le corse**, come
+prima che il catalogo avesse altro: un'app che non lo chiede riceve le
+stesse risposte di prima, byte per byte. Con `activity=cycling` le uscite
+disegnate per la bici (20–30 km) e solo quelle; un'attività che il catalogo
+non ha dà una lista vuota (`total` e `cities` a 0 in `/catalog`), mai un
+errore. Nella risposta, nell'elenco e nel percorso intero, il campo
+`activity` **c'è solo quando non è una corsa** (`"cycling"`): manca, non è
+`null`, in ogni corsa. `GET /recommended-routes/{id}` dà un'uscita per id
+senza parametro. `GET /recommended` e ogni altra lista restano sulle corse.
+Corpi in `recommended-routes-bike.json` e `recommended-route-bike.json`.
+L'app chiede `activity=cycling` solo con lo sport «Bike»; ogni altro sport
+chiede senza.
+
 I percorsi vengono da `catalog/seed/` (ADR-0097), letti all'avvio:
 `--catalog-dir` per un'altra cartella; senza file la lista è vuota. Un file
 nuovo vuole un riavvio dell'API.
@@ -474,8 +488,10 @@ nuovo vuole un riavvio dell'API.
 
 Tutto il catalogo, una pagina alla volta, per il fondo di «Explore»
 («Farther away»): `?lat=…&lon=…`, facoltativi `offset` (da 0, default 0)
-e `limit` (1–200, default 40). Risponde `{total, cities, routes}`: quanti
-percorsi ha il catalogo in tutto, in quante città, e i percorsi della
+e `limit` (1–200, default 40) e `activity` (sopra: senza, le corse; `total`
+e `cities` contano quell'attività soltanto). Risponde `{total, cities,
+routes}`: quanti percorsi ha il catalogo in tutto, in quante città, e i
+percorsi della
 pagina nello stesso corpo di `/recommended-routes` (con `away_m` dal
 punto). L'ordine è **città per città dalla più vicina** al punto (una
 città sta dove sta la sua partenza più vicina), e dentro la città prima

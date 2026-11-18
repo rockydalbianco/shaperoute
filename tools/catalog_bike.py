@@ -471,6 +471,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             mirror=args.overpass_url,
             extract=args.extract,
         )
+        # This process's own peak, without osmium's (a child's): bytes on
+        # macOS, kilobytes on Linux.
+        import resource
+
+        peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        mb = peak // (1 << 20 if sys.platform == "darwin" else 1 << 10)
+        print(f"peak memory of the planner itself: {mb} MB")
         print(f"{planned} bike cases planned")
     runs = cs.read_runs(args.log)
     if args.page:

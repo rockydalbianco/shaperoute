@@ -558,10 +558,105 @@ lasciando le righe d'indice.
 - ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Proposta
 - ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende · 2026-11-12 · Accettata
 - ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono · 2026-11-11 · Attiva
+- ADR-0387 — Il «+» del Feed: un'attività aggiunta da lì parte con «Everyone», eccezione ad ADR-0304; il foglio «Add activity» con solo «From a file» · 2026-11-12 · Attiva
 - ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo da due campi nel JSON delle statistiche, solo per il volo, `GET /me/flight-bests`, il calendario filtrato sui voli, la precisione del GPS · 2026-11-12 · Attiva
 - ADR-0352, precisazione — «Share live at start»: il link dal vivo a fine conto alla rovescia di un volo, se il pilota lo ha acceso; resta com'era l'ultima volta, solo il link · 2026-11-12 · Attiva
+- ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job
+
+**Stato**: Attiva · 2026-11-12 · TASK-413 B e C (#1280, `335f75f5`),
+correzione della A3 (#1266, `b079f067`), accensione (#1296, `ba569576`).
+Le scelte di prodotto sono dell'utente (testi «Sì, vanno bene», «Dentro le
+ciaspole», «Sì, accendi»); le altre sono **decise dall'agente su delega
+dell'utente**, con la lista dei file approvata dal Coordinatore.
+
+1. **`isPlacedFree`** (`src/snow/snow.ts`) vale per l'acqua e per la neve,
+   e sta dove la neve fa come l'acqua:
+   - pezzi a penna alzata, senza interruttore della penna;
+   - nessun «Move» del punto di partenza;
+   - nessuna indicazione, né sul telefono né sull'orologio.
+
+   `isOnWater` non si allarga: gli esempi, i posti e gli avvisi dell'acqua
+   restano suoi. Un test dice che per ogni attività tranne le ciaspole
+   `isPlacedFree` vale quanto `isOnWater`. Il predicato della sola neve è
+   `isSnowshoeRoute`, per non confonderlo con `activities/snow.ts`
+   `isOnSnow`, che dice una giornata registrata senza forma.
+2. **Nessun disegno a mano sulla neve**: il motore lo rifiuta
+   (`ON_SNOW_SHAPES_ONLY`). `sportDraw.drawsByHand` decide insieme
+   «Freehand» in «Draw» ed «Edit the drawing» sotto il percorso. Lo ha
+   trovato il controllo al simulatore.
+3. **Nessun tempo sotto la distanza** (`timeAt` assente): il passo di chi
+   cammina, sulla neve, prometterebbe meno tempo di quello reale.
+4. **«Record your day» dentro le ciaspole** (parte C, «Dentro le
+   ciaspole», contro una riga «Snowshoe day» a sé):
+   - il bottone in alto di «Draw» è «Record your day» ❄️, al posto di
+     «Snowshoe without a route»;
+   - l'uscita si salva come `snowshoeing`: niente attività nuova, niente
+     migrazione, niente passo sul server;
+   - alla fine c'è «Your day» con i numeri del fondo (`SnowFinishCard`) e
+     la riga «White: where you walked.».
+5. **L'avviso valanghe** (`snow/safetyNotice.ts`, file `snow-notice.json`)
+   compare al primo «Start» sulla neve: una forma, «Record your day» o un
+   disegno del Feed. In `App.tsx` lo sceglie `noticeOf(activity)`, insieme
+   a quelli della canoa e del nuoto.
+6. **Il conteggio degli edifici passa anche dai job** (#1266).
+   `jobs._ReportingSnow` non aveva `buildings`, e su `/route-jobs` il
+   motore non contava mai: è quello che chiedono l'app e i processi caldi.
+   Ora lo passa alla sorgente, o dà None se la sorgente non sa contare. Un
+   test chiede una città via `/route-jobs`. Al passo 12 (2026-11-12):
+   - Milano: 16170 edifici, rifiutata in circa 1,1 s;
+   - Trento: 8091 edifici, rifiutata in 0,65–1,1 s.
+7. **Privacy**: il server prende le quote da Amazon Web Services. La riga
+   è nella #1281, in cinque lingue, col sì dell'utente.
+
+**Conseguenze**: un altro sport piazzato libero userà `isPlacedFree` e
+`drawsByHand`, invece di nuovi `isOnWater` sparsi. Il criterio B del task
+(l'uscita va in Salute) si chiude dopo la prova sul telefono con l'OTA.
+
+## ADR-0387 — Il «+» del Feed: un'attività aggiunta da lì parte con «Everyone», eccezione ad ADR-0304
+
+**Stato**: Attiva · 2026-11-12 · TASK-476 (#1284 in `main`, `bf049887`).
+Il «+», il suo posto, la sua sola voce e «Everyone» sono **scelte
+dell'utente**; il modo è deciso dall'agente su delega dell'utente, numero
+dal Coordinatore.
+
+**Contesto**: l'utente ha chiesto nel Feed, che è la home, «un tasto +
+per poter caricare un'attività manualmente da fuori o dall'app o da
+un'altra app». L'import da file c'era già, in «My activities» (TASK-312
+B, ADR-0272), e una corsa importata partiva sempre «Only me»: aggiunta
+dal Feed, nel Feed non sarebbe comparsa. ADR-0304 dice che nessuno è
+pubblico senza averlo scelto, e la privacy lo prometteva.
+
+**Decisione**:
+- **Il «+» a destra delle schede del Feed**, solo con un account e in una
+  build col selettore di file; apre il foglio «Add activity» con **solo
+  «From a file»** (scelta dell'utente: «Solo From a file»; le altre voci
+  quando sono pronte, senza «Soon»). Il foglio riusa «Add past activity»
+  con due props (`opened`, `onDone`), senza toccare «My activities».
+- **Da lì parte «Everyone»** (l'utente: «Sì, Everyone», poi al
+  Coordinatore «Everyone + privacy»): `imported.visibility` facoltativo in
+  `RunEnd`. «Everyone» si vede scelto, la frase «Every member sees it in
+  your profile.» sta anche sopra «Save», e si cambia prima di salvare. In
+  «My activities» resta «Only me».
+- **La privacy lo dice prima che esca**: nelle cinque lingue (privacy e
+  aiuto) e sulle cinque pagine del sito, testo approvato dall'utente
+  («Approvo il testo»), data 12 novembre 2026; campo e frase entrati
+  insieme.
+
+**Alternative scartate**: «Only me» con il selettore ben in vista sopra
+«Save» (proposta del Coordinatore, non scelta dall'utente); «Record now»
+o l'inserimento a mano nella prima versione (l'utente ha scelto il solo
+file).
+
+**Conseguenze**: un GPX caricato dal Feed spesso parte dalla porta di
+casa: la frase sopra «Save» e la privacy lo dicono, il resto delle regole
+di ADR-0304 non cambia. Esce col prossimo OTA, poi la copia del sito (sì
+dell'utente al Coordinatore). Proposte per dopo nel task file: «Photos
+only» (TASK-312 C), «Apri in MuW» da altre app, Apple Salute, inserimento
+a mano, collegamenti diretti.
 
 ## ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo, i voli del mese, pronto al decollo
 
@@ -1227,13 +1322,36 @@ dall'agente su delega dell'utente):
   (`drift`); oggi solo «Child's pose», che usciva dal bordo di un
   telefono da 390 pt.
 
+**Decisione** (parte D, «Morning stretch», in `main` con la #1300,
+`749a5cc7`, 2026-11-12; la voce, la notifica 5 minuti dopo la sveglia,
+i giorni e le durate sono scelte dell'utente, testi e schermate col suo
+sì; il modo deciso dall'agente su delega dell'utente):
+- **L'ora della sveglia la scrive l'utente** (iOS non lascia leggere le
+  sveglie dell'Orologio), con «−» e «+», senza tastiera; l'impostazione
+  resta sul telefono (`morning-stretch.json`), spenta all'inizio.
+- **Notifiche locali settimanali con un nome proprio**,
+  `morning-stretch-<giorno>`: a ogni cambio si tolgono solo quelle con
+  questo inizio e si rimettono, mai `cancelAll`, così il promemoria del
+  piano (`muw-plan-day-…`) e la pausa della palestra restano. Il testo si
+  scrive quando la notifica è programmata: si rimettono all'apertura
+  dell'app e a ogni cambio di lingua.
+- **Il tocco ha un ascoltatore suo** (`onMorningTapped`), non quello
+  delle push, che apre solo con un account e attraverso le porte di
+  «Profile». La notifica che ha aperto l'app si legge senza cancellarla
+  (la cancella l'ascoltatore delle push, che parte dopo); quella
+  settimanale torna con lo stesso nome e si distingue dalla data.
+- **Sopra l'app, mai durante una corsa** (`MorningStretchLayer`, una riga
+  in `App.tsx`): la schermata dello stretching usa lo stesso «schermo
+  acceso» della corsa e lo spegnerebbe all'uscita.
+- Scartato: passare da `notificationTap.ts` e `openTarget.ts`, che
+  avrebbe toccato le porte di «Profile» per una cosa che non è un
+  profilo né un disegno.
+
 **Le parti dopo** (ciascuna con la sua PR, i testi col sì dell'utente):
-C, lo stretching in palestra (dopo TASK-461 A2 e TASK-465, col
-turno su `src/gym`); D, «Morning stretch» con l'orario scritto dall'utente
-e una notifica locale (iOS non lascia leggere le sveglie dell'Orologio;
-la prossima sveglia di Android è nativa e va in una build); E, le routine
-dell'utente pubblicate nel Feed con «Do this routine» (server prima,
-segnalazione e blocco anche lì).
+C, lo stretching in palestra (col turno su `src/gym`; lo stretching come
+sport è di TASK-475, ADR-0386); la prossima sveglia letta su Android,
+nativa, in una build; E, le routine dell'utente pubblicate nel Feed con
+«Do this routine» (server prima, segnalazione e blocco anche lì).
 
 **Alternative scartate**: una libreria di disegno (svg, Lottie) per la
 figura, una dipendenza e un'impronta nativa nuove per poco; il respiro

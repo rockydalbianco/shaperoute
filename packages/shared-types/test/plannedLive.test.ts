@@ -3,10 +3,13 @@ import { test } from "node:test";
 
 import page from "../fixtures/lives-page.json" with { type: "json" };
 import item from "../fixtures/planned-live.json" with { type: "json" };
+import push from "../fixtures/planned-live-push-data.json" with { type: "json" };
 import request from "../fixtures/planned-live-request.json" with { type: "json" };
 import {
   type LiveItem,
   type LivesPage,
+  PLANNED_LIVE_PUSH_KIND,
+  type PlannedLivePushData,
   PLANNED_LIVE_TITLE_MAX,
   type PlannedLiveRequest,
   RUN_ACTIVITIES,
@@ -40,4 +43,11 @@ test("the example row puts the lives going on first", () => {
   for (const l of body.lives) {
     assert.equal(l.share_id !== null, ["live", "paused", "finished"].includes(l.state));
   }
+});
+
+test("the push opens the live view of the planned live that started", () => {
+  const data = push as PlannedLivePushData;
+  assert.equal(data.kind, PLANNED_LIVE_PUSH_KIND);
+  assert.equal(data.planned_live_id, (item as LiveItem).planned_live_id);
+  assert.match(data.share_id, /^[0-9a-f-]{36}$/);
 });

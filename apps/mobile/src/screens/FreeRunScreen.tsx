@@ -7,6 +7,7 @@ import { FlightFinishCard } from "../air/FlightFinishCard";
 import { FlightLive } from "../air/FlightLive";
 import { useFlightNotice } from "../air/flightNotice";
 import { useStartLiveAtStart } from "../air/liveAtStart";
+import { useClimbNotice } from "../mountain/climbNotice";
 import type { FreeRun } from "../navigation/freeRun";
 import { freeRunActivity } from "../navigation/freeSport";
 import { t } from "../i18n";
@@ -149,6 +150,8 @@ export function FreeRunCard({
   useFlightNotice(isFlight(sport));
   // «Share live at start»: the link at the end of the countdown (part R5b).
   useStartLiveAtStart(isFlight(sport));
+  // Before the first day of mountaineering, its own (TASK-463 part B).
+  useClimbNotice(sport === "alpinism");
   const card = (
     <RunCard
       track={track}

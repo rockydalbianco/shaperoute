@@ -28,7 +28,6 @@ from route_engine.track_score import TrackPoint
 from route_engine.walking import API_ACTIVITIES, API_DISTANCE_LIMITS_M, engine_activity
 from test_cycling import RESULT, TOWN, Network, finished, loading
 from test_game_rules import Runner
-from test_sport_registry_api import in_the_contract
 
 from shaperoute_api import prefetch_zones
 from shaperoute_api.activities import RunActivity
@@ -95,8 +94,7 @@ def test_inline_skating_is_an_activity_of_the_api_5_to_30_km() -> None:
     assert contract["activities"] == list(API_ACTIVITIES)
     assert contract["distance_limits_m"][SKATE] == [5_000, 30_000]
     run_activities = json.loads((CONTRACT / "run-activities.json").read_text())
-    # But a day of alpinism, on the server before the contract (TASK-463).
-    assert run_activities["run_activities"] == in_the_contract(get_args(RunActivity))
+    assert run_activities["run_activities"] == list(get_args(RunActivity))
 
 
 def test_the_request_of_shared_types_is_one() -> None:

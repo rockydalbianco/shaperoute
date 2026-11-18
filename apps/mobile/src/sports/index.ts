@@ -1,5 +1,6 @@
 import type { Activity, RunActivity } from "@shaperoute/shared-types";
 
+import { ALPINISM } from "./alpinism";
 import type { SportProfile } from "./base";
 import { CYCLING } from "./cycling";
 import { GRAVEL_BIKING } from "./gravel_biking";
@@ -40,6 +41,7 @@ export const SPORT_PROFILES: readonly SportProfile[] = [
   XC_SKIING,
   SKI_TOURING,
   PARAGLIDING,
+  ALPINISM,
   GYM,
 ];
 

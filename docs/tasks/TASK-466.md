@@ -1,7 +1,8 @@
 # TASK-466 — Lo stretching nuovo: animazioni, routine, palestra, mattino, routine pubblicate
 
-**Stato**: In corso · A in produzione (#1181, OTA 12); B in `main`
-(#1216, `05f5a725`, 2026-11-12; esce col prossimo OTA); prossima D
+**Stato**: In corso · A in produzione (#1181, OTA 12); B (#1216,
+`05f5a725`) e D (#1300, `749a5cc7`) in `main` dal 2026-11-12, escono col
+primo OTA dopo; restano C ed E
 **Fase**: 4 · **Branch**: `feat/TASK-466-a-stretch-motion` (A); B, C, D, E
 ciascuna col suo branch e la sua PR
 **ADR**: ADR-0378 (una per tutte le parti; la voce va nella PR di soli
@@ -349,11 +350,19 @@ La prima sessione si è archiviata qui; chi riprende parte da questo file.
   all'uscita, come fa `App.tsx`: è alla seconda apertura che si vede un
   difetto come quello del punto 4. Con `exercises` non dati la schermata
   apre già la scelta: basta `<StretchScreen onLeave={…} routine="morning" />`.
-- **D**: scelte dell'utente nella sezione D; parte da `main` dopo il
-  merge della B, col turno del Coordinatore su `App.tsx`,
-  `SettingsPage.tsx`, `notifications/`.
-- **C**: dopo TASK-461 A2 e TASK-465, turno su `src/gym`.
+- **D**: in `main` (#1300, `749a5cc7`, 2026-11-12), testi e schermate
+  approvati dall'utente («Sì, approvo» due volte); esce col primo OTA
+  dopo. **Da provare sul telefono dopo l'OTA** (in Expo Go non si può):
+  la notifica 5 minuti dopo l'ora impostata, anche ad app chiusa, e il
+  tocco che apre «Morning» della durata scelta; che spegnere la voce non
+  tolga il promemoria del piano (TASK-461 B2b).
+- **C**: lo stretching in palestra, col turno del Coordinatore su
+  `src/gym`. Prima va visto dove finisce TASK-475 (lo stretching come
+  sport, ADR-0386): ogni file di `src/stretch/**` che chiede va
+  concordato con questo task.
 - **E**: da proporre all'utente (server prima, privacy).
+- La lettura della prossima sveglia su Android (nativa, in una build)
+  non ha ancora una parte sua.
 
 ## Esito
 

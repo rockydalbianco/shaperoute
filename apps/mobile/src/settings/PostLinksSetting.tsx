@@ -5,6 +5,7 @@ import { accountProblem, sessionEnded } from "../account/messages";
 import type { Account } from "../account/useAccount";
 import { apiUrl } from "../api/apiUrl";
 import { fetchPostLinks, savePostLinks } from "../api/postLinks";
+import { forgetOwnPostLinks, ownPostLinksAre } from "../feed/postLink";
 import { t, tLater } from "../i18n";
 import { color, fontSize, radius, space } from "../theme/tokens";
 import { contactStyles } from "./ContactField";
@@ -46,7 +47,9 @@ export function PostLinksSetting({ account, api = { baseUrl: apiUrl() } }: Props
       }
       if (outcome.kind === "ok") {
         setAnswer({ asked, on: outcome.value.post_links });
+        ownPostLinksAre(token, outcome.value.post_links);
       } else if (sessionEnded(outcome)) {
+        forgetOwnPostLinks();
         onSessionEnded(token);
       }
     });
@@ -70,7 +73,10 @@ export function PostLinksSetting({ account, api = { baseUrl: apiUrl() } }: Props
     setBusy(false);
     if (outcome.kind === "ok") {
       setAnswer({ asked, on: outcome.value.post_links });
+      // The posts «Feed» keeps lose «Share link» at once (`usePostLink`).
+      ownPostLinksAre(token, outcome.value.post_links);
     } else if (sessionEnded(outcome)) {
+      forgetOwnPostLinks();
       onSessionEnded(token);
     } else {
       setProblem(accountProblem(outcome));

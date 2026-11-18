@@ -1884,7 +1884,10 @@ l'app, come «Find friends»:
   telefono l'indirizzo `getmuw.app/p/#<id>` e nient'altro, senza parole
   nostre (`feed/postLink.ts`); chiuso quello, si chiude anche il foglietto.
   Un post «Followers» o «Only me», o di un autore con l'interruttore
-  spento, non ha la voce, nemmeno per l'autore.
+  spento, non ha la voce, nemmeno per l'autore. Spento l'interruttore, sui
+  propri post già a schermo la voce sparisce subito, senza aspettare che il
+  Feed sia riletto (`usePostLink`: l'ultimo stato dell'interruttore letto
+  o girato in questa sessione); riacceso, torna alla prossima lettura.
 - **«Links to my posts»** in «Settings», sotto «Show VO₂ max on my
   profile» (`settings/PostLinksSetting.tsx`): un interruttore tenuto
   dall'API (`GET`/`PUT /me/post-links`), acceso all'inizio, con sotto la

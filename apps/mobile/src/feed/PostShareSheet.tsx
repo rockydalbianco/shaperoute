@@ -29,6 +29,13 @@ export function usePostSendable(): boolean {
   return account.state.status === "signedIn" && unread !== null;
 }
 
+/** The session that reads the post, for what it knows of its own switch
+ * (`usePostLink`); null without an account. */
+export function usePostReader(): string | null {
+  const { state } = useMessagesDoor().account;
+  return state.status === "signedIn" ? state.session.token : null;
+}
+
 type Props = {
   visible: boolean;
   /** The post «Send to a friend» sends, as a pointer. */

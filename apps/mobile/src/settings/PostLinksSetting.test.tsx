@@ -1,9 +1,16 @@
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { Session } from "@shaperoute/shared-types";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import {
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react-native";
 
 import { answers, apiError } from "../account/testing";
 import { isPostLinksSwitch } from "../api/postLinks";
+import { forgetOwnPostLinks, usePostLink } from "../feed/postLink";
 import { POST_LINKS_NOTE, PostLinksSetting } from "./PostLinksSetting";
 
 // «Links to my posts» in «Settings» (TASK-455 part E, ADR-0382): on from
@@ -27,6 +34,8 @@ async function show(fetchFn: jest.Mock, baseUrl: string | null = URL) {
   );
   return sessionEnded;
 }
+
+afterEach(() => forgetOwnPostLinks());
 
 function calls(fetchFn: jest.Mock) {
   return fetchFn.mock.calls.map(([url, init]) => [url, init.method]);
@@ -106,4 +115,20 @@ test("an answer that is not the switch is not taken for one", () => {
   expect(isPostLinksSwitch({ post_links: "yes" })).toBe(false);
   expect(isPostLinksSwitch({})).toBe(false);
   expect(isPostLinksSwitch(null)).toBe(false);
+});
+
+test("turned off, one's own posts already on the screen lose «Share link» at once", async () => {
+  const post = { id: "0b7e5a94-6c1d-4f38-8e2a-9d4c1f6b3a57", linkable: true };
+  const link = await renderHook(() => usePostLink(post, true, TOKEN));
+  await show(
+    answers(
+      { status: 200, body: { post_links: true } },
+      { status: 200, body: { post_links: false } },
+    ),
+  );
+  await screen.findByRole("switch");
+  expect(link.result.current).not.toBeNull();
+  await fireEvent.press(screen.getByRole("switch"));
+  await waitFor(() => expect(checked()).toBe(false));
+  expect(link.result.current).toBeNull();
 });

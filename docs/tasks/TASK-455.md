@@ -537,3 +537,16 @@ Le altre parti scrivono i loro criteri quando partono.
   La pagina (parte D, in `main`) va sul sito con la copia, che il
   Coordinatore chiede all'utente; la parte E (#1309, CI verde) aspetta il
   simulatore e le schermate.
+- 2026-11-18: **prova al simulatore della parte E** (turno dato
+  dall'utente: «simulatore tuo, procedi»; API e database usa e getta, niente
+  sul server). Visto: «Links to my posts» in «Settings» acceso e spento con
+  la spiegazione, in inglese e in italiano; «Share link» sul proprio post
+  (tre voci) e su un post «Everyone» altrui (due voci, senza poster); un
+  post «Followers» con la sola «Send to a friend»; il foglio del telefono
+  con `getmuw.app`, e «Copy» mette negli appunti
+  `https://getmuw.app/p/#<id>`; spento l'interruttore l'API risponde 404
+  al link del proprio post e 200 a quello altrui. **Un difetto trovato e
+  corretto**: spento l'interruttore, «Share link» restava sui propri post
+  già letti dal Feed fino alla rilettura; ora sparisce subito
+  (`usePostLink` in `feed/postLink.ts`, quattro test nuovi). Otto schermate
+  in `out/TASK-455/shots-e/`; in attesa del sì dell'utente.

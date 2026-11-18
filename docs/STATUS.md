@@ -129,6 +129,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sul server col passo 8 del 2026-11-11; l'app col decimo OTA. Prima di B,
   la città lenta (76 s per un rifiuto). File: — · `tasks/TASK-413.md`
   **A3** in `main` (#1238, `8f5d0516`, 2026-11-12): una città è detta subito «no open snow»; sul server col passo 11. Poi B.
+  **B, C e accensione** in `main` (#1280, #1266, #1281, #1296 `ba569576`, 2026-11-12): le ciaspole accese con «Record your day»; A3 sul server col passo 12. Restano l'OTA e la prova in Salute sul telefono.
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
   **2026-11-11**: B in `main` (#1160) e nella preview; in produzione con
@@ -237,11 +238,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   rimando (ADR-0382). Resta la prova dell'utente sul telefono. Prossima C
   (server: link e interruttore), poi D sito, E app. File: — · `tasks/TASK-455.md`
 
-- **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (#1181,
-  OTA 12); B (dieci esercizi, routine Morning / After run / After gym da
-  3, 5, 10 min, e la gamba staccata alla seconda apertura corretta) in
-  `main` (#1216), col prossimo OTA. Poi D (mattino, lista al Coordinatore
-  prima del codice), C (palestra), E. File: — · `tasks/TASK-466.md`
+- **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (OTA
+  12); B (dieci esercizi, tre routine da 3, 5, 10 min, la gamba staccata
+  corretta, #1216) e D («Morning stretch» in Impostazioni, #1300) in
+  `main`, col primo OTA dopo; poi la prova sul telefono (la notifica
+  vera). Restano C (palestra) ed E. File: — · `tasks/TASK-466.md`
 
 - **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con

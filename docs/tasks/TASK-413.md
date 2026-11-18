@@ -10,8 +10,9 @@ A3 (la città detta subito) in `main` con la #1238 (`8f5d0516`, unita
 dall'utente il 2026-11-12), sul server col passo 11 (controllo in
 `out/TASK-413/SERVER-A3.md`), corretta dalla #1266 (`b079f067`: il job
 non passava il conteggio) col passo 12; B e C in `main` con la #1280
-(`335f75f5`, `ready: false`); privacy delle quote nella #1281; accensione
-con `feat/TASK-413-snowshoes-on`
+(`335f75f5`); privacy delle quote nella #1281 (`34fed156`, OTA 16);
+accese con la #1296 (`ba569576`). Restano l'OTA che le porta in produzione
+e la prova in Salute sul telefono
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -423,7 +424,9 @@ Tutte come la proposta, tranne la terza:
       Trento 1,1 s e 0,65 s, tutte «no open snow»; 16170 e 8091 edifici
       contati dalla neve in cache; `out/coordinatore/prova-passo12.out`.)
 - [ ] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
-      e i testi sono in cinque lingue.
+      e i testi sono in cinque lingue. (Nel codice: #1280 e l'accensione
+      #1296 in `main`, schermate in `out/TASK-413/sim/`. Manca la **prova
+      sul telefono dopo l'OTA**: un'uscita salvata che arriva in Salute.)
 
 ## File toccati
 

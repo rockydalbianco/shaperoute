@@ -7,6 +7,8 @@ import type {
   GymProgram,
 } from "@shaperoute/shared-types";
 
+import { isTargetDay, targetDayInWeek } from "./targetWeeks";
+
 /**
  * The weeks of a plan made with the guide (docs/sports/gym.md «Le schede
  * guidate»): the first week is written, the others are worked out from it
@@ -83,6 +85,36 @@ function round(kg: number): number {
   return Math.round(kg * 100) / 100;
 }
 
+/** A held exercise grows this many seconds a week. */
+export const HOLD_STEP_S = 5;
+
+/**
+ * An exercise without kg in «more reps each week» (TASK-461 A2, the
+ * user's yes of 2026-11-12, for plans already kept too): one rep more each
+ * week, 5 s more if held; the last week of a cycle of 3 or more is lighter,
+ * a set less at the week before's values; the next cycle goes on from where
+ * the last one got to («Un ciclo di 4 settimane, poi riparte da dove sei
+ * arrivato»).
+ */
+function withoutLoadInWeek(
+  item: GymPlanItem,
+  weeks: number,
+  week: number,
+  cycle: number,
+): GymPlanItem {
+  const lighter = weeks >= 3 && week === weeks;
+  const perCycle = weeks >= 3 ? weeks - 1 : weeks;
+  const steps = cycle * perCycle + (lighter ? week - 2 : week - 1);
+  return {
+    ...item,
+    ...(lighter ? { sets: Math.max(1, item.sets - 1) } : {}),
+    ...(item.reps === undefined ? {} : { reps: item.reps + steps }),
+    ...(item.kind !== "timed" || item.duration_s === undefined
+      ? {}
+      : { duration_s: item.duration_s + HOLD_STEP_S * steps }),
+  };
+}
+
 /** An exercise of the first week, as it is in `week` (1-based) of the
  * `cycle`-th cycle. */
 export function itemInWeek(
@@ -103,6 +135,9 @@ export function itemInWeek(
       }
       return { ...item, ...heavier(cycle + w) };
     case "reps": {
+      if (item.load_kg === undefined) {
+        return withoutLoadInWeek(item, weeks, week, cycle);
+      }
       const step = cycle * weeks + w;
       return {
         ...item,
@@ -194,24 +229,35 @@ export function sessionsOfWeek(
       ),
     }));
   }
-  return program.sessions.map((session) => ({
-    ...session,
-    items: session.items.map((item) =>
-      itemInWeek(item, program.mode, program.weeks, program.step_kg, week, cycle),
-    ),
-    ...(session.run === undefined
-      ? {}
-      : {
-          run: runInWeek(
-            session.run,
-            program.mode,
-            program.weeks,
-            week,
-            cycle,
-            program.runner !== undefined,
-          ),
-        }),
-  }));
+  const target = program.target;
+  return program.sessions.map((session) =>
+    // A day of the target's sport climbs the ladder to it (TASK-461 B and
+    // C, ADR-0371); the others change as the mode says.
+    target !== undefined && isTargetDay(session, target)
+      ? targetDayInWeek(session, program, week)
+      : weekOf(session),
+  );
+
+  function weekOf(session: GymPlanSession): GymPlanSession {
+    return {
+      ...session,
+      items: session.items.map((item) =>
+        itemInWeek(item, program.mode, program.weeks, program.step_kg, week, cycle),
+      ),
+      ...(session.run === undefined
+        ? {}
+        : {
+            run: runInWeek(
+              session.run,
+              program.mode,
+              program.weeks,
+              week,
+              cycle,
+              program.runner !== undefined,
+            ),
+          }),
+    };
+  }
 }
 
 /** The workout of `date`, with the week it is in; null on a day without. */

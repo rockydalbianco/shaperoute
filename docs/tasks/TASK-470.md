@@ -1,6 +1,6 @@
 # TASK-470 — Il controllo della navigazione
 
-**Stato**: In corso — A e B in produzione (OTA 13); E, C, D in PR
+**Stato**: Done — tutto in produzione: A e B con l'OTA 13, E, C, D con l'OTA 14 (2026-11-12 15:15Z, `be21e7d8`)
 **Fase**: 5 · **Branch**: `docs/TASK-470-part-0`, poi una per fetta
 (`fix/TASK-470-…`) · **ADR**: ADR-0384 (il gesto dal bordo, fetta E)
 
@@ -141,9 +141,9 @@ Coordinatore sulla lista dei file.
 | Parte 0 | #1232 | in `main` |
 | A — schede (1, 5, base del 2) | #1233 | in produzione: OTA 13, 2026-11-12 13:28Z da `100624e2` (iOS gruppo `86d0f643`, Android `5155f4d2`) |
 | B — tasto indietro di Android (2, 3, 4) | #1237 | in produzione con l'OTA 13 |
-| E — gesto dal bordo su iOS (11, ADR-0384) | #1243 | pronta; video visto dall'utente, sì del 2026-11-12 |
-| C — fogli che perdevano i tocchi (6) | #1250 | pronta |
-| D — pagine finite sotto altre (7–10) | #1252 | trattenuta fino alla prova al simulatore |
+| E — gesto dal bordo su iOS (11, ADR-0384) | #1243 | in produzione con l'OTA 14 (`main` `b79556c3`); video visto dall'utente, sì del 2026-11-12 |
+| C — fogli che perdevano i tocchi (6) | #1250 | in produzione con l'OTA 14 (`main` `89b25f99`) |
+| D — pagine finite sotto altre (7–10) | #1252 | in produzione con l'OTA 14 (`main` `20683c14`); provata al simulatore il 2026-11-12 |
 
 **Al simulatore il 2026-11-12** (`out/TASK-470/`, fuori dal repository):
 - 6: dalla chiusura di un foglio al `Modal` tolto 573 ms; un tocco su
@@ -165,10 +165,12 @@ nativo che ha la precedenza).
 
 - [x] Parte 0: ogni difetto con schermata, piattaforma, come si riproduce e
       file dove nasce.
-- [ ] Ogni difetto corretto ha un test deterministico; test dei file
+- [x] Ogni difetto corretto ha un test deterministico; test dei file
       toccati e `tsc` verdi in locale, CI verde.
-- [ ] 1, 2 e 6 guardati al simulatore (6 e 11 fatti il 2026-11-12; 7–10
-      prima del merge della D).
+- [x] Guardati al simulatore il 2026-11-12: 6 (573 ms misurati), 11 (sopra
+      l'app sì, dentro una scheda no), 7–10 prima del merge della D. 1 e 2
+      non riproducibili al simulatore iOS (1 nasce dallo scatto di Android,
+      2 è il tasto indietro di Android): coperti dai test.
 
 ## File toccati
 
@@ -185,4 +187,15 @@ Poi, per fetta, quelli elencati sopra.
 
 ## Esito
 
-*(a fine task)*
+Tutti i difetti 1–11 sono corretti, ognuno con un test: tocco su una
+scheda durante lo swipe, tasto indietro di Android su ogni pagina sopra
+l'app (pila `ui/backLayers.ts`), liste nascoste del Feed, fogli che
+perdevano i tocchi per 573 ms (ora ~270 ms), profilo sopra il post (le
+pagine del livello disegnate dentro il `Modal` del post), «Play» da una
+notifica sopra le pagine aperte, la mappa da «Play» e dai messaggi della
+modalità sci, il giorno di sci dopo «Map», e il gesto dal bordo su iOS
+(ADR-0384, scelta dell'utente). Il gesto non c'è sulle pagine dentro una
+scheda: il seguito possibile è scritto qui sopra. Visto per caso e
+passato al Coordinatore, fuori task: nella scheda del Feed di un post di
+corsa i numeri sono minuscoli sotto le etichette. Video in
+`out/TASK-470/` (fuori dal repository).

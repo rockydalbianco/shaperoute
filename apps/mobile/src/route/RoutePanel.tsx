@@ -26,7 +26,7 @@ import { StepTitle } from "../screens/StepTitle";
 import { profileOf } from "../sports";
 import { ON_FOOT_LETTERS, ON_FOOT_PARTS } from "../sports/running";
 import { SwimResult } from "../swim/SwimResult";
-import { isOnWater } from "../swim/water";
+import { isSnowshoeRoute, isPlacedFree } from "../snow/snow";
 import { milesAtLeast, tenthsToM, unitsNumber } from "../units/distanceInput";
 import { distanceLabel, inUnits, METRES_PER_MILE } from "../units/format";
 import { appUnits, type Units } from "../units/units";
@@ -57,7 +57,7 @@ import { type Pace, runTimeText } from "./runTime";
 import { ShapeGrid } from "./ShapeGrid";
 import { ShapePreview } from "./ShapePreview";
 import { shapeList, shapeName } from "./shapeWords";
-import { shapeOfSport } from "./sportDraw";
+import { drawsByHand, shapeOfSport } from "./sportDraw";
 import type { ExportState } from "./useGpxExport";
 import type { ImageState } from "./useImageOutline";
 import type { AnyRouteRequest, RouteProblem, RouteState } from "./useRouteRequest";
@@ -199,7 +199,8 @@ export function RouteChoice({
   const shownKind = left(kind) ? "shape" : kind;
   const kinds = DRAW_KINDS.filter((option) => !left(option.value));
   const shownShape = shapeOfSport(shape, activity);
-  const freehand = shapes === undefined ? onFreehand : undefined;
+  // No drawing by hand where the sport takes none (sportDraw.drawsByHand).
+  const freehand = drawsByHand(activity) ? onFreehand : undefined;
   return (
     <View style={styles.panel}>
       {/* The steps of «Draw» (TASK-361): «1 START» is the start's card. */}
@@ -230,7 +231,7 @@ export function RouteChoice({
           {shownShape !== null && distanceM !== null && (
             <ShapePreview shape={shownShape} distanceM={distanceM} />
           )}
-          {onPenUp && !isOnWater(activity) && offersPenUp(shownShape) && (
+          {onPenUp && !isPlacedFree(activity) && offersPenUp(shownShape) && (
             <PenSwitch
               label={t("Lift the pen between parts")}
               on={penUp}
@@ -505,7 +506,7 @@ export function RouteOutcome({
     case "done": {
       // Only with directions: a route traced without them has no turns. On
       // the water there are none to follow: the line is the way.
-      const startsHere = view.result.directions.length > 0 || onWater(view.request);
+      const startsHere = view.result.directions.length > 0 || placedFree(view.request);
       const startButton = (
         <Pressable
           style={[styles.draw, save !== undefined && styles.halfRow]}
@@ -834,10 +835,10 @@ function nameOf(request: AnyRouteRequest): string {
   return routeName(request);
 }
 
-/** A route on the water (TASK-191), a swim too (TASK-323): it follows no
- * road, and has no turns. */
-function onWater(request: AnyRouteRequest): boolean {
-  return isOnWater(request.activity);
+/** A route on the water (TASK-191), a swim too (TASK-323), or on the snow
+ * (TASK-413 B): it follows no road, and has no turns. */
+function placedFree(request: AnyRouteRequest): boolean {
+  return isPlacedFree(request.activity);
 }
 
 /** The line under the route's distance: what it is, what it runs on, and
@@ -845,12 +846,18 @@ function onWater(request: AnyRouteRequest): boolean {
 function targetLine(request: AnyRouteRequest, units: Units): string {
   if (units === "mi") {
     const miles = { name: nameOf(request), mi: unitsNumber(request.distance_m, "mi") };
-    return onWater(request)
+    if (isSnowshoeRoute(request.activity)) {
+      return t("{name} · on the snow · target {mi} mi", miles);
+    }
+    return placedFree(request)
       ? t("{name} · on the water · target {mi} mi", miles)
       : t("{name} · on roads · target {mi} mi", miles);
   }
   const values = { name: nameOf(request), km: request.distance_m / 1000 };
-  return onWater(request)
+  if (isSnowshoeRoute(request.activity)) {
+    return t("{name} · on the snow · target {km} km", values);
+  }
+  return placedFree(request)
     ? t("{name} · on the water · target {km} km", values)
     : t("{name} · on roads · target {km} km", values);
 }

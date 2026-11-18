@@ -29,7 +29,6 @@ from test_personal_bests import (
     saved,
     signed_up,
 )
-from test_sport_registry_api import in_the_contract
 
 from shaperoute_api.activities import RECORD_ACTIVITIES, RunActivity
 from shaperoute_api.activity_graphs import check_supported
@@ -64,9 +63,8 @@ def test_ski_touring_is_recorded_without_a_shape_after_the_snow() -> None:
     assert order.index(TOURING) == order.index("xc_skiing") + 1
     assert order.index("paragliding") == order.index(TOURING) + 1
     run_activities = json.loads((CONTRACT / "run-activities.json").read_text())
-    # But a day of alpinism, on the server before the contract (TASK-463).
-    assert run_activities["run_activities"] == in_the_contract(order)
-    assert run_activities["record_activities"] == in_the_contract(RECORD_ACTIVITIES)
+    assert run_activities["run_activities"] == order
+    assert run_activities["record_activities"] == list(RECORD_ACTIVITIES)
     # The contract of the routes keeps only what is drawn: no line there.
     contract = json.loads((CONTRACT / "contract.json").read_text())
     assert TOURING not in contract["activities"]

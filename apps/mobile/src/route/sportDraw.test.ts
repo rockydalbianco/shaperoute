@@ -5,7 +5,7 @@
  */
 import { ACTIVITIES, SHAPES } from "@shaperoute/shared-types";
 
-import { drawKindOf, figuresOf, shapeOfSport } from "./sportDraw";
+import { drawKindOf, drawsByHand, figuresOf, shapeOfSport } from "./sportDraw";
 
 test("on the water and swimming, as before the profiles said it", () => {
   for (const kind of ["shape", "word", "image"] as const) {
@@ -61,4 +61,18 @@ test("under the other routes as before: every shape, pictures but on the water",
   });
   expect(figuresOf("swimming").pictures).toBe(true);
   expect(figuresOf("cycling").editDrawing).toBe(true);
+});
+
+test("under a snowshoe route: every shape, no picture, no drawing by hand (TASK-413)", () => {
+  // The engine places only a shape of the catalogue on the snow, and
+  // refuses a drawing (ON_SNOW_SHAPES_ONLY).
+  expect(figuresOf("snowshoeing")).toEqual({
+    shapes: SHAPES,
+    pictures: false,
+    editDrawing: false,
+  });
+  expect(drawsByHand("snowshoeing")).toBe(false);
+  expect(drawsByHand("paddling")).toBe(true);
+  expect(drawsByHand("running")).toBe(true);
+  expect(drawsByHand("wheelchair")).toBe(false);
 });

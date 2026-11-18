@@ -606,9 +606,20 @@ il tratto sottile e `textFaint`; la foto del profilo attivo ha un bordo
 sottile del colore del testo. Niente giallo: è del percorso. Su «Messages»
 un numero rosso con le conversazioni nuove e le richieste; sul profilo
 quello delle richieste di follow. VoiceOver legge ogni scheda col suo nome
-(«Messages, 3 waiting») e quella sullo schermo come selezionata. La barra è
-quasi opaca (`background` al 95%): il blur vero chiede `expo-blur`, una
-build.
+(«Messages, 3 waiting») e quella sullo schermo come selezionata.
+
+**Il vetro della barra** (TASK-469 A1, ADR-0383, «Capsula»; prima era
+`background` al 95% attaccata in basso): la barra è una capsula di vetro
+che galleggia, staccata di `space.lg` dai lati e alzata sopra l'indicatore
+home (a 8 pt dal bordo dove non c'è). Il vetro è il fondo del tono velato
+all'88% (`glass` in `tokens.ts`, `src/ui/Glass.tsx`), con un filo di luce
+in cima, un bordo sottile e un'ombra morbida: senza blur si riconosce da
+questi, non dalla trasparenza, ed è il prezzo dei 4,5:1 sopra una foto
+bianca o nera. La capsula della scheda attiva è il testo al 12%; le icone
+spente sono `textMuted`. Con «Riduci trasparenza» la barra è `surface`
+opaca, con «Aumenta contrasto» opaca col bordo `borderStrong`. La fascia
+sotto la barra resta alta quanto prima: le pagine non ci passano sotto. Il
+vetro vero (`expo-glass-effect`) è la parte B, in una build dopo la 1.1.0.
 
 **Il movimento della barra** (TASK-388, ADR-0329): dietro la scheda attiva
 una capsula morbida (`surfaceRaised`) che scivola alla nuova con la molla
@@ -620,6 +631,25 @@ molla; quella che prende la scheda sale di 1,5 pt e passa dal contorno al
 pieno in dissolvenza. Una vibrazione leggera solo quando un tocco cambia scheda. Con
 «Riduci movimento» la capsula compare in dissolvenza dove va, le icone
 solo sfumano.
+
+**I segmenti che scivolano** (TASK-469 A2, `src/screens/Segmented.tsx`):
+la scelta fra due o tre (la partenza, forma o parola) è una pillola sola,
+`surfaceRaised` col bordo `borderStrong`, che scivola sotto la nuova con la
+stessa molla `glide` della barra e si ferma senza superarla; un tocco
+mentre viaggia la manda avanti da dov'è. Le parole stanno sopra e restano
+leggibili; quelle lunghe vanno a capo. Con «Riduci movimento» la pillola
+compare in dissolvenza dove va.
+
+**La pista di vetro** (TASK-469 A3): la pista dei segmenti è una capsula di
+vetro posata nella pagina, non sospesa: il fondo velato col filo di luce
+in cima e un bordo sottile, senza ombra portata (`segmentTrackFace`). La
+pillola esce dalla pista: una luce in cima e un'ombra corta, il bordo
+`borderStrong` resta (`segmentPillFace`). Chi passa un suo fondo (le
+schede del Feed, il pannello del percorso, Play su `surface`) lo tiene, e
+bordo e luce si aggiungono. Con «Riduci trasparenza» la pista è il fondo
+opaco col bordo `border`, con «Aumenta contrasto» col bordo
+`borderStrong`; la pillola resta piatta. Le schede di Play (`PlayTabs`)
+hanno lo stesso aspetto, con la loro molla e il loro tick.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
@@ -676,6 +706,17 @@ tags will show up here.».
 - **Il tocco sulla scheda già attiva** riporta la pagina in cima (Feed,
   Draw, Explore, Messages) o alla sua prima vista (il profilo).
 - Su Android il tasto indietro torna alla scheda di prima, poi esce.
+- **Indietro** (TASK-470): una pagina aperta sopra le schede (una
+  conversazione, la campanella, un profilo, un concorso, le pagine di
+  «Profile», «Play», una località o un giorno di sci, la mappa con la sua
+  «←») si chiude col tasto indietro di Android come con la sua «←», prima
+  che il tasto cambi scheda. Su iOS si chiude anche **dal bordo sinistro**
+  (ADR-0384): la pagina segue il dito e sotto si vede l'app un po' scurita;
+  lasciata oltre un terzo dello schermo, o con un colpo veloce, se ne va,
+  altrimenti torna. La tastiera si chiude quando il dito la prende. Con
+  «Riduci movimento» la pagina sfuma. Non sulle schede né sulle pagine dentro
+  una scheda (località e giorno di sci), sulla mappa, sui fogli e sulla
+  pagina di un post.
 - **«Messages»** è la lista delle conversazioni con «Message requests» in
   cima (TASK-319); una conversazione e le richieste si aprono sopra come
   prima, e «←» torna alla scheda. Si rilegge ogni volta che torna sullo
@@ -1418,6 +1459,20 @@ grande compare alla sua misura, senza crescere, qui e sul disegno aperto.
   your max heart rate to see your zones.». Una FC fuori dai limiti dice
   «Enter a heart rate between 100 and 230 bpm.» (a riposo 30 e 120) e non si
   tiene. Tutto resta sul telefono, in `heart.json`.
+  Sotto «Body», **«Morning stretch»** (🌅, TASK-466 parte D, ADR-0378), con
+  in fondo «Off» oppure l'ora della sveglia e la durata («7:00 · 5 min»). Un
+  tocco apre una pagina intera, «Back» in alto: «MuW can't read your phone's
+  alarm. Set here the time it rings: 5 minutes later a reminder opens your
+  Morning routine.», l'interruttore «Morning stretch» (spento all'inizio),
+  «Alarm time» con «−» e «+» per le ore e per i minuti (di 5 in 5, senza
+  tastiera), «Days» coi sette giorni (lunedì–venerdì all'inizio; l'ultimo
+  non si toglie), «Length» con «3 min», «5 min», «10 min». Accenderlo
+  chiede il permesso delle notifiche; negato, resta spento con «Notifications
+  are off for MuW on this phone. Allow them in Settings to turn this on.» e
+  «Open Settings». Nei giorni scelti, 5 minuti dopo quell'ora, il telefono
+  mostra «Morning stretch» / «5 minutes to wake up your body. Tap to
+  start.»: toccata, apre la routine «Morning» di quella durata, senza
+  chiedere «How long?»; non durante una corsa. Tutto resta sul telefono.
   **«Notifications»**: «Email
   notifications» e «Push notifications», due interruttori salvati
   nell'account (TASK-185, ADR-0206, sotto). **«Feedback»** (TASK-308,
@@ -3654,6 +3709,14 @@ cui tiene i numeri.
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra
   gialla del percorso fatto, «3.2 km to go» e «about 17 min».
+  **La scheda ripiegata** (TASK-472, scelta dell'utente del 2026-11-12;
+  codice in `screens/RunFoldedStrip.tsx`): correndo, in cima alla scheda
+  c'è una maniglia. Trascinata in giù (almeno 32 pt, più in verticale che
+  di lato), o la maniglia toccata, la scheda diventa una striscia: i tre
+  numeri su una riga e un «Pause» piccolo; la mappa prende il resto.
+  Trascinata in su, o toccata, torna intera. In pausa è sempre intera
+  («Stop», «Resume»); ripartiti torna piegata. Prima del primo fix, su
+  «Compass» e su «Data» niente maniglia.
 - **«Data»**: nessuna mappa. In alto quello che dice il banner (la svolta
   resta leggibile anche qui), poi i km in grande («2.34», «kilometres»),
   la barra del percorso, e sei riquadri: «Pace now», «Avg pace», «Time»,
@@ -3728,6 +3791,33 @@ cui tiene i numeri.
   orologio lo manderà (oggi nessuno segue piscina e palestra: vuoto).
   Ogni 15 s, subito a pausa e ripresa, `finished` quando lo schermo se ne
   va (fine, «Still training?» senza risposta).
+- **La live in chat** (TASK-468 parte B1, ADR-0381; testi approvati il
+  2026-11-12). Il foglio di «Share live» ha in più «Show my heart rate»
+  (un interruttore, **spento di partenza**, con «Off: nobody sees your heart
+  rate. On: they see it when a watch sends it.»: vale per chi guarda
+  dall'app; il link lo mostra come prima) e, sotto «Not now» · «Share
+  link», il pulsante largo «Send in MuW». «Send in MuW» fa la condivisione
+  **senza link** (`link: false`) e, sceso il foglio, apre «Choose who gets
+  your live»: chi si scrive, poi chi ci segue (una richiesta di messaggio
+  non porta allegati), con una spunta per persona, al più 20, e il
+  pulsante «Send ({count})» (`POST /me/live-shares/{id}/send`). **Mentre
+  condivide**, il tocco su «Sharing live» apre un menu: «Send in MuW»,
+  «Share link» (per una condivisione nata per la chat fa il link allora,
+  `POST …/link`), «Stop sharing» (poi la domanda di prima) e «Keep
+  sharing». **In chat** il messaggio ha la scheda: un pallino rosso e
+  «LIVE · {sport} · {distance}» mentre va; «Finished · {distance} ·
+  {time}» a fine attività; «Live ended» in grigio quando non c'è più. Nella
+  lista delle conversazioni «🔴 Live». Il tocco, finché la live si vede,
+  apre **la schermata dal vivo** (`src/liveShare/LiveViewScreen.tsx`): il
+  nome, la mappa col percorso fatto e la posizione seguita, distanza,
+  tempo, passo e il battito solo se il proprietario l'ha acceso; sotto
+  «Updated {seconds} s ago», «No update since {time}» dopo un minuto senza
+  notizie, «Finished · …» o «Live ended». Chiede `GET
+  /live-shares/{id}?after=` ogni 10 s, solo i punti nuovi, e smette a
+  live finita. L'app dice `live` in `X-MuW-Reads`: le app di prima leggono
+  «[Live]». La schermata dal vivo è un `Modal` a tutto schermo come
+  `MediaViewer`: lo scorrimento fra le schede non parte sotto di lei e il
+  gesto dal bordo sinistro (ADR-0384) non fa nulla; si chiude con «Close».
 - **La piscina mentre nuoti** (TASK-424 parte C1): sotto l'orologio due
   numeri, «Lengths» (le vasche stimate dal passo delle nuotate prima, 2:00
   /100 m senza nessuna; 0 prima di mezza vasca) e «Calories» («85 kcal»,
@@ -4457,6 +4547,43 @@ acceso. Testi approvati dall'utente l'11 novembre 2026.
   parte acceso, solo con un post che altri vedono, mai una richiesta di
   permesso. Con la costante spenta le due schermate sono com'erano.
 
+### La scheda Sleep del profilo (TASK-467 parte B3, ADR-0380)
+
+**Spenta in ogni build di oggi**, come «Sleep last night»: stessa costante
+(`SLEEP_POSTS_ON`), nessun lettore di Salute. Quello che segue è com'è
+quando è accesa. Testi approvati dall'utente (11 e 12 novembre 2026).
+
+- **Sul proprio «Profile»**, sotto il VO₂ max (`profile/OwnSleep.tsx`):
+  - *prima del sì*: il pulsante **«Show my sleep from Apple Health»** e
+    sotto «MuW works out a sleep score from your Apple Health sleep
+    data.». Il tocco è il sì a leggere il sonno: apre il foglio del
+    telefono, e da lì anche «Sleep last night» a fine attività legge la
+    notte. È l'unico punto in cui il permesso si chiede;
+  - *la notte*: «Sleep score» con accanto il giorno («12 Nov»), «82 · Very
+    good», «7 h 40 min», le fasi «Awake», «REM», «Light», «Deep» quando un
+    orologio le ha dette, e «Worked out by MuW from Apple Health data. It
+    can differ from the score in the Health app.». La notte è quella da
+    cui ci si è svegliati oggi, riletta dal telefono a ogni apertura del
+    profilo. Senza: «No sleep data for last night in Apple Health.». Se
+    il telefono non può leggere: «MuW can't read your sleep. Allow it in
+    the Health app: your profile › Apps › MuW.»;
+  - *chi la vede*: **«Only you see this»** e il pulsante **«Share»**. Il
+    primo «Share» chiede «Share your sleep?» — «Your score, hours slept
+    and sleep stages show on your profile, to everyone who can see it.»
+    («Cancel» / «Share»), una volta sola per telefono. Condivisa: **«On
+    your profile»** e **«Stop sharing»**, che toglie il sonno dal profilo
+    al tocco, senza conferma;
+  - *una notte più vecchia ancora sul profilo*: sotto quella di oggi, «On
+    your profile · 11 Nov» con «Stop sharing». Ogni notte si condivide col
+    suo «Share»: niente passa sul profilo da solo.
+- **Sul profilo di un altro**, sotto il VO₂ max (`profile/UserSleep.tsx`):
+  l'ultima notte che ha condiviso, nello stesso riquadro, col suo giorno;
+  sola lettura. Una notte non condivisa per gli altri non esiste: nessun
+  riquadro.
+- Mai l'ora in cui si è andati a letto o ci si è svegliati, mai un
+  consiglio; non si chiama mai «di Apple». Nessuna voce nel Feed: il post
+  della notte da sola arriva con TASK-312 C.
+
 ## Il post da condividere (TASK-231, ADR-0194)
 
 «Share» sta sulla scheda di fine corsa (con un percorso e senza) e sulla
@@ -4966,6 +5093,110 @@ yet: MuW records your flight.»: nessuna forma, nessun percorso. Il volo si regi
   «Top speed», poi «Calories». Provato nel simulatore il 2026-11-12. Nel Feed il volo è un post senza percorso, come una giornata
   sulla neve, con la velocità al posto del passo.
 
+#### Sotto «Record your flight» (TASK-305 parte R5b)
+
+Le scelte dell'utente del 2026-11-12, nei testi che ha approvato
+(TASK-305.md, «Testi di R5»). Sotto il bottone, tre schede (`FlightPage`):
+
+- **«Ready to fly»**, la prima, perché è quella che serve prima di partire.
+  - La precisione del GPS del telefono, letta una volta al secondo finché
+    «Draw» è aperto. La posizione non esce dal telefono; si mostra solo
+    l'errore.
+  - Fino a 10 m: «GPS ready · ±5 m», col punto giallo. Oltre: «Weak GPS ·
+    ±25 m: wait in the open». Prima del primo fix: «Waiting for GPS…».
+  - Senza permesso della posizione la riga non c'è.
+  - Con un account c'è l'interruttore **«Share live at start»**, con sotto
+    «When the countdown ends, MuW makes the link and opens the share
+    sheet.». Parte spento e poi resta com'era al volo prima (il file
+    `flight-live-at-start.json`).
+  - Acceso, alla fine del conto alla rovescia di un volo l'app crea il link
+    dal vivo e apre il foglio di condivisione, come «Share live» a mano. Non
+    succede per un volo ripreso dopo la chiusura dell'app, né per gli altri
+    sport.
+  - Crea solo il link (ADR-0352, precisazione), e in volo resta «Sharing
+    live». Se il link non si crea l'app non dice niente: «Share live» è lì
+    come sempre.
+- **«Your flights»**, solo con un account.
+  - Il mese, con i giorni volati in giallo, e sotto «2 flights · 2:30:00»
+    (o «No flights this month»).
+  - Viene da `GET /me/activity-calendar?sport=paragliding` e si aggiorna
+    quando cambiano le attività dell'account.
+  - Toccato, apre il calendario delle attività (TASK-462) già filtrato sui
+    voli.
+- **«Your best flights»**, solo con un account e almeno un record.
+  - Quattro righe, solo quelle che ci sono: «Max altitude» (m), «Longest
+    flight», «Farthest flight», «Top speed». Ognuna ha il giorno e apre il
+    suo volo.
+  - Vengono da `GET /me/flight-bests` (API.md, «I numeri di un volo»).
+  - A fine volo il telefono manda `max_alt_m` e `top_speed_mps` con i
+    numeri del post. Se un server senza R5a li rifiuta, li rimanda senza,
+    come fa con i tratti dello sci.
+
+#### A piedi e in volo, hike & fly (TASK-305 parte R6b)
+
+Nelle gare si corre e si vola nella stessa attività. È la scelta
+dell'utente del 2026-11-12, «Dentro Paragliding»; i testi sono in
+TASK-305.md, «Testi di R6».
+
+- **La divisione** (`src/air/flightParts.ts`). Viene solo dal GPS:
+  - decollo: per almeno 15 s si sale o si scende più di 1,5 m/s, oppure per
+    almeno 20 s si va oltre 25 km/h;
+  - atterraggio: per almeno 60 s si va sotto 9 km/h e si sale o si scende
+    meno di 0,7 m/s;
+  - un tratto più corto di un minuto si unisce a quello vicino.
+- **Durante la registrazione** sopra i riquadri del volo c'è «On foot | In
+  the air» (il controllo a pillola dell'app), con sotto «MuW switches by
+  itself; touch to correct it.».
+  - Un tocco imposta la fase da quel momento. Se arriva entro 5 minuti da un
+    cambio visto dal GPS, annulla quel cambio da quando è avvenuto (la
+    navetta del recupero letta come volo).
+  - Le correzioni restano sul telefono legate al volo
+    (`flight-phase-marks.json`), anche se l'app si chiude.
+  - A piedi i riquadri sono distanza del tratto, dislivello, quota e passo
+    medio; in aria quelli di sempre.
+- **La fine**: sotto la distanza un riquadro con «Total» (il tempo), poi
+  «On foot» (tempo · km · +dislivello) e «In the air» (tempo · km · quota
+  massima).
+  - Le calorie si contano tratto per tratto: a piedi come corsa sotto i
+    7:30 /km, altrimenti come camminata in montagna; in aria col MET del
+    volo.
+  - Sotto le righe restano solo «Max altitude», «Top speed» (dei soli
+    tratti in aria: la navetta non conta) e le calorie. Tempo e dislivello
+    sono già nelle righe, e con un riquadro in meno «Save» e «Discard»
+    restano sullo schermo (provato nel simulatore il 2026-11-12).
+  - Un volo senza tratti a piedi finisce come prima.
+- **Il salvataggio** manda `flight_parts` (API.md, «A piedi e in volo»),
+  coi tempi arrotondati al millisecondo: i fix del telefono hanno i
+  decimali e il server vuole interi. Se il server non li prende ancora
+  (422), li rimanda senza.
+- **Il Feed**: sotto il titolo del post «On foot 1:58:40 · In the air
+  1:43:30», anche sulla foto e in quello che legge VoiceOver. Nella pagina
+  del post il riepilogo ha due righe in più dopo il tempo, «On foot» e «In
+  the air».
+- **La mappa a due colori** (bianco a piedi, giallo in aria) è la parte
+  R6c, ancora da fare.
+
+### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
+
+«Mountaineering» 🧗 (IT «Alpinismo») sta in «Settings» e nel menu degli
+sport nella famiglia «On snow», dopo «Ski touring». Fino all'accensione,
+che è una PR a parte col sì dell'utente sulle schermate, dice «Soon» e nelle
+build per lo store non c'è. Acceso, «Draw» mostra solo **«Record your
+day»** 🧗, senza forme né percorsi. La giornata si registra come una corsa
+senza percorso, coi numeri di un'escursione (km, tempo, salita), e si
+salva come `alpinism`.
+
+- **L'avviso**, la prima volta su quel telefono, all'apertura della
+  schermata: «Before you climb» — «MuW records your climb and shares it:
+  it does not guide you. Go with your own gear, skills and judgement, and
+  check the conditions before you set off.», un solo bottone «Got it». Una
+  volta letto non torna più (il file `climb-notice.json`). Testi approvati
+  dall'utente il 2026-11-12, nelle cinque lingue in `tasks/TASK-463.md`.
+- Le calorie si contano come per un'escursione. In Apple Salute va come
+  «Climbing».
+- Nel modulo del post non è un giorno sulla neve: resta alpinismo. Sull'orologio non
+  c'è, finché una sua build non lo conosce.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di
@@ -5134,7 +5365,11 @@ c'è anche l'errore.
   l'API rifiuta si butta, non si rimanda. Vale lo stesso per un
   allenamento in palestra e un nuoto in vasca, che aspettano nelle loro
   code (`gym-outbox.json`, `pool-outbox.json`): la notte parte dopo di loro. Il sì a leggere il sonno sta in
-  `sleep-health.json`.
+  `sleep-health.json`. **Dalla scheda «Sleep» del profilo** (parte B3) la
+  notte va all'API solo al tocco di «Share» (lo stesso riassunto, col
+  giorno); «Stop sharing» la toglie dal profilo, e dal server se nessun
+  post la porta. Che il primo «Share» è stato confermato sta in
+  `sleep-share.json`.
 
 ## Quando la mappa non si carica
 

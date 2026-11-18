@@ -1,11 +1,13 @@
 # TASK-414 — Carrozzina e passeggino: forme semplici di pochi km, dove si spinge davvero
 
-**Stato**: In corso — parte 0 in `main` (#939); parte A in `main` (#1183,
-`f614821c`, 2026-11-12: motore, contratto, API, profilo nascosto
-nell'app); parte B in `main` (#1234, `100624e2`, nascosta); B2 in PR
-(#1257: lo sport acceso, col sì dell'utente alle schermate).
+**Stato**: Done (2026-11-12) — parte 0 in `main` (#939); A (#1183,
+`f614821c`: motore, contratto, API) in `main` e sul server dal passo 10;
+B (#1234, `100624e2`: l'app) e B2 (#1257, `e88d491f`: lo sport acceso) in
+`main`. Esito: «Carrozzina e passeggino» ♿ si sceglie, disegna solo cerchio,
+cuore, stella e luna di 1–5 km sulla rete `wheel`, ha record su 1 e 5 km;
+esce col prossimo OTA, col sì dell'utente.
 **Fase**: 4 · **Branch**: `docs/TASK-414-0-wheelchair` (parte 0), poi
-parte A e parte B · **ADR**: ADR-0343 (accettato 2026-11-12, precisazione A) · numeri dal Coordinatore
+parte A e parte B · **ADR**: ADR-0343 (accettato 2026-11-12, precisazioni A e B) · numeri dal Coordinatore
 · sessione dello sport, avviata dal «Coordinatore Sport»
 
 ## Obiettivo
@@ -208,8 +210,10 @@ come la proposta, tranne la prima:
       ruvide e strade grandi senza marciapiede; test deterministici; corsa,
       bici e canoa invariate (i nove percorsi fissi di `test_same_routes.py`,
       2026-11-11).
-- [ ] B: lo sport si sceglie, si percorre, si salva e va in Salute; i testi
-      sono in cinque lingue.
+- [x] B: lo sport si sceglie, disegna le sue quattro forme e mostra i record
+      (al simulatore, 2026-11-12, schermate approvate dall'utente); i testi
+      sono in cinque lingue. Percorrerlo, salvarlo e vederlo in Salute si
+      prova sul telefono dopo l'OTA.
 
 ## File toccati
 
@@ -359,25 +363,30 @@ Impronte invariate. ADR-0343 è accettato, con la precisazione A.
 
 ## Cosa resta
 
-- **Server**: la parte A è sul server dal passo 10 del 2026-11-12
-  (12:20Z, `1eb3e5a8`), con la `0071_wheelchair` applicata. I controlli 1
-  e 2 di `out/TASK-414/SERVER-A.md` sono come attesi: i quattro vincoli
-  con la carrozzina, health 200, impronte `e0834d054b6e 8ab61d8e87f9
-  b9d00c37d28d 574fbfba41eb`. Restano il 3 e il 4 (un cuore di 3 km a
-  Trento, una forma rifiutata col 422), come riga per l'utente.
+- **Server**: fatto. La parte A è sul server dal passo 10 del 2026-11-12
+  (12:20Z, `1eb3e5a8`), con la `0071_wheelchair` applicata; i quattro
+  controlli di `out/TASK-414/SERVER-A.md` come attesi (vincoli, health
+  200, impronte `e0834d054b6e 8ab61d8e87f9 b9d00c37d28d 574fbfba41eb`; un
+  cuore di 3 km a Trento: 3185 m, somiglianza 0,77, al secondo tentativo
+  perché Overpass era pieno; il cavallo rifiutato col 422). I 140 s del
+  primo tentativo fallito sono due download della stessa zona per job
+  (`loads=2`): vale per ogni sport, è un task a parte del Coordinatore su
+  `jobs.py`.
 - **Orologio**: i file di `targets/watch/**` della parte A (`sports.json`,
   `Localizable.strings`) non entrano nella build 14 dell'orologio già in
   revisione; entrano con la build dopo.
-- **Parte B** (l'app): in `main` (#1234); B2 (#1257) la accende. Resta
-  l'OTA che la porta in produzione, col sì dell'utente.
+- **OTA**: la carrozzina accesa esce col prossimo OTA (il 14 è uscito da
+  `be21e7d8`, prima della #1257), col sì dell'utente al Coordinatore; poi
+  la prova sul telefono: percorrerla, salvarla, vederla in Salute.
 - **Lasciati apposta in B**: `imports/fit.ts` (i codici FIT della
   carrozzina non sono verificati: un file FIT di carrozzina resta allo
   sport di «Impostazioni»; GPX e TCX che dicono «wheelchair» sì);
   `route/runTime.ts` e `sports/postMetrics.ts` non cambiano (tempo al
   passo della camminata, le righe del post di una camminata senza
   cadenza).
-- **Accensione**: `ready: true` nella #1257, col sì dell'utente alle
-  schermate («Sì, accendi»), dopo la `0071` sul server (passo 10).
+- **Difetti a parte** (del Coordinatore): «Colleziona le forme correndo»
+  anche in carrozzina (un testo: scelta dell'utente); «2.01 km» col punto
+  nel calendario in italiano (TASK-462).
 
 2026-11-12, parte B (branch `feat/TASK-414-b-wheelchair-app`, lista
 approvata dal Coordinatore, da `main` `ef07030b`):

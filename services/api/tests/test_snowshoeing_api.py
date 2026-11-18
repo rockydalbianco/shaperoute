@@ -40,7 +40,6 @@ from route_engine.walking import API_ACTIVITIES, API_DISTANCE_LIMITS_M, engine_a
 from route_engine.water import write_water
 from test_cycling import finished
 from test_game_rules import Runner
-from test_sport_registry_api import in_the_contract
 from test_way_back_api import _post as post_way_back
 from test_way_back_api import _Town, request_body
 
@@ -145,8 +144,7 @@ def test_snowshoeing_is_an_activity_of_the_api_half_a_km_to_3() -> None:
     assert contract["activities"] == list(API_ACTIVITIES)
     assert contract["distance_limits_m"][SNOW] == [500, 3_000]
     run_activities = json.loads((CONTRACT / "run-activities.json").read_text())
-    # But a day of alpinism, on the server before the contract (TASK-463).
-    assert run_activities["run_activities"] == in_the_contract(get_args(RunActivity))
+    assert run_activities["run_activities"] == list(get_args(RunActivity))
 
 
 def test_the_request_of_shared_types_is_one() -> None:
@@ -276,6 +274,29 @@ def test_a_town_is_shape_not_drawable_before_its_snow_is_downloaded(
     error = answer.json()["error"]
     assert error["code"] == "shape_not_drawable"
     assert "no open snow" in error["message"]
+
+
+def test_a_town_asked_as_a_job_is_refused_before_its_snow_is_downloaded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The app and the server ask /route-jobs, whose snow is the job's
+    (jobs._ReportingSnow): the buildings are counted there too, so a town is
+    refused at once (TASK-413 A3). On the server after step 11 the job's
+    snow did not count, and Milan waited for its snow."""
+
+    def no_download(query: str) -> dict[str, Any]:
+        raise AssertionError("the snow of a town was downloaded")
+
+    monkeypatch.setattr(snow_module, "overpass", no_download)
+    monkeypatch.setattr(snow_module, "count_buildings", lambda query: 10**6)
+    graphs = ActivityGraphs({}, snow=ServerSnow(tmp_path))
+    with TestClient(create_app(graphs)) as client:
+        job = client.post("/route-jobs", json=CIRCLE).json()
+        done = finished(client, job["job_id"], seconds=30.0)
+    assert done["status"] == "failed", done
+    assert done["error"]["code"] == "shape_not_drawable"
+    assert "no open snow" in done["error"]["message"]
+    assert list(tmp_path.glob("snow/count_*.json"))
 
 
 def test_heights_that_cannot_be_downloaded_are_map_data_unavailable(

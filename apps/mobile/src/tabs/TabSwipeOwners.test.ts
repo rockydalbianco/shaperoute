@@ -151,7 +151,9 @@ test("no map to drag lies in a page: the map takes the whole screen, without the
       /from "(\.\.\/map|\.)\/MapView"/.test(readFileSync(join(SRC, file), "utf8")),
     )
     .filter((file) => !file.startsWith("map/"));
-  // The canvas of «Draw on the map» only drives the map App lays under it.
-  expect(withMap).toEqual(["mapdraw/useMapCanvas.ts"]);
+  // The canvas of «Draw on the map» only drives the map App lays under it;
+  // the live view (TASK-468) is a Modal over the whole screen, never a page.
+  expect(withMap).toEqual(["liveShare/LiveViewScreen.tsx", "mapdraw/useMapCanvas.ts"]);
+  expect(read("liveShare/LiveViewScreen.tsx")).toMatch(/<Modal\b/);
   expect(read("mapdraw/useMapCanvas.ts")).not.toMatch(/<MapView\b/);
 });

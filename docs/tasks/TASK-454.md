@@ -1,13 +1,15 @@
 # TASK-454 — Reazioni e super like
 
-**Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-11) · C1 (server) in
-`main` (#1180) e sul server (passo 9, 2026-11-12) · **A (#1195), C2
-(#1199) e la frase della privacy (#1200) in `main` il 2026-11-12**: escono
-con l'aggiornamento completo (OTA 12, 2026-11-12 12:28Z) · **B (doppio
-tocco) nella #1231, pronta**: provata nel simulatore, video approvati
-dall'utente («Sì, approvo», 2026-11-12); aspetta il merge del Coordinatore
-e l'OTA dopo · poi la prova dei 300 ms sul telefono e la chiusura: vedi
-«Cosa resta di questo task»
+**Stato**: Done · 2026-11-12 · C1 #1180, A #1195, C2 #1199, privacy #1200,
+B #1231, tutte in `main`; C1 sul server (passo 9), A, C2 e privacy
+nell'OTA 12, B nell'OTA 14
+**Esito**: nel Feed e nella pagina del post «Like» apre la fila delle sei
+reazioni sopra la riga senza muovere niente e mostra la propria col totale;
+il commento di un super like compare subito tra i commenti; i commenti
+hanno risposte a un livello e cinque emoji; due tocchi sull'immagine di un
+post sono il suo super like. Tutto provato dall'utente sul telefono
+(«ok funziona top» sull'OTA 12, «Sì, va bene» sul doppio tocco dell'OTA
+14). Fuori dal task resta una cosa sola, in fondo al file.
 **Fase**: 5 · **Branch**: una PR per parte; la parte B parte da `main`
 **Dipende da**: TASK-444 parte 1 in `main` (tocca `feed/PostActions.tsx` e
 porta l'icona a cuore di «Like»)
@@ -481,8 +483,11 @@ da `main` a `ef07030b`, poi `main` unito a `627767a5` con TASK-467 B2
 dentro). Codice e test scritti per intero: `useDoubleTap`, il super like
 chiesto dall'immagine (`PostReactions`, passato da `PostActions` e
 `PostSheet`), l'immagine di `FeedPost` e di `PostPage` che lo chiede, il
-cuore fermo con «Riduci movimento». **Provata nel simulatore il
-2026-11-12** (iPhone 17e, API locale di `main`, un post di un altro
+cuore fermo con «Riduci movimento». **In `main` il 2026-11-12** (#1231,
+merge `7c44fa82`), **nell'OTA 14 delle 15:15Z** (commit `be21e7d8`,
+produzione iOS e Android), **provata dall'utente sul telefono coi 300 ms
+veri: «Sì, va bene»** (2026-11-12): la finestra resta a 300 ms. Prima,
+**provata nel simulatore il 2026-11-12** (iPhone 17e, API locale di `main`, un post di un altro
 account): il tocco singolo apre la pagina del post e poi la mappa dopo
 l'attesa; il doppio tocco apre il foglio nella pagina del post e nel Feed;
 mandato il commento la card dice «Mi piace · 3» col cuore di MuW e
@@ -552,23 +557,22 @@ nella pagina del post, e ora aspettano «Start», che è solo sulla mappa.
 
 ## Cosa resta di questo task
 
-Scritto il 2026-11-12, con A, C1, C2 e la privacy in `main`.
+Niente: chiuso il 2026-11-12.
 
-- **Parte B — doppio tocco = super like** (scelta 6): vedi la sezione qui
-  sopra. Approvata dall'utente sui video; mancano il merge (Coordinatore),
-  l'OTA (Coordinatore, col sì dell'utente) e la prova sul telefono del
-  doppio tocco vero, entro 300 ms.
-- **Prova sul telefono: fatta dall'utente il 2026-11-12** con l'OTA 12
-  («ok funziona top», sull'elenco qui sotto). Resta da provare lì solo la
-  parte B, quando esce. L'elenco, uscito con l'OTA 12 (12:28Z):
+- **Parte B — doppio tocco = super like** (scelta 6): in `main` (#1231),
+  nell'OTA 14, provata dall'utente sul telefono coi 300 ms veri («Sì, va
+  bene», 2026-11-12).
+- **Prova sul telefono di A, C2 e della privacy: fatta dall'utente il
+  2026-11-12** con l'OTA 12 («ok funziona top», sull'elenco qui sotto).
+  L'elenco, uscito con l'OTA 12 (12:28Z):
   «Like» apre la fila sopra il pulsante senza
   muovere la card; un super like porta subito il commento sotto il post;
   una risposta a un commento arriva come notifica a chi l'ha scritto; una
   reazione a un commento compare solo nella campanella; la pagina della
   privacy nell'app porta la frase nuova e la data del 12 novembre 2026
   (sul sito l'ha già controllata il Coordinatore).
-- **Chiusura**: con la parte B in `main`, la PR di soli documenti (la voce
-  esce da `STATUS.md`, una riga in `docs/archive/COMPLETATI.md`, questo
+- **Chiusura**: PR di soli documenti del 2026-11-12 (riga di chiusura sotto
+  la voce di `STATUS.md`, una riga in `docs/archive/COMPLETATI.md`, questo
   file a `Done`) e «TASK-454 fatto» al Coordinatore.
 
 ## Cosa resta (fuori da questo task)

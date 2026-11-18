@@ -7,7 +7,7 @@ import { requestDirections } from "../api/routeDirections";
 import type { Keepable } from "../favorites/favoriteRoute";
 import { useFavoritesDoor } from "../favorites/favoritesDoor";
 import { t } from "../i18n";
-import { isOnWater } from "../swim/water";
+import { isPlacedFree } from "../snow/snow";
 import { color, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { type WatchLink, watchLink } from "./watchLink";
 import { MAX_WATCH_POINTS, routeToSendOf, watchRouteOf } from "./watchRoute";
@@ -100,7 +100,8 @@ export function SendToWatchButton({
   }
 
   async function directionsOf(): Promise<readonly Direction[] | null> {
-    if (isOnWater(kept.request.activity)) {
+    // No turns on the water or the snow (TASK-413 B).
+    if (isPlacedFree(kept.request.activity)) {
       return [];
     }
     if (baseUrl === null) {

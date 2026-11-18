@@ -27,6 +27,7 @@ from route_engine.network import BBox, Graph
 from route_engine.optimizer import GraphLoader, Plan
 from route_engine.shore_names import ShoreNameSource, ShorePlace
 from route_engine.sidewalks import NamedRoad
+from route_engine.snow import CountsBuildings
 from route_engine.water import Element, WaterSource
 
 from shaperoute_api.activity_graphs import (
@@ -534,7 +535,7 @@ class _ReportingWater:
 class _ReportingSnow(_ReportingWater):
     """The job's snow (TASK-413), as its water: says when a download of the
     snow starts and ends, and stops the job if it was cancelled meanwhile;
-    the heights are its source's."""
+    the heights and the count of the buildings are its source's."""
 
     def __init__(
         self,
@@ -549,6 +550,15 @@ class _ReportingSnow(_ReportingWater):
 
     def heights(self) -> Heights:
         return self._snow.heights()
+
+    def buildings(self, bbox: BBox) -> int | None:
+        """The buildings of `bbox` as the source counts them, so that the
+        engine says «no snow» in a town before the snow is read (TASK-413
+        A3): without it a job never asked, as on the server after step 11.
+        None when the source cannot count: the job goes on as before."""
+        if isinstance(self._snow, CountsBuildings):
+            return self._snow.buildings(bbox)
+        return None
 
 
 def with_choices(

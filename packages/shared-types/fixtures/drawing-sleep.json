@@ -40,6 +40,7 @@
   "source": "muw",
   "order": null,
   "ski_descents": null,
+  "flight_split": null,
   "sleep": {
     "night": "2026-09-21",
     "score": 82,
@@ -50,5 +51,6 @@
       "light_min": 268,
       "deep_min": 72
     }
-  }
+  },
+  "linkable": false
 }

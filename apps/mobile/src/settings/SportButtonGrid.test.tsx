@@ -2,7 +2,13 @@ import { fireEvent, render, screen, within } from "@testing-library/react-native
 import { StyleSheet } from "react-native";
 
 import { ALL_SPORTS, loadSport, saveSport, SPORTS, type SportOption } from "./sport";
-import { panelMaxHeight, SportButton, tileHeight, tileWidth } from "./SportButton";
+import {
+  pairWidth,
+  panelMaxHeight,
+  SportButton,
+  tileHeight,
+  tileWidth,
+} from "./SportButton";
 import { FAMILY_OF, groupSports, SPORT_FAMILIES } from "./sportFamilies";
 
 jest.mock(
@@ -83,11 +89,27 @@ test("the tiles are large, two to a row, and the one chosen stands out", async (
   expect(screen.getAllByText("✓")).toHaveLength(1);
 });
 
-test("on a phone 390 wide two tiles fit in a row", () => {
-  const width = tileWidth(390);
-  // The panel 16 from each side, 12 inside, 8 between the two.
-  expect(width * 2 + 8 + 12 * 2 + 16 * 2).toBeLessThanOrEqual(390);
-  expect(width).toBeGreaterThanOrEqual(150);
+test.each([320, 375, 390, 393, 402, 428, 430, 440])(
+  "on a phone %i wide two tiles fit in a row, the panel's edge counted",
+  (window) => {
+    const width = tileWidth(window);
+    // The panel 16 from each side, its edge 1, 12 inside, 8 between the two.
+    expect(width * 2 + 8 + 12 * 2 + 1 * 2 + 16 * 2).toBeLessThan(window);
+    expect(width).toBeGreaterThanOrEqual(window === 320 ? 120 : 150);
+  },
+);
+
+test("the tiles follow the panel's inside as laid out", async () => {
+  await render(<SportButton sports={MIXED} />);
+  await open();
+  // The panel is laid out 356 wide inside: two tiles, the gap and the padding.
+  await fireEvent(screen.getByTestId("sport-scroll"), "layout", {
+    nativeEvent: { layout: { x: 0, y: 0, width: 356, height: 500 } },
+  });
+  const width = boxOf("run").width ?? 0;
+  expect(width).toBe(pairWidth(356));
+  expect(width * 2 + 8 + 12 * 2).toBeLessThanOrEqual(356);
+  expect(width).toBeGreaterThanOrEqual(160);
 });
 
 test("a tile chosen saves the sport and closes the panel", async () => {

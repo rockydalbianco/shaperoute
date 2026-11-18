@@ -1,6 +1,7 @@
 # TASK-472 — La scheda dei numeri ripiegata durante la registrazione
 
-**Stato**: In corso (codice e test fatti; mancano le schermate al simulatore)
+**Stato**: Done (2026-11-12) — #1262 in `main` (10a50ba0); schermate al
+simulatore approvate dall'utente; esce con l'aggiornamento completo dell'app
 **Fase**: 5 · **Branch**: `feat/TASK-472-run-card-fold`
 
 ## Obiettivo
@@ -46,8 +47,14 @@ intera.
 - [x] «Compass», «Data», prima del primo fix e in pausa: niente maniglia.
 - [x] Lo swipe laterale fra le pagine funziona come prima
       (`RunDashboard.test.tsx` verde).
-- [ ] Schermate al simulatore, scheda aperta e piegata, al turno del
-      Coordinatore (`out/TASK-472/`).
+- [x] Schermate al simulatore, scheda aperta e piegata, al turno del
+      Coordinatore (`out/TASK-472/`): trascinata giù e su, maniglia e
+      «Pause» dalla striscia provati; «Sì, vai» dell'utente il 2026-11-12.
+
+## Esito
+
+Fatto. Resta solo l'uscita con l'aggiornamento completo (OTA del
+Coordinatore) e uno sguardo sul telefono durante una corsa vera.
 
 ## Dopo il merge
 

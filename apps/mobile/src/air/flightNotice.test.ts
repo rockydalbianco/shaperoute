@@ -7,6 +7,7 @@ import { join } from "node:path";
 
 import type { KeptList } from "../storage/keptList";
 import {
+  afterFlightNotice,
   FLIGHT_NOTICE,
   FLIGHT_NOTICE_TITLE,
   resetFlightNotice,
@@ -64,4 +65,20 @@ test("read in this app run, it stays read even when the phone refuses to keep it
   );
   expect(showFlightNotice(show, refusing)).toBe(true);
   expect(showFlightNotice(show, refusing)).toBe(false);
+});
+
+test("what waits for the notice runs once it is read; with none up, at once", () => {
+  const kept = memory();
+  const then = jest.fn();
+  afterFlightNotice(then);
+  expect(then).toHaveBeenCalledTimes(1);
+  const show = jest.fn();
+  showFlightNotice(show, kept);
+  afterFlightNotice(then);
+  afterFlightNotice(then);
+  expect(then).toHaveBeenCalledTimes(1);
+  show.mock.calls[0][2]();
+  expect(then).toHaveBeenCalledTimes(3);
+  afterFlightNotice(then);
+  expect(then).toHaveBeenCalledTimes(4);
 });

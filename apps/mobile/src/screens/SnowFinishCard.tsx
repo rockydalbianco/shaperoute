@@ -29,7 +29,8 @@ import { NO_NUMBER, Tile, useRunNumbers } from "./RunPanel";
  * run's numbers. Skiing: the kilometres of the descents, how many, the
  * metres skied down, the top and the average speed, the lifts and the
  * time. Cross-country: the distance, the average pace, the metres climbed
- * and the time. Their calories too (TASK-424 part C2, the user's choice
+ * and the time; a day on snowshoes the same (TASK-413 part C, the
+ * user's «Sì, vanno bene», 2026-11-12). Their calories too (TASK-424 part C2, the user's choice
  * of 2026-11-10): downhill counted on the descents alone.
  */
 
@@ -48,7 +49,9 @@ function countOf(count: number | null): string {
 
 type Props = {
   run: FreeRun;
-  activity: RecordActivity;
+  /** A day on the snow, or on snowshoes (TASK-413 part C), whose numbers
+   * are cross-country's. */
+  activity: RecordActivity | "snowshoeing";
   /** Goes back to the day, when its track can still go on. */
   onResume?: () => void;
   /** Leaves the screen, and the day with it. Absent when «Save» and

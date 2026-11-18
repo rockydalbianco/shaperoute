@@ -1,9 +1,32 @@
 # TASK-471 — Overpass in errore: rispondere prima
 
-**Stato**: In corso — parte 0 (sola lettura) e correzione fatte il
-2026-11-12 (lista dei file approvata dal Coordinatore). Restano le scelte
-dell'utente qui sotto, una per volta, e il passo sul server.
-**Fase**: 5 · **Branch**: `fix/TASK-471-map-unavailable-once` ·
+**Stato**: Done — 2026-11-12. Esito: con Overpass in errore l'app lo sa
+dopo secondi invece che dopo più di due minuti: un download fallito per
+job (#1251), 5 secondi invece dei 60 di osmnx quando lo stato non si
+legge e l'errore in una riga (#1269), la frase nuova dell'app (#1259);
+il secondo servizio Overpass è nel codice, **spento**, per strade, acqua
+e neve (#1269), e la privacy lo nomina già (#1263). Sul server dal passo
+12 (2026-11-12, ~16:56Z, `eee85a69`); app con l'OTA 14. Decisione:
+ADR-0385 (#1286, entrata con la #1289).
+
+**Resta** (fuori dalla chiusura, ognuno col sì dell'utente):
+- **Accensione del secondo servizio**: aspetta la copia del sito con la
+  privacy nuova. Poi, in `/root/shaperoute/deploy/.env`, la riga
+  `SHAPEROUTE_OVERPASS_FALLBACK_URL=https://overpass.private.coffee/api`
+  e il contenitore dell'API ricreato; lettura di controllo in «Accendere
+  il secondo servizio».
+- **Letture dopo il passo 12** (`out/coordinatore/passo12/remote.out` e
+  `check-471.out`): server a `eee85a69`, `fallback_url()` = `None`,
+  health 200, nessun Traceback; `check_once.py` nel contenitore dà
+  «downloads tried: 1 (expected 1)». Dopo le 16:56Z ci sono 8 righe
+  `times total`, tutte di richieste di prova delle ciaspole finite «no
+  open snow» (`loads=0`): passano dal processo di calcolo, quindi il
+  messaggio nuovo fra thread e processo arriva e torna. **Non ancora
+  visto**: un job su strada `done` dopo il passo, con i campi del piano;
+  lo aggiunge il Coordinatore quando ne vede uno.
+- Da riprendere solo se i log lo chiedono: le scelte (e) e (d) qui sotto.
+**Fase**: 5 · **Branch**: `fix/TASK-471-map-unavailable-once` (#1251),
+`fix/TASK-471-b-overpass-pause` (parte B) ·
 **ADR**: ADR-0385 (la voce va nella PR di documenti dopo il merge)
 
 ## Obiettivo
@@ -278,7 +301,8 @@ File della parte B (ramo `fix/TASK-471-b-overpass-pause`, dopo la prima
 PR in `main`): `services/api/shaperoute_api/overpass_pause.py`,
 `overpass_fallback.py` e i loro test `test_overpass_pause.py`,
 `test_overpass_fallback.py` (nuovi), `services/api/shaperoute_api/graphs.py`,
-`services/api/tests/test_graphs.py`, `.env.example` (una voce),
+`paddling.py`, `snowshoeing.py`, `services/api/tests/test_graphs.py`,
+`.env.example` (una voce),
 `apps/mobile/assets/engine/engine.zip` (rifatto: anche `graphs.py` va
 sul telefono).
 
@@ -289,6 +313,53 @@ fra `Overpass: … through …` e l'errore passano secondi, non più di un
 minuto. Col secondo servizio acceso: la riga `Overpass answered with an
 error (…): one attempt on overpass.private.coffee` conta le volte che è
 servito; senza la variabile non compare mai.
+
+Nella stessa PR il `message` dell'errore dice il perché in una riga
+(`graphs._reason`): prima portava l'intera pagina 502 di Overpass nella
+risposta all'app e nel log delle richieste.
+
+**Acqua e neve** (canoa, nuoto, ciaspole) non passano da osmnx né da
+`ZoneGraphs`: il motore fa una richiesta sola con `urllib`
+(`paddling.ServerWater`, `snowshoeing.ServerSnow`). Non hanno la pausa di
+60 s (il 12 novembre alle 15:08Z una richiesta di neve a Milano è fallita
+in 0,26 s), quindi i 5 secondi non le riguardano. **Scelta dell'utente,
+2026-11-12: «Sì, aggiungilo»**, alla domanda «Secondo servizio anche per
+acqua e neve (canoa, nuoto, ciaspole): lo aggiungo?»: anche la loro
+richiesta, a un errore HTTP o di connessione del principale, si prova
+una volta sul secondo servizio, con la stessa variabile (spento senza).
+Il conto degli edifici della neve (TASK-413 A3) non riprova: non fallisce
+mai. La frase della privacy vale così com'è: dice «the map of an area»,
+e acqua e neve sono dati di OpenStreetMap di quell'area. Impronte uguali
+prima e dopo (`route_store` `e0834d054b6e` → `8ab61d8e87f9`, coi nuoti
+`1063cc95fea3` → `b9d00c37d28d`, `paddle_examples` `4c549677eefb` →
+`574fbfba41eb`): nessun file del motore è toccato.
+
+### Accendere il secondo servizio (passo a parte, col sì dell'utente)
+
+Solo **dopo** che la frase della privacy è uscita nell'app (OTA 14,
+fatto) **e** sul sito (copia di `site/privacy`). Sul server, in
+`/root/shaperoute/deploy/.env`, una riga:
+
+```
+SHAPEROUTE_OVERPASS_FALLBACK_URL=https://overpass.private.coffee/api
+```
+
+Senza barra finale, senza `/interpreter` (lo aggiunge osmnx). Poi il
+contenitore dell'API va ricreato perché legga la variabile. Per
+spegnerlo: togliere la riga o scrivere `off`, e ricreare.
+
+Lettura di controllo, dentro il contenitore, senza rete:
+
+```bash
+ssh root@188.245.9.220 'cd /root/shaperoute/deploy && docker compose exec -T api python -c "from shaperoute_api.overpass_fallback import fallback_url; print(fallback_url())"'
+```
+
+Atteso `https://overpass.private.coffee/api`; prima dell'accensione
+`None`. Nei giorni dopo, nel log: ogni riga
+`Overpass answered with an error (…): one attempt on
+overpass.private.coffee` è una volta in cui il principale ha detto no;
+se dopo c'è `graph from network` il secondo servizio ha dato la zona, se
+c'è `map_data_unavailable` no.
 
 ## File toccati
 
@@ -311,7 +382,7 @@ servito; senza la variabile non compare mai.
 - [x] `ruff`, `black` e i test dei file toccati verdi in locale
       (`test_jobs_map_unavailable`, `test_jobs`, `test_first_route`,
       `test_job_times`, `test_route_processes`: 57 passati).
-- [ ] CI verde.
+- [x] CI verde (#1251, #1269, #1259, #1263 in `main`).
 - [x] Nessun file del motore né `route_store.py` nel diff.
 
 ## Dopo il passo sul server (sola lettura)

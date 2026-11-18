@@ -31,8 +31,9 @@ test("ski touring is recorded without a shape, never planned", () => {
 });
 
 test("ski touring comes after cross-country skiing, before paragliding", () => {
-  // A paragliding flight (TASK-305 parts R) comes after it, then the gym.
-  assert.deepEqual(RECORDED_SPORTS.at(-2), SKI_TOURING);
+  // A paragliding flight (TASK-305 parts R) comes after it, then a day of
+  // mountaineering (TASK-463), then the gym.
+  assert.deepEqual(RECORDED_SPORTS.at(-3), SKI_TOURING);
   assert.equal(
     RUN_ACTIVITIES.indexOf("ski_touring"),
     RUN_ACTIVITIES.indexOf("xc_skiing") + 1,

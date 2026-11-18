@@ -67,6 +67,48 @@ const TWO: readonly Exercise[] = [
   },
 ];
 
+describe("how long to stretch (TASK-466 part B)", () => {
+  it("asks first, under the routine's name, with 3, 5 and 10 minutes", async () => {
+    await render(<StretchScreen onLeave={jest.fn()} />);
+    expect(screen.getByTestId("stretch-chooser")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "After run" })).toBeTruthy();
+    expect(screen.getByText("How long?")).toBeTruthy();
+    for (const label of ["3 min", "5 min", "10 min", "Not now"]) {
+      expect(screen.getByRole("button", { name: label })).toBeTruthy();
+    }
+    // Nothing runs before the choice.
+    await wait(TICK_MS * 30);
+    expect(screen.queryByTestId("stretch-screen")).toBeNull();
+    expect(sounds()).toEqual([]);
+  });
+
+  it("runs the routine of the length chosen, holds and all", async () => {
+    await render(<StretchScreen onLeave={jest.fn()} />);
+    await press("3 min");
+    expect(screen.queryByTestId("stretch-chooser")).toBeNull();
+    expect(screen.getByText("1 of 4")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Quad stretch" })).toBeTruthy();
+    expect(screen.getByText("Get ready")).toBeTruthy();
+    await wait(TICK_MS * READY_S);
+    expect(screen.getByText(clockLabel(20))).toBeTruthy();
+  });
+
+  it("asks about the routine it is given, and longer means more stretches", async () => {
+    await render(<StretchScreen onLeave={jest.fn()} routine="morning" />);
+    expect(screen.getByRole("header", { name: "Morning" })).toBeTruthy();
+    await press("10 min");
+    expect(screen.getByText("1 of 10")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Overhead reach" })).toBeTruthy();
+  });
+
+  it("leaves with «Not now», before any exercise", async () => {
+    const onLeave = jest.fn();
+    await render(<StretchScreen onLeave={onLeave} />);
+    await press("Not now");
+    expect(onLeave).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("the stretching after a run", () => {
   it("writes the seconds left as a clock", () => {
     expect(clockLabel(20)).toBe("0:20");

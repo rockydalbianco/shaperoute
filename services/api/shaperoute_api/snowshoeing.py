@@ -29,6 +29,7 @@ from route_engine.snowshoeing import plan_snowshoeing
 from route_engine.water import BBox, Element
 
 from shaperoute_api.graphs import MapDataUnavailableError
+from shaperoute_api.overpass_fallback import with_second_service
 
 log = logging.getLogger(__name__)
 
@@ -100,7 +101,9 @@ class ServerSnow:
 
     def _download(self, bbox: BBox) -> list[Element]:
         try:
-            return self._source.elements(bbox)
+            # Once more from the second Overpass service, if the server has
+            # one, when the usual one answers with an error (TASK-471).
+            return with_second_service(lambda: self._source.elements(bbox))
         except Exception as exc:
             raise MapDataUnavailableError(
                 f"OpenStreetMap snow for this area could not be downloaded: {exc}"

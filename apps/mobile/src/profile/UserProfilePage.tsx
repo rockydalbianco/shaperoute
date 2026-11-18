@@ -16,6 +16,7 @@ import { ProfileHeader } from "./ProfileHeader";
 import { GymLevels } from "../gym/GymLevels";
 import { PersonalBests } from "./PersonalBests";
 import { ProfileStats, totalsOf } from "./ProfileStats";
+import { UserSleep } from "./UserSleep";
 import { Vo2MaxRow } from "./Vo2MaxRow";
 
 type Failed = Exclude<AccountOutcome<unknown>, { kind: "ok" }>;
@@ -219,6 +220,15 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
       {profile.personal_bests && <PersonalBests bests={profile.personal_bests} />}
       {/* The VO₂ max (TASK-397): only after its owner's yes. */}
       {profile.vo2max && <Vo2MaxRow vo2max={profile.vo2max} own={own} />}
+      {/* The night they share (TASK-467 B3): nothing until part C turns it on. */}
+      <UserSleep
+        apiUrl={apiUrl}
+        token={token}
+        publicId={profile.public_id}
+        onSessionEnded={onSessionEnded}
+        fetchFn={fetchFn}
+        apiKey={apiKey}
+      />
       {/* The levels at the gym (TASK-385 E): none from an older API. */}
       {profile.gym_levels && <GymLevels levels={profile.gym_levels} />}
       <ProfileGallery

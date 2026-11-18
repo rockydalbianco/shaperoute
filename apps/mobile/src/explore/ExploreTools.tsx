@@ -14,7 +14,9 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { glassRaise } from "../ui/glassRaise";
 import { Tap } from "../ui/Tap";
+import { useGlassMode } from "../ui/useGlassMode";
 import { searchCities, suggestCities } from "./cities";
 import { cityShort, FEATURED_CITIES, isSpot, suggestionDetail } from "./presets";
 
@@ -256,9 +258,11 @@ function Chip({
   here?: boolean;
   onPress: () => void;
 }) {
+  // It stands out of the page as the pill of the segments (TASK-469 A4a).
+  const mode = useGlassMode();
   return (
     <Tap
-      style={[styles.chip, on && styles.chipOn]}
+      style={[styles.chip, glassRaise(mode), on && styles.chipOn]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: on }}

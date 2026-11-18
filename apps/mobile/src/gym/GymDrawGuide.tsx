@@ -30,6 +30,8 @@ import { GymIntroSheet } from "./GymIntroSheet";
 import { WEEK_DAYS } from "./planLimits";
 import { GymPlansSheet } from "./GymPlans";
 import { isoDay, todayPlan, useGymPlans } from "./plans";
+import { usePlanReminders } from "./planReminder";
+import { OutingToday } from "./PlanTodayCard";
 import { goToRun, RUN_HINTS, runAmount, runTitle } from "./runDay";
 import {
   clock,
@@ -137,6 +139,7 @@ export function GymDrawGuide({
   // «New plan» opens the editor straight away, not the empty list.
   const [newPlan, setNewPlan] = useState(false);
   const { owner, plans, keep } = useGymPlans(fetchFn);
+  usePlanReminders();
   const today = todayPlan(plans);
   // At the end of a cycle, new paces from the runs saved (TASK-452): asked
   // once a cycle, changed only on a yes.
@@ -265,7 +268,10 @@ export function GymDrawGuide({
               </Text>
             )}
           </View>
-          {today.run !== undefined ? (
+          {today.outing !== undefined ? (
+            // A day out of another sport (TASK-461 B and C): to its «Draw».
+            <OutingToday today={today} />
+          ) : today.run !== undefined ? (
             <>
               <View style={styles.runHead}>
                 <Text style={styles.runMark} importantForAccessibility="no">

@@ -27,7 +27,6 @@ from test_personal_bests import (
     saved,
     signed_up,
 )
-from test_sport_registry_api import in_the_contract
 
 from shaperoute_api.activities import (
     RECORD_ACTIVITIES,
@@ -52,10 +51,9 @@ def _fixture() -> dict[str, Any]:
 
 def test_the_activities_of_a_run_are_those_of_shared_types() -> None:
     fixture = _fixture()
-    # But a day of alpinism, on the server before the contract (TASK-463).
-    assert in_the_contract(RECORD_ACTIVITIES) == fixture["record_activities"]
+    assert list(RECORD_ACTIVITIES) == fixture["record_activities"]
     # The last, a workout at the gym, saved without a track (TASK-385).
-    assert in_the_contract(get_args(RunActivity)) == fixture["run_activities"]
+    assert list(get_args(RunActivity)) == fixture["run_activities"]
     assert fixture["run_activities"][-1:] == fixture["trackless_activities"]
     assert list(get_args(RunActivity)) == [
         *API_ACTIVITIES,

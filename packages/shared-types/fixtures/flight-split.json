@@ -1,0 +1,4 @@
+{
+  "foot": { "seconds": 7320, "metres": 10150, "climb_m": 1240, "max_alt_m": 1960 },
+  "air": { "seconds": 6210, "metres": 31200, "climb_m": 620, "max_alt_m": 2410 }
+}

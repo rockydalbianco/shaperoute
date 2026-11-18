@@ -159,3 +159,6 @@ export interface LiveView {
 // The planned lives (TASK-468 part A2a): exported from here, so index.ts
 // stays as it is.
 export * from "./plannedLive.ts";
+
+// A live share in a private message (TASK-468 part A1b).
+export * from "./messageLive.ts";

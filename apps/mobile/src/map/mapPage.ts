@@ -1158,6 +1158,24 @@ export function buildMapPage(language: Language = appLanguage()): string {
       }
       return lowest;
     }
+    // A track without a route (TASK-478): the map framed on all its lines,
+    // as on a route, upright.
+    function frameLines(lines) {
+      var points = [];
+      lines.forEach(function (line) {
+        line.forEach(function (point) {
+          points.push(point);
+        });
+      });
+      if (points.length === 0) {
+        return;
+      }
+      framed = points.reduce(function (box, point) {
+        return box.extend(point);
+      }, new maplibregl.LngLatBounds(points[0], points[0]));
+      framedPoints = points;
+      frame();
+    }
     function frame() {
       inFrame = true;
       map.fitBounds(framed, { padding: framePadding(), bearing: wanted });
@@ -2335,6 +2353,9 @@ export function buildMapPage(language: Language = appLanguage()): string {
             properties: {},
             geometry: { type: "LineString", coordinates: message.coordinates },
           });
+          if (message.frame) {
+            frameLines([message.coordinates]);
+          }
         } else if (message.type === "showStops") {
           setStops({
             type: "FeatureCollection",
@@ -2380,6 +2401,9 @@ export function buildMapPage(language: Language = appLanguage()): string {
             properties: {},
             geometry: { type: "MultiLineString", coordinates: message.skied },
           });
+          if (message.frame) {
+            frameLines(message.skied.concat(message.lifts));
+          }
           setLifts({
             type: "Feature",
             properties: {},

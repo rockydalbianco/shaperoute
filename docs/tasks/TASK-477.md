@@ -9,8 +9,8 @@ e scialpinismo; dopo, in tutti e tre, la scheda si ferma sotto il banner e
 scorre fino ai due bottoni (schermate in `out/TASK-477/`). Dalla prova una
 correzione: lo `ScrollView` aveva bisogno di `flexShrink: 1` per scorrere
 invece di uscire dal pannello. L'utente ha scelto di tenere la scheda del
-volo su tre righe («No, tre righe come oggi»): la #1302 è chiusa. Esce col
-primo OTA dopo il merge.
+volo su tre righe («No, tre righe come oggi»): la #1302 è chiusa. In
+produzione con l'OTA 17 (2026-11-18, 253b5da0).
 
 ## Il difetto
 

@@ -550,3 +550,9 @@ Le altre parti scrivono i loro criteri quando partono.
   già letti dal Feed fino alla rilettura; ora sparisce subito
   (`usePostLink` in `feed/postLink.ts`, quattro test nuovi). Otto schermate
   in `out/TASK-455/shots-e/`; in attesa del sì dell'utente.
+- 2026-11-18: **schermate della parte E approvate dall'utente** («Sì, vanno
+  bene», alla domanda «Vanno bene le schermate di «Share link» e
+  dell'interruttore?»). La #1309 esce dalla bozza e passa al Coordinatore
+  come «pronta». Restano, ognuno con il sì dell'utente al Coordinatore:
+  l'OTA della parte E e la copia del sito (pagina `/p/` della parte D e
+  pagine della privacy rigenerate).

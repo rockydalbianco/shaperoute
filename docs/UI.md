@@ -3838,6 +3838,19 @@ cui tiene i numeri.
   Fermare una condivisione senza link chiede «Stop sharing?» con «Nobody
   can follow you any more.» (scelta 8); con un link resta «The link stops
   working now.».
+- **«Plan a live», la partenza e il tocco della push** (TASK-468 parte
+  B2b1, ADR-0381). In cima alla fila «Live», con un account, la riga «Plan
+  a live ›» (scelta 9) apre un foglio a tutto schermo: lo sport di
+  «Settings», «Name (e.g. Milano Marathon)», «Day and time» (giorno e ora
+  coi pulsanti − e +, a passi di 15 minuti, da adesso a 60 giorni; prima
+  domani alle 9:00), «Who can follow» (Followers · Everyone), «Show my
+  heart rate» spento, «Not now» · «Plan». Quando una registrazione parte
+  (fine del conto alla rovescia) e c'è una propria live programmata nelle
+  sue ore, l'avviso «Start live "{title}"?» con «Your followers can follow
+  you now.» o «Everyone can follow you now.», «Not this time» · «Start
+  live» (scelta 3); mai da sola. Mentre si registra, la propria scheda
+  programmata nella fila ha «Start live». La push «… is live» toccata apre
+  la schermata dal vivo, col nome di chi la fa letto dalla programmata.
 - **La piscina mentre nuoti** (TASK-424 parte C1): sotto l'orologio due
   numeri, «Lengths» (le vasche stimate dal passo delle nuotate prima, 2:00
   /100 m senza nessuna; 0 prima di mezza vasca) e «Calories» («85 kcal»,

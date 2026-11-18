@@ -2920,4 +2920,17 @@ export const ES: Table = {
   "We'll notify you when it starts.": "Te avisamos cuando empiece.",
   "Nobody can follow you any more.": "Ya nadie puede seguirte.",
   "Live · {day} {time} · {title}": "Directo · {day} {time} · {title}",
+  // src/liveShare/ (TASK-468 part B2b1: «Plan a live», the start of a
+  // planned live; en and it approved 2026-11-12, «Plan» and the error to approve)
+  "Plan a live": "Programar un directo",
+  "Name (e.g. Milano Marathon)": "Nombre (p. ej. Milano Marathon)",
+  "Day and time": "Día y hora",
+  'Start live "{title}"?': "¿Iniciar el directo «{title}»?",
+  "Your followers can follow you now.": "Tus seguidores pueden seguirte ahora.",
+  "Everyone can follow you now.": "Todos pueden seguirte ahora.",
+  "Start live": "Iniciar el directo",
+  "Not this time": "Esta vez no",
+  Plan: "Programar",
+  "Couldn't plan the live. Try again.":
+    "No se pudo programar el directo. Inténtalo de nuevo.",
 };

@@ -15,6 +15,7 @@ import {
   sendLiveShareTo,
   sendLiveUpdate,
   setLiveAudience,
+  startPlannedLiveRequest,
   stopLiveShareRequest,
 } from "./liveShareApi";
 import { type LiveEnd, LiveSharer } from "./liveSharer";
@@ -148,7 +149,33 @@ export async function startLiveShare(
     put(OFF);
     return { kind: "failed" };
   }
-  const { id, url } = answer.value;
+  return adopt(api, answer.value.id, answer.value.url);
+}
+
+/** A planned live started now (TASK-468 part B2b1, the user's choice 3):
+ * its share, made by the server with the planned live's audience and heart
+ * rate, without a link, sent from here as any other. */
+export async function startPlannedLive(
+  api: LiveApiOptions,
+  plannedLiveId: string,
+  poolLengthM: number | null = null,
+): Promise<StartOutcome> {
+  if (status.kind !== "off") {
+    return { kind: "busy" };
+  }
+  cancelled = false;
+  put({ kind: "starting" });
+  const answer = await startPlannedLiveRequest(api, plannedLiveId, poolLengthM);
+  if (answer.kind !== "ok") {
+    put(OFF);
+    return { kind: "failed" };
+  }
+  return adopt(api, answer.value.id, answer.value.url);
+}
+
+/** The share made, sent from now on; the activity ended meanwhile: it
+ * stops before anyone has it. */
+function adopt(api: LiveApiOptions, id: string, url: string | null): StartOutcome {
   if (cancelled) {
     // The activity ended meanwhile: the link goes before anyone has it.
     put(OFF);

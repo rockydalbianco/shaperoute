@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), PR del server aperta col sì dell'utente («Le otto forme», 2026-11-18); app nella bozza #1248; le città estere in un secondo giro
+**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), PR del server #1317 col sì dell'utente («Le otto forme», 2026-11-18); app nella bozza #1248; le città estere in un secondo giro
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -484,7 +484,7 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
 
 ## Dove siamo
 
-*2026-11-18, B2*: **PR del server aperta** da `feat/TASK-441-b2-bike` col sì
+*2026-11-18, B2*: **PR del server #1317** da `feat/TASK-441-b2-bike` col sì
 dell'utente («Le otto forme»): 148 uscite in bici in 29 città italiane, il
 seme a 1694. Giro, misure ed esito sopra, in «Parte B2». L'API col seme
 nuovo costa 26 MB in più (185 contro 159 al caricamento); all'avvio dirà

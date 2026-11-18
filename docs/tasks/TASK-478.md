@@ -39,6 +39,14 @@ che si piega».
 
 Lista dei file mandata al Coordinatore. Si fa dopo (a).
 
+**Fatto (PR di (b))**: la maniglia di TASK-472 in cima alla scheda di fine
+(`MapScreen`, prop `endStrip`), la striscia in `EndFoldedStrip.tsx`. Da
+piegata la scheda resta montata ma nascosta, così il modulo tiene le sue
+scelte. Il «Save» della striscia chiama il `save()` di `RunEnd` attraverso
+un prop nuovo, `saveRef`: `RunEnd.tsx` non era nella lista, OK del
+Coordinatore del 2026-11-18. Chiamare `onSaveRun` direttamente avrebbe
+saltato visibilità, foto, salute e Strava.
+
 ## Criteri di accettazione
 
 - [ ] (a) A fine corsa senza percorso, la traccia intera nella mappa

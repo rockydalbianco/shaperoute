@@ -526,3 +526,14 @@ Le altre parti scrivono i loro criteri quando partono.
   approvata, non nomina titolo e sport. Mancano: la prova al simulatore
   (turno del Coordinatore) con le schermate per l'utente. Esce con un OTA
   solo dopo «server C fatto» e la copia del sito con la pagina (parte D).
+- 2026-11-18: **«server C fatto»** (Coordinatore): passo 13 lanciato
+  dall'utente alle ~13:41Z, server a `253b5da0`, `0078_post_links`
+  applicata; le letture di `SERVER-C.md` come previste (`/post` senza
+  chiave 404 con le tre intestazioni, «not an id 404», «feed without key
+  401», colonna `post_links|boolean|NO|true` con tutti e 9 gli account
+  accesi, `[('everyone', 7, 7), ('only_me', 3, 0)]`, le dieci chiavi di un
+  post «Everyone» con 1236 punti, un disegno non pubblico → `None`). Sul
+  server non c'è nessun disegno «Followers»: quel caso lo coprono i test.
+  La pagina (parte D, in `main`) va sul sito con la copia, che il
+  Coordinatore chiede all'utente; la parte E (#1309, CI verde) aspetta il
+  simulatore e le schermate.

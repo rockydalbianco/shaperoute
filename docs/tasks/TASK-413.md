@@ -1,18 +1,13 @@
 # TASK-413 — Ciaspole: forme piccole libere sulla neve
 
-**Stato**: In corso — parte 0 in `main` (#933, `189374bc`); A1 in `main` con
-la #957 (`a63254d3`, mergiata dall'utente) e sul server col passo unico del
-2026-11-10 (main `9cf5576b`; controllo in `out/TASK-413/check-957.md`);
-A2 in `main` con la #1130 (`ac08ae94`, mergiata dall'utente il
-2026-11-11) e sul server col passo 8 (2026-11-11 22:14Z, `ab5b2983`;
-controllo in `out/TASK-413/SERVER-A2.md`), l'app nascosta col decimo OTA;
-A3 (la città detta subito) in `main` con la #1238 (`8f5d0516`, unita
-dall'utente il 2026-11-12), sul server col passo 11 (controllo in
-`out/TASK-413/SERVER-A3.md`), corretta dalla #1266 (`b079f067`: il job
-non passava il conteggio) col passo 12; B e C in `main` con la #1280
-(`335f75f5`); privacy delle quote nella #1281 (`34fed156`, OTA 16);
-accese con la #1296 (`ba569576`). Restano l'OTA che le porta in produzione
-e la prova in Salute sul telefono
+**Stato**: Done (2026-11-18) — parte 0 (#933), A1 (#957), A2 (#1130), A3
+(#1238, corretta dalla #1266), B e C (#1280), privacy delle quote (#1281) e
+accensione (#1296, `ba569576`) in `main` e sul server (passi 8, 11 e 12);
+l'app in produzione con l'OTA 17 (2026-11-18). **Esito**: le ciaspole si
+scelgono, danno una forma da 0,5 a 3 km libera sulla neve o «Record your
+day», con l'avviso valanghe prima; l'uscita salvata arriva in Salute
+(come Escursionismo, Apple non ha le ciaspole), provato dall'utente sul
+telefono il 2026-11-18.
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -423,10 +418,10 @@ Tutte come la proposta, tranne la terza:
       passo 12, prova del 2026-11-12 17:00Z su `eee85a69`: Milano 1,1 s,
       Trento 1,1 s e 0,65 s, tutte «no open snow»; 16170 e 8091 edifici
       contati dalla neve in cache; `out/coordinatore/prova-passo12.out`.)
-- [ ] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
-      e i testi sono in cinque lingue. (Nel codice: #1280 e l'accensione
-      #1296 in `main`, schermate in `out/TASK-413/sim/`. Manca la **prova
-      sul telefono dopo l'OTA**: un'uscita salvata che arriva in Salute.)
+- [x] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
+      e i testi sono in cinque lingue. (#1280 e l'accensione #1296 in
+      `main`, schermate in `out/TASK-413/sim/`; in produzione con l'OTA 17;
+      prova dell'utente sul telefono il 2026-11-18: l'uscita è in Salute.)
 
 ## File toccati
 

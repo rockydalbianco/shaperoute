@@ -1,5 +1,6 @@
 import { type ReactNode, useMemo, useState } from "react";
 import {
+  PanResponder,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,6 +16,7 @@ import { MapKindButton } from "../map/MapKindButton";
 import { color, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { useBackCloses } from "../ui/backLayers";
 import { MapError } from "./ChooseScreen";
+import { FoldHandle, foldedAfter, upOrDown } from "./RunFoldedStrip";
 
 type Props = {
   /** The map itself: mounted by the app for both screens, so it never reloads. */
@@ -36,6 +38,13 @@ type Props = {
    * banner and scrolls, so that nothing falls under the bottom edge.
    */
   scrolls?: boolean;
+  /**
+   * The card at the end of an activity, folded (TASK-478 part b): with it,
+   * the card that scrolls can be dragged down, or its handle touched, and
+   * only this strip is left over the map. `open` opens the card again.
+   * What the card holds stays as it was, the form of the post included.
+   */
+  endStrip?: (open: () => void) => ReactNode;
 };
 
 /**
@@ -52,6 +61,7 @@ export function MapScreen({
   compass,
   children,
   scrolls = false,
+  endStrip,
 }: Props) {
   const insets = useSafeAreaInsets();
   // What lies over the top of the map (TASK-443): the map frames its
@@ -78,6 +88,27 @@ export function MapScreen({
           })
         : null,
     [active, insets.top, width, bannerHeight, hasCompass],
+  );
+  // The card at the end folded to a strip (TASK-478 part b): open again at
+  // the next end.
+  const foldable = active && scrolls && endStrip !== undefined;
+  const [folded, setFolded] = useState(false);
+  const [wasFoldable, setWasFoldable] = useState(foldable);
+  if (wasFoldable !== foldable) {
+    setWasFoldable(foldable);
+    setFolded(false);
+  }
+  const isFolded = foldable && folded;
+  // Up or down on the handle or the strip, not in the card that scrolls:
+  // there the finger scrolls.
+  const drag = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_event, { dx, dy }) => upOrDown(dx, dy),
+        onPanResponderRelease: (_event, { dx, dy }) =>
+          setFolded((now) => foldedAfter(dx, dy, now)),
+      }),
+    [],
   );
   return (
     <View style={styles.screen}>
@@ -133,8 +164,17 @@ export function MapScreen({
           ]}
           testID="map-card"
         >
+          {foldable && (
+            <View {...drag.panHandlers} testID="map-card-fold">
+              <FoldHandle folded={isFolded} onPress={() => setFolded(!isFolded)} />
+              {isFolded && endStrip(() => setFolded(false))}
+            </View>
+          )}
+          {isFolded && <View style={{ height: insets.bottom + space.md }} />}
           <ScrollView
-            style={styles.scroll}
+            // Folded, the card is still there, hidden: what was chosen in
+            // it is kept.
+            style={[styles.scroll, isFolded && styles.hidden]}
             contentContainerStyle={{ paddingBottom: insets.bottom + space.md }}
             keyboardShouldPersistTaps="handled"
             testID="map-card-scroll"
@@ -230,5 +270,8 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 0,
     flexShrink: 1,
+  },
+  hidden: {
+    display: "none",
   },
 });

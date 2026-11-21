@@ -1,12 +1,12 @@
 # TASK-484 — Allenamento in palestra scritto a mano, nel Feed
 
 **Stato**: In lavorazione · parte 0 (documenti) fatta il 2026-11-21; parte A
-(server) aspetta i file approvati dal Coordinatore
+(server) pronta a partire da `main`, file approvati dal Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-484-gym-by-hand` (parte 0)
 **Dipende da**: TASK-481 A (il foglio «Add to Feed» con la lista e
 `addToFeedEntries.ts`), TASK-385 (la palestra, ADR-0327), TASK-411 C (le
 schede)
-**ADR**: ADR-NNNN (numero chiesto al Coordinatore) · applica ADR-0390 e
+**ADR**: ADR-0395 (numero dal Coordinatore) · applica ADR-0390 e
 ADR-0272 alla palestra
 
 ## Obiettivo
@@ -142,7 +142,7 @@ diceva `PUT /me/activities/{key}`: la palestra invece si salva già con
 
 ### A — Server: `source: "manual"` per la palestra
 
-- Migrazione `00NN_gym_by_hand.sql` (numero dal Coordinatore): il `CHECK`
+- Migrazione `0083_gym_by_hand.sql` (provvisoria, il numero definitivo al merge): il `CHECK`
   di `runs.source` con `manual`.
 - `gym_sessions.py`: `source` nella richiesta e nella risposta
   (`GymSessionBody`), i controlli di un `manual`, il valore in `runs`.
@@ -153,12 +153,18 @@ diceva `PUT /me/activities/{key}`: la palestra invece si salva già con
 - Tipi condivisi: `RUN_SOURCES` con `manual`, `source` in
   `GymSessionRequest` e `GymSession`, una fixture nuova.
 - Va sul server prima della parte B: un passo del Coordinatore col sì
-  dell'utente.
+  dell'utente, con i controlli in `out/TASK-484/SERVER-A.md`.
 
-**File toccati (da approvare dal Coordinatore):**
+**Ordine (Coordinatore, 2026-11-21)**: parte da `main`. `activities.py` e
+`test_imported_runs.py` sono stati toccati di recente (461 D1, 355 B1):
+merge di `main` prima del push. In `gym_sessions.py` TASK-483 (lo storico
+degli esercizi) aggiungerà una rotta di lettura: qui solo righe aggiunte o
+cambiate nel modello e in `save`, nessuno spostamento.
+
+**File toccati (approvati dal Coordinatore il 2026-11-21):**
 
 ```
-services/api/migrations/00NN_gym_by_hand.sql            (nuovo)
+services/api/migrations/0083_gym_by_hand.sql            (nuovo)
 services/api/shaperoute_api/gym_sessions.py
 services/api/shaperoute_api/activities.py              (RunSource; manual rifiutato)
 services/api/shaperoute_api/gym_levels.py              (solo source = 'muw')
@@ -193,7 +199,7 @@ docs/tasks/TASK-484.md
   privacy del punto 4 a turno, col sì dell'utente sulle quattro traduzioni.
 - Niente server, niente impronta nativa: esce con un OTA.
 
-**File toccati (da approvare dal Coordinatore):**
+**File toccati (approvati dal Coordinatore il 2026-11-21):**
 
 ```
 apps/mobile/src/gym/GymByHand.tsx                (nuovo: il flusso)
@@ -207,7 +213,8 @@ apps/mobile/src/i18n/{it,de,fr,es}.ts
 docs/tasks/TASK-484.md
 ```
 
-A turno (privacy, punto 4):
+A turno (privacy, punto 4; in coda dopo 309 B1, 417 D2, 312 C2, 481 A e
+485, il Coordinatore dice quando tocca):
 
 ```
 apps/mobile/src/about/content/{en,it,de,fr,es}.ts
@@ -217,7 +224,7 @@ site/privacy/**/index.html                        (rigenerate con make_privacy.m
 
 ## Criteri di accettazione
 
-- [x] **0**: scelte dell'utente scritte qui e nell'ADR; liste dei file al
+- [x] **0**: scelte dell'utente scritte qui e in ADR-0395; liste dei file approvate dal
       Coordinatore.
 - [ ] **A**: un `PUT /me/gym-sessions` con `source: "manual"` si salva e
       torna con `source`; serie `live: true`, pause, `plan` o fine dopo

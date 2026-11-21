@@ -5266,8 +5266,13 @@ TASK-305.md, «Testi di R6».
     bianco, come prima.
   - I tratti si calcolano sul telefono dalla traccia e dalle correzioni a
     mano (`src/air/flightLegs.ts`), come quelli della fine.
-  - La pagina dell'attività riaperta più tardi è la parte R6d, ancora da
-    fare: lì i tratti arrivano dal server.
+  - **La gara riaperta da «My activities»** (parte R6d): la stessa mappa a
+    due colori, coi tratti che arrivano dal server (`flight` di
+    `GET /me/activities/{key}`), perché la traccia dell'API non ha gli
+    orari. Sotto km, tempo e passo, la riga «On foot 1:58:40 · In the air
+    1:43:30» come nel Feed, e la legenda «White: on foot. Yellow: in the
+    air.». Un'API di prima, o un `flight` che non sta sulla traccia: la
+    gara come una corsa, tutta bianca.
 
 ### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
 

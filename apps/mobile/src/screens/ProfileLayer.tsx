@@ -24,6 +24,7 @@ import { askContestOnce } from "../contest/contestKept";
 import { ContestPageHost } from "../contest/ContestPage";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import { t, tPlural } from "../i18n";
+import { useIncomingPostLink } from "../links/useIncomingPostLink";
 import { MessagesContext, useMessagesOf } from "../messages/messagesDoor";
 import { useTabReselect } from "../tabs/tabReselect";
 import { MessagesOverlay } from "../messages/MessagesOverlay";
@@ -409,6 +410,9 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     openLive: openLiveView,
   };
   usePushNotifications(apiUrl, account, opens);
+  // The link of a post opened in the app (TASK-482 part A): its drawing, as
+  // the one of a notification touched.
+  useIncomingPostLink(account, opens.openDrawing);
   // The bell of the header (TASK-367 part C): its lines open what the
   // pushes open.
   const bell = useBellOf(apiUrl, account);

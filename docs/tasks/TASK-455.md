@@ -505,3 +505,54 @@ Le altre parti scrivono i loro criteri quando partono.
   `site/tests/post.test.mjs` che lo controlla, con i file che la pagina
   prende da fuori dalla sua cartella. Il suo `sito.sh` lo aggiorna il
   Coordinatore alla copia.
+- 2026-11-12: **parte E scritta** (`feat/TASK-455-e-share-link`, bozza):
+  «Share link» nel foglietto di «Share» solo sui post `linkable` (dà al
+  foglio del telefono l'indirizzo `getmuw.app/p/#<id>` e nient'altro),
+  «Links to my posts» in «Settings» sotto il VO₂ max con la sua
+  spiegazione, la frase della privacy nelle cinque lingue e le pagine del
+  sito rigenerate (`make_privacy.mjs`). Traduzioni dell'agente. Nella
+  frase della privacy l'agente ha aggiunto «the sport» (la pagina del link
+  mostra «Run · 4.3 km»): **l'utente, alla domanda «Nella frase della
+  privacy sul link va bene aggiungere «the sport»?»: «Sì, aggiungi»**. La
+  frase approvata è quindi: «A post for «Everyone» can also be opened with
+  a link. You, or any member who sees the post, can share its link, and
+  whoever has the link sees the drawing on the map, your username, the
+  title, the sport and the distance on a web page, even without MuW: never
+  your photos, the comments or your times. Search engines are asked not to
+  list these pages. Turn off «Links to my posts» in Settings and no link
+  to your posts works any more. A post for «Followers» or «Only me» never
+  has a link.»
+  Segnalato all'utente anche che la spiegazione dell'interruttore, com'è
+  approvata, non nomina titolo e sport. Mancano: la prova al simulatore
+  (turno del Coordinatore) con le schermate per l'utente. Esce con un OTA
+  solo dopo «server C fatto» e la copia del sito con la pagina (parte D).
+- 2026-11-18: **«server C fatto»** (Coordinatore): passo 13 lanciato
+  dall'utente alle ~13:41Z, server a `253b5da0`, `0078_post_links`
+  applicata; le letture di `SERVER-C.md` come previste (`/post` senza
+  chiave 404 con le tre intestazioni, «not an id 404», «feed without key
+  401», colonna `post_links|boolean|NO|true` con tutti e 9 gli account
+  accesi, `[('everyone', 7, 7), ('only_me', 3, 0)]`, le dieci chiavi di un
+  post «Everyone» con 1236 punti, un disegno non pubblico → `None`). Sul
+  server non c'è nessun disegno «Followers»: quel caso lo coprono i test.
+  La pagina (parte D, in `main`) va sul sito con la copia, che il
+  Coordinatore chiede all'utente; la parte E (#1309, CI verde) aspetta il
+  simulatore e le schermate.
+- 2026-11-18: **prova al simulatore della parte E** (turno dato
+  dall'utente: «simulatore tuo, procedi»; API e database usa e getta, niente
+  sul server). Visto: «Links to my posts» in «Settings» acceso e spento con
+  la spiegazione, in inglese e in italiano; «Share link» sul proprio post
+  (tre voci) e su un post «Everyone» altrui (due voci, senza poster); un
+  post «Followers» con la sola «Send to a friend»; il foglio del telefono
+  con `getmuw.app`, e «Copy» mette negli appunti
+  `https://getmuw.app/p/#<id>`; spento l'interruttore l'API risponde 404
+  al link del proprio post e 200 a quello altrui. **Un difetto trovato e
+  corretto**: spento l'interruttore, «Share link» restava sui propri post
+  già letti dal Feed fino alla rilettura; ora sparisce subito
+  (`usePostLink` in `feed/postLink.ts`, quattro test nuovi). Otto schermate
+  in `out/TASK-455/shots-e/`; in attesa del sì dell'utente.
+- 2026-11-18: **schermate della parte E approvate dall'utente** («Sì, vanno
+  bene», alla domanda «Vanno bene le schermate di «Share link» e
+  dell'interruttore?»). La #1309 esce dalla bozza e passa al Coordinatore
+  come «pronta». Restano, ognuno con il sì dell'utente al Coordinatore:
+  l'OTA della parte E e la copia del sito (pagina `/p/` della parte D e
+  pagine della privacy rigenerate).

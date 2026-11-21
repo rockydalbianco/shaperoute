@@ -1,6 +1,6 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta) · **B3 in `main`** (#1292, `b6e36fcb`: app, la scheda «Sleep» del profilo, spenta) · **C avviata** (bozza #1334, da non unire: il lettore vero e il sonno acceso; build di prova per il solo iPhone dell'utente dal 2026-11-21), poi privacy, App Privacy e la build nativa, D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta) · **B3 in `main`** (#1292, `b6e36fcb`: app, la scheda «Sleep» del profilo, spenta) · **C avviata** (bozza #1334, da non unire: il lettore vero e il sonno acceso; build di prova per il solo iPhone dell'utente dal 2026-11-21) · **E1 in `main`** (#1373, `f38b1980`: il post del sonno da solo, server e contratto, migrazione `0082`; sul server col passo 17, col sì dell'utente) · **E2 scritta a metà** (app: i file nuovi nel branch `feat/TASK-467-e2-sleep-post-app`, gli agganci dopo TASK-312 C2 e TASK-481 A), poi privacy, App Privacy e la build nativa, D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
 `feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1),
 `feat/TASK-467-b1b-sleep-in-feed` (B1b), `feat/TASK-467-b2-sleep-post` (B2),
@@ -786,6 +786,82 @@ scheda come post sono nuovi; il collegamento diretto a Strava non può
 mostrare ad altri i dati (studio TASK-312 E); da Instagram non si importa
 niente, resta la foto dalla galleria.
 
+### Parte E1 — com'è fatta (2026-11-21, branch `feat/TASK-467-e-sleep-post-api`, #1373)
+
+Il post del sonno da solo, sul server e nel contratto («ADR-0380,
+precisazione E», deciso dall'agente su delega dell'utente dentro le
+risposte 10–12; lista dei file approvata dal Coordinatore). Nessuna app lo
+usa ancora: può stare in `main` e sul server senza che si veda niente.
+
+- **Un disegno senza corsa che porta la sua notte** (migrazione
+  `0082_sleep_posts.sql`): `drawings.sleep_night_id` → `sleep_nights`
+  (`ON DELETE CASCADE`), solo senza corsa e pubblicato appena nasce
+  (`drawings_sleep_post_check`), uno per notte
+  (`drawings_of_sleep_night`). È il modello dei post di sole foto
+  (TASK-312 C1, `0080`): reazioni, commenti, segnalazioni, blocchi e
+  «Followers» valgono senza regole nuove.
+- **Le rotte** (`sleep_posts.py`): `PUT`/`GET`/`DELETE
+  /me/sleep-posts/{night}`. `PUT` porta i numeri della notte e
+  `everyone` o `followers` (mai «Only me»); rimandato è lo stesso post,
+  coi numeri e la scelta dell'ultima volta, e non si ripubblica. La chiave
+  del disegno è `sleep` più il giorno (`sleep20260921`); `409` se un post
+  di sole foto ha già quella chiave.
+- **Chi lo riceve**: solo un'app che dice `sleep` in `X-MuW-Reads`
+  (`reads.py`, `Reads.drawings_sql()`: un disegno senza corsa con una
+  notte passa con `sleep`, uno senza notte con `photos`). Tutti gli
+  elenchi filtrano da lì: `feed.py` non è stato toccato. Negli elenchi e
+  nel disegno aperto ha `source` `sleep` e la notte nel campo `sleep`
+  (`sleep_seen.py` la legge anche da `d.sleep_night_id`).
+- **Si tiene solo quello che è pubblicato**, anche qui: una notte resta
+  finché è nel profilo, un'attività la porta o un post è suo
+  (`sleep.py`, e nel database la funzione `sleep_night_left` riscritta più
+  il trigger `drawings_sleep_night_deleted`). Cancellato il post, da
+  chiunque, la notte va via se niente altro la pubblica; `DELETE
+  /me/sleep/{night}` porta via anche il post. Il post e il profilo sono
+  separati: `shared` non cambia, e «Stop sharing» non toglie il post.
+- **Fuori di proposito**, come le sole foto: concorso, badge, gioco,
+  totali, ricerca, link pubblico, post mandato in chat.
+- **Il contratto**: `SleepPostRequest`, `MySleepPost`, `SLEEP_SOURCE`,
+  `SLEEP_POST_VISIBILITIES` in `shared-types/src/sleep.ts`;
+  `DrawingSource` con `sleep`; `reads.json` col tipo nuovo.
+
+**File**. NUOVI: `services/api/migrations/0082_sleep_posts.sql`,
+`shaperoute_api/sleep_posts.py`, `tests/test_sleep_posts.py` (28 test),
+`packages/shared-types/fixtures/sleep-post-request.json`,
+`sleep-post.json`, `test/sleepPost.test.ts`. MODIFICATI:
+`shaperoute_api/sleep.py`, `sleep_seen.py`, `reads.py`, `drawings.py`
+(`DrawingSource` e la `source` in `_SEEN_FIELDS`), `app.py` (due righe),
+`tests/test_reads.py`, `shared-types/src/sleep.ts`, `src/index.ts`,
+`fixtures/reads.json`, `docs/API.md` («Sleep»), `docs/DATABASE.md`.
+
+**Da sapere**:
+
+- TASK-312 fa una sua «C1c»: `GET /me/photo-posts` e gli endpoint delle
+  foto trovano un disegno senza corsa per account e chiave senza guardare
+  `sleep_night_id`. Va prima dell'app E2.
+- Sul server: passo 17 (del Coordinatore, col sì dell'utente); i controlli
+  di sola lettura in `out/TASK-467/SERVER-E1.md`, non provati sul server.
+
+### Parte E2 — l'app del post del sonno (2026-11-21, branch `feat/TASK-467-e2-sleep-post-app`, in corso)
+
+Scritti i file nuovi, non montati (nessuna PR): `api/sleepPosts.ts` (le
+tre chiamate), `feed/SleepPostPage.tsx` (la pagina «Sleep»: la scheda del
+profilo, il selettore che parte su «Everyone», «Publish» e la riga sotto;
+notte già pubblicata: «Already in the Feed» e «Remove post»; senza il sì a
+leggere il sonno, lo stesso pulsante della scheda del profilo),
+`feed/SleepPostCard.tsx` (nel Feed, al posto della mappa: «Sleep score»,
+punteggio e parola, ore, le fasi; nella pagina del post anche la nota), coi
+test. Tutto dietro `SLEEP_POSTS_ON`.
+
+**Restano gli agganci**, dopo TASK-312 C2 (l'app dei disegni senza corsa)
+e TASK-481 A (il foglio nuovo del «+», `feed/addToFeedEntries.ts`):
+`api/reads.ts` dice `sleep` solo con la costante accesa; la voce «Sleep»
+nel foglio; un ramo dove C2 separa i disegni senza corsa (scheda del Feed,
+pagina del post, griglia del profilo); i testi nelle quattro lingue;
+`UI.md`. La lista esatta al Coordinatore quando i due sono in `main`. Per
+vederlo sul telefono servirà una build di prova nuova (col sì
+dell'utente, chiesta al Coordinatore).
+
 ## Criteri di accettazione
 
 - [x] Le scelte di prodotto sono dell'utente e stanno in questo file.
@@ -833,7 +909,14 @@ niente, resta la foto dalla galleria.
   disegnano esattamente come prima e non parte nessuna richiesta sul
   sonno, coi test; `SLEEP_POSTS_ON` resta `false`, nessun lettore, nessun
   file nativo, `sleepModules.test.ts` invariato.
-- [ ] Parti C, D, E: criteri scritti qui quando partono.
+- [x] E1: il post del sonno sul server e nel contratto, coi test (28): uno
+  per notte, mai «Only me», pubblicato appena nasce; lo riceve solo
+  un'app che legge `sleep`; la notte resta sul server solo finché
+  qualcosa la pubblica; nessun orario.
+- [ ] E2: la voce «Sleep» nel «+», la pagina con «Publish», la scheda nel
+  Feed e la pagina del post; con `SLEEP_POSTS_ON` spento niente si vede e
+  l'app non dice `sleep`, coi test.
+- [ ] Parti C, D: criteri scritti qui quando partono.
 
 ## File toccati (documenti, questa PR)
 
@@ -929,3 +1012,9 @@ niente, resta la foto dalla galleria.
   attività, il sonno nel post. L'utente chiede il post del sonno da solo
   nel Feed e il «+» con tutte le voci: risposte 10–12 e «Parte E — il
   piano».
+- **2026-11-21, E1 in `main`**: #1373 unita dal Coordinatore a CI verde
+  (`f38b1980`), migrazione `0082` (la `0081` è di TASK-484 A, entrata
+  prima). Le scelte in `DECISIONS.md`, «ADR-0380, precisazione E». Il
+  «+» con tutte le voci è TASK-481. Restano: il passo 17 sul server col sì
+  dell'utente, gli agganci di E2 dopo TASK-312 C2 e TASK-481 A, una build
+  di prova nuova per vederlo sul telefono; poi la C.

@@ -28,7 +28,7 @@ from test_drawings import (
 
 from shaperoute_api.activities import ActivityRequestBody
 from shaperoute_api.db import Database
-from shaperoute_api.gym_sessions import GymSessionRequestBody
+from shaperoute_api.gym_sessions import ENDS_LATER, GymSessionRequestBody
 from shaperoute_api.reads import READS_HEADER
 from shaperoute_api.strava import SPORT_TYPES
 
@@ -46,6 +46,19 @@ Headers = dict[str, str]
 def workout(**changes: Any) -> dict[str, Any]:
     body = json.loads((FIXTURES / "gym-session.json").read_text(encoding="utf-8"))
     return {**body, **changes}
+
+
+def by_hand(**changes: Any) -> dict[str, Any]:
+    """The example of a workout written by hand (TASK-484, ADR-0395)."""
+    body = json.loads(
+        (FIXTURES / "gym-session-manual.json").read_text(encoding="utf-8")
+    )
+    return {**body, **changes}
+
+
+def by_hand_kept(**changes: Any) -> dict[str, Any]:
+    """by_hand as changes to kept's example: without its timer."""
+    return {"pauses": [], "rests": 0, "rest_s": 0, **by_hand(**changes)}
 
 
 def reading(headers: Headers, kinds: str = GYM_APP) -> Headers:
@@ -128,6 +141,35 @@ def test_overlapping_pauses_count_once() -> None:
     assert body.duration_s() == 3_900 - 400
 
 
+def test_the_example_written_by_hand_is_a_request() -> None:
+    body = GymSessionRequestBody.model_validate(by_hand())
+    assert body.source == "manual"
+    assert body.duration_s() == 3_900
+    assert len(body.sets) == 12
+    assert not any(item.live for item in body.sets)
+    # A workout of an older app was recorded.
+    assert GymSessionRequestBody.model_validate(workout()).source == "muw"
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"sets": []},
+        {"sets": [{**by_hand()["sets"][0], "live": True}]},
+        {"pauses": [{"from_s": 100, "to_s": 200}]},
+        {"rests": 3},
+        {"rest_s": 120},
+        {"plan": "abcdefgh12345678"},
+        {"source": "file"},
+    ],
+)
+def test_a_workout_written_by_hand_has_no_timer_behind_it(
+    changes: dict[str, Any],
+) -> None:
+    with pytest.raises(ValueError):
+        GymSessionRequestBody.model_validate(by_hand(**changes))
+
+
 def test_a_run_with_a_track_is_no_workout_at_the_gym() -> None:
     with pytest.raises(ValueError):
         ActivityRequestBody.model_validate(run(activity="gym"))
@@ -195,6 +237,44 @@ def test_a_clock_that_is_no_clock_is_refused(
         headers=me,
     )
     assert answer.status_code == 422
+
+
+def test_a_workout_written_by_hand_is_saved_as_such(
+    client: TestClient, database: Database  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    first = kept(client, me, **by_hand_kept())
+    assert first["source"] == "manual"
+    assert first["duration_s"] == 3_900
+    assert first["sets"] == by_hand()["sets"]
+    assert client.get(f"/me/gym-sessions/{GYM_KEY}", headers=me).json() == first
+    with database.connect() as conn:
+        row = conn.execute("SELECT source, activity FROM runs").fetchone()
+    assert (row["source"], row["activity"]) == ("manual", "gym")
+    # One recorded says so too.
+    assert kept(client, me, "1a2b3c4d5e6f7081")["source"] == "muw"
+
+
+def test_a_workout_written_by_hand_ends_before_now(
+    client: TestClient, wall: WallClock  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    # The clock of the phone may be a day ahead, as for any run (CLOCK_AHEAD):
+    # begun within it, the example ends after it.
+    wall.t = datetime(2026, 11, 3, 18, 0, tzinfo=UTC)
+    answer = client.put(f"/me/gym-sessions/{GYM_KEY}", json=by_hand(), headers=me)
+    assert answer.status_code == 422
+    assert answer.json()["error"]["message"] == ENDS_LATER
+
+
+def test_the_database_takes_no_other_source(
+    client: TestClient, database: Database  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    kept(client, me)
+    with database.connect() as conn:
+        with pytest.raises(psycopg.errors.CheckViolation):
+            conn.execute("UPDATE runs SET source = 'strava'")
 
 
 def test_my_activities_hold_it_for_an_app_that_reads_it(

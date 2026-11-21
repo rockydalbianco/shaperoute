@@ -1289,6 +1289,12 @@ Un'app dice **`photos`** quando sa mostrare un post di sole foto, un
 disegno senza corsa (TASK-312 parte C, «Photo posts», sotto): senza, ogni
 elenco lo lascia fuori e `GET /drawings/{id}` è `404`.
 
+Un'app dice **`sleep`** quando sa mostrare il post di una notte di sonno,
+un disegno senza corsa che porta la sua notte (TASK-467 parte E, «Sleep»,
+sotto): senza, ogni elenco lo lascia fuori e `GET /drawings/{id}` è `404`.
+È un tipo a sé e non `photos`: l'app delle sole foto lo mostrerebbe come un
+post senza foto.
+
 Nello stesso header un'app dice **`post`** quando sa mostrare un post
 allegato a un messaggio (TASK-455, ADR-0382, «Un post in un messaggio»,
 sotto). Non è un tipo di corsa: lo legge `messages.py`, non `reads.py`.
@@ -2714,6 +2720,11 @@ tipi in `shared-types` (`PhotoPostRequest`, `PhotoPostOrderRequest`,
   ripubblica.
 - `GET /me/photo-posts/{key}` → `200` `MyPhotoPost`; `404` «No post of
   photos with this key.».
+- `GET /me/photo-posts` → `200` `MyPhotoPosts` (`{ "photo_posts": [...] }`,
+  `fixtures/my-photo-posts.json`): tutti i post di sole foto dell'account,
+  l'ultimo pubblicato prima, quelli senza foto per quando sono stati tenuti
+  l'ultima volta. L'app ci trova la `key` di un post aperto dal suo id, per
+  modificarlo o cancellarlo anche da un altro telefono (parte C1b).
 - `DELETE /me/photo-posts/{key}` → `204` sempre: con le sue foto, i tag,
   le reazioni, i commenti e le segnalazioni.
 - `PUT /me/photo-posts/{key}/photos/{n}` (`n` da 1 a 10, nessuna mappa
@@ -3331,6 +3342,19 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   stesso account cominciati prima (anche quelli salvati dopo); prima il
   livello più alto; `[]` senza. Con gli esercizi: nascosti loro, nascosti
   anche i livelli.
+- **Scritto a mano** (TASK-484, ADR-0395): `"source": "manual"` nella
+  richiesta, per un allenamento già fatto scritto dal «+» del Feed
+  (esempio `fixtures/gym-session-manual.json`). Vuole almeno una serie,
+  tutte `live: false`, nessuna pausa, `rests` e `rest_s` a zero, niente
+  `plan` (altrimenti `422`), e una fine non oltre adesso più il margine
+  dell'orologio di ogni corsa (un giorno): oltre, `422` «A workout written
+  by hand ends before now.». Senza `source` è `muw`, come prima. `GymSession`
+  risponde sempre con `source`; le risposte di «My activities», del Feed e
+  dei disegni lo dicono come per un file (le app mostrano «Imported» per
+  ogni valore diverso da `muw`). Non raggiunge livelli (`new_levels` `[]`,
+  profilo invariato) e resta fuori da classifica, badge, concorso e gioco,
+  che leggono solo `muw`. `PUT /me/activities/{key}` rifiuta `manual`
+  (`422`).
 - **`GET /gym/leaderboard?exercise=&month=`** (parte F, ADR-0327
   precisazione F): la classifica mensile di un esercizio del catalogo con
   una scala (`404` `unknown_exercise` per gli altri), in un mese di
@@ -3469,7 +3493,7 @@ traccia**, come la palestra, con la routine fatta. Token richiesto; tipi in
 - Nessun punteggio di forma, nessun record, nessun luogo, niente Strava
   (una corsa senza traccia non si manda). Test in `test_stretching_api.py`.
 
-### Sleep (TASK-467 parti B1 e B1b, ADR-0380)
+### Sleep (TASK-467 parti B1, B1b ed E, ADR-0380)
 
 Le notti di sonno che una persona pubblica. Il punteggio lo calcola il
 telefono dai dati di Apple Salute (ADR-0379); al server arriva **solo il
@@ -3499,7 +3523,26 @@ Una notte si pubblica in due modi, ognuno col suo interruttore:
 | `GET /me/activities/{key}/sleep` | la notte dell'attività, per il suo proprietario | `200` `ActivitySleep`, o `404` |
 | `DELETE /me/activities/{key}/sleep` | l'attività senza notte | `204`, anche la seconda volta |
 | `GET /drawings/{id}/sleep` | la notte nel post, per chi vede il disegno e finché è mostrata | `200` `SleepSummary`, o `404` |
+| `PUT /me/sleep-posts/{night}` | la notte come **post a sé** nel Feed (parte E): i numeri e `visibility` (`everyone` o `followers`); fatto e pubblicato la prima volta, poi cambia numeri e chi lo vede | `200` `MySleepPost`; `422` per un giorno che non è una notte; `409` se un altro post ha la chiave di quella notte |
+| `GET /me/sleep-posts/{night}` | il post di quella notte, per il suo proprietario | `200` `MySleepPost`, o `404` |
+| `DELETE /me/sleep-posts/{night}` | il post via dal Feed | `204`, anche la seconda volta |
 
+- **Il post di una notte** (parte E, `sleep_posts.py`, tipi
+  `SleepPostRequest` e `MySleepPost`, esempi `fixtures/sleep-post*.json`):
+  pubblicato dal «+» del Feed senza un'attività. È **un disegno senza
+  corsa** che porta la sua notte (`drawings.sleep_night_id`, migrazione
+  `0082`), come il post di sole foto: reazioni, commenti, segnalazioni,
+  blocchi e «Followers» valgono come per ogni disegno. Uno per notte
+  (la chiave è `sleep` più il giorno, `sleep20260921`), pubblicato appena
+  nasce; mai «Only me». Negli elenchi e in `GET /drawings/{id}` ha
+  `source` **`sleep`**, la notte nel campo `sleep`, nessuna attività,
+  nessuna linea, nessuna foto. **Lo riceve solo un'app che dice `sleep`
+  in `X-MuW-Reads`** (a quella delle sole foto non arriva). Non conta per
+  concorso, badge, gioco e totali, non entra nella ricerca, nel link
+  pubblico né nei messaggi. È separato dal profilo: non tocca `shared`, e
+  «smetti di condividere» non lo toglie. Cancellato il post, la notte va
+  via dal server se né il profilo né un'attività la pubblicano;
+  `DELETE /me/sleep/{night}` porta via anche il post.
 - **I numeri**: `score` intero da 0 a 100; `asleep_min` da 1 a 1440;
   `awake_min` da 0 a 1440 (sveglio fra l'addormentarsi e l'ultimo
   risveglio); `stages` (`rem_min`, `light_min`, `deep_min`: «Light» è il
@@ -3548,6 +3591,70 @@ Una notte si pubblica in due modi, ognuno col suo interruttore:
 - Cancellare l'account cancella tutte le sue notti. Nessun punteggio lo
   calcola il server, nessuna classifica, nessuna ricerca, niente Strava.
   Test in `test_sleep.py`.
+
+### Gear (TASK-486 parte A, ADR-0393)
+
+L'attrezzatura di un iscritto: scarpe, bici, sci, caschi, imbraghi, vele,
+tutto, ognuno con marca, modello, un nome suo, la data d'acquisto, una nota
+e una foto; agganciato alle attività, conta da solo metri, secondi e
+attività. Token richiesto: senza, `401 not_signed_in`; senza database,
+`503`. Il codice in `gear.py`; i tipi in `shared-types` arrivano con la
+parte B (l'app), finché nessuna app lo chiama.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /me/gear` | la mia attrezzatura, in uso prima, poi ritirata | `200` `{gear: [...]}` |
+| `POST /me/gear` | un attrezzo nuovo, intero | `201` l'attrezzo |
+| `PUT /me/gear/{id}` | l'attrezzo intero, cambiato | `200`, `404` se non è mio |
+| `DELETE /me/gear/{id}` | via, con foto e agganci | `204`, `404` |
+| `PUT /me/gear/{id}/photo` | la foto, `{image}` in base64 (JPEG o PNG) | `200` l'attrezzo con `photo_url` |
+| `DELETE /me/gear/{id}/photo` | via la foto | `204`, `404` se non è mio |
+| `GET /me/activities/{key}/gear` | gli attrezzi di un'attività mia | `200` `{gear}`, `404` |
+| `PUT /me/activities/{key}/gear` | tutta la lista, `{gear_ids}` | `200` `{gear}` |
+| `GET /users/{public_id}/gear` | l'attrezzatura di un profilo | `200` `{gear}`, `404` |
+| `GET /gear/{id}` | un attrezzo | `200`, `404` |
+| `GET /gear/{id}/photo?v=` | la sua foto | `200` `image/jpeg`, `404` |
+
+- **I campi**: `kind` da `gear.GearKind` (`shoes`, `bike`, `skis`,
+  `ski_boots`, `snowboard`, `poles`, `boots`, `climbing_shoes`, `harness`,
+  `helmet`, `rope`, `crampons`, `ice_axe`, `snowshoes`, `inline_skates`,
+  `sail`, `board`, `paddle`, `boat`, `wetsuit`, `paraglider`,
+  `wheelchair`, `clothing`, `backpack`, `watch`, `other`: la lista cresce
+  con una migrazione, non si accorcia); `brand` obbligatoria (40
+  caratteri), `model` (80), `name` (40), `bought_on` (dal 1950, non dopo
+  oggi), `note` (500, a capo ammessi), `limit_m` (da 1 km a 100 000 km),
+  `off_profile` («Hide from profile»), `retired` («Retire»), `defaults`
+  (gli sport, i nomi di `runs.activity`, che partono con l'attrezzo già
+  scelto, anche più attrezzi per sport). Spazi intorno tolti, vuoti
+  `null`.
+- **Le parole le leggono gli altri**: un carattere di controllo (nella
+  nota tranne l'a capo) o un indirizzo: `422 invalid_request`; il filtro
+  dei commenti: `422 comment_rejected` con `reason`. Al più **200
+  attrezzi** per account (`409`).
+- **La risposta**: `id`, i campi, `retired`, `photo_url` (con la versione:
+  l'indirizzo cambia quando cambia la foto, che si tiene in cache),
+  `totals` (`distance_m`, `duration_s`, `activities`: le somme delle
+  attività agganciate, contate dal server, mai i numeri del telefono),
+  `created_at`. Solo al proprietario `off_profile`, `limit_m`, `defaults`
+  e `hidden` (nascosto dopo una segnalazione); agli altri mancano.
+- **Ritirato**: fuori dai predefiniti (i suoi `defaults` si svuotano), con
+  i suoi totali; ritirato di nuovo tiene il primo giorno. Nella lista dopo
+  quelli in uso, i più vecchi prima.
+- **Su un'attività**: la lista intera, al più **10**, solo attrezzi miei
+  (anche ritirati: un'attività di prima), se no `422`; un id due volte
+  conta una. L'app manda i predefiniti dello sport a fine attività (parte
+  C). Cancellare l'attività toglie i suoi agganci e i suoi metri.
+- **Chi lo vede**: chi vede il profilo, cioè ogni iscritto tranne uno che
+  un blocco tiene lontano (`follows.apart_sql`, `404` come per nessuno),
+  senza gli attrezzi `off_profile` e quelli nascosti dopo una
+  segnalazione. Il proprietario sul suo profilo lo vede come gli altri
+  (più i suoi nascosti dopo una segnalazione).
+- **La foto**: diritta, al più **1024 px** sul lato lungo, un JPEG nuovo
+  senza l'EXIF del telefono; al più 10 al minuto per account (`429`).
+- **Segnalazioni**: `POST /reports` con `kind: "gear"`; dall'email
+  «Hide» nasconde l'attrezzo intero, foto compresa, a tutti tranne al
+  proprietario. Cancellare l'account cancella attrezzi, foto e agganci.
+  Test in `test_gear.py`.
 
 ### Live shares (TASK-424, ADR-0352)
 

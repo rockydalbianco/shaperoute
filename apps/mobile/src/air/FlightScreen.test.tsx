@@ -13,7 +13,13 @@ import {
 } from "@testing-library/react-native";
 
 import { FIXED_LINE, FlightScreen } from "./FlightScreen";
-import { loadFlightPrefs } from "./flightLayout";
+import {
+  defaultFlightPrefs,
+  loadFlightPrefs,
+  pagesOf,
+  profileName,
+  saveFlightPrefs,
+} from "./flightLayout";
 import { numberSize } from "./FlightWidget";
 import { resetFlightNotice } from "./flightNotice";
 import { flightOf, T0 } from "./syntheticFlight";
@@ -128,11 +134,90 @@ describe("FlightScreen", () => {
     await fireEvent.press(screen.getByText("Sunlight"));
     await fireEvent.press(screen.getByTestId("flight-options-done"));
     expect(screen.getByTestId("widget-glide")).toBeTruthy();
-    expect(loadFlightPrefs("km")).toEqual({
-      preset: "xc",
-      look: "sun",
-      units: { altitude: "ft", vario: "mps", speed: "kmh" },
+    const kept = loadFlightPrefs("km");
+    expect(profileName(kept.profiles[kept.current])).toBe("XC");
+    expect(kept.look).toBe("sun");
+    expect(kept.units).toEqual({ altitude: "ft", vario: "mps", speed: "kmh" });
+  });
+});
+
+describe("the editor (part B2)", () => {
+  beforeEach(() => {
+    saveFlightPrefs(defaultFlightPrefs("km"));
+  });
+
+  async function holdVario() {
+    await showScreen();
+    await fireEvent(screen.getByTestId("flight-hold-vario"), "longPress");
+    await fireEvent(screen.getByTestId("flight-editor-grid"), "layout", {
+      nativeEvent: { layout: { width: 390, height: 400 } },
     });
+  }
+
+  it("opens on the widget held", async () => {
+    await holdVario();
+    expect(screen.getByTestId("flight-editor")).toBeTruthy();
+    expect(
+      screen.getByTestId("flight-editor-cell-vario").props.accessibilityState,
+    ).toEqual({
+      selected: true,
+    });
+  });
+
+  it("moves a widget, swapping it with one of its size, and keeps it", async () => {
+    await holdVario();
+    await fireEvent.press(screen.getByTestId("flight-editor-move-down"));
+    const page = pagesOf(loadFlightPrefs("km"))[0];
+    expect(page.find((cell) => cell.widget === "vario")).toMatchObject({
+      col: 0,
+      row: 2,
+    });
+    expect(page.find((cell) => cell.widget === "thermalAssistant")).toMatchObject({
+      col: 0,
+      row: 0,
+    });
+  });
+
+  it("gives a widget its own unit, shown on the flight screen", async () => {
+    await holdVario();
+    await fireEvent.press(screen.getByTestId("flight-editor-unit"));
+    expect(screen.getByText("Unit: m/s")).toBeTruthy();
+    await fireEvent.press(screen.getByTestId("flight-editor-unit"));
+    expect(screen.getByText("Unit: ft/min")).toBeTruthy();
+    await fireEvent.press(screen.getByTestId("flight-editor-done"));
+    expect(pagesOf(loadFlightPrefs("km"))[0][0].unit).toBe("fpm");
+    expect(screen.getAllByText("ft/min").length).toBeGreaterThan(0);
+  });
+
+  it("says when a page has no room for one more widget", async () => {
+    await holdVario();
+    await fireEvent.press(screen.getByTestId("flight-editor-add"));
+    await fireEvent.press(screen.getByTestId("flight-editor-add-clock"));
+    expect(screen.getByText("No room on this page.")).toBeTruthy();
+  });
+
+  it("adds a page and a widget on it", async () => {
+    await holdVario();
+    await fireEvent.press(screen.getByTestId("flight-editor-add-page"));
+    expect(screen.getByText("Page 3 of 3")).toBeTruthy();
+    await fireEvent.press(screen.getByTestId("flight-editor-add"));
+    await fireEvent.press(screen.getByTestId("flight-editor-add-clock"));
+    expect(pagesOf(loadFlightPrefs("km"))[2]).toEqual([
+      { widget: "clock", col: 0, row: 0, w: 2, h: 1 },
+    ]);
+  });
+
+  it("duplicates the layout and puts the copy on screen", async () => {
+    await holdVario();
+    await fireEvent.press(screen.getByTestId("flight-editor-duplicate"));
+    const kept = loadFlightPrefs("km");
+    expect(kept.profiles.map(profileName)).toEqual([
+      "Thermal",
+      "XC",
+      "Minimal",
+      "Thermal 2",
+    ]);
+    expect(screen.getByText("Thermal 2")).toBeTruthy();
   });
 });
 

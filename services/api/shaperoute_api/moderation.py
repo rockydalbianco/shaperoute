@@ -13,7 +13,8 @@ GET /me/blocked lists the members blocked, the last first, to unblock them.
 POST /reports keeps what a member reports, a drawing, a comment, a
 member, a group run (TASK-309), a private message (TASK-319: only the
 other member of its conversation reports it) or an item tagged on a photo
-(TASK-394, outfit_tags.py), with a reason from a short list: one row for
+(TASK-394, outfit_tags.py) or an item of gear (TASK-486, gear.py),
+with a reason from a short list: one row for
 each reporter and thing, the latest reason kept. No endpoint reads them
 (ADR-0228): a new report is emailed to whoever runs
 the app, with a link that hides the thing (report_email.py, TASK-291,
@@ -63,10 +64,12 @@ from shaperoute_api.follows import (
 from shaperoute_api.report_email import notify_report
 from shaperoute_api.schemas import ErrorBody
 
-ReportKind = Literal["drawing", "comment", "user", "group_run", "message", "outfit_tag"]
+ReportKind = Literal[
+    "drawing", "comment", "user", "group_run", "message", "outfit_tag", "gear"
+]
 """What is reported: a drawing (a post of the feed), a comment, a member, a
 group run (TASK-309), a private message (messages.py), an item tagged on a
-photo (outfit_tags.py)."""
+photo (outfit_tags.py), an item of gear (gear.py, TASK-486)."""
 ReportReason = Literal["spam", "offensive", "harassment", "sexual", "other"]
 """The short list the app shows, in this order. Codes, never the words: the
 app says them in its language. The migration's CHECK holds the same list."""
@@ -100,6 +103,7 @@ OWNER_OF: dict[ReportKind, str] = {
         "SELECT d.user_id AS owner FROM drawing_outfit_tags t"
         " JOIN drawings d ON d.id = t.drawing_id WHERE t.id = %s"
     ),
+    "gear": "SELECT user_id AS owner FROM gear WHERE id = %s",
 }
 
 
@@ -114,7 +118,8 @@ class ReportRequestBody(BaseModel):
     kind: ReportKind
     id: UUID
     """The drawing's id, the comment's id, the member's public_id, the
-    group run's id, the message's id or the item's id."""
+    group run's id, the message's id, the tagged item's id or the gear's
+    id."""
     reason: ReportReason
 
 

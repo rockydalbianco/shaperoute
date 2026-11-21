@@ -1385,6 +1385,16 @@ dopo la 0079 di TASK-475 A). **Un post di sole foto è un disegno senza corsa**:
   altri vogliono `published_at` pieno. Test in `test_photo_posts.py` e
   `test_photo_posts_seen.py`.
 
+Migrazione `0083_gym_by_hand.sql` (TASK-484 parte A, ADR-0395, `API.md`
+«Gym»; numero provvisorio del Coordinatore, il definitivo al merge, dopo
+la 0081 di TASK-467 E e la 0082 di TASK-485). **Un allenamento in palestra
+scritto a mano**: il vincolo `runs_source_check` di 0034 accetta anche
+`manual`, che scrive solo `PUT /me/gym-sessions/{key}`. Nessuna colonna
+nuova, nessuna riga di prima cambia, nessun backfill. I livelli
+(`gym_levels.py`) leggono solo `source = 'muw'`, come già classifica,
+badge, concorso e gioco. Test in `test_gym.py`, `test_gym_levels.py` e
+`test_imported_runs.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

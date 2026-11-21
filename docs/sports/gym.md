@@ -26,6 +26,24 @@ esercizi e le scale dei traguardi. Lo scrive la sessione di TASK-385.
   l'iscrizione, o com'era se la pagina viene lasciata. Lo stesso alla fine
   di una nuotata in piscina.
 
+## Scritto a mano, dal «+» del Feed (TASK-484, ADR-0395)
+
+Un allenamento già fatto, scritto dopo con «Gym workout» nel foglio «Add
+to Feed» (scelte dell'utente del 2026-11-21):
+
+- **Si scrive con l'editor delle schede**: una riga per esercizio, serie ×
+  ripetizioni o × tempo, un valore uguale per tutte le serie; «From a
+  plan» parte dagli esercizi di una propria scheda. Sopra giorno, ora
+  d'inizio e durata; sotto il post della palestra con «Imported», che
+  parte da «Everyone».
+- **Sul server** è un allenamento come gli altri con `source` `manual`
+  (`API.md` «Gym»): serie tutte non dal vivo, nessuna pausa né recupero,
+  nessuna scheda, finito prima di adesso.
+- **Conta** per il Feed, «My activities» e il calendario, con «Imported»;
+  le kcal si stimano dalla durata. **Non conta** per i livelli (niente
+  «New level»), la classifica, i badge, il gioco, il concorso, Apple
+  Salute e Health Connect, né segna fatto il giorno della scheda.
+
 ## Cosa non registra
 
 - Nessuna traccia, nessuna distanza della sessione (la distanza di un blocco
@@ -75,10 +93,11 @@ inventati, non a giudicare. Un «Custom» non ha scala né classifica.
 
 ## I traguardi sul profilo e nel post (parte E)
 
-- **Contano tutti gli allenamenti**, anche i privati (scelta dell'utente
-  del 2026-11-06, come i record personali): il profilo mostra figura,
-  esercizio e valore, mai l'allenamento. Contano anche le serie aggiunte
-  dopo «Stop»; «solo dal vivo» vale per la classifica.
+- **Contano tutti gli allenamenti registrati con MuW**, anche i privati
+  (scelta dell'utente del 2026-11-06, come i record personali): il profilo
+  mostra figura, esercizio e valore, mai l'allenamento. Contano anche le
+  serie aggiunte dopo «Stop»; «solo dal vivo» vale per la classifica. Uno
+  scritto a mano non conta (sotto).
 - **Sul profilo** il blocco «🏋️ Gym», dopo i record e il VO₂ max: ogni
   esercizio dal livello 1, prima il livello più alto, con la figura e la
   serie migliore. I primi cinque, gli altri sotto «Show more» (scelta

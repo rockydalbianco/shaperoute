@@ -44,7 +44,7 @@ from shaperoute_api.contests import Contests
 from shaperoute_api.db import Database, migrations
 from shaperoute_api.drawings import DrawingDetailBody, MyDrawingBody
 from shaperoute_api.expo_push import Expo
-from shaperoute_api.feed import FeedBody, FeedPostBody
+from shaperoute_api.feed import FeedCardBody, FeedPageBody
 from shaperoute_api.game_backfill import backfill
 from shaperoute_api.push import Pusher
 from shaperoute_api.strava import IMPORTED
@@ -213,8 +213,9 @@ def test_the_examples_are_the_bodies() -> None:
     assert set(one) == set(DrawingDetailBody.model_fields)
     assert DrawingDetailBody.model_validate(one).source == "file"
     page = _load("feed-imported.json")
-    assert set(page["posts"][0]) == set(FeedPostBody.model_fields)
-    assert FeedBody.model_validate(page).posts[0].source == "file"
+    # With what the card counts (TASK-355 part B).
+    assert set(page["posts"][0]) == set(FeedCardBody.model_fields)
+    assert FeedPageBody.model_validate(page).posts[0].source == "file"
     # The same run in each.
     assert mine["id"] == one["id"] == page["posts"][0]["id"]
     assert (

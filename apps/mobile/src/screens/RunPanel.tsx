@@ -76,8 +76,10 @@ export function useNow(on: boolean, everyMs: number): number {
   return now;
 }
 
-/** Along a route: the metres left, and the share of it done, 0 to 1. */
-export type RouteProgress = { remainingM: number; done: number };
+/** Along a route: the metres left, and the share of it done, 0 to 1. A
+ * plan's day recorded freely (TASK-461 B2c) is one too, its metres of climb
+ * for a hike to a climb (`climb`). */
+export type RouteProgress = { remainingM: number; done: number; climb?: boolean };
 
 export type RunNumbers = {
   /** "2.34": the kilometres, without their unit; with miles, the miles. */
@@ -158,7 +160,7 @@ export function useRunNumbers(
   const energyOf: RunActivity = sport ?? activity ?? DEFAULT_ACTIVITY;
   // The descents of a day of skiing: once per fix, not once per second.
   const day = useMemo(() => skiedDay(energyOf, track), [energyOf, track]);
-  const eta = route ? etaMs(route.remainingM, track, ms) : null;
+  const eta = route && route.climb !== true ? etaMs(route.remainingM, track, ms) : null;
   // The seconds of a kilometre or of a mile, as a pace or as a speed.
   const said = (seconds: number | null) =>
     seconds === null
@@ -197,7 +199,9 @@ export function useRunNumbers(
             ),
           ),
     toGo: route
-      ? t("{distance} to go", { distance: distanceLabel(route.remainingM, units) })
+      ? route.climb === true
+        ? t("{m} m of climb to go", { m: String(Math.round(route.remainingM)) })
+        : t("{distance} to go", { distance: distanceLabel(route.remainingM, units) })
       : null,
     eta: eta === null ? null : aboutMinutes(eta),
   };

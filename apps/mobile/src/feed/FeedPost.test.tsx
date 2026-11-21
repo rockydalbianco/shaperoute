@@ -140,7 +140,10 @@ test("the large radius and no border; the names medium; the finger answered thro
     .mockReturnValue({ start: jest.fn(), stop: jest.fn(), reset: jest.fn() });
   await render(<FeedPost post={POST} width={358} onOpen={jest.fn()} />);
   const card = screen.getByTestId("feed-post");
-  expect(card).toHaveStyle({ borderRadius: radius.xl, backgroundColor: color.surface });
+  expect(card).toHaveStyle({
+    borderRadius: radius.card,
+    backgroundColor: color.surface,
+  });
   expect(
     (StyleSheet.flatten(card.props.style) as { borderWidth?: number }).borderWidth,
   ).toBeUndefined();

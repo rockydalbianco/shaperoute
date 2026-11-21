@@ -52,6 +52,7 @@ from shaperoute_api.activity_graphs import (
     ground_for,
     source_for,
 )
+from shaperoute_api.avatars import install_avatars
 from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.comment_reactions import install_comment_reactions
@@ -100,6 +101,7 @@ from shaperoute_api.notification_list import install_notification_list
 from shaperoute_api.notifications import install_notifications
 from shaperoute_api.outfit_tags import install_outfit_tags
 from shaperoute_api.outline_edits import edit_outline
+from shaperoute_api.photo_posts import install_photo_posts
 from shaperoute_api.places import (
     MAX_QUERY_LENGTH,
     MIN_QUERY_LENGTH,
@@ -428,6 +430,9 @@ def create_app(
     # Up to three photos of a drawing, besides its map (TASK-208); they need
     # a token.
     install_drawing_photos(app)
+    # Posts of photos only, drawings without a run (TASK-312 part C); they
+    # need a token.
+    install_photo_posts(app)
     install_together(app)
     # The photos of a profile's drawings, a page at a time (TASK-324); they
     # need a token.
@@ -445,6 +450,7 @@ def create_app(
     # The drawings the members publish, read by whoever is signed in
     # (TASK-118); it needs a token.
     install_feed(app)
+    install_avatars(app)
     # The search of the drawings from the lens of «Feed» (TASK-344); it
     # needs a token.
     install_drawing_search(app)

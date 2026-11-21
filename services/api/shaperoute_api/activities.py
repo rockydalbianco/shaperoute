@@ -327,6 +327,11 @@ class ActivityBody(BaseModel):
     source: RunSource = MUW
     """Where it comes from (TASK-312): the app writes «Imported» for `file`.
     Always answered; the default is for the examples written before."""
+    climb_m: int | None = None
+    """The metres climbed (TASK-324), for «Quanta salita fai oggi?» of the
+    gym's plans (TASK-461 D1, ADR-0371): null for a run whose fixes had no
+    heights and for every run saved before TASK-324. Always answered; the
+    default is for the examples written before."""
     route_preview: list[LatLon] | None
     track_preview: list[LatLon]
 
@@ -657,7 +662,7 @@ def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:
 COLUMNS = (
     "id, key, started_at, place, shape, word, style, title, distance_m,"
     " duration_s, score, fidelity, route_similarity, walks, activity,"
-    " route_rotation_deg, source,"
+    " route_rotation_deg, source, climb_m,"
     " ST_AsGeoJSON(route, 15) AS route,"
     " ST_AsGeoJSON(ST_Force2D(track), 15) AS track"
 )
@@ -719,6 +724,7 @@ def _listed(row: DictRow) -> ActivityBody:
     route = row["route"]
     return ActivityBody(
         **_fields(row),
+        climb_m=row["climb_m"],
         route_preview=None if route is None else preview(_line(route)),
         track_preview=preview(_line(row["track"])),
     )

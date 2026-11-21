@@ -146,8 +146,7 @@ def _seen(conn: Connection[DictRow], drawing_id: UUID, viewer_id: int) -> bool:
     """True when `viewer_id` may see the drawing. The row stays locked until
     the transaction ends: a drawing deleted meanwhile waits for it."""
     row = conn.execute(
-        "SELECT d.id FROM drawings d JOIN runs r ON r.id = d.run_id"
-        f" WHERE {SEEN_BY} FOR SHARE OF d",
+        f"SELECT d.id FROM drawings d WHERE {SEEN_BY} FOR SHARE OF d",
         (drawing_id, viewer_id),
     ).fetchone()
     return row is not None

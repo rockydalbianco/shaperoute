@@ -44,7 +44,7 @@ from shaperoute_api.contests import Contests
 from shaperoute_api.db import Database, migrations
 from shaperoute_api.drawings import DrawingDetailBody, MyDrawingBody
 from shaperoute_api.expo_push import Expo
-from shaperoute_api.feed import FeedBody, FeedPostBody
+from shaperoute_api.feed import FeedCardBody, FeedPageBody
 from shaperoute_api.game_backfill import backfill
 from shaperoute_api.push import Pusher
 from shaperoute_api.strava import IMPORTED
@@ -200,7 +200,8 @@ def test_the_examples_are_the_bodies() -> None:
     )
     assert ActivityRequestBody.model_validate(request).source == "file"
     listed = _load("activities-imported.json")
-    assert set(listed["activities"][0]) == set(ActivityBody.model_fields)
+    # The climb in the list (TASK-461 D1): the example was written before.
+    assert set(listed["activities"][0]) == set(ActivityBody.model_fields) - {"climb_m"}
     assert ActivitiesBody.model_validate(listed).activities[0].source == "file"
     whole = _load("activity-imported.json")
     # A race's parts (TASK-305 part R6d): left out for any other run.
@@ -213,8 +214,9 @@ def test_the_examples_are_the_bodies() -> None:
     assert set(one) == set(DrawingDetailBody.model_fields)
     assert DrawingDetailBody.model_validate(one).source == "file"
     page = _load("feed-imported.json")
-    assert set(page["posts"][0]) == set(FeedPostBody.model_fields)
-    assert FeedBody.model_validate(page).posts[0].source == "file"
+    # With what the card counts (TASK-355 part B).
+    assert set(page["posts"][0]) == set(FeedCardBody.model_fields)
+    assert FeedPageBody.model_validate(page).posts[0].source == "file"
     # The same run in each.
     assert mine["id"] == one["id"] == page["posts"][0]["id"]
     assert (
@@ -253,13 +255,19 @@ def test_a_file_run_is_saved_with_the_times_of_the_file(
     answer = client.put(f"/me/activities/{KEY}", json=imported(), headers=me)
     assert answer.status_code == 201
     listed = _load("activities-imported.json")
-    assert answer.json() == listed["activities"][0]
+    saved = answer.json()
+    assert "climb_m" in saved  # TASK-461 D1: the example was written before
+    assert {k: v for k, v in saved.items() if k != "climb_m"} == listed["activities"][0]
     # A year before the clock: the file's first point, not the day it came.
     assert answer.json()["started_at"] == "2025-10-26T07:30:00Z"
     # The four minutes of the hole are an auto pause: their time does not
     # count, their metres do.
     assert answer.json()["duration_s"] == 780 - 240
-    assert client.get("/me/activities", headers=me).json() == listed
+    page = client.get("/me/activities", headers=me).json()
+    page["activities"] = [
+        {k: v for k, v in one.items() if k != "climb_m"} for one in page["activities"]
+    ]
+    assert page == listed
     whole = client.get(f"/me/activities/{KEY}", headers=me)
     assert whole.json() == _load("activity-imported.json")
     assert sources(database) == {KEY: "file"}

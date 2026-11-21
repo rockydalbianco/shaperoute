@@ -1653,7 +1653,35 @@ export const FEED_NEAR_M = 50_000;
  * who published it. Opened whole with GET /drawings/{id}.
  */
 export interface FeedPost extends Drawing {
-  author: DrawingAuthor;
+  author: FeedAuthor;
+  /**
+   * How many reactions the post has and the reader's own, as
+   * GET /drawings/{id}/reactions counts them (TASK-355 part B). Missing from
+   * an API of before, and from the search, the contests and the resorts.
+   */
+  reactions?: FeedReactions;
+  /**
+   * The comments and replies the reader reads, as `total` of
+   * GET /drawings/{id}/comments. Missing as `reactions` is.
+   */
+  comments?: number;
+}
+
+/** Who published a post of the feed. */
+export interface FeedAuthor extends DrawingAuthor {
+  /**
+   * Where its picture is read, `/users/{public_id}/photo?v=…`, a square JPEG
+   * of 128 px with the token; a new picture has a new address. Null without
+   * one; missing from an API of before (TASK-355 part B).
+   */
+  photo?: string | null;
+}
+
+/** The reactions of a post, as its card shows them. */
+export interface FeedReactions {
+  total: number;
+  /** The reader's own; null when it left none. */
+  mine: ReactionKind | null;
 }
 
 /**
@@ -1688,6 +1716,113 @@ export interface FilteredFeedPage extends FeedPage {
  * nobody from one whose people have published nothing. */
 export interface FollowingFeedPage extends FilteredFeedPage {
   follows_anyone: boolean;
+}
+
+// --- Posts of photos only (TASK-312 part C, ADR-0272) ---
+//
+// A drawing without a run: photos taken elsewhere, from Instagram too,
+// with a title, a description and the members tagged. Only an app that
+// says `photos` in X-MuW-Reads receives one (reads.json), in GET /feed,
+// GET /users/{id}/drawings, GET /users/{id}/photos and GET /drawings/{id}:
+// the types of the posts of runs above stay as they were, and the app
+// tells the two apart with isPhotoPost where it reads them.
+
+/** `source` of a post of photos only, and the value said in X-MuW-Reads. */
+export const PHOTOS_SOURCE = "photos" as const;
+/** Where a drawing comes from: its run, or photos only. */
+export type DrawingSource = RunSource | typeof PHOTOS_SOURCE;
+/** Never «Only me»: its photos are on the server only while others see it. */
+export const PHOTO_POST_VISIBILITIES = ["everyone", "followers"] as const;
+export type PhotoPostVisibility = (typeof PHOTO_POST_VISIBILITIES)[number];
+/** Its places, 1 to 10: there is no map among them. */
+export const PHOTO_POST_MAX_PHOTOS = 10;
+
+/** PUT /me/photo-posts/{key}: the post as it should be now, the key made
+ * by the phone as a run's; sent again, it changes nothing. */
+export interface PhotoPostRequest {
+  title?: string | null;
+  description?: string | null;
+  visibility: PhotoPostVisibility;
+  /** The public_id of the members tagged, in order; [] or missing: none. */
+  tags?: string[];
+}
+
+/** PUT /me/photo-posts/{key}/order: the photos by place, `photo:2`, each
+ * once; no `drawing`. The photos themselves go to
+ * PUT /me/photo-posts/{key}/photos/{n} as DrawingPhotoRequest. */
+export interface PhotoPostOrderRequest {
+  order: string[];
+}
+
+/** A post of photos only as its owner has it: GET, PUT /me/photo-posts/{key}
+ * and its photos and order. */
+export interface MyPhotoPost {
+  key: string;
+  /** What the others open it with: GET /drawings/{id}. */
+  id: string;
+  title: string | null;
+  description: string | null;
+  visibility: PhotoPostVisibility;
+  /** Set by its first photo; null while it has none, and nobody but its
+   * owner finds it. */
+  published_at: string | null;
+  tags: DrawingTag[];
+  photos: DrawingPhoto[];
+  order: string[] | null;
+}
+
+/** What a post of photos only has instead of a run's numbers. */
+interface WithoutRun {
+  id: string;
+  title: string | null;
+  /** When it was published. */
+  started_at: string;
+  published_at: string | null;
+  place: null;
+  shape: null;
+  word: null;
+  style: null;
+  route_title: null;
+  distance_m: 0;
+  duration_s: 0;
+  score: null;
+  fidelity: null;
+  visibility: PhotoPostVisibility;
+  description: string | null;
+  activity: null;
+  source: typeof PHOTOS_SOURCE;
+  tags: DrawingTag[];
+  photos: DrawingPhoto[];
+  order: string[] | null;
+  rotation_deg: null;
+  ski_descents: null;
+  flight_split: null;
+  sleep: null;
+  /** Never: a link shows a line, and it has none. */
+  linkable: false;
+}
+
+/** A post of photos only in GET /users/{id}/drawings. */
+export interface PhotoDrawing extends WithoutRun {
+  track_preview: [];
+}
+
+/** A post of photos only in GET /feed. */
+export interface PhotoFeedPost extends PhotoDrawing {
+  author: DrawingAuthor;
+}
+
+/** A post of photos only in GET /drawings/{id}. */
+export interface PhotoDrawingDetail extends WithoutRun {
+  author: DrawingAuthor;
+  public: boolean;
+  track: [];
+  stats: null;
+}
+
+/** Whether a drawing an API answered is a post of photos only. */
+export function isPhotoPost(post: { source?: string | null }): boolean {
+  return post.source === PHOTOS_SOURCE;
 }
 
 /** The orders of GET /search/drawings (TASK-344, ADR-0297): the last

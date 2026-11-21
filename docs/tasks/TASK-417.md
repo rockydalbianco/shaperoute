@@ -1,7 +1,9 @@
 # TASK-417 — La mia immagine al posto dell'animale, e il video «Together» con le persone taggate
 
-**Stato**: In lavorazione · B e C in `main` (#1067, 2026-11-10); D ed E
-da fare, ognuna con la sua lista dei file approvata dal Coordinatore
+**Stato**: In lavorazione · B e C in `main` (#1067, 2026-11-10); D1
+(server di «Together») in `main` (#1339, 2026-11-21), sul server col passo
+15; D2 (l'app) ed E da fare, ognuna con la sua lista dei file approvata dal
+Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-417-my-image-video-proposal`
 (documenti); il codice `feat/TASK-417-b-…`
 **Dipende da**: TASK-408 (l'editor del video, ADR-0339): l'animale è l'op
@@ -296,7 +298,7 @@ Parti B–E: si elencano prima di ciascuna.
   dipendenza nuova.
 - [ ] L'immagine non va al server: un test prova che l'esportazione non
   chiama la rete con l'immagine.
-- [ ] «Together»: il server dà le tracce con i tempi solo all'autore del
+- [x] «Together»: il server dà le tracce con i tempi solo all'autore del
   post, solo delle persone taggate con l'attività visibile a lui, solo in
   secondi dalla prima partenza; test sul server per ognuno di questi casi.
 - [ ] L'orologio unico usa solo punti registrati: un test prova che ogni
@@ -354,6 +356,39 @@ Quindi per ora nessuna PR del permesso. I testi di fotocamera, libreria,
 microfono e privacy si scrivono insieme quando si decide la registrazione
 di video nell'app, che è un task a parte. È un cambio nativo, quindi
 richiede una build nuova.
+
+## Parte D1 — fatta (2026-11-21)
+
+Il server di «Together»: PR #1339, in `main` a 11f354f1, lista dei file
+approvata dal Coordinatore lo stesso giorno. Solo server, nessuna
+migrazione, niente `schemas.py` né `engine.zip`.
+
+- **L'indirizzo** `GET /drawings/{id}/together` (`together.py`), solo per
+  l'autore del post: a chiunque altro, e per un id che non c'è, lo stesso
+  `404` di `GET /drawings/{id}`. Risponde con l'autore per primo e poi al
+  più 3 persone taggate, nell'ordine dei tag.
+- **La stessa corsa**: almeno metà del tempo trascorso della più corta in
+  comune, e partenze a meno di 2 km. Fra più corse della stessa persona,
+  quella con più tempo in comune. Una corsa senza disegno non entra; quelle
+  con un disegno che l'autore non può vedere (`drawing_seen_sql`) nemmeno.
+- **L'orologio**: per ogni punto i secondi dalla prima partenza del gruppo,
+  al decimo, e le pause sullo stesso orologio; mai l'ora né la data.
+- **Al più 600 punti** a traccia, presi fra quelli registrati: il primo,
+  l'ultimo, l'ultimo prima e il primo dopo ogni pausa, e gli altri più
+  vicini a secondi equidistanti. Nessun punto spostato.
+- **Test**: 17 in `tests/test_together.py`, con un PostgreSQL vero; uno per
+  ognuno dei casi del criterio «Together» qui sotto. L'esempio del contratto
+  è `packages/shared-types/fixtures/together.json`; la sezione in
+  `docs/API.md`.
+- **Il server**: controlli di sola lettura con i numeri attesi in
+  `out/TASK-417/SERVER-D1.md` (checkout principale); il passo 15 lo compone
+  il Coordinatore col sì dell'utente.
+
+**Prossima, D2 (l'app)**: la riga «Together» nel foglio «Edit video», più
+personaggi nella pagina del video, l'orologio unico, i ⚡ dove ci si
+incrocia, con la sua lista al Coordinatore. La frase nuova della privacy
+(testi approvati l'8-11, scelta 5) passa ancora dall'utente prima della
+produzione.
 
 ## Esito
 

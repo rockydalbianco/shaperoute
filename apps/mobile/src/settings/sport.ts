@@ -172,10 +172,11 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // (step 12), the user's «Sì, accendi» to the screenshots (2026-11-12).
   fromProfile("snowshoe", true),
   // A day of mountaineering, saved as "alpinism", recorded without a shape
-  // (TASK-463 part B, ADR-0373), with its notice «Before you climb». «Soon»
-  // until the server has part A and its migration 0076 and the user says
-  // yes on the screens: turning it on is a small PR of its own.
-  fromProfile("alpinism", false),
+  // (TASK-463 parts B and C, ADR-0373), with its notice «Before you climb»
+  // and its own line under «Record your day»: on since the server has part A
+  // and its migration 0076 (step 12, 2026-11-12) and the user approved the
+  // screens (2026-11-12).
+  fromProfile("alpinism", true),
   // Saved as "gym" (runActivityOf), without a track (TASK-385 part B); on in
   // the store builds too, the user's «ok accendi» (2026-11-05): the server
   // keeps its posts from the apps that cannot read them (X-MuW-Reads).

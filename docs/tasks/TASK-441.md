@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), server in `main` (#1317, `ee9f143c`, col sì dell'utente «Le otto forme», 2026-11-18), **sul server dal 2026-11-21** (passo 14, 06:43Z); app in `main` (#1248, `ab51d0fd`, 2026-11-21), nell'app con l'OTA 18 (sì dell'utente); le città estere in un secondo giro
+**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), server in `main` (#1317, `ee9f143c`, col sì dell'utente «Le otto forme», 2026-11-18), **sul server dal 2026-11-21** (passo 14, 06:43Z); app in `main` (#1248, `ab51d0fd`, 2026-11-21), **in produzione con l'OTA 18** (`593c6fbe`, 2026-11-21), provata dall'utente sul telefono («funziona»); le città estere in un secondo giro
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -481,9 +481,29 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
       `exploreCatalogEdit.test.ts` verde sul seme nuovo.
 - [x] CI verde, merge del Coordinatore (#1317, `ee9f143c`); `app.py` reso al Coordinatore.
 - [x] Passo sul server (passo 14, 2026-11-21 06:43Z) e PR dell'app (#1248, `ab51d0fd`).
-- [ ] OTA (sì dell'utente) e un'occhiata sul telefono: sport «Bike», poi «Explore».
+- [x] OTA 18 (`593c6fbe`; iOS `4c2d6752`, Android `bc572bad`), 2026-11-21, col sì dell'utente al Coordinatore.
+- [x] L'utente l'ha provata sul telefono (sport «Bike», poi «Explore»): «funziona», 2026-11-21.
 
 ## Dove siamo
+
+*2026-11-21, sera, B2*: **le uscite in bici italiane sono in produzione**
+(OTA 18, `593c6fbe`) e l'utente le ha provate sul telefono: «funziona». La
+parte italiana della B2 è chiusa. **Città estere**: 12 su 32 disegnate
+(Madrid, Valencia, Londra, Praga, Siviglia, Zagabria, Cracovia, Dubai,
+Monaco, Sydney, Barcellona, Amsterdam); solo Madrid ha passato il limite di
+4 GB (4499 MB, in `out/TASK-441/b2/estere-stopped.txt`, da chiedere al
+Coordinatore alla fine con i suoi 8 disegni già fatti). A Dubai il filtro
+ne tiene 2 su 7, com'è giusto. Il giro è **in pausa** dalle 22:05 per la
+coda del simulatore (469, 479, 475, 305): **non filtrare e non disegnare
+finché il Coordinatore (fork 2) non lo scrive**; un «continua» dell'utente
+non è il via. Intanto solo i download
+(`out/TASK-441/b2/download-estere.sh`, lascia i `.ok` che `run-estere.sh`
+salta). Al via: `zsh out/TASK-441/b2/run-estere.sh` con le 20 città da
+Berlino. Nel pomeriggio il disco T9 è sparito per quaranta minuti e il giro
+è morto a Barcellona: registro intero, ripreso da lì. Dopo il giro: fogli a
+occhio (`contact_city.py`), `catalog_bike.py --propose` / `--write`, una PR
+del solo catalogo, un passo sul server; gli estratti si cancellano alla
+chiusura della B2.
 
 *2026-11-21, B2*: **sul server e in `main`**. Passo 14 alle 06:43Z (server a
 `ee9f143c`), tutti i controlli di `out/TASK-441/SERVER-B2.md` come attesi:

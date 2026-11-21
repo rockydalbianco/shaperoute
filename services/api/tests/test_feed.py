@@ -176,6 +176,8 @@ def test_own_first_then_followed_then_the_others_each_newest_first(
     assert mine["author"] == {
         "public_id": public_id(client, me),
         "username": _load("sign-up-request.json")["username"],
+        # Without a picture (TASK-355 part B, test_feed_counts.py).
+        "photo": None,
     }
     assert mine["visibility"] == "everyone"
     assert mine["published_at"] is not None

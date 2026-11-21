@@ -1,8 +1,9 @@
-import type {
-  ChallengePushKind,
-  ContestPushKind,
-  MessagePushKind,
-  Person,
+import {
+  type ChallengePushKind,
+  type ContestPushKind,
+  type MessagePushKind,
+  type Person,
+  PLANNED_LIVE_PUSH_KIND,
 } from "@shaperoute/shared-types";
 
 /**
@@ -24,7 +25,9 @@ export type TapTarget =
   | { kind: "conversation"; person: Person }
   | { kind: "play" }
   | { kind: "challenge"; id: string }
-  | { kind: "contest"; id: string };
+  | { kind: "contest"; id: string }
+  /** A planned live that started (TASK-468 part B2b1): its live view. */
+  | { kind: "live"; shareId: string; plannedLiveId: string };
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -74,6 +77,13 @@ export function tapTarget(data: unknown): TapTarget | null {
     const contest = field(data, "contest_id");
     return contest !== null && ID.test(contest)
       ? { kind: "contest", id: contest }
+      : null;
+  }
+  if (kind === PLANNED_LIVE_PUSH_KIND) {
+    const share = field(data, "share_id");
+    const planned = field(data, "planned_live_id");
+    return share !== null && ID.test(share) && planned !== null && ID.test(planned)
+      ? { kind: "live", shareId: share, plannedLiveId: planned }
       : null;
   }
   const drawing = field(data, "drawing_id");

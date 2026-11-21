@@ -1,7 +1,13 @@
 # TASK-478 — La mappa a fine attività: inquadrata e visibile
 
-**Stato**: In lavorazione · 2026-11-18 · assegnato dal Coordinatore. ADR
-solo se serve (numero riservato: ADR-0388).
+**Stato**: Done · 2026-11-21 · assegnato dal Coordinatore. Nessun ADR
+servito: ADR-0388, riservato, resta libero.
+
+**Esito**: (a) #1316 e (b) #1319 in main. A fine attività la mappa si
+inquadra sulla traccia (anche lo sci; la gara di TASK-305 R6c con la
+#1313). La scheda di fine si piega in una striscia con km, tempo e «Save»,
+schermate approvate dall'utente il 2026-11-21. Esce col prossimo OTA, che
+pubblica il Coordinatore.
 
 Trovato nel simulatore il 2026-11-18, provando TASK-305 R6c (la mappa a
 due colori di una gara). Il lavoro ha due parti.
@@ -39,9 +45,18 @@ che si piega».
 
 Lista dei file mandata al Coordinatore. Si fa dopo (a).
 
+**Fatto (PR di (b))**: la maniglia di TASK-472 in cima alla scheda di fine
+(`MapScreen`, prop `endStrip`), la striscia in `EndFoldedStrip.tsx`. Da
+piegata la scheda resta montata ma nascosta, così il modulo tiene le sue
+scelte. Il «Save» della striscia chiama il `save()` di `RunEnd` attraverso
+un prop nuovo, `saveRef`: `RunEnd.tsx` non era nella lista, OK del
+Coordinatore del 2026-11-18. Chiamare `onSaveRun` direttamente avrebbe
+saltato visibilità, foto, salute e Strava.
+
 ## Criteri di accettazione
 
-- [ ] (a) A fine corsa senza percorso, la traccia intera nella mappa
-      (schermata prima/dopo nel simulatore).
+- [x] (a) A fine corsa senza percorso, la traccia intera nella mappa
+      (schermata prima/dopo nel simulatore, `out/TASK-478/a-prima-dopo.jpg`).
 - [x] (a) Mentre si registra la mappa non si inquadra mai da sola (test).
-- [ ] (b) La scheda di fine si piega e si riapre; «Save» dalla striscia.
+- [x] (b) La scheda di fine si piega e si riapre; «Save» dalla striscia
+      (test e simulatore, `out/TASK-478/b-schermate.jpg`).

@@ -4,7 +4,7 @@ import {
   SLEEP_SHOWN_DEFAULT,
   type Visibility,
 } from "@shaperoute/shared-types";
-import { useState } from "react";
+import { type MutableRefObject, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { type DrawingChoice, isChosen, isSeen, NOT_CHOSEN } from "../api/drawings";
@@ -75,6 +75,12 @@ type Props = {
    * «+» (TASK-476, the user's choice), seen over «Save» and changeable.
    */
   imported?: { sport: Activity | null; visibility?: Visibility };
+  /**
+   * The card folded at the end (TASK-478 part b): this form's «Save», for
+   * the strip's, so that it does all that this one does, the choices of
+   * the form with it. Null without an account: no «Save» then.
+   */
+  saveRef?: MutableRefObject<(() => void) | null>;
 };
 
 /** How much of the screen the form may take: the map and the buttons
@@ -119,6 +125,7 @@ export function RunEnd({
   health: phoneHealth = healthPhone(),
   sleep: phoneSleep = sleepReader(),
   imported,
+  saveRef,
 }: Props) {
   const {
     signedIn,
@@ -231,6 +238,17 @@ export function RunEnd({
       }
     }
   }
+
+  // After every drawing: the «Save» of the form as it is now.
+  useEffect(() => {
+    if (saveRef === undefined) {
+      return;
+    }
+    saveRef.current = signedIn ? save : null;
+    return () => {
+      saveRef.current = null;
+    };
+  });
 
   if (!signedIn) {
     return (

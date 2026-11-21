@@ -1,5 +1,5 @@
 import type { LiveItem, RunActivity } from "@shaperoute/shared-types";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { clockLabel } from "../feed/postSections";
@@ -15,8 +15,11 @@ import {
   space,
 } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
+import { runControl, subscribeRunControl } from "../navigation/runControl";
 import { distanceLabel } from "../units/format";
+import { startPlannedLive } from "./liveShareStore";
 import { LiveViewScreen } from "./LiveViewScreen";
+import { PlanLiveSheet } from "./PlanLiveSheet";
 import { useLives } from "./useLives";
 
 /** Going on, paused, or finished this hour: its card opens the live. */
@@ -57,7 +60,9 @@ export function liveLine(live: LiveItem, locale?: string): string {
  * the going on first. A card going on opens the live in the app; a planned
  * one offers «Remind me» (the push comes with part A2b). Cards one above the
  * other: a row that scrolls sideways would fight the swipe between the
- * Feed's tabs. Nothing without an account or without lives.
+ * Feed's tabs. Above them «Plan a live» (part B2b1, the user's choice 9),
+ * and «Start live» on one's own planned live while a recording goes on.
+ * Nothing without an account.
  */
 export function LivesRow({
   active = true,
@@ -79,14 +84,36 @@ export function LivesRow({
         : { baseUrl: apiUrl, token, fetchFn, key: apiKey },
     [active, apiKey, apiUrl, fetchFn, token],
   );
-  const { lives, remind } = useLives(api);
+  const { lives, remind, refresh } = useLives(api);
   const [watching, setWatching] = useState<LiveItem | null>(null);
+  const [planning, setPlanning] = useState(false);
+  // «Start live» on one's own planned live only while a recording goes on
+  // (TASK-468 part B2b1): its share sends that recording's points.
+  const recording = useSyncExternalStore(
+    subscribeRunControl,
+    () => runControl().phase !== "idle",
+  );
 
-  if (lives.length === 0 || apiUrl === null || token === null) {
+  if (api === null || apiUrl === null || token === null) {
     return null;
   }
+  const start = (live: LiveItem) => {
+    if (live.planned_live_id !== null) {
+      void startPlannedLive(api, live.planned_live_id).then(refresh);
+    }
+  };
   return (
     <View style={styles.row} testID="lives-row">
+      {/* The user's choice 9: «Plan a live» in the Feed, above its lives. */}
+      <Tap
+        style={styles.plan}
+        onPress={() => setPlanning(true)}
+        accessibilityRole="button"
+        testID="lives-plan"
+      >
+        <Text style={styles.planText}>{t("Plan a live")}</Text>
+        <Text style={styles.planText}>›</Text>
+      </Tap>
       {lives.map((live) => {
         const going = isGoing(live);
         const mine = live.owner.public_id === me;
@@ -110,6 +137,18 @@ export function LivesRow({
                 {liveLine(live)}
               </Text>
             </Tap>
+            {mine && live.can_start && recording && (
+              <Tap
+                style={[styles.remind, styles.reminded]}
+                onPress={() => start(live)}
+                accessibilityRole="button"
+                testID={`lives-start-${live.id}`}
+              >
+                <Text style={[styles.remindText, styles.remindedText]}>
+                  {t("Start live")}
+                </Text>
+              </Tap>
+            )}
             {live.state === "planned" && !mine && (
               <Tap
                 style={[styles.remind, live.reminded && styles.reminded]}
@@ -127,6 +166,13 @@ export function LivesRow({
           </View>
         );
       })}
+      {planning && (
+        <PlanLiveSheet
+          api={api}
+          onClose={() => setPlanning(false)}
+          onPlanned={refresh}
+        />
+      )}
       {watching !== null && watching.share_id !== null && (
         <LiveViewScreen
           shareId={watching.share_id}
@@ -147,6 +193,18 @@ const DOT = 8;
 const styles = StyleSheet.create({
   row: {
     gap: space.sm,
+  },
+  plan: {
+    minHeight: MIN_TAP_SIZE,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: space.md,
+  },
+  planText: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
   },
   card: {
     flexDirection: "row",

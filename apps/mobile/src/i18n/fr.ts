@@ -2844,6 +2844,10 @@ export const FR: Table = {
   "by {user}": "de {user}",
   "This post is no longer available.": "Cette publication n'est plus disponible.",
   "🗺️ Post": "🗺️ Publication",
+  // src/settings/PostLinksSetting.tsx (TASK-455 part E)
+  "Links to my posts": "Liens vers mes publications",
+  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.":
+    "Qui voit tes publications pour «Tout le monde» peut partager leur lien. Qui a le lien voit le dessin sur la carte, ton nom d'utilisateur et la distance, même sans MuW. Désactive-le et les liens cessent de fonctionner.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Ajouter une activité",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
@@ -2923,4 +2927,16 @@ export const FR: Table = {
   "We'll notify you when it starts.": "On te prévient quand ça commence.",
   "Nobody can follow you any more.": "Plus personne ne peut te suivre.",
   "Live · {day} {time} · {title}": "Live · {day} {time} · {title}",
+  // src/liveShare/ (TASK-468 part B2b1: «Plan a live», the start of a
+  // planned live; en and it approved 2026-11-12, «Plan» and the error on 2026-11-18)
+  "Plan a live": "Programmer un live",
+  "Name (e.g. Milano Marathon)": "Nom (ex. Milano Marathon)",
+  "Day and time": "Jour et heure",
+  'Start live "{title}"?': "Lancer le live « {title} » ?",
+  "Your followers can follow you now.": "Tes abonnés peuvent te suivre maintenant.",
+  "Everyone can follow you now.": "Tout le monde peut te suivre maintenant.",
+  "Start live": "Lancer le live",
+  "Not this time": "Pas cette fois",
+  Plan: "Programmer",
+  "Couldn't plan the live. Try again.": "Impossible de programmer le live. Réessaie.",
 };

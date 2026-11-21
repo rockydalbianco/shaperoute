@@ -190,6 +190,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   #1185; server e OTA escono insieme nell'aggiornamento completo. Poi B2
   (bici, canoa, nuoto) e C. File (#1185): `apps/mobile/src/explore/{ExploreScreen.tsx,explored.ts,recommendedRoutes.ts}`, `apps/mobile/src/route/NearYou.tsx`
   **2026-11-12, 12:28Z**: B1 in produzione — server a 1546 (passo 10), app nell'OTA 12.
+  **2026-11-18**: **B2** (ADR-0366, precisazione): 148 uscite in bici da 20–30 km, otto forme lette a occhio, 29 città italiane; catalogo a 1694, server in `main` (#1317), passo 14 e OTA con la #1248 (bozza) col sì dell'utente. Poi le città estere, B3 (40–50 km) e C. File (#1248): `apps/mobile/src/explore/{recommendedRoutes.ts,catalogList.ts,ExploreScreen.tsx}`, `apps/mobile/App.tsx` (una riga)
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
@@ -230,6 +231,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Poi A1b dopo TASK-455 A.
   **2026-11-12 sera**: A1a, A2a (#1245) e A1b (#1265) sul server (passi 11 e
   12); B1 (app) in `main` (#1275), esce con un OTA col sì. Prossime A2b, B2.
+  **2026-11-18**: B1 in produzione (OTA 17); A2b sul server (passo 13);
+  B2a in `main` (#1301), col prossimo OTA. Prossime B2b1 e B2b2.
 
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
@@ -241,6 +244,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   produzione il 2026-11-12: «Share» su ogni post, il post in chat come
   rimando (ADR-0382). Resta la prova dell'utente sul telefono. Prossima C
   (server: link e interruttore), poi D sito, E app. File: — · `tasks/TASK-455.md`
+  **Chiuso il 2026-11-21**: C sul server (passo 13), D ed E in `main` (#1308, #1309); restano l'OTA della parte E e la copia del sito, col sì dell'utente; vedi `archive/COMPLETATI.md`.
 
 - **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (OTA
   12); B (dieci esercizi, tre routine da 3, 5, 10 min, la gamba staccata

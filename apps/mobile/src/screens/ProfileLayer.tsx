@@ -52,6 +52,7 @@ import {
 import { OverAppPages, OverAppProvider, useOverAppState } from "./overAppContext";
 import { PeopleScreen } from "./PeopleScreen";
 import { type ProfilePage, ProfileScreen } from "./ProfileScreen";
+import { LiveViewHost, openLiveView } from "../liveShare/liveViewDoor";
 
 /** «Find friends» (TASK-215): on screen, or behind a drawing opened from it. */
 type PeopleAt = "shown" | "behind" | null;
@@ -404,6 +405,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     openConversation: messages.openConversation,
     // A monthly challenge's notification (TASK-343): its page.
     openContest: openContestPage,
+    // A planned live that started (TASK-468 part B2b1): its live view.
+    openLive: openLiveView,
   };
   usePushNotifications(apiUrl, account, opens);
   // The bell of the header (TASK-367 part C): its lines open what the
@@ -492,6 +495,14 @@ export function ProfileLayer({ apiUrl, children }: Props) {
       notification, and closed back to it (TASK-319). */}
               <MessagesOverlay />
               <BellOverlay opens={opens} />
+              <LiveViewHost
+                apiUrl={apiUrl}
+                token={
+                  account.state.status === "signedIn"
+                    ? account.state.session.token
+                    : null
+                }
+              />
             </OwnContext.Provider>
           </FollowsContext.Provider>
         </ReactionsContext.Provider>

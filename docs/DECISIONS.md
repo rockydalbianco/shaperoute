@@ -546,6 +546,8 @@ lasciando le righe d'indice.
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
 - ADR-0381, precisazione A1b — La live in un messaggio: un rimando senza chiave esterna, solo in una conversazione aperta, solo per chi dice `live` · 2026-11-12 · Attiva
 - ADR-0381, precisazione B1 — La live in chat nell'app: la condivisione senza link per la chat, il menu di «Sharing live», la schermata dal vivo come `Modal` · 2026-11-12 · Attiva
+- ADR-0381, precisazione A2b — La push «Remind me» parte con la live, una volta sola, senza giro · 2026-11-18 · Attiva
+- ADR-0381, precisazione B2a — La fila «Live» del Feed: schede una sopra l'altra, riletta ogni minuto, «Live in the Feed» senza link · 2026-11-18 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
 - ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←» · 2026-11-12 · Attiva
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
@@ -563,8 +565,102 @@ lasciando le righe d'indice.
 - ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo da due campi nel JSON delle statistiche, solo per il volo, `GET /me/flight-bests`, il calendario filtrato sui voli, la precisione del GPS · 2026-11-12 · Attiva
 - ADR-0352, precisazione — «Share live at start»: il link dal vivo a fine conto alla rovescia di un volo, se il pilota lo ha acceso; resta com'era l'ultima volta, solo il link · 2026-11-12 · Attiva
 - ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job · 2026-11-12 · Attiva
+- ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity` (senza: le corse), le zone da un estratto, entrano le otto forme lette a occhio · 2026-11-18 · Attiva
 
 ## Voci nuove
+
+## ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity`, le zone da un estratto, entrano le otto forme lette a occhio
+
+**Stato**: Attiva · 2026-11-18 · TASK-441, parte B2 (#1317 il server,
+`ee9f143c`; #1248 l'app, in bozza fino al passo sul server). Le scelte di
+prodotto sono dell'utente: «Sì, così» (solo bici, 20–30 km senza toccare il
+motore; canoa e nuoto fuori dal catalogo; le uscite si vedono con lo sport
+«Bike»), «Aspetta il principale» (niente specchi di Overpass), «Osmium sul
+Mac», «Le otto forme». Le altre sono **decise dall'agente su delega
+dell'utente**.
+
+**Contesto**: il catalogo aveva solo percorsi a piedi fino a 21 km; il
+motore disegna in bici da 10 a 30 km. Ogni lettore del catalogo (le liste,
+«Recommended», le app già installate) dava per scontato che un percorso
+fosse una corsa, e l'id di un percorso è il suo posto nel file di città.
+
+**Decisione**:
+
+1. **`activity` nel seme solo quando non è una corsa** (`"cycling"`); una
+   corsa non ha il campo e il suo testo nel file non cambia.
+2. **Le uscite in fondo al file di città**, dopo ogni corsa
+   (`catalog_seed.city_files`): una corsa tiene il posto, quindi l'id. I
+   preferiti, i disegni di «Feed» e i link che puntano a un id restano
+   validi.
+3. **Il parametro `activity`** su `GET /recommended-routes` e `GET
+   /catalog`: senza, le corse. `RecommendedCatalog.routes` resta «solo le
+   corse», le altre stanno in `others`: `best_routes.py` e ogni lista che
+   non chiede non vedono mai una bici. Nella risposta `activity` manca,
+   non è `null`, per una corsa (come `walks` e `gaps`).
+4. **L'app chiede `activity=cycling` solo con lo sport «Bike»**
+   (`CATALOG_ACTIVITIES`); ogni altro sport chiede come prima. Un server di
+   prima ignora il parametro e risponde con le corse: **il server può
+   uscire prima dell'app**, al contrario della B1.
+5. **Chiave `città/forma@cycling/distanza`** e registro a parte
+   (`out/TASK-441/bike.jsonl`), filtro di `catalog_seed.reasons` com'è. Una
+   distanza a forma fra 30, 25 e 20 km a turno.
+6. **Le zone della bici da un estratto, non da Overpass**: è già la regola
+   del progetto (ADR-0153, `MAPS.md`); `catalog_bike.py --extract` ritaglia
+   la zona che manca con `zone_extract.zone_from_extract`, non modificato.
+   Sul Mac: `osmium-tool` da Homebrew (sì dell'utente), l'estratto d'Italia
+   di Geofabrik filtrato una volta alle strade. Una città alla volta, mai
+   con un simulatore acceso; limiti del Coordinatore: 4 GB per il ritaglio,
+   2 GB per il pianificatore (4 GB nelle nove città grandi).
+7. **Il filtro non basta, si legge a occhio** anche per le forme: delle
+   dodici provate entrano le otto che si leggono (`READS`: cuore, stella,
+   farfalla, gatto, sole, cerchio, luna, pesce). Le altre quattro non si
+   disegnano più.
+
+**Motivo**: la chiocciola e la testa di cane passano il filtro a 0,95 e a
+20–30 km sono un groviglio; cavallo e smiley si leggono solo ai valori più
+alti, e una soglia non li separa dagli altri. Mettere le uscite in fondo e
+lasciare `routes` alle corse costa una riga per lettore nuovo e zero per
+quelli che c'erano. L'aver chiesto le zone a Overpass all'inizio è stato un
+errore dell'agente: cinque giorni di attesa per tre città.
+
+**Conseguenze**: 31 città italiane, 372 disegni provati, 239 passano il
+filtro, **148 entrano** (54 da 20 km, 49 da 25, 45 da 30) in 29 città;
+Venezia e Levico non ne hanno. Il catalogo va a **1694 percorsi**: 28 MB di
+file, +26 MB residenti; 34 file di città identici byte per byte, nei 29
+cambiati il testo di prima è l'inizio del nuovo. Il ritaglio di osmium
+vuole circa 3,7 GB per uno o due secondi qualunque sia l'estratto; Roma è
+l'unica dove il pianificatore arriva a 4 GB. Le 32 città estere vogliono un
+estratto per paese: un secondo giro. `tools/sample_feed.py` legge tutto il
+seme e, rilanciato, prenderebbe uscite in bici come corse di esempio:
+segnalato al Coordinatore, non toccato. I 40–50 km (B3) vogliono il limite
+del motore alzato: una PR a parte.
+
+## ADR-0381, precisazione A2b — La push «Remind me» parte con la live, una volta sola, senza giro
+
+**Stato**: Attiva · 2026-11-18 · TASK-468 parte A2b (#1299).
+**Deciso dall'agente su delega dell'utente.**
+
+- La push parte dentro `POST /me/planned-lives/{id}/start`, dopo la
+  scrittura, e solo se non c'era già una condivisione con quel
+  `planned_live_id`: una ripartenza dopo uno stop non la ripete. Nessun
+  giro periodico e nessuna migrazione.
+- La ricevono solo i promemoria di chi vede ancora la live (`apart_sql`, e
+  `follows_sql` per una «followers»), mai il proprietario; i dati
+  `{kind, planned_live_id, share_id}` aprono la schermata dal vivo (B2b1).
+
+## ADR-0381, precisazione B2a — La fila «Live» del Feed: schede una sopra l'altra, riletta ogni minuto, «Live in the Feed» senza link
+
+**Stato**: Attiva · 2026-11-18 · TASK-468 parte B2a (#1301).
+**Deciso dall'agente su delega dell'utente** (la tecnica; testi e aspetto
+approvati dall'utente).
+
+- Al più 5 schede una sopra l'altra: una fila che scorre di lato
+  litigherebbe con lo scorrimento fra le schede del Feed. `GET /lives`
+  ogni minuto; «Remind me» cambia subito e torna indietro se l'API dice no.
+- «Live in the Feed» crea la condivisione senza link col pubblico scelto, o
+  la cambia (`PATCH`) se è già accesa; nessun foglio delle persone.
+- I test che contano le richieste del Feed escludono `/lives`, come già il
+  concorso e Style.
 
 ## ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job
 

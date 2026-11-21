@@ -1879,8 +1879,25 @@ l'app, come «Find friends»:
   «Send to a friend» e, sui propri, «Poster and video» (quello che «Share»
   apriva prima); «Cancel» lo chiude, e chiudere quello che una voce apre
   chiude anche il foglietto. Senza i messaggi (nessun account, o un'API di
-  prima) sui post altrui «Share» non c'è. La voce del link arriva con la
-  parte E.
+  prima) sui post altrui «Share» non c'è, se il post non ha un link.
+- **«Share link»** (TASK-455 parte E; testi dell'utente del 2026-11-12):
+  nel foglietto, tra «Send to a friend» e «Poster and video», solo sui post
+  che l'API dice `linkable` (per «Everyone», con la linea, di un autore che
+  tiene «Links to my posts» acceso), propri o altrui. Dà al foglio del
+  telefono l'indirizzo `getmuw.app/p/#<id>` e nient'altro, senza parole
+  nostre (`feed/postLink.ts`); chiuso quello, si chiude anche il foglietto.
+  Un post «Followers» o «Only me», o di un autore con l'interruttore
+  spento, non ha la voce, nemmeno per l'autore. Spento l'interruttore, sui
+  propri post già a schermo la voce sparisce subito, senza aspettare che il
+  Feed sia riletto (`usePostLink`: l'ultimo stato dell'interruttore letto
+  o girato in questa sessione); riacceso, torna alla prossima lettura.
+- **«Links to my posts»** in «Settings», sotto «Show VO₂ max on my
+  profile» (`settings/PostLinksSetting.tsx`): un interruttore tenuto
+  dall'API (`GET`/`PUT /me/post-links`), acceso all'inizio, con sotto la
+  sua spiegazione: «People who see your «Everyone» posts can share a link
+  to them. Anyone with the link sees the drawing on the map, your username
+  and the distance, even without MuW. Turn this off and the links stop
+  working.». Con un'API di prima la riga non c'è.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -2141,6 +2158,16 @@ telefono dell'account: con un percorso o senza.
   stessa frase sopra il modulo, «←» e il titolo «Profile» (TASK-278 parte
   B). Chi entra da lì torna da solo alla scheda e trova «Save» e «Discard»
   al posto di «Done»; «←» torna alla scheda senza entrare.
+- **La scheda di fine si piega** (TASK-478 parte b, scelta dell'utente del
+  2026-11-18; codice in `activities/EndFoldedStrip.tsx` e
+  `screens/MapScreen.tsx`): in cima alla scheda c'è la maniglia della corsa
+  (TASK-472). Trascinata in giù, o toccata, la scheda diventa una striscia
+  sopra la mappa: km e tempo su una riga («3.02 km · 18:00») e, con un
+  account, «Save». La striscia toccata, o trascinata in su, riapre la
+  scheda. Il modulo resta com'era: foto, «Who can see it» e il resto. Il
+  «Save» della striscia è quello del modulo, con tutto quello che fa
+  (visibilità, Apple Health, Strava); se la corsa non si tiene, la scheda
+  si riapre e dice perché. Alla fine successiva la scheda parte intera.
 - **La pagina «My activities»**, da «Profile»: una scheda per corsa, dalla
   più recente. A sinistra il disegno, come a fine corsa: il percorso
   giallo e sopra, sottile e chiara, la linea corsa; una corsa senza
@@ -3838,6 +3865,19 @@ cui tiene i numeri.
   Fermare una condivisione senza link chiede «Stop sharing?» con «Nobody
   can follow you any more.» (scelta 8); con un link resta «The link stops
   working now.».
+- **«Plan a live», la partenza e il tocco della push** (TASK-468 parte
+  B2b1, ADR-0381). In cima alla fila «Live», con un account, la riga «Plan
+  a live ›» (scelta 9) apre un foglio a tutto schermo: lo sport di
+  «Settings», «Name (e.g. Milano Marathon)», «Day and time» (giorno e ora
+  coi pulsanti − e +, a passi di 15 minuti, da adesso a 60 giorni; prima
+  domani alle 9:00), «Who can follow» (Followers · Everyone), «Show my
+  heart rate» spento, «Not now» · «Plan». Quando una registrazione parte
+  (fine del conto alla rovescia) e c'è una propria live programmata nelle
+  sue ore, l'avviso «Start live "{title}"?» con «Your followers can follow
+  you now.» o «Everyone can follow you now.», «Not this time» · «Start
+  live» (scelta 3); mai da sola. Mentre si registra, la propria scheda
+  programmata nella fila ha «Start live». La push «… is live» toccata apre
+  la schermata dal vivo, col nome di chi la fa letto dalla programmata.
 - **La piscina mentre nuoti** (TASK-424 parte C1): sotto l'orologio due
   numeri, «Lengths» (le vasche stimate dal passo delle nuotate prima, 2:00
   /100 m senza nessuna; 0 prima di mezza vasca) e «Calories» («85 kcal»,

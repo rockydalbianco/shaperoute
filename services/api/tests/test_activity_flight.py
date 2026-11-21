@@ -16,9 +16,10 @@ from test_drawings import (
     database,  # noqa: F401
     saved,
     signed_up,
+    wall,  # noqa: F401
 )
 
-from shaperoute_api.flight_legs import ActivityFlightBody, FlightPartBody, air_legs
+from shaperoute_api.flight_legs import ActivityFlightBody, KeptFlightPart, air_legs
 from shaperoute_api.run_stats import FLIGHT
 
 FIXTURES = (
@@ -80,9 +81,7 @@ def test_the_example_is_the_body() -> None:
 def test_the_parts_in_the_air_are_cut_on_the_points_inside_them() -> None:
     times = [0.0, 300.0, 600.0, 900.0, 1200.0]
     parts = [
-        FlightPartBody(
-            kind=kind, start_s=a, end_s=b, moving_s=b - a, metres=1, climb_m=0
-        )
+        KeptFlightPart(kind=kind, start_s=a, end_s=b)
         for kind, a, b in [
             ("foot", 0, 290),
             ("air", 290, 610),

@@ -1,9 +1,10 @@
-"""A flight's parts on foot and in the air as the API gives them back
-(TASK-305 parts R6a and R6d, ADR-0375).
+"""A race on foot and in the air opened whole (TASK-305 part R6d,
+ADR-0375): its parts in the air as stretches of its track, and the two
+kinds added up, for GET /me/activities/{key}.
 
-Here, apart from run_stats.py, so that a run opened whole
-(activities.py, GET /me/activities/{key}) can carry them: run_stats.py
-imports activities.py.
+Apart from run_stats.py, which keeps the parts (part R6a) and imports
+activities.py: the few fields needed here are read again from what it
+keeps, not imported from it.
 """
 
 from __future__ import annotations
@@ -16,21 +17,18 @@ from psycopg.rows import DictRow
 from pydantic import BaseModel
 
 
-class FlightPartBody(BaseModel):
-    """A part of a flight as the API keeps it: its times in seconds from the
-    first point of the run's track."""
+class KeptFlightPart(BaseModel):
+    """What the figures of a run keep of a flight's part
+    (run_stats.FlightPartBody), as far as cutting the track needs: its kind
+    and its times in seconds from the first point of the track."""
 
     kind: Literal["foot", "air"]
     start_s: float
     end_s: float
-    moving_s: float
-    metres: float
-    climb_m: float
-    max_alt_m: float | None = None
 
 
-class FlightSideBody(BaseModel):
-    """The parts of one kind added up."""
+class ActivityFlightSideBody(BaseModel):
+    """The parts of one kind added up, as run_stats.FlightSideBody."""
 
     seconds: float
     metres: float
@@ -38,12 +36,11 @@ class FlightSideBody(BaseModel):
     max_alt_m: float | None = None
 
 
-class FlightSplitBody(BaseModel):
-    """A flight with parts on foot and in the air: each kind added up, for
-    «On foot {time} · In the air {time}»."""
+class ActivityFlightSplitBody(BaseModel):
+    """The two kinds added up, as run_stats.FlightSplitBody."""
 
-    foot: FlightSideBody
-    air: FlightSideBody
+    foot: ActivityFlightSideBody
+    air: ActivityFlightSideBody
 
 
 class ActivityFlightBody(BaseModel):
@@ -53,7 +50,7 @@ class ActivityFlightBody(BaseModel):
     air: list[tuple[int, int]]
     """The parts in the air as [from, to] indices into the run's `track`,
     in order: the app draws them yellow over the white line."""
-    split: FlightSplitBody
+    split: ActivityFlightSplitBody
 
 
 # The seconds of each point of the track, in its order, and what the
@@ -67,7 +64,7 @@ FLIGHT_OF_RUN = (
 
 
 def air_legs(
-    times: Sequence[float], parts: Sequence[FlightPartBody]
+    times: Sequence[float], parts: Sequence[KeptFlightPart]
 ) -> list[tuple[int, int]]:
     """The parts in the air as stretches of the track: from the first point
     inside each to the last one inside, as the app cuts its own
@@ -90,10 +87,10 @@ def flight_of(conn: Connection[DictRow], run_id: int) -> ActivityFlightBody | No
     row: dict[str, Any] | None = conn.execute(FLIGHT_OF_RUN, (run_id,)).fetchone()
     if row is None or row["split"] is None or not row["parts"] or not row["times"]:
         return None
-    parts = [FlightPartBody.model_validate(part) for part in row["parts"]]
+    parts = [KeptFlightPart.model_validate(part) for part in row["parts"]]
     legs = air_legs(row["times"], parts)
     if not legs:
         return None
     return ActivityFlightBody(
-        air=legs, split=FlightSplitBody.model_validate(row["split"])
+        air=legs, split=ActivityFlightSplitBody.model_validate(row["split"])
     )

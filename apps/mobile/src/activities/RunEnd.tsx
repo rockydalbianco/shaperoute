@@ -171,17 +171,20 @@ export function RunEnd({
   // user's choice 5): «Post it in the Feed?» once; «Post» makes the form
   // the live's (who sees it, its title), and «Save» still decides.
   const [planned] = useState(() => (imported === undefined ? takePlannedRun() : null));
+  // The form keeps its title as typed: drawn again once «Post» filled it.
+  const [formKey, setFormKey] = useState(0);
   useEffect(() => {
     if (planned === null || !signedIn) {
       return;
     }
-    askToPost(planned, () =>
+    askToPost(planned, () => {
       setChoice((was) => ({
         ...was,
         visibility: planned.audience,
         title: was.title ?? planned.title,
-      })),
-    );
+      }));
+      setFormKey((was) => was + 1);
+    });
   }, [planned, signedIn]);
   // Started from a remembered «Everyone» or «Followers»: the form scrolls, so
   // its words stay over «Save» too, seen before the run goes public.
@@ -321,6 +324,7 @@ export function RunEnd({
           )}
           <OutfitTaggingContext.Provider value={outfits.tagging}>
             <DrawingForm
+              key={formKey}
               choice={choice}
               onChoice={setChoice}
               items={items}

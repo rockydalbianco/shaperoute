@@ -3884,7 +3884,8 @@ cui tiene i numeri.
   «Post it in the Feed?» con «Your live becomes the post of this
   activity.», «Don't post» · «Post». «Post» mette nel modulo chi vede il
   post come il pubblico della live (Everyone o Followers) e, se non c'è,
-  il titolo della gara; il resto come sempre, decide «Save». Quando il post
+  il titolo della gara (il modulo si ridisegna per mostrarlo); il resto
+  come sempre, decide «Save». Quando il post
   è sull'API e altri lo vedono, l'app lo lega alla programmata (`PUT
   /me/planned-lives/{id}/post`) e nel Feed la scheda della live lascia il
   posto al post. «Don't post», o un post «Only me», non lega niente.

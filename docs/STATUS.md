@@ -282,6 +282,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   libero) in `main` (#1196, #1208), A2 esce col prossimo OTA. Prossime B2b/C2
   (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
 
+- **TASK-481 — Il «+» del Feed: tutte le voci** · parte 0 (documenti) fatta
+  il 2026-11-21 con le scelte dell'utente (sei voci, ADR-0390); A (la lista e
+  «Record now») dopo il merge di TASK-312 C2, lista dei file al Coordinatore.
+  File: — · `tasks/TASK-481.md`
+
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
 la figura, 305 parapendio (il pianificatore), 336 video nei post, 341 badge, 345 calorie e

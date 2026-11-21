@@ -98,6 +98,10 @@ Sulla tela «Schede palestra guidate»
     passo col promemoria acceso, la gita da 1000 m, e «Oggi» oltre il
     massimo di «Draw» e per un giorno di salita (`out/TASK-461/shots-b2b`,
     fuori da git).
+22. **Schermate di B2c al simulatore (2026-11-21)**: «Approvo» — registrando
+    libero nel giorno del piano, la barra con «mancano 12,4 km» (e il tempo
+    stimato) in bici e «mancano 230 m di salita» in montagna
+    (`out/TASK-461/shots-b2c`, fuori da git).
 
 ### I testi approvati della parte A (italiano; le altre lingue con lo stesso senso)
 
@@ -225,6 +229,17 @@ Sulla tela «Schede palestra guidate»
   la scheda «Oggi» dei giorni fuori, il promemoria alle 8, i testi;
   `sessionsOfWeek` passa i giorni dello sport dell'obiettivo da
   `targetDayInWeek`. I ritmi e il lungo della corsa vengono da TASK-452.
+
+- **B2c — «Mancano» mentre si registra** (branch `feat/TASK-461-b2c-to-go`,
+  lista col sì del Coordinatore il 2026-11-21, dopo D1): `gym/planToGo.ts`
+  (la meta del giorno dello sport registrato, dai piani tenuti sul
+  telefono), `screens/RunPanel.tsx` (`RouteProgress.climb` e il testo
+  «{m} m of climb to go», approvato nella riga G: «Mancano 230 m di
+  salita»), `screens/RunDashboard.tsx` (la barra del percorso anche per il
+  giorno del piano, file in più rispetto alla lista).
+- **D1 — `climb_m` nell'elenco delle attività** (server, branch
+  `feat/TASK-461-d1-climb-in-list`): «Già scritto dai tuoi hike» si scrive da
+  solo dopo il passo sul server; controllo in `out/TASK-461/SERVER-D1.md`.
 
 ## Il disegno tecnico (ADR-0371, deciso dall'agente su delega dell'utente)
 

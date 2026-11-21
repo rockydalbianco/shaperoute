@@ -5,7 +5,10 @@
  * longer available.»), the other languages translated from them. The names
  * of the sports are the app's own (apps/mobile/src/sports, src/i18n), so a
  * post is called here as the app calls it. The language comes from the
- * browser, English when it is none of these (../live/texts.js).
+ * browser, English when it is none of these (../live/texts.js). `failed`
+ * and `retry` are what the page says when the API did not answer («We
+ * couldn't load this drawing.», «Try again», approved on 2026-11-21);
+ * «Try again» is said as the app says it.
  */
 
 export const TEXTS = {
@@ -13,26 +16,36 @@ export const TEXTS = {
     by: "{user} drew this on MuW",
     get: "Get MuW",
     gone: "This drawing is no longer available.",
+    failed: "We couldn't load this drawing.",
+    retry: "Try again",
   },
   it: {
     by: "{user} ha disegnato questo con MuW",
     get: "Scarica MuW",
     gone: "Questo disegno non è più disponibile.",
+    failed: "Non siamo riusciti a caricare questo disegno.",
+    retry: "Riprova",
   },
   de: {
     by: "{user} hat das mit MuW gezeichnet",
     get: "MuW laden",
     gone: "Diese Zeichnung ist nicht mehr verfügbar.",
+    failed: "Wir konnten diese Zeichnung nicht laden.",
+    retry: "Erneut versuchen",
   },
   fr: {
     by: "{user} a dessiné ceci avec MuW",
     get: "Obtenir MuW",
     gone: "Ce dessin n'est plus disponible.",
+    failed: "Nous n'avons pas pu charger ce dessin.",
+    retry: "Réessayer",
   },
   es: {
     by: "{user} dibujó esto con MuW",
     get: "Consigue MuW",
     gone: "Este dibujo ya no está disponible.",
+    failed: "No hemos podido cargar este dibujo.",
+    retry: "Reintentar",
   },
 };
 

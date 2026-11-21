@@ -22,6 +22,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
+import { FeedMapShooter } from "../feed/FeedMaps";
 import { color } from "../theme/tokens";
 import { pageName, tourPart, useTourPager } from "../tour/tourParts";
 import { closeTopLayer, OnScreenContext } from "../ui/backLayers";
@@ -116,7 +117,7 @@ function useScreenReader(): boolean {
  */
 export function TabShell({ pages, page, onPage, action }: Props) {
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const count = pages.length;
   // VoiceOver goes by the tabs: a three-finger swipe would say «page 1001
   // of 2000», the strip's.
@@ -313,6 +314,15 @@ export function TabShell({ pages, page, onPage, action }: Props) {
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.shell]}>
+      {/* The maps under the drawings of every page (TASK-480): taken here,
+          before the pages and so before a page's own shooter. A page a tab
+          away is not laid out, and a map page inside it draws nothing. */}
+      <FeedMapShooter width={width} height={height} />
+      <View
+        testID="tab-maps-cover"
+        style={[StyleSheet.absoluteFill, styles.shell]}
+        pointerEvents="none"
+      />
       <AppHeader action={action} />
       <Hairline />
       <ScrollView

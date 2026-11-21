@@ -28,6 +28,8 @@ OTA di produzione e aggiornamenti del server in sospeso per task già Done:
 li tiene il Coordinatore (`AGENTI.md`, «L'albero»), col sì dell'utente.
 **TASK-294**: resta l'uscita su Google Play (test chiuso con 12 tester
 per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
+**TASK-480**: «Explore» senza mappe sotto i disegni, corretto in `main`
+(#1363); esce con l'OTA 20, col sì dell'utente al Coordinatore.
 
 ## In lavorazione
 
@@ -279,6 +281,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B2a (settimane verso una meta) e A2 (ingresso «Cosa vuoi allenare?», corpo
   libero) in `main` (#1196, #1208), A2 esce col prossimo OTA. Prossime B2b/C2
   (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
+
+- **TASK-481 — Il «+» del Feed: tutte le voci** · parte 0 (documenti) fatta
+  il 2026-11-21 con le scelte dell'utente (sei voci, ADR-0390); A (la lista e
+  «Record now») dopo il merge di TASK-312 C2, lista dei file al Coordinatore.
+  File: — · `tasks/TASK-481.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

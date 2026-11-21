@@ -1,0 +1,34 @@
+{
+  "photo_posts": [
+    {
+      "key": "p9a8b7c6d5e4f302",
+      "id": "95f4d5fc-f6e3-432b-abb6-2501ccea2274",
+      "title": "Not posted yet",
+      "description": "First posted on Instagram, in June.",
+      "visibility": "everyone",
+      "published_at": null,
+      "tags": [],
+      "photos": [],
+      "order": null
+    },
+    {
+      "key": "p1a2b3c4d5e6f708",
+      "id": "9b46dbcf-914b-40d8-81fa-b83676b912d8",
+      "title": "Lake morning",
+      "description": "First posted on Instagram, in June.",
+      "visibility": "everyone",
+      "published_at": "2026-11-05T12:00:00Z",
+      "tags": [],
+      "photos": [
+        {
+          "n": 1,
+          "url": "/drawings/9b46dbcf-914b-40d8-81fa-b83676b912d8/photos/1?v=1793880000000000",
+          "width": 4,
+          "height": 3,
+          "outfit_tags": []
+        }
+      ],
+      "order": null
+    }
+  ]
+}

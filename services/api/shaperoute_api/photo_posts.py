@@ -61,6 +61,7 @@ from shaperoute_api.drawings import (
     ORDER_PHOTO,
     TAG_UNKNOWN,
     Connection,
+    Details,
     PhotoBody,
     TagBody,
     _details,
@@ -156,6 +157,15 @@ class MyPhotoPostBody(BaseModel):
     place."""
 
 
+class MyPhotoPostsBody(BaseModel):
+    """GET /me/photo-posts: every post of photos only of the account, the
+    last published first, those still waiting for a photo by when they were
+    last kept: packages/shared-types/fixtures/my-photo-posts.json. The app
+    finds there the key of a post it opened by its id (part C1b)."""
+
+    photo_posts: list[MyPhotoPostBody]
+
+
 @dataclass(frozen=True)
 class Kept:
     """A post as it was kept, and the members tagged who are not to be told
@@ -184,8 +194,11 @@ def _post(conn: Connection, user_id: int, key: str) -> MyPhotoPostBody | None:
     return _body(conn, row, user_id)
 
 
-def _body(conn: Connection, row: DictRow, owner: int) -> MyPhotoPostBody:
-    details = _details(conn, [row["id"]], owner)
+def _body(
+    conn: Connection, row: DictRow, owner: int, details: Details | None = None
+) -> MyPhotoPostBody:
+    if details is None:
+        details = _details(conn, [row["id"]], owner)
     return MyPhotoPostBody(
         key=row["key"],
         id=row["id"],
@@ -217,6 +230,20 @@ class PhotoPosts:
         """The account's post with this key; None: no such post."""
         with self.database.connect() as conn:
             return _post(conn, user_id, key)
+
+    def all_mine(self, user_id: int) -> MyPhotoPostsBody:
+        """Every post of the account, the last published first."""
+        with self.database.connect() as conn:
+            rows = conn.execute(
+                "SELECT key, id, title, description, visibility, published_at"
+                " FROM drawings WHERE user_id = %s AND run_id IS NULL"
+                " ORDER BY coalesce(published_at, updated_at) DESC, id DESC",
+                (user_id,),
+            ).fetchall()
+            details = _details(conn, [row["id"] for row in rows], user_id)
+            return MyPhotoPostsBody(
+                photo_posts=[_body(conn, row, user_id, details) for row in rows]
+            )
 
     def keep(self, user_id: int, key: str, body: PhotoPostRequestBody) -> Kept:
         """The post as `body` wants it, made the first time. 422 for a field
@@ -352,6 +379,10 @@ def photo_post_routes() -> APIRouter:
     # Per account, as the photos of a run's drawing.
     uploads = RateLimiter(MAX_UPLOADS_PER_MINUTE)
     unknown = {404: {"model": ErrorBody}}
+
+    @router.get("/me/photo-posts")
+    def my_photo_posts(posts: Posts, user: Me) -> MyPhotoPostsBody:
+        return posts.all_mine(user.id)
 
     @router.get("/me/photo-posts/{key}", responses=unknown)
     def my_photo_post(key: Key, posts: Posts, user: Me) -> MyPhotoPostBody:

@@ -571,6 +571,7 @@ lasciando le righe d'indice.
 - ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte · 2026-11-12 · Attiva
 
 - ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos` · 2026-11-21 · Attiva
+- ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci in ordine, ognuna costruita dal task che la possiede e mostrata solo quando è pronta; «Everyone» anche per la palestra scritta a mano e la scheda pubblicata · 2026-11-21 · Proposta
 - ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Proposta
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 
@@ -706,6 +707,61 @@ prima dell'app. La parte B aggiunge la sua riga in `addToFeedEntries.ts`
 dopo TASK-481 A, testi in cinque lingue e la privacy a turno. Un
 allenamento scritto a mano non si corregge dopo «Save»: si cancella e si
 riscrive.
+
+## ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci, ognuna del suo task
+
+**Stato**: Proposta · 2026-11-21 · TASK-481 parte 0 (solo documenti).
+Le voci, l'ordine, i testi, «niente Soon», chi vede che cosa e la frase
+della privacy sono **scelte dell'utente** (2026-11-21, una domanda per
+volta); la lista prima del flusso e il file delle voci sono decisi
+dall'agente su delega dell'utente; numero dal Coordinatore. Estende
+ADR-0387, non lo sostituisce.
+
+**Contesto**: il «+» del Feed (TASK-476, ADR-0387) apre un foglio «Add
+activity» con la sola voce «From a file». L'utente, il 21 novembre: un «+»
+per pubblicare il sonno, una corsa, un'immagine, un'attività, da Strava, un
+post di Instagram, un allenamento in palestra, una scheda di allenamento.
+Ogni cosa ha già, o avrà, un task che la possiede (TASK-312 C2 le foto,
+TASK-467 il sonno), e Strava e Instagram non si possono collegare
+(ADR-0272).
+
+**Decisione**:
+- **Il foglio diventa «Add to Feed»** e si apre su una **lista**: «Record
+  now», «Photos only», «From a file», «Sleep», «Gym workout», «Workout
+  plan», in quest'ordine, ognuna con una riga sotto (testi in
+  `tasks/TASK-481.md`). Una voce apre il suo flusso nello stesso foglio,
+  con «‹» per tornare. Le voci stanno in un file a sé, così un task porta
+  la sua senza riscrivere il foglio.
+- **Una voce compare solo quando è pronta**, niente «Soon» (come in
+  ADR-0387). Il «+» c'è con un account anche senza il selettore di file,
+  perché «Record now» c'è sempre.
+- **Ogni voce la costruisce il suo task**: «Record now» TASK-481 A (apre
+  la registrazione di oggi); «Photos only» TASK-312 C2; «From a file» c'è
+  (TASK-476); «Sleep» TASK-467 E; «Gym workout» (un allenamento in palestra
+  già fatto, scritto a mano, con «Imported») TASK-484 e «Workout plan»
+  (una scheda della palestra come post, copiabile con «Use this plan»)
+  TASK-485.
+- **Chi lo vede**: «Record now» come ogni corsa (ADR-0304); «Photos only»
+  l'ultima scelta (TASK-312 C); «From a file» «Everyone» (ADR-0387);
+  «Sleep» come gli altri post (TASK-467); «Gym workout» e «Workout plan»
+  **«Everyone»**, visibile e cambiabile prima di salvare: altre due
+  eccezioni ad ADR-0304, una per ingresso. Ogni tipo nuovo ha la sua riga
+  di privacy approvata nel suo task.
+- **La privacy di oggi si precisa** con la parte A: «An activity you add
+  from a file with the «+» of the Feed…» (approvato dall'utente), perché
+  una corsa registrata dal «+» segue le regole di sempre.
+
+**Alternative scartate**: cinque voci senza «Record now»; «Gym workout»
+che avvia la palestra adesso, o nessuna voce per la palestra; la scheda
+solo da vedere; la routine di stretching dentro «Workout plan»; voci non
+pronte grigie con «Soon»; tutto «Everyone» dal «+», o tutto dall'ultima
+scelta; i titoli «Add activity» e «New post».
+
+**Conseguenze**: il foglio cresce a ogni uscita senza promettere niente.
+`AddToFeed.tsx` è toccato da TASK-312 C2 e poi da TASK-481 A: A parte dopo
+il merge di C2. I task di «Gym workout» e «Workout plan» chiedono server,
+migrazione e privacy, ognuno col suo sì. Strava resta il file esportato (e
+«Open in MuW», nativo, dopo la 1.1); Instagram la foto dalla galleria.
 
 ## ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos`
 

@@ -619,3 +619,7 @@ Parte E (in `main`, #1309):
   telefono col finto `/post` (`out/TASK-455/shots-fix/`). Deciso
   dall'agente su delega dell'utente («continua con i suggerimenti e
   miglioramenti»); va sul sito con la copia della parte D.
+- 2026-11-21: **schermate della correzione approvate dall'utente** («Sì,
+  va bene», alla domanda «Va bene la pagina del link con la mappa girata
+  come il disegno?»). La #1328 esce dalla bozza e passa al Coordinatore
+  come «pronta».

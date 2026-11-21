@@ -2951,4 +2951,27 @@ export const ES: Table = {
   "Your live becomes the post of this activity.":
     "Tu directo se convierte en la publicación de esta actividad.",
   "Don't post": "No publicar",
+  // Group runs (TASK-309 part B; it from the proposal, de/es/fr for the user's yes).
+  "Create group run": "Crear carrera en grupo",
+  "New group run": "Nueva carrera en grupo",
+  "Where exactly": "Dónde exactamente",
+  Notes: "Notas",
+  "e.g. MUSE entrance": "p. ej. entrada del MUSE",
+  "Pace, what to bring…": "Ritmo, qué llevar…",
+  "Meet in a public place, never at your home. MuW doesn't organise or check group runs. Everyone on MuW is 16 or older.":
+    "Quedad en un lugar público, nunca en tu casa. MuW no organiza ni controla las carreras en grupo. En MuW todos tienen al menos 16 años.",
+  Publish: "Publicar",
+  "Group runs": "Carreras en grupo",
+  "1 going": "1 participante",
+  "{count} going": "{count} participantes",
+  "I'm going": "Voy",
+  "You're going": "Vas",
+  "Not going": "Ya no voy",
+  Organiser: "Organiza",
+  "Cancel group run": "Cancelar la carrera en grupo",
+  "Cancel this group run? Everyone going gets a notice.":
+    "¿Cancelar esta carrera en grupo? Quien vaya recibirá un aviso.",
+  Cancelled: "Cancelada",
+  Over: "Terminada",
+  Past: "Pasadas",
 };

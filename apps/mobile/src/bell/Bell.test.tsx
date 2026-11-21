@@ -29,7 +29,7 @@ const account = { state: signedIn, sessionEnded: jest.fn() };
 const outAccount = { state: signedOut, sessionEnded: jest.fn() };
 const page = example as NotificationsPage;
 const [comment, request] = page.notifications;
-// A group run's line: its push opens nothing, nor does the line.
+// A group run's line: its page, as its push (TASK-309 part B).
 const groupRun: NotificationLine = {
   ...request,
   id: 40,
@@ -76,6 +76,7 @@ function opensSpy(): jest.Mocked<Opens> {
     openChallenge: jest.fn(),
     openConversation: jest.fn(),
     openContest: jest.fn(),
+    openGroupRun: jest.fn(),
   };
 }
 
@@ -143,11 +144,12 @@ test("a line opens what its push opens, and the list closes", async () => {
   await render(<Harness fetchFn={fetchFn} opens={opens} />);
   await fireEvent.press(await screen.findByTestId("bell"));
 
-  // A group run's line opens nothing, as its push.
-  const run = await screen.findByTestId("bell-line-40");
-  expect(run).toBeDisabled();
+  // A group run's line opens its page, as its push (TASK-309 part B).
+  await fireEvent.press(await screen.findByTestId("bell-line-40"));
+  expect(opens.openGroupRun).toHaveBeenCalledWith("5b0c6a1e-3d2f-4e8a-9b7c-1d2e3f4a5b6c");
 
-  await fireEvent.press(screen.getByTestId("bell-line-42"));
+  await fireEvent.press(screen.getByTestId("bell"));
+  await fireEvent.press(await screen.findByTestId("bell-line-42"));
   expect(opens.openDrawing).toHaveBeenCalledWith(
     "1c9d3b2a-5e4f-4a6b-8c7d-9e0f1a2b3c4d",
   );

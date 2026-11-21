@@ -22,6 +22,12 @@ import {
 } from "../contest/contestDoor";
 import { askContestOnce } from "../contest/contestKept";
 import { ContestPageHost } from "../contest/ContestPage";
+import {
+  closeGroupRunPage,
+  openGroupRunPage,
+  useAskedGroupRun,
+} from "../groupRuns/groupRunDoor";
+import { GroupRunPageHost } from "../groupRuns/GroupRunPage";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import { t, tPlural } from "../i18n";
 import { MessagesContext, useMessagesOf } from "../messages/messagesDoor";
@@ -178,6 +184,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
       setHint(null);
       setPage(null);
       closeContestPage();
+      closeGroupRunPage();
       setAsked((last) => ({ n: last.n + 1, hint: why }));
     },
     [setPeople],
@@ -269,6 +276,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
         setHint(null);
         setPeople(null);
         closeContestPage();
+        closeGroupRunPage();
       },
     }),
     [setPeople],
@@ -405,6 +413,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     openConversation: messages.openConversation,
     // A monthly challenge's notification (TASK-343): its page.
     openContest: openContestPage,
+    // A group run's notification (TASK-309 part B): its page.
+    openGroupRun: openGroupRunPage,
     // A planned live that started (TASK-468 part B2b1): its live view.
     openLive: openLiveView,
   };
@@ -424,6 +434,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // The page of a monthly challenge over the app (TASK-343): out of the way
   // while a drawing opened from it is on the map.
   const contestOver = useAskedContest() !== null && drawings.opened === null;
+  // The page of a group run over the app (TASK-309 part B), as a challenge's.
+  const groupRunOver = useAskedGroupRun() !== null;
   const door = useMemo(
     () => ({
       open: () => {
@@ -443,7 +455,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   const overInModal = overAppState.modalPages > 0;
   // The app is under a page over it: out of the screen reader's sight. Not
   // while «Play» covers those pages, which are kept out of sight then.
-  const appUnder = (shown || contestOver || bell.shown) && !overAppState.covered;
+  const appUnder =
+    (shown || contestOver || groupRunOver || bell.shown) && !overAppState.covered;
   const overPages = (
     <OverAppPages covered={overAppState.covered}>
       <CommentsContext.Provider value={outerComments}>
@@ -454,6 +467,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
       gallery opens over it, and back comes to it. */}
               <FollowsContext.Provider value={followsDoor}>
                 <ContestPageHost />
+                <GroupRunPageHost />
               </FollowsContext.Provider>
               {people !== null && (
                 <PeopleScreen
@@ -541,6 +555,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                                       shown:
                                         shown ||
                                         contestOver ||
+                                        groupRunOver ||
                                         bell.shown ||
                                         messages.screen !== null,
                                     }}

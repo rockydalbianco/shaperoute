@@ -210,6 +210,24 @@ apps/mobile/src/i18n/{it,fr,de,es}.ts
 docs/tasks/TASK-475.md
 ```
 
+## Parte C — acceso (2026-11-22)
+
+B in `main` (#1348, `e132e7a6`), server con la `0079` dal passo 15. Sì
+dell'utente alle schermate («Sì, approvo», 2026-11-21) e sì del
+Coordinatore alla PR di accensione; esce col prossimo OTA, col sì
+dell'utente chiesto dal Coordinatore. Solo `fromProfile("stretch", true)`
+e i conteggi dei test: 18 sport, nessun «Soon».
+
+## File toccati (parte C)
+
+```
+apps/mobile/src/settings/sport.ts
+apps/mobile/src/settings/{sport,sportRows}.test.ts
+apps/mobile/src/settings/{SportButton,SportSetting,SportStoreBuild}.test.tsx
+apps/mobile/src/profile/SettingsPage.test.tsx
+docs/tasks/TASK-475.md
+```
+
 ## File toccati (parte 0)
 
 ```

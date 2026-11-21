@@ -155,6 +155,7 @@ from shaperoute_api.sign_in_providers import (
 )
 from shaperoute_api.signals import SignalBody, SignalGate, event_of
 from shaperoute_api.sleep import install_sleep
+from shaperoute_api.sleep_posts import install_sleep_posts
 from shaperoute_api.strava import install_strava
 from shaperoute_api.strava_client import Strava
 from shaperoute_api.stretch_sessions import install_stretch_sessions
@@ -422,6 +423,7 @@ def create_app(
     # The nights of sleep a person publishes, on the profile and in the
     # post of an activity (TASK-467 B1); they need a token.
     install_sleep(app)
+    install_sleep_posts(app)
     # The figures of a run for the page of its post: splits, elevation,
     # cadence, calories (TASK-410 C); they need a token.
     install_run_stats(app)

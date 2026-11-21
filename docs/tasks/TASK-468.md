@@ -308,4 +308,5 @@ per tutti (fila «Live», solo di chi si segue), si programma in anticipo
 («Plan a live», «Remind me» con la push alla partenza, «Start live
 "…"?» all'avvio) e a fine attività diventa il post. Server: migrazioni
 `0073`, `0075`, `0077`; app: B1, B2a, B2b1, B2b2 in produzione (OTA 17,
-18 e 19). Resta all'utente la prova sul telefono.
+18 e 19). Provato dall'utente sul telefono il 2026-11-21: «Funziona, tutto
+ok».

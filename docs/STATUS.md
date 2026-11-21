@@ -191,7 +191,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (bici, canoa, nuoto) e C. File (#1185): `apps/mobile/src/explore/{ExploreScreen.tsx,explored.ts,recommendedRoutes.ts}`, `apps/mobile/src/route/NearYou.tsx`
   **2026-11-12, 12:28Z**: B1 in produzione — server a 1546 (passo 10), app nell'OTA 12.
   **2026-11-18**: **B2** (ADR-0366, precisazione): 148 uscite in bici da 20–30 km, otto forme lette a occhio, 29 città italiane; catalogo a 1694, server in `main` (#1317), passo 14 e OTA con la #1248 (bozza) col sì dell'utente. Poi le città estere, B3 (40–50 km) e C. File (#1248): `apps/mobile/src/explore/{recommendedRoutes.ts,catalogList.ts,ExploreScreen.tsx}`, `apps/mobile/App.tsx` (una riga)
-  **2026-11-21**: B2 sul server (passo 14, 06:43Z, catalogo a 1694, le corse identiche per chi non chiede `activity`); app in `main` (#1248, `ab51d0fd`): le uscite si vedono con lo sport «Bike» dopo l'OTA 18 (sì dell'utente). Città estere: secondo giro in corso sul Mac (estratti Geofabrik, limite 4 GB del pianificatore), poi una PR del solo catalogo.
+  **2026-11-21**: B2 sul server (passo 14, 06:43Z, catalogo a 1694, le corse identiche per chi non chiede `activity`); app in `main` (#1248, `ab51d0fd`): le uscite si vedono con lo sport «Bike», **in produzione con l'OTA 18** (`593c6fbe`, 2026-11-21); resta l'occhiata dell'utente sul telefono. Città estere: secondo giro in corso sul Mac (estratti Geofabrik, limite 4 GB del pianificatore), poi una PR del solo catalogo.
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),

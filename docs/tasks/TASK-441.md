@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), server in `main` (#1317, `ee9f143c`, col sì dell'utente «Le otto forme», 2026-11-18), **sul server dal 2026-11-21** (passo 14, 06:43Z); app in `main` (#1248, `ab51d0fd`, 2026-11-21), nell'app con l'OTA 18 (sì dell'utente); le città estere in un secondo giro
+**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), server in `main` (#1317, `ee9f143c`, col sì dell'utente «Le otto forme», 2026-11-18), **sul server dal 2026-11-21** (passo 14, 06:43Z); app in `main` (#1248, `ab51d0fd`) e **in produzione con l'OTA 18** (`593c6fbe`, 2026-11-21), resta l'occhiata dell'utente sul telefono; le città estere in un secondo giro
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -481,7 +481,8 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
       `exploreCatalogEdit.test.ts` verde sul seme nuovo.
 - [x] CI verde, merge del Coordinatore (#1317, `ee9f143c`); `app.py` reso al Coordinatore.
 - [x] Passo sul server (passo 14, 2026-11-21 06:43Z) e PR dell'app (#1248, `ab51d0fd`).
-- [ ] OTA (sì dell'utente) e un'occhiata sul telefono: sport «Bike», poi «Explore».
+- [x] OTA 18 (`593c6fbe`; iOS `4c2d6752`, Android `bc572bad`), 2026-11-21, col sì dell'utente al Coordinatore.
+- [ ] Un'occhiata dell'utente sul telefono: sport «Bike», poi «Explore».
 
 ## Dove siamo
 
@@ -494,8 +495,8 @@ prima del passo: i 26 MB del catalogo (i 362 MiB scritti in SERVER-B2.md
 erano di un riavvio più vecchio). **App**: `main` unito nella #1248, fuori
 dalla bozza, unita dal Coordinatore al verde (`ab51d0fd`); niente prova in
 un simulatore col server vero, la prova è `ExploreBike.test.tsx` e la CI.
-Resta l'**OTA 18** (sì dell'utente, lo chiede il Coordinatore) e un'occhiata
-sul telefono.
+**OTA 18 pubblicato il 2026-11-21** (`593c6fbe`): la bici in «Explore» è in
+produzione. Resta un'occhiata dell'utente sul telefono.
 
 **Città estere, secondo giro (in corso)**: via del Coordinatore il
 2026-11-21. Elenco ed estratti in `out/TASK-441/b2/ESTERE-ESTRATTI.md`: 32

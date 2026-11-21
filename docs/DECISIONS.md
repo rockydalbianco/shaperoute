@@ -686,7 +686,7 @@ commenti, segnalazioni, blocchi e nascosti.
    traccia, pubblicato alla creazione, niente foto. Chi parte da `runs`
    non lo vede mai.
 2. **La fotografia della scheda in `drawings.plan`** (JSONB, migrazione
-   provvisoria `0082_plan_posts.sql`): con `plan` è una scheda pubblicata,
+   provvisoria `0083_plan_posts.sql`): con `plan` è una scheda pubblicata,
    senza è un post di sole foto; `plan` solo senza corsa. Nessun legame con
    la riga di `gym_plans`: cambiare o cancellare la scheda non tocca il
    post (scelta dell'utente).

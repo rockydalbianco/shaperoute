@@ -245,6 +245,12 @@ def test_a_run_of_another_app_has_no_route_of_muw() -> None:
         ActivityRequestBody.model_validate(imported(source="strava"))
 
 
+def test_a_workout_written_by_hand_is_no_run() -> None:
+    # TASK-484, ADR-0395: `manual` is of the gym only, by /me/gym-sessions.
+    with pytest.raises(ValidationError, match="saved by /me/gym-sessions"):
+        ActivityRequestBody.model_validate(imported(source="manual"))
+
+
 # --- Saved ---
 
 

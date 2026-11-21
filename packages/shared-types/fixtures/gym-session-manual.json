@@ -1,0 +1,101 @@
+{
+  "started_at": "2026-11-04T17:30:00Z",
+  "ended_at": "2026-11-04T18:35:00Z",
+  "show_exercises": true,
+  "source": "manual",
+  "sets": [
+    {
+      "exercise": "bench_press",
+      "kind": "load",
+      "reps": 10,
+      "load_kg": 60,
+      "at_s": 300,
+      "live": false
+    },
+    {
+      "exercise": "bench_press",
+      "kind": "load",
+      "reps": 10,
+      "load_kg": 60,
+      "at_s": 600,
+      "live": false
+    },
+    {
+      "exercise": "bench_press",
+      "kind": "load",
+      "reps": 10,
+      "load_kg": 60,
+      "at_s": 900,
+      "live": false
+    },
+    {
+      "exercise": "bench_press",
+      "kind": "load",
+      "reps": 10,
+      "load_kg": 60,
+      "at_s": 1200,
+      "live": false
+    },
+    {
+      "exercise": "back_squat",
+      "kind": "load",
+      "reps": 5,
+      "load_kg": 90,
+      "at_s": 1500,
+      "live": false
+    },
+    {
+      "exercise": "back_squat",
+      "kind": "load",
+      "reps": 5,
+      "load_kg": 90,
+      "at_s": 1800,
+      "live": false
+    },
+    {
+      "exercise": "back_squat",
+      "kind": "load",
+      "reps": 5,
+      "load_kg": 90,
+      "at_s": 2100,
+      "live": false
+    },
+    {
+      "exercise": "back_squat",
+      "kind": "load",
+      "reps": 5,
+      "load_kg": 90,
+      "at_s": 2400,
+      "live": false
+    },
+    {
+      "exercise": "back_squat",
+      "kind": "load",
+      "reps": 5,
+      "load_kg": 90,
+      "at_s": 2700,
+      "live": false
+    },
+    {
+      "exercise": "plank",
+      "kind": "timed",
+      "duration_s": 45,
+      "at_s": 3000,
+      "live": false
+    },
+    {
+      "exercise": "plank",
+      "kind": "timed",
+      "duration_s": 45,
+      "at_s": 3300,
+      "live": false
+    },
+    {
+      "exercise": "plank",
+      "kind": "timed",
+      "duration_s": 45,
+      "at_s": 3600,
+      "live": false
+    }
+  ]
+}

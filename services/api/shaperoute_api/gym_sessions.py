@@ -8,6 +8,9 @@ seconds itself, the time between start and end without the pauses; the
 rests are inside it. Sent twice, it is saved once, as a run is (201, then
 200). The run is in «My activities» for an app that reads what has no track
 (reads.py) and is published as any other (drawings.py), without a line.
+A workout written by hand afterwards (TASK-484, ADR-0395) comes the same way
+with `source` `manual`: sets none of them live, no pauses, rests or plan,
+ended before now; it stays out of the levels and of all that reads `muw`.
 
 GET /me/gym-sessions/{key} gives the workout back to its owner, and PUT
 /me/gym-sessions/{key}/show-exercises says whether its post shows the
@@ -22,7 +25,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Response
@@ -46,7 +49,9 @@ from shaperoute_api.activities import (
     KEY_PATTERN,
     MAX_ACTIVITIES,
     MAX_PAUSES,
+    MUW,
     Key,
+    RunSource,
 )
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import drawing_seen_sql
@@ -66,6 +71,13 @@ EXERCISE_PATTERN = r"^[a-z0-9_]{1,40}$"
 UNKNOWN_WORKOUT = "No workout at the gym with this key."
 NO_EXERCISES = "No exercises to show for this drawing."
 NOT_A_WORKOUT = "This key is of a run, not of a workout at the gym."
+
+# Where a workout comes from (TASK-484, ADR-0395): recorded by the app, or
+# written by hand afterwards from the «+» of the Feed. Only `muw` counts for
+# the levels, the leaderboard, the badges, the contest and the game.
+GymSource = Literal["muw", "manual"]
+MANUAL: GymSource = "manual"
+ENDS_LATER = "A workout written by hand ends before now."
 
 # What a set of each kind has, besides its time and whether it was live:
 # the fields it needs, and those it may have.
@@ -183,6 +195,10 @@ class GymSessionRequestBody(BaseModel):
     plan: str | None = Field(default=None, pattern=KEY_PATTERN)
     """The key of the plan it followed (TASK-411 C, gym_plans.py); null for
     a workout without one. The plan may reach the API later."""
+    source: GymSource = MUW
+    """`manual` for a workout written by hand afterwards (TASK-484,
+    ADR-0395); missing from an older app, which only recorded. Like the
+    rest of the body, it counts only the first time."""
 
     @model_validator(mode="after")
     def within_the_workout(self) -> GymSessionRequestBody:
@@ -194,6 +210,22 @@ class GymSessionRequestBody(BaseModel):
             raise ValueError("a pause is inside the workout")
         if any(item.at_s > length_s for item in self.sets):
             raise ValueError("a set is logged inside the workout")
+        return self
+
+    @model_validator(mode="after")
+    def as_written_by_hand(self) -> GymSessionRequestBody:
+        """A workout written by hand has what its form asks and no more:
+        sets, none of them live, and no timer behind it."""
+        if self.source != MANUAL:
+            return self
+        if not self.sets:
+            raise ValueError("a workout written by hand has its sets")
+        if any(item.live for item in self.sets):
+            raise ValueError("a workout written by hand has no live sets")
+        if self.pauses or self.rests or self.rest_s:
+            raise ValueError("a workout written by hand has no pauses or rests")
+        if self.plan is not None:
+            raise ValueError("a workout written by hand follows no plan")
         return self
 
     def duration_s(self) -> int:
@@ -223,6 +255,8 @@ class GymSessionBody(BaseModel):
     sets: list[GymSetBody]
     plan: str | None = None
     """The key of the plan it followed; left out without one."""
+    source: RunSource = MUW
+    """`manual` for one written by hand (TASK-484); always answered."""
 
 
 class GymExercisesBody(BaseModel):
@@ -291,7 +325,7 @@ def _kept_pauses(pauses: Sequence[GymPauseBody]) -> list[dict[str, Any]]:
 
 WORKOUT_SQL = (
     "SELECT r.id, r.key, r.started_at, r.duration_s, g.rests, g.rest_s,"
-    " g.show_exercises, g.plan_key FROM runs r"
+    " g.show_exercises, g.plan_key, r.source FROM runs r"
     " JOIN gym_sessions g ON g.run_id = r.id"
     " WHERE r.user_id = %s AND r.key = %s"
 )
@@ -314,6 +348,7 @@ class GymSessions:
             show_exercises=row["show_exercises"],
             sets=_sets(conn, row["id"]),
             plan=row["plan_key"],
+            source=row["source"],
         )
 
     def get(self, user_id: int, key: str) -> GymSessionBody | None:
@@ -329,6 +364,8 @@ class GymSessions:
         now = self.now()
         if not EARLIEST_RUN <= body.started_at <= now + CLOCK_AHEAD:
             raise AccountError(422, "invalid_request", BAD_CLOCK)
+        if body.source == MANUAL and body.ended_at > now + CLOCK_AHEAD:
+            raise AccountError(422, "invalid_request", ENDS_LATER)
         with self.database.connect() as conn:
             # One account's runs change one at a time, as activities.py
             # saves them: the count below is the count when the row goes in.
@@ -349,8 +386,8 @@ class GymSessions:
                 raise AccountError(422, "invalid_request", ACTIVITIES_FULL)
             run = conn.execute(
                 "INSERT INTO runs (user_id, key, track, pauses, started_at,"
-                " distance_m, duration_s, created_at, activity)"
-                " VALUES (%s, %s, NULL, %s, %s, 0, %s, %s, %s) RETURNING id",
+                " distance_m, duration_s, created_at, activity, source)"
+                " VALUES (%s, %s, NULL, %s, %s, 0, %s, %s, %s, %s) RETURNING id",
                 (
                     user_id,
                     key,
@@ -359,6 +396,7 @@ class GymSessions:
                     body.duration_s(),
                     now,
                     GYM,
+                    body.source,
                 ),
             ).fetchone()
             assert run is not None

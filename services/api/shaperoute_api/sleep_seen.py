@@ -38,14 +38,18 @@ class SleepSummaryBody(BaseModel):
     stages: SleepStagesBody | None = None
 
 
-# The night in the post of a drawing, for a query that names its run `r`:
-# only while its owner shows it (`sleep_shown`), the rule of GET
-# /drawings/{id}/sleep for anyone but the owner. One row by a primary key.
+# The night in the post of a drawing, for a query that names the drawing `d`
+# and its run `r`: the run's only while its owner shows it (`sleep_shown`),
+# the rule of GET /drawings/{id}/sleep for anyone but the owner; or the one
+# the post itself is of, without a run (TASK-467 part E, sleep_posts.py),
+# which is all it shows. One row by a primary key: a drawing has a run or a
+# night of its own, never both.
 SEEN_SLEEP_SQL = (
     "(SELECT jsonb_build_object('night', n.night, 'score', n.score,"
     " 'asleep_min', n.asleep_min, 'awake_min', n.awake_min,"
     " 'rem_min', n.rem_min, 'light_min', n.light_min, 'deep_min', n.deep_min)"
-    " FROM sleep_nights n WHERE n.id = r.sleep_night_id AND r.sleep_shown)"
+    " FROM sleep_nights n WHERE (n.id = r.sleep_night_id AND r.sleep_shown)"
+    " OR n.id = d.sleep_night_id)"
 )
 
 

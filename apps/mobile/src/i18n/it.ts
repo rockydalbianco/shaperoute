@@ -2910,6 +2910,11 @@ export const IT: Table = {
     "Niente forme in montagna: MuW registra la tua giornata.",
   // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
   Stretching: "Stretching",
+  // «Draw» with the sport «Stretching» (TASK-475 part B), approved by the
+  // user on 2026-11-21.
+  "Start stretching": "Inizia lo stretching",
+  "No route for stretching: choose a routine and MuW guides you.":
+    "Niente percorso per lo stretching: scegli una routine e MuW ti guida.",
   "Before you climb": "Prima di salire",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW registra la tua salita e la condivide: non ti guida. Vai con la tua attrezzatura, la tua esperienza e il tuo giudizio, e controlla le condizioni prima di partire.",
@@ -2970,4 +2975,31 @@ export const IT: Table = {
   "From {bearing} · {minutes} min ago": "Da {bearing} · {minutes} min fa",
   "GPS numbers · not a certified instrument":
     "Numeri dal GPS · non è uno strumento certificato",
+  "Log in to see this drawing.": "Accedi per vedere questo disegno.",
+  // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
+  "Edit layout": "Modifica schermata",
+  "Page {n} of {count}": "Pagina {n} di {count}",
+  "Touch a widget to move it, size it or take it away.":
+    "Tocca un widget per spostarlo, ridimensionarlo o toglierlo.",
+  Size: "Dimensione",
+  Unit: "Unità",
+  "Add page": "Aggiungi pagina",
+  "Remove page": "Togli pagina",
+  Duplicate: "Duplica",
+  "Back to preset": "Torna al preset",
+  "Undo every change to this layout?":
+    "Annullare tutte le modifiche a questa schermata?",
+  "Delete this layout?": "Eliminare questa schermata?",
+  "Send file": "Invia file",
+  "Load file": "Carica file",
+  "No room there.": "Lì non c'è posto.",
+  "No room on this page.": "Non c'è posto in questa pagina.",
+  "No room for another size.": "Non c'è posto per un'altra dimensione.",
+  "No room for another page.": "Non c'è posto per un'altra pagina.",
+  "No room for another layout.": "Non c'è posto per un'altra schermata.",
+  "This file is not a MuW layout.": "Questo file non è una schermata di MuW.",
+  "This layout is from a newer MuW: update the app.":
+    "Questa schermata viene da un MuW più nuovo: aggiorna l'app.",
+  "MuW could not read this file.": "MuW non è riuscita a leggere questo file.",
+  "MuW could not share the file.": "MuW non è riuscita a condividere il file.",
 };

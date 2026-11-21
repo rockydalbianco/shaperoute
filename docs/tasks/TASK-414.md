@@ -5,7 +5,8 @@
 B (#1234, `100624e2`: l'app) e B2 (#1257, `e88d491f`: lo sport acceso) in
 `main`. Esito: «Carrozzina e passeggino» ♿ si sceglie, disegna solo cerchio,
 cuore, stella e luna di 1–5 km sulla rete `wheel`, ha record su 1 e 5 km;
-esce col prossimo OTA, col sì dell'utente.
+in produzione con l'OTA 15 (2026-11-12) e provato dall'utente sul telefono
+(«ok a posto», 2026-11-21).
 **Fase**: 4 · **Branch**: `docs/TASK-414-0-wheelchair` (parte 0), poi
 parte A e parte B · **ADR**: ADR-0343 (accettato 2026-11-12, precisazioni A e B) · numeri dal Coordinatore
 · sessione dello sport, avviata dal «Coordinatore Sport»
@@ -212,8 +213,8 @@ come la proposta, tranne la prima:
       2026-11-11).
 - [x] B: lo sport si sceglie, disegna le sue quattro forme e mostra i record
       (al simulatore, 2026-11-12, schermate approvate dall'utente); i testi
-      sono in cinque lingue. Percorrerlo, salvarlo e vederlo in Salute si
-      prova sul telefono dopo l'OTA.
+      sono in cinque lingue. Percorrerlo, salvarlo e vederlo in Salute:
+      provato dall'utente sul telefono dopo l'OTA 15 (2026-11-21).
 
 ## File toccati
 
@@ -375,9 +376,11 @@ Impronte invariate. ADR-0343 è accettato, con la precisazione A.
 - **Orologio**: i file di `targets/watch/**` della parte A (`sports.json`,
   `Localizable.strings`) non entrano nella build 14 dell'orologio già in
   revisione; entrano con la build dopo.
-- **OTA**: la carrozzina accesa esce col prossimo OTA (il 14 è uscito da
-  `be21e7d8`, prima della #1257), col sì dell'utente al Coordinatore; poi
-  la prova sul telefono: percorrerla, salvarla, vederla in Salute.
+- **OTA**: fatto. OTA 15 di produzione il 2026-11-12 alle 15:46Z da
+  `e88d491f` (iOS `165058e1`, Android `cd49e901`), col sì dell'utente al
+  Coordinatore. La prova sul telefono (scegliere lo sport, le quattro
+  forme anche sotto il percorso, percorrerlo e salvarlo, Salute, i record)
+  è andata bene: «ok a posto» (2026-11-21).
 - **Lasciati apposta in B**: `imports/fit.ts` (i codici FIT della
   carrozzina non sono verificati: un file FIT di carrozzina resta allo
   sport di «Impostazioni»; GPX e TCX che dicono «wheelchair» sì);

@@ -5240,8 +5240,17 @@ TASK-305.md, «Testi di R6».
   1:43:30», anche sulla foto e in quello che legge VoiceOver. Nella pagina
   del post il riepilogo ha due righe in più dopo il tempo, «On foot» e «In
   the air».
-- **La mappa a due colori** (bianco a piedi, giallo in aria) è la parte
-  R6c, ancora da fare.
+- **La mappa a due colori** (TASK-305 parte R6c), alla fine della gara.
+  - La linea dei tratti a piedi è il bianco della corsa; i voli sono sopra,
+    nel giallo del percorso, pieni (non tratteggiati come le risalite dello
+    sci).
+  - Il banner dice «White: on foot. Yellow: in the air.» al posto di
+    «White: where you flew.». Un volo senza tratti a piedi resta tutto
+    bianco, come prima.
+  - I tratti si calcolano sul telefono dalla traccia e dalle correzioni a
+    mano (`src/air/flightLegs.ts`), come quelli della fine.
+  - La pagina dell'attività riaperta più tardi è la parte R6d, ancora da
+    fare: lì i tratti arrivano dal server.
 
 ### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
 

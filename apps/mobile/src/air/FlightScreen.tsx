@@ -26,9 +26,9 @@ import {
   GRID_ROWS,
   loadFlightPrefs,
   type Page,
-  PRESET_NAME,
-  PRESET_PAGES,
-  PRESETS,
+  pagesOf,
+  profileName,
+  WIDGET_UNIT_KIND,
   saveFlightPrefs,
 } from "./flightLayout";
 import {
@@ -38,6 +38,7 @@ import {
   UNIT_LABEL,
   VARIO_UNITS,
 } from "./flightUnits";
+import { FlightEditor } from "./FlightEditor";
 import { FlightWidget } from "./FlightWidget";
 import { useFlightScreenData } from "./useFlightScreenData";
 
@@ -51,6 +52,8 @@ import { useFlightScreenData } from "./useFlightScreenData";
  */
 
 export const FIXED_LINE = tLater("GPS numbers · not a certified instrument");
+/** Hold a widget this long to open the editor (part B2). */
+export const EDIT_HOLD_MS = 700;
 /** Hold the lock this long to undo it. */
 export const UNLOCK_HOLD_MS = 1500;
 /** Targets for gloved fingers, points. */
@@ -108,11 +111,13 @@ function Options({
   prefs,
   onChange,
   onDone,
+  onEdit,
   palette,
 }: {
   prefs: FlightPrefs;
   onChange: (prefs: FlightPrefs) => void;
   onDone: () => void;
+  onEdit: () => void;
   palette: Palette;
 }) {
   const units = (patch: Partial<FlightUnits>) =>
@@ -130,15 +135,23 @@ function Options({
     >
       {row(
         t("Layout"),
-        PRESETS.map((preset) => (
+        <>
+          {prefs.profiles.map((profile, index) => (
+            <Chip
+              key={`${profile.from}-${profile.copy}`}
+              label={profileName(profile)}
+              on={prefs.current === index}
+              onPress={() => onChange({ ...prefs, current: index })}
+              palette={palette}
+            />
+          ))}
           <Chip
-            key={preset}
-            label={t(PRESET_NAME[preset])}
-            on={prefs.preset === preset}
-            onPress={() => onChange({ ...prefs, preset })}
+            label={t("Edit layout")}
+            on={false}
+            onPress={onEdit}
             palette={palette}
           />
-        )),
+        </>,
       )}
       {row(
         t("Look"),
@@ -214,13 +227,13 @@ function PageView({
   page: Page;
   width: number;
   height: number;
-  render: (cell: Page[number], w: number, h: number) => React.ReactNode;
+  render: (cell: Page[number], index: number, w: number, h: number) => React.ReactNode;
 }) {
   const cellW = (width - GAP * (GRID_COLUMNS + 1)) / GRID_COLUMNS;
   const cellH = (height - GAP * (GRID_ROWS + 1)) / GRID_ROWS;
   return (
     <View style={{ width, height }}>
-      {page.map((cell) => {
+      {page.map((cell, index) => {
         const w = cellW * cell.w + GAP * (cell.w - 1);
         const h = cellH * cell.h + GAP * (cell.h - 1);
         return (
@@ -234,7 +247,7 @@ function PageView({
               height: h,
             }}
           >
-            {render(cell, w, h)}
+            {render(cell, index, w, h)}
           </View>
         );
       })}
@@ -256,6 +269,10 @@ export function FlightScreen({
   const [locked, setLocked] = useState(false);
   const [hint, setHint] = useState(false);
   const [page, setPage] = useState(0);
+  // The editor (part B2): open on the page and the widget held.
+  const [editing, setEditing] = useState<{ page: number; index: number | null } | null>(
+    null,
+  );
   const [area, setArea] = useState({ width: 0, height: 0 });
   // The app has the provider; a screen tested alone does not.
   const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0 };
@@ -263,13 +280,20 @@ export function FlightScreen({
   const at = live ? now : (track.fixes[track.fixes.length - 1]?.timeMs ?? now);
   const data = useFlightScreenData(track, at, takeoffMs, sharingLive);
   const palette = useMemo(() => paletteFor(prefs.look), [prefs.look]);
-  const pages = PRESET_PAGES[prefs.preset];
+  const pages = pagesOf(prefs);
   const change = (next: FlightPrefs) => {
     setPrefs(next);
     saveFlightPrefs(next);
-    if (next.preset !== prefs.preset) {
+    if (next.current !== prefs.current) {
       setPage(0);
     }
+  };
+  /** The profile's units, with the widget's own where it has one. */
+  const unitsOf = (cell: Page[number]): FlightUnits => {
+    const kind = WIDGET_UNIT_KIND[cell.widget];
+    return cell.unit === undefined || kind === undefined
+      ? prefs.units
+      : { ...prefs.units, [kind]: cell.unit };
   };
   const onLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -324,7 +348,7 @@ export function FlightScreen({
             testID="flight-screen-layout"
           >
             <Text style={[styles.barText, { color: palette.text }]} numberOfLines={1}>
-              {`${t(PRESET_NAME[prefs.preset])} ▾`}
+              {`${profileName(prefs.profiles[prefs.current])} ▾`}
             </Text>
           </Pressable>
           <Pressable
@@ -368,7 +392,7 @@ export function FlightScreen({
               scrollEnabled={!locked}
               showsHorizontalScrollIndicator={false}
               onMomentumScrollEnd={onScrolled}
-              key={prefs.preset}
+              key={prefs.current}
             >
               {pages.map((one, index) => (
                 <PageView
@@ -376,16 +400,24 @@ export function FlightScreen({
                   page={one}
                   width={area.width}
                   height={area.height}
-                  render={(cell, w, h) => (
-                    <FlightWidget
-                      widget={cell.widget}
-                      data={data}
-                      flight={prefs.units}
-                      units={appUnits}
-                      palette={palette}
-                      width={w}
-                      height={h}
-                    />
+                  render={(cell, cellIndex, w, h) => (
+                    <Pressable
+                      style={styles.held}
+                      // A long press opens the editor on this widget (B2).
+                      onLongPress={() => setEditing({ page: index, index: cellIndex })}
+                      delayLongPress={EDIT_HOLD_MS}
+                      testID={`flight-hold-${cell.widget}`}
+                    >
+                      <FlightWidget
+                        widget={cell.widget}
+                        data={data}
+                        flight={unitsOf(cell)}
+                        units={appUnits}
+                        palette={palette}
+                        width={w}
+                        height={h}
+                      />
+                    </Pressable>
                   )}
                 />
               ))}
@@ -416,8 +448,36 @@ export function FlightScreen({
             prefs={prefs}
             onChange={change}
             onDone={() => setChoosing(false)}
+            onEdit={() => {
+              setChoosing(false);
+              setEditing({ page, index: null });
+            }}
             palette={palette}
           />
+        ) : null}
+        {editing !== null ? (
+          <View
+            style={[
+              styles.editing,
+              {
+                backgroundColor: palette.background,
+                paddingTop: insets.top,
+                paddingBottom: insets.bottom,
+              },
+            ]}
+          >
+            <FlightEditor
+              prefs={prefs}
+              onChange={change}
+              onDone={() => {
+                setEditing(null);
+                setPage(0);
+              }}
+              palette={palette}
+              startPage={editing.page}
+              startIndex={editing.index}
+            />
+          </View>
         ) : null}
       </View>
     </Modal>
@@ -426,6 +486,8 @@ export function FlightScreen({
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
+  held: { flex: 1 },
+  editing: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
   bar: { flexDirection: "row", gap: GAP, paddingHorizontal: GAP, paddingTop: GAP },
   barButton: {
     minHeight: GLOVE_TARGET,

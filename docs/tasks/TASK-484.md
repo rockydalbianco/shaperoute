@@ -1,7 +1,7 @@
 # TASK-484 — Allenamento in palestra scritto a mano, nel Feed
 
-**Stato**: In lavorazione · parte 0 (documenti) fatta il 2026-11-21; parte A
-(server) pronta a partire da `main`, file approvati dal Coordinatore
+**Stato**: In lavorazione · parte 0 fatta (#1366, 2026-11-21); parte A
+(server) nella PR #1371, poi il passo sul server col sì dell'utente
 **Fase**: 5 · **Branch**: `docs/TASK-484-gym-by-hand` (parte 0)
 **Dipende da**: TASK-481 A (il foglio «Add to Feed» con la lista e
 `addToFeedEntries.ts`), TASK-385 (la palestra, ADR-0327), TASK-411 C (le
@@ -142,7 +142,7 @@ diceva `PUT /me/activities/{key}`: la palestra invece si salva già con
 
 ### A — Server: `source: "manual"` per la palestra
 
-- Migrazione `0083_gym_by_hand.sql` (provvisoria, il numero definitivo al merge): il `CHECK`
+- Migrazione `0081_gym_by_hand.sql` (numero del Coordinatore: la prima entrata prende il primo libero): il `CHECK`
   di `runs.source` con `manual`.
 - `gym_sessions.py`: `source` nella richiesta e nella risposta
   (`GymSessionBody`), i controlli di un `manual`, il valore in `runs`.
@@ -164,7 +164,7 @@ cambiate nel modello e in `save`, nessuno spostamento.
 **File toccati (approvati dal Coordinatore il 2026-11-21):**
 
 ```
-services/api/migrations/0083_gym_by_hand.sql            (nuovo)
+services/api/migrations/0081_gym_by_hand.sql            (nuovo)
 services/api/shaperoute_api/gym_sessions.py
 services/api/shaperoute_api/activities.py              (RunSource; manual rifiutato)
 services/api/shaperoute_api/gym_levels.py              (solo source = 'muw')

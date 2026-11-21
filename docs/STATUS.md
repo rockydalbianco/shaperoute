@@ -36,6 +36,9 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
+  scelte dell'utente, ADR-0393); poi A server … G avviso, file al
+  Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`
 - **TASK-214 — Il motore dei percorsi sul telefono** · A, B, C, A2, B2 in
   `main`; restano tempi e memoria su un iPhone vero e le zone dove il server
   dà 404. File: — · `tasks/TASK-214.md`
@@ -240,6 +243,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **B3 in `main`** (#1292, `b6e36fcb`: la scheda «Sleep» del profilo,
   spenta). **C avviata il 2026-11-21**: bozza #1334 da non unire (lettore
   vero, sonno acceso) e build di prova per il solo iPhone dell'utente.
+  **E1 in `main`** (#1373, `f38b1980`: il post del sonno da solo, server e
+  contratto, migrazione `0082`); sul server col passo 17, col sì. E2 (app)
+  dopo TASK-312 C2 e TASK-481 A.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`
@@ -288,6 +294,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B2a (settimane verso una meta) e A2 (ingresso «Cosa vuoi allenare?», corpo
   libero) in `main` (#1196, #1208), A2 esce col prossimo OTA. Prossime B2b/C2
   (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
+  **Chiuso il 2026-11-21**: B2b/C2 (#1294), D1 (#1341, `climb_m` nell'elenco) e B2c (#1338, «mancano» mentre si registra) in `main`; restano il passo sul server di D1 e l'OTA di B2c, col sì dell'utente; vedi `archive/COMPLETATI.md`.
 
 - **TASK-481 — Il «+» del Feed: tutte le voci** · parte 0 (documenti) fatta
   il 2026-11-21 con le scelte dell'utente (sei voci, ADR-0390); A (la lista e

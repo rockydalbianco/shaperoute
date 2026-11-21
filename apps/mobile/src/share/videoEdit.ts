@@ -36,6 +36,9 @@ export type VideoEdit = {
   /** How the route is seen on «3D» (part C2b). */
   camera: RouteCamera;
   ending: Ending;
+  /** «Together» (TASK-417): the people tagged who ran with the author, on
+   * the one clock; off until turned on, and only where the API has them. */
+  together: boolean;
 };
 
 /** The video as it was before the sheet: «Night», no animal, the yellow
@@ -53,6 +56,7 @@ export const FIRST_EDIT: VideoEdit = {
   cut: "fade",
   camera: "around",
   ending: "drawing",
+  together: false,
 };
 
 /** The line's colours, in the order the sheet offers them. */

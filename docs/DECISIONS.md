@@ -568,7 +568,62 @@ lasciando le righe d'indice.
 - ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity` (senza: le corse), le zone da un estratto, entrano le otto forme lette a occhio · 2026-11-18 · Attiva
 - ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte · 2026-11-12 · Attiva
 
+- ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos` · 2026-11-21 · Attiva
+
 ## Voci nuove
+
+## ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos`
+
+**Stato**: Attiva · 2026-11-21 · TASK-312 parte C1 (#1347 in `main`,
+`cfd5e956`; migrazione `0080_photo_posts.sql`). Post di sole foto, «Only
+me» assente, «Imported», fuori da gioco e concorso: **scelte dell'utente**
+(2026-10-27/28). Testi «Up to 10 photos, also from Instagram», partenza
+dall'ultima scelta e riga della privacy: **scelte dell'utente** del
+2026-11-21. Il modo è **deciso dall'agente su delega dell'utente**, con le
+liste dei file approvate dal Coordinatore.
+
+**Contesto**: il punto 6 di ADR-0272 proponeva un disegno senza corsa, da
+verificare sul codice. Le query che leggono l'autore con `JOIN runs` sono
+51, in 36 moduli.
+
+**Decisione**:
+
+1. **Un disegno senza corsa**, non una corsa finta: chi parte da `runs`
+   (totali, record, calendario, gioco, badge, sport, concorso, «My
+   activities») non lo vede mai, senza un filtro per lettore.
+2. **`drawings.user_id`**, riempito da `runs` per le righe di prima:
+   `drawing_seen_sql` e `shown_sql` leggono lì l'autore, così blocchi,
+   nascosti, «Followers», commenti, reazioni, segnalazioni, push,
+   campanello ed email valgono senza regole nuove. Cambiano solo i
+   lettori che partono da un disegno (`LEFT JOIN runs` o `d.user_id`).
+3. **Il telefono fa la chiave** (`drawings.key`, unica per account), come
+   per una corsa: `PUT /me/photo-posts/{key}` rimandato senza rete resta
+   un post. Foto (1–10, nessuna mappa) e ordine con lo stesso codice dei
+   disegni.
+4. **Pubblicato con la prima foto**: `published_at` vuoto finché non ce
+   n'è una, e di nuovo vuoto senza foto. I taggati ricevono la push quando
+   è pubblicato. Il vincolo di 0014 fra `visibility` e `published_at` vale
+   solo con una corsa; `drawing_seen_sql` e `shown_sql` per gli altri
+   vogliono `published_at`.
+5. **Solo le app che dicono `photos` in `X-MuW-Reads`** lo ricevono
+   (`Reads.drawings_sql()`): il server esce prima dell'app senza cambiare
+   niente di quello che si vede.
+6. **Nelle risposte** `source: "photos"`, `activity` e i campi della corsa
+   `null`, 0 metri e 0 secondi, `started_at` la pubblicazione. In
+   `shared-types` solo tipi nuovi (`PhotoDrawing`, `PhotoFeedPost`,
+   `PhotoDrawingDetail`, `isPhotoPost`).
+
+**Alternative scartate**: `runs.source = 'photos'` (ogni lettore di
+`runs` da filtrare, e «My activities» lo mostrerebbe); una tabella a sé
+(reazioni, commenti, segnalazioni da rifare); creare il post con le foto
+in una sola richiesta (la coda del telefono manda una foto alla volta).
+
+**Conseguenze**: per ora un post di sole foto non si trova con la ricerca
+dei disegni, non ha link pubblico e non si manda in chat: partono tutti da
+una corsa, e sono dopo, se l'utente li vuole. Il ritorno indietro del solo
+codice vuole prima `user_id` senza `NOT NULL`. Il server col passo del
+Coordinatore e il sì dell'utente; poi C2 (l'app) con la riga della privacy
+approvata.
 
 ## ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte
 

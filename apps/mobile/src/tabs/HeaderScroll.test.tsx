@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, type ViewStyle } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { color, glass } from "../theme/tokens";
+import { TourScrollView } from "../tour/TourScrollView";
 import { useGlassMode } from "../ui/useGlassMode";
 import { useReduceMotion } from "../ui/useReduceMotion";
 import { headerBandFace } from "./AppHeader";
@@ -157,4 +158,19 @@ test("the band is never in the way of a touch, nor read", async () => {
   const band = screen.getByTestId("header-band");
   expect(band.props.pointerEvents).toBe("none");
   expect(band.props.accessible).toBeFalsy();
+});
+
+test("«Draw»'s scroll, the tour's own, tells the header too", async () => {
+  const report = jest.fn();
+  function Draw() {
+    return <TourScrollView testID="draw-scroller" {...useHeaderScroll()} />;
+  }
+  await render(
+    <HeaderScrollContext.Provider value={report}>
+      <Draw />
+    </HeaderScrollContext.Provider>,
+  );
+  await fireEvent.scroll(screen.getByTestId("draw-scroller"), scrollTo(120));
+  expect(report).toHaveBeenCalledWith(true);
+  expect(screen.getByTestId("draw-scroller").props.scrollEventThrottle).toBe(16);
 });

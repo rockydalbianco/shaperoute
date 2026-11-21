@@ -9,6 +9,8 @@ import {
   View,
 } from "react-native";
 
+import { authHeaders } from "../api/accounts";
+import { keyHeaders } from "../api/apiUrl";
 import { drawingPhotoSource } from "../api/drawings";
 import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
@@ -92,6 +94,15 @@ export function PhotoFeedPost({ post, width, onOpen }: Props) {
         }))
       : [];
   const ago = agoLabel(post.drawing.started_at);
+  // The author's picture, as on a run's card (TASK-355 part B); the initial
+  // without one.
+  const face =
+    author.photo != null && apiUrl !== null && signedIn !== null
+      ? {
+          uri: `${apiUrl}${author.photo}`,
+          headers: { ...keyHeaders(), ...authHeaders(signedIn.token) },
+        }
+      : null;
   function onPaged({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) {
     const shown = Math.round(nativeEvent.contentOffset.x / width);
     setPage(shown);
@@ -114,7 +125,18 @@ export function PhotoFeedPost({ post, width, onOpen }: Props) {
         testID="feed-author"
       >
         <View style={styles.avatar}>
-          <Text style={styles.initial}>{author.username.charAt(0).toUpperCase()}</Text>
+          {face === null ? (
+            <Text style={styles.initial}>
+              {author.username.charAt(0).toUpperCase()}
+            </Text>
+          ) : (
+            <Image
+              source={face}
+              style={styles.face}
+              accessibilityIgnoresInvertColors
+              testID="feed-author-photo"
+            />
+          )}
         </View>
         <View style={styles.names}>
           <Text style={styles.user}>{author.username}</Text>
@@ -260,6 +282,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: radius.pill,
     backgroundColor: color.surfaceRaised,
+  },
+  face: {
+    width: MIN_TAP_SIZE - space.sm,
+    height: MIN_TAP_SIZE - space.sm,
+    borderRadius: radius.pill,
   },
   initial: {
     color: color.text,

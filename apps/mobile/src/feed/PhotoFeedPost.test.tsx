@@ -120,6 +120,22 @@ test("the card shows its photos, its title and «Imported», and no «Share»", 
   expect(onOpen).toHaveBeenCalledTimes(1);
 });
 
+test("the author's picture is on the card, as on a run's; the initial without", async () => {
+  const post = examplePost();
+  const withFace = {
+    ...post,
+    author: { ...post.author, photo: `/users/${post.author.public_id}/photo?v=1` },
+  };
+  await render(
+    around(<PhotoFeedPost post={shownPost(withFace)} width={320} onOpen={() => {}} />),
+  );
+  expect(screen.getByTestId("feed-author-photo")).toBeTruthy();
+  await render(
+    around(<PhotoFeedPost post={shownPost(post)} width={320} onOpen={() => {}} />),
+  );
+  expect(screen.queryByTestId("feed-author-photo")).toBeNull();
+});
+
 test("the owner's settings find the post by its id, «Save» sends the change", async () => {
   const [waiting, published] = myPhotoPosts.photo_posts;
   const post = { ...examplePost(), id: published.id };

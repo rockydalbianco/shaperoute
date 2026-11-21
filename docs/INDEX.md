@@ -56,6 +56,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Attività da altre app (GPX, TCX, FIT), post di sole foto | `IMPORTAZIONI.md`, `tasks/TASK-312.md` |
 | Il «+» del Feed: le voci, l'ordine, chi vede che cosa | `tasks/TASK-481.md`, ADR-0390, ADR-0387, `IMPORTAZIONI.md` §2 |
 | Il parapendio registrato in volo: lo sport «Record only», i numeri del volo nel link dal vivo | `tasks/TASK-305.md` «Le parti R», ADR-0375, ADR-0352, ADR-0319 |
+| Il parapendio come strumento di volo: schermata di widget, vario sonoro, mappa 3D, spazi aerei da file, gare, punteggio XC, meteo | `tasks/TASK-479.md`, ADR-0388, ADR-0375 |
 | Apple Salute, Health Connect | ADR-0281, `tasks/TASK-321.md` |
 | Il punteggio del sonno MuW | `tasks/TASK-467.md` |
 | Le schede, lo swipe, il tasto indietro, il gesto dal bordo, i fogli, le pagine sopra l'app | `tasks/TASK-470.md`, ADR-0384, `UI.md` «Le pagine e la barra di schede» |

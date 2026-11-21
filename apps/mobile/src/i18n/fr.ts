@@ -2979,7 +2979,7 @@ export const FR: Table = {
   "From {bearing} · {minutes} min ago": "De {bearing} · il y a {minutes} min",
   "GPS numbers · not a certified instrument":
     "Valeurs GPS · pas un instrument certifié",
-  // src/air/ (TASK-479 part B2: the flight screen's editor)
+  // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Modifier la disposition",
   "Page {n} of {count}": "Page {n} sur {count}",
   "Touch a widget to move it, size it or take it away.":

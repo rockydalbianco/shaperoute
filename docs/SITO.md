@@ -187,6 +187,7 @@ lascia leggere `/post` solo a `https://getmuw.app` (CORS).
 | `p/post.js` | la pagina e la mappa |
 | `p/texts.js` | i tre testi approvati il 2026-11-12 in cinque lingue, e i nomi degli sport, quelli dell'app |
 | `p/post.css` | il poco che è solo suo |
+| `p/link-card.png` | l'immagine dell'anteprima del link (1200×630), disegnata da `tools/link-card.html` |
 
 - **MapLibre, lo stile e i colori della mappa sono quelli della pagina dal
   vivo**: la pagina carica `../live/maplibre-gl.js`, `.css` e
@@ -213,6 +214,16 @@ lascia leggere `/post` solo a `https://getmuw.app` (CORS).
   pagina, `X-Robots-Tag` nella risposta dell'API), non manda da dove si
   arriva (`no-referrer`) e non tiene niente sul dispositivo. Da fuori
   carica solo le tile e i font di OpenFreeMap, come la pagina dal vivo.
+- **L'anteprima nelle app di chat** (2026-11-21): chi riceve il link in
+  WhatsApp o iMessage vede una scheda **uguale per ogni post**, con i testi
+  approvati dall'utente («A drawing on MuW», «Open the link to see the line
+  on the map.») e `p/link-card.png`: il cuore del logo come percorso su
+  strade inventate, senza tile di mappa. Non mostra il disegno del post e
+  non può: l'id sta dopo il `#` e chi prepara l'anteprima non lo manda a
+  nessuno. È in inglese per tutti, perché quelle app leggono la pagina
+  senza eseguirla. Niente `og:url` né `canonical`: un'app che li seguisse
+  aprirebbe la pagina senza l'id. L'immagine si rifà con Chrome dal file
+  `site/tools/link-card.html` (il comando è in testa al file).
 
 **Guardarla in locale.** Come la pagina dal vivo: il server del sito
 (sotto) e un finto `/post` che risponde dalla fixture, con `?api=`

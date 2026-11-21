@@ -153,6 +153,36 @@ test("the page is not for search engines, and loads only the site's own files", 
   }
 });
 
+test("a chat app shows the same card for every link: the approved words and the site's own picture", () => {
+  const html = read(PAGE, "index.html");
+  const meta = (name) =>
+    html.match(new RegExp(`<meta (?:property|name)="${name}" content="([^"]*)" />`))?.[1];
+  // The words the user approved on 2026-11-21.
+  assert.equal(meta("og:title"), "A drawing on MuW");
+  assert.equal(meta("og:description"), "Open the link to see the line on the map.");
+  assert.equal(meta("og:site_name"), "MuW");
+  assert.equal(meta("twitter:card"), "summary_large_image");
+  assert.ok(meta("og:image:alt"));
+  // An app that followed og:url would open the page without the id.
+  assert.equal(meta("og:url"), undefined);
+  assert.ok(!/rel="canonical"/.test(html));
+  // The picture is the site's, beside the page the link opens.
+  const types = read(REPO, "packages", "shared-types", "src", "index.ts");
+  const page = types.match(/POST_LINK_PAGE = "([^"#]+)#"/)?.[1];
+  assert.ok(page, "POST_LINK_PAGE");
+  assert.equal(meta("og:image"), `${page}link-card.png`);
+  // A PNG of the size the page says, light enough for a chat app to take.
+  const picture = readFileSync(join(PAGE, "link-card.png"));
+  assert.equal(picture.subarray(1, 4).toString("latin1"), "PNG");
+  assert.equal(String(picture.readUInt32BE(16)), meta("og:image:width"));
+  assert.equal(String(picture.readUInt32BE(20)), meta("og:image:height"));
+  assert.deepEqual([picture.readUInt32BE(16), picture.readUInt32BE(20)], [1200, 630]);
+  assert.ok(picture.length < 300_000, `${picture.length} bytes`);
+  // Drawn here, with no map tiles and no address: nothing of a place or a post.
+  const drawing = read(SITE, "tools", "link-card.html");
+  assert.deepEqual(drawing.match(/https?:\/\/(?!www\.w3\.org\/2000\/svg)[^"'`\s)]+/g) ?? [], []);
+});
+
 test("the page asks the API once, sends nothing of who reads, and keeps nothing", () => {
   const script = read(PAGE, "post.js");
   assert.match(script, /cache: "no-store"/);

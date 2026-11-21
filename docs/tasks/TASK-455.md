@@ -1,16 +1,19 @@
 # TASK-455 — Condividere il disegno di un'altra persona
 
-**Stato**: **B0, A e B fatte e in produzione** (2026-11-12): B0 nella
-#1220, A nella #1230 e sul server col passo 11 (migrazione `0074`), B nella
-#1255 con l'OTA 15 · resta la prova dell'utente sul telefono · prossima
-**C** (server: il link e l'interruttore), che comincia da una domanda
-all'utente e dalla frase della privacy; poi D (sito) ed E (app)
-**Fase**: 5 · **Branch**: una PR per parte; la prossima
-`feat/TASK-455-c-post-links`
-**Dipende da**: per la parte C, la risposta dell'utente sul link
-dell'autore con l'interruttore spento, la frase della privacy e l'avviso
-nelle novità approvati **prima** del passo sul server, il sì del
-Coordinatore sui file
+**Stato**: Done (2026-11-21) — B0 (#1220), A (#1230, server passo 11,
+migrazione `0074`), B (#1255, OTA 15), C (#1285, server passo 13,
+migrazione `0078`), D (#1308) ed E (#1309, `449c997d`) in `main`.
+**Esito**: da ogni post «Share» manda il post a un amico in chat come
+rimando (mai una copia) e, per un post «Everyone», ne dà il link
+`getmuw.app/p/#<id>`, che apre una pagina con mappa, linea, titolo, nome,
+sport e distanza anche senza MuW; «Links to my posts» in «Settings» spegne
+tutti i link ai propri post. **Resta** (vedi «Quello che resta»): l'OTA
+della parte E e la copia del sito, col sì dell'utente dato al
+Coordinatore; la prova dell'utente sul telefono; la parte F, con una build
+nativa
+**Fase**: 5 · **Branch**: una PR per parte, tutte unite; l'ultimo
+`feat/TASK-455-e-share-link`
+**Dipende da**: —
 **ADR**: **ADR-0382** (il post in un messaggio, il link di un post,
 l'interruttore dell'account), numero dal Coordinatore il 2026-11-12 ·
 numero del task dal Coordinatore l'11 novembre 2026 (S5 e gruppo C di
@@ -170,15 +173,18 @@ foglietto nell'app, una volta.)
   «Followers»; `DrawingCard` manda il rimando per i disegni altrui (il buco
   chiuso). Dopo TASK-454 A in `main` e dopo il server di A. Simulatore col
   turno del Coordinatore.
-- **C — Server: i link.** L'interruttore nell'account (acceso all'inizio) e
+- **C — Server: i link** (**in `main`, #1285, e sul server col passo
+  13**). L'interruttore nell'account (acceso all'inizio) e
   la lettura senza account di un post «Everyone» il cui autore ha
   l'interruttore acceso: linea, titolo, nome, metri, sport, nient'altro.
   Come la pagina la legge senza la chiave dell'app si guarda in «Share
   live» (ADR-0352). Passo sul server.
-- **D — Sito: la pagina del post**, sul modello di `site/live/`: mappa,
+- **D — Sito: la pagina del post** (**in `main`, #1308; sul sito con la
+  copia**), sul modello di `site/live/`: mappa,
   linea, titolo, «{user} drew this on MuW», «Get MuW», senza indice per i
   motori di ricerca.
-- **E — App: «Share link», l'interruttore e la privacy.** La voce nel
+- **E — App: «Share link», l'interruttore e la privacy** (**in `main`,
+  #1309; in produzione col prossimo OTA**). La voce nel
   foglietto (il foglio del telefono), «Links to my posts» nelle
   impostazioni, il paragrafo della privacy nelle cinque lingue e sul sito
   (da approvare), la riga delle novità.
@@ -378,13 +384,55 @@ Parte B (in `main`, #1255; in produzione con l'OTA 15):
 - [ ] La prova dell'utente sul telefono: mandare il post di un altro a un
       amico e aprirlo dalla chat.
 
-Parte D (fissati col Coordinatore):
-- [ ] La pagina risponde solo per post «Everyone» con l'interruttore
-      dell'autore acceso; ha `noindex` e nessuna anteprima per i motori.
-- [ ] La linea è quella che vede un iscritto, con le stesse regole, non
-      di più; niente foto, commenti, reazioni, tempi.
+Parte C (in `main`, #1285; sul server col passo 13):
+- [x] `GET /post?id=` risponde senza account e senza chiave solo per un
+      post «Everyone» il cui autore ha l'interruttore acceso; ogni altro
+      caso è `404`, uguale per tutti.
+- [x] `GET` e `PUT /me/post-links`; l'interruttore nasce acceso (`0078`);
+      spento, nessun link ai post dell'autore funziona, nemmeno i suoi.
+- [x] `linkable` su ogni disegno letto, e nei quattro esempi condivisi.
+- [x] Il passo sul server, col sì dell'utente dato al Coordinatore, e le
+      letture di `out/TASK-455/SERVER-C.md` (passo 13, 2026-11-18).
 
-Le altre parti scrivono i loro criteri quando partono.
+Parte D (fissati col Coordinatore; in `main`, #1308):
+- [x] La pagina risponde solo per post «Everyone» con l'interruttore
+      dell'autore acceso; ha `noindex` e nessuna anteprima per i motori.
+- [x] La linea è quella che vede un iscritto, con le stesse regole, non
+      di più; niente foto, commenti, reazioni, tempi.
+- [x] Schermate della pagina approvate dall'utente («Sì, va bene»).
+- [ ] La copia del sito, col sì dell'utente dato al Coordinatore, e i
+      controlli di `out/TASK-455/SITO-D.md`.
+
+Parte E (in `main`, #1309):
+- [x] «Share link» nel foglietto solo sui post `linkable`: dà al foglio
+      del telefono l'indirizzo del post e nient'altro.
+- [x] «Links to my posts» in «Settings» legge e salva l'interruttore;
+      spento, «Share link» sparisce subito dai propri post.
+- [x] La frase della privacy nelle cinque lingue e nelle pagine del sito,
+      approvata dall'utente («Sì, aggiungi»).
+- [x] Schermate dal simulatore approvate dall'utente («Sì, vanno bene»).
+- [ ] L'OTA che la porta in produzione, col sì dell'utente dato al
+      Coordinatore.
+
+## Quello che resta (2026-11-21)
+
+- **L'OTA della parte E** e **la copia del sito** (la pagina `/p/` e le
+  pagine della privacy rigenerate; controlli in `out/TASK-455/SITO-D.md`):
+  li chiede il Coordinatore all'utente, un sì per ciascuno. Finché il sito
+  non ha la copia, un link condiviso non apre la pagina: prima la copia
+  del sito, poi l'OTA, o insieme.
+- **La prova dell'utente sul telefono**: mandare il post di un altro a un
+  amico e aprirlo dalla chat (parte B, in produzione dall'OTA 15); dopo
+  l'OTA della parte E, «Share link» e l'interruttore.
+- **Le note di versione dello store** alla prossima build: il testo
+  approvato è in «I testi approvati» («Share a post: send it to a friend
+  or share its link…»).
+- **Parte F**, con una build nativa: il link che apre il post dentro
+  l'app e un «Copy link» vero. È un task nuovo, col
+  numero del Coordinatore, quando si decide la build.
+- Detto all'utente e lasciato com'è: la spiegazione sotto l'interruttore
+  non nomina titolo e sport (la privacy sì); riacceso l'interruttore,
+  «Share link» torna sui propri post alla rilettura del Feed.
 
 ## Registro
 
@@ -556,3 +604,7 @@ Le altre parti scrivono i loro criteri quando partono.
   come «pronta». Restano, ognuno con il sì dell'utente al Coordinatore:
   l'OTA della parte E e la copia del sito (pagina `/p/` della parte D e
   pagine della privacy rigenerate).
+- 2026-11-21: **E in `main`** (#1309, `449c997d`), unita dal Coordinatore
+  col «Sì, unisci» dell'utente (la PR porta la frase nuova della privacy).
+  **Task chiuso**: tutte le parti da B0 a E sono in `main`; quello che
+  resta è in «Quello che resta».

@@ -1385,8 +1385,9 @@ dopo la 0079 di TASK-475 A). **Un post di sole foto è un disegno senza corsa**:
   altri vogliono `published_at` pieno. Test in `test_photo_posts.py` e
   `test_photo_posts_seen.py`.
 
-Migrazione `0082_gear.sql` (TASK-486 parte A, ADR-0393, `API.md`
-«Gear»; numero del Coordinatore, dopo la 0081 di TASK-484).
+Migrazione `0083_gear.sql` (TASK-486 parte A, ADR-0393, `API.md`
+«Gear»; numero del Coordinatore, dopo la 0081 di TASK-484 e la 0082 di
+TASK-467 E1).
 **L'attrezzatura di un iscritto**:
 
 - **`gear`**: un attrezzo. `id` (`uuid`), `user_id` verso `users(id)` con

@@ -24,7 +24,7 @@ import { chime, tick } from "./chime";
 import { type Exercise, EXERCISES, READY_S, SWITCH_S } from "./exercises";
 import { Figure } from "./Figure";
 import { RoutineChooser } from "./RoutineChooser";
-import { routineExercises, type RoutineKey } from "./routines";
+import { type Minutes, routineExercises, type RoutineKey } from "./routines";
 
 /**
  * The stretching after a run (TASK-285 part B, ADR-0247; the flow of
@@ -53,6 +53,25 @@ export const NEXT_SHOWN_S = 5;
 /** How often the time left is said to a screen reader. */
 export const SAID_EVERY_S = 10;
 
+/** What a session was, told to `onDone` as it ends (TASK-475 part B,
+ * ADR-0386): enough for the API to keep it as a stretching session. */
+export type StretchDone = {
+  routine: RoutineKey;
+  /** The length chosen; null when the exercises were given. */
+  minutes: Minutes | null;
+  /** When the first exercise began and the session ended, in ms. */
+  startedAt: number;
+  endedAt: number;
+  /** «Pause», in seconds since it began. */
+  pauses: { from_s: number; to_s: number }[];
+  /** The exercises held to their end, «Skip» left out. */
+  exercises: number;
+};
+
+/** What a running session was so far: `StretchDone` but what the screen
+ * knows itself. */
+type Summary = () => Omit<StretchDone, "routine" | "minutes">;
+
 type Props = {
   /** The stretching is over, skipped or done: on to «Your run». */
   onLeave: () => void;
@@ -60,6 +79,10 @@ type Props = {
   exercises?: readonly Exercise[];
   /** The routine whose length is asked first, when no exercises are given. */
   routine?: RoutineKey;
+  /** Told what the session was, just before `onLeave`, once its first
+   * exercise has begun (TASK-475, the sport «Stretching»); never when the
+   * length was not chosen. */
+  onDone?: (done: StretchDone) => void;
 };
 
 /** "0:20", "1:05": the seconds left as a clock. */
@@ -92,25 +115,49 @@ function phaseSeconds(step: Step, exercise: Exercise): number {
  * otherwise it first asks how long (`RoutineChooser`, TASK-466 part B) and
  * runs the routine's exercises for that length.
  */
-export function StretchScreen({ onLeave, exercises, routine = "afterRun" }: Props) {
+export function StretchScreen({
+  onLeave,
+  exercises,
+  routine = "afterRun",
+  onDone,
+}: Props) {
   const [chosen, setChosen] = useState<readonly Exercise[] | undefined>(exercises);
+  const [minutes, setMinutes] = useState<Minutes | null>(null);
+  // What the running session was, asked as it ends (TASK-475): none before
+  // its first exercise.
+  const summary = useRef<Summary | null>(null);
+  const register = useCallback((summarize: Summary | null) => {
+    summary.current = summarize;
+  }, []);
+  const told = useRef(false);
+  const leave = useCallback(() => {
+    const done = summary.current?.() ?? null;
+    if (done !== null && onDone !== undefined && !told.current) {
+      told.current = true;
+      onDone({ routine, minutes, ...done });
+    }
+    onLeave();
+  }, [minutes, onDone, onLeave, routine]);
   return (
     <Modal
       visible
       animationType="fade"
       statusBarTranslucent
       // Android's back button leaves, as «End» does.
-      onRequestClose={onLeave}
+      onRequestClose={leave}
     >
       <StatusBar hidden />
       {chosen === undefined ? (
         <RoutineChooser
           routine={routine}
-          onChoose={(minutes) => setChosen(routineExercises(routine, minutes))}
-          onLeave={onLeave}
+          onChoose={(length) => {
+            setMinutes(length);
+            setChosen(routineExercises(routine, length));
+          }}
+          onLeave={leave}
         />
       ) : (
-        <StretchRun onLeave={onLeave} exercises={chosen} />
+        <StretchRun onLeave={leave} exercises={chosen} register={register} />
       )}
     </Modal>
   );
@@ -119,13 +166,56 @@ export function StretchScreen({ onLeave, exercises, routine = "afterRun" }: Prop
 function StretchRun({
   onLeave,
   exercises = EXERCISES,
+  register,
 }: {
   onLeave: () => void;
   exercises?: readonly Exercise[];
+  /** Given how to say what it was so far (TASK-475); null as it goes. */
+  register?: (summarize: Summary | null) => void;
 }) {
   const { height: windowHeight } = useWindowDimensions();
   const [step, setStep] = useState<Step>(() => start(0));
   const [paused, setPaused] = useState(false);
+  // The session as it goes (TASK-475): when it began, its pauses, the
+  // exercises held to their end.
+  const began = useRef<number | null>(null);
+  const pauses = useRef<{ from_s: number; to_s: number }[]>([]);
+  const pausedAt = useRef<number | null>(null);
+  const held = useRef(0);
+  useEffect(() => {
+    began.current = Date.now();
+  }, []);
+  useEffect(() => {
+    if (register === undefined) {
+      return;
+    }
+    register(() => {
+      const endedAt = Date.now();
+      const startedAt = began.current ?? endedAt;
+      const since = (ms: number) => Math.max(0, (ms - startedAt) / 1000);
+      const open =
+        pausedAt.current === null
+          ? []
+          : [{ from_s: since(pausedAt.current), to_s: since(endedAt) }];
+      return {
+        startedAt,
+        endedAt,
+        pauses: [...pauses.current, ...open],
+        exercises: held.current,
+      };
+    });
+    return () => register(null);
+  }, [register]);
+  useEffect(() => {
+    if (paused) {
+      pausedAt.current = Date.now();
+    } else if (pausedAt.current !== null) {
+      const startedAt = began.current ?? pausedAt.current ?? Date.now();
+      const since = (ms: number) => Math.max(0, (ms - startedAt) / 1000);
+      pauses.current.push({ from_s: since(pausedAt.current), to_s: since(Date.now()) });
+      pausedAt.current = null;
+    }
+  }, [paused]);
   const exercise = exercises[step.index];
   const next = exercises[step.index + 1];
   const last = next === undefined;
@@ -162,6 +252,8 @@ function StretchRun({
         AccessibilityInfo.announceForAccessibility(t("Switch sides"));
         return;
       }
+      // Held to its end, its last side too (TASK-475).
+      held.current += 1;
       if (from.index + 1 < exercises.length) {
         go(start(from.index + 1));
         AccessibilityInfo.announceForAccessibility(t(exercises[from.index + 1].name));

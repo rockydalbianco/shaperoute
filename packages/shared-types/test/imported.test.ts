@@ -88,7 +88,8 @@ test("a run from a file says so in every answer", () => {
 });
 
 test("the examples written before are runs of the app, and say nothing of it", () => {
-  assert.deepEqual(RUN_SOURCES, ["muw", "file"]);
+  // "manual" is the gym's written by hand (TASK-484, gym.test.ts).
+  assert.deepEqual(RUN_SOURCES, ["muw", "file", "manual"]);
   assert.ok(!("source" in drawingDetailsBefore));
   assert.ok(!("source" in myDrawingBefore));
   assert.ok(feedBefore.posts.every((post) => !("source" in post)));

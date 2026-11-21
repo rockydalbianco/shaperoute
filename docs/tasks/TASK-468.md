@@ -1,9 +1,8 @@
 # TASK-468 — La live in chat e nel Feed, anche programmata
 
-**Stato**: In corso · server: A1a, A2a, A1b, A2b (passi 11, 12, 13); app:
-B1 in produzione (OTA 17), B2a in `main` (#1301, `9ca809c1`, col prossimo
-OTA); prossime B2b1 («Plan a live», la partenza, il tocco della push) e B2b2
-(il post a fine attività)
+**Stato**: Done (2026-11-21) · server: A1a, A2a, A1b, A2b (passi 11, 12,
+13); app: B1 (OTA 17), B2a e B2b1 (OTA 18), B2b2 (#1331, `c0b233e0`, OTA 19
+da `22d3b0cc`, il primo per la 1.1.0) in produzione
 **Fase**: 5 · **Branch**: `docs/TASK-468-live-chat-feed` (parte 0) ·
 **ADR**: ADR-0381 · numeri dal Coordinatore (2026-11-12)
 **Estende**: TASK-424 (ADR-0352, «Share live activity»), che metteva fuori
@@ -243,9 +242,23 @@ Privacy dell'app (`about/content`, voce «Your position»), frase in più:
   simulatore approvate dall'utente (`out/TASK-468/b2a-*.png`). Esce col
   prossimo OTA. `FeedScreenPosts/Tabs.test.tsx` escludono `/lives` dalle
   richieste contate (sì del Coordinatore).
-- **Prossime**: B2b1 («Plan a live» nel Feed, scelta 9; «Start live»;
-  la domanda all'avvio; il tocco della push) e B2b2 («Post it in the
-  Feed?», scelta 5); liste dei file al Coordinatore prima del codice.
+- **2026-11-21 — B2b1 in `main`** (#1322, `593c6fbe`), in produzione con
+  l'OTA 18: «Plan a live ›» sopra la fila «Live» (scelta 9) col suo foglio
+  (giorno e ora con − e +, niente dipendenze nuove), «Start live "{title}"?»
+  alla fine del conto alla rovescia, «Start live» sulla propria scheda
+  mentre si registra, il tocco della push che apre la schermata dal vivo
+  (`liveViewDoor`, montato da `ProfileLayer`). Testi nuovi «Plan» e
+  «Couldn't plan the live. Try again.» approvati dall'utente il 2026-11-18;
+  schermate approvate (`out/TASK-468/b2b1-*.png`).
+- **2026-11-21 — B2b2 in `main`** (#1331, `c0b233e0`): a fine registrazione di una live
+  programmata `RunEnd` chiede «Post it in the Feed?»; «Post» mette nel
+  modulo il pubblico della live e il titolo della gara (il modulo si
+  ridisegna con una `key`: tiene il titolo in uno stato suo); quando la
+  coda dei post (`drawingOutbox`) manda il post visibile, `PUT
+  /me/planned-lives/{id}/post` lo lega alla live. Provato nel simulatore
+  fino in fondo (due post legati, titolo e pubblico giusti); schermate
+  approvate (`out/TASK-468/b2b2-*.png`). In produzione con l'OTA 19
+  (2026-11-21, da `22d3b0cc`).
 
 ## Contesto da leggere
 
@@ -289,4 +302,11 @@ docs/DATABASE.md
 
 ## Esito
 
-*(a fine task)*
+Fatto il 2026-11-21. La live si manda in chat («Send in MuW», scheda
+«LIVE» e schermata dal vivo nell'app), si mette nel Feed per i follower o
+per tutti (fila «Live», solo di chi si segue), si programma in anticipo
+(«Plan a live», «Remind me» con la push alla partenza, «Start live
+"…"?» all'avvio) e a fine attività diventa il post. Server: migrazioni
+`0073`, `0075`, `0077`; app: B1, B2a, B2b1, B2b2 in produzione (OTA 17,
+18 e 19). Provato dall'utente sul telefono il 2026-11-21: «Funziona, tutto
+ok».

@@ -52,6 +52,7 @@ from shaperoute_api.activity_graphs import (
     ground_for,
     source_for,
 )
+from shaperoute_api.avatars import install_avatars
 from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.comment_reactions import install_comment_reactions
@@ -451,6 +452,7 @@ def create_app(
     # The drawings the members publish, read by whoever is signed in
     # (TASK-118); it needs a token.
     install_feed(app)
+    install_avatars(app)
     # The search of the drawings from the lens of «Feed» (TASK-344); it
     # needs a token.
     install_drawing_search(app)

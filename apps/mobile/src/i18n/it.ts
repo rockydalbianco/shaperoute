@@ -2766,8 +2766,8 @@ export const IT: Table = {
   // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
   "Record your flight": "Registra il volo",
   "Before you fly": "Prima di volare",
-  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
-    "MuW non è uno strumento di volo: registra il volo e lo condivide. Vola con il tuo strumento, il tuo brevetto e il tuo giudizio.",
+  "MuW is not a certified flight instrument. Its numbers come from the phone's GPS: they can be late or wrong. Fly with your licence and your judgement, and keep a backup instrument.":
+    "MuW non è uno strumento di volo certificato. I suoi numeri vengono dal GPS del telefono: possono arrivare in ritardo o essere sbagliati. Vola con il tuo brevetto e il tuo giudizio, e tieni uno strumento di riserva.",
   "Got it": "Ho capito",
   Vario: "Variometro",
   "Flight time": "Tempo di volo",
@@ -2932,4 +2932,32 @@ export const IT: Table = {
   "Your live becomes the post of this activity.":
     "La tua live diventa il post di questa attività.",
   "Don't post": "Non pubblicare",
+  // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
+  "Flight screen": "Schermata di volo",
+  "GPS altitude": "Quota GPS",
+  "Above takeoff": "Sopra il decollo",
+  "Average vario": "Vario medio",
+  "Thermal average": "Media termica",
+  "Thermal gain": "Guadagno termica",
+  "Ground speed": "Velocità al suolo",
+  Track: "Rotta",
+  "Glide ratio": "Efficienza",
+  Wind: "Vento",
+  "Thermal assistant": "Assistente termica",
+  Takeoff: "Decollo",
+  Clock: "Ora",
+  "GPS accuracy": "Precisione GPS",
+  Live: "Dal vivo",
+  "Last 10 min": "Ultimi 10 min",
+  Thermal: "Termica",
+  XC: "XC",
+  Minimal: "Essenziale",
+  Look: "Aspetto",
+  Sunlight: "Pieno sole",
+  "Hold to unlock": "Tieni premuto per sbloccare",
+  Lock: "Blocca",
+  "Not sharing": "Non condivisa",
+  "From {bearing} · {minutes} min ago": "Da {bearing} · {minutes} min fa",
+  "GPS numbers · not a certified instrument":
+    "Numeri dal GPS · non è uno strumento certificato",
 };

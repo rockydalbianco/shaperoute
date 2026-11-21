@@ -2797,8 +2797,8 @@ export const DE: Table = {
   // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
   "Record your flight": "Flug aufzeichnen",
   "Before you fly": "Vor dem Flug",
-  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
-    "MuW ist kein Fluginstrument: Es zeichnet deinen Flug auf und teilt ihn. Flieg mit deinem eigenen Instrument, deiner Lizenz und deinem Urteilsvermögen.",
+  "MuW is not a certified flight instrument. Its numbers come from the phone's GPS: they can be late or wrong. Fly with your licence and your judgement, and keep a backup instrument.":
+    "MuW ist kein zertifiziertes Fluginstrument. Seine Werte kommen vom GPS des Telefons: Sie können verspätet oder falsch sein. Flieg mit deiner Lizenz und deinem Urteilsvermögen und hab ein Ersatzinstrument dabei.",
   "Got it": "Verstanden",
   Vario: "Vario",
   "Flight time": "Flugzeit",
@@ -2964,4 +2964,32 @@ export const DE: Table = {
   "Your live becomes the post of this activity.":
     "Dein Live wird zum Post dieser Aktivität.",
   "Don't post": "Nicht posten",
+  // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
+  "Flight screen": "Flugbildschirm",
+  "GPS altitude": "GPS-Höhe",
+  "Above takeoff": "Über Startplatz",
+  "Average vario": "Mittleres Vario",
+  "Thermal average": "Thermikschnitt",
+  "Thermal gain": "Thermikgewinn",
+  "Ground speed": "Geschw. über Grund",
+  Track: "Kurs",
+  "Glide ratio": "Gleitzahl",
+  Wind: "Wind",
+  "Thermal assistant": "Thermikassistent",
+  Takeoff: "Startplatz",
+  Clock: "Uhrzeit",
+  "GPS accuracy": "GPS-Genauigkeit",
+  Live: "Live",
+  "Last 10 min": "Letzte 10 Min.",
+  Thermal: "Thermik",
+  XC: "XC",
+  Minimal: "Minimal",
+  Look: "Aussehen",
+  Sunlight: "Sonnenlicht",
+  "Hold to unlock": "Zum Entsperren halten",
+  Lock: "Sperren",
+  "Not sharing": "Nicht geteilt",
+  "From {bearing} · {minutes} min ago": "Aus {bearing} · vor {minutes} Min.",
+  "GPS numbers · not a certified instrument":
+    "GPS-Werte · kein zertifiziertes Instrument",
 };

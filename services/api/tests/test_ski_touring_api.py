@@ -50,8 +50,15 @@ TOURING = "ski_touring"
 
 
 def test_ski_touring_is_recorded_without_a_shape_after_the_snow() -> None:
-    # A paragliding flight comes after it (TASK-305 parts R).
-    assert RECORD_ACTIVITIES == ("skiing", "xc_skiing", TOURING, "paragliding")
+    # A paragliding flight comes after it (TASK-305 parts R), then a day of
+    # alpinism (TASK-463).
+    assert RECORD_ACTIVITIES == (
+        "skiing",
+        "xc_skiing",
+        TOURING,
+        "paragliding",
+        "alpinism",
+    )
     order = list(get_args(RunActivity))
     assert order.index(TOURING) == order.index("xc_skiing") + 1
     assert order.index("paragliding") == order.index(TOURING) + 1
@@ -207,6 +214,7 @@ def test_the_migration_adds_ski_touring_to_runs_only_and_keeps_the_rest(
     assert after == expected
     # Every activity of a run is let in once all migrations ran, but the
     # ones of a later migration: snowshoeing (0068, TASK-413), paragliding
-    # (0069, TASK-305 parts R), a wheelchair (0071, TASK-414).
-    later = {"snowshoeing", "paragliding", "wheelchair"}
+    # (0069, TASK-305 parts R), a wheelchair (0071, TASK-414), alpinism
+    # (TASK-463).
+    later = {"snowshoeing", "paragliding", "wheelchair", "alpinism"}
     assert set(get_args(RunActivity)) - later <= set(after["runs_activity_check"])

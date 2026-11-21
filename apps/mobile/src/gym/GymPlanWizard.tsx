@@ -29,10 +29,19 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import {
+  BODYWEIGHT_GOALS,
+  EQUIPMENT_OPTIONS,
+  type Equipment,
+  equipmentOf,
+  isBodyweightDay,
+} from "./bodyweight";
+import { exerciseName } from "./catalog";
 import { MAX_NAME } from "./ExercisePicker";
 import { WEEK_DAYS } from "./planLimits";
 import {
   CYCLE_WEEKS,
+  itemInWeek,
   isoDate,
   programDays,
   programItemCount,
@@ -40,20 +49,59 @@ import {
   sessionsOfWeek,
 } from "./program";
 import {
+  dayLetter,
   emptyProgram,
-  gymIndex,
+  isGymDay,
   isRunDay,
-  proposedRunDays,
   RUN_NAMES,
   GOALS,
   goalOf,
   type Naming,
   proposeProgram,
-  proposedDays,
   sessionLetter,
   withCycle,
   withDays,
 } from "./proposal";
+import {
+  countsFor,
+  DOOR_CHOSEN,
+  DOOR_COUNTS,
+  MIN_PLAN_SPORTS,
+  PLAN_SPORTS,
+  type PlanSport,
+  proposalKey,
+  type SportCounts,
+  SportsDoor,
+  SPORT_BADGES,
+  sportOfSession,
+  sportsOf,
+  spreadDays,
+} from "./SportsDoor";
+import { outingTitle } from "./outingDay";
+import { OutingDayEditor } from "./OutingDayEditor";
+import { planReminderOn, setPlanReminder } from "./planReminder";
+import {
+  MAX_TARGET_DAYS,
+  sportDays,
+  targetPlan,
+  type TargetPlan,
+  type TargetPlanAnswers,
+  type UnnamedDay,
+} from "./targetPlan";
+import {
+  type Aim,
+  aimText,
+  firstAim,
+  isEndurance,
+  TargetGoalPage,
+  TargetLadder,
+  TargetLevelPage,
+  targetSportOf,
+  TargetWhenPage,
+  useLastMonthBest,
+  type When,
+} from "./TargetSteps";
+import { roundClimb, roundDistance } from "./targetWeeks";
 import { runTitle } from "./runDay";
 import { clock, DEFAULT_RUNNER, LEVELS, withRunner } from "./runPace";
 import { RunnerPaces, RunnerQuestions } from "./RunnerStep";
@@ -68,8 +116,30 @@ export type WizardDraft = {
   program: GymProgram;
 };
 
+/** The sports of the door whose days are days out (TASK-461 B and C). */
+type OutingDoor = "walk" | "bike" | "swim" | "mountain";
+
+/** What a plan with a target keeps of the program made for its other days. */
+type TargetBase = TargetPlanAnswers["base"];
+
+/** YYYY-MM-DD as a day on the phone's calendar. */
+function dayOf(iso: string): Date {
+  const [year, month, day] = iso.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
 /** The guide's steps (the user's flow of 2026-11-10). */
-export type WizardStep = "goal" | "days" | "runner" | "plan" | "weeks" | "ready";
+export type WizardStep =
+  | "door"
+  | "target"
+  | "level"
+  | "goal"
+  | "days"
+  | "runner"
+  | "when"
+  | "plan"
+  | "weeks"
+  | "ready";
 const STEPS: readonly WizardStep[] = ["goal", "days", "plan", "weeks", "ready"];
 /** With run days, «How do you run today?» comes after the days (TASK-452). */
 const STEPS_WITH_RUNS: readonly WizardStep[] = [
@@ -104,6 +174,33 @@ const MODES: readonly { mode: GymPlanMode; title: string; line: string }[] = [
     line: tLater("As before: one week that repeats"),
   },
 ];
+
+/** The modes of a plan without the gym (TASK-461 A2): no kg to add, so
+ * the reps and seconds grow («Di più ogni settimana»). */
+const BODY_MODES: readonly { mode: GymPlanMode; title: string; line: string }[] = [
+  {
+    mode: "reps",
+    title: tLater("More each week"),
+    line: tLater("+1 rep, +5 s held; week {n} lighter"),
+  },
+  ...MODES.filter((one) => one.mode === "alternate" || one.mode === "same"),
+];
+
+/** Whether a program has days of the gym: without, its weeks grow by reps
+ * and seconds. */
+function hasGym(program: GymProgram): boolean {
+  return program.sessions.some(isGymDay);
+}
+
+/** The example of a plan without the gym's weeks: its first exercise of
+ * reps and its first held one («Piegamenti e plank, per esempio»). */
+function exampleItems(program: GymProgram) {
+  const items = program.sessions.flatMap((one) => one.items);
+  return {
+    reps: items.find((item) => item.reps !== undefined && item.load_kg === undefined),
+    held: items.find((item) => item.kind === "timed" && item.duration_s !== undefined),
+  };
+}
 
 /** «2,5», «5»: kg without a needless «,0». */
 export function kgText(kg: number): string {
@@ -160,6 +257,21 @@ function weekCaption(program: GymProgram, week: number): string {
         ? t("Base@@week")
         : `+${kgText(program.step_kg * (week - 1))} kg`;
     case "reps": {
+      if (!hasGym(program)) {
+        if (program.weeks >= 3 && week === program.weeks) {
+          return t("Lighter");
+        }
+        const { reps, held } = exampleItems(program);
+        const values = [
+          reps === undefined
+            ? null
+            : String(itemInWeek(reps, "reps", program.weeks, 0, week, 0).reps),
+          held === undefined
+            ? null
+            : `${itemInWeek(held, "reps", program.weeks, 0, week, 0).duration_s} s`,
+        ].filter((one): one is string => one !== null);
+        return values.length > 0 ? values.join(" · ") : t("Base@@week");
+      }
       const step = week - 1;
       if (step % 3 === 0) {
         const kg = Math.floor(step / 3) * program.step_kg;
@@ -183,6 +295,12 @@ function weekHeight(program: GymProgram, week: number): number {
       }
       return 0.5 + (0.5 * (week - 1)) / Math.max(1, program.weeks - 2);
     case "reps":
+      if (!hasGym(program)) {
+        if (program.weeks >= 3 && week === program.weeks) {
+          return 0.35;
+        }
+        return 0.5 + (0.5 * (week - 1)) / Math.max(1, program.weeks - 2);
+      }
       return 0.5 + 0.17 * ((week - 1) % 3) + 0.05 * Math.floor((week - 1) / 3);
     default:
       return 0.75;
@@ -215,23 +333,86 @@ export function GymPlanWizard({
   const naming: Naming = { t, language };
   const today = new Date();
   const kept = plan === null ? null : programOfPlan(plan, today);
-  const [step, setStep] = useState<WizardStep>(startAt);
+  // A new plan opens on «What do you want to train?» (TASK-461 A2).
+  const withDoor = plan === null && startAt === "goal";
+  const [step, setStep] = useState<WizardStep>(withDoor ? "door" : startAt);
   const [goal, setGoal] = useState<GymPlanGoal>(kept?.goal ?? "muscle");
-  const [days, setDays] = useState<number[]>(
-    kept === null
-      ? proposedDays(3)
-      : kept.sessions.filter((one) => !isRunDay(one)).map((one) => one.day),
+  // The sports of the plan: chosen at the door, at least two (the user's
+  // «Almeno due, sempre»), in the order chosen: the first with a distance
+  // leads to the target, the others keep fit (2026-11-12, «Più d'uno»); a
+  // plan kept has those of its days.
+  const keptSports: PlanSport[] = kept === null ? [] : sportsOf(kept.sessions);
+  const [sports, setSports] = useState<PlanSport[]>(
+    kept === null ? [...DOOR_CHOSEN] : keptSports,
   );
-  // The run days (TASK-433 C): «And running?», none at first.
-  const [runDays, setRunDays] = useState<number[]>(
-    kept === null ? [] : kept.sessions.filter(isRunDay).map((one) => one.day),
+  const firstDays = kept === null ? spreadDays(DOOR_CHOSEN, DOOR_COUNTS) : null;
+  const keptDaysOf = (sport: PlanSport): number[] =>
+    kept?.sessions
+      .filter((one) => sportOfSession(one) === sport)
+      .map((one) => one.day) ?? [];
+  const [days, setDays] = useState<number[]>(firstDays?.gym ?? keptDaysOf("gym"));
+  // The bodyweight days (TASK-461 A2) and what one has for them.
+  const [bodyDays, setBodyDays] = useState<number[]>(
+    firstDays?.body ?? keptDaysOf("body"),
   );
+  const [equipment, setEquipment] = useState<Equipment>(
+    kept === null ? "none" : equipmentOf(kept),
+  );
+  // The run days (TASK-433 C).
+  const [runDays, setRunDays] = useState<number[]>(firstDays?.run ?? keptDaysOf("run"));
+  // The days of the other sports with a distance (TASK-461 B and C).
+  const [moreDays, setMoreDays] = useState<Record<OutingDoor, number[]>>({
+    walk: firstDays?.walk ?? keptDaysOf("walk"),
+    bike: firstDays?.bike ?? keptDaysOf("bike"),
+    swim: firstDays?.swim ?? keptDaysOf("swim"),
+    mountain: firstDays?.mountain ?? keptDaysOf("mountain"),
+  });
+  // The target (TASK-461 B and C): of the first sport chosen with a
+  // distance; a run keeps fit at first, as before, the others lead to the
+  // second distance offered (10 km, 15 km, 60 km, 2 km; 1000 m of climb).
+  const targetDoor = withDoor ? (sports.find(isEndurance) ?? null) : null;
+  const [paddle, setPaddle] = useState(false);
+  const [pool, setPool] = useState(true);
+  const [aims, setAims] = useState<Partial<Record<PlanSport, Aim>>>({
+    run: { kind: "keepFit" },
+  });
+  const aim: Aim | null =
+    targetDoor === null ? null : (aims[targetDoor] ?? firstAim(targetDoor, paddle));
+  const targetSport = targetDoor === null ? null : targetSportOf(targetDoor, paddle);
+  const keepFitRun = targetDoor === "run" && aim?.kind === "keepFit";
+  const hasTarget = aim !== null && aim.kind !== "keepFit";
+  const asksLevel = targetDoor !== null && !keepFitRun;
+  const [level, setLevel] = useState<number | null>(null);
+  const [levelTouched, setLevelTouched] = useState(false);
+  const best = useLastMonthBest(
+    targetSport ?? "run",
+    aim?.kind === "climb",
+    step === "level" || step === "target",
+  );
+  // Where one is today: written from the last month until changed by hand.
+  const shownLevel =
+    !levelTouched && best !== null
+      ? aim?.kind === "climb"
+        ? roundClimb(best.metres)
+        : roundDistance(best.metres, targetSport ?? "run")
+      : level;
+  const [when, setWhen] = useState<When>({ ready: true });
+  // The other days of a plan with a target: made at the days' step.
+  const [others, setOthers] = useState<GymPlanSession[]>([]);
+  const [baseShape, setBaseShape] = useState<TargetBase | null>(null);
+  // «Ricordamelo alle 8» (TASK-461 B): one for all the plans, on at first
+  // for a new plan (the user's «Sì, alle 8» of 2026-11-11).
+  const [remind, setRemind] = useState(withDoor || planReminderOn());
+  // The run days of the plan that are not the target's.
+  const keptRunDays = targetDoor === "run" && !keepFitRun ? [] : runDays;
   const [program, setProgram] = useState<GymProgram | null>(kept);
   // From nothing: the plan's workouts without exercises.
   const [scratch, setScratch] = useState(false);
   // What the program was proposed for: asked again when it changes.
   const [proposedFor, setProposedFor] = useState<string | null>(
-    kept === null ? null : `${kept.goal ?? "muscle"}`,
+    kept === null
+      ? null
+      : proposalKey(kept.goal ?? "muscle", equipmentOf(kept), keptSports),
   );
   const [tab, setTab] = useState(0);
   // The week written by hand, being changed; its workout shown.
@@ -253,19 +434,93 @@ export function GymPlanWizard({
   );
   // «Your paces», after «How do you run today?».
   const [paces, setPaces] = useState(false);
-  const steps = runDays.length > 0 ? STEPS_WITH_RUNS : STEPS;
+  const strength = sports.includes("gym") || sports.includes("body");
+  const guided: readonly WizardStep[] = withDoor
+    ? [
+        ...(targetDoor !== null ? (["target"] as const) : []),
+        ...(asksLevel ? (["level"] as const) : []),
+        ...(strength ? (["goal"] as const) : []),
+        "days",
+        ...(keptRunDays.length > 0 ? (["runner"] as const) : []),
+        ...(hasTarget ? (["when"] as const) : []),
+        "plan",
+        ...(hasTarget ? [] : (["weeks"] as const)),
+        "ready",
+      ]
+    : runDays.length > 0
+      ? STEPS_WITH_RUNS
+      : STEPS;
+  const steps: readonly WizardStep[] = withDoor ? ["door", ...guided] : guided;
   const index = Math.max(0, steps.indexOf(step));
+  // The door is before the steps: «Step 1 of 5» is the first after it.
+  const counted = withDoor ? steps.slice(1) : steps;
+  const stepNumber = counted.indexOf(step) + 1;
+
+  /** The days of a sport of the plan. */
+  function daysOf(sport: PlanSport): number[] {
+    switch (sport) {
+      case "gym":
+        return days;
+      case "body":
+        return bodyDays;
+      case "run":
+        return runDays;
+      default:
+        return moreDays[sport];
+    }
+  }
+
+  /** The days of each sport again, for the counts chosen. */
+  function respread(chosen: readonly PlanSport[], counts: SportCounts) {
+    const spread = spreadDays(chosen, counts);
+    setDays(spread.gym);
+    setBodyDays(spread.body);
+    setRunDays(spread.run);
+    setMoreDays({
+      walk: spread.walk,
+      bike: spread.bike,
+      swim: spread.swim,
+      mountain: spread.mountain,
+    });
+  }
+
+  /** The days of every sport with `number` given to `sport` (or to none). */
+  function moveDay(number: number, sport: PlanSport | undefined) {
+    const without = (list: number[]) => list.filter((one) => one !== number);
+    const withIt = (one: PlanSport, list: number[]) =>
+      one === sport ? [...without(list), number] : without(list);
+    setDays(withIt("gym", days));
+    setBodyDays(withIt("body", bodyDays));
+    setRunDays(withIt("run", runDays));
+    setMoreDays({
+      walk: withIt("walk", moreDays.walk),
+      bike: withIt("bike", moreDays.bike),
+      swim: withIt("swim", moreDays.swim),
+      mountain: withIt("mountain", moreDays.mountain),
+    });
+  }
+
+  function toggleSport(sport: PlanSport) {
+    // In the order chosen: the first with a distance has the target.
+    const chosen = sports.includes(sport)
+      ? sports.filter((one) => one !== sport)
+      : [...sports, sport];
+    setSports(chosen);
+    respread(chosen, countsFor(chosen));
+  }
 
   function proposed(): GymProgram {
-    const forNow = `${goal}`;
+    const forNow = proposalKey(goal, equipment, sports);
     if (program !== null && proposedFor === forNow) {
-      return withDays(program, days, naming, runDays);
+      return withDays(program, days, naming, keptRunDays, bodyDays);
     }
     const fresh = proposeProgram({
       goal,
       days,
-      runDays,
-      mode: program?.mode ?? "load",
+      runDays: keptRunDays,
+      bodyDays,
+      equipment,
+      mode: program?.mode ?? (days.length > 0 ? "load" : "reps"),
       weeks: weeksChoice,
       startsOn,
       naming,
@@ -274,17 +529,136 @@ export function GymPlanWizard({
     return scratch ? emptyProgram(fresh, naming) : fresh;
   }
 
+  /** The name of a day the guide makes: what it is and how much. */
+  function nameOfDay(day: UnnamedDay): string {
+    if (day.outing !== undefined) {
+      return outingTitle(day.outing).slice(0, MAX_NAME);
+    }
+    return day.run !== undefined ? t(RUN_NAMES[day.run.kind]) : "";
+  }
+
+  /** The days of the sports with a distance that keep fit. */
+  function keepFitDays(): GymPlanSession[] {
+    return sports
+      .filter((one) => isEndurance(one) && one !== "run" && one !== targetDoor)
+      .flatMap((one) => {
+        const sport = targetSportOf(one, false);
+        return sportDays({
+          aim: { sport, keepFit: true },
+          level: null,
+          pool,
+          days: daysOf(one),
+          nameOf: nameOfDay,
+        });
+      });
+  }
+
+  /** The plan with its target from the other days: or why not. */
+  function targetResult(
+    withOthers: GymPlanSession[],
+    shape: TargetBase,
+  ): TargetPlan | null {
+    if (
+      targetDoor === null ||
+      targetSport === null ||
+      aim === null ||
+      aim.kind === "keepFit"
+    ) {
+      return null;
+    }
+    const on = when.ready ? {} : { on: when.on };
+    try {
+      return targetPlan({
+        aim:
+          aim.kind === "climb"
+            ? { sport: "hike", climb_m: aim.metres, ...on }
+            : { sport: targetSport, distance_m: aim.metres, ...on },
+        level: shownLevel,
+        pool,
+        days: daysOf(targetDoor),
+        others: withOthers,
+        base: shape,
+        startsOn: dayOf(startsOn),
+        nameOf: nameOfDay,
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  /** The Sunday of the `weeks`-th week from the start. */
+  function dateIn(weeks: number): string {
+    const start = dayOf(startsOn);
+    const mondayOf = new Date(
+      start.getFullYear(),
+      start.getMonth(),
+      start.getDate() - ((start.getDay() + 6) % 7),
+    );
+    return isoDate(
+      new Date(
+        mondayOf.getFullYear(),
+        mondayOf.getMonth(),
+        mondayOf.getDate() + (weeks - 1) * 7 + 6,
+      ),
+    );
+  }
+
+  function goOn() {
+    setStep(steps[Math.min(steps.length - 1, index + 1)]);
+  }
+
   function next() {
     switch (step) {
+      case "door":
       case "goal":
-        setStep("days");
+      case "target":
+        goOn();
         return;
-      case "days":
-        setProgram(proposed());
+      case "level":
+        goOn();
+        return;
+      case "days": {
+        const base = proposed();
+        const withOthers = [...base.sessions, ...keepFitDays()].sort(
+          (a, b) => a.day - b.day,
+        );
+        const shape: TargetBase = {
+          mode: base.mode,
+          step_kg: base.step_kg,
+          ...(base.goal === undefined ? {} : { goal: base.goal }),
+          ...(base.rest_s === undefined ? {} : { rest_s: base.rest_s }),
+        };
+        setOthers(withOthers);
+        setBaseShape(shape);
+        if (
+          targetDoor !== null &&
+          aim?.kind === "keepFit" &&
+          !keepFitRun &&
+          targetSport !== null
+        ) {
+          // To keep fit in a sport with a distance: its days as they are.
+          const own = sportDays({
+            aim: { sport: targetSport, keepFit: true },
+            level: shownLevel,
+            pool,
+            days: daysOf(targetDoor),
+            nameOf: nameOfDay,
+          });
+          setProgram({
+            ...base,
+            sessions: [...withOthers, ...own].sort((a, b) => a.day - b.day),
+          });
+        } else if (hasTarget) {
+          const result = targetResult(withOthers, shape);
+          setProgram(result?.kind === "plan" ? result.program : null);
+        } else {
+          setProgram({ ...base, sessions: withOthers });
+        }
         setTab(0);
         setPaces(false);
-        setStep(runDays.length > 0 ? "runner" : "plan");
+        goOn();
         return;
+      }
       case "runner":
         if (!paces) {
           setPaces(true);
@@ -294,14 +668,32 @@ export function GymPlanWizard({
           setProgram(withRunner(program, runner));
         }
         setPaces(false);
-        setStep("plan");
+        goOn();
         return;
+      case "when": {
+        if (baseShape !== null) {
+          const result = targetResult(others, baseShape);
+          if (result?.kind === "plan") {
+            setProgram(
+              keptRunDays.length > 0
+                ? withRunner(result.program, runner)
+                : result.program,
+            );
+          }
+        }
+        setTab(0);
+        goOn();
+        return;
+      }
       case "plan":
-        setStep("weeks");
+        if (hasTarget && name.trim() === "" && aim !== null) {
+          setName(t("Toward {target}", { target: aimText(aim) }).slice(0, MAX_NAME));
+        }
+        goOn();
         return;
       case "weeks":
         if (name.trim() === "") {
-          const count = days.length + runDays.length;
+          const count = program === null ? 0 : programDays(program).length;
           setName(
             (count === 1
               ? t("{goal} · 1 day", { goal: t(goalValues.title) })
@@ -309,11 +701,12 @@ export function GymPlanWizard({
             ).slice(0, MAX_NAME),
           );
         }
-        setStep("ready");
+        goOn();
         return;
       case "ready":
         if (program !== null) {
           const named = name.trim().slice(0, MAX_NAME);
+          setPlanReminder(remind);
           onSave({
             name: named,
             days: programDays(program),
@@ -327,9 +720,7 @@ export function GymPlanWizard({
                   ? {
                       ...session,
                       name: t("Workout {letter}", {
-                        letter: sessionLetter(
-                          Math.max(0, gymIndex(program.sessions, session.day)),
-                        ),
+                        letter: dayLetter(program.sessions, session.day),
                       }),
                     }
                   : { ...session, name: session.name.trim() },
@@ -357,35 +748,98 @@ export function GymPlanWizard({
     setStep(steps[index - 1]);
   }
 
+  const whenResult =
+    step === "when" && baseShape !== null ? targetResult(others, baseShape) : null;
   const canGoOn =
-    step === "days"
-      ? days.length + runDays.length > 0
-      : step === "plan"
-        ? program !== null &&
-          program.sessions.length > 0 &&
-          program.sessions.every((one) => isRunDay(one) || one.items.length > 0) &&
-          programItemCount(program) <= MAX_PROGRAM_ITEMS
-        : step === "ready"
-          ? name.trim() !== "" &&
-            program !== null &&
-            programItemCount(program) <= MAX_PROGRAM_ITEMS
-          : true;
+    step === "door"
+      ? sports.length >= MIN_PLAN_SPORTS
+      : step === "days"
+        ? withDoor
+          ? sports.every((sport) => daysOf(sport).length > 0) &&
+            (targetDoor === null || daysOf(targetDoor).length <= MAX_TARGET_DAYS)
+          : days.length + bodyDays.length + runDays.length > 0
+        : step === "when"
+          ? whenResult?.kind === "plan"
+          : step === "plan"
+            ? program !== null &&
+              program.sessions.length > 0 &&
+              program.sessions.every(
+                (one) =>
+                  isRunDay(one) || one.outing !== undefined || one.items.length > 0,
+              ) &&
+              programItemCount(program) <= MAX_PROGRAM_ITEMS
+            : step === "ready"
+              ? name.trim() !== "" &&
+                program !== null &&
+                programItemCount(program) <= MAX_PROGRAM_ITEMS
+              : true;
   const primaryLabel =
-    step === "runner"
-      ? paces
-        ? t("Looks good")
-        : t("Make my paces")
-      : step === "plan"
-        ? t("Looks good")
-        : step === "ready"
-          ? t("Save plan")
-          : week !== null
-            ? t("Done")
-            : t("Continue");
+    step === "door"
+      ? sports.length === 1
+        ? t("Next · 1 chosen")
+        : t("Next · {n} chosen", { n: String(sports.length) })
+      : step === "runner"
+        ? paces
+          ? t("Looks good")
+          : t("Make my paces")
+        : step === "plan"
+          ? t("Looks good")
+          : step === "ready"
+            ? t("Save plan")
+            : week !== null
+              ? t("Done")
+              : t("Continue");
 
   let body: ReactNode = null;
   if (week !== null && program !== null) {
     body = weekPage(program, week);
+  } else if (step === "door") {
+    body = <SportsDoor chosen={sports} onToggle={toggleSport} />;
+  } else if (step === "target" && targetDoor !== null && aim !== null) {
+    body = (
+      <TargetGoalPage
+        door={targetDoor}
+        aim={aim}
+        onAim={(one) => setAims({ ...aims, [targetDoor]: one })}
+        paddle={paddle}
+        onPaddle={setPaddle}
+        pool={pool}
+        onPool={setPool}
+      />
+    );
+  } else if (step === "level" && targetSport !== null) {
+    body = (
+      <TargetLevelPage
+        sport={targetSport}
+        climb={aim?.kind === "climb"}
+        level={shownLevel}
+        onLevel={(one) => {
+          setLevelTouched(true);
+          setLevel(one);
+        }}
+        best={best}
+      />
+    );
+  } else if (step === "when" && aim !== null) {
+    body = (
+      <TargetWhenPage
+        aim={aim}
+        when={when}
+        onWhen={setWhen}
+        result={whenResult}
+        dateIn={dateIn}
+        onReach={(metres) =>
+          targetDoor !== null &&
+          setAims({
+            ...aims,
+            [targetDoor]:
+              aim.kind === "climb"
+                ? { kind: "climb", metres }
+                : { kind: "distance", metres },
+          })
+        }
+      />
+    );
   } else if (step === "goal") {
     body = goalPage();
   } else if (step === "days") {
@@ -415,16 +869,25 @@ export function GymPlanWizard({
           </Text>
         </Pressable>
         <Text style={styles.stepLabel}>
-          {t("Step {n} of {total}", {
-            n: String(index + 1),
-            total: String(steps.length),
-          }).toUpperCase()}
+          {(step === "door"
+            ? t("New plan")
+            : t("Step {n} of {total}", {
+                n: String(stepNumber),
+                total: String(counted.length),
+              })
+          ).toUpperCase()}
         </Text>
         <View style={styles.round} />
       </View>
-      <View style={styles.progress} accessibilityElementsHidden>
-        {steps.map((one, i) => (
-          <View key={one} style={[styles.segment, i <= index && styles.segmentOn]} />
+      <View
+        style={[styles.progress, step === "door" && styles.hidden]}
+        accessibilityElementsHidden
+      >
+        {counted.map((one, i) => (
+          <View
+            key={one}
+            style={[styles.segment, i < stepNumber && styles.segmentOn]}
+          />
         ))}
       </View>
       <ScrollView
@@ -492,15 +955,24 @@ export function GymPlanWizard({
   }
 
   function goalPage() {
+    // Without the gym the goals are a bodyweight workout's (TASK-461 A2).
+    const body = !sports.includes("gym") && sports.includes("body");
     return (
       <>
         {heading(
           t("What do you want to achieve?"),
-          t("Sets, reps and rest come from here. You can change them later."),
+          body
+            ? t("Without weights you grow with reps and seconds.")
+            : t("Sets, reps and rest come from here. You can change them later."),
         )}
         {GOALS.map((one) => {
           const on = one.goal === goal;
-          const values = `${one.main.sets} × ${one.main.reps} · ${restLabel(one.restS)}`;
+          const bodyValues = BODYWEIGHT_GOALS[one.goal];
+          const values = body
+            ? one.goal === "strength"
+              ? `${bodyValues.sets} × ${bodyValues.reps} ${t("with the hardest exercises")} · ${restLabel(bodyValues.restS)}`
+              : `${bodyValues.sets} × ${bodyValues.reps} · ${restLabel(bodyValues.restS)}`
+            : `${one.main.sets} × ${one.main.reps} · ${restLabel(one.restS)}`;
           return (
             <Pressable
               key={one.goal}
@@ -526,84 +998,131 @@ export function GymPlanWizard({
             </Pressable>
           );
         })}
+        {sports.includes("body") && (
+          <>
+            <Text style={styles.label}>{t("What do you have?").toUpperCase()}</Text>
+            <View style={styles.counts}>
+              {EQUIPMENT_OPTIONS.map((one) => {
+                const on = one.equipment === equipment;
+                return (
+                  <Pressable
+                    key={one.equipment}
+                    style={({ pressed }) => [
+                      styles.count,
+                      styles.startChoice,
+                      on && styles.optionOn,
+                      pressed && styles.pressed,
+                    ]}
+                    onPress={() => setEquipment(one.equipment)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: on }}
+                    testID={`wizard-equipment-${one.equipment}`}
+                  >
+                    <Text style={[styles.optionTitle, styles.centered]}>
+                      {t(one.title)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Text style={styles.small}>
+              {t("With the bar we add pull-ups, with the dip bars the dips.")}
+            </Text>
+          </>
+        )}
       </>
     );
   }
 
-  /** A day touched in «Your week»: the gym, then a run, then rest. */
+  /** The sports a day of «Your week» goes round when touched: those of
+   * the plan, a run always for a plan kept (as before TASK-461). */
+  function roundOfDays(): PlanSport[] {
+    return withDoor
+      ? PLAN_SPORTS.filter((one) => sports.includes(one))
+      : PLAN_SPORTS.filter((one) => one === "run" || sports.includes(one));
+  }
+
+  /** A day touched in «Your week»: to the next sport of the plan, then
+   * rest. */
   function touchDay(number: number) {
-    if (days.includes(number)) {
-      setDays(days.filter((one) => one !== number));
-      setRunDays([...runDays, number]);
-    } else if (runDays.includes(number)) {
-      setRunDays(runDays.filter((one) => one !== number));
-    } else {
-      setDays([...days, number]);
+    const round = roundOfDays();
+    const now = round.findIndex((sport) => daysOf(sport).includes(number));
+    moveDay(number, round[now + 1]);
+  }
+
+  /** «Gym», «Bodyweight», «Running» over a row of counts. */
+  function sportLabel(sport: PlanSport): string {
+    switch (sport) {
+      case "gym":
+        return t("Gym");
+      case "body":
+        return t("Bodyweight");
+      case "run":
+        return t("Running");
+      case "walk":
+        return t("Walking and hiking");
+      case "bike":
+        return t("Cycling");
+      case "swim":
+        return t("Swimming and paddling");
+      case "mountain":
+        return t("Mountains");
     }
   }
 
-  function daysPage() {
-    const shown = [...days].sort((a, b) => a - b);
-    const runs = [...runDays].sort((a, b) => a - b);
-    const split = proposeProgram({
-      goal,
-      days: shown,
-      runDays: runs,
-      mode: "same",
-      weeks: 1,
-      startsOn,
-      naming,
-    }).sessions;
-    const sessions =
-      program !== null && proposedFor === goal && !scratch
-        ? withDays(program, shown, naming, runs).sessions
-        : split;
+  function countRow(sport: PlanSport) {
+    const run = isEndurance(sport);
+    // A plan kept may have no run: «No» stays, as before TASK-461.
+    const choices = run
+      ? withDoor
+        ? [1, 2, 3, 4]
+        : [0, 1, 2, 3]
+      : withDoor
+        ? [1, 2, 3, 4]
+        : [1, 2, 3, 4, 5];
+    const current = daysOf(sport).length;
     return (
-      <>
-        {heading(t("How many days a week?"))}
+      <View key={sport}>
+        <Text style={styles.label}>
+          {(withDoor || !run ? sportLabel(sport) : t("And running?")).toUpperCase()}
+        </Text>
         <View style={styles.counts}>
-          {[2, 3, 4, 5].map((count) => {
-            const on = days.length === count;
-            return (
-              <Pressable
-                key={count}
-                style={({ pressed }) => [
-                  styles.count,
-                  on && styles.optionOn,
-                  pressed && styles.pressed,
-                ]}
-                onPress={() => {
-                  const gym = proposedDays(count);
-                  setDays(gym);
-                  setRunDays(proposedRunDays(runDays.length, gym));
-                }}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: on }}
-                testID={`wizard-count-${count}`}
-              >
-                <Text style={styles.countText}>{count}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-        <Text style={styles.label}>{t("And running?").toUpperCase()}</Text>
-        <View style={styles.counts}>
-          {[0, 1, 2, 3].map((count) => {
-            const on = runDays.length === count;
+          {choices.map((count) => {
+            const on = current === count;
             return (
               <Pressable
                 key={count}
                 style={({ pressed }) => [
                   styles.count,
                   styles.countSmall,
-                  // «No» is no run: chosen, it looks chosen, not blue.
-                  on && (count === 0 ? styles.noRunsOn : styles.runOn),
+                  on &&
+                    (run
+                      ? count === 0
+                        ? styles.noRunsOn
+                        : styles.runOn
+                      : styles.optionOn),
                   pressed && styles.pressed,
                 ]}
-                onPress={() => setRunDays(proposedRunDays(count, days))}
+                onPress={() => {
+                  const counts: SportCounts = {
+                    gym: days.length,
+                    body: bodyDays.length,
+                    run: runDays.length,
+                    walk: moreDays.walk.length,
+                    bike: moreDays.bike.length,
+                    swim: moreDays.swim.length,
+                    mountain: moreDays.mountain.length,
+                    [sport]: count,
+                  };
+                  respread(roundOfDays(), counts);
+                }}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: on }}
-                testID={`wizard-runs-${count}`}
+                testID={
+                  sport === "run"
+                    ? `wizard-runs-${count}`
+                    : `wizard-count-${sport}-${count}`
+                }
               >
                 <Text
                   style={[styles.countTextSmall, count === 0 && !on && styles.muted]}
@@ -614,13 +1133,66 @@ export function GymPlanWizard({
             );
           })}
         </View>
+      </View>
+    );
+  }
+
+  function daysPage() {
+    const shown = [...days].sort((a, b) => a - b);
+    const body = [...bodyDays].sort((a, b) => a - b);
+    const runs = [...runDays].sort((a, b) => a - b);
+    const split = proposeProgram({
+      goal,
+      days: shown,
+      bodyDays: body,
+      runDays: runs,
+      equipment,
+      mode: "same",
+      weeks: 1,
+      startsOn,
+      naming,
+    }).sessions;
+    const sessions =
+      program !== null &&
+      proposedFor === proposalKey(goal, equipment, sports) &&
+      !scratch
+        ? withDays(program, shown, naming, runs, body).sessions
+        : split;
+    const strength = PLAN_SPORTS.filter(
+      (one) =>
+        (one === "gym" || one === "body") &&
+        (sports.includes(one) || (one === "gym" && !withDoor && days.length > 0)),
+    );
+    return (
+      <>
+        {heading(
+          withDoor ? t("How many days for each sport?") : t("How many days a week?"),
+        )}
+        {(strength.length > 0 || !withDoor ? strength : []).map(countRow)}
+        {!withDoor && strength.length === 0 && countRow("gym")}
+        {withDoor
+          ? sports.filter(isEndurance).map(countRow)
+          : roundOfDays().includes("run") && countRow("run")}
         <Text style={styles.label}>{t("Your week").toUpperCase()}</Text>
         <View style={styles.weekDays}>
           {WEEK_DAYS.map((day, i) => {
             const number = i + 1;
-            const gym = days.includes(number);
-            const run = runDays.includes(number);
+            const gym = days.includes(number) || bodyDays.includes(number);
+            // A day of a sport with a distance (TASK-461 B, C) in the run's blue.
+            const outdoor = sports.find(
+              (one) => isEndurance(one) && daysOf(one).includes(number),
+            );
+            const run = runDays.includes(number) || outdoor !== undefined;
             const session = sessions.find((one) => one.day === number);
+            const what = days.includes(number)
+              ? t("Gym")
+              : bodyDays.includes(number)
+                ? t("Bodyweight")
+                : outdoor !== undefined
+                  ? sportLabel(outdoor)
+                  : run
+                    ? t("Run")
+                    : t("Rest");
             return (
               <Pressable
                 key={day}
@@ -632,7 +1204,7 @@ export function GymPlanWizard({
                 onPress={() => touchDay(number)}
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: gym ? true : run ? "mixed" : false }}
-                accessibilityLabel={`${t(day)}: ${gym ? t("Gym") : run ? t("Run") : t("Rest")}`}
+                accessibilityLabel={`${t(day)}: ${what}`}
                 testID={`wizard-day-${number}`}
               >
                 <Text
@@ -643,9 +1215,9 @@ export function GymPlanWizard({
                   ]}
                 >
                   {gym && session !== undefined && !scratch
-                    ? sessionLetter(Math.max(0, gymIndex(sessions, number)))
+                    ? dayLetter(sessions, number)
                     : run
-                      ? "RUN"
+                      ? SPORT_BADGES[outdoor ?? "run"]
                       : t(day).slice(0, 2)}
                 </Text>
               </Pressable>
@@ -653,7 +1225,9 @@ export function GymPlanWizard({
           })}
         </View>
         <Text style={styles.small}>
-          {t("Touch a day to change it: gym, run or rest.")}
+          {withDoor
+            ? t("Already spread out, with rest in between. Touch a day to change it.")
+            : t("Touch a day to change it: gym, run or rest.")}
         </Text>
         {sessions.length > 0 && !scratch && (
           <View style={styles.card}>
@@ -680,12 +1254,12 @@ export function GymPlanWizard({
   /** The yellow letter of a day of the gym, «RUN» in its blue on a run
    * day. */
   function mark(sessions: GymPlanSession[], session: GymPlanSession) {
-    return session.run !== undefined ? (
-      <Text style={[styles.letter, styles.letterRun]}>RUN</Text>
-    ) : (
-      <Text style={styles.letter}>
-        {sessionLetter(Math.max(0, gymIndex(sessions, session.day)))}
+    return session.run !== undefined || session.outing !== undefined ? (
+      <Text style={[styles.letter, styles.letterRun]}>
+        {SPORT_BADGES[sportOfSession(session)]}
       </Text>
+    ) : (
+      <Text style={styles.letter}>{dayLetter(sessions, session.day)}</Text>
     );
   }
 
@@ -737,7 +1311,9 @@ export function GymPlanWizard({
             {`${
               session.run !== undefined
                 ? t("Run")
-                : sessionLetter(Math.max(0, gymIndex(sessions, session.day)))
+                : session.outing !== undefined
+                  ? SPORT_BADGES[sportOfSession(session)]
+                  : dayLetter(sessions, session.day)
             } · ${t(WEEK_DAYS[session.day - 1])}`}
           </Text>
         </Pressable>
@@ -769,10 +1345,31 @@ export function GymPlanWizard({
           scratch ? t("Your plan") : t("Here is your plan"),
           scratch
             ? t("Add the exercises of each day.")
-            : t("Ready to use. Touch an exercise to change it."),
+            : !hasGym(current) && bodyDays.length > 0
+              ? t("The whole body, {n} times a week. Touch an exercise to change it.", {
+                  n: String(bodyDays.length),
+                })
+              : t("Ready to use. Touch an exercise to change it."),
         )}
+        {aim !== null && hasTarget && <TargetLadder program={current} aim={aim} />}
         {tabs(current.sessions, shown, setTab)}
-        {session.run !== undefined ? (
+        {session.outing !== undefined ? (
+          <OutingDayEditor
+            day={session.day}
+            outing={session.outing}
+            program={current}
+            onChange={(outing) =>
+              setProgram({
+                ...current,
+                sessions: current.sessions.map((one, i) =>
+                  i === shown
+                    ? { ...one, outing, name: nameOfDay({ ...one, outing }) }
+                    : one,
+                ),
+              })
+            }
+          />
+        ) : session.run !== undefined ? (
           <RunDayEditor
             run={session.run}
             mode={current.mode}
@@ -831,7 +1428,14 @@ export function GymPlanWizard({
               })} · ${restLabel(current.rest_s ?? goalValues.restS)}`}
             </Text>
             <Text style={styles.noteStrong}>
-              {t("Write the kg at the first workout")}
+              {isBodyweightDay(session)
+                ? equipment === "none"
+                  ? t("No equipment")
+                  : t(
+                      EQUIPMENT_OPTIONS.find((one) => one.equipment === equipment)
+                        ?.title ?? "",
+                    )
+                : t("Write the kg at the first workout")}
             </Text>
           </View>
         )}
@@ -842,14 +1446,23 @@ export function GymPlanWizard({
   function weeksPage(current: GymProgram) {
     const length = current.weeks;
     const counted = current.mode === "load" || current.mode === "reps";
+    // Without the gym: no kg, the reps and seconds grow (TASK-461 A2).
+    const gym = hasGym(current);
+    const lighterLast =
+      (current.mode === "load" || (!gym && current.mode === "reps")) && length >= 3;
+    const example = exampleItems(current);
     const lead =
       current.mode === "same"
         ? t("The same week, again and again.")
         : current.mode === "alternate"
           ? t("Two weeks in turn, again and again.")
-          : t("A cycle of {n} weeks, then again with the new weights.", {
-              n: String(length),
-            });
+          : gym
+            ? t("A cycle of {n} weeks, then again with the new weights.", {
+                n: String(length),
+              })
+            : t("A cycle of {n} weeks, then it starts again from where you got to.", {
+                n: String(length),
+              });
     return (
       <>
         {heading(t("How do the weeks change?"), lead)}
@@ -872,10 +1485,7 @@ export function GymPlanWizard({
                     style={[
                       styles.bar,
                       { height: `${Math.round(weekHeight(current, number) * 100)}%` },
-                      current.mode === "load" &&
-                        length >= 3 &&
-                        number === length &&
-                        styles.barLight,
+                      lighterLast && number === length && styles.barLight,
                     ]}
                   />
                 </View>
@@ -889,10 +1499,18 @@ export function GymPlanWizard({
             ))}
           </View>
           <Text style={[styles.small, styles.center]}>
-            {t("Touch a week to change it.")}
+            {!gym &&
+            current.mode === "reps" &&
+            example.reps !== undefined &&
+            example.held !== undefined
+              ? `${t("{a} and {b}, for example.", {
+                  a: exerciseName(example.reps, language),
+                  b: exerciseName(example.held, language),
+                })} ${t("Touch a week to change it.")}`
+              : t("Touch a week to change it.")}
           </Text>
         </View>
-        {MODES.map((one) => {
+        {(gym ? MODES : BODY_MODES).map((one) => {
           const on = one.mode === current.mode;
           return (
             <Pressable
@@ -912,7 +1530,10 @@ export function GymPlanWizard({
               <View style={styles.optionText}>
                 <Text style={styles.optionTitle}>{t(one.title)}</Text>
                 <Text style={styles.optionLine}>
-                  {t(one.line, { kg: kgText(current.step_kg || 2.5) })}
+                  {t(one.line, {
+                    kg: kgText(current.step_kg || 2.5),
+                    n: String(length),
+                  })}
                 </Text>
               </View>
             </Pressable>
@@ -1088,16 +1709,42 @@ export function GymPlanWizard({
                 <Text style={styles.summaryValue} numberOfLines={1}>
                   {session.run !== undefined
                     ? runTitle(session.run)
-                    : `${sessionLetter(Math.max(0, gymIndex(current.sessions, session.day)))} · ${session.name}`}
+                    : session.outing !== undefined
+                      ? outingTitle(session.outing)
+                      : `${dayLetter(current.sessions, session.day)} · ${session.name}`}
                 </Text>
               </View>
             ))}
             <View style={styles.summaryRow}>
               <Text style={styles.summaryKey}>{t("Weeks")}</Text>
-              <Text style={styles.summaryValue}>{modeLine}</Text>
+              <Text style={styles.summaryValue}>
+                {current.target !== undefined && aim !== null
+                  ? t("Toward {target}", { target: aimText(aim) })
+                  : modeLine}
+              </Text>
             </View>
           </View>
         </View>
+        {/* «Ricordamelo alle 8» (TASK-461 B): only on the plan's days. */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.option,
+            remind && styles.optionOn,
+            pressed && styles.pressed,
+          ]}
+          onPress={() => setRemind(!remind)}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: remind }}
+          testID="wizard-remind"
+        >
+          <View style={styles.optionText}>
+            <Text style={styles.optionTitle}>{t("Remind me at 8")}</Text>
+            <Text style={styles.optionLine}>{t("Only on the plan's days")}</Text>
+          </View>
+          <View style={[styles.tick, remind && styles.tickOn]}>
+            {remind && <Text style={styles.tickText}>✓</Text>}
+          </View>
+        </Pressable>
       </>
     );
   }
@@ -1107,6 +1754,13 @@ const styles = StyleSheet.create({
   wizard: {
     flex: 1,
     gap: space.md,
+  },
+  centered: {
+    textAlign: "center",
+  },
+  // The door comes before the steps: no bar of the steps over it.
+  hidden: {
+    opacity: 0,
   },
   top: {
     flexDirection: "row",

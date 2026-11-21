@@ -247,6 +247,107 @@ per quota e quota massima.
 | fr | Altitude | Vario | Alt. max |
 | es | Altitud | Variómetro | Alt. máx. |
 
+### R5 — Sotto «Record your flight»: i tuoi voli, i record, pronto al decollo
+
+**Scelte dell'utente (2026-11-12).** Fra quattro proposte ha scelto «I
+tuoi voli», «Record personali» e «Pronto al decollo» (non «Ultimo volo»).
+Su «Share live at start» ha scelto «Come l'ultima volta»: l'interruttore
+resta com'era al volo precedente e si vede sempre nella scheda «Pronto al
+decollo» prima di partire. Crea solo il link, come oggi (nessun pubblico di
+TASK-468), e in volo resta il segno «Sharing live». Coordinatore: nessuna
+ADR nuova, ma «ADR-0375, precisazione R5» e «ADR-0352, precisazione».
+
+**R5a — server: i record del volo.**
+- Il telefono manda in più, a fine volo, `max_alt_m` (il punto più alto
+  dal GPS) e `top_speed_mps` (la velocità massima sul suolo) con
+  `PUT /me/activities/{key}/stats`.
+- Il server li tiene solo per un volo, nella colonna JSON
+  `run_stats.stats`, quindi nessuna migrazione. Per gli altri sport li
+  **ignora** invece di rifiutarli: il telefono li può mandare senza chiedersi
+  che sport è.
+- `GET /me/flight-bests`, solo del proprietario, dà il più alto, il più
+  lungo, il più lontano e il più veloce. Ognuno è `{id, started_at, value}`
+  o `null`; a parità vince il primo volato, e un volo cancellato si porta
+  via i suoi record.
+- Codice in `run_stats.py`, nello stesso router, senza toccare `app.py`;
+  tipi in `packages/shared-types/src/flightBests.ts`.
+- **Prima il server, poi l'app**: un server senza R5a rifiuta i due campi
+  (422).
+
+**R5b — app**, dopo R5a sul server:
+- sotto «Record your flight», tre schede:
+  - «I tuoi voli»: il mese, da `GET /me/activity-calendar?sport=paragliding`;
+    si tocca e apre il calendario sui voli;
+  - i record;
+  - «Pronto al decollo»: la precisione del GPS, pronto fino a 10 m, e
+    l'interruttore;
+- a fine volo il telefono manda i due campi;
+- una riga in `FreeRunScreen.tsx` accende il link a fine conto alla
+  rovescia.
+
+**Testi di R5**, approvati dall'utente il 2026-11-12 (en/it «Sì,
+approvo», poi de/fr/es «Sì, approvo»). Quota massima e velocità massima
+usano le parole che l'app ha già.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Your flights | I tuoi voli | Deine Flüge | Vos vols | Tus vuelos |
+| 1 flight · {time} | 1 volo · {time} | 1 Flug · {time} | 1 vol · {time} | 1 vuelo · {time} |
+| {count} flights · {time} | {count} voli · {time} | {count} Flüge · {time} | {count} vols · {time} | {count} vuelos · {time} |
+| No flights this month | Nessun volo questo mese | Keine Flüge in diesem Monat | Aucun vol ce mois-ci | Ningún vuelo este mes |
+| Your best flights | I tuoi record di volo | Deine Flugrekorde | Vos records de vol | Tus récords de vuelo |
+| Longest flight | Volo più lungo | Längster Flug | Vol le plus long | Vuelo más largo |
+| Farthest flight | Volo più lontano | Weitester Flug | Vol le plus lointain | Vuelo más lejano |
+| Ready to fly | Pronto al decollo | Startbereit | Prêt à décoller | Listo para despegar |
+| Waiting for GPS… | In attesa del GPS… | Warte auf GPS… | En attente du GPS… | Esperando el GPS… |
+| GPS ready · ±{m} m | GPS pronto · ±{m} m | GPS bereit · ±{m} m | GPS prêt · ±{m} m | GPS listo · ±{m} m |
+| Weak GPS · ±{m} m: wait in the open | GPS debole · ±{m} m: aspetta all'aperto | Schwaches GPS · ±{m} m: warte im Freien | GPS faible · ±{m} m : attendez à découvert | GPS débil · ±{m} m: espera al aire libre |
+| Share live at start | Condividi dal vivo alla partenza | Beim Start live teilen | Partager en direct au départ | Compartir en directo al empezar |
+| When the countdown ends, MuW makes the link and opens the share sheet. | Finito il conto alla rovescia, MuW crea il link e apre la condivisione. | Nach dem Countdown erstellt MuW den Link und öffnet das Teilen-Menü. | À la fin du compte à rebours, MuW crée le lien et ouvre le partage. | Al terminar la cuenta atrás, MuW crea el enlace y abre el menú para compartir. |
+
+### R6 — Corsa e volo nella stessa attività (hike & fly)
+
+**Scelta dell'utente (2026-11-12)**: nelle gare di parapendio si corre e si
+vola, quindi una registrazione deve tenere tutte e due le cose. Fra
+«Dentro Paragliding» e uno sport nuovo «Hike & fly» ha scelto **«Dentro
+Paragliding»**.
+- È una sola registrazione. L'app divide da sola i tratti a piedi da quelli
+  in aria, e c'è un bottone «A piedi | In volo» per correggerla.
+- Alla fine e nel Feed ci sono il tempo totale, «A piedi» (tempo, km,
+  dislivello) e «In volo» (tempo, km, quota massima).
+- Sulla mappa la linea è bianca a piedi e gialla in aria.
+- Chi fa solo il volo lo vede come oggi.
+
+Coordinatore: «ADR-0375, precisazione R6», nessuna migrazione.
+
+**Come capisce da sola** (GPS, senza barometro):
+- **decollo**: per almeno 15 s si sale o si scende più di 1,5 m/s, oppure
+  per almeno 20 s si va oltre 25 km/h;
+- **atterraggio**: per almeno 60 s si va sotto 9 km/h e si sale o si
+  scende meno di 0,7 m/s;
+- un tratto più corto di 60 s si unisce a quello vicino;
+- il bottone corregge la fase finché il GPS non vede il cambio opposto.
+
+**Parti**:
+- **R6a, server, prima dell'app**: `flight_parts` e `flight_split` (API.md,
+  «A piedi e in volo»).
+- **R6b, app**: la divisione in tratti (`src/air/flightParts.ts`), il
+  bottone, la fine, il Feed, le calorie tratto per tratto.
+- **R6c, la mappa a due colori**: tocca i file della mappa, a turno, per
+  ultima.
+
+**Testi di R6**, approvati dall'utente il 2026-11-12 (en/it «Sì, approvo»,
+poi de/fr/es «Sì, approvo»):
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| On foot *(c'è già)* | A piedi | Zu Fuß | À pied | A pie |
+| In the air | In volo | In der Luft | En vol | En el aire |
+| Total | Totale | Gesamt | Total | Total |
+| MuW switches by itself; touch to correct it. | MuW cambia da sola; tocca per correggere. | MuW wechselt von selbst; tippe, um es zu korrigieren. | MuW change tout seul ; touchez pour corriger. | MuW cambia solo; toca para corregir. |
+| On foot {time} · In the air {time} | A piedi {time} · In volo {time} | Zu Fuß {time} · In der Luft {time} | À pied {time} · En vol {time} | A pie {time} · En el aire {time} |
+| White: on foot. Yellow: in the air. | Bianco: a piedi. Giallo: in volo. | Weiß: zu Fuß. Gelb: in der Luft. | Blanc : à pied. Jaune : en vol. | Blanco: a pie. Amarillo: en el aire. |
+
 ## Cosa fare (se l'utente decide di sì)
 
 Parti piccole, una sessione per parte, nell'ordine. Ogni parte è un branch
@@ -597,10 +698,31 @@ correzioni: i riquadri due per riga («Max altitude» si tagliava) e la riga
 del volo sotto il bottone (`ChooseScreen.tsx`, col sì del Coordinatore).
 Esce con l'aggiornamento completo del 2026-11-12.
 
+**Esito R5** (2026-11-12): server #1258 in main (291c41ff), acceso al passo
+12 (~16:56Z, server eee85a69, letture di `out/TASK-305/SERVER-R5a.md` come
+attese); app #1260 in main, in produzione con l'OTA 16 (16:42Z), dopo la
+prova nel simulatore e le schermate approvate dall'utente («Sì, approvo»).
+Dalla prova una correzione: il foglio di «Share live at start» aspettava
+«Before you fly». Decisioni: ADR-0375 precisazione R5, ADR-0352
+precisazione.
+
+**Esito R6** (2026-11-18): server #1291 in main, acceso al passo 13
+(13:41Z, letture di `out/TASK-305/SERVER-R6a.md` come attese); app #1293 in
+main (9c4abf1e), esce col prossimo OTA. Le schermate della gara finta nel
+simulatore sono approvate dall'utente («Sì, approvo», 2026-11-12). Dalla
+prova tre correzioni: i tempi dei tratti in millisecondi interi, la
+velocità massima dei soli tratti in aria, una riga di riquadri in meno
+alla fine di una gara. Decisione: ADR-0375 precisazione R6. R6c, la mappa a
+due colori, è in bozza (#1313).
+
 **Cosa resta**:
 
 - Una prova di un volo vero, col link dal vivo aperto da un altro
   telefono, dopo l'uscita.
 - R4 (il volo sull'orologio, per il battito dal vivo): PR #1218 in bozza,
   fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
+- R6c (la mappa a due colori, #1313) e R6d (la pagina dell'attività
+  riaperta, coi tratti dal server).
+- TASK-478 (la mappa a fine attività inquadrata e visibile), aperto dalla
+  prova di R6c.
 - Le parti del pianificatore (A1…F) restano Proposte.

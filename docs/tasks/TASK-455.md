@@ -1,15 +1,16 @@
 # TASK-455 — Condividere il disegno di un'altra persona
 
-**Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-12; documenti nella
-#1212) · B0 (la copia solo dei disegni propri o «Everyone») nella #1220,
-«pronta» il 2026-11-12 per l'aggiornamento completo di oggi · parte A
-(server: il post in un messaggio) scritta sul suo branch, PR in bozza per
-il giro dopo
-**Fase**: 5 · **Branch**: `docs/TASK-455-share-others-drawing` (parte 0, solo
-documenti); poi una PR per parte, `feat/TASK-455-a-message-post` la prima
-**Dipende da**: TASK-454 A (#1195) in `main` per `feed/PostActions.tsx`
-(parte B); il turno su `shared-types` e `docs/API.md` (parti A e C: li
-tocca anche la #1211 di TASK-467 B1, si unisce `main` prima di «pronta»)
+**Stato**: **B0, A e B fatte e in produzione** (2026-11-12): B0 nella
+#1220, A nella #1230 e sul server col passo 11 (migrazione `0074`), B nella
+#1255 con l'OTA 15 · resta la prova dell'utente sul telefono · prossima
+**C** (server: il link e l'interruttore), che comincia da una domanda
+all'utente e dalla frase della privacy; poi D (sito) ed E (app)
+**Fase**: 5 · **Branch**: una PR per parte; la prossima
+`feat/TASK-455-c-post-links`
+**Dipende da**: per la parte C, la risposta dell'utente sul link
+dell'autore con l'interruttore spento, la frase della privacy e l'avviso
+nelle novità approvati **prima** del passo sul server, il sì del
+Coordinatore sui file
 **ADR**: **ADR-0382** (il post in un messaggio, il link di un post,
 l'interruttore dell'account), numero dal Coordinatore il 2026-11-12 ·
 numero del task dal Coordinatore l'11 novembre 2026 (S5 e gruppo C di
@@ -128,12 +129,31 @@ senza mostrarlo a chi non potrebbe vederlo.
 | Impostazioni, interruttore (acceso all'inizio) | «Links to my posts» · «People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.» |
 | Pagina web | «{user} drew this on MuW» · «Get MuW» · «This drawing is no longer available.» |
 
-Da approvare ancora: il paragrafo della privacy (parte E) e la riga delle
-novità.
+**La frase della privacy, approvata il 2026-11-12 («Approvo così»)**, da
+aggiungere dopo quella su «Everyone» e «Followers», nell'app e sul sito
+(traduzioni dell'agente):
+
+> A post for «Everyone» can also be opened with a link. You, or any member
+> who sees the post, can share its link, and whoever has the link sees the
+> drawing on the map, your username, the title and the distance on a web
+> page, even without MuW: never your photos, the comments or your times.
+> Search engines are asked not to list these pages. Turn off «Links to my
+> posts» in Settings and no link to your posts works any more. A post for
+> «Followers» or «Only me» never has a link.
+
+**Le novità, scelta dell'utente del 2026-11-12: «Solo privacy e App
+Store».** Nessun avviso dentro l'app (oggi non ha un posto per le novità):
+la frase della privacy, e nelle note di versione dello store alla prossima
+build «Share a post: send it to a friend or share its link. Links to your
+«Everyone» posts are on; turn them off in Settings.» (La proposta era un
+foglietto nell'app, una volta.)
 
 ## Le parti (proposta dell'agente; il server prima dell'app)
 
-- **A — Server: il post in un messaggio.** Un allegato nuovo, `post`: il
+- **B0 — App: niente copia dei disegni «Followers» altrui** (aggiunta il
+  2026-11-12, la correzione di riservatezza). **In `main`, #1220.**
+- **A — Server: il post in un messaggio** (**in `main`, #1230, e sul
+  server col passo 11**). Un allegato nuovo, `post`: il
   messaggio tiene l'id del disegno, non la linea. Mandarlo vuole che chi
   manda veda il disegno e una conversazione aperta, come ogni allegato.
   Leggerlo: a ogni pagina il server risolve la scheda **per chi legge**
@@ -142,7 +162,8 @@ novità.
   «[Post]» davanti al testo; la push dice «🗺️ Post». Migrazione, tipi in
   `shared-types`, esempi, `API.md`, `DATABASE.md`. Poi il passo sul server,
   col sì dell'utente dato al Coordinatore.
-- **B — App: «Share» su ogni post e la scheda in chat.** Il foglietto di
+- **B — App: «Share» su ogni post e la scheda in chat** (**in `main`,
+  #1255, in produzione con l'OTA 15**). Il foglietto di
   «Share» (file nuovo) nella riga delle azioni del Feed e della pagina del
   post; «Send to a friend» manda il rimando; la scheda del post nella
   conversazione, che apre la pagina del post; la nota per i post
@@ -164,7 +185,7 @@ novità.
 - **F — Più avanti, con una build nativa**: il link che apre il post
   dentro l'app (link universali); un «Copy link» vero, se lo si vuole.
 
-Ordine: A → B → C → D → E. A e B danno già «manda a un amico» e il post in
+Ordine: B0 → A → B → C → D → E. A e B danno già «manda a un amico» e il post in
 chat; C, D ed E il link. Esce tutto con l'aggiornamento completo: nessuna
 OTA da sola.
 
@@ -213,10 +234,14 @@ OTA da sola.
    server. Server e sito li lancia il Coordinatore coi sì dell'utente;
    nessuna OTA di produzione fino all'aggiornamento completo.
 
-Da chiedere all'utente prima della parte C: con l'interruttore spento, il
-link che l'autore prende del **proprio** post funziona? La risposta 5 dice
-che l'autore lo può sempre prendere, il testo dell'interruttore dice che
-spento «the links stop working».
+Chiesto all'utente il 2026-11-12, prima della parte C: con l'interruttore
+spento, il link che l'autore prende del **proprio** post funziona?
+**Risposta: «No: spento vuol dire nessun link».** Una regola sola, quella
+che il testo approvato dice già («Turn this off and the links stop
+working»): spento, nessun link ai miei post funziona, nemmeno quelli che ho
+mandato io, e «Share link» sparisce anche sui miei post; per mandarne uno
+lo riaccendo. Precisa la risposta 5 («l'autore lo può sempre prendere»
+vale con l'interruttore acceso). Nessun dato in più da tenere per post.
 
 Ordine sui file dell'app (Coordinatore): `feed/PostActions.tsx` dopo la
 #1195 (TASK-454 A) e accanto a TASK-454 B (`FeedPost.tsx`, `PostPage.tsx`,
@@ -225,6 +250,44 @@ Ordine sui file dell'app (Coordinatore): `feed/PostActions.tsx` dopo la
 dopo. In `messages.py` e `push.py` l'allegato sta in un blocco suo:
 TASK-468 («Share live» in chat) li tocca dopo.
 
+## La parte B, da dove si riparte (2026-11-12)
+
+Lista dei file **approvata dal Coordinatore** il 2026-11-12; branch
+`feat/TASK-455-b-share-post` da `main`. Si scrive tutto il resto e si tiene
+`feed/PostActions.tsx` per ultimo: prima entra la #1231 di TASK-454 B, e
+lo dice il Coordinatore. Su `messages/**` questo task va per primo; dopo
+entra TASK-468 B.
+
+Cosa fa: «Share» su ogni post apre un foglietto («Send to a friend», sui
+propri anche «Poster and video»; «Share link» arriva con la parte E); «Send
+to a friend» da un post manda il rimando (`attachment: { post_id }`), con
+la nota «Only people who follow {user} can open it.» per un post
+«Followers»; nella conversazione la scheda del post («by {user}», o «This
+post is no longer available.»); la lista dice «🗺️ Post»; l'app dice `post`
+in `X-MuW-Reads`; la scheda di un disegno altrui manda il rimando e il
+pulsante torna sui «Followers» (la B0 l'aveva tolto).
+
+- **Da chiedere all'utente all'inizio** (una domanda, con la proposta): il
+  tocco sulla scheda in chat. La pagina del post del Feed (`PostPage`, con
+  «Edit & run») vive dentro `FeedScreen`; da una notifica o dalla ricerca
+  un post si apre oggi con `drawingsDoor.open` (mappa e scheda con foto,
+  commenti, reazioni, «Draw it near me», «Edit the drawing»). Proposta:
+  aprirlo allo stesso modo dalla chat, senza toccare `App.tsx` (al
+  Coordinatore va bene).
+- **Un server di prima** rifiuta `post_id` con `422`: l'app lo dice con le
+  parole che ha già. `attachments.kinds` di una conversazione aperta ha
+  `post` quando il server lo accetta.
+- **I tipi**: `MESSAGE_ATTACHMENT_KINDS` è rimasto com'era e il tipo è
+  `MESSAGE_POST_KIND` a parte (parte A), così l'app compila; la B allarga
+  il tipo di `MessageAttachment.kind`.
+- **Di passaggio** (nota del Coordinatore): TASK-456 ha lasciato segnato
+  un difetto in `messages/SendDrawingButton.tsx`, dopo «Send to…» il
+  foglietto di «…» resta aperto. Se sono due righe si chiude qui e lo si
+  scrive nella PR; se è di più si lascia.
+- **Testi**: quelli approvati il 2026-11-12 (sopra); le traduzioni sono
+  dell'agente. Gli screenshot col turno del simulatore, prima di «pronta».
+- **Per uscire** aspetta il passo sul server della A.
+
 ## File toccati
 
 Parte 0 (la #1212, solo documenti): `docs/tasks/TASK-455.md`,
@@ -232,8 +295,8 @@ Parte 0 (la #1212, solo documenti): `docs/tasks/TASK-455.md`,
 
 Parte A (sì del Coordinatore il 2026-11-12):
 `services/api/shaperoute_api/messages.py`, `services/api/shaperoute_api/push.py`,
-`services/api/migrations/0075_message_post.sql` (numero provvisorio: il
-vero è il primo libero al merge),
+`services/api/migrations/0074_message_post.sql` (era `0075` in bozza: il
+numero è il primo libero al merge),
 `services/api/tests/test_message_posts.py` (nuovo),
 `packages/shared-types/src/index.ts` (a turno),
 `packages/shared-types/fixtures/message-post.json` (nuovo),
@@ -242,11 +305,38 @@ vero è il primo libero al merge),
 2026-11-12, in attesa del sì: `services/api/shaperoute_api/report_email.py`
 (la pagina del link di una segnalazione legge `drawing_card` per ogni
 allegato che non è foto o video: con `post` darebbe un 500). Sì del
-Coordinatore lo stesso giorno.
+Coordinatore lo stesso giorno. In `main` con la #1230.
 
-Parte B0 (sì del Coordinatore il 2026-11-12):
+Parte B0 (sì del Coordinatore il 2026-11-12; in `main` con la #1220):
 `apps/mobile/src/social/DrawingCard.tsx`,
 `apps/mobile/src/social/DrawingCardSend.test.tsx` (nuovo).
+
+Parte B (sì del Coordinatore il 2026-11-12). Si modificano:
+`apps/mobile/src/feed/PostActions.tsx` (per ultimo, dopo la #1231),
+`apps/mobile/src/messages/SendToFriend.tsx`, `SendDrawingButton.tsx`,
+`MessageMedia.tsx`, `ConversationScreen.tsx`, `attachmentText.ts`,
+`apps/mobile/src/api/messages.ts`, `apps/mobile/src/api/reads.ts`,
+`apps/mobile/src/social/DrawingCard.tsx`,
+`packages/shared-types/src/index.ts` (a turno),
+`apps/mobile/src/i18n/{de,es,fr,it}.ts`, `docs/UI.md`, e i test che oggi
+fissano il comportamento di prima: `feed/PostActions.test.tsx`,
+`feed/PostPage.test.tsx`, `feed/snowFeed.test.tsx`, `api/reads.test.ts`,
+`social/DrawingCardSend.test.tsx`, `messages/Attachments.test.tsx` e
+`messages/Drawings.test.tsx` solo se cambiano le firme,
+`packages/shared-types/test/message-post.test.ts`. Nuovi:
+`apps/mobile/src/feed/PostShareSheet.tsx`,
+`apps/mobile/src/messages/PostCard.tsx`,
+`apps/mobile/src/messages/messagePost.ts`, ognuno col suo test.
+Aggiunti il 2026-11-12 col sì del Coordinatore, per chiudere il foglietto
+di «…» dopo «Send to…»: `apps/mobile/src/activities/ActivityCard.tsx` e
+`apps/mobile/src/activities/ActivityCardSend.test.tsx` (nuovo). Tolti dalla
+lista: `api/reads.test.ts` (`post` non entra nella lista comune di
+`X-MuW-Reads`: lo dicono solo le chiamate dei messaggi, o l'esempio
+`reads.json` che l'API confronta coi suoi tipi si romperebbe).
+Non si toccano: `App.tsx`, `feed/FeedPost.tsx`, `feed/PostPage.tsx`,
+`feed/PostSheet.tsx`, `feed/PostReactions.tsx`,
+`messages/MessagesOverlay.tsx`, `social/drawingsDoor.ts`, `share/**`,
+`about/content/**` (la riga di «Help» va con la privacy, parte E).
 
 ## Criteri di accettazione
 
@@ -256,17 +346,37 @@ Parte 0:
 - [x] Una sola PR di documenti con tutte le risposte (#1212).
 - [x] Lista dei file della parte A mandata al Coordinatore, sì ricevuto.
 
-Parte A:
-- [ ] Un messaggio con l'allegato `post` tiene solo l'id del disegno.
-- [ ] Mandare un post che chi manda non vede è `404`; in una richiesta
+Parte B0 (in `main`, #1220):
+- [x] «Send to a friend» sulla scheda di un disegno: c'è sul proprio (anche
+      «Followers») e su quello altrui «Everyone»; non c'è su quello altrui
+      «Followers».
+
+Parte A (in `main`, #1230):
+- [x] Un messaggio con l'allegato `post` tiene solo l'id del disegno.
+- [x] Mandare un post che chi manda non vede è `404`; in una richiesta
       non aperta è `409`, come ogni allegato.
-- [ ] La scheda si risolve coi permessi di chi legge a ogni lettura; test
+- [x] La scheda si risolve coi permessi di chi legge a ogni lettura; test
       per: bloccato nei due versi, non follower, follow tolto, post
       cancellato, visibilità cambiata dopo l'invio, post nascosto.
-- [ ] Un'app che non dice di leggere `post` riceve «[Post]» e mai la
+- [x] Un'app che non dice di leggere `post` riceve «[Post]» e mai la
       scheda; la push e la lista dicono «🗺️ Post».
-- [ ] `API.md`, `DATABASE.md`, tipi ed esempio aggiornati; test dei file
+- [x] `API.md`, `DATABASE.md`, tipi ed esempio aggiornati; test dei file
       toccati verdi in locale, la suite in CI.
+- [x] Il passo sul server, col sì dell'utente dato al Coordinatore, e i
+      controlli di sola lettura di `out/TASK-455/SERVER-A.md` (passo 11,
+      2026-11-12).
+
+Parte B (in `main`, #1255; in produzione con l'OTA 15):
+- [x] «Share» sotto ogni post apre il foglietto: «Send to a friend», e
+      sui propri «Poster and video»; sui post altrui c'è solo coi messaggi.
+- [x] «Send to a friend» da un post manda `{ post_id }` e mai la linea;
+      per un post «Followers» altrui dice prima chi lo può aprire.
+- [x] In chat la scheda del post, o «This post is no longer available.»;
+      il tocco apre il post come una notifica; la lista dice «🗺️ Post».
+- [x] La scheda di un disegno altrui manda il post, anche «Followers».
+- [x] Schermate dal simulatore approvate dall'utente («Sì, vanno bene»).
+- [ ] La prova dell'utente sul telefono: mandare il post di un altro a un
+      amico e aprirlo dalla chat.
 
 Parte D (fissati col Coordinatore):
 - [ ] La pagina risponde solo per post «Everyone» con l'interruttore
@@ -299,3 +409,150 @@ Le altre parti scrivono i loro criteri quando partono.
   unito, branch spinto (`0a6f9f8e`); non va nel passo server di oggi, la
   PR si apre in bozza dopo la CI della B0. La scelta di `X-MuW-Reads` è
   nel punto 4 di ADR-0382.
+- 2026-11-12: **B0 in `main`** (#1220, `34333964`), dentro l'aggiornamento
+  completo uscito lo stesso giorno (commit dell'uscita `1eb3e5a8`). I
+  documenti della parte 0 in `main` con la PR unica del Coordinatore
+  (#1226), che ha chiuso la #1212 come unita.
+- 2026-11-12: **A in `main`** (#1230, `5c53e141`), migrazione
+  `0074_message_post.sql`, 13 test nuovi in `test_message_posts.py` (anche
+  la pagina di una segnalazione). Non era nel passo sul server di quel
+  giorno (12:20Z): va col prossimo, col sì dell'utente; i controlli di sola
+  lettura sono in `out/TASK-455/SERVER-A.md` (tre passi, scritti e non
+  ancora provati su un database vero). Tornare all'immagine di prima è
+  sicuro finché nessun messaggio porta un post, cioè fino alla parte B.
+- 2026-11-12: lista dei file della parte B approvata dal Coordinatore
+  («La parte B, da dove si riparte», sopra). La B parte in un contesto
+  nuovo, da questo file.
+- 2026-11-12: **risposta dell'utente sul tocco della scheda in chat: «Come
+  da una notifica»** (la chat si chiude e il post si apre sulla mappa con
+  la sua scheda, `drawingsDoor.open`); la pagina del Feed sopra la chat
+  vorrebbe `App.tsx` e `ProfileLayer.tsx`. Parte B nella **#1255 in
+  bozza**: la scheda del post in chat, «Send to a friend» col rimando, la
+  scheda di un disegno altrui che manda il post, `post` in `X-MuW-Reads`
+  solo nelle chiamate dei messaggi, il foglietto di «Share» scritto e non
+  ancora collegato, i cinque testi con le traduzioni, `UI.md`; chiuso anche
+  il foglietto di «…» di un'attività dopo «Send to…». Mancano
+  `feed/PostActions.tsx` (dopo la #1231 di TASK-454 B), gli screenshot col
+  turno del simulatore e il sì dell'utente.
+- 2026-11-12: l'utente: «sì procedi». **«Share» sotto ogni post** collegato
+  in `feed/PostActions.tsx` (il foglietto si monta al primo «Share»; sui
+  post altrui c'è solo coi messaggi), prima che la #1231 di TASK-454 B sia
+  in `main`: quando entra si unisce `main` qui e si tengono le sue righe
+  (una prop in più, `reactionsHandle`). Test nuovo
+  `feed/PostActionsShare.test.tsx`; `PostActions.test.tsx`,
+  `PostPage.test.tsx` e `snowFeed.test.tsx` non sono toccati e passano:
+  senza i messaggi «Share» resta solo sui propri post. Mancano gli
+  screenshot col turno del simulatore e il sì dell'utente.
+- 2026-11-12: **prova al simulatore** (iPhone 17e, Expo Go, API locale con
+  la `0074` su un database usa e getta, quattro account finti). Visti
+  sullo schermo: «Share» sul post di un altro e il suo foglietto, «Send
+  to…» e «Sent to…», il foglietto sul proprio post con «Poster and video»,
+  la lista con «🗺️ Post», la chat con la scheda del post e «This post is
+  no longer available.», il post aperto dalla chat (e «←» che torna a
+  «Messages»), la nota per un post «Followers», il foglietto di «…» di
+  un'attività che si chiude dopo «Send to…». Nel database il messaggio
+  mandato dall'app ha `attachment = post`, `post_id` e nessuna copia. **Un
+  difetto trovato e corretto**: «Send to…» aperto dal foglietto del Feed
+  stava sotto l'orologio; ora ha i suoi margini dentro il Modal, come la
+  pagina del post (`SendToFriendInset.test.tsx`). Schermate in
+  `out/TASK-455/shots/`, mandate all'utente per il suo sì.
+- 2026-11-12: **l'utente sulle schermate della parte B: «Sì, vanno bene»**
+  (sei schermate: «Share» sul post di un altro, i due foglietti, «Send
+  to…» con la nota per un post «Followers», la chat con la scheda e «This
+  post is no longer available.», il post aperto dalla chat). Detto
+  all'utente e lasciato com'è: nella scheda del post aperto dalla chat
+  l'ultimo pulsante dice «Back to the profile»; il foglietto non scurisce
+  lo sfondo, come quello di «…». Per «pronta» manca solo `main` unito dopo
+  la #1231 di TASK-454 B.
+- 2026-11-12: **«server A fatto»** (Coordinatore): passo 11 lanciato
+  dall'utente alle 15:03Z, server a `338e4d9b`, `0074_message_post`
+  applicata; le letture di `SERVER-A.md` come previste (colonna, i due
+  controlli, l'indice, gli allegati di prima invariati, nessun post, «post
+  ok True [Post] post», «everyone owner 1 stranger 1 points [64]»). Sul
+  server non c'è nessun disegno «Followers»: quel caso lì non è stato
+  provato, lo coprono i test e la prova al simulatore.
+- 2026-11-12: **B in `main`** (#1255, `360e26f6`; `main` unito con la
+  #1231 di TASK-454 B tenendo `reactionsHandle`) e **in produzione con
+  l'OTA 15** (15:46Z, commit `e88d491f`). Resta la prova dell'utente sul
+  telefono. Prossima la parte C: la domanda all'utente (con
+  l'interruttore spento, il link che l'autore prende del proprio post
+  funziona?), la frase della privacy e l'avviso nelle novità da approvare
+  prima del passo sul server, la lista dei file al Coordinatore prima del
+  codice.
+- 2026-11-12: risposta dell'utente per la parte C: con «Links to my posts»
+  spento nessun link funziona, nemmeno quelli dell'autore («No: spento
+  vuol dire nessun link»). Lista dei file della parte C mandata al
+  Coordinatore; frase della privacy e avviso nelle novità proposti
+  all'utente.
+- 2026-11-12: frase della privacy approvata («Approvo così») e scelta
+  sulle novità («Solo privacy e App Store»): testi sopra, in «I testi
+  approvati». Con questo le due cose chieste prima del passo sul server
+  della parte C hanno il sì dell'utente.
+- 2026-11-12: **parte D scritta** (`feat/TASK-455-d-post-page`): la pagina
+  `site/p/` sul modello di `site/live/` (stessa mappa, stesso MapLibre,
+  nessuna copia), dieci test nuovi, la sezione «La pagina di un post» in
+  `SITO.md`. Vista nel browser a larghezza di telefono con un finto
+  `/post`: un post col titolo, uno senza (il nome fa da titolo), un link
+  che non apre niente. **L'utente sulle tre schermate: «Sì, va bene».**
+  Detto all'utente: sotto il nome la riga «Run · 4.3 km» senza etichette
+  nuove, coi nomi degli sport dell'app; nel footer solo il link alla
+  privacy; se l'API non risponde la pagina riprova tre volte e poi tace; le
+  traduzioni dei tre testi sono dell'agente. Esce dopo la parte C sul
+  server e con la copia del sito (`out/TASK-455/SITO-D.md`), che deve
+  prendere anche `site/p`.
+- 2026-11-12: col sì del Coordinatore, `site/p` aggiunto alla riga della
+  copia del sito in `docs/DEPLOY.md` (F.14) e un test in
+  `site/tests/post.test.mjs` che lo controlla, con i file che la pagina
+  prende da fuori dalla sua cartella. Il suo `sito.sh` lo aggiorna il
+  Coordinatore alla copia.
+- 2026-11-12: **parte E scritta** (`feat/TASK-455-e-share-link`, bozza):
+  «Share link» nel foglietto di «Share» solo sui post `linkable` (dà al
+  foglio del telefono l'indirizzo `getmuw.app/p/#<id>` e nient'altro),
+  «Links to my posts» in «Settings» sotto il VO₂ max con la sua
+  spiegazione, la frase della privacy nelle cinque lingue e le pagine del
+  sito rigenerate (`make_privacy.mjs`). Traduzioni dell'agente. Nella
+  frase della privacy l'agente ha aggiunto «the sport» (la pagina del link
+  mostra «Run · 4.3 km»): **l'utente, alla domanda «Nella frase della
+  privacy sul link va bene aggiungere «the sport»?»: «Sì, aggiungi»**. La
+  frase approvata è quindi: «A post for «Everyone» can also be opened with
+  a link. You, or any member who sees the post, can share its link, and
+  whoever has the link sees the drawing on the map, your username, the
+  title, the sport and the distance on a web page, even without MuW: never
+  your photos, the comments or your times. Search engines are asked not to
+  list these pages. Turn off «Links to my posts» in Settings and no link
+  to your posts works any more. A post for «Followers» or «Only me» never
+  has a link.»
+  Segnalato all'utente anche che la spiegazione dell'interruttore, com'è
+  approvata, non nomina titolo e sport. Mancano: la prova al simulatore
+  (turno del Coordinatore) con le schermate per l'utente. Esce con un OTA
+  solo dopo «server C fatto» e la copia del sito con la pagina (parte D).
+- 2026-11-18: **«server C fatto»** (Coordinatore): passo 13 lanciato
+  dall'utente alle ~13:41Z, server a `253b5da0`, `0078_post_links`
+  applicata; le letture di `SERVER-C.md` come previste (`/post` senza
+  chiave 404 con le tre intestazioni, «not an id 404», «feed without key
+  401», colonna `post_links|boolean|NO|true` con tutti e 9 gli account
+  accesi, `[('everyone', 7, 7), ('only_me', 3, 0)]`, le dieci chiavi di un
+  post «Everyone» con 1236 punti, un disegno non pubblico → `None`). Sul
+  server non c'è nessun disegno «Followers»: quel caso lo coprono i test.
+  La pagina (parte D, in `main`) va sul sito con la copia, che il
+  Coordinatore chiede all'utente; la parte E (#1309, CI verde) aspetta il
+  simulatore e le schermate.
+- 2026-11-18: **prova al simulatore della parte E** (turno dato
+  dall'utente: «simulatore tuo, procedi»; API e database usa e getta, niente
+  sul server). Visto: «Links to my posts» in «Settings» acceso e spento con
+  la spiegazione, in inglese e in italiano; «Share link» sul proprio post
+  (tre voci) e su un post «Everyone» altrui (due voci, senza poster); un
+  post «Followers» con la sola «Send to a friend»; il foglio del telefono
+  con `getmuw.app`, e «Copy» mette negli appunti
+  `https://getmuw.app/p/#<id>`; spento l'interruttore l'API risponde 404
+  al link del proprio post e 200 a quello altrui. **Un difetto trovato e
+  corretto**: spento l'interruttore, «Share link» restava sui propri post
+  già letti dal Feed fino alla rilettura; ora sparisce subito
+  (`usePostLink` in `feed/postLink.ts`, quattro test nuovi). Otto schermate
+  in `out/TASK-455/shots-e/`; in attesa del sì dell'utente.
+- 2026-11-18: **schermate della parte E approvate dall'utente** («Sì, vanno
+  bene», alla domanda «Vanno bene le schermate di «Share link» e
+  dell'interruttore?»). La #1309 esce dalla bozza e passa al Coordinatore
+  come «pronta». Restano, ognuno con il sì dell'utente al Coordinatore:
+  l'OTA della parte E e la copia del sito (pagina `/p/` della parte D e
+  pagine della privacy rigenerate).

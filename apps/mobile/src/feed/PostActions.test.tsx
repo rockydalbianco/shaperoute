@@ -7,7 +7,8 @@ import type {
   ReactionResult,
   ReactionsSummary,
 } from "@shaperoute/shared-types";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { createRef, type Ref } from "react";
 import { StyleSheet } from "react-native";
 
 import { CommentsContext, type CommentsDoor } from "../social/commentsDoor";
@@ -17,6 +18,7 @@ import { ReactionsContext, type ReactionsDoor } from "../social/reactionsDoor";
 import { color, fontWeight, MIN_TAP_SIZE } from "../theme/tokens";
 import { shownPost } from "./feedPosts";
 import { PostActions, postOfDrawing } from "./PostActions";
+import type { PostReactionsHandle } from "./PostReactions";
 
 jest.mock(
   "react-native-safe-area-context",
@@ -103,10 +105,22 @@ function commentsOf(totals: number[]): CommentsDoor {
   };
 }
 
-type Doors = { reactions?: ReactionsDoor; comments?: CommentsDoor };
+type Doors = {
+  reactions?: ReactionsDoor;
+  comments?: CommentsDoor;
+  /** For the picture of the post, which is not in the row. */
+  handle?: Ref<PostReactionsHandle>;
+};
 
 async function bar(mine: boolean, onEditRun?: () => void, doors: Doors = {}) {
-  let row = <PostActions post={shownPost(DRAWING)} mine={mine} onEditRun={onEditRun} />;
+  let row = (
+    <PostActions
+      post={shownPost(DRAWING)}
+      mine={mine}
+      onEditRun={onEditRun}
+      reactionsHandle={doors.handle}
+    />
+  );
   if (doors.reactions !== undefined) {
     row = (
       <ReactionsContext.Provider value={doors.reactions}>
@@ -229,6 +243,65 @@ test("after a super like its comment is among the post's comments", async () => 
   expect(await screen.findByText("Comment · 3")).toBeOnTheScreen();
   expect(read.pageOf).toHaveBeenCalledTimes(2);
   expect(screen.getByText("Like · 7")).toHaveStyle({ fontWeight: fontWeight.semibold });
+});
+
+// Part B, the user's choice of 2026-11-11: two taps on the picture of the
+// post are its super like. The picture is drawn by who draws the row.
+describe("a double tap on the picture of the post", () => {
+  test("is the super like, and «Comment» counts its comment", async () => {
+    const read = commentsOf([2, 3]);
+    const door = reactionsOf(withMine(SUMMARY, null), result as ReactionResult);
+    const handle = createRef<PostReactionsHandle>();
+    await bar(false, undefined, { reactions: door, comments: read, handle });
+    await screen.findByText("Comment · 2");
+    await screen.findByText("Like · 6");
+
+    await act(async () => handle.current?.superLike());
+    // The sheet, without the bar of the six in between.
+    await screen.findByRole("header", { name: "Super like" });
+    expect(screen.queryByTestId("post-reactions")).toBeNull();
+    expect(like()).not.toBeExpanded();
+    await fireEvent.changeText(screen.getByLabelText("Comment"), "What a heart!");
+    await fireEvent.press(screen.getByRole("button", { name: "Send" }));
+
+    expect(door.leave).toHaveBeenCalledWith("d1", "super_like", "What a heart!");
+    expect(await screen.findByText("Comment · 3")).toBeOnTheScreen();
+    expect(screen.getByText("Like · 7")).toHaveStyle({
+      fontWeight: fontWeight.semibold,
+    });
+  });
+
+  test("on one's own post too, as the heart of the bar there", async () => {
+    const door = reactionsOf(withMine(SUMMARY, null), result as ReactionResult);
+    const handle = createRef<PostReactionsHandle>();
+    await bar(true, undefined, { reactions: door, handle });
+    await screen.findByText("Like · 6");
+    await act(async () => handle.current?.superLike());
+    expect(await screen.findByRole("header", { name: "Super like" })).toBeOnTheScreen();
+    expect(door.leave).not.toHaveBeenCalled();
+  });
+
+  test("with the super like already there «Like» stays as it is", async () => {
+    const door = reactionsOf(withMine(SUMMARY, "super_like"));
+    const handle = createRef<PostReactionsHandle>();
+    await bar(false, undefined, { reactions: door, handle });
+    await screen.findByText("Like · 7");
+    const before = screen.getByTestId("post-like").props.accessibilityLabel;
+    await act(async () => handle.current?.superLike());
+    expect(screen.getByTestId("super-like-heart")).toBeOnTheScreen();
+    expect(screen.queryByRole("header", { name: "Super like" })).toBeNull();
+    expect(door.remove).not.toHaveBeenCalled();
+    expect(door.leave).not.toHaveBeenCalled();
+    expect(screen.getByTestId("post-like").props.accessibilityLabel).toBe(before);
+  });
+
+  test("without reactions to read it does nothing", async () => {
+    const handle = createRef<PostReactionsHandle>();
+    await bar(false, undefined, { handle });
+    await act(async () => handle.current?.superLike());
+    expect(screen.queryByRole("header", { name: "Super like" })).toBeNull();
+    expect(screen.queryByTestId("super-like-heart")).toBeNull();
+  });
 });
 
 test("a reaction the API did not keep: a notice under the row", async () => {

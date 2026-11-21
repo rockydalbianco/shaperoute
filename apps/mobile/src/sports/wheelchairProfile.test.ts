@@ -1,7 +1,7 @@
 /**
  * «Wheelchair & stroller» ♿ in the app (TASK-414 part B, ADR-0343): its row
- * in «Settings», «Soon» until the server has part A; offered in the search
- * and the form to publish once ready; the caution under its routes; its
+ * in «Settings», on since the server has part A (0071); offered in the search
+ * and the form to publish while ready; the caution under its routes; its
  * four shapes; its bests over 1 and 5 km; the time at a walker's pace; the
  * files of other apps that say a wheelchair.
  */
@@ -27,16 +27,16 @@ jest.mock("expo-file-system");
 const CAUTION =
   "Map data can miss kerbs, steps and steep slopes: check the route before you set off.";
 
-test("«Wheelchair & stroller» ♿ comes after «Roller», «Soon» until the server has part A", () => {
+test("«Wheelchair & stroller» ♿ comes after «Roller», on since the server has part A", () => {
   const index = ALL_SPORTS.findIndex((option) => option.id === "wheelchair");
   expect(ALL_SPORTS[index - 1]?.id).toBe("roller");
   expect(ALL_SPORTS[index]).toEqual({
     id: "wheelchair",
     emoji: "♿",
     name: "Wheelchair & stroller",
-    ready: false,
+    ready: true,
   });
-  expect(canChoose("wheelchair", ALL_SPORTS)).toBe(false);
+  expect(canChoose("wheelchair", ALL_SPORTS)).toBe(true);
   // Asked, and saved, as itself; out with its own words, which say no walk.
   expect(activityOf("wheelchair")).toBe("wheelchair");
   expect(runActivityOf("wheelchair")).toBe("wheelchair");
@@ -44,14 +44,14 @@ test("«Wheelchair & stroller» ♿ comes after «Roller», «Soon» until the s
   expect(withoutRouteIcon("wheelchair")).toBe("♿");
 });
 
-test("a wheelchair route is offered to search and publish only once ready", () => {
-  expect(activityOffered("wheelchair")).toBe(false);
-  expect(SEARCH_ACTIVITIES).not.toContain("wheelchair");
-  const on: SportOption[] = ALL_SPORTS.map((option) =>
-    option.id === "wheelchair" ? { ...option, ready: true } : option,
+test("a wheelchair route is offered to search and publish while ready", () => {
+  expect(activityOffered("wheelchair")).toBe(true);
+  expect(SEARCH_ACTIVITIES).toContain("wheelchair");
+  const soon: SportOption[] = ALL_SPORTS.map((option) =>
+    option.id === "wheelchair" ? { ...option, ready: false } : option,
   );
-  expect(activityOffered("wheelchair", on)).toBe(true);
-  expect(activityOffered("walking", on)).toBe(true);
+  expect(activityOffered("wheelchair", soon)).toBe(false);
+  expect(activityOffered("walking", soon)).toBe(true);
 });
 
 test("its profile: four shapes, no word nor image, a walker's time, bests over 1 and 5 km", () => {

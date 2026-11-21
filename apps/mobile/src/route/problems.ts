@@ -7,6 +7,7 @@ import {
 } from "@shaperoute/shared-types";
 
 import { decimal, t, tLater } from "../i18n";
+import { isSnowshoeRoute } from "../snow/snow";
 import { isOnWater } from "../swim/water";
 import { nearestTenths, tenthsToM, unitsNumber } from "../units/distanceInput";
 import { METRES_PER_MILE } from "../units/format";
@@ -161,6 +162,15 @@ export function problemText(
     case "api_error":
       switch (problem.code) {
         case "shape_not_drawable": {
+          // On the snow (TASK-413 B), its own words: a shape of the
+          // catalogue only, no word and no drawing.
+          if (isSnowshoeRoute(activity)) {
+            return snowProblemText(
+              problem.message,
+              fitsAtM(problem.suggested_distance_m, activity, units, asked, true),
+              units,
+            );
+          }
           // A swim's are the water's too (TASK-323): the same words.
           if (isOnWater(activity)) {
             return waterProblemText(
@@ -205,7 +215,9 @@ export function problemText(
         }
         case "map_data_unavailable":
           return {
-            text: t("Map data for this area could not be downloaded. Try again later."),
+            text: t(
+              "The map service is busy, so this area could not be loaded. Try again in a few minutes.",
+            ),
             detail: devDetail(problem.message),
             retry: true,
           };
@@ -389,6 +401,59 @@ function waterProblemText(
   return {
     text: t(
       "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:",
+    ),
+    detail: devDetail(message),
+    pickShape: true,
+  };
+}
+
+/** The engine's words when no snow is near (route_engine/snow.py
+ * no_snow_error): a town too (TASK-413 A3). */
+const NO_SNOW = "no open snow";
+
+/**
+ * A shape not placed on the snow (TASK-413 B), said for the snow distances
+ * «Draw» offers: no open snow near the start (towns, woods, pistes and
+ * steep slopes are left out), the distance it fits at, or another shape.
+ */
+function snowProblemText(
+  message: string,
+  fits: number | null,
+  units: Units,
+): ProblemText {
+  if (message.includes(NO_SNOW)) {
+    return {
+      // The engine looks within 2 km: a mile from the snow is within them.
+      text:
+        units === "mi"
+          ? t(
+              "There is no open snow near this start. Start within 1 mile of open snow, away from towns, woods and pistes.",
+            )
+          : t(
+              "There is no open snow near this start. Start within 2 km of open snow, away from towns, woods and pistes.",
+            ),
+      detail: devDetail(message),
+    };
+  }
+  if (fits !== null) {
+    return {
+      text:
+        units === "mi"
+          ? t(
+              "This shape does not fit on the snow here at this distance. It fits at about {mi} mi.",
+              { mi: unitsNumber(fits, "mi") },
+            )
+          : t(
+              "This shape does not fit on the snow here at this distance. It fits at about {km} km.",
+              { km: fits / 1000 },
+            ),
+      detail: devDetail(message),
+      tryDistanceM: fits,
+    };
+  }
+  return {
+    text: t(
+      "This shape does not fit on the snow here. Try a shorter distance, another shape, or another start:",
     ),
     detail: devDetail(message),
     pickShape: true,

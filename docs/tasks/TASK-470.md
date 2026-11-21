@@ -1,8 +1,8 @@
 # TASK-470 — Il controllo della navigazione
 
-**Stato**: In corso (parte 0 fatta: l'elenco dei difetti)
+**Stato**: Done — tutto in produzione: A e B con l'OTA 13, E, C, D con l'OTA 14 (2026-11-12 15:15Z, `be21e7d8`)
 **Fase**: 5 · **Branch**: `docs/TASK-470-part-0`, poi una per fetta
-(`fix/TASK-470-…`)
+(`fix/TASK-470-…`) · **ADR**: ADR-0384 (il gesto dal bordo, fetta E)
 
 ## Obiettivo
 
@@ -127,14 +127,50 @@ Coordinatore sulla lista dei file.
   `skimode/SkiDaysPage.tsx`, dopo il merge della #1205 (TASK-457) e al
   turno di `App.tsx`.
 - 11 solo con la scelta dell'utente.
+- **E — il gesto dal bordo su iOS** (11): scelta dell'utente del
+  2026-11-12, «A, la pagina segue» (ADR-0384). `ui/EdgeBack.tsx`
+  (`useEdgeBack` sulla radice di ogni pagina sopra l'app) e una modifica
+  alla radice di `MessagesOverlay`, `BellOverlay`, `PeopleScreen`,
+  `ContestPage`, `ProfileScreen` (le pagine dentro «Profile», non la
+  scheda), `PlayOverlay`.
+
+## Dove sono le fette
+
+| Fetta | PR | Stato |
+|---|---|---|
+| Parte 0 | #1232 | in `main` |
+| A — schede (1, 5, base del 2) | #1233 | in produzione: OTA 13, 2026-11-12 13:28Z da `100624e2` (iOS gruppo `86d0f643`, Android `5155f4d2`) |
+| B — tasto indietro di Android (2, 3, 4) | #1237 | in produzione con l'OTA 13 |
+| E — gesto dal bordo su iOS (11, ADR-0384) | #1243 | in produzione con l'OTA 14 (`main` `b79556c3`); video visto dall'utente, sì del 2026-11-12 |
+| C — fogli che perdevano i tocchi (6) | #1250 | in produzione con l'OTA 14 (`main` `89b25f99`) |
+| D — pagine finite sotto altre (7–10) | #1252 | in produzione con l'OTA 14 (`main` `20683c14`); provata al simulatore il 2026-11-12 |
+
+**Al simulatore il 2026-11-12** (`out/TASK-470/`, fuori dal repository):
+- 6: dalla chiusura di un foglio al `Modal` tolto 573 ms; un tocco su
+  «Drawings» della ricerca in quel tempo è andato perso. Con la C ~270 ms.
+- 11: sulle pagine sopra l'app («Guide») il gesto segue il dito, torna se
+  lasciato prima di un terzo, chiude col colpo, e la barra sotto non si
+  muove. **Dentro una scheda no**: su una pagina di prova dentro «Explore»
+  il colpo dal bordo chiudeva la pagina e faceva scorrere anche le schede
+  (lo scroll nativo della striscia non si ferma per il gesto JS). Per questo
+  la località e il giorno di sci (dentro le schede della modalità sci)
+  restano senza gesto, col tasto indietro di Android e la «←».
+
+**Seguito possibile, non in questo task**: il gesto dal bordo anche sulle
+pagine dentro una scheda chiederebbe a `TabShell` di fermare il suo swipe
+mentre il gesto ha il dito (lo `scrollEnabled` della striscia, o un gesto
+nativo che ha la precedenza).
 
 ## Criteri di accettazione
 
 - [x] Parte 0: ogni difetto con schermata, piattaforma, come si riproduce e
       file dove nasce.
-- [ ] Ogni difetto corretto ha un test deterministico; test dei file
+- [x] Ogni difetto corretto ha un test deterministico; test dei file
       toccati e `tsc` verdi in locale, CI verde.
-- [ ] 1, 2 e 6 guardati al simulatore.
+- [x] Guardati al simulatore il 2026-11-12: 6 (573 ms misurati), 11 (sopra
+      l'app sì, dentro una scheda no), 7–10 prima del merge della D. 1 e 2
+      non riproducibili al simulatore iOS (1 nasce dallo scatto di Android,
+      2 è il tasto indietro di Android): coperti dai test.
 
 ## File toccati
 
@@ -151,4 +187,15 @@ Poi, per fetta, quelli elencati sopra.
 
 ## Esito
 
-*(a fine task)*
+Tutti i difetti 1–11 sono corretti, ognuno con un test: tocco su una
+scheda durante lo swipe, tasto indietro di Android su ogni pagina sopra
+l'app (pila `ui/backLayers.ts`), liste nascoste del Feed, fogli che
+perdevano i tocchi per 573 ms (ora ~270 ms), profilo sopra il post (le
+pagine del livello disegnate dentro il `Modal` del post), «Play» da una
+notifica sopra le pagine aperte, la mappa da «Play» e dai messaggi della
+modalità sci, il giorno di sci dopo «Map», e il gesto dal bordo su iOS
+(ADR-0384, scelta dell'utente). Il gesto non c'è sulle pagine dentro una
+scheda: il seguito possibile è scritto qui sopra. Visto per caso e
+passato al Coordinatore, fuori task: nella scheda del Feed di un post di
+corsa i numeri sono minuscoli sotto le etichette. Video in
+`out/TASK-470/` (fuori dal repository).

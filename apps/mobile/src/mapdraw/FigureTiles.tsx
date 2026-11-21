@@ -1,4 +1,4 @@
-import { SHAPES } from "@shaperoute/shared-types";
+import { type Shape, SHAPES } from "@shaperoute/shared-types";
 import { Image, Pressable, ScrollView, StyleSheet, Text } from "react-native";
 
 import { t } from "../i18n";
@@ -21,6 +21,9 @@ type Props = {
   onChoose: (choice: FigureChoice) => void;
   /** The ready-made pictures after the shapes; none on the water. */
   pictures?: boolean;
+  /** The shapes of the sport (TASK-414: a wheelchair's four); every shape
+   * of the catalogue when not said. */
+  shapes?: readonly Shape[];
   /** «+ photo» first, a picture of the phone: only on the map to draw on. */
   onPhoto?: () => void;
   /** A photo being traced: «+ photo» waits. */
@@ -38,6 +41,7 @@ export function FigureTiles({
   chosen,
   onChoose,
   pictures = true,
+  shapes = SHAPES,
   onPhoto,
   photoBusy = false,
   testID,
@@ -60,7 +64,7 @@ export function FigureTiles({
           <Text style={styles.photoText}>{t("+ photo")}</Text>
         </Pressable>
       )}
-      {SHAPES.map((shape) => {
+      {shapes.map((shape) => {
         const selected = shape === chosen.shape;
         return (
           <Pressable

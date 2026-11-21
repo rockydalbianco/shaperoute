@@ -60,3 +60,22 @@ test("every shape is shown by its outline, none by an emoji", async () => {
   }
   expect(screen.queryByText(/\p{Extended_Pictographic}/u)).toBeNull();
 });
+
+test("a sport's own shapes only, when it has them (TASK-414)", async () => {
+  const onChoose = jest.fn();
+  await render(
+    <FigureTiles
+      chosen={{ shape: "heart", sample: null }}
+      onChoose={onChoose}
+      pictures={false}
+      shapes={["circle", "heart", "star", "moon"]}
+    />,
+  );
+  expect(
+    screen.getAllByRole("button").map((tile) => tile.props.accessibilityLabel),
+  ).toEqual(["circle", "heart", "star", "moon"]);
+  expect(screen.getByRole("button", { name: "heart" })).toBeSelected();
+  expect(screen.queryByRole("button", { name: "horse" })).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "moon" }));
+  expect(onChoose).toHaveBeenLastCalledWith({ kind: "shape", shape: "moon" });
+});

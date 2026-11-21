@@ -3,6 +3,8 @@ import type { ActivitySleepRequest } from "@shaperoute/shared-types";
 import { sessionEnded } from "../account/messages";
 import { worthAgain } from "../api/drawings";
 import { isSleepSummary, saveActivitySleep } from "../api/sleep";
+import { loadGymOutbox } from "../gym/gymOutbox";
+import { loadPoolOutbox } from "../pool/poolOutbox";
 import { keptList } from "../storage/keptList";
 import { loadOutbox } from "./outbox";
 
@@ -10,7 +12,10 @@ import { loadOutbox } from "./outbox";
  * «Sleep last night» of the runs still to reach the API (TASK-467 part
  * B2), in a file of the app's documents, like the choices for their
  * drawings (social/drawingOutbox.ts): told at «Save», it waits here until
- * the API has the run, then goes with PUT /me/activities/{key}/sleep.
+ * the API has the run, then goes with PUT /me/activities/{key}/sleep. A
+ * workout at the gym and a swim in a pool are runs to the API, with a key
+ * of the same kind and an outbox of their own: their nights wait here the
+ * same way (part B2b).
  *
  * Only a night its owner shows waits here: with «Sleep last night» off, or
  * a post nobody else sees, nothing is kept and nothing is sent (the user's
@@ -94,9 +99,27 @@ export function forgetSleepFor(owner: number, key: string): void {
   }
 }
 
+/** The keys of what `owner` still has on the phone for the API to take: a
+ * run (outbox.ts), a workout at the gym, a swim in a pool. A night sent
+ * before its activity would be answered 404, and dropped. */
+function activitiesWaiting(owner: number): Set<string> {
+  return new Set([
+    ...loadOutbox()
+      .filter((run) => run.owner === owner)
+      .map((run) => run.id),
+    ...loadGymOutbox()
+      .filter((workout) => workout.owner === owner)
+      .map((workout) => workout.key),
+    ...loadPoolOutbox()
+      .filter((swim) => swim.owner === owner)
+      .map((swim) => swim.key),
+  ]);
+}
+
 /**
- * Sends the nights of `owner` whose run the API has, the oldest first:
- * those of a run still waiting on the phone (outbox.ts) wait with it. A
+ * Sends the nights of `owner` whose activity the API has, the oldest first:
+ * those of a run, a workout or a swim still waiting on the phone wait with
+ * it. A
  * night that went, or that the API will not take, leaves the file; with no
  * network they all wait. "session_ended" when the API says the session is
  * over: the rest waits for the next one.
@@ -108,11 +131,7 @@ export async function sendWaitingSleep(
   options: Options = {},
   nowMs: number = Date.now(),
 ): Promise<"done" | "session_ended"> {
-  const runsWaiting = new Set(
-    loadOutbox()
-      .filter((run) => run.owner === owner)
-      .map((run) => run.id),
-  );
+  const waiting = activitiesWaiting(owner);
   for (const item of loadSleepOutbox()) {
     if (item.owner !== owner) {
       continue;
@@ -121,7 +140,7 @@ export async function sendWaitingSleep(
       forgetSleepFor(owner, item.key);
       continue;
     }
-    if (runsWaiting.has(item.key)) {
+    if (waiting.has(item.key)) {
       continue;
     }
     const outcome = await saveActivitySleep(

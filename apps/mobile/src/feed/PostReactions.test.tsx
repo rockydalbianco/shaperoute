@@ -1,17 +1,23 @@
 import result from "@shaperoute/shared-types/fixtures/reaction-result.json";
 import reactions from "@shaperoute/shared-types/fixtures/reactions.json";
 import type { ReactionResult, ReactionsSummary } from "@shaperoute/shared-types";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
-import { useState } from "react";
-import { Alert, Platform, StyleSheet, Text } from "react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { createRef, type RefObject, useState } from "react";
+import { AccessibilityInfo, Alert, Platform, StyleSheet, Text } from "react-native";
 
 import type { AccountOutcome } from "../api/accounts";
 import { REACTION_BAR_HEIGHT } from "../social/DrawingReactions";
+import { HEART_ALONE_MS } from "../social/SuperLikeSheet";
 import { ReactionsContext, type ReactionsDoor } from "../social/reactionsDoor";
 import { withMine } from "../social/reactionKinds";
 import { useDrawingReactions } from "../social/useDrawingReactions";
 import { space } from "../theme/tokens";
-import { barPlace, PostReactions, type RowBox } from "./PostReactions";
+import {
+  barPlace,
+  PostReactions,
+  type PostReactionsHandle,
+  type RowBox,
+} from "./PostReactions";
 
 jest.mock(
   "react-native-safe-area-context",
@@ -63,10 +69,17 @@ function door(
 const onSuperLiked = jest.fn();
 const onClose = jest.fn();
 
+type PostProps = {
+  row: RowBox | null;
+  /** The bar up at once, as after «Like»; down, as under a picture. */
+  up?: boolean;
+  handle?: RefObject<PostReactionsHandle | null>;
+};
+
 /** The row of a post would do this: the reactions read, the bar up at once. */
-function Post({ row }: { row: RowBox | null }) {
+function Post({ row, up = true, handle }: PostProps) {
   const read = useDrawingReactions(DRAWING);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(up);
   return (
     <>
       <Text>{`${read.status}, mine: ${read.mine}`}</Text>
@@ -79,6 +92,7 @@ function Post({ row }: { row: RowBox | null }) {
           onClose();
         }}
         onSuperLiked={onSuperLiked}
+        handle={handle}
       />
     </>
   );
@@ -92,6 +106,18 @@ async function hung(value: ReactionsDoor, row: RowBox | null = ROW) {
     </ReactionsContext.Provider>,
   );
   return screen.findByTestId("post-reactions");
+}
+
+/** The bar down, the reactions read: what two taps on the picture ask. */
+async function underPicture(value: ReactionsDoor, up = false) {
+  const handle = createRef<PostReactionsHandle>();
+  await render(
+    <ReactionsContext.Provider value={value}>
+      <Post row={ROW} up={up} handle={handle} />
+    </ReactionsContext.Provider>,
+  );
+  await screen.findByText(/^ready, mine: /);
+  return () => act(async () => handle.current?.superLike());
 }
 
 const choice = (name: string) => screen.getByRole("button", { name });
@@ -241,5 +267,121 @@ describe("the MuW heart", () => {
     expect(value.remove).toHaveBeenCalledWith(DRAWING);
     expect(await screen.findByText("ready, mine: null")).toBeOnTheScreen();
     expect(screen.queryByRole("header", { name: "Super like" })).toBeNull();
+  });
+});
+
+// Part B, the user's choice of 2026-11-11: two taps on the picture of a post.
+describe("a double tap on the picture", () => {
+  test("asks for the super like's comment, and leaves nothing before it", async () => {
+    const value = door(WITHOUT_MINE, [ok(SUPER_LIKED)]);
+    const doubleTap = await underPicture(value);
+    await doubleTap();
+
+    expect(await screen.findByRole("header", { name: "Super like" })).toBeOnTheScreen();
+    expect(screen.queryByTestId("post-reactions")).toBeNull();
+    expect(value.leave).not.toHaveBeenCalled();
+
+    await write("What a heart!");
+    expect(value.leave).toHaveBeenCalledWith(DRAWING, "super_like", "What a heart!");
+    expect(await screen.findByText("ready, mine: super_like")).toBeOnTheScreen();
+    expect(onSuperLiked).toHaveBeenCalledTimes(1);
+  });
+
+  test("over an emoji of one's own: the super like takes its place", async () => {
+    const value = door(SUMMARY, [ok(SUPER_LIKED)]);
+    const doubleTap = await underPicture(value);
+    await doubleTap();
+    await screen.findByRole("header", { name: "Super like" });
+    // Until the comment went, the emoji is still one's own.
+    expect(screen.getByText("ready, mine: fire")).toBeOnTheScreen();
+    expect(value.remove).not.toHaveBeenCalled();
+  });
+
+  test("«Cancel» leaves nothing", async () => {
+    const value = door(WITHOUT_MINE);
+    const doubleTap = await underPicture(value);
+    await doubleTap();
+    await screen.findByRole("header", { name: "Super like" });
+    await fireEvent.press(screen.getByRole("button", { name: "Cancel" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("header", { name: "Super like" })).toBeNull(),
+    );
+    expect(value.leave).not.toHaveBeenCalled();
+    expect(screen.getByText("ready, mine: null")).toBeOnTheScreen();
+  });
+
+  test("with the super like already there: the heart, and nothing changes", async () => {
+    const value = door(withMine(SUMMARY, "super_like"));
+    const doubleTap = await underPicture(value);
+    await doubleTap();
+    expect(screen.getByTestId("super-like-heart")).toBeOnTheScreen();
+    // Never taken away by a double tap, and no words asked again.
+    expect(screen.queryByRole("header", { name: "Super like" })).toBeNull();
+    expect(value.remove).not.toHaveBeenCalled();
+    expect(value.leave).not.toHaveBeenCalled();
+    expect(screen.getByText("ready, mine: super_like")).toBeOnTheScreen();
+  });
+
+  test("the heart goes by itself, and comes again at the next", async () => {
+    jest.useFakeTimers();
+    const doubleTap = await underPicture(door(withMine(SUMMARY, "super_like")));
+    await doubleTap();
+    expect(screen.getByTestId("super-like-heart")).toBeOnTheScreen();
+    await act(async () => {
+      jest.advanceTimersByTime(HEART_ALONE_MS);
+    });
+    expect(screen.queryByTestId("super-like-heart")).toBeNull();
+    await doubleTap();
+    expect(screen.getByTestId("super-like-heart")).toBeOnTheScreen();
+    jest.useRealTimers();
+  });
+
+  test("without reactions to read it does nothing", async () => {
+    const handle = createRef<PostReactionsHandle>();
+    const value: ReactionsDoor = {
+      of: jest.fn(async () => null),
+      leave: jest.fn(async () => null),
+      remove: jest.fn(async () => null),
+    };
+    await render(
+      <ReactionsContext.Provider value={value}>
+        <Post row={ROW} up={false} handle={handle} />
+      </ReactionsContext.Provider>,
+    );
+    await waitFor(() => expect(value.of).toHaveBeenCalled());
+    await act(async () => handle.current?.superLike());
+    expect(screen.queryByRole("header", { name: "Super like" })).toBeNull();
+    expect(screen.queryByTestId("super-like-heart")).toBeNull();
+  });
+
+  test("while the bar is up it does nothing: the bar is what was asked", async () => {
+    const value = door(WITHOUT_MINE);
+    const doubleTap = await underPicture(value, true);
+    await doubleTap();
+    expect(screen.getByTestId("post-reactions")).toBeOnTheScreen();
+    expect(screen.queryByRole("header", { name: "Super like" })).toBeNull();
+  });
+
+  test("a second one while the sheet is up changes nothing", async () => {
+    const value = door(WITHOUT_MINE);
+    const doubleTap = await underPicture(value);
+    await doubleTap();
+    await screen.findByRole("header", { name: "Super like" });
+    await fireEvent.changeText(screen.getByLabelText("Comment"), "What a");
+    await doubleTap();
+    expect(screen.getByLabelText("Comment")).toHaveProp("value", "What a");
+    expect(screen.getAllByRole("header", { name: "Super like" })).toHaveLength(1);
+  });
+
+  test("with «Reduce Motion» it asks the same", async () => {
+    const reduced = jest
+      .spyOn(AccessibilityInfo, "isReduceMotionEnabled")
+      .mockResolvedValue(true);
+    const value = door(WITHOUT_MINE);
+    const doubleTap = await underPicture(value);
+    await doubleTap();
+    expect(await screen.findByRole("header", { name: "Super like" })).toBeOnTheScreen();
+    expect(value.leave).not.toHaveBeenCalled();
+    reduced.mockRestore();
   });
 });

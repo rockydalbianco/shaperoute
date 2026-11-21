@@ -75,7 +75,12 @@ from shaperoute_api.outfit_tags import OutfitTagBody, tags_on_photos
 from shaperoute_api.push import notify_tagged, tagged_before
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.recommended import preview
-from shaperoute_api.run_stats import RunStatsBody, SkiDescentsBody, seen_stats
+from shaperoute_api.run_stats import (
+    FlightSplitBody,
+    RunStatsBody,
+    SkiDescentsBody,
+    seen_stats,
+)
 from shaperoute_api.schemas import ErrorBody
 from shaperoute_api.sleep_seen import SEEN_SLEEP_SQL, SleepSummaryBody, seen_sleep
 
@@ -391,6 +396,15 @@ class SeenFields(BaseModel):
     alone, which its calories are counted on (TASK-424 part C2b,
     run_stats.py); null for any other run, and for a day whose phone sent no
     parts."""
+    flight_split: FlightSplitBody | None = None
+    """A race on foot and in the air (hike & fly, TASK-305 part R6a,
+    run_stats.py): each kind added up; null for any other run, and for a
+    flight with no part on foot."""
+    linkable: bool = False
+    """The drawing can be opened by its link on the site, without an account
+    (TASK-455 part C, post_links.py): it is for everyone, it has a line, and
+    its owner leaves «Links to my posts» on. The app shows «Share link» only
+    then. Always answered; the default is for the examples written before."""
     sleep: SleepSummaryBody | None = None
     """«Sleep last night» (TASK-467 part B1b, sleep_seen.py): the night
     before the activity, while its owner shows it in the post; null for a
@@ -445,6 +459,17 @@ class DrawingDetailBody(SeenFields):
 
 # --- The drawings in the database ---
 
+# Whether the drawing `d` of the run `r` can be opened by its link (TASK-455
+# part C, ADR-0382, post_links.py): every member sees it, it is not hidden,
+# it has a line, and its owner is not hidden and leaves «Links to my posts»
+# on. One condition for what the app is told (`linkable`) and for what the
+# page of the link is given: they never disagree.
+LINKABLE_SQL = (
+    "(d.visibility = 'everyone' AND d.hidden_at IS NULL AND d.track IS NOT NULL"
+    " AND EXISTS (SELECT 1 FROM users owner WHERE owner.id = r.user_id"
+    " AND owner.post_links AND owner.hidden_at IS NULL))"
+)
+
 _SEEN_FIELDS = (
     "d.id, d.title, d.visibility, d.description, d.published_at,"
     " r.started_at, r.place, r.shape, r.word, r.style, r.title AS route_title,"
@@ -454,9 +479,15 @@ _SEEN_FIELDS = (
     # run_stats row, by its primary key.
     " (SELECT s.stats -> 'ski_descents' FROM run_stats s WHERE s.run_id = r.id)"
     " AS ski_descents,"
+    # On foot and in the air, a flight's (TASK-305 part R6a): the same row.
+    " (SELECT s.stats -> 'flight_split' FROM run_stats s WHERE s.run_id = r.id)"
+    " AS flight_split,"
     # The night shown in the post (TASK-467 part B1b): one row of
     # sleep_nights, by its primary key.
-    f" {SEEN_SLEEP_SQL} AS sleep"
+    f" {SEEN_SLEEP_SQL} AS sleep,"
+    # Whether the drawing has a link (TASK-455 part C): for everyone, with a
+    # line, and its owner leaves «Links to my posts» on.
+    f" {LINKABLE_SQL} AS linkable"
 )
 # One drawing, its track whole.
 SEEN_COLUMNS = f"{_SEEN_FIELDS}, ST_AsGeoJSON(d.track, 15) AS track"
@@ -592,7 +623,9 @@ def _seen(row: DictRow, details: Details) -> dict[str, Any]:
         # The run's, as My activities answers it (activities._turn).
         "rotation_deg": turn_kept(row["route_rotation_deg"]),
         "ski_descents": row.get("ski_descents"),
+        "flight_split": row.get("flight_split"),
         "sleep": seen_sleep(row.get("sleep")),
+        "linkable": bool(row.get("linkable")),
     }
 
 

@@ -96,6 +96,9 @@ type Props = {
   fetchFn?: typeof fetch;
   /** For the tests: the month it opens on, instead of this one. */
   month?: string;
+  /** The sport it opens on, as if chosen in its filter: the flights from
+   * «Your flights» (TASK-305 part R5b); absent, all of them. */
+  sport?: RunActivity;
 };
 
 /**
@@ -114,6 +117,7 @@ export function ActivityCalendarSheet({
   bests,
   fetchFn,
   month,
+  sport,
 }: Props) {
   return (
     <Modal
@@ -130,6 +134,7 @@ export function ActivityCalendarSheet({
             bests={bests}
             fetchFn={fetchFn}
             first={month}
+            firstSport={sport}
           />
         )}
       </SafeAreaProvider>
@@ -147,11 +152,13 @@ function CalendarPage({
   bests,
   fetchFn,
   first,
+  firstSport,
 }: {
   onClose: () => void;
   bests?: readonly PersonalBest[];
   fetchFn?: typeof fetch;
   first?: string;
+  firstSport?: RunActivity;
 }) {
   const insets = useSafeAreaInsets();
   const { apiUrl, account } = useFollowsDoor();
@@ -161,7 +168,7 @@ function CalendarPage({
     account.state.status === "signedIn" ? account.state.session.token : null;
   const [today] = useState(() => phoneMonth());
   const [month, setMonth] = useState(first ?? today);
-  const [sport, setSport] = useState<RunActivity | null>(null);
+  const [sport, setSport] = useState<RunActivity | null>(firstSport ?? null);
   const [chosen, setChosen] = useState<number | null>(null);
   const [shown, setShown] = useState<Shown | null>(null);
   // The sports of the account, kept while another month or sport comes.

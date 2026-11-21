@@ -23,12 +23,16 @@ from route_engine.paddling import WATER_SHAPE_POINTS, _pen_up_lines
 from route_engine.shapes import FREE_ROTATION, get_shape
 from route_engine.snow import (
     CHOSEN,
+    CountsBuildings,
     SnowArea,
     SnowRules,
     SnowSource,
     as_snow_error,
     build_area,
+    built_up,
+    no_snow_error,
     snow_bbox,
+    town_bbox,
 )
 from route_engine.validation import InvalidRouteError
 from route_engine.water import XY, BBox, NoWaterError, WaterFitError
@@ -106,10 +110,17 @@ def plan_snowshoeing(
     itself, 1: how much it had to shrink and move is in the WaterRoute.
 
     NoSnowError and SnowFitError (both ShapeNotDrawableError) when there is
-    no snow to walk on near the start or the shape does not fit on it."""
+    no snow to walk on near the start or the shape does not fit on it.
+    NoSnowError before the snow is read when the source counts the
+    buildings and the start is in a town (snow.built_up on snow.town_bbox,
+    TASK-413 A3)."""
     shape = snow_shape(request)
     pieces = snow_pieces(request)
     bbox = snow_area(request)
+    if isinstance(source, CountsBuildings):
+        town = town_bbox(request.start)
+        if built_up(source.buildings(town), town):
+            raise no_snow_error()
     area = build_area(source.elements(bbox), heights, request.start, bbox, rules)
     name = str(request.shape)
     try:

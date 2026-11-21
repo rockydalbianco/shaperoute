@@ -54,6 +54,7 @@ import {
   setPick,
   setPosition,
   showLifts,
+  showTrackFramed,
   showGhost,
   showOthers,
   showProgress,
@@ -265,6 +266,9 @@ export function MapView({
   const routeShown = useRef(false);
   const followed = useRef(false);
   const trackShown = useRef(false);
+  // Framed on a track without a route (TASK-478): only when nothing is
+  // followed and no route frames the map.
+  const framesTrack = following === null && (route === null || route.length === 0);
   const liftsShown = useRef(false);
   const stopsShown = useRef(false);
   const othersShown = useRef(false);
@@ -397,14 +401,17 @@ export function MapView({
       return;
     }
     if (track && track.length > 1) {
+      const frame = framesTrack;
       if (lifts !== null && lifts.length > 0) {
         const cut = splitAtLifts(track, lifts);
         webView.current?.injectJavaScript(
-          pageScript(showLifts(cut.skied, cut.lifts, liftLabels)),
+          pageScript(showLifts(cut.skied, cut.lifts, liftLabels, frame)),
         );
         liftsShown.current = true;
       } else {
-        webView.current?.injectJavaScript(pageScript(showTrack(track)));
+        webView.current?.injectJavaScript(
+          pageScript(frame ? showTrackFramed(track) : showTrack(track)),
+        );
       }
       trackShown.current = true;
     } else if (trackShown.current) {
@@ -415,7 +422,7 @@ export function MapView({
       webView.current?.injectJavaScript(pageScript(clearLifts()));
       liftsShown.current = false;
     }
-  }, [ready, track, lifts, liftLabels]);
+  }, [ready, track, lifts, liftLabels, framesTrack]);
 
   useEffect(() => {
     if (!ready) {

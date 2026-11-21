@@ -73,6 +73,43 @@ test("more reps each week: 10, 11, 12, then heavier and 10 again", () => {
   });
 });
 
+test("without kg: one rep more a week, 5 s more held, the 4th lighter, then on", () => {
+  // TASK-461 A2: the user's «Sì, così» of 2026-11-12, plans kept included.
+  const push = { exercise: "push_up", kind: "bodyweight", sets: 3, reps: 10 } as const;
+  const plank = { exercise: "plank", kind: "timed", sets: 3, duration_s: 40 } as const;
+  const weeks = (item: GymPlanItem, cycle: number) =>
+    [1, 2, 3, 4].map((week) => itemInWeek(item, "reps", 4, 2.5, week, cycle));
+  expect(weeks(push, 0).map((item) => [item.sets, item.reps])).toEqual([
+    [3, 10],
+    [3, 11],
+    [3, 12],
+    [2, 12],
+  ]);
+  expect(weeks(push, 1).map((item) => item.reps)).toEqual([13, 14, 15, 15]);
+  expect(weeks(plank, 0).map((item) => [item.sets, item.duration_s])).toEqual([
+    [3, 40],
+    [3, 45],
+    [3, 50],
+    [2, 50],
+  ]);
+  expect(itemInWeek(plank, "reps", 4, 2.5, 1, 1).duration_s).toBe(55);
+  // A load exercise whose kg are not written yet grows its reps alike.
+  const { load_kg: _kg, ...bench } = BENCH;
+  expect(weeks(bench, 0).map((item) => item.reps)).toEqual([10, 11, 12, 12]);
+  // A cycle of two has no lighter week.
+  expect([1, 2].map((week) => itemInWeek(push, "reps", 2, 0, week, 1).reps)).toEqual([
+    12, 13,
+  ]);
+  // A machine's minutes stay as they are.
+  const bike = {
+    exercise: "exercise_bike",
+    kind: "cardio",
+    sets: 1,
+    duration_s: 600,
+  } as const;
+  expect(itemInWeek(bike, "reps", 4, 2.5, 3, 0).duration_s).toBe(600);
+});
+
 test("two weeks in turn and the same week stay as written", () => {
   expect(itemInWeek(BENCH, "same", 1, 0, 1, 5)).toBe(BENCH);
   expect(itemInWeek(BENCH, "alternate", 2, 2.5, 2, 1).load_kg).toBe(62.5);

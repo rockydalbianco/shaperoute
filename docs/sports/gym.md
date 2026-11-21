@@ -227,6 +227,62 @@ km»), così anche un'app di prima, che non mostra «Today» per un giorno
 fuori, nella lista dice il vero. Il resto (le domande della guida, «Oggi»
 oltre il massimo di Draw, il promemoria alle 8) è nel task file.
 
+**L'ingresso e il corpo libero** (TASK-461 A2). «New plan» apre prima
+«What do you want to train?» (in italiano «Cosa vuoi allenare?»): Palestra,
+Corpo libero e Corsa si scelgono, almeno due («Next · 2 chosen»; con uno
+solo il tasto resta spento); «Toward a distance» e «Mountains» dicono «Soon».
+All'apertura sono scelti corpo libero e corsa. Una scheda di sola palestra
+non si può più fare da nuova; le schede di prima si aprono come prima, senza
+ingresso. Poi i cinque passi:
+1. senza palestra gli obiettivi sono quelli del corpo libero: «More muscle»
+   4 × 12 recupero 60 s, «More strength» 5 × 6 con gli esercizi più duri
+   recupero 2 min, «Tone up» 3 × 15 recupero 30 s, «Get back in shape» 3 ×
+   10 recupero 60 s, quattro esercizi; col corpo libero anche «What do you
+   have?»: niente, una sbarra (trazioni), sbarra e parallele (dip);
+2. «How many days for each sport?»: una riga di giorni per sport, già
+   alternati col riposo in mezzo (corpo libero lun-mer-ven, corsa mar-sab);
+   un giorno toccato passa allo sport dopo, poi al riposo;
+3. il corpo libero è «Bodyweight · A» e «· B» in turno, tutto il corpo
+   (squat a corpo libero, piegamenti, affondi, ponte glutei, plank; B
+   affondi, piegamenti o dip, trazioni supine o superman, mountain climber,
+   plank laterale); «More strength» usa split squat bulgaro e, con la
+   sbarra, trazioni e dip. Alla sbarra e alle parallele metà ripetizioni,
+   almeno 5 (3 × 15 piegamenti, 3 × 8 trazioni). Senza kg: la nota dice
+   l'attrezzo;
+4. senza palestra i modi sono «More each week», A / B e «Always the same».
+   In «More reps each week» (anche nelle schede di palestra) un esercizio
+   senza kg cresce di una ripetizione a settimana, 5 s se tenuto; l'ultima
+   settimana di un ciclo di 3 o più ha una serie in meno coi valori della
+   settimana prima; il ciclo dopo riparte da dove è arrivato (10, 11, 12,
+   più leggera, 13…). Scelta dell'utente del 2026-11-12, «Sì, così», anche
+   per le schede già fatte; un esercizio coi kg fa come prima.
+Un giorno di corpo libero è uno fatto solo di esercizi senza attrezzi della
+palestra (`bodyweight.ts`): così la guida riconosce i giorni di ogni sport
+quando si cambiano. In italiano la scheda di più settimane è il «piano»
+(«Nuovo piano», «I miei piani»); il singolo allenamento resta «scheda».
+`SportsDoor.tsx`, `bodyweight.ts`.
+
+**Distanza e montagna nella guida** (TASK-461 B2b/C2). L'ingresso offre
+anche Corsa («verso 5, 10, 21 o 42 km»), Camminata e hike, Bici, Nuoto e
+canoa, Montagna; se ne sceglie più d'uno, il primo ha la meta e gli altri
+restano «tenermi in forma» (scelta dell'utente del 2026-11-12, «Più
+d'uno»). Per quel primo sport: «Dove vuoi arrivare?» (le distanze
+proposte, «Altro», «Solo tenermi in forma»; per il nuoto piscina o acque
+libere) o «Che gita vuoi fare?» (500–2000 m di salita); «Dove sei oggi?»
+(il più lungo dell'ultimo mese, già scritto dalle attività, o «Comincio da
+zero»); dopo i giorni, «Per quando?» (le settimane le conta il piano, o una
+data: troppo vicina, «Per 10 km servono 8 settimane, ne hai 5» con «Arriva
+a 8 km» e «Sposta la data»). La corsa parte da «Solo tenermi in forma», come
+i giorni di corsa di prima, coi ritmi di TASK-452. Il piano mostra la scala
+(«Verso i 60 km · 11 settimane»), i giorni fuori si cambiano con − e +.
+«Oggi» di un giorno fuori compare nella pagina «Palestra» e nella pagina
+«Draw» del suo sport: entro il massimo di «Draw» «Disegna 20 km» e
+«Registra libero», oltre «Draw disegna al massimo 30 km» con «Registra
+libero · 45 km» per primo; un giorno di salita «Cerca almeno 600 m di
+salita». «Ricordamelo alle 8» all'ultimo passo: una notifica del telefono
+alle 8 nei giorni dei piani (`planReminder.ts`). `TargetSteps.tsx`,
+`outingDay.ts`, `PlanTodayCard.tsx`, `OutingDayEditor.tsx`.
+
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
 In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una
@@ -364,8 +420,9 @@ nuove qui e nel file del catalogo dell'app.
 TASK-461 (ADR-0371) aggiunge quattro esercizi a corpo libero per i piani
 senza attrezzi: `superman`, `bodyweight_squat`, `glute_bridge`,
 `mountain_climber` (scelta dell'utente del 2026-11-11, «Sì, quattro nuovi»;
-nomi e guide approvati lo stesso giorno). Prima il server, poi l'app: un'app
-che non li ha ancora li mostra come un esercizio dal nome libero (sotto).
+nomi e guide approvati lo stesso giorno). Prima il server (A1), poi l'app
+(A2), con omino e guida; un'app che non li ha ancora li mostra come un
+esercizio dal nome libero (sotto).
 
 ## Il post nel Feed (parte D)
 

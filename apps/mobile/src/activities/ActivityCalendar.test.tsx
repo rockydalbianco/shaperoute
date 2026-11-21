@@ -194,6 +194,34 @@ test("a sport filters the month; a bar opens its month", async () => {
   expect(screen.getByTestId("calendar-trend")).toBeTruthy();
 });
 
+test("it opens on a sport when asked (the flights, TASK-305 R5b); else on all, as before", async () => {
+  const flights = { ...example, sport: "paragliding", count: 0, days: [] };
+  const onFlights = jest.fn(answers({ status: 200, body: flights }));
+  await shown(
+    <ActivityCalendarSheet
+      visible
+      onClose={() => {}}
+      fetchFn={onFlights as unknown as typeof fetch}
+      month="2026-11"
+      sport="paragliding"
+    />,
+  );
+  expect(asked(onFlights)).toHaveLength(1);
+  expect(asked(onFlights)[0]).toMatch(/month=2026-11&sport=paragliding$/);
+
+  const onAll = jest.fn(answers({ status: 200, body: calendar }));
+  await shown(
+    <ActivityCalendarSheet
+      visible
+      onClose={() => {}}
+      fetchFn={onAll as unknown as typeof fetch}
+      month="2026-11"
+    />,
+  );
+  expect(asked(onAll)).toHaveLength(1);
+  expect(asked(onAll)[0]).not.toMatch(/sport=/);
+});
+
 test("the records of the sport chosen are under the bars, and open their run", async () => {
   const bests: PersonalBest[] = [
     {

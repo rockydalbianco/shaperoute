@@ -242,7 +242,7 @@ test("water the API cannot download says so, with Try again", async () => {
   await settle();
   expect(
     screen.getByText(
-      "Map data for this area could not be downloaded. Try again later.",
+      "The map service is busy, so this area could not be loaded. Try again in a few minutes.",
     ),
   ).toBeOnTheScreen();
   // The first three say so; the others are left out, as in a city.

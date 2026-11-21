@@ -1,4 +1,7 @@
-import type { MessageAttachment } from "@shaperoute/shared-types";
+import type {
+  MessageAttachment,
+  MessageAttachmentWithLive,
+} from "@shaperoute/shared-types";
 import { Image, StyleSheet, Text, View } from "react-native";
 
 import { mediaImage } from "../api/messageMedia";
@@ -8,6 +11,8 @@ import { t } from "../i18n";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
 import { distanceLabel } from "../units/format";
 import { attachmentLine, duration } from "./attachmentText";
+import { LiveMessageCard } from "./LiveMessageCard";
+import { PostCard } from "./PostCard";
 
 /** The widest a photo or a video is shown in a message. */
 export const MEDIA_SIDE = 220;
@@ -37,10 +42,21 @@ export function shownSize(
  * What a message carries, in its bubble (TASK-333): a photo, a video's
  * first picture with ▶ and its length (a dark square without one), «This
  * video has expired.», or a drawing: its line, what it draws and how long
- * it is, opened on the map with a tap (part C). The bubble is what is
- * touched, and what VoiceOver reads (attachmentLabel).
+ * it is, opened on the map with a tap (part C); or a post (TASK-455): its
+ * card, or that it is no longer available; or a live share (TASK-468):
+ * its line, opened in the app. The bubble is what is touched,
+ * and what VoiceOver reads (attachmentLabel).
  */
 export function MessageMedia({ attachment, apiUrl, token, apiKey }: Props) {
+  // A live share (TASK-468 part B1): only an app that says it reads one
+  // receives the kind, kept out of MESSAGE_ATTACHMENT_KINDS.
+  const withLive = attachment as MessageAttachmentWithLive;
+  if (withLive.kind === "live") {
+    return <LiveMessageCard card={withLive.live ?? null} />;
+  }
+  if (attachment.kind === "post") {
+    return <PostCard post={attachment.post ?? null} />;
+  }
   if (attachment.kind === "drawing") {
     const card = attachment.drawing;
     if (card === null) {

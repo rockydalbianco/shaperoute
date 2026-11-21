@@ -1,6 +1,10 @@
 # TASK-457 — Profilo nuovo
 
-**Stato**: In lavorazione · parte 0 chiusa il 2026-11-12 (scelte dell'utente)
+**Stato**: Done · 2026-11-12 · #1205 in `main` (merge `1eb3e5a8`)
+**Esito**: un profilo senza attività mostra la scheda del primo passo al
+posto dei totali, i badge dicono come si prendono, «Guide» e «Blocked
+people» non sono più tra le statistiche. Solo app: esce con
+l'aggiornamento completo; resta da guardarlo sul telefono dopo l'uscita.
 **Fase**: 5 · **Branch**: `feat/TASK-457-new-profile`
 **Dipende da**: TASK-423 E2b (#1144) e TASK-462 B (#1172), già in `main`
 **ADR**: nessuno (ADR-0380 offerto dal Coordinatore e reso: sono scelte
@@ -105,27 +109,29 @@ parla di chi lo guarda.
 
 ## Criteri di accettazione
 
-- [ ] Un account senza attività non vede i tre totali né la striscia della
+- [x] Un account senza attività non vede i tre totali né la striscia della
       settimana: vede la scheda del primo passo, e il pulsante apre
       «Explore».
-- [ ] Con almeno un'attività il profilo mostra totali e settimana come
+- [x] Con almeno un'attività il profilo mostra totali e settimana come
       prima, e la scheda non c'è.
-- [ ] Le tessere «Favorites» e «My activities» non mostrano «0»; da 1 in su
+- [x] Le tessere «Favorites» e «My activities» non mostrano «0»; da 1 in su
       mostrano il numero.
-- [ ] Sotto il nome solo i badge presi; la sezione «Badges» elenca i tre
+- [x] Sotto il nome solo i badge presi; la sezione «Badges» elenca i tre
       badge con la frase che dice come si prendono.
-- [ ] «Guide» e «Blocked people» non sono più sul profilo; «Blocked
+- [x] «Guide» e «Blocked people» non sono più sul profilo; «Blocked
       people» funziona da «Settings», la guida è «Help»; senza account
       «Guide» resta sotto «Sign up».
-- [ ] Il profilo di un altro iscritto non cambia.
-- [ ] Nessun colore scritto a mano, nessuna dipendenza nuova, impronta iOS
-      `6f8bba4c`.
+- [x] Il profilo di un altro iscritto non cambia.
+- [x] Nessun colore scritto a mano, nessuna dipendenza nuova, impronta iOS
+      `6f8bba4c` (non rimisurata: la #1205 tocca solo `App.tsx`, file sotto
+      `src/` e test; niente nativo, niente `package.json`, niente di ciò
+      che `app.config.ts` importa).
 - [x] Testi nuovi (en, it, de, es, fr) approvati dall'utente («Sì,
       approvo», 2026-11-12): i tre della scheda, le tre frasi dei badge e
       la frase dopo un blocco.
-- [ ] Schermate del profilo vuoto e di uno con dati: fatte il 2026-11-12
-      sull'iPhone 17e (`out/TASK-457/TASK-457-profilo-nuovo.jpg`), da far
-      vedere all'utente.
+- [x] Schermate del profilo vuoto e di uno con dati: fatte il 2026-11-12
+      sull'iPhone 17e (`out/TASK-457/TASK-457-profilo-nuovo.jpg`) e
+      approvate dall'utente («Sì, vanno bene», 2026-11-12).
 
 ## Cronologia
 
@@ -145,3 +151,10 @@ parla di chi lo guarda.
   preso, «Blocked people» in «Settings». Due ritocchi dalle schermate: la
   riga «Blocked people» come le altre righe di «Settings» (🚫, peso medio)
   e il nome delle tessere in fondo, allineato quando una sola ha il numero.
+- 2026-11-12: l'utente approva le schermate («Sì, vanno bene»); una riga di
+  `__tests__/AppActivities.test.tsx` e un merge di `main` (i registri delle
+  lingue dopo la #1201, tenuti tutti e due i blocchi). #1205 fuori dalla
+  bozza, CI verde sulla testa `380f22a1`, in `main` alle 11:26Z (merge del
+  Coordinatore). `App.tsx` reso. Nota per dopo, non chiesta: sul profilo
+  nuovo la scheda del primo passo è alta; si può accorciare se sul
+  telefono pesa.

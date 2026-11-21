@@ -1,7 +1,8 @@
 # TASK-468 — La live in chat e nel Feed, anche programmata
 
-**Stato**: In corso · parte 0 in `main` (#1213, con la #1226); A1a in `main`
-(#1221, `9328c109`); poi A1b (dopo TASK-455 A), A2, B1, B2
+**Stato**: In corso · parte 0, A1a, A2a, A1b sul server (passi 11 e 12);
+B1 (app) in `main` (#1275, `875f754b`), esce con un OTA col sì dell'utente;
+prossime A2b (push «Remind me») e B2 (il Feed)
 **Fase**: 5 · **Branch**: `docs/TASK-468-live-chat-feed` (parte 0) ·
 **ADR**: ADR-0381 · numeri dal Coordinatore (2026-11-12)
 **Estende**: TASK-424 (ADR-0352, «Share live activity»), che metteva fuori
@@ -46,6 +47,13 @@ deciderlo».
    durante la registrazione offre «Share link», «Send in MuW» e «Live in
    the Feed» (con la scelta follower/tutti). Programmare serve ad avvisare
    prima.
+7. **La fila «Live» del Feed** — «Solo chi segui» (2026-11-12): solo le
+   live proprie e di chi si segue, mai quelle di uno sconosciuto, anche
+   «Tutti»; quelle si aprono dal profilo o da un link.
+8. **Il testo dello stop di una live senza link** — «Sì, così»
+   (2026-11-12): «Stop sharing?» con «Nobody can follow you any more.» (it
+   «Nessuno potrà più seguirti.»); con un link resta «The link stops
+   working now.». Entra con la parte B2.
 
 ## Proposta (da completare nella parte 0)
 
@@ -197,7 +205,32 @@ Privacy dell'app (`about/content`, voce «Your position»), frase in più:
   `--exclude-table-data=live_share_recipients` in `deploy/backup.sh` (del
   Coordinatore: senza, il ripristino di una copia fallisce sulla chiave
   esterna). Controlli di sola lettura in `out/TASK-468/SERVER-A1a.md`.
-- **Prossima**: A1b, quando TASK-455 A (#1230) è in `main`.
+- **2026-11-12 — A2a in `main`** (#1245, migrazione `0075_planned_lives`):
+  le live programmate e `GET /lives` (la fila, scelta 7), montate da
+  `install_live_shares`; sul server col passo 11 (`338e4d9b`, «server A2a
+  fatto»). Controlli in `out/TASK-468/SERVER-A2a.md`. Le copie notturne
+  tengono `planned_lives` e i promemoria.
+- **2026-11-12 — A1a sul server** col passo 11: la riga
+  `--exclude-table-data=live_share_recipients` in `deploy/backup.sh`, prova
+  di ripristino riuscita.
+- **2026-11-12 — A1b in `main`** (#1265, migrazione `0077_message_live`):
+  l'allegato `live` nei messaggi, «Send in MuW» che manda un messaggio a
+  persona, la push «{name} is sharing a live activity with you»;
+  `messages.live_share_id` senza chiave esterna (le copie). Sul server col
+  passo 12 (`eee85a69`, «server A1b fatto»). Controlli in
+  `out/TASK-468/SERVER-A1b.md`.
+- **2026-11-12 — B1 in `main`** (#1275, `875f754b`): il foglio con «Show my
+  heart rate» e «Send in MuW», «Choose who gets your live», il menu di
+  «Sharing live», la scheda in chat e «🔴 Live», la schermata dal vivo
+  (`LiveViewScreen`, ogni 10 s). Schermate nel simulatore approvate
+  dall'utente (`out/TASK-468/b1-*.png`). La schermata dal vivo è un `Modal`
+  a tutto schermo come `MediaViewer`: il gesto dal bordo sinistro
+  (ADR-0384) non fa nulla e si chiude con «Close» (Coordinatore,
+  2026-11-12); `TabSwipeOwners.test.ts` la ammette. Esce con un OTA, col sì
+  dell'utente.
+- **Prossime**: A2b (la push «Remind me» alla partenza, `push.py`), B2 (il
+  Feed: «Live in the Feed», «Plan a live», la fila, il testo dello stop
+  della scelta 8); liste dei file al Coordinatore prima del codice.
 
 ## Contesto da leggere
 

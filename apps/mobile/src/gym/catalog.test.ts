@@ -10,47 +10,40 @@ import { catalogEntry, entryOf, setOf } from "./setKinds";
 // against (fixtures/gym-exercises.json, gym_catalog.py), with the names of
 // docs/sports/gym.md in every language of the app.
 
-// TASK-461 A1 (ADR-0371): the server knows the four bodyweight exercises
-// before the app does; A2 adds them to the app's catalog and empties this.
-const ON_THE_SERVER_FIRST = new Set([
-  "superman",
-  "bodyweight_squat",
-  "glute_bridge",
-  "mountain_climber",
-]);
-
 test("the catalog is the API's, in its order", () => {
   expect(GYM_EXERCISES.map(({ key, group, kind }) => ({ key, group, kind }))).toEqual(
-    catalog.exercises
-      .filter(({ key }) => !ON_THE_SERVER_FIRST.has(key))
-      .map(({ key, group, kind }) => ({ key, group, kind })),
+    catalog.exercises.map(({ key, group, kind }) => ({ key, group, kind })),
   );
-  expect(GYM_EXERCISES).toHaveLength(91);
+  expect(GYM_EXERCISES).toHaveLength(95);
 });
 
-test("an app older than the server reads its new exercises without breaking", () => {
+test("the four exercises without equipment are in the app, with their names", () => {
+  // TASK-461 (ADR-0371): on the server first (A1), then in the app (A2).
+  expect(
+    ["superman", "bodyweight_squat", "glute_bridge", "mountain_climber"].map((key) => [
+      gymExercise(key)?.kind,
+      gymExercise(key)?.names.it,
+    ]),
+  ).toEqual([
+    ["bodyweight", "Superman"],
+    ["bodyweight", "Squat a corpo libero"],
+    ["bodyweight", "Ponte glutei"],
+    ["timed", "Mountain climber"],
+  ]);
+});
+
+test("a set of an exercise newer than the app is logged as any other", () => {
   // A plan or a workout written on an updated phone, read on one that is
   // not: the name in words, the kind the item carries, no guide, no
-  // leaderboard; a set of it is logged as any other.
-  const words: Record<string, string> = {
-    superman: "Superman",
-    bodyweight_squat: "Bodyweight squat",
-    glute_bridge: "Glute bridge",
-    mountain_climber: "Mountain climber",
-  };
-  for (const key of ON_THE_SERVER_FIRST) {
-    const kind = catalog.exercises.find((exercise) => exercise.key === key)?.kind;
-    expect(kind).toBeDefined();
-    if (gymExercise(key) !== undefined) {
-      continue;
-    }
-    expect(exerciseName({ exercise: key }, "it")).toBe(words[key]);
-    expect(catalogEntry(key)).toBeNull();
-    expect(hasLeaderboard(key)).toBe(false);
-    const entry = entryOf({ exercise: key, kind: kind as GymSetKind });
-    const values = kind === "timed" ? { duration_s: 40 } : { reps: 15 };
-    expect(setOf(entry, values, 0, false)).toMatchObject({ exercise: key, kind });
-  }
+  // leaderboard.
+  expect(exerciseName({ exercise: "sled_pull" }, "it")).toBe("Sled pull");
+  expect(catalogEntry("sled_pull")).toBeNull();
+  expect(hasLeaderboard("sled_pull")).toBe(false);
+  const entry = entryOf({ exercise: "sled_pull", kind: "bodyweight" as GymSetKind });
+  expect(setOf(entry, { reps: 15 }, 0, false)).toMatchObject({
+    exercise: "sled_pull",
+    kind: "bodyweight",
+  });
 });
 
 test("every exercise has a name in every language of the app", () => {

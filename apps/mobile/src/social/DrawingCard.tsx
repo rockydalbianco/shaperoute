@@ -14,6 +14,7 @@ import type { StartView } from "../explore/useStartDirections";
 import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
 import { drawingOfDrawing } from "../messages/messageDrawing";
+import { postOfDrawing } from "../messages/messagePost";
 import { useMessagesDoor } from "../messages/messagesDoor";
 import { SendDrawingButton } from "../messages/SendDrawingButton";
 import { durationLabel } from "../screens/FinishScreen";
@@ -57,18 +58,17 @@ type Props = {
 };
 
 /**
- * Whether «Send to a friend» may copy this drawing into a message. The
- * message carries the whole track, and whoever receives it keeps it
- * (ADR-0289): so one's own drawing, or one every member sees already. A
- * drawing for its owner's followers, of somebody else, is never copied to
- * whoever one writes to (TASK-455, ADR-0382, the user's choice 4): it waits
- * for the post sent as a pointer, which opens only for who may see it.
+ * Whether «Send to a friend» copies this drawing into a message: only one's
+ * own. The copy carries the whole track, and whoever receives it keeps it
+ * (ADR-0289). Somebody else's drawing is never copied (TASK-455, ADR-0382,
+ * the user's choices 3 and 4): it goes as a post, a pointer that opens only
+ * for who may see the drawing, so one for its owner's followers too.
  */
 export function copySendable(
-  drawing: Pick<DrawingDetail, "public" | "author">,
+  drawing: Pick<DrawingDetail, "author">,
   me: string | null,
 ): boolean {
-  return drawing.public || (me !== null && drawing.author.public_id === me);
+  return me !== null && drawing.author.public_id === me;
 }
 
 /** «Start» on a drawing asks for nothing first: it is never loading. */
@@ -226,11 +226,20 @@ export function DrawingCard({
       {exported === "failed" && (
         <Text style={styles.error}>{t("The GPX could not be made. Try again.")}</Text>
       )}
-      {/* «Send to a friend» (TASK-333): the track as the map shows it, in a
-          message; never somebody else's drawing for its followers. */}
-      {runnable(drawing) && copySendable(drawing, me) && (
+      {/* «Send to a friend»: one's own track as the map shows it, copied
+          into a message (TASK-333); somebody else's drawing as a post, a
+          pointer (TASK-455). */}
+      {copySendable(drawing, me) ? (
+        runnable(drawing) && (
+          <SendDrawingButton
+            drawing={() => drawingOfDrawing(drawing)}
+            style={styles.button}
+            textStyle={styles.buttonText}
+          />
+        )
+      ) : (
         <SendDrawingButton
-          drawing={() => drawingOfDrawing(drawing)}
+          post={postOfDrawing(drawing)}
           style={styles.button}
           textStyle={styles.buttonText}
         />

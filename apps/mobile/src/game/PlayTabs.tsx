@@ -10,9 +10,11 @@ import {
 } from "react-native";
 
 import { selectionFeel } from "../haptics/haptics";
+import { segmentPillFace, segmentTrackFace } from "../screens/Segmented";
 import { color, fontWeight, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { springTo } from "../ui/motion";
 import { Tap } from "../ui/Tap";
+import { useGlassMode } from "../ui/useGlassMode";
 import { useReduceMotion } from "../ui/useReduceMotion";
 
 type Props<T extends string> = {
@@ -27,7 +29,8 @@ type Props<T extends string> = {
  * Play»): the look of `screens/Segmented`, with the chosen pill sliding to
  * the tab touched on a spring, a light tick of the phone, and each tab
  * answering the finger (`ui/Tap`). With «Reduce Motion» the pill is just
- * there. Only «Play» has it: the other choices of the app stay as they are.
+ * there. Only «Play» has the tick and the touch. The track and the pill look
+ * as `Segmented`'s: glass with the pill standing out of it (TASK-469 A3).
  */
 export function PlayTabs<T extends string>({
   options,
@@ -36,6 +39,7 @@ export function PlayTabs<T extends string>({
   style,
 }: Props<T>) {
   const still = useReduceMotion();
+  const mode = useGlassMode();
   const index = Math.max(
     0,
     options.findIndex((option) => option.value === value),
@@ -63,14 +67,18 @@ export function PlayTabs<T extends string>({
 
   return (
     <View
-      style={[styles.track, style]}
+      style={[styles.track, segmentTrackFace(mode), style]}
       onLayout={(event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width)}
       testID="play-tabs"
     >
       {tab > 0 && (
         <Animated.View
           pointerEvents="none"
-          style={[styles.pill, { width: tab, transform: [{ translateX }] }]}
+          style={[
+            styles.pill,
+            segmentPillFace(mode),
+            { width: tab, transform: [{ translateX }] },
+          ]}
           testID="play-tabs-pill"
         />
       )}
@@ -105,7 +113,6 @@ const styles = StyleSheet.create({
     padding: space.xs,
     gap: space.xs,
     borderRadius: radius.pill,
-    backgroundColor: color.background,
   },
   pill: {
     position: "absolute",
@@ -113,9 +120,6 @@ const styles = StyleSheet.create({
     bottom: space.xs,
     left: space.xs,
     borderRadius: radius.pill,
-    backgroundColor: color.surfaceRaised,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
   },
   tab: {
     flex: 1,

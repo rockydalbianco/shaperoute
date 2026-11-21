@@ -1,0 +1,362 @@
+{
+ "about": "TASK-413 A3: the buildings of the town box (snow.town_bbox) of real places. «no snow at once»: a town, told before its snow is read. «planned as before»: snow to walk on (mountain villages, ski resorts), or a valley town whose box reaches the mountains round it (Bolzano, Aosta: as dense as Asiago, so not told at once; sports/snowshoes.md).",
+ "places": [
+  {
+   "name": "Asiago",
+   "start": [
+    45.8757,
+    11.5097
+   ],
+   "bbox": [
+    45.8541,
+    11.4786,
+    45.8973,
+    11.5408
+   ],
+   "buildings": 4153,
+   "from": "the bench's cached snow (2026-11-08)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Viote del Monte Bondone",
+   "start": [
+    46.018,
+    11.042
+   ],
+   "bbox": [
+    45.9964,
+    11.0109,
+    46.0396,
+    11.0731
+   ],
+   "buildings": 137,
+   "from": "the bench's cached snow (2026-11-08)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Cavalese",
+   "start": [
+    46.2915,
+    11.4605
+   ],
+   "bbox": [
+    46.2699,
+    11.4292,
+    46.3131,
+    11.4918
+   ],
+   "buildings": 2319,
+   "from": "the bench's cached snow (2026-11-08)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Passo Lavazè",
+   "start": [
+    46.3567,
+    11.4947
+   ],
+   "bbox": [
+    46.3351,
+    11.4634,
+    46.3783,
+    11.526
+   ],
+   "buildings": 45,
+   "from": "the bench's cached snow (2026-11-08)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Passo Rolle",
+   "start": [
+    46.2976,
+    11.787
+   ],
+   "bbox": [
+    46.276,
+    11.7557,
+    46.3192,
+    11.8183
+   ],
+   "buildings": 49,
+   "from": "the bench's cached snow (2026-11-08)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Milano, Duomo",
+   "start": [
+    45.4642,
+    9.19
+   ],
+   "bbox": [
+    45.4426,
+    9.1592,
+    45.4858,
+    9.2208
+   ],
+   "buildings": 16170,
+   "from": "the bench's cached snow (2026-11-08)",
+   "expected": "no snow at once",
+   "kind": "town"
+  },
+  {
+   "name": "Cortina d'Ampezzo",
+   "start": [
+    46.5405,
+    12.1357
+   ],
+   "bbox": [
+    46.5189,
+    12.1043,
+    46.5621,
+    12.1671
+   ],
+   "buildings": 3334,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Livigno",
+   "start": [
+    46.5385,
+    10.1357
+   ],
+   "bbox": [
+    46.5169,
+    10.1043,
+    46.5601,
+    10.1671
+   ],
+   "buildings": 1453,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Bormio",
+   "start": [
+    46.4669,
+    10.3709
+   ],
+   "bbox": [
+    46.4453,
+    10.3395,
+    46.4885,
+    10.4023
+   ],
+   "buildings": 2629,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Madonna di Campiglio",
+   "start": [
+    46.229,
+    10.8266
+   ],
+   "bbox": [
+    46.2074,
+    10.7953,
+    46.2506,
+    10.8579
+   ],
+   "buildings": 593,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Ortisei",
+   "start": [
+    46.5747,
+    11.6717
+   ],
+   "bbox": [
+    46.5531,
+    11.6403,
+    46.5963,
+    11.7031
+   ],
+   "buildings": 1729,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Canazei",
+   "start": [
+    46.4769,
+    11.771
+   ],
+   "bbox": [
+    46.4553,
+    11.7396,
+    46.4985,
+    11.8024
+   ],
+   "buildings": 988,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Selva di Val Gardena",
+   "start": [
+    46.555,
+    11.76
+   ],
+   "bbox": [
+    46.5334,
+    11.7286,
+    46.5766,
+    11.7914
+   ],
+   "buildings": 1196,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Sestriere",
+   "start": [
+    44.958,
+    6.879
+   ],
+   "bbox": [
+    44.9364,
+    6.8484,
+    44.9796,
+    6.9096
+   ],
+   "buildings": 472,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Folgaria",
+   "start": [
+    45.916,
+    11.172
+   ],
+   "bbox": [
+    45.8944,
+    11.1409,
+    45.9376,
+    11.2031
+   ],
+   "buildings": 1256,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Moena",
+   "start": [
+    46.3768,
+    11.6597
+   ],
+   "bbox": [
+    46.3552,
+    11.6284,
+    46.3984,
+    11.691
+   ],
+   "buildings": 1043,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Pinzolo",
+   "start": [
+    46.16,
+    10.765
+   ],
+   "bbox": [
+    46.1384,
+    10.7338,
+    46.1816,
+    10.7962
+   ],
+   "buildings": 1775,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "snow"
+  },
+  {
+   "name": "Trento",
+   "start": [
+    46.0679,
+    11.1211
+   ],
+   "bbox": [
+    46.0463,
+    11.0899,
+    46.0895,
+    11.1523
+   ],
+   "buildings": 8091,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "no snow at once",
+   "kind": "town"
+  },
+  {
+   "name": "Bolzano",
+   "start": [
+    46.4983,
+    11.3548
+   ],
+   "bbox": [
+    46.4767,
+    11.3234,
+    46.5199,
+    11.3862
+   ],
+   "buildings": 4783,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "town"
+  },
+  {
+   "name": "Belluno",
+   "start": [
+    46.1405,
+    12.2167
+   ],
+   "bbox": [
+    46.1189,
+    12.1855,
+    46.1621,
+    12.2479
+   ],
+   "buildings": 7971,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "no snow at once",
+   "kind": "town"
+  },
+  {
+   "name": "Aosta",
+   "start": [
+    45.737,
+    7.32
+   ],
+   "bbox": [
+    45.7154,
+    7.289,
+    45.7586,
+    7.351
+   ],
+   "buildings": 5706,
+   "from": "Overpass out count (2026-11-12)",
+   "expected": "planned as before",
+   "kind": "town"
+  }
+ ]
+}

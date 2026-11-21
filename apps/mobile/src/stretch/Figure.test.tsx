@@ -1,9 +1,9 @@
 import { act, render, screen } from "@testing-library/react-native";
-import { AccessibilityInfo } from "react-native";
+import { AccessibilityInfo, StyleSheet } from "react-native";
 
 import { EXERCISES } from "./exercises";
 import { BREATH_MS, Figure, path, POSE_MS, turns } from "./Figure";
-import { CALF, QUAD, STAND } from "./poses";
+import { CALF, CHILD, QUAD, STAND } from "./poses";
 
 beforeEach(() => {
   jest.useFakeTimers();
@@ -62,6 +62,31 @@ describe("the figure on screen", () => {
     await act(() => jest.advanceTimersByTimeAsync(POSE_MS * 2));
     expect(screen.queryByTestId("f")).toBeNull();
     expect(screen.getByTestId("f", { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it("gives no joint a frame of no size at (0, 0), which iOS would misplace when reused", async () => {
+    await render(<Figure pose={CHILD} height={300} testID="f" />);
+    await act(() => jest.advanceTimersByTimeAsync(POSE_MS * 2));
+    const figure = screen.getByTestId("f", { includeHiddenElements: true });
+    type Host = { props: { style?: unknown }; children: readonly (Host | string)[] };
+    const frames: Host[] = [];
+    const walk = (node: Host | string) => {
+      if (typeof node === "string") {
+        return;
+      }
+      frames.push(node);
+      node.children.forEach(walk);
+    };
+    (figure as unknown as Host).children.forEach(walk);
+    expect(frames.length).toBeGreaterThan(20);
+    for (const frame of frames) {
+      const { width, height } = StyleSheet.flatten(frame.props.style as object) as {
+        width?: number;
+        height?: number;
+      };
+      expect(width).toBeGreaterThan(0);
+      expect(height).toBeGreaterThan(0);
+    }
   });
 
   it("takes each pose at once with «Reduce Motion» on", async () => {

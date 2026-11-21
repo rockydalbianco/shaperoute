@@ -349,5 +349,7 @@ def test_the_migration_adds_wheelchair_to_the_four_tables_and_keeps_the_rest(
     assert database.migrate(tmp_path) == []
     after = _checks(database)
     assert after == {name: [*kept, WHEELS] for name, kept in before.items()}
-    # Every activity of a run is let in once all migrations ran.
-    assert set(get_args(RunActivity)) <= set(after["runs_activity_check"])
+    # Every activity of a run is let in once all migrations up to this one
+    # ran, but the ones of a later migration: alpinism (TASK-463).
+    later = {"alpinism"}
+    assert set(get_args(RunActivity)) - later <= set(after["runs_activity_check"])

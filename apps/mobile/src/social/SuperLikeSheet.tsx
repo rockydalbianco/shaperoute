@@ -29,6 +29,7 @@ import {
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
 import { Tap } from "../ui/Tap";
+import { useReduceMotion } from "../ui/useReduceMotion";
 
 /** The side of the Sgrava heart that comes up over the drawing. */
 export const BIG_HEART_SIDE = 128;
@@ -213,10 +214,20 @@ export function SuperLikeHeart({ onDone }: AloneProps) {
   );
 }
 
-/** The Sgrava heart on its yellow, growing to its size as it comes up. */
+/**
+ * The Sgrava heart on its yellow, growing to its size as it comes up. With
+ * «Reduce Motion» it is there at its size, and nothing grows (TASK-454
+ * part B: a double tap on a post brings it up more often).
+ */
 function BigHeart() {
   const [shown] = useState(() => new Animated.Value(0));
+  const still = useReduceMotion();
   useEffect(() => {
+    if (still) {
+      // Also when the phone says so a moment after the heart started.
+      shown.setValue(1);
+      return undefined;
+    }
     const coming = Animated.timing(shown, {
       toValue: 1,
       duration: HEART_IN_MS,
@@ -226,7 +237,7 @@ function BigHeart() {
     });
     coming.start();
     return () => coming.stop();
-  }, [shown]);
+  }, [shown, still]);
   return (
     <Animated.View
       testID="super-like-heart"

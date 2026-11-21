@@ -91,6 +91,12 @@ SOURCE |= {"stats"}
 # The night shown in the post, TASK-467 part B1b (test_sleep.py).
 NEW_FIELDS |= {"sleep"}
 SOURCE |= {"sleep"}
+# On foot and in the air, TASK-305 part R6a (test_flight_parts.py).
+NEW_FIELDS |= {"flight_split"}
+SOURCE |= {"flight_split"}
+# Whether the drawing has a link, TASK-455 part C (test_post_links.py).
+NEW_FIELDS |= {"linkable"}
+SOURCE |= {"linkable"}
 THIRD_EMAIL = "third@example.com"
 
 

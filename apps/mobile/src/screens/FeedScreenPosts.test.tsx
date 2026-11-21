@@ -39,12 +39,14 @@ function asked(): string[] {
   return (
     fetchSpy.mock.calls
       .map(([url]) => String(url).replace(API, ""))
-      // The contest's card and MuW Style (TASK-384) are read beside the feed.
+      // The contest's card, MuW Style (TASK-384) and the «Live» row
+      // (TASK-468) are read beside the feed.
       .filter(
         (path) =>
           path !== "/contests/current" &&
           !path.startsWith("/style") &&
-          !path.startsWith("/muw-routes"),
+          !path.startsWith("/muw-routes") &&
+          !path.startsWith("/lives"),
       )
   );
 }
@@ -150,15 +152,16 @@ test("a tap on a member's drawing opens its page, not a route of «Explore»", a
     </Around>,
   );
   await fireEvent.press(await screen.findByText("Sunday heart by the river"));
-  // The page of the post (TASK-410), over the feed; not the map.
-  expect(screen.getByTestId("post-page")).toBeOnTheScreen();
+  // The page of the post (TASK-410), over the feed; not the map. The tap
+  // waits to know it is alone (TASK-454 part B).
+  expect(await screen.findByTestId("post-page")).toBeOnTheScreen();
   expect(open).not.toHaveBeenCalled();
   expect(onOpen).not.toHaveBeenCalled();
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.queryByTestId("post-page")).toBeNull();
   // The second card; its author's name opens the profile (TASK-399).
   await fireEvent.press(screen.getAllByTestId("feed-post")[1]!);
-  expect(screen.getByTestId("post-page")).toBeOnTheScreen();
+  expect(await screen.findByTestId("post-page")).toBeOnTheScreen();
   expect(open).not.toHaveBeenCalled();
 });
 

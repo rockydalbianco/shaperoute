@@ -160,7 +160,8 @@ test("a tap on the drawing opens it on the map, as from the card before", async 
   const onMap = jest.fn();
   await render(<PostPage post={shownPost(OTHERS)} onClose={jest.fn()} onMap={onMap} />);
   await fireEvent.press(screen.getByTestId("post-map"));
-  expect(onMap).toHaveBeenCalledTimes(1);
+  // The tap waits to know it is alone (TASK-454 part B).
+  await waitFor(() => expect(onMap).toHaveBeenCalledTimes(1));
 });
 
 // --- The figures of the post (TASK-410 part D) ---

@@ -109,6 +109,21 @@ export function span(pose: Pose): { back: number; front: number } {
   return { back, front };
 }
 
+/** How far a pose may reach from the hip, forward or back, and still be
+ * whole on a narrow phone, in shares of the height. */
+export const REACH = 0.46;
+
+/**
+ * How far back the whole figure slides in `pose` so that its hands stay on
+ * the screen, in shares of the height (negative: forward). The hip is in
+ * the middle of the screen; a pose that reaches further than `REACH` from
+ * it (child's pose, the arms long on the floor) would be cut at the edge.
+ */
+export function drift(pose: Pose): number {
+  const { back, front } = span(pose);
+  return Math.max(0, front - REACH) - Math.max(0, -back - REACH);
+}
+
 /** Standing, arms by the sides, feet forward: where every exercise starts. */
 export const STAND: Pose = {
   torso: 180,
@@ -257,3 +272,186 @@ export const GLUTE_BREATH: Breath = {
   torso: -6,
   head: -4,
 };
+
+/*
+ * The ten poses of TASK-466 part B (ADR-0378), for the routines of 3, 5 and
+ * 10 minutes: the upper body and the floor, all drawn from the side as the
+ * five above, so each one reads in profile. Lying on the back is left out:
+ * the round head would sink under the floor line.
+ */
+
+/** Standing, the chin down toward the chest, arms by the sides. */
+export const NECK: Pose = { ...STAND, head: 115 };
+
+/** The head a little lower. */
+export const NECK_BREATH: Breath = { head: -8 };
+
+/** Standing, both arms straight up, the chest open, eyes a little up. */
+export const OVERHEAD_REACH: Pose = {
+  ...STAND,
+  torso: 183,
+  head: 188,
+  upperArmFar: 175,
+  forearmFar: 178,
+  upperArmNear: 175,
+  forearmNear: 178,
+};
+
+/** A little taller, the arms further back. */
+export const OVERHEAD_REACH_BREATH: Breath = {
+  upperArmFar: 6,
+  forearmFar: 6,
+  upperArmNear: 6,
+  forearmNear: 6,
+  torso: 2,
+  head: 3,
+};
+
+/** Standing, the near arm straight across the chest at shoulder height, the
+ * far hand pulling it in at the elbow. */
+export const SHOULDER: Pose = {
+  ...STAND,
+  upperArmNear: 90,
+  forearmNear: 90,
+  upperArmFar: 60,
+  forearmFar: 120,
+};
+
+/** The arm pulled a little closer and higher. */
+export const SHOULDER_BREATH: Breath = {
+  upperArmNear: 5,
+  forearmNear: 5,
+  upperArmFar: 5,
+};
+
+/** Standing, the hands clasped behind the back, the arms back and up, the
+ * chest out. */
+export const CHEST: Pose = {
+  ...STAND,
+  torso: 182,
+  head: 186,
+  upperArmFar: -45,
+  forearmFar: -50,
+  upperArmNear: -45,
+  forearmNear: -50,
+};
+
+/** The arms higher behind. */
+export const CHEST_BREATH: Breath = {
+  upperArmFar: -8,
+  forearmFar: -8,
+  upperArmNear: -8,
+  forearmNear: -8,
+};
+
+/** Standing, the near elbow up by the head, its hand down the upper back,
+ * the far hand pushing the elbow back. */
+export const TRICEPS: Pose = {
+  ...STAND,
+  upperArmNear: 180,
+  forearmNear: -15,
+  upperArmFar: 150,
+  forearmFar: 175,
+};
+
+/** The elbow a little further back. */
+export const TRICEPS_BREATH: Breath = {
+  upperArmNear: 6,
+  forearmNear: 6,
+  upperArmFar: 6,
+};
+
+/** Standing, the arms reaching forward at shoulder height, the back
+ * leaning in, the head down between the arms. */
+export const UPPER_BACK: Pose = {
+  ...STAND,
+  torso: 165,
+  head: 140,
+  upperArmFar: 90,
+  forearmFar: 90,
+  upperArmNear: 90,
+  forearmNear: 90,
+};
+
+/** The back rounder, the head lower. */
+export const UPPER_BACK_BREATH: Breath = { torso: -4, head: -6 };
+
+/** Folded forward from the hips, the legs straight, the hands down toward
+ * the toes. */
+export const FORWARD_FOLD: Pose = {
+  ...STAND,
+  torso: 62,
+  head: 45,
+  upperArmFar: 15,
+  forearmFar: 10,
+  upperArmNear: 15,
+  forearmNear: 10,
+};
+
+/** A little deeper, the hands a little further forward. */
+export const FORWARD_FOLD_BREATH: Breath = {
+  torso: -5,
+  head: -5,
+  upperArmFar: 5,
+  forearmFar: 5,
+  upperArmNear: 5,
+  forearmNear: 5,
+};
+
+/** On hands and knees: the knees under the hips, the hands under the
+ * shoulders, the shins flat behind. */
+export const CAT: Pose = {
+  torso: 103,
+  head: 75,
+  upperArmFar: 0,
+  forearmFar: 0,
+  upperArmNear: 0,
+  forearmNear: 0,
+  thighFar: 0,
+  shinFar: -90,
+  footFar: -90,
+  thighNear: 0,
+  shinNear: -90,
+  footNear: -90,
+};
+
+/** The head drops between the arms as the back rounds. */
+export const CAT_BREATH: Breath = { head: -10 };
+
+/** Sat back on the heels, the chest low over the knees, the arms long on
+ * the floor ahead, the forehead down. */
+export const CHILD: Pose = {
+  torso: 80,
+  head: 85,
+  upperArmFar: 76,
+  forearmFar: 76,
+  upperArmNear: 76,
+  forearmNear: 76,
+  thighFar: 60,
+  shinFar: -90,
+  footFar: -90,
+  thighNear: 60,
+  shinNear: -90,
+  footNear: -90,
+};
+
+/** The chest a little lower. */
+export const CHILD_BREATH: Breath = { torso: -2, head: -2 };
+
+/** Standing on the far leg, the near knee hugged up to the chest, both
+ * hands round the shin. */
+export const KNEE_HUG: Pose = {
+  ...STAND,
+  torso: 175,
+  head: 170,
+  thighNear: 125,
+  shinNear: 10,
+  footNear: 90,
+  upperArmFar: 60,
+  forearmFar: 20,
+  upperArmNear: 60,
+  forearmNear: 20,
+};
+
+/** The knee a little higher. */
+export const KNEE_HUG_BREATH: Breath = { thighNear: 6, shinNear: 6 };

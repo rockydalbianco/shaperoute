@@ -1,9 +1,15 @@
-import { POOL_LENGTHS_MAX, POOL_MAX_SPEED_M_S } from "@shaperoute/shared-types";
+import {
+  POOL_LENGTHS_MAX,
+  POOL_MAX_SPEED_M_S,
+  SLEEP_SHOWN_DEFAULT,
+} from "@shaperoute/shared-types";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SIGN_IN_TO_KEEP_RUNS, useActivitiesDoor } from "../activities/activitiesDoor";
+import { keepSleepFor } from "../activities/sleepOut";
+import { isSeen } from "../api/drawings";
 import { useBody } from "../body/useBody";
 import { gymStyles } from "../gym/gymStyles";
 import { heartReader } from "../health/heartModules";
@@ -11,6 +17,10 @@ import type { HeartReader } from "../health/heartSamples";
 import { healthPhone } from "../health/healthModules";
 import type { HealthPhone } from "../health/healthPhone";
 import { HealthRunEnd } from "../health/HealthRunEnd";
+import { sleepReader } from "../health/sleepModules";
+import { SleepRunEnd } from "../health/SleepRunEnd";
+import type { SleepReader } from "../health/sleepSamples";
+import { useLastNight } from "../health/useLastNight";
 import { useHealth } from "../health/useHealth";
 import { t } from "../i18n";
 import { clockLabel } from "../navigation/freeRun";
@@ -54,6 +64,8 @@ export function maxLengths(activeS: number, poolLengthM: number): number {
  * figures the form of its post (TASK-400 part C), as at the end of a
  * workout. Signed out, it says to sign in, as the end of a workout does:
  * `onSignIn` is the way there of what shows it over the app (TASK-453).
+ * Over «Save», «Sleep last night» as at the end of a run (TASK-467 part
+ * B2b): nothing in any build until part C, where the phone has no reader.
  */
 export function PoolSwimEnd({
   swim,
@@ -61,6 +73,7 @@ export function PoolSwimEnd({
   onSignIn,
   health: phone = healthPhone(),
   heart: reader = heartReader(),
+  sleep: sleepPhone = sleepReader(),
   pick,
   fetchFn,
   apiKey,
@@ -78,6 +91,8 @@ export function PoolSwimEnd({
   health?: HealthPhone | null;
   /** Where the heart rate is read (TASK-409 part B); for the tests, a fake. */
   heart?: HeartReader | null;
+  /** The phone's reader of the sleep (TASK-467): none until part C. */
+  sleep?: SleepReader | null;
   /** The fakes of the tests: the photo picker, the fetch of the tag search. */
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
@@ -102,6 +117,12 @@ export function PoolSwimEnd({
   );
   const [discarding, setDiscarding] = useState(false);
   const [problem, setProblem] = useState(false);
+  // «Sleep last night» (TASK-467 part B2b), as at the end of a run: the
+  // night before the swim began, on until turned off, shown and sent only
+  // with a post others see.
+  const lastNight = useLastNight(sleepPhone, swim.startedMs);
+  const [sleepShown, setSleepShown] = useState(SLEEP_SHOWN_DEFAULT);
+  const night = signedIn && isSeen(post.choice.visibility) ? lastNight : null;
 
   const written = parseLengths(text);
   const metres = written === null ? null : poolMetres(written, swim.poolLengthM);
@@ -126,6 +147,11 @@ export function PoolSwimEnd({
     }
     const saved = onSave(swim, lengths, post, heart);
     if (saved === "kept") {
+      // The night goes only when the post shows it; otherwise nothing of
+      // it leaves the phone.
+      if (owner !== null && night !== null && sleepShown) {
+        keepSleepFor(owner, swim.key, { ...night, shown: true });
+      }
       // Written there, on the phone, with no network; never fails «Save».
       void savePoolToHealth(phone, swim, lengths);
       endPoolSwim();
@@ -221,6 +247,7 @@ export function PoolSwimEnd({
         {phone !== null && signedIn && (
           <HealthRunEnd store={phone.store} health={healthState} />
         )}
+        <SleepRunEnd night={night} shown={sleepShown} onShown={setSleepShown} />
         {problem && (
           <Text style={[gymStyles.muted, gymStyles.danger]}>
             {t("This run could not be kept on the phone. Try again.")}

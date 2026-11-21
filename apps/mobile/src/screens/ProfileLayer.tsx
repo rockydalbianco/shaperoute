@@ -49,6 +49,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { OverAppPages, OverAppProvider, useOverAppState } from "./overAppContext";
 import { PeopleScreen } from "./PeopleScreen";
 import { type ProfilePage, ProfileScreen } from "./ProfileScreen";
 
@@ -408,6 +409,15 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // The bell of the header (TASK-367 part C): its lines open what the
   // pushes open.
   const bell = useBellOf(apiUrl, account);
+  // A post's own Modal under the pages over the app, or «Play» over them
+  // (TASK-470 D).
+  const [overApp, overAppState] = useOverAppState();
+  // What the pages over the app see of these is what is around the layer,
+  // not the app's: in a post's slot they are inside the app (TASK-470 D).
+  const outerComments = useContext(CommentsContext);
+  const outerReactions = useContext(ReactionsContext);
+  const outerFollows = useContext(FollowsContext);
+  const outerOwn = useContext(OwnContext);
   // The page of a monthly challenge over the app (TASK-343): out of the way
   // while a drawing opened from it is on the map.
   const contestOver = useAskedContest() !== null && drawings.opened === null;
@@ -425,6 +435,69 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     }),
     [attention, initial, photoUri, requests],
   );
+  // The pages over the app: in place, or in the slot of a post's own Modal
+  // while one is up (TASK-470 D).
+  const overInModal = overAppState.modalPages > 0;
+  // The app is under a page over it: out of the screen reader's sight. Not
+  // while «Play» covers those pages, which are kept out of sight then.
+  const appUnder = (shown || contestOver || bell.shown) && !overAppState.covered;
+  const overPages = (
+    <OverAppPages covered={overAppState.covered}>
+      <CommentsContext.Provider value={outerComments}>
+        <ReactionsContext.Provider value={outerReactions}>
+          <FollowsContext.Provider value={outerFollows}>
+            <OwnContext.Provider value={outerOwn}>
+              {/* Under «Find friends» and «Profile»: a name in its
+      gallery opens over it, and back comes to it. */}
+              <FollowsContext.Provider value={followsDoor}>
+                <ContestPageHost />
+              </FollowsContext.Provider>
+              {people !== null && (
+                <PeopleScreen
+                  // A member of the lists, or the search: not the same page.
+                  key={member?.public_id ?? "search"}
+                  apiUrl={apiUrl}
+                  account={account}
+                  first={member}
+                  hidden={people === "behind"}
+                  onBack={() => {
+                    setPeople(null);
+                    if (member !== null) {
+                      setMember(null);
+                      // The fourth page, or the app, is under it already.
+                      if (home.current === "layer") {
+                        setHint(null);
+                        setPage("account");
+                      }
+                    }
+                  }}
+                />
+              )}
+              {page !== null && (
+                <FollowsContext.Provider value={layerFollows}>
+                  <ProfileScreen
+                    account={account}
+                    page={page}
+                    onPage={onProfilePage}
+                    hint={hint}
+                    onBack={() => {
+                      // Closed without an account: the heart's route waits no more.
+                      forgetWaiting();
+                      setPage(null);
+                    }}
+                  />
+                </FollowsContext.Provider>
+              )}
+              {/* Over everything: opened from a profile, «Profile» or a
+      notification, and closed back to it (TASK-319). */}
+              <MessagesOverlay />
+              <BellOverlay opens={opens} />
+            </OwnContext.Provider>
+          </FollowsContext.Provider>
+        </ReactionsContext.Provider>
+      </CommentsContext.Provider>
+    </OverAppPages>
+  );
   return (
     <DoorContext.Provider value={door}>
       <FavoritesContext.Provider value={favorites}>
@@ -439,13 +512,9 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                         <View
                           style={styles.app}
                           // Under «Profile» the app is out of the screen reader's sight too.
-                          accessibilityElementsHidden={
-                            shown || contestOver || bell.shown
-                          }
+                          accessibilityElementsHidden={appUnder}
                           importantForAccessibility={
-                            shown || contestOver || bell.shown
-                              ? "no-hide-descendants"
-                              : "auto"
+                            appUnder ? "no-hide-descendants" : "auto"
                           }
                         >
                           <CommentsContext.Provider value={comments}>
@@ -454,57 +523,25 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                               name opens a profile (TASK-208). */}
                               <FollowsContext.Provider value={followsDoor}>
                                 <OwnContext.Provider value={own}>
-                                  {children}
+                                  <OverAppProvider
+                                    door={overApp}
+                                    slot={{
+                                      pages: overInModal ? overPages : null,
+                                      shown:
+                                        shown ||
+                                        contestOver ||
+                                        bell.shown ||
+                                        messages.screen !== null,
+                                    }}
+                                  >
+                                    {children}
+                                  </OverAppProvider>
                                 </OwnContext.Provider>
                               </FollowsContext.Provider>
                             </ReactionsContext.Provider>
                           </CommentsContext.Provider>
                         </View>
-                        {/* Under «Find friends» and «Profile»: a name in its
-                        gallery opens over it, and back comes to it. */}
-                        <FollowsContext.Provider value={followsDoor}>
-                          <ContestPageHost />
-                        </FollowsContext.Provider>
-                        {people !== null && (
-                          <PeopleScreen
-                            // A member of the lists, or the search: not the same page.
-                            key={member?.public_id ?? "search"}
-                            apiUrl={apiUrl}
-                            account={account}
-                            first={member}
-                            hidden={people === "behind"}
-                            onBack={() => {
-                              setPeople(null);
-                              if (member !== null) {
-                                setMember(null);
-                                // The fourth page, or the app, is under it already.
-                                if (home.current === "layer") {
-                                  setHint(null);
-                                  setPage("account");
-                                }
-                              }
-                            }}
-                          />
-                        )}
-                        {page !== null && (
-                          <FollowsContext.Provider value={layerFollows}>
-                            <ProfileScreen
-                              account={account}
-                              page={page}
-                              onPage={onProfilePage}
-                              hint={hint}
-                              onBack={() => {
-                                // Closed without an account: the heart's route waits no more.
-                                forgetWaiting();
-                                setPage(null);
-                              }}
-                            />
-                          </FollowsContext.Provider>
-                        )}
-                        {/* Over everything: opened from a profile, «Profile» or a
-                        notification, and closed back to it (TASK-319). */}
-                        <MessagesOverlay />
-                        <BellOverlay opens={opens} />
+                        {!overInModal && overPages}
                       </View>
                     </BellContext.Provider>
                   </MessagesContext.Provider>

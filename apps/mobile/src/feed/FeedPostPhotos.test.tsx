@@ -1,7 +1,14 @@
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { FeedPost as Post, Session } from "@shaperoute/shared-types";
-import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 import { type ImageStyle, type StyleProp, StyleSheet, Text } from "react-native";
 
 import type { AccountState } from "../account/useAccount";
@@ -237,5 +244,6 @@ test("a tap on a card with photos still opens the drawing", async () => {
   const onOpen = jest.fn();
   await show(WITH_PHOTO, signedIn, onOpen);
   await fireEvent.press(screen.getByTestId("feed-post"));
-  expect(onOpen).toHaveBeenCalledTimes(1);
+  // The tap waits to know it is alone (TASK-454 part B).
+  await waitFor(() => expect(onOpen).toHaveBeenCalledTimes(1));
 });

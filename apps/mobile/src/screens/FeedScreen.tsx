@@ -22,6 +22,7 @@ import type { FeedAds } from "../ads/feedAds";
 import { useFeedAds } from "../ads/useFeedAds";
 import { FeedContest } from "../contest/FeedContest";
 import { useContest } from "../contest/useContest";
+import { AddToFeed } from "../feed/AddToFeed";
 import { FeedAd } from "../feed/FeedAd";
 import { FeedMapShooter } from "../feed/FeedMaps";
 import { drawingHeight, FeedPost } from "../feed/FeedPost";
@@ -44,6 +45,8 @@ import { MuwPost } from "../feed/MuwPost";
 import { MUW_ROUTES_IN_FEED } from "../feed/muwInFeed";
 import { useMuwRoutes } from "../feed/useMuwRoutes";
 import { t } from "../i18n";
+import { filePickerAvailable } from "../imports/pickActivityFile";
+import { LivesRow } from "../liveShare/LivesRow";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { usePeopleDoor } from "../social/peopleDoor";
 import { color, font, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
@@ -108,7 +111,8 @@ function postsOf(tab: FeedFilter, shown: FeedShown): readonly Post[] {
  * turned them off, and a third tab, «Style», has them all; without an
  * account the tabs are then «All» and «Style». While the API has routes MuW
  * drew (TASK-365, ADR-0310), one row in 6 of «All» at most is one of them,
- * also among the examples; a tap opens it on the map.
+ * also among the examples; a tap opens it on the map. At the right of the
+ * bar, with an account, a «+» adds an activity from a file (TASK-476).
  */
 export function FeedScreen({
   onOpen,
@@ -147,6 +151,8 @@ export function FeedScreen({
   const signedIn = all.signedIn;
   const withFollowing = signedIn && tabsKnown;
   const withTabs = withFollowing || withStyle;
+  // The «+» of the bar: an account, and an app built with the file picker.
+  const withAdd = signedIn && filePickerAvailable();
   // Without an account there is no «Following»; the choice waits for the next one.
   const tab: FeedTab =
     (chosen === "following" && !withFollowing) || (chosen === "style" && !withStyle)
@@ -190,14 +196,20 @@ export function FeedScreen({
       <FeedMapShooter width={cardWidth} height={drawingHeight(cardWidth)} />
       <View style={[StyleSheet.absoluteFill, styles.screen]}>
         {/* The tabs, with an account (TASK-362). */}
-        {withTabs && (
+        {(withTabs || withAdd) && (
           <View style={[styles.bar, { paddingTop: insets.top + space.lg }]}>
-            <FeedTabs
-              tab={tab}
-              onChoose={onChoose}
-              following={withFollowing}
-              style={withStyle}
-            />
+            {withTabs ? (
+              <FeedTabs
+                tab={tab}
+                onChoose={onChoose}
+                following={withFollowing}
+                style={withStyle}
+              />
+            ) : (
+              <View style={styles.barSpace} />
+            )}
+            {/* «Add activity», with an account (TASK-476). */}
+            {withAdd && <AddToFeed />}
           </View>
         )}
         <FeedList
@@ -219,6 +231,9 @@ export function FeedScreen({
                   onOpen={signedIn ? open : undefined}
                 />
               )}
+              {/* The «Live» row (TASK-468 part B2a): one's own and the
+                  followed accounts' lives. */}
+              {signedIn && <LivesRow active={active} />}
               {problem}
             </View>
           }
@@ -467,6 +482,9 @@ const styles = StyleSheet.create({
     gap: space.md,
     paddingHorizontal: space.lg,
     paddingBottom: space.md,
+  },
+  barSpace: {
+    flex: 1,
   },
   list: {
     flex: 1,

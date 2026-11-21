@@ -61,6 +61,9 @@ export function ActivityCard({ activity, onDelete }: Props) {
   // The title of the post, as the API has it, then as the form does.
   const [title, setTitle] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  // «Send to…» closed: the «…» sheet it was opened from goes with it, a
+  // new menu in its place (TASK-456 left it open; closed with TASK-455).
+  const [menu, setMenu] = useState(0);
   // The facts are written again when «Settings» changes the units (TASK-182).
   useUnits();
   useEffect(() => {
@@ -105,10 +108,11 @@ export function ActivityCard({ activity, onDelete }: Props) {
           </Text>
           {imported && <ImportedMark />}
         </View>
-        <ActivityMenu name={shown ?? when} onDelete={onDelete}>
+        <ActivityMenu key={menu} name={shown ?? when} onDelete={onDelete}>
           {!gym && (
             <SendDrawingButton
               drawing={() => drawingOfRun(activity)}
+              onClosed={() => setMenu((was) => was + 1)}
               style={menuChoice.button}
               textStyle={menuChoice.text}
             />

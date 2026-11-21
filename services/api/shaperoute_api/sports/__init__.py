@@ -7,6 +7,7 @@ here."""
 from __future__ import annotations
 
 from shaperoute_api.sports import (
+    alpinism,
     cycling,
     gravel_biking,
     gym,
@@ -42,6 +43,7 @@ API_SPORTS: tuple[ApiSport, ...] = (
     xc_skiing.SPORT,
     ski_touring.SPORT,
     paragliding.SPORT,
+    alpinism.SPORT,
     gym.SPORT,
 )
 SPORTS_BY_ACTIVITY: dict[str, ApiSport] = {s.activity: s for s in API_SPORTS}

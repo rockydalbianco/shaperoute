@@ -1,11 +1,20 @@
-import type { LiveStats, RunActivity } from "@shaperoute/shared-types";
+import type {
+  LiveAudience,
+  LiveShareSent,
+  LiveStats,
+  RunActivity,
+} from "@shaperoute/shared-types";
 import { useSyncExternalStore } from "react";
 
 import { emptyTrack, MAX_ACCURACY_M, type Track } from "../navigation/trackRecorder";
 import {
   createLiveShare,
+  createLiveShareMade,
   type LiveApiOptions,
+  makeLiveLink,
+  sendLiveShareTo,
   sendLiveUpdate,
+  setLiveAudience,
   stopLiveShareRequest,
 } from "./liveShareApi";
 import { type LiveEnd, LiveSharer } from "./liveSharer";
@@ -25,7 +34,9 @@ export type LiveShareStatus =
   | { kind: "off" }
   /** POST /me/live-shares on its way. */
   | { kind: "starting" }
-  | { kind: "sharing"; url: string };
+  /** `url` null for a share made only for the chat (TASK-468 part B1),
+   * until «Share link». */
+  | { kind: "sharing"; id: string; url: string | null };
 
 /** What the recording screen knows, for the numbers of the next update. */
 export type LiveSnapshot = {
@@ -45,6 +56,8 @@ const OFF: LiveShareStatus = { kind: "off" };
 
 let status: LiveShareStatus = OFF;
 let sharer: LiveSharer | null = null;
+/** The requests of the share on: its link later, «Send in MuW». */
+let sharing: LiveApiOptions | null = null;
 let snapshot: LiveSnapshot = {
   track: emptyTrack(),
   kcal: null,
@@ -96,6 +109,8 @@ export function useLiveShare(): LiveShareStatus {
 
 export type StartOutcome =
   | { kind: "started"; url: string }
+  /** Made for the chat only (TASK-468 part B1): no link yet. */
+  | { kind: "started_without_link" }
   /** The link could not be made: say so, and nothing is shared. */
   | { kind: "failed" }
   /** A link is already on, or on its way. */
@@ -107,16 +122,28 @@ export async function startLiveShare(
   activity: RunActivity,
   /** A swim in a pool: its pool, and the page shows lengths (part B2). */
   poolLengthM: number | null = null,
+  /** TASK-468 part B1: without its link, for the chat only; the heart rate
+   * to the viewers in the app (off unless turned on). */
+  choice: { link?: boolean; heartVisible?: boolean; audience?: LiveAudience } = {},
 ): Promise<StartOutcome> {
   if (status.kind !== "off") {
     return { kind: "busy" };
   }
   cancelled = false;
   put({ kind: "starting" });
-  const answer = await createLiveShare(
-    api,
-    poolLengthM === null ? { activity } : { activity, pool_length_m: poolLengthM },
-  );
+  const request = {
+    activity,
+    ...(poolLengthM === null ? {} : { pool_length_m: poolLengthM }),
+    ...(choice.link === false ? { link: false } : {}),
+    ...(choice.heartVisible === true ? { heart_visible: true } : {}),
+    ...(choice.audience !== undefined && choice.audience !== "none"
+      ? { audience_feed: choice.audience }
+      : {}),
+  };
+  const answer =
+    choice.link === false
+      ? await createLiveShareMade(api, request)
+      : await createLiveShare(api, request);
   if (answer.kind !== "ok") {
     put(OFF);
     return { kind: "failed" };
@@ -145,17 +172,60 @@ export async function startLiveShare(
     onEnd: (_why: LiveEnd) => {
       if (sharer === mine) {
         sharer = null;
+        sharing = null;
         stopTimer();
         put(OFF);
       }
     },
   });
   sharer = mine;
-  put({ kind: "sharing", url });
+  sharing = api;
+  put({ kind: "sharing", id, url });
   startTimer();
   // The first update at once: the page shows the numbers from the start.
   void mine.tick();
-  return { kind: "started", url };
+  return url === null ? { kind: "started_without_link" } : { kind: "started", url };
+}
+
+/** «Share link» while a share made for the chat is on (TASK-468 part B1):
+ * its link, made now; null when it could not be made. */
+export async function liveShareLink(): Promise<string | null> {
+  const api = sharing;
+  if (status.kind !== "sharing" || api === null) {
+    return null;
+  }
+  if (status.url !== null) {
+    return status.url;
+  }
+  const { id } = status;
+  const answer = await makeLiveLink(api, id);
+  if (answer.kind !== "ok" || status.kind !== "sharing" || status.id !== id) {
+    return null;
+  }
+  put({ kind: "sharing", id, url: answer.value.url });
+  return answer.value.url;
+}
+
+/** «Live in the Feed» while a share is on (TASK-468 part B2a): who sees it
+ * there; false when it could not be changed. */
+export async function liveInFeed(audience: LiveAudience): Promise<boolean> {
+  const api = sharing;
+  if (status.kind !== "sharing" || api === null) {
+    return false;
+  }
+  const answer = await setLiveAudience(api, status.id, audience);
+  return answer.kind === "ok";
+}
+
+/** «Send in MuW» (TASK-468 part B1): the share in a message to each
+ * person; null when it could not be sent. */
+export async function sendLiveTo(publicIds: string[]): Promise<LiveShareSent | null> {
+  const api = sharing;
+  if (status.kind !== "sharing" || api === null || publicIds.length === 0) {
+    return null;
+  }
+  const answer = await sendLiveShareTo(api, status.id, publicIds);
+  return answer.kind === "ok" ? answer.value : null;
 }
 
 /** «Stop sharing»: the link stops now, its points go on the server. */
@@ -231,6 +301,7 @@ export function finishLiveShare(): void {
 export function resetLiveShare(): void {
   stopTimer();
   sharer = null;
+  sharing = null;
   status = OFF;
   snapshot = { track: emptyTrack(), kcal: null, bpm: null, paused: false };
   endedAtMs = null;

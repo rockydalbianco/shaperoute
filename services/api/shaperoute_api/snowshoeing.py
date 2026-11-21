@@ -29,6 +29,7 @@ from route_engine.snowshoeing import plan_snowshoeing
 from route_engine.water import BBox, Element
 
 from shaperoute_api.graphs import MapDataUnavailableError
+from shaperoute_api.overpass_fallback import with_second_service
 
 log = logging.getLogger(__name__)
 
@@ -74,6 +75,24 @@ class ServerSnow:
                     return _logged("network", self._download(bbox), started)
         return _logged("disk", self._source.elements(bbox), started)
 
+    def buildings(self, bbox: BBox) -> int | None:
+        """The buildings of `bbox` (snow.OverpassSnowSource.buildings): the
+        engine says «no snow» at once in a town, before the snow is
+        downloaded and built (TASK-413 A3). Never an error: a count that
+        fails is None, and the request goes on as before."""
+        started = time.perf_counter()
+        try:
+            count = self._source.buildings(bbox)
+        except Exception as exc:
+            log.info("snow: no count of the buildings (%s)", type(exc).__name__)
+            return None
+        log.info(
+            "snow: %s buildings counted in %.1f s",
+            count,
+            time.perf_counter() - started,
+        )
+        return count
+
     def heights(self) -> Heights:
         """The heights for one request: the tiles of the cache, new each
         time so that the decoded tiles of every place asked are not kept in
@@ -82,7 +101,9 @@ class ServerSnow:
 
     def _download(self, bbox: BBox) -> list[Element]:
         try:
-            return self._source.elements(bbox)
+            # Once more from the second Overpass service, if the server has
+            # one, when the usual one answers with an error (TASK-471).
+            return with_second_service(lambda: self._source.elements(bbox))
         except Exception as exc:
             raise MapDataUnavailableError(
                 f"OpenStreetMap snow for this area could not be downloaded: {exc}"

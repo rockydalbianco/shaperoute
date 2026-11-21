@@ -98,7 +98,8 @@ test("only a drawn example asks for the map under its line (TASK-174)", async ()
 
 test("what failed says why, once, with Try again", async () => {
   const onRetry = jest.fn();
-  const message = "Map data for this area could not be downloaded. Try again later.";
+  const message =
+    "The map service is busy, so this area could not be loaded. Try again in a few minutes.";
   const examples: Example[] = [
     { shape: "heart", status: "failed", message },
     { shape: "circle", status: "failed", message },

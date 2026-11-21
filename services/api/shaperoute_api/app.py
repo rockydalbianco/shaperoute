@@ -108,6 +108,7 @@ from shaperoute_api.places import (
     PlacesUnavailableError,
 )
 from shaperoute_api.pool_swims import install_pool_swims
+from shaperoute_api.post_links import install_post_links
 from shaperoute_api.profile_photos import install_profile_photos
 from shaperoute_api.profiles import install_profiles
 from shaperoute_api.push import install_push
@@ -117,6 +118,7 @@ from shaperoute_api.recommended import (
     DEFAULT_RADIUS_M,
     MAX_PAGE,
     MAX_RADIUS_M,
+    RUNNING,
     CatalogPageBody,
     RecommendedCatalog,
     RecommendedRouteDetailBody,
@@ -390,6 +392,9 @@ def create_app(
     # The runs an account publishes as drawings, cut for the others
     # (TASK-117); they need a token.
     install_drawings(app)
+    # A drawing for everyone opened by its link, without an account, and
+    # the switch that turns the links of an account off (TASK-455 part C).
+    install_post_links(app)
     # The workouts at the gym, saved without a track, and their sets
     # (TASK-385); they need a token.
     install_gym_sessions(app)
@@ -582,8 +587,11 @@ def create_app(
         lon: float = Query(ge=-180, le=180),
         offset: int = Query(default=0, ge=0),
         limit: int = Query(default=DEFAULT_PAGE, ge=1, le=MAX_PAGE),
+        # The runs when it is not said, as before a route could be a ride
+        # (TASK-441 B2): an app that does not ask gets no ride.
+        activity: str = Query(default=RUNNING, max_length=40),
     ) -> CatalogPageBody:
-        return catalog.page((lat, lon), offset, limit)
+        return catalog.page((lat, lon), offset, limit, activity)
 
     @app.get("/recommended-routes")
     def list_recommended_routes(
@@ -592,8 +600,11 @@ def create_app(
         radius_m: int = Query(default=DEFAULT_RADIUS_M, ge=100, le=MAX_RADIUS_M),
         shape: str | None = Query(default=None, max_length=40),
         distance_m: int | None = Query(default=None, ge=0),
+        activity: str = Query(default=RUNNING, max_length=40),
     ) -> RecommendedRoutesBody:
-        routes = catalog.near((lat, lon), radius_m, shape, distance_m)
+        routes = catalog.near(
+            (lat, lon), radius_m, shape, distance_m, activity=activity
+        )
         insights.record(
             "recommended_list",
             point=(lat, lon),

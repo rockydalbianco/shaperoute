@@ -114,6 +114,20 @@ la proposta (anche in `out/TASK-463/APP-B-TEXTS.md`).
 
 L'emoji è 🧗: `⛰️` è dell'escursionismo, `🏔️` dello scialpinismo.
 
+Dopo le schermate nel simulatore (2026-11-12) l'utente ha approvato menu,
+avviso e registrazione, e ha scelto la frase sotto «Record your day» al posto
+di quella della neve («No shapes on the slopes»):
+
+| Lingua | Frase sotto «Record your day» |
+|---|---|
+| EN | No shapes up a mountain: MuW records your day. |
+| IT | Niente forme in montagna: MuW registra la tua giornata. |
+| DE | Keine Formen am Berg: MuW zeichnet deinen Tag auf. |
+| FR | Pas de formes en montagne : MuW enregistre ta journée. |
+| ES | Sin formas en la montaña: MuW registra tu jornada. |
+
+Le schermate sono in `out/TASK-463/` (b1–b4).
+
 Prima della prima registrazione, una volta sola, un avviso come «Before you
 fly» del parapendio (`mountain/climbNotice.ts`). Si chiude con «Got it».
 
@@ -163,6 +177,7 @@ fly» del parapendio (`mountain/climbNotice.ts`). Si chiude con «Got it».
 - `apps/mobile/src`: `sports/alpinism.ts` (nuovo), `sports/index.ts`,
   `settings/sport.ts`, `settings/sportFamilies.ts`,
   `screens/RunNoRouteButton.tsx`, `screens/FreeRunScreen.tsx` (una riga),
+  `screens/ChooseScreen.tsx` (la frase, una riga), `mountain/MountainDraw.test.tsx`,
   `social/PublicParts.tsx`, `watch/watchSports.ts`,
   `mountain/climbNotice.ts` e `climbNotice.test.ts` (nuovi),
   `i18n/{de,es,fr,it}.ts`, più i test dei conteggi di sport e impostazioni
@@ -170,6 +185,16 @@ fly» del parapendio (`mountain/climbNotice.ts`). Si chiude con «Got it».
   `Localizable.strings`, una riga ciascuno
 - `docs/UI.md` (la sezione «L'alpinismo»), `docs/API.md` (un paragrafo
   accanto al parapendio), questo file
+
+## Parte C — l'accensione (2026-11-12)
+
+Dopo il passo 12 (server a `eee85a69`, letture di `SERVER-A.md` come
+attese) e il sì dell'utente alle schermate del simulatore, «Mountaineering»
+ha `ready: true` in «Settings»: si sceglie anche nelle build per lo store, ed
+esce con l'OTA del Coordinatore. Sotto «Record your day» compare la sua
+frase, «No shapes up a mountain: MuW records your day.», al posto di quella
+della neve. In «Settings» e nel menu degli sport il solo «Soon» rimasto è
+«Snowshoes».
 
 ## Il server
 

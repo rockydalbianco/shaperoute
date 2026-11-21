@@ -1285,6 +1285,16 @@ palestra (`gym`, TASK-385) non ha traccia: passa solo a chi dice **sia**
 `gym` **sia** `trackless`; l'app lo dirà con la parte B0, insieme alle
 schermate che mostrano un post senza linea.
 
+Un'app dice **`photos`** quando sa mostrare un post di sole foto, un
+disegno senza corsa (TASK-312 parte C, «Photo posts», sotto): senza, ogni
+elenco lo lascia fuori e `GET /drawings/{id}` è `404`.
+
+Un'app dice **`sleep`** quando sa mostrare il post di una notte di sonno,
+un disegno senza corsa che porta la sua notte (TASK-467 parte E, «Sleep»,
+sotto): senza, ogni elenco lo lascia fuori e `GET /drawings/{id}` è `404`.
+È un tipo a sé e non `photos`: l'app delle sole foto lo mostrerebbe come un
+post senza foto.
+
 Nello stesso header un'app dice **`post`** quando sa mostrare un post
 allegato a un messaggio (TASK-455, ADR-0382, «Un post in un messaggio»,
 sotto). Non è un tipo di corsa: lo legge `messages.py`, non `reads.py`.
@@ -1693,6 +1703,12 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
 | `PUT /me/activities/{key}` | salvare una corsa | `201` la prima volta, poi `200` |
 | `PUT /me/activities/{key}/post` | il post della corsa, come condiviso (TASK-258) | `200` con `shared_at`, o `404 http_error` |
 | `DELETE /me/activities/{key}` | cancellarla | `204`, anche se non c'era |
+
+- **`climb_m`** (TASK-461 D1, ADR-0371), in ogni corsa dell'elenco e nella
+  risposta del `PUT`: i metri di salita contati dall'API (TASK-324), `null`
+  per una corsa senza quote e per quelle salvate prima. L'app lo legge per
+  «Quanta salita fai oggi?» dei piani verso una gita; un'app di prima lo
+  ignora. La corsa intera (`GET /me/activities/{key}`) non lo cambia.
 
 - **`key`** la fa l'app dall'inizio della traccia (`activityKey`: 16 cifre
   esadecimali dall'orario e dal punto della prima posizione; l'API accetta
@@ -2652,6 +2668,88 @@ nuovi. Il codice in `drawings.py` e `drawing_photos.py`.
   `visibility`, `description`, `activity` e `tags` (`422`, campi in più)
   e non ha le foto (`404`): l'app di prima continua con `public`.
 
+#### «Together» (TASK-417 D1, ADR-0345)
+
+`GET /drawings/{id}/together`: le tracce **con i tempi** della corsa di un
+post e delle persone taggate che l'hanno corsa insieme, per il video
+«Together» dell'app. È l'unico posto da cui escono i tempi di una traccia
+(M di `runs.track`): i disegni, il Feed e «My activities» le danno senza.
+Codice in `together.py`, esempio in `fixtures/together.json`.
+
+- **Solo all'autore** del post, del suo disegno: a chiunque altro, e per un
+  id che non c'è, `404 http_error` «No drawing with this id.», come
+  `GET /drawings/{id}`. Senza token `401`.
+- **Chi entra**: l'autore per primo, poi le persone taggate nell'ordine dei
+  tag, al più 3 (scelta 4 dell'utente), la cui corsa è **la stessa**:
+  almeno metà del tempo trascorso della più corta in comune, e partenze a
+  meno di 2 km. Solo se il disegno di quella corsa è visibile all'autore
+  (`drawing_seen_sql`: `everyone`, o `followers` con il follow accettato;
+  mai `only_me`, nascosto o oltre un blocco). Una corsa senza disegno non
+  entra. Nessuna richiesta di consenso: bastano tag e visibilità (scelta
+  3). Fra più corse della stessa persona, quella con più tempo in comune.
+- **Il corpo**: `{ "people": [{ "public_id", "username", "points":
+  [[lat, lon], …], "seconds": [s, …], "pauses": [{ "from_s", "to_s" }] }] }`.
+  `seconds` è lungo come `points`: i **secondi dalla prima partenza del
+  gruppo**, al decimo; mai l'ora del giorno né la data. Le pause sullo
+  stesso orologio. Senza nessuno taggato che abbia corso, solo l'autore.
+- **Al più 600 punti** a traccia, scelti fra quelli registrati, nessuno
+  spostato: il primo, l'ultimo, l'ultimo prima e il primo dopo ogni pausa,
+  e gli altri più vicini a secondi equidistanti, così la linea tiene il
+  passo vero.
+- Se una persona rende la sua corsa `only_me` o toglie il disegno, non
+  entra più; un video già fatto resta sul telefono com'è. Un'API
+  precedente risponde `404`: l'app tiene spenta la riga «Together».
+
+### Photo posts (TASK-312 parte C, ADR-0272)
+
+Un **post di sole foto** è un disegno senza corsa: foto fatte altrove,
+anche da Instagram, con titolo, descrizione e iscritti taggati
+(`IMPORTAZIONI.md` §4). Vogliono il token. Codice in `photo_posts.py`;
+tipi in `shared-types` (`PhotoPostRequest`, `PhotoPostOrderRequest`,
+`MyPhotoPost`, `PhotoDrawing`, `PhotoFeedPost`, `PhotoDrawingDetail`,
+`PHOTOS_SOURCE`, `PHOTO_POST_VISIBILITIES`, `PHOTO_POST_MAX_PHOTOS`,
+`isPhotoPost`); esempi in `fixtures/photo-post-request.json`,
+`photo-post-order-request.json`, `my-photo-post.json`,
+`drawing-details-photos.json`, `feed-photos.json`.
+
+- `PUT /me/photo-posts/{key}` → `200` `MyPhotoPost`: il post com'è adesso,
+  fatto la prima volta. `key` come quella di una corsa (`[a-z0-9]{8,40}`),
+  scelta dal telefono: rimandato senza rete resta uno. `visibility` solo
+  `everyone` o `followers` (`only_me` è `422`), titolo, descrizione e tag
+  con le regole di un disegno. Passare fra `everyone` e `followers` non lo
+  ripubblica.
+- `GET /me/photo-posts/{key}` → `200` `MyPhotoPost`; `404` «No post of
+  photos with this key.».
+- `GET /me/photo-posts` → `200` `MyPhotoPosts` (`{ "photo_posts": [...] }`,
+  `fixtures/my-photo-posts.json`): tutti i post di sole foto dell'account,
+  l'ultimo pubblicato prima, quelli senza foto per quando sono stati tenuti
+  l'ultima volta. L'app ci trova la `key` di un post aperto dal suo id, per
+  modificarlo o cancellarlo anche da un altro telefono (parte C1b).
+- `DELETE /me/photo-posts/{key}` → `204` sempre: con le sue foto, i tag,
+  le reazioni, i commenti e le segnalazioni.
+- `PUT /me/photo-posts/{key}/photos/{n}` (`n` da 1 a 10, nessuna mappa
+  fra le foto; corpo `DrawingPhotoRequest`) → `200` `MyPhotoPost`;
+  `DELETE` → `204`; `PUT /me/photo-posts/{key}/order` (`photo:N`, mai
+  `drawing`) → `200`. Senza il post, `404`.
+- **Si pubblica con la prima foto**: prima `published_at` è `null` e
+  nessuno tranne il proprietario lo trova (`GET /drawings/{id}` `404` per
+  gli altri). Cancellata l'ultima foto torna così; la foto dopo lo
+  ripubblica. I taggati ricevono la push quando è pubblicato, non prima.
+- **Si legge come ogni disegno**, con `source: "photos"`: in
+  `GET /feed`, `GET /users/{id}/drawings`, `GET /users/{id}/photos`,
+  `GET /drawings/{id}` e `GET /notifications`, **solo** a un'app che dice
+  `photos` in `X-MuW-Reads`; per le altre non c'è (`404` dal suo id).
+  `activity`, `place`, `shape`, `word`, `style`, `route_title`, `score`,
+  `fidelity`, `rotation_deg` sono `null`, `distance_m` e `duration_s` `0`,
+  `started_at` è la pubblicazione, `track_preview` e `track` vuoti,
+  `stats` `null`, `linkable` falso. Senza linea non è mai «vicino» a un
+  punto: nel Feed lo vedono l'autore, chi lo segue e la scheda `all`.
+- Reazioni, commenti, tag, segnalazioni (`kind: "drawing"`), blocchi e
+  nascosti come ogni disegno. Fuori da concorso, gioco, badge, totali del
+  profilo, ricerca dei disegni, link pubblico e post mandato in chat
+  (tutti partono da una corsa); non è in «My activities» né in
+  `GET /me/drawings`. Conta solo in `PublicProfile.drawings`.
+
 ### Follow (TASK-211, ADR-0173)
 
 Un iscritto ne cerca un altro per nome e gli chiede di seguirlo; l'altro
@@ -2987,6 +3085,31 @@ esempio in `fixtures/feed.json`; il codice in `feed.py`.
   traccia intera, mai il percorso pianificato) più **`author`**
   (`public_id` e `username`, mai l'email). Per aprirlo intero, con le sue
   reazioni e i suoi commenti, `GET /drawings/{id}`.
+- **Cosa conta la scheda** (TASK-355 parte B), in ogni post di `GET /feed`,
+  con e senza `filter` (`fixtures/feed-counts.json`, tipi `FeedAuthor` e
+  `FeedReactions`):
+  - `author.photo`: dove si legge la foto dell'autore,
+    `/users/{public_id}/photo?v=…`, o `null` senza foto. L'indirizzo cambia
+    quando cambia la foto, così il telefono la legge una volta e la tiene;
+    nella pagina non viaggia l'immagine (sarebbero fino a 20 JPEG in
+    base64);
+  - `reactions`: `{ "total", "mine" }`, quante reazioni ha il post e quella
+    di chi chiede (`null` se non ne ha lasciata), contate come
+    `GET /drawings/{id}/reactions`;
+  - `comments`: quanti commenti e risposte legge chi chiede, come `total` di
+    `GET /drawings/{id}/comments`.
+
+  Un blocco toglie dai conteggi, nei due sensi; un commento nascosto conta
+  solo per chi l'ha scritto, come negli elenchi. Due query per pagina,
+  non due per post. La ricerca, le gare e le stazioni danno i post senza
+  questi campi, come un'API di prima: l'app chiede allora i conteggi a ogni
+  scheda, come prima.
+- **`GET /users/{public_id}/photo`** (TASK-355 parte B, `avatars.py`): la foto
+  di un iscritto, un JPEG quadrato da 128 px, `Cache-Control: private,
+  max-age=86400`. Vuole il token (`401`); a chi è separato da un blocco o per
+  un account nascosto, a un iscritto senza foto e a un id che non c'è,
+  `404 http_error` «This member has no picture here.». Il parametro `v` è
+  solo la versione per la cache.
 - **I vicini**: con `lat` e `lon`, dove sta il telefono (l'app li manda con
   due decimali, circa 1 km: TASK-356), il terzo gruppo
   tiene solo i disegni la cui traccia tagliata passa entro **50 km**
@@ -3219,6 +3342,19 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   stesso account cominciati prima (anche quelli salvati dopo); prima il
   livello più alto; `[]` senza. Con gli esercizi: nascosti loro, nascosti
   anche i livelli.
+- **Scritto a mano** (TASK-484, ADR-0395): `"source": "manual"` nella
+  richiesta, per un allenamento già fatto scritto dal «+» del Feed
+  (esempio `fixtures/gym-session-manual.json`). Vuole almeno una serie,
+  tutte `live: false`, nessuna pausa, `rests` e `rest_s` a zero, niente
+  `plan` (altrimenti `422`), e una fine non oltre adesso più il margine
+  dell'orologio di ogni corsa (un giorno): oltre, `422` «A workout written
+  by hand ends before now.». Senza `source` è `muw`, come prima. `GymSession`
+  risponde sempre con `source`; le risposte di «My activities», del Feed e
+  dei disegni lo dicono come per un file (le app mostrano «Imported» per
+  ogni valore diverso da `muw`). Non raggiunge livelli (`new_levels` `[]`,
+  profilo invariato) e resta fuori da classifica, badge, concorso e gioco,
+  che leggono solo `muw`. `PUT /me/activities/{key}` rifiuta `manual`
+  (`422`).
 - **`GET /gym/leaderboard?exercise=&month=`** (parte F, ADR-0327
   precisazione F): la classifica mensile di un esercizio del catalogo con
   una scala (`404` `unknown_exercise` per gli altri), in un mese di
@@ -3329,7 +3465,35 @@ con la vasca e le vasche. Token richiesto; tipi in
   /drawings/{id}/pool-swim` dà medio e massimo agli altri solo se
   `heart_shown`. Senza battito le risposte non hanno i campi, come prima.
 
-### Sleep (TASK-467 parti B1 e B1b, ADR-0380)
+### Stretching (TASK-475, ADR-0386)
+
+Una sessione di stretching: una corsa dell'attività `stretching` **senza
+traccia**, come la palestra, con la routine fatta. Token richiesto; tipi in
+`shared-types/src/stretchSession.ts` (`StretchSessionRequest`,
+`StretchSession`, `StretchFigures`), esempio in
+`fixtures/stretch-session.json`; il codice in `stretch_sessions.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/stretch-sessions/{key}` | salva la sessione: inizio, fine, pause, routine, minuti, esercizi fatti | `201` `StretchSession` la prima volta, poi `200` com'era; `409` se la chiave è di una corsa |
+| `GET /me/stretch-sessions/{key}` | la sessione del suo proprietario | `200` `StretchSession`, o `404` |
+| `GET /drawings/{id}/stretch` | routine, minuti ed esercizi del post, per chi vede il disegno | `200` `StretchFigures`, o `404` |
+
+- **Il tempo lo conta il server**: da `started_at` a `ended_at` meno le
+  pause (sovrapposte contate una volta), al più 4 ore. `routine` è la chiave
+  della routine sul telefono (`morning`, `afterRun`, `afterGym`, TASK-466
+  B: lettere, cifre e `_`, al più 40); `minutes` da 1 a 60 (oggi 3, 5 o
+  10); `exercises` da 0 a 100, quelli fatti, «Skip» esclusi. Distanza 0.
+- **Pubblicata come ogni corsa**, con `PUT /me/activities/{key}/drawing`:
+  senza linea (`track: []`). Un'attività con traccia è `422`, come per la
+  palestra.
+- **Solo a chi la sa leggere**: `X-MuW-Reads` deve dire `stretching` **e**
+  `trackless`. Un'app di prima non la riceve: niente in «My activities» né
+  nel Feed, `404` sul dettaglio e su `/stretch`.
+- Nessun punteggio di forma, nessun record, nessun luogo, niente Strava
+  (una corsa senza traccia non si manda). Test in `test_stretching_api.py`.
+
+### Sleep (TASK-467 parti B1, B1b ed E, ADR-0380)
 
 Le notti di sonno che una persona pubblica. Il punteggio lo calcola il
 telefono dai dati di Apple Salute (ADR-0379); al server arriva **solo il
@@ -3359,7 +3523,26 @@ Una notte si pubblica in due modi, ognuno col suo interruttore:
 | `GET /me/activities/{key}/sleep` | la notte dell'attività, per il suo proprietario | `200` `ActivitySleep`, o `404` |
 | `DELETE /me/activities/{key}/sleep` | l'attività senza notte | `204`, anche la seconda volta |
 | `GET /drawings/{id}/sleep` | la notte nel post, per chi vede il disegno e finché è mostrata | `200` `SleepSummary`, o `404` |
+| `PUT /me/sleep-posts/{night}` | la notte come **post a sé** nel Feed (parte E): i numeri e `visibility` (`everyone` o `followers`); fatto e pubblicato la prima volta, poi cambia numeri e chi lo vede | `200` `MySleepPost`; `422` per un giorno che non è una notte; `409` se un altro post ha la chiave di quella notte |
+| `GET /me/sleep-posts/{night}` | il post di quella notte, per il suo proprietario | `200` `MySleepPost`, o `404` |
+| `DELETE /me/sleep-posts/{night}` | il post via dal Feed | `204`, anche la seconda volta |
 
+- **Il post di una notte** (parte E, `sleep_posts.py`, tipi
+  `SleepPostRequest` e `MySleepPost`, esempi `fixtures/sleep-post*.json`):
+  pubblicato dal «+» del Feed senza un'attività. È **un disegno senza
+  corsa** che porta la sua notte (`drawings.sleep_night_id`, migrazione
+  `0082`), come il post di sole foto: reazioni, commenti, segnalazioni,
+  blocchi e «Followers» valgono come per ogni disegno. Uno per notte
+  (la chiave è `sleep` più il giorno, `sleep20260921`), pubblicato appena
+  nasce; mai «Only me». Negli elenchi e in `GET /drawings/{id}` ha
+  `source` **`sleep`**, la notte nel campo `sleep`, nessuna attività,
+  nessuna linea, nessuna foto. **Lo riceve solo un'app che dice `sleep`
+  in `X-MuW-Reads`** (a quella delle sole foto non arriva). Non conta per
+  concorso, badge, gioco e totali, non entra nella ricerca, nel link
+  pubblico né nei messaggi. È separato dal profilo: non tocca `shared`, e
+  «smetti di condividere» non lo toglie. Cancellato il post, la notte va
+  via dal server se né il profilo né un'attività la pubblicano;
+  `DELETE /me/sleep/{night}` porta via anche il post.
 - **I numeri**: `score` intero da 0 a 100; `asleep_min` da 1 a 1440;
   `awake_min` da 0 a 1440 (sveglio fra l'addormentarsi e l'ultimo
   risveglio); `stages` (`rem_min`, `light_min`, `deep_min`: «Light» è il
@@ -3408,6 +3591,70 @@ Una notte si pubblica in due modi, ognuno col suo interruttore:
 - Cancellare l'account cancella tutte le sue notti. Nessun punteggio lo
   calcola il server, nessuna classifica, nessuna ricerca, niente Strava.
   Test in `test_sleep.py`.
+
+### Gear (TASK-486 parte A, ADR-0393)
+
+L'attrezzatura di un iscritto: scarpe, bici, sci, caschi, imbraghi, vele,
+tutto, ognuno con marca, modello, un nome suo, la data d'acquisto, una nota
+e una foto; agganciato alle attività, conta da solo metri, secondi e
+attività. Token richiesto: senza, `401 not_signed_in`; senza database,
+`503`. Il codice in `gear.py`; i tipi in `shared-types` arrivano con la
+parte B (l'app), finché nessuna app lo chiama.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /me/gear` | la mia attrezzatura, in uso prima, poi ritirata | `200` `{gear: [...]}` |
+| `POST /me/gear` | un attrezzo nuovo, intero | `201` l'attrezzo |
+| `PUT /me/gear/{id}` | l'attrezzo intero, cambiato | `200`, `404` se non è mio |
+| `DELETE /me/gear/{id}` | via, con foto e agganci | `204`, `404` |
+| `PUT /me/gear/{id}/photo` | la foto, `{image}` in base64 (JPEG o PNG) | `200` l'attrezzo con `photo_url` |
+| `DELETE /me/gear/{id}/photo` | via la foto | `204`, `404` se non è mio |
+| `GET /me/activities/{key}/gear` | gli attrezzi di un'attività mia | `200` `{gear}`, `404` |
+| `PUT /me/activities/{key}/gear` | tutta la lista, `{gear_ids}` | `200` `{gear}` |
+| `GET /users/{public_id}/gear` | l'attrezzatura di un profilo | `200` `{gear}`, `404` |
+| `GET /gear/{id}` | un attrezzo | `200`, `404` |
+| `GET /gear/{id}/photo?v=` | la sua foto | `200` `image/jpeg`, `404` |
+
+- **I campi**: `kind` da `gear.GearKind` (`shoes`, `bike`, `skis`,
+  `ski_boots`, `snowboard`, `poles`, `boots`, `climbing_shoes`, `harness`,
+  `helmet`, `rope`, `crampons`, `ice_axe`, `snowshoes`, `inline_skates`,
+  `sail`, `board`, `paddle`, `boat`, `wetsuit`, `paraglider`,
+  `wheelchair`, `clothing`, `backpack`, `watch`, `other`: la lista cresce
+  con una migrazione, non si accorcia); `brand` obbligatoria (40
+  caratteri), `model` (80), `name` (40), `bought_on` (dal 1950, non dopo
+  oggi), `note` (500, a capo ammessi), `limit_m` (da 1 km a 100 000 km),
+  `off_profile` («Hide from profile»), `retired` («Retire»), `defaults`
+  (gli sport, i nomi di `runs.activity`, che partono con l'attrezzo già
+  scelto, anche più attrezzi per sport). Spazi intorno tolti, vuoti
+  `null`.
+- **Le parole le leggono gli altri**: un carattere di controllo (nella
+  nota tranne l'a capo) o un indirizzo: `422 invalid_request`; il filtro
+  dei commenti: `422 comment_rejected` con `reason`. Al più **200
+  attrezzi** per account (`409`).
+- **La risposta**: `id`, i campi, `retired`, `photo_url` (con la versione:
+  l'indirizzo cambia quando cambia la foto, che si tiene in cache),
+  `totals` (`distance_m`, `duration_s`, `activities`: le somme delle
+  attività agganciate, contate dal server, mai i numeri del telefono),
+  `created_at`. Solo al proprietario `off_profile`, `limit_m`, `defaults`
+  e `hidden` (nascosto dopo una segnalazione); agli altri mancano.
+- **Ritirato**: fuori dai predefiniti (i suoi `defaults` si svuotano), con
+  i suoi totali; ritirato di nuovo tiene il primo giorno. Nella lista dopo
+  quelli in uso, i più vecchi prima.
+- **Su un'attività**: la lista intera, al più **10**, solo attrezzi miei
+  (anche ritirati: un'attività di prima), se no `422`; un id due volte
+  conta una. L'app manda i predefiniti dello sport a fine attività (parte
+  C). Cancellare l'attività toglie i suoi agganci e i suoi metri.
+- **Chi lo vede**: chi vede il profilo, cioè ogni iscritto tranne uno che
+  un blocco tiene lontano (`follows.apart_sql`, `404` come per nessuno),
+  senza gli attrezzi `off_profile` e quelli nascosti dopo una
+  segnalazione. Il proprietario sul suo profilo lo vede come gli altri
+  (più i suoi nascosti dopo una segnalazione).
+- **La foto**: diritta, al più **1024 px** sul lato lungo, un JPEG nuovo
+  senza l'EXIF del telefono; al più 10 al minuto per account (`429`).
+- **Segnalazioni**: `POST /reports` con `kind: "gear"`; dall'email
+  «Hide» nasconde l'attrezzo intero, foto compresa, a tutti tranne al
+  proprietario. Cancellare l'account cancella attrezzi, foto e agganci.
+  Test in `test_gear.py`.
 
 ### Live shares (TASK-424, ADR-0352)
 

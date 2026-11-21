@@ -2086,6 +2086,8 @@ export const ES: Table = {
   SW: "SO",
   W: "O",
   NW: "NO",
+  // src/screens/RunPanel.tsx (TASK-461 B2c, approved 2026-11-11)
+  "{m} m of climb to go": "faltan {m} m de desnivel",
   "{distance} to go": "faltan {distance}",
   "Saved to My activities": "Guardada en Mis actividades",
   // src/social/ContactsFriends.tsx (TASK-262 C)
@@ -2782,8 +2784,8 @@ export const ES: Table = {
   // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
   "Record your flight": "Registra tu vuelo",
   "Before you fly": "Antes de volar",
-  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
-    "MuW no es un instrumento de vuelo: graba tu vuelo y lo comparte. Vuela con tu propio instrumento, tu licencia y tu criterio.",
+  "MuW is not a certified flight instrument. Its numbers come from the phone's GPS: they can be late or wrong. Fly with your licence and your judgement, and keep a backup instrument.":
+    "MuW no es un instrumento de vuelo certificado. Sus datos vienen del GPS del teléfono: pueden llegar con retraso o ser erróneos. Vuela con tu licencia y tu criterio, y lleva un instrumento de reserva.",
   "Got it": "Entendido",
   Vario: "Variómetro",
   "Flight time": "Tiempo de vuelo",
@@ -2845,8 +2847,8 @@ export const ES: Table = {
   "🗺️ Post": "🗺️ Publicación",
   // src/settings/PostLinksSetting.tsx (TASK-455 part E)
   "Links to my posts": "Enlaces a mis publicaciones",
-  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.":
-    "Quien ve tus publicaciones para «Todos» puede compartir su enlace. Quien tiene el enlace ve el dibujo en el mapa, tu nombre de usuario y la distancia, incluso sin MuW. Desactívalo y los enlaces dejan de funcionar.",
+  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.":
+    "Quien ve tus publicaciones para «Todos» puede compartir su enlace. Quien tiene el enlace ve el dibujo en el mapa, tu nombre de usuario, el título, el deporte y la distancia, incluso sin MuW. Desactívalo y los enlaces dejan de funcionar.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Añadir actividad",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
@@ -2913,9 +2915,20 @@ export const ES: Table = {
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Alpinismo",
+  "No shapes up a mountain: MuW records your day.":
+    "Sin formas en la montaña: MuW registra tu jornada.",
+  // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
+  Stretching: "Estiramientos",
+  // «Draw» with the sport «Stretching» (TASK-475 part B), approved by the
+  // user on 2026-11-21.
+  "Start stretching": "Empezar a estirar",
+  "No route for stretching: choose a routine and MuW guides you.":
+    "Sin ruta para estirar: elige una rutina y MuW te guía.",
   "Before you climb": "Antes de subir",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW registra tu ascensión y la comparte: no te guía. Ve con tu equipo, tu experiencia y tu criterio, y revisa las condiciones antes de salir.",
+  // TASK-305 part R6c: the map of a race (approved 2026-11-12).
+  "White: on foot. Yellow: in the air.": "Blanco: a pie. Amarillo: en el aire.",
   // src/liveShare/ (TASK-468 part B2a: the «Live» row, «Live in the Feed»,
   // the stop of a share without a link; en and it approved 2026-11-12)
   "Live in the Feed": "Directo en el Feed",
@@ -2937,4 +2950,64 @@ export const ES: Table = {
   Plan: "Programar",
   "Couldn't plan the live. Try again.":
     "No se pudo programar el directo. Inténtalo de nuevo.",
+  // src/liveShare/plannedPost.ts (TASK-468 part B2b2: the live becomes the
+  // post; en and it approved by the user 2026-11-12)
+  "Post it in the Feed?": "¿Publicarlo en el Feed?",
+  "Your live becomes the post of this activity.":
+    "Tu directo se convierte en la publicación de esta actividad.",
+  "Don't post": "No publicar",
+  // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
+  "Flight screen": "Pantalla de vuelo",
+  "GPS altitude": "Altitud GPS",
+  "Above takeoff": "Sobre el despegue",
+  "Average vario": "Vario medio",
+  "Thermal average": "Media de térmica",
+  "Thermal gain": "Ganancia en térmica",
+  "Ground speed": "Velocidad sobre el suelo",
+  Track: "Rumbo",
+  "Glide ratio": "Planeo",
+  Wind: "Viento",
+  "Thermal assistant": "Asistente de térmica",
+  Takeoff: "Despegue",
+  Clock: "Hora",
+  "GPS accuracy": "Precisión GPS",
+  Live: "En directo",
+  "Last 10 min": "Últimos 10 min",
+  Thermal: "Térmica",
+  XC: "XC",
+  Minimal: "Mínimo",
+  Look: "Aspecto",
+  Sunlight: "Pleno sol",
+  "Hold to unlock": "Mantén pulsado para desbloquear",
+  Lock: "Bloquear",
+  "Not sharing": "Sin compartir",
+  "From {bearing} · {minutes} min ago": "Desde {bearing} · hace {minutes} min",
+  "GPS numbers · not a certified instrument":
+    "Datos del GPS · no es un instrumento certificado",
+  "Log in to see this drawing.": "Inicia sesión para ver este dibujo.",
+  // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
+  "Edit layout": "Editar diseño",
+  "Page {n} of {count}": "Página {n} de {count}",
+  "Touch a widget to move it, size it or take it away.":
+    "Toca un widget para moverlo, cambiar su tamaño o quitarlo.",
+  Size: "Tamaño",
+  Unit: "Unidad",
+  "Add page": "Añadir página",
+  "Remove page": "Quitar página",
+  Duplicate: "Duplicar",
+  "Back to preset": "Volver al ajuste inicial",
+  "Undo every change to this layout?": "¿Deshacer todos los cambios de este diseño?",
+  "Delete this layout?": "¿Eliminar este diseño?",
+  "Send file": "Enviar archivo",
+  "Load file": "Cargar archivo",
+  "No room there.": "Ahí no hay sitio.",
+  "No room on this page.": "No hay sitio en esta página.",
+  "No room for another size.": "No hay sitio para otro tamaño.",
+  "No room for another page.": "No hay sitio para otra página.",
+  "No room for another layout.": "No hay sitio para otro diseño.",
+  "This file is not a MuW layout.": "Este archivo no es un diseño de MuW.",
+  "This layout is from a newer MuW: update the app.":
+    "Este diseño es de un MuW más reciente: actualiza la app.",
+  "MuW could not read this file.": "MuW no pudo leer este archivo.",
+  "MuW could not share the file.": "MuW no pudo compartir el archivo.",
 };

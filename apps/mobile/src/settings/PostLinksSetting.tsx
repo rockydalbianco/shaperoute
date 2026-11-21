@@ -10,9 +10,11 @@ import { t, tLater } from "../i18n";
 import { color, fontSize, radius, space } from "../theme/tokens";
 import { contactStyles } from "./ContactField";
 
-/** Approved by the user with the texts of TASK-455 (2026-11-12). */
+/** Approved by the user with the texts of TASK-455 (2026-11-12); the title
+ * and the sport, which the link's page shows too, added with the user's yes
+ * on 2026-11-21. */
 export const POST_LINKS_NOTE = tLater(
-  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.",
+  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.",
 );
 
 type Props = {

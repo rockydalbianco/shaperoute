@@ -24,6 +24,7 @@ scelte, fra il 27 e il 28 ottobre 2026:
 | Un post di sole foto | da 1 a 3 foto dal rullino, anche quelle già messe su Instagram | C |
 | Gli allenamenti già sul telefono | Apple Salute (iOS), Health Connect (Android) | D, prima uno studio (§7) |
 | Le attività di un account esterno | un collegamento diretto a Garmin, Polar, Suunto, Coros, Wahoo, Strava… | E, prima uno studio (§8) |
+| Un allenamento in palestra già fatto | scritto a mano dal «+» del Feed («Gym workout»: esercizi, serie, pesi, giorno, ora, durata) | TASK-484, ADR-0395 (`sports/gym.md`) |
 
 **Instagram non si collega.** La sua API legge solo gli account Business o
 Creator, e solo dopo la revisione di Meta. Un post di Instagram, poi, è
@@ -80,11 +81,15 @@ Il file non si tiene: resta solo la corsa, come la tiene l'API.
 
 ## 4. Un post di sole foto
 
-1. **Lo stesso modulo senza la mappa e senza i risultati**: da 1 a 3 foto
-   (almeno una), titolo, descrizione, persone taggate. Chi lo vede:
-   «Everyone» o «Followers». «Only me» non c'è, perché le foto vanno sul
+1. **Lo stesso modulo senza la mappa e senza i risultati**: da 1 a 10 foto
+   (almeno una; scelta dell'utente del 2026-11-21, «Fino a 10 foto»),
+   titolo, descrizione, persone taggate. Chi lo vede: «Everyone» o
+   «Followers», all'inizio l'ultima scelta salvata (la prima volta, o dopo
+   un «Only me», «Everyone»). «Only me» non c'è, perché le foto vanno sul
    server solo quando altri vedono il post (ADR-0170): un post solo foto
-   «Only me» sul server sarebbe vuoto.
+   «Only me» sul server sarebbe vuoto. Sul server è un disegno senza corsa
+   (`API.md` «Photo posts», `DATABASE.md` migrazione `0080`), pubblicato
+   con la prima foto.
 2. **Nel Feed** la scheda mostra le foto al posto del disegno, da scorrere
    come in ADR-0275, con «Imported». La data è quella della
    pubblicazione.
@@ -94,6 +99,10 @@ Il file non si tiene: resta solo la corsa, come la tiene l'API.
    post (TASK-119–121, TASK-213, TASK-291). Titolo e descrizione non
    passano dal filtro dei testi negativi, come quelli di un post
    (TASK-208).
+5. **Solo le app che lo sanno mostrare lo ricevono** (`photos` in
+   `X-MuW-Reads`): le app di prima non lo vedono mai. Per ora non si
+   trova con la ricerca dei disegni, non ha link pubblico e non si manda
+   in chat: partono tutti da una corsa.
 
 ## 5. Cosa non conta
 
@@ -103,6 +112,11 @@ Il file non si tiene: resta solo la corsa, come la tiene l'API.
 - **Il concorso** (TASK-299): la classifica prende solo i disegni di corse
   con `source = 'muw'`. Un post solo foto non ha corsa, quindi resta fuori
   da sé.
+- **La palestra scritta a mano** (TASK-484, ADR-0395, `source = 'manual'`):
+  fuori anche dai livelli e dalla classifica della palestra, dai badge,
+  da Apple Salute e dal giorno della scheda. Sotto «Imported» la sua
+  frase: «Workouts written by hand don't count for Play, contests, levels
+  or the leaderboard.»
 - **«Imported» si vede** nella scheda del Feed, nel post aperto e nella
   scheda di «My activities». Sotto il titolo del modulo: «Imported
   activities don't count for Play or contests.» *(testo da approvare)*.

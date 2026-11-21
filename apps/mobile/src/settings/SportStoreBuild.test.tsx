@@ -72,8 +72,12 @@ test("a store build leaves out the sports not ready, and keeps the order", () =>
     "xc_ski",
     "skimo",
     "snowshoe",
+    // A day of mountaineering, on since TASK-463 part C.
+    "alpinism",
     "gym",
     "paragliding",
+    // A stretching session, on since TASK-475 part C.
+    "stretch",
   ]);
   expect(STORE.every((option) => option.ready)).toBe(true);
 });
@@ -101,8 +105,12 @@ test("in a store build `SPORTS` has «Paragliding» since TASK-305 R2", () => {
       "xc_ski",
       "skimo",
       "snowshoe",
+      // A day of mountaineering, on since TASK-463 part C.
+      "alpinism",
       "gym",
       "paragliding",
+      // A stretching session, on since TASK-475 part C.
+      "stretch",
     ]);
   });
 });
@@ -113,8 +121,9 @@ test("«Settings» of a store build has no «Soon» row", async () => {
   // (TASK-378), the skate (TASK-380), paddle, the swim (TASK-323), the
   // alpine and the cross-country ski (TASK-375), ski touring (TASK-415 B),
   // the gym (TASK-385 B), the flight (TASK-305 R2), the wheelchair
-  // (TASK-414 B) and the snowshoes (TASK-413).
-  expect(screen.getAllByRole("radio")).toHaveLength(16);
+  // (TASK-414 B), the snowshoes (TASK-413), mountaineering (TASK-463 C)
+  // and stretching (TASK-475 C).
+  expect(screen.getAllByRole("radio")).toHaveLength(18);
   expect(
     screen.getByRole("radio", { name: "Wheelchair & stroller" }),
   ).toBeOnTheScreen();
@@ -138,8 +147,8 @@ test("«Settings» of a store build has no «Soon» row", async () => {
 test("the sport menu of «Draw» in a store build has no «Soon» row", async () => {
   await render(<SportButton sports={STORE} />);
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
-  // The sixteen of «Settings».
-  expect(screen.getAllByRole("radio")).toHaveLength(16);
+  // The eighteen of «Settings».
+  expect(screen.getAllByRole("radio")).toHaveLength(18);
   expect(screen.queryByText("Soon")).toBeNull();
   expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
 });

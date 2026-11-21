@@ -103,6 +103,10 @@ CURSOR_PATTERN = r"^\d{1,17}-[0-9a-f]{32}$"
 # Who can see a drawing (ADR-0170): every member, the members who follow its
 # owner with the request accepted, or only its owner.
 Visibility = Literal["everyone", "followers", "only_me"]
+# Where a drawing comes from: its run's `source`, or `photos` for a post of
+# photos only, without a run (TASK-312 part C, photo_posts.py).
+PHOTOS_SOURCE = "photos"
+DrawingSource = RunSource | Literal["photos", "sleep"]
 # The only ones that come with the line of a description.
 LINE_BREAK = "\n"
 
@@ -135,11 +139,12 @@ LatLon = tuple[float, float]
 
 
 def drawing_seen_sql(viewer: str) -> str:
-    """An SQL condition: the account `viewer` may open the drawing `d` of the
-    run `r` (FROM drawings d JOIN runs r ON r.id = d.run_id). Its owner
-    always; the others when it is for everyone, or for the followers and
-    they follow its owner with the request accepted. `viewer` is a column or
-    a placeholder holding a users.id, read once: one value for a `%s`.
+    """An SQL condition: the account `viewer` may open the drawing `d` (FROM
+    drawings d), of a run or of photos only (TASK-312 part C): its owner is
+    `d.user_id`. Its owner always; the others once it is published, when it
+    is for everyone, or for the followers and they follow its owner with the
+    request accepted. `viewer` is a column or a placeholder holding a
+    users.id, read once: one value for a `%s`.
 
     The question every reader of a drawing asks: its photos, and its
     comments (TASK-120), are seen by whoever sees it. Never across a block,
@@ -147,10 +152,13 @@ def drawing_seen_sql(viewer: str) -> str:
     from a report's email (TASK-291, ADR-0251), only its owner sees it."""
     return (
         f"EXISTS (SELECT 1 FROM (SELECT {viewer}::bigint AS id) seer"
-        " WHERE (seer.id = r.user_id OR (d.hidden_at IS NULL"
+        " WHERE (seer.id = d.user_id OR (d.hidden_at IS NULL"
+        # Implied by the visibility for a drawing of a run; a post of photos
+        # only waits for its first photo (migration 0080).
+        " AND d.published_at IS NOT NULL"
         " AND (d.visibility = 'everyone' OR (d.visibility = 'followers'"
-        f" AND {follows_sql('seer.id', 'r.user_id')}))))"
-        f" AND NOT {apart_sql('seer.id', 'r.user_id')})"
+        f" AND {follows_sql('seer.id', 'd.user_id')}))))"
+        f" AND NOT {apart_sql('seer.id', 'd.user_id')})"
     )
 
 
@@ -160,13 +168,15 @@ def shown_sql(viewer: str) -> str:
     (ADR-0159, point 8): for everyone, or for the followers and `viewer` is
     one of them or the owner. Never across a block (TASK-121): the feed and
     the profiles leave those drawings out. Hidden from a report's email
-    (TASK-291), only on its owner's own view of its profile."""
+    (TASK-291), only on its owner's own view of its profile. A post of
+    photos only waiting for its first photo is on no profile."""
     return (
         f"EXISTS (SELECT 1 FROM (SELECT {viewer}::bigint AS id) seer"
         " WHERE (d.visibility = 'everyone' OR (d.visibility = 'followers'"
-        f" AND (seer.id = r.user_id OR {follows_sql('seer.id', 'r.user_id')})))"
-        " AND (d.hidden_at IS NULL OR seer.id = r.user_id)"
-        f" AND NOT {apart_sql('seer.id', 'r.user_id')})"
+        f" AND (seer.id = d.user_id OR {follows_sql('seer.id', 'd.user_id')})))"
+        " AND d.published_at IS NOT NULL"
+        " AND (d.hidden_at IS NULL OR seer.id = d.user_id)"
+        f" AND NOT {apart_sql('seer.id', 'd.user_id')})"
     )
 
 
@@ -177,12 +187,13 @@ def published_count_sql(user_column: str, viewer: str | None = None) -> str:
     """
     shown = (
         "d.visibility = 'everyone' AND d.hidden_at IS NULL"
+        " AND d.published_at IS NOT NULL"
         if viewer is None
         else shown_sql(viewer)
     )
     return (
-        "(SELECT count(*) FROM drawings d JOIN runs r ON r.id = d.run_id"
-        f" WHERE r.user_id = {user_column} AND {shown})"
+        "(SELECT count(*) FROM drawings d"
+        f" WHERE d.user_id = {user_column} AND {shown})"
     )
 
 
@@ -375,11 +386,15 @@ class SeenFields(BaseModel):
     fidelity: float | None
     visibility: Visibility
     description: str | None
-    activity: RunActivity
-    source: RunSource = "muw"
+    activity: RunActivity | None
+    """The run's; null only for a post of photos only (`source` `photos`),
+    which only an app that reads `photos` receives (reads.py)."""
+    source: DrawingSource = "muw"
     """The run's (TASK-312): `file` for an activity of another app, shown
-    with «Imported». Always answered; the default is for the examples
-    written before."""
+    with «Imported»; `photos` for a post of photos only (part C), which has
+    no run: no place, shape, word, style, score or turn, 0 metres and 0
+    seconds, `started_at` when it was published, no line. Always answered;
+    the default is for the examples written before."""
     tags: list[TagBody]
     photos: list[PhotoBody]
     """In the post's order, for an app that does not read `order`."""
@@ -431,7 +446,8 @@ class DrawingBody(SeenFields):
 
 
 class DrawingsBody(BaseModel):
-    """A page of a profile's drawings, the latest run first."""
+    """A page of a profile's drawings, the latest run first (a post of
+    photos only by when it was published, TASK-312 part C)."""
 
     drawings: list[DrawingBody]
     next: str | None
@@ -459,6 +475,15 @@ class DrawingDetailBody(SeenFields):
 
 # --- The drawings in the database ---
 
+# When the drawing `d` was made, for FROM drawings d LEFT JOIN runs r: its
+# run's start, or for a post of photos only (TASK-312 part C) when it was
+# published, and while it waits for its first photo when it was last kept.
+# The order of a profile's drawings and the cursor of its pages.
+DRAWN_AT_SQL = "coalesce(r.started_at, d.published_at, d.updated_at)"
+# Its run, when it has one (TASK-312 part C): every reader of a drawing that
+# a post of photos only must also reach.
+WITH_RUN_SQL = "drawings d LEFT JOIN runs r ON r.id = d.run_id"
+
 # Whether the drawing `d` of the run `r` can be opened by its link (TASK-455
 # part C, ADR-0382, post_links.py): every member sees it, it is not hidden,
 # it has a line, and its owner is not hidden and leaves «Links to my posts»
@@ -466,15 +491,17 @@ class DrawingDetailBody(SeenFields):
 # page of the link is given: they never disagree.
 LINKABLE_SQL = (
     "(d.visibility = 'everyone' AND d.hidden_at IS NULL AND d.track IS NOT NULL"
-    " AND EXISTS (SELECT 1 FROM users owner WHERE owner.id = r.user_id"
+    " AND EXISTS (SELECT 1 FROM users owner WHERE owner.id = d.user_id"
     " AND owner.post_links AND owner.hidden_at IS NULL))"
 )
 
 _SEEN_FIELDS = (
     "d.id, d.title, d.visibility, d.description, d.published_at,"
-    " r.started_at, r.place, r.shape, r.word, r.style, r.title AS route_title,"
-    " r.distance_m, r.duration_s, r.score, r.fidelity, r.activity,"
-    " r.route_rotation_deg, r.source,"
+    f" {DRAWN_AT_SQL} AS started_at, r.place, r.shape, r.word, r.style,"
+    " r.title AS route_title, coalesce(r.distance_m, 0) AS distance_m,"
+    " coalesce(r.duration_s, 0) AS duration_s, r.score, r.fidelity, r.activity,"
+    f" r.route_rotation_deg, coalesce(r.source, CASE WHEN d.sleep_night_id IS NULL"
+    f" THEN '{PHOTOS_SOURCE}' ELSE 'sleep' END) AS source,"
     # The descents of a day of skiing (TASK-424 part C2b): one key of its
     # run_stats row, by its primary key.
     " (SELECT s.stats -> 'ski_descents' FROM run_stats s WHERE s.run_id = r.id)"
@@ -796,9 +823,10 @@ class Drawings:
                 if visibility != "only_me":
                     published_at = now if before is None else before["published_at"]
                 drawing = conn.execute(
-                    "INSERT INTO drawings (run_id, title, visibility, description,"
-                    " track, trackless, published_at, updated_at)"
-                    " VALUES (%s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s, %s, %s)"
+                    "INSERT INTO drawings (run_id, user_id, title, visibility,"
+                    " description, track, trackless, published_at, updated_at)"
+                    " VALUES (%s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s, %s,"
+                    " %s)"
                     " ON CONFLICT (run_id) DO UPDATE SET title = EXCLUDED.title,"
                     " visibility = EXCLUDED.visibility, track = EXCLUDED.track,"
                     " trackless = EXCLUDED.trackless,"
@@ -807,6 +835,7 @@ class Drawings:
                     " RETURNING id",
                     (
                         run["id"],
+                        user_id,
                         title,
                         visibility,
                         description,
@@ -876,18 +905,14 @@ class Drawings:
             ).fetchone()
             if user is None:
                 return None
-            where = (
-                f"r.user_id = %s AND {shown_sql('%s')}"
-                f" AND {reads.sql('r.activity', 'r.track IS NOT NULL')}"
-            )
+            where = f"d.user_id = %s AND {shown_sql('%s')} AND {reads.drawings_sql()}"
             values: list[Any] = [user["id"], viewer_id]
             if cursor is not None:
-                where += " AND (r.started_at, d.id) < (%s, %s)"
+                where += f" AND ({DRAWN_AT_SQL}, d.id) < (%s, %s)"
                 values += _after_cursor(cursor)
             rows = conn.execute(
-                f"SELECT {LISTED_COLUMNS} FROM drawings d"
-                f" JOIN runs r ON r.id = d.run_id WHERE {where}"
-                " ORDER BY r.started_at DESC, d.id DESC LIMIT %s",
+                f"SELECT {LISTED_COLUMNS} FROM {WITH_RUN_SQL} WHERE {where}"
+                f" ORDER BY {DRAWN_AT_SQL} DESC, d.id DESC LIMIT %s",
                 (*values, limit + 1),
             ).fetchall()
             count = conn.execute(
@@ -921,17 +946,22 @@ class Drawings:
         with self.database.connect() as conn:
             row = conn.execute(
                 f"SELECT {SEEN_COLUMNS}, u.public_id, u.username,"
-                " r.id AS run_id, r.user_id AS author_id FROM drawings d"
-                " JOIN runs r ON r.id = d.run_id JOIN users u ON u.id = r.user_id"
+                f" r.id AS run_id, d.user_id AS author_id FROM {WITH_RUN_SQL}"
+                " JOIN users u ON u.id = d.user_id"
                 f" WHERE d.id = %s AND {drawing_seen_sql('%s')}"
-                f" AND {reads.sql('r.activity', 'r.track IS NOT NULL')}",
+                f" AND {reads.drawings_sql()}",
                 (wanted, viewer_id),
             ).fetchone()
             if row is None:
                 return None
             details = _details(conn, [row["id"]], viewer_id)
-            stats = seen_stats(
-                conn, row["run_id"], author=row["author_id"] == viewer_id
+            # A post of photos only has no run, and no statistics.
+            stats = (
+                None
+                if row["run_id"] is None
+                else seen_stats(
+                    conn, row["run_id"], author=row["author_id"] == viewer_id
+                )
             )
         return DrawingDetailBody(
             **_seen(row, details),

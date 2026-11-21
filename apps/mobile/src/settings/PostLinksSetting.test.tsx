@@ -19,7 +19,7 @@ import { POST_LINKS_NOTE, PostLinksSetting } from "./PostLinksSetting";
 const URL = "http://api";
 const TOKEN = (session as Session).token;
 const NOTE =
-  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.";
+  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.";
 
 async function show(fetchFn: jest.Mock, baseUrl: string | null = URL) {
   const sessionEnded = jest.fn();

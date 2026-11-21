@@ -7,7 +7,9 @@ paddling, separated by commas: `swimming`, `hiking`, `mountain_biking`,
 `paragliding` (TASK-305 parts R), `alpinism` (TASK-463), `gym`,
 `trackless` for a run or a drawing without a track (TASK-385): a workout at
 the gym, which has none, needs both; and `pool` for a swim in a pool
-(TASK-400), which needs `swimming`, `trackless` and `pool`. A request
+(TASK-400), which needs `swimming`, `trackless` and `pool`; and `photos`
+for a post of photos only, a drawing without a run (TASK-312 part C,
+photo_posts.py), which has no activity. A request
 without it comes from a build of before, which reads those three only, each
 with its track. Every list of runs, drawings, routes or group runs leaves
 out what the request does not read; a drawing or a group run it does not
@@ -55,6 +57,8 @@ NEWER_ACTIVITIES: tuple[str, ...] = (
     "alpinism",
     # A workout at the gym (TASK-385): shown only with `trackless` too.
     "gym",
+    # A stretching session (TASK-475): shown only with `trackless` too.
+    "stretching",
 )
 TRACKLESS = "trackless"
 # A swim in a pool (TASK-400, ADR-0334): a run of swimming without a track.
@@ -62,17 +66,26 @@ TRACKLESS = "trackless"
 # lengths, so it needs all three.
 POOL = "pool"
 POOL_ACTIVITY = "swimming"
-KINDS: tuple[str, ...] = (*NEWER_ACTIVITIES, TRACKLESS, POOL)
+# A post of photos only (TASK-312 part C): no run, so no activity, no line.
+PHOTOS = "photos"
+# A night of sleep as a post of its own (TASK-467 part E): a drawing without
+# a run that carries its night. An app that reads `photos` and not `sleep`
+# would show it as a post without photos, so it has a kind of its own.
+SLEEP = "sleep"
+KINDS: tuple[str, ...] = (*NEWER_ACTIVITIES, TRACKLESS, POOL, PHOTOS, SLEEP)
 
 
 @dataclass(frozen=True)
 class Reads:
-    """The activities an app shows, whether it shows what has no track, and
-    whether a swim in a pool."""
+    """The activities an app shows, whether it shows what has no track,
+    whether a swim in a pool, whether a post of photos only, and whether the
+    post of a night of sleep."""
 
     activities: tuple[str, ...]
     trackless: bool = False
     pool: bool = False
+    photos: bool = False
+    sleep: bool = False
 
     def shows(self, activity: Any, tracked: bool = True) -> bool:
         """True when the app shows an item of `activity`, with a track or
@@ -94,11 +107,31 @@ class Reads:
             condition += f" AND ({activity} <> '{POOL_ACTIVITY}' OR {tracked})"
         return f"({condition})"
 
+    def drawings_sql(self) -> str:
+        """An SQL condition for FROM drawings d LEFT JOIN runs r: the app
+        shows the drawing `d`. One of a run as `sql` says, from its run; a
+        post of photos only, without a run (TASK-312 part C), only when the
+        app reads `photos`; the post of a night of sleep, without a run and
+        with its night (TASK-467 part E), only when it reads `sleep`."""
+        runs = self.sql("r.activity", "r.track IS NOT NULL")
+        shown = [f"(d.run_id IS NOT NULL AND {runs})"]
+        if self.photos:
+            shown.append("(d.run_id IS NULL AND d.sleep_night_id IS NULL)")
+        if self.sleep:
+            shown.append("d.sleep_night_id IS NOT NULL")
+        return f"({' OR '.join(shown)})"
+
 
 # The app of before the header.
 OLD_APP = Reads(OLD_APP_ACTIVITIES)
 # What the API itself sees: its commands, its pushes, its own tests.
-EVERYTHING = Reads((*OLD_APP_ACTIVITIES, *NEWER_ACTIVITIES), trackless=True, pool=True)
+EVERYTHING = Reads(
+    (*OLD_APP_ACTIVITIES, *NEWER_ACTIVITIES),
+    trackless=True,
+    pool=True,
+    photos=True,
+    sleep=True,
+)
 
 
 def reads_from(lines: Iterable[str]) -> Reads:
@@ -109,6 +142,8 @@ def reads_from(lines: Iterable[str]) -> Reads:
         (*OLD_APP_ACTIVITIES, *(a for a in NEWER_ACTIVITIES if a in said)),
         trackless=TRACKLESS in said,
         pool=POOL in said,
+        photos=PHOTOS in said,
+        sleep=SLEEP in said,
     )
 
 

@@ -9,14 +9,14 @@ import {
   waitFor,
   within,
 } from "@testing-library/react-native";
-import { type ImageStyle, type StyleProp, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text, type ViewStyle } from "react-native";
 
 import type { AccountState } from "../account/useAccount";
 import { TabShell } from "../tabs/TabShell";
 import { forgetBlocked } from "../social/blockedNow";
 import { FollowsContext } from "../social/followsDoor";
-import { color, font } from "../theme/tokens";
-import { FeedPost, postFacts, SCRIM_HEIGHT } from "./FeedPost";
+import { color, font, space } from "../theme/tokens";
+import { FeedPost, postFacts } from "./FeedPost";
 import { forgetFeedMaps } from "./FeedMaps";
 import { shownPost } from "./feedPosts";
 
@@ -107,7 +107,7 @@ test("a drawing with photos shows them after it, read with the token", async () 
   });
 });
 
-test("the words stay under the drawing, and lie over a photo on a scrim (TASK-339)", async () => {
+test("the words stay under the drawing, and lie over a photo on a capsule of glass (TASK-339, TASK-469 A4c)", async () => {
   await show(WITH_PHOTO);
   const post = shownPost(WITH_PHOTO);
   const [drawingPage, photoPage] = within(
@@ -123,9 +123,8 @@ test("the words stay under the drawing, and lie over a photo on a scrim (TASK-33
   });
   expect(within(drawingPage).queryByText(postFacts(post))).toBeNull();
   expect(screen.getByTestId("feed-summary")).toBeOnTheScreen();
-  // Over the photo: light in both tones, on the dark that rises from its
-  // foot, out of the way of the finger, and not read twice (the card is
-  // read as one thing).
+  // Over the photo: on a capsule of glass inside it, out of the way of the
+  // finger, and not read twice (the card is read as one thing).
   const hidden = { includeHiddenElements: true };
   const words = within(photoPage).getByTestId("feed-photo-words", hidden);
   expect(words).toHaveProp("pointerEvents", "none");
@@ -135,25 +134,24 @@ test("the words stay under the drawing, and lie over a photo on a scrim (TASK-33
   expect(within(words).getByText(post.title, hidden)).toHaveStyle({
     fontSize: font.heading.fontSize,
     fontWeight: font.heading.fontWeight,
-    color: color.onScrim,
+    color: color.text,
   });
   expect(within(words).queryByText(postFacts(post), hidden)).toBeNull();
-  // The scrim: an image stretched over the foot of the photo, and none
-  // over the drawing.
+  // The capsule: 8 pt from the photo's edges; the dark of `Scrim` is gone, from
+  // the photo as from the drawing.
+  expect(StyleSheet.flatten(words.props.style) as ViewStyle).toMatchObject({
+    position: "absolute",
+    left: space.sm,
+    right: space.sm,
+    bottom: space.sm,
+  });
   const [drawingJson, photoJson] = nodes(
     screen.toJSON() as unknown as Json | null,
     (node) => node.props.testID === "feed-page-tap",
   );
   const stretched = (page: Json) =>
     nodes(page, (node) => node.props.resizeMode === "stretch");
-  expect(stretched(photoJson)).toHaveLength(1);
-  expect(
-    StyleSheet.flatten(stretched(photoJson)[0].props.style as StyleProp<ImageStyle>),
-  ).toMatchObject({
-    position: "absolute",
-    bottom: 0,
-    height: SCRIM_HEIGHT,
-  });
+  expect(stretched(photoJson)).toHaveLength(0);
   expect(stretched(drawingJson)).toHaveLength(0);
 });
 

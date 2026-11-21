@@ -49,7 +49,15 @@ from fastapi import (
 )
 from psycopg.rows import DictRow
 from psycopg.types.json import Jsonb
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 from route_engine.geo import haversine_m
 from route_engine.pen_up import walks_problem
 from route_engine.track_score import (
@@ -74,6 +82,7 @@ from shaperoute_api.accounts import (
 )
 from shaperoute_api.best_routes import line_key
 from shaperoute_api.db import Database
+from shaperoute_api.flight_legs import ActivityFlightBody, flight_of
 from shaperoute_api.game import after_run_saved, notify_unlocked
 from shaperoute_api.insights import Insights
 from shaperoute_api.personal_bests import keep_run_bests, run_bests
@@ -150,6 +159,7 @@ RunActivity = Literal[
     "paragliding",
     "alpinism",
     "gym",
+    "stretching",
 ]
 # A day on the snow: recorded and shown, never planned by the engine. Its
 # speeds are no runner's nor rider's, so it gives no personal best. The
@@ -164,9 +174,10 @@ TRACKLESS_ACTIVITIES: tuple[RunActivity, ...] = tuple(
     cast(RunActivity, sport.activity) for sport in API_SPORTS if sport.trackless
 )
 # Where a run comes from (TASK-312, ADR-0272): recorded by the app, or a file
-# of another app read on the phone. Only `muw` counts for the shape game and
-# the contest.
-RunSource = Literal["muw", "file"]
+# of another app read on the phone; `manual`, a workout at the gym written by
+# hand (TASK-484, ADR-0395), saved only by gym_sessions.py. Only `muw` counts
+# for the shape game and the contest.
+RunSource = Literal["muw", "file", "manual"]
 MUW: RunSource = "muw"
 
 
@@ -282,6 +293,8 @@ class ActivityRequestBody(BaseModel):
             raise ValueError("rotation_deg is the route's: there is none")
         if self.source != MUW and self.points is not None:
             raise ValueError("a run from another app followed no route of MuW")
+        if self.source == "manual":
+            raise ValueError("a workout written by hand is saved by /me/gym-sessions")
         if self.activity in TRACKLESS_ACTIVITIES:
             raise ValueError("a workout at the gym is saved by /me/gym-sessions")
         # As POST /track-scores checks them (schemas.py).
@@ -317,6 +330,11 @@ class ActivityBody(BaseModel):
     source: RunSource = MUW
     """Where it comes from (TASK-312): the app writes «Imported» for `file`.
     Always answered; the default is for the examples written before."""
+    climb_m: int | None = None
+    """The metres climbed (TASK-324), for «Quanta salita fai oggi?» of the
+    gym's plans (TASK-461 D1, ADR-0371): null for a run whose fixes had no
+    heights and for every run saved before TASK-324. Always answered; the
+    default is for the examples written before."""
     route_preview: list[LatLon] | None
     track_preview: list[LatLon]
 
@@ -428,6 +446,17 @@ class ActivityDetailBody(BaseModel):
     """The post as it was last shared (TASK-258); null for a run whose post
     was never shared. Always answered; the default is for the examples
     written before."""
+    flight: ActivityFlightBody | None = None
+    """A race on foot and in the air (TASK-305 part R6d): its parts in the
+    air on `track` and the two kinds added up. Left out of the answer for
+    any other run, and for a flight without parts on foot."""
+
+    @model_serializer(mode="wrap")
+    def _without_flight(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        answer: dict[str, Any] = handler(self)
+        if answer.get("flight") is None:
+            answer.pop("flight", None)
+        return answer
 
 
 # --- The place a run starts from ---
@@ -636,7 +665,7 @@ def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:
 COLUMNS = (
     "id, key, started_at, place, shape, word, style, title, distance_m,"
     " duration_s, score, fidelity, route_similarity, walks, activity,"
-    " route_rotation_deg, source,"
+    " route_rotation_deg, source, climb_m,"
     " ST_AsGeoJSON(route, 15) AS route,"
     " ST_AsGeoJSON(ST_Force2D(track), 15) AS track"
 )
@@ -698,6 +727,7 @@ def _listed(row: DictRow) -> ActivityBody:
     route = row["route"]
     return ActivityBody(
         **_fields(row),
+        climb_m=row["climb_m"],
         route_preview=None if route is None else preview(_line(route)),
         track_preview=preview(_line(row["track"])),
     )
@@ -806,8 +836,20 @@ class Activities:
             ).fetchone()
 
     def get(self, user_id: int, key: str) -> ActivityDetailBody | None:
-        row = self._row(user_id, key, DETAIL_COLUMNS)
-        return None if row is None else _whole(row)
+        with self.database.connect() as conn:
+            row = conn.execute(
+                f"SELECT {DETAIL_COLUMNS} FROM runs WHERE user_id = %s AND key = %s",
+                (user_id, key),
+            ).fetchone()
+            if row is None:
+                return None
+            # A race's parts on foot and in the air (TASK-305 part R6d).
+            flight = (
+                flight_of(conn, int(row["id"]))
+                if row["activity"] == "paragliding"
+                else None
+            )
+        return _whole(row).model_copy(update={"flight": flight})
 
     def save(
         self, user_id: int, key: str, body: ActivityRequestBody

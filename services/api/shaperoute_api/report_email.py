@@ -8,25 +8,26 @@ and whether it is hidden already, and a link «Hide».
 
 The link is signed with SHAPEROUTE_EMAIL_SECRET and says one action (hide
 or show), one thing (a drawing, a comment, a member, a private message, an
-item tagged on a photo),
+item tagged on a photo, an item of gear),
 its id, when it expires (LINK_DAYS) and a random nonce. Opening it (GET)
 only shows what it will do and a button: a mail reader that opens links
 changes nothing.
 The button (POST) does it, once: the nonce goes in report_links_used.
 After «Hide» the page has «Undo», a new link of the same kind.
 
-Hidden is from the others only: the author still sees it. A hidden drawing
-is out of drawings.drawing_seen_sql and shown_sql, a hidden comment out of
-comments.NOT_APART, a hidden group run out of group_runs.seen_sql
-(TASK-309), a hidden message out of messages.SEEN, a hidden item of a photo
-out of outfit_tags.tags_on_photos (TASK-394: only that item, never its
-post), and a hidden member is kept apart from everyone as across a block
-(follows.apart_sql). Nothing is
-deleted. Of a private message (TASK-319) the email holds that message
-only, never the rest of its conversation. A message with a photo, a video
-or a drawing (TASK-333) says so, and the page of the link shows it: the
-file comes from the same address, `?t=…&part=media`, so whoever runs MuW
-needs no account; «Hide» hides the attachment with its message.
+Hidden is from the others only: the author still sees it. A hidden
+drawing is out of drawings.drawing_seen_sql and shown_sql, a hidden
+comment out of comments.NOT_APART, a hidden group run out of
+group_runs.seen_sql (TASK-309), a hidden message out of messages.SEEN, a
+hidden item of a photo out of outfit_tags.tags_on_photos (TASK-394: only
+that item, never its post), a hidden item of gear out of gear._seen_sql
+(TASK-486), and a hidden member is kept apart from everyone as across a
+block (follows.apart_sql). Nothing is deleted. Of a private message
+(TASK-319) the email holds that message only, never the rest of its
+conversation. A message with a photo, a video or a drawing (TASK-333)
+says so, and the page of the link shows it: the file comes from the same
+address, `?t=…&part=media`, so whoever runs MuW needs no account; «Hide»
+hides the attachment with its message.
 
 Off unless the environment has RESEND_API_KEY, SHAPEROUTE_EMAIL_SECRET,
 SHAPEROUTE_DOMAIN and SHAPEROUTE_REPORTS_TO (docs/DEPLOY.md, «Email delle
@@ -80,7 +81,9 @@ MAX_TOKEN_LENGTH = 160
 PAGE_HEADERS = {"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"}
 
 Action = Literal["hide", "show"]
-Kind = Literal["drawing", "comment", "user", "group_run", "message", "outfit_tag"]
+Kind = Literal[
+    "drawing", "comment", "user", "group_run", "message", "outfit_tag", "gear"
+]
 ACTIONS: tuple[Action, ...] = get_args(Action)
 KINDS: tuple[Kind, ...] = get_args(Kind)
 # What a report's kind is called in the email and on the pages.
@@ -91,6 +94,7 @@ NOUN: dict[Kind, str] = {
     "group_run": "group run",
     "message": "message",
     "outfit_tag": "tagged item",
+    "gear": "gear item",
 }
 
 # The row of each kind, by the id a report keeps (a member: its public_id).
@@ -101,6 +105,7 @@ TABLE_OF: dict[Kind, tuple[str, str]] = {
     "group_run": ("group_runs", "id"),
     "message": ("messages", "id"),
     "outfit_tag": ("drawing_outfit_tags", "id"),
+    "gear": ("gear", "id"),
 }
 
 
@@ -234,8 +239,7 @@ class Reported:
 def _drawing(conn: Connection[DictRow], target: UUID) -> DictRow | None:
     return conn.execute(
         "SELECT d.title, d.description, d.hidden_at, u.username, u.public_id"
-        " FROM drawings d JOIN runs r ON r.id = d.run_id"
-        " JOIN users u ON u.id = r.user_id WHERE d.id = %s",
+        " FROM drawings d JOIN users u ON u.id = d.user_id WHERE d.id = %s",
         (target,),
     ).fetchone()
 
@@ -262,10 +266,34 @@ def _outfit_tag(conn: Connection[DictRow], target: UUID) -> DictRow | None:
     return conn.execute(
         "SELECT t.item, t.brand, t.product_name, t.url, t.drawing_id, t.n,"
         " t.hidden_at, u.username, u.public_id FROM drawing_outfit_tags t"
-        " JOIN drawings d ON d.id = t.drawing_id JOIN runs r ON r.id = d.run_id"
-        " JOIN users u ON u.id = r.user_id WHERE t.id = %s",
+        " JOIN drawings d ON d.id = t.drawing_id"
+        " JOIN users u ON u.id = d.user_id WHERE t.id = %s",
         (target,),
     ).fetchone()
+
+
+def _gear(conn: Connection[DictRow], target: UUID) -> DictRow | None:
+    return conn.execute(
+        "SELECT g.kind, g.brand, g.model, g.name, g.note, g.hidden_at,"
+        " p.gear_id IS NOT NULL AS has_photo, u.username, u.public_id"
+        " FROM gear g JOIN users u ON u.id = g.user_id"
+        " LEFT JOIN gear_photos p ON p.gear_id = g.id WHERE g.id = %s",
+        (target,),
+    ).fetchone()
+
+
+def gear_lines(row: DictRow) -> tuple[str, ...]:
+    """An item of gear (TASK-486), for the email: its words, and whether it
+    has a photo, which hiding hides with it."""
+    return (
+        f"Kind: {row['kind']}",
+        f"Brand: {row['brand']}",
+        f"Model: {row['model'] or '(none)'}",
+        f"Name: {row['name'] or '(none)'}",
+        f"Note: {row['note'] or '(none)'}",
+        f"Photo: {'yes' if row['has_photo'] else 'no'}",
+        "Hiding hides the whole item, photo included, from everyone but its" " owner.",
+    )
 
 
 def outfit_tag_lines(row: DictRow) -> tuple[str, ...]:
@@ -376,6 +404,10 @@ def reported(conn: Connection[DictRow], report_id: UUID) -> Reported | None:
         row = _outfit_tag(conn, target)
         if row is not None:
             lines = outfit_tag_lines(row)
+    elif kind == "gear":
+        row = _gear(conn, target)
+        if row is not None:
+            lines = gear_lines(row)
     elif kind == "message":
         row = _message(conn, target)
         if row is not None:

@@ -17,7 +17,7 @@ import {
 import type { GymLevel } from "./gym.ts";
 import type { FlightSplit } from "./flightParts.ts";
 import type { SkiDescents } from "./skiParts.ts";
-import type { SleepSummary } from "./sleep.ts";
+import type { SLEEP_SOURCE, SleepSummary } from "./sleep.ts";
 
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
@@ -124,9 +124,12 @@ export type RunActivity = (typeof RUN_ACTIVITIES)[number];
 
 /** Where a saved run comes from (TASK-312, ADR-0272): "muw", recorded by
  * the app; "file", a GPX, TCX or FIT file of another app, read on the phone
- * and saved with the same PUT /me/activities/{key}. Only "muw" counts for
- * the shape game and the contest; the app shows «Imported» for the others. */
-export const RUN_SOURCES = ["muw", "file"] as const;
+ * and saved with the same PUT /me/activities/{key}; "manual", a workout at
+ * the gym written by hand afterwards, saved by PUT /me/gym-sessions/{key}
+ * (TASK-484, ADR-0395). Only "muw" counts for the shape game, the contest
+ * and the gym's levels and leaderboard; the app shows «Imported» for the
+ * others. */
+export const RUN_SOURCES = ["muw", "file", "manual"] as const;
 export type RunSource = (typeof RUN_SOURCES)[number];
 
 /** Plausible target distances for running, in metres. */
@@ -1653,7 +1656,35 @@ export const FEED_NEAR_M = 50_000;
  * who published it. Opened whole with GET /drawings/{id}.
  */
 export interface FeedPost extends Drawing {
-  author: DrawingAuthor;
+  author: FeedAuthor;
+  /**
+   * How many reactions the post has and the reader's own, as
+   * GET /drawings/{id}/reactions counts them (TASK-355 part B). Missing from
+   * an API of before, and from the search, the contests and the resorts.
+   */
+  reactions?: FeedReactions;
+  /**
+   * The comments and replies the reader reads, as `total` of
+   * GET /drawings/{id}/comments. Missing as `reactions` is.
+   */
+  comments?: number;
+}
+
+/** Who published a post of the feed. */
+export interface FeedAuthor extends DrawingAuthor {
+  /**
+   * Where its picture is read, `/users/{public_id}/photo?v=…`, a square JPEG
+   * of 128 px with the token; a new picture has a new address. Null without
+   * one; missing from an API of before (TASK-355 part B).
+   */
+  photo?: string | null;
+}
+
+/** The reactions of a post, as its card shows them. */
+export interface FeedReactions {
+  total: number;
+  /** The reader's own; null when it left none. */
+  mine: ReactionKind | null;
 }
 
 /**
@@ -1688,6 +1719,121 @@ export interface FilteredFeedPage extends FeedPage {
  * nobody from one whose people have published nothing. */
 export interface FollowingFeedPage extends FilteredFeedPage {
   follows_anyone: boolean;
+}
+
+// --- Posts of photos only (TASK-312 part C, ADR-0272) ---
+//
+// A drawing without a run: photos taken elsewhere, from Instagram too,
+// with a title, a description and the members tagged. Only an app that
+// says `photos` in X-MuW-Reads receives one (reads.json), in GET /feed,
+// GET /users/{id}/drawings, GET /users/{id}/photos and GET /drawings/{id}:
+// the types of the posts of runs above stay as they were, and the app
+// tells the two apart with isPhotoPost where it reads them.
+
+/** `source` of a post of photos only, and the value said in X-MuW-Reads. */
+export const PHOTOS_SOURCE = "photos" as const;
+/** Where a drawing comes from: its run, photos only, or a night of sleep
+ * (TASK-467 part E, sleep.ts). */
+export type DrawingSource = RunSource | typeof PHOTOS_SOURCE | typeof SLEEP_SOURCE;
+/** Never «Only me»: its photos are on the server only while others see it. */
+export const PHOTO_POST_VISIBILITIES = ["everyone", "followers"] as const;
+export type PhotoPostVisibility = (typeof PHOTO_POST_VISIBILITIES)[number];
+/** Its places, 1 to 10: there is no map among them. */
+export const PHOTO_POST_MAX_PHOTOS = 10;
+
+/** PUT /me/photo-posts/{key}: the post as it should be now, the key made
+ * by the phone as a run's; sent again, it changes nothing. */
+export interface PhotoPostRequest {
+  title?: string | null;
+  description?: string | null;
+  visibility: PhotoPostVisibility;
+  /** The public_id of the members tagged, in order; [] or missing: none. */
+  tags?: string[];
+}
+
+/** PUT /me/photo-posts/{key}/order: the photos by place, `photo:2`, each
+ * once; no `drawing`. The photos themselves go to
+ * PUT /me/photo-posts/{key}/photos/{n} as DrawingPhotoRequest. */
+export interface PhotoPostOrderRequest {
+  order: string[];
+}
+
+/** A post of photos only as its owner has it: GET, PUT /me/photo-posts/{key}
+ * and its photos and order. */
+export interface MyPhotoPost {
+  key: string;
+  /** What the others open it with: GET /drawings/{id}. */
+  id: string;
+  title: string | null;
+  description: string | null;
+  visibility: PhotoPostVisibility;
+  /** Set by its first photo; null while it has none, and nobody but its
+   * owner finds it. */
+  published_at: string | null;
+  tags: DrawingTag[];
+  photos: DrawingPhoto[];
+  order: string[] | null;
+}
+
+/** GET /me/photo-posts: every post of photos only of the account, the last
+ * published first (those waiting for a photo by when they were last kept).
+ * The app finds there the key of a post it opened by its id (part C1b). */
+export interface MyPhotoPosts {
+  photo_posts: MyPhotoPost[];
+}
+
+/** What a post of photos only has instead of a run's numbers. */
+interface WithoutRun {
+  id: string;
+  title: string | null;
+  /** When it was published. */
+  started_at: string;
+  published_at: string | null;
+  place: null;
+  shape: null;
+  word: null;
+  style: null;
+  route_title: null;
+  distance_m: 0;
+  duration_s: 0;
+  score: null;
+  fidelity: null;
+  visibility: PhotoPostVisibility;
+  description: string | null;
+  activity: null;
+  source: typeof PHOTOS_SOURCE;
+  tags: DrawingTag[];
+  photos: DrawingPhoto[];
+  order: string[] | null;
+  rotation_deg: null;
+  ski_descents: null;
+  flight_split: null;
+  sleep: null;
+  /** Never: a link shows a line, and it has none. */
+  linkable: false;
+}
+
+/** A post of photos only in GET /users/{id}/drawings. */
+export interface PhotoDrawing extends WithoutRun {
+  track_preview: [];
+}
+
+/** A post of photos only in GET /feed. */
+export interface PhotoFeedPost extends PhotoDrawing {
+  author: DrawingAuthor;
+}
+
+/** A post of photos only in GET /drawings/{id}. */
+export interface PhotoDrawingDetail extends WithoutRun {
+  author: DrawingAuthor;
+  public: boolean;
+  track: [];
+  stats: null;
+}
+
+/** Whether a drawing an API answered is a post of photos only. */
+export function isPhotoPost(post: { source?: string | null }): boolean {
+  return post.source === PHOTOS_SOURCE;
 }
 
 /** The orders of GET /search/drawings (TASK-344, ADR-0297): the last
@@ -1730,8 +1876,8 @@ export interface DrawingSearchPage extends FeedPage {
 /**
  * What a member reports with POST /reports (TASK-121, ADR-0228): a drawing
  * (a post of the feed), a comment, a member, a group run (TASK-309), a
- * private message (TASK-319: only the one it was sent to reports it), or an
- * item tagged on a photo (TASK-394).
+ * private message (TASK-319: only the one it was sent to reports it), an
+ * item tagged on a photo (TASK-394), or an item of gear (TASK-486).
  */
 export const REPORT_KINDS = [
   "drawing",
@@ -1740,6 +1886,7 @@ export const REPORT_KINDS = [
   "group_run",
   "message",
   "outfit_tag",
+  "gear",
 ] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
@@ -2999,6 +3146,7 @@ export interface StyleShop {
 
 export * from "./gym.ts";
 export * from "./poolSwim.ts";
+export * from "./stretchSession.ts";
 export * from "./activityCalendar.ts";
 export * from "./flightBests.ts";
 export * from "./liveShare.ts";
@@ -3105,3 +3253,4 @@ export * from "./resortFollows.ts";
 export * from "./skiParts.ts";
 export * from "./flightParts.ts";
 export * from "./sleep.ts";
+export * from "./together.ts";

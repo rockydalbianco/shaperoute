@@ -52,6 +52,7 @@ from shaperoute_api.activity_graphs import (
     ground_for,
     source_for,
 )
+from shaperoute_api.avatars import install_avatars
 from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.comment_reactions import install_comment_reactions
@@ -68,6 +69,7 @@ from shaperoute_api.feed import install_feed
 from shaperoute_api.feedback import install_feedback
 from shaperoute_api.follows import install_follows
 from shaperoute_api.game import install_game
+from shaperoute_api.gear import install_gear
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.group_runs import install_group_runs
 from shaperoute_api.gym_calendar import install_gym_calendar
@@ -100,6 +102,7 @@ from shaperoute_api.notification_list import install_notification_list
 from shaperoute_api.notifications import install_notifications
 from shaperoute_api.outfit_tags import install_outfit_tags
 from shaperoute_api.outline_edits import edit_outline
+from shaperoute_api.photo_posts import install_photo_posts
 from shaperoute_api.places import (
     MAX_QUERY_LENGTH,
     MIN_QUERY_LENGTH,
@@ -152,11 +155,14 @@ from shaperoute_api.sign_in_providers import (
 )
 from shaperoute_api.signals import SignalBody, SignalGate, event_of
 from shaperoute_api.sleep import install_sleep
+from shaperoute_api.sleep_posts import install_sleep_posts
 from shaperoute_api.strava import install_strava
 from shaperoute_api.strava_client import Strava
+from shaperoute_api.stretch_sessions import install_stretch_sessions
 from shaperoute_api.stroke_matches_api import install_stroke_matches
 from shaperoute_api.style_posts import install_style_posts
 from shaperoute_api.themed import ThemedJobBody, ThemedJobs, ThemedRequestBody
+from shaperoute_api.together import install_together
 from shaperoute_api.track_scores import score_run
 from shaperoute_api.user_photos import install_user_photos
 from shaperoute_api.vo2max import install_vo2max
@@ -411,9 +417,13 @@ def create_app(
     # The swims in a pool, saved without a track, and their lengths
     # (TASK-400); they need a token.
     install_pool_swims(app)
+    # The stretching sessions, saved without a track, and their routine
+    # (TASK-475); they need a token.
+    install_stretch_sessions(app)
     # The nights of sleep a person publishes, on the profile and in the
     # post of an activity (TASK-467 B1); they need a token.
     install_sleep(app)
+    install_sleep_posts(app)
     # The figures of a run for the page of its post: splits, elevation,
     # cadence, calories (TASK-410 C); they need a token.
     install_run_stats(app)
@@ -423,6 +433,10 @@ def create_app(
     # Up to three photos of a drawing, besides its map (TASK-208); they need
     # a token.
     install_drawing_photos(app)
+    # Posts of photos only, drawings without a run (TASK-312 part C); they
+    # need a token.
+    install_photo_posts(app)
+    install_together(app)
     # The photos of a profile's drawings, a page at a time (TASK-324); they
     # need a token.
     install_user_photos(app)
@@ -439,6 +453,7 @@ def create_app(
     # The drawings the members publish, read by whoever is signed in
     # (TASK-118); it needs a token.
     install_feed(app)
+    install_avatars(app)
     # The search of the drawings from the lens of «Feed» (TASK-344); it
     # needs a token.
     install_drawing_search(app)
@@ -867,5 +882,7 @@ def create_app(
     # Items tagged on the photos of members' posts (TASK-394, ADR-0333): their
     # links checked with Web Risk, the key from the environment.
     install_outfit_tags(app)
+    # A member's gear and its totals (TASK-486, ADR-0393).
+    install_gear(app)
 
     return app

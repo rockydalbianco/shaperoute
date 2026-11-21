@@ -13,6 +13,8 @@ import { fill, LANGUAGES, TEXTS as LIVE_TEXTS } from "../live/texts.js";
 import { API, boundsOf } from "../live/view.js";
 import { SPORTS, TEXTS } from "../p/texts.js";
 import {
+  appBarOf,
+  bearingOf,
   distanceOf,
   factsOf,
   ID_PATTERN,
@@ -70,6 +72,26 @@ test("the line goes to the map as it came, turned to [lon, lat]", () => {
   assert.ok(west < east && south < north);
 });
 
+test("the map is turned as the drawing, as the app turns its own", () => {
+  // The same answers as apps/mobile/src/map/turnedMap.ts.
+  assert.equal(bearingOf(30), -30);
+  assert.equal(bearingOf(-45), 45);
+  assert.equal(bearingOf(180), 180);
+  assert.equal(bearingOf(-180), 180);
+  assert.equal(bearingOf(390), -30);
+  // A drawing that does not say is north up: the example, an older API.
+  assert.equal(bearingOf(FIXTURE.rotation_deg), 0);
+  for (const none of [undefined, null, "30", Number.NaN, Infinity, 0]) {
+    assert.ok(Object.is(bearingOf(none), 0), String(none));
+  }
+  const script = read(PAGE, "post.js");
+  assert.match(script, /const bearing = bearingOf\(post\.rotation_deg\);/);
+  // The line is fitted on the turned map, not turned after.
+  assert.match(script, /fitBoundsOptions: \{[^}]*\bbearing\b[^}]*\}/);
+  // The compass only on a turned map.
+  assert.match(script, /showCompass: turned/);
+});
+
 test("a link that opens no drawing says so, whatever the reason", () => {
   // The API answers one 404 for a drawing for its followers, a private one,
   // one whose owner turned the links off, a deleted one, an id not there.
@@ -90,6 +112,33 @@ test("too many requests wait as long as the API says; a failure asks again a few
     assert.deepEqual(outcomeOf(status, undefined, null), { kind: "failed" });
   }
   assert.equal(RETRY_AFTER_MS.length, 3);
+});
+
+test("when the API still does not answer the page says so and offers to ask again", () => {
+  // The words the user approved on 2026-11-21; «Try again» as the app says it.
+  assert.equal(TEXTS.en.failed, "We couldn't load this drawing.");
+  assert.equal(TEXTS.en.retry, "Try again");
+  assert.equal(TEXTS.it.failed, "Non siamo riusciti a caricare questo disegno.");
+  for (const language of ["it", "de", "fr", "es"]) {
+    const table = read(REPO, "apps", "mobile", "src", "i18n", `${language}.ts`);
+    assert.ok(table.includes(`"Try again": "${TEXTS[language].retry}"`), language);
+    // Not the words of a drawing that is gone: it may well be there.
+    assert.notEqual(TEXTS[language].failed, TEXTS[language].gone, language);
+  }
+  const script = read(PAGE, "post.js");
+  // The button is the script's own, on the page only while it is there to
+  // press: the page as it comes has none to show by mistake.
+  assert.ok(!read(PAGE, "index.html").includes("<button"));
+  assert.match(script, /again\.className = "button post__again";/);
+  assert.match(script, /if \(retry\) \{\s*facts\.after\(again\);\s*\} else \{\s*again\.remove\(\);/);
+  // Only after the last wait, and the button starts the asking over.
+  assert.match(
+    script,
+    /attempt < RETRY_AFTER_MS\.length\) \{[^}]*\} else \{[^}]*showNothing\(text\.failed, true\);/,
+  );
+  assert.match(script, /again\.addEventListener\("click", start\);/);
+  // A drawing that came, or a link that opens none, has no button.
+  assert.match(script, /function showPost\(post\) \{\s*again\.remove\(\);/);
 });
 
 test("the words are the approved ones, in the five languages", () => {
@@ -151,6 +200,89 @@ test("the page is not for search engines, and loads only the site's own files", 
     const urls = read(PAGE, file).match(/https?:\/\/[^"'`\s)]+/g) ?? [];
     assert.deepEqual(urls, [], `${file} names no address of its own`);
   }
+});
+
+test("a chat app shows the same card for every link: the approved words and the site's own picture", () => {
+  const html = read(PAGE, "index.html");
+  const meta = (name) =>
+    html.match(new RegExp(`<meta (?:property|name)="${name}" content="([^"]*)" />`))?.[1];
+  // The words the user approved on 2026-11-21.
+  assert.equal(meta("og:title"), "A drawing on MuW");
+  assert.equal(meta("og:description"), "Open the link to see the line on the map.");
+  assert.equal(meta("og:site_name"), "MuW");
+  assert.equal(meta("twitter:card"), "summary_large_image");
+  assert.ok(meta("og:image:alt"));
+  // An app that followed og:url would open the page without the id.
+  assert.equal(meta("og:url"), undefined);
+  assert.ok(!/rel="canonical"/.test(html));
+  // The picture is the site's, beside the page the link opens.
+  const types = read(REPO, "packages", "shared-types", "src", "index.ts");
+  const page = types.match(/POST_LINK_PAGE = "([^"#]+)#"/)?.[1];
+  assert.ok(page, "POST_LINK_PAGE");
+  assert.equal(meta("og:image"), `${page}link-card.png`);
+  // A PNG of the size the page says, light enough for a chat app to take.
+  const picture = readFileSync(join(PAGE, "link-card.png"));
+  assert.equal(picture.subarray(1, 4).toString("latin1"), "PNG");
+  assert.equal(String(picture.readUInt32BE(16)), meta("og:image:width"));
+  assert.equal(String(picture.readUInt32BE(20)), meta("og:image:height"));
+  assert.deepEqual([picture.readUInt32BE(16), picture.readUInt32BE(20)], [1200, 630]);
+  assert.ok(picture.length < 300_000, `${picture.length} bytes`);
+  // Drawn here, with no map tiles and no address: nothing of a place or a post.
+  const drawing = read(SITE, "tools", "link-card.html");
+  assert.deepEqual(drawing.match(/https?:\/\/(?!www\.w3\.org\/2000\/svg)[^"'`\s)]+/g) ?? [], []);
+});
+
+test("on an iPhone Safari's bar names the app and is given the link, id and all", async () => {
+  const { downloadUrl } = await import("../config.js");
+  const link = `https://example.test/p/#${ID}`;
+  // The app's number is the one «Get MuW» leads to.
+  assert.equal(appBarOf(downloadUrl, link), `app-id=6820961883, app-argument=${link}`);
+  assert.equal(appBarOf("https://apps.apple.com/it/app/muw/id123?l=en", link), `app-id=123, app-argument=${link}`);
+  // A link that opens no drawing: the app alone.
+  assert.equal(appBarOf(downloadUrl, null), "app-id=6820961883");
+  // No App Store address, or one without a number: no bar.
+  assert.equal(appBarOf(null, link), null);
+  assert.equal(appBarOf("https://example.test/app", link), null);
+
+  // The page as it comes names the app, with the same number: Safari reads
+  // the bar as the page loads, before any module runs.
+  const html = read(PAGE, "index.html");
+  const meta = html.match(/<meta name="apple-itunes-app" content="([^"]*)" \/>/)?.[1];
+  assert.equal(meta, appBarOf(downloadUrl, null));
+  // bar.js comes right after it, and runs at once: not a module, not deferred.
+  assert.match(html, /<meta name="apple-itunes-app"[^>]*\/>\s*<script src="bar\.js"><\/script>/);
+
+  // What bar.js does, run here with a page and an address of its own.
+  const source = read(PAGE, "bar.js");
+  const run = (hash, content = meta) => {
+    const tag = {
+      content,
+      getAttribute: () => tag.content,
+      setAttribute: (_name, value) => {
+        tag.content = value;
+      },
+    };
+    const document = { querySelector: (q) => (q === 'meta[name="apple-itunes-app"]' ? tag : null) };
+    const location = { hash, origin: "https://example.test", pathname: "/p/" };
+    new Function("document", "location", source)(document, location);
+    return tag.content;
+  };
+  assert.equal(run(`#${ID}`), appBarOf(downloadUrl, link));
+  assert.equal(run(`#${ID.toUpperCase()}`), appBarOf(downloadUrl, link));
+  // Anything that is not a drawing's id is left out of the bar.
+  for (const hash of ["", "#", "#hello", `#${ID}x`, `#${ID}&next=https://example.test`]) {
+    assert.equal(run(hash), meta, hash);
+  }
+  // The same shape of id as the page's own.
+  assert.ok(source.includes(`/${ID_PATTERN.source}/i`), "bar.js and view.js agree on an id");
+  assert.deepEqual(source.match(/https?:\/\/[^"'`\s)]+/g) ?? [], [], "bar.js names no address");
+
+  const script = read(PAGE, "post.js");
+  // The link is the page's own address, wherever the page is served.
+  assert.match(script, /appBarOf\(downloadUrl, id === null \? null : `\$\{origin\}\$\{pathname\}#\$\{id\}`\)/);
+  // Kept right after a change of the `#`, and for a link that opens nothing.
+  assert.match(script, /const id = idFromHash\(window\.location\.hash\);\s*\/\/[^\n]*\n\s*putAppBar\(id\);/);
+  assert.match(script, /outcome\.kind === "gone"\) \{\s*putAppBar\(null\);/);
 });
 
 test("the page asks the API once, sends nothing of who reads, and keeps nothing", () => {

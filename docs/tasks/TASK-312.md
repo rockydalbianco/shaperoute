@@ -1,6 +1,6 @@
 # TASK-312 — Importare nel Feed attività fatte con altre app, e post di sole foto
 
-**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · poi C (post di sole foto), D (studio Apple Salute), E (studio collegamenti diretti)
+**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C1 in `main`** (API e migrazione `0080` dei post di sole foto, PR #1347, `cfd5e956`; server col passo del Coordinatore e il sì dell'utente) · poi C2 (app), D (studio Apple Salute), E (studio collegamenti diretti)
 **Fase**: 4 · **Branch**: `docs/TASK-312-import-activities` (documenti),
 `feat/TASK-312-a-imported-runs-api` (A), `feat/TASK-312-b-import-file-app`
 (B), `feat/TASK-312-c-photo-posts` (C), `docs/TASK-312-d-health-study`
@@ -302,6 +302,121 @@ Cosa fa:
 Non usa `expo-document-picker`: funziona anche nella 1.0, con il server
 aggiornato. File toccati: si dicono al Coordinatore prima del codice.
 
+### Parte C — il piano, verificato sul codice (2026-11-21)
+
+La proposta di partenza regge: **un post di sole foto è un disegno senza
+corsa**. Lo studio delle 51 query con `JOIN runs` (in 36 moduli) dice
+dove serve cambiare e dove no. *Deciso dall'agente su delega dell'utente*;
+va in ADR-0272 come «precisazione C» nella PR di documenti.
+
+**Perché non una corsa finta** (`runs.source = 'photos'`): i lettori che
+partono da `runs` (totali del profilo, record, calendario, gioco, badge,
+palestra, sci, sonno, VO₂ max, concorso) dovrebbero lasciarla fuori uno per
+uno, e «My activities» la mostrerebbe. Con un disegno senza corsa questi
+lettori non la vedono mai, perché partono da `runs`; cambiano solo quelli
+che partono dal disegno.
+
+**Migrazione** (numero dal Coordinatore al merge):
+
+- `drawings.user_id bigint NOT NULL REFERENCES users ON DELETE CASCADE`,
+  riempito da `runs` per le righe di oggi, con un indice;
+- `drawings.run_id` facoltativo; `drawings.key text` (la chiave fatta dal
+  telefono, come `activityKey`, per rimandare senza doppioni), `UNIQUE
+  (user_id, key)`, `CHECK ((run_id IS NULL) = (key IS NOT NULL))`;
+- senza corsa: mai `only_me`, mai traccia; `published_at` vuoto finché non
+  c'è almeno una foto (il vincolo di 0014 fra `visibility` e
+  `published_at` vale solo per i disegni con corsa).
+
+**Chi lo vede**: `drawing_seen_sql` e `shown_sql` leggono l'autore da
+`d.user_id` invece di `r.user_id`, e per gli altri vogliono
+`d.published_at IS NOT NULL` (per i disegni con corsa è la stessa cosa di
+oggi). Così blocchi (TASK-121), nascosti (TASK-291), «Followers»,
+commenti, reazioni e foto valgono senza regole nuove.
+
+**Dove cambia** (l'autore da `d.user_id`, `LEFT JOIN runs` dove il post
+deve comparire): `drawings.py` (profilo, disegno aperto, conteggio del
+profilo, scrittura di `user_id`), `feed.py` (fila, schede «Following» e
+«All»; senza punto non è mai «vicino»), `drawing_photos.py` (le foto
+viste), `user_photos.py` (la griglia delle foto del profilo),
+`profile_totals.py` (le reazioni ricevute), `comments.py`,
+`comment_reactions.py`, `reactions.py`, `moderation.py` e
+`report_email.py` (segnalazioni), `push.py`, `notice_email.py`,
+`notification_list.py`, `away_email.py`, `outfit_tags.py`.
+
+**Dove resta il `JOIN runs`, e il post di sole foto resta fuori di
+proposito**: concorso (`contests.py`, `contest_entries.py`,
+`contest_clock.py`), badge, gioco, palestra, sci, vasca, sonno,
+`drawing_retrack.py`, la ricerca (`drawing_search.py`), il link pubblico
+(`post_links.py`, vuole una linea), il post mandato in chat
+(`messages.py`), le live programmate, le stazioni. Ricerca e chat per i
+post di sole foto: dopo, se l'utente li vuole.
+
+**Le app di prima non li vedono**: un tipo nuovo `photos` in
+`X-MuW-Reads` (`reads.py`). Senza, ogni elenco li lascia fuori e il
+disegno aperto è `404`, come per gli sport nuovi. Il server può uscire
+prima dell'app.
+
+**L'endpoint**: `PUT /me/photo-posts/{key}` (titolo, descrizione, tag,
+`everyone` o `followers`; la seconda volta lo cambia), `DELETE
+/me/photo-posts/{key}`, e le foto e l'ordine con lo stesso codice di oggi
+sotto `/me/photo-posts/{key}/photos/{n}` e `/order`. Fino a 10 foto (non
+c'è la mappa). Nessun codice d'errore nuovo, quindi niente `schemas.py`
+né `engine.zip`.
+
+**Le risposte**: `source: "photos"`; per un post di sole foto `activity`
+e i campi della corsa sono `null`, metri e secondi `0`, `started_at` è la
+pubblicazione, `track_preview` vuoto. In `packages/shared-types` un tipo
+a sé (`PhotoPost`, `isPhotoPost`): i tipi di oggi non cambiano, l'app li
+separa dove legge il Feed.
+
+**Sotto-parti**:
+
+- **C1 — API e migrazione** (prima il server, col sì dell'utente);
+- **C2 — app**: «Photos only» nel foglio «Add activity» del «+» del Feed
+  (il «+» c'è anche senza il selettore di file) e in «Add past activity»;
+  il modulo senza mappa come quello della palestra e della vasca; la porta
+  con la coda; la scheda del Feed e il post aperto con «Imported»; modifica
+  e cancellazione dell'autore; niente «Send in chat» né link per questi
+  post; la riga della privacy (a turno).
+
+### Parte C1b — l'elenco dei propri post (2026-11-21)
+
+`GET /me/photo-posts`: l'app apre un post dal suo id, ma per modificarlo o
+cancellarlo le serve la `key`, e nessun endpoint la dava (i post di sole
+foto non sono in «My activities» né in `GET /me/drawings`). Nessuna
+migrazione, nessun codice d'errore nuovo. Lista approvata dal Coordinatore
+il 2026-11-21 (`photo_posts.py`, `test_photo_posts.py`, `index.ts`,
+`my-photo-posts.json`, `photoPosts.test.ts`, `API.md`, questo file); sul
+server col passo 16 se è in `main` prima, altrimenti col passo dopo.
+
+### Parte C1 — com'è fatta (2026-11-21)
+
+«File toccati» approvati dal Coordinatore il 2026-11-21 (la lista sopra,
+da `main`; migrazione provvisoria **0080**, la 0079 è prenotata da 475 A:
+il numero vero al merge). In più, chiesto al Coordinatore:
+`packages/shared-types/fixtures/reads.json` (solo `photos` in `kinds`;
+`this_app` invariato finché C2 non lo dice).
+
+- `0080_photo_posts.sql`: `drawings.user_id` riempito da `runs`, `run_id`
+  facoltativo, `key` unica per account, i vincoli del disegno senza corsa,
+  il vincolo di `published_at` solo con una corsa (`DATABASE.md`);
+- `drawing_seen_sql`, `shown_sql`, `published_count_sql`, `LINKABLE_SQL`
+  leggono l'autore da `d.user_id`, e per gli altri vogliono
+  `published_at`; le colonne viste con `coalesce` per i campi della corsa
+  (`DRAWN_AT_SQL`, `WITH_RUN_SQL`); `SeenFields.activity` può essere
+  `null` e `source` può essere `photos`;
+- `reads.py`: il tipo `photos` e `Reads.drawings_sql()`, usato da Feed,
+  profilo, foto del profilo, disegno aperto e campanello;
+- `photo_posts.py`: `PUT/GET/DELETE /me/photo-posts/{key}`, foto e ordine
+  (`store_photo` estratto da `drawing_photos.py`); pubblicato con la prima
+  foto, i taggati avvisati allora;
+- l'autore da `d.user_id` anche in commenti, reazioni a post e commenti,
+  segnalazioni e la loro email, push, email delle notifiche e di chi
+  manca, etichette dei vestiti, reazioni ricevute del profilo;
+- `user_photos.py`: il cursore accetta il decimo posto (prima solo 1–9);
+- 35 test nuovi (`test_photo_posts.py`, `test_photo_posts_seen.py`), tipi
+  e test in `shared-types`, fixture fatte dalle risposte vere dell'API.
+
 ## Parte D — Apple Salute e Health Connect (studio)
 
 Lo studio di §7 di `IMPORTAZIONI.md`, scritto in
@@ -340,6 +455,28 @@ della parte B (le righe sopra senza «Photos only» e «Add at least one
 photo.», che sono di C) con le traduzioni in italiano, tedesco, francese e
 spagnolo della PR, la riga della privacy nelle cinque lingue e la data
 della privacy **29 ottobre 2026**.
+
+**Testi di C approvati dall'utente il 2026-11-21** («Fino a 10 foto»):
+«Photos only» · «Up to 10 photos, also from Instagram» · «Add at least
+one photo.» (il limite di 3 del 27 ottobre era quello di allora; un post
+senza disegno tiene 10 foto).
+
+**Chi lo vede all'inizio, scelta dell'utente del 2026-11-21** («L'ultima
+scelta»): da tutte e due le entrate parte dalla scelta dell'ultimo post
+salvato, come le corse; la prima volta «Everyone». Quando l'ultima scelta
+è «Only me» (una corsa), parte «Everyone», perché qui «Only me» non c'è.
+*Quest'ultimo caso è deciso dall'agente su delega dell'utente.*
+
+**Privacy di C approvata dall'utente il 2026-11-21** («Approvo il
+testo»), in «Your runs and their GPS tracks» dopo la riga dei file, nelle
+cinque lingue e sul sito, con la data del giorno del merge di C2: «A post
+with «Photos only» has no track, no place and no times. Its photos go to
+our server resized, without the data your phone adds, such as where and
+when they were taken. They are seen, with the title, the description and
+the people you tag, by «Everyone» or by your «Followers»: there is no
+«Only me». The choice starts from your last post, or on «Everyone», and
+you see it before «Post». The post stays until you delete it or your
+account.» (Le traduzioni vanno all'utente con le schermate di C2.)
 
 ## Proposte da confermare con l'utente
 

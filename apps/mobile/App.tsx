@@ -21,6 +21,7 @@ import { EndFoldedStrip } from "./src/activities/EndFoldedStrip";
 import { RunEnd } from "./src/activities/RunEnd";
 import { snowParts } from "./src/activities/snowDay";
 import { type Lifts, snowLiftsOf } from "./src/activities/snowLifts";
+import { flightAirOf } from "./src/air/flightLegs";
 import { apiUrl } from "./src/api/apiUrl";
 import { PickStart } from "./src/location/PickStart";
 import {
@@ -175,6 +176,10 @@ import { clearSkiDay, queueSkiDay } from "./src/ski/skiDayStore";
 import { useSkiDayOutbox } from "./src/ski/useSkiDayOutbox";
 import { MorningStretchLayer } from "./src/stretch/MorningStretchLayer";
 import { StretchScreen } from "./src/stretch/StretchScreen";
+import {
+  StretchSessionHost,
+  startStretchSession,
+} from "./src/stretchSport/StretchSessionHost";
 import { useSwimNotice } from "./src/swim/safetyNotice";
 import { SwimNotice } from "./src/swim/SwimNotice";
 import { isOnWater } from "./src/swim/water";
@@ -1596,6 +1601,7 @@ function MuW() {
                     : null
             }
             lifts={freeFinishing ? freeFinished.lifts : null}
+            flightAir={freeFinishing ? flightAirOf(freeFinished.run) : null}
             liftLabels={freeFinishing ? freeFinished.liftLabels : undefined}
             following={
               navigating && navigation.status === "following"
@@ -2002,6 +2008,9 @@ function MuW() {
                       Keyboard.dismiss();
                       // A workout at the gym has its own screen (TASK-385 B).
                       if (sport === "gym") startGymWorkout();
+                      // A stretching session, the routine ticked on «Draw»
+                      // (TASK-475 part B).
+                      else if (sport === "stretch") startStretchSession();
                       // The day on snowshoes, through the avalanche notice
                       // the first time (TASK-413 C).
                       else if (sport === "snowshoe")
@@ -2221,6 +2230,8 @@ function MuW() {
           B), over everything until saved. Out of the map's card, which has
           nothing while «Draw» shows: «Start workout» there opened nothing. */}
       <GymWorkoutHost />
+      {/* A stretching session of the sport «Stretching» (TASK-475 part B). */}
+      <StretchSessionHost />
       <PoolSwimHost />
     </View>
   );

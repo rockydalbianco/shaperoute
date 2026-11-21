@@ -2992,4 +2992,11 @@ export const DE: Table = {
   "From {bearing} · {minutes} min ago": "Aus {bearing} · vor {minutes} Min.",
   "GPS numbers · not a certified instrument":
     "GPS-Werte · kein zertifiziertes Instrument",
+  // «Together» in «Edit video» (TASK-417 part D2b; approved by the user on 2026-11-08).
+  Together: "Zusammen",
+  "Your run and the runs of the people tagged here, on the same clock.":
+    "Dein Lauf und die Läufe der hier markierten Personen, auf derselben Uhr.",
+  "No one tagged ran at the same time.":
+    "Niemand der Markierten ist zur selben Zeit gelaufen.",
+  "Up to 4 people in one video.": "Bis zu 4 Personen in einem Video.",
 };

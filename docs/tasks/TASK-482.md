@@ -55,7 +55,7 @@ dovrebbe aprirsi il post nell'app».
 |---|---|---|---|
 | 0 | Questo file, ADR-0391, le domande all'utente | documenti | no |
 | A | L'app legge il link in arrivo e apre il post come fa una notifica (`Linking` di React Native, nessuna dipendenza nuova); senza account, prima l'ingresso e poi il post | app, OTA | no: resta inerte finché niente le manda un link |
-| B | Sulla pagina del link, per chi è su iPhone: «Open in MuW», che apre l'app con lo schema che la 1.1.0 ha già | sito | no, **se la prova sul telefono dice che lo schema c'è** |
+| ~~B~~ | ~~Sulla pagina del link, per chi è su iPhone: «Open in MuW», che apre l'app con lo schema che la 1.1.0 ha già~~ | — | **caduta il 2026-11-21**: la prova sul telefono dell'utente ha dato errore |
 | B2 | La barra «Apri» di Safari in cima alla pagina (`apple-itunes-app` con `app-argument`) | sito | no, **da provare su un telefono vero prima di prometterla** (Coordinatore) |
 | C | `/.well-known/apple-app-site-association` e `assetlinks.json` per `getmuw.app`, e come il server li serve | sito e server | no, ma è un passo sul server: lo prepara il Coordinatore col sì dell'utente |
 | D | `app.json`: `ios.associatedDomains` (`applinks:getmuw.app`), `android.intentFilters` verificati, uno `scheme` vero | app, nativo | **sì**: cambia l'impronta, entra nella prossima build nativa, che decide l'utente |
@@ -83,6 +83,12 @@ un tocco apre l'app.
 1. **La prova dello schema sull'iPhone** (dieci secondi, decide se B si
    può fare): scrivere `com.lppl1316.sgrava://` nella barra di Safari. Se
    Safari chiede di aprire MuW, lo schema c'è.
+   **Risposta dell'utente, 2026-11-21: «No, dà errore».** Lo schema non
+   risulta nella 1.1.0 (o la prova a mano non basta a dirlo: in ogni caso
+   non è provato). **La parte B non si fa**: niente «Open in MuW» con lo
+   schema dell'identificativo. Controllato dopo la risposta: la build di
+   produzione ha lo stesso identificativo (`app.config.ts` cambia solo la
+   versione del runtime), quindi l'indirizzo provato era quello giusto.
 2. «Open in MuW» sulla pagina, per chi è su iPhone: lo vuole subito, o
    aspetta la build nativa? E il testo.
 3. Chi apre il link nell'app senza essere entrato: prima l'ingresso, poi
@@ -120,3 +126,6 @@ elenchi delle parti A–D vanno al Coordinatore prima del codice.
   si prova su un telefono vero prima di prometterla; il passo sul server
   per `.well-known` lo prepara lui col sì dell'utente; gli elenchi dei
   file prima del codice.
+- 2026-11-21: **prova dello schema sull'iPhone dell'utente: errore** («No,
+  dà errore»). La parte B cade. Senza build nativa resta da provare solo
+  la barra di Safari (B2); la strada vera sono A, C e D.

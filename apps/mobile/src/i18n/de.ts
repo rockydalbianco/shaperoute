@@ -2926,6 +2926,8 @@ export const DE: Table = {
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Bergsteigen",
+  // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
+  Stretching: "Dehnen",
   "Before you climb": "Bevor du aufsteigst",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW zeichnet deinen Aufstieg auf und teilt ihn: Es führt dich nicht. Geh mit deiner Ausrüstung, deinem Können und deinem Urteil, und prüfe die Verhältnisse vor dem Start.",
@@ -2952,4 +2954,10 @@ export const DE: Table = {
   Plan: "Planen",
   "Couldn't plan the live. Try again.":
     "Das Live konnte nicht geplant werden. Versuch es noch einmal.",
+  // src/liveShare/plannedPost.ts (TASK-468 part B2b2: the live becomes the
+  // post; en and it approved by the user 2026-11-12)
+  "Post it in the Feed?": "Im Feed posten?",
+  "Your live becomes the post of this activity.":
+    "Dein Live wird zum Post dieser Aktivität.",
+  "Don't post": "Nicht posten",
 };

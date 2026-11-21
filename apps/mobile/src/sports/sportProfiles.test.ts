@@ -137,6 +137,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     alpinism: 9,
     // `.traditionalStrengthTraining` (TASK-385).
     gym: 50,
+    // `.flexibility` (TASK-475).
+    stretching: 62,
   });
   expect(Object.entries(DISTANCE_TYPE)).toEqual([
     ["running", "HKQuantityTypeIdentifierDistanceWalkingRunning"],
@@ -174,6 +176,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     alpinism: 51,
     // EXERCISE_TYPE_STRENGTH_TRAINING (TASK-385).
     gym: 70,
+    // EXERCISE_TYPE_STRETCHING (TASK-475).
+    stretching: 71,
   });
 });
 
@@ -222,6 +226,8 @@ it("counts the energy as before", () => {
     alpinism: "oxygen",
     // Snowshoeing as a hike (TASK-413).
     snowshoeing: "oxygen",
+    // A stretching session, the Compendium's light stretching (TASK-475).
+    stretching: "met",
     // A wheelchair route as a walk until part B (TASK-414).
     wheelchair: "oxygen",
   });
@@ -372,6 +378,7 @@ it("gives the screens what they told apart before (part B3b)", () => {
     paragliding: "🪂",
     alpinism: "🧗",
     gym: "🏋️",
+    stretching: "🧘",
   });
   expect(tableOf((sport) => sport.pace)).toEqual({
     paddling: "paddle",

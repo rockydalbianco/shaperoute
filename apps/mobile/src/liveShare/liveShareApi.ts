@@ -341,3 +341,20 @@ export function startPlannedLiveRequest(
     isMade,
   );
 }
+
+/** PUT /me/planned-lives/{id}/post: the post the live became (TASK-468
+ * part B2b2, the user's choice 5). */
+export function tiePlannedLivePost(
+  options: LiveApiOptions,
+  plannedLiveId: string,
+  drawingId: string,
+): Promise<LiveAnswer<null>> {
+  return send(
+    options,
+    "PUT",
+    `/me/planned-lives/${encodeURIComponent(plannedLiveId)}/post`,
+    { drawing_id: drawingId },
+    UPDATE_TIMEOUT_MS,
+    isNothing,
+  );
+}

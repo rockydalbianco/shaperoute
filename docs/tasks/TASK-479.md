@@ -185,6 +185,43 @@ dell'utente):
   1.1.
 - I grafici (profilo, assistente di termica, bussola) si disegnano con
   `View`, senza `react-native-svg` (non è nell'app).
+- **Battery**: «Sì, con la build» (2026-11-21): `expo-battery` entra
+  nella build nativa dopo la 1.1, con barometro, fotocamera e
+  orizzontale.
+
+**Testi di B1**, approvati dall'utente il 2026-11-21 (en/it «Sì, approvo»,
+poi de/fr/es «Sì, approvo»). «Sun» e «Off» c'erano già con altri sensi
+(domenica, «No»): per l'aspetto chiaro «Sunlight», per il live spento
+«Not sharing». Le parole che l'app ha già (Map, Layout, Dark, Altitude,
+Vario, Speed, Done, Flight time, Sharing live) restano le sue.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Flight screen | Schermata di volo | Flugbildschirm | Écran de vol | Pantalla de vuelo |
+| GPS altitude | Quota GPS | GPS-Höhe | Altitude GPS | Altitud GPS |
+| Above takeoff | Sopra il decollo | Über Startplatz | Au-dessus du déco | Sobre el despegue |
+| Average vario | Vario medio | Mittleres Vario | Vario moyen | Vario medio |
+| Thermal average | Media termica | Thermikschnitt | Moyenne thermique | Media de térmica |
+| Thermal gain | Guadagno termica | Thermikgewinn | Gain thermique | Ganancia en térmica |
+| Ground speed | Velocità al suolo | Geschw. über Grund | Vitesse sol | Velocidad sobre el suelo |
+| Track | Rotta | Kurs | Route | Rumbo |
+| Glide ratio | Efficienza | Gleitzahl | Finesse | Planeo |
+| Wind | Vento | Wind | Vent | Viento |
+| Thermal assistant | Assistente termica | Thermikassistent | Assistant thermique | Asistente de térmica |
+| Takeoff | Decollo | Startplatz | Déco | Despegue |
+| Clock | Ora | Uhrzeit | Heure | Hora |
+| GPS accuracy | Precisione GPS | GPS-Genauigkeit | Précision GPS | Precisión GPS |
+| Live | Dal vivo | Live | En direct | En directo |
+| Last 10 min | Ultimi 10 min | Letzte 10 Min. | 10 dernières min | Últimos 10 min |
+| Thermal | Termica | Thermik | Thermique | Térmica |
+| XC | XC | XC | XC | XC |
+| Minimal | Essenziale | Minimal | Minimal | Mínimo |
+| Look | Aspetto | Aussehen | Apparence | Aspecto |
+| Sunlight | Pieno sole | Sonnenlicht | Plein soleil | Pleno sol |
+| Lock | Blocca | Sperren | Verrouiller | Bloquear |
+| Hold to unlock | Tieni premuto per sbloccare | Zum Entsperren halten | Maintenez pour déverrouiller | Mantén pulsado para desbloquear |
+| Not sharing | Non condivisa | Nicht geteilt | Non partagé | Sin compartir |
+| From {bearing} · {minutes} min ago | Da {bearing} · {minutes} min fa | Aus {bearing} · vor {minutes} Min. | De {bearing} · il y a {minutes} min | Desde {bearing} · hace {minutes} min |
 
 **B2 — l'editor** (dopo D ed E):
 1. Pressione lunga su un widget → aggiungi, togli, sposta, ridimensiona

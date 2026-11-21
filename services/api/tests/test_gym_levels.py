@@ -20,7 +20,14 @@ from test_drawings import (
     signed_up,
     wall,  # noqa: F401
 )
-from test_gym import GYM_KEY, after_the_workout, kept, reading, workout  # noqa: F401
+from test_gym import (  # noqa: F401
+    GYM_KEY,
+    after_the_workout,
+    by_hand_kept,
+    kept,
+    reading,
+    workout,
+)
 
 from shaperoute_api.gym_catalog import EXERCISES_BY_KEY, SCALES, level_of, measured
 from shaperoute_api.gym_levels import GymLevelBody
@@ -222,6 +229,21 @@ def test_a_workout_added_later_but_begun_before_moves_the_line(
     # The day before already had level 4: the example reached nothing first.
     assert new_levels(client, me, GYM_KEY) == []
     assert [level["level"] for level in new_levels(client, me, EARLIER_KEY)] == [4]
+
+
+def test_a_workout_written_by_hand_reaches_no_level(
+    client: TestClient,  # noqa: F811
+) -> None:
+    # TASK-484, ADR-0395: as the imported activities, out of the levels.
+    me = signed_up(client)
+    heavy = [{**item, "live": False} for item in sets(bench(140))]
+    kept(client, me, EARLIER_KEY, **by_hand_kept(sets=heavy))
+    assert profile_levels(client, me, me) == []
+    assert new_levels(client, me, EARLIER_KEY) == []
+    # A workout recorded after it reaches its levels first, as if alone.
+    kept(client, me, sets=sets(bench(80)))
+    assert [level["level"] for level in new_levels(client, me, GYM_KEY)] == [4]
+    assert profile_levels(client, me, me) == expected(sets(bench(80)))
 
 
 def test_the_levels_are_of_their_owner_only(client: TestClient) -> None:  # noqa: F811

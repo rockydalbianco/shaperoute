@@ -66,7 +66,11 @@ test("a day on the snow is saved as its own activity, the others as their route"
   expect(runActivityOf("skimo")).toBe("ski_touring");
   // The gym is saved as a workout, without a route (TASK-385 B).
   expect(runActivityOf("gym")).toBe("gym");
-  for (const sport of EVERY.filter((id) => !isRecordOnly(id) && id !== "gym")) {
+  // And a stretching session as one, without a route (TASK-475 B).
+  expect(runActivityOf("stretch")).toBe("stretching");
+  for (const sport of EVERY.filter(
+    (id) => !isRecordOnly(id) && id !== "gym" && id !== "stretch",
+  )) {
     expect(runActivityOf(sport)).toBe(activityOf(sport));
   }
   expect(runActivityOf("walk")).toBe("walking");

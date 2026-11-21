@@ -743,13 +743,23 @@ Dalla prova una correzione: il foglio di «Share live at start» aspettava
 «Before you fly». Decisioni: ADR-0375 precisazione R5, ADR-0352
 precisazione.
 
+**Esito R6** (2026-11-18): server #1291 in main, acceso al passo 13
+(13:41Z, letture di `out/TASK-305/SERVER-R6a.md` come attese); app #1293 in
+main (9c4abf1e), esce col prossimo OTA. Le schermate della gara finta nel
+simulatore sono approvate dall'utente («Sì, approvo», 2026-11-12). Dalla
+prova tre correzioni: i tempi dei tratti in millisecondi interi, la
+velocità massima dei soli tratti in aria, una riga di riquadri in meno
+alla fine di una gara. Decisione: ADR-0375 precisazione R6. R6c, la mappa a
+due colori, è in bozza (#1313).
+
 **Cosa resta**:
 
 - Una prova di un volo vero, col link dal vivo aperto da un altro
   telefono, dopo l'uscita.
 - R4 (il volo sull'orologio, per il battito dal vivo): PR #1218 in bozza,
   fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
-- R6 (corsa + volo): server #1291 dopo TASK-455 C, app #1293 dopo R6a sul
-  server; poi R6c (la mappa a due colori).
-- Il fix #1302: «Save» sullo schermo alla fine del volo.
+- R6c (la mappa a due colori, #1313) e R6d (la pagina dell'attività
+  riaperta, coi tratti dal server).
+- TASK-478 (la mappa a fine attività inquadrata e visibile), aperto dalla
+  prova di R6c.
 - Le parti del pianificatore (A1…F) restano Proposte.

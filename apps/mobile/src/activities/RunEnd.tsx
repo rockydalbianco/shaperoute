@@ -4,7 +4,7 @@ import {
   SLEEP_SHOWN_DEFAULT,
   type Visibility,
 } from "@shaperoute/shared-types";
-import { useState } from "react";
+import { type MutableRefObject, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { type DrawingChoice, isChosen, isSeen, NOT_CHOSEN } from "../api/drawings";
@@ -35,6 +35,7 @@ import {
   type PickPhoto,
   seenText,
 } from "../social/PublicParts";
+import { askToPost, takePlannedRun } from "../liveShare/plannedPost";
 import { loadVisibility, saveVisibility } from "../social/visibilityChoice";
 import { loadSendToStrava, saveSendToStrava } from "../strava/stravaChoice";
 import { StravaRunEnd } from "../strava/StravaRunEnd";
@@ -75,6 +76,12 @@ type Props = {
    * «+» (TASK-476, the user's choice), seen over «Save» and changeable.
    */
   imported?: { sport: Activity | null; visibility?: Visibility };
+  /**
+   * The card folded at the end (TASK-478 part b): this form's «Save», for
+   * the strip's, so that it does all that this one does, the choices of
+   * the form with it. Null without an account: no «Save» then.
+   */
+  saveRef?: MutableRefObject<(() => void) | null>;
 };
 
 /** How much of the screen the form may take: the map and the buttons
@@ -119,6 +126,7 @@ export function RunEnd({
   health: phoneHealth = healthPhone(),
   sleep: phoneSleep = sleepReader(),
   imported,
+  saveRef,
 }: Props) {
   const {
     signedIn,
@@ -159,6 +167,25 @@ export function RunEnd({
         ? loadVisibility(owner)
         : (imported.visibility ?? "only_me"),
   }));
+  // The planned live this recording started (TASK-468 part B2b2, the
+  // user's choice 5): «Post it in the Feed?» once; «Post» makes the form
+  // the live's (who sees it, its title), and «Save» still decides.
+  const [planned] = useState(() => (imported === undefined ? takePlannedRun() : null));
+  // The form keeps its title as typed: drawn again once «Post» filled it.
+  const [formKey, setFormKey] = useState(0);
+  useEffect(() => {
+    if (planned === null || !signedIn) {
+      return;
+    }
+    askToPost(planned, () => {
+      setChoice((was) => ({
+        ...was,
+        visibility: planned.audience,
+        title: was.title ?? planned.title,
+      }));
+      setFormKey((was) => was + 1);
+    });
+  }, [planned, signedIn]);
   // Started from a remembered «Everyone» or «Followers»: the form scrolls, so
   // its words stay over «Save» too, seen before the run goes public.
   const [startedSeen] = useState(() => isSeen(choice.visibility));
@@ -232,6 +259,17 @@ export function RunEnd({
     }
   }
 
+  // After every drawing: the «Save» of the form as it is now.
+  useEffect(() => {
+    if (saveRef === undefined) {
+      return;
+    }
+    saveRef.current = signedIn ? save : null;
+    return () => {
+      saveRef.current = null;
+    };
+  });
+
   if (!signedIn) {
     return (
       <Pressable style={styles.tap} onPress={signIn} accessibilityRole="button">
@@ -286,6 +324,7 @@ export function RunEnd({
           )}
           <OutfitTaggingContext.Provider value={outfits.tagging}>
             <DrawingForm
+              key={formKey}
               choice={choice}
               onChoice={setChoice}
               items={items}

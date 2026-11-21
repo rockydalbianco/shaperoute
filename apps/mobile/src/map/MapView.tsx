@@ -13,6 +13,7 @@ import {
 import { WebView } from "react-native-webview";
 
 import { type Lifts, splitAtLifts } from "../activities/snowLifts";
+import { type AirLeg, splitAtAir } from "../air/flightLegs";
 import { t } from "../i18n";
 import { useLanguage } from "../i18n/useLanguage";
 import { usePocketOn } from "../navigation/pocketOn";
@@ -35,6 +36,7 @@ import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
   type CanvasMode,
   clearCanvas,
+  clearFlight,
   clearLifts,
   clearProgress,
   clearRejoin,
@@ -53,7 +55,9 @@ import {
   setMove,
   setPick,
   setPosition,
+  showFlight,
   showLifts,
+  showTrackFramed,
   showGhost,
   showOthers,
   showProgress,
@@ -145,6 +149,9 @@ type Props = {
   /** The numbers of the descents and the lifts on them (TASK-429 part B):
    * none, the lines alone. */
   liftLabels?: readonly SkiLabel[];
+  /** A race's flights, as stretches of `track` (TASK-305 part R6c): yellow
+   * over the white of the parts on foot. None draws the track as a run's. */
+  flightAir?: readonly AirLeg[] | null;
   /** While navigating, the phone's position: the map follows it (TASK-049). */
   following?: LatLon | null;
   /** Where the runner is heading, in degrees clockwise from north: the
@@ -222,6 +229,7 @@ export function MapView({
   track = null,
   lifts = null,
   liftLabels = NO_LABELS,
+  flightAir = null,
   following = null,
   heading = null,
   facing = null,
@@ -265,7 +273,11 @@ export function MapView({
   const routeShown = useRef(false);
   const followed = useRef(false);
   const trackShown = useRef(false);
+  // Framed on a track without a route (TASK-478): only when nothing is
+  // followed and no route frames the map.
+  const framesTrack = following === null && (route === null || route.length === 0);
   const liftsShown = useRef(false);
+  const flightShown = useRef(false);
   const stopsShown = useRef(false);
   const othersShown = useRef(false);
   const ghostShown = useRef(false);
@@ -397,14 +409,23 @@ export function MapView({
       return;
     }
     if (track && track.length > 1) {
+      const frame = framesTrack;
       if (lifts !== null && lifts.length > 0) {
         const cut = splitAtLifts(track, lifts);
         webView.current?.injectJavaScript(
-          pageScript(showLifts(cut.skied, cut.lifts, liftLabels)),
+          pageScript(showLifts(cut.skied, cut.lifts, liftLabels, frame)),
         );
         liftsShown.current = true;
+      } else if (flightAir !== null && flightAir.length > 0) {
+        const cut = splitAtAir(track, flightAir);
+        webView.current?.injectJavaScript(
+          pageScript(showFlight(cut.foot, cut.air, frame)),
+        );
+        flightShown.current = true;
       } else {
-        webView.current?.injectJavaScript(pageScript(showTrack(track)));
+        webView.current?.injectJavaScript(
+          pageScript(frame ? showTrackFramed(track) : showTrack(track)),
+        );
       }
       trackShown.current = true;
     } else if (trackShown.current) {
@@ -415,7 +436,14 @@ export function MapView({
       webView.current?.injectJavaScript(pageScript(clearLifts()));
       liftsShown.current = false;
     }
-  }, [ready, track, lifts, liftLabels]);
+    if (
+      (!track || flightAir === null || flightAir.length === 0) &&
+      flightShown.current
+    ) {
+      webView.current?.injectJavaScript(pageScript(clearFlight()));
+      flightShown.current = false;
+    }
+  }, [ready, track, lifts, liftLabels, flightAir, framesTrack]);
 
   useEffect(() => {
     if (!ready) {

@@ -315,7 +315,10 @@ pagine»):
    un pulsante: se toccherebbe «←», il tipo di mappa o la freccia del nord
    scende sotto la loro riga. Con lui entra la sagoma tratteggiata della
    forma chiesta (TASK-442). Quando la scheda sotto cambia altezza la mappa
-   si inquadra di nuovo, se l'utente non l'ha mossa. Dove il motore ha
+   si inquadra di nuovo, se l'utente non l'ha mossa. Una corsa senza
+   percorso finita, o riaperta, si inquadra allo stesso modo sulla sua
+   traccia, risalite dello sci comprese (TASK-478). Mentre si registra mai:
+   la mappa segue chi corre. Dove il motore ha
    spostato l'inizio c'è una bandierina in un tondo ciano (non una goccia,
    che è la partenza chiesta) con «Start here» nei colori di un controllo:
    sopra la bandierina, o sotto quando sopra finirebbe nella barra di stato
@@ -650,6 +653,13 @@ bordo e luce si aggiungono. Con «Riduci trasparenza» la pista è il fondo
 opaco col bordo `border`, con «Aumenta contrasto» col bordo
 `borderStrong`; la pillola resta piatta. Le schede di Play (`PlayTabs`)
 hanno lo stesso aspetto, con la loro molla e il loro tick.
+
+**I chip in rilievo** (TASK-469 A4a, `src/ui/glassRaise.ts`): i chip delle
+città in Explore e quelli della ricerca (`FilterChip`) escono dalla pagina
+come la pillola dei segmenti: un filo di luce in cima e un'ombra corta. Non
+aggiunge colore: ognuno tiene il suo, il giallo del chip scelto compreso.
+Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Gli altri
+chip dell'app non lo hanno ancora.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
@@ -1876,8 +1886,25 @@ l'app, come «Find friends»:
   «Send to a friend» e, sui propri, «Poster and video» (quello che «Share»
   apriva prima); «Cancel» lo chiude, e chiudere quello che una voce apre
   chiude anche il foglietto. Senza i messaggi (nessun account, o un'API di
-  prima) sui post altrui «Share» non c'è. La voce del link arriva con la
-  parte E.
+  prima) sui post altrui «Share» non c'è, se il post non ha un link.
+- **«Share link»** (TASK-455 parte E; testi dell'utente del 2026-11-12):
+  nel foglietto, tra «Send to a friend» e «Poster and video», solo sui post
+  che l'API dice `linkable` (per «Everyone», con la linea, di un autore che
+  tiene «Links to my posts» acceso), propri o altrui. Dà al foglio del
+  telefono l'indirizzo `getmuw.app/p/#<id>` e nient'altro, senza parole
+  nostre (`feed/postLink.ts`); chiuso quello, si chiude anche il foglietto.
+  Un post «Followers» o «Only me», o di un autore con l'interruttore
+  spento, non ha la voce, nemmeno per l'autore. Spento l'interruttore, sui
+  propri post già a schermo la voce sparisce subito, senza aspettare che il
+  Feed sia riletto (`usePostLink`: l'ultimo stato dell'interruttore letto
+  o girato in questa sessione); riacceso, torna alla prossima lettura.
+- **«Links to my posts»** in «Settings», sotto «Show VO₂ max on my
+  profile» (`settings/PostLinksSetting.tsx`): un interruttore tenuto
+  dall'API (`GET`/`PUT /me/post-links`), acceso all'inizio, con sotto la
+  sua spiegazione: «People who see your «Everyone» posts can share a link
+  to them. Anyone with the link sees the drawing on the map, your username
+  and the distance, even without MuW. Turn this off and the links stop
+  working.». Con un'API di prima la riga non c'è.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -2138,6 +2165,16 @@ telefono dell'account: con un percorso o senza.
   stessa frase sopra il modulo, «←» e il titolo «Profile» (TASK-278 parte
   B). Chi entra da lì torna da solo alla scheda e trova «Save» e «Discard»
   al posto di «Done»; «←» torna alla scheda senza entrare.
+- **La scheda di fine si piega** (TASK-478 parte b, scelta dell'utente del
+  2026-11-18; codice in `activities/EndFoldedStrip.tsx` e
+  `screens/MapScreen.tsx`): in cima alla scheda c'è la maniglia della corsa
+  (TASK-472). Trascinata in giù, o toccata, la scheda diventa una striscia
+  sopra la mappa: km e tempo su una riga («3.02 km · 18:00») e, con un
+  account, «Save». La striscia toccata, o trascinata in su, riapre la
+  scheda. Il modulo resta com'era: foto, «Who can see it» e il resto. Il
+  «Save» della striscia è quello del modulo, con tutto quello che fa
+  (visibilità, Apple Health, Strava); se la corsa non si tiene, la scheda
+  si riapre e dice perché. Alla fine successiva la scheda parte intera.
 - **La pagina «My activities»**, da «Profile»: una scheda per corsa, dalla
   più recente. A sinistra il disegno, come a fine corsa: il percorso
   giallo e sopra, sottile e chiara, la linea corsa; una corsa senza
@@ -3818,6 +3855,47 @@ cui tiene i numeri.
   «[Live]». La schermata dal vivo è un `Modal` a tutto schermo come
   `MediaViewer`: lo scorrimento fra le schede non parte sotto di lei e il
   gesto dal bordo sinistro (ADR-0384) non fa nulla; si chiude con «Close».
+- **La fila «Live» del Feed e «Live in the Feed»** (TASK-468 parte B2a,
+  ADR-0381; testi approvati il 2026-11-12). In «All», sotto la scheda del
+  concorso, con un account: al più 5 schede una sopra l'altra (una fila che
+  scorre di lato litigherebbe con lo scorrimento fra le schede del Feed),
+  solo le proprie live e quelle di chi si segue (scelta 7), prima quelle in
+  corso. Una live in corso: il nome con un pallino rosso e «LIVE · {sport} ·
+  {distance}» (o «Finished · …» nell'ora del riepilogo); il tocco apre la
+  schermata dal vivo. Una programmata: «Live · {day} {time} · {title}» e,
+  se non è propria, «Remind me» (pieno quando chiesto; «We'll notify you
+  when it starts.» per VoiceOver). Si rilegge ogni minuto (`GET /lives`).
+  Nel foglio di «Share live», sotto «Send in MuW», «Live in the Feed»: un
+  avviso «Who can follow» con «Followers» · «Everyone» · «Not now», poi la
+  condivisione senza link per il Feed (nessun foglio delle persone). Lo
+  stesso nel menu di «Sharing live», che cambia chi la vede (`PATCH`).
+  Fermare una condivisione senza link chiede «Stop sharing?» con «Nobody
+  can follow you any more.» (scelta 8); con un link resta «The link stops
+  working now.».
+- **«Plan a live», la partenza e il tocco della push** (TASK-468 parte
+  B2b1, ADR-0381). In cima alla fila «Live», con un account, la riga «Plan
+  a live ›» (scelta 9) apre un foglio a tutto schermo: lo sport di
+  «Settings», «Name (e.g. Milano Marathon)», «Day and time» (giorno e ora
+  coi pulsanti − e +, a passi di 15 minuti, da adesso a 60 giorni; prima
+  domani alle 9:00), «Who can follow» (Followers · Everyone), «Show my
+  heart rate» spento, «Not now» · «Plan». Quando una registrazione parte
+  (fine del conto alla rovescia) e c'è una propria live programmata nelle
+  sue ore, l'avviso «Start live "{title}"?» con «Your followers can follow
+  you now.» o «Everyone can follow you now.», «Not this time» · «Start
+  live» (scelta 3); mai da sola. Mentre si registra, la propria scheda
+  programmata nella fila ha «Start live». La push «… is live» toccata apre
+  la schermata dal vivo, col nome di chi la fa letto dalla programmata.
+- **La live diventa il post** (TASK-468 parte B2b2, scelta 5; testi
+  approvati il 2026-11-12). Se la registrazione è partita da una live
+  programmata («Start live»), alla fine il modulo di «Save» chiede una volta
+  «Post it in the Feed?» con «Your live becomes the post of this
+  activity.», «Don't post» · «Post». «Post» mette nel modulo chi vede il
+  post come il pubblico della live (Everyone o Followers) e, se non c'è,
+  il titolo della gara (il modulo si ridisegna per mostrarlo); il resto
+  come sempre, decide «Save». Quando il post
+  è sull'API e altri lo vedono, l'app lo lega alla programmata (`PUT
+  /me/planned-lives/{id}/post`) e nel Feed la scheda della live lascia il
+  posto al post. «Don't post», o un post «Only me», non lega niente.
 - **La piscina mentre nuoti** (TASK-424 parte C1): sotto l'orologio due
   numeri, «Lengths» (le vasche stimate dal passo delle nuotate prima, 2:00
   /100 m senza nessuna; 0 prima di mezza vasca) e «Calories» («85 kcal»,
@@ -5131,6 +5209,59 @@ Le scelte dell'utente del 2026-11-12, nei testi che ha approvato
   - A fine volo il telefono manda `max_alt_m` e `top_speed_mps` con i
     numeri del post. Se un server senza R5a li rifiuta, li rimanda senza,
     come fa con i tratti dello sci.
+
+#### A piedi e in volo, hike & fly (TASK-305 parte R6b)
+
+Nelle gare si corre e si vola nella stessa attività. È la scelta
+dell'utente del 2026-11-12, «Dentro Paragliding»; i testi sono in
+TASK-305.md, «Testi di R6».
+
+- **La divisione** (`src/air/flightParts.ts`). Viene solo dal GPS:
+  - decollo: per almeno 15 s si sale o si scende più di 1,5 m/s, oppure per
+    almeno 20 s si va oltre 25 km/h;
+  - atterraggio: per almeno 60 s si va sotto 9 km/h e si sale o si scende
+    meno di 0,7 m/s;
+  - un tratto più corto di un minuto si unisce a quello vicino.
+- **Durante la registrazione** sopra i riquadri del volo c'è «On foot | In
+  the air» (il controllo a pillola dell'app), con sotto «MuW switches by
+  itself; touch to correct it.».
+  - Un tocco imposta la fase da quel momento. Se arriva entro 5 minuti da un
+    cambio visto dal GPS, annulla quel cambio da quando è avvenuto (la
+    navetta del recupero letta come volo).
+  - Le correzioni restano sul telefono legate al volo
+    (`flight-phase-marks.json`), anche se l'app si chiude.
+  - A piedi i riquadri sono distanza del tratto, dislivello, quota e passo
+    medio; in aria quelli di sempre.
+- **La fine**: sotto la distanza un riquadro con «Total» (il tempo), poi
+  «On foot» (tempo · km · +dislivello) e «In the air» (tempo · km · quota
+  massima).
+  - Le calorie si contano tratto per tratto: a piedi come corsa sotto i
+    7:30 /km, altrimenti come camminata in montagna; in aria col MET del
+    volo.
+  - Sotto le righe restano solo «Max altitude», «Top speed» (dei soli
+    tratti in aria: la navetta non conta) e le calorie. Tempo e dislivello
+    sono già nelle righe, e con un riquadro in meno «Save» e «Discard»
+    restano sullo schermo (provato nel simulatore il 2026-11-12).
+  - Un volo senza tratti a piedi finisce come prima.
+- **Il salvataggio** manda `flight_parts` (API.md, «A piedi e in volo»),
+  coi tempi arrotondati al millisecondo: i fix del telefono hanno i
+  decimali e il server vuole interi. Se il server non li prende ancora
+  (422), li rimanda senza.
+- **Il Feed**: sotto il titolo del post «On foot 1:58:40 · In the air
+  1:43:30», anche sulla foto e in quello che legge VoiceOver. Nella pagina
+  del post il riepilogo ha due righe in più dopo il tempo, «On foot» e «In
+  the air».
+- **La mappa a due colori** (TASK-305 parte R6c), alla fine della gara.
+  - La linea dei tratti a piedi è il bianco della corsa; i voli sono sopra,
+    nel giallo del percorso, pieni (non tratteggiati come le risalite dello
+    sci).
+  - Il banner dice «White: on foot. Yellow: in the air.» al posto di
+    «White: where you flew.». Un volo senza tratti a piedi resta tutto
+    bianco, come prima.
+  - I tratti si calcolano sul telefono dalla traccia e dalle correzioni a
+    mano (`src/air/flightLegs.ts`), come quelli della fine.
+  - La pagina dell'attività riaperta più tardi è la parte R6d, ancora da
+    fare: lì i tratti arrivano dal server.
 
 ### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
 

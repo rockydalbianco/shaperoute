@@ -1,16 +1,19 @@
 # TASK-455 — Condividere il disegno di un'altra persona
 
-**Stato**: **B0, A e B fatte e in produzione** (2026-11-12): B0 nella
-#1220, A nella #1230 e sul server col passo 11 (migrazione `0074`), B nella
-#1255 con l'OTA 15 · resta la prova dell'utente sul telefono · prossima
-**C** (server: il link e l'interruttore), che comincia da una domanda
-all'utente e dalla frase della privacy; poi D (sito) ed E (app)
-**Fase**: 5 · **Branch**: una PR per parte; la prossima
-`feat/TASK-455-c-post-links`
-**Dipende da**: per la parte C, la risposta dell'utente sul link
-dell'autore con l'interruttore spento, la frase della privacy e l'avviso
-nelle novità approvati **prima** del passo sul server, il sì del
-Coordinatore sui file
+**Stato**: Done (2026-11-21) — B0 (#1220), A (#1230, server passo 11,
+migrazione `0074`), B (#1255, OTA 15), C (#1285, server passo 13,
+migrazione `0078`), D (#1308) ed E (#1309, `449c997d`) in `main`.
+**Esito**: da ogni post «Share» manda il post a un amico in chat come
+rimando (mai una copia) e, per un post «Everyone», ne dà il link
+`getmuw.app/p/#<id>`, che apre una pagina con mappa, linea, titolo, nome,
+sport e distanza anche senza MuW; «Links to my posts» in «Settings» spegne
+tutti i link ai propri post. **Resta** (vedi «Quello che resta»): l'OTA
+della parte E e la copia del sito, col sì dell'utente dato al
+Coordinatore; la prova dell'utente sul telefono; la parte F, con una build
+nativa
+**Fase**: 5 · **Branch**: una PR per parte, tutte unite; l'ultimo
+`feat/TASK-455-e-share-link`
+**Dipende da**: —
 **ADR**: **ADR-0382** (il post in un messaggio, il link di un post,
 l'interruttore dell'account), numero dal Coordinatore il 2026-11-12 ·
 numero del task dal Coordinatore l'11 novembre 2026 (S5 e gruppo C di
@@ -128,6 +131,8 @@ senza mostrarlo a chi non potrebbe vederlo.
 | App di prima | «[Post]» |
 | Impostazioni, interruttore (acceso all'inizio) | «Links to my posts» · «People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.» |
 | Pagina web | «{user} drew this on MuW» · «Get MuW» · «This drawing is no longer available.» |
+| Pagina web, se l'API non risponde (approvati il 2026-11-21, «Sì, con questi testi») | «We couldn't load this drawing.» · «Try again» |
+| Anteprima del link nelle app di chat (approvati il 2026-11-21, «Approvo così») | «A drawing on MuW» · «Open the link to see the line on the map.» |
 
 **La frase della privacy, approvata il 2026-11-12 («Approvo così»)**, da
 aggiungere dopo quella su «Everyone» e «Followers», nell'app e sul sito
@@ -170,15 +175,18 @@ foglietto nell'app, una volta.)
   «Followers»; `DrawingCard` manda il rimando per i disegni altrui (il buco
   chiuso). Dopo TASK-454 A in `main` e dopo il server di A. Simulatore col
   turno del Coordinatore.
-- **C — Server: i link.** L'interruttore nell'account (acceso all'inizio) e
+- **C — Server: i link** (**in `main`, #1285, e sul server col passo
+  13**). L'interruttore nell'account (acceso all'inizio) e
   la lettura senza account di un post «Everyone» il cui autore ha
   l'interruttore acceso: linea, titolo, nome, metri, sport, nient'altro.
   Come la pagina la legge senza la chiave dell'app si guarda in «Share
   live» (ADR-0352). Passo sul server.
-- **D — Sito: la pagina del post**, sul modello di `site/live/`: mappa,
+- **D — Sito: la pagina del post** (**in `main`, #1308; sul sito con la
+  copia**), sul modello di `site/live/`: mappa,
   linea, titolo, «{user} drew this on MuW», «Get MuW», senza indice per i
   motori di ricerca.
-- **E — App: «Share link», l'interruttore e la privacy.** La voce nel
+- **E — App: «Share link», l'interruttore e la privacy** (**in `main`,
+  #1309; in produzione col prossimo OTA**). La voce nel
   foglietto (il foglio del telefono), «Links to my posts» nelle
   impostazioni, il paragrafo della privacy nelle cinque lingue e sul sito
   (da approvare), la riga delle novità.
@@ -378,13 +386,59 @@ Parte B (in `main`, #1255; in produzione con l'OTA 15):
 - [ ] La prova dell'utente sul telefono: mandare il post di un altro a un
       amico e aprirlo dalla chat.
 
-Parte D (fissati col Coordinatore):
-- [ ] La pagina risponde solo per post «Everyone» con l'interruttore
-      dell'autore acceso; ha `noindex` e nessuna anteprima per i motori.
-- [ ] La linea è quella che vede un iscritto, con le stesse regole, non
-      di più; niente foto, commenti, reazioni, tempi.
+Parte C (in `main`, #1285; sul server col passo 13):
+- [x] `GET /post?id=` risponde senza account e senza chiave solo per un
+      post «Everyone» il cui autore ha l'interruttore acceso; ogni altro
+      caso è `404`, uguale per tutti.
+- [x] `GET` e `PUT /me/post-links`; l'interruttore nasce acceso (`0078`);
+      spento, nessun link ai post dell'autore funziona, nemmeno i suoi.
+- [x] `linkable` su ogni disegno letto, e nei quattro esempi condivisi.
+- [x] Il passo sul server, col sì dell'utente dato al Coordinatore, e le
+      letture di `out/TASK-455/SERVER-C.md` (passo 13, 2026-11-18).
 
-Le altre parti scrivono i loro criteri quando partono.
+Parte D (fissati col Coordinatore; in `main`, #1308):
+- [x] La pagina risponde solo per post «Everyone» con l'interruttore
+      dell'autore acceso; ha `noindex` e nessuna anteprima per i motori.
+- [x] La linea è quella che vede un iscritto, con le stesse regole, non
+      di più; niente foto, commenti, reazioni, tempi.
+- [x] Schermate della pagina approvate dall'utente («Sì, va bene»).
+- [ ] La copia del sito, col sì dell'utente dato al Coordinatore, e i
+      controlli di `out/TASK-455/SITO-D.md`.
+
+Parte E (in `main`, #1309):
+- [x] «Share link» nel foglietto solo sui post `linkable`: dà al foglio
+      del telefono l'indirizzo del post e nient'altro.
+- [x] «Links to my posts» in «Settings» legge e salva l'interruttore;
+      spento, «Share link» sparisce subito dai propri post.
+- [x] La frase della privacy nelle cinque lingue e nelle pagine del sito,
+      approvata dall'utente («Sì, aggiungi»).
+- [x] Schermate dal simulatore approvate dall'utente («Sì, vanno bene»).
+- [ ] L'OTA che la porta in produzione, col sì dell'utente dato al
+      Coordinatore.
+
+## Quello che resta (2026-11-21)
+
+- **L'OTA della parte E**: la chiede il Coordinatore all'utente. La pagina
+  `/p/` è **online dal 2026-11-18** (la copia del sito della parte D è
+  stata fatta allora, non era da fare come diceva questa voce), quindi un
+  link condiviso apre già la pagina.
+- **Un'altra copia del sito**, una sola, per le tre aggiunte del 2026-11-21
+  alla pagina `/p/` (la mappa girata come il disegno, #1328; l'anteprima
+  nelle app di chat e «Try again», #1332) e per le pagine della privacy
+  rigenerate con la parte E, se non sono già andate: la chiede il
+  Coordinatore all'utente.
+- **La prova dell'utente sul telefono**: mandare il post di un altro a un
+  amico e aprirlo dalla chat (parte B, in produzione dall'OTA 15); dopo
+  l'OTA della parte E, «Share link» e l'interruttore.
+- **Le note di versione dello store** alla prossima build: il testo
+  approvato è in «I testi approvati» («Share a post: send it to a friend
+  or share its link…»).
+- **Parte F**, con una build nativa: il link che apre il post dentro
+  l'app e un «Copy link» vero. È un task nuovo, col
+  numero del Coordinatore, quando si decide la build.
+- Detto all'utente e lasciato com'è: la spiegazione sotto l'interruttore
+  non nomina titolo e sport (la privacy sì); riacceso l'interruttore,
+  «Share link» torna sui propri post alla rilettura del Feed.
 
 ## Registro
 
@@ -505,3 +559,97 @@ Le altre parti scrivono i loro criteri quando partono.
   `site/tests/post.test.mjs` che lo controlla, con i file che la pagina
   prende da fuori dalla sua cartella. Il suo `sito.sh` lo aggiorna il
   Coordinatore alla copia.
+- 2026-11-12: **parte E scritta** (`feat/TASK-455-e-share-link`, bozza):
+  «Share link» nel foglietto di «Share» solo sui post `linkable` (dà al
+  foglio del telefono l'indirizzo `getmuw.app/p/#<id>` e nient'altro),
+  «Links to my posts» in «Settings» sotto il VO₂ max con la sua
+  spiegazione, la frase della privacy nelle cinque lingue e le pagine del
+  sito rigenerate (`make_privacy.mjs`). Traduzioni dell'agente. Nella
+  frase della privacy l'agente ha aggiunto «the sport» (la pagina del link
+  mostra «Run · 4.3 km»): **l'utente, alla domanda «Nella frase della
+  privacy sul link va bene aggiungere «the sport»?»: «Sì, aggiungi»**. La
+  frase approvata è quindi: «A post for «Everyone» can also be opened with
+  a link. You, or any member who sees the post, can share its link, and
+  whoever has the link sees the drawing on the map, your username, the
+  title, the sport and the distance on a web page, even without MuW: never
+  your photos, the comments or your times. Search engines are asked not to
+  list these pages. Turn off «Links to my posts» in Settings and no link
+  to your posts works any more. A post for «Followers» or «Only me» never
+  has a link.»
+  Segnalato all'utente anche che la spiegazione dell'interruttore, com'è
+  approvata, non nomina titolo e sport. Mancano: la prova al simulatore
+  (turno del Coordinatore) con le schermate per l'utente. Esce con un OTA
+  solo dopo «server C fatto» e la copia del sito con la pagina (parte D).
+- 2026-11-18: **«server C fatto»** (Coordinatore): passo 13 lanciato
+  dall'utente alle ~13:41Z, server a `253b5da0`, `0078_post_links`
+  applicata; le letture di `SERVER-C.md` come previste (`/post` senza
+  chiave 404 con le tre intestazioni, «not an id 404», «feed without key
+  401», colonna `post_links|boolean|NO|true` con tutti e 9 gli account
+  accesi, `[('everyone', 7, 7), ('only_me', 3, 0)]`, le dieci chiavi di un
+  post «Everyone» con 1236 punti, un disegno non pubblico → `None`). Sul
+  server non c'è nessun disegno «Followers»: quel caso lo coprono i test.
+  La pagina (parte D, in `main`) va sul sito con la copia, che il
+  Coordinatore chiede all'utente; la parte E (#1309, CI verde) aspetta il
+  simulatore e le schermate.
+- 2026-11-18: **prova al simulatore della parte E** (turno dato
+  dall'utente: «simulatore tuo, procedi»; API e database usa e getta, niente
+  sul server). Visto: «Links to my posts» in «Settings» acceso e spento con
+  la spiegazione, in inglese e in italiano; «Share link» sul proprio post
+  (tre voci) e su un post «Everyone» altrui (due voci, senza poster); un
+  post «Followers» con la sola «Send to a friend»; il foglio del telefono
+  con `getmuw.app`, e «Copy» mette negli appunti
+  `https://getmuw.app/p/#<id>`; spento l'interruttore l'API risponde 404
+  al link del proprio post e 200 a quello altrui. **Un difetto trovato e
+  corretto**: spento l'interruttore, «Share link» restava sui propri post
+  già letti dal Feed fino alla rilettura; ora sparisce subito
+  (`usePostLink` in `feed/postLink.ts`, quattro test nuovi). Otto schermate
+  in `out/TASK-455/shots-e/`; in attesa del sì dell'utente.
+- 2026-11-18: **schermate della parte E approvate dall'utente** («Sì, vanno
+  bene», alla domanda «Vanno bene le schermate di «Share link» e
+  dell'interruttore?»). La #1309 esce dalla bozza e passa al Coordinatore
+  come «pronta». Restano, ognuno con il sì dell'utente al Coordinatore:
+  l'OTA della parte E e la copia del sito (pagina `/p/` della parte D e
+  pagine della privacy rigenerate).
+- 2026-11-21: **E in `main`** (#1309, `449c997d`), unita dal Coordinatore
+  col «Sì, unisci» dell'utente (la PR porta la frase nuova della privacy).
+  **Task chiuso**: tutte le parti da B0 a E sono in `main`; quello che
+  resta è in «Quello che resta».
+- 2026-11-21: **correzione alla pagina del link, dopo la chiusura** (branch
+  `fix/TASK-455-link-page-turned-map`): `GET /post` manda `rotation_deg`,
+  ma la pagina lasciava il nord in alto, e un disegno che il motore ha
+  girato si vedeva storto, mentre nell'app è dritto. Ora la mappa prende
+  il `bearing` opposto come nell'app (`bearingOf` in `site/p/view.js`) e,
+  solo se è girata, mostra la bussola di MapLibre (un tocco: nord in
+  alto). Solo `site/p/post.js`, `site/p/view.js`, `site/tests/post.test.mjs`
+  e `docs/SITO.md`; niente server né app. Vista nel browser a larghezza
+  telefono col finto `/post` (`out/TASK-455/shots-fix/`). Deciso
+  dall'agente su delega dell'utente («continua con i suggerimenti e
+  miglioramenti»). (La pagina era già online dal 2026-11-18: va sul sito
+  con una copia nuova, non con quella della parte D.)
+- 2026-11-21: **schermate della correzione approvate dall'utente** («Sì,
+  va bene», alla domanda «Va bene la pagina del link con la mappa girata
+  come il disegno?»). La #1328 esce dalla bozza e passa al Coordinatore
+  come «pronta».
+- 2026-11-21: **la correzione è in `main`** (#1328, `8f350b05`).
+- 2026-11-21: **due aggiunte alla pagina del link, PR #1332** (branch
+  `feat/TASK-455-link-preview-card`), solo sito. (1) **L'anteprima nelle
+  app di chat**: tag Open Graph in `site/p/index.html` con «A drawing on
+  MuW» e «Open the link to see the line on the map.», e l'immagine
+  `site/p/link-card.png` (il cuore del logo come percorso su strade
+  inventate, niente tile; si rifà da `site/tools/link-card.html`);
+  approvati dall'utente («Approvo così», alla domanda «Approvi testo e
+  immagine dell'anteprima del link?»). Uguale per ogni post: l'id sta dopo
+  il `#` e non arriva a nessun server; niente `og:url`, che farebbe
+  perdere l'id; `noindex` invariato. La descrizione dell'immagine
+  (`og:image:alt`) è dell'agente, detta all'utente. (2) **Se l'API non
+  risponde**, dopo i tre tentativi la pagina dice «We couldn't load this
+  drawing.» con «Try again» (cinque lingue; testi approvati dall'utente,
+  «Sì, con questi testi»); il pulsante lo crea lo script e sta nella pagina
+  solo allora. Decise dall'agente su delega dell'utente le scelte
+  tecniche; testi e immagine sono dell'utente. Restano della lista
+  proposta, non iniziate: «Share link» che torna subito quando si
+  riaccende l'interruttore, e titolo e sport nella spiegazione sotto
+  l'interruttore (testo da approvare).
+- 2026-11-21: **schermata di «Try again» approvata dall'utente** («Sì, va
+  bene», alla domanda «Va bene la schermata con la frase e «Try again»?»).
+  La #1332 esce dalla bozza e passa al Coordinatore come «pronta».

@@ -41,7 +41,11 @@ export interface WatchSport {
 }
 
 /** What the registry does not say: the sports done indoors, with no GPS. */
-const INDOORS: ReadonlySet<RunActivity> = new Set<RunActivity>(["gym"]);
+const INDOORS: ReadonlySet<RunActivity> = new Set<RunActivity>([
+  "gym",
+  // A stretching session (TASK-475).
+  "stretching",
+]);
 
 /** The sports the watch does not offer yet: the open-water swim until it is
  * tried in the water with the watch (TASK-370 part C, spring 2027). A
@@ -52,6 +56,8 @@ const NOT_ON_WATCH: ReadonlySet<RunActivity> = new Set<RunActivity>([
   "swimming",
   // A day of mountaineering, until a watch build knows it (TASK-463).
   "alpinism",
+  // A stretching session: its routines are the phone's (TASK-475).
+  "stretching",
 ]);
 
 export function watchSportOf(profile: SportProfile): WatchSport {

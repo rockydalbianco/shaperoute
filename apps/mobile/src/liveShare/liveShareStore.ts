@@ -1,4 +1,10 @@
-import type { LiveShareSent, LiveStats, RunActivity } from "@shaperoute/shared-types";
+import type {
+  LiveAudience,
+  PlannedLiveAudience,
+  LiveShareSent,
+  LiveStats,
+  RunActivity,
+} from "@shaperoute/shared-types";
 import { useSyncExternalStore } from "react";
 
 import { emptyTrack, MAX_ACCURACY_M, type Track } from "../navigation/trackRecorder";
@@ -9,10 +15,13 @@ import {
   makeLiveLink,
   sendLiveShareTo,
   sendLiveUpdate,
+  setLiveAudience,
+  startPlannedLiveRequest,
   stopLiveShareRequest,
 } from "./liveShareApi";
 import { type LiveEnd, LiveSharer } from "./liveSharer";
 import { liveStats } from "./liveStats";
+import { rememberPlannedLive } from "./plannedPost";
 
 /**
  * The live link of the activity under way (TASK-424 part B1, ADR-0352):
@@ -118,7 +127,7 @@ export async function startLiveShare(
   poolLengthM: number | null = null,
   /** TASK-468 part B1: without its link, for the chat only; the heart rate
    * to the viewers in the app (off unless turned on). */
-  choice: { link?: boolean; heartVisible?: boolean } = {},
+  choice: { link?: boolean; heartVisible?: boolean; audience?: LiveAudience } = {},
 ): Promise<StartOutcome> {
   if (status.kind !== "off") {
     return { kind: "busy" };
@@ -130,6 +139,9 @@ export async function startLiveShare(
     ...(poolLengthM === null ? {} : { pool_length_m: poolLengthM }),
     ...(choice.link === false ? { link: false } : {}),
     ...(choice.heartVisible === true ? { heart_visible: true } : {}),
+    ...(choice.audience !== undefined && choice.audience !== "none"
+      ? { audience_feed: choice.audience }
+      : {}),
   };
   const answer =
     choice.link === false
@@ -139,7 +151,40 @@ export async function startLiveShare(
     put(OFF);
     return { kind: "failed" };
   }
-  const { id, url } = answer.value;
+  return adopt(api, answer.value.id, answer.value.url);
+}
+
+/** A planned live started now (TASK-468 part B2b1, the user's choice 3):
+ * its share, made by the server with the planned live's audience and heart
+ * rate, without a link, sent from here as any other. */
+export async function startPlannedLive(
+  api: LiveApiOptions,
+  plannedLiveId: string,
+  poolLengthM: number | null = null,
+  /** Its title and audience, for the post at the end (part B2b2). */
+  planned?: { title: string; audience: PlannedLiveAudience },
+): Promise<StartOutcome> {
+  if (status.kind !== "off") {
+    return { kind: "busy" };
+  }
+  cancelled = false;
+  put({ kind: "starting" });
+  const answer = await startPlannedLiveRequest(api, plannedLiveId, poolLengthM);
+  if (answer.kind !== "ok") {
+    put(OFF);
+    return { kind: "failed" };
+  }
+  const outcome = adopt(api, answer.value.id, answer.value.url);
+  if (outcome.kind !== "failed" && planned !== undefined) {
+    // At the end, «Post it in the Feed?» (part B2b2).
+    rememberPlannedLive({ plannedLiveId, ...planned });
+  }
+  return outcome;
+}
+
+/** The share made, sent from now on; the activity ended meanwhile: it
+ * stops before anyone has it. */
+function adopt(api: LiveApiOptions, id: string, url: string | null): StartOutcome {
   if (cancelled) {
     // The activity ended meanwhile: the link goes before anyone has it.
     put(OFF);
@@ -195,6 +240,17 @@ export async function liveShareLink(): Promise<string | null> {
   }
   put({ kind: "sharing", id, url: answer.value.url });
   return answer.value.url;
+}
+
+/** «Live in the Feed» while a share is on (TASK-468 part B2a): who sees it
+ * there; false when it could not be changed. */
+export async function liveInFeed(audience: LiveAudience): Promise<boolean> {
+  const api = sharing;
+  if (status.kind !== "sharing" || api === null) {
+    return false;
+  }
+  const answer = await setLiveAudience(api, status.id, audience);
+  return answer.kind === "ok";
 }
 
 /** «Send in MuW» (TASK-468 part B1): the share in a message to each

@@ -1,4 +1,4 @@
-import type { RunActivity } from "@shaperoute/shared-types";
+import type { LiveAudience, RunActivity } from "@shaperoute/shared-types";
 import { type ReactNode, useRef, useState } from "react";
 import { Alert, Platform, Share, StyleSheet, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,7 +19,9 @@ import {
 import { SheetModal } from "../ui/SheetModal";
 import { Tap } from "../ui/Tap";
 import {
+  liveInFeed,
   liveShareLink,
+  liveShareStatus,
   startLiveShare,
   stopLiveShare,
   useLiveShare,
@@ -72,19 +74,39 @@ async function shareLinkNow(): Promise<void> {
   }
 }
 
-/** What a touch on «Sharing live» offers (TASK-468 part B1). */
+/** «Live in the Feed» (TASK-468 part B2a, the user's choices 1 and 6):
+ * who can follow, then `onChoose`. */
+export function askWhoFollows(onChoose: (audience: LiveAudience) => void): void {
+  Alert.alert(t("Who can follow"), undefined, [
+    { text: t("Followers"), onPress: () => onChoose("followers") },
+    { text: t("Everyone"), onPress: () => onChoose("everyone") },
+    { text: t("Not now"), style: "cancel" },
+  ]);
+}
+
+/** What a touch on «Sharing live» offers (TASK-468 parts B1 and B2a). */
 export function sharingMenu(onSend: () => void): void {
   Alert.alert(t("Sharing live"), undefined, [
     { text: t("Send in MuW"), onPress: onSend },
+    {
+      text: t("Live in the Feed"),
+      onPress: () => askWhoFollows((audience) => void liveInFeed(audience)),
+    },
     { text: t("Share link"), onPress: () => void shareLinkNow() },
     { text: t("Stop sharing"), style: "destructive", onPress: confirmStopSharing },
     { text: t("Keep sharing"), style: "cancel" },
   ]);
 }
 
-/** Asks, then stops sharing: the link stops working now. */
+/** Asks, then stops sharing: the link stops working now; a share without
+ * a link says nobody can follow any more (the user's choice 8). */
 export function confirmStopSharing(): void {
-  Alert.alert(t("Stop sharing?"), t("The link stops working now."), [
+  const now = liveShareStatus();
+  const linked = now.kind === "sharing" && now.url !== null;
+  const what = linked
+    ? t("The link stops working now.")
+    : t("Nobody can follow you any more.");
+  Alert.alert(t("Stop sharing?"), what, [
     { text: t("Keep sharing"), style: "cancel" },
     {
       text: t("Stop sharing"),
@@ -127,7 +149,7 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
     }
   };
 
-  const share = async (link: boolean) => {
+  const share = async (link: boolean, audience?: LiveAudience) => {
     if (session === null || apiUrl === null) {
       return;
     }
@@ -136,14 +158,15 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
       { baseUrl: apiUrl, token: session.token, fetchFn, key: apiKey },
       activity,
       trackless?.poolLengthM ?? null,
-      { link, heartVisible: heart },
+      { link, heartVisible: heart, audience },
     );
     if (outcome.kind === "started") {
       toShare.current = outcome.url;
       setOpen(false);
     } else if (outcome.kind === "started_without_link") {
-      // The people once the sheet is down: iOS shows one at a time.
-      toChoose.current = true;
+      // The people once the sheet is down: iOS shows one at a time. Not
+      // for «Live in the Feed»: its followers see it there.
+      toChoose.current = audience === undefined;
       setOpen(false);
     } else if (outcome.kind === "failed") {
       setProblem(t("Couldn't create the link. Try again."));
@@ -211,6 +234,7 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
           onHeart={setHeart}
           onShare={() => void share(true)}
           onSend={() => void share(false)}
+          onFeed={() => askWhoFollows((audience) => void share(false, audience))}
           onCancel={() => setOpen(false)}
         />
       </SheetModal>
@@ -233,6 +257,7 @@ function ConsentSheet({
   onHeart,
   onShare,
   onSend,
+  onFeed,
   onCancel,
 }: {
   withMap: boolean;
@@ -242,6 +267,7 @@ function ConsentSheet({
   onHeart: (on: boolean) => void;
   onShare: () => void;
   onSend: () => void;
+  onFeed: () => void;
   onCancel: () => void;
 }) {
   const insets = useSafeAreaInsets();
@@ -326,6 +352,16 @@ function ConsentSheet({
           testID="live-share-send-in-muw"
         >
           <Text style={styles.buttonText}>{t("Send in MuW")}</Text>
+        </Tap>
+        <Tap
+          style={[styles.button, styles.wide, starting && styles.off]}
+          onPress={onFeed}
+          disabled={starting}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: starting, busy: starting }}
+          testID="live-share-in-feed"
+        >
+          <Text style={styles.buttonText}>{t("Live in the Feed")}</Text>
         </Tap>
       </View>
     </View>

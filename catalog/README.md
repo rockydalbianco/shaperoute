@@ -111,6 +111,41 @@ chiave. Le parole a riga unica di prima (55) sono uscite.
 Dal 12 novembre 2026 il seme ha **1546 percorsi in 63 città**: 1206 forme e
 340 parole a penna alzata.
 
+### Le uscite in bici (TASK-441 B2)
+
+Un percorso disegnato per la bici ha in più `"activity": "cycling"`; una
+corsa non ha il campo, come prima. Nel file di una città le uscite stanno
+**in fondo**, dopo ogni corsa: una corsa tiene il suo posto, e quindi il suo
+id. L'API le dà solo a chi chiede `activity=cycling`.
+
+```
+zsh out/TASK-441/b2/run-bike.sh                # il giro, una città alla volta
+python tools/catalog_bike.py --page out/TASK-441/b2/tutti.html --every
+python tools/catalog_bike.py --propose         # le chiavi da tenere
+python tools/catalog_bike.py --write           # catalog/seed dai quattro registri
+```
+
+`tools/catalog_bike.py` disegna sulla rete della bici, dalla piazza delle
+stesse città, una forma per città a 20, 25 o 30 km a turno (il motore
+disegna in bici fino a 30 km). Registro `out/TASK-441/bike.jsonl`, chiave
+`città/forma@cycling/distanza`, filtro di `catalog_seed.py` com'è.
+
+**Le zone della bici non si scaricano da Overpass** (`docs/MAPS.md`, «Le
+zone della bici», ADR-0153): si ritagliano da un estratto di Geofabrik con
+`--extract` (`osmium tags-filter … w/highway`, poi il ritaglio di
+`zone_extract.py`). Il ritaglio di osmium vuole circa 3,7 GB per un paio di
+secondi, qualunque sia l'estratto.
+
+**Il filtro non dice se una forma si legge**, come per le parole. Delle
+dodici forme provate, guardate una per una, otto si leggono (cuore, stella,
+farfalla, gatto, sole, cerchio, luna, pesce: `READS` nello strumento) e
+quattro no (smiley, cavallo, chiocciola, testa di cane): si disegnano e si
+tengono solo le otto, per scelta dell'utente (2026-11-18).
+
+Dal 18 novembre 2026 il seme ha **1694 percorsi**: le 1546 corse di prima e
+**148 uscite in bici in 29 città italiane** (54 da 20 km, 49 da 25, 45 da
+30). Le città estere vogliono un estratto per paese: un secondo giro.
+
 ### Le città in evidenza
 
 Le città che «Explore» mostra per prime (`FEATURED_CITIES` nell'app) e che

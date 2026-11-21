@@ -70,8 +70,12 @@ describe("the watch's sports", () => {
       guided: false,
       onWatch: true,
     });
+    // A stretching session indoors too, and off the watch (TASK-475).
+    const stretch = WATCH_SPORTS.find((sport) => sport.activity === "stretching");
+    expect(stretch).toMatchObject({ appleWorkout: 62, gps: false, onWatch: false });
     expect(WATCH_SPORTS.filter((sport) => !sport.gps).map((s) => s.activity)).toEqual([
       "gym",
+      "stretching",
     ]);
   });
 

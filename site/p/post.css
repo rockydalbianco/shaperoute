@@ -27,3 +27,17 @@
   display: flex;
   justify-content: flex-start;
 }
+
+/* The API did not answer: under the words, the way to ask again. */
+.post__again {
+  margin-top: 14px;
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.post__again:hover {
+  border-color: var(--text);
+}

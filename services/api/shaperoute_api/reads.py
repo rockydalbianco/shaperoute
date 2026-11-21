@@ -55,6 +55,8 @@ NEWER_ACTIVITIES: tuple[str, ...] = (
     "alpinism",
     # A workout at the gym (TASK-385): shown only with `trackless` too.
     "gym",
+    # A stretching session (TASK-475): shown only with `trackless` too.
+    "stretching",
 )
 TRACKLESS = "trackless"
 # A swim in a pool (TASK-400, ADR-0334): a run of swimming without a track.

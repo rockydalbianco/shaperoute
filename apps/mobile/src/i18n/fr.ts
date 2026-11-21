@@ -2844,6 +2844,10 @@ export const FR: Table = {
   "by {user}": "de {user}",
   "This post is no longer available.": "Cette publication n'est plus disponible.",
   "🗺️ Post": "🗺️ Publication",
+  // src/settings/PostLinksSetting.tsx (TASK-455 part E)
+  "Links to my posts": "Liens vers mes publications",
+  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.":
+    "Qui voit tes publications pour «Tout le monde» peut partager leur lien. Qui a le lien voit le dessin sur la carte, ton nom d'utilisateur et la distance, même sans MuW. Désactive-le et les liens cessent de fonctionner.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Ajouter une activité",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
@@ -2873,6 +2877,11 @@ export const FR: Table = {
   "{name} · on the snow · target {km} km": "{name} · sur la neige · objectif {km} km",
   "{name} · on the snow · target {mi} mi": "{name} · sur la neige · objectif {mi} mi",
   "White: where you walked.": "Blanc : là où tu as marché.",
+  // TASK-305 part R6b: on foot and in the air (approved 2026-11-12).
+  "In the air": "En vol",
+  "MuW switches by itself; touch to correct it.":
+    "MuW change tout seul ; touchez pour corriger.",
+  "On foot {foot} · In the air {air}": "À pied {foot} · En vol {air}",
   // src/liveShare/ (TASK-468 part B1: «Send in MuW», the heart rate, the
   // live in the app; en and it approved by the user 2026-11-12)
   "Send in MuW": "Envoyer sur MuW",
@@ -2905,7 +2914,37 @@ export const FR: Table = {
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Alpinisme",
+  // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
+  Stretching: "Étirements",
   "Before you climb": "Avant de grimper",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW enregistre ton ascension et la partage : il ne te guide pas. Pars avec ton matériel, ton expérience et ton jugement, et vérifie les conditions avant de partir.",
+  // TASK-305 part R6c: the map of a race (approved 2026-11-12).
+  "White: on foot. Yellow: in the air.": "Blanc : à pied. Jaune : en vol.",
+  // src/liveShare/ (TASK-468 part B2a: the «Live» row, «Live in the Feed»,
+  // the stop of a share without a link; en and it approved 2026-11-12)
+  "Live in the Feed": "Live dans le Feed",
+  "Who can follow": "Qui peut te suivre",
+  "Remind me": "Me prévenir",
+  "We'll notify you when it starts.": "On te prévient quand ça commence.",
+  "Nobody can follow you any more.": "Plus personne ne peut te suivre.",
+  "Live · {day} {time} · {title}": "Live · {day} {time} · {title}",
+  // src/liveShare/ (TASK-468 part B2b1: «Plan a live», the start of a
+  // planned live; en and it approved 2026-11-12, «Plan» and the error on 2026-11-18)
+  "Plan a live": "Programmer un live",
+  "Name (e.g. Milano Marathon)": "Nom (ex. Milano Marathon)",
+  "Day and time": "Jour et heure",
+  'Start live "{title}"?': "Lancer le live « {title} » ?",
+  "Your followers can follow you now.": "Tes abonnés peuvent te suivre maintenant.",
+  "Everyone can follow you now.": "Tout le monde peut te suivre maintenant.",
+  "Start live": "Lancer le live",
+  "Not this time": "Pas cette fois",
+  Plan: "Programmer",
+  "Couldn't plan the live. Try again.": "Impossible de programmer le live. Réessaie.",
+  // src/liveShare/plannedPost.ts (TASK-468 part B2b2: the live becomes the
+  // post; en and it approved by the user 2026-11-12)
+  "Post it in the Feed?": "La publier dans le Feed ?",
+  "Your live becomes the post of this activity.":
+    "Ton live devient la publication de cette activité.",
+  "Don't post": "Ne pas publier",
 };

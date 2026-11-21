@@ -1,7 +1,16 @@
 # TASK-477 — Il pannello di fine attività che non scorre
 
-**Stato**: In lavorazione · 2026-11-12 · assegnato dal Coordinatore
-(nessun ADR: è un difetto).
+**Stato**: Done · 2026-11-12 · assegnato dal Coordinatore (nessun ADR: è
+un difetto).
+
+**Esito**: #1305 in main (762be3bf). Provato nel simulatore su iPhone 17e
+(844 pt): prima «Save» e «Discard» stavano sotto il bordo a fine volo, sci
+e scialpinismo; dopo, in tutti e tre, la scheda si ferma sotto il banner e
+scorre fino ai due bottoni (schermate in `out/TASK-477/`). Dalla prova una
+correzione: lo `ScrollView` aveva bisogno di `flexShrink: 1` per scorrere
+invece di uscire dal pannello. L'utente ha scelto di tenere la scheda del
+volo su tre righe («No, tre righe come oggi»): la #1302 è chiusa. In
+produzione con l'OTA 17 (2026-11-18, 253b5da0).
 
 ## Il difetto
 
@@ -33,10 +42,10 @@ scialpinismo (`SkiTourFinishCard`, quattro) sono più alte di quella del volo
 
 ## Criteri di accettazione
 
-- [ ] A fine volo, sci e scialpinismo, su iPhone 17e (844 pt), «Save» e
+- [x] A fine volo, sci e scialpinismo, su iPhone 17e (844 pt), «Save» e
       «Discard» si raggiungono scorrendo. Schermate prima/dopo nel
       simulatore, al turno dopo TASK-461.
-- [ ] Fuori dalla fine (risultato, navigazione, corsa) il pannello è come
+- [x] Fuori dalla fine (risultato, navigazione, corsa) il pannello è come
       prima.
 - [x] Test: alla fine i figli sono in uno `ScrollView` col `maxHeight`,
       altrove no (`screens/MapScreenScrolls.test.tsx`).

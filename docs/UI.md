@@ -148,7 +148,9 @@ https://claude.ai/artifact/XRMFiZ9BWbWnKkdJ9Udtjf. Sei regole, tutte in
    cima e `scrim` all'82 % in fondo lungo una curva dolce, stirata sulla
    scheda (`assets/ui/scrim.png`, disegnata da `tools/ui_scrim.py`); le
    parole sopra sono chiare in tutti e due i toni. Sui disegni le parole
-   restano sotto, per non coprire la figura.
+   restano sotto, per non coprire la figura. **Aggiornato da TASK-469 A4c
+   (ADR-0383):** nel Feed le parole sopra una foto stanno su una capsula
+   di vetro dentro la foto, non più su `Scrim`; le card hanno il raggio 28.
 4. **Il movimento** (`motion`): un comando toccato scende a 0,97 e
    all'85 % in 120 ms e torna in 180 (`Tap`, un Pressable animato sul
    driver nativo: al posto dell'opacità 0,6 di prima); ciò che compare
@@ -660,6 +662,23 @@ come la pillola dei segmenti: un filo di luce in cima e un'ombra corta. Non
 aggiunge colore: ognuno tiene il suo, il giallo del chip scelto compreso.
 Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Gli altri
 chip dell'app non lo hanno ancora.
+
+**Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
+raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro
+disegnato sopra la card perché disegno e foto non lo coprano (`cardEdge`:
+filo e luce in cima; con «Aumenta contrasto» il bordo `borderStrong`, con
+«Riduci trasparenza» niente, come prima). La percentuale in alto a destra
+è una capsula di vetro posata (`segmentTrackFace`), mai gialla. Le parole
+restano sotto il disegno.
+
+**Le card del Feed** (TASK-469 A4c, `src/feed/FeedPost.tsx`): raggio 28.
+Sopra una foto titolo e numeri stanno su una capsula di vetro posata
+dentro la foto, a 8 pt dal bordo, coi lati corti tutti tondi (scelta
+dell'utente), al posto della sfumatura `Scrim`: il titolo in `text`, i
+numeri in `textMuted`, le calorie nel loro rosso, tutti a 4,5:1 sul vetro
+sopra una foto bianca o nera. Il contatore delle foto è una capsula di
+vetro. Con «Riduci trasparenza» e «Aumenta contrasto» la capsula è opaca.
+Sotto il disegno le parole restano come prima.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce

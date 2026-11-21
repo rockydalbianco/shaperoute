@@ -10,6 +10,7 @@ import { fill, pickLanguage, TEXTS as LIVE_TEXTS } from "../live/texts.js";
 import { apiBase, boundsOf, MAP_COLOURS, mapStyle, unitsOf } from "../live/view.js";
 import { SPORTS, TEXTS } from "./texts.js";
 import {
+  appBarOf,
   bearingOf,
   factsOf,
   idFromHash,
@@ -176,6 +177,7 @@ async function ask(id, mine, attempt) {
   if (outcome.kind === "shown") {
     showPost(outcome.post);
   } else if (outcome.kind === "gone") {
+    putAppBar(null);
     showNothing(text.gone);
   } else if (outcome.kind === "busy") {
     setTimeout(() => mine === round && ask(id, mine, attempt), outcome.waitMs);
@@ -190,9 +192,38 @@ async function ask(id, mine, attempt) {
   }
 }
 
+/**
+ * Safari's own bar over the page, on an iPhone (TASK-482): with MuW on the
+ * phone it offers to open it, and gives it this link; without, it leads to
+ * the App Store. Safari draws it and asks Apple about the app by itself;
+ * the page only names the app (index.html) and its own address. bar.js has
+ * already put the link as the page was read; here it follows a change of
+ * the `#`, and a link that opens no drawing (`id` null) names the app alone.
+ */
+function putAppBar(id) {
+  const { origin, pathname } = window.location;
+  const bar = appBarOf(downloadUrl, id === null ? null : `${origin}${pathname}#${id}`);
+  let meta = document.querySelector('meta[name="apple-itunes-app"]');
+  if (bar === null) {
+    meta?.remove();
+    return;
+  }
+  if (meta === null) {
+    // An older copy of the page, kept by the browser, has none.
+    meta = document.createElement("meta");
+    meta.name = "apple-itunes-app";
+    document.head.append(meta);
+  }
+  if (meta.content !== bar) {
+    meta.content = bar;
+  }
+}
+
 function start() {
   round += 1;
   const id = idFromHash(window.location.hash);
+  // The bar says which post, also after a change of the `#`.
+  putAppBar(id);
   if (id === null) {
     // Not a link to a drawing: as one that opens none.
     showNothing(text.gone);

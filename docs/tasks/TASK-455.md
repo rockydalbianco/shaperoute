@@ -7,10 +7,11 @@ migrazione `0078`), D (#1308) ed E (#1309, `449c997d`) in `main`.
 rimando (mai una copia) e, per un post «Everyone», ne dà il link
 `getmuw.app/p/#<id>`, che apre una pagina con mappa, linea, titolo, nome,
 sport e distanza anche senza MuW; «Links to my posts» in «Settings» spegne
-tutti i link ai propri post. **Resta** (vedi «Quello che resta»): l'OTA
-della parte E e la copia del sito, col sì dell'utente dato al
-Coordinatore; la prova dell'utente sul telefono; la parte F, con una build
-nativa
+tutti i link ai propri post. Dopo la chiusura, il 2026-11-21, cinque
+aggiunte in `main` (#1328, #1332, #1336; vedi il registro). **Resta** (vedi
+«Quello che resta»): l'OTA dopo il 19 per la #1336, col sì dell'utente
+dato al Coordinatore; la prova dell'utente sul telefono; la parte F, con
+una build nativa
 **Fase**: 5 · **Branch**: una PR per parte, tutte unite; l'ultimo
 `feat/TASK-455-e-share-link`
 **Dipende da**: —
@@ -418,15 +419,11 @@ Parte E (in `main`, #1309):
 
 ## Quello che resta (2026-11-21)
 
-- **L'OTA della parte E**: la chiede il Coordinatore all'utente. La pagina
-  `/p/` è **online dal 2026-11-18** (la copia del sito della parte D è
-  stata fatta allora, non era da fare come diceva questa voce), quindi un
-  link condiviso apre già la pagina.
-- **Un'altra copia del sito**, una sola, per le tre aggiunte del 2026-11-21
-  alla pagina `/p/` (la mappa girata come il disegno, #1328; l'anteprima
-  nelle app di chat e «Try again», #1332) e per le pagine della privacy
-  rigenerate con la parte E, se non sono già andate: la chiede il
-  Coordinatore all'utente.
+- Fatto: **la parte E è in produzione con l'OTA 19** (2026-11-21, dal
+  commit `22d3b0cc`, che contiene la #1309), e **il sito è stato copiato**
+  il 2026-11-21 da `main` `11f354f1` col sì dell'utente: la pagina `/p/`
+  ha online la mappa girata come il disegno (#1328), l'anteprima nelle app
+  di chat e «Try again» (#1332).
 - **La prova dell'utente sul telefono**: mandare il post di un altro a un
   amico e aprirlo dalla chat (parte B, in produzione dall'OTA 15); dopo
   l'OTA della parte E, «Share link» e l'interruttore.
@@ -436,10 +433,11 @@ Parte E (in `main`, #1309):
 - **Parte F**, con una build nativa: il link che apre il post dentro
   l'app e un «Copy link» vero. È un task nuovo, col
   numero del Coordinatore, quando si decide la build.
-- **L'OTA 19** per le due aggiunte all'app del 2026-11-21 (#1336: «Share
-  link» che torna subito quando si riaccende l'interruttore, e titolo e
-  sport nella spiegazione sotto l'interruttore): la chiede il Coordinatore
-  all'utente.
+- **L'OTA dopo il 19** per le due aggiunte all'app del 2026-11-21 (#1336,
+  in `main` a `15f1a208`: «Share link» che torna subito quando si
+  riaccende l'interruttore, e titolo e sport nella spiegazione sotto
+  l'interruttore). L'OTA 19 è uscito prima che la #1336 fosse unita e non
+  le contiene: le chiede il Coordinatore all'utente col prossimo.
 
 ## Registro
 
@@ -676,3 +674,14 @@ Parte E (in `main`, #1309):
   «Cambio la spiegazione sotto l'interruttore aggiungendo titolo e
   sport?»), nelle cinque lingue. Non viste nel simulatore, d'accordo col
   Coordinatore: nessuna riga nuova a schermo.
+- 2026-11-21: **le due aggiunte all'app sono in `main`** (#1336,
+  `15f1a208`). **Non escono con l'OTA 19**, come diceva la riga qui sopra:
+  l'OTA 19 era già uscito da `22d3b0cc` (porta la parte E, #1309, e non la
+  #1336); vanno nel prossimo, col sì dell'utente al Coordinatore.
+- 2026-11-21: **copia del sito fatta** dal Coordinatore col sì dell'utente,
+  da `main` `11f354f1`; sono cambiati solo i file di `/p/`. Controllato
+  online: `post.js` e `view.js` uguali a quelli di `main` (mappa girata,
+  «Try again»), `og:title` «A drawing on MuW», `link-card.png` servita
+  come `image/png`, `noindex` invariato, `site/tools` non online. Non
+  provato un link vero dentro un'app di chat. Con questo la lista dei
+  miglioramenti proposti il 2026-11-21 è chiusa.

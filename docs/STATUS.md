@@ -36,6 +36,9 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
+  scelte dell'utente, ADR-0393); poi A server … G avviso, file al
+  Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`
 - **TASK-214 — Il motore dei percorsi sul telefono** · A, B, C, A2, B2 in
   `main`; restano tempi e memoria su un iPhone vero e le zone dove il server
   dà 404. File: — · `tasks/TASK-214.md`

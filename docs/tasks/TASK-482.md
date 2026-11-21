@@ -95,7 +95,12 @@ un tocco apre l'app.
    proviamola»** (parte B2, PR #1359, una prova: poi la copia del sito e
    lo sguardo dell'utente sull'iPhone).
 3. Chi apre il link nell'app senza essere entrato: prima l'ingresso, poi
-   il post (proposta).
+   il post (proposta) — **risposta dell'utente, 2026-11-22: «Sì, prima
+   l'ingresso»**. La riga che dice perché, sulla pagina dell'account:
+   «Log in to see this drawing.» (it «Accedi per vedere questo disegno.»,
+   de «Melde dich an, um diese Zeichnung zu sehen.», fr «Connecte-toi pour
+   voir ce dessin.», es «Inicia sesión para ver este dibujo.») —
+   **approvata dall'utente il 2026-11-22: «Sì, approvo»**.
 4. La parte D nella prossima build nativa: sì o no, e quando.
 
 ## Un difetto trovato, non di questo task
@@ -110,6 +115,16 @@ assegna.
 Parte 0: `docs/tasks/TASK-482.md` (nuovo), `docs/DECISIONS.md` (ADR-0391),
 `docs/STATUS.md` (la voce del task), `docs/INDEX.md` (una riga). Gli
 elenchi delle parti A–D vanno al Coordinatore prima del codice.
+
+Parte B2 (#1359): `site/p/index.html`, `site/p/bar.js` (nuovo),
+`site/p/post.js`, `site/p/view.js`, `site/tests/post.test.mjs`,
+`docs/SITO.md`.
+
+Parte A (#1374): `apps/mobile/src/links/postLinkIn.ts` e
+`links/useIncomingPostLink.ts` (nuovi, coi loro test),
+`apps/mobile/src/screens/ProfileLayer.tsx` (la chiamata accanto a
+`usePushNotifications`), una riga in ciascuno di
+`apps/mobile/src/i18n/it.ts`, `de.ts`, `fr.ts`, `es.ts`.
 
 ## Fuori scope
 
@@ -140,3 +155,20 @@ elenchi delle parti A–D vanno al Coordinatore prima del codice.
   mandato al Coordinatore prima. Da provare sul telefono dopo la copia del
   sito: se Safari mostra la barra per un meta aggiunto dallo script, e se
   «Apri» apre MuW; che arrivi al post dipende dalla parte A.
+- 2026-11-21: **#1359 unita e online** (sito copiato da main `370743cf`
+  col sì dell'utente). Su consiglio del Coordinatore il meta è fisso in
+  `index.html` e `bar.js`, letto subito, gli aggiunge `app-argument`:
+  Safari legge la riga mentre carica la pagina. **Prova dell'utente
+  sull'iPhone: «Sì, c'è la barra»; toccando «Apri»: «Sì, apre MuW»** (sulla
+  prima schermata: al post ci arriva la parte A).
+- 2026-11-22: **parte A scritta, #1374** (`feat/TASK-482-a-app-reads-link`),
+  elenco dei file approvato prima dal Coordinatore. `postLinkIn` prende
+  solo la pagina `POST_LINK_PAGE` con un id a forma di disegno dopo `#`;
+  `useIncomingPostLink` ascolta `Linking` (indirizzi in arrivo e quello con
+  cui l'app è stata aperta, letto una volta; lo stesso post due volte in
+  3 s è uno) e apre con `opens.openDrawing`, come una notifica toccata;
+  senza account, `showOwnPage` con la riga approvata, e il post appena si
+  entra. «#1374 pronta» al Coordinatore (`70421e40`). **Non dimostrato**:
+  che iOS passi all'app l'indirizzo della barra — si vede sul telefono
+  dopo l'OTA. Resta: l'OTA (un sì dell'utente), la sua prova, la
+  domanda 4, le parti C e D.

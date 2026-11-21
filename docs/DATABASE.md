@@ -1385,6 +1385,34 @@ dopo la 0079 di TASK-475 A). **Un post di sole foto è un disegno senza corsa**:
   altri vogliono `published_at` pieno. Test in `test_photo_posts.py` e
   `test_photo_posts_seen.py`.
 
+Migrazione `0084_gear.sql` (TASK-486 parte A, ADR-0393, `API.md`
+«Gear»; numero provvisorio del Coordinatore, quello vero al merge).
+**L'attrezzatura di un iscritto**:
+
+- **`gear`**: un attrezzo. `id` (`uuid`), `user_id` verso `users(id)` con
+  `ON DELETE CASCADE`; `kind` dalla lista di `gear.GearKind` (il `CHECK`
+  ha gli stessi nomi, un test lo legge); `brand` (1–40), `model` (1–80),
+  `name` (1–40), `bought_on` (dal 1950), `note` (1–500), `limit_m`
+  (1000–100 000 000); `off_profile` («Hide from profile»), `retired_at`
+  («Retire»), `hidden_at` (nascosto dall'email di una segnalazione),
+  `created_at`. Indice `(user_id, created_at)`.
+- **`gear_photos`**: una foto per attrezzo, `jpeg` com'è uscito da
+  `gear.gear_jpeg`, `updated_at` (la versione nell'indirizzo); via con
+  l'attrezzo.
+- **`activity_gear`**: `(run_id, gear_id)`, chiave primaria la coppia;
+  via con l'attività o con l'attrezzo. Indice su `gear_id` per i totali,
+  che si contano a ogni lettura da `runs.distance_m` e `runs.duration_s`
+  (nessun totale salvato che possa sbagliare).
+- **`gear_defaults`**: `(gear_id, activity)`, gli sport che partono con
+  l'attrezzo già scelto. `activity` sono i nomi di `runs.activity`,
+  controllati da `gear.py` e non da un `CHECK`: uno sport nuovo non chiede
+  una migrazione qui.
+- **`drawing_outfit_tags.gear_id`** (verso `gear(id)`, `ON DELETE SET
+  NULL`): un capo taggato nato da un attrezzo (parte F); il tag tiene la
+  sua marca e il suo modello.
+- **`reports.kind`** con `gear`. Nessuna riga di prima cambia, nessun
+  backfill. Test in `test_gear.py` e `test_moderation.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

@@ -69,6 +69,7 @@ from shaperoute_api.feed import install_feed
 from shaperoute_api.feedback import install_feedback
 from shaperoute_api.follows import install_follows
 from shaperoute_api.game import install_game
+from shaperoute_api.gear import install_gear
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.group_runs import install_group_runs
 from shaperoute_api.gym_calendar import install_gym_calendar
@@ -879,5 +880,7 @@ def create_app(
     # Items tagged on the photos of members' posts (TASK-394, ADR-0333): their
     # links checked with Web Risk, the key from the environment.
     install_outfit_tags(app)
+    # A member's gear and its totals (TASK-486, ADR-0393).
+    install_gear(app)
 
     return app

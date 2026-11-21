@@ -2784,8 +2784,8 @@ export const ES: Table = {
   // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
   "Record your flight": "Registra tu vuelo",
   "Before you fly": "Antes de volar",
-  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
-    "MuW no es un instrumento de vuelo: graba tu vuelo y lo comparte. Vuela con tu propio instrumento, tu licencia y tu criterio.",
+  "MuW is not a certified flight instrument. Its numbers come from the phone's GPS: they can be late or wrong. Fly with your licence and your judgement, and keep a backup instrument.":
+    "MuW no es un instrumento de vuelo certificado. Sus datos vienen del GPS del teléfono: pueden llegar con retraso o ser erróneos. Vuela con tu licencia y tu criterio, y lleva un instrumento de reserva.",
   "Got it": "Entendido",
   Vario: "Variómetro",
   "Flight time": "Tiempo de vuelo",
@@ -2974,4 +2974,32 @@ export const ES: Table = {
   Cancelled: "Cancelada",
   Over: "Terminada",
   Past: "Pasadas",
+  // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
+  "Flight screen": "Pantalla de vuelo",
+  "GPS altitude": "Altitud GPS",
+  "Above takeoff": "Sobre el despegue",
+  "Average vario": "Vario medio",
+  "Thermal average": "Media de térmica",
+  "Thermal gain": "Ganancia en térmica",
+  "Ground speed": "Velocidad sobre el suelo",
+  Track: "Rumbo",
+  "Glide ratio": "Planeo",
+  Wind: "Viento",
+  "Thermal assistant": "Asistente de térmica",
+  Takeoff: "Despegue",
+  Clock: "Hora",
+  "GPS accuracy": "Precisión GPS",
+  Live: "En directo",
+  "Last 10 min": "Últimos 10 min",
+  Thermal: "Térmica",
+  XC: "XC",
+  Minimal: "Mínimo",
+  Look: "Aspecto",
+  Sunlight: "Pleno sol",
+  "Hold to unlock": "Mantén pulsado para desbloquear",
+  Lock: "Bloquear",
+  "Not sharing": "Sin compartir",
+  "From {bearing} · {minutes} min ago": "Desde {bearing} · hace {minutes} min",
+  "GPS numbers · not a certified instrument":
+    "Datos del GPS · no es un instrumento certificado",
 };

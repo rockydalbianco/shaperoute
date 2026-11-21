@@ -23,6 +23,11 @@ the next page neither repeats nor skips one. Every post is a Drawing as
 the profile lists it (drawings.DrawingBody) with its author: the app
 opens it whole with GET /drawings/{id}, with its reactions and comments.
 
+Each post says too what its card shows without asking again (TASK-355 part
+B): the address of its author's picture (avatars.py), how many reactions it
+has and the reader's own, and how many comments the reader reads; counted
+as GET /drawings/{id}/reactions and /comments count them, a block apart.
+
 The tabs of «Feed» ask with a `filter` (TASK-362, ADR-0308): `all` is what
 everyone may see, `following` the reader's own and those of the people it
 follows, the last published first with no groups and no point. Without a
@@ -40,7 +45,7 @@ it, the strangers nearby do not (docs/IMPORTAZIONI.md §4.3).
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any, Literal
@@ -59,6 +64,8 @@ from shaperoute_api.accounts import (
     current_user,
 )
 from shaperoute_api.activities import EPOCH, MICROSECOND
+from shaperoute_api.avatars import avatar_url
+from shaperoute_api.comments import READ
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import (
     LISTED_COLUMNS,
@@ -70,7 +77,8 @@ from shaperoute_api.drawings import (
     _seen,
     shown_sql,
 )
-from shaperoute_api.follows import follows_sql
+from shaperoute_api.follows import apart_sql, follows_sql
+from shaperoute_api.reactions import ReactionKind
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.recommended import preview
 
@@ -97,20 +105,56 @@ LatLon = tuple[float, float]
 
 class FeedPostBody(DrawingBody):
     """A drawing in the feed: as the profile lists it, with who published
-    it. packages/shared-types/fixtures/feed.json."""
+    it. packages/shared-types/fixtures/feed.json. The search, the contests
+    and the resorts list their drawings so too."""
 
     author: AuthorBody
 
 
-class FeedBody(BaseModel):
-    """GET /feed: a page of the drawings the reader may see."""
+class FeedAuthorBody(AuthorBody):
+    """Who published a post of GET /feed, with where its picture is read."""
 
-    posts: list[FeedPostBody]
+    photo: str | None
+    """`/users/{public_id}/photo?v=…` (avatars.py), a new address for a new
+    picture; null without one."""
+
+
+class FeedReactionsBody(BaseModel):
+    """The reactions of a post, as its card shows them."""
+
+    total: int
+    mine: ReactionKind | None
+    """The reader's own; null when it left none."""
+
+
+class FeedCardBody(FeedPostBody):
+    """A post of GET /feed, with what its card counts (TASK-355 part B):
+    packages/shared-types/fixtures/feed-counts.json. An API of before
+    leaves out `author.photo`, `reactions` and `comments`."""
+
+    author: FeedAuthorBody
+    reactions: FeedReactionsBody
+    comments: int
+    """The comments and replies the reader reads, as `total` of
+    GET /drawings/{id}/comments."""
+
+
+class FeedBody(BaseModel):
+    """A page of drawings, as the search lists them too."""
+
+    posts: Sequence[FeedPostBody]
     next: str | None
     """The `cursor` of the next page; null on the last one."""
 
 
-class FilteredFeedBody(FeedBody):
+class FeedPageBody(FeedBody):
+    """GET /feed: a page of the drawings the reader may see, each with what
+    its card counts."""
+
+    posts: Sequence[FeedCardBody]
+
+
+class FilteredFeedBody(FeedPageBody):
     """GET /feed?filter=…: a page of one tab, which says its tab. An API
     before the tabs ignores `filter` and leaves this out: the app then shows
     the feed without tabs."""
@@ -169,6 +213,46 @@ def filter_sql(feed_filter: FeedFilter, viewer: str) -> str:
     return f"(d.user_id = {viewer}::bigint OR {follows_sql(viewer, 'd.user_id')})"
 
 
+NO_REACTIONS = FeedReactionsBody(total=0, mine=None)
+
+
+@dataclass(frozen=True)
+class Counts:
+    """What the cards of a page count, by drawing id."""
+
+    reactions: dict[UUID, FeedReactionsBody]
+    comments: dict[UUID, int]
+
+
+def _counts(conn: Any, ids: list[UUID], viewer_id: int) -> Counts:
+    """The reactions and the comments of the drawings `ids` as `viewer_id`
+    counts them: as reactions._summary and Comments.page do, one query each
+    for the whole page."""
+    if not ids:
+        return Counts({}, {})
+    values = {"ids": ids, "viewer": viewer_id}
+    reactions = {
+        row["drawing_id"]: FeedReactionsBody(total=row["n"], mine=row["mine"])
+        for row in conn.execute(
+            "SELECT drawing_id, count(*) AS n,"
+            " min(kind) FILTER (WHERE user_id = %(viewer)s) AS mine"
+            " FROM reactions WHERE drawing_id = ANY(%(ids)s)"
+            # None of a member a block keeps apart from who asks (TASK-121).
+            f" AND NOT {apart_sql('%(viewer)s', 'user_id')} GROUP BY drawing_id",
+            values,
+        ).fetchall()
+    }
+    comments = {
+        row["drawing_id"]: row["n"]
+        for row in conn.execute(
+            "SELECT c.drawing_id, count(*) AS n FROM comments c"
+            f" WHERE c.drawing_id = ANY(%(ids)s) AND {READ} GROUP BY c.drawing_id",
+            values,
+        ).fetchall()
+    }
+    return Counts(reactions, comments)
+
+
 @dataclass
 class Feed:
     """The feed in the database."""
@@ -184,7 +268,7 @@ class Feed:
         point: LatLon | None = None,
         feed_filter: FeedFilter | None = None,
         reads: Reads = EVERYTHING,
-    ) -> FeedBody:
+    ) -> FeedPageBody:
         """A page of the drawings `viewer_id` may see, its own first, then
         those of the members it follows, then the others' near `point`
         (all of them without one); the last published first in each. With
@@ -215,8 +299,10 @@ class Feed:
             rows = conn.execute(
                 "SELECT * FROM ("
                 f"SELECT {LISTED_COLUMNS}, u.public_id, u.username,"
+                " pp.updated_at AS photo_at,"
                 f" {tier} AS tier, {near_sql(point)} AS nearby"
                 f" FROM {WITH_RUN_SQL} JOIN users u ON u.id = d.user_id"
+                " LEFT JOIN profile_photos pp ON pp.user_id = u.id"
                 # Implied by shown_sql, and said for the index of the
                 # published drawings (migration 0022).
                 " WHERE d.visibility <> 'only_me'"
@@ -227,7 +313,9 @@ class Feed:
                 values,
             ).fetchall()
             page, more = rows[:limit], len(rows) > limit
-            details = _details(conn, [row["id"] for row in page], viewer_id)
+            ids = [row["id"] for row in page]
+            details = _details(conn, ids, viewer_id)
+            counts = _counts(conn, ids, viewer_id)
             follows_anyone = feed_filter == "following" and bool(
                 conn.execute(
                     "SELECT EXISTS (SELECT 1 FROM follows WHERE follower_id = %s"
@@ -236,10 +324,20 @@ class Feed:
                 ).fetchone()["some"]
             )
         posts = [
-            FeedPostBody(
+            FeedCardBody(
                 **_seen(row, details),
                 track_preview=preview(_line(row["track"])),
-                author=AuthorBody(public_id=row["public_id"], username=row["username"]),
+                author=FeedAuthorBody(
+                    public_id=row["public_id"],
+                    username=row["username"],
+                    photo=(
+                        None
+                        if row["photo_at"] is None
+                        else avatar_url(row["public_id"], row["photo_at"])
+                    ),
+                ),
+                reactions=counts.reactions.get(row["id"], NO_REACTIONS),
+                comments=counts.comments.get(row["id"], 0),
             )
             for row in page
         ]
@@ -253,7 +351,7 @@ class Feed:
             )
         if feed_filter is not None:
             return FilteredFeedBody(posts=posts, next=after, filter=feed_filter)
-        return FeedBody(posts=posts, next=after)
+        return FeedPageBody(posts=posts, next=after)
 
 
 def feed_of(accounts: Annotated[Accounts, Depends(accounts_of)]) -> Feed:
@@ -274,7 +372,7 @@ def feed_routes() -> APIRouter:
         lat: Annotated[float | None, Query(ge=-90, le=90)] = None,
         lon: Annotated[float | None, Query(ge=-180, le=180)] = None,
         feed_filter: Annotated[FeedFilter | None, Query(alias="filter")] = None,
-    ) -> FollowingFeedBody | FilteredFeedBody | FeedBody:
+    ) -> FollowingFeedBody | FilteredFeedBody | FeedPageBody:
         if (lat is None) != (lon is None):
             raise AccountError(422, "invalid_request", HALF_A_POINT)
         point = None if lat is None or lon is None else (lat, lon)

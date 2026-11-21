@@ -453,6 +453,7 @@ const privacy: AboutDocument = {
       heading: "Apple Health and Health Connect",
       blocks: [
         "Once you turn on «Save to Apple Health» (iPhone) or «Save to Health Connect» (Android), every activity you save is also written there, on your phone: the sport, when it started and ended, the distance, the route and, for a run, the estimated active calories. If at the end of a swim in a pool you tap «Add heart rate from Apple Health», MuW reads the heart rate your watch recorded during that swim, and nothing else. Its average and maximum stay with the swim on our server and show in its post, unless you turn off «Show heart rate»; the time in each zone stays on your phone. None of your health data reaches any advertising. You can stop it in the Health app or in Health Connect. What is already there stays until you delete it there, also when you delete the run or your account.",
+        "Once you tap «Show my sleep from Apple Health», MuW reads your sleep from Apple Health (the time asleep and the sleep stages) on your phone and works out a sleep score there. Nothing of it reaches our server until you publish it: with «Share» on your profile, with «Publish» as a post of its own, or with «Sleep last night» in the post of an activity. Then the score, the hours slept, the stages and the day are kept on our server and seen by whoever can see your profile or that post, until you stop sharing, remove the post or delete your account. Never the hour you went to bed or woke up.",
       ],
     },
     {

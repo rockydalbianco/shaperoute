@@ -1647,6 +1647,10 @@ dall'agente su delega dell'utente; l'utente ha approvato le schermate.
 luce interni, nessuna ombra portata), la pillola ha la luce in cima e
 un'ombra a 2 pt con 6 di sfocatura; nelle modalità opache tutto torna
 piatto. Lo stesso in `PlayTabs`. Il fondo passato da chi chiama vince.
+**A4a (#1290)**: il rilievo è una funzione sola, `glassRaise(mode)`, che
+dà la luce interna in cima e l'ombra a 2 pt e non tocca i colori; la
+usano i chip delle città e `FilterChip`. Il giallo del chip scelto resta
+(TASK-344, scelta di prodotto).
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

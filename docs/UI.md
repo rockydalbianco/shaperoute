@@ -654,6 +654,13 @@ opaco col bordo `border`, con «Aumenta contrasto» col bordo
 `borderStrong`; la pillola resta piatta. Le schede di Play (`PlayTabs`)
 hanno lo stesso aspetto, con la loro molla e il loro tick.
 
+**I chip in rilievo** (TASK-469 A4a, `src/ui/glassRaise.ts`): i chip delle
+città in Explore e quelli della ricerca (`FilterChip`) escono dalla pagina
+come la pillola dei segmenti: un filo di luce in cima e un'ombra corta. Non
+aggiunge colore: ognuno tiene il suo, il giallo del chip scelto compreso.
+Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Gli altri
+chip dell'app non lo hanno ancora.
+
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
 piccola, si allarga, poi si alza; le parole compaiono quando è aperta,

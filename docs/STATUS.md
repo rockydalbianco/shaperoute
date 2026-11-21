@@ -243,6 +243,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **B3 in `main`** (#1292, `b6e36fcb`: la scheda «Sleep» del profilo,
   spenta). **C avviata il 2026-11-21**: bozza #1334 da non unire (lettore
   vero, sonno acceso) e build di prova per il solo iPhone dell'utente.
+  **E1 in `main`** (#1373, `f38b1980`: il post del sonno da solo, server e
+  contratto, migrazione `0082`); sul server col passo 17, col sì. E2 (app)
+  dopo TASK-312 C2 e TASK-481 A.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`

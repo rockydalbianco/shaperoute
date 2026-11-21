@@ -95,6 +95,12 @@ aerei e la navigazione; l'editor completo quando i widget sono tutti;
 dopo il volo e il live; il meteo (H) per ultimo, perché chiede un
 servizio nuovo sul server.
 
+Dal Coordinatore (2026-11-21): si lavora a fianco della sessione di
+TASK-305 (R6d e la #1218 dell'orologio aperte): prima di ogni lista dei
+file si guardano i suoi file aperti e quelli di `src/air/`. Ogni testo
+nuovo e ogni frase sulla sicurezza in volo passano dall'utente; server e
+OTA col suo sì; il simulatore è quello della sessione («simulatore tuo»).
+
 Per ogni parte: prima la logica pura in `src/air/<nome>.ts` con test
 deterministici su tracce e file sintetici, poi i componenti. Le schermate
 dal simulatore (volo simulato, come `out/TASK-305/race-sim.sh`) vanno

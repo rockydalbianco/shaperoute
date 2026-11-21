@@ -559,7 +559,7 @@ lasciando le righe d'indice.
 - ADR-0380, precisazione B2b — Il sonno a fine palestra e a fine vasca: lo stesso interruttore di B2, e la notte aspetta l'attività nella coda sua prima di partire · 2026-11-12 · Attiva
 - ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km · 2026-11-12 · Attiva
 - ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`) · 2026-11-12 · Attiva
-- ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Proposta
+- ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Attiva
 - ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende · 2026-11-12 · Accettata
 - ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono · 2026-11-11 · Attiva
 - ADR-0387 — Il «+» del Feed: un'attività aggiunta da lì parte con «Everyone», eccezione ad ADR-0304; il foglio «Add activity» con solo «From a file» · 2026-11-12 · Attiva
@@ -1503,7 +1503,9 @@ accende il secondo servizio e cosa leggere dopo: `tasks/TASK-471.md`.
 
 ## ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false`
 
-**Stato**: Proposta · 2026-11-12 · TASK-475, parte 0 (documenti). Lo sport,
+**Stato**: Attiva · 2026-11-22 · TASK-475: A #1340 (server, `0079` al
+passo 15), B #1348, C #1376 (`f5bccf82`, acceso); proposta il
+2026-11-12, parte 0 (documenti). Lo sport,
 il salvataggio come attività, il nome e l'emoji sono **scelte
 dell'utente** (2026-11-12: «Diventa uno sport», «Sì, come la palestra»,
 «Sì, approvati»); il modo è deciso dall'agente su delega dell'utente,

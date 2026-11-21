@@ -418,11 +418,15 @@ Parte E (in `main`, #1309):
 
 ## Quello che resta (2026-11-21)
 
-- **L'OTA della parte E** e **la copia del sito** (la pagina `/p/` e le
-  pagine della privacy rigenerate; controlli in `out/TASK-455/SITO-D.md`):
-  li chiede il Coordinatore all'utente, un sì per ciascuno. Finché il sito
-  non ha la copia, un link condiviso non apre la pagina: prima la copia
-  del sito, poi l'OTA, o insieme.
+- **L'OTA della parte E**: la chiede il Coordinatore all'utente. La pagina
+  `/p/` è **online dal 2026-11-18** (la copia del sito della parte D è
+  stata fatta allora, non era da fare come diceva questa voce), quindi un
+  link condiviso apre già la pagina.
+- **Un'altra copia del sito**, una sola, per le tre aggiunte del 2026-11-21
+  alla pagina `/p/` (la mappa girata come il disegno, #1328; l'anteprima
+  nelle app di chat e «Try again», #1332) e per le pagine della privacy
+  rigenerate con la parte E, se non sono già andate: la chiede il
+  Coordinatore all'utente.
 - **La prova dell'utente sul telefono**: mandare il post di un altro a un
   amico e aprirlo dalla chat (parte B, in produzione dall'OTA 15); dopo
   l'OTA della parte E, «Share link» e l'interruttore.
@@ -620,8 +624,29 @@ Parte E (in `main`, #1309):
   e `docs/SITO.md`; niente server né app. Vista nel browser a larghezza
   telefono col finto `/post` (`out/TASK-455/shots-fix/`). Deciso
   dall'agente su delega dell'utente («continua con i suggerimenti e
-  miglioramenti»); va sul sito con la copia della parte D.
+  miglioramenti»). (La pagina era già online dal 2026-11-18: va sul sito
+  con una copia nuova, non con quella della parte D.)
 - 2026-11-21: **schermate della correzione approvate dall'utente** («Sì,
   va bene», alla domanda «Va bene la pagina del link con la mappa girata
   come il disegno?»). La #1328 esce dalla bozza e passa al Coordinatore
   come «pronta».
+- 2026-11-21: **la correzione è in `main`** (#1328, `8f350b05`).
+- 2026-11-21: **due aggiunte alla pagina del link, PR #1332** (branch
+  `feat/TASK-455-link-preview-card`), solo sito. (1) **L'anteprima nelle
+  app di chat**: tag Open Graph in `site/p/index.html` con «A drawing on
+  MuW» e «Open the link to see the line on the map.», e l'immagine
+  `site/p/link-card.png` (il cuore del logo come percorso su strade
+  inventate, niente tile; si rifà da `site/tools/link-card.html`);
+  approvati dall'utente («Approvo così», alla domanda «Approvi testo e
+  immagine dell'anteprima del link?»). Uguale per ogni post: l'id sta dopo
+  il `#` e non arriva a nessun server; niente `og:url`, che farebbe
+  perdere l'id; `noindex` invariato. La descrizione dell'immagine
+  (`og:image:alt`) è dell'agente, detta all'utente. (2) **Se l'API non
+  risponde**, dopo i tre tentativi la pagina dice «We couldn't load this
+  drawing.» con «Try again» (cinque lingue; testi approvati dall'utente,
+  «Sì, con questi testi»); il pulsante lo crea lo script e sta nella pagina
+  solo allora. Decise dall'agente su delega dell'utente le scelte
+  tecniche; testi e immagine sono dell'utente. Restano della lista
+  proposta, non iniziate: «Share link» che torna subito quando si
+  riaccende l'interruttore, e titolo e sport nella spiegazione sotto
+  l'interruttore (testo da approvare).

@@ -30,7 +30,13 @@ from shaperoute_api.accounts import (
 )
 from shaperoute_api.activities import EPOCH, MICROSECOND
 from shaperoute_api.db import Database
-from shaperoute_api.drawings import NO_PROFILE, photo_url, shown_sql
+from shaperoute_api.drawings import (
+    DRAWN_AT_SQL,
+    NO_PROFILE,
+    WITH_RUN_SQL,
+    photo_url,
+    shown_sql,
+)
 from shaperoute_api.follows import apart_sql
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.schemas import ErrorBody
@@ -39,8 +45,9 @@ from shaperoute_api.schemas import ErrorBody
 PAGE_SIZE = 30
 MAX_PAGE_SIZE = 60
 # Where a page ended: the start of its run in microseconds, the drawing,
-# the place of the photo.
-CURSOR_PATTERN = r"^\d{1,17}-[0-9a-f]{32}-[1-9]$"
+# the place of the photo, 1 to 10 (a post of photos only fills the tenth,
+# TASK-312 part C).
+CURSOR_PATTERN = r"^\d{1,17}-[0-9a-f]{32}-(?:[1-9]|10)$"
 
 
 class UserPhotoBody(BaseModel):
@@ -102,10 +109,9 @@ class UserPhotos:
             ).fetchone()
             if user is None:
                 return None
-            where = (
-                f"r.user_id = %s AND {shown_sql('%s')}"
-                f" AND {reads.sql('r.activity', 'r.track IS NOT NULL')}"
-            )
+            # A post of photos only (TASK-312 part C) too, by when it was
+            # published, for an app that reads it.
+            where = f"d.user_id = %s AND {shown_sql('%s')} AND {reads.drawings_sql()}"
             values: list[Any] = [user["id"], viewer_id]
             if cursor is not None:
                 micros, drawing_hex, n = cursor.split("-")
@@ -113,16 +119,15 @@ class UserPhotos:
                 drawing_id = UUID(drawing_hex)
                 # The runs in the order of the drawings, the places upwards.
                 where += (
-                    " AND ((r.started_at, d.id) < (%s, %s)"
-                    " OR ((r.started_at, d.id) = (%s, %s) AND p.n > %s))"
+                    f" AND (({DRAWN_AT_SQL}, d.id) < (%s, %s)"
+                    f" OR (({DRAWN_AT_SQL}, d.id) = (%s, %s) AND p.n > %s))"
                 )
                 values += [started_at, drawing_id, started_at, drawing_id, int(n)]
             rows = conn.execute(
                 "SELECT p.drawing_id, p.n, p.width, p.height, p.updated_at,"
-                " d.title, r.started_at FROM drawing_photos p"
-                " JOIN drawings d ON d.id = p.drawing_id"
-                f" JOIN runs r ON r.id = d.run_id WHERE {where}"
-                " ORDER BY r.started_at DESC, d.id DESC, p.n LIMIT %s",
+                f" d.title, {DRAWN_AT_SQL} AS started_at FROM drawing_photos p"
+                f" JOIN {WITH_RUN_SQL} ON d.id = p.drawing_id WHERE {where}"
+                f" ORDER BY {DRAWN_AT_SQL} DESC, d.id DESC, p.n LIMIT %s",
                 (*values, limit + 1),
             ).fetchall()
         page, more = rows[:limit], len(rows) > limit

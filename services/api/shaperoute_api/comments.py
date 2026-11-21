@@ -261,7 +261,7 @@ JOINED = (
 )
 # The drawing %(drawing)s, when `viewer` may see it: its owner.
 OWNER_SQL = (
-    "SELECT r.user_id AS owner FROM drawings d JOIN runs r ON r.id = d.run_id"
+    "SELECT d.user_id AS owner FROM drawings d"
     f" WHERE d.id = %(drawing)s AND {drawing_seen_sql(VIEWER)}"
 )
 
@@ -455,9 +455,8 @@ class Comments:
         }
         with self.database.connect() as conn:
             drawing = conn.execute(
-                "SELECT r.user_id AS owner FROM comments c"
+                "SELECT d.user_id AS owner FROM comments c"
                 " JOIN drawings d ON d.id = c.drawing_id"
-                " JOIN runs r ON r.id = d.run_id"
                 " WHERE c.id = %(above)s AND c.parent_id IS NULL"
                 f" AND {drawing_seen_sql(VIEWER)} AND {read_sql('c', VIEWER)}",
                 params,
@@ -581,10 +580,10 @@ class Comments:
             return None
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT c.user_id AS author, r.user_id AS owner,"
+                "SELECT c.user_id AS author, d.user_id AS owner,"
                 f" {drawing_seen_sql('%s')} AS seen"
                 " FROM comments c JOIN drawings d ON d.id = c.drawing_id"
-                " JOIN runs r ON r.id = d.run_id WHERE c.id = %s",
+                " WHERE c.id = %s",
                 (viewer_id, wanted),
             ).fetchone()
             if row is None:

@@ -1,6 +1,6 @@
 # TASK-312 — Importare nel Feed attività fatte con altre app, e post di sole foto
 
-**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · poi C (post di sole foto), D (studio Apple Salute), E (studio collegamenti diretti)
+**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C1 in PR** (API e migrazione dei post di sole foto, branch `feat/TASK-312-c1-photo-posts-api`) · poi C2 (app), D (studio Apple Salute), E (studio collegamenti diretti)
 **Fase**: 4 · **Branch**: `docs/TASK-312-import-activities` (documenti),
 `feat/TASK-312-a-imported-runs-api` (A), `feat/TASK-312-b-import-file-app`
 (B), `feat/TASK-312-c-photo-posts` (C), `docs/TASK-312-d-health-study`
@@ -378,6 +378,34 @@ separa dove legge il Feed.
   con la coda; la scheda del Feed e il post aperto con «Imported»; modifica
   e cancellazione dell'autore; niente «Send in chat» né link per questi
   post; la riga della privacy (a turno).
+
+### Parte C1 — com'è fatta (2026-11-21)
+
+«File toccati» approvati dal Coordinatore il 2026-11-21 (la lista sopra,
+da `main`; migrazione provvisoria **0080**, la 0079 è prenotata da 475 A:
+il numero vero al merge). In più, chiesto al Coordinatore:
+`packages/shared-types/fixtures/reads.json` (solo `photos` in `kinds`;
+`this_app` invariato finché C2 non lo dice).
+
+- `0080_photo_posts.sql`: `drawings.user_id` riempito da `runs`, `run_id`
+  facoltativo, `key` unica per account, i vincoli del disegno senza corsa,
+  il vincolo di `published_at` solo con una corsa (`DATABASE.md`);
+- `drawing_seen_sql`, `shown_sql`, `published_count_sql`, `LINKABLE_SQL`
+  leggono l'autore da `d.user_id`, e per gli altri vogliono
+  `published_at`; le colonne viste con `coalesce` per i campi della corsa
+  (`DRAWN_AT_SQL`, `WITH_RUN_SQL`); `SeenFields.activity` può essere
+  `null` e `source` può essere `photos`;
+- `reads.py`: il tipo `photos` e `Reads.drawings_sql()`, usato da Feed,
+  profilo, foto del profilo, disegno aperto e campanello;
+- `photo_posts.py`: `PUT/GET/DELETE /me/photo-posts/{key}`, foto e ordine
+  (`store_photo` estratto da `drawing_photos.py`); pubblicato con la prima
+  foto, i taggati avvisati allora;
+- l'autore da `d.user_id` anche in commenti, reazioni a post e commenti,
+  segnalazioni e la loro email, push, email delle notifiche e di chi
+  manca, etichette dei vestiti, reazioni ricevute del profilo;
+- `user_photos.py`: il cursore accetta il decimo posto (prima solo 1–9);
+- 35 test nuovi (`test_photo_posts.py`, `test_photo_posts_seen.py`), tipi
+  e test in `shared-types`, fixture fatte dalle risposte vere dell'API.
 
 ## Parte D — Apple Salute e Health Connect (studio)
 

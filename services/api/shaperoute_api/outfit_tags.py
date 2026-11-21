@@ -212,14 +212,13 @@ def tags_on_photos(
     for row in conn.execute(
         "SELECT t.id, t.drawing_id, t.n, t.x, t.y, t.item, t.brand,"
         " t.product_name, t.store, t.url, t.hidden_at,"
-        " coalesce(r.user_id = %(viewer)s, false) AS own, c.opens, c.shops"
+        " coalesce(d.user_id = %(viewer)s, false) AS own, c.opens, c.shops"
         " FROM drawing_outfit_tags t JOIN drawings d ON d.id = t.drawing_id"
-        " JOIN runs r ON r.id = d.run_id"
         " LEFT JOIN LATERAL (SELECT sum(k.opens) AS opens, sum(k.shops) AS shops"
         " FROM outfit_tag_clicks k WHERE k.tag_id = t.id"
-        " AND r.user_id = %(viewer)s) c ON true"
+        " AND d.user_id = %(viewer)s) c ON true"
         " WHERE t.drawing_id = ANY(%(ids)s)"
-        " AND (t.hidden_at IS NULL OR r.user_id = %(viewer)s)"
+        " AND (t.hidden_at IS NULL OR d.user_id = %(viewer)s)"
         " ORDER BY t.drawing_id, t.n, t.position",
         {"ids": list(ids), "viewer": viewer_id},
     ):
@@ -405,9 +404,9 @@ class OutfitTags:
         from shaperoute_api.drawings import drawing_seen_sql
 
         row = conn.execute(
-            "SELECT t.url, r.user_id = %s AS own FROM drawing_outfit_tags t"
-            " JOIN drawings d ON d.id = t.drawing_id JOIN runs r ON r.id = d.run_id"
-            " WHERE t.id = %s AND (t.hidden_at IS NULL OR r.user_id = %s)"
+            "SELECT t.url, d.user_id = %s AS own FROM drawing_outfit_tags t"
+            " JOIN drawings d ON d.id = t.drawing_id"
+            " WHERE t.id = %s AND (t.hidden_at IS NULL OR d.user_id = %s)"
             f" AND {drawing_seen_sql('%s')}",
             (viewer_id, tag_id, viewer_id, viewer_id),
         ).fetchone()

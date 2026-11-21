@@ -84,6 +84,7 @@ from shaperoute_api.activities import (
     Key,
 )
 from shaperoute_api.db import Database
+from shaperoute_api.flight_legs import FlightPartBody, FlightSideBody, FlightSplitBody
 from shaperoute_api.personal_bests_backfill import KeptPause, kept_track
 from shaperoute_api.schemas import ErrorBody
 
@@ -236,36 +237,6 @@ class FlightPartRequestBody(BaseModel):
         if self.moving_s > (self.end_ms - self.start_ms) / 1000 + SKI_EPSILON_S:
             raise ValueError("a part moves no longer than it lasts")
         return self
-
-
-class FlightPartBody(BaseModel):
-    """A part of a flight as the API keeps it: its times in seconds from the
-    first point of the run's track."""
-
-    kind: Literal["foot", "air"]
-    start_s: float
-    end_s: float
-    moving_s: float
-    metres: float
-    climb_m: float
-    max_alt_m: float | None = None
-
-
-class FlightSideBody(BaseModel):
-    """The parts of one kind added up."""
-
-    seconds: float
-    metres: float
-    climb_m: float
-    max_alt_m: float | None = None
-
-
-class FlightSplitBody(BaseModel):
-    """A flight with parts on foot and in the air: each kind added up, for
-    «On foot {time} · In the air {time}»."""
-
-    foot: FlightSideBody
-    air: FlightSideBody
 
 
 class RunStatsBody(BaseModel):

@@ -52,6 +52,9 @@ POST = {"post"}
 # Where a run comes from (TASK-312 part A): every fixture written before is
 # a run of the app, as an older app sends it and an older API answers it.
 SOURCE = {"source"}
+# A race's parts (TASK-305 part R6d): always answered, null in the
+# examples written before (activity-flight.json).
+FLIGHT_PARTS = {"flight"}
 # The phone's offset for the game (TASK-423 C): only a newer app sends it.
 OFFSET = {"utc_offset_min"}
 MUW = {"source": "muw"}
@@ -185,6 +188,7 @@ def test_the_fixtures_are_the_contract() -> None:
         - TURN
         - POST
         - SOURCE
+        - FLIGHT_PARTS
     )
     # A word with the pen up (TASK-199): every field but the activity.
     walked = _load("activity-request-walks.json")

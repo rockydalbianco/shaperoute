@@ -58,3 +58,15 @@ export interface FlightSplit {
   foot: FlightSide;
   air: FlightSide;
 }
+
+/**
+ * A race on foot and in the air opened whole (TASK-305 part R6d): the
+ * `flight` of GET /me/activities/{key}, null for any other run and for a
+ * flight without parts on foot. Example: fixtures/activity-flight.json.
+ */
+export interface ActivityFlight {
+  /** The parts in the air as [from, to] indices into the run's `track`, in
+   * order: drawn yellow over the white line. */
+  air: [number, number][];
+  split: FlightSplit;
+}

@@ -74,6 +74,7 @@ from shaperoute_api.accounts import (
 )
 from shaperoute_api.best_routes import line_key
 from shaperoute_api.db import Database
+from shaperoute_api.flight_legs import ActivityFlightBody, flight_of
 from shaperoute_api.game import after_run_saved, notify_unlocked
 from shaperoute_api.insights import Insights
 from shaperoute_api.personal_bests import keep_run_bests, run_bests
@@ -428,6 +429,11 @@ class ActivityDetailBody(BaseModel):
     """The post as it was last shared (TASK-258); null for a run whose post
     was never shared. Always answered; the default is for the examples
     written before."""
+    flight: ActivityFlightBody | None = None
+    """A race on foot and in the air (TASK-305 part R6d): its parts in the
+    air on `track` and the two kinds added up; null for any other run, and
+    for a flight without parts on foot. Always answered; the default is for
+    the examples written before."""
 
 
 # --- The place a run starts from ---
@@ -806,8 +812,20 @@ class Activities:
             ).fetchone()
 
     def get(self, user_id: int, key: str) -> ActivityDetailBody | None:
-        row = self._row(user_id, key, DETAIL_COLUMNS)
-        return None if row is None else _whole(row)
+        with self.database.connect() as conn:
+            row = conn.execute(
+                f"SELECT {DETAIL_COLUMNS} FROM runs WHERE user_id = %s AND key = %s",
+                (user_id, key),
+            ).fetchone()
+            if row is None:
+                return None
+            # A race's parts on foot and in the air (TASK-305 part R6d).
+            flight = (
+                flight_of(conn, int(row["id"]))
+                if row["activity"] == "paragliding"
+                else None
+            )
+        return _whole(row).model_copy(update={"flight": flight})
 
     def save(
         self, user_id: int, key: str, body: ActivityRequestBody

@@ -55,7 +55,16 @@ export interface GymSessionRequest {
   sets?: GymSet[];
   /** The key of the plan it followed (TASK-411 C); absent without one. */
   plan?: string;
+  /** "manual" for a workout written by hand afterwards (TASK-484,
+   * ADR-0395, fixtures/gym-session-manual.json): its sets none of them
+   * live, no pauses, rests or plan, ended before now; out of the levels and
+   * the leaderboard. Absent for one recorded ("muw"). */
+  source?: GymSource;
 }
+
+/** Where a workout comes from (TASK-484): recorded, or written by hand. */
+export const GYM_SOURCES = ["muw", "manual"] as const;
+export type GymSource = (typeof GYM_SOURCES)[number];
 
 /** The workout as saved: 201 the first time, then 200 with it unchanged.
  * `duration_s` is the API's: from start to end without the pauses. */
@@ -69,6 +78,8 @@ export interface GymSession {
   sets: GymSet[];
   /** The key of the plan it followed; absent without one. */
   plan?: string;
+  /** Where it comes from (TASK-484); missing from an API older than it. */
+  source?: GymSource;
 }
 
 /** GET /drawings/{id}/exercises: what the post of a workout shows; 404

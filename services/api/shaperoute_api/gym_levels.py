@@ -71,7 +71,9 @@ def _measured_sql(where: str) -> str:
     run, exercise, its place in the catalog, measure, steps and value."""
     return (
         "SELECT s.run_id, c.exercise, c.n, c.measure, c.steps, v.value"
+        # A workout written by hand (TASK-484, ADR-0395) reaches no level.
         " FROM gym_sets s JOIN runs r ON r.id = s.run_id AND r.activity = 'gym'"
+        " AND r.source = 'muw'"
         f" JOIN {_CATALOG_SQL} ON c.exercise = s.exercise AND c.kind = s.kind"
         f" CROSS JOIN LATERAL (SELECT {_VALUE_SQL} AS value) v"
         f" WHERE v.value > 0 AND v.value <= c.cap AND {where}"

@@ -235,6 +235,46 @@ widget delle parti successive entrano nell'elenco quando la loro parte è in
    export/import del layout come file JSON (`.muwlayout`), con versione;
    salvato sul telefono (`expo-file-system`), mai sul server.
 
+**Come funziona l'editor** (deciso dall'agente su delega dell'utente):
+i preset diventano profili del pilota (copie di un preset, «XC», «XC 2»,
+senza nomi da scrivere); una pressione lunga di 0,7 s su un widget, o
+«Edit layout» nelle opzioni, apre l'editor su quel widget; frecce grandi
+spostano il widget di una cella (sopra un widget della stessa misura i due
+si scambiano); «Size» passa alla misura successiva che ci sta; «Unit» dà al
+widget un'unità sua (o torna a quella del profilo); pagine fino a 5,
+profili fino a 8; «Back to preset» e «Delete» chiedono conferma; il file
+`.muwlayout` è JSON con tipo e versione, uno di un'app più nuova si
+rifiuta. Le scelte salvate da B1 diventano profili senza perdere nulla.
+
+**Testi di B2**, approvati dall'utente il 2026-11-21 (en/it «Sì, approvo»,
+poi de/fr/es «Sì, approvo»). Le parole che l'app ha già (Done, Add,
+Remove, Delete, Default, Cancel) restano le sue.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Edit layout | Modifica schermata | Layout bearbeiten | Modifier la disposition | Editar diseño |
+| Page {n} of {count} | Pagina {n} di {count} | Seite {n} von {count} | Page {n} sur {count} | Página {n} de {count} |
+| Touch a widget to move it, size it or take it away. | Tocca un widget per spostarlo, ridimensionarlo o toglierlo. | Tippe auf ein Widget, um es zu verschieben, seine Größe zu ändern oder es zu entfernen. | Touchez un widget pour le déplacer, le redimensionner ou le retirer. | Toca un widget para moverlo, cambiar su tamaño o quitarlo. |
+| Size | Dimensione | Größe | Taille | Tamaño |
+| Unit | Unità | Einheit | Unité | Unidad |
+| Add page | Aggiungi pagina | Seite hinzufügen | Ajouter une page | Añadir página |
+| Remove page | Togli pagina | Seite entfernen | Retirer la page | Quitar página |
+| Duplicate | Duplica | Duplizieren | Dupliquer | Duplicar |
+| Back to preset | Torna al preset | Zurück zur Vorlage | Revenir au préréglage | Volver al ajuste inicial |
+| Undo every change to this layout? | Annullare tutte le modifiche a questa schermata? | Alle Änderungen an diesem Layout verwerfen? | Annuler toutes les modifications de cette disposition ? | ¿Deshacer todos los cambios de este diseño? |
+| Delete this layout? | Eliminare questa schermata? | Dieses Layout löschen? | Supprimer cette disposition ? | ¿Eliminar este diseño? |
+| Send file | Invia file | Datei senden | Envoyer le fichier | Enviar archivo |
+| Load file | Carica file | Datei laden | Charger un fichier | Cargar archivo |
+| No room there. | Lì non c'è posto. | Dort ist kein Platz. | Pas de place là. | Ahí no hay sitio. |
+| No room on this page. | Non c'è posto in questa pagina. | Auf dieser Seite ist kein Platz. | Plus de place sur cette page. | No hay sitio en esta página. |
+| No room for another size. | Non c'è posto per un'altra dimensione. | Kein Platz für eine andere Größe. | Pas de place pour une autre taille. | No hay sitio para otro tamaño. |
+| No room for another page. | Non c'è posto per un'altra pagina. | Kein Platz für eine weitere Seite. | Pas de place pour une autre page. | No hay sitio para otra página. |
+| No room for another layout. | Non c'è posto per un'altra schermata. | Kein Platz für ein weiteres Layout. | Pas de place pour une autre disposition. | No hay sitio para otro diseño. |
+| This file is not a MuW layout. | Questo file non è una schermata di MuW. | Diese Datei ist kein MuW-Layout. | Ce fichier n'est pas une disposition MuW. | Este archivo no es un diseño de MuW. |
+| This layout is from a newer MuW: update the app. | Questa schermata viene da un MuW più nuovo: aggiorna l'app. | Dieses Layout stammt aus einer neueren MuW-Version: Aktualisiere die App. | Cette disposition vient d'une version plus récente de MuW : mettez l'app à jour. | Este diseño es de un MuW más reciente: actualiza la app. |
+| MuW could not read this file. | MuW non è riuscita a leggere questo file. | MuW konnte diese Datei nicht lesen. | MuW n'a pas pu lire ce fichier. | MuW no pudo leer este archivo. |
+| MuW could not share the file. | MuW non è riuscita a condividere il file. | MuW konnte die Datei nicht teilen. | MuW n'a pas pu partager le fichier. | MuW no pudo compartir el archivo. |
+
 **I widget** (unità nell'interfaccia: quelle dell'utente, più piedi e nodi
 come scelta del volo; nel codice metri, m/s, gradi):
 

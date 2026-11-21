@@ -151,13 +151,15 @@ Migrazione, `plan_posts.py`, `plans` in `X-MuW-Reads`, il disegno con
 Server col passo del Coordinatore e il sì dell'utente, prima della B.
 Nessun cambiamento per le app che non dicono `plans`.
 
-**Ordine con TASK-467 E** (il post del sonno, detto dal Coordinatore il
-2026-11-21): anche lui aggiunge un tipo in `reads.py` (`sleep`) e tocca
-`drawings.py`, sul modello di TASK-312 C1, con la migrazione 0081. La A
-parte dopo di lui: merge di `main` prima del push, e la lista esatta al
-Coordinatore prima del codice.
+**Ordine** (dal Coordinatore, 2026-11-21): `reads.py` e `drawings.py` li
+tocca prima TASK-467 E1 (il post del sonno, tipo `sleep`, migrazione
+0081), sul modello di TASK-312 C1; `feed.py` la #1356 (TASK-355 B1, in
+`main`). Merge di `main` prima di ogni push, e nei registri solo righe
+aggiunte. Dopo il merge c'è un passo sul server col sì dell'utente: i
+controlli vanno in `out/TASK-485/SERVER-A.md` (o nella cartella delle
+note), per il Coordinatore.
 
-**File toccati (da approvare dal Coordinatore):**
+**File toccati (approvati dal Coordinatore il 2026-11-21):**
 
 ```
 services/api/migrations/0082_plan_posts.sql          (nuovo: drawings.plan; 0082 provvisorio, definitivo al merge)
@@ -199,8 +201,9 @@ Coordinatore prima del codice.
 - I testi nelle cinque lingue; la privacy a turno, col sì dell'utente sulle
   quattro traduzioni e le schermate dal simulatore.
 
-**File toccati (da approvare dal Coordinatore; la lista esatta prima del
-codice, perché i file del Feed e della guida sono in coda ad altri task):**
+**File toccati (approvati dal Coordinatore il 2026-11-21; la B parte dopo
+la A sul server e dopo TASK-481 A in `main`; `FeedPost.tsx` lo tocca anche
+TASK-355 B2, merge di `main` prima del push):**
 
 ```
 apps/mobile/src/feed/addToFeedEntries.ts             (una riga, dopo TASK-481 A)
@@ -223,7 +226,8 @@ docs/sports/gym.md                                   (la scheda pubblicata)
 docs/tasks/TASK-485.md
 ```
 
-A turno (privacy, punto 4):
+A turno (privacy, punto 4; in coda dopo TASK-309 B1, 417 D2, 312 C2 e 481
+A, il Coordinatore dice quando tocca):
 
 ```
 apps/mobile/src/about/content/{en,it,de,fr,es}.ts

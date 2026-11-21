@@ -275,6 +275,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B2a (settimane verso una meta) e A2 (ingresso «Cosa vuoi allenare?», corpo
   libero) in `main` (#1196, #1208), A2 esce col prossimo OTA. Prossime B2b/C2
   (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
+  **Chiuso il 2026-11-21**: B2b/C2 (#1294), D1 (#1341, `climb_m` nell'elenco) e B2c (#1338, «mancano» mentre si registra) in `main`; restano il passo sul server di D1 e l'OTA di B2c, col sì dell'utente; vedi `archive/COMPLETATI.md`.
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

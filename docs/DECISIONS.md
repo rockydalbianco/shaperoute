@@ -635,9 +635,9 @@ con terzi né servizi a pagamento.
   test deterministici su file sintetici (nessun file di spazi aerei
   reale nel repository).
 - **Ordine** (scelta dell'utente): B1 (numeri e schermata coi preset) →
-  C (vario sonoro) → A1 (mappa 3D in volo) → E (spazi aerei) → D
-  (navigazione e gare) → B2 (editor) → F con A2 (dopo il volo, replay) →
-  G (live) → H (meteo).
+  B2 (editor; anticipato dall'utente la sera del 2026-11-21) → C (vario
+  sonoro) → A1 (mappa 3D in volo) → E (spazi aerei) → D (navigazione e
+  gare) → F con A2 (dopo il volo, replay) → G (live) → H (meteo).
 
 **Alternative scartate**:
 - *Restare un registratore* (ADR-0375 com'era): superata dalla scelta

@@ -88,12 +88,15 @@ In `app.json` iOS ha già `UIBackgroundModes: ["audio"]`; il plugin
 ## Le parti
 
 Una parte = un branch da `main` = una PR «pronta» al Coordinatore, con la
-lista dei file prima della PR. Ordine scelto dall'utente (2026-11-21): **B1 → C →
-A1 → E → D → B2 → F (con A2) → G → H**. Il motivo: prima i numeri e il suono,
-che servono in ogni volo e alla prova col pilota; poi la mappa, gli spazi
-aerei e la navigazione; l'editor completo quando i widget sono tutti;
-dopo il volo e il live; il meteo (H) per ultimo, perché chiede un
-servizio nuovo sul server.
+lista dei file prima della PR. Ordine scelto dall'utente (2026-11-21): **B1 → B2 →
+C → A1 → E → D → F (con A2) → G → H**. All'inizio era B1 → C → A1 → E → D →
+B2 → …; la sera del 2026-11-21 l'utente ha chiesto di poter spostare i dati
+sullo schermo e ha scelto «B2 right after» (l'editor subito dopo B1). Il
+motivo: prima i numeri e il loro posto sullo schermo, poi il suono, che
+serve in ogni volo e alla prova col pilota; poi la mappa, gli spazi aerei e
+la navigazione, i cui widget entrano nell'elenco dell'editor quando la loro
+parte è in `main`; dopo il volo e il live; il meteo (H) per ultimo, perché
+chiede un servizio nuovo sul server.
 
 Dal Coordinatore (2026-11-21): si lavora a fianco della sessione di
 TASK-305 (R6d e la #1218 dell'orologio aperte): prima di ogni lista dei
@@ -223,7 +226,9 @@ Vario, Speed, Done, Flight time, Sharing live) restano le sue.
 | Not sharing | Non condivisa | Nicht geteilt | Non partagé | Sin compartir |
 | From {bearing} · {minutes} min ago | Da {bearing} · {minutes} min fa | Aus {bearing} · vor {minutes} Min. | De {bearing} · il y a {minutes} min | Desde {bearing} · hace {minutes} min |
 
-**B2 — l'editor** (dopo D ed E):
+**B2 — l'editor** (subito dopo B1, scelta dell'utente del 2026-11-21; i
+widget delle parti successive entrano nell'elenco quando la loro parte è in
+`main`):
 1. Pressione lunga su un widget → aggiungi, togli, sposta, ridimensiona
    (1×1 … 4×2), scegli il campo e l'unità.
 2. Più profili (es. «Gara», «Libero»), duplica, ripristina il preset;
@@ -420,7 +425,9 @@ parte, prima della sua PR.
 ## Scelte dell'utente sulla parte 0 (2026-11-21)
 
 1. **Ordine delle parti**: B1 → C → A1 → E → D → B2 → F (con A2) → G,
-   com'era proposto; la parte H (meteo) dopo G.
+   com'era proposto; la parte H (meteo) dopo G. **Cambiato la sera
+   stessa**: «B2 right after», l'editor subito dopo B1 (B1 → B2 → C → A1 →
+   E → D → F → G → H).
 2. **Testi degli avvisi**: approvati in en/it e poi in de/fr/es (tabelle
    sopra).
 3. **Meteo**: «Sì, come parte H» (la proposta era «no per ora»): vento in

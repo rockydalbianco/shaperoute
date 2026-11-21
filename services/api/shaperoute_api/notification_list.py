@@ -159,9 +159,8 @@ def shown_sql(reads: Reads) -> str:
         " WHERE t.drawing_id = n.drawing_id AND t.user_id = n.recipient_id)"
         " ELSE true END"
         " AND (n.drawing_id IS NULL OR EXISTS (SELECT 1 FROM drawings d"
-        " JOIN runs r ON r.id = d.run_id WHERE d.id = n.drawing_id"
-        f" AND {drawing_seen_sql('%(reader)s')}"
-        f" AND {reads.sql('r.activity', 'r.track IS NOT NULL')}))"
+        " LEFT JOIN runs r ON r.id = d.run_id WHERE d.id = n.drawing_id"
+        f" AND {drawing_seen_sql('%(reader)s')} AND {reads.drawings_sql()}))"
     )
 
 

@@ -1285,6 +1285,10 @@ palestra (`gym`, TASK-385) non ha traccia: passa solo a chi dice **sia**
 `gym` **sia** `trackless`; l'app lo dirà con la parte B0, insieme alle
 schermate che mostrano un post senza linea.
 
+Un'app dice **`photos`** quando sa mostrare un post di sole foto, un
+disegno senza corsa (TASK-312 parte C, «Photo posts», sotto): senza, ogni
+elenco lo lascia fuori e `GET /drawings/{id}` è `404`.
+
 Nello stesso header un'app dice **`post`** quando sa mostrare un post
 allegato a un messaggio (TASK-455, ADR-0382, «Un post in un messaggio»,
 sotto). Non è un tipo di corsa: lo legge `messages.py`, non `reads.py`.
@@ -1693,6 +1697,12 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
 | `PUT /me/activities/{key}` | salvare una corsa | `201` la prima volta, poi `200` |
 | `PUT /me/activities/{key}/post` | il post della corsa, come condiviso (TASK-258) | `200` con `shared_at`, o `404 http_error` |
 | `DELETE /me/activities/{key}` | cancellarla | `204`, anche se non c'era |
+
+- **`climb_m`** (TASK-461 D1, ADR-0371), in ogni corsa dell'elenco e nella
+  risposta del `PUT`: i metri di salita contati dall'API (TASK-324), `null`
+  per una corsa senza quote e per quelle salvate prima. L'app lo legge per
+  «Quanta salita fai oggi?» dei piani verso una gita; un'app di prima lo
+  ignora. La corsa intera (`GET /me/activities/{key}`) non lo cambia.
 
 - **`key`** la fa l'app dall'inizio della traccia (`activityKey`: 16 cifre
   esadecimali dall'orario e dal punto della prima posizione; l'API accetta
@@ -2683,6 +2693,51 @@ Codice in `together.py`, esempio in `fixtures/together.json`.
 - Se una persona rende la sua corsa `only_me` o toglie il disegno, non
   entra più; un video già fatto resta sul telefono com'è. Un'API
   precedente risponde `404`: l'app tiene spenta la riga «Together».
+
+### Photo posts (TASK-312 parte C, ADR-0272)
+
+Un **post di sole foto** è un disegno senza corsa: foto fatte altrove,
+anche da Instagram, con titolo, descrizione e iscritti taggati
+(`IMPORTAZIONI.md` §4). Vogliono il token. Codice in `photo_posts.py`;
+tipi in `shared-types` (`PhotoPostRequest`, `PhotoPostOrderRequest`,
+`MyPhotoPost`, `PhotoDrawing`, `PhotoFeedPost`, `PhotoDrawingDetail`,
+`PHOTOS_SOURCE`, `PHOTO_POST_VISIBILITIES`, `PHOTO_POST_MAX_PHOTOS`,
+`isPhotoPost`); esempi in `fixtures/photo-post-request.json`,
+`photo-post-order-request.json`, `my-photo-post.json`,
+`drawing-details-photos.json`, `feed-photos.json`.
+
+- `PUT /me/photo-posts/{key}` → `200` `MyPhotoPost`: il post com'è adesso,
+  fatto la prima volta. `key` come quella di una corsa (`[a-z0-9]{8,40}`),
+  scelta dal telefono: rimandato senza rete resta uno. `visibility` solo
+  `everyone` o `followers` (`only_me` è `422`), titolo, descrizione e tag
+  con le regole di un disegno. Passare fra `everyone` e `followers` non lo
+  ripubblica.
+- `GET /me/photo-posts/{key}` → `200` `MyPhotoPost`; `404` «No post of
+  photos with this key.».
+- `DELETE /me/photo-posts/{key}` → `204` sempre: con le sue foto, i tag,
+  le reazioni, i commenti e le segnalazioni.
+- `PUT /me/photo-posts/{key}/photos/{n}` (`n` da 1 a 10, nessuna mappa
+  fra le foto; corpo `DrawingPhotoRequest`) → `200` `MyPhotoPost`;
+  `DELETE` → `204`; `PUT /me/photo-posts/{key}/order` (`photo:N`, mai
+  `drawing`) → `200`. Senza il post, `404`.
+- **Si pubblica con la prima foto**: prima `published_at` è `null` e
+  nessuno tranne il proprietario lo trova (`GET /drawings/{id}` `404` per
+  gli altri). Cancellata l'ultima foto torna così; la foto dopo lo
+  ripubblica. I taggati ricevono la push quando è pubblicato, non prima.
+- **Si legge come ogni disegno**, con `source: "photos"`: in
+  `GET /feed`, `GET /users/{id}/drawings`, `GET /users/{id}/photos`,
+  `GET /drawings/{id}` e `GET /notifications`, **solo** a un'app che dice
+  `photos` in `X-MuW-Reads`; per le altre non c'è (`404` dal suo id).
+  `activity`, `place`, `shape`, `word`, `style`, `route_title`, `score`,
+  `fidelity`, `rotation_deg` sono `null`, `distance_m` e `duration_s` `0`,
+  `started_at` è la pubblicazione, `track_preview` e `track` vuoti,
+  `stats` `null`, `linkable` falso. Senza linea non è mai «vicino» a un
+  punto: nel Feed lo vedono l'autore, chi lo segue e la scheda `all`.
+- Reazioni, commenti, tag, segnalazioni (`kind: "drawing"`), blocchi e
+  nascosti come ogni disegno. Fuori da concorso, gioco, badge, totali del
+  profilo, ricerca dei disegni, link pubblico e post mandato in chat
+  (tutti partono da una corsa); non è in «My activities» né in
+  `GET /me/drawings`. Conta solo in `PublicProfile.drawings`.
 
 ### Follow (TASK-211, ADR-0173)
 

@@ -1361,6 +1361,30 @@ Migrazione `0079_stretching.sql` (TASK-475 parte A, ADR-0386, `API.md`
 - Nessuna posizione, nessuna riga di prima cambia, nessun backfill. Test in
   `test_stretching_api.py`.
 
+Migrazione `0080_photo_posts.sql` (TASK-312 parte C, ADR-0272, `API.md`
+«Photo posts», `IMPORTAZIONI.md` §4; numero del Coordinatore,
+dopo la 0079 di TASK-475 A). **Un post di sole foto è un disegno senza corsa**:
+
+- `drawings.user_id` (`bigint NOT NULL`, `ON DELETE CASCADE` su `users`,
+  indice `drawings_user_idx`): di chi è il disegno, riempito da `runs` per
+  le righe di prima. Da qui leggono l'autore `drawing_seen_sql`,
+  `shown_sql` e chi parte da un disegno (Feed, profilo, foto, commenti,
+  reazioni, segnalazioni, push, campanello, email): così blocchi, nascosti
+  e «Followers» valgono anche per un post senza corsa. Chi parte da `runs`
+  (concorso, gioco, badge, totali, sport) non lo vede mai.
+- `drawings.run_id` diventa facoltativo; `drawings.key` (stessa forma
+  della chiave di una corsa) c'è solo senza corsa
+  (`drawings_run_or_key_check`), unica per account
+  (`drawings_user_key_key`): un post rimandato senza rete resta uno.
+- `drawings_photo_post_check`: senza corsa mai `only_me`, mai traccia,
+  sempre `trackless`.
+- Il vincolo di 0014 fra `visibility` e `published_at` diventa
+  `drawings_published_check` e vale solo con una corsa: un post senza
+  corsa ha `published_at` vuoto finché non ha una foto (lo mette la prima,
+  lo toglie l'ultima cancellata), e `drawing_seen_sql`/`shown_sql` per gli
+  altri vogliono `published_at` pieno. Test in `test_photo_posts.py` e
+  `test_photo_posts_seen.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

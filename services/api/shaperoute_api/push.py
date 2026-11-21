@@ -802,8 +802,7 @@ def _sees(conn: Connection[DictRow], viewer_id: int, drawing_id: UUID) -> bool:
     from shaperoute_api.drawings import drawing_seen_sql
 
     row = conn.execute(
-        "SELECT 1 FROM drawings d JOIN runs r ON r.id = d.run_id"
-        f" WHERE d.id = %s AND {drawing_seen_sql('%s')}",
+        f"SELECT 1 FROM drawings d WHERE d.id = %s AND {drawing_seen_sql('%s')}",
         (drawing_id, viewer_id),
     ).fetchone()
     return row is not None
@@ -867,8 +866,7 @@ def notify_owner(
         return
     owner = _one(
         pusher,
-        "SELECT r.user_id AS id FROM drawings d JOIN runs r ON r.id = d.run_id"
-        " WHERE d.id = %s",
+        "SELECT user_id AS id FROM drawings WHERE id = %s",
         (wanted,),
     )
     if owner is not None:

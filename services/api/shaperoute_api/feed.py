@@ -36,6 +36,11 @@ follows, the last published first with no groups and no point. Without a
 A page holds only the drawings of the activities the app reads, as its
 header X-MuW-Reads says (reads.py, TASK-387): an app of before the walks
 and the days on the snow never receives one.
+
+A post of photos only (TASK-312 part C, photo_posts.py) is a drawing
+without a run: only an app that reads `photos` receives it. Without a line
+it is never near a point: the author, its followers and the tab `all` see
+it, the strangers nearby do not (docs/IMPORTAZIONI.md §4.3).
 """
 
 from __future__ import annotations
@@ -64,6 +69,7 @@ from shaperoute_api.comments import READ
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import (
     LISTED_COLUMNS,
+    WITH_RUN_SQL,
     AuthorBody,
     DrawingBody,
     _details,
@@ -189,22 +195,22 @@ def near_sql(point: LatLon | None) -> str:
 
 
 def tier_sql(viewer: str) -> str:
-    """The group of the drawing `d` of the run `r` for the account
+    """The group of the drawing `d` for the account
     `viewer`: OWN for its own, FOLLOWED for one of a member it follows,
     OTHERS for the rest."""
     return (
-        f"CASE WHEN r.user_id = {viewer}::bigint THEN {OWN}"
-        f" WHEN {follows_sql(viewer, 'r.user_id')} THEN {FOLLOWED}"
+        f"CASE WHEN d.user_id = {viewer}::bigint THEN {OWN}"
+        f" WHEN {follows_sql(viewer, 'd.user_id')} THEN {FOLLOWED}"
         f" ELSE {OTHERS} END"
     )
 
 
 def filter_sql(feed_filter: FeedFilter, viewer: str) -> str:
-    """An SQL condition: the drawing `d` of the run `r` is in the tab
+    """An SQL condition: the drawing `d` is in the tab
     `feed_filter` of the account `viewer`, once shown_sql lets it be seen."""
     if feed_filter == "all":
         return "d.visibility = 'everyone'"
-    return f"(r.user_id = {viewer}::bigint OR {follows_sql(viewer, 'r.user_id')})"
+    return f"(d.user_id = {viewer}::bigint OR {follows_sql(viewer, 'd.user_id')})"
 
 
 NO_REACTIONS = FeedReactionsBody(total=0, mine=None)
@@ -295,14 +301,13 @@ class Feed:
                 f"SELECT {LISTED_COLUMNS}, u.public_id, u.username,"
                 " pp.updated_at AS photo_at,"
                 f" {tier} AS tier, {near_sql(point)} AS nearby"
-                " FROM drawings d JOIN runs r ON r.id = d.run_id"
-                " JOIN users u ON u.id = r.user_id"
+                f" FROM {WITH_RUN_SQL} JOIN users u ON u.id = d.user_id"
                 " LEFT JOIN profile_photos pp ON pp.user_id = u.id"
                 # Implied by shown_sql, and said for the index of the
                 # published drawings (migration 0022).
                 " WHERE d.visibility <> 'only_me'"
                 f" AND {shown_sql('%(viewer)s')}{chosen}"
-                f" AND {reads.sql('r.activity', 'r.track IS NOT NULL')}) feed"
+                f" AND {reads.drawings_sql()}) feed"
                 f" WHERE {where}"
                 " ORDER BY tier, published_at DESC, id DESC LIMIT %(limit)s",
                 values,

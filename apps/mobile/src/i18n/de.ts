@@ -2098,6 +2098,8 @@ export const DE: Table = {
   SW: "SW",
   W: "W",
   NW: "NW",
+  // src/screens/RunPanel.tsx (TASK-461 B2c, approved 2026-11-11)
+  "{m} m of climb to go": "noch {m} Höhenmeter",
   "{distance} to go": "noch {distance}",
   "Saved to My activities": "In Meine Aktivitäten gespeichert",
   // src/social/ContactsFriends.tsx (TASK-262 C)
@@ -2795,8 +2797,8 @@ export const DE: Table = {
   // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
   "Record your flight": "Flug aufzeichnen",
   "Before you fly": "Vor dem Flug",
-  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
-    "MuW ist kein Fluginstrument: Es zeichnet deinen Flug auf und teilt ihn. Flieg mit deinem eigenen Instrument, deiner Lizenz und deinem Urteilsvermögen.",
+  "MuW is not a certified flight instrument. Its numbers come from the phone's GPS: they can be late or wrong. Fly with your licence and your judgement, and keep a backup instrument.":
+    "MuW ist kein zertifiziertes Fluginstrument. Seine Werte kommen vom GPS des Telefons: Sie können verspätet oder falsch sein. Flieg mit deiner Lizenz und deinem Urteilsvermögen und hab ein Ersatzinstrument dabei.",
   "Got it": "Verstanden",
   Vario: "Vario",
   "Flight time": "Flugzeit",
@@ -2926,8 +2928,15 @@ export const DE: Table = {
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Bergsteigen",
+  "No shapes up a mountain: MuW records your day.":
+    "Keine Formen am Berg: MuW zeichnet deinen Tag auf.",
   // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
   Stretching: "Dehnen",
+  // «Draw» with the sport «Stretching» (TASK-475 part B), approved by the
+  // user on 2026-11-21.
+  "Start stretching": "Dehnen starten",
+  "No route for stretching: choose a routine and MuW guides you.":
+    "Keine Route beim Dehnen: Wähle eine Routine, MuW führt dich.",
   "Before you climb": "Bevor du aufsteigst",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW zeichnet deinen Aufstieg auf und teilt ihn: Es führt dich nicht. Geh mit deiner Ausrüstung, deinem Können und deinem Urteil, und prüfe die Verhältnisse vor dem Start.",
@@ -2960,4 +2969,58 @@ export const DE: Table = {
   "Your live becomes the post of this activity.":
     "Dein Live wird zum Post dieser Aktivität.",
   "Don't post": "Nicht posten",
+  // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
+  "Flight screen": "Flugbildschirm",
+  "GPS altitude": "GPS-Höhe",
+  "Above takeoff": "Über Startplatz",
+  "Average vario": "Mittleres Vario",
+  "Thermal average": "Thermikschnitt",
+  "Thermal gain": "Thermikgewinn",
+  "Ground speed": "Geschw. über Grund",
+  Track: "Kurs",
+  "Glide ratio": "Gleitzahl",
+  Wind: "Wind",
+  "Thermal assistant": "Thermikassistent",
+  Takeoff: "Startplatz",
+  Clock: "Uhrzeit",
+  "GPS accuracy": "GPS-Genauigkeit",
+  Live: "Live",
+  "Last 10 min": "Letzte 10 Min.",
+  Thermal: "Thermik",
+  XC: "XC",
+  Minimal: "Minimal",
+  Look: "Aussehen",
+  Sunlight: "Sonnenlicht",
+  "Hold to unlock": "Zum Entsperren halten",
+  Lock: "Sperren",
+  "Not sharing": "Nicht geteilt",
+  "From {bearing} · {minutes} min ago": "Aus {bearing} · vor {minutes} Min.",
+  "GPS numbers · not a certified instrument":
+    "GPS-Werte · kein zertifiziertes Instrument",
+  "Log in to see this drawing.": "Melde dich an, um diese Zeichnung zu sehen.",
+  // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
+  "Edit layout": "Layout bearbeiten",
+  "Page {n} of {count}": "Seite {n} von {count}",
+  "Touch a widget to move it, size it or take it away.":
+    "Tippe auf ein Widget, um es zu verschieben, seine Größe zu ändern oder es zu entfernen.",
+  Size: "Größe",
+  Unit: "Einheit",
+  "Add page": "Seite hinzufügen",
+  "Remove page": "Seite entfernen",
+  Duplicate: "Duplizieren",
+  "Back to preset": "Zurück zur Vorlage",
+  "Undo every change to this layout?": "Alle Änderungen an diesem Layout verwerfen?",
+  "Delete this layout?": "Dieses Layout löschen?",
+  "Send file": "Datei senden",
+  "Load file": "Datei laden",
+  "No room there.": "Dort ist kein Platz.",
+  "No room on this page.": "Auf dieser Seite ist kein Platz.",
+  "No room for another size.": "Kein Platz für eine andere Größe.",
+  "No room for another page.": "Kein Platz für eine weitere Seite.",
+  "No room for another layout.": "Kein Platz für ein weiteres Layout.",
+  "This file is not a MuW layout.": "Diese Datei ist kein MuW-Layout.",
+  "This layout is from a newer MuW: update the app.":
+    "Dieses Layout stammt aus einer neueren MuW-Version: Aktualisiere die App.",
+  "MuW could not read this file.": "MuW konnte diese Datei nicht lesen.",
+  "MuW could not share the file.": "MuW konnte die Datei nicht teilen.",
 };

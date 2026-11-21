@@ -1,6 +1,6 @@
 # TASK-312 — Importare nel Feed attività fatte con altre app, e post di sole foto
 
-**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C1 in PR** (API e migrazione dei post di sole foto, branch `feat/TASK-312-c1-photo-posts-api`) · poi C2 (app), D (studio Apple Salute), E (studio collegamenti diretti)
+**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C1 in `main`** (API e migrazione `0080` dei post di sole foto, PR #1347, `cfd5e956`; server col passo del Coordinatore e il sì dell'utente) · poi C2 (app), D (studio Apple Salute), E (studio collegamenti diretti)
 **Fase**: 4 · **Branch**: `docs/TASK-312-import-activities` (documenti),
 `feat/TASK-312-a-imported-runs-api` (A), `feat/TASK-312-b-import-file-app`
 (B), `feat/TASK-312-c-photo-posts` (C), `docs/TASK-312-d-health-study`
@@ -378,6 +378,16 @@ separa dove legge il Feed.
   con la coda; la scheda del Feed e il post aperto con «Imported»; modifica
   e cancellazione dell'autore; niente «Send in chat» né link per questi
   post; la riga della privacy (a turno).
+
+### Parte C1b — l'elenco dei propri post (2026-11-21)
+
+`GET /me/photo-posts`: l'app apre un post dal suo id, ma per modificarlo o
+cancellarlo le serve la `key`, e nessun endpoint la dava (i post di sole
+foto non sono in «My activities» né in `GET /me/drawings`). Nessuna
+migrazione, nessun codice d'errore nuovo. Lista approvata dal Coordinatore
+il 2026-11-21 (`photo_posts.py`, `test_photo_posts.py`, `index.ts`,
+`my-photo-posts.json`, `photoPosts.test.ts`, `API.md`, questo file); sul
+server col passo 16 se è in `main` prima, altrimenti col passo dopo.
 
 ### Parte C1 — com'è fatta (2026-11-21)
 

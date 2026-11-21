@@ -5,12 +5,14 @@ import drawingDetails from "../fixtures/drawing-details-photos.json" with { type
 import feedImported from "../fixtures/feed-imported.json" with { type: "json" };
 import feed from "../fixtures/feed-photos.json" with { type: "json" };
 import myPhotoPost from "../fixtures/my-photo-post.json" with { type: "json" };
+import myPhotoPosts from "../fixtures/my-photo-posts.json" with { type: "json" };
 import order from "../fixtures/photo-post-order-request.json" with { type: "json" };
 import request from "../fixtures/photo-post-request.json" with { type: "json" };
 import reads from "../fixtures/reads.json" with { type: "json" };
 import {
   isPhotoPost,
   type MyPhotoPost,
+  type MyPhotoPosts,
   PHOTO_POST_MAX_PHOTOS,
   PHOTO_POST_VISIBILITIES,
   type PhotoDrawingDetail,
@@ -136,4 +138,19 @@ test("a post of a run is not one", () => {
   assert.ok(run);
   assert.ok(!isPhotoPost(run));
   assert.ok(!isPhotoPost({}));
+});
+
+test("the account lists its posts with their keys, the waiting one too", () => {
+  const listed: MyPhotoPosts = {
+    photo_posts: myPhotoPosts.photo_posts.map((post) => ({
+      ...post,
+      visibility: visibility(post.visibility),
+    })),
+  };
+  const [waiting, published] = listed.photo_posts;
+  assert.ok(waiting && published);
+  assert.equal(waiting.published_at, null);
+  assert.deepEqual(waiting.photos, []);
+  assert.ok(published.published_at);
+  assert.notEqual(waiting.key, published.key);
 });

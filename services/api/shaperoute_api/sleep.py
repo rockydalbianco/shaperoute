@@ -212,10 +212,12 @@ def _keep(
 
 def _drop_unpublished(conn: DictConnection, user_id: int) -> None:
     """Only what is published stays: the account's nights that are neither
-    on the profile nor carried by an activity go."""
+    on the profile, nor carried by an activity, nor a post of their own
+    (sleep_posts.py) go."""
     conn.execute(
         "DELETE FROM sleep_nights n WHERE n.user_id = %s AND NOT n.shared"
-        " AND NOT EXISTS (SELECT 1 FROM runs r WHERE r.sleep_night_id = n.id)",
+        " AND NOT EXISTS (SELECT 1 FROM runs r WHERE r.sleep_night_id = n.id)"
+        " AND NOT EXISTS (SELECT 1 FROM drawings d WHERE d.sleep_night_id = n.id)",
         (user_id,),
     )
 

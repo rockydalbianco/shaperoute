@@ -13,6 +13,7 @@ import { fill, LANGUAGES, TEXTS as LIVE_TEXTS } from "../live/texts.js";
 import { API, boundsOf } from "../live/view.js";
 import { SPORTS, TEXTS } from "../p/texts.js";
 import {
+  appBarOf,
   bearingOf,
   distanceOf,
   factsOf,
@@ -229,6 +230,59 @@ test("a chat app shows the same card for every link: the approved words and the 
   // Drawn here, with no map tiles and no address: nothing of a place or a post.
   const drawing = read(SITE, "tools", "link-card.html");
   assert.deepEqual(drawing.match(/https?:\/\/(?!www\.w3\.org\/2000\/svg)[^"'`\s)]+/g) ?? [], []);
+});
+
+test("on an iPhone Safari's bar names the app and is given the link, id and all", async () => {
+  const { downloadUrl } = await import("../config.js");
+  const link = `https://example.test/p/#${ID}`;
+  // The app's number is the one «Get MuW» leads to.
+  assert.equal(appBarOf(downloadUrl, link), `app-id=6820961883, app-argument=${link}`);
+  assert.equal(appBarOf("https://apps.apple.com/it/app/muw/id123?l=en", link), `app-id=123, app-argument=${link}`);
+  // A link that opens no drawing: the app alone.
+  assert.equal(appBarOf(downloadUrl, null), "app-id=6820961883");
+  // No App Store address, or one without a number: no bar.
+  assert.equal(appBarOf(null, link), null);
+  assert.equal(appBarOf("https://example.test/app", link), null);
+
+  // The page as it comes names the app, with the same number: Safari reads
+  // the bar as the page loads, before any module runs.
+  const html = read(PAGE, "index.html");
+  const meta = html.match(/<meta name="apple-itunes-app" content="([^"]*)" \/>/)?.[1];
+  assert.equal(meta, appBarOf(downloadUrl, null));
+  // bar.js comes right after it, and runs at once: not a module, not deferred.
+  assert.match(html, /<meta name="apple-itunes-app"[^>]*\/>\s*<script src="bar\.js"><\/script>/);
+
+  // What bar.js does, run here with a page and an address of its own.
+  const source = read(PAGE, "bar.js");
+  const run = (hash, content = meta) => {
+    const tag = {
+      content,
+      getAttribute: () => tag.content,
+      setAttribute: (_name, value) => {
+        tag.content = value;
+      },
+    };
+    const document = { querySelector: (q) => (q === 'meta[name="apple-itunes-app"]' ? tag : null) };
+    const location = { hash, origin: "https://example.test", pathname: "/p/" };
+    new Function("document", "location", source)(document, location);
+    return tag.content;
+  };
+  assert.equal(run(`#${ID}`), appBarOf(downloadUrl, link));
+  assert.equal(run(`#${ID.toUpperCase()}`), appBarOf(downloadUrl, link));
+  // Anything that is not a drawing's id is left out of the bar.
+  for (const hash of ["", "#", "#hello", `#${ID}x`, `#${ID}&next=https://example.test`]) {
+    assert.equal(run(hash), meta, hash);
+  }
+  // The same shape of id as the page's own.
+  assert.ok(source.includes(`/${ID_PATTERN.source}/i`), "bar.js and view.js agree on an id");
+  assert.deepEqual(source.match(/https?:\/\/[^"'`\s)]+/g) ?? [], [], "bar.js names no address");
+
+  const script = read(PAGE, "post.js");
+  // The link is the page's own address, wherever the page is served.
+  assert.match(script, /appBarOf\(downloadUrl, id === null \? null : `\$\{origin\}\$\{pathname\}#\$\{id\}`\)/);
+  // Kept right after a change of the `#`, and for a link that opens nothing.
+  assert.match(script, /const id = idFromHash\(window\.location\.hash\);\s*\/\/[^\n]*\n\s*putAppBar\(id\);/);
+  assert.match(script, /outcome\.kind === "gone"\) \{\s*putAppBar\(null\);/);
 });
 
 test("the page asks the API once, sends nothing of who reads, and keeps nothing", () => {

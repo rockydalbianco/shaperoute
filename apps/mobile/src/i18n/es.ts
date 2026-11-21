@@ -2853,7 +2853,8 @@ export const ES: Table = {
   "Add activity": "Añadir actividad",
   // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
   // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
-  // the first three approved by the user, 2026-11-21).
+  // the first three approved by the user, 2026-11-21, the deletion's with
+  // the screenshots, 2026-11-22).
   "Photos only": "Solo fotos",
   "Up to 10 photos, also from Instagram": "Hasta 10 fotos, también de Instagram",
   "Add at least one photo.": "Añade al menos una foto.",

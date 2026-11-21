@@ -177,7 +177,11 @@ approvata dal Coordinatore (fork 2) il 2026-11-21):
   minuti, inizio, fine, pause ed esercizi tenuti fino in fondo. Senza
   `onDone` la schermata fa quello che faceva.
 - Resta `ready: false`: si accende con le schermate approvate dall'utente
-  (parte C). Fuori da B: la routine nel post (`GET /drawings/{id}/stretch`)
+  (parte C).
+- **Schermate** dal simulatore (iPhone 17e, Expo Go, sport acceso solo in
+  locale, API su una porta spenta): pannello, «Draw», durata, sessione,
+  logo di salvataggio, in `out/TASK-475/b-1…5`. Approvate dall'utente il
+  2026-11-21: «Sì, approvo». Fuori da B: la routine nel post (`GET /drawings/{id}/stretch`)
   e Apple Salute.
 
 ## File toccati (parte B)

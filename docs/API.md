@@ -3488,7 +3488,7 @@ Una notte si pubblica in due modi, ognuno col suo interruttore:
   `SleepPostRequest` e `MySleepPost`, esempi `fixtures/sleep-post*.json`):
   pubblicato dal «+» del Feed senza un'attività. È **un disegno senza
   corsa** che porta la sua notte (`drawings.sleep_night_id`, migrazione
-  `0081`), come il post di sole foto: reazioni, commenti, segnalazioni,
+  `0082`), come il post di sole foto: reazioni, commenti, segnalazioni,
   blocchi e «Followers» valgono come per ogni disegno. Uno per notte
   (la chiave è `sleep` più il giorno, `sleep20260921`), pubblicato appena
   nasce; mai «Only me». Negli elenchi e in `GET /drawings/{id}` ha

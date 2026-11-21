@@ -1385,9 +1385,9 @@ dopo la 0079 di TASK-475 A). **Un post di sole foto è un disegno senza corsa**:
   altri vogliono `published_at` pieno. Test in `test_photo_posts.py` e
   `test_photo_posts_seen.py`.
 
-Migrazione `0081_sleep_posts.sql` (TASK-467 parte E, «ADR-0380,
-precisazione E», `API.md` «Sleep»; numero provvisorio del Coordinatore,
-dopo la 0080 di TASK-312 C). **Il post di una notte di sonno è un disegno
+Migrazione `0082_sleep_posts.sql` (TASK-467 parte E, «ADR-0380,
+precisazione E», `API.md` «Sleep»; numero del Coordinatore, dopo la 0081
+di TASK-484 A). **Il post di una notte di sonno è un disegno
 senza corsa che porta la sua notte**:
 
 - `drawings.sleep_night_id` (`bigint`, `ON DELETE CASCADE` su

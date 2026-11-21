@@ -87,7 +87,7 @@ def seen(client: TestClient, me: Headers, post_id: str) -> bool:  # noqa: F811
 
 
 def test_the_migration_is_there() -> None:
-    assert "0081_sleep_posts.sql" in [path.name for path in migrations()]
+    assert "0082_sleep_posts.sql" in [path.name for path in migrations()]
 
 
 def test_the_examples_are_the_bodies() -> None:

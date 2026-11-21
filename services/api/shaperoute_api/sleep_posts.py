@@ -5,7 +5,7 @@ A member publishes last night from the Feed's «+», without an activity:
 MuW's score, the time asleep and the stages, as the phone worked them out
 (ADR-0379). It is a drawing without a run, as a post of photos only
 (photo_posts.py, migration 0080), that carries its night
-(`drawings.sleep_night_id`, migration 0081): reactions, comments, reports,
+(`drawings.sleep_night_id`, migration 0082): reactions, comments, reports,
 blocks and hiding follow every drawing (drawings.drawing_seen_sql), so they
 hold for it with no table of its own.
 
@@ -149,7 +149,7 @@ class SleepPosts:
 
     def remove(self, user_id: int, night: date) -> None:
         """Off the Feed; the second time changes nothing. Its night goes
-        with it when nothing else publishes it (migration 0081)."""
+        with it when nothing else publishes it (migration 0082)."""
         with self.database.connect() as conn:
             _one_at_a_time(conn, user_id)
             conn.execute(

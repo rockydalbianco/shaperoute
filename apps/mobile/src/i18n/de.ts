@@ -2992,4 +2992,29 @@ export const DE: Table = {
   "From {bearing} · {minutes} min ago": "Aus {bearing} · vor {minutes} Min.",
   "GPS numbers · not a certified instrument":
     "GPS-Werte · kein zertifiziertes Instrument",
+  // src/air/ (TASK-479 part B2: the flight screen's editor)
+  "Edit layout": "Layout bearbeiten",
+  "Page {n} of {count}": "Seite {n} von {count}",
+  "Touch a widget to move it, size it or take it away.":
+    "Tippe auf ein Widget, um es zu verschieben, seine Größe zu ändern oder es zu entfernen.",
+  Size: "Größe",
+  Unit: "Einheit",
+  "Add page": "Seite hinzufügen",
+  "Remove page": "Seite entfernen",
+  Duplicate: "Duplizieren",
+  "Back to preset": "Zurück zur Vorlage",
+  "Undo every change to this layout?": "Alle Änderungen an diesem Layout verwerfen?",
+  "Delete this layout?": "Dieses Layout löschen?",
+  "Send file": "Datei senden",
+  "Load file": "Datei laden",
+  "No room there.": "Dort ist kein Platz.",
+  "No room on this page.": "Auf dieser Seite ist kein Platz.",
+  "No room for another size.": "Kein Platz für eine andere Größe.",
+  "No room for another page.": "Kein Platz für eine weitere Seite.",
+  "No room for another layout.": "Kein Platz für ein weiteres Layout.",
+  "This file is not a MuW layout.": "Diese Datei ist kein MuW-Layout.",
+  "This layout is from a newer MuW: update the app.":
+    "Dieses Layout stammt aus einer neueren MuW-Version: Aktualisiere die App.",
+  "MuW could not read this file.": "MuW konnte diese Datei nicht lesen.",
+  "MuW could not share the file.": "MuW konnte die Datei nicht teilen.",
 };

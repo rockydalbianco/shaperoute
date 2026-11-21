@@ -1,7 +1,17 @@
-import { tLater } from "../i18n";
+import { t, tLater } from "../i18n";
 import { type KeptList, keptList } from "../storage/keptList";
 import type { Units } from "../units/units";
-import { defaultFlightUnits, type FlightUnits, isFlightUnits } from "./flightUnits";
+import {
+  ALTITUDE_UNITS,
+  type AltitudeUnit,
+  defaultFlightUnits,
+  type FlightUnits,
+  isFlightUnits,
+  SPEED_UNITS,
+  type SpeedUnit,
+  VARIO_UNITS,
+  type VarioUnit,
+} from "./flightUnits";
 
 /**
  * The flight screen's layout (TASK-479 part B1, ADR-0388): pages of
@@ -9,7 +19,8 @@ import { defaultFlightUnits, type FlightUnits, isFlightUnits } from "./flightUni
  * pilot's choices kept on the phone, never on the server. Part B1 has the
  * widgets of the numbers; the map (A1), the airspace (E), the turnpoints
  * and the task (D) come with their parts, and with them the «Map» and
- * «Competition» presets. The editor is part B2.
+ * «Competition» presets. Part B2 (the editor) turns the presets into the
+ * pilot's profiles: copies of a preset, changed widget by widget.
  */
 
 /** The grid of a page, upright. */
@@ -58,8 +69,40 @@ export const WIDGET_NAME: Readonly<Record<WidgetId, string>> = {
 
 export const WIDGETS: readonly WidgetId[] = Object.keys(WIDGET_NAME) as WidgetId[];
 
-/** A widget on a page: its corner and its size in grid cells. */
-export type Cell = { widget: WidgetId; col: number; row: number; w: number; h: number };
+/** A unit a widget may show its number in. */
+export type UnitChoice = AltitudeUnit | VarioUnit | SpeedUnit;
+export type UnitKind = "altitude" | "vario" | "speed";
+
+/** The widgets whose number has a unit the pilot may choose, one by one
+ * (part B2); the others have none, or the app's distance unit. */
+export const WIDGET_UNIT_KIND: Readonly<Partial<Record<WidgetId, UnitKind>>> = {
+  altitude: "altitude",
+  aboveTakeoff: "altitude",
+  thermalGain: "altitude",
+  altitudeChart: "altitude",
+  vario: "vario",
+  varioAvg: "vario",
+  thermalAvg: "vario",
+  groundSpeed: "speed",
+  wind: "speed",
+};
+
+export const UNITS_OF_KIND: Readonly<Record<UnitKind, readonly UnitChoice[]>> = {
+  altitude: ALTITUDE_UNITS,
+  vario: VARIO_UNITS,
+  speed: SPEED_UNITS,
+};
+
+/** A widget on a page: its corner and its size in grid cells; `unit` when
+ * the pilot chose one for this widget alone, else the profile's. */
+export type Cell = {
+  widget: WidgetId;
+  col: number;
+  row: number;
+  w: number;
+  h: number;
+  unit?: UnitChoice;
+};
 
 export type Page = readonly Cell[];
 
@@ -160,17 +203,90 @@ export function pageFits(page: Page): boolean {
   return true;
 }
 
+/** Whether `value` is a cell a page can hold. */
+export function isCell(value: unknown): value is Cell {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const one = value as Record<string, unknown>;
+  const whole = (n: unknown) => typeof n === "number" && Number.isInteger(n);
+  if (
+    !WIDGETS.includes(one.widget as WidgetId) ||
+    !whole(one.col) ||
+    !whole(one.row) ||
+    !whole(one.w) ||
+    !whole(one.h)
+  ) {
+    return false;
+  }
+  if (one.unit === undefined) {
+    return true;
+  }
+  const kind = WIDGET_UNIT_KIND[one.widget as WidgetId];
+  return kind !== undefined && UNITS_OF_KIND[kind].includes(one.unit as UnitChoice);
+}
+
+export function isPage(value: unknown): value is Page {
+  return Array.isArray(value) && value.every(isCell) && pageFits(value);
+}
+
+/** At most this many pages in a profile, and this many profiles. */
+export const MAX_PAGES = 5;
+export const MAX_PROFILES = 8;
+
+/** The pilot's own layout: a preset's copy, changed or not. `copy` tells
+ * two copies of one preset apart («XC», «XC 2»). */
+export type Profile = { from: PresetId; copy: number; pages: Page[] };
+
+export function profileOf(preset: PresetId, copy = 1): Profile {
+  return { from: preset, copy, pages: PRESET_PAGES[preset].map((page) => [...page]) };
+}
+
+export function isProfile(value: unknown): value is Profile {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const one = value as Record<string, unknown>;
+  return (
+    PRESETS.includes(one.from as PresetId) &&
+    typeof one.copy === "number" &&
+    Number.isInteger(one.copy) &&
+    one.copy >= 1 &&
+    Array.isArray(one.pages) &&
+    one.pages.length >= 1 &&
+    one.pages.length <= MAX_PAGES &&
+    one.pages.every(isPage)
+  );
+}
+
+/** «XC», «XC 2»: in the words of the app's language. */
+export function profileName(profile: Profile): string {
+  const name = t(PRESET_NAME[profile.from]);
+  return profile.copy > 1 ? `${name} ${profile.copy}` : name;
+}
+
 /** The look of the flight screen: dark, or bright for the sun. */
 export type FlightLook = "dark" | "sun";
 
 export type FlightPrefs = {
-  preset: PresetId;
+  profiles: Profile[];
+  /** The profile on screen, an index in `profiles`. */
+  current: number;
   look: FlightLook;
   units: FlightUnits;
 };
 
 export function defaultFlightPrefs(units: Units): FlightPrefs {
-  return { preset: "thermal", look: "dark", units: defaultFlightUnits(units) };
+  return {
+    profiles: PRESETS.map((preset) => profileOf(preset)),
+    current: 0,
+    look: "dark",
+    units: defaultFlightUnits(units),
+  };
+}
+
+function isLook(value: unknown): value is FlightLook {
+  return value === "dark" || value === "sun";
 }
 
 export function isFlightPrefs(value: unknown): value is FlightPrefs {
@@ -179,27 +295,73 @@ export function isFlightPrefs(value: unknown): value is FlightPrefs {
   }
   const prefs = value as Record<string, unknown>;
   return (
-    PRESETS.includes(prefs.preset as PresetId) &&
-    (prefs.look === "dark" || prefs.look === "sun") &&
+    Array.isArray(prefs.profiles) &&
+    prefs.profiles.length >= 1 &&
+    prefs.profiles.length <= MAX_PROFILES &&
+    prefs.profiles.every(isProfile) &&
+    typeof prefs.current === "number" &&
+    Number.isInteger(prefs.current) &&
+    prefs.current >= 0 &&
+    prefs.current < prefs.profiles.length &&
+    isLook(prefs.look) &&
     isFlightUnits(prefs.units)
   );
 }
 
+/** What part B1 kept: a preset, a look, the units. */
+type KeptB1 = { preset: PresetId; look: FlightLook; units: FlightUnits };
+
+function isKeptB1(value: unknown): value is KeptB1 {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const prefs = value as Record<string, unknown>;
+  return (
+    PRESETS.includes(prefs.preset as PresetId) &&
+    isLook(prefs.look) &&
+    isFlightUnits(prefs.units)
+  );
+}
+
+/** The prefs of B2 from what was kept: as they are, or B1's with its
+ * preset on screen; null when neither. */
+export function upgradeFlightPrefs(value: unknown): FlightPrefs | null {
+  if (isFlightPrefs(value)) {
+    return value;
+  }
+  if (isKeptB1(value)) {
+    return {
+      profiles: PRESETS.map((preset) => profileOf(preset)),
+      current: PRESETS.indexOf(value.preset),
+      look: value.look,
+      units: value.units,
+    };
+  }
+  return null;
+}
+
+/** The pages of the profile on screen. */
+export function pagesOf(prefs: FlightPrefs): readonly Page[] {
+  return prefs.profiles[prefs.current].pages;
+}
+
 export const FLIGHT_SCREEN_FILE = "flight-screen.json";
 
-const kept: KeptList<FlightPrefs> = keptList(FLIGHT_SCREEN_FILE, isFlightPrefs);
+const isKept = (value: unknown): value is unknown => upgradeFlightPrefs(value) !== null;
+
+const kept: KeptList<unknown> = keptList(FLIGHT_SCREEN_FILE, isKept);
 
 /** The pilot's choices on this phone, or the defaults. */
 export function loadFlightPrefs(
   units: Units,
-  list: KeptList<FlightPrefs> = kept,
+  list: KeptList<unknown> = kept,
 ): FlightPrefs {
-  return list.load()[0] ?? defaultFlightPrefs(units);
+  return upgradeFlightPrefs(list.load()[0]) ?? defaultFlightPrefs(units);
 }
 
 export function saveFlightPrefs(
   prefs: FlightPrefs,
-  list: KeptList<FlightPrefs> = kept,
+  list: KeptList<unknown> = kept,
 ): boolean {
   return list.save([prefs]);
 }

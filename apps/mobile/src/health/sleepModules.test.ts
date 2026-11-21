@@ -1,14 +1,14 @@
 /// <reference types="node" />
 
 import { readdirSync, readFileSync, statSync } from "fs";
-import { join } from "path";
+import { join, relative } from "path";
 
+import appJson from "../../app.json";
 import { SLEEP_POSTS_ON, sleepPostsOn, sleepReader } from "./sleepModules";
 
-// TASK-467 part B2, the Coordinatore's condition: until the native build of
-// part C (after version 1.1.0, with the privacy line and the App Privacy
-// card), nothing in `main` reads the sleep from Apple Health, and the sleep
-// in a post is off. Turning either on is part C's change, and this test's.
+// TASK-467 part C: the sleep is on, in the build whose permission text
+// speaks of it. Reading Apple Health stays in two files, and asking for
+// the permission in one place.
 
 const SRC = join(__dirname, "..");
 
@@ -22,40 +22,56 @@ function sourceFiles(directory: string): string[] {
   });
 }
 
-test("the sleep in a post is off", () => {
-  expect(SLEEP_POSTS_ON).toBe(false);
-  expect(sleepPostsOn()).toBe(false);
+/** The code of a file, without what its comments say. */
+function codeOf(path: string): string {
+  return readFileSync(path, "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/.*$/gm, "");
+}
+
+const named = (paths: string[]) => paths.map((path) => relative(SRC, path)).sort();
+
+test("the sleep is on", () => {
+  expect(SLEEP_POSTS_ON).toBe(true);
+  expect(sleepPostsOn()).toBe(true);
 });
 
-test("the phone has no reader of the sleep", () => {
+test("the build that turns it on says in its permission text that it reads the sleep", () => {
+  expect(appJson.expo.ios.infoPlist.NSHealthShareUsageDescription).toMatch(/sleep/);
+});
+
+test("without the native code of Apple Health there is no reader", () => {
+  // Under jest, as in Expo Go and on Android: nothing to read from.
   expect(sleepReader()).toBeNull();
 });
 
-test("no file of the sleep loads the health library or asks to read", () => {
+test("only the reader and the switch load the health library or query it", () => {
   const files = sourceFiles(SRC).filter((path) => /sleep|lastNight/i.test(path));
-  // The files of parts A and B2, at the least.
-  expect(files.length).toBeGreaterThanOrEqual(10);
-  for (const path of files) {
-    const code = readFileSync(path, "utf8")
-      // What a comment says of the library is not a use of it.
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/\/\/.*$/gm, "");
-    expect({ path, loads: /react-native-healthkit/.test(code) }).toEqual({
-      path,
-      loads: false,
-    });
-    expect({
-      path,
-      asks: /requestAuthorization|queryCategorySamples|NitroModules|require\(/.test(
-        code,
-      ),
-    }).toEqual({ path, asks: false });
-  }
+  // The files of parts A, B2, B3 and C, at the least.
+  expect(files.length).toBeGreaterThanOrEqual(15);
+  const loading = files.filter((path) =>
+    /react-native-healthkit|NitroModules|require\(/.test(codeOf(path)),
+  );
+  expect(named(loading)).toEqual(["health/sleepModules.ts"]);
+  const querying = files.filter((path) =>
+    /requestAuthorization|queryCategorySamples/.test(codeOf(path)),
+  );
+  expect(named(querying)).toEqual(["health/appleSleep.ts"]);
 });
 
-test("the only file that names the sleep type of Apple Health is none yet", () => {
-  const named = sourceFiles(SRC).filter((path) =>
+test("only the reader names the sleep type of Apple Health", () => {
+  const naming = sourceFiles(SRC).filter((path) =>
     /HKCategoryTypeIdentifierSleepAnalysis/.test(readFileSync(path, "utf8")),
   );
-  expect(named).toEqual([]);
+  expect(named(naming)).toEqual(["health/appleSleep.ts"]);
+});
+
+test("the permission is asked in one place: the card of the profile", () => {
+  // `reader.ask()` opens the phone's sheet: only at the user's tap.
+  const asking = sourceFiles(SRC).filter(
+    (path) =>
+      /sleep/i.test(readFileSync(path, "utf8")) &&
+      /readOwnNight\(.*\btrue\)/.test(codeOf(path)),
+  );
+  expect(named(asking)).toEqual(["profile/OwnSleep.tsx"]);
 });

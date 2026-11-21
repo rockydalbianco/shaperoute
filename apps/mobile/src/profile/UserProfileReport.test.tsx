@@ -9,6 +9,13 @@ import { forgetBlocked } from "../social/blockedNow";
 import { IslandLayer } from "../ui/IslandLayer";
 import { UserProfilePage } from "./UserProfilePage";
 
+// The night a member shares has its own tests (UserProfileSleep.test.tsx):
+// here it asks nothing, so the answers stay in their order.
+jest.mock("../health/sleepModules", () => ({
+  ...jest.requireActual("../health/sleepModules"),
+  sleepPostsOn: () => false,
+}));
+
 jest.mock(
   "react-native-safe-area-context",
   () => jest.requireActual("react-native-safe-area-context/jest/mock").default,

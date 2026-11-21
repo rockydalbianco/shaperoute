@@ -2947,7 +2947,7 @@ export const FR: Table = {
   "Your live becomes the post of this activity.":
     "Ton live devient la publication de cette activité.",
   "Don't post": "Ne pas publier",
-  // src/air/ (TASK-479 part B1: the flight screen; the notices approved by the user on 2026-11-21)
+  // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
   "Flight screen": "Écran de vol",
   "GPS altitude": "Altitude GPS",
   "Above takeoff": "Au-dessus du déco",

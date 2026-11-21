@@ -2928,7 +2928,7 @@ export const IT: Table = {
   "Your live becomes the post of this activity.":
     "La tua live diventa il post di questa attività.",
   "Don't post": "Non pubblicare",
-  // src/air/ (TASK-479 part B1: the flight screen; the notices approved by the user on 2026-11-21)
+  // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
   "Flight screen": "Schermata di volo",
   "GPS altitude": "Quota GPS",
   "Above takeoff": "Sopra il decollo",

@@ -93,6 +93,10 @@ Tre schermi:
    riga di testo: i campi restano compilati coi valori dell'ultima volta.
 3. Un esercizio col nome libero: lo storico unisce le serie con lo stesso
    nome, senza badare a maiuscole e spazi (proposta).
+   **Risposta dell'utente, 2026-11-22: «Sì, uniscili».** Due nomi sono lo
+   stesso esercizio se coincidono dopo aver tolto gli spazi in testa e in
+   coda, ridotto gli spazi doppi a uno e messo tutto in minuscolo; nomi
+   diversi davvero restano separati.
 4. «History» anche fuori dall'allenamento, dalla guida «i» (proposta).
 
 ## File toccati

@@ -1,7 +1,8 @@
 """A race on foot and in the air opened whole (TASK-305 part R6d,
 ADR-0375): GET /me/activities/{key} gives its parts in the air as
 stretches of its track and the two kinds added up, so that the app draws
-the line in two colours and shows the two times; null for any other run."""
+the line in two colours and shows the two times; left out for any other
+run."""
 
 from __future__ import annotations
 
@@ -67,7 +68,7 @@ def _stats(app: TestClient, headers: Headers, parts: list[dict[str, Any]]) -> No
 def _flight(app: TestClient, headers: Headers) -> Any:
     answer = app.get(f"/me/activities/{KEY}", headers=headers)
     assert answer.status_code == 200, answer.text
-    return answer.json()["flight"]
+    return answer.json().get("flight")
 
 
 # --- Without a database ---
@@ -128,4 +129,5 @@ def test_another_sport_has_none(client: TestClient) -> None:  # noqa: F811
     me = signed_up(client)
     saved(client, me)
     _stats(client, me, RACE)
-    assert _flight(client, me) is None
+    # Left out of the answer, as the examples of before have it.
+    assert "flight" not in client.get(f"/me/activities/{KEY}", headers=me).json()

@@ -49,7 +49,15 @@ from fastapi import (
 )
 from psycopg.rows import DictRow
 from psycopg.types.json import Jsonb
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 from route_engine.geo import haversine_m
 from route_engine.pen_up import walks_problem
 from route_engine.track_score import (
@@ -431,9 +439,15 @@ class ActivityDetailBody(BaseModel):
     written before."""
     flight: ActivityFlightBody | None = None
     """A race on foot and in the air (TASK-305 part R6d): its parts in the
-    air on `track` and the two kinds added up; null for any other run, and
-    for a flight without parts on foot. Always answered; the default is for
-    the examples written before."""
+    air on `track` and the two kinds added up. Left out of the answer for
+    any other run, and for a flight without parts on foot."""
+
+    @model_serializer(mode="wrap")
+    def _without_flight(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        answer: dict[str, Any] = handler(self)
+        if answer.get("flight") is None:
+            answer.pop("flight", None)
+        return answer
 
 
 # --- The place a run starts from ---

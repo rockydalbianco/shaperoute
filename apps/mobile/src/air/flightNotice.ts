@@ -6,17 +6,19 @@ import { type KeptList, keptList } from "../storage/keptList";
 
 /**
  * The notice before the first flight recorded on this phone (TASK-305 part
- * R2, ADR-0375; the words are the user's, approved on 2026-11-12): MuW is
- * not a flight instrument. Once read, never again on this phone.
+ * R2, ADR-0375): MuW is not a flight instrument. Once read, never again on
+ * this phone. With the flight screen (TASK-479 part B1, ADR-0388) its words
+ * are the ones the user approved on 2026-11-21 (TASK-479, «Gli avvisi» 1),
+ * and a phone that read the words of R2 reads the new ones once.
  */
 
 export const FLIGHT_NOTICE_FILE = "flight-notice.json";
 export const FLIGHT_NOTICE_TITLE = tLater("Before you fly");
 export const FLIGHT_NOTICE = tLater(
-  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.",
+  "MuW is not a certified flight instrument. Its numbers come from the phone's GPS: they can be late or wrong. Fly with your licence and your judgement, and keep a backup instrument.",
 );
-/** What the file keeps once the notice is read. */
-const READ = "read";
+/** What the file keeps once the notice is read: "read" was R2's words. */
+const READ = "read-2";
 
 function isRead(value: unknown): value is string {
   return value === READ;

@@ -63,6 +63,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'utente. File: — · `tasks/TASK-311.md`
 - **TASK-312 — Attività da altre app e post di sole foto** · A e B in `main`;
   poi C, D, E. File: — · `tasks/TASK-312.md`
+  **2026-11-21**: C1 (API dei post di sole foto, migrazione `0080`) in `main` (#1347, ADR-0272 precisazione C); server col passo del Coordinatore e il sì dell'utente; poi C2 (app), D, E.
 - **TASK-316 — Explore pronto prima** · A e B in `main`; C (server,
   `draw_examples`) col sì dell'utente. File: — · `tasks/TASK-316.md`
 - **TASK-321 — L'attività in Apple Salute e Health Connect** · A in `main`,
@@ -141,6 +142,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B e C («My image», #1067) in `main`, escono col prossimo OTA di
   produzione; prossime D («Together») ed E (telefono: anche il picker di
   sistema). File: — · `tasks/TASK-417.md`
+  **2026-11-21**: D1 (server di «Together», #1339) in `main`, sul server
+  col passo 15; poi D2 (l'app, privacy dall'utente) ed E.
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
   0, A, B in produzione; C1 (#1096, OTA 5), C2 (#1098), C2b (#1110) e C3
   (#1123, calorie in rosso) in `main`. Restano: il server di C2b (passo 7)
@@ -192,6 +195,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-12, 12:28Z**: B1 in produzione — server a 1546 (passo 10), app nell'OTA 12.
   **2026-11-18**: **B2** (ADR-0366, precisazione): 148 uscite in bici da 20–30 km, otto forme lette a occhio, 29 città italiane; catalogo a 1694, server in `main` (#1317), passo 14 e OTA con la #1248 (bozza) col sì dell'utente. Poi le città estere, B3 (40–50 km) e C. File (#1248): `apps/mobile/src/explore/{recommendedRoutes.ts,catalogList.ts,ExploreScreen.tsx}`, `apps/mobile/App.tsx` (una riga)
   **2026-11-21**: B2 sul server (passo 14, 06:43Z, catalogo a 1694, le corse identiche per chi non chiede `activity`); app in `main` (#1248, `ab51d0fd`): le uscite si vedono con lo sport «Bike» dopo l'OTA 18 (sì dell'utente). Città estere: secondo giro in corso sul Mac (estratti Geofabrik, limite 4 GB del pianificatore), poi una PR del solo catalogo.
+  **2026-11-21, sera**: B2 **in produzione** con l'OTA 18 (`593c6fbe`): le uscite in bici delle 29 città italiane in «Explore» con lo sport «Bike»; l'utente l'ha provata sul telefono («funziona»). Città estere: 12 su 32 disegnate, il giro è in pausa per la coda del simulatore (via del Coordinatore).
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
@@ -259,8 +263,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
   l'OTA 14; A3 pista di vetro (#1276) e A4a chip (#1290) in produzione al
-  più tardi con l'OTA 17. Prossima A4 (card), lista al Coordinatore prima
-  del codice; B dopo la 1.1.0. File: — · `tasks/TASK-469.md`
+  più tardi con l'OTA 17; A4b card di Explore (#1333) e A4c card del Feed
+  (#1344) in `main`. Prossima A5, lista al Coordinatore prima del codice;
+  B dopo la 1.1.0. File: — · `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);

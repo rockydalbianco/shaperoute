@@ -481,6 +481,7 @@ lasciando le righe d'indice.
 
 - ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
 - ADR-0345, precisazione B — La mia immagine nel video: i fotogrammi in RGBA entro 2 MiB, le scelte sotto la riga, il cartellino sul 3D · 2026-11-10 · Attiva
+- ADR-0345, precisazione D1 — «Together» sul server: la stessa corsa a metà del tempo e 2 km, i secondi dalla prima partenza, 600 punti scelti nel tempo · 2026-11-21 · Attiva
 - ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app · 2026-11-08 · Accettata
 - ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono · 2026-11-08 · Accettata
 - ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
@@ -568,7 +569,62 @@ lasciando le righe d'indice.
 - ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity` (senza: le corse), le zone da un estratto, entrano le otto forme lette a occhio · 2026-11-18 · Attiva
 - ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte · 2026-11-12 · Attiva
 
+- ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos` · 2026-11-21 · Attiva
+
 ## Voci nuove
+
+## ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos`
+
+**Stato**: Attiva · 2026-11-21 · TASK-312 parte C1 (#1347 in `main`,
+`cfd5e956`; migrazione `0080_photo_posts.sql`). Post di sole foto, «Only
+me» assente, «Imported», fuori da gioco e concorso: **scelte dell'utente**
+(2026-10-27/28). Testi «Up to 10 photos, also from Instagram», partenza
+dall'ultima scelta e riga della privacy: **scelte dell'utente** del
+2026-11-21. Il modo è **deciso dall'agente su delega dell'utente**, con le
+liste dei file approvate dal Coordinatore.
+
+**Contesto**: il punto 6 di ADR-0272 proponeva un disegno senza corsa, da
+verificare sul codice. Le query che leggono l'autore con `JOIN runs` sono
+51, in 36 moduli.
+
+**Decisione**:
+
+1. **Un disegno senza corsa**, non una corsa finta: chi parte da `runs`
+   (totali, record, calendario, gioco, badge, sport, concorso, «My
+   activities») non lo vede mai, senza un filtro per lettore.
+2. **`drawings.user_id`**, riempito da `runs` per le righe di prima:
+   `drawing_seen_sql` e `shown_sql` leggono lì l'autore, così blocchi,
+   nascosti, «Followers», commenti, reazioni, segnalazioni, push,
+   campanello ed email valgono senza regole nuove. Cambiano solo i
+   lettori che partono da un disegno (`LEFT JOIN runs` o `d.user_id`).
+3. **Il telefono fa la chiave** (`drawings.key`, unica per account), come
+   per una corsa: `PUT /me/photo-posts/{key}` rimandato senza rete resta
+   un post. Foto (1–10, nessuna mappa) e ordine con lo stesso codice dei
+   disegni.
+4. **Pubblicato con la prima foto**: `published_at` vuoto finché non ce
+   n'è una, e di nuovo vuoto senza foto. I taggati ricevono la push quando
+   è pubblicato. Il vincolo di 0014 fra `visibility` e `published_at` vale
+   solo con una corsa; `drawing_seen_sql` e `shown_sql` per gli altri
+   vogliono `published_at`.
+5. **Solo le app che dicono `photos` in `X-MuW-Reads`** lo ricevono
+   (`Reads.drawings_sql()`): il server esce prima dell'app senza cambiare
+   niente di quello che si vede.
+6. **Nelle risposte** `source: "photos"`, `activity` e i campi della corsa
+   `null`, 0 metri e 0 secondi, `started_at` la pubblicazione. In
+   `shared-types` solo tipi nuovi (`PhotoDrawing`, `PhotoFeedPost`,
+   `PhotoDrawingDetail`, `isPhotoPost`).
+
+**Alternative scartate**: `runs.source = 'photos'` (ogni lettore di
+`runs` da filtrare, e «My activities» lo mostrerebbe); una tabella a sé
+(reazioni, commenti, segnalazioni da rifare); creare il post con le foto
+in una sola richiesta (la coda del telefono manda una foto alla volta).
+
+**Conseguenze**: per ora un post di sole foto non si trova con la ricerca
+dei disegni, non ha link pubblico e non si manda in chat: partono tutti da
+una corsa, e sono dopo, se l'utente li vuole. Il ritorno indietro del solo
+codice vuole prima `user_id` senza `NOT NULL`. Il server col passo del
+Coordinatore e il sì dell'utente; poi C2 (l'app) con la riga della privacy
+approvata.
 
 ## ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte
 
@@ -1687,6 +1743,16 @@ piatto. Lo stesso in `PlayTabs`. Il fondo passato da chi chiama vince.
 dà la luce interna in cima e l'ombra a 2 pt e non tocca i colori; la
 usano i chip delle città e `FilterChip`. Il giallo del chip scelto resta
 (TASK-344, scelta di prodotto).
+**A4b (#1333)**: il raggio delle card del vetro è un token nuovo,
+`radius.card` = 28 (`xl` resta 20 per chi lo usa). Il bordo della card è
+una vista sopra la card, non un'ombra della card stessa: un'ombra interna
+starebbe sotto il disegno e la foto, che la coprirebbero.
+**A4c (#1344)**: nel Feed la sfumatura `Scrim` sotto le parole di una foto
+lascia il posto a una capsula di vetro posata (`segmentTrackFace`); la
+forma a capsula intera è scelta dell'utente (2026-11-21). Le parole
+prendono i colori del testo; un test controlla anche le calorie a 4,5:1
+sul vetro. `Scrim` e i token `onScrim` restano per gli altri che li
+usano.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 
@@ -4965,3 +5031,37 @@ tratti li manda il telefono come `ski_parts` dei run-stats (TASK-424 C2b,
 **Conseguenze**: nessuna migrazione; sul server col passo 7, insieme alla
 C2b di TASK-424.
 
+## ADR-0345, precisazione D1 — «Together» sul server: la stessa corsa a metà del tempo e 2 km, i secondi dalla prima partenza, 600 punti scelti nel tempo
+
+**Stato**: Attiva · 2026-11-21 · TASK-417 parte D1 (#1339, 11f354f1) ·
+deciso dall'agente su delega dell'utente; le scelte di prodotto restano le
+1–5 del task file (3: bastano tag e visibilità; 4: fino a 4 persone)
+
+- **Un modulo nuovo**, `together.py`, con l'indirizzo
+  `GET /drawings/{id}/together`, invece di un campo in `GET /drawings/{id}`:
+  i tempi escono solo da qui, solo all'autore, e il dettaglio di un disegno
+  resta senza tempi per tutti.
+- **La stessa corsa**: le soglie della proposta, prese così come sono.
+  Almeno il 50 % del tempo trascorso della più corta in comune (pause
+  comprese, il tempo dalla prima all'ultima posizione), e i primi punti a
+  meno di 2000 m. Il database sceglie prima le corse che si sovrappongono
+  nel tempo (al più 20 per persona), il resto lo controlla Python; fra più
+  corse buone vince quella con più tempo in comune.
+- **Chi la può vedere**: la corsa di una persona taggata entra solo col suo
+  disegno, e solo se `drawing_seen_sql` lo dà all'autore. Una corsa senza
+  disegno è privata, quindi non entra.
+- **L'orologio**: i secondi di ognuno sono il suo M più lo scarto fra la sua
+  partenza e la prima del gruppo, al decimo di secondo. Lo scarto fra le
+  partenze resta (serve al video); l'ora e la data no.
+- **I 600 punti**: scelti nel tempo, non con Douglas-Peucker. Una scelta
+  sulla forma toglierebbe i punti dei rettilinei, e il video li
+  interpolerebbe a passo costante dove il passo vero cambiava. Sempre
+  tenuti il primo, l'ultimo e i due bordi di ogni pausa; gli altri sono i
+  più vicini a secondi equidistanti. Se i bordi delle pause sono più di
+  600, se ne tengono 600 a distanza uguale, con i due estremi.
+- **Nessun limite di frequenza nuovo**: l’indirizzo legge al più 1 + 10×20
+  corse (al più 10 tag, 20 corse ciascuno), di un post dell’autore stesso.
+
+**Conseguenze**: nessuna migrazione; sul server col passo 15. L'app (D2)
+legge `fixtures/together.json`; un'API di prima risponde `404`, e l'app
+tiene spenta la riga «Together».

@@ -283,6 +283,14 @@ salita». «Ricordamelo alle 8» all'ultimo passo: una notifica del telefono
 alle 8 nei giorni dei piani (`planReminder.ts`). `TargetSteps.tsx`,
 `outingDay.ts`, `PlanTodayCard.tsx`, `OutingDayEditor.tsx`.
 
+**«Mancano 12,4 km» mentre si registra** (TASK-461 B2c). In un giorno di un
+piano, registrando libero nello sport di quel giorno (anche una corsa del
+piano senza percorso), la schermata della corsa mostra la barra di un
+percorso con quanto manca alla distanza del giorno («mancano 12,4 km») o,
+in un giorno di salita, ai suoi metri («mancano 230 m di salita»). Raggiunta
+la meta la barra sparisce. Letto dai piani tenuti sul telefono, senza
+chiedere all'API (`gym/planToGo.ts`, `screens/RunDashboard.tsx`).
+
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
 In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una

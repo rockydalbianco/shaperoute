@@ -2098,6 +2098,8 @@ export const DE: Table = {
   SW: "SW",
   W: "W",
   NW: "NW",
+  // src/screens/RunPanel.tsx (TASK-461 B2c, approved 2026-11-11)
+  "{m} m of climb to go": "noch {m} Höhenmeter",
   "{distance} to go": "noch {distance}",
   "Saved to My activities": "In Meine Aktivitäten gespeichert",
   // src/social/ContactsFriends.tsx (TASK-262 C)
@@ -2926,6 +2928,8 @@ export const DE: Table = {
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Bergsteigen",
+  "No shapes up a mountain: MuW records your day.":
+    "Keine Formen am Berg: MuW zeichnet deinen Tag auf.",
   // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
   Stretching: "Dehnen",
   "Before you climb": "Bevor du aufsteigst",

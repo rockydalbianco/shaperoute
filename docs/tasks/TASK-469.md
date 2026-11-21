@@ -1,12 +1,14 @@
 # TASK-469 — Il look Liquid Glass
 
 **Stato**: In corso (0 fatta: «Capsula»; A1 e A2 in produzione con l'OTA 14;
-A3 e A4a in produzione al più tardi con l'OTA 17; prossima A4, le card)
+A3 e A4a in produzione al più tardi con l'OTA 17; A4b in `main`, col
+prossimo OTA dopo il 19; prossima A4c, le card del Feed)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
-`feat/TASK-469-a4a-glass-chips` #1290; documenti `docs/TASK-469-a-done`
-#1270, `docs/TASK-469-a3-done` #1287, `docs/TASK-469-a4a-done` questa)
+`feat/TASK-469-a4a-glass-chips` #1290, `feat/TASK-469-a4b-explore-cards`
+#1333; documenti `docs/TASK-469-a-done` #1270, `docs/TASK-469-a3-done`
+#1287, `docs/TASK-469-a4a-done` #1329, `docs/TASK-469-a4b-done` questa)
 
 ## Obiettivo
 
@@ -55,7 +57,13 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
     (`FilterChip`), coi loro colori; il giallo del chip scelto resta
     (TASK-344). Gli altri chip sparsi (calendario, piscina, pagaia,
     pannello del percorso, Style) restano per una fetta dopo;
-  - A4 le card di Explore e Feed (superfici stratificate, raggi più grandi);
+  - **A4b fatta** (#1333, in `main` cc58c258): le card di Explore
+    (`RouteCard`) col raggio 28 (`radius.card`, token nuovo), un bordo di
+    vetro disegnato sopra la card (`cardEdge`) e la percentuale in alto a
+    destra su una capsula di vetro posata; le parole restano sotto il
+    disegno;
+  - A4c le card del Feed (`FeedPost`): raggio 28, titolo e numeri sopra la
+    foto su una lastra di vetro al posto di `Scrim`;
   - A5 l'header che si dissolve allo scroll (`AppHeader`);
   - A6 Settings (dopo TASK-457, che tiene `src/profile/**`);
   - A7 il resto (fogli, isola, chip), da elencare dopo A6.
@@ -138,6 +146,13 @@ Spuntati per A1 e A2 (2026-11-12):
 - A4a (#1290): `apps/mobile/src/ui/glassRaise.ts`,
   `src/ui/glassRaise.test.tsx` (nuovi), `src/explore/ExploreTools.tsx`,
   `src/search/FilterChip.tsx`.
+- A4b (#1333): `apps/mobile/src/theme/tokens.ts` (solo `radius.card`),
+  `src/explore/RouteCard.tsx`, `src/explore/RouteCardGlass.test.tsx`
+  (nuovo), `src/explore/RouteCard.test.tsx` (una riga, `radius.xl` →
+  `radius.card`, col sì del Coordinatore).
+- La PR di documenti di A4b: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/*-A4b-*.jpg` (nuove), `docs/STATUS.md`,
+  `docs/DECISIONS.md`, `docs/UI.md`.
 - La PR di documenti di A4a: `docs/tasks/TASK-469.md`,
   `docs/tasks/TASK-469/*-A4a-*.jpg`, `a4a-*.jpg` (nuove), `docs/STATUS.md`,
   `docs/DECISIONS.md`, `docs/UI.md`.
@@ -183,6 +198,11 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   turno di simulatore (Explore e ricerca, scuro e chiaro, «Riduci
   trasparenza»); l'utente approva («Sì, vai»). #1290 in `main` 33c12fb1.
 - **2026-11-21**: PR di documenti di A4a; worktree di A1–A4a rimossi.
+- **2026-11-21**: A4b (#1333): lista e una riga di test col sì del
+  Coordinatore, codice, turno di simulatore (Explore con gli esempi di New
+  York, che mostrano la percentuale); l'utente approva («Sì, vai»). #1333
+  in `main` cc58c258, col prossimo OTA dopo il 19. Il Coordinatore attivo
+  è ora «Coordinatore (fork 2)».
 
 ## Schermate prima/dopo
 
@@ -233,8 +253,16 @@ Con «Riduci trasparenza» i chip restano piatti e la barra è `surface`
 
 ![A4a, Riduci trasparenza](TASK-469/a4a-dark-reduce-transparency-explore.jpg)
 
+**A4b, le card di Explore** — angoli a 28 e un filo di vetro intorno
+(netto in scuro, leggero in chiaro); la percentuale su una capsula di
+vetro, sotto cui la linea gialla si intravede appena. Con «Riduci
+trasparenza» la card è come prima, la barra `surface`:
+
+![A4b, le card da vicino](TASK-469/TASK-469-A4b-card-da-vicino.jpg)
+![A4b, prima e dopo, e Riduci trasparenza](TASK-469/TASK-469-A4b-prima-dopo.jpg)
+
 ## Esito
 
 *(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14); A3 e A4a
 in `main` dal 2026-11-12, in produzione al più tardi con l'OTA 17
-(2026-11-18).
+(2026-11-18); A4b in `main` dal 2026-11-21, col prossimo OTA.

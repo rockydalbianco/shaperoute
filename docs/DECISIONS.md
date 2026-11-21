@@ -1687,6 +1687,10 @@ piatto. Lo stesso in `PlayTabs`. Il fondo passato da chi chiama vince.
 dà la luce interna in cima e l'ombra a 2 pt e non tocca i colori; la
 usano i chip delle città e `FilterChip`. Il giallo del chip scelto resta
 (TASK-344, scelta di prodotto).
+**A4b (#1333)**: il raggio delle card del vetro è un token nuovo,
+`radius.card` = 28 (`xl` resta 20 per chi lo usa). Il bordo della card è
+una vista sopra la card, non un'ombra della card stessa: un'ombra interna
+starebbe sotto il disegno e la foto, che la coprirebbero.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

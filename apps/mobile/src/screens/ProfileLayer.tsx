@@ -467,7 +467,6 @@ export function ProfileLayer({ apiUrl, children }: Props) {
       gallery opens over it, and back comes to it. */}
               <FollowsContext.Provider value={followsDoor}>
                 <ContestPageHost />
-                <GroupRunPageHost />
               </FollowsContext.Provider>
               {people !== null && (
                 <PeopleScreen
@@ -505,6 +504,11 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                   />
                 </FollowsContext.Provider>
               )}
+              {/* Over the profiles: a group run opened from a member's
+      list comes over it, and back goes to it (TASK-309 part B). */}
+              <FollowsContext.Provider value={followsDoor}>
+                <GroupRunPageHost />
+              </FollowsContext.Provider>
               {/* Over everything: opened from a profile, «Profile» or a
       notification, and closed back to it (TASK-319). */}
               <MessagesOverlay />

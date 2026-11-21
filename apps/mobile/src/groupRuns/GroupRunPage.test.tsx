@@ -157,3 +157,38 @@ test("the route on the map is the group run's, point for point", () => {
   expect(favorite.title).toBe(RUN.title);
   expect(favorite.id).toBe(`group-run-${RUN.id}`);
 });
+
+test("a name closes the page and opens the member's profile over the app", async () => {
+  const { fetchFn } = api(OTHERS);
+  const openProfile = jest.fn();
+  const onBack = jest.fn();
+  const state: AccountState = { status: "signedIn", session: session as Session };
+  await render(
+    <SafeAreaProvider
+      initialMetrics={{
+        frame: { x: 0, y: 0, width: 390, height: 844 },
+        insets: { top: 0, left: 0, right: 0, bottom: 0 },
+      }}
+    >
+      <FollowsContext.Provider
+        value={{
+          apiUrl: "http://api",
+          account: { state, sessionEnded: () => {} },
+          openProfile,
+        }}
+      >
+        <GroupRunPage
+          groupRunId={RUN.id}
+          onBack={onBack}
+          fetchFn={fetchFn}
+          apiKey={null}
+        />
+      </FollowsContext.Provider>
+    </SafeAreaProvider>,
+  );
+  await fireEvent.press(
+    await screen.findByRole("button", { name: "adam.trento's profile" }),
+  );
+  expect(onBack).toHaveBeenCalled();
+  expect(openProfile).toHaveBeenCalledWith(OTHERS.organiser);
+});

@@ -83,7 +83,13 @@ type Props = {
  */
 export function GroupRunPage({ groupRunId, onBack, fetchFn, apiKey }: Props) {
   const insets = useSafeAreaInsets();
-  const { apiUrl, account, openProfile } = useFollowsDoor();
+  const { apiUrl, account, openProfile: showProfile } = useFollowsDoor();
+  // A name opens the member's profile in place of the page: the page lies
+  // over the profiles, so it goes first.
+  const openProfile = (person: Person) => {
+    onBack();
+    showProfile(person);
+  };
   const favorites = useFavoritesDoor();
   const { state } = account;
   const signedIn = state.status === "signedIn";

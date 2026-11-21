@@ -92,6 +92,33 @@ test("too many requests wait as long as the API says; a failure asks again a few
   assert.equal(RETRY_AFTER_MS.length, 3);
 });
 
+test("when the API still does not answer the page says so and offers to ask again", () => {
+  // The words the user approved on 2026-11-21; «Try again» as the app says it.
+  assert.equal(TEXTS.en.failed, "We couldn't load this drawing.");
+  assert.equal(TEXTS.en.retry, "Try again");
+  assert.equal(TEXTS.it.failed, "Non siamo riusciti a caricare questo disegno.");
+  for (const language of ["it", "de", "fr", "es"]) {
+    const table = read(REPO, "apps", "mobile", "src", "i18n", `${language}.ts`);
+    assert.ok(table.includes(`"Try again": "${TEXTS[language].retry}"`), language);
+    // Not the words of a drawing that is gone: it may well be there.
+    assert.notEqual(TEXTS[language].failed, TEXTS[language].gone, language);
+  }
+  const script = read(PAGE, "post.js");
+  // The button is the script's own, on the page only while it is there to
+  // press: the page as it comes has none to show by mistake.
+  assert.ok(!read(PAGE, "index.html").includes("<button"));
+  assert.match(script, /again\.className = "button post__again";/);
+  assert.match(script, /if \(retry\) \{\s*facts\.after\(again\);\s*\} else \{\s*again\.remove\(\);/);
+  // Only after the last wait, and the button starts the asking over.
+  assert.match(
+    script,
+    /attempt < RETRY_AFTER_MS\.length\) \{[^}]*\} else \{[^}]*showNothing\(text\.failed, true\);/,
+  );
+  assert.match(script, /again\.addEventListener\("click", start\);/);
+  // A drawing that came, or a link that opens none, has no button.
+  assert.match(script, /function showPost\(post\) \{\s*again\.remove\(\);/);
+});
+
 test("the words are the approved ones, in the five languages", () => {
   assert.equal(TEXTS.en.by, "{user} drew this on MuW");
   assert.equal(TEXTS.en.get, "Get MuW");

@@ -185,7 +185,7 @@ lascia leggere `/post` solo a `https://getmuw.app` (CORS).
 | `p/index.html` | la pagina |
 | `p/view.js` | cosa mostrare, senza DOM: l'id, la richiesta, cosa diventa una risposta, la riga sotto il nome, la linea per la mappa (funzioni pure, provate dai test con la fixture `post-link.json`) |
 | `p/post.js` | la pagina e la mappa |
-| `p/texts.js` | i tre testi approvati il 2026-11-12 in cinque lingue, e i nomi degli sport, quelli dell'app |
+| `p/texts.js` | i testi approvati (tre il 2026-11-12, due il 2026-11-21) in cinque lingue, e i nomi degli sport, quelli dell'app |
 | `p/post.css` | il poco che è solo suo |
 | `p/link-card.png` | l'immagine dell'anteprima del link (1200×630), disegnata da `tools/link-card.html` |
 
@@ -207,9 +207,12 @@ lascia leggere `/post` solo a `https://getmuw.app` (CORS).
   «Links to my posts», un id che non c'è: l'API risponde uguale per tutti),
   per un indirizzo senza un id valido e per una risposta che non è un
   disegno.
-- **Se l'API non risponde**: la pagina riprova dopo 2, 5 e 10 secondi e poi
-  resta com'è, senza dire niente di un disegno di cui non sa niente; a un
-  `429` aspetta quanto dice `Retry-After`.
+- **Se l'API non risponde**: la pagina riprova dopo 2, 5 e 10 secondi,
+  senza dire niente di un disegno di cui non sa niente; se ancora non ha
+  risposta dice «We couldn't load this drawing.» con il pulsante «Try
+  again», che ricomincia da capo (testi approvati il 2026-11-21, nelle
+  cinque lingue; non è la frase del disegno che non c'è più, perché il
+  disegno può esserci). A un `429` aspetta quanto dice `Retry-After`.
 - **Non va nei motori di ricerca** (`noindex, nofollow, noarchive` nella
   pagina, `X-Robots-Tag` nella risposta dell'API), non manda da dove si
   arriva (`no-referrer`) e non tiene niente sul dispositivo. Da fuori

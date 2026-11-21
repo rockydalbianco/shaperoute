@@ -131,6 +131,8 @@ senza mostrarlo a chi non potrebbe vederlo.
 | App di prima | «[Post]» |
 | Impostazioni, interruttore (acceso all'inizio) | «Links to my posts» · «People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.» |
 | Pagina web | «{user} drew this on MuW» · «Get MuW» · «This drawing is no longer available.» |
+| Pagina web, se l'API non risponde (approvati il 2026-11-21, «Sì, con questi testi») | «We couldn't load this drawing.» · «Try again» |
+| Anteprima del link nelle app di chat (approvati il 2026-11-21, «Approvo così») | «A drawing on MuW» · «Open the link to see the line on the map.» |
 
 **La frase della privacy, approvata il 2026-11-12 («Approvo così»)**, da
 aggiungere dopo quella su «Everyone» e «Followers», nell'app e sul sito

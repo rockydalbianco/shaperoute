@@ -1,6 +1,6 @@
 # TASK-483 — Lo storico di ogni esercizio in palestra
 
-**Stato**: In corso (parte 0, solo documenti: le domande all'utente)
+**Stato**: In corso (parte 0 chiusa il 2026-11-22; poi A server, B app)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-483-exercise-history`
 **Dipende da**: TASK-385 (la palestra, le serie salvate), TASK-411 (la
@@ -130,3 +130,6 @@ elenchi delle parti A e B vanno al Coordinatore prima del codice.
   push), passo sul server col sì dell'utente, B con l'elenco dei file
   prima del codice e il simulatore su «simulatore tuo». Proposta in tre
   schermi mostrata all'utente; domanda 1 in attesa.
+- 2026-11-22: risposte 1–4 dell'utente («Sì, così», «Sì, questa regola»,
+  «Sì, uniscili», «Sì, anche fuori»); parte 0 chiusa, ADR-0392 scritto.
+  Prossimo: l'elenco dei file della parte A al Coordinatore.

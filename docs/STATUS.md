@@ -63,6 +63,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'utente. File: — · `tasks/TASK-311.md`
 - **TASK-312 — Attività da altre app e post di sole foto** · A e B in `main`;
   poi C, D, E. File: — · `tasks/TASK-312.md`
+  **2026-11-21**: C1 (API dei post di sole foto, migrazione `0080`) in `main` (#1347, ADR-0272 precisazione C); server col passo del Coordinatore e il sì dell'utente; poi C2 (app), D, E.
 - **TASK-316 — Explore pronto prima** · A e B in `main`; C (server,
   `draw_examples`) col sì dell'utente. File: — · `tasks/TASK-316.md`
 - **TASK-321 — L'attività in Apple Salute e Health Connect** · A in `main`,

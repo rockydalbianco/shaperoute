@@ -3010,4 +3010,13 @@ export const ES: Table = {
     "Este diseño es de un MuW más reciente: actualiza la app.",
   "MuW could not read this file.": "MuW no pudo leer este archivo.",
   "MuW could not share the file.": "MuW no pudo compartir el archivo.",
+  // src/air/ (TASK-479 part C: the vario's sound)
+  "Vario sound": "Sonido del vario",
+  "Beeps from": "Pitidos desde",
+  "Sink tone below": "Tono de descenso bajo",
+  Volume: "Volumen",
+  "From GPS: the sound comes 1–2 s after the climb.":
+    "Desde el GPS: el sonido llega 1–2 s después del ascenso.",
+  "Mute the vario": "Silenciar el vario",
+  "Turn the vario sound on": "Activar el sonido del vario",
 };

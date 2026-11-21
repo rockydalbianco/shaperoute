@@ -40,7 +40,7 @@ type Editing = { kind: "new" } | { kind: "item"; item: Gear } | null;
 /**
  * The page of «Gear» (TASK-486 part B, ADR-0393): the items in use, then
  * the retired ones, each with its photo or its kind's emoji, its name and
- * its totals; «Add gear» on top. A tap opens the item to change it.
+ * its totals; «Add» on top. A tap opens the item to change it.
  */
 export function GearPage({ visible, onClose, ...rest }: Props) {
   return (
@@ -85,7 +85,7 @@ function Page({
           onPress={() => setEditing({ kind: "new" })}
           accessibilityRole="button"
         >
-          <Text style={styles.addText}>{t("Add gear")}</Text>
+          <Text style={styles.addText}>{t("Add")}</Text>
         </Tap>
       </View>
       <ScrollView

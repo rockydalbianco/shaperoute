@@ -75,7 +75,7 @@ test("a new item is sent whole and the list is read again", async () => {
   );
   await show(fetchFn);
   await fireEvent.press(await screen.findByLabelText("Gear"));
-  await fireEvent.press(await screen.findByText("Add gear"));
+  await fireEvent.press(await screen.findByText("Add"));
   await fireEvent.changeText(screen.getByLabelText("Brand"), "Nike");
   await fireEvent.changeText(screen.getByLabelText("Model"), "Pegasus 41");
   await fireEvent.changeText(screen.getByLabelText("Month bought"), "3");
@@ -105,7 +105,7 @@ test("without a brand nothing is sent", async () => {
   const fetchFn: jest.Mock = answers({ status: 200, body: { gear: [] } });
   await show(fetchFn);
   await fireEvent.press(await screen.findByLabelText("Gear"));
-  await fireEvent.press(await screen.findByText("Add gear"));
+  await fireEvent.press(await screen.findByText("Add"));
   await fireEvent.press(screen.getByText("Save"));
   expect(await screen.findByText("Say the brand.")).toBeOnTheScreen();
   expect(fetchFn).toHaveBeenCalledTimes(1);
@@ -118,7 +118,7 @@ test("a word the filter refuses is said in the app's words", async () => {
   );
   await show(fetchFn);
   await fireEvent.press(await screen.findByLabelText("Gear"));
-  await fireEvent.press(await screen.findByText("Add gear"));
+  await fireEvent.press(await screen.findByText("Add"));
   await fireEvent.changeText(screen.getByLabelText("Brand"), "Nike");
   await fireEvent.press(screen.getByText("Save"));
   expect(

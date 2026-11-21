@@ -1694,6 +1694,12 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
 | `PUT /me/activities/{key}/post` | il post della corsa, come condiviso (TASK-258) | `200` con `shared_at`, o `404 http_error` |
 | `DELETE /me/activities/{key}` | cancellarla | `204`, anche se non c'era |
 
+- **`climb_m`** (TASK-461 D1, ADR-0371), in ogni corsa dell'elenco e nella
+  risposta del `PUT`: i metri di salita contati dall'API (TASK-324), `null`
+  per una corsa senza quote e per quelle salvate prima. L'app lo legge per
+  «Quanta salita fai oggi?» dei piani verso una gita; un'app di prima lo
+  ignora. La corsa intera (`GET /me/activities/{key}`) non lo cambia.
+
 - **`key`** la fa l'app dall'inizio della traccia (`activityKey`: 16 cifre
   esadecimali dall'orario e dal punto della prima posizione; l'API accetta
   da 8 a 40 fra minuscole e cifre): la stessa corsa mandata due volte è

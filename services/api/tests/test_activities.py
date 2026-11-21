@@ -52,6 +52,9 @@ POST = {"post"}
 # Where a run comes from (TASK-312 part A): every fixture written before is
 # a run of the app, as an older app sends it and an older API answers it.
 SOURCE = {"source"}
+# The climb in the list (TASK-461 D1): the fixtures written before are what
+# an older API answers.
+CLIMB = {"climb_m"}
 # The phone's offset for the game (TASK-423 C): only a newer app sends it.
 OFFSET = {"utc_offset_min"}
 MUW = {"source": "muw"}
@@ -176,7 +179,7 @@ def test_the_fixtures_are_the_contract() -> None:
     listed = _load("activities.json")
     assert set(listed) == set(ActivitiesBody.model_fields)
     for activity in listed["activities"]:
-        assert set(activity) == set(ActivityBody.model_fields) - TURN - SOURCE
+        assert set(activity) == set(ActivityBody.model_fields) - TURN - SOURCE - CLIMB
     ActivitiesBody.model_validate(listed)
     whole = _load("activity.json")
     assert set(whole) == (
@@ -266,11 +269,29 @@ def test_a_run_saved_is_listed_as_the_example(client: TestClient) -> None:
         **_load("activities.json")["activities"][0],
         "rotation_deg": None,
         **MUW,
+        "climb_m": None,
     }
     assert saved.json() == expected
     listed = client.get("/me/activities", headers=me)
     assert listed.status_code == 200
     assert listed.json() == {"activities": [expected], "next": None, "total": 1}
+
+
+def test_the_list_says_each_runs_climb(client: TestClient) -> None:
+    # TASK-461 D1 (ADR-0371): «Già scritto dai tuoi hike: 452 m il 26
+    # ottobre». A run whose fixes have heights says what it climbed; one
+    # without, null.
+    me = signed_up(client)
+    body = request()
+    for index, fix in enumerate(body["track"]):
+        fix["altitude_m"] = 200.0 + 10.0 * index
+    saved = client.put(f"/me/activities/{KEY}", json=body, headers=me)
+    assert saved.status_code == 201
+    listed = client.get("/me/activities", headers=me).json()["activities"]
+    assert listed[0]["climb_m"] == saved.json()["climb_m"]
+    assert listed[0]["climb_m"] is not None and listed[0]["climb_m"] > 0
+    flat = client.put(f"/me/activities/{OTHER_KEY}", json=request(), headers=me)
+    assert flat.json()["climb_m"] is None
 
 
 def test_a_run_opens_whole_as_the_example(client: TestClient) -> None:

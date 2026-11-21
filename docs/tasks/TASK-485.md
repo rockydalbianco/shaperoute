@@ -110,10 +110,11 @@ Verificato sul codice di `main` (`5ef3d45b`):
    da `runs` (totali, record, calendario, gioco, badge, concorso, «My
    activities») non lo vede mai.
 2. **L'istantanea nel disegno**: una colonna nuova `drawings.plan` JSONB
-   (migrazione `0083_plan_posts.sql`: numero provvisorio del Coordinatore,
-   la 0081 è di TASK-484 e la 0082 di TASK-467 E; il definitivo al merge,
-   col primo numero libero). Un disegno senza corsa con `plan` è una
-   scheda pubblicata, senza `plan` è un post di sole foto. Il vincolo `drawings_photo_post_check` di 0080 vale
+   (migrazione `0084_plan_posts.sql`: numero provvisorio del Coordinatore,
+   dopo 0081 di TASK-484, 0082 di TASK-486 A e 0083 di TASK-467 E; il
+   definitivo al merge, col primo numero libero). Un disegno senza corsa
+   con `plan` è una scheda pubblicata, senza `plan` è un post di sole
+   foto. Il vincolo `drawings_photo_post_check` di 0080 vale
    già (mai «Only me», nessuna traccia); in più `plan` solo senza corsa.
    Pubblicato subito (`published_at` alla creazione), niente foto.
 3. **Che cosa c'è nell'istantanea**: nome, giorni, esercizi coi kg, e il
@@ -154,7 +155,7 @@ Nessun cambiamento per le app che non dicono `plans`.
 
 **Ordine** (dal Coordinatore, 2026-11-21): `reads.py` e `drawings.py` li
 tocca prima TASK-467 E1 (il post del sonno, tipo `sleep`, migrazione
-0082), sul modello di TASK-312 C1; `feed.py` la #1356 (TASK-355 B1, in
+0083), sul modello di TASK-312 C1; `feed.py` la #1356 (TASK-355 B1, in
 `main`). Merge di `main` prima di ogni push, e nei registri solo righe
 aggiunte. Dopo il merge c'è un passo sul server col sì dell'utente: i
 controlli vanno in `out/TASK-485/SERVER-A.md` (o nella cartella delle
@@ -163,7 +164,7 @@ note), per il Coordinatore.
 **File toccati (approvati dal Coordinatore il 2026-11-21):**
 
 ```
-services/api/migrations/0083_plan_posts.sql          (nuovo: drawings.plan; 0083 provvisorio, definitivo al merge)
+services/api/migrations/0084_plan_posts.sql          (nuovo: drawings.plan; 0084 provvisorio, definitivo al merge)
 services/api/shaperoute_api/plan_posts.py            (nuovo: /me/plan-posts)
 services/api/shaperoute_api/app.py                   (il router)
 services/api/shaperoute_api/reads.py                 (plans; drawings_sql)

@@ -2850,6 +2850,15 @@ export const FR: Table = {
     "Qui voit tes publications pour «Tout le monde» peut partager leur lien. Qui a le lien voit le dessin sur la carte, ton nom d'utilisateur, le titre, le sport et la distance, même sans MuW. Désactive-le et les liens cessent de fonctionner.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Ajouter une activité",
+  // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
+  // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
+  // the first three approved by the user, 2026-11-21).
+  "Photos only": "Photos seulement",
+  "Up to 10 photos, also from Instagram": "Jusqu'à 10 photos, même depuis Instagram",
+  "Add at least one photo.": "Ajoute au moins une photo.",
+  "Delete this post? It cannot be undone.":
+    "Supprimer cette publication ? C'est irréversible.",
+  "Delete post": "Supprimer la publication",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
   // 2026-11-08 and 2026-11-12.
   Snowshoes: "Raquettes",

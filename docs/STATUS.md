@@ -210,6 +210,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **R6 fatta il 2026-11-18**: #1291 (server, passo 13) e #1293 (app, col
   prossimo OTA) in main: corsa + volo nella stessa attività. In bozza R6c
   (#1313, la mappa a due colori); poi R6d (la pagina riaperta).
+- **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
+  scelta dell'utente del 2026-11-21, senza accordi con terzi: schermata di
+  widget, vario sonoro, mappa 3D, spazi aerei dal file del pilota, gare,
+  dopo il volo, live, meteo DWD/ECMWF. Parte 0 (documenti) in PR; poi
+  B1 → C → A1 → E → D → B2 → F → G → H. File: — · `tasks/TASK-479.md`
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`

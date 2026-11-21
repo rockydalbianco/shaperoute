@@ -566,8 +566,93 @@ lasciando le righe d'indice.
 - ADR-0352, precisazione — «Share live at start»: il link dal vivo a fine conto alla rovescia di un volo, se il pilota lo ha acceso; resta com'era l'ultima volta, solo il link · 2026-11-12 · Attiva
 - ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job · 2026-11-12 · Attiva
 - ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity` (senza: le corse), le zone da un estratto, entrano le otto forme lette a occhio · 2026-11-18 · Attiva
+- ADR-0388 — Il parapendio completo: uno strumento di volo con dati gratuiti e formati aperti, senza accordi con terzi; gli spazi aerei li carica il pilota; supera «Nessuna guida in volo» di ADR-0375 · 2026-11-21 · Attiva
 
 ## Voci nuove
+
+## ADR-0388 — Il parapendio completo: uno strumento di volo con dati gratuiti e formati aperti, senza accordi con terzi; gli spazi aerei li carica il pilota
+
+**Stato**: Attiva · 2026-11-21 · scelta di prodotto dell'utente; il come
+deciso dall'agente su delega dell'utente (TASK-479; numeri dal
+Coordinatore).
+
+**Contesto**: il parapendio è uno sport «Record only» (ADR-0375): registra
+il volo, mostra quota, vario e velocità, lo condivide dal vivo. Il
+2026-10-26 l'utente aveva scelto «non facciamo da navigatore» (parte G di
+TASK-305 fuori) e ADR-0375 diceva «Nessuna guida in volo». Il 2026-11-21
+l'utente vuole il parapendio «completo e professionale, come XCTrack,
+SeeYou Navigator e Flyskyhy», ma solo con quello che non chiede accordi
+con terzi né servizi a pagamento.
+
+**Decisione**:
+- **Scelta dell'utente**: MuW diventa uno strumento di volo: schermata di
+  widget personalizzabile coi preset, vario sonoro, mappa 3D in volo e
+  replay, navigazione e gare (boe, task, cilindri, planata), spazi aerei
+  da un file del pilota, analisi e punteggio XC dopo il volo, la task nel
+  live, il vento in quota da modelli aperti. **Supera** la scelta del
+  2026-10-26 (parte G di TASK-305) e il punto «Nessuna guida in volo» di
+  ADR-0375; il resto di ADR-0375 vale.
+- **Restano**: l'avviso «MuW is not a … flight instrument» al primo volo
+  (testo nuovo approvato il 2026-11-21: «certified», numeri dal GPS,
+  strumento di riserva) e una riga fissa sulla schermata; l'app dà numeri
+  e informazioni, mai ordini o giudizi: non dice mai «spazio aereo
+  libero», «nessun NOTAM», «condizioni sicure», «ce la fai», «qui è legale
+  volare», e la planata è sempre una quota d'arrivo, mai un sì o un no.
+- **Solo fonti gratuite e senza accordi**: terreno AWS Terrain Tiles (già
+  nell'app) e Copernicus DEM sul server se serve; decolli e atterraggi da
+  OpenStreetMap (ODbL, le chiavi `sport=free_flying`,
+  `free_flying:takeoff/landing` e la vecchia `free_flying:site`); formati
+  aperti IGC, GPX, `.cup`, `.wpt`, `.xctsk` e QR di XCTrack; meteo da DWD
+  ICON-D2 ed ECMWF open data (CC BY 4.0) elaborati sul nostro server
+  (parte H, «Sì, come parte H»). **Non si usano** openAIP,
+  ParaglidingEarth, XContest, LiveTrack24, NOTAM, Open-Meteo, Windy,
+  Meteo-Parapente: li valuterà l'utente più avanti.
+- **Gli spazi aerei li carica il pilota**: un file OpenAir scelto da lui,
+  letto e tenuto sul telefono; MuW non include né spedisce dati di spazio
+  aereo, mostra sempre il nome del file e la data dell'import e la riga
+  «Dati caricati da te: verifica AIP e NOTAM prima di volare». I limiti in
+  FL sono approssimati dalla quota GPS e segnati «≈».
+- **Tutto sul telefono**: layout, profili, boe, task, spazi aerei e
+  punteggio XC vivono sul telefono (`expo-file-system`); niente upload né
+  firma IGC (l'export dice «non firmato»). Il server prende solo
+  l'estratto OSM dei siti (D), la task nel live (G) e il meteo (H), ognuno
+  prima dell'app e col sì dell'utente.
+- **Senza dipendenze nuove nell'app** fino alla 1.1: quota e vario dal
+  GPS (con la correzione del geoide EGM96 dove il telefono dà la quota
+  sull'ellissoide), suono con `expo-audio` e campioni pre-generati, voce
+  con `expo-speech` solo per il nome della boa presa e della successiva,
+  QR di export scritto in TypeScript. **Dopo la 1.1**, in una build
+  nativa e ognuno col suo sì: barometro (`expo-sensors`) e fotocamera per
+  leggere il QR (`expo-camera`). Un tocco ad `app.json` per l'audio a
+  schermo spento si chiede prima (fingerprint iOS).
+- **Logica pura e testata prima dei componenti**: vario medio, L/D, vento
+  dalla deriva, termiche, ottimizzazione dei cilindri e del punteggio XC,
+  parser IGC/`.cup`/`.wpt`/`.xctsk`/OpenAir in `apps/mobile/src/air/`, con
+  test deterministici su file sintetici (nessun file di spazi aerei
+  reale nel repository).
+- **Ordine** (scelta dell'utente): B1 (numeri e schermata coi preset) →
+  C (vario sonoro) → A1 (mappa 3D in volo) → E (spazi aerei) → D
+  (navigazione e gare) → B2 (editor) → F con A2 (dopo il volo, replay) →
+  G (live) → H (meteo).
+
+**Alternative scartate**:
+- *Restare un registratore* (ADR-0375 com'era): superata dalla scelta
+  dell'utente.
+- *openAIP o un file di spazi aerei incluso*: licenza non commerciale o
+  da chiarire (studio di TASK-305), e MuW diventerebbe distributore di
+  dati di sicurezza; l'utente valuterà gli accordi più avanti.
+- *Open-Meteo o Windy per il meteo*: gratuiti solo per uso non
+  commerciale o a pagamento; DWD ed ECMWF sono CC BY 4.0.
+- *Barometro e fotocamera subito*: dipendenze e build nativa prima della
+  1.1; l'utente li vuole dopo.
+- *Una libreria QR o 3D*: niente librerie nuove; MapLibre fa già il 3D.
+
+**Conseguenze**: nove parti, ognuna un branch e una PR «pronta» al
+Coordinatore, con schermate dal simulatore e testi in 5 lingue approvati
+dall'utente. Server, OTA, sito e store solo col sì dell'utente o del
+Coordinatore; prima della pubblicazione una prova con un pilota vero.
+ADR-0265 (il pianificatore nel cono) resta Proposta. Dettagli in
+`tasks/TASK-479.md`.
 
 ## ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity`, le zone da un estratto, entrano le otto forme lette a occhio
 

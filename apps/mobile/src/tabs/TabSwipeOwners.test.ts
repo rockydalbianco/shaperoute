@@ -18,6 +18,8 @@ const ROWS = [
   // filters of the lens «Style» (TASK-384).
   "feed/FeedPost.tsx",
   "contest/ContestGallery.tsx",
+  // And the photos of a post of photos only (TASK-312 part C2).
+  "feed/PhotoFeedPost.tsx",
   "feed/StyleLens.tsx",
   // In «Draw»: «NEAR YOU».
   "route/NearYou.tsx",

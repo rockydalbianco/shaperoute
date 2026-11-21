@@ -20,6 +20,12 @@
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="A heart drawn as a route on a map, with the MuW logo" />
     <meta name="twitter:card" content="summary_large_image" />
+    <!-- Safari's own bar on an iPhone (TASK-482): in the page as it comes,
+         since Safari reads it as the page loads; bar.js, run at once, adds
+         the post's link to it. The number is the app's in the App Store, the
+         one of `downloadUrl` (../config.js). -->
+    <meta name="apple-itunes-app" content="app-id=6820961883" />
+    <script src="bar.js"></script>
     <meta name="theme-color" content="#0A0A0B" />
     <link rel="icon" href="../assets/muw-mark.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="../styles.css" />

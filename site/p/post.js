@@ -196,26 +196,33 @@ async function ask(id, mine, attempt) {
  * Safari's own bar over the page, on an iPhone (TASK-482): with MuW on the
  * phone it offers to open it, and gives it this link; without, it leads to
  * the App Store. Safari draws it and asks Apple about the app by itself;
- * the page only names the app and its own address. None (`id` null) for a
- * link that opens no drawing.
+ * the page only names the app (index.html) and its own address. bar.js has
+ * already put the link as the page was read; here it follows a change of
+ * the `#`, and a link that opens no drawing (`id` null) names the app alone.
  */
 function putAppBar(id) {
-  document.querySelector('meta[name="apple-itunes-app"]')?.remove();
   const { origin, pathname } = window.location;
-  const bar = id === null ? null : appBarOf(downloadUrl, `${origin}${pathname}#${id}`);
+  const bar = appBarOf(downloadUrl, id === null ? null : `${origin}${pathname}#${id}`);
+  let meta = document.querySelector('meta[name="apple-itunes-app"]');
   if (bar === null) {
+    meta?.remove();
     return;
   }
-  const meta = document.createElement("meta");
-  meta.name = "apple-itunes-app";
-  meta.content = bar;
-  document.head.append(meta);
+  if (meta === null) {
+    // An older copy of the page, kept by the browser, has none.
+    meta = document.createElement("meta");
+    meta.name = "apple-itunes-app";
+    document.head.append(meta);
+  }
+  if (meta.content !== bar) {
+    meta.content = bar;
+  }
 }
 
 function start() {
   round += 1;
   const id = idFromHash(window.location.hash);
-  // At once, before the API answers: Safari looks for it as the page loads.
+  // The bar says which post, also after a change of the `#`.
   putAppBar(id);
   if (id === null) {
     // Not a link to a drawing: as one that opens none.

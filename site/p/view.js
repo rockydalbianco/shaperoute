@@ -139,14 +139,18 @@ export function factsOf(post, sports, units, lang) {
  * What Safari's own bar over the page is told (`apple-itunes-app`, TASK-482):
  * the app's number in the App Store, read from where the page sends who
  * wants the app, and the link itself, which Safari hands to the app when
- * «Open» is touched. Null without a number: no bar.
+ * «Open» is touched. Without a link (one that opens no drawing) the app
+ * alone; null without a number: no bar.
  * @param {string | null} downloadUrl the App Store address of the app
- * @param {string} link the page's own address, with the id after the `#`
+ * @param {string | null} link the page's own address, with the id after the `#`
  * @returns {string | null}
  */
 export function appBarOf(downloadUrl, link) {
   const appId = /\/id(\d+)(?:[/?#]|$)/.exec(String(downloadUrl ?? ""))?.[1];
-  return appId ? `app-id=${appId}, app-argument=${link}` : null;
+  if (!appId) {
+    return null;
+  }
+  return link === null ? `app-id=${appId}` : `app-id=${appId}, app-argument=${link}`;
 }
 
 /** A map turned less than this, in degrees, is north-up: no compass. */

@@ -187,6 +187,7 @@ lascia leggere `/post` solo a `https://getmuw.app` (CORS).
 | `p/post.js` | la pagina e la mappa |
 | `p/texts.js` | i testi approvati (tre il 2026-11-12, due il 2026-11-21) in cinque lingue, e i nomi degli sport, quelli dell'app |
 | `p/post.css` | il poco che è solo suo |
+| `p/bar.js` | la barra di Safari su iPhone: aggiunge il link del post al meta `apple-itunes-app` mentre la pagina viene letta |
 | `p/link-card.png` | l'immagine dell'anteprima del link (1200×630), disegnata da `tools/link-card.html` |
 
 - **MapLibre, lo stile e i colori della mappa sono quelli della pagina dal
@@ -234,18 +235,22 @@ lascia leggere `/post` solo a `https://getmuw.app` (CORS).
   aprirebbe la pagina senza l'id. L'immagine si rifà con Chrome dal file
   `site/tools/link-card.html` (il comando è in testa al file).
 - **La barra di Safari su iPhone** (TASK-482 parte B2, una prova del
-  2026-11-21 voluta dall'utente: «Sì, proviamola»): `post.js` mette nella
-  pagina il meta `apple-itunes-app` con il numero dell'app nell'App Store
-  (letto da `downloadUrl`) e, come `app-argument`, l'indirizzo della
-  pagina con l'id del post. Safari mostra allora in cima la sua barra:
-  «Apri» per chi ha MuW, «Visualizza» verso l'App Store per chi non l'ha.
-  La barra la disegna Safari, ed è Safari a chiedere ad Apple i dati
-  dell'app: la pagina non carica niente di nuovo, e l'id del post non
-  lascia il telefono (`app-argument` passa dall'iPhone all'app). Il meta
-  lo mette lo script, perché l'id sta dopo il `#`; lo toglie per un link
-  che non apre niente. **Che «Apri» porti al post dentro l'app dipende
-  dalla parte A di TASK-482** (l'app che legge il link) e va provato su un
-  telefono vero: fino ad allora, al più, apre l'app.
+  2026-11-21 voluta dall'utente: «Sì, proviamola»): `p/index.html` ha il
+  meta `apple-itunes-app` con il numero dell'app nell'App Store (lo stesso
+  di `downloadUrl`: un test li tiene uguali), e subito dopo carica
+  `p/bar.js`, uno script non modulo e senza `defer` che, mentre la pagina
+  viene letta, aggiunge come `app-argument` l'indirizzo della pagina con
+  l'id del post. Il meta è nella pagina così com'è, e non aggiunto dopo,
+  perché Safari lo legge al caricamento (consiglio del Coordinatore);
+  `post.js` lo tiene giusto se cambia il `#`. Safari mostra allora in cima
+  la sua barra: «Apri» per chi ha MuW, «Visualizza» verso l'App Store per
+  chi non l'ha; c'è anche per un link che non apre niente, col solo nome
+  dell'app. La barra la disegna Safari, ed è Safari a chiedere ad Apple i
+  dati dell'app: la pagina non carica niente di nuovo da fuori, e l'id del
+  post non lascia il telefono (`app-argument` passa dall'iPhone all'app).
+  **Che «Apri» porti al post dentro l'app dipende dalla parte A di
+  TASK-482** (l'app che legge il link) e va provato su un telefono vero:
+  fino ad allora, al più, apre l'app.
 
 **Guardarla in locale.** Come la pagina dal vivo: il server del sito
 (sotto) e un finto `/post` che risponde dalla fixture, con `?api=`

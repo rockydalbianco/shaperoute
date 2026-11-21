@@ -98,6 +98,10 @@ Sulla tela «Schede palestra guidate»
     passo col promemoria acceso, la gita da 1000 m, e «Oggi» oltre il
     massimo di «Draw» e per un giorno di salita (`out/TASK-461/shots-b2b`,
     fuori da git).
+22. **Schermate di B2c al simulatore (2026-11-21)**: «Approvo» — registrando
+    libero nel giorno del piano, la barra con «mancano 12,4 km» (e il tempo
+    stimato) in bici e «mancano 230 m di salita» in montagna
+    (`out/TASK-461/shots-b2c`, fuori da git).
 
 ### I testi approvati della parte A (italiano; le altre lingue con lo stesso senso)
 

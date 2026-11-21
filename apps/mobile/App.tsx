@@ -21,7 +21,7 @@ import { EndFoldedStrip } from "./src/activities/EndFoldedStrip";
 import { RunEnd } from "./src/activities/RunEnd";
 import { snowParts } from "./src/activities/snowDay";
 import { type Lifts, snowLiftsOf } from "./src/activities/snowLifts";
-import { flightAirOf } from "./src/air/flightLegs";
+import { activityFlightOf, flightAirOf } from "./src/air/flightLegs";
 import { apiUrl } from "./src/api/apiUrl";
 import { PickStart } from "./src/location/PickStart";
 import {
@@ -511,6 +511,8 @@ function MuW() {
             walks: activity.walks ?? null,
             others: NO_OTHERS,
             track: activity.track,
+            // A race: the flights yellow over the white (TASK-305 R6d).
+            flightAir: activityFlightOf(activity)?.air ?? null,
           }
         : drawing !== null && skiDayMap !== null
           ? {

@@ -815,7 +815,10 @@ barra qui sopra, e lo swipe è quello qui sopra.
   reazioni e commenti, come dal profilo (TASK-117, 119, 120); «←» torna
   a «Feed» com'era, senza rileggere, e «Profile» resta chiuso; se nel
   frattempo è sparito, sopra l'elenco: «This drawing is no longer
-  public.». Mentre la prima pagina arriva, una rotella e niente altro.
+  public.». Mentre la prima pagina arriva, la sagoma di due schede (il
+  cerchio e le righe del nome, la mappa, la riga delle azioni) nei grigi
+  delle superfici, e niente altro: una pagina riletta tiene le schede che
+  aveva (TASK-355 B, al posto della rotella).
   **La scheda di un iscritto** (TASK-355 A, ADR-0306, scelte dell'utente
   del 2026-10-30): sotto il nome il luogo e quando è stata corsa, con le
   parole dell'età dei commenti, «Caldonazzo · 2 h fa» («1 g fa», dopo una
@@ -840,7 +843,12 @@ barra qui sopra, e lo swipe è quello qui sopra.
   linea di Lucide come quelle della barra (`assets/ui/icons/`: `heart`,
   `message-circle`, `share`, `pencil`; PNG bianche colorate dai token,
   gialla solo quella di «Edit & run»), non più emoji (TASK-444); il
-  lettore di schermo legge la parola.
+  lettore di schermo legge la parola. I numeri di «Like» e «Comment» e la
+  propria reazione arrivano con la pagina del Feed (TASK-355 B): la scheda
+  non chiede altro finché non si apre la lista dei commenti o non parte una
+  propria reazione; da un'API di prima, dalla ricerca e dalle sfide li
+  chiede come prima. Nel cerchio del nome la foto dell'autore quando c'è,
+  letta col token dal suo indirizzo sull'API; senza, l'iniziale in grigio.
   **Senza account, e finché nessuno ha pubblicato qualcosa che si può
   vedere** (o l'API non risponde, o è di prima del feed), mostra
   **quindici disegni di esempio**

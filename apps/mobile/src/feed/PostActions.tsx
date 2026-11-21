@@ -102,10 +102,18 @@ export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
   // «Share link» (TASK-455 part E): only on a post the API says has a link,
   // and on none of one's own once «Links to my posts» is off.
   const link = usePostLink(post.drawing, mine, usePostReader());
-  const comments = useDrawingComments(post.drawing.id);
-  const commentCount =
-    comments.status === "ready" && comments.total > 0 ? ` · ${comments.total}` : "";
-  const reactions = useDrawingReactions(post.drawing.id);
+  // What the page of the Feed already counts (TASK-355 part B): the card
+  // asks nothing more until its comments open or a super like goes; an API
+  // of before, the search and the contests say nothing, and it asks as before.
+  const told = post.drawing.comments;
+  const [superLiked, setSuperLiked] = useState(false);
+  const comments = useDrawingComments(
+    post.drawing.id,
+    told !== undefined && !commented && !superLiked,
+  );
+  const commentTotal = comments.status === "ready" ? comments.total : (told ?? 0);
+  const commentCount = commentTotal > 0 ? ` · ${commentTotal}` : "";
+  const reactions = useDrawingReactions(post.drawing.id, post.drawing.reactions);
   const reactionsReady = reactions.status === "ready";
   const reaction = reactionsReady ? reactions.mine : null;
   const reactionCount = reactionsReady ? reactions.total : 0;
@@ -193,7 +201,11 @@ export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
         open={reacting}
         row={rowBox}
         onClose={() => setReacting(false)}
-        onSuperLiked={comments.reload}
+        onSuperLiked={() => {
+          // Its comment is one of the post's: read them, now or again.
+          setSuperLiked(true);
+          comments.reload();
+        }}
         handle={reactionsHandle}
       />
       {commented && (

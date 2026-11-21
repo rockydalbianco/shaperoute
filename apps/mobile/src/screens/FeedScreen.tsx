@@ -6,7 +6,6 @@ import {
 } from "@shaperoute/shared-types";
 import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -33,6 +32,7 @@ import { PhotoPostPage } from "../feed/PhotoPostPage";
 import { PostPage } from "../feed/PostPage";
 import { loadFeedTab, saveFeedTab } from "../feed/feedTabChoice";
 import { type FeedTab, feedTabName, FeedTabs } from "../feed/FeedTabs";
+import { FeedSkeleton } from "../feed/FeedSkeleton";
 import { SAMPLE_FEED, type SamplePost } from "../feed/sampleFeed";
 import { type FeedItem, feedWithAds } from "../feed/feedWithAds";
 import { type Feed, type FeedShown, useFeed } from "../feed/useFeed";
@@ -413,11 +413,8 @@ function FeedList({
         ListHeaderComponent={header}
         ListEmptyComponent={
           shown.kind === "loading" ? (
-            <ActivityIndicator
-              color={color.textMuted}
-              style={styles.loading}
-              testID="feed-loading"
-            />
+            // The shape of the cards to come (TASK-355 part B), not a spinner.
+            <FeedSkeleton />
           ) : shown.kind === "failed" ? (
             <EmptyState
               outline={HEART}
@@ -528,9 +525,6 @@ const styles = StyleSheet.create({
   problem: {
     color: color.error,
     fontSize: fontSize.small,
-  },
-  loading: {
-    paddingVertical: space.xl,
   },
   content: {
     gap: space.md,

@@ -99,7 +99,11 @@ export function toRequest(detail: RecommendedRouteDetail): AnyRouteRequest | nul
   }
   if (detail.word !== null) {
     const style: LetterStyle = detail.style === "block" ? "block" : "round";
-    return { ...base, word: detail.word, style };
+    // Written letter by letter, the pen up between them (TASK-441): asked
+    // so again, or the export would join the letters.
+    return detail.walks !== undefined
+      ? { ...base, word: detail.word, style, pen_up: true }
+      : { ...base, word: detail.word, style };
   }
   if (!isShape(detail.shape)) {
     return null;

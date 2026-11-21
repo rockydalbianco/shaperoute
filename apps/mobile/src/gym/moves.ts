@@ -6,7 +6,7 @@ import type { GymExercise } from "./catalog";
  * figure drawn by the app, the load in yellow, no picture to download.
  *
  * A move is a few poses the figure goes through and back, in a box of 80 ×
- * 80 with the floor at y = 74; the figure faces right. The 91 exercises
+ * 80 with the floor at y = 74; the figure faces right. The 95 exercises
  * share some fifty moves (`MOVE_OF`). The near arm and leg are `elbow`,
  * `hand`, `knee` and `foot`; the far ones end in 2 and are drawn fainter,
  * unless the move is seen from the front.
@@ -1457,6 +1457,110 @@ export const MOVES = {
     seconds: 1.4,
     steady: true,
   },
+  air_squat: {
+    // Arms out in front and no load (TASK-461 A2).
+    poses: [
+      {
+        head: [40, 12],
+        neck: [40, 20],
+        hip: [40, 42],
+        elbow: [52, 21],
+        hand: [63, 22],
+        knee: [41, 57],
+        foot: [40, 73],
+      },
+      {
+        head: [54, 33],
+        neck: [50, 40],
+        hip: [37, 58],
+        elbow: [62, 40],
+        hand: [73, 40],
+        knee: [52, 62],
+        foot: [40, 73],
+      },
+    ],
+  },
+  glute_bridge: {
+    // On the back, feet on the floor: the hips go up.
+    poses: [
+      {
+        head: [14, 69],
+        neck: [21, 70],
+        hip: [40, 71],
+        elbow: [30, 72],
+        hand: [40, 73],
+        knee: [52, 59],
+        foot: [58, 73],
+      },
+      {
+        head: [14, 69],
+        neck: [21, 70],
+        hip: [42, 58],
+        elbow: [30, 72],
+        hand: [40, 73],
+        knee: [55, 55],
+        foot: [58, 73],
+      },
+    ],
+  },
+  superman: {
+    // Face down, arms out ahead: arms, chest and legs off the floor.
+    poses: [
+      {
+        head: [64, 70],
+        neck: [57, 71],
+        hip: [36, 72],
+        elbow: [69, 71],
+        hand: [79, 71],
+        knee: [21, 72],
+        foot: [6, 73],
+      },
+      {
+        head: [64, 63],
+        neck: [57, 66],
+        hip: [36, 72],
+        elbow: [68, 62],
+        hand: [78, 58],
+        knee: [21, 69],
+        foot: [7, 65],
+      },
+    ],
+    seconds: 3,
+  },
+  mountain_climber: {
+    // On the hands as for a push-up, a knee to the chest in turn.
+    poses: [
+      {
+        ...PLANK_UP,
+        knee: [53, 63],
+        foot: [41, 71],
+        knee2: [28, 66],
+        foot2: [14, 72],
+      },
+      {
+        ...PLANK_UP,
+        knee: [40, 71],
+        foot: [26, 73],
+        knee2: [40, 71],
+        foot2: [26, 73],
+      },
+      {
+        ...PLANK_UP,
+        knee: [28, 66],
+        foot: [14, 72],
+        knee2: [53, 63],
+        foot2: [41, 71],
+      },
+      {
+        ...PLANK_UP,
+        knee: [40, 71],
+        foot: [26, 73],
+        knee2: [40, 71],
+        foot2: [26, 73],
+      },
+    ],
+    seconds: 1.2,
+  },
 } satisfies Record<string, Move>;
 
 export type MoveKey = keyof typeof MOVES;
@@ -1491,6 +1595,8 @@ export const MOVE_OF: Readonly<Record<string, MoveKey | "adduction">> = {
   t_bar_row: "bent_row",
   straight_arm_pulldown: "straight_pulldown",
   back_extension: "back_extension",
+  superman: "superman",
+  bodyweight_squat: "air_squat",
   back_squat: "squat",
   front_squat: "squat",
   smith_squat: "squat",
@@ -1503,6 +1609,7 @@ export const MOVE_OF: Readonly<Record<string, MoveKey | "adduction">> = {
   bulgarian_split_squat: "lunge",
   step_up: "step_up",
   hip_thrust: "hip_thrust",
+  glute_bridge: "glute_bridge",
   glute_machine: "kickback",
   hip_abduction: "abduction",
   hip_adduction: "adduction",
@@ -1539,6 +1646,7 @@ export const MOVE_OF: Readonly<Record<string, MoveKey | "adduction">> = {
   plank: "plank",
   side_plank: "side_plank",
   wall_sit: "wall_sit",
+  mountain_climber: "mountain_climber",
   power_clean: "clean",
   snatch: "snatch",
   kettlebell_swing: "swing",

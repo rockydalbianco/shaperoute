@@ -40,6 +40,16 @@ test("a word keeps its style", () => {
   expect(toResult(word).shape).toBeNull();
 });
 
+test("a word written letter by letter is asked with the pen up again (TASK-441)", () => {
+  const walks: [number, number][] = [[1, 2]];
+  const word = { ...star, shape: null, word: "CIAO", style: "round", walks };
+  expect(toRequest(word)).toMatchObject({ word: "CIAO", style: "round", pen_up: true });
+  expect(toResult(word).walks).toEqual(walks);
+  // In one line, as every word of the catalogue was: no `pen_up`.
+  const { walks: _, ...oneLine } = word;
+  expect(toRequest(oneLine)).not.toHaveProperty("pen_up");
+});
+
 test("an example on the water asks for paddling (TASK-191)", () => {
   expect(toRequest({ ...star, distance_m: 2000, activity: "paddling" })).toEqual({
     start: star.points[0],

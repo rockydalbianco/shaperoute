@@ -36,10 +36,13 @@
 "Hike" = "Senderismo";
 "MTB" = "MTB";
 "Roller" = "Patines";
-"Snowshoes" = "Snowshoes";
+"Snowshoes" = "Raquetas";
+"Wheelchair & stroller" = "Silla y carrito";
 "Walk" = "Caminata";
 "Gravel" = "Gravel";
 "Ski" = "Esquí";
 "Cross-country ski" = "Esquí de fondo";
-"Ski touring" = "Ski touring";
+"Ski touring" = "Esquí de travesía";
+"Paragliding" = "Parapente";
+"Mountaineering" = "Alpinismo";
 "Gym" = "Gimnasio";

@@ -26,7 +26,7 @@ import { StepTitle } from "../screens/StepTitle";
 import { profileOf } from "../sports";
 import { ON_FOOT_LETTERS, ON_FOOT_PARTS } from "../sports/running";
 import { SwimResult } from "../swim/SwimResult";
-import { isOnWater } from "../swim/water";
+import { isSnowshoeRoute, isPlacedFree } from "../snow/snow";
 import { milesAtLeast, tenthsToM, unitsNumber } from "../units/distanceInput";
 import { distanceLabel, inUnits, METRES_PER_MILE } from "../units/format";
 import { appUnits, type Units } from "../units/units";
@@ -46,6 +46,7 @@ import {
 import { DistanceDial } from "./DistanceDial";
 import { ImageChoice } from "./ImageChoice";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
+import { NoteRow } from "./NoteRow";
 import { penUpHint } from "./penUpHint";
 import { offersPenUp } from "./penUpShapes";
 import type { ImageSource } from "./pickImage";
@@ -56,6 +57,7 @@ import { type Pace, runTimeText } from "./runTime";
 import { ShapeGrid } from "./ShapeGrid";
 import { ShapePreview } from "./ShapePreview";
 import { shapeList, shapeName } from "./shapeWords";
+import { drawsByHand, shapeOfSport } from "./sportDraw";
 import type { ExportState } from "./useGpxExport";
 import type { ImageState } from "./useImageOutline";
 import type { AnyRouteRequest, RouteProblem, RouteState } from "./useRouteRequest";
@@ -182,20 +184,32 @@ export function RouteChoice({
   // A swim draws a shape or a drawing, never a word (TASK-323); paddling
   // neither a word nor an image (TASK-191, TASK-396): one chosen before
   // waits for another sport, as App.tsx asks. Each sport says it in src/sports.
-  const { noWords = false, noImages = false, drawNote, timeAt } = profileOf(activity);
+  // A wheelchair draws only a circle, a heart, a star or a moon (TASK-414):
+  // no other shape, none typed, no drawing by hand; a shape chosen before
+  // that is not one of them waits for another sport, as App.tsx asks.
+  const {
+    noWords = false,
+    noImages = false,
+    drawNote,
+    timeAt,
+    shapes,
+  } = profileOf(activity);
   const left = (value: ChoiceKind) =>
     (noWords && value === "word") || (noImages && value === "image");
   const shownKind = left(kind) ? "shape" : kind;
   const kinds = DRAW_KINDS.filter((option) => !left(option.value));
+  const shownShape = shapeOfSport(shape, activity);
+  // No drawing by hand where the sport takes none (sportDraw.drawsByHand).
+  const freehand = drawsByHand(activity) ? onFreehand : undefined;
   return (
     <View style={styles.panel}>
       {/* The steps of «Draw» (TASK-361): «1 START» is the start's card. */}
       <StepTitle number={2} label={t("WHAT YOU DRAW")} />
       {drawNote !== undefined && <Text style={styles.note}>{t(drawNote)}</Text>}
       <Segmented<ChoiceKind | "freehand">
-        options={translated(onFreehand ? [FREEHAND, ...kinds] : kinds)}
+        options={translated(freehand ? [FREEHAND, ...kinds] : kinds)}
         value={shownKind}
-        onChange={(value) => (value === "freehand" ? onFreehand?.() : onKind(value))}
+        onChange={(value) => (value === "freehand" ? freehand?.() : onKind(value))}
         style={styles.kinds}
       />
       {shownKind === "shape" ? (
@@ -203,19 +217,21 @@ export function RouteChoice({
           {/* Two rows, nothing cut at the edge (TASK-361); the field for a
               shape out of the catalogue behind «Type another shape», the
               user's choice of 2026-10-30. */}
-          <ShapeGrid chosen={shape} onPick={onShapeText} />
-          <OtherShapeField
-            text={shapeText}
-            shape={shape}
-            onText={onShapeText}
-            onDone={onShapeDone}
-          >
-            <ShapeNote text={shapeText} shape={shape} reading={reading} />
-          </OtherShapeField>
-          {shape !== null && distanceM !== null && (
-            <ShapePreview shape={shape} distanceM={distanceM} />
+          <ShapeGrid chosen={shownShape} onPick={onShapeText} shapes={shapes} />
+          {shapes === undefined && (
+            <OtherShapeField
+              text={shapeText}
+              shape={shape}
+              onText={onShapeText}
+              onDone={onShapeDone}
+            >
+              <ShapeNote text={shapeText} shape={shape} reading={reading} />
+            </OtherShapeField>
           )}
-          {onPenUp && !isOnWater(activity) && offersPenUp(shape) && (
+          {shownShape !== null && distanceM !== null && (
+            <ShapePreview shape={shownShape} distanceM={distanceM} />
+          )}
+          {onPenUp && !isPlacedFree(activity) && offersPenUp(shownShape) && (
             <PenSwitch
               label={t("Lift the pen between parts")}
               on={penUp}
@@ -490,7 +506,7 @@ export function RouteOutcome({
     case "done": {
       // Only with directions: a route traced without them has no turns. On
       // the water there are none to follow: the line is the way.
-      const startsHere = view.result.directions.length > 0 || onWater(view.request);
+      const startsHere = view.result.directions.length > 0 || placedFree(view.request);
       const startButton = (
         <Pressable
           style={[styles.draw, save !== undefined && styles.halfRow]}
@@ -517,6 +533,13 @@ export function RouteOutcome({
             <SwimResult result={view.result} onLaps={onSwimLaps} />
           )}
           <RouteTiles choices={choices} chosen={chosen} onChoose={onChoose} />
+          {/* The first route is on screen, the others are coming (TASK-435):
+              said, so that tiles appearing later are no surprise. */}
+          {view.more === true && (
+            <Text style={styles.target} accessibilityLiveRegion="polite">
+              {t("Looking for other routes…")}
+            </Text>
+          )}
           {better !== null && (
             <BetterDistance
               text={betterDistanceText(kindOf(view.request), better, units)}
@@ -812,10 +835,10 @@ function nameOf(request: AnyRouteRequest): string {
   return routeName(request);
 }
 
-/** A route on the water (TASK-191), a swim too (TASK-323): it follows no
- * road, and has no turns. */
-function onWater(request: AnyRouteRequest): boolean {
-  return isOnWater(request.activity);
+/** A route on the water (TASK-191), a swim too (TASK-323), or on the snow
+ * (TASK-413 B): it follows no road, and has no turns. */
+function placedFree(request: AnyRouteRequest): boolean {
+  return isPlacedFree(request.activity);
 }
 
 /** The line under the route's distance: what it is, what it runs on, and
@@ -823,12 +846,18 @@ function onWater(request: AnyRouteRequest): boolean {
 function targetLine(request: AnyRouteRequest, units: Units): string {
   if (units === "mi") {
     const miles = { name: nameOf(request), mi: unitsNumber(request.distance_m, "mi") };
-    return onWater(request)
+    if (isSnowshoeRoute(request.activity)) {
+      return t("{name} · on the snow · target {mi} mi", miles);
+    }
+    return placedFree(request)
       ? t("{name} · on the water · target {mi} mi", miles)
       : t("{name} · on roads · target {mi} mi", miles);
   }
   const values = { name: nameOf(request), km: request.distance_m / 1000 };
-  return onWater(request)
+  if (isSnowshoeRoute(request.activity)) {
+    return t("{name} · on the snow · target {km} km", values);
+  }
+  return placedFree(request)
     ? t("{name} · on the water · target {km} km", values)
     : t("{name} · on roads · target {km} km", values);
 }
@@ -925,17 +954,29 @@ function Problem({
           <Text style={styles.secondaryText}>{tryText(tryDistanceM, units)}</Text>
         </Pressable>
       )}
-      {pickShape && onPickShape && <ShapeChoices onPick={onPickShape} />}
+      {pickShape && onPickShape && (
+        <ShapeChoices
+          onPick={onPickShape}
+          shapes={activity === undefined ? undefined : profileOf(activity).shapes}
+        />
+      )}
       {detail && <Text style={styles.detail}>{detail}</Text>}
     </View>
   );
 }
 
-/** The shapes of the catalogue, each writing itself in the shape field. */
-function ShapeChoices({ onPick }: { onPick: (shape: Shape) => void }) {
+/** The shapes of the catalogue, each writing itself in the shape field; a
+ * sport's own when it has them (TASK-414). */
+function ShapeChoices({
+  onPick,
+  shapes = SHAPES,
+}: {
+  onPick: (shape: Shape) => void;
+  shapes?: readonly Shape[];
+}) {
   return (
     <View style={styles.choices}>
-      {SHAPES.map((shape) => (
+      {shapes.map((shape) => (
         <Pressable
           key={shape}
           style={[styles.secondary, styles.chip]}
@@ -961,7 +1002,7 @@ function BetterDistance({
   onTry: () => void;
 }) {
   return (
-    <View style={[styles.noteRow, styles.info, styles.problemBox]}>
+    <View style={[styles.noteRow, styles.problemBox]}>
       <Text style={styles.noteText}>{text}</Text>
       <Pressable
         style={[styles.secondary, styles.choice]}
@@ -970,20 +1011,6 @@ function BetterDistance({
       >
         <Text style={styles.secondaryText}>{tryLabel}</Text>
       </Pressable>
-    </View>
-  );
-}
-
-/**
- * A warning of the engine in plain words (warnings.ts), with a stripe that says
- * whether to watch for it (warning) or just to know it.
- */
-function NoteRow({ note }: { note: Note }) {
-  return (
-    <View
-      style={[styles.noteRow, note.tone === "caution" ? styles.caution : styles.info]}
-    >
-      <Text style={styles.noteText}>{note.text}</Text>
     </View>
   );
 }
@@ -1156,19 +1183,12 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.body,
   },
+  // A box as a note's (NoteRow), with a button under its words.
   noteRow: {
     paddingVertical: space.sm,
     paddingHorizontal: space.md,
-    borderLeftWidth: 3,
     borderRadius: radius.sm,
     backgroundColor: color.surfaceRaised,
-  },
-  // Not yellow: that means "route", and a warning is something else.
-  caution: {
-    borderLeftColor: color.warning,
-  },
-  info: {
-    borderLeftColor: color.borderStrong,
   },
   noteText: {
     color: color.text,

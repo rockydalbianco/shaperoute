@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t, tLater } from "../i18n";
 import { color, font, fontWeight, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
+import { useBackCloses } from "../ui/backLayers";
 import { distanceLabel, METRES_PER_KM } from "../units/format";
 import type { Units } from "../units/units";
 import { useUnits } from "../units/useUnits";
@@ -70,6 +71,8 @@ export function ResortPage({
   apiKey,
 }: Props) {
   const insets = useSafeAreaInsets();
+  // Android's «back» is «‹ Back»: the search again, not another tab.
+  useBackCloses(true, onBack);
   // «Your resorts» (part D3): the same «Follow» as the members'.
   const { isFollowed, toggle } = useFollowedResorts();
   const following = isFollowed(resort.id);

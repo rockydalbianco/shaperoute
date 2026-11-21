@@ -1,6 +1,15 @@
 import { REACTION_KINDS, type ReactionKind } from "@shaperoute/shared-types";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Image,
+  Pressable,
+  type StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  type ViewStyle,
+} from "react-native";
 
 import { t, tPlural } from "../i18n";
 import { HeartBadge } from "../intro/HeartBadge";
@@ -13,18 +22,18 @@ import {
   space,
 } from "../theme/tokens";
 import { negativeComment } from "./commentText";
-import {
-  NO_REACTION_FACE,
-  REACTION_EMOJI,
-  reactionName,
-  topKinds,
-} from "./reactionKinds";
+import { REACTION_EMOJI, reactionName, topKinds } from "./reactionKinds";
 import { SuperLikeHeart, SuperLikeSheet } from "./SuperLikeSheet";
 import { useDrawingReactions } from "./useDrawingReactions";
 
 /** A reaction on the button and in the bar; smaller among the most used. */
 const MARK_SIDE = 26;
 const TOP_SIDE = 18;
+/** The heart of «Like» (TASK-444), from Lucide as the actions' icons are
+ * (ISC, assets/ui/icons/LICENSE-lucide.txt): on the button of who left no
+ * reaction yet. A faded face stood there (TASK-454). */
+const NO_REACTION_ICON = require("../../assets/ui/icons/heart.png");
+const NO_REACTION_SIDE = 22;
 
 const listeners = new Set<() => void>();
 
@@ -42,26 +51,19 @@ type Props = {
   onSuperLiked?: () => void;
   /** What stays next to the reactions, on their row: the comments' button. */
   beside?: ReactNode;
-  /** The bar of the six open from the start: the page of a post opens it
-   * from its «Like» (TASK-410). */
-  barAtStart?: boolean;
 };
 
 /**
  * Under a drawing on the map (TASK-119, ADR-0193): a button with one's own
- * reaction, the three most used and how many there are. The button opens
+ * reaction (the heart of «Like», in a line, until there is one), the three
+ * most used and how many there are. The button opens
  * the bar of the six; the Sgrava heart, there or with a double tap on the
  * drawing, is the super like and asks for its comment. Without an account,
  * or on an API without reactions, only what is `beside`, in its place.
  */
-export function DrawingReactions({
-  drawingId,
-  onSuperLiked,
-  beside,
-  barAtStart = false,
-}: Props) {
+export function DrawingReactions({ drawingId, onSuperLiked, beside }: Props) {
   const reactions = useDrawingReactions(drawingId);
-  const [barOpen, setBarOpen] = useState(barAtStart);
+  const [barOpen, setBarOpen] = useState(false);
   const [writing, setWriting] = useState(false);
   // A count, not a flag: a double tap while the heart is up starts it again.
   const [hearts, setHearts] = useState(0);
@@ -121,22 +123,7 @@ export function DrawingReactions({
 
   return (
     <View style={styles.block}>
-      {ready && barOpen && (
-        <View style={styles.bar} accessibilityRole="toolbar">
-          {REACTION_KINDS.map((kind) => (
-            <Pressable
-              key={kind}
-              style={[styles.choice, mine === kind && styles.choiceMine]}
-              onPress={() => onChoose(kind)}
-              accessibilityRole="button"
-              accessibilityLabel={reactionName(kind)}
-              accessibilityState={{ selected: mine === kind }}
-            >
-              <ReactionMark kind={kind} side={MARK_SIDE} />
-            </Pressable>
-          ))}
-        </View>
-      )}
+      {ready && barOpen && <ReactionBar mine={mine} onChoose={onChoose} />}
       <View style={styles.row}>
         {ready && (
           <>
@@ -152,9 +139,13 @@ export function DrawingReactions({
               accessibilityState={{ expanded: barOpen }}
             >
               {mine === null ? (
-                <Text style={[styles.emoji, styles.noReaction]}>
-                  {NO_REACTION_FACE}
-                </Text>
+                <Image
+                  source={NO_REACTION_ICON}
+                  style={styles.noReaction}
+                  accessible={false}
+                  importantForAccessibility="no"
+                  testID="no-reaction-icon"
+                />
               ) : (
                 <ReactionMark kind={mine} side={MARK_SIDE} />
               )}
@@ -197,6 +188,41 @@ export function DrawingReactions({
   );
 }
 
+type BarProps = {
+  /** The reaction of who looks, with a ring around it; null without one. */
+  mine: ReactionKind | null;
+  onChoose: (kind: ReactionKind) => void;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+};
+
+/**
+ * The bar of the six: the MuW heart, then the five emoji. Under a drawing on
+ * the map it opens in the card; over the «Like» of a post it hangs above the
+ * row (`feed/PostReactions.tsx`, TASK-454).
+ */
+export function ReactionBar({ mine, onChoose, style, testID }: BarProps) {
+  return (
+    <View style={[styles.bar, style]} accessibilityRole="toolbar" testID={testID}>
+      {REACTION_KINDS.map((kind) => (
+        <Pressable
+          key={kind}
+          style={[styles.choice, mine === kind && styles.choiceMine]}
+          onPress={() => onChoose(kind)}
+          accessibilityRole="button"
+          accessibilityLabel={reactionName(kind)}
+          accessibilityState={{ selected: mine === kind }}
+        >
+          <ReactionMark kind={kind} side={MARK_SIDE} />
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+/** How tall the bar is: a choice, the space around it and its border. */
+export const REACTION_BAR_HEIGHT = MIN_TAP_SIZE + 2 * space.xs + 2;
+
 type MarkProps = {
   kind: ReactionKind;
   /** The side of the Sgrava heart; an emoji is as tall. */
@@ -204,7 +230,7 @@ type MarkProps = {
 };
 
 /** A reaction, drawn: the Sgrava heart on its yellow, or the emoji. */
-function ReactionMark({ kind, side }: MarkProps) {
+export function ReactionMark({ kind, side }: MarkProps) {
   if (kind === "super_like") {
     return <HeartBadge size={side} />;
   }
@@ -270,7 +296,9 @@ const styles = StyleSheet.create({
     fontSize: MARK_SIDE * EMOJI_SHARE,
   },
   noReaction: {
-    opacity: 0.5,
+    width: NO_REACTION_SIDE,
+    height: NO_REACTION_SIDE,
+    tintColor: color.text,
   },
   summary: {
     flexDirection: "row",

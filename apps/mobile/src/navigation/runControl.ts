@@ -71,7 +71,19 @@ export function useRunControl(): RunControl {
   return useSyncExternalStore(subscribeRunControl, runControl, runControl);
 }
 
+/**
+ * The auto-pause each kind of outing was left with, for the next one of
+ * its kind (TASK-305): on over the ground, off in the air, where standing
+ * still over the ground is flying into the wind and the live link would say
+ * «Paused» with the pilot up there. The runner's switch changes the one of
+ * the outing under way.
+ */
+const autoPauseOf = { ground: true, air: false };
+/** The outing under the controls is a flight. */
+let inAir = false;
+
 export function setAutoPause(on: boolean): void {
+  autoPauseOf[inAir ? "air" : "ground"] = on;
   set({ autoPause: on });
 }
 
@@ -234,11 +246,15 @@ export function controlRun(
     onChange,
     say,
     stillMs = AUTO_PAUSE_AFTER_MS,
+    air = false,
   }: {
     onChange: () => void;
     say: (text: string) => void;
     /** How long standing still waits before the pause: a run's unless said. */
     stillMs?: number;
+    /** A flight (TASK-305): its auto-pause is off unless the pilot turned
+     * it on in a flight before. */
+    air?: boolean;
   },
 ): RunSession {
   // One run at a time: a run still under the controls leaves them.
@@ -262,7 +278,9 @@ export function controlRun(
     stillMs,
   };
   session = mine;
+  inAir = air;
   set({
+    autoPause: autoPauseOf[air ? "air" : "ground"],
     phase: fresh ? "countdown" : held !== null ? "paused" : "running",
     startsAtMs: fresh ? Date.now() + COUNTDOWN_MS : null,
     auto: held?.auto === true,
@@ -317,7 +335,14 @@ export function controlRun(
       clearInterval(mine.watch);
       if (session === mine) {
         session = null;
-        set({ phase: "idle", startsAtMs: null, auto: false, pen: false });
+        inAir = false;
+        set({
+          phase: "idle",
+          startsAtMs: null,
+          auto: false,
+          pen: false,
+          autoPause: autoPauseOf.ground,
+        });
       }
     },
   };

@@ -72,28 +72,37 @@ test("every row works: only the sports to come say «Soon»", async () => {
   // (TASK-190), paddling (TASK-191), swimming in open water (TASK-323) and
   // the alpine ski (TASK-375 D4) are ready in «Sport» (TASK-189), and the
   // hike (TASK-377), gravel and MTB (TASK-378), walking (TASK-371) and the
-  // skate (TASK-380); cross-country skiing (TASK-375) and paragliding
-  // (TASK-305 D0) are the sports to come.
-  expect(screen.getAllByText("Soon")).toHaveLength(2);
-  expect(screen.getAllByLabelText(/coming soon$/)).toHaveLength(2);
+  // skate (TASK-380), paragliding (TASK-305 R2), cross-country skiing
+  // (TASK-375), the wheelchair (TASK-414 B) and the snowshoes (TASK-413).
+  // Only mountaineering (TASK-463 B) is to come, until it is turned on.
+  expect(screen.getAllByText("Soon")).toHaveLength(1);
+  expect(screen.queryAllByLabelText(/coming soon$/)).toHaveLength(1);
+  expect(screen.queryByLabelText("Snowshoes, coming soon")).toBeNull();
+  expect(screen.getByLabelText("Mountaineering, coming soon")).toBeOnTheScreen();
+  expect(screen.queryByLabelText("Wheelchair & stroller, coming soon")).toBeNull();
+  expect(screen.queryByLabelText("Cross-country ski, coming soon")).toBeNull();
   expect(screen.queryByLabelText("Walk, coming soon")).toBeNull();
   expect(screen.queryByLabelText("Roller, coming soon")).toBeNull();
   expect(screen.queryByLabelText("MTB, coming soon")).toBeNull();
   expect(screen.queryByLabelText("Ski, coming soon")).toBeNull();
   expect(screen.queryByLabelText("Open water swim, coming soon")).toBeNull();
-  expect(screen.getByLabelText("Paragliding, coming soon")).toBeOnTheScreen();
+  expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
   // The picture (TASK-178), the email and the phone number (TASK-183), the
   // language (TASK-210), «Add a place» (TASK-334), the units (TASK-182),
-  // the body (TASK-374), the tone (TASK-263), the three texts of «ABOUT»
-  // (TASK-184) and the ways out are buttons. «Send feedback» waits for a
-  // server that takes it (TASK-308, below).
-  expect(screen.getAllByRole("button")).toHaveLength(13);
+  // the body (TASK-374), the morning stretch (TASK-466 part D), the tone
+  // (TASK-263), the three texts of «ABOUT» (TASK-184) and the ways out are
+  // buttons. «Send feedback» waits for a server that takes it (TASK-308,
+  // below).
+  expect(screen.getAllByRole("button")).toHaveLength(14);
   expect(screen.getByRole("button", { name: "Profile picture" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Change email" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Phone number, Add" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Language, English" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Units, Kilometres" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Body, Not set" })).toBeOnTheScreen();
+  expect(
+    screen.getByRole("button", { name: "Morning stretch, Off" }),
+  ).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Tone, Dark" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Log out" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Delete account" })).toBeOnTheScreen();
@@ -120,7 +129,7 @@ test("on the server of today, which answers 404, there is no «FEEDBACK» to wri
   expect(fetchFn).toHaveBeenCalledTimes(1);
   expect(screen.queryByText("FEEDBACK")).toBeNull();
   expect(screen.queryByRole("button", { name: "Send feedback" })).toBeNull();
-  expect(screen.getAllByRole("button")).toHaveLength(13);
+  expect(screen.getAllByRole("button")).toHaveLength(14);
 });
 
 test("without a network nothing is shown either (TASK-308)", async () => {

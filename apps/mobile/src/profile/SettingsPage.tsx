@@ -14,13 +14,16 @@ import { FeedbackSetting } from "../settings/FeedbackSetting";
 import { LanguageSetting } from "../settings/LanguageSetting";
 import { NotificationsSetting } from "../settings/NotificationsSetting";
 import { PhoneSetting } from "../settings/PhoneSetting";
+import { PostLinksSetting } from "../settings/PostLinksSetting";
 import { SportSetting } from "../settings/SportSetting";
 import { StyleSetting } from "../settings/StyleSetting";
 import { ToneSetting } from "../settings/ToneSetting";
 import { UnitsSetting } from "../settings/UnitsSetting";
 import { Vo2MaxSetting } from "../settings/Vo2MaxSetting";
 import { useFeedbackService } from "../settings/useFeedbackService";
+import { BlockedPeople } from "../social/BlockedPeople";
 import { StravaSetting } from "../strava/StravaSetting";
+import { MorningStretchSetting } from "../stretch/MorningStretchSetting";
 import {
   color,
   font,
@@ -54,7 +57,8 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
 
 /**
  * «Settings» in «Profile» (TASK-177), in sections: the account with its
- * email and phone number (TASK-183) and the ways out of it, the sport
+ * email and phone number (TASK-183), the people it blocked (TASK-121,
+ * here since TASK-457) and the ways out of it, the sport
  * (TASK-189), Strava (TASK-187), the language
  * (TASK-210), the offline maps (TASK-214) and the units (TASK-182) among
  * the preferences with the body under them (TASK-374), the two notification switches (TASK-185), «Send
@@ -83,6 +87,9 @@ export function SettingsPage({
         <PhotoRow name={user.username} />
         <EmailSetting user={user} account={account} />
         <PhoneSetting user={user} account={account} />
+        {/* Whom the account blocked, to unblock (TASK-121); here and not on
+            the profile since TASK-457. */}
+        <BlockedPeople />
       </Section>
       <SportSetting />
       <StravaSetting />
@@ -91,8 +98,12 @@ export function SettingsPage({
         <OfflineMapsSetting />
         <UnitsSetting />
         <BodySetting />
+        {/* The reminder after the alarm, kept on this phone (TASK-466 part D). */}
+        <MorningStretchSetting />
         {/* The yes of the VO₂ max on the profile, kept by the API (TASK-397). */}
         <Vo2MaxSetting account={account} />
+        {/* Whether the links to one's posts work, kept by the API (TASK-455). */}
+        <PostLinksSetting account={account} />
         <ToneSetting />
         {/* MuW Style is advertising: it can be turned off (TASK-384). */}
         <StyleSetting />

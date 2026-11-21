@@ -173,7 +173,10 @@ async function drawingOpened() {
   await fireEvent.press(await screen.findByText(String(feed.posts[0].title)));
   // The page of the post (TASK-410): a tap on its drawing opens the map.
   await fireEvent.press(await screen.findByTestId("post-map"));
-  expect(await screen.findByText(String(drawing.description))).toBeOnTheScreen();
+  // The tap waits to know it is alone (TASK-454 part B), and the page of the
+  // post has the description too: «Start» is on the map only.
+  await screen.findByRole("button", { name: "Start" });
+  expect(screen.getByText(String(drawing.description))).toBeOnTheScreen();
 }
 
 jest.spyOn(Vibration, "vibrate").mockImplementation(() => {});

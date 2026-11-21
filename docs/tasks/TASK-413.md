@@ -1,11 +1,13 @@
 # TASK-413 — Ciaspole: forme piccole libere sulla neve
 
-**Stato**: In corso — parte 0 in `main` (#933, `189374bc`); A1 in `main` con
-la #957 (`a63254d3`, mergiata dall'utente) e sul server col passo unico del
-2026-11-10 (main `9cf5576b`; controllo in `out/TASK-413/check-957.md`);
-A2 in `main` con la #1130 (`ac08ae94`, mergiata dall'utente il
-2026-11-11), sul server col passo 8 del Coordinatore (controllo in
-`out/TASK-413/SERVER-A2.md`), l'app nascosta col decimo OTA; poi B
+**Stato**: Done (2026-11-18) — parte 0 (#933), A1 (#957), A2 (#1130), A3
+(#1238, corretta dalla #1266), B e C (#1280), privacy delle quote (#1281) e
+accensione (#1296, `ba569576`) in `main` e sul server (passi 8, 11 e 12);
+l'app in produzione con l'OTA 17 (2026-11-18). **Esito**: le ciaspole si
+scelgono, danno una forma da 0,5 a 3 km libera sulla neve o «Record your
+day», con l'avviso valanghe prima; l'uscita salvata arriva in Salute
+(come Escursionismo, Apple non ha le ciaspole), provato dall'utente sul
+telefono il 2026-11-18.
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -179,6 +181,83 @@ Connect: `EXERCISE_TYPE_SNOWSHOEING`, da verificare sulla libreria. Solo
 JavaScript: l'impronta iOS non si muove. La lista al Coordinatore prima del
 codice.
 
+**Parte B, accordi** (2026-11-12; lista dei file approvata dal
+Coordinatore, `feat/TASK-413-b-snowshoes-app`):
+
+- **I testi sono riapprovati dall'utente** il 2026-11-12, con le parole
+  «Sì, vanno bene». Sono:
+  - l'avviso valanghe intero nelle cinque lingue, mostrato di nuovo perché
+    è un testo di sicurezza;
+  - nome e riga sotto ogni percorso, come nella scelta 4;
+  - i testi nuovi della neve, nelle cinque lingue:
+    - «There is no open snow near this start. Start within 2 km of open
+      snow, away from towns, woods and pistes.» (in miglia, «1 mile»);
+    - «This shape does not fit on the snow here at this distance. It fits
+      at about {km} km.»;
+    - «This shape does not fit on the snow here. Try a shorter distance,
+      another shape, or another start:»;
+    - «{name} · on the snow · target {km} km».
+- **`isPlacedFree`** (`src/snow/snow.ts`, acqua o neve) è un predicato
+  nuovo: `isOnWater` non si allarga. Lo chiedono i punti dove la neve fa
+  come l'acqua:
+  - pezzi a penna alzata;
+  - nessun «Move» del punto di partenza;
+  - nessuna indicazione, né sul telefono né sull'orologio.
+
+  Gli esempi, i posti e gli avvisi dell'acqua restano `isOnWater`. Un test
+  dice che per ogni attività tranne le ciaspole `isPlacedFree` vale quanto
+  `isOnWater`.
+- **Nessun tempo sotto la distanza**: il passo di chi cammina, sulla neve,
+  prometterebbe meno tempo di quello reale. Deciso dall'agente su delega
+  dell'utente.
+- **Lo sport resta `ready: false`** nella PR. Si accende con una riga a
+  parte, col sì dell'utente dato al Coordinatore, dopo le schermate.
+- **Accensione**: l'utente ha detto «Sì, accendi» alle schermate
+  (2026-11-12, `out/TASK-413/sim/`). La PR piccola
+  `feat/TASK-413-snowshoes-on` porta `fromProfile("snowshoe", true)` e i
+  test delle liste. Si apre dopo che il Coordinatore conferma «passo 12 e
+  prova come attesi», con la riga della privacy (#1281) in `main`.
+- **Anche «Record your day»**: scelta dell'utente del 2026-11-12, «Anche
+  Record your day», contro la proposta dell'agente «solo forme». Le
+  ciaspole avranno anche la giornata sulla neve da registrare intera, come
+  lo sci e lo scialpinismo. È una **parte a sé, dopo B** (la parte C):
+  - la B resta quella delle forme, con il suo «Snowshoe without a route»;
+  - la C porta la riga in Impostazioni, la giornata, i suoi numeri e i suoi
+    testi;
+  - la lista dei file e il disegno della C vanno al Coordinatore prima del
+    codice.
+- **La C sta dentro le ciaspole**: scelta dell'utente del 2026-11-12,
+  «Dentro le ciaspole», fra le due strade portate dal Coordinatore:
+  - (1) una riga nuova «Snowshoe day» in Impostazioni, sport a sé;
+  - (2) «Record your day» dentro le ciaspole che già ci sono.
+
+  Vale la (2): una riga sola, «Snowshoes», nessuna migrazione, nessun
+  passo sul server, esce con un OTA. L'utente ha approvato il
+  2026-11-12, con le parole «Sì, vanno bene», la proposta dell'agente e
+  il testo nuovo nelle cinque lingue:
+  - il bottone in alto di «Draw» diventa «Record your day», al posto di
+    «Snowshoe without a route»;
+  - a fine uscita c'è la scheda «Your day» del fondo (distanza, passo,
+    metri saliti, tempo, calorie);
+  - sulla mappa la riga è «White: where you walked.»: it «Bianco: dove
+    hai camminato.», de «Weiß: wo du gegangen bist.», fr «Blanc : là où
+    tu as marché.», es «Blanco: donde caminaste.».
+
+- **Privacy delle quote** (2026-11-12): per la neve il server scarica le
+  quote da Amazon Web Services (tessere Terrarium, `heights.py`), e la
+  privacy nominava Amazon solo per la mappa «3D» del telefono. L'utente ha
+  approvato con le parole «Sì, va bene» la riga nuova da aggiungere in «Chi
+  altro riceve dati»:
+  - en: «For a snowshoe route our server asks Amazon Web Services for the
+    heights of an area it does not have yet: it sees which area, not who
+    asked.»;
+  - it: «Per un percorso con le ciaspole il nostro server chiede ad Amazon
+    Web Services le altezze di una zona che non ha ancora: vede quale zona,
+    non chi l'ha chiesta.».
+
+  Va scritta prima dell'accensione, nel turno del Coordinatore su
+  `about/content/**` e `site/privacy/**`.
+
 **Accordi e scelte della parte A2** (2026-11-10, decise dall'agente su
 delega dell'utente):
 
@@ -202,6 +281,12 @@ delega dell'utente):
   un controllo «poca neve» prima del piazzamento, che toccherebbe il motore
   (`snowshoeing.py`); il job è asincrono e una città non è un posto da
   ciaspole. Se i tempi del server lo chiedono, è un passo a parte.
+  **Il server lo chiede**: Trento 3 km, la prima volta, `failed
+  shape_not_drawable` in **76,4 s** (passo 8). Al banco sul Mac (Milano,
+  dalla cache, 83.000 elementi) la ricerca costa 0,7 s e `snow.build_area`
+  16–19 s, quasi tutto shapely elemento per elemento (buffer, unioni);
+  sul server, la prima volta, c'è in più lo scarico da Overpass. Diventa
+  la parte A3 (Coordinatore, 2026-11-11), sotto.
 - **Il profilo nell'app è nascosto**: nessuna riga in «Impostazioni», la
   ricerca lo lascia fuori (`searchFilters.NOT_YET`), il modulo per
   pubblicare non lo elenca. Nome in inglese senza `tLater`, niente
@@ -210,6 +295,57 @@ delega dell'utente):
   attività, scelta dell'utente del 2026-11-10). Apple Salute `hiking`
   (24, nessun tipo per le ciaspole), Health Connect
   `EXERCISE_TYPE_SNOWSHOEING` (63, verificato sulla libreria).
+
+**A3 — la città detta subito** (`feat/TASK-413-a3-snow-early-no`, chiesta
+dal Coordinatore il 2026-11-11 dopo il passo 8, prima di B; decisa
+dall'agente su delega dell'utente):
+
+- **Prima di leggere la neve**, il motore conta gli edifici attorno alla
+  partenza; sopra la soglia dice subito «no open snow», lo stesso
+  `NoSnowError` di oggi (nessun testo nuovo). Il conteggio viene dalla
+  neve già in cache (senza rete), da un file di conteggio
+  (`<cache>/snow/count_….json`) o da Overpass (`out count`, 5 s per
+  Overpass, 6 s di attesa al massimo), ed è tenuto in cache.
+- **Un conteggio che non arriva non è un errore**: Overpass lento, 429 o
+  502 (stanotte frequenti) e la richiesta va avanti come prima; la volta
+  dopo il rifiuto viene dalla neve scaricata.
+- **Il riquadro è fisso**, 4,8 km di lato attorno alla partenza
+  (`snow.town_bbox`: dove una forma può stare), lo stesso per ogni forma e
+  distanza. Il riquadro della richiesta cresce con la forma e per una
+  valle arriva alle montagne: Bolzano per un cuore di 3 km scendeva sotto
+  Asiago.
+- **La soglia è 280 edifici per km²**, scelta sui conteggi di 21 posti
+  (`sports/snowshoes.md`): il posto con neve più denso è Asiago (180), le
+  città Trento (350), Belluno (345), Milano (700). **Bolzano (207) e Aosta
+  (247) non sono dette subito**: sono dense come un paese, e prenderle
+  vorrebbe una soglia a un passo da Asiago (meglio l'attesa che un «no»
+  sbagliato, Coordinatore). Per loro aiuta la parte a sé che rende
+  `build_area` più veloce.
+  Soglia e Bolzano e Aosta fuori: sì del Coordinatore, 2026-11-12.
+- **Nessuna impronta cambia**: `snow.py` e `snowshoeing.py` stanno in
+  `SNOW_ONLY` (codice ed efficaci uguali a main: `e0834d054b6e` / `8ab61d8e87f9` dopo la TASK-414 A).
+  `engine.zip` li contiene: rifatto nell'ultimo commit.
+- **Sul server** arriva con un passo suo dopo il merge; controllo: la riga
+  di Trento 3 km del passo 8 (76 s) scende a pochi secondi, con lo stesso
+  `shape_not_drawable` «no open snow».
+- **In città il messaggio diventa «no open snow»**: prima Milano dava
+  `SnowFitError` («the circle does not fit on open snow here, even at
+  0.4 km», a volte con una distanza più corta); ora dà subito `NoSnowError`
+  («there is no open snow to walk on within 2 km of here»). Per l'app è
+  sempre `shape_not_drawable`.
+- **Il banco prima e dopo** (2026-11-12, turno del Mac,
+  `out/TASK-413/results/a3-compare.txt`): 72 richieste (6 posti, cerchio,
+  cuore e stella, da 0,5 a 3 km). Le 60 dei cinque posti con neve sono
+  identiche. Tempi per posto, prima → dopo:
+  - Milano: 67,0 → 3,3 s (0,3 s a richiesta);
+  - Asiago: 24,9 → 24,3 s;
+  - Fiemme: 19,5 → 16,1 s;
+  - Lavazè: 10,3 → 10,4 s;
+  - Bondone: 9,5 → 9,4 s;
+  - Rolle: 9,2 → 9,5 s.
+- **In `main`** con la #1238 (`8f5d0516`, unita dall'utente); impronte
+  `e0834d054b6e 8ab61d8e87f9 b9d00c37d28d 574fbfba41eb`, come prima.
+  Decisione: ADR-0342, precisazione A3.
 
 ## Scelte dell'utente
 
@@ -271,12 +407,21 @@ Tutte come la proposta, tranne la terza:
       senza rete; canoa e nuoto identici al banco (`compare --same`)
       (2026-11-08: 48 forme su 60 sul motore vero, Milano nessuna; 27
       canoe identiche, i nove percorsi fissi identici).
-- [ ] A2: lo sport è nel contratto e nell'API, nascosto nell'app; il server
-      scarica la neve di un posto nuovo. (Contratto, API e app in `main`
-      con la #1130; resta il server, passo 8: si spunta coi controlli 1–3
-      di `SERVER-A2.md`.)
-- [ ] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
-      e i testi sono in cinque lingue.
+- [x] A2: lo sport è nel contratto e nell'API, nascosto nell'app; il server
+      scarica la neve di un posto nuovo (#1130; passo 8 del 2026-11-11:
+      0068 e i tre vincoli, impronte attese, cuore di 1 km alle Viote in
+      38,2 s la prima volta e 4,1 s la seconda, 1000 m, 0 indicazioni).
+- [x] A3: una città è detta subito senza leggerne la neve (Trento, Belluno,
+      Milano), ogni posto con neve del banco va avanti come prima; un
+      conteggio che non arriva non cambia nulla; impronte invariate; sul
+      server Trento 3 km in pochi secondi. (#1238 e la correzione #1266;
+      passo 12, prova del 2026-11-12 17:00Z su `eee85a69`: Milano 1,1 s,
+      Trento 1,1 s e 0,65 s, tutte «no open snow»; 16170 e 8091 edifici
+      contati dalla neve in cache; `out/coordinatore/prova-passo12.out`.)
+- [x] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
+      e i testi sono in cinque lingue. (#1280 e l'accensione #1296 in
+      `main`, schermate in `out/TASK-413/sim/`; in produzione con l'OTA 17;
+      prova dell'utente sul telefono il 2026-11-18: l'uscita è in Salute.)
 
 ## File toccati
 
@@ -338,6 +483,20 @@ apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json,
 apps/mobile/assets/engine/engine.zip                         (rifatto, ultimo commit)
 docs/tasks/TASK-413.md, + docs/API.md, + docs/DATABASE.md
 docs/STATUS.md, docs/DECISIONS.md (precisazione di ADR-0342): in una PR di soli documenti dopo il merge
+```
+
+Parte A3 (`feat/TASK-413-a3-snow-early-no`; lista approvata dal
+Coordinatore il 2026-11-12):
+
+```
+services/route-engine/route_engine/snow.py, snowshoeing.py   (il conteggio, la soglia, il rifiuto)
+services/route-engine/tests/test_snow.py, test_snowshoeing.py
+services/route-engine/tests/fixtures/snow_built_up.json      (nuovo: i 21 posti contati)
+services/api/shaperoute_api/snowshoeing.py                    (ServerSnow.buildings, mai un errore)
+services/api/tests/test_snowshoeing_api.py
+apps/mobile/assets/engine/engine.zip                          (rifatto, ultimo commit)
+docs/tasks/TASK-413.md, docs/sports/snowshoes.md
+docs/STATUS.md, docs/DECISIONS.md (ADR-0342, precisazione A3): in una PR di soli documenti dopo il merge
 ```
 
 Parte B: la lista qui sopra, da confermare al Coordinatore prima del

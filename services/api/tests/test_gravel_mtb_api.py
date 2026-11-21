@@ -213,8 +213,8 @@ def _ride(km: float, kmh: float) -> list[TrackPoint]:
 
 def test_gravel_and_mtb_have_a_ride_s_bests_of_their_own() -> None:
     sports: tuple[Sport, ...] = get_args(Sport)
-    # A skate between them since TASK-380.
-    assert sports == ("running", "cycling", MTB, "inline_skating", GRAVEL)
+    # A skate between them since TASK-380, and a wheelchair since TASK-414.
+    assert sports == ("running", "cycling", MTB, "inline_skating", "wheelchair", GRAVEL)
     assert list(SPORTS) == list(sports)
     track = _ride(21, 25.0)
     ride = bests(track, [], "cycling")

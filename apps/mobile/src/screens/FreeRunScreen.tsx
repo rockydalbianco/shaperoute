@@ -2,7 +2,15 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { isOnSnow } from "../activities/snow";
-import type { FreeRun } from "../navigation/freeRun";
+import { isFlight } from "../air/flight";
+import { FlightFinishCard } from "../air/FlightFinishCard";
+import { flightAirOf } from "../air/flightLegs";
+import { FlightLive } from "../air/FlightLive";
+import { useFlightNotice } from "../air/flightNotice";
+import { useStartLiveAtStart } from "../air/liveAtStart";
+import { usePlannedStart } from "../liveShare/usePlannedStart";
+import { useClimbNotice } from "../mountain/climbNotice";
+import { type FreeRun, pendingFreeRun } from "../navigation/freeRun";
 import { freeRunActivity } from "../navigation/freeSport";
 import { t } from "../i18n";
 import { LocationOff } from "../location/LocationOff";
@@ -34,6 +42,8 @@ import { runDistanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { RunCard } from "./RunDashboard";
 import { RunGrid, useRunNumbers } from "./RunPanel";
+import { SkiTourFinishCard } from "./SkiTourFinishCard";
+import { SkiTourLive } from "./SkiTourLive";
 import { SnowFinishCard } from "./SnowFinishCard";
 
 /**
@@ -138,6 +148,14 @@ export function FreeRunCard({
   // With «Paddle» in «Settings» the numbers are a paddler's (TASK-251),
   // with «Bike» speeds, as along a route (TASK-251 C); a run's as before.
   const sport = runActivityOf(useSport());
+  // Before the first flight on this phone, the notice (TASK-305 part R2).
+  useFlightNotice(isFlight(sport));
+  // «Share live at start»: the link at the end of the countdown (part R5b).
+  useStartLiveAtStart(isFlight(sport));
+  // A planned live within its hours: «Start live “…”?» (TASK-468 part B2b1).
+  usePlannedStart();
+  // Before the first day of mountaineering, its own (TASK-463 part B).
+  useClimbNotice(sport === "alpinism");
   const card = (
     <RunCard
       track={track}
@@ -148,10 +166,22 @@ export function FreeRunCard({
     />
   );
   // On the slopes, the resort of the day and its weather over the numbers
-  // (TASK-406 part D2).
+  // (TASK-406 part D2); on a ski tour, its phase, its VAM, the metres
+  // climbed and the height (TASK-415 part B); in flight, the altitude, the
+  // vario and the highest altitude (TASK-305 part R2).
   return sport === "skiing" ? (
     <View style={styles.skiing}>
       <DayResort />
+      {card}
+    </View>
+  ) : sport === "ski_touring" ? (
+    <View style={styles.skiing}>
+      <SkiTourLive track={track} live={running} />
+      {card}
+    </View>
+  ) : isFlight(sport) ? (
+    <View style={styles.skiing}>
+      <FlightLive track={track} live={running} />
       {card}
     </View>
   ) : (
@@ -164,15 +194,42 @@ export function FreeFinishBanner() {
   // skiing has its descents yellow and its lifts red and dashed on the map,
   // numbered, and the legend says so (TASK-429 part B, ADR-0357).
   const activity = runActivityOf(useSport());
+  // A race on foot and in the air, its map in two colours (TASK-305 part
+  // R6c): the run that ended, read once.
+  const race = useMemo(
+    () => isFlight(activity) && flightAirOf(pendingFreeRun()) !== null,
+    [activity],
+  );
+  if (isFlight(activity)) {
+    // A flight is a flight (TASK-305 part R2).
+    return (
+      <View style={styles.banner}>
+        <Text style={styles.title}>{t("Your flight")}</Text>
+        <Text style={styles.message}>
+          {race
+            ? t("White: on foot. Yellow: in the air.")
+            : t("White: where you flew.")}
+        </Text>
+      </View>
+    );
+  }
   const snow = isOnSnow(activity);
+  // A day on snowshoes is a day too, walked (TASK-413 part C).
+  const snowshoes = activity === "snowshoeing";
   return (
     <View style={styles.banner}>
-      <Text style={styles.title}>{snow ? t("Your day") : t("Your run")}</Text>
+      <Text style={styles.title}>
+        {snow || snowshoes ? t("Your day") : t("Your run")}
+      </Text>
       {activity === "skiing" ? (
         <SkiLegend />
       ) : (
         <Text style={styles.message}>
-          {snow ? t("White: where you skied.") : t("White: what you ran.")}
+          {snowshoes
+            ? t("White: where you walked.")
+            : snow
+              ? t("White: where you skied.")
+              : t("White: what you ran.")}
         </Text>
       )}
     </View>
@@ -189,10 +246,17 @@ type FinishProps = {
 };
 
 /** The end of a run without a route or, on the snow, of the day
- * (TASK-375 part C): the sport of «Settings» says which. */
+ * (TASK-375 part C), or of a ski tour with its phases (TASK-415 part B), or
+ * of a flight (TASK-305 part R2), or of a day on snowshoes (TASK-413 C):
+ * the sport of «Settings» says which. */
 export function FreeFinishCard(props: FinishProps) {
   const activity = runActivityOf(useSport());
-  return isOnSnow(activity) ? (
+  return activity === "paragliding" ? (
+    <FlightFinishCard {...props} activity={activity} />
+  ) : activity === "ski_touring" ? (
+    <SkiTourFinishCard {...props} activity={activity} />
+  ) : isOnSnow(activity) || activity === "snowshoeing" ? (
+    // A day on snowshoes ends as a day of cross-country (TASK-413 part C).
     <SnowFinishCard {...props} activity={activity} />
   ) : (
     <RunFinishCard {...props} />

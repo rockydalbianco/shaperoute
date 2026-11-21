@@ -1,9 +1,9 @@
-import { SHAPES } from "@shaperoute/shared-types";
+import { type Shape, SHAPES } from "@shaperoute/shared-types";
 import { Image, Pressable, ScrollView, StyleSheet, Text } from "react-native";
 
 import { t } from "../i18n";
 import { SAMPLE_PICTURES } from "../route/samplePictures";
-import { SHAPE_SIGNS } from "../route/ShapeTiles";
+import { ShapeGlyph } from "../route/ShapeGlyph";
 import { shapeName } from "../route/shapeWords";
 import {
   color,
@@ -21,6 +21,9 @@ type Props = {
   onChoose: (choice: FigureChoice) => void;
   /** The ready-made pictures after the shapes; none on the water. */
   pictures?: boolean;
+  /** The shapes of the sport (TASK-414: a wheelchair's four); every shape
+   * of the catalogue when not said. */
+  shapes?: readonly Shape[];
   /** «+ photo» first, a picture of the phone: only on the map to draw on. */
   onPhoto?: () => void;
   /** A photo being traced: «+ photo» waits. */
@@ -30,7 +33,7 @@ type Props = {
 
 /**
  * The figures as a row of tiles that slides sideways (TASK-281, TASK-286):
- * the 17 shapes of the catalogue by their signs and the 16 ready-made
+ * the shapes of the catalogue by their outlines (TASK-444) and the ready-made
  * pictures of «Draw» (TASK-280, TASK-290). The same tiles on the map of «Draw on the
  * map», where «+ photo» comes first, and under the route drawn.
  */
@@ -38,6 +41,7 @@ export function FigureTiles({
   chosen,
   onChoose,
   pictures = true,
+  shapes = SHAPES,
   onPhoto,
   photoBusy = false,
   testID,
@@ -60,7 +64,7 @@ export function FigureTiles({
           <Text style={styles.photoText}>{t("+ photo")}</Text>
         </Pressable>
       )}
-      {SHAPES.map((shape) => {
+      {shapes.map((shape) => {
         const selected = shape === chosen.shape;
         return (
           <Pressable
@@ -71,7 +75,7 @@ export function FigureTiles({
             accessibilityLabel={shapeName(shape)}
             accessibilityState={{ selected }}
           >
-            <Text style={styles.sign}>{SHAPE_SIGNS[shape]}</Text>
+            <ShapeGlyph shape={shape} size={GLYPH} />
           </Pressable>
         );
       })}
@@ -96,6 +100,8 @@ export function FigureTiles({
 }
 
 const TILE = MIN_TAP_SIZE + space.md;
+/** A shape's outline in its tile, with room around it. */
+const GLYPH = 28;
 
 const styles = StyleSheet.create({
   row: {
@@ -123,10 +129,6 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.small,
     fontWeight: fontWeight.semibold,
-  },
-  sign: {
-    color: color.text,
-    fontSize: fontSize.title,
   },
   picture: {
     width: TILE - space.md,

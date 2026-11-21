@@ -22,13 +22,16 @@ import {
   color,
   fontSize,
   fontWeight,
+  glass,
   MIN_TAP_SIZE,
   radius,
   space,
 } from "../theme/tokens";
 import { tabName, tourPart } from "../tour/tourParts";
+import { Glass } from "../ui/Glass";
 import { fadeTo, springTo } from "../ui/motion";
 import { Tap } from "../ui/Tap";
+import { useGlassMode } from "../ui/useGlassMode";
 import { useReduceMotion } from "../ui/useReduceMotion";
 
 /** The icons of the bar, from Lucide (ISC, assets/ui/tabs/LICENSE-lucide.txt):
@@ -59,9 +62,34 @@ export const TAB_ICON_SIZE = 26;
 /** How tall the bar is over the home indicator. */
 export const TAB_BAR_HEIGHT = 50;
 
+/**
+ * The bar is a capsule of glass floating over the foot of the app
+ * (TASK-469, ADR-0383): this far from the sides of the screen, this tall,
+ * and lifted from the bottom edge by the home indicator's room less
+ * `TAB_GLASS_SINK`, at least `space.sm`. On a phone with a home indicator
+ * the band it floats in is as tall as the bar was.
+ */
+export const TAB_BAR_INSET = space.lg;
+export const TAB_GLASS_HEIGHT = TAB_BAR_HEIGHT + space.sm;
+export const TAB_GLASS_SINK = space.md;
+
 /** The soft capsule behind the tab on screen (TASK-388), in points. */
-export const TAB_CAPSULE_WIDTH = 56;
-export const TAB_CAPSULE_HEIGHT = 34;
+export const TAB_CAPSULE_WIDTH = 64;
+export const TAB_CAPSULE_HEIGHT = TAB_GLASS_HEIGHT - space.md;
+
+/**
+ * Where the capsule stands under tab `index`, from the glass's left edge:
+ * the tabs share the glass, not the screen.
+ */
+export function tabCapsuleX(index: number, width: number, count: number): number {
+  const slot = (width - 2 * TAB_BAR_INSET) / Math.max(count, 1);
+  return index * slot + (slot - TAB_CAPSULE_WIDTH) / 2;
+}
+
+/** How far the glass floats over the bottom edge, for the phone's insets. */
+export function tabGlassLift(bottomInset: number): number {
+  return Math.max(bottomInset - TAB_GLASS_SINK, space.sm);
+}
 /** How small an icon gets under the finger. */
 export const TAB_PRESS_SCALE = 0.9;
 /** How far the icon taking its tab rises, in points. */
@@ -108,9 +136,15 @@ type Props = {
 export function TabBar({ tabs, page, onTab, drag }: Props) {
   const insets = useSafeAreaInsets();
   const still = useReduceMotion();
+  const mode = useGlassMode();
   const { width } = useWindowDimensions();
   const count = tabs.length;
-  const slot = width / Math.max(count, 1);
+  const slot = (width - 2 * TAB_BAR_INSET) / Math.max(count, 1);
+  const lift = tabGlassLift(insets.bottom);
+  const band = Math.max(
+    TAB_BAR_HEIGHT + insets.bottom,
+    TAB_GLASS_HEIGHT + lift + space.xs,
+  );
 
   // The capsule's tab, as a number: 2.5 is half way from the third to the fourth.
   const [at] = useState(() => new Animated.Value(page));
@@ -222,7 +256,7 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
   // other comes in at the left.
   const moves = useMemo(() => {
     const where = drag ? Animated.add(at, drag) : at;
-    const offset = (slot - TAB_CAPSULE_WIDTH) / 2;
+    const offset = tabCapsuleX(0, width, count);
     return [-1, 0, 1].map((round) =>
       where.interpolate({
         inputRange: [0, 1],
@@ -232,57 +266,68 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
         ],
       }),
     );
-  }, [at, drag, slot, count]);
+  }, [at, drag, slot, count, width]);
 
   return (
     <View
-      style={[styles.bar, { paddingBottom: insets.bottom }]}
+      style={[styles.bar, { height: band }]}
       accessibilityRole="tablist"
       testID="tab-bar"
     >
-      <View style={styles.capsules} pointerEvents="none">
-        {moves.map((translateX, round) => (
-          <Animated.View
-            key={round}
-            testID={round === 1 ? "tab-capsule" : `tab-capsule-${round}`}
-            style={[styles.capsule, { opacity: shown, transform: [{ translateX }] }]}
-          />
-        ))}
-      </View>
-      {tabs.map((tab, index) => {
-        const selected = index === page;
-        return (
-          // The tour shows the tab: a plain view, which it can measure.
-          <View
-            key={tab.title}
-            ref={tourPart(tabName(tab.title))}
-            collapsable={false}
-            style={styles.slot}
-          >
-            <Tap
-              style={styles.tab}
-              pressScale={TAB_PRESS_SCALE}
-              settle="glide"
-              onPress={() => {
-                if (index !== page) {
-                  touched(index);
-                }
-                onTab(index);
-              }}
-              accessibilityRole="tab"
-              accessibilityState={{ selected }}
-              accessibilityLabel={tab.label}
+      <Glass testID="tab-glass" mode={mode} style={[styles.glass, { bottom: lift }]}>
+        <View style={styles.capsules} pointerEvents="none">
+          {moves.map((translateX, round) => (
+            <Animated.View
+              key={round}
+              testID={round === 1 ? "tab-capsule" : `tab-capsule-${round}`}
+              style={[
+                styles.capsule,
+                mode === "glass" ? styles.capsuleOnGlass : null,
+                { opacity: shown, transform: [{ translateX }] },
+              ]}
+            />
+          ))}
+        </View>
+        {tabs.map((tab, index) => {
+          const selected = index === page;
+          return (
+            // The tour shows the tab: a plain view, which it can measure.
+            <View
+              key={tab.title}
+              ref={tourPart(tabName(tab.title))}
+              collapsable={false}
+              style={styles.slot}
             >
-              <Glyph tab={tab} selected={selected} on={lightOf(index)} still={still} />
-              {(tab.count ?? 0) > 0 && (
-                <View style={styles.count}>
-                  <Text style={styles.countText}>{countLabel(tab.count ?? 0)}</Text>
-                </View>
-              )}
-            </Tap>
-          </View>
-        );
-      })}
+              <Tap
+                style={styles.tab}
+                pressScale={TAB_PRESS_SCALE}
+                settle="glide"
+                onPress={() => {
+                  if (index !== page) {
+                    touched(index);
+                  }
+                  onTab(index);
+                }}
+                accessibilityRole="tab"
+                accessibilityState={{ selected }}
+                accessibilityLabel={tab.label}
+              >
+                <Glyph
+                  tab={tab}
+                  selected={selected}
+                  on={lightOf(index)}
+                  still={still}
+                />
+                {(tab.count ?? 0) > 0 && (
+                  <View style={styles.count}>
+                    <Text style={styles.countText}>{countLabel(tab.count ?? 0)}</Text>
+                  </View>
+                )}
+              </Tap>
+            </View>
+          );
+        })}
+      </Glass>
     </View>
   );
 }
@@ -330,7 +375,7 @@ function Glyph({ tab, selected, on, still }: GlyphProps) {
       <Animated.Image
         testID={`tab-icon-off-${tab.title}`}
         source={TAB_ICONS[tab.icon].off}
-        style={[styles.layer, { tintColor: color.textFaint, opacity: unlit }]}
+        style={[styles.layer, { tintColor: color.textMuted, opacity: unlit }]}
       />
       <Animated.Image
         testID={`tab-icon-on-${tab.title}`}
@@ -342,37 +387,46 @@ function Glyph({ tab, selected, on, still }: GlyphProps) {
 }
 
 const styles = StyleSheet.create({
-  // Over the pages, a little see-through: what scrolls under it shows, as
-  // under Instagram's. A hairline above, as under the header. What passes
-  // its edges (a capsule going round) is cut.
+  // The band at the foot of the app, the page's background; the glass
+  // floats in it (TASK-469, ADR-0383).
   bar: {
-    flexDirection: "row",
-    overflow: "hidden",
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: color.hairline,
-    backgroundColor: color.background + "F2",
+    backgroundColor: color.background,
   },
+  glass: {
+    position: "absolute",
+    left: TAB_BAR_INSET,
+    right: TAB_BAR_INSET,
+    height: TAB_GLASS_HEIGHT,
+    flexDirection: "row",
+  },
+  // What passes the glass's edges (a capsule going round) is cut.
   capsules: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: TAB_BAR_HEIGHT,
+    bottom: 0,
+    overflow: "hidden",
+    borderRadius: radius.pill,
   },
   capsule: {
     position: "absolute",
-    top: (TAB_BAR_HEIGHT - TAB_CAPSULE_HEIGHT) / 2,
+    top: (TAB_GLASS_HEIGHT - TAB_CAPSULE_HEIGHT) / 2,
     left: 0,
     width: TAB_CAPSULE_WIDTH,
     height: TAB_CAPSULE_HEIGHT,
     borderRadius: radius.pill,
     backgroundColor: color.surfaceRaised,
   },
+  // On the see-through glass the capsule is the text, faint: never yellow.
+  capsuleOnGlass: {
+    backgroundColor: glass.selected,
+  },
   slot: {
     flex: 1,
   },
   tab: {
-    height: TAB_BAR_HEIGHT,
+    height: TAB_GLASS_HEIGHT,
     minWidth: MIN_TAP_SIZE,
     alignItems: "center",
     justifyContent: "center",

@@ -109,6 +109,10 @@ export type PhotoShown = {
 export type DrawingsDoor = {
   /** The keys of the account's runs others see; empty until the API says. */
   publicKeys: ReadonlySet<string>;
+  /** The titles of the account's posts, by the run's key, for the runs that
+   * have one (TASK-456): from the same answer as `publicKeys`. Without it
+   * (a door of a test made before) no run has a title. */
+  postTitles?: ReadonlyMap<string, string>;
   /** Asks the API which runs others see: «My activities» does when it shows. */
   refreshMine: () => void;
   /** What the owner chose for the run `key`; null with nobody signed in. */
@@ -180,6 +184,7 @@ export type DrawingsDoor = {
 };
 
 const NO_KEYS: ReadonlySet<string> = new Set();
+const NO_TITLES: ReadonlyMap<string, string> = new Map();
 
 const NOTHING: DrawingsDoor = {
   publicKeys: NO_KEYS,
@@ -227,8 +232,18 @@ type Doors = {
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
 
-/** The public keys of one account: another token's are nobody's. */
-type Held = { token: string; keys: ReadonlySet<string> };
+/** The public keys of one account, and the titles of its posts: another
+ * token's are nobody's. */
+type Held = {
+  token: string;
+  keys: ReadonlySet<string>;
+  titles: ReadonlyMap<string, string>;
+};
+
+/** A post's title as a list shows it: null for none, or an empty one. */
+function titleOf(title: string | null): string | null {
+  return title === null || title.trim() === "" ? null : title;
+}
 
 /** The drawings of the account, for «Profile» to hand to the app. */
 export function useDrawingsOf(
@@ -270,6 +285,12 @@ export function useDrawingsOf(
               .filter((d) => isSeen(choiceOfDrawing(d).visibility))
               .map((d) => d.key),
           ),
+          titles: new Map(
+            outcome.value.flatMap((d): [string, string][] => {
+              const title = titleOf(d.title);
+              return title === null ? [] : [[d.key, title]];
+            }),
+          ),
         });
       } else {
         ended(token, outcome);
@@ -277,18 +298,30 @@ export function useDrawingsOf(
     });
   }, [baseUrl, ended, fetchFn, key, token]);
 
-  /** The run `key` is seen by others, or not, as chosen. */
-  const mark = useCallback((of: string, runKey: string, on: boolean) => {
-    setHeld((was) => {
-      const keys = new Set(was !== null && was.token === of ? was.keys : NO_KEYS);
-      if (on) {
-        keys.add(runKey);
-      } else {
-        keys.delete(runKey);
-      }
-      return { token: of, keys };
-    });
-  }, []);
+  /** The run `key` is seen by others, or not, and has this title, as
+   * chosen. */
+  const mark = useCallback(
+    (of: string, runKey: string, on: boolean, title: string | null) => {
+      setHeld((was) => {
+        const mine = was !== null && was.token === of;
+        const keys = new Set(mine ? was.keys : NO_KEYS);
+        if (on) {
+          keys.add(runKey);
+        } else {
+          keys.delete(runKey);
+        }
+        const titles = new Map(mine ? was.titles : NO_TITLES);
+        const shown = titleOf(title);
+        if (shown === null) {
+          titles.delete(runKey);
+        } else {
+          titles.set(runKey, shown);
+        }
+        return { token: of, keys, titles };
+      });
+    },
+    [],
+  );
 
   const choiceOf = useCallback(
     async (runKey: string): Promise<ChoiceShown | null> => {
@@ -347,7 +380,7 @@ export function useDrawingsOf(
         // would undo it when it is sent (TASK-252).
         forgetForDrawing(owner, runKey);
         const kept = choiceOfDrawing(outcome.value);
-        mark(token, runKey, isSeen(kept.visibility));
+        mark(token, runKey, isSeen(kept.visibility), kept.title);
         // Then the photos (TASK-208): those the phone has and the API has
         // not, while others see the run, and the places emptied here. A
         // photo that cannot go now goes with the next round of what waits.
@@ -418,7 +451,7 @@ export function useDrawingsOf(
       }
       if (worthAgain(outcome)) {
         if (keepForDrawing({ owner, key: runKey, ...choice })) {
-          mark(token, runKey, isSeen(choice.visibility));
+          mark(token, runKey, isSeen(choice.visibility), choice.title);
           return { kind: "waiting" };
         }
       } else {
@@ -688,9 +721,11 @@ export function useDrawingsOf(
   }, [onLeave]);
 
   const publicKeys = held !== null && held.token === token ? held.keys : NO_KEYS;
+  const postTitles = held !== null && held.token === token ? held.titles : NO_TITLES;
   return useMemo(
     () => ({
       publicKeys,
+      postTitles,
       refreshMine,
       choiceOf,
       choose,
@@ -718,6 +753,7 @@ export function useDrawingsOf(
     }),
     [
       publicKeys,
+      postTitles,
       refreshMine,
       choiceOf,
       choose,

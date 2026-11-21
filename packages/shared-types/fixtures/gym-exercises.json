@@ -96,6 +96,13 @@
       "kind": "bodyweight",
       "scale": "B-easy"
     },
+    { "key": "superman", "group": "back", "kind": "bodyweight", "scale": "B-easy" },
+    {
+      "key": "bodyweight_squat",
+      "group": "legs",
+      "kind": "bodyweight",
+      "scale": "B-easy"
+    },
     {
       "key": "back_squat",
       "group": "legs",
@@ -125,6 +132,7 @@
       "scale": "L-big",
       "cap": 600
     },
+    { "key": "glute_bridge", "group": "legs", "kind": "bodyweight", "scale": "B-easy" },
     { "key": "glute_machine", "group": "legs", "kind": "load", "scale": "L-M" },
     { "key": "hip_abduction", "group": "legs", "kind": "load", "scale": "L-M" },
     { "key": "hip_adduction", "group": "legs", "kind": "load", "scale": "L-M" },
@@ -191,6 +199,7 @@
     { "key": "plank", "group": "core", "kind": "timed", "scale": "T" },
     { "key": "side_plank", "group": "core", "kind": "timed", "scale": "T" },
     { "key": "wall_sit", "group": "core", "kind": "timed", "scale": "T" },
+    { "key": "mountain_climber", "group": "core", "kind": "timed", "scale": "T" },
     { "key": "power_clean", "group": "full_body", "kind": "load", "scale": "L-M" },
     { "key": "snatch", "group": "full_body", "kind": "load", "scale": "L-M" },
     { "key": "kettlebell_swing", "group": "full_body", "kind": "load", "scale": "L-S" },

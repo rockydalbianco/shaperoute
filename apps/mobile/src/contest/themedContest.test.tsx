@@ -242,7 +242,14 @@ describe("what the API says", () => {
 
 describe("the card of «Feed»", () => {
   test("without a theme: as before, «How it works» and no way to a page", async () => {
-    await render(<ContestCard contest={PLAIN} mine={null} />);
+    // Far from today's clock, like THEMED: the fixture's contest ended on
+    // 2026-11-15, and an ended contest says «Ended · the winner is coming».
+    const running = {
+      ...PLAIN,
+      starts_at: "2020-01-01T00:00:00Z",
+      ends_at: "2999-12-31T23:59:59Z",
+    };
+    await render(<ContestCard contest={running} mine={null} />);
     expect(screen.getByRole("header", { name: "MuW contest" })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "How it works" })).toBeOnTheScreen();
     expect(screen.getByText("Publish a run to take part.")).toBeOnTheScreen();
@@ -357,7 +364,8 @@ describe("the page", () => {
     );
     const [post] = await screen.findAllByTestId("feed-post");
     await fireEvent.press(post);
-    expect(opens).toHaveBeenCalledWith(GALLERY.entries[0].drawing);
+    // The tap waits to know it is alone (TASK-454 part B).
+    await waitFor(() => expect(opens).toHaveBeenCalledWith(GALLERY.entries[0].drawing));
     await unmount();
     opens.mockClear();
     await render(

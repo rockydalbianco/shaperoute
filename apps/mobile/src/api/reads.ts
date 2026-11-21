@@ -36,3 +36,13 @@ export const READS: readonly string[] = [
 export function readsHeaders(): Record<string, string> {
   return { [READS_HEADER]: READS.join(",") };
 }
+
+/**
+ * The header of the calls that read something more than a kind of run: the
+ * messages say `post` (TASK-455, ADR-0382), which only they receive. It is
+ * not among READS: the API reads it in its messages alone, and an API of
+ * before leaves it out as every value it does not know.
+ */
+export function readsHeadersWith(...more: string[]): Record<string, string> {
+  return { [READS_HEADER]: [...READS, ...more].join(",") };
+}

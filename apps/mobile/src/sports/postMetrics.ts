@@ -27,7 +27,7 @@ const ON_WATER: ReadonlySet<RunActivity> = new Set(["paddling", "swimming"]);
 /** On foot: every row and every section. */
 const ON_FOOT: ReadonlySet<RunActivity> = new Set(["running", "walking", "hiking"]);
 
-/** On wheels and on the snow a speed says more than a pace. */
+/** On wheels, on the snow and in the air a speed says more than a pace. */
 const BY_SPEED: ReadonlySet<RunActivity> = new Set([
   "cycling",
   "gravel_biking",
@@ -35,6 +35,7 @@ const BY_SPEED: ReadonlySet<RunActivity> = new Set([
   "inline_skating",
   "skiing",
   "xc_skiing",
+  "paragliding",
 ]);
 
 /** The rows of the summary of an activity of `activity`; a run's when none. */

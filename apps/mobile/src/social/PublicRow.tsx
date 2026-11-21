@@ -33,7 +33,7 @@ import {
 
 type Line = { text: string; alert: boolean };
 
-/** How much of the screen the form may take on the card. */
+/** How much of the screen the form may take, unless told. */
 export const CARD_FORM_SHARE = 0.4;
 
 type Props = {
@@ -44,6 +44,12 @@ type Props = {
    * drawing (TASK-348). */
   track?: readonly LatLon[] | null;
   rotationDeg?: number | null;
+  /** How much of the screen the form may take: more in the sheet «Edit
+   * post» than on a card (TASK-456). */
+  formShare?: number;
+  /** The post's title as the form has it now, once the API said what was
+   * chosen and at every change: the run's card shows it (TASK-456). */
+  onTitle?: (title: string | null) => void;
   /** The fakes of the tests. */
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
@@ -52,7 +58,7 @@ type Props = {
 
 /**
  * The form of the drawing on a run of «My activities» (TASK-117, TASK-208),
- * on its card: to open the run to the others after the end of the run,
+ * in the sheet «Edit post» of its card (TASK-456): to open the run to the others after the end of the run,
  * change its title, its description, its photos, the people tagged, what
  * it was, or take it back. Nothing until the API says what was chosen;
  * nothing at all from an API without drawings. The title and the
@@ -66,6 +72,8 @@ export function PublicRow({
   imported,
   track,
   rotationDeg,
+  formShare = CARD_FORM_SHARE,
+  onTitle,
   pick,
   fetchFn,
   apiKey,
@@ -155,6 +163,14 @@ export function PublicRow({
       live.current = false;
     };
   }, [activityKey, choiceOf]);
+
+  // The title the form has, said to the card.
+  const title = choice === null ? undefined : choice.title;
+  useEffect(() => {
+    if (title !== undefined) {
+      onTitle?.(title);
+    }
+  }, [onTitle, title]);
 
   if (shown === null || shown.kind === "off" || choice === null || kept === null) {
     return null;
@@ -260,7 +276,7 @@ export function PublicRow({
 
   return (
     <View style={styles.block}>
-      <FormScroll maxHeight={Math.round(height * CARD_FORM_SHARE)}>
+      <FormScroll maxHeight={Math.round(height * formShare)}>
         <OutfitTaggingContext.Provider value={outfit}>
           <DrawingForm
             choice={current}
@@ -358,7 +374,9 @@ export function PublicRow({
 }
 
 const styles = StyleSheet.create({
+  // In a sheet shorter than the form (the keyboard is up), the form scrolls.
   block: {
+    flexShrink: 1,
     gap: space.sm,
     paddingTop: space.xs,
   },

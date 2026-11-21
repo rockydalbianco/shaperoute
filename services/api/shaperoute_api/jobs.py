@@ -27,6 +27,7 @@ from route_engine.network import BBox, Graph
 from route_engine.optimizer import GraphLoader, Plan
 from route_engine.shore_names import ShoreNameSource, ShorePlace
 from route_engine.sidewalks import NamedRoad
+from route_engine.snow import CountsBuildings
 from route_engine.water import Element, WaterSource
 
 from shaperoute_api.activity_graphs import (
@@ -316,7 +317,9 @@ class RouteJobs:
         """The route the store keeps a few metres from the start, reached
         along the roads (FindsNearby); None when the store has none, or is
         not one that looks nearby. A store that fails leaves the job to the
-        engine: its failure is logged, the job goes on."""
+        engine: its failure is logged, the job goes on. A zone it could not
+        download is not asked for twice: `source` remembers it
+        (_Reporting.unavailable, TASK-471)."""
         if not isinstance(self._store, FindsNearby):
             return None
         try:
@@ -324,7 +327,9 @@ class RouteJobs:
         except _Dropped:
             raise
         except MapDataUnavailableError:
-            return None  # the engine says so, as for any request
+            # The engine goes on with the zones there are, and says so at
+            # once if it needs a download too (_Reporting.unavailable).
+            return None
         except Exception:
             log.exception("job %s: the archive failed; drawn instead", job.job_id)
             return None
@@ -413,7 +418,15 @@ class _Reporting:
     It also keeps the job's times: each load's, and how the nearby starts
     went (job_times.NotesNearby). And it passes on to `first` the plan from
     the user's own start, as soon as the planner has it
-    (job_times.ShowsFirst, TASK-435)."""
+    (job_times.ShowsFirst, TASK-435).
+
+    A job asks Overpass once (TASK-471, ADR-0385): after a download that
+    failed, `unavailable` is its error, and the next load that needs a
+    download raises it at once, without the minute or more a failed
+    download takes. Loads from the cache go on: a route that needs no
+    download is still drawn. The archive's load and the planner's are the
+    same job's (RouteJobs._nearby, then the plan), in a worker process too
+    (route_processes gives it `unavailable`)."""
 
     def __init__(
         self,
@@ -423,6 +436,7 @@ class _Reporting:
         times: JobTimes | None = None,
         clock: Callable[[], float] = time.monotonic,
         first: Callable[[Plan], None] | None = None,
+        unavailable: MapDataUnavailableError | None = None,
     ):
         self._source = source
         self._report = report
@@ -431,6 +445,8 @@ class _Reporting:
         self._clock = clock
         self._first = first
         self.graphs: list[Graph] = []  # as loaded, for the directions
+        # The job's download that failed, if one did: none is tried again.
+        self.unavailable = unavailable
 
     def note_nearby(self, nearby: NearbyPlan) -> None:
         self._times.nearby = nearby
@@ -450,11 +466,17 @@ class _Reporting:
         downloading = isinstance(self._source, KnowsDownloads) and (
             self._source.needs_download(bbox)
         )
+        if downloading and self.unavailable is not None:
+            log.info("map data unavailable a moment ago: not downloaded again")
+            raise self.unavailable
         if downloading:
             self._report("downloading_map")
         began = self._clock()
         try:
             graph = self._source.load(bbox)
+        except MapDataUnavailableError as exc:
+            self.unavailable = exc
+            raise
         finally:  # a download that fails took its time too
             self._times.loaded(self._clock() - began, downloading)
         if not self._wanted():
@@ -513,7 +535,7 @@ class _ReportingWater:
 class _ReportingSnow(_ReportingWater):
     """The job's snow (TASK-413), as its water: says when a download of the
     snow starts and ends, and stops the job if it was cancelled meanwhile;
-    the heights are its source's."""
+    the heights and the count of the buildings are its source's."""
 
     def __init__(
         self,
@@ -528,6 +550,15 @@ class _ReportingSnow(_ReportingWater):
 
     def heights(self) -> Heights:
         return self._snow.heights()
+
+    def buildings(self, bbox: BBox) -> int | None:
+        """The buildings of `bbox` as the source counts them, so that the
+        engine says «no snow» in a town before the snow is read (TASK-413
+        A3): without it a job never asked, as on the server after step 11.
+        None when the source cannot count: the job goes on as before."""
+        if isinstance(self._snow, CountsBuildings):
+            return self._snow.buildings(bbox)
+        return None
 
 
 def with_choices(

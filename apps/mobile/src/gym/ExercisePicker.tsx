@@ -8,11 +8,13 @@ import type { Language } from "../i18n/languages";
 import { color, space } from "../theme/tokens";
 import { GYM_EXERCISES, type GymExercise, type GymGroup } from "./catalog";
 import { ExerciseFigure } from "./ExerciseFigure";
-import { GroupGrid, GROUP_EMOJI, GuideButton, MachineGrid } from "./ExerciseGrid";
+import { GroupGrid, GuideButton, MachineGrid } from "./ExerciseGrid";
 import { ExerciseGuide } from "./ExerciseGuide";
 import { groupName } from "./groups";
 import { gymStyles } from "./gymStyles";
 import { moveOf } from "./moves";
+import { MuscleMap } from "./MuscleMap";
+import { musclesOf } from "./muscles";
 import type { Entry } from "./setKinds";
 
 /** The side of the figure on a row of the search. */
@@ -159,7 +161,7 @@ export function ExercisePicker({
             <Text style={gymStyles.chipText}>‹</Text>
           </Pressable>
           <Text style={gymStyles.title} accessibilityRole="header">
-            {`${GROUP_EMOJI[group]} ${groupName(group, language)}`}
+            {groupName(group, language)}
           </Text>
         </View>
       )}
@@ -191,6 +193,7 @@ export function ExercisePicker({
         {searching &&
           found.map((exercise) => {
             const move = moveOf(exercise.key);
+            const worked = musclesOf(exercise.key);
             return (
               <View key={exercise.key} style={styles.found}>
                 <Pressable
@@ -202,6 +205,13 @@ export function ExercisePicker({
                   testID={`exercise-${exercise.key}`}
                 >
                   {move !== null && <ExerciseFigure move={move} size={ROW_FIGURE} />}
+                  {worked !== null && (
+                    <MuscleMap
+                      worked={worked}
+                      height={ROW_FIGURE}
+                      language={language}
+                    />
+                  )}
                   <Text style={[gymStyles.text, styles.foundName]}>
                     {exercise.names[language]}
                   </Text>

@@ -272,6 +272,7 @@ test("a tab touched shows its page at once where the strip stands, and builds no
   expect(screen.getByText(/^Explore body/)).toBeOnTheScreen();
   expect(names(built)).toEqual(["Feed", "Draw", "Explore"]);
   // And the swipe goes on from there: «Feed» after «Explore».
+  await fireEvent(strip(), "scrollBeginDrag", at(STRIP_START));
   await fireEvent(strip(), "momentumScrollEnd", at(STRIP_START + 1));
   expect(screen.getByRole("tab", { name: "Feed", selected: true })).toBeOnTheScreen();
 });

@@ -1,13 +1,6 @@
 import type { Drawing, SkiDayPart } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useState } from "react";
-import {
-  BackHandler,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { dayLabel } from "../activities/activityText";
@@ -28,6 +21,7 @@ import {
   MIN_TAP_SIZE,
   space,
 } from "../theme/tokens";
+import { useBackCloses } from "../ui/backLayers";
 import { runDistanceLabel } from "../units/format";
 import { speedUnit } from "../units/runFormat";
 import { useUnits } from "../units/useUnits";
@@ -102,13 +96,8 @@ export function SkiDayPage({ day, onBack }: Props) {
       live = false;
     };
   }, [day.id, skiDayOf]);
-  useEffect(() => {
-    const listener = BackHandler.addEventListener("hardwareBackPress", () => {
-      onBack();
-      return true;
-    });
-    return () => listener.remove();
-  }, [onBack]);
+  // Android's «back» is «←»; only while its tab is on screen.
+  useBackCloses(true, onBack);
 
   const snowParts = useMemo(
     () => (parts ?? []).map((part) => snowPartOf(part, day.started_at)),

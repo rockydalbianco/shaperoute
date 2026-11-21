@@ -17,21 +17,33 @@ from fastapi.testclient import TestClient
 from route_engine.network import FileSource
 
 from shaperoute_api.app import create_app
+from shaperoute_api.best_routes import near as _best_near
 from shaperoute_api.recommended import (
     CatalogRoute,
     RecommendedCatalog,
+    activity_of,
     distance_m,
     parse_city,
+    pen_up_preview,
     preview,
     turn_of,
     varied,
+    walks_of,
 )
 
 HERE = Path(__file__).parent
 REPO = HERE.parents[2]
 CATALOG = HERE / "fixtures" / "catalog"
+# A word written letter by letter, the pen up between them, and a shape.
+PEN_UP = HERE / "fixtures" / "catalog_pen_up"
 CONTRACT = REPO / "packages" / "shared-types" / "fixtures"
 PIAZZA_DUOMO = {"lat": 46.067, "lon": 11.1215}
+
+
+def best_near(
+    catalog: RecommendedCatalog, point: tuple[float, float], radius_m: float
+) -> list[CatalogRoute]:
+    return [route for route, _ in _best_near(catalog, point, radius_m)]
 
 
 def client(catalog: RecommendedCatalog | None) -> TestClient:
@@ -419,3 +431,187 @@ def test_a_bad_page_query_is_invalid(api: TestClient, params: dict[str, Any]) ->
 def test_without_a_catalogue_the_page_is_empty() -> None:
     answer = client(None).get("/catalog", params=PIAZZA_DUOMO)
     assert answer.json() == {"total": 0, "cities": 0, "routes": []}
+
+
+# --- A word with the pen up (TASK-441, ADR-0366) -------------------------------
+
+
+@pytest.fixture
+def pen_up() -> TestClient:
+    return client(RecommendedCatalog.from_dir(PEN_UP))
+
+
+def test_the_list_with_a_word_in_pieces_is_the_shared_contract(
+    pen_up: TestClient,
+) -> None:
+    answer = pen_up.get("/recommended-routes", params=PIAZZA_DUOMO)
+    assert answer.status_code == 200
+    contract = CONTRACT / "recommended-routes-pen-up.json"
+    assert answer.json() == json.loads(contract.read_text("utf-8"))
+
+
+def test_a_word_in_pieces_whole_is_the_shared_contract(pen_up: TestClient) -> None:
+    answer = pen_up.get("/recommended-routes/trento-go-6000-0")
+    assert answer.status_code == 200
+    contract = CONTRACT / "recommended-route-pen-up.json"
+    assert answer.json() == json.loads(contract.read_text("utf-8"))
+
+
+def test_the_card_of_a_word_in_pieces_leaves_the_walk_out(pen_up: TestClient) -> None:
+    routes = pen_up.get("/recommended-routes", params=PIAZZA_DUOMO).json()["routes"]
+    word, shape = routes
+    # Five points of G, five of O: the point walked between them is not there,
+    # and O's first point is come to with the pen up.
+    assert len(word["preview"]) == 10
+    assert word["gaps"] == [5]
+    assert [46.0672, 11.1232] not in word["preview"]
+    # A route in one line says nothing new.
+    assert "gaps" not in shape
+    page = pen_up.get("/catalog", params=PIAZZA_DUOMO).json()["routes"]
+    assert [r.get("gaps") for r in page] == [[5], None]
+
+
+def test_only_a_route_in_pieces_says_its_walks(pen_up: TestClient) -> None:
+    word = pen_up.get("/recommended-routes/trento-go-6000-0").json()
+    assert word["walks"] == [[4, 6]]
+    assert len(word["points"]) == 11
+    shape = pen_up.get("/recommended-routes/trento-heart-5000-1").json()
+    assert "walks" not in shape
+
+
+def test_the_preview_of_pieces_thins_each_and_marks_where_the_pen_comes_down() -> None:
+    line = [(46.0 + i / 10000, 11.0) for i in range(300)]
+    preview_, gaps = pen_up_preview(line, [(99, 110), (199, 210)], piece_size=8)
+    assert len(preview_) == 24
+    assert gaps == [8, 16]
+    assert preview_[0] == line[0] and preview_[7] == line[99]
+    assert preview_[8] == line[110] and preview_[15] == line[199]
+    assert preview_[16] == line[210] and preview_[-1] == line[-1]
+
+
+def test_many_pieces_share_the_points_and_keep_two_each() -> None:
+    line = [(46.0 + i / 10000, 11.0) for i in range(100)]
+    walks = [(i, i + 2) for i in range(4, 95, 5)]
+    preview_, gaps = pen_up_preview(line, walks, piece_size=4, pieces=2)
+    assert len(gaps) == len(walks)
+    assert len(preview_) == 2 * (len(walks) + 1)
+
+
+@pytest.mark.parametrize(
+    "walks",
+    [
+        None,
+        [],
+        "4-6",
+        [[4]],
+        [[4, 6, 8]],
+        [[6, 4]],
+        [[4, 4]],
+        [[4, 11]],
+        [[-1, 3]],
+        [[4.0, 6]],
+        [[True, 6]],
+        [[4, 6], [5, 8]],
+    ],
+)
+def test_walks_that_do_not_read_leave_the_route_in_one_line(walks: Any) -> None:
+    assert walks_of({"walks": walks}, 11) == ()
+
+
+def test_walks_in_order_are_kept() -> None:
+    assert walks_of({"walks": [[2, 4], [4, 6], [8, 10]]}, 11) == (
+        (2, 4),
+        (4, 6),
+        (8, 10),
+    )
+    assert walks_of({}, 11) == ()
+
+
+# --- A ride (TASK-441 B2, ADR-0366) ---------------------------------------------
+
+# A heart of 5 km on foot and, after it in the file, one of 30 km by bike.
+BIKE = HERE / "fixtures" / "catalog_bike"
+RUN_ID, RIDE_ID = "trento-heart-5000-0", "trento-heart-30000-1"
+
+
+@pytest.fixture
+def bike() -> TestClient:
+    return client(RecommendedCatalog.from_dir(BIKE))
+
+
+def test_the_list_of_the_rides_is_the_shared_contract(bike: TestClient) -> None:
+    answer = bike.get(
+        "/recommended-routes", params={**PIAZZA_DUOMO, "activity": "cycling"}
+    )
+    assert answer.status_code == 200
+    contract = CONTRACT / "recommended-routes-bike.json"
+    assert answer.json() == json.loads(contract.read_text("utf-8"))
+
+
+def test_a_ride_whole_is_the_shared_contract(bike: TestClient) -> None:
+    answer = bike.get(f"/recommended-routes/{RIDE_ID}")
+    assert answer.status_code == 200
+    contract = CONTRACT / "recommended-route-bike.json"
+    assert answer.json() == json.loads(contract.read_text("utf-8"))
+
+
+def test_who_does_not_ask_for_an_activity_gets_the_runs_alone(
+    bike: TestClient,
+) -> None:
+    # An app from before the rides: its lists are what they were.
+    near = bike.get("/recommended-routes", params=PIAZZA_DUOMO).json()["routes"]
+    assert [r["id"] for r in near] == [RUN_ID]
+    assert "activity" not in near[0]
+    page = bike.get("/catalog", params=PIAZZA_DUOMO).json()
+    assert [r["id"] for r in page["routes"]] == [RUN_ID]
+    assert (page["total"], page["cities"]) == (1, 1)
+    said = bike.get(
+        "/recommended-routes", params={**PIAZZA_DUOMO, "activity": "running"}
+    ).json()["routes"]
+    assert said == near
+
+
+def test_the_rides_are_listed_apart_and_say_what_they_are(bike: TestClient) -> None:
+    asked = {**PIAZZA_DUOMO, "activity": "cycling"}
+    near = bike.get("/recommended-routes", params=asked).json()["routes"]
+    assert [(r["id"], r["activity"]) for r in near] == [(RIDE_ID, "cycling")]
+    page = bike.get("/catalog", params=asked).json()
+    assert [r["id"] for r in page["routes"]] == [RIDE_ID]
+    assert (page["total"], page["cities"]) == (1, 1)
+    assert page["routes"][0]["activity"] == "cycling"
+
+
+def test_only_a_ride_says_its_activity_when_opened(bike: TestClient) -> None:
+    assert bike.get(f"/recommended-routes/{RIDE_ID}").json()["activity"] == "cycling"
+    assert "activity" not in bike.get(f"/recommended-routes/{RUN_ID}").json()
+
+
+def test_an_activity_the_catalogue_does_not_have_is_an_empty_list(
+    bike: TestClient,
+) -> None:
+    asked = {**PIAZZA_DUOMO, "activity": "paddling"}
+    assert bike.get("/recommended-routes", params=asked).json() == {"routes": []}
+    page = bike.get("/catalog", params=asked).json()
+    assert page == {"total": 0, "cities": 0, "routes": []}
+
+
+def test_an_activity_too_long_is_invalid(bike: TestClient) -> None:
+    asked = {**PIAZZA_DUOMO, "activity": "x" * 41}
+    assert bike.get("/recommended-routes", params=asked).status_code == 422
+    assert bike.get("/catalog", params=asked).status_code == 422
+
+
+def test_the_catalogue_counts_every_route_and_keeps_the_runs_apart() -> None:
+    catalog = RecommendedCatalog.from_dir(BIKE)
+    assert len(catalog) == 2
+    # What best_routes.py reads: the runs, never a ride among them.
+    assert list(catalog.routes) == [RUN_ID]
+    assert [r.id for r in catalog.of("cycling")] == [RIDE_ID]
+    assert [r.id for r in best_near(catalog, (46.067, 11.1215), 5_000)] == [RUN_ID]
+
+
+@pytest.mark.parametrize("said", [None, "", 7, ["cycling"], True])
+def test_an_activity_that_does_not_read_is_a_run(said: Any) -> None:
+    assert activity_of({"activity": said}) == "running"
+    assert activity_of({}) == "running"
+    assert activity_of({"activity": "cycling"}) == "cycling"

@@ -70,7 +70,6 @@ export const DE: Table = {
   // «Keep it» answers two questions (a run, Strava): a word that fits both.
   "Keep it": "Abbrechen",
   "Delete run": "Lauf löschen",
-  "Delete the run of {when}": "Lauf vom {when} löschen",
   Delete: "Löschen",
   // A run the API will not take (TASK-257).
   "The server could not take this run: {message}":
@@ -87,6 +86,7 @@ export const DE: Table = {
     "Gelb: die Route. Weiß: was du gelaufen bist.",
   "White: what you ran.": "Weiß: was du gelaufen bist.",
   "Back to the list": "Zurück zur Liste",
+  "Edit post": "Beitrag bearbeiten",
 
   // src/activities/activitiesDoor.ts
   "Sign up or log in to keep your runs and share them as drawings.":
@@ -645,8 +645,8 @@ export const DE: Table = {
     "Dieser Umriss passt hier nicht auf die Straßen. Versuche eine andere Distanz, einen anderen Start oder ein einfacheres Bild.",
   "This shape does not fit the roads here. Try another shape, or another start:":
     "Diese Form passt hier nicht auf die Straßen. Versuche eine andere Form oder einen anderen Start:",
-  "Map data for this area could not be downloaded. Try again later.":
-    "Die Kartendaten für dieses Gebiet konnten nicht geladen werden. Versuche es später noch einmal.",
+  "The map service is busy, so this area could not be loaded. Try again in a few minutes.":
+    "Der Kartendienst ist gerade ausgelastet, daher konnte dieses Gebiet nicht geladen werden. Versuche es in ein paar Minuten noch einmal.",
   "The route engine cannot find one clear outline in this picture.":
     "In diesem Bild ist kein klarer Umriss zu finden.",
   "Only PNG and JPEG pictures work. Choose another one.":
@@ -762,6 +762,9 @@ export const DE: Table = {
   "Route {label}, {distance}, {likeness} like the shape":
     "Route {label}, {distance}, {likeness} wie die Form",
   "The outline traced from the picture": "Der aus dem Bild gezeichnete Umriss",
+
+  // src/route/RoutePanel.tsx (TASK-435: the first route is shown, the others are coming)
+  "Looking for other routes…": "Weitere Routen werden gesucht…",
 
   // src/screens/PeopleScreen.tsx
   "Find friends": "Freunde finden",
@@ -954,6 +957,10 @@ export const DE: Table = {
   "Show more comments": "Mehr Kommentare zeigen",
   "{name}, {ago}: {text}": "{name}, {ago}: {text}",
   "Touch and hold to delete.": "Zum Löschen gedrückt halten.",
+  Reply: "Antworten",
+  "Replying to {name}": "Antwort an {name}",
+  "View {count} more reply": "{count} weitere Antwort ansehen",
+  "View {count} more replies": "{count} weitere Antworten ansehen",
 
   // src/social/DrawingReactions.tsx
   React: "Reagieren",
@@ -984,6 +991,8 @@ export const DE: Table = {
   "Write a comment to send your super like":
     "Schreib einen Kommentar, um dein Super-Like zu senden",
   Send: "Senden",
+  "A super like comes with a comment. Everyone who sees the post can read it.":
+    "Ein Super-Like kommt mit einem Kommentar. Alle, die den Beitrag sehen, können ihn lesen.",
 
   // src/social/reactionKinds.ts
   "MuW heart, super like": "MuW-Herz, Super-Like",
@@ -1000,6 +1009,7 @@ export const DE: Table = {
   "{count} min ago": "vor {count} Min.",
   "{count} h ago": "vor {count} Std.",
   "{count} d ago": "vor {count} Tg.",
+  yesterday: "gestern",
   "Write a comment": "Kommentar schreiben",
   "{count} comment": "{count} Kommentar",
   "{count} comments": "{count} Kommentare",
@@ -1119,6 +1129,8 @@ export const DE: Table = {
   Pause: "Pause",
   Music: "Musik",
   "Opens Spotify": "Öffnet Spotify",
+  "Show the numbers": "Zahlen zeigen",
+  "Hide the numbers": "Zahlen ausblenden",
   Compass: "Kompass",
   Map: "Karte",
   Data: "Daten",
@@ -1191,14 +1203,25 @@ export const DE: Table = {
   Roller: "Inline",
   "Watch for traffic and steep descents: check the route before you set off.":
     "Achte auf Verkehr und steile Abfahrten: Prüf die Route, bevor du losfährst.",
+  // src/sports/wheelchair.ts, settings/sport.ts (TASK-414 part B), approved on
+  // 2026-11-08 (the user's choice 6)
+  "Wheelchair & stroller": "Rollstuhl & Kinderwagen",
+  "Go without a route": "Ohne Route los",
+  "Map data can miss kerbs, steps and steep slopes: check the route before you set off.":
+    "Die Kartendaten zeigen nicht immer Bordsteine, Stufen und steile Steigungen: Prüf die Route, bevor du losgehst.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Ski",
   "Cross-country ski": "Langlauf",
   // src/sports/gym.ts, src/gym/ (TASK-385 B0: a workout at the gym)
   Gym: "Fitnessstudio",
-  "{n} exercises · {s} sets": "{n} Übungen · {s} Sätze",
-  "{n} rests · avg {time} · {total} resting":
-    "{n} Satzpausen · Ø {time} · {total} Pause",
+  // The counts of a workout, one or more (TASK-453)
+  "{count} exercise": "{count} Übung",
+  "{count} exercises": "{count} Übungen",
+  "{count} set": "{count} Satz",
+  "{count} sets": "{count} Sätze",
+  "{count} rest": "{count} Satzpause",
+  "{count} rests": "{count} Satzpausen",
+  "avg {time} · {total} resting": "Ø {time} · {total} Pause",
   // src/gym/ (TASK-385 part B), approved on 2026-11-04
   "Start workout": "Training starten",
   "No route in the gym: MuW times your workout.":
@@ -1349,6 +1372,182 @@ export const DE: Table = {
   "Lower body B": "Unterkörper B",
   "Arms, core": "Arme, Bauch",
   "Workout {letter}": "Training {letter}",
+  // src/gym/RunnerStep.tsx, runPace.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-452, approved 2026-11-11)
+  "Pace@@run": "Tempo",
+  "Intermediate@@runner": "Fortgeschritten",
+  "Expert@@runner": "Erfahren",
+  Yes: "Ja",
+  "Your runs say {pace}/km over 10 km: update the paces?":
+    "Deine Läufe sagen {pace}/km auf 10 km: Tempos aktualisieren?",
+  "From your {pace}/km over 10 km and your long run of {long}.":
+    "Aus deinem {pace}/km auf 10 km und deinem langen Lauf von {long}.",
+  "How do you run today?": "Wie läufst du heute?",
+  "Make my paces": "Meine Tempos erstellen",
+  "Two answers and the plan's paces are yours.":
+    "Zwei Antworten, und die Tempos des Plans sind deine.",
+  "Your paces": "Deine Tempos",
+  "at {pace}/km": "mit {pace}/km",
+  "10 km in {time}": "10 km in {time}",
+  "At the end of each cycle": "Am Ende jedes Zyklus",
+  "Easy: your pace over 10 km + 1:05. Long: + 1:15. Intervals of 400 m: − 0:25. The long run starts from yours and grows 1 km a week; the easy run is about half of it.":
+    "Locker: dein 10-km-Tempo + 1:05. Lang: + 1:15. Intervalle über 400 m: − 0:25. Der lange Lauf beginnt bei deinem und wächst 1 km pro Woche; der lockere ist etwa halb so lang.",
+  "How I work them out": "So berechne ich sie",
+  "I don't know: I'll pick my level": "Weiß ich nicht: ich wähle mein Niveau",
+  "I look at your runs: if you got faster, I propose new paces.":
+    "Ich sehe mir deine Läufe an: Bist du schneller geworden, schlage ich neue Tempos vor.",
+  "The longest run you do without strain":
+    "Der längste Lauf, den du ohne Mühe schaffst",
+  "Your long run, today": "Dein langer Lauf, heute",
+  "Your pace over 10 km": "Dein Tempo auf 10 km",
+  "minutes per km": "Minuten pro km",
+  "{n} minutes": "{n} Minuten",
+  Beginner: "Einsteiger",
+  // src/gym/SportsDoor.tsx, bodyweight.ts, GymPlanWizard.tsx (TASK-461 A2, approved 2026-11-11)
+  "What do you want to train?": "Was willst du trainieren?",
+  "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.":
+    "Wähle mindestens zwei: Ein Plan mischt immer zwei Sportarten. Dann führen wir dich in 5 Schritten.",
+  "With weights and machines": "Mit Gewichten und Geräten",
+  Bodyweight: "Eigengewicht",
+  "At home or in the park, no equipment": "Zu Hause oder im Park, ohne Geräte",
+  Mountains: "Berge",
+  "Hikes and trips, more climb each week":
+    "Wanderungen und Touren, jede Woche mehr Höhenmeter",
+  "Next · 1 chosen": "Weiter · 1 gewählt",
+  "Next · {n} chosen": "Weiter · {n} gewählt",
+  "More each week": "Jede Woche mehr",
+  "+1 rep, +5 s held; week {n} lighter":
+    "+1 Wiederholung, +5 s beim Halten; Woche {n} leichter",
+  "Without weights you grow with reps and seconds.":
+    "Ohne Gewichte wächst du mit Wiederholungen und Sekunden.",
+  "with the hardest exercises": "mit den schwersten Übungen",
+  "What do you have?": "Was hast du zur Verfügung?",
+  "A pull-up bar": "Eine Klimmzugstange",
+  "Bar and dip bars": "Stange und Barren",
+  "With the bar we add pull-ups, with the dip bars the dips.":
+    "Mit der Stange kommen Klimmzüge dazu, mit dem Barren Dips.",
+  "How many days for each sport?": "Wie viele Tage pro Sportart?",
+  "Already spread out, with rest in between. Touch a day to change it.":
+    "Schon verteilt, mit Ruhetagen dazwischen. Tippe auf einen Tag, um ihn zu ändern.",
+  "The whole body, {n} times a week. Touch an exercise to change it.":
+    "Der ganze Körper, {n}-mal pro Woche. Tippe auf eine Übung, um sie zu ändern.",
+  "No equipment": "Keine Geräte",
+  "A cycle of {n} weeks, then it starts again from where you got to.":
+    "Ein Zyklus von {n} Wochen, dann geht es dort weiter, wo du angekommen bist.",
+  "{a} and {b}, for example.": "{a} und {b}, zum Beispiel.",
+  "Bodyweight · A": "Eigengewicht · A",
+  "Bodyweight · B": "Eigengewicht · B",
+  // src/gym/outingDay.ts, PlanTodayCard.tsx, TargetSteps.tsx, GymPlanWizard.tsx (TASK-461 B and C, approved 2026-11-11)
+  "Long walk": "Lange Wanderung",
+  "Long hike": "Lange Wanderung am Berg",
+  "Long ride": "Lange Ausfahrt",
+  "Long swim": "Langes Schwimmen",
+  "Long paddle": "Lange Paddeltour",
+  "Easy walk": "Lockere Wanderung",
+  "Easy hike": "Lockere Bergwanderung",
+  "Easy ride": "Lockere Ausfahrt",
+  "Easy swim": "Lockeres Schwimmen",
+  "Easy paddle": "Lockeres Paddeln",
+  "Bike intervals": "Rad-Intervalle",
+  "Swim sets": "Schwimmserien",
+  "Paddle intervals": "Paddel-Intervalle",
+  "Brisk walk uphill": "Zügiges Gehen bergauf",
+  "Brisk walk": "Zügiges Gehen",
+  "Climb outing": "Tour bergauf",
+  "A ride today marks the day done, even a shorter one.":
+    "Eine Ausfahrt heute hakt den Tag ab, auch eine kürzere.",
+  "A swim today marks the day done, even a shorter one.":
+    "Schwimmen heute hakt den Tag ab, auch kürzer.",
+  "A paddle today marks the day done, even a shorter one.":
+    "Paddeln heute hakt den Tag ab, auch kürzer.",
+  "A hike today marks the day done, even with less climb.":
+    "Eine Wanderung heute hakt den Tag ab, auch mit weniger Höhenmetern.",
+  "A hike today marks the day done, even a shorter one.":
+    "Eine Wanderung heute hakt den Tag ab, auch eine kürzere.",
+  "A walk today marks the day done, even a shorter one.":
+    "Ein Spaziergang heute hakt den Tag ab, auch ein kürzerer.",
+  "Toward {target}, week {n} of {total}.": "Richtung {target}, Woche {n} von {total}.",
+  "Go to the day · {amount}": "Zum Tag · {amount}",
+  "Look for at least {m} m of climb": "Suche mindestens {m} Höhenmeter",
+  "Record freely and see how much climb is left.":
+    "Zeichne frei auf und sieh, wie viele Höhenmeter fehlen.",
+  "Draw draws the hike with its km ({km}); the climb depends on where you start. Or record freely and see how much climb is left.":
+    "Draw zeichnet die Wanderung mit ihren km ({km}); die Höhenmeter hängen vom Start ab. Oder zeichne frei auf und sieh, wie viele fehlen.",
+  "Draw the hike · {km}": "Wanderung zeichnen · {km}",
+  "Record freely · {amount}": "Frei aufzeichnen · {amount}",
+  "Draw draws {max} at most": "Draw zeichnet höchstens {max}",
+  "Record freely and see how much is left to {amount}, or draw {max} of shape and do the rest freely.":
+    "Zeichne frei auf und sieh, wie viel bis {amount} fehlt, oder zeichne {max} Form und den Rest frei.",
+  "Draw {max}": "{max} zeichnen",
+  "Record freely": "Frei aufzeichnen",
+  "Today: {day}": "Heute: {day}",
+  "Already written from your runs: {amount} on {day}.":
+    "Schon aus deinen Läufen: {amount} am {day}.",
+  "Already written from your walks: {amount} on {day}.":
+    "Schon aus deinen Spaziergängen: {amount} am {day}.",
+  "Already written from your hikes: {amount} on {day}.":
+    "Schon aus deinen Wanderungen: {amount} am {day}.",
+  "Already written from your rides: {amount} on {day}.":
+    "Schon aus deinen Ausfahrten: {amount} am {day}.",
+  "Already written from your swims: {amount} on {day}.":
+    "Schon aus deinem Schwimmen: {amount} am {day}.",
+  "Already written from your paddles: {amount} on {day}.":
+    "Schon aus deinen Paddeltouren: {amount} am {day}.",
+  Less: "Weniger",
+  "What trip do you want to do?": "Welche Tour willst du machen?",
+  "How much climb in one day. The plan takes you there.":
+    "Wie viele Höhenmeter an einem Tag. Der Plan bringt dich hin.",
+  "Where do you want to get to?": "Wohin willst du kommen?",
+  "The distance of the plan's last day.": "Die Distanz des letzten Tages im Plan.",
+  Swimming: "Schwimmen",
+  Paddling: "Paddeln",
+  "Other@@target": "Andere",
+  "Of climb uphill. 1000 m is, for example, a hut high above the village.":
+    "Höhenmeter bergauf. 1000 m sind zum Beispiel eine Hütte hoch über dem Dorf.",
+  "Just keep fit": "Nur fit bleiben",
+  "A plan that stays the same, with no target day":
+    "Ein Plan, der gleich bleibt, ohne Zieltag",
+  "Where do you swim?": "Wo schwimmst du?",
+  "How much climb do you do today?": "Wie viele Höhenmeter schaffst du heute?",
+  "The most of the last month, in one outing.":
+    "Das meiste im letzten Monat, an einem Stück.",
+  "Where are you today?": "Wo stehst du heute?",
+  "The longest you did in the last month without stopping.":
+    "Das Längste im letzten Monat ohne Pause.",
+  "I'm starting from zero": "Ich fange bei null an",
+  "Starting from 200 m, on easy trails": "Start mit 200 m auf leichten Wegen",
+  "Starting with walk-run: 1′ running and 2′ walking":
+    "Start mit Gehen-Laufen: 1′ laufen und 2′ gehen",
+  "Starting from {amount}": "Start mit {amount}",
+  "By when?": "Bis wann?",
+  "When I'm ready": "Wenn ich bereit bin",
+  "The plan counts the weeks by itself": "Der Plan zählt die Wochen selbst",
+  "The plan counts the weeks by itself: {n} weeks":
+    "Der Plan zählt die Wochen selbst: {n} Wochen",
+  "A date": "Ein Datum",
+  "A race, an outing: {day}": "Ein Rennen, eine Tour: {day}",
+  "In {have} weeks you get to {reach}.": "In {have} Wochen kommst du auf {reach}.",
+  "For {target} you need {needed} weeks, you have {have}.":
+    "Für {target} brauchst du {needed} Wochen, du hast {have}.",
+  "Get to {reach}": "Auf {reach} kommen",
+  "Move the date": "Datum verschieben",
+  "At most {n} weeks: choose a nearer date.":
+    "Höchstens {n} Wochen: wähle ein näheres Datum.",
+  "Toward {target}": "Richtung {target}",
+  "{n} weeks. The climb grows by a tenth, every 4th lighter, the last day is the trip.":
+    "{n} Wochen. Die Höhenmeter wachsen um ein Zehntel, jede 4. leichter, der letzte Tag ist die Tour.",
+  "{n} weeks. The long one grows by a tenth, every 4th lighter, the last day is the race.":
+    "{n} Wochen. Die lange Einheit wächst um ein Zehntel, jede 4. leichter, der letzte Tag ist das Rennen.",
+  "Weeks: {first} · {second} · {third} … {last}":
+    "Wochen: {first} · {second} · {third} … {last}",
+  "Toward 5, 10, 21 or 42 km": "Richtung 5, 10, 21 oder 42 km",
+  "Walking and hiking": "Gehen und Wandern",
+  "Toward 10, 15, 20, 30 km": "Richtung 10, 15, 20, 30 km",
+  Cycling: "Radfahren",
+  "Road, gravel, MTB · toward 30–150 km": "Straße, Gravel, MTB · Richtung 30–150 km",
+  "Swimming and paddling": "Schwimmen und Paddeln",
+  "Pool or open water": "Becken oder offenes Wasser",
+  "Remind me at 8": "Erinnere mich um 8",
+  "Only on the plan's days": "Nur an den Tagen des Plans",
   // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
   "Your plan, step by step": "Dein Plan, Schritt für Schritt",
   "A minute to make it, then it guides you every time.":
@@ -1506,6 +1705,10 @@ export const DE: Table = {
   "{sport}, coming soon": "{sport}, demnächst verfügbar",
   "Sport, {sport}": "Sport, {sport}",
   "Changes the sport": "Ändert die Sportart",
+  // The families of the sport panel: src/settings/sportFamilies.ts
+  "On foot": "Zu Fuß",
+  "On wheels": "Auf Rädern",
+  "Other@@sport": "Weitere",
   Sport: "Sport",
   Default: "Standard",
   "Voice language and voice: {language}, {voice}":
@@ -1563,8 +1766,8 @@ export const DE: Table = {
   "You have not blocked anyone.": "Du hast niemanden blockiert.",
   Unblock: "Freigeben",
   "Unblock {name}": "{name} freigeben",
-  "You blocked {user}. Unblock them from Blocked people in your profile.":
-    "Du hast {user} blockiert. Freigeben kannst du unter Blockierte Personen in deinem Profil.",
+  "You blocked {user}. Unblock them from Blocked people in Settings.":
+    "Du hast {user} blockiert. Freigeben kannst du unter Blockierte Personen in den Einstellungen.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
@@ -1596,10 +1799,57 @@ export const DE: Table = {
   "Glute stretch": "Gesäß dehnen",
   "Cross one ankle over the other knee. Sit back as if into a chair.":
     "Einen Knöchel aufs andere Knie legen. Zurücksetzen wie auf einen Stuhl.",
+  // src/stretch, the routines (TASK-466 part B)
+  "Neck stretch": "Nacken dehnen",
+  "Stand tall. Let your chin drop toward your chest, shoulders low.":
+    "Aufrecht stehen. Das Kinn zur Brust sinken lassen, Schultern locker.",
+  "Overhead reach": "Nach oben strecken",
+  "Reach both arms up high. Grow tall, chest open.":
+    "Beide Arme hoch strecken. Lang machen, Brust offen.",
+  "Shoulder stretch": "Schulter dehnen",
+  "Bring one arm across your chest. Pull it in with the other hand.":
+    "Einen Arm vor die Brust führen. Mit der anderen Hand heranziehen.",
+  "Chest opener": "Brust öffnen",
+  "Clasp your hands behind your back. Lift them a little, chest out.":
+    "Hände hinter dem Rücken verschränken. Leicht anheben, Brust raus.",
+  "Triceps stretch": "Trizeps dehnen",
+  "Raise one elbow, hand down your back. Press the elbow back gently.":
+    "Einen Ellbogen heben, die Hand zum Rücken. Den Ellbogen sanft nach hinten drücken.",
+  "Upper back stretch": "Oberen Rücken dehnen",
+  "Reach your arms forward, hands together. Round your back, head down.":
+    "Arme nach vorn strecken, Hände zusammen. Rücken rund machen, Kopf runter.",
+  "Forward fold": "Vorbeuge",
+  "Fold forward from the hips. Let your arms hang, knees soft.":
+    "Aus der Hüfte nach vorn beugen. Arme hängen lassen, Knie locker.",
+  "Cat stretch": "Katzenbuckel",
+  "On hands and knees. Round your back up, let your head drop.":
+    "Auf Händen und Knien. Rücken nach oben rund machen, Kopf hängen lassen.",
+  "Child's pose": "Kindhaltung",
+  "Sit back on your heels. Reach your arms forward, forehead down.":
+    "Auf die Fersen setzen. Arme nach vorn strecken, Stirn nach unten.",
+  "Knee hug": "Knie zur Brust",
+  "Stand on one leg. Hug the other knee to your chest.":
+    "Auf einem Bein stehen. Das andere Knie an die Brust ziehen.",
+  Morning: "Morgens",
+  "After run": "Nach dem Laufen",
+  "After gym": "Nach dem Fitnessstudio",
+  "How long?": "Wie lange?",
+  // «Morning stretch» in «Settings» and its reminder (TASK-466 part D).
+  "Morning stretch": "Dehnen am Morgen",
+  "{minutes} minutes to wake up your body. Tap to start.":
+    "{minutes} Minuten, um deinen Körper zu wecken. Tippe zum Starten.",
+  "MuW can't read your phone's alarm. Set here the time it rings: {minutes} minutes later a reminder opens your Morning routine.":
+    "MuW kann den Wecker deines Handys nicht lesen. Stell hier die Zeit ein, zu der er klingelt: {minutes} Minuten später öffnet eine Erinnerung deine Morgenroutine.",
+  "Alarm time": "Weckzeit",
+  Length: "Dauer",
+  Hour: "Stunde",
+  Minutes: "Minuten",
   "{index} of {total}": "{index} von {total}",
   "Right side": "Rechte Seite",
   "Left side": "Linke Seite",
   "Switch sides": "Seite wechseln",
+  End: "Beenden",
+  "Next: {exercise}": "Als Nächstes: {exercise}",
   "{seconds} seconds left": "Noch {seconds} Sekunden",
   "Stop if it hurts.": "Hör auf, wenn es wehtut.",
   // «Draw»: src/route/samplePictures.ts (TASK-280)
@@ -2512,4 +2762,194 @@ export const DE: Table = {
   "Vertical this season": "Höhenmeter der Saison",
   "On snow": "Im Schnee",
   "Piste without a name": "Piste ohne Namen",
+  // TASK-415 part B: ski touring, its phases and its VAM (approved 2026-11-11).
+  "Ski touring": "Skitour",
+  Phase: "Phase",
+  Climb: "Aufstieg",
+  Descent: "Abfahrt",
+  Changeover: "Fellwechsel",
+  "VAM 5 min": "VAM 5 Min.",
+  Altitude: "Höhe",
+  "Elev. loss": "Abstieg",
+  "Time up": "Zeit bergauf",
+  "Time down": "Zeit bergab",
+  "Avg VAM": "Ø VAM",
+  "Max altitude": "Max. Höhe",
+  Phases: "Phasen",
+  "Climb {n}": "Aufstieg {n}",
+  "Descent {n}": "Abfahrt {n}",
+  "Lift {n}": "Lift {n}",
+  "Skins off": "Felle ab",
+  "Skins on": "Felle auf",
+  "Climbed: {metres} m": "Anstieg: {metres} m",
+  "{phase}, from {time}, for {duration}": "{phase}, ab {time}, {duration} lang",
+  "No heights from the phone: no phases for this tour.":
+    "Das Telefon hat keine Höhen geliefert: keine Phasen für diese Tour.",
+
+  // src/activities/ (TASK-462: the calendar of every sport)
+  Calendar: "Kalender",
+  "Last 12 months": "Letzte 12 Monate",
+  "{count} activity": "{count} Aktivität",
+  "{count} activities": "{count} Aktivitäten",
+
+  // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
+  "Record your flight": "Flug aufzeichnen",
+  "Before you fly": "Vor dem Flug",
+  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
+    "MuW ist kein Fluginstrument: Es zeichnet deinen Flug auf und teilt ihn. Flieg mit deinem eigenen Instrument, deiner Lizenz und deinem Urteilsvermögen.",
+  "Got it": "Verstanden",
+  Vario: "Vario",
+  "Flight time": "Flugzeit",
+  "Your flight": "Dein Flug",
+  "No shapes in the air yet: MuW records your flight.":
+    "Noch keine Formen in der Luft: MuW zeichnet deinen Flug auf.",
+  "White: where you flew.": "Weiß: wo du geflogen bist.",
+
+  // src/profile/FirstStep.tsx, BadgesSection.tsx (TASK-457: a new profile)
+  "Your first drawing": "Deine erste Zeichnung",
+  "Start from a route that already draws a shape near you.":
+    "Starte mit einer Route, die schon eine Form in deiner Nähe zeichnet.",
+  "Find a route near you": "Route in deiner Nähe finden",
+  "Record a run with MuW and publish its drawing.":
+    "Zeichne einen Lauf mit MuW auf und veröffentliche seine Zeichnung.",
+  "Publish 10 drawings of runs recorded with MuW.":
+    "Veröffentliche 10 Zeichnungen von Läufen, die du mit MuW aufgezeichnet hast.",
+  "Publish the drawing of a run of {distance} or more.":
+    "Veröffentliche die Zeichnung eines Laufs von mindestens {distance}.",
+  // «Sleep last night» in a post (TASK-467 part B2): src/health/sleepText.ts,
+  // SleepRunEnd.tsx, SleepCard.tsx
+  "Sleep last night": "Schlaf letzte Nacht",
+  "Shown in this post. Turn it off to keep it to yourself.":
+    "In diesem Beitrag sichtbar. Schalte es aus, um es für dich zu behalten.",
+  "Sleep score": "Schlafwert",
+  "Poor@@sleep": "Schwach",
+  "Fair@@sleep": "Mäßig",
+  "Good@@sleep": "Gut",
+  "Very good@@sleep": "Sehr gut",
+  "Excellent@@sleep": "Ausgezeichnet",
+  "Awake@@sleep": "Wach",
+  "REM@@sleep": "REM",
+  "Light@@sleep": "Leicht",
+  "Deep@@sleep": "Tief",
+  "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
+    "Von MuW aus den Daten von Apple Health berechnet. Er kann vom Wert in der Health-App abweichen.",
+  // TASK-305 part R5b: under «Record your flight» (approved 2026-11-12).
+  "Your flights": "Deine Flüge",
+  "{count} flight · {time}": "{count} Flug · {time}",
+  "{count} flights · {time}": "{count} Flüge · {time}",
+  "No flights this month": "Keine Flüge in diesem Monat",
+  "Your best flights": "Deine Flugrekorde",
+  "Longest flight": "Längster Flug",
+  "Farthest flight": "Weitester Flug",
+  "Ready to fly": "Startbereit",
+  "Waiting for GPS…": "Warte auf GPS…",
+  "GPS ready · ±{m} m": "GPS bereit · ±{m} m",
+  "Weak GPS · ±{m} m: wait in the open": "Schwaches GPS · ±{m} m: warte im Freien",
+  "Share live at start": "Beim Start live teilen",
+  "When the countdown ends, MuW makes the link and opens the share sheet.":
+    "Nach dem Countdown erstellt MuW den Link und öffnet das Teilen-Menü.",
+  // src/feed/PostShareSheet.tsx, src/messages/messagePost.ts, attachmentText.ts
+  // (TASK-455: a post shared and sent in a message; texts approved 2026-11-12)
+  "Poster and video": "Poster und Video",
+  "Only people who follow {user} can open it.":
+    "Nur wer {user} folgt, kann ihn öffnen.",
+  "by {user}": "von {user}",
+  "This post is no longer available.": "Dieser Beitrag ist nicht mehr verfügbar.",
+  "🗺️ Post": "🗺️ Beitrag",
+  // src/settings/PostLinksSetting.tsx (TASK-455 part E)
+  "Links to my posts": "Links zu meinen Beiträgen",
+  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.":
+    "Wer deine Beiträge für «Alle» sieht, kann einen Link dazu teilen. Wer den Link hat, sieht die Zeichnung auf der Karte, deinen Benutzernamen und die Distanz, auch ohne MuW. Schalte das aus, und die Links funktionieren nicht mehr.",
+  // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
+  "Add activity": "Aktivität hinzufügen",
+  // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
+  // 2026-11-08 and 2026-11-12.
+  Snowshoes: "Schneeschuhe",
+  "Off-trail on snow: check the avalanche bulletin first.":
+    "Abseits der Wege im Schnee: Schau zuerst in den Lawinenlagebericht.",
+  "Before you head out on snowshoes": "Bevor du mit Schneeschuhen losgehst",
+  "Check the avalanche bulletin and the weather before you go. MuW does not know them.":
+    "Prüf vor dem Start den Lawinenlagebericht und das Wetter. MuW kennt sie nicht.",
+  "The route avoids slopes over 25°, woods, pistes and rock. That does not make it safe: an avalanche can come from above.":
+    "Die Route meidet Hänge über 25°, Wälder, Pisten und Fels. Sicher ist sie dadurch nicht: Eine Lawine kann von oben kommen.",
+  "Stay off the pistes and follow the local rules: parks, reserves, wildlife quiet zones, private land. MuW does not know them all.":
+    "Geh nicht auf Pisten und halte dich an die Regeln vor Ort: Parks, Schutzgebiete, Wildruhezonen, Privatgrund. MuW kennt nicht alle.",
+  "Never go alone, tell someone where you are going, and turn back if the snow or the weather changes.":
+    "Geh nicht allein, sag jemandem, wohin du gehst, und kehr um, wenn sich Schnee oder Wetter ändern.",
+  "There is no open snow near this start. Start within 2 km of open snow, away from towns, woods and pistes.":
+    "In der Nähe dieses Starts gibt es keinen freien Schnee. Starte höchstens 2 km von freiem Schnee entfernt, abseits von Orten, Wäldern und Pisten.",
+  "There is no open snow near this start. Start within 1 mile of open snow, away from towns, woods and pistes.":
+    "In der Nähe dieses Starts gibt es keinen freien Schnee. Starte höchstens 1 Meile von freiem Schnee entfernt, abseits von Orten, Wäldern und Pisten.",
+  "This shape does not fit on the snow here at this distance. It fits at about {km} km.":
+    "Diese Form passt hier bei dieser Distanz nicht auf den Schnee. Sie passt bei etwa {km} km.",
+  "This shape does not fit on the snow here at this distance. It fits at about {mi} mi.":
+    "Diese Form passt hier bei dieser Distanz nicht auf den Schnee. Sie passt bei etwa {mi} mi.",
+  "This shape does not fit on the snow here. Try a shorter distance, another shape, or another start:":
+    "Diese Form passt hier nicht auf den Schnee. Versuch eine kürzere Distanz, eine andere Form oder einen anderen Start:",
+  "{name} · on the snow · target {km} km": "{name} · auf dem Schnee · Ziel {km} km",
+  "{name} · on the snow · target {mi} mi": "{name} · auf dem Schnee · Ziel {mi} mi",
+  "White: where you walked.": "Weiß: wo du gegangen bist.",
+  // TASK-305 part R6b: on foot and in the air (approved 2026-11-12).
+  "In the air": "In der Luft",
+  "MuW switches by itself; touch to correct it.":
+    "MuW wechselt von selbst; tippe, um es zu korrigieren.",
+  "On foot {foot} · In the air {air}": "Zu Fuß {foot} · In der Luft {air}",
+  // src/liveShare/ (TASK-468 part B1: «Send in MuW», the heart rate, the
+  // live in the app; en and it approved by the user 2026-11-12)
+  "Send in MuW": "In MuW senden",
+  "Show my heart rate": "Meinen Puls zeigen",
+  "Off: nobody sees your heart rate. On: they see it when a watch sends it.":
+    "Aus: Niemand sieht deinen Puls. An: Sie sehen ihn, wenn eine Uhr ihn sendet.",
+  "Choose who gets your live": "Wähle, wer dein Live bekommt",
+  "They can follow you in the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain and calories.":
+    "Sie folgen dir in der App: deine genaue Position auf der Karte, die bisherige Strecke, Distanz, Zeit, Pace oder Tempo, Höhenmeter und Kalorien.",
+  "Send ({count})": "Senden ({count})",
+  "Live ended": "Live beendet",
+  "Finished · {distance} · {time}": "Beendet · {distance} · {time}",
+  "No update since {time}": "Keine Aktualisierung seit {time}",
+  "Updated {seconds} s ago": "Vor {seconds} s aktualisiert",
+  "LIVE · {sport} · {distance}": "LIVE · {sport} · {distance}",
+  "🔴 Live": "🔴 Live",
+  // The «Sleep» card of the profile (TASK-467 part B3): src/profile/OwnSleep.tsx
+  // («On your profile» is with the prizes, «Only you see this» with the VO₂ max)
+  "Show my sleep from Apple Health": "Meinen Schlaf aus Apple Health zeigen",
+  "MuW works out a sleep score from your Apple Health sleep data.":
+    "MuW berechnet aus deinen Schlafdaten in Apple Health einen Schlafwert.",
+  "Share your sleep?": "Deinen Schlaf teilen?",
+  "Your score, hours slept and sleep stages show on your profile, to everyone who can see it.":
+    "Dein Wert, die geschlafenen Stunden und die Schlafphasen sind auf deinem Profil zu sehen, für alle, die es sehen können.",
+  "No sleep data for last night in Apple Health.":
+    "Keine Schlafdaten für letzte Nacht in Apple Health.",
+  "MuW can't read your sleep. Allow it in the Health app: your profile › Apps › MuW.":
+    "MuW kann deinen Schlaf nicht lesen. Erlaube es in der Health-App: dein Profil › Apps › MuW.",
+  "Stop sharing@@sleep": "Nicht mehr teilen",
+
+  // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
+  Mountaineering: "Bergsteigen",
+  "Before you climb": "Bevor du aufsteigst",
+  "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
+    "MuW zeichnet deinen Aufstieg auf und teilt ihn: Es führt dich nicht. Geh mit deiner Ausrüstung, deinem Können und deinem Urteil, und prüfe die Verhältnisse vor dem Start.",
+  // TASK-305 part R6c: the map of a race (approved 2026-11-12).
+  "White: on foot. Yellow: in the air.": "Weiß: zu Fuß. Gelb: in der Luft.",
+  // src/liveShare/ (TASK-468 part B2a: the «Live» row, «Live in the Feed»,
+  // the stop of a share without a link; en and it approved 2026-11-12)
+  "Live in the Feed": "Live im Feed",
+  "Who can follow": "Wer dir folgen kann",
+  "Remind me": "Erinnere mich",
+  "We'll notify you when it starts.": "Wir benachrichtigen dich, wenn es losgeht.",
+  "Nobody can follow you any more.": "Niemand kann dir mehr folgen.",
+  "Live · {day} {time} · {title}": "Live · {day} {time} · {title}",
+  // src/liveShare/ (TASK-468 part B2b1: «Plan a live», the start of a
+  // planned live; en and it approved 2026-11-12, «Plan» and the error on 2026-11-18)
+  "Plan a live": "Live planen",
+  "Name (e.g. Milano Marathon)": "Name (z. B. Milano Marathon)",
+  "Day and time": "Tag und Uhrzeit",
+  'Start live "{title}"?': "Live „{title}“ starten?",
+  "Your followers can follow you now.": "Deine Follower können dir jetzt folgen.",
+  "Everyone can follow you now.": "Alle können dir jetzt folgen.",
+  "Start live": "Live starten",
+  "Not this time": "Diesmal nicht",
+  Plan: "Planen",
+  "Couldn't plan the live. Try again.":
+    "Das Live konnte nicht geplant werden. Versuch es noch einmal.",
 };

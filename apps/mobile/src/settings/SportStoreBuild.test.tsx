@@ -65,15 +65,20 @@ test("a store build leaves out the sports not ready, and keeps the order", () =>
     "gravel",
     "mtb",
     "roller",
+    "wheelchair",
     "paddle",
     "swim",
     "ski",
+    "xc_ski",
+    "skimo",
+    "snowshoe",
     "gym",
+    "paragliding",
   ]);
   expect(STORE.every((option) => option.ready)).toBe(true);
 });
 
-test("in a store build `SPORTS` itself has no «Paragliding»", () => {
+test("in a store build `SPORTS` has «Paragliding» since TASK-305 R2", () => {
   jest.isolateModules(() => {
     jest.doMock("expo-constants", () => ({
       __esModule: true,
@@ -89,10 +94,15 @@ test("in a store build `SPORTS` itself has no «Paragliding»", () => {
       "gravel",
       "mtb",
       "roller",
+      "wheelchair",
       "paddle",
       "swim",
       "ski",
+      "xc_ski",
+      "skimo",
+      "snowshoe",
       "gym",
+      "paragliding",
     ]);
   });
 });
@@ -101,17 +111,24 @@ test("«Settings» of a store build has no «Soon» row", async () => {
   await render(<SportSetting sports={STORE} />);
   // Walk (TASK-371), run, the hike (TASK-377), bike, gravel and MTB
   // (TASK-378), the skate (TASK-380), paddle, the swim (TASK-323), the
-  // alpine ski (TASK-375 D4) and the gym (TASK-385 B).
-  expect(screen.getAllByRole("radio")).toHaveLength(11);
+  // alpine and the cross-country ski (TASK-375), ski touring (TASK-415 B),
+  // the gym (TASK-385 B), the flight (TASK-305 R2), the wheelchair
+  // (TASK-414 B) and the snowshoes (TASK-413).
+  expect(screen.getAllByRole("radio")).toHaveLength(16);
+  expect(
+    screen.getByRole("radio", { name: "Wheelchair & stroller" }),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "Cross-country ski" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Roller" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Walk" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Hike" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Gravel" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "MTB" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Ski" })).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "Ski touring" })).toBeOnTheScreen();
   expect(screen.queryByText("Soon")).toBeNull();
   expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
-  expect(screen.queryByText("🪂")).toBeNull();
+  expect(screen.getByRole("radio", { name: "Paragliding" })).toBeOnTheScreen();
   // Swimming is a sport of the store builds since the server swims
   // (TASK-323), a row like the others.
   expect(screen.getByRole("radio", { name: "Swim" })).toBeOnTheScreen();
@@ -121,8 +138,8 @@ test("«Settings» of a store build has no «Soon» row", async () => {
 test("the sport menu of «Draw» in a store build has no «Soon» row", async () => {
   await render(<SportButton sports={STORE} />);
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
-  // The eleven of «Settings».
-  expect(screen.getAllByRole("radio")).toHaveLength(11);
+  // The sixteen of «Settings».
+  expect(screen.getAllByRole("radio")).toHaveLength(16);
   expect(screen.queryByText("Soon")).toBeNull();
   expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
 });

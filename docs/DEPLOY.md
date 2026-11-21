@@ -1095,6 +1095,16 @@ Sul server, da `~/shaperoute/deploy`:
 - **Sapere se si ferma**: con l'indirizzo pubblico di F.8, un servizio
   gratuito che chiama `/health` ogni pochi minuti e manda un'email se non
   risponde (ad esempio UptimeRobot).
+- **Zone in memoria** (TASK-464, ADR-0374): ogni processo di calcolo tiene
+  le zone a piedi fino a `SHAPEROUTE_ZONES_MB` (in `deploy/.env`; vuota,
+  500), stimate come 12 volte il loro pickle, e almeno 2 come prima. Le
+  zone usate le conta in `data/cache/zone-usage/running.json`; all'avvio
+  rilegge in background le più usate (nel log: `zone … warmed`, poi
+  `N zones warmed`). Il valore si sceglie da `docker stats` e `free -m`:
+  oltre all'API, con le sue due copie delle zone, devono restare liberi i
+  figli delle partenze vicine (fino a ~0,4 GB l'uno, sei con due percorsi
+  insieme), 1 GB di riserva e il backup della notte. Cambiarlo vuole un
+  `docker compose up -d api`; i percorsi non cambiano.
 
 ### F.10 Verso gli store
 
@@ -1430,7 +1440,7 @@ utente `caddy` e non entra in `/root`.
    cd /root/shaperoute
    git fetch origin main
    rm -rf /srv/getmuw-site.new && mkdir -p /srv/getmuw-site.new
-   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets site/privacy site/support site/account-deletion site/live | tar -x -C /srv/getmuw-site.new --strip-components=1
+   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets site/privacy site/support site/account-deletion site/live site/p | tar -x -C /srv/getmuw-site.new --strip-components=1
    chmod -R a+rX /srv/getmuw-site.new
    rm -rf /srv/getmuw-site.old
    if [ -d /srv/getmuw-site ]; then mv /srv/getmuw-site /srv/getmuw-site.old; fi

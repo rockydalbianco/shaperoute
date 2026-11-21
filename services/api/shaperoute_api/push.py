@@ -40,6 +40,12 @@ The texts are in the language the app said with the token, else English.
 An event let through (not one's own, the first of the day) also goes to
 the listeners, before the push: the email of the notices keeps the five
 events of the people for its daily email (notice_email.py, TASK-262 B).
+
+Two more are a comment's (TASK-454 part C1, ADR-0377; comments.py and
+comment_reactions.py): a reply, told to who it answers as every event
+above; and a reaction to a comment, which goes to the listeners only
+(BELL_ONLY): it is read in the bell and no phone rings (the user's choice,
+2026-11-11).
 """
 
 from __future__ import annotations
@@ -84,6 +90,8 @@ Kind = Literal[
     "follow_accepted",
     "reaction",
     "comment",
+    "comment_reply",
+    "comment_reaction",
     "tag",
     "shape_unlocked",
     "edition_up",
@@ -100,6 +108,7 @@ Kind = Literal[
     "group_run_cancelled",
     "message",
     "message_request",
+    "planned_live_started",
 ]
 # The events of what one did oneself, or of nobody's doing: told to
 # oneself too (the shape game, TASK-296; the contest won, TASK-299; the
@@ -119,6 +128,10 @@ OWN_KINDS: frozenset[str] = frozenset(
         "group_run_soon",
     }
 )
+
+# The events the listeners hear of and no phone is sent: a reaction to a
+# comment is read in the bell only (TASK-454, the user's choice).
+BELL_ONLY: frozenset[str] = frozenset({"comment_reaction"})
 
 # An Expo push token: "ExponentPushToken[…]", or "ExpoPushToken[…]".
 TOKEN_PATTERN = r"^Expo(nent)?PushToken\[[A-Za-z0-9_\-]{1,180}\]$"
@@ -200,13 +213,14 @@ class PushEvent:
     kind: Kind
     actor_id: int
     recipient_id: int
-    # The drawing of a reaction, a comment, a tag.
+    # The drawing of a reaction, a comment, a reply, a tag.
     drawing_id: UUID | None = None
     # The reaction's code (reactions.py), the comment's text.
     reaction: str | None = None
     text: str | None = None
-    # What tells two events of the same kind apart: a comment's id. Two
-    # reactions of one person to one drawing are the same event.
+    # What tells two events of the same kind apart: a comment's id, a
+    # reply's, the id of the comment a reaction was left on. Two reactions
+    # of one person to one drawing, or to one comment, are the same event.
     key: str = ""
     # A challenge of the shape game (TASK-296 C): the app opens it; its text
     # has a number (a piece's, or the pieces missing) and the shape's name
@@ -219,8 +233,13 @@ class PushEvent:
     # A monthly challenge (TASK-343): the app opens its page; the theme's
     # title, by language, is in `names`.
     contest_id: UUID | None = None
+    # A planned live that started (TASK-468 part A2b): the app opens its
+    # live view; its title is `text`.
+    planned_live_id: UUID | None = None
+    live_share_id: UUID | None = None
     # What a private message carries (TASK-333): "photo", "video",
-    # "drawing"; its text, if any, is `text`.
+    # "drawing", "post" (TASK-455) or "live" (TASK-468); its text, if any,
+    # is `text`.
     attachment: str | None = None
 
     def same(self) -> tuple[str, int, int, str, str]:
@@ -278,6 +297,21 @@ TEXTS: dict[str, dict[str, str]] = {
         "it": "{name} ha commentato il tuo post: {text}",
         "es": "{name} ha comentado tu publicación: {text}",
         "fr": "{name} a commenté ta publication : {text}",
+    },
+    # A comment's (TASK-454): the English ones are the user's.
+    "comment_reply": {
+        "en": "{name} replied to your comment: {text}",
+        "de": "{name} hat auf deinen Kommentar geantwortet: {text}",
+        "it": "{name} ha risposto al tuo commento: {text}",
+        "es": "{name} ha respondido a tu comentario: {text}",
+        "fr": "{name} a répondu à ton commentaire : {text}",
+    },
+    "comment_reaction": {
+        "en": "{name} reacted to your comment.",
+        "de": "{name} hat auf deinen Kommentar reagiert.",
+        "it": "{name} ha reagito al tuo commento.",
+        "es": "{name} ha reaccionado a tu comentario.",
+        "fr": "{name} a réagi à ton commentaire.",
     },
     "tag": {
         "en": "{name} tagged you in a post.",
@@ -399,6 +433,16 @@ TEXTS: dict[str, dict[str, str]] = {
     },
     # Group runs (TASK-309, docs/EVENTI.md §8): {title} is the group run's,
     # {name} its organiser. No time: the server does not know the phone's.
+    # A planned live that started, to who asked «Remind me» (TASK-468 part
+    # A2b; en and it approved by the user 2026-11-12, the others in the same
+    # sense).
+    "planned_live_started": {
+        "en": "{name} is live: {title}",
+        "de": "{name} ist live: {title}",
+        "it": "{name} è live: {title}",
+        "es": "{name} está en directo: {title}",
+        "fr": "{name} est en live : {title}",
+    },
     "group_run_soon": {
         "en": "{title} starts soon: see you at the start!",
         "de": "{title} beginnt gleich: wir sehen uns am Start!",
@@ -471,6 +515,33 @@ TEXTS: dict[str, dict[str, str]] = {
         language: "{name}" + (" : " if language == "fr" else ": ") + "🗺️ {text}"
         for language in ("en", "de", "it", "es", "fr")
     },
+    # A message with a post (TASK-455, ADR-0382; «🗺️ Post» approved
+    # 2026-11-12): that it carries one and nothing of it, since who receives
+    # it may not be among those who see the post.
+    "message_post": {
+        "en": "{name}: 🗺️ Post",
+        "de": "{name}: 🗺️ Beitrag",
+        "it": "{name}: 🗺️ Post",
+        "es": "{name}: 🗺️ Publicación",
+        "fr": "{name} : 🗺️ Publication",
+    },
+    "message_post_text": {
+        language: "{name}" + (" : " if language == "fr" else ": ") + "🗺️ {text}"
+        for language in ("en", "de", "it", "es", "fr")
+    },
+    # A live share sent in a message (TASK-468 part A1b, ADR-0381; en and it
+    # approved by the user 2026-11-12, the others with the same sense).
+    "message_live": {
+        "en": "{name} is sharing a live activity with you",
+        "de": "{name} teilt eine Live-Aktivität mit dir",
+        "it": "{name} ti condivide un'attività dal vivo",
+        "es": "{name} comparte contigo una actividad en directo",
+        "fr": "{name} partage une activité en direct avec toi",
+    },
+    "message_live_text": {
+        language: "{name}" + (" : " if language == "fr" else ": ") + "🔴 {text}"
+        for language in ("en", "de", "it", "es", "fr")
+    },
 }
 
 
@@ -512,6 +583,12 @@ def data_of(event: PushEvent, actor_public_id: UUID, actor_name: str) -> dict[st
         return {"kind": event.kind, "contest_id": str(event.contest_id)}
     if event.group_run_id is not None:
         return {"kind": event.kind, "group_run_id": str(event.group_run_id)}
+    if event.planned_live_id is not None:
+        return {
+            "kind": event.kind,
+            "planned_live_id": str(event.planned_live_id),
+            "share_id": str(event.live_share_id or ""),
+        }
     if event.challenge_id is not None:
         return {"kind": event.kind, "challenge_id": str(event.challenge_id)}
     if event.drawing_id is not None:
@@ -592,6 +669,8 @@ class Pusher:
             if (own and event.kind not in OWN_KINDS) or not self._first(event):
                 return
             self._tell(event)
+            if event.kind in BELL_ONLY:
+                return
             messages = self.messages(event)
             if messages:
                 assert self.run is not None

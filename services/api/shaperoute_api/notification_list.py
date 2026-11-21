@@ -14,8 +14,9 @@ language (the sign-up's, then the phone's, then English), who acted, and
 what the app opens when it is touched: push.py's data_of, the same as the
 push's. What is no longer true is left out, as in the email of the notices:
 a request withdrawn, a follow ended, a reaction taken back, a comment
-deleted or hidden, a tag removed, a drawing no longer seen, and anything
-across a block or from an account hidden from a report. Nor a row of a
+or a reply deleted or hidden, a reaction to a comment taken back, a tag
+removed, a drawing no longer seen, and anything across a block or from an
+account hidden from a report. Nor a row of a
 drawing of an activity the app does not read (reads.py, TASK-387): it
 would open a drawing that is not found.
 
@@ -59,6 +60,14 @@ log = logging.getLogger(__name__)
 # Every kind push.py tells but the private messages'.
 BELL_KINDS: frozenset[str] = frozenset(get_args(Kind)) - {"message", "message_request"}
 KEPT_DAYS = 90
+# The kinds whose event is a comment's: its id is the event's key. A
+# comment and a reply are the row itself, read again for its words; a
+# reaction to a comment is left on that row (TASK-454).
+COMMENT_KINDS: frozenset[str] = frozenset(
+    {"comment", "comment_reply", "comment_reaction"}
+)
+# Those whose words are the comment's, as it reads now.
+WORDS_KINDS: frozenset[str] = frozenset({"comment", "comment_reply"})
 PAGE_SIZE = 30
 
 
@@ -83,7 +92,7 @@ def extra_of(event: PushEvent) -> dict[str, Any]:
     """The rest of the event, as JSON: what its text and its data need that
     the row's columns do not hold."""
     extra: dict[str, Any] = {}
-    if event.text is not None and event.kind != "comment":
+    if event.text is not None and event.kind not in WORDS_KINDS:
         extra["text"] = event.text
     if event.number is not None:
         extra["number"] = event.number
@@ -142,6 +151,10 @@ def shown_sql(reads: Reads) -> str:
         " AND f.status = 'accepted')"
         " WHEN 'reaction' THEN re.user_id IS NOT NULL"
         " WHEN 'comment' THEN c.id IS NOT NULL AND c.hidden_at IS NULL"
+        " WHEN 'comment_reply' THEN c.id IS NOT NULL AND c.hidden_at IS NULL"
+        " WHEN 'comment_reaction' THEN c.id IS NOT NULL"
+        " AND c.hidden_at IS NULL AND EXISTS (SELECT 1 FROM comment_reactions cr"
+        " WHERE cr.comment_id = n.comment_id AND cr.user_id = n.actor_id)"
         " WHEN 'tag' THEN EXISTS (SELECT 1 FROM drawing_tags t"
         " WHERE t.drawing_id = n.drawing_id AND t.user_id = n.recipient_id)"
         " ELSE true END"
@@ -219,7 +232,8 @@ def line_text(event: PushEvent, name: str, language: Language) -> str:
 
 def notification_of(row: Mapping[str, Any], language: Language) -> NotificationBody:
     extra: Mapping[str, Any] = row["extra"] or {}
-    text = row["comment_text"] if row["kind"] in ("comment", "reaction") else None
+    words = row["kind"] in WORDS_KINDS or row["kind"] == "reaction"
+    text = row["comment_text"] if words else None
     event = PushEvent(
         row["kind"],
         0,
@@ -265,7 +279,7 @@ class NotificationList:
             "actor": event.actor_id,
             "kind": event.kind,
             "drawing": event.drawing_id,
-            "comment": _uuid(event.key) if event.kind == "comment" else None,
+            "comment": _uuid(event.key) if event.kind in COMMENT_KINDS else None,
             "same": same_of(event),
             "extra": Jsonb(extra_of(event)),
             "at": at,

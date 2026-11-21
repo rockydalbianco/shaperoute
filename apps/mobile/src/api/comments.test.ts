@@ -1,5 +1,10 @@
 import comment from "@shaperoute/shared-types/fixtures/comment.json";
+import reactionRequest from "@shaperoute/shared-types/fixtures/comment-reaction-request.json";
+import reactions from "@shaperoute/shared-types/fixtures/comment-reactions.json";
+import reply from "@shaperoute/shared-types/fixtures/comment-reply.json";
+import replyRequest from "@shaperoute/shared-types/fixtures/comment-reply-request.json";
 import request from "@shaperoute/shared-types/fixtures/comment-request.json";
+import threads from "@shaperoute/shared-types/fixtures/comment-threads.json";
 import comments from "@shaperoute/shared-types/fixtures/comments.json";
 import { COMMENT_MAX_LENGTH } from "@shaperoute/shared-types";
 
@@ -9,10 +14,14 @@ import {
   commentProblem,
   commentTextProblem,
   deleteComment,
+  deleteCommentReaction,
   fetchComments,
+  fetchReplies,
   isComment,
+  isCommentReactions,
   isCommentsPage,
   postComment,
+  putCommentReaction,
 } from "./comments";
 
 const URL = "http://api";
@@ -51,12 +60,82 @@ test("a page of comments is asked with the token, then after the cursor", async 
   const first = await fetchComments(URL, TOKEN, DRAWING, null, options(fetchFn));
   expect(first).toEqual({ kind: "ok", value: comments });
   await fetchComments(URL, TOKEN, DRAWING, comments.next, options(fetchFn));
+  // With the replies under their comments (TASK-454): an API from before
+  // them does not know `threads` and answers the list it always did.
   const [url, init] = fetchFn.mock.calls[0];
-  expect(url).toBe(`http://api/drawings/${DRAWING}/comments`);
+  expect(url).toBe(`http://api/drawings/${DRAWING}/comments?threads=true`);
   expect(init).toMatchObject({ method: "GET", headers: AUTH });
   expect(fetchFn.mock.calls[1][0]).toBe(
-    `http://api/drawings/${DRAWING}/comments?cursor=${comments.next}`,
+    `http://api/drawings/${DRAWING}/comments?threads=true&cursor=${comments.next}`,
   );
+});
+
+describe("replies and reactions to a comment (TASK-454 part C, ADR-0377)", () => {
+  const [top] = threads.comments;
+
+  test("the examples of the API are what the app reads", () => {
+    expect(isCommentsPage(threads)).toBe(true);
+    expect(isComment(reply)).toBe(true);
+    expect(isCommentReactions(reactions)).toBe(true);
+    // A comment of before the replies is still one: its example has none of it.
+    expect(isComment(comment)).toBe(true);
+    // Never half made: a reply that is not a comment, a kind that is not one.
+    expect(isComment({ ...top, replies: [{}] })).toBe(false);
+    expect(isComment({ ...top, mention: { username: "ada" } })).toBe(false);
+    expect(isComment({ ...top, reply_count: "3" })).toBe(false);
+    expect(isComment({ ...top, reactions: { ...reactions, mine: "super_like" } })).toBe(
+      false,
+    );
+    expect(
+      isCommentReactions({ ...reactions, counts: { ...reactions.counts, wow: null } }),
+    ).toBe(false);
+  });
+
+  test("a reply goes with the id of what it answers", async () => {
+    const fetchFn = answers({ status: 201, body: reply });
+    const outcome = await postComment(
+      URL,
+      TOKEN,
+      DRAWING,
+      ` ${replyRequest.text} `,
+      options(fetchFn),
+      replyRequest.reply_to,
+    );
+    expect(outcome).toEqual({ kind: "ok", value: reply });
+    const [url, init] = fetchFn.mock.calls[0];
+    expect(url).toBe(`http://api/drawings/${DRAWING}/comments`);
+    expect(JSON.parse(String(init?.body))).toEqual(replyRequest);
+  });
+
+  test("the other replies of a comment are asked by its id, then after the cursor", async () => {
+    const page = { comments: top.replies, next: "n2", total: 3 };
+    const fetchFn = answers({ status: 200, body: page }, { status: 200, body: page });
+    const first = await fetchReplies(URL, TOKEN, top.id, null, options(fetchFn));
+    expect(first).toEqual({ kind: "ok", value: page });
+    await fetchReplies(URL, TOKEN, top.id, "n2", options(fetchFn));
+    expect(fetchFn.mock.calls[0][0]).toBe(`http://api/comments/${top.id}/replies`);
+    expect(fetchFn.mock.calls[0][1]).toMatchObject({ method: "GET", headers: AUTH });
+    expect(fetchFn.mock.calls[1][0]).toBe(
+      `http://api/comments/${top.id}/replies?cursor=n2`,
+    );
+  });
+
+  test("a reaction is left with PUT and taken away with DELETE", async () => {
+    const fetchFn = answers(
+      { status: 200, body: reactions },
+      { status: 200, body: reactions },
+    );
+    const left = await putCommentReaction(URL, TOKEN, top.id, "fire", options(fetchFn));
+    expect(left).toEqual({ kind: "ok", value: reactions });
+    await deleteCommentReaction(URL, TOKEN, top.id, options(fetchFn));
+    const [putUrl, put] = fetchFn.mock.calls[0];
+    expect(putUrl).toBe(`http://api/comments/${top.id}/reaction`);
+    expect(put).toMatchObject({ method: "PUT", headers: AUTH });
+    expect(JSON.parse(String(put?.body))).toEqual(reactionRequest);
+    const [deleteUrl, del] = fetchFn.mock.calls[1];
+    expect(deleteUrl).toBe(`http://api/comments/${top.id}/reaction`);
+    expect(del).toMatchObject({ method: "DELETE", headers: AUTH });
+  });
 });
 
 test("a comment goes without the spaces around it", async () => {

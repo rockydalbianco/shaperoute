@@ -612,7 +612,8 @@ def city_files(
         by_city.setdefault(by_key[k]["city"], []).append(by_key[k])
     files = {}
     for city, routes in sorted(by_city.items()):
-        routes.sort(key=lambda r: (-r["similarity"], r["key"]))
+        # A ride after the runs (TASK-441): a run keeps its place, so its id.
+        routes.sort(key=lambda r: ("activity" in r, -r["similarity"], r["key"]))
         lat, lon = centres.get(city, (None, None))
         body = {
             "city": city,
@@ -640,6 +641,12 @@ def _route_body(r: Run) -> dict[str, Any]:
     )
     if r.get("rotation_deg"):
         body["rotation_deg"] = r["rotation_deg"]
+    # A word written with the pen up (TASK-441): where it walks unseen.
+    if r.get("walks"):
+        body["walks"] = r["walks"]
+    # Not a run (TASK-441): what it was drawn for.
+    if r.get("activity"):
+        body["activity"] = r["activity"]
     return body
 
 

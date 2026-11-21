@@ -466,6 +466,20 @@ che non lo dice (il catalogo di oggi è di prima della parte A: tutti `0`);
 lo scrive `seed_catalog` del motore quando il motore inclina, e un valore
 che non è un numero fra −180 e 180 si legge `0`.
 
+**`activity`** (TASK-441 B2, ADR-0366 precisazione): facoltativo nella
+query di `/recommended-routes` e di `/catalog`. **Senza, le corse**, come
+prima che il catalogo avesse altro: un'app che non lo chiede riceve le
+stesse risposte di prima, byte per byte. Con `activity=cycling` le uscite
+disegnate per la bici (20–30 km) e solo quelle; un'attività che il catalogo
+non ha dà una lista vuota (`total` e `cities` a 0 in `/catalog`), mai un
+errore. Nella risposta, nell'elenco e nel percorso intero, il campo
+`activity` **c'è solo quando non è una corsa** (`"cycling"`): manca, non è
+`null`, in ogni corsa. `GET /recommended-routes/{id}` dà un'uscita per id
+senza parametro. `GET /recommended` e ogni altra lista restano sulle corse.
+Corpi in `recommended-routes-bike.json` e `recommended-route-bike.json`.
+L'app chiede `activity=cycling` solo con lo sport «Bike»; ogni altro sport
+chiede senza.
+
 I percorsi vengono da `catalog/seed/` (ADR-0097), letti all'avvio:
 `--catalog-dir` per un'altra cartella; senza file la lista è vuota. Un file
 nuovo vuole un riavvio dell'API.
@@ -474,8 +488,10 @@ nuovo vuole un riavvio dell'API.
 
 Tutto il catalogo, una pagina alla volta, per il fondo di «Explore»
 («Farther away»): `?lat=…&lon=…`, facoltativi `offset` (da 0, default 0)
-e `limit` (1–200, default 40). Risponde `{total, cities, routes}`: quanti
-percorsi ha il catalogo in tutto, in quante città, e i percorsi della
+e `limit` (1–200, default 40) e `activity` (sopra: senza, le corse; `total`
+e `cities` contano quell'attività soltanto). Risponde `{total, cities,
+routes}`: quanti percorsi ha il catalogo in tutto, in quante città, e i
+percorsi della
 pagina nello stesso corpo di `/recommended-routes` (con `away_m` dal
 punto). L'ordine è **città per città dalla più vicina** al punto (una
 città sta dove sta la sua partenza più vicina), e dentro la città prima
@@ -1145,6 +1161,39 @@ motore.)
   record personali. Preferiti e corse di gruppo sì (migrazione `0068`).
   La legge solo un'app che dice `snowshoeing` in `X-MuW-Reads`.
 
+### Carrozzina e passeggino: `"activity": "wheelchair"` (TASK-414 parte A, ADR-0343)
+
+```json
+{ "start": [46.0671, 11.1214], "shape": "heart", "distance_m": 3000, "activity": "wheelchair" }
+```
+
+(`fixtures/route-request-wheelchair.json`, a Trento.)
+
+- **La rete `wheel`** (`networks/wheel.py`): le vie della rete foot che si
+  spingono con le ruote, la rete `wheelcalm` del banco
+  (`sports/wheelchair.md`). Fuori scale, cordoli alti (il nodo taglia la
+  via), `incline` scritto oltre l'8%, superfici ruvide, `smoothness` da
+  `bad` in giù, `wheelchair=no`, sentieri con `sac_scale`, tornelli,
+  scalette e cancelli a bussola, e le strade principali e secondarie (anche
+  `trunk`) che non scrivono un marciapiede. `path` e `track` solo con una
+  superficie scritta (o `tracktype=grade1`). `wheelchair=yes` o
+  `designated` tiene la via o il nodo. Ogni via nei due sensi.
+- **Da 1 a 5 km** (`DISTANCE_LIMITS_M.wheelchair`, scelta 4): fuori è
+  `422 invalid_request`.
+- **Solo cerchio, cuore, stella e luna** (scelta 5, `Activity.shapes`):
+  ogni altra forma del catalogo, una parola, un'immagine, un disegno a
+  mano o un tratto sono `422 invalid_request` (`wheelchair draws only these
+  shapes: circle, heart, star, moon, not …`), prima di toccare la rete.
+- **Le zone** sono sue, nella cache come `wheel_<area>.graphml`, grandi
+  quanto il suo percorso più lungo (`longest`, 5 km), coi nomi delle strade
+  come a piedi; il server ne tiene una in memoria.
+- **Salvata**: Strava `Wheelchair` e GPX `<type>wheelchair</type>`, anche
+  per un passeggino (scelta 8); nel gioco delle forme conta come una
+  camminata, coi controlli «veicolo» della corsa e senza tempi migliori
+  (scelta 7); record personali suoi su 1 e 5 km. Preferiti e corse di
+  gruppo sì (migrazione `0071`, numero in bozza). La legge solo un'app che
+  dice `wheelchair` in `X-MuW-Reads`.
+
 ### A piedi, camminando: `"activity": "walking"` (TASK-371, ADR-0315)
 
 ```json
@@ -1198,6 +1247,21 @@ niente gioco delle forme, niente record personali; preferiti e corse di
 gruppo no (migrazione `0057`). Lo legge solo un'app che dice
 `ski_touring` in `X-MuW-Reads`.
 
+**Il parapendio** (`paragliding`, TASK-305 parte R1, ADR-0375) è un quarto
+sport senza forma, dopo `ski_touring` in `RECORD_ACTIVITIES`: un volo si
+salva, si elenca e si apre come una giornata di sci; Strava non ha il
+parapendio e lo riceve come `Workout`, il GPX dice
+`<type>paragliding</type>`. Niente percorsi (il pianificatore di ADR-0265
+è un'altra cosa), niente gioco delle forme, niente record personali;
+preferiti e corse di gruppo no (migrazione `0069`). Lo legge solo un'app
+che dice `paragliding` in `X-MuW-Reads`.
+
+**L'alpinismo** (`alpinism`, TASK-463, ADR-0373) è un quinto sport senza
+forma, dopo `paragliding`: Strava lo riceve come `Hike`, il GPX dice
+`<type>alpinism</type>`. Per il resto vale quello che vale per il
+parapendio: niente percorsi, gioco o record, e la migrazione `0076` allarga
+solo `runs`. Lo legge solo un'app che dice `alpinism` in `X-MuW-Reads`.
+
 ### Quello che un'app sa leggere: `X-MuW-Reads` (TASK-387, ADR-0328)
 
 Ogni richiesta dell'app dice nell'header `X-MuW-Reads` i tipi in più che sa
@@ -1220,6 +1284,12 @@ L'app di oggi manda `swimming,walking,skiing,xc_skiing`. Un allenamento in
 palestra (`gym`, TASK-385) non ha traccia: passa solo a chi dice **sia**
 `gym` **sia** `trackless`; l'app lo dirà con la parte B0, insieme alle
 schermate che mostrano un post senza linea.
+
+Nello stesso header un'app dice **`post`** quando sa mostrare un post
+allegato a un messaggio (TASK-455, ADR-0382, «Un post in un messaggio»,
+sotto). Non è un tipo di corsa: lo legge `messages.py`, non `reads.py`.
+Senza, il messaggio arriva con «[Post]» davanti al testo e `attachment`
+`null`.
 
 ### Una parola invece di una forma (TASK-056)
 
@@ -1775,6 +1845,36 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   `activity-request-imported.json`, `activities-imported.json`,
   `activity-imported.json`. Un'API di prima rifiuta il campo: `422
   invalid_request`.
+
+### Il calendario delle attività (TASK-462 parte A, ADR-0372)
+
+Il calendario di tutte le attività del proprietario, di ogni sport, per la
+striscia della settimana nel profilo e per il calendario del profilo e di «My
+activities». Vuole il token (`401 not_signed_in`; senza database `503
+accounts_unavailable`). Esempio `fixtures/activity-calendar.json`; tipi in
+`shared-types` `src/activityCalendar.ts`; codice `activity_calendar.py`.
+Solo lettura da `runs` e `run_stats`, nessuna migrazione.
+
+- **`GET /me/activity-calendar?tz=&month=&sport=`**: `tz` è il fuso del
+  telefono (nome IANA, `422` se no), `month` un mese `YYYY-MM` su quel fuso
+  (questo se manca), `sport` un'attività di una corsa (`running`, `gym`,
+  `swimming`…; tutte se manca, `422` se non è una di loro).
+- Risponde `month`, `tz`, `sport` (`null` per tutti), `count`,
+  `distance_m`, `duration_s` del mese e `days`: solo i giorni con
+  un'attività, ognuna con `id` (la chiave di «My activities»), `activity`,
+  `started_at`, `distance_m` (0 per la palestra), `duration_s`, `kcal`
+  (quelle che il telefono ha mandato con `PUT /me/activities/{key}/stats`,
+  `null` se nessuna), `tracked` (`false` senza traccia: la palestra e la
+  piscina, che non aprono una mappa), `shape`, `word`, `title`, `place`; la
+  prima prima.
+- `trend`: i 12 mesi fino a `month`, il più vecchio prima, ognuno anche
+  vuoto, con `count`, `distance_m`, `duration_s`; dello `sport` chiesto.
+  Sono le barre dello «storico tempi».
+- `sports`: gli sport di cui il proprietario ha attività, di ogni mese e
+  qualunque sia `sport`, il più frequente prima: i filtri del calendario.
+- Come «My activities», solo ciò che l'app legge (`X-MuW-Reads`, `reads.py`):
+  un'app di prima vede solo corsa, bici e pagaia; la palestra vuole
+  `gym` e `trackless`, la piscina anche `pool`.
 
 ### Profile picture (TASK-178, ADR-0146)
 
@@ -2719,6 +2819,73 @@ Tipi in `shared-types` (`CommentRequest`, `Comment`, `CommentsPage`,
 - **Un'API precedente** non ha questi endpoint: `404 http_error`, e l'app
   non mostra i commenti.
 
+#### Risposte e reazioni ai commenti (TASK-454 parte C1, ADR-0377)
+
+A un commento si risponde e si reagisce. Tutto quello che segue è **in
+più**: un'app di prima chiede e legge come sopra e non si rompe (test
+«an app from before» in `test_comment_threads.py`). Tipi in `shared-types`
+(`CommentReactionKind`, `COMMENT_REACTION_KINDS`, `CommentReactions`,
+`CommentReactionRequest`, i campi nuovi di `Comment` e `CommentRequest`),
+esempi in `fixtures/comment-reply-request.json`, `comment-reply.json`,
+`comment-threads.json`, `comment-reactions.json`,
+`comment-reaction-request.json`; il codice in `comments.py` e
+`comment_reactions.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /drawings/{id}/comments` con `reply_to` | una risposta | `201` `Comment`, o `404 http_error` |
+| `GET /drawings/{id}/comments?threads=true` | i commenti, ognuno con le prime risposte | `200` `CommentsPage`, o `404 http_error` |
+| `GET /comments/{id}/replies` | una pagina delle risposte di un commento, dalla più vecchia | `200` `CommentsPage`, o `404 http_error` |
+| `PUT /comments/{id}/reaction` | lascia o cambia la propria reazione | `200` `CommentReactions`, o `404 http_error` |
+| `DELETE /comments/{id}/reaction` | la toglie | `200` `CommentReactions`, o `404 http_error` |
+
+- **Una risposta** è un commento con `reply_to`, l'`id` del commento (o
+  della risposta) a cui si risponde, dello stesso disegno: stessi
+  controlli, stesso filtro delle parole, stesso limite al minuto. **Un
+  livello solo**: `parent_id` è sempre il commento in cima; rispondere a
+  una risposta la mette sotto lo stesso commento, con `mention` (`public_id`
+  e `username` di chi ha scritto la risposta a cui si risponde), che l'app
+  mostra come «@nome» davanti al testo. `mention` è `null` rispondendo al
+  commento, a sé stessi, e per chi non vede quell'iscritto. Un `reply_to`
+  che non è un commento di quel disegno, o che chi scrive non legge (un
+  blocco, nascosto): `404 http_error` «No comment with this id.».
+- **I campi in più di un commento**: `parent_id` (`null` per un commento),
+  `mention`, `reply_count` (quante risposte legge chi chiede; 0 per una
+  risposta), `replies` e `reactions`.
+- **Con `threads=true`** la pagina ha solo i commenti, dal più vecchio, e
+  ognuno porta in `replies` le sue **due risposte più vecchie**
+  (`REPLIES_SHOWN`); le altre si chiedono a `GET /comments/{id}/replies`
+  (`limit`, `cursor`, `next` e `total` come le altre pagine; `404` per una
+  risposta, che non ne ha di sue). **Senza `threads`** la lista è quella
+  di prima: commenti e risposte insieme, per data, con `replies` `null`.
+  `total` conta commenti e risposte in tutti e due i casi.
+- **Una risposta si legge col suo commento**: se chi chiede non legge il
+  commento (un blocco con chi l'ha scritto, nascosto da una segnalazione),
+  non legge nemmeno le sue risposte, in nessuna delle due liste, e non
+  contano. **Cancellare un commento cancella le sue risposte.** Chi
+  cancella una risposta: chi l'ha scritta o il proprietario del disegno,
+  come ogni commento. Si segnala con `POST /reports` (`kind: "comment"`).
+- **Le reazioni a un commento** sono cinque, **una a testa**: 🔥 👏 💪 😂
+  😮 (`fire`, `clap`, `strong`, `laugh`, `wow`). Il cuore MuW no: il super
+  like è solo del disegno (scelta dell'utente, 2026-11-11), `super_like`
+  qui è `422 invalid_request`. Il corpo del `PUT` è `{ "kind": "fire" }`;
+  un altro tipo prende il posto del primo, lo stesso non cambia niente.
+  Reagisce chi legge il commento, anche a una risposta. `reactions` di un
+  commento, e la risposta di `PUT` e `DELETE`, è `{ counts, total, mine }`
+  come per un disegno, coi cinque tipi: quanti, **mai chi**, e mai quelle
+  di chi un blocco tiene lontano. Al più 30 al minuto per account, a parte
+  da quelle dei disegni.
+- **Chi viene avvisato**: di una risposta, chi ha scritto il commento (o
+  la risposta) a cui si risponde: «ada replied to your comment: …»
+  (`comment_reply`), con le regole di «Push notifications». Il
+  proprietario del disegno riceve il solito «commented on your post», ma
+  non se è lui quello a cui si risponde: una notizia, una volta. Di una
+  reazione a un commento, chi l'ha scritto lo legge **solo nella
+  campanella** («ada reacted to your comment.», `comment_reaction`):
+  nessuna notifica sul telefono, qualunque sia l'interruttore
+  (`push.BELL_ONLY`), e non entra nell'email delle notizie. Tutti e due
+  aprono il disegno (`drawing_id`).
+
 ### Reactions (TASK-119, ADR-0193)
 
 Sotto un disegno gli iscritti lasciano una reazione fra sei, **una a
@@ -3083,7 +3250,7 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   Esempio `fixtures/gym-plans.json`; `gym_plans.py`. Una scheda fatta con
   la guida (TASK-433, migrazione 0066) ha `program`: `goal` facoltativo
   (`muscle`, `strength`, `tone`, `fit`), `starts_on` (`YYYY-MM-DD`, le
-  settimane contano dal suo lunedì), `weeks` 1–12, `mode` (`load`, `reps`,
+  settimane contano dal suo lunedì), `weeks` 1–24, `mode` (`load`, `reps`,
   `alternate`, `same`), `step_kg` 0–20, `rest_s` facoltativo 10–600,
   `sessions` (la prima settimana: 1–7 allenamenti `{day, name, items}`, un
   giorno una volta) e `custom` (le settimane scritte a mano, `{week,
@@ -3099,7 +3266,22 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   giorno c'è una corsa (`running`). Il programma può avere `runner`
   (TASK-452, ADR-0369): `pace_10k_s` 180–900 (il ritmo sui 10 km, in
   secondi al km) e il lungo, `long_m` (1–60 km) o `long_s` (10 min–6 h); i
-  ritmi li calcola il telefono.
+  ritmi li calcola il telefono. Un giorno fuori di un altro sport
+  (TASK-461 B e C, ADR-0371) ha `outing` e né esercizi né `run`: `sport`
+  (`walk`, `hike`, `bike`, `gravel`, `mtb`, `swim`, `paddle`; la corsa resta
+  `run`), `kind` (`easy`, `intervals`, `long`; `brisk`, il passo svelto, solo
+  a piedi; `climb`, la salita di un hike), i campi di una corsa
+  (`distance_m` fino a 300 km in bici, 100 km a piedi o in canoa, 10 km a
+  nuoto; `duration_s` 60 s–12 h; `reps`, `rep_m` 25–5000, `rep_s`), a piedi
+  `climb_m` (50–5000, obbligatorio per `climb`), un nuoto `pool` (vasca
+  `true`, acque libere `false`); nel calendario è fatto se quel giorno c'è
+  un'attività del suo sport (`walking`, `hiking`, `cycling`, `gravel_biking`,
+  `mountain_biking`, `swimming`, `paddling`). Il programma può avere
+  `target`: `sport` (anche `run`), `distance_m` (500 m–300 km) o, per
+  `hike`, `climb_m` (100–5000), `on` facoltativo (`YYYY-MM-DD`); con un
+  obiettivo `weeks` arriva a 24. Un'app di prima non mostra «Today» in un
+  giorno fuori (non ha né corsa né esercizi), ne mostra il nome nella lista
+  e, salvando di nuovo la scheda, tiene `outing` e `target`.
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`
@@ -3147,6 +3329,86 @@ con la vasca e le vasche. Token richiesto; tipi in
   /drawings/{id}/pool-swim` dà medio e massimo agli altri solo se
   `heart_shown`. Senza battito le risposte non hanno i campi, come prima.
 
+### Sleep (TASK-467 parti B1 e B1b, ADR-0380)
+
+Le notti di sonno che una persona pubblica. Il punteggio lo calcola il
+telefono dai dati di Apple Salute (ADR-0379); al server arriva **solo il
+riassunto di una notte pubblicata**: il giorno del risveglio, il punteggio,
+i minuti dormiti e svegli e, se un orologio li ha detti, i minuti per fase.
+Mai i campioni, mai l'ora in cui si è andati a letto o ci si è svegliati.
+Token richiesto; tipi in `shared-types/src/sleep.ts` (`SleepNightRequest`,
+`SleepNight`, `ActivitySleepRequest`, `ActivitySleep`, `SleepSummary`),
+esempi in `fixtures/sleep-*.json`; il codice in `sleep.py`.
+
+Una notte si pubblica in due modi, ognuno col suo interruttore:
+
+- **nel profilo**, `shared`: spento finché il proprietario non lo accende;
+- **nel post di un'attività**, `shown` («Sleep last night»): acceso se il
+  proprietario non lo spegne (scelta dell'utente del 2026-11-12).
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/sleep/{night}` | la notte del giorno `night` (`YYYY-MM-DD`) coi suoi numeri e `shared`; senza `shared` resta com'era | `200` `SleepNight`; `204` se niente la pubblica: non si tiene |
+| `PATCH /me/sleep/{night}` | solo `shared`, senza i numeri | `200` `SleepNight`; `204` come sopra; `404` se non c'è |
+| `GET /me/sleep/{night}` | la notte del suo proprietario | `200` `SleepNight`, o `404` |
+| `DELETE /me/sleep/{night}` | via dal server: dal profilo e dai post che la portavano | `204`, anche la seconda volta |
+| `DELETE /me/sleep/shared` | «smetti di condividere»: nessuna notte nel profilo | `204` |
+| `GET /users/{id}/sleep` | l'ultima notte condivisa di un profilo, per chi può aprirlo | `200` `SleepSummary`, o `404` |
+| `PUT /me/activities/{key}/sleep` | la notte prima dell'attività: numeri, `night` e `shown` | `200` `ActivitySleep`; `404` senza l'attività; `422` se non è la notte prima |
+| `PATCH /me/activities/{key}/sleep` | solo `shown` | `200` `ActivitySleep`; `404` senza notte |
+| `GET /me/activities/{key}/sleep` | la notte dell'attività, per il suo proprietario | `200` `ActivitySleep`, o `404` |
+| `DELETE /me/activities/{key}/sleep` | l'attività senza notte | `204`, anche la seconda volta |
+| `GET /drawings/{id}/sleep` | la notte nel post, per chi vede il disegno e finché è mostrata | `200` `SleepSummary`, o `404` |
+
+- **I numeri**: `score` intero da 0 a 100; `asleep_min` da 1 a 1440;
+  `awake_min` da 0 a 1440 (sveglio fra l'addormentarsi e l'ultimo
+  risveglio); `stages` (`rem_min`, `light_min`, `deep_min`: «Light» è il
+  «Core» di Apple) tutti e tre o niente, e insieme non più di `asleep_min`
+  (il sonno senza fase detta sta solo lì). Ogni altro campo è `422`. La
+  parola accanto al punteggio («Poor» … «Excellent») la ricava l'app.
+- **`night`** è il giorno del risveglio, com'è sul calendario del telefono:
+  dal 2020-01-01 a domani (un telefono a est dell'API è avanti di un
+  giorno al più), se no `422`. Una notte per account e per giorno:
+  rimandata, prende i numeri nuovi (l'orologio ha sincronizzato dopo).
+- **Si tiene solo quello che è pubblicato**: una notte che non è nel
+  profilo e che nessuna attività porta non resta sul server. Per questo
+  `PUT` e `PATCH /me/sleep/{night}` rispondono `204` quando, spento
+  `shared`, non la porta nessun post; e togliere la notte all'ultima
+  attività che la portava, o cancellare quell'attività, cancella la notte
+  (lo fa il database, migrazione `0072`).
+- **Chi non è l'autore** legge una notte solo da `GET /users/{id}/sleep`
+  (l'ultima con `shared` acceso, per chi può aprire il profilo: mai
+  attraverso un blocco) e da `GET /drawings/{id}/sleep` (se vede il
+  disegno, come `drawing_seen_sql`, e `shown` è acceso). Una notte non
+  condivisa, o il sonno di un post nascosto, rispondono lo **stesso `404`**
+  di un profilo o di un post che una notte non ce l'ha: nessuna risposta
+  li conta, e il profilo, il Feed e il dettaglio del post non li
+  distinguono da un post senza notte (`sleep` è `null`, vedi sotto). Il
+  proprietario dal suo profilo vede quello che vedono gli altri.
+- **La notte dentro il post, senza chiederla** (parte B1b): ogni disegno
+  visto porta `sleep`, lo stesso `SleepSummary` di `GET
+  /drawings/{id}/sleep`, **solo mentre `shown` è acceso**; `null` per un
+  post senza notte e per uno col sonno nascosto, anche al suo autore (che
+  l'interruttore lo legge da `GET /me/activities/{key}/sleep`). Vale per
+  `GET /drawings/{id}` e per ogni lista di post: `GET /feed`, il profilo
+  (`GET /users/{id}/drawings`), la ricerca, la stazione, le gare. Chi non
+  vede il post non lo trova in nessuna lista, quindi non ne legge la notte;
+  attraverso un blocco nemmeno. `stages` manca per una notte senza fasi,
+  come nell'endpoint, mai `null`. Così il Feed non fa una richiesta in più
+  per riga; le app di prima ignorano il campo. Il codice in
+  `sleep_seen.py` (la sotto-select, una riga per chiave primaria) e in
+  `drawings.py` (`SeenFields`); esempio in `fixtures/drawing-sleep.json`.
+- **Nel post**: `PUT /me/activities/{key}/sleep` salva la notte (senza
+  toccare `shared`) e la dà all'attività, al posto di quella che aveva.
+  «La notte prima» vuol dire `night` entro 2 giorni dal giorno d'inizio
+  dell'attività (in UTC: il giorno stesso o quello prima, più un giorno di
+  fuso), se no `422`. Più attività dello stesso giorno portano la stessa
+  notte. I due interruttori sono separati: `shown` non la mette nel
+  profilo, `shared` non la mostra in un post nascosto.
+- Cancellare l'account cancella tutte le sue notti. Nessun punteggio lo
+  calcola il server, nessuna classifica, nessuna ricerca, niente Strava.
+  Test in `test_sleep.py`.
+
 ### Live shares (TASK-424, ADR-0352)
 
 «Share live activity»: un link che mostra una registrazione dal vivo, su
@@ -3179,6 +3441,14 @@ senza app né account. Tipi in `shared-types/src/liveShare.ts`
 - **I numeri** (`LiveStats`): distanza, tempo senza pause, dislivello,
   calorie, battito (quando l'orologio lo manda), vasche stimate, esercizio
   della palestra. La pagina calcola passo o velocità medi.
+  Per un volo di parapendio (TASK-305 parte R1, ADR-0375) quattro numeri
+  in più, tutti facoltativi: `alt_m` (quota adesso, metri sul mare,
+  −500…9000), `max_alt_m` (la più alta finora, stessi limiti),
+  `vario_mps` (sale o scende, m/s, −30…30) e `speed_mps` (velocità al
+  suolo adesso, 0…100). Fuori dai limiti è `422`. Un'app che non li manda
+  e una pagina che non li legge funzionano come prima; nella `LiveView`
+  sono `null` quando mancano. Con `extra="forbid"` un server di prima li
+  rifiuta: il server esce prima dell'app.
 - **Solo il sito legge `/live`**: `Access-Control-Allow-Origin:
   https://getmuw.app`, `Cache-Control: no-store`, `Referrer-Policy:
   no-referrer`, anche sul `429`.
@@ -3187,6 +3457,101 @@ senza app né account. Tipi in `shared-types/src/liveShare.ts`
   un giorno, perché la pagina possa dire «stopped». Le copie notturne del
   database non tengono le righe dei link (`deploy/backup.sh`). Cancellare
   l'account cancella i link. Test in `test_live_shares.py`.
+
+#### In chat e nel Feed (TASK-468 parte A1a, ADR-0381)
+
+Una sola condivisione per registrazione, vista in più modi: il link è uno
+di questi, ora facoltativo; gli altri sono le persone scelte in chat e il
+Feed (follower o tutti). Tipi nuovi in `liveShare.ts` (`LiveAudience`,
+`LiveShareMade`, `LiveAudienceChange`, `LiveShareSend`, `LiveShareSent`),
+esempio in `fixtures/live-share-send-request.json`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /me/live-shares` | in più, facoltativi: `link` (default `true`), `audience_feed` (`none`/`followers`/`everyone`, default `none`), `heart_visible` (default `false`) | `201`; con `link: false` `url` è `null` (`LiveShareMade`) |
+| `POST /me/live-shares/{id}/link` | fa il link adesso: un token nuovo, il link dato prima smette di funzionare | `201` `LiveShareCreated`; `404` se non è sua; `410` se è finita |
+| `PATCH /me/live-shares/{id}` | `audience_feed` e/o `heart_visible`; il resto resta | `200` `LiveShare`; `404`; `410` se è finita |
+| `POST /me/live-shares/{id}/send` | `to`: da 1 a 20 `public_id` | `200` `LiveShareSent` (`sent`, `skipped`); `404`; `410`; `429` oltre 20 invii al minuto per account |
+| `GET /live-shares/{id}?after=<seq>` | quello che vede nell'app chi ha un account e il diritto | `200` `LiveView`; `404` a chi non può; `429` oltre 120 al minuto per persona e live |
+
+- **Chi vede nell'app**: il proprietario; e, se non è lontano da lui per
+  un blocco (dei due versi) o un account nascosto (`follows.apart_sql`),
+  chi ha ricevuto la live in chat, chi lo segue (follow accettato) se
+  `audience_feed` è `followers`, chiunque abbia un account se è
+  `everyone`. Si controlla a ogni richiesta: un follow tolto o un blocco
+  fatto durante l'attività tolgono la vista subito. A chi non può, `404`
+  come per una live che non c'è, **mai `403`**.
+- **Il battito** (scelta 4 dell'utente): a chi guarda dall'app
+  `stats.heart_bpm` è `null` finché il proprietario non accende
+  `heart_visible`; il proprietario lo vede sempre, il link come prima.
+- **`send`** («Send in MuW»): dalla parte A1b manda a ciascuno **un
+  messaggio con la live allegata**, come il `POST` dei messaggi (sotto,
+  «Una live in un messaggio»), con la sua push. Chi non ha un account, se
+  stessi, chi è lontano per un blocco o un nascosto e chi non ha la
+  conversazione `open` con chi manda (una richiesta non porta allegati)
+  finiscono in `skipped`, tutti uguali. Lo stesso `public_id` due volte
+  nella stessa richiesta conta una volta; mandata di nuovo, è un messaggio
+  in più.
+- **Fine e stop** come per il link: una live finita si vede col riepilogo
+  per un'ora, poi `expired`; fermata, `stopped`, solo lo `status`. Su una
+  live finita `link`, `PATCH` e `send` rispondono `410`.
+- **`LiveShare`** ha in più `link` (c'è il token), `audience_feed`,
+  `heart_visible`; un'app di prima non li legge. Il log non scrive
+  posizioni (test in `test_live_shares.py`).
+
+#### Le live programmate e la fila «Live» del Feed (TASK-468 parte A2a, ADR-0381)
+
+Una live fatta in anticipo, una gara per esempio: sport, titolo, giorno e
+ora, chi la segue (`followers` o `everyone`) e se vede il battito. Il codice
+in `planned_lives.py`, montato da `install_live_shares`; tipi in
+`plannedLive.ts` (`PlannedLiveRequest`, `PlannedLiveChange`,
+`PlannedLiveStart`, `PlannedLivePost`, `LiveItem`, `LivesPage`), esempi in
+`fixtures/planned-live-request.json`, `planned-live.json`,
+`lives-page.json`. Tutti vogliono il token d'account.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /me/planned-lives` | `activity`, `title` (1–60, una riga, filtro dei commenti), `starts_at` (da adesso a 60 giorni), `audience_feed` (default `followers`), `heart_visible` (default `false`) | `201` `LiveItem`; `422` oltre 10 non finite |
+| `GET /me/planned-lives` | le mie non finite e non pubblicate, la più vicina prima, con `can_start` | `200` `LiveItem[]` |
+| `PUT /me/planned-lives/{id}` | cambia quello che si dà, solo prima della partenza | `200` `LiveItem`; `404`; `422` se è partita |
+| `DELETE /me/planned-lives/{id}` | la toglie coi promemoria; una live partita va avanti per conto suo | `204`; `404` |
+| `POST /me/planned-lives/{id}/start` | la sua live: da un'ora prima a tre ore dopo, col suo pubblico e il suo battito; senza link se non lo si chiede (`link`) | `201` `LiveShareCreated`; `404`; `422` fuori dalle ore o se è già in corso |
+| `PUT /me/planned-lives/{id}/post` | `drawing_id`: il post che è diventata (scelta 5) | `204`; `404` per un post non suo |
+| `GET /planned-lives/{id}` | una live programmata, anche finita (`ended`) | `200` `LiveItem`; `404` a chi non può |
+| `PUT` / `DELETE /planned-lives/{id}/reminder` | «Remind me» o no: due volte è una | `204`; `404`; `422` se è già partita (solo `PUT`) |
+| `GET /lives?limit=&cursor=` | la fila del Feed | `200` `LivesPage` |
+| `GET /users/{public_id}/lives` | le live non finite di un profilo che chi chiede può vedere | `200` `LiveItem[]`; `404` come il profilo |
+
+- **Chi vede**: il proprietario; gli altri se non sono lontani per un
+  blocco (dei due versi) o un nascosto, e se la live è `everyone` o lo
+  seguono. A chi non può, `404`, mai `403`.
+- **La fila** (scelta 7 dell'utente): solo le proprie e quelle di chi si
+  segue, **mai quelle di uno sconosciuto**, anche `everyone` (quelle si
+  aprono dal profilo o da un link). Ci sono le programmate e le live messe
+  nel Feed senza programmarle (`audience_feed` di `POST /me/live-shares`,
+  scelta 6). Prima quelle in corso (anche `finished` per l'ora del
+  riepilogo), l'ultima partita prima; poi le programmate, la più vicina
+  prima. A pagine: `limit` 1–50, `next` è il `cursor` della pagina dopo.
+  Escono: una programmata mai partita tre ore dopo la sua ora, una live
+  fermata o scaduta, una programmata diventata post.
+- **`LiveItem`**: `id` è quello della programmata, o della live per una
+  messa nel Feed senza programmarla (`planned_live_id` `null`); `share_id`
+  c'è solo mentre è in corso o finita da meno di un'ora, e apre `GET
+  /live-shares/{id}`; `state` è `planned`, `live`, `paused`, `finished`
+  o `ended`; `distance_m` e `duration_s` sono gli ultimi numeri, per la
+  scheda; `reminded` è il «Remind me» di chi chiede; `can_start` vale
+  solo per il proprietario.
+- **«Remind me»** (parte A2b): alla **prima** partenza riuscita (`POST
+  /me/planned-lives/{id}/start`), dopo la scrittura, una push
+  `planned_live_started` a chi l'ha chiesto e la vede ancora: mai al
+  proprietario, a chi è lontano per un blocco, a chi non lo segue più per
+  una live «followers». Testo «{name} is live: {title}» (it «{name} è live:
+  {title}», più de, es, fr); dati `{kind, planned_live_id, share_id}`
+  (`fixtures/planned-live-push-data.json`, `PlannedLivePushData`) per
+  aprire la schermata dal vivo. Una ripartenza dopo uno stop non la manda
+  di nuovo; nessun giro periodico, nessuna migrazione. Le regole di
+  `push.py` valgono come per le altre (push accese, token). Test in
+  `test_planned_lives.py`.
 
 ### Run stats (TASK-410 parte C, ADR-0340)
 
@@ -3242,6 +3607,48 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
   `PUT …/stats` con `ski_parts` (422, `extra="forbid"`) e la giornata
   perde tutti i suoi dati. Nessuna app manda i tratti prima che il server
   con C2b sia acceso.
+
+- **I numeri di un volo** (TASK-305 parte R5a, ADR-0375; tipi in
+  `packages/shared-types/src/flightBests.ts`, esempi in
+  `fixtures/flight-stats-request.json` e `fixtures/flight-bests.json`, test
+  in `test_flight_bests.py`).
+  - Il telefono può mandare in più `max_alt_m` (−1000…10000 m, il punto
+    più alto dal GPS, tenuto al metro) e `top_speed_mps` (0…100 m/s, la
+    velocità massima sul suolo, tenuta al centesimo). Il profilo ridotto a
+    120 punti e i metri della traccia non li danno.
+  - Il server li tiene in `stats` **solo per un volo** (`paragliding`): per
+    gli altri sport sono ignorati, non rifiutati. Non escono in
+    `GET /drawings/{id}`.
+  - **`GET /me/flight-bests`**, solo del proprietario (401 senza token):
+    `{highest, longest, farthest, fastest}`, cioè metri, secondi in
+    movimento, metri, m/s. Ognuno è `{id, started_at, value}` (`id` è la
+    chiave dell'app, come in `/me/activities`) o `null` senza un volo che
+    lo abbia; un valore zero non è un record. A parità vince il primo
+    volato, e un volo cancellato porta via i suoi record. Voli privati
+    compresi.
+  - **Prima il server, poi l'app**: un server senza R5a rifiuta i due campi
+    (422, `extra="forbid"`).
+- **A piedi e in volo, hike & fly** (TASK-305 parte R6a, ADR-0375
+  «precisazione R6»; tipi in `packages/shared-types/src/flightParts.ts`,
+  esempi in `fixtures/flight-parts-request.json` e
+  `fixtures/flight-split.json`, test in `test_flight_parts.py`).
+  - Il telefono può mandare in più `flight_parts`, al più 200,
+    nell'ordine del volo.
+  - Ogni tratto è `{kind: "foot"|"air", start_ms, end_ms, moving_s,
+    metres, climb_m, max_alt_m}`: i tempi sono sull'orologio dei `time_ms`
+    della traccia, `moving_s` non supera la durata del tratto, e
+    `max_alt_m` è `null` senza quote.
+  - Il server li tiene in `stats` **solo per un volo**, come i tratti dello
+    sci: `start_s`/`end_s` in secondi dal primo punto tenuto. Calcola anche
+    `flight_split` `{foot, air}`, ognuno `{seconds, metres, climb_m,
+    max_alt_m}`, ma solo se il volo ha tratti di tutti e due i tipi. Per gli
+    altri sport li ignora.
+  - `GET /drawings/{id}` dà `flight_parts` e `flight_split` dentro
+    `stats`. Ogni lista di post (Feed, profilo, ricerca, gare, stazione) dà
+    `flight_split` sul post, `null` senza tratti a piedi: il Feed ci scrive
+    «On foot {time} · In the air {time}».
+  - **Prima il server, poi l'app**: un server senza R6a rifiuta
+    `flight_parts` (422).
 
 ### Ski names (TASK-375 parte D2, ADR-0319)
 
@@ -3767,6 +4174,129 @@ post, ADR-0292); tipi `MessageAttachmentRequest`, `MessageDrawing`,
   l'app non mostra il «+». Un server senza la cartella (`--media-dir`, di
   solito `data/media`) risponde `404` agli endpoint dei file e offre solo
   i disegni.
+
+#### Un post in un messaggio (TASK-455, ADR-0382)
+
+Un quarto allegato, `post`: **un rimando a un disegno pubblicato, mai una
+copia** (scelte dell'utente del 2026-11-12). Il messaggio tiene l'id del
+disegno e nient'altro: né linea, né titolo, né autore. Nessun endpoint
+nuovo: sono quelli dei messaggi. Tipi in `shared-types`
+(`MessagePostRequest`, `MessagePostCard`, `MESSAGE_POST_KIND`,
+`READS_MESSAGE_POST`), esempio in `fixtures/message-post.json`; il codice
+nel blocco «A post attached» di `messages.py`, la migrazione
+`0074_message_post.sql` (`DATABASE.md`).
+
+- **Mandare**: `POST /conversations/{public_id}/messages` con
+  `attachment: { "post_id": "<id del disegno>" }`, da solo: con `media_id`
+  o `drawing` è `422`. Come ogni allegato solo in una conversazione `open`
+  (`409` in una richiesta), col testo facoltativo. **Chi manda deve vedere
+  il disegno** (`drawings.drawing_seen_sql`): altrimenti `404 http_error`
+  «No drawing with this id.», uguale a un id che non c'è. Un proprio
+  disegno `only_me` è `422 invalid_request` «Only you can see this post:
+  choose who can see it, then send it.». Un post «Followers» si manda: lo
+  apre solo chi segue l'autore.
+- **Leggere: i permessi sono di chi legge, a ogni lettura.** In `GET
+  …/messages`, in `GET /me/conversations` e nella risposta del `POST`
+  l'allegato ha `kind: "post"` e `post`: la scheda (`MessagePostCard`:
+  `id` del disegno, `author` come `Person`, `title`, `shape`, `word`,
+  `style`, `route_title`, `distance_m`, `activity`, `rotation_deg`,
+  `preview` di al più 64 punti) **solo se chi chiede può aprire il post in
+  quel momento**, con la stessa domanda di `GET /drawings/{id}`:
+  visibilità, follow accettato, nessun blocco nei due versi, niente di
+  nascosto, e uno sport che la sua app legge. Altrimenti `post` è `null`:
+  l'app dice «This post is no longer available.». Vale anche per chi l'ha
+  mandato. Niente è tenuto nel messaggio, quindi cambiare «Who can see
+  it», smettere di seguire, bloccare o cancellare agiscono dalla lettura
+  dopo. Un post cancellato lascia il messaggio, con `post` `null` per
+  sempre. Il post intero si apre con `GET /drawings/{id}`.
+- **Chi lo riceve**: solo un'app che dice `post` in `X-MuW-Reads` (sopra,
+  «Quello che un'app sa leggere»). Le app di prima chiedono già
+  `?with=attachments` e non conoscono questo tipo: a loro, e a chi non
+  chiede gli allegati, il testo arriva con davanti «[Post]» e `attachment`
+  è `null`. `MessagesPage.attachments.kinds` ha `post` solo per chi lo
+  legge: l'app sa così che il server lo accetta.
+- **La push**: «{name}: 🗺️ Post» nelle cinque lingue, o «{name}: 🗺️
+  {text}» con un testo. Mai il titolo o l'autore del post: chi la riceve
+  può non essere tra quelli che lo vedono.
+- **Un'API di prima** ignora `post` nell'header e rifiuta `post_id` con
+  `422` (campo in più).
+
+#### Una live in un messaggio (TASK-468 parte A1b, ADR-0381)
+
+Un quinto allegato, `live`: **un rimando a una propria live in corso, mai
+una copia**, come il post. Si manda da «Send in MuW» (`POST
+/me/live-shares/{id}/send`, sopra in «Live shares») o come allegato. Tipi
+in `messageLive.ts` (`MessageLiveRequest`, `MessageLiveCard`,
+`MessageAttachmentWithLive`, `MESSAGE_LIVE_KIND`, `READS_MESSAGE_LIVE`),
+esempio in `fixtures/message-live.json`; il codice nel blocco «A live
+share attached» di `messages.py`, la migrazione `0077_message_live.sql`.
+
+- **Mandare**: `attachment: { "live_share_id": "<id>" }`, da solo, in una
+  conversazione `open` (`409` in una richiesta). Solo **la propria** live:
+  un'altra o nessuna è `404` «No live share of yours with this id.»; una
+  finita, fermata o scaduta è `422` «This live share has ended: make a new
+  one.». Mandarla dà all'altro il diritto di vederla nell'app (`GET
+  /live-shares/{id}`, riga in `live_share_recipients`).
+- **Leggere, a ogni lettura**: `attachment.live` è la scheda
+  (`MessageLiveCard`: `share_id`, `activity`, `status`, `distance_m`,
+  `duration_s`, `updated_at`) finché chi chiede può vedere la live
+  (`live_shares.MAY_SEE_SQL`: il proprietario, o chi l'ha ricevuta, senza
+  blocchi); `null` quando la riga della live non c'è più (un giorno dopo
+  la fine) o chi chiede non può: l'app dice «Live ended».
+- **Chi la riceve**: solo un'app che dice `live` in `X-MuW-Reads`; alle
+  altre il testo arriva con davanti «[Live]» e `attachment` `null`. Il
+  compositore della chat non la offre (`attachments.kinds` non cambia):
+  si manda dallo schermo della registrazione.
+- **La push**: «{name} is sharing a live activity with you» (it «{name} ti
+  condivide un'attività dal vivo», più de, es, fr), o «{name}: 🔴 {text}»
+  con un testo. Mai la posizione.
+- **Un'API di prima** ignora `live` nell'header e rifiuta `live_share_id`
+  con `422` (campo in più). Test in `test_message_lives.py`.
+
+### Post links (TASK-455 parte C, ADR-0382)
+
+Il link di un post: una pagina del sito (`https://getmuw.app/p/#<id del
+disegno>`, `SITO.md`) che chiede all'API quello che il link mostra, **senza
+account e senza la chiave dell'app** (scelte dell'utente del 2026-11-12).
+Tipi in `shared-types` (`PostLink`, `PostLinksSwitch`, `POST_LINK_PAGE`, e
+`linkable` nei disegni), esempio in `fixtures/post-link.json`; il codice in
+`post_links.py`, la condizione in `drawings.LINKABLE_SQL`, la migrazione
+`0078_post_links.sql` (`DATABASE.md`).
+
+| Endpoint | Account | Cosa | Risposta |
+|---|---|---|---|
+| `GET /post?id=<id del disegno>` | no, e senza `X-API-Key` | quello che il link mostra | `200` `PostLink`, `404 http_error`, `429` |
+| `GET /me/post-links` | sì | «Links to my posts» | `200` `{ "post_links": true }` |
+| `PUT /me/post-links` | sì | lo accende o lo spegne, corpo `{ "post_links": false }` | `200` lo stesso corpo, `422` |
+
+- **Chi ha un link**: solo un disegno `everyone`, con una linea, non
+  nascosto, di un autore non nascosto e che lascia **«Links to my posts»**
+  acceso. È una condizione sola (`LINKABLE_SQL`), chiesta a ogni richiesta.
+- **Cosa mostra, e non di più**: `id`, `username` dell'autore, `title`,
+  `shape`, `word`, `route_title`, `distance_m`, `activity`,
+  `rotation_deg` e `track`, **la linea intera come la vede già un
+  iscritto** (ADR-0330). Mai foto, commenti, reazioni, descrizione, persone
+  taggate, luogo, giorno, tempi, né altro dell'account.
+- **Un solo `404`**: un disegno «Followers», uno privato, uno nascosto, uno
+  di un autore nascosto, uno con l'interruttore spento, uno cancellato, un
+  id che non c'è o che non è un UUID rispondono tutti `404 http_error` «No
+  drawing with this id.», identici: un link non dice niente di ciò che non
+  apre. Niente è tenuto: il link smette di funzionare alla richiesta dopo.
+- **`/post` è in `access.OPEN_PATHS`**, come `/live`: la pagina del sito
+  non ha la chiave. La risposta (anche il `404` e il `429`) ha
+  `Access-Control-Allow-Origin: https://getmuw.app`, `Cache-Control:
+  no-store`, `Referrer-Policy: no-referrer` e `X-Robots-Tag: noindex,
+  nofollow, noarchive`. Limite: 60 richieste al minuto per indirizzo
+  (`429 too_many_requests`, `Retry-After`); conta anche un id che non c'è.
+- **«Links to my posts»** (`users.post_links`) è **acceso all'inizio**, anche
+  per gli account di prima. Spento, nessun link ai disegni dell'account
+  funziona, **nemmeno quelli presi dall'autore**, e nessuno dei suoi
+  disegni è `linkable`, nemmeno per lui.
+- **`linkable`** è in tutto quello che un iscritto vede di un disegno (`GET
+  /feed`, `GET /users/{id}/drawings`, `GET /drawings/{id}`, la ricerca, i
+  concorsi): vero quando il disegno ha un link. L'app mostra «Share link»
+  solo allora. Un'app di prima ignora il campo; un'API di prima non lo ha
+  (nessun link).
 
 ### Shape game (TASK-296, ADR-0255)
 

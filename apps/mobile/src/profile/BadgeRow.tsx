@@ -12,7 +12,7 @@ import { useUnits } from "../units/useUnits";
 export const LONG_DRAWING_M = 30_000;
 
 /** The emoji of each badge: the only colour not a token, as the cup. */
-const ICONS: Record<ProfileBadge, string> = {
+export const BADGE_ICONS: Record<ProfileBadge, string> = {
   first_drawing: "✏️",
   ten_drawings: "🖼️",
   long_drawing: "🛣️",
@@ -37,24 +37,20 @@ type Props = {
   winner: boolean;
   /** The badges it earned; null from an API older than TASK-341. */
   badges: readonly ProfileBadge[] | null;
-  /** One's own profile: also the badges not earned yet, dimmed. */
-  own?: boolean;
 };
 
 /**
  * The badges under the name of a profile (TASK-341, ADR-0294): «Winner»
  * (TASK-299), then the first drawing, ten drawings and a drawing of 30 km,
- * as the API decides them. On one's own profile the ones still to earn are
- * there too, dimmed, to say what can be earned; on another's only those
- * earned. Nothing earned and nothing to show: no row.
+ * as the API decides them. Only those earned, on one's own profile as on
+ * another's: the ones still to earn are in «Badges» lower down, each with
+ * how it is earned (`BadgesSection`, TASK-457). Nothing earned: no row.
  */
-export function BadgeRow({ winner, badges, own = false }: Props) {
+export function BadgeRow({ winner, badges }: Props) {
   const units = useUnits();
   const earned = new Set(badges ?? []);
   // From an older API nothing is known of the others: «Winner» alone.
-  const shown = PROFILE_BADGES.filter(
-    (badge) => earned.has(badge) || (own && badges !== null),
-  );
+  const shown = PROFILE_BADGES.filter((badge) => earned.has(badge));
   if (!winner && shown.length === 0) {
     return null;
   }
@@ -62,30 +58,24 @@ export function BadgeRow({ winner, badges, own = false }: Props) {
     <View style={styles.row} testID="badge-row">
       {winner && <WinnerBadge />}
       {shown.map((badge) => (
-        <Badge
-          key={badge}
-          badge={badge}
-          text={badgeText(badge, units)}
-          earned={earned.has(badge)}
-        />
+        <Badge key={badge} badge={badge} text={badgeText(badge, units)} />
       ))}
     </View>
   );
 }
 
-type BadgeProps = { badge: ProfileBadge; text: string; earned: boolean };
+type BadgeProps = { badge: ProfileBadge; text: string };
 
-function Badge({ badge, text, earned }: BadgeProps) {
+function Badge({ badge, text }: BadgeProps) {
   return (
     <View
-      style={[styles.badge, !earned && styles.notEarned]}
+      style={styles.badge}
       testID={`badge-${badge}`}
       accessible
-      accessibilityLabel={earned ? text : t("Not earned yet: {badge}", { badge: text })}
-      accessibilityState={{ disabled: !earned }}
+      accessibilityLabel={text}
     >
       <Text style={styles.icon} accessibilityElementsHidden>
-        {ICONS[badge]}
+        {BADGE_ICONS[badge]}
       </Text>
       <Text style={styles.text}>{text}</Text>
     </View>
@@ -110,9 +100,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.borderStrong,
     backgroundColor: color.surfaceRaised,
-  },
-  notEarned: {
-    opacity: 0.4,
   },
   icon: {
     fontSize: fontSize.body,

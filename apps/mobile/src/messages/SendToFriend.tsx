@@ -1,4 +1,8 @@
-import type { MessageDrawing, Person } from "@shaperoute/shared-types";
+import type {
+  MessageAttachmentRequest,
+  MessageDrawing,
+  Person,
+} from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import {
   FlatList,
@@ -9,7 +13,11 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  initialWindowMetrics,
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { fetchFollowList } from "../api/follows";
 import { fetchConversations, messageProblem, sendMessage } from "../api/messages";
@@ -25,6 +33,7 @@ import {
   space,
 } from "../theme/tokens";
 import { useIsland } from "../ui/useIsland";
+import { followersNote, postAttachment, type PostToSend } from "./messagePost";
 import { useMessagesDoor } from "./messagesDoor";
 
 /** The side of a member's picture in the list. */
@@ -34,7 +43,10 @@ const PHOTO_SIDE = 36;
 const CLOSED = ["Photos, videos and drawings", "Your message request is waiting"];
 
 type Props = {
-  drawing: MessageDrawing;
+  /** A route to copy into the message (TASK-333); or `post`. */
+  drawing?: MessageDrawing;
+  /** A post to point at (TASK-455): the message carries its id only. */
+  post?: PostToSend;
   onClose: () => void;
   fetchFn?: typeof fetch;
   apiKey?: string | null;
@@ -58,9 +70,24 @@ export function peopleOf(talking: Person[], following: Person[]): Person[] {
  * drawing as a message of its own. One who has not accepted a message
  * request gets nothing: a request is text only (the user's choice 1).
  * «Sent» says so in the island at the top (TASK-388 B); a problem stays
- * written over the list.
+ * written over the list. A post (TASK-455, ADR-0382) goes as a pointer and
+ * not as a copy; one for its owner's followers says, before it is sent,
+ * that only who follows them opens it.
  */
-export function SendToFriend({ drawing, onClose, fetchFn, apiKey }: Props) {
+export function SendToFriend(props: Props) {
+  return (
+    <Modal visible animationType="slide" onRequestClose={props.onClose}>
+      {/* Its own edges, as the page of a post has them (TASK-410): opened
+          from a sheet of «Feed» the app's are none, and the title sat under
+          the clock (TASK-455). */}
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <Friends {...props} />
+      </SafeAreaProvider>
+    </Modal>
+  );
+}
+
+function Friends({ drawing, post, onClose, fetchFn, apiKey }: Props) {
   const insets = useSafeAreaInsets();
   const { apiUrl, account } = useMessagesDoor();
   const token =
@@ -72,6 +99,17 @@ export function SendToFriend({ drawing, onClose, fetchFn, apiKey }: Props) {
   const [sending, setSending] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [island, say] = useIsland();
+  const me =
+    account.state.status === "signedIn"
+      ? (account.state.session.user.public_id ?? null)
+      : null;
+  const note = post === undefined ? null : followersNote(post, me);
+  const attachment: MessageAttachmentRequest | null =
+    post !== undefined
+      ? postAttachment(post)
+      : drawing !== undefined
+        ? { drawing }
+        : null;
 
   useEffect(() => {
     if (apiUrl === null || token === null) {
@@ -114,12 +152,12 @@ export function SendToFriend({ drawing, onClose, fetchFn, apiKey }: Props) {
   }, [apiKey, apiUrl, fetchFn, token, typed]);
 
   function send(person: Person) {
-    if (apiUrl === null || token === null) {
+    if (apiUrl === null || token === null || attachment === null) {
       return;
     }
     setSending(person.public_id);
     setProblem(null);
-    void sendMessage(apiUrl, token, person.public_id, "", options, { drawing }).then(
+    void sendMessage(apiUrl, token, person.public_id, "", options, attachment).then(
       (outcome) => {
         setSending(null);
         if (outcome.kind === "ok") {
@@ -146,72 +184,71 @@ export function SendToFriend({ drawing, onClose, fetchFn, apiKey }: Props) {
 
   const shown = searchable(typed) ? (found ?? []) : (near ?? []);
   return (
-    <Modal visible animationType="slide" onRequestClose={onClose}>
-      <View style={[styles.screen, { paddingTop: insets.top + space.md }]}>
-        <View style={styles.titleRow}>
-          <Text style={styles.title} accessibilityRole="header">
-            {t("Send to…")}
-          </Text>
-          <Pressable
-            style={({ pressed }) => [styles.close, pressed && styles.pressed]}
-            onPress={onClose}
-            accessibilityRole="button"
-          >
-            <Text style={styles.closeText}>{t("Close")}</Text>
-          </Pressable>
-        </View>
-        <TextInput
-          style={styles.search}
-          value={typed}
-          onChangeText={setTyped}
-          placeholder={t("Search people")}
-          placeholderTextColor={color.textFaint}
-          autoCapitalize="none"
-          autoCorrect={false}
-          accessibilityLabel={t("Search people")}
-        />
-        {problem !== null && (
-          <Text style={styles.problem} accessibilityRole="alert">
-            {problem}
-          </Text>
-        )}
-        {near === null && !searchable(typed) ? (
-          <Text style={styles.note}>{t("Loading…")}</Text>
-        ) : (
-          <FlatList
-            data={shown}
-            keyExtractor={(person) => person.public_id}
-            contentContainerStyle={{ paddingBottom: insets.bottom + space.lg }}
-            renderItem={({ item }) => (
-              <Pressable
-                style={({ pressed }) => [
-                  styles.person,
-                  (pressed || sending === item.public_id) && styles.pressed,
-                ]}
-                onPress={() => send(item)}
-                disabled={sending !== null}
-                accessibilityRole="button"
-                accessibilityLabel={item.username}
-                accessibilityState={{ disabled: sending !== null }}
-              >
-                <Avatar
-                  name={item.username}
-                  size={PHOTO_SIDE}
-                  photo={personPhotoUri(item)}
-                />
-                <Text style={styles.name} numberOfLines={1}>
-                  {item.username}
-                </Text>
-                {sending === item.public_id && (
-                  <Text style={styles.note}>{t("Sending…")}</Text>
-                )}
-              </Pressable>
-            )}
-          />
-        )}
-        {island}
+    <View style={[styles.screen, { paddingTop: insets.top + space.md }]}>
+      <View style={styles.titleRow}>
+        <Text style={styles.title} accessibilityRole="header">
+          {t("Send to…")}
+        </Text>
+        <Pressable
+          style={({ pressed }) => [styles.close, pressed && styles.pressed]}
+          onPress={onClose}
+          accessibilityRole="button"
+        >
+          <Text style={styles.closeText}>{t("Close")}</Text>
+        </Pressable>
       </View>
-    </Modal>
+      <TextInput
+        style={styles.search}
+        value={typed}
+        onChangeText={setTyped}
+        placeholder={t("Search people")}
+        placeholderTextColor={color.textFaint}
+        autoCapitalize="none"
+        autoCorrect={false}
+        accessibilityLabel={t("Search people")}
+      />
+      {note !== null && <Text style={styles.note}>{note}</Text>}
+      {problem !== null && (
+        <Text style={styles.problem} accessibilityRole="alert">
+          {problem}
+        </Text>
+      )}
+      {near === null && !searchable(typed) ? (
+        <Text style={styles.note}>{t("Loading…")}</Text>
+      ) : (
+        <FlatList
+          data={shown}
+          keyExtractor={(person) => person.public_id}
+          contentContainerStyle={{ paddingBottom: insets.bottom + space.lg }}
+          renderItem={({ item }) => (
+            <Pressable
+              style={({ pressed }) => [
+                styles.person,
+                (pressed || sending === item.public_id) && styles.pressed,
+              ]}
+              onPress={() => send(item)}
+              disabled={sending !== null}
+              accessibilityRole="button"
+              accessibilityLabel={item.username}
+              accessibilityState={{ disabled: sending !== null }}
+            >
+              <Avatar
+                name={item.username}
+                size={PHOTO_SIDE}
+                photo={personPhotoUri(item)}
+              />
+              <Text style={styles.name} numberOfLines={1}>
+                {item.username}
+              </Text>
+              {sending === item.public_id && (
+                <Text style={styles.note}>{t("Sending…")}</Text>
+              )}
+            </Pressable>
+          )}
+        />
+      )}
+      {island}
+    </View>
   );
 }
 

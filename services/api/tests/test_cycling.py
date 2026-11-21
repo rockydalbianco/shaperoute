@@ -321,7 +321,8 @@ def test_an_activity_the_contract_does_not_offer_is_an_invalid_request(
         assert response.json()["error"]["message"] == (
             f"unsupported activity {activity!r}; "
             "choose one of: running, cycling, paddling, swimming, hiking, "
-            "mountain_biking, inline_skating, snowshoeing, walking, gravel_biking"
+            "mountain_biking, inline_skating, snowshoeing, wheelchair, walking, "
+            "gravel_biking"
         )
     assert foot.asked == bike.asked == []
 

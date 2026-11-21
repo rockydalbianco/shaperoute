@@ -23,6 +23,8 @@ import { gymKcal, gymKcalLabel } from "./gymKcal";
 import { gymLiveStats } from "./gymLive";
 import { gymStyles } from "./gymStyles";
 import { moveOf } from "./moves";
+import { MuscleMap } from "./MuscleMap";
+import { musclesOf } from "./muscles";
 import { useRestAlert } from "./restAlert";
 import { RestPanel } from "./RestPanel";
 import { restOver } from "./restTimer";
@@ -171,6 +173,7 @@ export function WorkoutScreen({
       ? gymExercise(current.exercise)
       : undefined;
   const move = guided === undefined ? null : moveOf(guided.key);
+  const worked = guided === undefined ? null : musclesOf(guided.key);
   if (guiding && guided !== undefined) {
     return (
       <View style={[gymStyles.screen, { paddingTop: insets.top + space.lg }]}>
@@ -269,6 +272,14 @@ export function WorkoutScreen({
           <View style={styles.set} testID="gym-set">
             <View style={styles.name}>
               {move !== null && <ExerciseFigure move={move} size={NAME_FIGURE} />}
+              {worked !== null && (
+                <MuscleMap
+                  worked={worked}
+                  height={NAME_FIGURE}
+                  language={language}
+                  testID="set-muscles"
+                />
+              )}
               <Text style={[gymStyles.title, styles.nameText]}>
                 {entryName(current)}
               </Text>

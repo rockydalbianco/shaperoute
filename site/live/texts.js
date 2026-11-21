@@ -5,6 +5,8 @@
  * English when it is none of these. `{n}` and `{time}` are filled by `fill`.
  *
  * `privacy` is the title of the site's privacy page in that language.
+ * `altitude`, `vario` and `maxAltitude` are the numbers of a flight
+ * (TASK-305 R3, docs/tasks/TASK-305.md «Testi di R3»).
  */
 
 export const LANGUAGES = ["en", "it", "de", "fr", "es"];
@@ -28,6 +30,9 @@ export const TEXTS = {
     heart: "Heart rate",
     lengths: "Lengths (est.)",
     exercise: "Exercise",
+    altitude: "Altitude",
+    vario: "Vario",
+    maxAltitude: "Max altitude",
     footer: "Shared from MuW. The link stops working one hour after the activity ends.",
     privacy: "Privacy policy",
   },
@@ -49,6 +54,9 @@ export const TEXTS = {
     heart: "Battito",
     lengths: "Vasche (stima)",
     exercise: "Esercizio",
+    altitude: "Quota",
+    vario: "Variometro",
+    maxAltitude: "Quota massima",
     footer:
       "Condiviso da MuW. Il link smette di funzionare un'ora dopo la fine dell'attività.",
     privacy: "Informativa sulla privacy",
@@ -71,6 +79,9 @@ export const TEXTS = {
     heart: "Puls",
     lengths: "Bahnen (geschätzt)",
     exercise: "Übung",
+    altitude: "Höhe",
+    vario: "Vario",
+    maxAltitude: "Max. Höhe",
     footer:
       "Geteilt über MuW. Der Link funktioniert eine Stunde nach dem Ende der Aktivität nicht mehr.",
     privacy: "Datenschutzerklärung",
@@ -93,6 +104,9 @@ export const TEXTS = {
     heart: "Fréquence cardiaque",
     lengths: "Longueurs (estim.)",
     exercise: "Exercice",
+    altitude: "Altitude",
+    vario: "Vario",
+    maxAltitude: "Alt. max",
     footer:
       "Partagé depuis MuW. Le lien cesse de fonctionner une heure après la fin de l'activité.",
     privacy: "Politique de confidentialité",
@@ -115,6 +129,9 @@ export const TEXTS = {
     heart: "Pulso",
     lengths: "Largos (estim.)",
     exercise: "Ejercicio",
+    altitude: "Altitud",
+    vario: "Variómetro",
+    maxAltitude: "Alt. máx.",
     footer:
       "Compartido desde MuW. El enlace deja de funcionar una hora después de que termine la actividad.",
     privacy: "Política de privacidad",

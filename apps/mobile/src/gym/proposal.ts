@@ -11,6 +11,13 @@ import type {
 
 import { tLater } from "../i18n";
 import type { Language } from "../i18n/languages";
+import {
+  BODYWEIGHT_GOALS,
+  type Equipment,
+  bodyweightSession,
+  equipmentOf,
+  isBodyweightDay,
+} from "./bodyweight";
 import { type GymGroup, gymExercise } from "./catalog";
 import { groupName } from "./groups";
 import { DEFAULT_STEP_KG } from "./program";
@@ -357,12 +364,31 @@ function turnOf(
   goal: GymPlanGoal,
   naming: Naming,
 ): GymPlanSession[] {
-  const gym = sessions.filter((one) => !isRunDay(one)).sort(byDay);
+  const gym = sessions.filter(isGymDay).sort(byDay);
   const count = Math.min(7, Math.max(1, gym.length));
   const turned = gym.map((session, index) =>
     sessionOf(TURNS[count][index], session.day, goal, naming),
   );
-  return [...turned, ...sessions.filter(isRunDay)].sort(byDay);
+  // The bodyweight days the other way round: B where A was (TASK-461 A2).
+  const equipment = equipmentOf({ sessions });
+  const body = sessions
+    .filter(isBodyweightDay)
+    .sort(byDay)
+    .map((session, index) =>
+      bodyweightSession(index + 1, session.day, goal, equipment, naming.t),
+    );
+  return [
+    ...turned,
+    ...body,
+    ...sessions.filter((one) => !isGymDay(one) && !isBodyweightDay(one)),
+  ].sort(byDay);
+}
+
+/** A workout of the gym: neither a run, a day out nor a bodyweight day. */
+export function isGymDay(session: GymPlanSession): boolean {
+  return (
+    !isRunDay(session) && session.outing === undefined && !isBodyweightDay(session)
+  );
 }
 
 /**
@@ -375,27 +401,39 @@ export function proposeProgram({
   goal,
   days,
   runDays = [],
+  bodyDays = [],
+  equipment = "none",
   mode,
   weeks,
   startsOn,
   naming,
 }: {
   goal: GymPlanGoal;
+  /** The gym's days. */
   days: number[];
   runDays?: number[];
+  /** The bodyweight days (TASK-461 A2), with what one has. */
+  bodyDays?: number[];
+  equipment?: Equipment;
   mode: GymPlanMode;
   weeks: number;
   startsOn: string;
   naming: Naming;
 }): GymProgram {
   const sorted = [...new Set(days)].sort((a, b) => a - b);
-  const runs = [...new Set(runDays)]
+  const body = [...new Set(bodyDays)]
     .filter((day) => !sorted.includes(day))
+    .sort((a, b) => a - b);
+  const runs = [...new Set(runDays)]
+    .filter((day) => !sorted.includes(day) && !body.includes(day))
     .sort((a, b) => a - b);
   const count = Math.min(7, Math.max(1, sorted.length));
   const split = SPLITS[count];
   const sessions = [
     ...sorted.map((day, index) => sessionOf(split[index], day, goal, naming)),
+    ...body.map((day, index) =>
+      bodyweightSession(index, day, goal, equipment, naming.t),
+    ),
     ...runs.map((day, index) => runSession(day, index, goal, naming)),
   ].sort(byDay);
   const custom: GymPlanWeek[] =
@@ -406,7 +444,10 @@ export function proposeProgram({
     weeks: cycleWeeks(mode, weeks),
     mode,
     step_kg: mode === "same" ? 0 : DEFAULT_STEP_KG,
-    rest_s: goalOf(goal).restS,
+    rest_s:
+      sorted.length === 0 && body.length > 0
+        ? BODYWEIGHT_GOALS[goal].restS
+        : goalOf(goal).restS,
     sessions,
     custom,
   };
@@ -460,21 +501,38 @@ export function withDays(
   days: number[],
   naming: Naming,
   runDays: number[] = program.sessions.filter(isRunDay).map((one) => one.day),
+  bodyDays: number[] = program.sessions.filter(isBodyweightDay).map((one) => one.day),
 ): GymProgram {
-  const sorted = [...new Set(days)].sort((a, b) => a - b);
+  // A day out (TASK-461 B) stays on its day: the others go round it.
+  const outings = program.sessions.filter((one) => one.outing !== undefined);
+  const outingDays = new Set(outings.map((one) => one.day));
+  const sorted = [...new Set(days)]
+    .filter((day) => !outingDays.has(day))
+    .sort((a, b) => a - b);
+  const body = [...new Set(bodyDays)]
+    .filter((day) => !sorted.includes(day) && !outingDays.has(day))
+    .sort((a, b) => a - b);
   const runs = [...new Set(runDays)]
-    .filter((day) => !sorted.includes(day))
+    .filter(
+      (day) => !sorted.includes(day) && !body.includes(day) && !outingDays.has(day),
+    )
     .sort((a, b) => a - b);
   const goal = program.goal ?? "muscle";
-  const gymBefore = program.sessions.filter((one) => !isRunDay(one)).sort(byDay);
+  const equipment = equipmentOf(program);
+  const gymBefore = program.sessions.filter(isGymDay).sort(byDay);
+  const bodyBefore = program.sessions.filter(isBodyweightDay).sort(byDay);
   const runBefore = program.sessions.filter(isRunDay).sort(byDay);
   const moved = new Map<number, number>([
     ...gymBefore.flatMap((session, index): [number, number][] =>
       index < sorted.length ? [[session.day, sorted[index]]] : [],
     ),
+    ...bodyBefore.flatMap((session, index): [number, number][] =>
+      index < body.length ? [[session.day, body[index]]] : [],
+    ),
     ...runBefore.flatMap((session, index): [number, number][] =>
       index < runs.length ? [[session.day, runs[index]]] : [],
     ),
+    ...outings.map((session): [number, number] => [session.day, session.day]),
   ]);
   const count = Math.min(7, Math.max(1, sorted.length));
   const sessions = [
@@ -483,11 +541,17 @@ export function withDays(
         ? { ...gymBefore[index], day }
         : sessionOf(SPLITS[count][index], day, goal, naming),
     ),
+    ...body.map((day, index) =>
+      index < bodyBefore.length
+        ? { ...bodyBefore[index], day }
+        : bodyweightSession(index, day, goal, equipment, naming.t),
+    ),
     ...runs.map((day, index) =>
       index < runBefore.length
         ? { ...runBefore[index], day }
         : runSession(day, index, goal, naming),
     ),
+    ...outings,
   ].sort(byDay);
   const custom = program.custom.map((week) => ({
     ...week,
@@ -509,16 +573,13 @@ export function emptyProgram(program: GymProgram, naming: Naming): GymProgram {
   return {
     ...program,
     sessions: program.sessions.map((session) =>
-      isRunDay(session)
+      isRunDay(session) || session.outing !== undefined
         ? session
         : {
             ...session,
             name: naming
               .t(WORKOUT_LETTER)
-              .replace(
-                "{letter}",
-                sessionLetter(gymIndex(program.sessions, session.day)),
-              ),
+              .replace("{letter}", dayLetter(program.sessions, session.day)),
             items: [],
           },
     ),
@@ -530,7 +591,18 @@ export function emptyProgram(program: GymProgram, naming: Naming): GymProgram {
  * the gym's days, a run day is «Run». */
 export function gymIndex(sessions: GymPlanSession[], day: number): number {
   return sessions
-    .filter((one) => !isRunDay(one))
+    .filter(isGymDay)
     .sort(byDay)
     .findIndex((one) => one.day === day);
+}
+
+/** The letter of the workout on `day`: A, B, C… for the gym's days, A and
+ * B in turn for the bodyweight ones (TASK-461 A2: «A · Lun, B · Mer, A ·
+ * Ven»). */
+export function dayLetter(sessions: GymPlanSession[], day: number): string {
+  const body = sessions
+    .filter(isBodyweightDay)
+    .sort(byDay)
+    .findIndex((one) => one.day === day);
+  return sessionLetter(body >= 0 ? body % 2 : Math.max(0, gymIndex(sessions, day)));
 }

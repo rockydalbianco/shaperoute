@@ -24,7 +24,7 @@ from itertools import groupby
 from pathlib import Path
 from typing import Any, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, SerializerFunctionWrapHandler, model_serializer
 
 log = logging.getLogger(__name__)
 
@@ -38,11 +38,27 @@ DEFAULT_PAGE = 40
 MAX_PAGE = 200
 # The preview of a line: enough to recognise the shape on a small card.
 PREVIEW_POINTS = 64
+# A word with the pen up (TASK-441): as many points for each letter, the
+# walks between them left out, up to this many letters' worth.
+PREVIEW_PIECE_POINTS = 32
+PREVIEW_PIECES = 8
 PREVIEW_DECIMALS = 5
+# What a route of a city file is drawn for when it does not say (TASK-441):
+# every route was a run before one could say.
+RUNNING = "running"
 EARTH_RADIUS_M = 6_371_008.8
 
 LatLon = tuple[float, float]
 T = TypeVar("T")
+
+
+def _drop_none(body: dict[str, Any], *fields: str) -> dict[str, Any]:
+    """`body` without each of `fields` that is None: the answer of a run in
+    one line is what it was before the fields existed."""
+    for field in fields:
+        if body.get(field) is None:
+            body.pop(field, None)
+    return body
 
 
 class RecommendedRouteBody(BaseModel):
@@ -69,6 +85,17 @@ class RecommendedRouteBody(BaseModel):
     """How far its shape is turned, as RouteResult.rotation_deg (TASK-232,
     ADR-0195): the app draws it turned back. 0 for a route north up, and
     for every route of a city file that does not say."""
+    gaps: list[int] | None = None
+    """The points of `preview` the route comes to with the pen up (TASK-441,
+    ADR-0366): a card draws no segment that ends at one. Only for a word
+    written letter by letter; left out of the answer for every other route."""
+    activity: str | None = None
+    """What it was drawn for when not a run (TASK-441 B2, ADR-0366): a ride
+    is `cycling`. Left out of the answer for a run."""
+
+    @model_serializer(mode="wrap")
+    def _without_absent(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        return _drop_none(handler(self), "gaps", "activity")
 
 
 class RecommendedRoutesBody(BaseModel):
@@ -100,6 +127,18 @@ class RecommendedRouteDetailBody(BaseModel):
     license: str
     rotation_deg: float
     """As in the list."""
+    walks: list[tuple[int, int]] | None = None
+    """Where the route walks with the pen up, as RouteResult.walks (TASK-197,
+    ADR-0157): pairs of indices of `points`, in order. Only for a word
+    written letter by letter (TASK-441, ADR-0366); left out of the answer
+    for every other route."""
+    activity: str | None = None
+    """As in the list: left out of the answer for a run. The app asks for
+    the route again with it (RecommendedRouteDetail.activity)."""
+
+    @model_serializer(mode="wrap")
+    def _without_absent(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        return _drop_none(handler(self), "walks", "activity")
 
 
 @dataclass(frozen=True)
@@ -115,6 +154,10 @@ class CatalogRoute:
     points: tuple[LatLon, ...]
     license: str
     rotation_deg: float = 0.0
+    walks: tuple[tuple[int, int], ...] = ()
+    """The stretches walked with the pen up, as RouteResult.walks."""
+    activity: str = RUNNING
+    """What it was drawn for: a run, unless its city file says another."""
 
     @property
     def start(self) -> LatLon:
@@ -163,6 +206,58 @@ def preview(points: Sequence[LatLon], size: int = PREVIEW_POINTS) -> list[LatLon
     ]
 
 
+def pen_up_preview(
+    points: Sequence[LatLon],
+    walks: Sequence[tuple[int, int]],
+    piece_size: int = PREVIEW_PIECE_POINTS,
+    pieces: int = PREVIEW_PIECES,
+) -> tuple[list[LatLon], list[int]]:
+    """The preview of a route drawn in pieces, and its `gaps`: every piece
+    drawn thinned as `preview`, the walks left out, and the first point of
+    each piece after the first marked as come to with the pen up. Past
+    `pieces` pieces each gets fewer points, never under two."""
+    drawn, at = [], 0
+    for a, b in walks:
+        drawn.append(points[at : a + 1])
+        at = b
+    drawn.append(points[at:])
+    drawn = [d for d in drawn if len(d) >= 2]
+    if not drawn:
+        return preview(points), []
+    size = max(2, piece_size * pieces // max(pieces, len(drawn)))
+    line: list[LatLon] = []
+    gaps: list[int] = []
+    for piece in drawn:
+        if line:
+            gaps.append(len(line))
+        line += preview(piece, size)
+    return line, gaps
+
+
+def walks_of(route: dict[str, Any], points: int) -> tuple[tuple[int, int], ...]:
+    """The `walks` of a route of a city file: pairs of indices of its
+    points, each after the one before. None when it does not say, or says
+    something that does not read so: the route is then in one line."""
+    raw = route.get("walks")
+    if not isinstance(raw, list) or not raw:
+        return ()
+    walks = []
+    at = 0
+    for pair in raw:
+        if (
+            not isinstance(pair, list | tuple)
+            or len(pair) != 2
+            or not all(isinstance(i, int) and not isinstance(i, bool) for i in pair)
+        ):
+            return ()
+        a, b = pair
+        if not at <= a < b < points:
+            return ()
+        walks.append((a, b))
+        at = b
+    return tuple(walks)
+
+
 def parse_city(body: dict[str, Any]) -> list[CatalogRoute]:
     """The routes of one city file, with ids stable while the file is."""
     city = str(body["city"])
@@ -189,9 +284,24 @@ def parse_city(body: dict[str, Any]) -> list[CatalogRoute]:
                 points=points,
                 license=str(body.get("license", "")),
                 rotation_deg=turn_of(r),
+                walks=walks_of(r, len(points)),
+                activity=activity_of(r),
             )
         )
     return routes
+
+
+def activity_of(route: dict[str, Any]) -> str:
+    """What a route of a city file says it was drawn for (`activity`,
+    written by tools/catalog_bike.py): a run when it does not say, or says
+    something that is not a name."""
+    activity = route.get("activity")
+    return activity if isinstance(activity, str) and activity else RUNNING
+
+
+def _said(activity: str) -> str | None:
+    """`activity` as an answer says it: not at all for a run."""
+    return None if activity == RUNNING else activity
 
 
 def turn_of(route: dict[str, Any]) -> float:
@@ -206,6 +316,11 @@ def turn_of(route: dict[str, Any]) -> float:
 
 def listed(route: CatalogRoute, away: float) -> RecommendedRouteBody:
     """One route of a list, `away` metres from the point asked about."""
+    line, gaps = (
+        pen_up_preview(route.points, route.walks)
+        if route.walks
+        else (preview(route.points), [])
+    )
     return RecommendedRouteBody(
         id=route.id,
         city=route.city,
@@ -217,14 +332,22 @@ def listed(route: CatalogRoute, away: float) -> RecommendedRouteBody:
         similarity=route.similarity,
         start=route.start,
         away_m=round(away),
-        preview=preview(route.points),
+        preview=line,
         rotation_deg=route.rotation_deg,
+        gaps=gaps or None,
+        activity=_said(route.activity),
     )
 
 
 class RecommendedCatalog:
     def __init__(self, routes: Iterable[CatalogRoute]) -> None:
-        self.routes = {r.id: r for r in routes}
+        every = list(routes)
+        # The runs: what the catalogue was before a route could say its
+        # activity, and what every reader that does not ask for another
+        # still gets (the lists without `activity`, best_routes.py).
+        self.routes = {r.id: r for r in every if r.activity == RUNNING}
+        # The routes drawn for something else (TASK-441 B2): the rides.
+        self.others = {r.id: r for r in every if r.activity != RUNNING}
 
     @classmethod
     def from_dir(cls, directory: Path) -> RecommendedCatalog:
@@ -239,7 +362,14 @@ class RecommendedCatalog:
         return cls(routes)
 
     def __len__(self) -> int:
-        return len(self.routes)
+        return len(self.routes) + len(self.others)
+
+    def of(self, activity: str) -> list[CatalogRoute]:
+        """The routes drawn for `activity`: none for one the catalogue does
+        not have."""
+        if activity == RUNNING:
+            return list(self.routes.values())
+        return [r for r in self.others.values() if r.activity == activity]
 
     def near(
         self,
@@ -248,14 +378,16 @@ class RecommendedCatalog:
         shape: str | None = None,
         distance: int | None = None,
         limit: int = MAX_ROUTES,
+        activity: str = RUNNING,
     ) -> list[RecommendedRouteBody]:
-        """The routes starting within `radius_m` of `point`: the best of
+        """The routes drawn for `activity` (the runs when it is not said)
+        starting within `radius_m` of `point`: the best of
         every shape and word first, then the second best of each, and so on
         (`varied`, TASK-441); in a turn the best first, equally good ones
         nearer first. Every one is kept, even on the same roads (TASK-092,
         point 3), up to `limit`."""
         found = []
-        for r in self.routes.values():
+        for r in self.of(activity):
             if shape is not None and shape not in (r.shape, r.word):
                 continue
             if distance is not None and r.distance_m != distance:
@@ -272,18 +404,22 @@ class RecommendedCatalog:
         point: LatLon,
         offset: int = 0,
         limit: int = DEFAULT_PAGE,
+        activity: str = RUNNING,
     ) -> CatalogPageBody:
-        """The whole catalogue from `offset`, at most `limit` routes: city
+        """The whole catalogue of `activity` (the runs when it is not said,
+        and `total` and `cities` count those) from `offset`, at most `limit`
+        routes: city
         by city from the one whose nearest start is nearest `point`, and
         inside a city as `near`: the best of every shape and word, then the
         second best of each, in a turn the best first and equally good ones
         nearer first. The same order on every page, so pages join."""
-        away = {r.id: distance_m(point, r.start) for r in self.routes.values()}
+        routes = self.of(activity)
+        away = {r.id: distance_m(point, r.start) for r in routes}
         city_away: dict[str, float] = {}
-        for r in self.routes.values():
+        for r in routes:
             city_away[r.city] = min(city_away.get(r.city, math.inf), away[r.id])
         ordered = sorted(
-            self.routes.values(),
+            routes,
             key=lambda r: (
                 city_away[r.city],
                 r.city,
@@ -305,7 +441,7 @@ class RecommendedCatalog:
         )
 
     def get(self, route_id: str) -> RecommendedRouteDetailBody | None:
-        r = self.routes.get(route_id)
+        r = self.routes.get(route_id) or self.others.get(route_id)
         if r is None:
             return None
         return RecommendedRouteDetailBody(
@@ -320,4 +456,6 @@ class RecommendedCatalog:
             points=list(r.points),
             license=r.license,
             rotation_deg=r.rotation_deg,
+            walks=list(r.walks) or None,
+            activity=_said(r.activity),
         )

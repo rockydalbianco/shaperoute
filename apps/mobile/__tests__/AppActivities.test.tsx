@@ -14,7 +14,14 @@ import session from "@shaperoute/shared-types/fixtures/session.json";
 import signUpRequest from "@shaperoute/shared-types/fixtures/sign-up-request.json";
 import trackScore from "@shaperoute/shared-types/fixtures/track-score.json";
 import type { LatLon } from "@shaperoute/shared-types";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 import * as Location from "expo-location";
 
 import App from "../App";
@@ -175,6 +182,17 @@ async function openActivities() {
   await fireEvent.press(await screen.findByRole("button", { name: /^My activities/ }));
 }
 
+/** Opens the «…» of the run of the list that began at `when` (TASK-456). */
+async function openMenuOf(when: string) {
+  const row = screen
+    .getAllByTestId("activity-row")
+    .find((one) => within(one).queryByText(when) !== null);
+  if (row === undefined) {
+    throw new Error(`no run of ${when} in the list`);
+  }
+  await fireEvent.press(within(row).getByTestId("activity-menu"));
+}
+
 beforeEach(() => {
   store.kept.clear();
   clearRun();
@@ -201,8 +219,8 @@ test("«My activities» in «Profile» lists the runs, with how many they are", 
   api({ ...ACCOUNT, "GET /me/activities": () => Response.json(activities) });
   await open();
   await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
-  // Under «Favorites», with its number.
-  expect(screen.getByRole("button", { name: "Favorites, 0" })).toBeOnTheScreen();
+  // Under «Favorites», which keeps nothing yet: its name alone (TASK-457).
+  expect(screen.getByRole("button", { name: "Favorites" })).toBeOnTheScreen();
   await fireEvent.press(
     await screen.findByRole("button", { name: "My activities, 2" }),
   );
@@ -251,7 +269,7 @@ test("a run opens on the map, its route under what was run, and goes back to the
     }),
   );
   // «Profile» gets out of the way: the map, with the run's card under it.
-  expect(await screen.findByText("Back to the list")).toBeOnTheScreen();
+  expect(await screen.findByTestId("activity-card-heading")).toBeOnTheScreen();
   expect(screen.queryByRole("header", { name: "My activities" })).toBeNull();
   expect(screen.queryByRole("tab")).toBeNull();
   expect(screen.getByText(STAR_WHEN)).toBeOnTheScreen();
@@ -270,8 +288,13 @@ test("a run opens on the map, its route under what was run, and goes back to the
   expect(scripts("showRoute").at(-1)).toContain(`[${lon},${lat}]`);
   expect(scripts("showTrack").at(-1)).toContain(`[${lon},${lat}]`);
 
+  // The card has no way back of its own (TASK-456), and neither «Delete»
+  // nor the form of the post in sight.
+  expect(screen.queryByText("Back to the list")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+  expect(screen.queryByLabelText("Title")).toBeNull();
   // Back: the list it came from, over the page left under it.
-  await fireEvent.press(screen.getByText("Back to the list"));
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.getByRole("header", { name: "My activities" })).toBeOnTheScreen();
   expect(screen.getAllByTestId("activity-row")).toHaveLength(2);
   // Then the page of the profile (TASK-278), and «Draw».
@@ -279,7 +302,7 @@ test("a run opens on the map, its route under what was run, and goes back to the
   await fireEvent.press(screen.getByRole("tab", { name: "Draw" }));
   expect(screen.getByRole("tab", { name: "Draw", selected: true })).toBeOnTheScreen();
   // The map lets the run go.
-  expect(screen.queryByText("Back to the list")).toBeNull();
+  expect(screen.queryByTestId("activity-card-heading")).toBeNull();
 });
 
 test("the way back on the map goes to the list too; a run without a route has no yellow", async () => {
@@ -329,19 +352,21 @@ test("a run is deleted from the list only after a yes", async () => {
   });
   await open();
   await openActivities();
-  await fireEvent.press(
-    screen.getByRole("button", { name: `Delete the run of ${STAR_WHEN}` }),
-  );
+  // No «Delete» in sight on the rows (TASK-456): it is in the «…» of each.
+  expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+  await openMenuOf(STAR_WHEN);
+  await fireEvent.press(screen.getByRole("button", { name: "Delete" }));
   expect(screen.getByText("Delete this run? It cannot be undone.")).toBeOnTheScreen();
   // No: the run stays, and nothing is asked.
   await fireEvent.press(screen.getByRole("button", { name: "Keep it" }));
-  expect(screen.queryByText("Delete this run? It cannot be undone.")).toBeNull();
+  await waitFor(() =>
+    expect(screen.queryByText("Delete this run? It cannot be undone.")).toBeNull(),
+  );
   expect(screen.getByText("Trento · Star")).toBeOnTheScreen();
   expect(calls("DELETE", `/me/activities/${STAR.id}`)).toHaveLength(0);
   // Yes: gone at once.
-  await fireEvent.press(
-    screen.getByRole("button", { name: `Delete the run of ${STAR_WHEN}` }),
-  );
+  await openMenuOf(STAR_WHEN);
+  await fireEvent.press(screen.getByRole("button", { name: "Delete" }));
   await fireEvent.press(screen.getByRole("button", { name: "Delete run" }));
   expect(screen.queryByText("Trento · Star")).toBeNull();
   expect(screen.getAllByTestId("activity-row")).toHaveLength(1);
@@ -363,9 +388,8 @@ test("a run the API does not delete comes back, and says why", async () => {
   });
   await open();
   await openActivities();
-  await fireEvent.press(
-    screen.getByRole("button", { name: `Delete the run of ${FREE_WHEN}` }),
-  );
+  await openMenuOf(FREE_WHEN);
+  await fireEvent.press(screen.getByRole("button", { name: "Delete" }));
   await fireEvent.press(screen.getByRole("button", { name: "Delete run" }));
   expect(await screen.findByRole("alert")).toBeOnTheScreen();
   expect(screen.getAllByTestId("activity-row")).toHaveLength(2);
@@ -391,10 +415,13 @@ test("a run is deleted from the map too, and the list is back without it", async
   await fireEvent.press(
     screen.getByRole("button", { name: new RegExp(`^${STAR_WHEN}, `) }),
   );
-  await fireEvent.press(await screen.findByRole("button", { name: "Delete" }));
+  // «Delete» is in the card's «…» (TASK-456), and asks there.
+  await fireEvent.press(await screen.findByTestId("activity-menu"));
+  await fireEvent.press(screen.getByRole("button", { name: "Delete" }));
   expect(screen.getByText("Delete this run? It cannot be undone.")).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Keep it" }));
-  expect(screen.getByText("Back to the list")).toBeOnTheScreen();
+  expect(screen.getByTestId("activity-card-heading")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("activity-menu"));
   await fireEvent.press(screen.getByRole("button", { name: "Delete" }));
   await fireEvent.press(screen.getByRole("button", { name: "Delete run" }));
   expect(screen.getByRole("header", { name: "My activities" })).toBeOnTheScreen();

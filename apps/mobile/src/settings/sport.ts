@@ -7,7 +7,7 @@ import {
 import Constants from "expo-constants";
 import { File, Paths } from "expo-file-system";
 
-import { t, tLater } from "../i18n";
+import { t } from "../i18n";
 import { profileOf } from "../sports";
 
 /** What a route is for: a run, a bike ride since TASK-190, paddling on a
@@ -17,11 +17,17 @@ import { profileOf } from "../sports";
  * ADR-0321), «Soon» until the server hikes, a gravel ride on the bike's
  * network or an MTB ride on the trails of its own (TASK-378 part B,
  * ADR-0322) since the server has them, or swimming in open water
- * (TASK-323, ADR-0283) since the server swims.
- * Paragliding (TASK-305 D0, ADR-0265) is only «Soon» for now: never chosen,
- * so never a route, and wherever the sports are told apart it goes as a
- * run. A day of alpine skiing («Ski») or of cross-country skiing is
- * recorded without a shape (TASK-375, ADR-0319): `recordOnly`. A workout
+ * (TASK-323, ADR-0283) since the server swims. A wheelchair or a stroller
+ * draws only a circle, a heart, a star or a moon on the ways of its own
+ * network (TASK-414 part B, ADR-0343), since the server has them.
+ * Paragliding (TASK-305 R2, ADR-0375) is a flight recorded without a
+ * shape, never a route. A day of alpine skiing («Ski») or of cross-country skiing is
+ * recorded without a shape (TASK-375, ADR-0319): `recordOnly`, and so is
+ * a ski tour («Ski touring», TASK-415 part B, ADR-0344). Snowshoes draw a
+ * small shape placed freely on the open snow, as on the water, and record
+ * a day without one (TASK-413 parts B and C, ADR-0342). A day of
+ * mountaineering («Mountaineering», TASK-463 part B, ADR-0373) is recorded
+ * without a shape too, «Soon» until it is turned on. A workout
  * at the gym («Gym», TASK-385 part B, ADR-0327) has no route and no GPS:
  * «Draw» offers only «Start workout». */
 export type Sport =
@@ -33,11 +39,15 @@ export type Sport =
   | "gravel"
   | "mtb"
   | "roller"
+  | "wheelchair"
   | "swim"
   | "ski"
   | "xc_ski"
+  | "skimo"
+  | "snowshoe"
   | "gym"
-  | "paragliding";
+  | "paragliding"
+  | "alpinism";
 
 export type SportOption = {
   id: Sport;
@@ -81,9 +91,14 @@ const ACTIVITY: { readonly [S in Sport]?: RunActivity } = {
   gravel: "gravel_biking",
   mtb: "mountain_biking",
   roller: "inline_skating",
+  wheelchair: "wheelchair",
   ski: "skiing",
   xc_ski: "xc_skiing",
+  skimo: "ski_touring",
+  snowshoe: "snowshoeing",
   gym: "gym",
+  paragliding: "paragliding",
+  alpinism: "alpinism",
 };
 
 /** A sport of «Settings» as its profile says it (TASK-376 part B3c,
@@ -124,6 +139,12 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // the server's own network (TASK-380 part B); on since the server has part
   // A and its migration 0055, the user's «appena pronto».
   fromProfile("roller", true),
+  // A wheelchair or a stroller is asked as "wheelchair" (activityOf), 1-5 km
+  // on the server's own network, a circle, a heart, a star or a moon
+  // (TASK-414 part B, ADR-0343). On since the server has part A and its
+  // migration 0071 (2026-11-12), the user's «Sì, accendi» to the screenshots
+  // (the user's choice 9: «appena pronto»).
+  fromProfile("wheelchair", true),
   // On the water. The swim is asked as "swimming" since TASK-323 C2
   // (activityOf); on since the server swims (TASK-323, 2026-11-04).
   fromProfile("paddle", true),
@@ -131,14 +152,34 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // On the snow, saved as "skiing" and "xc_skiing" (runActivityOf). The
   // alpine ski is on since TASK-375 D4: the server has parts A-D
   // (migrations 0044 and 0048) and the day its numbers, lifts and pistes.
-  // The cross-country ski not yet.
+  // The cross-country ski is on too, with its distance, pace and climb
+  // (TASK-375 C1): the server has kept "xc_skiing" since 0044, the user's
+  // «rendile disponibili» (2026-11-12).
   fromProfile("ski", true),
-  fromProfile("xc_ski", false),
+  fromProfile("xc_ski", true),
+  // Ski touring, saved as "ski_touring": on since its phases and its VAM
+  // (TASK-415 part B), the user's «Acceso con a e b» (2026-11-07), with
+  // the OTA that carries them; the server has had part A and its migration
+  // 0057 since 2026-11-08.
+  fromProfile("skimo", true),
+  // Snowshoes are asked as "snowshoeing" (activityOf), 0.5-3 km on the open
+  // snow of the server (TASK-413 parts A, ADR-0342); «Record your day» is
+  // their way without a shape (part C). On since the server has #1266
+  // (step 12), the user's «Sì, accendi» to the screenshots (2026-11-12).
+  fromProfile("snowshoe", true),
+  // A day of mountaineering, saved as "alpinism", recorded without a shape
+  // (TASK-463 part B, ADR-0373), with its notice «Before you climb». «Soon»
+  // until the server has part A and its migration 0076 and the user says
+  // yes on the screens: turning it on is a small PR of its own.
+  fromProfile("alpinism", false),
   // Saved as "gym" (runActivityOf), without a track (TASK-385 part B); on in
   // the store builds too, the user's «ok accendi» (2026-11-05): the server
   // keeps its posts from the apps that cannot read them (X-MuW-Reads).
   fromProfile("gym", true),
-  { id: "paragliding", emoji: "🪂", name: tLater("Paragliding"), ready: false },
+  // A flight, saved as "paragliding", recorded without a shape (TASK-305
+  // part R2, ADR-0375): on with its numbers of the air and its notice; the
+  // server has had part R1 and its migration 0069 since 2026-11-12.
+  fromProfile("paragliding", true),
 ];
 
 /** The sports offered only once «Settings» has them ready. */
@@ -148,6 +189,8 @@ const OFFERED_WHEN_READY: { readonly [A in Activity]?: Sport } = {
   gravel_biking: "gravel",
   mountain_biking: "mtb",
   inline_skating: "roller",
+  wheelchair: "wheelchair",
+  snowshoeing: "snowshoe",
 };
 
 /**
@@ -155,7 +198,9 @@ const OFFERED_WHEN_READY: { readonly [A in Activity]?: Sport } = {
  * (the form to publish, the search's filters): a walk once «Walk» is ready,
  * the server keeping walks (TASK-371), so the two come together, a hike
  * once «Hike» is (TASK-377), a gravel or an MTB ride once «Gravel» or «MTB»
- * is (TASK-378), a skate once «Roller» is (TASK-380); every other as before.
+ * is (TASK-378), a skate once «Roller» is (TASK-380), a wheelchair or a
+ * stroller once «Wheelchair & stroller» is (TASK-414), a snowshoe outing
+ * once «Snowshoes» is (TASK-413); every other as before.
  */
 export function activityOffered(
   activity: Activity,
@@ -293,7 +338,8 @@ export function runActivityOf(sport: Sport): RunActivity {
  * words: «Ride» by bike (TASK-190), «Paddle» on the water (TASK-191),
  * «Walk» on foot (TASK-371), «Hike» on the trails (TASK-377), «Swim» in
  * open water (TASK-323). A gravel or an MTB ride is a ride (TASK-378).
- * «Skate» on inline skates (TASK-380). */
+ * «Skate» on inline skates (TASK-380). «Go» in a wheelchair or pushing a
+ * stroller, which is no walk (TASK-414). */
 export function withoutRouteLabel(sport: Sport): string {
   switch (sport) {
     case "bike":
@@ -308,15 +354,27 @@ export function withoutRouteLabel(sport: Sport): string {
       return t("Hike without a route");
     case "roller":
       return t("Skate without a route");
+    case "wheelchair":
+      return t("Go without a route");
     case "swim":
       return t("Swim without a route");
     case "ski":
     case "xc_ski":
-      // No shapes on the slopes (TASK-375): the only way to go.
+    case "skimo":
+    case "alpinism":
+      // No shapes on the slopes (TASK-375) nor up a mountain (TASK-463):
+      // the only way to go.
+      return t("Record your day");
+    case "snowshoe":
+      // Beside the shapes on the snow, the day as it comes (TASK-413 part
+      // C, the user's «Dentro le ciaspole», 2026-11-12).
       return t("Record your day");
     case "gym":
       // No route in the gym (TASK-385 part B): the workout's own start.
       return t("Start workout");
+    case "paragliding":
+      // No shapes in the air yet (TASK-305 parts R): the flight only.
+      return t("Record your flight");
     default:
       return t("Run without a route");
   }

@@ -14,7 +14,7 @@ import {
 } from "../theme/tokens";
 import { useTourPart } from "../tour/tourParts";
 import { TOUR_PART } from "../tour/tourSteps";
-import { SHAPE_SIGNS } from "./ShapeTiles";
+import { ShapeGlyph } from "./ShapeGlyph";
 import { shapeName } from "./shapeWords";
 
 /** Tiles in a row: four fit a phone with room for the names. */
@@ -47,19 +47,23 @@ type Props = {
   chosen: Shape | null;
   /** Gets the shape's name as the runner reads it, as `ShapeTiles` does. */
   onPick: (name: string) => void;
+  /** The shapes of the sport (its profile's `shapes`, TASK-414); every shape
+   * of the catalogue when not said. */
+  shapes?: readonly Shape[];
 };
 
 /**
  * The shapes of the catalogue in a grid of two rows (TASK-361), in place of
  * the row that slid sideways and was cut at the edge (ADR-0084): nothing
  * hides. The last tile, «See all», opens every shape; «Show fewer» closes.
+ * Each shape by its outline (`ShapeGlyph`, TASK-444), not by an emoji.
  */
-export function ShapeGrid({ chosen, onPick }: Props) {
+export function ShapeGrid({ chosen, onPick, shapes = SHAPES }: Props) {
   const [open, setOpen] = useState(false);
   // Shown by the tour of the first opening (TASK-266).
   const tourRef = useTourPart(TOUR_PART.shapes);
-  const shown = gridShapes(chosen, open);
-  const more = !open && shown.length < SHAPES.length;
+  const shown = gridShapes(chosen, open, shapes);
+  const more = !open && shown.length < shapes.length;
   return (
     <View ref={tourRef} collapsable={false} style={styles.grid} testID="shape-grid">
       {shown.map((shape) => {
@@ -76,7 +80,7 @@ export function ShapeGrid({ chosen, onPick }: Props) {
             accessibilityLabel={shapeName(shape)}
             accessibilityState={{ selected }}
           >
-            <Text style={styles.sign}>{SHAPE_SIGNS[shape]}</Text>
+            <ShapeGlyph shape={shape} />
             <Text
               style={[styles.name, selected && styles.selectedName]}
               numberOfLines={2}
@@ -94,13 +98,13 @@ export function ShapeGrid({ chosen, onPick }: Props) {
           accessibilityLabel={
             open
               ? t("Show fewer shapes")
-              : t("See all {count} shapes", { count: SHAPES.length })
+              : t("See all {count} shapes", { count: shapes.length })
           }
           accessibilityState={{ expanded: open }}
           testID="shape-grid-more"
         >
           <Text style={styles.moreSign}>
-            {open ? "−" : `+${SHAPES.length - shown.length}`}
+            {open ? "−" : `+${shapes.length - shown.length}`}
           </Text>
           <Text style={styles.moreText}>{open ? t("Show fewer") : t("See all")}</Text>
         </Pressable>
@@ -136,12 +140,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     backgroundColor: color.surfaceRaised,
   },
-  sign: {
-    color: color.text,
-    fontSize: fontSize.title,
-  },
   // textMuted, not textFaint: the names are read, not hinted (WCAG AA).
+  // As wide as its tile, not as its own first measure: in a row of four
+  // «luna» came out «lu…» (TASK-414).
   name: {
+    alignSelf: "stretch",
     color: color.textMuted,
     fontSize: fontSize.small,
     textAlign: "center",

@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — parte A in `main` (#1149, 2026-11-11); le 702 parole nuove escono con una PR di correzione (→ 1261); resta il server; poi B
+**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), server in `main` (#1317, `ee9f143c`, col sì dell'utente «Le otto forme», 2026-11-18), **sul server dal 2026-11-21** (passo 14, 06:43Z); app in `main` (#1248, `ab51d0fd`, 2026-11-21), nell'app con l'OTA 18 (sì dell'utente); le città estere in un secondo giro
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -47,7 +47,9 @@ non tracciato).
 |---|---|---|---|
 | A1 | i 776 già disegnati che passano il filtro | catalogo | passo «catalogo» sul server |
 | A2 | parole corte (2–4 lettere) su una riga nelle 63 città, la migliore dei due stili | `tools/`, catalogo | come A1, stessa PR |
-| B | `walks` e `activity` nel catalogo: parole di 5–8 lettere a penna alzata, bici 30–50 km, canoa e nuoto | API, shared-types, app, `tools/` | server, poi OTA |
+| B1 | `walks` nel catalogo: le parole a penna alzata, fino a 6 lettere, solo quelle che si leggono; due PR, prima il server poi l'app | API, esempi condivisi, `tools/`, catalogo; poi app | server, poi OTA |
+| B2 | `activity` nel catalogo: **solo bici, 20–30 km** (scelta dell'utente del 2026-11-12); due PR, prima il server poi l'app | API, esempi condivisi, `tools/`, catalogo; poi app | server, poi OTA |
+| B3 | bici a 40–50 km: il limite del motore da 30 a 50 km e le zone bici grandi | `services/route-engine`, contratto, app | **da chiedere al Coordinatore** (PR del motore, dell'utente) |
 | C | motore: spazio nelle frasi, cifre, forme nuove a tema, i 35 contorni in attesa | `services/route-engine` | **task e ADR a parte**, da chiedere al Coordinatore |
 
 ## Parte A — cosa fare
@@ -162,6 +164,32 @@ docs/tasks/TASK-441.md            (nuovo)
   (`services/api/shaperoute_api/city_examples.py`) le scrivono a penna
   alzata, tonde, 3 km a lettera. Escono dal catalogo; nella parte B tutte
   le parole si rifanno con quel metodo.
+- 2026-11-11, sui passi dopo la correzione: merge «ok procedi garzie»;
+  server dopo la #1155 con 1261 «si va bene»; parte B e le 55 parole di
+  prima da rifare a penna alzata «si procedi e ifalle».
+- 2026-11-11, vista la pagina di prova: «Sì, rifai il giro».
+- 2026-11-12, «Sì, così»: la B2 è **solo bici, subito fino a 30 km**, e i
+  40–50 km un passo a parte. Canoa e nuoto non entrano nel catalogo: con
+  lo sport «Paddle» o «Open water swim» «Explore» mostra già laghi e
+  spiagge con otto forme l'uno. I disegni in bici si vedono quando lo
+  sport è «Bike».
+- 2026-11-12, «Sì, vanno bene»: le 340 parole a penna alzata entrano nel
+  catalogo. Viste le due pagine (`parole-che-entrano.html`,
+  `parole-scartate.html`) e il campione grande (`campione-grande.html`:
+  57 parole disegnate grandi, per ogni lunghezza le meno somiglianti,
+  quelle di mezzo e le più somiglianti).
+- 2026-11-12, «Aspetta il principale»: per le zone della bici niente
+  specchi di Overpass (quello di OpenStreetMap Francia risponde, ma rifiuta
+  le richieste col nome generico di OSMnx).
+- 2026-11-18, «Osmium sul Mac»: Overpass giù da sei giorni, e le zone della
+  bici per regola vengono da un estratto (ADR-0153): `osmium-tool`
+  installato sul Mac, estratti di Geofabrik ritagliati in locale; prima le
+  città italiane, le estere in un secondo giro.
+- 2026-11-18, «Le otto forme»: vista la pagina con tutti i 239 disegni in
+  bici che passano il filtro (`out/TASK-441/b2/tutti-i-disegni-bici.html`),
+  entrano quelli di cuore, stella, farfalla, gatto, sole, cerchio, luna e
+  pesce: **148**. Smiley, cavallo, chiocciola e testa di cane restano fuori
+  (l'altra scelta era «Tutti i 239»).
 
 ## Com'è uscita la parte A
 
@@ -208,7 +236,360 @@ Dalla sessione «Forme generate strane», che ha fatto la correzione:
 - I numeri di «Com'è uscita la parte A» qui sopra (1963, 757 parole, 91 a
   Milano) sono quelli del merge di #1149, prima della correzione.
 
+## Parte B1 — le parole a penna alzata (ADR-0366)
+
+Divisione approvata dal Coordinatore il 2026-11-11: B1 le parole, B2 bici,
+canoa e nuoto; B1 in due PR, **prima il server, poi l'app e l'OTA**.
+
+**La prova** (2026-11-11 sera, `out/TASK-441/penup/`): 30 parole in quattro
+città, come gli esempi di città (`city_examples.py`: tonde, `pen_up`, 3 km
+a lettera). Fino a 6 lettere passano nelle città grandi (0,92–1,00); a 7
+(FOREVER) restano fra 0,85 e 0,89 dovunque; a 8 serve una zona più grande
+di quelle in cache. L'utente: «Sì, rifai il giro».
+
+**Il giro** (`bash out/TASK-441/run-pen-up.sh`, 2026-11-11 notte, un'ora e
+venti): 1047 parole da 2 a 6 lettere in 63 città, comprese quelle che il
+catalogo aveva a riga unica. 1011 disegnate (36 senza zona in cache:
+Overpass è chiuso apposta), **761 passano il filtro**: per lunghezza
+85/89, 267/315, 261/328, 113/179, 35/100. Il filtro guarda la lunghezza
+del solo disegno: i tratti fra le lettere aggiungono in media il 20%.
+
+**Quelle che si leggono**: il filtro non lo dice. A Levico HI e SI a 0,92–
+0,94 non si leggono; a Nizza YES a 0,99 nemmeno. Le 761 sono state lette
+una per una su fogli da 45, alla grandezza di una scheda dell'app,
+**senza il nome sotto** e raddrizzate come le raddrizza l'app
+(`rotation_deg`, fino a ±30°): una parola entra solo se ogni lettera si
+riconosce. **340 su 761** (per lunghezza 60, 117, 132, 22, 9), in 59
+città; somiglianza mediana 0,98 contro 0,94 delle scartate. Le chiavi sono
+in `tools/catalog_pen_up_read.json`. Delle 44 coppie città-parola che il
+catalogo aveva a riga unica, 19 tornano a penna alzata (CIAO era in 33
+città, ora in 10).
+
+**Il catalogo**: 1546 percorsi (1206 forme, 340 parole). Costo per l'API:
+24,7 MB di file, 0,32 s, +166 MB (a 1261: 19 MB). Da Milano «NEAR YOU» dà
+60 percorsi, 50 nomi diversi, i primi 50 tutti diversi, 19 con `gaps`;
+119 KB prima della compressione.
+
+**Cosa cambia**:
+
+- `tools/catalog_words.py --pen-up` (`--plan`, `--run`, `--propose`,
+  `--page`, `--unread`), `tools/catalog_pen_up_read.json` (nuovo).
+- `tools/catalog_seed.py`: `_route_body` scrive `walks` quando la riga li
+  ha (tre righe, permesso del Coordinatore). Prova: `--write` in una
+  cartella a parte dai registri di prima dà 63 file identici byte per byte
+  a `catalog/seed` di `main` (sha256 dei file in fila `ef27c63fe76807c5`).
+- API (`recommended.py`): `walks` nel dettaglio, `gaps` nell'anteprima
+  delle liste (ogni lettera fino a 32 punti, i tratti fra le lettere fuori);
+  tutti e due mancano dalla risposta di un percorso a riga unica, che resta
+  identica. Esempi nuovi: `recommended-routes-pen-up.json`,
+  `recommended-route-pen-up.json`.
+- `exploreCatalogEdit.test.ts`: una parola a pezzi non è un anello;
+  «Edit the drawing» la prende tutta in una riga, tratti compresi, chiusa
+  dal lato che torna alla partenza, come le parole degli esempi di città.
+  **Limite noto**: modificarla lettera per lettera non si può.
+
+**L'app** (branch `feat/TASK-441-b1-app-pen-up`, PR #1185): `gaps` alle schede in `ExploreScreen.tsx` e `route/NearYou.tsx`,
+`pen_up` in `toRequest` (`explored.ts`) per una parola con `walks`, due
+commenti in `recommendedRoutes.ts`. Senza l'OTA le schede uniscono le
+lettere con un tratto dritto; la mappa le mostra già staccate (`toResult`
+porta `walks`).
+
+### File toccati (B1, PR del server)
+
+```
+tools/catalog_words.py, tools/test_catalog_words.py
+tools/catalog_pen_up_read.json                          (nuovo)
+tools/catalog_seed.py                                   (tre righe: `walks`)
+tools/catalog_kept.json, catalog/seed/<città>.json, catalog/README.md
+services/api/shaperoute_api/recommended.py, services/api/tests/test_recommended.py
+services/api/tests/fixtures/catalog_pen_up/trento.json  (nuovo)
+packages/shared-types/fixtures/recommended-routes-pen-up.json, recommended-route-pen-up.json  (nuovi)
+apps/mobile/src/route/exploreCatalogEdit.test.ts
+docs/tasks/TASK-441.md
+```
+
+### File toccati (B1, PR dell'app)
+
+```
+apps/mobile/src/explore/ExploreScreen.tsx, explored.ts, explored.test.ts
+apps/mobile/src/explore/recommendedRoutes.ts            (solo commenti)
+apps/mobile/src/explore/ExplorePenUpWords.test.tsx      (nuovo)
+apps/mobile/src/route/NearYou.tsx
+```
+
+### Criteri di accettazione (B1)
+
+- [x] Giro finito, registro in `out/TASK-441/pen-up.jsonl`.
+- [x] Test deterministici: strumento (39), API (61), l'app sul catalogo.
+- [x] I file di oggi identici byte per byte con le tre righe nuove.
+- [x] Sì dell'utente alla pagina delle 340 parole
+      (`out/TASK-441/penup/parole-che-entrano.html`; le scartate in
+      `parole-scartate.html`) **prima del merge**.
+- [x] CI verde, merge del Coordinatore (#1184, `defe1357`, 2026-11-12).
+- [x] PR dell'app (#1185).
+- [x] Passo sul server e OTA, insieme nell'aggiornamento completo (sì
+      dell'utente «Sì, oggi», dal Coordinatore): passo 10 alle 12:20Z del
+      2026-11-12, OTA 12 alle 12:28Z. Controlli di
+      `out/TASK-441/SERVER-B1.md` tutti come attesi (sotto).
+
+## Parte B2 — i disegni in bici (ADR-0366)
+
+**Cosa c'era** (`main` di 2026-11-12): con lo sport «Paddle» o «Open water
+swim» «Explore» è `PaddleExplore` (760 laghi e 67 spiagge, otto forme
+l'uno; sull'acqua la forma è appoggiata, somiglianza sempre 1): niente da
+aggiungere dal catalogo. Con «Bike» mostra il catalogo a piedi (5–21 km) e
+le tre idee di «RIDE IT YOURSELF». Il motore disegna in bici da 10 a 30 km
+(`activities/cycling.py`).
+
+**La prova** (`out/TASK-441/b2/`, checkout principale): a 25–30 km dalle
+zone bici in cache Milano, Trento e Barcellona danno 0,94–0,97 in dieci
+secondi a disegno. A 40 e 50 km (solo a Mantova, col limite tolto nello
+script di prova e una zona scaricata apposta): cuore 0,92 e 0,90, stella
+0,95 e 0,94, cerchio 0,77 e 0,92. Una richiesta di 30 km vuole una zona di
+22,7 km di lato, una di 40 km 29,5, una di 50 km 36,5. L'utente: «Sì,
+così» (sopra).
+
+**Cosa cambia**:
+
+- `tools/catalog_bike.py` (nuovo): dodici forme per città (`SHAPES`: le
+  sette di base più cavallo, gatto, pesce, lumaca, testa di cane), una
+  distanza a forma fra 30, 25 e 20 km a turno, sulla rete bici
+  (`OsmnxSource.for_activity`), dalla piazza delle stesse 63 città. Chiave
+  `città/forma@cycling/distanza`. Filtro: `catalog_seed.reasons` com'è.
+  `--plan`, `--run [--downloads N | --extract file.osm.pbf]`,
+  `--page [--whole | --every]`, `--propose`, `--write` (legge i quattro
+  registri). Dal 2026-11-18 si disegnano e si tengono solo le otto forme
+  che si leggono (`READS`); ognuna tiene il turno di distanza che aveva
+  fra le dodici.
+- `tools/catalog_seed.py`: `_route_body` scrive `activity` quando la riga
+  lo ha; `city_files` mette le uscite in bici **in fondo** al file della
+  città, così un percorso a piedi tiene il posto e quindi l'id. Prova:
+  `--write` dai registri di prima dà 63 file identici byte per byte a
+  `catalog/seed` di `main` (sha256 dei file in fila `792e815e52dccb22`).
+- API (`recommended.py`, `app.py`): un percorso del seme dice `activity`
+  (una corsa quando non lo dice). `GET /recommended-routes` e `GET
+  /catalog` prendono `activity` (senza: le corse, come prima);
+  `RecommendedCatalog.routes` resta «solo le corse», le uscite stanno in
+  `others`: `best_routes.py` e ogni lista senza parametro non vedono mai
+  una bici. `activity` manca dalla risposta di una corsa, che resta
+  identica. Esempi nuovi: `recommended-routes-bike.json`,
+  `recommended-route-bike.json`.
+
+**Il giro**: Milano dalla zona in cache, 12 su 12 passano (0,93–1,00).
+Levico e Trento da Overpass, prima che cadesse (2026-11-12; Trento un'ora
+di attesa per 241 s di lavoro). **Le altre 28 città italiane da un
+estratto**, che è poi la regola del progetto per le zone della bici
+(`docs/MAPS.md`, ADR-0153, `prefetch_zones.py`): l'averle chieste a
+Overpass è stato un errore mio, trovato tardi.
+
+- `brew install osmium-tool` sul Mac (sì dell'utente, «Osmium sul Mac»).
+- Estratto di Geofabrik `italy-261117.osm.pbf` (2,25 GB, md5 controllato),
+  filtrato una volta con `osmium tags-filter … w/highway` in
+  `italy-highways.osm.pbf` (650 MB; 12 s, 2,1 GB di memoria).
+- `catalog_bike.py --run --extract italy-highways.osm.pbf`: per una zona
+  che manca, `zone_from_extract` (com'è, non toccato) la ritaglia e la dà
+  a OSMnx al posto di Overpass.
+- `zsh out/TASK-441/b2/run-bike.sh` (checkout principale), una città alla
+  volta con `nice`: aspetta finché c'è un simulatore acceso, il carico è
+  ≥ 10 o la memoria libera < 30%; si ferma se una città passa 1200 s di
+  lavoro, il pianificatore 2 GB (4 GB per le nove città grandi) o il
+  ritaglio 4 GB (limiti del Coordinatore, 2026-11-18).
+
+**Le misure, città per città** (memoria del pianificatore / col ritaglio di
+osmium, MB; secondi):
+
+| Città | MB | s | Città | MB | s |
+|---|---|---|---|---|---|
+| Rovereto | – / 3758 | 64 | Modena | 973 / 3649 | 39 |
+| Siena | 1135 / 3478 | 72 | Cagliari | 1020 / 3626 | 58 |
+| Lucca | 1366 / 3455 | 54 | Venezia | 1067 / 3631 | 58 |
+| Pisa | 1066 / 3398 | 57 | Verona | 1424 / 3645 | 57 |
+| Ferrara | 690 / 3052 | 40 | Padova | 2233 / 3653 | 81 |
+| Ravenna | 615 / 3408 | 31 | Catania | 1011 / 3131 | 42 |
+| Rimini | 928 / 3559 | 43 | Bari | 976 / 3513 | 54 |
+| Lecce | 932 / 3414 | 42 | Genova | 1353 / 3590 | 72 |
+| Perugia | 874 / 3530 | 52 | Bologna | 1713 / 3356 | 69 |
+| Trieste | 970 / 3624 | 64 | Firenze | 2296 / 3382 | 77 |
+| Bolzano | 1272 / 3377 | 53 | Palermo | 957 / 3423 | 49 |
+| Bergamo | 1698 / 3561 | 71 | Torino | 2086 / 3492 | 68 |
+| Brescia | 1919 / 3565 | 72 | Napoli | 1437 / 3441 | 77 |
+| Parma | 1141 / 3518 | 44 | Roma | 4049 / 4049 | 144 |
+
+Il ritaglio di osmium (`--strategy complete_ways`) vuole circa 3,7 GB per
+uno o due secondi qualunque sia l'estratto: tiene gli insiemi degli id dei
+nodi. Roma è l'unica dove il pianificatore da solo arriva a 4 GB.
+
+**L'esito**: 31 città, 372 disegni provati, **239 passano il filtro**
+(cuore 19, stella 19, farfalla 19, gatto 17, sole 25, cerchio 17, luna 22,
+pesce 10, cavallo 17, smiley 23, chiocciola 28, testa di cane 23). Venezia
+non ne ha nessuno. **Il filtro non dice se una forma si legge**: guardati
+uno per uno, chiocciola e testa di cane sono un groviglio, cavallo e smiley
+si leggono solo sopra 0,95 circa. L'utente: «Le otto forme» → **148** (54
+da 20 km, 49 da 25, 45 da 30) in 29 città: Venezia e Levico restano senza
+(a Levico passavano solo forme delle quattro escluse).
+
+**Da cancellare a lavoro finito** (fuori da git, in
+`out/TASK-441/b2/extracts/` del checkout principale): `italy-261117.osm.pbf`
+2,25 GB e `italy-highways.osm.pbf` 650 MB. Servono ancora solo se si
+ridisegnano città italiane; le zone ritagliate restano in `data/cache`
+(`bike_*`).
+
+**Le 32 città estere**: un estratto per paese (una ventina), stesso
+copione e stessi limiti. Un secondo giro, da chiedere al Coordinatore
+prima di cominciare.
+
+**L'app** (PR dopo il server; `App.tsx` dopo il via del Coordinatore): con
+lo sport «Bike», «Explore» chiede le liste con `activity=cycling`.
+
+### File toccati (B2, PR del server)
+
+```
+tools/catalog_bike.py, tools/test_catalog_bike.py       (nuovi)
+tools/catalog_seed.py                                   (`activity`, le uscite in fondo)
+tools/catalog_kept.json, catalog/seed/<città>.json, catalog/README.md
+services/api/shaperoute_api/recommended.py, services/api/tests/test_recommended.py
+services/api/shaperoute_api/app.py                      (il parametro `activity` sulle due rotte)
+services/api/tests/fixtures/catalog_bike/trento.json    (nuovo)
+packages/shared-types/fixtures/recommended-routes-bike.json, recommended-route-bike.json  (nuovi)
+docs/tasks/TASK-441.md
+```
+
+### File toccati (B2, PR dell'app)
+
+```
+apps/mobile/src/explore/recommendedRoutes.ts, catalogList.ts, ExploreScreen.tsx
+apps/mobile/src/explore/ExploreBike.test.tsx            (nuovo)
+apps/mobile/App.tsx                                     (una riga: lo sport a ExploreScreen)
+```
+
+«NEAR YOU» sotto la distanza di «Draw» (`route/NearYou.tsx`) non si tocca:
+è della corsa soltanto, per scelta già presa (TASK-306). Nessun testo nuovo.
+
+### Criteri di accettazione (B2)
+
+- [x] Test deterministici: strumento (15), API (`test_recommended.py`, 74).
+- [x] I file di oggi identici byte per byte con le righe nuove.
+- [x] Giro finito nelle 31 città italiane (le 32 estere: secondo giro).
+- [x] Tutti i 239 disegni che passano all'utente, forma per forma, e il
+      suo sì **prima del merge**: «Le otto forme» (2026-11-18).
+- [x] `catalog/seed` riscritto (29 file; gli altri 34 identici byte per
+      byte), `catalog/README.md`, controlli di sola lettura in
+      `out/TASK-441/SERVER-B2.md`.
+- [x] Le corse di prima intatte: in ogni file cambiato il testo di prima è
+      l'inizio di quello nuovo, le uscite stanno dopo; nell'API 1546 corse
+      con gli stessi id e gli stessi punti, 148 uscite in `others`;
+      `exploreCatalogEdit.test.ts` verde sul seme nuovo.
+- [x] CI verde, merge del Coordinatore (#1317, `ee9f143c`); `app.py` reso al Coordinatore.
+- [x] Passo sul server (passo 14, 2026-11-21 06:43Z) e PR dell'app (#1248, `ab51d0fd`).
+- [ ] OTA (sì dell'utente) e un'occhiata sul telefono: sport «Bike», poi «Explore».
+
 ## Dove siamo
+
+*2026-11-21, B2*: **sul server e in `main`**. Passo 14 alle 06:43Z (server a
+`ee9f143c`), tutti i controlli di `out/TASK-441/SERVER-B2.md` come attesi:
+`1694 recommended routes`, senza `activity` le righe di prima (`60 50 50
+pen-up 19 milano-star-12000-0 activity 0`, `1546 63 40 0`), in bici `8
+milano-circle-20000-90` e `148 29 40`. Memoria dell'API 925 MiB contro 899
+prima del passo: i 26 MB del catalogo (i 362 MiB scritti in SERVER-B2.md
+erano di un riavvio più vecchio). **App**: `main` unito nella #1248, fuori
+dalla bozza, unita dal Coordinatore al verde (`ab51d0fd`); niente prova in
+un simulatore col server vero, la prova è `ExploreBike.test.tsx` e la CI.
+Resta l'**OTA 18** (sì dell'utente, lo chiede il Coordinatore) e un'occhiata
+sul telefono.
+
+**Città estere, secondo giro (in corso)**: via del Coordinatore il
+2026-11-21. Elenco ed estratti in `out/TASK-441/b2/ESTERE-ESTRATTI.md`: 32
+città, l'estratto Geofabrik più piccolo che contiene tutto il riquadro
+della zona; per Amburgo, Londra, New York e Amsterdam i pezzi piccoli uniti
+con `osmium merge` (12,4 GB in tutto invece di 20,4). Copione:
+`zsh out/TASK-441/b2/run-estere.sh [città …]` dal checkout principale
+(piano `estere-plan.tsv`, registro `run-estere.log`): scarica, controlla
+l'md5, filtra le strade, unisce i pezzi, poi `run-bike.sh` su quel file.
+Regole del Coordinatore: una città per volta; un simulatore acceso prima di
+una città ferma tutto (uscita 5) e gli si scrive; carico sotto 10 e memoria
+libera al 30%; **il limite di 4 GB del pianificatore non si alza**: una
+città che lo passa viene fermata, scritta in `estere-stopped.txt` e chiesta
+al Coordinatore alla fine. Un download fallito salta la città
+(`estere-retry.txt`), da rifare dopo. Madrid, la prova: 8 disegni su 8
+passano e si leggono, ma il pianificatore è arrivato a 4499 MB e il
+controllo di allora (ogni 10 s) non l'ha visto; ora guarda ogni 2 s.
+Valencia 2911 MB, 8 su 8. Poi: fogli a occhio (`contact_city.py`),
+`catalog_bike.py --propose` / `--write`, una PR del solo catalogo e un
+altro passo sul server.
+
+*2026-11-18, sera, B2*: **la #1317 è in `main`** (`ee9f143c`); `app.py` reso
+al Coordinatore, che prepara il passo 14 con `out/TASK-441/SERVER-B2.md` e
+lo chiede all'utente. Documenti nella PR `docs/TASK-441-b2-server`
+(`API.md` col parametro, ADR-0366 precisazione, STATUS, INDEX). **Aspetto
+«server B2 fatto»**: poi la #1248 esce dalla bozza («pronta» con le parole
+dell'utente) e va nell'OTA. Le città estere: chiedere al Coordinatore prima
+di cominciare; gli estratti restano fino alla chiusura della B2.
+
+*2026-11-18, B2*: **PR del server #1317** da `feat/TASK-441-b2-bike` col sì
+dell'utente («Le otto forme»): 148 uscite in bici in 29 città italiane, il
+seme a 1694. Giro, misure ed esito sopra, in «Parte B2». L'API col seme
+nuovo costa 26 MB in più (185 contro 159 al caricamento); all'avvio dirà
+«1694 recommended routes from catalog/seed». **Il server può andare prima
+dell'app**: chi non chiede `activity` riceve le corse di prima. **Poi**:
+merge del Coordinatore («pronta»), `app.py` reso, passo sul server
+(`out/TASK-441/SERVER-B2.md`), #1248 fuori dalla bozza e OTA col sì
+dell'utente, PR di soli documenti (`docs/API.md` col parametro, STATUS,
+DECISIONS). **Da dire al Coordinatore**: `tools/sample_feed.py` (non mio,
+si lancia a mano) legge tutto il seme e oggi sceglierebbe anche uscite in
+bici come corse di esempio; il file che l'app usa non cambia finché nessuno
+lo rilancia. Dopo: le 32 città estere, B3 (40–50 km), C.
+
+*2026-11-12, 16:20, B2*: **il giro aspetta Overpass**, giù dalle 10:30
+(anche per il server di produzione: TASK-471). Fatta solo Milano (12 su
+12), restano 62 città da Trento. Il giro riprova da solo ogni 10 minuti
+(`out/TASK-441/b2/run-bike.sh` in un ciclo, registro `run-bike.log`); si è
+fermato due volte su richiesta del Coordinatore (11:09–13:08, 13:43–13:50)
+e una per il riavvio della sessione. **Scelta dell'utente («Aspetta il
+principale»)**: niente specchi. Quello di OpenStreetMap Francia risponde,
+ma rifiuta le richieste presentate col nome generico di OSMnx; lo
+strumento ha comunque `--overpass-url` (senza attesa del posto libero,
+pausa di un minuto fra due città) e `run-bike.sh` legge `OVERPASS_URL`.
+**App della B2: bozza #1248** (`feat/TASK-441-b2-app-bike`, CI verde): solo
+la bici chiede `&activity=cycling` (`CATALOG_ACTIVITIES`), ogni altro
+sport chiede come prima; una riga in `App.tsx`. Resta in bozza finché il
+server della B2 non è in `main` e sul server.
+
+*2026-11-12, B2*: branch `feat/TASK-441-b2-bike` (worktree
+`.claude/worktrees/TASK-441-b2`), pubblicato senza PR: strumento e API.
+Il giro delle 62 città aspetta Overpass (pieno dalle 10:30). **Da fare
+quando finisce**: `catalog_bike.py --page` (campione grande) → sì
+dell'utente → `--propose` in `tools/catalog_kept.json` → `--write` coi
+registri del checkout principale (`--old-log out/TASK-419/runs.jsonl
+--words-log out/TASK-441/runs.jsonl --pen-up-log out/TASK-441/pen-up.jsonl
+--log out/TASK-441/bike.jsonl`) → `exploreCatalogEdit.test.ts` sul seme
+nuovo → README, `SERVER-B2.md`, PR. `docs/API.md` (il parametro) nella PR
+di soli documenti dopo il merge.
+
+*2026-11-12, 12:28Z*: **la B1 è in produzione** («server B1 fatto e OTA
+uscito», Coordinatore). Passo 10 alle 12:20Z, server a `1eb3e5a8`; OTA 12
+di produzione alle 12:28Z con la #1185 (iOS `86033ea0`, Android
+`77e8b96b`), anteprima 12 (`4524060c`); fra passo e OTA 8 minuti. Controlli
+di sola lettura, tutti come attesi: nel log «1546 recommended routes from
+catalog/seed»; da Milano `60 50 50`, 19 parole a penna alzata,
+`milano-star-12000-0`; STAR intera con 1093 punti e i tre tratti a penna
+alzata `[[389, 506], [714, 811], [888, 912]]`; nessun aeroplano fra le
+parole; API a 362 MiB (era 330); nessun Traceback.
+
+*2026-11-12*: **il server della B1 è in `main`** (#1184), entrato col sì
+dell'utente alle 340 parole; l'app è la #1185. In produzione non c'è
+ancora niente: il server resta al catalogo a 1261 finché non esce l'OTA,
+perché un'app senza la #1185 unisce le lettere con un tratto dritto sulle
+schede. Attesi dopo il passo: nel log «1546 recommended routes from
+catalog/seed»; da Milano `60 50 50`, 19 parole a penna alzata;
+`milano-star-12000-0` coi suoi tre tratti. **Poi B2** (bici 30–50 km,
+canoa, nuoto, il campo `activity`): prima la lista dei file al
+Coordinatore.
+
+*2026-11-11, 22:14Z*: **parte A sul server** («passo 8 fatto», Coordinatore):
+checkout `ab5b2983`, nel log «1261 recommended routes from catalog/seed»,
+il controllo da Milano dà `60 31 31`; il contenitore dell'API appena
+partito usa 345 MB (processo principale 279 MB). «Explore» in produzione ha
+il catalogo senza le parole a riga unica e l'ordine misto.
 
 *2026-11-11*: **parte A in `main`** (#1149, merge del Coordinatore dopo il
 sì dell'utente; documenti #1153, ADR-0347 precisazione C). Giro delle

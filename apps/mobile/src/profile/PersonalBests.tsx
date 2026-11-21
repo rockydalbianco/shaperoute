@@ -25,7 +25,8 @@ const NAMED: Readonly<Record<string, string>> = {
   marathon: tLater("Marathon"),
 };
 
-/** «5K», «Half marathon» on foot, as races are called; «40 km» by bike. */
+/** «5K», «Half marathon» on foot, as races are called; «40 km» by bike, «1 km»
+ * in a wheelchair. */
 export function distanceName(best: Pick<PersonalBest, "sport" | "distance">): string {
   const named = NAMED[best.distance];
   if (named !== undefined) {
@@ -74,6 +75,8 @@ export function PersonalBests({ bests }: Props) {
       ["mountain_biking", t("MTB")],
       // On skates, apart from a run's (TASK-380, the user's choice 4).
       ["inline_skating", t("Roller")],
+      // Pushed, over 1 and 5 km (TASK-414, the user's choice 7).
+      ["wheelchair", t("Wheelchair & stroller")],
     ] as const
   )
     .map(([sport, name]) => ({ sport, name, bests: ofSport(bests, sport) }))

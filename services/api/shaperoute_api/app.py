@@ -45,6 +45,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from shaperoute_api.access import protect
 from shaperoute_api.accounts import Accounts, install_accounts
 from shaperoute_api.activities import PlaceNames, install_activities
+from shaperoute_api.activity_calendar import install_activity_calendar
 from shaperoute_api.activity_graphs import (
     Graphs,
     check_supported,
@@ -53,6 +54,7 @@ from shaperoute_api.activity_graphs import (
 )
 from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
+from shaperoute_api.comment_reactions import install_comment_reactions
 from shaperoute_api.comments import install_comments
 from shaperoute_api.contact import install_contact
 from shaperoute_api.contact_people import install_contact_people
@@ -106,6 +108,7 @@ from shaperoute_api.places import (
     PlacesUnavailableError,
 )
 from shaperoute_api.pool_swims import install_pool_swims
+from shaperoute_api.post_links import install_post_links
 from shaperoute_api.profile_photos import install_profile_photos
 from shaperoute_api.profiles import install_profiles
 from shaperoute_api.push import install_push
@@ -115,6 +118,7 @@ from shaperoute_api.recommended import (
     DEFAULT_RADIUS_M,
     MAX_PAGE,
     MAX_RADIUS_M,
+    RUNNING,
     CatalogPageBody,
     RecommendedCatalog,
     RecommendedRouteDetailBody,
@@ -147,6 +151,7 @@ from shaperoute_api.sign_in_providers import (
     install_sign_in_providers,
 )
 from shaperoute_api.signals import SignalBody, SignalGate, event_of
+from shaperoute_api.sleep import install_sleep
 from shaperoute_api.strava import install_strava
 from shaperoute_api.strava_client import Strava
 from shaperoute_api.stroke_matches_api import install_stroke_matches
@@ -387,6 +392,9 @@ def create_app(
     # The runs an account publishes as drawings, cut for the others
     # (TASK-117); they need a token.
     install_drawings(app)
+    # A drawing for everyone opened by its link, without an account, and
+    # the switch that turns the links of an account off (TASK-455 part C).
+    install_post_links(app)
     # The workouts at the gym, saved without a track, and their sets
     # (TASK-385); they need a token.
     install_gym_sessions(app)
@@ -395,11 +403,17 @@ def create_app(
     # The calendar of one's own workouts at the gym (TASK-411 B); it needs
     # a token.
     install_gym_calendar(app)
+    # The calendar of all one's own activities, with the twelve months up
+    # to it (TASK-462 A); it needs a token.
+    install_activity_calendar(app)
     # The plans of the gym (TASK-411 C); they need a token.
     install_gym_plans(app)
     # The swims in a pool, saved without a track, and their lengths
     # (TASK-400); they need a token.
     install_pool_swims(app)
+    # The nights of sleep a person publishes, on the profile and in the
+    # post of an activity (TASK-467 B1); they need a token.
+    install_sleep(app)
     # The figures of a run for the page of its post: splits, elevation,
     # cadence, calories (TASK-410 C); they need a token.
     install_run_stats(app)
@@ -420,6 +434,8 @@ def create_app(
     # What the members leave under a drawing with one tap, the super like
     # with a comment (TASK-119); they need a token.
     install_reactions(app)
+    # What they leave on a comment, or on a reply (TASK-454); a token too.
+    install_comment_reactions(app)
     # The drawings the members publish, read by whoever is signed in
     # (TASK-118); it needs a token.
     install_feed(app)
@@ -571,8 +587,11 @@ def create_app(
         lon: float = Query(ge=-180, le=180),
         offset: int = Query(default=0, ge=0),
         limit: int = Query(default=DEFAULT_PAGE, ge=1, le=MAX_PAGE),
+        # The runs when it is not said, as before a route could be a ride
+        # (TASK-441 B2): an app that does not ask gets no ride.
+        activity: str = Query(default=RUNNING, max_length=40),
     ) -> CatalogPageBody:
-        return catalog.page((lat, lon), offset, limit)
+        return catalog.page((lat, lon), offset, limit, activity)
 
     @app.get("/recommended-routes")
     def list_recommended_routes(
@@ -581,8 +600,11 @@ def create_app(
         radius_m: int = Query(default=DEFAULT_RADIUS_M, ge=100, le=MAX_RADIUS_M),
         shape: str | None = Query(default=None, max_length=40),
         distance_m: int | None = Query(default=None, ge=0),
+        activity: str = Query(default=RUNNING, max_length=40),
     ) -> RecommendedRoutesBody:
-        routes = catalog.near((lat, lon), radius_m, shape, distance_m)
+        routes = catalog.near(
+            (lat, lon), radius_m, shape, distance_m, activity=activity
+        )
         insights.record(
             "recommended_list",
             point=(lat, lon),

@@ -11,7 +11,7 @@ from pathlib import Path
 import route_engine
 from route_engine import models, network
 from route_engine.activities import ENGINE_ACTIVITIES, ENGINE_ONLY
-from route_engine.networks import NETWORKS_BY_NAME, bike, foot, hike, mtb, roller
+from route_engine.networks import NETWORKS_BY_NAME, bike, foot, hike, mtb, roller, wheel
 
 ENGINE = Path(route_engine.__file__).parent
 
@@ -26,13 +26,20 @@ BEFORE_LIMITS = {
 BEFORE_NETWORKS = {"running": "foot", "cycling": "bike"}
 # Added since, each by a line of its register: a hike (TASK-377), an MTB
 # ride (TASK-378), a skate (TASK-380), snowshoeing on the snow (TASK-413,
-# in ENGINE_ONLY until its part A2).
-SINCE_SUPPORTED = ("hiking", "mountain_biking", "inline_skating", "snowshoeing")
+# in ENGINE_ONLY until its part A2), a wheelchair or a stroller (TASK-414).
+SINCE_SUPPORTED = (
+    "hiking",
+    "mountain_biking",
+    "inline_skating",
+    "snowshoeing",
+    "wheelchair",
+)
 SINCE_LIMITS = {
     "hiking": (1_000, 30_000),
     "mountain_biking": (10_000, 30_000),
     "inline_skating": (5_000, 30_000),
     "snowshoeing": (500, 3_000),
+    "wheelchair": (1_000, 5_000),
 }
 # Drawn by the engine before the contract has it, by a line of ENGINE_ONLY:
 # none now.
@@ -41,6 +48,7 @@ SINCE_NETWORKS = {
     "hiking": "hike",
     "mountain_biking": "mtb",
     "inline_skating": "roller",
+    "wheelchair": "wheel",
 }
 
 
@@ -72,6 +80,7 @@ def test_the_networks_are_those_of_before() -> None:
         "hike": hike.HIKE_FILTER,
         "mtb": network.BIKE_FILTER,
         "roller": roller.ROLLER_FILTER,
+        "wheel": wheel.WHEEL_FILTER,
     }
     assert network.FOOT_NETWORK_NAME == "foot"
     assert network.BIKE_NETWORK_NAME == "bike"
@@ -102,6 +111,7 @@ def test_every_network_is_registered_under_its_own_name() -> None:
         "hike": hike.NETWORK,
         "mtb": mtb.NETWORK,
         "roller": roller.NETWORK,
+        "wheel": wheel.NETWORK,
     }
     for name, registered in NETWORKS_BY_NAME.items():
         assert registered.name == name
@@ -129,6 +139,7 @@ def test_one_way_streets_are_a_property_of_the_network() -> None:
         "hike": False,
         "mtb": True,
         "roller": False,
+        "wheel": False,
     }
     for name, registered in NETWORKS_BY_NAME.items():
         graph = network.Graph(network=name)

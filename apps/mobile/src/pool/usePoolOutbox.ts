@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
+import { sendWaitingSleep } from "../activities/sleepOut";
 import { savePoolSwimOnApi } from "../api/poolSwims";
 import { keepForDrawing, sendWaitingDrawings } from "../social/drawingOutbox";
 import { keepOrder } from "../social/drawingOrder";
@@ -98,6 +99,9 @@ export function usePoolOutbox(fetchFn?: typeof fetch): {
       if (posts) {
         await sendWaitingDrawings(url, key, who, options);
       }
+      // «Sleep last night» of what the API has now (TASK-467 part B2b):
+      // nothing waits, and nothing is asked, unless a post shows a night.
+      await sendWaitingSleep(url, key, who, options);
     } finally {
       sending.current = false;
       if (sent) {

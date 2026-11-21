@@ -134,6 +134,18 @@ export const GUIDES_DE: Guides = {
     "Komm hoch, bis dein Körper eine gerade Linie bildet.",
     "Geh nicht über die gerade Linie hinaus ins Hohlkreuz.",
   ],
+  superman: [
+    "Leg dich auf den Bauch, Arme nach vorne gestreckt.",
+    "Hebe Arme, Brust und Beine gleichzeitig an.",
+    "Kurz halten, dann langsam absenken.",
+    "Blick zum Boden, Nacken lang.",
+  ],
+  bodyweight_squat: [
+    "Füße schulterbreit, Arme nach vorne.",
+    "Hüfte nach hinten senken, bis die Oberschenkel waagrecht sind.",
+    "Über die Fersen drücken und aufstehen.",
+    "Knie zeigen in Richtung der Zehen.",
+  ],
   back_squat: [
     "Stange auf dem oberen Rücken, Füße schulterbreit.",
     "Setz dich nach hinten und unten, bis die Oberschenkel waagerecht sind.",
@@ -205,6 +217,12 @@ export const GUIDES_DE: Guides = {
     "Drück die Hüfte hoch, bis dein Körper von den Knien bis zu den Schultern eine Linie bildet.",
     "Senke sie langsam ab.",
     "Drück dich über die Fersen ab, das Kinn zur Brust.",
+  ],
+  glute_bridge: [
+    "Auf den Rücken legen, Knie gebeugt, Füße am Boden.",
+    "Über die Fersen drücken und das Becken anheben.",
+    "Oben den Po anspannen, dann langsam absenken.",
+    "Kein Hohlkreuz.",
   ],
   glute_machine: [
     "Steh oder knie auf der Maschine, Hände an den Griffen.",
@@ -421,6 +439,12 @@ export const GUIDES_DE: Guides = {
     "Rutsch nach unten, bis die Knie bei 90° sind.",
     "Halte die Position und atme.",
     "Halte die Knie über den Knöcheln.",
+  ],
+  mountain_climber: [
+    "In die Liegestützposition, Arme gestreckt.",
+    "Ein Knie zur Brust ziehen.",
+    "Schnell die Beine wechseln, wie beim Laufen.",
+    "Hüfte unten, Schultern über den Händen.",
   ],
   power_clean: [
     "Starte wie beim Kreuzheben, die Stange über den Füßen.",

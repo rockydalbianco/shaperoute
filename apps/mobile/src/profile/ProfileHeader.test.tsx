@@ -61,7 +61,7 @@ test("who won a contest has the «Winner» badge under the name; the others none
   expect(screen.queryByLabelText("Winner")).toBeNull();
 });
 
-test("the badges of the drawings follow «Winner»; on one's own, those to earn too", async () => {
+test("the badges of the drawings follow «Winner»; on one's own too, only those earned", async () => {
   await render(
     <ProfileHeader
       username="runner_42"
@@ -85,5 +85,7 @@ test("the badges of the drawings follow «Winner»; on one's own, those to earn 
       badges={["first_drawing"]}
     />,
   );
-  expect(screen.getByLabelText("Not earned yet: 10 drawings")).toBeDisabled();
+  // Those to earn are in «Badges» lower down (TASK-457), not under the name.
+  expect(screen.getByTestId("badge-row")).toHaveTextContent("✏️First drawing");
+  expect(screen.queryByLabelText(/Not earned yet/)).toBeNull();
 });

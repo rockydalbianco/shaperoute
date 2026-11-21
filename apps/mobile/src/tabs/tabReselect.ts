@@ -40,10 +40,19 @@ type ToTop = {
 };
 
 /** A ref for the scroll of a page: back to its top when its tab is
- * touched again. */
-export function useScrollToTopOnReselect<T extends ToTop>() {
+ * touched again. A list `shown` false, one of the lists of a page that
+ * shows one at a time («All», «Following», «Style» in «Feed»), keeps its
+ * place: only the one on screen goes back to its top. */
+export function useScrollToTopOnReselect<T extends ToTop>(shown = true) {
   const scroll = useRef<T | null>(null);
+  const isShown = useRef(shown);
+  useEffect(() => {
+    isShown.current = shown;
+  });
   useTabReselect(() => {
+    if (!isShown.current) {
+      return;
+    }
     const view = scroll.current;
     if (view?.scrollToOffset) {
       view.scrollToOffset({ offset: 0, animated: true });

@@ -1,13 +1,6 @@
 import type { Session } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AboutScreen } from "../about/AboutScreen";
@@ -34,6 +27,8 @@ import {
 import { GuideRow } from "../tour/GuideRow";
 import { tourTexts } from "../tour/tourTexts";
 import { askTour } from "../tour/useTour";
+import { useBackCloses } from "../ui/backLayers";
+import { EdgeKeyboardAvoidingView, useEdgeBack } from "../ui/EdgeBack";
 import { SignInScreen } from "./SignInScreen";
 
 type Notice = { text: string; tone: "warning" | "muted" };
@@ -89,6 +84,9 @@ type Props = {
    * is the fourth page of the pager (TASK-278): no «←» nor title there, as
    * on the other pages. */
   onBack?: () => void;
+  /** Opens «Explore» from the first step of a new profile (TASK-457); left
+   * out where there is no such page to go to. */
+  onExplore?: () => void;
 };
 
 /**
@@ -98,13 +96,21 @@ type Props = {
  * was (TASK-154); its first page is also the fourth page of the pager,
  * from where the others open over the app (TASK-278).
  */
-export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
+export function ProfileScreen({
+  account,
+  page,
+  onPage,
+  hint,
+  onBack,
+  onExplore,
+}: Props) {
   const insets = useSafeAreaInsets();
   const { state } = account;
   const signedOut = state.status !== "signedIn";
   // Where «Help» was opened: its row in «Settings», or «Guide» on the first
-  // page, with an account or without (TASK-266). Opened right on «Help»,
-  // it is «Guide» of the fourth page (TASK-278): back goes there.
+  // page without an account (TASK-266; with one the row left the profile,
+  // TASK-457). Opened right on «Help», it is «Guide» of the fourth page
+  // (TASK-278): back goes there.
   const [helpFrom, setHelpFrom] = useState<"settings" | "account">(() =>
     page === "help" ? "account" : "settings",
   );
@@ -114,6 +120,19 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
   const under = isAboutId(page) ? (page === "help" ? helpFrom : "settings") : page;
   // A page of the account is one step into «Profile»: back goes to it first.
   const inside = !signedOut && under !== "account";
+  // Android's «back» is the «←» on screen: a text of «ABOUT», a page of the
+  // account, then «Profile» itself when it has one.
+  const aboutBack = () => onPage(about === "help" ? helpFrom : "settings");
+  useBackCloses(
+    about !== null || inside || onBack !== undefined,
+    about !== null ? aboutBack : inside ? () => onPage("account") : () => onBack?.(),
+  );
+  // On iOS, from the left edge, the pages inside «Profile» only: «Profile»
+  // itself can be a tab, where a finger from the edge goes to the tab before.
+  const edge = useEdgeBack(
+    about !== null ? aboutBack : () => onPage("account"),
+    about !== null || inside,
+  );
   // Out of the account from «Settings» or «Edit profile»: who comes back in
   // finds «Profile».
   useEffect(() => {
@@ -122,10 +141,12 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
     }
   }, [signedOut, page, onPage]);
   return (
-    <KeyboardAvoidingView
-      style={[StyleSheet.absoluteFill, styles.screen]}
+    <EdgeKeyboardAvoidingView
+      style={[StyleSheet.absoluteFill, styles.screen, edge.style]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
+      {...edge.handlers}
     >
+      {edge.shade}
       <SightScrollView
         style={about !== null && styles.hidden}
         contentContainerStyle={[
@@ -174,14 +195,7 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             <FavoritesList margin={space.lg} />
           )
         ) : state.status === "signedIn" ? (
-          <SignedIn
-            session={state.session}
-            onPage={onPage}
-            onGuide={() => {
-              setHelpFrom("account");
-              onPage("help");
-            }}
-          />
+          <SignedIn session={state.session} onPage={onPage} onExplore={onExplore} />
         ) : (
           <SignInScreen
             // A new form after each way out: no password left in it.
@@ -209,7 +223,7 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             email={account.email}
           />
         )}
-        {/* With an account «Guide» is under «Settings» (ProfileHome). */}
+        {/* With an account it is «Help» in «Settings» (TASK-457). */}
         {signedOut && (
           <GuideRow
             onOpen={() => {
@@ -222,7 +236,7 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
       {about !== null && (
         <AboutScreen
           id={about}
-          onBack={() => onPage(about === "help" ? helpFrom : "settings")}
+          onBack={aboutBack}
           // Named as the row that opened it.
           name={
             about === "help" && helpFrom === "account" ? tourTexts().guide : undefined
@@ -238,7 +252,7 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
           }
         />
       )}
-    </KeyboardAvoidingView>
+    </EdgeKeyboardAvoidingView>
   );
 }
 
@@ -246,11 +260,11 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
 function SignedIn({
   session,
   onPage,
-  onGuide,
+  onExplore,
 }: {
   session: Session;
   onPage: (page: ProfilePage) => void;
-  onGuide: () => void;
+  onExplore?: () => void;
 }) {
   const favorites = useFavoritesDoor();
   const activities = useActivitiesDoor();
@@ -261,7 +275,7 @@ function SignedIn({
       activities={activities.total}
       onOpen={onPage}
       onEdit={() => onPage("edit")}
-      onGuide={onGuide}
+      onExplore={onExplore}
     />
   );
 }

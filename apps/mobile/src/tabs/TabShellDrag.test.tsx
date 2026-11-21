@@ -5,7 +5,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { runAnimationsOnJs } from "../ui/animationsOnJs.testing";
 import { useReduceMotion } from "../ui/useReduceMotion";
-import { TAB_CAPSULE_WIDTH } from "./TabBar";
+import { TAB_BAR_INSET, TAB_CAPSULE_WIDTH } from "./TabBar";
 import { pagesFromPage, type ShellPage, TabShell } from "./TabShell";
 import { STRIP_START } from "./tabStrip";
 
@@ -27,7 +27,8 @@ const PAGES: ShellPage[] = ["Feed", "Draw", "Messages", "Explore"].map(
 
 // The window of the tests (react-native's jest setup).
 const WIDTH = 750;
-const SLOT = WIDTH / PAGES.length;
+// The tabs share the glass, inset from the screen's sides (TASK-469).
+const SLOT = (WIDTH - 2 * TAB_BAR_INSET) / PAGES.length;
 const FRAME = 16;
 
 function under(index: number): number {

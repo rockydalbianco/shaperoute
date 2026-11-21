@@ -1,5 +1,10 @@
-import type { Activity, LatLon } from "@shaperoute/shared-types";
-import { useState } from "react";
+import {
+  type Activity,
+  type LatLon,
+  SLEEP_SHOWN_DEFAULT,
+  type Visibility,
+} from "@shaperoute/shared-types";
+import { type MutableRefObject, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { type DrawingChoice, isChosen, isSeen, NOT_CHOSEN } from "../api/drawings";
@@ -7,6 +12,10 @@ import { loadHealthOn } from "../health/healthChoice";
 import { healthPhone } from "../health/healthModules";
 import type { HealthPhone } from "../health/healthPhone";
 import { HealthRunEnd } from "../health/HealthRunEnd";
+import { sleepReader } from "../health/sleepModules";
+import { SleepRunEnd } from "../health/SleepRunEnd";
+import type { SleepReader } from "../health/sleepSamples";
+import { useLastNight } from "../health/useLastNight";
 import { saveToHealth, useHealth } from "../health/useHealth";
 import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
@@ -53,14 +62,25 @@ type Props = {
   fetchFn?: typeof fetch;
   apiKey?: string | null;
   health?: HealthPhone | null;
+  /** The phone's reader of the sleep (TASK-467 part B2): none in every
+   * build until the native one of part C, so nothing of it shows. */
+  sleep?: SleepReader | null;
   /**
    * An activity added from a file of another app (TASK-312, ADR-0272), with
    * the sport the file says (null: the one of «Settings»): «Imported» over
    * the form, and a line that it does not count for Play or the contests.
    * Neither «Send to Strava» (it often comes from Strava itself) nor the
-   * phone's health data (the other app wrote it there already).
+   * phone's health data (the other app wrote it there already). It starts
+   * on «Only me», or on `visibility` when given: «Everyone» from the Feed's
+   * «+» (TASK-476, the user's choice), seen over «Save» and changeable.
    */
-  imported?: { sport: Activity | null };
+  imported?: { sport: Activity | null; visibility?: Visibility };
+  /**
+   * The card folded at the end (TASK-478 part b): this form's «Save», for
+   * the strip's, so that it does all that this one does, the choices of
+   * the form with it. Null without an account: no «Save» then.
+   */
+  saveRef?: MutableRefObject<(() => void) | null>;
 };
 
 /** How much of the screen the form may take: the map and the buttons
@@ -103,7 +123,9 @@ export function RunEnd({
   fetchFn,
   apiKey,
   health: phoneHealth = healthPhone(),
+  sleep: phoneSleep = sleepReader(),
   imported,
+  saveRef,
 }: Props) {
   const {
     signedIn,
@@ -114,6 +136,7 @@ export function RunEnd({
     toPhotos,
     toOrder,
     toOutfit,
+    toSleep,
     full,
     waiting,
     refused,
@@ -132,12 +155,16 @@ export function RunEnd({
   const [send, setSend] = useState(loadSendToStrava);
   // «Only me» until the account saves another choice, then the last one
   // saved (the user's choice, ADR-0304): nobody is public without having
-  // chosen it. An activity added from a file is an old one: always «Only me».
+  // chosen it. An activity added from a file is an old one: «Only me», but
+  // from the Feed's «+» «Everyone» (TASK-476, the user's choice).
   // The activity is the sport chosen in «Settings», or the one the file says.
   const [choice, setChoice] = useState<DrawingChoice>(() => ({
     ...NOT_CHOSEN,
     activity: imported?.sport ?? runActivityOf(sport),
-    visibility: imported === undefined ? loadVisibility(owner) : "only_me",
+    visibility:
+      imported === undefined
+        ? loadVisibility(owner)
+        : (imported.visibility ?? "only_me"),
   }));
   // Started from a remembered «Everyone» or «Followers»: the form scrolls, so
   // its words stay over «Save» too, seen before the run goes public.
@@ -150,6 +177,13 @@ export function RunEnd({
   const [line] = useState<LatLon[] | null>(
     () => ended?.track.fixes.map((fix) => fix.point) ?? null,
   );
+  // «Sleep last night» (TASK-467 part B2): the night before the run began,
+  // never for an activity from a file (an old one). On until turned off
+  // (the user's choice); shown, and sent, only with a post others see.
+  const [beganMs] = useState(() => ended?.track.fixes[0]?.timeMs ?? Date.now());
+  const lastNight = useLastNight(imported === undefined ? phoneSleep : null, beganMs);
+  const [sleepShown, setSleepShown] = useState(SLEEP_SHOWN_DEFAULT);
+  const night = isSeen(choice.visibility) ? lastNight : null;
 
   function save() {
     const sending =
@@ -183,6 +217,9 @@ export function RunEnd({
     toOrder(
       post.photos.length > 0 && post.order[0] !== DRAWING_ITEM ? post.order : null,
     );
+    // The night goes only when the post shows it: off, or with a post only
+    // its owner sees, nothing of it leaves the phone (TASK-467).
+    toSleep?.(night !== null && sleepShown ? { ...night, shown: true } : null);
     // The run as the phone keeps it, read before «Save» lets the file go:
     // only after the user's yes to the phone's health data.
     const run = health !== null && loadHealthOn() ? loadRun() : null;
@@ -201,6 +238,17 @@ export function RunEnd({
       }
     }
   }
+
+  // After every drawing: the «Save» of the form as it is now.
+  useEffect(() => {
+    if (saveRef === undefined) {
+      return;
+    }
+    saveRef.current = signedIn ? save : null;
+    return () => {
+      saveRef.current = null;
+    };
+  });
 
   if (!signedIn) {
     return (
@@ -316,6 +364,7 @@ export function RunEnd({
           {health !== null && (
             <HealthRunEnd store={health.store} health={healthState} />
           )}
+          <SleepRunEnd night={night} shown={sleepShown} onShown={setSleepShown} />
         </View>
       </FormScroll>
       {startedSeen && isSeen(choice.visibility) && (

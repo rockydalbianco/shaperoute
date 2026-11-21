@@ -3,6 +3,7 @@ import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useState } from "react";
 
+import { isFlight } from "../air/flight";
 import { loadSport, runActivityOf } from "../settings/sport";
 import { appUnits } from "../units/units";
 import { endRunAudio, startRunAudio } from "../voice/runAudio";
@@ -94,6 +95,8 @@ export function useFreeRun(active: boolean): FreeRunState {
             }
           },
           ...(swim ? { stillMs: SWIM_AUTO_PAUSE_AFTER_MS } : {}),
+          // In the air no auto-pause unless the pilot wants it (TASK-305).
+          air: isFlight(runActivityOf(loadSport())),
         });
         run = session;
         setState({ status: "running", track: recorder.track(), position });

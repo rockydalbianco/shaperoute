@@ -1,19 +1,26 @@
+import { SLEEP_SHOWN_DEFAULT } from "@shaperoute/shared-types";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SIGN_IN_TO_KEEP_RUNS, useActivitiesDoor } from "../activities/activitiesDoor";
+import { keepSleepFor } from "../activities/sleepOut";
+import { isSeen } from "../api/drawings";
 import { useBody } from "../body/useBody";
 import { healthPhone } from "../health/healthModules";
 import type { HealthPhone } from "../health/healthPhone";
 import { HealthRunEnd } from "../health/HealthRunEnd";
+import { sleepReader } from "../health/sleepModules";
+import { SleepRunEnd } from "../health/SleepRunEnd";
+import type { SleepReader } from "../health/sleepSamples";
+import { useLastNight } from "../health/useLastNight";
 import { useHealth } from "../health/useHealth";
 import { t } from "../i18n";
 import { appLanguage } from "../i18n/language";
 import { clockLabel } from "../navigation/freeRun";
 import { color, fontSize, fontWeight, space } from "../theme/tokens";
 import { useUnits } from "../units/useUnits";
-import { restsLabel, rowsOf, setLabel } from "./ExerciseList";
+import { countsLabel, restsLabel, rowsOf, setLabel } from "./ExerciseList";
 import { ExercisePicker } from "./ExercisePicker";
 import { type GymPost, GymPostForm, newGymPost } from "./GymPostForm";
 import { saveGymToHealth } from "./gymHealth";
@@ -46,25 +53,34 @@ type Editing = { kind: "set"; n: number; entry: Entry } | { kind: "new"; entry: 
  * «Sì, anche alla fine»), as at the end of a run. «Save» keeps it on the
  * phone and sends it, its post after it, and writes it to Apple Health or
  * Health Connect after the user's yes (part C); «Discard» asks first.
- * Signed out, it says to sign in, as the end of a run does. Its energy
+ * Over «Save», «Sleep last night» as at the end of a run (TASK-467 part
+ * B2b): nothing in any build until part C, where the phone has no reader.
+ * Signed out, it says to sign in, as the end of a run does: `onSignIn` is
+ * the way there of what shows it over the app (TASK-453). Its energy
  * under its time (part C, the user's «Stima MET sempre»).
  */
 export function GymEnd({
   workout,
   onSave,
+  onSignIn,
   pick,
   fetchFn,
   apiKey,
   health: phone = healthPhone(),
+  sleep: sleepPhone = sleepReader(),
 }: {
   workout: Workout;
   onSave: (workout: Workout, post?: GymPost) => GymSaved;
+  /** «Sign up or log in», signed out; without it, the account's own door. */
+  onSignIn?: () => void;
   /** The fakes of the tests: the photo picker, the fetch of the tag search. */
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
   apiKey?: string | null;
   /** The phone's health data; for the tests, a fake. */
   health?: HealthPhone | null;
+  /** The phone's reader of the sleep (TASK-467): none until part C. */
+  sleep?: SleepReader | null;
 }) {
   const insets = useSafeAreaInsets();
   const units = useUnits();
@@ -77,6 +93,12 @@ export function GymEnd({
   const [problem, setProblem] = useState(false);
   const healthState = useHealth(phone);
   const body = useBody();
+  // «Sleep last night» (TASK-467 part B2b), as at the end of a run: the
+  // night before the workout began, on until turned off, shown and sent
+  // only with a post others see.
+  const lastNight = useLastNight(sleepPhone, workout.startedMs);
+  const [sleepShown, setSleepShown] = useState(SLEEP_SHOWN_DEFAULT);
+  const night = signedIn && isSeen(post.choice.visibility) ? lastNight : null;
 
   function edit(set: LoggedSet) {
     const entry = entryOf(set);
@@ -103,6 +125,11 @@ export function GymEnd({
   function save() {
     const saved = onSave(workout, post);
     if (saved === "kept") {
+      // The night goes only when the post shows it; otherwise nothing of
+      // it leaves the phone.
+      if (owner !== null && night !== null && sleepShown) {
+        keepSleepFor(owner, workout.key, { ...night, shown: true });
+      }
       // Written there, on the phone, with no network; never fails «Save».
       void saveGymToHealth(phone, workout);
       endGymWorkout();
@@ -170,10 +197,10 @@ export function GymEnd({
         </View>
         {workout.sets.length > 0 && (
           <Text style={gymStyles.text}>
-            {t("{n} exercises · {s} sets", {
-              n: String(rowsOf(workout.sets, appLanguage()).length),
-              s: String(workout.sets.length),
-            })}
+            {countsLabel(
+              rowsOf(workout.sets, appLanguage()).length,
+              workout.sets.length,
+            )}
           </Text>
         )}
         {rests !== null && <Text style={gymStyles.muted}>{rests}</Text>}
@@ -254,6 +281,7 @@ export function GymEnd({
             {phone !== null && signedIn && (
               <HealthRunEnd store={phone.store} health={healthState} />
             )}
+            <SleepRunEnd night={night} shown={sleepShown} onShown={setSleepShown} />
           </>
         )}
         {problem && (
@@ -262,7 +290,7 @@ export function GymEnd({
           </Text>
         )}
         {!signedIn && (
-          <Pressable onPress={signIn} accessibilityRole="button">
+          <Pressable onPress={onSignIn ?? signIn} accessibilityRole="button">
             <Text style={[gymStyles.text, styles.link]}>{t(SIGN_IN_TO_KEEP_RUNS)}</Text>
           </Pressable>
         )}

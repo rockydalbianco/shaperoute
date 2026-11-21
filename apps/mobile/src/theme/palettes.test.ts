@@ -55,6 +55,7 @@ test("with no choice the app is dark at its darkest (ADR-0046), warm (ADR-0293)"
     you: "#3D9BFF",
     north: "#FF5B4F",
     runDay: "#4DD2FF",
+    muscle: "#FF6FB5",
     strava: "#FC5200",
     onStrava: "#FFFFFF",
     ski: { descent: "#FFD02B", lift: "#FF5A4E", onLine: "#0B0A08" },
@@ -139,6 +140,10 @@ test.each(EVERY)("%s at step %i keeps the contrasts", (_tone, _step, c) => {
   // The «RUN» mark of a run day, bold, on a card and on its chip (TASK-433 C).
   for (const under of [c.surface, c.surfaceRaised]) {
     expect(contrast(c.runDay, under)).toBeGreaterThanOrEqual(3);
+  }
+  // A muscle lit on the body of an exercise, a graphic (TASK-465).
+  for (const under of [c.background, c.surface, c.surfaceRaised]) {
+    expect(contrast(c.muscle, under)).toBeGreaterThanOrEqual(3);
   }
   // Text on yellow does not depend on the tone.
   expect(contrast(c.onAccent, c.accent)).toBeGreaterThanOrEqual(7);

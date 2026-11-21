@@ -1,0 +1,11 @@
+{
+  "night": "2026-09-21",
+  "score": 82,
+  "asleep_min": 452,
+  "awake_min": 18,
+  "stages": {
+    "rem_min": 96,
+    "light_min": 268,
+    "deep_min": 72
+  }
+}

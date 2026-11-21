@@ -12,45 +12,8 @@ import {
 } from "../theme/tokens";
 import { useTourPart } from "../tour/tourParts";
 import { TOUR_PART } from "../tour/tourSteps";
+import { ShapeGlyph } from "./ShapeGlyph";
 import { shapeName } from "./shapeWords";
-
-/**
- * A sign for each shape of the catalogue. Text, not drawings: drawing the real
- * outlines needs react-native-svg, a dependency not yet asked for (TASK-051).
- */
-export const SHAPE_SIGNS: Record<Shape, string> = {
-  circle: "◯",
-  heart: "♥",
-  star: "★",
-  horse: "🐎",
-  moon: "☾",
-  cat: "🐈",
-  fish: "🐟",
-  butterfly: "🦋",
-  snail: "🐌",
-  dog_head: "🐶",
-  rabbit_head: "🐰",
-  pumpkin: "🎃",
-  christmas_tree: "🎄",
-  smiley: "🙂",
-  ghost: "👻",
-  donut: "🍩",
-  sun: "☀️",
-  airplane: "✈️",
-  anchor: "⚓",
-  bear_head: "🐻",
-  bicycle: "🚲",
-  cherries: "🍒",
-  espresso_cup: "☕",
-  four_leaf_clover: "🍀",
-  leaning_tower: "🗼",
-  music_note: "🎵",
-  pear: "🍐",
-  sailboat: "⛵",
-  swan: "🦢",
-  windmill: "🌬️",
-  wine_glass: "🍷",
-};
 
 type Props = {
   /** The shape the field names now, shown as chosen; null for none. */
@@ -62,7 +25,8 @@ type Props = {
 /**
  * The shapes of the catalogue as tiles in one row that slides sideways
  * (ADR-0084): touching one writes it in the field. A shape written in the
- * field brings its tile into view.
+ * field brings its tile into view. Each by its outline, not by an emoji
+ * (TASK-444).
  */
 export function ShapeTiles({ chosen, onPick }: Props) {
   const row = useRef<ScrollView>(null);
@@ -100,7 +64,7 @@ export function ShapeTiles({ chosen, onPick }: Props) {
               accessibilityLabel={shapeName(shape)}
               accessibilityState={{ selected }}
             >
-              <Text style={styles.sign}>{SHAPE_SIGNS[shape]}</Text>
+              <ShapeGlyph shape={shape} />
               <Text
                 style={[styles.name, selected && styles.selectedName]}
                 numberOfLines={2}
@@ -136,10 +100,6 @@ const styles = StyleSheet.create({
   selected: {
     borderColor: color.text,
     backgroundColor: color.surfaceRaised,
-  },
-  sign: {
-    color: color.text,
-    fontSize: fontSize.title,
   },
   name: {
     color: color.textMuted,

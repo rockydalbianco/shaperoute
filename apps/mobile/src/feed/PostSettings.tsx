@@ -9,6 +9,7 @@ import {
   fetchMyDrawings,
   titleOf,
 } from "../api/drawings";
+import { SleepPostSwitch } from "../health/SleepPostSwitch";
 import { t } from "../i18n";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { useFollowsDoor } from "../social/followsDoor";
@@ -37,7 +38,8 @@ type Shown =
  * sees it, its title and its description, kept as «My activities» keeps
  * them (`DrawingsDoor.choose`, by the run's key). The run is found among the
  * account's drawings by the drawing's id. «Show heart rate» comes with the
- * heart (TASK-345 B): before it there is nothing to hide.
+ * heart (TASK-345 B): before it there is nothing to hide. «Sleep last
+ * night» is a switch of its own, kept at once (TASK-467, `SleepPostSwitch`).
  */
 export function PostSettings({ post, onSaved }: Props) {
   const { apiUrl, account } = useFollowsDoor();
@@ -139,6 +141,7 @@ export function PostSettings({ post, onSaved }: Props) {
         onChange={setDescription}
         editable={!saving}
       />
+      <SleepPostSwitch drawingId={id} runKey={shown.key} />
       {problem !== null && (
         <Text style={styles.problem} accessibilityRole="alert">
           {problem}

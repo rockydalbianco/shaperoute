@@ -20,6 +20,11 @@ esercizi e le scale dei traguardi. Lo scrive la sessione di TASK-385.
   Keytel 2005 (parte G).
 - **Il battito** a sessione finita, da Salute (TASK-345 C): medio, massimo,
   tempo nelle zone.
+- **Senza account** (TASK-453): il riepilogo mostra «Sign up or log in…»;
+  toccarlo fa da parte il riepilogo e mostra la pagina del profilo;
+  l'allenamento resta sul telefono e il riepilogo torna con «Save» dopo
+  l'iscrizione, o com'era se la pagina viene lasciata. Lo stesso alla fine
+  di una nuotata in piscina.
 
 ## Cosa non registra
 
@@ -97,6 +102,19 @@ tre passi e «Watch out» con l'errore da evitare; aperta da «+ Exercise» ha
 «Add to workout», durante l'allenamento solo «‹». Un esercizio col nome
 libero non ha né omino né guida (`gym/moves.ts`, `gym/ExerciseFigure.tsx`,
 `gym/ExerciseGuide.tsx`, `gym/guides/`).
+
+## Il muscolo allenato accanto all'omino (TASK-465)
+
+Accanto all'omino c'è una sagoma del corpo, ferma, coi muscoli che
+l'esercizio allena (ADR-0376): negli stessi posti dell'omino. Piccola
+(riquadri, ricerca, esercizio in corso) mostra un lato solo, davanti o
+dietro, quello del primo muscolo principale, coi principali **pieni**; nella
+guida davanti e dietro, i muscoli che aiutano col **contorno** e sotto i
+nomi («Chest», «Also: shoulders, triceps»). Pieno o contorno, mai solo il
+colore (il rosa del token `muscle`); il lettore di schermo dice i nomi.
+I muscoli sono 17 e stanno in una tabella dell'app, non nel catalogo del
+server: chi aggiunge un esercizio aggiunge la sua riga, e un esercizio col
+nome libero non ha sagoma (`gym/muscles.ts`, `gym/MuscleMap.tsx`).
 
 ## La scelta dell'esercizio (TASK-411 A)
 
@@ -185,6 +203,86 @@ la corsa e «Go to the run · 5.5 km» passa a «Run» coi km già scritti; una
 corsa fatta quel giorno conta come fatta nel calendario. La sigla «RUN» ha
 il suo colore (`runDay`). `runDay.ts`, `RunDayEditor.tsx`.
 
+**La corsa su misura** (TASK-452): con almeno una corsa la guida chiede
+«How do you run today?»: il ritmo sui 10 km (o il livello) e il lungo di oggi
+(km o minuti). I ritmi vengono da lì (lenta +1:05/km, lungo +1:15, ripetute
+da 400 m −0:25), il lungo parte dal suo e cresce di 1 km a settimana, la
+lenta è circa metà del lungo; «Your paces» li mostra prima della scheda. In
+«Draw» il giorno di corsa dice ritmo e tempo; a fine ciclo, se le corse
+salvate delle ultime 4 settimane dicono un ritmo più veloce, «Your runs say
+5:20/km over 10 km: update the paces?» li cambia solo col sì.
+`runPace.ts`, `RunnerStep.tsx`.
+
+**Il pianificatore completo** (TASK-461, ADR-0371): un piano nuovo mescola
+sempre almeno due sport (scelta dell'utente del 2026-11-11, «Almeno due,
+sempre»): palestra, corpo libero, corsa, camminata e hike, bici, nuoto e
+canoa, montagna. Un piano può portare a un obiettivo (`target`): una
+distanza di uno sport (corsa 5–42,2 km, bici 30–150 km, nuoto 1–5 km…) o la
+salita di una gita in montagna (500–2000 m), in una data o «Quando sono
+pronto», fino a 24 settimane. I giorni di corsa restano `run`; quelli degli
+altri sport sono `outing` (camminata svelta, uscita in bici, serie in
+vasca, uscita in salita), fatti nel calendario da un'attività del loro
+sport quel giorno. Il nome del giorno dice sport e misura («Long ride · 30
+km»), così anche un'app di prima, che non mostra «Today» per un giorno
+fuori, nella lista dice il vero. Il resto (le domande della guida, «Oggi»
+oltre il massimo di Draw, il promemoria alle 8) è nel task file.
+
+**L'ingresso e il corpo libero** (TASK-461 A2). «New plan» apre prima
+«What do you want to train?» (in italiano «Cosa vuoi allenare?»): Palestra,
+Corpo libero e Corsa si scelgono, almeno due («Next · 2 chosen»; con uno
+solo il tasto resta spento); «Toward a distance» e «Mountains» dicono «Soon».
+All'apertura sono scelti corpo libero e corsa. Una scheda di sola palestra
+non si può più fare da nuova; le schede di prima si aprono come prima, senza
+ingresso. Poi i cinque passi:
+1. senza palestra gli obiettivi sono quelli del corpo libero: «More muscle»
+   4 × 12 recupero 60 s, «More strength» 5 × 6 con gli esercizi più duri
+   recupero 2 min, «Tone up» 3 × 15 recupero 30 s, «Get back in shape» 3 ×
+   10 recupero 60 s, quattro esercizi; col corpo libero anche «What do you
+   have?»: niente, una sbarra (trazioni), sbarra e parallele (dip);
+2. «How many days for each sport?»: una riga di giorni per sport, già
+   alternati col riposo in mezzo (corpo libero lun-mer-ven, corsa mar-sab);
+   un giorno toccato passa allo sport dopo, poi al riposo;
+3. il corpo libero è «Bodyweight · A» e «· B» in turno, tutto il corpo
+   (squat a corpo libero, piegamenti, affondi, ponte glutei, plank; B
+   affondi, piegamenti o dip, trazioni supine o superman, mountain climber,
+   plank laterale); «More strength» usa split squat bulgaro e, con la
+   sbarra, trazioni e dip. Alla sbarra e alle parallele metà ripetizioni,
+   almeno 5 (3 × 15 piegamenti, 3 × 8 trazioni). Senza kg: la nota dice
+   l'attrezzo;
+4. senza palestra i modi sono «More each week», A / B e «Always the same».
+   In «More reps each week» (anche nelle schede di palestra) un esercizio
+   senza kg cresce di una ripetizione a settimana, 5 s se tenuto; l'ultima
+   settimana di un ciclo di 3 o più ha una serie in meno coi valori della
+   settimana prima; il ciclo dopo riparte da dove è arrivato (10, 11, 12,
+   più leggera, 13…). Scelta dell'utente del 2026-11-12, «Sì, così», anche
+   per le schede già fatte; un esercizio coi kg fa come prima.
+Un giorno di corpo libero è uno fatto solo di esercizi senza attrezzi della
+palestra (`bodyweight.ts`): così la guida riconosce i giorni di ogni sport
+quando si cambiano. In italiano la scheda di più settimane è il «piano»
+(«Nuovo piano», «I miei piani»); il singolo allenamento resta «scheda».
+`SportsDoor.tsx`, `bodyweight.ts`.
+
+**Distanza e montagna nella guida** (TASK-461 B2b/C2). L'ingresso offre
+anche Corsa («verso 5, 10, 21 o 42 km»), Camminata e hike, Bici, Nuoto e
+canoa, Montagna; se ne sceglie più d'uno, il primo ha la meta e gli altri
+restano «tenermi in forma» (scelta dell'utente del 2026-11-12, «Più
+d'uno»). Per quel primo sport: «Dove vuoi arrivare?» (le distanze
+proposte, «Altro», «Solo tenermi in forma»; per il nuoto piscina o acque
+libere) o «Che gita vuoi fare?» (500–2000 m di salita); «Dove sei oggi?»
+(il più lungo dell'ultimo mese, già scritto dalle attività, o «Comincio da
+zero»); dopo i giorni, «Per quando?» (le settimane le conta il piano, o una
+data: troppo vicina, «Per 10 km servono 8 settimane, ne hai 5» con «Arriva
+a 8 km» e «Sposta la data»). La corsa parte da «Solo tenermi in forma», come
+i giorni di corsa di prima, coi ritmi di TASK-452. Il piano mostra la scala
+(«Verso i 60 km · 11 settimane»), i giorni fuori si cambiano con − e +.
+«Oggi» di un giorno fuori compare nella pagina «Palestra» e nella pagina
+«Draw» del suo sport: entro il massimo di «Draw» «Disegna 20 km» e
+«Registra libero», oltre «Draw disegna al massimo 30 km» con «Registra
+libero · 45 km» per primo; un giorno di salita «Cerca almeno 600 m di
+salita». «Ricordamelo alle 8» all'ultimo passo: una notifica del telefono
+alle 8 nei giorni dei piani (`planReminder.ts`). `TargetSteps.tsx`,
+`outingDay.ts`, `PlanTodayCard.tsx`, `OutingDayEditor.tsx`.
+
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
 In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una
@@ -241,6 +339,8 @@ il 2026-11-04 («Sì, approvo tutto»).
 | t_bar_row | T-bar row | Rematore T-bar | T-Bar-Rudern | Rowing T-bar | Remo en barra T | Back | L-M |
 | straight_arm_pulldown | Straight-arm pulldown | Pullover ai cavi | Überzüge am Kabel | Pull-over à la poulie | Pullover en polea | Back | L-S |
 | back_extension | Back extension | Hyperextension | Rückenstrecker | Extension lombaire | Hiperextensiones | Back | B-easy |
+| superman | Superman | Superman | Superman | Superman | Superman | Back | B-easy |
+| bodyweight_squat | Bodyweight squat | Squat a corpo libero | Kniebeuge ohne Gewicht | Squat au poids du corps | Sentadilla sin peso | Legs | B-easy |
 | back_squat | Squat | Squat | Kniebeuge | Squat | Sentadilla | Legs | L-big |
 | front_squat | Front squat | Front squat | Frontkniebeuge | Squat avant | Sentadilla frontal | Legs | L-M |
 | smith_squat | Smith machine squat | Squat al multipower | Kniebeuge an der Multipresse | Squat à la Smith machine | Sentadilla en multipower | Legs | L-M |
@@ -253,6 +353,7 @@ il 2026-11-04 («Sì, approvo tutto»).
 | bulgarian_split_squat | Bulgarian split squat | Squat bulgaro | Bulgarische Kniebeuge | Squat bulgare | Sentadilla búlgara | Legs | L-XS |
 | step_up | Step-up | Step-up | Step-ups | Step-up | Subidas al cajón | Legs | L-XS |
 | hip_thrust | Hip thrust | Hip thrust | Hip Thrust | Hip thrust | Hip thrust | Legs | L-big |
+| glute_bridge | Glute bridge | Ponte glutei | Glute Bridge | Pont fessier | Puente de glúteos | Legs | B-easy |
 | glute_machine | Glute machine | Glute machine | Gesäßmaschine | Machine à fessiers | Máquina de glúteos | Legs | L-M |
 | hip_abduction | Hip abduction machine | Abductor machine | Abduktorenmaschine | Machine à abducteurs | Máquina de abductores | Legs | L-M |
 | hip_adduction | Hip adduction machine | Adductor machine | Adduktorenmaschine | Machine à adducteurs | Máquina de aductores | Legs | L-M |
@@ -289,6 +390,7 @@ il 2026-11-04 («Sì, approvo tutto»).
 | plank | Plank | Plank | Unterarmstütz | Gainage | Plancha | Core | T |
 | side_plank | Side plank | Plank laterale | Seitstütz | Gainage latéral | Plancha lateral | Core | T |
 | wall_sit | Wall sit | Sedia al muro | Wandsitzen | Chaise | Sentadilla isométrica en pared | Core | T |
+| mountain_climber | Mountain climber | Mountain climber | Bergsteiger | Grimpeur | Escaladores | Core | T |
 | power_clean | Power clean | Girata al petto | Umsetzen | Épaulé | Cargada | Full body | L-M |
 | snatch | Snatch | Strappo | Reißen | Arraché | Arrancada | Full body | L-M |
 | kettlebell_swing | Kettlebell swing | Swing con kettlebell | Kettlebell-Swing | Swing kettlebell | Swing con kettlebell | Full body | L-S |
@@ -311,9 +413,16 @@ il 2026-11-04 («Sì, approvo tutto»).
 | arm_ergometer | Arm bike | Ergometro per braccia | Armergometer | Ergomètre à bras | Ergómetro de brazos | Cardio | C-time (tempo, livello) |
 | jump_rope | Jump rope | Salto della corda | Seilspringen | Corde à sauter | Comba | Cardio | C-time (tempo) |
 
-91 esercizi; un nome libero («Add "{name}"») per quello che manca, con il
+95 esercizi; un nome libero («Add "{name}"») per quello che manca, con il
 tipo scelto da chi lo scrive. Le aggiunte al catalogo dopo il task sono righe
 nuove qui e nel file del catalogo dell'app.
+
+TASK-461 (ADR-0371) aggiunge quattro esercizi a corpo libero per i piani
+senza attrezzi: `superman`, `bodyweight_squat`, `glute_bridge`,
+`mountain_climber` (scelta dell'utente del 2026-11-11, «Sì, quattro nuovi»;
+nomi e guide approvati lo stesso giorno). Prima il server (A1), poi l'app
+(A2), con omino e guida; un'app che non li ha ancora li mostra come un
+esercizio dal nome libero (sotto).
 
 ## Il post nel Feed (parte D)
 

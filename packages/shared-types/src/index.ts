@@ -15,7 +15,9 @@ import {
   TRACKLESS_SPORTS,
 } from "./sports/index.ts";
 import type { GymLevel } from "./gym.ts";
+import type { FlightSplit } from "./flightParts.ts";
 import type { SkiDescents } from "./skiParts.ts";
+import type { SleepSummary } from "./sleep.ts";
 
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
@@ -1121,16 +1123,28 @@ export const CYCLING_BEST_DISTANCES = [
 /** On inline skates (TASK-380, ADR-0324): a run's races, bests of their own. */
 export const INLINE_SKATING_BEST_DISTANCES = ["5k", "10k", "half", "marathon"] as const;
 
+/** In a wheelchair or pushing a stroller (TASK-414, ADR-0343, the user's
+ * choice 7): bests of its own over 1 and 5 km. */
+export const WHEELCHAIR_BEST_DISTANCES = ["1k", "5k"] as const;
+
 /**
  * The fastest stretch of a distance inside any run of the account, private
  * ones too (TASK-368): moving seconds, the pauses left out.
  */
 export interface PersonalBest {
-  /** A gravel or an MTB ride's bests are their own (TASK-378, ADR-0322), and
-   * a skate's (TASK-380, ADR-0324). */
-  sport: "running" | "cycling" | "gravel_biking" | "mountain_biking" | "inline_skating";
+  /** A gravel or an MTB ride's bests are their own (TASK-378, ADR-0322), a
+   * skate's (TASK-380, ADR-0324) and a wheelchair's (TASK-414, ADR-0343). */
+  sport:
+    | "running"
+    | "cycling"
+    | "gravel_biking"
+    | "mountain_biking"
+    | "inline_skating"
+    | "wheelchair";
   distance:
-    (typeof RUNNING_BEST_DISTANCES)[number] | (typeof CYCLING_BEST_DISTANCES)[number];
+    | (typeof RUNNING_BEST_DISTANCES)[number]
+    | (typeof CYCLING_BEST_DISTANCES)[number]
+    | (typeof WHEELCHAIR_BEST_DISTANCES)[number];
   distance_m: number;
   seconds: number;
   /** When the run it was made in began: its day. */
@@ -1384,6 +1398,28 @@ interface DrawingFields {
    * parts; missing from an API before it.
    */
   ski_descents?: SkiDescents | null;
+  /**
+   * A race on foot and in the air (hike & fly, TASK-305 part R6a,
+   * flightParts.ts): each kind added up. Null for any other run and for a
+   * flight with no part on foot; missing from an API before it.
+   */
+  flight_split?: FlightSplit | null;
+  /**
+   * «Sleep last night» (TASK-467 part B1b, sleep.ts): the night before the
+   * activity, while its owner shows it in the post, in every list of posts
+   * and in the drawing whole, so that nothing more is asked for it. Null
+   * for a post without one and for one whose owner hides it, to the owner
+   * too (GET /me/activities/{key}/sleep has the switch); missing from an
+   * API before it.
+   */
+  sleep?: SleepSummary | null;
+  /**
+   * The drawing can be opened by its link on the site, without an account
+   * (TASK-455 part C, PostLink): it is for everyone, it has a line, and its
+   * owner leaves «Links to my posts» on. The app shows «Share link» only
+   * then, on one's own post too. Missing from an API before it: no link.
+   */
+  linkable?: boolean;
 }
 
 /** One drawing of GET /users/{public_id}/drawings. */
@@ -1452,7 +1488,46 @@ export type CommentReason = (typeof COMMENT_REASONS)[number];
  */
 export interface CommentRequest {
   text: string;
+  /**
+   * The comment of this drawing these words answer, a reply too (TASK-454):
+   * they go under its comment. Left out, a comment of the drawing.
+   */
+  reply_to?: string;
 }
+
+/**
+ * The reactions to a comment (TASK-454, ADR-0377), in the order the app
+ * shows them: those of a drawing without the MuW heart, which is a
+ * drawing's only. Codes, never the emoji: the app draws them.
+ */
+export const COMMENT_REACTION_KINDS = [
+  "fire",
+  "clap",
+  "strong",
+  "laugh",
+  "wow",
+] as const;
+export type CommentReactionKind = (typeof COMMENT_REACTION_KINDS)[number];
+
+/** PUT /comments/{id}/reaction: one for each member on a comment. */
+export interface CommentReactionRequest {
+  kind: CommentReactionKind;
+}
+
+/**
+ * The reactions of a comment as who asks sees them: with each comment, and
+ * the answer of PUT and DELETE /comments/{id}/reaction.
+ */
+export interface CommentReactions {
+  /** How many of each kind, all five, zero included. */
+  counts: Record<CommentReactionKind, number>;
+  total: number;
+  /** The reaction of who asks; null when it left none. */
+  mine: CommentReactionKind | null;
+}
+
+/** The replies that come with their comment when the threads are asked for. */
+export const COMMENT_REPLIES_SHOWN = 2;
 
 /** One comment under a drawing, as who asks sees it. */
 export interface Comment {
@@ -1464,14 +1539,37 @@ export interface Comment {
   created_at: string;
   /** Who asks may delete it: it wrote it, or it owns the drawing. */
   deletable: boolean;
+  // What follows came with the replies (TASK-454): an API from before does
+  // not send it.
+  /** The comment a reply stands under; null for a comment. */
+  parent_id?: string | null;
+  /**
+   * Who a reply to a reply answers, shown as «@name» before its words; null
+   * for the others, and when who asks does not see that member.
+   */
+  mention?: DrawingAuthor | null;
+  /** How many replies who asks reads under it; 0 for a reply. */
+  reply_count?: number;
+  /**
+   * With `?threads=true`, the oldest COMMENT_REPLIES_SHOWN of them, the
+   * others from GET /comments/{id}/replies; null when the threads were not
+   * asked for, and for a reply.
+   */
+  replies?: Comment[] | null;
+  reactions?: CommentReactions;
 }
 
-/** GET /drawings/{id}/comments: a page, the oldest first. */
+/**
+ * GET /drawings/{id}/comments: a page, the oldest first. With
+ * `?threads=true` the comments only, each with its first replies; without,
+ * the replies among the comments by time, as before them (TASK-454). GET
+ * /comments/{id}/replies: a page of the replies of a comment.
+ */
 export interface CommentsPage {
   comments: Comment[];
   /** The `cursor` of the next page; null on the last one. */
   next: string | null;
-  /** How many comments the drawing has, on every page. */
+  /** How many comments and replies there are, on every page. */
   total: number;
 }
 
@@ -2596,11 +2694,13 @@ export interface MessageDrawing {
 /**
  * A message's attachment: a photo or video sent first with POST
  * /me/message-media (the file's bytes as the body, Content-Type image/jpeg,
- * image/png, video/mp4 or video/quicktime), or a drawing. One of the two.
+ * image/png, video/mp4 or video/quicktime), a drawing, or a post (TASK-455).
+ * One of them.
  */
 export type MessageAttachmentRequest =
-  | { media_id: string; drawing?: undefined }
-  | { drawing: MessageDrawing; media_id?: undefined };
+  | { media_id: string; drawing?: undefined; post_id?: undefined }
+  | { drawing: MessageDrawing; media_id?: undefined; post_id?: undefined }
+  | MessagePostRequest;
 
 /** POST /me/message-media (201): the file kept, to send within the hour. */
 export interface MessageMedia {
@@ -2631,7 +2731,8 @@ export interface MessageDrawingCard {
 
 /** What a message carries besides its text. */
 export interface MessageAttachment {
-  kind: MessageAttachmentKind;
+  /** `post` (MESSAGE_POST_KIND) only for an app that says it reads one. */
+  kind: MessageAttachmentKind | typeof MESSAGE_POST_KIND;
   /** A photo's or a video's: GET /message-media/{media_id}, with the key
    * and the token. Null for a drawing and a video expired. */
   media_id: string | null;
@@ -2643,14 +2744,104 @@ export interface MessageAttachment {
   /** A video MESSAGE_VIDEO_DAYS after its message: «This video has expired.» */
   expired: boolean;
   drawing: MessageDrawingCard | null;
+  /** A post's card (TASK-455), with the kind MESSAGE_POST_KIND; null for
+   * any other attachment, and for a post who asks may not open, or gone:
+   * «This post is no longer available.» Absent from an API of before. */
+  post?: MessagePostCard | null;
+}
+
+// --- The link of a post (TASK-455 part C, ADR-0382) ---
+
+/** Where the link of a post leads: this, then the drawing's id. The page
+ * reads the id after the «#», which no server is sent. */
+export const POST_LINK_PAGE = "https://getmuw.app/p/#";
+
+/**
+ * GET /post?id=<the drawing's id>: what the link of a post shows, asked by
+ * the page of the site with no account and no API key. Only a drawing every
+ * member sees, of an owner who leaves «Links to my posts» on; any other is
+ * 404, as an id that is not there. Never the photos, the comments, the
+ * description, the place nor a time.
+ */
+export interface PostLink {
+  /** The drawing's. */
+  id: string;
+  /** Who drew it. */
+  username: string;
+  /** Its owner's; null: none. */
+  title: string | null;
+  shape: string | null;
+  word: string | null;
+  /** As in a drawing: what its route draws without a shape or a word. */
+  route_title: string | null;
+  distance_m: number;
+  activity: string;
+  rotation_deg: number | null;
+  /** The line as every member sees it already, whole. */
+  track: LatLon[];
+}
+
+/**
+ * GET and PUT /me/post-links: «Links to my posts», on from the start. Off,
+ * no link to the account's drawings works, its owner's own included, and
+ * none of them is `linkable`.
+ */
+export interface PostLinksSwitch {
+  post_links: boolean;
+}
+
+// --- A post in a private message (TASK-455, ADR-0382) ---
+
+/**
+ * The kind of an attachment that is a post: a pointer to a drawing somebody
+ * published, never a copy. Only an app that says READS_MESSAGE_POST receives
+ * it, so it is not among MESSAGE_ATTACHMENT_KINDS, which every app that asks
+ * `?with=attachments` reads; the others read «[Post]» before the text.
+ */
+export const MESSAGE_POST_KIND = "post";
+/** Said in the header X-MuW-Reads, among the kinds the app reads, by an app
+ * that shows a post attached. An API of before leaves it out. */
+export const READS_MESSAGE_POST = "post";
+
+/** A post to send: the id of a drawing who sends sees. 404 for one it does
+ * not see; 422 for its own that only it sees. */
+export interface MessagePostRequest {
+  post_id: string;
+  media_id?: undefined;
+  drawing?: undefined;
+}
+
+/**
+ * A post as the conversation shows it to who asks. The API answers it at
+ * every reading only while who asks may open the post itself (who can see
+ * it, a follow accepted, no block): nothing of it is kept in the message.
+ * GET /drawings/{id} has it whole.
+ */
+export interface MessagePostCard {
+  /** The drawing's. */
+  id: string;
+  author: Person;
+  /** Its owner's; null: none. */
+  title: string | null;
+  shape: string | null;
+  word: string | null;
+  style: string | null;
+  /** As in a drawing: what its route draws without a shape or a word. */
+  route_title: string | null;
+  distance_m: number;
+  activity: string;
+  rotation_deg: number | null;
+  /** At most 64 points of its line; none for a post without one. */
+  preview: LatLon[];
 }
 
 /**
  * What may be attached in a conversation now. "video" leaves while the
- * server is full of them (POST /me/message-media is then 507).
+ * server is full of them (POST /me/message-media is then 507). An app that
+ * says READS_MESSAGE_POST also finds MESSAGE_POST_KIND here (TASK-455).
  */
 export interface AttachmentsAllowed {
-  kinds: MessageAttachmentKind[];
+  kinds: (MessageAttachmentKind | typeof MESSAGE_POST_KIND)[];
   video_max_s: number;
   video_max_bytes: number;
   photo_max_bytes: number;
@@ -2808,6 +2999,8 @@ export interface StyleShop {
 
 export * from "./gym.ts";
 export * from "./poolSwim.ts";
+export * from "./activityCalendar.ts";
+export * from "./flightBests.ts";
 export * from "./liveShare.ts";
 
 /**
@@ -2910,3 +3103,5 @@ export * from "./skiDays.ts";
 export * from "./skiSeason.ts";
 export * from "./resortFollows.ts";
 export * from "./skiParts.ts";
+export * from "./flightParts.ts";
+export * from "./sleep.ts";

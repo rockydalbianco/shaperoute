@@ -10,21 +10,20 @@ test("another's profile shows only the badges earned, «Winner» first", async (
   expect(screen.queryByTestId("badge-ten_drawings")).toBeNull();
 });
 
-test("one's own shows the badges still to earn too, said as not earned", async () => {
-  await render(<BadgeRow winner={false} badges={["first_drawing"]} own />);
-  expect(screen.getByLabelText("First drawing")).toBeEnabled();
-  const ten = screen.getByLabelText("Not earned yet: 10 drawings");
-  expect(ten).toBeDisabled();
-  expect(screen.getByLabelText("Not earned yet: 30 km drawing")).toBeOnTheScreen();
+test("only the badges earned are under the name: none dimmed (TASK-457)", async () => {
+  await render(<BadgeRow winner={false} badges={["first_drawing"]} />);
+  expect(screen.getByLabelText("First drawing")).toBeOnTheScreen();
+  expect(screen.queryByTestId("badge-ten_drawings")).toBeNull();
+  expect(screen.queryByLabelText(/Not earned yet/)).toBeNull();
 });
 
-test("nothing earned on another's profile: no row", async () => {
+test("nothing earned: no row", async () => {
   await render(<BadgeRow winner={false} badges={[]} />);
   expect(screen.queryByTestId("badge-row")).toBeNull();
 });
 
-test("an API older than the badges: «Winner» alone, even on one's own", async () => {
-  await render(<BadgeRow winner badges={null} own />);
+test("an API older than the badges: «Winner» alone", async () => {
+  await render(<BadgeRow winner badges={null} />);
   expect(screen.getByTestId("badge-row")).toHaveTextContent("🏆Winner");
   expect(screen.queryByTestId("badge-first_drawing")).toBeNull();
 });

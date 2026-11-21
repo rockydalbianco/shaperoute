@@ -78,7 +78,7 @@ def test_the_fixture_is_the_catalog() -> None:
 
 def test_the_catalog_is_the_one_of_the_docs() -> None:
     rows = _catalog_rows()
-    assert len(rows) == len(EXERCISES) == len(EXERCISES_BY_KEY) == 91
+    assert len(rows) == len(EXERCISES) == len(EXERCISES_BY_KEY) == 95
     for cells, exercise in zip(rows, EXERCISES, strict=True):
         key, group, kind_scale = cells[0], cells[6], cells[7]
         assert exercise.key == key

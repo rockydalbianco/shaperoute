@@ -55,9 +55,10 @@ function heightOf(track: Track, index: number): number | null {
 }
 
 /** The track as it climbs and drops, from turn to turn: a turn is where
- * the height, after going one way, has gone back the other by `TURN_M`.
+ * the height, after going one way, has gone back the other by `turnM`
+ * (`TURN_M` on a ski day; a tour's phases take a wider one, TASK-415 B).
  * Fixes without a height belong to the stretch they are in. */
-function legs(track: Track): { leg: Leg; up: boolean }[] {
+export function legs(track: Track, turnM = TURN_M): { leg: Leg; up: boolean }[] {
   const found: { leg: Leg; up: boolean }[] = [];
   let start = -1;
   let extreme = -1;
@@ -75,7 +76,7 @@ function legs(track: Track): { leg: Leg; up: boolean }[] {
     const top = heightOf(track, extreme) as number;
     if (up === null) {
       // The first way the day goes, once it has gone far enough.
-      if (Math.abs(height - top) >= TURN_M) {
+      if (Math.abs(height - top) >= turnM) {
         up = height > top;
         extreme = index;
       }
@@ -83,7 +84,7 @@ function legs(track: Track): { leg: Leg; up: boolean }[] {
     }
     if (up ? height >= top : height <= top) {
       extreme = index;
-    } else if (Math.abs(height - top) >= TURN_M) {
+    } else if (Math.abs(height - top) >= turnM) {
       found.push({ leg: { from: start, to: extreme }, up });
       start = extreme;
       extreme = index;
@@ -109,7 +110,7 @@ function metresAndMs(track: Track, leg: Leg): { metres: number; ms: number } {
 }
 
 /** Whether a climbing stretch is a lift: long, fast up and steady. */
-function isLift(track: Track, leg: Leg): boolean {
+export function isLift(track: Track, leg: Leg): boolean {
   const { ms } = metresAndMs(track, leg);
   const rise = (heightOf(track, leg.to) ?? 0) - (heightOf(track, leg.from) ?? 0);
   if (ms < LIFT_MIN_MS || rise / (ms / 1000) < LIFT_MIN_RISE_MPS) {
@@ -131,8 +132,8 @@ function isLift(track: Track, leg: Leg): boolean {
 }
 
 /** The metres dropped along a stretch, from turn to turn as `legs` reads
- * them: the climbs between take nothing away. */
-function droppedM(track: Track, leg: Leg): number {
+ * them with the same `turnM`: the climbs between take nothing away. */
+export function droppedM(track: Track, leg: Leg, turnM = TURN_M): number {
   let dropped = 0;
   let from: number | null = null;
   for (let index = leg.from; index <= leg.to; index += 1) {
@@ -142,7 +143,7 @@ function droppedM(track: Track, leg: Leg): number {
     }
     if (from === null || height > from) {
       from = height;
-    } else if (from - height >= TURN_M) {
+    } else if (from - height >= turnM) {
       dropped += from - height;
       from = height;
     }

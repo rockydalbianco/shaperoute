@@ -1,8 +1,13 @@
 import drawingDetails from "@shaperoute/shared-types/fixtures/drawing-details.json";
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
+import reactions from "@shaperoute/shared-types/fixtures/reactions.json";
 import runStats from "@shaperoute/shared-types/fixtures/run-stats.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
-import type { FeedPost as Post, Session } from "@shaperoute/shared-types";
+import type {
+  FeedPost as Post,
+  ReactionsSummary,
+  Session,
+} from "@shaperoute/shared-types";
 import {
   fireEvent,
   render,
@@ -13,6 +18,7 @@ import {
 
 import type { AccountState } from "../account/useAccount";
 import { FollowsContext } from "../social/followsDoor";
+import { ReactionsContext, type ReactionsDoor } from "../social/reactionsDoor";
 import { EditRunContext } from "./editRunDoor";
 import { forgetFeedMaps } from "./FeedMaps";
 import { shownPost } from "./feedPosts";
@@ -38,7 +44,19 @@ const OTHERS = {
   },
 } as Post;
 
-async function show(post: Post, edit = jest.fn()) {
+/** No reactions to read, as on a page shown alone: «Like» opens nothing. */
+const NO_REACTIONS: ReactionsDoor = {
+  of: async () => null,
+  leave: async () => null,
+  remove: async () => null,
+};
+/** Seven reactions read, one of them one's own. */
+const SEVEN: ReactionsDoor = {
+  ...NO_REACTIONS,
+  of: async () => ({ kind: "ok", value: reactions as ReactionsSummary }),
+};
+
+async function show(post: Post, edit = jest.fn(), door = NO_REACTIONS) {
   const onClose = jest.fn();
   await render(
     <FollowsContext.Provider
@@ -48,9 +66,13 @@ async function show(post: Post, edit = jest.fn()) {
         openProfile: jest.fn(),
       }}
     >
-      <EditRunContext.Provider value={(line) => (line.length >= 2 ? edit : undefined)}>
-        <PostPage post={shownPost(post)} onClose={onClose} />
-      </EditRunContext.Provider>
+      <ReactionsContext.Provider value={door}>
+        <EditRunContext.Provider
+          value={(line) => (line.length >= 2 ? edit : undefined)}
+        >
+          <PostPage post={shownPost(post)} onClose={onClose} />
+        </EditRunContext.Provider>
+      </ReactionsContext.Provider>
     </FollowsContext.Provider>,
   );
   return { onClose, edit };
@@ -111,12 +133,15 @@ test("on one's own post: share, and the handle of the settings", async () => {
   expect(screen.queryByTestId("post-settings")).toBeNull();
 });
 
-test("«Like» opens the six reactions over the bar, and closes them", async () => {
-  await show(OTHERS);
+// TASK-454: the six hang over the bar and move nothing; a strip used to
+// open above it and push the four buttons down.
+test("«Like» hangs the six reactions over the bar; a tap elsewhere closes them", async () => {
+  await show(OTHERS, jest.fn(), SEVEN);
+  expect(await screen.findByText("Like · 7")).toBeOnTheScreen();
   expect(screen.queryByTestId("post-reactions")).toBeNull();
   await fireEvent.press(screen.getByTestId("post-like"));
-  expect(screen.getByTestId("post-reactions")).toBeOnTheScreen();
-  await fireEvent.press(screen.getByTestId("post-like"));
+  expect(screen.getByTestId("post-reactions")).toHaveStyle({ position: "absolute" });
+  await fireEvent.press(screen.getByTestId("post-reactions-outside"));
   expect(screen.queryByTestId("post-reactions")).toBeNull();
 });
 
@@ -135,7 +160,8 @@ test("a tap on the drawing opens it on the map, as from the card before", async 
   const onMap = jest.fn();
   await render(<PostPage post={shownPost(OTHERS)} onClose={jest.fn()} onMap={onMap} />);
   await fireEvent.press(screen.getByTestId("post-map"));
-  expect(onMap).toHaveBeenCalledTimes(1);
+  // The tap waits to know it is alone (TASK-454 part B).
+  await waitFor(() => expect(onMap).toHaveBeenCalledTimes(1));
 });
 
 // --- The figures of the post (TASK-410 part D) ---

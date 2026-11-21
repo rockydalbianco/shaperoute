@@ -22,3 +22,7 @@ class Activity:
     # Drawn on open snow, with no network: as on the water, where the shape
     # fits on the snow one may walk on it is the route (snow.py, ADR-0342).
     on_snow: bool = False
+    # The shapes of the catalogue it draws, and nothing else: no other
+    # shape, no word, no image or outline (TASK-414, ADR-0343). None: every
+    # one the activity's place allows.
+    shapes: tuple[str, ...] | None = None

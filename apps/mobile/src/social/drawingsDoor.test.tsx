@@ -154,3 +154,47 @@ test("a session that ended leaves what waits for the account's next sign-in", as
   expect(sessionEnded).toHaveBeenCalledWith(signedIn.token);
   expect(loadDrawingOutbox()).toEqual([{ owner: OWNER, key: "a", ...ON }]);
 });
+
+test("the titles of the posts come with the runs others see, and follow what is chosen", async () => {
+  const fetchFn = answers(
+    {
+      status: 200,
+      body: {
+        drawings: [
+          { ...myDrawing, key: "a", title: "Star", public: true },
+          { ...myDrawing, key: "b", title: null, public: false, published_at: null },
+          // Spaces alone are no title.
+          { ...myDrawing, key: "c", title: "  ", public: false, published_at: null },
+        ],
+      },
+    },
+    { status: 200, body: { ...myDrawing, key: "b", title: "Heart", public: false } },
+    { status: 200, body: { ...myDrawing, key: "a", title: null, public: true } },
+  );
+  const { result: door } = await renderHook(() =>
+    useDrawingsOf(URL, account(), doors, options(fetchFn)),
+  );
+  expect([...(door.current.postTitles ?? [])]).toEqual([]);
+
+  await act(async () => {
+    door.current.refreshMine();
+  });
+  expect([...(door.current.postTitles ?? [])]).toEqual([["a", "Star"]]);
+  expect([...door.current.publicKeys]).toEqual(["a"]);
+
+  // A title given on a run's card is the list's at once, with no new asking.
+  await act(async () => {
+    expect(await door.current.choose("b", OFF)).toMatchObject({ kind: "saved" });
+  });
+  expect(door.current.postTitles?.get("b")).toBe("Heart");
+  expect(door.current.postTitles?.get("a")).toBe("Star");
+
+  // And one taken away is gone.
+  await act(async () => {
+    expect(await door.current.choose("a", { ...ON, title: null })).toMatchObject({
+      kind: "saved",
+    });
+  });
+  expect(door.current.postTitles?.has("a")).toBe(false);
+  expect([...door.current.publicKeys]).toEqual(["a"]);
+});

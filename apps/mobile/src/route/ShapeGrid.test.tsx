@@ -52,3 +52,15 @@ test("the chosen tile says so", async () => {
   expect(screen.getByRole("button", { name: "star" })).toBeSelected();
   expect(screen.getByRole("button", { name: "heart" })).not.toBeSelected();
 });
+
+// TASK-444: a horse was an emoji in colours beside a white circle.
+test("every shape is shown by its outline, none by an emoji", async () => {
+  await render(<ShapeGrid chosen={null} onPick={() => {}} />);
+  await fireEvent.press(screen.getByTestId("shape-grid-more"));
+  for (const shape of SHAPES) {
+    expect(
+      screen.getByTestId(`shape-glyph-${shape}`, { includeHiddenElements: true }),
+    ).toBeOnTheScreen();
+  }
+  expect(screen.queryByText(/\p{Extended_Pictographic}/u)).toBeNull();
+});

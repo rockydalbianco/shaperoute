@@ -161,7 +161,9 @@ test("«Create my plan» opens the guide once the sheet is down", async () => {
   await act(async () => {});
   expect(screen.queryByTestId("gym-intro")).toBeNull();
   expect(screen.getByTestId("plan-wizard")).toBeOnTheScreen();
-  expect(screen.getByText("STEP 1 OF 5")).toBeOnTheScreen();
+  // «What do you want to train?» first (TASK-461 A2).
+  expect(screen.getByText("NEW PLAN")).toBeOnTheScreen();
+  expect(screen.getByTestId("door-gym")).toBeOnTheScreen();
 });
 
 test("without an account, «Not now» only", async () => {

@@ -135,10 +135,13 @@ test("marks where a moved route begins, and frames it with the start", () => {
   expect(START_HERE_LABEL).toBe("Start here");
   expect(START_HERE_COLOR).toBe(color.startHere);
   expect(START_HERE_COLOR).not.toBe(ROUTE_COLOR);
-  expect(page).toContain(`.setText("${START_HERE_LABEL}")`);
-  expect(page).toContain(`new maplibregl.Marker({ color: "${START_HERE_COLOR}" })`);
+  // A flag in a disc with its words, no longer a pin and MapLibre's popup
+  // (TASK-443, `mapPageStartHere.test.ts`).
+  expect(page).toContain(`startLabel.textContent = "${START_HERE_LABEL}"`);
+  expect(page).toContain("new maplibregl.Marker({ element: element })");
+  expect(page).not.toContain("maplibregl.Popup");
   expect(page).toContain("setStartHere(message.startHere)");
-  expect(page).toContain("bounds.extend(marker.getLngLat())");
+  expect(page).toContain("bounds.extend(asked)");
   expect(page).toContain("setStartHere(null)");
 });
 

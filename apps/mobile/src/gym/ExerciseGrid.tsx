@@ -14,6 +14,8 @@ import { GYM_EXERCISES, type GymExercise, type GymGroup } from "./catalog";
 import { ExerciseFigure } from "./ExerciseFigure";
 import { groupName, GYM_GROUPS } from "./groups";
 import { MOVES, type MoveKey, moveOf } from "./moves";
+import { MuscleMap } from "./MuscleMap";
+import { musclesOf } from "./muscles";
 import type { Entry } from "./setKinds";
 
 /** The move on each group's tile (TASK-411 part E). */
@@ -31,19 +33,8 @@ export const GROUP_MOVE: Readonly<Record<GymGroup, MoveKey>> = {
 /** The side of the figure on a group's tile and on an exercise's. */
 const GROUP_FIGURE = 52;
 const EXERCISE_FIGURE = 52;
-
-/** The sign of each group on its tile (TASK-411 part A, the user's «Gruppi,
- * poi macchinari»). */
-export const GROUP_EMOJI: Readonly<Record<GymGroup, string>> = {
-  chest: "🫁",
-  back: "🧗",
-  legs: "🦵",
-  shoulders: "🤸",
-  arms: "💪",
-  core: "🧘",
-  full_body: "🏋️",
-  cardio: "🏃",
-};
+/** The height of the body beside it, with the muscles worked (TASK-465). */
+const EXERCISE_BODY = 48;
 
 /** The exercises of `group`, in the catalog's order. */
 export function exercisesOf(group: GymGroup): GymExercise[] {
@@ -52,7 +43,9 @@ export function exercisesOf(group: GymGroup): GymExercise[] {
 
 /**
  * The eight groups of «+ Exercise» as big tiles, two a row (TASK-411 part
- * A, ADR-0341): the group's sign, its name and how many exercises it has.
+ * A, ADR-0341): the group's name, how many exercises it has and its line
+ * figure. The figure is the group's only sign (TASK-444): an emoji beside
+ * it was a second picture, in colours, of the same thing.
  */
 export function GroupGrid({
   language,
@@ -80,9 +73,6 @@ export function GroupGrid({
             testID={`group-${group}`}
           >
             <View style={styles.groupWords}>
-              <Text style={styles.emoji} importantForAccessibility="no">
-                {GROUP_EMOJI[group]}
-              </Text>
               <Text style={styles.name} numberOfLines={2}>
                 {name}
               </Text>
@@ -142,6 +132,7 @@ export function MachineGrid({
     <View style={styles.grid} testID={`machine-grid-${group}`}>
       {exercisesOf(group).map((exercise) => {
         const move = moveOf(exercise.key);
+        const worked = musclesOf(exercise.key);
         return (
           <View key={exercise.key} style={[styles.tile, styles.machine]}>
             <Pressable
@@ -150,7 +141,16 @@ export function MachineGrid({
               accessibilityRole="button"
               testID={`exercise-${exercise.key}`}
             >
-              {move !== null && <ExerciseFigure move={move} size={EXERCISE_FIGURE} />}
+              <View style={styles.pictures}>
+                {move !== null && <ExerciseFigure move={move} size={EXERCISE_FIGURE} />}
+                {worked !== null && (
+                  <MuscleMap
+                    worked={worked}
+                    height={EXERCISE_BODY}
+                    language={language}
+                  />
+                )}
+              </View>
               <Text style={styles.machineName} numberOfLines={3}>
                 {exercise.names[language]}
               </Text>
@@ -206,6 +206,11 @@ const styles = StyleSheet.create({
     padding: space.sm,
     paddingTop: space.md,
   },
+  pictures: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.xs,
+  },
   corner: {
     position: "absolute",
     top: space.xs,
@@ -229,9 +234,6 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
-  },
-  emoji: {
-    fontSize: fontSize.title,
   },
   name: {
     color: color.text,

@@ -1,0 +1,18 @@
+{
+  "id": "0b7e5a94-6c1d-4f38-8e2a-9d4c1f6b3a57",
+  "username": "cleo_draws",
+  "title": "Sunday star",
+  "shape": "star",
+  "word": null,
+  "route_title": null,
+  "distance_m": 4020,
+  "activity": "running",
+  "rotation_deg": null,
+  "track": [
+    [46.067, 11.1215],
+    [46.07, 11.123],
+    [46.071, 11.126],
+    [46.068, 11.127],
+    [46.067, 11.1215]
+  ]
+}

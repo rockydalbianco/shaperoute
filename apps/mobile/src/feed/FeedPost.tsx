@@ -22,6 +22,7 @@ import { NewLevels } from "../gym/NewLevels";
 import { useGymExercises } from "../gym/useGymExercises";
 import { isPoolLine, PoolTile } from "../pool/PoolTile";
 import { usePoolFigures } from "../pool/usePoolFigures";
+import { SleepLine } from "../health/SleepLine";
 import { t } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
 import { useLanguage } from "../i18n/useLanguage";
@@ -49,9 +50,11 @@ import { Tap } from "../ui/Tap";
 import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { useEditRunDoor } from "./editRunDoor";
+import { postSplit, postSplitLine } from "../air/flightSplit";
 import { isImportedPost, isShown } from "./feedPosts";
 import { PhotoViewer } from "./PhotoViewer";
 import { PostActions } from "./PostActions";
+import type { PostReactionsHandle } from "./PostReactions";
 import { gymPostEnergy, postEnergy } from "./postEnergy";
 import { FactsText, factsEnergy } from "./FactsText";
 import { summaryRows } from "./postSections";
@@ -59,6 +62,7 @@ import { drawingHeight, RouteMap } from "./RouteMap";
 import { SummaryBoxes } from "./SummaryBoxes";
 import type { SamplePost } from "./sampleFeed";
 import { turnedLine } from "./turnedLine";
+import { useDoubleTap } from "./useDoubleTap";
 
 export { drawingHeight, MAP_CREDIT } from "./RouteMap";
 
@@ -209,7 +213,16 @@ export function FeedPost({ post, width, onOpen }: Props) {
       }
     };
   }
-  const onPress = tapped(() => onOpen?.());
+  // Two taps on the picture are the post's super like (TASK-454 part B):
+  // asked of the reactions its row of actions reads. One tap waits to know
+  // it is alone, only where the row is: an example opens at once.
+  const reactions = useRef<PostReactionsHandle>(null);
+  const tap = useDoubleTap(
+    onOpen !== undefined && isShown(post)
+      ? () => reactions.current?.superLike()
+      : undefined,
+  );
+  const onPress = tapped(() => tap(() => onOpen?.()));
   if (blocked) {
     return null;
   }
@@ -258,10 +271,13 @@ export function FeedPost({ post, width, onOpen }: Props) {
         : ordered;
   // A photo's page is the one shown, a whole width each: the tap opens it.
   const onPhotoPress = tapped(() => {
+    // The photo that was tapped, whatever is shown once the wait is over.
     const item = pages[page];
-    if (item !== undefined && item.kind === "photo") {
-      setViewing(item.n);
-    }
+    tap(() => {
+      if (item !== undefined && item.kind === "photo") {
+        setViewing(item.n);
+      }
+    });
   });
   // Each page of the photos takes a tap itself (TASK-330): were the card
   // the one touched, iOS would not let the photos scroll inside it, and the
@@ -295,10 +311,12 @@ export function FeedPost({ post, width, onOpen }: Props) {
     setPage(shown);
     setReached((was) => Math.max(was, shown));
   }
-  const heard =
-    ago === ""
-      ? postFacts(post, exercises?.sets)
-      : `${ago} · ${postFacts(post, exercises?.sets)}`;
+  // A race on foot and in the air (TASK-305 part R6b): its two times.
+  const split = postSplit(post);
+  const splitText = split === null ? null : postSplitLine(split);
+  const facts = postFacts(post, exercises?.sets);
+  const withSplit = splitText === null ? facts : `${facts} · ${splitText}`;
+  const heard = ago === "" ? withSplit : `${ago} · ${withSplit}`;
   // A member's run may have no place found (TASK-118): then none is read.
   const label =
     city === ""
@@ -346,6 +364,11 @@ export function FeedPost({ post, width, onOpen }: Props) {
   const words = (
     <View style={styles.words}>
       <Text style={styles.title}>{post.title}</Text>
+      {splitText !== null && (
+        <Text style={styles.facts} testID="feed-flight-split">
+          {splitText}
+        </Text>
+      )}
       {!shown && (
         <FactsText
           style={styles.facts}
@@ -383,6 +406,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
         testID="feed-photo-words"
       >
         <Text style={styles.titleOnPhoto}>{post.title}</Text>
+        {splitText !== null && <Text style={styles.factsOnPhoto}>{splitText}</Text>}
         {!shown && (
           <FactsText
             style={styles.factsOnPhoto}
@@ -579,11 +603,17 @@ export function FeedPost({ post, width, onOpen }: Props) {
       {who}
       {card}
       <SummaryBoxes rows={summaryRows(post, units, exercises?.sets)} />
+      <SleepLine drawingId={post.drawing.id} sleep={post.drawing.sleep} />
       {menu !== null && <View style={styles.menu}>{menu}</View>}
       {onOpen !== undefined && (
         <>
           <Hairline />
-          <PostActions post={post} mine={mine} onEditRun={onEditRun} />
+          <PostActions
+            post={post}
+            mine={mine}
+            onEditRun={onEditRun}
+            reactionsHandle={reactions}
+          />
         </>
       )}
       {viewer}

@@ -20,6 +20,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useBackCloses } from "../ui/backLayers";
 import { Tap } from "../ui/Tap";
 import { inUnits } from "../units/format";
 import { useUnits } from "../units/useUnits";
@@ -99,6 +100,14 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
       ? collectionRows(catalog, states)
       : null;
   const opened = rows?.find((row) => row.collection.id === openId) ?? null;
+  // Android's «back» is the «←» of the page on screen.
+  const prizesShown =
+    active && collection && catalog !== null && prizesOpen && me !== null;
+  useBackCloses(prizesShown, () => setPrizesOpen(false));
+  useBackCloses(
+    active && collection && catalog !== null && !prizesShown && opened !== null,
+    () => setOpenId(null),
+  );
   return (
     <ScrollView
       style={styles.page}

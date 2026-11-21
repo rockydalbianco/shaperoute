@@ -54,7 +54,7 @@ test.each([
   ["fr", "Départ ici"],
 ] as const)("the page in «%s» says «%s» and names places in it", (language, label) => {
   const page = buildMapPage(language);
-  expect(page).toContain(`.setText(${JSON.stringify(label)})`);
+  expect(page).toContain(`startLabel.textContent = ${JSON.stringify(label)}`);
   expect(page).toContain(`"name:${language}"`);
   // The names are no longer Italian whatever the language.
   expect(page.includes('"name:it"')).toBe(language === "it");

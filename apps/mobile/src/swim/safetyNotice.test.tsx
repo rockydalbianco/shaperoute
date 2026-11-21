@@ -173,4 +173,6 @@ test("under every swim, the line the user approved", async () => {
   expect(SWIM_ROUTE_NOTE).toBe("Within 150 m of the shore. Never swim alone.");
   await render(<SwimRouteNote />);
   expect(screen.getByText(SWIM_ROUTE_NOTE)).toBeOnTheScreen();
+  // The sign of something to watch for, as a route's note has it (TASK-444).
+  expect(screen.getByTestId("note-icon-caution")).toBeOnTheScreen();
 });

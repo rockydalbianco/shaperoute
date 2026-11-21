@@ -174,9 +174,10 @@ TRACKLESS_ACTIVITIES: tuple[RunActivity, ...] = tuple(
     cast(RunActivity, sport.activity) for sport in API_SPORTS if sport.trackless
 )
 # Where a run comes from (TASK-312, ADR-0272): recorded by the app, or a file
-# of another app read on the phone. Only `muw` counts for the shape game and
-# the contest.
-RunSource = Literal["muw", "file"]
+# of another app read on the phone; `manual`, a workout at the gym written by
+# hand (TASK-484, ADR-0395), saved only by gym_sessions.py. Only `muw` counts
+# for the shape game and the contest.
+RunSource = Literal["muw", "file", "manual"]
 MUW: RunSource = "muw"
 
 
@@ -292,6 +293,8 @@ class ActivityRequestBody(BaseModel):
             raise ValueError("rotation_deg is the route's: there is none")
         if self.source != MUW and self.points is not None:
             raise ValueError("a run from another app followed no route of MuW")
+        if self.source == "manual":
+            raise ValueError("a workout written by hand is saved by /me/gym-sessions")
         if self.activity in TRACKLESS_ACTIVITIES:
             raise ValueError("a workout at the gym is saved by /me/gym-sessions")
         # As POST /track-scores checks them (schemas.py).

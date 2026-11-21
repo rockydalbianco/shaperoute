@@ -24,6 +24,7 @@ scelte, fra il 27 e il 28 ottobre 2026:
 | Un post di sole foto | da 1 a 3 foto dal rullino, anche quelle già messe su Instagram | C |
 | Gli allenamenti già sul telefono | Apple Salute (iOS), Health Connect (Android) | D, prima uno studio (§7) |
 | Le attività di un account esterno | un collegamento diretto a Garmin, Polar, Suunto, Coros, Wahoo, Strava… | E, prima uno studio (§8) |
+| Un allenamento in palestra già fatto | scritto a mano dal «+» del Feed («Gym workout»: esercizi, serie, pesi, giorno, ora, durata) | TASK-484, ADR-0395 (`sports/gym.md`) |
 
 **Instagram non si collega.** La sua API legge solo gli account Business o
 Creator, e solo dopo la revisione di Meta. Un post di Instagram, poi, è
@@ -111,6 +112,11 @@ Il file non si tiene: resta solo la corsa, come la tiene l'API.
 - **Il concorso** (TASK-299): la classifica prende solo i disegni di corse
   con `source = 'muw'`. Un post solo foto non ha corsa, quindi resta fuori
   da sé.
+- **La palestra scritta a mano** (TASK-484, ADR-0395, `source = 'manual'`):
+  fuori anche dai livelli e dalla classifica della palestra, dai badge,
+  da Apple Salute e dal giorno della scheda. Sotto «Imported» la sua
+  frase: «Workouts written by hand don't count for Play, contests, levels
+  or the leaderboard.»
 - **«Imported» si vede** nella scheda del Feed, nel post aperto e nella
   scheda di «My activities». Sotto il titolo del modulo: «Imported
   activities don't count for Play or contests.» *(testo da approvare)*.

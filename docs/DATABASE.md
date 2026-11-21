@@ -1385,6 +1385,62 @@ dopo la 0079 di TASK-475 A). **Un post di sole foto è un disegno senza corsa**:
   altri vogliono `published_at` pieno. Test in `test_photo_posts.py` e
   `test_photo_posts_seen.py`.
 
+Migrazione `0081_gym_by_hand.sql` (TASK-484 parte A, ADR-0395, `API.md`
+«Gym»; numero del Coordinatore: la prima entrata prende il primo libero). **Un allenamento in palestra
+scritto a mano**: il vincolo `runs_source_check` di 0034 accetta anche
+`manual`, che scrive solo `PUT /me/gym-sessions/{key}`. Nessuna colonna
+nuova, nessuna riga di prima cambia, nessun backfill. I livelli
+(`gym_levels.py`) leggono solo `source = 'muw'`, come già classifica,
+badge, concorso e gioco. Test in `test_gym.py`, `test_gym_levels.py` e
+`test_imported_runs.py`.
+
+Migrazione `0082_sleep_posts.sql` (TASK-467 parte E, «ADR-0380,
+precisazione E», `API.md` «Sleep»; numero del Coordinatore, dopo la 0081
+di TASK-484 A). **Il post di una notte di sonno è un disegno
+senza corsa che porta la sua notte**:
+
+- `drawings.sleep_night_id` (`bigint`, `ON DELETE CASCADE` su
+  `sleep_nights`): la notte di cui è il post. Vincolo
+  `drawings_sleep_post_check`: solo un disegno senza corsa ne ha una sua
+  (la notte di una corsa sta sulla corsa, `0072`), ed è pubblicato appena
+  nasce (`published_at` pieno: non aspetta una foto). Indice unico
+  `drawings_of_sleep_night`: un post per notte.
+- La funzione `sleep_night_left` della `0072` è riscritta: una notte resta
+  finché è nel profilo, una corsa la porta **o un post è suo**. Un trigger
+  nuovo, `drawings_sleep_night_deleted`, la chiama quando il post viene
+  cancellato, da chiunque: la notte va via se niente altro la pubblica.
+- Una richiesta di copia dei dati comprende i post del sonno: sono righe
+  di `drawings` con `sleep_night_id`, e le loro notti sono in
+  `sleep_nights` (le query del sonno della `0072` le trovano già).
+
+Migrazione `0083_gear.sql` (TASK-486 parte A, ADR-0393, `API.md`
+«Gear»; numero del Coordinatore, dopo la 0081 di TASK-484 e la 0082 di
+TASK-467 E1).
+**L'attrezzatura di un iscritto**:
+
+- **`gear`**: un attrezzo. `id` (`uuid`), `user_id` verso `users(id)` con
+  `ON DELETE CASCADE`; `kind` dalla lista di `gear.GearKind` (il `CHECK`
+  ha gli stessi nomi, un test lo legge); `brand` (1–40), `model` (1–80),
+  `name` (1–40), `bought_on` (dal 1950), `note` (1–500), `limit_m`
+  (1000–100 000 000); `off_profile` («Hide from profile»), `retired_at`
+  («Retire»), `hidden_at` (nascosto dall'email di una segnalazione),
+  `created_at`. Indice `(user_id, created_at)`.
+- **`gear_photos`**: una foto per attrezzo, `jpeg` com'è uscito da
+  `gear.gear_jpeg`, `updated_at` (la versione nell'indirizzo); via con
+  l'attrezzo.
+- **`activity_gear`**: `(run_id, gear_id)`, chiave primaria la coppia;
+  via con l'attività o con l'attrezzo. Indice su `gear_id` per i totali,
+  che si contano a ogni lettura da `runs.distance_m` e `runs.duration_s`
+  (nessun totale salvato che possa sbagliare).
+- **`gear_defaults`**: `(gear_id, activity)`, gli sport che partono con
+  l'attrezzo già scelto. `activity` sono i nomi di `runs.activity`,
+  controllati da `gear.py` e non da un `CHECK`: uno sport nuovo non chiede
+  una migrazione qui.
+- Il legame coi capi taggati (`drawing_outfit_tags.gear_id`) arriva con
+  la parte F, in una migrazione sua, insieme a `outfit_tags.py`.
+- **`reports.kind`** con `gear`. Nessuna riga di prima cambia, nessun
+  backfill. Test in `test_gear.py` e `test_moderation.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

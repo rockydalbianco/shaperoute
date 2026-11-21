@@ -52,6 +52,7 @@ from shaperoute_api.activity_graphs import (
     ground_for,
     source_for,
 )
+from shaperoute_api.avatars import install_avatars
 from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.comment_reactions import install_comment_reactions
@@ -68,6 +69,7 @@ from shaperoute_api.feed import install_feed
 from shaperoute_api.feedback import install_feedback
 from shaperoute_api.follows import install_follows
 from shaperoute_api.game import install_game
+from shaperoute_api.gear import install_gear
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.group_runs import install_group_runs
 from shaperoute_api.gym_calendar import install_gym_calendar
@@ -153,6 +155,7 @@ from shaperoute_api.sign_in_providers import (
 )
 from shaperoute_api.signals import SignalBody, SignalGate, event_of
 from shaperoute_api.sleep import install_sleep
+from shaperoute_api.sleep_posts import install_sleep_posts
 from shaperoute_api.strava import install_strava
 from shaperoute_api.strava_client import Strava
 from shaperoute_api.stretch_sessions import install_stretch_sessions
@@ -420,6 +423,7 @@ def create_app(
     # The nights of sleep a person publishes, on the profile and in the
     # post of an activity (TASK-467 B1); they need a token.
     install_sleep(app)
+    install_sleep_posts(app)
     # The figures of a run for the page of its post: splits, elevation,
     # cadence, calories (TASK-410 C); they need a token.
     install_run_stats(app)
@@ -449,6 +453,7 @@ def create_app(
     # The drawings the members publish, read by whoever is signed in
     # (TASK-118); it needs a token.
     install_feed(app)
+    install_avatars(app)
     # The search of the drawings from the lens of «Feed» (TASK-344); it
     # needs a token.
     install_drawing_search(app)
@@ -877,5 +882,7 @@ def create_app(
     # Items tagged on the photos of members' posts (TASK-394, ADR-0333): their
     # links checked with Web Risk, the key from the environment.
     install_outfit_tags(app)
+    # A member's gear and its totals (TASK-486, ADR-0393).
+    install_gear(app)
 
     return app

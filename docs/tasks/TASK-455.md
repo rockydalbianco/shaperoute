@@ -650,3 +650,6 @@ Parte E (in `main`, #1309):
   proposta, non iniziate: «Share link» che torna subito quando si
   riaccende l'interruttore, e titolo e sport nella spiegazione sotto
   l'interruttore (testo da approvare).
+- 2026-11-21: **schermata di «Try again» approvata dall'utente** («Sì, va
+  bene», alla domanda «Va bene la schermata con la frase e «Try again»?»).
+  La #1332 esce dalla bozza e passa al Coordinatore come «pronta».

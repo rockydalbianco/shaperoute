@@ -2984,6 +2984,7 @@ export const ES: Table = {
   "From {bearing} · {minutes} min ago": "Desde {bearing} · hace {minutes} min",
   "GPS numbers · not a certified instrument":
     "Datos del GPS · no es un instrumento certificado",
+  "Log in to see this drawing.": "Inicia sesión para ver este dibujo.",
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Editar diseño",
   "Page {n} of {count}": "Página {n} de {count}",

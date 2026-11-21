@@ -17,7 +17,7 @@ import {
 import type { GymLevel } from "./gym.ts";
 import type { FlightSplit } from "./flightParts.ts";
 import type { SkiDescents } from "./skiParts.ts";
-import type { SleepSummary } from "./sleep.ts";
+import type { SLEEP_SOURCE, SleepSummary } from "./sleep.ts";
 
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
@@ -1732,8 +1732,9 @@ export interface FollowingFeedPage extends FilteredFeedPage {
 
 /** `source` of a post of photos only, and the value said in X-MuW-Reads. */
 export const PHOTOS_SOURCE = "photos" as const;
-/** Where a drawing comes from: its run, or photos only. */
-export type DrawingSource = RunSource | typeof PHOTOS_SOURCE;
+/** Where a drawing comes from: its run, photos only, or a night of sleep
+ * (TASK-467 part E, sleep.ts). */
+export type DrawingSource = RunSource | typeof PHOTOS_SOURCE | typeof SLEEP_SOURCE;
 /** Never «Only me»: its photos are on the server only while others see it. */
 export const PHOTO_POST_VISIBILITIES = ["everyone", "followers"] as const;
 export type PhotoPostVisibility = (typeof PHOTO_POST_VISIBILITIES)[number];
@@ -1875,8 +1876,8 @@ export interface DrawingSearchPage extends FeedPage {
 /**
  * What a member reports with POST /reports (TASK-121, ADR-0228): a drawing
  * (a post of the feed), a comment, a member, a group run (TASK-309), a
- * private message (TASK-319: only the one it was sent to reports it), or an
- * item tagged on a photo (TASK-394).
+ * private message (TASK-319: only the one it was sent to reports it), an
+ * item tagged on a photo (TASK-394), or an item of gear (TASK-486).
  */
 export const REPORT_KINDS = [
   "drawing",
@@ -1885,6 +1886,7 @@ export const REPORT_KINDS = [
   "group_run",
   "message",
   "outfit_tag",
+  "gear",
 ] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 

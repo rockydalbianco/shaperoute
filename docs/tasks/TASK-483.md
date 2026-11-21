@@ -98,6 +98,13 @@ Tre schermi:
    coda, ridotto gli spazi doppi a uno e messo tutto in minuscolo; nomi
    diversi davvero restano separati.
 4. «History» anche fuori dall'allenamento, dalla guida «i» (proposta).
+   **Risposta dell'utente, 2026-11-22: «Sì, anche fuori».** Nella guida,
+   sotto «Watch out», una riga col massimale stimato (o il record del
+   tipo) e «History»; da «+ Exercise» si guarda lo storico prima di
+   aggiungere l'esercizio. Un esercizio col nome libero non ha guida: per
+   lui «History» si apre solo dall'allenamento.
+
+Le domande della parte 0 sono finite il 2026-11-22.
 
 ## File toccati
 

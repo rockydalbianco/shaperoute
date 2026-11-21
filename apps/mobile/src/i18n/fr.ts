@@ -3010,4 +3010,67 @@ export const FR: Table = {
     "Cette disposition vient d'une version plus récente de MuW : mettez l'app à jour.",
   "MuW could not read this file.": "MuW n'a pas pu lire ce fichier.",
   "MuW could not share the file.": "MuW n'a pas pu partager le fichier.",
+
+  // src/gear/ (TASK-486 part B, the gear), to approve
+  Shoes: "Chaussures",
+  Skis: "Skis",
+  "Ski boots": "Chaussures de ski",
+  Snowboard: "Snowboard",
+  Poles: "Bâtons",
+  Boots: "Chaussures de randonnée",
+  "Climbing shoes": "Chaussons d'escalade",
+  Harness: "Baudrier",
+  Helmet: "Casque",
+  Rope: "Corde",
+  Crampons: "Crampons",
+  "Ice axe": "Piolet",
+  "Inline skates": "Rollers en ligne",
+  Sail: "Voile",
+  Board: "Planche",
+  Boat: "Bateau",
+  Wetsuit: "Combinaison",
+  Paraglider: "Parapente",
+  Wheelchair: "Fauteuil roulant",
+  Clothing: "Vêtements",
+  Backpack: "Sac à dos",
+  Watch: "Montre",
+  "Add gear": "Ajouter du matériel",
+  "Add your shoes, your bike, your skis and everything you use. Each activity you take them on adds to their kilometres and hours.":
+    "Ajoute tes chaussures, ton vélo, tes skis et tout ce que tu utilises. Chaque activité où tu les emportes s'ajoute à leurs kilomètres et à leurs heures.",
+  "Past its limit": "Au-delà de sa limite",
+  Retired: "Retiré",
+  Kind: "Type",
+  Brand: "Marque",
+  Model: "Modèle",
+  "Your name for it": "Ton nom pour lui",
+  Bought: "Acheté",
+  Month: "Mois",
+  Year: "Année",
+  "Month bought": "Mois d'achat",
+  "Year bought": "Année d'achat",
+  Note: "Note",
+  "Where you bought it, a race you ran in it…":
+    "Où tu l'as acheté, une course faite avec…",
+  Limit: "Limite",
+  "MuW tells you when it passes this.": "MuW te prévient quand il le dépasse.",
+  "Use by default for": "Par défaut pour",
+  "Activities of these sports start with it chosen.":
+    "Les activités de ces sports commencent avec ce matériel choisi.",
+  "Hide from profile": "Masquer du profil",
+  "Others don't see it. Its kilometres still count.":
+    "Les autres ne le voient pas. Ses kilomètres comptent quand même.",
+  Retire: "Retirer",
+  "Out of your choices, with its kilometres kept.":
+    "Hors de tes choix, avec ses kilomètres gardés.",
+  "Delete this gear?": "Supprimer ce matériel ?",
+  "Its photo goes too. Your activities stay.":
+    "Sa photo part aussi. Tes activités restent.",
+  "Say the brand.": "Indique la marque.",
+  "Write the month (1 to 12) and the year it was bought.":
+    "Écris le mois (1 à 12) et l'année de l'achat.",
+  "Write the limit as a number of {unit}.": "Écris la limite en nombre de {unit}.",
+  "These words can't be used. Try other words.":
+    "Ces mots ne peuvent pas être utilisés. Essaie d'autres mots.",
+  "Links and special characters can't be used here.":
+    "Les liens et les caractères spéciaux ne sont pas acceptés ici.",
 };

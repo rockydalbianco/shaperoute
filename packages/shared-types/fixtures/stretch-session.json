@@ -1,0 +1,8 @@
+{
+  "started_at": "2026-11-05T06:30:00Z",
+  "ended_at": "2026-11-05T06:41:00Z",
+  "pauses": [{ "from_s": 300, "to_s": 360 }],
+  "routine": "morning",
+  "minutes": 10,
+  "exercises": 10
+}

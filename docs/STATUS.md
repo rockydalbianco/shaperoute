@@ -28,12 +28,17 @@ OTA di produzione e aggiornamenti del server in sospeso per task già Done:
 li tiene il Coordinatore (`AGENTI.md`, «L'albero»), col sì dell'utente.
 **TASK-294**: resta l'uscita su Google Play (test chiuso con 12 tester
 per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
+**TASK-480**: «Explore» senza mappe sotto i disegni, corretto in `main`
+(#1363); esce con l'OTA 20, col sì dell'utente al Coordinatore.
 
 ## In lavorazione
 
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
+  scelte dell'utente, ADR-0393); poi A server … G avviso, file al
+  Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`
 - **TASK-214 — Il motore dei percorsi sul telefono** · A, B, C, A2, B2 in
   `main`; restano tempi e memoria su un iPhone vero e le zone dove il server
   dà 404. File: — · `tasks/TASK-214.md`
@@ -214,6 +219,13 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **R6 fatta il 2026-11-18**: #1291 (server, passo 13) e #1293 (app, col
   prossimo OTA) in main: corsa + volo nella stessa attività. In bozza R6c
   (#1313, la mappa a due colori); poi R6d (la pagina riaperta).
+- **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
+  scelta dell'utente del 2026-11-21, senza accordi con terzi: schermata di
+  widget, vario sonoro, mappa 3D, spazi aerei dal file del pilota, gare,
+  dopo il volo, live, meteo DWD/ECMWF. Parte 0 (documenti) in PR; poi
+  B1 → C → A1 → E → D → B2 → F → G → H. File: — · `tasks/TASK-479.md`
+  **2026-11-21 sera**: B1 «pronta» (#1349); ordine cambiato dall'utente:
+  B2 (editor) subito dopo B1.
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
@@ -231,6 +243,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **B3 in `main`** (#1292, `b6e36fcb`: la scheda «Sleep» del profilo,
   spenta). **C avviata il 2026-11-21**: bozza #1334 da non unire (lettore
   vero, sonno acceso) e build di prova per il solo iPhone dell'utente.
+  **E1 in `main`** (#1373, `f38b1980`: il post del sonno da solo, server e
+  contratto, migrazione `0082`); sul server col passo 17, col sì. E2 (app)
+  dopo TASK-312 C2 e TASK-481 A.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`
@@ -241,6 +256,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   12); B1 (app) in `main` (#1275), esce con un OTA col sì. Prossime A2b, B2.
   **2026-11-18**: B1 in produzione (OTA 17); A2b sul server (passo 13);
   B2a in `main` (#1301), col prossimo OTA. Prossime B2b1 e B2b2.
+  **Chiuso il 2026-11-21**: B2b1 (#1322) in produzione con l'OTA 18, B2b2
+  (#1331) con l'OTA 19; vedi `archive/COMPLETATI.md`.
 
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
@@ -277,6 +294,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B2a (settimane verso una meta) e A2 (ingresso «Cosa vuoi allenare?», corpo
   libero) in `main` (#1196, #1208), A2 esce col prossimo OTA. Prossime B2b/C2
   (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
+  **Chiuso il 2026-11-21**: B2b/C2 (#1294), D1 (#1341, `climb_m` nell'elenco) e B2c (#1338, «mancano» mentre si registra) in `main`; restano il passo sul server di D1 e l'OTA di B2c, col sì dell'utente; vedi `archive/COMPLETATI.md`.
+
+- **TASK-481 — Il «+» del Feed: tutte le voci** · parte 0 (documenti) fatta
+  il 2026-11-21 con le scelte dell'utente (sei voci, ADR-0390); A (la lista e
+  «Record now») dopo il merge di TASK-312 C2, lista dei file al Coordinatore.
+  File: — · `tasks/TASK-481.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

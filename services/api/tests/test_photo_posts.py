@@ -29,6 +29,7 @@ from shaperoute_api.expo_push import Expo
 from shaperoute_api.feed import FeedBody, FeedPostBody
 from shaperoute_api.photo_posts import (
     MyPhotoPostBody,
+    MyPhotoPostsBody,
     PhotoPostOrderRequestBody,
     PhotoPostRequestBody,
 )
@@ -324,6 +325,38 @@ def test_a_post_is_deleted_with_all_it_has(
     assert client.get(f"/drawings/{post_id}", headers=new_app(bob)).status_code == 404
 
 
+def test_the_list_answer_is_the_body() -> None:
+    listed = _load("my-photo-posts.json")
+    assert set(listed) == set(MyPhotoPostsBody.model_fields)
+    body = MyPhotoPostsBody.model_validate(listed)
+    # The one still waiting for a photo, then the one published.
+    assert [post.published_at is None for post in body.photo_posts] == [True, False]
+    assert set(listed["photo_posts"][0]) == set(MyPhotoPostBody.model_fields)
+
+
+def test_an_account_lists_its_posts_by_key(client: TestClient, wall: WallClock) -> None:
+    ada, bob = signed_up(client, "ada"), signed_up(client, "bob")
+    first = posted(client, ada)
+    wall.t += timedelta(hours=1)
+    second = posted(client, ada, key=OTHER_KEY, title="Later")
+    wall.t += timedelta(hours=1)
+    waiting = kept(client, ada, key="p0waiting0001", title="No photo yet")
+    kept(client, bob)
+    answer = client.get("/me/photo-posts", headers=ada)
+    assert answer.status_code == 200, answer.text
+    listed = answer.json()["photo_posts"]
+    # Its own only, the newest first; the key of each, found by its id.
+    assert [post["id"] for post in listed] == [waiting["id"], second, first]
+    assert [post["key"] for post in listed] == ["p0waiting0001", OTHER_KEY, KEY]
+    assert listed[0]["published_at"] is None
+    assert [photo["n"] for photo in listed[1]["photos"]] == [1]
+    assert (
+        client.get("/me/photo-posts", headers=bob).json()["photo_posts"][0]["key"]
+        == KEY
+    )
+    assert client.get("/me/photo-posts").status_code == 401
+
+
 def test_a_post_is_not_an_activity(client: TestClient) -> None:
     ada = signed_up(client, "ada")
     posted(client, ada)
@@ -411,3 +444,29 @@ def test_a_profile_lists_it_by_when_it_was_published(
     assert rest["next"] is None
     profile = client.get(f"/users/{owner}", headers=new_app(bob)).json()
     assert profile["drawings"] == 2
+
+
+def test_the_post_of_a_night_is_not_one_of_photos(
+    client: TestClient, database: Database
+) -> None:
+    # A night of sleep is a drawing without a run too (TASK-467 part E,
+    # migration 0082): none of these endpoints reads, changes or deletes it.
+    ada = signed_up(client, "ada")
+    night = client.put(
+        "/me/sleep-posts/2026-09-21", json=_load("sleep-post-request.json"), headers=ada
+    )
+    assert night.status_code == 200, night.text
+    sleep_key = "sleep20260921"
+    assert client.get("/me/photo-posts", headers=ada).json()["photo_posts"] == []
+    assert client.get(f"/me/photo-posts/{sleep_key}", headers=ada).status_code == 404
+    taken = client.put(
+        f"/me/photo-posts/{sleep_key}",
+        json=_load("photo-post-request.json"),
+        headers=ada,
+    )
+    assert taken.status_code == 409
+    photo = client.put(f"/me/photo-posts/{sleep_key}/photos/1", json=PHOTO, headers=ada)
+    assert photo.status_code == 404
+    assert client.delete(f"/me/photo-posts/{sleep_key}", headers=ada).status_code == 204
+    (row,) = drawing_rows(database)
+    assert row["key"] == sleep_key

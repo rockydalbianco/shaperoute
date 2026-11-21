@@ -61,6 +61,7 @@ from shaperoute_api.drawings import (
     ORDER_PHOTO,
     TAG_UNKNOWN,
     Connection,
+    Details,
     PhotoBody,
     TagBody,
     _details,
@@ -156,6 +157,15 @@ class MyPhotoPostBody(BaseModel):
     place."""
 
 
+class MyPhotoPostsBody(BaseModel):
+    """GET /me/photo-posts: every post of photos only of the account, the
+    last published first, those still waiting for a photo by when they were
+    last kept: packages/shared-types/fixtures/my-photo-posts.json. The app
+    finds there the key of a post it opened by its id (part C1b)."""
+
+    photo_posts: list[MyPhotoPostBody]
+
+
 @dataclass(frozen=True)
 class Kept:
     """A post as it was kept, and the members tagged who are not to be told
@@ -166,17 +176,22 @@ class Kept:
     not_told: frozenset[int]
 
 
+# A drawing without a run that is a post of photos only: not the post of a
+# night of sleep (TASK-467 part E, migration 0082), which has no run either.
+PHOTO_POST_SQL = "run_id IS NULL AND sleep_night_id IS NULL"
+NOT_A_PHOTO_POST = "This key is of another post, not of photos only."
+
 # The post of the account with this key, locked until the transaction ends.
 POST_OF_KEY = (
     "SELECT id, published_at FROM drawings"
-    " WHERE user_id = %s AND key = %s AND run_id IS NULL FOR UPDATE"
+    f" WHERE user_id = %s AND key = %s AND {PHOTO_POST_SQL} FOR UPDATE"
 )
 
 
 def _post(conn: Connection, user_id: int, key: str) -> MyPhotoPostBody | None:
     row = conn.execute(
         "SELECT key, id, title, description, visibility, published_at"
-        " FROM drawings WHERE user_id = %s AND key = %s AND run_id IS NULL",
+        f" FROM drawings WHERE user_id = %s AND key = %s AND {PHOTO_POST_SQL}",
         (user_id, key),
     ).fetchone()
     if row is None:
@@ -184,8 +199,11 @@ def _post(conn: Connection, user_id: int, key: str) -> MyPhotoPostBody | None:
     return _body(conn, row, user_id)
 
 
-def _body(conn: Connection, row: DictRow, owner: int) -> MyPhotoPostBody:
-    details = _details(conn, [row["id"]], owner)
+def _body(
+    conn: Connection, row: DictRow, owner: int, details: Details | None = None
+) -> MyPhotoPostBody:
+    if details is None:
+        details = _details(conn, [row["id"]], owner)
     return MyPhotoPostBody(
         key=row["key"],
         id=row["id"],
@@ -218,6 +236,20 @@ class PhotoPosts:
         with self.database.connect() as conn:
             return _post(conn, user_id, key)
 
+    def all_mine(self, user_id: int) -> MyPhotoPostsBody:
+        """Every post of the account, the last published first."""
+        with self.database.connect() as conn:
+            rows = conn.execute(
+                "SELECT key, id, title, description, visibility, published_at"
+                f" FROM drawings WHERE user_id = %s AND {PHOTO_POST_SQL}"
+                " ORDER BY coalesce(published_at, updated_at) DESC, id DESC",
+                (user_id,),
+            ).fetchall()
+            details = _details(conn, [row["id"] for row in rows], user_id)
+            return MyPhotoPostsBody(
+                photo_posts=[_body(conn, row, user_id, details) for row in rows]
+            )
+
     def keep(self, user_id: int, key: str, body: PhotoPostRequestBody) -> Kept:
         """The post as `body` wants it, made the first time. 422 for a field
         refused. Who sees it changing between everyone and the followers
@@ -238,10 +270,13 @@ class PhotoPosts:
                     " visibility = EXCLUDED.visibility,"
                     " description = EXCLUDED.description,"
                     " updated_at = EXCLUDED.updated_at"
+                    # Never over the post of a night with the same key.
+                    " WHERE drawings.sleep_night_id IS NULL"
                     " RETURNING id, key, title, description, visibility, published_at",
                     (user_id, key, title, body.visibility, description, now),
                 ).fetchone()
-                assert row is not None
+                if row is None:
+                    raise HTTPException(409, NOT_A_PHOTO_POST)
                 conn.execute(
                     "DELETE FROM drawing_tags WHERE drawing_id = %s", (row["id"],)
                 )
@@ -270,7 +305,7 @@ class PhotoPosts:
         with self.database.connect() as conn:
             conn.execute(
                 "DELETE FROM drawings WHERE user_id = %s AND key = %s"
-                " AND run_id IS NULL",
+                f" AND {PHOTO_POST_SQL}",
                 (user_id, key),
             )
 
@@ -353,6 +388,10 @@ def photo_post_routes() -> APIRouter:
     uploads = RateLimiter(MAX_UPLOADS_PER_MINUTE)
     unknown = {404: {"model": ErrorBody}}
 
+    @router.get("/me/photo-posts")
+    def my_photo_posts(posts: Posts, user: Me) -> MyPhotoPostsBody:
+        return posts.all_mine(user.id)
+
     @router.get("/me/photo-posts/{key}", responses=unknown)
     def my_photo_post(key: Key, posts: Posts, user: Me) -> MyPhotoPostBody:
         found = posts.mine(user.id, key)
@@ -362,7 +401,7 @@ def photo_post_routes() -> APIRouter:
 
     # The whole post every time: the app may send it again after a phone
     # without network, and the second time changes nothing.
-    @router.put("/me/photo-posts/{key}")
+    @router.put("/me/photo-posts/{key}", responses={409: {"model": ErrorBody}})
     def keep_photo_post(
         key: Key,
         body: PhotoPostRequestBody,

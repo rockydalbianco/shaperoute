@@ -1,7 +1,8 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 import { t } from "../i18n";
 import { countLabel } from "../messages/MessagesRow";
+import { segmentTrackFace } from "../screens/Segmented";
 import { TAB_ICON_SIZE } from "../tabs/TabBar";
 import {
   color,
@@ -11,10 +12,38 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { glassRaise } from "../ui/glassRaise";
+import { type GlassMode, useGlassMode } from "../ui/useGlassMode";
 import { Tap } from "../ui/Tap";
 import { useBell } from "./bellDoor";
 
 const BELL = require("../../assets/ui/tabs/bell.png");
+
+type Shadows = Exclude<ViewStyle["boxShadow"], string | undefined>;
+
+/** The shadows of a face, as a list: none when it has none. */
+function shadowsOf(face: ViewStyle): Shadows {
+  return Array.isArray(face.boxShadow) ? (face.boxShadow as Shadows) : [];
+}
+
+/**
+ * A round button of the header on glass (TASK-469 A5, ADR-0383, «Capsula»):
+ * the glass laid with its rim and light (`segmentTrackFace`), raised out of
+ * the page (`glassRaise`), and the 1 pt `borderStrong` edge every control
+ * keeps to be found in sunlight (TASK-086). With «Reduce Transparency» the
+ * opaque background; with «Increase Contrast» the strong edge inside too.
+ */
+export function headerGlass(mode: GlassMode): ViewStyle {
+  const laid = segmentTrackFace(mode);
+  const raised = glassRaise(mode);
+  return {
+    ...laid,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    borderRadius: radius.pill,
+    boxShadow: [...shadowsOf(laid), ...shadowsOf(raised)],
+  };
+}
 
 /**
  * The bell of the header (TASK-367 part C, ADR-0311), as Instagram's heart:
@@ -24,12 +53,13 @@ const BELL = require("../../assets/ui/tabs/bell.png");
  */
 export function BellButton() {
   const { unread, open } = useBell();
+  const mode = useGlassMode();
   if (unread === null) {
     return null;
   }
   return (
     <Tap
-      style={styles.bell}
+      style={[styles.bell, headerGlass(mode)]}
       onPress={open}
       accessibilityRole="button"
       accessibilityLabel={
@@ -49,7 +79,8 @@ export function BellButton() {
   );
 }
 
-// As the tabs of the bar: the same icon size, the same red number.
+// As the tabs of the bar: the same icon size, the same red number; in a
+// circle of glass (TASK-469 A5).
 const styles = StyleSheet.create({
   bell: {
     width: MIN_TAP_SIZE,

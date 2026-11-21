@@ -1,6 +1,6 @@
 # TASK-482 — Il link di un post apre l'app
 
-**Stato**: In corso (parte 0, solo documenti: le domande all'utente)
+**Stato**: In corso (parte 0 chiusa il 2026-11-22; B2 online; A in #1374; C e D con la prossima build nativa)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-482-post-link-opens-app`
 **Dipende da**: TASK-455 (il link di un post, `getmuw.app/p/#<id>`, parti
@@ -101,7 +101,10 @@ un tocco apre l'app.
    de «Melde dich an, um diese Zeichnung zu sehen.», fr «Connecte-toi pour
    voir ce dessin.», es «Inicia sesión para ver este dibujo.») —
    **approvata dall'utente il 2026-11-22: «Sì, approvo»**.
-4. La parte D nella prossima build nativa: sì o no, e quando.
+4. La parte D nella prossima build nativa: sì o no, e quando —
+   **risposta dell'utente, 2026-11-22: «Sì, nella prossima»** (nella
+   prossima build per gli store che l'utente deciderà di fare, senza
+   farne una apposta).
 
 ## Un difetto trovato, non di questo task
 
@@ -172,3 +175,9 @@ Parte A (#1374): `apps/mobile/src/links/postLinkIn.ts` e
   che iOS passi all'app l'indirizzo della barra — si vede sul telefono
   dopo l'OTA. Resta: l'OTA (un sì dell'utente), la sua prova, la
   domanda 4, le parti C e D.
+- 2026-11-22: **le domande sono finite** (4: «Sì, nella prossima»). PR dei
+  soli documenti della parte 0: questo file, ADR-0391, la voce in
+  `STATUS.md`, la riga in `INDEX.md`. La parte D entra nel piano della
+  prossima build nativa (lo tiene il Coordinatore); la parte C (i due file
+  `.well-known` e come il server li serve) va preparata prima che quella
+  build esca, o i link verificati non si verificano.

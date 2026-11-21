@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), PR del server #1317 col sì dell'utente («Le otto forme», 2026-11-18); app nella bozza #1248; le città estere in un secondo giro
+**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), server in `main` (#1317, `ee9f143c`, col sì dell'utente «Le otto forme», 2026-11-18), passo 14 sul server da fare; app nella bozza #1248; le città estere in un secondo giro
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -479,10 +479,18 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
       l'inizio di quello nuovo, le uscite stanno dopo; nell'API 1546 corse
       con gli stessi id e gli stessi punti, 148 uscite in `others`;
       `exploreCatalogEdit.test.ts` verde sul seme nuovo.
-- [ ] CI verde, merge del Coordinatore; `app.py` reso al Coordinatore.
+- [x] CI verde, merge del Coordinatore (#1317, `ee9f143c`); `app.py` reso al Coordinatore.
 - [ ] PR dell'app, OTA (sì dell'utente).
 
 ## Dove siamo
+
+*2026-11-18, sera, B2*: **la #1317 è in `main`** (`ee9f143c`); `app.py` reso
+al Coordinatore, che prepara il passo 14 con `out/TASK-441/SERVER-B2.md` e
+lo chiede all'utente. Documenti nella PR `docs/TASK-441-b2-server`
+(`API.md` col parametro, ADR-0366 precisazione, STATUS, INDEX). **Aspetto
+«server B2 fatto»**: poi la #1248 esce dalla bozza («pronta» con le parole
+dell'utente) e va nell'OTA. Le città estere: chiedere al Coordinatore prima
+di cominciare; gli estratti restano fino alla chiusura della B2.
 
 *2026-11-18, B2*: **PR del server #1317** da `feat/TASK-441-b2-bike` col sì
 dell'utente («Le otto forme»): 148 uscite in bici in 29 città italiane, il

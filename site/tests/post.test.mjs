@@ -13,6 +13,7 @@ import { fill, LANGUAGES, TEXTS as LIVE_TEXTS } from "../live/texts.js";
 import { API, boundsOf } from "../live/view.js";
 import { SPORTS, TEXTS } from "../p/texts.js";
 import {
+  appBarOf,
   bearingOf,
   distanceOf,
   factsOf,
@@ -229,6 +230,26 @@ test("a chat app shows the same card for every link: the approved words and the 
   // Drawn here, with no map tiles and no address: nothing of a place or a post.
   const drawing = read(SITE, "tools", "link-card.html");
   assert.deepEqual(drawing.match(/https?:\/\/(?!www\.w3\.org\/2000\/svg)[^"'`\s)]+/g) ?? [], []);
+});
+
+test("on an iPhone Safari's bar names the app and is given the link, id and all", async () => {
+  const { downloadUrl } = await import("../config.js");
+  const link = `https://example.test/p/#${ID}`;
+  // The app's number is the one «Get MuW» leads to: one place to change.
+  assert.equal(appBarOf(downloadUrl, link), `app-id=6820961883, app-argument=${link}`);
+  assert.equal(appBarOf("https://apps.apple.com/it/app/muw/id123?l=en", link), `app-id=123, app-argument=${link}`);
+  // No App Store address, or one without a number: no bar.
+  assert.equal(appBarOf(null, link), null);
+  assert.equal(appBarOf("https://example.test/app", link), null);
+  const script = read(PAGE, "post.js");
+  // The link is the page's own address, wherever the page is served.
+  assert.match(script, /appBarOf\(downloadUrl, `\$\{origin\}\$\{pathname\}#\$\{id\}`\)/);
+  assert.match(script, /meta\.name = "apple-itunes-app";/);
+  // Put as the page starts, and taken away for a link that opens nothing.
+  assert.match(script, /const id = idFromHash\(window\.location\.hash\);\s*\/\/[^\n]*\n\s*putAppBar\(id\);/);
+  assert.match(script, /outcome\.kind === "gone"\) \{\s*putAppBar\(null\);/);
+  // The page as it comes has none: the script alone knows the id.
+  assert.ok(!read(PAGE, "index.html").includes("apple-itunes-app"));
 });
 
 test("the page asks the API once, sends nothing of who reads, and keeps nothing", () => {

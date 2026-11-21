@@ -233,6 +233,19 @@ lascia leggere `/post` solo a `https://getmuw.app` (CORS).
   senza eseguirla. Niente `og:url` né `canonical`: un'app che li seguisse
   aprirebbe la pagina senza l'id. L'immagine si rifà con Chrome dal file
   `site/tools/link-card.html` (il comando è in testa al file).
+- **La barra di Safari su iPhone** (TASK-482 parte B2, una prova del
+  2026-11-21 voluta dall'utente: «Sì, proviamola»): `post.js` mette nella
+  pagina il meta `apple-itunes-app` con il numero dell'app nell'App Store
+  (letto da `downloadUrl`) e, come `app-argument`, l'indirizzo della
+  pagina con l'id del post. Safari mostra allora in cima la sua barra:
+  «Apri» per chi ha MuW, «Visualizza» verso l'App Store per chi non l'ha.
+  La barra la disegna Safari, ed è Safari a chiedere ad Apple i dati
+  dell'app: la pagina non carica niente di nuovo, e l'id del post non
+  lascia il telefono (`app-argument` passa dall'iPhone all'app). Il meta
+  lo mette lo script, perché l'id sta dopo il `#`; lo toglie per un link
+  che non apre niente. **Che «Apri» porti al post dentro l'app dipende
+  dalla parte A di TASK-482** (l'app che legge il link) e va provato su un
+  telefono vero: fino ad allora, al più, apre l'app.
 
 **Guardarla in locale.** Come la pagina dal vivo: il server del sito
 (sotto) e un finto `/post` che risponde dalla fixture, con `?api=`

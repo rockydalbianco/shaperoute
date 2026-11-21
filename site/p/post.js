@@ -10,6 +10,7 @@ import { fill, pickLanguage, TEXTS as LIVE_TEXTS } from "../live/texts.js";
 import { apiBase, boundsOf, MAP_COLOURS, mapStyle, unitsOf } from "../live/view.js";
 import { SPORTS, TEXTS } from "./texts.js";
 import {
+  appBarOf,
   bearingOf,
   factsOf,
   idFromHash,
@@ -176,6 +177,7 @@ async function ask(id, mine, attempt) {
   if (outcome.kind === "shown") {
     showPost(outcome.post);
   } else if (outcome.kind === "gone") {
+    putAppBar(null);
     showNothing(text.gone);
   } else if (outcome.kind === "busy") {
     setTimeout(() => mine === round && ask(id, mine, attempt), outcome.waitMs);
@@ -190,9 +192,31 @@ async function ask(id, mine, attempt) {
   }
 }
 
+/**
+ * Safari's own bar over the page, on an iPhone (TASK-482): with MuW on the
+ * phone it offers to open it, and gives it this link; without, it leads to
+ * the App Store. Safari draws it and asks Apple about the app by itself;
+ * the page only names the app and its own address. None (`id` null) for a
+ * link that opens no drawing.
+ */
+function putAppBar(id) {
+  document.querySelector('meta[name="apple-itunes-app"]')?.remove();
+  const { origin, pathname } = window.location;
+  const bar = id === null ? null : appBarOf(downloadUrl, `${origin}${pathname}#${id}`);
+  if (bar === null) {
+    return;
+  }
+  const meta = document.createElement("meta");
+  meta.name = "apple-itunes-app";
+  meta.content = bar;
+  document.head.append(meta);
+}
+
 function start() {
   round += 1;
   const id = idFromHash(window.location.hash);
+  // At once, before the API answers: Safari looks for it as the page loads.
+  putAppBar(id);
   if (id === null) {
     // Not a link to a drawing: as one that opens none.
     showNothing(text.gone);

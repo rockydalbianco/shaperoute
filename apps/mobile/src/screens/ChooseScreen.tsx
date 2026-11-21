@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FlightPage } from "../air/FlightPage";
 import { GymDrawGuide } from "../gym/GymDrawGuide";
+import { PlanTodayCard } from "../gym/PlanTodayCard";
 import { t, tLater } from "../i18n";
 import { useStartAddress } from "../location/startAddress";
 import { OpenSettings } from "../permissions/OpenSettings";
@@ -159,6 +160,7 @@ export function ChooseScreen({
             </View>
           </View>
           {swim && <SwimPlaceChoice place={place} />}
+          {!gym && onRun && <PlanTodayCard sport={sport} onRecord={onRun} />}
           {pool ? (
             <PoolDraw />
           ) : recordOnly && gym ? (

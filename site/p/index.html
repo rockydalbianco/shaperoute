@@ -1,0 +1,61 @@
+<!doctype html>
+<!-- The link of a post (TASK-455, docs/SITO.md): https://getmuw.app/p/#<the drawing's id> -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="referrer" content="no-referrer" />
+    <title>MuW</title>
+    <!-- What a chat app shows for the link: the same for every post, since the
+         id after the `#` reaches no server. No og:url: an app that follows it
+         would lose the id. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MuW" />
+    <meta property="og:title" content="A drawing on MuW" />
+    <meta property="og:description" content="Open the link to see the line on the map." />
+    <meta property="og:image" content="https://getmuw.app/p/link-card.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A heart drawn as a route on a map, with the MuW logo" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0A0A0B" />
+    <link rel="icon" href="../assets/muw-mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="../live/maplibre-gl.css" />
+    <link rel="stylesheet" href="../live/live.css" />
+    <link rel="stylesheet" href="post.css" />
+    <script src="../live/maplibre-gl.js" defer></script>
+    <script type="module" src="post.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <a class="top__logo" href="../" aria-label="MuW, home">
+        <img class="top__mark" src="../assets/muw-mark.svg" alt="" width="34" height="34" />
+        <img class="top__word" src="../assets/muw-logo.svg" alt="MuW" width="84" height="24" />
+      </a>
+    </header>
+
+    <main id="main" class="live post">
+      <section class="live__head">
+        <h1 class="live__title" data-title hidden></h1>
+        <p class="post__by" data-by aria-live="polite"></p>
+        <p class="live__status" data-facts></p>
+      </section>
+
+      <section data-map-box hidden>
+        <div class="live__map" data-map></div>
+      </section>
+
+      <section class="post__get">
+        <a class="button button--primary" data-get rel="noopener noreferrer">Get MuW</a>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <img src="../assets/muw-mark.svg" alt="" width="24" height="24" />
+      <p><a class="foot__link" href="../privacy/" data-privacy>Privacy policy</a></p>
+    </footer>
+  </body>
+</html>

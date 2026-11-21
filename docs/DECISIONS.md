@@ -546,6 +546,8 @@ lasciando le righe d'indice.
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
 - ADR-0381, precisazione A1b — La live in un messaggio: un rimando senza chiave esterna, solo in una conversazione aperta, solo per chi dice `live` · 2026-11-12 · Attiva
 - ADR-0381, precisazione B1 — La live in chat nell'app: la condivisione senza link per la chat, il menu di «Sharing live», la schermata dal vivo come `Modal` · 2026-11-12 · Attiva
+- ADR-0381, precisazione A2b — La push «Remind me» parte con la live, una volta sola, senza giro · 2026-11-18 · Attiva
+- ADR-0381, precisazione B2a — La fila «Live» del Feed: schede una sopra l'altra, riletta ogni minuto, «Live in the Feed» senza link · 2026-11-18 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
 - ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←» · 2026-11-12 · Attiva
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
@@ -558,8 +560,322 @@ lasciando le righe d'indice.
 - ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Proposta
 - ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende · 2026-11-12 · Accettata
 - ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono · 2026-11-11 · Attiva
+- ADR-0387 — Il «+» del Feed: un'attività aggiunta da lì parte con «Everyone», eccezione ad ADR-0304; il foglio «Add activity» con solo «From a file» · 2026-11-12 · Attiva
+- ADR-0375, precisazione R6 — Corsa e volo nella stessa attività (hike & fly): i tratti a piedi e in aria divisi dal GPS sul telefono, corretti a mano, nel JSON delle statistiche; il riepilogo nelle liste dei post; le calorie tratto per tratto · 2026-11-18 · Attiva
+- ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo da due campi nel JSON delle statistiche, solo per il volo, `GET /me/flight-bests`, il calendario filtrato sui voli, la precisione del GPS · 2026-11-12 · Attiva
+- ADR-0352, precisazione — «Share live at start»: il link dal vivo a fine conto alla rovescia di un volo, se il pilota lo ha acceso; resta com'era l'ultima volta, solo il link · 2026-11-12 · Attiva
+- ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job · 2026-11-12 · Attiva
+- ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity` (senza: le corse), le zone da un estratto, entrano le otto forme lette a occhio · 2026-11-18 · Attiva
+- ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte
+
+**Stato**: Attiva · 2026-11-12 · TASK-467 parte B3 (#1292, `b6e36fcb`).
+Le scelte di prodotto sono dell'utente (risposte 8 e 9 del task file:
+«Pulsante + riga», «Col giorno»); le altre sono **decise dall'agente su
+delega dell'utente**; lista dei file approvata dal Coordinatore. Nessun
+codice sul server, nessuna migrazione, niente di nativo.
+
+**Contesto**: l'ADR-0380 mette sul server la notte condivisa nel profilo
+(`shared`) con le sue rotte; restava come l'app la mostra e la condivide.
+
+1. **Quale notte è sul profilo lo dice il server, non il telefono**: la
+   scheda chiede `GET /users/{il proprio id}/sleep` e confronta il giorno
+   con la notte letta da Salute. Vale anche da un altro telefono, e la
+   domanda non porta nessun dato del sonno. Parte solo col sì a leggere il
+   sonno già tenuto.
+2. **Niente lascia il telefono prima di «Share»**: al server vanno solo
+   punteggio, minuti e fasi, e il giorno nel percorso. Mai gli orari.
+3. **«Stop sharing» toglie ogni notte dal profilo** (`DELETE
+   /me/sleep/shared`): spegnere la sola ultima farebbe ricomparire quella
+   prima. Una notte che nessun post porta sparisce così anche dal server.
+4. **La conferma del primo «Share» è del telefono** (`sleep-share.json`),
+   come la domanda del VO₂ max.
+5. **La notte condivisa non si aggiorna da sola**: se Salute cambia i
+   numeri dopo «Share», sul profilo restano quelli condivisi finché non si
+   condivide di nuovo. Nessun invio senza un tocco.
+6. **«Stop sharing» ha una chiave sua** (`Stop sharing@@sleep`): quella
+   della live è tradotta «Smetti», che qui non dice che cosa.
+7. **Spenta come B2**: `OwnSleep` niente senza `sleepPostsOn()` o senza
+   lettore, `UserSleep` niente e nessuna richiesta senza `sleepPostsOn()`;
+   i test confrontano l'albero intero delle due schermate acceso e spento.
+
+**Conseguenze**: accendere resta un cambio solo, quello della parte C. Il
+post nel Feed di una notte da sola resta fuori (TASK-312 C).
+
+## ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity`, le zone da un estratto, entrano le otto forme lette a occhio
+
+**Stato**: Attiva · 2026-11-18 · TASK-441, parte B2 (#1317 il server,
+`ee9f143c`; #1248 l'app, in bozza fino al passo sul server). Le scelte di
+prodotto sono dell'utente: «Sì, così» (solo bici, 20–30 km senza toccare il
+motore; canoa e nuoto fuori dal catalogo; le uscite si vedono con lo sport
+«Bike»), «Aspetta il principale» (niente specchi di Overpass), «Osmium sul
+Mac», «Le otto forme». Le altre sono **decise dall'agente su delega
+dell'utente**.
+
+**Contesto**: il catalogo aveva solo percorsi a piedi fino a 21 km; il
+motore disegna in bici da 10 a 30 km. Ogni lettore del catalogo (le liste,
+«Recommended», le app già installate) dava per scontato che un percorso
+fosse una corsa, e l'id di un percorso è il suo posto nel file di città.
+
+**Decisione**:
+
+1. **`activity` nel seme solo quando non è una corsa** (`"cycling"`); una
+   corsa non ha il campo e il suo testo nel file non cambia.
+2. **Le uscite in fondo al file di città**, dopo ogni corsa
+   (`catalog_seed.city_files`): una corsa tiene il posto, quindi l'id. I
+   preferiti, i disegni di «Feed» e i link che puntano a un id restano
+   validi.
+3. **Il parametro `activity`** su `GET /recommended-routes` e `GET
+   /catalog`: senza, le corse. `RecommendedCatalog.routes` resta «solo le
+   corse», le altre stanno in `others`: `best_routes.py` e ogni lista che
+   non chiede non vedono mai una bici. Nella risposta `activity` manca,
+   non è `null`, per una corsa (come `walks` e `gaps`).
+4. **L'app chiede `activity=cycling` solo con lo sport «Bike»**
+   (`CATALOG_ACTIVITIES`); ogni altro sport chiede come prima. Un server di
+   prima ignora il parametro e risponde con le corse: **il server può
+   uscire prima dell'app**, al contrario della B1.
+5. **Chiave `città/forma@cycling/distanza`** e registro a parte
+   (`out/TASK-441/bike.jsonl`), filtro di `catalog_seed.reasons` com'è. Una
+   distanza a forma fra 30, 25 e 20 km a turno.
+6. **Le zone della bici da un estratto, non da Overpass**: è già la regola
+   del progetto (ADR-0153, `MAPS.md`); `catalog_bike.py --extract` ritaglia
+   la zona che manca con `zone_extract.zone_from_extract`, non modificato.
+   Sul Mac: `osmium-tool` da Homebrew (sì dell'utente), l'estratto d'Italia
+   di Geofabrik filtrato una volta alle strade. Una città alla volta, mai
+   con un simulatore acceso; limiti del Coordinatore: 4 GB per il ritaglio,
+   2 GB per il pianificatore (4 GB nelle nove città grandi).
+7. **Il filtro non basta, si legge a occhio** anche per le forme: delle
+   dodici provate entrano le otto che si leggono (`READS`: cuore, stella,
+   farfalla, gatto, sole, cerchio, luna, pesce). Le altre quattro non si
+   disegnano più.
+
+**Motivo**: la chiocciola e la testa di cane passano il filtro a 0,95 e a
+20–30 km sono un groviglio; cavallo e smiley si leggono solo ai valori più
+alti, e una soglia non li separa dagli altri. Mettere le uscite in fondo e
+lasciare `routes` alle corse costa una riga per lettore nuovo e zero per
+quelli che c'erano. L'aver chiesto le zone a Overpass all'inizio è stato un
+errore dell'agente: cinque giorni di attesa per tre città.
+
+**Conseguenze**: 31 città italiane, 372 disegni provati, 239 passano il
+filtro, **148 entrano** (54 da 20 km, 49 da 25, 45 da 30) in 29 città;
+Venezia e Levico non ne hanno. Il catalogo va a **1694 percorsi**: 28 MB di
+file, +26 MB residenti; 34 file di città identici byte per byte, nei 29
+cambiati il testo di prima è l'inizio del nuovo. Il ritaglio di osmium
+vuole circa 3,7 GB per uno o due secondi qualunque sia l'estratto; Roma è
+l'unica dove il pianificatore arriva a 4 GB. Le 32 città estere vogliono un
+estratto per paese: un secondo giro. `tools/sample_feed.py` legge tutto il
+seme e, rilanciato, prenderebbe uscite in bici come corse di esempio:
+segnalato al Coordinatore, non toccato. I 40–50 km (B3) vogliono il limite
+del motore alzato: una PR a parte.
+
+## ADR-0381, precisazione A2b — La push «Remind me» parte con la live, una volta sola, senza giro
+
+**Stato**: Attiva · 2026-11-18 · TASK-468 parte A2b (#1299).
+**Deciso dall'agente su delega dell'utente.**
+
+- La push parte dentro `POST /me/planned-lives/{id}/start`, dopo la
+  scrittura, e solo se non c'era già una condivisione con quel
+  `planned_live_id`: una ripartenza dopo uno stop non la ripete. Nessun
+  giro periodico e nessuna migrazione.
+- La ricevono solo i promemoria di chi vede ancora la live (`apart_sql`, e
+  `follows_sql` per una «followers»), mai il proprietario; i dati
+  `{kind, planned_live_id, share_id}` aprono la schermata dal vivo (B2b1).
+
+## ADR-0381, precisazione B2a — La fila «Live» del Feed: schede una sopra l'altra, riletta ogni minuto, «Live in the Feed» senza link
+
+**Stato**: Attiva · 2026-11-18 · TASK-468 parte B2a (#1301).
+**Deciso dall'agente su delega dell'utente** (la tecnica; testi e aspetto
+approvati dall'utente).
+
+- Al più 5 schede una sopra l'altra: una fila che scorre di lato
+  litigherebbe con lo scorrimento fra le schede del Feed. `GET /lives`
+  ogni minuto; «Remind me» cambia subito e torna indietro se l'API dice no.
+- «Live in the Feed» crea la condivisione senza link col pubblico scelto, o
+  la cambia (`PATCH`) se è già accesa; nessun foglio delle persone.
+- I test che contano le richieste del Feed escludono `/lives`, come già il
+  concorso e Style.
+
+## ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job
+
+**Stato**: Attiva · 2026-11-12 · TASK-413 B e C (#1280, `335f75f5`),
+correzione della A3 (#1266, `b079f067`), accensione (#1296, `ba569576`).
+Le scelte di prodotto sono dell'utente (testi «Sì, vanno bene», «Dentro le
+ciaspole», «Sì, accendi»); le altre sono **decise dall'agente su delega
+dell'utente**, con la lista dei file approvata dal Coordinatore.
+
+1. **`isPlacedFree`** (`src/snow/snow.ts`) vale per l'acqua e per la neve,
+   e sta dove la neve fa come l'acqua:
+   - pezzi a penna alzata, senza interruttore della penna;
+   - nessun «Move» del punto di partenza;
+   - nessuna indicazione, né sul telefono né sull'orologio.
+
+   `isOnWater` non si allarga: gli esempi, i posti e gli avvisi dell'acqua
+   restano suoi. Un test dice che per ogni attività tranne le ciaspole
+   `isPlacedFree` vale quanto `isOnWater`. Il predicato della sola neve è
+   `isSnowshoeRoute`, per non confonderlo con `activities/snow.ts`
+   `isOnSnow`, che dice una giornata registrata senza forma.
+2. **Nessun disegno a mano sulla neve**: il motore lo rifiuta
+   (`ON_SNOW_SHAPES_ONLY`). `sportDraw.drawsByHand` decide insieme
+   «Freehand» in «Draw» ed «Edit the drawing» sotto il percorso. Lo ha
+   trovato il controllo al simulatore.
+3. **Nessun tempo sotto la distanza** (`timeAt` assente): il passo di chi
+   cammina, sulla neve, prometterebbe meno tempo di quello reale.
+4. **«Record your day» dentro le ciaspole** (parte C, «Dentro le
+   ciaspole», contro una riga «Snowshoe day» a sé):
+   - il bottone in alto di «Draw» è «Record your day» ❄️, al posto di
+     «Snowshoe without a route»;
+   - l'uscita si salva come `snowshoeing`: niente attività nuova, niente
+     migrazione, niente passo sul server;
+   - alla fine c'è «Your day» con i numeri del fondo (`SnowFinishCard`) e
+     la riga «White: where you walked.».
+5. **L'avviso valanghe** (`snow/safetyNotice.ts`, file `snow-notice.json`)
+   compare al primo «Start» sulla neve: una forma, «Record your day» o un
+   disegno del Feed. In `App.tsx` lo sceglie `noticeOf(activity)`, insieme
+   a quelli della canoa e del nuoto.
+6. **Il conteggio degli edifici passa anche dai job** (#1266).
+   `jobs._ReportingSnow` non aveva `buildings`, e su `/route-jobs` il
+   motore non contava mai: è quello che chiedono l'app e i processi caldi.
+   Ora lo passa alla sorgente, o dà None se la sorgente non sa contare. Un
+   test chiede una città via `/route-jobs`. Al passo 12 (2026-11-12):
+   - Milano: 16170 edifici, rifiutata in circa 1,1 s;
+   - Trento: 8091 edifici, rifiutata in 0,65–1,1 s.
+7. **Privacy**: il server prende le quote da Amazon Web Services. La riga
+   è nella #1281, in cinque lingue, col sì dell'utente.
+
+**Conseguenze**: un altro sport piazzato libero userà `isPlacedFree` e
+`drawsByHand`, invece di nuovi `isOnWater` sparsi. Il criterio B del task
+(l'uscita va in Salute) si chiude dopo la prova sul telefono con l'OTA.
+
+## ADR-0387 — Il «+» del Feed: un'attività aggiunta da lì parte con «Everyone», eccezione ad ADR-0304
+
+**Stato**: Attiva · 2026-11-12 · TASK-476 (#1284 in `main`, `bf049887`).
+Il «+», il suo posto, la sua sola voce e «Everyone» sono **scelte
+dell'utente**; il modo è deciso dall'agente su delega dell'utente, numero
+dal Coordinatore.
+
+**Contesto**: l'utente ha chiesto nel Feed, che è la home, «un tasto +
+per poter caricare un'attività manualmente da fuori o dall'app o da
+un'altra app». L'import da file c'era già, in «My activities» (TASK-312
+B, ADR-0272), e una corsa importata partiva sempre «Only me»: aggiunta
+dal Feed, nel Feed non sarebbe comparsa. ADR-0304 dice che nessuno è
+pubblico senza averlo scelto, e la privacy lo prometteva.
+
+**Decisione**:
+- **Il «+» a destra delle schede del Feed**, solo con un account e in una
+  build col selettore di file; apre il foglio «Add activity» con **solo
+  «From a file»** (scelta dell'utente: «Solo From a file»; le altre voci
+  quando sono pronte, senza «Soon»). Il foglio riusa «Add past activity»
+  con due props (`opened`, `onDone`), senza toccare «My activities».
+- **Da lì parte «Everyone»** (l'utente: «Sì, Everyone», poi al
+  Coordinatore «Everyone + privacy»): `imported.visibility` facoltativo in
+  `RunEnd`. «Everyone» si vede scelto, la frase «Every member sees it in
+  your profile.» sta anche sopra «Save», e si cambia prima di salvare. In
+  «My activities» resta «Only me».
+- **La privacy lo dice prima che esca**: nelle cinque lingue (privacy e
+  aiuto) e sulle cinque pagine del sito, testo approvato dall'utente
+  («Approvo il testo»), data 12 novembre 2026; campo e frase entrati
+  insieme.
+
+**Alternative scartate**: «Only me» con il selettore ben in vista sopra
+«Save» (proposta del Coordinatore, non scelta dall'utente); «Record now»
+o l'inserimento a mano nella prima versione (l'utente ha scelto il solo
+file).
+
+**Conseguenze**: un GPX caricato dal Feed spesso parte dalla porta di
+casa: la frase sopra «Save» e la privacy lo dicono, il resto delle regole
+di ADR-0304 non cambia. Esce col prossimo OTA, poi la copia del sito (sì
+dell'utente al Coordinatore). Proposte per dopo nel task file: «Photos
+only» (TASK-312 C), «Apri in MuW» da altre app, Apple Salute, inserimento
+a mano, collegamenti diretti.
+
+## ADR-0375, precisazione R6 — Corsa e volo nella stessa attività (hike & fly)
+
+**Stato**: Attiva · 2026-11-18 · TASK-305 parte R6 (#1291 server, #1293
+app; R6c #1313 in bozza). **Scelte dell'utente** (2026-11-12): «Dentro
+Paragliding», niente sport nuovo; i testi in cinque lingue. Il resto è
+**deciso dall'agente su delega dell'utente**, con le liste dei file
+approvate dal Coordinatore.
+
+1. **La divisione la fa il telefono, dal solo GPS** (`src/air/flightParts.ts`,
+   una funzione pura).
+   - Decollo: per almeno 15 s |vario| > 1,5 m/s, oppure per almeno 20 s
+     più di 25 km/h.
+   - Atterraggio: per almeno 60 s meno di 9 km/h e |vario| < 0,7 m/s. Il
+     minuto serve per non scambiare un volo fermo controvento.
+   - Un tratto sotto il minuto si unisce al vicino.
+2. **La correzione a mano** («On foot | In the air») vale da quel momento.
+   Il GPS torna a contare solo quando smette di vedere il suo cambio. Un
+   tocco entro 5 minuti da un cambio del GPS lo annulla dall'inizio: è il
+   caso della navetta del recupero. I tocchi restano sul telefono legati
+   al volo.
+3. **Il server tiene i tratti solo per il volo**, nel JSON di
+   `run_stats.stats`, quindi **nessuna migrazione**; per gli altri sport li
+   ignora. Somma i due tipi in `flight_split` solo se ci sono tutti e due,
+   e lo dà in ogni lista di post.
+4. **Le calorie tratto per tratto**: a piedi come corsa sotto i 7:30 /km,
+   altrimenti come escursione; in aria col MET del volo. La velocità
+   massima di una gara conta solo i tratti in aria.
+5. **Tempi in millisecondi interi**: i fix del telefono hanno i decimali e
+   il server vuole interi. Trovato nel simulatore; lo stesso difetto
+   c'era nei tratti dello sci (#1304).
+6. **Prima il server, poi l'app**: su 422 l'app rimanda le statistiche
+   senza i tratti.
+
+## ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo, i voli del mese, pronto al decollo
+
+**Stato**: Attiva · 2026-11-12 · TASK-305 parte R5 (#1258 server, #1260
+app). **Scelte dell'utente** (2026-11-12): fra quattro proposte «I tuoi
+voli», «Record personali» e «Pronto al decollo»; testi approvati nelle
+cinque lingue. Il resto è **deciso dall'agente su delega dell'utente**,
+con le liste dei file approvate dal Coordinatore.
+
+1. **I record del volo vengono dal server.** Quota massima e velocità
+   massima il server non le aveva: il profilo è ridotto a 120 punti e la
+   velocità non c'era.
+   - Il telefono le manda a fine volo (`max_alt_m`, `top_speed_mps`) con
+     `PUT …/stats`.
+   - Il server le tiene nel JSON di `run_stats.stats`, quindi **nessuna
+     migrazione**, e **solo per il volo**: per gli altri sport le ignora
+     invece di rifiutarle.
+2. **`GET /me/flight-bests`** sta nel router di `run_stats`, così `app.py`
+   non si tocca. Dà il più alto, il più lungo, il più lontano e il più
+   veloce.
+   - Solo del proprietario.
+   - A parità vince il primo volato.
+   - Un volo cancellato porta via i suoi record.
+3. **«Your flights»** usa il calendario di TASK-462 filtrato sui voli: per
+   aprirlo filtrato, un prop `sport` opzionale in `ActivityCalendarSheet`.
+4. **«Ready to fly»** legge solo l'errore del GPS (pronto fino a 10 m),
+   finché «Draw» è aperto; la posizione non esce dal telefono.
+5. **Prima il server, poi l'app**: un server senza R5a rifiuta i due campi
+   (422) e l'app rimanda le statistiche senza. L'OTA 16 è uscito prima del
+   passo 12: per poco più di un'ora i record sono rimasti nascosti, nessun
+   dato perso.
+
+## ADR-0352, precisazione — «Share live at start»
+
+**Stato**: Attiva · 2026-11-12 · TASK-305 parte R5b (#1260). **Scelta
+dell'utente** (2026-11-12), con le sue parole «Come l'ultima volta», sulla
+proposta del Coordinatore.
+
+ADR-0352 dice che il link dal vivo non si accende mai da solo. Questa
+precisazione aggiunge un caso, solo per il volo e solo se è il pilota a
+volerlo:
+
+1. Su «Ready to fly» c'è l'interruttore «Share live at start». Parte
+   spento; poi **resta com'era l'ultima volta**
+   (`flight-live-at-start.json`), e si vede sempre prima di partire.
+2. Acceso, **a fine conto alla rovescia di un volo** l'app crea il link e
+   apre il foglio di condivisione, come «Share live» a mano. Non lo fa per
+   un volo ripreso dopo la chiusura dell'app, né per gli altri sport, né
+   senza account.
+3. **Solo il link**, mandato a chi vuole il pilota; non va ai pubblici di
+   TASK-468. In volo «Sharing live» dice che è acceso.
+4. Al primo volo sul telefono il foglio aspetta che «Before you fly» sia
+   letto (trovato nel simulatore).
 
 ## ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares`
 
@@ -1172,13 +1488,36 @@ dall'agente su delega dell'utente):
   (`drift`); oggi solo «Child's pose», che usciva dal bordo di un
   telefono da 390 pt.
 
+**Decisione** (parte D, «Morning stretch», in `main` con la #1300,
+`749a5cc7`, 2026-11-12; la voce, la notifica 5 minuti dopo la sveglia,
+i giorni e le durate sono scelte dell'utente, testi e schermate col suo
+sì; il modo deciso dall'agente su delega dell'utente):
+- **L'ora della sveglia la scrive l'utente** (iOS non lascia leggere le
+  sveglie dell'Orologio), con «−» e «+», senza tastiera; l'impostazione
+  resta sul telefono (`morning-stretch.json`), spenta all'inizio.
+- **Notifiche locali settimanali con un nome proprio**,
+  `morning-stretch-<giorno>`: a ogni cambio si tolgono solo quelle con
+  questo inizio e si rimettono, mai `cancelAll`, così il promemoria del
+  piano (`muw-plan-day-…`) e la pausa della palestra restano. Il testo si
+  scrive quando la notifica è programmata: si rimettono all'apertura
+  dell'app e a ogni cambio di lingua.
+- **Il tocco ha un ascoltatore suo** (`onMorningTapped`), non quello
+  delle push, che apre solo con un account e attraverso le porte di
+  «Profile». La notifica che ha aperto l'app si legge senza cancellarla
+  (la cancella l'ascoltatore delle push, che parte dopo); quella
+  settimanale torna con lo stesso nome e si distingue dalla data.
+- **Sopra l'app, mai durante una corsa** (`MorningStretchLayer`, una riga
+  in `App.tsx`): la schermata dello stretching usa lo stesso «schermo
+  acceso» della corsa e lo spegnerebbe all'uscita.
+- Scartato: passare da `notificationTap.ts` e `openTarget.ts`, che
+  avrebbe toccato le porte di «Profile» per una cosa che non è un
+  profilo né un disegno.
+
 **Le parti dopo** (ciascuna con la sua PR, i testi col sì dell'utente):
-C, lo stretching in palestra (dopo TASK-461 A2 e TASK-465, col
-turno su `src/gym`); D, «Morning stretch» con l'orario scritto dall'utente
-e una notifica locale (iOS non lascia leggere le sveglie dell'Orologio;
-la prossima sveglia di Android è nativa e va in una build); E, le routine
-dell'utente pubblicate nel Feed con «Do this routine» (server prima,
-segnalazione e blocco anche lì).
+C, lo stretching in palestra (col turno su `src/gym`; lo stretching come
+sport è di TASK-475, ADR-0386); la prossima sveglia letta su Android,
+nativa, in una build; E, le routine dell'utente pubblicate nel Feed con
+«Do this routine» (server prima, segnalazione e blocco anche lì).
 
 **Alternative scartate**: una libreria di disegno (svg, Lottie) per la
 figura, una dipendenza e un'impronta nativa nuove per poco; il respiro
@@ -1344,6 +1683,10 @@ dall'agente su delega dell'utente; l'utente ha approvato le schermate.
 luce interni, nessuna ombra portata), la pillola ha la luce in cima e
 un'ombra a 2 pt con 6 di sfocatura; nelle modalità opache tutto torna
 piatto. Lo stesso in `PlayTabs`. Il fondo passato da chi chiama vince.
+**A4a (#1290)**: il rilievo è una funzione sola, `glassRaise(mode)`, che
+dà la luce interna in cima e l'ombra a 2 pt e non tocca i colori; la
+usano i chip delle città e `FilterChip`. Il giallo del chip scelto resta
+(TASK-344, scelta di prodotto).
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

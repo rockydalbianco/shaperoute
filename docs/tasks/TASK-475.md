@@ -1,6 +1,6 @@
 # TASK-475 — Lo stretching come sport
 
-**Stato**: Da fare · parte 0 (documenti) nella PR di soli documenti; A e B in coda
+**Stato**: In corso · parte 0 in `main` (#1283); parte A in PR (`feat/TASK-475-a-stretching`, 2026-11-21); B dopo A
 **Fase**: 5 · **Branch**: `docs/TASK-475-stretching-sport` (parte 0); A, B
 ciascuna col suo branch e la sua PR
 **ADR**: ADR-0386
@@ -71,7 +71,7 @@ codice della parte B.
 
 ## Criteri di accettazione
 
-- [ ] A: il server accetta e rilegge una sessione `stretching` senza
+- [x] A: il server accetta e rilegge una sessione `stretching` senza
       traccia (durata, routine), come la palestra; test dell'API e dei
       tipi condivisi verdi.
 - [ ] B: «Stretching» 🧘 nella famiglia «Other» del pannello, `ready:
@@ -82,6 +82,69 @@ codice della parte B.
 - [ ] Nessun file di `src/stretch` cambiato senza l'accordo della
       sessione di TASK-466 e del Coordinatore.
 - [ ] C: acceso (`ready: true`) col sì dell'utente sulle schermate.
+
+## Parte A — com'è fatta (2026-11-21)
+
+Decisa dall'agente su delega dell'utente, con la ricetta
+(`sports/COME-AGGIUNGERE.md`, sezioni 2–4): contratto, API e profilo
+nascosto dell'app in una PR, senza la deroga `SERVER_FIRST`. Lista dei file
+approvata dal Coordinatore (2026-11-21); `0079` sua.
+
+- **Uno sport senza traccia dopo la palestra**: `TracklessSport` nel
+  contratto, `ApiSport(trackless=True)` nell'API (Strava «Yoga», mai
+  mandato), `X-MuW-Reads` con `stretching` e `trackless`.
+- **Un endpoint suo**, come la piscina: `PUT/GET /me/stretch-sessions/{key}`
+  e `GET /drawings/{id}/stretch` (`stretch_sessions.py`). La routine è la
+  chiave del telefono (`morning`, `afterRun`, `afterGym`), con i minuti e
+  gli esercizi fatti; il tempo lo conta il server.
+- **`0079_stretching.sql`**: allarga `runs_activity_check` e
+  `runs_track_check`, crea `stretch_sessions`.
+- **Profilo nascosto** (`src/sports/stretching.ts`): Salute
+  `.flexibility` (62), Health Connect `EXERCISE_TYPE_STRETCHING` (71),
+  energia 2,3 MET; sull'orologio no (al chiuso, `NOT_ON_WATCH`). Nessuna
+  riga in Impostazioni né nel pannello: arrivano con la B.
+- **Da sapere per la B**: il server non distingue fra due attività senza
+  traccia quando si pubblica (`drawings.py`, `NOT_TRACKLESS`): il modulo
+  per pubblicare deve tenere lo sport della sessione, come fa per la
+  palestra.
+
+## File toccati (parte A)
+
+```
+services/api/migrations/0079_stretching.sql                 (nuovo)
+services/api/shaperoute_api/stretch_sessions.py             (nuovo)
+services/api/shaperoute_api/sports/stretching.py            (nuovo)
+services/api/shaperoute_api/sports/__init__.py
+services/api/shaperoute_api/activities.py
+services/api/shaperoute_api/reads.py
+services/api/shaperoute_api/app.py
+services/api/tests/test_stretching_api.py                   (nuovo)
+services/api/tests/test_record_only.py
+packages/shared-types/src/sports/stretching.ts              (nuovo)
+packages/shared-types/src/stretchSession.ts                 (nuovo)
+packages/shared-types/src/sports/index.ts
+packages/shared-types/src/index.ts
+packages/shared-types/fixtures/stretch-session.json         (nuovo)
+packages/shared-types/fixtures/run-activities.json
+packages/shared-types/fixtures/reads.json
+packages/shared-types/test/stretching.test.ts               (nuovo)
+packages/shared-types/test/sportRegistry.test.ts
+packages/shared-types/test/gym.test.ts
+apps/mobile/src/sports/stretching.ts                        (nuovo)
+apps/mobile/src/sports/index.ts
+apps/mobile/src/sports/sportProfiles.test.ts
+apps/mobile/src/sports/activityName.test.ts
+apps/mobile/src/api/accounts.test.ts
+apps/mobile/src/i18n/{it,fr,de,es}.ts
+apps/mobile/src/watch/watchSports.ts
+apps/mobile/src/watch/watchSports.test.ts
+apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json
+apps/mobile/targets/watch/{it,en,fr,de,es}.lproj/Localizable.strings
+apps/mobile/assets/engine/engine.zip
+docs/API.md
+docs/DATABASE.md
+docs/tasks/TASK-475.md
+```
 
 ## File toccati (parte 0)
 

@@ -19,6 +19,9 @@ export type Opens = {
   /** Shows the page of the monthly challenge `id` (TASK-343 part B): a new
    * one, its last days, its results. */
   openContest?: (id: string) => void;
+  /** Shows the live `shareId` in the app (TASK-468 part B2b1): a planned
+   * live that started. */
+  openLive?: (shareId: string, plannedLiveId: string) => void;
 };
 
 /**
@@ -36,6 +39,8 @@ export function openTarget(target: TapTarget, opens: Opens): void {
     opens.openChallenge(target.id);
   } else if (target.kind === "contest") {
     opens.openContest?.(target.id);
+  } else if (target.kind === "live") {
+    opens.openLive?.(target.shareId, target.plannedLiveId);
   } else {
     opens.openPlay();
   }

@@ -75,7 +75,12 @@ from shaperoute_api.outfit_tags import OutfitTagBody, tags_on_photos
 from shaperoute_api.push import notify_tagged, tagged_before
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.recommended import preview
-from shaperoute_api.run_stats import RunStatsBody, SkiDescentsBody, seen_stats
+from shaperoute_api.run_stats import (
+    FlightSplitBody,
+    RunStatsBody,
+    SkiDescentsBody,
+    seen_stats,
+)
 from shaperoute_api.schemas import ErrorBody
 from shaperoute_api.sleep_seen import SEEN_SLEEP_SQL, SleepSummaryBody, seen_sleep
 
@@ -391,6 +396,10 @@ class SeenFields(BaseModel):
     alone, which its calories are counted on (TASK-424 part C2b,
     run_stats.py); null for any other run, and for a day whose phone sent no
     parts."""
+    flight_split: FlightSplitBody | None = None
+    """A race on foot and in the air (hike & fly, TASK-305 part R6a,
+    run_stats.py): each kind added up; null for any other run, and for a
+    flight with no part on foot."""
     linkable: bool = False
     """The drawing can be opened by its link on the site, without an account
     (TASK-455 part C, post_links.py): it is for everyone, it has a line, and
@@ -470,6 +479,9 @@ _SEEN_FIELDS = (
     # run_stats row, by its primary key.
     " (SELECT s.stats -> 'ski_descents' FROM run_stats s WHERE s.run_id = r.id)"
     " AS ski_descents,"
+    # On foot and in the air, a flight's (TASK-305 part R6a): the same row.
+    " (SELECT s.stats -> 'flight_split' FROM run_stats s WHERE s.run_id = r.id)"
+    " AS flight_split,"
     # The night shown in the post (TASK-467 part B1b): one row of
     # sleep_nights, by its primary key.
     f" {SEEN_SLEEP_SQL} AS sleep,"
@@ -611,6 +623,7 @@ def _seen(row: DictRow, details: Details) -> dict[str, Any]:
         # The run's, as My activities answers it (activities._turn).
         "rotation_deg": turn_kept(row["route_rotation_deg"]),
         "ski_descents": row.get("ski_descents"),
+        "flight_split": row.get("flight_split"),
         "sleep": seen_sleep(row.get("sleep")),
         "linkable": bool(row.get("linkable")),
     }

@@ -1,5 +1,13 @@
 import { type ReactNode, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import {
+  PanResponder,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t } from "../i18n";
@@ -8,6 +16,7 @@ import { MapKindButton } from "../map/MapKindButton";
 import { color, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { useBackCloses } from "../ui/backLayers";
 import { MapError } from "./ChooseScreen";
+import { FoldHandle, foldedAfter, upOrDown } from "./RunFoldedStrip";
 
 type Props = {
   /** The map itself: mounted by the app for both screens, so it never reloads. */
@@ -23,6 +32,19 @@ type Props = {
   compass?: ReactNode;
   /** The wait, the route or the problem (RouteOutcome). */
   children: ReactNode;
+  /**
+   * The end of an activity (TASK-477): the card and «Save» and «Discard»
+   * under it can be taller than the screen. Then the card stops under the
+   * banner and scrolls, so that nothing falls under the bottom edge.
+   */
+  scrolls?: boolean;
+  /**
+   * The card at the end of an activity, folded (TASK-478 part b): with it,
+   * the card that scrolls can be dragged down, or its handle touched, and
+   * only this strip is left over the map. `open` opens the card again.
+   * What the card holds stays as it was, the form of the post included.
+   */
+  endStrip?: (open: () => void) => ReactNode;
 };
 
 /**
@@ -38,12 +60,14 @@ export function MapScreen({
   banner,
   compass,
   children,
+  scrolls = false,
+  endStrip,
 }: Props) {
   const insets = useSafeAreaInsets();
   // What lies over the top of the map (TASK-443): the map frames its
   // route clear of it. The map goes from side to side of the window; a
   // banner is as high as it turns out.
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const [rowHeight, setRowHeight] = useState<number | null>(null);
   const hasBanner = banner !== undefined && banner !== null;
   // Without a banner the row is the buttons': its height is not asked, so
@@ -64,6 +88,27 @@ export function MapScreen({
           })
         : null,
     [active, insets.top, width, bannerHeight, hasCompass],
+  );
+  // The card at the end folded to a strip (TASK-478 part b): open again at
+  // the next end.
+  const foldable = active && scrolls && endStrip !== undefined;
+  const [folded, setFolded] = useState(false);
+  const [wasFoldable, setWasFoldable] = useState(foldable);
+  if (wasFoldable !== foldable) {
+    setWasFoldable(foldable);
+    setFolded(false);
+  }
+  const isFolded = foldable && folded;
+  // Up or down on the handle or the strip, not in the card that scrolls:
+  // there the finger scrolls.
+  const drag = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_event, { dx, dy }) => upOrDown(dx, dy),
+        onPanResponderRelease: (_event, { dx, dy }) =>
+          setFolded((now) => foldedAfter(dx, dy, now)),
+      }),
+    [],
   );
   return (
     <View style={styles.screen}>
@@ -108,7 +153,37 @@ export function MapScreen({
           </View>
         )}
       </View>
-      {active && (
+      {active && scrolls && (
+        // At most as high as the screen under the banner's row: the rest
+        // scrolls, «Save» at its foot included (TASK-477).
+        <View
+          style={[
+            styles.card,
+            styles.scrolling,
+            { maxHeight: cardMaxHeight(height, insets.top, bannerHeight) },
+          ]}
+          testID="map-card"
+        >
+          {foldable && (
+            <View {...drag.panHandlers} testID="map-card-fold">
+              <FoldHandle folded={isFolded} onPress={() => setFolded(!isFolded)} />
+              {isFolded && endStrip(() => setFolded(false))}
+            </View>
+          )}
+          {isFolded && <View style={{ height: insets.bottom + space.md }} />}
+          <ScrollView
+            // Folded, the card is still there, hidden: what was chosen in
+            // it is kept.
+            style={[styles.scroll, isFolded && styles.hidden]}
+            contentContainerStyle={{ paddingBottom: insets.bottom + space.md }}
+            keyboardShouldPersistTaps="handled"
+            testID="map-card-scroll"
+          >
+            {children}
+          </ScrollView>
+        </View>
+      )}
+      {active && !scrolls && (
         <View
           style={[styles.card, { paddingBottom: insets.bottom + space.md }]}
           testID="map-card"
@@ -117,6 +192,22 @@ export function MapScreen({
         </View>
       )}
     </View>
+  );
+}
+
+/**
+ * The highest the card goes at the end of an activity (TASK-477): the
+ * window, less the safe area at the top, the banner's row and a gap under
+ * it, so that the banner stays in sight.
+ */
+export function cardMaxHeight(
+  windowHeight: number,
+  insetTop: number,
+  bannerHeight: number | null,
+): number {
+  return Math.max(
+    0,
+    windowHeight - insetTop - space.sm - (bannerHeight ?? MIN_TAP_SIZE) - space.sm,
   );
 }
 
@@ -169,5 +260,18 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radius.sheet,
     borderTopRightRadius: radius.sheet,
     backgroundColor: color.surface,
+  },
+  // The card that scrolls: its padding at the foot is the content's.
+  scrolling: {
+    paddingBottom: 0,
+  },
+  // As high as its content, up to the card's height: it shrinks to fit
+  // the card, and what is left over scrolls.
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 1,
+  },
+  hidden: {
+    display: "none",
   },
 });

@@ -48,16 +48,24 @@ export type ToPage =
   /** What lies over the top of the map (TASK-443), or null for nothing
    * told: the route is framed clear of it. */
   | { type: "setCover"; cover: MapCover | null }
-  | { type: "showTrack"; coordinates: LngLat[] }
+  /** `frame`: the map is framed on the line (TASK-478), at the end of a
+   * run without a route; never while following the runner. */
+  | { type: "showTrack"; coordinates: LngLat[]; frame?: true }
   | { type: "clearTrack" }
   | {
       type: "showLifts";
       skied: LngLat[][];
       lifts: LngLat[][];
+      /** As `showTrack`'s (TASK-478). */
+      frame?: true;
       /** The numbers on the lines (TASK-429 part B); none from an app before. */
       labels?: { point: LngLat; text: string; kind: "lift" | "descent" }[];
     }
   | { type: "clearLifts" }
+  /** A race on foot and in the air (TASK-305 part R6c): white on foot,
+   * yellow in the air. */
+  | { type: "showFlight"; foot: LngLat[][]; air: LngLat[][]; frame?: true }
+  | { type: "clearFlight" }
   | { type: "follow"; lngLat: LngLat; heading: number | null }
   /** Where the phone points on «Compass» (TASK-431), or null off it. */
   | { type: "face"; heading: number | null }
@@ -254,6 +262,12 @@ export function showTrack(points: LatLon[]): ToPage {
   return { type: "showTrack", coordinates: points.map(toLngLat) };
 }
 
+/** The track, and the map framed on it (TASK-478): a run without a route
+ * that ended, or one opened again. */
+export function showTrackFramed(points: LatLon[]): ToPage {
+  return { type: "showTrack", coordinates: points.map(toLngLat), frame: true };
+}
+
 export function clearTrack(): ToPage {
   return { type: "clearTrack" };
 }
@@ -266,9 +280,11 @@ export function showLifts(
   skied: LatLon[][],
   lifts: LatLon[][],
   labels: readonly SkiLabel[] = [],
+  frame = false,
 ): ToPage {
   return {
     type: "showLifts",
+    ...(frame ? { frame: true as const } : {}),
     skied: skied.map((line) => line.map(toLngLat)),
     lifts: lifts.map((line) => line.map(toLngLat)),
     labels: labels.map((label) => ({
@@ -281,6 +297,22 @@ export function showLifts(
 
 export function clearLifts(): ToPage {
   return { type: "clearLifts" };
+}
+
+/** A race on foot and in the air (TASK-305 part R6c, the user's words of
+ * 2026-11-12, «White: on foot. Yellow: in the air.»): the track white where
+ * the pilot went on foot, the flights yellow over it. */
+export function showFlight(foot: LatLon[][], air: LatLon[][], frame = false): ToPage {
+  return {
+    type: "showFlight",
+    ...(frame ? { frame: true as const } : {}),
+    foot: foot.map((line) => line.map(toLngLat)),
+    air: air.map((line) => line.map(toLngLat)),
+  };
+}
+
+export function clearFlight(): ToPage {
+  return { type: "clearFlight" };
 }
 
 /** Marks the places of a themed route, named when the route passes by. */

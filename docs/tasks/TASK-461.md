@@ -86,6 +86,18 @@ Sulla tela «Schede palestra guidate»
     (`out/TASK-461/shots`, fuori da git). Dalla prova: alla sbarra e alle
     parallele metà ripetizioni (3 × 8 trazioni accanto a 3 × 15
     piegamenti).
+20. **Più sport di resistenza nello stesso piano (B2b, 2026-11-12)**: «Più
+    d'uno» alla domanda «quanti sport "di resistenza" si possono scegliere
+    insieme (corsa, camminata e hike, bici, nuoto e canoa, montagna)? Ogni
+    piano ha una sola meta». Il primo scelto ha la meta, gli altri restano
+    «tenermi in forma», con giorni che non crescono verso una meta.
+21. **Schermate di B2b/C2 al simulatore (2026-11-12)**: «Approvo» — l'ingresso
+    coi sette sport, la meta in bici (60 km), «Dove sei oggi?», i giorni,
+    «Per quando?» con la data troppo vicina («Arriva a 54 km», «Sposta la
+    data»), il piano con la scala, il giorno in bici con − e +, l'ultimo
+    passo col promemoria acceso, la gita da 1000 m, e «Oggi» oltre il
+    massimo di «Draw» e per un giorno di salita (`out/TASK-461/shots-b2b`,
+    fuori da git).
 
 ### I testi approvati della parte A (italiano; le altre lingue con lo stesso senso)
 
@@ -190,7 +202,23 @@ Sulla tela «Schede palestra guidate»
   di visibile nell'app. `targetWeeks.ts` (la scala delle settimane),
   `targetPlan.ts` (il piano dalle risposte della guida), `outingHistory.ts`
   («Dove sei oggi?» dalle attività dell'ultimo mese), coi loro test.
-- **B2b — app dei piani a distanza** (corsa, camminata, hike, bici, nuoto,
+- **B2b/C2 — app di distanza e montagna** (branch
+  `feat/TASK-461-b2b-target-app`, lista col sì del Coordinatore il
+  2026-11-12): l'ingresso con corsa, camminata e hike, bici, nuoto e canoa,
+  montagna; i passi «Dove vuoi arrivare?»/«Che gita vuoi fare?», «Dove sei
+  oggi?», «Per quando?»; il piano con la scala delle settimane; «Oggi» di un
+  giorno fuori in palestra e nella pagina «Draw» del suo sport (una riga in
+  `ChooseScreen.tsx`); «Ricordamelo alle 8». Fuori: B2c («Mancano 12,4 km»
+  mentre si registra, la schermata di registrazione) e `climb_m`
+  nell'elenco delle attività (server): liste a parte.
+  **Il promemoria** (`gym/planReminder.ts`): notifiche locali con
+  identificativi `muw-plan-day-YYYY-MM-DD` e `data.kind = "plan_day"`;
+  toglie e rimette solo le sue (quelle col prefisso `muw-plan-day-`), mai
+  quelle del recupero (`gym_rest`) o dello stretching del mattino
+  (TASK-466 D). Il permesso è quello delle notifiche push, chiesto dal
+  sistema quando si accende: nessun testo nuovo. Interruttore unico per
+  tutti i piani, nel file del telefono `plan-reminder.json`.
+- **B2b — (prima stesura) app dei piani a distanza** (corsa, camminata, hike, bici, nuoto,
   canoa) e **C2 — app della montagna**: dopo la PR dell'app di TASK-452
   (#1159) e A2, che toccano gli stessi file (la guida, «Today», le tabelle
   delle lingue). Le schermate delle righe F e G, l'ingresso senza «Presto»,

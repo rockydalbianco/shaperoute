@@ -59,17 +59,16 @@ test("the days out of the example say their sport and amount in their name", () 
   ]);
 });
 
-test("an older «Today» shows the gym day and no day out", () => {
+test("«Today» shows the gym day, and since B2b the day out too", () => {
   // The bike plan from Monday 2 November 2026: Monday the gym, Wednesday
-  // the bike intervals, Friday the pool, Sunday the long ride.
+  // the bike intervals, Friday the pool, Sunday the long ride. An app
+  // older than TASK-461 B2b showed no «Today» on a day out (it had no
+  // `outing`); this one shows it, with this week's values.
   const monday = todayPlan([bike], new Date(2026, 10, 2, 9));
   expect(monday?.name).toBe("Full body A");
-  expect(monday?.run).toBeUndefined();
-  for (const day of [4, 6, 8]) {
-    expect(todayPlan([bike], new Date(2026, 10, day, 9))).toBeNull();
-  }
-  // The mountain plan: Saturday's climb is no «Today» either.
-  expect(todayPlan([mountain], new Date(2026, 10, 7, 9))).toBeNull();
+  expect(monday?.outing).toBeUndefined();
+  expect(todayPlan([bike], new Date(2026, 10, 4, 9))?.outing?.sport).toBe("bike");
+  expect(todayPlan([mountain], new Date(2026, 10, 7, 9))?.outing?.kind).toBe("climb");
 });
 
 test("an older app keeps the days out and the target when it works out or edits a plan", () => {
@@ -77,11 +76,17 @@ test("an older app keeps the days out and the target when it works out or edits 
   if (program == null) {
     throw new Error("the bike plan has its weeks");
   }
+  // The week's values climb toward the target; each day keeps its sport
+  // and kind.
   const week = sessionsOfWeek(program, 3);
   expect(
-    week.filter((one) => one.outing !== undefined).map((one) => one.outing),
+    week.flatMap((one) =>
+      one.outing === undefined ? [] : [[one.outing.sport, one.outing.kind]],
+    ),
   ).toEqual(
-    program.sessions.flatMap((one) => (one.outing === undefined ? [] : [one.outing])),
+    program.sessions.flatMap((one) =>
+      one.outing === undefined ? [] : [[one.outing.sport, one.outing.kind]],
+    ),
   );
   // TASK-461 A2: the days are given by sport, the bodyweight Monday as
   // such; a day out stays on its day.

@@ -36,6 +36,9 @@ In «My activities» (Profile) c'è un pulsante «Add past activity». Apre due
 scelte: «From a file» e «Photos only». *Proposta, da confermare con i
 testi della parte B.*
 
+Anche dal Feed (TASK-476, ADR-0387): il «+» a destra delle schede apre
+il foglio «Add activity», oggi con solo «From a file».
+
 Senza account il pulsante non c'è, come «My activities». Senza il modulo
 nativo del selettore di file (la 1.0 da App Store, finché non arriva la
 build dopo) «From a file» è nascosto e resta «Photos only».
@@ -68,7 +71,8 @@ build dopo) «From a file» è nascosto e resta «Photos only».
    rifiutato.
 6. **Poi il modulo di sempre**: titolo, descrizione, 3 foto, persone
    taggate, sport, chi la vede, con «Only me» all'inizio come a ogni corsa
-   (TASK-208). Sopra il modulo, la scritta «Imported».
+   (TASK-208); dal «+» del Feed con «Everyone», che si vede sopra «Save»
+   e si cambia (ADR-0387). Sopra il modulo, la scritta «Imported».
 7. **«Send to Strava» non c'è** per una corsa importata: viene da un'altra
    app, e spesso da Strava stessa. *Proposta, da confermare.*
 

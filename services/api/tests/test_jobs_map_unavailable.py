@@ -135,7 +135,11 @@ def test_a_download_that_failed_is_not_tried_again_by_the_engine(
     assert job.error.message == "no Overpass"
     assert zones.downloads == 1
     assert planner.calls == 1  # asked, and stopped at its first load
-    # One load in the job's times: the second took no time at all.
+    # One load in the job's times: the second took no time at all. The job
+    # writes its times after it sets its status, so wait for the line.
+    deadline = time.monotonic() + 5.0
+    while " times " not in caplog.text and time.monotonic() < deadline:
+        time.sleep(0.01)
     assert " loads=1 " in caplog.text
     assert "not downloaded again" in caplog.text
 

@@ -48,6 +48,8 @@ test("a day with lifts is drawn cut at them, not as one line", async () => {
   expect(messages("showLifts")).toEqual([
     {
       type: "showLifts",
+      // Nothing followed and no route: framed on the day (TASK-478).
+      frame: true,
       skied: [lngLat(LINE.slice(0, 3)), lngLat(LINE.slice(4))],
       lifts: [lngLat(LINE.slice(2, 5))],
       labels: [],
@@ -115,7 +117,7 @@ test("a run after the day has its line whole, and no dashes", async () => {
   const run = LINE.slice(0, 4);
   await rerender(<MapView start={null} route={null} track={run} onError={jest.fn()} />);
   expect(messages("showTrack")).toEqual([
-    { type: "showTrack", coordinates: lngLat(run) },
+    { type: "showTrack", coordinates: lngLat(run), frame: true },
   ]);
   expect(messages("clearLifts")).toHaveLength(1);
 });

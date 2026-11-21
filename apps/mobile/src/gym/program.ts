@@ -7,6 +7,8 @@ import type {
   GymProgram,
 } from "@shaperoute/shared-types";
 
+import { isTargetDay, targetDayInWeek } from "./targetWeeks";
+
 /**
  * The weeks of a plan made with the guide (docs/sports/gym.md «Le schede
  * guidate»): the first week is written, the others are worked out from it
@@ -227,24 +229,35 @@ export function sessionsOfWeek(
       ),
     }));
   }
-  return program.sessions.map((session) => ({
-    ...session,
-    items: session.items.map((item) =>
-      itemInWeek(item, program.mode, program.weeks, program.step_kg, week, cycle),
-    ),
-    ...(session.run === undefined
-      ? {}
-      : {
-          run: runInWeek(
-            session.run,
-            program.mode,
-            program.weeks,
-            week,
-            cycle,
-            program.runner !== undefined,
-          ),
-        }),
-  }));
+  const target = program.target;
+  return program.sessions.map((session) =>
+    // A day of the target's sport climbs the ladder to it (TASK-461 B and
+    // C, ADR-0371); the others change as the mode says.
+    target !== undefined && isTargetDay(session, target)
+      ? targetDayInWeek(session, program, week)
+      : weekOf(session),
+  );
+
+  function weekOf(session: GymPlanSession): GymPlanSession {
+    return {
+      ...session,
+      items: session.items.map((item) =>
+        itemInWeek(item, program.mode, program.weeks, program.step_kg, week, cycle),
+      ),
+      ...(session.run === undefined
+        ? {}
+        : {
+            run: runInWeek(
+              session.run,
+              program.mode,
+              program.weeks,
+              week,
+              cycle,
+              program.runner !== undefined,
+            ),
+          }),
+    };
+  }
 }
 
 /** The workout of `date`, with the week it is in; null on a day without. */

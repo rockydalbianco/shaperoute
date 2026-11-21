@@ -466,6 +466,20 @@ che non lo dice (il catalogo di oggi è di prima della parte A: tutti `0`);
 lo scrive `seed_catalog` del motore quando il motore inclina, e un valore
 che non è un numero fra −180 e 180 si legge `0`.
 
+**`activity`** (TASK-441 B2, ADR-0366 precisazione): facoltativo nella
+query di `/recommended-routes` e di `/catalog`. **Senza, le corse**, come
+prima che il catalogo avesse altro: un'app che non lo chiede riceve le
+stesse risposte di prima, byte per byte. Con `activity=cycling` le uscite
+disegnate per la bici (20–30 km) e solo quelle; un'attività che il catalogo
+non ha dà una lista vuota (`total` e `cities` a 0 in `/catalog`), mai un
+errore. Nella risposta, nell'elenco e nel percorso intero, il campo
+`activity` **c'è solo quando non è una corsa** (`"cycling"`): manca, non è
+`null`, in ogni corsa. `GET /recommended-routes/{id}` dà un'uscita per id
+senza parametro. `GET /recommended` e ogni altra lista restano sulle corse.
+Corpi in `recommended-routes-bike.json` e `recommended-route-bike.json`.
+L'app chiede `activity=cycling` solo con lo sport «Bike»; ogni altro sport
+chiede senza.
+
 I percorsi vengono da `catalog/seed/` (ADR-0097), letti all'avvio:
 `--catalog-dir` per un'altra cartella; senza file la lista è vuota. Un file
 nuovo vuole un riavvio dell'API.
@@ -474,8 +488,10 @@ nuovo vuole un riavvio dell'API.
 
 Tutto il catalogo, una pagina alla volta, per il fondo di «Explore»
 («Farther away»): `?lat=…&lon=…`, facoltativi `offset` (da 0, default 0)
-e `limit` (1–200, default 40). Risponde `{total, cities, routes}`: quanti
-percorsi ha il catalogo in tutto, in quante città, e i percorsi della
+e `limit` (1–200, default 40) e `activity` (sopra: senza, le corse; `total`
+e `cities` contano quell'attività soltanto). Risponde `{total, cities,
+routes}`: quanti percorsi ha il catalogo in tutto, in quante città, e i
+percorsi della
 pagina nello stesso corpo di `/recommended-routes` (con `away_m` dal
 punto). L'ordine è **città per città dalla più vicina** al punto (una
 città sta dove sta la sua partenza più vicina), e dentro la città prima
@@ -2636,6 +2652,38 @@ nuovi. Il codice in `drawings.py` e `drawing_photos.py`.
   `visibility`, `description`, `activity` e `tags` (`422`, campi in più)
   e non ha le foto (`404`): l'app di prima continua con `public`.
 
+#### «Together» (TASK-417 D1, ADR-0345)
+
+`GET /drawings/{id}/together`: le tracce **con i tempi** della corsa di un
+post e delle persone taggate che l'hanno corsa insieme, per il video
+«Together» dell'app. È l'unico posto da cui escono i tempi di una traccia
+(M di `runs.track`): i disegni, il Feed e «My activities» le danno senza.
+Codice in `together.py`, esempio in `fixtures/together.json`.
+
+- **Solo all'autore** del post, del suo disegno: a chiunque altro, e per un
+  id che non c'è, `404 http_error` «No drawing with this id.», come
+  `GET /drawings/{id}`. Senza token `401`.
+- **Chi entra**: l'autore per primo, poi le persone taggate nell'ordine dei
+  tag, al più 3 (scelta 4 dell'utente), la cui corsa è **la stessa**:
+  almeno metà del tempo trascorso della più corta in comune, e partenze a
+  meno di 2 km. Solo se il disegno di quella corsa è visibile all'autore
+  (`drawing_seen_sql`: `everyone`, o `followers` con il follow accettato;
+  mai `only_me`, nascosto o oltre un blocco). Una corsa senza disegno non
+  entra. Nessuna richiesta di consenso: bastano tag e visibilità (scelta
+  3). Fra più corse della stessa persona, quella con più tempo in comune.
+- **Il corpo**: `{ "people": [{ "public_id", "username", "points":
+  [[lat, lon], …], "seconds": [s, …], "pauses": [{ "from_s", "to_s" }] }] }`.
+  `seconds` è lungo come `points`: i **secondi dalla prima partenza del
+  gruppo**, al decimo; mai l'ora del giorno né la data. Le pause sullo
+  stesso orologio. Senza nessuno taggato che abbia corso, solo l'autore.
+- **Al più 600 punti** a traccia, scelti fra quelli registrati, nessuno
+  spostato: il primo, l'ultimo, l'ultimo prima e il primo dopo ogni pausa,
+  e gli altri più vicini a secondi equidistanti, così la linea tiene il
+  passo vero.
+- Se una persona rende la sua corsa `only_me` o toglie il disegno, non
+  entra più; un video già fatto resta sul telefono com'è. Un'API
+  precedente risponde `404`: l'app tiene spenta la riga «Together».
+
 ### Follow (TASK-211, ADR-0173)
 
 Un iscritto ne cerca un altro per nome e gli chiede di seguirlo; l'altro
@@ -3313,6 +3361,34 @@ con la vasca e le vasche. Token richiesto; tipi in
   /drawings/{id}/pool-swim` dà medio e massimo agli altri solo se
   `heart_shown`. Senza battito le risposte non hanno i campi, come prima.
 
+### Stretching (TASK-475, ADR-0386)
+
+Una sessione di stretching: una corsa dell'attività `stretching` **senza
+traccia**, come la palestra, con la routine fatta. Token richiesto; tipi in
+`shared-types/src/stretchSession.ts` (`StretchSessionRequest`,
+`StretchSession`, `StretchFigures`), esempio in
+`fixtures/stretch-session.json`; il codice in `stretch_sessions.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/stretch-sessions/{key}` | salva la sessione: inizio, fine, pause, routine, minuti, esercizi fatti | `201` `StretchSession` la prima volta, poi `200` com'era; `409` se la chiave è di una corsa |
+| `GET /me/stretch-sessions/{key}` | la sessione del suo proprietario | `200` `StretchSession`, o `404` |
+| `GET /drawings/{id}/stretch` | routine, minuti ed esercizi del post, per chi vede il disegno | `200` `StretchFigures`, o `404` |
+
+- **Il tempo lo conta il server**: da `started_at` a `ended_at` meno le
+  pause (sovrapposte contate una volta), al più 4 ore. `routine` è la chiave
+  della routine sul telefono (`morning`, `afterRun`, `afterGym`, TASK-466
+  B: lettere, cifre e `_`, al più 40); `minutes` da 1 a 60 (oggi 3, 5 o
+  10); `exercises` da 0 a 100, quelli fatti, «Skip» esclusi. Distanza 0.
+- **Pubblicata come ogni corsa**, con `PUT /me/activities/{key}/drawing`:
+  senza linea (`track: []`). Un'attività con traccia è `422`, come per la
+  palestra.
+- **Solo a chi la sa leggere**: `X-MuW-Reads` deve dire `stretching` **e**
+  `trackless`. Un'app di prima non la riceve: niente in «My activities» né
+  nel Feed, `404` sul dettaglio e su `/stretch`.
+- Nessun punteggio di forma, nessun record, nessun luogo, niente Strava
+  (una corsa senza traccia non si manda). Test in `test_stretching_api.py`.
+
 ### Sleep (TASK-467 parti B1 e B1b, ADR-0380)
 
 Le notti di sonno che una persona pubblica. Il punteggio lo calcola il
@@ -3525,8 +3601,17 @@ in `planned_lives.py`, montato da `install_live_shares`; tipi in
   o `ended`; `distance_m` e `duration_s` sono gli ultimi numeri, per la
   scheda; `reminded` è il «Remind me» di chi chiede; `can_start` vale
   solo per il proprietario.
-- **«Remind me»** tiene solo chi vuole l'avviso: la push alla partenza
-  arriva con la parte A2b. Test in `test_planned_lives.py`.
+- **«Remind me»** (parte A2b): alla **prima** partenza riuscita (`POST
+  /me/planned-lives/{id}/start`), dopo la scrittura, una push
+  `planned_live_started` a chi l'ha chiesto e la vede ancora: mai al
+  proprietario, a chi è lontano per un blocco, a chi non lo segue più per
+  una live «followers». Testo «{name} is live: {title}» (it «{name} è live:
+  {title}», più de, es, fr); dati `{kind, planned_live_id, share_id}`
+  (`fixtures/planned-live-push-data.json`, `PlannedLivePushData`) per
+  aprire la schermata dal vivo. Una ripartenza dopo uno stop non la manda
+  di nuovo; nessun giro periodico, nessuna migrazione. Le regole di
+  `push.py` valgono come per le altre (push accese, token). Test in
+  `test_planned_lives.py`.
 
 ### Run stats (TASK-410 parte C, ADR-0340)
 
@@ -3603,6 +3688,27 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
     compresi.
   - **Prima il server, poi l'app**: un server senza R5a rifiuta i due campi
     (422, `extra="forbid"`).
+- **A piedi e in volo, hike & fly** (TASK-305 parte R6a, ADR-0375
+  «precisazione R6»; tipi in `packages/shared-types/src/flightParts.ts`,
+  esempi in `fixtures/flight-parts-request.json` e
+  `fixtures/flight-split.json`, test in `test_flight_parts.py`).
+  - Il telefono può mandare in più `flight_parts`, al più 200,
+    nell'ordine del volo.
+  - Ogni tratto è `{kind: "foot"|"air", start_ms, end_ms, moving_s,
+    metres, climb_m, max_alt_m}`: i tempi sono sull'orologio dei `time_ms`
+    della traccia, `moving_s` non supera la durata del tratto, e
+    `max_alt_m` è `null` senza quote.
+  - Il server li tiene in `stats` **solo per un volo**, come i tratti dello
+    sci: `start_s`/`end_s` in secondi dal primo punto tenuto. Calcola anche
+    `flight_split` `{foot, air}`, ognuno `{seconds, metres, climb_m,
+    max_alt_m}`, ma solo se il volo ha tratti di tutti e due i tipi. Per gli
+    altri sport li ignora.
+  - `GET /drawings/{id}` dà `flight_parts` e `flight_split` dentro
+    `stats`. Ogni lista di post (Feed, profilo, ricerca, gare, stazione) dà
+    `flight_split` sul post, `null` senza tratti a piedi: il Feed ci scrive
+    «On foot {time} · In the air {time}».
+  - **Prima il server, poi l'app**: un server senza R6a rifiuta
+    `flight_parts` (422).
 
 ### Ski names (TASK-375 parte D2, ADR-0319)
 

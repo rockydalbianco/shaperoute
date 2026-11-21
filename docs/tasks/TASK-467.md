@@ -1,6 +1,6 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta) · **B3 scritta** (app, la scheda «Sleep» del profilo, spenta: branch `feat/TASK-467-b3-sleep-profile`), poi C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta) · **B3 in `main`** (#1292, `b6e36fcb`: app, la scheda «Sleep» del profilo, spenta) · **C avviata** (bozza #1334, da non unire: il lettore vero e il sonno acceso; build di prova per il solo iPhone dell'utente dal 2026-11-21), poi privacy, App Privacy e la build nativa, D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
 `feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1),
 `feat/TASK-467-b1b-sleep-in-feed` (B1b), `feat/TASK-467-b2-sleep-post` (B2),
@@ -653,6 +653,12 @@ e `profile/UserProfilePage.tsx` (un import e una riga ciascuno),
 
 **Da sapere per C**:
 
+- **Condizione del Coordinatore (2026-11-12)**: prima che la C accenda il
+  sonno per tutti, l'utente deve aver visto la scheda e i post accesi.
+  Dal 2026-11-21 la vede sul suo iPhone con la build di prova (sotto,
+  «Parte C — avviata»); quello che chiede di cambiare entra prima
+  dell'accensione.
+
 - Il lettore vero deve **lanciare un errore** quando sa che non può
   leggere (permesso negato dove iOS lo dice, dati di Salute non
   disponibili): è quello che fa dire «MuW can't read your sleep…». iOS non
@@ -664,6 +670,57 @@ e `profile/UserProfilePage.tsx` (un import e una riga ciascuno),
   prima di accendere.
 - La prova nel simulatore (un lettore finto, la costante accesa in locale)
   è della parte C o del turno del simulatore: qui niente si vede.
+
+### Parte C — avviata (2026-11-21, branch `feat/TASK-467-c-sleep-on`, bozza #1334)
+
+L'utente, il 21 novembre: «non vedo ancora i post di come ho dormito», e
+alla domanda come vederli prima dell'uscita ha scelto **«Build di prova sul
+mio iPhone»** (scartate: le schermate dal simulatore; aspettare la build
+nativa); il sì alla build lo ha dato anche al Coordinatore («Sì, build»).
+La 1.1.0 risulta sullo Store dal 12 novembre: la condizione «dopo la
+1.1.0» è caduta, restano i sì della C.
+
+**Che cosa c'è nel branch, fuori da `main`** (la #1334 resta in bozza: non
+si unisce prima della build nativa che porta il testo nuovo):
+
+- `health/appleSleep.ts`: Apple Salute come lettore del sonno
+  (`HKCategoryTypeIdentifierSleepAnalysis`), l'unico file che nomina quel
+  tipo e che lo interroga. «A letto» e i valori che MuW non conosce restano
+  fuori. Una lettura negata torna vuota (iOS non dice se è negata): la
+  scheda dice «No sleep data for last night in Apple Health.».
+- `health/sleepModules.ts`: `SLEEP_POSTS_ON = true`; `sleepReader()` è il
+  lettore di Apple su un iPhone la cui build ha il codice nativo di
+  Salute, null altrove.
+- `app.json` e `locales/{en,it,de,es,fr}.json`:
+  `NSHealthShareUsageDescription` col testo approvato nella risposta 7
+  (il battito e il sonno), le altre quattro lingue preparate dall'agente.
+- `sleepModules.test.ts` riscritto per la C: acceso solo con un testo del
+  permesso che nomina il sonno; la libreria di Salute caricata in un file
+  solo e interrogata in un file solo; il permesso chiesto in un posto
+  solo, la scheda del profilo.
+- `eas.json`: il profilo `preview-sleep` (come `preview`, canale suo). Una
+  build `preview` ha il runtime `exposdk:57.0.0` e il canale `preview`: al
+  secondo avvio prenderebbe l'OTA di prova di `main` e il sonno si
+  rispegnerebbe. Sul canale `preview-sleep` arrivano solo gli update
+  pubblicati da questo branch.
+
+**La build di prova**: EAS `c9dc5e44-5cd3-4ee3-8636-158cfa67d539`, dal
+commit `637a2db6`, distribuzione interna, solo l'iPhone dell'utente; parla
+con l'API di produzione (il sonno che condivide va sul suo profilo vero;
+gli altri, con la costante spenta, non lo vedono). Parte da `main`, che
+non ha ancora l'app dell'orologio: sul telefono prende il posto della
+1.1.0 finché non la si reinstalla dallo Store (detto all'utente: «Parti
+adesso da main»).
+
+**Resta per chiudere la C** (ognuno col sì dell'utente dove serve):
+
+- il resto dei test con la costante accesa (quelli che contavano sul
+  «spento»), le impronte misurate su una copia pulita;
+- la frase della privacy, da rileggere con l'utente (dice «kept with your
+  post»: la notte condivisa sul profilo non è in un post), «App Privacy»,
+  le note di revisione, la riga della descrizione sullo Store;
+- quello che l'utente chiede di cambiare dopo la prova sul telefono;
+- la build nativa che porta il testo nuovo, e solo allora il merge.
 
 ## Criteri di accettazione
 
@@ -790,3 +847,12 @@ e `profile/UserProfilePage.tsx` (un import e una riga ciascuno),
   a «Sleep score». Nessun codice sul server. Restano: il merge del
   Coordinatore, la PR di soli documenti («ADR-0380, precisazione B3», la
   riga di `STATUS.md`), B1b sul server, la prova nel simulatore; poi C.
+- **2026-11-12, B3 in `main`**: #1292 unita dal Coordinatore a CI verde
+  (`b6e36fcb`), spenta; le scelte in `DECISIONS.md`, «ADR-0380,
+  precisazione B3».
+- **2026-11-21, C avviata**: l'utente non vede ancora il sonno e sceglie la
+  build di prova sul suo iPhone. Scritti il lettore vero di Apple Salute e
+  l'accensione in un branch a parte (bozza #1334, da non unire), lanciata
+  la build EAS `c9dc5e44` col profilo `preview-sleep`. Restano: la prova
+  dell'utente e quello che chiede di cambiare, poi privacy, «App Privacy»,
+  note di revisione e la build nativa, ognuna col suo sì.

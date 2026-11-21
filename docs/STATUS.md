@@ -129,6 +129,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sul server col passo 8 del 2026-11-11; l'app col decimo OTA. Prima di B,
   la città lenta (76 s per un rifiuto). File: — · `tasks/TASK-413.md`
   **A3** in `main` (#1238, `8f5d0516`, 2026-11-12): una città è detta subito «no open snow»; sul server col passo 11. Poi B.
+  **B, C e accensione** in `main` (#1280, #1266, #1281, #1296 `ba569576`, 2026-11-12): le ciaspole accese con «Record your day»; A3 sul server col passo 12. Restano l'OTA e la prova in Salute sul telefono.
+  **Chiuso il 2026-11-18**: in produzione con l'OTA 17, l'uscita con le ciaspole arriva in Salute (prova dell'utente); vedi `archive/COMPLETATI.md`.
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
   **2026-11-11**: B in `main` (#1160) e nella preview; in produzione con
@@ -188,6 +190,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   #1185; server e OTA escono insieme nell'aggiornamento completo. Poi B2
   (bici, canoa, nuoto) e C. File (#1185): `apps/mobile/src/explore/{ExploreScreen.tsx,explored.ts,recommendedRoutes.ts}`, `apps/mobile/src/route/NearYou.tsx`
   **2026-11-12, 12:28Z**: B1 in produzione — server a 1546 (passo 10), app nell'OTA 12.
+  **2026-11-18**: **B2** (ADR-0366, precisazione): 148 uscite in bici da 20–30 km, otto forme lette a occhio, 29 città italiane; catalogo a 1694, server in `main` (#1317), passo 14 e OTA con la #1248 (bozza) col sì dell'utente. Poi le città estere, B3 (40–50 km) e C. File (#1248): `apps/mobile/src/explore/{recommendedRoutes.ts,catalogList.ts,ExploreScreen.tsx}`, `apps/mobile/App.tsx` (una riga)
+  **2026-11-21**: B2 sul server (passo 14, 06:43Z, catalogo a 1694, le corse identiche per chi non chiede `activity`); app in `main` (#1248, `ab51d0fd`): le uscite si vedono con lo sport «Bike» dopo l'OTA 18 (sì dell'utente). Città estere: secondo giro in corso sul Mac (estratti Geofabrik, limite 4 GB del pianificatore), poi una PR del solo catalogo.
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
@@ -200,6 +204,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **R2 fatta il 2026-11-12**: #1201 in main (f0909495), esce con
   l'aggiornamento completo. Resta: un volo vero col link dal vivo; R4
   (orologio, battito) in bozza #1218 fino alla build dopo la 1.1.0.
+  **R5 fatta il 2026-11-12**: #1258 (server, passo 12) e #1260 (app, OTA
+  16) in main: «Ready to fly», «Your flights», i record di volo. In corso
+  R6 (corsa + volo, #1291 e #1293 in bozza) e il fix #1302 (fine del volo).
+  **R6 fatta il 2026-11-18**: #1291 (server, passo 13) e #1293 (app, col
+  prossimo OTA) in main: corsa + volo nella stessa attività. In bozza R6c
+  (#1313, la mappa a due colori); poi R6d (la pagina riaperta).
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
@@ -214,6 +224,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B2b (palestra e vasca), B3, C.
   **B2b in `main`** (#1244, `bb3d3457`: il sonno a fine palestra e a fine
   vasca, spenta). Prossima B3 (la scheda «Sleep» del profilo), poi C.
+  **B3 in `main`** (#1292, `b6e36fcb`: la scheda «Sleep» del profilo,
+  spenta). **C avviata il 2026-11-21**: bozza #1334 da non unire (lettore
+  vero, sonno acceso) e build di prova per il solo iPhone dell'utente.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`
@@ -222,6 +235,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Poi A1b dopo TASK-455 A.
   **2026-11-12 sera**: A1a, A2a (#1245) e A1b (#1265) sul server (passi 11 e
   12); B1 (app) in `main` (#1275), esce con un OTA col sì. Prossime A2b, B2.
+  **2026-11-18**: B1 in produzione (OTA 17); A2b sul server (passo 13);
+  B2a in `main` (#1301), col prossimo OTA. Prossime B2b1 e B2b2.
 
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
@@ -233,18 +248,19 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   produzione il 2026-11-12: «Share» su ogni post, il post in chat come
   rimando (ADR-0382). Resta la prova dell'utente sul telefono. Prossima C
   (server: link e interruttore), poi D sito, E app. File: — · `tasks/TASK-455.md`
+  **Chiuso il 2026-11-21**: C sul server (passo 13), D ed E in `main` (#1308, #1309); restano l'OTA della parte E e la copia del sito, col sì dell'utente; vedi `archive/COMPLETATI.md`.
 
-- **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (#1181,
-  OTA 12); B (dieci esercizi, routine Morning / After run / After gym da
-  3, 5, 10 min, e la gamba staccata alla seconda apertura corretta) in
-  `main` (#1216), col prossimo OTA. Poi D (mattino, lista al Coordinatore
-  prima del codice), C (palestra), E. File: — · `tasks/TASK-466.md`
+- **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (OTA
+  12); B (dieci esercizi, tre routine da 3, 5, 10 min, la gamba staccata
+  corretta, #1216) e D («Morning stretch» in Impostazioni, #1300) in
+  `main`, col primo OTA dopo; poi la prova sul telefono (la notifica
+  vera). Restano C (palestra) ed E. File: — · `tasks/TASK-466.md`
 
 - **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
-  l'OTA 14; A3 pista di vetro (#1276) in `main`, col prossimo OTA. Prossima
-  i chip, lista al Coordinatore prima del codice; B dopo la 1.1.0. File: —
-  · `tasks/TASK-469.md`
+  l'OTA 14; A3 pista di vetro (#1276) e A4a chip (#1290) in produzione al
+  più tardi con l'OTA 17. Prossima A4 (card), lista al Coordinatore prima
+  del codice; B dopo la 1.1.0. File: — · `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);

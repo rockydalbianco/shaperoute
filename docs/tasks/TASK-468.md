@@ -1,8 +1,9 @@
 # TASK-468 — La live in chat e nel Feed, anche programmata
 
-**Stato**: In corso · parte 0, A1a, A2a, A1b sul server (passi 11 e 12);
-B1 (app) in `main` (#1275, `875f754b`), esce con un OTA col sì dell'utente;
-prossime A2b (push «Remind me») e B2 (il Feed)
+**Stato**: In corso · server: A1a, A2a, A1b, A2b (passi 11, 12, 13); app:
+B1 in produzione (OTA 17), B2a in `main` (#1301, `9ca809c1`, col prossimo
+OTA); prossime B2b1 («Plan a live», la partenza, il tocco della push) e B2b2
+(il post a fine attività)
 **Fase**: 5 · **Branch**: `docs/TASK-468-live-chat-feed` (parte 0) ·
 **ADR**: ADR-0381 · numeri dal Coordinatore (2026-11-12)
 **Estende**: TASK-424 (ADR-0352, «Share live activity»), che metteva fuori
@@ -54,6 +55,8 @@ deciderlo».
    (2026-11-12): «Stop sharing?» con «Nobody can follow you any more.» (it
    «Nessuno potrà più seguirti.»); con un link resta «The link stops
    working now.». Entra con la parte B2.
+9. **Dove si programma una live** — «Nel Feed» (2026-11-18): una riga
+   «Plan a live ›» sopra la fila «Live», sempre visibile con un account.
 
 ## Proposta (da completare nella parte 0)
 
@@ -228,9 +231,21 @@ Privacy dell'app (`about/content`, voce «Your position»), frase in più:
   (ADR-0384) non fa nulla e si chiude con «Close» (Coordinatore,
   2026-11-12); `TabSwipeOwners.test.ts` la ammette. Esce con un OTA, col sì
   dell'utente.
-- **Prossime**: A2b (la push «Remind me» alla partenza, `push.py`), B2 (il
-  Feed: «Live in the Feed», «Plan a live», la fila, il testo dello stop
-  della scelta 8); liste dei file al Coordinatore prima del codice.
+- **2026-11-18 — B1 in produzione** con l'OTA 17 (`253b5da0`).
+- **2026-11-18 — A2b in `main`** (#1299, `85f5b807`): la push
+  `planned_live_started` «{name} is live: {title}» alla prima partenza, a
+  chi ha chiesto «Remind me» e la vede ancora; nessun giro, nessuna
+  migrazione. Sul server col passo 13 (`253b5da0`, «server A2b fatto»;
+  controlli in `out/TASK-468/SERVER-A2b.md`).
+- **2026-11-18 — B2a in `main`** (#1301, `9ca809c1`): la fila «Live» del
+  Feed (al più 5 schede una sopra l'altra, scelta 7), «Live in the Feed»
+  con «Who can follow», il testo dello stop della scelta 8. Schermate nel
+  simulatore approvate dall'utente (`out/TASK-468/b2a-*.png`). Esce col
+  prossimo OTA. `FeedScreenPosts/Tabs.test.tsx` escludono `/lives` dalle
+  richieste contate (sì del Coordinatore).
+- **Prossime**: B2b1 («Plan a live» nel Feed, scelta 9; «Start live»;
+  la domanda all'avvio; il tocco della push) e B2b2 («Post it in the
+  Feed?», scelta 5); liste dei file al Coordinatore prima del codice.
 
 ## Contesto da leggere
 

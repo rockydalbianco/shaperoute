@@ -14,6 +14,7 @@ import { FeedbackSetting } from "../settings/FeedbackSetting";
 import { LanguageSetting } from "../settings/LanguageSetting";
 import { NotificationsSetting } from "../settings/NotificationsSetting";
 import { PhoneSetting } from "../settings/PhoneSetting";
+import { PostLinksSetting } from "../settings/PostLinksSetting";
 import { SportSetting } from "../settings/SportSetting";
 import { StyleSetting } from "../settings/StyleSetting";
 import { ToneSetting } from "../settings/ToneSetting";
@@ -22,6 +23,7 @@ import { Vo2MaxSetting } from "../settings/Vo2MaxSetting";
 import { useFeedbackService } from "../settings/useFeedbackService";
 import { BlockedPeople } from "../social/BlockedPeople";
 import { StravaSetting } from "../strava/StravaSetting";
+import { MorningStretchSetting } from "../stretch/MorningStretchSetting";
 import {
   color,
   font,
@@ -96,8 +98,12 @@ export function SettingsPage({
         <OfflineMapsSetting />
         <UnitsSetting />
         <BodySetting />
+        {/* The reminder after the alarm, kept on this phone (TASK-466 part D). */}
+        <MorningStretchSetting />
         {/* The yes of the VO₂ max on the profile, kept by the API (TASK-397). */}
         <Vo2MaxSetting account={account} />
+        {/* Whether the links to one's posts work, kept by the API (TASK-455). */}
+        <PostLinksSetting account={account} />
         <ToneSetting />
         {/* MuW Style is advertising: it can be turned off (TASK-384). */}
         <StyleSetting />

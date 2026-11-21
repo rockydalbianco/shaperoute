@@ -111,14 +111,37 @@ export type ListOutcome =
 export type DetailOutcome =
   { kind: "route"; route: RecommendedRouteDetail } | { kind: "failed" };
 
-type Options = { fetchFn?: typeof fetch; key?: string | null; signal?: AbortSignal };
+type Options = {
+  fetchFn?: typeof fetch;
+  key?: string | null;
+  signal?: AbortSignal;
+  /** Whose drawings: a run's when left out. */
+  activity?: Activity;
+};
+
+/** The activities the catalogue has drawings of its own for (TASK-441): a
+ * walk, like every other, is shown a run's, as ever. */
+const CATALOG_ACTIVITIES: readonly Activity[] = ["cycling"];
+
+/**
+ * What a list is asked with for the drawings of `activity` (TASK-441): a
+ * ride's by its name, a run's as ever, with nothing, and an API that does
+ * not know the word answers with a run's.
+ */
+export function activityParam(activity: Activity = "running"): string {
+  return CATALOG_ACTIVITIES.includes(activity) ? `&activity=${activity}` : "";
+}
 
 export function recommendedUrl(
   baseUrl: string,
   near: LatLon,
   radiusM: number = NEAR_RADIUS_M,
+  activity: Activity = "running",
 ): string {
-  return `${baseUrl}/recommended-routes?${nearParams(near)}&radius_m=${radiusM}`;
+  return (
+    `${baseUrl}/recommended-routes?${nearParams(near)}&radius_m=${radiusM}` +
+    activityParam(activity)
+  );
 }
 
 /**
@@ -139,13 +162,13 @@ export function measuredFrom(
 export async function fetchRecommended(
   baseUrl: string,
   near: LatLon,
-  { fetchFn = fetch, key = apiKey(), signal }: Options = {},
+  { fetchFn = fetch, key = apiKey(), signal, activity }: Options = {},
 ): Promise<ListOutcome> {
   try {
-    const response = await fetchFn(recommendedUrl(baseUrl, near), {
-      headers: keyHeaders(key),
-      signal,
-    });
+    const response = await fetchFn(
+      recommendedUrl(baseUrl, near, NEAR_RADIUS_M, activity),
+      { headers: keyHeaders(key), signal },
+    );
     const body: unknown = await response.json();
     return response.ok && isRecommendedList(body)
       ? { kind: "routes", routes: measuredFrom(near, body.routes) }

@@ -118,6 +118,7 @@ from shaperoute_api.recommended import (
     DEFAULT_RADIUS_M,
     MAX_PAGE,
     MAX_RADIUS_M,
+    RUNNING,
     CatalogPageBody,
     RecommendedCatalog,
     RecommendedRouteDetailBody,
@@ -153,9 +154,11 @@ from shaperoute_api.signals import SignalBody, SignalGate, event_of
 from shaperoute_api.sleep import install_sleep
 from shaperoute_api.strava import install_strava
 from shaperoute_api.strava_client import Strava
+from shaperoute_api.stretch_sessions import install_stretch_sessions
 from shaperoute_api.stroke_matches_api import install_stroke_matches
 from shaperoute_api.style_posts import install_style_posts
 from shaperoute_api.themed import ThemedJobBody, ThemedJobs, ThemedRequestBody
+from shaperoute_api.together import install_together
 from shaperoute_api.track_scores import score_run
 from shaperoute_api.user_photos import install_user_photos
 from shaperoute_api.vo2max import install_vo2max
@@ -410,6 +413,9 @@ def create_app(
     # The swims in a pool, saved without a track, and their lengths
     # (TASK-400); they need a token.
     install_pool_swims(app)
+    # The stretching sessions, saved without a track, and their routine
+    # (TASK-475); they need a token.
+    install_stretch_sessions(app)
     # The nights of sleep a person publishes, on the profile and in the
     # post of an activity (TASK-467 B1); they need a token.
     install_sleep(app)
@@ -422,6 +428,7 @@ def create_app(
     # Up to three photos of a drawing, besides its map (TASK-208); they need
     # a token.
     install_drawing_photos(app)
+    install_together(app)
     # The photos of a profile's drawings, a page at a time (TASK-324); they
     # need a token.
     install_user_photos(app)
@@ -586,8 +593,11 @@ def create_app(
         lon: float = Query(ge=-180, le=180),
         offset: int = Query(default=0, ge=0),
         limit: int = Query(default=DEFAULT_PAGE, ge=1, le=MAX_PAGE),
+        # The runs when it is not said, as before a route could be a ride
+        # (TASK-441 B2): an app that does not ask gets no ride.
+        activity: str = Query(default=RUNNING, max_length=40),
     ) -> CatalogPageBody:
-        return catalog.page((lat, lon), offset, limit)
+        return catalog.page((lat, lon), offset, limit, activity)
 
     @app.get("/recommended-routes")
     def list_recommended_routes(
@@ -596,8 +606,11 @@ def create_app(
         radius_m: int = Query(default=DEFAULT_RADIUS_M, ge=100, le=MAX_RADIUS_M),
         shape: str | None = Query(default=None, max_length=40),
         distance_m: int | None = Query(default=None, ge=0),
+        activity: str = Query(default=RUNNING, max_length=40),
     ) -> RecommendedRoutesBody:
-        routes = catalog.near((lat, lon), radius_m, shape, distance_m)
+        routes = catalog.near(
+            (lat, lon), radius_m, shape, distance_m, activity=activity
+        )
         insights.record(
             "recommended_list",
             point=(lat, lon),

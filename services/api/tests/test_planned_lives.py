@@ -15,6 +15,7 @@ import pytest
 from fastapi.testclient import TestClient
 from test_drawings import (
     WallClock,
+    api,
     client,  # noqa: F401  (the fixtures of the drawings' tests)
     database,  # noqa: F401
     published,
@@ -22,14 +23,17 @@ from test_drawings import (
     signed_up,
     wall,  # noqa: F401
 )
+from test_push import FakeExpo, push_on, put_token
 
 from shaperoute_api.db import Database
+from shaperoute_api.expo_push import Expo
 from shaperoute_api.planned_lives import (
     MAX_UPCOMING,
     LiveItemBody,
     LivesPageBody,
     PlannedLiveRequestBody,
 )
+from shaperoute_api.push import TEXTS, Pusher
 
 FIXTURES = (
     Path(__file__).resolve().parents[3] / "packages" / "shared-types" / "fixtures"
@@ -512,3 +516,105 @@ def test_the_row_puts_the_lives_going_on_first_and_comes_in_pages(
     assert ids(first) == [going["id"], soon["id"]] and first["next"] is not None
     second = row(client, cleo, limit=2, cursor=first["next"])
     assert ids(second) == [later["id"]] and second["next"] is None
+
+
+# --- «Remind me»: the push at the start (TASK-468 part A2b) ---
+
+
+@pytest.fixture
+def expo() -> FakeExpo:
+    return FakeExpo()
+
+
+@pytest.fixture
+def pushing(
+    database: Database,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+    expo: FakeExpo,
+) -> TestClient:
+    app = api(database, wall)
+    app.app.state.pusher = Pusher(  # type: ignore[attr-defined]
+        database, Expo(send=expo), run=lambda task: task(), later=lambda *_: None
+    )
+    return app
+
+
+def phone(app: TestClient, who: Headers, name: str) -> None:
+    push_on(app, who)
+    put_token(app, who, f"ExponentPushToken[{name}]")
+
+
+def told(expo: FakeExpo, name: str) -> list[dict[str, Any]]:
+    return [m for m in expo.sent if m["to"] == f"ExponentPushToken[{name}]"]
+
+
+def test_remind_me_tells_who_asked_at_the_start(
+    pushing: TestClient,
+    wall: WallClock,  # noqa: F811
+    expo: FakeExpo,
+) -> None:
+    ada, bob = person(pushing, "ada"), person(pushing, "bob")
+    follow(pushing, bob, ada)
+    phone(pushing, bob, "bob")
+    phone(pushing, ada, "ada")
+    live = planned(pushing, ada)
+    pushing.put(f"/planned-lives/{live['id']}/reminder", headers=bob)
+    # The owner asking is not told: it starts it.
+    pushing.put(f"/planned-lives/{live['id']}/reminder", headers=ada)
+    wall.t = RACE
+    share = started(pushing, ada, live).json()
+    [push] = told(expo, "bob")
+    assert push["body"] == "ada is live: Milano Marathon"
+    assert push["data"] == {
+        "kind": "planned_live_started",
+        "planned_live_id": live["id"],
+        "share_id": share["id"],
+    }
+    assert told(expo, "ada") == []
+
+
+def test_a_start_again_after_a_stop_tells_nobody_twice(
+    pushing: TestClient,
+    wall: WallClock,  # noqa: F811
+    expo: FakeExpo,
+) -> None:
+    ada, bob = person(pushing, "ada"), person(pushing, "bob")
+    follow(pushing, bob, ada)
+    phone(pushing, bob, "bob")
+    live = planned(pushing, ada)
+    pushing.put(f"/planned-lives/{live['id']}/reminder", headers=bob)
+    wall.t = RACE
+    first = started(pushing, ada, live).json()
+    pushing.delete(f"/me/live-shares/{first['id']}", headers=ada)
+    assert started(pushing, ada, live).status_code == 201
+    assert len(told(expo, "bob")) == 1
+
+
+def test_who_is_kept_apart_or_no_longer_follows_is_not_told(
+    pushing: TestClient,
+    wall: WallClock,  # noqa: F811
+    expo: FakeExpo,
+) -> None:
+    ada, bob, cleo = (
+        person(pushing, "ada"),
+        person(pushing, "bob"),
+        person(pushing, "cleo"),
+    )
+    follow(pushing, bob, ada)
+    follow(pushing, cleo, ada)
+    for who, name in ((bob, "bob"), (cleo, "cleo")):
+        phone(pushing, who, name)
+    live = planned(pushing, ada, audience_feed="followers")
+    for who in (bob, cleo):
+        pushing.put(f"/planned-lives/{live['id']}/reminder", headers=who)
+    # Ada blocks Bob; Cleo stops following Ada.
+    assert pushing.put(f"/users/{pid(pushing, bob)}/block", headers=ada).is_success
+    assert pushing.delete(f"/users/{pid(pushing, ada)}/follow", headers=cleo).is_success
+    wall.t = RACE
+    started(pushing, ada, live)
+    assert told(expo, "bob") == [] and told(expo, "cleo") == []
+
+
+def test_the_push_is_in_every_language() -> None:
+    assert set(TEXTS["planned_live_started"]) == {"en", "de", "it", "es", "fr"}
+    assert TEXTS["planned_live_started"]["it"] == "{name} è live: {title}"

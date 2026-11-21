@@ -1,0 +1,90 @@
+<!doctype html>
+<!-- The picture a chat app shows for a post's link (TASK-455, docs/SITO.md):
+     site/p/link-card.png, 1200x630, the same for every link. The heart of the
+     logo as a route, on streets that are no place: no map tiles, nothing of
+     any post. Approved by the user on 2026-11-21. To make it again, from the
+     repository's root (Chrome writes where it can: a folder on the Mac's own
+     disk, then copy):
+       "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+         --headless=new --hide-scrollbars --force-device-scale-factor=1 \
+         --window-size=1200,630 --screenshot=/tmp/link-card.png \
+         "file://$PWD/site/tools/link-card.html"
+       cp /tmp/link-card.png site/p/link-card.png -->
+<html><head><meta charset="utf-8"><style>
+html,body{margin:0;background:#0A0A0B}
+svg{display:block}
+</style></head><body>
+<svg id="card" xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="shade" cx="50%" cy="44%" r="62%">
+      <stop offset="0" stop-color="#0A0A0B" stop-opacity="0"/>
+      <stop offset="0.55" stop-color="#0A0A0B" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#0A0A0B" stop-opacity="0.94"/>
+    </radialGradient>
+    <linearGradient id="foot" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0A0A0B" stop-opacity="0"/>
+      <stop offset="1" stop-color="#0A0A0B" stop-opacity="0.96"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0A0A0B"/>
+  <g id="streets" transform="rotate(-13 600 315)"></g>
+  <rect width="1200" height="630" fill="url(#shade)"/>
+  <rect y="430" width="1200" height="200" fill="url(#foot)"/>
+  <!-- The heart of the logo as a route: the line and the start dot of the app. -->
+  <g transform="translate(600 262) scale(0.66) translate(-500 -481)">
+    <path d="M509.52 359.58L512.24 354.14L520.4 354.14L530.6 348.02L530.6 314.02L535.36 309.26L530.6 305.86L546.24 282.06L552.36 279.34L567.32 281.38L572.08 286.82L576.16 284.78L578.2 277.98L593.16 271.86L687.68 198.42L708.76 224.94L710.12 221.54L714.2 223.58L723.72 240.58L750.24 231.74L769.96 218.14L772 220.18L808.72 209.98L811.44 211.34L822.32 259.62L819.6 262.34L829.8 319.46L840 420.1L819.6 419.42L819.6 425.54L829.8 425.54L827.08 441.86L800.56 431.66L796.48 435.06L803.28 488.1L786.96 490.82L784.24 494.22L794.44 543.18L737.32 556.1L744.12 585.34L711.48 593.5L712.84 617.98L718.96 643.82L708.76 596.22L639.4 613.22L633.28 617.98L641.44 663.54L599.96 673.74L597.24 706.38L577.52 705.02L572.08 764.86L525.84 764.86L527.2 798.18L523.12 801.58L520.4 786.62L503.4 782.54L502.04 774.38L505.44 765.54L449 744.46L450.36 739.7L446.28 738.34L449 721.34L395.96 713.18L386.44 683.26L388.48 654.02L384.4 653.34L385.76 632.94L361.96 629.54L359.24 631.58L346.32 613.22L317.08 609.14L321.16 574.46L247.72 524.82L197.4 481.98L160 441.86L190.6 355.5L206.92 318.78L214.4 314.02L236.84 256.9L255.2 254.18L285.12 267.78L289.88 237.18L308.92 236.5L326.6 229.02L334.08 237.18L347 228.34L355.84 233.1L415.68 224.26L418.4 230.38L440.84 232.42L461.24 241.94L455.8 252.82L491.16 275.26L483.68 286.14L497.28 297.02L499.32 343.26L495.92 351.42L510.88 354.14L509.52 359.58" fill="none" stroke="#0A0A0B" stroke-opacity="0.7" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M509.52 359.58L512.24 354.14L520.4 354.14L530.6 348.02L530.6 314.02L535.36 309.26L530.6 305.86L546.24 282.06L552.36 279.34L567.32 281.38L572.08 286.82L576.16 284.78L578.2 277.98L593.16 271.86L687.68 198.42L708.76 224.94L710.12 221.54L714.2 223.58L723.72 240.58L750.24 231.74L769.96 218.14L772 220.18L808.72 209.98L811.44 211.34L822.32 259.62L819.6 262.34L829.8 319.46L840 420.1L819.6 419.42L819.6 425.54L829.8 425.54L827.08 441.86L800.56 431.66L796.48 435.06L803.28 488.1L786.96 490.82L784.24 494.22L794.44 543.18L737.32 556.1L744.12 585.34L711.48 593.5L712.84 617.98L718.96 643.82L708.76 596.22L639.4 613.22L633.28 617.98L641.44 663.54L599.96 673.74L597.24 706.38L577.52 705.02L572.08 764.86L525.84 764.86L527.2 798.18L523.12 801.58L520.4 786.62L503.4 782.54L502.04 774.38L505.44 765.54L449 744.46L450.36 739.7L446.28 738.34L449 721.34L395.96 713.18L386.44 683.26L388.48 654.02L384.4 653.34L385.76 632.94L361.96 629.54L359.24 631.58L346.32 613.22L317.08 609.14L321.16 574.46L247.72 524.82L197.4 481.98L160 441.86L190.6 355.5L206.92 318.78L214.4 314.02L236.84 256.9L255.2 254.18L285.12 267.78L289.88 237.18L308.92 236.5L326.6 229.02L334.08 237.18L347 228.34L355.84 233.1L415.68 224.26L418.4 230.38L440.84 232.42L461.24 241.94L455.8 252.82L491.16 275.26L483.68 286.14L497.28 297.02L499.32 343.26L495.92 351.42L510.88 354.14L509.52 359.58" fill="none" stroke="#FFD02B" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="509.5" cy="359.6" r="20" fill="#F5F5F4" stroke="#0A0A0B" stroke-width="9"/>
+  </g>
+  <!-- The lockup: the mark and the word. -->
+  <g transform="translate(497 520)">
+    <svg width="58" height="58" viewBox="0 0 1000 1000">
+      <rect width="1000" height="1000" rx="220" fill="#FFD02B"/>
+      <path d="M509.52 359.58L512.24 354.14L520.4 354.14L530.6 348.02L530.6 314.02L535.36 309.26L530.6 305.86L546.24 282.06L552.36 279.34L567.32 281.38L572.08 286.82L576.16 284.78L578.2 277.98L593.16 271.86L687.68 198.42L708.76 224.94L710.12 221.54L714.2 223.58L723.72 240.58L750.24 231.74L769.96 218.14L772 220.18L808.72 209.98L811.44 211.34L822.32 259.62L819.6 262.34L829.8 319.46L840 420.1L819.6 419.42L819.6 425.54L829.8 425.54L827.08 441.86L800.56 431.66L796.48 435.06L803.28 488.1L786.96 490.82L784.24 494.22L794.44 543.18L737.32 556.1L744.12 585.34L711.48 593.5L712.84 617.98L718.96 643.82L708.76 596.22L639.4 613.22L633.28 617.98L641.44 663.54L599.96 673.74L597.24 706.38L577.52 705.02L572.08 764.86L525.84 764.86L527.2 798.18L523.12 801.58L520.4 786.62L503.4 782.54L502.04 774.38L505.44 765.54L449 744.46L450.36 739.7L446.28 738.34L449 721.34L395.96 713.18L386.44 683.26L388.48 654.02L384.4 653.34L385.76 632.94L361.96 629.54L359.24 631.58L346.32 613.22L317.08 609.14L321.16 574.46L247.72 524.82L197.4 481.98L160 441.86L190.6 355.5L206.92 318.78L214.4 314.02L236.84 256.9L255.2 254.18L285.12 267.78L289.88 237.18L308.92 236.5L326.6 229.02L334.08 237.18L347 228.34L355.84 233.1L415.68 224.26L418.4 230.38L440.84 232.42L461.24 241.94L455.8 252.82L491.16 275.26L483.68 286.14L497.28 297.02L499.32 343.26L495.92 351.42L510.88 354.14L509.52 359.58" fill="none" stroke="#0A0A0B" stroke-width="62.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="509.5" cy="359.6" r="83.3333" fill="#F5F5F4" stroke="#0A0A0B" stroke-width="41.6667"/>
+    </svg>
+    <svg x="74" y="10" width="133" height="38" viewBox="-7 17 302 86">
+      <path d="M0 96L0 24L30 72L60 24L60 96" fill="none" stroke="#F5F5F4" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M84 48L84 84L84 84L84.0833 85.9167L84.3333 87.6667L84.75 89.25L85.3333 90.6667L86.0833 91.9167L87 93L88.0833 93.9167L89.3333 94.6667L90.75 95.25L92.3333 95.6667L94.0833 95.9167L96 96L132 96L132 96L133.917 95.9167L135.667 95.6667L137.25 95.25L138.667 94.6667L139.917 93.9167L141 93L141.917 91.9167L142.667 90.6667L143.25 89.25L143.667 87.6667L143.917 85.9167L144 84L144 48" fill="none" stroke="#F5F5F4" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M168 24L198 96L228 24L258 96L288 24" fill="none" stroke="#F5F5F4" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </g>
+</svg>
+<script>
+// Streets that are no place: a fixed seed, so the card is always the same.
+let seed = 455;
+function rnd(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+const NS = "http://www.w3.org/2000/svg";
+const g = document.getElementById("streets");
+function add(tag, attrs){ const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); g.appendChild(e); return e; }
+const xs = [], ys = [];
+for (let x = -260; x < 1460; x += 44 + rnd() * 34) xs.push(x);
+for (let y = -320; y < 950; y += 40 + rnd() * 30) ys.push(y);
+// A few parks.
+for (let i = 0; i < 5; i++) {
+  const a = 2 + Math.floor(rnd() * (xs.length - 6)), b = 2 + Math.floor(rnd() * (ys.length - 6));
+  add("rect", { x: xs[a] + 4, y: ys[b] + 4, width: xs[a + 2] - xs[a] - 8, height: ys[b + 2] - ys[b] - 8, rx: 6, fill: "#0f1711" });
+}
+// The river.
+add("path", { d: "M -300 250 C 120 150, 300 420, 560 360 S 980 120, 1500 330", fill: "none", stroke: "#1d3c4e", "stroke-width": 50, "stroke-linecap": "round", "stroke-opacity": 0.55 });
+add("path", { d: "M -300 250 C 120 150, 300 420, 560 360 S 980 120, 1500 330", fill: "none", stroke: "#101f29", "stroke-width": 44, "stroke-linecap": "round" });
+const minor = { stroke: "#1f1f24", "stroke-width": 3.2, "stroke-linecap": "round" };
+const main = { stroke: "#2b2b31", "stroke-width": 7, "stroke-linecap": "round" };
+xs.forEach((x, i) => {
+  const big = i % 5 === 2;
+  for (let j = 0; j < ys.length - 1; j++) {
+    if (!big && rnd() < 0.2) continue;
+    add("line", { x1: x, y1: ys[j], x2: x, y2: ys[j + 1], ...(big ? main : minor) });
+  }
+});
+ys.forEach((y, j) => {
+  const big = j % 6 === 3;
+  for (let i = 0; i < xs.length - 1; i++) {
+    if (!big && rnd() < 0.2) continue;
+    add("line", { x1: xs[i], y1: y, x2: xs[i + 1], y2: y, ...(big ? main : minor) });
+  }
+});
+// One avenue across the grid.
+add("line", { x1: -260, y1: 760, x2: 1460, y2: -40, ...main, "stroke-width": 8 });
+</script>
+</body></html>

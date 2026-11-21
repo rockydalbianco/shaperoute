@@ -131,6 +131,20 @@ volta, ognuna con la proposta dell'agente:
    sharing». Scartati: far sparire da sola la notte dopo un giorno; nessun
    giorno.
 
+10. **Il post del sonno da solo nel Feed.** L'utente, il 2026-11-21, dopo
+   aver provato la build sul telefono: «fai il post del sonno da solo nel
+   Feed e nella sezione feed il tasto + per poter aggiungere l'attività
+   sonno…». **Da dove nasce: «Dal "+", a parte»** — nel Feed, «+» ›
+   «Sleep» mostra la notte scorsa e «Publish» la mette nel Feed come post,
+   visto come gli altri post. «Share» sulla scheda del profilo resta
+   com'è, solo profilo. Scartati: «Share» fa tutte e due; solo nel Feed.
+11. **Con quale scelta parte il selettore.** **«Everyone»**, in vista
+   prima di «Publish», come le cose aggiunte dal «+» (ADR-0387). Scartati:
+   «Followers»; l'ultima scelta fatta.
+12. **I testi del post del sonno.** **«Approvo così»** (2026-11-21) alla
+   riga «Post del sonno» della tabella; le altre quattro lingue le prepara
+   l'agente.
+
 | Dove | Testo |
 |---|---|
 | Permesso di iOS (`NSHealthShareUsageDescription`, al posto di quello di oggi) | «MuW reads your heart rate during each activity and your sleep from Apple Health, to show them with your activities and in your posts. You can hide them before you publish.» |
@@ -140,6 +154,7 @@ volta, ognuna con la proposta dell'agente:
 | Primo «Share» | «Share your sleep? Your score, hours slept and sleep stages show on your profile, to everyone who can see it.» · «Share» / «Cancel» (riscritto e riapprovato il 2026-11-12, dopo «Sì, profilo adesso»; prima finiva «…become a post, seen like your other posts.») |
 | Post dell'attività, prima di pubblicare | interruttore «Sleep last night» · «82 · Very good · 7 h 40 min» · «Shown in this post. Turn it off to keep it to yourself.» |
 | Scheda «Sleep», chi la vede (risposte 8 e 9, 2026-11-12) | prima di «Share»: «Only you see this» · dopo: «On your profile» e pulsante «Stop sharing» · una notte più vecchia ancora sul profilo: «On your profile · 11 Nov» · accanto a «Sleep score» il giorno della notte: «12 Nov» |
+| Post del sonno nel Feed (risposte 10–12, 2026-11-21) | foglio del «+»: voce «Sleep», sotto «Last night's sleep score, from Apple Health» · pagina: titolo «Sleep», la scheda col punteggio come sul profilo, selettore «Everyone / Followers», pulsante «Publish», sotto «Your score, hours slept and sleep stages go in the Feed.» · notte già pubblicata: «Already in the Feed» e «Remove post» · scheda nel Feed: «Sleep score», «82 · Very good», «7 h 40 min», le fasi |
 | Nessun dato | «No sleep data for last night in Apple Health.» |
 | Permesso negato o tolto | «MuW can't read your sleep. Allow it in the Health app: your profile › Apps › MuW.» |
 | Privacy | «Once you allow it, MuW reads your sleep from Apple Health (time asleep and sleep stages) on your phone and works out a sleep score there. Nothing reaches our server until you publish it: then the score, the hours slept, the stages and the date are kept with your post, seen by whoever can see your posts, until you delete the post or your account. We never use health data for advertising.» |
@@ -722,6 +737,55 @@ adesso da main»).
 - quello che l'utente chiede di cambiare dopo la prova sul telefono;
 - la build nativa che porta il testo nuovo, e solo allora il merge.
 
+### Parte E — il post del sonno da solo nel Feed: il piano (2026-11-21, nessun codice)
+
+Chiesta dall'utente dopo la prova sul telefono (risposte 10–12). Era la
+parte rimandata a TASK-312 C; ora C1 è in `main` (`0080_photo_posts.sql`,
+`photo_posts.py`, il tipo `photos` in `X-MuW-Reads`): un post senza
+attività è **un disegno senza corsa** (`drawings.user_id`, `key`, mai
+`only_me`, mai traccia). Il post del sonno ci si appoggia. *Proposta
+tecnica dell'agente*: numeri (migrazione, ADR o «ADR-0380, precisazione
+E»), nome della parte e file li dà il Coordinatore prima del codice; i
+file di `drawings.py`, `feed.py`, `reads.py` e del foglio del «+» sono di
+TASK-312 C.
+
+**Server**
+
+- `drawings.sleep_night_id` → `sleep_nights`, solo per un disegno senza
+  corsa; un post del sonno è pubblicato appena nasce (ha la sua notte: non
+  aspetta una foto come il post di sole foto).
+- `PUT /me/sleep-posts/{key}` (i numeri della notte, il giorno,
+  `everyone` o `followers`; la seconda volta lo cambia) e `DELETE
+  /me/sleep-posts/{key}`. Una notte portata da un post conta come
+  pubblicata: `sleep.py` non la cancella finché il post c'è, e il post
+  cancellato se la porta via se niente altro la pubblica.
+- Il disegno visto porta `sleep` anche da `d.sleep_night_id`; `source:
+  "sleep"`; un tipo nuovo `sleep` in `X-MuW-Reads`, così le app di prima
+  non lo vedono in nessun elenco.
+- Fuori di proposito, come il post di sole foto: concorso, badge, gioco,
+  ricerca, link pubblico, post mandato in chat.
+
+**App**
+
+- Nel foglio del «+» (`feed/AddToFeed.tsx`) la voce «Sleep»; la pagina
+  «Sleep» con la scheda del profilo (`ProfileSleep`), il selettore e
+  «Publish»; serve il sì a leggere il sonno (lo stesso pulsante della
+  scheda del profilo se manca).
+- La scheda nel Feed e la pagina del post per `source: "sleep"`: il
+  punteggio al posto della mappa, mai orari.
+- Tutto dietro `SLEEP_POSTS_ON`, come il resto: in `main` resta spento
+  fino alla parte C.
+
+**Il «+» con tutte le voci** (la seconda metà della richiesta: una corsa,
+un'immagine, una corsa da Strava, un post di Instagram, un allenamento in
+palestra, una scheda di allenamento) è più largo di questo task: passato
+al Coordinatore il 2026-11-21 perché lo tagli. Sui documenti di oggi:
+l'attività da un file c'è già (TASK-476, anche il GPX esportato da
+Strava); l'immagine è il post di sole foto (TASK-312 C2); allenamento e
+scheda come post sono nuovi; il collegamento diretto a Strava non può
+mostrare ad altri i dati (studio TASK-312 E); da Instagram non si importa
+niente, resta la foto dalla galleria.
+
 ## Criteri di accettazione
 
 - [x] Le scelte di prodotto sono dell'utente e stanno in questo file.
@@ -769,7 +833,7 @@ adesso da main»).
   disegnano esattamente come prima e non parte nessuna richiesta sul
   sonno, coi test; `SLEEP_POSTS_ON` resta `false`, nessun lettore, nessun
   file nativo, `sleepModules.test.ts` invariato.
-- [ ] Parti C, D: criteri scritti qui quando partono.
+- [ ] Parti C, D, E: criteri scritti qui quando partono.
 
 ## File toccati (documenti, questa PR)
 
@@ -856,3 +920,12 @@ adesso da main»).
   la build EAS `c9dc5e44` col profilo `preview-sleep`. Restano: la prova
   dell'utente e quello che chiede di cambiare, poi privacy, «App Privacy»,
   note di revisione e la build nativa, ognuna col suo sì.
+- **2026-11-21, la prova sul telefono**: installata la build `233f0c6a`
+  (la prima, `c9dc5e44`, era caduta sul profilo ad hoc senza HealthKit,
+  rifatto con l'accesso Apple dell'utente). Sul profilo il pulsante c'è
+  («Compare») e dopo il tocco la notte si legge da Apple Salute («Sì, col
+  punteggio»): la condizione della C per la scheda del profilo è
+  soddisfatta. Non ancora provati: «Share», «Sleep last night» a fine
+  attività, il sonno nel post. L'utente chiede il post del sonno da solo
+  nel Feed e il «+» con tutte le voci: risposte 10–12 e «Parte E — il
+  piano».

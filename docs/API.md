@@ -2714,6 +2714,11 @@ tipi in `shared-types` (`PhotoPostRequest`, `PhotoPostOrderRequest`,
   ripubblica.
 - `GET /me/photo-posts/{key}` → `200` `MyPhotoPost`; `404` «No post of
   photos with this key.».
+- `GET /me/photo-posts` → `200` `MyPhotoPosts` (`{ "photo_posts": [...] }`,
+  `fixtures/my-photo-posts.json`): tutti i post di sole foto dell'account,
+  l'ultimo pubblicato prima, quelli senza foto per quando sono stati tenuti
+  l'ultima volta. L'app ci trova la `key` di un post aperto dal suo id, per
+  modificarlo o cancellarlo anche da un altro telefono (parte C1b).
 - `DELETE /me/photo-posts/{key}` → `204` sempre: con le sue foto, i tag,
   le reazioni, i commenti e le segnalazioni.
 - `PUT /me/photo-posts/{key}/photos/{n}` (`n` da 1 a 10, nessuna mappa
@@ -3074,6 +3079,31 @@ esempio in `fixtures/feed.json`; il codice in `feed.py`.
   traccia intera, mai il percorso pianificato) più **`author`**
   (`public_id` e `username`, mai l'email). Per aprirlo intero, con le sue
   reazioni e i suoi commenti, `GET /drawings/{id}`.
+- **Cosa conta la scheda** (TASK-355 parte B), in ogni post di `GET /feed`,
+  con e senza `filter` (`fixtures/feed-counts.json`, tipi `FeedAuthor` e
+  `FeedReactions`):
+  - `author.photo`: dove si legge la foto dell'autore,
+    `/users/{public_id}/photo?v=…`, o `null` senza foto. L'indirizzo cambia
+    quando cambia la foto, così il telefono la legge una volta e la tiene;
+    nella pagina non viaggia l'immagine (sarebbero fino a 20 JPEG in
+    base64);
+  - `reactions`: `{ "total", "mine" }`, quante reazioni ha il post e quella
+    di chi chiede (`null` se non ne ha lasciata), contate come
+    `GET /drawings/{id}/reactions`;
+  - `comments`: quanti commenti e risposte legge chi chiede, come `total` di
+    `GET /drawings/{id}/comments`.
+
+  Un blocco toglie dai conteggi, nei due sensi; un commento nascosto conta
+  solo per chi l'ha scritto, come negli elenchi. Due query per pagina,
+  non due per post. La ricerca, le gare e le stazioni danno i post senza
+  questi campi, come un'API di prima: l'app chiede allora i conteggi a ogni
+  scheda, come prima.
+- **`GET /users/{public_id}/photo`** (TASK-355 parte B, `avatars.py`): la foto
+  di un iscritto, un JPEG quadrato da 128 px, `Cache-Control: private,
+  max-age=86400`. Vuole il token (`401`); a chi è separato da un blocco o per
+  un account nascosto, a un iscritto senza foto e a un id che non c'è,
+  `404 http_error` «This member has no picture here.». Il parametro `v` è
+  solo la versione per la cache.
 - **I vicini**: con `lat` e `lon`, dove sta il telefono (l'app li manda con
   due decimali, circa 1 km: TASK-356), il terzo gruppo
   tiene solo i disegni la cui traccia tagliata passa entro **50 km**

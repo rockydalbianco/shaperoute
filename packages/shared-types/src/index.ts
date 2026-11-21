@@ -1653,7 +1653,35 @@ export const FEED_NEAR_M = 50_000;
  * who published it. Opened whole with GET /drawings/{id}.
  */
 export interface FeedPost extends Drawing {
-  author: DrawingAuthor;
+  author: FeedAuthor;
+  /**
+   * How many reactions the post has and the reader's own, as
+   * GET /drawings/{id}/reactions counts them (TASK-355 part B). Missing from
+   * an API of before, and from the search, the contests and the resorts.
+   */
+  reactions?: FeedReactions;
+  /**
+   * The comments and replies the reader reads, as `total` of
+   * GET /drawings/{id}/comments. Missing as `reactions` is.
+   */
+  comments?: number;
+}
+
+/** Who published a post of the feed. */
+export interface FeedAuthor extends DrawingAuthor {
+  /**
+   * Where its picture is read, `/users/{public_id}/photo?v=…`, a square JPEG
+   * of 128 px with the token; a new picture has a new address. Null without
+   * one; missing from an API of before (TASK-355 part B).
+   */
+  photo?: string | null;
+}
+
+/** The reactions of a post, as its card shows them. */
+export interface FeedReactions {
+  total: number;
+  /** The reader's own; null when it left none. */
+  mine: ReactionKind | null;
 }
 
 /**
@@ -1741,6 +1769,13 @@ export interface MyPhotoPost {
   tags: DrawingTag[];
   photos: DrawingPhoto[];
   order: string[] | null;
+}
+
+/** GET /me/photo-posts: every post of photos only of the account, the last
+ * published first (those waiting for a photo by when they were last kept).
+ * The app finds there the key of a post it opened by its id (part C1b). */
+export interface MyPhotoPosts {
+  photo_posts: MyPhotoPost[];
 }
 
 /** What a post of photos only has instead of a run's numbers. */
@@ -3213,3 +3248,4 @@ export * from "./resortFollows.ts";
 export * from "./skiParts.ts";
 export * from "./flightParts.ts";
 export * from "./sleep.ts";
+export * from "./together.ts";

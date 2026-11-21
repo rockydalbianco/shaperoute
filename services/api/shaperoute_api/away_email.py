@@ -223,19 +223,19 @@ DUE_SQL = (
 # The drawings published since %(since)s that the Feed would show
 # %(reader)s, its own left out.
 NEW_SQL = (
-    " FROM drawings d JOIN runs r ON r.id = d.run_id"
-    " WHERE d.published_at > %(since)s AND r.user_id <> %(reader)s"
+    " FROM drawings d"
+    " WHERE d.published_at > %(since)s AND d.user_id <> %(reader)s"
     f" AND {shown_sql('%(reader)s')}"
 )
-FOLLOWED = follows_sql("%(reader)s", "r.user_id")
+FOLLOWED = follows_sql("%(reader)s", "d.user_id")
 COUNT_SQL = (
     "SELECT count(*) AS feed,"
     f" count(*) FILTER (WHERE {FOLLOWED}) AS followed,"
-    f" count(DISTINCT r.user_id) FILTER (WHERE {FOLLOWED}) AS people{NEW_SQL}"
+    f" count(DISTINCT d.user_id) FILTER (WHERE {FOLLOWED}) AS people{NEW_SQL}"
 )
 NAMES_SQL = (
-    "SELECT a.username FROM (SELECT r.user_id, max(d.published_at) AS last"
-    f"{NEW_SQL} AND {FOLLOWED} GROUP BY r.user_id) people"
+    "SELECT a.username FROM (SELECT d.user_id, max(d.published_at) AS last"
+    f"{NEW_SQL} AND {FOLLOWED} GROUP BY d.user_id) people"
     " JOIN users a ON a.id = people.user_id"
     " ORDER BY people.last DESC, a.id LIMIT %(names)s"
 )

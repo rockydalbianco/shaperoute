@@ -36,9 +36,10 @@ import { TRACKLESS_SPORTS } from "../src/sports/index.ts";
 
 test("a workout at the gym is the activity saved without a track", () => {
   assert.deepEqual([...TRACKLESS_ACTIVITIES], runActivities.trackless_activities);
+  // A stretching session after it (TASK-475).
   assert.deepEqual(
     TRACKLESS_SPORTS.map((sport) => sport.trackless),
-    [true],
+    [true, true],
   );
   // One of RUN_ACTIVITIES since the app shows a post without a line (B0),
   // after all those with a track.

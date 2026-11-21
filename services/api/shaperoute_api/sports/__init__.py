@@ -20,6 +20,7 @@ from shaperoute_api.sports import (
     ski_touring,
     skiing,
     snowshoeing,
+    stretching,
     swimming,
     walking,
     wheelchair,
@@ -45,5 +46,6 @@ API_SPORTS: tuple[ApiSport, ...] = (
     paragliding.SPORT,
     alpinism.SPORT,
     gym.SPORT,
+    stretching.SPORT,
 )
 SPORTS_BY_ACTIVITY: dict[str, ApiSport] = {s.activity: s for s in API_SPORTS}

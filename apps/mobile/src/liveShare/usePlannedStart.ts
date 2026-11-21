@@ -56,7 +56,14 @@ export function usePlannedStart(fetchFn?: typeof fetch, apiKey?: string | null):
       const live = answer.kind === "ok" ? plannedNow(answer.value) : null;
       if (live !== null && live.planned_live_id !== null) {
         const id = live.planned_live_id;
-        askToStart(live, () => void startPlannedLive(api, id));
+        askToStart(
+          live,
+          () =>
+            void startPlannedLive(api, id, null, {
+              title: live.title ?? "",
+              audience: live.audience_feed,
+            }),
+        );
       }
     });
   }, [phase, apiUrl, token, fetchFn, apiKey]);

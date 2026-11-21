@@ -19,6 +19,7 @@ import { wordsOf } from "../voice/words";
 import { kmAnnouncement } from "./freeRun";
 import { comparisonOf } from "./kmCompare";
 import { moveOnFootJoined } from "./joinOnFoot";
+import { type LiveActivityRun, startLiveActivity } from "./liveActivity";
 import { type LockNoticeRun, startLockNotice } from "./lockNotice";
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
 import { startOnFoot } from "./onFootVoice";
@@ -90,8 +91,9 @@ export function play(cues: Cue[]): void {
  * RIDE_MI_EVERY, and the turns in feet. With the phone locked, or another app
  * in front, the GPS goes on where the app can (TASK-261, `runPosition`) and
  * the voice speaks, over the music (part B, `runAudio`); on iOS what the
- * navigator says is also written in a notification (TASK-401,
- * `lockNotice`). Off the route the way back to it on the streets is asked
+ * navigator says is also written on the lock screen (TASK-401): a Live
+ * Activity where the build has one (`liveActivity`), else a notification
+ * (`lockNotice`). Off the route the way back to it on the streets is asked
  * for, and its turns said and written the same way (TASK-314,
  * `wayBackRun`): the position goes to the server only for that, when the
  * phone has no map of the area.
@@ -134,6 +136,7 @@ export function useNavigation(
     let stopRecording: (() => void) | null = null;
     let away: RunAway | null = null;
     let notice: LockNoticeRun | null = null;
+    let live: LiveActivityRun | null = null;
     let wayBack: WayBackRun | null = null;
     // The phone's voices, before the first words: a chosen one is used only
     // once it is known to be there.
@@ -201,9 +204,11 @@ export function useNavigation(
             play(cues);
           }
         };
-        // What the navigator says, written on the locked phone too
-        // (TASK-401); not on a swim, with the phone in the buoy.
-        notice = swim ? null : startLockNotice();
+        // The directions on the locked phone too (TASK-401): a Live
+        // Activity where the build has it, else a notification of what the
+        // navigator says; not on a swim, with the phone in the buoy.
+        live = swim ? null : startLiveActivity(resumed.navigation);
+        notice = swim || live !== null ? null : startLockNotice();
         // A way back found between two fixes is shown and said at once.
         wayBack = startWayBack(activity, (place) => {
           if (stopped || navigation.current === null) {
@@ -219,6 +224,7 @@ export function useNavigation(
           });
           cue(found.cues);
           notice?.said(found.cues, found.navigation);
+          live?.update(found.navigation);
         });
         const session = controlRun(recorder, {
           // «Pause» and «Resume» change the track between two fixes.
@@ -300,6 +306,7 @@ export function useNavigation(
             cue(drawing.cues);
             cue(next.cues);
             notice?.said(next.cues, next.navigation);
+            live?.update(next.navigation);
             // After the turn, which may be the way onto the stretch; from
             // where the run joined a closed route (TASK-273).
             const walking = moveOnFootJoined(
@@ -355,6 +362,9 @@ export function useNavigation(
       subscription?.remove();
       away?.remove();
       notice?.end();
+      if (navigation.current !== null) {
+        live?.end(navigation.current);
+      }
       wayBack?.end();
       run?.end();
       stopRecording?.();

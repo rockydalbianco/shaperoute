@@ -59,7 +59,7 @@ from shaperoute_api.schemas import ErrorBody
 # ends: a comment deleted meanwhile waits for it.
 READ_SQL = (
     "SELECT c.user_id AS author, c.drawing_id FROM comments c"
-    " JOIN drawings d ON d.id = c.drawing_id JOIN runs r ON r.id = d.run_id"
+    " JOIN drawings d ON d.id = c.drawing_id"
     f" WHERE c.id = %(comment)s AND {drawing_seen_sql(VIEWER)} AND {READ}"
     " FOR SHARE OF c"
 )

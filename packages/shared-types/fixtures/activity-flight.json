@@ -1,0 +1,7 @@
+{
+  "air": [[1, 3]],
+  "split": {
+    "foot": { "seconds": 540, "metres": 1900, "climb_m": 120, "max_alt_m": 1610 },
+    "air": { "seconds": 600, "metres": 2100, "climb_m": 40, "max_alt_m": 1700 }
+  }
+}

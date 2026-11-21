@@ -2086,6 +2086,8 @@ export const ES: Table = {
   SW: "SO",
   W: "O",
   NW: "NO",
+  // src/screens/RunPanel.tsx (TASK-461 B2c, approved 2026-11-11)
+  "{m} m of climb to go": "faltan {m} m de desnivel",
   "{distance} to go": "faltan {distance}",
   "Saved to My activities": "Guardada en Mis actividades",
   // src/social/ContactsFriends.tsx (TASK-262 C)
@@ -2845,8 +2847,8 @@ export const ES: Table = {
   "🗺️ Post": "🗺️ Publicación",
   // src/settings/PostLinksSetting.tsx (TASK-455 part E)
   "Links to my posts": "Enlaces a mis publicaciones",
-  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.":
-    "Quien ve tus publicaciones para «Todos» puede compartir su enlace. Quien tiene el enlace ve el dibujo en el mapa, tu nombre de usuario y la distancia, incluso sin MuW. Desactívalo y los enlaces dejan de funcionar.",
+  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.":
+    "Quien ve tus publicaciones para «Todos» puede compartir su enlace. Quien tiene el enlace ve el dibujo en el mapa, tu nombre de usuario, el título, el deporte y la distancia, incluso sin MuW. Desactívalo y los enlaces dejan de funcionar.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Añadir actividad",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
@@ -2913,6 +2915,10 @@ export const ES: Table = {
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Alpinismo",
+  "No shapes up a mountain: MuW records your day.":
+    "Sin formas en la montaña: MuW registra tu jornada.",
+  // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
+  Stretching: "Estiramientos",
   "Before you climb": "Antes de subir",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW registra tu ascensión y la comparte: no te guía. Ve con tu equipo, tu experiencia y tu criterio, y revisa las condiciones antes de salir.",
@@ -2939,4 +2945,10 @@ export const ES: Table = {
   Plan: "Programar",
   "Couldn't plan the live. Try again.":
     "No se pudo programar el directo. Inténtalo de nuevo.",
+  // src/liveShare/plannedPost.ts (TASK-468 part B2b2: the live becomes the
+  // post; en and it approved by the user 2026-11-12)
+  "Post it in the Feed?": "¿Publicarlo en el Feed?",
+  "Your live becomes the post of this activity.":
+    "Tu directo se convierte en la publicación de esta actividad.",
+  "Don't post": "No publicar",
 };

@@ -144,7 +144,16 @@ tengono solo le otto, per scelta dell'utente (2026-11-18).
 
 Dal 18 novembre 2026 il seme ha **1694 percorsi**: le 1546 corse di prima e
 **148 uscite in bici in 29 città italiane** (54 da 20 km, 49 da 25, 45 da
-30). Le città estere vogliono un estratto per paese: un secondo giro.
+30).
+
+Dal secondo giro (2026-11-22) il seme ha **1866 percorsi**: si aggiungono
+**172 uscite in bici in 25 città estere** (in tutto 320 in 54 città: 116 da
+20 km, 105 da 25, 99 da 30). Le zone vengono dall'estratto di Geofabrik del
+paese o della regione, uno per città (`out/TASK-441/b2/run-estere.sh`; per
+Amburgo, Londra, New York e Amsterdam più pezzi uniti con `osmium merge`).
+Berlino, Parigi, Dublino, Tokyo, New York, Amburgo e Vienna non hanno uscite
+in bici: con la loro zona il pianificatore passa i 4 GB sul Mac, e il limite
+non si alza.
 
 ### Le città in evidenza
 

@@ -7,6 +7,13 @@ import { answers, apiError } from "../account/testing";
 import type { AccountState } from "../account/useAccount";
 import { profileDetail, UserProfilePage } from "./UserProfilePage";
 
+// The night a member shares has its own tests (UserProfileSleep.test.tsx):
+// here it asks nothing, so the answers stay in their order.
+jest.mock("../health/sleepModules", () => ({
+  ...jest.requireActual("../health/sleepModules"),
+  sleepPostsOn: () => false,
+}));
+
 // Following from another member's profile (TASK-211, ADR-0173): «Follow»
 // asks, «Requested» takes it back, «Following» stops after asking.
 

@@ -17,6 +17,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useActivitiesDoor } from "./src/activities/activitiesDoor";
 import { ActivityCard } from "./src/activities/ActivityCard";
 import { type Drawn, sameLine } from "./src/activities/recordedRun";
+import { EndFoldedStrip } from "./src/activities/EndFoldedStrip";
 import { RunEnd } from "./src/activities/RunEnd";
 import { snowParts } from "./src/activities/snowDay";
 import { type Lifts, snowLiftsOf } from "./src/activities/snowLifts";
@@ -841,6 +842,10 @@ function MuW() {
   const freeStart =
     freeTrack.fixes[0]?.point ?? (position.status === "ok" ? position.point : null);
   const freeFinishing = screen === "runFinish" && freeFinished !== null;
+  // The «Save» of the form under the end card, for the folded card's strip
+  // (TASK-478 part b).
+  const endSave = useRef<(() => void) | null>(null);
+  const ended = finishing ? finished.run : freeFinishing ? freeFinished.run : null;
   // Where the runner is heading, with a route or without (TASK-164): the
   // arrow on the map.
   const runTrack = navigating ? trackOfNavigation(navigation) : freeTrack;
@@ -1450,6 +1455,27 @@ function MuW() {
         // At the end of an activity the card scrolls: «Save» and «Discard»
         // under a tall end card stay on the screen (TASK-477).
         scrolls={finishing || freeFinishing}
+        // Folded, a strip of how far and how long, and «Save» (TASK-478 b).
+        endStrip={
+          ended === null
+            ? undefined
+            : (open) => (
+                <EndFoldedStrip
+                  track={ended.track}
+                  activity={ended.activity}
+                  onOpen={open}
+                  onSave={
+                    signedIn
+                      ? () => {
+                          endSave.current?.();
+                          // Not kept: the card says why.
+                          open();
+                        }
+                      : undefined
+                  }
+                />
+              )
+        }
         onBack={onBack}
         mapError={mapError}
         banner={
@@ -1850,7 +1876,7 @@ function MuW() {
         {/* Under the card of a run that ended: «Save» or «Discard», with an
             account (TASK-172). */}
         {(finishing || freeFinishing) && (
-          <RunEnd onSave={onSaveRun} onDiscard={onDiscardRun} />
+          <RunEnd onSave={onSaveRun} onDiscard={onDiscardRun} saveRef={endSave} />
         )}
         {/* The stretching, over the whole screen, until done or skipped
             (TASK-285 part B). */}

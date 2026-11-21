@@ -2158,6 +2158,16 @@ telefono dell'account: con un percorso o senza.
   stessa frase sopra il modulo, «←» e il titolo «Profile» (TASK-278 parte
   B). Chi entra da lì torna da solo alla scheda e trova «Save» e «Discard»
   al posto di «Done»; «←» torna alla scheda senza entrare.
+- **La scheda di fine si piega** (TASK-478 parte b, scelta dell'utente del
+  2026-11-18; codice in `activities/EndFoldedStrip.tsx` e
+  `screens/MapScreen.tsx`): in cima alla scheda c'è la maniglia della corsa
+  (TASK-472). Trascinata in giù, o toccata, la scheda diventa una striscia
+  sopra la mappa: km e tempo su una riga («3.02 km · 18:00») e, con un
+  account, «Save». La striscia toccata, o trascinata in su, riapre la
+  scheda. Il modulo resta com'era: foto, «Who can see it» e il resto. Il
+  «Save» della striscia è quello del modulo, con tutto quello che fa
+  (visibilità, Apple Health, Strava); se la corsa non si tiene, la scheda
+  si riapre e dice perché. Alla fine successiva la scheda parte intera.
 - **La pagina «My activities»**, da «Profile»: una scheda per corsa, dalla
   più recente. A sinistra il disegno, come a fine corsa: il percorso
   giallo e sopra, sottile e chiara, la linea corsa; una corsa senza

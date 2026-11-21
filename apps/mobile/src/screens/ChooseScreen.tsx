@@ -38,6 +38,7 @@ import { TOUR_PART } from "../tour/tourSteps";
 import { RunNoRouteButton } from "./RunNoRouteButton";
 import { Segmented } from "./Segmented";
 import { StepTitle } from "./StepTitle";
+import { StretchRoutines } from "../stretchSport/StretchRoutines";
 
 /** "My position" also asks the GPS again, as the old button did, so it works
  * after the permission is given in Settings. Translated where shown, with
@@ -111,7 +112,9 @@ export function ChooseScreen({
   // its recording only; a workout at the gym, its start (TASK-385 part B).
   const sport = useSport();
   const gym = sport === "gym";
-  const recordOnly = (isRecordOnly(sport) || gym) && onRun !== undefined;
+  // A stretching session (TASK-475 part B): its routines and their start.
+  const stretch = sport === "stretch";
+  const recordOnly = (isRecordOnly(sport) || gym || stretch) && onRun !== undefined;
   // A swim in open water or in a pool (TASK-400 part B, ADR-0334): in a
   // pool no start, no shape, no route, the pool and «Start swim».
   const { place } = usePoolChoice();
@@ -160,7 +163,9 @@ export function ChooseScreen({
             </View>
           </View>
           {swim && <SwimPlaceChoice place={place} />}
-          {!gym && onRun && <PlanTodayCard sport={sport} onRecord={onRun} />}
+          {!gym && !stretch && onRun && (
+            <PlanTodayCard sport={sport} onRecord={onRun} />
+          )}
           {pool ? (
             <PoolDraw />
           ) : recordOnly && gym ? (
@@ -172,6 +177,19 @@ export function ChooseScreen({
               startIcon={runIcon}
               hint={t("No route in the gym: MuW times your workout.")}
             />
+          ) : recordOnly && stretch ? (
+            // The routines of TASK-466, one ticked, and «Start stretching».
+            <>
+              <StretchRoutines />
+              <RecordDay
+                label={runLabel}
+                icon={runIcon}
+                onPress={onRun}
+                hint={t(
+                  "No route for stretching: choose a routine and MuW guides you.",
+                )}
+              />
+            </>
           ) : recordOnly ? (
             <>
               <RecordDay

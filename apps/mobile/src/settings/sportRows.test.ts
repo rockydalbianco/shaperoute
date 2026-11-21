@@ -54,6 +54,8 @@ it("shows the rows of before, in their order", () => {
       ready: true,
       recordOnly: true,
     },
+    // A stretching session (TASK-475 part B), «Soon» until it is turned on.
+    { id: "stretch", emoji: "🧘", name: "Stretching", ready: false },
   ]);
   // Only the rows that say it carry «Record only».
   expect(
@@ -81,6 +83,8 @@ it("asks and saves the activities of before", () => {
     "running",
     "running",
     "running",
+    // A stretching session asks no route: a run, never shown (TASK-475).
+    "running",
   ]);
   expect(every.map(runActivityOf)).toEqual([
     "walking",
@@ -100,6 +104,8 @@ it("asks and saves the activities of before", () => {
     "alpinism",
     "gym",
     "paragliding",
+    // Saved as a stretching session, without a track (TASK-475).
+    "stretching",
   ]);
   for (const sport of every) {
     expect(ACTIVITIES).toContain(activityOf(sport));

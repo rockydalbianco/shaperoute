@@ -570,8 +570,70 @@ lasciando le righe d'indice.
 - ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte · 2026-11-12 · Attiva
 
 - ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos` · 2026-11-21 · Attiva
+- ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Proposta
 
 ## Voci nuove
+
+## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
+
+**Stato**: Proposta · 2026-11-21 · TASK-485 parte 0 (numero dal
+Coordinatore). Che cosa mostra, che cosa copia «Use this plan» (kg
+compresi), che il post non segue la scheda, testi e riga di privacy:
+**scelte dell'utente** del 2026-11-21 («Riquadro + dettaglio», «Anche i
+kg», «No, resta com'era», «Approvo»), con la voce, la riga sotto e
+«Everyone» già scelte in TASK-481 (ADR-0390). Il modo è **deciso
+dall'agente su delega dell'utente**, da verificare in ogni parte con la
+lista dei file approvata dal Coordinatore.
+
+**Contesto**: «Workout plan» è la sesta voce del foglio «Add to Feed»
+(ADR-0390). Una scheda (`gym_plans`, ADR-0341, ADR-0360, ADR-0371) oggi la
+vede solo il suo autore; dopo TASK-312 C1 (ADR-0272 precisazione C) un
+disegno senza corsa ha già autore, chiave del telefono, reazioni,
+commenti, segnalazioni, blocchi e nascosti.
+
+**Decisione**:
+
+1. **Un disegno senza corsa**, come il post di sole foto: `run_id` vuoto,
+   `key` del telefono, autore in `drawings.user_id`, mai «Only me», nessuna
+   traccia, pubblicato alla creazione, niente foto. Chi parte da `runs`
+   non lo vede mai.
+2. **La fotografia della scheda in `drawings.plan`** (JSONB, migrazione
+   provvisoria `0082_plan_posts.sql`): con `plan` è una scheda pubblicata,
+   senza è un post di sole foto; `plan` solo senza corsa. Nessun legame con
+   la riga di `gym_plans`: cambiare o cancellare la scheda non tocca il
+   post (scelta dell'utente).
+3. **Che cosa c'è nella fotografia**: nome, giorni, esercizi coi kg e il
+   programma (obiettivo, settimane, modo, passo, recupero, allenamenti,
+   settimane scritte a mano, la meta senza data), validati dai modelli di
+   `gym_plans.py`. Il server rifiuta `runner` (i ritmi dell'autore) e non
+   tiene `starts_on`: la privacy nomina solo nome, obiettivo, giorni,
+   settimane, esercizi e kg.
+4. **Rotte `/me/plan-posts/{key}`** (`PUT`, `GET`, `DELETE`), come quelle
+   delle foto; il Feed e il dettaglio lo danno con `source: "plan"` e il
+   campo `plan`.
+5. **Solo alle app che dicono `plans` in `X-MuW-Reads`**:
+   `Reads.drawings_sql()` separa sole foto (`photos`) e schede (`plans`).
+   Il server esce prima dell'app senza cambiare niente di quello che si
+   vede.
+6. **«Use this plan» non ha rotte nuove**: il telefono fa una scheda nuova
+   (chiave nuova) dalla fotografia, coi kg, senza ritmi (se ci sono corse
+   la guida chiede «How do you run today?») e con la meta «quando sono
+   pronto»; l'ultimo passo della guida (nome, primo giorno), poi
+   `PUT /me/gym-plans/{key}`, che tiene già il limite di 20.
+
+**Alternative scartate**: il post che punta alla scheda dell'autore
+(cambierebbe e sparirebbe con lei); una tabella `plan_posts` a sé
+(reazioni, commenti, segnalazioni da rifare); una corsa finta di palestra
+(ogni lettore di `runs` da filtrare); copiare anche ritmi e data della
+meta (sono dell'autore).
+
+**Conseguenze**: come i post di sole foto, una scheda pubblicata per ora
+non si cerca, non ha link pubblico e non va in chat. Prima il server (col
+passo del Coordinatore e il sì dell'utente), dopo TASK-467 E che tocca
+`reads.py` e `drawings.py`; poi l'app con la riga di privacy approvata, in
+coda dopo TASK-481 A. Il comportamento andrà in `docs/sports/gym.md`, il
+contratto in `API.md`, la colonna in `DATABASE.md`. TASK-466 E (la
+routine di stretching pubblicata) può usare lo stesso modo con un tipo suo.
 
 ## ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos`
 

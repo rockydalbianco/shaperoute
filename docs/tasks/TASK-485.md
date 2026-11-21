@@ -13,7 +13,7 @@ ADR-0360, ADR-0371)
 forma): due task separati per scelta del Coordinatore (2026-11-21). Al
 2026-11-21 la E non è partita; quando parte, riusa il modo di questo task
 (un disegno senza corsa con un'istantanea, un tipo suo in `X-MuW-Reads`).
-**ADR**: ADR-0NNN (numero dal Coordinatore)
+**ADR**: ADR-0394 (numero dal Coordinatore, 2026-11-21)
 
 ## Obiettivo
 
@@ -98,7 +98,7 @@ Una domanda per volta, ognuna con la proposta dell'agente.
    > while copies already made stay with whoever made them. The calendar of
    > your workouts is seen only by you.
 
-## Il modo (deciso dall'agente su delega dell'utente, ADR-0NNN)
+## Il modo (deciso dall'agente su delega dell'utente, ADR-0394)
 
 Verificato sul codice di `main` (`5ef3d45b`):
 
@@ -110,8 +110,8 @@ Verificato sul codice di `main` (`5ef3d45b`):
    da `runs` (totali, record, calendario, gioco, badge, concorso, «My
    activities») non lo vede mai.
 2. **L'istantanea nel disegno**: una colonna nuova `drawings.plan` JSONB
-   (migrazione col primo numero libero al merge, oggi dopo `0080`). Un
-   disegno senza corsa con `plan` è una scheda pubblicata, senza `plan` è un
+   (migrazione `0082_plan_posts.sql`: numero provvisorio del Coordinatore,
+   la 0081 è di TASK-467 E; il definitivo al merge). Un disegno senza corsa con `plan` è una scheda pubblicata, senza `plan` è un
    post di sole foto. Il vincolo `drawings_photo_post_check` di 0080 vale
    già (mai «Only me», nessuna traccia); in più `plan` solo senza corsa.
    Pubblicato subito (`published_at` alla creazione), niente foto.
@@ -151,10 +151,16 @@ Migrazione, `plan_posts.py`, `plans` in `X-MuW-Reads`, il disegno con
 Server col passo del Coordinatore e il sì dell'utente, prima della B.
 Nessun cambiamento per le app che non dicono `plans`.
 
+**Ordine con TASK-467 E** (il post del sonno, detto dal Coordinatore il
+2026-11-21): anche lui aggiunge un tipo in `reads.py` (`sleep`) e tocca
+`drawings.py`, sul modello di TASK-312 C1, con la migrazione 0081. La A
+parte dopo di lui: merge di `main` prima del push, e la lista esatta al
+Coordinatore prima del codice.
+
 **File toccati (da approvare dal Coordinatore):**
 
 ```
-services/api/migrations/00NN_plan_posts.sql          (nuovo: drawings.plan)
+services/api/migrations/0082_plan_posts.sql          (nuovo: drawings.plan; 0082 provvisorio, definitivo al merge)
 services/api/shaperoute_api/plan_posts.py            (nuovo: /me/plan-posts)
 services/api/shaperoute_api/app.py                   (il router)
 services/api/shaperoute_api/reads.py                 (plans; drawings_sql)
@@ -227,7 +233,7 @@ site/privacy/**/index.html                           (rigenerate con make_privac
 
 ## Criteri di accettazione
 
-- [x] **0**: scelte dell'utente scritte qui e nell'ADR; parti e liste dei
+- [x] **0**: scelte dell'utente scritte qui e in ADR-0394; parti e liste dei
       file al Coordinatore.
 - [ ] **A**: `PUT /me/plan-posts/{key}` crea una volta sola; rifiuta
       `runner` e «Only me»; un'app senza `plans` non riceve mai la scheda

@@ -234,8 +234,7 @@ class Reported:
 def _drawing(conn: Connection[DictRow], target: UUID) -> DictRow | None:
     return conn.execute(
         "SELECT d.title, d.description, d.hidden_at, u.username, u.public_id"
-        " FROM drawings d JOIN runs r ON r.id = d.run_id"
-        " JOIN users u ON u.id = r.user_id WHERE d.id = %s",
+        " FROM drawings d JOIN users u ON u.id = d.user_id WHERE d.id = %s",
         (target,),
     ).fetchone()
 
@@ -262,8 +261,8 @@ def _outfit_tag(conn: Connection[DictRow], target: UUID) -> DictRow | None:
     return conn.execute(
         "SELECT t.item, t.brand, t.product_name, t.url, t.drawing_id, t.n,"
         " t.hidden_at, u.username, u.public_id FROM drawing_outfit_tags t"
-        " JOIN drawings d ON d.id = t.drawing_id JOIN runs r ON r.id = d.run_id"
-        " JOIN users u ON u.id = r.user_id WHERE t.id = %s",
+        " JOIN drawings d ON d.id = t.drawing_id"
+        " JOIN users u ON u.id = d.user_id WHERE t.id = %s",
         (target,),
     ).fetchone()
 

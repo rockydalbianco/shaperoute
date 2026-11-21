@@ -1,8 +1,7 @@
 # TASK-481 — Il «+» del Feed: tutte le voci
 
 **Stato**: In lavorazione · parte 0 (documenti) fatta il 2026-11-21; parte A
-aspetta la lista dei file approvata dal Coordinatore e l'arrivo in `main` di
-TASK-312 C2
+(file approvati dal Coordinatore) aspetta l'arrivo in `main` di TASK-312 C2
 **Fase**: 5 · **Branch**: `docs/TASK-481-feed-plus-all-entries` (parte 0)
 **Dipende da**: TASK-476 (il «+» e il foglio, ADR-0387), TASK-312 C2 (che
 tocca lo stesso foglio)
@@ -106,8 +105,8 @@ Una domanda per volta, ognuna con la proposta dell'agente.
 | «Photos only» | **TASK-312 C2** (sessione `local_3444e01e-ccb0-4cb7-bd05-8c1c26f2cd0d`) | in corso; API in `main` (C1, #1347) |
 | «From a file» | TASK-476 | c'è già |
 | «Sleep» | **TASK-467 parte E** (sessione `local_434d1949`) | da scrivere: oggi il sonno sta sul profilo e dentro il post dell'attività, non è un post da solo; che cosa mostra lo decide l'utente lì |
-| «Gym workout» | **task nuovo** (numero dal Coordinatore) | da scrivere |
-| «Workout plan» | **task nuovo** (numero dal Coordinatore), parente di TASK-466 E | da scrivere |
+| «Gym workout» | **TASK-484** «Allenamento in palestra scritto a mano, nel Feed» | da scrivere; la sessione parte quando l'utente la apre |
+| «Workout plan» | **TASK-485** «La scheda della palestra come post» (con «Use this plan»), parente di TASK-466 E | da scrivere; la sessione parte quando l'utente la apre |
 
 **Non sono voci, e perché:**
 
@@ -148,10 +147,13 @@ file delle voci, «‹» per tornare, il «+» anche senza selettore.
 
 **Ordine con TASK-312 C2**: C2 tocca adesso `AddToFeed.tsx`,
 `AddToFeed.test.tsx`, `FeedScreen.tsx`, `FeedScreenAdd.test.tsx` e le
-`i18n`. Proposta al Coordinatore: **A parte dopo il merge di C2**, dal
-`main` che ha già «Photos only» nel foglio; così nessun file è conteso.
+`i18n`. **A parte dopo il merge di C2** (approvato dal Coordinatore il
+2026-11-21), dal `main` che ha già «Photos only» nel foglio. Ordine sui
+file del Feed: 355 B2, 312 C2, 481 A, 309 B2. `App.tsx`: una riga, merge
+di `main` prima del push. Privacy a turno, in coda dopo 309 B1, 417 D2 e
+312 C2: il Coordinatore dice quando tocca.
 
-**File toccati (proposti, da approvare dal Coordinatore):**
+**File toccati (approvati dal Coordinatore il 2026-11-21):**
 
 ```
 apps/mobile/src/feed/AddToFeed.tsx                (la lista, poi il flusso scelto)
@@ -186,7 +188,7 @@ notte, e la riga di privacy si decidono con l'utente in TASK-467. Entra
 dopo la parte C del sonno (la build nativa con il permesso nuovo). Aggiunge
 la sua riga in `addToFeedEntries.ts`.
 
-### D — «Gym workout» scritto a mano (task nuovo)
+### D — «Gym workout» scritto a mano (TASK-484)
 
 Un allenamento in palestra già fatto: esercizi, serie, pesi (l'editor della
 palestra di oggi), giorno e durata; poi il modulo del post della palestra
@@ -197,7 +199,7 @@ dal concorso, dai livelli e dalla classifica della palestra come le
 attività importate (ADR-0272). Server prima dell'app, migrazione se serve,
 riga di privacy, testi all'utente.
 
-### E — «Workout plan» pubblicata (task nuovo)
+### E — «Workout plan» pubblicata (TASK-485)
 
 Una scheda della palestra (`gym_plans`, ADR-0360) diventa un post; chi la
 vede la copia con «Use this plan» fra le sue schede. *Proposta tecnica di
@@ -205,8 +207,8 @@ partenza*: un disegno senza corsa come il post di sole foto (ADR-0272
 precisazione C) con il riferimento alla scheda, così reazioni, commenti,
 segnalazioni, blocchi e nascosti valgono senza tabelle nuove; un tipo nuovo
 in `X-MuW-Reads`. Da tenere vicino a TASK-466 E (la routine di stretching
-pubblicata), che ha la stessa forma: il Coordinatore decide se uno o due
-task. Server prima dell'app, riga di privacy, testi all'utente.
+pubblicata), che ha la stessa forma; il Coordinatore ha scelto due task
+separati (2026-11-21). Server prima dell'app, riga di privacy, testi all'utente.
 
 ## Criteri di accettazione
 

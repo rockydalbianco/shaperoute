@@ -604,8 +604,9 @@ TASK-467 il sonno), e Strava e Instagram non si possono collegare
 - **Ogni voce la costruisce il suo task**: «Record now» TASK-481 A (apre
   la registrazione di oggi); «Photos only» TASK-312 C2; «From a file» c'è
   (TASK-476); «Sleep» TASK-467 E; «Gym workout» (un allenamento in palestra
-  già fatto, scritto a mano, con «Imported») e «Workout plan» (una scheda
-  della palestra come post, copiabile con «Use this plan») due task nuovi.
+  già fatto, scritto a mano, con «Imported») TASK-484 e «Workout plan»
+  (una scheda della palestra come post, copiabile con «Use this plan»)
+  TASK-485.
 - **Chi lo vede**: «Record now» come ogni corsa (ADR-0304); «Photos only»
   l'ultima scelta (TASK-312 C); «From a file» «Everyone» (ADR-0387);
   «Sleep» come gli altri post (TASK-467); «Gym workout» e «Workout plan»

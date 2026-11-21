@@ -84,6 +84,13 @@ Tre schermi:
 2. Il suggerimento «Try 82.5 kg × 8»: sì o no, e con che regola (proposta:
    +2,5 kg se l'ultima volta tutte le serie sono arrivate alle ripetizioni,
    altrimenti lo stesso peso).
+   **Risposta dell'utente, 2026-11-22: «Sì, questa regola»**, cioè:
+   tutte le serie dell'ultima volta arrivate alle ripetizioni → «Try
+   {kg + 2,5} kg × {reps}»; altrimenti «Try {kg} kg × {reps} again»; a
+   corpo libero +1 ripetizione; a tempo +5 secondi; il cardio senza
+   suggerimento. Le ripetizioni da raggiungere sono quelle della scheda
+   seguita, altrimenti quelle della prima serie dell'ultima volta. È una
+   riga di testo: i campi restano compilati coi valori dell'ultima volta.
 3. Un esercizio col nome libero: lo storico unisce le serie con lo stesso
    nome, senza badare a maiuscole e spazi (proposta).
 4. «History» anche fuori dall'allenamento, dalla guida «i» (proposta).

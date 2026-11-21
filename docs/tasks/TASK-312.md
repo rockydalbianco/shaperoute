@@ -379,6 +379,16 @@ separa dove legge il Feed.
   e cancellazione dell'autore; niente «Send in chat» né link per questi
   post; la riga della privacy (a turno).
 
+### Parte C1b — l'elenco dei propri post (2026-11-21)
+
+`GET /me/photo-posts`: l'app apre un post dal suo id, ma per modificarlo o
+cancellarlo le serve la `key`, e nessun endpoint la dava (i post di sole
+foto non sono in «My activities» né in `GET /me/drawings`). Nessuna
+migrazione, nessun codice d'errore nuovo. Lista approvata dal Coordinatore
+il 2026-11-21 (`photo_posts.py`, `test_photo_posts.py`, `index.ts`,
+`my-photo-posts.json`, `photoPosts.test.ts`, `API.md`, questo file); sul
+server col passo 16 se è in `main` prima, altrimenti col passo dopo.
+
 ### Parte C1 — com'è fatta (2026-11-21)
 
 «File toccati» approvati dal Coordinatore il 2026-11-21 (la lista sopra,

@@ -80,7 +80,7 @@ Tre schermi:
 
 1. **La proposta in tre schermi** (riquadro «Last time», campi già
    compilati, «History» con massimale stimato, record e sedute): va bene
-   così? *In attesa.*
+   così? **Risposta dell'utente, 2026-11-22: «Sì, così».**
 2. Il suggerimento «Try 82.5 kg × 8»: sì o no, e con che regola (proposta:
    +2,5 kg se l'ultima volta tutte le serie sono arrivate alle ripetizioni,
    altrimenti lo stesso peso).

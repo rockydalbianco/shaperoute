@@ -10,6 +10,7 @@ import { fill, pickLanguage, TEXTS as LIVE_TEXTS } from "../live/texts.js";
 import { apiBase, boundsOf, MAP_COLOURS, mapStyle, unitsOf } from "../live/view.js";
 import { SPORTS, TEXTS } from "./texts.js";
 import {
+  bearingOf,
   factsOf,
   idFromHash,
   lineOf,
@@ -17,6 +18,7 @@ import {
   postUrl,
   RETRY_AFTER_MS,
   titleOf,
+  TURNED_MIN_DEG,
 } from "./view.js";
 
 const languages = navigator.languages ?? [navigator.language];
@@ -30,6 +32,12 @@ const by = document.querySelector("[data-by]");
 const facts = document.querySelector("[data-facts]");
 const mapBox = document.querySelector("[data-map-box]");
 const mapElement = document.querySelector("[data-map]");
+/** «Try again», made here and put under the words only while it is there to
+ * press: a browser that kept an older copy of the page or of its styles
+ * shows no stray button. */
+const again = document.createElement("button");
+again.type = "button";
+again.className = "button post__again";
 
 /** A new id (the `#` changed) leaves the answers of the old one unread. */
 let round = 0;
@@ -40,6 +48,7 @@ function putTexts() {
   const get = document.querySelector("[data-get]");
   get.textContent = text.get;
   get.setAttribute("href", downloadUrl);
+  again.textContent = text.retry;
   const privacy = document.querySelector("[data-privacy]");
   privacy.textContent = LIVE_TEXTS[lang].privacy;
   if (lang !== "en") {
@@ -55,10 +64,15 @@ function clearMap() {
   mapBox.hidden = true;
 }
 
-/** Nothing of a drawing on the page: before the answer, and after a link
- * that opens none. */
-function showNothing(words) {
+/** Nothing of a drawing on the page: before the answer, after a link that
+ * opens none, and, with the way to ask again, when the API did not answer. */
+function showNothing(words, retry = false) {
   clearMap();
+  if (retry) {
+    facts.after(again);
+  } else {
+    again.remove();
+  }
   title.hidden = true;
   title.textContent = "";
   facts.textContent = "";
@@ -84,12 +98,15 @@ function showMap(post) {
   }
   mapBox.hidden = false;
   const { colours, track, casing } = mapColours();
+  // Turned as the drawing, so its shape reads upright, as in the app.
+  const bearing = bearingOf(post.rotation_deg);
   try {
     map = new window.maplibregl.Map({
       container: mapElement,
       style: mapStyle(colours, lang),
+      bearing,
       bounds: boundsOf(post.track),
-      fitBoundsOptions: { padding: 48, maxZoom: 16 },
+      fitBoundsOptions: { padding: 48, maxZoom: 16, bearing },
       attributionControl: false,
       dragRotate: false,
       pitchWithRotate: false,
@@ -101,7 +118,12 @@ function showMap(post) {
     return;
   }
   map.addControl(new window.maplibregl.AttributionControl({ compact: false }));
-  map.addControl(new window.maplibregl.NavigationControl({ showCompass: false }), "top-right");
+  // On a turned map the compass says where north is; a tap puts it up.
+  const turned = Math.abs(bearing) >= TURNED_MIN_DEG;
+  map.addControl(
+    new window.maplibregl.NavigationControl({ showCompass: turned, visualizePitch: false }),
+    "top-right",
+  );
   const drawn = map;
   // The style is written here: the line can draw before the tiles come.
   drawn.once("style.load", () => {
@@ -124,6 +146,7 @@ function showMap(post) {
 }
 
 function showPost(post) {
+  again.remove();
   const who = fill(text.by, { user: post.username });
   const named = titleOf(post);
   title.hidden = named === null;
@@ -160,6 +183,10 @@ async function ask(id, mine, attempt) {
     // The API did not answer: the page waits and asks again, and says
     // nothing of a drawing it knows nothing of.
     setTimeout(() => mine === round && ask(id, mine, attempt + 1), RETRY_AFTER_MS[attempt]);
+  } else {
+    // Still no answer: the page says so, not that the drawing is gone, and
+    // leaves the asking to who reads.
+    showNothing(text.failed, true);
   }
 }
 
@@ -176,5 +203,6 @@ function start() {
 }
 
 putTexts();
+again.addEventListener("click", start);
 start();
 window.addEventListener("hashchange", start);

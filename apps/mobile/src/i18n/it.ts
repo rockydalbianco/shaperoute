@@ -2826,8 +2826,8 @@ export const IT: Table = {
   "🗺️ Post": "🗺️ Post",
   // src/settings/PostLinksSetting.tsx (TASK-455 part E)
   "Links to my posts": "Link ai miei post",
-  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.":
-    "Chi vede i tuoi post per «Tutti» può condividerne il link. Chi ha il link vede il disegno sulla mappa, il tuo nome utente e la distanza, anche senza MuW. Spegnilo e i link smettono di funzionare.",
+  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.":
+    "Chi vede i tuoi post per «Tutti» può condividerne il link. Chi ha il link vede il disegno sulla mappa, il tuo nome utente, il titolo, lo sport e la distanza, anche senza MuW. Spegnilo e i link smettono di funzionare.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Aggiungi attività",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
@@ -2894,9 +2894,13 @@ export const IT: Table = {
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Alpinismo",
+  // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
+  Stretching: "Stretching",
   "Before you climb": "Prima di salire",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW registra la tua salita e la condivide: non ti guida. Vai con la tua attrezzatura, la tua esperienza e il tuo giudizio, e controlla le condizioni prima di partire.",
+  // TASK-305 part R6c: the map of a race (approved 2026-11-12).
+  "White: on foot. Yellow: in the air.": "Bianco: a piedi. Giallo: in volo.",
   // src/liveShare/ (TASK-468 part B2a: the «Live» row, «Live in the Feed»,
   // the stop of a share without a link; en and it approved 2026-11-12)
   "Live in the Feed": "Live nel Feed",
@@ -2918,4 +2922,10 @@ export const IT: Table = {
   Plan: "Programma",
   "Couldn't plan the live. Try again.":
     "Non è stato possibile programmare la live. Riprova.",
+  // src/liveShare/plannedPost.ts (TASK-468 part B2b2: the live becomes the
+  // post; en and it approved by the user 2026-11-12)
+  "Post it in the Feed?": "Pubblicarla nel Feed?",
+  "Your live becomes the post of this activity.":
+    "La tua live diventa il post di questa attività.",
+  "Don't post": "Non pubblicare",
 };

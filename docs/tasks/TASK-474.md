@@ -1,6 +1,6 @@
 # TASK-474 — I numeri della scheda del Feed a quattro colonne
 
-**Stato**: In revisione (PR #1277) · **Branch**: `fix/TASK-474-feed-card-numbers` · **ADR**: nessuno
+**Stato**: Done · 2026-11-21 · **Branch**: `fix/TASK-474-feed-card-numbers` · **ADR**: nessuno
 (è un difetto) · assegnato dal Coordinatore il 2026-11-12, visto durante TASK-470.
 
 ## Il difetto
@@ -39,3 +39,10 @@ valore non ci sta in altezza e rimpicciolirlo non serve, perché la riga resta
 
 File toccati: `apps/mobile/src/feed/SummaryBoxes.tsx`,
 `apps/mobile/src/feed/SummaryBoxes.test.tsx` (nuovo), questo file.
+
+## Esito
+
+#1277 in `main` il 2026-11-12 (`f749e4fa`), in produzione con l'OTA 17
+(2026-11-18, `253b5da0`). I numeri della scheda del Feed restano a 15 pt
+anche con quattro colonne, la scheda ha la stessa altezza di prima. Resta
+solo uno sguardo sul telefono.

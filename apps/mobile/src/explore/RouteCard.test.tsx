@@ -293,7 +293,10 @@ test("the large radius and no border, the words in the card's title style (TASK-
     />,
   );
   const card = screen.getByTestId("route-card");
-  expect(card).toHaveStyle({ borderRadius: radius.xl, backgroundColor: color.surface });
+  expect(card).toHaveStyle({
+    borderRadius: radius.card,
+    backgroundColor: color.surface,
+  });
   expect(
     (StyleSheet.flatten(card.props.style) as { borderWidth?: number }).borderWidth,
   ).toBeUndefined();

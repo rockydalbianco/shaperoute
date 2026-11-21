@@ -577,8 +577,59 @@ lasciando le righe d'indice.
 - ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Proposta
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 - ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo · 2026-11-21 · Attiva
+- ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Proposta
 
 ## Voci nuove
+
+## ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie
+
+**Stato**: Proposta · 2026-11-22 · TASK-483 (parte 0, soli documenti).
+I tre schermi, la regola del suggerimento, l'unione dei nomi liberi e
+«History» dalla guida sono **scelte dell'utente** (risposte 1–4 del task
+file); il resto è **deciso dall'agente su delega dell'utente**, numero dal
+Coordinatore (fork 2).
+
+**Contesto**: l'utente vuole che, scelto un esercizio, l'app dica quanto
+ha fatto le volte scorse e mostri tutto lo storico in modo intelligente.
+Le serie sono già salvate in `gym_sets` (ADR-0327), ma nessun indirizzo le
+rilegge per esercizio e l'app non le mostra.
+
+**Decisione**:
+- **Durante l'allenamento** un riquadro «Last time · {data}» con le serie
+  dell'ultima seduta di quell'esercizio; la prima serie parte coi valori
+  dell'ultima volta. Sotto, un suggerimento di una riga: tutte le serie
+  arrivate alle ripetizioni → +2,5 kg alle stesse ripetizioni, altrimenti
+  lo stesso peso «again»; a corpo libero +1 ripetizione, a tempo +5
+  secondi, il cardio senza. Le ripetizioni da raggiungere sono quelle
+  della scheda seguita, altrimenti quelle della prima serie dell'ultima
+  volta. Il suggerimento non compila i campi.
+- **«History»**: grafico (1M, 3M, 1Y, All), quattro record, tutte le
+  sedute dalla più recente con la freccia sulla seduta prima e «PR». Si
+  apre dall'allenamento e dalla guida «i» (quindi anche da «+ Exercise»).
+- **Il numero del grafico** dipende dal tipo: `load` il **massimale
+  stimato** con la formula di Epley, kg × (1 + ripetizioni / 30), solo da
+  serie con al più 12 ripetizioni (oltre la stima non regge; una seduta
+  senza serie così mostra il peso più alto); `bodyweight` le ripetizioni
+  migliori; `timed` i secondi; `cardio` la distanza. Un punto per seduta:
+  il meglio di quella seduta.
+- **Lo stesso esercizio**: un esercizio del catalogo per la sua chiave; uno
+  col nome libero per il nome senza spazi in testa e in coda, con gli
+  spazi doppi ridotti a uno e in minuscolo.
+- **Un indirizzo nuovo, solo per chi è entrato e solo sulle proprie
+  serie**: `GET /me/gym-history?exercise=` o `?name=`, in un modulo nuovo
+  (`gym_history.py`). Risponde coi record e un punto per seduta su tutto
+  lo storico (pochi byte per seduta, così «All» e i record sono giusti
+  senza scaricare ogni serie), e con le sedute intere a pagine dalla più
+  recente. Contano tutte le serie, anche quelle non `live` e quelle di
+  un allenamento scritto a mano (ADR-0395, quando arriva): lo storico è
+  di chi si allena, la classifica resta com'è. Un indice nuovo su `gym_sets` solo se la misura lo chiede.
+- **Gli allenamenti ancora in coda** sul telefono (`gymOutbox`) contano
+  per «Last time» e «History»: li aggiunge l'app.
+
+**Conseguenze**: parte A sul server col sì dell'utente (controlli in
+`out/TASK-483/SERVER-A.md`); parte B nell'app con un OTA, testi e
+schermate all'utente prima. Un'API di prima risponde `404`: l'app tiene
+spenti riquadro e «History» e lascia i campi come oggi.
 
 ## ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo
 

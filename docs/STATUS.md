@@ -63,6 +63,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'utente. File: — · `tasks/TASK-311.md`
 - **TASK-312 — Attività da altre app e post di sole foto** · A e B in `main`;
   poi C, D, E. File: — · `tasks/TASK-312.md`
+  **2026-11-21**: C1 (API dei post di sole foto, migrazione `0080`) in `main` (#1347, ADR-0272 precisazione C); server col passo del Coordinatore e il sì dell'utente; poi C2 (app), D, E.
 - **TASK-316 — Explore pronto prima** · A e B in `main`; C (server,
   `draw_examples`) col sì dell'utente. File: — · `tasks/TASK-316.md`
 - **TASK-321 — L'attività in Apple Salute e Health Connect** · A in `main`,
@@ -141,6 +142,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B e C («My image», #1067) in `main`, escono col prossimo OTA di
   produzione; prossime D («Together») ed E (telefono: anche il picker di
   sistema). File: — · `tasks/TASK-417.md`
+  **2026-11-21**: D1 (server di «Together», #1339) in `main`, sul server
+  col passo 15; poi D2 (l'app, privacy dall'utente) ed E.
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
   0, A, B in produzione; C1 (#1096, OTA 5), C2 (#1098), C2b (#1110) e C3
   (#1123, calorie in rosso) in `main`. Restano: il server di C2b (passo 7)

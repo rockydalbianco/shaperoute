@@ -13,6 +13,7 @@ import { fill, LANGUAGES, TEXTS as LIVE_TEXTS } from "../live/texts.js";
 import { API, boundsOf } from "../live/view.js";
 import { SPORTS, TEXTS } from "../p/texts.js";
 import {
+  bearingOf,
   distanceOf,
   factsOf,
   ID_PATTERN,
@@ -68,6 +69,26 @@ test("the line goes to the map as it came, turned to [lon, lat]", () => {
   assert.deepEqual(line.geometry.coordinates[0], [FIXTURE.track[0][1], FIXTURE.track[0][0]]);
   const [[west, south], [east, north]] = boundsOf(FIXTURE.track);
   assert.ok(west < east && south < north);
+});
+
+test("the map is turned as the drawing, as the app turns its own", () => {
+  // The same answers as apps/mobile/src/map/turnedMap.ts.
+  assert.equal(bearingOf(30), -30);
+  assert.equal(bearingOf(-45), 45);
+  assert.equal(bearingOf(180), 180);
+  assert.equal(bearingOf(-180), 180);
+  assert.equal(bearingOf(390), -30);
+  // A drawing that does not say is north up: the example, an older API.
+  assert.equal(bearingOf(FIXTURE.rotation_deg), 0);
+  for (const none of [undefined, null, "30", Number.NaN, Infinity, 0]) {
+    assert.ok(Object.is(bearingOf(none), 0), String(none));
+  }
+  const script = read(PAGE, "post.js");
+  assert.match(script, /const bearing = bearingOf\(post\.rotation_deg\);/);
+  // The line is fitted on the turned map, not turned after.
+  assert.match(script, /fitBoundsOptions: \{[^}]*\bbearing\b[^}]*\}/);
+  // The compass only on a turned map.
+  assert.match(script, /showCompass: turned/);
 });
 
 test("a link that opens no drawing says so, whatever the reason", () => {

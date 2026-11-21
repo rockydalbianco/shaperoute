@@ -201,6 +201,12 @@ lascia leggere `/post` solo a `https://getmuw.app` (CORS).
   vede già un iscritto**, e «Get MuW», che porta dove si scarica l'app
   (`config.js`). Mai foto, commenti, reazioni, descrizione, luogo, giorno o
   tempi: l'API non li manda e la pagina non ha dove metterli.
+- **La mappa è girata come il disegno** (correzione del 2026-11-21): se il
+  motore ha girato la forma (`rotation_deg` di `GET /post`), la mappa
+  prende il `bearing` opposto, come nell'app (`bearingOf` di `p/view.js`,
+  lo stesso conto di `apps/mobile/src/map/turnedMap.ts`), e la linea è
+  inquadrata sulla mappa già girata. Solo su una mappa girata c'è la
+  bussola di MapLibre: un tocco rimette il nord in alto.
 - **Un link che non apre niente**: «This drawing is no longer available.»
   e «Get MuW», senza mappa. Vale per un `404` dell'API (un post
   «Followers», privato, nascosto, cancellato, di un autore che ha spento

@@ -237,6 +237,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   12); B1 (app) in `main` (#1275), esce con un OTA col sì. Prossime A2b, B2.
   **2026-11-18**: B1 in produzione (OTA 17); A2b sul server (passo 13);
   B2a in `main` (#1301), col prossimo OTA. Prossime B2b1 e B2b2.
+  **Chiuso il 2026-11-21**: B2b1 (#1322) in produzione con l'OTA 18, B2b2
+  (#1331) con l'OTA 19; vedi `archive/COMPLETATI.md`.
 
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al

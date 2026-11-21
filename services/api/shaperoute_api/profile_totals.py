@@ -39,7 +39,7 @@ def reactions_received_sql(user_column: str, viewer: str) -> str:
     placeholder or a column, read twice: two values for two `%s`."""
     return (
         "(SELECT count(*) FROM reactions x JOIN drawings d ON d.id = x.drawing_id"
-        f" JOIN runs r ON r.id = d.run_id WHERE r.user_id = {user_column}"
-        f" AND x.user_id <> r.user_id AND {shown_sql(viewer)}"
+        f" WHERE d.user_id = {user_column}"
+        f" AND x.user_id <> d.user_id AND {shown_sql(viewer)}"
         f" AND NOT {apart_sql(viewer, 'x.user_id')})"
     )

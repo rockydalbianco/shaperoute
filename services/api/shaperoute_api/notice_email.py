@@ -176,8 +176,7 @@ LINES_SQL = (
     " WHERE t.drawing_id = n.drawing_id AND t.user_id = n.recipient_id)"
     " END"
     " AND (n.drawing_id IS NULL OR EXISTS (SELECT 1 FROM drawings d"
-    " JOIN runs r ON r.id = d.run_id WHERE d.id = n.drawing_id"
-    f" AND {drawing_seen_sql('%(reader)s')}))"
+    f" WHERE d.id = n.drawing_id AND {drawing_seen_sql('%(reader)s')}))"
     " ORDER BY n.at DESC, n.id DESC"
 )
 

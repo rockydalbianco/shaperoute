@@ -491,8 +491,8 @@ Coordinatore alle 00:37, fine all'01:08). **25 città disegnate** su 32: 200
 casi, **172 passano il filtro**, tutti delle otto forme. Riletti a occhio
 (`out/TASK-441/b2/contact_all.py`, fogli `contact-estere/all-*.svg.png`) e
 mandati all'utente in una pagina
-(`out/TASK-441/b2/tutti-i-disegni-bici-estere.html`): **il suo sì prima di
-scrivere «pronta»**. La PR è di solo catalogo (`feat/TASK-441-b2-estere`):
+(`out/TASK-441/b2/tutti-i-disegni-bici-estere.html`): il suo sì, **«Sì,
+vanno bene»** (2026-11-22). La PR è di solo catalogo (`feat/TASK-441-b2-estere`):
 25 file di `catalog/seed`, `tools/catalog_kept.json` (1694 → 1866),
 `catalog/README.md` e questo file; poi un passo sul server col sì
 dell'utente al Coordinatore, e la PR dei soli documenti.

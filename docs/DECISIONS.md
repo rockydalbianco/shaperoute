@@ -567,8 +567,44 @@ lasciando le righe d'indice.
 - ADR-0352, precisazione — «Share live at start»: il link dal vivo a fine conto alla rovescia di un volo, se il pilota lo ha acceso; resta com'era l'ultima volta, solo il link · 2026-11-12 · Attiva
 - ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job · 2026-11-12 · Attiva
 - ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity` (senza: le corse), le zone da un estratto, entrano le otto forme lette a occhio · 2026-11-18 · Attiva
+- ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte
+
+**Stato**: Attiva · 2026-11-12 · TASK-467 parte B3 (#1292, `b6e36fcb`).
+Le scelte di prodotto sono dell'utente (risposte 8 e 9 del task file:
+«Pulsante + riga», «Col giorno»); le altre sono **decise dall'agente su
+delega dell'utente**; lista dei file approvata dal Coordinatore. Nessun
+codice sul server, nessuna migrazione, niente di nativo.
+
+**Contesto**: l'ADR-0380 mette sul server la notte condivisa nel profilo
+(`shared`) con le sue rotte; restava come l'app la mostra e la condivide.
+
+1. **Quale notte è sul profilo lo dice il server, non il telefono**: la
+   scheda chiede `GET /users/{il proprio id}/sleep` e confronta il giorno
+   con la notte letta da Salute. Vale anche da un altro telefono, e la
+   domanda non porta nessun dato del sonno. Parte solo col sì a leggere il
+   sonno già tenuto.
+2. **Niente lascia il telefono prima di «Share»**: al server vanno solo
+   punteggio, minuti e fasi, e il giorno nel percorso. Mai gli orari.
+3. **«Stop sharing» toglie ogni notte dal profilo** (`DELETE
+   /me/sleep/shared`): spegnere la sola ultima farebbe ricomparire quella
+   prima. Una notte che nessun post porta sparisce così anche dal server.
+4. **La conferma del primo «Share» è del telefono** (`sleep-share.json`),
+   come la domanda del VO₂ max.
+5. **La notte condivisa non si aggiorna da sola**: se Salute cambia i
+   numeri dopo «Share», sul profilo restano quelli condivisi finché non si
+   condivide di nuovo. Nessun invio senza un tocco.
+6. **«Stop sharing» ha una chiave sua** (`Stop sharing@@sleep`): quella
+   della live è tradotta «Smetti», che qui non dice che cosa.
+7. **Spenta come B2**: `OwnSleep` niente senza `sleepPostsOn()` o senza
+   lettore, `UserSleep` niente e nessuna richiesta senza `sleepPostsOn()`;
+   i test confrontano l'albero intero delle due schermate acceso e spento.
+
+**Conseguenze**: accendere resta un cambio solo, quello della parte C. Il
+post nel Feed di una notte da sola resta fuori (TASK-312 C).
 
 ## ADR-0381, precisazione B2b — Programmare e chiudere una live dall'app: il foglio senza dipendenze, la domanda all'avvio, la push che apre la live, il post legato dalla coda
 

@@ -32,6 +32,12 @@ const by = document.querySelector("[data-by]");
 const facts = document.querySelector("[data-facts]");
 const mapBox = document.querySelector("[data-map-box]");
 const mapElement = document.querySelector("[data-map]");
+/** «Try again», made here and put under the words only while it is there to
+ * press: a browser that kept an older copy of the page or of its styles
+ * shows no stray button. */
+const again = document.createElement("button");
+again.type = "button";
+again.className = "button post__again";
 
 /** A new id (the `#` changed) leaves the answers of the old one unread. */
 let round = 0;
@@ -42,6 +48,7 @@ function putTexts() {
   const get = document.querySelector("[data-get]");
   get.textContent = text.get;
   get.setAttribute("href", downloadUrl);
+  again.textContent = text.retry;
   const privacy = document.querySelector("[data-privacy]");
   privacy.textContent = LIVE_TEXTS[lang].privacy;
   if (lang !== "en") {
@@ -57,10 +64,15 @@ function clearMap() {
   mapBox.hidden = true;
 }
 
-/** Nothing of a drawing on the page: before the answer, and after a link
- * that opens none. */
-function showNothing(words) {
+/** Nothing of a drawing on the page: before the answer, after a link that
+ * opens none, and, with the way to ask again, when the API did not answer. */
+function showNothing(words, retry = false) {
   clearMap();
+  if (retry) {
+    facts.after(again);
+  } else {
+    again.remove();
+  }
   title.hidden = true;
   title.textContent = "";
   facts.textContent = "";
@@ -134,6 +146,7 @@ function showMap(post) {
 }
 
 function showPost(post) {
+  again.remove();
   const who = fill(text.by, { user: post.username });
   const named = titleOf(post);
   title.hidden = named === null;
@@ -170,6 +183,10 @@ async function ask(id, mine, attempt) {
     // The API did not answer: the page waits and asks again, and says
     // nothing of a drawing it knows nothing of.
     setTimeout(() => mine === round && ask(id, mine, attempt + 1), RETRY_AFTER_MS[attempt]);
+  } else {
+    // Still no answer: the page says so, not that the drawing is gone, and
+    // leaves the asking to who reads.
+    showNothing(text.failed, true);
   }
 }
 
@@ -186,5 +203,6 @@ function start() {
 }
 
 putTexts();
+again.addEventListener("click", start);
 start();
 window.addEventListener("hashchange", start);

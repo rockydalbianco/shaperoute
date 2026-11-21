@@ -208,8 +208,9 @@ def test_a_walk_saved_has_its_type_and_goes_to_strava_as_a_walk() -> None:
     assert gpx_type("walking") == "walking" and gpx_type("running") is None
     assert SPORT_TYPES["walking"] == "Walk"
     assert set(SPORT_TYPES) == set(API_ACTIVITIES) | set(RECORD_ACTIVITIES)
-    # A workout at the gym too, saved without a track (TASK-385).
-    saved = set(API_ACTIVITIES) | set(RECORD_ACTIVITIES) | {"gym"}
+    # A workout at the gym too, saved without a track (TASK-385), and a
+    # stretching session (TASK-475).
+    saved = set(API_ACTIVITIES) | set(RECORD_ACTIVITIES) | {"gym", "stretching"}
     assert set(get_args(RunActivity)) == saved
 
 

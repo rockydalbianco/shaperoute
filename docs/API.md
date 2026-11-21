@@ -2652,6 +2652,38 @@ nuovi. Il codice in `drawings.py` e `drawing_photos.py`.
   `visibility`, `description`, `activity` e `tags` (`422`, campi in più)
   e non ha le foto (`404`): l'app di prima continua con `public`.
 
+#### «Together» (TASK-417 D1, ADR-0345)
+
+`GET /drawings/{id}/together`: le tracce **con i tempi** della corsa di un
+post e delle persone taggate che l'hanno corsa insieme, per il video
+«Together» dell'app. È l'unico posto da cui escono i tempi di una traccia
+(M di `runs.track`): i disegni, il Feed e «My activities» le danno senza.
+Codice in `together.py`, esempio in `fixtures/together.json`.
+
+- **Solo all'autore** del post, del suo disegno: a chiunque altro, e per un
+  id che non c'è, `404 http_error` «No drawing with this id.», come
+  `GET /drawings/{id}`. Senza token `401`.
+- **Chi entra**: l'autore per primo, poi le persone taggate nell'ordine dei
+  tag, al più 3 (scelta 4 dell'utente), la cui corsa è **la stessa**:
+  almeno metà del tempo trascorso della più corta in comune, e partenze a
+  meno di 2 km. Solo se il disegno di quella corsa è visibile all'autore
+  (`drawing_seen_sql`: `everyone`, o `followers` con il follow accettato;
+  mai `only_me`, nascosto o oltre un blocco). Una corsa senza disegno non
+  entra. Nessuna richiesta di consenso: bastano tag e visibilità (scelta
+  3). Fra più corse della stessa persona, quella con più tempo in comune.
+- **Il corpo**: `{ "people": [{ "public_id", "username", "points":
+  [[lat, lon], …], "seconds": [s, …], "pauses": [{ "from_s", "to_s" }] }] }`.
+  `seconds` è lungo come `points`: i **secondi dalla prima partenza del
+  gruppo**, al decimo; mai l'ora del giorno né la data. Le pause sullo
+  stesso orologio. Senza nessuno taggato che abbia corso, solo l'autore.
+- **Al più 600 punti** a traccia, scelti fra quelli registrati, nessuno
+  spostato: il primo, l'ultimo, l'ultimo prima e il primo dopo ogni pausa,
+  e gli altri più vicini a secondi equidistanti, così la linea tiene il
+  passo vero.
+- Se una persona rende la sua corsa `only_me` o toglie il disegno, non
+  entra più; un video già fatto resta sul telefono com'è. Un'API
+  precedente risponde `404`: l'app tiene spenta la riga «Together».
+
 ### Follow (TASK-211, ADR-0173)
 
 Un iscritto ne cerca un altro per nome e gli chiede di seguirlo; l'altro
@@ -3328,6 +3360,34 @@ con la vasca e le vasche. Token richiesto; tipi in
   salvato resta com'era. Il proprietario li riceve sempre; `GET
   /drawings/{id}/pool-swim` dà medio e massimo agli altri solo se
   `heart_shown`. Senza battito le risposte non hanno i campi, come prima.
+
+### Stretching (TASK-475, ADR-0386)
+
+Una sessione di stretching: una corsa dell'attività `stretching` **senza
+traccia**, come la palestra, con la routine fatta. Token richiesto; tipi in
+`shared-types/src/stretchSession.ts` (`StretchSessionRequest`,
+`StretchSession`, `StretchFigures`), esempio in
+`fixtures/stretch-session.json`; il codice in `stretch_sessions.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/stretch-sessions/{key}` | salva la sessione: inizio, fine, pause, routine, minuti, esercizi fatti | `201` `StretchSession` la prima volta, poi `200` com'era; `409` se la chiave è di una corsa |
+| `GET /me/stretch-sessions/{key}` | la sessione del suo proprietario | `200` `StretchSession`, o `404` |
+| `GET /drawings/{id}/stretch` | routine, minuti ed esercizi del post, per chi vede il disegno | `200` `StretchFigures`, o `404` |
+
+- **Il tempo lo conta il server**: da `started_at` a `ended_at` meno le
+  pause (sovrapposte contate una volta), al più 4 ore. `routine` è la chiave
+  della routine sul telefono (`morning`, `afterRun`, `afterGym`, TASK-466
+  B: lettere, cifre e `_`, al più 40); `minutes` da 1 a 60 (oggi 3, 5 o
+  10); `exercises` da 0 a 100, quelli fatti, «Skip» esclusi. Distanza 0.
+- **Pubblicata come ogni corsa**, con `PUT /me/activities/{key}/drawing`:
+  senza linea (`track: []`). Un'attività con traccia è `422`, come per la
+  palestra.
+- **Solo a chi la sa leggere**: `X-MuW-Reads` deve dire `stretching` **e**
+  `trackless`. Un'app di prima non la riceve: niente in «My activities» né
+  nel Feed, `404` sul dettaglio e su `/stretch`.
+- Nessun punteggio di forma, nessun record, nessun luogo, niente Strava
+  (una corsa senza traccia non si manda). Test in `test_stretching_api.py`.
 
 ### Sleep (TASK-467 parti B1 e B1b, ADR-0380)
 

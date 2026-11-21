@@ -1,5 +1,6 @@
 import type {
   LiveAudience,
+  PlannedLiveAudience,
   LiveShareSent,
   LiveStats,
   RunActivity,
@@ -20,6 +21,7 @@ import {
 } from "./liveShareApi";
 import { type LiveEnd, LiveSharer } from "./liveSharer";
 import { liveStats } from "./liveStats";
+import { rememberPlannedLive } from "./plannedPost";
 
 /**
  * The live link of the activity under way (TASK-424 part B1, ADR-0352):
@@ -159,6 +161,8 @@ export async function startPlannedLive(
   api: LiveApiOptions,
   plannedLiveId: string,
   poolLengthM: number | null = null,
+  /** Its title and audience, for the post at the end (part B2b2). */
+  planned?: { title: string; audience: PlannedLiveAudience },
 ): Promise<StartOutcome> {
   if (status.kind !== "off") {
     return { kind: "busy" };
@@ -170,7 +174,12 @@ export async function startPlannedLive(
     put(OFF);
     return { kind: "failed" };
   }
-  return adopt(api, answer.value.id, answer.value.url);
+  const outcome = adopt(api, answer.value.id, answer.value.url);
+  if (outcome.kind !== "failed" && planned !== undefined) {
+    // At the end, «Post it in the Feed?» (part B2b2).
+    rememberPlannedLive({ plannedLiveId, ...planned });
+  }
+  return outcome;
 }
 
 /** The share made, sent from now on; the activity ended meanwhile: it

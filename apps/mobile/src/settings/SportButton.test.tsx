@@ -105,8 +105,8 @@ test("the app's menu ends with «Paragliding», as «Settings» (TASK-305 R2)", 
   // (TASK-378), the skate (TASK-380), paddle, the swim in Expo Go, the alpine
   // and the cross-country ski (TASK-375), ski touring (TASK-415 B), the gym
   // in Expo Go (TASK-385 B), the flight (TASK-305 R2), the wheelchair
-  // (TASK-414 B) and the snowshoes (TASK-413).
-  expect(screen.getAllByRole("radio")).toHaveLength(16);
+  // (TASK-414 B), the snowshoes (TASK-413) and mountaineering (TASK-463 C).
+  expect(screen.getAllByRole("radio")).toHaveLength(17);
   expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
   await fireEvent.press(screen.getByRole("radio", { name: "Paragliding" }));
   expect(saveSport).toHaveBeenCalledWith("paragliding");

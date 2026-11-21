@@ -2915,6 +2915,8 @@ export const ES: Table = {
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Alpinismo",
+  "No shapes up a mountain: MuW records your day.":
+    "Sin formas en la montaña: MuW registra tu jornada.",
   // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
   Stretching: "Estiramientos",
   "Before you climb": "Antes de subir",

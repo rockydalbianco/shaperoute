@@ -27,8 +27,10 @@ let queue: readonly Want[] = [];
 const listeners = new Set<() => void>();
 // The shooters on screen, in the order they came. The first takes the
 // pictures and the others wait: one map page at a time, wherever it is
-// (TASK-332). «Feed» has one; a profile over the big map, where «Feed» is
-// taken down, has its own.
+// (TASK-332). The tab shell has one, laid out whatever page is on screen
+// (TASK-480); a profile over the big map, where the shell is taken down, has
+// its own. The first must be laid out: a map page under `display: none`
+// draws nothing, and its pictures are given up on one by one.
 let shooters: readonly object[] = [];
 
 function subscribe(listener: () => void): () => void {

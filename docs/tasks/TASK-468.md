@@ -2,7 +2,7 @@
 
 **Stato**: Done (2026-11-21) · server: A1a, A2a, A1b, A2b (passi 11, 12,
 13); app: B1 (OTA 17), B2a e B2b1 (OTA 18) in produzione, B2b2 in `main`
-(#1331) col prossimo OTA
+(#1331, `c0b233e0`) col prossimo OTA
 **Fase**: 5 · **Branch**: `docs/TASK-468-live-chat-feed` (parte 0) ·
 **ADR**: ADR-0381 · numeri dal Coordinatore (2026-11-12)
 **Estende**: TASK-424 (ADR-0352, «Share live activity»), che metteva fuori
@@ -250,7 +250,7 @@ Privacy dell'app (`about/content`, voce «Your position»), frase in più:
   (`liveViewDoor`, montato da `ProfileLayer`). Testi nuovi «Plan» e
   «Couldn't plan the live. Try again.» approvati dall'utente il 2026-11-18;
   schermate approvate (`out/TASK-468/b2b1-*.png`).
-- **2026-11-21 — B2b2** (#1331): a fine registrazione di una live
+- **2026-11-21 — B2b2 in `main`** (#1331, `c0b233e0`): a fine registrazione di una live
   programmata `RunEnd` chiede «Post it in the Feed?»; «Post» mette nel
   modulo il pubblico della live e il titolo della gara (il modulo si
   ridisegna con una `key`: tiene il titolo in uno stato suo); quando la

@@ -1906,9 +1906,11 @@ l'app, come «Find friends»:
   profile» (`settings/PostLinksSetting.tsx`): un interruttore tenuto
   dall'API (`GET`/`PUT /me/post-links`), acceso all'inizio, con sotto la
   sua spiegazione: «People who see your «Everyone» posts can share a link
-  to them. Anyone with the link sees the drawing on the map, your username
-  and the distance, even without MuW. Turn this off and the links stop
-  working.». Con un'API di prima la riga non c'è.
+  to them. Anyone with the link sees the drawing on the map, your username,
+  the title, the sport and the distance, even without MuW. Turn this off
+  and the links stop working.» (titolo e sport, che la pagina del link
+  mostra, aggiunti col sì dell'utente il 2026-11-21). Con un'API di prima
+  la riga non c'è.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale

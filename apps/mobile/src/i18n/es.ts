@@ -2845,8 +2845,8 @@ export const ES: Table = {
   "🗺️ Post": "🗺️ Publicación",
   // src/settings/PostLinksSetting.tsx (TASK-455 part E)
   "Links to my posts": "Enlaces a mis publicaciones",
-  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.":
-    "Quien ve tus publicaciones para «Todos» puede compartir su enlace. Quien tiene el enlace ve el dibujo en el mapa, tu nombre de usuario y la distancia, incluso sin MuW. Desactívalo y los enlaces dejan de funcionar.",
+  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.":
+    "Quien ve tus publicaciones para «Todos» puede compartir su enlace. Quien tiene el enlace ve el dibujo en el mapa, tu nombre de usuario, el título, el deporte y la distancia, incluso sin MuW. Desactívalo y los enlaces dejan de funcionar.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Añadir actividad",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,

@@ -17,6 +17,7 @@ import { RUNNING } from "./running.ts";
 import { SKI_TOURING } from "./ski_touring.ts";
 import { SKIING } from "./skiing.ts";
 import { SNOWSHOEING } from "./snowshoeing.ts";
+import { STRETCHING } from "./stretching.ts";
 import { SWIMMING } from "./swimming.ts";
 import { WALKING } from "./walking.ts";
 import { WHEELCHAIR } from "./wheelchair.ts";
@@ -42,6 +43,7 @@ export {
   SKI_TOURING,
   SKIING,
   SNOWSHOEING,
+  STRETCHING,
   SWIMMING,
   WALKING,
   WHEELCHAIR,
@@ -68,4 +70,4 @@ export const RECORDED_SPORTS = [
   PARAGLIDING,
   ALPINISM,
 ] as const;
-export const TRACKLESS_SPORTS = [GYM] as const;
+export const TRACKLESS_SPORTS = [GYM, STRETCHING] as const;

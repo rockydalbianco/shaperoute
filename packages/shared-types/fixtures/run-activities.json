@@ -6,7 +6,7 @@
     "paragliding",
     "alpinism"
   ],
-  "trackless_activities": ["gym"],
+  "trackless_activities": ["gym", "stretching"],
   "run_activities": [
     "running",
     "cycling",
@@ -24,6 +24,7 @@
     "ski_touring",
     "paragliding",
     "alpinism",
-    "gym"
+    "gym",
+    "stretching"
   ]
 }

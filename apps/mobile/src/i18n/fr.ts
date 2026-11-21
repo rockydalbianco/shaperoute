@@ -2848,8 +2848,8 @@ export const FR: Table = {
   "🗺️ Post": "🗺️ Publication",
   // src/settings/PostLinksSetting.tsx (TASK-455 part E)
   "Links to my posts": "Liens vers mes publications",
-  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.":
-    "Qui voit tes publications pour «Tout le monde» peut partager leur lien. Qui a le lien voit le dessin sur la carte, ton nom d'utilisateur et la distance, même sans MuW. Désactive-le et les liens cessent de fonctionner.",
+  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.":
+    "Qui voit tes publications pour «Tout le monde» peut partager leur lien. Qui a le lien voit le dessin sur la carte, ton nom d'utilisateur, le titre, le sport et la distance, même sans MuW. Désactive-le et les liens cessent de fonctionner.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Ajouter une activité",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
@@ -2916,6 +2916,8 @@ export const FR: Table = {
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Alpinisme",
+  // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
+  Stretching: "Étirements",
   "Before you climb": "Avant de grimper",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW enregistre ton ascension et la partage : il ne te guide pas. Pars avec ton matériel, ton expérience et ton jugement, et vérifie les conditions avant de partir.",
@@ -2941,4 +2943,10 @@ export const FR: Table = {
   "Not this time": "Pas cette fois",
   Plan: "Programmer",
   "Couldn't plan the live. Try again.": "Impossible de programmer le live. Réessaie.",
+  // src/liveShare/plannedPost.ts (TASK-468 part B2b2: the live becomes the
+  // post; en and it approved by the user 2026-11-12)
+  "Post it in the Feed?": "La publier dans le Feed ?",
+  "Your live becomes the post of this activity.":
+    "Ton live devient la publication de cette activité.",
+  "Don't post": "Ne pas publier",
 };

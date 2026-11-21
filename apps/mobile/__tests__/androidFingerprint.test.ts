@@ -77,6 +77,16 @@ it("a config without the Android settings is read as it is", () => {
   config.android.permissions = config.android.permissions.filter(
     (name: string) => !name.startsWith("android.permission.FOREGROUND_SERVICE"),
   );
+  // Nor the watch's (TASK-370, iosOnlyFingerprint.test.ts).
+  config.plugins = config.plugins.filter(
+    (plugin: unknown) =>
+      !["./plugins/withWatchCore.js", "@bacons/apple-targets"].includes(
+        (Array.isArray(plugin) ? plugin[0] : plugin) as string,
+      ),
+  );
+  delete config.extra.eas.build;
+  // Nor the Live Activity's key (TASK-401 B, the 1.1).
+  delete config.ios.infoPlist.NSSupportsLiveActivities;
   const written = stringifyJsonSorted(config);
   expect(transform("expoConfig", written)).toBe(written);
 });
@@ -97,7 +107,8 @@ it("the Android fingerprint keeps the Android settings", () => {
 });
 
 it("every other source is read as it is", () => {
-  expect(transform("expoAutolinkingConfig:ios", "modules")).toBe("modules");
+  // The iPhone's own source gets the watch (iosOnlyFingerprint.test.ts).
+  expect(transform("expoAutolinkingConfig:ios", "modules")).toMatch(/^modules\n/);
   expect(transform("packageJson:scripts", "{}")).toBe("{}");
   const file = Buffer.from("code") as unknown as string;
   expect(

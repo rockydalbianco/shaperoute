@@ -1897,14 +1897,20 @@ l'app, come «Find friends»:
   spento, non ha la voce, nemmeno per l'autore. Spento l'interruttore, sui
   propri post già a schermo la voce sparisce subito, senza aspettare che il
   Feed sia riletto (`usePostLink`: l'ultimo stato dell'interruttore letto
-  o girato in questa sessione); riacceso, torna alla prossima lettura.
+  o girato in questa sessione). Riacceso mentre l'app è aperta, la voce
+  torna subito anche sui propri post letti mentre era spento (correzione
+  del 2026-11-21): per quelli l'app guarda da sé quello che l'API chiede
+  oltre all'interruttore, cioè che il post sia per «Everyone» e abbia una
+  linea. Sui post altrui, e in ogni altro caso, vale solo `linkable`.
 - **«Links to my posts»** in «Settings», sotto «Show VO₂ max on my
   profile» (`settings/PostLinksSetting.tsx`): un interruttore tenuto
   dall'API (`GET`/`PUT /me/post-links`), acceso all'inizio, con sotto la
   sua spiegazione: «People who see your «Everyone» posts can share a link
-  to them. Anyone with the link sees the drawing on the map, your username
-  and the distance, even without MuW. Turn this off and the links stop
-  working.». Con un'API di prima la riga non c'è.
+  to them. Anyone with the link sees the drawing on the map, your username,
+  the title, the sport and the distance, even without MuW. Turn this off
+  and the links stop working.» (titolo e sport, che la pagina del link
+  mostra, aggiunti col sì dell'utente il 2026-11-21). Con un'API di prima
+  la riga non c'è.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -3885,6 +3891,17 @@ cui tiene i numeri.
   live» (scelta 3); mai da sola. Mentre si registra, la propria scheda
   programmata nella fila ha «Start live». La push «… is live» toccata apre
   la schermata dal vivo, col nome di chi la fa letto dalla programmata.
+- **La live diventa il post** (TASK-468 parte B2b2, scelta 5; testi
+  approvati il 2026-11-12). Se la registrazione è partita da una live
+  programmata («Start live»), alla fine il modulo di «Save» chiede una volta
+  «Post it in the Feed?» con «Your live becomes the post of this
+  activity.», «Don't post» · «Post». «Post» mette nel modulo chi vede il
+  post come il pubblico della live (Everyone o Followers) e, se non c'è,
+  il titolo della gara (il modulo si ridisegna per mostrarlo); il resto
+  come sempre, decide «Save». Quando il post
+  è sull'API e altri lo vedono, l'app lo lega alla programmata (`PUT
+  /me/planned-lives/{id}/post`) e nel Feed la scheda della live lascia il
+  posto al post. «Don't post», o un post «Only me», non lega niente.
 - **La piscina mentre nuoti** (TASK-424 parte C1): sotto l'orologio due
   numeri, «Lengths» (le vasche stimate dal passo delle nuotate prima, 2:00
   /100 m senza nessuna; 0 prima di mezza vasca) e «Calories» («85 kcal»,

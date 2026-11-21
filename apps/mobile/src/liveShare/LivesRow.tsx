@@ -99,7 +99,10 @@ export function LivesRow({
   }
   const start = (live: LiveItem) => {
     if (live.planned_live_id !== null) {
-      void startPlannedLive(api, live.planned_live_id).then(refresh);
+      void startPlannedLive(api, live.planned_live_id, null, {
+        title: live.title ?? "",
+        audience: live.audience_feed,
+      }).then(refresh);
     }
   };
   return (

@@ -87,10 +87,7 @@ NOTHING_TO_REPORT = "Nothing to report with this id."
 # The table of each kind, and the column of the account that owns a row. A
 # message only for a member of its conversation: the second placeholder.
 OWNER_OF: dict[ReportKind, str] = {
-    "drawing": (
-        "SELECT r.user_id AS owner FROM drawings d JOIN runs r ON r.id = d.run_id"
-        " WHERE d.id = %s"
-    ),
+    "drawing": ("SELECT user_id AS owner FROM drawings WHERE id = %s"),
     "comment": "SELECT user_id AS owner FROM comments WHERE id = %s",
     "user": "SELECT id AS owner FROM users WHERE public_id = %s",
     "group_run": "SELECT owner_id AS owner FROM group_runs WHERE id = %s",
@@ -100,9 +97,8 @@ OWNER_OF: dict[ReportKind, str] = {
         " WHERE cm.conversation_id = m.conversation_id AND cm.user_id = %s)"
     ),
     "outfit_tag": (
-        "SELECT r.user_id AS owner FROM drawing_outfit_tags t"
-        " JOIN drawings d ON d.id = t.drawing_id JOIN runs r ON r.id = d.run_id"
-        " WHERE t.id = %s"
+        "SELECT d.user_id AS owner FROM drawing_outfit_tags t"
+        " JOIN drawings d ON d.id = t.drawing_id WHERE t.id = %s"
     ),
 }
 

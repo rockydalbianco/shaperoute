@@ -9,6 +9,7 @@ import {
   worthAgain,
 } from "../api/drawings";
 import { sendEntry } from "../contest/sendEntry";
+import { tiePlannedPost } from "../liveShare/plannedPost";
 import { keptList } from "../storage/keptList";
 import { syncOrder } from "./drawingOrder";
 import { syncPhotos } from "./drawingPhotos";
@@ -166,6 +167,12 @@ export async function sendWaitingDrawings(
       break;
     }
     if (outcome.kind === "ok") {
+      // A planned live that was to become this post (TASK-468 part B2b2).
+      void tiePlannedPost(
+        { baseUrl, token, ...options },
+        outcome.value.id,
+        isSeen(choice.visibility),
+      );
       const photos = await syncPhotos(
         baseUrl,
         token,

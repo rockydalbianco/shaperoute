@@ -608,3 +608,14 @@ Parte E (in `main`, #1309):
   col «Sì, unisci» dell'utente (la PR porta la frase nuova della privacy).
   **Task chiuso**: tutte le parti da B0 a E sono in `main`; quello che
   resta è in «Quello che resta».
+- 2026-11-21: **correzione alla pagina del link, dopo la chiusura** (branch
+  `fix/TASK-455-link-page-turned-map`): `GET /post` manda `rotation_deg`,
+  ma la pagina lasciava il nord in alto, e un disegno che il motore ha
+  girato si vedeva storto, mentre nell'app è dritto. Ora la mappa prende
+  il `bearing` opposto come nell'app (`bearingOf` in `site/p/view.js`) e,
+  solo se è girata, mostra la bussola di MapLibre (un tocco: nord in
+  alto). Solo `site/p/post.js`, `site/p/view.js`, `site/tests/post.test.mjs`
+  e `docs/SITO.md`; niente server né app. Vista nel browser a larghezza
+  telefono col finto `/post` (`out/TASK-455/shots-fix/`). Deciso
+  dall'agente su delega dell'utente («continua con i suggerimenti e
+  miglioramenti»); va sul sito con la copia della parte D.

@@ -219,6 +219,13 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **R6 fatta il 2026-11-18**: #1291 (server, passo 13) e #1293 (app, col
   prossimo OTA) in main: corsa + volo nella stessa attività. In bozza R6c
   (#1313, la mappa a due colori); poi R6d (la pagina riaperta).
+- **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
+  scelta dell'utente del 2026-11-21, senza accordi con terzi: schermata di
+  widget, vario sonoro, mappa 3D, spazi aerei dal file del pilota, gare,
+  dopo il volo, live, meteo DWD/ECMWF. Parte 0 (documenti) in PR; poi
+  B1 → C → A1 → E → D → B2 → F → G → H. File: — · `tasks/TASK-479.md`
+  **2026-11-21 sera**: B1 «pronta» (#1349); ordine cambiato dall'utente:
+  B2 (editor) subito dopo B1.
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
@@ -284,6 +291,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B2a (settimane verso una meta) e A2 (ingresso «Cosa vuoi allenare?», corpo
   libero) in `main` (#1196, #1208), A2 esce col prossimo OTA. Prossime B2b/C2
   (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
+
+- **TASK-481 — Il «+» del Feed: tutte le voci** · parte 0 (documenti) fatta
+  il 2026-11-21 con le scelte dell'utente (sei voci, ADR-0390); A (la lista e
+  «Record now») dopo il merge di TASK-312 C2, lista dei file al Coordinatore.
+  File: — · `tasks/TASK-481.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

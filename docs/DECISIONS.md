@@ -568,10 +568,12 @@ lasciando le righe d'indice.
 - ADR-0352, precisazione — «Share live at start»: il link dal vivo a fine conto alla rovescia di un volo, se il pilota lo ha acceso; resta com'era l'ultima volta, solo il link · 2026-11-12 · Attiva
 - ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job · 2026-11-12 · Attiva
 - ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity` (senza: le corse), le zone da un estratto, entrano le otto forme lette a occhio · 2026-11-18 · Attiva
+- ADR-0388 — Il parapendio completo: uno strumento di volo con dati gratuiti e formati aperti, senza accordi con terzi; gli spazi aerei li carica il pilota; supera «Nessuna guida in volo» di ADR-0375 · 2026-11-21 · Attiva
 - ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte · 2026-11-12 · Attiva
 
 - ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos` · 2026-11-21 · Attiva
 - ADR-0393 — L'attrezzatura: una lista per iscritto con foto e nota, più attrezzi per attività, i totali contati dal server, visibile come il profilo, legata ai capi taggati · 2026-11-21 · Proposta
+- ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci in ordine, ognuna costruita dal task che la possiede e mostrata solo quando è pronta; «Everyone» anche per la palestra scritta a mano e la scheda pubblicata · 2026-11-21 · Proposta
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 
 ## Voci nuove
@@ -616,6 +618,90 @@ amici subito (scelta dell'utente: base e foto prima).
 profilo, E post, F capi taggati, G avviso), ognuna una PR coi file
 mandati prima al Coordinatore. La privacy cambia nelle cinque lingue e sul
 sito prima dell'uscita, col sì dell'utente, come il passo sul server.
+
+## ADR-0388 — Il parapendio completo: uno strumento di volo con dati gratuiti e formati aperti, senza accordi con terzi; gli spazi aerei li carica il pilota
+
+**Stato**: Attiva · 2026-11-21 · scelta di prodotto dell'utente; il come
+deciso dall'agente su delega dell'utente (TASK-479; numeri dal
+Coordinatore).
+
+**Contesto**: il parapendio è uno sport «Record only» (ADR-0375): registra
+il volo, mostra quota, vario e velocità, lo condivide dal vivo. Il
+2026-10-26 l'utente aveva scelto «non facciamo da navigatore» (parte G di
+TASK-305 fuori) e ADR-0375 diceva «Nessuna guida in volo». Il 2026-11-21
+l'utente vuole il parapendio «completo e professionale, come XCTrack,
+SeeYou Navigator e Flyskyhy», ma solo con quello che non chiede accordi
+con terzi né servizi a pagamento.
+
+**Decisione**:
+- **Scelta dell'utente**: MuW diventa uno strumento di volo: schermata di
+  widget personalizzabile coi preset, vario sonoro, mappa 3D in volo e
+  replay, navigazione e gare (boe, task, cilindri, planata), spazi aerei
+  da un file del pilota, analisi e punteggio XC dopo il volo, la task nel
+  live, il vento in quota da modelli aperti. **Supera** la scelta del
+  2026-10-26 (parte G di TASK-305) e il punto «Nessuna guida in volo» di
+  ADR-0375; il resto di ADR-0375 vale.
+- **Restano**: l'avviso «MuW is not a … flight instrument» al primo volo
+  (testo nuovo approvato il 2026-11-21: «certified», numeri dal GPS,
+  strumento di riserva) e una riga fissa sulla schermata; l'app dà numeri
+  e informazioni, mai ordini o giudizi: non dice mai «spazio aereo
+  libero», «nessun NOTAM», «condizioni sicure», «ce la fai», «qui è legale
+  volare», e la planata è sempre una quota d'arrivo, mai un sì o un no.
+- **Solo fonti gratuite e senza accordi**: terreno AWS Terrain Tiles (già
+  nell'app) e Copernicus DEM sul server se serve; decolli e atterraggi da
+  OpenStreetMap (ODbL, le chiavi `sport=free_flying`,
+  `free_flying:takeoff/landing` e la vecchia `free_flying:site`); formati
+  aperti IGC, GPX, `.cup`, `.wpt`, `.xctsk` e QR di XCTrack; meteo da DWD
+  ICON-D2 ed ECMWF open data (CC BY 4.0) elaborati sul nostro server
+  (parte H, «Sì, come parte H»). **Non si usano** openAIP,
+  ParaglidingEarth, XContest, LiveTrack24, NOTAM, Open-Meteo, Windy,
+  Meteo-Parapente: li valuterà l'utente più avanti.
+- **Gli spazi aerei li carica il pilota**: un file OpenAir scelto da lui,
+  letto e tenuto sul telefono; MuW non include né spedisce dati di spazio
+  aereo, mostra sempre il nome del file e la data dell'import e la riga
+  «Dati caricati da te: verifica AIP e NOTAM prima di volare». I limiti in
+  FL sono approssimati dalla quota GPS e segnati «≈».
+- **Tutto sul telefono**: layout, profili, boe, task, spazi aerei e
+  punteggio XC vivono sul telefono (`expo-file-system`); niente upload né
+  firma IGC (l'export dice «non firmato»). Il server prende solo
+  l'estratto OSM dei siti (D), la task nel live (G) e il meteo (H), ognuno
+  prima dell'app e col sì dell'utente.
+- **Senza dipendenze nuove nell'app** fino alla 1.1: quota e vario dal
+  GPS (con la correzione del geoide EGM96 dove il telefono dà la quota
+  sull'ellissoide), suono con `expo-audio` e campioni pre-generati, voce
+  con `expo-speech` solo per il nome della boa presa e della successiva,
+  QR di export scritto in TypeScript. **Dopo la 1.1**, in una build
+  nativa e ognuno col suo sì: barometro (`expo-sensors`) e fotocamera per
+  leggere il QR (`expo-camera`). Un tocco ad `app.json` per l'audio a
+  schermo spento si chiede prima (fingerprint iOS).
+- **Logica pura e testata prima dei componenti**: vario medio, L/D, vento
+  dalla deriva, termiche, ottimizzazione dei cilindri e del punteggio XC,
+  parser IGC/`.cup`/`.wpt`/`.xctsk`/OpenAir in `apps/mobile/src/air/`, con
+  test deterministici su file sintetici (nessun file di spazi aerei
+  reale nel repository).
+- **Ordine** (scelta dell'utente): B1 (numeri e schermata coi preset) →
+  B2 (editor; anticipato dall'utente la sera del 2026-11-21) → C (vario
+  sonoro) → A1 (mappa 3D in volo) → E (spazi aerei) → D (navigazione e
+  gare) → F con A2 (dopo il volo, replay) → G (live) → H (meteo).
+
+**Alternative scartate**:
+- *Restare un registratore* (ADR-0375 com'era): superata dalla scelta
+  dell'utente.
+- *openAIP o un file di spazi aerei incluso*: licenza non commerciale o
+  da chiarire (studio di TASK-305), e MuW diventerebbe distributore di
+  dati di sicurezza; l'utente valuterà gli accordi più avanti.
+- *Open-Meteo o Windy per il meteo*: gratuiti solo per uso non
+  commerciale o a pagamento; DWD ed ECMWF sono CC BY 4.0.
+- *Barometro e fotocamera subito*: dipendenze e build nativa prima della
+  1.1; l'utente li vuole dopo.
+- *Una libreria QR o 3D*: niente librerie nuove; MapLibre fa già il 3D.
+
+**Conseguenze**: nove parti, ognuna un branch e una PR «pronta» al
+Coordinatore, con schermate dal simulatore e testi in 5 lingue approvati
+dall'utente. Server, OTA, sito e store solo col sì dell'utente o del
+Coordinatore; prima della pubblicazione una prova con un pilota vero.
+ADR-0265 (il pianificatore nel cono) resta Proposta. Dettagli in
+`tasks/TASK-479.md`.
 
 ## ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli
 
@@ -686,6 +772,61 @@ prima dell'app. La parte B aggiunge la sua riga in `addToFeedEntries.ts`
 dopo TASK-481 A, testi in cinque lingue e la privacy a turno. Un
 allenamento scritto a mano non si corregge dopo «Save»: si cancella e si
 riscrive.
+
+## ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci, ognuna del suo task
+
+**Stato**: Proposta · 2026-11-21 · TASK-481 parte 0 (solo documenti).
+Le voci, l'ordine, i testi, «niente Soon», chi vede che cosa e la frase
+della privacy sono **scelte dell'utente** (2026-11-21, una domanda per
+volta); la lista prima del flusso e il file delle voci sono decisi
+dall'agente su delega dell'utente; numero dal Coordinatore. Estende
+ADR-0387, non lo sostituisce.
+
+**Contesto**: il «+» del Feed (TASK-476, ADR-0387) apre un foglio «Add
+activity» con la sola voce «From a file». L'utente, il 21 novembre: un «+»
+per pubblicare il sonno, una corsa, un'immagine, un'attività, da Strava, un
+post di Instagram, un allenamento in palestra, una scheda di allenamento.
+Ogni cosa ha già, o avrà, un task che la possiede (TASK-312 C2 le foto,
+TASK-467 il sonno), e Strava e Instagram non si possono collegare
+(ADR-0272).
+
+**Decisione**:
+- **Il foglio diventa «Add to Feed»** e si apre su una **lista**: «Record
+  now», «Photos only», «From a file», «Sleep», «Gym workout», «Workout
+  plan», in quest'ordine, ognuna con una riga sotto (testi in
+  `tasks/TASK-481.md`). Una voce apre il suo flusso nello stesso foglio,
+  con «‹» per tornare. Le voci stanno in un file a sé, così un task porta
+  la sua senza riscrivere il foglio.
+- **Una voce compare solo quando è pronta**, niente «Soon» (come in
+  ADR-0387). Il «+» c'è con un account anche senza il selettore di file,
+  perché «Record now» c'è sempre.
+- **Ogni voce la costruisce il suo task**: «Record now» TASK-481 A (apre
+  la registrazione di oggi); «Photos only» TASK-312 C2; «From a file» c'è
+  (TASK-476); «Sleep» TASK-467 E; «Gym workout» (un allenamento in palestra
+  già fatto, scritto a mano, con «Imported») TASK-484 e «Workout plan»
+  (una scheda della palestra come post, copiabile con «Use this plan»)
+  TASK-485.
+- **Chi lo vede**: «Record now» come ogni corsa (ADR-0304); «Photos only»
+  l'ultima scelta (TASK-312 C); «From a file» «Everyone» (ADR-0387);
+  «Sleep» come gli altri post (TASK-467); «Gym workout» e «Workout plan»
+  **«Everyone»**, visibile e cambiabile prima di salvare: altre due
+  eccezioni ad ADR-0304, una per ingresso. Ogni tipo nuovo ha la sua riga
+  di privacy approvata nel suo task.
+- **La privacy di oggi si precisa** con la parte A: «An activity you add
+  from a file with the «+» of the Feed…» (approvato dall'utente), perché
+  una corsa registrata dal «+» segue le regole di sempre.
+
+**Alternative scartate**: cinque voci senza «Record now»; «Gym workout»
+che avvia la palestra adesso, o nessuna voce per la palestra; la scheda
+solo da vedere; la routine di stretching dentro «Workout plan»; voci non
+pronte grigie con «Soon»; tutto «Everyone» dal «+», o tutto dall'ultima
+scelta; i titoli «Add activity» e «New post».
+
+**Conseguenze**: il foglio cresce a ogni uscita senza promettere niente.
+`AddToFeed.tsx` è toccato da TASK-312 C2 e poi da TASK-481 A: A parte dopo
+il merge di C2. I task di «Gym workout» e «Workout plan» chiedono server,
+migrazione e privacy, ognuno col suo sì. Strava resta il file esportato (e
+«Open in MuW», nativo, dopo la 1.1); Instagram la foto dalla galleria.
 
 ## ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos`
 

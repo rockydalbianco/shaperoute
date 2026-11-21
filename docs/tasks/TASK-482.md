@@ -89,8 +89,11 @@ un tocco apre l'app.
    schema dell'identificativo. Controllato dopo la risposta: la build di
    produzione ha lo stesso identificativo (`app.config.ts` cambia solo la
    versione del runtime), quindi l'indirizzo provato era quello giusto.
-2. «Open in MuW» sulla pagina, per chi è su iPhone: lo vuole subito, o
-   aspetta la build nativa? E il testo.
+2. ~~«Open in MuW» sulla pagina, per chi è su iPhone~~: caduta con la
+   parte B. Al suo posto: **«Provo intanto la barra «Apri» di Safari
+   sulla pagina del link?» — risposta dell'utente, 2026-11-21: «Sì,
+   proviamola»** (parte B2, PR #1359, una prova: poi la copia del sito e
+   lo sguardo dell'utente sull'iPhone).
 3. Chi apre il link nell'app senza essere entrato: prima l'ingresso, poi
    il post (proposta).
 4. La parte D nella prossima build nativa: sì o no, e quando.
@@ -129,3 +132,11 @@ elenchi delle parti A–D vanno al Coordinatore prima del codice.
 - 2026-11-21: **prova dello schema sull'iPhone dell'utente: errore** («No,
   dà errore»). La parte B cade. Senza build nativa resta da provare solo
   la barra di Safari (B2); la strada vera sono A, C e D.
+- 2026-11-21: **parte B2 scritta, bozza #1359**
+  (`feat/TASK-482-b2-safari-bar`), dopo il «Sì, proviamola» dell'utente:
+  `site/p/post.js` mette il meta `apple-itunes-app` (numero dell'app da
+  `downloadUrl`, `app-argument` = l'indirizzo della pagina con l'id),
+  `appBarOf` in `site/p/view.js`, un test, `docs/SITO.md`. Elenco dei file
+  mandato al Coordinatore prima. Da provare sul telefono dopo la copia del
+  sito: se Safari mostra la barra per un meta aggiunto dallo script, e se
+  «Apri» apre MuW; che arrivi al post dipende dalla parte A.

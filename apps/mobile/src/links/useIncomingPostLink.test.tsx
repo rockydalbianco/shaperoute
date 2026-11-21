@@ -22,6 +22,7 @@ let listeners: UrlListener[] = [];
 let opened: string | null = null;
 let now = 1_000_000;
 const openDrawing = jest.fn();
+const askAccount = jest.fn();
 
 /** The phone hands `url` to the app while it is open. */
 async function arrives(url: string): Promise<void> {
@@ -33,7 +34,7 @@ async function arrives(url: string): Promise<void> {
 function mount(state: AccountState) {
   return renderHook(
     ({ account }: { account: { state: AccountState } }) =>
-      useIncomingPostLink(account, openDrawing),
+      useIncomingPostLink(account, openDrawing, askAccount),
     { initialProps: { account: { state } } },
   );
 }
@@ -44,6 +45,7 @@ beforeEach(() => {
   opened = null;
   now = 1_000_000;
   openDrawing.mockReset();
+  askAccount.mockReset();
   jest.spyOn(Date, "now").mockImplementation(() => now);
   jest.spyOn(Linking, "getInitialURL").mockImplementation(async () => opened);
   jest.spyOn(Linking, "addEventListener").mockImplementation(((
@@ -110,6 +112,24 @@ describe("useIncomingPostLink", () => {
     expect(openDrawing.mock.calls).toEqual([[ID], [OTHER]]);
   });
 
+  it("does not ask for the account of who has one", async () => {
+    opened = linkOf(ID);
+    await mount(IN);
+    await act(async () => {});
+    await arrives(linkOf(OTHER));
+
+    expect(askAccount).not.toHaveBeenCalled();
+  });
+
+  it("asks for no account for an address that is not the link of a post", async () => {
+    opened = "exp://192.168.1.10:8081";
+    await mount(OUT);
+    await act(async () => {});
+    await arrives("https://getmuw.app/live/#abc");
+
+    expect(askAccount).not.toHaveBeenCalled();
+  });
+
   it("leaves alone an address that is not the link of a post", async () => {
     opened = "exp://192.168.1.10:8081";
     await mount(IN);
@@ -120,11 +140,12 @@ describe("useIncomingPostLink", () => {
     expect(openDrawing).not.toHaveBeenCalled();
   });
 
-  it("waits for the account, then opens the post", async () => {
+  it("asks for the account first, then opens the post", async () => {
     opened = linkOf(ID);
     const hook = await mount(OUT);
     await act(async () => {});
     expect(openDrawing).not.toHaveBeenCalled();
+    expect(askAccount).toHaveBeenCalledTimes(1);
 
     await hook.rerender({ account: { state: IN } });
 
@@ -167,7 +188,7 @@ describe("useIncomingPostLink", () => {
     const later = jest.fn();
     const hook = await renderHook(
       ({ door }: { door: (id: string) => void }) =>
-        useIncomingPostLink({ state: IN }, door),
+        useIncomingPostLink({ state: IN }, door, askAccount),
       { initialProps: { door: openDrawing } },
     );
     await hook.rerender({ door: later });

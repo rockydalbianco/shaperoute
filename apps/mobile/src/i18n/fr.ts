@@ -2984,4 +2984,5 @@ export const FR: Table = {
   "From {bearing} · {minutes} min ago": "De {bearing} · il y a {minutes} min",
   "GPS numbers · not a certified instrument":
     "Valeurs GPS · pas un instrument certifié",
+  "Log in to see this drawing.": "Connecte-toi pour voir ce dessin.",
 };

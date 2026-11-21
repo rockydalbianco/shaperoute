@@ -2,7 +2,12 @@ import { useEffect, useRef } from "react";
 import { Linking } from "react-native";
 
 import type { Account } from "../account/useAccount";
+import { tLater } from "../i18n";
 import { postLinkIn } from "./postLinkIn";
+
+/** Said on the page of the account to who opens the link of a post without
+ * one (TASK-482 part A): why the app asks to log in. */
+export const LOG_IN_TO_SEE = tLater("Log in to see this drawing.");
 
 /** The phone hands the address that opened the app both as the first one
  * and as one that arrives: the same post twice within this is one. */
@@ -62,21 +67,22 @@ export function onPostLinkIn(listener: (id: string) => void): () => void {
  * drawing is shown as the one of a notification touched is, fetched whole
  * by `openDrawing` — the API says whether it exists and who may see it.
  *
- * Only with an account: the link waits for one, as the app, just opened,
- * is still reading who is signed in.
+ * Only with an account: without one `askAccount` shows the page where one
+ * logs in, and the post opens once somebody has.
  */
 export function useIncomingPostLink(
   account: Pick<Account, "state">,
   openDrawing: (id: string) => void,
+  askAccount: () => void,
 ): void {
   const signedIn = account.state.status === "signedIn";
   // The link that waits for an account; the last one that arrived.
   const waiting = useRef<string | null>(null);
-  // The latest of what a link that arrives needs: the door of when it
-  // started listening may be an old one.
-  const latest = useRef({ openDrawing, signedIn });
+  // The latest of what a link that arrives needs: the doors of when it
+  // started listening may be old ones.
+  const latest = useRef({ openDrawing, askAccount, signedIn });
   useEffect(() => {
-    latest.current = { openDrawing, signedIn };
+    latest.current = { openDrawing, askAccount, signedIn };
   });
 
   useEffect(
@@ -86,6 +92,7 @@ export function useIncomingPostLink(
           latest.current.openDrawing(id);
         } else {
           waiting.current = id;
+          latest.current.askAccount();
         }
       }),
     [],

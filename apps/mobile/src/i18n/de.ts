@@ -2098,6 +2098,8 @@ export const DE: Table = {
   SW: "SW",
   W: "W",
   NW: "NW",
+  // src/screens/RunPanel.tsx (TASK-461 B2c, approved 2026-11-11)
+  "{m} m of climb to go": "noch {m} Höhenmeter",
   "{distance} to go": "noch {distance}",
   "Saved to My activities": "In Meine Aktivitäten gespeichert",
   // src/social/ContactsFriends.tsx (TASK-262 C)

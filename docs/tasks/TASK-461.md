@@ -226,6 +226,17 @@ Sulla tela «Schede palestra guidate»
   `sessionsOfWeek` passa i giorni dello sport dell'obiettivo da
   `targetDayInWeek`. I ritmi e il lungo della corsa vengono da TASK-452.
 
+- **B2c — «Mancano» mentre si registra** (branch `feat/TASK-461-b2c-to-go`,
+  lista col sì del Coordinatore il 2026-11-21, dopo D1): `gym/planToGo.ts`
+  (la meta del giorno dello sport registrato, dai piani tenuti sul
+  telefono), `screens/RunPanel.tsx` (`RouteProgress.climb` e il testo
+  «{m} m of climb to go», approvato nella riga G: «Mancano 230 m di
+  salita»), `screens/RunDashboard.tsx` (la barra del percorso anche per il
+  giorno del piano, file in più rispetto alla lista).
+- **D1 — `climb_m` nell'elenco delle attività** (server, branch
+  `feat/TASK-461-d1-climb-in-list`): «Già scritto dai tuoi hike» si scrive da
+  solo dopo il passo sul server; controllo in `out/TASK-461/SERVER-D1.md`.
+
 ## Il disegno tecnico (ADR-0371, deciso dall'agente su delega dell'utente)
 
 - **Un esercizio nuovo va prima sul server.** Le schede (`gym_plans.py`) e

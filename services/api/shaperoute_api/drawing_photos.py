@@ -20,7 +20,8 @@ JPEG. The file of the phone is never kept, so neither is its EXIF: where
 and when it was taken stays on the phone. They are kept in the database,
 with the rest of the account (ADR-0115).
 
-The owner puts and deletes them through its run in My activities; whoever
+The owner puts and deletes them through its run in My activities, or
+through its post of photos only (photo_posts.py, TASK-312 part C); whoever
 may see the drawing (drawings.drawing_seen_sql) reads them, as JPEG files.
 Deleting the run, the drawing's run, or the account deletes them.
 """
@@ -56,6 +57,7 @@ from shaperoute_api.drawings import (
     NO_DRAWING,
     ORDER_DRAWING,
     ORDER_PHOTO,
+    Connection,
     Drawings,
     MyDrawingBody,
     drawing_seen_sql,
@@ -183,6 +185,21 @@ def _opaque(picture: Image.Image) -> Image.Image:
     return picture.convert("RGB")
 
 
+def store_photo(
+    conn: Connection, drawing_id: UUID, n: int, photo: Photo, now: datetime
+) -> None:
+    """The photo in place `n` of the drawing, the one there replaced: of a
+    run's drawing here, of a post of photos only in photo_posts.py."""
+    conn.execute(
+        "INSERT INTO drawing_photos (drawing_id, n, jpeg, width, height,"
+        " updated_at) VALUES (%s, %s, %s, %s, %s, %s)"
+        " ON CONFLICT (drawing_id, n) DO UPDATE SET jpeg = EXCLUDED.jpeg,"
+        " width = EXCLUDED.width, height = EXCLUDED.height,"
+        " updated_at = EXCLUDED.updated_at",
+        (drawing_id, n, photo.jpeg, photo.width, photo.height, now),
+    )
+
+
 @dataclass
 class DrawingPhotos:
     """The photos of the drawings, in the database."""
@@ -199,14 +216,7 @@ class DrawingPhotos:
             drawing_id = shared_drawing(conn, user_id, key)
             if drawing_id is None:
                 return False
-            conn.execute(
-                "INSERT INTO drawing_photos (drawing_id, n, jpeg, width, height,"
-                " updated_at) VALUES (%s, %s, %s, %s, %s, %s)"
-                " ON CONFLICT (drawing_id, n) DO UPDATE SET jpeg = EXCLUDED.jpeg,"
-                " width = EXCLUDED.width, height = EXCLUDED.height,"
-                " updated_at = EXCLUDED.updated_at",
-                (drawing_id, n, photo.jpeg, photo.width, photo.height, now),
-            )
+            store_photo(conn, drawing_id, n, photo, now)
         return True
 
     def remove(self, user_id: int, key: str, n: int) -> bool:
@@ -245,7 +255,7 @@ class DrawingPhotos:
             raise HTTPException(404, NO_DRAWING) from None
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT p.jpeg FROM drawings d JOIN runs r ON r.id = d.run_id"
+                "SELECT p.jpeg FROM drawings d"
                 " LEFT JOIN drawing_photos p ON p.drawing_id = d.id AND p.n = %s"
                 f" WHERE d.id = %s AND {drawing_seen_sql('%s')}",
                 (n, wanted, viewer_id),

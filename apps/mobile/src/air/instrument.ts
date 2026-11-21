@@ -63,7 +63,9 @@ export type Instrument = {
 
 function heightOf(fix: TrackFix): number | null {
   const height = fix.altitudeM;
-  return height === undefined || height === null || !Number.isFinite(height) ? null : height;
+  return height === undefined || height === null || !Number.isFinite(height)
+    ? null
+    : height;
 }
 
 /** The fixes since the last pause's gap: no window crosses one. */
@@ -88,12 +90,19 @@ function lastWindow(fixes: readonly TrackFix[], ms: number): readonly TrackFix[]
 
 /** The climb in m/s over the window, by least squares; null when the
  * window's heights span less than `minSpanMs`. */
-export function climbOver(fixes: readonly TrackFix[], ms: number, minSpanMs: number): number | null {
+export function climbOver(
+  fixes: readonly TrackFix[],
+  ms: number,
+  minSpanMs: number,
+): number | null {
   if (fixes.length === 0) {
     return null;
   }
   const window = lastWindow(fixes, ms).filter((fix) => heightOf(fix) !== null);
-  if (window.length < 2 || window[window.length - 1].timeMs - window[0].timeMs < minSpanMs) {
+  if (
+    window.length < 2 ||
+    window[window.length - 1].timeMs - window[0].timeMs < minSpanMs
+  ) {
     return null;
   }
   const t0 = window[0].timeMs;
@@ -105,7 +114,10 @@ export function climbOver(fixes: readonly TrackFix[], ms: number, minSpanMs: num
 
 /** The speed (m/s) and the track (degrees) over the ground at the end of
  * `fixes`. */
-function groundOf(fixes: readonly TrackFix[]): { speedMps: number | null; trackDeg: number | null } {
+function groundOf(fixes: readonly TrackFix[]): {
+  speedMps: number | null;
+  trackDeg: number | null;
+} {
   if (fixes.length < 2) {
     return { speedMps: null, trackDeg: null };
   }
@@ -155,7 +167,9 @@ export function takeoffOf(track: Track, takeoffMs: number | null): Takeoff | nul
     return null;
   }
   const fix = track.fixes.find((one) => one.timeMs >= takeoffMs);
-  return fix === undefined ? null : { point: fix.point, altM: heightOf(fix), atMs: fix.timeMs };
+  return fix === undefined
+    ? null
+    : { point: fix.point, altM: heightOf(fix), atMs: fix.timeMs };
 }
 
 /**
@@ -196,9 +210,12 @@ export function instrumentNow(
     glideRatio: fresh && !circling ? glideOver(stretch) : null,
     takeoff,
     aboveTakeoffM: takeoffAltM !== null && altM !== null ? altM - takeoffAltM : null,
-    takeoffDistanceM: takeoff !== null && here !== null ? metresBetween(here, takeoff.point) : null,
+    takeoffDistanceM:
+      takeoff !== null && here !== null ? metresBetween(here, takeoff.point) : null,
     takeoffBearingDeg:
-      takeoff !== null && here !== null && metresBetween(here, takeoff.point) >= MIN_TRACK_M
+      takeoff !== null &&
+      here !== null &&
+      metresBetween(here, takeoff.point) >= MIN_TRACK_M
         ? bearingBetween(here, takeoff.point)
         : null,
     flightMs: takeoff === null ? null : Math.max(0, nowMs - takeoff.atMs),

@@ -36,8 +36,10 @@ export function AltitudeChart({
           key={index}
           style={{
             width: Math.max(1, bar - 1),
-            height: value === null ? 0 : Math.max(2, ((value - low) / (high - low)) * height),
-            backgroundColor: index === series.length - 1 ? palette.accent : palette.borderStrong,
+            height:
+              value === null ? 0 : Math.max(2, ((value - low) / (high - low)) * height),
+            backgroundColor:
+              index === series.length - 1 ? palette.accent : palette.borderStrong,
           }}
         />
       ))}

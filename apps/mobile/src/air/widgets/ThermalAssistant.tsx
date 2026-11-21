@@ -26,17 +26,28 @@ export function ThermalAssistant({
   size: number;
   palette: Palette;
 }) {
-  const far = assistant.points.reduce((most, point) => Math.max(most, Math.abs(point.x), Math.abs(point.y)), 0);
+  const far = assistant.points.reduce(
+    (most, point) => Math.max(most, Math.abs(point.x), Math.abs(point.y)),
+    0,
+  );
   const reach = Math.min(MAX_REACH_M, Math.max(MIN_REACH_M, far * 1.1));
   const half = size / 2;
   const scale = half / reach;
-  const place = (x: number, y: number) => ({ left: half + x * scale, top: half - y * scale });
+  const place = (x: number, y: number) => ({
+    left: half + x * scale,
+    top: half - y * scale,
+  });
   return (
     <View style={{ width: size, height: size }} testID="thermal-assistant">
       <View
         style={[
           styles.ring,
-          { width: size, height: size, borderRadius: half, borderColor: palette.border },
+          {
+            width: size,
+            height: size,
+            borderRadius: half,
+            borderColor: palette.border,
+          },
         ]}
       />
       {assistant.points.map((point, index) => {
@@ -79,7 +90,12 @@ export function ThermalAssistant({
       <View
         style={[
           styles.you,
-          { left: half - 7, top: half - 7, backgroundColor: palette.you, borderColor: palette.background },
+          {
+            left: half - 7,
+            top: half - 7,
+            backgroundColor: palette.you,
+            borderColor: palette.background,
+          },
         ]}
       />
     </View>
@@ -89,6 +105,12 @@ export function ThermalAssistant({
 const styles = StyleSheet.create({
   ring: { position: "absolute", borderWidth: 1 },
   dot: { position: "absolute" },
-  best: { position: "absolute", width: 24, height: 24, borderRadius: 12, borderWidth: 2 },
+  best: {
+    position: "absolute",
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+  },
   you: { position: "absolute", width: 14, height: 14, borderRadius: 7, borderWidth: 2 },
 });

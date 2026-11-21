@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import {
   type LayoutChangeEvent,
   Modal,
@@ -11,7 +11,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 
 import { t, tLater } from "../i18n";
 import type { Track } from "../navigation/trackRecorder";
@@ -97,7 +97,9 @@ function Chip({
         },
       ]}
     >
-      <Text style={[styles.chipText, { color: on ? palette.onAccent : palette.text }]}>{label}</Text>
+      <Text style={[styles.chipText, { color: on ? palette.onAccent : palette.text }]}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -113,7 +115,8 @@ function Options({
   onDone: () => void;
   palette: Palette;
 }) {
-  const units = (patch: Partial<FlightUnits>) => onChange({ ...prefs, units: { ...prefs.units, ...patch } });
+  const units = (patch: Partial<FlightUnits>) =>
+    onChange({ ...prefs, units: { ...prefs.units, ...patch } });
   const row = (title: string, chips: React.ReactNode) => (
     <View style={styles.optionRow}>
       <Text style={[styles.optionTitle, { color: palette.textMuted }]}>{title}</Text>
@@ -121,7 +124,10 @@ function Options({
     </View>
   );
   return (
-    <View style={[styles.options, { backgroundColor: palette.background }]} testID="flight-options">
+    <View
+      style={[styles.options, { backgroundColor: palette.background }]}
+      testID="flight-options"
+    >
       {row(
         t("Layout"),
         PRESETS.map((preset) => (
@@ -137,26 +143,54 @@ function Options({
       {row(
         t("Look"),
         <>
-          <Chip label={t("Dark")} on={prefs.look === "dark"} onPress={() => onChange({ ...prefs, look: "dark" })} palette={palette} />
-          <Chip label={t("Sun")} on={prefs.look === "sun"} onPress={() => onChange({ ...prefs, look: "sun" })} palette={palette} />
+          <Chip
+            label={t("Dark")}
+            on={prefs.look === "dark"}
+            onPress={() => onChange({ ...prefs, look: "dark" })}
+            palette={palette}
+          />
+          <Chip
+            label={t("Sunlight")}
+            on={prefs.look === "sun"}
+            onPress={() => onChange({ ...prefs, look: "sun" })}
+            palette={palette}
+          />
         </>,
       )}
       {row(
         t("Altitude"),
         ALTITUDE_UNITS.map((unit) => (
-          <Chip key={unit} label={UNIT_LABEL[unit]} on={prefs.units.altitude === unit} onPress={() => units({ altitude: unit })} palette={palette} />
+          <Chip
+            key={unit}
+            label={UNIT_LABEL[unit]}
+            on={prefs.units.altitude === unit}
+            onPress={() => units({ altitude: unit })}
+            palette={palette}
+          />
         )),
       )}
       {row(
         t("Vario"),
         VARIO_UNITS.map((unit) => (
-          <Chip key={unit} label={UNIT_LABEL[unit]} on={prefs.units.vario === unit} onPress={() => units({ vario: unit })} palette={palette} />
+          <Chip
+            key={unit}
+            label={UNIT_LABEL[unit]}
+            on={prefs.units.vario === unit}
+            onPress={() => units({ vario: unit })}
+            palette={palette}
+          />
         )),
       )}
       {row(
         t("Speed"),
         SPEED_UNITS.map((unit) => (
-          <Chip key={unit} label={UNIT_LABEL[unit]} on={prefs.units.speed === unit} onPress={() => units({ speed: unit })} palette={palette} />
+          <Chip
+            key={unit}
+            label={UNIT_LABEL[unit]}
+            on={prefs.units.speed === unit}
+            onPress={() => units({ speed: unit })}
+            palette={palette}
+          />
         )),
       )}
       <Pressable
@@ -208,7 +242,14 @@ function PageView({
   );
 }
 
-export function FlightScreen({ visible, onClose, track, live, takeoffMs, sharingLive }: Props) {
+export function FlightScreen({
+  visible,
+  onClose,
+  track,
+  live,
+  takeoffMs,
+  sharingLive,
+}: Props) {
   const appUnits = useUnits();
   const [prefs, setPrefs] = useState<FlightPrefs>(() => loadFlightPrefs(appUnits));
   const [choosing, setChoosing] = useState(false);
@@ -216,7 +257,8 @@ export function FlightScreen({ visible, onClose, track, live, takeoffMs, sharing
   const [hint, setHint] = useState(false);
   const [page, setPage] = useState(0);
   const [area, setArea] = useState({ width: 0, height: 0 });
-  const insets = useSafeAreaInsets();
+  // The app has the provider; a screen tested alone does not.
+  const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0 };
   const now = useNow(visible && live, TICK_MS);
   const at = live ? now : (track.fixes[track.fixes.length - 1]?.timeMs ?? now);
   const data = useFlightScreenData(track, at, takeoffMs, sharingLive);
@@ -248,7 +290,14 @@ export function FlightScreen({ visible, onClose, track, live, takeoffMs, sharing
     >
       <StatusBar barStyle={prefs.look === "dark" ? "light-content" : "dark-content"} />
       <View
-        style={[styles.screen, { backgroundColor: palette.background, paddingTop: insets.top, paddingBottom: insets.bottom }]}
+        style={[
+          styles.screen,
+          {
+            backgroundColor: palette.background,
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+          },
+        ]}
         testID="flight-screen"
       >
         <View style={styles.bar}>
@@ -259,13 +308,19 @@ export function FlightScreen({ visible, onClose, track, live, takeoffMs, sharing
             style={[styles.barButton, { borderColor: palette.borderStrong }]}
             testID="flight-screen-map"
           >
-            <Text style={[styles.barText, { color: palette.text }]}>{`← ${t("Map")}`}</Text>
+            <Text
+              style={[styles.barText, { color: palette.text }]}
+            >{`← ${t("Map")}`}</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
             onPress={() => setChoosing(true)}
             disabled={locked}
-            style={[styles.barButton, styles.barMiddle, { borderColor: palette.borderStrong }]}
+            style={[
+              styles.barButton,
+              styles.barMiddle,
+              { borderColor: palette.borderStrong },
+            ]}
             testID="flight-screen-layout"
           >
             <Text style={[styles.barText, { color: palette.text }]} numberOfLines={1}>
@@ -283,17 +338,27 @@ export function FlightScreen({ visible, onClose, track, live, takeoffMs, sharing
             delayLongPress={UNLOCK_HOLD_MS}
             style={[
               styles.barButton,
-              { borderColor: locked ? palette.accent : palette.borderStrong, backgroundColor: locked ? palette.accent : undefined },
+              {
+                borderColor: locked ? palette.accent : palette.borderStrong,
+                backgroundColor: locked ? palette.accent : undefined,
+              },
             ]}
             testID="flight-screen-lock"
           >
-            <Text style={[styles.barText, { color: locked ? palette.onAccent : palette.text }]}>
+            <Text
+              style={[
+                styles.barText,
+                { color: locked ? palette.onAccent : palette.text },
+              ]}
+            >
               {locked ? "🔒" : "🔓"}
             </Text>
           </Pressable>
         </View>
         {locked && hint ? (
-          <Text style={[styles.hint, { color: palette.text }]}>{t("Hold to unlock")}</Text>
+          <Text style={[styles.hint, { color: palette.text }]}>
+            {t("Hold to unlock")}
+          </Text>
         ) : null}
         <View style={styles.pages} onLayout={onLayout} testID="flight-pages">
           {area.width > 0 ? (
@@ -326,21 +391,33 @@ export function FlightScreen({ visible, onClose, track, live, takeoffMs, sharing
               ))}
             </ScrollView>
           ) : null}
-          {locked ? <View style={StyleSheet.absoluteFill} testID="flight-screen-locked" /> : null}
+          {locked ? (
+            <View style={StyleSheet.absoluteFill} testID="flight-screen-locked" />
+          ) : null}
         </View>
         <View style={styles.dots}>
           {pages.length > 1
             ? pages.map((_, index) => (
                 <View
                   key={index}
-                  style={[styles.dot, { backgroundColor: index === page ? palette.text : palette.border }]}
+                  style={[
+                    styles.dot,
+                    { backgroundColor: index === page ? palette.text : palette.border },
+                  ]}
                 />
               ))
             : null}
         </View>
-        <Text style={[styles.fixed, { color: palette.textMuted }]}>{t(FIXED_LINE)}</Text>
+        <Text style={[styles.fixed, { color: palette.textMuted }]}>
+          {t(FIXED_LINE)}
+        </Text>
         {choosing ? (
-          <Options prefs={prefs} onChange={change} onDone={() => setChoosing(false)} palette={palette} />
+          <Options
+            prefs={prefs}
+            onChange={change}
+            onDone={() => setChoosing(false)}
+            palette={palette}
+          />
         ) : null}
       </View>
     </Modal>
@@ -361,14 +438,39 @@ const styles = StyleSheet.create({
   },
   barMiddle: { flex: 1 },
   barText: { fontSize: 20, fontWeight: fontWeight.bold },
-  hint: { textAlign: "center", fontSize: 16, fontWeight: fontWeight.semibold, paddingTop: 4 },
+  hint: {
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: fontWeight.semibold,
+    paddingTop: 4,
+  },
   pages: { flex: 1 },
-  dots: { flexDirection: "row", justifyContent: "center", gap: 8, height: 14, alignItems: "center" },
+  dots: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+    height: 14,
+    alignItems: "center",
+  },
   dot: { width: 10, height: 10, borderRadius: 5 },
   fixed: { textAlign: "center", fontSize: 12, paddingVertical: 4 },
-  options: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, padding: 20, paddingTop: 60, gap: 18 },
+  options: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: 20,
+    paddingTop: 60,
+    gap: 18,
+  },
   optionRow: { gap: 8 },
-  optionTitle: { fontSize: 14, fontWeight: fontWeight.semibold, textTransform: "uppercase", letterSpacing: 0.5 },
+  optionTitle: {
+    fontSize: 14,
+    fontWeight: fontWeight.semibold,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   chip: {
     minHeight: GLOVE_TARGET,
@@ -380,6 +482,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   chipText: { fontSize: 18, fontWeight: fontWeight.bold },
-  done: { minHeight: GLOVE_TARGET, borderRadius: 14, alignItems: "center", justifyContent: "center", marginTop: 8 },
+  done: {
+    minHeight: GLOVE_TARGET,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+  },
   doneText: { fontSize: 20, fontWeight: fontWeight.bold },
 });

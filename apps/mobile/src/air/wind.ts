@@ -51,7 +51,10 @@ export function velocitiesOf(fixes: readonly TrackFix[]): Metres[] {
     if (ms < MIN_VELOCITY_MS) {
       continue;
     }
-    out.push({ x: (at[i].x - at[from].x) / (ms / 1000), y: (at[i].y - at[from].y) / (ms / 1000) });
+    out.push({
+      x: (at[i].x - at[from].x) / (ms / 1000),
+      y: (at[i].y - at[from].y) / (ms / 1000),
+    });
     from = i;
   }
   return out;
@@ -68,17 +71,27 @@ function solve3(m: number[][], v: number[]): [number, number, number] | null {
   if (Math.abs(d) < 1e-9) {
     return null;
   }
-  const column = (k: number) => m.map((row, i) => row.map((cell, j) => (j === k ? v[i] : cell)));
+  const column = (k: number) =>
+    m.map((row, i) => row.map((cell, j) => (j === k ? v[i] : cell)));
   return [det(column(0)) / d, det(column(1)) / d, det(column(2)) / d];
 }
 
 /** The least-squares circle through `points`: its centre and radius. */
-export function circleFit(points: readonly Metres[]): { centre: Metres; radius: number } | null {
+export function circleFit(
+  points: readonly Metres[],
+): { centre: Metres; radius: number } | null {
   if (points.length < 3) {
     return null;
   }
   // x² + y² + D x + E y + F = 0, in the least squares.
-  let sx = 0, sy = 0, sxx = 0, syy = 0, sxy = 0, sz = 0, sxz = 0, syz = 0;
+  let sx = 0,
+    sy = 0,
+    sxx = 0,
+    syy = 0,
+    sxy = 0,
+    sz = 0,
+    sxz = 0,
+    syz = 0;
   for (const { x, y } of points) {
     const z = x * x + y * y;
     sx += x;
@@ -113,9 +126,9 @@ export function windOfCircling(track: Track, circling: Circling): Wind | null {
   if (Math.abs(circling.turnDeg) < MIN_WIND_TURN) {
     return null;
   }
-  const velocities = velocitiesOf(track.fixes.slice(circling.from, circling.to + 1)).slice(
-    -MAX_VELOCITIES,
-  );
+  const velocities = velocitiesOf(
+    track.fixes.slice(circling.from, circling.to + 1),
+  ).slice(-MAX_VELOCITIES);
   const fit = circleFit(velocities);
   if (fit === null) {
     return null;
@@ -129,12 +142,16 @@ export function windOfCircling(track: Track, circling: Circling): Wind | null {
     return null;
   }
   // The centre is where the air goes; the weather says where it comes from.
-  const fromDeg = ((Math.atan2(-fit.centre.x, -fit.centre.y) * 180) / Math.PI + 360) % 360;
+  const fromDeg =
+    ((Math.atan2(-fit.centre.x, -fit.centre.y) * 180) / Math.PI + 360) % 360;
   return { fromDeg, speedMps, airspeedMps: fit.radius, atMs: circling.endMs };
 }
 
 /** The wind of the last circling that tells one, or null. */
-export function windNow(track: Track, all: readonly Circling[] = circlings(track)): Wind | null {
+export function windNow(
+  track: Track,
+  all: readonly Circling[] = circlings(track),
+): Wind | null {
   for (let i = all.length - 1; i >= 0; i -= 1) {
     const wind = windOfCircling(track, all[i]);
     if (wind !== null) {

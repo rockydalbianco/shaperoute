@@ -72,14 +72,22 @@ describe("prefs", () => {
 
   it("are kept and read back", () => {
     const list = memory();
-    const prefs: FlightPrefs = { ...defaultFlightPrefs("mi"), preset: "xc", look: "sun" };
+    const prefs: FlightPrefs = {
+      ...defaultFlightPrefs("mi"),
+      preset: "xc",
+      look: "sun",
+    };
     expect(saveFlightPrefs(prefs, list)).toBe(true);
     expect(loadFlightPrefs("km", list)).toEqual(prefs);
   });
 
   it("are left out when not whole", () => {
-    expect(isFlightPrefs({ preset: "race", look: "dark", units: defaultFlightPrefs("km").units })).toBe(
-      false,
-    );
+    expect(
+      isFlightPrefs({
+        preset: "race",
+        look: "dark",
+        units: defaultFlightPrefs("km").units,
+      }),
+    ).toBe(false);
   });
 });

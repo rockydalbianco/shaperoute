@@ -56,7 +56,9 @@ export type FlightOptions = {
 /** A track flying `legs` from ORIGIN at T0. */
 export function flightOf(legs: readonly Leg[], options: FlightOptions = {}): Track {
   const everyMs = options.everyMs ?? 1000;
-  const drift = options.wind ? driftOf(options.wind.fromDeg, options.wind.mps) : { x: 0, y: 0 };
+  const drift = options.wind
+    ? driftOf(options.wind.fromDeg, options.wind.mps)
+    : { x: 0, y: 0 };
   const fixes: TrackFix[] = [];
   let x = 0;
   let y = 0;

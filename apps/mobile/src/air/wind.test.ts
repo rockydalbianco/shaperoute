@@ -6,7 +6,14 @@ import { flightOf } from "./syntheticFlight";
 import { circleFit, windNow } from "./wind";
 
 const circle = (seconds: number) =>
-  ({ kind: "circle", seconds, airspeedMps: 10, turnSeconds: 20, direction: 1, varioMps: 1.5 }) as const;
+  ({
+    kind: "circle",
+    seconds,
+    airspeedMps: 10,
+    turnSeconds: 20,
+    direction: 1,
+    varioMps: 1.5,
+  }) as const;
 const glide = (seconds: number) =>
   ({ kind: "glide", seconds, airspeedMps: 10, headingDeg: 0, varioMps: -1 }) as const;
 
@@ -28,7 +35,13 @@ describe("circleFit", () => {
   });
 
   it("gives up on points in a line", () => {
-    expect(circleFit([{ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 2 }])).toBeNull();
+    expect(
+      circleFit([
+        { x: 0, y: 0 },
+        { x: 1, y: 1 },
+        { x: 2, y: 2 },
+      ]),
+    ).toBeNull();
   });
 });
 
@@ -47,11 +60,15 @@ describe("windNow", () => {
   });
 
   it("is null without a whole turn", () => {
-    expect(windNow(flightOf([glide(120)], { wind: { fromDeg: 270, mps: 5 } }))).toBeNull();
+    expect(
+      windNow(flightOf([glide(120)], { wind: { fromDeg: 270, mps: 5 } })),
+    ).toBeNull();
   });
 
   it("keeps the last circling's wind during a glide after it", () => {
-    const track = flightOf([glide(20), circle(60), glide(90)], { wind: { fromDeg: 200, mps: 4 } });
+    const track = flightOf([glide(20), circle(60), glide(90)], {
+      wind: { fromDeg: 200, mps: 4 },
+    });
     const wind = windNow(track);
     expect(angleOff(wind!.fromDeg, 200)).toBeLessThan(5);
     expect(wind!.atMs).toBeLessThan(track.fixes[track.fixes.length - 1].timeMs);

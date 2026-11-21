@@ -23,11 +23,6 @@ export function useFlightScreen(
       afterFlightNotice(() => setOpen(true));
     }
   }, [phase, live]);
-  useEffect(() => {
-    if (!live) {
-      // The recording is over: the screen of the end, not of the flight.
-      setOpen(false);
-    }
-  }, [live]);
-  return { open, show: () => setOpen(true), hide: () => setOpen(false) };
+  // The recording over, the screen of the end, not of the flight.
+  return { open: live && open, show: () => setOpen(true), hide: () => setOpen(false) };
 }

@@ -20,8 +20,16 @@ import {
 
 describe("flight units", () => {
   it("start as the app's", () => {
-    expect(defaultFlightUnits("km")).toEqual({ altitude: "m", vario: "mps", speed: "kmh" });
-    expect(defaultFlightUnits("mi")).toEqual({ altitude: "ft", vario: "fpm", speed: "mph" });
+    expect(defaultFlightUnits("km")).toEqual({
+      altitude: "m",
+      vario: "mps",
+      speed: "kmh",
+    });
+    expect(defaultFlightUnits("mi")).toEqual({
+      altitude: "ft",
+      vario: "fpm",
+      speed: "mph",
+    });
   });
 
   it("are read back only when whole", () => {

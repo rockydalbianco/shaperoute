@@ -4,7 +4,13 @@
  * lock held to undo, dark or bright, the pilot's units kept, the fixed
  * line always there; and it opens by itself at the take-off.
  */
-import { act, fireEvent, render, renderHook, screen } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+} from "@testing-library/react-native";
 
 import { FIXED_LINE, FlightScreen } from "./FlightScreen";
 import { loadFlightPrefs } from "./flightLayout";
@@ -44,11 +50,27 @@ jest.mock("expo-file-system", () => {
 });
 
 const glide = (seconds: number) =>
-  ({ kind: "glide", seconds, airspeedMps: 10, headingDeg: 90, varioMps: -1.2 }) as const;
+  ({
+    kind: "glide",
+    seconds,
+    airspeedMps: 10,
+    headingDeg: 90,
+    varioMps: -1.2,
+  }) as const;
 const circle = (seconds: number) =>
-  ({ kind: "circle", seconds, airspeedMps: 10, turnSeconds: 20, direction: 1, varioMps: 2.4 }) as const;
+  ({
+    kind: "circle",
+    seconds,
+    airspeedMps: 10,
+    turnSeconds: 20,
+    direction: 1,
+    varioMps: 2.4,
+  }) as const;
 
-const TRACK = flightOf([glide(60), circle(90)], { fromAltM: 1800, wind: { fromDeg: 270, mps: 4 } });
+const TRACK = flightOf([glide(60), circle(90)], {
+  fromAltM: 1800,
+  wind: { fromDeg: 270, mps: 4 },
+});
 
 async function showScreen(onClose = jest.fn()) {
   await render(
@@ -102,7 +124,7 @@ describe("FlightScreen", () => {
     await fireEvent.press(screen.getByTestId("flight-screen-layout"));
     await fireEvent.press(screen.getByText("XC"));
     await fireEvent.press(screen.getByText("ft"));
-    await fireEvent.press(screen.getByText("Sun"));
+    await fireEvent.press(screen.getByText("Sunlight"));
     await fireEvent.press(screen.getByTestId("flight-options-done"));
     expect(screen.getByTestId("widget-glide")).toBeTruthy();
     expect(loadFlightPrefs("km")).toEqual({
@@ -118,7 +140,8 @@ describe("useFlightScreen", () => {
 
   it("opens by itself at the take-off, once, and closes with the recording", async () => {
     const { result, rerender } = await renderHook(
-      ({ phase, live }: { phase: "foot" | "air"; live: boolean }) => useFlightScreen(phase, live),
+      ({ phase, live }: { phase: "foot" | "air"; live: boolean }) =>
+        useFlightScreen(phase, live),
       { initialProps: { phase: "foot", live: true } },
     );
     expect(result.current.open).toBe(false);

@@ -2,7 +2,14 @@ import { useMemo } from "react";
 
 import type { Track } from "../navigation/trackRecorder";
 import { altitudeSeries, type Instrument, instrumentNow } from "./instrument";
-import { type Assistant, assistantOf, circlingNow, circlings, type ThermalNow, thermalNow } from "./thermal";
+import {
+  type Assistant,
+  assistantOf,
+  circlingNow,
+  circlings,
+  type ThermalNow,
+  thermalNow,
+} from "./thermal";
 import { type Wind, windNow } from "./wind";
 
 /**

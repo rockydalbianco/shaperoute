@@ -22,7 +22,12 @@ export function Dial({
     <View
       style={[
         styles.dial,
-        { width: size, height: size, borderRadius: size / 2, borderColor: palette.borderStrong },
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          borderColor: palette.borderStrong,
+        },
       ]}
     >
       <View
@@ -33,25 +38,54 @@ export function Dial({
         ]}
       >
         <Text
-          style={[styles.north, { color: palette.north, fontSize: Math.max(12, size * 0.2), top: size * 0.04 }]}
+          style={[
+            styles.north,
+            {
+              color: palette.north,
+              fontSize: Math.max(12, size * 0.2),
+              top: size * 0.04,
+            },
+          ]}
         >
           N
         </Text>
       </View>
       {/* The way the pilot goes: always up. */}
-      <View style={[styles.heading, { height: size * 0.32, backgroundColor: palette.text }]} />
+      <View
+        style={[styles.heading, { height: size * 0.32, backgroundColor: palette.text }]}
+      />
     </View>
   );
 }
 
 /** An arrow `size` tall pointing at `deg` on screen (0 = up). */
-export function Arrow({ size, deg, color }: { size: number; deg: number; color: string }) {
+export function Arrow({
+  size,
+  deg,
+  color,
+}: {
+  size: number;
+  deg: number;
+  color: string;
+}) {
   return (
     <View
-      style={[styles.centre, { width: size, height: size, transform: [{ rotate: `${deg}deg` }] }]}
+      style={[
+        styles.centre,
+        { width: size, height: size, transform: [{ rotate: `${deg}deg` }] },
+      ]}
       testID="flight-arrow"
     >
-      <Text style={{ color, fontSize: size * 0.9, lineHeight: size, includeFontPadding: false }}>↑</Text>
+      <Text
+        style={{
+          color,
+          fontSize: size * 0.9,
+          lineHeight: size,
+          includeFontPadding: false,
+        }}
+      >
+        ↑
+      </Text>
     </View>
   );
 }

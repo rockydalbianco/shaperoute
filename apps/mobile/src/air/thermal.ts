@@ -45,7 +45,9 @@ type Step = { atMs: number; heading: number | null; gap: boolean };
 
 function heightOf(fix: TrackFix): number | null {
   const height = fix.altitudeM;
-  return height === undefined || height === null || !Number.isFinite(height) ? null : height;
+  return height === undefined || height === null || !Number.isFinite(height)
+    ? null
+    : height;
 }
 
 /** The heading of the step into each fix (null on the first, after a gap,
@@ -99,7 +101,8 @@ function turningOf(steps: readonly Step[]): { turning: boolean[]; turnInto: numb
     }
     // `sum` holds the turns into start+1 … i: the window's.
     const span = steps[i].atMs - steps[start].atMs;
-    turning[i] = span >= MIN_TURN_SPAN_MS && Math.abs(sum) / (span / 1000) >= MIN_TURN_RATE;
+    turning[i] =
+      span >= MIN_TURN_SPAN_MS && Math.abs(sum) / (span / 1000) >= MIN_TURN_RATE;
   }
   return { turning, turnInto };
 }
@@ -181,7 +184,11 @@ export type ThermalNow = {
 
 /** The circling of now; or, when not circling, the last one that gained
  * height; null before any. */
-export function thermalNow(track: Track, nowMs: number, all: readonly Circling[] = circlings(track)): ThermalNow | null {
+export function thermalNow(
+  track: Track,
+  nowMs: number,
+  all: readonly Circling[] = circlings(track),
+): ThermalNow | null {
   const lastFix = track.fixes[track.fixes.length - 1];
   const last = all[all.length - 1];
   if (
@@ -190,19 +197,32 @@ export function thermalNow(track: Track, nowMs: number, all: readonly Circling[]
     last.to === track.fixes.length - 1 &&
     nowMs - lastFix.timeMs <= CIRCLE_STALE_MS
   ) {
-    return { active: true, avgMps: last.avgMps, gainM: last.gainM, startMs: last.startMs };
+    return {
+      active: true,
+      avgMps: last.avgMps,
+      gainM: last.gainM,
+      startMs: last.startMs,
+    };
   }
   for (let i = all.length - 1; i >= 0; i -= 1) {
     const one = all[i];
     if (one.gainM !== null && one.gainM > 0) {
-      return { active: false, avgMps: one.avgMps, gainM: one.gainM, startMs: one.startMs };
+      return {
+        active: false,
+        avgMps: one.avgMps,
+        gainM: one.gainM,
+        startMs: one.startMs,
+      };
     }
   }
   return null;
 }
 
 /** Whether the pilot is circling at the track's last fix. */
-export function circlingNow(track: Track, all: readonly Circling[] = circlings(track)): boolean {
+export function circlingNow(
+  track: Track,
+  all: readonly Circling[] = circlings(track),
+): boolean {
   const last = all[all.length - 1];
   return last !== undefined && last.to === track.fixes.length - 1;
 }
@@ -223,7 +243,10 @@ export const ASSISTANT_VARIO_MS = 3_000;
 export const ASSISTANT_SPAN_MS = 60_000;
 
 /** The thermal assistant's picture at the track's last fix. */
-export function assistantOf(track: Track, spanMs: number = ASSISTANT_SPAN_MS): Assistant {
+export function assistantOf(
+  track: Track,
+  spanMs: number = ASSISTANT_SPAN_MS,
+): Assistant {
   const fixes = track.fixes;
   const last = fixes[fixes.length - 1];
   if (last === undefined) {
@@ -231,7 +254,11 @@ export function assistantOf(track: Track, spanMs: number = ASSISTANT_SPAN_MS): A
   }
   const plane = planeAt(last.point);
   let first = fixes.length - 1;
-  while (first > 0 && fixes[first].gap !== true && last.timeMs - fixes[first - 1].timeMs <= spanMs) {
+  while (
+    first > 0 &&
+    fixes[first].gap !== true &&
+    last.timeMs - fixes[first - 1].timeMs <= spanMs
+  ) {
     first -= 1;
   }
   const points: AssistantPoint[] = [];
@@ -245,12 +272,18 @@ export function assistantOf(track: Track, spanMs: number = ASSISTANT_SPAN_MS): A
     const from = heightOf(fixes[back]);
     const ms = fix.timeMs - fixes[back].timeMs;
     const varioMps =
-      top === null || from === null || ms < ASSISTANT_VARIO_MS / 2 ? null : (top - from) / (ms / 1000);
+      top === null || from === null || ms < ASSISTANT_VARIO_MS / 2
+        ? null
+        : (top - from) / (ms / 1000);
     points.push({ ...plane(fix.point), varioMps });
   }
   let best: AssistantPoint | null = null;
   for (const point of points) {
-    if (point.varioMps !== null && point.varioMps > 0 && (best === null || point.varioMps > (best.varioMps ?? 0))) {
+    if (
+      point.varioMps !== null &&
+      point.varioMps > 0 &&
+      (best === null || point.varioMps > (best.varioMps ?? 0))
+    ) {
       best = point;
     }
   }

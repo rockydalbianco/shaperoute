@@ -47,7 +47,9 @@ export function isFlightUnits(value: unknown): value is FlightUnits {
 export const NO_VALUE = "–";
 
 /** The words after a number, in every language the same. */
-export const UNIT_LABEL: Readonly<Record<AltitudeUnit | VarioUnit | SpeedUnit, string>> = {
+export const UNIT_LABEL: Readonly<
+  Record<AltitudeUnit | VarioUnit | SpeedUnit, string>
+> = {
   m: "m",
   ft: "ft",
   mps: "m/s",
@@ -74,7 +76,8 @@ export function altitudeText(metres: number | null, unit: AltitudeUnit): string 
 /** A height with its sign: "+120", "-40", "0". */
 export function heightChangeText(metres: number | null, unit: AltitudeUnit): string {
   const text = altitudeText(metres, unit);
-  return finite(metres) && Math.round(unit === "ft" ? metres / METRES_PER_FOOT : metres) > 0
+  return finite(metres) &&
+    Math.round(unit === "ft" ? metres / METRES_PER_FOOT : metres) > 0
     ? `+${text}`
     : text;
 }
@@ -105,7 +108,11 @@ export function speedText(mps: number | null, unit: SpeedUnit): string {
   }
   const perHour = mps * 3600;
   const metresPer =
-    unit === "kmh" ? METRES_PER_KM : unit === "mph" ? METRES_PER_MILE : METRES_PER_NAUTICAL_MILE;
+    unit === "kmh"
+      ? METRES_PER_KM
+      : unit === "mph"
+        ? METRES_PER_MILE
+        : METRES_PER_NAUTICAL_MILE;
   return String(Math.round(perHour / metresPer));
 }
 
@@ -117,9 +124,13 @@ export function distanceText(metres: number | null, units: Units): string {
   }
   if (units === "mi") {
     const miles = metres / METRES_PER_MILE;
-    return miles < 0.1 ? String(Math.round(metres / METRES_PER_FOOT)) : miles.toFixed(1);
+    return miles < 0.1
+      ? String(Math.round(metres / METRES_PER_FOOT))
+      : miles.toFixed(1);
   }
-  return metres < 1000 ? String(Math.round(metres)) : (metres / METRES_PER_KM).toFixed(1);
+  return metres < 1000
+    ? String(Math.round(metres))
+    : (metres / METRES_PER_KM).toFixed(1);
 }
 
 export function distanceUnit(metres: number | null, units: Units): string {

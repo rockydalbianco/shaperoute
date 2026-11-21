@@ -71,10 +71,16 @@ function Box({
   const big = Math.max(20, Math.min(height * 0.52, 140));
   return (
     <View
-      style={[styles.box, { backgroundColor: background ?? palette.surface, borderColor: palette.border }]}
+      style={[
+        styles.box,
+        { backgroundColor: background ?? palette.surface, borderColor: palette.border },
+      ]}
       testID={testID}
     >
-      <Text style={[styles.name, { color: ink ?? palette.textMuted }]} numberOfLines={1}>
+      <Text
+        style={[styles.name, { color: ink ?? palette.textMuted }]}
+        numberOfLines={1}
+      >
         {name}
       </Text>
       <View style={styles.row}>
@@ -88,13 +94,21 @@ function Box({
           {value}
         </Text>
         {unit !== undefined ? (
-          <Text style={[styles.unit, { color: ink ?? palette.textMuted, fontSize: Math.max(14, big * 0.28) }]}>
+          <Text
+            style={[
+              styles.unit,
+              { color: ink ?? palette.textMuted, fontSize: Math.max(14, big * 0.28) },
+            ]}
+          >
             {unit}
           </Text>
         ) : null}
       </View>
       {under !== undefined ? (
-        <Text style={[styles.under, { color: ink ?? palette.textMuted }]} numberOfLines={1}>
+        <Text
+          style={[styles.under, { color: ink ?? palette.textMuted }]}
+          numberOfLines={1}
+        >
           {under}
         </Text>
       ) : null}
@@ -102,18 +116,41 @@ function Box({
   );
 }
 
-export function FlightWidget({ widget, data, flight, units, palette, width, height }: Props) {
+export function FlightWidget({
+  widget,
+  data,
+  flight,
+  units,
+  palette,
+  width,
+  height,
+}: Props) {
   const name = t(WIDGET_NAME[widget]);
   const now = data.instrument;
   const id = `widget-${widget}`;
-  const box = (value: string, unit?: string, extra: Partial<Parameters<typeof Box>[0]> = {}) => (
-    <Box name={name} value={value} unit={unit} palette={palette} height={height} testID={id} {...extra} />
+  const box = (
+    value: string,
+    unit?: string,
+    extra: Partial<Parameters<typeof Box>[0]> = {},
+  ) => (
+    <Box
+      name={name}
+      value={value}
+      unit={unit}
+      palette={palette}
+      height={height}
+      testID={id}
+      {...extra}
+    />
   );
   switch (widget) {
     case "altitude":
       return box(altitudeText(now.altM, flight.altitude), UNIT_LABEL[flight.altitude]);
     case "aboveTakeoff":
-      return box(heightChangeText(now.aboveTakeoffM, flight.altitude), UNIT_LABEL[flight.altitude]);
+      return box(
+        heightChangeText(now.aboveTakeoffM, flight.altitude),
+        UNIT_LABEL[flight.altitude],
+      );
     case "vario":
     case "varioAvg": {
       const mps = widget === "vario" ? now.varioMps : now.varioAvgMps;
@@ -124,9 +161,15 @@ export function FlightWidget({ widget, data, flight, units, palette, width, heig
       });
     }
     case "thermalAvg":
-      return box(varioText(data.thermal?.avgMps ?? null, flight.vario), UNIT_LABEL[flight.vario]);
+      return box(
+        varioText(data.thermal?.avgMps ?? null, flight.vario),
+        UNIT_LABEL[flight.vario],
+      );
     case "thermalGain":
-      return box(heightChangeText(data.thermal?.gainM ?? null, flight.altitude), UNIT_LABEL[flight.altitude]);
+      return box(
+        heightChangeText(data.thermal?.gainM ?? null, flight.altitude),
+        UNIT_LABEL[flight.altitude],
+      );
     case "groundSpeed":
       return box(speedText(now.speedMps, flight.speed), UNIT_LABEL[flight.speed]);
     case "glide":
@@ -143,53 +186,92 @@ export function FlightWidget({ widget, data, flight, units, palette, width, heig
     case "wind": {
       const wind = data.wind;
       const arrow = Math.min(height * 0.5, width * 0.35);
-      return box(wind === null ? NO_VALUE : speedText(wind.speedMps, flight.speed), UNIT_LABEL[flight.speed], {
-        // The arrow goes where the wind goes, north up.
-        side: wind === null ? null : <Arrow size={arrow} deg={wind.fromDeg + 180} color={palette.text} />,
-        under:
-          wind === null
-            ? undefined
-            : t("From {bearing} · {minutes} min ago", {
-                bearing: bearingText(wind.fromDeg),
-                minutes: String(Math.max(0, Math.round((data.nowMs - wind.atMs) / 60_000))),
-              }),
-      });
+      return box(
+        wind === null ? NO_VALUE : speedText(wind.speedMps, flight.speed),
+        UNIT_LABEL[flight.speed],
+        {
+          // The arrow goes where the wind goes, north up.
+          side:
+            wind === null ? null : (
+              <Arrow size={arrow} deg={wind.fromDeg + 180} color={palette.text} />
+            ),
+          under:
+            wind === null
+              ? undefined
+              : t("From {bearing} · {minutes} min ago", {
+                  bearing: bearingText(wind.fromDeg),
+                  minutes: String(
+                    Math.max(0, Math.round((data.nowMs - wind.atMs) / 60_000)),
+                  ),
+                }),
+        },
+      );
     }
     case "takeoff": {
       const arrow = Math.min(height * 0.5, width * 0.35);
       const bearing = now.takeoffBearingDeg;
       // The way back, as the pilot goes: up is straight on.
       const onScreen = bearing === null ? null : bearing - (now.trackDeg ?? 0);
-      return box(distanceText(now.takeoffDistanceM, units), distanceUnit(now.takeoffDistanceM, units), {
-        side: onScreen === null ? null : <Arrow size={arrow} deg={onScreen} color={palette.text} />,
-        under: bearing === null ? undefined : bearingText(bearing),
-      });
+      return box(
+        distanceText(now.takeoffDistanceM, units),
+        distanceUnit(now.takeoffDistanceM, units),
+        {
+          side:
+            onScreen === null ? null : (
+              <Arrow size={arrow} deg={onScreen} color={palette.text} />
+            ),
+          under: bearing === null ? undefined : bearingText(bearing),
+        },
+      );
     }
     case "flightTime":
       return box(durationText(now.flightMs));
     case "clock":
       return box(clockText(data.nowMs));
     case "gpsAccuracy":
-      return box(now.accuracyM === null ? NO_VALUE : `±${Math.round(now.accuracyM)}`, "m");
+      return box(
+        now.accuracyM === null ? NO_VALUE : `±${Math.round(now.accuracyM)}`,
+        "m",
+      );
     case "live":
-      return box(data.live ? t("Sharing live") : t("Off"));
+      return box(data.live ? t("Sharing live") : t("Not sharing"));
     case "thermalAssistant": {
       const size = Math.min(width, height) - 16;
       return (
-        <View style={[styles.box, styles.drawing, { backgroundColor: palette.surface, borderColor: palette.border }]} testID={id}>
-          <Text style={[styles.name, styles.corner, { color: palette.textMuted }]}>{name}</Text>
+        <View
+          style={[
+            styles.box,
+            styles.drawing,
+            { backgroundColor: palette.surface, borderColor: palette.border },
+          ]}
+          testID={id}
+        >
+          <Text style={[styles.name, styles.corner, { color: palette.textMuted }]}>
+            {name}
+          </Text>
           <ThermalAssistant assistant={data.assistant} size={size} palette={palette} />
         </View>
       );
     }
     case "altitudeChart":
       return (
-        <View style={[styles.box, { backgroundColor: palette.surface, borderColor: palette.border }]} testID={id}>
+        <View
+          style={[
+            styles.box,
+            { backgroundColor: palette.surface, borderColor: palette.border },
+          ]}
+          testID={id}
+        >
           <Text style={[styles.name, { color: palette.textMuted }]}>{name}</Text>
           <Text style={[styles.chartNow, { color: palette.text }]}>
             {altitudeText(now.altM, flight.altitude)} {UNIT_LABEL[flight.altitude]}
           </Text>
-          <AltitudeChart series={data.altitudes} width={width - 20} height={Math.max(20, height - 70)} palette={palette} />
+          <AltitudeChart
+            series={data.altitudes}
+            width={width - 20}
+            height={Math.max(20, height - 70)}
+            palette={palette}
+          />
         </View>
       );
   }
@@ -207,10 +289,19 @@ const styles = StyleSheet.create({
   },
   drawing: { alignItems: "center" },
   corner: { position: "absolute", top: 6, left: 10 },
-  name: { fontSize: 13, fontWeight: fontWeight.semibold, letterSpacing: 0.4, textTransform: "uppercase" },
+  name: {
+    fontSize: 13,
+    fontWeight: fontWeight.semibold,
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
+  },
   row: { flexDirection: "row", alignItems: "center", gap: 8 },
   value: { flexShrink: 1, fontWeight: fontWeight.bold, fontVariant: ["tabular-nums"] },
   unit: { fontWeight: fontWeight.semibold },
   under: { fontSize: 14, fontWeight: fontWeight.medium },
-  chartNow: { fontSize: 22, fontWeight: fontWeight.bold, fontVariant: ["tabular-nums"] },
+  chartNow: {
+    fontSize: 22,
+    fontWeight: fontWeight.bold,
+    fontVariant: ["tabular-nums"],
+  },
 });

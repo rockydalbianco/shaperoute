@@ -123,7 +123,13 @@ export const PRESET_PAGES: Readonly<Record<PresetId, readonly Page[]>> = {
       cell("live", 0, 5, 4, 1),
     ],
   ],
-  minimal: [[cell("vario", 0, 0, 4, 2), cell("altitude", 0, 2, 4, 2), cell("flightTime", 0, 4, 4, 2)]],
+  minimal: [
+    [
+      cell("vario", 0, 0, 4, 2),
+      cell("altitude", 0, 2, 4, 2),
+      cell("flightTime", 0, 4, 4, 2),
+    ],
+  ],
 };
 
 /** Whether every cell of `page` is on the grid and none overlaps
@@ -184,10 +190,16 @@ export const FLIGHT_SCREEN_FILE = "flight-screen.json";
 const kept: KeptList<FlightPrefs> = keptList(FLIGHT_SCREEN_FILE, isFlightPrefs);
 
 /** The pilot's choices on this phone, or the defaults. */
-export function loadFlightPrefs(units: Units, list: KeptList<FlightPrefs> = kept): FlightPrefs {
+export function loadFlightPrefs(
+  units: Units,
+  list: KeptList<FlightPrefs> = kept,
+): FlightPrefs {
   return list.load()[0] ?? defaultFlightPrefs(units);
 }
 
-export function saveFlightPrefs(prefs: FlightPrefs, list: KeptList<FlightPrefs> = kept): boolean {
+export function saveFlightPrefs(
+  prefs: FlightPrefs,
+  list: KeptList<FlightPrefs> = kept,
+): boolean {
   return list.save([prefs]);
 }

@@ -9,7 +9,14 @@ import { assistantOf, circlingNow, circlings, thermalNow } from "./thermal";
 const glide = (seconds: number, varioMps = -1.2) =>
   ({ kind: "glide", seconds, airspeedMps: 10, headingDeg: 90, varioMps }) as const;
 const circle = (seconds: number, varioMps = 2, direction: 1 | -1 = 1) =>
-  ({ kind: "circle", seconds, airspeedMps: 10, turnSeconds: 20, direction, varioMps }) as const;
+  ({
+    kind: "circle",
+    seconds,
+    airspeedMps: 10,
+    turnSeconds: 20,
+    direction,
+    varioMps,
+  }) as const;
 
 describe("circlings", () => {
   it("finds none in a straight glide", () => {
@@ -41,7 +48,14 @@ describe("circlings", () => {
     // 180° in 30 s: 6°/s, but not 270° in all.
     const track = flightOf([
       glide(60),
-      { kind: "circle", seconds: 30, airspeedMps: 10, turnSeconds: 60, direction: 1, varioMps: 0 },
+      {
+        kind: "circle",
+        seconds: 30,
+        airspeedMps: 10,
+        turnSeconds: 60,
+        direction: 1,
+        varioMps: 0,
+      },
       // On the way the turn left it: no second turn back.
       { kind: "glide", seconds: 60, airspeedMps: 10, headingDeg: 270, varioMps: -1.2 },
     ]);
@@ -49,7 +63,9 @@ describe("circlings", () => {
   });
 
   it("holds in a wind", () => {
-    const track = flightOf([glide(40), circle(100, 1.5)], { wind: { fromDeg: 270, mps: 5 } });
+    const track = flightOf([glide(40), circle(100, 1.5)], {
+      wind: { fromDeg: 270, mps: 5 },
+    });
     expect(circlings(track)).toHaveLength(1);
   });
 });
@@ -95,6 +111,9 @@ describe("assistantOf", () => {
   });
 
   it("is empty without fixes", () => {
-    expect(assistantOf({ fixes: [], distanceM: 0 })).toEqual({ points: [], best: null });
+    expect(assistantOf({ fixes: [], distanceM: 0 })).toEqual({
+      points: [],
+      best: null,
+    });
   });
 });

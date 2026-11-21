@@ -2,15 +2,29 @@
  * The numbers of the flight screen (TASK-479 part B1): vario now and over
  * 30 s, speed and track, glide ratio, take-off, time in the air.
  */
-import { altitudeSeries, climbOver, glideOver, instrumentNow, STALE_MS } from "./instrument";
+import {
+  altitudeSeries,
+  climbOver,
+  glideOver,
+  instrumentNow,
+  STALE_MS,
+} from "./instrument";
 import { flightOf, T0 } from "./syntheticFlight";
 
 const glide = (seconds: number, varioMps = -1.25, headingDeg = 90, airspeedMps = 10) =>
   ({ kind: "glide", seconds, airspeedMps, headingDeg, varioMps }) as const;
 const circle = (seconds: number, varioMps = 2) =>
-  ({ kind: "circle", seconds, airspeedMps: 10, turnSeconds: 20, direction: 1, varioMps }) as const;
+  ({
+    kind: "circle",
+    seconds,
+    airspeedMps: 10,
+    turnSeconds: 20,
+    direction: 1,
+    varioMps,
+  }) as const;
 
-const lastMs = (track: { fixes: { timeMs: number }[] }) => track.fixes[track.fixes.length - 1].timeMs;
+const lastMs = (track: { fixes: { timeMs: number }[] }) =>
+  track.fixes[track.fixes.length - 1].timeMs;
 
 describe("instrumentNow", () => {
   it("reads a steady glide", () => {

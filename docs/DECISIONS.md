@@ -549,6 +549,7 @@ lasciando le righe d'indice.
 - ADR-0381, precisazione B1 — La live in chat nell'app: la condivisione senza link per la chat, il menu di «Sharing live», la schermata dal vivo come `Modal` · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2b — La push «Remind me» parte con la live, una volta sola, senza giro · 2026-11-18 · Attiva
 - ADR-0381, precisazione B2a — La fila «Live» del Feed: schede una sopra l'altra, riletta ogni minuto, «Live in the Feed» senza link · 2026-11-18 · Attiva
+- ADR-0381, precisazione B2b — Programmare e chiudere una live dall'app: il foglio senza dipendenze, la domanda all'avvio, la push che apre la live, il post legato dalla coda · 2026-11-21 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
 - ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←» · 2026-11-12 · Attiva
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
@@ -571,8 +572,79 @@ lasciando le righe d'indice.
 
 - ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos` · 2026-11-21 · Attiva
 - ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci in ordine, ognuna costruita dal task che la possiede e mostrata solo quando è pronta; «Everyone» anche per la palestra scritta a mano e la scheda pubblicata · 2026-11-21 · Proposta
+- ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 
 ## Voci nuove
+
+## ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli
+
+**Stato**: Proposta · 2026-11-21 · TASK-484 parte 0 (solo documenti).
+L'editor, che cosa conta, i testi e le righe della privacy sono **scelte
+dell'utente** (2026-11-21, una domanda per volta); la rotta, il valore di
+`source`, i controlli dell'API e il giorno senza calendario nativo sono
+**decisi dall'agente su delega dell'utente**; numero dal Coordinatore.
+Applica ADR-0390 (la voce «Gym workout», «Everyone») e ADR-0272 (le
+attività importate) alla palestra (ADR-0327).
+
+**Contesto**: ADR-0390 vuole nel «+» del Feed un allenamento in palestra già
+fatto, scritto a mano, con «Imported». La proposta di partenza diceva
+`PUT /me/activities/{key}`, ma la palestra si salva già con
+`PUT /me/gym-sessions/{key}`: una riga di `runs` con `activity = 'gym'` e
+senza traccia, le serie in `gym_sets` con `live`. `runs.source` vale `muw`
+o `file` (0034); classifica della palestra, badge, concorso e gioco
+leggono solo `muw`, i livelli leggono tutto. Le app di oggi mostrano
+«Imported» per ogni `source` diverso da `muw`.
+
+**Decisione dell'utente**:
+1. si scrive con **l'editor delle schede** (`SessionEditor`): una riga per
+   esercizio, serie × ripetizioni o tempo, un valore per tutte le serie;
+   «From a plan» parte dagli esercizi di una propria scheda; sopra giorno,
+   ora d'inizio e durata, sotto il post della palestra con «Imported»;
+2. conta **come le importate**: Feed, «My activities», calendario, kcal
+   dalla durata; fuori da gioco, concorso, badge, classifica, **livelli**
+   («New level»), Apple Salute e Health Connect, e dal giorno della scheda;
+3. i testi «Gym workout», «Day», «Started», «Duration», «From a plan»,
+   «Workouts written by hand don't count for Play, contests, levels or the
+   leaderboard.», «Pick a time before now.»;
+4. la privacy: una riga nuova («If you add a gym workout written by hand,
+   we keep its day, time, duration, exercises, sets and weights like a
+   workout recorded with MuW.»), i livelli contati «from the workouts you
+   record with MuW», e l'eccezione «Everyone» del «+» che nomina anche la
+   palestra scritta a mano (testi interi in `tasks/TASK-484.md`).
+
+**Decisione dell'agente**:
+1. **Stessa rotta, un campo**: `source` in `GymSessionRequestBody`, `muw`
+   per difetto o `manual`, salvato in `runs.source`. Nessuna tabella e
+   nessuna rotta nuove: Feed, «My activities», calendario, reazioni,
+   commenti, segnalazioni, chiave del telefono e coda senza rete valgono
+   come oggi.
+2. **`manual`, non `file`**: una corsa da file ha traccia e orari di
+   un'altra app, uno scritto a mano no. La migrazione allarga il `CHECK` a
+   `('muw', 'file', 'manual')`; `RunSource` lo legge anche nelle risposte;
+   `PUT /me/activities` rifiuta `manual`.
+3. **L'API controlla la forma** (422): serie tutte `live: false`, nessuna
+   pausa né recupero, `plan` vuoto, fine non dopo adesso. Il segno lo manda
+   l'app: non è una prova, come per i file (ADR-0272 punto 2).
+4. **I livelli leggono solo `muw`** (`gym_levels.py`, profilo e
+   `new_levels`); gli altri lettori lo fanno già.
+5. **Nessun tipo nuovo in `X-MuW-Reads`**: le app vecchie vedono un
+   allenamento della palestra con «Imported».
+6. **Sul telefono** ogni riga diventa tante serie uguali, con `at_s` a
+   passo uguale dentro la durata; il giorno con «‹ ›» e ora e durata
+   scritte, senza un calendario nativo: impronta iOS invariata, un OTA.
+
+**Alternative scartate**: serie per serie come le correzioni dopo «Stop»;
+le righe che si aprono serie per serie; contare per i livelli, o anche per
+il giorno della scheda; `source` `file`; `PUT /me/activities` senza
+traccia per la palestra; una rotta o una tabella a sé; un tipo in
+`X-MuW-Reads`; la frase di oggi delle importate sotto «Imported»; solo la
+riga nuova nella privacy.
+
+**Conseguenze**: una migrazione e un passo sul server col sì dell'utente,
+prima dell'app. La parte B aggiunge la sua riga in `addToFeedEntries.ts`
+dopo TASK-481 A, testi in cinque lingue e la privacy a turno. Un
+allenamento scritto a mano non si corregge dopo «Save»: si cancella e si
+riscrive.
 
 ## ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci, ognuna del suo task
 
@@ -716,6 +788,27 @@ codice sul server, nessuna migrazione, niente di nativo.
 
 **Conseguenze**: accendere resta un cambio solo, quello della parte C. Il
 post nel Feed di una notte da sola resta fuori (TASK-312 C).
+
+## ADR-0381, precisazione B2b — Programmare e chiudere una live dall'app: il foglio senza dipendenze, la domanda all'avvio, la push che apre la live, il post legato dalla coda
+
+**Stato**: Attiva · 2026-11-21 · TASK-468 parti B2b1 (#1322) e B2b2
+(#1331). **Deciso dall'agente su delega dell'utente** (la tecnica; testi e
+aspetto approvati dall'utente).
+
+- Giorno e ora con − e + (15 minuti, da adesso a 60 giorni): nessun
+  selettore di date, nessuna dipendenza nuova.
+- La domanda «Start live "…"?» parte alla fine del conto alla rovescia
+  (`usePlannedStart`, una riga in `FreeRunScreen.tsx` accanto a
+  `useStartLiveAtStart`), solo con una propria programmata nelle sue ore.
+- La push `planned_live_started` apre la schermata dal vivo da qualunque
+  pagina: `liveViewDoor` (un piccolo store fuori da React) e `LiveViewHost`
+  montato da `ProfileLayer`, dove si aprono le push.
+- Il post di una corsa appena salvata passa dalla coda dei post
+  (`drawingOutbox.sendWaitingDrawings`), non da `drawingsDoor.choose`
+  (che modifica un post già fatto): lì, dopo il «Post» detto a fine corsa e
+  per un post che altri vedono, `PUT /me/planned-lives/{id}/post`, una
+  volta. Il modulo di `RunEnd` si ridisegna con una `key` perché tiene il
+  titolo in uno stato suo.
 
 ## ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity`, le zone da un estratto, entrano le otto forme lette a occhio
 

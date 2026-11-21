@@ -51,6 +51,9 @@ const ROWS = [
   // In the activity calendar, over the whole screen: the chips of the
   // sports (TASK-462 B).
   "activities/ActivityCalendar.tsx",
+  // The flight screen, over the whole screen in its own Modal: its pages of
+  // widgets (TASK-479 B1).
+  "air/FlightScreen.tsx",
 ];
 
 /** The one that hands the finger on: the drawing, then the photo, of a card

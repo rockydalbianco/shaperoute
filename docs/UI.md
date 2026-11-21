@@ -3878,6 +3878,16 @@ cui tiene i numeri.
   live» (scelta 3); mai da sola. Mentre si registra, la propria scheda
   programmata nella fila ha «Start live». La push «… is live» toccata apre
   la schermata dal vivo, col nome di chi la fa letto dalla programmata.
+- **La live diventa il post** (TASK-468 parte B2b2, scelta 5; testi
+  approvati il 2026-11-12). Se la registrazione è partita da una live
+  programmata («Start live»), alla fine il modulo di «Save» chiede una volta
+  «Post it in the Feed?» con «Your live becomes the post of this
+  activity.», «Don't post» · «Post». «Post» mette nel modulo chi vede il
+  post come il pubblico della live (Everyone o Followers) e, se non c'è,
+  il titolo della gara; il resto come sempre, decide «Save». Quando il post
+  è sull'API e altri lo vedono, l'app lo lega alla programmata (`PUT
+  /me/planned-lives/{id}/post`) e nel Feed la scheda della live lascia il
+  posto al post. «Don't post», o un post «Only me», non lega niente.
 - **La piscina mentre nuoti** (TASK-424 parte C1): sotto l'orologio due
   numeri, «Lengths» (le vasche stimate dal passo delle nuotate prima, 2:00
   /100 m senza nessuna; 0 prima di mezza vasca) e «Calories» («85 kcal»,

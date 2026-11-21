@@ -35,6 +35,7 @@ import {
   type PickPhoto,
   seenText,
 } from "../social/PublicParts";
+import { askToPost, takePlannedRun } from "../liveShare/plannedPost";
 import { loadVisibility, saveVisibility } from "../social/visibilityChoice";
 import { loadSendToStrava, saveSendToStrava } from "../strava/stravaChoice";
 import { StravaRunEnd } from "../strava/StravaRunEnd";
@@ -166,6 +167,22 @@ export function RunEnd({
         ? loadVisibility(owner)
         : (imported.visibility ?? "only_me"),
   }));
+  // The planned live this recording started (TASK-468 part B2b2, the
+  // user's choice 5): «Post it in the Feed?» once; «Post» makes the form
+  // the live's (who sees it, its title), and «Save» still decides.
+  const [planned] = useState(() => (imported === undefined ? takePlannedRun() : null));
+  useEffect(() => {
+    if (planned === null || !signedIn) {
+      return;
+    }
+    askToPost(planned, () =>
+      setChoice((was) => ({
+        ...was,
+        visibility: planned.audience,
+        title: was.title ?? planned.title,
+      })),
+    );
+  }, [planned, signedIn]);
   // Started from a remembered «Everyone» or «Followers»: the form scrolls, so
   // its words stay over «Save» too, seen before the run goes public.
   const [startedSeen] = useState(() => isSeen(choice.visibility));

@@ -571,8 +571,50 @@ lasciando le righe d'indice.
 - ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte · 2026-11-12 · Attiva
 
 - ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos` · 2026-11-21 · Attiva
+- ADR-0393 — L'attrezzatura: una lista per iscritto con foto e nota, più attrezzi per attività, i totali contati dal server, visibile come il profilo, legata ai capi taggati · 2026-11-21 · Proposta
 
 ## Voci nuove
+
+## ADR-0393 — L'attrezzatura: una lista per iscritto con foto e nota, più attrezzi per attività, i totali contati dal server, visibile come il profilo, legata ai capi taggati
+
+**Stato**: Proposta · 2026-11-21 · TASK-486 (parte 0, soli documenti).
+Cosa entra, i tipi, il legame coi capi taggati, la visibilità, il ritiro
+con l'avviso e la riga nel post sono **scelte dell'utente**; il resto è
+deciso dall'agente su delega dell'utente, numero dal Coordinatore.
+
+**Contesto**: l'utente vuole aggiungere scarpe, bici, sci e «tutto
+proprio» (vele, imbraghi, caschi, vestiti), agganciarli alle attività
+perché contino i km, vederli sul profilo proprio e degli amici, con una
+nota («quando l'hanno comprata»). Esistevano solo i capi taggati sulle
+foto dei post (ADR-0333): un pallino per foto, senza lista né km.
+
+**Decisione**:
+- **Una lista per iscritto** (`gear`): tipo da una lista fissa con
+  `other`, marca, modello, nome, data d'acquisto, nota, una foto. Nome,
+  marca, modello e nota passano dal filtro dei commenti; si segnalano.
+- **Più attrezzi per attività** (al massimo 10) in `activity_gear`, e
+  predefiniti per sport che si agganciano da soli a fine attività.
+- **I totali li conta il server** (metri, secondi, uscite) dalle attività
+  agganciate, come i totali del profilo; mai i numeri del telefono.
+- **Visibile come il profilo**, con «Hide from profile» per attrezzo; nel
+  dettaglio del post una riga per attrezzo non nascosto, mai sulla scheda
+  del Feed.
+- **«Retire»** tiene l'attrezzo e i totali fuori dalla scelta; un limite
+  facoltativo dà una voce nella campanella, una volta per limite.
+- **Capi taggati legati**: un tag può nascere da un attrezzo
+  (`drawing_outfit_tags.gear_id`, `ON DELETE SET NULL`); i tag di prima
+  restano come sono.
+
+**Alternative scartate**: un attrezzo solo per attività (casco e imbrago
+non conterebbero mai); attrezzatura e capi taggati separati, o fusi in una
+cosa sola (scelta dell'utente: collegati); visibile solo agli amici o solo
+a chi la possiede (scelta dell'utente: come il profilo); commenti degli
+amici subito (scelta dell'utente: base e foto prima).
+
+**Conseguenze**: sette parti (A server, B lista, C fine attività, D
+profilo, E post, F capi taggati, G avviso), ognuna una PR coi file
+mandati prima al Coordinatore. La privacy cambia nelle cinque lingue e sul
+sito prima dell'uscita, col sì dell'utente, come il passo sul server.
 
 ## ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos`
 

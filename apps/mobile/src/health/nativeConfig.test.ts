@@ -42,23 +42,23 @@ const APPROVED =
 const APPROVED_READ: [Record<string, Record<string, string>>, string][] = [
   [
     en,
-    "MuW reads your heart rate from Apple Health during each activity, to show it with the activity and in your post. You can hide it before you publish.",
+    "MuW reads your heart rate during each activity and your sleep from Apple Health, to show them with your activities and in your posts. You can hide them before you publish.",
   ],
   [
     it,
-    "MuW legge il tuo battito da Apple Salute durante ogni attività, per mostrarlo con l'attività e nel tuo post. Puoi nasconderlo prima di pubblicare.",
+    "MuW legge da Apple Salute il tuo battito durante ogni attività e il tuo sonno, per mostrarli con le tue attività e nei tuoi post. Puoi nasconderli prima di pubblicare.",
   ],
   [
     de,
-    "MuW liest deine Herzfrequenz aus Apple Health während jeder Aktivität, um sie mit der Aktivität und in deinem Beitrag zu zeigen. Du kannst sie vor dem Veröffentlichen ausblenden.",
+    "MuW liest aus Apple Health deine Herzfrequenz während jeder Aktivität und deinen Schlaf, um sie mit deinen Aktivitäten und in deinen Beiträgen zu zeigen. Du kannst sie vor dem Veröffentlichen ausblenden.",
   ],
   [
     fr,
-    "MuW lit ta fréquence cardiaque dans Apple Santé pendant chaque activité, pour l'afficher avec l'activité et dans ta publication. Tu peux la masquer avant de publier.",
+    "MuW lit dans Apple Santé ta fréquence cardiaque pendant chaque activité et ton sommeil, pour les afficher avec tes activités et dans tes publications. Tu peux les masquer avant de publier.",
   ],
   [
     es,
-    "MuW lee tu frecuencia cardíaca de Apple Salud durante cada actividad, para mostrarla con la actividad y en tu publicación. Puedes ocultarla antes de publicar.",
+    "MuW lee de Apple Salud tu frecuencia cardíaca durante cada actividad y tu sueño, para mostrarlos con tus actividades y en tus publicaciones. Puedes ocultarlos antes de publicar.",
   ],
 ];
 

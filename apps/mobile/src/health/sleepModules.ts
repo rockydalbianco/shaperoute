@@ -1,31 +1,58 @@
+import { Platform, TurboModuleRegistry } from "react-native";
+
+import { appleSleepReader, type SleepKitModule } from "./appleSleep";
 import type { SleepReader } from "./sleepSamples";
 
+type AppleLibrary = typeof import("@kingstinct/react-native-healthkit");
+
 /**
- * The switch of the whole «sleep in a post» (TASK-467 part B2), and the
- * phone's reader of the sleep.
+ * The switch of the whole sleep in MuW (TASK-467: «Sleep last night» in a
+ * post, the «Sleep» card of the profile), and the phone's reader of the
+ * sleep.
  *
- * **Off, and no reader, until part C**: the iOS permission text of the
- * builds out today speaks of the heart rate only, so reading the sleep
- * needs the native build that comes after version 1.1.0, with the privacy
- * line, the App Privacy card and the review notes, each after the user's
- * yes. Until then nothing of this shows and nothing reads Apple Health:
- * this file loads no health library and asks for no permission, and
- * `sleepModules.test.ts` holds it to that.
+ * **On only from the native build of part C**, whose iOS permission text
+ * speaks of the sleep beside the heart rate (`app.json`,
+ * `NSHealthShareUsageDescription`). The builds before it never get this
+ * code: the changed text moves the fingerprint, so no update from here
+ * reaches them. Reading is asked only at the user's tap on «Show my sleep
+ * from Apple Health» (`profile/OwnSleep.tsx`).
  */
 
-/** Whether the app shows and publishes the sleep in a post. Typed as a
- * boolean, not as the `false` it is, so that what it hides still compiles
- * and is tested. */
-export const SLEEP_POSTS_ON: boolean = false;
+/** Whether the app shows and publishes the sleep. Typed as a boolean, so
+ * that what it hides still compiles and is tested either way. */
+export const SLEEP_POSTS_ON: boolean = true;
 
-/** `SLEEP_POSTS_ON`, for the screens: a test turns it on by replacing
+/** `SLEEP_POSTS_ON`, for the screens: a test turns it off by replacing
  * this. */
 export function sleepPostsOn(): boolean {
   return SLEEP_POSTS_ON;
 }
 
-/** The phone's reader of the sleep: none in this build. The one of Apple
- * Health comes with part C, where the build has its permission text. */
+let shared: SleepReader | null | undefined;
+
+function appleReader(): SleepReader | null {
+  // The HealthKit library is a Nitro module: without Nitro's native code,
+  // loading it would throw.
+  if (TurboModuleRegistry.get("NitroModules") === null) {
+    return null;
+  }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const library = require("@kingstinct/react-native-healthkit") as AppleLibrary;
+    // What MuW uses of it, checked against the library's own types.
+    const kit: SleepKitModule = library;
+    return appleSleepReader(kit);
+  } catch {
+    return null;
+  }
+}
+
+/** The phone's reader of the sleep, made the first time: Apple Health on
+ * an iPhone whose build has its native code; null elsewhere (Expo Go,
+ * Android until Health Connect, part D). */
 export function sleepReader(): SleepReader | null {
-  return null;
+  if (shared === undefined) {
+    shared = Platform.OS === "ios" ? appleReader() : null;
+  }
+  return shared;
 }

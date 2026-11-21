@@ -14,6 +14,7 @@ import {
 
 import { FIXED_LINE, FlightScreen } from "./FlightScreen";
 import { loadFlightPrefs } from "./flightLayout";
+import { numberSize } from "./FlightWidget";
 import { resetFlightNotice } from "./flightNotice";
 import { flightOf, T0 } from "./syntheticFlight";
 import { useFlightScreen } from "./useFlightScreen";
@@ -159,5 +160,24 @@ describe("useFlightScreen", () => {
   it("does not open for a recording already in the air when the screen mounts", async () => {
     const { result } = await renderHook(() => useFlightScreen("air", true));
     expect(result.current.open).toBe(false);
+  });
+});
+
+describe("numberSize", () => {
+  it("is as big as the height lets it in a wide cell", () => {
+    expect(numberSize(380, 100, "+2.3", "m/s", 0, false)).toBeCloseTo(52, 6);
+  });
+
+  it("shrinks so the number, its unit and an arrow fit the width", () => {
+    const size = numberSize(180, 230, "1860", "m", 0, false);
+    // Four digits and a small unit in 160 points.
+    expect(size * (4 * 0.64 + 0.62 * 0.3)).toBeLessThanOrEqual(160 - 8 + 1e-9);
+    expect(numberSize(180, 230, "15", "km/h", 50, true)).toBeLessThan(
+      numberSize(180, 230, "15", "km/h", 0, true),
+    );
+  });
+
+  it("never goes under 16 points", () => {
+    expect(numberSize(40, 40, "12345678", "km/h", 30, false)).toBe(16);
   });
 });

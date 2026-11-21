@@ -34,6 +34,36 @@ import { ThermalAssistant } from "./widgets/ThermalAssistant";
 /** A climb from this much paints the vario in the accent. */
 export const CLIMB_SHOWN_MPS = 0.2;
 
+/** The widths of a bold tabular digit and of a unit's letter, per point
+ * of their size: a little wide, so the number never runs out of its cell. */
+const DIGIT_EM = 0.64;
+const UNIT_EM = 0.62;
+/** A unit is this much of the number's size. */
+const UNIT_SCALE = 0.3;
+/** The box's padding, both sides, and the gaps of a row. */
+const PADDING = 20;
+const GAP = 8;
+
+/**
+ * The number's size in a cell `width` × `height`: as big as the height
+ * lets it, unless the number, its unit and what stands beside it (an
+ * arrow, a dial, `sideSize` across) need the width.
+ */
+export function numberSize(
+  width: number,
+  height: number,
+  value: string,
+  unit: string | undefined,
+  sideSize: number,
+  under: boolean,
+): number {
+  const room = width - PADDING - (sideSize > 0 ? sideSize + GAP : 0) - (unit ? GAP : 0);
+  const ems = value.length * DIGIT_EM + (unit ? unit.length * UNIT_EM * UNIT_SCALE : 0);
+  const byWidth = room / Math.max(1, ems);
+  const byHeight = height * (under ? 0.4 : 0.52);
+  return Math.max(16, Math.min(byWidth, byHeight, 140));
+}
+
 type Props = {
   widget: WidgetId;
   data: FlightScreenData;
@@ -49,18 +79,23 @@ function Box({
   value,
   unit,
   palette,
+  width,
   height,
   background,
   ink,
   under,
   side,
+  sideSize = 0,
   testID,
 }: {
   name: string;
   value: string;
   unit?: string;
   palette: Palette;
+  width: number;
   height: number;
+  /** How wide `side` is. */
+  sideSize?: number;
   background?: string;
   ink?: string;
   under?: string;
@@ -68,7 +103,14 @@ function Box({
   testID: string;
 }) {
   const text = ink ?? palette.text;
-  const big = Math.max(20, Math.min(height * 0.52, 140));
+  const big = numberSize(
+    width,
+    height,
+    value,
+    unit,
+    side ? sideSize : 0,
+    under !== undefined,
+  );
   return (
     <View
       style={[
@@ -85,24 +127,32 @@ function Box({
       </Text>
       <View style={styles.row}>
         {side}
-        <Text
-          style={[styles.value, { color: text, fontSize: big, lineHeight: big * 1.08 }]}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.3}
-        >
-          {value}
-        </Text>
-        {unit !== undefined ? (
+        <View style={styles.number}>
           <Text
             style={[
-              styles.unit,
-              { color: ink ?? palette.textMuted, fontSize: Math.max(14, big * 0.28) },
+              styles.value,
+              { color: text, fontSize: big, lineHeight: big * 1.08 },
             ]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
           >
-            {unit}
+            {value}
           </Text>
-        ) : null}
+          {unit !== undefined ? (
+            <Text
+              style={[
+                styles.unit,
+                {
+                  color: ink ?? palette.textMuted,
+                  fontSize: Math.max(14, big * UNIT_SCALE),
+                },
+              ]}
+            >
+              {unit}
+            </Text>
+          ) : null}
+        </View>
       </View>
       {under !== undefined ? (
         <Text
@@ -138,6 +188,7 @@ export function FlightWidget({
       value={value}
       unit={unit}
       palette={palette}
+      width={width}
       height={height}
       testID={id}
       {...extra}
@@ -175,17 +226,18 @@ export function FlightWidget({
     case "glide":
       return box(glideText(now.glideRatio));
     case "track": {
-      const dial = Math.min(height * 0.55, width * 0.4);
+      const dial = Math.min(height * 0.5, width * 0.3);
       return box(bearingText(now.trackDeg), undefined, {
         side:
           now.trackDeg === null ? null : (
             <Dial size={dial} northDeg={-now.trackDeg} palette={palette} />
           ),
+        sideSize: dial,
       });
     }
     case "wind": {
       const wind = data.wind;
-      const arrow = Math.min(height * 0.5, width * 0.35);
+      const arrow = Math.min(height * 0.4, width * 0.3);
       return box(
         wind === null ? NO_VALUE : speedText(wind.speedMps, flight.speed),
         UNIT_LABEL[flight.speed],
@@ -195,6 +247,7 @@ export function FlightWidget({
             wind === null ? null : (
               <Arrow size={arrow} deg={wind.fromDeg + 180} color={palette.text} />
             ),
+          sideSize: arrow,
           under:
             wind === null
               ? undefined
@@ -208,7 +261,7 @@ export function FlightWidget({
       );
     }
     case "takeoff": {
-      const arrow = Math.min(height * 0.5, width * 0.35);
+      const arrow = Math.min(height * 0.4, width * 0.3);
       const bearing = now.takeoffBearingDeg;
       // The way back, as the pilot goes: up is straight on.
       const onScreen = bearing === null ? null : bearing - (now.trackDeg ?? 0);
@@ -220,6 +273,7 @@ export function FlightWidget({
             onScreen === null ? null : (
               <Arrow size={arrow} deg={onScreen} color={palette.text} />
             ),
+          sideSize: arrow,
           under: bearing === null ? undefined : bearingText(bearing),
         },
       );
@@ -295,7 +349,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
     textTransform: "uppercase",
   },
-  row: { flexDirection: "row", alignItems: "center", gap: 8 },
+  row: { flexDirection: "row", alignItems: "center", gap: GAP },
+  number: { flexShrink: 1, flexDirection: "row", alignItems: "baseline", gap: GAP },
   value: { flexShrink: 1, fontWeight: fontWeight.bold, fontVariant: ["tabular-nums"] },
   unit: { fontWeight: fontWeight.semibold },
   under: { fontSize: 14, fontWeight: fontWeight.medium },

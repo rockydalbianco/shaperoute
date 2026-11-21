@@ -2714,6 +2714,11 @@ tipi in `shared-types` (`PhotoPostRequest`, `PhotoPostOrderRequest`,
   ripubblica.
 - `GET /me/photo-posts/{key}` → `200` `MyPhotoPost`; `404` «No post of
   photos with this key.».
+- `GET /me/photo-posts` → `200` `MyPhotoPosts` (`{ "photo_posts": [...] }`,
+  `fixtures/my-photo-posts.json`): tutti i post di sole foto dell'account,
+  l'ultimo pubblicato prima, quelli senza foto per quando sono stati tenuti
+  l'ultima volta. L'app ci trova la `key` di un post aperto dal suo id, per
+  modificarlo o cancellarlo anche da un altro telefono (parte C1b).
 - `DELETE /me/photo-posts/{key}` → `204` sempre: con le sue foto, i tag,
   le reazioni, i commenti e le segnalazioni.
 - `PUT /me/photo-posts/{key}/photos/{n}` (`n` da 1 a 10, nessuna mappa

@@ -16,10 +16,10 @@ import { forgetFeedMaps } from "./FeedMaps";
 import { shownPost } from "./feedPosts";
 
 // The cards of «Feed» in the glass look (TASK-469 A4c, ADR-0383,
-// «Capsula»): the card's radius, the words over a photo on a slab of glass
+// «Capsula»): the card's radius, the words over a photo on a capsule of glass
 // laid inside it (before, light words on `Scrim`), the page counter as a
 // capsule of glass. «Reduce Transparency» and «Increase Contrast» make the
-// slab opaque.
+// capsule opaque.
 
 jest.mock(
   "react-native-safe-area-context",
@@ -70,31 +70,31 @@ test("the card has the glass look's radius, 28", async () => {
 });
 
 test.each(["glass", "solid", "contrast"] as const)(
-  "over a photo the words lie on a slab of glass 8 pt inside it (%s)",
+  "over a photo the words lie on a capsule of glass 8 pt inside it (%s)",
   async (mode) => {
     await show(mode);
-    const slab = styleOf("feed-photo-words");
-    expect(slab).toMatchObject({
+    const capsule = styleOf("feed-photo-words");
+    expect(capsule).toMatchObject({
       position: "absolute",
       left: space.sm,
       right: space.sm,
       bottom: space.sm,
-      borderRadius: radius.card - space.sm,
+      borderRadius: radius.pill,
     });
-    expect(slab.backgroundColor).toBe(segmentTrackFace(mode).backgroundColor);
-    expect(slab.boxShadow).toEqual(segmentTrackFace(mode).boxShadow);
+    expect(capsule.backgroundColor).toBe(segmentTrackFace(mode).backgroundColor);
+    expect(capsule.boxShadow).toEqual(segmentTrackFace(mode).boxShadow);
     const words = screen.getByTestId("feed-photo-words", hidden);
     const title = shownPost(WITH_PHOTO).title;
     expect(within(words).getByText(title, hidden)).toHaveStyle({ color: color.text });
   },
 );
 
-test("«Reduce Transparency»: the slab is the opaque background", async () => {
+test("«Reduce Transparency»: the capsule is the opaque background", async () => {
   await show("solid");
   expect(styleOf("feed-photo-words").backgroundColor).toBe(color.background);
 });
 
-test("the slab and the counter are never yellow", async () => {
+test("the capsule and the counter are never yellow", async () => {
   await show("glass");
   expect(styleOf("feed-photo-words").backgroundColor).not.toBe(color.accent);
 });
@@ -132,7 +132,7 @@ const EVERY = TONES.flatMap((tone) =>
 );
 
 test.each(EVERY)(
-  "%s at step %d: the calories keep 4.5:1 on the slab over any photo",
+  "%s at step %d: the calories keep 4.5:1 on the capsule over any photo",
   (_tone, _step, choice) => {
     const palette = paletteOf(choice);
     const fill = glassOf(choice).fill;

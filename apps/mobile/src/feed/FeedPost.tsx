@@ -380,7 +380,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
       {gym && <NewLevels exercises={exercises} />}
     </View>
   );
-  // Over a photo, on a slab of glass laid inside it, 8 pt from its edges
+  // Over a photo, on a capsule of glass laid inside it, 8 pt from its edges
   // (TASK-469 A4c, ADR-0383, «Capsula»; before, light words on `Scrim`).
   // The same words as under the drawing: a screen reader hears the card as
   // one thing, so these are hidden from it.
@@ -732,18 +732,19 @@ const styles = StyleSheet.create({
     top: space.md,
     right: space.md,
   },
-  // A slab of glass inside the photo, 8 pt from its edges, its corners
-  // following the card's (28 − 8); the words in the text's colours, which
-  // keep 4.5:1 on the glass over any photo (theme/glass.test.ts).
+  // A capsule of glass inside the photo, 8 pt from its edges, its short
+  // sides fully round as the tab bar's (the user's choice, 2026-11-21); the
+  // words in the text's colours, which keep 4.5:1 on the glass over any
+  // photo (theme/glass.test.ts). The round ends want more room on the sides.
   wordsOnPhoto: {
     position: "absolute",
     left: space.sm,
     right: space.sm,
     bottom: space.sm,
     gap: space.xs,
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm,
-    borderRadius: radius.card - space.sm,
+    paddingHorizontal: space.xl,
+    paddingVertical: space.md,
+    borderRadius: radius.pill,
   },
   titleOnPhoto: {
     ...font.heading,

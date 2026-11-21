@@ -107,7 +107,7 @@ test("a drawing with photos shows them after it, read with the token", async () 
   });
 });
 
-test("the words stay under the drawing, and lie over a photo on a slab of glass (TASK-339, TASK-469 A4c)", async () => {
+test("the words stay under the drawing, and lie over a photo on a capsule of glass (TASK-339, TASK-469 A4c)", async () => {
   await show(WITH_PHOTO);
   const post = shownPost(WITH_PHOTO);
   const [drawingPage, photoPage] = within(
@@ -123,7 +123,7 @@ test("the words stay under the drawing, and lie over a photo on a slab of glass 
   });
   expect(within(drawingPage).queryByText(postFacts(post))).toBeNull();
   expect(screen.getByTestId("feed-summary")).toBeOnTheScreen();
-  // Over the photo: on a slab of glass inside it, out of the way of the
+  // Over the photo: on a capsule of glass inside it, out of the way of the
   // finger, and not read twice (the card is read as one thing).
   const hidden = { includeHiddenElements: true };
   const words = within(photoPage).getByTestId("feed-photo-words", hidden);
@@ -137,7 +137,7 @@ test("the words stay under the drawing, and lie over a photo on a slab of glass 
     color: color.text,
   });
   expect(within(words).queryByText(postFacts(post), hidden)).toBeNull();
-  // The slab: 8 pt from the photo's edges; the dark of `Scrim` is gone, from
+  // The capsule: 8 pt from the photo's edges; the dark of `Scrim` is gone, from
   // the photo as from the drawing.
   expect(StyleSheet.flatten(words.props.style) as ViewStyle).toMatchObject({
     position: "absolute",

@@ -1897,7 +1897,11 @@ l'app, come «Find friends»:
   spento, non ha la voce, nemmeno per l'autore. Spento l'interruttore, sui
   propri post già a schermo la voce sparisce subito, senza aspettare che il
   Feed sia riletto (`usePostLink`: l'ultimo stato dell'interruttore letto
-  o girato in questa sessione); riacceso, torna alla prossima lettura.
+  o girato in questa sessione). Riacceso mentre l'app è aperta, la voce
+  torna subito anche sui propri post letti mentre era spento (correzione
+  del 2026-11-21): per quelli l'app guarda da sé quello che l'API chiede
+  oltre all'interruttore, cioè che il post sia per «Everyone» e abbia una
+  linea. Sui post altrui, e in ogni altro caso, vale solo `linkable`.
 - **«Links to my posts»** in «Settings», sotto «Show VO₂ max on my
   profile» (`settings/PostLinksSetting.tsx`): un interruttore tenuto
   dall'API (`GET`/`PUT /me/post-links`), acceso all'inizio, con sotto la

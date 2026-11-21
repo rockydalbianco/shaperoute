@@ -2934,7 +2934,7 @@ export const DE: Table = {
   "Nobody can follow you any more.": "Niemand kann dir mehr folgen.",
   "Live · {day} {time} · {title}": "Live · {day} {time} · {title}",
   // src/liveShare/ (TASK-468 part B2b1: «Plan a live», the start of a
-  // planned live; en and it approved 2026-11-12, «Plan» and the error to approve)
+  // planned live; en and it approved 2026-11-12, «Plan» and the error on 2026-11-18)
   "Plan a live": "Live planen",
   "Name (e.g. Milano Marathon)": "Name (z. B. Milano Marathon)",
   "Day and time": "Tag und Uhrzeit",

@@ -351,5 +351,6 @@ def test_the_migration_adds_wheelchair_to_the_four_tables_and_keeps_the_rest(
     assert after == {name: [*kept, WHEELS] for name, kept in before.items()}
     # Every activity of a run is let in once all migrations up to this one
     # ran, but the ones of a later migration: alpinism (TASK-463).
-    later = {"alpinism"}
+    # And stretching (TASK-475).
+    later = {"alpinism", "stretching"}
     assert set(get_args(RunActivity)) - later <= set(after["runs_activity_check"])

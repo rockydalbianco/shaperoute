@@ -154,6 +154,7 @@ from shaperoute_api.signals import SignalBody, SignalGate, event_of
 from shaperoute_api.sleep import install_sleep
 from shaperoute_api.strava import install_strava
 from shaperoute_api.strava_client import Strava
+from shaperoute_api.stretch_sessions import install_stretch_sessions
 from shaperoute_api.stroke_matches_api import install_stroke_matches
 from shaperoute_api.style_posts import install_style_posts
 from shaperoute_api.themed import ThemedJobBody, ThemedJobs, ThemedRequestBody
@@ -411,6 +412,9 @@ def create_app(
     # The swims in a pool, saved without a track, and their lengths
     # (TASK-400); they need a token.
     install_pool_swims(app)
+    # The stretching sessions, saved without a track, and their routine
+    # (TASK-475); they need a token.
+    install_stretch_sessions(app)
     # The nights of sleep a person publishes, on the profile and in the
     # post of an activity (TASK-467 B1); they need a token.
     install_sleep(app)

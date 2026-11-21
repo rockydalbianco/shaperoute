@@ -486,6 +486,28 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
 
 ## Dove siamo
 
+*2026-11-22, notte, B2 estere*: **giro delle città estere finito** (via del
+Coordinatore alle 00:37, fine all'01:08). **25 città disegnate** su 32: 200
+casi, **172 passano il filtro**, tutti delle otto forme. Riletti a occhio
+(`out/TASK-441/b2/contact_all.py`, fogli `contact-estere/all-*.svg.png`) e
+mandati all'utente in una pagina
+(`out/TASK-441/b2/tutti-i-disegni-bici-estere.html`): **il suo sì prima di
+scrivere «pronta»**. La PR è di solo catalogo (`feat/TASK-441-b2-estere`):
+25 file di `catalog/seed`, `tools/catalog_kept.json` (1694 → 1866),
+`catalog/README.md` e questo file; poi un passo sul server col sì
+dell'utente al Coordinatore, e la PR dei soli documenti.
+
+**Sette città senza disegni**, fermate dal limite di 4 GB del
+pianificatore: Berlino (4286 MB), Parigi (4144), Dublino (4769), Tokyo
+(4206), New York (4502), Amburgo (4435), Vienna (4142). Madrid era arrivata
+a 4499 MB ma i suoi 8 disegni ci sono, ed entrano con le altre.
+**Deciso dal Coordinatore (2026-11-22)**: le sette si recuperano in un
+secondo giro, dopo la PR, col limite a 5 GB solo per loro; una per volta, a
+Mac vuoto (nessun simulatore, carico sotto 5, memoria libera almeno al
+40%), con «pausa» se serve il simulatore. **Parte solo col via del
+Coordinatore.** Gli estratti (15 GB in `out/TASK-441/b2/extracts/`) si
+cancellano dopo quel giro.
+
 *2026-11-21, sera, B2*: **le uscite in bici italiane sono in produzione**
 (OTA 18, `593c6fbe`) e l'utente le ha provate sul telefono: «funziona». La
 parte italiana della B2 è chiusa. **Città estere**: 12 su 32 disegnate

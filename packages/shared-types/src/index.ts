@@ -1774,6 +1774,13 @@ export interface MyPhotoPost {
   order: string[] | null;
 }
 
+/** GET /me/photo-posts: every post of photos only of the account, the last
+ * published first (those waiting for a photo by when they were last kept).
+ * The app finds there the key of a post it opened by its id (part C1b). */
+export interface MyPhotoPosts {
+  photo_posts: MyPhotoPost[];
+}
+
 /** What a post of photos only has instead of a run's numbers. */
 interface WithoutRun {
   id: string;
@@ -3244,3 +3251,4 @@ export * from "./resortFollows.ts";
 export * from "./skiParts.ts";
 export * from "./flightParts.ts";
 export * from "./sleep.ts";
+export * from "./together.ts";

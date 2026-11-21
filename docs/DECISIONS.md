@@ -571,8 +571,135 @@ lasciando le righe d'indice.
 - ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte · 2026-11-12 · Attiva
 
 - ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos` · 2026-11-21 · Attiva
+- ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci in ordine, ognuna costruita dal task che la possiede e mostrata solo quando è pronta; «Everyone» anche per la palestra scritta a mano e la scheda pubblicata · 2026-11-21 · Proposta
+- ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 
 ## Voci nuove
+
+## ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli
+
+**Stato**: Proposta · 2026-11-21 · TASK-484 parte 0 (solo documenti).
+L'editor, che cosa conta, i testi e le righe della privacy sono **scelte
+dell'utente** (2026-11-21, una domanda per volta); la rotta, il valore di
+`source`, i controlli dell'API e il giorno senza calendario nativo sono
+**decisi dall'agente su delega dell'utente**; numero dal Coordinatore.
+Applica ADR-0390 (la voce «Gym workout», «Everyone») e ADR-0272 (le
+attività importate) alla palestra (ADR-0327).
+
+**Contesto**: ADR-0390 vuole nel «+» del Feed un allenamento in palestra già
+fatto, scritto a mano, con «Imported». La proposta di partenza diceva
+`PUT /me/activities/{key}`, ma la palestra si salva già con
+`PUT /me/gym-sessions/{key}`: una riga di `runs` con `activity = 'gym'` e
+senza traccia, le serie in `gym_sets` con `live`. `runs.source` vale `muw`
+o `file` (0034); classifica della palestra, badge, concorso e gioco
+leggono solo `muw`, i livelli leggono tutto. Le app di oggi mostrano
+«Imported» per ogni `source` diverso da `muw`.
+
+**Decisione dell'utente**:
+1. si scrive con **l'editor delle schede** (`SessionEditor`): una riga per
+   esercizio, serie × ripetizioni o tempo, un valore per tutte le serie;
+   «From a plan» parte dagli esercizi di una propria scheda; sopra giorno,
+   ora d'inizio e durata, sotto il post della palestra con «Imported»;
+2. conta **come le importate**: Feed, «My activities», calendario, kcal
+   dalla durata; fuori da gioco, concorso, badge, classifica, **livelli**
+   («New level»), Apple Salute e Health Connect, e dal giorno della scheda;
+3. i testi «Gym workout», «Day», «Started», «Duration», «From a plan»,
+   «Workouts written by hand don't count for Play, contests, levels or the
+   leaderboard.», «Pick a time before now.»;
+4. la privacy: una riga nuova («If you add a gym workout written by hand,
+   we keep its day, time, duration, exercises, sets and weights like a
+   workout recorded with MuW.»), i livelli contati «from the workouts you
+   record with MuW», e l'eccezione «Everyone» del «+» che nomina anche la
+   palestra scritta a mano (testi interi in `tasks/TASK-484.md`).
+
+**Decisione dell'agente**:
+1. **Stessa rotta, un campo**: `source` in `GymSessionRequestBody`, `muw`
+   per difetto o `manual`, salvato in `runs.source`. Nessuna tabella e
+   nessuna rotta nuove: Feed, «My activities», calendario, reazioni,
+   commenti, segnalazioni, chiave del telefono e coda senza rete valgono
+   come oggi.
+2. **`manual`, non `file`**: una corsa da file ha traccia e orari di
+   un'altra app, uno scritto a mano no. La migrazione allarga il `CHECK` a
+   `('muw', 'file', 'manual')`; `RunSource` lo legge anche nelle risposte;
+   `PUT /me/activities` rifiuta `manual`.
+3. **L'API controlla la forma** (422): serie tutte `live: false`, nessuna
+   pausa né recupero, `plan` vuoto, fine non dopo adesso. Il segno lo manda
+   l'app: non è una prova, come per i file (ADR-0272 punto 2).
+4. **I livelli leggono solo `muw`** (`gym_levels.py`, profilo e
+   `new_levels`); gli altri lettori lo fanno già.
+5. **Nessun tipo nuovo in `X-MuW-Reads`**: le app vecchie vedono un
+   allenamento della palestra con «Imported».
+6. **Sul telefono** ogni riga diventa tante serie uguali, con `at_s` a
+   passo uguale dentro la durata; il giorno con «‹ ›» e ora e durata
+   scritte, senza un calendario nativo: impronta iOS invariata, un OTA.
+
+**Alternative scartate**: serie per serie come le correzioni dopo «Stop»;
+le righe che si aprono serie per serie; contare per i livelli, o anche per
+il giorno della scheda; `source` `file`; `PUT /me/activities` senza
+traccia per la palestra; una rotta o una tabella a sé; un tipo in
+`X-MuW-Reads`; la frase di oggi delle importate sotto «Imported»; solo la
+riga nuova nella privacy.
+
+**Conseguenze**: una migrazione e un passo sul server col sì dell'utente,
+prima dell'app. La parte B aggiunge la sua riga in `addToFeedEntries.ts`
+dopo TASK-481 A, testi in cinque lingue e la privacy a turno. Un
+allenamento scritto a mano non si corregge dopo «Save»: si cancella e si
+riscrive.
+
+## ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci, ognuna del suo task
+
+**Stato**: Proposta · 2026-11-21 · TASK-481 parte 0 (solo documenti).
+Le voci, l'ordine, i testi, «niente Soon», chi vede che cosa e la frase
+della privacy sono **scelte dell'utente** (2026-11-21, una domanda per
+volta); la lista prima del flusso e il file delle voci sono decisi
+dall'agente su delega dell'utente; numero dal Coordinatore. Estende
+ADR-0387, non lo sostituisce.
+
+**Contesto**: il «+» del Feed (TASK-476, ADR-0387) apre un foglio «Add
+activity» con la sola voce «From a file». L'utente, il 21 novembre: un «+»
+per pubblicare il sonno, una corsa, un'immagine, un'attività, da Strava, un
+post di Instagram, un allenamento in palestra, una scheda di allenamento.
+Ogni cosa ha già, o avrà, un task che la possiede (TASK-312 C2 le foto,
+TASK-467 il sonno), e Strava e Instagram non si possono collegare
+(ADR-0272).
+
+**Decisione**:
+- **Il foglio diventa «Add to Feed»** e si apre su una **lista**: «Record
+  now», «Photos only», «From a file», «Sleep», «Gym workout», «Workout
+  plan», in quest'ordine, ognuna con una riga sotto (testi in
+  `tasks/TASK-481.md`). Una voce apre il suo flusso nello stesso foglio,
+  con «‹» per tornare. Le voci stanno in un file a sé, così un task porta
+  la sua senza riscrivere il foglio.
+- **Una voce compare solo quando è pronta**, niente «Soon» (come in
+  ADR-0387). Il «+» c'è con un account anche senza il selettore di file,
+  perché «Record now» c'è sempre.
+- **Ogni voce la costruisce il suo task**: «Record now» TASK-481 A (apre
+  la registrazione di oggi); «Photos only» TASK-312 C2; «From a file» c'è
+  (TASK-476); «Sleep» TASK-467 E; «Gym workout» (un allenamento in palestra
+  già fatto, scritto a mano, con «Imported») TASK-484 e «Workout plan»
+  (una scheda della palestra come post, copiabile con «Use this plan»)
+  TASK-485.
+- **Chi lo vede**: «Record now» come ogni corsa (ADR-0304); «Photos only»
+  l'ultima scelta (TASK-312 C); «From a file» «Everyone» (ADR-0387);
+  «Sleep» come gli altri post (TASK-467); «Gym workout» e «Workout plan»
+  **«Everyone»**, visibile e cambiabile prima di salvare: altre due
+  eccezioni ad ADR-0304, una per ingresso. Ogni tipo nuovo ha la sua riga
+  di privacy approvata nel suo task.
+- **La privacy di oggi si precisa** con la parte A: «An activity you add
+  from a file with the «+» of the Feed…» (approvato dall'utente), perché
+  una corsa registrata dal «+» segue le regole di sempre.
+
+**Alternative scartate**: cinque voci senza «Record now»; «Gym workout»
+che avvia la palestra adesso, o nessuna voce per la palestra; la scheda
+solo da vedere; la routine di stretching dentro «Workout plan»; voci non
+pronte grigie con «Soon»; tutto «Everyone» dal «+», o tutto dall'ultima
+scelta; i titoli «Add activity» e «New post».
+
+**Conseguenze**: il foglio cresce a ogni uscita senza promettere niente.
+`AddToFeed.tsx` è toccato da TASK-312 C2 e poi da TASK-481 A: A parte dopo
+il merge di C2. I task di «Gym workout» e «Workout plan» chiedono server,
+migrazione e privacy, ognuno col suo sì. Strava resta il file esportato (e
+«Open in MuW», nativo, dopo la 1.1); Instagram la foto dalla galleria.
 
 ## ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos`
 

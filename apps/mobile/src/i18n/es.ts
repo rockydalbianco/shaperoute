@@ -2985,4 +2985,29 @@ export const ES: Table = {
   "GPS numbers · not a certified instrument":
     "Datos del GPS · no es un instrumento certificado",
   "Log in to see this drawing.": "Inicia sesión para ver este dibujo.",
+  // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
+  "Edit layout": "Editar diseño",
+  "Page {n} of {count}": "Página {n} de {count}",
+  "Touch a widget to move it, size it or take it away.":
+    "Toca un widget para moverlo, cambiar su tamaño o quitarlo.",
+  Size: "Tamaño",
+  Unit: "Unidad",
+  "Add page": "Añadir página",
+  "Remove page": "Quitar página",
+  Duplicate: "Duplicar",
+  "Back to preset": "Volver al ajuste inicial",
+  "Undo every change to this layout?": "¿Deshacer todos los cambios de este diseño?",
+  "Delete this layout?": "¿Eliminar este diseño?",
+  "Send file": "Enviar archivo",
+  "Load file": "Cargar archivo",
+  "No room there.": "Ahí no hay sitio.",
+  "No room on this page.": "No hay sitio en esta página.",
+  "No room for another size.": "No hay sitio para otro tamaño.",
+  "No room for another page.": "No hay sitio para otra página.",
+  "No room for another layout.": "No hay sitio para otro diseño.",
+  "This file is not a MuW layout.": "Este archivo no es un diseño de MuW.",
+  "This layout is from a newer MuW: update the app.":
+    "Este diseño es de un MuW más reciente: actualiza la app.",
+  "MuW could not read this file.": "MuW no pudo leer este archivo.",
+  "MuW could not share the file.": "MuW no pudo compartir el archivo.",
 };

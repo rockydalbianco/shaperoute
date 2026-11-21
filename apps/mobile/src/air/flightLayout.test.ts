@@ -1,25 +1,32 @@
 /**
- * The flight screen's layout (TASK-479 part B1): the presets' pages fit
- * the grid, the pilot's choices are kept and read back.
+ * The flight screen's layout (TASK-479 parts B1 and B2): the presets'
+ * pages fit the grid, the pilot's profiles are kept and read back, and
+ * what B1 kept becomes B2's profiles.
  */
 import type { KeptList } from "../storage/keptList";
 import {
   defaultFlightPrefs,
   type FlightPrefs,
+  isCell,
   isFlightPrefs,
+  isProfile,
   loadFlightPrefs,
   pageFits,
+  pagesOf,
+  profileName,
+  profileOf,
   PRESET_PAGES,
   PRESETS,
   saveFlightPrefs,
+  upgradeFlightPrefs,
   WIDGET_NAME,
 } from "./flightLayout";
 
-function memory(): KeptList<FlightPrefs> & { items: FlightPrefs[] } {
+function memory(): KeptList<unknown> & { items: unknown[] } {
   const list = {
-    items: [] as FlightPrefs[],
-    load: () => list.items.filter(isFlightPrefs),
-    save: (items: FlightPrefs[]) => {
+    items: [] as unknown[],
+    load: () => list.items,
+    save: (items: unknown[]) => {
       list.items = items;
       return true;
     },
@@ -61,33 +68,63 @@ describe("pageFits", () => {
   });
 });
 
+describe("cells", () => {
+  it("take a unit only of their own kind", () => {
+    expect(isCell({ widget: "vario", col: 0, row: 0, w: 1, h: 1, unit: "kt" })).toBe(
+      true,
+    );
+    expect(isCell({ widget: "vario", col: 0, row: 0, w: 1, h: 1, unit: "ft" })).toBe(
+      false,
+    );
+    expect(isCell({ widget: "clock", col: 0, row: 0, w: 1, h: 1, unit: "m" })).toBe(
+      false,
+    );
+    expect(isCell({ widget: "radar", col: 0, row: 0, w: 1, h: 1 })).toBe(false);
+  });
+});
+
 describe("prefs", () => {
-  it("start as «Thermal», dark, in the app's units", () => {
-    expect(loadFlightPrefs("km", memory())).toEqual({
-      preset: "thermal",
-      look: "dark",
-      units: { altitude: "m", vario: "mps", speed: "kmh" },
-    });
+  it("start with a profile per preset, «Thermal» on screen, dark, in the app's units", () => {
+    const prefs = loadFlightPrefs("km", memory());
+    expect(prefs.profiles.map(profileName)).toEqual(["Thermal", "XC", "Minimal"]);
+    expect(prefs.current).toBe(0);
+    expect(pagesOf(prefs)).toEqual(PRESET_PAGES.thermal);
+    expect(prefs.look).toBe("dark");
+    expect(prefs.units).toEqual({ altitude: "m", vario: "mps", speed: "kmh" });
   });
 
   it("are kept and read back", () => {
     const list = memory();
-    const prefs: FlightPrefs = {
-      ...defaultFlightPrefs("mi"),
-      preset: "xc",
-      look: "sun",
-    };
+    const prefs: FlightPrefs = { ...defaultFlightPrefs("mi"), current: 1, look: "sun" };
     expect(saveFlightPrefs(prefs, list)).toBe(true);
     expect(loadFlightPrefs("km", list)).toEqual(prefs);
   });
 
+  it("from what part B1 kept: its preset on screen", () => {
+    const list = memory();
+    list.items = [{ preset: "xc", look: "sun", units: defaultFlightPrefs("mi").units }];
+    const prefs = loadFlightPrefs("km", list);
+    expect(profileName(prefs.profiles[prefs.current])).toBe("XC");
+    expect(prefs.look).toBe("sun");
+    expect(prefs.units).toEqual(defaultFlightPrefs("mi").units);
+  });
+
   it("are left out when not whole", () => {
+    const whole = defaultFlightPrefs("km");
+    expect(isFlightPrefs({ ...whole, current: 3 })).toBe(false);
+    expect(isFlightPrefs({ ...whole, profiles: [] })).toBe(false);
     expect(
-      isFlightPrefs({
-        preset: "race",
-        look: "dark",
-        units: defaultFlightPrefs("km").units,
-      }),
-    ).toBe(false);
+      upgradeFlightPrefs({ preset: "race", look: "dark", units: whole.units }),
+    ).toBeNull();
+    // Two widgets on one another.
+    const broken = profileOf("minimal");
+    broken.pages = [
+      [...broken.pages[0], { widget: "clock", col: 0, row: 0, w: 1, h: 1 }],
+    ];
+    expect(isProfile(broken)).toBe(false);
+  });
+
+  it("name a second copy with its number", () => {
+    expect(profileName(profileOf("xc", 2))).toBe("XC 2");
   });
 });

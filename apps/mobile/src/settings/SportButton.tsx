@@ -21,7 +21,9 @@ import {
 } from "../theme/tokens";
 import { isSkiMode } from "../skimode/skiMode";
 import { Hairline } from "../ui/Hairline";
+import { headerGlass } from "../bell/BellButton";
 import { Tap } from "../ui/Tap";
+import { useGlassMode } from "../ui/useGlassMode";
 import { saveSport, type Sport, SPORTS, type SportOption } from "./sport";
 import { groupSports } from "./sportFamilies";
 import { useSport } from "./useSport";
@@ -92,6 +94,7 @@ export function SportButton({ sports = SPORTS }: Props) {
     setOpen(false);
   }
 
+  const mode = useGlassMode();
   // Until the button says where it is: where the header of the pages puts it.
   const hang = top ?? insets.top + space.sm + MIN_TAP_SIZE + space.xs;
   const maxHeight = panelMaxHeight(height, hang, insets.bottom);
@@ -101,7 +104,7 @@ export function SportButton({ sports = SPORTS }: Props) {
     <>
       <Pressable
         ref={button}
-        style={styles.button}
+        style={[styles.button, headerGlass(mode)]}
         onPress={openMenu}
         accessibilityRole="button"
         accessibilityLabel={t("Sport, {sport}", { sport: t(current.name) })}
@@ -253,10 +256,7 @@ const styles = StyleSheet.create({
     height: MIN_TAP_SIZE,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-    backgroundColor: color.surfaceRaised,
+    // Its face: a circle of glass, as the bell's (TASK-469 A5, `headerGlass`).
   },
   buttonEmoji: {
     fontSize: fontSize.input + space.xs,

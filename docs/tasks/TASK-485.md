@@ -111,7 +111,7 @@ Verificato sul codice di `main` (`5ef3d45b`):
    activities») non lo vede mai.
 2. **L'istantanea nel disegno**: una colonna nuova `drawings.plan` JSONB
    (migrazione `0084_plan_posts.sql`: numero provvisorio del Coordinatore,
-   dopo 0081 di TASK-484, 0082 di TASK-486 A e 0083 di TASK-467 E; il
+   dopo 0081 di TASK-484, 0082 di TASK-467 E e 0083 di TASK-486; il
    definitivo al merge, col primo numero libero). Un disegno senza corsa
    con `plan` è una scheda pubblicata, senza `plan` è un post di sole
    foto. Il vincolo `drawings_photo_post_check` di 0080 vale
@@ -155,7 +155,7 @@ Nessun cambiamento per le app che non dicono `plans`.
 
 **Ordine** (dal Coordinatore, 2026-11-21): `reads.py` e `drawings.py` li
 tocca prima TASK-467 E1 (il post del sonno, tipo `sleep`, migrazione
-0083), sul modello di TASK-312 C1; `feed.py` la #1356 (TASK-355 B1, in
+0082), sul modello di TASK-312 C1; `feed.py` la #1356 (TASK-355 B1, in
 `main`). Merge di `main` prima di ogni push, e nei registri solo righe
 aggiunte. Dopo il merge c'è un passo sul server col sì dell'utente: i
 controlli vanno in `out/TASK-485/SERVER-A.md` (o nella cartella delle

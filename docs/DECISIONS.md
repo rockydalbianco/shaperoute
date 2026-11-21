@@ -578,8 +578,71 @@ lasciando le righe d'indice.
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 - ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo · 2026-11-21 · Attiva
 - ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Proposta
+- ADR-0391 — Il link di un post apre l'app: l'id resta dopo il `#`, l'app prende dall'indirizzo solo un id a forma di disegno e chiede il post all'API, senza account prima l'ingresso; la barra di Safari subito, i link verificati con la prossima build nativa · 2026-11-22 · Attiva
 
 ## Voci nuove
+
+## ADR-0391 — Il link di un post apre l'app: l'id dopo il `#`, solo un id a forma di disegno, la barra di Safari subito e i link verificati con la prossima build
+
+**Stato**: Attiva · 2026-11-22 · TASK-482. Che il link debba aprire il post
+nell'app, la prova della barra di Safari, «prima l'ingresso e poi il post»,
+la frase «Log in to see this drawing.» e la parte nativa «nella prossima»
+build sono **scelte dell'utente** (2026-11-21 e 22, una domanda per volta);
+il resto è deciso dall'agente su delega dell'utente; numero dal
+Coordinatore. Estende ADR-0382 (il link di un post), non lo cambia.
+
+**Contesto**: il link di un post (`https://getmuw.app/p/#<id>`, TASK-455
+parte E) apriva sempre la pagina del sito, anche con MuW installata:
+`app.json` non dichiara né uno schema né domini associati, l'app non
+ascoltava nessun indirizzo in arrivo, il sito non ha `/.well-known/`.
+L'utente, provandolo da WhatsApp il 21 novembre: «dovrebbe aprirsi il post
+nell'app». Ogni riga di `app.json` cambia l'impronta nativa (`5e1b5ce5`) e
+arriva solo con una build dagli store. Lo schema che Expo aggiunge da solo
+(l'identificativo dell'app) sul telefono dell'utente **dà errore**: non ci
+si costruisce sopra.
+
+**Decisione**:
+
+1. **Il link non cambia**: resta `getmuw.app/p/#<id>`, con l'id dopo il
+   `#`, che non arriva a nessun server (ADR-0382), anche quando apre l'app.
+   La pagina resta com'è per chi non ha l'app.
+2. **L'app non si fida dell'indirizzo** (parte A, `links/postLinkIn.ts`):
+   ne prende solo un id a forma di disegno, e solo dalla pagina
+   `POST_LINK_PAGE` in `https`; ogni altro sito, pagina o schema è
+   ignorato. Se il post esiste e chi può vederlo lo dice l'API quando il
+   disegno viene chiesto, come per una notifica toccata
+   (`opens.openDrawing`).
+3. **Senza account, prima l'ingresso**: la pagina dell'account con la riga
+   «Log in to see this drawing.», e il post appena si entra. Il link in
+   attesa vive solo finché l'app è aperta.
+4. **Niente dipendenze nuove**: `Linking` di React Native. L'indirizzo con
+   cui l'app è stata aperta si legge una volta sola; lo stesso post due
+   volte in 3 secondi è uno (il telefono lo consegna in due modi).
+5. **Subito, senza build**: la barra di Safari sulla pagina del link
+   (parte B2) — il meta `apple-itunes-app` fisso in `site/p/index.html`,
+   perché Safari lo legge mentre carica, e `bar.js`, eseguito subito, gli
+   aggiunge `app-argument` con l'indirizzo della pagina. Provata
+   dall'utente: la barra c'è e «Apri» apre MuW.
+6. **Con la prossima build nativa** (parti C e D): `associatedDomains`
+   (`applinks:getmuw.app`), i filtri verificati di Android e uno schema
+   vero in `app.json`; i due file `/.well-known/` sul sito, serviti dal
+   server, prima che la build esca. Solo così il link toccato in WhatsApp
+   apre direttamente l'app, anche su Android.
+
+**Scartate**: un bottone «Open in MuW» con lo schema dell'identificativo
+(sul telefono dà errore); mettere l'id nel percorso o dopo `?` per
+semplificare i link verificati (arriverebbe ai server, contro ADR-0382);
+una build nativa apposta (l'utente: nella prossima); aprire il post anche
+senza account (la pagina del sito lo fa già).
+
+**Conseguenze**: la barra compare anche per un link che non apre più
+nessun post (Safari la legge prima che la pagina lo sappia) e solo in
+Safari, non nel browser interno delle app di chat. Che iOS passi all'app
+l'`app-argument` della barra come indirizzo aperto **non è dimostrato**:
+si vede sul telefono dopo l'OTA della parte A; se non lo fa, la parte A
+resta inerte fino alla build nativa. `site/config.js` ha un solo
+`downloadUrl`, l'App Store anche per chi è su Android: difetto segnalato
+al Coordinatore, non di questo task.
 
 ## ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie
 

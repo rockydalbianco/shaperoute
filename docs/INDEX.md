@@ -48,6 +48,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Video della corsa ed editor con l'animale 3D | ADR-0303, ADR-0339, `UI.md` «Il post da condividere», `tasks/TASK-408.md` |
 | Messaggi, chat, allegati | `API.md` «Messages», `UI.md`, ADR-0279, ADR-0305 |
 | Condividere un post: «Share» sui post, il post mandato in chat come rimando, il link di un post | `tasks/TASK-455.md`, ADR-0382, `API.md` «Un post in un messaggio» |
+| Il link di un post che apre l'app: la barra di Safari, l'indirizzo letto dall'app, i link verificati | `tasks/TASK-482.md`, ADR-0391, ADR-0382, `SITO.md` |
 | Profilo: record personali, badge, il mio corpo, VO₂ max | `API.md` «Profile», ADR-0312, ADR-0318, `tasks/TASK-341.md`, `tasks/TASK-397.md` |
 | Posizione del telefono e privacy | `tasks/TASK-363.md`, ADR-0306 |
 | Il gioco delle forme, squadre e sfide | `GIOCO.md` |

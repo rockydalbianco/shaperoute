@@ -1,0 +1,42 @@
+{
+  "id": "31aace6f-6287-49c1-b314-dc3067dad03e",
+  "title": "Lake morning",
+  "started_at": "2026-11-05T12:00:00Z",
+  "published_at": "2026-11-05T12:00:00Z",
+  "place": null,
+  "shape": null,
+  "word": null,
+  "style": null,
+  "route_title": null,
+  "distance_m": 0,
+  "duration_s": 0,
+  "score": null,
+  "fidelity": null,
+  "visibility": "everyone",
+  "description": "First posted on Instagram, in June.",
+  "activity": null,
+  "source": "photos",
+  "tags": [],
+  "photos": [
+    {
+      "n": 1,
+      "url": "/drawings/31aace6f-6287-49c1-b314-dc3067dad03e/photos/1?v=1793880000000000",
+      "width": 4,
+      "height": 3,
+      "outfit_tags": []
+    }
+  ],
+  "order": null,
+  "rotation_deg": null,
+  "ski_descents": null,
+  "flight_split": null,
+  "linkable": false,
+  "sleep": null,
+  "author": {
+    "public_id": "d2f76566-653f-43e9-8177-1bf3fa509ffe",
+    "username": "ada"
+  },
+  "public": true,
+  "track": [],
+  "stats": null
+}

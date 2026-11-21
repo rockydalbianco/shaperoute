@@ -178,11 +178,14 @@ export function ChooseScreen({
                 label={runLabel}
                 icon={runIcon}
                 onPress={onRun}
-                // A flight is not a day on the slopes (TASK-305 part R2).
+                // A flight is not a day on the slopes (TASK-305 part R2), nor
+                // is a day of mountaineering (TASK-463 part B).
                 hint={
                   sport === "paragliding"
                     ? t("No shapes in the air yet: MuW records your flight.")
-                    : undefined
+                    : sport === "alpinism"
+                      ? t("No shapes up a mountain: MuW records your day.")
+                      : undefined
                 }
               />
               {/* Under it, ready to fly, the month and the bests (part R5b). */}

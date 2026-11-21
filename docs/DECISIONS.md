@@ -481,6 +481,7 @@ lasciando le righe d'indice.
 
 - ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
 - ADR-0345, precisazione B — La mia immagine nel video: i fotogrammi in RGBA entro 2 MiB, le scelte sotto la riga, il cartellino sul 3D · 2026-11-10 · Attiva
+- ADR-0345, precisazione D1 — «Together» sul server: la stessa corsa a metà del tempo e 2 km, i secondi dalla prima partenza, 600 punti scelti nel tempo · 2026-11-21 · Attiva
 - ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app · 2026-11-08 · Accettata
 - ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono · 2026-11-08 · Accettata
 - ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
@@ -4965,3 +4966,37 @@ tratti li manda il telefono come `ski_parts` dei run-stats (TASK-424 C2b,
 **Conseguenze**: nessuna migrazione; sul server col passo 7, insieme alla
 C2b di TASK-424.
 
+## ADR-0345, precisazione D1 — «Together» sul server: la stessa corsa a metà del tempo e 2 km, i secondi dalla prima partenza, 600 punti scelti nel tempo
+
+**Stato**: Attiva · 2026-11-21 · TASK-417 parte D1 (#1339, 11f354f1) ·
+deciso dall'agente su delega dell'utente; le scelte di prodotto restano le
+1–5 del task file (3: bastano tag e visibilità; 4: fino a 4 persone)
+
+- **Un modulo nuovo**, `together.py`, con l'indirizzo
+  `GET /drawings/{id}/together`, invece di un campo in `GET /drawings/{id}`:
+  i tempi escono solo da qui, solo all'autore, e il dettaglio di un disegno
+  resta senza tempi per tutti.
+- **La stessa corsa**: le soglie della proposta, prese così come sono.
+  Almeno il 50 % del tempo trascorso della più corta in comune (pause
+  comprese, il tempo dalla prima all'ultima posizione), e i primi punti a
+  meno di 2000 m. Il database sceglie prima le corse che si sovrappongono
+  nel tempo (al più 20 per persona), il resto lo controlla Python; fra più
+  corse buone vince quella con più tempo in comune.
+- **Chi la può vedere**: la corsa di una persona taggata entra solo col suo
+  disegno, e solo se `drawing_seen_sql` lo dà all'autore. Una corsa senza
+  disegno è privata, quindi non entra.
+- **L'orologio**: i secondi di ognuno sono il suo M più lo scarto fra la sua
+  partenza e la prima del gruppo, al decimo di secondo. Lo scarto fra le
+  partenze resta (serve al video); l'ora e la data no.
+- **I 600 punti**: scelti nel tempo, non con Douglas-Peucker. Una scelta
+  sulla forma toglierebbe i punti dei rettilinei, e il video li
+  interpolerebbe a passo costante dove il passo vero cambiava. Sempre
+  tenuti il primo, l'ultimo e i due bordi di ogni pausa; gli altri sono i
+  più vicini a secondi equidistanti. Se i bordi delle pause sono più di
+  600, se ne tengono 600 a distanza uguale, con i due estremi.
+- **Nessun limite di frequenza nuovo**: l’indirizzo legge al più 1 + 10×20
+  corse (al più 10 tag, 20 corse ciascuno), di un post dell’autore stesso.
+
+**Conseguenze**: nessuna migrazione; sul server col passo 15. L'app (D2)
+legge `fixtures/together.json`; un'API di prima risponde `404`, e l'app
+tiene spenta la riga «Together».

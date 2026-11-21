@@ -141,6 +141,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B e C («My image», #1067) in `main`, escono col prossimo OTA di
   produzione; prossime D («Together») ed E (telefono: anche il picker di
   sistema). File: — · `tasks/TASK-417.md`
+  **2026-11-21**: D1 (server di «Together», #1339) in `main`, sul server
+  col passo 15; poi D2 (l'app, privacy dall'utente) ed E.
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
   0, A, B in produzione; C1 (#1096, OTA 5), C2 (#1098), C2b (#1110) e C3
   (#1123, calorie in rosso) in `main`. Restano: il server di C2b (passo 7)

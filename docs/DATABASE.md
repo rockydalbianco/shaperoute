@@ -1385,6 +1385,25 @@ dopo la 0079 di TASK-475 A). **Un post di sole foto è un disegno senza corsa**:
   altri vogliono `published_at` pieno. Test in `test_photo_posts.py` e
   `test_photo_posts_seen.py`.
 
+Migrazione `0081_sleep_posts.sql` (TASK-467 parte E, «ADR-0380,
+precisazione E», `API.md` «Sleep»; numero provvisorio del Coordinatore,
+dopo la 0080 di TASK-312 C). **Il post di una notte di sonno è un disegno
+senza corsa che porta la sua notte**:
+
+- `drawings.sleep_night_id` (`bigint`, `ON DELETE CASCADE` su
+  `sleep_nights`): la notte di cui è il post. Vincolo
+  `drawings_sleep_post_check`: solo un disegno senza corsa ne ha una sua
+  (la notte di una corsa sta sulla corsa, `0072`), ed è pubblicato appena
+  nasce (`published_at` pieno: non aspetta una foto). Indice unico
+  `drawings_of_sleep_night`: un post per notte.
+- La funzione `sleep_night_left` della `0072` è riscritta: una notte resta
+  finché è nel profilo, una corsa la porta **o un post è suo**. Un trigger
+  nuovo, `drawings_sleep_night_deleted`, la chiama quando il post viene
+  cancellato, da chiunque: la notte va via se niente altro la pubblica.
+- Una richiesta di copia dei dati comprende i post del sonno: sono righe
+  di `drawings` con `sleep_night_id`, e le loro notti sono in
+  `sleep_nights` (le query del sonno della `0072` le trovano già).
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

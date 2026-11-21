@@ -1289,6 +1289,12 @@ Un'app dice **`photos`** quando sa mostrare un post di sole foto, un
 disegno senza corsa (TASK-312 parte C, «Photo posts», sotto): senza, ogni
 elenco lo lascia fuori e `GET /drawings/{id}` è `404`.
 
+Un'app dice **`sleep`** quando sa mostrare il post di una notte di sonno,
+un disegno senza corsa che porta la sua notte (TASK-467 parte E, «Sleep»,
+sotto): senza, ogni elenco lo lascia fuori e `GET /drawings/{id}` è `404`.
+È un tipo a sé e non `photos`: l'app delle sole foto lo mostrerebbe come un
+post senza foto.
+
 Nello stesso header un'app dice **`post`** quando sa mostrare un post
 allegato a un messaggio (TASK-455, ADR-0382, «Un post in un messaggio»,
 sotto). Non è un tipo di corsa: lo legge `messages.py`, non `reads.py`.
@@ -3444,7 +3450,7 @@ traccia**, come la palestra, con la routine fatta. Token richiesto; tipi in
 - Nessun punteggio di forma, nessun record, nessun luogo, niente Strava
   (una corsa senza traccia non si manda). Test in `test_stretching_api.py`.
 
-### Sleep (TASK-467 parti B1 e B1b, ADR-0380)
+### Sleep (TASK-467 parti B1, B1b ed E, ADR-0380)
 
 Le notti di sonno che una persona pubblica. Il punteggio lo calcola il
 telefono dai dati di Apple Salute (ADR-0379); al server arriva **solo il
@@ -3474,7 +3480,26 @@ Una notte si pubblica in due modi, ognuno col suo interruttore:
 | `GET /me/activities/{key}/sleep` | la notte dell'attività, per il suo proprietario | `200` `ActivitySleep`, o `404` |
 | `DELETE /me/activities/{key}/sleep` | l'attività senza notte | `204`, anche la seconda volta |
 | `GET /drawings/{id}/sleep` | la notte nel post, per chi vede il disegno e finché è mostrata | `200` `SleepSummary`, o `404` |
+| `PUT /me/sleep-posts/{night}` | la notte come **post a sé** nel Feed (parte E): i numeri e `visibility` (`everyone` o `followers`); fatto e pubblicato la prima volta, poi cambia numeri e chi lo vede | `200` `MySleepPost`; `422` per un giorno che non è una notte; `409` se un altro post ha la chiave di quella notte |
+| `GET /me/sleep-posts/{night}` | il post di quella notte, per il suo proprietario | `200` `MySleepPost`, o `404` |
+| `DELETE /me/sleep-posts/{night}` | il post via dal Feed | `204`, anche la seconda volta |
 
+- **Il post di una notte** (parte E, `sleep_posts.py`, tipi
+  `SleepPostRequest` e `MySleepPost`, esempi `fixtures/sleep-post*.json`):
+  pubblicato dal «+» del Feed senza un'attività. È **un disegno senza
+  corsa** che porta la sua notte (`drawings.sleep_night_id`, migrazione
+  `0081`), come il post di sole foto: reazioni, commenti, segnalazioni,
+  blocchi e «Followers» valgono come per ogni disegno. Uno per notte
+  (la chiave è `sleep` più il giorno, `sleep20260921`), pubblicato appena
+  nasce; mai «Only me». Negli elenchi e in `GET /drawings/{id}` ha
+  `source` **`sleep`**, la notte nel campo `sleep`, nessuna attività,
+  nessuna linea, nessuna foto. **Lo riceve solo un'app che dice `sleep`
+  in `X-MuW-Reads`** (a quella delle sole foto non arriva). Non conta per
+  concorso, badge, gioco e totali, non entra nella ricerca, nel link
+  pubblico né nei messaggi. È separato dal profilo: non tocca `shared`, e
+  «smetti di condividere» non lo toglie. Cancellato il post, la notte va
+  via dal server se né il profilo né un'attività la pubblicano;
+  `DELETE /me/sleep/{night}` porta via anche il post.
 - **I numeri**: `score` intero da 0 a 100; `asleep_min` da 1 a 1440;
   `awake_min` da 0 a 1440 (sveglio fra l'addormentarsi e l'ultimo
   risveglio); `stages` (`rem_min`, `light_min`, `deep_min`: «Light» è il

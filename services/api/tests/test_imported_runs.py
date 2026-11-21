@@ -200,7 +200,8 @@ def test_the_examples_are_the_bodies() -> None:
     )
     assert ActivityRequestBody.model_validate(request).source == "file"
     listed = _load("activities-imported.json")
-    assert set(listed["activities"][0]) == set(ActivityBody.model_fields)
+    # The climb in the list (TASK-461 D1): the example was written before.
+    assert set(listed["activities"][0]) == set(ActivityBody.model_fields) - {"climb_m"}
     assert ActivitiesBody.model_validate(listed).activities[0].source == "file"
     whole = _load("activity-imported.json")
     assert set(whole) == set(ActivityDetailBody.model_fields)
@@ -252,13 +253,19 @@ def test_a_file_run_is_saved_with_the_times_of_the_file(
     answer = client.put(f"/me/activities/{KEY}", json=imported(), headers=me)
     assert answer.status_code == 201
     listed = _load("activities-imported.json")
-    assert answer.json() == listed["activities"][0]
+    saved = answer.json()
+    assert "climb_m" in saved  # TASK-461 D1: the example was written before
+    assert {k: v for k, v in saved.items() if k != "climb_m"} == listed["activities"][0]
     # A year before the clock: the file's first point, not the day it came.
     assert answer.json()["started_at"] == "2025-10-26T07:30:00Z"
     # The four minutes of the hole are an auto pause: their time does not
     # count, their metres do.
     assert answer.json()["duration_s"] == 780 - 240
-    assert client.get("/me/activities", headers=me).json() == listed
+    page = client.get("/me/activities", headers=me).json()
+    page["activities"] = [
+        {k: v for k, v in one.items() if k != "climb_m"} for one in page["activities"]
+    ]
+    assert page == listed
     whole = client.get(f"/me/activities/{KEY}", headers=me)
     assert whole.json() == _load("activity-imported.json")
     assert sources(database) == {KEY: "file"}

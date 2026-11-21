@@ -54,8 +54,8 @@ it("shows the rows of before, in their order", () => {
       ready: true,
       recordOnly: true,
     },
-    // A stretching session (TASK-475 part B), «Soon» until it is turned on.
-    { id: "stretch", emoji: "🧘", name: "Stretching", ready: false },
+    // A stretching session (TASK-475 part B), on since part C.
+    { id: "stretch", emoji: "🧘", name: "Stretching", ready: true },
   ]);
   // Only the rows that say it carry «Record only».
   expect(

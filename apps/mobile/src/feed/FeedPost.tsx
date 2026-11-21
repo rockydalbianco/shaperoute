@@ -28,6 +28,7 @@ import { shapeName } from "../i18n/shapeNames";
 import { useLanguage } from "../i18n/useLanguage";
 import { bearingOf } from "../map/turnedMap";
 import { durationLabel } from "../screens/FinishScreen";
+import { segmentTrackFace } from "../screens/Segmented";
 import { useBlockedNow } from "../social/blockedNow";
 import { itemsOf } from "../social/composer/postOrder";
 import { useFollowsDoor } from "../social/followsDoor";
@@ -45,8 +46,8 @@ import {
 } from "../theme/tokens";
 import { DEFAULT_ACTIVITY, findProfile } from "../sports";
 import { Hairline } from "../ui/Hairline";
-import { Scrim } from "../ui/Scrim";
 import { Tap } from "../ui/Tap";
+import { useGlassMode } from "../ui/useGlassMode";
 import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { useEditRunDoor } from "./editRunDoor";
@@ -70,8 +71,6 @@ export { drawingHeight, MAP_CREDIT } from "./RouteMap";
 const TAP_SLOP = 12;
 /** The side of a dot under the photos. */
 const DOT = 6;
-/** How far up a photo the dark under its words reaches (TASK-339). */
-export const SCRIM_HEIGHT = 150;
 /** The side of the figure in the corner of a photo (TASK-355). */
 const THUMB = 56;
 
@@ -164,6 +163,7 @@ export function postFacts(post: SamplePost, sets?: readonly GymSet[] | null): st
  * «Save» keeps it on the phone; a tap on the drawing opens its route.
  */
 export function FeedPost({ post, width, onOpen }: Props) {
+  const mode = useGlassMode();
   // The line of facts is written again when «Settings» changes the units
   // (TASK-182).
   const units = useUnits();
@@ -380,12 +380,12 @@ export function FeedPost({ post, width, onOpen }: Props) {
       {gym && <NewLevels exercises={exercises} />}
     </View>
   );
-  // Over a photo, light on the dark that rises from its foot. The same
-  // words as under the drawing: a screen reader hears the card as one
-  // thing, so these are hidden from it.
+  // Over a photo, on a slab of glass laid inside it, 8 pt from its edges
+  // (TASK-469 A4c, ADR-0383, «Capsula»; before, light words on `Scrim`).
+  // The same words as under the drawing: a screen reader hears the card as
+  // one thing, so these are hidden from it.
   const wordsOnPhoto = (
     <>
-      <Scrim height={SCRIM_HEIGHT} />
       {/* No figure in the corner of a workout at the gym: it has none. */}
       {!gym && !pool && (
         <View
@@ -399,7 +399,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
         </View>
       )}
       <View
-        style={styles.wordsOnPhoto}
+        style={[styles.wordsOnPhoto, segmentTrackFace(mode)]}
         pointerEvents="none"
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
@@ -412,7 +412,6 @@ export function FeedPost({ post, width, onOpen }: Props) {
             style={styles.factsOnPhoto}
             facts={postFacts(post, exercises?.sets)}
             kcal={factsEnergy(post, exercises?.sets)}
-            energyColor={color.energyOnScrim}
           />
         )}
       </View>
@@ -532,7 +531,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
             {/* Which page of how many, over the page's top left corner: the
                 figure is in the other. */}
             <View
-              style={styles.counter}
+              style={[styles.counter, segmentTrackFace(mode)]}
               pointerEvents="none"
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"
@@ -622,9 +621,10 @@ export function FeedPost({ post, width, onOpen }: Props) {
 }
 
 const styles = StyleSheet.create({
-  // A drawing or a photo at its face: the large radius, no border (TASK-339).
+  // A drawing or a photo at its face, no border (TASK-339); the radius of
+  // the glass look's cards (TASK-469 A4c).
   card: {
-    borderRadius: radius.xl,
+    borderRadius: radius.card,
     backgroundColor: color.surface,
     overflow: "hidden",
   },
@@ -686,6 +686,7 @@ const styles = StyleSheet.create({
   photo: {
     backgroundColor: color.surfaceRaised,
   },
+  // A capsule of glass laid on the photo (TASK-469 A4c): `segmentTrackFace`.
   counter: {
     position: "absolute",
     top: space.md,
@@ -693,12 +694,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.sm,
     paddingVertical: 2,
     borderRadius: radius.pill,
-    backgroundColor: color.scrim,
-    opacity: 0.75,
   },
   counterText: {
     ...font.small,
-    color: color.onScrim,
+    color: color.text,
     fontWeight: fontWeight.semibold,
   },
   dots: {
@@ -733,21 +732,25 @@ const styles = StyleSheet.create({
     top: space.md,
     right: space.md,
   },
-  // On `Scrim`: light in both tones, since the dark under them is.
+  // A slab of glass inside the photo, 8 pt from its edges, its corners
+  // following the card's (28 − 8); the words in the text's colours, which
+  // keep 4.5:1 on the glass over any photo (theme/glass.test.ts).
   wordsOnPhoto: {
     position: "absolute",
-    left: space.lg,
-    right: space.lg,
-    bottom: space.lg,
+    left: space.sm,
+    right: space.sm,
+    bottom: space.sm,
     gap: space.xs,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    borderRadius: radius.card - space.sm,
   },
   titleOnPhoto: {
     ...font.heading,
-    color: color.onScrim,
+    color: color.text,
   },
   factsOnPhoto: {
     ...font.small,
-    color: color.onScrim,
-    opacity: 0.85,
+    color: color.textMuted,
   },
 });

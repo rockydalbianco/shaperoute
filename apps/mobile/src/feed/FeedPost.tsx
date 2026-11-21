@@ -13,6 +13,8 @@ import type { GymSet } from "@shaperoute/shared-types";
 
 import { sportPaceLabel } from "../activities/activityText";
 import { isOnSnow, isTrackless } from "../activities/snow";
+import { authHeaders } from "../api/accounts";
+import { keyHeaders } from "../api/apiUrl";
 import { drawingPhotoSource } from "../api/drawings";
 import { cityName } from "../explore/recommendedRoutes";
 import { RouteThumb } from "../explore/RouteThumb";
@@ -417,10 +419,28 @@ export function FeedPost({ post, width, onOpen }: Props) {
       </View>
     </>
   );
+  // The author's picture at its own address on the API (TASK-355 part B),
+  // read with the token and the key as the photos are; the initial without.
+  const face =
+    author?.photo != null && apiUrl !== null && state.status === "signedIn"
+      ? {
+          uri: `${apiUrl}${author.photo}`,
+          headers: { ...keyHeaders(), ...authHeaders(state.session.token) },
+        }
+      : null;
   const whoBody = (
     <>
       <View style={styles.avatar}>
-        <Text style={styles.initial}>{post.user.charAt(0).toUpperCase()}</Text>
+        {face === null ? (
+          <Text style={styles.initial}>{post.user.charAt(0).toUpperCase()}</Text>
+        ) : (
+          <Image
+            source={face}
+            style={styles.face}
+            accessibilityIgnoresInvertColors
+            testID="feed-author-photo"
+          />
+        )}
       </View>
       <View style={styles.names}>
         <Text style={styles.user}>{post.user}</Text>
@@ -653,6 +673,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: radius.pill,
     backgroundColor: color.surfaceRaised,
+  },
+  face: {
+    width: MIN_TAP_SIZE - space.sm,
+    height: MIN_TAP_SIZE - space.sm,
+    borderRadius: radius.pill,
   },
   // Names are medium, not bold: the weight is the yellow controls' (ADR-0293).
   initial: {

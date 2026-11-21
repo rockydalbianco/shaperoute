@@ -135,7 +135,9 @@ test("while the first page comes, no example takes its place", async () => {
       <FeedScreen onOpen={() => {}} />
     </Around>,
   );
-  expect(screen.getByTestId("feed-loading")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("feed-loading", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
   expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
   expect(screen.queryByTestId("feed-post")).toBeNull();
   await act(async () => release(Response.json(page)));

@@ -57,8 +57,29 @@ const LOADING: Shown = {
   summary: { counts: NO_COUNTS, total: 0, mine: null },
 };
 
-/** The reactions of `drawingId`, and the ways to leave one. */
-export function useDrawingReactions(drawingId: string): DrawingReactions {
+/** What a page of the Feed already says of a post's reactions (TASK-355
+ * part B): how many, and one's own. */
+export type KnownReactions = { total: number; mine: ReactionKind | null };
+
+/** The counts a card keeps beside what it was told: only one's own, which
+ * is all `withMine` needs to move the total by one. */
+function knownShown(known: KnownReactions): Shown {
+  const counts = { ...NO_COUNTS };
+  if (known.mine !== null) {
+    counts[known.mine] = 1;
+  }
+  return { status: "ready", summary: { counts, total: known.total, mine: known.mine } };
+}
+
+/**
+ * The reactions of `drawingId`, and the ways to leave one. With `known`,
+ * from a page of the Feed, nothing is asked: the card starts from it, and
+ * the API's answer to one's own reaction takes its place (TASK-355 part B).
+ */
+export function useDrawingReactions(
+  drawingId: string,
+  known?: KnownReactions,
+): DrawingReactions {
   const door = useReactionsDoor();
   // The answer for one drawing: another's is not this one's.
   const [answer, setAnswer] = useState<{ asked: string; shown: Shown } | null>(null);
@@ -68,7 +89,12 @@ export function useDrawingReactions(drawingId: string): DrawingReactions {
   // One change at a time: the next waits for the API's answer to this one.
   const changing = useRef(false);
 
+  const told = known !== undefined;
   useEffect(() => {
+    // Told by the Feed: no request for this card.
+    if (told) {
+      return;
+    }
     let live = true;
     void door.of(drawingId).then((outcome) => {
       if (!live) {
@@ -85,9 +111,14 @@ export function useDrawingReactions(drawingId: string): DrawingReactions {
     return () => {
       live = false;
     };
-  }, [door, drawingId]);
+  }, [door, drawingId, told]);
 
-  const shown = answer !== null && answer.asked === drawingId ? answer.shown : LOADING;
+  const shown =
+    answer !== null && answer.asked === drawingId
+      ? answer.shown
+      : known !== undefined
+        ? knownShown(known)
+        : LOADING;
   const ready = shown.status === "ready";
   const { summary } = shown;
 
@@ -95,11 +126,13 @@ export function useDrawingReactions(drawingId: string): DrawingReactions {
   const show = useCallback(
     (asked: string, next: ReactionsSummary) =>
       setAnswer((was) =>
-        was === null || was.asked !== asked || was.shown.status !== "ready"
-          ? was
-          : { asked, shown: { status: "ready", summary: next } },
+        // Told by the Feed, nothing was answered yet: the card's own start.
+        (was === null && told) ||
+        (was !== null && was.asked === asked && was.shown.status === "ready")
+          ? { asked, shown: { status: "ready", summary: next } }
+          : was,
       ),
-    [],
+    [told],
   );
 
   /** One's own becomes `kind` (null: none), at once; back if the API refuses. */

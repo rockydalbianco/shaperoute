@@ -187,6 +187,17 @@
       "guided": false,
       "gps": false,
       "onWatch": true
+    },
+    {
+      "activity": "stretching",
+      "name": "Stretching",
+      "emoji": "🧘",
+      "appleWorkout": 62,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": false,
+      "onWatch": false
     }
   ]
 }

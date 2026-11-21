@@ -153,8 +153,9 @@ def test_a_session_of_the_future_is_refused(
     me = signed_up(client)
     answer = client.put(
         f"/me/stretch-sessions/{STRETCH_KEY}",
+        # Two days after the server's clock: past CLOCK_AHEAD.
         json=session(
-            started_at="2026-11-06T06:30:00Z", ended_at="2026-11-06T06:41:00Z"
+            started_at="2026-11-07T06:30:00Z", ended_at="2026-11-07T06:41:00Z"
         ),
         headers=me,
     )
@@ -199,13 +200,13 @@ def test_deleting_the_run_deletes_its_routine(
 ) -> None:
     me = signed_up(client)
     kept(client, me)
-    assert (
-        client.delete(f"/me/activities/{STRETCH_KEY}", headers=me).status_code == 204
-    )
+    assert client.delete(f"/me/activities/{STRETCH_KEY}", headers=me).status_code == 204
     with database.connect() as conn:
         count = conn.execute("SELECT count(*) AS n FROM stretch_sessions").fetchone()
         assert count["n"] == 0
-    assert client.get(f"/me/stretch-sessions/{STRETCH_KEY}", headers=me).status_code == 404
+    assert (
+        client.get(f"/me/stretch-sessions/{STRETCH_KEY}", headers=me).status_code == 404
+    )
 
 
 def test_it_is_in_my_activities_for_an_app_that_reads_it(
@@ -263,7 +264,10 @@ def test_a_drawing_cannot_change_what_a_session_was(
     me = signed_up(client)
     saved(client, me)
     kept(client, me)
-    for activity in ("running", "gym", "swimming"):
+    # No activity with a track. Between two without one (the gym) the API
+    # does not tell them apart (drawings.py, NOT_TRACKLESS): the form to
+    # publish keeps a session's own sport (part B).
+    for activity in ("running", "swimming"):
         drawn(client, me, STRETCH_KEY, status=422, activity=activity)
     drawn(client, me, STRETCH_KEY, activity="stretching")
     # A run with a track stays one, as before.

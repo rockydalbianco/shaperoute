@@ -150,6 +150,7 @@ RunActivity = Literal[
     "paragliding",
     "alpinism",
     "gym",
+    "stretching",
 ]
 # A day on the snow: recorded and shown, never planned by the engine. Its
 # speeds are no runner's nor rider's, so it gives no personal best. The

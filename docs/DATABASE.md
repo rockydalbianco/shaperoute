@@ -1348,6 +1348,19 @@ libero al merge):
   (`drawings.LINKABLE_SQL`). Nessuna riga di prima cambia. Test in
   `test_post_links.py`.
 
+Migrazione `0079_stretching.sql` (TASK-475 parte A, ADR-0386, `API.md`
+«Stretching»; numero del Coordinatore):
+
+- **`runs`**: `stretching` entra in `runs_activity_check` (letto e allargato
+  come la `0047`), e `runs_track_check` diventa `track IS NOT NULL OR
+  activity IN ('gym', 'swimming', 'stretching')`: una sessione di
+  stretching va senza traccia.
+- **`stretch_sessions`**: una riga per sessione, chiave la sua corsa (`ON
+  DELETE CASCADE`): `routine` (la chiave sul telefono, `^[A-Za-z0-9_]{1,40}$`),
+  `minutes` (da 1 a 60) ed `exercises` (da 0 a 100).
+- Nessuna posizione, nessuna riga di prima cambia, nessun backfill. Test in
+  `test_stretching_api.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

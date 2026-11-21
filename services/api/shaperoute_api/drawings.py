@@ -106,7 +106,7 @@ Visibility = Literal["everyone", "followers", "only_me"]
 # Where a drawing comes from: its run's `source`, or `photos` for a post of
 # photos only, without a run (TASK-312 part C, photo_posts.py).
 PHOTOS_SOURCE = "photos"
-DrawingSource = RunSource | Literal["photos"]
+DrawingSource = RunSource | Literal["photos", "sleep"]
 # The only ones that come with the line of a description.
 LINE_BREAK = "\n"
 
@@ -500,7 +500,8 @@ _SEEN_FIELDS = (
     f" {DRAWN_AT_SQL} AS started_at, r.place, r.shape, r.word, r.style,"
     " r.title AS route_title, coalesce(r.distance_m, 0) AS distance_m,"
     " coalesce(r.duration_s, 0) AS duration_s, r.score, r.fidelity, r.activity,"
-    f" r.route_rotation_deg, coalesce(r.source, '{PHOTOS_SOURCE}') AS source,"
+    f" r.route_rotation_deg, coalesce(r.source, CASE WHEN d.sleep_night_id IS NULL"
+    f" THEN '{PHOTOS_SOURCE}' ELSE 'sleep' END) AS source,"
     # The descents of a day of skiing (TASK-424 part C2b): one key of its
     # run_stats row, by its primary key.
     " (SELECT s.stats -> 'ski_descents' FROM run_stats s WHERE s.run_id = r.id)"

@@ -29,7 +29,9 @@ import { profileOf } from "../sports";
  * mountaineering («Mountaineering», TASK-463 part B, ADR-0373) is recorded
  * without a shape too, «Soon» until it is turned on. A workout
  * at the gym («Gym», TASK-385 part B, ADR-0327) has no route and no GPS:
- * «Draw» offers only «Start workout». */
+ * «Draw» offers only «Start workout». A stretching session («Stretching»,
+ * TASK-475 part B, ADR-0386) has neither: «Draw» offers the routines of
+ * TASK-466 and «Start stretching», «Soon» until it is turned on. */
 export type Sport =
   | "run"
   | "bike"
@@ -47,7 +49,8 @@ export type Sport =
   | "snowshoe"
   | "gym"
   | "paragliding"
-  | "alpinism";
+  | "alpinism"
+  | "stretch";
 
 export type SportOption = {
   id: Sport;
@@ -99,6 +102,7 @@ const ACTIVITY: { readonly [S in Sport]?: RunActivity } = {
   gym: "gym",
   paragliding: "paragliding",
   alpinism: "alpinism",
+  stretch: "stretching",
 };
 
 /** A sport of «Settings» as its profile says it (TASK-376 part B3c,
@@ -181,6 +185,11 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // part R2, ADR-0375): on with its numbers of the air and its notice; the
   // server has had part R1 and its migration 0069 since 2026-11-12.
   fromProfile("paragliding", true),
+  // A stretching session, saved as "stretching" without a track (TASK-475
+  // part B, ADR-0386): the routines of TASK-466 from «Draw». On since the
+  // server has part A and its migration 0079 (step 15, 2026-11-21) and the
+  // user's «Sì, approvo» to the screens (part C).
+  fromProfile("stretch", true),
 ];
 
 /** The sports offered only once «Settings» has them ready. */
@@ -373,6 +382,9 @@ export function withoutRouteLabel(sport: Sport): string {
     case "gym":
       // No route in the gym (TASK-385 part B): the workout's own start.
       return t("Start workout");
+    case "stretch":
+      // No route to stretch (TASK-475): the routine chosen on «Draw».
+      return t("Start stretching");
     case "paragliding":
       // No shapes in the air yet (TASK-305 parts R): the flight only.
       return t("Record your flight");

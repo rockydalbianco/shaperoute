@@ -1,9 +1,11 @@
 # TASK-461 — Il pianificatore completo: corpo libero, piani verso una distanza, gite in montagna
 
-**Stato**: In corso · 2026-11-12 · parte 0 chiusa; A1 e B1 in `main` e
-sul server (passo 9, 2026-11-12); B2a in `main` (#1196); A2 (app del corpo
-libero) in `main` (#1208, `da3d86f1`), esce col prossimo OTA col sì
-dell'utente; poi B2b/C2 (lista dei file al Coordinatore prima del codice)
+**Stato**: Done · 2026-11-21 · tutte le parti in `main`: A1 #1163 e B1
+#1175 (server, passo 9), B2a #1196, A2 #1208, B2b/C2 #1294 (in produzione),
+D1 #1341 (`climb_m` nell'elenco, server: passo 16 col sì dell'utente), B2c
+#1338 («mancano» mentre si registra: esce col prossimo OTA col sì
+dell'utente). Esito: il pianificatore completo, con le scelte 1–22
+dell'utente.
 **Fase**: 5 · **Branch**: `feat/TASK-461-a1-bodyweight-catalog` (A1),
 `feat/TASK-461-b1-distance-mountain-server` (B1),
 `feat/TASK-461-b2a-target-plans` (B2a), `feat/TASK-461-a2-bodyweight-app` (A2)

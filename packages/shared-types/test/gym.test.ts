@@ -8,8 +8,10 @@ import gymLevels from "../fixtures/gym-levels.json" with { type: "json" };
 import gymPlans from "../fixtures/gym-plans.json" with { type: "json" };
 import runActivities from "../fixtures/run-activities.json" with { type: "json" };
 import session from "../fixtures/gym-session.json" with { type: "json" };
+import byHand from "../fixtures/gym-session-manual.json" with { type: "json" };
 import {
   GYM_LEVEL_MEASURES,
+  GYM_SOURCES,
   GYM_OUTING_KINDS,
   GYM_OUTING_SPORTS,
   GYM_PLAN_MODES,
@@ -26,6 +28,7 @@ import {
   type GymSessionRequest,
   type GymSetKind,
   RUN_ACTIVITIES,
+  RUN_SOURCES,
   TRACKLESS_ACTIVITIES,
   type TracklessActivity,
 } from "../src/index.ts";
@@ -60,6 +63,29 @@ test("the example workout is a request of the contract", () => {
     assert.ok(GYM_SET_KINDS.includes(item.kind));
     assert.ok((item.exercise === undefined) !== (item.name === undefined));
   }
+});
+
+test("a workout written by hand has sets none of them live, and no timer", () => {
+  const source = GYM_SOURCES.find((s) => s === byHand.source);
+  assert.equal(source, "manual");
+  const request: GymSessionRequest = {
+    ...byHand,
+    source,
+    sets: byHand.sets.map((item) => ({ ...item, kind: item.kind as GymSetKind })),
+  };
+  const length_s =
+    (Date.parse(request.ended_at) - Date.parse(request.started_at)) / 1000;
+  assert.ok(length_s > 0);
+  assert.ok((request.sets ?? []).length > 0);
+  for (const item of request.sets ?? []) {
+    assert.equal(item.live, false);
+    assert.ok(item.at_s <= length_s);
+  }
+  assert.ok(!("pauses" in byHand) && !("rests" in byHand) && !("plan" in byHand));
+  // Every source of a workout is a source of a run (TASK-312).
+  assert.ok(GYM_SOURCES.every((s) => (RUN_SOURCES as readonly string[]).includes(s)));
+  // The recorded example says nothing of it, as an older app.
+  assert.ok(!("source" in session));
 });
 
 test("the catalog names each exercise once, of a kind and a scale it has", () => {

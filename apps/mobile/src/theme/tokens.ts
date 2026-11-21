@@ -451,6 +451,8 @@ export const radius = {
   xl: 20,
   /** Sheets that rise from the bottom edge. */
   sheet: 26,
+  /** A card of the glass look «Capsula» (TASK-469, ADR-0383). */
+  card: 28,
   pill: 999,
 } as const;
 

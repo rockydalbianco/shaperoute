@@ -546,6 +546,8 @@ lasciando le righe d'indice.
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
 - ADR-0381, precisazione A1b — La live in un messaggio: un rimando senza chiave esterna, solo in una conversazione aperta, solo per chi dice `live` · 2026-11-12 · Attiva
 - ADR-0381, precisazione B1 — La live in chat nell'app: la condivisione senza link per la chat, il menu di «Sharing live», la schermata dal vivo come `Modal` · 2026-11-12 · Attiva
+- ADR-0381, precisazione A2b — La push «Remind me» parte con la live, una volta sola, senza giro · 2026-11-18 · Attiva
+- ADR-0381, precisazione B2a — La fila «Live» del Feed: schede una sopra l'altra, riletta ogni minuto, «Live in the Feed» senza link · 2026-11-18 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
 - ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←» · 2026-11-12 · Attiva
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
@@ -632,6 +634,33 @@ estratto per paese: un secondo giro. `tools/sample_feed.py` legge tutto il
 seme e, rilanciato, prenderebbe uscite in bici come corse di esempio:
 segnalato al Coordinatore, non toccato. I 40–50 km (B3) vogliono il limite
 del motore alzato: una PR a parte.
+
+## ADR-0381, precisazione A2b — La push «Remind me» parte con la live, una volta sola, senza giro
+
+**Stato**: Attiva · 2026-11-18 · TASK-468 parte A2b (#1299).
+**Deciso dall'agente su delega dell'utente.**
+
+- La push parte dentro `POST /me/planned-lives/{id}/start`, dopo la
+  scrittura, e solo se non c'era già una condivisione con quel
+  `planned_live_id`: una ripartenza dopo uno stop non la ripete. Nessun
+  giro periodico e nessuna migrazione.
+- La ricevono solo i promemoria di chi vede ancora la live (`apart_sql`, e
+  `follows_sql` per una «followers»), mai il proprietario; i dati
+  `{kind, planned_live_id, share_id}` aprono la schermata dal vivo (B2b1).
+
+## ADR-0381, precisazione B2a — La fila «Live» del Feed: schede una sopra l'altra, riletta ogni minuto, «Live in the Feed» senza link
+
+**Stato**: Attiva · 2026-11-18 · TASK-468 parte B2a (#1301).
+**Deciso dall'agente su delega dell'utente** (la tecnica; testi e aspetto
+approvati dall'utente).
+
+- Al più 5 schede una sopra l'altra: una fila che scorre di lato
+  litigherebbe con lo scorrimento fra le schede del Feed. `GET /lives`
+  ogni minuto; «Remind me» cambia subito e torna indietro se l'API dice no.
+- «Live in the Feed» crea la condivisione senza link col pubblico scelto, o
+  la cambia (`PATCH`) se è già accesa; nessun foglio delle persone.
+- I test che contano le richieste del Feed escludono `/lives`, come già il
+  concorso e Style.
 
 ## ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job
 

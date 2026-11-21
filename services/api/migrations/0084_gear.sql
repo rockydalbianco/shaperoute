@@ -57,11 +57,6 @@ CREATE TABLE gear_defaults (
     PRIMARY KEY (gear_id, activity)
 );
 
--- An item tagged on a photo may come from its owner's gear (part F): the
--- tag keeps its own brand and model, and loses the link when the item goes.
-ALTER TABLE drawing_outfit_tags
-    ADD COLUMN gear_id uuid REFERENCES gear (id) ON DELETE SET NULL;
-
 -- An item of gear is reported too (moderation.py): the list of 0050, with
 -- 'gear'.
 ALTER TABLE reports DROP CONSTRAINT reports_kind_check;

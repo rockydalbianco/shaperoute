@@ -1407,9 +1407,8 @@ Migrazione `0084_gear.sql` (TASK-486 parte A, ADR-0393, `API.md`
   l'attrezzo già scelto. `activity` sono i nomi di `runs.activity`,
   controllati da `gear.py` e non da un `CHECK`: uno sport nuovo non chiede
   una migrazione qui.
-- **`drawing_outfit_tags.gear_id`** (verso `gear(id)`, `ON DELETE SET
-  NULL`): un capo taggato nato da un attrezzo (parte F); il tag tiene la
-  sua marca e il suo modello.
+- Il legame coi capi taggati (`drawing_outfit_tags.gear_id`) arriva con
+  la parte F, in una migrazione sua, insieme a `outfit_tags.py`.
 - **`reports.kind`** con `gear`. Nessuna riga di prima cambia, nessun
   backfill. Test in `test_gear.py` e `test_moderation.py`.
 

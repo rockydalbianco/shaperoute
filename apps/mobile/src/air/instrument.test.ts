@@ -2,7 +2,7 @@
  * The numbers of the flight screen (TASK-479 part B1): vario now and over
  * 30 s, speed and track, glide ratio, take-off, time in the air.
  */
-import { climbOver, glideOver, instrumentNow, STALE_MS } from "./instrument";
+import { altitudeSeries, climbOver, glideOver, instrumentNow, STALE_MS } from "./instrument";
 import { flightOf, T0 } from "./syntheticFlight";
 
 const glide = (seconds: number, varioMps = -1.25, headingDeg = 90, airspeedMps = 10) =>
@@ -96,5 +96,17 @@ describe("glideOver", () => {
   it("is capped at 99", () => {
     const track = flightOf([glide(60, -0.21, 0, 25)]);
     expect(glideOver(track.fixes)).toBe(99);
+  });
+});
+
+describe("altitudeSeries", () => {
+  it("gives the last ten minutes in sixty bars, the last height in each", () => {
+    const track = flightOf([glide(300, 1)], { fromAltM: 1000 });
+    const series = altitudeSeries(track, lastMs(track));
+    expect(series).toHaveLength(60);
+    // The first five minutes are before the flight.
+    expect(series.slice(0, 29).every((height) => height === null)).toBe(true);
+    expect(series[59]).toBeCloseTo(1300, 6);
+    expect(series[44]).toBeCloseTo(1150, 6);
   });
 });

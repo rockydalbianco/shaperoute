@@ -205,3 +205,39 @@ export function instrumentNow(
     accuracyM: last?.accuracyM ?? null,
   };
 }
+
+/** The altitude chart shows this long. */
+export const CHART_SPAN_MS = 10 * 60_000;
+/** In this many bars. */
+export const CHART_BARS = 60;
+
+/**
+ * The height over the last CHART_SPAN_MS before `nowMs`, in CHART_BARS
+ * bars, oldest first: each the last height known in its slice of time,
+ * null before the first fix with a height.
+ */
+export function altitudeSeries(
+  track: Track,
+  nowMs: number,
+  spanMs: number = CHART_SPAN_MS,
+  bars: number = CHART_BARS,
+): (number | null)[] {
+  const out: (number | null)[] = [];
+  const from = nowMs - spanMs;
+  const slice = spanMs / bars;
+  const fixes = track.fixes;
+  let i = 0;
+  let known: number | null = null;
+  for (let bar = 0; bar < bars; bar += 1) {
+    const end = from + slice * (bar + 1);
+    while (i < fixes.length && fixes[i].timeMs <= end) {
+      const height = heightOf(fixes[i]);
+      if (height !== null) {
+        known = height;
+      }
+      i += 1;
+    }
+    out.push(known);
+  }
+  return out;
+}

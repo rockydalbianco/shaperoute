@@ -1394,6 +1394,25 @@ nuova, nessuna riga di prima cambia, nessun backfill. I livelli
 badge, concorso e gioco. Test in `test_gym.py`, `test_gym_levels.py` e
 `test_imported_runs.py`.
 
+Migrazione `0082_sleep_posts.sql` (TASK-467 parte E, «ADR-0380,
+precisazione E», `API.md` «Sleep»; numero del Coordinatore, dopo la 0081
+di TASK-484 A). **Il post di una notte di sonno è un disegno
+senza corsa che porta la sua notte**:
+
+- `drawings.sleep_night_id` (`bigint`, `ON DELETE CASCADE` su
+  `sleep_nights`): la notte di cui è il post. Vincolo
+  `drawings_sleep_post_check`: solo un disegno senza corsa ne ha una sua
+  (la notte di una corsa sta sulla corsa, `0072`), ed è pubblicato appena
+  nasce (`published_at` pieno: non aspetta una foto). Indice unico
+  `drawings_of_sleep_night`: un post per notte.
+- La funzione `sleep_night_left` della `0072` è riscritta: una notte resta
+  finché è nel profilo, una corsa la porta **o un post è suo**. Un trigger
+  nuovo, `drawings_sleep_night_deleted`, la chiama quando il post viene
+  cancellato, da chiunque: la notte va via se niente altro la pubblica.
+- Una richiesta di copia dei dati comprende i post del sonno: sono righe
+  di `drawings` con `sleep_night_id`, e le loro notti sono in
+  `sleep_nights` (le query del sonno della `0072` le trovano già).
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

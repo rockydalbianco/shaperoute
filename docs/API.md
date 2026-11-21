@@ -3336,6 +3336,19 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   stesso account cominciati prima (anche quelli salvati dopo); prima il
   livello più alto; `[]` senza. Con gli esercizi: nascosti loro, nascosti
   anche i livelli.
+- **Scritto a mano** (TASK-484, ADR-0395): `"source": "manual"` nella
+  richiesta, per un allenamento già fatto scritto dal «+» del Feed
+  (esempio `fixtures/gym-session-manual.json`). Vuole almeno una serie,
+  tutte `live: false`, nessuna pausa, `rests` e `rest_s` a zero, niente
+  `plan` (altrimenti `422`), e una fine non oltre adesso più il margine
+  dell'orologio di ogni corsa (un giorno): oltre, `422` «A workout written
+  by hand ends before now.». Senza `source` è `muw`, come prima. `GymSession`
+  risponde sempre con `source`; le risposte di «My activities», del Feed e
+  dei disegni lo dicono come per un file (le app mostrano «Imported» per
+  ogni valore diverso da `muw`). Non raggiunge livelli (`new_levels` `[]`,
+  profilo invariato) e resta fuori da classifica, badge, concorso e gioco,
+  che leggono solo `muw`. `PUT /me/activities/{key}` rifiuta `manual`
+  (`422`).
 - **`GET /gym/leaderboard?exercise=&month=`** (parte F, ADR-0327
   precisazione F): la classifica mensile di un esercizio del catalogo con
   una scala (`404` `unknown_exercise` per gli altri), in un mese di

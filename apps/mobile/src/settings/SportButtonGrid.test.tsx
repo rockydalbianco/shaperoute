@@ -128,10 +128,12 @@ test("the dark around the panel closes it and changes nothing", async () => {
   expect(saveSport).not.toHaveBeenCalled();
 });
 
-test("every sport of the app has a family other than «Other» but gym and paragliding", () => {
+test("every sport of the app has a family other than «Other» but gym, paragliding, stretching", () => {
   const groups = groupSports(SPORTS);
   const other = groups.find((g) => g.family === "other")?.sports.map((s) => s.id) ?? [];
-  expect(other.every((id) => id === "gym" || id === "paragliding")).toBe(true);
+  expect(
+    other.every((id) => id === "gym" || id === "paragliding" || id === "stretch"),
+  ).toBe(true);
   expect(groups.flatMap((g) => g.sports)).toHaveLength(SPORTS.length);
 });
 

@@ -559,7 +559,7 @@ lasciando le righe d'indice.
 - ADR-0380, precisazione B2b — Il sonno a fine palestra e a fine vasca: lo stesso interruttore di B2, e la notte aspetta l'attività nella coda sua prima di partire · 2026-11-12 · Attiva
 - ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km · 2026-11-12 · Attiva
 - ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`) · 2026-11-12 · Attiva
-- ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Proposta
+- ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Attiva
 - ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende · 2026-11-12 · Accettata
 - ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono · 2026-11-11 · Attiva
 - ADR-0387 — Il «+» del Feed: un'attività aggiunta da lì parte con «Everyone», eccezione ad ADR-0304; il foglio «Add activity» con solo «From a file» · 2026-11-12 · Attiva
@@ -577,8 +577,122 @@ lasciando le righe d'indice.
 - ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Proposta
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 - ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo · 2026-11-21 · Attiva
+- ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Proposta
+- ADR-0391 — Il link di un post apre l'app: l'id resta dopo il `#`, l'app prende dall'indirizzo solo un id a forma di disegno e chiede il post all'API, senza account prima l'ingresso; la barra di Safari subito, i link verificati con la prossima build nativa · 2026-11-22 · Attiva
 
 ## Voci nuove
+
+## ADR-0391 — Il link di un post apre l'app: l'id dopo il `#`, solo un id a forma di disegno, la barra di Safari subito e i link verificati con la prossima build
+
+**Stato**: Attiva · 2026-11-22 · TASK-482. Che il link debba aprire il post
+nell'app, la prova della barra di Safari, «prima l'ingresso e poi il post»,
+la frase «Log in to see this drawing.» e la parte nativa «nella prossima»
+build sono **scelte dell'utente** (2026-11-21 e 22, una domanda per volta);
+il resto è deciso dall'agente su delega dell'utente; numero dal
+Coordinatore. Estende ADR-0382 (il link di un post), non lo cambia.
+
+**Contesto**: il link di un post (`https://getmuw.app/p/#<id>`, TASK-455
+parte E) apriva sempre la pagina del sito, anche con MuW installata:
+`app.json` non dichiara né uno schema né domini associati, l'app non
+ascoltava nessun indirizzo in arrivo, il sito non ha `/.well-known/`.
+L'utente, provandolo da WhatsApp il 21 novembre: «dovrebbe aprirsi il post
+nell'app». Ogni riga di `app.json` cambia l'impronta nativa (`5e1b5ce5`) e
+arriva solo con una build dagli store. Lo schema che Expo aggiunge da solo
+(l'identificativo dell'app) sul telefono dell'utente **dà errore**: non ci
+si costruisce sopra.
+
+**Decisione**:
+
+1. **Il link non cambia**: resta `getmuw.app/p/#<id>`, con l'id dopo il
+   `#`, che non arriva a nessun server (ADR-0382), anche quando apre l'app.
+   La pagina resta com'è per chi non ha l'app.
+2. **L'app non si fida dell'indirizzo** (parte A, `links/postLinkIn.ts`):
+   ne prende solo un id a forma di disegno, e solo dalla pagina
+   `POST_LINK_PAGE` in `https`; ogni altro sito, pagina o schema è
+   ignorato. Se il post esiste e chi può vederlo lo dice l'API quando il
+   disegno viene chiesto, come per una notifica toccata
+   (`opens.openDrawing`).
+3. **Senza account, prima l'ingresso**: la pagina dell'account con la riga
+   «Log in to see this drawing.», e il post appena si entra. Il link in
+   attesa vive solo finché l'app è aperta.
+4. **Niente dipendenze nuove**: `Linking` di React Native. L'indirizzo con
+   cui l'app è stata aperta si legge una volta sola; lo stesso post due
+   volte in 3 secondi è uno (il telefono lo consegna in due modi).
+5. **Subito, senza build**: la barra di Safari sulla pagina del link
+   (parte B2) — il meta `apple-itunes-app` fisso in `site/p/index.html`,
+   perché Safari lo legge mentre carica, e `bar.js`, eseguito subito, gli
+   aggiunge `app-argument` con l'indirizzo della pagina. Provata
+   dall'utente: la barra c'è e «Apri» apre MuW.
+6. **Con la prossima build nativa** (parti C e D): `associatedDomains`
+   (`applinks:getmuw.app`), i filtri verificati di Android e uno schema
+   vero in `app.json`; i due file `/.well-known/` sul sito, serviti dal
+   server, prima che la build esca. Solo così il link toccato in WhatsApp
+   apre direttamente l'app, anche su Android.
+
+**Scartate**: un bottone «Open in MuW» con lo schema dell'identificativo
+(sul telefono dà errore); mettere l'id nel percorso o dopo `?` per
+semplificare i link verificati (arriverebbe ai server, contro ADR-0382);
+una build nativa apposta (l'utente: nella prossima); aprire il post anche
+senza account (la pagina del sito lo fa già).
+
+**Conseguenze**: la barra compare anche per un link che non apre più
+nessun post (Safari la legge prima che la pagina lo sappia) e solo in
+Safari, non nel browser interno delle app di chat. Che iOS passi all'app
+l'`app-argument` della barra come indirizzo aperto **non è dimostrato**:
+si vede sul telefono dopo l'OTA della parte A; se non lo fa, la parte A
+resta inerte fino alla build nativa. `site/config.js` ha un solo
+`downloadUrl`, l'App Store anche per chi è su Android: difetto segnalato
+al Coordinatore, non di questo task.
+
+## ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie
+
+**Stato**: Proposta · 2026-11-22 · TASK-483 (parte 0, soli documenti).
+I tre schermi, la regola del suggerimento, l'unione dei nomi liberi e
+«History» dalla guida sono **scelte dell'utente** (risposte 1–4 del task
+file); il resto è **deciso dall'agente su delega dell'utente**, numero dal
+Coordinatore (fork 2).
+
+**Contesto**: l'utente vuole che, scelto un esercizio, l'app dica quanto
+ha fatto le volte scorse e mostri tutto lo storico in modo intelligente.
+Le serie sono già salvate in `gym_sets` (ADR-0327), ma nessun indirizzo le
+rilegge per esercizio e l'app non le mostra.
+
+**Decisione**:
+- **Durante l'allenamento** un riquadro «Last time · {data}» con le serie
+  dell'ultima seduta di quell'esercizio; la prima serie parte coi valori
+  dell'ultima volta. Sotto, un suggerimento di una riga: tutte le serie
+  arrivate alle ripetizioni → +2,5 kg alle stesse ripetizioni, altrimenti
+  lo stesso peso «again»; a corpo libero +1 ripetizione, a tempo +5
+  secondi, il cardio senza. Le ripetizioni da raggiungere sono quelle
+  della scheda seguita, altrimenti quelle della prima serie dell'ultima
+  volta. Il suggerimento non compila i campi.
+- **«History»**: grafico (1M, 3M, 1Y, All), quattro record, tutte le
+  sedute dalla più recente con la freccia sulla seduta prima e «PR». Si
+  apre dall'allenamento e dalla guida «i» (quindi anche da «+ Exercise»).
+- **Il numero del grafico** dipende dal tipo: `load` il **massimale
+  stimato** con la formula di Epley, kg × (1 + ripetizioni / 30), solo da
+  serie con al più 12 ripetizioni (oltre la stima non regge; una seduta
+  senza serie così mostra il peso più alto); `bodyweight` le ripetizioni
+  migliori; `timed` i secondi; `cardio` la distanza. Un punto per seduta:
+  il meglio di quella seduta.
+- **Lo stesso esercizio**: un esercizio del catalogo per la sua chiave; uno
+  col nome libero per il nome senza spazi in testa e in coda, con gli
+  spazi doppi ridotti a uno e in minuscolo.
+- **Un indirizzo nuovo, solo per chi è entrato e solo sulle proprie
+  serie**: `GET /me/gym-history?exercise=` o `?name=`, in un modulo nuovo
+  (`gym_history.py`). Risponde coi record e un punto per seduta su tutto
+  lo storico (pochi byte per seduta, così «All» e i record sono giusti
+  senza scaricare ogni serie), e con le sedute intere a pagine dalla più
+  recente. Contano tutte le serie, anche quelle non `live` e quelle di
+  un allenamento scritto a mano (ADR-0395, quando arriva): lo storico è
+  di chi si allena, la classifica resta com'è. Un indice nuovo su `gym_sets` solo se la misura lo chiede.
+- **Gli allenamenti ancora in coda** sul telefono (`gymOutbox`) contano
+  per «Last time» e «History»: li aggiunge l'app.
+
+**Conseguenze**: parte A sul server col sì dell'utente (controlli in
+`out/TASK-483/SERVER-A.md`); parte B nell'app con un OTA, testi e
+schermate all'utente prima. Un'API di prima risponde `404`: l'app tiene
+spenti riquadro e «History» e lascia i campi come oggi.
 
 ## ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo
 
@@ -1503,7 +1617,9 @@ accende il secondo servizio e cosa leggere dopo: `tasks/TASK-471.md`.
 
 ## ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false`
 
-**Stato**: Proposta · 2026-11-12 · TASK-475, parte 0 (documenti). Lo sport,
+**Stato**: Attiva · 2026-11-22 · TASK-475: A #1340 (server, `0079` al
+passo 15), B #1348, C #1376 (`f5bccf82`, acceso); proposta il
+2026-11-12, parte 0 (documenti). Lo sport,
 il salvataggio come attività, il nome e l'emoji sono **scelte
 dell'utente** (2026-11-12: «Diventa uno sport», «Sì, come la palestra»,
 «Sì, approvati»); il modo è deciso dall'agente su delega dell'utente,

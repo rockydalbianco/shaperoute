@@ -1,4 +1,5 @@
 import type {
+  ActivityFlight,
   RunActivity,
   LatLon,
   RunSource,
@@ -82,6 +83,13 @@ export type ActivityDetail = Omit<Activity, "route_preview" | "track_preview"> &
    * than TASK-258.
    */
   post?: RunPost | null;
+  /**
+   * A race on foot and in the air (TASK-305 part R6d): its parts in the air
+   * on `track` and the two kinds added up. Missing for any other run, and
+   * from an API older than R6d. Read through `activityFlightOf`
+   * (src/air/flightLegs.ts), which trusts only what fits the track.
+   */
+  flight?: ActivityFlight;
 };
 
 /** An emoji on the post: its centre as shares of the picture's width and

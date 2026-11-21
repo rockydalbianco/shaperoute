@@ -39,6 +39,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
   scelte dell'utente, ADR-0393); poi A server … G avviso, file al
   Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`
+- **TASK-483 — Lo storico di ogni esercizio in palestra** · parte 0
+  chiusa il 2026-11-22 (quattro scelte dell'utente, ADR-0392); poi A
+  server e B app, file al Coordinatore prima di ogni parte. File: — ·
+  `tasks/TASK-483.md`
 - **TASK-214 — Il motore dei percorsi sul telefono** · A, B, C, A2, B2 in
   `main`; restano tempi e memoria su un iPhone vero e le zone dove il server
   dà 404. File: — · `tasks/TASK-214.md`
@@ -300,6 +304,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   il 2026-11-21 con le scelte dell'utente (sei voci, ADR-0390); A (la lista e
   «Record now») dopo il merge di TASK-312 C2, lista dei file al Coordinatore.
   File: — · `tasks/TASK-481.md`
+
+- **TASK-482 — Il link di un post apre l'app** (ADR-0391) · parte 0
+  (documenti) chiusa il 2026-11-22; B2 (la barra «Apri» di Safari) online,
+  provata dall'utente; A (l'app apre il post del link) in #1374, poi OTA e
+  prova sul telefono; C e D (link verificati) con la prossima build nativa.
+  File: — · `tasks/TASK-482.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

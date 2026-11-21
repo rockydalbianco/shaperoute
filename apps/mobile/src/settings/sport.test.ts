@@ -82,7 +82,7 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
     "Mountaineering",
     "Gym",
     "Paragliding",
-    // «Soon» until it is turned on (TASK-475 part B).
+    // On since TASK-475 part C.
     "Stretching",
   ]);
   expect(SPORTS.filter((option) => option.ready).map((option) => option.id)).toEqual([
@@ -104,6 +104,8 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
     "alpinism",
     "gym",
     "paragliding",
+    // A stretching session, on since TASK-475 part C.
+    "stretch",
   ]);
   expect(canChoose("run")).toBe(true);
   expect(canChoose("bike")).toBe(true);
@@ -156,8 +158,9 @@ test("«Snowshoes» ❄️ on the snow: shapes on the open snow, and «Record yo
 });
 
 test("«Paragliding» comes last, recorded without a shape since TASK-305 R2", () => {
-  // The last ready: «Stretching» after it is «Soon» (TASK-475 part B).
-  expect(SPORTS.filter((option) => option.ready).at(-1)).toEqual({
+  // Before «Stretching», the last since TASK-475 part C.
+  expect(SPORTS.at(-1)?.id).toBe("stretch");
+  expect(SPORTS.at(-2)).toEqual({
     id: "paragliding",
     emoji: "🪂",
     name: "Paragliding",

@@ -186,10 +186,10 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // server has had part R1 and its migration 0069 since 2026-11-12.
   fromProfile("paragliding", true),
   // A stretching session, saved as "stretching" without a track (TASK-475
-  // part B, ADR-0386): the routines of TASK-466 from «Draw». «Soon» until
-  // the server has part A and its migration 0079 and the user says yes on
-  // the screens.
-  fromProfile("stretch", false),
+  // part B, ADR-0386): the routines of TASK-466 from «Draw». On since the
+  // server has part A and its migration 0079 (step 15, 2026-11-21) and the
+  // user's «Sì, approvo» to the screens (part C).
+  fromProfile("stretch", true),
 ];
 
 /** The sports offered only once «Settings» has them ready. */

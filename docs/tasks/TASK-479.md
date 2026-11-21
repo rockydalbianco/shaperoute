@@ -162,6 +162,30 @@ dell'utente alle cinque domande (in «Scelte dell'utente sulla parte 0»).
 4. I widget di navigazione, spazi aerei e gara compaiono nella lista solo
    quando la loro parte è in `main` (D, E).
 
+**Scelte dell'utente su B1 (2026-11-21)**:
+- **Dove compare**: «Si apre da sola»: la schermata di volo si apre a
+  tutto schermo al decollo (quando la fase passa «In the air»); in alto
+  «Map» torna alla schermata di registrazione di oggi (mappa,
+  condivisione, Stop) e lì un tasto «Flight screen» la riapre. Lo Stop
+  resta solo nella schermata di oggi.
+- **Orizzontale**: «Dopo la 1.1»: `app.json` blocca l'app in verticale;
+  sbloccarla è nativo (fingerprint iOS), quindi entra nella build dopo la
+  1.1 con barometro e fotocamera. B1 è solo verticale.
+
+**Rimandati in B1 per motivi tecnici** (deciso dall'agente su delega
+dell'utente):
+- **AGL** (widget 2) passa ad A1: le quote del terreno si leggono dalla
+  WebView della mappa, che è il lavoro di A1; in B1 il preset «Thermal»
+  mostra «Above takeoff» al suo posto.
+- **Il geoide su Android** passa a E, dove i limiti MSL degli spazi aerei
+  lo rendono necessario; fino ad allora la quota è quella che il telefono
+  dà, come in R2.
+- **Battery** (widget 24): leggere la batteria chiede `expo-battery`, una
+  dipendenza nativa nuova: da chiedere all'utente, con la build dopo la
+  1.1.
+- I grafici (profilo, assistente di termica, bussola) si disegnano con
+  `View`, senza `react-native-svg` (non è nell'app).
+
 **B2 — l'editor** (dopo D ed E):
 1. Pressione lunga su un widget → aggiungi, togli, sposta, ridimensiona
    (1×1 … 4×2), scegli il campo e l'unità.

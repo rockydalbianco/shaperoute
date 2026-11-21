@@ -1,11 +1,12 @@
 # TASK-469 — Il look Liquid Glass
 
 **Stato**: In corso (0 fatta: «Capsula»; A1 e A2 in produzione con l'OTA 14;
-A3 in `main`, esce col prossimo OTA; prossima la fetta dei chip)
+A3 e A4a in produzione al più tardi con l'OTA 17; prossima A4, le card)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
-#1225, `feat/TASK-469-a3-glass-segments` #1276; documenti
-`docs/TASK-469-a-done` #1270, `docs/TASK-469-a3-done` questa)
+#1225, `feat/TASK-469-a3-glass-segments` #1276,
+`feat/TASK-469-a4a-glass-chips` #1290; documenti `docs/TASK-469-a-done`
+#1270, `docs/TASK-469-a3-done` #1287, `docs/TASK-469-a4a-done` questa)
 
 ## Obiettivo
 
@@ -49,6 +50,11 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
     `ExploreTools` ha chip, non segmenti, e va con la fetta dei chip;
     `RoutePanel.tsx` non si tocca (di TASK-413 B) ma prende il vetro da
     `Segmented`;
+  - **A4a fatta** (#1290, in `main` 33c12fb1): i chip in rilievo sul vetro
+    (`ui/glassRaise.ts`): le città di Explore e i chip della ricerca
+    (`FilterChip`), coi loro colori; il giallo del chip scelto resta
+    (TASK-344). Gli altri chip sparsi (calendario, piscina, pagaia,
+    pannello del percorso, Style) restano per una fetta dopo;
   - A4 le card di Explore e Feed (superfici stratificate, raggi più grandi);
   - A5 l'header che si dissolve allo scroll (`AppHeader`);
   - A6 Settings (dopo TASK-457, che tiene `src/profile/**`);
@@ -129,6 +135,12 @@ Spuntati per A1 e A2 (2026-11-12):
   `src/screens/Segmented.test.tsx` (nuovo).
 - A3 (#1276): `apps/mobile/src/screens/Segmented.tsx`,
   `src/game/PlayTabs.tsx`, `src/screens/SegmentedGlass.test.tsx` (nuovo).
+- A4a (#1290): `apps/mobile/src/ui/glassRaise.ts`,
+  `src/ui/glassRaise.test.tsx` (nuovi), `src/explore/ExploreTools.tsx`,
+  `src/search/FilterChip.tsx`.
+- La PR di documenti di A4a: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/*-A4a-*.jpg`, `a4a-*.jpg` (nuove), `docs/STATUS.md`,
+  `docs/DECISIONS.md`, `docs/UI.md`.
 - La PR di documenti di A3: `docs/tasks/TASK-469.md`,
   `docs/tasks/TASK-469/*-A3-*.jpg`, `a3-*.jpg` (nuove), `docs/STATUS.md`,
   `docs/DECISIONS.md`, `docs/UI.md`.
@@ -167,6 +179,10 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
 - Imparato: il simulatore può restare sullo sport di un'altra sessione;
   per Draw e Play si torna a «Run» da Settings. Metro in modo CI non
   ricarica: una variante, un riavvio.
+- **2026-11-12**: A4a (#1290): lista col sì del Coordinatore, codice,
+  turno di simulatore (Explore e ricerca, scuro e chiaro, «Riduci
+  trasparenza»); l'utente approva («Sì, vai»). #1290 in `main` 33c12fb1.
+- **2026-11-21**: PR di documenti di A4a; worktree di A1–A4a rimossi.
 
 ## Schermate prima/dopo
 
@@ -203,7 +219,22 @@ pixel) e la barra `surface` (22,20,17):
 
 ![A3, Riduci trasparenza](TASK-469/a3-dark-reduce-transparency-draw.jpg)
 
+**A4a, i chip** — le città di Explore e i chip della ricerca hanno una
+luce in cima e un'ombra corta; i colori restano, il giallo del chip
+scelto compreso. In chiaro si nota di più il filo di luce sul chip nero
+«Near me»:
+
+![A4a, i chip da vicino](TASK-469/TASK-469-A4a-chip-da-vicino.jpg)
+![A4a scuro, prima e dopo](TASK-469/TASK-469-A4a-scuro-prima-dopo.jpg)
+![A4a chiaro, prima e dopo](TASK-469/TASK-469-A4a-chiaro-prima-dopo.jpg)
+
+Con «Riduci trasparenza» i chip restano piatti e la barra è `surface`
+(22,20,17 al pixel):
+
+![A4a, Riduci trasparenza](TASK-469/a4a-dark-reduce-transparency-explore.jpg)
+
 ## Esito
 
-*(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14); A3 in
-`main` dal 2026-11-12, col prossimo OTA.
+*(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14); A3 e A4a
+in `main` dal 2026-11-12, in produzione al più tardi con l'OTA 17
+(2026-11-18).

@@ -195,6 +195,9 @@ export const SKI_DESCENT_COLOR = color.ski.descent;
 export const SKI_LIFT_COLOR = color.ski.lift;
 export const SKI_LABEL_COLOR = color.ski.onLine;
 export const SKI_LABEL_RADIUS = 10;
+/** A race on foot and in the air (TASK-305 part R6c): the flights in the
+ * route's yellow over the white of the parts on foot. */
+export const FLIGHT_AIR_COLOR = ROUTE_COLOR;
 
 /**
  * The start asked for. MapLibre's default marker is a light blue that reads
@@ -420,6 +423,8 @@ export function buildMapPage(language: Language = appLanguage()): string {
     var track = noRoute;
     // A day of skiing (TASK-375 part C2): its lifts, dashed.
     var lifts = noRoute;
+    // A race on foot and in the air (TASK-305 part R6c): its flights.
+    var flightAir = noRoute;
     // A day of skiing shown (TASK-429 part B): its lines in the ski mode's
     // colours, and the numbers of its descents and lifts.
     var skiDay = false;
@@ -636,6 +641,20 @@ export function buildMapPage(language: Language = appLanguage()): string {
           "line-width": ${TRACK_WIDTH},
           "line-opacity": ${TRACK_OPACITY},
           "line-dasharray": ${toScript(LIFT_DASH)},
+        },
+      });
+      // The flights of a race (TASK-305 part R6c): yellow over the white
+      // of the parts on foot.
+      map.addSource("flight-air", { type: "geojson", data: flightAir });
+      map.addLayer({
+        id: "flight-air",
+        type: "line",
+        source: "flight-air",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(FLIGHT_AIR_COLOR)},
+          "line-width": ${TRACK_WIDTH},
+          "line-opacity": ${TRACK_OPACITY},
         },
       });
       // Their numbers (TASK-429 part B): a dot of the line's colour, the
@@ -1002,6 +1021,13 @@ export function buildMapPage(language: Language = appLanguage()): string {
       var source = map.getSource("lifts");
       if (source) {
         source.setData(lifts);
+      }
+    }
+    function setFlightAir(data) {
+      flightAir = data;
+      var source = map.getSource("flight-air");
+      if (source) {
+        source.setData(flightAir);
       }
     }
     // The colours of a day of skiing on, or the run's back (TASK-429).
@@ -2393,6 +2419,22 @@ export function buildMapPage(language: Language = appLanguage()): string {
               };
             }),
           });
+        } else if (message.type === "showFlight") {
+          setTrack({
+            type: "Feature",
+            properties: {},
+            geometry: { type: "MultiLineString", coordinates: message.foot },
+          });
+          setFlightAir({
+            type: "Feature",
+            properties: {},
+            geometry: { type: "MultiLineString", coordinates: message.air },
+          });
+          if (message.frame) {
+            frameLines(message.foot.concat(message.air));
+          }
+        } else if (message.type === "clearFlight") {
+          setFlightAir(noRoute);
         } else if (message.type === "clearLifts") {
           setLifts(noRoute);
           setSkiDay(false, noRoute);

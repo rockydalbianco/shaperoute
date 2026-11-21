@@ -10,6 +10,7 @@ import { fill, pickLanguage, TEXTS as LIVE_TEXTS } from "../live/texts.js";
 import { apiBase, boundsOf, MAP_COLOURS, mapStyle, unitsOf } from "../live/view.js";
 import { SPORTS, TEXTS } from "./texts.js";
 import {
+  bearingOf,
   factsOf,
   idFromHash,
   lineOf,
@@ -17,6 +18,7 @@ import {
   postUrl,
   RETRY_AFTER_MS,
   titleOf,
+  TURNED_MIN_DEG,
 } from "./view.js";
 
 const languages = navigator.languages ?? [navigator.language];
@@ -84,12 +86,15 @@ function showMap(post) {
   }
   mapBox.hidden = false;
   const { colours, track, casing } = mapColours();
+  // Turned as the drawing, so its shape reads upright, as in the app.
+  const bearing = bearingOf(post.rotation_deg);
   try {
     map = new window.maplibregl.Map({
       container: mapElement,
       style: mapStyle(colours, lang),
+      bearing,
       bounds: boundsOf(post.track),
-      fitBoundsOptions: { padding: 48, maxZoom: 16 },
+      fitBoundsOptions: { padding: 48, maxZoom: 16, bearing },
       attributionControl: false,
       dragRotate: false,
       pitchWithRotate: false,
@@ -101,7 +106,12 @@ function showMap(post) {
     return;
   }
   map.addControl(new window.maplibregl.AttributionControl({ compact: false }));
-  map.addControl(new window.maplibregl.NavigationControl({ showCompass: false }), "top-right");
+  // On a turned map the compass says where north is; a tap puts it up.
+  const turned = Math.abs(bearing) >= TURNED_MIN_DEG;
+  map.addControl(
+    new window.maplibregl.NavigationControl({ showCompass: turned, visualizePitch: false }),
+    "top-right",
+  );
   const drawn = map;
   // The style is written here: the line can draw before the tiles come.
   drawn.once("style.load", () => {

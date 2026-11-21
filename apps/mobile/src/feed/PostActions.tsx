@@ -20,7 +20,8 @@ import {
 import { Tap } from "../ui/Tap";
 import type { ShownPost } from "./feedPosts";
 import { PostReactions, type PostReactionsHandle, type RowBox } from "./PostReactions";
-import { PostShareSheet, usePostSendable } from "./PostShareSheet";
+import { usePostLink } from "./postLink";
+import { PostShareSheet, usePostReader, usePostSendable } from "./PostShareSheet";
 
 /** The actions' icons, from Lucide (ISC, assets/ui/icons/LICENSE-lucide.txt)
  * as the bar's are (TASK-444): white, coloured by `tintColor`. Emoji in
@@ -97,6 +98,9 @@ export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
   const [sharing, setSharing] = useState(false);
   const [shared, setShared] = useState(false);
   const sendable = usePostSendable();
+  // «Share link» (TASK-455 part E): only on a post the API says has a link,
+  // and on none of one's own once «Links to my posts» is off.
+  const link = usePostLink(post.drawing, mine, usePostReader());
   const comments = useDrawingComments(post.drawing.id);
   const commentCount =
     comments.status === "ready" && comments.total > 0 ? ` · ${comments.total}` : "";
@@ -155,7 +159,7 @@ export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
             testID="post-comment"
           />
         )}
-        {(mine || sendable) && (
+        {(mine || sendable || link !== null) && (
           <Action
             icon={ICONS.share}
             label={t("Share")}
@@ -201,6 +205,7 @@ export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
           visible={sharing}
           post={postOfFeed(post.drawing)}
           poster={mine ? () => postOfDrawing(post) : undefined}
+          link={link}
           onClose={() => setSharing(false)}
         />
       )}

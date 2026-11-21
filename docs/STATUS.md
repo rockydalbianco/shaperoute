@@ -242,6 +242,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   produzione il 2026-11-12: «Share» su ogni post, il post in chat come
   rimando (ADR-0382). Resta la prova dell'utente sul telefono. Prossima C
   (server: link e interruttore), poi D sito, E app. File: — · `tasks/TASK-455.md`
+  **Chiuso il 2026-11-21**: C sul server (passo 13), D ed E in `main` (#1308, #1309); restano l'OTA della parte E e la copia del sito, col sì dell'utente; vedi `archive/COMPLETATI.md`.
 
 - **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (OTA
   12); B (dieci esercizi, tre routine da 3, 5, 10 min, la gamba staccata

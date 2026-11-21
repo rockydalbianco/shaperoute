@@ -2916,6 +2916,11 @@ export const FR: Table = {
   Mountaineering: "Alpinisme",
   // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
   Stretching: "Étirements",
+  // «Draw» with the sport «Stretching» (TASK-475 part B), approved by the
+  // user on 2026-11-21.
+  "Start stretching": "Commencer les étirements",
+  "No route for stretching: choose a routine and MuW guides you.":
+    "Pas de parcours pour les étirements : choisis une routine, MuW te guide.",
   "Before you climb": "Avant de grimper",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW enregistre ton ascension et la partage : il ne te guide pas. Pars avec ton matériel, ton expérience et ton jugement, et vérifie les conditions avant de partir.",

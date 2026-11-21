@@ -2920,4 +2920,10 @@ export const IT: Table = {
   Plan: "Programma",
   "Couldn't plan the live. Try again.":
     "Non è stato possibile programmare la live. Riprova.",
+  // src/liveShare/plannedPost.ts (TASK-468 part B2b2: the live becomes the
+  // post; en and it approved by the user 2026-11-12)
+  "Post it in the Feed?": "Pubblicarla nel Feed?",
+  "Your live becomes the post of this activity.":
+    "La tua live diventa il post di questa attività.",
+  "Don't post": "Non pubblicare",
 };

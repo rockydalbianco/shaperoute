@@ -320,6 +320,9 @@ dell'app e della pagina**, ognuno col sì dell'utente.
    scritti qui. La lettura dei GRIB (eccodes/cfgrib) è una dipendenza
    nuova sul server: **la lista va chiesta prima**. Server e OTA col sì
    dell'utente.
+5. Il meteo, come ogni servizio esterno nuovo, va nella privacy (app e
+   sito) e passa dall'utente prima della produzione (Coordinatore,
+   2026-11-21).
 
 ## Gli avvisi (approvati dall'utente il 2026-11-21)
 

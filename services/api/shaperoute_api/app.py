@@ -424,8 +424,6 @@ def create_app(
     # Up to three photos of a drawing, besides its map (TASK-208); they need
     # a token.
     install_drawing_photos(app)
-    # «Together»: the tracks with their times, only to the author of a post
-    # and only of the runs it may see (TASK-417 D1); they need a token.
     install_together(app)
     # The photos of a profile's drawings, a page at a time (TASK-324); they
     # need a token.

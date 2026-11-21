@@ -30,7 +30,7 @@ const listeners = new Set<() => void>();
 // (TASK-332). The tab shell has one, laid out whatever page is on screen
 // (TASK-480); a profile over the big map, where the shell is taken down, has
 // its own. The first must be laid out: a map page under `display: none`
-// draws nothing, and its pictures are given up on one by one.
+// never says it is ready, and every picture waits for as long as it is there.
 let shooters: readonly object[] = [];
 
 function subscribe(listener: () => void): () => void {

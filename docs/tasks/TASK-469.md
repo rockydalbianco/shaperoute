@@ -1,14 +1,15 @@
 # TASK-469 — Il look Liquid Glass
 
 **Stato**: In corso (0 fatta: «Capsula»; A1 e A2 in produzione con l'OTA 14;
-A3 e A4a in produzione al più tardi con l'OTA 17; A4b in `main`, col
-prossimo OTA dopo il 19; prossima A4c, le card del Feed)
+A3 e A4a in produzione al più tardi con l'OTA 17; A4b e A4c in `main`,
+col prossimo OTA dopo il 19; prossima A5)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
 `feat/TASK-469-a4a-glass-chips` #1290, `feat/TASK-469-a4b-explore-cards`
 #1333; documenti `docs/TASK-469-a-done` #1270, `docs/TASK-469-a3-done`
-#1287, `docs/TASK-469-a4a-done` #1329, `docs/TASK-469-a4b-done` questa)
+#1287, `docs/TASK-469-a4a-done` #1329, `docs/TASK-469-a4b-done` questa, per
+A4b e A4c; `feat/TASK-469-a4c-feed-cards` #1344)
 
 ## Obiettivo
 
@@ -62,8 +63,11 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
     vetro disegnato sopra la card (`cardEdge`) e la percentuale in alto a
     destra su una capsula di vetro posata; le parole restano sotto il
     disegno;
-  - A4c le card del Feed (`FeedPost`): raggio 28, titolo e numeri sopra la
-    foto su una lastra di vetro al posto di `Scrim`;
+  - **A4c fatta** (#1344, in `main` a7a7bd8e): le card del Feed
+    (`FeedPost`) col raggio 28; sopra una foto titolo e numeri stanno su
+    una capsula di vetro dentro la foto, a 8 pt dal bordo, al posto della
+    sfumatura `Scrim` (a capsula intera, scelta dell'utente del
+    2026-11-21); il contatore delle foto è una capsula di vetro;
   - A5 l'header che si dissolve allo scroll (`AppHeader`);
   - A6 Settings (dopo TASK-457, che tiene `src/profile/**`);
   - A7 il resto (fogli, isola, chip), da elencare dopo A6.
@@ -150,9 +154,14 @@ Spuntati per A1 e A2 (2026-11-12):
   `src/explore/RouteCard.tsx`, `src/explore/RouteCardGlass.test.tsx`
   (nuovo), `src/explore/RouteCard.test.tsx` (una riga, `radius.xl` →
   `radius.card`, col sì del Coordinatore).
-- La PR di documenti di A4b: `docs/tasks/TASK-469.md`,
-  `docs/tasks/TASK-469/*-A4b-*.jpg` (nuove), `docs/STATUS.md`,
-  `docs/DECISIONS.md`, `docs/UI.md`.
+- A4c (#1344): `apps/mobile/src/feed/FeedPost.tsx`,
+  `src/feed/FeedPostGlass.test.tsx` (nuovo), `src/feed/FeedPost.test.tsx`
+  (una riga, `radius.xl` → `radius.card`) e un test di
+  `src/feed/FeedPostPhotos.test.tsx` (la capsula al posto di `Scrim`),
+  tutti e due col sì del Coordinatore.
+- La PR di documenti di A4b e A4c: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/*-A4b-*.jpg`, `*-A4c-*.jpg`, `a4c-*.jpg` (nuove),
+  `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md`.
 - La PR di documenti di A4a: `docs/tasks/TASK-469.md`,
   `docs/tasks/TASK-469/*-A4a-*.jpg`, `a4a-*.jpg` (nuove), `docs/STATUS.md`,
   `docs/DECISIONS.md`, `docs/UI.md`.
@@ -203,6 +212,16 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   York, che mostrano la percentuale); l'utente approva («Sì, vai»). #1333
   in `main` cc58c258, col prossimo OTA dopo il 19. Il Coordinatore attivo
   è ora «Coordinatore (fork 2)».
+- **2026-11-21**: A4c (#1344): lista e due test col sì del Coordinatore. Il
+  primo turno di simulatore si è interrotto (gli strumenti dell'app non
+  rispondevano); nel secondo, con un database locale e due foto finte
+  (una chiara, una scura) su un post di prova. L'utente sceglie la
+  capsula intera per la didascalia («Sì, a capsula») e approva le
+  schermate («Sì, vai»). #1344 in `main` a7a7bd8e.
+- Imparato: i post d'esempio del Feed non hanno foto; per vederne servono
+  un database e un account (`out/TASK-469/seed.py`, `add_photos.py`).
+  `@bacons/apple-targets` (in `main`) non è nel `node_modules` del checkout
+  principale: Metro da un worktree lo vuole collegato.
 
 ## Schermate prima/dopo
 
@@ -261,8 +280,17 @@ trasparenza» la card è come prima, la barra `surface`:
 ![A4b, le card da vicino](TASK-469/TASK-469-A4b-card-da-vicino.jpg)
 ![A4b, prima e dopo, e Riduci trasparenza](TASK-469/TASK-469-A4b-prima-dopo.jpg)
 
+**A4c, le card del Feed** — prima il titolo bianco su `Scrim` spariva
+sopra un cielo chiaro; ora sta su una capsula di vetro e si legge su
+ogni foto, in tutti e due i toni. Sulla foto scura in tono chiaro i
+puntini si intravedono appena attraverso la capsula. Con «Riduci
+trasparenza» la capsula è opaca:
+
+![A4c, prima e dopo](TASK-469/TASK-469-A4c-card-del-feed.jpg)
+![A4c, Riduci trasparenza](TASK-469/a4c-dark-reduce-transparency-bright.jpg)
+
 ## Esito
 
 *(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14); A3 e A4a
 in `main` dal 2026-11-12, in produzione al più tardi con l'OTA 17
-(2026-11-18); A4b in `main` dal 2026-11-21, col prossimo OTA.
+(2026-11-18); A4b e A4c in `main` dal 2026-11-21, col prossimo OTA.

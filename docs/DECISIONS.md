@@ -1691,6 +1691,12 @@ usano i chip delle città e `FilterChip`. Il giallo del chip scelto resta
 `radius.card` = 28 (`xl` resta 20 per chi lo usa). Il bordo della card è
 una vista sopra la card, non un'ombra della card stessa: un'ombra interna
 starebbe sotto il disegno e la foto, che la coprirebbero.
+**A4c (#1344)**: nel Feed la sfumatura `Scrim` sotto le parole di una foto
+lascia il posto a una capsula di vetro posata (`segmentTrackFace`); la
+forma a capsula intera è scelta dell'utente (2026-11-21). Le parole
+prendono i colori del testo; un test controlla anche le calorie a 4,5:1
+sul vetro. `Scrim` e i token `onScrim` restano per gli altri che li
+usano.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

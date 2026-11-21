@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), server in `main` (#1317, `ee9f143c`, col sì dell'utente «Le otto forme», 2026-11-18), passo 14 sul server da fare; app nella bozza #1248; le città estere in un secondo giro
+**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), server in `main` (#1317, `ee9f143c`, col sì dell'utente «Le otto forme», 2026-11-18), **sul server dal 2026-11-21** (passo 14, 06:43Z); app in `main` (#1248, `ab51d0fd`, 2026-11-21), nell'app con l'OTA 18 (sì dell'utente); le città estere in un secondo giro
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -480,9 +480,42 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
       con gli stessi id e gli stessi punti, 148 uscite in `others`;
       `exploreCatalogEdit.test.ts` verde sul seme nuovo.
 - [x] CI verde, merge del Coordinatore (#1317, `ee9f143c`); `app.py` reso al Coordinatore.
-- [ ] PR dell'app, OTA (sì dell'utente).
+- [x] Passo sul server (passo 14, 2026-11-21 06:43Z) e PR dell'app (#1248, `ab51d0fd`).
+- [ ] OTA (sì dell'utente) e un'occhiata sul telefono: sport «Bike», poi «Explore».
 
 ## Dove siamo
+
+*2026-11-21, B2*: **sul server e in `main`**. Passo 14 alle 06:43Z (server a
+`ee9f143c`), tutti i controlli di `out/TASK-441/SERVER-B2.md` come attesi:
+`1694 recommended routes`, senza `activity` le righe di prima (`60 50 50
+pen-up 19 milano-star-12000-0 activity 0`, `1546 63 40 0`), in bici `8
+milano-circle-20000-90` e `148 29 40`. Memoria dell'API 925 MiB contro 899
+prima del passo: i 26 MB del catalogo (i 362 MiB scritti in SERVER-B2.md
+erano di un riavvio più vecchio). **App**: `main` unito nella #1248, fuori
+dalla bozza, unita dal Coordinatore al verde (`ab51d0fd`); niente prova in
+un simulatore col server vero, la prova è `ExploreBike.test.tsx` e la CI.
+Resta l'**OTA 18** (sì dell'utente, lo chiede il Coordinatore) e un'occhiata
+sul telefono.
+
+**Città estere, secondo giro (in corso)**: via del Coordinatore il
+2026-11-21. Elenco ed estratti in `out/TASK-441/b2/ESTERE-ESTRATTI.md`: 32
+città, l'estratto Geofabrik più piccolo che contiene tutto il riquadro
+della zona; per Amburgo, Londra, New York e Amsterdam i pezzi piccoli uniti
+con `osmium merge` (12,4 GB in tutto invece di 20,4). Copione:
+`zsh out/TASK-441/b2/run-estere.sh [città …]` dal checkout principale
+(piano `estere-plan.tsv`, registro `run-estere.log`): scarica, controlla
+l'md5, filtra le strade, unisce i pezzi, poi `run-bike.sh` su quel file.
+Regole del Coordinatore: una città per volta; un simulatore acceso prima di
+una città ferma tutto (uscita 5) e gli si scrive; carico sotto 10 e memoria
+libera al 30%; **il limite di 4 GB del pianificatore non si alza**: una
+città che lo passa viene fermata, scritta in `estere-stopped.txt` e chiesta
+al Coordinatore alla fine. Un download fallito salta la città
+(`estere-retry.txt`), da rifare dopo. Madrid, la prova: 8 disegni su 8
+passano e si leggono, ma il pianificatore è arrivato a 4499 MB e il
+controllo di allora (ogni 10 s) non l'ha visto; ora guarda ogni 2 s.
+Valencia 2911 MB, 8 su 8. Poi: fogli a occhio (`contact_city.py`),
+`catalog_bike.py --propose` / `--write`, una PR del solo catalogo e un
+altro passo sul server.
 
 *2026-11-18, sera, B2*: **la #1317 è in `main`** (`ee9f143c`); `app.py` reso
 al Coordinatore, che prepara il passo 14 con `out/TASK-441/SERVER-B2.md` e

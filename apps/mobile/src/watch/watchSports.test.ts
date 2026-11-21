@@ -64,8 +64,12 @@ describe("the watch's sports", () => {
     // A flight neither, until a part of its own (TASK-305, ADR-0375).
     const flight = WATCH_SPORTS.find((sport) => sport.activity === "paragliding");
     expect(flight).toMatchObject({ appleWorkout: 3000, onWatch: false });
+    // A stretching session indoors too, and off the watch (TASK-475).
+    const stretch = WATCH_SPORTS.find((sport) => sport.activity === "stretching");
+    expect(stretch).toMatchObject({ appleWorkout: 62, gps: false, onWatch: false });
     expect(WATCH_SPORTS.filter((sport) => !sport.gps).map((s) => s.activity)).toEqual([
       "gym",
+      "stretching",
     ]);
   });
 

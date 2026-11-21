@@ -3335,6 +3335,34 @@ con la vasca e le vasche. Token richiesto; tipi in
   /drawings/{id}/pool-swim` dà medio e massimo agli altri solo se
   `heart_shown`. Senza battito le risposte non hanno i campi, come prima.
 
+### Stretching (TASK-475, ADR-0386)
+
+Una sessione di stretching: una corsa dell'attività `stretching` **senza
+traccia**, come la palestra, con la routine fatta. Token richiesto; tipi in
+`shared-types/src/stretchSession.ts` (`StretchSessionRequest`,
+`StretchSession`, `StretchFigures`), esempio in
+`fixtures/stretch-session.json`; il codice in `stretch_sessions.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/stretch-sessions/{key}` | salva la sessione: inizio, fine, pause, routine, minuti, esercizi fatti | `201` `StretchSession` la prima volta, poi `200` com'era; `409` se la chiave è di una corsa |
+| `GET /me/stretch-sessions/{key}` | la sessione del suo proprietario | `200` `StretchSession`, o `404` |
+| `GET /drawings/{id}/stretch` | routine, minuti ed esercizi del post, per chi vede il disegno | `200` `StretchFigures`, o `404` |
+
+- **Il tempo lo conta il server**: da `started_at` a `ended_at` meno le
+  pause (sovrapposte contate una volta), al più 4 ore. `routine` è la chiave
+  della routine sul telefono (`morning`, `afterRun`, `afterGym`, TASK-466
+  B: lettere, cifre e `_`, al più 40); `minutes` da 1 a 60 (oggi 3, 5 o
+  10); `exercises` da 0 a 100, quelli fatti, «Skip» esclusi. Distanza 0.
+- **Pubblicata come ogni corsa**, con `PUT /me/activities/{key}/drawing`:
+  senza linea (`track: []`). Un'attività con traccia è `422`, come per la
+  palestra.
+- **Solo a chi la sa leggere**: `X-MuW-Reads` deve dire `stretching` **e**
+  `trackless`. Un'app di prima non la riceve: niente in «My activities» né
+  nel Feed, `404` sul dettaglio e su `/stretch`.
+- Nessun punteggio di forma, nessun record, nessun luogo, niente Strava
+  (una corsa senza traccia non si manda). Test in `test_stretching_api.py`.
+
 ### Sleep (TASK-467 parti B1 e B1b, ADR-0380)
 
 Le notti di sonno che una persona pubblica. Il punteggio lo calcola il

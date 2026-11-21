@@ -55,6 +55,9 @@ SOURCE = {"source"}
 # The climb in the list (TASK-461 D1): the fixtures written before are what
 # an older API answers.
 CLIMB = {"climb_m"}
+# A race's parts (TASK-305 part R6d): left out of the answer for any other
+# run (activity-flight.json).
+FLIGHT_PARTS = {"flight"}
 # The phone's offset for the game (TASK-423 C): only a newer app sends it.
 OFFSET = {"utc_offset_min"}
 MUW = {"source": "muw"}
@@ -188,6 +191,7 @@ def test_the_fixtures_are_the_contract() -> None:
         - TURN
         - POST
         - SOURCE
+        - FLIGHT_PARTS
     )
     # A word with the pen up (TASK-199): every field but the activity.
     walked = _load("activity-request-walks.json")
@@ -198,12 +202,17 @@ def test_the_fixtures_are_the_contract() -> None:
     ActivityRequestBody.model_validate(walked)
     whole_walked = _load("activity-walks.json")
     assert set(whole_walked) == (
-        set(ActivityDetailBody.model_fields) - {"pauses"} - TURN - POST - SOURCE
+        set(ActivityDetailBody.model_fields)
+        - {"pauses"}
+        - TURN
+        - POST
+        - SOURCE
+        - FLIGHT_PARTS
     )
     # The same run opened from the API of TASK-200: every field.
     whole_paused = _load("activity-pauses.json")
     assert set(whole_paused) == (
-        set(ActivityDetailBody.model_fields) - TURN - POST - SOURCE
+        set(ActivityDetailBody.model_fields) - TURN - POST - SOURCE - FLIGHT_PARTS
     )
     assert {**whole_paused, "pauses": None} == {**whole_walked, "pauses": None}
     ActivityDetailBody.model_validate(whole_paused)
@@ -216,7 +225,9 @@ def test_the_fixtures_are_the_contract() -> None:
     assert {**turned, "rotation_deg": None} == {**body, "rotation_deg": None}
     assert ActivityRequestBody.model_validate(turned).rotation_deg == -30
     whole_turned = _load("activity-turned.json")
-    assert set(whole_turned) == set(ActivityDetailBody.model_fields) - POST - SOURCE
+    assert set(whole_turned) == (
+        set(ActivityDetailBody.model_fields) - POST - SOURCE - FLIGHT_PARTS
+    )
     assert ActivityDetailBody.model_validate(whole_turned).rotation_deg == -30
 
 

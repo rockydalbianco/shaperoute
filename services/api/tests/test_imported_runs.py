@@ -204,7 +204,8 @@ def test_the_examples_are_the_bodies() -> None:
     assert set(listed["activities"][0]) == set(ActivityBody.model_fields) - {"climb_m"}
     assert ActivitiesBody.model_validate(listed).activities[0].source == "file"
     whole = _load("activity-imported.json")
-    assert set(whole) == set(ActivityDetailBody.model_fields)
+    # A race's parts (TASK-305 part R6d): left out for any other run.
+    assert set(whole) == set(ActivityDetailBody.model_fields) - {"flight"}
     assert ActivityDetailBody.model_validate(whole).source == "file"
     mine = _load("my-drawing-imported.json")
     assert set(mine) == set(MyDrawingBody.model_fields)

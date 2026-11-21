@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type ViewStyle,
 } from "react-native";
 import { t } from "../i18n";
 
@@ -16,16 +17,21 @@ import { useFeedMap } from "../feed/FeedMaps";
 import { MAP_CREDIT } from "../feed/FeedPost";
 import { turnedLine } from "../feed/turnedLine";
 import { bearingOf } from "../map/turnedMap";
+import { segmentTrackFace } from "../screens/Segmented";
 import {
   color,
   font,
   fontSize,
   fontWeight,
+  glass,
+  type GlassColors,
+  type Palette,
   radius,
   route as routeLine,
   space,
 } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
+import { type GlassMode, useGlassMode } from "../ui/useGlassMode";
 import { thumbSegments } from "./RouteThumb";
 import { useTapNotSwipe } from "./useTapNotSwipe";
 
@@ -41,6 +47,39 @@ const DOT_SIDE = 5;
 
 /** No line: nothing to lay a map under. */
 const NO_LINE: LatLon[] = [];
+
+/**
+ * The edge of a card in `mode` (TASK-469 A4b, ADR-0383, «Capsula»), drawn
+ * over the card so the drawing and the photo do not hide it: on the glass a
+ * thin rim and a line of light on top; with «Increase Contrast» the strong
+ * edge of the controls; with «Reduce Transparency» none, as before.
+ */
+export function cardEdge(
+  mode: GlassMode,
+  colors: GlassColors = glass,
+  palette: Palette = color,
+): ViewStyle {
+  const edge = (of: string) => ({
+    inset: true,
+    offsetX: 0,
+    offsetY: 0,
+    blurRadius: 0,
+    spreadDistance: 1,
+    color: of,
+  });
+  if (mode === "glass") {
+    return {
+      boxShadow: [
+        edge(colors.rim),
+        { inset: true, offsetX: 0, offsetY: 1, blurRadius: 0, color: colors.rimTop },
+      ],
+    };
+  }
+  if (mode === "contrast") {
+    return { boxShadow: [edge(palette.borderStrong)] };
+  }
+  return {};
+}
 
 /** How wide a card is when two stand side by side in `width`, `gap` apart. */
 export function cardWidth(width: number, gap: number = space.md): number {
@@ -163,6 +202,7 @@ export function RouteCard({
   accessibilityLabel,
 }: Props) {
   const height = cardDrawingHeight(width);
+  const mode = useGlassMode();
   const bearing = bearingOf(rotationDeg);
   const mapped = map && line !== null ? line : NO_LINE;
   const framing = useMemo(
@@ -289,7 +329,10 @@ export function RouteCard({
           drawingPage
         )}
         {match !== undefined && (
-          <View style={styles.match}>
+          <View
+            style={[styles.match, segmentTrackFace(mode)]}
+            testID="route-card-match"
+          >
             <Text style={styles.matchText}>{`${Math.round(match * 100)}%`}</Text>
           </View>
         )}
@@ -304,6 +347,11 @@ export function RouteCard({
           </Text>
         )}
       </View>
+      <View
+        style={[StyleSheet.absoluteFill, styles.edge, cardEdge(mode)]}
+        pointerEvents="none"
+        testID="route-card-edge"
+      />
     </>
   );
   if (onPress === undefined) {
@@ -328,9 +376,10 @@ export function RouteCard({
 }
 
 const styles = StyleSheet.create({
-  // A drawing or a photo at its face: the large radius, no border (TASK-339).
+  // A drawing or a photo at its face, no border (TASK-339); the radius of
+  // the glass look's cards and its edge drawn over it (TASK-469 A4b).
   card: {
-    borderRadius: radius.xl,
+    borderRadius: radius.card,
     backgroundColor: color.surface,
     overflow: "hidden",
   },
@@ -344,7 +393,11 @@ const styles = StyleSheet.create({
     borderRadius: LINE_WIDTH / 2,
     backgroundColor: routeLine.color,
   },
-  // Not yellow: that is the line's (docs/UI.md, «Il tema»).
+  edge: {
+    borderRadius: radius.card,
+  },
+  // Not yellow: that is the line's (docs/UI.md, «Il tema»). A capsule of
+  // glass laid on the drawing (TASK-469 A4b): `segmentTrackFace`.
   match: {
     position: "absolute",
     top: space.sm,
@@ -352,9 +405,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.sm,
     paddingVertical: space.xs / 2,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: color.border,
-    backgroundColor: color.background,
   },
   matchText: {
     color: color.text,

@@ -191,6 +191,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (bici, canoa, nuoto) e C. File (#1185): `apps/mobile/src/explore/{ExploreScreen.tsx,explored.ts,recommendedRoutes.ts}`, `apps/mobile/src/route/NearYou.tsx`
   **2026-11-12, 12:28Z**: B1 in produzione — server a 1546 (passo 10), app nell'OTA 12.
   **2026-11-18**: **B2** (ADR-0366, precisazione): 148 uscite in bici da 20–30 km, otto forme lette a occhio, 29 città italiane; catalogo a 1694, server in `main` (#1317), passo 14 e OTA con la #1248 (bozza) col sì dell'utente. Poi le città estere, B3 (40–50 km) e C. File (#1248): `apps/mobile/src/explore/{recommendedRoutes.ts,catalogList.ts,ExploreScreen.tsx}`, `apps/mobile/App.tsx` (una riga)
+  **2026-11-21**: B2 sul server (passo 14, 06:43Z, catalogo a 1694, le corse identiche per chi non chiede `activity`); app in `main` (#1248, `ab51d0fd`): le uscite si vedono con lo sport «Bike» dopo l'OTA 18 (sì dell'utente). Città estere: secondo giro in corso sul Mac (estratti Geofabrik, limite 4 GB del pianificatore), poi una PR del solo catalogo.
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
@@ -223,6 +224,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B2b (palestra e vasca), B3, C.
   **B2b in `main`** (#1244, `bb3d3457`: il sonno a fine palestra e a fine
   vasca, spenta). Prossima B3 (la scheda «Sleep» del profilo), poi C.
+  **B3 in `main`** (#1292, `b6e36fcb`: la scheda «Sleep» del profilo,
+  spenta). **C avviata il 2026-11-21**: bozza #1334 da non unire (lettore
+  vero, sonno acceso) e build di prova per il solo iPhone dell'utente.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`
@@ -231,6 +235,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Poi A1b dopo TASK-455 A.
   **2026-11-12 sera**: A1a, A2a (#1245) e A1b (#1265) sul server (passi 11 e
   12); B1 (app) in `main` (#1275), esce con un OTA col sì. Prossime A2b, B2.
+  **2026-11-18**: B1 in produzione (OTA 17); A2b sul server (passo 13);
+  B2a in `main` (#1301), col prossimo OTA. Prossime B2b1 e B2b2.
 
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
@@ -252,9 +258,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
 - **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
-  l'OTA 14; A3 pista di vetro (#1276) in `main`, col prossimo OTA. Prossima
-  i chip, lista al Coordinatore prima del codice; B dopo la 1.1.0. File: —
-  · `tasks/TASK-469.md`
+  l'OTA 14; A3 pista di vetro (#1276) e A4a chip (#1290) in produzione al
+  più tardi con l'OTA 17. Prossima A4 (card), lista al Coordinatore prima
+  del codice; B dopo la 1.1.0. File: — · `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);

@@ -654,6 +654,13 @@ opaco col bordo `border`, con «Aumenta contrasto» col bordo
 `borderStrong`; la pillola resta piatta. Le schede di Play (`PlayTabs`)
 hanno lo stesso aspetto, con la loro molla e il loro tick.
 
+**I chip in rilievo** (TASK-469 A4a, `src/ui/glassRaise.ts`): i chip delle
+città in Explore e quelli della ricerca (`FilterChip`) escono dalla pagina
+come la pillola dei segmenti: un filo di luce in cima e un'ombra corta. Non
+aggiunge colore: ognuno tiene il suo, il giallo del chip scelto compreso.
+Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Gli altri
+chip dell'app non lo hanno ancora.
+
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
 piccola, si allarga, poi si alza; le parole compaiono quando è aperta,
@@ -3865,6 +3872,30 @@ cui tiene i numeri.
   Fermare una condivisione senza link chiede «Stop sharing?» con «Nobody
   can follow you any more.» (scelta 8); con un link resta «The link stops
   working now.».
+- **«Plan a live», la partenza e il tocco della push** (TASK-468 parte
+  B2b1, ADR-0381). In cima alla fila «Live», con un account, la riga «Plan
+  a live ›» (scelta 9) apre un foglio a tutto schermo: lo sport di
+  «Settings», «Name (e.g. Milano Marathon)», «Day and time» (giorno e ora
+  coi pulsanti − e +, a passi di 15 minuti, da adesso a 60 giorni; prima
+  domani alle 9:00), «Who can follow» (Followers · Everyone), «Show my
+  heart rate» spento, «Not now» · «Plan». Quando una registrazione parte
+  (fine del conto alla rovescia) e c'è una propria live programmata nelle
+  sue ore, l'avviso «Start live "{title}"?» con «Your followers can follow
+  you now.» o «Everyone can follow you now.», «Not this time» · «Start
+  live» (scelta 3); mai da sola. Mentre si registra, la propria scheda
+  programmata nella fila ha «Start live». La push «… is live» toccata apre
+  la schermata dal vivo, col nome di chi la fa letto dalla programmata.
+- **La live diventa il post** (TASK-468 parte B2b2, scelta 5; testi
+  approvati il 2026-11-12). Se la registrazione è partita da una live
+  programmata («Start live»), alla fine il modulo di «Save» chiede una volta
+  «Post it in the Feed?» con «Your live becomes the post of this
+  activity.», «Don't post» · «Post». «Post» mette nel modulo chi vede il
+  post come il pubblico della live (Everyone o Followers) e, se non c'è,
+  il titolo della gara (il modulo si ridisegna per mostrarlo); il resto
+  come sempre, decide «Save». Quando il post
+  è sull'API e altri lo vedono, l'app lo lega alla programmata (`PUT
+  /me/planned-lives/{id}/post`) e nel Feed la scheda della live lascia il
+  posto al post. «Don't post», o un post «Only me», non lega niente.
 - **La piscina mentre nuoti** (TASK-424 parte C1): sotto l'orologio due
   numeri, «Lengths» (le vasche stimate dal passo delle nuotate prima, 2:00
   /100 m senza nessuna; 0 prima di mezza vasca) e «Calories» («85 kcal»,
@@ -5220,8 +5251,17 @@ TASK-305.md, «Testi di R6».
   1:43:30», anche sulla foto e in quello che legge VoiceOver. Nella pagina
   del post il riepilogo ha due righe in più dopo il tempo, «On foot» e «In
   the air».
-- **La mappa a due colori** (bianco a piedi, giallo in aria) è la parte
-  R6c, ancora da fare.
+- **La mappa a due colori** (TASK-305 parte R6c), alla fine della gara.
+  - La linea dei tratti a piedi è il bianco della corsa; i voli sono sopra,
+    nel giallo del percorso, pieni (non tratteggiati come le risalite dello
+    sci).
+  - Il banner dice «White: on foot. Yellow: in the air.» al posto di
+    «White: where you flew.». Un volo senza tratti a piedi resta tutto
+    bianco, come prima.
+  - I tratti si calcolano sul telefono dalla traccia e dalle correzioni a
+    mano (`src/air/flightLegs.ts`), come quelli della fine.
+  - La pagina dell'attività riaperta più tardi è la parte R6d, ancora da
+    fare: lì i tratti arrivano dal server.
 
 ### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
 

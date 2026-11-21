@@ -214,5 +214,6 @@ def test_the_migration_adds_paragliding_to_runs_only_and_keeps_the_rest(
     # Every activity of a run is let in once all migrations up to this one
     # ran, but the ones of a later migration: a wheelchair (0071, TASK-414),
     # alpinism (TASK-463).
-    later = {"wheelchair", "alpinism"}
+    # And stretching (TASK-475).
+    later = {"wheelchair", "alpinism", "stretching"}
     assert set(get_args(RunActivity)) - later <= set(after["runs_activity_check"])

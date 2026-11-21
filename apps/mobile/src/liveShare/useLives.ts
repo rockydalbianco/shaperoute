@@ -17,12 +17,16 @@ export const ROW_MOST = 5;
 export type Lives = {
   lives: LiveItem[];
   remind: (live: LiveItem, on: boolean) => void;
+  /** Read the row again now: a live just planned or started. */
+  refresh: () => void;
 };
 
 /** `api` the same object between renders (useMemo); null without an
  * account or while the Feed is hidden: no request. */
 export function useLives(api: LiveApiOptions | null): Lives {
   const [lives, setLives] = useState<LiveItem[]>([]);
+  const [asked, setAsked] = useState(0);
+  const refresh = useCallback(() => setAsked((n) => n + 1), []);
 
   useEffect(() => {
     if (api === null) {
@@ -41,7 +45,7 @@ export function useLives(api: LiveApiOptions | null): Lives {
       live = false;
       clearInterval(timer);
     };
-  }, [api]);
+  }, [api, asked]);
 
   const remind = useCallback(
     (item: LiveItem, on: boolean) => {
@@ -62,5 +66,5 @@ export function useLives(api: LiveApiOptions | null): Lives {
     [api],
   );
 
-  return { lives, remind };
+  return { lives, remind, refresh };
 }

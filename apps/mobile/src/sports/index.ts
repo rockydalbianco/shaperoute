@@ -14,6 +14,7 @@ import { RUNNING } from "./running";
 import { SKI_TOURING } from "./ski_touring";
 import { SKIING } from "./skiing";
 import { SNOWSHOEING } from "./snowshoeing";
+import { STRETCHING } from "./stretching";
 import { SWIMMING } from "./swimming";
 import { WALKING } from "./walking";
 import { WHEELCHAIR } from "./wheelchair";
@@ -43,6 +44,7 @@ export const SPORT_PROFILES: readonly SportProfile[] = [
   PARAGLIDING,
   ALPINISM,
   GYM,
+  STRETCHING,
 ];
 
 /** The activity a request without one is: its request keeps no field. */

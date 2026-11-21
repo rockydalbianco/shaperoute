@@ -82,7 +82,20 @@ test("a card going on opens the live; a planned one offers «Remind me»", async
   ).toBe(false);
 });
 
-test("nothing without lives", async () => {
+test("without lives, «Plan a live» alone (the user's choice 9)", async () => {
   await show(server([]));
-  expect(screen.queryByTestId("lives-row")).toBeNull();
+  expect(screen.getByTestId("lives-plan")).toBeTruthy();
+  expect(screen.queryByTestId(/^lives-card-/)).toBeNull();
+});
+
+test("«Start live» on one's own planned live only while a recording goes on", async () => {
+  const mine = {
+    ...planned,
+    owner: { ...planned.owner, public_id: (session as Session).user.public_id ?? "" },
+    can_start: true,
+    reminded: false,
+  };
+  await show(server([mine]));
+  expect(screen.queryByTestId(`lives-start-${mine.id}`)).toBeNull();
+  expect(screen.queryByTestId(`lives-remind-${mine.id}`)).toBeNull();
 });

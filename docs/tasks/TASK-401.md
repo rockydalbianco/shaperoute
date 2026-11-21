@@ -1,4 +1,4 @@
-# TASK-401 — Le indicazioni a schermo bloccato: la notifica subito, la Live Activity nella 1.0.2
+# TASK-401 — Le indicazioni a schermo bloccato: la notifica subito, la Live Activity nella 1.0.3
 
 **Stato**: Todo · proposta (parte 0) in PR; nessun codice prima delle scelte
 dell'utente e del via del Coordinatore sulla lista dei file
@@ -17,7 +17,7 @@ Richiesta dell'utente del 2026-11-05: «Dai le indicazioni del percorso
 anche da iPhone bloccato con una notifica esterna, quella percentuale svolta
 a destra, sinistra, eccetera». Alla domanda «Come vuoi le indicazioni a
 schermo bloccato?» ha scelto **«Live Activity, poi anche OTA»**: subito, con
-un OTA, una notifica che si sostituisce a ogni svolta; nella build 1.0.2 la
+un OTA, una notifica che si sostituisce a ogni svolta; nella build 1.0.3 la
 Live Activity vera (il riquadro fisso sul lock screen e nella Dynamic
 Island), contro «Solo Live Activity (1.0.2)» e «Solo notifica via OTA».
 
@@ -83,7 +83,7 @@ come la voce e la vibrazione.
 - Limite: una notifica non si aggiorna da sola metro per metro; mostra i
   metri del momento dell'annuncio. Il conto alla rovescia è della parte B.
 
-### B — La Live Activity (build 1.0.2, nativo)
+### B — La Live Activity (build 1.0.3, nativo)
 
 - **Il riquadro sul lock screen**: freccia grande, metri alla svolta,
   «Turn right», la via, una barra con la percentuale e i km che mancano.
@@ -117,7 +117,7 @@ come la voce e la vibrazione.
 `@bacons/apple-targets` è la stessa dipendenza che TASK-370 (l'app per Apple
 Watch, sessione «Apple Watch app status») porta nella build 1.1, con il sì
 dell'utente del 2026-10-30 dato per TASK-323 E. Se la Live Activity va
-nella 1.0.2, **la dipendenza arriva prima** e la aggiunge **TASK-401 B**:
+nella 1.0.3, **la dipendenza arriva prima** e la aggiunge **TASK-401 B**:
 `package.json`, il plugin in `app.json`, la cartella `apps/mobile/targets/`
 con la sola sottocartella `live-activity/`. TASK-370 A2 la trova già lì e
 aggiunge `targets/watch/` accanto, senza toccare quella della Live Activity.
@@ -128,22 +128,26 @@ prima di scrivere codice; la lista dei file va al Coordinatore.
 scritto anche in `tasks/TASK-370.md` con la loro PR #849, che qui non si
 tocca):
 
-1. TASK-401 B mette nella 1.0.2 `@bacons/apple-targets` **5.0.0**, il
+1. TASK-401 B mette nella 1.0.3 `@bacons/apple-targets` **5.0.0**, il
    plugin in `app.json` (una sola config) e `apps/mobile/targets/
    live-activity/`.
 2. Il plugin va con **`"match": "live-activity"`**. Senza opzioni la 5.0.0
    costruisce ogni `targets/*/expo-target.config.js` (`match = "*"`): il
-   target dell'orologio entrerebbe nella 1.0.2 appena TASK-370 A2 mette
+   target dell'orologio entrerebbe nella 1.0.3 appena TASK-370 A2 mette
    `targets/watch/expo-target.config.js` in `main`. `targets/watch/Core/`
    (A1, già in `main`) non ha quel file e non conta.
 3. TASK-370 A2 mette `targets/watch/` accanto e non tocca `live-activity/`;
    con `MUW_WATCH=1` il loro `app.config.ts` allarga `match` a
    `{live-activity,watch}`; il loro A-flip, alla 1.1, allarga `match` in
    `app.json`.
-4. La PR della parte B scrive l'impronta iOS della 1.0.2 che ne esce: è il
+4. La PR della parte B scrive l'impronta iOS della 1.0.3 che ne esce: è il
    nuovo riferimento di TASK-370.
 
-La 1.0.2 è già condivisa (video nei messaggi 333 E; testo della chiave di
+**Rilascio (Coordinatore, 2026-11-06)**: l'utente ha cambiato piano. La 1.0.2 è
+uscita solo per gli screenshot; il giro nativo, con la parte B, è la **1.0.3**.
+Dove sopra le scelte dell'utente citano la 1.0.2, ora vale la 1.0.3.
+
+La 1.0.3 è già condivisa (video nei messaggi 333 E; testo della chiave di
 Salute 374 C, 345 C, 397 C; accesso con Apple e Google 322): l'ordine lo
 tiene il Coordinatore con l'utente.
 
@@ -171,7 +175,7 @@ tiene il Coordinatore con l'utente.
    prima dell'arrivo sparisce subito.
 5. ~~La dipendenza~~ → **«Sì, nella 1.0.2»** (2026-11-05): l'utente dà il
    sì a `@bacons/apple-targets` 5.0.0 e al modulo locale in Swift nella
-   build 1.0.2. Manca il via del Coordinatore sulla lista dei file.
+   build 1.0.3. Manca il via del Coordinatore sulla lista dei file.
 
 ## Cosa fare
 
@@ -186,7 +190,7 @@ tiene il Coordinatore con l'utente.
 3. Il testo nuovo in `src/i18n/{it,de,fr,es}.ts`.
 4. Prova nel simulatore a schermo bloccato con la corsa simulata.
 
-**Parte B** (dopo le scelte 3–5, nella 1.0.2):
+**Parte B** (dopo le scelte 3–5, nella 1.0.3):
 1. `@bacons/apple-targets`, `targets/live-activity/` (SwiftUI), il modulo
    locale, `NSSupportsLiveActivities`.
 2. `navigation/liveActivity.ts` + test (quando parte, quando si aggiorna,
@@ -213,7 +217,7 @@ tiene il Coordinatore con l'utente.
 - [ ] Con la Live Activity attiva la notifica della parte A non parte.
 - [ ] Su una build senza il modulo (1.0.1) un OTA con la parte B dà la
       notifica della parte A, senza errori.
-- [ ] Test deterministici verdi; la build 1.0.2 si costruisce con
+- [ ] Test deterministici verdi; la build 1.0.3 si costruisce con
       `targets/live-activity/`.
 
 ## File toccati
@@ -268,7 +272,15 @@ apps/mobile/src/navigation/liveActivity.test.ts   (nuovo)
 apps/mobile/src/navigation/useNavigation.ts       (parte con un percorso; la notifica
                                                    della parte A solo senza modulo)
 apps/mobile/src/i18n/{it,de,fr,es}.ts             (solo se servono testi brevi nuovi)
+apps/mobile/plugins/watchConfig.test.ts           (di TASK-370; via del Coordinatore
+                                                   2026-11-06: il test passa con e
+                                                   senza la parte B)
 ```
+
+Fuori percorso, con la via di ritorno sulle strade di TASK-314 B (ADR-0274,
+precisazione B punto 7), `liveStateOf` legge `navigation.wayBack` con
+`upcomingOnWay`: la Live Activity mostra la stessa svolta di voce, banner e
+notifica. Senza via, i metri in linea d'aria di `navigation.rejoin`.
 
 Il tipo degli attributi della Live Activity (`ActivityAttributes`) sta sia
 nel modulo sia nel target, uguale: i due binari non condividono codice.

@@ -70,10 +70,11 @@ test("the activities are those of before, in their order", () => {
     NOW_RECORD_ACTIVITIES.filter((a) => !SINCE_RECORD_ACTIVITIES.includes(a)),
     BEFORE_RECORD_ACTIVITIES,
   );
-  // Then a workout at the gym, saved without a track (TASK-385 B0).
+  // Then a workout at the gym, saved without a track (TASK-385 B0), and a
+  // stretching session (TASK-475).
   assert.deepEqual(
     [...RUN_ACTIVITIES],
-    [...NOW_ACTIVITIES, ...NOW_RECORD_ACTIVITIES, "gym"],
+    [...NOW_ACTIVITIES, ...NOW_RECORD_ACTIVITIES, "gym", "stretching"],
   );
   assert.deepEqual(
     NOW_ACTIVITIES.filter((a) => !SINCE.includes(a)),

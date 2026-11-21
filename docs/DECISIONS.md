@@ -546,6 +546,8 @@ lasciando le righe d'indice.
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
 - ADR-0381, precisazione A1b — La live in un messaggio: un rimando senza chiave esterna, solo in una conversazione aperta, solo per chi dice `live` · 2026-11-12 · Attiva
 - ADR-0381, precisazione B1 — La live in chat nell'app: la condivisione senza link per la chat, il menu di «Sharing live», la schermata dal vivo come `Modal` · 2026-11-12 · Attiva
+- ADR-0381, precisazione A2b — La push «Remind me» parte con la live, una volta sola, senza giro · 2026-11-18 · Attiva
+- ADR-0381, precisazione B2a — La fila «Live» del Feed: schede una sopra l'altra, riletta ogni minuto, «Live in the Feed» senza link · 2026-11-18 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
 - ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←» · 2026-11-12 · Attiva
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
@@ -564,8 +566,44 @@ lasciando le righe d'indice.
 - ADR-0352, precisazione — «Share live at start»: il link dal vivo a fine conto alla rovescia di un volo, se il pilota lo ha acceso; resta com'era l'ultima volta, solo il link · 2026-11-12 · Attiva
 - ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job · 2026-11-12 · Attiva
 - ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity` (senza: le corse), le zone da un estratto, entrano le otto forme lette a occhio · 2026-11-18 · Attiva
+- ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0380, precisazione B3 — La scheda «Sleep» del profilo: quale notte è sul profilo lo dice il server, niente lascia il telefono prima di «Share», «Stop sharing» toglie ogni notte
+
+**Stato**: Attiva · 2026-11-12 · TASK-467 parte B3 (#1292, `b6e36fcb`).
+Le scelte di prodotto sono dell'utente (risposte 8 e 9 del task file:
+«Pulsante + riga», «Col giorno»); le altre sono **decise dall'agente su
+delega dell'utente**; lista dei file approvata dal Coordinatore. Nessun
+codice sul server, nessuna migrazione, niente di nativo.
+
+**Contesto**: l'ADR-0380 mette sul server la notte condivisa nel profilo
+(`shared`) con le sue rotte; restava come l'app la mostra e la condivide.
+
+1. **Quale notte è sul profilo lo dice il server, non il telefono**: la
+   scheda chiede `GET /users/{il proprio id}/sleep` e confronta il giorno
+   con la notte letta da Salute. Vale anche da un altro telefono, e la
+   domanda non porta nessun dato del sonno. Parte solo col sì a leggere il
+   sonno già tenuto.
+2. **Niente lascia il telefono prima di «Share»**: al server vanno solo
+   punteggio, minuti e fasi, e il giorno nel percorso. Mai gli orari.
+3. **«Stop sharing» toglie ogni notte dal profilo** (`DELETE
+   /me/sleep/shared`): spegnere la sola ultima farebbe ricomparire quella
+   prima. Una notte che nessun post porta sparisce così anche dal server.
+4. **La conferma del primo «Share» è del telefono** (`sleep-share.json`),
+   come la domanda del VO₂ max.
+5. **La notte condivisa non si aggiorna da sola**: se Salute cambia i
+   numeri dopo «Share», sul profilo restano quelli condivisi finché non si
+   condivide di nuovo. Nessun invio senza un tocco.
+6. **«Stop sharing» ha una chiave sua** (`Stop sharing@@sleep`): quella
+   della live è tradotta «Smetti», che qui non dice che cosa.
+7. **Spenta come B2**: `OwnSleep` niente senza `sleepPostsOn()` o senza
+   lettore, `UserSleep` niente e nessuna richiesta senza `sleepPostsOn()`;
+   i test confrontano l'albero intero delle due schermate acceso e spento.
+
+**Conseguenze**: accendere resta un cambio solo, quello della parte C. Il
+post nel Feed di una notte da sola resta fuori (TASK-312 C).
 
 ## ADR-0366, precisazione — Le uscite in bici nel catalogo: `activity` solo quando non è una corsa, le uscite in fondo al file di città, il parametro `activity`, le zone da un estratto, entrano le otto forme lette a occhio
 
@@ -632,6 +670,33 @@ estratto per paese: un secondo giro. `tools/sample_feed.py` legge tutto il
 seme e, rilanciato, prenderebbe uscite in bici come corse di esempio:
 segnalato al Coordinatore, non toccato. I 40–50 km (B3) vogliono il limite
 del motore alzato: una PR a parte.
+
+## ADR-0381, precisazione A2b — La push «Remind me» parte con la live, una volta sola, senza giro
+
+**Stato**: Attiva · 2026-11-18 · TASK-468 parte A2b (#1299).
+**Deciso dall'agente su delega dell'utente.**
+
+- La push parte dentro `POST /me/planned-lives/{id}/start`, dopo la
+  scrittura, e solo se non c'era già una condivisione con quel
+  `planned_live_id`: una ripartenza dopo uno stop non la ripete. Nessun
+  giro periodico e nessuna migrazione.
+- La ricevono solo i promemoria di chi vede ancora la live (`apart_sql`, e
+  `follows_sql` per una «followers»), mai il proprietario; i dati
+  `{kind, planned_live_id, share_id}` aprono la schermata dal vivo (B2b1).
+
+## ADR-0381, precisazione B2a — La fila «Live» del Feed: schede una sopra l'altra, riletta ogni minuto, «Live in the Feed» senza link
+
+**Stato**: Attiva · 2026-11-18 · TASK-468 parte B2a (#1301).
+**Deciso dall'agente su delega dell'utente** (la tecnica; testi e aspetto
+approvati dall'utente).
+
+- Al più 5 schede una sopra l'altra: una fila che scorre di lato
+  litigherebbe con lo scorrimento fra le schede del Feed. `GET /lives`
+  ogni minuto; «Remind me» cambia subito e torna indietro se l'API dice no.
+- «Live in the Feed» crea la condivisione senza link col pubblico scelto, o
+  la cambia (`PATCH`) se è già accesa; nessun foglio delle persone.
+- I test che contano le richieste del Feed escludono `/lives`, come già il
+  concorso e Style.
 
 ## ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job
 
@@ -1618,6 +1683,10 @@ dall'agente su delega dell'utente; l'utente ha approvato le schermate.
 luce interni, nessuna ombra portata), la pillola ha la luce in cima e
 un'ombra a 2 pt con 6 di sfocatura; nelle modalità opache tutto torna
 piatto. Lo stesso in `PlayTabs`. Il fondo passato da chi chiama vince.
+**A4a (#1290)**: il rilievo è una funzione sola, `glassRaise(mode)`, che
+dà la luce interna in cima e l'ombra a 2 pt e non tocca i colori; la
+usano i chip delle città e `FilterChip`. Il giallo del chip scelto resta
+(TASK-344, scelta di prodotto).
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

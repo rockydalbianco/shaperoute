@@ -2913,9 +2913,13 @@ export const ES: Table = {
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Alpinismo",
+  // The sport of TASK-475 (ADR-0386): src/sports/stretching.ts.
+  Stretching: "Estiramientos",
   "Before you climb": "Antes de subir",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW registra tu ascensión y la comparte: no te guía. Ve con tu equipo, tu experiencia y tu criterio, y revisa las condiciones antes de salir.",
+  // TASK-305 part R6c: the map of a race (approved 2026-11-12).
+  "White: on foot. Yellow: in the air.": "Blanco: a pie. Amarillo: en el aire.",
   // src/liveShare/ (TASK-468 part B2a: the «Live» row, «Live in the Feed»,
   // the stop of a share without a link; en and it approved 2026-11-12)
   "Live in the Feed": "Directo en el Feed",
@@ -2924,4 +2928,23 @@ export const ES: Table = {
   "We'll notify you when it starts.": "Te avisamos cuando empiece.",
   "Nobody can follow you any more.": "Ya nadie puede seguirte.",
   "Live · {day} {time} · {title}": "Directo · {day} {time} · {title}",
+  // src/liveShare/ (TASK-468 part B2b1: «Plan a live», the start of a
+  // planned live; en and it approved 2026-11-12, «Plan» and the error on 2026-11-18)
+  "Plan a live": "Programar un directo",
+  "Name (e.g. Milano Marathon)": "Nombre (p. ej. Milano Marathon)",
+  "Day and time": "Día y hora",
+  'Start live "{title}"?': "¿Iniciar el directo «{title}»?",
+  "Your followers can follow you now.": "Tus seguidores pueden seguirte ahora.",
+  "Everyone can follow you now.": "Todos pueden seguirte ahora.",
+  "Start live": "Iniciar el directo",
+  "Not this time": "Esta vez no",
+  Plan: "Programar",
+  "Couldn't plan the live. Try again.":
+    "No se pudo programar el directo. Inténtalo de nuevo.",
+  // src/liveShare/plannedPost.ts (TASK-468 part B2b2: the live becomes the
+  // post; en and it approved by the user 2026-11-12)
+  "Post it in the Feed?": "¿Publicarlo en el Feed?",
+  "Your live becomes the post of this activity.":
+    "Tu directo se convierte en la publicación de esta actividad.",
+  "Don't post": "No publicar",
 };

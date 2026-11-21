@@ -1348,10 +1348,22 @@ libero al merge):
   (`drawings.LINKABLE_SQL`). Nessuna riga di prima cambia. Test in
   `test_post_links.py`.
 
+Migrazione `0079_stretching.sql` (TASK-475 parte A, ADR-0386, `API.md`
+«Stretching»; numero del Coordinatore):
+
+- **`runs`**: `stretching` entra in `runs_activity_check` (letto e allargato
+  come la `0047`), e `runs_track_check` diventa `track IS NOT NULL OR
+  activity IN ('gym', 'swimming', 'stretching')`: una sessione di
+  stretching va senza traccia.
+- **`stretch_sessions`**: una riga per sessione, chiave la sua corsa (`ON
+  DELETE CASCADE`): `routine` (la chiave sul telefono, `^[A-Za-z0-9_]{1,40}$`),
+  `minutes` (da 1 a 60) ed `exercises` (da 0 a 100).
+- Nessuna posizione, nessuna riga di prima cambia, nessun backfill. Test in
+  `test_stretching_api.py`.
+
 Migrazione `0080_photo_posts.sql` (TASK-312 parte C, ADR-0272, `API.md`
-«Photo posts», `IMPORTAZIONI.md` §4; numero provvisorio del Coordinatore,
-la 0079 è prenotata da TASK-475 A: quello vero è il primo libero al
-merge). **Un post di sole foto è un disegno senza corsa**:
+«Photo posts», `IMPORTAZIONI.md` §4; numero del Coordinatore,
+dopo la 0079 di TASK-475 A). **Un post di sole foto è un disegno senza corsa**:
 
 - `drawings.user_id` (`bigint NOT NULL`, `ON DELETE CASCADE` su `users`,
   indice `drawings_user_idx`): di chi è il disegno, riempito da `runs` per

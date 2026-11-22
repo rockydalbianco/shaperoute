@@ -3171,4 +3171,11 @@ export const ES: Table = {
   "Delete this post?": "¿Eliminar esta publicación?",
   "Copies already made stay with whoever made them.":
     "Las copias ya hechas se quedan con quien las hizo.",
+
+  // The post of a night of sleep (TASK-467 part E).
+  Sleep: "Sueño",
+  "Already in the Feed": "Ya está en el Feed",
+  "Remove post": "Quitar la publicación",
+  "Your score, hours slept and sleep stages go in the Feed.":
+    "Tu puntuación, las horas dormidas y las fases del sueño van al Feed.",
 };

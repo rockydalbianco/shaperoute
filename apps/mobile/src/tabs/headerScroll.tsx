@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef } from "react";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 
 /**
@@ -40,6 +40,18 @@ export type HeaderScrollProps = {
 export function useHeaderScroll(): HeaderScrollProps {
   const report = useContext(HeaderScrollContext);
   const told = useRef(false);
+  // A scroller that goes while away from the top (a lazy page, the ski
+  // mode, a page of the profile) leaves the header at rest, not in glass
+  // over a page that is at its top.
+  useEffect(
+    () => () => {
+      if (told.current) {
+        told.current = false;
+        report?.(false);
+      }
+    },
+    [report],
+  );
   const onScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const scrolled = isScrolled(event.nativeEvent.contentOffset.y);

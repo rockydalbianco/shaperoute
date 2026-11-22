@@ -36,6 +36,10 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-491 — Il Coach MuW** · parte 0 il 2026-11-23 (ADR-0399): regole
+  con il loro studio, sul telefono e senza AI; la scheda cambia solo con
+  «Apply»; solo con account, omino di TASK-490 B. Testi all'utente; poi A
+  dopo TASK-488 A sul server. File: — · `tasks/TASK-491.md`
 - **TASK-490 — La modalità Allenamento** · parte 0 chiusa il 2026-11-23
   (ADR-0398): scelta «Gym», la barra è Today · Workouts · Food · Feed ·
   Profile come per lo sci; il Cibo è la pagina di TASK-489. Prossima la A.

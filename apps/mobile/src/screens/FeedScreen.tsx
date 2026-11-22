@@ -30,6 +30,9 @@ import { isShown, type ShownPost, shownPost } from "../feed/feedPosts";
 import { PhotoFeedPost } from "../feed/PhotoFeedPost";
 import { PhotoPostPage } from "../feed/PhotoPostPage";
 import { PostPage } from "../feed/PostPage";
+import { SleepFeedPost } from "../feed/SleepFeedPost";
+import { isSleepPost } from "../feed/sleepPost";
+import { SleepPostDetailPage } from "../feed/SleepPostDetailPage";
 import { loadFeedTab, saveFeedTab } from "../feed/feedTabChoice";
 import { type FeedTab, feedTabName, FeedTabs } from "../feed/FeedTabs";
 import { FeedSkeleton } from "../feed/FeedSkeleton";
@@ -335,7 +338,19 @@ export function FeedScreen({
       {page !== null && isPhotoPost(page.drawing) && (
         <PhotoPostPage post={page} onClose={() => setPage(null)} />
       )}
-      {page !== null && !isPhotoPost(page.drawing) && (
+      {/* The post of a night of sleep has its own page too (TASK-467 part
+          E); taken off the Feed there, the open tabs read again. */}
+      {page !== null && isSleepPost(page.drawing) && (
+        <SleepPostDetailPage
+          post={page}
+          onClose={() => setPage(null)}
+          onRemoved={() => {
+            refreshAll();
+            refreshFollowing();
+          }}
+        />
+      )}
+      {page !== null && !isPhotoPost(page.drawing) && !isSleepPost(page.drawing) && (
         <PostPage
           post={page}
           onClose={() => setPage(null)}
@@ -485,6 +500,13 @@ function FeedList({
             <PhotoFeedPost
               post={item.post}
               width={cardWidth}
+              onOpen={() => isShown(item.post) && openPost(item.post)}
+            />
+          ) : item.kind === "post" &&
+            isShown(item.post) &&
+            isSleepPost(item.post.drawing) ? (
+            <SleepFeedPost
+              post={item.post}
               onOpen={() => isShown(item.post) && openPost(item.post)}
             />
           ) : item.kind === "post" ? (

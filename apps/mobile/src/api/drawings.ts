@@ -11,7 +11,12 @@ import type {
   RunActivity,
   Visibility,
 } from "@shaperoute/shared-types";
-import { PHOTOS_SOURCE, RUN_ACTIVITIES, VISIBILITIES } from "@shaperoute/shared-types";
+import {
+  PHOTOS_SOURCE,
+  RUN_ACTIVITIES,
+  SLEEP_SOURCE,
+  VISIBILITIES,
+} from "@shaperoute/shared-types";
 
 import { accountProblem, SESSION_ENDED } from "../account/messages";
 import { t } from "../i18n";
@@ -429,9 +434,13 @@ function readsActivity(body: Record<string, unknown>): boolean {
     return true;
   }
   // A post of photos only has no run, so no activity (TASK-312 part C):
-  // read as none, as on an API before TASK-208. Any other drawing with a
-  // null activity is still refused.
-  if (body.activity === null && body.source === PHOTOS_SOURCE) {
+  // read as none, as on an API before TASK-208. The post of a night of
+  // sleep the same (TASK-467 part E). Any other drawing with a null
+  // activity is still refused.
+  if (
+    body.activity === null &&
+    (body.source === PHOTOS_SOURCE || body.source === SLEEP_SOURCE)
+  ) {
     delete body.activity;
     return true;
   }

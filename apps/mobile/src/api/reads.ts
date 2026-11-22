@@ -1,4 +1,6 @@
-import { PHOTOS_SOURCE, RUN_ACTIVITIES } from "@shaperoute/shared-types";
+import { PHOTOS_SOURCE, RUN_ACTIVITIES, SLEEP_SOURCE } from "@shaperoute/shared-types";
+
+import { sleepPostsOn } from "../health/sleepModules";
 
 /**
  * What this app can show, said to the API in every request of an account
@@ -35,9 +37,19 @@ export const READS: readonly string[] = [
   PHOTOS_SOURCE,
 ];
 
+/**
+ * READS and, while the sleep is on (TASK-467 part E), `sleep`: the Feed,
+ * the profiles and the post show the post of a night, a drawing without a
+ * run. Off, as in every build until part C, the app says what it said
+ * before and never receives one.
+ */
+export function reads(): readonly string[] {
+  return sleepPostsOn() ? [...READS, SLEEP_SOURCE] : READS;
+}
+
 /** The header, for `ask` (accounts.ts). */
 export function readsHeaders(): Record<string, string> {
-  return { [READS_HEADER]: READS.join(",") };
+  return { [READS_HEADER]: reads().join(",") };
 }
 
 /**
@@ -47,5 +59,5 @@ export function readsHeaders(): Record<string, string> {
  * before leaves it out as every value it does not know.
  */
 export function readsHeadersWith(...more: string[]): Record<string, string> {
-  return { [READS_HEADER]: [...READS, ...more].join(",") };
+  return { [READS_HEADER]: [...reads(), ...more].join(",") };
 }

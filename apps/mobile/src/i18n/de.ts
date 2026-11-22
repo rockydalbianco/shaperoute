@@ -3164,4 +3164,10 @@ export const DE: Table = {
     "Diese Wörter sind nicht erlaubt. Versuch andere.",
   "Links and special characters can't be used here.":
     "Links und Sonderzeichen sind hier nicht erlaubt.",
+  // The post of a night of sleep (TASK-467 part E).
+  Sleep: "Schlaf",
+  "Already in the Feed": "Schon im Feed",
+  "Remove post": "Beitrag entfernen",
+  "Your score, hours slept and sleep stages go in the Feed.":
+    "Dein Wert, die geschlafenen Stunden und die Schlafphasen kommen in den Feed.",
 };

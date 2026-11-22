@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddPastActivity } from "../imports/AddPastActivity";
 import { filePickerAvailable, type PickFile } from "../imports/pickActivityFile";
+import type { PickPhoto } from "../social/PublicParts";
 import { t } from "../i18n";
 import {
   color,
@@ -17,26 +18,31 @@ import { SheetModal } from "../ui/SheetModal";
 
 type Props = {
   /** The fakes of the tests: whether the app was built with the file
-   * picker, and the picker. */
+   * picker, the pickers, and the network. */
   available?: boolean;
   pickFile?: PickFile;
+  pick?: PickPhoto;
+  fetchFn?: typeof fetch;
 };
 
 /**
  * The «+» at the right of the Feed's bar (TASK-476): a sheet «Add activity»
- * with what an account can add to the Feed from outside the app. Today
- * «From a file», the GPX, TCX or FIT of another app, as «Add past activity»
- * of «My activities» (TASK-312, docs/IMPORTAZIONI.md): read on the phone,
- * then the form of the end of a run, marked «Imported». The sheet closes
- * once the run is kept, or the form discarded. In an app built without the
- * file picker there is nothing to add, and there is no «+».
+ * with what an account can add to the Feed from outside the app, as «Add
+ * past activity» of «My activities» (TASK-312, docs/IMPORTAZIONI.md):
+ * «From a file», the GPX, TCX or FIT of another app, read on the phone,
+ * then the form of the end of a run, marked «Imported»; and «Photos only»
+ * (part C), a post of photos without a run. The sheet closes once the run
+ * or the post is kept, or the form discarded. In an app built without the
+ * file picker «Photos only» is there alone.
  */
-export function AddToFeed({ available = filePickerAvailable(), pickFile }: Props) {
+export function AddToFeed({
+  available = filePickerAvailable(),
+  pickFile,
+  pick,
+  fetchFn,
+}: Props) {
   const [open, setOpen] = useState(false);
   const insets = useSafeAreaInsets();
-  if (!available) {
-    return null;
-  }
   const close = () => setOpen(false);
   return (
     <>
@@ -81,7 +87,14 @@ export function AddToFeed({ available = filePickerAvailable(), pickFile }: Props
             keyboardShouldPersistTaps="handled"
             automaticallyAdjustKeyboardInsets
           >
-            <AddPastActivity opened onDone={close} pickFile={pickFile} />
+            <AddPastActivity
+              opened
+              onDone={close}
+              available={available}
+              pickFile={pickFile}
+              pick={pick}
+              fetchFn={fetchFn}
+            />
           </ScrollView>
         </View>
       </SheetModal>

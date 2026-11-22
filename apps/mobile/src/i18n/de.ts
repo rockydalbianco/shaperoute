@@ -2969,6 +2969,29 @@ export const DE: Table = {
   "Your live becomes the post of this activity.":
     "Dein Live wird zum Post dieser Aktivität.",
   "Don't post": "Nicht posten",
+  // Group runs (TASK-309 part B; it from the proposal, de/es/fr for the user's yes).
+  "Create group run": "Gruppenlauf erstellen",
+  "New group run": "Neuer Gruppenlauf",
+  "Where exactly": "Wo genau",
+  Notes: "Notizen",
+  "e.g. MUSE entrance": "z. B. Eingang des MUSE",
+  "Pace, what to bring…": "Tempo, was mitbringen…",
+  "Meet in a public place, never at your home. MuW doesn't organise or check group runs. Everyone on MuW is 16 or older.":
+    "Trefft euch an einem öffentlichen Ort, nie bei dir zu Hause. MuW organisiert und prüft keine Gruppenläufe. Alle auf MuW sind mindestens 16 Jahre alt.",
+  Publish: "Veröffentlichen",
+  "Group runs": "Gruppenläufe",
+  "1 going": "1 dabei",
+  "{count} going": "{count} dabei",
+  "I'm going": "Ich bin dabei",
+  "You're going": "Du bist dabei",
+  "Not going": "Nicht mehr dabei",
+  Organiser: "Organisiert",
+  "Cancel group run": "Gruppenlauf absagen",
+  "Cancel this group run? Everyone going gets a notice.":
+    "Diesen Gruppenlauf absagen? Alle, die dabei sind, bekommen eine Nachricht.",
+  Cancelled: "Abgesagt",
+  Over: "Vorbei",
+  Past: "Vergangene",
   // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
   "Flight screen": "Flugbildschirm",
   "GPS altitude": "GPS-Höhe",
@@ -3030,6 +3053,15 @@ export const DE: Table = {
     "Dieses Layout stammt aus einer neueren MuW-Version: Aktualisiere die App.",
   "MuW could not read this file.": "MuW konnte diese Datei nicht lesen.",
   "MuW could not share the file.": "MuW konnte die Datei nicht teilen.",
+  // src/air/ (TASK-479 part C: the vario's sound; texts approved by the user on 2026-11-22)
+  "Vario sound": "Vario-Ton",
+  "Beeps from": "Piepen ab",
+  "Sink tone below": "Sinkton unter",
+  Volume: "Lautstärke",
+  "From GPS: the sound comes 1–2 s after the climb.":
+    "Vom GPS: Der Ton kommt 1–2 s nach dem Steigen.",
+  "Mute the vario": "Vario stummschalten",
+  "Turn the vario sound on": "Vario-Ton einschalten",
 
   // src/gear/ (TASK-486 part B, the gear), approved by the user on 2026-11-22
   Shoes: "Schuhe",

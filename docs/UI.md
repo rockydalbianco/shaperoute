@@ -5549,3 +5549,29 @@ pagina per liberare memoria, la WebView la ricarica da sola.
   calcolati c'è da TASK-093).
 - Contorni disegnati delle forme e cursore della distanza: vogliono
   dipendenze (TASK-051).
+
+## Le corse di gruppo (TASK-309 parte B1, ADR-0269)
+
+- **Sul percorso**: sotto il cuore, «Send to a friend» e «Send to watch», un
+  bottone tondo ⚑ «Create group run», solo con un account. Apre «New group
+  run» a tutto schermo: «Title» (il nome del percorso per cominciare),
+  «Day and time» con due righe «−» / «+» (un giorno, 15 minuti), «Where
+  exactly» («e.g. MUSE entrance»), «Notes» («Pace, what to bring…»), «Who
+  can see it» («Everyone» o «Followers»), l'avviso di sicurezza in piccolo,
+  poi «Not now» e «Publish». Un rifiuto dell'API si legge sotto, con le sue
+  parole.
+- **La pagina** sopra l'app, con «←»: «Group runs» in alto e «…» per
+  segnalarla (non sulla propria); il titolo; «Cancelled» o «Over» in rosso
+  quando vale; il giorno e l'ora del telefono, «Where exactly», la
+  distanza, le note; «Organiser» con il nome, «{n} going» e i nomi, ognuno
+  apre il profilo. Finché non è finita: «Start» giallo e, per chi non
+  organizza, «I'm going» o «Not going» (con «You're going» sotto).
+  L'organizzatore, prima dell'inizio, ha «Edit» (lo stesso modulo, senza
+  «Who can see it») e «Cancel group run», con la domanda «Cancel this group
+  run? Everyone going gets a notice.».
+- **Nel profilo**, proprio e degli altri, sotto il resto: «Group runs» con
+  quelle in arrivo e poi «Past», una scheda a testa (titolo, giorno e ora,
+  quanti vanno). Niente senza corse di gruppo, niente da un'API di prima.
+- **Le notifiche** e le righe della campanella delle corse di gruppo aprono
+  la pagina.
+

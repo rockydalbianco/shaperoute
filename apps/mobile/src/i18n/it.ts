@@ -2937,6 +2937,29 @@ export const IT: Table = {
   "Your live becomes the post of this activity.":
     "La tua live diventa il post di questa attività.",
   "Don't post": "Non pubblicare",
+  // Group runs (TASK-309 part B; it from the proposal, de/es/fr for the user's yes).
+  "Create group run": "Crea corsa di gruppo",
+  "New group run": "Nuova corsa di gruppo",
+  "Where exactly": "Dove esattamente",
+  Notes: "Note",
+  "e.g. MUSE entrance": "es. ingresso del MUSE",
+  "Pace, what to bring…": "Ritmo, cosa portare…",
+  "Meet in a public place, never at your home. MuW doesn't organise or check group runs. Everyone on MuW is 16 or older.":
+    "Trovatevi in un luogo pubblico, mai a casa. MuW non organizza né controlla le corse di gruppo. Su MuW tutti hanno almeno 16 anni.",
+  Publish: "Pubblica",
+  "Group runs": "Corse di gruppo",
+  "1 going": "1 partecipante",
+  "{count} going": "{count} partecipanti",
+  "I'm going": "Ci vado",
+  "You're going": "Ci vai",
+  "Not going": "Non vado più",
+  Organiser: "Organizza",
+  "Cancel group run": "Annulla la corsa di gruppo",
+  "Cancel this group run? Everyone going gets a notice.":
+    "Annullare la corsa di gruppo? Chi partecipa riceve un avviso.",
+  Cancelled: "Annullata",
+  Over: "Finita",
+  Past: "Passate",
   // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
   "Flight screen": "Schermata di volo",
   "GPS altitude": "Quota GPS",
@@ -2999,6 +3022,15 @@ export const IT: Table = {
     "Questa schermata viene da un MuW più nuovo: aggiorna l'app.",
   "MuW could not read this file.": "MuW non è riuscita a leggere questo file.",
   "MuW could not share the file.": "MuW non è riuscita a condividere il file.",
+  // src/air/ (TASK-479 part C: the vario's sound; texts approved by the user on 2026-11-22)
+  "Vario sound": "Suono del vario",
+  "Beeps from": "Bip da",
+  "Sink tone below": "Tono di discesa sotto",
+  Volume: "Volume",
+  "From GPS: the sound comes 1–2 s after the climb.":
+    "Dal GPS: il suono arriva 1–2 s dopo la salita.",
+  "Mute the vario": "Silenzia il vario",
+  "Turn the vario sound on": "Attiva il suono del vario",
 
   // src/gear/ (TASK-486 part B, the gear), approved by the user on 2026-11-22
   Shoes: "Scarpe",

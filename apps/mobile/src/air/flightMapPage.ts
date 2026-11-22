@@ -1,0 +1,255 @@
+import type { Language } from "../i18n/languages";
+import { kindLayers, PITCH_3D, TERRAIN_SPEC, withKinds } from "../map/mapKindStyle";
+import {
+  MAPLIBRE_CSS_SRI,
+  MAPLIBRE_CSS_URL,
+  MAPLIBRE_JS_SRI,
+  MAPLIBRE_JS_URL,
+} from "../map/mapPage";
+import { mapStyleFor } from "../map/mapStyle";
+import { type Palette, vario } from "../theme/tokens";
+
+/**
+ * The flight map's page (TASK-479 part A1, ADR-0388): MapLibre in a
+ * WebView, as the app's map, but a page of its own, small, for a widget of
+ * the flight screen. It draws:
+ * - the hills in 3D (the app's terrain), or the map flat;
+ * - the track since the take-off in the colours of the climb, a fixed
+ *   scale from −3 to +3 m/s (`vario` of the tokens);
+ * - the take-off, and the pilot as an arrow the way they go;
+ * - the camera on the pilot, turned the way they fly («Heading up», the
+ *   course of the last 5 s, held while circling) or north up.
+ *
+ * The map follows: it does not pan under a finger, it only zooms with two.
+ * The phone calls `window.flight.*`; the page tells `ready`, `loaded`,
+ * `error`, and every 5 s the frames a second the map drew (`fps`), to
+ * measure what the 3D costs.
+ */
+
+/** Where a flight map starts: some kilometres around. */
+export const FLIGHT_ZOOM = 13;
+/** How long the camera takes to reach the pilot's new place, ms. */
+export const FOLLOW_MS = 900;
+/** The frames are counted over this long, ms. */
+export const FPS_EVERY_MS = 5_000;
+export const TRACK_WIDTH = 4;
+export const PILOT_PX = 34;
+
+/** The scale of the climb: m/s and its colour, from the tokens. */
+export const VARIO_STOPS: readonly [number, string][] = [
+  [-3, vario.sinkStrong],
+  [-1, vario.sink],
+  [0, vario.level],
+  [1, vario.climb],
+  [3, vario.climbStrong],
+];
+
+function toScript(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
+export function buildFlightMapPage(palette: Palette, language: Language): string {
+  const style = withKinds(mapStyleFor(palette, language));
+  const layers = kindLayers(style);
+  const lineColor = ["interpolate", ["linear"], ["get", "v"], ...VARIO_STOPS.flat()];
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="${MAPLIBRE_CSS_URL}" integrity="${MAPLIBRE_CSS_SRI}" crossorigin="anonymous">
+<style>
+  html, body, #map { margin: 0; width: 100%; height: 100%; background: ${palette.map.background}; }
+  .maplibregl-ctrl.maplibregl-ctrl-attrib { font-size: 9px; }
+  .pilot { width: ${PILOT_PX}px; height: ${PILOT_PX}px; line-height: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script src="${MAPLIBRE_JS_URL}" integrity="${MAPLIBRE_JS_SRI}" crossorigin="anonymous"></script>
+<script>
+  var STYLE = ${toScript(style)};
+  var LAYERS = ${toScript(layers)};
+  var TERRAIN = ${toScript(TERRAIN_SPEC)};
+  var PITCH_3D = ${PITCH_3D};
+  var FOLLOW_MS = ${FOLLOW_MS};
+  var NONE = { type: "FeatureCollection", features: [] };
+  var view = { threeD: true, headingUp: true };
+  var pilot = null;
+  var marker = null;
+  var pilotShown = false;
+
+  function post(message) {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify(message));
+    }
+  }
+
+  if (typeof maplibregl === "undefined") {
+    post({ type: "error" });
+  } else {
+    var map = new maplibregl.Map({
+      container: "map",
+      style: STYLE,
+      center: [11, 46],
+      zoom: ${FLIGHT_ZOOM},
+      attributionControl: false,
+      dragPan: false,
+      dragRotate: false,
+      touchPitch: false,
+      doubleClickZoom: false,
+      keyboard: false,
+    });
+    map.touchZoomRotate.disableRotation();
+    map.addControl(new maplibregl.AttributionControl({ compact: true }));
+    map.on("error", function () {});
+    map.once("idle", function () {
+      post({ type: "loaded" });
+    });
+    map.on("load", function () {
+      map.addSource("flight-track", { type: "geojson", data: NONE });
+      map.addLayer({
+        id: "flight-track",
+        type: "line",
+        source: "flight-track",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": ${toScript(lineColor)}, "line-width": ${TRACK_WIDTH} },
+      });
+      map.addSource("flight-takeoff", { type: "geojson", data: NONE });
+      map.addLayer({
+        id: "flight-takeoff",
+        type: "circle",
+        source: "flight-takeoff",
+        paint: {
+          "circle-radius": 7,
+          "circle-color": ${toScript(palette.surface)},
+          "circle-stroke-color": ${toScript(palette.text)},
+          "circle-stroke-width": 3,
+        },
+      });
+      var element = document.createElement("div");
+      element.className = "pilot";
+      element.innerHTML =
+        '<svg viewBox="0 0 24 24" width="${PILOT_PX}" height="${PILOT_PX}">' +
+        '<path d="M12 2 L20 21 L12 16.5 L4 21 Z" fill=${toScript(palette.accent)} ' +
+        'stroke=${toScript(palette.onAccent)} stroke-width="1.6" stroke-linejoin="round"/></svg>';
+      marker = new maplibregl.Marker({
+        element: element,
+        rotationAlignment: "map",
+        pitchAlignment: "map",
+      });
+      setView(view.threeD, view.headingUp);
+      post({ type: "ready" });
+    });
+  }
+
+  function showKind(threeD) {
+    var shown = LAYERS[threeD ? "3d" : "standard"];
+    STYLE.layers.forEach(function (layer) {
+      if (map.getLayer(layer.id)) {
+        map.setLayoutProperty(layer.id, "visibility", shown.indexOf(layer.id) >= 0 ? "visible" : "none");
+      }
+    });
+    map.setTerrain(threeD ? TERRAIN : null);
+  }
+
+  function follow(duration) {
+    if (pilot === null) {
+      return;
+    }
+    map.easeTo({
+      center: [pilot.lon, pilot.lat],
+      bearing: view.headingUp && pilot.course !== null ? pilot.course : 0,
+      pitch: view.threeD ? PITCH_3D : 0,
+      duration: duration,
+      essential: true,
+    });
+  }
+
+  function setView(threeD, headingUp) {
+    view = { threeD: threeD, headingUp: headingUp };
+    showKind(threeD);
+    follow(600);
+  }
+
+  function setPilot(lat, lon, headingDeg, course) {
+    pilot = { lat: lat, lon: lon, course: course };
+    marker.setLngLat([lon, lat]);
+    if (headingDeg !== null) {
+      marker.setRotation(headingDeg);
+    }
+    if (!pilotShown) {
+      pilotShown = true;
+      marker.addTo(map);
+      follow(0);
+    } else {
+      follow(FOLLOW_MS);
+    }
+  }
+
+  function setTrack(collection) {
+    var source = map.getSource("flight-track");
+    if (source) {
+      source.setData(collection);
+    }
+  }
+
+  function setTakeoff(lat, lon) {
+    var source = map.getSource("flight-takeoff");
+    if (source) {
+      source.setData(
+        lat === null
+          ? NONE
+          : { type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [lon, lat] } },
+      );
+    }
+  }
+
+  window.flight = { setView: setView, setPilot: setPilot, setTrack: setTrack, setTakeoff: setTakeoff };
+
+  // The frames the map drew a second, told every few seconds: what the
+  // hills in 3D cost while the camera follows.
+  var frames = 0;
+  var since = Date.now();
+  if (typeof map !== "undefined") {
+    map.on("render", function () {
+      frames += 1;
+    });
+  }
+  setInterval(function () {
+    var now = Date.now();
+    if (now > since) {
+      post({ type: "fps", fps: Math.round((frames * 1000) / (now - since)) });
+    }
+    frames = 0;
+    since = now;
+  }, ${FPS_EVERY_MS});
+</script>
+</body>
+</html>`;
+}
+
+export type FlightMapMessage =
+  | { type: "ready" }
+  | { type: "loaded" }
+  | { type: "error" }
+  | { type: "fps"; fps: number };
+
+export function parseFlightMapMessage(data: string): FlightMapMessage | null {
+  try {
+    const message: unknown = JSON.parse(data);
+    if (typeof message !== "object" || message === null) {
+      return null;
+    }
+    const one = message as Record<string, unknown>;
+    if (one.type === "ready" || one.type === "loaded" || one.type === "error") {
+      return { type: one.type };
+    }
+    if (one.type === "fps" && typeof one.fps === "number" && Number.isFinite(one.fps)) {
+      return { type: "fps", fps: one.fps };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}

@@ -3125,4 +3125,8 @@ export const DE: Table = {
     "Diese Wörter sind nicht erlaubt. Versuch andere.",
   "Links and special characters can't be used here.":
     "Links und Sonderzeichen sind hier nicht erlaubt.",
+  // src/air/ (TASK-479 part A1: the flight map and the height above the ground)
+  "Height above ground": "Höhe über Grund",
+  "Heading up": "Kurs oben",
+  "North up": "Norden oben",
 };

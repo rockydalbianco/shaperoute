@@ -1,3 +1,4 @@
+import { isPhotoPost } from "@shaperoute/shared-types";
 import { type ReactNode, type Ref, useRef, useState } from "react";
 import { Image, type ImageSourcePropType, StyleSheet, Text, View } from "react-native";
 
@@ -167,7 +168,9 @@ export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
             testID="post-comment"
           />
         )}
-        {(mine || sendable || link !== null) && (
+        {/* A post of photos only (TASK-312 part C) has no line for a poster or
+            a link, and is not sent in a chat: no «Share». */}
+        {!isPhotoPost(post.drawing) && (mine || sendable || link !== null) && (
           <Action
             icon={ICONS.share}
             label={t("Share")}

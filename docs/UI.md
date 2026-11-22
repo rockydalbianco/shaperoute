@@ -689,10 +689,19 @@ prende una fascia di vetro con il filo di luce in basso e un'ombra corta
 sul contenuto, in 200 ms (subito con «Riduci movimento»), e la lascia
 quando la pagina torna in cima. Conta la pagina sullo schermo: cambiando
 scheda l'header segue quella nuova. Ogni pagina lo dice con
-`useHeaderScroll()` sul suo scroller principale; una pagina che non lo
-dice tiene l'header a riposo. Con «Riduci trasparenza» la fascia è opaca
+`useHeaderScroll()` sul suo scroller principale (Disegna, Explore,
+Explore sull'acqua, Messaggi, Profilo, «Today» e «Days» dello sci, A5c);
+una pagina che non lo dice tiene l'header a riposo, e una che se ne va
+lontana dalla cima lo rimette a riposo. Con «Riduci trasparenza» la fascia è opaca
 con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
 contenuto non passa sotto l'header: per quello serve la parte B.
+
+**I gruppi di Impostazioni** (TASK-469 A6, `src/settings/settingsGroup.ts`):
+ogni gruppo di righe di Impostazioni ha gli angoli a 24 (`radius.group`) e i
+bordi del vetro posato dei segmenti: il filo di luce intorno e quello in
+cima. La faccia resta `surface`, così le parole tengono il contrasto. Con
+«Riduci trasparenza» il bordo è la linea sottile di prima, con «Aumenta
+contrasto» il bordo forte. Ogni gruppo lo prende con `useSettingsGroup()`.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
@@ -5314,6 +5323,11 @@ TASK-305.md, «Testi di R6».
     1:43:30» come nel Feed, e la legenda «White: on foot. Yellow: in the
     air.». Un'API di prima, o un `flight` che non sta sulla traccia: la
     gara come una corsa, tutta bianca.
+  - **Il post della gara aperto dal Feed o da un profilo** (parte R6e): la
+    mappa del post ha gli stessi due colori, coi tratti dal `flight` di
+    `GET /drawings/{id}`, la mappa inquadrata sulla linea. Un'API di prima,
+    o una linea del post con punti diversi da quelli della corsa: il post
+    come oggi, tutto giallo.
 - **Un volo nelle liste** (TASK-305, 2026-11-22): in «My activities», nella
   scheda sotto la mappa e nella riga del Feed un volo ha la velocità media
   («15.1 km/h», come la pagina del post) al posto del passo per km; senza

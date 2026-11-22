@@ -11,7 +11,7 @@ import type {
   RunActivity,
   Visibility,
 } from "@shaperoute/shared-types";
-import { RUN_ACTIVITIES, VISIBILITIES } from "@shaperoute/shared-types";
+import { PHOTOS_SOURCE, RUN_ACTIVITIES, VISIBILITIES } from "@shaperoute/shared-types";
 
 import { accountProblem, SESSION_ENDED } from "../account/messages";
 import { t } from "../i18n";
@@ -426,6 +426,13 @@ export function isDrawingPhoto(value: unknown): value is DrawingPhoto {
  */
 function readsActivity(body: Record<string, unknown>): boolean {
   if (body.activity === undefined || isRunActivity(body.activity)) {
+    return true;
+  }
+  // A post of photos only has no run, so no activity (TASK-312 part C):
+  // read as none, as on an API before TASK-208. Any other drawing with a
+  // null activity is still refused.
+  if (body.activity === null && body.source === PHOTOS_SOURCE) {
+    delete body.activity;
     return true;
   }
   if (typeof body.activity !== "string") {

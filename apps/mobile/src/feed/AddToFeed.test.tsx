@@ -56,9 +56,12 @@ async function openSheet() {
   await fireEvent.press(screen.getByRole("button", { name: "Add activity" }));
 }
 
-test("without the file picker in the app there is no «+»", async () => {
+test("without the file picker in the app the «+» has «Photos only» alone", async () => {
   await show(spies(), false);
-  expect(screen.queryByTestId("feed-add")).toBeNull();
+  await openSheet();
+  expect(screen.queryByText("From a file")).toBeNull();
+  expect(screen.getByText("Photos only")).toBeTruthy();
+  expect(screen.getByText("Up to 10 photos, also from Instagram")).toBeTruthy();
 });
 
 test("the «+» opens «Add activity» with «From a file» at once", async () => {

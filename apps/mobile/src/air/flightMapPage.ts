@@ -101,6 +101,8 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
       keyboard: false,
     });
     map.touchZoomRotate.disableRotation();
+    // The page sets the height the camera looks at itself (follow).
+    map.setCenterClampedToGround(false);
     map.addControl(new maplibregl.AttributionControl({ compact: true }));
     map.on("error", function () {});
     map.once("idle", function () {
@@ -157,6 +159,12 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
     if (pilot === null) {
       return;
     }
+    // On the hills the camera looks at the ground under the pilot, not at
+    // the sea's level under it: else the pilot is above the screen, hidden
+    // by the mountain (seen on the simulator, 2026-11-22). The terrain's
+    // height as drawn, exaggerated as the hills are.
+    var ground = view.threeD ? map.queryTerrainElevation([pilot.lon, pilot.lat]) : null;
+    map.setCenterElevation(typeof ground === "number" && isFinite(ground) ? ground : 0);
     map.easeTo({
       center: [pilot.lon, pilot.lat],
       bearing: view.headingUp && pilot.course !== null ? pilot.course : 0,

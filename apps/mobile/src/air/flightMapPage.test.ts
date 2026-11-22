@@ -28,10 +28,18 @@ function runPage() {
   const visibility = new Map<string, string>();
   const eases: Record<string, unknown>[] = [];
   let terrain: unknown = "unset";
+  const centerElevations: number[] = [];
   let interval: (() => void) | null = null;
   const marker = { lngLat: null as unknown, rotation: null as unknown, added: false };
   class Map_ {
     touchZoomRotate = { disableRotation() {} };
+    setCenterClampedToGround() {}
+    setCenterElevation(metres: number) {
+      centerElevations.push(metres);
+    }
+    queryTerrainElevation() {
+      return 2600;
+    }
     addControl() {}
     on(event: string, handler: () => void) {
       handlers.set(event, handler);
@@ -127,6 +135,7 @@ function runPage() {
     visibility,
     marker,
     terrain: () => terrain,
+    centerElevations,
     load: () => handlers.get("load")!(),
     render: () => handlers.get("render")!(),
     tick: () => interval!(),
@@ -164,7 +173,7 @@ it("starts in 3D, with the hills; flat without them", () => {
   expect(page.visibility.get("hillshade")).toBe("none");
 });
 
-it("follows the pilot, turned by the course, or north up", () => {
+it("follows the pilot, turned by the course, or north up, on the ground under them", () => {
   const page = runPage();
   page.load();
   page.flight.setPilot(45.87, 11.8, 120, 110);
@@ -176,9 +185,12 @@ it("follows the pilot, turned by the course, or north up", () => {
     bearing: 110,
     pitch: PITCH_3D,
   });
+  // In 3D the camera looks at the ground under the pilot.
+  expect(page.centerElevations[page.centerElevations.length - 1]).toBe(2600);
   page.flight.setView(false, false);
   page.flight.setPilot(45.871, 11.8, 120, 110);
   expect(page.eases[page.eases.length - 1]).toMatchObject({ bearing: 0, pitch: 0 });
+  expect(page.centerElevations[page.centerElevations.length - 1]).toBe(0);
 });
 
 it("marks the take-off", () => {

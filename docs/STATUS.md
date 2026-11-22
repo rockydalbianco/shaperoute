@@ -242,6 +242,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B1 → C → A1 → E → D → B2 → F → G → H. File: — · `tasks/TASK-479.md`
   **2026-11-21 sera**: B1 «pronta» (#1349); ordine cambiato dall'utente:
   B2 (editor) subito dopo B1.
+  **2026-11-22**: B1 in produzione (OTA 20), B2 in `main` (#1368), C (vario
+  sonoro, acceso di default) in produzione (OTA 22, #1394), provata
+  dall'utente sul telefono; prossima A1.
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`

@@ -1,7 +1,8 @@
 # TASK-479 — Il parapendio completo: lo strumento di volo senza accordi con terzi
 
-**Stato**: In corso · parte 0 (documenti): domande risposte il
-2026-11-21; poi B1
+**Stato**: In corso · parte 0 chiusa (2026-11-21); B1 in produzione
+(OTA 20), B2 in `main` (#1368), C in produzione (OTA 22, 2026-11-22);
+prossima A1
 **Fase**: 5 · **Branch**: `docs/TASK-479-paragliding-pro` (parte 0), poi
 `feat/TASK-479-<parte>-<slug>`, una parte alla volta, ognuna da `main`
 **Dipende da**: TASK-305 parti R (in `main`: lo sport «Record only», i
@@ -336,6 +337,50 @@ come scelta del volo; nel codice metri, m/s, gradi):
    `enableBackgroundPlayback: true` o un servizio in primo piano Android di
    tipo `mediaPlayback`), **si chiede prima**: cambia il fingerprint iOS e
    chiede una build nativa.
+
+**C fatta** (#1394, in produzione con l'OTA 22 del 2026-11-22). Scelta
+dell'utente del 2026-11-22: **il suono parte acceso** al primo volo
+(«Acceso»), si spegne col tasto 🔊 accanto al lucchetto, che funziona anche
+a schermo bloccato; la scelta resta.
+
+**Com'è fatta** (deciso dall'agente su delega dell'utente):
+- 15 loop WAV mono (270 KB) in `apps/mobile/assets/sounds/vario/`, fatti
+  da `tools/vario_tones.py` (solo libreria standard, come
+  `stretch_chime.py`; `tools/` e non `apps/mobile/scripts/` perché la CI
+  prova lì gli script): 11 di salita (0…+5 m/s a passi di 0,5: 600→1600 Hz,
+  2→8 bip al secondo; un loop è un bip e il suo silenzio) e 4 di discesa
+  (2, 3, 4, 5+ m/s: 400→250 Hz, mezzo secondo di onde intere, senza
+  giunture).
+- Un player in loop per tono (`varioSound.ts`, expo-audio caricato al
+  primo tono); un tono nuovo ferma il precedente, lo stesso tono cambia
+  solo il volume; un player fermato dal telefono riparte dopo 2 s. Margine
+  di 0,1 m/s ai bordi dei gradini e delle soglie, perché il tono non
+  sfarfalli.
+- Il suono è della registrazione (`useVarioSound` in `FlightLive`), non
+  della schermata di volo: suona anche a schermata chiusa; solo in volo,
+  registrando, non in pausa; tace 5 s dopo l'ultimo fix.
+- Scelte in un file loro (`vario-sound.json`): acceso o no, bip da +0,1 /
+  +0,2 / +0,3 / +0,5 m/s, tono di discesa sotto −1,5 … −4 m/s o mai, volume
+  35 / 65 / 100 %; le soglie nell'unità del vario del pilota.
+- Nessun tocco ad `app.json`: lo schermo spento non è ancora provato su un
+  telefono vero (iOS dovrebbe bastare la modalità audio in background che
+  la registrazione già chiede; su Android non è sicuro).
+
+**Testi di C**, approvati dall'utente il 2026-11-22 (en/it «Sì, approvo»,
+poi de/fr/es «Sì, approvo»). «Sì»/«No» e i numeri restano quelli dell'app.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Vario sound | Suono del vario | Vario-Ton | Son du vario | Sonido del vario |
+| Beeps from | Bip da | Piepen ab | Bips dès | Pitidos desde |
+| Sink tone below | Tono di discesa sotto | Sinkton unter | Son de descente sous | Tono de descenso bajo |
+| Volume | Volume | Lautstärke | Volume | Volumen |
+| From GPS: the sound comes 1–2 s after the climb. | Dal GPS: il suono arriva 1–2 s dopo la salita. | Vom GPS: Der Ton kommt 1–2 s nach dem Steigen. | Depuis le GPS : le son arrive 1 à 2 s après la montée. | Desde el GPS: el sonido llega 1–2 s después del ascenso. |
+| Mute the vario | Silenzia il vario | Vario stummschalten | Couper le son du vario | Silenciar el vario |
+| Turn the vario sound on | Attiva il suono del vario | Vario-Ton einschalten | Activer le son du vario | Activar el sonido del vario |
+
+**Provata dall'utente sul telefono** il 2026-11-22: «il vario funziona,
+l'ho provato sul telefono».
 
 ### Parte D — Navigazione e gare
 

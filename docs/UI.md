@@ -5530,3 +5530,33 @@ pagina per liberare memoria, la WebView la ricarica da sola.
   calcolati c'è da TASK-093).
 - Contorni disegnati delle forme e cursore della distanza: vogliono
   dipendenze (TASK-051).
+
+## Il disegno a mano agganciato alle strade (TASK-347 parte C, ADR-0300)
+
+In «Draw on the map» un disegno a mano (la figura «drawing», da sola, senza
+altri pezzi) si aggancia alle strade mentre lo disegni, tratto per tratto,
+300 ms dopo che il dito si alza: prima sul telefono, poi sul server
+(`engine/matchOnPhone.ts`, parte B).
+
+- **Sulla mappa**: il disegno come l'ha fatto il dito resta come
+  **fantasma**, lo stesso giallo, sottile (2 pt) e semitrasparente (0,45).
+  Sopra c'è il **percorso agganciato** in giallo pieno, come un percorso.
+  Dove la strada passa a più di 40 m dal dito (`FAR_M`), quel tratto del
+  percorso prende il colore `warning`. Le linee agganciate arrivano alla
+  pagina con un messaggio a parte (`setAnchored`), così non cancellano mai
+  la linea che il dito sta disegnando.
+- **Sotto la mappa**, sopra la distanza: «Snapping to roads…» mentre un
+  tratto si aggancia, poi «Roads follow your drawing: 87%». Il numero è la
+  quota dei punti disegnati con una strada entro 40 m; dopo «Draw route»
+  sarà la somiglianza del motore (parte C3). Non va nei post. Il numero si
+  legge con VoiceOver (regione «polite»), quindi il colore non è l'unico
+  segnale.
+- **Fuori strada**: se un tratto è in campagna resta fantasma e la nota
+  dice «No roads here: this line stays as you drew it.» nel colore
+  `warning`.
+- **Senza risposta** (niente rete e niente zona, o un server vecchio): il
+  tratto resta fantasma senza avvisi e si riprova al tratto dopo.
+- **Undo e Redo**: le risposte restano in memoria (200), quindi un Undo e
+  poi un Redo ridisegnano subito l'aggancio di prima.
+- Forme, immagini, foto e pezzi non si agganciano: arrivano nelle parti D
+  ed E.

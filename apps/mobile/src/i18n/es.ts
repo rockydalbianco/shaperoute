@@ -3016,4 +3016,9 @@ export const ES: Table = {
     "Este diseño es de un MuW más reciente: actualiza la app.",
   "MuW could not read this file.": "MuW no pudo leer este archivo.",
   "MuW could not share the file.": "MuW no pudo compartir el archivo.",
+  // src/mapdraw/ (TASK-347 part C: a drawing anchored to the roads; texts approved by the user on 2026-11-22)
+  "Snapping to roads…": "Ajustando a las calles…",
+  "Roads follow your drawing: {percent}%": "Las calles siguen tu dibujo: {percent} %",
+  "No roads here: this line stays as you drew it.":
+    "Aquí no hay calles: la línea queda como la dibujaste.",
 };

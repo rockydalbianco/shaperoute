@@ -106,7 +106,8 @@ Visibility = Literal["everyone", "followers", "only_me"]
 # Where a drawing comes from: its run's `source`, or `photos` for a post of
 # photos only, without a run (TASK-312 part C, photo_posts.py).
 PHOTOS_SOURCE = "photos"
-DrawingSource = RunSource | Literal["photos", "sleep"]
+# `plan` for a gym plan posted (TASK-485, plan_posts.py).
+DrawingSource = RunSource | Literal["photos", "sleep", "plan"]
 # The only ones that come with the line of a description.
 LINE_BREAK = "\n"
 
@@ -420,6 +421,11 @@ class SeenFields(BaseModel):
     (TASK-455 part C, post_links.py): it is for everyone, it has a line, and
     its owner leaves «Links to my posts» on. The app shows «Share link» only
     then. Always answered; the default is for the examples written before."""
+    plan: dict[str, Any] | None = None
+    """A gym plan posted (TASK-485, plan_posts.py, `source` `plan`): the plan
+    as it was posted, `GymPlanPosted`, with its exercises and kg; null for
+    any other post. Always answered; the default is for the examples
+    written before."""
     sleep: SleepSummaryBody | None = None
     """«Sleep last night» (TASK-467 part B1b, sleep_seen.py): the night
     before the activity, while its owner shows it in the post; null for a
@@ -500,8 +506,11 @@ _SEEN_FIELDS = (
     f" {DRAWN_AT_SQL} AS started_at, r.place, r.shape, r.word, r.style,"
     " r.title AS route_title, coalesce(r.distance_m, 0) AS distance_m,"
     " coalesce(r.duration_s, 0) AS duration_s, r.score, r.fidelity, r.activity,"
-    f" r.route_rotation_deg, coalesce(r.source, CASE WHEN d.sleep_night_id IS NULL"
-    f" THEN '{PHOTOS_SOURCE}' ELSE 'sleep' END) AS source,"
+    " r.route_rotation_deg, coalesce(r.source, CASE"
+    " WHEN d.sleep_night_id IS NOT NULL THEN 'sleep'"
+    f" WHEN d.plan IS NOT NULL THEN 'plan' ELSE '{PHOTOS_SOURCE}' END) AS source,"
+    # The plan of a gym plan posted (TASK-485): on the drawing itself.
+    " d.plan,"
     # The descents of a day of skiing (TASK-424 part C2b): one key of its
     # run_stats row, by its primary key.
     " (SELECT s.stats -> 'ski_descents' FROM run_stats s WHERE s.run_id = r.id)"
@@ -651,6 +660,7 @@ def _seen(row: DictRow, details: Details) -> dict[str, Any]:
         "rotation_deg": turn_kept(row["route_rotation_deg"]),
         "ski_descents": row.get("ski_descents"),
         "flight_split": row.get("flight_split"),
+        "plan": row.get("plan"),
         "sleep": seen_sleep(row.get("sleep")),
         "linkable": bool(row.get("linkable")),
     }

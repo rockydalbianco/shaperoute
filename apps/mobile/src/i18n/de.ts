@@ -3164,4 +3164,21 @@ export const DE: Table = {
     "Diese Wörter sind nicht erlaubt. Versuch andere.",
   "Links and special characters can't be used here.":
     "Links und Sonderzeichen sind hier nicht erlaubt.",
+
+  // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
+  "Choose a plan": "Plan auswählen",
+  "No plans yet: make one in Gym › Plans.":
+    "Noch keine Pläne: Erstelle einen unter Fitnessstudio › Pläne.",
+  "Say something about this plan (optional)": "Schreib etwas zu diesem Plan (optional)",
+  "Who sees it: {who}": "Wer ihn sieht: {who}",
+  "Workout plan": "Trainingsplan",
+  "{count} day a week": "{count} Tag pro Woche",
+  "{count} days a week": "{count} Tage pro Woche",
+  "Use this plan": "Diesen Plan nutzen",
+  "Added to your plans": "Zu deinen Plänen hinzugefügt",
+  "You already have 20 plans: delete one to add this.":
+    "Du hast schon 20 Pläne: Lösche einen, um diesen hinzuzufügen.",
+  "Delete this post?": "Diesen Beitrag löschen?",
+  "Copies already made stay with whoever made them.":
+    "Schon erstellte Kopien bleiben bei denen, die sie erstellt haben.",
 };

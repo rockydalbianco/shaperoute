@@ -33,7 +33,7 @@ import { PostPage } from "../feed/PostPage";
 import { loadFeedTab, saveFeedTab } from "../feed/feedTabChoice";
 import { type FeedTab, feedTabName, FeedTabs } from "../feed/FeedTabs";
 import { FeedSkeleton } from "../feed/FeedSkeleton";
-import { SAMPLE_FEED, type SamplePost } from "../feed/sampleFeed";
+import type { SamplePost } from "../feed/sampleFeed";
 import { type FeedItem, feedWithAds } from "../feed/feedWithAds";
 import { type Feed, type FeedShown, useFeed } from "../feed/useFeed";
 // MuW Style (TASK-384, ADR-0326): its posts in «All» and its lens.
@@ -78,17 +78,14 @@ type Item = FeedItem<Post, NativeAd> | StyleItem | MuwItem;
 /** How far from the end of the list, in screens, the next page is asked. */
 const MORE_AT_SCREENS = 1;
 
-/** The rows of a tab: only «All» falls back on the examples, while it has
- * nothing the account may see or nobody is signed in (ADR-0127). */
-function postsOf(tab: FeedFilter, shown: FeedShown): readonly Post[] {
-  if (shown.kind === "ready" && shown.posts.length > 0) {
-    return shown.posts.map(shownPost);
-  }
-  if (tab === "following" || shown.kind === "loading" || shown.kind === "failed") {
-    return [];
-  }
-  return SAMPLE_FEED;
+/** The rows of a tab: only the members' real drawings. The made-up examples
+ * of ADR-0127 are gone (the user's choice, 2026-11-22): without an account,
+ * or while nobody has published anything, the tab says so instead. */
+function postsOf(shown: FeedShown): readonly Post[] {
+  return shown.kind === "ready" ? shown.posts.map(shownPost) : NO_POSTS;
 }
+
+const NO_POSTS: readonly Post[] = [];
 
 /**
  * «Feed», the page at the left of «Draw» (TASK-154): the drawings the
@@ -99,13 +96,12 @@ function postsOf(tab: FeedFilter, shown: FeedShown): readonly Post[] {
  * screen is only hidden. The last tab chosen opens again. A pull reads the
  * open tab again, the end of its list reads more. Without an account there
  * are no tabs, only «All». While nobody has published anything the account
- * may see, and without an account, «All» shows examples: figures of the
- * catalogue with made-up runners (TASK-156, ADR-0127). Nothing on the page
- * says they are examples: the user's choice. Under each line is the map of
+ * may see, «All» says so, and without an account it asks to log in: the
+ * made-up examples of TASK-156 (ADR-0127) are no longer shown (the user's
+ * choice, 2026-11-22). Under each line is the map of
  * its streets (TASK-162): a picture, taken by a map page that the list
  * covers. A tap on a member's drawing opens it whole on the map, with its
- * reactions and comments, as from a profile (TASK-117); one on an example
- * opens its route (TASK-188). The search that was its lens is at the top
+ * reactions and comments, as from a profile (TASK-117). The search that was its lens is at the top
  * of «Explore» since TASK-367 part B; above the drawings of «All»,
  * while the API has a contest, its card (TASK-299, docs/CONCORSI.md §7),
  * asked with the feed and with each pull. Between the drawings, one ad every
@@ -113,8 +109,8 @@ function postsOf(tab: FeedFilter, shown: FeedShown): readonly Post[] {
  * ADR-0326), one row in 8 of «All» at most is one of them, unless «Settings»
  * turned them off, and a third tab, «Style», has them all; without an
  * account the tabs are then «All» and «Style». While the API has routes MuW
- * drew (TASK-365, ADR-0310), one row in 6 of «All» at most is one of them,
- * also among the examples; a tap opens it on the map. At the right of the
+ * drew (TASK-365, ADR-0310), one row in 6 of «All» at most is one of them;
+ * a tap opens it on the map. At the right of the
  * bar, with an account, a «+» adds an activity from a file (TASK-476) or a
  * post of photos only (TASK-312 part C), whose card and page are their own
  * (PhotoFeedPost, PhotoPostPage); once one reaches the API, the open tabs
@@ -256,7 +252,23 @@ export function FeedScreen({
               {problem}
             </View>
           }
-          empty={null}
+          empty={
+            !signedIn ? (
+              <EmptyState
+                outline={HEART}
+                title={feedTabName("all")}
+                message={t("Log in from Profile to see the activities.")}
+                testID="feed-log-in"
+              />
+            ) : all.shown.kind === "ready" ? (
+              <EmptyState
+                outline={HEART}
+                title={feedTabName("all")}
+                message={t("Nobody has published anything yet.")}
+                testID="feed-no-posts-all"
+              />
+            ) : null
+          }
         />
         {withFollowing && opened && (
           <FeedList
@@ -382,7 +394,7 @@ function FeedList({
   onOpen,
 }: ListProps) {
   const { shown, signedIn, refreshing, refresh, more } = feed;
-  const posts = useMemo(() => postsOf(tab, shown), [tab, shown]);
+  const posts = useMemo(() => postsOf(shown), [shown]);
   const { ads: placed, see } = useFeedAds(posts.length, active && visible, ads);
   const items = useMemo<Item[]>(
     () => feedWithMuw(feedWithStyle(feedWithAds(posts, placed), stylePosts), muwRoutes),

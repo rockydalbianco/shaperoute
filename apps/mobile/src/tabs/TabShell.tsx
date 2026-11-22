@@ -26,8 +26,8 @@ import { FeedMapShooter } from "../feed/FeedMaps";
 import { color } from "../theme/tokens";
 import { pageName, tourPart, useTourPager } from "../tour/tourParts";
 import { closeTopLayer, OnScreenContext } from "../ui/backLayers";
-import { Hairline } from "../ui/Hairline";
 import { AppHeader } from "./AppHeader";
+import { HeaderScrollContext, type HeaderScrollReport } from "./headerScroll";
 import { type BarTab, TabBar } from "./TabBar";
 import { TabReselect, TabReselectContext } from "./tabReselect";
 import {
@@ -172,6 +172,30 @@ export function TabShell({ pages, page, onPage, action }: Props) {
   const between = useMemo(() => ({ ...insets, top: 0, bottom: 0 }), [insets]);
   // One for each page, made the first time it is asked for.
   const [reselects] = useState(() => new Map<string, TabReselect>());
+  // The pages scrolled away from their top: the header is in glass over them
+  // (TASK-469 A5b). Each page tells through its own, made once.
+  const [awayFromTop, setAwayFromTop] = useState<ReadonlySet<string>>(() => new Set());
+  const [reports] = useState(() => new Map<string, HeaderScrollReport>());
+  function reportOf(title: string): HeaderScrollReport {
+    let report = reports.get(title);
+    if (report === undefined) {
+      report = (away: boolean) =>
+        setAwayFromTop((before) => {
+          if (before.has(title) === away) {
+            return before;
+          }
+          const after = new Set(before);
+          if (away) {
+            after.add(title);
+          } else {
+            after.delete(title);
+          }
+          return after;
+        });
+      reports.set(title, report);
+    }
+    return report;
+  }
   function reselectOf(title: string): TabReselect {
     let reselect = reselects.get(title);
     if (reselect === undefined) {
@@ -323,8 +347,10 @@ export function TabShell({ pages, page, onPage, action }: Props) {
         style={[StyleSheet.absoluteFill, styles.shell]}
         pointerEvents="none"
       />
-      <AppHeader action={action} />
-      <Hairline />
+      <AppHeader
+        action={action}
+        scrolled={shown !== undefined && awayFromTop.has(shown)}
+      />
       <ScrollView
         ref={scroller}
         testID="tab-pages"
@@ -375,7 +401,9 @@ export function TabShell({ pages, page, onPage, action }: Props) {
                 {isBuilt && (
                   <OnScreenContext.Provider value={onScreen}>
                     <TabReselectContext.Provider value={reselectOf(each.title)}>
-                      {each.render()}
+                      <HeaderScrollContext.Provider value={reportOf(each.title)}>
+                        {each.render()}
+                      </HeaderScrollContext.Provider>
                     </TabReselectContext.Provider>
                   </OnScreenContext.Provider>
                 )}

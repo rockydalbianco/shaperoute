@@ -737,6 +737,39 @@ adesso da main»).
 - quello che l'utente chiede di cambiare dopo la prova sul telefono;
 - la build nativa che porta il testo nuovo, e solo allora il merge.
 
+**La frase della privacy, approvata («Approvo così», 2026-11-21)**. Prende
+il posto di quella della risposta 7, che diceva «kept with your post»: la
+notte condivisa sul profilo non è in un post, e con la parte E il sonno si
+pubblica in tre modi. In inglese, così com'è nell'app:
+
+> Once you tap «Show my sleep from Apple Health», MuW reads your sleep from
+> Apple Health (the time asleep and the sleep stages) on your phone and
+> works out a sleep score there. Nothing of it reaches our server until you
+> publish it: with «Share» on your profile, with «Publish» as a post of its
+> own, or with «Sleep last night» in the post of an activity. Then the
+> score, the hours slept, the stages and the day are kept on our server and
+> seen by whoever can see your profile or that post, until you stop
+> sharing, remove the post or delete your account. Never the hour you went
+> to bed or woke up.
+
+È il secondo blocco di «Apple Health and Health Connect» in
+`about/content/{en,it,de,es,fr}.ts`, **solo sulla bozza #1334**; le altre
+quattro lingue le ha preparate l'agente e citano i pulsanti come sono
+tradotti. Un cambio in quei file vuole `node site/tools/make_privacy.mjs`
+dalla radice, che riscrive `site/privacy/**` (un test del sito le
+confronta): fatto sulla bozza. Sono le pagine nel repository: la copia sul
+sito pubblicato è un passo a parte, col sì dell'utente. Prima del merge
+della C i file della privacy vanno riallineati a quello che è entrato in
+`main` nel frattempo (Coordinatore, 2026-11-21).
+
+**Dal 2026-11-22** la bozza è allineata a `main` (1.1.0 con l'orologio e
+E1) e ha la CI tutta verde a `3bea4a3c`: è la suite intera con la costante
+accesa. Per non cambiare `targets/watch/**` l'orologio ha una frase sua,
+solo sul battito (`WATCH_HEALTH_READ` in `src/watch/watchTexts.ts`). Dei
+punti qui sopra restano: la data della privacy, la copia sul sito, «App
+Privacy», le note di revisione, le impronte su una copia pulita, la build
+nativa.
+
 ### Parte E — il post del sonno da solo nel Feed: il piano (2026-11-21, nessun codice)
 
 Chiesta dall'utente dopo la prova sul telefono (risposte 10–12). Era la
@@ -841,6 +874,10 @@ usa ancora: può stare in `main` e sul server senza che si veda niente.
   `sleep_night_id`. Va prima dell'app E2.
 - Sul server: passo 17 (del Coordinatore, col sì dell'utente); i controlli
   di sola lettura in `out/TASK-467/SERVER-E1.md`, non provati sul server.
+- **Sul server dal 2026-11-22** (passo 17, server a `40789324`): la `0082`
+  passata in ordine dopo la `0081`, `/me/sleep-posts/{night}` risponde
+  `401` senza token, nessun `Traceback`. Finché nessuna app dice `sleep`
+  non cambia niente di quello che si vede.
 
 ### Parte E2 — l'app del post del sonno (2026-11-21, branch `feat/TASK-467-e2-sleep-post-app`, in corso)
 
@@ -861,6 +898,46 @@ pagina del post, griglia del profilo); i testi nelle quattro lingue;
 `UI.md`. La lista esatta al Coordinatore quando i due sono in `main`. Per
 vederlo sul telefono servirà una build di prova nuova (col sì
 dell'utente, chiesta al Coordinatore).
+
+**2026-11-22, il secondo gruppo di file nuovi** (testa `0fc1999a`, sempre
+senza PR), scritti leggendo la bozza di TASK-312 C2 (#1386), che dà ai post
+di sole foto una scheda e una pagina loro e li separa con `isPhotoPost`:
+
+- `feed/sleepPost.ts`: `isSleepPost`, dal `source` come `isPhotoPost`;
+- `feed/SleepFeedPost.tsx`: la riga del Feed. Autore e quando, la notte
+  dove una corsa ha la mappa, le azioni sotto; un tocco sulla notte apre la
+  pagina, due sono il super like; «…» sul post di un altro;
+- `feed/SleepPostDetailPage.tsx`: la pagina del post, con la nota di chi è
+  il punteggio; sul proprio, «Remove post» sotto la barra, che lo toglie
+  dal Feed e chiude la pagina (senza conferma, come nella pagina del «+»:
+  si ripubblica da lì);
+- `feed/SleepTile.tsx`: la tessera nella griglia di un profilo, il
+  punteggio sopra «Sleep», muta per un lettore di schermo;
+- `feed/sleepPost.testing.ts` e i test: 39 verdi con quelli di prima.
+
+Nessun testo oltre ai sei approvati. **Gli agganci, punto per punto**
+(da ricontrollare sul diff finale di C2, e da mandare al Coordinatore
+prima di toccare un file esistente):
+
+1. `api/reads.ts`: `sleep` in `X-MuW-Reads` solo con `sleepPostsOn()`
+   (oggi `READS` è una costante; spento, l'intestazione è quella di oggi);
+2. `api/drawings.ts`: `activity: null` letta come nessuna anche con
+   `source` «sleep»;
+3. `screens/FeedScreen.tsx`: `SleepFeedPost` nella lista e
+   `SleepPostDetailPage` come pagina; tolto un post, le schede rileggono;
+4. `feed/PostActions.tsx`: niente «Share» sul post del sonno (oggi sul
+   proprio comparirebbe: non ha linea né link);
+5. `social/DrawingCard.tsx`: senza i fatti della corsa e senza «Send to a
+   friend»;
+6. `social/DrawingsGrid.tsx`: `SleepTile` nella cella;
+7. `feed/addToFeedEntries.ts` (di TASK-481 A): la voce «Sleep», solo con
+   la costante accesa;
+8. i sei testi nelle quattro lingue;
+9. `fixtures/feed-sleep.json` (nuovo), letto da API e app;
+10. `UI.md` e questo file.
+
+Da guardare su `main` vero: dove C2 apre la pagina di un post fuori dal
+Feed (profilo, notifica) e la ricerca dei disegni.
 
 ## Criteri di accettazione
 
@@ -1018,3 +1095,9 @@ dell'utente, chiesta al Coordinatore).
   «+» con tutte le voci è TASK-481. Restano: il passo 17 sul server col sì
   dell'utente, gli agganci di E2 dopo TASK-312 C2 e TASK-481 A, una build
   di prova nuova per vederlo sul telefono; poi la C.
+- **2026-11-22**: la frase della privacy approvata dall'utente e messa
+  sulla bozza #1334, con le pagine del sito rigenerate nel repository; la
+  bozza è verde con la costante accesa. **E1 sul server** (passo 17,
+  `40789324`). E2: scritti anche la riga del Feed, la pagina del post e la
+  tessera del profilo, file nuovi senza PR; gli agganci, elencati in
+  «Parte E2», aspettano ancora TASK-312 C2 (bozza #1386) e TASK-481 A.

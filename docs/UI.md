@@ -680,6 +680,20 @@ sopra una foto bianca o nera. Il contatore delle foto è una capsula di
 vetro. Con «Riduci trasparenza» e «Aumenta contrasto» la capsula è opaca.
 Sotto il disegno le parole restano come prima.
 
+**L'header di vetro** (TASK-469 A5 e A5b, `src/tabs/AppHeader.tsx`,
+`src/tabs/headerScroll.tsx`): la campanella e lo sport sono due cerchi di
+vetro in rilievo, col bordo forte dei comandi (`headerGlass`); il numero
+rosso resta sulla campanella. In cima a una pagina l'header ha il colore
+della pagina e nessuna linea sotto; quando la pagina scorre di più di 4 pt
+prende una fascia di vetro con il filo di luce in basso e un'ombra corta
+sul contenuto, in 200 ms (subito con «Riduci movimento»), e la lascia
+quando la pagina torna in cima. Conta la pagina sullo schermo: cambiando
+scheda l'header segue quella nuova. Ogni pagina lo dice con
+`useHeaderScroll()` sul suo scroller principale; una pagina che non lo
+dice tiene l'header a riposo. Con «Riduci trasparenza» la fascia è opaca
+con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
+contenuto non passa sotto l'header: per quello serve la parte B.
+
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
 piccola, si allarga, poi si alza; le parole compaiono quando è aperta,

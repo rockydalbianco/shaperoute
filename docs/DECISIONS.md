@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1, A2 in produzione); B Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A4c in produzione, A5 e A5b in `main`); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -577,11 +577,42 @@ lasciando le righe d'indice.
 - ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Proposta
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 - ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo · 2026-11-21 · Attiva
+- ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities» · 2026-11-22 · Attiva
 - ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Proposta
 - ADR-0391 — Il link di un post apre l'app: l'id resta dopo il `#`, l'app prende dall'indirizzo solo un id a forma di disegno e chiede il post all'API, senza account prima l'ingresso; la barra di Safari subito, i link verificati con la prossima build nativa · 2026-11-22 · Attiva
 
 ## Voci nuove
 
+## ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities»
+
+**Stato**: Attiva · 2026-11-22 · TASK-305 parti R6c (#1313), R6d-a (#1342,
+server al passo 15) e R6d-b (#1352). **Scelta dell'utente**: le schermate
+della gara finta nel simulatore («Sì, approvo» per R6c e per R6d). Il resto
+è **deciso dall'agente su delega dell'utente**, con le liste dei file
+approvate dal Coordinatore.
+
+1. **`flight` nell'attività aperta** (`GET /me/activities/{key}`): `air`
+   è una lista di coppie di indici dei punti della traccia salvata, il
+   primo e l'ultimo punto il cui tempo (l'M della linea) cade dentro un
+   tratto in aria; `split` è lo stesso `flight_split` delle liste. Un
+   tratto in aria con un punto solo resta fuori.
+2. **Calcolato a ogni lettura**, dalla traccia e dal JSON di
+   `run_stats.stats`: nessuna migrazione, niente di nuovo salvato, e le
+   gare già salvate lo hanno senza toccarle. Solo per `paragliding` con
+   tutti e due i tipi di tratto.
+3. **Assente quando manca**: un serializzatore lo toglie se è nullo, così
+   ogni altra risposta resta uguale byte per byte. Il prezzo: in openapi
+   quella risposta è un oggetto senza proprietà, e il controllo del server
+   legge il modello.
+4. **L'app non si fida alla cieca**: coppie intere, in ordine, dentro la
+   traccia, e uno split valido; se qualcosa non torna, la gara si vede
+   come prima, tutta bianca e senza la riga dei tempi.
+5. **Alla fine di una gara (R6c)** la mappa inquadra tutta la traccia,
+   piedi e aria, non solo l'ultimo tratto.
+6. **Prima il server, poi l'OTA**: un server senza R6d-a non dà `flight` e
+   l'app mostra la gara come oggi.
+7. **Fuori**: il post di una gara aperto dal Feed o da un profilo
+   (`GET /drawings/{id}`) resta bianco, per dopo.
 ## ADR-0391 — Il link di un post apre l'app: l'id dopo il `#`, solo un id a forma di disegno, la barra di Safari subito e i link verificati con la prossima build
 
 **Stato**: Attiva · 2026-11-22 · TASK-482. Che il link debba aprire il post
@@ -2253,6 +2284,21 @@ forma a capsula intera è scelta dell'utente (2026-11-21). Le parole
 prendono i colori del testo; un test controlla anche le calorie a 4,5:1
 sul vetro. `Scrim` e i token `onScrim` restano per gli altri che li
 usano.
+**A5 (#1358)**: la campanella e lo sport dell'header usano lo stesso
+cerchio, `headerGlass` (il vetro posato dei segmenti più il rilievo dei
+chip, col bordo forte), definito in `BellButton.tsx` e usato anche da
+`SportButton.tsx`.
+**A5b (#1384)**: gli eventi di scroll di React Native non risalgono, quindi
+l'header non può guardare lo scroll da solo: `TabShell` dà a ogni pagina un
+contesto, e la pagina mette `useHeaderScroll()` sul suo scroller
+principale. L'hook avvisa solo quando cambia (oltre 4 pt), così l'header
+non si ridisegna a ogni evento. `TabShell` ricorda quali pagine sono
+lontane dalla cima e passa all'header lo stato di quella sullo schermo. La
+fascia è una vista animata sul driver nativo dentro l'header, che non
+riceve tocchi; la vecchia linea fissa di `TabShell` sparisce. Il
+contenuto resta sotto l'header, non dietro: in parte A il vetro non sfoca
+niente, quindi farci passare il contenuto lo renderebbe solo meno
+leggibile. Deciso dall'agente su delega dell'utente.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

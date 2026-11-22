@@ -41,15 +41,20 @@ export const PLAN_TIMEOUT_MS = 120_000;
 /** The way back to a route (TASK-314): a crop of the zone and a search of a
  * few km, a few seconds at most; past this the server is asked. */
 export const WAY_BACK_TIMEOUT_MS = 20_000;
+/** A stroke drawn on the map, anchored to the roads (TASK-347 part B): a
+ * crop of the zone and one tracing, under half a second in Pyodide on the
+ * Mac once the zone is read (up to 5 s the first time); past this the
+ * server is asked. */
+export const MATCH_TIMEOUT_MS = 15_000;
 /** After this many deaths of the WebView, the phone stops trying until the
  * app opens again: the server draws every route. */
 export const MAX_DEATHS = 2;
 
 type Job = {
   id: number;
-  /** A route, the zone read ahead of the routes (`prepare`), or the way
-   * back to a route (`wayBack`). */
-  call: "plan" | "warm" | "wayBack";
+  /** A route, the zone read ahead of the routes (`prepare`), the way back
+   * to a route (`wayBack`), or a stroke anchored to the roads (`match`). */
+  call: "plan" | "warm" | "wayBack" | "match";
   body: string;
   zones: PageZone[];
   /** For "warm": the activity and the point of the routes to come. */
@@ -118,8 +123,20 @@ export class PhoneEngine {
     return this.ask("wayBack", body, zones, timeoutMs, signal);
   }
 
+  /** The JSON of POST /stroke-matches for its JSON (TASK-347 part B,
+   * ADR-0300): a stroke drawn on the map, anchored to the roads, behind the
+   * requests already asked. */
+  match(
+    body: string,
+    zones: PageZone[],
+    timeoutMs: number = MATCH_TIMEOUT_MS,
+    signal?: AbortSignal,
+  ): Promise<PlanAnswer> {
+    return this.ask("match", body, zones, timeoutMs, signal);
+  }
+
   private ask(
-    call: "plan" | "wayBack",
+    call: "plan" | "wayBack" | "match",
     body: string,
     zones: PageZone[],
     timeoutMs: number,
@@ -239,12 +256,12 @@ export class PhoneEngine {
   }
 
   /** iOS closed the WebView's process, most likely for memory. Only a death
-   * during a route or a way back counts: an idle WebView is fair game for
+   * during a route, a way back or a stroke counts: an idle WebView is fair game for
    * iOS, and so is one reading a zone ahead (`prepare`), which the next
    * route reads again. */
   died(): void {
     const call = this.running?.job.call;
-    if (call === "plan" || call === "wayBack") {
+    if (call === "plan" || call === "wayBack" || call === "match") {
       this.deaths += 1;
     }
     this.restart("the engine was closed");
@@ -289,7 +306,7 @@ export class PhoneEngine {
     this.running = { job, timer };
     this.link.send(
       job.warm === undefined
-        ? pageCall(job.call === "wayBack" ? "wayBack" : "plan", {
+        ? pageCall(job.call === "warm" ? "plan" : job.call, {
             id: job.id,
             body: job.body,
             zones: job.zones,

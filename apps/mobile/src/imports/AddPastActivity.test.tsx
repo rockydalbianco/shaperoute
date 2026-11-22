@@ -62,9 +62,21 @@ async function fromFile() {
   await fireEvent.press(screen.getByText("From a file"));
 }
 
-test("without the file picker in the app there is nothing to add", async () => {
+test("without the file picker in the app there is «Photos only» alone", async () => {
   await show(spies(), file("strava-run.gpx"), false);
-  expect(screen.queryByText("Add past activity")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Add past activity" }));
+  expect(screen.queryByText("From a file")).toBeNull();
+  expect(screen.getByText("Photos only")).toBeTruthy();
+});
+
+test("«Photos only» opens the form of a post of photos, «Cancel» goes back", async () => {
+  await show(spies(), file("strava-run.gpx"));
+  await fireEvent.press(screen.getByRole("button", { name: "Add past activity" }));
+  await fireEvent.press(screen.getByText("Photos only"));
+  expect(screen.getByTestId("photo-post-form")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Cancel" }));
+  expect(screen.queryByTestId("photo-post-form")).toBeNull();
+  expect(screen.getByText("From a file")).toBeTruthy();
 });
 
 test("the button opens «From a file», with what to pick and how", async () => {

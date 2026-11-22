@@ -47,10 +47,12 @@ def _load(name: str) -> Any:
     return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
 
-# The app of part C says `photos` with what it reads today.
-THIS_APP = f"{_load('reads.json')['this_app']},photos"
-# One of today: everything but `photos`.
-TODAY_APP = _load("reads.json")["this_app"]
+# An app of before part C2: what this app reads, but `photos`.
+TODAY_APP = ",".join(
+    kind for kind in _load("reads.json")["this_app"].split(",") if kind != "photos"
+)
+# The app of part C2 says `photos` too.
+THIS_APP = f"{TODAY_APP},photos"
 PHOTO = _load("drawing-photo-request.json")
 
 

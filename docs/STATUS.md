@@ -229,6 +229,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   20; R6d-a (#1342) sul server al passo 15, R6d-b (#1352, `7a082983`) in main, col
   prossimo OTA: la gara riaperta a due colori, coi tempi a piedi e in volo.
   Resta: un volo vero; R4 in bozza (#1218).
+  **2026-11-22**: R6d in produzione con l'OTA 21. #1399 in main: un volo
+  nelle liste si chiama «Paragliding» e ha la velocità, col prossimo OTA.
 - **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
   scelta dell'utente del 2026-11-21, senza accordi con terzi: schermata di
   widget, vario sonoro, mappa 3D, spazi aerei dal file del pilota, gare,

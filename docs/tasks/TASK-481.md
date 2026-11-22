@@ -1,8 +1,9 @@
 # TASK-481 — Il «+» del Feed: tutte le voci
 
 **Stato**: In lavorazione · parte 0 (documenti) fatta il 2026-11-21; parte A
-(file approvati dal Coordinatore) aspetta l'arrivo in `main` di TASK-312 C2
-**Fase**: 5 · **Branch**: `docs/TASK-481-feed-plus-all-entries` (parte 0)
+scritta il 2026-11-22 dopo TASK-312 C2 in `main` (#1386)
+**Fase**: 5 · **Branch**: `docs/TASK-481-feed-plus-all-entries` (parte 0),
+`feat/TASK-481-a-feed-plus-list` (parte A)
 **Dipende da**: TASK-476 (il «+» e il foglio, ADR-0387), TASK-312 C2 (che
 tocca lo stesso foglio)
 **ADR**: ADR-0390 (numero dal Coordinatore) · estende ADR-0387
@@ -153,6 +154,28 @@ file del Feed: 355 B2, 312 C2, 481 A, 309 B2. `App.tsx`: una riga, merge
 di `main` prima del push. Privacy a turno, in coda dopo 309 B1, 417 D2 e
 312 C2: il Coordinatore dice quando tocca.
 
+**Com'è venuta (2026-11-22).** C2 ha messo «Photos only» dentro le scelte di
+`AddPastActivity`: aperto da «From a file» della lista, avrebbe mostrato di
+nuovo «Photos only», e l'ordine scelto non avrebbe tenuto. Quindi:
+
+- «Photos only» della lista apre direttamente `PhotoPostForm` (il flusso di
+  C2, invariato); «Cancel» e «‹» tornano alla lista;
+- `AddPastActivity` prende una prop facoltativa `fileAtOnce`: con `opened`,
+  solo «From a file», e «Files» si apre subito al tocco della riga; dopo un
+  annullamento o un problema resta la scelta «From a file» con il suo aiuto.
+  In «My activities» non cambia niente (`AddPastActivity.test.tsx` verde
+  senza ritocchi). File in più approvato dal Coordinatore il 2026-11-22;
+- «Record now» fa quello che fa l'avvio senza percorso di «Draw» per lo
+  sport scelto (palestra, stretching, ciaspole con il loro avviso, altrimenti
+  `setScreen("run")`): con la palestra `setScreen("run")` da solo avrebbe
+  aperto la corsa;
+- il titolo del foglio è quello della voce aperta («Photos only», «From a
+  file»); sulla lista «Add to Feed». «Add activity» esce dalle `i18n`;
+- il «+» senza selettore c'era già (C2).
+
+*Deciso dall'agente su delega dell'utente*: `fileAtOnce`, il titolo della
+voce aperta, «Record now» come l'avvio di «Draw».
+
 **File toccati (approvati dal Coordinatore il 2026-11-21):**
 
 ```
@@ -166,6 +189,7 @@ apps/mobile/App.tsx                               (una prop: onRecord del Feed �
 apps/mobile/src/i18n/{it,de,fr,es}.ts
 docs/IMPORTAZIONI.md                              (§2: il «+» con la lista)
 docs/tasks/TASK-481.md
+apps/mobile/src/imports/AddPastActivity.tsx       (in più, approvato il 2026-11-22: `fileAtOnce`)
 ```
 
 A turno (privacy, punto 7):

@@ -379,7 +379,8 @@ poi de/fr/es «Sì, approvo»). «Sì»/«No» e i numeri restano quelli dell'ap
 | Mute the vario | Silenzia il vario | Vario stummschalten | Couper le son du vario | Silenciar el vario |
 | Turn the vario sound on | Attiva il suono del vario | Vario-Ton einschalten | Activer le son du vario | Activar el sonido del vario |
 
-Resta: la prova al telefono (il suono in volo e a schermo spento).
+**Provata dall'utente sul telefono** il 2026-11-22: «il vario funziona,
+l'ho provato sul telefono».
 
 ### Parte D — Navigazione e gare
 

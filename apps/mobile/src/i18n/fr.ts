@@ -3142,4 +3142,28 @@ export const FR: Table = {
     "Ces mots ne peuvent pas être utilisés. Essaie d'autres mots.",
   "Links and special characters can't be used here.":
     "Les liens et les caractères spéciaux ne sont pas acceptés ici.",
+  // The plan that adapts (TASK-488): gym/AdaptQuestion.tsx, gym/GymPlans.tsx.
+  "Easy@@feel": "Facile",
+  "Right@@feel": "Juste",
+  "Hard@@feel": "Dur",
+  "could do more": "j'aurais pu plus",
+  "as planned": "comme prévu",
+  "at my limit": "à la limite",
+  "Next time the plan adjusts to your answer.":
+    "La prochaine fois, le programme s'ajuste à ta réponse.",
+  "No answer? It goes on as planned.": "Pas de réponse ? Il continue comme prévu.",
+  "Easy: up we go": "Facile : on monte",
+  "Right: as planned": "Juste : comme prévu",
+  "Hard: the same next time": "Dur : pareil la prochaine fois",
+  "Hard again: one step back": "Encore dur : un pas en arrière",
+  "Change@@answer": "Changer",
+  "Next {day}, {name}:": "La prochaine fois ({day}), {name} :",
+  "Easy: one step more than planned. Right: as planned. Hard: the same next time; after two «Hard» in a row, one step back.":
+    "Facile : un pas de plus que prévu. Juste : comme prévu. Dur : pareil la prochaine fois ; après deux « Dur » de suite, un pas en arrière.",
+  "{run} of the plan: how did it go?": "{run} du programme : comment ça s'est passé ?",
+  "↑ one step more · = the same · ↓ one step back":
+    "↑ un pas de plus · = pareil · ↓ un pas en arrière",
+  "Adapts to how it went": "S'adapte à comment ça s'est passé",
+  "Off: no question at the end, the weeks grow as planned.":
+    "Désactivé : pas de question à la fin, les semaines progressent comme prévu.",
 };

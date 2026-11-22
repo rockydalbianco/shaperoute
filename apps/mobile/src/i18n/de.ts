@@ -3154,4 +3154,28 @@ export const DE: Table = {
     "Diese Wörter sind nicht erlaubt. Versuch andere.",
   "Links and special characters can't be used here.":
     "Links und Sonderzeichen sind hier nicht erlaubt.",
+  // The plan that adapts (TASK-488): gym/AdaptQuestion.tsx, gym/GymPlans.tsx.
+  "Easy@@feel": "Leicht",
+  "Right@@feel": "Passend",
+  "Hard@@feel": "Hart",
+  "could do more": "hätte mehr gekonnt",
+  "as planned": "wie geplant",
+  "at my limit": "am Limit",
+  "Next time the plan adjusts to your answer.":
+    "Beim nächsten Mal passt sich der Plan deiner Antwort an.",
+  "No answer? It goes on as planned.": "Keine Antwort? Es geht wie geplant weiter.",
+  "Easy: up we go": "Leicht: eine Stufe mehr",
+  "Right: as planned": "Passend: wie geplant",
+  "Hard: the same next time": "Hart: nächstes Mal gleich",
+  "Hard again: one step back": "Wieder hart: eine Stufe zurück",
+  "Change@@answer": "Ändern",
+  "Next {day}, {name}:": "Nächstes Mal ({day}), {name}:",
+  "Easy: one step more than planned. Right: as planned. Hard: the same next time; after two «Hard» in a row, one step back.":
+    "Leicht: eine Stufe mehr als geplant. Passend: wie geplant. Hart: nächstes Mal gleich; nach zweimal „Hart“ hintereinander eine Stufe zurück.",
+  "{run} of the plan: how did it go?": "{run} des Plans: Wie war's?",
+  "↑ one step more · = the same · ↓ one step back":
+    "↑ eine Stufe mehr · = gleich · ↓ eine Stufe zurück",
+  "Adapts to how it went": "Passt sich an, wie es lief",
+  "Off: no question at the end, the weeks grow as planned.":
+    "Aus: am Ende keine Frage, die Wochen steigen wie geplant.",
 };

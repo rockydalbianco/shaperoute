@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Keyboard, StyleSheet, Text, View } from "react-native";
 
+import { activityFlightOf } from "../air/flightLegs";
+import { postSplitLine } from "../air/flightSplit";
 import { type ActivityDetail, isImported } from "../api/activities";
 import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
@@ -84,6 +86,7 @@ export function ActivityCard({ activity, onDelete }: Props) {
   // A workout at the gym (TASK-385 B0): no line, no distance, nothing to
   // send as a route nor to Strava.
   const gym = isTrackless(activity.activity);
+  const race = activityFlightOf(activity);
   const when = startedLabel(activity.started_at);
   const where = whereAndWhat(activity, withRoute);
   const shown = title === null || title.trim() === "" ? null : title;
@@ -123,12 +126,21 @@ export function ActivityCard({ activity, onDelete }: Props) {
       <Text style={styles.facts}>
         {gym ? clockLabel(activity.duration_s * 1000) : runFacts(activity)}
       </Text>
+      {/* A race on foot and in the air (TASK-305 part R6d): the time of
+          each, as in the Feed. */}
+      {race !== null && (
+        <Text style={styles.facts} testID="activity-card-split">
+          {postSplitLine(race.split)}
+        </Text>
+      )}
       {!gym && (
         <Text style={styles.message}>
           {t(
-            withRoute
-              ? "Yellow: the route. White: what you ran."
-              : "White: what you ran.",
+            race !== null
+              ? "White: on foot. Yellow: in the air."
+              : withRoute
+                ? "Yellow: the route. White: what you ran."
+                : "White: what you ran.",
           )}
         </Text>
       )}

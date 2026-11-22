@@ -54,6 +54,7 @@ import {
   WATER_SPOTS,
   type WaterSpot,
 } from "./waterSpots";
+import { useHeaderScroll } from "../tabs/headerScroll";
 import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 import { ExploreSearch } from "../explore/ExploreSearch";
 import { postRoute } from "../feed/feedRoute";
@@ -150,6 +151,8 @@ export function PaddleExplore({
   const insets = useSafeAreaInsets();
   // Its tab touched again: back to the top (TASK-367).
   const scroll = useScrollToTopOnReselect<ScrollView>();
+  // The header turns to glass once the list scrolls (TASK-469 A5b).
+  const headerScroll = useHeaderScroll();
   const { width } = useWindowDimensions();
   const [chosen, setChosen] = useState<Chosen>(() => kept);
   const [started, setStarted] = useState<LatLon | null>(() => firstStart ?? near);
@@ -242,6 +245,7 @@ export function PaddleExplore({
       </View>
       <ScrollView
         ref={scroll}
+        {...headerScroll}
         contentContainerStyle={[
           styles.list,
           { paddingBottom: insets.bottom + space.lg },

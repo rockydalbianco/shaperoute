@@ -18,6 +18,7 @@ import { LineColourRow } from "./LineColourRow";
 import type { PostRun } from "./postRun";
 import { ScenesRows } from "./ScenesRows";
 import { StyleRow } from "./StyleRow";
+import { TogetherRow, type TogetherState } from "./TogetherRow";
 import type { VideoEdit } from "./videoEdit";
 import { VideoEmojiRow } from "./VideoEmojiRow";
 import { VideoPreview } from "./VideoPreview";
@@ -32,6 +33,8 @@ type Props = {
   onClose: () => void;
   /** The video of the post with an edit, for the preview (part C2c). */
   sceneOf: (edit: VideoEdit) => VideoScene;
+  /** «Together» (TASK-417): what the API said of the post's runners. */
+  together?: TogetherState;
 };
 
 /**
@@ -50,6 +53,7 @@ export function EditVideoSheet({
   onChange,
   onClose,
   sceneOf,
+  together,
 }: Props) {
   return (
     <SheetModal visible={visible} onRequestClose={onClose} dim testID="edit-video">
@@ -59,12 +63,20 @@ export function EditVideoSheet({
         onChange={onChange}
         onClose={onClose}
         sceneOf={sceneOf}
+        together={together}
       />
     </SheetModal>
   );
 }
 
-function SheetBody({ run, edit, onChange, onClose, sceneOf }: Omit<Props, "visible">) {
+function SheetBody({
+  run,
+  edit,
+  onChange,
+  onClose,
+  sceneOf,
+  together = { kind: "none" },
+}: Omit<Props, "visible">) {
   const insets = useSafeAreaInsets();
   const change = (part: Partial<VideoEdit>) => onChange({ ...edit, ...part });
   return (
@@ -103,6 +115,11 @@ function SheetBody({ run, edit, onChange, onClose, sceneOf }: Omit<Props, "visib
             onChange={(character) => change({ character })}
           />
           <LineColourRow line={edit.line} onChange={(line) => change({ line })} />
+          <TogetherRow
+            state={together}
+            on={edit.together}
+            onChange={(on) => change({ together: on })}
+          />
           <Text style={styles.label}>{t("Emoji")}</Text>
           <VideoEmojiRow
             title={t("Along the way")}

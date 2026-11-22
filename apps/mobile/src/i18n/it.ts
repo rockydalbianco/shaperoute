@@ -2988,6 +2988,13 @@ export const IT: Table = {
   "From {bearing} · {minutes} min ago": "Da {bearing} · {minutes} min fa",
   "GPS numbers · not a certified instrument":
     "Numeri dal GPS · non è uno strumento certificato",
+  // «Together» in «Edit video» (TASK-417 part D2b; approved by the user on 2026-11-08).
+  Together: "Insieme",
+  "Your run and the runs of the people tagged here, on the same clock.":
+    "La tua corsa e quelle delle persone taggate qui, sullo stesso orologio.",
+  "No one tagged ran at the same time.":
+    "Nessuna persona taggata ha corso nello stesso momento.",
+  "Up to 4 people in one video.": "Fino a 4 persone in un video.",
   "Log in to see this drawing.": "Accedi per vedere questo disegno.",
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Modifica schermata",

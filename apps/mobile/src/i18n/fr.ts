@@ -3138,4 +3138,23 @@ export const FR: Table = {
     "Ces mots ne peuvent pas être utilisés. Essaie d'autres mots.",
   "Links and special characters can't be used here.":
     "Les liens et les caractères spéciaux ne sont pas acceptés ici.",
+
+  // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
+  "Choose a plan": "Choisis un programme",
+  "No plans yet: make one in Gym › Plans.":
+    "Aucun programme pour l'instant : crée-en un dans Salle de sport › Programmes.",
+  "Say something about this plan (optional)":
+    "Dis quelque chose sur ce programme (facultatif)",
+  "Who sees it: {who}": "Qui le voit : {who}",
+  "Workout plan": "Programme d'entraînement",
+  "{count} day a week": "{count} jour par semaine",
+  "{count} days a week": "{count} jours par semaine",
+  "Use this plan": "Utiliser ce programme",
+  "Added to your plans": "Ajouté à tes programmes",
+  "You already have 20 plans: delete one to add this.":
+    "Tu as déjà 20 programmes : supprimes-en un pour ajouter celui-ci.",
+  "Delete this post?": "Supprimer cette publication ?",
+  "Copies already made stay with whoever made them.":
+    "Les copies déjà faites restent à ceux qui les ont faites.",
+  "Delete post": "Supprimer la publication",
 };

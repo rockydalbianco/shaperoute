@@ -1,9 +1,9 @@
 # TASK-485 — La scheda della palestra come post
 
-**Stato**: In lavorazione · parte 0 in `main` (#1365); A (server) scritta
-il 2026-11-22 su `feat/TASK-485-a-plan-posts-api`, lista approvata dal
-Coordinatore; poi merge e passo sul server col sì dell'utente; B (app) dopo
-A sul server e dopo TASK-481 A in `main`
+**Stato**: In lavorazione · parte 0 in `main` (#1365); A (server) in
+`main` (#1404), passo 18 sul server col sì dell'utente; B (app) scritta il
+2026-11-22 su `feat/TASK-485-b-plan-post-app`, senza la riga del foglio
+(dopo TASK-481 A) e senza la privacy (a turno)
 **Fase**: 5 · **Branch**: `docs/TASK-485-gym-plan-post` (parte 0, in
 `main`); `feat/TASK-485-a-plan-posts-api` (A); B col suo branch e la sua PR
 **Dipende da**: TASK-481 (il foglio «Add to Feed» e `addToFeedEntries.ts`,
@@ -241,6 +241,37 @@ apps/mobile/src/i18n/{it,de,fr,es}.ts
 docs/sports/gym.md                                   (la scheda pubblicata)
 docs/tasks/TASK-485.md
 ```
+
+**B, dove siamo (2026-11-22).** Scritti `api/planPosts.ts` (rotte e coda
+nel file `plan-post-outbox.json`), `gym/planCopy.ts`, `PlanPostFlow.tsx`,
+`PlanPostTile.tsx`, `PlanPostDetail.tsx`, il ramo `source "plan"` in
+`FeedPost.tsx`, `copied` in `GymPlanWizard.tsx`, `plans` in `reads.ts`, i
+testi nelle quattro lingue e `gym.md`. Fuori lista, chiesti al Coordinatore:
+`packages/shared-types/fixtures/reads.json`, `services/api/tests/test_reads.py`
+e `apps/mobile/src/api/accounts.test.ts` (l'intestazione `X-MuW-Reads`
+scritta per esteso, come in TASK-312 C2). Scelte tecniche (decise
+dall'agente su delega dell'utente, voce in `DECISIONS.md` col PR dei
+documenti dopo il merge):
+
+- la coda vive in `api/planPosts.ts`; un post mandato resta nel file col
+  suo id (al più 50 per account), perché il Feed dà l'id e non la chiave:
+  «Delete post» c'è solo sul telefono che l'ha pubblicato;
+- la guida di «Use this plan» si apre *dentro* il piano aperto (iOS mostra
+  un foglio solo sopra quello in cima) e «Added to your plans» è una riga
+  sotto il riquadro, non un avviso;
+- il limite di 20 si guarda sul telefono (`plansOf`) prima di aprire la
+  guida; `PUT /me/gym-plans/{key}` lo tiene comunque.
+
+Testi in più da far approvare con le schermate: «Delete post», «Delete
+this post?», «Copies already made stay with whoever made them.» (la privacy
+approvata dice che il post si cancella), «{count} day a week» al singolare.
+
+Restano: la riga di `addToFeedEntries.ts` (dopo TASK-481 A, con il
+montaggio di `usePlanPostOutbox` dove il foglio è sempre montato, così un
+post rimasto in coda parte anche senza riaprire il flusso); la privacy a
+turno; un piano pubblicato aperto da un profilo, da una notifica o dal
+link del post (`PostPage.tsx`, `DrawingCard.tsx`, fuori lista: chiesto al
+Coordinatore).
 
 A turno (privacy, punto 4; in coda dopo TASK-309 B1, 417 D2, 312 C2 e 481
 A, il Coordinatore dice quando tocca):

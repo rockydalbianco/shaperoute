@@ -1,0 +1,14 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.getmuw.android",
+      "sha256_cert_fingerprints": [
+        "ED:A9:15:AB:2C:AD:57:65:5F:73:EC:2C:FC:10:4E:7D:2A:D1:66:92:A9:F4:92:17:87:2F:35:50:FF:AE:27:D0",
+        "CB:28:A9:EA:78:83:00:A9:A5:B0:28:3D:45:61:DA:7B:24:87:4F:20:EA:11:12:CA:CA:28:5A:D7:00:9F:9D:C7",
+        "64:9D:17:71:8F:85:49:14:AF:AF:DE:A9:A9:F5:84:55:15:FC:11:B8:CC:0A:9F:07:91:6D:B8:E9:A8:0E:55:B4"
+      ]
+    }
+  }
+]

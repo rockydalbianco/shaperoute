@@ -2509,6 +2509,9 @@ export const DE: Table = {
   "The people you follow have not published anything yet.":
     "Die Personen, denen du folgst, haben noch nichts veröffentlicht.",
   "Couldn't load the Feed.": "Der Feed konnte nicht geladen werden.",
+  // src/screens/FeedScreen.tsx: «All» without examples (2026-11-22)
+  "Log in from Profile to see the activities.": "Melde dich im Profil an, um die Aktivitäten zu sehen.",
+  "Nobody has published anything yet.": "Noch niemand hat etwas veröffentlicht.",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)
   "≈ {time} at {pace}": "≈ {time} bei {pace}",

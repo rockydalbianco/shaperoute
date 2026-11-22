@@ -352,10 +352,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
   **Chiuso il 2026-11-21**: B2b/C2 (#1294), D1 (#1341, `climb_m` nell'elenco) e B2c (#1338, «mancano» mentre si registra) in `main`; restano il passo sul server di D1 e l'OTA di B2c, col sì dell'utente; vedi `archive/COMPLETATI.md`.
 
-- **TASK-481 — Il «+» del Feed: tutte le voci** · parte 0 (documenti) fatta
-  il 2026-11-21 con le scelte dell'utente (sei voci, ADR-0390); A (la lista e
-  «Record now») dopo il merge di TASK-312 C2, lista dei file al Coordinatore.
-  File: — · `tasks/TASK-481.md`
+- **TASK-481 — Il «+» del Feed: tutte le voci** (ADR-0390) · A (la lista:
+  «Record now», «Photos only», «From a file») in `main` il 2026-11-23 (#1421),
+  esce col prossimo OTA; restano la privacy e le righe di 467 E2, 484 B, 485 B,
+  al via del Coordinatore. File: — · `tasks/TASK-481.md`
 
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 (la barra
   «Apri» di Safari) e A (l'app apre il post del link) in produzione (OTA 21),

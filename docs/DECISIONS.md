@@ -573,7 +573,7 @@ lasciando le righe d'indice.
 
 - ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos` · 2026-11-21 · Attiva
 - ADR-0393 — L'attrezzatura: una lista per iscritto con foto e nota, più attrezzi per attività, i totali contati dal server, visibile come il profilo, legata ai capi taggati · 2026-11-21 · Proposta
-- ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci in ordine, ognuna costruita dal task che la possiede e mostrata solo quando è pronta; «Everyone» anche per la palestra scritta a mano e la scheda pubblicata · 2026-11-21 · Proposta
+- ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci in ordine, ognuna costruita dal task che la possiede e mostrata solo quando è pronta; «Everyone» anche per la palestra scritta a mano e la scheda pubblicata · 2026-11-21 · Attiva
 - ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Attiva
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 - ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo · 2026-11-21 · Attiva
@@ -586,10 +586,55 @@ lasciando le righe d'indice.
 - ADR-0375, precisazione R6e — Il post di una gara a due colori: `flight` anche in `GET /drawings/{id}`, solo se la linea del post ha i punti della corsa; lo schema openapi delle due risposte torna coi suoi campi · 2026-11-23 · Attiva
 - ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Proposta
 - ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima · 2026-11-23 · Attiva
+- ADR-0390, precisazione A — La lista del «+» nell'app: «Record now» come l'avvio senza percorso di «Draw», «Photos only» dritto al modulo di C2, «From a file» con «Files» aperto subito (`fileAtOnce`), il titolo della voce aperta · 2026-11-23 · Attiva
 - ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Proposta
 - ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
 
 ## Voci nuove
+
+## ADR-0390, precisazione A — La lista del «+» nell'app: «Record now» come l'avvio senza percorso di «Draw», «Photos only» dritto al modulo di C2, «From a file» con «Files» aperto subito (`fileAtOnce`), il titolo della voce aperta
+
+**Stato**: Attiva · 2026-11-23 · TASK-481 parte A (#1421, `3f124ce7`).
+Ordine, «niente Soon», «Record now» in lista, testi e traduzioni
+(«Add to Feed», «Record now», «Start an activity now») e schermate:
+**scelte dell'utente** (2026-11-21, approvate il 2026-11-23). Il resto è
+**deciso dall'agente su delega dell'utente**, con `AddPastActivity.tsx`
+come file in più approvato dal Coordinatore il 2026-11-22.
+
+**Contesto**: ADR-0390 vuole il «+» del Feed come una lista di voci pronte,
+in ordine. TASK-312 C2 aveva messo «Photos only» dentro le scelte di «Add
+past activity»: aperto da «From a file» della lista, l'avrebbe mostrata di
+nuovo, e l'ordine non avrebbe tenuto.
+
+**Decisione**:
+
+1. **Le voci in un file solo**, `apps/mobile/src/feed/addToFeedEntries.ts`:
+   ogni voce con titolo, riga sotto e «pronta»; oggi «Record now» (se il
+   Feed sa avviare una registrazione), «Photos only» (sempre), «From a
+   file» (se l'app ha il selettore di file). Sleep, Gym workout e Workout
+   plan aggiungono la loro riga lì, al loro posto, quando il loro flusso è
+   nell'app.
+2. **«Record now» fa quello che fa l'avvio senza percorso di «Draw»** per
+   lo sport scelto: palestra e stretching aprono la loro seduta, le
+   ciaspole passano dal loro avviso, gli altri sport la corsa libera. Il
+   foglio si chiude prima.
+3. **«Photos only» apre direttamente il modulo di C2** (`PhotoPostForm`,
+   invariato); «Cancel» e «‹» tornano alla lista.
+4. **«From a file» apre «Files» subito**: `AddPastActivity` prende la prop
+   facoltativa `fileAtOnce`, che con `opened` mostra solo «From a file» e
+   apre il selettore una volta al primo disegno; dopo un annullamento resta
+   la scelta con il suo aiuto. In «My activities» non cambia niente.
+5. **Il titolo del foglio** è «Add to Feed» sulla lista e quello della voce
+   aperta dentro, con «‹» per tornare. «Add activity» esce dai testi.
+
+**Alternative scartate**: aprire «Add past activity» intero da «From a
+file» (ripete «Photos only»); per «Record now» solo `setScreen("run")`
+(con la palestra avrebbe aperto la corsa).
+
+**Conseguenze**: esce col prossimo OTA (Coordinatore, col sì
+dell'utente). Restano il turno della privacy («from a file» in due frasi,
+cinque lingue e sito) e le righe di TASK-467 E2, TASK-484 B e TASK-485 B,
+ognuna al via del Coordinatore.
 
 ## ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima
 
@@ -1210,7 +1255,8 @@ riscrive.
 
 ## ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci, ognuna del suo task
 
-**Stato**: Proposta · 2026-11-21 · TASK-481 parte 0 (solo documenti).
+**Stato**: Attiva · 2026-11-21 · TASK-481 parte 0 (solo documenti); la
+lista nell'app in `main` dal 2026-11-23 (parte A, precisazione A).
 Le voci, l'ordine, i testi, «niente Soon», chi vede che cosa e la frase
 della privacy sono **scelte dell'utente** (2026-11-21, una domanda per
 volta); la lista prima del flusso e il file delle voci sono decisi

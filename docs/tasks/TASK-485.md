@@ -1,10 +1,11 @@
 # TASK-485 — La scheda della palestra come post
 
-**Stato**: In lavorazione · parte 0 (documenti) fatta il 2026-11-21; A
-(server) aspetta il turno del Coordinatore; B (app) dopo A sul server e
-dopo TASK-481 A in `main`
-**Fase**: 5 · **Branch**: `docs/TASK-485-gym-plan-post` (parte 0); A e B
-ciascuna col suo branch e la sua PR
+**Stato**: In lavorazione · parte 0 in `main` (#1365); A (server) scritta
+il 2026-11-22 su `feat/TASK-485-a-plan-posts-api`, lista approvata dal
+Coordinatore; poi merge e passo sul server col sì dell'utente; B (app) dopo
+A sul server e dopo TASK-481 A in `main`
+**Fase**: 5 · **Branch**: `docs/TASK-485-gym-plan-post` (parte 0, in
+`main`); `feat/TASK-485-a-plan-posts-api` (A); B col suo branch e la sua PR
 **Dipende da**: TASK-481 (il foglio «Add to Feed» e `addToFeedEntries.ts`,
 ADR-0390), TASK-312 C1 (il disegno senza corsa, ADR-0272 precisazione C,
 in `main`), TASK-433 e TASK-461 (le schede guidate e il pianificatore,
@@ -122,7 +123,9 @@ Verificato sul codice di `main` (`5ef3d45b`):
    allenamenti, le settimane scritte a mano, la meta **senza data**),
    validati dagli stessi modelli di `gym_plans.py`. **Il server rifiuta**
    (`422`) un'istantanea con `runner` (i ritmi sono dell'autore e la
-   privacy non li nomina) e non tiene `starts_on`. La manda il telefono, che
+   privacy non li nomina), con `starts_on` o con la data della meta
+   (`GymPlanPostedBody`, nella A: rifiutati invece che scartati, così il
+   telefono non li manda mai). La manda il telefono, che
    ha la scheda anche senza rete: nessun legame con la riga di `gym_plans`
    (punto 3 delle scelte: il post resta com'era).
 4. **Le rotte**, sotto `/me/plan-posts/{key}` come quelle delle foto: `PUT`
@@ -161,27 +164,38 @@ aggiunte. Dopo il merge c'è un passo sul server col sì dell'utente: i
 controlli vanno in `out/TASK-485/SERVER-A.md` (o nella cartella delle
 note), per il Coordinatore.
 
-**File toccati (approvati dal Coordinatore il 2026-11-21):**
+**File toccati (approvati dal Coordinatore il 2026-11-21; corretti il
+2026-11-22 scrivendo il codice, i due file in più approvati dal
+Coordinatore fork 3):**
 
 ```
 services/api/migrations/0084_plan_posts.sql          (nuovo: drawings.plan; 0084 provvisorio, definitivo al merge)
 services/api/shaperoute_api/plan_posts.py            (nuovo: /me/plan-posts)
 services/api/shaperoute_api/app.py                   (il router)
 services/api/shaperoute_api/reads.py                 (plans; drawings_sql)
-services/api/shaperoute_api/drawings.py              (source "plan", il campo plan)
-services/api/shaperoute_api/feed.py                  (idem nel Feed)
-services/api/shaperoute_api/gym_plans.py             (solo se serve esporre un modello dell'istantanea)
+services/api/shaperoute_api/drawings.py              (source "plan", il campo plan; il Feed passa da qui)
+services/api/shaperoute_api/gym_plans.py             (GymPlanPostedBody: la copia senza starts_on, runner, data)
+services/api/shaperoute_api/photo_posts.py           (approvato dal fork 3 il 2026-11-22: un post di sole foto è anche senza plan)
 services/api/tests/test_plan_posts.py                (nuovo)
 services/api/tests/test_reads.py
-packages/shared-types/src/index.ts                   (PlanDrawing, PlanFeedPost, isPlanPost)
+packages/shared-types/src/planPosts.ts               (nuovo: PlanPostRequest, MyPlanPost, GymPlanPosted…)
+packages/shared-types/src/index.ts                   (DrawingSource, il campo plan, l'export)
 packages/shared-types/fixtures/plan-post-request.json (nuovo)
-packages/shared-types/fixtures/feed-plans.json       (nuovo)
+packages/shared-types/fixtures/my-plan-post.json     (nuovo)
 packages/shared-types/fixtures/reads.json
 packages/shared-types/test/planPosts.test.ts         (nuovo)
+packages/shared-types/test/sleepPost.test.ts         (approvato dal fork 3 il 2026-11-22: `sleep` non è più l'ultimo tipo)
+packages/shared-types/fixtures/{drawing-details-photos,feed-photos,drawing-details-imported,feed-imported,drawing-ski,drawing-sleep}.json
+                                                     (chiesti al fork 3: `"plan": null`, il campo nuovo del contratto)
+services/api/tests/test_drawings.py                  (chiesto al fork 3: `plan` fra i campi nuovi)
+services/api/tests/test_feed.py                      (chiesto al fork 3: idem)
 docs/API.md
 docs/DATABASE.md
 docs/tasks/TASK-485.md
 ```
+
+`feed.py` è uscito dalla lista: il Feed legge i disegni con
+`drawings._seen`, che ha già il campo `plan`.
 
 Se un lettore che parte da un disegno (email, campanello, segnalazioni)
 nomina il tipo del post, la lista cresce: la nuova lista va al

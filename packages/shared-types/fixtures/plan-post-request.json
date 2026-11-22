@@ -1,12 +1,7 @@
 {
   "plan": {
     "name": "Lift and run",
-    "days": [
-      1,
-      2,
-      4,
-      6
-    ],
+    "days": [1, 2, 4, 6],
     "items": [],
     "program": {
       "goal": "fit",

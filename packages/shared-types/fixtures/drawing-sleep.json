@@ -41,6 +41,7 @@
   "order": null,
   "ski_descents": null,
   "flight_split": null,
+  "plan": null,
   "sleep": {
     "night": "2026-09-21",
     "score": 82,

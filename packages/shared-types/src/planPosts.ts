@@ -30,8 +30,10 @@ export type GymPlanPostedTarget = Omit<GymPlanTarget, "on">;
 
 /** The weeks of a plan posted: never its first day (`starts_on`) nor its
  * owner's paces (`runner`). Sent, 422. */
-export interface GymPlanPostedProgram
-  extends Omit<GymProgram, "starts_on" | "runner" | "target"> {
+export interface GymPlanPostedProgram extends Omit<
+  GymProgram,
+  "starts_on" | "runner" | "target"
+> {
   target?: GymPlanPostedTarget;
 }
 

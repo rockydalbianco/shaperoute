@@ -133,12 +133,14 @@ test("a swipe to the left goes to «Explore», which asks for its routes then", 
   expect(listCalls()).toBe(1);
 });
 
-test("a swipe to the right goes to «Feed», with its example drawings", async () => {
+test("a swipe to the right goes to «Feed», without made-up drawings", async () => {
   await atTrento();
   await swipeTo(0);
   expect(screen.getByRole("tab", { name: "Feed", selected: true })).toBeOnTheScreen();
-  expect(screen.getByText("A horse through Levico")).toBeOnTheScreen();
-  expect(screen.getAllByTestId("feed-post").length).toBeGreaterThanOrEqual(2);
+  // Without an account, the words to log in, no example (TASK-487).
+  expect(screen.getByTestId("feed-log-in")).toBeOnTheScreen();
+  expect(screen.queryByText("A horse through Levico")).toBeNull();
+  expect(screen.queryByTestId("feed-post")).toBeNull();
   expect(screen.queryByTestId("draw-route")).toBeNull();
   // «Explore» was never in view: it asked nothing.
   expect(askedBesidesTheGame()).toEqual([]);

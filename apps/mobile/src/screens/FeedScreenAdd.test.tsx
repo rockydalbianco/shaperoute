@@ -1,7 +1,7 @@
 /**
- * The «+» of the Feed's bar (TASK-476): with an account and the file
- * picker in the app, at the right of the tabs; without an account, or in
- * an app built without the picker, not there.
+ * The «+» of the Feed's bar (TASK-476, TASK-481): with an account, at the
+ * right of the tabs, also in an app built without the file picker; without
+ * an account not there. Its «Record now» calls the Feed's `onRecord`.
  */
 import page from "@shaperoute/shared-types/fixtures/feed.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
@@ -69,7 +69,7 @@ beforeEach(() => {
 
 afterEach(() => fetchSpy.mockRestore());
 
-test("with an account, the «+» is beside the tabs and opens «Add activity»", async () => {
+test("with an account, the «+» is beside the tabs and opens «Add to Feed»", async () => {
   await render(
     <Around state={SIGNED_IN}>
       <FeedScreen onOpen={() => {}} />
@@ -77,8 +77,23 @@ test("with an account, the «+» is beside the tabs and opens «Add activity»",
   );
   await screen.findByText("Sunday heart by the river");
   expect(screen.getByText("Following")).toBeOnTheScreen();
-  await fireEvent.press(screen.getByRole("button", { name: "Add activity" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Add to Feed" }));
   expect(screen.getByText("From a file")).toBeOnTheScreen();
+  // No way to record given: no «Record now».
+  expect(screen.queryByText("Record now")).toBeNull();
+});
+
+test("«Record now» of the «+» starts a recording through the Feed's onRecord", async () => {
+  const onRecord = jest.fn();
+  await render(
+    <Around state={SIGNED_IN}>
+      <FeedScreen onOpen={() => {}} onRecord={onRecord} />
+    </Around>,
+  );
+  await screen.findByText("Sunday heart by the river");
+  await fireEvent.press(screen.getByRole("button", { name: "Add to Feed" }));
+  await fireEvent.press(screen.getByText("Record now"));
+  expect(onRecord).toHaveBeenCalledTimes(1);
 });
 
 test("without an account there is no «+»", async () => {
@@ -91,7 +106,7 @@ test("without an account there is no «+»", async () => {
   expect(screen.queryByTestId("feed-add")).toBeNull();
 });
 
-test("in an app built without the file picker there is no «+»", async () => {
+test("in an app built without the file picker the «+» is there, for «Photos only»", async () => {
   jest.mocked(filePickerAvailable).mockReturnValue(false);
   await render(
     <Around state={SIGNED_IN}>
@@ -99,5 +114,5 @@ test("in an app built without the file picker there is no «+»", async () => {
     </Around>,
   );
   await screen.findByText("Sunday heart by the river");
-  expect(screen.queryByTestId("feed-add")).toBeNull();
+  expect(screen.getByTestId("feed-add")).toBeTruthy();
 });

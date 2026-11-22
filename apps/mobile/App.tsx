@@ -500,6 +500,12 @@ function MuW() {
   // A post of a day of skiing with its parts: its lifts and numbers, in the
   // ski mode's colours (TASK-429 part C).
   const skiDayMap = useSkiDayMap(drawing);
+  // A race's post (TASK-305 part R6e): its flights on its line, when the
+  // API gives them and they fit it.
+  const postAir = useMemo(
+    () => (drawing === null ? null : (activityFlightOf(drawing)?.air ?? null)),
+    [drawing],
+  );
   const reviewed = useMemo(
     () =>
       activity !== null
@@ -525,16 +531,27 @@ function MuW() {
               lifts: skiDayMap.lifts,
               liftLabels: skiDayMap.labels,
             }
-          : drawing !== null
+          : drawing !== null && postAir !== null
             ? {
+                // A race as in «My activities»: white on foot, the flights
+                // yellow over it, the map framed on the line.
                 start: null,
-                route: drawing.track.length > 1 ? drawing.track : null,
+                route: null,
                 walks: null,
                 others: NO_OTHERS,
-                track: null,
+                track: drawing.track,
+                flightAir: postAir,
               }
-            : null,
-    [activity, drawing, skiDayMap],
+            : drawing !== null
+              ? {
+                  start: null,
+                  route: drawing.track.length > 1 ? drawing.track : null,
+                  walks: null,
+                  others: NO_OTHERS,
+                  track: null,
+                }
+              : null,
+    [activity, drawing, skiDayMap, postAir],
   );
   const { position, refresh } = useCurrentPosition();
   // The size of the first maps of the phone while they download (TASK-214).
@@ -1950,6 +1967,15 @@ function MuW() {
                           openExplored(muwCardRoute(route), fetchMuwRoute(route));
                           setRouteList("feed");
                           setScreen("map");
+                        }}
+                        // «Record now» of the «+» (TASK-481): as «Draw»'s
+                        // start without a route, for the chosen sport.
+                        onRecord={() => {
+                          if (sport === "gym") startGymWorkout();
+                          else if (sport === "stretch") startStretchSession();
+                          else if (sport === "snowshoe")
+                            snowNotice.ask(() => setScreen("run"));
+                          else setScreen("run");
                         }}
                       />
                     </EditRunContext.Provider>

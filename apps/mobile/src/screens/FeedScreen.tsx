@@ -1,9 +1,10 @@
-import type {
-  FeedFilter,
-  MuwRoute,
-  StylePost as StylePostBody,
+import {
+  type FeedFilter,
+  isPhotoPost,
+  type MuwRoute,
+  type StylePost as StylePostBody,
 } from "@shaperoute/shared-types";
-import { type ReactElement, useCallback, useMemo, useState } from "react";
+import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   RefreshControl,
@@ -26,11 +27,13 @@ import { FeedAd } from "../feed/FeedAd";
 import { FeedMapShooter } from "../feed/FeedMaps";
 import { drawingHeight, FeedPost } from "../feed/FeedPost";
 import { isShown, type ShownPost, shownPost } from "../feed/feedPosts";
+import { PhotoFeedPost } from "../feed/PhotoFeedPost";
+import { PhotoPostPage } from "../feed/PhotoPostPage";
 import { PostPage } from "../feed/PostPage";
 import { loadFeedTab, saveFeedTab } from "../feed/feedTabChoice";
 import { type FeedTab, feedTabName, FeedTabs } from "../feed/FeedTabs";
 import { FeedSkeleton } from "../feed/FeedSkeleton";
-import { SAMPLE_FEED, type SamplePost } from "../feed/sampleFeed";
+import type { SamplePost } from "../feed/sampleFeed";
 import { type FeedItem, feedWithAds } from "../feed/feedWithAds";
 import { type Feed, type FeedShown, useFeed } from "../feed/useFeed";
 // MuW Style (TASK-384, ADR-0326): its posts in «All» and its lens.
@@ -45,10 +48,10 @@ import { MuwPost } from "../feed/MuwPost";
 import { MUW_ROUTES_IN_FEED } from "../feed/muwInFeed";
 import { useMuwRoutes } from "../feed/useMuwRoutes";
 import { t } from "../i18n";
-import { filePickerAvailable } from "../imports/pickActivityFile";
 import { LivesRow } from "../liveShare/LivesRow";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { usePeopleDoor } from "../social/peopleDoor";
+import { onPhotoPostsSent, usePhotoPostOutbox } from "../social/usePhotoPostOutbox";
 import { color, font, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { EmptyState } from "../ui/EmptyState";
 import { HEART } from "../ui/outlines";
@@ -60,6 +63,9 @@ type Props = {
   onOpen: (post: SamplePost) => void;
   /** A route MuW drew was tapped: it goes on the map, as one of «Explore». */
   onOpenMuw?: (route: MuwRoute) => void;
+  /** «Record now» of the «+» (TASK-481): a recording starts, as from
+   * «Draw»; without it the «+» has no «Record now». */
+  onRecord?: () => void;
   /** «Feed» is the page on the screen. Built behind «Draw» at the start, it
    * asks for no ad (and no consent), and no drawings, until it is
    * (TASK-235, TASK-118). */
@@ -75,17 +81,14 @@ type Item = FeedItem<Post, NativeAd> | StyleItem | MuwItem;
 /** How far from the end of the list, in screens, the next page is asked. */
 const MORE_AT_SCREENS = 1;
 
-/** The rows of a tab: only «All» falls back on the examples, while it has
- * nothing the account may see or nobody is signed in (ADR-0127). */
-function postsOf(tab: FeedFilter, shown: FeedShown): readonly Post[] {
-  if (shown.kind === "ready" && shown.posts.length > 0) {
-    return shown.posts.map(shownPost);
-  }
-  if (tab === "following" || shown.kind === "loading" || shown.kind === "failed") {
-    return [];
-  }
-  return SAMPLE_FEED;
+/** The rows of a tab: only the members' real drawings. The made-up examples
+ * of ADR-0127 are gone (the user's choice, 2026-11-22): without an account,
+ * or while nobody has published anything, the tab says so instead. */
+function postsOf(shown: FeedShown): readonly Post[] {
+  return shown.kind === "ready" ? shown.posts.map(shownPost) : NO_POSTS;
 }
+
+const NO_POSTS: readonly Post[] = [];
 
 /**
  * «Feed», the page at the left of «Draw» (TASK-154): the drawings the
@@ -96,13 +99,12 @@ function postsOf(tab: FeedFilter, shown: FeedShown): readonly Post[] {
  * screen is only hidden. The last tab chosen opens again. A pull reads the
  * open tab again, the end of its list reads more. Without an account there
  * are no tabs, only «All». While nobody has published anything the account
- * may see, and without an account, «All» shows examples: figures of the
- * catalogue with made-up runners (TASK-156, ADR-0127). Nothing on the page
- * says they are examples: the user's choice. Under each line is the map of
+ * may see, «All» says so, and without an account it asks to log in: the
+ * made-up examples of TASK-156 (ADR-0127) are no longer shown (the user's
+ * choice, 2026-11-22). Under each line is the map of
  * its streets (TASK-162): a picture, taken by a map page that the list
  * covers. A tap on a member's drawing opens it whole on the map, with its
- * reactions and comments, as from a profile (TASK-117); one on an example
- * opens its route (TASK-188). The search that was its lens is at the top
+ * reactions and comments, as from a profile (TASK-117). The search that was its lens is at the top
  * of «Explore» since TASK-367 part B; above the drawings of «All»,
  * while the API has a contest, its card (TASK-299, docs/CONCORSI.md §7),
  * asked with the feed and with each pull. Between the drawings, one ad every
@@ -110,13 +112,18 @@ function postsOf(tab: FeedFilter, shown: FeedShown): readonly Post[] {
  * ADR-0326), one row in 8 of «All» at most is one of them, unless «Settings»
  * turned them off, and a third tab, «Style», has them all; without an
  * account the tabs are then «All» and «Style». While the API has routes MuW
- * drew (TASK-365, ADR-0310), one row in 6 of «All» at most is one of them,
- * also among the examples; a tap opens it on the map. At the right of the
- * bar, with an account, a «+» adds an activity from a file (TASK-476).
+ * drew (TASK-365, ADR-0310), one row in 6 of «All» at most is one of them;
+ * a tap opens it on the map. At the right of the
+ * bar, with an account, a «+» lists what can be added (TASK-481): a
+ * recording started now, an activity from a file (TASK-476) or a
+ * post of photos only (TASK-312 part C), whose card and page are their own
+ * (PhotoFeedPost, PhotoPostPage); once one reaches the API, the open tabs
+ * read again.
  */
 export function FeedScreen({
   onOpen,
   onOpenMuw,
+  onRecord,
   active = true,
   ads = feedAds(),
 }: Props) {
@@ -151,8 +158,21 @@ export function FeedScreen({
   const signedIn = all.signedIn;
   const withFollowing = signedIn && tabsKnown;
   const withTabs = withFollowing || withStyle;
-  // The «+» of the bar: an account, and an app built with the file picker.
-  const withAdd = signedIn && filePickerAvailable();
+  // The «+» of the bar: an account. «Photos only» needs no file picker.
+  const withAdd = signedIn;
+  // The posts of photos only left on the phone go from here, the page
+  // always built; once one reaches the API the tabs read again.
+  usePhotoPostOutbox();
+  const refreshAll = all.refresh;
+  const refreshFollowing = following.refresh;
+  useEffect(
+    () =>
+      onPhotoPostsSent(() => {
+        refreshAll();
+        refreshFollowing();
+      }),
+    [refreshAll, refreshFollowing],
+  );
   // Without an account there is no «Following»; the choice waits for the next one.
   const tab: FeedTab =
     (chosen === "following" && !withFollowing) || (chosen === "style" && !withStyle)
@@ -208,8 +228,8 @@ export function FeedScreen({
             ) : (
               <View style={styles.barSpace} />
             )}
-            {/* «Add activity», with an account (TASK-476). */}
-            {withAdd && <AddToFeed />}
+            {/* «Add to Feed», with an account (TASK-476, TASK-481). */}
+            {withAdd && <AddToFeed onRecord={onRecord} />}
           </View>
         )}
         <FeedList
@@ -237,7 +257,23 @@ export function FeedScreen({
               {problem}
             </View>
           }
-          empty={null}
+          empty={
+            !signedIn ? (
+              <EmptyState
+                outline={HEART}
+                title={feedTabName("all")}
+                message={t("Log in from Profile to see the activities.")}
+                testID="feed-log-in"
+              />
+            ) : all.shown.kind === "ready" ? (
+              <EmptyState
+                outline={HEART}
+                title={feedTabName("all")}
+                message={t("Nobody has published anything yet.")}
+                testID="feed-no-posts-all"
+              />
+            ) : null
+          }
         />
         {withFollowing && opened && (
           <FeedList
@@ -301,7 +337,10 @@ export function FeedScreen({
           />
         )}
       </View>
-      {page !== null && (
+      {page !== null && isPhotoPost(page.drawing) && (
+        <PhotoPostPage post={page} onClose={() => setPage(null)} />
+      )}
+      {page !== null && !isPhotoPost(page.drawing) && (
         <PostPage
           post={page}
           onClose={() => setPage(null)}
@@ -360,7 +399,7 @@ function FeedList({
   onOpen,
 }: ListProps) {
   const { shown, signedIn, refreshing, refresh, more } = feed;
-  const posts = useMemo(() => postsOf(tab, shown), [tab, shown]);
+  const posts = useMemo(() => postsOf(shown), [shown]);
   const { ads: placed, see } = useFeedAds(posts.length, active && visible, ads);
   const items = useMemo<Item[]>(
     () => feedWithMuw(feedWithStyle(feedWithAds(posts, placed), stylePosts), muwRoutes),
@@ -444,6 +483,14 @@ function FeedList({
               route={item.route}
               width={cardWidth}
               onOpen={(route) => onOpenMuw?.(route)}
+            />
+          ) : item.kind === "post" &&
+            isShown(item.post) &&
+            isPhotoPost(item.post.drawing) ? (
+            <PhotoFeedPost
+              post={item.post}
+              width={cardWidth}
+              onOpen={() => isShown(item.post) && openPost(item.post)}
             />
           ) : item.kind === "post" ? (
             <FeedPost

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
@@ -27,6 +27,7 @@ import {
   type PickFile,
   pickActivityFile,
 } from "./pickActivityFile";
+import { PhotoPostForm } from "./PhotoPostForm";
 
 /** The side of the drawing of the file's track over the form. */
 const DRAWING = 160;
@@ -35,7 +36,8 @@ type Stage =
   | { kind: "closed" }
   | { kind: "choosing"; problem: string | null }
   | { kind: "reading" }
-  | { kind: "form"; imported: ImportedRun };
+  | { kind: "form"; imported: ImportedRun }
+  | { kind: "photos" };
 
 type Props = {
   /** The fakes of the tests: whether the app was built with the file
@@ -50,6 +52,10 @@ type Props = {
    * the form discarded. */
   opened?: boolean;
   onDone?: () => void;
+  /** With `opened`, «From a file» alone (the Feed's «+» list, TASK-481):
+   * «Files» opens at once, and the choice is there again after a cancel or
+   * a problem; «Photos only» is the list's own entry. */
+  fileAtOnce?: boolean;
 };
 
 /**
@@ -58,10 +64,12 @@ type Props = {
  * FIT of another app. The file is read on the phone; a file that is not an
  * activity says why, and one already kept says so. Then the form of the end
  * of a run, under the drawing of its track, marked «Imported»: nothing
- * leaves the phone before «Save», and the file never. In an app built
- * without the picker (the store's 1.0) there is nothing to add yet, and the
- * button is not there; «Photos only» comes with part C. Opened from the
- * Feed's «+» (TASK-476), it has no button and starts at the choices.
+ * leaves the phone before «Save», and the file never. «Photos only»
+ * (part C) opens the form of a post of photos without a run
+ * (PhotoPostForm). In an app built without the picker «From a file» is not
+ * there, «Photos only» is. Opened from the Feed's «+» (TASK-476), it has no
+ * button and starts at the choices; from its list (TASK-481) it is «From a
+ * file» alone, with «Files» opened at once.
  */
 export function AddPastActivity({
   available = filePickerAvailable(),
@@ -71,6 +79,7 @@ export function AddPastActivity({
   apiKey,
   opened = false,
   onDone,
+  fileAtOnce = false,
 }: Props) {
   const { recordImported, alreadyKept } = useActivitiesDoor();
   const [stage, setStage] = useState<Stage>(
@@ -81,10 +90,16 @@ export function AddPastActivity({
     setStage(opened ? { kind: "choosing", problem: null } : { kind: "closed" });
     onDone?.();
   };
-
-  if (!available) {
-    return null;
-  }
+  // Once, on the first render: a second effect run (strict mode) would open
+  // «Files» twice.
+  const pickedAtOnce = useRef(false);
+  useEffect(() => {
+    if (opened && fileAtOnce && available && !pickedAtOnce.current) {
+      pickedAtOnce.current = true;
+      void fromFile();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function fromFile() {
     setStage({ kind: "reading" });
@@ -115,6 +130,20 @@ export function AddPastActivity({
       return;
     }
     setStage({ kind: "form", imported: outcome.imported });
+  }
+
+  if (stage.kind === "photos") {
+    return (
+      <View style={styles.card}>
+        <PhotoPostForm
+          onPosted={finish}
+          onCancel={() => setStage({ kind: "choosing", problem: null })}
+          pick={pick}
+          fetchFn={fetchFn}
+          apiKey={apiKey}
+        />
+      </View>
+    );
   }
 
   if (stage.kind === "form") {
@@ -173,25 +202,43 @@ export function AddPastActivity({
       )}
       {open && (
         <>
-          <Tap
-            style={[styles.choice, reading && styles.dim]}
-            onPress={() => void fromFile()}
-            disabled={reading}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: reading, busy: reading }}
-          >
-            <Text style={styles.choiceTitle}>
-              {reading ? t("Loading…") : t("From a file")}
-            </Text>
-            <Text style={styles.choiceDetail}>
-              {t("GPX, TCX or FIT from Strava, Garmin, Komoot…")}
-            </Text>
-          </Tap>
-          <Text style={styles.help}>
-            {t(
-              "Export the activity as a file from the other app or its website, save it in Files, then pick it here.",
-            )}
-          </Text>
+          {available && (
+            <>
+              <Tap
+                style={[styles.choice, reading && styles.dim]}
+                onPress={() => void fromFile()}
+                disabled={reading}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: reading, busy: reading }}
+              >
+                <Text style={styles.choiceTitle}>
+                  {reading ? t("Loading…") : t("From a file")}
+                </Text>
+                <Text style={styles.choiceDetail}>
+                  {t("GPX, TCX or FIT from Strava, Garmin, Komoot…")}
+                </Text>
+              </Tap>
+              <Text style={styles.help}>
+                {t(
+                  "Export the activity as a file from the other app or its website, save it in Files, then pick it here.",
+                )}
+              </Text>
+            </>
+          )}
+          {!fileAtOnce && (
+            <Tap
+              style={[styles.choice, reading && styles.dim]}
+              onPress={() => setStage({ kind: "photos" })}
+              disabled={reading}
+              accessibilityRole="button"
+              testID="add-photos-only"
+            >
+              <Text style={styles.choiceTitle}>{t("Photos only")}</Text>
+              <Text style={styles.choiceDetail}>
+                {t("Up to 10 photos, also from Instagram")}
+              </Text>
+            </Tap>
+          )}
           {stage.kind === "choosing" && stage.problem !== null && (
             <Text style={styles.problem} accessibilityRole="alert">
               {stage.problem}

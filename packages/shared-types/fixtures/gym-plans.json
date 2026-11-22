@@ -209,6 +209,13 @@
         "runner": {
           "pace_10k_s": 330,
           "long_m": 12000
+        },
+        "adapt": {
+          "off": false,
+          "days": [
+            { "day": 1, "steps": 1, "hard": 0, "last": "easy" },
+            { "day": 6, "steps": -1, "hard": 1, "last": "hard" }
+          ]
         }
       }
     },

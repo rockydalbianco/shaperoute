@@ -2723,6 +2723,16 @@ export const IT: Table = {
   "Log in to see your days.": "Accedi per vedere le tue giornate.",
   "No days on the snow yet.": "Ancora nessuna giornata sulla neve.",
 
+  // src/trainingmode/, settings/SportButton.tsx (TASK-490 part A: the training mode)
+  "Training mode": "Modalità allenamento",
+  "Turns MuW into your training app": "Trasforma MuW nella tua app per allenarti",
+  Workouts: "Allenamenti",
+  "Log in to keep your plans and see your workouts.":
+    "Accedi per tenere i tuoi piani e vedere i tuoi allenamenti.",
+  Exercises: "Esercizi",
+  "Find an exercise": "Cerca un esercizio",
+  "Workout at the gym": "Allenamento in palestra",
+
   // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
   "Runs@@ski": "Discese",
   Legend: "Legenda",

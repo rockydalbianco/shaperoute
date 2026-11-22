@@ -1,15 +1,17 @@
 # TASK-469 — Il look Liquid Glass
 
 **Stato**: In corso (0 fatta: «Capsula»; A1 e A2 in produzione con l'OTA 14;
-A3 e A4a in produzione al più tardi con l'OTA 17; A4b e A4c in `main`,
-col prossimo OTA dopo il 19; prossima A5)
+A3 e A4a in produzione al più tardi con l'OTA 17; A4b e A4c in produzione
+con l'OTA 20; A5 e A5b in `main`, con l'OTA 21; prossima A5c)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
 `feat/TASK-469-a4a-glass-chips` #1290, `feat/TASK-469-a4b-explore-cards`
 #1333; documenti `docs/TASK-469-a-done` #1270, `docs/TASK-469-a3-done`
-#1287, `docs/TASK-469-a4a-done` #1329, `docs/TASK-469-a4b-done` questa, per
-A4b e A4c; `feat/TASK-469-a4c-feed-cards` #1344)
+#1287, `docs/TASK-469-a4a-done` #1329, `docs/TASK-469-a4b-done` #1343, per
+A4b e A4c; `feat/TASK-469-a4c-feed-cards` #1344,
+`feat/TASK-469-a5-header-glass` #1358, `feat/TASK-469-a5b-header-scroll`
+#1384; documenti di A5 e A5b `docs/TASK-469-a5-done` questa)
 
 ## Obiettivo
 
@@ -68,7 +70,18 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
     una capsula di vetro dentro la foto, a 8 pt dal bordo, al posto della
     sfumatura `Scrim` (a capsula intera, scelta dell'utente del
     2026-11-21); il contatore delle foto è una capsula di vetro;
-  - A5 l'header che si dissolve allo scroll (`AppHeader`);
+  - **A5 fatta** (#1358, in `main` 2dedac1a): la campanella e lo sport
+    dell'header sono cerchi di vetro in rilievo (`headerGlass`), col bordo
+    forte dei comandi;
+  - **A5b fatta** (#1384, in `main` a2c1b96c): in cima a una pagina
+    l'header ha il colore della pagina, senza linea; appena la pagina
+    scorre prende una fascia di vetro con il filo di luce in basso e
+    un'ombra corta (`useHeaderScroll`, sì dell'utente «Sì, anche lo
+    scroll»). Collegate Disegna, Explore, Explore sull'acqua e Messaggi;
+    il contenuto non passa sotto l'header (serve la parte B);
+  - A5c le altre pagine: Profilo, «Today» e «Days» dello sci; il Feed
+    quando `FeedScreen.tsx` è libero. «Resorts» resta a riposo: lì scorre
+    solo la lista, sotto la ricerca fissa;
   - A6 Settings (dopo TASK-457, che tiene `src/profile/**`);
   - A7 il resto (fogli, isola, chip), da elencare dopo A6.
 - **B — Liquid Glass nativo** con `expo-glass-effect` (UIGlassEffect su
@@ -159,6 +172,19 @@ Spuntati per A1 e A2 (2026-11-12):
   (una riga, `radius.xl` → `radius.card`) e un test di
   `src/feed/FeedPostPhotos.test.tsx` (la capsula al posto di `Scrim`),
   tutti e due col sì del Coordinatore.
+- A5 (#1358): `apps/mobile/src/bell/BellButton.tsx`,
+  `src/settings/SportButton.tsx` (solo lo stile del tasto),
+  `src/tabs/HeaderGlass.test.tsx` (nuovo).
+- A5b (#1384): `apps/mobile/src/tabs/headerScroll.tsx`,
+  `src/tabs/HeaderScroll.test.tsx` (nuovi), `src/tabs/AppHeader.tsx`,
+  `src/tabs/TabShell.tsx`, una riga per pagina in
+  `src/explore/ExploreScreen.tsx`, `src/tabs/MessagesPage.tsx`,
+  `src/paddle/PaddleExplore.tsx`, `src/screens/ChooseScreen.tsx`, e
+  `src/tour/TourScrollView.tsx` (passa avanti l'`onScroll` di chi lo usa,
+  col sì del Coordinatore).
+- La PR di documenti di A5 e A5b: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/*-A5-*.jpg`, `*-A5b-*.jpg` (nuove), `docs/STATUS.md`,
+  `docs/DECISIONS.md`, `docs/UI.md`.
 - La PR di documenti di A4b e A4c: `docs/tasks/TASK-469.md`,
   `docs/tasks/TASK-469/*-A4b-*.jpg`, `*-A4c-*.jpg`, `a4c-*.jpg` (nuove),
   `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md`.
@@ -222,6 +248,20 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   un database e un account (`out/TASK-469/seed.py`, `add_photos.py`).
   `@bacons/apple-targets` (in `main`) non è nel `node_modules` del checkout
   principale: Metro da un worktree lo vuole collegato.
+
+- **2026-11-21**: A5 (#1358): lista col sì del Coordinatore; turno di
+  simulatore con un database locale e un account di prova (la campanella
+  c'è solo con un account). L'utente approva («Sì, vai») e chiede anche
+  l'header che cambia scorrendo («Sì, anche lo scroll»).
+- **2026-11-22**: A5b (#1384): lista col sì del Coordinatore (fork 2), senza
+  `FeedScreen.tsx`, occupato da altri task; una riga in `TourScrollView`
+  per Disegna, col suo sì. L'utente approva le schermate («Sì, vai»). #1358
+  in `main` 2dedac1a, #1384 in `main` a2c1b96c, con l'OTA 21. Il
+  Coordinatore attivo è ora «Coordinatore (fork 3)».
+- Imparato: gli eventi di scroll di React Native non risalgono, quindi ogni
+  pagina dice il suo scroll all'header con un hook; una pagina non
+  collegata lascia l'header a riposo. Il pulsante degli strumenti di Expo
+  Go 57 copre l'angolo destro dell'header: si spegne dal suo menu.
 
 ## Schermate prima/dopo
 
@@ -289,8 +329,24 @@ trasparenza» la capsula è opaca:
 ![A4c, prima e dopo](TASK-469/TASK-469-A4c-card-del-feed.jpg)
 ![A4c, Riduci trasparenza](TASK-469/a4c-dark-reduce-transparency-bright.jpg)
 
+**A5, i cerchi dell'header** — prima la campanella era un'icona nuda e lo
+sport un cerchio pieno; ora sono due cerchi di vetro in rilievo col bordo
+forte. Con «Riduci trasparenza» sono opachi:
+
+![A5, prima e dopo, e Riduci trasparenza](TASK-469/TASK-469-A5-intestazione.jpg)
+
+**A5b, l'header che cambia scorrendo** (Disegna) — prima la linea sotto
+l'header c'era sempre; ora in cima non c'è, e compare con la fascia
+quando la pagina scorre. In chiaro si vede l'ombra corta sul contenuto; in
+scuro la fascia somiglia alla vecchia linea, e la differenza è la pagina
+in cima senza linea. Con «Riduci trasparenza» la fascia è opaca, con la
+linea sottile:
+
+![A5b, a riposo e scorrendo](TASK-469/TASK-469-A5b-intestazione-scorrendo.jpg)
+
 ## Esito
 
 *(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14); A3 e A4a
 in `main` dal 2026-11-12, in produzione al più tardi con l'OTA 17
-(2026-11-18); A4b e A4c in `main` dal 2026-11-21, col prossimo OTA.
+(2026-11-18); A4b e A4c in produzione con l'OTA 20 (2026-11-21); A5 e A5b
+in `main` dal 2026-11-22, con l'OTA 21.

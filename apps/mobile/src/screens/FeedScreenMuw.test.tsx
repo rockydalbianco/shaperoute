@@ -18,7 +18,6 @@ import { saveFeedTab } from "../feed/feedTabChoice";
 import { forgetFeed } from "../feed/useFeed";
 import { forgetMuwRoutes } from "../feed/useMuwRoutes";
 import { forgetStylePosts } from "../feed/useStylePosts";
-import { SAMPLE_FEED } from "../feed/sampleFeed";
 import { FollowsContext } from "../social/followsDoor";
 import { PeopleContext } from "../social/peopleDoor";
 import { FeedScreen } from "./FeedScreen";
@@ -158,18 +157,14 @@ test("never in «Following»", async () => {
   expect(kinds("feed-list-following").every((kind) => kind === "post")).toBe(true);
 });
 
-test("without an account, among the examples", async () => {
+test("without an account, none: no drawing to lay them among", async () => {
   await render(
     <Around state={SIGNED_OUT}>
       <FeedScreen onOpen={() => {}} />
     </Around>,
   );
-  await waitFor(() => expect(kinds("feed-list")).toContain("muw"));
-  const rows = kinds("feed-list");
-  expect(rows.filter((kind) => kind === "post")).toHaveLength(SAMPLE_FEED.length);
-  // 15 examples: after the 3rd, the 8th and the 13th.
-  expect(rows.filter((kind) => kind === "muw")).toHaveLength(3);
-  expect(rows.indexOf("muw")).toBe(3);
+  expect(await screen.findByTestId("feed-log-in")).toBeOnTheScreen();
+  expect(kinds("feed-list")).toEqual([]);
 });
 
 test("a tap opens the route", async () => {

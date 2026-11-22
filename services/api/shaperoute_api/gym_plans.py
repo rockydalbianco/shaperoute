@@ -421,6 +421,54 @@ class GymPlansBody(BaseModel):
     plans: list[GymPlanBody] = Field(description="In their order, then by key.")
 
 
+# --- A plan as a post (TASK-485, ADR-0394, plan_posts.py) ---
+#
+# What a post shows of a plan, and what «Use this plan» copies: its name,
+# days, exercises with their kg and its weeks. Never what is its owner's
+# own, which the privacy does not name: the first day (`starts_on`), the
+# paces (`runner`), the date of the target. Each is refused if sent.
+
+
+class GymPlanTargetPostedBody(GymPlanTargetBody):
+    """The target of a plan posted: a distance or a climb, without a date
+    (whoever copies it starts when ready). `GymPlanPostedTarget`."""
+
+    on: None = None
+    """Never sent: the date is its owner's."""
+
+
+class GymProgramPostedBody(GymProgramBody):
+    """The weeks of a plan posted: `GymPlanPostedProgram`."""
+
+    starts_on: None = None
+    """Never sent: whoever copies the plan chooses the first day."""
+    runner: None = None
+    """Never sent: the paces are worked out from how each one runs."""
+    target: GymPlanTargetPostedBody | None = None
+
+
+class GymPlanPostedBody(BaseModel):
+    """A plan as a post shows it, kept as it was posted:
+    packages/shared-types src/gym.ts, `GymPlanPosted`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=MAX_NAME_LENGTH)
+    days: list[int] = Field(default_factory=list, max_length=7)
+    """The days of the week it is for, 1 Monday to 7 Sunday."""
+    items: list[GymPlanItemBody] = Field(default_factory=list, max_length=MAX_ITEMS)
+    program: GymProgramPostedBody | None = None
+    """Its weeks, when made with the guide."""
+
+    @model_validator(mode="after")
+    def days_of_the_week(self) -> GymPlanPostedBody:
+        if any(not 1 <= day <= 7 for day in self.days):
+            raise ValueError("a day of the week is 1 (Monday) to 7 (Sunday)")
+        if len(set(self.days)) != len(self.days):
+            raise ValueError("a day is given once")
+        return self
+
+
 def days_mask(days: list[int]) -> int:
     """The days as kept: bit 0 Monday to bit 6 Sunday."""
     return sum(1 << (day - 1) for day in set(days))

@@ -36,13 +36,13 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-487 — Il Feed senza attività finte** · 2026-11-22: niente
+  esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
+  dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.
+  File: `apps/mobile/src/screens/FeedScreen.tsx` · `tasks/TASK-487.md`
 - **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
   scelte dell'utente, ADR-0393); poi A server … G avviso, file al
   Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`
-- **TASK-483 — Lo storico di ogni esercizio in palestra** · parte 0
-  chiusa il 2026-11-22 (quattro scelte dell'utente, ADR-0392); poi A
-  server e B app, file al Coordinatore prima di ogni parte. File: — ·
-  `tasks/TASK-483.md`
 - **TASK-214 — Il motore dei percorsi sul telefono** · A, B, C, A2, B2 in
   `main`; restano tempi e memoria su un iPhone vero e le zone dove il server
   dà 404. File: — · `tasks/TASK-214.md`
@@ -205,6 +205,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-18**: **B2** (ADR-0366, precisazione): 148 uscite in bici da 20–30 km, otto forme lette a occhio, 29 città italiane; catalogo a 1694, server in `main` (#1317), passo 14 e OTA con la #1248 (bozza) col sì dell'utente. Poi le città estere, B3 (40–50 km) e C. File (#1248): `apps/mobile/src/explore/{recommendedRoutes.ts,catalogList.ts,ExploreScreen.tsx}`, `apps/mobile/App.tsx` (una riga)
   **2026-11-21**: B2 sul server (passo 14, 06:43Z, catalogo a 1694, le corse identiche per chi non chiede `activity`); app in `main` (#1248, `ab51d0fd`): le uscite si vedono con lo sport «Bike» dopo l'OTA 18 (sì dell'utente). Città estere: secondo giro in corso sul Mac (estratti Geofabrik, limite 4 GB del pianificatore), poi una PR del solo catalogo.
   **2026-11-21, sera**: B2 **in produzione** con l'OTA 18 (`593c6fbe`): le uscite in bici delle 29 città italiane in «Explore» con lo sport «Bike»; l'utente l'ha provata sul telefono («funziona»). Città estere: 12 su 32 disegnate, il giro è in pausa per la coda del simulatore (via del Coordinatore).
+  **2026-11-22**: B2, città estere: 172 uscite in bici in 25 città (stesse otto forme, zone dagli estratti di Geofabrik), catalogo a 1866, in `main` (#1380, `ef7b1d83`) col sì dell'utente sui disegni («Sì, vanno bene»); il server le carica al prossimo passo, senza OTA. Berlino, Parigi, Dublino, Tokyo, New York, Amburgo e Vienna in un secondo giro col limite a 5 GB (deciso dal Coordinatore, parte col suo via).
+  **2026-11-22, passo 17**: B2 estere **sul server** (`40789324`, catalogo a 1866): le corse identiche (`1546 63 40 0`), in bici 320 uscite in 54 città, Londra con le sue otto; nell'app si vedono già con lo sport «Bike», senza OTA. Resta il secondo giro delle sette città (via del Coordinatore, limite 5 GB solo per loro).
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
@@ -223,6 +225,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **R6 fatta il 2026-11-18**: #1291 (server, passo 13) e #1293 (app, col
   prossimo OTA) in main: corsa + volo nella stessa attività. In bozza R6c
   (#1313, la mappa a due colori); poi R6d (la pagina riaperta).
+  **R6c e R6d fatte il 2026-11-22**: R6c (#1313) in produzione con l'OTA
+  20; R6d-a (#1342) sul server al passo 15, R6d-b (#1352, `7a082983`) in main, col
+  prossimo OTA: la gara riaperta a due colori, coi tempi a piedi e in volo.
+  Resta: un volo vero; R4 in bozza (#1218).
+  **2026-11-22**: R6d in produzione con l'OTA 21. #1399 in main: un volo
+  nelle liste si chiama «Paragliding» e ha la velocità, col prossimo OTA.
 - **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
   scelta dell'utente del 2026-11-21, senza accordi con terzi: schermata di
   widget, vario sonoro, mappa 3D, spazi aerei dal file del pilota, gare,
@@ -230,6 +238,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B1 → C → A1 → E → D → B2 → F → G → H. File: — · `tasks/TASK-479.md`
   **2026-11-21 sera**: B1 «pronta» (#1349); ordine cambiato dall'utente:
   B2 (editor) subito dopo B1.
+  **2026-11-22**: B1 in produzione (OTA 20), B2 in `main` (#1368), C (vario
+  sonoro, acceso di default) in produzione (OTA 22, #1394), provata
+  dall'utente sul telefono; prossima A1.
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
@@ -250,6 +261,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **E1 in `main`** (#1373, `f38b1980`: il post del sonno da solo, server e
   contratto, migrazione `0082`); sul server col passo 17, col sì. E2 (app)
   dopo TASK-312 C2 e TASK-481 A.
+  **2026-11-22**: E1 sul server (passo 17). E2: file nuovi pronti senza
+  PR, agganci dopo TASK-312 C2 e TASK-481 A. C: frase della privacy
+  approvata, sulla bozza #1334 (verde, da non unire).
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`
@@ -284,9 +298,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
   l'OTA 14; A3 pista di vetro (#1276) e A4a chip (#1290) in produzione al
-  più tardi con l'OTA 17; A4b card di Explore (#1333) e A4c card del Feed
-  (#1344) in `main`. Prossima A5, lista al Coordinatore prima del codice;
-  B dopo la 1.1.0. File: — · `tasks/TASK-469.md`
+  più tardi con l'OTA 17; A4b e A4c card (#1333, #1344) con l'OTA 20; A5
+  cerchi dell'header (#1358) e A5b header che cambia scorrendo (#1384) in
+  `main`, con l'OTA 21. Prossima A5c (Profilo, sci, poi Feed), lista al
+  Coordinatore; B dopo la 1.1.0. File: — · `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);
@@ -305,11 +320,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   «Record now») dopo il merge di TASK-312 C2, lista dei file al Coordinatore.
   File: — · `tasks/TASK-481.md`
 
-- **TASK-482 — Il link di un post apre l'app** (ADR-0391) · parte 0
-  (documenti) chiusa il 2026-11-22; B2 (la barra «Apri» di Safari) online,
-  provata dall'utente; A (l'app apre il post del link) in #1374, poi OTA e
-  prova sul telefono; C e D (link verificati) con la prossima build nativa.
-  File: — · `tasks/TASK-482.md`
+- **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 (la barra
+  «Apri» di Safari) e A (l'app apre il post del link) in produzione (OTA 21),
+  provate dall'utente sull'iPhone il 2026-11-22; C: il file per l'iPhone è
+  online (#1392). Restano il file Android e la parte D (link verificati), con
+  la prossima build nativa. File: — · `tasks/TASK-482.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

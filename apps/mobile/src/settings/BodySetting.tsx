@@ -16,6 +16,7 @@ import {
 import { Tap } from "../ui/Tap";
 import { useUnits } from "../units/useUnits";
 import { BodyPage } from "./BodyPage";
+import { useSettingsGroup } from "./settingsGroup";
 
 /**
  * «Body» in «Settings» (TASK-374, ADR-0318), under «Units»: the weight at
@@ -24,6 +25,7 @@ import { BodyPage } from "./BodyPage";
  * this phone.
  */
 export function BodySetting() {
+  const group = useSettingsGroup();
   const body = useBody();
   const units = useUnits();
   const [open, setOpen] = useState(false);
@@ -34,7 +36,7 @@ export function BodySetting() {
         ? t("Not set")
         : null;
   return (
-    <View style={styles.menu}>
+    <View style={[styles.menu, group]}>
       <Tap
         style={styles.row}
         onPress={() => setOpen(true)}

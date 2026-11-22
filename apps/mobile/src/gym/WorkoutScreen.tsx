@@ -16,12 +16,15 @@ import { exerciseName, gymExercise } from "./catalog";
 import { ExerciseFigure } from "./ExerciseFigure";
 import { GuideButton } from "./ExerciseGrid";
 import { ExerciseGuide } from "./ExerciseGuide";
+import { ExerciseHistory } from "./ExerciseHistoryPage";
+import { lastTime, lastValues } from "./exerciseHistory";
 import { planItemLine } from "./GymDrawGuide";
 import { ExerciseList } from "./ExerciseList";
 import { ExercisePicker } from "./ExercisePicker";
 import { gymKcal, gymKcalLabel } from "./gymKcal";
 import { gymLiveStats } from "./gymLive";
 import { gymStyles } from "./gymStyles";
+import { LastTime } from "./LastTime";
 import { moveOf } from "./moves";
 import { MuscleMap } from "./MuscleMap";
 import { musclesOf } from "./muscles";
@@ -31,6 +34,7 @@ import { restOver } from "./restTimer";
 import { SetFields, type SetTexts, textsOf, valuesOfTexts } from "./SetFields";
 import { type Entry, sameEntry, type SetValues, setOf } from "./setKinds";
 import { StillTraining } from "./StillTraining";
+import { useExerciseHistory } from "./useExerciseHistory";
 import { changeWorkout } from "./useWorkout";
 import {
   activeMs,
@@ -87,12 +91,15 @@ export function WorkoutScreen({
   nowMs,
   fetchFn,
   apiKey,
+  historyFetchFn,
 }: {
   workout: Workout;
   nowMs: number;
   /** For the tests: the fetch and the API key of «Share live». */
   fetchFn?: typeof fetch;
   apiKey?: string | null;
+  /** For the tests: the fetch of the exercise's history (TASK-483 B). */
+  historyFetchFn?: typeof fetch;
 }) {
   const insets = useSafeAreaInsets();
   const units = useUnits();
@@ -100,19 +107,32 @@ export function WorkoutScreen({
   const [picking, setPicking] = useState(workout.current === null);
   // The guide of the exercise under way, in place of the workout (part E).
   const [guiding, setGuiding] = useState(false);
+  // Its history, in place of the workout too (TASK-483 part B).
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const history = useExerciseHistory(workout.current, historyFetchFn);
+  const last = history.history === null ? null : lastTime(history.history);
   // What the boxes of a set hold first: the last set of the exercise, or
-  // what the plan aims at (TASK-411 C), or nothing.
+  // what the plan aims at (TASK-411 C) with last time's first set for the
+  // fields the plan leaves empty (TASK-483 B), or nothing.
   function startTexts(going: Workout, entry: Entry): SetTexts {
-    const last = setsOf(going, entry).at(-1);
-    if (last !== undefined) {
-      return textsOf(entry, last, units);
+    const done = setsOf(going, entry).at(-1);
+    if (done !== undefined) {
+      return textsOf(entry, done, units);
     }
     const target = planTarget(going, entry);
-    return target === null ? {} : textsOf(entry, target, units);
+    const before =
+      last !== null && going.current !== null && sameEntry(going.current, entry)
+        ? lastValues(last)
+        : null;
+    return target === null && before === null
+      ? {}
+      : textsOf(entry, { ...before, ...target }, units);
   }
-  const [texts, setTexts] = useState<SetTexts>(() =>
-    workout.current === null ? {} : startTexts(workout, workout.current),
-  );
+  // What is typed; null until something is, and the boxes hold startTexts
+  // (so last time fills them when the history comes after the exercise).
+  const [typed, setTyped] = useState<SetTexts | null>(null);
+  const texts =
+    typed ?? (workout.current === null ? {} : startTexts(workout, workout.current));
 
   // A set logged; when the plan moves on to its next exercise, its boxes
   // hold what the plan aims at.
@@ -130,7 +150,8 @@ export function WorkoutScreen({
       return after;
     });
     if (moved.to?.current != null) {
-      setTexts(startTexts(moved.to, moved.to.current));
+      setTyped(null);
+      setHistoryOpen(false);
     }
   }
   const paused = isPaused(workout);
@@ -147,7 +168,7 @@ export function WorkoutScreen({
   useLiveShareNumbers(liveNumbers, paused);
 
   const current = workout.current;
-  const typed =
+  const whole =
     current === null
       ? null
       : setOf(current, valuesOfTexts(current, texts, units), 0, true);
@@ -155,7 +176,8 @@ export function WorkoutScreen({
 
   function pick(entry: Entry) {
     changeWorkout((going, at) => chooseExercise(going, entry, at));
-    setTexts(startTexts(workout, entry));
+    setTyped(null);
+    setHistoryOpen(false);
     setPicking(false);
   }
 
@@ -182,6 +204,22 @@ export function WorkoutScreen({
             exercise={guided}
             language={language}
             onBack={() => setGuiding(false)}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  if (historyOpen && current !== null) {
+    return (
+      <View style={[gymStyles.screen, { paddingTop: insets.top + space.lg }]}>
+        <View style={[gymStyles.content, styles.guide]}>
+          <ExerciseHistory
+            title={entryName(current)}
+            state={history}
+            units={units}
+            nowMs={nowMs}
+            onBack={() => setHistoryOpen(false)}
           />
         </View>
       </View>
@@ -291,6 +329,14 @@ export function WorkoutScreen({
                 />
               )}
             </View>
+            {history.history !== null && last !== null && (
+              <LastTime
+                history={history.history}
+                target={planTarget(workout, current)}
+                units={units}
+                onHistory={() => setHistoryOpen(true)}
+              />
+            )}
             {step === null ? (
               <Text style={gymStyles.muted}>
                 {t("Set {n}", { n: String(nextSetNumber(workout)) })}
@@ -320,16 +366,16 @@ export function WorkoutScreen({
               entry={current}
               texts={texts}
               units={units}
-              onChange={setTexts}
+              onChange={setTyped}
             />
             <Pressable
               style={[
                 gymStyles.button,
                 gymStyles.primary,
                 styles.log,
-                typed === null && gymStyles.disabled,
+                whole === null && gymStyles.disabled,
               ]}
-              disabled={typed === null}
+              disabled={whole === null}
               onPress={() => log(valuesOfTexts(current, texts, units))}
               accessibilityRole="button"
               testID="log-set"
@@ -343,7 +389,7 @@ export function WorkoutScreen({
               disabled={again === null}
               onPress={() => {
                 if (again !== null) {
-                  setTexts(textsOf(current, again, units));
+                  setTyped(textsOf(current, again, units));
                   log(again);
                 }
               }}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import {
   color,
   fontSize,
@@ -24,12 +25,13 @@ const PHOTO_SIZE = MIN_TAP_SIZE - space.xs;
  * library, a photo taken now, or none.
  */
 export function PhotoRow({ name }: { name: string }) {
+  const group = useSettingsGroup();
   const photo = useProfilePhoto();
   const [open, setOpen] = useState(false);
   const busy = photo.busy !== null;
   const busyText = photoBusyText(photo.busy);
   return (
-    <View style={styles.menu}>
+    <View style={[styles.menu, group]}>
       <Tap
         style={styles.row}
         onPress={() => {

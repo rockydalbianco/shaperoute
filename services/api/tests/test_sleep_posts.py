@@ -36,6 +36,7 @@ from test_push import signed_up
 from test_strava import WallClock
 
 from shaperoute_api.db import Database, migrations
+from shaperoute_api.feed import FeedBody, FeedPostBody
 from shaperoute_api.reads import READS_HEADER
 from shaperoute_api.sleep_posts import (
     MySleepPostBody,
@@ -95,6 +96,21 @@ def test_the_examples_are_the_bodies() -> None:
     assert asked.visibility == "everyone"
     post = MySleepPostBody(**_load("sleep-post.json"))
     assert post.model_dump(mode="json", exclude_none=True) == _load("sleep-post.json")
+
+
+def test_the_feed_example_is_the_body() -> None:
+    page = _load("feed-sleep.json")
+    (row,) = page["posts"]
+    assert set(row) == set(FeedPostBody.model_fields)
+    post = FeedBody.model_validate(page).posts[0]
+    assert (post.source, post.activity) == ("sleep", None)
+    assert (post.track_preview, post.photos) == ([], [])
+    assert (post.distance_m, post.duration_s) == (0, 0)
+    assert row["sleep"] == _load("sleep-summary.json")
+    # The same post as its owner reads it, dated when it was published.
+    mine = _load("sleep-post.json")
+    assert (row["id"], row["visibility"]) == (mine["id"], mine["visibility"])
+    assert row["started_at"] == row["published_at"] == mine["published_at"]
 
 
 @pytest.mark.parametrize("visibility", ["only_me", "nobody", None])
@@ -311,6 +327,13 @@ def test_it_is_answered_as_a_drawing_with_its_night(
     assert post["id"] == post_id
     assert post["source"] == "sleep"
     assert post["sleep"] == _load("sleep-summary.json")
+    # The row is the example's, but for what is this post's own; the Feed
+    # adds its reactions and comments, as to every drawing.
+    (example,) = _load("feed-sleep.json")["posts"]
+    own = ("id", "started_at", "published_at", "author")
+    assert set(post) - set(example) == {"reactions", "comments"}
+    row = {name: post[name] for name in example}
+    assert {**row, **{name: example[name] for name in own}} == example
     # No hour of going to bed or of waking, anywhere in what others read.
     assert "T" not in str(post["sleep"]) and ":" not in str(post["sleep"]["night"])
     profile = client.get(

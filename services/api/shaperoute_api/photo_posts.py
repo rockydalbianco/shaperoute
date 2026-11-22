@@ -177,8 +177,9 @@ class Kept:
 
 
 # A drawing without a run that is a post of photos only: not the post of a
-# night of sleep (TASK-467 part E, migration 0082), which has no run either.
-PHOTO_POST_SQL = "run_id IS NULL AND sleep_night_id IS NULL"
+# night of sleep (TASK-467 part E, migration 0082) nor a gym plan posted
+# (TASK-485, migration 0084), which have no run either.
+PHOTO_POST_SQL = "run_id IS NULL AND sleep_night_id IS NULL AND plan IS NULL"
 NOT_A_PHOTO_POST = "This key is of another post, not of photos only."
 
 # The post of the account with this key, locked until the transaction ends.
@@ -270,8 +271,8 @@ class PhotoPosts:
                     " visibility = EXCLUDED.visibility,"
                     " description = EXCLUDED.description,"
                     " updated_at = EXCLUDED.updated_at"
-                    # Never over the post of a night with the same key.
-                    " WHERE drawings.sleep_night_id IS NULL"
+                    # Never over the post of a night or a plan with the key.
+                    " WHERE drawings.sleep_night_id IS NULL AND drawings.plan IS NULL"
                     " RETURNING id, key, title, description, visibility, published_at",
                     (user_id, key, title, body.visibility, description, now),
                 ).fetchone()

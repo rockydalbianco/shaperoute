@@ -1295,6 +1295,11 @@ sotto): senza, ogni elenco lo lascia fuori e `GET /drawings/{id}` è `404`.
 È un tipo a sé e non `photos`: l'app delle sole foto lo mostrerebbe come un
 post senza foto.
 
+Un'app dice **`plans`** quando sa mostrare una scheda della palestra
+pubblicata, un disegno senza corsa che porta la scheda (TASK-485, «Plan
+posts», sotto): senza, ogni elenco la lascia fuori e `GET /drawings/{id}` è
+`404`. Anche questo è un tipo a sé, per la stessa ragione.
+
 Nello stesso header un'app dice **`post`** quando sa mostrare un post
 allegato a un messaggio (TASK-455, ADR-0382, «Un post in un messaggio»,
 sotto). Non è un tipo di corsa: lo legge `messages.py`, non `reads.py`.
@@ -2750,6 +2755,46 @@ tipi in `shared-types` (`PhotoPostRequest`, `PhotoPostOrderRequest`,
   (tutti partono da una corsa); non è in «My activities» né in
   `GET /me/drawings`. Conta solo in `PublicProfile.drawings`.
 
+### Plan posts (TASK-485, ADR-0394)
+
+Una **scheda della palestra pubblicata** («Workout plan» nel «+» del Feed)
+è un disegno senza corsa che porta una copia della scheda
+(`drawings.plan`, migrazione `0084`). Vogliono il token. Codice in
+`plan_posts.py`, il modello della copia in `gym_plans.GymPlanPostedBody`;
+tipi in `shared-types` (`PlanPostRequest`, `MyPlanPost`, `GymPlanPosted`,
+`GymPlanPostedProgram`, `GymPlanPostedTarget`, `PLAN_SOURCE`, `PLANS_READ`,
+`PLAN_POST_VISIBILITIES`, `planPosts.ts`); esempi in
+`fixtures/plan-post-request.json` e `my-plan-post.json`.
+
+- `PUT /me/plan-posts/{key}` → `200` `MyPlanPost`: `plan`, `description`
+  (la riga dell'autore, regole di un disegno) e `visibility` (`everyone` o
+  `followers`; `only_me` è `422`). Fatto e pubblicato la prima volta;
+  rimandato cambiano solo la riga e chi lo vede, **la scheda resta quella
+  della prima volta**. `key` scelta dal telefono (`[a-z0-9]{8,40}`); `409`
+  se la chiave è di un altro post dell'account (di sole foto o di una
+  notte).
+- **La copia non porta niente di suo dell'autore**: `program.starts_on`,
+  `program.runner` (i ritmi) e `program.target.on` (la data della meta)
+  sono `422` se mandati. I kg ci sono. Esercizi, giorni, settimane e
+  limiti come in `PUT /me/gym-plans/{key}`.
+- `GET /me/plan-posts/{key}` → `200` `MyPlanPost`; `404` «No post of a
+  plan with this key.». `DELETE /me/plan-posts/{key}` → `204` sempre, con
+  reazioni, commenti e segnalazioni; le copie già fatte restano a chi le
+  ha fatte.
+- **Si legge come ogni disegno**, con `source: "plan"` e la scheda nel
+  campo `plan` (`null` per ogni altro post): in `GET /feed`,
+  `GET /users/{id}/drawings` e `GET /drawings/{id}`, **solo** a un'app che
+  dice `plans` in `X-MuW-Reads` (a quelle delle sole foto o del sonno non
+  arriva). Niente attività, linea, foto né titolo; `distance_m` e
+  `duration_s` `0`, `started_at` la pubblicazione, `linkable` falso.
+- **«Use this plan»** non ha una rotta sua: il telefono fa una scheda nuova
+  dalla copia (chiave nuova, il primo giorno di chi copia, i ritmi chiesti
+  di nuovo) con `PUT /me/gym-plans/{key}`, che tiene il limite di 20.
+- Reazioni, commenti, segnalazioni (`kind: "drawing"`), blocchi e nascosti
+  come ogni disegno. Fuori da concorso, gioco, badge, totali, ricerca,
+  link pubblico e chat; non è in «My activities». Le rotte
+  `/me/photo-posts` non la vedono.
+
 ### Follow (TASK-211, ADR-0173)
 
 Un iscritto ne cerca un altro per nome e gli chiede di seguirlo; l'altro
@@ -3557,7 +3602,8 @@ Una notte si pubblica in due modi, ognuno col suo interruttore:
   (la chiave è `sleep` più il giorno, `sleep20260921`), pubblicato appena
   nasce; mai «Only me». Negli elenchi e in `GET /drawings/{id}` ha
   `source` **`sleep`**, la notte nel campo `sleep`, nessuna attività,
-  nessuna linea, nessuna foto. **Lo riceve solo un'app che dice `sleep`
+  nessuna linea, nessuna foto (la riga di `GET /feed` in
+  `fixtures/feed-sleep.json`). **Lo riceve solo un'app che dice `sleep`
   in `X-MuW-Reads`** (a quella delle sole foto non arriva). Non conta per
   concorso, badge, gioco e totali, non entra nella ricerca, nel link
   pubblico né nei messaggi. È separato dal profilo: non tocca `shared`, e

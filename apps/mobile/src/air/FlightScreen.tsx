@@ -41,6 +41,8 @@ import {
 import { FlightEditor } from "./FlightEditor";
 import { FlightWidget } from "./FlightWidget";
 import { useFlightScreenData } from "./useFlightScreenData";
+import { setVarioPrefs, useVarioPrefs } from "./varioPrefs";
+import { VarioSoundOptions } from "./VarioSoundOptions";
 
 /**
  * The flight screen (TASK-479 part B1, ADR-0388): pages of widgets on a
@@ -49,6 +51,11 @@ import { useFlightScreenData } from "./useFlightScreenData";
  * choice). Big numbers, targets for gloves, a lock against touches. «Map»
  * goes back to the recording, where «Stop» is: no flight stops from here.
  * The line at the bottom is the user's, approved on 2026-11-21.
+ *
+ * The vario's sound (part C): a button beside the lock mutes it or turns
+ * it on, the lock on or not; its choices are among the options. The sound
+ * itself is the recording's (`useVarioSound` in `FlightLive`), so it goes
+ * on with this screen closed.
  */
 
 export const FIXED_LINE = tLater("GPS numbers · not a certified instrument");
@@ -113,7 +120,11 @@ function Options({
   onDone,
   onEdit,
   palette,
+  insets,
 }: {
+  /** Inside the safe area: the options scroll, and would go under the
+   * status bar and the home bar. */
+  insets: { top: number; bottom: number };
   prefs: FlightPrefs;
   onChange: (prefs: FlightPrefs) => void;
   onDone: () => void;
@@ -129,8 +140,9 @@ function Options({
     </View>
   );
   return (
-    <View
-      style={[styles.options, { backgroundColor: palette.background }]}
+    <ScrollView
+      style={[styles.options, { ...insets, backgroundColor: palette.background }]}
+      contentContainerStyle={styles.optionsInside}
       testID="flight-options"
     >
       {row(
@@ -206,6 +218,14 @@ function Options({
           />
         )),
       )}
+      <VarioSoundOptions
+        unit={prefs.units.vario}
+        chip={(key, label, on, onPress) => (
+          <Chip key={key} label={label} on={on} onPress={onPress} palette={palette} />
+        )}
+        row={row}
+        palette={palette}
+      />
       <Pressable
         accessibilityRole="button"
         onPress={onDone}
@@ -214,7 +234,7 @@ function Options({
       >
         <Text style={[styles.doneText, { color: palette.onAccent }]}>{t("Done")}</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -264,6 +284,7 @@ export function FlightScreen({
   sharingLive,
 }: Props) {
   const appUnits = useUnits();
+  const sound = useVarioPrefs();
   const [prefs, setPrefs] = useState<FlightPrefs>(() => loadFlightPrefs(appUnits));
   const [choosing, setChoosing] = useState(false);
   const [locked, setLocked] = useState(false);
@@ -349,6 +370,20 @@ export function FlightScreen({
           >
             <Text style={[styles.barText, { color: palette.text }]} numberOfLines={1}>
               {`${profileName(prefs.profiles[prefs.current])} ▾`}
+            </Text>
+          </Pressable>
+          {/* Within reach with the lock on too: the quick mute (part C). */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              sound.on ? t("Mute the vario") : t("Turn the vario sound on")
+            }
+            onPress={() => setVarioPrefs({ ...sound, on: !sound.on })}
+            style={[styles.barButton, { borderColor: palette.borderStrong }]}
+            testID="flight-screen-sound"
+          >
+            <Text style={[styles.barText, { color: palette.text }]}>
+              {sound.on ? "🔊" : "🔇"}
             </Text>
           </Pressable>
           <Pressable
@@ -453,6 +488,7 @@ export function FlightScreen({
               setEditing({ page, index: null });
             }}
             palette={palette}
+            insets={{ top: insets.top, bottom: insets.bottom }}
           />
         ) : null}
         {editing !== null ? (
@@ -522,10 +558,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    padding: 20,
-    paddingTop: 60,
-    gap: 18,
   },
+  optionsInside: { padding: 20, paddingTop: 16, gap: 18 },
   optionRow: { gap: 8 },
   optionTitle: {
     fontSize: 14,

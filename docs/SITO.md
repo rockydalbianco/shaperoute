@@ -41,6 +41,7 @@ Dall'alto in basso:
 | `site/assets/` | il segno e la scritta di MuW, ricavati da `docs/brand/muw-*.svg` (la scritta nel colore del testo, per lo sfondo scuro) |
 | `site/tools/` | gli script che ricavano i disegni dai percorsi veri |
 | `site/live/` | la pagina di un link dal vivo (TASK-424, sotto) |
+| `site/.well-known/` | il file che l'iPhone legge per sapere che il link di un post può aprire l'app (TASK-482 parte C, sotto) |
 | `site/tests/` | i test (`node --test`) |
 
 ## Mettere il link per scaricare l'app
@@ -251,6 +252,21 @@ lascia leggere `/post` solo a `https://getmuw.app` (CORS).
   **Che «Apri» porti al post dentro l'app dipende dalla parte A di
   TASK-482** (l'app che legge il link) e va provato su un telefono vero:
   fino ad allora, al più, apre l'app.
+
+- **Il link che apre l'app senza passare dalla pagina** (TASK-482 parti C
+  e D, ADR-0391; l'utente il 2026-11-22: «Sì, nella prossima» build
+  nativa). Sul sito c'è la metà dell'iPhone:
+  `site/.well-known/apple-app-site-association`, un JSON senza estensione
+  che dice ad Apple quale app (la squadra e l'identificativo di
+  `apps/mobile/app.json`: un test li tiene uguali) può aprire quali
+  indirizzi — solo `/p/`, `/p` e `/p/index.html`, e solo con qualcosa a
+  forma di id di un disegno dopo il `#`; nessun'altra pagina del sito.
+  **Da solo non fa niente**: serve che l'app dichiari il dominio
+  (`associatedDomains` in `app.json`, parte D), cosa che arriva solo con
+  una build dagli store. Il server deve dire che il file è JSON
+  (`DEPLOY.md` F.14, punto 4). Manca la metà di Android
+  (`assetlinks.json`): vuole l'impronta SHA-256 con cui Play firma l'app,
+  che si chiede all'utente quando la build è decisa.
 
 **Guardarla in locale.** Come la pagina dal vivo: il server del sito
 (sotto) e un finto `/post` che risponde dalla fixture, con `?api=`

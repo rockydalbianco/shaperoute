@@ -18,6 +18,7 @@ import {
   VIDEO_PAGE_BASE,
   type VideoPageMessage,
 } from "./videoPage";
+import { togetherTracks } from "./togetherClock";
 import { videoScene } from "./videoScene";
 
 /** The scripts of the page without a source, as the WebView runs them:
@@ -1216,5 +1217,63 @@ describe("the video page, with the runner's own image (TASK-417)", () => {
       expect(p.posted.some((m) => m.type === "done")).toBe(true);
       expect(p.context.drawImage).not.toHaveBeenCalled();
     }
+  });
+});
+
+describe("the video page, «Together» (TASK-417 D2b)", () => {
+  const line = RUN.track as LatLon[];
+  const tracks = togetherTracks(
+    {
+      people: [
+        {
+          public_id: "a",
+          username: "me",
+          points: line,
+          seconds: line.map((_, i) => i * 30),
+          pauses: [],
+        },
+        {
+          public_id: "b",
+          username: "anna_trail",
+          points: line.map(([lat, lon]): LatLon => [lat, lon + 0.003]),
+          seconds: line.map((_, i) => 20 + i * 25),
+          pauses: [],
+        },
+      ],
+    },
+    "yellow",
+  );
+
+  it("draws the other runner's line and writes its name, on paper", async () => {
+    const scene = videoScene(RUN, POST_RESULTS, [], "paper", { runners: tracks });
+    const { posted, written, make } = page(fakeEncoder([VIDEO_CODECS[0]]).FakeEncoder);
+    await until(posted, "ready");
+    make(scene);
+    await until(posted, "done", "failed");
+    expect(posted[posted.length - 1]).toEqual(
+      expect.objectContaining({ type: "done" }),
+    );
+    expect(written).toContain("anna_trail");
+  });
+
+  it("lays the other runner on the hills as the map lays its line, on «3D»", async () => {
+    const scene = videoScene(RUN, POST_RESULTS, [], "3d", { runners: tracks });
+    const maplibre = fakeMapLibre("idle");
+    const { posted, context, make, prepareMap } = page(
+      fakeEncoder([VIDEO_CODECS[0]]).FakeEncoder,
+      FakeFrame,
+      maplibre,
+    );
+    await until(posted, "ready");
+    prepareMap(scene.map);
+    await until(posted, "map");
+    make(scene);
+    await until(posted, "done", "failed");
+    const names = (context.fillText.mock.calls as [string, number, number][]).filter(
+      ([text]) => text === "anna_trail",
+    );
+    expect(names.length).toBeGreaterThan(0);
+    const [, x, y] = names[names.length - 1]!;
+    expect(Number.isFinite(x) && Number.isFinite(y)).toBe(true);
   });
 });

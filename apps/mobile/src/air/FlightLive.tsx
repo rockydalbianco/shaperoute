@@ -15,6 +15,7 @@ import { FlightPhaseSwitch } from "./FlightPhaseSwitch";
 import { FlightScreen, GLOVE_TARGET } from "./FlightScreen";
 import { markPhase, usePhaseMarks } from "./phaseMarks";
 import { useFlightScreen } from "./useFlightScreen";
+import { useVarioSound } from "./useVarioSound";
 
 /**
  * A flight as it goes (TASK-305 part R2, ADR-0375), over the numbers of the
@@ -64,6 +65,8 @@ export function FlightLive({ track, live }: { track: Track; live: boolean }) {
   const takeoffMs =
     [...parts].reverse().find((one) => one.kind === "air")?.startMs ?? null;
   const flightScreen = useFlightScreen(phase, live);
+  // The vario's sound (TASK-479 part C), with the flight screen closed too.
+  useVarioSound({ track, nowMs: now, sounding: live && !paused && phase === "air" });
   const sharing = useLiveShare().kind === "sharing";
   const screen = live ? (
     <>

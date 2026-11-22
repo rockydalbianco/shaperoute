@@ -3375,6 +3375,27 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   (parte C); `count`, `duration_s`, `last` (l'ultimo di sempre) e
   `skipped` (i giorni di una scheda passati senza di lei, parte C). Vuole il
   token. Esempio `fixtures/gym-calendar.json`; `gym_calendar.py`.
+- **`GET /me/gym-history?exercise=` o `?name=`** (TASK-483 A, ADR-0392):
+  lo storico di un esercizio, **solo le serie di chi chiede**, anche quelle
+  segnate dopo «Stop» e quelle di un allenamento scritto a mano. Un
+  esercizio del catalogo per `exercise` (`404` `unknown_exercise` se il
+  catalogo non lo ha), uno col nome libero per `name`, uguale senza badare a
+  maiuscole, spazi in testa e in coda e spazi doppi; tutti e due o nessuno
+  sono `422`. `kind` e `measure` dicono cosa legge un punto: per un carico
+  `estimated_1rm_kg` (Epley, kg × (1 + ripetizioni / 30), il peso stesso
+  per una ripetizione, solo da serie di al più 12 ripetizioni; senza
+  serie così il peso più alto, con `estimated: false`), a corpo libero
+  `reps`, a tempo `duration_s`, il cardio `distance_m` se la macchina la
+  mostra, altrimenti `duration_s`. `points` un punto per allenamento, il
+  più vecchio prima, su tutto lo storico, con `record` quando supera ogni
+  punto prima; `records` i record del tipo (`best_estimate_kg`,
+  `heaviest_kg`, `most_reps`, `best_volume_kg`, `longest_s`,
+  `farthest_m`), il primo a raggiungerli li tiene; `workouts` gli
+  allenamenti con le serie di quell'esercizio, il più recente prima, a
+  pagine di `limit` (20, al più 100) e `before` (la chiave di `next`;
+  `404` `unknown_workout` se non è nello storico). I campi vuoti mancano,
+  come nelle serie. Vuole il token. Esempio `fixtures/gym-history.json`;
+  `gym_history.py`, tipi in `shared-types/src/gymHistory.ts`.
 - **`GET /me/gym-plans`, `PUT /me/gym-plans/{key}`, `DELETE
   /me/gym-plans/{key}`** (TASK-411 C, ADR-0341): le schede del
   proprietario, nel loro ordine; la chiave la sceglie il telefono (`201`
@@ -3536,7 +3557,8 @@ Una notte si pubblica in due modi, ognuno col suo interruttore:
   (la chiave è `sleep` più il giorno, `sleep20260921`), pubblicato appena
   nasce; mai «Only me». Negli elenchi e in `GET /drawings/{id}` ha
   `source` **`sleep`**, la notte nel campo `sleep`, nessuna attività,
-  nessuna linea, nessuna foto. **Lo riceve solo un'app che dice `sleep`
+  nessuna linea, nessuna foto (la riga di `GET /feed` in
+  `fixtures/feed-sleep.json`). **Lo riceve solo un'app che dice `sleep`
   in `X-MuW-Reads`** (a quella delle sole foto non arriva). Non conta per
   concorso, badge, gioco e totali, non entra nella ricerca, nel link
   pubblico né nei messaggi. È separato dal profilo: non tocca `shared`, e

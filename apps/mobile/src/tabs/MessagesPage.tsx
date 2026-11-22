@@ -5,6 +5,7 @@ import { t } from "../i18n";
 import { ConversationList } from "../messages/ConversationList";
 import { useMessagesDoor } from "../messages/messagesDoor";
 import { color, font, space } from "../theme/tokens";
+import { useHeaderScroll } from "./headerScroll";
 import { useScrollToTopOnReselect } from "./tabReselect";
 
 type Props = {
@@ -26,6 +27,8 @@ type Props = {
 export function MessagesPage({ active, fetchFn, apiKey }: Props) {
   const { screen, openConversation, recount } = useMessagesDoor();
   const scroll = useScrollToTopOnReselect<ScrollView>();
+  // The header turns to glass once the page scrolls (TASK-469 A5b).
+  const headerScroll = useHeaderScroll();
   const shown = active && screen === null;
   const [visit, setVisit] = useState(0);
   const [wasShown, setWasShown] = useState(shown);
@@ -42,7 +45,7 @@ export function MessagesPage({ active, fetchFn, apiKey }: Props) {
     }
   }, [recount, shown]);
   return (
-    <ScrollView ref={scroll} contentContainerStyle={styles.content}>
+    <ScrollView ref={scroll} {...headerScroll} contentContainerStyle={styles.content}>
       <Text style={styles.title} accessibilityRole="header">
         {t("Messages")}
       </Text>

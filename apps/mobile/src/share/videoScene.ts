@@ -31,6 +31,15 @@ import {
   type Plane,
   planeOf,
 } from "./videoChase";
+import {
+  meetings,
+  metresApart,
+  positionAt,
+  realSecondAt,
+  type Span,
+  spanOf,
+  type TogetherTrack,
+} from "./togetherClock";
 import type { Actor } from "./videoActor";
 import {
   ALONG_COUNT,
@@ -174,6 +183,12 @@ const CREDIT = 0.02;
 const CREDIT_BOTTOM = 0.012;
 /** The animal's length, as a share of the width (TASK-408). */
 const CHARACTER = 0.2;
+/** «Together» (TASK-417): another runner's line, as a share of the author's;
+ * its name, as a share of the width; how long a ⚡ stays, in seconds. */
+const RUNNER_LINE = 0.75;
+const RUNNER_NAME = 0.026;
+const MEET_S = 1.2;
+const MEET_EMOJI = "⚡";
 /** How high the animal is seen from, in degrees above the ground, on the
  * flat looks; on «3D», from as high as the map is. */
 const CHARACTER_TILT = 50;
@@ -287,7 +302,9 @@ export type VideoOp =
       alpha: number;
     }
   /** An emoji, centred on x, y, grown by `scale`; on «3D» at `share` of
-   * `path` as the map lays it, instead of at x, y (TASK-408). */
+   * `path` as the map lays it, instead of at x, y (TASK-408). With `geo`
+   * (TASK-417 «Together»), at `share` of that runner's line as the map lays
+   * it. */
   | {
       k: "emoji";
       text: string;
@@ -297,6 +314,23 @@ export type VideoOp =
       scale: number;
       alpha: number;
       path?: number;
+      share?: number;
+      geo?: number;
+    }
+  /** Another runner of a «Together» video (TASK-417): its line in `color`
+   * from its start to `upTo` pixels along `path`, a dot at its tip, its
+   * name under the dot; on «3D» `share` of the line `geo` of
+   * `VideoScene.together` as the map lays it. */
+  | {
+      k: "runner";
+      path: number;
+      upTo: number;
+      width: number;
+      color: string;
+      name: string;
+      size: number;
+      alpha: number;
+      geo?: number;
       share?: number;
     }
   /** The animal (TASK-408): its feet `upTo` pixels along `path`, on «3D»
@@ -334,6 +368,10 @@ export type VideoScene = {
         /** «Camera behind» (part C2b): cameras along the run for the
          * page to try before the video. */
         chase?: { cameras: ChaseCamera[] };
+        /** «Together» on «3D» (TASK-417): every runner's line as
+         * [lon, lat], the author's first, for the page to lay on the hills
+         * as it lays `line`. */
+        together?: [number, number][][];
       })
     | null;
   /** Lines, each as x0, y0, x1, y1, …: the logo's heart, then the run;
@@ -344,6 +382,11 @@ export type VideoScene = {
   character: Actor | null;
   /** What each picture shows, in order. */
   frames: VideoOp[][];
+  /**
+   * «Together» (TASK-417): the indices in `paths` of the other runners'
+   * lines. Absent for a video of one.
+   */
+  together?: { paths: number[] };
 };
 
 const HEART_PATH = 0;
@@ -659,6 +702,8 @@ function layoutOf(
   look: Look,
   palette: Palette | null,
   language: Language,
+  /** The other runners of a «Together» video (TASK-417), framed with it. */
+  others: readonly LatLon[][] = [],
 ) {
   const w = VIDEO_WIDTH;
   const h = VIDEO_HEIGHT;
@@ -678,16 +723,26 @@ function layoutOf(
   const line = w * look.line.width;
   const whole = postLine(run.track);
   const bearing = bearingOf(run.rotationDeg);
-  const [segments] = fitLines([whole], boxWidth, boxHeight, line, bearing);
-  const track = thinned(pointsOf(segments)).flatMap(([x, y]) => [
-    round(w * SIDE + x),
-    round(h * DRAWING_TOP + y),
-  ]);
+  // One fit for every line: the map frames them all (TASK-417).
+  const [segments = [], ...othersSegments] = fitLines(
+    [whole, ...others],
+    boxWidth,
+    boxHeight,
+    line,
+    bearing,
+  );
+  const placedPath = (segs: Segment[]) =>
+    thinned(pointsOf(segs)).flatMap(([x, y]) => [
+      round(w * SIDE + x),
+      round(h * DRAWING_TOP + y),
+    ]);
+  const track = placedPath(segments);
+  const otherTracks = othersSegments.map(placedPath);
   // The same fit, in points of the map, so the map lies under the line.
   const map =
     palette !== null && look.map
       ? videoMap(
-          whole,
+          others.length === 0 ? whole : [...whole, ...others.flat()],
           {
             left: (w * SIDE) / MAP_PIXEL_RATIO,
             top: (h * DRAWING_TOP) / MAP_PIXEL_RATIO,
@@ -754,6 +809,7 @@ function layoutOf(
     },
     track,
     trackLength: lengthOf(track),
+    otherTracks,
     line,
     map,
     placed,
@@ -825,9 +881,88 @@ type Plan = {
    * whole drawing the camera comes closer from; null otherwise. */
   chase: Plane | null;
   fitZoom: number;
+  /** «Together» (TASK-417): the one clock of every runner; null alone. */
+  clock: Clock | null;
 };
 
-function planOf(scenes: SceneChoice, relief: boolean, map: VideoMap | null): Plan {
+/** The one real clock of a «Together» video, pressed into the route. */
+type Clock = {
+  tracks: readonly TogetherTrack[];
+  span: Span;
+  /** The metres run up to each point, each runner. */
+  runs: number[][];
+  /** The colour of each other runner's line, in the look. */
+  colors: string[];
+  /** Where the other runners' lines start in `VideoScene.paths`. */
+  pathFrom: number;
+  /** The ⚡ where two met, in seconds of the route's drawing. */
+  marks: ReturnType<typeof meetings>;
+};
+
+function clockOf(
+  tracks: readonly TogetherTrack[] | null | undefined,
+  colorOf: (track: TogetherTrack) => string,
+  pathFrom: number,
+  routeS: number,
+): Clock | null {
+  if (tracks === null || tracks === undefined || tracks.length < 2) {
+    return null;
+  }
+  const runs = tracks.map((track) => {
+    const run = [0];
+    for (let i = 1; i < track.points.length; i += 1) {
+      run.push(
+        (run[i - 1] as number) +
+          metresApart(track.points[i - 1] as LatLon, track.points[i] as LatLon),
+      );
+    }
+    return run;
+  });
+  return {
+    tracks,
+    span: spanOf(tracks),
+    runs,
+    colors: tracks.slice(1).map(colorOf),
+    pathFrom,
+    marks: meetings(tracks, routeS),
+  };
+}
+
+/** The real second shown at `t`: the first start until the route draws,
+ * the last finish after it. */
+function realAt(
+  t: number,
+  clock: Clock,
+  route: { drawFrom: number; to: number },
+): number {
+  if (t <= route.drawFrom) {
+    return clock.span.startS;
+  }
+  return realSecondAt(t - route.drawFrom, route.to - route.drawFrom, clock.span);
+}
+
+/** How much of runner `i`'s line is behind it at the real second `realS`,
+ * 0 to 1, by the metres of its stored points. */
+function runShare(clock: Clock, i: number, realS: number): number {
+  const track = clock.tracks[i] as TogetherTrack;
+  const run = clock.runs[i] as number[];
+  const total = run[run.length - 1] ?? 0;
+  if (total <= 0) {
+    return 1;
+  }
+  const at = positionAt(track, realS);
+  const [from] = at.between;
+  const metres =
+    (run[from] as number) + metresApart(track.points[from] as LatLon, at.point);
+  return Math.min(1, Math.max(0, metres / total));
+}
+
+function planOf(
+  scenes: SceneChoice,
+  relief: boolean,
+  map: VideoMap | null,
+  clock: Clock | null = null,
+): Plan {
   let windows = sceneWindows(scenes.order, scenes.off, VIDEO_SECONDS);
   if (windows.length === 0) {
     windows = sceneWindows(SCENES, ["opening"], VIDEO_SECONDS);
@@ -857,6 +992,7 @@ function planOf(scenes: SceneChoice, relief: boolean, map: VideoMap | null): Pla
         ? planeOf(map.line.map(([lon, lat]): LatLon => [lat, lon]))
         : null,
     fitZoom: map?.camera.zoom ?? 0,
+    clock,
   };
 }
 
@@ -886,6 +1022,10 @@ function drawnShare(t: number, plan: Plan): number {
   }
   if (route === null) {
     return ending !== null && t >= ending.from ? 1 : 0;
+  }
+  // «Together»: the author's line at its real pace on the one clock.
+  if (plan.clock !== null) {
+    return t >= route.to ? 1 : runShare(plan.clock, 0, realAt(t, plan.clock, route));
   }
   return easeInOut(ramp(t, route.drawFrom, route.to));
 }
@@ -1145,6 +1285,60 @@ function frameAt(
               ),
             }
           : {}),
+      });
+    }
+  }
+
+  // «Together» (TASK-417): the others on the one clock, each in its colour
+  // with its name, and a ⚡ where two met at the same moment.
+  const clock = plan.clock;
+  if (clock !== null && route !== null && main > 0 && t >= route.from) {
+    const real = t >= route.to ? clock.span.endS : realAt(t, clock, route);
+    clock.tracks.forEach((track, i) => {
+      const path = layout.otherTracks[i - 1];
+      if (i === 0 || path === undefined) {
+        return;
+      }
+      const length = lengthOf(path);
+      if (length <= 0) {
+        return;
+      }
+      const ran = runShare(clock, i, real);
+      ops.push({
+        k: "runner",
+        path: clock.pathFrom + i - 1,
+        upTo: round(length * ran),
+        width: round(layout.line * RUNNER_LINE),
+        color: clock.colors[i - 1] as string,
+        name: track.username,
+        size: round(w * RUNNER_NAME),
+        alpha: round3(main),
+        ...(look.relief ? { geo: i, share: round3(ran) } : {}),
+      });
+    });
+    for (const mark of clock.marks) {
+      const at = route.drawFrom + mark.videoS;
+      const pop =
+        ramp(t, at, at + EMOJI_POP_S) * (1 - ramp(t, at + MEET_S - 0.3, at + MEET_S));
+      if (pop <= 0) {
+        continue;
+      }
+      const [who] = mark.who;
+      const path = who === 0 ? layout.track : layout.otherTracks[who - 1];
+      if (path === undefined) {
+        continue;
+      }
+      const ran = runShare(clock, who, mark.realS);
+      const [x, y] = pointAlong(path, lengthOf(path) * ran);
+      ops.push({
+        k: "emoji",
+        text: MEET_EMOJI,
+        x: round(x),
+        y: round(y),
+        size: round(w * ALONG_EMOJI),
+        scale: round3(easeOutBack(Math.min(1, pop * 2))),
+        alpha: round3(pop * main),
+        ...(look.relief ? { geo: who, share: round3(ran) } : {}),
       });
     }
   }
@@ -1474,6 +1668,9 @@ export type SceneOptions = Partial<SceneChoice> & {
   line?: LineColour;
   along?: string | null;
   end?: string | null;
+  /** «Together» (TASK-417): every runner on the one clock, the author
+   * first; null, or one runner, for a video of one. */
+  runners?: readonly TogetherTrack[] | null;
 };
 
 /** The scenes in `options`, as the post opens where not given. */
@@ -1513,13 +1710,27 @@ export function videoScene(
           styleMap(look),
         );
   const language = appLanguage();
-  const layout = layoutOf(run, shown, spec, palette, language);
+  const together = options.runners ?? null;
+  const others = together === null ? [] : together.slice(1).map((one) => one.points);
+  const layout = layoutOf(run, shown, spec, palette, language, others);
   const plan = planOf(scenesOf(options), spec.relief, layout.map);
   // «Line in 2D» on «3D»: drawn as on a flat map, over its picture from
   // straight above.
   const drawn = plan.flatAll ? { ...spec, relief: false } : spec;
   const hearted =
     plan.ending !== null && (plan.endKind === "heart" || plan.endKind === "all");
+  const pathFrom = hearted ? 3 : 2;
+  // «Together» (TASK-417): the others' colours in this look, after the
+  // author's own; on paper as on «Night».
+  plan.clock =
+    plan.route === null
+      ? null
+      : clockOf(
+          together,
+          (one) => lineColourOf(one.colour, palette ?? stylePalette("night")),
+          pathFrom,
+          plan.route.to - plan.route.drawFrom,
+        );
   const count = VIDEO_SECONDS * VIDEO_FPS;
   return {
     width: VIDEO_WIDTH,
@@ -1536,14 +1747,30 @@ export function videoScene(
             ...(plan.chase !== null
               ? { chase: { cameras: chaseSamples(plan.chase, plan.fitZoom) } }
               : {}),
+            ...(plan.clock !== null && spec.relief
+              ? {
+                  together: plan.clock.tracks.map((one) =>
+                    thinnedTrack(one.points).map(([lat, lon]): [number, number] => [
+                      round6(lon),
+                      round6(lat),
+                    ]),
+                  ),
+                }
+              : {}),
           },
-    paths: hearted
-      ? [layout.heart, layout.track, layout.heartCard.path]
-      : [layout.heart, layout.track],
+    paths: [
+      ...(hearted
+        ? [layout.heart, layout.track, layout.heartCard.path]
+        : [layout.heart, layout.track]),
+      ...(plan.clock === null ? [] : layout.otherTracks),
+    ],
     character: options.character ?? null,
     frames: Array.from({ length: count }, (_, i) =>
       frameAt(i / VIDEO_FPS, run, stickers, layout, drawn, language, options, plan),
     ),
+    ...(plan.clock === null
+      ? {}
+      : { together: { paths: layout.otherTracks.map((_, i) => pathFrom + i) } }),
   };
 }
 

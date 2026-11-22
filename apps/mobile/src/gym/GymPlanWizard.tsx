@@ -214,6 +214,23 @@ const FIT_RUNNER: GymPlanRunner = {
 };
 
 /** A plan whose run days were all taken away keeps no runner. */
+/** The plan's answers (TASK-488) kept through the guide, for the days it
+ * still has: the guide's steps make the program again without them. */
+function withAdaptOf(
+  program: GymProgram,
+  was: GymProgram | null | undefined,
+): GymProgram {
+  const adapt = program.adapt ?? was?.adapt;
+  if (adapt === undefined) {
+    return program;
+  }
+  const days = programDays(program);
+  return {
+    ...program,
+    adapt: { off: adapt.off, days: adapt.days.filter((one) => days.includes(one.day)) },
+  };
+}
+
 function withoutRunnerIfNoRuns(program: GymProgram): GymProgram {
   if (program.sessions.some((one) => one.run !== undefined)) {
     return program;
@@ -725,7 +742,7 @@ export function GymPlanWizard({
             days: programDays(program),
             items: [],
             program: {
-              ...withoutRunnerIfNoRuns(program),
+              ...withAdaptOf(withoutRunnerIfNoRuns(program), plan?.program),
               starts_on: startsOn,
               // A workout always has a name (gym_plans.py).
               sessions: program.sessions.map((session) =>

@@ -593,7 +593,8 @@ test("run days in the guide: «And running?», the week, the run's editor (TASK-
 test("in Draw on a run day: the run of the week, and «Go to the run» turns to Run", async () => {
   const now = new Date();
   const lastWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-  const program = LIFT_AND_RUN.program!;
+  // Without the example's answers (TASK-488): the same run every day.
+  const { adapt: _adapt, ...program } = LIFT_AND_RUN.program!;
   const runs: GymPlan = {
     ...LIFT_AND_RUN,
     days: [1, 2, 3, 4, 5, 6, 7],
@@ -664,4 +665,45 @@ test("at the end of a cycle, faster runs propose new paces, changed on a yes (TA
   expect(screen.queryByTestId("gym-guide-new-paces")).toBeNull();
   const [kept] = plansOf(OWNER);
   expect(kept.program?.runner).toEqual({ pace_10k_s: 300, long_m: 12000 });
+});
+
+test("the days the answers moved: ↑ and =, «Adapts to how it went» turns it off (TASK-488)", async () => {
+  mergePlans(OWNER, [LIFT_AND_RUN]);
+  const fetchFn = api([LIFT_AND_RUN]);
+  await shown(
+    <GymPlansSheet
+      visible
+      onClose={jest.fn()}
+      fetchFn={fetchFn as unknown as typeof fetch}
+    />,
+  );
+  // Monday answered «Easy», Saturday «Hard» once; the other days nothing.
+  // The marks are for the eye: the legend under them says what they are.
+  const hidden = { includeHiddenElements: true };
+  expect(screen.getByTestId("gym-plan-mark-1", hidden)).toHaveTextContent("↑");
+  expect(screen.getByTestId("gym-plan-mark-6", hidden)).toHaveTextContent("=");
+  expect(screen.getByTestId("gym-plan-mark-2", hidden)).toHaveTextContent(/^\s*$/);
+  expect(
+    screen.getByText("↑ one step more · = the same · ↓ one step back"),
+  ).toBeOnTheScreen();
+  const toggle = screen.getByTestId("gym-plan-adapt");
+  expect(toggle).toHaveProp("value", true);
+
+  await fireEvent(toggle, "valueChange", false);
+  await act(async () => {});
+  const off = plansOf(OWNER).find((one) => one.key === LIFT_AND_RUN.key)!;
+  expect(off.program?.adapt).toEqual({ ...LIFT_AND_RUN.program!.adapt, off: true });
+  expect(screen.queryByTestId("gym-plan-mark-1", hidden)).toBeNull();
+  // Sent to the API with the plan.
+  const sent = fetchFn.mock.calls.filter(([, init]) => init?.method === "PUT");
+  expect(JSON.parse(String(sent.at(-1)?.[1]?.body)).program.adapt.off).toBe(true);
+
+  // Through the guide, the answers stay with the plan.
+  await fireEvent(screen.getByTestId("gym-plan-adapt"), "valueChange", true);
+  await fireEvent.press(screen.getByTestId("gym-plan-weeks"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await act(async () => {});
+  const again = plansOf(OWNER).find((one) => one.key === LIFT_AND_RUN.key)!;
+  expect(again.program?.adapt).toEqual(LIFT_AND_RUN.program!.adapt);
 });

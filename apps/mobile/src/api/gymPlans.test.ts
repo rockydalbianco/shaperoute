@@ -99,3 +99,27 @@ test("a run day of a plan (TASK-433 C): its run, read; one it does not know, not
   };
   expect(isGymPlans({ plans: [broken] })).toBe(false);
 });
+
+test("how a plan adapted to its answers (TASK-488): read; a feel it does not know, not", () => {
+  expect(liftAndRun.program!.adapt).toEqual({
+    off: false,
+    days: [
+      { day: 1, steps: 1, hard: 0, last: "easy" },
+      { day: 6, steps: -1, hard: 1, last: "hard" },
+    ],
+  });
+  const program = liftAndRun.program!;
+  for (const broken of [
+    { ...program, adapt: { days: [] } },
+    {
+      ...program,
+      adapt: { off: false, days: [{ day: 1, steps: 1, hard: 0, last: "great" }] },
+    },
+    {
+      ...program,
+      adapt: { off: false, days: [{ day: 1, steps: 0.5, hard: 0, last: "easy" }] },
+    },
+  ]) {
+    expect(isGymPlans({ plans: [{ ...liftAndRun, program: broken }] })).toBe(false);
+  }
+});

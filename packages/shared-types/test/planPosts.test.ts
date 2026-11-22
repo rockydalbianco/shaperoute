@@ -79,6 +79,6 @@ test("`plans` is a kind an app may read, and `plan` a source of a drawing", () =
   assert.equal(source, "plan");
   assert.ok(reads.kinds.includes(PLANS_READ));
   assert.equal(reads.kinds.indexOf(PLANS_READ), reads.kinds.indexOf("sleep") + 1);
-  // The app says it with TASK-485 part B: today's does not read it yet.
-  assert.ok(!reads.this_app.split(",").includes(PLANS_READ));
+  // The app says it since TASK-485 part B.
+  assert.ok(reads.this_app.split(",").includes(PLANS_READ));
 });

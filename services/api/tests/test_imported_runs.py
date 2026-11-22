@@ -211,7 +211,8 @@ def test_the_examples_are_the_bodies() -> None:
     assert set(mine) == set(MyDrawingBody.model_fields)
     assert MyDrawingBody.model_validate(mine).source == "file"
     one = _load("drawing-details-imported.json")
-    assert set(one) == set(DrawingDetailBody.model_fields)
+    # A race's flights (TASK-305 part R6e): left out for any other post.
+    assert set(one) == set(DrawingDetailBody.model_fields) - {"flight"}
     assert DrawingDetailBody.model_validate(one).source == "file"
     page = _load("feed-imported.json")
     # With what the card counts (TASK-355 part B).

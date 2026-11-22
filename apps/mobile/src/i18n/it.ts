@@ -3137,4 +3137,22 @@ export const IT: Table = {
     "Queste parole non si possono usare. Prova con altre.",
   "Links and special characters can't be used here.":
     "Qui non si possono usare link né caratteri speciali.",
+
+  // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
+  "Choose a plan": "Scegli un piano",
+  "No plans yet: make one in Gym › Plans.":
+    "Ancora nessun piano: creane uno in Palestra › Piani.",
+  "Say something about this plan (optional)":
+    "Scrivi qualcosa su questo piano (facoltativo)",
+  "Who sees it: {who}": "Chi lo vede: {who}",
+  "Workout plan": "Piano di allenamento",
+  "{count} day a week": "{count} giorno a settimana",
+  "{count} days a week": "{count} giorni a settimana",
+  "Use this plan": "Usa questo piano",
+  "Added to your plans": "Aggiunto ai tuoi piani",
+  "You already have 20 plans: delete one to add this.":
+    "Hai già 20 piani: eliminane uno per aggiungere questo.",
+  "Delete this post?": "Eliminare questo post?",
+  "Copies already made stay with whoever made them.":
+    "Le copie già fatte restano a chi le ha fatte.",
 };

@@ -80,11 +80,11 @@ def test_several_lines_of_the_header_add_up() -> None:
 def test_the_app_of_today_reads_everything() -> None:
     reads = reads_from([_fixture()["this_app"]])
     # A workout at the gym and its post without a line too (TASK-385 B0),
-    # a swim in a pool since TASK-400 B, and a post of photos only since
-    # TASK-312 part C2. Not yet the posts of a night of sleep: it says
-    # `sleep` with TASK-467 part E's app. Nor a gym plan posted: it says
-    # `plans` with TASK-485 part B.
-    assert reads == replace(EVERYTHING, sleep=False, plans=False)
+    # a swim in a pool since TASK-400 B, a post of photos only since
+    # TASK-312 part C2, and a gym plan posted since TASK-485 part B. Not yet
+    # the posts of a night of sleep: it says `sleep` with TASK-467 part E's
+    # app.
+    assert reads == replace(EVERYTHING, sleep=False)
 
 
 def test_shows_asks_the_activity_and_the_track() -> None:

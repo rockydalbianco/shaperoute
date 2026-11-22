@@ -11,7 +11,7 @@ import type {
   RunActivity,
   Visibility,
 } from "@shaperoute/shared-types";
-import { RUN_ACTIVITIES, VISIBILITIES } from "@shaperoute/shared-types";
+import { PLAN_SOURCE, RUN_ACTIVITIES, VISIBILITIES } from "@shaperoute/shared-types";
 
 import { accountProblem, SESSION_ENDED } from "../account/messages";
 import { t } from "../i18n";
@@ -426,6 +426,12 @@ export function isDrawingPhoto(value: unknown): value is DrawingPhoto {
  */
 function readsActivity(body: Record<string, unknown>): boolean {
   if (body.activity === undefined || isRunActivity(body.activity)) {
+    return true;
+  }
+  // A gym plan posted has no run, so no activity (TASK-485 part B): read as
+  // none. Any other drawing with a null activity is still refused.
+  if (body.activity === null && body.source === PLAN_SOURCE) {
+    delete body.activity;
     return true;
   }
   if (typeof body.activity !== "string") {

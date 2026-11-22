@@ -9,7 +9,7 @@ import { t } from "../i18n";
  * plan» is always ready: the «+» is there only with an account, and with
  * no plans its flow says how to make one.
  */
-export type AddToFeedEntryId = "record" | "photos" | "file" | "plan";
+export type AddToFeedEntryId = "record" | "photos" | "file" | "sleep" | "plan";
 
 export type AddToFeedEntry = {
   id: AddToFeedEntryId;
@@ -22,10 +22,17 @@ type Ready = {
   record: boolean;
   /** The app was built with the file picker (`filePickerAvailable()`). */
   filePicker: boolean;
+  /** The sleep is on and the phone can read it (TASK-467 part E): false
+   * when left out, as in every build until part C. */
+  sleep?: boolean;
 };
 
 /** The entries the sheet lists, in order, with their texts. */
-export function addToFeedEntries({ record, filePicker }: Ready): AddToFeedEntry[] {
+export function addToFeedEntries({
+  record,
+  filePicker,
+  sleep = false,
+}: Ready): AddToFeedEntry[] {
   const all: [boolean, AddToFeedEntry][] = [
     [
       record,
@@ -45,6 +52,14 @@ export function addToFeedEntries({ record, filePicker }: Ready): AddToFeedEntry[
         id: "file",
         title: t("From a file"),
         detail: t("GPX, TCX or FIT from Strava, Garmin, Komoot…"),
+      },
+    ],
+    [
+      sleep,
+      {
+        id: "sleep",
+        title: t("Sleep"),
+        detail: t("Last night's sleep score, from Apple Health"),
       },
     ],
     [

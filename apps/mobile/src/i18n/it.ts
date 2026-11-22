@@ -2723,6 +2723,16 @@ export const IT: Table = {
   "Log in to see your days.": "Accedi per vedere le tue giornate.",
   "No days on the snow yet.": "Ancora nessuna giornata sulla neve.",
 
+  // src/trainingmode/, settings/SportButton.tsx (TASK-490 part A: the training mode)
+  "Training mode": "Modalità allenamento",
+  "Turns MuW into your training app": "Trasforma MuW nella tua app per allenarti",
+  Workouts: "Allenamenti",
+  "Log in to keep your plans and see your workouts.":
+    "Accedi per tenere i tuoi piani e vedere i tuoi allenamenti.",
+  Exercises: "Esercizi",
+  "Find an exercise": "Cerca un esercizio",
+  "Workout at the gym": "Allenamento in palestra",
+
   // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
   "Runs@@ski": "Discese",
   Legend: "Legenda",
@@ -3162,6 +3172,12 @@ export const IT: Table = {
   Sleep: "Sonno",
   "Already in the Feed": "Già nel Feed",
   "Remove post": "Rimuovi il post",
+  "Last night's sleep score, from Apple Health":
+    "Il punteggio del sonno della notte scorsa, da Apple Salute",
   "Your score, hours slept and sleep stages go in the Feed.":
     "Il punteggio, le ore dormite e le fasi del sonno vanno nel Feed.",
+  // src/air/ (TASK-479 part A1: the flight map and the height above the ground; texts approved by the user on 2026-11-22)
+  "Height above ground": "Quota sul terreno",
+  "Heading up": "Rotta in alto",
+  "North up": "Nord in alto",
 };

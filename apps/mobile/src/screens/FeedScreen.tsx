@@ -243,7 +243,15 @@ export function FeedScreen({
               <View style={styles.barSpace} />
             )}
             {/* «Add to Feed», with an account (TASK-476, TASK-481). */}
-            {withAdd && <AddToFeed onRecord={onRecord} />}
+            {withAdd && (
+              <AddToFeed
+                onRecord={onRecord}
+                onSleepPost={() => {
+                  refreshAll();
+                  refreshFollowing();
+                }}
+              />
+            )}
           </View>
         )}
         <FeedList

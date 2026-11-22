@@ -1,5 +1,5 @@
 // The files iPhone and Android read to know that a link of the site may
-// open the app (TASK-482 part C, ADR-0391). Only the iPhone's is here yet.
+// open the app (TASK-482 part C, ADR-0391).
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -14,6 +14,8 @@ const read = (...parts) => readFileSync(join(...parts), "utf8");
 
 const ASSOCIATION = [".well-known", "apple-app-site-association"];
 const association = () => JSON.parse(read(SITE, ...ASSOCIATION));
+const LINKS = [".well-known", "assetlinks.json"];
+const links = () => JSON.parse(read(SITE, ...LINKS));
 const ID = "0b7e5a94-6c1d-4f38-8e2a-9d4c1f6b3a57";
 
 /** Apple's pattern: «?» is any one character, «*» any run of them. */
@@ -88,6 +90,44 @@ test("the pattern after # has the shape of the ids the page takes", () => {
   );
 });
 
+test("Android's file is one statement: this app may open the site's links", () => {
+  assert.equal(links().length, 1);
+  const [one] = links();
+  assert.deepEqual(Object.keys(one).sort(), ["relation", "target"]);
+  assert.deepEqual(one.relation, ["delegate_permission/common.handle_all_urls"]);
+  assert.deepEqual(Object.keys(one.target).sort(), [
+    "namespace",
+    "package_name",
+    "sha256_cert_fingerprints",
+  ]);
+  assert.equal(one.target.namespace, "android_app");
+});
+
+test("Android's file names the package of app.json", () => {
+  const app = JSON.parse(read(REPO, "apps", "mobile", "app.json"));
+  const pack = find(find(app, "android"), "package");
+  assert.ok(pack);
+  assert.equal(links()[0].target.package_name, pack);
+});
+
+// The key the builds are uploaded to Play with (EAS's): Play signs what
+// people install with its own keys, so this one opens no link.
+const UPLOAD_KEY =
+  "E5:29:0A:6E:3D:35:EB:40:AD:46:52:B0:AF:F3:02:7B:43:65:14:AB:7B:BA:B5:E6:8A:B6:49:AF:7F:62:14:74";
+
+test("Android's file gives the keys Play signs the app with, as Play writes them", () => {
+  const prints = links()[0].target.sha256_cert_fingerprints;
+  // The one in use (its classic and its post-quantum certificate) and the
+  // one before it: «Copy all certificate fingerprints» in the Play Console.
+  assert.equal(prints.length, 3);
+  assert.equal(new Set(prints).size, prints.length);
+  for (const one of prints) {
+    // 32 bytes in capital hexadecimal, a colon between each two.
+    assert.match(one, /^[0-9A-F]{2}(?::[0-9A-F]{2}){31}$/);
+  }
+  assert.ok(!prints.includes(UPLOAD_KEY), "not the key of the uploads");
+});
+
 test("the server's copy (DEPLOY.md F.14) takes the folder and says its type", () => {
   const deploy = read(REPO, "docs", "DEPLOY.md");
   const line = deploy.match(/git archive origin\/main ((?:site\/\S+ ?)+)\|/);
@@ -99,5 +139,11 @@ test("the server's copy (DEPLOY.md F.14) takes the folder and says its type", ()
       "header /.well-known/apple-app-site-association Content-Type application/json",
     ),
     "DEPLOY.md F.14 gives the file its type",
+  );
+  // Android's ends in .json: the server says its type by itself. The check
+  // from outside is written beside the iPhone's.
+  assert.ok(
+    deploy.includes("https://getmuw.app/.well-known/assetlinks.json"),
+    "DEPLOY.md F.14 checks Android's file from outside",
   );
 });

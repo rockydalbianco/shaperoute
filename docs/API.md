@@ -3375,6 +3375,27 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   (parte C); `count`, `duration_s`, `last` (l'ultimo di sempre) e
   `skipped` (i giorni di una scheda passati senza di lei, parte C). Vuole il
   token. Esempio `fixtures/gym-calendar.json`; `gym_calendar.py`.
+- **`GET /me/gym-history?exercise=` o `?name=`** (TASK-483 A, ADR-0392):
+  lo storico di un esercizio, **solo le serie di chi chiede**, anche quelle
+  segnate dopo «Stop» e quelle di un allenamento scritto a mano. Un
+  esercizio del catalogo per `exercise` (`404` `unknown_exercise` se il
+  catalogo non lo ha), uno col nome libero per `name`, uguale senza badare a
+  maiuscole, spazi in testa e in coda e spazi doppi; tutti e due o nessuno
+  sono `422`. `kind` e `measure` dicono cosa legge un punto: per un carico
+  `estimated_1rm_kg` (Epley, kg × (1 + ripetizioni / 30), il peso stesso
+  per una ripetizione, solo da serie di al più 12 ripetizioni; senza
+  serie così il peso più alto, con `estimated: false`), a corpo libero
+  `reps`, a tempo `duration_s`, il cardio `distance_m` se la macchina la
+  mostra, altrimenti `duration_s`. `points` un punto per allenamento, il
+  più vecchio prima, su tutto lo storico, con `record` quando supera ogni
+  punto prima; `records` i record del tipo (`best_estimate_kg`,
+  `heaviest_kg`, `most_reps`, `best_volume_kg`, `longest_s`,
+  `farthest_m`), il primo a raggiungerli li tiene; `workouts` gli
+  allenamenti con le serie di quell'esercizio, il più recente prima, a
+  pagine di `limit` (20, al più 100) e `before` (la chiave di `next`;
+  `404` `unknown_workout` se non è nello storico). I campi vuoti mancano,
+  come nelle serie. Vuole il token. Esempio `fixtures/gym-history.json`;
+  `gym_history.py`, tipi in `shared-types/src/gymHistory.ts`.
 - **`GET /me/gym-plans`, `PUT /me/gym-plans/{key}`, `DELETE
   /me/gym-plans/{key}`** (TASK-411 C, ADR-0341): le schede del
   proprietario, nel loro ordine; la chiave la sceglie il telefono (`201`
@@ -3591,6 +3612,70 @@ Una notte si pubblica in due modi, ognuno col suo interruttore:
 - Cancellare l'account cancella tutte le sue notti. Nessun punteggio lo
   calcola il server, nessuna classifica, nessuna ricerca, niente Strava.
   Test in `test_sleep.py`.
+
+### Gear (TASK-486 parte A, ADR-0393)
+
+L'attrezzatura di un iscritto: scarpe, bici, sci, caschi, imbraghi, vele,
+tutto, ognuno con marca, modello, un nome suo, la data d'acquisto, una nota
+e una foto; agganciato alle attività, conta da solo metri, secondi e
+attività. Token richiesto: senza, `401 not_signed_in`; senza database,
+`503`. Il codice in `gear.py`; i tipi in `shared-types` arrivano con la
+parte B (l'app), finché nessuna app lo chiama.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /me/gear` | la mia attrezzatura, in uso prima, poi ritirata | `200` `{gear: [...]}` |
+| `POST /me/gear` | un attrezzo nuovo, intero | `201` l'attrezzo |
+| `PUT /me/gear/{id}` | l'attrezzo intero, cambiato | `200`, `404` se non è mio |
+| `DELETE /me/gear/{id}` | via, con foto e agganci | `204`, `404` |
+| `PUT /me/gear/{id}/photo` | la foto, `{image}` in base64 (JPEG o PNG) | `200` l'attrezzo con `photo_url` |
+| `DELETE /me/gear/{id}/photo` | via la foto | `204`, `404` se non è mio |
+| `GET /me/activities/{key}/gear` | gli attrezzi di un'attività mia | `200` `{gear}`, `404` |
+| `PUT /me/activities/{key}/gear` | tutta la lista, `{gear_ids}` | `200` `{gear}` |
+| `GET /users/{public_id}/gear` | l'attrezzatura di un profilo | `200` `{gear}`, `404` |
+| `GET /gear/{id}` | un attrezzo | `200`, `404` |
+| `GET /gear/{id}/photo?v=` | la sua foto | `200` `image/jpeg`, `404` |
+
+- **I campi**: `kind` da `gear.GearKind` (`shoes`, `bike`, `skis`,
+  `ski_boots`, `snowboard`, `poles`, `boots`, `climbing_shoes`, `harness`,
+  `helmet`, `rope`, `crampons`, `ice_axe`, `snowshoes`, `inline_skates`,
+  `sail`, `board`, `paddle`, `boat`, `wetsuit`, `paraglider`,
+  `wheelchair`, `clothing`, `backpack`, `watch`, `other`: la lista cresce
+  con una migrazione, non si accorcia); `brand` obbligatoria (40
+  caratteri), `model` (80), `name` (40), `bought_on` (dal 1950, non dopo
+  oggi), `note` (500, a capo ammessi), `limit_m` (da 1 km a 100 000 km),
+  `off_profile` («Hide from profile»), `retired` («Retire»), `defaults`
+  (gli sport, i nomi di `runs.activity`, che partono con l'attrezzo già
+  scelto, anche più attrezzi per sport). Spazi intorno tolti, vuoti
+  `null`.
+- **Le parole le leggono gli altri**: un carattere di controllo (nella
+  nota tranne l'a capo) o un indirizzo: `422 invalid_request`; il filtro
+  dei commenti: `422 comment_rejected` con `reason`. Al più **200
+  attrezzi** per account (`409`).
+- **La risposta**: `id`, i campi, `retired`, `photo_url` (con la versione:
+  l'indirizzo cambia quando cambia la foto, che si tiene in cache),
+  `totals` (`distance_m`, `duration_s`, `activities`: le somme delle
+  attività agganciate, contate dal server, mai i numeri del telefono),
+  `created_at`. Solo al proprietario `off_profile`, `limit_m`, `defaults`
+  e `hidden` (nascosto dopo una segnalazione); agli altri mancano.
+- **Ritirato**: fuori dai predefiniti (i suoi `defaults` si svuotano), con
+  i suoi totali; ritirato di nuovo tiene il primo giorno. Nella lista dopo
+  quelli in uso, i più vecchi prima.
+- **Su un'attività**: la lista intera, al più **10**, solo attrezzi miei
+  (anche ritirati: un'attività di prima), se no `422`; un id due volte
+  conta una. L'app manda i predefiniti dello sport a fine attività (parte
+  C). Cancellare l'attività toglie i suoi agganci e i suoi metri.
+- **Chi lo vede**: chi vede il profilo, cioè ogni iscritto tranne uno che
+  un blocco tiene lontano (`follows.apart_sql`, `404` come per nessuno),
+  senza gli attrezzi `off_profile` e quelli nascosti dopo una
+  segnalazione. Il proprietario sul suo profilo lo vede come gli altri
+  (più i suoi nascosti dopo una segnalazione).
+- **La foto**: diritta, al più **1024 px** sul lato lungo, un JPEG nuovo
+  senza l'EXIF del telefono; al più 10 al minuto per account (`429`).
+- **Segnalazioni**: `POST /reports` con `kind: "gear"`; dall'email
+  «Hide» nasconde l'attrezzo intero, foto compresa, a tutti tranne al
+  proprietario. Cancellare l'account cancella attrezzi, foto e agganci.
+  Test in `test_gear.py`.
 
 ### Live shares (TASK-424, ADR-0352)
 

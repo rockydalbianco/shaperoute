@@ -23,6 +23,7 @@ import type { LatLon } from "@shaperoute/shared-types";
 import type { Place } from "../places/photon";
 import type { StartMode } from "../location/startMode";
 import { isRecordOnly } from "../settings/sport";
+import { useHeaderScroll } from "../tabs/headerScroll";
 import { useSport } from "../settings/useSport";
 import {
   color,
@@ -108,6 +109,8 @@ export function ChooseScreen({
   runIcon,
 }: Props) {
   const insets = useSafeAreaInsets();
+  // The header turns to glass once the page scrolls (TASK-469 A5b).
+  const headerScroll = useHeaderScroll();
   // A day on the snow has no shape to draw (TASK-375, ADR-0319): «Draw» is
   // its recording only; a workout at the gym, its start (TASK-385 part B).
   const sport = useSport();
@@ -139,6 +142,7 @@ export function ChooseScreen({
       <View style={styles.page}>
         {/* The tour of the first opening scrolls it to its parts (TASK-266). */}
         <TourScrollView
+          {...headerScroll}
           contentContainerStyle={[
             styles.content,
             {

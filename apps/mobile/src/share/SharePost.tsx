@@ -30,6 +30,8 @@ import {
   space,
 } from "../theme/tokens";
 import { EditVideoSheet } from "./EditVideoSheet";
+import { togetherTracks } from "./togetherClock";
+import { useTogether } from "./useTogether";
 import { MusicRow } from "./MusicRow";
 import { PostButton } from "./PostButton";
 import { POST_RATIO, PostImage } from "./PostImage";
@@ -130,6 +132,18 @@ function SharePage({ run, onClose }: Props) {
   // line, no emoji of its own when the post opens (TASK-351, TASK-408).
   const [edit, setEdit] = useState<VideoEdit>(FIRST_EDIT);
   const [editing, setEditing] = useState(false);
+  // «Together» (TASK-417 part D2b): the people tagged who ran with the
+  // author, for a post of the Feed only; asked once, as the post opens.
+  const together = useTogether(run.drawingId ?? null);
+  const page = together.page;
+  /** The scene's options of an edit: the runners when «Together» is on. */
+  const optionsOf = useCallback(
+    (next: VideoEdit) => ({
+      ...next,
+      runners: next.together && page !== null ? togetherTracks(page, next.line) : null,
+    }),
+    [page],
+  );
   // The video being made, with its music, and how much of it is (TASK-295);
   // the map under it, and the post on yellow for when the map does not
   // come (TASK-351).
@@ -181,8 +195,8 @@ function SharePage({ run, onClose }: Props) {
     hearMusic(null);
     setMade(0);
     setVideo({
-      scene: videoScene(run, shown, stickers, edit.style, edit),
-      fallback: videoScene(run, shown, stickers, "paper", edit),
+      scene: videoScene(run, shown, stickers, edit.style, optionsOf(edit)),
+      fallback: videoScene(run, shown, stickers, "paper", optionsOf(edit)),
       music,
     });
   }
@@ -198,8 +212,8 @@ function SharePage({ run, onClose }: Props) {
   const busy = sharing || video !== null;
   // The video with an edit, for the preview in «Edit video» (part C2c).
   const sceneOf = useCallback(
-    (next: VideoEdit) => videoScene(run, shown, stickers, next.style, next),
-    [run, shown, stickers],
+    (next: VideoEdit) => videoScene(run, shown, stickers, next.style, optionsOf(next)),
+    [optionsOf, run, shown, stickers],
   );
 
   return (
@@ -375,6 +389,7 @@ function SharePage({ run, onClose }: Props) {
           onChange={setEdit}
           onClose={() => setEditing(false)}
           sceneOf={sceneOf}
+          together={together.state}
         />
       )}
     </View>

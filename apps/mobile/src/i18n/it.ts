@@ -3094,7 +3094,7 @@ export const IT: Table = {
     "Queste parole non si possono usare. Prova con altre.",
   "Links and special characters can't be used here.":
     "Qui non si possono usare link né caratteri speciali.",
-  // src/air/ (TASK-479 part A1: the flight map and the height above the ground)
+  // src/air/ (TASK-479 part A1: the flight map and the height above the ground; texts approved by the user on 2026-11-22)
   "Height above ground": "Quota sul terreno",
   "Heading up": "Rotta in alto",
   "North up": "Nord in alto",

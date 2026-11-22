@@ -3113,7 +3113,7 @@ export const FR: Table = {
     "Ces mots ne peuvent pas être utilisés. Essaie d'autres mots.",
   "Links and special characters can't be used here.":
     "Les liens et les caractères spéciaux ne sont pas acceptés ici.",
-  // src/air/ (TASK-479 part A1: the flight map and the height above the ground)
+  // src/air/ (TASK-479 part A1: the flight map and the height above the ground; texts approved by the user on 2026-11-22)
   "Height above ground": "Hauteur sol",
   "Heading up": "Cap en haut",
   "North up": "Nord en haut",

@@ -19,6 +19,7 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react-n
 import { Alert } from "react-native";
 
 import { ActivitiesContext, type ActivitiesDoor } from "../activities/activitiesDoor";
+import { isFeedPost } from "../api/feed";
 import { keepPlanPost, sendWaitingPlanPosts } from "../api/planPosts";
 import { forgetPlans, mergePlans, plansOf } from "../gym/plans";
 import { forgetPaceAsked } from "../gym/runPace";
@@ -157,6 +158,15 @@ beforeEach(() => {
   global.fetch = jest.fn(api) as unknown as typeof fetch;
 });
 
+test("the Feed reads a plan posted as the API sends it: no activity, no line", () => {
+  // GET /feed gives `activity: null` to a drawing without a run.
+  const sent = { ...planPost(), activity: null } as unknown as Post;
+  expect(isFeedPost(sent)).toBe(true);
+  expect(sent.activity).toBeUndefined();
+  // Any other drawing without an activity is still refused.
+  expect(isFeedPost({ ...OWN, activity: null })).toBe(false);
+});
+
 test("the tile says the plan: name and goal, days and weeks, sports, the week", async () => {
   await show(planPost());
   const tile = screen.getByTestId("plan-tile");
@@ -235,6 +245,26 @@ test("«Use this plan» opens the guide's last steps and keeps a new plan with t
       (one) => one.url.includes("/me/gym-plans/") && one.init?.method === "PUT",
     ),
   ).toBe(true);
+});
+
+test("from the plan opened, the guide takes its place; closed, the plan is back", async () => {
+  await show(planPost(ADAM, WITH_KG));
+  await fireEvent.press(screen.getByTestId("plan-tile-open"));
+  await fireEvent.press(screen.getByTestId("plan-detail-use"));
+  // One sheet: the guide in place of the plan, never over it.
+  expect(screen.getByTestId("plan-wizard")).toBeOnTheScreen();
+  expect(screen.queryByTestId("plan-detail")).toBeNull();
+  await fireEvent.press(screen.getByTestId("wizard-back"));
+  expect(screen.getByTestId("plan-detail")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("plan-detail-use"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await act(async () => {});
+  // Saved: the sheet closes, the tile says so.
+  expect(screen.queryByTestId("plan-detail")).toBeNull();
+  expect(screen.queryByTestId("plan-wizard")).toBeNull();
+  expect(screen.getByTestId("plan-added")).toBeOnTheScreen();
 });
 
 test("a plan without runs opens on the name and first day", async () => {

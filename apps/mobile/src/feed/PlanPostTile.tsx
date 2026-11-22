@@ -21,7 +21,7 @@ import { t, tLater, tPlural } from "../i18n";
 import type { Language } from "../i18n/languages";
 import { color, font, fontWeight, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
-import { PlanCopy, PlanPostDetail } from "./PlanPostDetail";
+import { PlanPostDetail } from "./PlanPostDetail";
 
 /**
  * A gym plan posted, in the Feed (TASK-485 part B, ADR-0394, the user's
@@ -253,35 +253,26 @@ export function PlanPost({
   width: number;
 }) {
   const owner = useActivitiesDoor().owner ?? null;
-  const [open, setOpen] = useState(false);
-  const [copying, setCopying] = useState(false);
+  // The sheet: the plan whole, or the guide of «Use this plan»; and where
+  // the guide was opened from, to go back there when it is closed.
+  const [page, setPage] = useState<"plan" | "copy" | null>(null);
+  const [from, setFrom] = useState<"plan" | null>(null);
   const [added, setAdded] = useState(false);
   function onUse() {
     if (owner !== null && plansOf(owner).length >= MAX_GYM_PLANS) {
       Alert.alert(t("You already have 20 plans: delete one to add this."));
       return;
     }
-    setCopying(true);
+    setFrom(page === "plan" ? "plan" : null);
+    setPage("copy");
   }
-  const copy = copying ? (
-    <PlanCopy
-      plan={plan}
-      onDone={(saved) => {
-        setCopying(false);
-        if (saved) {
-          setOpen(false);
-          setAdded(true);
-        }
-      }}
-    />
-  ) : null;
   return (
     <>
       <PlanPostTile
         plan={plan}
         description={description}
         width={width}
-        onOpen={() => setOpen(true)}
+        onOpen={() => setPage("plan")}
         onUse={mine ? undefined : onUse}
       />
       {added && (
@@ -290,16 +281,19 @@ export function PlanPost({
         </Text>
       )}
       <PlanPostDetail
-        visible={open}
+        page={page}
         plan={plan}
         mine={mine}
         drawingId={drawingId}
         onUse={mine ? undefined : onUse}
-        onClose={() => setOpen(false)}
-      >
-        {copy}
-      </PlanPostDetail>
-      {!open && copy}
+        onCopied={(saved) => {
+          setPage(saved ? null : from);
+          if (saved) {
+            setAdded(true);
+          }
+        }}
+        onClose={() => setPage(null)}
+      />
     </>
   );
 }

@@ -40,35 +40,38 @@ import {
  * 4 × 10 · 60 kg», the runs and days out by name, «Thu — Long run · 8 km»,
  * and «Use this plan» at the foot, but not on one's own post: there,
  * «Delete post», when this phone posted it. The guide of «Use this plan»
- * opens inside it (`children`): iOS shows a sheet only over the one on top.
+ * takes the place of the plan in the same sheet (`page` «copy»): a sheet
+ * opened from another and closed with it left iOS on a black screen.
  */
 export function PlanPostDetail({
-  visible,
+  page,
   plan,
   mine,
   drawingId,
   onUse,
+  onCopied,
   onClose,
-  children,
 }: {
-  visible: boolean;
+  /** What the sheet shows; null: closed. */
+  page: "plan" | "copy" | null;
   plan: GymPlanPosted;
   mine: boolean;
   drawingId: string;
   /** «Use this plan»; absent on one's own post. */
   onUse?: () => void;
+  /** The guide saved the copy, or was closed without. */
+  onCopied: (saved: boolean) => void;
   onClose: () => void;
-  children?: ReactNode;
 }) {
   return (
     <Modal
-      visible={visible}
+      visible={page !== null}
       animationType="slide"
       statusBarTranslucent
-      onRequestClose={onClose}
+      onRequestClose={page === "copy" ? () => onCopied(false) : onClose}
     >
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        {visible && (
+        {page === "plan" && (
           <DetailPage
             plan={plan}
             mine={mine}
@@ -77,7 +80,7 @@ export function PlanPostDetail({
             onClose={onClose}
           />
         )}
-        {visible && children}
+        {page === "copy" && <PlanCopy plan={plan} onDone={onCopied} />}
       </SafeAreaProvider>
     </Modal>
   );
@@ -204,7 +207,7 @@ function DetailPage({
  * kg included, in the guide's last step, the name and the first day, after
  * «How do you run today?» when it has runs; «Save plan» keeps it among
  * one's plans (`PUT /me/gym-plans/{key}`, at most 20, checked before it
- * opens: PlanPost).
+ * opens: PlanPost). A page of the sheet of PlanPostDetail.
  */
 export function PlanCopy({
   plan,
@@ -219,26 +222,17 @@ export function PlanCopy({
   const { keep } = useGymPlans(fetchFn);
   const copy = useMemo(() => planFromPosted(plan), [plan]);
   return (
-    <Modal
-      visible
-      animationType="slide"
-      statusBarTranslucent
-      onRequestClose={() => onDone(false)}
-    >
-      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <CopyPage>
-          <GymPlanWizard
-            plan={copy}
-            copied
-            onSave={(draft) => {
-              keep(null, draft);
-              onDone(true);
-            }}
-            onClose={() => onDone(false)}
-          />
-        </CopyPage>
-      </SafeAreaProvider>
-    </Modal>
+    <CopyPage>
+      <GymPlanWizard
+        plan={copy}
+        copied
+        onSave={(draft) => {
+          keep(null, draft);
+          onDone(true);
+        }}
+        onClose={() => onDone(false)}
+      />
+    </CopyPage>
   );
 }
 
@@ -248,6 +242,7 @@ function CopyPage({ children }: { children: ReactNode }) {
     <View
       style={[
         gymStyles.screen,
+        styles.copy,
         { paddingTop: insets.top + space.lg, paddingBottom: insets.bottom + space.lg },
       ]}
       testID="plan-copy"
@@ -304,5 +299,10 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.6,
+  },
+  // As «My plans» holds the guide (GymPlans.tsx).
+  copy: {
+    gap: space.md,
+    paddingHorizontal: space.lg,
   },
 });

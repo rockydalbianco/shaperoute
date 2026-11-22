@@ -3178,4 +3178,6 @@ export const DE: Table = {
   "Adapts to how it went": "Passt sich an, wie es lief",
   "Off: no question at the end, the weeks grow as planned.":
     "Aus: am Ende keine Frage, die Wochen steigen wie geplant.",
+  "Next week is the lighter one, to recover.":
+    "Nächste Woche ist die leichtere, zum Erholen.",
 };

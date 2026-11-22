@@ -12,7 +12,14 @@ import {
   space,
 } from "../theme/tokens";
 import { useUnits } from "../units/useUnits";
-import { answerDay, answered, answerTitle, FEELS, nextTime } from "./adapt";
+import {
+  answerDay,
+  answered,
+  answerTitle,
+  FEELS,
+  lighterNext,
+  nextTime,
+} from "./adapt";
 
 /**
  * «How did it go?» at the end of a workout of a plan (TASK-488, the mockup
@@ -123,6 +130,11 @@ export function AdaptQuestion({
               </View>
             ))}
           </View>
+          {lighterNext(after, date) && (
+            <Text style={styles.note} testID="adapt-lighter">
+              {t("Next week is the lighter one, to recover.")}
+            </Text>
+          )}
         </>
       )}
       <Text style={styles.note}>

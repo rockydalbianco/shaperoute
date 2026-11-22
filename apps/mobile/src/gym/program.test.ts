@@ -227,6 +227,16 @@ test("the answers' steps (TASK-488): along the mode's ladder, never under nothin
     reps: 10,
     load_kg: 60,
   });
+  // Without kg in «more kg each week»: it never grew, so it never goes
+  // under what is written; with «Easy» a rep more.
+  const raise: GymPlanItem = {
+    exercise: "lateral_raise",
+    kind: "bodyweight",
+    sets: 3,
+    reps: 12,
+  };
+  expect(itemInWeek(raise, "load", 4, 2.5, 2, 0, -1).reps).toBe(12);
+  expect(itemInWeek(raise, "load", 4, 2.5, 2, 0, 1).reps).toBe(13);
   // Without kg: a rep a step, at least one.
   const pullUp: GymPlanItem = {
     exercise: "pull_up",

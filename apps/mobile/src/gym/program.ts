@@ -145,7 +145,15 @@ export function itemInWeek(
   shift: number = 0,
 ): GymPlanItem {
   if (shift !== 0 && !(mode === "reps" && item.load_kg !== undefined)) {
-    return shifted(itemInWeek(item, mode, weeks, stepKg, week, cycle), shift, stepKg);
+    // An exercise «more kg each week» does not make heavier (one without
+    // kg) never grew: «Hard», which holds the others' step, leaves it as
+    // written, and it never goes under what is written.
+    const still = mode === "load" && (item.load_kg === undefined || stepKg === 0);
+    return shifted(
+      itemInWeek(item, mode, weeks, stepKg, week, cycle),
+      still ? Math.max(0, shift) : shift,
+      stepKg,
+    );
   }
   const w = week - 1;
   const heavier = (steps: number): Partial<GymPlanItem> =>

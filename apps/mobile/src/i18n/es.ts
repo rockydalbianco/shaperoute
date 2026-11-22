@@ -3165,4 +3165,6 @@ export const ES: Table = {
   "Adapts to how it went": "Se adapta a cómo ha ido",
   "Off: no question at the end, the weeks grow as planned.":
     "Desactivado: sin pregunta al final, las semanas suben como estaba previsto.",
+  "Next week is the lighter one, to recover.":
+    "La próxima es la semana más ligera, para recuperar.",
 };

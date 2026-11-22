@@ -7,15 +7,16 @@ import {
   type GymProgram,
 } from "@shaperoute/shared-types";
 
+import { weightLabel } from "../body/bodyUnits";
 import { t, tLater, tPlural } from "../i18n";
 import type { Language } from "../i18n/languages";
+import { clockLabel } from "../navigation/freeRun";
 import type { Units } from "../units/units";
 import { exerciseName } from "./catalog";
 import type { KeptPlan } from "./plans";
 import { cycleWeekOf, sessionOn, sessionsOfWeek } from "./program";
 import { RUN_NAMES } from "./proposal";
 import { runAmount } from "./runDay";
-import { fieldText, fieldUnit } from "./setKinds";
 import { isTargetDay } from "./targetWeeks";
 
 /**
@@ -145,14 +146,12 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 function amountOf(item: GymPlanItem, units: Units): string {
   if (item.load_kg !== undefined && item.load_kg > 0) {
-    return `${fieldText("load_kg", item.load_kg, units)} ${fieldUnit("load_kg", units)}`;
+    return weightLabel(item.load_kg, units);
   }
   if (item.reps !== undefined) {
     return tPlural(item.reps, "{count} rep", "{count} reps");
   }
-  return item.duration_s === undefined
-    ? ""
-    : fieldText("duration_s", item.duration_s, units);
+  return item.duration_s === undefined ? "" : clockLabel(item.duration_s * 1000);
 }
 
 /**
@@ -241,4 +240,16 @@ export function adaptDayOf(
     }
   }
   return null;
+}
+
+/** Whether next week, after `date`, is the cycle's lighter one (a cycle of
+ * 3 weeks or more that grows): what changes may then be less, to recover. */
+export function lighterNext(program: GymProgram, date: Date): boolean {
+  const next = cycleWeekOf(program, new Date(date.getTime() + 7 * DAY_MS));
+  return (
+    next !== null &&
+    program.mode !== "same" &&
+    program.weeks >= 3 &&
+    next.week === program.weeks
+  );
 }

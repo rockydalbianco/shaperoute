@@ -3148,4 +3148,6 @@ export const IT: Table = {
   "Adapts to how it went": "Si adatta a com'è andata",
   "Off: no question at the end, the weeks grow as planned.":
     "Spenta: a fine allenamento nessuna domanda, le settimane crescono come previsto.",
+  "Next week is the lighter one, to recover.":
+    "La prossima è la settimana più leggera, per recuperare.",
 };

@@ -8,6 +8,7 @@ import {
   answered,
   answerTitle,
   canAdapt,
+  lighterNext,
   markOf,
   nextTime,
   withAdapt,
@@ -131,4 +132,13 @@ test("the day a workout or a run was: of its plan, a day that adapts", () => {
   const ride = to60.sessions.find((one) => one.outing !== undefined)!;
   expect(canAdapt(to60, ride)).toBe(false);
   expect(canAdapt(to60, to60.sessions[0])).toBe(true);
+});
+
+test("next week the cycle's lighter one: said, not hidden", () => {
+  // Monday 16 November is week 3 of 4: week 4 is lighter.
+  expect(lighterNext(muscle, new Date(2026, 10, 16, 18))).toBe(true);
+  expect(lighterNext(muscle, MONDAY)).toBe(false);
+  expect(lighterNext({ ...muscle, mode: "same" }, new Date(2026, 10, 16, 18))).toBe(
+    false,
+  );
 });

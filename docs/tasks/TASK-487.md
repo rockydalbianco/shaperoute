@@ -1,0 +1,55 @@
+# TASK-487 — Il Feed senza attività finte
+
+**Stato**: In lavorazione · codice in PR #1397 (2026-11-22)
+**Fase**: 5 · **Branch**: `fix/feed-no-examples` (codice),
+`docs/TASK-487-feed-no-examples` (documenti)
+**ADR**: — (cambia ADR-0127 / TASK-156) · numero dal Coordinatore (fork 3),
+2026-11-22
+
+## La richiesta (2026-11-22)
+
+> «Nell'applicazione che ho scaricato sul Mac che è quella dell'App Store
+> nel feed ci sono attività finte devono esserci tutte le attività come
+> sull'App di prova mie e di Riccardo dell'utente Rocky togliamo tutte
+> quelle finte e poi rimandiamo l'aggiornamento.»
+
+## La causa
+
+L'app dell'App Store e quella di prova usano lo stesso server
+(`https://api.getmuw.app`, variabile `EXPO_PUBLIC_API_URL` di EAS
+`production` e `preview`). Le attività finte erano gli esempi di
+`apps/mobile/src/feed/sampleFeed.ts` (TASK-156, ADR-0127): figure del
+catalogo con corridori inventati, che «Tutti» mostrava quando nessuno ha
+fatto l'accesso o quando l'account non ha nulla da vedere. Sul Mac l'app
+era senza accesso. `GET /feed` vuole il token: senza accesso il server non
+dà le attività vere.
+
+## Scelta dell'utente (2026-11-22)
+
+Alla domanda «cosa deve vedere chi apre il Feed senza accesso?» l'utente
+ha scelto **«Invito ad accedere»** (non un Feed pubblico senza accesso, che
+avrebbe chiesto una modifica al server).
+
+## Cosa fa la PR #1397 (solo app)
+
+- `apps/mobile/src/screens/FeedScreen.tsx`: il Feed mostra solo i post
+  veri; gli esempi non entrano più.
+- «Tutti» senza accesso: «Log in from Profile to see the activities.»
+  («Accedi dal Profilo per vedere le attività.»).
+- «Tutti» con accesso e nessun post: «Nobody has published anything yet.»
+  («Nessuno ha ancora pubblicato nulla.»).
+- Testi nuovi in it/de/fr/es.
+- Test adattati; tolti `__tests__/AppFeedPaddle.test.tsx` e il test
+  «a drawing of «Feed» on the water is not moved» di
+  `AppExploreMove.test.tsx`: il loro unico ingresso era toccare un
+  esempio nel Feed. Restano i test unitari di `paddlePosts` e `feedRoute`.
+
+## Cosa resta
+
+- Merge della #1397 (Coordinatore), poi OTA production e preview
+  (Coordinatore, con il sì dell'utente).
+- L'utente fa l'accesso dall'app del Mac e controlla che il Feed mostri le
+  attività vere.
+- Fuori da questo task: gli esempi compaiono ancora tra i «featured» della
+  ricerca di «Esplora» (`src/search/StartState.tsx`), e il codice usato solo
+  dagli esempi (`paddlePosts`, `fetchPostRoute`) resta per quello.

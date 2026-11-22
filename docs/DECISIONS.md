@@ -583,6 +583,7 @@ lasciando le righe d'indice.
 - ADR-0127, precisazione (TASK-487) — «Feed» senza esempi: senza account l'invito ad accedere, con account e nessun post una riga che lo dice · 2026-11-22 · Attiva
 - ADR-0397 — «Alimentazione»: un contacalorie senza diete, cibi da USDA più quelli dell'utente, piano a settimana e diario solo sul telefono, bilancio = assunte − (riposo + attività) senza doppi conti, tabella solo per il proprietario, spenta fino alla build nativa che legge da Salute · 2026-11-22 · Proposta
 - ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share» · 2026-11-22 · Attiva
+- ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Proposta
 
 ## Voci nuove
 
@@ -5796,3 +5797,44 @@ dell'App Store e di Google Play e «How we calculate» col sì dell'utente
 prima dell'uscita. Limite noto: senza Apple Watch e senza scrittura in
 Salute, in un giorno che ha energia attiva di Salute un'attività di MuW
 conta solo per quanto Salute ha misurato dal telefono.
+
+## ADR-0398 — La modalità Allenamento: scelta «Gym», MuW diventa un'app per allenarsi come con lo sci
+
+**Stato**: Proposta · 2026-11-23 · TASK-490 (parte 0, soli documenti).
+La barra, l'ingresso solo da «Gym» e il Cibo come pagina di TASK-489 sono
+**scelte dell'utente** (2026-11-22, task file); le quattro tab finché il
+Cibo è spento sono del Coordinatore, da far vedere all'utente nelle
+schermate della parte A; il resto è **deciso dall'agente su delega
+dell'utente**, numeri dal Coordinatore (fork 3).
+
+**Contesto**: l'utente vuole che allenamenti, palestra e alimentazione
+abbiano una schermata loro, «come quando entro nello sport Sci». La
+modalità sci (ADR-0357) cambia la barra quando lo sport scelto è lo sci,
+senza salvare niente di nuovo. Le parti della palestra ci sono già, ma
+stanno sparse in «Draw» e nei fogli (ADR-0341, ADR-0392); il Coach è una
+proposta senza numero; il Cibo è TASK-489 (ADR-0397).
+
+**Decisione**:
+- **Il modo è lo sport salvato**, come per lo sci: con `"gym"` scelto la
+  barra è «Today» · «Workouts» · «Food» · «Feed» · «Profile», «Messages»
+  in alto accanto allo sport. Nessuna impostazione nuova; scegliere un
+  altro sport riporta l'app di sempre. «Stretching» non entra.
+- **«Today» è la pagina «choose»**: ogni ritorno a «Draw» ci atterra;
+  dentro c'è la palestra di «Draw» com'è (`GymDrawGuide`). Lasciando il
+  modo, «Workouts» (che l'app non ha) porta a «Draw».
+- **«Workouts»** mette in una pagina le schede, il mese, gli allenamenti
+  fatti e lo storico degli esercizi, aprendo i fogli che esistono: i file
+  della palestra si leggono soltanto, così TASK-488 non ha conflitti.
+- **Il Coach** non ha una tab: una riga su «Today» e «My plans» aprono la
+  sua pagina (parte C, quando il Coach ha numero). L'omino della settimana
+  lo costruisce questo task (parte B, file nuovi) e il Coach lo riusa.
+- **«Food»** monta la pagina «Nutrition» di TASK-489 così com'è, solo con
+  `NUTRITION_ON`; fino ad allora la barra ha quattro tab.
+- **Le regole dei tre modi** stanno in un file nuovo
+  (`trainingmode/trainingMode.ts`) che `App.tsx` usa al posto di quelle di
+  `skimode/skiMode.ts`; il file dello sci non cambia.
+
+**Conseguenze**: nessuna dipendenza, nessun indirizzo dell'API, nessuna
+migrazione; tutto con un OTA. `App.tsx` si tocca dopo TASK-481 A (#1421),
+`SportButton.tsx` prima di TASK-489 B. Un utente che si allena e corre
+cambia barra quando cambia sport, come lo sciatore.

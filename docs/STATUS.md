@@ -36,6 +36,10 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-490 — La modalità Allenamento** · parte 0 chiusa il 2026-11-23
+  (ADR-0398): scelta «Gym», la barra è Today · Workouts · Food · Feed ·
+  Profile come per lo sci; il Cibo è la pagina di TASK-489. Prossima la A.
+  File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
   parte 0 chiusa il 2026-11-22 (otto scelte dell'utente, ADR-0397): cibi da
   USDA più i propri, piano a settimana, solo sul telefono, tabella solo per

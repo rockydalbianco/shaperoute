@@ -2866,8 +2866,21 @@ export const DE: Table = {
   "Links to my posts": "Links zu meinen Beiträgen",
   "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.":
     "Wer deine Beiträge für «Alle» sieht, kann einen Link dazu teilen. Wer den Link hat, sieht die Zeichnung auf der Karte, deinen Benutzernamen, den Titel, die Sportart und die Distanz, auch ohne MuW. Schalte das aus, und die Links funktionieren nicht mehr.",
-  // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
-  "Add activity": "Aktivität hinzufügen",
+  // src/feed/AddToFeed.tsx and addToFeedEntries.ts (TASK-476, TASK-481:
+  // the Feed's «+»; the English approved by the user, 2026-11-21).
+  "Add to Feed": "Zum Feed hinzufügen",
+  "Record now": "Jetzt aufzeichnen",
+  "Start an activity now": "Starte jetzt eine Aktivität",
+  // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
+  // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
+  // the first three approved by the user, 2026-11-21, the deletion's with
+  // the screenshots, 2026-11-22).
+  "Photos only": "Nur Fotos",
+  "Up to 10 photos, also from Instagram": "Bis zu 10 Fotos, auch von Instagram",
+  "Add at least one photo.": "Füge mindestens ein Foto hinzu.",
+  "Delete this post? It cannot be undone.":
+    "Diesen Beitrag löschen? Das kann nicht rückgängig gemacht werden.",
+  "Delete post": "Beitrag löschen",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
   // 2026-11-08 and 2026-11-12.
   Snowshoes: "Schneeschuhe",
@@ -3154,4 +3167,21 @@ export const DE: Table = {
     "Diese Wörter sind nicht erlaubt. Versuch andere.",
   "Links and special characters can't be used here.":
     "Links und Sonderzeichen sind hier nicht erlaubt.",
+
+  // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
+  "Choose a plan": "Plan auswählen",
+  "No plans yet: make one in Gym › Plans.":
+    "Noch keine Pläne: Erstelle einen unter Fitnessstudio › Pläne.",
+  "Say something about this plan (optional)": "Schreib etwas zu diesem Plan (optional)",
+  "Who sees it: {who}": "Wer ihn sieht: {who}",
+  "Workout plan": "Trainingsplan",
+  "{count} day a week": "{count} Tag pro Woche",
+  "{count} days a week": "{count} Tage pro Woche",
+  "Use this plan": "Diesen Plan nutzen",
+  "Added to your plans": "Zu deinen Plänen hinzugefügt",
+  "You already have 20 plans: delete one to add this.":
+    "Du hast schon 20 Pläne: Lösche einen, um diesen hinzuzufügen.",
+  "Delete this post?": "Diesen Beitrag löschen?",
+  "Copies already made stay with whoever made them.":
+    "Schon erstellte Kopien bleiben bei denen, die sie erstellt haben.",
 };

@@ -1,9 +1,10 @@
-import type {
-  FeedFilter,
-  MuwRoute,
-  StylePost as StylePostBody,
+import {
+  type FeedFilter,
+  isPhotoPost,
+  type MuwRoute,
+  type StylePost as StylePostBody,
 } from "@shaperoute/shared-types";
-import { type ReactElement, useCallback, useMemo, useState } from "react";
+import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   RefreshControl,
@@ -26,6 +27,8 @@ import { FeedAd } from "../feed/FeedAd";
 import { FeedMapShooter } from "../feed/FeedMaps";
 import { drawingHeight, FeedPost } from "../feed/FeedPost";
 import { isShown, type ShownPost, shownPost } from "../feed/feedPosts";
+import { PhotoFeedPost } from "../feed/PhotoFeedPost";
+import { PhotoPostPage } from "../feed/PhotoPostPage";
 import { PostPage } from "../feed/PostPage";
 import { loadFeedTab, saveFeedTab } from "../feed/feedTabChoice";
 import { type FeedTab, feedTabName, FeedTabs } from "../feed/FeedTabs";
@@ -45,10 +48,10 @@ import { MuwPost } from "../feed/MuwPost";
 import { MUW_ROUTES_IN_FEED } from "../feed/muwInFeed";
 import { useMuwRoutes } from "../feed/useMuwRoutes";
 import { t } from "../i18n";
-import { filePickerAvailable } from "../imports/pickActivityFile";
 import { LivesRow } from "../liveShare/LivesRow";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { usePeopleDoor } from "../social/peopleDoor";
+import { onPhotoPostsSent, usePhotoPostOutbox } from "../social/usePhotoPostOutbox";
 import { color, font, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { EmptyState } from "../ui/EmptyState";
 import { HEART } from "../ui/outlines";
@@ -60,6 +63,9 @@ type Props = {
   onOpen: (post: SamplePost) => void;
   /** A route MuW drew was tapped: it goes on the map, as one of «Explore». */
   onOpenMuw?: (route: MuwRoute) => void;
+  /** «Record now» of the «+» (TASK-481): a recording starts, as from
+   * «Draw»; without it the «+» has no «Record now». */
+  onRecord?: () => void;
   /** «Feed» is the page on the screen. Built behind «Draw» at the start, it
    * asks for no ad (and no consent), and no drawings, until it is
    * (TASK-235, TASK-118). */
@@ -108,11 +114,16 @@ const NO_POSTS: readonly Post[] = [];
  * account the tabs are then «All» and «Style». While the API has routes MuW
  * drew (TASK-365, ADR-0310), one row in 6 of «All» at most is one of them;
  * a tap opens it on the map. At the right of the
- * bar, with an account, a «+» adds an activity from a file (TASK-476).
+ * bar, with an account, a «+» lists what can be added (TASK-481): a
+ * recording started now, an activity from a file (TASK-476) or a
+ * post of photos only (TASK-312 part C), whose card and page are their own
+ * (PhotoFeedPost, PhotoPostPage); once one reaches the API, the open tabs
+ * read again.
  */
 export function FeedScreen({
   onOpen,
   onOpenMuw,
+  onRecord,
   active = true,
   ads = feedAds(),
 }: Props) {
@@ -147,8 +158,21 @@ export function FeedScreen({
   const signedIn = all.signedIn;
   const withFollowing = signedIn && tabsKnown;
   const withTabs = withFollowing || withStyle;
-  // The «+» of the bar: an account, and an app built with the file picker.
-  const withAdd = signedIn && filePickerAvailable();
+  // The «+» of the bar: an account. «Photos only» needs no file picker.
+  const withAdd = signedIn;
+  // The posts of photos only left on the phone go from here, the page
+  // always built; once one reaches the API the tabs read again.
+  usePhotoPostOutbox();
+  const refreshAll = all.refresh;
+  const refreshFollowing = following.refresh;
+  useEffect(
+    () =>
+      onPhotoPostsSent(() => {
+        refreshAll();
+        refreshFollowing();
+      }),
+    [refreshAll, refreshFollowing],
+  );
   // Without an account there is no «Following»; the choice waits for the next one.
   const tab: FeedTab =
     (chosen === "following" && !withFollowing) || (chosen === "style" && !withStyle)
@@ -204,8 +228,8 @@ export function FeedScreen({
             ) : (
               <View style={styles.barSpace} />
             )}
-            {/* «Add activity», with an account (TASK-476). */}
-            {withAdd && <AddToFeed />}
+            {/* «Add to Feed», with an account (TASK-476, TASK-481). */}
+            {withAdd && <AddToFeed onRecord={onRecord} />}
           </View>
         )}
         <FeedList
@@ -313,7 +337,10 @@ export function FeedScreen({
           />
         )}
       </View>
-      {page !== null && (
+      {page !== null && isPhotoPost(page.drawing) && (
+        <PhotoPostPage post={page} onClose={() => setPage(null)} />
+      )}
+      {page !== null && !isPhotoPost(page.drawing) && (
         <PostPage
           post={page}
           onClose={() => setPage(null)}
@@ -456,6 +483,14 @@ function FeedList({
               route={item.route}
               width={cardWidth}
               onOpen={(route) => onOpenMuw?.(route)}
+            />
+          ) : item.kind === "post" &&
+            isShown(item.post) &&
+            isPhotoPost(item.post.drawing) ? (
+            <PhotoFeedPost
+              post={item.post}
+              width={cardWidth}
+              onOpen={() => isShown(item.post) && openPost(item.post)}
             />
           ) : item.kind === "post" ? (
             <FeedPost

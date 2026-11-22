@@ -5,9 +5,11 @@ import { t } from "../i18n";
  * «Record now», «Photos only», «From a file», then «Sleep» (TASK-467 E),
  * «Gym workout» (TASK-484) and «Workout plan» (TASK-485). Only the ready
  * ones are listed, with no «Soon»: each of the last three adds its own line
- * here, at its place in the order, when its flow is in the app.
+ * here, at its place in the order, when its flow is in the app. «Workout
+ * plan» is always ready: the «+» is there only with an account, and with
+ * no plans its flow says how to make one.
  */
-export type AddToFeedEntryId = "record" | "photos" | "file";
+export type AddToFeedEntryId = "record" | "photos" | "file" | "plan";
 
 export type AddToFeedEntry = {
   id: AddToFeedEntryId;
@@ -43,6 +45,14 @@ export function addToFeedEntries({ record, filePicker }: Ready): AddToFeedEntry[
         id: "file",
         title: t("From a file"),
         detail: t("GPX, TCX or FIT from Strava, Garmin, Komoot…"),
+      },
+    ],
+    [
+      true,
+      {
+        id: "plan",
+        title: t("Workout plan"),
+        detail: t("Share one of your gym plans"),
       },
     ],
   ];

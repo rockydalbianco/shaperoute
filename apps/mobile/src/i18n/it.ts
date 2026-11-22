@@ -3138,6 +3138,8 @@ export const IT: Table = {
   "Links and special characters can't be used here.":
     "Qui non si possono usare link né caratteri speciali.",
 
+  // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
+  "Share one of your gym plans": "Condividi uno dei tuoi piani di palestra",
   // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
   "Choose a plan": "Scegli un piano",
   "No plans yet: make one in Gym › Plans.":

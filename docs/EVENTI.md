@@ -253,3 +253,24 @@ L'organizzatore non ha una riga in `group_run_going`: va sempre (§6.2).
   sezione «Group runs» sopra «Feedback», nelle cinque lingue approvate
   dall'utente; le pagine di `site/privacy` si rifanno da lì
   (`site/tools/make_privacy.mjs`).
+
+**Parte B1, l'app senza la fila del Feed** (branch
+`feat/TASK-309-b1-group-runs-app`; la fila arriva con B2, dopo 312 C2):
+
+- `apps/mobile/src/groupRuns/`: il client dell'API letto senza fidarsi
+  (`groupRunsApi.ts`), il modulo (`GroupRunForm.tsx`), la pagina
+  (`GroupRunPage.tsx`), le corse del profilo (`ProfileGroupRuns.tsx`) e il
+  bottone (`CreateGroupRunButton.tsx`).
+- **Il bottone** ⚑ «Create group run» sta nella colonna del cuore sopra la
+  mappa, sotto «Send to a friend» e «Send to watch», solo con un account: il
+  percorso è quello che il cuore terrebbe (`Keepable`), mandato intero con
+  titolo, ora, «Where exactly», note e chi la vede. `App.tsx` non cambia.
+- **Giorno e ora** a passi (un giorno, 15 minuti), come «Plan a live»:
+  nessun selettore nativo, nessuna dipendenza. Si parte da domani alle 8;
+  si va da 30 minuti a 60 giorni da adesso sull'orologio del telefono, e
+  l'ora va all'API con il fuso del telefono (`+01:00`). L'API ricontrolla.
+- **La pagina** si apre sopra l'app come quella di una sfida del mese
+  (`groupRunDoor.ts`, ospitata da `ProfileLayer`): dopo «Publish», da un
+  profilo, da una notifica o da una riga della campanella. «Start» mette il
+  percorso sulla mappa come un Preferito aperto, e «←» della scheda torna
+  alla pagina.

@@ -2956,6 +2956,29 @@ export const FR: Table = {
   "Your live becomes the post of this activity.":
     "Ton live devient la publication de cette activité.",
   "Don't post": "Ne pas publier",
+  // Group runs (TASK-309 part B; it from the proposal, de/es/fr for the user's yes).
+  "Create group run": "Créer une course en groupe",
+  "New group run": "Nouvelle course en groupe",
+  "Where exactly": "Où exactement",
+  Notes: "Notes",
+  "e.g. MUSE entrance": "ex. entrée du MUSE",
+  "Pace, what to bring…": "Allure, quoi apporter…",
+  "Meet in a public place, never at your home. MuW doesn't organise or check group runs. Everyone on MuW is 16 or older.":
+    "Retrouvez-vous dans un lieu public, jamais chez toi. MuW n'organise ni ne contrôle les courses en groupe. Sur MuW, tout le monde a au moins 16 ans.",
+  Publish: "Publier",
+  "Group runs": "Courses en groupe",
+  "1 going": "1 participant",
+  "{count} going": "{count} participants",
+  "I'm going": "J'y vais",
+  "You're going": "Tu y vas",
+  "Not going": "Je n'y vais plus",
+  Organiser: "Organise",
+  "Cancel group run": "Annuler la course en groupe",
+  "Cancel this group run? Everyone going gets a notice.":
+    "Annuler cette course en groupe ? Les participants recevront un avis.",
+  Cancelled: "Annulée",
+  Over: "Terminée",
+  Past: "Passées",
   // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
   "Flight screen": "Écran de vol",
   "GPS altitude": "Altitude GPS",

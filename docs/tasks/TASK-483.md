@@ -2,8 +2,8 @@
 
 **Stato**: Done · 2026-11-22 · A #1385 in `main` e sul server (passo 17),
 B #1396 in produzione con l'OTA 22; «Last time», «History» e la riga
-nella guida «i» come nelle risposte 1–4. Restano il controllo
-dell'utente sul telefono e la virgola nei pesi (#1406, prossima OTA).
+nella guida «i» come nelle risposte 1–4. L'utente l'ha provato sul
+telefono («Sì, funziona»). Resta la virgola nei pesi (#1406, OTA 23).
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-483-exercise-history`
 **Dipende da**: TASK-385 (la palestra, le serie salvate), TASK-411 (la
@@ -169,5 +169,7 @@ Chiusura (questa PR): `docs/tasks/TASK-483.md`, `docs/DECISIONS.md`,
   (Coordinatore, `b4c31f09`).
 - 2026-11-22: l'utente ha chiesto la virgola nei pesi in italiano
   («82.5 kg» → «82,5 kg»): `weightLabel` scrive il decimale come la lingua
-  dell'app, per tutti i pesi dell'app (#1406). Task Done; restano #1406
-  con la prossima OTA e il controllo dell'utente sul telefono.
+  dell'app, per tutti i pesi dell'app (#1406). Task Done; resta #1406
+  con l'OTA 23.
+- 2026-11-22: l'utente ha provato lo storico sul telefono dopo l'OTA 22:
+  «Sì, funziona».

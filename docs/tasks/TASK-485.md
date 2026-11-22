@@ -249,7 +249,8 @@ nel file `plan-post-outbox.json`), `gym/planCopy.ts`, `PlanPostFlow.tsx`,
 testi nelle quattro lingue e `gym.md`. Fuori lista, chiesti al Coordinatore:
 `packages/shared-types/fixtures/reads.json`, `services/api/tests/test_reads.py`
 e `apps/mobile/src/api/accounts.test.ts` (l'intestazione `X-MuW-Reads`
-scritta per esteso, come in TASK-312 C2). Scelte tecniche (decise
+scritta per esteso, come in TASK-312 C2), e `apps/mobile/src/api/drawings.ts`
+(vedi la prova nel simulatore). Scelte tecniche (decise
 dall'agente su delega dell'utente, voce in `DECISIONS.md` col PR dei
 documenti dopo il merge):
 
@@ -265,6 +266,18 @@ documenti dopo il merge):
 Testi in più da far approvare con le schermate: «Delete post», «Delete
 this post?», «Copies already made stay with whoever made them.» (la privacy
 approvata dice che il post si cancella), «{count} day a week» al singolare.
+
+**Prova nel simulatore (2026-11-22)**, con l'API del worktree su un
+PostGIS locale (`out/TASK-485/seed.py`, schermate in `out/TASK-485/shots/`):
+Feed, piano aperto, «Use this plan» fino a «Added to your plans», «Choose a
+plan» → «Post» (`PUT /me/plan-posts`), il proprio post e «Delete post»
+(`DELETE`) funzionano. Trovati e corretti due difetti che i test non
+vedevano: il Feed dà `activity: null` a un piano pubblicato e
+`readsActivity` di `api/drawings.ts` lo rifiutava, facendo cadere **tutta**
+la pagina del Feed (fuori lista, chiesto al Coordinatore: TASK-312 C2 tocca
+la stessa funzione per `photos`); la guida aperta come foglio sopra il
+piano aperto, chiusi insieme, lasciava iOS su uno schermo nero: ora la
+guida prende il posto del piano nello stesso foglio.
 
 Restano: la riga di `addToFeedEntries.ts` (dopo TASK-481 A, con il
 montaggio di `usePlanPostOutbox` dove il foglio è sempre montato, così un

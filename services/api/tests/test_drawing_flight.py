@@ -21,7 +21,9 @@ from test_drawings import (
     wall,  # noqa: F401
 )
 
+from shaperoute_api.activities import ActivityDetailBody
 from shaperoute_api.db import Database
+from shaperoute_api.drawings import DrawingDetailBody
 from shaperoute_api.run_stats import FLIGHT
 
 Headers = dict[str, str]
@@ -35,6 +37,14 @@ def _seen(app: TestClient, headers: Headers, drawing_id: str) -> dict[str, Any]:
     assert answer.status_code == 200, answer.text
     body: dict[str, Any] = answer.json()
     return body
+
+
+def test_the_answers_say_their_fields() -> None:
+    # Leaving a null `flight` out keeps each answer's schema its own fields
+    # (openapi.json), not any object.
+    for model in (DrawingDetailBody, ActivityDetailBody):
+        schema = model.model_json_schema(mode="serialization")
+        assert {"track", "flight"} <= set(schema["properties"]), model
 
 
 def test_a_race_post_has_its_flights_on_its_line(

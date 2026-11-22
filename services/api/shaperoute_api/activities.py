@@ -452,7 +452,9 @@ class ActivityDetailBody(BaseModel):
     any other run, and for a flight without parts on foot."""
 
     @model_serializer(mode="wrap")
-    def _without_flight(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+    def _without_flight(self, handler: SerializerFunctionWrapHandler):
+        # No return type, so the answer's schema stays the run's own fields:
+        # with one it would be any object.
         answer: dict[str, Any] = handler(self)
         if answer.get("flight") is None:
             answer.pop("flight", None)

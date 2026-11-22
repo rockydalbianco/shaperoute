@@ -94,12 +94,13 @@ export function splitAtAir(
   return { foot: foot.filter(drawn), air: flown.filter(drawn) };
 }
 
-/** A race opened again from «My activities» (TASK-305 part R6d): its parts
- * in the air on its track, and the two kinds added up, as the API gives
- * them; null for any other run, for an API before R6d, and for anything
- * that does not fit the track. */
+/** A race opened again from «My activities» (TASK-305 part R6d), or its
+ * post opened from the Feed or a profile (part R6e, a `DrawingDetail`): its
+ * parts in the air on its track, and the two kinds added up, as the API
+ * gives them; null for any other run, for an API before R6d (R6e for a
+ * post), and for anything that does not fit the track. */
 export function activityFlightOf(
-  detail: ActivityDetail,
+  detail: Pick<ActivityDetail, "track"> & { flight?: unknown },
 ): { air: AirLeg[]; split: FlightSplitStats } | null {
   const flight: unknown = detail.flight;
   if (typeof flight !== "object" || flight === null) {

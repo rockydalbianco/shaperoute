@@ -2509,6 +2509,10 @@ export const DE: Table = {
   "The people you follow have not published anything yet.":
     "Die Personen, denen du folgst, haben noch nichts veröffentlicht.",
   "Couldn't load the Feed.": "Der Feed konnte nicht geladen werden.",
+  // src/screens/FeedScreen.tsx: «All» without examples (2026-11-22)
+  "Log in from Profile to see the activities.":
+    "Melde dich im Profil an, um die Aktivitäten zu sehen.",
+  "Nobody has published anything yet.": "Noch niemand hat etwas veröffentlicht.",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)
   "≈ {time} at {pace}": "≈ {time} bei {pace}",
@@ -2864,6 +2868,16 @@ export const DE: Table = {
     "Wer deine Beiträge für «Alle» sieht, kann einen Link dazu teilen. Wer den Link hat, sieht die Zeichnung auf der Karte, deinen Benutzernamen, den Titel, die Sportart und die Distanz, auch ohne MuW. Schalte das aus, und die Links funktionieren nicht mehr.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Aktivität hinzufügen",
+  // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
+  // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
+  // the first three approved by the user, 2026-11-21, the deletion's with
+  // the screenshots, 2026-11-22).
+  "Photos only": "Nur Fotos",
+  "Up to 10 photos, also from Instagram": "Bis zu 10 Fotos, auch von Instagram",
+  "Add at least one photo.": "Füge mindestens ein Foto hinzu.",
+  "Delete this post? It cannot be undone.":
+    "Diesen Beitrag löschen? Das kann nicht rückgängig gemacht werden.",
+  "Delete post": "Beitrag löschen",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
   // 2026-11-08 and 2026-11-12.
   Snowshoes: "Schneeschuhe",

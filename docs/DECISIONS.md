@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A4c in produzione, A5 e A5b in `main`); B Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6 in produzione); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -578,7 +578,7 @@ lasciando le righe d'indice.
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 - ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo · 2026-11-21 · Attiva
 - ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities» · 2026-11-22 · Attiva
-- ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Proposta
+- ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Attiva
 - ADR-0391 — Il link di un post apre l'app: l'id resta dopo il `#`, l'app prende dall'indirizzo solo un id a forma di disegno e chiede il post all'API, senza account prima l'ingresso; la barra di Safari subito, i link verificati con la prossima build nativa · 2026-11-22 · Attiva
 - ADR-0127, precisazione (TASK-487) — «Feed» senza esempi: senza account l'invito ad accedere, con account e nessun post una riga che lo dice · 2026-11-22 · Attiva
 
@@ -708,7 +708,8 @@ al Coordinatore, non di questo task.
 
 ## ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie
 
-**Stato**: Proposta · 2026-11-22 · TASK-483 (parte 0, soli documenti).
+**Stato**: Attiva · 2026-11-22 · TASK-483: parte 0 (documenti), A #1385
+(server, passo 17), B #1396 (app, OTA 22), #1406 (la virgola nei pesi).
 I tre schermi, la regola del suggerimento, l'unione dei nomi liberi e
 «History» dalla guida sono **scelte dell'utente** (risposte 1–4 del task
 file); il resto è **deciso dall'agente su delega dell'utente**, numero dal
@@ -755,6 +756,22 @@ rilegge per esercizio e l'app non le mostra.
 `out/TASK-483/SERVER-A.md`); parte B nell'app con un OTA, testi e
 schermate all'utente prima. Un'API di prima risponde `404`: l'app tiene
 spenti riquadro e «History» e lascia i campi come oggi.
+
+**Aggiunte della parte B, decise dall'agente su delega dell'utente**:
+- **Campi già compilati**: valgono le serie di questo allenamento, poi i
+  valori della scheda seguita; l'ultima volta riempie solo i campi che la
+  scheda lascia vuoti (le settimane delle schede guidate restano quelle).
+- **Chi pesa in lb**: il suggerimento aggiunge 5 lb, non 2,5 kg.
+- **Senza rete**: il telefono tiene l'ultima risposta di 40 esercizi
+  (`gym-history.json`), così «Last time» c'è anche in palestra.
+- **Le frecce tra sedute** non confrontano un massimale stimato con un
+  peso massimo (seduta di sole serie oltre 12 ripetizioni): niente freccia.
+- **Un'API senza la rotta (404)** spegne «Last time» e «History».
+- **Il grafico è fatto di View** (niente react-native-svg, niente build
+  nativa).
+- **I pesi con la virgola** dove la lingua dell'app la usa («82,5 kg»),
+  chiesto dall'utente dopo la prova: `weightLabel` per tutti i pesi
+  dell'app (#1406).
 
 ## ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo
 
@@ -925,6 +942,13 @@ dall'utente. Server, OTA, sito e store solo col sì dell'utente o del
 Coordinatore; prima della pubblicazione una prova con un pilota vero.
 ADR-0265 (il pianificatore nel cono) resta Proposta. Dettagli in
 `tasks/TASK-479.md`.
+
+**Aggiunta del 2026-11-22 (parte C, deciso dall'agente su delega
+dell'utente)**: il vario sonoro suona file, non sintesi: 15 loop WAV fatti
+da `tools/vario_tones.py` (un gradino di salita ogni 0,5 m/s, uno di
+discesa ogni 1 m/s), un player in loop per tono; il suono appartiene alla
+registrazione e non alla schermata di volo, così suona anche a schermata
+chiusa; nessun tocco ad `app.json`. Acceso di default: scelta dell'utente.
 
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
@@ -2330,6 +2354,19 @@ riceve tocchi; la vecchia linea fissa di `TabShell` sparisce. Il
 contenuto resta sotto l'header, non dietro: in parte A il vetro non sfoca
 niente, quindi farci passare il contenuto lo renderebbe solo meno
 leggibile. Deciso dall'agente su delega dell'utente.
+**A5c (#1391)**: Profilo, «Today» e «Days» dello sci mettono
+`useHeaderScroll()` come le altre pagine. Una pagina pigra o il cambio di
+modalità sci possono smontare uno scroller lontano dalla cima: l'hook,
+smontandosi, rimette l'header a riposo, invece di lasciarlo in vetro sopra
+una pagina in cima. «Resorts» non lo mette: lì il titolo e la ricerca sono
+fissi e scorre solo la lista. Deciso dall'agente su delega dell'utente.
+**A6 (#1403)**: i gruppi di Impostazioni prendono i bordi della pista dei
+segmenti (`segmentTrackFace`) con la faccia `surface` invece del velo,
+perché le righe sono testo lungo e il contrasto conta più del vetro. Un
+nuovo passo dei raggi, `radius.group` = 24, tra `lg` (16) e `card` (28).
+Un solo aiuto, `settingsGroupFace` / `useSettingsGroup`, in un file nuovo,
+così ognuno dei 18 file cambia di una riga. Deciso dall'agente su delega
+dell'utente.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

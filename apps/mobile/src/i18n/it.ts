@@ -2479,6 +2479,10 @@ export const IT: Table = {
   "The people you follow have not published anything yet.":
     "Chi segui non ha ancora pubblicato nulla.",
   "Couldn't load the Feed.": "Non è stato possibile caricare il Feed.",
+  // src/screens/FeedScreen.tsx: «All» without examples (2026-11-22)
+  "Log in from Profile to see the activities.":
+    "Accedi dal Profilo per vedere le attività.",
+  "Nobody has published anything yet.": "Nessuno ha ancora pubblicato nulla.",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)
   "≈ {time} at {pace}": "≈ {time} a {pace}",
@@ -2832,6 +2836,16 @@ export const IT: Table = {
     "Chi vede i tuoi post per «Tutti» può condividerne il link. Chi ha il link vede il disegno sulla mappa, il tuo nome utente, il titolo, lo sport e la distanza, anche senza MuW. Spegnilo e i link smettono di funzionare.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Aggiungi attività",
+  // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
+  // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
+  // the first three approved by the user, 2026-11-21, the deletion's with
+  // the screenshots, 2026-11-22).
+  "Photos only": "Solo foto",
+  "Up to 10 photos, also from Instagram": "Fino a 10 foto, anche da Instagram",
+  "Add at least one photo.": "Aggiungi almeno una foto.",
+  "Delete this post? It cannot be undone.":
+    "Eliminare questo post? Non si può annullare.",
+  "Delete post": "Elimina post",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
   // 2026-11-08 and 2026-11-12.
   Snowshoes: "Ciaspole",

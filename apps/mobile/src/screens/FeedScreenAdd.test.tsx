@@ -91,7 +91,7 @@ test("without an account there is no «+»", async () => {
   expect(screen.queryByTestId("feed-add")).toBeNull();
 });
 
-test("in an app built without the file picker there is no «+»", async () => {
+test("in an app built without the file picker the «+» is there, for «Photos only»", async () => {
   jest.mocked(filePickerAvailable).mockReturnValue(false);
   await render(
     <Around state={SIGNED_IN}>
@@ -99,5 +99,5 @@ test("in an app built without the file picker there is no «+»", async () => {
     </Around>,
   );
   await screen.findByText("Sunday heart by the river");
-  expect(screen.queryByTestId("feed-add")).toBeNull();
+  expect(screen.getByTestId("feed-add")).toBeTruthy();
 });

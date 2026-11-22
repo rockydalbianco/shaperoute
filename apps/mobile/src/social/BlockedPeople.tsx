@@ -7,6 +7,7 @@ import { fetchBlocked, unblockMember } from "../api/moderation";
 import { personPhotoUri } from "../api/people";
 import { t } from "../i18n";
 import { Avatar } from "../profile/Avatar";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import {
   color,
   fontSize,
@@ -44,6 +45,7 @@ type Props = {
  */
 export function BlockedPeople({ fetchFn, apiKey }: Props) {
   const { apiUrl, account } = useFollowsDoor();
+  const group = useSettingsGroup();
   const { state, sessionEnded: onSessionEnded } = account;
   const token = state.status === "signedIn" ? state.session.token : null;
   const [open, setOpen] = useState(false);
@@ -148,7 +150,7 @@ export function BlockedPeople({ fetchFn, apiKey }: Props) {
   return (
     <View style={styles.section}>
       <Tap
-        style={styles.row}
+        style={[styles.row, group]}
         onPress={() => {
           setProblem(null);
           setOpen(!open);

@@ -1,4 +1,4 @@
-import { RUN_ACTIVITIES } from "@shaperoute/shared-types";
+import { PHOTOS_SOURCE, RUN_ACTIVITIES } from "@shaperoute/shared-types";
 
 /**
  * What this app can show, said to the API in every request of an account
@@ -24,12 +24,15 @@ export const POOL = "pool";
  * Every activity a run of this app may be (RUN_ACTIVITIES) but those of
  * before, `trackless`: the Feed, the profiles, the search and the drawing
  * show a post without a line since TASK-385 B0; and `pool`: «My
- * activities» shows a swim in a pool since TASK-400 B.
+ * activities» shows a swim in a pool since TASK-400 B; and `photos`: the
+ * Feed, the profiles and the post show a post of photos only, a drawing
+ * without a run, since TASK-312 part C.
  */
 export const READS: readonly string[] = [
   ...RUN_ACTIVITIES.filter((activity) => !OLD_APP_ACTIVITIES.includes(activity)),
   TRACKLESS,
   POOL,
+  PHOTOS_SOURCE,
 ];
 
 /** The header, for `ask` (accounts.ts). */

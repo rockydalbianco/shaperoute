@@ -5314,6 +5314,11 @@ TASK-305.md, «Testi di R6».
     1:43:30» come nel Feed, e la legenda «White: on foot. Yellow: in the
     air.». Un'API di prima, o un `flight` che non sta sulla traccia: la
     gara come una corsa, tutta bianca.
+  - **Il post della gara aperto dal Feed o da un profilo** (parte R6e): la
+    mappa del post ha gli stessi due colori, coi tratti dal `flight` di
+    `GET /drawings/{id}`, la mappa inquadrata sulla linea. Un'API di prima,
+    o una linea del post con punti diversi da quelli della corsa: il post
+    come oggi, tutto giallo.
 - **Un volo nelle liste** (TASK-305, 2026-11-22): in «My activities», nella
   scheda sotto la mappa e nella riga del Feed un volo ha la velocità media
   («15.1 km/h», come la pagina del post) al posto del passo per km; senza

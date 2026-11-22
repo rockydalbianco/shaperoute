@@ -1,6 +1,6 @@
 # TASK-491 — Il Coach MuW: consigli dagli allenamenti fatti e la scheda che cambia con «Apply»
 
-**Stato**: In corso (parte 0: questo file, ADR-0399 e i testi da approvare)
+**Stato**: In corso (parte 0 chiusa il 2026-11-23: scelte e testi approvati; A nella #1427, poi B e C)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-491-coach`
 **Dipende da**: TASK-488 (la scheda si adatta, ADR-0396: i passi `adapt`
@@ -38,8 +38,8 @@ https://claude.ai/artifact/YboyrVDGfr9NWw8G7aXCpi (sorgente
    lo costruisce TASK-490 B (`trainingmode/weekBody.ts`,
    `WeekBodyCard.tsx`) e il Coach lo riusa.
 4. **Niente domanda sulla fatica (RPE)** per ora: la regola T2 resta fuori.
-5. **I testi dei consigli**: nella proposta, sezione «I testi dei
-   consigli». *Aspettano il sì dell'utente.*
+5. **I testi dei consigli**: quelli della sezione «I testi» qui sotto,
+   **approvati dall'utente il 2026-11-23** («Approvo»).
 
 ## Come funziona (deciso dall'agente su delega dell'utente, ADR-0399)
 
@@ -79,7 +79,7 @@ https://claude.ai/artifact/YboyrVDGfr9NWw8G7aXCpi (sorgente
 Le soglie sono costanti in un file solo, ciascuna col suo studio nel
 commento.
 
-## I testi (aspettano il sì dell'utente)
+## I testi (approvati dall'utente il 2026-11-23)
 
 In inglese come l'app, poi tradotti; `{…}` sono i numeri del Coach.
 
@@ -122,7 +122,7 @@ L'elenco dei file di ogni parte va al Coordinatore prima del codice.
 
 ## Criteri di accettazione
 
-- [ ] Parte 0: questo file, ADR-0399 e i testi approvati dall'utente.
+- [x] Parte 0: questo file, ADR-0399 e i testi approvati dall'utente.
 - [ ] Ogni regola ha un test che la fa scattare e uno che non la fa
       scattare; gli stessi dati danno gli stessi consigli.
 - [ ] Mai più di tre consigli, nell'ordine scritto sopra.

@@ -5916,9 +5916,9 @@ cambia barra quando cambia sport, come lo sciatore.
 ## ADR-0399 — Il Coach MuW: consigli da regole scritte con il loro studio, la scheda che cambia solo con «Apply»
 
 **Stato**: Proposta · 2026-11-23 · TASK-491 (parte 0, soli documenti).
-«Apply», dove si apre, solo con account con l'omino, niente RPE sono
-**scelte dell'utente** (2026-11-22 e 23, task file); i testi aspettano il
-suo sì; l'omino di TASK-490 B e l'ordine dopo TASK-488 sono del
+«Apply», dove si apre, solo con account con l'omino, niente RPE e i
+testi dei consigli sono **scelte dell'utente** (2026-11-22 e 23, task
+file); l'omino di TASK-490 B e l'ordine dopo TASK-488 sono del
 Coordinatore; il resto è **deciso dall'agente su delega dell'utente**,
 numeri dal Coordinatore (fork 3).
 

@@ -486,6 +486,21 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
 
 ## Dove siamo
 
+*2026-11-22, pomeriggio, B2 estere, le sette*: **secondo giro finito**
+(13:00–13:37, a Mac vuoto, limite a 5 GB solo per loro, deciso dal
+Coordinatore; `out/TASK-441/b2/run-sette.sh`). **Cinque città disegnate**:
+Berlino (pianificatore a 4145 MB), Dublino (4852), Amburgo (5057), Vienna
+(4662) e New York (5121 MB, un MB sopra il limite a disegni già fatti:
+come Madrid, i disegni ci sono). 40 casi, **36 passano il filtro** (New
+York 4 su 8). **Parigi (5412 MB) e Tokyo (5239) restano senza uscite in
+bici**: fermate anche a 5 GB. Catalogo da 1866 a **1902** (356 uscite in
+bici in 59 città). Pagina per l'utente:
+`out/TASK-441/b2/disegni-bici-cinque-citta.html`; il suo sì: **«SI VANNO
+BENE»** (2026-11-22). PR di solo catalogo `feat/TASK-441-b2-estere-2`: 5 file di
+`catalog/seed`, `tools/catalog_kept.json`, `catalog/README.md`, questo
+file. Poi un passo sul server (sì dell'utente al Coordinatore), la PR dei
+documenti, e gli estratti (15 GB) da cancellare.
+
 *2026-11-22, B2 estere*: **la #1380 è in `main`** (`ef7b1d83`) **e sul
 server** (passo 17, server a `40789324`, riferito dal Coordinatore):
 `1866 recommended routes`, le corse di prima identiche (`60 50 50 …`,

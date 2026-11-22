@@ -330,11 +330,14 @@ function weekHeight(program: GymProgram, week: number): number {
  * ready with a workout a day to retouch, how the weeks change, the name and
  * the first day. Each step asks one thing and has its answer chosen
  * already: «Continue» all the way makes a good plan. A plan already made
- * opens on its workouts («Edit») or its weeks («Weeks»).
+ * opens on its workouts («Edit») or its weeks («Weeks»). A plan copied
+ * from a post (TASK-485, «Use this plan») opens on the last step, the name
+ * and the first day, after «How do you run today?» when it has runs.
  */
 export function GymPlanWizard({
   plan,
   startAt = "goal",
+  copied = false,
   onSave,
   onDelete,
   onClose,
@@ -342,6 +345,8 @@ export function GymPlanWizard({
   /** The plan changed; null for a new one. */
   plan: GymPlan | null;
   startAt?: WizardStep;
+  /** `plan` is a copy, not one's own yet: only its last steps. */
+  copied?: boolean;
   onSave: (draft: WizardDraft) => void;
   onDelete?: () => void;
   onClose: () => void;
@@ -352,7 +357,11 @@ export function GymPlanWizard({
   const kept = plan === null ? null : programOfPlan(plan, today);
   // A new plan opens on «What do you want to train?» (TASK-461 A2).
   const withDoor = plan === null && startAt === "goal";
-  const [step, setStep] = useState<WizardStep>(withDoor ? "door" : startAt);
+  // A copy's run days ask for its new owner's paces first (TASK-485).
+  const copiedRuns = copied && kept !== null && kept.sessions.some(isRunDay);
+  const [step, setStep] = useState<WizardStep>(
+    withDoor ? "door" : copied ? (copiedRuns ? "runner" : "ready") : startAt,
+  );
   const [goal, setGoal] = useState<GymPlanGoal>(kept?.goal ?? "muscle");
   // The sports of the plan: chosen at the door, at least two (the user's
   // «Almeno due, sempre»), in the order chosen: the first with a distance
@@ -443,7 +452,8 @@ export function GymPlanWizard({
   const monday = nextMonday(today);
   const todayIso = isoDate(today);
   const [startsOn, setStartsOn] = useState(
-    kept?.starts_on ?? (today.getDay() === 1 ? todayIso : isoDate(monday)),
+    (copied ? undefined : kept?.starts_on) ??
+      (today.getDay() === 1 ? todayIso : isoDate(monday)),
   );
   // How the owner runs (TASK-452): asked only for a plan with run days.
   const [runner, setRunner] = useState<GymPlanRunner>(
@@ -452,7 +462,7 @@ export function GymPlanWizard({
   // «Your paces», after «How do you run today?».
   const [paces, setPaces] = useState(false);
   const strength = sports.includes("gym") || sports.includes("body");
-  const guided: readonly WizardStep[] = withDoor
+  const ownSteps: readonly WizardStep[] = withDoor
     ? [
         ...(targetDoor !== null ? (["target"] as const) : []),
         ...(asksLevel ? (["level"] as const) : []),
@@ -467,6 +477,9 @@ export function GymPlanWizard({
     : runDays.length > 0
       ? STEPS_WITH_RUNS
       : STEPS;
+  // A copy: its paces when it has runs, then its name and first day.
+  const copySteps: readonly WizardStep[] = copiedRuns ? ["runner", "ready"] : ["ready"];
+  const guided = copied ? copySteps : ownSteps;
   const steps: readonly WizardStep[] = withDoor ? ["door", ...guided] : guided;
   const index = Math.max(0, steps.indexOf(step));
   // The door is before the steps: «Step 1 of 5» is the first after it.

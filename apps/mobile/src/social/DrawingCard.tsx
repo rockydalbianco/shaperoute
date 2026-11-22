@@ -1,4 +1,8 @@
-import type { DrawingDetail, DrawingPhoto } from "@shaperoute/shared-types";
+import {
+  type DrawingDetail,
+  type DrawingPhoto,
+  isPhotoPost,
+} from "@shaperoute/shared-types";
 import { useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -124,6 +128,9 @@ export function DrawingCard({
   const gym = isTrackless(drawing.activity);
   // A swim in a pool: no line to draw again nor edit (TASK-400 part C).
   const pool = isPoolLine(drawing.activity, drawing.track);
+  // A post of photos only (TASK-312 part C) has no run: no numbers, no
+  // line, and it is not sent in a chat.
+  const photosOnly = isPhotoPost(drawing);
   const facts = [
     ...(drawing.activity === undefined ? [] : [activityName(drawing.activity)]),
     gym
@@ -137,7 +144,7 @@ export function DrawingCard({
         <View style={styles.words}>
           <Text style={styles.title}>{drawing.title ?? day}</Text>
           {drawing.title !== null && <Text style={styles.message}>{day}</Text>}
-          <Text style={styles.facts}>{facts}</Text>
+          {!photosOnly && <Text style={styles.facts}>{facts}</Text>}
           {drawing.source !== undefined && drawing.source !== "muw" && <ImportedMark />}
         </View>
       </View>
@@ -229,7 +236,7 @@ export function DrawingCard({
       {/* «Send to a friend»: one's own track as the map shows it, copied
           into a message (TASK-333); somebody else's drawing as a post, a
           pointer (TASK-455). */}
-      {copySendable(drawing, me) ? (
+      {photosOnly ? null : copySendable(drawing, me) ? (
         runnable(drawing) && (
           <SendDrawingButton
             drawing={() => drawingOfDrawing(drawing)}

@@ -2836,6 +2836,16 @@ export const IT: Table = {
     "Chi vede i tuoi post per «Tutti» può condividerne il link. Chi ha il link vede il disegno sulla mappa, il tuo nome utente, il titolo, lo sport e la distanza, anche senza MuW. Spegnilo e i link smettono di funzionare.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Aggiungi attività",
+  // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
+  // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
+  // the first three approved by the user, 2026-11-21, the deletion's with
+  // the screenshots, 2026-11-22).
+  "Photos only": "Solo foto",
+  "Up to 10 photos, also from Instagram": "Fino a 10 foto, anche da Instagram",
+  "Add at least one photo.": "Aggiungi almeno una foto.",
+  "Delete this post? It cannot be undone.":
+    "Eliminare questo post? Non si può annullare.",
+  "Delete post": "Elimina post",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
   // 2026-11-08 and 2026-11-12.
   Snowshoes: "Ciaspole",
@@ -3124,6 +3134,24 @@ export const IT: Table = {
     "Queste parole non si possono usare. Prova con altre.",
   "Links and special characters can't be used here.":
     "Qui non si possono usare link né caratteri speciali.",
+
+  // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
+  "Choose a plan": "Scegli un piano",
+  "No plans yet: make one in Gym › Plans.":
+    "Ancora nessun piano: creane uno in Palestra › Piani.",
+  "Say something about this plan (optional)":
+    "Scrivi qualcosa su questo piano (facoltativo)",
+  "Who sees it: {who}": "Chi lo vede: {who}",
+  "Workout plan": "Piano di allenamento",
+  "{count} day a week": "{count} giorno a settimana",
+  "{count} days a week": "{count} giorni a settimana",
+  "Use this plan": "Usa questo piano",
+  "Added to your plans": "Aggiunto ai tuoi piani",
+  "You already have 20 plans: delete one to add this.":
+    "Hai già 20 piani: eliminane uno per aggiungere questo.",
+  "Delete this post?": "Eliminare questo post?",
+  "Copies already made stay with whoever made them.":
+    "Le copie già fatte restano a chi le ha fatte.",
   // The plan that adapts (TASK-488): gym/AdaptQuestion.tsx, gym/GymPlans.tsx.
   "Easy@@feel": "Facile",
   "Right@@feel": "Giusto",

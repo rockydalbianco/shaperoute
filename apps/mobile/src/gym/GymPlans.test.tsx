@@ -593,7 +593,8 @@ test("run days in the guide: «And running?», the week, the run's editor (TASK-
 test("in Draw on a run day: the run of the week, and «Go to the run» turns to Run", async () => {
   const now = new Date();
   const lastWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-  const program = LIFT_AND_RUN.program!;
+  // Without the example's answers (TASK-488): the same run every day.
+  const { adapt: _adapt, ...program } = LIFT_AND_RUN.program!;
   const runs: GymPlan = {
     ...LIFT_AND_RUN,
     days: [1, 2, 3, 4, 5, 6, 7],

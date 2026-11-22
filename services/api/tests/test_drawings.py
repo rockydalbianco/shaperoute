@@ -100,6 +100,10 @@ SOURCE |= {"linkable"}
 # The plan of a gym plan posted, TASK-485 (test_plan_posts.py).
 NEW_FIELDS |= {"plan"}
 SOURCE |= {"plan"}
+# A race's flights on the post's line, TASK-305 part R6e
+# (test_drawing_flight.py).
+NEW_FIELDS |= {"flight"}
+SOURCE |= {"flight"}
 THIRD_EMAIL = "third@example.com"
 
 

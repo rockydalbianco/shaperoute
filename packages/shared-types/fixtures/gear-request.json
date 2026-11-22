@@ -1,0 +1,12 @@
+{
+  "kind": "shoes",
+  "brand": "Nike",
+  "model": "Pegasus 41",
+  "name": "The red ones",
+  "bought_on": "2025-03-01",
+  "note": "Bought in Milan.",
+  "limit_m": 700000,
+  "off_profile": false,
+  "retired": false,
+  "defaults": ["running", "hiking"]
+}

@@ -2937,6 +2937,29 @@ export const IT: Table = {
   "Your live becomes the post of this activity.":
     "La tua live diventa il post di questa attività.",
   "Don't post": "Non pubblicare",
+  // Group runs (TASK-309 part B; it from the proposal, de/es/fr for the user's yes).
+  "Create group run": "Crea corsa di gruppo",
+  "New group run": "Nuova corsa di gruppo",
+  "Where exactly": "Dove esattamente",
+  Notes: "Note",
+  "e.g. MUSE entrance": "es. ingresso del MUSE",
+  "Pace, what to bring…": "Ritmo, cosa portare…",
+  "Meet in a public place, never at your home. MuW doesn't organise or check group runs. Everyone on MuW is 16 or older.":
+    "Trovatevi in un luogo pubblico, mai a casa. MuW non organizza né controlla le corse di gruppo. Su MuW tutti hanno almeno 16 anni.",
+  Publish: "Pubblica",
+  "Group runs": "Corse di gruppo",
+  "1 going": "1 partecipante",
+  "{count} going": "{count} partecipanti",
+  "I'm going": "Ci vado",
+  "You're going": "Ci vai",
+  "Not going": "Non vado più",
+  Organiser: "Organizza",
+  "Cancel group run": "Annulla la corsa di gruppo",
+  "Cancel this group run? Everyone going gets a notice.":
+    "Annullare la corsa di gruppo? Chi partecipa riceve un avviso.",
+  Cancelled: "Annullata",
+  Over: "Finita",
+  Past: "Passate",
   // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
   "Flight screen": "Schermata di volo",
   "GPS altitude": "Quota GPS",
@@ -2999,4 +3022,76 @@ export const IT: Table = {
     "Questa schermata viene da un MuW più nuovo: aggiorna l'app.",
   "MuW could not read this file.": "MuW non è riuscita a leggere questo file.",
   "MuW could not share the file.": "MuW non è riuscita a condividere il file.",
+  // src/air/ (TASK-479 part C: the vario's sound; texts approved by the user on 2026-11-22)
+  "Vario sound": "Suono del vario",
+  "Beeps from": "Bip da",
+  "Sink tone below": "Tono di discesa sotto",
+  Volume: "Volume",
+  "From GPS: the sound comes 1–2 s after the climb.":
+    "Dal GPS: il suono arriva 1–2 s dopo la salita.",
+  "Mute the vario": "Silenzia il vario",
+  "Turn the vario sound on": "Attiva il suono del vario",
+
+  // src/gear/ (TASK-486 part B, the gear), approved by the user on 2026-11-22
+  Shoes: "Scarpe",
+  Skis: "Sci",
+  "Ski boots": "Scarponi da sci",
+  Snowboard: "Snowboard",
+  Poles: "Bastoncini",
+  Boots: "Scarponi",
+  "Climbing shoes": "Scarpette d'arrampicata",
+  Harness: "Imbrago",
+  Helmet: "Casco",
+  Rope: "Corda",
+  Crampons: "Ramponi",
+  "Ice axe": "Piccozza",
+  "Inline skates": "Pattini in linea",
+  Sail: "Vela",
+  Board: "Tavola",
+  Boat: "Barca",
+  Wetsuit: "Muta",
+  Paraglider: "Parapendio",
+  Wheelchair: "Carrozzina",
+  Clothing: "Abbigliamento",
+  Backpack: "Zaino",
+  Watch: "Orologio",
+  "Add gear": "Aggiungi attrezzatura",
+  "Add your shoes, your bike, your skis and everything you use. Each activity you take them on adds to their kilometres and hours.":
+    "Aggiungi le tue scarpe, la bici, gli sci e tutto quello che usi. Ogni attività in cui li porti aggiunge ai loro chilometri e alle loro ore.",
+  "Past its limit": "Oltre il suo limite",
+  Retired: "Ritirata",
+  Kind: "Tipo",
+  Brand: "Marca",
+  Model: "Modello",
+  "Your name for it": "Il tuo nome",
+  Bought: "Comprata",
+  Month: "Mese",
+  Year: "Anno",
+  "Month bought": "Mese d'acquisto",
+  "Year bought": "Anno d'acquisto",
+  Note: "Nota",
+  "Where you bought it, a race you ran in it…":
+    "Dove l'hai comprata, una gara fatta con lei…",
+  Limit: "Limite",
+  "MuW tells you when it passes this.": "MuW ti avvisa quando lo supera.",
+  "Use by default for": "Usala di solito per",
+  "Activities of these sports start with it chosen.":
+    "Le attività di questi sport partono con questa già scelta.",
+  "Hide from profile": "Nascondi dal profilo",
+  "Others don't see it. Its kilometres still count.":
+    "Gli altri non la vedono. I suoi chilometri contano lo stesso.",
+  Retire: "Ritira",
+  "Out of your choices, with its kilometres kept.":
+    "Esce dalle tue scelte, coi suoi chilometri.",
+  "Delete this gear?": "Eliminare questa attrezzatura?",
+  "Its photo goes too. Your activities stay.":
+    "Se ne va anche la foto. Le tue attività restano.",
+  "Say the brand.": "Scrivi la marca.",
+  "Write the month (1 to 12) and the year it was bought.":
+    "Scrivi il mese (da 1 a 12) e l'anno in cui l'hai comprata.",
+  "Write the limit as a number of {unit}.": "Scrivi il limite come numero di {unit}.",
+  "These words can't be used. Try other words.":
+    "Queste parole non si possono usare. Prova con altre.",
+  "Links and special characters can't be used here.":
+    "Qui non si possono usare link né caratteri speciali.",
 };

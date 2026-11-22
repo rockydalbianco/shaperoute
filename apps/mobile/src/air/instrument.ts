@@ -69,7 +69,7 @@ function heightOf(fix: TrackFix): number | null {
 }
 
 /** The fixes since the last pause's gap: no window crosses one. */
-function lastStretch(fixes: readonly TrackFix[]): readonly TrackFix[] {
+export function lastStretch(fixes: readonly TrackFix[]): readonly TrackFix[] {
   for (let i = fixes.length - 1; i > 0; i -= 1) {
     if (fixes[i].gap === true) {
       return fixes.slice(i);

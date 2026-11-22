@@ -486,6 +486,17 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
 
 ## Dove siamo
 
+*2026-11-22, B2 estere*: **la #1380 è in `main`** (`ef7b1d83`) **e sul
+server** (passo 17, server a `40789324`, riferito dal Coordinatore):
+`1866 recommended routes`, le corse di prima identiche (`60 50 50 …`,
+`1546 63 40 0`), Londra in bici `8 london-circle-20000-25 ['cycling']
+[20000, 25000, 30000]` e `320 54 40 london-circle-20000-25`, come attesi
+in `out/TASK-441/SERVER-B2-ESTERE.md`. Niente OTA: con lo sport «Bike»,
+«Explore» mostra già le uscite nelle 25 città. Il Coordinatore ha dato il
+via al secondo giro delle sette (a Mac vuoto, una per lancio):
+`LIMIT_MB=5120 LOAD_MAX=5 FREE_MIN=40 zsh out/TASK-441/b2/run-estere.sh
+<città>`, una per lancio.
+
 *2026-11-22, notte, B2 estere*: **giro delle città estere finito** (via del
 Coordinatore alle 00:37, fine all'01:08). **25 città disegnate** su 32: 200
 casi, **172 passano il filtro**, tutti delle otto forme. Riletti a occhio

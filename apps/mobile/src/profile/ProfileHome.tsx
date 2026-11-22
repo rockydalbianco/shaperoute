@@ -20,6 +20,7 @@ import { BadgesSection } from "./BadgesSection";
 import { FirstStep, profileStage } from "./FirstStep";
 import { photoBusyText, PhotoChoices } from "./PhotoChoices";
 import { ProfileGallery } from "./ProfileGallery";
+import { ProfileGroupRuns } from "../groupRuns/ProfileGroupRuns";
 import { ProfileHeader } from "./ProfileHeader";
 import { OwnSleep } from "./OwnSleep";
 import { OwnVo2Max } from "./OwnVo2Max";
@@ -176,6 +177,15 @@ export function ProfileHome({
       </View>
       {/* The badges of the drawings, with how each is earned (TASK-457). */}
       <BadgesSection badges={own?.badges ?? null} />
+      {/* Its group runs, coming and past (TASK-309 part B): none, nothing. */}
+      {apiUrl !== null && account.state.status === "signedIn" && publicId !== null && (
+        <ProfileGroupRuns
+          apiUrl={apiUrl}
+          token={account.state.session.token}
+          publicId={publicId}
+          onSessionEnded={account.sessionEnded}
+        />
+      )}
       {/* What it made. */}
       <ProfileGallery
         publicId={publicId}

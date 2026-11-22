@@ -680,6 +680,20 @@ sopra una foto bianca o nera. Il contatore delle foto è una capsula di
 vetro. Con «Riduci trasparenza» e «Aumenta contrasto» la capsula è opaca.
 Sotto il disegno le parole restano come prima.
 
+**L'header di vetro** (TASK-469 A5 e A5b, `src/tabs/AppHeader.tsx`,
+`src/tabs/headerScroll.tsx`): la campanella e lo sport sono due cerchi di
+vetro in rilievo, col bordo forte dei comandi (`headerGlass`); il numero
+rosso resta sulla campanella. In cima a una pagina l'header ha il colore
+della pagina e nessuna linea sotto; quando la pagina scorre di più di 4 pt
+prende una fascia di vetro con il filo di luce in basso e un'ombra corta
+sul contenuto, in 200 ms (subito con «Riduci movimento»), e la lascia
+quando la pagina torna in cima. Conta la pagina sullo schermo: cambiando
+scheda l'header segue quella nuova. Ogni pagina lo dice con
+`useHeaderScroll()` sul suo scroller principale; una pagina che non lo
+dice tiene l'header a riposo. Con «Riduci trasparenza» la fascia è opaca
+con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
+contenuto non passa sotto l'header: per quello serve la parte B.
+
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
 piccola, si allarga, poi si alza; le parole compaiono quando è aperta,
@@ -5530,3 +5544,29 @@ pagina per liberare memoria, la WebView la ricarica da sola.
   calcolati c'è da TASK-093).
 - Contorni disegnati delle forme e cursore della distanza: vogliono
   dipendenze (TASK-051).
+
+## Le corse di gruppo (TASK-309 parte B1, ADR-0269)
+
+- **Sul percorso**: sotto il cuore, «Send to a friend» e «Send to watch», un
+  bottone tondo ⚑ «Create group run», solo con un account. Apre «New group
+  run» a tutto schermo: «Title» (il nome del percorso per cominciare),
+  «Day and time» con due righe «−» / «+» (un giorno, 15 minuti), «Where
+  exactly» («e.g. MUSE entrance»), «Notes» («Pace, what to bring…»), «Who
+  can see it» («Everyone» o «Followers»), l'avviso di sicurezza in piccolo,
+  poi «Not now» e «Publish». Un rifiuto dell'API si legge sotto, con le sue
+  parole.
+- **La pagina** sopra l'app, con «←»: «Group runs» in alto e «…» per
+  segnalarla (non sulla propria); il titolo; «Cancelled» o «Over» in rosso
+  quando vale; il giorno e l'ora del telefono, «Where exactly», la
+  distanza, le note; «Organiser» con il nome, «{n} going» e i nomi, ognuno
+  apre il profilo. Finché non è finita: «Start» giallo e, per chi non
+  organizza, «I'm going» o «Not going» (con «You're going» sotto).
+  L'organizzatore, prima dell'inizio, ha «Edit» (lo stesso modulo, senza
+  «Who can see it») e «Cancel group run», con la domanda «Cancel this group
+  run? Everyone going gets a notice.».
+- **Nel profilo**, proprio e degli altri, sotto il resto: «Group runs» con
+  quelle in arrivo e poi «Past», una scheda a testa (titolo, giorno e ora,
+  quanti vanno). Niente senza corse di gruppo, niente da un'API di prima.
+- **Le notifiche** e le righe della campanella delle corse di gruppo aprono
+  la pagina.
+

@@ -1,6 +1,7 @@
 import {
   type ChallengePushKind,
   type ContestPushKind,
+  type GroupRunPushKind,
   type MessagePushKind,
   type Person,
   PLANNED_LIVE_PUSH_KIND,
@@ -27,7 +28,9 @@ export type TapTarget =
   | { kind: "challenge"; id: string }
   | { kind: "contest"; id: string }
   /** A planned live that started (TASK-468 part B2b1): its live view. */
-  | { kind: "live"; shareId: string; plannedLiveId: string };
+  | { kind: "live"; shareId: string; plannedLiveId: string }
+  /** A group run soon, changed or cancelled (TASK-309 part B): its page. */
+  | { kind: "group_run"; id: string };
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -40,6 +43,13 @@ const CHALLENGE_KINDS: readonly ChallengePushKind[] = [
 
 /** The kinds of a private message's notifications (TASK-319). */
 const MESSAGE_KINDS: readonly MessagePushKind[] = ["message", "message_request"];
+
+/** The kinds of a group run's notifications (TASK-309). */
+const GROUP_RUN_KINDS: readonly GroupRunPushKind[] = [
+  "group_run_soon",
+  "group_run_changed",
+  "group_run_cancelled",
+];
 
 /** The kinds of a monthly challenge's notifications (TASK-343). */
 const CONTEST_KINDS: readonly ContestPushKind[] = [
@@ -77,6 +87,12 @@ export function tapTarget(data: unknown): TapTarget | null {
     const contest = field(data, "contest_id");
     return contest !== null && ID.test(contest)
       ? { kind: "contest", id: contest }
+      : null;
+  }
+  if (kind !== null && (GROUP_RUN_KINDS as readonly string[]).includes(kind)) {
+    const groupRun = field(data, "group_run_id");
+    return groupRun !== null && ID.test(groupRun)
+      ? { kind: "group_run", id: groupRun }
       : null;
   }
   if (kind === PLANNED_LIVE_PUSH_KIND) {

@@ -728,6 +728,12 @@ da «My activities») sono approvate dall'utente («Sì, approvo», 2026-11-22):
 linea bianca a piedi e gialla in volo, «A piedi 30:00 · In volo 15:00», la
 legenda. Decisione: ADR-0375 precisazione R6d.
 
+**Un volo nelle liste** (2026-11-22, chiesto dall'utente dopo la prova di
+R6d): #1399 in main (`07d6daa6`), esce con l'OTA dopo la 21. In «My
+activities», nella scheda e nella riga del Feed un volo senza luogo né
+disegno si chiama «Paragliding» invece di «Run», e ha la velocità media
+invece del passo per km. R6d è in produzione con l'OTA 21.
+
 **Cosa resta**:
 
 - Una prova di un volo vero, col link dal vivo aperto da un altro
@@ -736,7 +742,4 @@ legenda. Decisione: ADR-0375 precisazione R6d.
   fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
 - Il post di una gara aperto dal Feed o da un profilo
   (`GET /drawings/{id}`) resta tutto bianco: i due colori lì sono per dopo.
-- Nella scheda di «My activities» un volo senza luogo si chiama «Run» e
-  mostra un passo in /km, come prima di R6d: da correggere a parte, se
-  l'utente lo vuole.
 - Le parti del pianificatore (A1…F) restano Proposte.

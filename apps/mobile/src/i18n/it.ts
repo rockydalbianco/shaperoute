@@ -2479,6 +2479,10 @@ export const IT: Table = {
   "The people you follow have not published anything yet.":
     "Chi segui non ha ancora pubblicato nulla.",
   "Couldn't load the Feed.": "Non è stato possibile caricare il Feed.",
+  // src/screens/FeedScreen.tsx: «All» without examples (2026-11-22)
+  "Log in from Profile to see the activities.":
+    "Accedi dal Profilo per vedere le attività.",
+  "Nobody has published anything yet.": "Nessuno ha ancora pubblicato nulla.",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)
   "≈ {time} at {pace}": "≈ {time} a {pace}",
@@ -3022,6 +3026,32 @@ export const IT: Table = {
     "Questa schermata viene da un MuW più nuovo: aggiorna l'app.",
   "MuW could not read this file.": "MuW non è riuscita a leggere questo file.",
   "MuW could not share the file.": "MuW non è riuscita a condividere il file.",
+  // TASK-483 B: the history of an exercise at the gym.
+  "Last time · {day}": "L'ultima volta · {day}",
+  History: "Storico",
+  "Try {set}": "Prova {set}",
+  "Try {set} again": "Riprova {set}",
+  "{count} rep": "{count} ripetizione",
+  "{count} reps": "{count} ripetizioni",
+  "Estimated max": "Massimale stimato",
+  "Best set (reps)": "Serie migliore (ripetizioni)",
+  "Longest set": "Serie più lunga",
+  Farthest: "Distanza massima",
+  "All time": "Tutto",
+  Records: "Record",
+  Heaviest: "Peso massimo",
+  "Most reps": "Più ripetizioni",
+  "Best volume": "Volume migliore",
+  "Longest time": "Tempo più lungo",
+  "{count} workout": "{count} allenamento",
+  "{count} workouts": "{count} allenamenti",
+  PR: "PR",
+  "Estimated from your sets of up to 12 reps.":
+    "Stimato dalle tue serie fino a 12 ripetizioni.",
+  "No workouts in this period.": "Nessun allenamento in questo periodo.",
+  "No workouts with this exercise yet.":
+    "Ancora nessun allenamento con questo esercizio.",
+  "From {low} to {high}, {count} workouts": "Da {low} a {high}, {count} allenamenti",
   // src/air/ (TASK-479 part C: the vario's sound; texts approved by the user on 2026-11-22)
   "Vario sound": "Suono del vario",
   "Beeps from": "Bip da",

@@ -1,0 +1,63 @@
+{
+  "key": "pp7k2m9q4x1c",
+  "id": "5b8e2f14-6a3d-4c97-9e01-2d7f4a8c6b30",
+  "description": "Three days in the gym and two runs a week: it got me to 10 km.",
+  "visibility": "everyone",
+  "published_at": "2026-09-21T18:30:00Z",
+  "plan": {
+    "name": "Lift and run",
+    "days": [1, 2, 4, 6],
+    "items": [],
+    "program": {
+      "goal": "fit",
+      "weeks": 4,
+      "mode": "load",
+      "step_kg": 2.5,
+      "rest_s": 60,
+      "sessions": [
+        {
+          "day": 1,
+          "name": "Full body A",
+          "items": [
+            {
+              "exercise": "leg_press",
+              "kind": "load",
+              "sets": 3,
+              "reps": 12,
+              "load_kg": 80
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "name": "Easy run",
+          "items": [],
+          "run": {
+            "kind": "easy",
+            "distance_m": 5000
+          }
+        },
+        {
+          "day": 4,
+          "name": "Intervals",
+          "items": [],
+          "run": {
+            "kind": "intervals",
+            "reps": 6,
+            "rep_m": 400
+          }
+        },
+        {
+          "day": 6,
+          "name": "Long run",
+          "items": [],
+          "run": {
+            "kind": "long",
+            "duration_s": 3600
+          }
+        }
+      ],
+      "custom": []
+    }
+  }
+}

@@ -2509,6 +2509,10 @@ export const DE: Table = {
   "The people you follow have not published anything yet.":
     "Die Personen, denen du folgst, haben noch nichts veröffentlicht.",
   "Couldn't load the Feed.": "Der Feed konnte nicht geladen werden.",
+  // src/screens/FeedScreen.tsx: «All» without examples (2026-11-22)
+  "Log in from Profile to see the activities.":
+    "Melde dich im Profil an, um die Aktivitäten zu sehen.",
+  "Nobody has published anything yet.": "Noch niemand hat etwas veröffentlicht.",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)
   "≈ {time} at {pace}": "≈ {time} bei {pace}",
@@ -3053,6 +3057,31 @@ export const DE: Table = {
     "Dieses Layout stammt aus einer neueren MuW-Version: Aktualisiere die App.",
   "MuW could not read this file.": "MuW konnte diese Datei nicht lesen.",
   "MuW could not share the file.": "MuW konnte die Datei nicht teilen.",
+  // TASK-483 B: the history of an exercise at the gym.
+  "Last time · {day}": "Letztes Mal · {day}",
+  History: "Verlauf",
+  "Try {set}": "Versuch {set}",
+  "Try {set} again": "Versuch nochmal {set}",
+  "{count} rep": "{count} Wiederholung",
+  "{count} reps": "{count} Wiederholungen",
+  "Estimated max": "Geschätztes Maximum",
+  "Best set (reps)": "Bester Satz (Wdh.)",
+  "Longest set": "Längster Satz",
+  Farthest: "Weiteste Distanz",
+  "All time": "Gesamt",
+  Records: "Rekorde",
+  Heaviest: "Schwerstes Gewicht",
+  "Most reps": "Meiste Wiederholungen",
+  "Best volume": "Bestes Volumen",
+  "Longest time": "Längste Zeit",
+  "{count} workout": "{count} Training",
+  "{count} workouts": "{count} Trainings",
+  PR: "PR",
+  "Estimated from your sets of up to 12 reps.":
+    "Geschätzt aus deinen Sätzen mit bis zu 12 Wiederholungen.",
+  "No workouts in this period.": "Keine Trainings in diesem Zeitraum.",
+  "No workouts with this exercise yet.": "Noch keine Trainings mit dieser Übung.",
+  "From {low} to {high}, {count} workouts": "Von {low} bis {high}, {count} Trainings",
   // src/air/ (TASK-479 part C: the vario's sound; texts approved by the user on 2026-11-22)
   "Vario sound": "Vario-Ton",
   "Beeps from": "Piepen ab",

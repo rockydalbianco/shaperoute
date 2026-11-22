@@ -1,3 +1,4 @@
+import { decimal } from "../i18n";
 import type { Units } from "../units/units";
 
 /**
@@ -60,7 +61,10 @@ export function heightLabel(cm: number, units: Units): string {
   return `${Math.round(cm)} cm`;
 }
 
-/** The weight as the app shows it: «72.5 kg», «160 lb». */
+/** The weight as the app shows it: «72.5 kg», «160 lb», with the comma
+ * where the app's language writes one («72,5 kg»). */
 export function weightLabel(kg: number, units: Units): string {
-  return `${weightIn(kg, units)} ${weightUnit(units)}`;
+  const value = weightIn(kg, units);
+  const number = Number.isInteger(value) ? String(value) : decimal(value, 1);
+  return `${number} ${weightUnit(units)}`;
 }

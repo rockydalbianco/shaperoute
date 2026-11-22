@@ -51,8 +51,7 @@ test("its owner reads the night, the drawing's id and when it was published", ()
 test("`sleep` is a source of a drawing and a kind an app may read, after `photos`", () => {
   const source: DrawingSource = SLEEP_SOURCE;
   assert.equal(source, "sleep");
-  assert.equal(reads.kinds.at(-1), SLEEP_SOURCE);
-  assert.equal(reads.kinds.at(-2), "photos");
+  assert.equal(reads.kinds.indexOf(SLEEP_SOURCE), reads.kinds.indexOf("photos") + 1);
   // The app says it with part E's app: today's does not read it yet.
   assert.ok(!reads.this_app.split(",").includes(SLEEP_SOURCE));
 });

@@ -2496,6 +2496,10 @@ export const FR: Table = {
   "The people you follow have not published anything yet.":
     "Les personnes que tu suis n'ont encore rien publié.",
   "Couldn't load the Feed.": "Impossible de charger le Feed.",
+  // src/screens/FeedScreen.tsx: «All» without examples (2026-11-22)
+  "Log in from Profile to see the activities.":
+    "Connecte-toi depuis le Profil pour voir les activités.",
+  "Nobody has published anything yet.": "Personne n'a encore rien publié.",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)
   "≈ {time} at {pace}": "≈ {time} à {pace}",
@@ -3041,6 +3045,31 @@ export const FR: Table = {
     "Cette disposition vient d'une version plus récente de MuW : mettez l'app à jour.",
   "MuW could not read this file.": "MuW n'a pas pu lire ce fichier.",
   "MuW could not share the file.": "MuW n'a pas pu partager le fichier.",
+  // TASK-483 B: the history of an exercise at the gym.
+  "Last time · {day}": "La dernière fois · {day}",
+  History: "Historique",
+  "Try {set}": "Essaie {set}",
+  "Try {set} again": "Réessaie {set}",
+  "{count} rep": "{count} répétition",
+  "{count} reps": "{count} répétitions",
+  "Estimated max": "Max estimé",
+  "Best set (reps)": "Meilleure série (reps)",
+  "Longest set": "Série la plus longue",
+  Farthest: "Distance max",
+  "All time": "Tout",
+  Records: "Records",
+  Heaviest: "Plus lourd",
+  "Most reps": "Plus de répétitions",
+  "Best volume": "Meilleur volume",
+  "Longest time": "Temps le plus long",
+  "{count} workout": "{count} séance",
+  "{count} workouts": "{count} séances",
+  PR: "PR",
+  "Estimated from your sets of up to 12 reps.":
+    "Estimé à partir de tes séries jusqu'à 12 répétitions.",
+  "No workouts in this period.": "Aucune séance sur cette période.",
+  "No workouts with this exercise yet.": "Pas encore de séance avec cet exercice.",
+  "From {low} to {high}, {count} workouts": "De {low} à {high}, {count} séances",
   // src/air/ (TASK-479 part C: the vario's sound; texts approved by the user on 2026-11-22)
   "Vario sound": "Son du vario",
   "Beeps from": "Bips dès",

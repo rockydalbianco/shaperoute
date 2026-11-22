@@ -191,7 +191,9 @@ test("without an account the tabs are «All» and «Style»", async () => {
     </Around>,
   );
   expect(await screen.findByText("Style")).toBeOnTheScreen();
-  expect(screen.getByText("All")).toBeOnTheScreen();
+  // «All» twice: the tab and the title of the words to log in (TASK-487).
+  expect(screen.getAllByText("All")).toHaveLength(2);
+  expect(screen.getByTestId("feed-log-in")).toBeOnTheScreen();
   expect(screen.queryByText("Following")).toBeNull();
 });
 

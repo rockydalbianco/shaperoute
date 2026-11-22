@@ -9,13 +9,14 @@ import {
   Text,
   View,
 } from "react-native";
-import type { GymSet } from "@shaperoute/shared-types";
+import { type GymSet, PLAN_SOURCE } from "@shaperoute/shared-types";
 
 import { sportPaceLabel } from "../activities/activityText";
 import { isOnSnow, isTrackless } from "../activities/snow";
 import { authHeaders } from "../api/accounts";
 import { keyHeaders } from "../api/apiUrl";
 import { drawingPhotoSource } from "../api/drawings";
+import { isGymPlanPosted } from "../api/planPosts";
 import { cityName } from "../explore/recommendedRoutes";
 import { RouteThumb } from "../explore/RouteThumb";
 import { GymTile } from "../gym/GymTile";
@@ -56,6 +57,7 @@ import { useEditRunDoor } from "./editRunDoor";
 import { postSplit, postSplitLine } from "../air/flightSplit";
 import { isImportedPost, isShown } from "./feedPosts";
 import { PhotoViewer } from "./PhotoViewer";
+import { PlanPost } from "./PlanPostTile";
 import { PostActions } from "./PostActions";
 import type { PostReactionsHandle } from "./PostReactions";
 import { gymPostEnergy, postEnergy } from "./postEnergy";
@@ -613,6 +615,32 @@ export function FeedPost({ post, width, onOpen }: Props) {
   const mine =
     state.status === "signedIn" &&
     state.session.user.public_id === post.drawing.author.public_id;
+  // A gym plan posted (TASK-485 part B): its tile in place of the drawing,
+  // opened whole by a tap; no numbers, it was never run.
+  // The shared type of a post's `source` names only a run's.
+  const source: string | undefined = post.drawing.source;
+  const plan = source === PLAN_SOURCE ? post.drawing.plan : null;
+  if (isGymPlanPosted(plan)) {
+    return (
+      <View style={styles.card} testID="feed-plan-post">
+        {who}
+        <PlanPost
+          plan={plan}
+          description={post.drawing.description ?? null}
+          mine={mine}
+          drawingId={post.drawing.id}
+          width={width}
+        />
+        {menu !== null && <View style={styles.menu}>{menu}</View>}
+        {onOpen !== undefined && (
+          <>
+            <Hairline />
+            <PostActions post={post} mine={mine} reactionsHandle={reactions} />
+          </>
+        )}
+      </View>
+    );
+  }
   // «Edit & run» where there is a line to run: not on the snow, at the gym
   // nor in a pool.
   const onEditRun =

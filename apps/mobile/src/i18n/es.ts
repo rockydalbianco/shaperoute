@@ -2863,8 +2863,11 @@ export const ES: Table = {
   "Links to my posts": "Enlaces a mis publicaciones",
   "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.":
     "Quien ve tus publicaciones para «Todos» puede compartir su enlace. Quien tiene el enlace ve el dibujo en el mapa, tu nombre de usuario, el título, el deporte y la distancia, incluso sin MuW. Desactívalo y los enlaces dejan de funcionar.",
-  // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
-  "Add activity": "Añadir actividad",
+  // src/feed/AddToFeed.tsx and addToFeedEntries.ts (TASK-476, TASK-481:
+  // the Feed's «+»; the English approved by the user, 2026-11-21).
+  "Add to Feed": "Añadir al feed",
+  "Record now": "Grabar ahora",
+  "Start an activity now": "Empieza una actividad ahora",
   // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
   // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
   // the first three approved by the user, 2026-11-21, the deletion's with
@@ -3161,4 +3164,21 @@ export const ES: Table = {
     "Estas palabras no se pueden usar. Prueba con otras.",
   "Links and special characters can't be used here.":
     "Aquí no se pueden usar enlaces ni caracteres especiales.",
+
+  // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
+  "Choose a plan": "Elige un plan",
+  "No plans yet: make one in Gym › Plans.":
+    "Aún no tienes planes: crea uno en Gimnasio › Planes.",
+  "Say something about this plan (optional)": "Di algo sobre este plan (opcional)",
+  "Who sees it: {who}": "Quién lo ve: {who}",
+  "Workout plan": "Plan de entrenamiento",
+  "{count} day a week": "{count} día a la semana",
+  "{count} days a week": "{count} días a la semana",
+  "Use this plan": "Usar este plan",
+  "Added to your plans": "Añadido a tus planes",
+  "You already have 20 plans: delete one to add this.":
+    "Ya tienes 20 planes: elimina uno para añadir este.",
+  "Delete this post?": "¿Eliminar esta publicación?",
+  "Copies already made stay with whoever made them.":
+    "Las copias ya hechas se quedan con quien las hizo.",
 };

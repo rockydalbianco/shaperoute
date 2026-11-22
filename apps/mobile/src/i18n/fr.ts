@@ -2864,8 +2864,11 @@ export const FR: Table = {
   "Links to my posts": "Liens vers mes publications",
   "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.":
     "Qui voit tes publications pour «Tout le monde» peut partager leur lien. Qui a le lien voit le dessin sur la carte, ton nom d'utilisateur, le titre, le sport et la distance, même sans MuW. Désactive-le et les liens cessent de fonctionner.",
-  // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
-  "Add activity": "Ajouter une activité",
+  // src/feed/AddToFeed.tsx and addToFeedEntries.ts (TASK-476, TASK-481:
+  // the Feed's «+»; the English approved by the user, 2026-11-21).
+  "Add to Feed": "Ajouter au fil",
+  "Record now": "Enregistrer maintenant",
+  "Start an activity now": "Commencer une activité maintenant",
   // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
   // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
   // the first three approved by the user, 2026-11-21, the deletion's with
@@ -3162,4 +3165,22 @@ export const FR: Table = {
     "Ces mots ne peuvent pas être utilisés. Essaie d'autres mots.",
   "Links and special characters can't be used here.":
     "Les liens et les caractères spéciaux ne sont pas acceptés ici.",
+
+  // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
+  "Choose a plan": "Choisis un programme",
+  "No plans yet: make one in Gym › Plans.":
+    "Aucun programme pour l'instant : crée-en un dans Salle de sport › Programmes.",
+  "Say something about this plan (optional)":
+    "Dis quelque chose sur ce programme (facultatif)",
+  "Who sees it: {who}": "Qui le voit : {who}",
+  "Workout plan": "Programme d'entraînement",
+  "{count} day a week": "{count} jour par semaine",
+  "{count} days a week": "{count} jours par semaine",
+  "Use this plan": "Utiliser ce programme",
+  "Added to your plans": "Ajouté à tes programmes",
+  "You already have 20 plans: delete one to add this.":
+    "Tu as déjà 20 programmes : supprimes-en un pour ajouter celui-ci.",
+  "Delete this post?": "Supprimer cette publication ?",
+  "Copies already made stay with whoever made them.":
+    "Les copies déjà faites restent à ceux qui les ont faites.",
 };

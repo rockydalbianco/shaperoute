@@ -36,6 +36,15 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-485 — La scheda della palestra come post** (ADR-0394) · 0 e A in
+  `main`, A sul server (passo 18); B (app) in `main` (#1414, `f4737c66`),
+  testi approvati il 2026-11-23, esce con l'OTA col sì. Restano la voce del
+  «+» (dopo TASK-481 A), la privacy a turno, l'apertura da profilo, notifica
+  o link. File: — · `tasks/TASK-485.md`
+- **TASK-490 — La modalità Allenamento** · parte 0 chiusa il 2026-11-23
+  (ADR-0398): scelta «Gym», la barra è Today · Workouts · Food · Feed ·
+  Profile come per lo sci; il Cibo è la pagina di TASK-489. Prossima la A.
+  File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
   parte 0 chiusa il 2026-11-22 (otto scelte dell'utente, ADR-0397): cibi da
   USDA più i propri, piano a settimana, solo sul telefono, tabella solo per
@@ -242,6 +251,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Resta: un volo vero; R4 in bozza (#1218).
   **2026-11-22**: R6d in produzione con l'OTA 21. #1399 in main: un volo
   nelle liste si chiama «Paragliding» e ha la velocità, col prossimo OTA.
+  **2026-11-23**: R6e in main (#1411 server col passo 19, #1412 app con
+  l'OTA 23): il post di una gara dal Feed a due colori.
 - **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
   scelta dell'utente del 2026-11-21, senza accordi con terzi: schermata di
   widget, vario sonoro, mappa 3D, spazi aerei dal file del pilota, gare,

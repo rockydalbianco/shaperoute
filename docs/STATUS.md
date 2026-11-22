@@ -40,6 +40,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
   dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.
   File: `apps/mobile/src/screens/FeedScreen.tsx` · `tasks/TASK-487.md`
+  **Chiuso il 2026-11-22**: #1397 in `main` (5a6e3cd4); esce con l'OTA 23, col sì dell'utente al Coordinatore; vedi `archive/COMPLETATI.md`.
 - **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
   scelte dell'utente, ADR-0393); poi A server … G avviso, file al
   Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`

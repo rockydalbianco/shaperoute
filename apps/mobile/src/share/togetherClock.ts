@@ -48,8 +48,14 @@ export type Position = {
   between: [number, number];
 };
 
-/** A ⚡ in the video: when, in seconds of «The route», and where. */
-export type Meeting = { videoS: number; point: LatLon };
+/** A ⚡ in the video: when, in seconds of «The route», and where; the real
+ * second, and the two runners who met (`who[0]` the first in the page). */
+export type Meeting = {
+  videoS: number;
+  point: LatLon;
+  realS: number;
+  who: [number, number];
+};
 
 /** The real clock, from the first start to the last finish. */
 export type Span = { startS: number; endS: number };
@@ -176,6 +182,7 @@ export function meetings(tracks: readonly TogetherTrack[], routeS: number): Meet
       continue;
     }
     let met: LatLon | null = null;
+    let who: [number, number] = [0, 0];
     for (let a = 0; a < tracks.length && met === null; a += 1) {
       const here = positionAt(tracks[a] as TogetherTrack, realS);
       if (!onTheWay(here)) {
@@ -186,13 +193,14 @@ export function meetings(tracks: readonly TogetherTrack[], routeS: number): Meet
           const there = positionAt(tracks[b] as TogetherTrack, realS + d);
           if (onTheWay(there) && metresApart(here.point, there.point) < MEET_M) {
             met = along(here.point, there.point, 0.5);
+            who = [a, b];
             break;
           }
         }
       }
     }
     if (met !== null) {
-      found.push({ videoS, point: met });
+      found.push({ videoS, point: met, realS, who });
       lastVideoS = videoS;
     }
   }

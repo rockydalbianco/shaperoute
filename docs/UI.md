@@ -815,7 +815,10 @@ barra qui sopra, e lo swipe è quello qui sopra.
   reazioni e commenti, come dal profilo (TASK-117, 119, 120); «←» torna
   a «Feed» com'era, senza rileggere, e «Profile» resta chiuso; se nel
   frattempo è sparito, sopra l'elenco: «This drawing is no longer
-  public.». Mentre la prima pagina arriva, una rotella e niente altro.
+  public.». Mentre la prima pagina arriva, la sagoma di due schede (il
+  cerchio e le righe del nome, la mappa, la riga delle azioni) nei grigi
+  delle superfici, e niente altro: una pagina riletta tiene le schede che
+  aveva (TASK-355 B, al posto della rotella).
   **La scheda di un iscritto** (TASK-355 A, ADR-0306, scelte dell'utente
   del 2026-10-30): sotto il nome il luogo e quando è stata corsa, con le
   parole dell'età dei commenti, «Caldonazzo · 2 h fa» («1 g fa», dopo una
@@ -840,7 +843,12 @@ barra qui sopra, e lo swipe è quello qui sopra.
   linea di Lucide come quelle della barra (`assets/ui/icons/`: `heart`,
   `message-circle`, `share`, `pencil`; PNG bianche colorate dai token,
   gialla solo quella di «Edit & run»), non più emoji (TASK-444); il
-  lettore di schermo legge la parola.
+  lettore di schermo legge la parola. I numeri di «Like» e «Comment» e la
+  propria reazione arrivano con la pagina del Feed (TASK-355 B): la scheda
+  non chiede altro finché non si apre la lista dei commenti o non parte una
+  propria reazione; da un'API di prima, dalla ricerca e dalle sfide li
+  chiede come prima. Nel cerchio del nome la foto dell'autore quando c'è,
+  letta col token dal suo indirizzo sull'API; senza, l'iniziale in grigio.
   **Senza account, e finché nessuno ha pubblicato qualcosa che si può
   vedere** (o l'API non risponde, o è di prima del feed), mostra
   **quindici disegni di esempio**
@@ -5285,8 +5293,13 @@ TASK-305.md, «Testi di R6».
     bianco, come prima.
   - I tratti si calcolano sul telefono dalla traccia e dalle correzioni a
     mano (`src/air/flightLegs.ts`), come quelli della fine.
-  - La pagina dell'attività riaperta più tardi è la parte R6d, ancora da
-    fare: lì i tratti arrivano dal server.
+  - **La gara riaperta da «My activities»** (parte R6d): la stessa mappa a
+    due colori, coi tratti che arrivano dal server (`flight` di
+    `GET /me/activities/{key}`), perché la traccia dell'API non ha gli
+    orari. Sotto km, tempo e passo, la riga «On foot 1:58:40 · In the air
+    1:43:30» come nel Feed, e la legenda «White: on foot. Yellow: in the
+    air.». Un'API di prima, o un `flight` che non sta sulla traccia: la
+    gara come una corsa, tutta bianca.
 
 ### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
 

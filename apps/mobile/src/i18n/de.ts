@@ -3031,7 +3031,7 @@ export const DE: Table = {
   "MuW could not read this file.": "MuW konnte diese Datei nicht lesen.",
   "MuW could not share the file.": "MuW konnte die Datei nicht teilen.",
 
-  // src/gear/ (TASK-486 part B, the gear), to approve
+  // src/gear/ (TASK-486 part B, the gear), approved by the user on 2026-11-22
   Shoes: "Schuhe",
   Skis: "Ski",
   "Ski boots": "Skischuhe",

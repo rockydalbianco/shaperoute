@@ -3019,7 +3019,7 @@ export const FR: Table = {
   "MuW could not read this file.": "MuW n'a pas pu lire ce fichier.",
   "MuW could not share the file.": "MuW n'a pas pu partager le fichier.",
 
-  // src/gear/ (TASK-486 part B, the gear), to approve
+  // src/gear/ (TASK-486 part B, the gear), approved by the user on 2026-11-22
   Shoes: "Chaussures",
   Skis: "Skis",
   "Ski boots": "Chaussures de ski",

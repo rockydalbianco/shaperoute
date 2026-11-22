@@ -293,6 +293,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-22**: E1 sul server (passo 17). E2: file nuovi pronti senza
   PR, agganci dopo TASK-312 C2 e TASK-481 A. C: frase della privacy
   approvata, sulla bozza #1334 (verde, da non unire).
+  **2026-11-23**: **E2 in `main`**, spenta: il post del sonno nel Feed,
+  nella sua pagina e nella griglia (#1419, `d0b89470`) e la voce «Sleep»
+  del «+» (#1441, `57e4d4b4`). Poi una build di prova nuova, poi la C.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`

@@ -895,6 +895,13 @@ Coordinatore; prima della pubblicazione una prova con un pilota vero.
 ADR-0265 (il pianificatore nel cono) resta Proposta. Dettagli in
 `tasks/TASK-479.md`.
 
+**Aggiunta del 2026-11-22 (parte C, deciso dall'agente su delega
+dell'utente)**: il vario sonoro suona file, non sintesi: 15 loop WAV fatti
+da `tools/vario_tones.py` (un gradino di salita ogni 0,5 m/s, uno di
+discesa ogni 1 m/s), un player in loop per tono; il suono appartiene alla
+registrazione e non alla schermata di volo, così suona anche a schermata
+chiusa; nessun tocco ad `app.json`. Acceso di default: scelta dell'utente.
+
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
 **Stato**: Proposta · 2026-11-21 · TASK-485 parte 0 (numero dal

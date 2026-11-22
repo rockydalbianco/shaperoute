@@ -338,7 +338,9 @@ test("«Help» and «Privacy» say «Everyone» is for an activity added from a 
   };
   for (const [language, content] of CONTENTS) {
     for (const text of [all(content.help), all(content.privacy)]) {
-      const plus = text.split(/(?<=\.)\s/).filter((sentence) => sentence.includes("«+»"));
+      const plus = text
+        .split(/(?<=\.)\s/)
+        .filter((sentence) => sentence.includes("«+»"));
       expect(plus.length).toBeGreaterThan(0);
       for (const sentence of plus) {
         expect(sentence).toMatch(fromFile[language]);

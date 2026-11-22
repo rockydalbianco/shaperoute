@@ -7,6 +7,7 @@ import type { Account } from "../account/useAccount";
 import { apiUrl } from "../api/apiUrl";
 import { fetchMyGear } from "../api/gear";
 import { t } from "../i18n";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import {
   color,
   fontSize,
@@ -43,6 +44,7 @@ export function GearSetting({
   api = { baseUrl: apiUrl() },
   on = GEAR_ON,
 }: Props) {
+  const group = useSettingsGroup();
   const { baseUrl, fetchFn, key } = api;
   const { state, sessionEnded: onSessionEnded } = account;
   const token = state.status === "signedIn" ? state.session.token : null;
@@ -77,7 +79,7 @@ export function GearSetting({
   }
   const inUse = items.gear.filter((item) => !item.retired).length;
   return (
-    <View style={styles.menu}>
+    <View style={[styles.menu, group]}>
       <Tap
         style={styles.row}
         onPress={() => setOpen(true)}

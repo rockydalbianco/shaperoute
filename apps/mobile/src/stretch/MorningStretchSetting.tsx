@@ -11,6 +11,7 @@ import { t } from "../i18n";
 import { askPushPermission, type PushPermission } from "../notifications/pushDevice";
 import { OpenSettings } from "../permissions/OpenSettings";
 import { PUSH_NOT_ALLOWED } from "../settings/notificationFields";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import {
   color,
   fontSize,
@@ -55,13 +56,14 @@ type Props = {
  * them. Every change is kept at once and the phone's notifications follow.
  */
 export function MorningStretchSetting({ ask = askPushPermission, notifier }: Props) {
+  const group = useSettingsGroup();
   const setting = useSyncExternalStore(subscribeMorning, appMorning);
   const [open, setOpen] = useState(false);
   const shown = setting.on
     ? `${clock(setting.hour, setting.minute)} · ${t("{minutes} min", { minutes: setting.minutes })}`
     : t("Off");
   return (
-    <View style={styles.menu}>
+    <View style={[styles.menu, group]}>
       <Tap
         style={styles.row}
         onPress={() => setOpen(true)}
@@ -107,6 +109,7 @@ function Page({
   notifier: MorningNotifier | undefined;
   onClose: () => void;
 }) {
+  const group = useSettingsGroup();
   const insets = useSafeAreaInsets();
   // The phone refused notifications: the reason, and the way to allow them.
   const [refused, setRefused] = useState(false);
@@ -170,7 +173,7 @@ function Page({
             { minutes: AFTER_ALARM_MIN },
           )}
         </Text>
-        <View style={styles.menu}>
+        <View style={[styles.menu, group]}>
           <Pressable
             style={({ pressed }) => [styles.row, pressed && styles.pressed]}
             onPress={() => void turn(!setting.on)}

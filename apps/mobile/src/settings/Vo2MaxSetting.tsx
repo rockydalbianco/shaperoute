@@ -8,6 +8,7 @@ import { fetchVo2Max, saveVo2MaxShow } from "../api/vo2max";
 import { t } from "../i18n";
 import { color, fontSize, radius, space } from "../theme/tokens";
 import { contactStyles } from "./ContactField";
+import { useSettingsGroup } from "./settingsGroup";
 
 type Props = {
   account: Pick<Account, "state" | "sessionEnded">;
@@ -22,6 +23,7 @@ type Props = {
  * that has it: an older one answers 404 and the row is not there.
  */
 export function Vo2MaxSetting({ account, api = { baseUrl: apiUrl() } }: Props) {
+  const group = useSettingsGroup();
   const { baseUrl, fetchFn, key } = api;
   const { state, sessionEnded: onSessionEnded } = account;
   const token = state.status === "signedIn" ? state.session.token : null;
@@ -74,7 +76,7 @@ export function Vo2MaxSetting({ account, api = { baseUrl: apiUrl() } }: Props) {
 
   return (
     <View style={styles.setting}>
-      <View style={contactStyles.menu}>
+      <View style={[contactStyles.menu, group]}>
         <Pressable
           style={({ pressed }) => [contactStyles.row, pressed && contactStyles.pressed]}
           onPress={() => void turn(!on)}

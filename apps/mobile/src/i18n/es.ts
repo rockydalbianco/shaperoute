@@ -3155,6 +3155,11 @@ export const ES: Table = {
   "Links and special characters can't be used here.":
     "Aquí no se pueden usar enlaces ni caracteres especiales.",
 
+  // src/gear/GearPicker.tsx, ActivityGear.tsx (TASK-486 part C), to approve
+  "Up to {count} items on an activity.": "Hasta {count} equipos por actividad.",
+  "This activity is still on its way. Try again in a moment.":
+    "Esta actividad todavía está en camino. Vuelve a intentarlo en un momento.",
+
   // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
   "Choose a plan": "Elige un plan",
   "No plans yet: make one in Gym › Plans.":

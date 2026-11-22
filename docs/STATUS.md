@@ -73,11 +73,13 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **Chiuso il 2026-11-10**: #568 in `main`; la prova sull'iPhone resta all'utente; vedi `archive/COMPLETATI.md`.
 - **TASK-309 — Le corse di gruppo** · documenti e A (API) in `main`;
   prossimo B (app), poi C. File: — · `tasks/TASK-309.md`
+  **2026-11-22**: B1 (app) in `main` (#1369); prossima B2 dopo 312 C2.
 - **TASK-311 — Parole scritte meglio** · A e B fatte; C e D dopo il sì
   dell'utente. File: — · `tasks/TASK-311.md`
 - **TASK-312 — Attività da altre app e post di sole foto** · A e B in `main`;
   poi C, D, E. File: — · `tasks/TASK-312.md`
   **2026-11-21**: C1 (API dei post di sole foto, migrazione `0080`) in `main` (#1347, ADR-0272 precisazione C); server col passo del Coordinatore e il sì dell'utente; poi C2 (app), D, E.
+  **2026-11-22**: parte C fatta: C1b, C1c sul server (passo 17), C2 app e privacy in `main` (#1386, `3d4f0d47`, ADR-0272 precisazione C2); OTA 23 del Coordinatore, poi sguardo sul telefono; restano D, E.
 - **TASK-316 — Explore pronto prima** · A e B in `main`; C (server,
   `draw_examples`) col sì dell'utente. File: — · `tasks/TASK-316.md`
 - **TASK-321 — L'attività in Apple Salute e Health Connect** · A in `main`,
@@ -96,6 +98,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **Chiuso il 2026-11-10**: #655 in `main`; la prova sul telefono resta all'utente; vedi `archive/COMPLETATI.md`.
 - **TASK-347 — Il disegno libero ancorato alle strade** · A fatta; prossima
   B (il telefono). File: — · `tasks/TASK-347.md`
+  **2026-11-22**: B in `main` (#1389); C1 #1398, poi C2 (schermate) e C3.
 - **TASK-348 — Il compositore del post** · A in `main`; resta la prova sul
   telefono, poi B, C, D. File: — · `tasks/TASK-348.md`
 - **TASK-353 — La chat: orari, giorni, non letti** · in corso; dopo il merge
@@ -103,6 +106,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **Chiuso il 2026-11-10**: #671 in `main` e sul server; prova sul telefono all'utente; vedi `archive/COMPLETATI.md`.
 - **TASK-355 — Una scheda del Feed chiara** · A in `main`; B dopo 344 B.
   File: — · `tasks/TASK-355.md`
+  **2026-11-22**: B1 (#1356, server passo 17) e B2 (#1370) in `main`; resta l'OTA.
 - **TASK-361 — «Draw» in tre secondi** · A e B in `main`; manca la
   pubblicazione. File: — · `tasks/TASK-361.md`
 - **TASK-363 — Dove va la posizione del telefono** · codice in
@@ -158,6 +162,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sistema). File: — · `tasks/TASK-417.md`
   **2026-11-21**: D1 (server di «Together», #1339) in `main`, sul server
   col passo 15; poi D2 (l'app, privacy dall'utente) ed E.
+  **2026-11-22**: D2a (#1357) e D2b (#1375) in `main`; restano la frase della
+  privacy (dopo 312 C2), l'OTA ed E.
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
   0, A, B in produzione; C1 (#1096, OTA 5), C2 (#1098), C2b (#1110) e C3
   (#1123, calorie in rosso) in `main`. Restano: il server di C2b (passo 7)

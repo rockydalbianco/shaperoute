@@ -1,6 +1,6 @@
 # TASK-309 — Eventi: le corse di gruppo («Group runs»)
 
-**Stato**: In lavorazione · documenti in `main` (#574) · A (API) in `main` (#581) · poi B (app), C (commenti)
+**Stato**: In lavorazione · documenti in `main` (#574) · A (API) in `main` (#581) · B1 (app) in `main` (#1369, 2026-11-22) · poi B2 (la riga nel Feed, dopo 312 C2), C (commenti)
 **Fase**: 4 · **Branch**: `docs/TASK-309-group-runs` (documenti),
 `feat/TASK-309-a-group-runs-api` (A), `feat/TASK-309-b-group-runs-app` (B),
 `feat/TASK-309-c-group-run-comments` (C)
@@ -352,3 +352,19 @@ della privacy dice ancora «a drawing, a comment or a profile»; con il suo
 sì, «or a group run» entra nella parte B. **Prossimo**: la parte B (app),
 in una sessione sua, con i «File toccati» al Coordinatore prima del
 codice.
+
+**Parte B1 in `main`** con la #1369 (`d83c4655`, 2026-11-22), mergiata dal
+Coordinatore dopo il sì dell'utente su schermate e testi de/es/fr
+(2026-11-22). Nell'app: la sezione nel profilo, il modulo «New group run»,
+la pagina della corsa (chi organizza: «Edit» e «Cancel»; chi partecipa:
+«I'm going»), «Start» che mette il percorso sulla mappa, il tasto ⚑ sotto
+il cuore e la push che apre la pagina. Privacy: «or a group run» nella
+sezione «Reports», nelle cinque lingue e sul sito, con la data del 22
+novembre 2026; le pagine di `site/privacy` sono rifatte con
+`make_privacy.mjs` e la copia sul sito la chiede il Coordinatore
+all'utente. Provata al simulatore il 2026-11-22: una pagina aperta dal
+profilo di un altro finiva sotto il profilo, ora `GroupRunPageHost` sta
+sopra `PeopleScreen` e `ProfileScreen`. Fuori lista, con l'OK del
+Coordinatore: `PeopleScreen.test.tsx`, perché il profilo ora chiede anche
+le sue corse di gruppo. Com'è fatta: `EVENTI.md` §14 e `UI.md`.
+**Prossimo**: B2 (la riga nel Feed) dopo 312 C2, poi C.

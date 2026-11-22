@@ -21,7 +21,7 @@ scelte, fra il 27 e il 28 ottobre 2026:
 | Che cosa | Da dove | Parte |
 |---|---|---|
 | Un'attività con la sua traccia | un file GPX, TCX o FIT esportato da un'altra app (Strava dal sito, Garmin Connect, Komoot, Polar Flow, Suunto, Coros, Wahoo…) e salvato in «File» | A (API), B (app) |
-| Un post di sole foto | da 1 a 3 foto dal rullino, anche quelle già messe su Instagram | C |
+| Un post di sole foto | da 1 a 10 foto dal rullino, anche quelle già messe su Instagram | C |
 | Gli allenamenti già sul telefono | Apple Salute (iOS), Health Connect (Android) | D, prima uno studio (§7) |
 | Le attività di un account esterno | un collegamento diretto a Garmin, Polar, Suunto, Coros, Wahoo, Strava… | E, prima uno studio (§8) |
 | Un allenamento in palestra già fatto | scritto a mano dal «+» del Feed («Gym workout»: esercizi, serie, pesi, giorno, ora, durata) | TASK-484, ADR-0395 (`sports/gym.md`) |
@@ -43,7 +43,9 @@ nell'ordine «Record now», «Photos only», «From a file» (poi «Sleep», «G
 workout», «Workout plan» quando arrivano). «Record now» chiude il foglio e
 fa partire la registrazione dello sport scelto; «Photos only» apre il modulo
 del post di sole foto; «From a file» apre subito «Files». Una voce si apre
-nello stesso foglio, con «‹» per tornare alla lista.
+nello stesso foglio, con «‹» per tornare alla lista. Il «+» c'è con
+l'account anche senza il selettore di file (TASK-312 C2): allora manca
+solo «From a file».
 
 Senza account il pulsante non c'è, come «My activities». Senza il modulo
 nativo del selettore di file (la 1.0 da App Store, finché non arriva la
@@ -108,6 +110,12 @@ Il file non si tiene: resta solo la corsa, come la tiene l'API.
    `X-MuW-Reads`): le app di prima non lo vedono mai. Per ora non si
    trova con la ricerca dei disegni, non ha link pubblico e non si manda
    in chat: partono tutti da una corsa.
+6. **Si cambia e si cancella dalla sua pagina** (TASK-312 C2): chi l'ha
+   scritto apre il post e, dalle impostazioni, cambia titolo, descrizione
+   e chi lo vede, o lo cancella («Delete this post? It cannot be
+   undone.»). Niente «Share» e niente numeri della corsa. Senza rete il
+   post e le sue foto aspettano sul telefono e partono dopo, una foto alla
+   volta.
 
 ## 5. Cosa non conta
 
@@ -138,6 +146,15 @@ Il file non si tiene: resta solo la corsa, come la tiene l'API.
 - Una riga nuova nella privacy, da approvare dall'utente nella parte B:
   «If you add a past activity from a file, we keep its track and times
   like a run recorded with MuW. We do not keep the file.»
+- La riga dei post di sole foto, approvata dall'utente il 2026-11-21
+  (traduzioni il 2026-11-22), nella privacy dal 22 novembre 2026: «A post
+  with «Photos only» has no track, no place and no times. Its photos go to
+  our server resized, without the data your phone adds, such as where and
+  when they were taken. They are seen, with the title, the description
+  and the people you tag, by «Everyone» or by your «Followers»: there is
+  no «Only me». The choice starts from your last post, or on «Everyone»,
+  and you see it before «Post». The post stays until you delete it or
+  your account.»
 
 ## 7. Apple Salute e Health Connect (studio, parte D)
 

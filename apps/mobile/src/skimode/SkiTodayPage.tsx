@@ -5,6 +5,7 @@ import { t } from "../i18n";
 import { withoutRouteIcon } from "../screens/RunNoRouteButton";
 import { withoutRouteLabel } from "../settings/sport";
 import { DayResort } from "../ski/DayResort";
+import { useHeaderScroll } from "../tabs/headerScroll";
 import {
   color,
   font,
@@ -30,8 +31,10 @@ type Props = {
  * and the friends come with parts B and C.
  */
 export function SkiTodayPage({ onRecord, resort = <DayResort /> }: Props) {
+  const headerScroll = useHeaderScroll();
   return (
     <ScrollView
+      {...headerScroll}
       style={styles.page}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"

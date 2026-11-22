@@ -15,6 +15,7 @@ import {
   feedbackProblem,
   phoneSystem,
 } from "./feedbackFields";
+import { useSettingsGroup } from "./settingsGroup";
 
 type Props = {
   account: Pick<Account, "state" | "sessionEnded">;
@@ -40,6 +41,7 @@ export function FeedbackSetting({
   baseUrl = apiUrl(),
   options = {},
 }: Props) {
+  const group = useSettingsGroup();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -91,7 +93,7 @@ export function FeedbackSetting({
   }
 
   return (
-    <View style={contactStyles.menu}>
+    <View style={[contactStyles.menu, group]}>
       <Pressable
         style={({ pressed }) => [contactStyles.row, pressed && contactStyles.pressed]}
         onPress={toggle}

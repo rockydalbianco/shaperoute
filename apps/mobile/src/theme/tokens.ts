@@ -453,6 +453,8 @@ export const radius = {
   sheet: 26,
   /** A card of the glass look «Capsula» (TASK-469, ADR-0383). */
   card: 28,
+  /** A group of rows of the glass look, as in «Settings» (TASK-469 A6). */
+  group: 24,
   pill: 999,
 } as const;
 

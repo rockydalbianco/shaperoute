@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import {
   color,
   fontSize,
@@ -20,6 +21,7 @@ import { useStrava } from "./useStrava";
  * no Strava.
  */
 export function StravaSetting() {
+  const group = useSettingsGroup();
   const strava = useStrava();
   const { status, busy, problem } = strava;
   const [confirming, setConfirming] = useState(false);
@@ -31,7 +33,7 @@ export function StravaSetting() {
     <View style={styles.section}>
       <Text style={styles.label}>STRAVA</Text>
       {status.connected ? (
-        <View style={styles.menu}>
+        <View style={[styles.menu, group]}>
           <View
             style={styles.row}
             accessible

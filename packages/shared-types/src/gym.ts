@@ -357,6 +357,36 @@ export interface GymPlanRunner {
   long_s?: number;
 }
 
+/** How a workout of a plan went, asked at its end (TASK-488, ADR-0396). */
+export const GYM_PLAN_FEELS = ["easy", "right", "hard"] as const;
+export type GymPlanFeel = (typeof GYM_PLAN_FEELS)[number];
+
+/** The most steps a day moves away from its mode's. */
+export const MAX_GYM_ADAPT_STEPS = 24;
+
+/** A day of the week the plan adapted to its answers (mirrors gym_plans.py
+ * `GymPlanAdaptDayBody`): the phone adds `steps` to the steps of every week
+ * it works out for that day. */
+export interface GymPlanAdaptDay {
+  /** 1 Monday to 7 Sunday, a day the plan has a workout on. */
+  day: number;
+  /** Steps more (or fewer) than the mode's, −24 to 24. */
+  steps: number;
+  /** «Hard» answers in a row, 0–2: the second steps back. */
+  hard: number;
+  /** The last answer, for the mark beside the day. */
+  last: GymPlanFeel;
+}
+
+/** The plan that adapts to how its workouts went (mirrors gym_plans.py
+ * `GymPlanAdaptBody`, TASK-488). */
+export interface GymPlanAdapt {
+  /** Turned off by its owner: no question, the weeks as the mode says. */
+  off: boolean;
+  /** At most 7, a day once. */
+  days: GymPlanAdaptDay[];
+}
+
 /** The weeks of a plan made with the guide (mirrors gym_plans.py): the
  * phone works out each week's values from `sessions` and `mode`. */
 export interface GymProgram {
@@ -381,6 +411,9 @@ export interface GymProgram {
   /** What it leads to (TASK-461 B and C); absent from a cycle that
    * repeats, and from an API older than the targets. */
   target?: GymPlanTarget;
+  /** How its days adapted to the answers (TASK-488, ADR-0396); absent from
+   * a plan nobody answered for, and from an API older than it. */
+  adapt?: GymPlanAdapt;
 }
 
 /** A plan as kept, with the key the phone chose. */

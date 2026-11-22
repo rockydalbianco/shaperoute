@@ -66,6 +66,9 @@ type Props = {
   onOpen: (post: SamplePost) => void;
   /** A route MuW drew was tapped: it goes on the map, as one of «Explore». */
   onOpenMuw?: (route: MuwRoute) => void;
+  /** «Record now» of the «+» (TASK-481): a recording starts, as from
+   * «Draw»; without it the «+» has no «Record now». */
+  onRecord?: () => void;
   /** «Feed» is the page on the screen. Built behind «Draw» at the start, it
    * asks for no ad (and no consent), and no drawings, until it is
    * (TASK-235, TASK-118). */
@@ -114,7 +117,8 @@ const NO_POSTS: readonly Post[] = [];
  * account the tabs are then «All» and «Style». While the API has routes MuW
  * drew (TASK-365, ADR-0310), one row in 6 of «All» at most is one of them;
  * a tap opens it on the map. At the right of the
- * bar, with an account, a «+» adds an activity from a file (TASK-476) or a
+ * bar, with an account, a «+» lists what can be added (TASK-481): a
+ * recording started now, an activity from a file (TASK-476) or a
  * post of photos only (TASK-312 part C), whose card and page are their own
  * (PhotoFeedPost, PhotoPostPage); once one reaches the API, the open tabs
  * read again.
@@ -122,6 +126,7 @@ const NO_POSTS: readonly Post[] = [];
 export function FeedScreen({
   onOpen,
   onOpenMuw,
+  onRecord,
   active = true,
   ads = feedAds(),
 }: Props) {
@@ -226,8 +231,8 @@ export function FeedScreen({
             ) : (
               <View style={styles.barSpace} />
             )}
-            {/* «Add activity», with an account (TASK-476). */}
-            {withAdd && <AddToFeed />}
+            {/* «Add to Feed», with an account (TASK-476, TASK-481). */}
+            {withAdd && <AddToFeed onRecord={onRecord} />}
           </View>
         )}
         <FeedList

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
@@ -52,6 +52,10 @@ type Props = {
    * the form discarded. */
   opened?: boolean;
   onDone?: () => void;
+  /** With `opened`, «From a file» alone (the Feed's «+» list, TASK-481):
+   * «Files» opens at once, and the choice is there again after a cancel or
+   * a problem; «Photos only» is the list's own entry. */
+  fileAtOnce?: boolean;
 };
 
 /**
@@ -64,7 +68,8 @@ type Props = {
  * (part C) opens the form of a post of photos without a run
  * (PhotoPostForm). In an app built without the picker «From a file» is not
  * there, «Photos only» is. Opened from the Feed's «+» (TASK-476), it has no
- * button and starts at the choices.
+ * button and starts at the choices; from its list (TASK-481) it is «From a
+ * file» alone, with «Files» opened at once.
  */
 export function AddPastActivity({
   available = filePickerAvailable(),
@@ -74,6 +79,7 @@ export function AddPastActivity({
   apiKey,
   opened = false,
   onDone,
+  fileAtOnce = false,
 }: Props) {
   const { recordImported, alreadyKept } = useActivitiesDoor();
   const [stage, setStage] = useState<Stage>(
@@ -84,6 +90,16 @@ export function AddPastActivity({
     setStage(opened ? { kind: "choosing", problem: null } : { kind: "closed" });
     onDone?.();
   };
+  // Once, on the first render: a second effect run (strict mode) would open
+  // «Files» twice.
+  const pickedAtOnce = useRef(false);
+  useEffect(() => {
+    if (opened && fileAtOnce && available && !pickedAtOnce.current) {
+      pickedAtOnce.current = true;
+      void fromFile();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function fromFile() {
     setStage({ kind: "reading" });
@@ -209,18 +225,20 @@ export function AddPastActivity({
               </Text>
             </>
           )}
-          <Tap
-            style={[styles.choice, reading && styles.dim]}
-            onPress={() => setStage({ kind: "photos" })}
-            disabled={reading}
-            accessibilityRole="button"
-            testID="add-photos-only"
-          >
-            <Text style={styles.choiceTitle}>{t("Photos only")}</Text>
-            <Text style={styles.choiceDetail}>
-              {t("Up to 10 photos, also from Instagram")}
-            </Text>
-          </Tap>
+          {!fileAtOnce && (
+            <Tap
+              style={[styles.choice, reading && styles.dim]}
+              onPress={() => setStage({ kind: "photos" })}
+              disabled={reading}
+              accessibilityRole="button"
+              testID="add-photos-only"
+            >
+              <Text style={styles.choiceTitle}>{t("Photos only")}</Text>
+              <Text style={styles.choiceDetail}>
+                {t("Up to 10 photos, also from Instagram")}
+              </Text>
+            </Tap>
+          )}
           {stage.kind === "choosing" && stage.problem !== null && (
             <Text style={styles.problem} accessibilityRole="alert">
               {stage.problem}

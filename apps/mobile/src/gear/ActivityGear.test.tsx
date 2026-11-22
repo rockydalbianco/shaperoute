@@ -92,6 +92,8 @@ test("the items on it and in use are offered, a retired one only if on it", asyn
   expect(String(fetchFn.mock.calls[1][0])).toBe(`http://api/me/activities/${KEY}/gear`);
   expect(screen.getByTestId(`gear-chip-${HELMET.id}`)).toBeSelected();
   expect(screen.getByTestId(`gear-chip-${SHOES.id}`)).not.toBeSelected();
+  // One «Gear»: the sheet's heading, and the row of the «…».
+  expect(screen.getAllByText("Gear")).toHaveLength(2);
   await fireEvent.press(screen.getByText("🚲 Canyon"));
   await fireEvent.press(screen.getByText("Done"));
   await waitFor(() => expect(onClosed).toHaveBeenCalled());

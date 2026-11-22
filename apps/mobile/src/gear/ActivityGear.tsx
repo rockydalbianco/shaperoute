@@ -181,6 +181,7 @@ export function ActivityGear({
           <GearPicker
             gear={offered}
             chosen={shown.chosen}
+            label={false}
             toggle={(id) => setShown({ ...shown, chosen: toggled(shown.chosen, id) })}
           />
         )}

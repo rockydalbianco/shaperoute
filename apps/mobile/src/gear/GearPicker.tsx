@@ -108,6 +108,8 @@ type Props = {
   gear: readonly Gear[] | null;
   chosen: readonly string[];
   toggle: (id: string) => void;
+  /** «Gear» over the chips; off where a heading says it already. */
+  label?: boolean;
 };
 
 /**
@@ -115,13 +117,13 @@ type Props = {
  * its emoji and its name, the chosen ones yellow. Nothing without items:
  * the list is made in «Settings», «Gear».
  */
-export function GearPicker({ gear, chosen, toggle }: Props) {
+export function GearPicker({ gear, chosen, toggle, label = true }: Props) {
   if (gear === null || gear.length === 0) {
     return null;
   }
   return (
     <View style={styles.block} testID="gear-picker">
-      <Text style={styles.label}>{t("Gear")}</Text>
+      {label && <Text style={styles.label}>{t("Gear")}</Text>}
       <View style={styles.chips}>
         {gear.map((item) => (
           <FilterChip

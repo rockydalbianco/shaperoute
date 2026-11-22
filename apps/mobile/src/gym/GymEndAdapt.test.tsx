@@ -98,7 +98,9 @@ beforeEach(() => {
 
 test("easy: next Monday a step more, «Change» to answer again, kept with «Save»", async () => {
   await shown(true);
-  expect(screen.getByTestId("adapt-question")).toHaveTextContent(/How did the plan feel\?/);
+  expect(screen.getByTestId("adapt-question")).toHaveTextContent(
+    /How did the plan feel\?/,
+  );
   await fireEvent.press(screen.getByTestId("adapt-easy"));
   expect(screen.getByTestId("adapt-title")).toHaveTextContent("Easy: up we go");
   // Week 3 would be 65 kg; a step more: 67.5.

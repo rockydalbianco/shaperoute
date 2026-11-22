@@ -1499,6 +1499,24 @@ utente `caddy` e non entra in `/root`.
    dichiara il dominio (parte D, con una build nativa) il file non cambia
    niente per nessuno.
 
+   **Il file che legge Android** sta nella stessa cartella:
+   `site/.well-known/assetlinks.json`. Finisce in `.json`, quindi Caddy
+   dice il tipo da solo: nessuna riga in più nel blocco, basta la copia
+   del punto 1. La prova, dal Mac:
+
+   ```bash
+   curl -s -o /dev/null -w '%{http_code} %{content_type} %{redirect_url}\n' https://getmuw.app/.well-known/assetlinks.json
+   ```
+
+   risponde `200 application/json` senza redirect (Google non li segue).
+   Dentro ci sono le impronte SHA-256 delle **chiavi di firma dell'app** di
+   Play (Play Console → Integrità dell'app → Firma dell'app → «Copia tutte
+   le fingerprint del certificato»): la chiave in uso, col suo certificato
+   classico e quello post-quantistico, e quella precedente. **Non** quella
+   della chiave di caricamento (un test la tiene fuori): un APK di prova
+   firmato da EAS non apre i link. Se Play cambia chiave, il file va
+   aggiornato o i link smettono di aprire l'app.
+
 **Strava resta su `sslip.io`.** `SHAPEROUTE_DOMAIN` in `deploy/.env` è
 solo l'indirizzo a cui Strava rimanda il browser dopo «Connect with
 Strava», e deve essere uguale alla «Authorization Callback Domain»

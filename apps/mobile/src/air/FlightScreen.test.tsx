@@ -147,6 +147,26 @@ describe("FlightScreen", () => {
   });
 });
 
+describe("the map and the height above the ground (part A1)", () => {
+  beforeEach(() => {
+    saveFlightPrefs(defaultFlightPrefs("km"));
+  });
+
+  it("«Thermal» reads the ground and has the map on its second page", async () => {
+    await showScreen();
+    expect(screen.getByTestId("widget-aboveGround")).toBeTruthy();
+    expect(screen.getByTestId("ground-probe")).toBeTruthy();
+    expect(screen.getByTestId("flight-map")).toBeTruthy();
+  });
+
+  it("reads no ground for a profile that does not show it", async () => {
+    const prefs = defaultFlightPrefs("km");
+    saveFlightPrefs({ ...prefs, current: 2 });
+    await showScreen();
+    expect(screen.queryByTestId("ground-probe")).toBeNull();
+  });
+});
+
 describe("the vario's sound (part C)", () => {
   beforeEach(() => {
     resetVarioPrefs();

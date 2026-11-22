@@ -41,7 +41,7 @@ Dall'alto in basso:
 | `site/assets/` | il segno e la scritta di MuW, ricavati da `docs/brand/muw-*.svg` (la scritta nel colore del testo, per lo sfondo scuro) |
 | `site/tools/` | gli script che ricavano i disegni dai percorsi veri |
 | `site/live/` | la pagina di un link dal vivo (TASK-424, sotto) |
-| `site/.well-known/` | il file che l'iPhone legge per sapere che il link di un post può aprire l'app (TASK-482 parte C, sotto) |
+| `site/.well-known/` | i due file che l'iPhone e Android leggono per sapere che il link di un post può aprire l'app (TASK-482 parte C, sotto) |
 | `site/tests/` | i test (`node --test`) |
 
 ## Mettere il link per scaricare l'app
@@ -264,9 +264,16 @@ lascia leggere `/post` solo a `https://getmuw.app` (CORS).
   **Da solo non fa niente**: serve che l'app dichiari il dominio
   (`associatedDomains` in `app.json`, parte D), cosa che arriva solo con
   una build dagli store. Il server deve dire che il file è JSON
-  (`DEPLOY.md` F.14, punto 4). Manca la metà di Android
-  (`assetlinks.json`): vuole l'impronta SHA-256 con cui Play firma l'app,
-  che si chiede all'utente quando la build è decisa.
+  (`DEPLOY.md` F.14, punto 4). La metà di Android è
+  `site/.well-known/assetlinks.json`: dice a Google che l'app
+  `app.getmuw.android` (il pacchetto di `app.json`: un test li tiene
+  uguali), firmata con una delle chiavi di Play di cui porta l'impronta
+  SHA-256, può aprire i link del sito. Le impronte sono pubbliche e le dà
+  la Play Console («Firma dell'app»): la chiave in uso (certificato
+  classico e post-quantistico) e la precedente, mai quella di caricamento
+  (`DEPLOY.md` F.14, punto 4). A differenza del file dell'iPhone non sceglie le
+  pagine: quali indirizzi l'app prende (solo `/p`) lo dirà il filtro in
+  `app.json`, con la parte D. Anche questo **da solo non fa niente**.
 
 **Guardarla in locale.** Come la pagina dal vivo: il server del sito
 (sotto) e un finto `/post` che risponde dalla fixture, con `?api=`

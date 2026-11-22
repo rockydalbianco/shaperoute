@@ -965,6 +965,24 @@ Resta il **tempo 2**: la voce «Sleep» in `feed/addToFeedEntries.ts` con
 allora la pagina «Sleep» non si apre da nessuna parte. Ordine di unione
 detto dal Coordinatore: TASK-485 B, TASK-481 A, poi questo.
 
+**2026-11-23, tempo 2 (la voce «Sleep» del «+»)**, scritto sopra la bozza
+di TASK-481 A e portato su un ramo da `main` quando quella è entrata:
+
+- `feed/addToFeedEntries.ts`: la voce `sleep`, quarta nell'ordine
+  dell'utente, con `sleep` falso quando non è detto: la lista di chi non
+  lo dice è quella di prima;
+- `feed/AddToFeed.tsx`: la voce c'è con `sleepPostsOn()` e un lettore del
+  sonno nel telefono; scelta, apre `SleepPostPage` nello stesso foglio;
+- `feed/SleepPostPage.tsx`: senza più un titolo suo (è quello del foglio),
+  e dice `onChanged` quando la notte entra nel Feed o ne esce;
+- `screens/FeedScreen.tsx`: a quel segnale le due schede rileggono;
+- il testo «Last night's sleep score, from Apple Health» nelle quattro
+  lingue;
+- test nuovi: `feed/addToFeedEntriesSleep.test.ts`,
+  `feed/AddToFeedSleep.test.tsx` (spento e senza lettore: il foglio è
+  quello di prima; acceso: la voce, la pagina nel foglio, «Publish» che
+  chiude e fa rileggere).
+
 ## Criteri di accettazione
 
 - [x] Le scelte di prodotto sono dell'utente e stanno in questo file.

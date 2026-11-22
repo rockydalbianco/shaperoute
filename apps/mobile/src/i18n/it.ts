@@ -3170,6 +3170,8 @@ export const IT: Table = {
   Sleep: "Sonno",
   "Already in the Feed": "Già nel Feed",
   "Remove post": "Rimuovi il post",
+  "Last night's sleep score, from Apple Health":
+    "Il punteggio del sonno della notte scorsa, da Apple Salute",
   "Your score, hours slept and sleep stages go in the Feed.":
     "Il punteggio, le ore dormite e le fasi del sonno vanno nel Feed.",
   // src/air/ (TASK-479 part A1: the flight map and the height above the ground; texts approved by the user on 2026-11-22)

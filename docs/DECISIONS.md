@@ -581,6 +581,7 @@ lasciando le righe d'indice.
 - ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Attiva
 - ADR-0391 — Il link di un post apre l'app: l'id resta dopo il `#`, l'app prende dall'indirizzo solo un id a forma di disegno e chiede il post all'API, senza account prima l'ingresso; la barra di Safari subito, i link verificati con la prossima build nativa · 2026-11-22 · Attiva
 - ADR-0127, precisazione (TASK-487) — «Feed» senza esempi: senza account l'invito ad accedere, con account e nessun post una riga che lo dice · 2026-11-22 · Attiva
+- ADR-0397 — «Alimentazione»: un contacalorie senza diete, cibi da USDA più quelli dell'utente, piano a settimana e diario solo sul telefono, bilancio = assunte − (riposo + attività) senza doppi conti, tabella solo per il proprietario, spenta fino alla build nativa che legge da Salute · 2026-11-22 · Proposta
 - ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share» · 2026-11-22 · Attiva
 
 ## Voci nuove
@@ -5721,3 +5722,77 @@ deciso dall'agente su delega dell'utente; le scelte di prodotto restano le
 **Conseguenze**: nessuna migrazione; sul server col passo 15. L'app (D2)
 legge `fixtures/together.json`; un'API di prima risponde `404`, e l'app
 tiene spenta la riga «Together».
+
+## ADR-0397 — «Alimentazione»: un contacalorie senza diete, cibi da USDA più quelli dell'utente, bilancio senza doppi conti, tabella solo per il proprietario
+
+**Stato**: Proposta · 2026-11-22 · TASK-489 (parte 0, soli documenti).
+Dove sta la voce, la fonte dei cibi, calorie prima dei macronutrienti, il
+piano a settimana, i dati solo sul telefono, chi vede la tabella, le parole
+e l'uscita tutta insieme con la build nativa sono **scelte dell'utente**
+(risposte 1–8 del task file); il resto è **deciso dall'agente su delega
+dell'utente**, numeri dal Coordinatore (fork 3).
+
+**Contesto**: l'utente vuole fra gli sport una voce «Alimentazione»: scrive
+la sua dieta (sua o del dietologo), segna ogni giorno quello che mangia e
+vede nel profilo i giorni a credito o a debito di calorie, contando tutte
+le attività dell'hub privato, comprese quelle lette da Apple Salute. Il
+consumo di un'attività e a riposo c'è già (`body/energy.ts`, ADR-0318);
+MuW oggi scrive in Salute e legge solo il battito (ADR-0281).
+
+**Decisione**:
+- **MuW non fornisce diete, obiettivi né consigli alimentari**, nemmeno
+  tramite l'AI: l'AI può interpretare le parole, i numeri li fa solo la
+  tabella. Ogni numero è una stima e si chiama così. L'avviso approvato
+  dall'utente compare alla prima apertura e, in piccolo, sempre.
+- **L'ingresso** è una tessera «Nutrition» in una famiglia sua in fondo al
+  pannello degli sport. Non è uno `Sport`: non entra nel registro né nel
+  contratto, non ha percorsi e non si registra; toccarla apre la pagina e
+  non cambia lo sport scelto. È un componente a sé, così TASK-490
+  (ADR-0398) può montarlo nella sua schermata se l'utente lo sceglie.
+- **I cibi**: un elenco di base di circa 300 cibi da **USDA FoodData
+  Central** (pubblico dominio, CC0 1.0; la fonte è citata nell'app),
+  costruito da uno script dallo scarico di USDA e da una lista di
+  identificativi scelti a mano, più i **cibi dell'utente** (nome e kcal
+  per 100 g). Open Food Facts (ODbL: attribuzione e ricondivisione delle
+  basi mescolate; serve la rete) e le tabelle CREA (nessuna licenza di
+  riuso trovata) restano fuori. Nessuna dipendenza nuova.
+- **Calorie subito**; proteine, carboidrati e grassi per 100 g stanno già
+  nella tabella e non si mostrano.
+- **Il piano** è una settimana di quattro pasti al giorno con cibi e
+  grammi; **il diario** è per giorno di calendario del telefono. «Eaten as
+  planned» copia nel diario il piano com'è in quel momento: cambiare il
+  piano dopo non riscrive i giorni passati. Un giorno senza voci è vuoto,
+  non zero.
+- **I dati restano sul telefono**, in file JSON (`expo-file-system`, come
+  il corpo). Nessun indirizzo dell'API, nessuna migrazione. Il server è
+  una parte dopo, con la sua decisione.
+- **Il bilancio del giorno** = assunte − (riposo + attività). Il riposo è
+  `restKcalPerMin` × 1440 (Mifflin-St Jeor). L'attività: se il giorno ha
+  l'energia attiva di Salute vale quella da sola; altrimenti la somma
+  delle attività dell'hub (`activeKcal`, `gymKcal`, `poolKcal`, e per un
+  allenamento di un'altra app la sua energia attiva). **Nessun doppio
+  conto**: un allenamento di Salute scritto da MuW si scarta; uno di
+  un'altra app che si sovrappone a un'attività di MuW per più di metà
+  della più corta conta una volta, quella di MuW. Un'attività conta nel
+  giorno in cui parte.
+- **I numeri letti da Salute non si salvano**: si rileggono quando la
+  tabella si apre. Non vanno al server, non servono alla pubblicità
+  (regola Apple 5.1.3).
+- **La tabella** («Eaten», «Used», «Balance», «Surplus» o «Deficit» col
+  segno, mai il colore da solo) sta solo nel profilo di chi è entrato: non
+  è un campo del profilo pubblico, non è nel Feed, non si condivide.
+- **Tutto insieme con la build nativa**: leggere da Salute allenamenti ed
+  energia attiva chiede un testo del permesso nuovo
+  (`NSHealthShareUsageDescription`, oggi solo il battito), quindi una
+  build nativa e la revisione di Apple; su Android i permessi di lettura
+  di Health Connect nel manifest. Le parti prima entrano in `main` spente
+  dietro `NUTRITION_ON`, che si accende solo con quella build e dopo il
+  sì dell'utente sulle schermate.
+
+**Conseguenze**: file nuovi in `apps/mobile/src/nutrition/`; nessun
+cambio al server né al contratto. Il testo del permesso di Salute va
+scritto una volta sola insieme a TASK-467 C (sonno). Privacy, etichette
+dell'App Store e di Google Play e «How we calculate» col sì dell'utente
+prima dell'uscita. Limite noto: senza Apple Watch e senza scrittura in
+Salute, in un giorno che ha energia attiva di Salute un'attività di MuW
+conta solo per quanto Salute ha misurato dal telefono.

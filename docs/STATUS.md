@@ -36,6 +36,11 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
+  parte 0 chiusa il 2026-11-22 (otto scelte dell'utente, ADR-0397): cibi da
+  USDA più i propri, piano a settimana, solo sul telefono, tabella solo per
+  il proprietario; spenta (`NUTRITION_ON`) fino alla build nativa che legge
+  da Salute. Poi A1 (i conti). File: — · `tasks/TASK-489.md`
 - **TASK-487 — Il Feed senza attività finte** · 2026-11-22: niente
   esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
   dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.

@@ -689,10 +689,19 @@ prende una fascia di vetro con il filo di luce in basso e un'ombra corta
 sul contenuto, in 200 ms (subito con «Riduci movimento»), e la lascia
 quando la pagina torna in cima. Conta la pagina sullo schermo: cambiando
 scheda l'header segue quella nuova. Ogni pagina lo dice con
-`useHeaderScroll()` sul suo scroller principale; una pagina che non lo
-dice tiene l'header a riposo. Con «Riduci trasparenza» la fascia è opaca
+`useHeaderScroll()` sul suo scroller principale (Disegna, Explore,
+Explore sull'acqua, Messaggi, Profilo, «Today» e «Days» dello sci, A5c);
+una pagina che non lo dice tiene l'header a riposo, e una che se ne va
+lontana dalla cima lo rimette a riposo. Con «Riduci trasparenza» la fascia è opaca
 con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
 contenuto non passa sotto l'header: per quello serve la parte B.
+
+**I gruppi di Impostazioni** (TASK-469 A6, `src/settings/settingsGroup.ts`):
+ogni gruppo di righe di Impostazioni ha gli angoli a 24 (`radius.group`) e i
+bordi del vetro posato dei segmenti: il filo di luce intorno e quello in
+cima. La faccia resta `surface`, così le parole tengono il contrasto. Con
+«Riduci trasparenza» il bordo è la linea sottile di prima, con «Aumenta
+contrasto» il bordo forte. Ogni gruppo lo prende con `useSettingsGroup()`.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce

@@ -294,9 +294,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
   l'OTA 14; A3 pista di vetro (#1276) e A4a chip (#1290) in produzione al
   più tardi con l'OTA 17; A4b e A4c card (#1333, #1344) con l'OTA 20; A5
-  cerchi dell'header (#1358) e A5b header che cambia scorrendo (#1384) in
-  `main`, con l'OTA 21. Prossima A5c (Profilo, sci, poi Feed), lista al
-  Coordinatore; B dopo la 1.1.0. File: — · `tasks/TASK-469.md`
+  cerchi dell'header e A5b header che scorre con l'OTA 21; A5c (Profilo,
+  sci, #1391) e A6 gruppi di Impostazioni (#1403) in `main`; A6b account
+  in bozza (#1407). Poi A5c-2 Feed, A7; B dopo la 1.1.0. File: — ·
+  `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);

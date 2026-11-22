@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A4c in produzione, A5 e A5b in `main`); B Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A5b in produzione, A5c e A6 in `main`); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -2299,6 +2299,19 @@ riceve tocchi; la vecchia linea fissa di `TabShell` sparisce. Il
 contenuto resta sotto l'header, non dietro: in parte A il vetro non sfoca
 niente, quindi farci passare il contenuto lo renderebbe solo meno
 leggibile. Deciso dall'agente su delega dell'utente.
+**A5c (#1391)**: Profilo, «Today» e «Days» dello sci mettono
+`useHeaderScroll()` come le altre pagine. Una pagina pigra o il cambio di
+modalità sci possono smontare uno scroller lontano dalla cima: l'hook,
+smontandosi, rimette l'header a riposo, invece di lasciarlo in vetro sopra
+una pagina in cima. «Resorts» non lo mette: lì il titolo e la ricerca sono
+fissi e scorre solo la lista. Deciso dall'agente su delega dell'utente.
+**A6 (#1403)**: i gruppi di Impostazioni prendono i bordi della pista dei
+segmenti (`segmentTrackFace`) con la faccia `surface` invece del velo,
+perché le righe sono testo lungo e il contrasto conta più del vetro. Un
+nuovo passo dei raggi, `radius.group` = 24, tra `lg` (16) e `card` (28).
+Un solo aiuto, `settingsGroupFace` / `useSettingsGroup`, in un file nuovo,
+così ognuno dei 18 file cambia di una riga. Deciso dall'agente su delega
+dell'utente.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

@@ -2,7 +2,8 @@
 
 **Stato**: In corso (0 fatta: «Capsula»; A1 e A2 in produzione con l'OTA 14;
 A3 e A4a in produzione al più tardi con l'OTA 17; A4b e A4c in produzione
-con l'OTA 20; A5 e A5b in `main`, con l'OTA 21; prossima A5c)
+con l'OTA 20; A5 e A5b con l'OTA 21; A5c e A6 in `main`, con la prossima
+OTA; A6b in bozza, #1407)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
@@ -11,7 +12,11 @@ con l'OTA 20; A5 e A5b in `main`, con l'OTA 21; prossima A5c)
 #1287, `docs/TASK-469-a4a-done` #1329, `docs/TASK-469-a4b-done` #1343, per
 A4b e A4c; `feat/TASK-469-a4c-feed-cards` #1344,
 `feat/TASK-469-a5-header-glass` #1358, `feat/TASK-469-a5b-header-scroll`
-#1384; documenti di A5 e A5b `docs/TASK-469-a5-done` questa)
+#1384, `feat/TASK-469-a5c-header-pages` #1391,
+`feat/TASK-469-a6-settings-groups` #1403,
+`feat/TASK-469-a6b-account-glass` #1407; documenti di A5 e A5b
+`docs/TASK-469-a5-done` #1390, di A5c e A6 `docs/TASK-469-a5c-a6-done`
+questa)
 
 ## Obiettivo
 
@@ -79,10 +84,16 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
     un'ombra corta (`useHeaderScroll`, sì dell'utente «Sì, anche lo
     scroll»). Collegate Disegna, Explore, Explore sull'acqua e Messaggi;
     il contenuto non passa sotto l'header (serve la parte B);
-  - A5c le altre pagine: Profilo, «Today» e «Days» dello sci; il Feed
-    quando `FeedScreen.tsx` è libero. «Resorts» resta a riposo: lì scorre
-    solo la lista, sotto la ricerca fissa;
-  - A6 Settings (dopo TASK-457, che tiene `src/profile/**`);
+  - **A5c fatta** (#1391, in `main` 9a2364ef): anche Profilo, «Today» e
+    «Days» dello sci dicono il loro scroll all'header; una pagina che se ne
+    va lontana dalla cima lo rimette a riposo. «Resorts» resta a riposo:
+    lì scorre solo la lista, sotto la ricerca fissa;
+  - A5c-2 il Feed, quando `FeedScreen.tsx` è libero;
+  - **A6 fatta** (#1403, in `main` 832a554f): i gruppi di righe di
+    Impostazioni con gli angoli a 24 (`radius.group`) e i bordi del vetro
+    posato; la faccia resta `surface`, così le parole tengono il contrasto;
+  - A6b la scheda dell'account, il riquadro prima di «Delete account» e la
+    riga «Blocked people» (#1407, in bozza);
   - A7 il resto (fogli, isola, chip), da elencare dopo A6.
 - **B — Liquid Glass nativo** con `expo-glass-effect` (UIGlassEffect su
   iOS 26; `expo-blur` o opaco prima e su Android). Dipendenza nuova e
@@ -182,6 +193,25 @@ Spuntati per A1 e A2 (2026-11-12):
   `src/paddle/PaddleExplore.tsx`, `src/screens/ChooseScreen.tsx`, e
   `src/tour/TourScrollView.tsx` (passa avanti l'`onScroll` di chi lo usa,
   col sì del Coordinatore).
+- A5c (#1391): `apps/mobile/src/tabs/headerScroll.tsx` (rimette l'header a
+  riposo quando lo scroller se ne va), una riga per pagina in
+  `src/screens/ProfileScreen.tsx`, `src/skimode/SkiTodayPage.tsx`,
+  `src/skimode/SkiDaysPage.tsx`, `src/tabs/HeaderScrollPages.test.tsx`
+  (nuovo).
+- A6 (#1403): `apps/mobile/src/theme/tokens.ts` (solo `radius.group`),
+  `src/settings/settingsGroup.ts`, `src/settings/SettingsGroup.test.tsx`
+  (nuovi), e una riga per gruppo in 18 file di Impostazioni: i
+  `…Setting.tsx` di `src/settings/` (Body, Email, Feedback, Language,
+  Notifications, Phone, PostLinks, Sport, Style, Tone, Units, Vo2Max),
+  `src/about/AboutRows.tsx`, `src/engine/OfflineMapsSetting.tsx`,
+  `src/profile/PhotoRow.tsx`, `src/strava/StravaSetting.tsx`,
+  `src/stretch/MorningStretchSetting.tsx`, `src/gear/GearSetting.tsx`.
+- A6b (#1407): `apps/mobile/src/profile/SettingsPage.tsx`,
+  `src/social/BlockedPeople.tsx`, `src/settings/SettingsGroupAccount.test.tsx`
+  (nuovo).
+- La PR di documenti di A5c e A6: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/*-A5c-*.jpg`, `*-A6-*.jpg` (nuove), `docs/STATUS.md`,
+  `docs/DECISIONS.md`, `docs/UI.md`.
 - La PR di documenti di A5 e A5b: `docs/tasks/TASK-469.md`,
   `docs/tasks/TASK-469/*-A5-*.jpg`, `*-A5b-*.jpg` (nuove), `docs/STATUS.md`,
   `docs/DECISIONS.md`, `docs/UI.md`.
@@ -262,6 +292,15 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   pagina dice il suo scroll all'header con un hook; una pagina non
   collegata lascia l'header a riposo. Il pulsante degli strumenti di Expo
   Go 57 copre l'angolo destro dell'header: si spegne dal suo menu.
+- **2026-11-22**: A5c (#1391): lista col sì del Coordinatore (fork 3), il
+  Feed escluso perché occupato. L'utente approva le schermate («Sì, vai»);
+  #1391 in `main` 9a2364ef. A6 (#1403): lista col sì del Coordinatore,
+  `GearSetting.tsx` aggiunto col suo sì; l'utente approva («Sì, vai»);
+  #1403 in `main` 832a554f. A6b: lista col sì del Coordinatore, bozza
+  #1407.
+- Imparato: «Today» dello sci nel simulatore non scorre (la pagina è più
+  corta dello schermo), quindi lì lo provano solo i test. Un gruppo di una
+  sola riga con gli angoli a 24 sembra quasi una capsula.
 
 ## Schermate prima/dopo
 
@@ -344,9 +383,24 @@ linea sottile:
 
 ![A5b, a riposo e scorrendo](TASK-469/TASK-469-A5b-intestazione-scorrendo.jpg)
 
+**A5c, il Profilo che scorre** — in cima l'header è a riposo, scorrendo
+prende la fascia di vetro, come Disegna; scuro, chiaro e «Riduci
+trasparenza» (fascia opaca):
+
+![A5c, Profilo a riposo e scorrendo](TASK-469/TASK-469-A5c-profilo-scorrendo.jpg)
+
+**A6, i gruppi di Impostazioni** — gli angoli passano da 16 a 24, quindi
+un gruppo di una riga sembra quasi una capsula. In scuro il bordo è vicino
+a quello di prima, in chiaro più morbido; le parole restano su `surface`.
+Con «Riduci trasparenza» il bordo è la linea sottile di prima. La scheda
+dell'account resta a 16 fino alla A6b:
+
+![A6, prima e dopo, e Riduci trasparenza](TASK-469/TASK-469-A6-impostazioni.jpg)
+
 ## Esito
 
 *(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14); A3 e A4a
 in `main` dal 2026-11-12, in produzione al più tardi con l'OTA 17
 (2026-11-18); A4b e A4c in produzione con l'OTA 20 (2026-11-21); A5 e A5b
-in `main` dal 2026-11-22, con l'OTA 21.
+con l'OTA 21 (2026-11-22); A5c e A6 in `main` dal 2026-11-22, con la
+prossima OTA.

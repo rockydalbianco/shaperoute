@@ -36,6 +36,11 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-485 — La scheda della palestra come post** (ADR-0394) · 0 e A in
+  `main`, A sul server (passo 18); B (app) in `main` (#1414, `f4737c66`),
+  testi approvati il 2026-11-23, esce con l'OTA col sì. Restano la voce del
+  «+» (dopo TASK-481 A), la privacy a turno, l'apertura da profilo, notifica
+  o link. File: — · `tasks/TASK-485.md`
 - **TASK-490 — La modalità Allenamento** · parte 0 chiusa il 2026-11-23
   (ADR-0398): scelta «Gym», la barra è Today · Workouts · Food · Feed ·
   Profile come per lo sci; il Cibo è la pagina di TASK-489. Prossima la A.
@@ -222,6 +227,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-21, sera**: B2 **in produzione** con l'OTA 18 (`593c6fbe`): le uscite in bici delle 29 città italiane in «Explore» con lo sport «Bike»; l'utente l'ha provata sul telefono («funziona»). Città estere: 12 su 32 disegnate, il giro è in pausa per la coda del simulatore (via del Coordinatore).
   **2026-11-22**: B2, città estere: 172 uscite in bici in 25 città (stesse otto forme, zone dagli estratti di Geofabrik), catalogo a 1866, in `main` (#1380, `ef7b1d83`) col sì dell'utente sui disegni («Sì, vanno bene»); il server le carica al prossimo passo, senza OTA. Berlino, Parigi, Dublino, Tokyo, New York, Amburgo e Vienna in un secondo giro col limite a 5 GB (deciso dal Coordinatore, parte col suo via).
   **2026-11-22, passo 17**: B2 estere **sul server** (`40789324`, catalogo a 1866): le corse identiche (`1546 63 40 0`), in bici 320 uscite in 54 città, Londra con le sue otto; nell'app si vedono già con lo sport «Bike», senza OTA. Resta il secondo giro delle sette città (via del Coordinatore, limite 5 GB solo per loro).
+  **Passo 19 (riferito dal Coordinatore il 2026-11-23)**: le cinque città recuperate (Berlino, Dublino, Amburgo, Vienna, New York: 36 uscite, sì dell'utente sui disegni «SI VANNO BENE») in `main` (#1418, `32036bd3`) e **sul server** (`e427ed2e`, catalogo a 1902): le corse identiche (`1546 63 40 0`), in bici 356 uscite in 59 città; senza OTA. Parigi e Tokyo restano senza uscite in bici (oltre i 5 GB del pianificatore). B2 estere chiusa; restano B3 (40–50 km) e C.
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),

@@ -225,6 +225,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **R6 fatta il 2026-11-18**: #1291 (server, passo 13) e #1293 (app, col
   prossimo OTA) in main: corsa + volo nella stessa attività. In bozza R6c
   (#1313, la mappa a due colori); poi R6d (la pagina riaperta).
+  **R6c e R6d fatte il 2026-11-22**: R6c (#1313) in produzione con l'OTA
+  20; R6d-a (#1342) sul server al passo 15, R6d-b (#1352, `7a082983`) in main, col
+  prossimo OTA: la gara riaperta a due colori, coi tempi a piedi e in volo.
+  Resta: un volo vero; R4 in bozza (#1218).
 - **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
   scelta dell'utente del 2026-11-21, senza accordi con terzi: schermata di
   widget, vario sonoro, mappa 3D, spazi aerei dal file del pilota, gare,

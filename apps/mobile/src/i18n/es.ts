@@ -2956,6 +2956,29 @@ export const ES: Table = {
   "Your live becomes the post of this activity.":
     "Tu directo se convierte en la publicación de esta actividad.",
   "Don't post": "No publicar",
+  // Group runs (TASK-309 part B; it from the proposal, de/es/fr for the user's yes).
+  "Create group run": "Crear carrera en grupo",
+  "New group run": "Nueva carrera en grupo",
+  "Where exactly": "Dónde exactamente",
+  Notes: "Notas",
+  "e.g. MUSE entrance": "p. ej. entrada del MUSE",
+  "Pace, what to bring…": "Ritmo, qué llevar…",
+  "Meet in a public place, never at your home. MuW doesn't organise or check group runs. Everyone on MuW is 16 or older.":
+    "Quedad en un lugar público, nunca en tu casa. MuW no organiza ni controla las carreras en grupo. En MuW todos tienen al menos 16 años.",
+  Publish: "Publicar",
+  "Group runs": "Carreras en grupo",
+  "1 going": "1 participante",
+  "{count} going": "{count} participantes",
+  "I'm going": "Voy",
+  "You're going": "Vas",
+  "Not going": "Ya no voy",
+  Organiser: "Organiza",
+  "Cancel group run": "Cancelar la carrera en grupo",
+  "Cancel this group run? Everyone going gets a notice.":
+    "¿Cancelar esta carrera en grupo? Quien vaya recibirá un aviso.",
+  Cancelled: "Cancelada",
+  Over: "Terminada",
+  Past: "Pasadas",
   // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
   "Flight screen": "Pantalla de vuelo",
   "GPS altitude": "Altitud GPS",
@@ -3042,6 +3065,15 @@ export const ES: Table = {
   "No workouts with this exercise yet.":
     "Aún no hay entrenamientos con este ejercicio.",
   "From {low} to {high}, {count} workouts": "De {low} a {high}, {count} entrenamientos",
+  // src/air/ (TASK-479 part C: the vario's sound; texts approved by the user on 2026-11-22)
+  "Vario sound": "Sonido del vario",
+  "Beeps from": "Pitidos desde",
+  "Sink tone below": "Tono de descenso bajo",
+  Volume: "Volumen",
+  "From GPS: the sound comes 1–2 s after the climb.":
+    "Desde el GPS: el sonido llega 1–2 s después del ascenso.",
+  "Mute the vario": "Silenciar el vario",
+  "Turn the vario sound on": "Activar el sonido del vario",
 
   // src/gear/ (TASK-486 part B, the gear), approved by the user on 2026-11-22
   Shoes: "Zapatillas",

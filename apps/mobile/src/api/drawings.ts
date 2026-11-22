@@ -15,6 +15,7 @@ import {
   PHOTOS_SOURCE,
   PLAN_SOURCE,
   RUN_ACTIVITIES,
+  SLEEP_SOURCE,
   VISIBILITIES,
 } from "@shaperoute/shared-types";
 
@@ -435,10 +436,13 @@ function readsActivity(body: Record<string, unknown>): boolean {
   }
   // A post of photos only (TASK-312 part C) and a gym plan posted (TASK-485
   // part B) have no run, so no activity: read as none, as on an API before
-  // TASK-208. Any other drawing with a null activity is still refused.
+  // TASK-208. The post of a night of sleep the same (TASK-467 part E). Any
+  // other drawing with a null activity is still refused.
   if (
     body.activity === null &&
-    (body.source === PHOTOS_SOURCE || body.source === PLAN_SOURCE)
+    (body.source === PHOTOS_SOURCE ||
+      body.source === PLAN_SOURCE ||
+      body.source === SLEEP_SOURCE)
   ) {
     delete body.activity;
     return true;

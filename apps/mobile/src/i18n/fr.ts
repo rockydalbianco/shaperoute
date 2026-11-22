@@ -3113,4 +3113,15 @@ export const FR: Table = {
     "Ces mots ne peuvent pas être utilisés. Essaie d'autres mots.",
   "Links and special characters can't be used here.":
     "Les liens et les caractères spéciaux ne sont pas acceptés ici.",
+
+  // src/gym/GymByHand.tsx (TASK-484 B: a gym workout written by hand)
+  "Gym workout": "Séance de salle",
+  "Previous day": "Jour précédent",
+  "Next day": "Jour suivant",
+  Started: "Commencée à",
+  Duration: "Durée",
+  "Pick a time before now.": "Choisis une heure avant maintenant.",
+  "From a plan": "D’un programme",
+  "Workouts written by hand don't count for Play, contests, levels or the leaderboard.":
+    "Les séances écrites à la main ne comptent ni pour le jeu, ni pour les concours, ni pour les niveaux, ni pour le classement.",
 };

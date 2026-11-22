@@ -1,7 +1,9 @@
 # TASK-484 — Allenamento in palestra scritto a mano, nel Feed
 
 **Stato**: In lavorazione · parte 0 fatta (#1366, 2026-11-21); parte A
-(server) nella PR #1371, poi il passo sul server col sì dell'utente
+in `main` (#1371) e sul server (passo 17, 2026-11-22); parte B: i file
+nuovi sul branch `feat/TASK-484-b-gym-by-hand-app`, l'aggancio aspetta
+TASK-481 A
 **Fase**: 5 · **Branch**: `docs/TASK-484-gym-by-hand` (parte 0)
 **Dipende da**: TASK-481 A (il foglio «Add to Feed» con la lista e
 `addToFeedEntries.ts`), TASK-385 (la palestra, ADR-0327), TASK-411 C (le
@@ -204,14 +206,32 @@ docs/tasks/TASK-484.md
 ```
 apps/mobile/src/gym/GymByHand.tsx                (nuovo: il flusso)
 apps/mobile/src/gym/GymByHand.test.tsx           (nuovo)
-apps/mobile/src/gym/gymByHand.ts                 (nuovo: righe → GymSessionRequest, giorno e ora)
-apps/mobile/src/gym/gymByHand.test.ts            (nuovo)
+apps/mobile/src/gym/byHand.ts                    (nuovo: righe → GymSessionRequest, giorno e ora)
+apps/mobile/src/gym/byHand.test.ts               (nuovo)
 apps/mobile/src/gym/useGymOutbox.ts              (salvare una richiesta già fatta)
 apps/mobile/src/feed/addToFeedEntries.ts         (la riga «Gym workout», dopo TASK-481 A)
 apps/mobile/src/feed/addToFeedEntries.test.ts
 apps/mobile/src/i18n/{it,de,fr,es}.ts
 docs/tasks/TASK-484.md
 ```
+
+**Avanzamento della parte B (2026-11-22, deciso dall'agente su delega
+dell'utente).** Sul branch, prima di TASK-481 A, solo file nuovi e quelli
+della lista che nessuno tiene: il flusso (`GymByHand.tsx`), la sua logica,
+`saveRequest` in `useGymOutbox.ts`, i testi nelle quattro lingue (da far
+approvare con le schermate). Due scarti dalla lista:
+
+- la logica si chiama `byHand.ts`, non `gymByHand.ts`: su macOS (disco
+  senza maiuscole) `./GymByHand` trovava `gymByHand.ts` prima di
+  `GymByHand.tsx`, e il componente risultava `undefined`;
+- due testi in più, solo per VoiceOver sulle frecce del giorno: «Previous
+  day» e «Next day».
+
+Il giorno mostra «Today», «Yesterday» o la data intera già dell'app
+(«Thu 19 Nov 2026»), senza un testo nuovo «Yesterday, Fri 20 Nov». Resta:
+la riga in `addToFeedEntries.ts` (dopo TASK-481 A, con «‹» e «✕» del foglio;
+il titolo del flusso si sposta lì se il foglio lo mostra), le schermate e
+le traduzioni all'utente, poi la PR.
 
 A turno (privacy, punto 4; in coda dopo 309 B1, 417 D2, 312 C2, 481 A e
 485, il Coordinatore dice quando tocca):

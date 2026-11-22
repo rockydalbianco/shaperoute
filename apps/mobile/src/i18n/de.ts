@@ -3125,4 +3125,15 @@ export const DE: Table = {
     "Diese Wörter sind nicht erlaubt. Versuch andere.",
   "Links and special characters can't be used here.":
     "Links und Sonderzeichen sind hier nicht erlaubt.",
+
+  // src/gym/GymByHand.tsx (TASK-484 B: a gym workout written by hand)
+  "Gym workout": "Fitnesstraining",
+  "Previous day": "Vorheriger Tag",
+  "Next day": "Nächster Tag",
+  Started: "Begonnen um",
+  Duration: "Dauer",
+  "Pick a time before now.": "Wähle eine Zeit vor jetzt.",
+  "From a plan": "Aus einem Plan",
+  "Workouts written by hand don't count for Play, contests, levels or the leaderboard.":
+    "Von Hand eingetragene Trainings zählen nicht für das Spiel, die Wettbewerbe, die Stufen und die Rangliste.",
 };

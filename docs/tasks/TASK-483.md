@@ -1,6 +1,9 @@
 # TASK-483 — Lo storico di ogni esercizio in palestra
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-22; poi A server, B app)
+**Stato**: Done · 2026-11-22 · A #1385 in `main` e sul server (passo 17),
+B #1396 in produzione con l'OTA 22; «Last time», «History» e la riga
+nella guida «i» come nelle risposte 1–4. Restano il controllo
+dell'utente sul telefono e la virgola nei pesi (#1406, prossima OTA).
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-483-exercise-history`
 **Dipende da**: TASK-385 (la palestra, le serie salvate), TASK-411 (la
@@ -109,8 +112,30 @@ Le domande della parte 0 sono finite il 2026-11-22.
 ## File toccati
 
 Parte 0: `docs/tasks/TASK-483.md` (nuovo), `docs/DECISIONS.md` (ADR-0392),
-`docs/STATUS.md` (la voce del task), `docs/INDEX.md` (una riga). Gli
-elenchi delle parti A e B vanno al Coordinatore prima del codice.
+`docs/STATUS.md` (la voce del task), `docs/INDEX.md` (una riga).
+
+Parte A (#1385, elenco approvato dal Coordinatore): `docs/API.md`,
+`packages/shared-types/fixtures/gym-history.json`,
+`packages/shared-types/src/gymHistory.ts`,
+`packages/shared-types/src/index.ts`,
+`packages/shared-types/test/gymHistory.test.ts`,
+`services/api/shaperoute_api/app.py` (solo righe aggiunte),
+`services/api/shaperoute_api/gym_history.py`,
+`services/api/tests/test_gym_history.py`.
+
+Parte B (#1396, elenco approvato dal Coordinatore fork 3): in
+`apps/mobile/src/`: `api/gymHistory.ts` e test, `gym/exerciseHistory.ts`,
+`gym/gymHistoryCache.ts`, `gym/useExerciseHistory.ts` coi loro test,
+`gym/LastTime.tsx` e test, `gym/HistoryChart.tsx`,
+`gym/ExerciseHistoryPage.tsx` e test, `gym/GuideHistoryLine.tsx`,
+`gym/WorkoutHistory.test.tsx`, `gym/WorkoutScreen.tsx`,
+`gym/ExerciseGuide.tsx`, `i18n/{it,de,es,fr}.ts` (solo righe aggiunte).
+
+Dopo B (#1406, chiesta dall'utente): `apps/mobile/src/body/bodyUnits.ts` e
+il suo test.
+
+Chiusura (questa PR): `docs/tasks/TASK-483.md`, `docs/DECISIONS.md`,
+`docs/STATUS.md`, `docs/archive/COMPLETATI.md`, `docs/sports/gym.md`.
 
 ## Fuori scope
 
@@ -133,3 +158,16 @@ elenchi delle parti A e B vanno al Coordinatore prima del codice.
 - 2026-11-22: risposte 1–4 dell'utente («Sì, così», «Sì, questa regola»,
   «Sì, uniscili», «Sì, anche fuori»); parte 0 chiusa, ADR-0392 scritto.
   Prossimo: l'elenco dei file della parte A al Coordinatore.
+- 2026-11-21: parte A in `main` (#1385, `920293d4`): `GET
+  /me/gym-history`, nessuna migrazione, nessun indice nuovo.
+- 2026-11-22: parte A sul server (passo 17, col sì dell'utente; una
+  lettura 36 ms). Parte B: elenco dei file al Coordinatore (fork 3), ok;
+  testi e schermate approvati dall'utente («Sì, vai avanti»); prova al
+  simulatore con l'API locale (guida, «History», «Last time» coi campi
+  già compilati e il suggerimento), schermate in `out/TASK-483/sim/shots/`.
+  B in `main` (#1396, `d0c85665`) e in produzione con l'OTA 22
+  (Coordinatore, `b4c31f09`).
+- 2026-11-22: l'utente ha chiesto la virgola nei pesi in italiano
+  («82.5 kg» → «82,5 kg»): `weightLabel` scrive il decimale come la lingua
+  dell'app, per tutti i pesi dell'app (#1406). Task Done; restano #1406
+  con la prossima OTA e il controllo dell'utente sul telefono.

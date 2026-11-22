@@ -199,12 +199,6 @@ import { SportButton } from "./src/settings/SportButton";
 import { useSport } from "./src/settings/useSport";
 import { MessagesButton } from "./src/skimode/MessagesButton";
 import { type SkiLabel, skiDayLabels } from "./src/skimode/skiDayLabels";
-import {
-  barPagesOf,
-  isSkiMode,
-  pageAfterModeChange,
-  shellPagesOf,
-} from "./src/skimode/skiMode";
 import { SkiDaysPage } from "./src/skimode/SkiDaysPage";
 import { SkiMessages } from "./src/skimode/SkiMessages";
 import { SkiResortsPage } from "./src/skimode/SkiResortsPage";
@@ -217,6 +211,16 @@ import { drawnOf, followedOf } from "./src/social/drawingRoute";
 import { useDrawingsDoor } from "./src/social/drawingsDoor";
 import { t } from "./src/i18n";
 import { color, statusBarStyle } from "./src/theme/tokens";
+import { TrainingTabIcon } from "./src/trainingmode/TrainingTabIcon";
+import { TrainingTodayPage } from "./src/trainingmode/TrainingTodayPage";
+import { TrainingWorkoutsPage } from "./src/trainingmode/TrainingWorkoutsPage";
+import {
+  barPagesOf,
+  modeOf,
+  pageAfterModeChange,
+  pagesOfMode,
+  shellPagesOf,
+} from "./src/trainingmode/trainingMode";
 import { useDrawDistance } from "./src/units/useDrawDistance";
 import { useUnits } from "./src/units/useUnits";
 
@@ -250,7 +254,9 @@ type Screen =
   | "play"
   // The pages of the ski mode (TASK-429, ADR-0357): «Days» and «Resorts».
   | "skiDays"
-  | "skiResorts";
+  | "skiResorts"
+  // The page of the training mode (TASK-490, ADR-0398): «Workouts».
+  | "trainingWorkouts";
 
 /** The screens that are pages of the tab bar, in the order of their tabs
  * (TASK-367, ADR-0311): «Feed», «Draw», «Messages», «Explore», «Profile».
@@ -259,7 +265,9 @@ type Screen =
  * 2026-10-29 (the user's choice): it opens from its row under the distance
  * of «Draw», over the app. With «Ski» chosen, the ski mode's pages instead
  * (TASK-429, ADR-0357): «Today», «Days», «Resorts», «Feed», «Profile»
- * (`src/skimode/skiMode.ts`). */
+ * (`src/skimode/skiMode.ts`); with «Gym», the training mode's (TASK-490,
+ * ADR-0398): «Today», «Workouts», «Feed», «Profile»
+ * (`src/trainingmode/trainingMode.ts`). */
 
 /** A run that ended, shown on the finish screen. */
 type Finished = {
@@ -455,7 +463,10 @@ function MuW() {
   const playOn = useGameCatalog() !== null;
   // The sport of «Settings» decides the pages: with «Ski», the ski mode's.
   const barSport = useSport();
-  const skiMode = isSkiMode(barSport);
+  // «app», «ski» or «training» (TASK-490): a mode has its own bar, and
+  // «Messages» in the header instead of a tab.
+  const mode = modeOf(barSport);
+  const ownBar = mode !== "app";
   const pages: readonly Screen[] = barPagesOf(barSport);
   useEffect(() => {
     void refreshGameCatalog(API_URL);
@@ -1423,19 +1434,23 @@ function MuW() {
   const messages = useMessagesDoor();
   const messagesWaiting =
     messages.unread === null ? 0 : messages.unread.unread + messages.unread.requests;
-  // The ski mode coming on opens «Today»; going off, «Days» and «Resorts»
-  // go to «Draw» (TASK-429). Only on a page: never over a run.
-  const wasSkiMode = useRef(skiMode);
+  // A mode coming on opens «Today»; going off, its own pages («Days»,
+  // «Resorts», «Workouts») go to «Draw» (TASK-429, TASK-490). Only on a
+  // page of the bar being left: never over a run. The bar of the new mode
+  // has no page of the old one, so it cannot say (TASK-490).
+  const wasMode = useRef(mode);
   useEffect(() => {
-    const next = pageAfterModeChange(screenNow, wasSkiMode.current, skiMode);
-    wasSkiMode.current = skiMode;
-    if (next !== null && latestPage.current.onPage) {
+    const was = wasMode.current;
+    const next = pageAfterModeChange(screenNow, was, mode);
+    wasMode.current = mode;
+    const onPageLeft = (pagesOfMode(was) as readonly string[]).includes(screenNow);
+    if (next !== null && onPageLeft) {
       latestPage.current.showPage(next);
     }
     // Only when the mode changes: the page then is the one to leave.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [skiMode]);
-  // «Messages» of the ski mode, over the app: «Back» returns where they
+  }, [mode]);
+  // «Messages» of the ski and training modes, over the app: «Back» returns where they
   // were opened from.
   const messagesFrom = useRef<Screen>("choose");
   const profileTab = useProfileTab();
@@ -1916,9 +1931,9 @@ function MuW() {
       <FavoriteHeart route={onMap} />
       {page !== -1 && (
         <TabShell
-          // Built again when the ski mode comes or goes (TASK-429): other
+          // Built again when a mode comes or goes (TASK-429, TASK-490): other
           // tabs, whose lights start from the page on screen.
-          key={skiMode ? "ski" : "app"}
+          key={mode}
           page={page}
           onPage={(index) =>
             // Nobody signed in has no messages: their tab is the way to sign in.
@@ -1927,9 +1942,10 @@ function MuW() {
             )
           }
           // The sport at the right of the header (TASK-205, TASK-367); in the
-          // ski mode «Messages» beside it, which has no tab there (TASK-429).
+          // ski and training modes «Messages» beside it, which has no tab
+          // there (TASK-429, TASK-490).
           action={
-            skiMode ? (
+            ownBar ? (
               <View style={styles.headerActions}>
                 <MessagesButton
                   waiting={messagesWaiting}
@@ -2177,46 +2193,77 @@ function MuW() {
                     onBack={profileFrom !== null ? backFromProfile : undefined}
                     // The first step of a new profile (TASK-457); the ski
                     // mode's bar has no «Explore».
-                    onExplore={skiMode ? undefined : () => showPage("explore")}
+                    onExplore={ownBar ? undefined : () => showPage("explore")}
                   />
                 ),
               },
             ],
             {
               // The ski mode's own pages (TASK-429 part A, ADR-0357).
-              choose: {
-                title: t("Today"),
-                label: t("Today"),
-                face: (selected) => <SkiTabIcon name="today" selected={selected} />,
-                render: () => (
-                  <SkiTodayPage
-                    onRecord={() => {
-                      Keyboard.dismiss();
-                      setScreen("run");
-                    }}
-                  />
-                ),
+              ski: {
+                choose: {
+                  title: t("Today"),
+                  label: t("Today"),
+                  face: (selected) => <SkiTabIcon name="today" selected={selected} />,
+                  render: () => (
+                    <SkiTodayPage
+                      onRecord={() => {
+                        Keyboard.dismiss();
+                        setScreen("run");
+                      }}
+                    />
+                  ),
+                },
+                skiDays: {
+                  title: t("Days@@ski"),
+                  label: t("Days@@ski"),
+                  face: (selected) => <SkiTabIcon name="days" selected={selected} />,
+                  lazy: true,
+                  render: () => <SkiDaysPage onLogIn={() => showPage("profile")} />,
+                },
+                skiResorts: {
+                  title: t("Resorts"),
+                  label: t("Resorts"),
+                  face: (selected) => <SkiTabIcon name="resorts" selected={selected} />,
+                  lazy: true,
+                  render: () => <SkiResortsPage apiUrl={API_URL} />,
+                },
               },
-              skiDays: {
-                title: t("Days@@ski"),
-                label: t("Days@@ski"),
-                face: (selected) => <SkiTabIcon name="days" selected={selected} />,
-                lazy: true,
-                render: () => <SkiDaysPage onLogIn={() => showPage("profile")} />,
-              },
-              skiResorts: {
-                title: t("Resorts"),
-                label: t("Resorts"),
-                face: (selected) => <SkiTabIcon name="resorts" selected={selected} />,
-                lazy: true,
-                render: () => <SkiResortsPage apiUrl={API_URL} />,
+              // The training mode's own pages (TASK-490 part A, ADR-0398).
+              training: {
+                choose: {
+                  title: t("Today"),
+                  label: t("Today"),
+                  face: (selected) => (
+                    <TrainingTabIcon name="today" selected={selected} />
+                  ),
+                  render: () => (
+                    <TrainingTodayPage
+                      onStart={() => {
+                        Keyboard.dismiss();
+                        startGymWorkout();
+                      }}
+                    />
+                  ),
+                },
+                trainingWorkouts: {
+                  title: t("Workouts"),
+                  label: t("Workouts"),
+                  face: (selected) => (
+                    <TrainingTabIcon name="workouts" selected={selected} />
+                  ),
+                  lazy: true,
+                  render: () => (
+                    <TrainingWorkoutsPage onLogIn={() => showPage("profile")} />
+                  ),
+                },
               },
             },
           )}
         />
       )}
-      {/* «Messages» of the ski mode over the app (TASK-429 part A). */}
-      {skiMode && screen === "messages" && (
+      {/* «Messages» of the ski and training modes over the app (TASK-429 part A, TASK-490). */}
+      {ownBar && screen === "messages" && (
         <SkiMessages onBack={() => showPage(messagesFrom.current)} />
       )}
       {/* The shape game (TASK-296, ADR-0255) over the app, opened from its

@@ -3602,7 +3602,8 @@ Una notte si pubblica in due modi, ognuno col suo interruttore:
   (la chiave è `sleep` più il giorno, `sleep20260921`), pubblicato appena
   nasce; mai «Only me». Negli elenchi e in `GET /drawings/{id}` ha
   `source` **`sleep`**, la notte nel campo `sleep`, nessuna attività,
-  nessuna linea, nessuna foto. **Lo riceve solo un'app che dice `sleep`
+  nessuna linea, nessuna foto (la riga di `GET /feed` in
+  `fixtures/feed-sleep.json`). **Lo riceve solo un'app che dice `sleep`
   in `X-MuW-Reads`** (a quella delle sole foto non arriva). Non conta per
   concorso, badge, gioco e totali, non entra nella ricerca, nel link
   pubblico né nei messaggi. È separato dal profilo: non tocca `shared`, e

@@ -1440,7 +1440,7 @@ utente `caddy` e non entra in `/root`.
    cd /root/shaperoute
    git fetch origin main
    rm -rf /srv/getmuw-site.new && mkdir -p /srv/getmuw-site.new
-   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets site/privacy site/support site/account-deletion site/live site/p | tar -x -C /srv/getmuw-site.new --strip-components=1
+   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets site/privacy site/support site/account-deletion site/live site/p site/.well-known | tar -x -C /srv/getmuw-site.new --strip-components=1
    chmod -R a+rX /srv/getmuw-site.new
    rm -rf /srv/getmuw-site.old
    if [ -d /srv/getmuw-site ]; then mv /srv/getmuw-site /srv/getmuw-site.old; fi
@@ -1460,6 +1460,7 @@ utente `caddy` e non entra in `/root`.
    getmuw.app {
    	root * /srv/getmuw-site
    	encode gzip
+   	header /.well-known/apple-app-site-association Content-Type application/json
    	file_server
    }
 
@@ -1483,6 +1484,20 @@ utente `caddy` e non entra in `/root`.
    sono moduli ES e il browser li vuole con questo tipo: Caddy lo dà da
    solo dall'estensione), `404`, e `301 https://getmuw.app/`. Poi la
    pagina in un browser: «Try it» disegna un percorso.
+4. **Il file che l'iPhone legge per i link** (TASK-482 parte C,
+   ADR-0391): `site/.well-known/apple-app-site-association` è nell'elenco
+   del punto 1, e non ha estensione, così Caddy da solo non direbbe che è
+   JSON: lo dice la riga `header` del blocco qui sopra (Apple lo chiede, e
+   non segue i redirect). Dopo la riga, `caddy validate` e `systemctl
+   reload caddy` come al punto 2. La prova, dal Mac:
+
+   ```bash
+   curl -s -o /dev/null -w '%{http_code} %{content_type} %{redirect_url}\n' https://getmuw.app/.well-known/apple-app-site-association
+   ```
+
+   risponde `200 application/json` senza redirect. Finché l'app non
+   dichiara il dominio (parte D, con una build nativa) il file non cambia
+   niente per nessuno.
 
 **Strava resta su `sslip.io`.** `SHAPEROUTE_DOMAIN` in `deploy/.env` è
 solo l'indirizzo a cui Strava rimanda il browser dopo «Connect with

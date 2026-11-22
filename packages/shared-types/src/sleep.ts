@@ -98,6 +98,7 @@ export interface ActivitySleep extends SleepSummary {
 // in X-MuW-Reads receives one (reads.json), in GET /feed, GET
 // /users/{id}/drawings and GET /drawings/{id}: `source` is `sleep`, the
 // night is in `sleep`, and it has no activity, no line and no photos.
+// fixtures/feed-sleep.json is its row in GET /feed.
 
 /** `source` of the post of a night, and the value said in X-MuW-Reads. */
 export const SLEEP_SOURCE = "sleep" as const;

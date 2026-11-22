@@ -91,15 +91,17 @@ In inglese come l'app, poi tradotti; `{…}` sono i numeri del Coach.
 | P3 | {Exercise} has stalled | Your estimated max hasn't moved in 3 workouts. Try {min2}–{max2} reps for the next weeks. | Change the stimulus · ACSM 2009 | Apply to plan |
 | P4 | Add {n} sets for {muscle} | {Muscle} got {sets} sets this week. Around 10 a week builds muscle better. | Weekly volume · Schoenfeld 2017 | Add to {day} |
 | P4 alto | A lot for {muscle} | {Muscle} got {sets} sets this week. Above 20 adds tiredness more than muscle. | Weekly volume · Schoenfeld 2017 | OK |
-| P5 | Train {muscle} twice a week | All your {muscle} sets are on {day}. Split them over two days for more growth. | Frequency · Schoenfeld 2016 | Split sets |
+| P5 | Train {muscle} twice a week | All your {muscle} sets are on {day}. Split them over two days for more growth. | Frequency · Schoenfeld 2016 | OK |
 | P6 | {Muscle} is still recovering | You trained it hard {hours} hours ago. Today pick another muscle, or keep it light. | 48 hours to recover · ACSM 2009 | OK |
-| C1 | Keep {km} km this week | Last week you ran {pct}% more than your usual. Hold the distance before adding more. | Safe increase · Nielsen 2014 | Apply to plan |
-| C2 | Next run: slow and long | Only {pct}% of your running was easy. Most of it should feel easy, around 80%. | 80/20 · Seiler 2010 | Apply to plan |
+| C1 | Keep {km} km this week | Last week you ran {pct}% more than your usual. Hold the distance before adding more. | Safe increase · Nielsen 2014 | OK |
+| C2 | Next run: slow and long | Only {pct}% of your running was easy. Most of it should feel easy, around 80%. | 80/20 · Seiler 2010 | OK |
 | C3 | Maybe a lighter week | This week's load is high compared with the last month. | Workload ratio · Gabbett 2016 | OK |
-| T1 | Time for an easy week | {weeks} weeks of steady work. Do about half the sets this week, same weights. | Deload · Bosquet 2007 | Apply to plan |
-| T3 | Short night: go lighter | Your sleep score was {score}. Same workout today, one set less per exercise. | Sleep and performance · Fullagar 2015 | Apply today |
-| T4 | Welcome back | You've been away {days} days. Start this week at about 85% of your weights. | Coming back · Mujika 2000 | Apply to plan |
+| T1 | Time for an easy week | {weeks} weeks of steady work. Do about half the sets this week, same weights. | Deload · Bosquet 2007 | OK |
+| T3 | Short night: go lighter | Your sleep score was {score}. Same workout today, one set less per exercise. | Sleep and performance · Fullagar 2015 | OK |
+| T4 | Welcome back | You've been away {days} days. Start this week at about 85% of your weights. | Coming back · Mujika 2000 | OK |
 | T5 | One more strength day | {n} strength day this week. Two a week keep muscles and bones strong. | WHO guidelines 2020 | OK |
+
+Nella prima versione «Apply» c'è per P1, P2, P3 e P4; le altre regole spiegano cosa fare e hanno «OK». Spostare un giorno, cambiare una settimana sola o una corsa della scheda viene dopo, se serve.
 
 Fissi: «Coach», «Based on your last 4 weeks», «Not now», «{pct}% of your
 body trained this week», «Create an account to get tips from your

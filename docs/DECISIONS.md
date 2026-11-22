@@ -578,7 +578,7 @@ lasciando le righe d'indice.
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 - ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo · 2026-11-21 · Attiva
 - ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities» · 2026-11-22 · Attiva
-- ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Proposta
+- ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Attiva
 - ADR-0391 — Il link di un post apre l'app: l'id resta dopo il `#`, l'app prende dall'indirizzo solo un id a forma di disegno e chiede il post all'API, senza account prima l'ingresso; la barra di Safari subito, i link verificati con la prossima build nativa · 2026-11-22 · Attiva
 - ADR-0127, precisazione (TASK-487) — «Feed» senza esempi: senza account l'invito ad accedere, con account e nessun post una riga che lo dice · 2026-11-22 · Attiva
 
@@ -708,7 +708,8 @@ al Coordinatore, non di questo task.
 
 ## ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie
 
-**Stato**: Proposta · 2026-11-22 · TASK-483 (parte 0, soli documenti).
+**Stato**: Attiva · 2026-11-22 · TASK-483: parte 0 (documenti), A #1385
+(server, passo 17), B #1396 (app, OTA 22), #1406 (la virgola nei pesi).
 I tre schermi, la regola del suggerimento, l'unione dei nomi liberi e
 «History» dalla guida sono **scelte dell'utente** (risposte 1–4 del task
 file); il resto è **deciso dall'agente su delega dell'utente**, numero dal
@@ -755,6 +756,22 @@ rilegge per esercizio e l'app non le mostra.
 `out/TASK-483/SERVER-A.md`); parte B nell'app con un OTA, testi e
 schermate all'utente prima. Un'API di prima risponde `404`: l'app tiene
 spenti riquadro e «History» e lascia i campi come oggi.
+
+**Aggiunte della parte B, decise dall'agente su delega dell'utente**:
+- **Campi già compilati**: valgono le serie di questo allenamento, poi i
+  valori della scheda seguita; l'ultima volta riempie solo i campi che la
+  scheda lascia vuoti (le settimane delle schede guidate restano quelle).
+- **Chi pesa in lb**: il suggerimento aggiunge 5 lb, non 2,5 kg.
+- **Senza rete**: il telefono tiene l'ultima risposta di 40 esercizi
+  (`gym-history.json`), così «Last time» c'è anche in palestra.
+- **Le frecce tra sedute** non confrontano un massimale stimato con un
+  peso massimo (seduta di sole serie oltre 12 ripetizioni): niente freccia.
+- **Un'API senza la rotta (404)** spegne «Last time» e «History».
+- **Il grafico è fatto di View** (niente react-native-svg, niente build
+  nativa).
+- **I pesi con la virgola** dove la lingua dell'app la usa («82,5 kg»),
+  chiesto dall'utente dopo la prova: `weightLabel` per tutti i pesi
+  dell'app (#1406).
 
 ## ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo
 

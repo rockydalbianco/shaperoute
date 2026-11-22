@@ -146,6 +146,28 @@ gruppi, per nome nella lingua dell'app o in inglese, e «Add “{name}”»
 aggiunge un esercizio col nome libero (`gym/ExerciseGrid.tsx`,
 `gym/ExercisePicker.tsx`).
 
+## Lo storico di un esercizio (TASK-483, ADR-0392)
+
+Durante l'allenamento, sotto un esercizio già fatto, il riquadro «Last
+time · {data}» mostra le serie dell'ultima seduta e una riga di
+suggerimento: tutte le serie arrivate alle ripetizioni → «Try {kg + 2,5}
+× {reps}» (5 lb in libbre), altrimenti «Try … again»; a corpo libero +1
+ripetizione, a tempo +5 s, il cardio senza. Le ripetizioni sono quelle
+della scheda seguita, altrimenti quelle della prima serie dell'ultima
+volta. La prima serie parte coi valori dell'ultima volta, solo nei campi
+che la scheda lascia vuoti (`gym/LastTime.tsx`, `gym/exerciseHistory.ts`).
+
+«History» (dall'allenamento e dalla guida «i», sotto «Watch out») ha il
+grafico del numero del tipo — `load` il massimale stimato (Epley, solo
+serie fino a 12 ripetizioni), `bodyweight` le ripetizioni, `timed` i
+secondi, `cardio` la distanza — su 1M, 3M, 1Y, All; quattro record; le
+sedute dalla più recente con la freccia sulla seduta prima e «PR»
+(`gym/ExerciseHistoryPage.tsx`, `gym/HistoryChart.tsx`). I dati vengono da
+`GET /me/gym-history` (solo le proprie serie), più gli allenamenti ancora
+in coda sul telefono; l'ultima risposta di 40 esercizi resta in
+`gym-history.json` per la palestra senza rete. I nomi liberi si uniscono
+dopo spazi tolti e minuscole. Un'API senza la rotta spegne tutto.
+
 ## Le schede (TASK-411 C)
 
 «Plans ›» in «Draw» elenca le proprie schede (nome, giorni, quanti

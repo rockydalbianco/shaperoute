@@ -9,6 +9,7 @@ import { forgetOwnPostLinks, ownPostLinksAre } from "../feed/postLink";
 import { t, tLater } from "../i18n";
 import { color, fontSize, radius, space } from "../theme/tokens";
 import { contactStyles } from "./ContactField";
+import { useSettingsGroup } from "./settingsGroup";
 
 /** Approved by the user with the texts of TASK-455 (2026-11-12); the title
  * and the sport, which the link's page shows too, added with the user's yes
@@ -30,6 +31,7 @@ type Props = {
  * an API that has it: an older one answers 404 and the row is not there.
  */
 export function PostLinksSetting({ account, api = { baseUrl: apiUrl() } }: Props) {
+  const group = useSettingsGroup();
   const { baseUrl, fetchFn, key } = api;
   const { state, sessionEnded: onSessionEnded } = account;
   const token = state.status === "signedIn" ? state.session.token : null;
@@ -88,7 +90,7 @@ export function PostLinksSetting({ account, api = { baseUrl: apiUrl() } }: Props
   const note = t(POST_LINKS_NOTE);
   return (
     <View style={styles.setting}>
-      <View style={contactStyles.menu}>
+      <View style={[contactStyles.menu, group]}>
         <Pressable
           style={({ pressed }) => [contactStyles.row, pressed && contactStyles.pressed]}
           onPress={() => void turn(!on)}

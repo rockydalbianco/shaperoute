@@ -8,6 +8,8 @@ import { RUN_DRAWING_PAD, RunDrawing } from "../activities/RunDrawing";
 import { isTrackless } from "../activities/snow";
 import { CardMapsCredit } from "../explore/RouteCard";
 import { useFeedMap } from "../feed/FeedMaps";
+import { isSleepPost } from "../feed/sleepPost";
+import { SleepTile } from "../feed/SleepTile";
 import { GymTile } from "../gym/GymTile";
 import { isPoolLine, PoolTile } from "../pool/PoolTile";
 import { t } from "../i18n";
@@ -255,6 +257,9 @@ function DrawingCell({ drawing, size, opening, disabled, onOpen }: CellProps) {
       {/* A post of photos only has no line: its first photo (TASK-312 C). */}
       {isPhotoPost(drawing) ? (
         <FirstPhoto drawing={drawing} size={size} />
+      ) : /* The post of a night of sleep: its score (TASK-467 part E). */
+      isSleepPost(drawing) ? (
+        <SleepTile sleep={drawing.sleep} size={size} />
       ) : /* A workout at the gym has no line: its tile (TASK-385 B0). */
       isTrackless(drawing.activity) ? (
         <GymTile width={size} height={size} />

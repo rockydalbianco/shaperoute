@@ -11,6 +11,8 @@ import { isOnSnow, isTrackless } from "../activities/snow";
 import { useWinnerDrawingId } from "../contest/contestKept";
 import { WinnerBadge } from "../contest/WinnerBadge";
 import { ExploreStart } from "../explore/ExploreStart";
+import { SleepPostCard } from "../feed/SleepPostCard";
+import { isSleepPost } from "../feed/sleepPost";
 import { GymDetail } from "../gym/GymDetail";
 import { PoolFigures } from "../pool/PoolFigures";
 import { isPoolLine } from "../pool/PoolTile";
@@ -131,6 +133,10 @@ export function DrawingCard({
   // A post of photos only (TASK-312 part C) has no run: no numbers, no
   // line, and it is not sent in a chat.
   const photosOnly = isPhotoPost(drawing);
+  // The post of a night of sleep (TASK-467 part E) the same: its night
+  // where a run has its numbers.
+  const night = isSleepPost(drawing);
+  const runless = photosOnly || night;
   const facts = [
     ...(drawing.activity === undefined ? [] : [activityName(drawing.activity)]),
     gym
@@ -144,8 +150,10 @@ export function DrawingCard({
         <View style={styles.words}>
           <Text style={styles.title}>{drawing.title ?? day}</Text>
           {drawing.title !== null && <Text style={styles.message}>{day}</Text>}
-          {!photosOnly && <Text style={styles.facts}>{facts}</Text>}
-          {drawing.source !== undefined && drawing.source !== "muw" && <ImportedMark />}
+          {!runless && <Text style={styles.facts}>{facts}</Text>}
+          {drawing.source !== undefined && drawing.source !== "muw" && !night && (
+            <ImportedMark />
+          )}
         </View>
       </View>
       {photos.length > 0 && (
@@ -165,6 +173,7 @@ export function DrawingCard({
         </ScrollView>
       )}
       <OutfitTotals photos={photos} />
+      {night && <SleepPostCard sleep={drawing.sleep} detail />}
       {drawing.description != null && drawing.description !== "" && (
         <Text style={styles.description}>{drawing.description}</Text>
       )}
@@ -236,7 +245,7 @@ export function DrawingCard({
       {/* «Send to a friend»: one's own track as the map shows it, copied
           into a message (TASK-333); somebody else's drawing as a post, a
           pointer (TASK-455). */}
-      {photosOnly ? null : copySendable(drawing, me) ? (
+      {runless ? null : copySendable(drawing, me) ? (
         runnable(drawing) && (
           <SendDrawingButton
             drawing={() => drawingOfDrawing(drawing)}

@@ -185,10 +185,10 @@ packages/shared-types/fixtures/my-plan-post.json     (nuovo)
 packages/shared-types/fixtures/reads.json
 packages/shared-types/test/planPosts.test.ts         (nuovo)
 packages/shared-types/test/sleepPost.test.ts         (approvato dal fork 3 il 2026-11-22: `sleep` non è più l'ultimo tipo)
-packages/shared-types/fixtures/{drawing-details-photos,feed-photos,drawing-details-imported,feed-imported,drawing-ski,drawing-sleep}.json
-                                                     (chiesti al fork 3: `"plan": null`, il campo nuovo del contratto)
-services/api/tests/test_drawings.py                  (chiesto al fork 3: `plan` fra i campi nuovi)
-services/api/tests/test_feed.py                      (chiesto al fork 3: idem)
+packages/shared-types/fixtures/{drawing-details-photos,feed-photos,drawing-details-imported,feed-imported,drawing-ski,drawing-sleep,feed-sleep}.json
+                                                     (approvati dal fork 3 il 2026-11-22: `"plan": null`, il campo nuovo del contratto)
+services/api/tests/test_drawings.py                  (approvato dal fork 3: `plan` fra i campi nuovi)
+services/api/tests/test_feed.py                      (approvato dal fork 3: idem)
 docs/API.md
 docs/DATABASE.md
 docs/tasks/TASK-485.md

@@ -214,8 +214,8 @@ def test_the_plan_changed_or_deleted_leaves_the_post_as_it_was(
 
 
 def test_use_this_plan_makes_a_plan_of_its_own(
-    client: TestClient,
-) -> None:  # noqa: F811
+    client: TestClient,  # noqa: F811
+) -> None:
     # The phone copies the plan of the post into the plans of whoever sees
     # it, kg and all, with a new key and its own first day: the route of the
     # plans, no route of its own.

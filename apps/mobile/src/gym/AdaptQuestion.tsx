@@ -43,14 +43,15 @@ export function AdaptQuestion({
   date: Date;
   feel: GymPlanFeel | null;
   onFeel: (feel: GymPlanFeel | null) => void;
-  /** Over the three answers; «How did it go?» without. */
+  /** Over the three answers; «How did the plan feel?» without (the post
+   * form under it has its own «How did it go?», the user's choice). */
   heading?: string;
 }) {
   const units = useUnits();
   if (feel === null) {
     return (
       <View style={styles.card} testID="adapt-question">
-        <Text style={styles.title}>{heading ?? t("How did it go?")}</Text>
+        <Text style={styles.title}>{heading ?? t("How did the plan feel?")}</Text>
         <Text style={styles.note}>
           {t("Next time the plan adjusts to your answer.")}
         </Text>

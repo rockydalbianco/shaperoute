@@ -3167,4 +3167,5 @@ export const ES: Table = {
     "Desactivado: sin pregunta al final, las semanas suben como estaba previsto.",
   "Next week is the lighter one, to recover.":
     "La próxima es la semana más ligera, para recuperar.",
+  "How did the plan feel?": "¿Qué tal te pareció el plan?",
 };

@@ -3150,4 +3150,5 @@ export const IT: Table = {
     "Spenta: a fine allenamento nessuna domanda, le settimane crescono come previsto.",
   "Next week is the lighter one, to recover.":
     "La prossima è la settimana più leggera, per recuperare.",
+  "How did the plan feel?": "Come ti è sembrata la scheda?",
 };

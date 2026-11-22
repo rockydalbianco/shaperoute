@@ -78,6 +78,13 @@ Tre piccole differenze dalla tela, per le lingue: «Change» è
 prossimo» è «La prossima volta (lunedì)», perché il giorno cambia genere;
 a fine corsa il titolo è «Lungo della scheda: com'è andata?», perché il modulo
 della corsa ha già un «Com'è andata?» (la descrizione).
+In palestra il titolo è «Come ti è sembrata la scheda?», scelta dell'utente
+del 2026-11-23 dopo le schermate (il modulo del post sotto ha già «Com'è
+andata?»). Dal simulatore una riga nuova: «La prossima è la settimana più
+leggera, per recuperare.», quando la settimana dopo è quella di recupero del
+ciclo (altrimenti «Facile» mostrerebbe un peso più basso senza dire perché).
+Gli esercizi che in «più kg» non crescono (senza kg) non scendono mai sotto
+quanto è scritto.
 
 ## Criteri di accettazione
 

@@ -3180,4 +3180,5 @@ export const DE: Table = {
     "Aus: am Ende keine Frage, die Wochen steigen wie geplant.",
   "Next week is the lighter one, to recover.":
     "Nächste Woche ist die leichtere, zum Erholen.",
+  "How did the plan feel?": "Wie fühlte sich der Plan an?",
 };

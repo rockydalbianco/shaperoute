@@ -3168,4 +3168,5 @@ export const FR: Table = {
     "Désactivé : pas de question à la fin, les semaines progressent comme prévu.",
   "Next week is the lighter one, to recover.":
     "La semaine prochaine est la plus légère, pour récupérer.",
+  "How did the plan feel?": "Comment as-tu trouvé le programme ?",
 };

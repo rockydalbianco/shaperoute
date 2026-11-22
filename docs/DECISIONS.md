@@ -583,9 +583,38 @@ lasciando le righe d'indice.
 - ADR-0127, precisazione (TASK-487) — «Feed» senza esempi: senza account l'invito ad accedere, con account e nessun post una riga che lo dice · 2026-11-22 · Attiva
 - ADR-0397 — «Alimentazione»: un contacalorie senza diete, cibi da USDA più quelli dell'utente, piano a settimana e diario solo sul telefono, bilancio = assunte − (riposo + attività) senza doppi conti, tabella solo per il proprietario, spenta fino alla build nativa che legge da Salute · 2026-11-22 · Proposta
 - ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share» · 2026-11-22 · Attiva
+- ADR-0375, precisazione R6e — Il post di una gara a due colori: `flight` anche in `GET /drawings/{id}`, solo se la linea del post ha i punti della corsa; lo schema openapi delle due risposte torna coi suoi campi · 2026-11-23 · Attiva
 - ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Proposta
 
 ## Voci nuove
+
+## ADR-0375, precisazione R6e — Il post di una gara a due colori: `flight` anche in `GET /drawings/{id}`, solo se la linea del post ha i punti della corsa; lo schema openapi delle due risposte torna coi suoi campi
+
+**Stato**: Attiva · 2026-11-23 · TASK-305 parte R6e: server #1411
+(`e427ed2e`, col passo 19), app #1412 (`7a0972de`, con l'OTA 23). Che la
+si faccia ora è **scelta dell'utente** («Sì, fallo», 2026-11-22); il resto
+è **deciso dall'agente su delega dell'utente**, con le liste dei file
+approvate dal Coordinatore. Toglie il punto 7 («Fuori») di R6d e corregge
+il prezzo del suo punto 3.
+
+1. **`flight` nel post aperto** (`GET /drawings/{id}`): lo stesso di
+   `GET /me/activities/{key}` (R6d, punto 1), dallo stesso `flight_of`,
+   calcolato a ogni lettura. Lo vede chi vede il post: i tempi a piedi e in
+   volo erano già sul post (`flight_split`).
+2. **Solo se i punti tornano**: gli indici sono della traccia della corsa;
+   il post ha la sua copia (`drawings.track`). Se le due linee non hanno lo
+   stesso numero di punti (un disegno tenuto tagliato, prima di ADR-0330)
+   `flight` manca, così i tratti non finiscono nel posto sbagliato.
+3. **Assente quando manca**, come in R6d. Il serializzatore ora non ha un
+   tipo di ritorno, come quello del sonno in `SeenFields`: lo schema
+   openapi di tutte e due le risposte resta coi loro campi (R6d lo aveva
+   reso un oggetto qualsiasi). Un test lo controlla.
+4. **Nell'app** lo stesso `activityFlightOf`, che accetta qualunque
+   `{ track, flight? }`: il post di una gara si disegna bianco a piedi e
+   giallo in volo, la mappa inquadrata sulla linea, invece che tutto in
+   giallo come una rotta. Senza `flight` resta come prima.
+5. **Prima il server, poi l'OTA**, ma qui l'ordine non conta: un'app con
+   R6e su un server senza mostra il post come oggi.
 
 ## ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share»
 

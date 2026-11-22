@@ -3968,6 +3968,13 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
     `stats`. Ogni lista di post (Feed, profilo, ricerca, gare, stazione) dà
     `flight_split` sul post, `null` senza tratti a piedi: il Feed ci scrive
     «On foot {time} · In the air {time}».
+  - **I tratti in aria sulla linea** (parti R6d e R6e, `flight_legs.py`,
+    esempio in `fixtures/activity-flight.json`): `GET /me/activities/{key}`
+    e `GET /drawings/{id}` di una gara danno `flight` `{air, split}`.
+    `air` è una lista di coppie `[from, to]`, indici dei punti di `track`;
+    `split` è lo stesso `flight_split`. Manca per ogni altra attività, per
+    un volo senza tratti a piedi e, nel post, se la sua linea non ha i
+    punti della corsa.
   - **Prima il server, poi l'app**: un server senza R6a rifiuta
     `flight_parts` (422).
 

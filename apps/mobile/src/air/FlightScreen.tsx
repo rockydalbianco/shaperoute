@@ -120,7 +120,11 @@ function Options({
   onDone,
   onEdit,
   palette,
+  insets,
 }: {
+  /** Inside the safe area: the options scroll, and would go under the
+   * status bar and the home bar. */
+  insets: { top: number; bottom: number };
   prefs: FlightPrefs;
   onChange: (prefs: FlightPrefs) => void;
   onDone: () => void;
@@ -137,7 +141,7 @@ function Options({
   );
   return (
     <ScrollView
-      style={[styles.options, { backgroundColor: palette.background }]}
+      style={[styles.options, { ...insets, backgroundColor: palette.background }]}
       contentContainerStyle={styles.optionsInside}
       testID="flight-options"
     >
@@ -484,6 +488,7 @@ export function FlightScreen({
               setEditing({ page, index: null });
             }}
             palette={palette}
+            insets={{ top: insets.top, bottom: insets.bottom }}
           />
         ) : null}
         {editing !== null ? (
@@ -554,7 +559,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  optionsInside: { padding: 20, paddingTop: 60, gap: 18 },
+  optionsInside: { padding: 20, paddingTop: 16, gap: 18 },
   optionRow: { gap: 8 },
   optionTitle: {
     fontSize: 14,

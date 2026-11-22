@@ -4718,6 +4718,36 @@ quando è accesa. Testi approvati dall'utente (11 e 12 novembre 2026).
   consiglio; non si chiama mai «di Apple». Nessuna voce nel Feed: il post
   della notte da sola arriva con TASK-312 C.
 
+### Il post del sonno nel Feed (TASK-467 parte E, ADR-0380 precisazione E)
+
+**Spento in ogni build di oggi**, dalla stessa costante `SLEEP_POSTS_ON`:
+spenta, l'app non dice `sleep` in `X-MuW-Reads` (`api/reads.ts`), quindi
+il server non le manda nessun post del sonno e niente di qui si vede.
+Acceso, la notte pubblicata da sola è un post come gli altri, senza corsa:
+
+- **Nel Feed** (`feed/SleepFeedPost.tsx`): chi l'ha pubblicata e da
+  quanto; dove una corsa ha la mappa, la notte (`feed/SleepPostCard.tsx`):
+  «Sleep score», «82 · Very good», «7 h 40 min» e le fasi quando un
+  orologio le ha dette; sotto, le azioni di ogni post **senza «Share»**
+  (non ha linea né link, e non si manda in chat). Un tocco sulla notte
+  apre la pagina, due sono il super like; «…» sul post di un altro.
+- **La pagina del post** (`feed/SleepPostDetailPage.tsx`): autore e
+  giorno, la notte con sotto «Worked out by MuW from Apple Health data. It
+  can differ from the score in the Health app.», la barra di ogni post.
+  Sul proprio, sotto la barra, **«Remove post»**: lo toglie dal Feed al
+  tocco, senza conferma (si ripubblica dal «+»), e le schede rileggono.
+- **Nella griglia di un profilo** (`feed/SleepTile.tsx`): al posto della
+  linea il punteggio sopra «Sleep». Aperto da lì, sulla scheda del
+  disegno c'è la notte al posto dei numeri della corsa; niente «Imported»,
+  niente «Send to a friend», niente GPX.
+- **Pubblicarlo**: la pagina «Sleep» (`feed/SleepPostPage.tsx`: la notte
+  come sul profilo, «Everyone» / «Followers», «Publish», «Your score,
+  hours slept and sleep stages go in the Feed.»; già pubblicata: «Already
+  in the Feed» e «Remove post») si apre dalla voce «Sleep» del «+» del
+  Feed, che arriva dopo TASK-481 A: fino ad allora la pagina c'è ma
+  niente la apre.
+- Mai l'ora in cui si è andati a letto o ci si è svegliati.
+
 ## Il post da condividere (TASK-231, ADR-0194)
 
 «Share» sta sulla scheda di fine corsa (con un percorso e senza) e sulla

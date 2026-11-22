@@ -1,6 +1,7 @@
 # TASK-487 — Il Feed senza attività finte
 
-**Stato**: In lavorazione · codice in PR #1397 (2026-11-22)
+**Stato**: Done (2026-11-22) — #1397 in `main` (5a6e3cd4); esce con l'OTA 23
+(Coordinatore, col sì dell'utente)
 **Fase**: 5 · **Branch**: `fix/feed-no-examples` (codice),
 `docs/TASK-487-feed-no-examples` (documenti)
 **ADR**: ADR-0127, precisazione (TASK-487) · numero del task dal
@@ -44,10 +45,19 @@ avrebbe chiesto una modifica al server).
   `AppExploreMove.test.tsx`: il loro unico ingresso era toccare un
   esempio nel Feed. Restano i test unitari di `paddlePosts` e `feedRoute`.
 
+## Chiusura (2026-11-22)
+
+- La #1397 è in `main` (5a6e3cd4), unita dal Coordinatore al verde. Prima
+  due giri di test rossi: `AppEditDrawing` e `AppExploreMove` (testa
+  1ec61c0a), poi, con `main` più avanti, `FeedScreenStyle` (senza accesso
+  «All» compare due volte: la scheda e il titolo dell'invito) e `AppPages`
+  (lo scorrimento verso «Feed» trova l'invito, non gli esempi), testa
+  9abed3da.
+- Documenti: #1402 (task file, STATUS, precisazione di ADR-0127), poi questa.
+
 ## Cosa resta
 
-- Merge della #1397 (Coordinatore), poi OTA production e preview
-  (Coordinatore, con il sì dell'utente).
+- OTA 23, production e preview (Coordinatore, con il sì dell'utente).
 - L'utente fa l'accesso dall'app del Mac e controlla che il Feed mostri le
   attività vere.
 - Fuori da questo task: gli esempi compaiono ancora tra i «featured» della

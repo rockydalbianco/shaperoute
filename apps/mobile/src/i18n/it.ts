@@ -2723,6 +2723,16 @@ export const IT: Table = {
   "Log in to see your days.": "Accedi per vedere le tue giornate.",
   "No days on the snow yet.": "Ancora nessuna giornata sulla neve.",
 
+  // src/trainingmode/, settings/SportButton.tsx (TASK-490 part A: the training mode)
+  "Training mode": "Modalità allenamento",
+  "Turns MuW into your training app": "Trasforma MuW nella tua app per allenarti",
+  Workouts: "Allenamenti",
+  "Log in to keep your plans and see your workouts.":
+    "Accedi per tenere i tuoi piani e vedere i tuoi allenamenti.",
+  Exercises: "Esercizi",
+  "Find an exercise": "Cerca un esercizio",
+  "Workout at the gym": "Allenamento in palestra",
+
   // src/trainingmode/ (TASK-490 part B: the body of the week)
   "of your body trained": "del corpo allenato",
   "{percent}% of your body trained this week.":
@@ -3163,4 +3173,11 @@ export const IT: Table = {
   "Delete this post?": "Eliminare questo post?",
   "Copies already made stay with whoever made them.":
     "Le copie già fatte restano a chi le ha fatte.",
+
+  // The post of a night of sleep (TASK-467 part E).
+  Sleep: "Sonno",
+  "Already in the Feed": "Già nel Feed",
+  "Remove post": "Rimuovi il post",
+  "Your score, hours slept and sleep stages go in the Feed.":
+    "Il punteggio, le ore dormite e le fasi del sonno vanno nel Feed.",
 };

@@ -582,8 +582,50 @@ lasciando le righe d'indice.
 - ADR-0391 — Il link di un post apre l'app: l'id resta dopo il `#`, l'app prende dall'indirizzo solo un id a forma di disegno e chiede il post all'API, senza account prima l'ingresso; la barra di Safari subito, i link verificati con la prossima build nativa · 2026-11-22 · Attiva
 - ADR-0127, precisazione (TASK-487) — «Feed» senza esempi: senza account l'invito ad accedere, con account e nessun post una riga che lo dice · 2026-11-22 · Attiva
 - ADR-0397 — «Alimentazione»: un contacalorie senza diete, cibi da USDA più quelli dell'utente, piano a settimana e diario solo sul telefono, bilancio = assunte − (riposo + attività) senza doppi conti, tabella solo per il proprietario, spenta fino alla build nativa che legge da Salute · 2026-11-22 · Proposta
+- ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share» · 2026-11-22 · Attiva
 
 ## Voci nuove
+
+## ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share»
+
+**Stato**: Attiva · 2026-11-22 · TASK-312 parte C2 (#1386, `3d4f0d47`). Testi,
+partenza dall'ultima scelta, schermate, testi della cancellazione,
+«Importata» e riga della privacy con le traduzioni: **scelte dell'utente**
+(2026-11-21 e 2026-11-22). Il resto è **deciso dall'agente su delega
+dell'utente**, con la lista dei file approvata dal Coordinatore.
+
+**Contesto**: la precisazione C mette sul server il post di sole foto (un
+disegno senza corsa, solo alle app che dicono `photos`); restava l'app.
+
+**Decisione**:
+
+1. **L'app dice `photos`** in `X-MuW-Reads` e accetta `activity` `null`
+   solo quando `source` è `photos`: un'altra risposta senza attività resta
+   una risposta sbagliata.
+2. **Una coda sul telefono**, come per le corse e la palestra: il post e
+   le sue foto (file `photo-post-outbox.json` e una foto per file) partono
+   anche più tardi, una foto alla volta; la chiave la fa il telefono. A
+   ogni invio riuscito il Feed rilegge le schede aperte. All'uscita
+   dall'account la coda di quell'account si scorda.
+3. **Due entrate**: «Photos only» in «Add past activity» e nel «+» del
+   Feed. Il «+» c'è con l'account anche senza il selettore di file (la
+   1.0): allora ha solo «Photos only».
+4. **Una scheda e una pagina proprie** (`PhotoFeedPost`, `PhotoPostPage`):
+   foto da scorrere, «Imported», la data della pubblicazione, reazioni,
+   commenti, segnalazioni e blocchi come ogni post. Niente «Share»,
+   niente numeri della corsa, niente invio in chat; nella griglia del
+   profilo la prima foto.
+5. **Cambiare e cancellare dalle impostazioni della pagina**: l'app trova
+   la chiave con `GET /me/photo-posts` (C1b); «Delete post» chiede
+   conferma.
+
+**Alternative scartate**: mettere i post di sole foto in «My activities»
+(non sono attività, e «My activities» parte dalle corse); riusare la
+scheda di una corsa senza mappa (troppi rami per i campi `null`).
+
+**Conseguenze**: in produzione con l'OTA 23; le app di
+prima non vedono questi post. Ricerca, link pubblico e chat restano fuori
+come dice la precisazione C.
 
 ## ADR-0127, precisazione (TASK-487) — «Feed» senza esempi: senza account l'invito ad accedere, con account e nessun post una riga che lo dice
 

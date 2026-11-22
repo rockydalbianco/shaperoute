@@ -62,6 +62,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Il punteggio del sonno MuW | `tasks/TASK-467.md` |
 | «Alimentazione»: diario dei pasti, piano, bilancio delle calorie, tabella nel profilo | `tasks/TASK-489.md`, ADR-0397, ADR-0318, ADR-0281 |
 | La modalità Allenamento: scelta la palestra, l'app diventa un'app per allenarsi (Today, Workouts, Food) | `tasks/TASK-490.md`, ADR-0398, ADR-0357, ADR-0341, ADR-0392 |
+| Il Coach MuW: consigli dagli allenamenti fatti, regole e studi, la scheda che cambia con «Apply» | `tasks/TASK-491.md`, ADR-0399, ADR-0396, ADR-0398, ADR-0392 |
 | Le schede, lo swipe, il tasto indietro, il gesto dal bordo, i fogli, le pagine sopra l'app | `tasks/TASK-470.md`, ADR-0384, `UI.md` «Le pagine e la barra di schede» |
 | La live in chat e nel Feed, anche programmata (una gara) | `tasks/TASK-468.md`, ADR-0381, ADR-0352, `API.md` «Live shares» e «Messages» |
 | «MuW Style» | `STYLE.md`, `tasks/TASK-384.md` |

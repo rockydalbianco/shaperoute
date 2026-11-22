@@ -41,6 +41,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   testi approvati il 2026-11-23, esce con l'OTA col sì. Restano la voce del
   «+» (dopo TASK-481 A), la privacy a turno, l'apertura da profilo, notifica
   o link. File: — · `tasks/TASK-485.md`
+- **TASK-491 — Il Coach MuW** · parte 0 il 2026-11-23 (ADR-0399): regole
+  con il loro studio, sul telefono e senza AI; la scheda cambia solo con
+  «Apply»; solo con account, omino di TASK-490 B; testi approvati. A (solo
+  file nuovi in `coach/`) nella #1427; poi B e C. File: `apps/mobile/src/coach/`
+  · `tasks/TASK-491.md`
 - **TASK-490 — La modalità Allenamento** · parte 0 chiusa il 2026-11-23
   (ADR-0398): scelta «Gym», la barra è Today · Workouts · Food · Feed ·
   Profile come per lo sci; il Cibo è la pagina di TASK-489. Prossima la A.

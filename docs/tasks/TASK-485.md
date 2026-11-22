@@ -1,9 +1,10 @@
 # TASK-485 — La scheda della palestra come post
 
 **Stato**: In lavorazione · parte 0 in `main` (#1365); A (server) in
-`main` (#1404), passo 18 sul server col sì dell'utente; B (app) scritta il
-2026-11-22 su `feat/TASK-485-b-plan-post-app`, senza la riga del foglio
-(dopo TASK-481 A) e senza la privacy (a turno)
+`main` (#1404), passo 18 sul server col sì dell'utente; B (app) in `main`
+(#1414, `f4737c66`, 2026-11-22), testi e traduzioni approvati il
+2026-11-23, esce con l'OTA col sì; senza la riga del foglio (dopo TASK-481
+A) e senza la privacy (a turno)
 **Fase**: 5 · **Branch**: `docs/TASK-485-gym-plan-post` (parte 0, in
 `main`); `feat/TASK-485-a-plan-posts-api` (A); B col suo branch e la sua PR
 **Dipende da**: TASK-481 (il foglio «Add to Feed» e `addToFeedEntries.ts`,
@@ -286,6 +287,15 @@ turno; un piano pubblicato aperto da un profilo, da una notifica o dal
 link del post (`PostPage.tsx`, `DrawingCard.tsx`, fuori lista: chiesto al
 Coordinatore).
 
+**B in `main` (2026-11-22, #1414, `f4737c66`).** I file fuori lista li ha
+approvati tutti il Coordinatore (fork 3), più
+`packages/shared-types/test/planPosts.test.ts` e
+`services/api/tests/test_photo_posts.py` (l'app di oggi senza `plans`).
+«Delete post» c'era già con TASK-312 C2: i testi nuovi sono rimasti tre.
+Il 2026-11-23 l'utente ha approvato le quattro traduzioni e i tre testi
+(«Sì, approvo»). Voce: ADR-0394 precisazione B. Esce con l'OTA, col sì
+dell'utente.
+
 A turno (privacy, punto 4; in coda dopo TASK-309 B1, 417 D2, 312 C2 e 481
 A, il Coordinatore dice quando tocca):
 
@@ -299,7 +309,7 @@ site/privacy/**/index.html                           (rigenerate con make_privac
 
 - [x] **0**: scelte dell'utente scritte qui e in ADR-0394; parti e liste dei
       file al Coordinatore.
-- [ ] **A**: `PUT /me/plan-posts/{key}` crea una volta sola; rifiuta
+- [x] **A**: `PUT /me/plan-posts/{key}` crea una volta sola; rifiuta
       `runner` e «Only me»; un'app senza `plans` non riceve mai la scheda
       pubblicata (test); reazioni, commenti, blocchi e nascosti valgono
       (test); chi parte da `runs` non la vede (test). CI verde; sul server

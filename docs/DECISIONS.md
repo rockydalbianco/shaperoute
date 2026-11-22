@@ -574,7 +574,7 @@ lasciando le righe d'indice.
 - ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos` · 2026-11-21 · Attiva
 - ADR-0393 — L'attrezzatura: una lista per iscritto con foto e nota, più attrezzi per attività, i totali contati dal server, visibile come il profilo, legata ai capi taggati · 2026-11-21 · Proposta
 - ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci in ordine, ognuna costruita dal task che la possiede e mostrata solo quando è pronta; «Everyone» anche per la palestra scritta a mano e la scheda pubblicata · 2026-11-21 · Proposta
-- ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Proposta
+- ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Attiva
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 - ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo · 2026-11-21 · Attiva
 - ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities» · 2026-11-22 · Attiva
@@ -585,8 +585,52 @@ lasciando le righe d'indice.
 - ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share» · 2026-11-22 · Attiva
 - ADR-0375, precisazione R6e — Il post di una gara a due colori: `flight` anche in `GET /drawings/{id}`, solo se la linea del post ha i punti della corsa; lo schema openapi delle due risposte torna coi suoi campi · 2026-11-23 · Attiva
 - ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Proposta
+- ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima · 2026-11-23 · Attiva
 
 ## Voci nuove
+
+## ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima
+
+**Stato**: Attiva · 2026-11-23 · TASK-485 parte B (#1414, `f4737c66`).
+Riquadro e dettaglio, kg nella copia, copia che non segue l'originale,
+testi e quattro traduzioni (2026-11-21 e 2026-11-23, con le schermate del
+simulatore): **scelte dell'utente**. Il resto è **deciso dall'agente su
+delega dell'utente**, con la lista dei file approvata dal Coordinatore
+(fork 3).
+
+**Contesto**: la parte A mette sul server la scheda pubblicata (un disegno
+senza corsa con `drawings.plan`, solo alle app che dicono `plans`); restava
+l'app.
+
+**Decisione**:
+
+1. **L'app dice `plans`** in `X-MuW-Reads` e accetta `activity` `null`
+   quando `source` è `photos` o `plan`. Senza questo il Feed rifiutava la
+   risposta intera e la pagina non si caricava (visto nel simulatore).
+2. **Una coda sul telefono** (`plan-post-outbox.json`, come per le foto):
+   il post parte anche più tardi, il più vecchio prima; la chiave la fa il
+   telefono. Un post mandato resta nel file col suo id (al più 50 per
+   account), perché il Feed dà l'id e non la chiave: «Delete post» c'è solo
+   sul telefono che l'ha pubblicato.
+3. **Un foglio solo**: «Use this plan» apre la guida *al posto* del piano
+   aperto, nello stesso foglio. Due fogli chiusi insieme lasciavano iOS su
+   uno schermo nero. «Added to your plans» è una riga sotto il riquadro,
+   non un avviso.
+4. **La copia nella guida delle schede** (`GymPlanWizard`, `copied`): solo
+   gli ultimi passi, «How do you run today?» quando la scheda ha corse e
+   poi nome e primo giorno (il lunedì da oggi). Salva con
+   `PUT /me/gym-plans/{key}`.
+5. **Il limite di 20** si guarda sul telefono prima di aprire la guida; il
+   server lo tiene comunque.
+
+**Alternative scartate**: tenere la chiave del post sul server per
+cancellarlo da ogni telefono (cambia il contratto di A); la guida come
+foglio sopra il piano (lo schermo nero di iOS).
+
+**Conseguenze**: in produzione con l'OTA che la porta, col sì
+dell'utente; le app di prima non vedono questi post. Restano la voce nel
+«+» del Feed (dopo TASK-481 A), la riga della privacy a turno, e il piano
+aperto da un profilo, una notifica o un link.
 
 ## ADR-0375, precisazione R6e — Il post di una gara a due colori: `flight` anche in `GET /drawings/{id}`, solo se la linea del post ha i punti della corsa; lo schema openapi delle due risposte torna coi suoi campi
 
@@ -1025,7 +1069,7 @@ chiusa; nessun tocco ad `app.json`. Acceso di default: scelta dell'utente.
 
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
-**Stato**: Proposta · 2026-11-21 · TASK-485 parte 0 (numero dal
+**Stato**: Attiva (A e B in `main`, A sul server, 2026-11-23) · 2026-11-21 · TASK-485 parte 0 (numero dal
 Coordinatore). Che cosa mostra, che cosa copia «Use this plan» (kg
 compresi), che il post non segue la scheda, testi e riga di privacy:
 **scelte dell'utente** del 2026-11-21 («Riquadro + dettaglio», «Anche i

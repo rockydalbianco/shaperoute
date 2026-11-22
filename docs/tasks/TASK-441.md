@@ -486,6 +486,22 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
 
 ## Dove siamo
 
+*2026-11-23, B2 estere, le cinque*: **la #1418 è in `main`** (`32036bd3`)
+**e sul server** (passo 19, server a `e427ed2e`, riferito dal
+Coordinatore). Tutti i controlli di `out/TASK-441/SERVER-B2-SETTE.md` danno
+i valori attesi: `1902 recommended routes`; le corse di prima identiche
+(`60 50 50 pen-up 19 …`, `1546 63 40 0`); Londra `8
+london-circle-20000-25` com'era; Berlino `8 berlin-circle-20000-23
+['cycling'] [20000, 25000, 30000]`; New York `4 newyork-sun-25000-31`;
+`356 59 40 berlin-circle-20000-23`; l'uscita letta intera `circle cycling
+20000 20870 points 1295`. Niente OTA: con lo sport «Bike», «Explore»
+mostra già le uscite nelle cinque città. **Il secondo giro di B2 è
+chiuso**: 30 città estere su 32 hanno le uscite in bici (208 disegni);
+Parigi e Tokyo no (pianificatore oltre i 5 GB, limite non alzato). Resta:
+chiedere all'utente se cancellare gli estratti
+(`out/TASK-441/b2/extracts/`, 15 GB); poi B3 (40–50 km) e C, non
+iniziate.
+
 *2026-11-22, pomeriggio, B2 estere, le sette*: **secondo giro finito**
 (13:00–13:37, a Mac vuoto, limite a 5 GB solo per loro, deciso dal
 Coordinatore; `out/TASK-441/b2/run-sette.sh`). **Cinque città disegnate**:

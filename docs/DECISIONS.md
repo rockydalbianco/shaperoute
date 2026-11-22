@@ -587,7 +587,7 @@ lasciando le righe d'indice.
 
 ## ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share»
 
-**Stato**: Attiva · 2026-11-22 · TASK-312 parte C2 (#1386). Testi,
+**Stato**: Attiva · 2026-11-22 · TASK-312 parte C2 (#1386, `3d4f0d47`). Testi,
 partenza dall'ultima scelta, schermate, testi della cancellazione,
 «Importata» e riga della privacy con le traduzioni: **scelte dell'utente**
 (2026-11-21 e 2026-11-22). Il resto è **deciso dall'agente su delega
@@ -622,7 +622,7 @@ disegno senza corsa, solo alle app che dicono `photos`); restava l'app.
 (non sono attività, e «My activities» parte dalle corse); riusare la
 scheda di una corsa senza mappa (troppi rami per i campi `null`).
 
-**Conseguenze**: in produzione con il prossimo aggiornamento OTA; le app di
+**Conseguenze**: in produzione con l'OTA 23; le app di
 prima non vedono questi post. Ricerca, link pubblico e chat restano fuori
 come dice la precisazione C.
 

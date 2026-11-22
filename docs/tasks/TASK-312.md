@@ -1,6 +1,6 @@
 # TASK-312 — Importare nel Feed attività fatte con altre app, e post di sole foto
 
-**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C in `main`**: C1 (API e migrazione `0080`, PR #1347, `cfd5e956`; server col passo 16), C1b (`GET /me/photo-posts`, PR #1355) e C1c (fuori i post del sonno, PR #1379) sul server col passo 17, C2 (app e riga della privacy, PR #1386) · poi D (studio Apple Salute), E (studio collegamenti diretti)
+**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C in `main`**: C1 (API e migrazione `0080`, PR #1347, `cfd5e956`; server col passo 16), C1b (`GET /me/photo-posts`, PR #1355) e C1c (fuori i post del sonno, PR #1379) sul server col passo 17, C2 (app e riga della privacy, PR #1386, `3d4f0d47`) · poi D (studio Apple Salute), E (studio collegamenti diretti)
 **Fase**: 4 · **Branch**: `docs/TASK-312-import-activities` (documenti),
 `feat/TASK-312-a-imported-runs-api` (A), `feat/TASK-312-b-import-file-app`
 (B), `feat/TASK-312-c-photo-posts` (C), `docs/TASK-312-d-health-study`
@@ -428,7 +428,7 @@ in `main` (`fdc49ddd`), con un test. Sul server col passo 17, insieme a C1b
 (server a `40789324`: `/me/photo-posts` 401 senza chiave, controlli
 `10|0|0|0|0`, nessun Traceback).
 
-### Parte C2 — com'è fatta (2026-11-22, PR #1386)
+### Parte C2 — com'è fatta (2026-11-22, PR #1386, `3d4f0d47`)
 
 «File toccati» approvati dal Coordinatore (lista in
 `side-session-notes`, poi nel corpo della PR); in più, chiesti e approvati:
@@ -593,5 +593,5 @@ docs/STATUS.md              (una voce in «In lavorazione»)
 *(si compila a fine task)*
 
 **Parte C fatta, 2026-11-22**: C1, C1b, C1c in `main` e sul server; C2
-(#1386) in `main`, in produzione con il prossimo aggiornamento (OTA del
-Coordinatore), poi uno sguardo sul telefono. Restano D ed E.
+(#1386) in `main` (`3d4f0d47`), in produzione con l'OTA 23 (la chiede il
+Coordinatore all'utente), poi uno sguardo sul telefono. Restano D ed E.

@@ -16,7 +16,6 @@ import { MUW_ROUTES_IN_FEED } from "../feed/muwInFeed";
 import { forgetFeed } from "../feed/useFeed";
 import { forgetMuwRoutes } from "../feed/useMuwRoutes";
 import { forgetStylePosts } from "../feed/useStylePosts";
-import { SAMPLE_FEED } from "../feed/sampleFeed";
 import { FollowsContext } from "../social/followsDoor";
 import { PeopleContext } from "../social/peopleDoor";
 import { FeedScreen } from "./FeedScreen";
@@ -131,15 +130,13 @@ test("with an account, «All» has only the posts and never asks for them", asyn
   expect(askedForMuw()).toBe(false);
 });
 
-test("without an account, only the examples", async () => {
+test("without an account, no row at all: the words to log in", async () => {
   await render(
     <Around state={SIGNED_OUT}>
       <FeedScreen onOpen={() => {}} />
     </Around>,
   );
-  await waitFor(() =>
-    expect(kinds().filter((kind) => kind === "post")).toHaveLength(SAMPLE_FEED.length),
-  );
-  expect(kinds()).not.toContain("muw");
+  expect(await screen.findByTestId("feed-log-in")).toBeOnTheScreen();
+  expect(kinds()).toEqual([]);
   expect(askedForMuw()).toBe(false);
 });

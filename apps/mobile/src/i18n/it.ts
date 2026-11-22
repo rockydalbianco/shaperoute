@@ -2480,7 +2480,8 @@ export const IT: Table = {
     "Chi segui non ha ancora pubblicato nulla.",
   "Couldn't load the Feed.": "Non è stato possibile caricare il Feed.",
   // src/screens/FeedScreen.tsx: «All» without examples (2026-11-22)
-  "Log in from Profile to see the activities.": "Accedi dal Profilo per vedere le attività.",
+  "Log in from Profile to see the activities.":
+    "Accedi dal Profilo per vedere le attività.",
   "Nobody has published anything yet.": "Nessuno ha ancora pubblicato nulla.",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)

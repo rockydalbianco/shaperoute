@@ -2497,7 +2497,8 @@ export const FR: Table = {
     "Les personnes que tu suis n'ont encore rien publié.",
   "Couldn't load the Feed.": "Impossible de charger le Feed.",
   // src/screens/FeedScreen.tsx: «All» without examples (2026-11-22)
-  "Log in from Profile to see the activities.": "Connecte-toi depuis le Profil pour voir les activités.",
+  "Log in from Profile to see the activities.":
+    "Connecte-toi depuis le Profil pour voir les activités.",
   "Nobody has published anything yet.": "Personne n'a encore rien publié.",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)

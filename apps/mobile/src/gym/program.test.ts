@@ -202,3 +202,51 @@ test("a long run made for its runner grows a kilometre a week (TASK-452)", () =>
     runInWeek({ kind: "easy", distance_m: 6000 }, "load", 4, 2, 0, true).distance_m,
   ).toBe(6500);
 });
+
+test("the answers' steps (TASK-488): along the mode's ladder, never under nothing", () => {
+  const bench: GymPlanItem = {
+    exercise: "bench_press",
+    kind: "load",
+    sets: 4,
+    reps: 10,
+    load_kg: 60,
+  };
+  // «More kg each week»: a step is 2.5 kg, a step back from week 1 under it.
+  expect(itemInWeek(bench, "load", 4, 2.5, 2, 0, 1).load_kg).toBe(65);
+  expect(itemInWeek(bench, "load", 4, 2.5, 1, 0, -1).load_kg).toBe(57.5);
+  expect(itemInWeek({ ...bench, load_kg: 2.5 }, "load", 4, 2.5, 1, 0, -3).load_kg).toBe(
+    0,
+  );
+  // «More reps each week»: one rung of its ladder (10, 11, 12, then kg),
+  // never under the first week.
+  expect(itemInWeek(bench, "reps", 4, 2.5, 3, 0, 1)).toMatchObject({
+    reps: 10,
+    load_kg: 62.5,
+  });
+  expect(itemInWeek(bench, "reps", 4, 2.5, 1, 0, -2)).toMatchObject({
+    reps: 10,
+    load_kg: 60,
+  });
+  // Without kg in «more kg each week»: it never grew, so it never goes
+  // under what is written; with «Easy» a rep more.
+  const raise: GymPlanItem = {
+    exercise: "lateral_raise",
+    kind: "bodyweight",
+    sets: 3,
+    reps: 12,
+  };
+  expect(itemInWeek(raise, "load", 4, 2.5, 2, 0, -1).reps).toBe(12);
+  expect(itemInWeek(raise, "load", 4, 2.5, 2, 0, 1).reps).toBe(13);
+  // Without kg: a rep a step, at least one.
+  const pullUp: GymPlanItem = {
+    exercise: "pull_up",
+    kind: "bodyweight",
+    sets: 3,
+    reps: 2,
+  };
+  expect(itemInWeek(pullUp, "same", 4, 2.5, 1, 0, -5).reps).toBe(1);
+  // «Always the same» runs move only by the answers.
+  const easy = { kind: "easy" as const, distance_m: 5000 };
+  expect(runInWeek(easy, "same", 4, 3, 0)).toBe(easy);
+  expect(runInWeek(easy, "same", 4, 3, 0, false, 2).distance_m).toBe(6000);
+});

@@ -30,6 +30,13 @@ describe("layout files", () => {
     expect(readLayout(JSON.stringify(broken))).toEqual({ error: "not-a-layout" });
   });
 
+  it("read a layout of part B2 (version 1), and write version 2 since A1", () => {
+    expect(LAYOUT_VERSION).toBe(2);
+    const profile = profileOf("minimal");
+    const text = JSON.stringify({ kind: LAYOUT_KIND, version: 1, profile });
+    expect(readLayout(text)).toEqual({ profile });
+  });
+
   it("refuse a layout of a later app", () => {
     const later = {
       kind: LAYOUT_KIND,

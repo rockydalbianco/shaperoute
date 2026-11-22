@@ -23,6 +23,7 @@ import type { ShownPost } from "./feedPosts";
 import { PostReactions, type PostReactionsHandle, type RowBox } from "./PostReactions";
 import { usePostLink } from "./postLink";
 import { PostShareSheet, usePostReader, usePostSendable } from "./PostShareSheet";
+import { isSleepPost } from "./sleepPost";
 
 /** The actions' icons, from Lucide (ISC, assets/ui/icons/LICENSE-lucide.txt)
  * as the bar's are (TASK-444): white, coloured by `tintColor`. Emoji in
@@ -169,18 +170,21 @@ export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
           />
         )}
         {/* A post of photos only (TASK-312 part C) has no line for a poster or
-            a link, and is not sent in a chat: no «Share». */}
-        {!isPhotoPost(post.drawing) && (mine || sendable || link !== null) && (
-          <Action
-            icon={ICONS.share}
-            label={t("Share")}
-            onPress={() => {
-              setShared(true);
-              setSharing(true);
-            }}
-            testID="post-share"
-          />
-        )}
+            a link, and is not sent in a chat: no «Share». The post of a night
+            of sleep the same (TASK-467 part E). */}
+        {!isPhotoPost(post.drawing) &&
+          !isSleepPost(post.drawing) &&
+          (mine || sendable || link !== null) && (
+            <Action
+              icon={ICONS.share}
+              label={t("Share")}
+              onPress={() => {
+                setShared(true);
+                setSharing(true);
+              }}
+              testID="post-share"
+            />
+          )}
         {onEditRun !== undefined && (
           <Action
             icon={ICONS.editRun}

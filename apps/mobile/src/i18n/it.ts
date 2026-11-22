@@ -2723,6 +2723,16 @@ export const IT: Table = {
   "Log in to see your days.": "Accedi per vedere le tue giornate.",
   "No days on the snow yet.": "Ancora nessuna giornata sulla neve.",
 
+  // src/trainingmode/, settings/SportButton.tsx (TASK-490 part A: the training mode)
+  "Training mode": "Modalità allenamento",
+  "Turns MuW into your training app": "Trasforma MuW nella tua app per allenarti",
+  Workouts: "Allenamenti",
+  "Log in to keep your plans and see your workouts.":
+    "Accedi per tenere i tuoi piani e vedere i tuoi allenamenti.",
+  Exercises: "Esercizi",
+  "Find an exercise": "Cerca un esercizio",
+  "Workout at the gym": "Allenamento in palestra",
+
   // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
   "Runs@@ski": "Discese",
   Legend: "Legenda",
@@ -3160,4 +3170,44 @@ export const IT: Table = {
   "Delete this post?": "Eliminare questo post?",
   "Copies already made stay with whoever made them.":
     "Le copie già fatte restano a chi le ha fatte.",
+
+  // The post of a night of sleep (TASK-467 part E).
+  Sleep: "Sonno",
+  "Already in the Feed": "Già nel Feed",
+  "Remove post": "Rimuovi il post",
+  "Last night's sleep score, from Apple Health":
+    "Il punteggio del sonno della notte scorsa, da Apple Salute",
+  "Your score, hours slept and sleep stages go in the Feed.":
+    "Il punteggio, le ore dormite e le fasi del sonno vanno nel Feed.",
+  // src/air/ (TASK-479 part A1: the flight map and the height above the ground; texts approved by the user on 2026-11-22)
+  "Height above ground": "Quota sul terreno",
+  "Heading up": "Rotta in alto",
+  "North up": "Nord in alto",
+  // The plan that adapts (TASK-488): gym/AdaptQuestion.tsx, gym/GymPlans.tsx.
+  "Easy@@feel": "Facile",
+  "Right@@feel": "Giusto",
+  "Hard@@feel": "Duro",
+  "could do more": "potevo di più",
+  "as planned": "come previsto",
+  "at my limit": "al limite",
+  "Next time the plan adjusts to your answer.":
+    "La prossima volta la scheda si regola su quello che rispondi.",
+  "No answer? It goes on as planned.": "Non rispondi? Va avanti come previsto.",
+  "Easy: up we go": "Facile: si sale",
+  "Right: as planned": "Giusto: come previsto",
+  "Hard: the same next time": "Duro: la prossima volta uguale",
+  "Hard again: one step back": "Di nuovo duro: un passo indietro",
+  "Change@@answer": "Cambia",
+  "Next {day}, {name}:": "La prossima volta ({day}), {name}:",
+  "Easy: one step more than planned. Right: as planned. Hard: the same next time; after two «Hard» in a row, one step back.":
+    "Facile: un passo in più del previsto. Giusto: come previsto. Duro: la prossima volta uguale; dopo due «Duro» di fila, un passo indietro.",
+  "{run} of the plan: how did it go?": "{run} della scheda: com'è andata?",
+  "↑ one step more · = the same · ↓ one step back":
+    "↑ un passo in più · = uguale · ↓ un passo indietro",
+  "Adapts to how it went": "Si adatta a com'è andata",
+  "Off: no question at the end, the weeks grow as planned.":
+    "Spenta: a fine allenamento nessuna domanda, le settimane crescono come previsto.",
+  "Next week is the lighter one, to recover.":
+    "La prossima è la settimana più leggera, per recuperare.",
+  "How did the plan feel?": "Come ti è sembrata la scheda?",
 };

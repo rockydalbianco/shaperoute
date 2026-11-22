@@ -586,6 +586,7 @@ lasciando le righe d'indice.
 - ADR-0375, precisazione R6e — Il post di una gara a due colori: `flight` anche in `GET /drawings/{id}`, solo se la linea del post ha i punti della corsa; lo schema openapi delle due risposte torna coi suoi campi · 2026-11-23 · Attiva
 - ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Proposta
 - ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima · 2026-11-23 · Attiva
+- ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Proposta
 
 ## Voci nuove
 
@@ -1066,6 +1067,14 @@ da `tools/vario_tones.py` (un gradino di salita ogni 0,5 m/s, uno di
 discesa ogni 1 m/s), un player in loop per tono; il suono appartiene alla
 registrazione e non alla schermata di volo, così suona anche a schermata
 chiusa; nessun tocco ad `app.json`. Acceso di default: scelta dell'utente.
+
+**Aggiunta del 2026-11-23 (parte A1, deciso dall'agente su delega
+dell'utente)**: la mappa di volo è una pagina MapLibre sua in `src/air/`,
+non la mappa dell'app (che resta intatta); in 3D la camera punta al
+terreno sotto il pilota (`setCenterElevation`). La quota sul terreno si
+legge dalle stesse Terrain Tiles «terrarium» della mappa 3D, decodificate
+su un canvas in una pagina nascosta: nessuna libreria, nessun server. I
+colori del vario sono `vario` in `tokens.ts`.
 
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
@@ -5911,3 +5920,45 @@ proposta senza numero; il Cibo è TASK-489 (ADR-0397).
 migrazione; tutto con un OTA. `App.tsx` si tocca dopo TASK-481 A (#1421),
 `SportButton.tsx` prima di TASK-489 B. Un utente che si allena e corre
 cambia barra quando cambia sport, come lo sciatore.
+
+## ADR-0399 — Il Coach MuW: consigli da regole scritte con il loro studio, la scheda che cambia solo con «Apply»
+
+**Stato**: Proposta · 2026-11-23 · TASK-491 (parte 0, soli documenti).
+«Apply», dove si apre, solo con account con l'omino, niente RPE e i
+testi dei consigli sono **scelte dell'utente** (2026-11-22 e 23, task
+file); l'omino di TASK-490 B e l'ordine dopo TASK-488 sono del
+Coordinatore; il resto è **deciso dall'agente su delega dell'utente**,
+numeri dal Coordinatore (fork 3).
+
+**Contesto**: l'utente vuole un agente o un algoritmo che legga gli
+allenamenti fatti, consigli i prossimi e modifichi le schede con metodi
+scientifici. TASK-488 (ADR-0396) cambia già i passi di un giorno da come
+l'utente dice che è andata; mancano i numeri: ripetizioni fatte, volume
+per muscolo, km che salgono, pause, sonno.
+
+**Decisione**:
+- **Regole, non un modello AI.** Una funzione pura sul telefono prende gli
+  allenamenti di 4 settimane e la scheda e rende i consigli: stessi dati,
+  stessi consigli, un test per regola, niente rete oltre alle letture che
+  ci sono, niente costo per utente. È il principio del progetto: l'AI non
+  decide i numeri.
+- **Tredici regole con il loro studio** (task file): doppia progressione e
+  carico (ACSM 2009), stallo col massimale di Epley, volume (Schoenfeld
+  2017) e frequenza (Schoenfeld 2016) per muscolo, 48 h di recupero, km
+  oltre +30% (Nielsen 2014), 80/20 (Seiler 2010), scarico (Foster 1998,
+  Bosquet 2007), pausa (Mujika 2000), OMS 2020. ACWR (Gabbett 2016) e
+  sonno (Fullagar 2015) sono **soft**: mai una modifica della scheda.
+- **Al massimo tre consigli**, prima la sicurezza, poi la progressione,
+  poi l'equilibrio; ognuno con un «Why» che nomina lo studio.
+- **«Apply» o niente**: i kg con i passi `adapt` di TASK-488, serie e
+  ripetizioni nel `program` della scheda, col salvataggio che c'è; «Not
+  now» nasconde il consiglio per 7 giorni sul telefono.
+- **Solo con account**: lo storico sta sul server; senza account la
+  pagina invita a crearlo e non chiede niente all'API.
+- **L'omino** della settimana è quello di TASK-490 B; il Coach non ne
+  disegna un altro.
+
+**Conseguenze**: nessuna dipendenza, nessuna migrazione prevista (se ne
+servisse una, la 0085 col sì del Coordinatore). Parte dopo TASK-488 A sul
+server; gli ingressi in «My plans» e GymEnd dopo TASK-488 B (#1420). I
+consigli sono generali, non medici: la pagina lo dice.

@@ -202,6 +202,15 @@ export function FlightWidget({
         heightChangeText(now.aboveTakeoffM, flight.altitude),
         UNIT_LABEL[flight.altitude],
       );
+    case "aboveGround":
+      return box(
+        altitudeText(data.aboveGroundM, flight.altitude),
+        UNIT_LABEL[flight.altitude],
+      );
+    case "map":
+      // The flight screen draws the map itself (FlightMap): here only its
+      // name, as in the editor.
+      return box(NO_VALUE, undefined);
     case "vario":
     case "varioAvg": {
       const mps = widget === "vario" ? now.varioMps : now.varioAvgMps;

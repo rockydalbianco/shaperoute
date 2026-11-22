@@ -7,6 +7,7 @@ import type { AboutId } from "../about/documents";
 import type { Account } from "../account/useAccount";
 import { apiUrl } from "../api/apiUrl";
 import { OfflineMapsSetting } from "../engine/OfflineMapsSetting";
+import { GearSetting } from "../gear/GearSetting";
 import { t } from "../i18n";
 import { BodySetting } from "../settings/BodySetting";
 import { EmailSetting } from "../settings/EmailSetting";
@@ -92,6 +93,8 @@ export function SettingsPage({
         <BlockedPeople />
       </Section>
       <SportSetting />
+      {/* Shoes, bikes, skis and the rest, with their kilometres (TASK-486). */}
+      <GearSetting account={account} />
       <StravaSetting />
       <Section label={t("PREFERENCES")}>
         <LanguageSetting />

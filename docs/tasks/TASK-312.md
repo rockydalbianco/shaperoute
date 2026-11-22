@@ -1,6 +1,6 @@
 # TASK-312 — Importare nel Feed attività fatte con altre app, e post di sole foto
 
-**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C in `main`**: C1 (API e migrazione `0080`, PR #1347, `cfd5e956`; server col passo 16), C1b (`GET /me/photo-posts`, PR #1355) e C1c (fuori i post del sonno, PR #1379) sul server col passo 17, C2 (app e riga della privacy, PR #1386, `3d4f0d47`) · poi D (studio Apple Salute), E (studio collegamenti diretti)
+**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C in `main`**: C1 (API e migrazione `0080`, PR #1347, `cfd5e956`; server col passo 16), C1b (`GET /me/photo-posts`, PR #1355) e C1c (fuori i post del sonno, PR #1379) sul server col passo 17, C2 (app e riga della privacy, PR #1386, `3d4f0d47`) · **D: studio scritto** (sezione «Studio D»), scelte all'utente · poi E (studio collegamenti diretti)
 **Fase**: 4 · **Branch**: `docs/TASK-312-import-activities` (documenti),
 `feat/TASK-312-a-imported-runs-api` (A), `feat/TASK-312-b-import-file-app`
 (B), `feat/TASK-312-c-photo-posts` (C), `docs/TASK-312-d-health-study`
@@ -469,6 +469,150 @@ Lo studio di §7 di `IMPORTAZIONI.md`, scritto in
 `docs/tasks/TASK-312.md`, sezione «Studio D». Nessun codice. Poi una scelta
 dell'utente (la libreria, i permessi, la privacy) e il codice con la
 build nativa.
+
+### Studio D (2026-11-23)
+
+Scritto dall'agente col via del Coordinatore. Nessun codice; le scelte in
+fondo sono dell'utente.
+
+**1. Cosa c'è già nell'app.** Le due librerie sono già nelle dipendenze
+(TASK-321, ADR-0281): `@kingstinct/react-native-healthkit` 16.2.0 per
+l'iPhone e `react-native-health-connect` 4.1.3 per Android, tenute fuori
+dal linking finché non arriva la build nativa (`health/healthModules.ts`).
+**Nessuna dipendenza nuova** per leggere: la domanda «quale libreria» di
+§7 è già risolta. Oggi MuW da Salute:
+
+| Chi | Scrive | Legge |
+| --- | --- | --- |
+| TASK-321 (in `main`) | allenamento, traccia, distanza, energia di una corsa | battito durante l'attività (`heartSamples.ts`) |
+| TASK-467 C (#1334, bozza) | — | sonno (`HKCategoryTypeIdentifierSleepAnalysis`) |
+| TASK-489 C2 (piano) | — | allenamenti delle altre app (`HKWorkoutTypeIdentifier`) ed energia attiva del giorno (`HKQuantityTypeIdentifierActiveEnergyBurned`); Android: allenamenti e calorie attive |
+| **TASK-312 D (questo studio)** | — | **la traccia** di quegli allenamenti (`HKWorkoutRouteTypeIdentifier`); Android `ExerciseRoute` |
+
+Su Health Connect oggi MuW chiede solo permessi di scrittura
+(`health/healthConnect.ts`).
+
+**2. Cosa si aggiunge alla lista della prossima build nativa.** La build
+avrà un solo `NSHealthShareUsageDescription` per tutti (Coordinatore,
+2026-11-23). Rispetto a 467 C e 489 C2, D aggiunge **un solo tipo di
+lettura**:
+
+- iPhone: `HKWorkoutRouteTypeIdentifier` in `toRead` (gli allenamenti li
+  chiede già 489 C2; il permesso della traccia è un interruttore a parte
+  nel foglio di Salute). Nessun entitlement nuovo:
+  `com.apple.developer.healthkit` c'è già in `app.json`.
+- Android: `android.permission.health.READ_EXERCISE` (lo chiede già 489
+  C2) e **`android.permission.health.READ_EXERCISE_ROUTES`** (nuovo). Se
+  si vuole andare oltre i 30 giorni, anche
+  `android.permission.health.READ_HEALTH_DATA_HISTORY` (scelta 3).
+- Il testo del permesso deve nominare anche «le tracce» degli
+  allenamenti. Proposta inglese, da approvare insieme a 467 C e 489 C2:
+  «MuW reads from Apple Health your heart rate during each activity, your
+  sleep, your active energy and your workouts from other apps with their
+  routes, to show them with your activities, in your posts and in your
+  food diary. You can hide them before you publish.» Poi le quattro
+  traduzioni in `locales/*.json`.
+
+**3. Quali app scrivono la traccia.** Senza traccia non c'è disegno.
+
+- **Apple Allenamento** (Apple Watch, iPhone) scrive la traccia di ogni
+  allenamento all'aperto: è il caso più comune su iPhone.
+- **Garmin Connect** scrive in Salute allenamento, distanza e calorie, ma
+  **non la traccia**: lo dicono più utenti sul forum Garmin, e Garmin
+  Connect non compare fra le fonti di «Workout Routes» in Salute.
+- **Strava**: scrive gli allenamenti in Salute; della traccia ci sono
+  solo segnalazioni discordanti degli utenti, nessuna pagina di Strava.
+- **Polar Flow**: la sua scheda dell'App Store elenca allenamenti, battito
+  e passi, non la traccia. **Suunto, Coros**: nessuna fonte trovata.
+- App ponte come RunGap scrivono anche la traccia: chi usa Garmin può
+  passare di lì, non è cosa di MuW.
+
+Le fonti sono quasi tutte forum: **la verifica vera è sul telefono**. In
+Salute › Profilo › App e servizi si vede quali app hanno scritto «Workout
+Routes». Prima del codice, sull'iPhone dell'utente (che usa le app vere),
+si guarda quali fonti hanno tracce e se ne scrive l'elenco qui.
+
+Su Android: la traccia la scrivono le app che usano `ExerciseRoute` di
+Health Connect; da verificare allo stesso modo con la build Android di
+TASK-321 C.
+
+**4. Come si legge.**
+
+- iPhone: si leggono gli allenamenti (`queryWorkoutSamples`), poi la
+  traccia di ognuno (`getWorkoutRoutes()` sull'allenamento, che dietro
+  usa `HKWorkoutRouteQuery`). Salute **non dice se la lettura è stata
+  negata**: un allenamento senza traccia può voler dire «l'app non l'ha
+  scritta» o «permesso negato». La riga sotto l'elenco lo dice in tutti e
+  due i casi.
+- Android: si leggono le `ExerciseSession`; la traccia di un'altra app
+  vuole `READ_EXERCISE_ROUTES` e l'app in primo piano; se manca il
+  consenso, Health Connect risponde `ConsentRequired` e
+  `requestExerciseRoute(recordId)` apre la richiesta per quella sola
+  sessione. Il gesto dell'utente («scegli questo allenamento») è il
+  momento giusto per chiederla.
+- **Gli allenamenti scritti da MuW stesso si saltano** (sorgente
+  `HKSource` col bundle di MuW; su Android `dataOrigin` col pacchetto di
+  MuW): sono già corse di MuW.
+- Il codice di lettura è lo stesso di 489 C2: un modulo solo in `health/`
+  che legge gli allenamenti, e due usi (il diario del cibo prende le
+  calorie, «Add past activity» prende la traccia).
+
+**5. Dove entra nell'app e sul server.** La strada c'è già: è quella del
+file (parte B). In «Add past activity» una voce «From Apple Health» (su
+Android «From Health Connect») apre l'elenco degli allenamenti con
+traccia; uno scelto diventa una traccia come quella di un GPX e va nello
+stesso modulo con «Imported», fuori da gioco e concorsi.
+
+- Sul server serve un valore nuovo di `runs.source` (oggi `muw`, `file`,
+  `manual`): una migrazione e lo schema. Oppure si riusa `file`. Scelta
+  tecnica, al momento del codice.
+- La chiave dell'attività può venire dall'UUID dell'allenamento di
+  Salute: importarlo due volte dà la stessa corsa.
+
+**6. Regole.**
+
+- **Apple 5.1.3 e 27.x**: i dati di Salute mai per pubblicità, marketing
+  o data mining, mai venduti; pubblicarli solo col gesto esplicito di chi
+  li pubblica. MuW avrà gli annunci (ADR-0198): la traccia letta da Salute
+  non li tocca mai. Pubblicare è già un gesto esplicito («Save» nel
+  modulo).
+- **Privacy**: una riga nuova, da approvare. Come quella dei file: la
+  traccia e gli orari dell'allenamento scelto arrivano al server solo
+  quando lo salvi, con le stesse regole di una corsa salvata (traccia
+  tagliata di 200 m). Su App Store «Health» copre già i dati che escono
+  dal telefono (467 C lo aggiorna per il sonno).
+- **Google Play**: il modulo della dichiarazione di Health Connect su
+  Play Console, con ogni permesso di lettura e il suo uso; il permesso
+  della cronologia è uno di quelli da giustificare.
+- **Build nativa**: tutto entra solo con lei (iOS dopo la 1.1.0, Android
+  con TASK-321 C). Quale build e quando lo dice il Coordinatore.
+
+**7. Le scelte dell'utente, una per volta, con una proposta.**
+
+1. **Si fa?** «From Apple Health» in «Add past activity», insieme alla
+   build di 467 C e 489 C2 (un solo testo del permesso). *Proposta: sì,
+   con la stessa build.*
+2. **Gli allenamenti senza traccia** (Garmin, probabilmente Polar):
+   nascosti, o nell'elenco in grigio con «No route in Apple Health».
+   *Proposta: in grigio, con la riga che dice perché.*
+3. **Quanto indietro su Android**: i 30 giorni di base, o tutta la
+   cronologia (permesso in più, da giustificare a Google). *Proposta: i 30
+   giorni; la cronologia dopo, se la chiedono.* Su iPhone nessun limite.
+4. **Il testo del permesso unico** (§2) e **la riga della privacy** (§6):
+   testi dell'utente.
+
+Fonti: Apple, «Reading route data» e `HKWorkoutRouteQuery`
+(developer.apple.com/documentation/healthkit); Android, «Add exercise
+routes» e `HealthPermission`
+(developer.android.com/health-and-fitness/health-connect/features/exercise-routes);
+Android Developers Blog, marzo 2025 (i 30 giorni e
+`READ_HEALTH_DATA_HISTORY`); Google Play, «Health apps»
+(support.google.com/googleplay/android-developer/answer/12991134); forum
+Garmin, «garmin connect does not sync workout routes … to apple health»
+(forums.garmin.com, thread 352961); Apple Community, thread 251755357
+(Strava); App Store, Polar Flow (id717172678); `getWorkoutRoutes()` in
+`WorkoutProxy.nitro.ts` della libreria (v14, da ricontrollare sulla 16.2
+prima del codice).
 
 ## Parte E — Collegamenti diretti (studio)
 

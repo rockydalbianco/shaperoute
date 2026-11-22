@@ -66,12 +66,12 @@ test("only the reader names the sleep type of Apple Health", () => {
   expect(named(naming)).toEqual(["health/appleSleep.ts"]);
 });
 
-test("the permission is asked in one place: the card of the profile", () => {
+test("the permission is asked in two places: «Sleep» of the «+» and the card of the profile", () => {
   // `reader.ask()` opens the phone's sheet: only at the user's tap.
   const asking = sourceFiles(SRC).filter(
     (path) =>
       /sleep/i.test(readFileSync(path, "utf8")) &&
       /readOwnNight\(.*\btrue\)/.test(codeOf(path)),
   );
-  expect(named(asking)).toEqual(["profile/OwnSleep.tsx"]);
+  expect(named(asking)).toEqual(["feed/SleepPostPage.tsx", "profile/OwnSleep.tsx"]);
 });

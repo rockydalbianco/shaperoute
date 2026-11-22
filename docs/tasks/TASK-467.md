@@ -939,6 +939,50 @@ prima di toccare un file esistente):
 Da guardare su `main` vero: dove C2 apre la pagina di un post fuori dal
 Feed (profilo, notifica) e la ricerca dei disegni.
 
+**2026-11-22, tempo 1 degli agganci** (dopo #1386 in `main`; il
+Coordinatore ha detto sì ai due tempi; l'elenco esatto gli è stato
+mandato prima di toccare un file). Tutto dietro `sleepPostsOn()`:
+
+- `api/reads.ts`: `reads()` è `READS` più `sleep` con l'interruttore
+  acceso; l'intestazione di ogni richiesta e quella dei messaggi passano
+  da lì. Spento, la stringa è quella di `fixtures/reads.json`;
+- `api/drawings.ts`: `activity: null` letta come nessuna anche con
+  `source` «sleep»; ogni altro disegno con attività nulla resta rifiutato;
+- `screens/FeedScreen.tsx`: `SleepFeedPost` nella lista e
+  `SleepPostDetailPage` come pagina; tolto il post, le schede rileggono;
+- `feed/PostActions.tsx`: niente «Share»; `social/DrawingCard.tsx`: la
+  notte al posto dei fatti della corsa, niente «Imported» (la `source` non
+  è `muw`, ma non è un'importazione), niente «Send to a friend»;
+  `social/DrawingsGrid.tsx`: `SleepTile` nella cella;
+- quattro testi nelle quattro lingue («Publish» c'era già);
+- test nuovi: `api/readsSleep.test.ts`, `api/drawingsSleep.test.ts`,
+  `screens/FeedScreenSleep.test.tsx` (acceso: scheda e pagina; spento:
+  l'app non dice `sleep` e il Feed è quello di prima),
+  `social/DrawingCardSleep.test.tsx`, `social/DrawingsGridSleep.test.tsx`.
+
+Resta il **tempo 2**: la voce «Sleep» in `feed/addToFeedEntries.ts` con
+«Last night's sleep score, from Apple Health», dopo TASK-481 A. Fino ad
+allora la pagina «Sleep» non si apre da nessuna parte. Ordine di unione
+detto dal Coordinatore: TASK-485 B, TASK-481 A, poi questo.
+
+**2026-11-23, tempo 2 (la voce «Sleep» del «+»)**, scritto sopra la bozza
+di TASK-481 A e portato su un ramo da `main` quando quella è entrata:
+
+- `feed/addToFeedEntries.ts`: la voce `sleep`, quarta nell'ordine
+  dell'utente, con `sleep` falso quando non è detto: la lista di chi non
+  lo dice è quella di prima;
+- `feed/AddToFeed.tsx`: la voce c'è con `sleepPostsOn()` e un lettore del
+  sonno nel telefono; scelta, apre `SleepPostPage` nello stesso foglio;
+- `feed/SleepPostPage.tsx`: senza più un titolo suo (è quello del foglio),
+  e dice `onChanged` quando la notte entra nel Feed o ne esce;
+- `screens/FeedScreen.tsx`: a quel segnale le due schede rileggono;
+- il testo «Last night's sleep score, from Apple Health» nelle quattro
+  lingue;
+- test nuovi: `feed/addToFeedEntriesSleep.test.ts`,
+  `feed/AddToFeedSleep.test.tsx` (spento e senza lettore: il foglio è
+  quello di prima; acceso: la voce, la pagina nel foglio, «Publish» che
+  chiude e fa rileggere).
+
 ## Criteri di accettazione
 
 - [x] Le scelte di prodotto sono dell'utente e stanno in questo file.
@@ -1101,3 +1145,15 @@ Feed (profilo, notifica) e la ricerca dei disegni.
   `40789324`). E2: scritti anche la riga del Feed, la pagina del post e la
   tessera del profilo, file nuovi senza PR; gli agganci, elencati in
   «Parte E2», aspettano ancora TASK-312 C2 (bozza #1386) e TASK-481 A.
+- **2026-11-23, bozza #1334 con E2**: `main` (con #1419 e #1441) unito
+  nella bozza del sonno acceso, senza conflitti. Tre test toccati solo
+  qui, perché con la costante accesa l'app dice `sleep`:
+  `api/reads.test.ts` (la lista di prima, con l'interruttore finto
+  spento), `api/accounts.test.ts` (l'intestazione con `sleep`),
+  `health/sleepModules.test.ts` (il permesso si chiede in due posti: la
+  pagina «Sleep» del «+» e la scheda del profilo). **Al taglio della C**:
+  `this_app` di `fixtures/reads.json` prende `sleep`, con
+  `services/api/tests/test_reads.py`, `shared-types/test/sleepPost.test.ts`
+  e i tre test qui sopra. La build di prova `233f0c6a` ha runtime
+  `exposdk:57.0.0` sul canale `preview-sleep`, lo stesso di `app.json`:
+  un `eas update` su quel canale la raggiunge senza una build nuova.

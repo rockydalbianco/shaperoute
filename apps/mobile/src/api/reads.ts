@@ -1,4 +1,11 @@
-import { RUN_ACTIVITIES } from "@shaperoute/shared-types";
+import {
+  PHOTOS_SOURCE,
+  PLANS_READ,
+  RUN_ACTIVITIES,
+  SLEEP_SOURCE,
+} from "@shaperoute/shared-types";
+
+import { sleepPostsOn } from "../health/sleepModules";
 
 /**
  * What this app can show, said to the API in every request of an account
@@ -24,17 +31,32 @@ export const POOL = "pool";
  * Every activity a run of this app may be (RUN_ACTIVITIES) but those of
  * before, `trackless`: the Feed, the profiles, the search and the drawing
  * show a post without a line since TASK-385 B0; and `pool`: «My
- * activities» shows a swim in a pool since TASK-400 B.
+ * activities» shows a swim in a pool since TASK-400 B; and `photos`: the
+ * Feed, the profiles and the post show a post of photos only, a drawing
+ * without a run, since TASK-312 part C; and `plans`: the Feed shows a gym
+ * plan posted, a drawing without a run, since TASK-485 part B (ADR-0394).
  */
 export const READS: readonly string[] = [
   ...RUN_ACTIVITIES.filter((activity) => !OLD_APP_ACTIVITIES.includes(activity)),
   TRACKLESS,
   POOL,
+  PHOTOS_SOURCE,
+  PLANS_READ,
 ];
+
+/**
+ * READS and, while the sleep is on (TASK-467 part E), `sleep`: the Feed,
+ * the profiles and the post show the post of a night, a drawing without a
+ * run. Off, as in every build until part C, the app says what it said
+ * before and never receives one.
+ */
+export function reads(): readonly string[] {
+  return sleepPostsOn() ? [...READS, SLEEP_SOURCE] : READS;
+}
 
 /** The header, for `ask` (accounts.ts). */
 export function readsHeaders(): Record<string, string> {
-  return { [READS_HEADER]: READS.join(",") };
+  return { [READS_HEADER]: reads().join(",") };
 }
 
 /**
@@ -44,5 +66,5 @@ export function readsHeaders(): Record<string, string> {
  * before leaves it out as every value it does not know.
  */
 export function readsHeadersWith(...more: string[]): Record<string, string> {
-  return { [READS_HEADER]: [...READS, ...more].join(",") };
+  return { [READS_HEADER]: [...reads(), ...more].join(",") };
 }

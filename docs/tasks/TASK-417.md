@@ -2,8 +2,8 @@
 
 **Stato**: In lavorazione · B e C in `main` (#1067, 2026-11-10); D1
 (server di «Together») in `main` (#1339, 2026-11-21), sul server col passo
-15; D2 (l'app) ed E da fare, ognuna con la sua lista dei file approvata dal
-Coordinatore
+15; D2a (#1357) e D2b (#1375) in `main` il 2026-11-21; restano la frase
+della privacy (dopo 312 C2), l'OTA ed E
 **Fase**: 5 · **Branch**: `docs/TASK-417-my-image-video-proposal`
 (documenti); il codice `feat/TASK-417-b-…`
 **Dipende da**: TASK-408 (l'editor del video, ADR-0339): l'animale è l'op
@@ -393,3 +393,21 @@ produzione.
 ## Esito
 
 *(a fine task)*
+
+**D2a in `main`** con la #1357 (`5700063e`, 2026-11-21): il client di
+`GET /drawings/{id}/together` (`api/together.ts`) e l'orologio comune
+delle tracce (`share/togetherClock.ts`: tempo vero e tempo del video,
+posizioni, distanza fra due persone, incontri entro 25 m per 10 s), con
+i tipi in `shared-types`. Niente di visibile.
+
+**D2b in `main`** con la #1375 (`7ae88b9c`, 2026-11-21), dopo il sì
+dell'utente sulle schermate (2026-11-22): in «Edit video» la riga
+«Together» (i quattro testi approvati il 2026-11-08), spenta con «No one
+tagged ran at the same time.» quando nessuno ha corso insieme. Accesa,
+nel video corrono fino a 4 persone sullo stesso orologio, ognuna col suo
+colore e il suo nome, con la mappa inquadrata su tutte (`videoScene.ts`:
+l'op `runner`, `layoutOf` con le altre linee; `videoPage.ts`). Al
+simulatore: tre linee (gialla, azzurra, rosa) con i nomi. **Restano**: la
+frase della privacy (testi approvati il 2026-11-08, scelta 5), in un PR a
+parte quando tocca a lei, dopo 312 C2; l'OTA e uno sguardo sul
+telefono; poi E.

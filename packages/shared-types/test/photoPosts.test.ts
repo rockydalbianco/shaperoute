@@ -129,8 +129,8 @@ test("up to ten photos, ordered without a map", () => {
 
 test("only an app that says photos receives one", () => {
   assert.ok(reads.kinds.includes(PHOTOS_SOURCE));
-  // The app of today does not say it yet: part C's app will.
-  assert.ok(!reads.this_app.split(",").includes(PHOTOS_SOURCE));
+  // The app says it since part C2.
+  assert.ok(reads.this_app.split(",").includes(PHOTOS_SOURCE));
 });
 
 test("a post of a run is not one", () => {

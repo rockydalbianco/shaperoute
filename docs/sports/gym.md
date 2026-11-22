@@ -332,6 +332,44 @@ in un giorno di salita, ai suoi metri («mancano 230 m di salita»). Raggiunta
 la meta la barra sparisce. Letto dai piani tenuti sul telefono, senza
 chiedere all'API (`gym/planToGo.ts`, `screens/RunDashboard.tsx`).
 
+## Il piano pubblicato nel Feed (TASK-485, ADR-0394)
+
+Un piano si pubblica nel Feed da «Workout plan» del «+» (la riga del
+foglio arriva con TASK-481 A): «Choose a plan» fra i propri, come «My
+plans»; poi una riga facoltativa («Say something about this plan
+(optional)»), «Who sees it: Everyone» (si cambia lì in «Followers») e
+«Post». Il post va prima in un file del telefono e poi all'API con la
+chiave del telefono, anche senza rete: parte appena può, quando qualcuno
+accede e quando l'app torna davanti (`api/planPosts.ts`,
+`feed/PlanPostFlow.tsx`). Una volta sull'API resta nel file con il suo id,
+così il suo autore lo cancella da quel telefono («Delete post»).
+
+Il post è una **fotografia** del piano a «Post»: nome, giorni, esercizi
+**coi kg**, settimane, modo, ciclo, settimane scritte a mano, corse e
+uscite. Non ci sono mai il primo giorno, i ritmi di corsa (`runner`) né la
+data della meta (`gym/planCopy.ts`, `postedPlan`). Cambiare o cancellare il
+piano non tocca il post.
+
+Nel Feed è un riquadro (`feed/PlanPostTile.tsx`): «WORKOUT PLAN», «{nome}
+· {obiettivo}», «4 days a week · 8 weeks», gli sport del piano e la
+settimana con la lettera di ogni allenamento (A, B…; l'iniziale dello
+sport per una corsa o un'uscita); sopra, la riga dell'autore. Toccato, si
+apre il piano intero (`feed/PlanPostDetail.tsx`): ogni giorno della prima
+settimana, «A · Mon» coi suoi esercizi («Bench press 4 × 10 · 60 kg»), le
+corse e le uscite per nome («Thu — Long run · 8 km»). Reazioni, commenti,
+«…» come ogni post; niente numeri, non è mai stato corso.
+
+**«Use this plan»**, nel riquadro e in fondo al piano aperto, mai sul
+proprio post: con 20 piani già fatti dice «You already have 20 plans:
+delete one to add this.»; se no apre la guida sulla copia
+(`planFromPosted`, `GymPlanWizard` con `copied`): «How do you run today?»
+se ha corse, poi l'ultimo passo (nome, primo giorno, che parte dal lunedì
+dopo) e «Save plan». Il piano nuovo ha una chiave nuova e i kg dell'autore,
+i ritmi di chi copia, la meta «quando sono pronto»; si salva come ogni
+piano (`PUT /me/gym-plans/{key}`) e sotto il riquadro compare «Added to
+your plans». L'app dice `plans` in `X-MuW-Reads`: solo così l'API le manda
+i piani pubblicati.
+
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
 In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una

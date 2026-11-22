@@ -3400,6 +3400,19 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   profilo invariato) e resta fuori da classifica, badge, concorso e gioco,
   che leggono solo `muw`. `PUT /me/activities/{key}` rifiuta `manual`
   (`422`).
+- **Il battito** (parte G, ADR-0327 punto 7): la richiesta può portare
+  `heart_avg_bpm` e `heart_max_bpm`, quello che un orologio ha scritto in
+  Apple Salute durante l'allenamento (tutti e due o nessuno, da 30 a 230, la
+  media non sopra il massimo, mai su uno scritto a mano: altrimenti `422`), e
+  `heart_shown` («Show heart rate», vero se manca). Vanno nelle colonne di
+  `runs` della migrazione 0061, come per il nuoto; esempio
+  `fixtures/gym-session-heart.json`. `GymSession` li risponde tutti e tre
+  solo con il battito. `GymExercises` porta media e massimo quando il
+  proprietario lo mostra, e sempre al proprietario; altrimenti li lascia
+  fuori. Arriva con gli esercizi: nascosti loro, l'endpoint è `404` e il
+  battito non si vede (deciso dall'agente su delega dell'utente, come le kcal
+  della scelta 17). Un'app di prima non li manda; un server di prima risponde
+  `422` a un'app che li manda (`extra="forbid"`): prima il server.
 - **`GET /gym/leaderboard?exercise=&month=`** (parte F, ADR-0327
   precisazione F): la classifica mensile di un esercizio del catalogo con
   una scala (`404` `unknown_exercise` per gli altri), in un mese di
@@ -3468,7 +3481,14 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   giorno c'è una corsa (`running`). Il programma può avere `runner`
   (TASK-452, ADR-0369): `pace_10k_s` 180–900 (il ritmo sui 10 km, in
   secondi al km) e il lungo, `long_m` (1–60 km) o `long_s` (10 min–6 h); i
-  ritmi li calcola il telefono. Un giorno fuori di un altro sport
+  ritmi li calcola il telefono. Il programma può avere `adapt` (TASK-488,
+  ADR-0396), la scheda che si adatta a com'è andata: `off` (spenta dal suo
+  proprietario) e `days`, al più uno per giorno della settimana: `day`
+  (1–7), `steps` (−24…24, i passi in più o in meno di quelli del modo,
+  che il telefono somma a ogni settimana di quel giorno), `hard` (0–2, i
+  «Duro» di fila) e `last` (`easy`, `right`, `hard`, l'ultima risposta);
+  un giorno senza allenamento nel programma perde le sue risposte invece di
+  far rifiutare la scheda. Un giorno fuori di un altro sport
   (TASK-461 B e C, ADR-0371) ha `outing` e né esercizi né `run`: `sport`
   (`walk`, `hike`, `bike`, `gravel`, `mtb`, `swim`, `paddle`; la corsa resta
   `run`), `kind` (`easy`, `intervals`, `long`; `brisk`, il passo svelto, solo
@@ -3961,6 +3981,13 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
     `stats`. Ogni lista di post (Feed, profilo, ricerca, gare, stazione) dà
     `flight_split` sul post, `null` senza tratti a piedi: il Feed ci scrive
     «On foot {time} · In the air {time}».
+  - **I tratti in aria sulla linea** (parti R6d e R6e, `flight_legs.py`,
+    esempio in `fixtures/activity-flight.json`): `GET /me/activities/{key}`
+    e `GET /drawings/{id}` di una gara danno `flight` `{air, split}`.
+    `air` è una lista di coppie `[from, to]`, indici dei punti di `track`;
+    `split` è lo stesso `flight_split`. Manca per ogni altra attività, per
+    un volo senza tratti a piedi e, nel post, se la sua linea non ha i
+    punti della corsa.
   - **Prima il server, poi l'app**: un server senza R6a rifiuta
     `flight_parts` (422).
 

@@ -2,6 +2,7 @@ import drawing from "@shaperoute/shared-types/fixtures/drawing.json";
 import detail from "@shaperoute/shared-types/fixtures/drawing-details.json";
 import photoRequest from "@shaperoute/shared-types/fixtures/drawing-photo-request.json";
 import request from "@shaperoute/shared-types/fixtures/drawing-request-details.json";
+import drawingDetailsPhotos from "@shaperoute/shared-types/fixtures/drawing-details-photos.json";
 import drawings from "@shaperoute/shared-types/fixtures/drawings.json";
 import myDrawing from "@shaperoute/shared-types/fixtures/my-drawing.json";
 import myDetails from "@shaperoute/shared-types/fixtures/my-drawing-details.json";
@@ -315,6 +316,16 @@ test("an activity this app knows stays, one that is no name still refuses", () =
   expect(known.activity).toBe("cycling");
   expect(isDrawing({ ...structuredClone(listed), activity: 3 })).toBe(false);
   expect(isDrawing({ ...structuredClone(listed), activity: null })).toBe(false);
+});
+
+test("a post of photos only, without a run, is read with no activity (TASK-312 C2)", () => {
+  const photos = structuredClone(drawingDetailsPhotos);
+  expect(isDrawingDetail(photos)).toBe(true);
+  expect("activity" in photos).toBe(false);
+  const listed = structuredClone(drawings.drawings[0]);
+  // Only a post of photos only: a run's drawing with no activity is not one.
+  expect(isDrawing({ ...listed, activity: null, source: "photos" })).toBe(true);
+  expect(isDrawing({ ...listed, activity: null, source: "file" })).toBe(false);
 });
 
 test("a profile page with a day on the snow comes whole", async () => {

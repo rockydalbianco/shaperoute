@@ -2723,6 +2723,14 @@ export const IT: Table = {
   "Log in to see your days.": "Accedi per vedere le tue giornate.",
   "No days on the snow yet.": "Ancora nessuna giornata sulla neve.",
 
+  // src/trainingmode/ (TASK-490 part B: the body of the week)
+  "of your body trained": "del corpo allenato",
+  "{percent}% of your body trained this week.":
+    "{percent}% del corpo allenato questa settimana.",
+  "10 sets or more: {muscles}.": "10 serie o più: {muscles}.",
+  "5 to 9 sets: {muscles}.": "Da 5 a 9 serie: {muscles}.",
+  "1 to 4 sets: {muscles}.": "Da 1 a 4 serie: {muscles}.",
+
   // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
   "Runs@@ski": "Discese",
   Legend: "Legenda",

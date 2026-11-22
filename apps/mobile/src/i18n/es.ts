@@ -3016,4 +3016,67 @@ export const ES: Table = {
     "Este diseño es de un MuW más reciente: actualiza la app.",
   "MuW could not read this file.": "MuW no pudo leer este archivo.",
   "MuW could not share the file.": "MuW no pudo compartir el archivo.",
+
+  // src/gear/ (TASK-486 part B, the gear), approved by the user on 2026-11-22
+  Shoes: "Zapatillas",
+  Skis: "Esquís",
+  "Ski boots": "Botas de esquí",
+  Snowboard: "Snowboard",
+  Poles: "Bastones",
+  Boots: "Botas",
+  "Climbing shoes": "Pies de gato",
+  Harness: "Arnés",
+  Helmet: "Casco",
+  Rope: "Cuerda",
+  Crampons: "Crampones",
+  "Ice axe": "Piolet",
+  "Inline skates": "Patines en línea",
+  Sail: "Vela",
+  Board: "Tabla",
+  Boat: "Barco",
+  Wetsuit: "Neopreno",
+  Paraglider: "Parapente",
+  Wheelchair: "Silla de ruedas",
+  Clothing: "Ropa",
+  Backpack: "Mochila",
+  Watch: "Reloj",
+  "Add gear": "Añadir equipo",
+  "Add your shoes, your bike, your skis and everything you use. Each activity you take them on adds to their kilometres and hours.":
+    "Añade tus zapatillas, tu bici, tus esquís y todo lo que usas. Cada actividad en la que los llevas suma a sus kilómetros y sus horas.",
+  "Past its limit": "Ha pasado su límite",
+  Retired: "Retirado",
+  Kind: "Tipo",
+  Brand: "Marca",
+  Model: "Modelo",
+  "Your name for it": "Tu nombre para él",
+  Bought: "Comprado",
+  Month: "Mes",
+  Year: "Año",
+  "Month bought": "Mes de compra",
+  "Year bought": "Año de compra",
+  Note: "Nota",
+  "Where you bought it, a race you ran in it…":
+    "Dónde lo compraste, una carrera con él…",
+  Limit: "Límite",
+  "MuW tells you when it passes this.": "MuW te avisa cuando lo pase.",
+  "Use by default for": "Úsalo por defecto para",
+  "Activities of these sports start with it chosen.":
+    "Las actividades de estos deportes empiezan con esto elegido.",
+  "Hide from profile": "Ocultar del perfil",
+  "Others don't see it. Its kilometres still count.":
+    "Los demás no lo ven. Sus kilómetros siguen contando.",
+  Retire: "Retirar",
+  "Out of your choices, with its kilometres kept.":
+    "Fuera de tus opciones, con sus kilómetros guardados.",
+  "Delete this gear?": "¿Eliminar este equipo?",
+  "Its photo goes too. Your activities stay.":
+    "Su foto también se va. Tus actividades se quedan.",
+  "Say the brand.": "Indica la marca.",
+  "Write the month (1 to 12) and the year it was bought.":
+    "Escribe el mes (1 a 12) y el año en que lo compraste.",
+  "Write the limit as a number of {unit}.": "Escribe el límite como número de {unit}.",
+  "These words can't be used. Try other words.":
+    "Estas palabras no se pueden usar. Prueba con otras.",
+  "Links and special characters can't be used here.":
+    "Aquí no se pueden usar enlaces ni caracteres especiales.",
 };

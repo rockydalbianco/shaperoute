@@ -105,6 +105,9 @@ function allowed() {
   files.set(`file:///documents/${SLEEP_CHOICE_FILE}`, '{"on":true}');
 }
 
+/** The Feed told to read again. */
+const onChanged = jest.fn();
+
 async function show(phone: SleepReader | null, fetchFn: typeof fetch) {
   const onDone = jest.fn();
   await render(
@@ -115,6 +118,7 @@ async function show(phone: SleepReader | null, fetchFn: typeof fetch) {
         fetchFn={fetchFn}
         apiKey={null}
         onDone={onDone}
+        onChanged={onChanged}
       />
     </SignedIn>,
   );
@@ -128,6 +132,7 @@ async function tap(role: "button" | "radio", name: string) {
 }
 
 beforeEach(() => {
+  onChanged.mockClear();
   files.clear();
   on.mockReturnValue(true);
 });
@@ -156,7 +161,8 @@ test("without the yes to reading the sleep, the same button as on the profile", 
   const phone = reader();
   const { fetchFn, sent } = api();
   await show(phone, fetchFn);
-  expect(screen.getByRole("header", { name: "Sleep" })).toBeTruthy();
+  // The title is the sheet's (AddToFeed.tsx): none here.
+  expect(screen.queryByRole("header")).toBeNull();
   expect(screen.getByRole("button", { name: SHOW })).toBeTruthy();
   expect(phone.samples).not.toHaveBeenCalled();
   expect(fetchFn).not.toHaveBeenCalled();
@@ -174,7 +180,6 @@ test("last night, who sees it starting on «Everyone», and «Publish»", async 
   const { fetchFn, sent } = api();
   await show(reader(), fetchFn);
   expect(screen.getByTestId(SLEEP_POST_PAGE_TEST_ID)).toBeTruthy();
-  expect(screen.getByRole("header", { name: "Sleep" })).toBeTruthy();
   expect(screen.getByText(`${NIGHT.score} · Excellent`)).toBeTruthy();
   expect(screen.getByText("7 h 30 min")).toBeTruthy();
   expect(screen.getByRole("radio", { name: "Everyone" })).toBeChecked();
@@ -205,6 +210,7 @@ test("«Publish» puts the night in the Feed with the choice made, and the sheet
     visibility: "followers",
   });
   expect(onDone).toHaveBeenCalledTimes(1);
+  expect(onChanged).toHaveBeenCalledTimes(1);
   expect(screen.getByText("Already in the Feed")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Publish" })).toBeNull();
 });
@@ -219,8 +225,10 @@ test("a night already in the Feed says so, and «Remove post» takes it off", as
   expect(screen.getByText("Already in the Feed")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Publish" })).toBeNull();
   expect(screen.queryByRole("radiogroup")).toBeNull();
+  expect(onChanged).not.toHaveBeenCalled();
   await tap("button", "Remove post");
   expect(sent()).toEqual([READ, REMOVE]);
+  expect(onChanged).toHaveBeenCalledTimes(1);
   // Off the Feed, it can be published again; the sheet stays.
   expect(screen.getByRole("button", { name: "Publish" })).toBeTruthy();
   expect(screen.queryByText("Already in the Feed")).toBeNull();

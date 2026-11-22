@@ -4743,9 +4743,13 @@ Acceso, la notte pubblicata da sola è un post come gli altri, senza corsa:
 - **Pubblicarlo**: la pagina «Sleep» (`feed/SleepPostPage.tsx`: la notte
   come sul profilo, «Everyone» / «Followers», «Publish», «Your score,
   hours slept and sleep stages go in the Feed.»; già pubblicata: «Already
-  in the Feed» e «Remove post») si apre dalla voce «Sleep» del «+» del
-  Feed, che arriva dopo TASK-481 A: fino ad allora la pagina c'è ma
-  niente la apre.
+  in the Feed» e «Remove post») si apre dalla voce **«Sleep»** del «+» del
+  Feed (TASK-481), la quarta, dopo «From a file», con sotto «Last night's
+  sleep score, from Apple Health». Si apre nello stesso foglio, sotto il
+  titolo «Sleep» del foglio e con «‹» per tornare alla lista; «Publish»
+  chiude il foglio e le schede del Feed rileggono. La voce c'è solo con
+  l'interruttore acceso **e** un telefono che sa leggere il sonno: in
+  nessuna build fino alla parte C.
 - Mai l'ora in cui si è andati a letto o ci si è svegliati.
 
 ## Il post da condividere (TASK-231, ADR-0194)

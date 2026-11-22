@@ -3189,6 +3189,8 @@ export const DE: Table = {
   Sleep: "Schlaf",
   "Already in the Feed": "Schon im Feed",
   "Remove post": "Beitrag entfernen",
+  "Last night's sleep score, from Apple Health":
+    "Dein Schlafwert der letzten Nacht, aus Apple Health",
   "Your score, hours slept and sleep stages go in the Feed.":
     "Dein Wert, die geschlafenen Stunden und die Schlafphasen kommen in den Feed.",
 };

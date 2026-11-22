@@ -230,8 +230,15 @@ approvare con le schermate). Due scarti dalla lista:
 Il giorno mostra «Today», «Yesterday» o la data intera già dell'app
 («Thu 19 Nov 2026»), senza un testo nuovo «Yesterday, Fri 20 Nov». Resta:
 la riga in `addToFeedEntries.ts` (dopo TASK-481 A, con «‹» e «✕» del foglio;
-il titolo del flusso si sposta lì se il foglio lo mostra), le schermate e
-le traduzioni all'utente, poi la PR.
+il titolo del flusso si sposta lì se il foglio lo mostra), poi la PR.
+
+**Schermate approvate (2026-11-22).** Otto schermate dal simulatore
+(iPhone 17e, harness non committato) in `out/TASK-484/b/` del checkout
+principale: modulo vuoto, «Da una scheda», giorni di una scheda, esercizio
+copiato, «Scegli un orario prima di adesso.», fondo con «Importata» e post,
+più due in inglese. L'utente: «Sì, approvo» — aspetto e testi nelle quattro
+lingue, «Previous day»/«Next day» compresi. Se la riga del foglio cambia
+l'aspetto (titolo spostato), una schermata in più prima della PR.
 
 A turno (privacy, punto 4; in coda dopo 309 B1, 417 D2, 312 C2, 481 A e
 485, il Coordinatore dice quando tocca):

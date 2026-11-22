@@ -5314,6 +5314,11 @@ TASK-305.md, «Testi di R6».
     1:43:30» come nel Feed, e la legenda «White: on foot. Yellow: in the
     air.». Un'API di prima, o un `flight` che non sta sulla traccia: la
     gara come una corsa, tutta bianca.
+- **Un volo nelle liste** (TASK-305, 2026-11-22): in «My activities», nella
+  scheda sotto la mappa e nella riga del Feed un volo ha la velocità media
+  («15.1 km/h», come la pagina del post) al posto del passo per km; senza
+  luogo né disegno si chiama «Paragliding» (IT «Parapendio») invece di
+  «Run». Gli altri sport restano come sono.
 
 ### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
 

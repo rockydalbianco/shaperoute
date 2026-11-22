@@ -1,6 +1,6 @@
 # TASK-312 — Importare nel Feed attività fatte con altre app, e post di sole foto
 
-**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C in `main`**: C1 (API e migrazione `0080`, PR #1347, `cfd5e956`; server col passo 16), C1b (`GET /me/photo-posts`, PR #1355) e C1c (fuori i post del sonno, PR #1379) sul server col passo 17, C2 (app e riga della privacy, PR #1386, `3d4f0d47`) · **D: studio scritto** (sezione «Studio D»), scelte all'utente · poi E (studio collegamenti diretti)
+**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C in `main`**: C1 (API e migrazione `0080`, PR #1347, `cfd5e956`; server col passo 16), C1b (`GET /me/photo-posts`, PR #1355) e C1c (fuori i post del sonno, PR #1379) sul server col passo 17, C2 (app e riga della privacy, PR #1386, `3d4f0d47`) · **D: studio scritto** (sezione «Studio D»), le quattro risposte dell'utente il 2026-11-23; codice con la build nativa · poi E (studio collegamenti diretti)
 **Fase**: 4 · **Branch**: `docs/TASK-312-import-activities` (documenti),
 `feat/TASK-312-a-imported-runs-api` (A), `feat/TASK-312-b-import-file-app`
 (B), `feat/TASK-312-c-photo-posts` (C), `docs/TASK-312-d-health-study`
@@ -613,6 +613,33 @@ Garmin, «garmin connect does not sync workout routes … to apple health»
 (Strava); App Store, Polar Flow (id717172678); `getWorkoutRoutes()` in
 `WorkoutProxy.nitro.ts` della libreria (v14, da ricontrollare sulla 16.2
 prima del codice).
+
+**Le risposte dell'utente (2026-11-23)**, col via del Coordinatore:
+
+1. «Sì, stessa build»: «From Apple Health» / «From Health Connect» in
+   «Add past activity», con la build nativa di 467 C e 489 C2.
+2. «In grigio con il perché»: gli allenamenti senza traccia restano
+   nell'elenco, non si scelgono, con «No route in Apple Health».
+3. Android: «30 giorni», poi l'utente ha aggiunto «fai anche precedente se
+   l'utente lo vuole». Quindi: si parte dai 30 giorni; in fondo
+   all'elenco «Show older workouts» chiede
+   `READ_HEALTH_DATA_HISTORY` e mostra anche quelli più vecchi
+   («Sì, va bene»). Il permesso va dichiarato su Play Console.
+4. Riga della privacy approvata («Approvo», poi «Sì, va bene» per la
+   frase sulla cronologia), nella sezione «Apple Health and Health
+   Connect», traduzioni da approvare col codice:
+   «If you add a past activity «From Apple Health» (iPhone) or «From
+   Health Connect» (Android), MuW reads on your phone the workouts other
+   apps saved there, with their routes; on Android, those of the last 30
+   days, and older ones too if you allow it. Only the workout you choose
+   reaches our server, when you save it: we keep its route and times like
+   a run recorded with MuW. None of it reaches any advertising.»
+   Fra i consensi: «reading your workouts from Apple Health or Health
+   Connect».
+
+Il testo unico del permesso di iOS (§2) lo concordano 312 D, 467 C e 489,
+poi va all'utente per il sì (Coordinatore, 2026-11-23). La lettura delle
+tracce è nella lista della prossima build nativa del Coordinatore.
 
 ## Parte E — Collegamenti diretti (studio)
 

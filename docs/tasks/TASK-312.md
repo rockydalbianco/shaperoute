@@ -648,6 +648,78 @@ una tabella per provider (Strava, Garmin, Polar, Suunto, Coros, Wahoo,
 Komoot), con le fonti. Nessun codice, nessun account aperto a nome
 dell'utente. Poi l'utente sceglie quali.
 
+### Studio E (2026-11-23)
+
+Scritto dall'agente col via del Coordinatore. Nessun codice, nessun
+account aperto. Le fonti sono in fondo: dove sono di seconda mano (blog,
+forum) lo dice la tabella, e il testo dell'accordo di ogni provider va
+letto per intero prima di qualsiasi codice.
+
+**La domanda che decide.** Un'attività presa da un altro servizio
+diventa un post del Feed, quindi la vedono altri iscritti. Il provider lo
+permette?
+
+| Provider | Chi può entrare | Azienda | Costo | Formati | Mostrarla ad altri | Note |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Strava** | chiunque crea un'app (Standard tier) | no | dal 30 giugno 2026 **11,99 $/mese** per il Standard tier (post di Strava, ripreso da heise e altri) | JSON, stream GPS | **no**: dall'11 novembre 2024 i dati di un utente si mostrano **solo a lui** (accordo API, pagina di supporto di Strava) | niente uso per l'AI; dal 2026 niente intermediari; i dati di un Garmin passati da Strava vogliono comunque l'attribuzione a Garmin |
+| **Garmin Connect** | programma per aziende, con modulo e revisione | **sì** | gratis per le aziende approvate (pagina del programma); termini commerciali a parte per l'Activity API enterprise | JSON e FIT | sì, con l'**attribuzione** «Garmin [modello]» su ogni schermata e immagine, anche condivise (linee guida del marchio) | **domande nuove sospese** da settembre 2026 (forum Garmin, the5krunner, Terra), nessuna data di riapertura; la chiave «Personal» dà solo i propri dati |
+| **Polar AccessLink** | chiunque abbia un account Polar Flow registra un client | no | gratis | FIT, GPX, TCX | da leggere nell'accordo «API Limited License» | dà solo gli allenamenti caricati su Flow **negli ultimi 30 giorni** |
+| **Suunto** | Partner Program, modulo e revisione («adatti al marchio») | **sì** (non per uso personale) | gratis | FIT con la traccia GPS; webhook per gli allenamenti nuovi | da leggere nell'accordo, che arriva con la domanda | OAuth2 per ogni utente |
+| **Coros** | Partner API per piattaforme già avviate | **sì**, e una base di utenti dimostrata | non pubblicato | FIT, GPX | da leggere nei «Terms of Use», documentazione privata | domanda via `api@coros.com`; c'è anche un server MCP senza domanda, non adatto a MuW |
+| **Wahoo** | Cloud API con OAuth, app approvata (sandbox → produzione) | non detto | gratis «per ora» (accordo API di Wahoo) | FIT | da leggere nell'accordo e nei «Service Terms» | uno sviluppatore sul forum di Intervals.icu parla di condizioni sgradevoli, senza dire quali |
+| **Komoot** | nessuna API pubblica; partner B2B su domanda (`komoot.de/b2b/connect`, da fonte di seconda mano) | **sì** (B2B) | non pubblicato | tour (piani e uscite) | non trovato | i partner citati sono marchi grandi (Garmin, Bosch, Suunto, Wahoo); le librerie non ufficiali usano endpoint interni e non vanno usate |
+
+**Cosa ne esce.**
+
+- **Strava resta fuori dal Feed.** L'accordo vieta proprio quello che MuW
+  farebbe, mostrare l'attività ad altri, e dal 2026 l'accesso costa ogni
+  mese. Il file esportato dall'utente (parte B) è un suo dato e resta la
+  strada per Strava. «Send to Strava» (ADR-0156) non c'entra: è MuW che
+  scrive su Strava.
+- **Garmin, Suunto, Coros e Komoot vogliono un'azienda.** MuW oggi non ne
+  ha una (la stessa attesa degli annunci): prima dell'azienda non si può
+  nemmeno fare domanda. Garmin in più ha le domande sospese.
+- **Polar è l'unico che si può provare subito**: gratis, senza azienda, con FIT e
+  GPX. Il limite dei 30 giorni dice che serve per le attività nuove, non
+  per lo storico. Prima va letto l'accordo sulla parte «mostrare ad
+  altri».
+- **Wahoo** forse senza azienda, ma l'accordo va letto prima.
+- **Gli aggregatori a pagamento** (Terra e simili): scartati. Costano, e
+  dal 2026 Strava non accetta più dati che passano da intermediari.
+- **Il collegamento diretto vuole il server**: OAuth per ogni utente, i
+  token salvati, i webhook per le attività nuove, e l'importazione nella
+  stessa strada dei file (`runs.source` con un valore per provider). Più
+  una riga della privacy per ognuno.
+- **Senza collegamenti c'è già molto**: il file da qualunque app (parte
+  B) e, con la build nativa, Apple Salute e Health Connect (parte D) per
+  le app che ci scrivono la traccia.
+
+**Le scelte dell'utente, una per volta, con una proposta.**
+
+1. **Strava**: niente collegamento diretto per il Feed, resta il file.
+   *Proposta: sì, resta il file.*
+2. **Il primo collegamento**: Polar AccessLink, dopo aver letto il suo
+   accordo, oppure nessuno per ora. *Proposta: nessuno finché non ci sono
+   la parte D in produzione e richieste vere degli utenti; poi Polar.*
+3. **Garmin, Suunto, Coros, Komoot**: si rimandano a quando c'è
+   l'azienda. *Proposta: sì, una riga in `STATUS.md` «Prossimo passo»
+   quando l'azienda esiste.*
+
+Fonti: Strava, «API Agreement Update: How Data Appears on 3rd Party Apps»
+(support.strava.com, articolo 31798729397773) e «An update to our
+developer program» (communityhub.strava.com, 13428); heise.de (11315017)
+e TechRepublic sul 2026; DC Rainmaker, novembre 2024. Garmin, «Activity
+API» e «Program FAQ» (developer.garmin.com/gc-developer-program), «API
+Brand Guidelines» (developer.garmin.com/brand-guidelines); the5krunner
+(14 settembre 2026) e il blog di Terra sulla sospensione. Polar,
+«AccessLink API v3» (polar.com/accesslink-api) e «Polar API agreement»
+(polar.com/en/legal/polar-api-agreement). Suunto, FAQ di
+apizone.suunto.com. Coros, «Submit an API Application»
+(support.coros.com, articolo 17085887816340). Wahoo, «Wahoo API
+Agreement» (wahoofitness.com/wahoo-api-agreement); forum di
+Intervals.icu. Komoot: nessuna pagina ufficiale trovata, solo un elenco di
+terzi; da verificare su komoot.de/b2b.
+
 ## Testi da approvare (parti B e C)
 
 | Dove | Testo |

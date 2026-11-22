@@ -3010,7 +3010,7 @@ export const ES: Table = {
     "Este diseño es de un MuW más reciente: actualiza la app.",
   "MuW could not read this file.": "MuW no pudo leer este archivo.",
   "MuW could not share the file.": "MuW no pudo compartir el archivo.",
-  // src/air/ (TASK-479 part C: the vario's sound)
+  // src/air/ (TASK-479 part C: the vario's sound; texts approved by the user on 2026-11-22)
   "Vario sound": "Sonido del vario",
   "Beeps from": "Pitidos desde",
   "Sink tone below": "Tono de descenso bajo",

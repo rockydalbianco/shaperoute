@@ -3,8 +3,8 @@
 **Stato**: In lavorazione · codice in PR #1397 (2026-11-22)
 **Fase**: 5 · **Branch**: `fix/feed-no-examples` (codice),
 `docs/TASK-487-feed-no-examples` (documenti)
-**ADR**: — (cambia ADR-0127 / TASK-156) · numero dal Coordinatore (fork 3),
-2026-11-22
+**ADR**: ADR-0127, precisazione (TASK-487) · numero del task dal
+Coordinatore (fork 3), 2026-11-22; niente ADR nuovo (Coordinatore)
 
 ## La richiesta (2026-11-22)
 

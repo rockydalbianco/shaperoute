@@ -486,6 +486,13 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
 
 ## Dove siamo
 
+*2026-11-22, B2 estere*: **la #1380 è in `main`** (`ef7b1d83`): catalogo a
+1866 percorsi. Resta il passo sul server (controlli in
+`out/TASK-441/SERVER-B2-ESTERE.md`), col sì dell'utente al Coordinatore;
+niente OTA. Poi, col via del Coordinatore, il secondo giro delle sette:
+`LIMIT_MB=5120 LOAD_MAX=5 FREE_MIN=40 zsh out/TASK-441/b2/run-estere.sh
+<città>`, una per lancio.
+
 *2026-11-22, notte, B2 estere*: **giro delle città estere finito** (via del
 Coordinatore alle 00:37, fine all'01:08). **25 città disegnate** su 32: 200
 casi, **172 passano il filtro**, tutti delle otto forme. Riletti a occhio

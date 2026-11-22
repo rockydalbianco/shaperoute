@@ -3184,6 +3184,13 @@ export const DE: Table = {
   "Delete this post?": "Diesen Beitrag löschen?",
   "Copies already made stay with whoever made them.":
     "Schon erstellte Kopien bleiben bei denen, die sie erstellt haben.",
+
+  // The post of a night of sleep (TASK-467 part E).
+  Sleep: "Schlaf",
+  "Already in the Feed": "Schon im Feed",
+  "Remove post": "Beitrag entfernen",
+  "Your score, hours slept and sleep stages go in the Feed.":
+    "Dein Wert, die geschlafenen Stunden und die Schlafphasen kommen in den Feed.",
   // The plan that adapts (TASK-488): gym/AdaptQuestion.tsx, gym/GymPlans.tsx.
   "Easy@@feel": "Leicht",
   "Right@@feel": "Passend",

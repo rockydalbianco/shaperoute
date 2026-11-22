@@ -1,6 +1,6 @@
 # TASK-312 — Importare nel Feed attività fatte con altre app, e post di sole foto
 
-**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C1 in `main`** (API e migrazione `0080` dei post di sole foto, PR #1347, `cfd5e956`; server col passo del Coordinatore e il sì dell'utente) · poi C2 (app), D (studio Apple Salute), E (studio collegamenti diretti)
+**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C in `main`**: C1 (API e migrazione `0080`, PR #1347, `cfd5e956`; server col passo 16), C1b (`GET /me/photo-posts`, PR #1355) e C1c (fuori i post del sonno, PR #1379) sul server col passo 17, C2 (app e riga della privacy, PR #1386) · poi D (studio Apple Salute), E (studio collegamenti diretti)
 **Fase**: 4 · **Branch**: `docs/TASK-312-import-activities` (documenti),
 `feat/TASK-312-a-imported-runs-api` (A), `feat/TASK-312-b-import-file-app`
 (B), `feat/TASK-312-c-photo-posts` (C), `docs/TASK-312-d-health-study`
@@ -417,6 +417,52 @@ il numero vero al merge). In più, chiesto al Coordinatore:
 - 35 test nuovi (`test_photo_posts.py`, `test_photo_posts_seen.py`), tipi
   e test in `shared-types`, fixture fatte dalle risposte vere dell'API.
 
+### Parte C1c — i post del sonno restano fuori (2026-11-22)
+
+Con 467 E1 (migrazione `0082`, `drawings.sleep_night_id`) anche il post del
+sonno è un disegno senza corsa. Le quattro letture di `photo_posts.py`
+(`POST_OF_KEY`, `_post`, `all_mine`, `remove`) vogliono ora
+`run_id IS NULL AND sleep_night_id IS NULL` (`PHOTO_POST_SQL`), e un `PUT`
+sulla chiave di un post del sonno risponde `409 not_a_photo_post`. PR #1379
+in `main` (`fdc49ddd`), con un test. Sul server col passo 17, insieme a C1b
+(server a `40789324`: `/me/photo-posts` 401 senza chiave, controlli
+`10|0|0|0|0`, nessun Traceback).
+
+### Parte C2 — com'è fatta (2026-11-22, PR #1386)
+
+«File toccati» approvati dal Coordinatore (lista in
+`side-session-notes`, poi nel corpo della PR); in più, chiesti e approvati:
+`services/api/tests/test_reads.py`, `apps/mobile/src/tabs/TabSwipeOwners.test.ts`,
+`services/api/tests/test_photo_posts.py`.
+
+- `reads.json`: `this_app` dice anche `photos`; l'app manda `photos` in
+  `X-MuW-Reads` (`api/reads.ts`), e `api/drawings.ts` accetta `activity`
+  `null` solo con `source: "photos"`;
+- `api/photoPosts.ts` e la coda del telefono (`social/photoPostOutbox.ts`,
+  `usePhotoPostOutbox.ts`): il post e le sue foto partono anche più tardi,
+  senza rete, una foto alla volta, e si scordano all'uscita dall'account;
+- `imports/PhotoPostForm.tsx`: da 1 a 10 foto, titolo, descrizione,
+  persone taggate, «Everyone» o «Followers» dall'ultima scelta
+  (`photoPostVisibility.ts`); «Photos only» in «Add past activity» e nel
+  «+» del Feed, anche senza il selettore di file (il «+» c'è con
+  l'account);
+- nel Feed `feed/PhotoFeedPost.tsx` (foto da scorrere, foto dell'autore,
+  «Imported», reazioni, commenti, segnalazione) e `PhotoPostPage.tsx`;
+  `PhotoPostSettings.tsx` cambia titolo, descrizione e chi lo vede, e
+  cancella con «Delete this post? It cannot be undone.» / «Delete post»;
+  niente «Share», niente numeri della corsa, niente invio in chat; nella
+  griglia del profilo la prima foto;
+- la riga della privacy nelle cinque lingue e sul sito
+  (`make_privacy.mjs`), data 22 novembre 2026;
+- provato nel simulatore (Expo Go, API locale): creare, Feed, pagina,
+  impostazioni, cancellare (`DELETE` 204).
+
+Approvati dall'utente il 2026-11-22: le schermate e i testi della
+cancellazione («Approvo»), «Importata» in italiano resta, le traduzioni
+della riga della privacy («Approvo»); il merge con «Sì, unisci» (tocca la
+privacy), chiesto dal Coordinatore. #1397 (TASK-487) è entrata prima: il
+conflitto su `FeedScreen.tsx` era solo nel commento.
+
 ## Parte D — Apple Salute e Health Connect (studio)
 
 Lo studio di §7 di `IMPORTAZIONI.md`, scritto in
@@ -478,6 +524,9 @@ the people you tag, by «Everyone» or by your «Followers»: there is no
 you see it before «Post». The post stays until you delete it or your
 account.» (Le traduzioni vanno all'utente con le schermate di C2.)
 
+**Traduzioni della privacy di C approvate dall'utente il 2026-11-22**
+(«Approvo»), quelle della PR #1386; la data è il 22 novembre 2026.
+
 ## Proposte da confermare con l'utente
 
 - Il pulsante in «My activities», con le due scelte (§2).
@@ -509,12 +558,16 @@ TASK-121.
       «From a file» non c'è. *Misurata dal Coordinatore su una copia
       pulita di `72af7335`; i test in `AddPastActivity.test.tsx` e
       `pickActivityFile.test.ts`.*
-- [ ] **C**: un post di sole foto si pubblica a «Everyone» o
+- [x] **C**: un post di sole foto si pubblica a «Everyone» o
       «Followers», si vede nel Feed con le foto e «Imported», e non entra
-      nel concorso.
+      nel concorso. *Test in `test_photo_posts.py`,
+      `test_photo_posts_seen.py`, `FeedScreenPhotos.test.tsx`; provato nel
+      simulatore il 2026-11-22.*
 - [ ] **D** ed **E**: gli studi scritti, con le fonti, e la scelta
       dell'utente registrata.
-- [ ] I testi e la privacy approvati dall'utente prima del merge di B e C.
+- [x] I testi e la privacy approvati dall'utente prima del merge di B e C.
+      *B il 2026-10-29; C il 2026-11-21 (testi, riga inglese) e il
+      2026-11-22 (schermate, cancellazione, traduzioni).*
 
 ## File toccati (documenti, questa PR)
 
@@ -538,3 +591,7 @@ docs/STATUS.md              (una voce in «In lavorazione»)
 ## Esito
 
 *(si compila a fine task)*
+
+**Parte C fatta, 2026-11-22**: C1, C1b, C1c in `main` e sul server; C2
+(#1386) in `main`, in produzione con il prossimo aggiornamento (OTA del
+Coordinatore), poi uno sguardo sul telefono. Restano D ed E.

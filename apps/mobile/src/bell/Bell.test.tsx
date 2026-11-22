@@ -146,7 +146,9 @@ test("a line opens what its push opens, and the list closes", async () => {
 
   // A group run's line opens its page, as its push (TASK-309 part B).
   await fireEvent.press(await screen.findByTestId("bell-line-40"));
-  expect(opens.openGroupRun).toHaveBeenCalledWith("5b0c6a1e-3d2f-4e8a-9b7c-1d2e3f4a5b6c");
+  expect(opens.openGroupRun).toHaveBeenCalledWith(
+    "5b0c6a1e-3d2f-4e8a-9b7c-1d2e3f4a5b6c",
+  );
 
   await fireEvent.press(screen.getByTestId("bell"));
   await fireEvent.press(await screen.findByTestId("bell-line-42"));

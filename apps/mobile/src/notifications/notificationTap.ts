@@ -91,7 +91,9 @@ export function tapTarget(data: unknown): TapTarget | null {
   }
   if (kind !== null && (GROUP_RUN_KINDS as readonly string[]).includes(kind)) {
     const groupRun = field(data, "group_run_id");
-    return groupRun !== null && ID.test(groupRun) ? { kind: "group_run", id: groupRun } : null;
+    return groupRun !== null && ID.test(groupRun)
+      ? { kind: "group_run", id: groupRun }
+      : null;
   }
   if (kind === PLANNED_LIVE_PUSH_KIND) {
     const share = field(data, "share_id");

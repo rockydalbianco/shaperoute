@@ -179,6 +179,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   col passo 15; poi D2 (l'app, privacy dall'utente) ed E.
   **2026-11-22**: D2a (#1357) e D2b (#1375) in `main`; restano la frase della
   privacy (dopo 312 C2), l'OTA ed E.
+  **2026-11-23**: frase della privacy «Together» in `main` (#1430); restano
+  la copia sul sito, l'OTA ed E.
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
   0, A, B in produzione; C1 (#1096, OTA 5), C2 (#1098), C2b (#1110) e C3
   (#1123, calorie in rosso) in `main`. Restano: il server di C2b (passo 7)

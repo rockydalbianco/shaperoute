@@ -8,6 +8,7 @@ import { Hairline } from "../ui/Hairline";
 import { Tap } from "../ui/Tap";
 import { ContactField, contactStyles as styles } from "./ContactField";
 import { checkPhone, phoneOfUser } from "./contactFields";
+import { useSettingsGroup } from "./settingsGroup";
 
 type Props = {
   user: User;
@@ -25,6 +26,7 @@ type Busy = "save" | "remove" | null;
  * closes and the row shows the number as the API keeps it.
  */
 export function PhoneSetting({ user, account }: Props) {
+  const group = useSettingsGroup();
   const kept = phoneOfUser(user);
   const [open, setOpen] = useState(false);
   const [phone, setPhone] = useState(kept ?? "");
@@ -68,7 +70,7 @@ export function PhoneSetting({ user, account }: Props) {
 
   const value = kept ?? t("Add");
   return (
-    <View style={styles.menu}>
+    <View style={[styles.menu, group]}>
       <Tap
         style={styles.row}
         onPress={toggle}

@@ -18,6 +18,7 @@ import type { GymLevel } from "./gym.ts";
 import type { FlightSplit } from "./flightParts.ts";
 import type { SkiDescents } from "./skiParts.ts";
 import type { SLEEP_SOURCE, SleepSummary } from "./sleep.ts";
+import type { GymPlanPosted, PLAN_SOURCE } from "./planPosts.ts";
 
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
@@ -1417,6 +1418,12 @@ interface DrawingFields {
    */
   sleep?: SleepSummary | null;
   /**
+   * A gym plan posted (TASK-485, planPosts.ts, `source` `plan`): the plan as
+   * it was posted, with its exercises and kg. Null for any other post;
+   * missing from an API before it.
+   */
+  plan?: GymPlanPosted | null;
+  /**
    * The drawing can be opened by its link on the site, without an account
    * (TASK-455 part C, PostLink): it is for everyone, it has a line, and its
    * owner leaves «Links to my posts» on. The app shows «Share link» only
@@ -1732,9 +1739,11 @@ export interface FollowingFeedPage extends FilteredFeedPage {
 
 /** `source` of a post of photos only, and the value said in X-MuW-Reads. */
 export const PHOTOS_SOURCE = "photos" as const;
-/** Where a drawing comes from: its run, photos only, or a night of sleep
- * (TASK-467 part E, sleep.ts). */
-export type DrawingSource = RunSource | typeof PHOTOS_SOURCE | typeof SLEEP_SOURCE;
+/** Where a drawing comes from: its run, photos only, a night of sleep
+ * (TASK-467 part E, sleep.ts) or a gym plan posted (TASK-485,
+ * planPosts.ts). */
+export type DrawingSource =
+  RunSource | typeof PHOTOS_SOURCE | typeof SLEEP_SOURCE | typeof PLAN_SOURCE;
 /** Never «Only me»: its photos are on the server only while others see it. */
 export const PHOTO_POST_VISIBILITIES = ["everyone", "followers"] as const;
 export type PhotoPostVisibility = (typeof PHOTO_POST_VISIBILITIES)[number];
@@ -1809,6 +1818,8 @@ interface WithoutRun {
   ski_descents: null;
   flight_split: null;
   sleep: null;
+  /** Not a gym plan posted (TASK-485). */
+  plan: null;
   /** Never: a link shows a line, and it has none. */
   linkable: false;
 }
@@ -3253,6 +3264,7 @@ export * from "./resortFollows.ts";
 export * from "./skiParts.ts";
 export * from "./flightParts.ts";
 export * from "./sleep.ts";
+export * from "./planPosts.ts";
 export * from "./together.ts";
 export * from "./gymHistory.ts";
 export * from "./gear.ts";

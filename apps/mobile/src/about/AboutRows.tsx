@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { t, tLater } from "../i18n";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import {
   color,
   fontSize,
@@ -37,8 +38,9 @@ type Props = {
  * under the row, as «Language» does: these are pages of text to read.
  */
 export function AboutRows({ onOpen }: Props) {
+  const group = useSettingsGroup();
   return (
-    <View style={styles.menu}>
+    <View style={[styles.menu, group]}>
       {ABOUT_ROWS.map((row, at) => (
         <View key={row.id}>
           {at > 0 && <Hairline style={styles.inset} />}

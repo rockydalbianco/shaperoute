@@ -5,6 +5,7 @@ import { apiUrl } from "../api/apiUrl";
 import { t } from "../i18n";
 import { PlaceSearch } from "../places/PlaceSearch";
 import type { FindPlaces } from "../places/placeFinder";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import { activityOf, loadSport } from "../settings/sport";
 import {
   color,
@@ -55,6 +56,7 @@ export function OfflineMapsSetting({
   keep = keepPlaces,
   find,
 }: Props) {
+  const group = useSettingsGroup();
   const [bytes, setBytes] = useState(() => savedBytes());
   const [places, setPlaces] = useState(() => readPlaces());
   const [adding, setAdding] = useState(false);
@@ -89,7 +91,7 @@ export function OfflineMapsSetting({
   const full = places.length >= MAX_PLACES;
   return (
     <View style={styles.setting}>
-      <View style={styles.menu}>
+      <View style={[styles.menu, group]}>
         <View style={styles.row}>
           <Text style={styles.emoji}>🗺️</Text>
           <Text style={styles.rowText}>

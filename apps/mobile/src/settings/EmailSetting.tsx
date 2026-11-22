@@ -9,6 +9,7 @@ import { Tap } from "../ui/Tap";
 import { ContactField, contactStyles as styles } from "./ContactField";
 import { checkEmailChange } from "./contactFields";
 import { EmailConfirmation } from "./EmailConfirmation";
+import { useSettingsGroup } from "./settingsGroup";
 
 type Props = {
   user: User;
@@ -25,6 +26,7 @@ type Props = {
  * `EmailConfirmation` says so, as it says an address not confirmed yet.
  */
 export function EmailSetting({ user, account }: Props) {
+  const group = useSettingsGroup();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -72,7 +74,7 @@ export function EmailSetting({ user, account }: Props) {
   }
 
   return (
-    <View style={styles.menu}>
+    <View style={[styles.menu, group]}>
       <Tap
         style={styles.row}
         onPress={() => (open ? close() : setOpen(true))}

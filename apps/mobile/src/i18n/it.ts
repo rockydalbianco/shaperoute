@@ -3176,4 +3176,14 @@ export const IT: Table = {
   "Height above ground": "Quota sul terreno",
   "Heading up": "Rotta in alto",
   "North up": "Nord in alto",
+  // src/air/ (TASK-479 part E1: the pilot's airspace file; notices 3 and 4 approved by the user on 2026-11-21)
+  "No airspace loaded. MuW does not include airspace data.":
+    "Nessuno spazio aereo caricato. MuW non include dati di spazi aerei.",
+  "Data loaded by you: check the AIP and NOTAMs before you fly. · {file} · loaded {date}":
+    "Dati caricati da te: verifica AIP e NOTAM prima di volare. · {file} · caricato il {date}",
+  Airspace: "Spazi aerei",
+  "Airspaces: {count}": "Spazi aerei: {count}",
+  "Lines not read: {n}": "Righe non lette: {n}",
+  "This file has no airspace MuW can read.":
+    "In questo file non ci sono spazi aerei che MuW sa leggere.",
 };

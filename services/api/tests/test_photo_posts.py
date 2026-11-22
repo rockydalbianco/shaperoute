@@ -47,9 +47,12 @@ def _load(name: str) -> Any:
     return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
 
-# An app of before part C2: what this app reads, but `photos`.
+# An app of before part C2: what this app reads, but `photos`; nor the gym
+# plans posted, which it says since TASK-485 part B.
 TODAY_APP = ",".join(
-    kind for kind in _load("reads.json")["this_app"].split(",") if kind != "photos"
+    kind
+    for kind in _load("reads.json")["this_app"].split(",")
+    if kind not in ("photos", "plans")
 )
 # The app of part C2 says `photos` too.
 THIS_APP = f"{TODAY_APP},photos"

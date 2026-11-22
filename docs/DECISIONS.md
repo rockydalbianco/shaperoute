@@ -580,8 +580,39 @@ lasciando le righe d'indice.
 - ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities» · 2026-11-22 · Attiva
 - ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Proposta
 - ADR-0391 — Il link di un post apre l'app: l'id resta dopo il `#`, l'app prende dall'indirizzo solo un id a forma di disegno e chiede il post all'API, senza account prima l'ingresso; la barra di Safari subito, i link verificati con la prossima build nativa · 2026-11-22 · Attiva
+- ADR-0127, precisazione (TASK-487) — «Feed» senza esempi: senza account l'invito ad accedere, con account e nessun post una riga che lo dice · 2026-11-22 · Attiva
 
 ## Voci nuove
+
+## ADR-0127, precisazione (TASK-487) — «Feed» senza esempi: senza account l'invito ad accedere, con account e nessun post una riga che lo dice
+
+**Stato**: Attiva · 2026-11-22 · TASK-487, codice #1397. **Scelta
+dell'utente** (2026-11-22): «togliamo tutte quelle finte», e alla domanda
+su cosa mostrare senza accesso «Invito ad accedere».
+
+**Contesto**: l'ADR-0127 faceva mostrare a «All» i disegni d'esempio
+(figure del catalogo con corridori inventati) finché l'account non aveva
+nulla da vedere o nessuno aveva fatto l'accesso. Sull'app dell'App Store
+aperta sul Mac senza accesso l'utente ha visto quelle attività finte al
+posto delle sue e di Rocky, che l'app di prova mostra: le due app usano lo
+stesso server, la differenza era solo l'accesso. `GET /feed` vuole il
+token, quindi senza accesso non ci sono attività vere da mostrare.
+
+1. **«Feed» non mostra più esempi**, in nessuna scheda: solo i post degli
+   iscritti (`postsOf` in `FeedScreen.tsx`).
+2. **Senza account**: «All» dice «Log in from Profile to see the
+   activities.» (`feed-log-in`), senza schede né «+», come prima.
+3. **Con account e nessun post**: «Nobody has published anything yet.»
+   (`feed-no-posts-all`). «Following» resta com'era.
+4. Il server non cambia; nessun Feed pubblico senza account.
+
+**Conseguenze**: i percorsi MuW (TASK-365) e i post di MuW Style si
+mettono solo tra post veri, quindi senza post non compaiono. Il codice che
+apre un esempio (`fetchPostRoute`, `paddlePosts`) resta perché gli esempi
+compaiono ancora tra i «featured» della ricerca di «Explore»
+(`src/search/StartState.tsx`), fuori da questo task. Tolti i test
+d'interfaccia che entravano da un esempio del Feed
+(`AppFeedPaddle.test.tsx`, un test di `AppExploreMove.test.tsx`).
 
 ## ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities»
 
@@ -894,6 +925,13 @@ dall'utente. Server, OTA, sito e store solo col sì dell'utente o del
 Coordinatore; prima della pubblicazione una prova con un pilota vero.
 ADR-0265 (il pianificatore nel cono) resta Proposta. Dettagli in
 `tasks/TASK-479.md`.
+
+**Aggiunta del 2026-11-22 (parte C, deciso dall'agente su delega
+dell'utente)**: il vario sonoro suona file, non sintesi: 15 loop WAV fatti
+da `tools/vario_tones.py` (un gradino di salita ogni 0,5 m/s, uno di
+discesa ogni 1 m/s), un player in loop per tono; il suono appartiene alla
+registrazione e non alla schermata di volo, così suona anche a schermata
+chiusa; nessun tocco ad `app.json`. Acceso di default: scelta dell'utente.
 
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 

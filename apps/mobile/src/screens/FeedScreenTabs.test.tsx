@@ -191,7 +191,7 @@ test("following people who have published nothing has its own words", async () =
   ).toBeOnTheScreen();
 });
 
-test("without an account: no tabs, only the examples, whatever was chosen", async () => {
+test("without an account: no tabs, the words to log in, whatever was chosen", async () => {
   saveFeedTab("following");
   await render(
     <Around state={SIGNED_OUT}>
@@ -200,7 +200,8 @@ test("without an account: no tabs, only the examples, whatever was chosen", asyn
   );
   expect(screen.queryByText("Following")).toBeNull();
   expect(screen.queryByTestId("feed-list-following")).toBeNull();
-  expect(await screen.findByText(SAMPLE_FEED[0].user)).toBeOnTheScreen();
+  expect(await screen.findByTestId("feed-log-in")).toBeOnTheScreen();
+  expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
   expect(asked()).toEqual([]);
 });
 

@@ -19,7 +19,7 @@ import {
 } from "../src/explore/exampleRoutes";
 import { forgetWaterChoice } from "../src/paddle/PaddleExplore";
 import { forgetNoticeSeen } from "../src/paddle/safetyNotice";
-import { loadSport, saveSport } from "../src/settings/sport";
+import { loadSport } from "../src/settings/sport";
 
 jest.mock(
   "react-native-safe-area-context",
@@ -276,40 +276,4 @@ test("a drag told when nobody is moving asks for nothing", async () => {
   await heartOpen();
   await pagePosts('{"type":"moved","by":[0.002,-0.001]}');
   expect(routeBodies()).toHaveLength(0);
-});
-
-test("a drawing of «Feed» on the water is not moved", async () => {
-  // On the shore of Lake Garda: «Explore» shows its examples, and the heart
-  // of «Feed» is one of them, known to the app with its centre.
-  jest.mocked(Location.getCurrentPositionAsync).mockResolvedValue({
-    coords: { latitude: 45.88114, longitude: 10.84559 },
-  } as Location.LocationObject);
-  apiAnswers(waterDone(CENTRE, 0));
-  await atRiccione();
-  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
-  expect(screen.getByLabelText(HEART_CARD)).toBeOnTheScreen();
-  await fireEvent.press(screen.getByRole("tab", { name: "Feed" }));
-  // The list draws two drawings at first, and the others once it knows how
-  // tall it is.
-  let list = screen.getAllByTestId("feed-post")[0].parent;
-  while (list !== null && list.props.onContentSizeChange === undefined) {
-    list = list.parent;
-  }
-  if (list === null) {
-    throw new Error("the drawings are not in a list");
-  }
-  await fireEvent(list, "layout", {
-    nativeEvent: { layout: { x: 0, y: 0, width: 390, height: 800 } },
-  });
-  await fireEvent(list, "contentSizeChange", 390, 6000);
-  await act(() => jest.advanceTimersByTimeAsync(100));
-  await fireEvent.press(screen.getByText("A heart on Lake Garda"));
-  expect(await screen.findByRole("button", { name: "Start" })).toBeOnTheScreen();
-  expect(screen.queryByRole("button", MOVE)).toBeNull();
-
-  // The same heart from «Explore» is.
-  await fireEvent.press(screen.getByText("Back to the list"));
-  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
-  await fireEvent.press(screen.getByLabelText(HEART_CARD));
-  expect(screen.getByRole("button", MOVE)).toBeOnTheScreen();
 });

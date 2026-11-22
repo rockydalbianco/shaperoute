@@ -70,7 +70,12 @@ const LOADING: Shown = {
 };
 
 /** The comments of `drawingId`, the oldest first, a page at a time. */
-export function useDrawingComments(drawingId: string): DrawingComments {
+export function useDrawingComments(
+  drawingId: string,
+  /** Asks nothing yet (TASK-355 part B): a card of the Feed knows how many
+   * there are, and reads them when its sheet first opens. */
+  wait = false,
+): DrawingComments {
   const door = useCommentsDoor();
   // The answer for one drawing: another's is not this one's.
   const [answer, setAnswer] = useState<{ asked: string; shown: Shown } | null>(null);
@@ -85,6 +90,9 @@ export function useDrawingComments(drawingId: string): DrawingComments {
   const reacting = useRef(false);
 
   useEffect(() => {
+    if (wait) {
+      return;
+    }
     let live = true;
     repliesNext.current = new Map();
     void door.pageOf(drawingId, null).then((outcome) => {
@@ -108,7 +116,7 @@ export function useDrawingComments(drawingId: string): DrawingComments {
     return () => {
       live = false;
     };
-  }, [door, drawingId, tries]);
+  }, [door, drawingId, tries, wait]);
 
   const shown = answer !== null && answer.asked === drawingId ? answer.shown : LOADING;
 

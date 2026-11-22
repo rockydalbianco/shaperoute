@@ -2997,6 +2997,13 @@ export const DE: Table = {
   "From {bearing} · {minutes} min ago": "Aus {bearing} · vor {minutes} Min.",
   "GPS numbers · not a certified instrument":
     "GPS-Werte · kein zertifiziertes Instrument",
+  // «Together» in «Edit video» (TASK-417 part D2b; approved by the user on 2026-11-08).
+  Together: "Zusammen",
+  "Your run and the runs of the people tagged here, on the same clock.":
+    "Dein Lauf und die Läufe der hier markierten Personen, auf derselben Uhr.",
+  "No one tagged ran at the same time.":
+    "Niemand der Markierten ist zur selben Zeit gelaufen.",
+  "Up to 4 people in one video.": "Bis zu 4 Personen in einem Video.",
   "Log in to see this drawing.": "Melde dich an, um diese Zeichnung zu sehen.",
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Layout bearbeiten",
@@ -3032,4 +3039,67 @@ export const DE: Table = {
     "Vom GPS: Der Ton kommt 1–2 s nach dem Steigen.",
   "Mute the vario": "Vario stummschalten",
   "Turn the vario sound on": "Vario-Ton einschalten",
+
+  // src/gear/ (TASK-486 part B, the gear), approved by the user on 2026-11-22
+  Shoes: "Schuhe",
+  Skis: "Ski",
+  "Ski boots": "Skischuhe",
+  Snowboard: "Snowboard",
+  Poles: "Stöcke",
+  Boots: "Bergschuhe",
+  "Climbing shoes": "Kletterschuhe",
+  Harness: "Klettergurt",
+  Helmet: "Helm",
+  Rope: "Seil",
+  Crampons: "Steigeisen",
+  "Ice axe": "Eispickel",
+  "Inline skates": "Inlineskates",
+  Sail: "Segel",
+  Board: "Board",
+  Boat: "Boot",
+  Wetsuit: "Neoprenanzug",
+  Paraglider: "Gleitschirm",
+  Wheelchair: "Rollstuhl",
+  Clothing: "Kleidung",
+  Backpack: "Rucksack",
+  Watch: "Uhr",
+  "Add gear": "Ausrüstung hinzufügen",
+  "Add your shoes, your bike, your skis and everything you use. Each activity you take them on adds to their kilometres and hours.":
+    "Füge deine Schuhe, dein Rad, deine Ski und alles hinzu, was du benutzt. Jede Aktivität, bei der du sie dabeihast, zählt zu ihren Kilometern und Stunden.",
+  "Past its limit": "Über seinem Limit",
+  Retired: "Ausgemustert",
+  Kind: "Art",
+  Brand: "Marke",
+  Model: "Modell",
+  "Your name for it": "Dein Name dafür",
+  Bought: "Gekauft",
+  Month: "Monat",
+  Year: "Jahr",
+  "Month bought": "Kaufmonat",
+  "Year bought": "Kaufjahr",
+  Note: "Notiz",
+  "Where you bought it, a race you ran in it…":
+    "Wo du es gekauft hast, ein Rennen damit…",
+  Limit: "Limit",
+  "MuW tells you when it passes this.": "MuW sagt dir, wenn es das überschreitet.",
+  "Use by default for": "Standardmäßig für",
+  "Activities of these sports start with it chosen.":
+    "Aktivitäten dieser Sportarten starten damit ausgewählt.",
+  "Hide from profile": "Im Profil ausblenden",
+  "Others don't see it. Its kilometres still count.":
+    "Andere sehen es nicht. Seine Kilometer zählen trotzdem.",
+  Retire: "Ausmustern",
+  "Out of your choices, with its kilometres kept.":
+    "Nicht mehr zur Auswahl, seine Kilometer bleiben.",
+  "Delete this gear?": "Diese Ausrüstung löschen?",
+  "Its photo goes too. Your activities stay.":
+    "Das Foto wird auch gelöscht. Deine Aktivitäten bleiben.",
+  "Say the brand.": "Gib die Marke an.",
+  "Write the month (1 to 12) and the year it was bought.":
+    "Gib den Monat (1 bis 12) und das Jahr des Kaufs an.",
+  "Write the limit as a number of {unit}.": "Gib das Limit als Zahl in {unit} an.",
+  "These words can't be used. Try other words.":
+    "Diese Wörter sind nicht erlaubt. Versuch andere.",
+  "Links and special characters can't be used here.":
+    "Links und Sonderzeichen sind hier nicht erlaubt.",
 };

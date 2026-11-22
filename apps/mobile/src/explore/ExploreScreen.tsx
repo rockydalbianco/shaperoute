@@ -55,6 +55,7 @@ import { RecommendedRow } from "./RecommendedRow";
 import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
 import type { ThemedRequest } from "./themedRoutes";
 import { stillDrawing, useWaited, WhileDrawing } from "./WhileDrawing";
+import { useHeaderScroll } from "../tabs/headerScroll";
 import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 import { postRoute } from "../feed/feedRoute";
 import type { SamplePost } from "../feed/sampleFeed";
@@ -143,6 +144,8 @@ export function ExploreScreen({
   const insets = useSafeAreaInsets();
   // Its tab touched again: back to the top (TASK-367).
   const scroll = useScrollToTopOnReselect<FlatList<FarRow>>();
+  // The header turns to glass once the list scrolls (TASK-469 A5b).
+  const headerScroll = useHeaderScroll();
   // The cards are written again when «Settings» changes the units (TASK-182).
   const units = useUnits();
   // What the page has between its side margins: two cards side by side.
@@ -340,6 +343,7 @@ export function ExploreScreen({
       </View>
       <FlatList
         ref={scroll}
+        {...headerScroll}
         data={farRowsOfPage}
         keyExtractor={(row) => row.key}
         renderItem={({ item }) => (

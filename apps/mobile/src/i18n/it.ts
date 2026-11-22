@@ -2965,6 +2965,13 @@ export const IT: Table = {
   "From {bearing} · {minutes} min ago": "Da {bearing} · {minutes} min fa",
   "GPS numbers · not a certified instrument":
     "Numeri dal GPS · non è uno strumento certificato",
+  // «Together» in «Edit video» (TASK-417 part D2b; approved by the user on 2026-11-08).
+  Together: "Insieme",
+  "Your run and the runs of the people tagged here, on the same clock.":
+    "La tua corsa e quelle delle persone taggate qui, sullo stesso orologio.",
+  "No one tagged ran at the same time.":
+    "Nessuna persona taggata ha corso nello stesso momento.",
+  "Up to 4 people in one video.": "Fino a 4 persone in un video.",
   "Log in to see this drawing.": "Accedi per vedere questo disegno.",
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Modifica schermata",
@@ -3001,4 +3008,67 @@ export const IT: Table = {
     "Dal GPS: il suono arriva 1–2 s dopo la salita.",
   "Mute the vario": "Silenzia il vario",
   "Turn the vario sound on": "Attiva il suono del vario",
+
+  // src/gear/ (TASK-486 part B, the gear), approved by the user on 2026-11-22
+  Shoes: "Scarpe",
+  Skis: "Sci",
+  "Ski boots": "Scarponi da sci",
+  Snowboard: "Snowboard",
+  Poles: "Bastoncini",
+  Boots: "Scarponi",
+  "Climbing shoes": "Scarpette d'arrampicata",
+  Harness: "Imbrago",
+  Helmet: "Casco",
+  Rope: "Corda",
+  Crampons: "Ramponi",
+  "Ice axe": "Piccozza",
+  "Inline skates": "Pattini in linea",
+  Sail: "Vela",
+  Board: "Tavola",
+  Boat: "Barca",
+  Wetsuit: "Muta",
+  Paraglider: "Parapendio",
+  Wheelchair: "Carrozzina",
+  Clothing: "Abbigliamento",
+  Backpack: "Zaino",
+  Watch: "Orologio",
+  "Add gear": "Aggiungi attrezzatura",
+  "Add your shoes, your bike, your skis and everything you use. Each activity you take them on adds to their kilometres and hours.":
+    "Aggiungi le tue scarpe, la bici, gli sci e tutto quello che usi. Ogni attività in cui li porti aggiunge ai loro chilometri e alle loro ore.",
+  "Past its limit": "Oltre il suo limite",
+  Retired: "Ritirata",
+  Kind: "Tipo",
+  Brand: "Marca",
+  Model: "Modello",
+  "Your name for it": "Il tuo nome",
+  Bought: "Comprata",
+  Month: "Mese",
+  Year: "Anno",
+  "Month bought": "Mese d'acquisto",
+  "Year bought": "Anno d'acquisto",
+  Note: "Nota",
+  "Where you bought it, a race you ran in it…":
+    "Dove l'hai comprata, una gara fatta con lei…",
+  Limit: "Limite",
+  "MuW tells you when it passes this.": "MuW ti avvisa quando lo supera.",
+  "Use by default for": "Usala di solito per",
+  "Activities of these sports start with it chosen.":
+    "Le attività di questi sport partono con questa già scelta.",
+  "Hide from profile": "Nascondi dal profilo",
+  "Others don't see it. Its kilometres still count.":
+    "Gli altri non la vedono. I suoi chilometri contano lo stesso.",
+  Retire: "Ritira",
+  "Out of your choices, with its kilometres kept.":
+    "Esce dalle tue scelte, coi suoi chilometri.",
+  "Delete this gear?": "Eliminare questa attrezzatura?",
+  "Its photo goes too. Your activities stay.":
+    "Se ne va anche la foto. Le tue attività restano.",
+  "Say the brand.": "Scrivi la marca.",
+  "Write the month (1 to 12) and the year it was bought.":
+    "Scrivi il mese (da 1 a 12) e l'anno in cui l'hai comprata.",
+  "Write the limit as a number of {unit}.": "Scrivi il limite come numero di {unit}.",
+  "These words can't be used. Try other words.":
+    "Queste parole non si possono usare. Prova con altre.",
+  "Links and special characters can't be used here.":
+    "Qui non si possono usare link né caratteri speciali.",
 };

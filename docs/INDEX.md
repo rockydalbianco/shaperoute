@@ -48,6 +48,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Video della corsa ed editor con l'animale 3D | ADR-0303, ADR-0339, `UI.md` «Il post da condividere», `tasks/TASK-408.md` |
 | Messaggi, chat, allegati | `API.md` «Messages», `UI.md`, ADR-0279, ADR-0305 |
 | Condividere un post: «Share» sui post, il post mandato in chat come rimando, il link di un post | `tasks/TASK-455.md`, ADR-0382, `API.md` «Un post in un messaggio» |
+| Il link di un post che apre l'app: la barra di Safari, l'indirizzo letto dall'app, i link verificati | `tasks/TASK-482.md`, ADR-0391, ADR-0382, `SITO.md` |
 | Profilo: record personali, badge, il mio corpo, VO₂ max | `API.md` «Profile», ADR-0312, ADR-0318, `tasks/TASK-341.md`, `tasks/TASK-397.md` |
 | Posizione del telefono e privacy | `tasks/TASK-363.md`, ADR-0306 |
 | Il gioco delle forme, squadre e sfide | `GIOCO.md` |
@@ -82,6 +83,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | La freccia di chi corre (anello e cono azzurri, punta dove punta la mappa su «Compass»), i disegni delle tre schede, i token `you` e `north` | `UI.md` «La freccia di direzione» e «La corsa: tre pagine», ADR-0359, `tasks/TASK-431.md` |
 | Le schede della palestra guidate: la guida in 5 passi, le settimane che cambiano, «My plans», l'app di prima che le legge | `sports/gym.md` «Le schede guidate», ADR-0360, ADR-0341, `API.md` «Gym», `tasks/TASK-433.md` |
 | I giorni di corsa nella scheda della palestra, «Come funzionano le schede» al primo tocco di Palestra | `sports/gym.md` «Le schede guidate», ADR-0363, `tasks/TASK-433.md` (parti B e C) |
+| Lo storico di un esercizio in palestra: «Last time», i campi già compilati, il suggerimento, «History» col massimale stimato | `tasks/TASK-483.md`, ADR-0392, `sports/gym.md`, ADR-0327 |
 | La corsa su misura nelle schede della palestra: il ritmo sui 10 km e il lungo nella guida, i ritmi di ogni corsa, la proposta a fine ciclo dalle corse salvate | `sports/gym.md` «Le schede guidate», ADR-0369, `API.md` «Gym», `tasks/TASK-452.md` |
 | Il pianificatore completo: almeno due sport, il corpo libero, i giorni fuori (camminata, hike, bici, nuoto, canoa), i piani verso una distanza o una salita | `sports/gym.md` «Il pianificatore completo» e «L'ingresso e il corpo libero», ADR-0371, `API.md` «Gym», `tasks/TASK-461.md` |
 | «Edit the drawing» su una traccia che finisce lontano dalla partenza: chiusa fino alla partenza, non corsa due volte; se si incrocia, un anello alla partenza; anche un percorso chiuso di «Explore» che si incrocia | `UI.md` «Edit the drawing: la figura sulla mappa», ADR-0353, ADR-0356 (e precisazione), ADR-0313, `tasks/TASK-425.md`, `tasks/TASK-428.md`, `tasks/TASK-432.md` |

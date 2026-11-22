@@ -1,0 +1,24 @@
+{
+  "gear": [
+    {
+      "id": "6f1c2a7e-3b4d-4e8f-9a01-2b3c4d5e6f70",
+      "kind": "shoes",
+      "brand": "Nike",
+      "model": "Pegasus 41",
+      "name": "The red ones",
+      "bought_on": "2025-03-01",
+      "photo_url": "/gear/6f1c2a7e-3b4d-4e8f-9a01-2b3c4d5e6f70/photo?v=1763715600000",
+      "retired": false,
+      "totals": { "distance_m": 412300, "duration_s": 145800, "activities": 38 },
+      "created_at": "2026-11-21T09:00:00Z"
+    },
+    {
+      "id": "0a9b8c7d-6e5f-4a3b-8c2d-1e0f9a8b7c6d",
+      "kind": "helmet",
+      "brand": "Petzl",
+      "retired": true,
+      "totals": { "distance_m": 0, "duration_s": 7200, "activities": 2 },
+      "created_at": "2026-11-20T08:00:00Z"
+    }
+  ]
+}

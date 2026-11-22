@@ -16,6 +16,7 @@ import { EditProfile } from "../profile/EditProfile";
 import { ProfileHome } from "../profile/ProfileHome";
 import { SettingsPage } from "../profile/SettingsPage";
 import { SightScrollView } from "../social/scrollSight";
+import { useHeaderScroll } from "../tabs/headerScroll";
 import {
   color,
   fontSize,
@@ -105,6 +106,9 @@ export function ProfileScreen({
   onExplore,
 }: Props) {
   const insets = useSafeAreaInsets();
+  // As the tab «Profile», its scroll turns the header to glass (TASK-469
+  // A5c); over the app, outside the tab shell, it tells nobody.
+  const headerScroll = useHeaderScroll();
   const { state } = account;
   const signedOut = state.status !== "signedIn";
   // Where «Help» was opened: its row in «Settings», or «Guide» on the first
@@ -148,6 +152,7 @@ export function ProfileScreen({
     >
       {edge.shade}
       <SightScrollView
+        {...headerScroll}
         style={about !== null && styles.hidden}
         contentContainerStyle={[
           styles.content,

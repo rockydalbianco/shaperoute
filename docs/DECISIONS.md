@@ -577,11 +577,42 @@ lasciando le righe d'indice.
 - ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Proposta
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 - ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo · 2026-11-21 · Attiva
+- ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities» · 2026-11-22 · Attiva
 - ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Proposta
 - ADR-0391 — Il link di un post apre l'app: l'id resta dopo il `#`, l'app prende dall'indirizzo solo un id a forma di disegno e chiede il post all'API, senza account prima l'ingresso; la barra di Safari subito, i link verificati con la prossima build nativa · 2026-11-22 · Attiva
 
 ## Voci nuove
 
+## ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities»
+
+**Stato**: Attiva · 2026-11-22 · TASK-305 parti R6c (#1313), R6d-a (#1342,
+server al passo 15) e R6d-b (#1352). **Scelta dell'utente**: le schermate
+della gara finta nel simulatore («Sì, approvo» per R6c e per R6d). Il resto
+è **deciso dall'agente su delega dell'utente**, con le liste dei file
+approvate dal Coordinatore.
+
+1. **`flight` nell'attività aperta** (`GET /me/activities/{key}`): `air`
+   è una lista di coppie di indici dei punti della traccia salvata, il
+   primo e l'ultimo punto il cui tempo (l'M della linea) cade dentro un
+   tratto in aria; `split` è lo stesso `flight_split` delle liste. Un
+   tratto in aria con un punto solo resta fuori.
+2. **Calcolato a ogni lettura**, dalla traccia e dal JSON di
+   `run_stats.stats`: nessuna migrazione, niente di nuovo salvato, e le
+   gare già salvate lo hanno senza toccarle. Solo per `paragliding` con
+   tutti e due i tipi di tratto.
+3. **Assente quando manca**: un serializzatore lo toglie se è nullo, così
+   ogni altra risposta resta uguale byte per byte. Il prezzo: in openapi
+   quella risposta è un oggetto senza proprietà, e il controllo del server
+   legge il modello.
+4. **L'app non si fida alla cieca**: coppie intere, in ordine, dentro la
+   traccia, e uno split valido; se qualcosa non torna, la gara si vede
+   come prima, tutta bianca e senza la riga dei tempi.
+5. **Alla fine di una gara (R6c)** la mappa inquadra tutta la traccia,
+   piedi e aria, non solo l'ultimo tratto.
+6. **Prima il server, poi l'OTA**: un server senza R6d-a non dà `flight` e
+   l'app mostra la gara come oggi.
+7. **Fuori**: il post di una gara aperto dal Feed o da un profilo
+   (`GET /drawings/{id}`) resta bianco, per dopo.
 ## ADR-0391 — Il link di un post apre l'app: l'id dopo il `#`, solo un id a forma di disegno, la barra di Safari subito e i link verificati con la prossima build
 
 **Stato**: Attiva · 2026-11-22 · TASK-482. Che il link debba aprire il post

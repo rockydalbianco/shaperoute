@@ -12,6 +12,7 @@ import { FollowButton } from "../social/FollowButton";
 import { ReportMenu } from "../social/ReportMenu";
 import { color, fontSize, space } from "../theme/tokens";
 import { ProfileGallery } from "./ProfileGallery";
+import { ProfileGroupRuns } from "../groupRuns/ProfileGroupRuns";
 import { ProfileHeader } from "./ProfileHeader";
 import { GymLevels } from "../gym/GymLevels";
 import { PersonalBests } from "./PersonalBests";
@@ -231,6 +232,15 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
       />
       {/* The levels at the gym (TASK-385 E): none from an older API. */}
       {profile.gym_levels && <GymLevels levels={profile.gym_levels} />}
+      {/* Their group runs, coming and past (TASK-309 part B): none, nothing. */}
+      <ProfileGroupRuns
+        apiUrl={apiUrl}
+        token={token}
+        publicId={profile.public_id}
+        onSessionEnded={onSessionEnded}
+        fetchFn={fetchFn}
+        apiKey={apiKey}
+      />
       <ProfileGallery
         publicId={profile.public_id}
         own={false}

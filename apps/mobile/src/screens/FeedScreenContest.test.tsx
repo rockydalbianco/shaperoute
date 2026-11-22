@@ -160,9 +160,10 @@ test("without an account the card is there, without a line of its own", async ()
   expect(await screen.findByTestId("contest-card")).toBeOnTheScreen();
   expect(screen.queryByText(/Your best post/)).toBeNull();
   expect(screen.queryByText("Publish a run to take part.")).toBeNull();
-  // Asked without a token; the examples are the page's.
+  // Asked without a token; under it, no made-up drawing: the words to log in.
   expect(asked("/contests/current")[0].headers).not.toHaveProperty("Authorization");
-  expect(screen.getByText(SAMPLE_FEED[0].title)).toBeOnTheScreen();
+  expect(screen.queryByText(SAMPLE_FEED[0].title)).toBeNull();
+  expect(screen.getByTestId("feed-log-in")).toBeOnTheScreen();
   // The first three open nothing: no button.
   expect(screen.queryByRole("button", { name: /Ada_runs/ })).toBeNull();
 });

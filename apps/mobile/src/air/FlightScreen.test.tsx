@@ -24,6 +24,12 @@ import { numberSize } from "./FlightWidget";
 import { resetFlightNotice } from "./flightNotice";
 import { flightOf, T0 } from "./syntheticFlight";
 import { useFlightScreen } from "./useFlightScreen";
+import {
+  DEFAULT_VARIO_PREFS,
+  loadVarioPrefs,
+  resetVarioPrefs,
+  setVarioPrefs,
+} from "./varioPrefs";
 
 jest.mock(
   "react-native-safe-area-context",
@@ -138,6 +144,55 @@ describe("FlightScreen", () => {
     expect(profileName(kept.profiles[kept.current])).toBe("XC");
     expect(kept.look).toBe("sun");
     expect(kept.units).toEqual({ altitude: "ft", vario: "mps", speed: "kmh" });
+  });
+});
+
+describe("the vario's sound (part C)", () => {
+  beforeEach(() => {
+    resetVarioPrefs();
+    setVarioPrefs(DEFAULT_VARIO_PREFS);
+  });
+
+  it("mutes and turns on with the button beside the lock, the lock on too", async () => {
+    await showScreen();
+    const sound = screen.getByTestId("flight-screen-sound");
+    expect(sound.props.accessibilityLabel).toBe("Mute the vario");
+    await fireEvent.press(screen.getByTestId("flight-screen-lock"));
+    await fireEvent.press(screen.getByTestId("flight-screen-sound"));
+    expect(loadVarioPrefs().on).toBe(false);
+    expect(screen.getByTestId("flight-screen-sound").props.accessibilityLabel).toBe(
+      "Turn the vario sound on",
+    );
+    await fireEvent.press(screen.getByTestId("flight-screen-sound"));
+    expect(loadVarioPrefs().on).toBe(true);
+  });
+
+  it("has its thresholds and volume among the options, in the pilot's unit, kept", async () => {
+    await showScreen();
+    await fireEvent.press(screen.getByTestId("flight-screen-layout"));
+    expect(
+      screen.getByText("From GPS: the sound comes 1–2 s after the climb."),
+    ).toBeTruthy();
+    await fireEvent.press(screen.getByText("+0.5 m/s"));
+    // The second «Off»: the sink tone's.
+    await fireEvent.press(screen.getAllByText("Off")[1]);
+    await fireEvent.press(screen.getByText("35 %"));
+    expect(loadVarioPrefs()).toEqual({
+      on: true,
+      climbFromMps: 0.5,
+      sinkBelowMps: null,
+      volume: "low",
+    });
+    await fireEvent.press(screen.getByText("ft/min"));
+    expect(screen.getByText("+20 ft/min")).toBeTruthy();
+  });
+
+  it("hides its choices while off", async () => {
+    await showScreen();
+    await fireEvent.press(screen.getByTestId("flight-screen-layout"));
+    await fireEvent.press(screen.getAllByText("Off")[0]);
+    expect(screen.queryByText("Beeps from")).toBeNull();
+    expect(loadVarioPrefs().on).toBe(false);
   });
 });
 

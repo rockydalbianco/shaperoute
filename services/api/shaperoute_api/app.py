@@ -73,6 +73,7 @@ from shaperoute_api.gear import install_gear
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.group_runs import install_group_runs
 from shaperoute_api.gym_calendar import install_gym_calendar
+from shaperoute_api.gym_history import install_gym_history
 from shaperoute_api.gym_leaderboard import install_gym_leaderboard
 from shaperoute_api.gym_plans import install_gym_plans
 from shaperoute_api.gym_sessions import install_gym_sessions
@@ -110,6 +111,7 @@ from shaperoute_api.places import (
     PlaceSearch,
     PlacesUnavailableError,
 )
+from shaperoute_api.plan_posts import install_plan_posts
 from shaperoute_api.pool_swims import install_pool_swims
 from shaperoute_api.post_links import install_post_links
 from shaperoute_api.profile_photos import install_profile_photos
@@ -406,6 +408,7 @@ def create_app(
     install_gym_sessions(app)
     # The monthly leaderboards at the gym (TASK-385 F); they need a token.
     install_gym_leaderboard(app)
+    install_gym_history(app)
     # The calendar of one's own workouts at the gym (TASK-411 B); it needs
     # a token.
     install_gym_calendar(app)
@@ -436,6 +439,9 @@ def create_app(
     # Posts of photos only, drawings without a run (TASK-312 part C); they
     # need a token.
     install_photo_posts(app)
+    # Gym plans posted, drawings without a run that carry the plan
+    # (TASK-485); they need a token.
+    install_plan_posts(app)
     install_together(app)
     # The photos of a profile's drawings, a page at a time (TASK-324); they
     # need a token.

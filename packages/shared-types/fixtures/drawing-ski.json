@@ -44,6 +44,7 @@
     "moving_s": 285.0
   },
   "flight_split": null,
+  "plan": null,
   "sleep": null,
   "linkable": false
 }

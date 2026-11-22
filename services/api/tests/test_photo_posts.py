@@ -444,3 +444,29 @@ def test_a_profile_lists_it_by_when_it_was_published(
     assert rest["next"] is None
     profile = client.get(f"/users/{owner}", headers=new_app(bob)).json()
     assert profile["drawings"] == 2
+
+
+def test_the_post_of_a_night_is_not_one_of_photos(
+    client: TestClient, database: Database
+) -> None:
+    # A night of sleep is a drawing without a run too (TASK-467 part E,
+    # migration 0082): none of these endpoints reads, changes or deletes it.
+    ada = signed_up(client, "ada")
+    night = client.put(
+        "/me/sleep-posts/2026-09-21", json=_load("sleep-post-request.json"), headers=ada
+    )
+    assert night.status_code == 200, night.text
+    sleep_key = "sleep20260921"
+    assert client.get("/me/photo-posts", headers=ada).json()["photo_posts"] == []
+    assert client.get(f"/me/photo-posts/{sleep_key}", headers=ada).status_code == 404
+    taken = client.put(
+        f"/me/photo-posts/{sleep_key}",
+        json=_load("photo-post-request.json"),
+        headers=ada,
+    )
+    assert taken.status_code == 409
+    photo = client.put(f"/me/photo-posts/{sleep_key}/photos/1", json=PHOTO, headers=ada)
+    assert photo.status_code == 404
+    assert client.delete(f"/me/photo-posts/{sleep_key}", headers=ada).status_code == 204
+    (row,) = drawing_rows(database)
+    assert row["key"] == sleep_key

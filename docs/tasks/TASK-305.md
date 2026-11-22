@@ -335,6 +335,10 @@ Coordinatore: «ADR-0375, precisazione R6», nessuna migrazione.
   bottone, la fine, il Feed, le calorie tratto per tratto.
 - **R6c, la mappa a due colori**: tocca i file della mappa, a turno, per
   ultima.
+- **R6d, la gara riaperta**: R6d-a sul server dà `flight` nell'attività
+  aperta (i tratti in aria come coppie di punti della traccia salvata, e i
+  tempi divisi); R6d-b nell'app colora la mappa e scrive i tempi sotto la
+  scheda di «My activities».
 
 **Testi di R6**, approvati dall'utente il 2026-11-12 (en/it «Sì, approvo»,
 poi de/fr/es «Sì, approvo»):
@@ -715,14 +719,27 @@ velocità massima dei soli tratti in aria, una riga di riquadri in meno
 alla fine di una gara. Decisione: ADR-0375 precisazione R6. R6c, la mappa a
 due colori, è in bozza (#1313).
 
+**Esito R6c e R6d** (2026-11-22): R6c (#1313, `dfe61bcd`) in produzione con
+l'OTA 20: alla fine di una gara la mappa inquadra piedi e volo. R6d-a
+(#1342) in main e sul server al passo 15 (letture di
+`out/TASK-305/SERVER-R6d.md`); R6d-b (#1352) in main, esce col prossimo
+OTA. Le schermate del simulatore (una gara finta sopra Malcesine, riaperta
+da «My activities») sono approvate dall'utente («Sì, approvo», 2026-11-22):
+linea bianca a piedi e gialla in volo, «A piedi 30:00 · In volo 15:00», la
+legenda. Decisione: ADR-0375 precisazione R6d.
+
+**Un volo nelle liste** (2026-11-22, chiesto dall'utente dopo la prova di
+R6d): #1399 in main (`07d6daa6`), esce con l'OTA dopo la 21. In «My
+activities», nella scheda e nella riga del Feed un volo senza luogo né
+disegno si chiama «Paragliding» invece di «Run», e ha la velocità media
+invece del passo per km. R6d è in produzione con l'OTA 21.
+
 **Cosa resta**:
 
 - Una prova di un volo vero, col link dal vivo aperto da un altro
   telefono, dopo l'uscita.
 - R4 (il volo sull'orologio, per il battito dal vivo): PR #1218 in bozza,
   fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
-- R6c (la mappa a due colori, #1313) e R6d (la pagina dell'attività
-  riaperta, coi tratti dal server).
-- TASK-478 (la mappa a fine attività inquadrata e visibile), aperto dalla
-  prova di R6c.
+- Il post di una gara aperto dal Feed o da un profilo
+  (`GET /drawings/{id}`) resta tutto bianco: i due colori lì sono per dopo.
 - Le parti del pianificatore (A1…F) restano Proposte.

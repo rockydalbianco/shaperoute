@@ -27,6 +27,7 @@ import {
 } from "../theme/tokens";
 import { Hairline } from "../ui/Hairline";
 import { Tap } from "../ui/Tap";
+import { useSettingsGroup } from "./settingsGroup";
 
 // In English; shown with t() in the app's language (TASK-210).
 const NAMES: Readonly<Record<Tone, string>> = {
@@ -46,6 +47,7 @@ type Trouble = "not-kept" | "not-reopened" | null;
  * it, and «Apply» keeps it and opens the app again, in the new tone.
  */
 export function ToneSetting() {
+  const group = useSettingsGroup();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<ToneChoice>(shown);
   const [trouble, setTrouble] = useState<Trouble>(null);
@@ -71,7 +73,7 @@ export function ToneSetting() {
   };
 
   return (
-    <View style={styles.menu}>
+    <View style={[styles.menu, group]}>
       <Tap
         style={styles.row}
         onPress={toggle}

@@ -66,6 +66,9 @@ test("a name found opens the profile; back finds the names as they were", async 
   expect(await screen.findByText(publicProfile.bio)).toBeOnTheScreen();
   expect(screen.getByRole("header", { name: "Profile" })).toBeOnTheScreen();
   expect(fetchFn.mock.calls[1][0]).toBe(`${URL}/users/${ada.public_id}`);
+  // Beside it, the group runs of the profile (TASK-309 part B1).
+  const asked = fetchFn.mock.calls.map(([url]) => String(url));
+  expect(asked.slice(2).every((url) => url.includes("/group-runs"))).toBe(true);
   expect(screen.queryByPlaceholderText("Name")).not.toBeOnTheScreen();
 
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
@@ -73,7 +76,7 @@ test("a name found opens the profile; back finds the names as they were", async 
   expect(screen.getByPlaceholderText("Name").props.value).toBe("ada");
   expect(screen.getByRole("button", { name: "Ada_runs" })).toBeOnTheScreen();
   // Nothing asked again.
-  expect(fetchFn).toHaveBeenCalledTimes(2);
+  expect(fetchFn).toHaveBeenCalledTimes(asked.length);
   expect(onBack).not.toHaveBeenCalled();
 
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));

@@ -21,6 +21,7 @@ import {
   type UnitsChoice,
 } from "../units/units";
 import { useUnits } from "../units/useUnits";
+import { useSettingsGroup } from "./settingsGroup";
 
 // In English; shown with t() in the app's language (TASK-210).
 const NAMES: Readonly<Record<Units, string>> = {
@@ -36,6 +37,7 @@ const NAMES: Readonly<Record<Units, string>> = {
  * phone and the app turns to it at once.
  */
 export function UnitsSetting() {
+  const group = useSettingsGroup();
   const units = useUnits();
   const [choice, setChoice] = useState<UnitsChoice>(loadUnitsChoice);
   const [open, setOpen] = useState(false);
@@ -46,7 +48,7 @@ export function UnitsSetting() {
     saveUnitsChoice(next);
   };
   return (
-    <View style={styles.menu}>
+    <View style={[styles.menu, group]}>
       <Tap
         style={styles.row}
         onPress={() => setOpen(!open)}

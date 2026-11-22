@@ -9,6 +9,7 @@ import { OpenSettings } from "../permissions/OpenSettings";
 import { color, fontSize, radius, space } from "../theme/tokens";
 import { contactStyles } from "./ContactField";
 import { notificationsOf, PUSH_NOT_ALLOWED } from "./notificationFields";
+import { useSettingsGroup } from "./settingsGroup";
 
 type Props = {
   user: User;
@@ -39,6 +40,7 @@ const SWITCHES: { which: Which; emoji: string; name: string }[] = [
  * sends nothing.
  */
 export function NotificationsSetting({ user, account }: Props) {
+  const group = useSettingsGroup();
   const kept = notificationsOf(user);
   // The switch tapped, as it will be once the API has kept it.
   const [sending, setSending] = useState<{ which: Which; on: boolean } | null>(null);
@@ -82,7 +84,7 @@ export function NotificationsSetting({ user, account }: Props) {
 
   return (
     <View style={styles.setting}>
-      <View style={contactStyles.menu}>
+      <View style={[contactStyles.menu, group]}>
         {SWITCHES.map(({ which, emoji, name }, at) => (
           <View key={which}>
             {at > 0 && <View style={contactStyles.divider} />}

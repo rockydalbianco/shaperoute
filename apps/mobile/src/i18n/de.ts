@@ -2509,6 +2509,10 @@ export const DE: Table = {
   "The people you follow have not published anything yet.":
     "Die Personen, denen du folgst, haben noch nichts veröffentlicht.",
   "Couldn't load the Feed.": "Der Feed konnte nicht geladen werden.",
+  // src/screens/FeedScreen.tsx: «All» without examples (2026-11-22)
+  "Log in from Profile to see the activities.":
+    "Melde dich im Profil an, um die Aktivitäten zu sehen.",
+  "Nobody has published anything yet.": "Noch niemand hat etwas veröffentlicht.",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)
   "≈ {time} at {pace}": "≈ {time} bei {pace}",
@@ -2969,6 +2973,29 @@ export const DE: Table = {
   "Your live becomes the post of this activity.":
     "Dein Live wird zum Post dieser Aktivität.",
   "Don't post": "Nicht posten",
+  // Group runs (TASK-309 part B; it from the proposal, de/es/fr for the user's yes).
+  "Create group run": "Gruppenlauf erstellen",
+  "New group run": "Neuer Gruppenlauf",
+  "Where exactly": "Wo genau",
+  Notes: "Notizen",
+  "e.g. MUSE entrance": "z. B. Eingang des MUSE",
+  "Pace, what to bring…": "Tempo, was mitbringen…",
+  "Meet in a public place, never at your home. MuW doesn't organise or check group runs. Everyone on MuW is 16 or older.":
+    "Trefft euch an einem öffentlichen Ort, nie bei dir zu Hause. MuW organisiert und prüft keine Gruppenläufe. Alle auf MuW sind mindestens 16 Jahre alt.",
+  Publish: "Veröffentlichen",
+  "Group runs": "Gruppenläufe",
+  "1 going": "1 dabei",
+  "{count} going": "{count} dabei",
+  "I'm going": "Ich bin dabei",
+  "You're going": "Du bist dabei",
+  "Not going": "Nicht mehr dabei",
+  Organiser: "Organisiert",
+  "Cancel group run": "Gruppenlauf absagen",
+  "Cancel this group run? Everyone going gets a notice.":
+    "Diesen Gruppenlauf absagen? Alle, die dabei sind, bekommen eine Nachricht.",
+  Cancelled: "Abgesagt",
+  Over: "Vorbei",
+  Past: "Vergangene",
   // src/air/ (TASK-479 part B1: the flight screen; notices and texts approved by the user on 2026-11-21)
   "Flight screen": "Flugbildschirm",
   "GPS altitude": "GPS-Höhe",
@@ -2997,6 +3024,13 @@ export const DE: Table = {
   "From {bearing} · {minutes} min ago": "Aus {bearing} · vor {minutes} Min.",
   "GPS numbers · not a certified instrument":
     "GPS-Werte · kein zertifiziertes Instrument",
+  // «Together» in «Edit video» (TASK-417 part D2b; approved by the user on 2026-11-08).
+  Together: "Zusammen",
+  "Your run and the runs of the people tagged here, on the same clock.":
+    "Dein Lauf und die Läufe der hier markierten Personen, auf derselben Uhr.",
+  "No one tagged ran at the same time.":
+    "Niemand der Markierten ist zur selben Zeit gelaufen.",
+  "Up to 4 people in one video.": "Bis zu 4 Personen in einem Video.",
   "Log in to see this drawing.": "Melde dich an, um diese Zeichnung zu sehen.",
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Layout bearbeiten",
@@ -3023,4 +3057,101 @@ export const DE: Table = {
     "Dieses Layout stammt aus einer neueren MuW-Version: Aktualisiere die App.",
   "MuW could not read this file.": "MuW konnte diese Datei nicht lesen.",
   "MuW could not share the file.": "MuW konnte die Datei nicht teilen.",
+  // TASK-483 B: the history of an exercise at the gym.
+  "Last time · {day}": "Letztes Mal · {day}",
+  History: "Verlauf",
+  "Try {set}": "Versuch {set}",
+  "Try {set} again": "Versuch nochmal {set}",
+  "{count} rep": "{count} Wiederholung",
+  "{count} reps": "{count} Wiederholungen",
+  "Estimated max": "Geschätztes Maximum",
+  "Best set (reps)": "Bester Satz (Wdh.)",
+  "Longest set": "Längster Satz",
+  Farthest: "Weiteste Distanz",
+  "All time": "Gesamt",
+  Records: "Rekorde",
+  Heaviest: "Schwerstes Gewicht",
+  "Most reps": "Meiste Wiederholungen",
+  "Best volume": "Bestes Volumen",
+  "Longest time": "Längste Zeit",
+  "{count} workout": "{count} Training",
+  "{count} workouts": "{count} Trainings",
+  PR: "PR",
+  "Estimated from your sets of up to 12 reps.":
+    "Geschätzt aus deinen Sätzen mit bis zu 12 Wiederholungen.",
+  "No workouts in this period.": "Keine Trainings in diesem Zeitraum.",
+  "No workouts with this exercise yet.": "Noch keine Trainings mit dieser Übung.",
+  "From {low} to {high}, {count} workouts": "Von {low} bis {high}, {count} Trainings",
+  // src/air/ (TASK-479 part C: the vario's sound; texts approved by the user on 2026-11-22)
+  "Vario sound": "Vario-Ton",
+  "Beeps from": "Piepen ab",
+  "Sink tone below": "Sinkton unter",
+  Volume: "Lautstärke",
+  "From GPS: the sound comes 1–2 s after the climb.":
+    "Vom GPS: Der Ton kommt 1–2 s nach dem Steigen.",
+  "Mute the vario": "Vario stummschalten",
+  "Turn the vario sound on": "Vario-Ton einschalten",
+
+  // src/gear/ (TASK-486 part B, the gear), approved by the user on 2026-11-22
+  Shoes: "Schuhe",
+  Skis: "Ski",
+  "Ski boots": "Skischuhe",
+  Snowboard: "Snowboard",
+  Poles: "Stöcke",
+  Boots: "Bergschuhe",
+  "Climbing shoes": "Kletterschuhe",
+  Harness: "Klettergurt",
+  Helmet: "Helm",
+  Rope: "Seil",
+  Crampons: "Steigeisen",
+  "Ice axe": "Eispickel",
+  "Inline skates": "Inlineskates",
+  Sail: "Segel",
+  Board: "Board",
+  Boat: "Boot",
+  Wetsuit: "Neoprenanzug",
+  Paraglider: "Gleitschirm",
+  Wheelchair: "Rollstuhl",
+  Clothing: "Kleidung",
+  Backpack: "Rucksack",
+  Watch: "Uhr",
+  "Add gear": "Ausrüstung hinzufügen",
+  "Add your shoes, your bike, your skis and everything you use. Each activity you take them on adds to their kilometres and hours.":
+    "Füge deine Schuhe, dein Rad, deine Ski und alles hinzu, was du benutzt. Jede Aktivität, bei der du sie dabeihast, zählt zu ihren Kilometern und Stunden.",
+  "Past its limit": "Über seinem Limit",
+  Retired: "Ausgemustert",
+  Kind: "Art",
+  Brand: "Marke",
+  Model: "Modell",
+  "Your name for it": "Dein Name dafür",
+  Bought: "Gekauft",
+  Month: "Monat",
+  Year: "Jahr",
+  "Month bought": "Kaufmonat",
+  "Year bought": "Kaufjahr",
+  Note: "Notiz",
+  "Where you bought it, a race you ran in it…":
+    "Wo du es gekauft hast, ein Rennen damit…",
+  Limit: "Limit",
+  "MuW tells you when it passes this.": "MuW sagt dir, wenn es das überschreitet.",
+  "Use by default for": "Standardmäßig für",
+  "Activities of these sports start with it chosen.":
+    "Aktivitäten dieser Sportarten starten damit ausgewählt.",
+  "Hide from profile": "Im Profil ausblenden",
+  "Others don't see it. Its kilometres still count.":
+    "Andere sehen es nicht. Seine Kilometer zählen trotzdem.",
+  Retire: "Ausmustern",
+  "Out of your choices, with its kilometres kept.":
+    "Nicht mehr zur Auswahl, seine Kilometer bleiben.",
+  "Delete this gear?": "Diese Ausrüstung löschen?",
+  "Its photo goes too. Your activities stay.":
+    "Das Foto wird auch gelöscht. Deine Aktivitäten bleiben.",
+  "Say the brand.": "Gib die Marke an.",
+  "Write the month (1 to 12) and the year it was bought.":
+    "Gib den Monat (1 bis 12) und das Jahr des Kaufs an.",
+  "Write the limit as a number of {unit}.": "Gib das Limit als Zahl in {unit} an.",
+  "These words can't be used. Try other words.":
+    "Diese Wörter sind nicht erlaubt. Versuch andere.",
+  "Links and special characters can't be used here.":
+    "Links und Sonderzeichen sind hier nicht erlaubt.",
 };

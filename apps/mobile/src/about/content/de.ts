@@ -11,7 +11,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "10. November 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). */
-const PRIVACY_UPDATED = "12. November 2026";
+const PRIVACY_UPDATED = "22. November 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -379,7 +379,7 @@ const privacy: AboutDocument = {
     {
       heading: "Meldungen",
       blocks: [
-        "Wenn du eine Zeichnung, ein markiertes Teil, einen Kommentar oder ein Profil meldest, behalten wir, wer was gemeldet hat, den Grund und wann. Wer MuW betreibt, bekommt die Meldung per E-Mail und kann das Gemeldete vor den anderen Mitgliedern verbergen. Nichts wird gelöscht, und wer es geschrieben hat, sieht es weiter. Deine Meldung wird dem Verfasser nie gezeigt.",
+        "Wenn du eine Zeichnung, ein markiertes Teil, einen Kommentar, ein Profil oder einen Gruppenlauf meldest, behalten wir, wer was gemeldet hat, den Grund und wann. Wer MuW betreibt, bekommt die Meldung per E-Mail und kann das Gemeldete vor den anderen Mitgliedern verbergen. Nichts wird gelöscht, und wer es geschrieben hat, sieht es weiter. Deine Meldung wird dem Verfasser nie gezeigt.",
       ],
     },
     {

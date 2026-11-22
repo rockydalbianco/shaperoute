@@ -1,6 +1,6 @@
 # TASK-475 — Lo stretching come sport
 
-**Stato**: In corso · parte 0 in `main` (#1283); parte A in `main` (#1340) e sul server (passo 15 del 2026-11-21, `0079`); parte B in PR (#1348, `feat/TASK-475-b-stretching-app`, bozza fino alle schermate)
+**Stato**: Done · 2026-11-22 · parte 0 (#1283), A (#1340, server al passo 15, `0079`), B (#1348) e C (#1376, `f5bccf82`) in `main`; esce col prossimo OTA
 **Fase**: 5 · **Branch**: `docs/TASK-475-stretching-sport` (parte 0); A, B
 ciascuna col suo branch e la sua PR
 **ADR**: ADR-0386
@@ -74,14 +74,14 @@ codice della parte B.
 - [x] A: il server accetta e rilegge una sessione `stretching` senza
       traccia (durata, routine), come la palestra; test dell'API e dei
       tipi condivisi verdi.
-- [ ] B: «Stretching» 🧘 nella famiglia «Other» del pannello, `ready:
+- [x] B: «Stretching» 🧘 nella famiglia «Other» del pannello, `ready:
       false` («Soon»); `FAMILY_OF` lo copre (test di TASK-473 verdi).
-- [ ] B: con lo sport scelto «Draw» mostra le routine di TASK-466 B e una
+- [x] B: con lo sport scelto «Draw» mostra le routine di TASK-466 B e una
       routine finita si salva come attività, in «My activities» e nel
       calendario.
-- [ ] Nessun file di `src/stretch` cambiato senza l'accordo della
+- [x] Nessun file di `src/stretch` cambiato senza l'accordo della
       sessione di TASK-466 e del Coordinatore.
-- [ ] C: acceso (`ready: true`) col sì dell'utente sulle schermate.
+- [x] C: acceso (`ready: true`) col sì dell'utente sulle schermate.
 
 ## Parte A — com'è fatta (2026-11-21)
 
@@ -237,4 +237,20 @@ docs/DECISIONS.md        (ADR-0386, voce e riga d'indice)
 
 ## Esito
 
-*(a fine task)*
+Done il 2026-11-22. «Stretching» 🧘 è uno sport del pannello (famiglia
+«Other»): «Draw» propone le routine di TASK-466, «Start stretching» apre
+la sessione guidata e una sessione finita si salva come attività senza
+percorso (`PUT /me/stretch-sessions/{key}`, coda sul telefono come la
+palestra). L'unico file di `src/stretch` toccato (`StretchScreen.tsx`,
+un `onDone` facoltativo) col sì del Coordinatore. Esce col prossimo OTA,
+col sì dell'utente chiesto dal Coordinatore; poi l'occhiata sul telefono.
+
+Restano fuori, per dopo (un task nuovo ciascuno, se l'utente li vuole):
+
+- la riga della routine nel post (`GET /drawings/{id}/stretch` c'è già);
+- la sessione mandata a Salute / Health Connect (tipi 62 e 71 già nel
+  profilo);
+- il modulo di pubblicazione che tiene lo sport: `drawings.py`
+  (`NOT_TRACKLESS`) non distingue le attività senza percorso, e una
+  sessione di stretching si può pubblicare come palestra.
+

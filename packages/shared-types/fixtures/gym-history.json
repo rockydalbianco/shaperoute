@@ -1,0 +1,130 @@
+{
+  "exercise": "bench_press",
+  "kind": "load",
+  "measure": "estimated_1rm_kg",
+  "workouts_count": 3,
+  "points": [
+    {
+      "workout": "hb00000000000001",
+      "started_at": "2026-11-02T17:00:00Z",
+      "value": 93.33,
+      "estimated": true,
+      "record": true
+    },
+    {
+      "workout": "hb00000000000002",
+      "started_at": "2026-11-06T17:00:00Z",
+      "value": 96.25,
+      "estimated": true,
+      "record": true
+    },
+    {
+      "workout": "hb00000000000003",
+      "started_at": "2026-11-10T17:00:00Z",
+      "value": 60,
+      "estimated": false,
+      "record": false
+    }
+  ],
+  "records": [
+    {
+      "kind": "best_estimate_kg",
+      "value": 96.25,
+      "workout": "hb00000000000002",
+      "started_at": "2026-11-06T17:00:00Z",
+      "set": {
+        "exercise": "bench_press",
+        "kind": "load",
+        "reps": 5,
+        "load_kg": 82.5,
+        "at_s": 600,
+        "live": true
+      }
+    },
+    {
+      "kind": "heaviest_kg",
+      "value": 82.5,
+      "workout": "hb00000000000002",
+      "started_at": "2026-11-06T17:00:00Z",
+      "set": {
+        "exercise": "bench_press",
+        "kind": "load",
+        "reps": 5,
+        "load_kg": 82.5,
+        "at_s": 600,
+        "live": true
+      }
+    },
+    {
+      "kind": "most_reps",
+      "value": 15,
+      "workout": "hb00000000000003",
+      "started_at": "2026-11-10T17:00:00Z",
+      "set": {
+        "exercise": "bench_press",
+        "kind": "load",
+        "reps": 15,
+        "load_kg": 60,
+        "at_s": 600,
+        "live": true
+      }
+    },
+    {
+      "kind": "best_volume_kg",
+      "value": 1740,
+      "workout": "hb00000000000003",
+      "started_at": "2026-11-10T17:00:00Z"
+    }
+  ],
+  "workouts": [
+    {
+      "id": "hb00000000000003",
+      "started_at": "2026-11-10T17:00:00Z",
+      "source": "muw",
+      "value": 60,
+      "sets": [
+        {
+          "exercise": "bench_press",
+          "kind": "load",
+          "reps": 15,
+          "load_kg": 60,
+          "at_s": 600,
+          "live": true
+        },
+        {
+          "exercise": "bench_press",
+          "kind": "load",
+          "reps": 14,
+          "load_kg": 60,
+          "at_s": 780,
+          "live": true
+        }
+      ]
+    },
+    {
+      "id": "hb00000000000002",
+      "started_at": "2026-11-06T17:00:00Z",
+      "source": "muw",
+      "value": 96.25,
+      "sets": [
+        {
+          "exercise": "bench_press",
+          "kind": "load",
+          "reps": 5,
+          "load_kg": 82.5,
+          "at_s": 600,
+          "live": true
+        },
+        {
+          "exercise": "bench_press",
+          "kind": "load",
+          "reps": 8,
+          "load_kg": 75,
+          "at_s": 780,
+          "live": true
+        }
+      ]
+    }
+  ],
+  "next": "hb00000000000002"
+}

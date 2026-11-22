@@ -176,17 +176,23 @@ class Kept:
     not_told: frozenset[int]
 
 
+# A drawing without a run that is a post of photos only: not the post of a
+# night of sleep (TASK-467 part E, migration 0082) nor a gym plan posted
+# (TASK-485, migration 0084), which have no run either.
+PHOTO_POST_SQL = "run_id IS NULL AND sleep_night_id IS NULL AND plan IS NULL"
+NOT_A_PHOTO_POST = "This key is of another post, not of photos only."
+
 # The post of the account with this key, locked until the transaction ends.
 POST_OF_KEY = (
     "SELECT id, published_at FROM drawings"
-    " WHERE user_id = %s AND key = %s AND run_id IS NULL FOR UPDATE"
+    f" WHERE user_id = %s AND key = %s AND {PHOTO_POST_SQL} FOR UPDATE"
 )
 
 
 def _post(conn: Connection, user_id: int, key: str) -> MyPhotoPostBody | None:
     row = conn.execute(
         "SELECT key, id, title, description, visibility, published_at"
-        " FROM drawings WHERE user_id = %s AND key = %s AND run_id IS NULL",
+        f" FROM drawings WHERE user_id = %s AND key = %s AND {PHOTO_POST_SQL}",
         (user_id, key),
     ).fetchone()
     if row is None:
@@ -236,7 +242,7 @@ class PhotoPosts:
         with self.database.connect() as conn:
             rows = conn.execute(
                 "SELECT key, id, title, description, visibility, published_at"
-                " FROM drawings WHERE user_id = %s AND run_id IS NULL"
+                f" FROM drawings WHERE user_id = %s AND {PHOTO_POST_SQL}"
                 " ORDER BY coalesce(published_at, updated_at) DESC, id DESC",
                 (user_id,),
             ).fetchall()
@@ -265,10 +271,13 @@ class PhotoPosts:
                     " visibility = EXCLUDED.visibility,"
                     " description = EXCLUDED.description,"
                     " updated_at = EXCLUDED.updated_at"
+                    # Never over the post of a night or a plan with the key.
+                    " WHERE drawings.sleep_night_id IS NULL AND drawings.plan IS NULL"
                     " RETURNING id, key, title, description, visibility, published_at",
                     (user_id, key, title, body.visibility, description, now),
                 ).fetchone()
-                assert row is not None
+                if row is None:
+                    raise HTTPException(409, NOT_A_PHOTO_POST)
                 conn.execute(
                     "DELETE FROM drawing_tags WHERE drawing_id = %s", (row["id"],)
                 )
@@ -297,7 +306,7 @@ class PhotoPosts:
         with self.database.connect() as conn:
             conn.execute(
                 "DELETE FROM drawings WHERE user_id = %s AND key = %s"
-                " AND run_id IS NULL",
+                f" AND {PHOTO_POST_SQL}",
                 (user_id, key),
             )
 
@@ -393,7 +402,7 @@ def photo_post_routes() -> APIRouter:
 
     # The whole post every time: the app may send it again after a phone
     # without network, and the second time changes nothing.
-    @router.put("/me/photo-posts/{key}")
+    @router.put("/me/photo-posts/{key}", responses={409: {"model": ErrorBody}})
     def keep_photo_post(
         key: Key,
         body: PhotoPostRequestBody,

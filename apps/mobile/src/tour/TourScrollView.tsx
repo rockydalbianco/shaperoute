@@ -25,7 +25,10 @@ export class TourScrollView extends Component<ScrollViewProps> {
       <ScrollView
         {...props}
         ref={this.scroll.hold}
-        onScroll={this.scroll.onScroll}
+        onScroll={(event) => {
+          this.scroll.onScroll(event);
+          this.props.onScroll?.(event);
+        }}
         scrollEventThrottle={16}
       >
         <ToTopOnReselect scroll={this.scroll} />

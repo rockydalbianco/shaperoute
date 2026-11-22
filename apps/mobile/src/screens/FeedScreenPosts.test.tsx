@@ -1,9 +1,8 @@
 /**
  * «Feed» with the drawings the members publish (TASK-118, ADR-0227): the
- * page reads them with the account, shows them on the cards of the
- * examples, opens one whole on a tap, and falls back to the examples when
- * there are none. The examples themselves, the ads and the maps are in
- * FeedScreen.test.tsx.
+ * page reads them with the account, opens one whole on a tap, and says
+ * so when there are none: the made-up examples are no longer shown
+ * (2026-11-22). The ads and the maps are in FeedScreen.test.tsx.
  */
 import page from "@shaperoute/shared-types/fixtures/feed.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
@@ -135,7 +134,9 @@ test("while the first page comes, no example takes its place", async () => {
       <FeedScreen onOpen={() => {}} />
     </Around>,
   );
-  expect(screen.getByTestId("feed-loading")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("feed-loading", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
   expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
   expect(screen.queryByTestId("feed-post")).toBeNull();
   await act(async () => release(Response.json(page)));
@@ -176,19 +177,18 @@ test("a drawing that did not open says why, above the list", async () => {
   ).toBeOnTheScreen();
 });
 
-test("with nothing published yet, the examples take the place of the drawings", async () => {
+test("with nothing published yet, the page says so, with no made-up drawing", async () => {
   feedAnswer = () => Response.json({ posts: [], next: null });
-  const onOpen = jest.fn();
   await render(
     <Around>
-      <FeedScreen onOpen={onOpen} />
+      <FeedScreen onOpen={() => {}} />
     </Around>,
   );
-  expect(await screen.findByText(SAMPLE_FEED[0].user)).toBeOnTheScreen();
-  expect(screen.queryByText("Ada_runs")).toBeNull();
-  // An example opens its route, as before.
-  await fireEvent.press(screen.getByText(SAMPLE_FEED[0].title));
-  expect(onOpen).toHaveBeenCalledWith(SAMPLE_FEED[0]);
+  expect(await screen.findByTestId("feed-no-posts-all")).toBeOnTheScreen();
+  expect(screen.getByText("Nobody has published anything yet.")).toBeOnTheScreen();
+  expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
+  expect(screen.queryByTestId("feed-post")).toBeNull();
+  expect(screen.queryByTestId("feed-log-in")).toBeNull();
 });
 
 test("an answer that does not come offers to ask again, in place of the examples", async () => {
@@ -213,8 +213,9 @@ test("built behind «Draw», the page asks for no drawings until it is on the sc
     </Around>,
   );
   expect(asked()).toEqual([]);
-  // Not on the screen, and nothing read yet: the examples.
-  expect(screen.getByText(SAMPLE_FEED[0].user)).toBeOnTheScreen();
+  // Not on the screen, and nothing read yet: no drawing, and no made-up one.
+  expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
+  expect(screen.queryByTestId("feed-post")).toBeNull();
   await rerender(
     <Around>
       <FeedScreen onOpen={() => {}} active />

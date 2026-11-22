@@ -680,6 +680,20 @@ sopra una foto bianca o nera. Il contatore delle foto è una capsula di
 vetro. Con «Riduci trasparenza» e «Aumenta contrasto» la capsula è opaca.
 Sotto il disegno le parole restano come prima.
 
+**L'header di vetro** (TASK-469 A5 e A5b, `src/tabs/AppHeader.tsx`,
+`src/tabs/headerScroll.tsx`): la campanella e lo sport sono due cerchi di
+vetro in rilievo, col bordo forte dei comandi (`headerGlass`); il numero
+rosso resta sulla campanella. In cima a una pagina l'header ha il colore
+della pagina e nessuna linea sotto; quando la pagina scorre di più di 4 pt
+prende una fascia di vetro con il filo di luce in basso e un'ombra corta
+sul contenuto, in 200 ms (subito con «Riduci movimento»), e la lascia
+quando la pagina torna in cima. Conta la pagina sullo schermo: cambiando
+scheda l'header segue quella nuova. Ogni pagina lo dice con
+`useHeaderScroll()` sul suo scroller principale; una pagina che non lo
+dice tiene l'header a riposo. Con «Riduci trasparenza» la fascia è opaca
+con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
+contenuto non passa sotto l'header: per quello serve la parte B.
+
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
 piccola, si allarga, poi si alza; le parole compaiono quando è aperta,
@@ -815,7 +829,10 @@ barra qui sopra, e lo swipe è quello qui sopra.
   reazioni e commenti, come dal profilo (TASK-117, 119, 120); «←» torna
   a «Feed» com'era, senza rileggere, e «Profile» resta chiuso; se nel
   frattempo è sparito, sopra l'elenco: «This drawing is no longer
-  public.». Mentre la prima pagina arriva, una rotella e niente altro.
+  public.». Mentre la prima pagina arriva, la sagoma di due schede (il
+  cerchio e le righe del nome, la mappa, la riga delle azioni) nei grigi
+  delle superfici, e niente altro: una pagina riletta tiene le schede che
+  aveva (TASK-355 B, al posto della rotella).
   **La scheda di un iscritto** (TASK-355 A, ADR-0306, scelte dell'utente
   del 2026-10-30): sotto il nome il luogo e quando è stata corsa, con le
   parole dell'età dei commenti, «Caldonazzo · 2 h fa» («1 g fa», dopo una
@@ -840,7 +857,12 @@ barra qui sopra, e lo swipe è quello qui sopra.
   linea di Lucide come quelle della barra (`assets/ui/icons/`: `heart`,
   `message-circle`, `share`, `pencil`; PNG bianche colorate dai token,
   gialla solo quella di «Edit & run»), non più emoji (TASK-444); il
-  lettore di schermo legge la parola.
+  lettore di schermo legge la parola. I numeri di «Like» e «Comment» e la
+  propria reazione arrivano con la pagina del Feed (TASK-355 B): la scheda
+  non chiede altro finché non si apre la lista dei commenti o non parte una
+  propria reazione; da un'API di prima, dalla ricerca e dalle sfide li
+  chiede come prima. Nel cerchio del nome la foto dell'autore quando c'è,
+  letta col token dal suo indirizzo sull'API; senza, l'iniziale in grigio.
   **Senza account, e finché nessuno ha pubblicato qualcosa che si può
   vedere** (o l'API non risponde, o è di prima del feed), mostra
   **quindici disegni di esempio**
@@ -5285,8 +5307,18 @@ TASK-305.md, «Testi di R6».
     bianco, come prima.
   - I tratti si calcolano sul telefono dalla traccia e dalle correzioni a
     mano (`src/air/flightLegs.ts`), come quelli della fine.
-  - La pagina dell'attività riaperta più tardi è la parte R6d, ancora da
-    fare: lì i tratti arrivano dal server.
+  - **La gara riaperta da «My activities»** (parte R6d): la stessa mappa a
+    due colori, coi tratti che arrivano dal server (`flight` di
+    `GET /me/activities/{key}`), perché la traccia dell'API non ha gli
+    orari. Sotto km, tempo e passo, la riga «On foot 1:58:40 · In the air
+    1:43:30» come nel Feed, e la legenda «White: on foot. Yellow: in the
+    air.». Un'API di prima, o un `flight` che non sta sulla traccia: la
+    gara come una corsa, tutta bianca.
+- **Un volo nelle liste** (TASK-305, 2026-11-22): in «My activities», nella
+  scheda sotto la mappa e nella riga del Feed un volo ha la velocità media
+  («15.1 km/h», come la pagina del post) al posto del passo per km; senza
+  luogo né disegno si chiama «Paragliding» (IT «Parapendio») invece di
+  «Run». Gli altri sport restano come sono.
 
 ### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
 
@@ -5517,3 +5549,29 @@ pagina per liberare memoria, la WebView la ricarica da sola.
   calcolati c'è da TASK-093).
 - Contorni disegnati delle forme e cursore della distanza: vogliono
   dipendenze (TASK-051).
+
+## Le corse di gruppo (TASK-309 parte B1, ADR-0269)
+
+- **Sul percorso**: sotto il cuore, «Send to a friend» e «Send to watch», un
+  bottone tondo ⚑ «Create group run», solo con un account. Apre «New group
+  run» a tutto schermo: «Title» (il nome del percorso per cominciare),
+  «Day and time» con due righe «−» / «+» (un giorno, 15 minuti), «Where
+  exactly» («e.g. MUSE entrance»), «Notes» («Pace, what to bring…»), «Who
+  can see it» («Everyone» o «Followers»), l'avviso di sicurezza in piccolo,
+  poi «Not now» e «Publish». Un rifiuto dell'API si legge sotto, con le sue
+  parole.
+- **La pagina** sopra l'app, con «←»: «Group runs» in alto e «…» per
+  segnalarla (non sulla propria); il titolo; «Cancelled» o «Over» in rosso
+  quando vale; il giorno e l'ora del telefono, «Where exactly», la
+  distanza, le note; «Organiser» con il nome, «{n} going» e i nomi, ognuno
+  apre il profilo. Finché non è finita: «Start» giallo e, per chi non
+  organizza, «I'm going» o «Not going» (con «You're going» sotto).
+  L'organizzatore, prima dell'inizio, ha «Edit» (lo stesso modulo, senza
+  «Who can see it») e «Cancel group run», con la domanda «Cancel this group
+  run? Everyone going gets a notice.».
+- **Nel profilo**, proprio e degli altri, sotto il resto: «Group runs» con
+  quelle in arrivo e poi «Past», una scheda a testa (titolo, giorno e ora,
+  quanti vanno). Niente senza corse di gruppo, niente da un'API di prima.
+- **Le notifiche** e le righe della campanella delle corse di gruppo aprono
+  la pagina.
+

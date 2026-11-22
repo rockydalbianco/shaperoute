@@ -1,0 +1,17 @@
+{
+  "id": "6f1c2a7e-3b4d-4e8f-9a01-2b3c4d5e6f70",
+  "kind": "shoes",
+  "brand": "Nike",
+  "model": "Pegasus 41",
+  "name": "The red ones",
+  "bought_on": "2025-03-01",
+  "note": "Bought in Milan.\nRan the Rome half in them.",
+  "photo_url": "/gear/6f1c2a7e-3b4d-4e8f-9a01-2b3c4d5e6f70/photo?v=1763715600000",
+  "retired": false,
+  "totals": { "distance_m": 412300, "duration_s": 145800, "activities": 38 },
+  "created_at": "2026-11-21T09:00:00Z",
+  "off_profile": false,
+  "limit_m": 700000,
+  "defaults": ["running"],
+  "hidden": false
+}

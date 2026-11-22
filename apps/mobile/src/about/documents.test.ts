@@ -327,3 +327,22 @@ test("the three texts are told from the other pages of «Profile»", () => {
   expect(ABOUT_IDS.every(isAboutId)).toBe(true);
   expect(isAboutId("settings")).toBe(false);
 });
+
+test("«Help» and «Privacy» say «Everyone» is for an activity added from a file with the Feed's «+», not one recorded from it (TASK-481 A)", () => {
+  const fromFile: Record<Language, RegExp> = {
+    en: /from a file with the «\+» of the Feed/,
+    it: /da un file col «\+» del Feed/,
+    de: /aus einer Datei mit dem «\+» im Feed/,
+    fr: /depuis un fichier avec le «\+» du Feed/,
+    es: /desde un archivo con el «\+» del Feed/,
+  };
+  for (const [language, content] of CONTENTS) {
+    for (const text of [all(content.help), all(content.privacy)]) {
+      const plus = text.split(/(?<=\.)\s/).filter((sentence) => sentence.includes("«+»"));
+      expect(plus.length).toBeGreaterThan(0);
+      for (const sentence of plus) {
+        expect(sentence).toMatch(fromFile[language]);
+      }
+    }
+  }
+});

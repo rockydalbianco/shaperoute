@@ -164,7 +164,7 @@ nuovo «Photos only», e l'ordine scelto non avrebbe tenuto. Quindi:
   solo «From a file», e «Files» si apre subito al tocco della riga; dopo un
   annullamento o un problema resta la scelta «From a file» con il suo aiuto.
   In «My activities» non cambia niente (`AddPastActivity.test.tsx` verde
-  senza ritocchi). File in più chiesto al Coordinatore il 2026-11-22;
+  senza ritocchi). File in più approvato dal Coordinatore il 2026-11-22;
 - «Record now» fa quello che fa l'avvio senza percorso di «Draw» per lo
   sport scelto (palestra, stretching, ciaspole con il loro avviso, altrimenti
   `setScreen("run")`): con la palestra `setScreen("run")` da solo avrebbe
@@ -189,7 +189,7 @@ apps/mobile/App.tsx                               (una prop: onRecord del Feed �
 apps/mobile/src/i18n/{it,de,fr,es}.ts
 docs/IMPORTAZIONI.md                              (§2: il «+» con la lista)
 docs/tasks/TASK-481.md
-apps/mobile/src/imports/AddPastActivity.tsx       (in più, chiesto il 2026-11-22: `fileAtOnce`)
+apps/mobile/src/imports/AddPastActivity.tsx       (in più, approvato il 2026-11-22: `fileAtOnce`)
 ```
 
 A turno (privacy, punto 7):

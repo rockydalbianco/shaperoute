@@ -48,6 +48,7 @@ from pydantic import (
     Field,
     SerializerFunctionWrapHandler,
     field_serializer,
+    model_serializer,
 )
 from route_engine.geo import path_length_m
 
@@ -70,6 +71,7 @@ from shaperoute_api.activities import (
     turn_kept,
 )
 from shaperoute_api.db import Database
+from shaperoute_api.flight_legs import ActivityFlightBody, flight_of
 from shaperoute_api.follows import apart_sql, follows_sql
 from shaperoute_api.outfit_tags import OutfitTagBody, tags_on_photos
 from shaperoute_api.push import notify_tagged, tagged_before
@@ -477,6 +479,21 @@ class DrawingDetailBody(SeenFields):
     """Splits, elevation, cadence, calories, heart rate (TASK-410 C,
     run_stats.py), as the one who asks may see them; null for a run without
     any, as every run saved before them."""
+    flight: ActivityFlightBody | None = None
+    """A race on foot and in the air (TASK-305 part R6e, flight_legs.py):
+    its parts in the air as [from, to] indices into `track`, and the two
+    kinds added up, as GET /me/activities/{key} gives them. Left out of the
+    answer for any other drawing, for a flight without parts on foot, and
+    when `track` has not the run's points."""
+
+    @model_serializer(mode="wrap")
+    def _without_flight(self, handler: SerializerFunctionWrapHandler):
+        # No return type, so the answer's schema stays the drawing's own
+        # fields: with one it would be any object.
+        answer: dict[str, Any] = handler(self)
+        if answer.get("flight") is None:
+            answer.pop("flight", None)
+        return answer
 
 
 # --- The drawings in the database ---
@@ -973,12 +990,22 @@ class Drawings:
                     conn, row["run_id"], author=row["author_id"] == viewer_id
                 )
             )
+            track = _line(row["track"])
+            # A race's parts in the air on the line shown (TASK-305 R6e).
+            flight = (
+                flight_of(conn, row["run_id"], len(track))
+                if row["run_id"] is not None
+                and row["activity"] == "paragliding"
+                and track
+                else None
+            )
         return DrawingDetailBody(
             **_seen(row, details),
             author=AuthorBody(public_id=row["public_id"], username=row["username"]),
             public=row["visibility"] == "everyone",
-            track=_line(row["track"]),
+            track=track,
             stats=stats,
+            flight=flight,
         )
 
 

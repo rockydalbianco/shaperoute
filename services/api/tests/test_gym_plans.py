@@ -27,6 +27,7 @@ from test_gym import kept
 
 from shaperoute_api.gym_plans import (
     MAX_PLANS,
+    GymPlanAdaptBody,
     GymPlanItemBody,
     GymPlanOutingBody,
     GymPlanRequestBody,
@@ -462,6 +463,83 @@ def test_a_program_keeps_its_runner(
     # Without it, as before: absent, not null.
     plain = put(client, me, MUSCLE["key"], request(MUSCLE)).json()
     assert "runner" not in plain["program"]
+
+
+# --- The plan that adapts (TASK-488, ADR-0396) ---
+
+
+@pytest.mark.parametrize(
+    "adapt",
+    [
+        # A day of the week, steps within 24, «hard» up to 2 in a row.
+        {"days": [{"day": 8, "steps": 1, "last": "easy"}]},
+        {"days": [{"day": 1, "steps": 25, "last": "easy"}]},
+        {"days": [{"day": 1, "steps": 0, "hard": 3, "last": "hard"}]},
+        {"days": [{"day": 1, "steps": 0, "last": "great"}]},
+        # A day once; nothing else.
+        {"days": [{"day": 1, "steps": 1, "last": "easy"}] * 2},
+        {"off": True, "days": [], "on": True},
+    ],
+)
+def test_an_adapted_day_is_a_day_with_its_steps(adapt: dict[str, Any]) -> None:
+    with pytest.raises(ValueError):
+        GymPlanAdaptBody.model_validate(adapt)
+
+
+def test_a_program_keeps_how_it_adapted(
+    client: TestClient,  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    days = sorted({one["day"] for one in LIFT_AND_RUN["program"]["sessions"]})
+    adapt = {
+        "off": False,
+        "days": [
+            {"day": days[0], "steps": 1, "hard": 0, "last": "easy"},
+            {"day": days[1], "steps": -1, "hard": 1, "last": "hard"},
+        ],
+    }
+    program = {**LIFT_AND_RUN["program"], "adapt": adapt}
+    made = put(client, me, LIFT_AND_RUN["key"], request(LIFT_AND_RUN, program=program))
+    assert made.status_code == 201, made.text
+    assert made.json()["program"]["adapt"] == adapt
+    # Turned off, the answers stay for when it is turned on again.
+    off = {**adapt, "off": True}
+    again = put(
+        client,
+        me,
+        LIFT_AND_RUN["key"],
+        request(LIFT_AND_RUN, program={**program, "adapt": off}),
+    )
+    assert again.json()["program"]["adapt"] == off
+    # Without it, as before: absent, not null.
+    plain = put(client, me, MUSCLE["key"], request(MUSCLE)).json()
+    assert "adapt" not in plain["program"]
+
+
+def test_a_day_taken_out_loses_its_answers(
+    client: TestClient,  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    sessions = LIFT_AND_RUN["program"]["sessions"]
+    kept = sessions[0]["day"]
+    # A day it has no workout on: an app that copied `adapt` after
+    # taking a day out is not refused, the day's answers go.
+    gone = next(
+        day for day in range(1, 8) if day not in {one["day"] for one in sessions}
+    )
+    adapt = {
+        "days": [
+            {"day": kept, "steps": 2, "last": "easy"},
+            {"day": gone, "steps": 1, "last": "easy"},
+        ]
+    }
+    program = {**LIFT_AND_RUN["program"], "adapt": adapt}
+    made = put(client, me, LIFT_AND_RUN["key"], request(LIFT_AND_RUN, program=program))
+    assert made.status_code == 201, made.text
+    assert made.json()["program"]["adapt"] == {
+        "off": False,
+        "days": [{"day": kept, "steps": 2, "hard": 0, "last": "easy"}],
+    }
 
 
 # --- Days out and targets (TASK-461 B and C, ADR-0371) ---

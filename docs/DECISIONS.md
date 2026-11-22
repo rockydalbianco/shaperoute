@@ -587,6 +587,7 @@ lasciando le righe d'indice.
 - ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Proposta
 - ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima · 2026-11-23 · Attiva
 - ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Proposta
+- ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
 
 ## Voci nuove
 
@@ -5962,3 +5963,49 @@ per muscolo, km che salgono, pause, sonno.
 servisse una, la 0085 col sì del Coordinatore). Parte dopo TASK-488 A sul
 server; gli ingressi in «My plans» e GymEnd dopo TASK-488 B (#1420). I
 consigli sono generali, non medici: la pagina lo dice.
+
+## ADR-0397, precisazione — Il codice a barre come parte a sé, i macronutrienti dopo, «My daily target» scritto solo dall'utente, il consumo correggibile a mano
+
+**Stato**: Proposta · 2026-11-23 · TASK-489 (precisazioni 9–12 del task
+file, soli documenti). Le tre risposte e la richiesta di correggere a
+mano il consumo sono **scelte dell'utente**; come si tengono i prodotti
+di Open Food Facts e come una correzione entra nel conto è **deciso
+dall'agente su delega dell'utente**.
+
+**Contesto**: il 2026-11-22 l'utente aveva risposto alla sessione di
+TASK-490 (ADR-0398) «Diario completo»: codice a barre con Open Food Facts,
+macronutrienti per pasto, in cima l'obiettivo del giorno. Tre punti non
+coincidevano con ADR-0397: richiesti all'utente, uno alla volta.
+
+**Decisione**:
+- **Il codice a barre entra, come parte a sé (G)**: restano la tabella
+  USDA e i cibi dell'utente; il lettore cerca il prodotto su Open Food
+  Facts, un prodotto alla volta, con la rete. Il prodotto trovato diventa
+  un cibo del telefono col suo codice e la scritta «from Open Food
+  Facts», correggibile dall'etichetta. I prodotti restano separati dalla
+  tabella USDA e MuW non pubblica una base mescolata; l'attribuzione
+  (ODbL) è nell'app. Dal telefono esce **solo il codice letto**. La
+  dipendenza nativa nuova è `expo-camera`, col sì dell'utente a chiederla;
+  va nella stessa build nativa di «Nutrition». Niente ricerca per nome su
+  Open Food Facts né copia dei suoi dati dentro l'app.
+- **I macronutrienti restano dopo**: la prima uscita mostra solo le kcal.
+- **In cima alla pagina** «Eaten», «Used (est.)» e «Balance»; l'utente può
+  scrivere «My daily target» in kcal e vedere «Left». MuW non lo propone
+  e non lo calcola: il divieto di obiettivi prodotti da MuW e l'avviso
+  approvato restano interi. Il «Daily goal» calcolato da MuW è scartato.
+- **Il consumo si corregge a mano** (richiesta dell'utente del
+  2026-11-23): l'utente può scrivere le kcal al giorno che consuma a
+  riposo, che prendono il posto della stima di Mifflin-St Jeor («set by
+  you»), e correggere le kcal di ogni singola attività («edited»); in
+  tutti e due i casi si torna alla stima togliendo la correzione. Le
+  correzioni restano sul telefono, valgono per il bilancio e per la lista
+  privata, e non cambiano le calorie del post né quelle scritte in
+  Salute. In un giorno che ha l'energia attiva di Salute, un'attività
+  corretta sposta il totale della differenza fra il numero corretto e
+  quello che contava prima. `body/energy.ts` non cambia: la correzione
+  si applica sopra, in `nutrition/`.
+
+**Conseguenze**: la tab «Cibo» di TASK-490 monta la pagina di TASK-489
+com'è. Il testo del permesso della fotocamera (oggi solo la foto da
+ricalcare) e la riga della privacy sul codice mandato a Open Food Facts
+vanno approvati dall'utente prima della build.

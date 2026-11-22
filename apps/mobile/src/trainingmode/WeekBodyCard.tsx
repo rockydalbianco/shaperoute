@@ -126,7 +126,7 @@ function WeekSide({
 export function WeekBodyCard({
   count,
   language,
-  height = 104,
+  height = 140,
 }: {
   count: MuscleSets;
   language: Language;

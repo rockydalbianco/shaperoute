@@ -1,6 +1,6 @@
 # TASK-489 — «Alimentazione»: il diario di quello che mangio e il bilancio delle calorie
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-22: otto scelte dell'utente, #1417 in `main`; quattro precisazioni il 2026-11-23; A1 col via del Coordinatore; poi A2, B, C1, D, F, C2, G)
+**Stato**: In corso (parte 0 chiusa il 2026-11-22: otto scelte dell'utente, #1417 in `main`; quattro precisazioni il 2026-11-23; **A1 in `main`** (#1437, `dd29df5b`, 2026-11-23); poi A2, B, C1, D, F, C2, G)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-489-nutrition-part-0`
 **Dipende da**: TASK-374 (il mio corpo, `body/energy.ts`), TASK-321 (Apple
@@ -360,9 +360,17 @@ apps/mobile/src/nutrition/energyEdits.ts          + energyEdits.test.ts (aggiunt
 docs/tasks/TASK-489.md                            (il registro)
 ```
 
-Parte A2, solo file nuovi: `tools/nutrition/**` (lo script, la lista degli
-identificativi, i suoi test), `apps/mobile/src/nutrition/foodTable.ts`
-(generato), `apps/mobile/src/nutrition/foodNames/{de,es,fr,it}.ts`, i test.
+Parte A2, solo file nuovi (lista approvata dal Coordinatore il 2026-11-23;
+parte col sì dell'utente alla parte e allo scarico di USDA):
+`tools/nutrition_table.py` (lo script, solo libreria standard),
+`tools/test_nutrition_table.py`, `tools/nutrition_foods.csv` (i cibi
+scelti: identificativo FDC e nome corto), `apps/mobile/src/nutrition/foodTable.ts`
+(generato, con fonte, versione e data in testa) e `foodTable.test.ts`,
+`apps/mobile/src/nutrition/foodNames.ts` e `foodNames.test.ts`,
+`apps/mobile/src/nutrition/foodNames/{de,es,fr,it}.ts`. Lo scarico grezzo
+di USDA resta in `out/TASK-489/` sul T9, fuori dal repository e dal
+bundle; prima del «pronta» si misura il peso dei file che entrano nel
+bundle (stima: sotto i 100 KB).
 
 Le parti dopo toccano anche file esistenti, da chiedere al Coordinatore
 prima di ognuna: B `settings/SportButton.tsx` (montare la tessera),
@@ -403,6 +411,24 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 
 ## Registro
 
+- **2026-11-23, A1 fatta**: #1437 in `main` (`dd29df5b`): 21 file nuovi
+  in `apps/mobile/src/nutrition/` (giorni del telefono, cibi e cibi
+  dell'utente, piano, diario, assunte, «My daily target», correzioni a
+  mano, bilancio del giorno, file sul telefono), 98 test; `NUTRITION_ON`
+  spento e niente importa ancora la cartella. Decisi dall'agente su delega
+  dell'utente: la settimana parte da lunedì; una porzione porta con sé il
+  suo cibo (un giorno scritto non cambia se il cibo cambia dopo); le
+  chiavi dei cibi dell'utente non si ridanno mai; il diario è un file al
+  mese; due allenamenti di altre app sovrapposti per più di metà del più
+  corto contano una volta, il primo.
+  Accordi con le altre sessioni: TASK-490 monta la tab «Food» in TASK-490
+  D (solo con `NUTRITION_ON` acceso) e libera `settings/SportButton.tsx`
+  per la tessera dopo la sua #1424; il testo unico di
+  `NSHealthShareUsageDescription` lo raccoglie la sessione di TASK-312 D
+  (con 467 C) e lo porta all'utente: l'energia attiva vi è detta solo per
+  il bilancio che vede il proprietario, e la frase aspetta se la build
+  esce con «Nutrition» spenta; un solo lettore di Salute in `health/` per
+  312 D e 489 C2, lo scrive chi arriva prima.
 - **2026-11-23, precisazioni**: #1417 in `main` dal 2026-11-22; via del
   Coordinatore per A1 e «Nutrition» nella lista della prossima build
   nativa (nessuna data; il testo del permesso di Salute si scrive una

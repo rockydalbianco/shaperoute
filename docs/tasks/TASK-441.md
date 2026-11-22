@@ -495,8 +495,8 @@ come Madrid, i disegni ci sono). 40 casi, **36 passano il filtro** (New
 York 4 su 8). **Parigi (5412 MB) e Tokyo (5239) restano senza uscite in
 bici**: fermate anche a 5 GB. Catalogo da 1866 a **1902** (356 uscite in
 bici in 59 città). Pagina per l'utente:
-`out/TASK-441/b2/disegni-bici-cinque-citta.html`; il suo sì prima di
-«pronta». PR di solo catalogo `feat/TASK-441-b2-estere-2`: 5 file di
+`out/TASK-441/b2/disegni-bici-cinque-citta.html`; il suo sì: **«SI VANNO
+BENE»** (2026-11-22). PR di solo catalogo `feat/TASK-441-b2-estere-2`: 5 file di
 `catalog/seed`, `tools/catalog_kept.json`, `catalog/README.md`, questo
 file. Poi un passo sul server (sì dell'utente al Coordinatore), la PR dei
 documenti, e gli estratti (15 GB) da cancellare.

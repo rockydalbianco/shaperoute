@@ -39,7 +39,9 @@ import {
   VARIO_UNITS,
 } from "./flightUnits";
 import { FlightEditor } from "./FlightEditor";
+import { FlightMap } from "./FlightMap";
 import { FlightWidget } from "./FlightWidget";
+import { GroundProbe } from "./GroundProbe";
 import { useFlightScreenData } from "./useFlightScreenData";
 import { setVarioPrefs, useVarioPrefs } from "./varioPrefs";
 import { VarioSoundOptions } from "./VarioSoundOptions";
@@ -56,6 +58,10 @@ import { VarioSoundOptions } from "./VarioSoundOptions";
  * it on, the lock on or not; its choices are among the options. The sound
  * itself is the recording's (`useVarioSound` in `FlightLive`), so it goes
  * on with this screen closed.
+ *
+ * The map and the height above the ground (part A1): a «Map» widget is the
+ * flight map (`FlightMap`); with «Height above ground» on a page of the
+ * profile, a page out of sight reads the ground (`GroundProbe`).
  */
 
 export const FIXED_LINE = tLater("GPS numbers · not a certified instrument");
@@ -302,6 +308,11 @@ export function FlightScreen({
   const data = useFlightScreenData(track, at, takeoffMs, sharingLive);
   const palette = useMemo(() => paletteFor(prefs.look), [prefs.look]);
   const pages = pagesOf(prefs);
+  // The ground's height is read only for a profile that shows it (A1).
+  const showsGround = pages.some((one) =>
+    one.some((cell) => cell.widget === "aboveGround"),
+  );
+  const here = track.fixes[track.fixes.length - 1]?.point ?? null;
   const change = (next: FlightPrefs) => {
     setPrefs(next);
     saveFlightPrefs(next);
@@ -443,15 +454,27 @@ export function FlightScreen({
                       delayLongPress={EDIT_HOLD_MS}
                       testID={`flight-hold-${cell.widget}`}
                     >
-                      <FlightWidget
-                        widget={cell.widget}
-                        data={data}
-                        flight={unitsOf(cell)}
-                        units={appUnits}
-                        palette={palette}
-                        width={w}
-                        height={h}
-                      />
+                      {cell.widget === "map" ? (
+                        <FlightMap
+                          track={track}
+                          takeoffMs={takeoffMs}
+                          takeoff={data.instrument.takeoff?.point ?? null}
+                          headingDeg={data.instrument.trackDeg}
+                          circling={data.circling}
+                          palette={palette}
+                          height={h}
+                        />
+                      ) : (
+                        <FlightWidget
+                          widget={cell.widget}
+                          data={data}
+                          flight={unitsOf(cell)}
+                          units={appUnits}
+                          palette={palette}
+                          width={w}
+                          height={h}
+                        />
+                      )}
                     </Pressable>
                   )}
                 />
@@ -478,6 +501,7 @@ export function FlightScreen({
         <Text style={[styles.fixed, { color: palette.textMuted }]}>
           {t(FIXED_LINE)}
         </Text>
+        {showsGround ? <GroundProbe here={here} nowMs={at} /> : null}
         {choosing ? (
           <Options
             prefs={prefs}

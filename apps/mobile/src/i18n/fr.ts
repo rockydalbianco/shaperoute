@@ -3190,4 +3190,8 @@ export const FR: Table = {
   "Remove post": "Retirer la publication",
   "Your score, hours slept and sleep stages go in the Feed.":
     "Ton score, tes heures de sommeil et tes phases de sommeil vont dans le Feed.",
+  // src/air/ (TASK-479 part A1: the flight map and the height above the ground; texts approved by the user on 2026-11-22)
+  "Height above ground": "Hauteur sol",
+  "Heading up": "Cap en haut",
+  "North up": "Nord en haut",
 };

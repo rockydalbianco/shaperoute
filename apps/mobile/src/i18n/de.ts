@@ -3201,4 +3201,8 @@ export const DE: Table = {
   "Remove post": "Beitrag entfernen",
   "Your score, hours slept and sleep stages go in the Feed.":
     "Dein Wert, die geschlafenen Stunden und die Schlafphasen kommen in den Feed.",
+  // src/air/ (TASK-479 part A1: the flight map and the height above the ground; texts approved by the user on 2026-11-22)
+  "Height above ground": "Höhe über Grund",
+  "Heading up": "Kurs oben",
+  "North up": "Norden oben",
 };

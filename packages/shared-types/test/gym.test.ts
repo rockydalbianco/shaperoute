@@ -14,9 +14,11 @@ import {
   GYM_SOURCES,
   GYM_OUTING_KINDS,
   GYM_OUTING_SPORTS,
+  GYM_PLAN_FEELS,
   GYM_PLAN_MODES,
   GYM_RUN_KINDS,
   GYM_SET_KINDS,
+  MAX_GYM_ADAPT_STEPS,
   MAX_GYM_PLAN_ITEMS,
   MAX_GYM_PLAN_WEEKS,
   MAX_GYM_PLANS,
@@ -221,6 +223,17 @@ test("a plan's days are of the week once, its exercises of the catalog and its k
         const { pace_10k_s, long_m, long_s } = program.runner;
         assert.ok(pace_10k_s >= 180 && pace_10k_s <= 900);
         assert.ok((long_m === undefined) !== (long_s === undefined));
+      }
+      if (program.adapt !== undefined) {
+        // A planned day once, within 24 steps, «hard» up to 2 in a row.
+        const days = program.adapt.days.map((one) => one.day);
+        assert.equal(new Set(days).size, days.length);
+        for (const one of program.adapt.days) {
+          assert.ok(plan.days.includes(one.day));
+          assert.ok(Math.abs(one.steps) <= MAX_GYM_ADAPT_STEPS);
+          assert.ok(one.hard >= 0 && one.hard <= 2);
+          assert.ok((GYM_PLAN_FEELS as readonly string[]).includes(one.last));
+        }
       }
       for (const session of sessions) {
         if (session.run !== undefined) {

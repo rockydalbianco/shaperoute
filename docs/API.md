@@ -3468,7 +3468,14 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   giorno c'è una corsa (`running`). Il programma può avere `runner`
   (TASK-452, ADR-0369): `pace_10k_s` 180–900 (il ritmo sui 10 km, in
   secondi al km) e il lungo, `long_m` (1–60 km) o `long_s` (10 min–6 h); i
-  ritmi li calcola il telefono. Un giorno fuori di un altro sport
+  ritmi li calcola il telefono. Il programma può avere `adapt` (TASK-488,
+  ADR-0396), la scheda che si adatta a com'è andata: `off` (spenta dal suo
+  proprietario) e `days`, al più uno per giorno della settimana: `day`
+  (1–7), `steps` (−24…24, i passi in più o in meno di quelli del modo,
+  che il telefono somma a ogni settimana di quel giorno), `hard` (0–2, i
+  «Duro» di fila) e `last` (`easy`, `right`, `hard`, l'ultima risposta);
+  un giorno senza allenamento nel programma perde le sue risposte invece di
+  far rifiutare la scheda. Un giorno fuori di un altro sport
   (TASK-461 B e C, ADR-0371) ha `outing` e né esercizi né `run`: `sport`
   (`walk`, `hike`, `bike`, `gravel`, `mtb`, `swim`, `paddle`; la corsa resta
   `run`), `kind` (`easy`, `intervals`, `long`; `brisk`, il passo svelto, solo

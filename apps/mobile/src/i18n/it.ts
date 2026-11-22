@@ -3157,4 +3157,11 @@ export const IT: Table = {
   "Delete this post?": "Eliminare questo post?",
   "Copies already made stay with whoever made them.":
     "Le copie già fatte restano a chi le ha fatte.",
+
+  // The post of a night of sleep (TASK-467 part E).
+  Sleep: "Sonno",
+  "Already in the Feed": "Già nel Feed",
+  "Remove post": "Rimuovi il post",
+  "Your score, hours slept and sleep stages go in the Feed.":
+    "Il punteggio, le ore dormite e le fasi del sonno vanno nel Feed.",
 };

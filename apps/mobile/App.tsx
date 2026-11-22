@@ -1968,6 +1968,15 @@ function MuW() {
                           setRouteList("feed");
                           setScreen("map");
                         }}
+                        // «Record now» of the «+» (TASK-481): as «Draw»'s
+                        // start without a route, for the chosen sport.
+                        onRecord={() => {
+                          if (sport === "gym") startGymWorkout();
+                          else if (sport === "stretch") startStretchSession();
+                          else if (sport === "snowshoe")
+                            snowNotice.ask(() => setScreen("run"));
+                          else setScreen("run");
+                        }}
                       />
                     </EditRunContext.Provider>
                   </DrawAgainContext.Provider>

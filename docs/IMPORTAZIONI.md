@@ -37,10 +37,15 @@ In «My activities» (Profile) c'è un pulsante «Add past activity». Apre due
 scelte: «From a file» e «Photos only». *Proposta, da confermare con i
 testi della parte B.*
 
-Anche dal Feed (TASK-476, ADR-0387): il «+» a destra delle schede apre
-il foglio «Add activity», con «From a file» e «Photos only» (TASK-312
-C2). Il «+» c'è con l'account anche senza il selettore di file: allora
-resta solo «Photos only».
+Anche dal Feed (TASK-476, ADR-0387; TASK-481, ADR-0390): il «+» a destra
+delle schede apre il foglio «Add to Feed» sulla lista delle voci pronte,
+nell'ordine «Record now», «Photos only», «From a file» (poi «Sleep», «Gym
+workout», «Workout plan» quando arrivano). «Record now» chiude il foglio e
+fa partire la registrazione dello sport scelto; «Photos only» apre il modulo
+del post di sole foto; «From a file» apre subito «Files». Una voce si apre
+nello stesso foglio, con «‹» per tornare alla lista. Il «+» c'è con
+l'account anche senza il selettore di file (TASK-312 C2): allora manca
+solo «From a file».
 
 Senza account il pulsante non c'è, come «My activities». Senza il modulo
 nativo del selettore di file (la 1.0 da App Store, finché non arriva la

@@ -151,9 +151,15 @@ Dal secondo giro (2026-11-22) il seme ha **1866 percorsi**: si aggiungono
 20 km, 105 da 25, 99 da 30). Le zone vengono dall'estratto di Geofabrik del
 paese o della regione, uno per città (`out/TASK-441/b2/run-estere.sh`; per
 Amburgo, Londra, New York e Amsterdam più pezzi uniti con `osmium merge`).
-Berlino, Parigi, Dublino, Tokyo, New York, Amburgo e Vienna non hanno uscite
-in bici: con la loro zona il pianificatore passa i 4 GB sul Mac, e il limite
-non si alza.
+Sette città restavano fuori: con la loro zona il pianificatore passa i 4 GB
+sul Mac.
+
+Per quelle sette il limite è salito a 5 GB (deciso dal Coordinatore,
+2026-11-22; `out/TASK-441/b2/run-sette.sh`, a Mac vuoto): entrano **36
+uscite a Berlino, Dublino, New York, Amburgo e Vienna**, e il seme ha
+**1902 percorsi** (356 uscite in bici in 59 città: 131 da 20 km, 115 da 25,
+110 da 30). **Parigi e Tokyo non hanno uscite in bici**: passano anche i
+5 GB.
 
 ### Le città in evidenza
 

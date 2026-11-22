@@ -1,4 +1,9 @@
-import { PHOTOS_SOURCE, RUN_ACTIVITIES, SLEEP_SOURCE } from "@shaperoute/shared-types";
+import {
+  PHOTOS_SOURCE,
+  PLANS_READ,
+  RUN_ACTIVITIES,
+  SLEEP_SOURCE,
+} from "@shaperoute/shared-types";
 
 import { sleepPostsOn } from "../health/sleepModules";
 
@@ -28,13 +33,15 @@ export const POOL = "pool";
  * show a post without a line since TASK-385 B0; and `pool`: «My
  * activities» shows a swim in a pool since TASK-400 B; and `photos`: the
  * Feed, the profiles and the post show a post of photos only, a drawing
- * without a run, since TASK-312 part C.
+ * without a run, since TASK-312 part C; and `plans`: the Feed shows a gym
+ * plan posted, a drawing without a run, since TASK-485 part B (ADR-0394).
  */
 export const READS: readonly string[] = [
   ...RUN_ACTIVITIES.filter((activity) => !OLD_APP_ACTIVITIES.includes(activity)),
   TRACKLESS,
   POOL,
   PHOTOS_SOURCE,
+  PLANS_READ,
 ];
 
 /**

@@ -13,6 +13,7 @@ import type {
 } from "@shaperoute/shared-types";
 import {
   PHOTOS_SOURCE,
+  PLAN_SOURCE,
   RUN_ACTIVITIES,
   SLEEP_SOURCE,
   VISIBILITIES,
@@ -433,13 +434,15 @@ function readsActivity(body: Record<string, unknown>): boolean {
   if (body.activity === undefined || isRunActivity(body.activity)) {
     return true;
   }
-  // A post of photos only has no run, so no activity (TASK-312 part C):
-  // read as none, as on an API before TASK-208. The post of a night of
-  // sleep the same (TASK-467 part E). Any other drawing with a null
-  // activity is still refused.
+  // A post of photos only (TASK-312 part C) and a gym plan posted (TASK-485
+  // part B) have no run, so no activity: read as none, as on an API before
+  // TASK-208. The post of a night of sleep the same (TASK-467 part E). Any
+  // other drawing with a null activity is still refused.
   if (
     body.activity === null &&
-    (body.source === PHOTOS_SOURCE || body.source === SLEEP_SOURCE)
+    (body.source === PHOTOS_SOURCE ||
+      body.source === PLAN_SOURCE ||
+      body.source === SLEEP_SOURCE)
   ) {
     delete body.activity;
     return true;

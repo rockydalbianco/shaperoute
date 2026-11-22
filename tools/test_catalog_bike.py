@@ -1,5 +1,5 @@
 """catalog_bike: the bike cases, the keys kept and the page, without the
-engine and without the network (TASK-441 B2)."""
+network and without a route planned (TASK-441 B2; the long rides, B3)."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from pathlib import Path
 import catalog_bike as cb
 import catalog_seed as cs
 import catalog_words as cw
+import pytest
 
 
 def _run(
@@ -57,6 +58,78 @@ def test_the_plan_has_every_shape_that_reads_once_a_city_longest_first() -> None
 def test_a_distance_is_within_the_engine_limits_of_a_ride() -> None:
     assert min(cb.DISTANCES_M) >= 10_000
     assert max(cb.DISTANCES_M) <= 30_000
+
+
+def test_the_long_rides_are_beyond_the_engine_limit_of_a_ride() -> None:
+    from route_engine.models import DISTANCE_LIMITS_M
+
+    longest = DISTANCE_LIMITS_M[cb.ACTIVITY][1]
+    assert max(cb.DISTANCES_M) <= longest < min(cb.LONG_DISTANCES_M)
+    assert not set(cb.DISTANCES_M) & set(cb.LONG_DISTANCES_M)
+
+
+def test_the_plan_of_the_long_rides_is_another_plan_with_the_same_turn() -> None:
+    short = cb.plan()
+    long = cb.plan(distances=cb.LONG_DISTANCES_M)
+    assert len(long) == len(short)
+    assert not {c.key for c in long} & {c.key for c in short}
+    assert [(c.city.name, c.shape) for c in cb.plan(["trento"])] != []
+    trento = cb.plan(["trento"], cb.LONG_DISTANCES_M)
+    assert {c.shape for c in trento} == cb.READS
+    distances = [c.distance_m for c in trento]
+    assert distances == sorted(distances, reverse=True)
+    # A shape keeps the turn it has among the twelve: five and three of a
+    # city's eight, the other way round in the next city; over the cities
+    # each shape at both distances.
+    assert sorted(map(distances.count, cb.LONG_DISTANCES_M)) == [3, 5]
+    after = [c.distance_m for c in long if c.city == cs.CITIES[1]]
+    first = [c.distance_m for c in long if c.city == cs.CITIES[0]]
+    assert first.count(50_000) + after.count(50_000) == len(cb.READS)
+    by_shape: dict[str, set[int]] = {}
+    for c in long:
+        by_shape.setdefault(c.shape, set()).add(c.distance_m)
+    assert all(d == set(cb.LONG_DISTANCES_M) for d in by_shape.values())
+    # One distance alone: every shape of the city at it.
+    only = cb.plan(["torino"], (40_000,))
+    assert [c.distance_m for c in only] == [40_000] * len(cb.READS)
+    assert cb.todo([only[0].key], ["torino"], (40_000,)) == only[1:]
+
+
+def test_the_ride_limit_is_lifted_inside_the_block_and_put_back() -> None:
+    from route_engine.models import (
+        DISTANCE_LIMITS_M,
+        InvalidRequestError,
+        RouteRequest,
+    )
+
+    def ask(distance_m: int) -> RouteRequest:
+        return RouteRequest(
+            start=(46.0671, 11.1214),
+            shape="heart",
+            distance_m=distance_m,
+            activity=cb.ACTIVITY,  # type: ignore[arg-type]
+        )
+
+    before = dict(DISTANCE_LIMITS_M)
+    with pytest.raises(InvalidRequestError):
+        ask(50_000)
+    with cb.ride_limit(50_000):
+        assert ask(50_000).distance_m == 50_000
+        assert DISTANCE_LIMITS_M[cb.ACTIVITY] == (before[cb.ACTIVITY][0], 50_000)
+        with pytest.raises(InvalidRequestError):
+            ask(50_100)
+        # Only a ride's: a run is as it was.
+        assert DISTANCE_LIMITS_M["running"] == before["running"]
+    assert DISTANCE_LIMITS_M == before
+    with pytest.raises(InvalidRequestError):
+        ask(50_000)
+    # Within the limit nothing moves, and nothing is lowered.
+    with cb.ride_limit(20_000):
+        assert DISTANCE_LIMITS_M == before
+    # Put back when the block fails too.
+    with pytest.raises(RuntimeError), cb.ride_limit(50_000):
+        raise RuntimeError("a city failed")
+    assert DISTANCE_LIMITS_M == before
 
 
 def test_over_the_cities_a_shape_is_drawn_at_every_distance() -> None:
@@ -195,6 +268,23 @@ def test_the_page_shows_the_passing_runs_and_with_whole_the_rejected_too() -> No
     assert "similarity 0.70" in whole
 
 
+def test_the_page_of_some_distances_shows_only_those() -> None:
+    runs = [
+        _run("trento", "heart", 30_000),
+        _run("trento", "star", 50_000),
+        _run("torino", "moon", 40_000, similarity=0.7),
+    ]
+    everything = cb.page(runs, every=True)
+    assert everything.count("<svg") == 2
+    assert "<td>50 km</td><td>1</td><td>1</td>" in everything
+    assert "<td>40 km</td><td>0</td><td>1</td>" in everything
+    long = cb.page(runs, every=True, distances=cb.LONG_DISTANCES_M)
+    assert "1 disegni in bici passano il filtro su 2 disegnati, in 1 città" in long
+    assert long.count("<svg") == 1 and "star" in long and "heart" not in long
+    assert "<td>30 km</td>" not in long
+    assert "<td>40 km</td><td>0</td><td>1</td>" in long
+
+
 def test_plan_on_the_command_line(capsys, tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
     assert (
         cb.main(["--plan", "--cities", "trento", "--log", str(tmp_path / "none.jsonl")])
@@ -204,6 +294,23 @@ def test_plan_on_the_command_line(capsys, tmp_path: Path) -> None:  # type: igno
     assert len(out.out.splitlines()) == len(cb.READS)
     assert all(cb.is_bike_key(line) for line in out.out.splitlines())
     assert cb.main(["--plan", "--cities", "atlantis"]) == 2
+
+
+def test_plan_of_the_long_rides_on_the_command_line(capsys, tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
+    none = ["--log", str(tmp_path / "none.jsonl")]
+    # The order typed does not move a city's turn.
+    assert (
+        cb.main(
+            ["--plan", "--cities", "trento", "--distances", "40000", "50000", *none]
+        )
+        == 0
+    )
+    typed = capsys.readouterr().out.splitlines()
+    assert typed == [c.key for c in cb.plan(["trento"], cb.LONG_DISTANCES_M)]
+    assert cb.main(["--plan", "--cities", "torino", "--distances", "40000", *none]) == 0
+    assert all(k.endswith("/40000") for k in capsys.readouterr().out.splitlines())
+    with pytest.raises(SystemExit):
+        cb.main(["--plan", "--distances", "60000", *none])
 
 
 def test_propose_and_write_on_the_command_line(capsys, tmp_path: Path) -> None:  # type: ignore[no-untyped-def]

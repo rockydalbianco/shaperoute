@@ -97,6 +97,9 @@ SOURCE |= {"flight_split"}
 # Whether the drawing has a link, TASK-455 part C (test_post_links.py).
 NEW_FIELDS |= {"linkable"}
 SOURCE |= {"linkable"}
+# The plan of a gym plan posted, TASK-485 (test_plan_posts.py).
+NEW_FIELDS |= {"plan"}
+SOURCE |= {"plan"}
 THIRD_EMAIL = "third@example.com"
 
 

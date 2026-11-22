@@ -2868,6 +2868,16 @@ export const DE: Table = {
     "Wer deine Beiträge für «Alle» sieht, kann einen Link dazu teilen. Wer den Link hat, sieht die Zeichnung auf der Karte, deinen Benutzernamen, den Titel, die Sportart und die Distanz, auch ohne MuW. Schalte das aus, und die Links funktionieren nicht mehr.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Aktivität hinzufügen",
+  // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
+  // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
+  // the first three approved by the user, 2026-11-21, the deletion's with
+  // the screenshots, 2026-11-22).
+  "Photos only": "Nur Fotos",
+  "Up to 10 photos, also from Instagram": "Bis zu 10 Fotos, auch von Instagram",
+  "Add at least one photo.": "Füge mindestens ein Foto hinzu.",
+  "Delete this post? It cannot be undone.":
+    "Diesen Beitrag löschen? Das kann nicht rückgängig gemacht werden.",
+  "Delete post": "Beitrag löschen",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
   // 2026-11-08 and 2026-11-12.
   Snowshoes: "Schneeschuhe",
@@ -3171,5 +3181,4 @@ export const DE: Table = {
   "Delete this post?": "Diesen Beitrag löschen?",
   "Copies already made stay with whoever made them.":
     "Schon erstellte Kopien bleiben bei denen, die sie erstellt haben.",
-  "Delete post": "Beitrag löschen",
 };

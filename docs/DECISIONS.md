@@ -1068,6 +1068,14 @@ discesa ogni 1 m/s), un player in loop per tono; il suono appartiene alla
 registrazione e non alla schermata di volo, così suona anche a schermata
 chiusa; nessun tocco ad `app.json`. Acceso di default: scelta dell'utente.
 
+**Aggiunta del 2026-11-23 (parte A1, deciso dall'agente su delega
+dell'utente)**: la mappa di volo è una pagina MapLibre sua in `src/air/`,
+non la mappa dell'app (che resta intatta); in 3D la camera punta al
+terreno sotto il pilota (`setCenterElevation`). La quota sul terreno si
+legge dalle stesse Terrain Tiles «terrarium» della mappa 3D, decodificate
+su un canvas in una pagina nascosta: nessuna libreria, nessun server. I
+colori del vario sono `vario` in `tokens.ts`.
+
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
 **Stato**: Attiva (A e B in `main`, A sul server, 2026-11-23) · 2026-11-21 · TASK-485 parte 0 (numero dal

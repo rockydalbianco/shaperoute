@@ -270,6 +270,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-22**: B1 in produzione (OTA 20), B2 in `main` (#1368), C (vario
   sonoro, acceso di default) in produzione (OTA 22, #1394), provata
   dall'utente sul telefono; prossima A1.
+  **2026-11-23**: A1 (mappa di volo 3D/2D, quota sul terreno) in `main`
+  (#1434); OTA dal Coordinatore; prossima E.
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
@@ -293,6 +295,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-22**: E1 sul server (passo 17). E2: file nuovi pronti senza
   PR, agganci dopo TASK-312 C2 e TASK-481 A. C: frase della privacy
   approvata, sulla bozza #1334 (verde, da non unire).
+  **2026-11-23**: **E2 in `main`**, spenta: il post del sonno nel Feed,
+  nella sua pagina e nella griglia (#1419, `d0b89470`) e la voce «Sleep»
+  del «+» (#1441, `57e4d4b4`). Poi una build di prova nuova, poi la C.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`

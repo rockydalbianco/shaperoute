@@ -164,7 +164,8 @@ def test_the_answers_are_the_bodies() -> None:
     mine = _load("my-photo-post.json")
     assert set(mine) == set(MyPhotoPostBody.model_fields)
     one = _load("drawing-details-photos.json")
-    assert set(one) == set(DrawingDetailBody.model_fields)
+    # A race's flights (TASK-305 part R6e): left out for any other post.
+    assert set(one) == set(DrawingDetailBody.model_fields) - {"flight"}
     detail = DrawingDetailBody.model_validate(one)
     assert (detail.source, detail.activity, detail.track) == ("photos", None, [])
     page = _load("feed-photos.json")

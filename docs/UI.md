@@ -5392,6 +5392,65 @@ salva come `alpinism`.
 - Nel modulo del post non è un giorno sulla neve: resta alpinismo. Sull'orologio non
   c'è, finché una sua build non lo conosce.
 
+## Il contacalorie: «Nutrition» (TASK-489 parte B, ADR-0397)
+
+**Spenta in ogni build di oggi** dalla costante `NUTRITION_ON`
+(`nutrition/nutritionOn.ts`): si accende con la build nativa che legge
+allenamenti ed energia attiva da Apple Salute. Quello che segue è com'è
+quando è accesa. Schermate e testi approvati dall'utente il 2026-11-23,
+nelle cinque lingue in `tasks/TASK-489.md`. Niente di quello che si scrive
+qui esce dal telefono.
+
+- **L'ingresso**: in fondo al pannello degli sport, una famiglia a sé,
+  «Food», con la tessera **«Nutrition»** 🥗 (`nutrition/NutritionTile.tsx`).
+  Non è uno sport: il tocco apre la pagina sopra il pannello e lo sport
+  scelto non cambia; la ✕ riporta al pannello. Nella modalità allenamento la
+  stessa pagina è la tab «Food» (TASK-490 D).
+- **L'avviso**, la prima volta su quel telefono: «Before you start» — «MuW
+  does not provide diets, meal plans or medical advice. The plan here is
+  the one you write: your own, or the one your dietitian gave you.»,
+  «Every number is an estimate, from food composition tables and from
+  formulas for the energy you use.», «If you have a medical condition, are
+  pregnant or have a history of eating disorders, talk to a doctor or a
+  dietitian before counting calories.», un solo pulsante «I understand».
+  Prima del tocco non si può scrivere niente; dopo non torna più.
+- **Due viste**, «Diary» | «My plan», e sotto sempre «Estimates only. MuW
+  does not provide diets or medical advice.» col collegamento **«How we
+  calculate»**.
+- **«Diary»** (`nutrition/DiaryView.tsx`): il giorno in cima, «Today»,
+  «Yesterday» o la data, con le frecce; dopo oggi non si va. Tre numeri:
+  «Eaten», «Used (est.)» e «Balance»; gli ultimi due sono «—» finché la
+  parte C1 non conta le attività. Sotto, **«My daily target»**: un numero
+  di kcal che scrive solo l'utente, e quante ne restano; MuW non ne propone
+  mai uno. Poi i quattro pasti, «Breakfast», «Lunch», «Dinner», «Snacks»,
+  ognuno coi suoi cibi (nome, grammi, kcal), il totale e «Add food». Un
+  pasto vuoto mostra «—», non zero.
+- **«Eaten as planned»**: copia nel giorno il piano di quel giorno della
+  settimana. C'è **solo finché il giorno è vuoto** e il piano ha quel
+  giorno: non scrive mai sopra quello che è stato segnato a mano (scelta
+  dell'utente, 2026-11-23).
+- **Aggiungere un cibo** (`nutrition/AddFoodSheet.tsx`): si cerca per nome
+  fra i cibi propri e i 314 della tabella (USDA FoodData Central, SR
+  Legacy), nella lingua dell'app; si scrivono i grammi e si vede la stima
+  prima di «Add». Toccando un cibo già segnato si cambiano i grammi o lo si
+  toglie con «Remove».
+- **«My own food»**, da «Add my own food» nella ricerca: nome e
+  «Calories in 100 g (kcal)», da copiare
+  dall'etichetta o dal foglio del dietista. Si corregge e si elimina con
+  «Edit» dal passo dei grammi; un cibo eliminato resta nei giorni già
+  segnati.
+- **«My plan»** (`nutrition/PlanView.tsx`): i sette giorni della settimana
+  («Mon» … «Sun»), aperto su quello di oggi; per ogni giorno gli stessi
+  quattro pasti e il totale. **«Copy this day to…»** scrive un giorno sopra
+  un altro. Sotto: «This is the plan you write. MuW never changes it.». Non
+  c'è nessun piano finché l'utente non lo scrive.
+- **«How we calculate»**: da dove vengono i numeri dei cibi (la tabella e
+  la sua edizione), come si stima l'energia usata (Mifflin-St Jeor per il
+  riposo, le attività), che sono stime, e «Only you see this page. Nothing
+  here leaves your phone.».
+- I pulsanti sono quelli neutri dell'app, mai gialli; i numeri non hanno il
+  separatore delle migliaia.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di

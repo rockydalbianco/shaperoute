@@ -133,15 +133,14 @@ Lista approvata dal Coordinatore il 23 novembre 2026. `STATUS.md`,
 
 ## Dove siamo
 
-- 2026-11-23: verifica fatta, lista approvata; l'occhio e i campi di iOS
-  scritti coi loro test; le bolle gialle scritte coi loro test
-  (`ChatMinor.test.tsx`). **Nessun test è ancora girato**: il Mac era a
-  load 200–400 e il Coordinatore ha chiesto di aspettare il suo «carico
-  ok». Da girare: `SignInScreen.test.tsx`, `ChatMinor.test.tsx`,
-  `i18n/tables.test.ts`, poi `tsc`, `prettier --check` ed `eslint` sui file
-  toccati. Restano da chiedere all'utente: chat vuota e «New message». Simulatore: in coda dopo
-  469 A7c-3, 479 D2, 486 F2 e la prova dell'app; il turno va chiesto al
-  Coordinatore.
+- 2026-11-23: verifica fatta, lista approvata; l'occhio e i campi di iOS e
+  le bolle gialle in un commit (`4a99dba7`), coi test verdi in locale:
+  `SignInScreen.test.tsx`, tutta `src/messages` (77 test),
+  `i18n/tables.test.ts`, `tsc`, `prettier`, `eslint` sui file toccati.
+  PR aperta come bozza. Restano: le scelte dell'utente su chat vuota e
+  «New message», le schermate (turno del simulatore dal Coordinatore, in
+  coda dopo 469 A7c-3, 479 D2, 486 F2 e la prova dell'app), la conferma
+  del giallo sulle schermate, i testi approvati.
 - Da guardare nel simulatore: su iOS un campo che torna segreto può
   svuotarsi al primo tasto dopo il tocco sull'occhio. Se succede, il testo
   va tenuto da `onChangeText`.

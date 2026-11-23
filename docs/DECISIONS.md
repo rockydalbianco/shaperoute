@@ -587,7 +587,7 @@ lasciando le righe d'indice.
 - ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Proposta
 - ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima · 2026-11-23 · Attiva
 - ADR-0390, precisazione A — La lista del «+» nell'app: «Record now» come l'avvio senza percorso di «Draw», «Photos only» dritto al modulo di C2, «From a file» con «Files» aperto subito (`fileAtOnce`), il titolo della voce aperta · 2026-11-23 · Attiva
-- ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Proposta
+- ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Attiva
 - ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
 - ADR-0397, precisazione 2 — La tabella di base dei cibi: 314 voci da USDA SR Legacy (aprile 2018) ricavate da uno script, nomi in cinque lingue in file loro; la pagina «Nutrition» in due PR, con schermate e testi approvati · 2026-11-23 · Proposta
 - ADR-0397, precisazione 3 — Le attività nel bilancio stimate da quello che dice la lista privata (palestra dal solo tempo, escursione senza salita), oggi «finora» e fuori dal totale della settimana, il diario del telefono e non dell'account · 2026-11-23 · Proposta
@@ -6403,7 +6403,9 @@ cambia barra quando cambia sport, come lo sciatore.
 
 ## ADR-0399 — Il Coach MuW: consigli da regole scritte con il loro studio, la scheda che cambia solo con «Apply»
 
-**Stato**: Proposta · 2026-11-23 · TASK-491 (parte 0, soli documenti).
+**Stato**: Attiva · 2026-11-23 · TASK-491, A (#1427), B (#1457) e C
+(#1476) in `main`; esce col prossimo OTA di produzione. Prima: Proposta
+(parte 0, soli documenti).
 «Apply», dove si apre, solo con account con l'omino, niente RPE e i
 testi dei consigli sono **scelte dell'utente** (2026-11-22 e 23, task
 file); l'omino di TASK-490 B e l'ordine dopo TASK-488 sono del

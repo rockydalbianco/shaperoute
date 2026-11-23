@@ -60,6 +60,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   «Apply»; solo con account, omino di TASK-490 B; testi approvati. A in
   `main` (#1427); B dopo TASK-490 B (#1433), C dopo #1420.
   File: — · `tasks/TASK-491.md`
+  **Chiuso il 2026-11-23**: B (#1457) e C (#1476, `38ffa555`) in `main`; esce col prossimo OTA, col sì dell'utente al Coordinatore; vedi `archive/COMPLETATI.md`.
 - **TASK-490 — La modalità Allenamento** · A (#1424) e B (#1433, l'omino
   della settimana su «Today») in `main` il 2026-11-23, schermate e testi
   approvati dall'utente; escono col prossimo OTA. Restano C (riga del

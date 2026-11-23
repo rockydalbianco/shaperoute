@@ -1,7 +1,12 @@
 # TASK-506 — Le schede della palestra: la tabella, la sola palestra, il prossimo allenamento
 
-**Stato**: In lavorazione · 2026-11-23 · A #1523, B e D #1525, C #1528;
-schermate, testi e scelte approvati dall'utente
+**Stato**: Done · 2026-11-24 · A #1523 (`8b84b0c4`), B e D #1525
+(`1bca4123`), C #1528 (`fee20d90`) in `main`; documenti nella PR di soli
+documenti. Esito: in «My plans» la tabella del piano e il prossimo
+allenamento con «Questa settimana: 1 di 3 fatti»; un piano nuovo di sola
+palestra, la Palestra già scelta; i segni degli sport dal menu degli sport
+e un solo giallo. Resta l'OTA di produzione (Coordinatore, col sì
+dell'utente) e la prova sul telefono
 **Fase**: 5 · **Branch**: `feat/TASK-506-a-plan-table` (A), poi un branch
 da `main` per B e per C
 **Dipende da**: TASK-433 (schede guidate, ADR-0360), TASK-488 (la scheda si
@@ -205,7 +210,9 @@ Parte C:
 - [x] Testi nelle cinque lingue (`tables.test.ts`).
 - [x] Schermate dal simulatore e testi approvati dall'utente (2026-11-23,
       «Approvo»).
-- [ ] CI verde; merge dal Coordinatore col «Sì, unisci» dell'utente; OTA.
+- [x] CI verde e merge (#1528, `fee20d90`), col «Sì, unisci» dell'utente al
+      Coordinatore.
+- [ ] OTA.
 
 Parte B e parte D (#1525):
 - [x] Uno sport basta, la Palestra scelta all'apertura, un piano di sola
@@ -218,3 +225,15 @@ Parte B e parte D (#1525):
 - [x] CI verde e merge (#1525, `1bca4123`), col «Sì, unisci» dell'utente al
       Coordinatore.
 - [ ] OTA.
+
+## Uscita e prova
+
+- Tutto solo app, nessun server: esce col prossimo OTA di produzione,
+  pubblicato dal Coordinatore col sì dell'utente.
+- Dopo l'OTA, sul telefono: «My plans» → «Table» (le quattro settimane,
+  l'intestazione apre «Weeks»), il riquadro col prossimo allenamento e «This
+  week: X of Y done», «New guided plan» con la Palestra già scelta e i segni
+  degli sport.
+- Il quarto punto della tela, «Fallo oggi» per un allenamento saltato
+  (tocca anche il server), resta per un giro dopo: un task nuovo col suo
+  numero.

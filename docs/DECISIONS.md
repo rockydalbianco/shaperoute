@@ -2340,6 +2340,20 @@ di prima. Partendo da zero la regola del decimo dà piani lunghi (corsa da
 attività: finché il server non la dà, l'app la chiede. Il promemoria alle
 8 è una notifica locale del telefono (B2b).
 
+**Aggiunta 2026-11-23** (TASK-506 parte B, scelta dell'utente sulla tela
+«Schede palestra · migliorie»: «1, 2, 3», poi «Sì, tutte e due» sulla
+regola): un piano nuovo ha **uno o più** sport, non più almeno due
+(«Almeno due, sempre» del 2026-11-11). `MIN_PLAN_SPORTS` passa da 2 a 1;
+all'apertura di «Nuovo piano» è scelta la Palestra (prima corpo libero e
+corsa), perché la guida si apre solo dalle pagine della palestra (Draw e la
+modalità allenamento di ADR-0398): un piano di sola palestra è «Continue»
+fino in fondo. Il resto di questa decisione non cambia: `outing`, `target`
+e le settimane verso la meta restano come sopra. Con la parte D gli sport
+dell'ingresso e i giorni fuori mostrano il segno del loro profilo
+(`profileOf(...).emoji`, lo stesso del menu degli sport) invece delle sigle
+«RUN», «BIKE»…, e un solo colore di selezione, il giallo. Nessuna
+migrazione, nessun cambio al server.
+
 ## ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende
 
 **Stato**: Accettata · 2026-11-12 · TASK-471 (#1251 e #1269 in `main`;

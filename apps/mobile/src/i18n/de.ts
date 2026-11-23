@@ -3468,4 +3468,16 @@ export const DE: Table = {
   "Deepest: {dist} from the edge, {height} from floor or ceiling":
     "Am tiefsten: {dist} vom Rand, {height} von Unter- oder Obergrenze",
   "Only on your phone: not in the Feed.": "Nur auf deinem Telefon: nicht im Feed.",
+  // src/air/ (TASK-479 part D1: the pilot's waypoints and task; en/it approved by the user on 2026-11-23)
+  Waypoints: "Wegpunkte",
+  Task: "Aufgabe",
+  "Waypoints: {count} · Landings: {landings}":
+    "Wegpunkte: {count} · Landeplätze: {landings}",
+  "Turnpoints: {count}": "Wendepunkte: {count}",
+  "First start: {time}": "Erster Start: {time}",
+  "{file} · loaded {date}": "{file} · geladen am {date}",
+  "This file has no waypoint MuW can read.":
+    "Diese Datei enthält keinen Wegpunkt, den MuW lesen kann.",
+  "This file is not a task MuW can read.":
+    "Diese Datei ist keine Aufgabe, die MuW lesen kann.",
 };

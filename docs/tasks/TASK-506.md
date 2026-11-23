@@ -158,8 +158,9 @@ Lista approvata dal Coordinatore il 2026-11-23.
 Parte A: nuovi `apps/mobile/src/gym/tableOfPlan.ts` (+ `.test.ts`; nella
 lista come `planTable.ts`, rinominato per il motivo sopra),
 `gym/PlanTable.tsx` (+ `PlanTable.test.tsx`); modificati `gym/GymPlans.tsx`,
-`i18n/{it,de,fr,es}.ts`; documenti `docs/tasks/TASK-506.md`,
-`docs/sports/gym.md`.
+`i18n/{it,de,fr,es}.ts`, e `tabs/TabSwipeOwners.test.ts` (il registro
+degli scroll orizzontali, approvato dal Coordinatore dopo la CI rossa);
+documenti `docs/tasks/TASK-506.md`, `docs/sports/gym.md`.
 
 Parte B: `gym/SportsDoor.tsx`, `gym/SportsDoor.test.tsx`,
 `gym/GymPlans.test.tsx`, `gym/GymPlanWizard.tsx` (un commento), i18n,

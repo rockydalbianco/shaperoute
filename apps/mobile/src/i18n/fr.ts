@@ -2407,6 +2407,22 @@ export const FR: Table = {
   "{name} gets this as a message request. You can send one message until they accept it.":
     "{name} le reçoit comme demande de message. Tant qu'elle n'est pas acceptée, tu peux envoyer un seul message.",
   "Write a message…": "Écris un message…",
+  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
+  "Show password": "Afficher le mot de passe",
+  "Hide password": "Masquer le mot de passe",
+  // src/messages/ConversationScreen.tsx (TASK-458: a conversation with nothing in it yet, the user's choice of 2026-11-23)
+  "Say hi to {name}.": "Dis bonjour à {name}.",
+  "Hi {name}!": "Salut {name} !",
+  "I like your drawings": "J'aime tes dessins",
+  "Shall we run together?": "On court ensemble ?",
+  "Writes it in the box. Nothing is sent yet.":
+    "L'écrit dans la zone de texte. Rien n'est encore envoyé.",
+  "Photos, videos and drawings come after that.":
+    "Les photos, les vidéos et les dessins viennent après.",
+  // src/tabs/MessagesPage.tsx, src/messages/NewMessage.tsx (TASK-458: «New message» from the list)
+  "New message": "Nouveau message",
+  "Search someone by name to write to them.":
+    "Cherche quelqu'un par son nom pour lui écrire.",
   "Delete this message for both of you?": "Supprimer ce message pour vous deux ?",
   "Report this message": "Signaler ce message",
   // src/explore/ExploredCard.tsx, social/DrawingCard.tsx, mapdraw/DrawOnMap.tsx,
@@ -3489,20 +3505,4 @@ export const FR: Table = {
   "Goal taken": "But atteint",
   "Turnpoint {name} taken. Next: {next}.": "Balise {name} validée. Suivante : {next}.",
   "Goal {name} taken.": "But {name} atteint.",
-  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
-  "Show password": "Afficher le mot de passe",
-  "Hide password": "Masquer le mot de passe",
-  // src/messages/ConversationScreen.tsx (TASK-458: a conversation with nothing in it yet, the user's choice of 2026-11-23)
-  "Say hi to {name}.": "Dis bonjour à {name}.",
-  "Hi {name}!": "Salut {name} !",
-  "I like your drawings": "J'aime tes dessins",
-  "Shall we run together?": "On court ensemble ?",
-  "Writes it in the box. Nothing is sent yet.":
-    "L'écrit dans la zone de texte. Rien n'est encore envoyé.",
-  "Photos, videos and drawings come after that.":
-    "Les photos, les vidéos et les dessins viennent après.",
-  // src/tabs/MessagesPage.tsx, src/messages/NewMessage.tsx (TASK-458: «New message» from the list)
-  "New message": "Nouveau message",
-  "Search someone by name to write to them.":
-    "Cherche quelqu'un par son nom pour lui écrire.",
 };

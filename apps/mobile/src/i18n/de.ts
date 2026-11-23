@@ -2419,6 +2419,22 @@ export const DE: Table = {
   "{name} gets this as a message request. You can send one message until they accept it.":
     "{name} bekommt das als Nachrichtenanfrage. Bis sie angenommen ist, kannst du eine Nachricht schicken.",
   "Write a message…": "Schreib eine Nachricht…",
+  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
+  "Show password": "Passwort anzeigen",
+  "Hide password": "Passwort verbergen",
+  // src/messages/ConversationScreen.tsx (TASK-458: a conversation with nothing in it yet, the user's choice of 2026-11-23)
+  "Say hi to {name}.": "Sag {name} hallo.",
+  "Hi {name}!": "Hallo {name}!",
+  "I like your drawings": "Mir gefallen deine Zeichnungen",
+  "Shall we run together?": "Wollen wir zusammen laufen?",
+  "Writes it in the box. Nothing is sent yet.":
+    "Schreibt es ins Feld. Es wird noch nichts gesendet.",
+  "Photos, videos and drawings come after that.":
+    "Fotos, Videos und Zeichnungen kommen danach.",
+  // src/tabs/MessagesPage.tsx, src/messages/NewMessage.tsx (TASK-458: «New message» from the list)
+  "New message": "Neue Nachricht",
+  "Search someone by name to write to them.":
+    "Suche jemanden nach Namen, um zu schreiben.",
   "Delete this message for both of you?": "Diese Nachricht für euch beide löschen?",
   "Report this message": "Diese Nachricht melden",
   // src/explore/ExploredCard.tsx, social/DrawingCard.tsx, mapdraw/DrawOnMap.tsx,
@@ -3500,20 +3516,4 @@ export const DE: Table = {
   "Turnpoint {name} taken. Next: {next}.":
     "Wendepunkt {name} erreicht. Nächster: {next}.",
   "Goal {name} taken.": "Ziel {name} erreicht.",
-  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
-  "Show password": "Passwort anzeigen",
-  "Hide password": "Passwort verbergen",
-  // src/messages/ConversationScreen.tsx (TASK-458: a conversation with nothing in it yet, the user's choice of 2026-11-23)
-  "Say hi to {name}.": "Sag {name} hallo.",
-  "Hi {name}!": "Hallo {name}!",
-  "I like your drawings": "Mir gefallen deine Zeichnungen",
-  "Shall we run together?": "Wollen wir zusammen laufen?",
-  "Writes it in the box. Nothing is sent yet.":
-    "Schreibt es ins Feld. Es wird noch nichts gesendet.",
-  "Photos, videos and drawings come after that.":
-    "Fotos, Videos und Zeichnungen kommen danach.",
-  // src/tabs/MessagesPage.tsx, src/messages/NewMessage.tsx (TASK-458: «New message» from the list)
-  "New message": "Neue Nachricht",
-  "Search someone by name to write to them.":
-    "Suche jemanden nach Namen, um zu schreiben.",
 };

@@ -18,7 +18,9 @@ import { type Palette, vario } from "../theme/tokens";
  *   scale from −3 to +3 m/s (`vario` of the tokens);
  * - the take-off, and the pilot as an arrow the way they go;
  * - the camera on the pilot, turned the way they fly («Heading up», the
- *   course of the last 5 s, held while circling) or north up.
+ *   course of the last 5 s, held while circling) or north up;
+ * - the airspaces of the pilot's file near them (part E2): see-through
+ *   volumes on the hills in 3D, outlines on the plain map.
  *
  * The map follows: it does not pan under a finger, it only zooms with two.
  * The phone calls `window.flight.*`; the page tells `ready`, `loaded`,
@@ -34,6 +36,8 @@ export const FOLLOW_MS = 900;
 export const FPS_EVERY_MS = 5_000;
 export const TRACK_WIDTH = 4;
 export const PILOT_PX = 34;
+/** How see-through the airspaces are. */
+export const AIRSPACE_OPACITY = 0.2;
 
 /** The scale of the climb: m/s and its colour, from the tokens. */
 export const VARIO_STOPS: readonly [number, string][] = [
@@ -52,6 +56,9 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
   const style = withKinds(mapStyleFor(palette, language));
   const layers = kindLayers(style);
   const lineColor = ["interpolate", ["linear"], ["get", "v"], ...VARIO_STOPS.flat()];
+  // Prohibited, restricted and danger areas in the error colour, the others
+  // in the warning colour: the palette's, as everywhere.
+  const airspaceColor = ["case", ["get", "danger"], palette.error, palette.warning];
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -117,6 +124,41 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
         layout: { "line-cap": "round", "line-join": "round" },
         paint: { "line-color": ${toScript(lineColor)}, "line-width": ${TRACK_WIDTH} },
       });
+      // The pilot's airspaces (part E2): under the track, see-through.
+      map.addSource("flight-airspace", { type: "geojson", data: NONE });
+      map.addLayer(
+        {
+          id: "flight-airspace-volume",
+          type: "fill-extrusion",
+          source: "flight-airspace",
+          filter: ["!", ["get", "flat"]],
+          paint: {
+            "fill-extrusion-color": ${toScript(airspaceColor)},
+            "fill-extrusion-base": ["*", ["get", "base"], TERRAIN.exaggeration],
+            "fill-extrusion-height": ["*", ["get", "top"], TERRAIN.exaggeration],
+            "fill-extrusion-opacity": ${AIRSPACE_OPACITY},
+          },
+        },
+        "flight-track",
+      );
+      map.addLayer(
+        {
+          id: "flight-airspace-area",
+          type: "fill",
+          source: "flight-airspace",
+          paint: { "fill-color": ${toScript(airspaceColor)}, "fill-opacity": ${AIRSPACE_OPACITY} },
+        },
+        "flight-track",
+      );
+      map.addLayer(
+        {
+          id: "flight-airspace-edge",
+          type: "line",
+          source: "flight-airspace",
+          paint: { "line-color": ${toScript(airspaceColor)}, "line-width": 2 },
+        },
+        "flight-track",
+      );
       map.addSource("flight-takeoff", { type: "geojson", data: NONE });
       map.addLayer({
         id: "flight-takeoff",
@@ -153,6 +195,11 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
       }
     });
     map.setTerrain(threeD ? TERRAIN : null);
+    // The airspaces: standing up on the hills, lying flat on the plain map.
+    if (map.getLayer("flight-airspace-volume")) {
+      map.setLayoutProperty("flight-airspace-volume", "visibility", threeD ? "visible" : "none");
+      map.setLayoutProperty("flight-airspace-area", "visibility", threeD ? "none" : "visible");
+    }
   }
 
   function follow(duration) {
@@ -202,6 +249,13 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
     }
   }
 
+  function setAirspace(collection) {
+    var source = map.getSource("flight-airspace");
+    if (source) {
+      source.setData(collection);
+    }
+  }
+
   function setTakeoff(lat, lon) {
     var source = map.getSource("flight-takeoff");
     if (source) {
@@ -213,7 +267,13 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
     }
   }
 
-  window.flight = { setView: setView, setPilot: setPilot, setTrack: setTrack, setTakeoff: setTakeoff };
+  window.flight = {
+    setView: setView,
+    setPilot: setPilot,
+    setTrack: setTrack,
+    setTakeoff: setTakeoff,
+    setAirspace: setAirspace,
+  };
 
   // The frames the map drew a second, told every few seconds: what the
   // hills in 3D cost while the camera follows.

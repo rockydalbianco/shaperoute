@@ -15,6 +15,7 @@ import { FlightPhaseSwitch } from "./FlightPhaseSwitch";
 import { FlightScreen, GLOVE_TARGET } from "./FlightScreen";
 import { markPhase, usePhaseMarks } from "./phaseMarks";
 import { useFlightScreen } from "./useFlightScreen";
+import { useAirspaceAlert } from "./useAirspaceAlert";
 import { useVarioSound } from "./useVarioSound";
 
 /**
@@ -67,6 +68,8 @@ export function FlightLive({ track, live }: { track: Track; live: boolean }) {
   const flightScreen = useFlightScreen(phase, live);
   // The vario's sound (TASK-479 part C), with the flight screen closed too.
   useVarioSound({ track, nowMs: now, sounding: live && !paused && phase === "air" });
+  // The airspace warning's sound (TASK-479 part E2), the same way.
+  useAirspaceAlert({ track, nowMs: now, sounding: live && !paused && phase === "air" });
   const sharing = useLiveShare().kind === "sharing";
   const screen = live ? (
     <>

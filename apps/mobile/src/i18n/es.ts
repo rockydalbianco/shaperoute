@@ -3246,4 +3246,13 @@ export const ES: Table = {
   "Lines not read: {n}": "Líneas no leídas: {n}",
   "This file has no airspace MuW can read.":
     "Este archivo no tiene espacios aéreos que MuW pueda leer.",
+  // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21)
+  "Nearest airspace": "Espacio aéreo más cercano",
+  inside: "dentro",
+  "{name} ({class}) · {dist} · floor {floor}":
+    "{name} ({class}) · {dist} · base {floor}",
+  "FL limits from GPS altitude (≈).": "Límites en FL según la altitud GPS (≈).",
+  "Warn within": "Avisar a menos de",
+  "Warn above or below": "Avisar por encima o por debajo",
+  "Warning sound": "Sonido del aviso",
 };

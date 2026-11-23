@@ -89,6 +89,10 @@ it("tells the page everything once it is ready, then the pilot at most once a se
   expect(calls("setTakeoff")).toHaveLength(1);
   expect(calls("setPilot")).toHaveLength(1);
   expect(calls("setTrack")).toHaveLength(1);
+  // The airspaces go with the track (part E2): none without a file.
+  expect(calls("setAirspace")).toEqual([
+    'if (window.flight) { window.flight.setAirspace({"type":"FeatureCollection","features":[]}); } true;',
+  ]);
   // The next fix, a second later: the pilot; the track waits 5 s.
   await view.rerender(
     <FlightMap

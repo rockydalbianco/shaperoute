@@ -1,3 +1,4 @@
+import page from "@shaperoute/shared-types/fixtures/activities.json";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -8,6 +9,8 @@ import {
   type ActivitiesDoor,
   useActivitiesDoor,
 } from "../activities/activitiesDoor";
+import { startedLabel } from "../activities/activityText";
+import type { ActivitiesPage } from "../api/activities";
 import type { PickFile, Picked } from "../imports/pickActivityFile";
 import { AddToFeed } from "./AddToFeed";
 
@@ -72,16 +75,30 @@ test("the «+» opens «Add to Feed» on the list, in the user's order", async (
   expect(screen.queryByText("From a file")).toBeNull();
   await openSheet();
   expect(screen.getByRole("header", { name: "Add to Feed" })).toBeTruthy();
-  const titles = ["Record now", "Photos only", "From a file"];
+  const titles = [
+    "Record now",
+    "Already recorded",
+    "Photos only",
+    "From a file",
+    "Workout plan",
+  ];
   const rows = titles.map((title) => screen.getByText(title));
-  expect(rows).toHaveLength(3);
+  expect(rows).toHaveLength(5);
   expect(screen.getByText("Start an activity now")).toBeTruthy();
+  expect(screen.getByText("Post an activity from My activities")).toBeTruthy();
   expect(screen.getByText("Up to 10 photos, also from Instagram")).toBeTruthy();
   expect(screen.getByText("GPX, TCX or FIT from Strava, Garmin, Komoot…")).toBeTruthy();
+  expect(screen.getByText("Share one of your gym plans")).toBeTruthy();
   const ids = screen
-    .getAllByTestId(/^feed-add-(record|photos|file)$/)
+    .getAllByTestId(/^feed-add-(record|done|photos|file|plan)$/)
     .map((row) => row.props.testID);
-  expect(ids).toEqual(["feed-add-record", "feed-add-photos", "feed-add-file"]);
+  expect(ids).toEqual([
+    "feed-add-record",
+    "feed-add-done",
+    "feed-add-photos",
+    "feed-add-file",
+    "feed-add-plan",
+  ]);
   // The list is the opener: no form, no «Back», nothing picked yet.
   expect(screen.queryByTestId("imported-form")).toBeNull();
   expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
@@ -125,6 +142,21 @@ test("«Photos only» opens its form in the sheet; «‹» and «Cancel» go bac
   await fireEvent.press(screen.getByRole("button", { name: "Cancel" }));
   expect(screen.queryByTestId("photo-post-form")).toBeNull();
   expect(screen.getByText("From a file")).toBeTruthy();
+});
+
+test("«Workout plan» opens «Choose a plan» in the sheet; «‹» goes back to the list", async () => {
+  await show(spies());
+  await openSheet();
+  await fireEvent.press(screen.getByText("Workout plan"));
+  expect(screen.getByRole("header", { name: "Workout plan" })).toBeTruthy();
+  expect(screen.getByTestId("plan-post-choose")).toBeTruthy();
+  expect(screen.getByText("Choose a plan")).toBeTruthy();
+  // No plans on this phone: the way to make one.
+  expect(screen.getByText("No plans yet: make one in Gym › Plans.")).toBeTruthy();
+  expect(screen.queryByText("Photos only")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(screen.queryByTestId("plan-post-choose")).toBeNull();
+  expect(screen.getByText("Photos only")).toBeTruthy();
 });
 
 test("«From a file» opens «Files» at once", async () => {
@@ -191,4 +223,65 @@ test("«Everyone» can still be changed before «Save»", async () => {
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
   // «Only me» and nothing else chosen: no drawing goes out at all.
   expect(door.toDrawing).toHaveBeenCalledWith(null);
+});
+
+// «Already recorded» (TASK-481 part F): the activities not in the Feed yet,
+// then the form of «Edit post» of the one chosen.
+
+const ACTIVITIES = (page as ActivitiesPage).activities;
+
+async function showDone(onActivityPosted = jest.fn()) {
+  function WithDoor() {
+    const nothing = useActivitiesDoor();
+    return (
+      <ActivitiesContext.Provider
+        value={{
+          ...nothing,
+          signedIn: true,
+          status: "ready",
+          list: ACTIVITIES,
+          total: ACTIVITIES.length,
+        }}
+      >
+        <AddToFeed available onActivityPosted={onActivityPosted} />
+      </ActivitiesContext.Provider>
+    );
+  }
+  await render(<WithDoor />);
+  return onActivityPosted;
+}
+
+test("«Already recorded» lists the activities; one chosen opens its form; «‹» goes back to the list, then to the entries", async () => {
+  await showDone();
+  await openSheet();
+  await fireEvent.press(screen.getByText("Already recorded"));
+  expect(screen.getByRole("header", { name: "Already recorded" })).toBeTruthy();
+  expect(screen.getByTestId("past-activity-list")).toBeTruthy();
+  expect(screen.queryByText("Photos only")).toBeNull();
+  await fireEvent.press(
+    screen.getByRole("button", {
+      name: new RegExp(`^${startedLabel(ACTIVITIES[0].started_at)}`),
+    }),
+  );
+  expect(screen.getByTestId("past-activity-form")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(screen.queryByTestId("past-activity-form")).toBeNull();
+  expect(screen.getByTestId("past-activity-list")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(screen.getByRole("header", { name: "Add to Feed" })).toBeTruthy();
+  expect(screen.getByText("Photos only")).toBeTruthy();
+});
+
+test("the Feed reads again when the sheet closes after an activity was opened, not before", async () => {
+  const onActivityPosted = await showDone();
+  await openSheet();
+  await fireEvent.press(screen.getByText("Already recorded"));
+  await fireEvent.press(screen.getByRole("button", { name: "Close" }));
+  expect(onActivityPosted).not.toHaveBeenCalled();
+  await openSheet();
+  await fireEvent.press(screen.getByText("Already recorded"));
+  await fireEvent.press(screen.getAllByTestId("past-activity")[0]);
+  await fireEvent.press(screen.getByRole("button", { name: "Done" }));
+  expect(onActivityPosted).toHaveBeenCalledTimes(1);
+  await waitFor(() => expect(screen.queryByTestId("past-activity-form")).toBeNull());
 });

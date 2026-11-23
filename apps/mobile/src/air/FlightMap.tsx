@@ -17,7 +17,8 @@ import { setFlightMapPrefs, useFlightMapPrefs } from "./flightMapPrefs";
  * second and the coloured track once every 5 s, so the phone does not
  * spend itself on the map. Two buttons on it, when it is tall enough:
  * «3D»/«2D» and the way it turns, heading up or north up; the choice is
- * kept and is every map widget's.
+ * kept and is every map widget's. The airspaces of the pilot's file near
+ * them go with the track (part E2).
  */
 
 /** The pilot's place goes to the page at most this often, ms. */
@@ -44,6 +45,9 @@ type Props = {
   circling: boolean;
   palette: Palette;
   height: number;
+  /** The pilot's airspaces near them, as the page draws them (part E2);
+   * null without a file. Sent with the track. */
+  airspace?: unknown;
 };
 
 function call(view: WebView | null, script: string): void {
@@ -58,6 +62,7 @@ export function FlightMap({
   circling,
   palette,
   height,
+  airspace = null,
 }: Props) {
   const language = useLanguage();
   const page = useMemo(
@@ -116,8 +121,14 @@ export function FlightMap({
         view.current,
         `window.flight.setTrack(${JSON.stringify({ type: "FeatureCollection", features })});`,
       );
+      call(
+        view.current,
+        `window.flight.setAirspace(${JSON.stringify(
+          airspace ?? { type: "FeatureCollection", features: [] },
+        )});`,
+      );
     }
-  }, [ready, last, track, takeoffMs, headingDeg, circling]);
+  }, [ready, last, track, takeoffMs, headingDeg, circling, airspace]);
 
   const buttons = height >= BUTTONS_MIN_HEIGHT;
   const button = [

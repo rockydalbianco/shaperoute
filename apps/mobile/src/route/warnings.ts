@@ -158,6 +158,26 @@ const RULES: Rule[] = [
         : t("The route is {share}% shorter than asked.", { share }),
   },
   {
+    // anchored.distance_warning (TASK-347 part C3, ADR-0300): a drawing
+    // left where it was drawn is never rescaled, so the roads may make it
+    // longer or shorter than the distance drawn.
+    pattern:
+      /^on the roads the drawing is (\d+(?:\.\d+)?) km, (\d+)% (longer|shorter) than the [\d.]+ km drawn/,
+    tone: "info",
+    say: ([, km, share, longer]) => {
+      const distance = engineDistance(`${km} km`);
+      return longer === "longer"
+        ? t(
+            "On the roads your drawing is {share}% longer: {distance}. It stays where you drew it, at the same size.",
+            { share, distance },
+          )
+        : t(
+            "On the roads your drawing is {share}% shorter: {distance}. It stays where you drew it, at the same size.",
+            { share, distance },
+          );
+    },
+  },
+  {
     pattern: /^shape similarity [\d.]+ is below [\d.]+/,
     tone: "caution",
     say: () => t("The roads here follow the shape only roughly."),

@@ -1,26 +1,17 @@
 import type { Gear } from "@shaperoute/shared-types";
 import { useState } from "react";
-import { Image, Modal, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Modal, ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   initialWindowMetrics,
   SafeAreaProvider,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-import { gearPhotoSource } from "../api/gear";
 import { t } from "../i18n";
-import {
-  color,
-  fontSize,
-  fontWeight,
-  MIN_TAP_SIZE,
-  radius,
-  space,
-} from "../theme/tokens";
+import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
-import { useUnits } from "../units/useUnits";
 import { GearEditor } from "./GearEditor";
-import { gearSubtitle, gearTitle, lookOf, pastLimit, totalsLabel } from "./gearKinds";
+import { GearRow } from "./GearRow";
 import type { GearApi } from "./GearSetting";
 
 type Props = {
@@ -141,65 +132,6 @@ function Page({
   );
 }
 
-function GearRow({
-  item,
-  token,
-  api,
-  onPress,
-}: {
-  item: Gear;
-  token: string;
-  api: GearApi;
-  onPress: () => void;
-}) {
-  const units = useUnits();
-  const look = lookOf(item.kind);
-  const title = gearTitle(item);
-  const totals = totalsLabel(item, units);
-  const past = pastLimit(item);
-  return (
-    <Tap
-      style={styles.row}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={[
-        title,
-        gearSubtitle(item),
-        totals,
-        past ? t("Past its limit") : "",
-      ]
-        .filter(Boolean)
-        .join(", ")}
-    >
-      {item.photo_url !== undefined && api.baseUrl !== null ? (
-        <Image
-          style={styles.photo}
-          source={gearPhotoSource(api.baseUrl, token, item.photo_url, api.key)}
-          resizeMode="cover"
-          accessibilityIgnoresInvertColors
-        />
-      ) : (
-        <View style={styles.photo}>
-          <Text style={styles.emoji}>{look.emoji}</Text>
-        </View>
-      )}
-      <View style={styles.words}>
-        <Text style={styles.name} numberOfLines={1}>
-          {title}
-        </Text>
-        <Text style={styles.sub} numberOfLines={1}>
-          {gearSubtitle(item)}
-        </Text>
-        <Text style={styles.totals}>{totals}</Text>
-        {past && <Text style={styles.limit}>{t("Past its limit")}</Text>}
-      </View>
-      <Text style={styles.arrow}>›</Text>
-    </Tap>
-  );
-}
-
-const PHOTO_SIDE = 64;
-
 const styles = StyleSheet.create({
   page: {
     flex: 1,
@@ -250,52 +182,5 @@ const styles = StyleSheet.create({
     fontSize: fontSize.label,
     fontWeight: fontWeight.semibold,
     letterSpacing: 1.2,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
-    padding: space.md,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: color.border,
-    backgroundColor: color.surface,
-  },
-  photo: {
-    width: PHOTO_SIDE,
-    height: PHOTO_SIDE,
-    borderRadius: radius.md,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: color.surfaceRaised,
-  },
-  emoji: {
-    fontSize: fontSize.input + space.md,
-  },
-  words: {
-    flex: 1,
-    gap: 2,
-  },
-  name: {
-    color: color.text,
-    fontSize: fontSize.input,
-    fontWeight: fontWeight.semibold,
-  },
-  sub: {
-    color: color.textMuted,
-    fontSize: fontSize.small,
-  },
-  totals: {
-    color: color.text,
-    fontSize: fontSize.body,
-  },
-  limit: {
-    color: color.error,
-    fontSize: fontSize.small,
-    fontWeight: fontWeight.semibold,
-  },
-  arrow: {
-    color: color.textMuted,
-    fontSize: fontSize.input,
   },
 });

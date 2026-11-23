@@ -1,8 +1,9 @@
-import type { GymSet } from "@shaperoute/shared-types";
+import type { GymExercises, GymSet } from "@shaperoute/shared-types";
 
 import { loadSession } from "../account/sessionStore";
 import { appBody, type BodyProfile, NO_BODY } from "../body/bodyProfile";
 import { activeKcal } from "../body/energy";
+import { heartKcal } from "../body/heartKcal";
 import { isTrackless } from "../activities/snow";
 import { findProfile } from "../sports";
 import { gymKcal, gymKcalLabel } from "../gym/gymKcal";
@@ -69,18 +70,35 @@ export function postEnergy(
  * "184 kcal" for a workout at the gym (TASK-385 part C, ADR-0327), from
  * its sets; none without them: whoever hides them from others shows no
  * energy either (the user's «Niente kcal», 2026-11-06), since a number
- * without the cardio would not be the one its owner sees.
+ * without the cardio would not be the one its owner sees. Given its
+ * exercises with their heart rate (part G), from the heart rate (Keytel)
+ * when the body has a sex, a weight and a year of birth: one's own posts
+ * only, as the end of the workout counts it; another's body has none.
  */
 export function gymPostEnergy(
   post: SamplePost,
-  sets: readonly GymSet[] | null | undefined,
+  exercises: GymExercises | readonly GymSet[] | null | undefined,
   body: BodyProfile = bodyFor(post),
   year: number = new Date().getFullYear(),
 ): string | null {
-  if (sets === null || sets === undefined || !(post.minutes > 0)) {
+  if (exercises === null || exercises === undefined || !(post.minutes > 0)) {
     return null;
   }
-  return gymKcalLabel(gymKcal(sets, post.minutes * 60, body, year));
+  const seconds = post.minutes * 60;
+  if (isSets(exercises)) {
+    return gymKcalLabel(gymKcal(exercises, seconds, body, year));
+  }
+  const avg = exercises.heart_avg_bpm;
+  return gymKcalLabel(
+    (avg === undefined ? null : heartKcal(avg, seconds, body, year)) ??
+      gymKcal(exercises.sets, seconds, body, year),
+  );
+}
+
+function isSets(
+  exercises: GymExercises | readonly GymSet[],
+): exercises is readonly GymSet[] {
+  return Array.isArray(exercises);
 }
 
 /** The phone's body for a post of whoever is signed in; none for another's. */

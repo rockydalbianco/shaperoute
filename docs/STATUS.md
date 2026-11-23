@@ -360,8 +360,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
 - **TASK-481 — Il «+» del Feed: tutte le voci** (ADR-0390) · A (la lista:
   «Record now», «Photos only», «From a file») in `main` il 2026-11-23 (#1421),
-  esce col prossimo OTA; restano la privacy e le righe di 467 E2, 484 B, 485 B,
-  al via del Coordinatore. File: — · `tasks/TASK-481.md`
+  privacy («from a file», cinque lingue e sito) in `main` (#1444); escono col
+  prossimo OTA, copia del sito col sì dell'utente; restano le righe di 467 E2,
+  484 B, 485 B, al via del Coordinatore. File: — · `tasks/TASK-481.md`
 
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 (la barra
   «Apri» di Safari) e A (l'app apre il post del link) in produzione (OTA 21),

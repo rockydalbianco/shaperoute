@@ -3400,6 +3400,19 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   profilo invariato) e resta fuori da classifica, badge, concorso e gioco,
   che leggono solo `muw`. `PUT /me/activities/{key}` rifiuta `manual`
   (`422`).
+- **Il battito** (parte G, ADR-0327 punto 7): la richiesta può portare
+  `heart_avg_bpm` e `heart_max_bpm`, quello che un orologio ha scritto in
+  Apple Salute durante l'allenamento (tutti e due o nessuno, da 30 a 230, la
+  media non sopra il massimo, mai su uno scritto a mano: altrimenti `422`), e
+  `heart_shown` («Show heart rate», vero se manca). Vanno nelle colonne di
+  `runs` della migrazione 0061, come per il nuoto; esempio
+  `fixtures/gym-session-heart.json`. `GymSession` li risponde tutti e tre
+  solo con il battito. `GymExercises` porta media e massimo quando il
+  proprietario lo mostra, e sempre al proprietario; altrimenti li lascia
+  fuori. Arriva con gli esercizi: nascosti loro, l'endpoint è `404` e il
+  battito non si vede (deciso dall'agente su delega dell'utente, come le kcal
+  della scelta 17). Un'app di prima non li manda; un server di prima risponde
+  `422` a un'app che li manda (`extra="forbid"`): prima il server.
 - **`GET /gym/leaderboard?exercise=&month=`** (parte F, ADR-0327
   precisazione F): la classifica mensile di un esercizio del catalogo con
   una scala (`404` `unknown_exercise` per gli altri), in un mese di

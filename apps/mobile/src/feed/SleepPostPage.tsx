@@ -18,7 +18,6 @@ import { ProfileSleep } from "../profile/ProfileSleep";
 import { useFollowsDoor } from "../social/followsDoor";
 import {
   color,
-  font,
   fontSize,
   fontWeight,
   MIN_TAP_SIZE,
@@ -38,6 +37,8 @@ export const SLEEP_POST_VISIBILITY_AT_FIRST: SleepPostVisibility = "everyone";
 type Props = {
   /** The night is in the Feed: the sheet closes. */
   onDone?: () => void;
+  /** The night went in the Feed, or was taken off it: the Feed reads again. */
+  onChanged?: () => void;
   /** The phone's reader of the sleep: none in every build until part C. */
   reader?: SleepReader | null;
   /** For the tests: the moment the page opens. */
@@ -53,7 +54,7 @@ function visibilityName(visibility: SleepPostVisibility): string {
 
 /**
  * «Sleep», opened from the Feed's «+» (TASK-467 part E), in the texts the
- * user approved on 2026-11-21: last night as on the profile's card — the
+ * user approved on 2026-11-21, under the sheet's own title: last night as on the profile's card — the
  * score and its word, the hours slept, the stages — then who sees it,
  * «Everyone» at first, and «Publish», which puts the night in the Feed as
  * a post of its own. A night already there says «Already in the Feed» and
@@ -68,6 +69,7 @@ function visibilityName(visibility: SleepPostVisibility): string {
  */
 export function SleepPostPage({
   onDone,
+  onChanged,
   reader = sleepReader(),
   nowMs,
   fetchFn,
@@ -169,6 +171,7 @@ export function SleepPostPage({
     setBusy(false);
     if (outcome.kind === "ok") {
       setPosted({ asked, post: outcome.value });
+      onChanged?.();
       onDone?.();
     } else if (sessionEnded(outcome)) {
       onSessionEnded(session);
@@ -190,6 +193,7 @@ export function SleepPostPage({
     setBusy(false);
     if (outcome.kind === "ok") {
       setPosted({ asked, post: null });
+      onChanged?.();
     } else if (sessionEnded(outcome)) {
       onSessionEnded(session);
     } else {
@@ -197,11 +201,6 @@ export function SleepPostPage({
     }
   }
 
-  const title = (
-    <Text style={styles.title} accessibilityRole="header">
-      {t("Sleep")}
-    </Text>
-  );
   const cannotRead = (
     <Text style={styles.message}>
       {t(
@@ -213,7 +212,6 @@ export function SleepPostPage({
   if (!allowed) {
     return (
       <View style={styles.page} testID={SLEEP_POST_PAGE_TEST_ID}>
-        {title}
         <Tap
           style={[styles.button, styles.primary]}
           onPress={() => void allow()}
@@ -232,16 +230,11 @@ export function SleepPostPage({
   }
   if (own === null) {
     // Being read.
-    return (
-      <View style={styles.page} testID={SLEEP_POST_PAGE_TEST_ID}>
-        {title}
-      </View>
-    );
+    return <View style={styles.page} testID={SLEEP_POST_PAGE_TEST_ID} />;
   }
   if (night === null) {
     return (
       <View style={styles.page} testID={SLEEP_POST_PAGE_TEST_ID}>
-        {title}
         {own.kind === "refused" ? (
           cannotRead
         ) : (
@@ -256,7 +249,6 @@ export function SleepPostPage({
   const inFeed = posted !== null && posted.asked === asked && posted.post !== null;
   return (
     <View style={styles.page} testID={SLEEP_POST_PAGE_TEST_ID}>
-      {title}
       <ProfileSleep night={night} testID="sleep-post-night" />
       {inFeed ? (
         <View style={styles.row}>
@@ -323,10 +315,6 @@ export function SleepPostPage({
 const styles = StyleSheet.create({
   page: {
     gap: space.md,
-  },
-  title: {
-    ...font.heading,
-    color: color.text,
   },
   row: {
     flexDirection: "row",

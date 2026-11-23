@@ -60,6 +60,15 @@ export interface GymSessionRequest {
    * live, no pauses, rests or plan, ended before now; out of the levels and
    * the leaderboard. Absent for one recorded ("muw"). */
   source?: GymSource;
+  /** The heart rate a watch wrote in Apple Health during the workout
+   * (TASK-385 part G, fixtures/gym-session-heart.json), both or neither,
+   * HEART_BPM_MIN–HEART_BPM_MAX, the average not above the maximum; never
+   * on a workout written by hand. Only to an API with part G: an older one
+   * answers 422. */
+  heart_avg_bpm?: number;
+  heart_max_bpm?: number;
+  /** «Show heart rate»: whether others see it; true when left out. */
+  heart_shown?: boolean;
 }
 
 /** Where a workout comes from (TASK-484): recorded, or written by hand. */
@@ -80,6 +89,10 @@ export interface GymSession {
   plan?: string;
   /** Where it comes from (TASK-484); missing from an API older than it. */
   source?: GymSource;
+  /** The three only for a workout sent with its heart rate (part G). */
+  heart_avg_bpm?: number;
+  heart_max_bpm?: number;
+  heart_shown?: boolean;
 }
 
 /** GET /drawings/{id}/exercises: what the post of a workout shows; 404
@@ -92,6 +105,10 @@ export interface GymExercises {
   /** The levels this workout reached first (part E), the highest first;
    * missing from an API older than TASK-385 E. */
   new_levels?: GymLevel[];
+  /** Its heart rate (part G): when its owner shows it, and always to the
+   * owner; missing otherwise. */
+  heart_avg_bpm?: number;
+  heart_max_bpm?: number;
 }
 
 /** What a milestone reads (docs/sports/gym.md «I tipi di serie»): the kg of

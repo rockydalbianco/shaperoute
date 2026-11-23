@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { sleepPostsOn, sleepReader } from "../health/sleepModules";
+import type { SleepReader } from "../health/sleepSamples";
 import { AddPastActivity } from "../imports/AddPastActivity";
 import { PhotoPostForm } from "../imports/PhotoPostForm";
 import { filePickerAvailable, type PickFile } from "../imports/pickActivityFile";
@@ -18,11 +20,17 @@ import {
 import { SheetModal } from "../ui/SheetModal";
 import { Tap } from "../ui/Tap";
 import { type AddToFeedEntryId, addToFeedEntries } from "./addToFeedEntries";
+import { SleepPostPage } from "./SleepPostPage";
 
 type Props = {
   /** «Record now»: the sheet closes and the recording starts (App.tsx);
    * without it the entry is not there. */
   onRecord?: () => void;
+  /** A night of sleep went in the Feed, or was taken off it, from «Sleep»:
+   * the Feed reads again. */
+  onSleepPost?: () => void;
+  /** The phone's reader of the sleep: none in every build until part C. */
+  reader?: SleepReader | null;
   /** The fakes of the tests: whether the app was built with the file
    * picker, the pickers, and the network. */
   available?: boolean;
@@ -42,10 +50,14 @@ type Props = {
  * marked «Imported». A chosen entry opens in the same sheet, with «‹» back
  * to the list; the sheet closes once the run or the post is kept, or the
  * form discarded. In an app built without the file picker there is no
- * «From a file».
+ * «From a file». «Sleep» (TASK-467 part E) is last night with «Publish»,
+ * a post of its own: there only while the sleep is on (`sleepPostsOn`) and
+ * the phone has a reader of it, so in no build until part C.
  */
 export function AddToFeed({
   onRecord,
+  onSleepPost,
+  reader = sleepReader(),
   available = filePickerAvailable(),
   pickFile,
   pick,
@@ -57,6 +69,7 @@ export function AddToFeed({
   const entries = addToFeedEntries({
     record: onRecord !== undefined,
     filePicker: available,
+    sleep: sleepPostsOn() && reader !== null,
   });
   const entry = entries.find(({ id }) => id === chosen) ?? null;
   const close = () => {
@@ -162,6 +175,16 @@ export function AddToFeed({
                 pick={pick}
                 fetchFn={fetchFn}
               />
+            )}
+            {entry?.id === "sleep" && (
+              <View style={styles.card}>
+                <SleepPostPage
+                  reader={reader}
+                  onChanged={onSleepPost}
+                  onDone={close}
+                  fetchFn={fetchFn}
+                />
+              </View>
             )}
           </ScrollView>
         </View>

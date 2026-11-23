@@ -2751,6 +2751,14 @@ export const FR: Table = {
   "Find an exercise": "Chercher un exercice",
   "Workout at the gym": "Séance en salle",
 
+  // src/trainingmode/ (TASK-490 part B: the body of the week)
+  "of your body trained": "de ton corps entraîné",
+  "{percent}% of your body trained this week.":
+    "{percent} % de ton corps entraîné cette semaine.",
+  "10 sets or more: {muscles}.": "10 séries ou plus : {muscles}.",
+  "5 to 9 sets: {muscles}.": "De 5 à 9 séries : {muscles}.",
+  "1 to 4 sets: {muscles}.": "De 1 à 4 séries : {muscles}.",
+
   // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
   "Runs@@ski": "Descentes",
   Legend: "Légende",
@@ -3188,12 +3196,41 @@ export const FR: Table = {
   Sleep: "Sommeil",
   "Already in the Feed": "Déjà dans le Feed",
   "Remove post": "Retirer la publication",
+  "Last night's sleep score, from Apple Health":
+    "Le score de sommeil de la nuit dernière, depuis Apple Santé",
   "Your score, hours slept and sleep stages go in the Feed.":
     "Ton score, tes heures de sommeil et tes phases de sommeil vont dans le Feed.",
   // src/air/ (TASK-479 part A1: the flight map and the height above the ground; texts approved by the user on 2026-11-22)
   "Height above ground": "Hauteur sol",
   "Heading up": "Cap en haut",
   "North up": "Nord en haut",
+  // The plan that adapts (TASK-488): gym/AdaptQuestion.tsx, gym/GymPlans.tsx.
+  "Easy@@feel": "Facile",
+  "Right@@feel": "Juste",
+  "Hard@@feel": "Dur",
+  "could do more": "j'aurais pu plus",
+  "as planned": "comme prévu",
+  "at my limit": "à la limite",
+  "Next time the plan adjusts to your answer.":
+    "La prochaine fois, le programme s'ajuste à ta réponse.",
+  "No answer? It goes on as planned.": "Pas de réponse ? Il continue comme prévu.",
+  "Easy: up we go": "Facile : on monte",
+  "Right: as planned": "Juste : comme prévu",
+  "Hard: the same next time": "Dur : pareil la prochaine fois",
+  "Hard again: one step back": "Encore dur : un pas en arrière",
+  "Change@@answer": "Changer",
+  "Next {day}, {name}:": "La prochaine fois ({day}), {name} :",
+  "Easy: one step more than planned. Right: as planned. Hard: the same next time; after two «Hard» in a row, one step back.":
+    "Facile : un pas de plus que prévu. Juste : comme prévu. Dur : pareil la prochaine fois ; après deux « Dur » de suite, un pas en arrière.",
+  "{run} of the plan: how did it go?": "{run} du programme : comment ça s'est passé ?",
+  "↑ one step more · = the same · ↓ one step back":
+    "↑ un pas de plus · = pareil · ↓ un pas en arrière",
+  "Adapts to how it went": "S'adapte à comment ça s'est passé",
+  "Off: no question at the end, the weeks grow as planned.":
+    "Désactivé : pas de question à la fin, les semaines progressent comme prévu.",
+  "Next week is the lighter one, to recover.":
+    "La semaine prochaine est la plus légère, pour récupérer.",
+  "How did the plan feel?": "Comment as-tu trouvé le programme ?",
   // src/air/ (TASK-479 part E1: the pilot's airspace file; notices 3 and 4 approved by the user on 2026-11-21, the other texts on 2026-11-23)
   "No airspace loaded. MuW does not include airspace data.":
     "Aucun espace aérien chargé. MuW ne fournit pas de données d'espace aérien.",

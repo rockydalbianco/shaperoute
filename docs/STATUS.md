@@ -371,6 +371,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);
   manca il passo sul server (il 12, col sì dell'utente). Poi la parte app,
   dopo TASK-414 B e TASK-413 B. File: — · `tasks/TASK-463.md`
+  **2026-11-23**: B (#1278) e C, l'accensione (#1350), in `main`; A sul
+  server dal passo 12, l'app in produzione dall'OTA 20 (2026-11-21). Fatto
+  in produzione: manca la prova dell'utente sul telefono, poi si chiude.
 
 - **TASK-461 — Il pianificatore completo** (ADR-0371) · A1 e B1 (server:
   quattro esercizi, giorni fuori `outing`, `target`) in `main` e sul server;

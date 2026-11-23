@@ -1,4 +1,4 @@
-import type { LatLon, Person, RunActivity } from "./index.ts";
+import type { FeedPage, LatLon, Person, RunActivity } from "./index.ts";
 
 /**
  * Groups to go out together (TASK-495, ADR-0402, docs/GRUPPI.md, docs/API.md
@@ -108,6 +108,16 @@ export interface GroupMembersPage {
 export interface GroupRoleRequest {
   role: GroupRole;
 }
+
+/**
+ * GET /groups/{id}/activity?limit=20&cursor=…, members only (403 for the
+ * others): «Recent activity», the posts of the members of the last 14 days,
+ * of a run of one of the group's sports, the latest first; only those who
+ * asks sees in the Feed. The Feed's cards.
+ */
+export type GroupActivity = FeedPage;
+/** The days «Recent activity» looks back. */
+export const GROUP_RECENT_DAYS = 14;
 
 /** PUT /groups/{id}/membership: where who asked stands now. */
 export interface GroupJoin {

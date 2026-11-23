@@ -5117,6 +5117,7 @@ del gruppo arrivano con la parte C.
 | `DELETE /groups/{id}/membership` | esce; ritira la richiesta; rifiuta l'invito | `204` |
 | `PUT /groups/{id}/mute`, `DELETE …/mute` | «Mute» del membro, e il contrario | `204` |
 | `GET /groups/{id}/members?limit=20&cursor=…` | i membri, solo per i membri | `200` `GroupMembersPage` |
+| `GET /groups/{id}/activity?limit=20&cursor=…` | «Recent activity», solo per i membri | `200` `FeedPage` |
 | `DELETE /groups/{id}/members/{public_id}` | admin o co-admin tolgono un membro | `204` |
 | `PUT /groups/{id}/members/{public_id}/role` | l'admin dà o toglie il co-admin, o passa il suo ruolo | `204` |
 | `GET /groups/{id}/requests?limit=20&cursor=…` | chi ha chiesto di entrare, il primo per primo | `200` `PeoplePage` |
@@ -5149,6 +5150,14 @@ del gruppo arrivano con la parte C.
   membri (`403 http_error` «Only the group's members can do this.»): prima
   l'admin, poi i co-admin, poi i membri, ognuno da quando è entrato, mai
   chi è lontano da chi chiede.
+- **«Recent activity»** (`GET …/activity`, parte A2), solo per i membri
+  (`403` per gli altri): i post dei membri pubblicati negli ultimi **14
+  giorni**, di una corsa di uno degli sport del gruppo (niente post di sole
+  foto, del sonno o di una scheda), il più recente prima; solo quelli che
+  chi chiede vede già nel Feed (`drawings.shown_sql`: mai attraverso un
+  blocco, mai nascosti, «Followers» solo a chi segue) e che l'app sa
+  leggere (`X-MuW-Reads`). Le schede del Feed (`FeedPage`), a pagine con
+  `cursor`. Chi esce dal gruppo porta via i suoi post.
 - **«Join»** (`PUT …/membership`): in un gruppo `public`, o con un invito,
   si entra subito (`me: member`); in un gruppo `request` si lascia una
   richiesta (`me: requested`) e admin e co-admin ricevono

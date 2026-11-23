@@ -3468,7 +3468,7 @@ export const DE: Table = {
   "Deepest: {dist} from the edge, {height} from floor or ceiling":
     "Am tiefsten: {dist} vom Rand, {height} von Unter- oder Obergrenze",
   "Only on your phone: not in the Feed.": "Nur auf deinem Telefon: nicht im Feed.",
-  // src/air/ (TASK-479 part D1: the pilot's waypoints and task; en/it approved by the user on 2026-11-23)
+  // src/air/ (TASK-479 part D1: the pilot's waypoints and task; approved by the user on 2026-11-23)
   Waypoints: "Wegpunkte",
   Task: "Aufgabe",
   "Waypoints: {count} · Landings: {landings}":

@@ -17,6 +17,7 @@ import {
   space,
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 import { Tap } from "../ui/Tap";
 import {
   liveInFeed,
@@ -271,6 +272,8 @@ function ConsentSheet({
   onCancel: () => void;
 }) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   return (
     <View style={styles.fill}>
       <Tap
@@ -280,7 +283,9 @@ function ConsentSheet({
         importantForAccessibility="no"
         pressScale={1}
       />
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + space.md }]}>
+      <View
+        style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.md }]}
+      >
         <Text style={styles.title} accessibilityRole="header">
           {t("Share this activity live")}
         </Text>

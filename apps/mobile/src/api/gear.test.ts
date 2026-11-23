@@ -7,11 +7,13 @@ import { answers, apiError } from "../account/testing";
 import {
   addGear,
   deleteGear,
+  fetchActivityGear,
   fetchMyGear,
   gearPhotoSource,
   isGear,
   isGearList,
   removeGearPhoto,
+  saveActivityGear,
   saveGear,
   saveGearPhoto,
 } from "./gear";
@@ -104,4 +106,29 @@ test("the photo is read with the token and the key", () => {
     uri: `http://api${one.photo_url}`,
     headers: { ...AUTH, "X-API-Key": "k" },
   });
+});
+
+test("the gear of an activity is read and put whole", async () => {
+  const fetchFn: jest.Mock = answers(
+    { status: 200, body: list },
+    { status: 200, body: { gear: [one] } },
+  );
+  expect(await fetchActivityGear(URL, TOKEN, "a b", { fetchFn, key: null })).toEqual({
+    kind: "ok",
+    value: list.gear,
+  });
+  expect(
+    await saveActivityGear(
+      URL,
+      TOKEN,
+      "a b",
+      { gear_ids: [ID] },
+      { fetchFn, key: null },
+    ),
+  ).toEqual({ kind: "ok", value: [one] });
+  expect(fetchFn.mock.calls[0][0]).toBe("http://api/me/activities/a%20b/gear");
+  const [url, init] = fetchFn.mock.calls[1];
+  expect(url).toBe("http://api/me/activities/a%20b/gear");
+  expect(init).toMatchObject({ method: "PUT", headers: AUTH });
+  expect(JSON.parse(init.body)).toEqual({ gear_ids: [ID] });
 });

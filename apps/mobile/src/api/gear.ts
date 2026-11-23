@@ -1,4 +1,9 @@
-import { type Gear, type GearList, type GearRequest } from "@shaperoute/shared-types";
+import {
+  type ActivityGearRequest,
+  type Gear,
+  type GearList,
+  type GearRequest,
+} from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask, authHeaders } from "./accounts";
 import { apiKey, keyHeaders } from "./apiUrl";
@@ -107,6 +112,49 @@ export function removeGearPhoto(
     { method: "DELETE", token },
     isEmpty,
     options,
+  );
+}
+
+function activityGearPath(key: string): string {
+  return `/me/activities/${encodeURIComponent(key)}/gear`;
+}
+
+/** GET /me/activities/{key}/gear: the items on an activity (TASK-486 part
+ * C), retired ones too. 404: the API has no such activity, or no gear. */
+export function fetchActivityGear(
+  baseUrl: string,
+  token: string,
+  key: string,
+  options: Options = {},
+): Promise<AccountOutcome<Gear[]>> {
+  return ask(
+    baseUrl,
+    activityGearPath(key),
+    { method: "GET", token },
+    isGearList,
+    options,
+  ).then((outcome) =>
+    outcome.kind === "ok" ? { kind: "ok", value: outcome.value.gear } : outcome,
+  );
+}
+
+/** PUT /me/activities/{key}/gear: the whole list of the activity, up to
+ * `GEAR_MAX_ON_ACTIVITY`; the items as the API keeps them come back. */
+export function saveActivityGear(
+  baseUrl: string,
+  token: string,
+  key: string,
+  request: ActivityGearRequest,
+  options: Options = {},
+): Promise<AccountOutcome<Gear[]>> {
+  return ask(
+    baseUrl,
+    activityGearPath(key),
+    { method: "PUT", body: request, token },
+    isGearList,
+    options,
+  ).then((outcome) =>
+    outcome.kind === "ok" ? { kind: "ok", value: outcome.value.gear } : outcome,
   );
 }
 

@@ -612,8 +612,7 @@ def city_files(
         by_city.setdefault(by_key[k]["city"], []).append(by_key[k])
     files = {}
     for city, routes in sorted(by_city.items()):
-        # A ride after the runs (TASK-441): a run keeps its place, so its id.
-        routes.sort(key=lambda r: ("activity" in r, -r["similarity"], r["key"]))
+        routes.sort(key=_place)
         lat, lon = centres.get(city, (None, None))
         body = {
             "city": city,
@@ -624,6 +623,19 @@ def city_files(
         }
         files[f"{city}.json"] = json.dumps(body, separators=(",", ":")) + "\n"
     return files
+
+
+# The rides drawn after the first ones (TASK-441 B3, 40 and 50 km).
+LATER_RIDES_FROM_M = 40_000
+
+
+def _place(r: Run) -> tuple[bool, bool, float, str]:
+    """Where a route goes in its city file: best first, a ride after the runs
+    and a later ride after the rides. The API numbers a route by its place
+    (recommended.py), so what was in the file keeps its id."""
+    ride = "activity" in r
+    later = ride and r["distance_m"] >= LATER_RIDES_FROM_M
+    return (ride, later, -r["similarity"], r["key"])
 
 
 def _route_body(r: Run) -> dict[str, Any]:

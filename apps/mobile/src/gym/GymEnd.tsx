@@ -6,7 +6,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SIGN_IN_TO_KEEP_RUNS, useActivitiesDoor } from "../activities/activitiesDoor";
 import { keepSleepFor } from "../activities/sleepOut";
 import { isSeen } from "../api/drawings";
+import { heartKcal } from "../body/heartKcal";
 import { useBody } from "../body/useBody";
+import { heartReader } from "../health/heartModules";
+import type { HeartReader } from "../health/heartSamples";
 import { healthPhone } from "../health/healthModules";
 import type { HealthPhone } from "../health/healthPhone";
 import { HealthRunEnd } from "../health/HealthRunEnd";
@@ -18,6 +21,7 @@ import { useHealth } from "../health/useHealth";
 import { t } from "../i18n";
 import { appLanguage } from "../i18n/language";
 import { clockLabel } from "../navigation/freeRun";
+import { PoolHeartLines } from "../pool/PoolHeartLines";
 import { color, fontSize, fontWeight, space } from "../theme/tokens";
 import { useUnits } from "../units/useUnits";
 import { adaptDayOf, answered } from "./adapt";
@@ -33,6 +37,7 @@ import type { PickPhoto } from "../social/PublicParts";
 import { entryOf, type Entry, setOf, valuesOf } from "./setKinds";
 import { keepPlan, useKeptPlans } from "./plans";
 import type { GymSaved } from "./useGymOutbox";
+import { useGymHeart } from "./useGymHeart";
 import { changeWorkout, endGymWorkout } from "./useWorkout";
 import {
   activeMs,
@@ -60,7 +65,11 @@ type Editing = { kind: "set"; n: number; entry: Entry } | { kind: "new"; entry: 
  * B2b): nothing in any build until part C, where the phone has no reader.
  * Signed out, it says to sign in, as the end of a run does: `onSignIn` is
  * the way there of what shows it over the app (TASK-453). Its energy
- * under its time (part C, the user's «Stima MET sempre»).
+ * under its time (part C, the user's «Stima MET sempre»). Its heart rate
+ * from the watch under its figures (part G, the user's «Un sì per tutti»):
+ * the swim's button and lines, one consent for both; with it, its energy
+ * from the heart rate (Keytel) when the body has a sex, a weight and a
+ * year of birth, and «Show heart rate» in the form of its post.
  */
 export function GymEnd({
   workout,
@@ -71,6 +80,7 @@ export function GymEnd({
   apiKey,
   health: phone = healthPhone(),
   sleep: sleepPhone = sleepReader(),
+  heart: reader = heartReader(),
 }: {
   workout: Workout;
   onSave: (workout: Workout, post?: GymPost) => GymSaved;
@@ -84,6 +94,8 @@ export function GymEnd({
   health?: HealthPhone | null;
   /** The phone's reader of the sleep (TASK-467): none until part C. */
   sleep?: SleepReader | null;
+  /** Where the heart rate is read (TASK-385 part G); for the tests, a fake. */
+  heart?: HeartReader | null;
 }) {
   const insets = useSafeAreaInsets();
   const units = useUnits();
@@ -96,6 +108,8 @@ export function GymEnd({
   const [problem, setProblem] = useState(false);
   const healthState = useHealth(phone);
   const body = useBody();
+  const { state: heartState, add: addHeart } = useGymHeart(reader, workout);
+  const heart = heartState.kind === "heart" ? heartState.heart : null;
   // «Sleep last night» (TASK-467 part B2b), as at the end of a run: the
   // night before the workout began, on until turned off, shown and sent
   // only with a post others see.
@@ -135,7 +149,20 @@ export function GymEnd({
   }
 
   function save() {
-    const saved = onSave(workout, post);
+    // Its heart rate goes with it, shown in the post unless turned off.
+    const saved = onSave(
+      heart === null
+        ? workout
+        : {
+            ...workout,
+            heart: {
+              avgBpm: heart.avgBpm,
+              maxBpm: heart.maxBpm,
+              shown: post.showHeart ?? true,
+            },
+          },
+      post,
+    );
     if (saved === "kept") {
       // The night goes only when the post shows it; otherwise nothing of
       // it leaves the phone.
@@ -185,13 +212,10 @@ export function GymEnd({
       ? null
       : setOf(editing.entry, valuesOfTexts(editing.entry, texts, units), 0, true);
   const timeMs = activeMs(workout, workout.endedMs ?? workout.startedMs);
+  const year = new Date(workout.startedMs).getFullYear();
   const kcal = gymKcalLabel(
-    gymKcal(
-      workout.sets,
-      timeMs / 1000,
-      body,
-      new Date(workout.startedMs).getFullYear(),
-    ),
+    (heart === null ? null : heartKcal(heart.avgBpm, timeMs / 1000, body, year)) ??
+      gymKcal(workout.sets, timeMs / 1000, body, year),
   );
 
   return (
@@ -226,6 +250,11 @@ export function GymEnd({
           </Text>
         )}
         {rests !== null && <Text style={gymStyles.muted}>{rests}</Text>}
+        {/* The swim's «No heart rate from your watch for this swim.» does
+            not fit a workout: with no readings, nothing. */}
+        {heartState.kind !== "none" && (
+          <PoolHeartLines state={heartState} onAdd={addHeart} />
+        )}
         {editing !== null ? (
           <View style={styles.edit} testID="gym-edit">
             <Text style={gymStyles.title}>{entryName(editing.entry)}</Text>
@@ -304,6 +333,7 @@ export function GymEnd({
               <GymPostForm
                 post={post}
                 onPost={setPost}
+                heart={heart !== null}
                 pick={pick}
                 fetchFn={fetchFn}
                 apiKey={apiKey}

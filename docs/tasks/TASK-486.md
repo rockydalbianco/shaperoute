@@ -1,6 +1,7 @@
 # TASK-486 — L'attrezzatura: scarpe, bici, sci e tutto il resto, coi km
 
-**Stato**: Todo · parte 0 (domande e documenti) chiusa il 2026-11-21
+**Stato**: In lavorazione · parte 0 chiusa il 2026-11-21; A, B, C, D in
+`main` (2026-11-23), dietro `GEAR_ON = false`; prossimi: privacy, poi E
 **Fase**: 5 · **Branch**: `docs/TASK-486-gear` (parte 0), poi
 `feat/TASK-486-<parte>-…` per ogni parte
 **ADR**: ADR-0393 · numeri dal Coordinatore (fork 2), 2026-11-21
@@ -100,6 +101,14 @@ server e privacy col sì dell'utente.
 - **Privacy** nelle cinque lingue e sul sito prima che l'app la mostri
   (testo approvato dall'utente). Server: un passo, col sì dell'utente.
 
+**Com'è uscita** (PR #1372, `ea133ae1`, server allo step 17 del
+2026-11-22): migrazione `0083_gear.sql`; l'attrezzo cambia con
+`PUT /me/gear/{id}` intero, non `PATCH`; i predefiniti sono il campo
+`defaults` dell'attrezzo, non una rotta a parte; in più
+`GET /me/activities/{key}/gear`, `GET /gear/{id}` e la sua foto.
+`drawing_outfit_tags.gear_id` passa alla parte F (rompeva
+`test_outfit_tags`). Le rotte in `docs/API.md` «Gear».
+
 ### Parte B — La lista e la scheda dell'attrezzo (app)
 
 - «Gear» da «Settings» e dal proprio profilo: la lista divisa in «In use»
@@ -172,6 +181,82 @@ docs/INDEX.md
 
 Le liste delle parti A–G si scrivono qui prima di ogni parte, dopo il via
 del Coordinatore.
+
+Parte A (PR #1372, in `main` il 2026-11-21, `ea133ae1`):
+
+```
+services/api/migrations/0083_gear.sql          (nuovo)
+services/api/shaperoute_api/gear.py            (nuovo)
+services/api/tests/test_gear.py                (nuovo)
+services/api/shaperoute_api/app.py
+services/api/shaperoute_api/moderation.py
+services/api/shaperoute_api/report_email.py
+services/api/tests/test_moderation.py
+packages/shared-types/src/index.ts             (REPORT_KINDS con "gear")
+packages/shared-types/test/moderation.test.ts
+docs/API.md
+docs/DATABASE.md
+```
+
+Parte B (PR #1377, in `main` il 2026-11-22, `77442332`; testi e
+schermate approvati dall'utente il 2026-11-22):
+
+```
+packages/shared-types/src/gear.ts              (nuovo)
+packages/shared-types/test/gear.test.ts        (nuovo)
+packages/shared-types/fixtures/gear.json       (nuovo)
+packages/shared-types/fixtures/gear-list.json  (nuovo)
+packages/shared-types/fixtures/gear-request.json (nuovo)
+packages/shared-types/src/index.ts
+apps/mobile/src/api/gear.ts                    (nuovo)
+apps/mobile/src/api/gear.test.ts               (nuovo)
+apps/mobile/src/gear/gearOn.ts                 (nuovo, GEAR_ON = false)
+apps/mobile/src/gear/gearKinds.ts              (nuovo)
+apps/mobile/src/gear/gearKinds.test.ts         (nuovo)
+apps/mobile/src/gear/GearSetting.tsx           (nuovo)
+apps/mobile/src/gear/GearSetting.test.tsx      (nuovo)
+apps/mobile/src/gear/GearPage.tsx              (nuovo)
+apps/mobile/src/gear/GearEditor.tsx            (nuovo)
+apps/mobile/src/profile/SettingsPage.tsx       (una riga)
+apps/mobile/src/i18n/{it,de,fr,es}.ts
+```
+
+Parte C (PR #1439, in `main` il 2026-11-23, `5b315253`; testi e
+schermate approvati dall'utente il 2026-11-23):
+
+```
+apps/mobile/src/gear/gearOut.ts                (nuovo)
+apps/mobile/src/gear/gearOut.test.ts           (nuovo)
+apps/mobile/src/gear/GearPicker.tsx            (nuovo)
+apps/mobile/src/gear/GearPicker.test.tsx       (nuovo)
+apps/mobile/src/gear/ActivityGear.tsx          (nuovo)
+apps/mobile/src/gear/ActivityGear.test.tsx     (nuovo)
+apps/mobile/src/activities/RunEndGear.test.tsx (nuovo)
+apps/mobile/src/activities/activitiesDoorGear.test.tsx (nuovo)
+apps/mobile/src/activities/RunEnd.tsx          (solo l'aggancio)
+apps/mobile/src/activities/ActivityCard.tsx    (una voce nel «…»)
+apps/mobile/src/activities/activitiesDoor.ts
+apps/mobile/src/api/gear.ts
+apps/mobile/src/api/gear.test.ts
+apps/mobile/src/i18n/{it,de,fr,es}.ts
+```
+
+Parte D (PR #1463, in `main` il 2026-11-23, `42498201`; schermate
+approvate dall'utente il 2026-11-23, nessun testo nuovo):
+
+```
+apps/mobile/src/api/profileGear.ts             (nuovo)
+apps/mobile/src/api/profileGear.test.ts        (nuovo)
+apps/mobile/src/gear/GearRow.tsx               (nuovo, tolto da GearPage)
+apps/mobile/src/gear/GearSheet.tsx             (nuovo, la scheda in sola lettura)
+apps/mobile/src/gear/ProfileGear.tsx           (nuovo)
+apps/mobile/src/gear/ProfileGear.test.tsx      (nuovo)
+apps/mobile/src/gear/GearPage.tsx
+apps/mobile/src/profile/ProfileHome.tsx        (una riga)
+apps/mobile/src/profile/UserProfilePage.tsx    (una riga)
+```
+
+Questa PR (soli documenti): `docs/tasks/TASK-486.md`, `docs/STATUS.md`.
 
 ## Fuori scope
 

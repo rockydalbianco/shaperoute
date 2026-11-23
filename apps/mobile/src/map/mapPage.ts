@@ -176,6 +176,14 @@ export const FIRST_MARK_RADIUS = 9;
 export const FAINT_OPACITY = 0.35;
 export const BOX_WIDTH = 1.5;
 
+/** A drawing anchored to the roads (TASK-347 part C, ADR-0300): the lines as
+ * the finger drew them stay as a ghost, the same yellow, thin and faint,
+ * under the route the roads draw; where the roads went far from the finger
+ * the route takes the colour of what the user should know (`warning`). */
+export const DRAWN_GHOST_WIDTH = 2;
+export const DRAWN_GHOST_OPACITY = 0.45;
+export const FAR_COLOR = color.warning;
+
 /** Where the route of the figure starts (TASK-426, ADR-0354): a dot in the
  * colour of a start, which a finger drags with «Move». */
 export const START_DOT_RADIUS = 9;
@@ -440,6 +448,12 @@ export function buildMapPage(language: Language = appLanguage()): string {
     var faint = noRoute;
     var chosenBox = noRoute;
     var links = noRoute;
+    // The drawing anchored to the roads (TASK-347 part C): the route of its
+    // strokes, the stretches where the roads went far from the finger, and
+    // whether the figure is a ghost under them.
+    var snapped = noRoute;
+    var farAway = noRoute;
+    var ghostFigure = false;
     var marks = noRoute;
     var startDot = noRoute;
     var ink = [];
@@ -740,6 +754,34 @@ export function buildMapPage(language: Language = appLanguage()): string {
           "line-dasharray": ${toScript(WALK_DASH)},
         },
       });
+      map.addSource("canvas-snapped", { type: "geojson", data: snapped });
+      map.addLayer({
+        id: "canvas-snapped",
+        type: "line",
+        source: "canvas-snapped",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(ROUTE_COLOR)},
+          "line-width": ${ROUTE_WIDTH},
+          "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      map.addSource("canvas-far", { type: "geojson", data: farAway });
+      map.addLayer({
+        id: "canvas-far",
+        type: "line",
+        source: "canvas-far",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(FAR_COLOR)},
+          "line-width": ${ROUTE_WIDTH},
+          "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      // Drawn again after a reload of the style: the figure a ghost again.
+      if (ghostFigure) {
+        ghostLooks();
+      }
       map.addSource("ink", { type: "geojson", data: inkData() });
       map.addLayer({
         id: "ink",
@@ -1521,6 +1563,35 @@ export function buildMapPage(language: Language = appLanguage()): string {
       setSource("canvas-faint", faint);
       setSource("canvas-links", links);
     }
+    // The figure as a ghost under the route of its strokes, or as the route
+    // itself (TASK-347 part C).
+    function ghostLooks() {
+      if (!map.getLayer("canvas")) {
+        return;
+      }
+      map.setPaintProperty(
+        "canvas",
+        "line-width",
+        ghostFigure ? ${DRAWN_GHOST_WIDTH} : ${ROUTE_WIDTH},
+      );
+      map.setPaintProperty(
+        "canvas",
+        "line-opacity",
+        ghostFigure ? ${DRAWN_GHOST_OPACITY} : ${ROUTE_OPACITY},
+      );
+    }
+    // The route of the strokes anchored, and its stretches far from the
+    // finger (TASK-347 part C).
+    function drawAnchored(ghostOn, snappedLines, farLines) {
+      snapped = multiLine(snappedLines);
+      farAway = multiLine(farLines);
+      setSource("canvas-snapped", snapped);
+      setSource("canvas-far", farAway);
+      if (ghostOn !== ghostFigure) {
+        ghostFigure = ghostOn;
+        ghostLooks();
+      }
+    }
     // The box round the piece chosen.
     function drawBox(ring) {
       chosenBox = ring.length > 1
@@ -2199,6 +2270,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       inkLooks("draw");
       drawInk();
       drawFigure([]);
+      drawAnchored(false, [], []);
       drawBox([]);
       drawMarks([]);
       drawStart(null);
@@ -2468,6 +2540,10 @@ export function buildMapPage(language: Language = appLanguage()): string {
           setKind(message.kind);
         } else if (message.type === "setCanvas") {
           setCanvas(message);
+        } else if (message.type === "setAnchored") {
+          if (canvas) {
+            drawAnchored(message.ghost, message.snapped, message.far);
+          }
         } else if (message.type === "clearCanvas") {
           clearCanvas();
         } else if (message.type === "setPick") {

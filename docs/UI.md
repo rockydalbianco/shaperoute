@@ -690,7 +690,9 @@ sul contenuto, in 200 ms (subito con «Riduci movimento»), e la lascia
 quando la pagina torna in cima. Conta la pagina sullo schermo: cambiando
 scheda l'header segue quella nuova. Ogni pagina lo dice con
 `useHeaderScroll()` sul suo scroller principale (Disegna, Explore,
-Explore sull'acqua, Messaggi, Profilo, «Today» e «Days» dello sci, A5c);
+Explore sull'acqua, Messaggi, Profilo, «Today» e «Days» dello sci, A5c;
+«All» e «Following» del Feed, A5c-2, dove parla solo la scheda sullo
+schermo e una scheda nascosta rimette l'header a riposo);
 una pagina che non lo dice tiene l'header a riposo, e una che se ne va
 lontana dalla cima lo rimette a riposo. Con «Riduci trasparenza» la fascia è opaca
 con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
@@ -714,6 +716,16 @@ restano un attimo, poi va via nello stesso modo. Non prende i tocchi. Con
 to {name}.» di «Send to a friend» e «Thanks for telling us. We will look at
 it.» dopo ogni segnalazione (post, profilo, messaggio, commento): il foglio
 si chiude e il grazie arriva nell'isola. Altri punti li decide l'utente.
+Sul vetro (TASK-469 A7b) l'isola ha il filo di luce del vetro scuro in
+ogni tono e un'ombra corta; con «Riduci trasparenza» e «Aumenta
+contrasto» resta come prima.
+
+**I fogli di vetro** (TASK-469 A7a, `src/ui/sheetFace.ts`): ogni foglio
+dal basso prende `useSheetFace()` dopo il suo stile: angoli in alto a 28,
+il filo di luce del vetro al posto della linea in cima e un'ombra
+morbida verso l'alto; la faccia resta `surface`. Con «Riduci
+trasparenza» la linea sottile di prima, con «Aumenta contrasto» il
+bordo forte.
 
 **Fogli e liste** (TASK-388 C): i fogli dal basso (il «+» dei messaggi, il
 foglio di un messaggio, i filtri della ricerca, il super like, «Tag
@@ -5392,6 +5404,65 @@ salva come `alpinism`.
 - Nel modulo del post non è un giorno sulla neve: resta alpinismo. Sull'orologio non
   c'è, finché una sua build non lo conosce.
 
+## Il contacalorie: «Nutrition» (TASK-489 parte B, ADR-0397)
+
+**Spenta in ogni build di oggi** dalla costante `NUTRITION_ON`
+(`nutrition/nutritionOn.ts`): si accende con la build nativa che legge
+allenamenti ed energia attiva da Apple Salute. Quello che segue è com'è
+quando è accesa. Schermate e testi approvati dall'utente il 2026-11-23,
+nelle cinque lingue in `tasks/TASK-489.md`. Niente di quello che si scrive
+qui esce dal telefono.
+
+- **L'ingresso**: in fondo al pannello degli sport, una famiglia a sé,
+  «Food», con la tessera **«Nutrition»** 🥗 (`nutrition/NutritionTile.tsx`).
+  Non è uno sport: il tocco apre la pagina sopra il pannello e lo sport
+  scelto non cambia; la ✕ riporta al pannello. Nella modalità allenamento la
+  stessa pagina è la tab «Food» (TASK-490 D).
+- **L'avviso**, la prima volta su quel telefono: «Before you start» — «MuW
+  does not provide diets, meal plans or medical advice. The plan here is
+  the one you write: your own, or the one your dietitian gave you.»,
+  «Every number is an estimate, from food composition tables and from
+  formulas for the energy you use.», «If you have a medical condition, are
+  pregnant or have a history of eating disorders, talk to a doctor or a
+  dietitian before counting calories.», un solo pulsante «I understand».
+  Prima del tocco non si può scrivere niente; dopo non torna più.
+- **Due viste**, «Diary» | «My plan», e sotto sempre «Estimates only. MuW
+  does not provide diets or medical advice.» col collegamento **«How we
+  calculate»**.
+- **«Diary»** (`nutrition/DiaryView.tsx`): il giorno in cima, «Today»,
+  «Yesterday» o la data, con le frecce; dopo oggi non si va. Tre numeri:
+  «Eaten», «Used (est.)» e «Balance»; gli ultimi due sono «—» finché la
+  parte C1 non conta le attività. Sotto, **«My daily target»**: un numero
+  di kcal che scrive solo l'utente, e quante ne restano; MuW non ne propone
+  mai uno. Poi i quattro pasti, «Breakfast», «Lunch», «Dinner», «Snacks»,
+  ognuno coi suoi cibi (nome, grammi, kcal), il totale e «Add food». Un
+  pasto vuoto mostra «—», non zero.
+- **«Eaten as planned»**: copia nel giorno il piano di quel giorno della
+  settimana. C'è **solo finché il giorno è vuoto** e il piano ha quel
+  giorno: non scrive mai sopra quello che è stato segnato a mano (scelta
+  dell'utente, 2026-11-23).
+- **Aggiungere un cibo** (`nutrition/AddFoodSheet.tsx`): si cerca per nome
+  fra i cibi propri e i 314 della tabella (USDA FoodData Central, SR
+  Legacy), nella lingua dell'app; si scrivono i grammi e si vede la stima
+  prima di «Add». Toccando un cibo già segnato si cambiano i grammi o lo si
+  toglie con «Remove».
+- **«My own food»**, da «Add my own food» nella ricerca: nome e
+  «Calories in 100 g (kcal)», da copiare
+  dall'etichetta o dal foglio del dietista. Si corregge e si elimina con
+  «Edit» dal passo dei grammi; un cibo eliminato resta nei giorni già
+  segnati.
+- **«My plan»** (`nutrition/PlanView.tsx`): i sette giorni della settimana
+  («Mon» … «Sun»), aperto su quello di oggi; per ogni giorno gli stessi
+  quattro pasti e il totale. **«Copy this day to…»** scrive un giorno sopra
+  un altro. Sotto: «This is the plan you write. MuW never changes it.». Non
+  c'è nessun piano finché l'utente non lo scrive.
+- **«How we calculate»**: da dove vengono i numeri dei cibi (la tabella e
+  la sua edizione), come si stima l'energia usata (Mifflin-St Jeor per il
+  riposo, le attività), che sono stime, e «Only you see this page. Nothing
+  here leaves your phone.».
+- I pulsanti sono quelli neutri dell'app, mai gialli; i numeri non hanno il
+  separatore delle migliaia.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di
@@ -5626,3 +5697,41 @@ pagina per liberare memoria, la WebView la ricarica da sola.
 - **Le notifiche** e le righe della campanella delle corse di gruppo aprono
   la pagina.
 
+## Il disegno a mano agganciato alle strade (TASK-347 parte C, ADR-0300)
+
+In «Draw on the map» un disegno a mano (la figura «drawing», da sola, senza
+altri pezzi) si aggancia alle strade mentre lo disegni, tratto per tratto,
+300 ms dopo che il dito si alza: prima sul telefono, poi sul server
+(`engine/matchOnPhone.ts`, parte B).
+
+- **Sulla mappa**: il disegno come l'ha fatto il dito resta come
+  **fantasma**, lo stesso giallo, sottile (2 pt) e semitrasparente (0,45).
+  Sopra c'è il **percorso agganciato** in giallo pieno, come un percorso.
+  Dove la strada passa a più di 40 m dal dito (`FAR_M`), quel tratto del
+  percorso prende il colore `warning`. Le linee agganciate arrivano alla
+  pagina con un messaggio a parte (`setAnchored`), così non cancellano mai
+  la linea che il dito sta disegnando.
+- **Sotto la mappa**, sopra la distanza: «Snapping to roads…» mentre un
+  tratto si aggancia, poi «Roads follow your drawing: 87%». Il numero è la
+  quota dei punti disegnati con una strada entro 40 m; dopo «Draw route»
+  sarà la somiglianza del motore (parte C3). Non va nei post. Il numero si
+  legge con VoiceOver (regione «polite»), quindi il colore non è l'unico
+  segnale.
+- **Fuori strada**: se un tratto è in campagna resta fantasma e la nota
+  dice «No roads here: this line stays as you drew it.» nel colore
+  `warning`.
+- **Senza risposta** (niente rete e niente zona, o un server vecchio): il
+  tratto resta fantasma senza avvisi e si riprova al tratto dopo.
+- **Undo e Redo**: le risposte restano in memoria (200), quindi un Undo e
+  poi un Redo ridisegnano subito l'aggancio di prima.
+- Forme, immagini, foto e pezzi non si agganciano: arrivano nelle parti D
+  ed E.
+- **«Draw route» ancorato** (parte C3): un disegno a mano si chiede con
+  `placement: "anchored"`, senza magnete (quello del motore). Il percorso
+  resta dove e come l'hai disegnato: non viene girato, spostato né
+  ingrandito, e sotto c'è il fantasma (`placed_outline`), nello stesso posto.
+  Si chiede così solo a un server che risponde alla sonda
+  (`GET /stroke-matches`); con un server vecchio, o senza risposta, il
+  disegno va libero come prima. Se sulle strade il disegno viene più lungo
+  o più corto di oltre il 10%, una nota lo dice: «On the roads your drawing
+  is 53% longer: 7.6 km. It stays where you drew it, at the same size.»

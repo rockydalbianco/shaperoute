@@ -6,7 +6,8 @@ import { addToFeedEntries } from "./addToFeedEntries";
 // the one of before.
 
 test("off, or left out: the list is the one of before", () => {
-  const before = ["record", "photos", "file"];
+  // «Workout plan» (TASK-485) is always last.
+  const before = ["record", "photos", "file", "plan"];
   expect(
     addToFeedEntries({ record: true, filePicker: true }).map(({ id }) => id),
   ).toEqual(before);
@@ -19,7 +20,13 @@ test("off, or left out: the list is the one of before", () => {
 
 test("on: «Sleep» comes after «From a file», with what it publishes", () => {
   const entries = addToFeedEntries({ record: true, filePicker: true, sleep: true });
-  expect(entries.map(({ id }) => id)).toEqual(["record", "photos", "file", "sleep"]);
+  expect(entries.map(({ id }) => id)).toEqual([
+    "record",
+    "photos",
+    "file",
+    "sleep",
+    "plan",
+  ]);
   expect(entries[3]).toEqual({
     id: "sleep",
     title: "Sleep",
@@ -29,5 +36,5 @@ test("on: «Sleep» comes after «From a file», with what it publishes", () => 
 
 test("on, with nothing else ready: after «Photos only»", () => {
   const entries = addToFeedEntries({ record: false, filePicker: false, sleep: true });
-  expect(entries.map(({ id }) => id)).toEqual(["photos", "sleep"]);
+  expect(entries.map(({ id }) => id)).toEqual(["photos", "sleep", "plan"]);
 });

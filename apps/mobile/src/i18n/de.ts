@@ -3486,6 +3486,20 @@ export const DE: Table = {
     "Diese Datei enthält keinen Wegpunkt, den MuW lesen kann.",
   "This file is not a task MuW can read.":
     "Diese Datei ist keine Aufgabe, die MuW lesen kann.",
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
+  "Next turnpoint": "Nächster Wendepunkt",
+  "Glide to goal": "Gleitflug zum Ziel",
+  "Start gate": "Startfenster",
+  "Task distance": "Aufgabendistanz",
+  Competition: "Wettkampf",
+  "Gate open": "Startfenster offen",
+  "Started {time}": "Gestartet {time}",
+  "Whole task: {distance}": "Ganze Aufgabe: {distance}",
+  "No task loaded": "Keine Aufgabe geladen",
+  "Goal taken": "Ziel erreicht",
+  "Turnpoint {name} taken. Next: {next}.":
+    "Wendepunkt {name} erreicht. Nächster: {next}.",
+  "Goal {name} taken.": "Ziel {name} erreicht.",
   // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
   "Show password": "Passwort anzeigen",
   "Hide password": "Passwort verbergen",

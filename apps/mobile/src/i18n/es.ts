@@ -3471,6 +3471,19 @@ export const ES: Table = {
     "Este archivo no tiene balizas que MuW pueda leer.",
   "This file is not a task MuW can read.":
     "Este archivo no es una manga que MuW pueda leer.",
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
+  "Next turnpoint": "Próxima baliza",
+  "Glide to goal": "Planeo hasta el gol",
+  "Start gate": "Puerta de salida",
+  "Task distance": "Distancia de la manga",
+  Competition: "Competición",
+  "Gate open": "Puerta abierta",
+  "Started {time}": "Salida a las {time}",
+  "Whole task: {distance}": "Manga completa: {distance}",
+  "No task loaded": "Ninguna manga cargada",
+  "Goal taken": "Gol alcanzado",
+  "Turnpoint {name} taken. Next: {next}.": "Baliza {name} tomada. Siguiente: {next}.",
+  "Goal {name} taken.": "Gol {name} alcanzado.",
   // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
   "Show password": "Mostrar la contraseña",
   "Hide password": "Ocultar la contraseña",

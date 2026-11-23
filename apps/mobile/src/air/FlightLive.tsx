@@ -16,6 +16,7 @@ import { FlightScreen, GLOVE_TARGET } from "./FlightScreen";
 import { markPhase, usePhaseMarks } from "./phaseMarks";
 import { useFlightScreen } from "./useFlightScreen";
 import { useAirspaceAlert } from "./useAirspaceAlert";
+import { useTurnpointCall } from "./useTurnpointCall";
 import { useVarioSound } from "./useVarioSound";
 
 /**
@@ -70,6 +71,8 @@ export function FlightLive({ track, live }: { track: Track; live: boolean }) {
   useVarioSound({ track, nowMs: now, sounding: live && !paused && phase === "air" });
   // The airspace warning's sound (TASK-479 part E2), the same way.
   useAirspaceAlert({ track, nowMs: now, sounding: live && !paused && phase === "air" });
+  // The pilot's task (part D2): each turnpoint taken said aloud, the same way.
+  useTurnpointCall({ track, takeoffMs, sounding: live && !paused && phase === "air" });
   const sharing = useLiveShare().kind === "sharing";
   const screen = live ? (
     <>

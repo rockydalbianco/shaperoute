@@ -824,6 +824,26 @@ resta inerte fino alla build nativa. `site/config.js` ha un solo
 `downloadUrl`, l'App Store anche per chi è su Android: difetto segnalato
 al Coordinatore, non di questo task.
 
+**Aggiunta 2026-11-23** (decisa dall'agente su delega dell'utente):
+
+- **Dimostrato**: iOS passa all'app l'`app-argument` della barra di Safari
+  come indirizzo aperto. L'utente, sull'iPhone dopo l'OTA 21: «Sì, apre il
+  post». La parte A non è inerte: link in Safari → «Apri» → il post in MuW.
+- **`assetlinks.json` porta tre impronte, non una** (parte C, metà
+  Android, #1436). Nella Play Console la chiave di firma «In uso» ha due
+  certificati (classico e post-quantistico, «Predisposta per la tecnologia
+  quantistica») e ce n'è una precedente; il JSON che Play propone porta
+  solo la precedente. Non potendo sapere con quale Play firma ogni
+  installazione, il file elenca tutte e tre («Copia tutte le fingerprint
+  del certificato»): sono tutte chiavi di Play per questa app, e
+  `sha256_cert_fingerprints` è una lista. **La chiave di caricamento resta
+  fuori** (un test lo controlla): un APK di prova firmato da EAS non apre
+  i link. Scartata: la sola impronta del JSON di Play (se Play firma con
+  la chiave in uso, i link non si verificherebbero).
+- I due file `.well-known` vanno online **prima** della build, non con
+  essa: da soli non cambiano niente, e il giorno della build i telefoni li
+  trovano già.
+
 ## ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie
 
 **Stato**: Attiva · 2026-11-22 · TASK-483: parte 0 (documenti), A #1385

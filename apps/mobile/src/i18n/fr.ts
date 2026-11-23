@@ -3448,4 +3448,14 @@ export const FR: Table = {
   "Calories of this activity": "Calories de cette activité",
   "Your number stays on this phone. Your post and Apple Health keep theirs.":
     "Ton chiffre reste sur ce téléphone. Ta publication et Santé d'Apple gardent les leurs.",
+  // src/air/ (TASK-479 part E3: the airspace log after the flight; approved by the user on 2026-11-23)
+  "Inside your airspaces: {count}": "Dans vos espaces aériens : {count}",
+  "No fix inside the volumes of your file.":
+    "Aucun point dans les volumes de votre fichier.",
+  "{from}–{to} · {name} ({class}) · {min} min":
+    "{from}–{to} · {name} ({class}) · {min} min",
+  "Deepest: {dist} from the edge, {height} from floor or ceiling":
+    "Au plus profond : {dist} du bord, {height} du plancher ou du plafond",
+  "Only on your phone: not in the Feed.":
+    "Uniquement sur votre téléphone : pas dans le Fil.",
 };

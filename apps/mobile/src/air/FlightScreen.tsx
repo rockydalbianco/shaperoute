@@ -41,6 +41,7 @@ import {
 import { useAirspaceAlerts } from "./airspaceAlertPrefs";
 import { AirspaceAlertLine } from "./AirspaceAlertLine";
 import { airspaceFeatures, alertOf, nearAirspaces } from "./airspaceNear";
+import { placeSeries, type ProfileBand, profileBands } from "./airspaceProfile";
 import { AirspaceOptions } from "./AirspaceOptions";
 import { useAirspace } from "./airspaceStore";
 import { FlightEditor } from "./FlightEditor";
@@ -338,6 +339,14 @@ export function FlightScreen({
       ? []
       : nearAirspaces(airspace.airspaces, here, altM, groundM);
   const alert = alertOf(near, alerts);
+  // The volumes under the altitude chart (E3), when a page has one.
+  const charted = pages.some((one) =>
+    one.some((cell) => cell.widget === "altitudeChart"),
+  );
+  const bands: ProfileBand[][] =
+    airspace === null || !charted
+      ? []
+      : profileBands(placeSeries(track, at), airspace.airspaces, groundM);
   const change = (next: FlightPrefs) => {
     setPrefs(next);
     saveFlightPrefs(next);
@@ -502,6 +511,7 @@ export function FlightScreen({
                         <FlightWidget
                           widget={cell.widget}
                           nearest={near[0] ?? null}
+                          bands={bands}
                           data={data}
                           flight={unitsOf(cell)}
                           units={appUnits}

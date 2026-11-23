@@ -1,6 +1,6 @@
 # TASK-489 — «Alimentazione»: il diario di quello che mangio e il bilancio delle calorie
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-22: otto scelte dell'utente, #1417 in `main`; quattro precisazioni il 2026-11-23; **A1 e A2 in `main`** (#1437, #1460, 2026-11-23); schermate e testi delle parti B, C1, D e F approvati il 2026-11-23; B1 = #1473, poi B2, C1, D in fila, una PR dopo l'altra; F aspetta il turno dei file della privacy; poi C2 e G con la build nativa)
+**Stato**: In corso (parte 0 chiusa il 2026-11-22: otto scelte dell'utente, #1417 in `main`; quattro precisazioni il 2026-11-23; **A1 e A2 in `main`** (#1437, #1460, 2026-11-23); schermate e testi di tutte le parti (B, C1, D, F, G, C2) approvati il 2026-11-23; **B1 e B2 in `main`** (#1473, #1490); in fila, una PR dopo l'altra: C1 = #1501, D, G1, C2a; F = #1496 col sì dell'utente; restano per la build nativa G2 (il lettore con la fotocamera), C2b (accendere la lettura da Salute) e l'accensione)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-489-nutrition-part-0`
 **Dipende da**: TASK-374 (il mio corpo, `body/energy.ts`), TASK-321 (Apple
@@ -450,6 +450,123 @@ Si tu l'autorises, MuW lit aussi dans Santé d'Apple (sur Android, dans Health C
   (allenamenti, calorie attive) e una privacy che lo dice (pezzo 3). Va con
   la build Android di TASK-321 C.
 
+### Testi della parte G (approvati dall'utente il 2026-11-23, «Sì, approvo»)
+
+Mostrati con quattro schermate disegnate (la ricerca col tasto, il lettore,
+il prodotto trovato, il prodotto che non c'è).
+
+L'inglese è il testo dell'app.
+Restano quelli che l'app ha già: «Add my own food», «Edit», «Cancel»,
+«Try again», «Open Settings», «My food», «kcal / 100 g».
+
+#### Nella scheda «Add food»
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Tasto sotto la ricerca; titolo del lettore | Scan a barcode | Leggi un codice a barre | Barcode scannen | Escanear un código de barras | Scanner un code-barres |
+| Sotto l'inquadratura | Point the camera at the barcode on the pack. | Inquadra il codice a barre sulla confezione. | Richte die Kamera auf den Barcode auf der Packung. | Apunta la cámara al código de barras del envase. | Vise le code-barres sur l'emballage. |
+| Sempre nel lettore, in piccolo | Only the barcode goes to Open Food Facts, to find the product. | A Open Food Facts va solo il codice a barre, per trovare il prodotto. | Nur der Barcode geht an Open Food Facts, um das Produkt zu finden. | A Open Food Facts solo va el código de barras, para encontrar el producto. | Seul le code-barres est envoyé à Open Food Facts, pour trouver le produit. |
+| Collegamento per scriverlo a mano | Type the code | Scrivi il codice | Code eingeben | Escribir el código | Saisir le code |
+| Campo | Barcode | Codice a barre | Barcode | Código de barras | Code-barres |
+| Tasto | Look up | Cerca | Suchen | Buscar | Rechercher |
+| Mentre cerca | Looking it up… | Lo cerco… | Suche läuft… | Buscando… | Recherche en cours… |
+
+#### Il prodotto trovato
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Segno accanto al prodotto | from Open Food Facts | da Open Food Facts | von Open Food Facts | de Open Food Facts | d'Open Food Facts |
+| Sotto i numeri | Check the numbers against the label: you can correct them. | Controlla i numeri sull'etichetta: puoi correggerli. | Vergleiche die Zahlen mit dem Etikett: Du kannst sie korrigieren. | Comprueba los números con la etiqueta: puedes corregirlos. | Vérifie les chiffres sur l'étiquette : tu peux les corriger. |
+| Tasto | Use this food | Usa questo cibo | Dieses Lebensmittel verwenden | Usar este alimento | Utiliser cet aliment |
+
+#### Quando non va
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Prodotto che non c'è | This product is not on Open Food Facts. | Questo prodotto non è su Open Food Facts. | Dieses Produkt ist nicht bei Open Food Facts. | Este producto no está en Open Food Facts. | Ce produit n'est pas sur Open Food Facts. |
+| Prodotto senza calorie | Open Food Facts has no calories for this product. | Open Food Facts non ha le calorie di questo prodotto. | Open Food Facts hat keine Kalorien für dieses Produkt. | Open Food Facts no tiene las calorías de este producto. | Open Food Facts n'a pas les calories de ce produit. |
+| Senza rete, o se Open Food Facts non risponde | The product could not be looked up. Check your connection and try again. | Non è stato possibile cercare il prodotto. Controlla la connessione e riprova. | Das Produkt konnte nicht gesucht werden. Prüfe deine Verbindung und versuche es erneut. | No se ha podido buscar el producto. Comprueba tu conexión e inténtalo de nuevo. | Impossible de rechercher le produit. Vérifie ta connexion et réessaie. |
+| Fotocamera negata | MuW can't use the camera. Allow it in Settings, or type the code. | MuW non può usare la fotocamera. Permettilo in Impostazioni, o scrivi il codice. | MuW kann die Kamera nicht verwenden. Erlaube es in den Einstellungen oder gib den Code ein. | MuW no puede usar la cámara. Permítelo en Ajustes o escribe el código. | MuW ne peut pas utiliser l'appareil photo. Autorise-le dans les Réglages ou saisis le code. |
+
+#### «How we calculate», un capoverso in più sotto «Food»
+
+| English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|
+| Products found by barcode contain data from Open Food Facts, available under the Open Database License. They are kept apart from the USDA list. | I prodotti trovati col codice a barre contengono dati di Open Food Facts, disponibili con la Open Database License. Restano separati dall'elenco USDA. | Per Barcode gefundene Produkte enthalten Daten von Open Food Facts, verfügbar unter der Open Database License. Sie bleiben von der USDA-Liste getrennt. | Los productos encontrados por código de barras contienen datos de Open Food Facts, disponibles bajo la Open Database License. Se mantienen separados de la lista del USDA. | Les produits trouvés par code-barres contiennent des données d'Open Food Facts, disponibles sous l'Open Database License. Ils restent séparés de la liste USDA. |
+
+Con un collegamento a openfoodfacts.org, come chiede la loro licenza.
+
+E la frase in fondo alla pagina cambia (sì dell'utente del 2026-11-23,
+«Sì, cambiala»), perché il codice cercato esce dal telefono:
+
+| | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Prima | Only you see this page. Nothing here leaves your phone. | Questa pagina la vedi solo tu. Niente di quello che c'è qui esce dal tuo telefono. | | | |
+| Ora | Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts. | Questa pagina la vedi solo tu. Quello che scrivi qui resta sul tuo telefono; un codice a barre che cerchi va a Open Food Facts. | Diese Seite siehst nur du. Was du hier einträgst, bleibt auf deinem Handy; ein Barcode, den du suchst, geht an Open Food Facts. | Esta página solo la ves tú. Lo que escribes aquí se queda en tu teléfono; un código de barras que buscas va a Open Food Facts. | Toi seul vois cette page. Ce que tu écris ici reste sur ton téléphone ; un code-barres que tu recherches est envoyé à Open Food Facts. |
+
+#### Il permesso della fotocamera (finestra del telefono; build nativa)
+
+Oggi dice solo: «MuW uses the photo you take to trace the outline your
+route will draw.», in inglese in ogni lingua. Il testo nuovo:
+
+| English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|
+| MuW uses the camera for the photo you trace a route from, and to read the barcode of a food. | MuW usa la fotocamera per la foto da cui ricalchi un percorso, e per leggere il codice a barre di un cibo. | MuW verwendet die Kamera für das Foto, aus dem du eine Route nachzeichnest, und um den Barcode eines Lebensmittels zu lesen. | MuW usa la cámara para la foto de la que calcas una ruta y para leer el código de barras de un alimento. | MuW utilise l'appareil photo pour la photo à partir de laquelle tu traces un parcours, et pour lire le code-barres d'un aliment. |
+
+#### Privacy: una riga in più in «Others who receive data» (con questa parte)
+
+| English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|
+| Open Food Facts receives the barcode you scan or type in «Nutrition», to find the product: it sees the barcode and, like any site, your IP address, never your account or your diary. The product it sends back is kept on your phone. | Open Food Facts riceve il codice a barre che leggi o scrivi in «Alimentazione», per trovare il prodotto: vede il codice e, come ogni sito, il tuo indirizzo IP, mai il tuo account né il tuo diario. Il prodotto che rimanda resta sul tuo telefono. | Open Food Facts erhält den Barcode, den du in «Ernährung» scannst oder eingibst, um das Produkt zu finden: Es sieht den Barcode und, wie jede Website, deine IP-Adresse, nie dein Konto oder dein Tagebuch. Das zurückgesendete Produkt bleibt auf deinem Handy. | Open Food Facts recibe el código de barras que escaneas o escribes en «Nutrición», para encontrar el producto: ve el código y, como cualquier sitio, tu dirección IP, nunca tu cuenta ni tu diario. El producto que devuelve se guarda en tu teléfono. | Open Food Facts reçoit le code-barres que tu scannes ou saisis dans «Nutrition», pour trouver le produit : il voit le code et, comme tout site, ton adresse IP, jamais ton compte ni ton journal. Le produit renvoyé reste sur ton téléphone. |
+
+#### Note (lette il 2026-11-23 sulle pagine di Open Food Facts e di Expo)
+
+- Lettura di un prodotto senza account; chiedono un'intestazione
+  `User-Agent` del tipo `NomeApp/Versione (indirizzo di contatto)` e non più
+  di 15 letture al minuto per indirizzo IP: una lettura = un codice letto
+  da una persona.
+- Licenze: la base di dati ODbL 1.0, i contenuti DbCL 1.0, le foto CC BY-SA
+  3.0 (MuW non mostra le foto). Chi riusa i dati deve nominare la licenza e
+  Open Food Facts con un collegamento.
+- `expo-camera`: componente `CameraView`, tipi `ean13`, `ean8`, `upc_a`,
+  `upc_e`; il suo plugin scrive il testo del permesso e, se non lo si
+  spegne, aggiunge su Android anche il permesso del microfono
+  (`recordAudioAndroid`), che qui va spento.
+
+### Testi della parte C2 (approvati dall'utente il 2026-11-23, «Sì, approvo»)
+
+Mostrati con tre schermate disegnate di «Energy you use» (prima del sì, un
+giorno contato da Salute, un giorno senza).
+
+L'inglese è il testo dell'app.
+Già approvati e non ripetuti qui: il testo del permesso di Salute (in
+`TASK-312.md`, «Approvo» del 2026-11-23), il capoverso della privacy sulla
+lettura da Salute (pezzo 3 della parte F), la frase di «How we calculate»
+sui giorni che hanno l'energia attiva di Salute.
+
+#### Nella scheda «Energy you use»
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Tasto, prima del sì | Use Apple Health | Usa Salute di Apple | Apple Health verwenden | Usar Salud de Apple | Utiliser Santé d'Apple |
+| Sotto il tasto | MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there. | MuW legge la tua energia attiva e gli allenamenti registrati da altre app, per contare l'energia che consumi. Sono letti sul telefono e restano lì. | MuW liest deine Aktivitätsenergie und die Trainings, die andere Apps aufgezeichnet haben, um die Energie zu zählen, die du verbrauchst. Sie werden auf deinem Handy gelesen und bleiben dort. | MuW lee tu energía activa y los entrenamientos que registraron otras apps, para contar la energía que gastas. Se leen en tu teléfono y se quedan ahí. | MuW lit ton énergie active et les entraînements enregistrés par d'autres apps, pour compter l'énergie que tu dépenses. Ils sont lus sur ton téléphone et y restent. |
+| Riga, in un giorno che ha l'energia di Salute | Active energy | Energia attiva | Aktivitätsenergie | Energía activa | Énergie active |
+| Segno sulla riga e sugli allenamenti delle altre app | from Apple Health | da Salute di Apple | von Apple Health | de Salud de Apple | de Santé d'Apple |
+| Sotto le attività, in un giorno contato da Salute | Your activities are already inside Apple Health's active energy: they are not added again. | Le tue attività sono già dentro l'energia attiva di Salute di Apple: non si sommano di nuovo. | Deine Aktivitäten stecken schon in der Aktivitätsenergie von Apple Health: Sie werden nicht noch einmal addiert. | Tus actividades ya están dentro de la energía activa de Salud de Apple: no se suman otra vez. | Tes activités sont déjà comprises dans l'énergie active de Santé d'Apple : elles ne sont pas ajoutées une seconde fois. |
+| Giorno senza energia in Salute, dopo il sì | Apple Health has nothing for this day: your activities are counted. | Salute di Apple non ha niente per questo giorno: si contano le tue attività. | Apple Health hat nichts für diesen Tag: Deine Aktivitäten werden gezählt. | Salud de Apple no tiene nada para este día: se cuentan tus actividades. | Santé d'Apple n'a rien pour ce jour : tes activités sont comptées. |
+| Collegamento, dopo il sì | Stop using Apple Health | Non usare più Salute di Apple | Apple Health nicht mehr verwenden | Dejar de usar Salud de Apple | Ne plus utiliser Santé d'Apple |
+
+#### Come conta (già deciso nella parte 0 e nei conti di A1)
+
+- Un giorno che ha l'energia attiva di Salute usa **quella da sola**: le
+  attività di MuW non si sommano sopra, perché Salute le ha già contate.
+- Un giorno senza energia in Salute usa la somma delle attività: quelle di
+  MuW e gli allenamenti delle altre app letti da Salute, ognuno una volta.
+- Un numero corretto a mano vale sempre: in un giorno contato da Salute
+  sposta il totale della differenza.
+- Salute non dice se la lettura è stata negata: un permesso negato si legge
+  come «nessun dato», e il giorno usa le attività.
+
 ## Le parti
 
 | Parte | Cosa | Dove va |
@@ -613,6 +730,42 @@ Coordinatore scrive «privacy tua».
 - **Quale build e quando lo dice il Coordinatore**: non si promettono
   tempi all'utente prima.
 
+Com'è fatta (schermate e testi approvati dall'utente il 2026-11-23), in
+tre PR concordate col Coordinatore:
+
+- **C2a**, niente di nativo, in `main` spenta: il lettore e il conto.
+  - `health/energyReader.ts` è **il lettore unico degli allenamenti di
+    Salute** (accordo con TASK-312 D): chiede in lettura solo
+    `HKWorkoutTypeIdentifier` e l'energia attiva. **`workouts(da, a)` è il
+    punto d'ingresso per TASK-312 D**: dà gli allenamenti partiti in un
+    intervallo, di qualunque app, con tipo, inizio, fine, kcal, metri, app
+    che li ha scritti e la chiave che MuW mette ai suoi (`HKSyncIdentifier`).
+    Per le tracce, 312 D aggiunge il suo tipo alla richiesta.
+  - `health/energyModules.ts`: `HEALTH_ENERGY_ON = false`. Finché è spento
+    non c'è nessun lettore e la libreria non si carica mai (un test lo
+    tiene fermo), come `sleepModules.ts`.
+  - Il sì è «Use Apple Health» nella scheda «Energy you use», l'unico punto
+    in cui il permesso si chiede; resta sul telefono
+    (`nutrition-health.json`); «Stop using Apple Health» lo dimentica.
+  - Un giorno che ha l'energia attiva di Salute usa quella da sola, e le
+    attività restano in elenco senza sommarsi; un giorno senza usa la somma
+    delle attività, comprese quelle delle altre app, «from Apple Health».
+  - **Scelta dell'utente**: gli allenamenti delle altre app compaiono solo
+    in «Energy you use», non in «My activities» (scartato «Anche in My
+    activities»: portarli lì è l'importazione di TASK-312 D).
+  - I numeri letti da Salute non si salvano: si rileggono quando una
+    schermata li mostra.
+- **C2b**, nativa, bozza fino al taglio della build: solo
+  `HEALTH_ENERGY_ON = true`. Il testo unico del permesso in `app.json` e
+  `locales/*.json` lo scrive #1334 (TASK-467 C) al taglio. Il capoverso di
+  privacy sulla lettura da Salute (pezzo 3 della parte F) è una PR a sé, a
+  turno, prima della build.
+- **L'accensione**, ultima: `NUTRITION_ON = true` e
+  `settings/SportButtonGrid.test.tsx` con la famiglia «Food», dopo che
+  l'utente ha visto le schermate dal simulatore.
+- Android resta sulla somma delle attività fino alla build con Health
+  Connect (TASK-321 C).
+
 ### G — Il codice a barre (build nativa)
 
 - Il lettore legge il codice di un prodotto confezionato e lo cerca su
@@ -630,6 +783,30 @@ Coordinatore scrive «privacy tua».
   foto da ricalcare e va riscritto, con l'approvazione dell'utente. La
   lista dei file di `app.json` e `package.json` va al Coordinatore quando
   la build è decisa.
+
+Com'è fatta (schermate e testi approvati dall'utente il 2026-11-23), in
+due PR concordate col Coordinatore:
+
+- **G1**, niente di nativo, in `main` spenta: nella ricerca dei cibi il
+  collegamento **«Type the code»** (scelta dell'utente: il codice si può
+  scrivere a mano, scartato «Senza codice a mano»). Prima di cercare la
+  pagina dice «Only the barcode goes to Open Food Facts, to find the
+  product.». Il prodotto trovato mostra nome, kcal per 100 g, il codice e
+  «from Open Food Facts»; «Use this food» lo salva fra i cibi dell'utente
+  col suo codice, «Edit» lo apre: riscritto, i numeri sono dell'utente e
+  il segno sparisce. Un codice già salvato si ritrova sul telefono, senza
+  un'altra richiesta. Prodotto assente o senza calorie: si scrive a mano,
+  e il codice resta con lui. Senza rete: «Try again».
+- **G2**, nativa, bozza fino al taglio: `expo-camera`, il lettore con
+  «Scan a barcode», il testo nuovo del permesso della fotocamera.
+  `npm install` solo col turno del Coordinatore.
+- A Open Food Facts va il codice e, come a ogni sito, l'indirizzo IP;
+  l'app si presenta con nome, versione e l'indirizzo di contatto che già
+  pubblica nella privacy (scelta dell'utente).
+- In fondo a «How we calculate» la frase approvata nella parte B cambia
+  (sì dell'utente, «Sì, cambiala»): «Only you see this page. What you
+  write here stays on your phone; a barcode you look up goes to Open Food
+  Facts.».
 
 ### E — Il server
 
@@ -694,8 +871,22 @@ Esistenti: `nutrition/useDayEnergy.ts`, `profile/ProfileHome.tsx` (un
 import e `<OwnBalance />` sotto `<OwnSleep />`), `i18n/{de,es,fr,it}.ts`
 (7 chiavi).
 
-Parte F, quando il Coordinatore dà il turno:
-`apps/mobile/src/about/content/{en,it,de,es,fr}.ts`, poi `site/privacy/**`.
+Parte F (#1496): `apps/mobile/src/about/content/{en,it,de,es,fr}.ts` e
+`site/privacy/**`, riscritte da `site/tools/make_privacy.mjs` nella stessa
+PR: un test del sito vuole le pagine uguali al testo dell'app. Pubblicare
+il sito resta un passo a parte, col sì dell'utente.
+
+Parte G1 (lista approvata dal Coordinatore il 2026-11-23). Nuovi in
+`apps/mobile/src/nutrition/`, coi test: `openFoodFacts.ts`,
+`BarcodeStep.tsx`. Esistenti: `nutrition/foods.ts`, `ownFoods.ts`,
+`OwnFoodForm.tsx`, `AddFoodSheet.tsx`, `HowWeCalculate.tsx`,
+`i18n/{de,es,fr,it}.ts` (13 chiavi, una tolta).
+
+Parte C2a (lista approvata dal Coordinatore il 2026-11-23). Nuovi coi
+test: `health/energyReader.ts`, `health/energyModules.ts`,
+`nutrition/healthEnergyChoice.ts`, `nutrition/useHealthEnergy.ts`.
+Esistenti: `nutrition/activityEnergy.ts`, `useDayEnergy.ts`,
+`EnergySheet.tsx`, `i18n/{de,es,fr,it}.ts` (7 chiavi).
 
 Le parti dopo toccano anche file esistenti, da chiedere al Coordinatore
 prima di ognuna: B `settings/SportButton.tsx` (montare la tessera),
@@ -736,6 +927,37 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 
 ## Registro
 
+- **2026-11-23, parte C2a scritta**: l'utente ha detto «Sì, parti con la
+  parte C2» e, viste le tre schermate e i sette testi, «Sì, approvo». Sul
+  ramo `feat/TASK-489-c2a-health-energy`, sopra la G1; diventa una PR
+  quando la G1 è in `main`. Il lettore è spento: la lettura vera da Salute
+  non è stata provata, i test usano un Salute finto; `tsc` controlla il
+  lettore contro i tipi della libreria. Decisi dall'agente su delega
+  dell'utente: mentre Salute risponde «Used (est.)» è «—»; un Salute che
+  non risponde è un giorno senza dati; un allenamento è di MuW se viene
+  dal suo bundle o porta la chiave di un'attività della lista, e la stessa
+  uscita registrata anche da un orologio conta una volta (la regola della
+  sovrapposizione di A1); gli allenamenti delle altre app si correggono a
+  mano come le attività; un allenamento di Salute si chiama come MuW
+  chiama quello sport, «Workout» se non lo conosce.
+- **2026-11-23, parte G1 scritta**: l'utente ha detto «Sì, parti con la
+  parte G» e, viste le quattro schermate e i testi, «Sì, approvo»; poi
+  «Sì, cambiala» per la frase in fondo a «How we calculate». Sul ramo
+  `feat/TASK-489-g1-barcode-lookup`, sopra la D. Letto sulle pagine di
+  Open Food Facts e provato con due prodotti e un codice inesistente il
+  2026-11-23: `GET /api/v2/product/<codice>.json`, `status` 1 con
+  `product` oppure 0; `nutriments["energy-kcal_100g"]` è un numero.
+  Decisi dall'agente su delega dell'utente: si usa **solo il campo in
+  kcal**, e un prodotto che ha solo i kilojoule è «senza calorie» (MuW
+  non scrive un numero convertito); un prodotto senza nome prende la prima
+  marca, o il codice; un codice è di 8, 12, 13 o 14 cifre; la richiesta
+  scade dopo 10 secondi; l'ingresso di G1 è «Type the code», il tasto
+  «Scan a barcode» arriva con G2.
+- **2026-11-23, parte F in PR**: #1496, dopo «privacy tua» del
+  Coordinatore; l'utente ha detto «Sì, unisci» al Coordinatore. Dentro
+  anche la riga di Open Food Facts della parte G.
+- **2026-11-23, B1 e B2 in `main`**: #1473 (`ccccd731`) e #1490
+  (`454acaf8`); C1 = #1501. La PR di documenti #1488 è in `main`.
 - **2026-11-23, parte F: testi della privacy approvati**: l'utente ha detto
   «Sì, parti con la parte F» e, visti i tre pezzi nelle cinque lingue, «Sì,
   approvo»: il diario resta del telefono e non si cancella all'uscita

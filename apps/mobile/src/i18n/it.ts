@@ -3455,4 +3455,17 @@ export const IT: Table = {
     "In questo file non ci sono boe che MuW sa leggere.",
   "This file is not a task MuW can read.":
     "Questo file non è una task che MuW sa leggere.",
+  // src/air/ (TASK-479 part D2: the task in flight; waiting for the user's approval)
+  "Next turnpoint": "Prossima boa",
+  "Glide to goal": "Planata al goal",
+  "Start gate": "Gate di partenza",
+  "Task distance": "Distanza della task",
+  Competition: "Competizione",
+  "Gate open": "Gate aperto",
+  "Started {time}": "Partito alle {time}",
+  "Whole task: {distance}": "Task intera: {distance}",
+  "No task loaded": "Nessuna task caricata",
+  "Goal taken": "Goal preso",
+  "Turnpoint {name} taken. Next: {next}.": "Boa {name} presa. Prossima: {next}.",
+  "Goal {name} taken.": "Goal {name} preso.",
 };

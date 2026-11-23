@@ -3475,4 +3475,17 @@ export const FR: Table = {
     "Ce fichier ne contient aucune balise que MuW sait lire.",
   "This file is not a task MuW can read.":
     "Ce fichier n'est pas une manche que MuW sait lire.",
+  // src/air/ (TASK-479 part D2: the task in flight; waiting for the user's approval)
+  "Next turnpoint": "Prochaine balise",
+  "Glide to goal": "Plané jusqu'au but",
+  "Start gate": "Porte de départ",
+  "Task distance": "Distance de la manche",
+  Competition: "Compétition",
+  "Gate open": "Porte ouverte",
+  "Started {time}": "Parti à {time}",
+  "Whole task: {distance}": "Manche entière : {distance}",
+  "No task loaded": "Aucune manche chargée",
+  "Goal taken": "But atteint",
+  "Turnpoint {name} taken. Next: {next}.": "Balise {name} validée. Suivante : {next}.",
+  "Goal {name} taken.": "But {name} atteint.",
 };

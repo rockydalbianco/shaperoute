@@ -202,3 +202,15 @@ export function taskRoute(task: FlightTask): Route {
     task.goal.type === "line",
   );
 }
+
+const lengths = new WeakMap<FlightTask, number>();
+
+/** The whole task's shortest length, worked out once per task. */
+export function taskLengthM(task: FlightTask): number {
+  let length = lengths.get(task);
+  if (length === undefined) {
+    length = taskRoute(task).totalM;
+    lengths.set(task, length);
+  }
+  return length;
+}

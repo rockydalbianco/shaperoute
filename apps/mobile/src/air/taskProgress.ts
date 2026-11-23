@@ -280,3 +280,28 @@ export function startGateAt(
   const first = gatesOn(task, nowMs)[0];
   return first !== undefined && nowMs < first ? { opensInMs: first - nowMs } : "open";
 }
+
+/** The task as the flight screen shows it at a tick. */
+export type TaskNow = {
+  task: FlightTask;
+  progress: TaskProgress;
+  /** The pilot's last fix, null before the first. */
+  here: LatLon | null;
+  /** The shortest way left from `here`. */
+  left: Route | null;
+};
+
+export function taskNowOf(
+  task: FlightTask,
+  fixes: readonly TrackFix[],
+  takeoffMs: number | null,
+): TaskNow {
+  const progress = progressOf(task, fixes, takeoffMs);
+  const here = fixes[fixes.length - 1]?.point ?? null;
+  return {
+    task,
+    progress,
+    here,
+    left: here === null ? null : routeLeft(task, progress, here),
+  };
+}

@@ -66,9 +66,9 @@ dopo.
   suggerimenti e ottimizzazioni» e riferite da lei; le proposte erano A blu
   tenue, B chiaro pieno, C neutro col bordo forte. È un'eccezione alla
   regola «il giallo è solo del percorso» (`tokens.ts`, `docs/UI.md`,
-  ADR-0383): è ADR-0403. **La scelta è arrivata da un'altra sessione: va
-  fatta confermare all'utente qui, con le schermate prima/dopo** (parola
-  del Coordinatore: è quel sì che conta).
+  ADR-0383): è ADR-0403. La scelta era arrivata da un'altra sessione;
+  **confermata dall'utente qui sulle schermate prima/dopo il 23 novembre
+  2026: «Sì, gialle così»**.
   Come è fatto (deciso dall'agente su delega dell'utente): fondo
   `color.accent`, parole e orario `color.onAccent` (13:1, uguale in ogni
   tono: `palettes.test.ts`); nessun token nuovo. Quello che la bolla porta
@@ -131,7 +131,8 @@ Tedesco, spagnolo e francese sono in `src/i18n/`. Riusati, non nuovi:
 - [ ] Le proprie bolle gialle con le parole scure, quelle dell'altro
       neutre; l'allegato di una propria bolla su una piastra neutra
       (`ChatMinor.test.tsx`).
-- [ ] Il giallo delle bolle confermato dall'utente sulle schermate.
+- [x] Il giallo delle bolle confermato dall'utente sulle schermate
+      («Sì, gialle così», 23 novembre 2026).
 - [ ] Una conversazione senza messaggi offre i tre spunti, che scrivono
       nella casella senza inviare; in una richiesta dice che i file vengono
       dopo (`ChatMinor.test.tsx`).

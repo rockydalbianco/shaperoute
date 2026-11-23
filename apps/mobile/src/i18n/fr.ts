@@ -3194,7 +3194,7 @@ export const FR: Table = {
   "Height above ground": "Hauteur sol",
   "Heading up": "Cap en haut",
   "North up": "Nord en haut",
-  // src/air/ (TASK-479 part E1: the pilot's airspace file; notices 3 and 4 approved by the user on 2026-11-21)
+  // src/air/ (TASK-479 part E1: the pilot's airspace file; notices 3 and 4 approved by the user on 2026-11-21, the other texts on 2026-11-23)
   "No airspace loaded. MuW does not include airspace data.":
     "Aucun espace aérien chargé. MuW ne fournit pas de données d'espace aérien.",
   "Data loaded by you: check the AIP and NOTAMs before you fly. · {file} · loaded {date}":

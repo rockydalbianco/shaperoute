@@ -52,6 +52,9 @@ import { useFlightScreenData } from "./useFlightScreenData";
 import { setVarioPrefs, useVarioPrefs } from "./varioPrefs";
 import { VarioSoundOptions } from "./VarioSoundOptions";
 import { WaypointOptions } from "./WaypointOptions";
+import { taskFeatures } from "./taskMapData";
+import { type TaskNow, taskNowOf } from "./taskProgress";
+import { useTask } from "./waypointStore";
 
 /**
  * The flight screen (TASK-479 part B1, ADR-0388): pages of widgets on a
@@ -355,6 +358,14 @@ export function FlightScreen({
     airspace === null || !charted
       ? []
       : profileBands(placeSeries(track, at), airspace.airspaces, groundM);
+  // The pilot's task at this tick (D2): where they are along it.
+  const loadedTask = useTask();
+  const taskNow: TaskNow | null =
+    loadedTask === null ? null : taskNowOf(loadedTask.task, track.fixes, takeoffMs);
+  const taskMap =
+    taskNow === null
+      ? null
+      : taskFeatures(taskNow.task, taskNow.progress, taskNow.here, taskNow.left);
   const change = (next: FlightPrefs) => {
     setPrefs(next);
     saveFlightPrefs(next);
@@ -514,12 +525,14 @@ export function FlightScreen({
                           airspace={
                             airspace === null ? null : airspaceFeatures(near, groundM)
                           }
+                          task={taskMap}
                         />
                       ) : (
                         <FlightWidget
                           widget={cell.widget}
                           nearest={near[0] ?? null}
                           bands={bands}
+                          task={taskNow}
                           data={data}
                           flight={unitsOf(cell)}
                           units={appUnits}

@@ -599,9 +599,53 @@ lasciando le righe d'indice.
 - ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
 - ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo di ADR-0269 con `group_id`, anche senza percorso; Public, Request, Invite only; un solo admin e fino a 3 co-admin; l'elenco dei membri solo ai membri; la chat di gruppo come parte E · 2026-11-23 · Proposta
 - ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Attiva
+- ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella: rotte a parte (`/drawings/{id}/gear`, `/gear/{id}`), `gear_id` sul tag col `SET NULL`, il limite una riga sola nella campanella per attrezzo e limite, «From my gear» coi tipi della foto · 2026-11-23 · Attiva
 
 
 ## Voci nuove
+## ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella
+
+**Stato**: Attiva · 2026-11-23 · TASK-486 parti E, F, G. Le scelte 5 e 6
+sono **dell'utente** (2026-11-21), come i testi e le schermate (approvati
+il 2026-11-23); il come è **deciso dall'agente su delega dell'utente**.
+
+**Contesto**: ADR-0393 dice cosa si vede (una riga nel dettaglio del post,
+i capi taggati da «From my gear», l'avviso del limite senza push), non
+dove passano i dati.
+
+**Decisione**:
+- **Rotte a parte, non campi nuovi**: `GET /drawings/{id}/gear` (parte E)
+  e `GET /gear/{id}` (parte F) invece di `gear` dentro `DrawingDetail` o
+  nel tag. `schemas.py` ed `engine.zip` restano fuori, e le app di prima
+  non vedono niente di diverso. Si vede quello che si vede del post e del
+  profilo: «Hide from profile» mai, nemmeno al proprietario; nascosto dopo
+  una segnalazione, solo al proprietario; un blocco tiene lontano.
+- **Il tag tiene `gear_id`** (migrazione 0085), con `ON DELETE SET NULL`:
+  cancellare l'attrezzo lascia il capo taggato com'era. Mandato senza
+  `gear_id`, un tag che c'era tiene quello che aveva (le app di prima);
+  `null` lo toglie. `gear_id` arriva solo a chi vede l'attrezzo.
+- **«From my gear» coi tipi della foto**: le scarpe di ogni tipo (anche
+  scarponi e scarpette) diventano «Shoes», zaino e orologio restano loro,
+  il resto «Other»: la foto ha meno tipi dell'attrezzatura e «Other» non
+  dice mai una cosa sbagliata.
+- **Il limite è una riga sola nella campanella** (`gear_limit`, in
+  `BELL_ONLY`, niente push) quando un'attività porta l'attrezzo da sotto il
+  limite a sopra; la chiave è attrezzo e limite, quindi un limite nuovo è
+  una riga nuova. Toccata, apre l'editor dell'attrezzo (ritirarlo o
+  cambiare il limite); un attrezzo cancellato si porta via la sua riga.
+
+**Alternative scartate**: `gear` in `DrawingDetail` (toccava `schemas.py`
+e quindi `engine.zip`); copiare marca e modello nel tag senza legarlo
+(il pallino non avrebbe aperto l'attrezzo); una riga per ogni attività
+oltre il limite (troppe).
+
+**Conseguenze**: per chi costruisce sopra l'attrezzatura (TASK-494,
+ADR-0401): un tipo nuovo va in `GearKind` del server, in `GEAR_KINDS`
+dei tipi condivisi e in `GEAR_LOOKS` dell'app (il compilatore lo chiede);
+le sue righe nella campanella sono un `kind` nuovo, non `gear_limit`, con
+la sua condizione in `shown_sql`; per aprire l'attrezzo dalla campanella
+c'è già `openGearItem` (`gear/gearDoor.ts`).
+
 ## ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta e saltabile le altre; animali e musiche del video restano dentro l'app
 
 **Stato**: Attiva · 2026-11-23 · TASK-505 (parte A in `main`, #1527).

@@ -3266,7 +3266,7 @@ export const ES: Table = {
     "Por las calles tu dibujo es un {share} % más largo: {distance}. Se queda donde lo dibujaste, del mismo tamaño.",
   "On the roads your drawing is {share}% shorter: {distance}. It stays where you drew it, at the same size.":
     "Por las calles tu dibujo es un {share} % más corto: {distance}. Se queda donde lo dibujaste, del mismo tamaño.",
-  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts.
+  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts, coach/nextTime.ts.
   Coach: "Coach",
   "Based on your last 4 weeks": "Según tus últimas 4 semanas",
   "Apply to plan": "Aplicar a la rutina",
@@ -3340,6 +3340,7 @@ export const ES: Table = {
   "WHO guidelines 2020": "Directrices de la OMS 2020",
   OK: "OK",
   "Nothing to change for now: keep going.": "Por ahora nada que cambiar: sigue así.",
+  "Next time: {exercise} {kg} kg": "La próxima vez: {exercise} {kg} kg",
   // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21, the other texts on 2026-11-23)
   "Nearest airspace": "Espacio aéreo más cercano",
   inside: "dentro",

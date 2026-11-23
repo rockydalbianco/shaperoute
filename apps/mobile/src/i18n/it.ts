@@ -1401,6 +1401,11 @@ export const IT: Table = {
   "No exercises yet.": "Ancora nessun esercizio.",
   "Change week {n}": "Cambia la settimana {n}",
   "kg · touch a week to change it": "kg · tocca una settimana per cambiarla",
+  // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; approved by the user on 2026-11-23)
+  Tomorrow: "Domani",
+  "+ 1 more": "+ 1 altro",
+  "+ {n} more": "+ altri {n}",
+  "This week: {done} of {total} done": "Questa settimana: {done} di {total} fatti",
   "With weights and machines": "Con pesi e macchine",
   Bodyweight: "Corpo libero",
   "At home or in the park, no equipment": "A casa o al parco, senza attrezzi",

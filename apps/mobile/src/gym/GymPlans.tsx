@@ -17,6 +17,8 @@ import {
 
 import { CoachPage } from "../coach/CoachPage";
 import { t } from "../i18n";
+import type { Language } from "../i18n/languages";
+import { useLanguage } from "../i18n/useLanguage";
 import {
   color,
   font,
@@ -29,11 +31,14 @@ import {
 import { WEEK_DAYS } from "./planLimits";
 import { GymPlanWizard, type WizardStep } from "./GymPlanWizard";
 import { gymStyles } from "./gymStyles";
+import { NextWorkout, nextWorkout } from "./NextWorkout";
 import { adapts, markOf, withAdapt } from "./adapt";
 import { isoDay, useGymPlans } from "./plans";
 import { PlanTable } from "./PlanTable";
 import { cycleWeekOf, sessionsOfWeek } from "./program";
 import { gymIndex, isRunDay, sessionLetter } from "./proposal";
+import { SPORT_BADGES } from "./SportsDoor";
+import { doneOfWeek, useWeekDone, type WeekDone } from "./weekDone";
 
 /** At most this many plans an account keeps (gym_plans.py). */
 export const MAX_PLANS = 20;
@@ -99,6 +104,10 @@ function PlansPage({
 }) {
   const insets = useSafeAreaInsets();
   const { plans, keep, drop } = useGymPlans(fetchFn);
+  // This week of the gym calendar, for «This week: 1 of 3 done» and the
+  // next workout (TASK-506 C); null without an account.
+  const done = useWeekDone(fetchFn);
+  const language = useLanguage();
   // The plan in the guide: «new», a plan's key, or none (the list); and
   // the step it opens on.
   const [editing, setEditing] = useState<{ key: string; at: WizardStep } | null>(
@@ -203,6 +212,8 @@ function PlansPage({
               plan={plan}
               program={plan.program}
               today={today}
+              done={done}
+              language={language}
               onEdit={(at) => setEditing({ key: plan.key, at })}
               onTable={() => setTableOf(plan.key)}
               onAdapt={(on) =>
@@ -259,6 +270,8 @@ function ProgramCard({
   plan,
   program,
   today,
+  done,
+  language,
   onEdit,
   onTable,
   onAdapt,
@@ -266,6 +279,9 @@ function ProgramCard({
   plan: GymPlan;
   program: GymProgram;
   today: Date;
+  /** This week of the gym calendar; null without an account (TASK-506 C). */
+  done: WeekDone | null;
+  language: Language;
   onEdit: (at: WizardStep) => void;
   /** «Table»: the whole plan on one page (TASK-506 A). */
   onTable: () => void;
@@ -276,14 +292,18 @@ function ProgramCard({
   const week = where?.week ?? 1;
   const sessions = sessionsOfWeek(program, week, where?.cycle ?? 0);
   const todayDay = isoDay(today);
+  // The next workout, and how many of this week's are done (TASK-506 C).
+  const coming = nextWorkout(program, today, done?.worked.has(todayDay) ?? false);
+  const thisWeek = done === null ? null : doneOfWeek(program, plan.name, done, today);
   // ↑ = ↓ under the days the answers moved (TASK-488, the mockup H3).
   const marked = sessions.some((one) => markOf(program, one.day) !== null);
-  // A, B, C… for the gym's days, «RUN» for a run day (TASK-433 C).
+  // A, B, C… for the gym's days, the run's mark for a run day (TASK-433 C;
+  // the sports' menu mark since TASK-506 D, «RUN» before).
   const letters = new Map(
     program.sessions.map((session) => [
       session.day,
       isRunDay(session)
-        ? "RUN"
+        ? SPORT_BADGES.run
         : sessionLetter(gymIndex(program.sessions, session.day)),
     ]),
   );
@@ -311,6 +331,14 @@ function ProgramCard({
         <Text style={gymStyles.muted}>
           {planLine({ days: plan.days, items: [] }, false)}
         </Text>
+        {thisWeek !== null && thisWeek.total > 0 && (
+          <Text style={gymStyles.muted} testID="gym-plan-done">
+            {t("This week: {done} of {total} done", {
+              done: String(thisWeek.done),
+              total: String(thisWeek.total),
+            })}
+          </Text>
+        )}
       </View>
       {program.weeks > 1 && (
         <View style={styles.dashes} accessibilityElementsHidden>
@@ -377,6 +405,14 @@ function ProgramCard({
         <Text style={gymStyles.muted}>
           {t("↑ one step more · = the same · ↓ one step back")}
         </Text>
+      )}
+      {coming !== null && (
+        <NextWorkout
+          program={program}
+          coming={coming}
+          now={today}
+          language={language}
+        />
       )}
       <View style={styles.adapt}>
         <View style={styles.planText}>

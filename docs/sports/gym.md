@@ -243,6 +243,16 @@ settimana non c'è; una corsa o un giorno fuori è una riga sola. Si guarda
 soltanto: l'intestazione di una settimana apre il passo «Weeks» della
 guida. `tableOfPlan.ts`, `PlanTable.tsx`.
 
+**Il prossimo allenamento** (TASK-506 C, scelta dell'utente del
+2026-11-23): nel riquadro del piano, sotto i giorni, l'allenamento che
+viene: quello di oggi finché non è fatto, poi il primo giorno dopo («Today ·
+B», «Tomorrow · Run», «Fri · C»), il suo nome, i primi tre esercizi coi
+valori di quella settimana e «+ 2 more», l'omino coi muscoli che lavora; una
+corsa o un giorno fuori in una riga. Con un account, sotto i giorni del
+piano «This week: 1 of 3 done» dal calendario della palestra (un giorno
+passato è fatto se non è saltato, oggi con un allenamento in palestra
+oggi). `NextWorkout.tsx`, `weekDone.ts`.
+
 La prima volta che si tocca «Palestra» in «Draw» (mai all'avvio, mai con
 un altro sport) sale un riquadro «Your plan, step by step» con le barre
 delle settimane e tre passi; «Create my plan» apre la guida, «Not now» lo

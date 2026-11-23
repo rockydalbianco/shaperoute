@@ -1,8 +1,10 @@
 /**
  * «Table» in «My plans» (TASK-506 A, the user's «Da guardare + Settimane»
  * of 2026-11-23): the whole plan on one page; a week's head opens the
- * guide's «Weeks»; «‹» goes back to the plans.
+ * guide's «Weeks»; «‹» goes back to the plans. And the card's next workout
+ * (TASK-506 C).
  */
+import calendar from "@shaperoute/shared-types/fixtures/gym-calendar.json";
 import plans from "@shaperoute/shared-types/fixtures/gym-plans.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { GymPlan, Session } from "@shaperoute/shared-types";
@@ -48,7 +50,11 @@ const OWNER = 7;
 const [PUSH, , MUSCLE, LIFT_AND_RUN] = plans.plans as GymPlan[];
 
 function api(remote: GymPlan[]) {
-  return jest.fn(async () => Response.json({ plans: remote }));
+  return jest.fn(async (url: string) =>
+    String(url).includes("/me/gym-calendar")
+      ? Response.json(calendar)
+      : Response.json({ plans: remote }),
+  );
 }
 
 async function shownPlans(remote: GymPlan[]) {
@@ -133,4 +139,15 @@ test("run days are a row each, the lighter week says so", async () => {
   const table = screen.getByTestId("plan-table");
   expect(within(table).getByText("Easy run")).toBeOnTheScreen();
   expect(screen.getByTestId("plan-table-cell-0-1")).toHaveTextContent("5 km");
+});
+
+test("the card says the next workout and how many of this week are done (TASK-506 C)", async () => {
+  await shownPlans([MUSCLE, PUSH]);
+  const card = screen.getByTestId("gym-plan-program");
+  expect(within(card).getByTestId("gym-plan-next-title")).toHaveTextContent(
+    /^(Today|Tomorrow|Mon|Tue|Wed|Thu|Fri|Sat|Sun) · [ABC]$/,
+  );
+  expect(within(card).getByTestId("gym-plan-done")).toHaveTextContent(
+    /^This week: \d of \d done$/,
+  );
 });

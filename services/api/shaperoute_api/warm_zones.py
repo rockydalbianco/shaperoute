@@ -43,7 +43,7 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
-from route_engine.network import BBox, Graph, OsmnxSource, read_graph
+from route_engine.network import BBox, Graph, OsmnxSource, download_box, read_graph
 from route_engine.optimizer import GraphLoader
 from route_engine.walking import drawn_as
 from route_engine.zone_crop import ZoneCrop
@@ -223,8 +223,11 @@ class WarmZoneGraphs(ZoneGraphs):
         max_zones: int = MAX_WARM_ZONES,
         read: Callable[[Path], Graph] = read_graph,
         size_mb: Callable[[Path], float] = zone_mb,
+        widen: Callable[[BBox], BBox] | None = None,
     ) -> None:
-        super().__init__(source, max_zones=max(max_zones, MAX_ZONES), read=read)
+        super().__init__(
+            source, max_zones=max(max_zones, MAX_ZONES), read=read, widen=widen
+        )
         self._cache_dir = cache_dir
         self._usage = usage
         self._budget_mb = budget_mb
@@ -359,6 +362,7 @@ def warm_graphs(
         cache_dir,
         ZoneUsage(cache_dir / USAGE_FOLDER / f"{WARM_ACTIVITY}.json"),
         budget_mb=budget_mb,
+        widen=download_box,
     )
     if in_background:
         warm.warm_in_background()

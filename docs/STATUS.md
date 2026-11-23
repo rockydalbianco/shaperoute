@@ -403,6 +403,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   taglio della build nativa; poi la prova dell'utente sul telefono. Sessione
   archiviata: chi riprende legge il Registro. File: — · `tasks/TASK-482.md`
 
+- **TASK-495 — I gruppi per uscire insieme («Groups»)** (ADR-0402) ·
+  parte 0 il 2026-11-23: tutti i default approvati dall'utente
+  (`GRUPPI.md`). Poi A API, B app, C uscite (anche senza percorso, file di
+  TASK-309 col via del Coordinatore), D Explore e push, privacy prima
+  dell'OTA, E chat di gruppo. File: — · `tasks/TASK-495.md`
+
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
 la figura, 305 parapendio (il pianificatore), 336 video nei post, 341 badge, 345 calorie e

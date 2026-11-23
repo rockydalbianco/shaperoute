@@ -1471,6 +1471,26 @@ dell'utente):
   Nessuna riga di prima cambia, nessun backfill. Test in
   `test_outfit_gear.py`.
 
+Migrazione `0086_flying_sites.sql` (TASK-493 parte A, ADR-0400, `API.md`
+«Flying sites»; numero del Coordinatore):
+
+- **`flying_sites`**: i decolli e gli atterraggi del volo libero da
+  OpenStreetMap (ODbL), una riga per oggetto OSM e tipo.
+  - **Identità:** `id` (generato, stabile da un'estrazione all'altra),
+    `osm_type` (`node` o `way`), `osm_id`, `kind` (`takeoff` o `landing`),
+    unici insieme: un oggetto decollo e atterraggio è due righe.
+  - **Dove:** `point` (`geography(Point)`, indice GIST per il riquadro e
+    per i vicini); una via è il centro dei suoi nodi.
+  - **Altro:** `name` (1–120), `ele_m` (il tag `ele` in metri, −500–9000),
+    `orientation` (i punti cardinali di `free_flying:site_orientation`,
+    vuoto se OSM non lo dice), `official`, `updated_at`.
+- **Chi la scrive:** solo l'estrazione (`flying_sites_extract.py`), che
+  rimpiazza ogni riga per oggetto e tipo. Con `--clean` toglie i siti non
+  riscritti in quel giro.
+- **Nessun dato degli utenti**: le stesse righe per tutti. Lo storico dei
+  voli è la parte B. Test in `test_flying_sites.py` e
+  `test_flying_sites_extract.py`.
+
 Migrazione `0087_groups.sql` (TASK-495 parte A, ADR-0402, `API.md`
 «Groups», `GRUPPI.md` §12; numero del Coordinatore, dopo la 0086 di
 TASK-493). **I gruppi per uscire insieme**:

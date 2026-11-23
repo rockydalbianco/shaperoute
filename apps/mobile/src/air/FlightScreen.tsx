@@ -51,6 +51,7 @@ import { GroundProbe } from "./GroundProbe";
 import { useFlightScreenData } from "./useFlightScreenData";
 import { setVarioPrefs, useVarioPrefs } from "./varioPrefs";
 import { VarioSoundOptions } from "./VarioSoundOptions";
+import { WaypointOptions } from "./WaypointOptions";
 
 /**
  * The flight screen (TASK-479 part B1, ADR-0388): pages of widgets on a
@@ -240,6 +241,13 @@ function Options({
       />
       <AirspaceOptions
         altitudeUnit={prefs.units.altitude}
+        chip={(key, label, on, onPress) => (
+          <Chip key={key} label={label} on={on} onPress={onPress} palette={palette} />
+        )}
+        row={row}
+        palette={palette}
+      />
+      <WaypointOptions
         chip={(key, label, on, onPress) => (
           <Chip key={key} label={label} on={on} onPress={onPress} palette={palette} />
         )}

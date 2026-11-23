@@ -15,6 +15,7 @@ import {
   AppState,
   FlatList,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -72,6 +73,8 @@ const OLDER_WITHIN_SCREENS = 0.5;
 
 /** The side of the other's picture in the title. */
 const PHOTO_SIDE = 36;
+/** And in a conversation with nothing in it yet. */
+const EMPTY_PHOTO_SIDE = 64;
 
 /** What the screen has of the conversation, for one account and member. */
 type Held = {
@@ -666,9 +669,8 @@ export function ConversationScreen({
           {shown.messages.length === 0 ? (
             // Outside the list: an inverted list shows its empty part upside down.
             <View style={styles.messages}>
-              {shown.state === "open" && (
-                <Text style={styles.note}>{t("No messages yet.")}</Text>
-              )}
+              {(shown.state === "open" || shown.state === "first") &&
+                draft === null && <Starters person={who} onPick={setText} />}
             </View>
           ) : (
             <FlatList
@@ -867,11 +869,68 @@ function Bubble({
         accessibilityActions={[{ name: "longpress" }]}
         onAccessibilityAction={onLongPress}
       >
-        {media}
-        {message.text !== "" && <Text style={styles.bubbleText}>{message.text}</Text>}
-        {time !== "" && <Text style={styles.time}>{time}</Text>}
+        {message.mine && media ? (
+          <View style={styles.mineMedia} testID="message-mine-media">
+            {media}
+          </View>
+        ) : (
+          media
+        )}
+        {message.text !== "" && (
+          <Text style={[styles.bubbleText, message.mine && styles.mineText]}>
+            {message.text}
+          </Text>
+        )}
+        {time !== "" && (
+          <Text style={[styles.time, message.mine && styles.mineText]}>{time}</Text>
+        )}
       </Pressable>
     </View>
+  );
+}
+
+/**
+ * A conversation with nothing in it yet (TASK-458, the user's choice): who
+ * it is with, a line, and three ways to begin. A touch writes the words in
+ * the box and sends nothing: they can be changed first. It scrolls, for
+ * when the keyboard leaves it little room.
+ */
+function Starters({
+  person,
+  onPick,
+}: {
+  person: Person;
+  onPick: (text: string) => void;
+}) {
+  const name = person.username;
+  const starters = [
+    t("Hi {name}!", { name }),
+    t("I like your drawings"),
+    t("Shall we run together?"),
+  ];
+  return (
+    <ScrollView
+      contentContainerStyle={styles.empty}
+      keyboardShouldPersistTaps="handled"
+      testID="conversation-empty"
+    >
+      <Avatar name={name} size={EMPTY_PHOTO_SIDE} photo={personPhotoUri(person)} />
+      <Text style={styles.emptyName} numberOfLines={1}>
+        {name}
+      </Text>
+      <Text style={styles.emptyLine}>{t("Say hi to {name}.", { name })}</Text>
+      {starters.map((starter) => (
+        <Pressable
+          key={starter}
+          style={({ pressed }) => [styles.starter, pressed && styles.pressed]}
+          onPress={() => onPick(starter)}
+          accessibilityRole="button"
+          accessibilityHint={t("Writes it in the box. Nothing is sent yet.")}
+        >
+          <Text style={styles.starterText}>{starter}</Text>
+        </Pressable>
+      ))}
+    </ScrollView>
   );
 }
 
@@ -937,6 +996,12 @@ function Foot({
             "{name} gets this as a message request. You can send one message until they accept it.",
             { name },
           )}
+        </Text>
+      )}
+      {/* Why the «+» is not there yet (TASK-458): a request is text only. */}
+      {state === "first" && (
+        <Text style={styles.hint}>
+          {t("Photos, videos and drawings come after that.")}
         </Text>
       )}
       <View style={styles.box}>
@@ -1028,6 +1093,38 @@ const styles = StyleSheet.create({
   messages: {
     flex: 1,
   },
+  empty: {
+    flexGrow: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.sm,
+    paddingVertical: space.lg,
+  },
+  emptyName: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  emptyLine: {
+    color: color.textMuted,
+    fontSize: fontSize.body,
+    textAlign: "center",
+    paddingBottom: space.sm,
+  },
+  // Neutral, as «Send»: the yellow is one's own bubbles'.
+  starter: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    paddingHorizontal: space.lg,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  starterText: {
+    color: color.text,
+    fontSize: fontSize.body,
+  },
   messagesContent: {
     gap: space.sm,
     paddingVertical: space.sm,
@@ -1042,7 +1139,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.detail,
     fontWeight: fontWeight.semibold,
   },
-  // Neutral, both: the yellow belongs to the route.
+  // One's own in the app's yellow, the user's choice (TASK-458): the other's
+  // stay neutral.
   bubble: {
     maxWidth: "80%",
     gap: space.sm,
@@ -1052,6 +1150,18 @@ const styles = StyleSheet.create({
   },
   mine: {
     alignSelf: "flex-end",
+    backgroundColor: color.accent,
+  },
+  // On the yellow, in every tone: the words and the time.
+  mineText: {
+    color: color.onAccent,
+  },
+  // What one's own message carries sits on a neutral plate, as the bubble
+  // was: a drawing's line is yellow too, and the words of a card are the
+  // tone's.
+  mineMedia: {
+    padding: space.sm,
+    borderRadius: radius.md,
     backgroundColor: color.surfaceRaised,
   },
   theirs: {

@@ -2384,7 +2384,6 @@ export const IT: Table = {
   "Message {name}": "Scrivi a {name}",
 
   // src/messages/ConversationScreen.tsx, MessageSheet.tsx (TASK-319)
-  "No messages yet.": "Ancora nessun messaggio.",
   "Show earlier messages": "Mostra i messaggi precedenti",
   "Touch and hold to delete it": "Tieni premuto per eliminarlo",
   "Touch and hold to report it": "Tieni premuto per segnalarlo",
@@ -2394,6 +2393,20 @@ export const IT: Table = {
   "{name} gets this as a message request. You can send one message until they accept it.":
     "{name} la riceve come richiesta di messaggio. Finché non la accetta puoi mandare un solo messaggio.",
   "Write a message…": "Scrivi un messaggio…",
+  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
+  "Show password": "Mostra la password",
+  "Hide password": "Nascondi la password",
+  // src/messages/ConversationScreen.tsx (TASK-458: a conversation with nothing in it yet, the user's choice of 2026-11-23)
+  "Say hi to {name}.": "Saluta {name}.",
+  "Hi {name}!": "Ciao {name}!",
+  "I like your drawings": "Mi piacciono i tuoi disegni",
+  "Shall we run together?": "Corriamo insieme?",
+  "Writes it in the box. Nothing is sent yet.":
+    "Lo scrive nella casella. Non viene ancora inviato niente.",
+  "Photos, videos and drawings come after that.": "Foto, video e disegni vengono dopo.",
+  // src/tabs/MessagesPage.tsx, src/messages/NewMessage.tsx (TASK-458: «New message» from the list)
+  "New message": "Nuovo messaggio",
+  "Search someone by name to write to them.": "Cerca qualcuno per nome per scrivergli.",
   "Delete this message for both of you?": "Eliminare questo messaggio per tutti e due?",
   "Report this message": "Segnala questo messaggio",
   // src/explore/ExploredCard.tsx, social/DrawingCard.tsx, mapdraw/DrawOnMap.tsx,

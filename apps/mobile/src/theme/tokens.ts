@@ -21,8 +21,9 @@ const FIXED = {
   /**
    * The brand yellow. In the app it means one thing only: the route, and the
    * control that produces it. Anything else that needs attention uses
-   * `warning` — a second meaning would make the colour say nothing. One
-   * exception, the user's choice: «Run without a route» (ADR-0183).
+   * `warning` — a second meaning would make the colour say nothing. Two
+   * exceptions, each the user's choice: «Run without a route» (ADR-0183),
+   * and one's own bubbles in a conversation (TASK-458, ADR-0403).
    */
   accent: "#FFD02B",
   /**

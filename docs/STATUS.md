@@ -51,10 +51,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Profile come per lo sci; il Cibo è la pagina di TASK-489. Prossima la A.
   File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
-  parte 0 chiusa il 2026-11-22 (otto scelte dell'utente, ADR-0397): cibi da
-  USDA più i propri, piano a settimana, solo sul telefono, tabella solo per
-  il proprietario; spenta (`NUTRITION_ON`) fino alla build nativa che legge
-  da Salute. Poi A1 (i conti). File: — · `tasks/TASK-489.md`
+  parte 0 chiusa (scelte dell'utente del 22 e 23 novembre, ADR-0397); A1
+  (i conti, file nuovi) in `main` il 2026-11-23 (#1437), spenta dietro
+  `NUTRITION_ON` fino alla build nativa che legge da Salute. Poi A2 (la
+  tabella USDA). File: — · `tasks/TASK-489.md`
 - **TASK-487 — Il Feed senza attività finte** · 2026-11-22: niente
   esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
   dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.
@@ -352,10 +352,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
   **Chiuso il 2026-11-21**: B2b/C2 (#1294), D1 (#1341, `climb_m` nell'elenco) e B2c (#1338, «mancano» mentre si registra) in `main`; restano il passo sul server di D1 e l'OTA di B2c, col sì dell'utente; vedi `archive/COMPLETATI.md`.
 
-- **TASK-481 — Il «+» del Feed: tutte le voci** · parte 0 (documenti) fatta
-  il 2026-11-21 con le scelte dell'utente (sei voci, ADR-0390); A (la lista e
-  «Record now») dopo il merge di TASK-312 C2, lista dei file al Coordinatore.
-  File: — · `tasks/TASK-481.md`
+- **TASK-481 — Il «+» del Feed: tutte le voci** (ADR-0390) · A (la lista:
+  «Record now», «Photos only», «From a file») in `main` il 2026-11-23 (#1421),
+  esce col prossimo OTA; restano la privacy e le righe di 467 E2, 484 B, 485 B,
+  al via del Coordinatore. File: — · `tasks/TASK-481.md`
 
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 (la barra
   «Apri» di Safari) e A (l'app apre il post del link) in produzione (OTA 21),

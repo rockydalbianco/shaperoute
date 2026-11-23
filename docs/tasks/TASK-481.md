@@ -1,7 +1,9 @@
 # TASK-481 — Il «+» del Feed: tutte le voci
 
 **Stato**: In lavorazione · parte 0 (documenti) fatta il 2026-11-21; parte A
-scritta il 2026-11-22 dopo TASK-312 C2 in `main` (#1386)
+in `main` il 2026-11-23 (#1421, `3f124ce7`; schermate e traduzioni approvate
+dall'utente il 2026-11-23, ADR-0390 precisazione A); restano la privacy e le
+righe di 467 E2, 484 B e 485 B, al via del Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-481-feed-plus-all-entries` (parte 0),
 `feat/TASK-481-a-feed-plus-list` (parte A)
 **Dipende da**: TASK-476 (il «+» e il foglio, ADR-0387), TASK-312 C2 (che

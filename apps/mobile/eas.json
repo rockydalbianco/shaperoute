@@ -8,10 +8,6 @@
       "channel": "preview",
       "environment": "preview"
     },
-    "preview-sleep": {
-      "extends": "preview",
-      "channel": "preview-sleep"
-    },
     "preview-simulator": {
       "extends": "preview",
       "ios": {

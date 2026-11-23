@@ -1,7 +1,7 @@
 # TASK-506 — Le schede della palestra: la tabella, la sola palestra, il prossimo allenamento
 
-**Stato**: In lavorazione · 2026-11-23 · parte A (la tabella) nel branch
-`feat/TASK-506-a-plan-table`
+**Stato**: In lavorazione · 2026-11-23 · A #1523, B e D #1525, C #1528;
+schermate, testi e scelte approvati dall'utente
 **Fase**: 5 · **Branch**: `feat/TASK-506-a-plan-table` (A), poi un branch
 da `main` per B e per C
 **Dipende da**: TASK-433 (schede guidate, ADR-0360), TASK-488 (la scheda si
@@ -33,6 +33,18 @@ quattro proposte con l'anteprima del telefono:
    l'intestazione di una settimana si apre il passo «Settimane» della guida
    che c'è già, dove la si cambia a mano. Scartate: caselle modificabili
    nella tabella, una tabella senza nessun tocco.
+3. **Le schermate** dal simulatore (A, B, C e D insieme, `out/TASK-506/`
+   del checkout principale): «Approvo». Dalla prova un ritocco nella A: le
+   colonne più strette, le quattro settimane di un ciclo stanno sul
+   telefono.
+4. **La Palestra già scelta** all'apertura di «Nuovo piano» (dalla pagina
+   palestra di Draw e dalla modalità allenamento): «Sì, Palestra già
+   scelta». Scartato: nessuno sport già scelto.
+5. **I testi** nelle quattro lingue (`out/TASK-506/TESTI.md`): «Approvo».
+6. **La regola di ADR-0371** («Almeno due, sempre» diventa «basta uno
+   sport», un'aggiunta datata ad ADR-0371) e **i segni degli sport** della
+   parte D presi dal menu degli sport (oggi le emoji, le icone a linea con
+   TASK-510): «Sì, tutte e due».
 
 ## Parte A — La tabella del piano
 
@@ -138,7 +150,8 @@ Parte A:
       linguette; l'intestazione di una settimana apre il passo 4; «‹»
       torna ai piani (`PlanTable.test.tsx`).
 - [x] Testi nelle cinque lingue (`tables.test.ts`).
-- [ ] Schermate dal simulatore e testi approvati dall'utente.
+- [x] Schermate dal simulatore e testi approvati dall'utente (2026-11-23,
+      «Approvo»).
 - [ ] CI verde; merge dal Coordinatore col «Sì, unisci» dell'utente; OTA.
 
 Parte C:

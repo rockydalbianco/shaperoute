@@ -6,7 +6,12 @@ import type { Activity } from "../api/activities";
 import { saveLanguageChoice } from "../i18n/language";
 import { FOOD_TABLE } from "./foodTable";
 import { weekOf } from "./localDay";
-import { OWN_BALANCE_TEST_ID, OwnBalance, weekLabel } from "./OwnBalance";
+import {
+  NUTRITION_ENTRY_TEST_ID,
+  OWN_BALANCE_TEST_ID,
+  OwnBalance,
+  weekLabel,
+} from "./OwnBalance";
 import { NO_MEALS, withPortion } from "./plan";
 import { forgetNutrition, seeNotice, writeDay } from "./useNutrition";
 
@@ -105,12 +110,45 @@ test("a week is «This week» or its two dates", () => {
   expect(weekLabel(week, "2026-11-26")).toBe("16 Nov – 22 Nov");
 });
 
-test("nothing is there before the notice of «Nutrition» was read", async () => {
+test("before the notice of «Nutrition» was read there is only the row to open it", async () => {
   const loadMore = jest.fn();
   await show({ list: [MONDAY_RUN], more: true, loadMore });
   expect(screen.queryByTestId(OWN_BALANCE_TEST_ID)).toBeNull();
-  // And no page of the activities is asked for it.
+  expect(
+    screen.getByRole("button", {
+      name: "Nutrition, Write what you eat and see your calorie balance.",
+    }),
+  ).toBeOnTheScreen();
+  // No number, and no page of the activities is asked for it.
+  expect(screen.queryByText("Calorie balance")).toBeNull();
   expect(loadMore).not.toHaveBeenCalled();
+});
+
+test("the row opens the page, which stays open when its notice is read", async () => {
+  await show();
+  await fireEvent.press(screen.getByTestId(NUTRITION_ENTRY_TEST_ID));
+  expect(screen.getByTestId("nutrition-page")).toBeOnTheScreen();
+  expect(screen.getByTestId("nutrition-notice")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("nutrition-understood"));
+  // The profile under it now has the card, and the page is still there.
+  expect(screen.getByTestId("nutrition-page")).toBeOnTheScreen();
+  expect(screen.getByTestId(OWN_BALANCE_TEST_ID)).toBeOnTheScreen();
+  expect(screen.queryByTestId(NUTRITION_ENTRY_TEST_ID)).toBeNull();
+  await fireEvent.press(screen.getByTestId("nutrition-close"));
+  expect(screen.queryByTestId("nutrition-page")).toBeNull();
+});
+
+test("the card ends with «Open Nutrition», which opens the same page", async () => {
+  await act(async () => {
+    seeNotice();
+  });
+  await show();
+  expect(screen.queryByTestId(NUTRITION_ENTRY_TEST_ID)).toBeNull();
+  expect(screen.queryByTestId("nutrition-page")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Open Nutrition" }));
+  expect(screen.getByTestId("nutrition-page")).toBeOnTheScreen();
+  // The notice was read: the page starts on the day.
+  expect(screen.queryByTestId("nutrition-notice")).toBeNull();
 });
 
 test("the week has a row a day, and says only its owner sees it", async () => {

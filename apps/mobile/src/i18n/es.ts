@@ -3251,7 +3251,7 @@ export const ES: Table = {
   "Lines not read: {n}": "Líneas no leídas: {n}",
   "This file has no airspace MuW can read.":
     "Este archivo no tiene espacios aéreos que MuW pueda leer.",
-  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts.
+  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts, coach/nextTime.ts.
   Coach: "Coach",
   "Based on your last 4 weeks": "Según tus últimas 4 semanas",
   "Apply to plan": "Aplicar a la rutina",
@@ -3325,4 +3325,5 @@ export const ES: Table = {
   "WHO guidelines 2020": "Directrices de la OMS 2020",
   OK: "OK",
   "Nothing to change for now: keep going.": "Por ahora nada que cambiar: sigue así.",
+  "Next time: {exercise} {kg} kg": "La próxima vez: {exercise} {kg} kg",
 };

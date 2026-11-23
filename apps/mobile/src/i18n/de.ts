@@ -2764,6 +2764,14 @@ export const DE: Table = {
   "Find an exercise": "Übung suchen",
   "Workout at the gym": "Training im Studio",
 
+  // src/trainingmode/ (TASK-490 part B: the body of the week)
+  "of your body trained": "deines Körpers trainiert",
+  "{percent}% of your body trained this week.":
+    "{percent}% deines Körpers diese Woche trainiert.",
+  "10 sets or more: {muscles}.": "10 Sätze oder mehr: {muscles}.",
+  "5 to 9 sets: {muscles}.": "5 bis 9 Sätze: {muscles}.",
+  "1 to 4 sets: {muscles}.": "1 bis 4 Sätze: {muscles}.",
+
   // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
   "Runs@@ski": "Abfahrten",
   Legend: "Legende",

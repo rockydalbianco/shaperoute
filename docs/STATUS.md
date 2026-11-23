@@ -287,6 +287,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (#1434); OTA dal Coordinatore; prossima E.
   **2026-11-23 sera**: E1 (file OpenAir del pilota, #1454) ed E2 (spazi
   aerei in volo: avviso, suono, mappa, widget, #1470) in `main`; prossima E3.
+  **2026-11-23**: E3 (registro dopo il volo, fasce nel grafico, #1498) in
+  `main`; prossima D (D1 #1503).
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`

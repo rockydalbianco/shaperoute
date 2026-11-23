@@ -1337,6 +1337,13 @@ avvisa sulla sola distanza orizzontale. Il suono d'avviso è un file nostro
 (`alert.wav`, da `tools/vario_tones.py`). I volumi sulla mappa usano i
 colori `error` e `warning` della tavolozza: nessun colore nuovo.
 
+**Aggiunta del 2026-11-23 (parte E3, deciso dall'agente su delega
+dell'utente)**: il registro degli spazi aerei dopo il volo si calcola sul
+telefono e resta lì, mai al server né nel Feed. Dopo il volo i limiti dal
+terreno contano come rispettati e il tratto è segnato «≈»: la quota sul
+terreno sotto ogni punto non c'è. Nel grafico della quota le fasce dei
+volumi usano i colori `error` e `warning` della tavolozza.
+
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
 **Stato**: Attiva (A e B in `main`, A sul server, 2026-11-23) · 2026-11-21 · TASK-485 parte 0 (numero dal

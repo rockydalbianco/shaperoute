@@ -3470,7 +3470,7 @@ export const ES: Table = {
     "Este archivo no tiene balizas que MuW pueda leer.",
   "This file is not a task MuW can read.":
     "Este archivo no es una manga que MuW pueda leer.",
-  // src/air/ (TASK-479 part D2: the task in flight; waiting for the user's approval)
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
   "Next turnpoint": "Próxima baliza",
   "Glide to goal": "Planeo hasta el gol",
   "Start gate": "Puerta de salida",

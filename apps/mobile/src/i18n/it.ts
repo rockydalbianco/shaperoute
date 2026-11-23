@@ -3455,7 +3455,7 @@ export const IT: Table = {
     "In questo file non ci sono boe che MuW sa leggere.",
   "This file is not a task MuW can read.":
     "Questo file non è una task che MuW sa leggere.",
-  // src/air/ (TASK-479 part D2: the task in flight; waiting for the user's approval)
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
   "Next turnpoint": "Prossima boa",
   "Glide to goal": "Planata al goal",
   "Start gate": "Gate di partenza",

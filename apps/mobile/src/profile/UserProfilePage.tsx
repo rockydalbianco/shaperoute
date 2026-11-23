@@ -13,6 +13,7 @@ import { ReportMenu } from "../social/ReportMenu";
 import { color, fontSize, space } from "../theme/tokens";
 import { ProfileGallery } from "./ProfileGallery";
 import { ProfileGroupRuns } from "../groupRuns/ProfileGroupRuns";
+import { ProfileGear } from "../gear/ProfileGear";
 import { ProfileHeader } from "./ProfileHeader";
 import { GymLevels } from "../gym/GymLevels";
 import { PersonalBests } from "./PersonalBests";
@@ -237,6 +238,18 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
         apiUrl={apiUrl}
         token={token}
         publicId={profile.public_id}
+        onSessionEnded={onSessionEnded}
+        fetchFn={fetchFn}
+        apiKey={apiKey}
+      />
+      {/* Their gear, in use then retired (TASK-486 part D): none, nothing. */}
+      <ProfileGear
+        apiUrl={apiUrl}
+        token={token}
+        publicId={profile.public_id}
+        owner={
+          own ? null : { public_id: profile.public_id, username: profile.username }
+        }
         onSessionEnded={onSessionEnded}
         fetchFn={fetchFn}
         apiKey={apiKey}

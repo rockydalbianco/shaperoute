@@ -3329,6 +3329,15 @@ export const FR: Table = {
   OK: "OK",
   "Nothing to change for now: keep going.":
     "Rien à changer pour l'instant : continue comme ça.",
+  // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21, the other texts on 2026-11-23)
+  "Nearest airspace": "Espace aérien le plus proche",
+  inside: "dedans",
+  "{name} ({class}) · {dist} · floor {floor}":
+    "{name} ({class}) · {dist} · plancher {floor}",
+  "FL limits from GPS altitude (≈).": "Limites en FL d'après l'altitude GPS (≈).",
+  "Warn within": "Avertir à moins de",
+  "Warn above or below": "Avertir au-dessus ou en dessous",
+  "Warning sound": "Son de l'avertissement",
   // src/nutrition (TASK-489 part B1)
   "Food@@nutrition": "Alimentation",
   Nutrition: "Nutrition",

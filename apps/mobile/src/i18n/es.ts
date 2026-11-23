@@ -3325,6 +3325,15 @@ export const ES: Table = {
   "WHO guidelines 2020": "Directrices de la OMS 2020",
   OK: "OK",
   "Nothing to change for now: keep going.": "Por ahora nada que cambiar: sigue así.",
+  // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21, the other texts on 2026-11-23)
+  "Nearest airspace": "Espacio aéreo más cercano",
+  inside: "dentro",
+  "{name} ({class}) · {dist} · floor {floor}":
+    "{name} ({class}) · {dist} · base {floor}",
+  "FL limits from GPS altitude (≈).": "Límites en FL según la altitud GPS (≈).",
+  "Warn within": "Avisar a menos de",
+  "Warn above or below": "Avisar por encima o por debajo",
+  "Warning sound": "Sonido del aviso",
   // src/nutrition (TASK-489 part B1)
   "Food@@nutrition": "Comida",
   Nutrition: "Nutrición",

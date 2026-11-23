@@ -1,6 +1,6 @@
 # TASK-489 — «Alimentazione»: il diario di quello che mangio e il bilancio delle calorie
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-22: otto scelte dell'utente, #1417 in `main`; quattro precisazioni il 2026-11-23; **A1 e A2 in `main`** (#1437, #1460, 2026-11-23); schermate e testi della parte B approvati il 2026-11-23; poi B1, B2, C1, D, F, C2, G)
+**Stato**: In corso (parte 0 chiusa il 2026-11-22: otto scelte dell'utente, #1417 in `main`; quattro precisazioni il 2026-11-23; **A1 e A2 in `main`** (#1437, #1460, 2026-11-23); schermate e testi delle parti B, C1, D e F approvati il 2026-11-23; B1 = #1473, poi B2, C1, D in fila, una PR dopo l'altra; F aspetta il turno dei file della privacy; poi C2 e G con la build nativa)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-489-nutrition-part-0`
 **Dipende da**: TASK-374 (il mio corpo, `body/energy.ts`), TASK-321 (Apple
@@ -262,6 +262,194 @@ I testi nuovi:
 |  | Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice. | I valori reali cambiano con il prodotto, la ricetta e la persona. MuW non fornisce diete né consigli medici. | Die tatsächlichen Werte hängen vom Produkt, vom Rezept und von der Person ab. MuW gibt keine Diäten oder medizinischen Ratschläge. | Los valores reales cambian con el producto, la receta y la persona. MuW no ofrece dietas ni consejos médicos. | Les valeurs réelles varient selon le produit, la recette et la personne. MuW ne fournit ni régimes ni conseils médicaux. |
 |  | Only you see this page. Nothing here leaves your phone. | Questa pagina la vedi solo tu. Niente di quello che c'è qui esce dal tuo telefono. | Diese Seite siehst nur du. Nichts davon verlässt dein Handy. | Esta página solo la ves tú. Nada de lo que hay aquí sale de tu teléfono. | Toi seul vois cette page. Rien de ce qui s'y trouve ne quitte ton téléphone. |
 
+### Testi della parte C1 (approvati dall'utente il 2026-11-23, «Sì, approvo»)
+
+Mostrati con cinque schermate disegnate (il diario coi numeri pieni, «Energy
+you use», «Energy at rest», «Calories of this activity», la lista privata).
+
+L'inglese è il testo dell'app.
+Restano quelli già approvati: «Eaten», «Used (est.)», «Balance», «Surplus»,
+«Deficit», «(set by you)», «Energy you use», «kcal a day», «Save», «Close».
+
+#### In cima al diario
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Sotto i tre numeri, solo oggi | Today the energy at rest is counted up to now. | Oggi l'energia a riposo è contata fino a adesso. | Heute wird die Energie in Ruhe bis jetzt gezählt. | Hoy la energía en reposo se cuenta hasta ahora. | Aujourd'hui, l'énergie au repos est comptée jusqu'à maintenant. |
+
+«Balance» mostra il numero col segno e la parola: «−660 · Deficit»,
+«+120 · Surplus». Senza niente di mangiato scritto resta «—».
+
+#### La scheda «Energy you use» (si apre toccando «Used (est.)»)
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Riga del riposo | At rest | A riposo | In Ruhe | En reposo | Au repos |
+| Titoletto | Activities | Attività | Aktivitäten | Actividades | Activités |
+| Giorno senza attività | No activities on this day. | Nessuna attività in questo giorno. | Keine Aktivitäten an diesem Tag. | Ninguna actividad este día. | Aucune activité ce jour-là. |
+| Segno su un numero corretto a mano | edited | modificato | bearbeitet | editado | modifié |
+| Senza account | Log in to count your activities. | Accedi per contare le tue attività. | Melde dich an, um deine Aktivitäten zu zählen. | Inicia sesión para contar tus actividades. | Connecte-toi pour compter tes activités. |
+| Lista non arrivata | Your activities could not be loaded. Only the energy at rest is counted. | Non è stato possibile caricare le tue attività. È contata solo l'energia a riposo. | Deine Aktivitäten konnten nicht geladen werden. Es wird nur die Energie in Ruhe gezählt. | No se han podido cargar tus actividades. Solo se cuenta la energía en reposo. | Impossible de charger tes activités. Seule l'énergie au repos est comptée. |
+
+#### La scheda «Energy at rest» (toccando la riga «At rest»)
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Titolo | Energy at rest | Energia a riposo | Energie in Ruhe | Energía en reposo | Énergie au repos |
+| Sotto il campo | Your own number, for example the one your dietitian measured. It takes the place of MuW's estimate. | Il tuo numero, per esempio quello misurato dal tuo dietista. Prende il posto della stima di MuW. | Deine eigene Zahl, zum Beispiel die von deiner Ernährungsfachkraft gemessene. Sie ersetzt die Schätzung von MuW. | Tu propio número, por ejemplo el que midió tu dietista. Sustituye a la estimación de MuW. | Ton propre chiffre, par exemple celui mesuré par ton diététicien. Il remplace l'estimation de MuW. |
+| La stima, sempre in vista | MuW's estimate: {kcal} kcal | Stima di MuW: {kcal} kcal | Schätzung von MuW: {kcal} kcal | Estimación de MuW: {kcal} kcal | Estimation de MuW : {kcal} kcal |
+| Tasto per togliere il numero scritto | Back to the estimate | Torna alla stima | Zurück zur Schätzung | Volver a la estimación | Revenir à l'estimation |
+
+#### La scheda «Calories of this activity» (toccando un'attività)
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Titolo | Calories of this activity | Calorie di questa attività | Kalorien dieser Aktivität | Calorías de esta actividad | Calories de cette activité |
+| Sotto il campo | Your number stays on this phone. Your post and Apple Health keep theirs. | Il tuo numero resta su questo telefono. Il tuo post e Salute di Apple tengono i loro. | Deine Zahl bleibt auf diesem Handy. Dein Beitrag und Apple Health behalten ihre. | Tu número se queda en este teléfono. Tu publicación y Salud de Apple conservan los suyos. | Ton chiffre reste sur ce téléphone. Ta publication et Santé d'Apple gardent les leurs. |
+
+Usa anche «MuW's estimate: {kcal} kcal» e «Back to the estimate».
+
+#### La lista privata («My activities»)
+
+Nessun testo nuovo: ogni attività chiude la riga dei numeri con le sue
+calorie, «7.2 km · 38:12 · 412 kcal», come oggi fa già la vasca. Un numero
+corretto a mano porta «(edited)»: «250 kcal (edited)».
+
+### Testi della parte D (approvati dall'utente il 2026-11-23, «Sì, approvo»)
+
+Mostrati con due schermate disegnate (la settimana in corso e una finita).
+
+L'inglese è il testo dell'app.
+Restano quelli già approvati o già nell'app: «Eaten», «Balance», «Surplus»,
+«Deficit», «Only you see this», «This week», «Mon» … «Sun», «Estimates only.
+MuW does not provide diets or medical advice.».
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Titolo del riquadro | Calorie balance | Bilancio delle calorie | Kalorienbilanz | Balance de calorías | Bilan calorique |
+| Colonna (approvata in inglese il 2026-11-22) | Used | Consumate | Verbraucht | Gastadas | Dépensées |
+| Frecce (lette dallo schermo parlante) | Previous week | Settimana prima | Vorherige Woche | Semana anterior | Semaine précédente |
+|  | Next week | Settimana dopo | Nächste Woche | Semana siguiente | Semaine suivante |
+| Segno sulla riga di oggi | so far | finora | bisher | hasta ahora | jusqu'ici |
+| Ultima riga | Week total | Totale della settimana | Wochensumme | Total de la semana | Total de la semaine |
+| Sotto il totale, solo nella settimana in corso | Today is not in the total until the day is over. | Oggi non entra nel totale finché il giorno non è finito. | Heute zählt erst zur Summe, wenn der Tag vorbei ist. | Hoy no entra en el total hasta que acabe el día. | Aujourd'hui n'entre dans le total qu'une fois la journée terminée. |
+
+Una settimana che non è quella in corso ha per titolo le sue date,
+«16 Nov – 22 Nov», scritte coi nomi dei mesi che l'app ha già.
+
+Le righe: il giorno («Mon 23»), «Eaten», «Used», «Balance» col segno
+(«−470», «+330»). Un giorno senza niente scritto nel diario mostra «—» in
+tutte e tre le colonne e non entra nel totale. Le parole «Surplus» e
+«Deficit» stanno accanto al totale della settimana; sulle righe le legge lo
+schermo parlante.
+
+### Testi della parte F (approvati dall'utente il 2026-11-23, «Sì, approvo»)
+
+Entrano in `apps/mobile/src/about/content/{en,it,de,es,fr}.ts`
+(la privacy nell'app) e, non prima dell'app che li porta, in `site/privacy/**`.
+
+Tre pezzi. I primi due descrivono quello che il codice delle parti A–D fa
+già (tutto sul telefono). Il terzo descrive la lettura da Salute, che arriva
+con la parte C2 nella build nativa: entra nel testo solo con quella.
+
+#### 1 · Sezione nuova «Nutrition», prima di «Apple Health and Health Connect»
+
+**English**
+
+Heading: Nutrition
+
+«Nutrition» is a diary you keep for yourself. The foods you add, your weekly plan, what you write that you ate each day, your daily target and the calories you correct by hand are kept on your phone only: they do not reach our server and nobody else can see them. The «Calorie balance» on your profile is worked out on your phone and shown only to you.
+
+To estimate the energy you use, MuW counts on your phone the activities of your account and the body data you entered in «Settings». Every number is an estimate: MuW does not provide diets or medical advice.
+
+This data was never on our server, so logging out or deleting your account does not delete it: it stays on your phone until you remove it there or uninstall the app.
+
+**Italiano**
+
+Titolo: Alimentazione
+
+«Alimentazione» è un diario che tieni per te. I cibi che aggiungi, il tuo piano della settimana, quello che scrivi di aver mangiato ogni giorno, il tuo obiettivo del giorno e le calorie che correggi a mano restano solo sul tuo telefono: non arrivano al nostro server e nessun altro può vederli. Il «Bilancio delle calorie» nel tuo profilo è calcolato sul telefono e lo vedi solo tu.
+
+Per stimare l'energia che consumi, MuW conta sul telefono le attività del tuo account e i dati del corpo che hai inserito in «Impostazioni». Ogni numero è una stima: MuW non fornisce diete né consigli medici.
+
+Questi dati non sono mai stati sul nostro server, quindi uscire dall'account o eliminarlo non li cancella: restano sul telefono finché non li togli lì o non disinstalli l'app.
+
+**Deutsch**
+
+Überschrift: Ernährung
+
+«Ernährung» ist ein Tagebuch, das du für dich führst. Die Lebensmittel, die du hinzufügst, dein Wochenplan, was du für jeden Tag als gegessen einträgst, dein Tagesziel und die Kalorien, die du von Hand korrigierst, bleiben nur auf deinem Handy: Sie erreichen unseren Server nicht, und niemand sonst kann sie sehen. Die «Kalorienbilanz» in deinem Profil wird auf deinem Handy berechnet und nur dir angezeigt.
+
+Um die Energie zu schätzen, die du verbrauchst, zählt MuW auf deinem Handy die Aktivitäten deines Kontos und die Körperdaten, die du in den «Einstellungen» eingegeben hast. Jede Zahl ist eine Schätzung: MuW gibt keine Diäten oder medizinischen Ratschläge.
+
+Diese Daten waren nie auf unserem Server. Deshalb löscht weder das Abmelden noch das Löschen deines Kontos sie: Sie bleiben auf deinem Handy, bis du sie dort entfernst oder die App deinstallierst.
+
+**Español**
+
+Título: Nutrición
+
+«Nutrición» es un diario que llevas para ti. Los alimentos que añades, tu plan de la semana, lo que escribes que comiste cada día, tu objetivo diario y las calorías que corriges a mano se guardan solo en tu teléfono: no llegan a nuestro servidor y nadie más puede verlos. El «Balance de calorías» de tu perfil se calcula en tu teléfono y solo lo ves tú.
+
+Para estimar la energía que gastas, MuW cuenta en tu teléfono las actividades de tu cuenta y los datos del cuerpo que introdujiste en «Ajustes». Cada número es una estimación: MuW no ofrece dietas ni consejos médicos.
+
+Estos datos nunca estuvieron en nuestro servidor, así que cerrar sesión o eliminar tu cuenta no los borra: se quedan en tu teléfono hasta que los quites allí o desinstales la app.
+
+**Français**
+
+Titre : Nutrition
+
+«Nutrition» est un journal que tu tiens pour toi. Les aliments que tu ajoutes, ton plan de la semaine, ce que tu notes avoir mangé chaque jour, ton objectif du jour et les calories que tu corriges à la main restent uniquement sur ton téléphone : ils n'arrivent pas sur notre serveur et personne d'autre ne peut les voir. Le «Bilan calorique» de ton profil est calculé sur ton téléphone et n'est affiché qu'à toi.
+
+Pour estimer l'énergie que tu dépenses, MuW compte sur ton téléphone les activités de ton compte et les données corporelles que tu as saisies dans les «Réglages». Chaque chiffre est une estimation : MuW ne fournit ni régimes ni conseils médicaux.
+
+Ces données n'ont jamais été sur notre serveur : te déconnecter ou supprimer ton compte ne les efface donc pas. Elles restent sur ton téléphone jusqu'à ce que tu les retires là ou que tu désinstalles l'app.
+
+#### 2 · Una riga in più in «Where your data is and for how long», nel punto «On your phone»
+
+Dopo «…to suggest lakes and the sea near it; it is deleted when you log out.»
+un punto nuovo:
+
+| English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|
+| On your phone only, also after you log out: what you write in «Nutrition». | Solo sul tuo telefono, anche dopo che esci dall'account: quello che scrivi in «Alimentazione». | Nur auf deinem Handy, auch nach dem Abmelden: was du in «Ernährung» einträgst. | Solo en tu teléfono, también después de cerrar sesión: lo que escribes en «Nutrición». | Uniquement sur ton téléphone, même après ta déconnexion : ce que tu écris dans «Nutrition». |
+
+#### 3 · Con la parte C2 (build nativa): un capoverso in più in «Apple Health and Health Connect»
+
+**English**
+
+If you allow it, MuW also reads from Apple Health (on Android, from Health Connect) the workouts other apps recorded and your active energy of each day, to count the energy you use in «Nutrition». These numbers are read on your phone each time they are needed: MuW does not save them, they do not reach our server and they are never used for advertising. You can stop it at any time in the Health app or in Health Connect.
+
+**Italiano**
+
+Se lo permetti, MuW legge da Salute di Apple (su Android, da Health Connect) anche gli allenamenti registrati da altre app e la tua energia attiva di ogni giorno, per contare l'energia che consumi in «Alimentazione». Questi numeri sono letti sul telefono ogni volta che servono: MuW non li salva, non arrivano al nostro server e non sono mai usati per la pubblicità. Puoi fermare la lettura in ogni momento nell'app Salute o in Health Connect.
+
+**Deutsch**
+
+Wenn du es erlaubst, liest MuW aus Apple Health (auf Android aus Health Connect) auch die Trainings, die andere Apps aufgezeichnet haben, und deine Aktivitätsenergie jedes Tages, um in «Ernährung» die Energie zu zählen, die du verbrauchst. Diese Zahlen werden auf deinem Handy jedes Mal gelesen, wenn sie gebraucht werden: MuW speichert sie nicht, sie erreichen unseren Server nicht und sie werden nie für Werbung verwendet. Du kannst das jederzeit in der Health-App oder in Health Connect beenden.
+
+**Español**
+
+Si lo permites, MuW también lee de Salud de Apple (en Android, de Health Connect) los entrenamientos que registraron otras apps y tu energía activa de cada día, para contar la energía que gastas en «Nutrición». Estos números se leen en tu teléfono cada vez que hacen falta: MuW no los guarda, no llegan a nuestro servidor y nunca se usan para publicidad. Puedes detenerlo en cualquier momento en la app Salud o en Health Connect.
+
+**Français**
+
+Si tu l'autorises, MuW lit aussi dans Santé d'Apple (sur Android, dans Health Connect) les entraînements enregistrés par d'autres apps et ton énergie active de chaque jour, pour compter l'énergie que tu dépenses dans «Nutrition». Ces chiffres sont lus sur ton téléphone chaque fois qu'ils sont nécessaires : MuW ne les enregistre pas, ils n'arrivent pas sur notre serveur et ils ne servent jamais à la publicité. Tu peux arrêter cette lecture à tout moment dans l'app Santé ou dans Health Connect.
+
+#### Negozi (da fare a mano nelle console, col sì dell'utente, quando esce la build)
+
+- **App Store, etichette della privacy**: i dati di «Nutrition» e quelli
+  letti da Salute restano sul telefono e non arrivano a MuW: per Apple non
+  sono «raccolti», quindi le etichette non dovrebbero cambiare. Da
+  ricontrollare sulla pagina di App Store Connect al momento della build.
+- **App Store, revisione**: serve il testo del permesso di Salute già
+  approvato (TASK-312), e la privacy deve dire che i dati di Salute non
+  vanno alla pubblicità (pezzo 3).
+- **Google Play, sicurezza dei dati**: come sopra, i dati lavorati solo sul
+  telefono non sono «raccolti». Per leggere da Health Connect Play chiede
+  una dichiarazione a parte, con il motivo per ogni tipo di dato
+  (allenamenti, calorie attive) e una privacy che lo dice (pezzo 3). Va con
+  la build Android di TASK-321 C.
+
 ## Le parti
 
 | Parte | Cosa | Dove va |
@@ -352,15 +540,41 @@ Le calorie di ogni attività dell'hub (`energy.ts`, `gymKcal.ts`,
 `poolKcal.ts`) e le attività raggruppate per giorno del telefono; nella
 lista privata ogni attività mostra le sue calorie stimate.
 
+Com'è fatta (schermate e testi approvati dall'utente il 2026-11-23):
+
+- In cima al diario «Used (est.)» = riposo + attività della lista privata
+  partite quel giorno; «Balance» = assunte − consumate, col segno e la
+  parola «Surplus» o «Deficit», «—» senza niente di mangiato scritto.
+- **Oggi il riposo è contato fino a adesso** (scelta dell'utente), con la
+  riga «Today the energy at rest is counted up to now.».
+- Un tocco su «Used (est.)» apre **«Energy you use»**: la riga «At rest» e
+  ogni attività con le sue calorie. Toccando il riposo o un'attività si
+  scrive il proprio numero (precisazione 12): il campo parte vuoto, la
+  stima di MuW resta in vista, «Back to the estimate» toglie il numero
+  scritto. Segni: «(set by you)» sul riposo, «edited» su un'attività.
+- Senza account, o se la lista non arriva, conta solo il riposo e la
+  scheda lo dice. Mentre le attività del giorno sono in arrivo «Used
+  (est.)» è «—».
+- Nella lista privata («My activities») ogni attività chiude la riga dei
+  numeri con le calorie che il bilancio conta, «(edited)» se corrette.
+  Solo con `NUTRITION_ON` acceso.
+- L'energia attiva di Salute non c'è ancora: arriva con C2.
+
 ### D — La tabella nel profilo
 
 Per giorno: «Eaten», «Used», «Balance» con «Surplus» o «Deficit» e il
 segno; il totale della settimana. Montata solo nel profilo di chi è entrato
 (`profile/ProfileHome.tsx`, una riga); nessun campo dell'API, niente esce
-dal telefono. I giorni senza diario restano vuoti. *Proposta dell'agente,
-da vedere con le schermate*: oggi è «so far» (il riposo contato fino a
-adesso) e non entra nel totale della settimana finché il giorno non è
-finito.
+dal telefono. I giorni senza diario restano vuoti.
+
+Com'è fatta (schermate e testi approvati dall'utente il 2026-11-23): il
+riquadro **«Calorie balance»** con «Only you see this», sotto il sonno; la
+settimana da lunedì a domenica, le frecce verso le settimane prima;
+«Week total» con «Surplus» o «Deficit». Scelte dell'utente: **oggi è «so
+far» e non entra nel totale** finché il giorno non è finito; **un giorno
+senza diario è «—»** in tutte le colonne e fuori dal totale; il riquadro
+compare **solo dopo che l'avviso di «Nutrition» è stato letto**; surplus e
+deficit nello stesso colore.
 
 ### F — Privacy
 
@@ -370,6 +584,16 @@ Play sui dati di salute, «How we calculate» con le fonti: USDA FoodData
 Central, equazioni ACSM, Compendium of Physical Activities 2024,
 Mifflin-St Jeor, energia attiva di Apple Salute. Testi e pubblicazione col
 sì dell'utente, sul sito **non prima** dell'app che li porta.
+
+Testi approvati dall'utente il 2026-11-23 («Sì, approvo»), in tre pezzi,
+più sotto. Scelta dell'utente: **il diario è del telefono, non
+dell'account**; uscire dall'account o eliminarlo non lo cancella, e la
+privacy lo dice (scartata: cancellare tutto all'uscita). Quando entrano
+(Coordinatore, 2026-11-23): i pezzi 1 e 2 nell'app **prima**
+dell'accensione, perché la privacy online deve esserci già quando
+`NUTRITION_ON` diventa `true`; il pezzo 3 con la C2, quando MuW comincia a
+leggere da Salute. I file della privacy si toccano a turno: il
+Coordinatore scrive «privacy tua».
 
 ### C2 — La lettura da Salute e l'accensione (build nativa)
 
@@ -457,6 +681,22 @@ File nuovi in `apps/mobile/src/nutrition/`, con i loro test:
 (B1: poche righe dietro `NUTRITION_ON`), `i18n/{de,es,fr,it}.ts` (in ogni
 PR solo le chiavi che usa), `docs/UI.md` (nella PR di documenti).
 
+Parte C1 (lista approvata dal Coordinatore il 2026-11-23). Nuovi in
+`apps/mobile/src/nutrition/`, coi test: `activityEnergy.ts`,
+`useDayEnergy.ts`, `EnergySheet.tsx`, `EnergyEditForm.tsx`,
+`useListKcal.ts`. Esistenti: `nutrition/DiaryView.tsx`,
+`nutrition/useNutrition.ts`, `activities/ActivityRow.tsx` (un hook e poche
+righe, dietro `NUTRITION_ON`), `i18n/{de,es,fr,it}.ts` (15 chiavi).
+
+Parte D (lista approvata dal Coordinatore il 2026-11-23). Nuovi in
+`apps/mobile/src/nutrition/`, coi test: `weekBalance.ts`, `OwnBalance.tsx`.
+Esistenti: `nutrition/useDayEnergy.ts`, `profile/ProfileHome.tsx` (un
+import e `<OwnBalance />` sotto `<OwnSleep />`), `i18n/{de,es,fr,it}.ts`
+(7 chiavi).
+
+Parte F, quando il Coordinatore dà il turno:
+`apps/mobile/src/about/content/{en,it,de,es,fr}.ts`, poi `site/privacy/**`.
+
 Le parti dopo toccano anche file esistenti, da chiedere al Coordinatore
 prima di ognuna: B `settings/SportButton.tsx` (montare la tessera),
 `App.tsx` o la pagina che ospita «Nutrition» (a turno), `i18n/{de,es,fr,it}.ts`,
@@ -496,6 +736,49 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 
 ## Registro
 
+- **2026-11-23, parte F: testi della privacy approvati**: l'utente ha detto
+  «Sì, parti con la parte F» e, visti i tre pezzi nelle cinque lingue, «Sì,
+  approvo»: il diario resta del telefono e non si cancella all'uscita
+  dall'account (scartato «Cancella all'uscita»). Nessun file toccato:
+  l'app aspetta il turno dei file della privacy (dopo TASK-486 e TASK-385
+  G3), il sito viene dopo l'app, il pezzo sulla lettura da Salute con la
+  C2. Per i negozi, da ricontrollare nelle console quando esce la build:
+  i dati che restano sul telefono non sono «raccolti», quindi etichette
+  dell'App Store e sicurezza dei dati di Play non dovrebbero cambiare;
+  leggere da Health Connect chiede a Play una dichiarazione a parte.
+- **2026-11-23, parte D scritta**: l'utente ha detto «Sì, parti con la
+  parte D» e, viste le due schermate e i sette testi, «Sì, approvo». Sul
+  ramo `feat/TASK-489-d-profile-balance`, sopra la C1; diventa una PR
+  quando la C1 è in `main`. Dietro `NUTRITION_ON` spento; non provata nel
+  simulatore. Diverso dal disegno: «so far» è scritto dopo il giorno
+  («Thu 26 · so far»), non in un'etichetta. Decisi dall'agente su delega
+  dell'utente: il conto di più giorni sta in `useDayEnergy.ts`
+  (`useDaysEnergy`), e le pagine della lista si chiedono fino a coprire il
+  lunedì della settimana guardata; mentre arrivano non c'è totale; prima
+  dell'avviso letto il riquadro non chiede niente alla lista; le
+  intestazioni delle colonne non sono lette una per una dallo schermo
+  parlante, perché ogni riga le dice.
+- **2026-11-23, parte C1 scritta**: l'utente ha detto «Sì, parti con la
+  parte C1» e, viste le cinque schermate e i testi, «Sì, approvo». Sul
+  ramo `feat/TASK-489-c1-activity-energy`, sopra la B2; diventa una PR
+  quando la B2 è in `main`. Dietro `NUTRITION_ON` spento; non provata nel
+  simulatore. Diverso dal disegno, detto all'utente: il campo del numero
+  parte vuoto; accanto a «Save» c'è «Cancel»; «Back to the estimate» solo
+  dopo un numero scritto. Decisi dall'agente su delega dell'utente: la
+  lista privata dice sport, metri e tempo, non il dislivello né le serie,
+  quindi **la palestra si conta dal solo tempo** (pesi per tutta la
+  durata) e **un'escursione senza la salita**; lo stretching col suo MET
+  sul tempo; uno sport che l'app non conosce conta zero; la lista si legge
+  con `useActivitiesDoor()` senza toccare `activities/`; per un giorno più
+  vecchio delle pagine tenute si chiedono le pagine dopo, e **una pagina
+  che non arriva non si richiede da sola** (quel giorno conta solo il
+  riposo, e la scheda lo dice); una sola scheda a passi (elenco, riposo,
+  attività) invece di schede una sopra l'altra; `useListKcal` non legge
+  niente dal telefono con `NUTRITION_ON` spento.
+- **2026-11-23, B1 in conflitto con `main`**: due volte la coda delle
+  tabelle `i18n/` (altri task aggiungono righe in fondo): tenute entrambe
+  le parti, prima quelle di `main`; testa di #1473 `dc179cd9`. La PR di
+  documenti #1475 è in `main`.
 - **2026-11-23, parte B scritta**: **B1** = #1473 (pagina «Nutrition»,
   avviso, diario, aggiunta del cibo, cibo mio, «My daily target», tessera;
   14 file nuovi in `apps/mobile/src/nutrition/`, 5 righe in

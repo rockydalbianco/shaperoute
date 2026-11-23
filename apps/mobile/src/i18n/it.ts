@@ -57,6 +57,9 @@ export const IT: Table = {
   "Try again": "Riprova",
   "No activities yet. Save a run when you finish it, and it is kept here.":
     "Ancora nessuna attività. Salva una corsa quando la finisci e la ritrovi qui.",
+  "No activities yet": "Ancora nessuna attività",
+  "When you finish an activity and save it, you find it here.":
+    "Quando finisci un'attività e la salvi, la ritrovi qui.",
   "{when}, {where}, {facts}, public, open on the map":
     "{when}, {where}, {facts}, pubblica, apri sulla mappa",
   "{when}, {where}, {facts}, open on the map":
@@ -176,8 +179,9 @@ export const IT: Table = {
   "Remove {title} from favorites": "Togli {title} dai preferiti",
   "Loading your favorites…": "Carico i tuoi preferiti…",
   "Your favorites could not load.": "Non è stato possibile caricare i tuoi preferiti.",
-  "No favorites yet. Tap {heart} on a route on the map to keep it here.":
-    "Ancora nessun preferito. Tocca {heart} su un percorso sulla mappa per tenerlo qui.",
+  "No favorites yet": "Ancora nessun preferito",
+  "Tap {heart} on a route on the map to keep it here.":
+    "Tocca {heart} su un percorso sulla mappa per tenerlo qui.",
 
   // src/favorites/favoriteRoute.ts
   Route: "Percorso",
@@ -2370,8 +2374,9 @@ export const IT: Table = {
   "Messages, {count} waiting": "Messaggi, {count} in attesa",
   "Message requests": "Richieste di messaggio",
   "Message requests, {count} waiting": "Richieste di messaggio, {count} in attesa",
-  "No messages yet. Open someone's profile and tap Message to write to them.":
-    "Ancora nessun messaggio. Apri il profilo di qualcuno e tocca Messaggio per scrivergli.",
+  "No messages yet": "Ancora nessun messaggio",
+  "Open someone's profile and tap Message to write to them.":
+    "Apri il profilo di qualcuno e tocca Messaggio per scrivergli.",
   "No message requests.": "Nessuna richiesta di messaggio.",
   "You: {text}": "Tu: {text}",
   "{name}, new message: {text}": "{name}, nuovo messaggio: {text}",

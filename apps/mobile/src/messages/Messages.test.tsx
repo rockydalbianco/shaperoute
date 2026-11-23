@@ -134,15 +134,15 @@ test("an empty list says how to write, the requests say there are none", async (
   await render(<Harness fetchFn={fetchFn} />);
   await fireEvent.press(await screen.findByRole("button", { name: "Messages" }));
   expect(
-    await screen.findByText(
-      "No messages yet. Open someone's profile and tap Message to write to them.",
-    ),
+    await screen.findByText("Open someone's profile and tap Message to write to them."),
   ).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Message requests" }));
   expect(await screen.findByText("No message requests.")).toBeOnTheScreen();
   // «←» from the requests: «Messages».
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
-  expect(await screen.findByText(/^No messages yet\. Open/)).toBeOnTheScreen();
+  expect(
+    await screen.findByText("Open someone's profile and tap Message to write to them."),
+  ).toBeOnTheScreen();
 });
 
 test("a conversation opened from the list is marked read, and «←» goes back to it", async () => {

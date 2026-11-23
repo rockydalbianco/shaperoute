@@ -21,6 +21,8 @@ import {
   space,
 } from "../theme/tokens";
 import { Cascade } from "../ui/Cascade";
+import { EmptyState } from "../ui/EmptyState";
+import { HEART } from "../ui/outlines";
 import { messageLine } from "./attachmentText";
 import { listWhen } from "./messageTime";
 import { useMessagesDoor } from "./messagesDoor";
@@ -147,15 +149,19 @@ export function ConversationList({ box, visit, onOpen, fetchFn, apiKey }: Props)
       )}
       {list === null && <Text style={styles.note}>{t("Loading…")}</Text>}
       {list?.kind === "failed" && <Text style={styles.problem}>{list.problem}</Text>}
-      {list?.kind === "ready" && list.conversations.length === 0 && (
-        <Text style={styles.note}>
-          {box === "inbox"
-            ? t(
-                "No messages yet. Open someone's profile and tap Message to write to them.",
-              )
-            : t("No message requests.")}
-        </Text>
-      )}
+      {list?.kind === "ready" &&
+        list.conversations.length === 0 &&
+        (box === "inbox" ? (
+          // A page with nothing in it yet (TASK-339 part C1).
+          <EmptyState
+            outline={HEART}
+            title={t("No messages yet")}
+            message={t("Open someone's profile and tap Message to write to them.")}
+            testID="messages-empty"
+          />
+        ) : (
+          <Text style={styles.note}>{t("No message requests.")}</Text>
+        ))}
       {list?.kind === "ready" &&
         list.conversations.map((conversation, index) => (
           <Cascade key={conversation.person.public_id} index={index}>

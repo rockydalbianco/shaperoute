@@ -231,9 +231,21 @@ disegno, 0,45 s fermo, 0,3 s di dissolvenza sull'app; il giallo si vede
 almeno 2,4 secondi. Il cuore finito resta sempre i suoi 0,45 s: se il
 telefono è lento e il disegno finisce tardi, la dissolvenza aspetta.
 L'app parte sotto e si carica intanto; l'animazione prende i tocchi finché
-c'è, non si salta, e si vede una volta a ogni apertura. Sta in
+c'è e si vede una volta a ogni apertura. Sta in
 `src/intro/`, sopra `App` (`index.ts`). Al lettore di schermo dice
 «MuW».
+
+**Intera una volta per versione, poi corta** (TASK-505, ADR-0405): i
+tempi qui sopra sono dell'animazione intera, che si vede alla prima
+apertura e alla prima dopo una versione nuova dello store (`version` di
+`app.json`, non gli OTA). Le altre volte lo stesso cuore dura 1,0 s: la
+penna parte subito, 0,6 s il disegno, 0,15 s fermo, 0,25 s di
+dissolvenza. **Un tocco la chiude**, intera o corta: sfuma in 0,25 s da
+dov'è, senza pulsanti né testi; vale anche il doppio tocco del lettore di
+schermo, e il tocco resta dell'animazione, non arriva all'app sotto. Il
+telefono ricorda la versione vista in `intro-seen.json`
+(`intro/introSeen.ts`), letto prima del primo fotogramma; senza file, o
+con un file che non si legge, l'intera.
 
 **Il cuore su giallo** (TASK-221, ADR-0184): lo stesso cuore, fermo e
 piccolo, come un logo. Un quadrato giallo `accent` con gli angoli
@@ -1125,7 +1137,11 @@ senza cambiare niente. È la stessa scelta della sezione «Sport» di
 
 **«Profile» senza account**: «Sign up» e «Log in», due pulsanti affiancati.
 «Sign up» chiede email, nome (da 3 a 20 fra lettere, cifre, `_` e `.`),
-password (almeno 8 caratteri) e la casella «I am at least 16» (ADR-0114);
+password (almeno 8 caratteri; nel campo, anche in «Log in», un occhio la
+mostra e la nasconde senza perdere il testo, VoiceOver «Show password» /
+«Hide password»; a iOS l'email è detta come nome dell'account e la
+password nuova con le sue regole: TASK-458) e la casella «I am at least
+16» (ADR-0114);
 sotto, piccola e grigia, «If you don't open MuW for 2 weeks, we email you
 once with what's new.» e la casella **non spuntata** «Don't send me these
 emails» (TASK-284, ADR-0244): spuntata, la richiesta manda `away_email:
@@ -1873,9 +1889,12 @@ l'app, come «Find friends»:
   someone's profile and tap Message to write to them.»; le richieste vuote:
   «No message requests.». Venti per volta, poi «Show more».
 - **La conversazione**: titolo con foto e nome e il «…» di «Report or
-  block» della persona; i messaggi dal basso, i propri a destra su
-  `surfaceRaised`, quelli dell'altro a sinistra su `surface` con il bordo
-  (il giallo resta del percorso), ognuno con il suo orario in basso a
+  block» della persona; i messaggi dal basso, i propri a destra **sul
+  giallo dell'app** (`accent`, parole e orario `onAccent`: scelta
+  dell'utente, TASK-458, ADR-0403; quello che portano — disegno, post,
+  live, foto — su una piastra `surfaceRaised` dentro il giallo), quelli
+  dell'altro a sinistra su `surface` con il bordo, ognuno con il suo
+  orario in basso a
   destra e sopra il primo di ogni giorno il titolo «Today», «Yesterday» o la
   data intera («Fri 2 Oct 2026»), sull'orologio del telefono (TASK-353). I
   vecchi arrivano scorrendo verso l'alto, con «Loading…»; «Show earlier
@@ -1890,6 +1909,20 @@ l'app, come «Find friends»:
   «Delete» chiude la conversazione. Si rilegge ogni 5 secondi mentre è
   aperta, e quando l'app torna sullo schermo; l'altro che scrive la segna
   letta (nessuna conferma all'altro).
+- **Una conversazione senza messaggi** (TASK-458, scelta dell'utente): al
+  centro la foto e il nome, «Say hi to {name}.» e tre spunti a capsula —
+  «Hi {name}!», «I like your drawings», «Shall we run together?» — che
+  scrivono il testo nella casella senza inviarlo (VoiceOver: «Writes it in
+  the box. Nothing is sent yet.»). In una richiesta, sotto la riga «{name}
+  gets this as a message request…», la riga «Photos, videos and drawings
+  come after that.»: il «+» arriva quando l'altro accetta.
+- **«New message»** (TASK-458): un tasto neutro a capsula accanto al titolo
+  della scheda «Messages» apre una pagina sua, col titolo «New message»,
+  «Close» e la casella «Search people»: prima chi si sente già, poi chi si
+  segue, ognuno una volta; un nome scritto cerca fra tutti («Nobody has a
+  name like that.»). Senza nessuno: «Search someone by name to write to
+  them.». Un tocco chiude la pagina e apre la conversazione; da lì non
+  parte niente.
 - **Un tocco lungo su un messaggio** (VoiceOver: «Touch and hold to delete
   it» / «… to report it») apre il foglio: il proprio, «Delete this message
   for both of you?» e «Delete»; dell'altro, «Report this message», poi i
@@ -4371,7 +4404,11 @@ screen goes dark but stays on, so directions go on. Do not lock the phone:
 if you press the side button, directions stop. To come back, hold the
 screen for 2 seconds.» La luminosità torna com'era all'uscita, all'arrivo
 (che toglie anche il pulsante), con «Stop» e quando l'app esce dal primo
-piano.
+piano. Sotto lo schermo nero la mappa non riceve niente della corsa e
+l'orologio dei numeri non scatta; uscendo la mappa riceve una volta i
+punti che mancano e la posizione, e l'orologio si legge subito (TASK-496).
+In vista, a ogni posizione vanno alla mappa solo i punti nuovi, e la mappa
+segue chi corre in 250 ms.
 
 **La traccia della corsa** (TASK-112, ADR-0091). Durante la navigazione
 l'app tiene la linea di quello che si è corso: ogni posizione del GPS,
@@ -4379,7 +4416,12 @@ tranne quelle con errore oltre 40 m e quelle a meno di 5 m dalla
 precedente, con distanza e durata. Anche in modalità tasca. La traccia sta
 in un file nei documenti dell'app (`current-run.json`), insieme al percorso
 pianificato: si scrive alla prima posizione, poi al più ogni 15 secondi, a
-«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Una corsa per volta:
+«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Con l'app dietro
+un'altra o il telefono bloccato ogni posizione tenuta si scrive subito
+(TASK-304), ma solo lei: una riga in coda al diario `current-run.journal`,
+accanto al file; il file intero si riscrive uscendo dal primo piano, a una
+pausa, alla fine e ogni 300 righe, e la corsa riaperta è il file con il
+diario dopo (TASK-496, aggiunta ad ADR-0264). Una corsa per volta:
 «Start» sullo stesso percorso entro 30 minuti continua la traccia, un altro
 percorso la sostituisce alla prima posizione. La traccia non esce dal
 telefono: la usano i numeri della corsa e la schermata di fine corsa
@@ -4788,6 +4830,12 @@ Acceso, la notte pubblicata da sola è un post come gli altri, senza corsa:
 scheda di una corsa in «My activities». Apre a tutto schermo «Share your
 run», con «Close» in alto a sinistra:
 
+- **L'ordine della pagina** (TASK-450, scelta dell'utente del 2026-11-23):
+  il post; subito sotto «Instagram» ed «Export video», con la riga «Pick
+  Instagram in the list…» e l'eventuale errore; poi «Style» (i fondi del
+  post), «Results», «Add emoji», «Edit video», «Music» e Strava. Le due
+  azioni si raggiungono senza scorrere; dove le voci qui sotto dicono
+  «sopra» o «accanto», vale quest'ordine.
 - **Il post**, in alto: 9:16, sul giallo di Sgrava. Il cuore del logo e
   «Sgrava», il titolo (quello della corsa, o luogo e forma; nessuno a
   fine corsa), il disegno della corsa in nero **senza i primi e gli ultimi
@@ -4795,6 +4843,27 @@ run», con «Close» in alto a sinistra:
   «Time», «Pace» (il passo manca sotto i 100 m). **Il punteggio non è fra i risultati**
   (TASK-241 parte C, chiesto dall'utente): non si può accendere, non è
   sul post e non va nel testo per Strava.
+- **Titolo e giorno sul post** (TASK-450, scelte dell'utente del
+  2026-11-23): da «My activities» il titolo è quello del **post**, scritto
+  in «Edit post», quando c'è; altrimenti quello del percorso o «luogo ·
+  forma», come prima. Dal Feed è già il titolo del post. Sotto il titolo,
+  piccolo, il giorno della corsa come lo scrive l'app («Sat 21 Nov 2026»),
+  sempre: da «My activities», dal Feed (il giorno della corsa, non quello
+  della pubblicazione) e a fine corsa, dove sta da solo perché il titolo
+  non c'è ancora. Titolo (due righe al più) e giorno finiscono sopra il disegno.
+- **«Style»**, sotto i due pulsanti (TASK-450, scelta dell'utente del
+  2026-11-23): tre tessere 9:16 col disegno della corsa, una accesa.
+  «Yellow», accesa all'apertura: il giallo del logo con tutto in nero,
+  com'era. «Night»: il fondo scuro dell'app al suo passo più scuro, la
+  linea nel giallo del percorso, le scritte chiare. «Day»: il fondo chiaro
+  dell'app al suo passo più chiaro, linea e scritte scure. Sono le palette
+  del video («Night», «Day»), qualunque tono abbia l'app; i colori vengono
+  solo dai token. Il quadrato giallo del logo resta giallo su tutti e tre.
+  La scelta vale per l'immagine di «Instagram» e non si salva col post,
+  come stile e musica del video. Le tessere di palestra e piscina restano
+  com'erano, senza «Style». Nella pagina il post ha attorno un filo
+  (`hairline`) che non entra nell'immagine: con «Night» ha lo stesso scuro
+  della pagina.
 - **«Results»**: una pastiglia per risultato, accesa all'inizio; spenta,
   il risultato sparisce dal post e dal testo per Strava.
 - **«Add emoji»**: 🔥 ❤️ 💪 🏃 🎉 😅 🥵 😎 ⚡ 🏆 ☀️ 🌧️. Un tocco mette l'emoji

@@ -5089,6 +5089,114 @@ accounts_unavailable`. Tipi in `shared-types` (`GroupRunRequest`,
 - **Un'API precedente** non ha questi endpoint (`404 http_error`): l'app
   non mostra la fila né il bottone.
 
+### Groups (TASK-495, ADR-0402)
+
+I gruppi per uscire insieme: un nome, una foto, una descrizione, da 1 a 3
+sport, una città e un modo d'ingresso; un admin, fino a 3 co-admin, i
+membri. Le regole sono in `GRUPPI.md`; il codice in `groups.py`. Tutti gli
+endpoint vogliono il token: senza, `401 not_signed_in`; senza database,
+`503 accounts_unavailable`. Tipi in `shared-types` (`src/groups.ts`:
+`GroupRequest`, `Group`, `GroupDetail`, `GroupsFound`, `MyGroups`,
+`GroupMember`, `GroupMembersPage`, `GroupRoleRequest`, `GroupJoin`,
+`GroupPushKind`, `GroupPushData` e i limiti `GROUP_*`), esempi in
+`fixtures/group-request.json`, `group.json`, `groups.json`,
+`my-groups.json`, `group-members.json`, `group-push-data.json`. Le uscite
+del gruppo arrivano con la parte C.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /groups` | crea un gruppo; chi lo crea è l'admin | `201` `GroupDetail` |
+| `GET /groups?lat=…&lon=…&sport=…` | Explore: quelli entro 50 km, i più vicini prima | `200` `GroupsFound` |
+| `GET /groups?q=…&sport=…` | Explore: quelli il cui nome contiene `q`, ovunque, per nome | `200` `GroupsFound` |
+| `GET /me/groups` | i propri gruppi, per nome, e gli inviti | `200` `MyGroups` |
+| `GET /groups/{id}` | la pagina del gruppo | `200` `GroupDetail` |
+| `PUT /groups/{id}` | l'admin cambia il gruppo, tutto | `200` `GroupDetail` |
+| `PUT /groups/{id}/photo` | l'admin mette la foto (`{ "image": "…" }`, come `PUT /me/photo`) | `200` `GroupDetail` |
+| `DELETE /groups/{id}/photo` | l'admin la toglie | `204` |
+| `PUT /groups/{id}/membership` | «Join» | `200` `GroupJoin` |
+| `DELETE /groups/{id}/membership` | esce; ritira la richiesta; rifiuta l'invito | `204` |
+| `PUT /groups/{id}/mute`, `DELETE …/mute` | «Mute» del membro, e il contrario | `204` |
+| `GET /groups/{id}/members?limit=20&cursor=…` | i membri, solo per i membri | `200` `GroupMembersPage` |
+| `GET /groups/{id}/activity?limit=20&cursor=…` | «Recent activity», solo per i membri | `200` `FeedPage` |
+| `DELETE /groups/{id}/members/{public_id}` | admin o co-admin tolgono un membro | `204` |
+| `PUT /groups/{id}/members/{public_id}/role` | l'admin dà o toglie il co-admin, o passa il suo ruolo | `204` |
+| `GET /groups/{id}/requests?limit=20&cursor=…` | chi ha chiesto di entrare, il primo per primo | `200` `PeoplePage` |
+| `PUT /groups/{id}/requests/{public_id}` | accetta la richiesta | `204` |
+| `DELETE /groups/{id}/requests/{public_id}` | la rifiuta, senza avvisare | `204` |
+| `PUT /groups/{id}/invites/{public_id}` | invita | `204` |
+| `DELETE /groups/{id}/invites/{public_id}` | ritira l'invito | `204` |
+
+- **Il corpo di `POST` e `PUT`** è `GroupRequest`: `name` 1–40 caratteri su
+  una riga («A group's name is 1 to 40 characters, on one line.»),
+  `description` al più 500 con gli a capo, `sports` da 1 a 3 nomi diversi
+  di `runs.activity` («A group has 1 to 3 different sports.»), `city` 1–80
+  su una riga, `area` un punto della città `[lat, lon]`, tenuto
+  **arrotondato a due decimali** (circa un chilometro: mai un indirizzo),
+  `access` `public`, `request` o `invite`. Un gruppo con `alpinism` non è
+  mai `public` («A group with alpinism asks to join, or is by invite
+  only.»). Spazi in testa e in coda tolti, una descrizione vuota è `null`.
+  Nome, descrizione e città passano dal **filtro dei commenti negativi**
+  (`422 comment_rejected`). **Al più 5 gruppi di cui si è admin** («You can
+  be the admin of 5 groups at most.»).
+- **Chi vede un gruppo**: nessuno tenuto lontano dal suo admin
+  (`apart_sql`, un blocco nei due sensi, un admin nascosto), per cui
+  risponde `404 http_error` «No group with this id.» come un id che non
+  c'è; gli altri se ne sono membri, o se non è nascosto e non è `invite`, o
+  se sono stati invitati. **Nascosto** dal link di una segnalazione: lo
+  vedono solo i membri, non compare in Explore e non entra nessuno.
+- **`members`** conta chi è nel gruppo meno chi è lontano da chi chiede;
+  **`me`** dice dove sta chi chiede: `admin`, `coadmin`, `member`,
+  `requested`, `invited`, `none`. **L'elenco dei membri** lo leggono solo i
+  membri (`403 http_error` «Only the group's members can do this.»): prima
+  l'admin, poi i co-admin, poi i membri, ognuno da quando è entrato, mai
+  chi è lontano da chi chiede.
+- **«Recent activity»** (`GET …/activity`, parte A2), solo per i membri
+  (`403` per gli altri): i post dei membri pubblicati negli ultimi **14
+  giorni**, di una corsa di uno degli sport del gruppo (niente post di sole
+  foto, del sonno o di una scheda), il più recente prima; solo quelli che
+  chi chiede vede già nel Feed (`drawings.shown_sql`: mai attraverso un
+  blocco, mai nascosti, «Followers» solo a chi segue) e che l'app sa
+  leggere (`X-MuW-Reads`). Le schede del Feed (`FeedPage`), a pagine con
+  `cursor`. Chi esce dal gruppo porta via i suoi post.
+- **«Join»** (`PUT …/membership`): in un gruppo `public`, o con un invito,
+  si entra subito (`me: member`); in un gruppo `request` si lascia una
+  richiesta (`me: requested`) e admin e co-admin ricevono
+  `group_join_request`, una volta. Due volte è una. **Al più 300 membri**
+  («A group has 300 members at most.»).
+- **Uscire** (`DELETE …/membership`): un membro o un co-admin esce; una
+  richiesta si ritira; un invito si rifiuta. L'admin esce solo da ultimo
+  membro, e il gruppo se ne va; altrimenti `422` «Pass the admin role to
+  another member before you leave.».
+- **Richieste e inviti** sono di admin e co-admin (`403` «Only the group's
+  admin and co-admins can do this.»). Accettata una richiesta, chi l'ha
+  fatta riceve `group_join_accepted`; invitato, `group_invite`. Invitare
+  chi ha già chiesto lo fa entrare, come accettato; chi è lontano da chi
+  invita o dall'admin risponde `404 http_error` «No profile with this id.».
+  Rifiutare o ritirare non avvisa nessuno.
+- **Ruoli**: solo l'admin cambia il gruppo, la foto e i ruoli (`403` «Only
+  the group's admin can do this.»). `coadmin` fino a 3 («A group has 3
+  co-admins at most.»); `member` toglie il co-admin; `admin` passa il ruolo
+  (l'admin di prima diventa membro), a chi non è già admin di 5 gruppi
+  («They are the admin of 5 groups already.»). Un co-admin toglie i
+  membri, non i co-admin né l'admin. Chi è tolto può chiedere di nuovo.
+- **Explore** (`GET /groups`): mai un gruppo `invite` o nascosto; `sport`
+  filtra; con `q` (almeno 2 caratteri) cerca nel nome ovunque, per nome,
+  senza `q` vuole il punto (`lat` e `lon` insieme), altrimenti `422` «Give
+  a place, or part of a name.». Al più 20.
+- **Le push** portano `{ kind, group_id }` (`GroupPushData`) e aprono la
+  pagina del gruppo; finiscono anche nella campanella, non nell'email del
+  giorno. Valgono «Push notifications» e i blocchi.
+- **Segnalare**: `POST /reports` con `kind` `group` e l'id del gruppo; è
+  segnalato il suo admin. L'email lo chiama «group», con nome,
+  descrizione, città, ingresso e se ha la foto; il link nasconde
+  (`groups.hidden_at`).
+- **`DELETE /me`**: prima della cancellazione il ruolo di admin passa al
+  co-admin più vecchio nel ruolo, poi al membro più vecchio nel gruppo; un
+  gruppo senza nessun altro si cancella (`app.state.before_account_delete`).
+  Poi appartenenze, richieste e inviti se ne vanno con l'account.
+- **Un'API precedente** non ha questi endpoint (`404 http_error`): l'app
+  non mostra i gruppi.
+
 ### Feedback (TASK-308, ADR-0268)
 
 «Send feedback» in «Settings»: un iscritto scrive a chi gestisce MuW

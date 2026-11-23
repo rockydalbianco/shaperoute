@@ -182,19 +182,23 @@ dell'OTA:
 > see. We delete your groups, memberships, requests and invites when you
 > delete your account.
 
-## 12. I dati (proposta, la parte A la fissa)
+## 12. I dati
+
+Le tabelle dei gruppi sono della migrazione `0087_groups.sql` (parte A,
+`DATABASE.md`); le colonne nuove di `group_runs` arrivano con la parte C.
 
 ```
 groups
   id            uuid, primaria
   name          text, 1–40
   description   text, al più 500, facoltativo
-  photo         come la foto del profilo, facoltativa
-  sports        text[], 1–3
+  sports        text[], 1–3 nomi di runs.activity
   city          text
   area          geography(Point), arrotondato a ~1 km, indice GIST
   access        'public' | 'request' | 'invite'
   created_at, updated_at, hidden_at
+
+group_photos     (group_id, jpeg, updated_at) — quadrata, 256 px
 
 group_members
   group_id → groups ON DELETE CASCADE, user_id → users ON DELETE CASCADE
@@ -213,8 +217,28 @@ group_runs (TASK-309), in più:
   il percorso   facoltativo, solo per le uscite senza percorso
 ```
 
-La migrazione prende il primo numero libero, chiesto al Coordinatore con
-la lista dei file della parte A.
+Il ruolo di admin passa prima che il suo account si cancelli
+(`groups.before_account_delete`, §4); tutto il resto va con l'account
+(`ON DELETE CASCADE`).
+
+**Scelte della parte A** (dell'agente, su delega dell'utente; ADR-0402,
+precisazione A):
+
+- la foto del gruppo è quadrata, 256 px, come quella del profilo; nelle
+  schede una copia piccola;
+- passato il ruolo, l'admin di prima diventa membro;
+- un gruppo che diventa Public fa entrare chi aveva chiesto (fino a 300);
+- invitare chi ha già chiesto lo fa entrare, come una richiesta accettata;
+- un co-admin toglie i membri, non gli altri co-admin né l'admin;
+- in Explore la ricerca per nome vuole almeno 2 caratteri e vale ovunque;
+  senza nome serve la posizione del telefono;
+- un admin nascosto da una segnalazione (`users.hidden_at`) è lontano da
+  tutti: il suo gruppo non lo vede più nessuno, membri compresi, finché
+  resta nascosto;
+- «Recent activity» (parte A2) tiene solo i post di una corsa di uno sport
+  del gruppo: non i post di sole foto, del sonno o di una scheda;
+- la push di una nuova uscita (`group_outing_new`) arriva con le uscite,
+  nella parte C.
 
 ## 13. Fuori da questa versione
 
@@ -227,8 +251,9 @@ dopo le altre (§14).
 
 ## 14. Le parti
 
-0 documenti → **A** API e migrazione (gruppi, membri, richieste, inviti,
-segnalazioni, push) → **B** app: crea, entra, pagina del gruppo → **C**
+0 documenti (#1515) → **A** API e migrazione (gruppi, membri, richieste,
+inviti, segnalazioni, push; #1538) → **A2** «Recent activity» (#1543) →
+**B** app: crea, entra, pagina del gruppo → **C**
 uscite di gruppo per più sport, anche senza percorso (tocca i file di
 TASK-309: la lista al Coordinatore prima) → **D** Explore e notifiche →
 **privacy** (prima dell'OTA) → **E** chat di gruppo: testo e foto, filtro

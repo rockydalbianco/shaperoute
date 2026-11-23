@@ -65,11 +65,19 @@ from shaperoute_api.report_email import notify_report
 from shaperoute_api.schemas import ErrorBody
 
 ReportKind = Literal[
-    "drawing", "comment", "user", "group_run", "message", "outfit_tag", "gear"
+    "drawing",
+    "comment",
+    "user",
+    "group_run",
+    "message",
+    "outfit_tag",
+    "gear",
+    "group",
 ]
 """What is reported: a drawing (a post of the feed), a comment, a member, a
 group run (TASK-309), a private message (messages.py), an item tagged on a
-photo (outfit_tags.py), an item of gear (gear.py, TASK-486)."""
+photo (outfit_tags.py), an item of gear (gear.py, TASK-486), a group
+(groups.py, TASK-495): its admin is who it is reported of."""
 ReportReason = Literal["spam", "offensive", "harassment", "sexual", "other"]
 """The short list the app shows, in this order. Codes, never the words: the
 app says them in its language. The migration's CHECK holds the same list."""
@@ -104,6 +112,10 @@ OWNER_OF: dict[ReportKind, str] = {
         " JOIN drawings d ON d.id = t.drawing_id WHERE t.id = %s"
     ),
     "gear": "SELECT user_id AS owner FROM gear WHERE id = %s",
+    "group": (
+        "SELECT user_id AS owner FROM group_members WHERE group_id = %s"
+        " AND role = 'admin'"
+    ),
 }
 
 
@@ -118,8 +130,8 @@ class ReportRequestBody(BaseModel):
     kind: ReportKind
     id: UUID
     """The drawing's id, the comment's id, the member's public_id, the
-    group run's id, the message's id, the tagged item's id or the gear's
-    id."""
+    group run's id, the message's id, the tagged item's id, the gear's id or
+    the group's id."""
     reason: ReportReason
 
 

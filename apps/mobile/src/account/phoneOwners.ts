@@ -2,6 +2,8 @@ import type { User } from "@shaperoute/shared-types";
 
 import { forgetOutboxOf } from "../activities/outbox";
 import { forgetAllSleepOf } from "../activities/sleepOut";
+import { BODY_FILE } from "../body/bodyProfile";
+import { HEART_FILE } from "../body/heartZones";
 import { forgetGymOf } from "../gym/gymOutbox";
 import { forgetHistoriesOf } from "../gym/gymHistoryCache";
 import { forgetPlansOf } from "../gym/plans";
@@ -13,6 +15,7 @@ import { forgetVisibilityOf } from "../social/visibilityChoice";
 import { keptList } from "../storage/keptList";
 import { forgetStravaOf } from "../strava/stravaOutbox";
 import { forgetStretchOf } from "../stretchSport/stretchOutbox";
+import { forgetOwnedFile } from "./currentOwner";
 
 /**
  * Whose the data waiting on this phone is (TASK-507, ADR-0406). The files
@@ -55,8 +58,8 @@ export function serverOf(baseUrl: string): string {
  * Lets go of everything waiting on the phone for the account `owner`: its
  * runs, nights, workouts, swims and stretching sessions not sent, what was
  * to follow them (Strava, drawings, photos, order, outfits, «Public»), its
- * gym plans and the gym history kept. For an account deleted, and for a
- * number that now is somebody else's.
+ * gym plans and the gym history kept, its body and its heart. For an
+ * account deleted, and for a number that now is somebody else's.
  */
 export function forgetPhoneDataOf(owner: number): void {
   forgetOutboxOf(owner);
@@ -71,6 +74,9 @@ export function forgetPhoneDataOf(owner: number): void {
   forgetPlansOf(owner);
   forgetPoolOf(owner);
   forgetStretchOf(owner);
+  // Its body and its heart (part D): each account has its own.
+  forgetOwnedFile(BODY_FILE, owner);
+  forgetOwnedFile(HEART_FILE, owner);
 }
 
 /**

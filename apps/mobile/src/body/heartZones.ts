@@ -1,4 +1,4 @@
-import { File, Paths } from "expo-file-system";
+import { onOwnerChange, ownedFile } from "../account/currentOwner";
 
 import { ageIn, type BodyProfile } from "./bodyProfile";
 
@@ -183,11 +183,11 @@ export function isEmptyHeart(heart: HeartSettings): boolean {
 
 export const HEART_FILE = "heart.json";
 
-/** The settings kept on this phone; empty when none were kept or they do
- * not read. */
+/** The settings of the account signed in (TASK-507: each account its
+ * own); empty when none were kept or they do not read. */
 export function loadHeart(): HeartSettings {
   try {
-    const file = new File(Paths.document, HEART_FILE);
+    const file = ownedFile(HEART_FILE);
     if (!file.exists) {
       return NO_HEART;
     }
@@ -211,6 +211,14 @@ export function appHeart(): HeartSettings {
 /** Told of each new setting, while the app is open. */
 const listeners = new Set<(heart: HeartSettings) => void>();
 
+// Another account signed in, or none (TASK-507): its settings, told to all.
+onOwnerChange(() => {
+  current = loadHeart();
+  for (const listener of listeners) {
+    listener(current);
+  }
+});
+
 /** Calls `listener` with each setting saved from now on, until the returned
  * function is called. */
 export function subscribeHeart(listener: (heart: HeartSettings) => void): () => void {
@@ -227,7 +235,7 @@ export function subscribeHeart(listener: (heart: HeartSettings) => void): () => 
 export function saveHeart(heart: HeartSettings): void {
   const kept = heartOf(heart);
   try {
-    const file = new File(Paths.document, HEART_FILE);
+    const file = ownedFile(HEART_FILE);
     if (isEmptyHeart(kept)) {
       if (file.exists) {
         file.delete();

@@ -1,6 +1,6 @@
 # TASK-450 — «Share your run»: ordine dei pulsanti e poster
 
-**Stato**: In corso · codice scritto, mancano le schermate prima/dopo col sì dell'utente
+**Stato**: In corso · PR #1541 (bozza), schermate prima/dopo fatte, manca il sì dell'utente
 **Fase**: 5 · **Branch**: `feat/TASK-450-share-order-poster`
 **Dipende da**: niente
 **ADR**: nessuno finora · numero dal Coordinatore l'11 novembre 2026 (idea
@@ -93,6 +93,25 @@ nell'app e nelle quattro lingue; la data è scritta come nel resto dell'app.
   riga in `feed/PostActions.tsx` (`postOfDrawing`, `startedAt:
   drawing.started_at`), file aggiunto alla lista col sì del Coordinatore
   (2026-11-23).
+
+- **La cornice** (`SharePost.tsx`): un filo (`hairline`) attorno al poster
+  nella pagina, fuori dall'immagine condivisa. Uscita dalla prova nel
+  simulatore: con «Night» il poster ha lo stesso scuro della pagina e non
+  se ne vedevano i bordi.
+
+## Prova nel simulatore (2026-11-23)
+
+iPhone 17e, Expo Go, Metro dal worktree (8150), API locale (8050) su un
+PostGIS a perdere (`task450-db`), account di prova con una corsa a stella
+e il post «My first star» (`out/TASK-450/seed.py`); «prima» = i cinque file
+di codice com'erano su `main`, «dopo» = il branch. Schermate in
+`out/TASK-450/shots/`, fogli `out/TASK-450/TASK-450-pagina-prima-dopo.jpg`
+e `TASK-450-poster-stili.jpg` (fuori da git). Visto: prima il poster
+diceva «Stella» e i pulsanti erano in fondo; dopo dice «My first star» con
+«Sab 21 nov 2026», i pulsanti stanno sotto il poster, le tre tessere
+cambiano fondo, linea e scritte. Non provato nel simulatore: il poster a
+fine corsa e dal Feed (coperti dai test), e l'immagine che arriva nel
+foglio di condivisione di iOS.
 
 ## Criteri di accettazione
 

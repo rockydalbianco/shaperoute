@@ -1,5 +1,11 @@
 import type { LatLon } from "@shaperoute/shared-types";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 import * as Sharing from "expo-sharing";
 import type { ReactNode } from "react";
 import { Linking, StyleSheet } from "react-native";
@@ -255,6 +261,23 @@ describe("the post's look (TASK-450)", () => {
 
     await fireEvent.press(screen.getByRole("radio", { name: "Day" }));
     expect(ground()).toBe(lookColours("day").ground);
+    await screen.findByText("Send to Strava");
+  });
+
+  it("has a thin edge around the picture, which is not in the picture shared", async () => {
+    await shown(<SharePost run={RUN} onClose={() => {}} />);
+    const frame = screen.getByTestId("post-frame");
+    expect(within(frame).getByTestId("post-image")).toBeOnTheScreen();
+    expect(StyleSheet.flatten(frame.props.style).borderWidth).toBe(
+      StyleSheet.hairlineWidth,
+    );
+    // The picture is made of the post alone: the edge is its parent's.
+    await fireEvent.press(screen.getByRole("button", { name: "Instagram" }));
+    await waitFor(() => expect(capture).toHaveBeenCalledTimes(1));
+    const made = capture.mock.calls[0][0] as {
+      current: { props: { testID?: string } };
+    };
+    expect(made.current.props.testID).toBe("post-image");
     await screen.findByText("Send to Strava");
   });
 

@@ -4813,7 +4813,9 @@ run», con «Close» in alto a sinistra:
   solo dai token. Il quadrato giallo del logo resta giallo su tutti e tre.
   La scelta vale per l'immagine di «Instagram» e non si salva col post,
   come stile e musica del video. Le tessere di palestra e piscina restano
-  com'erano, senza «Style».
+  com'erano, senza «Style». Nella pagina il post ha attorno un filo
+  (`hairline`) che non entra nell'immagine: con «Night» ha lo stesso scuro
+  della pagina.
 - **«Results»**: una pastiglia per risultato, accesa all'inizio; spenta,
   il risultato sparisce dal post e dal testo per Strava.
 - **«Add emoji»**: 🔥 ❤️ 💪 🏃 🎉 😅 🥵 😎 ⚡ 🏆 ☀️ 🌧️. Un tocco mette l'emoji

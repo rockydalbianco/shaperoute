@@ -272,18 +272,22 @@ function SharePage({ run, onClose }: Props) {
               height={postWidth * POST_RATIO}
             />
           ) : (
-            <PostImage
-              ref={post}
-              run={run}
-              shown={shown}
-              stickers={stickers}
-              look={look}
-              width={postWidth}
-              onMoveSticker={(id, x, y) =>
-                setStickers((now) => moveSticker(now, id, x, y))
-              }
-              onRemoveSticker={(id) => setStickers((now) => removeSticker(now, id))}
-            />
+            // A thin edge around the picture, not in it: «Night» has the
+            // page's own dark, and its edges would not show (TASK-450).
+            <View style={styles.frame} testID="post-frame">
+              <PostImage
+                ref={post}
+                run={run}
+                shown={shown}
+                stickers={stickers}
+                look={look}
+                width={postWidth}
+                onMoveSticker={(id, x, y) =>
+                  setStickers((now) => moveSticker(now, id, x, y))
+                }
+                onRemoveSticker={(id) => setStickers((now) => removeSticker(now, id))}
+              />
+            </View>
           )}
         </View>
         {stickers.length > 0 && (
@@ -487,6 +491,10 @@ const styles = StyleSheet.create({
   },
   center: {
     alignItems: "center",
+  },
+  frame: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: color.hairline,
   },
   label: {
     color: color.textMuted,

@@ -44,6 +44,7 @@ import {
   clearStops,
   focus as focusMap,
   clearTrack,
+  extendTrack,
   face,
   follow,
   pageScript,
@@ -78,6 +79,28 @@ const NO_OTHERS: LatLon[][] = [];
 const NO_LABELS: readonly SkiLabel[] = [];
 /** No shape under the route. */
 const NO_GHOST: LatLon[][] = [];
+
+function samePoint(a: LatLon, b: LatLon): boolean {
+  return a[0] === b[0] && a[1] === b[1];
+}
+
+/**
+ * What `track` is to `told`, the line the page holds (TASK-496): "longer",
+ * the same line with new fixes at its end, as a run recorded grows;
+ * "same", nothing new; "other", any other line. Judged from its ends: a
+ * track only ever grows at its end.
+ */
+function grownFrom(told: LatLon[], track: LatLon[]): "longer" | "same" | "other" {
+  if (
+    told.length < 2 ||
+    track.length < told.length ||
+    !samePoint(told[0], track[0]) ||
+    !samePoint(told[told.length - 1], track[told.length - 1])
+  ) {
+    return "other";
+  }
+  return track.length === told.length ? "same" : "longer";
+}
 
 /** The figure of «Draw on the map» as the map shows it (TASK-281). */
 export type MapCanvas = {
@@ -282,6 +305,12 @@ export function MapView({
   const routeShown = useRef(false);
   const followed = useRef(false);
   const trackShown = useRef(false);
+  // The track the page holds as one line, told with `showTrack` and its
+  // new fixes after (TASK-496); null when it holds none, or another kind.
+  const lineTold = useRef<LatLon[] | null>(null);
+  // Whether the page was told to stop blinking, under pocket mode's black
+  // screen: nothing more of the progress until the screen is back.
+  const stilled = useRef(false);
   // Framed on a track without a route (TASK-478): only when nothing is
   // followed and no route frames the map.
   const framesTrack = following === null && (route === null || route.length === 0);
@@ -324,7 +353,10 @@ export function MapView({
   const rejoinFrom = progress?.rejoin?.from ?? null;
   const rejoinTo = progress?.rejoin?.to ?? null;
   const wayBack = progress?.wayBack ?? null;
-  // Under the black screen of pocket mode nobody sees the blinking.
+  // Under the black screen of pocket mode nobody sees the blinking
+  // (TASK-224), nor the run on the map (TASK-496): the page is told nothing
+  // of the track, the runner, the compass and the progress until the screen
+  // is back, and then once how things are.
   const pocket = usePocketOn();
 
   const fail = (reason: string) => {
@@ -416,6 +448,11 @@ export function MapView({
 
   useEffect(() => {
     if (!ready) {
+      // A page that loads again holds no line.
+      lineTold.current = null;
+      return;
+    }
+    if (pocket) {
       return;
     }
     if (track && track.length > 1) {
@@ -426,21 +463,35 @@ export function MapView({
           pageScript(showLifts(cut.skied, cut.lifts, liftLabels, frame)),
         );
         liftsShown.current = true;
+        lineTold.current = null;
       } else if (flightAir !== null && flightAir.length > 0) {
         const cut = splitAtAir(track, flightAir);
         webView.current?.injectJavaScript(
           pageScript(showFlight(cut.foot, cut.air, frame)),
         );
         flightShown.current = true;
+        lineTold.current = null;
       } else {
-        webView.current?.injectJavaScript(
-          pageScript(frame ? showTrackFramed(track) : showTrack(track)),
-        );
+        // A run as it is recorded: only its new fixes, after the line the
+        // page holds (TASK-496). Anything else is told whole.
+        const told = frame ? null : lineTold.current;
+        const grown = told === null ? "other" : grownFrom(told, track);
+        if (told !== null && grown === "longer") {
+          webView.current?.injectJavaScript(
+            pageScript(extendTrack(track.slice(told.length))),
+          );
+        } else if (grown !== "same") {
+          webView.current?.injectJavaScript(
+            pageScript(frame ? showTrackFramed(track) : showTrack(track)),
+          );
+        }
+        lineTold.current = track;
       }
       trackShown.current = true;
     } else if (trackShown.current) {
       webView.current?.injectJavaScript(pageScript(clearTrack()));
       trackShown.current = false;
+      lineTold.current = null;
     }
     if ((!track || lifts === null || lifts.length === 0) && liftsShown.current) {
       webView.current?.injectJavaScript(pageScript(clearLifts()));
@@ -453,7 +504,7 @@ export function MapView({
       webView.current?.injectJavaScript(pageScript(clearFlight()));
       flightShown.current = false;
     }
-  }, [ready, track, lifts, liftLabels, flightAir, framesTrack]);
+  }, [ready, pocket, track, lifts, liftLabels, flightAir, framesTrack]);
 
   useEffect(() => {
     if (!ready) {
@@ -470,7 +521,7 @@ export function MapView({
 
   // Navigating: the map stays on the runner. After, the whole route again.
   useEffect(() => {
-    if (!ready) {
+    if (!ready || pocket) {
       return;
     }
     if (following) {
@@ -488,7 +539,7 @@ export function MapView({
     // Only a new position moves the map, and the heading comes with it; the
     // route effect above draws the route.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, following]);
+  }, [ready, pocket, following]);
 
   // On «Compass», where the phone points (TASK-431): the arrow turns with
   // the map though the runner stands still. Told once off the page, so the
@@ -496,18 +547,23 @@ export function MapView({
   const faced = useRef(false);
   const facingDeg = facing === null ? null : Math.round(facing) % 360;
   useEffect(() => {
-    if (!ready || (facingDeg === null && !faced.current)) {
+    if (!ready || pocket || (facingDeg === null && !faced.current)) {
       return;
     }
     faced.current = facingDeg !== null;
     webView.current?.injectJavaScript(pageScript(face(facingDeg)));
-  }, [ready, facingDeg]);
+  }, [ready, pocket, facingDeg]);
 
   // Running the route: cut where the runner is. After, the route whole again.
   useEffect(() => {
     if (!ready) {
+      stilled.current = false;
       return;
     }
+    if (pocket && stilled.current) {
+      return;
+    }
+    stilled.current = pocket;
     if (route && along && doneM !== null) {
       // A route joined away from its start has no walks: it is not a word.
       const split =
@@ -526,7 +582,7 @@ export function MapView({
   // each fix (TASK-303), along the streets of the way back when there is one
   // (TASK-314). Back on it, or the run over, none.
   useEffect(() => {
-    if (!ready) {
+    if (!ready || pocket) {
       return;
     }
     if (rejoinFrom !== null && rejoinTo !== null) {
@@ -538,7 +594,7 @@ export function MapView({
       webView.current?.injectJavaScript(pageScript(clearRejoin()));
       rejoinShown.current = false;
     }
-  }, [ready, rejoinFrom, rejoinTo, wayBack]);
+  }, [ready, pocket, rejoinFrom, rejoinTo, wayBack]);
 
   // Asked for only where a double tap means something: elsewhere it zooms.
   const wantsDoubleTap = onDoubleTap !== undefined;
@@ -567,11 +623,15 @@ export function MapView({
   // After the route, which turns the map as its drawing: a tap on the north
   // arrow is asked of the map once, not again when the page loads again.
   useEffect(() => {
+    if (pocket) {
+      // Asked once the screen is back, if it is still to ask.
+      return;
+    }
     if (ready && turn !== null && turn !== turnAsked.current) {
       webView.current?.injectJavaScript(pageScript(turnMap(turn.bearing)));
     }
     turnAsked.current = turn;
-  }, [ready, turn]);
+  }, [ready, pocket, turn]);
 
   // A place tapped under the map: asked of the map once, as the north arrow.
   useEffect(() => {

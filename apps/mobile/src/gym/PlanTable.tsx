@@ -12,9 +12,10 @@ import { planTable, type TableCell } from "./tableOfPlan";
 const ROW = 52;
 /** The height of the weeks' heads. */
 const HEAD = 52;
-/** The width of a week's column, and of the names' column. */
-const COLUMN = 76;
-const NAMES = 128;
+/** The width of a week's column, and of the names' column: the four
+ * weeks of a cycle fit on a phone; more weeks scroll sideways. */
+const COLUMN = 60;
+const NAMES = 116;
 
 /**
  * «Table» (TASK-506 A, the user's «Da guardare + Settimane» of
@@ -138,7 +139,11 @@ export function PlanTable({
                       <Text style={[styles.week, now && styles.weekNow]}>
                         {t("Wk {n}", { n: String(week) })}
                       </Text>
-                      {caption !== "" && <Text style={styles.caption}>{caption}</Text>}
+                      {caption !== "" && (
+                        <Text style={styles.caption} numberOfLines={2}>
+                          {caption}
+                        </Text>
+                      )}
                     </Pressable>
                     {tab.rows.map((row, r) => (
                       <Cell
@@ -260,6 +265,7 @@ const styles = StyleSheet.create({
   caption: {
     color: color.textFaint,
     fontSize: fontSize.label,
+    textAlign: "center",
   },
   cell: {
     height: ROW,

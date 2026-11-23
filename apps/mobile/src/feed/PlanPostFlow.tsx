@@ -16,6 +16,8 @@ import { useGymPlans } from "../gym/plans";
 import { t } from "../i18n";
 import { useFollowsDoor } from "../social/followsDoor";
 import { color, font, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 import { PlanPostTile } from "./PlanPostTile";
 
 /**
@@ -156,6 +158,8 @@ export function PlanPostFlow({ onDone, fetchFn, width = 320 }: Props) {
   const [chosen, setChosen] = useState<string | null>(null);
   const [line, setLine] = useState("");
   const [visibility, setVisibility] = useState<PlanPostVisibility>("everyone");
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const [choosingWho, setChoosingWho] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const plan = plans.find((one) => one.key === chosen) ?? null;
@@ -239,7 +243,11 @@ export function PlanPostFlow({ onDone, fetchFn, width = 320 }: Props) {
           {(["everyone", "followers"] as const).map((one) => (
             <Pressable
               key={one}
-              style={[gymStyles.chip, visibility === one && gymStyles.chipOn]}
+              style={[
+                gymStyles.chip,
+                chipRaise,
+                visibility === one && gymStyles.chipOn,
+              ]}
               onPress={() => {
                 setVisibility(one);
                 setChoosingWho(false);

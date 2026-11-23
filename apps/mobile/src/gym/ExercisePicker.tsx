@@ -6,6 +6,8 @@ import { t } from "../i18n";
 import { appLanguage } from "../i18n/language";
 import type { Language } from "../i18n/languages";
 import { color, space } from "../theme/tokens";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 import { GYM_EXERCISES, type GymExercise, type GymGroup } from "./catalog";
 import { ExerciseFigure } from "./ExerciseFigure";
 import { GroupGrid, GuideButton, MachineGrid } from "./ExerciseGrid";
@@ -83,6 +85,8 @@ export function ExercisePicker({
   const [group, setGroup] = useState<GymGroup | null>(null);
   const [own, setOwn] = useState<string | null>(null);
   const [guide, setGuide] = useState<GymExercise | null>(null);
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   // Typing searches every group, as a list; otherwise the grids.
   const searching = search.trim() !== "";
   const found = exercisesFound(search, null, language);
@@ -112,7 +116,7 @@ export function ExercisePicker({
           {OWN_KINDS.map((kind) => (
             <Pressable
               key={kind}
-              style={gymStyles.chip}
+              style={[gymStyles.chip, chipRaise]}
               onPress={() => onPick({ name: own, kind })}
               accessibilityRole="button"
               testID={`own-kind-${kind}`}
@@ -145,14 +149,18 @@ export function ExercisePicker({
           autoCorrect={false}
           testID="exercise-search"
         />
-        <Pressable style={gymStyles.chip} onPress={onClose} accessibilityRole="button">
+        <Pressable
+          style={[gymStyles.chip, chipRaise]}
+          onPress={onClose}
+          accessibilityRole="button"
+        >
           <Text style={gymStyles.chipText}>{t("Close")}</Text>
         </Pressable>
       </View>
       {!searching && group !== null && (
         <View style={styles.top}>
           <Pressable
-            style={gymStyles.chip}
+            style={[gymStyles.chip, chipRaise]}
             onPress={() => setGroup(null)}
             accessibilityRole="button"
             accessibilityLabel={t("Back")}

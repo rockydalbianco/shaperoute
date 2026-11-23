@@ -45,3 +45,8 @@ test("without an account, no body of the week over the gym", async () => {
   await render(<TrainingTodayPage onStart={jest.fn()} guide={<Text>Push</Text>} />);
   expect(screen.queryByTestId("week-body")).toBeNull();
 });
+
+test("without an account, no Coach line over the gym", async () => {
+  await render(<TrainingTodayPage onStart={jest.fn()} guide={<Text>Push</Text>} />);
+  expect(screen.queryByTestId("training-coach")).toBeNull();
+});

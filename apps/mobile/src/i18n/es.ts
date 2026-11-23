@@ -3451,6 +3451,18 @@ export const ES: Table = {
   "Deepest: {dist} from the edge, {height} from floor or ceiling":
     "Lo más dentro: {dist} del borde, {height} de la base o el techo",
   "Only on your phone: not in the Feed.": "Solo en tu teléfono: no va al Feed.",
+  // src/air/ (TASK-479 part D1: the pilot's waypoints and task; approved by the user on 2026-11-23)
+  Waypoints: "Balizas",
+  Task: "Manga",
+  "Waypoints: {count} · Landings: {landings}":
+    "Balizas: {count} · Aterrizajes: {landings}",
+  "Turnpoints: {count}": "Balizas de la manga: {count}",
+  "First start: {time}": "Primera salida: {time}",
+  "{file} · loaded {date}": "{file} · cargado el {date}",
+  "This file has no waypoint MuW can read.":
+    "Este archivo no tiene balizas que MuW pueda leer.",
+  "This file is not a task MuW can read.":
+    "Este archivo no es una manga que MuW pueda leer.",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Balance de calorías",
   Used: "Gastadas",

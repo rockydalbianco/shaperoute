@@ -3217,7 +3217,7 @@ export const DE: Table = {
     "Bis zu {count} Ausrüstungsteile pro Aktivität.",
   "This activity is still on its way. Try again in a moment.":
     "Diese Aktivität ist noch unterwegs. Versuch es gleich noch einmal.",
-  // src/gear/GearTagChoice.tsx (TASK-486 part F), to approve
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), approved by the user on 2026-11-23
   "From my gear": "Aus meiner Ausrüstung",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)

@@ -107,6 +107,7 @@ Una domanda per volta, ognuna con la proposta dell'agente.
 | Voce | Chi la costruisce | Stato oggi |
 |---|---|---|
 | «Record now» | **TASK-481 parte A** (questo task) | da fare: solo app, apre la registrazione che c'è già |
+| «Already recorded» | **TASK-481 parte F** (questo task) | aggiunta il 2026-11-23: pubblica un'attività di «My activities» non ancora nel Feed; #1478 |
 | «Photos only» | **TASK-312 C2** (sessione `local_3444e01e-ccb0-4cb7-bd05-8c1c26f2cd0d`) | in corso; API in `main` (C1, #1347) |
 | «From a file» | TASK-476 | c'è già |
 | «Sleep» | **TASK-467 parte E** (sessione `local_434d1949`) | da scrivere: oggi il sonno sta sul profilo e dentro il post dell'attività, non è un post da solo; che cosa mostra lo decide l'utente lì |
@@ -238,6 +239,84 @@ in `X-MuW-Reads`. Da tenere vicino a TASK-466 E (la routine di stretching
 pubblicata), che ha la stessa forma; il Coordinatore ha scelto due task
 separati (2026-11-21). Server prima dell'app, riga di privacy, testi all'utente.
 
+### F — «Already recorded»: pubblicare un'attività già fatta (TASK-481, solo app, esce con un OTA)
+
+**Da dove viene.** Provando la build di prova il 2026-11-23 l'utente ha
+chiesto di aggiungere al «+» «un'attività già registrata». Al Coordinatore
+ha chiarito: **«Pubblicarne una già fatta»**, cioè mettere nel Feed
+un'attività che è in «My activities» ma non è ancora un post (per esempio
+la corsa di ieri non condivisa). Non è l'inserimento a mano di un'attività
+passata: «Add past activity» esiste già.
+
+**Come un'attività diventa post, oggi.** Quando la sua visibilità passa da
+«Only me» a «Everyone» o «Followers»: è quello che fa la scheda «Edit post»
+della card di «My activities» (`PublicRow`, `DrawingsDoor.choose`).
+`publicKeys` dice quali attività gli altri vedono già. **Nessuna API
+nuova**, niente server, niente impronta nativa.
+
+**Scelte dell'utente (2026-11-23):**
+
+1. **Il modulo.** Proposta, **accettata («Quello di «Edit post»»)**: scelta
+   l'attività, si apre il modulo di «Edit post» così com'è (titolo,
+   descrizione, foto, tag, attività, «Who can see it»). Parte da dov'è
+   l'attività («Only me»); un tocco su «Everyone» o «Followers» la mette nel
+   Feed, salvata subito o con la prossima rete. Scartato: un modulo nuovo
+   che parte da «Everyone» con un bottone «Post», senza foto.
+2. **I testi.** Inglese approvato dal Coordinatore, italiano **approvato
+   dall'utente («Approvo»)**; tedesco, francese e spagnolo dell'agente:
+
+   | Dove | Inglese | Italiano |
+   |---|---|---|
+   | La voce | «Already recorded» | «Già registrata» |
+   | Riga sotto | «Post an activity from My activities» | «Pubblica un'attività da Le mie attività» |
+   | Sopra la lista | «Your activities not in the Feed yet, the latest first.» | «Le tue attività non ancora nel Feed, dalla più recente.» |
+   | Lista vuota | «All your activities are in the Feed already.» | «Tutte le tue attività sono già nel Feed.» |
+   | Sopra il modulo | «Choose «Everyone» or «Followers» and it goes in the Feed.» | «Scegli «Tutti» o «Follower» e va nel Feed.» |
+
+3. **Le schermate** dal simulatore (il «+», la lista, il modulo con
+   «Everyone», il post nel Feed): **approvate dall'utente («Approvo»)**,
+   2026-11-23.
+
+**Com'è fatta (#1478, `b762a847`).**
+
+- `addToFeedEntries.ts`: la voce `done`, **seconda dopo «Record now»**
+  (le due voci delle attività vicine: adesso, già fatta), sempre pronta
+  (il «+» c'è solo con un account).
+- `PastActivityPost.tsx` (nuovo): le attività di `useActivitiesDoor().list`
+  senza quelle in `publicKeys`, dalla più recente, con «Show more»; ogni
+  riga come in «My activities» ma senza «…»; l'attività scelta apre
+  `PublicRow` con «Done». Alla lista chiede di nuovo le attività e quali
+  sono pubbliche, così tornando dal modulo quella appena pubblicata sparisce.
+- `AddToFeed.tsx`: il flusso nel foglio; «‹» dal modulo torna alla lista,
+  poi alle voci; `onActivityPosted` quando il foglio si chiude dopo che
+  un'attività è stata aperta. `FeedScreen.tsx`: `onActivityPosted` rilegge il
+  Feed, come `onSleepPost`.
+- Testi nelle quattro lingue; `addToFeedEntriesSleep.test.ts` (TASK-467 E)
+  adeguato alla voce nuova, file in più approvato dal Coordinatore.
+- Nessuna riga di privacy nuova: è la stessa scelta «Who can see it» di
+  «Edit post», e la frase del «+» parla solo di «from a file».
+
+*Deciso dall'agente su delega dell'utente*: la posizione dopo «Record
+now», il riuso di `PublicRow` senza ritocchi, `PastActivityPost.tsx` come
+file nuovo, la rilettura del Feed alla chiusura del foglio.
+
+**File toccati (approvati dal Coordinatore il 2026-11-23):**
+
+```
+apps/mobile/src/feed/addToFeedEntries.ts
+apps/mobile/src/feed/addToFeedEntries.test.ts
+apps/mobile/src/feed/AddToFeed.tsx
+apps/mobile/src/feed/AddToFeed.test.tsx
+apps/mobile/src/feed/PastActivityPost.tsx         (nuovo)
+apps/mobile/src/feed/PastActivityPost.test.tsx    (nuovo)
+apps/mobile/src/screens/FeedScreen.tsx            (una prop: onActivityPosted)
+apps/mobile/src/i18n/{it,de,fr,es}.ts
+apps/mobile/src/feed/addToFeedEntriesSleep.test.ts (in più, approvato il 2026-11-23)
+docs/tasks/TASK-481.md                            (questa PR docs, a parte)
+```
+
+**Resta**: merge di #1478 e OTA (Coordinatore), prova sul telefono.
+
 ## Criteri di accettazione
 
 - [x] **0**: scelte dell'utente scritte qui e in ADR-0390; mappa voce → task;
@@ -250,6 +329,10 @@ separati (2026-11-21). Server prima dell'app, riga di privacy, testi all'utente.
       dall'utente; privacy del punto 7 nelle cinque lingue e sul sito.
 - [ ] **A**: `tsc` e jest dei file toccati verdi, CI verde.
 - [ ] Ogni voce delle parti B–E nel foglio, col suo task chiuso.
+- [ ] **F**: «Already recorded» elenca le attività non ancora nel Feed e
+      apre il modulo di «Edit post»; testi e schermate approvati dall'utente
+      (2026-11-23); jest dei file toccati, `tsc`, CI verdi (#1478); merge e
+      OTA.
 
 ## Fuori scope
 

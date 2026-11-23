@@ -3272,6 +3272,14 @@ database, `503`. Tipi in `shared-types` (`OutfitTag`, `OutfitTagRequest`,
   suoi; uno senza `id` è nuovo. `[]` li toglie tutti. Un `id` che non è di
   questa foto, o due volte: `422 invalid_request`. Al più **5 per foto e
   10 per post**.
+- **Da un attrezzo** (TASK-486 parte F, ADR-0393): un capo può portare
+  `gear_id`, un attrezzo di chi tagga (se no `422 invalid_request`);
+  l'app ne prende tipo, marca e modello, e il pallino apre l'attrezzo. Un
+  capo mandato col suo `id` e senza il campo (un'app di prima) tiene il
+  `gear_id` che aveva; `null` lo toglie. Nelle foto `gear_id` arriva a chi
+  vedrebbe l'attrezzo (`gear.py`): agli altri mai uno «Hide from profile»
+  o nascosto dopo una segnalazione, e allora è `null`. Cancellato
+  l'attrezzo, il capo resta senza legame. Test in `test_outfit_gear.py`.
 - **Solo dove stanno le foto**: la corsa del proprietario, con il disegno
   visto da altri (`409` mentre è `only_me`, come per le foto), e una foto
   già mandata in quel posto (`404` «No photo in this place: send the photo

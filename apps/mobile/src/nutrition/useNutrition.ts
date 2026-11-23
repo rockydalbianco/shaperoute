@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from "react";
 
-import { dayOf, type Diary, diaryOfMonth, diaryWithDay } from "./diary";
+import { dayOf, type Diary, diaryOfMonth, diaryWithDay, eatenAsPlanned } from "./diary";
 import type { Food } from "./foods";
-import { type LocalDay, monthOf } from "./localDay";
+import { type LocalDay, monthOf, type Weekday } from "./localDay";
 import {
   loadDiaryMonth,
   loadOwnFoods,
@@ -22,7 +22,14 @@ import {
   removeOwnFood,
 } from "./ownFoods";
 import { targetOf } from "./ownTarget";
-import { type DayMeals, NO_MEALS, planWithFood, type WeekPlan } from "./plan";
+import {
+  copyDay,
+  type DayMeals,
+  NO_MEALS,
+  planWithDay,
+  planWithFood,
+  type WeekPlan,
+} from "./plan";
 
 /**
  * What «Nutrition» holds while the app is open (TASK-489 part B, ADR-0397):
@@ -91,6 +98,37 @@ export function writeDay(day: LocalDay, meals: DayMeals): boolean {
   months.set(month, diary);
   change({ ...current() });
   return saveDiaryMonth(month, diary);
+}
+
+/**
+ * «Eaten as planned»: `day` becomes what the plan has for its day of the
+ * week, as the plan is now. Nothing changes with nothing planned that day.
+ */
+export function writeDayAsPlanned(day: LocalDay): boolean {
+  const month = monthOf(day);
+  const before = monthOfDiary(month);
+  const diary = diaryOfMonth(eatenAsPlanned(before, day, current().plan), month);
+  if (diary[day] === before[day]) {
+    return true;
+  }
+  months.set(month, diary);
+  change({ ...current() });
+  return saveDiaryMonth(month, diary);
+}
+
+function writePlan(plan: WeekPlan): boolean {
+  change({ ...current(), plan });
+  return savePlan(plan);
+}
+
+/** `meals` become what the plan has for `weekday`. */
+export function writePlanDay(weekday: Weekday, meals: DayMeals): boolean {
+  return writePlan(planWithDay(current().plan, weekday, meals));
+}
+
+/** The plan of `from` written over the one of `to`. */
+export function copyPlanDay(from: Weekday, to: Weekday): boolean {
+  return writePlan(copyDay(current().plan, from, to));
 }
 
 function writeSettings(settings: NutritionSettings): boolean {

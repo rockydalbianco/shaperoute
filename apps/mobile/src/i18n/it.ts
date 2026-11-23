@@ -3057,6 +3057,12 @@ export const IT: Table = {
     "Questa schermata viene da un MuW più nuovo: aggiorna l'app.",
   "MuW could not read this file.": "MuW non è riuscita a leggere questo file.",
   "MuW could not share the file.": "MuW non è riuscita a condividere il file.",
+  // src/mapdraw/ (TASK-347 part C: a drawing anchored to the roads; texts approved by the user on 2026-11-22)
+  "Snapping to roads…": "Aggancio alle strade…",
+  "Roads follow your drawing: {percent}%":
+    "Le strade seguono il tuo disegno: {percent}%",
+  "No roads here: this line stays as you drew it.":
+    "Qui non ci sono strade: la linea resta come l'hai disegnata.",
   // TASK-483 B: the history of an exercise at the gym.
   "Last time · {day}": "L'ultima volta · {day}",
   History: "Storico",
@@ -3161,6 +3167,8 @@ export const IT: Table = {
   "This activity is still on its way. Try again in a moment.":
     "Questa attività sta ancora arrivando. Riprova tra poco.",
 
+  // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
+  "Share one of your gym plans": "Condividi uno dei tuoi piani di palestra",
   // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
   "Choose a plan": "Scegli un piano",
   "No plans yet: make one in Gym › Plans.":

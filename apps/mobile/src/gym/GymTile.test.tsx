@@ -54,3 +54,24 @@ test("the energy is written under the time, none without it", async () => {
     screen.queryByTestId("gym-tile-kcal", { includeHiddenElements: true }),
   ).toBeNull();
 });
+
+// TASK-385 part G: the average heart rate under the energy.
+
+test("the heart rate is written under the energy, none without it", async () => {
+  await render(
+    <GymTile
+      width={320}
+      height={256}
+      durationS={3600}
+      kcal="519 kcal"
+      heartBpm={118}
+    />,
+  );
+  expect(
+    screen.getByTestId("gym-tile-heart", { includeHiddenElements: true }),
+  ).toHaveTextContent("Avg heart rate 118 bpm");
+  await render(<GymTile width={320} height={256} durationS={3600} />);
+  expect(
+    screen.queryByTestId("gym-tile-heart", { includeHiddenElements: true }),
+  ).toBeNull();
+});

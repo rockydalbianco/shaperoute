@@ -40,6 +40,10 @@ export type LoggedSet = GymSet & { n: number };
 /** A «Pause», in ms since the epoch; `toMs` null while it lasts. */
 export type WorkoutPause = { fromMs: number; toMs: number | null };
 
+/** The heart rate sent with a workout (TASK-385 part G): its average and
+ * maximum, and «Show heart rate». */
+export type GymHeartSent = { avgBpm: number; maxBpm: number; shown: boolean };
+
 /** The plan a workout follows (TASK-411 C, ADR-0341 point 4): copied when
  * it starts, so changing the plan later leaves the workout as it was. */
 export type WorkoutPlan = {
@@ -75,6 +79,9 @@ export type Workout = {
   nextN: number;
   /** The plan it follows; absent or null for a free workout. */
   plan?: WorkoutPlan | null;
+  /** Its heart rate from the watch, read at its end and set with «Save»
+   * (TASK-385 part G); absent or null without one. */
+  heart?: GymHeartSent | null;
 };
 
 /** «Still training?» after this long with nothing. */
@@ -463,7 +470,8 @@ export function savable(workout: Workout): boolean {
 }
 
 /** PUT /me/gym-sessions/{key} for an ended workout, in the API's terms:
- * pauses and sets in seconds since the start, within it. */
+ * pauses and sets in seconds since the start, within it; its heart rate
+ * when the watch wrote one (TASK-385 part G). */
 export function sessionRequest(workout: Workout): GymSessionRequest | null {
   if (workout.endedMs === null || !savable(workout)) {
     return null;
@@ -488,5 +496,12 @@ export function sessionRequest(workout: Workout): GymSessionRequest | null {
       at_s: Math.min(set.at_s, Math.floor(endS)),
     })),
     ...(workout.plan == null ? {} : { plan: workout.plan.key }),
+    ...(workout.heart == null
+      ? {}
+      : {
+          heart_avg_bpm: workout.heart.avgBpm,
+          heart_max_bpm: workout.heart.maxBpm,
+          heart_shown: workout.heart.shown,
+        }),
   };
 }

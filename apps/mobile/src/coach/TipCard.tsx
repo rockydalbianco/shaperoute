@@ -32,7 +32,7 @@ export function TipCard({ tip, language, onApply, onPutOff }: Props) {
       </Text>
       <Text style={styles.body}>{text.body}</Text>
       <Text style={styles.why}>{text.why}</Text>
-      <View style={gymStyles.row}>
+      <View style={text.apply === null ? gymStyles.row : styles.stack}>
         {text.apply === null ? (
           <Pressable
             style={gymStyles.button}
@@ -87,5 +87,10 @@ const styles = StyleSheet.create({
   why: {
     ...font.small,
     color: color.textMuted,
+  },
+  // «Apply to plan» over «Not now»: each button the card's width, so the
+  // longer words of other languages fit on one line.
+  stack: {
+    gap: space.sm,
   },
 });

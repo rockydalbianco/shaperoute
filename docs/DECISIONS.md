@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6b in produzione, A7a, A7b, A5c-2, A7c-1 in `main`); B Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6b in produzione, A7a, A7b, A5c-2, A7c-1, A7c-2 in `main`); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -598,9 +598,68 @@ lasciando le righe d'indice.
 - ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap estratti dal server, la scheda del decollo con lo storico dei voli di MuW contato dal server, mai giudizi sulle condizioni · 2026-11-23 · Proposta
 - ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
 - ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo di ADR-0269 con `group_id`, anche senza percorso; Public, Request, Invite only; un solo admin e fino a 3 co-admin; l'elenco dei membri solo ai membri; la chat di gruppo come parte E · 2026-11-23 · Proposta
+- ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Proposta
 
 
 ## Voci nuove
+## ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta e saltabile le altre; animali e musiche del video restano dentro l'app
+
+**Stato**: Proposta · 2026-11-23 · TASK-505 (parte 0, soli documenti).
+Le due scelte sono **dell'utente** (2026-11-23, risposte in
+`tasks/TASK-505.md`); il come è deciso dall'agente su delega dell'utente.
+Aggiorna ADR-0147 nei tempi e in «non si salta con un tocco»; il resto di
+ADR-0147 vale.
+
+**Contesto**: la lettura del codice del 2026-11-23 ha trovato due cose che
+non sono errori ma scelte (O6 e O15). A ogni apertura a freddo
+l'animazione del cuore tiene lo schermo 2,7 s senza poterla saltare
+(ADR-0147, scelta dell'utente del 2026-10-02: «almeno due secondi»). E gli
+animali e le musiche del video (13 modelli e 10 brani, 5,6 MB) stanno in
+ogni installazione anche se servono solo a chi fa un video.
+
+**Decisione**:
+1. **Due animazioni** (scelta dell'utente). L'intera, quella di ADR-0147
+   (0,35 + 1,6 + 0,45 + 0,3 = 2,7 s), alla prima apertura e alla prima
+   dopo una versione nuova dello store. Le altre volte la corta: la penna
+   parte subito, il cuore si disegna in 0,6 s, resta 0,15 s, sfuma in
+   0,25 s: 1,0 s in tutto. È lo stesso cuore, più veloce: non un altro
+   disegno.
+2. **Un tocco la chiude** (scelta dell'utente), intera o corta: da
+   dovunque sia arrivata sfuma in 0,25 s. Nessun pulsante e nessun testo:
+   tutto lo schermo è il tasto.
+3. **«Versione nuova» è la `version` di `app.json`** (oggi 1.1.0), letta
+   con `expo-constants`: cambia con le uscite sugli store, non con gli
+   OTA, che sono decine al mese e ridarebbero l'intera ogni due giorni.
+4. **Il telefono lo ricorda in un file**, `intro-seen.json` nei documenti
+   dell'app con la versione dell'ultima animazione intera vista, letto
+   subito all'avvio come `tour/tourSeen.ts`: niente attesa prima del primo
+   fotogramma. Si scrive quando l'animazione finisce o viene chiusa. Chi
+   ha già l'app non ha il file: vede l'intera una volta dopo l'OTA, poi la
+   corta. File mancante o illeggibile: l'intera.
+5. **Animali e musiche restano dentro l'app** (scelta dell'utente): O15
+   si chiude senza lavoro.
+
+**Scartate**: lasciare l'animazione com'è, o intera sempre ma saltabile
+(proposte all'utente, non scelte); contare gli OTA come versione nuova
+(punto 3); togliere del tutto l'animazione dopo la prima volta (il giallo
+copre il momento in cui l'app sotto si carica, e nessuno l'ha chiesto).
+Per O15: scaricare animali e musiche al primo uso, tutti o tranne i primi.
+Si poteva: sono dati e non codice, quindi non è il caso scartato da
+ADR-0177 (Pyodide e il motore, regole 2.5.2 e 4.7 di Apple), e senza rete
+il video esce già senza animale (ADR-0339, precisazione B, punto 2). Non
+conviene: 5,6 MB su 28 di file dell'app, di cui 21 del motore, e accanto a
+zone da 7 MB l'una; in cambio servono un posto sul server, un'attesa e un
+testo nuovo al primo video, un video senza animale e senza musica a chi è
+senza rete; e il risparmio arriva solo con una build nuova, perché un OTA
+non toglie file da un'app installata.
+
+**Conseguenze**: dalla seconda apertura l'app si tocca 1,7 s prima; con
+l'animazione corta si vede prima anche un'app che non ha finito di
+caricarsi, da guardare sul simulatore nella parte A e da dire a TASK-500,
+che misura l'avvio. Solo JavaScript, nessuna dipendenza nuova, nessun
+testo: l'impronta iOS non cambia, esce con un OTA. O15 si riapre se i
+file del video crescono molto (ordine di grandezza: oltre 20 MB).
+
 ## ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap, la scheda del decollo con lo storico di MuW
 
 **Stato**: Proposta · 2026-11-23 · TASK-493 (parte 0, soli documenti).
@@ -2884,6 +2943,12 @@ subito dopo il loro stile, una riga per componente, senza un componente
 comune: ogni pagina ha il suo chip con forma e colori suoi, e riunirli
 toccherebbe molto più codice. Un test legge i sorgenti e chiede che ogni
 uso di `styles.chip` sia seguito dal rilievo. Deciso dall'agente su
+delega dell'utente.
+**A7c-2 (#1494)**: lo stesso rilievo su quattro schermate degli sport
+(`TargetSteps`, `PaddleExplore`, `PoolDraw`, `DayChoices`), aggiunte alla
+lista del test. Prende il rilievo solo un chip che si preme: le etichette
+di testo e il segno di pausa che nel codice si chiamano «chip» restano
+piatti, perché il rilievo dice «qui si tocca». Deciso dall'agente su
 delega dell'utente.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s

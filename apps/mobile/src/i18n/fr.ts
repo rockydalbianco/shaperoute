@@ -3571,7 +3571,7 @@ export const FR: Table = {
     "Les produits trouvés par code-barres contiennent des données d'Open Food Facts, disponibles sous l'Open Database License. Ils restent séparés de la liste USDA.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Toi seul vois cette page. Ce que tu écris ici reste sur ton téléphone ; un code-barres que tu recherches est envoyé à Open Food Facts.",
-  // src/air/ (TASK-479 part D4: the task passed on; waiting for the user's approval)
+  // src/air/ (TASK-479 part D4: the task passed on; approved by the user on 2026-11-23)
   "Share file": "Partager le fichier",
   "Show QR": "Afficher le QR",
   "Task for XCTrack": "Manche pour XCTrack",

@@ -60,6 +60,7 @@ import { color, font, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tok
 import { EmptyState } from "../ui/EmptyState";
 import { HEART } from "../ui/outlines";
 import { Tap } from "../ui/Tap";
+import { useHeaderScroll } from "../tabs/headerScroll";
 import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 
 type Props = {
@@ -453,10 +454,13 @@ function FeedList({
   );
   // Its tab touched again: back to the newest drawings (TASK-367).
   const scroll = useScrollToTopOnReselect<FlatList<Item>>(visible);
+  // The header turns to glass as the list scrolls (TASK-469 A5c-2).
+  const headerScroll = useHeaderScroll(visible);
   return (
     <View style={visible ? styles.list : styles.hidden}>
       <FlatList<Item>
         ref={scroll}
+        {...headerScroll}
         contentContainerStyle={[
           styles.content,
           { paddingBottom: insetBottom + space.xl },

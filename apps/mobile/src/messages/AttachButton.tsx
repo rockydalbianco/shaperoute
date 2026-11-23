@@ -12,6 +12,7 @@ import {
   space,
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 
 export type FileKind = "photo" | "video";
 export type AttachKind = FileKind | "drawing";
@@ -101,8 +102,12 @@ export function AttachButton({ kinds, disabled, onPick }: Props) {
 /** The sheet above the phone's bottom edge: asked only while it is open. */
 function Sheet({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   return (
-    <View style={[styles.sheet, { paddingBottom: insets.bottom + space.lg }]}>
+    <View
+      style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.lg }]}
+    >
       {children}
     </View>
   );

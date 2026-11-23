@@ -1,6 +1,6 @@
 # TASK-489 — «Alimentazione»: il diario di quello che mangio e il bilancio delle calorie
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-22: otto scelte dell'utente, #1417 in `main`; quattro precisazioni il 2026-11-23; **A1 in `main`** (#1437, `dd29df5b`, 2026-11-23); poi A2, B, C1, D, F, C2, G)
+**Stato**: In corso (parte 0 chiusa il 2026-11-22: otto scelte dell'utente, #1417 in `main`; quattro precisazioni il 2026-11-23; **A1 e A2 in `main`** (#1437, #1460, 2026-11-23); schermate e testi della parte B approvati il 2026-11-23; poi B1, B2, C1, D, F, C2, G)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-489-nutrition-part-0`
 **Dipende da**: TASK-374 (il mio corpo, `body/energy.ts`), TASK-321 (Apple
@@ -183,10 +183,84 @@ La tab «Cibo» di TASK-490 monta la pagina di questo task così com'è.
 | Il diario | «Eaten as planned» |
 | In cima alla pagina (2026-11-23) | «Eaten» · «Used (est.)» · «Balance» · «My daily target» · «(set by you)» · «Left» |
 
-Le traduzioni in italiano, tedesco, francese e spagnolo e gli altri testi
-delle schermate si mostrano all'utente con le schermate della parte B. Il
-testo nuovo del permesso di Salute e quelli della privacy si approvano
+Il testo nuovo del permesso di Salute e quelli della privacy si approvano
 nelle parti F e C2.
+
+### Testi della parte B (approvati dall'utente il 2026-11-23, «Sì, approvo»)
+
+Mostrati con sei schermate disegnate (ingresso dal pannello, avviso,
+diario del giorno, piano della settimana, aggiunta di un cibo, «How we
+calculate»). L'inglese è il testo dell'app; le altre quattro lingue
+entrano in `i18n/{it,de,es,fr}.ts`, in ogni PR solo le chiavi che quella PR
+usa. I nomi dei giorni sono quelli che l'app ha già.
+
+Le traduzioni dei testi già approvati in inglese:
+
+| English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|
+| Before you start | Prima di iniziare | Bevor du anfängst | Antes de empezar | Avant de commencer |
+| MuW does not provide diets, meal plans or medical advice. The plan here is the one you write: your own, or the one your dietitian gave you. | MuW non fornisce diete, piani alimentari né consigli medici. Il piano qui è quello che scrivi tu: il tuo, o quello che ti ha dato il tuo dietista. | MuW gibt keine Diäten, Ernährungspläne oder medizinischen Ratschläge. Der Plan hier ist der, den du schreibst: dein eigener oder der von deiner Ernährungsfachkraft. | MuW no ofrece dietas, planes de comidas ni consejos médicos. El plan de aquí es el que escribes tú: el tuyo o el que te dio tu dietista. | MuW ne fournit ni régimes, ni plans de repas, ni conseils médicaux. Le plan ici est celui que tu écris : le tien, ou celui que ton diététicien t'a donné. |
+| Every number is an estimate, from food composition tables and from formulas for the energy you use. | Ogni numero è una stima, ricavata da tabelle di composizione degli alimenti e da formule per l'energia che consumi. | Jede Zahl ist eine Schätzung aus Nährwerttabellen und aus Formeln für die Energie, die du verbrauchst. | Cada número es una estimación, a partir de tablas de composición de alimentos y de fórmulas para la energía que gastas. | Chaque chiffre est une estimation, tirée de tables de composition des aliments et de formules pour l'énergie que tu dépenses. |
+| If you have a medical condition, are pregnant or have a history of eating disorders, talk to a doctor or a dietitian before counting calories. | Se hai una condizione medica, sei in gravidanza o hai avuto disturbi alimentari, parla con un medico o un dietista prima di contare le calorie. | Wenn du eine Erkrankung hast, schwanger bist oder eine Essstörung hattest, sprich mit einer Ärztin, einem Arzt oder einer Ernährungsfachkraft, bevor du Kalorien zählst. | Si tienes una enfermedad, estás embarazada o has tenido trastornos alimentarios, habla con un médico o un dietista antes de contar calorías. | Si tu as un problème de santé, si tu es enceinte ou si tu as eu des troubles alimentaires, parle à un médecin ou à un diététicien avant de compter les calories. |
+| I understand | Ho capito | Verstanden | Entendido | J'ai compris |
+| Estimates only. MuW does not provide diets or medical advice. | Solo stime. MuW non fornisce diete né consigli medici. | Nur Schätzungen. MuW gibt keine Diäten oder medizinischen Ratschläge. | Solo estimaciones. MuW no ofrece dietas ni consejos médicos. | Estimations uniquement. MuW ne fournit ni régimes ni conseils médicaux. |
+| How we calculate | Come calcoliamo | So rechnen wir | Cómo calculamos | Comment nous calculons |
+| Eaten | Mangiate | Gegessen | Ingeridas | Mangées |
+| Used (est.) | Consumate (stima) | Verbraucht (gesch.) | Gastadas (est.) | Dépensées (est.) |
+| Balance | Bilancio | Bilanz | Balance | Bilan |
+| Surplus | Surplus | Überschuss | Superávit | Excédent |
+| Deficit | Deficit | Defizit | Déficit | Déficit |
+| Breakfast | Colazione | Frühstück | Desayuno | Petit-déjeuner |
+| Lunch | Pranzo | Mittagessen | Comida | Déjeuner |
+| Dinner | Cena | Abendessen | Cena | Dîner |
+| Snacks | Spuntini | Snacks | Tentempiés | En-cas |
+| Eaten as planned | Mangiato come da piano | Wie geplant gegessen | Comido según el plan | Mangé comme prévu |
+| My daily target | Il mio obiettivo del giorno | Mein Tagesziel | Mi objetivo diario | Mon objectif du jour |
+| (set by you) | (scritto da te) | (von dir festgelegt) | (lo pones tú) | (fixé par toi) |
+| Left | Restano | Übrig | Quedan | Restent |
+
+I testi nuovi:
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Pannello degli sport, titolo della famiglia | Food | Cibo | Essen | Comida | Alimentation |
+| Pannello, tessera; titolo della pagina | Nutrition | Alimentazione | Ernährung | Nutrición | Nutrition |
+| Le due viste | Diary | Diario | Tagebuch | Diario | Journal |
+|  | My plan | Il mio piano | Mein Plan | Mi plan | Mon plan |
+| Giorno del diario | Today | Oggi | Heute | Hoy | Aujourd'hui |
+|  | Yesterday | Ieri | Gestern | Ayer | Hier |
+| Frecce (letti dallo schermo parlante) | Previous day | Giorno prima | Vorheriger Tag | Día anterior | Jour précédent |
+|  | Next day | Giorno dopo | Nächster Tag | Día siguiente | Jour suivant |
+| Senza obiettivo scritto | Set my daily target | Scrivi il mio obiettivo del giorno | Mein Tagesziel festlegen | Poner mi objetivo diario | Fixer mon objectif du jour |
+| Scheda dell'obiettivo | kcal a day | kcal al giorno | kcal pro Tag | kcal al día | kcal par jour |
+|  | Your own number, or the one your dietitian gave you. MuW never suggests one. | Il tuo numero, o quello che ti ha dato il tuo dietista. MuW non ne propone mai uno. | Deine eigene Zahl oder die von deiner Ernährungsfachkraft. MuW schlägt nie eine vor. | Tu propio número, o el que te dio tu dietista. MuW nunca propone uno. | Ton propre chiffre, ou celui que ton diététicien t'a donné. MuW n'en propose jamais. |
+|  | Remove target | Togli l'obiettivo | Ziel entfernen | Quitar objetivo | Retirer l'objectif |
+| Pasto | Add food | Aggiungi cibo | Lebensmittel hinzufügen | Añadir alimento | Ajouter un aliment |
+| Giorno senza niente | Nothing written for this day. | Niente scritto per questo giorno. | Für diesen Tag ist nichts eingetragen. | Nada escrito para este día. | Rien d'écrit pour ce jour. |
+| Piano | Copy this day to… | Copia questo giorno su… | Diesen Tag kopieren nach… | Copiar este día a… | Copier ce jour vers… |
+|  | This is the plan you write. MuW never changes it. | Questo è il piano che scrivi tu. MuW non lo cambia mai. | Das ist der Plan, den du schreibst. MuW ändert ihn nie. | Este es el plan que escribes tú. MuW nunca lo cambia. | C'est le plan que tu écris. MuW ne le modifie jamais. |
+| Scheda «aggiungi un cibo», titolo | Add to breakfast / lunch / dinner / snacks | Aggiungi a colazione / pranzo / cena / spuntini | Zum Frühstück / Mittagessen / Abendessen / zu den Snacks hinzufügen | Añadir al desayuno / a la comida / a la cena / a los tentempiés | Ajouter au petit-déjeuner / au déjeuner / au dîner / aux en-cas |
+| Campo di ricerca | Search food | Cerca un cibo | Lebensmittel suchen | Buscar alimento | Chercher un aliment |
+| Segno sui cibi dell'utente | My food | Cibo mio | Mein Lebensmittel | Alimento mío | Mon aliment |
+| Ricerca senza risultati | No food found. | Nessun cibo trovato. | Kein Lebensmittel gefunden. | Ningún alimento encontrado. | Aucun aliment trouvé. |
+| In fondo alla ricerca | Add my own food | Aggiungi un cibo mio | Eigenes Lebensmittel hinzufügen | Añadir un alimento mío | Ajouter mon propre aliment |
+| Grammi | Grams | Grammi | Gramm | Gramos | Grammes |
+| Calorie della porzione | Estimate | Stima | Schätzung | Estimación | Estimation |
+| Tasti | Add | Aggiungi | Hinzufügen | Añadir | Ajouter |
+|  | Save | Salva | Speichern | Guardar | Enregistrer |
+|  | Remove | Togli | Entfernen | Quitar | Retirer |
+| Cibo mio, modulo | My own food | Un cibo mio | Eigenes Lebensmittel | Mi alimento | Mon aliment |
+|  | Name | Nome | Name | Nombre | Nom |
+|  | Calories in 100 g (kcal) | Calorie in 100 g (kcal) | Kalorien in 100 g (kcal) | Calorías en 100 g (kcal) | Calories pour 100 g (kcal) |
+|  | Copy the number from the label, or from your dietitian's sheet. | Copia il numero dall'etichetta, o dal foglio del tuo dietista. | Übernimm die Zahl vom Etikett oder vom Blatt deiner Ernährungsfachkraft. | Copia el número de la etiqueta o de la hoja de tu dietista. | Recopie le chiffre de l'étiquette ou de la fiche de ton diététicien. |
+|  | Delete food | Elimina il cibo | Lebensmittel löschen | Eliminar alimento | Supprimer l'aliment |
+| «How we calculate», titoletti | Food | Cibo | Lebensmittel | Alimentos | Aliments |
+|  | Energy you use | Energia che consumi | Energie, die du verbrauchst | Energía que gastas | Énergie que tu dépenses |
+|  | Estimates | Stime | Schätzungen | Estimaciones | Estimations |
+| «How we calculate», testo | Calories of the foods in the list come from USDA FoodData Central (SR Legacy, April 2018), a public-domain food composition table. Your own foods use the numbers you wrote. | Le calorie dei cibi dell'elenco vengono da USDA FoodData Central (SR Legacy, aprile 2018), una tabella di composizione degli alimenti di pubblico dominio. I cibi tuoi usano i numeri che hai scritto tu. | Die Kalorien der Lebensmittel in der Liste stammen aus USDA FoodData Central (SR Legacy, April 2018), einer gemeinfreien Nährwerttabelle. Deine eigenen Lebensmittel nutzen die Zahlen, die du eingetragen hast. | Las calorías de los alimentos de la lista vienen de USDA FoodData Central (SR Legacy, abril de 2018), una tabla de composición de alimentos de dominio público. Tus alimentos usan los números que escribiste. | Les calories des aliments de la liste viennent de USDA FoodData Central (SR Legacy, avril 2018), une table de composition des aliments du domaine public. Tes propres aliments utilisent les chiffres que tu as écrits. |
+|  | At rest: the Mifflin-St Jeor equation, from the body data in your profile. Activities: ACSM equations and the 2024 Compendium of Physical Activities. On days when Apple Health has your active energy, that number is used instead. | A riposo: l'equazione di Mifflin-St Jeor, dai dati del corpo nel tuo profilo. Attività: equazioni ACSM e il Compendium of Physical Activities 2024. Nei giorni in cui Salute di Apple ha la tua energia attiva, si usa quel numero. | In Ruhe: die Mifflin-St-Jeor-Gleichung, aus den Körperdaten in deinem Profil. Aktivitäten: ACSM-Gleichungen und das Compendium of Physical Activities 2024. An Tagen, an denen Apple Health deine Aktivitätsenergie hat, wird stattdessen diese Zahl verwendet. | En reposo: la ecuación de Mifflin-St Jeor, con los datos del cuerpo de tu perfil. Actividades: ecuaciones del ACSM y el Compendium of Physical Activities 2024. Los días en que Salud de Apple tiene tu energía activa, se usa ese número. | Au repos : l'équation de Mifflin-St Jeor, à partir des données corporelles de ton profil. Activités : équations de l'ACSM et le Compendium of Physical Activities 2024. Les jours où Santé d'Apple a ton énergie active, c'est ce chiffre qui est utilisé. |
+|  | Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice. | I valori reali cambiano con il prodotto, la ricetta e la persona. MuW non fornisce diete né consigli medici. | Die tatsächlichen Werte hängen vom Produkt, vom Rezept und von der Person ab. MuW gibt keine Diäten oder medizinischen Ratschläge. | Los valores reales cambian con el producto, la receta y la persona. MuW no ofrece dietas ni consejos médicos. | Les valeurs réelles varient selon le produit, la recette et la personne. MuW ne fournit ni régimes ni conseils médicaux. |
+|  | Only you see this page. Nothing here leaves your phone. | Questa pagina la vedi solo tu. Niente di quello che c'è qui esce dal tuo telefono. | Diese Seite siehst nur du. Nichts davon verlässt dein Handy. | Esta página solo la ves tú. Nada de lo que hay aquí sale de tu teléfono. | Toi seul vois cette page. Rien de ce qui s'y trouve ne quitte ton téléphone. |
 
 ## Le parti
 
@@ -220,7 +294,9 @@ Funzioni pure con test deterministici, in `apps/mobile/src/nutrition/`:
 - **Il diario**: un giorno di calendario del telefono (`AAAA-MM-GG`), gli
   stessi quattro pasti. «Eaten as planned» copia nel diario il piano di
   quel giorno della settimana **com'è in quel momento**: cambiare il piano
-  dopo non cambia i giorni già segnati. Un giorno senza nessuna voce è
+  dopo non cambia i giorni già segnati. Il pulsante c'è **solo finché il
+  giorno è vuoto**: non scrive mai sopra quello che l'utente ha segnato a
+  mano (scelta dell'utente, 2026-11-23). Un giorno senza nessuna voce è
   **vuoto**, non zero.
 - **Assunte**: somma di kcal per 100 g × grammi / 100, arrotondata alla
   fine. Un cibo dell'utente cancellato resta nei giorni già segnati col
@@ -372,6 +448,15 @@ di USDA resta in `out/TASK-489/` sul T9, fuori dal repository e dal
 bundle; prima del «pronta» si misura il peso dei file che entrano nel
 bundle (stima: sotto i 100 KB).
 
+Parte B (lista approvata dal Coordinatore il 2026-11-23), in due PR.
+File nuovi in `apps/mobile/src/nutrition/`, con i loro test:
+`NutritionPage.tsx`, `NutritionNotice.tsx`, `DiaryView.tsx`,
+`MealCard.tsx`, `AddFoodSheet.tsx`, `OwnFoodForm.tsx`, `TargetSheet.tsx`,
+`NutritionTile.tsx`, `useNutrition.ts` (B1); `PlanView.tsx`,
+`HowWeCalculate.tsx` (B2). File esistenti: `settings/SportButton.tsx`
+(B1: poche righe dietro `NUTRITION_ON`), `i18n/{de,es,fr,it}.ts` (in ogni
+PR solo le chiavi che usa), `docs/UI.md` (nella PR di documenti).
+
 Le parti dopo toccano anche file esistenti, da chiedere al Coordinatore
 prima di ognuna: B `settings/SportButton.tsx` (montare la tessera),
 `App.tsx` o la pagina che ospita «Nutrition» (a turno), `i18n/{de,es,fr,it}.ts`,
@@ -411,6 +496,64 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 
 ## Registro
 
+- **2026-11-23, parte B scritta**: **B1** = #1473 (pagina «Nutrition»,
+  avviso, diario, aggiunta del cibo, cibo mio, «My daily target», tessera;
+  14 file nuovi in `apps/mobile/src/nutrition/`, 5 righe in
+  `settings/SportButton.tsx`, 38 testi nelle quattro tabelle). **B2**
+  (piano della settimana, «Copy this day to…», «Eaten as planned», «How we
+  calculate»; 13 testi) è scritta sul ramo `feat/TASK-489-b2-week-plan` e
+  diventa una PR quando B1 è in `main`. Tutto dietro `NUTRITION_ON`
+  spento; non provata nel simulatore.
+  **Scelta dell'utente** (2026-11-23, «Va bene così, «Eaten as planned»
+  solo a giorno vuoto»): «Eaten as planned» si offre solo finché il giorno
+  non ha niente di scritto.
+  Diverso dalle schermate approvate, detto all'utente lo stesso giorno, e
+  deciso dall'agente su delega dell'utente: i pulsanti non sono gialli (il
+  giallo è del percorso); i numeri non hanno il separatore delle migliaia
+  («1240»), come nel resto dell'app; in cima al diario «Today» e
+  «Yesterday» senza data, la data per i giorni più vecchi; i giorni dopo
+  oggi non si scrivono; i giorni del piano hanno i nomi corti che l'app ha
+  già («Mon»); un cibo mio si corregge o si elimina con «Edit» dal passo
+  dei grammi; la tessera apre la pagina sopra il pannello degli sport e
+  chiudendola si torna lì, senza cambiare sport; in italiano «Aggiungi agli
+  spuntini»; il testo approvato «Nothing written for this day.» non è
+  usato (un pasto vuoto mostra «—»), quindi non è nelle tabelle.
+  Tecnica: `nutrition/useNutrition.ts` è un solo deposito per tutte le
+  viste, sopra `nutritionStore`; un mese del diario si legge dal telefono
+  una volta. **Da fare all'accensione**: `settings/SportButtonGrid.test.tsx`
+  elenca le famiglie del pannello e deve avere anche «Food».
+- **2026-11-23, parte B: schermate e testi approvati**: l'utente ha detto
+  «Sì, parti con la parte B» e, viste le sei schermate e i testi nelle
+  cinque lingue, «Sì, approvo». Lista dei file approvata dal Coordinatore,
+  in due PR di codice: **B1** (pagina, avviso, diario, aggiunta del cibo,
+  cibo mio, «My daily target», tessera) e **B2** (piano della settimana,
+  «Eaten as planned», «How we calculate»). «Used (est.)» e «Balance» in
+  cima al diario restano vuoti fino a C1. Per TASK-490 D: la pagina è
+  `NutritionPage` in `apps/mobile/src/nutrition/NutritionPage.tsx`, senza
+  props obbligatorie; mostra da sé l'avviso alla prima apertura. La tessera
+  resta nel pannello degli sport, in una famiglia «Food» in fondo.
+  Il testo unico di `NSHealthShareUsageDescription` (467 C, 312 D, 489 C2)
+  è stato approvato dall'utente alla sessione di TASK-312 («Approvo»,
+  2026-11-23, in `TASK-312.md`): la frase sull'energia attiva aspetta se la
+  build esce con «Nutrition» spenta; lo scrive in `app.json` e nelle
+  traduzioni la prima PR della build nativa che arriva in `main`.
+- **2026-11-23, A2 fatta**: #1460 in `main` (`1d5d530e`): 11 file nuovi.
+  L'utente ha detto sì alla parte e allo scarico di
+  `FoodData_Central_sr_legacy_food_csv_2018-04.zip` (5,8 MB, da
+  fdc.nal.usda.gov, CC0 1.0), che resta in `out/TASK-489/` sul T9. 314
+  cibi; `tools/nutrition_table.py` ricava kcal, proteine, carboidrati e
+  grassi per 100 g dall'archivio (riconosciuto dal suo SHA-256) e scrive
+  `nutrition/foodTable.ts`; `--check` dice se il file è aggiornato. I nomi
+  nelle altre quattro lingue in `nutrition/foodNames/`. Peso nel bundle
+  quando la parte B li importa: circa 56 KB. Decisi dall'agente su delega
+  dell'utente: l'edizione SR Legacy (aprile 2018) invece di Foundation
+  Foods, che ha poche centinaia di cibi quasi tutti crudi; la chiave di un
+  cibo è `usda-<identificativo FDC>`; `tools/nutrition_foods.csv` porta
+  anche la descrizione di USDA, e un identificativo che non le corrisponde
+  ferma la tabella; fuori le voci che USDA ha solo di marca (kefir,
+  bevanda sportiva) o non ha (prosciutto crudo, muesli, hot dog) e lo
+  strutto (902 kcal per 100 g, sopra le 900 che l'app tiene); crudo e
+  cotto sono cibi diversi.
 - **2026-11-23, A1 fatta**: #1437 in `main` (`dd29df5b`): 21 file nuovi
   in `apps/mobile/src/nutrition/` (giorni del telefono, cibi e cibi
   dell'utente, piano, diario, assunte, «My daily target», correzioni a

@@ -470,7 +470,9 @@ che non è un numero fra −180 e 180 si legge `0`.
 query di `/recommended-routes` e di `/catalog`. **Senza, le corse**, come
 prima che il catalogo avesse altro: un'app che non lo chiede riceve le
 stesse risposte di prima, byte per byte. Con `activity=cycling` le uscite
-disegnate per la bici (20–30 km) e solo quelle; un'attività che il catalogo
+disegnate per la bici e solo quelle (da 20 a 30 km; da TASK-441 B3 anche da
+40 e 50 km, che stanno solo nel catalogo: «Draw» in bici resta a 10–30 km,
+e l'API non controlla la distanza di un disegno del catalogo); un'attività che il catalogo
 non ha dà una lista vuota (`total` e `cities` a 0 in `/catalog`), mai un
 errore. Nella risposta, nell'elenco e nel percorso intero, il campo
 `activity` **c'è solo quando non è una corsa** (`"cycling"`): manca, non è

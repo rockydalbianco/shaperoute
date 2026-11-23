@@ -49,7 +49,12 @@ export type WidgetId =
   | "aboveGround"
   | "map"
   // Part E2.
-  | "nearestAirspace";
+  | "nearestAirspace"
+  // Part D2.
+  | "nextTurnpoint"
+  | "glideToGoal"
+  | "startGate"
+  | "taskDistance";
 
 /** Each widget's name on screen, in the user's words of 2026-11-21. */
 export const WIDGET_NAME: Readonly<Record<WidgetId, string>> = {
@@ -73,6 +78,10 @@ export const WIDGET_NAME: Readonly<Record<WidgetId, string>> = {
   aboveGround: tLater("Height above ground"),
   map: tLater("Map"),
   nearestAirspace: tLater("Nearest airspace"),
+  nextTurnpoint: tLater("Next turnpoint"),
+  glideToGoal: tLater("Glide to goal"),
+  startGate: tLater("Start gate"),
+  taskDistance: tLater("Task distance"),
 };
 
 export const WIDGETS: readonly WidgetId[] = Object.keys(WIDGET_NAME) as WidgetId[];
@@ -89,6 +98,7 @@ export const WIDGET_UNIT_KIND: Readonly<Partial<Record<WidgetId, UnitKind>>> = {
   aboveGround: "altitude",
   thermalGain: "altitude",
   altitudeChart: "altitude",
+  glideToGoal: "altitude",
   vario: "vario",
   varioAvg: "vario",
   thermalAvg: "vario",
@@ -115,15 +125,17 @@ export type Cell = {
 
 export type Page = readonly Cell[];
 
-export type PresetId = "thermal" | "xc" | "minimal";
+export type PresetId = "thermal" | "xc" | "competition" | "minimal";
 
 export const PRESET_NAME: Readonly<Record<PresetId, string>> = {
   thermal: tLater("Thermal"),
   xc: tLater("XC"),
+  competition: tLater("Competition"),
   minimal: tLater("Minimal"),
 };
 
-export const PRESETS: readonly PresetId[] = ["thermal", "xc", "minimal"];
+/** «Competition» last: part D2 brought it, after the others. */
+export const PRESETS: readonly PresetId[] = ["thermal", "xc", "minimal", "competition"];
 
 const cell = (widget: WidgetId, col: number, row: number, w = 2, h = 1): Cell => ({
   widget,
@@ -182,6 +194,18 @@ export const PRESET_PAGES: Readonly<Record<PresetId, readonly Page[]>> = {
       cell("aboveGround", 0, 5),
       cell("groundSpeed", 2, 5),
     ],
+  ],
+  // Part D2: the task. «Glide to turnpoint» comes with part D3.
+  competition: [
+    [
+      cell("nextTurnpoint", 0, 0, 4, 2),
+      cell("glideToGoal", 0, 2, 2, 2),
+      cell("taskDistance", 2, 2, 2, 2),
+      cell("startGate", 0, 4),
+      cell("varioAvg", 2, 4, 2, 2),
+      cell("altitude", 0, 5),
+    ],
+    [cell("map", 0, 0, 4, 5), cell("nearestAirspace", 0, 5, 4, 1)],
   ],
   minimal: [
     [
@@ -291,6 +315,9 @@ export type FlightPrefs = {
   current: number;
   look: FlightLook;
   units: FlightUnits;
+  /** «Competition» was put among the pilot's profiles (part D2), once:
+   * one they delete stays deleted. */
+  competitionAdded?: true;
 };
 
 export function defaultFlightPrefs(units: Units): FlightPrefs {
@@ -299,6 +326,23 @@ export function defaultFlightPrefs(units: Units): FlightPrefs {
     current: 0,
     look: "dark",
     units: defaultFlightUnits(units),
+    competitionAdded: true,
+  };
+}
+
+/** The pilot's profiles with «Competition» at the end, once, where there
+ * is room (part D2). */
+export function withCompetition(prefs: FlightPrefs): FlightPrefs {
+  if (prefs.competitionAdded === true) {
+    return prefs;
+  }
+  const has = prefs.profiles.some((profile) => profile.from === "competition");
+  const room = prefs.profiles.length < MAX_PROFILES;
+  return {
+    ...prefs,
+    profiles:
+      has || !room ? prefs.profiles : [...prefs.profiles, profileOf("competition")],
+    competitionAdded: true,
   };
 }
 
@@ -344,7 +388,7 @@ function isKeptB1(value: unknown): value is KeptB1 {
  * preset on screen; null when neither. */
 export function upgradeFlightPrefs(value: unknown): FlightPrefs | null {
   if (isFlightPrefs(value)) {
-    return value;
+    return withCompetition(value);
   }
   if (isKeptB1(value)) {
     return {
@@ -352,6 +396,7 @@ export function upgradeFlightPrefs(value: unknown): FlightPrefs | null {
       current: PRESETS.indexOf(value.preset),
       look: value.look,
       units: value.units,
+      competitionAdded: true,
     };
   }
   return null;

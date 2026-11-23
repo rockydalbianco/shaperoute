@@ -161,10 +161,11 @@ describe("profiles", () => {
       "Thermal",
       "XC",
       "Minimal",
+      "Competition",
       "XC 2",
       "XC 3",
     ]);
-    expect(twice.current).toBe(4);
+    expect(twice.current).toBe(5);
   });
 
   it("stop at the most", () => {
@@ -184,7 +185,7 @@ describe("profiles", () => {
   it("are deleted, the one before on screen, the last one stays", () => {
     const prefs = { ...defaultFlightPrefs("km"), current: 2 };
     const fewer = deleteProfile(prefs);
-    expect(fewer.profiles.map(profileName)).toEqual(["Thermal", "XC"]);
+    expect(fewer.profiles.map(profileName)).toEqual(["Thermal", "XC", "Competition"]);
     expect(fewer.current).toBe(1);
     const one = deleteProfile(deleteProfile(fewer));
     expect(one.profiles).toHaveLength(1);

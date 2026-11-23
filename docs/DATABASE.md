@@ -1441,6 +1441,25 @@ TASK-467 E1).
 - **`reports.kind`** con `gear`. Nessuna riga di prima cambia, nessun
   backfill. Test in `test_gear.py` e `test_moderation.py`.
 
+Migrazione `0084_plan_posts.sql` (TASK-485 parte A, ADR-0394, `API.md`
+«Plan posts»; numero del Coordinatore, dopo la 0083 di TASK-486).
+**Una scheda della palestra pubblicata è un disegno senza corsa che porta
+una copia della scheda**:
+
+- `drawings.plan` (`jsonb`): la scheda com'era a «Post», controllata da
+  `gym_plans.GymPlanPostedBody` (nome, giorni, esercizi coi kg, il
+  programma; mai `starts_on`, `runner` né la data della meta). Una copia,
+  non un riferimento a `gym_plans`: cambiare o cancellare la scheda non
+  tocca il post, e rimandato il post la tiene com'era.
+- Vincolo `drawings_plan_post_check`: solo un disegno senza corsa e senza
+  notte ne ha una, pubblicato appena nasce (`published_at` pieno), e
+  `plan` è un oggetto. Valgono anche i vincoli della `0080` (mai «Only
+  me», nessuna traccia).
+- Un disegno senza corsa è di sole foto solo senza notte e senza `plan`
+  (`photo_posts.PHOTO_POST_SQL`). Una richiesta di copia dei dati
+  comprende le schede pubblicate: sono righe di `drawings`. Nessuna riga di
+  prima cambia, nessun backfill. Test in `test_plan_posts.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

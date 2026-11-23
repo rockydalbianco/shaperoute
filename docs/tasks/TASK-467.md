@@ -1,6 +1,6 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta) · **B3 in `main`** (#1292, `b6e36fcb`: app, la scheda «Sleep» del profilo, spenta) · **C avviata** (bozza #1334, da non unire: il lettore vero e il sonno acceso; build di prova per il solo iPhone dell'utente dal 2026-11-21) · **E1 in `main`** (#1373, `f38b1980`: il post del sonno da solo, server e contratto, migrazione `0082`; sul server col passo 17, col sì dell'utente) · **E2 scritta a metà** (app: i file nuovi nel branch `feat/TASK-467-e2-sleep-post-app`, gli agganci dopo TASK-312 C2 e TASK-481 A), poi privacy, App Privacy e la build nativa, D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta) · **B3 in `main`** (#1292, `b6e36fcb`: app, la scheda «Sleep» del profilo, spenta) · **C avviata** (bozza #1334, da non unire: il lettore vero e il sonno acceso; build di prova per il solo iPhone dell'utente dal 2026-11-21) · **E1 in `main`** (#1373, `f38b1980`: il post del sonno da solo, server e contratto, migrazione `0082`; sul server col passo 17, col sì dell'utente) · **E2 in `main`** (app, spenta: #1419, `d0b89470`: il post del sonno nel Feed, nella sua pagina e nella griglia di un profilo; #1441, `57e4d4b4`: la voce «Sleep» del «+»), poi una build di prova nuova, privacy, App Privacy e la build nativa, D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
 `feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1),
 `feat/TASK-467-b1b-sleep-in-feed` (B1b), `feat/TASK-467-b2-sleep-post` (B2),
@@ -939,6 +939,50 @@ prima di toccare un file esistente):
 Da guardare su `main` vero: dove C2 apre la pagina di un post fuori dal
 Feed (profilo, notifica) e la ricerca dei disegni.
 
+**2026-11-22, tempo 1 degli agganci** (dopo #1386 in `main`; il
+Coordinatore ha detto sì ai due tempi; l'elenco esatto gli è stato
+mandato prima di toccare un file). Tutto dietro `sleepPostsOn()`:
+
+- `api/reads.ts`: `reads()` è `READS` più `sleep` con l'interruttore
+  acceso; l'intestazione di ogni richiesta e quella dei messaggi passano
+  da lì. Spento, la stringa è quella di `fixtures/reads.json`;
+- `api/drawings.ts`: `activity: null` letta come nessuna anche con
+  `source` «sleep»; ogni altro disegno con attività nulla resta rifiutato;
+- `screens/FeedScreen.tsx`: `SleepFeedPost` nella lista e
+  `SleepPostDetailPage` come pagina; tolto il post, le schede rileggono;
+- `feed/PostActions.tsx`: niente «Share»; `social/DrawingCard.tsx`: la
+  notte al posto dei fatti della corsa, niente «Imported» (la `source` non
+  è `muw`, ma non è un'importazione), niente «Send to a friend»;
+  `social/DrawingsGrid.tsx`: `SleepTile` nella cella;
+- quattro testi nelle quattro lingue («Publish» c'era già);
+- test nuovi: `api/readsSleep.test.ts`, `api/drawingsSleep.test.ts`,
+  `screens/FeedScreenSleep.test.tsx` (acceso: scheda e pagina; spento:
+  l'app non dice `sleep` e il Feed è quello di prima),
+  `social/DrawingCardSleep.test.tsx`, `social/DrawingsGridSleep.test.tsx`.
+
+Resta il **tempo 2**: la voce «Sleep» in `feed/addToFeedEntries.ts` con
+«Last night's sleep score, from Apple Health», dopo TASK-481 A. Fino ad
+allora la pagina «Sleep» non si apre da nessuna parte. Ordine di unione
+detto dal Coordinatore: TASK-485 B, TASK-481 A, poi questo.
+
+**2026-11-23, tempo 2 (la voce «Sleep» del «+»)**, scritto sopra la bozza
+di TASK-481 A e portato su un ramo da `main` quando quella è entrata:
+
+- `feed/addToFeedEntries.ts`: la voce `sleep`, quarta nell'ordine
+  dell'utente, con `sleep` falso quando non è detto: la lista di chi non
+  lo dice è quella di prima;
+- `feed/AddToFeed.tsx`: la voce c'è con `sleepPostsOn()` e un lettore del
+  sonno nel telefono; scelta, apre `SleepPostPage` nello stesso foglio;
+- `feed/SleepPostPage.tsx`: senza più un titolo suo (è quello del foglio),
+  e dice `onChanged` quando la notte entra nel Feed o ne esce;
+- `screens/FeedScreen.tsx`: a quel segnale le due schede rileggono;
+- il testo «Last night's sleep score, from Apple Health» nelle quattro
+  lingue;
+- test nuovi: `feed/addToFeedEntriesSleep.test.ts`,
+  `feed/AddToFeedSleep.test.tsx` (spento e senza lettore: il foglio è
+  quello di prima; acceso: la voce, la pagina nel foglio, «Publish» che
+  chiude e fa rileggere).
+
 ## Criteri di accettazione
 
 - [x] Le scelte di prodotto sono dell'utente e stanno in questo file.
@@ -990,7 +1034,7 @@ Feed (profilo, notifica) e la ricerca dei disegni.
   per notte, mai «Only me», pubblicato appena nasce; lo riceve solo
   un'app che legge `sleep`; la notte resta sul server solo finché
   qualcosa la pubblica; nessun orario.
-- [ ] E2: la voce «Sleep» nel «+», la pagina con «Publish», la scheda nel
+- [x] E2: la voce «Sleep» nel «+», la pagina con «Publish», la scheda nel
   Feed e la pagina del post; con `SLEEP_POSTS_ON` spento niente si vede e
   l'app non dice `sleep`, coi test.
 - [ ] Parti C, D: criteri scritti qui quando partono.
@@ -1101,3 +1145,21 @@ Feed (profilo, notifica) e la ricerca dei disegni.
   `40789324`). E2: scritti anche la riga del Feed, la pagina del post e la
   tessera del profilo, file nuovi senza PR; gli agganci, elencati in
   «Parte E2», aspettano ancora TASK-312 C2 (bozza #1386) e TASK-481 A.
+- **2026-11-23, E2 in `main`**: in due tempi, col sì del Coordinatore.
+  Tempo 1 (#1419, `d0b89470`, dopo TASK-312 C2, TASK-485 B e TASK-481 A):
+  l'app dice `sleep` in `X-MuW-Reads` solo con l'interruttore acceso; la
+  riga del Feed, la pagina del post col proprio «Remove post», la tessera
+  nella griglia di un profilo, niente «Share» né «Imported» su un post del
+  sonno. Tempo 2 (#1441, `57e4d4b4`): la voce «Sleep» del «+», quarta dopo
+  «From a file», che apre la pagina nello stesso foglio; la pagina non ha
+  più un titolo suo (è quello del foglio) e dopo «Publish» o «Remove
+  post» le schede del Feed rileggono. L'esempio condiviso della riga del
+  Feed è `fixtures/feed-sleep.json` (#1395). Tutto spento in `main`:
+  `SLEEP_POSTS_ON` falso e nessun lettore, quindi il «+» e il Feed sono
+  quelli di prima. Restano: le traduzioni dei cinque testi della parte E
+  da far vedere all'utente con la build di prova, prima di accendere; la
+  build di prova nuova (prima l'impronta su copia pulita, al turno del
+  Coordinatore, che chiede lui il sì all'utente per l'aggiornamento o la
+  build); poi la C. Il testo unico del permesso di Salute per 467 C, 489
+  C2 e 312 D lo raccoglie TASK-312 D e lo porta all'utente: fino al suo sì
+  sulla bozza #1334 resta la frase approvata per il sonno.

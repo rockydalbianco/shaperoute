@@ -689,10 +689,19 @@ prende una fascia di vetro con il filo di luce in basso e un'ombra corta
 sul contenuto, in 200 ms (subito con «Riduci movimento»), e la lascia
 quando la pagina torna in cima. Conta la pagina sullo schermo: cambiando
 scheda l'header segue quella nuova. Ogni pagina lo dice con
-`useHeaderScroll()` sul suo scroller principale; una pagina che non lo
-dice tiene l'header a riposo. Con «Riduci trasparenza» la fascia è opaca
+`useHeaderScroll()` sul suo scroller principale (Disegna, Explore,
+Explore sull'acqua, Messaggi, Profilo, «Today» e «Days» dello sci, A5c);
+una pagina che non lo dice tiene l'header a riposo, e una che se ne va
+lontana dalla cima lo rimette a riposo. Con «Riduci trasparenza» la fascia è opaca
 con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
 contenuto non passa sotto l'header: per quello serve la parte B.
+
+**I gruppi di Impostazioni** (TASK-469 A6, `src/settings/settingsGroup.ts`):
+ogni gruppo di righe di Impostazioni ha gli angoli a 24 (`radius.group`) e i
+bordi del vetro posato dei segmenti: il filo di luce intorno e quello in
+cima. La faccia resta `surface`, così le parole tengono il contrasto. Con
+«Riduci trasparenza» il bordo è la linea sottile di prima, con «Aumenta
+contrasto» il bordo forte. Ogni gruppo lo prende con `useSettingsGroup()`.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
@@ -4709,6 +4718,40 @@ quando è accesa. Testi approvati dall'utente (11 e 12 novembre 2026).
   consiglio; non si chiama mai «di Apple». Nessuna voce nel Feed: il post
   della notte da sola arriva con TASK-312 C.
 
+### Il post del sonno nel Feed (TASK-467 parte E, ADR-0380 precisazione E)
+
+**Spento in ogni build di oggi**, dalla stessa costante `SLEEP_POSTS_ON`:
+spenta, l'app non dice `sleep` in `X-MuW-Reads` (`api/reads.ts`), quindi
+il server non le manda nessun post del sonno e niente di qui si vede.
+Acceso, la notte pubblicata da sola è un post come gli altri, senza corsa:
+
+- **Nel Feed** (`feed/SleepFeedPost.tsx`): chi l'ha pubblicata e da
+  quanto; dove una corsa ha la mappa, la notte (`feed/SleepPostCard.tsx`):
+  «Sleep score», «82 · Very good», «7 h 40 min» e le fasi quando un
+  orologio le ha dette; sotto, le azioni di ogni post **senza «Share»**
+  (non ha linea né link, e non si manda in chat). Un tocco sulla notte
+  apre la pagina, due sono il super like; «…» sul post di un altro.
+- **La pagina del post** (`feed/SleepPostDetailPage.tsx`): autore e
+  giorno, la notte con sotto «Worked out by MuW from Apple Health data. It
+  can differ from the score in the Health app.», la barra di ogni post.
+  Sul proprio, sotto la barra, **«Remove post»**: lo toglie dal Feed al
+  tocco, senza conferma (si ripubblica dal «+»), e le schede rileggono.
+- **Nella griglia di un profilo** (`feed/SleepTile.tsx`): al posto della
+  linea il punteggio sopra «Sleep». Aperto da lì, sulla scheda del
+  disegno c'è la notte al posto dei numeri della corsa; niente «Imported»,
+  niente «Send to a friend», niente GPX.
+- **Pubblicarlo**: la pagina «Sleep» (`feed/SleepPostPage.tsx`: la notte
+  come sul profilo, «Everyone» / «Followers», «Publish», «Your score,
+  hours slept and sleep stages go in the Feed.»; già pubblicata: «Already
+  in the Feed» e «Remove post») si apre dalla voce **«Sleep»** del «+» del
+  Feed (TASK-481), la quarta, dopo «From a file», con sotto «Last night's
+  sleep score, from Apple Health». Si apre nello stesso foglio, sotto il
+  titolo «Sleep» del foglio e con «‹» per tornare alla lista; «Publish»
+  chiude il foglio e le schede del Feed rileggono. La voce c'è solo con
+  l'interruttore acceso **e** un telefono che sa leggere il sonno: in
+  nessuna build fino alla parte C.
+- Mai l'ora in cui si è andati a letto o ci si è svegliati.
+
 ## Il post da condividere (TASK-231, ADR-0194)
 
 «Share» sta sulla scheda di fine corsa (con un percorso e senza) e sulla
@@ -5314,6 +5357,16 @@ TASK-305.md, «Testi di R6».
     1:43:30» come nel Feed, e la legenda «White: on foot. Yellow: in the
     air.». Un'API di prima, o un `flight` che non sta sulla traccia: la
     gara come una corsa, tutta bianca.
+  - **Il post della gara aperto dal Feed o da un profilo** (parte R6e): la
+    mappa del post ha gli stessi due colori, coi tratti dal `flight` di
+    `GET /drawings/{id}`, la mappa inquadrata sulla linea. Un'API di prima,
+    o una linea del post con punti diversi da quelli della corsa: il post
+    come oggi, tutto giallo.
+- **Un volo nelle liste** (TASK-305, 2026-11-22): in «My activities», nella
+  scheda sotto la mappa e nella riga del Feed un volo ha la velocità media
+  («15.1 km/h», come la pagina del post) al posto del passo per km; senza
+  luogo né disegno si chiama «Paragliding» (IT «Parapendio») invece di
+  «Run». Gli altri sport restano come sono.
 
 ### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
 

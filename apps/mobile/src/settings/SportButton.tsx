@@ -20,6 +20,7 @@ import {
   space,
 } from "../theme/tokens";
 import { isSkiMode } from "../skimode/skiMode";
+import { isTrainingMode } from "../trainingmode/trainingMode";
 import { Hairline } from "../ui/Hairline";
 import { headerGlass } from "../bell/BellButton";
 import { Tap } from "../ui/Tap";
@@ -152,10 +153,17 @@ export function SportButton({ sports = SPORTS }: Props) {
             contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
           >
-            {/* In the ski mode (TASK-429, ADR-0357), how to leave it. */}
-            {isSkiMode(sport) && (
-              <View style={styles.mode} accessible testID="sport-ski-mode">
-                <Text style={styles.familyTitle}>{t("Ski mode")}</Text>
+            {/* In the ski mode (TASK-429, ADR-0357) or the training mode
+                (TASK-490, ADR-0398), how to leave it. */}
+            {(isSkiMode(sport) || isTrainingMode(sport)) && (
+              <View
+                style={styles.mode}
+                accessible
+                testID={isSkiMode(sport) ? "sport-ski-mode" : "sport-training-mode"}
+              >
+                <Text style={styles.familyTitle}>
+                  {isSkiMode(sport) ? t("Ski mode") : t("Training mode")}
+                </Text>
                 <Text style={styles.modeLine}>
                   {t("Choose another sport to go back to MuW as always.")}
                 </Text>
@@ -219,7 +227,12 @@ function SportTile({ option, size, chosen, onChoose }: TileProps) {
       </View>
     );
   }
-  const skiMode = isSkiMode(option.id);
+  // Choosing it changes the app (TASK-429, TASK-490): the tile says so.
+  const modeLine = isSkiMode(option.id)
+    ? t("Turns MuW into your ski app")
+    : isTrainingMode(option.id)
+      ? t("Turns MuW into your training app")
+      : undefined;
   return (
     // It answers the finger through Tap, as the app's other controls.
     <Tap
@@ -229,7 +242,7 @@ function SportTile({ option, size, chosen, onChoose }: TileProps) {
       accessibilityRole="radio"
       // One name for the tile: the emoji is not read on its own.
       accessibilityLabel={t(option.name)}
-      accessibilityHint={skiMode ? t("Turns MuW into your ski app") : undefined}
+      accessibilityHint={modeLine}
       accessibilityState={{ checked: chosen }}
     >
       {chosen && <Text style={styles.check}>✓</Text>}
@@ -237,10 +250,9 @@ function SportTile({ option, size, chosen, onChoose }: TileProps) {
       <Text style={styles.tileName} numberOfLines={2}>
         {t(option.name)}
       </Text>
-      {/* Choosing it changes the app (TASK-429): the tile says so. */}
-      {skiMode && (
+      {modeLine !== undefined && (
         <Text style={styles.tileLine} numberOfLines={2}>
-          {t("Turns MuW into your ski app")}
+          {modeLine}
         </Text>
       )}
     </Tap>

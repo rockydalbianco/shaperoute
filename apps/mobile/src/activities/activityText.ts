@@ -4,7 +4,8 @@ import { clockLabel } from "../navigation/freeRun";
 import { paddlePaceLabel } from "../navigation/paddle";
 import { swimPaceLabel } from "../navigation/swim";
 import { findProfile } from "../sports";
-import { paceLabel, runDistanceLabel } from "../units/format";
+import { MIN_PACE_M, paceLabel, runDistanceLabel } from "../units/format";
+import { speedIn, speedUnit } from "../units/runFormat";
 
 /**
  * A run of «My activities» in words (TASK-172): when it began, where, what
@@ -69,16 +70,20 @@ export function startedLabel(startedAt: string): string {
 type Drawn = { shape: string | null; word: string | null; title: string | null };
 
 /** "Trento · Star", "Trento", "Star": where the run began and what its
- * route drew; "Run" when nobody knows either. */
+ * route drew; "Run" when nobody knows either, and for a flight, which is
+ * no run, "Paragliding" (TASK-305). */
 export function whereAndWhat(
-  run: Drawn & { place: string | null },
+  run: Drawn & { place: string | null; activity?: string },
   /** Whether the run followed a route: without one it drew nothing. */
   withRoute: boolean,
 ): string {
   const parts = [run.place, withRoute ? favoriteTitle(run) : null].filter(
     (part): part is string => part !== null && part !== "",
   );
-  return parts.length > 0 ? parts.join(" · ") : t("Run");
+  if (parts.length > 0) {
+    return parts.join(" · ");
+  }
+  return run.activity === "paragliding" ? t("Paragliding") : t("Run");
 }
 
 /** "4.01 km · 19:00 · 4:44 /km": distance, time and average pace, in the
@@ -104,12 +109,19 @@ export function runFacts(run: {
 }
 
 /** The pace of `metres` in `ms` as the sport writes it (src/sports): per
- * 500 m on the water, per 100 m swimming, per km otherwise. */
+ * 500 m on the water, per 100 m swimming, per km otherwise. A flight has
+ * its speed instead, "14.8 km/h", as the page of its post (ADR-0340): a
+ * pace per km says nothing in the air (TASK-305). */
 export function sportPaceLabel(
   activity: string | undefined,
   metres: number,
   ms: number,
 ): string | null {
+  if (activity === "paragliding") {
+    return metres < MIN_PACE_M || ms <= 0
+      ? null
+      : `${speedIn(metres, ms).toFixed(1)} ${speedUnit()}`;
+  }
   switch (findProfile(activity)?.pace) {
     case "paddle":
       return paddlePaceLabel(metres, ms);

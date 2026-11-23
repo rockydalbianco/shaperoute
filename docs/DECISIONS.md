@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A4c in produzione, A5 e A5b in `main`); B Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6 in produzione); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -573,15 +573,210 @@ lasciando le righe d'indice.
 
 - ADR-0272, precisazione C — Il post di sole foto è un disegno senza corsa: l'autore in `drawings.user_id`, la chiave del telefono, pubblicato con la prima foto, solo alle app che dicono `photos` · 2026-11-21 · Attiva
 - ADR-0393 — L'attrezzatura: una lista per iscritto con foto e nota, più attrezzi per attività, i totali contati dal server, visibile come il profilo, legata ai capi taggati · 2026-11-21 · Proposta
-- ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci in ordine, ognuna costruita dal task che la possiede e mostrata solo quando è pronta; «Everyone» anche per la palestra scritta a mano e la scheda pubblicata · 2026-11-21 · Proposta
-- ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Proposta
+- ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci in ordine, ognuna costruita dal task che la possiede e mostrata solo quando è pronta; «Everyone» anche per la palestra scritta a mano e la scheda pubblicata · 2026-11-21 · Attiva
+- ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Attiva
 - ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
 - ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo · 2026-11-21 · Attiva
 - ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities» · 2026-11-22 · Attiva
-- ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Proposta
+- ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Attiva
 - ADR-0391 — Il link di un post apre l'app: l'id resta dopo il `#`, l'app prende dall'indirizzo solo un id a forma di disegno e chiede il post all'API, senza account prima l'ingresso; la barra di Safari subito, i link verificati con la prossima build nativa · 2026-11-22 · Attiva
+- ADR-0127, precisazione (TASK-487) — «Feed» senza esempi: senza account l'invito ad accedere, con account e nessun post una riga che lo dice · 2026-11-22 · Attiva
+- ADR-0397 — «Alimentazione»: un contacalorie senza diete, cibi da USDA più quelli dell'utente, piano a settimana e diario solo sul telefono, bilancio = assunte − (riposo + attività) senza doppi conti, tabella solo per il proprietario, spenta fino alla build nativa che legge da Salute · 2026-11-22 · Proposta
+- ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share» · 2026-11-22 · Attiva
+- ADR-0375, precisazione R6e — Il post di una gara a due colori: `flight` anche in `GET /drawings/{id}`, solo se la linea del post ha i punti della corsa; lo schema openapi delle due risposte torna coi suoi campi · 2026-11-23 · Attiva
+- ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Proposta
+- ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima · 2026-11-23 · Attiva
+- ADR-0390, precisazione A — La lista del «+» nell'app: «Record now» come l'avvio senza percorso di «Draw», «Photos only» dritto al modulo di C2, «From a file» con «Files» aperto subito (`fileAtOnce`), il titolo della voce aperta · 2026-11-23 · Attiva
+- ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Proposta
+- ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
 
 ## Voci nuove
+
+## ADR-0390, precisazione A — La lista del «+» nell'app: «Record now» come l'avvio senza percorso di «Draw», «Photos only» dritto al modulo di C2, «From a file» con «Files» aperto subito (`fileAtOnce`), il titolo della voce aperta
+
+**Stato**: Attiva · 2026-11-23 · TASK-481 parte A (#1421, `3f124ce7`).
+Ordine, «niente Soon», «Record now» in lista, testi e traduzioni
+(«Add to Feed», «Record now», «Start an activity now») e schermate:
+**scelte dell'utente** (2026-11-21, approvate il 2026-11-23). Il resto è
+**deciso dall'agente su delega dell'utente**, con `AddPastActivity.tsx`
+come file in più approvato dal Coordinatore il 2026-11-22.
+
+**Contesto**: ADR-0390 vuole il «+» del Feed come una lista di voci pronte,
+in ordine. TASK-312 C2 aveva messo «Photos only» dentro le scelte di «Add
+past activity»: aperto da «From a file» della lista, l'avrebbe mostrata di
+nuovo, e l'ordine non avrebbe tenuto.
+
+**Decisione**:
+
+1. **Le voci in un file solo**, `apps/mobile/src/feed/addToFeedEntries.ts`:
+   ogni voce con titolo, riga sotto e «pronta»; oggi «Record now» (se il
+   Feed sa avviare una registrazione), «Photos only» (sempre), «From a
+   file» (se l'app ha il selettore di file). Sleep, Gym workout e Workout
+   plan aggiungono la loro riga lì, al loro posto, quando il loro flusso è
+   nell'app.
+2. **«Record now» fa quello che fa l'avvio senza percorso di «Draw»** per
+   lo sport scelto: palestra e stretching aprono la loro seduta, le
+   ciaspole passano dal loro avviso, gli altri sport la corsa libera. Il
+   foglio si chiude prima.
+3. **«Photos only» apre direttamente il modulo di C2** (`PhotoPostForm`,
+   invariato); «Cancel» e «‹» tornano alla lista.
+4. **«From a file» apre «Files» subito**: `AddPastActivity` prende la prop
+   facoltativa `fileAtOnce`, che con `opened` mostra solo «From a file» e
+   apre il selettore una volta al primo disegno; dopo un annullamento resta
+   la scelta con il suo aiuto. In «My activities» non cambia niente.
+5. **Il titolo del foglio** è «Add to Feed» sulla lista e quello della voce
+   aperta dentro, con «‹» per tornare. «Add activity» esce dai testi.
+
+**Alternative scartate**: aprire «Add past activity» intero da «From a
+file» (ripete «Photos only»); per «Record now» solo `setScreen("run")`
+(con la palestra avrebbe aperto la corsa).
+
+**Conseguenze**: esce col prossimo OTA (Coordinatore, col sì
+dell'utente). Restano il turno della privacy («from a file» in due frasi,
+cinque lingue e sito) e le righe di TASK-467 E2, TASK-484 B e TASK-485 B,
+ognuna al via del Coordinatore.
+
+## ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima
+
+**Stato**: Attiva · 2026-11-23 · TASK-485 parte B (#1414, `f4737c66`).
+Riquadro e dettaglio, kg nella copia, copia che non segue l'originale,
+testi e quattro traduzioni (2026-11-21 e 2026-11-23, con le schermate del
+simulatore): **scelte dell'utente**. Il resto è **deciso dall'agente su
+delega dell'utente**, con la lista dei file approvata dal Coordinatore
+(fork 3).
+
+**Contesto**: la parte A mette sul server la scheda pubblicata (un disegno
+senza corsa con `drawings.plan`, solo alle app che dicono `plans`); restava
+l'app.
+
+**Decisione**:
+
+1. **L'app dice `plans`** in `X-MuW-Reads` e accetta `activity` `null`
+   quando `source` è `photos` o `plan`. Senza questo il Feed rifiutava la
+   risposta intera e la pagina non si caricava (visto nel simulatore).
+2. **Una coda sul telefono** (`plan-post-outbox.json`, come per le foto):
+   il post parte anche più tardi, il più vecchio prima; la chiave la fa il
+   telefono. Un post mandato resta nel file col suo id (al più 50 per
+   account), perché il Feed dà l'id e non la chiave: «Delete post» c'è solo
+   sul telefono che l'ha pubblicato.
+3. **Un foglio solo**: «Use this plan» apre la guida *al posto* del piano
+   aperto, nello stesso foglio. Due fogli chiusi insieme lasciavano iOS su
+   uno schermo nero. «Added to your plans» è una riga sotto il riquadro,
+   non un avviso.
+4. **La copia nella guida delle schede** (`GymPlanWizard`, `copied`): solo
+   gli ultimi passi, «How do you run today?» quando la scheda ha corse e
+   poi nome e primo giorno (il lunedì da oggi). Salva con
+   `PUT /me/gym-plans/{key}`.
+5. **Il limite di 20** si guarda sul telefono prima di aprire la guida; il
+   server lo tiene comunque.
+
+**Alternative scartate**: tenere la chiave del post sul server per
+cancellarlo da ogni telefono (cambia il contratto di A); la guida come
+foglio sopra il piano (lo schermo nero di iOS).
+
+**Conseguenze**: in produzione con l'OTA che la porta, col sì
+dell'utente; le app di prima non vedono questi post. Restano la voce nel
+«+» del Feed (dopo TASK-481 A), la riga della privacy a turno, e il piano
+aperto da un profilo, una notifica o un link.
+
+## ADR-0375, precisazione R6e — Il post di una gara a due colori: `flight` anche in `GET /drawings/{id}`, solo se la linea del post ha i punti della corsa; lo schema openapi delle due risposte torna coi suoi campi
+
+**Stato**: Attiva · 2026-11-23 · TASK-305 parte R6e: server #1411
+(`e427ed2e`, col passo 19), app #1412 (`7a0972de`, con l'OTA 23). Che la
+si faccia ora è **scelta dell'utente** («Sì, fallo», 2026-11-22); il resto
+è **deciso dall'agente su delega dell'utente**, con le liste dei file
+approvate dal Coordinatore. Toglie il punto 7 («Fuori») di R6d e corregge
+il prezzo del suo punto 3.
+
+1. **`flight` nel post aperto** (`GET /drawings/{id}`): lo stesso di
+   `GET /me/activities/{key}` (R6d, punto 1), dallo stesso `flight_of`,
+   calcolato a ogni lettura. Lo vede chi vede il post: i tempi a piedi e in
+   volo erano già sul post (`flight_split`).
+2. **Solo se i punti tornano**: gli indici sono della traccia della corsa;
+   il post ha la sua copia (`drawings.track`). Se le due linee non hanno lo
+   stesso numero di punti (un disegno tenuto tagliato, prima di ADR-0330)
+   `flight` manca, così i tratti non finiscono nel posto sbagliato.
+3. **Assente quando manca**, come in R6d. Il serializzatore ora non ha un
+   tipo di ritorno, come quello del sonno in `SeenFields`: lo schema
+   openapi di tutte e due le risposte resta coi loro campi (R6d lo aveva
+   reso un oggetto qualsiasi). Un test lo controlla.
+4. **Nell'app** lo stesso `activityFlightOf`, che accetta qualunque
+   `{ track, flight? }`: il post di una gara si disegna bianco a piedi e
+   giallo in volo, la mappa inquadrata sulla linea, invece che tutto in
+   giallo come una rotta. Senza `flight` resta come prima.
+5. **Prima il server, poi l'OTA**, ma qui l'ordine non conta: un'app con
+   R6e su un server senza mostra il post come oggi.
+
+## ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share»
+
+**Stato**: Attiva · 2026-11-22 · TASK-312 parte C2 (#1386, `3d4f0d47`). Testi,
+partenza dall'ultima scelta, schermate, testi della cancellazione,
+«Importata» e riga della privacy con le traduzioni: **scelte dell'utente**
+(2026-11-21 e 2026-11-22). Il resto è **deciso dall'agente su delega
+dell'utente**, con la lista dei file approvata dal Coordinatore.
+
+**Contesto**: la precisazione C mette sul server il post di sole foto (un
+disegno senza corsa, solo alle app che dicono `photos`); restava l'app.
+
+**Decisione**:
+
+1. **L'app dice `photos`** in `X-MuW-Reads` e accetta `activity` `null`
+   solo quando `source` è `photos`: un'altra risposta senza attività resta
+   una risposta sbagliata.
+2. **Una coda sul telefono**, come per le corse e la palestra: il post e
+   le sue foto (file `photo-post-outbox.json` e una foto per file) partono
+   anche più tardi, una foto alla volta; la chiave la fa il telefono. A
+   ogni invio riuscito il Feed rilegge le schede aperte. All'uscita
+   dall'account la coda di quell'account si scorda.
+3. **Due entrate**: «Photos only» in «Add past activity» e nel «+» del
+   Feed. Il «+» c'è con l'account anche senza il selettore di file (la
+   1.0): allora ha solo «Photos only».
+4. **Una scheda e una pagina proprie** (`PhotoFeedPost`, `PhotoPostPage`):
+   foto da scorrere, «Imported», la data della pubblicazione, reazioni,
+   commenti, segnalazioni e blocchi come ogni post. Niente «Share»,
+   niente numeri della corsa, niente invio in chat; nella griglia del
+   profilo la prima foto.
+5. **Cambiare e cancellare dalle impostazioni della pagina**: l'app trova
+   la chiave con `GET /me/photo-posts` (C1b); «Delete post» chiede
+   conferma.
+
+**Alternative scartate**: mettere i post di sole foto in «My activities»
+(non sono attività, e «My activities» parte dalle corse); riusare la
+scheda di una corsa senza mappa (troppi rami per i campi `null`).
+
+**Conseguenze**: in produzione con l'OTA 23; le app di
+prima non vedono questi post. Ricerca, link pubblico e chat restano fuori
+come dice la precisazione C.
+
+## ADR-0127, precisazione (TASK-487) — «Feed» senza esempi: senza account l'invito ad accedere, con account e nessun post una riga che lo dice
+
+**Stato**: Attiva · 2026-11-22 · TASK-487, codice #1397. **Scelta
+dell'utente** (2026-11-22): «togliamo tutte quelle finte», e alla domanda
+su cosa mostrare senza accesso «Invito ad accedere».
+
+**Contesto**: l'ADR-0127 faceva mostrare a «All» i disegni d'esempio
+(figure del catalogo con corridori inventati) finché l'account non aveva
+nulla da vedere o nessuno aveva fatto l'accesso. Sull'app dell'App Store
+aperta sul Mac senza accesso l'utente ha visto quelle attività finte al
+posto delle sue e di Rocky, che l'app di prova mostra: le due app usano lo
+stesso server, la differenza era solo l'accesso. `GET /feed` vuole il
+token, quindi senza accesso non ci sono attività vere da mostrare.
+
+1. **«Feed» non mostra più esempi**, in nessuna scheda: solo i post degli
+   iscritti (`postsOf` in `FeedScreen.tsx`).
+2. **Senza account**: «All» dice «Log in from Profile to see the
+   activities.» (`feed-log-in`), senza schede né «+», come prima.
+3. **Con account e nessun post**: «Nobody has published anything yet.»
+   (`feed-no-posts-all`). «Following» resta com'era.
+4. Il server non cambia; nessun Feed pubblico senza account.
+
+**Conseguenze**: i percorsi MuW (TASK-365) e i post di MuW Style si
+mettono solo tra post veri, quindi senza post non compaiono. Il codice che
+apre un esempio (`fetchPostRoute`, `paddlePosts`) resta perché gli esempi
+compaiono ancora tra i «featured» della ricerca di «Explore»
+(`src/search/StartState.tsx`), fuori da questo task. Tolti i test
+d'interfaccia che entravano da un esempio del Feed
+(`AppFeedPaddle.test.tsx`, un test di `AppExploreMove.test.tsx`).
 
 ## ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities»
 
@@ -677,7 +872,8 @@ al Coordinatore, non di questo task.
 
 ## ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie
 
-**Stato**: Proposta · 2026-11-22 · TASK-483 (parte 0, soli documenti).
+**Stato**: Attiva · 2026-11-22 · TASK-483: parte 0 (documenti), A #1385
+(server, passo 17), B #1396 (app, OTA 22), #1406 (la virgola nei pesi).
 I tre schermi, la regola del suggerimento, l'unione dei nomi liberi e
 «History» dalla guida sono **scelte dell'utente** (risposte 1–4 del task
 file); il resto è **deciso dall'agente su delega dell'utente**, numero dal
@@ -724,6 +920,22 @@ rilegge per esercizio e l'app non le mostra.
 `out/TASK-483/SERVER-A.md`); parte B nell'app con un OTA, testi e
 schermate all'utente prima. Un'API di prima risponde `404`: l'app tiene
 spenti riquadro e «History» e lascia i campi come oggi.
+
+**Aggiunte della parte B, decise dall'agente su delega dell'utente**:
+- **Campi già compilati**: valgono le serie di questo allenamento, poi i
+  valori della scheda seguita; l'ultima volta riempie solo i campi che la
+  scheda lascia vuoti (le settimane delle schede guidate restano quelle).
+- **Chi pesa in lb**: il suggerimento aggiunge 5 lb, non 2,5 kg.
+- **Senza rete**: il telefono tiene l'ultima risposta di 40 esercizi
+  (`gym-history.json`), così «Last time» c'è anche in palestra.
+- **Le frecce tra sedute** non confrontano un massimale stimato con un
+  peso massimo (seduta di sole serie oltre 12 ripetizioni): niente freccia.
+- **Un'API senza la rotta (404)** spegne «Last time» e «History».
+- **Il grafico è fatto di View** (niente react-native-svg, niente build
+  nativa).
+- **I pesi con la virgola** dove la lingua dell'app la usa («82,5 kg»),
+  chiesto dall'utente dopo la prova: `weightLabel` per tutti i pesi
+  dell'app (#1406).
 
 ## ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo
 
@@ -895,9 +1107,24 @@ Coordinatore; prima della pubblicazione una prova con un pilota vero.
 ADR-0265 (il pianificatore nel cono) resta Proposta. Dettagli in
 `tasks/TASK-479.md`.
 
+**Aggiunta del 2026-11-22 (parte C, deciso dall'agente su delega
+dell'utente)**: il vario sonoro suona file, non sintesi: 15 loop WAV fatti
+da `tools/vario_tones.py` (un gradino di salita ogni 0,5 m/s, uno di
+discesa ogni 1 m/s), un player in loop per tono; il suono appartiene alla
+registrazione e non alla schermata di volo, così suona anche a schermata
+chiusa; nessun tocco ad `app.json`. Acceso di default: scelta dell'utente.
+
+**Aggiunta del 2026-11-23 (parte A1, deciso dall'agente su delega
+dell'utente)**: la mappa di volo è una pagina MapLibre sua in `src/air/`,
+non la mappa dell'app (che resta intatta); in 3D la camera punta al
+terreno sotto il pilota (`setCenterElevation`). La quota sul terreno si
+legge dalle stesse Terrain Tiles «terrarium» della mappa 3D, decodificate
+su un canvas in una pagina nascosta: nessuna libreria, nessun server. I
+colori del vario sono `vario` in `tokens.ts`.
+
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
-**Stato**: Proposta · 2026-11-21 · TASK-485 parte 0 (numero dal
+**Stato**: Attiva (A e B in `main`, A sul server, 2026-11-23) · 2026-11-21 · TASK-485 parte 0 (numero dal
 Coordinatore). Che cosa mostra, che cosa copia «Use this plan» (kg
 compresi), che il post non segue la scheda, testi e riga di privacy:
 **scelte dell'utente** del 2026-11-21 («Riquadro + dettaglio», «Anche i
@@ -1028,7 +1255,8 @@ riscrive.
 
 ## ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci, ognuna del suo task
 
-**Stato**: Proposta · 2026-11-21 · TASK-481 parte 0 (solo documenti).
+**Stato**: Attiva · 2026-11-21 · TASK-481 parte 0 (solo documenti); la
+lista nell'app in `main` dal 2026-11-23 (parte A, precisazione A).
 Le voci, l'ordine, i testi, «niente Soon», chi vede che cosa e la frase
 della privacy sono **scelte dell'utente** (2026-11-21, una domanda per
 volta); la lista prima del flusso e il file delle voci sono decisi
@@ -2299,6 +2527,19 @@ riceve tocchi; la vecchia linea fissa di `TabShell` sparisce. Il
 contenuto resta sotto l'header, non dietro: in parte A il vetro non sfoca
 niente, quindi farci passare il contenuto lo renderebbe solo meno
 leggibile. Deciso dall'agente su delega dell'utente.
+**A5c (#1391)**: Profilo, «Today» e «Days» dello sci mettono
+`useHeaderScroll()` come le altre pagine. Una pagina pigra o il cambio di
+modalità sci possono smontare uno scroller lontano dalla cima: l'hook,
+smontandosi, rimette l'header a riposo, invece di lasciarlo in vetro sopra
+una pagina in cima. «Resorts» non lo mette: lì il titolo e la ricerca sono
+fissi e scorre solo la lista. Deciso dall'agente su delega dell'utente.
+**A6 (#1403)**: i gruppi di Impostazioni prendono i bordi della pista dei
+segmenti (`segmentTrackFace`) con la faccia `surface` invece del velo,
+perché le righe sono testo lungo e il contrasto conta più del vetro. Un
+nuovo passo dei raggi, `radius.group` = 24, tra `lg` (16) e `card` (28).
+Un solo aiuto, `settingsGroupFace` / `useSettingsGroup`, in un file nuovo,
+così ognuno dei 18 file cambia di una riga. Deciso dall'agente su delega
+dell'utente.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 
@@ -5611,3 +5852,206 @@ deciso dall'agente su delega dell'utente; le scelte di prodotto restano le
 **Conseguenze**: nessuna migrazione; sul server col passo 15. L'app (D2)
 legge `fixtures/together.json`; un'API di prima risponde `404`, e l'app
 tiene spenta la riga «Together».
+
+## ADR-0397 — «Alimentazione»: un contacalorie senza diete, cibi da USDA più quelli dell'utente, bilancio senza doppi conti, tabella solo per il proprietario
+
+**Stato**: Proposta · 2026-11-22 · TASK-489 (parte 0, soli documenti).
+Dove sta la voce, la fonte dei cibi, calorie prima dei macronutrienti, il
+piano a settimana, i dati solo sul telefono, chi vede la tabella, le parole
+e l'uscita tutta insieme con la build nativa sono **scelte dell'utente**
+(risposte 1–8 del task file); il resto è **deciso dall'agente su delega
+dell'utente**, numeri dal Coordinatore (fork 3).
+
+**Contesto**: l'utente vuole fra gli sport una voce «Alimentazione»: scrive
+la sua dieta (sua o del dietologo), segna ogni giorno quello che mangia e
+vede nel profilo i giorni a credito o a debito di calorie, contando tutte
+le attività dell'hub privato, comprese quelle lette da Apple Salute. Il
+consumo di un'attività e a riposo c'è già (`body/energy.ts`, ADR-0318);
+MuW oggi scrive in Salute e legge solo il battito (ADR-0281).
+
+**Decisione**:
+- **MuW non fornisce diete, obiettivi né consigli alimentari**, nemmeno
+  tramite l'AI: l'AI può interpretare le parole, i numeri li fa solo la
+  tabella. Ogni numero è una stima e si chiama così. L'avviso approvato
+  dall'utente compare alla prima apertura e, in piccolo, sempre.
+- **L'ingresso** è una tessera «Nutrition» in una famiglia sua in fondo al
+  pannello degli sport. Non è uno `Sport`: non entra nel registro né nel
+  contratto, non ha percorsi e non si registra; toccarla apre la pagina e
+  non cambia lo sport scelto. È un componente a sé, così TASK-490
+  (ADR-0398) può montarlo nella sua schermata se l'utente lo sceglie.
+- **I cibi**: un elenco di base di circa 300 cibi da **USDA FoodData
+  Central** (pubblico dominio, CC0 1.0; la fonte è citata nell'app),
+  costruito da uno script dallo scarico di USDA e da una lista di
+  identificativi scelti a mano, più i **cibi dell'utente** (nome e kcal
+  per 100 g). Open Food Facts (ODbL: attribuzione e ricondivisione delle
+  basi mescolate; serve la rete) e le tabelle CREA (nessuna licenza di
+  riuso trovata) restano fuori. Nessuna dipendenza nuova.
+- **Calorie subito**; proteine, carboidrati e grassi per 100 g stanno già
+  nella tabella e non si mostrano.
+- **Il piano** è una settimana di quattro pasti al giorno con cibi e
+  grammi; **il diario** è per giorno di calendario del telefono. «Eaten as
+  planned» copia nel diario il piano com'è in quel momento: cambiare il
+  piano dopo non riscrive i giorni passati. Un giorno senza voci è vuoto,
+  non zero.
+- **I dati restano sul telefono**, in file JSON (`expo-file-system`, come
+  il corpo). Nessun indirizzo dell'API, nessuna migrazione. Il server è
+  una parte dopo, con la sua decisione.
+- **Il bilancio del giorno** = assunte − (riposo + attività). Il riposo è
+  `restKcalPerMin` × 1440 (Mifflin-St Jeor). L'attività: se il giorno ha
+  l'energia attiva di Salute vale quella da sola; altrimenti la somma
+  delle attività dell'hub (`activeKcal`, `gymKcal`, `poolKcal`, e per un
+  allenamento di un'altra app la sua energia attiva). **Nessun doppio
+  conto**: un allenamento di Salute scritto da MuW si scarta; uno di
+  un'altra app che si sovrappone a un'attività di MuW per più di metà
+  della più corta conta una volta, quella di MuW. Un'attività conta nel
+  giorno in cui parte.
+- **I numeri letti da Salute non si salvano**: si rileggono quando la
+  tabella si apre. Non vanno al server, non servono alla pubblicità
+  (regola Apple 5.1.3).
+- **La tabella** («Eaten», «Used», «Balance», «Surplus» o «Deficit» col
+  segno, mai il colore da solo) sta solo nel profilo di chi è entrato: non
+  è un campo del profilo pubblico, non è nel Feed, non si condivide.
+- **Tutto insieme con la build nativa**: leggere da Salute allenamenti ed
+  energia attiva chiede un testo del permesso nuovo
+  (`NSHealthShareUsageDescription`, oggi solo il battito), quindi una
+  build nativa e la revisione di Apple; su Android i permessi di lettura
+  di Health Connect nel manifest. Le parti prima entrano in `main` spente
+  dietro `NUTRITION_ON`, che si accende solo con quella build e dopo il
+  sì dell'utente sulle schermate.
+
+**Conseguenze**: file nuovi in `apps/mobile/src/nutrition/`; nessun
+cambio al server né al contratto. Il testo del permesso di Salute va
+scritto una volta sola insieme a TASK-467 C (sonno). Privacy, etichette
+dell'App Store e di Google Play e «How we calculate» col sì dell'utente
+prima dell'uscita. Limite noto: senza Apple Watch e senza scrittura in
+Salute, in un giorno che ha energia attiva di Salute un'attività di MuW
+conta solo per quanto Salute ha misurato dal telefono.
+
+## ADR-0398 — La modalità Allenamento: scelta «Gym», MuW diventa un'app per allenarsi come con lo sci
+
+**Stato**: Proposta · 2026-11-23 · TASK-490 (parte 0, soli documenti).
+La barra, l'ingresso solo da «Gym» e il Cibo come pagina di TASK-489 sono
+**scelte dell'utente** (2026-11-22, task file); le quattro tab finché il
+Cibo è spento sono del Coordinatore, da far vedere all'utente nelle
+schermate della parte A; il resto è **deciso dall'agente su delega
+dell'utente**, numeri dal Coordinatore (fork 3).
+
+**Contesto**: l'utente vuole che allenamenti, palestra e alimentazione
+abbiano una schermata loro, «come quando entro nello sport Sci». La
+modalità sci (ADR-0357) cambia la barra quando lo sport scelto è lo sci,
+senza salvare niente di nuovo. Le parti della palestra ci sono già, ma
+stanno sparse in «Draw» e nei fogli (ADR-0341, ADR-0392); il Coach è una
+proposta senza numero; il Cibo è TASK-489 (ADR-0397).
+
+**Decisione**:
+- **Il modo è lo sport salvato**, come per lo sci: con `"gym"` scelto la
+  barra è «Today» · «Workouts» · «Food» · «Feed» · «Profile», «Messages»
+  in alto accanto allo sport. Nessuna impostazione nuova; scegliere un
+  altro sport riporta l'app di sempre. «Stretching» non entra.
+- **«Today» è la pagina «choose»**: ogni ritorno a «Draw» ci atterra;
+  dentro c'è la palestra di «Draw» com'è (`GymDrawGuide`). Lasciando il
+  modo, «Workouts» (che l'app non ha) porta a «Draw».
+- **«Workouts»** mette in una pagina le schede, il mese, gli allenamenti
+  fatti e lo storico degli esercizi, aprendo i fogli che esistono: i file
+  della palestra si leggono soltanto, così TASK-488 non ha conflitti.
+- **Il Coach** non ha una tab: una riga su «Today» e «My plans» aprono la
+  sua pagina (parte C, quando il Coach ha numero). L'omino della settimana
+  lo costruisce questo task (parte B, file nuovi) e il Coach lo riusa.
+- **«Food»** monta la pagina «Nutrition» di TASK-489 così com'è, solo con
+  `NUTRITION_ON`; fino ad allora la barra ha quattro tab.
+- **Le regole dei tre modi** stanno in un file nuovo
+  (`trainingmode/trainingMode.ts`) che `App.tsx` usa al posto di quelle di
+  `skimode/skiMode.ts`; il file dello sci non cambia.
+
+**Conseguenze**: nessuna dipendenza, nessun indirizzo dell'API, nessuna
+migrazione; tutto con un OTA. `App.tsx` si tocca dopo TASK-481 A (#1421),
+`SportButton.tsx` prima di TASK-489 B. Un utente che si allena e corre
+cambia barra quando cambia sport, come lo sciatore.
+
+## ADR-0399 — Il Coach MuW: consigli da regole scritte con il loro studio, la scheda che cambia solo con «Apply»
+
+**Stato**: Proposta · 2026-11-23 · TASK-491 (parte 0, soli documenti).
+«Apply», dove si apre, solo con account con l'omino, niente RPE e i
+testi dei consigli sono **scelte dell'utente** (2026-11-22 e 23, task
+file); l'omino di TASK-490 B e l'ordine dopo TASK-488 sono del
+Coordinatore; il resto è **deciso dall'agente su delega dell'utente**,
+numeri dal Coordinatore (fork 3).
+
+**Contesto**: l'utente vuole un agente o un algoritmo che legga gli
+allenamenti fatti, consigli i prossimi e modifichi le schede con metodi
+scientifici. TASK-488 (ADR-0396) cambia già i passi di un giorno da come
+l'utente dice che è andata; mancano i numeri: ripetizioni fatte, volume
+per muscolo, km che salgono, pause, sonno.
+
+**Decisione**:
+- **Regole, non un modello AI.** Una funzione pura sul telefono prende gli
+  allenamenti di 4 settimane e la scheda e rende i consigli: stessi dati,
+  stessi consigli, un test per regola, niente rete oltre alle letture che
+  ci sono, niente costo per utente. È il principio del progetto: l'AI non
+  decide i numeri.
+- **Tredici regole con il loro studio** (task file): doppia progressione e
+  carico (ACSM 2009), stallo col massimale di Epley, volume (Schoenfeld
+  2017) e frequenza (Schoenfeld 2016) per muscolo, 48 h di recupero, km
+  oltre +30% (Nielsen 2014), 80/20 (Seiler 2010), scarico (Foster 1998,
+  Bosquet 2007), pausa (Mujika 2000), OMS 2020. ACWR (Gabbett 2016) e
+  sonno (Fullagar 2015) sono **soft**: mai una modifica della scheda.
+- **Al massimo tre consigli**, prima la sicurezza, poi la progressione,
+  poi l'equilibrio; ognuno con un «Why» che nomina lo studio.
+- **«Apply» o niente**: i kg con i passi `adapt` di TASK-488, serie e
+  ripetizioni nel `program` della scheda, col salvataggio che c'è; «Not
+  now» nasconde il consiglio per 7 giorni sul telefono.
+- **Solo con account**: lo storico sta sul server; senza account la
+  pagina invita a crearlo e non chiede niente all'API.
+- **L'omino** della settimana è quello di TASK-490 B; il Coach non ne
+  disegna un altro.
+
+**Conseguenze**: nessuna dipendenza, nessuna migrazione prevista (se ne
+servisse una, la 0085 col sì del Coordinatore). Parte dopo TASK-488 A sul
+server; gli ingressi in «My plans» e GymEnd dopo TASK-488 B (#1420). I
+consigli sono generali, non medici: la pagina lo dice.
+
+## ADR-0397, precisazione — Il codice a barre come parte a sé, i macronutrienti dopo, «My daily target» scritto solo dall'utente, il consumo correggibile a mano
+
+**Stato**: Proposta · 2026-11-23 · TASK-489 (precisazioni 9–12 del task
+file, soli documenti). Le tre risposte e la richiesta di correggere a
+mano il consumo sono **scelte dell'utente**; come si tengono i prodotti
+di Open Food Facts e come una correzione entra nel conto è **deciso
+dall'agente su delega dell'utente**.
+
+**Contesto**: il 2026-11-22 l'utente aveva risposto alla sessione di
+TASK-490 (ADR-0398) «Diario completo»: codice a barre con Open Food Facts,
+macronutrienti per pasto, in cima l'obiettivo del giorno. Tre punti non
+coincidevano con ADR-0397: richiesti all'utente, uno alla volta.
+
+**Decisione**:
+- **Il codice a barre entra, come parte a sé (G)**: restano la tabella
+  USDA e i cibi dell'utente; il lettore cerca il prodotto su Open Food
+  Facts, un prodotto alla volta, con la rete. Il prodotto trovato diventa
+  un cibo del telefono col suo codice e la scritta «from Open Food
+  Facts», correggibile dall'etichetta. I prodotti restano separati dalla
+  tabella USDA e MuW non pubblica una base mescolata; l'attribuzione
+  (ODbL) è nell'app. Dal telefono esce **solo il codice letto**. La
+  dipendenza nativa nuova è `expo-camera`, col sì dell'utente a chiederla;
+  va nella stessa build nativa di «Nutrition». Niente ricerca per nome su
+  Open Food Facts né copia dei suoi dati dentro l'app.
+- **I macronutrienti restano dopo**: la prima uscita mostra solo le kcal.
+- **In cima alla pagina** «Eaten», «Used (est.)» e «Balance»; l'utente può
+  scrivere «My daily target» in kcal e vedere «Left». MuW non lo propone
+  e non lo calcola: il divieto di obiettivi prodotti da MuW e l'avviso
+  approvato restano interi. Il «Daily goal» calcolato da MuW è scartato.
+- **Il consumo si corregge a mano** (richiesta dell'utente del
+  2026-11-23): l'utente può scrivere le kcal al giorno che consuma a
+  riposo, che prendono il posto della stima di Mifflin-St Jeor («set by
+  you»), e correggere le kcal di ogni singola attività («edited»); in
+  tutti e due i casi si torna alla stima togliendo la correzione. Le
+  correzioni restano sul telefono, valgono per il bilancio e per la lista
+  privata, e non cambiano le calorie del post né quelle scritte in
+  Salute. In un giorno che ha l'energia attiva di Salute, un'attività
+  corretta sposta il totale della differenza fra il numero corretto e
+  quello che contava prima. `body/energy.ts` non cambia: la correzione
+  si applica sopra, in `nutrition/`.
+
+**Conseguenze**: la tab «Cibo» di TASK-490 monta la pagina di TASK-489
+com'è. Il testo del permesso della fotocamera (oggi solo la foto da
+ricalcare) e la riga della privacy sul codice mandato a Open Food Facts
+vanno approvati dall'utente prima della build.

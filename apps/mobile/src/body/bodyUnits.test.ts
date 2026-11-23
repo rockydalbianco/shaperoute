@@ -1,3 +1,4 @@
+import * as language from "../i18n/language";
 import {
   cmOfFeetInches,
   feetInchesOf,
@@ -22,6 +23,16 @@ test("a weight typed in pounds shows the same pounds after kilograms", () => {
   expect(weightIn(kg, "mi")).toBe(160);
   expect(weightLabel(kg, "mi")).toBe("160 lb");
   expect(weightLabel(72.5, "km")).toBe("72.5 kg");
+});
+
+test("a weight is written with the comma where the app's language has one", () => {
+  const app = jest.spyOn(language, "appLanguage").mockReturnValue("it");
+  expect(weightLabel(82.5, "km")).toBe("82,5 kg");
+  expect(weightLabel(80, "km")).toBe("80 kg");
+  expect(weightLabel(weightKgOf(160.5, "mi"), "mi")).toBe("160,5 lb");
+  app.mockReturnValue("en");
+  expect(weightLabel(82.5, "km")).toBe("82.5 kg");
+  app.mockRestore();
 });
 
 test("a height in feet and inches comes back the same", () => {

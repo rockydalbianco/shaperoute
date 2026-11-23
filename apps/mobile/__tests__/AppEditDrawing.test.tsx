@@ -65,7 +65,7 @@ const HERE: [number, number] = [46.067, 11.1215];
 // The «All» tab: never with the phone's position (TASK-362).
 const FEED = "/feed?filter=all";
 
-// The second drawing of the sample feed, opened as a route of «Explore».
+// A route of the catalogue, under the id of an example drawing.
 const POST = SAMPLE_FEED[1];
 const ROUTE = { ...detail, id: POST.id, route_m: POST.route_m };
 
@@ -203,9 +203,11 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-test("an example of the Feed of an emoji puts the line of its route on the map where it is, then «Draw route» asks for it there as a drawing", async () => {
+test("a route of «Explore» of an emoji puts its line on the map where it is, then «Draw route» asks for it there as a drawing", async () => {
+  // From the list of «Explore»: «Feed» has no made-up drawing to open.
   await onFeed();
-  await fireEvent.press(screen.getByText(POST.title));
+  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
+  await fireEvent.press(await screen.findByText("Star · 5.1 km"));
   await screen.findByText("Start");
   expect(screen.getByRole("button", { name: "Draw it near me" })).toBeOnTheScreen();
   const before = fetchSpy.mock.calls.length;

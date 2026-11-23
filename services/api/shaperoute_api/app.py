@@ -111,6 +111,7 @@ from shaperoute_api.places import (
     PlaceSearch,
     PlacesUnavailableError,
 )
+from shaperoute_api.plan_posts import install_plan_posts
 from shaperoute_api.pool_swims import install_pool_swims
 from shaperoute_api.post_links import install_post_links
 from shaperoute_api.profile_photos import install_profile_photos
@@ -438,6 +439,9 @@ def create_app(
     # Posts of photos only, drawings without a run (TASK-312 part C); they
     # need a token.
     install_photo_posts(app)
+    # Gym plans posted, drawings without a run that carry the plan
+    # (TASK-485); they need a token.
+    install_plan_posts(app)
     install_together(app)
     # The photos of a profile's drawings, a page at a time (TASK-324); they
     # need a token.

@@ -1295,6 +1295,11 @@ sotto): senza, ogni elenco lo lascia fuori e `GET /drawings/{id}` è `404`.
 È un tipo a sé e non `photos`: l'app delle sole foto lo mostrerebbe come un
 post senza foto.
 
+Un'app dice **`plans`** quando sa mostrare una scheda della palestra
+pubblicata, un disegno senza corsa che porta la scheda (TASK-485, «Plan
+posts», sotto): senza, ogni elenco la lascia fuori e `GET /drawings/{id}` è
+`404`. Anche questo è un tipo a sé, per la stessa ragione.
+
 Nello stesso header un'app dice **`post`** quando sa mostrare un post
 allegato a un messaggio (TASK-455, ADR-0382, «Un post in un messaggio»,
 sotto). Non è un tipo di corsa: lo legge `messages.py`, non `reads.py`.
@@ -2750,6 +2755,46 @@ tipi in `shared-types` (`PhotoPostRequest`, `PhotoPostOrderRequest`,
   (tutti partono da una corsa); non è in «My activities» né in
   `GET /me/drawings`. Conta solo in `PublicProfile.drawings`.
 
+### Plan posts (TASK-485, ADR-0394)
+
+Una **scheda della palestra pubblicata** («Workout plan» nel «+» del Feed)
+è un disegno senza corsa che porta una copia della scheda
+(`drawings.plan`, migrazione `0084`). Vogliono il token. Codice in
+`plan_posts.py`, il modello della copia in `gym_plans.GymPlanPostedBody`;
+tipi in `shared-types` (`PlanPostRequest`, `MyPlanPost`, `GymPlanPosted`,
+`GymPlanPostedProgram`, `GymPlanPostedTarget`, `PLAN_SOURCE`, `PLANS_READ`,
+`PLAN_POST_VISIBILITIES`, `planPosts.ts`); esempi in
+`fixtures/plan-post-request.json` e `my-plan-post.json`.
+
+- `PUT /me/plan-posts/{key}` → `200` `MyPlanPost`: `plan`, `description`
+  (la riga dell'autore, regole di un disegno) e `visibility` (`everyone` o
+  `followers`; `only_me` è `422`). Fatto e pubblicato la prima volta;
+  rimandato cambiano solo la riga e chi lo vede, **la scheda resta quella
+  della prima volta**. `key` scelta dal telefono (`[a-z0-9]{8,40}`); `409`
+  se la chiave è di un altro post dell'account (di sole foto o di una
+  notte).
+- **La copia non porta niente di suo dell'autore**: `program.starts_on`,
+  `program.runner` (i ritmi) e `program.target.on` (la data della meta)
+  sono `422` se mandati. I kg ci sono. Esercizi, giorni, settimane e
+  limiti come in `PUT /me/gym-plans/{key}`.
+- `GET /me/plan-posts/{key}` → `200` `MyPlanPost`; `404` «No post of a
+  plan with this key.». `DELETE /me/plan-posts/{key}` → `204` sempre, con
+  reazioni, commenti e segnalazioni; le copie già fatte restano a chi le
+  ha fatte.
+- **Si legge come ogni disegno**, con `source: "plan"` e la scheda nel
+  campo `plan` (`null` per ogni altro post): in `GET /feed`,
+  `GET /users/{id}/drawings` e `GET /drawings/{id}`, **solo** a un'app che
+  dice `plans` in `X-MuW-Reads` (a quelle delle sole foto o del sonno non
+  arriva). Niente attività, linea, foto né titolo; `distance_m` e
+  `duration_s` `0`, `started_at` la pubblicazione, `linkable` falso.
+- **«Use this plan»** non ha una rotta sua: il telefono fa una scheda nuova
+  dalla copia (chiave nuova, il primo giorno di chi copia, i ritmi chiesti
+  di nuovo) con `PUT /me/gym-plans/{key}`, che tiene il limite di 20.
+- Reazioni, commenti, segnalazioni (`kind: "drawing"`), blocchi e nascosti
+  come ogni disegno. Fuori da concorso, gioco, badge, totali, ricerca,
+  link pubblico e chat; non è in «My activities». Le rotte
+  `/me/photo-posts` non la vedono.
+
 ### Follow (TASK-211, ADR-0173)
 
 Un iscritto ne cerca un altro per nome e gli chiede di seguirlo; l'altro
@@ -3355,6 +3400,19 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   profilo invariato) e resta fuori da classifica, badge, concorso e gioco,
   che leggono solo `muw`. `PUT /me/activities/{key}` rifiuta `manual`
   (`422`).
+- **Il battito** (parte G, ADR-0327 punto 7): la richiesta può portare
+  `heart_avg_bpm` e `heart_max_bpm`, quello che un orologio ha scritto in
+  Apple Salute durante l'allenamento (tutti e due o nessuno, da 30 a 230, la
+  media non sopra il massimo, mai su uno scritto a mano: altrimenti `422`), e
+  `heart_shown` («Show heart rate», vero se manca). Vanno nelle colonne di
+  `runs` della migrazione 0061, come per il nuoto; esempio
+  `fixtures/gym-session-heart.json`. `GymSession` li risponde tutti e tre
+  solo con il battito. `GymExercises` porta media e massimo quando il
+  proprietario lo mostra, e sempre al proprietario; altrimenti li lascia
+  fuori. Arriva con gli esercizi: nascosti loro, l'endpoint è `404` e il
+  battito non si vede (deciso dall'agente su delega dell'utente, come le kcal
+  della scelta 17). Un'app di prima non li manda; un server di prima risponde
+  `422` a un'app che li manda (`extra="forbid"`): prima il server.
 - **`GET /gym/leaderboard?exercise=&month=`** (parte F, ADR-0327
   precisazione F): la classifica mensile di un esercizio del catalogo con
   una scala (`404` `unknown_exercise` per gli altri), in un mese di
@@ -3423,7 +3481,14 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   giorno c'è una corsa (`running`). Il programma può avere `runner`
   (TASK-452, ADR-0369): `pace_10k_s` 180–900 (il ritmo sui 10 km, in
   secondi al km) e il lungo, `long_m` (1–60 km) o `long_s` (10 min–6 h); i
-  ritmi li calcola il telefono. Un giorno fuori di un altro sport
+  ritmi li calcola il telefono. Il programma può avere `adapt` (TASK-488,
+  ADR-0396), la scheda che si adatta a com'è andata: `off` (spenta dal suo
+  proprietario) e `days`, al più uno per giorno della settimana: `day`
+  (1–7), `steps` (−24…24, i passi in più o in meno di quelli del modo,
+  che il telefono somma a ogni settimana di quel giorno), `hard` (0–2, i
+  «Duro» di fila) e `last` (`easy`, `right`, `hard`, l'ultima risposta);
+  un giorno senza allenamento nel programma perde le sue risposte invece di
+  far rifiutare la scheda. Un giorno fuori di un altro sport
   (TASK-461 B e C, ADR-0371) ha `outing` e né esercizi né `run`: `sport`
   (`walk`, `hike`, `bike`, `gravel`, `mtb`, `swim`, `paddle`; la corsa resta
   `run`), `kind` (`easy`, `intervals`, `long`; `brisk`, il passo svelto, solo
@@ -3916,6 +3981,13 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
     `stats`. Ogni lista di post (Feed, profilo, ricerca, gare, stazione) dà
     `flight_split` sul post, `null` senza tratti a piedi: il Feed ci scrive
     «On foot {time} · In the air {time}».
+  - **I tratti in aria sulla linea** (parti R6d e R6e, `flight_legs.py`,
+    esempio in `fixtures/activity-flight.json`): `GET /me/activities/{key}`
+    e `GET /drawings/{id}` di una gara danno `flight` `{air, split}`.
+    `air` è una lista di coppie `[from, to]`, indici dei punti di `track`;
+    `split` è lo stesso `flight_split`. Manca per ogni altra attività, per
+    un volo senza tratti a piedi e, nel post, se la sua linea non ha i
+    punti della corsa.
   - **Prima il server, poi l'app**: un server senza R6a rifiuta
     `flight_parts` (422).
 

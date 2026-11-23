@@ -2494,6 +2494,10 @@ export const ES: Table = {
   "The people you follow have not published anything yet.":
     "Las personas a las que sigues aún no han publicado nada.",
   "Couldn't load the Feed.": "No se pudo cargar el Feed.",
+  // src/screens/FeedScreen.tsx: «All» without examples (2026-11-22)
+  "Log in from Profile to see the activities.":
+    "Inicia sesión desde el Perfil para ver las actividades.",
+  "Nobody has published anything yet.": "Nadie ha publicado nada todavía.",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)
   "≈ {time} at {pace}": "≈ {time} a {pace}",
@@ -2736,6 +2740,16 @@ export const ES: Table = {
   "Log in to see your days.": "Inicia sesión para ver tus jornadas.",
   "No days on the snow yet.": "Aún no hay jornadas en la nieve.",
 
+  // src/trainingmode/, settings/SportButton.tsx (TASK-490 part A: the training mode)
+  "Training mode": "Modo entrenamiento",
+  "Turns MuW into your training app": "Convierte MuW en tu app de entrenamiento",
+  Workouts: "Entrenamientos",
+  "Log in to keep your plans and see your workouts.":
+    "Inicia sesión para guardar tus rutinas y ver tus entrenamientos.",
+  Exercises: "Ejercicios",
+  "Find an exercise": "Buscar un ejercicio",
+  "Workout at the gym": "Entrenamiento en el gimnasio",
+
   // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
   "Runs@@ski": "Descensos",
   Legend: "Leyenda",
@@ -2849,8 +2863,21 @@ export const ES: Table = {
   "Links to my posts": "Enlaces a mis publicaciones",
   "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.":
     "Quien ve tus publicaciones para «Todos» puede compartir su enlace. Quien tiene el enlace ve el dibujo en el mapa, tu nombre de usuario, el título, el deporte y la distancia, incluso sin MuW. Desactívalo y los enlaces dejan de funcionar.",
-  // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
-  "Add activity": "Añadir actividad",
+  // src/feed/AddToFeed.tsx and addToFeedEntries.ts (TASK-476, TASK-481:
+  // the Feed's «+»; the English approved by the user, 2026-11-21).
+  "Add to Feed": "Añadir al feed",
+  "Record now": "Grabar ahora",
+  "Start an activity now": "Empieza una actividad ahora",
+  // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
+  // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
+  // the first three approved by the user, 2026-11-21, the deletion's with
+  // the screenshots, 2026-11-22).
+  "Photos only": "Solo fotos",
+  "Up to 10 photos, also from Instagram": "Hasta 10 fotos, también de Instagram",
+  "Add at least one photo.": "Añade al menos una foto.",
+  "Delete this post? It cannot be undone.":
+    "¿Eliminar esta publicación? No se puede deshacer.",
+  "Delete post": "Eliminar publicación",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
   // 2026-11-08 and 2026-11-12.
   Snowshoes: "Raquetas",
@@ -3044,6 +3071,32 @@ export const ES: Table = {
   "Roads follow your drawing: {percent}%": "Las calles siguen tu dibujo: {percent} %",
   "No roads here: this line stays as you drew it.":
     "Aquí no hay calles: la línea queda como la dibujaste.",
+  // TASK-483 B: the history of an exercise at the gym.
+  "Last time · {day}": "La última vez · {day}",
+  History: "Historial",
+  "Try {set}": "Prueba {set}",
+  "Try {set} again": "Repite {set}",
+  "{count} rep": "{count} repetición",
+  "{count} reps": "{count} repeticiones",
+  "Estimated max": "Máximo estimado",
+  "Best set (reps)": "Mejor serie (reps)",
+  "Longest set": "Serie más larga",
+  Farthest: "Distancia máxima",
+  "All time": "Todo",
+  Records: "Récords",
+  Heaviest: "Más peso",
+  "Most reps": "Más repeticiones",
+  "Best volume": "Mejor volumen",
+  "Longest time": "Tiempo más largo",
+  "{count} workout": "{count} entrenamiento",
+  "{count} workouts": "{count} entrenamientos",
+  PR: "PR",
+  "Estimated from your sets of up to 12 reps.":
+    "Estimado con tus series de hasta 12 repeticiones.",
+  "No workouts in this period.": "Ningún entrenamiento en este periodo.",
+  "No workouts with this exercise yet.":
+    "Aún no hay entrenamientos con este ejercicio.",
+  "From {low} to {high}, {count} workouts": "De {low} a {high}, {count} entrenamientos",
   // src/air/ (TASK-479 part C: the vario's sound; texts approved by the user on 2026-11-22)
   "Vario sound": "Sonido del vario",
   "Beeps from": "Pitidos desde",
@@ -3116,4 +3169,61 @@ export const ES: Table = {
     "Estas palabras no se pueden usar. Prueba con otras.",
   "Links and special characters can't be used here.":
     "Aquí no se pueden usar enlaces ni caracteres especiales.",
+
+  // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
+  "Choose a plan": "Elige un plan",
+  "No plans yet: make one in Gym › Plans.":
+    "Aún no tienes planes: crea uno en Gimnasio › Planes.",
+  "Say something about this plan (optional)": "Di algo sobre este plan (opcional)",
+  "Who sees it: {who}": "Quién lo ve: {who}",
+  "Workout plan": "Plan de entrenamiento",
+  "{count} day a week": "{count} día a la semana",
+  "{count} days a week": "{count} días a la semana",
+  "Use this plan": "Usar este plan",
+  "Added to your plans": "Añadido a tus planes",
+  "You already have 20 plans: delete one to add this.":
+    "Ya tienes 20 planes: elimina uno para añadir este.",
+  "Delete this post?": "¿Eliminar esta publicación?",
+  "Copies already made stay with whoever made them.":
+    "Las copias ya hechas se quedan con quien las hizo.",
+
+  // The post of a night of sleep (TASK-467 part E).
+  Sleep: "Sueño",
+  "Already in the Feed": "Ya está en el Feed",
+  "Remove post": "Quitar la publicación",
+  "Last night's sleep score, from Apple Health":
+    "La puntuación del sueño de anoche, de Apple Salud",
+  "Your score, hours slept and sleep stages go in the Feed.":
+    "Tu puntuación, las horas dormidas y las fases del sueño van al Feed.",
+  // src/air/ (TASK-479 part A1: the flight map and the height above the ground; texts approved by the user on 2026-11-22)
+  "Height above ground": "Altura sobre el suelo",
+  "Heading up": "Rumbo arriba",
+  "North up": "Norte arriba",
+  // The plan that adapts (TASK-488): gym/AdaptQuestion.tsx, gym/GymPlans.tsx.
+  "Easy@@feel": "Fácil",
+  "Right@@feel": "Bien",
+  "Hard@@feel": "Duro",
+  "could do more": "podía más",
+  "as planned": "como estaba previsto",
+  "at my limit": "al límite",
+  "Next time the plan adjusts to your answer.":
+    "La próxima vez el plan se ajusta a tu respuesta.",
+  "No answer? It goes on as planned.": "¿Sin respuesta? Sigue como estaba previsto.",
+  "Easy: up we go": "Fácil: subimos",
+  "Right: as planned": "Bien: como estaba previsto",
+  "Hard: the same next time": "Duro: igual la próxima vez",
+  "Hard again: one step back": "Otra vez duro: un paso atrás",
+  "Change@@answer": "Cambiar",
+  "Next {day}, {name}:": "La próxima vez ({day}), {name}:",
+  "Easy: one step more than planned. Right: as planned. Hard: the same next time; after two «Hard» in a row, one step back.":
+    "Fácil: un paso más de lo previsto. Bien: como estaba previsto. Duro: igual la próxima vez; tras dos «Duro» seguidos, un paso atrás.",
+  "{run} of the plan: how did it go?": "{run} del plan: ¿cómo ha ido?",
+  "↑ one step more · = the same · ↓ one step back":
+    "↑ un paso más · = igual · ↓ un paso atrás",
+  "Adapts to how it went": "Se adapta a cómo ha ido",
+  "Off: no question at the end, the weeks grow as planned.":
+    "Desactivado: sin pregunta al final, las semanas suben como estaba previsto.",
+  "Next week is the lighter one, to recover.":
+    "La próxima es la semana más ligera, para recuperar.",
+  "How did the plan feel?": "¿Qué tal te pareció el plan?",
 };

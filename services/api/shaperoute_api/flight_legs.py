@@ -1,6 +1,7 @@
 """A race on foot and in the air opened whole (TASK-305 part R6d,
 ADR-0375): its parts in the air as stretches of its track, and the two
-kinds added up, for GET /me/activities/{key}.
+kinds added up, for GET /me/activities/{key}; and for GET /drawings/{id}
+when its post is opened from the Feed or a profile (part R6e).
 
 Apart from run_stats.py, which keeps the parts (part R6a) and imports
 activities.py: the few fields needed here are read again from what it
@@ -80,12 +81,18 @@ def air_legs(
     return legs
 
 
-def flight_of(conn: Connection[DictRow], run_id: int) -> ActivityFlightBody | None:
+def flight_of(
+    conn: Connection[DictRow], run_id: int, points: int | None = None
+) -> ActivityFlightBody | None:
     """The race of run `run_id` as its page shows it; null for a flight
     without parts on foot, without figures, or with no part in the air
-    left on the track."""
+    left on the track. With `points`, the number of points of the line it
+    is drawn on (a drawing's, part R6e): null too when the run's track has
+    another, as the stretches would not fit that line."""
     row: dict[str, Any] | None = conn.execute(FLIGHT_OF_RUN, (run_id,)).fetchone()
     if row is None or row["split"] is None or not row["parts"] or not row["times"]:
+        return None
+    if points is not None and len(row["times"]) != points:
         return None
     parts = [KeptFlightPart.model_validate(part) for part in row["parts"]]
     legs = air_legs(row["times"], parts)

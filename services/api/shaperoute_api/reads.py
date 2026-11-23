@@ -72,20 +72,25 @@ PHOTOS = "photos"
 # a run that carries its night. An app that reads `photos` and not `sleep`
 # would show it as a post without photos, so it has a kind of its own.
 SLEEP = "sleep"
-KINDS: tuple[str, ...] = (*NEWER_ACTIVITIES, TRACKLESS, POOL, PHOTOS, SLEEP)
+# A gym plan as a post (TASK-485, ADR-0394): a drawing without a run that
+# carries a copy of the plan. An app that reads `photos` and not `plans`
+# would show it as a post without photos, so it has a kind of its own.
+PLANS = "plans"
+KINDS: tuple[str, ...] = (*NEWER_ACTIVITIES, TRACKLESS, POOL, PHOTOS, SLEEP, PLANS)
 
 
 @dataclass(frozen=True)
 class Reads:
     """The activities an app shows, whether it shows what has no track,
-    whether a swim in a pool, whether a post of photos only, and whether the
-    post of a night of sleep."""
+    whether a swim in a pool, whether a post of photos only, whether the
+    post of a night of sleep, and whether a gym plan posted."""
 
     activities: tuple[str, ...]
     trackless: bool = False
     pool: bool = False
     photos: bool = False
     sleep: bool = False
+    plans: bool = False
 
     def shows(self, activity: Any, tracked: bool = True) -> bool:
         """True when the app shows an item of `activity`, with a track or
@@ -112,13 +117,19 @@ class Reads:
         shows the drawing `d`. One of a run as `sql` says, from its run; a
         post of photos only, without a run (TASK-312 part C), only when the
         app reads `photos`; the post of a night of sleep, without a run and
-        with its night (TASK-467 part E), only when it reads `sleep`."""
+        with its night (TASK-467 part E), only when it reads `sleep`; a gym
+        plan posted, without a run and with its plan (TASK-485), only when
+        it reads `plans`."""
         runs = self.sql("r.activity", "r.track IS NOT NULL")
         shown = [f"(d.run_id IS NOT NULL AND {runs})"]
         if self.photos:
-            shown.append("(d.run_id IS NULL AND d.sleep_night_id IS NULL)")
+            shown.append(
+                "(d.run_id IS NULL AND d.sleep_night_id IS NULL AND d.plan IS NULL)"
+            )
         if self.sleep:
             shown.append("d.sleep_night_id IS NOT NULL")
+        if self.plans:
+            shown.append("d.plan IS NOT NULL")
         return f"({' OR '.join(shown)})"
 
 
@@ -131,6 +142,7 @@ EVERYTHING = Reads(
     pool=True,
     photos=True,
     sleep=True,
+    plans=True,
 )
 
 
@@ -144,6 +156,7 @@ def reads_from(lines: Iterable[str]) -> Reads:
         pool=POOL in said,
         photos=PHOTOS in said,
         sleep=SLEEP in said,
+        plans=PLANS in said,
     )
 
 

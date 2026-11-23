@@ -867,9 +867,21 @@ function Bubble({
         accessibilityActions={[{ name: "longpress" }]}
         onAccessibilityAction={onLongPress}
       >
-        {media}
-        {message.text !== "" && <Text style={styles.bubbleText}>{message.text}</Text>}
-        {time !== "" && <Text style={styles.time}>{time}</Text>}
+        {message.mine && media ? (
+          <View style={styles.mineMedia} testID="message-mine-media">
+            {media}
+          </View>
+        ) : (
+          media
+        )}
+        {message.text !== "" && (
+          <Text style={[styles.bubbleText, message.mine && styles.mineText]}>
+            {message.text}
+          </Text>
+        )}
+        {time !== "" && (
+          <Text style={[styles.time, message.mine && styles.mineText]}>{time}</Text>
+        )}
       </Pressable>
     </View>
   );
@@ -1042,7 +1054,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.detail,
     fontWeight: fontWeight.semibold,
   },
-  // Neutral, both: the yellow belongs to the route.
+  // One's own in the app's yellow, the user's choice (TASK-458): the other's
+  // stay neutral.
   bubble: {
     maxWidth: "80%",
     gap: space.sm,
@@ -1052,6 +1065,18 @@ const styles = StyleSheet.create({
   },
   mine: {
     alignSelf: "flex-end",
+    backgroundColor: color.accent,
+  },
+  // On the yellow, in every tone: the words and the time.
+  mineText: {
+    color: color.onAccent,
+  },
+  // What one's own message carries sits on a neutral plate, as the bubble
+  // was: a drawing's line is yellow too, and the words of a card are the
+  // tone's.
+  mineMedia: {
+    padding: space.sm,
+    borderRadius: radius.md,
     backgroundColor: color.surfaceRaised,
   },
   theirs: {

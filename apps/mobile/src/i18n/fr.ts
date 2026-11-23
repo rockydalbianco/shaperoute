@@ -3458,4 +3458,7 @@ export const FR: Table = {
     "Au plus profond : {dist} du bord, {height} du plancher ou du plafond",
   "Only on your phone: not in the Feed.":
     "Uniquement sur votre téléphone : pas dans le Fil.",
+  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
+  "Show password": "Afficher le mot de passe",
+  "Hide password": "Masquer le mot de passe",
 };

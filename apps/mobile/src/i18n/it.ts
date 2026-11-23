@@ -3439,4 +3439,7 @@ export const IT: Table = {
   "Deepest: {dist} from the edge, {height} from floor or ceiling":
     "Più dentro: {dist} dal bordo, {height} da base o tetto",
   "Only on your phone: not in the Feed.": "Solo sul tuo telefono: non va nel Feed.",
+  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
+  "Show password": "Mostra la password",
+  "Hide password": "Nascondi la password",
 };

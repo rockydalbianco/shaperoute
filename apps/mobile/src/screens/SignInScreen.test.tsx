@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
-import { SignInScreen, type SignInMode } from "./SignInScreen";
+import { PASSWORD_RULES, SignInScreen, type SignInMode } from "./SignInScreen";
 
 function show({
   initialMode = "signUp",
@@ -136,4 +136,55 @@ test("the problem and the notice are on the screen", async () => {
   await shown;
   expect(screen.getByText("Wrong email or password.")).toBeTruthy();
   expect(screen.getByText("Your session has ended. Log in again.")).toBeTruthy();
+});
+
+test("the eye shows the password and hides it again, the text kept (TASK-458)", async () => {
+  const { shown, onLogIn } = show({ initialMode: "logIn" });
+  await shown;
+  const password = screen.getByLabelText("password");
+  await fireEvent.changeText(password, "secret password");
+  expect(password.props.secureTextEntry).toBe(true);
+  expect(screen.queryByRole("button", { name: "Hide password" })).toBeNull();
+
+  await fireEvent.press(screen.getByRole("button", { name: "Show password" }));
+  expect(screen.getByLabelText("password").props.secureTextEntry).toBe(false);
+  expect(screen.getByLabelText("password").props.value).toBe("secret password");
+  expect(screen.queryByRole("button", { name: "Show password" })).toBeNull();
+
+  await fireEvent.press(screen.getByRole("button", { name: "Hide password" }));
+  expect(screen.getByLabelText("password").props.secureTextEntry).toBe(true);
+  await fireEvent.press(submit());
+  expect(onLogIn).toHaveBeenCalledWith({ email: "", password: "secret password" });
+});
+
+test("the eye is on «Sign up» too, and only on the password", async () => {
+  const { shown } = show();
+  await shown;
+  expect(screen.getAllByRole("button", { name: "Show password" })).toHaveLength(1);
+  expect(screen.getByLabelText("email").props.secureTextEntry).toBeUndefined();
+  expect(screen.getByLabelText("username").props.secureTextEntry).toBeUndefined();
+});
+
+test("«Sign up» tells iOS which field names the account and what a password is", async () => {
+  const { shown } = show();
+  await shown;
+  // The email, not the username of the profile, goes with the password.
+  expect(screen.getByLabelText("email").props.textContentType).toBe("username");
+  expect(screen.getByLabelText("username").props.textContentType).toBe("none");
+  const password = screen.getByLabelText("password");
+  expect(password.props.textContentType).toBe("newPassword");
+  expect(password.props.autoComplete).toBe("new-password");
+  // The strong password iOS offers is one the account takes.
+  expect(PASSWORD_RULES).toBe("minlength: 8; maxlength: 128;");
+  expect(password.props.passwordRules).toBe(PASSWORD_RULES);
+});
+
+test("«Log in» asks iOS for the saved password, with no rules", async () => {
+  const { shown } = show({ initialMode: "logIn" });
+  await shown;
+  expect(screen.getByLabelText("email").props.textContentType).toBe("username");
+  const password = screen.getByLabelText("password");
+  expect(password.props.textContentType).toBe("password");
+  expect(password.props.autoComplete).toBe("current-password");
+  expect(password.props.passwordRules).toBeUndefined();
 });

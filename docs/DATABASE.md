@@ -1471,6 +1471,31 @@ dell'utente):
   Nessuna riga di prima cambia, nessun backfill. Test in
   `test_outfit_gear.py`.
 
+Migrazione `0087_groups.sql` (TASK-495 parte A, ADR-0402, `API.md`
+«Groups», `GRUPPI.md` §12; numero del Coordinatore, dopo la 0086 di
+TASK-493). **I gruppi per uscire insieme**:
+
+- **`groups`**: nome (1–40), descrizione (al più 500), `sports` (`text[]`
+  da 1 a 3 nomi di `runs.activity`, controllati da `groups.py`: uno sport
+  nuovo non vuole una migrazione), `city`, `area` (`geography(Point)`
+  arrotondato da `groups.py` a circa un chilometro, indice GIST per
+  Explore), `access` (`public`, `request`, `invite`), `hidden_at` dal link
+  di una segnalazione.
+- **`group_photos`**: la foto, come `profile_photos.square_jpeg` la fa.
+- **`group_members`**: chi è dentro, col ruolo (`admin`, `coadmin`,
+  `member`), «Mute» (`muted`), da quando è entrato (`joined_at`) e da
+  quando ha il ruolo (`role_since`: il co-admin più vecchio diventa
+  admin). **Un solo admin per gruppo**: un indice unico parziale
+  (`WHERE role = 'admin'`) tiene fuori il secondo; `groups.py` tiene
+  dentro il primo.
+- **`group_requests`** (chi ha chiesto) e **`group_invites`** (chi è
+  invitato e da chi).
+- Tutto va con l'account e col gruppo (`ON DELETE CASCADE`); prima della
+  cancellazione di un account il suo ruolo di admin passa
+  (`groups.before_account_delete`).
+- **`reports.kind`** con `group`. Nessuna riga di prima cambia, nessun
+  backfill. Test in `test_groups.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

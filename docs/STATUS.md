@@ -40,8 +40,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
 - **TASK-485 — La scheda della palestra come post** (ADR-0394) · 0 e A in
   `main`, A sul server (passo 18); B (#1414) e B2, la voce del «+» (#1431,
-  `ed0bd4d7`), in `main`; escono con l'OTA, col sì, dopo la privacy (in
-  corso, traduzioni all'utente). Poi l'apertura da profilo, notifica o
+  `ed0bd4d7`) e la privacy (#1469, `5d226b33`) in `main`; restano la copia
+  del sito e l'OTA, col sì. Poi l'apertura da profilo, notifica o
   link. File: — · `tasks/TASK-485.md`
 - **TASK-491 — Il Coach MuW** · parte 0 il 2026-11-23 (ADR-0399): regole
   con il loro studio, sul telefono e senza AI; la scheda cambia solo con

@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6b in produzione); B Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6b in produzione, A7a, A7b, A5c-2 in `main`); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -2638,6 +2638,24 @@ chiede prima di «Delete account» prende solo gli angoli (`radius.group`) e
 tiene il bordo `color.error`: è un avviso, e il vetro lo farebbe sembrare
 una riga qualsiasi. «Log out» e «Keep my account» restano come sono, già
 capsule. Deciso dall'agente su delega dell'utente.
+**A7a (#1453)**: `SheetModal` non disegna il foglio, ogni foglio ha il
+suo stile; quindi un aiuto solo, `sheetFace` / `useSheetFace`, in un file
+nuovo, messo dopo lo stile del foglio così vince sugli angoli e sul bordo
+e lascia al foglio il suo padding. Sul vetro: angoli in alto a 28
+(`radius.card`), il filo e la luce in cima disegnati dentro e un'ombra
+verso l'alto; la faccia resta `surface` per il contrasto. Con «Riduci
+trasparenza» la linea sottile di prima, con «Aumenta contrasto» il bordo
+forte. Deciso dall'agente su delega dell'utente.
+**A7b (#1455)**: l'isola è sempre scura, quindi prende il filo di luce
+del vetro del tono scuro in ogni tono (`glassOf` col tono scuro) e
+l'ombra corta del tono attivo; faccia e parole non cambiano. Deciso
+dall'agente su delega dell'utente.
+**A5c-2 (#1467)**: le schede del Feed restano montate tutte e due, quindi
+`useHeaderScroll(active)` fa parlare solo lo scroller sullo schermo. Una
+scheda nascosta va a riposo in un layout effect, che corre prima
+dell'effect con cui la scheda mostrata dice dove si trova: l'ordine
+delle schede nell'albero non conta. «Style» resta fuori per ora.
+Deciso dall'agente su delega dell'utente.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

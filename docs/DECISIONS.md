@@ -601,9 +601,95 @@ lasciando le righe d'indice.
 - ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
 - ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Attiva
 - ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella: rotte a parte (`/drawings/{id}/gear`, `/gear/{id}`), `gear_id` sul tag col `SET NULL`, il limite una riga sola nella campanella per attrezzo e limite, «From my gear» coi tipi della foto · 2026-11-23 · Attiva
+- ADR-0264, aggiunta (TASK-496) — Con l'app dietro i punti nuovi vanno in un diario accanto al file della corsa, il file intero ogni tanto; in tasca la mappa non riceve niente e l'orologio non scatta · 2026-11-23 · Attiva
 
 
 ## Voci nuove
+## ADR-0264, aggiunta (TASK-496) — Con l'app dietro i punti nuovi vanno in un diario accanto al file della corsa; quello che nessuno vede non lavora
+
+**Stato**: Attiva · 2026-11-23 · TASK-496 (punti O1 e O2 della lettura del
+codice del 2026-11-23). **Scelta dell'utente** del 2026-11-23, alla
+domanda «a telefono bloccato oggi ogni punto GPS riscrive tutto il file
+della corsa. Propongo di scrivere solo i punti nuovi in un piccolo diario
+accanto al file, e il file intero uscendo dall'app, in pausa, alla fine e
+ogni 300 punti circa. La tua scelta della TASK-304 resta uguale: nessun
+punto perso se iOS chiude MuW. Cambia solo come viene mantenuta. Va
+bene?»: **«Sì, così»**. Il resto (il formato del diario, ogni quanto il
+file intero, la mappa e l'orologio) è **deciso dall'agente su delega
+dell'utente**. Numero e forma (un'aggiunta, non un ADR nuovo) dal
+Coordinatore. **Precisa il punto 4 di ADR-0264**; la promessa non cambia.
+
+**Contesto**: il punto 4 di ADR-0264 dice che con l'app dietro «ogni
+posizione tenuta riscrive» il file. `saveRun` fa `JSON.stringify` di tutta
+la corsa e una scrittura sincrona: a telefono bloccato il lavoro cresce col
+quadrato della lunghezza della corsa (un punto ogni 5 m). In modalità tasca
+la mappa sotto lo schermo nero riceveva a ogni punto tutta la traccia e
+un'animazione di 500 ms, e l'orologio del pannello scattava ogni secondo
+anche in tasca e con l'app dietro.
+
+**Decisione**:
+
+1. **Un diario accanto al file** (`current-run.journal`, `runJournal.ts`):
+   con l'app «background» o «inactive» ogni scrittura è una riga JSON in
+   coda al diario, con i soli punti nuovi, i metri, le pause solo se sono
+   cambiate, quanti punti c'erano prima e la chiave del file intero a cui
+   segue. La corsa sul telefono è il file con il diario dopo.
+2. **Il file intero** si scrive: uscendo dal primo piano, a una pausa, alla
+   penna alzata, all'arrivo, a «Stop», e ogni 300 righe di diario
+   (`FULL_EVERY_LINES`). In primo piano resta ogni 15 s. Dopo ogni file
+   intero il diario si svuota.
+3. **`loadRun` legge file + diario**, solo per una corsa `running`. Una
+   riga che non si legge (può essere solo l'ultima, tagliata da una
+   chiusura a metà scrittura) o che non parte da dove la traccia finisce
+   ferma la lettura lì; una riga di un altro file intero si salta. La
+   chiave dice la corsa (l'ora del primo punto), quanti punti ha, l'ultimo
+   e le pause: i punti si aggiungono soltanto, quindi due file con la
+   stessa chiave tengono la stessa traccia. Il file non ha campi nuovi:
+   una corsa di prima del diario si legge come sempre.
+4. **Se il telefono rifiuta**: la riga, si scrive il file intero; di
+   svuotare il diario, si scrive il file intero a ogni punto finché non lo
+   svuota; tutto, la corsa resta in memoria per «Stop» (TASK-252).
+5. **La pausa di un'assenza oltre 10 minuti si scrive subito**, anche
+   quando il punto che la porta non è tenuto: prima restava in memoria
+   fino al punto dopo (trovato dai test di questa task).
+6. **In modalità tasca la pagina della mappa non riceve niente della
+   corsa**: traccia, posizione, bussola, progresso, rientro e mappa
+   girata. Entrando le si dice una volta di smettere di lampeggiare
+   (TASK-224); uscendo, una volta, com'è adesso. Con l'app in
+   «background» la pagina non c'è già (punto 5 di ADR-0264).
+7. **In vista vanno alla pagina solo i punti nuovi** (`extendTrack`): la
+   pagina tiene la linea. La linea intera torna dopo una pagina
+   ricaricata, una traccia tolta, un'altra linea e quando la traccia è
+   inquadrata. Sci e volo restano a traccia intera.
+8. **La mappa segue chi corre in 250 ms** (`FOLLOW_MS`); il primo
+   movimento, quello che porta la mappa su chi corre, resta di 500 ms.
+9. **L'orologio dei numeri non scatta quando nessuno lo vede**
+   (`useRunSeen`: app «background» o «inactive», o tasca). I numeri sono
+   allora quelli dell'ultimo punto, così il link dal vivo li riceve
+   giusti; al ritorno l'orologio si legge subito. `useNow` non cambia.
+
+**Alternative scartate**: il file intero ogni 15 s anche dietro (resta un
+lavoro che cresce con la corsa, e fino a 15 s di punti persi: contro la
+scelta dell'utente); un contatore nel file per legare il diario (il file
+avrebbe un campo nuovo e decine di test lo confrontano per intero); una
+scrittura atomica del file intero con file temporaneo e spostamento (il
+comportamento di `File.move` su un file che esiste non è verificato: resta
+com'era, e col diario il file intero si scrive molte meno volte); niente
+animazione nel seguire (a scatti); toccare `useNow` (lo usano il conto
+alla rovescia, lo sci e il volo).
+
+**Conseguenze**: a telefono bloccato una posizione scrive circa 180 byte
+invece dell'intera corsa. **Misurato, non sul telefono**: in Node con un
+disco in memoria, 12 km dietro scrivevano 209,5 MB di testo e ora 1,0 MB
+(48 km: 3349 MB e 12,6 MB); nel simulatore, sul disco del Mac, il file
+intero di 4000 punti costa 11 ms a scrittura e una riga 0,4 ms, e dopo
+un'uscita forzata con l'app dietro la corsa è tornata con tutti i 176
+punti (155 nel file, 21 nel diario). **Non misurato**: la batteria e i
+tempi sul telefono. Nella pagina MapLibre ridisegna ancora tutta la linea
+a ogni punto: non cresce più il messaggio che le arriva. Nessun cambio
+nativo, nessuna dipendenza: l'impronta iOS resta `5e1b5ce5`. Resta fuori
+lo stato della corsa in `App.tsx` (TASK-504).
+
 ## ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella
 
 **Stato**: Attiva · 2026-11-23 · TASK-486 parti E, F, G. Le scelte 5 e 6

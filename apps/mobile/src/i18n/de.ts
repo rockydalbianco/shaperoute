@@ -3506,12 +3506,9 @@ export const DE: Table = {
   "No exercises yet.": "Noch keine Übungen.",
   "Change week {n}": "Woche {n} ändern",
   "kg · touch a week to change it": "kg · tippe auf eine Woche, um sie zu ändern",
-<<<<<<< HEAD
   // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; approved by the user on 2026-11-23)
   Tomorrow: "Morgen",
   "+ 1 more": "+ 1 weitere",
   "+ {n} more": "+ {n} weitere",
   "This week: {done} of {total} done": "Diese Woche: {done} von {total} erledigt",
-=======
->>>>>>> feat/TASK-506-a-plan-table
 };

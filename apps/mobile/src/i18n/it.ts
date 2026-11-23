@@ -3297,4 +3297,13 @@ export const IT: Table = {
   "Calories of this activity": "Calorie di questa attività",
   "Your number stays on this phone. Your post and Apple Health keep theirs.":
     "Il tuo numero resta su questo telefono. Il tuo post e Salute di Apple tengono i loro.",
+  // src/nutrition (TASK-489 part D)
+  "Calorie balance": "Bilancio delle calorie",
+  Used: "Consumate",
+  "Previous week": "Settimana prima",
+  "Next week": "Settimana dopo",
+  "so far": "finora",
+  "Week total": "Totale della settimana",
+  "Today is not in the total until the day is over.":
+    "Oggi non entra nel totale finché il giorno non è finito.",
 };

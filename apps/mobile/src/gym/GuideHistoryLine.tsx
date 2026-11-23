@@ -2,6 +2,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import { color, font, radius, space } from "../theme/tokens";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 import type { Units } from "../units/units";
 import { recordName, recordValue } from "./ExerciseHistoryPage";
 import { gymStyles } from "./gymStyles";
@@ -23,6 +25,8 @@ export function GuideHistoryLine({
   units: Units;
   onHistory: () => void;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const best = state.history?.records[0];
   if (state.off || best === undefined) {
     return null;
@@ -33,7 +37,7 @@ export function GuideHistoryLine({
         {`${recordName(best.kind)}: ${recordValue(best, units)}`}
       </Text>
       <Pressable
-        style={gymStyles.chip}
+        style={[gymStyles.chip, chipRaise]}
         onPress={onHistory}
         accessibilityRole="button"
         testID="guide-open-history"

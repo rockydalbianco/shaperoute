@@ -265,8 +265,9 @@ corsa, riposo). Un giorno di corsa è Lenta, Ripetute o Lungo, in km o
 minuti; con le settimane +10% circa (le ripetute +1), l'ultima settimana di
 un ciclo di 3 o più all'80% della prima. In «Draw» quel giorno «Today» dice
 la corsa e «Go to the run · 5.5 km» passa a «Run» coi km già scritti; una
-corsa fatta quel giorno conta come fatta nel calendario. La sigla «RUN» ha
-il suo colore (`runDay`). `runDay.ts`, `RunDayEditor.tsx`.
+corsa fatta quel giorno conta come fatta nel calendario. Il segno della
+corsa (la sigla «RUN» fino a TASK-506 D, ora quello del menu degli sport) ha
+il suo colore (`runDay`) nelle caselle dei giorni. `runDay.ts`, `RunDayEditor.tsx`.
 
 **La corsa su misura** (TASK-452): con almeno una corsa la guida chiede
 «How do you run today?»: il ritmo sui 10 km (o il livello) e il lungo di oggi
@@ -293,8 +294,8 @@ risposte restano). La risposta parte verso l'API con la sincronizzazione
 seguente delle schede. `adapt.ts`, `AdaptQuestion.tsx`.
 
 **Il pianificatore completo** (TASK-461, ADR-0371): un piano nuovo mescola
-sempre almeno due sport (scelta dell'utente del 2026-11-11, «Almeno due,
-sempre»): palestra, corpo libero, corsa, camminata e hike, bici, nuoto e
+uno o più sport (fino al 2026-11-23 almeno due, «Almeno due, sempre» del
+2026-11-11; dal 2026-11-23 ne basta uno, TASK-506 B): palestra, corpo libero, corsa, camminata e hike, bici, nuoto e
 canoa, montagna. Un piano può portare a un obiettivo (`target`): una
 distanza di uno sport (corsa 5–42,2 km, bici 30–150 km, nuoto 1–5 km…) o la
 salita di una gita in montagna (500–2000 m), in una data o «Quando sono
@@ -308,11 +309,18 @@ oltre il massimo di Draw, il promemoria alle 8) è nel task file.
 
 **L'ingresso e il corpo libero** (TASK-461 A2). «New plan» apre prima
 «What do you want to train?» (in italiano «Cosa vuoi allenare?»): Palestra,
-Corpo libero e Corsa si scelgono, almeno due («Next · 2 chosen»; con uno
-solo il tasto resta spento); «Toward a distance» e «Mountains» dicono «Soon».
-All'apertura sono scelti corpo libero e corsa. Una scheda di sola palestra
-non si può più fare da nuova; le schede di prima si aprono come prima, senza
-ingresso. Poi i cinque passi:
+Corpo libero e Corsa si scelgono, uno o più («Next · 1 chosen»; senza
+nessuno il tasto resta spento); «Toward a distance» e «Mountains» dicono
+«Soon». All'apertura è scelta la Palestra, dove «New plan» sta: un piano di
+sola palestra è «Continue» fino in fondo (TASK-506 B, scelta dell'utente
+del 2026-11-23 sulla tela «Schede palestra · migliorie»; prima erano
+scelti corpo libero e corsa e servivano due sport). Le schede di prima si
+aprono come prima, senza ingresso. Ogni sport ha nel suo quadratino il
+segno del menu degli sport (lo stesso profilo dello sport: oggi l'emoji,
+🏃 🚶 🚴 🏊 ⛰️), non più una sigla in inglese, e lo stesso segno sta nelle
+caselle dei giorni e nelle linguette della guida; scelto, ogni sport ha il
+bordo giallo (prima gli sport di distanza erano azzurri) — TASK-506 D, punto
+U7 della prova del 2026-11-23. Poi i cinque passi:
 1. senza palestra gli obiettivi sono quelli del corpo libero: «More muscle»
    4 × 12 recupero 60 s, «More strength» 5 × 6 con gli esercizi più duri
    recupero 2 min, «Tone up» 3 × 15 recupero 30 s, «Get back in shape» 3 ×

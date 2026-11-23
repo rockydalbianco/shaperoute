@@ -37,6 +37,7 @@ import { isoDay, useGymPlans } from "./plans";
 import { PlanTable } from "./PlanTable";
 import { cycleWeekOf, sessionsOfWeek } from "./program";
 import { gymIndex, isRunDay, sessionLetter } from "./proposal";
+import { SPORT_BADGES } from "./SportsDoor";
 import { doneOfWeek, useWeekDone, type WeekDone } from "./weekDone";
 
 /** At most this many plans an account keeps (gym_plans.py). */
@@ -296,12 +297,13 @@ function ProgramCard({
   const thisWeek = done === null ? null : doneOfWeek(program, plan.name, done, today);
   // ↑ = ↓ under the days the answers moved (TASK-488, the mockup H3).
   const marked = sessions.some((one) => markOf(program, one.day) !== null);
-  // A, B, C… for the gym's days, «RUN» for a run day (TASK-433 C).
+  // A, B, C… for the gym's days, the run's mark for a run day (TASK-433 C;
+  // the sports' menu mark since TASK-506 D, «RUN» before).
   const letters = new Map(
     program.sessions.map((session) => [
       session.day,
       isRunDay(session)
-        ? "RUN"
+        ? SPORT_BADGES.run
         : sessionLetter(gymIndex(program.sessions, session.day)),
     ]),
   );

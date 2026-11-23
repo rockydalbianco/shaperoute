@@ -5,6 +5,7 @@ import {
   draftProblem,
   hasAddress,
   inBox,
+  isOutfitDraft,
   linkProblem,
   type OutfitDraft,
   photoFrame,
@@ -118,6 +119,19 @@ test("an item of the API becomes one its owner changes", () => {
     product_name: "Pegasus 41",
     url: "https://nike.com/p",
   });
+});
+
+test("an item of one's gear keeps its id, and an app of before leaves it out", () => {
+  // TASK-486 part F: absent, the API keeps the link it had; null takes it away.
+  expect(requestOf({ ...DRAFT, gear_id: "g1" })).toMatchObject({ gear_id: "g1" });
+  expect(requestOf({ ...DRAFT, gear_id: null })).toMatchObject({ gear_id: null });
+  expect(requestOf(DRAFT)).not.toHaveProperty("gear_id");
+  expect(draftOf({ ...TAG, gear_id: "g1" })).toMatchObject({ gear_id: "g1" });
+  expect(draftOf(TAG)).not.toHaveProperty("gear_id");
+  expect(isOutfitDraft({ ...DRAFT, gear_id: "g1" })).toBe(true);
+  expect(isOutfitDraft({ ...DRAFT, gear_id: null })).toBe(true);
+  expect(isOutfitDraft(DRAFT)).toBe(true);
+  expect(isOutfitDraft({ ...DRAFT, gear_id: 7 })).toBe(false);
 });
 
 test("the items of a photo: none before TASK-394, an unknown kind left out", () => {

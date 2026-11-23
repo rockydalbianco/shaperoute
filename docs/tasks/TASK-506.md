@@ -75,6 +75,39 @@ quattro proposte con l'anteprima del telefono:
 - Solo app: niente server, niente migrazione, niente nativo; esce con un
   OTA.
 
+## Parte B — Un piano di sola palestra
+
+- In «Cosa vuoi allenare?» basta uno sport (`MIN_PLAN_SPORTS` da 2 a 1):
+  «Next · 1 chosen», il tasto spento solo senza nessuno sport. Cambia la
+  regola «Almeno due, sempre» del 2026-11-11 (ADR-0371): l'aggiunta datata
+  va nella PR di soli documenti.
+- All'apertura è scelta la Palestra (prima corpo libero e corsa):
+  «Nuovo piano» sta solo nelle pagine della palestra (Draw e la modalità
+  allenamento). Un piano di sola palestra è «Continue» fino in fondo.
+- La riga sotto il titolo: «Choose one or more. Then we guide you in 5
+  steps.» al posto di «Choose at least two: a plan always mixes two
+  sports…», nelle cinque lingue.
+- In `main` con #1525 (`1bca4123`, insieme alla D).
+
+## Parte D — I segni degli sport e un solo giallo (punto U7)
+
+Aggiunta dal Coordinatore il 2026-11-23: il punto U7 della prova al
+simulatore del 2026-11-23 (`out/prova-app-2026-11-23/PROPOSTE.md`),
+approvato dall'utente («Sì, tutti»). In «Nuovo piano» gli sport di distanza
+avevano sigle in inglese («RUN», «WALK», «BIKE», «SWIM») e un colore di
+selezione azzurro accanto al giallo.
+
+- `SPORT_BADGES` prende il segno dai profili degli sport
+  (`profileOf(...).emoji` di `src/sports`), la stessa fonte del menu degli
+  sport: oggi l'emoji (🏃 🚶 🚴 🏊 ⛰️), con TASK-510 le icone a linea
+  senza toccare la guida (condizione del Coordinatore: niente emoji scritte
+  a mano). Il segno sta nei quadratini dell'ingresso, nelle caselle dei
+  giorni, nelle righe «Come dividiamo il lavoro», nelle linguette, e (con
+  la C) nel riquadro di «I miei piani» al posto di «RUN».
+- Un solo colore di selezione nell'ingresso, il giallo; `runDay` resta per i
+  giorni di corsa nel resto della guida.
+- Nessun testo nuovo. In `main` con #1525.
+
 ## Parte C — «I miei piani» dice cosa viene dopo
 
 - Nel riquadro di un piano con le settimane, sotto i giorni: il prossimo
@@ -128,8 +161,12 @@ lista come `planTable.ts`, rinominato per il motivo sopra),
 `i18n/{it,de,fr,es}.ts`; documenti `docs/tasks/TASK-506.md`,
 `docs/sports/gym.md`.
 
-Parte B (dopo): `gym/SportsDoor.tsx` e il suo test (o `GymPlans.test.tsx`),
-`gym/GymPlanWizard.tsx` solo se serve, i18n.
+Parte B: `gym/SportsDoor.tsx`, `gym/SportsDoor.test.tsx`,
+`gym/GymPlans.test.tsx`, `gym/GymPlanWizard.tsx` (un commento), i18n,
+`docs/sports/gym.md`. Parte D, nella stessa PR (lista approvata dal
+Coordinatore): `gym/SportsDoor.tsx` e il suo test, `gym/GymPlans.test.tsx`,
+`docs/sports/gym.md`; nella C `gym/GymPlans.tsx` («RUN» → il segno) e
+l'attesa in `gym/GymPlans.test.tsx`.
 
 Parte C (dopo A, stesso `GymPlans.tsx`): nuovi `gym/NextWorkout.tsx`,
 `gym/weekDone.ts` (+ `NextWorkout.test.tsx`, `weekDone.test.ts`);
@@ -166,5 +203,14 @@ Parte C:
       «Approvo»).
 - [ ] CI verde; merge dal Coordinatore col «Sì, unisci» dell'utente; OTA.
 
-Parte B: i criteri quando la parte A è in `main` (la sezione arriva con la
-sua PR).
+Parte B e parte D (#1525):
+- [x] Uno sport basta, la Palestra scelta all'apertura, un piano di sola
+      palestra fino in fondo; le corse e il corpo libero partono dalla
+      Palestra già scelta (`SportsDoor.test.tsx`, `GymPlans.test.tsx`).
+- [x] I segni dai profili degli sport, nessuna sigla in inglese, un solo
+      giallo (`SportsDoor.test.tsx`); le caselle dei giorni col segno
+      (`GymPlans.test.tsx`).
+- [x] Schermate, testi e scelte approvati dall'utente (2026-11-23).
+- [x] CI verde e merge (#1525, `1bca4123`), col «Sì, unisci» dell'utente al
+      Coordinatore.
+- [ ] OTA.

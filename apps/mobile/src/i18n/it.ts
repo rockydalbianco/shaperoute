@@ -57,6 +57,9 @@ export const IT: Table = {
   "Try again": "Riprova",
   "No activities yet. Save a run when you finish it, and it is kept here.":
     "Ancora nessuna attività. Salva una corsa quando la finisci e la ritrovi qui.",
+  "No activities yet": "Ancora nessuna attività",
+  "When you finish an activity and save it, you find it here.":
+    "Quando finisci un'attività e la salvi, la ritrovi qui.",
   "{when}, {where}, {facts}, public, open on the map":
     "{when}, {where}, {facts}, pubblica, apri sulla mappa",
   "{when}, {where}, {facts}, open on the map":
@@ -176,8 +179,9 @@ export const IT: Table = {
   "Remove {title} from favorites": "Togli {title} dai preferiti",
   "Loading your favorites…": "Carico i tuoi preferiti…",
   "Your favorites could not load.": "Non è stato possibile caricare i tuoi preferiti.",
-  "No favorites yet. Tap {heart} on a route on the map to keep it here.":
-    "Ancora nessun preferito. Tocca {heart} su un percorso sulla mappa per tenerlo qui.",
+  "No favorites yet": "Ancora nessun preferito",
+  "Tap {heart} on a route on the map to keep it here.":
+    "Tocca {heart} su un percorso sulla mappa per tenerlo qui.",
 
   // src/favorites/favoriteRoute.ts
   Route: "Percorso",
@@ -1390,8 +1394,8 @@ export const IT: Table = {
   Beginner: "Principiante",
   // src/gym/SportsDoor.tsx, bodyweight.ts, GymPlanWizard.tsx (TASK-461 A2, approved 2026-11-11)
   "What do you want to train?": "Cosa vuoi allenare?",
-  "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.":
-    "Scegline almeno due: un piano mescola sempre due sport. Poi ti guidiamo in 5 passi.",
+  "Choose one or more. Then we guide you in 5 steps.":
+    "Scegline uno o più. Poi ti guidiamo in 5 passi.",
   "With weights and machines": "Con pesi e macchine",
   Bodyweight: "Corpo libero",
   "At home or in the park, no equipment": "A casa o al parco, senza attrezzi",
@@ -2370,8 +2374,9 @@ export const IT: Table = {
   "Messages, {count} waiting": "Messaggi, {count} in attesa",
   "Message requests": "Richieste di messaggio",
   "Message requests, {count} waiting": "Richieste di messaggio, {count} in attesa",
-  "No messages yet. Open someone's profile and tap Message to write to them.":
-    "Ancora nessun messaggio. Apri il profilo di qualcuno e tocca Messaggio per scrivergli.",
+  "No messages yet": "Ancora nessun messaggio",
+  "Open someone's profile and tap Message to write to them.":
+    "Apri il profilo di qualcuno e tocca Messaggio per scrivergli.",
   "No message requests.": "Nessuna richiesta di messaggio.",
   "You: {text}": "Tu: {text}",
   "{name}, new message: {text}": "{name}, nuovo messaggio: {text}",
@@ -3186,6 +3191,8 @@ export const IT: Table = {
   "Up to {count} items on an activity.": "Fino a {count} attrezzi su un'attività.",
   "This activity is still on its way. Try again in a moment.":
     "Questa attività sta ancora arrivando. Riprova tra poco.",
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), approved by the user on 2026-11-23
+  "From my gear": "Dalla mia attrezzatura",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
   "Share one of your gym plans": "Condividi uno dei tuoi piani di palestra",
@@ -3439,12 +3446,36 @@ export const IT: Table = {
   "Deepest: {dist} from the edge, {height} from floor or ceiling":
     "Più dentro: {dist} dal bordo, {height} da base o tetto",
   "Only on your phone: not in the Feed.": "Solo sul tuo telefono: non va nel Feed.",
-  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; to approve with the screenshots)
+  // src/air/ (TASK-479 part D1: the pilot's waypoints and task; approved by the user on 2026-11-23)
+  Waypoints: "Boe",
+  Task: "Task",
+  "Waypoints: {count} · Landings: {landings}": "Boe: {count} · Atterraggi: {landings}",
+  "Turnpoints: {count}": "Boe della task: {count}",
+  "First start: {time}": "Prima partenza: {time}",
+  "{file} · loaded {date}": "{file} · caricato il {date}",
+  "This file has no waypoint MuW can read.":
+    "In questo file non ci sono boe che MuW sa leggere.",
+  "This file is not a task MuW can read.":
+    "Questo file non è una task che MuW sa leggere.",
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
+  "Next turnpoint": "Prossima boa",
+  "Glide to goal": "Planata al goal",
+  "Start gate": "Gate di partenza",
+  "Task distance": "Distanza della task",
+  Competition: "Competizione",
+  "Gate open": "Gate aperto",
+  "Started {time}": "Partito alle {time}",
+  "Whole task: {distance}": "Task intera: {distance}",
+  "No task loaded": "Nessuna task caricata",
+  "Goal taken": "Goal preso",
+  "Turnpoint {name} taken. Next: {next}.": "Boa {name} presa. Prossima: {next}.",
+  "Goal {name} taken.": "Goal {name} preso.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
   Table: "Tabella",
   "No exercises yet.": "Ancora nessun esercizio.",
   "Change week {n}": "Cambia la settimana {n}",
   "kg · touch a week to change it": "kg · tocca una settimana per cambiarla",
-  // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; to approve with the screenshots)
+  // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; approved by the user on 2026-11-23)
   Tomorrow: "Domani",
   "+ 1 more": "+ 1 altro",
   "+ {n} more": "+ altri {n}",

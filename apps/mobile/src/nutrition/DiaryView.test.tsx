@@ -5,7 +5,9 @@ import { ActivitiesContext, type ActivitiesDoor } from "../activities/activities
 import type { Activity } from "../api/activities";
 import { saveLanguageChoice } from "../i18n/language";
 import { diaryDayLabel, DiaryView } from "./DiaryView";
+import type { Food } from "./foods";
 import { FOOD_TABLE } from "./foodTable";
+import { macrosOf } from "./intake";
 import { loadDiaryMonth, loadOwnFoods, loadSettings } from "./nutritionStore";
 import { NO_MEALS, withPortion } from "./plan";
 import {
@@ -15,6 +17,11 @@ import {
   writeRest,
   writeTarget,
 } from "./useNutrition";
+import { stripHeights } from "./WeekStrip";
+
+// The page stands still, as with «Reduce Motion»: its numbers are there at
+// once. What moves is tried in CountUp.test.tsx and Ring.test.tsx.
+jest.mock("../ui/useReduceMotion", () => ({ useReduceMotion: () => true }));
 
 jest.mock(
   "react-native-safe-area-context",
@@ -514,5 +521,164 @@ test("in Italian the energy is said in Italian", async () => {
   expect(screen.getByRole("header", { name: "Energia a riposo" })).toBeOnTheScreen();
   expect(screen.getByTestId("energy-edit-estimate")).toHaveTextContent(
     `Stima di MuW: ${REST} kcal`,
+  );
+});
+
+// The page since part H: rings, protein, carbs and fat, the week.
+
+/** A food of the user's, written with its calories alone. */
+const SOUP: Food = {
+  key: "own-1",
+  name: "Soup",
+  kcalPer100g: 50,
+  proteinPer100g: null,
+  carbsPer100g: null,
+  fatPer100g: null,
+  source: "own",
+};
+const PASTA_FOOD = FOOD_TABLE.find((food) => food.key === PASTA) as Food;
+
+test("the two numbers are also two rings, a picture beside them", async () => {
+  await render(<DiaryView today={TODAY} />);
+  const rings = screen.getByTestId("diary-rings");
+  expect(
+    within(rings).getByTestId("diary-ring-eaten", { includeHiddenElements: true }),
+  ).toBeTruthy();
+  expect(
+    within(rings).getByTestId("diary-ring-used", { includeHiddenElements: true }),
+  ).toBeTruthy();
+  // The numbers are still said in words.
+  expect(screen.getByLabelText("Eaten, —")).toBeOnTheScreen();
+});
+
+test("an empty day has no card of protein, carbs and fat", async () => {
+  await render(<DiaryView today={TODAY} />);
+  expect(screen.queryByTestId("diary-macros")).toBeNull();
+});
+
+test("the day's protein, carbs and fat are grams and a share of the energy", async () => {
+  await act(async () => {
+    writeDay(TODAY, withPortion(NO_MEALS, "lunch", { food: PASTA_FOOD, grams: 180 }));
+  });
+  await render(<DiaryView today={TODAY} />);
+  expect(
+    screen.getByRole("header", { name: "Protein, carbs and fat (est.)" }),
+  ).toBeOnTheScreen();
+  const macros = macrosOf(loadDiaryMonth("2026-11")[TODAY]);
+  expect(macros).not.toBeNull();
+  for (const [id, name, grams] of [
+    ["protein", "Protein", macros?.proteinG],
+    ["carbs", "Carbs", macros?.carbsG],
+    ["fat", "Fat", macros?.fatG],
+  ] as const) {
+    expect(screen.getByTestId(`diary-macro-${id}`).props.accessibilityLabel).toMatch(
+      new RegExp(`^${name}, ${grams} g · \\d+% of the energy$`),
+    );
+  }
+  // Every food had its numbers: nothing was left out.
+  expect(screen.queryByTestId("diary-macros-partial")).toBeNull();
+  // No target and no word of judgement on the card.
+  const card = within(screen.getByTestId("diary-macros"));
+  expect(card.queryByText(/target|too|enough|goal/i)).toBeNull();
+});
+
+test("a food with its calories alone is left out, and the card says so", async () => {
+  await act(async () => {
+    writeDay(
+      TODAY,
+      withPortion(
+        withPortion(NO_MEALS, "lunch", { food: PASTA_FOOD, grams: 180 }),
+        "dinner",
+        { food: SOUP, grams: 300 },
+      ),
+    );
+  });
+  await render(<DiaryView today={TODAY} />);
+  expect(screen.getByTestId("diary-macros-partial")).toHaveTextContent(
+    "Counted only for the foods that have these numbers.",
+  );
+});
+
+test("a day of foods with calories alone has no three numbers to show", async () => {
+  await act(async () => {
+    writeDay(TODAY, withPortion(NO_MEALS, "dinner", { food: SOUP, grams: 300 }));
+  });
+  await render(<DiaryView today={TODAY} />);
+  expect(screen.getByTestId("diary-macros-none")).toHaveTextContent(
+    "No protein, carbs or fat to count for this day.",
+  );
+  expect(screen.queryByTestId("diary-macro-protein")).toBeNull();
+});
+
+test("the tallest column of the week is its largest number", () => {
+  expect(
+    stripHeights([
+      { day: "2026-11-23", eaten: 1000, used: 2000 },
+      { day: "2026-11-24", eaten: null, used: 1500 },
+      { day: "2026-11-25", eaten: null, used: null },
+    ]),
+  ).toEqual([
+    { eaten: 0.5, used: 1 },
+    { eaten: 0, used: 0.75 },
+    { eaten: 0, used: 0 },
+  ]);
+  expect(stripHeights([{ day: "2026-11-23", eaten: null, used: null }])).toEqual([
+    { eaten: 0, used: 0 },
+  ]);
+});
+
+test("the week under the diary has a day to a button, none after today", async () => {
+  await render(<DiaryView today={TODAY} now={EVENING} />);
+  const week = within(screen.getByTestId("diary-week"));
+  expect(week.getByRole("header", { name: "This week" })).toBeOnTheScreen();
+  // Monday 23 is today: it is the one chosen, and Tuesday cannot be opened.
+  expect(screen.getByTestId(`diary-week-${TODAY}`)).toBeSelected();
+  expect(screen.getByTestId("diary-week-2026-11-24")).toBeDisabled();
+  expect(screen.getByTestId("diary-week-2026-11-29")).toBeDisabled();
+  expect(week.getAllByRole("button")).toHaveLength(7);
+});
+
+test("a day touched in the week takes the diary there", async () => {
+  await act(async () => {
+    writeDay(
+      "2026-11-18",
+      withPortion(NO_MEALS, "lunch", { food: PASTA_FOOD, grams: 100 }),
+    );
+  });
+  await render(<DiaryView today={TODAY} now={EVENING} />);
+  // Back a day: Sunday, in the week before.
+  await fireEvent.press(screen.getByTestId("diary-previous"));
+  expect(
+    within(screen.getByTestId("diary-week")).getByRole("header", {
+      name: "16 Nov – 22 Nov",
+    }),
+  ).toBeOnTheScreen();
+  // With nobody signed in a whole day past is its rest alone.
+  expect(
+    screen.getByLabelText(`Wed 18, Eaten 158, Used (est.) ${REST}`),
+  ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("diary-week-2026-11-18"));
+  expect(screen.getByTestId("diary-day")).toHaveTextContent("Wed 18 Nov 2026");
+  expect(screen.getByLabelText("Eaten, 158")).toBeOnTheScreen();
+  expect(screen.getByTestId("diary-week-2026-11-18")).toBeSelected();
+});
+
+test("the day and the week under it ask for a missing page once, not twice", async () => {
+  const loadMore = jest.fn();
+  await showDiary({ list: [MORNING_RUN], more: true, loadMore });
+  expect(loadMore).toHaveBeenCalledTimes(1);
+});
+
+test("in Italian the new card is in Italian", async () => {
+  await act(async () => {
+    saveLanguageChoice("it");
+    writeDay(TODAY, withPortion(NO_MEALS, "lunch", { food: PASTA_FOOD, grams: 180 }));
+  });
+  await render(<DiaryView today={TODAY} />);
+  expect(
+    screen.getByRole("header", { name: "Proteine, carboidrati e grassi (stima)" }),
+  ).toBeOnTheScreen();
+  expect(screen.getByTestId("diary-macro-protein").props.accessibilityLabel).toMatch(
+    /^Proteine, \d+ g · \d+% dell'energia$/,
   );
 });

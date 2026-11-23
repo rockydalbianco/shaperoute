@@ -3543,4 +3543,14 @@ export const ES: Table = {
   "Apple Health has nothing for this day: your activities are counted.":
     "Salud de Apple no tiene nada para este día: se cuentan tus actividades.",
   "Stop using Apple Health": "Dejar de usar Salud de Apple",
+  // src/nutrition (TASK-489 part H: the animated day; approved by the user on 2026-11-24)
+  "Protein, carbs and fat (est.)": "Proteínas, carbohidratos y grasas (est.)",
+  Protein: "Proteínas",
+  Carbs: "Carbohidratos",
+  Fat: "Grasas",
+  "{percent}% of the energy": "{percent}% de la energía",
+  "Counted only for the foods that have these numbers.":
+    "Se cuentan solo para los alimentos que tienen estos números.",
+  "No protein, carbs or fat to count for this day.":
+    "No hay proteínas, carbohidratos ni grasas que contar para este día.",
 };

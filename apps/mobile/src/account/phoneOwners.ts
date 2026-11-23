@@ -7,7 +7,10 @@ import { HEART_FILE } from "../body/heartZones";
 import { forgetGymOf } from "../gym/gymOutbox";
 import { forgetHistoriesOf } from "../gym/gymHistoryCache";
 import { forgetPlansOf } from "../gym/plans";
+import { forgetWorkoutOf } from "../gym/workoutStore";
+import { forgetRunsOf } from "../navigation/trackStore";
 import { forgetPoolOf } from "../pool/poolOutbox";
+import { forgetPoolSwimOf } from "../pool/poolStore";
 import { forgetDrawingsOf } from "../social/drawingOutbox";
 import { forgetAllPhotosOf } from "../social/drawingPhotos";
 import { forgetPhotoPostsOf } from "../social/photoPostOutbox";
@@ -15,6 +18,7 @@ import { forgetVisibilityOf } from "../social/visibilityChoice";
 import { keptList } from "../storage/keptList";
 import { forgetStravaOf } from "../strava/stravaOutbox";
 import { forgetStretchOf } from "../stretchSport/stretchOutbox";
+import { forgetWatchRunsOf } from "../watch/watchRuns";
 import { forgetOwnedFile } from "./currentOwner";
 
 /**
@@ -58,7 +62,8 @@ export function serverOf(baseUrl: string): string {
  * Lets go of everything waiting on the phone for the account `owner`: its
  * runs, nights, workouts, swims and stretching sessions not sent, what was
  * to follow them (Strava, drawings, photos, order, outfits, «Public»), its
- * gym plans and the gym history kept, its body and its heart. For an
+ * gym plans and the gym history kept, its body and its heart, and what it
+ * left under way (a run, a workout, a swim, the watch's). For an
  * account deleted, and for a number that now is somebody else's.
  */
 export function forgetPhoneDataOf(owner: number): void {
@@ -77,6 +82,12 @@ export function forgetPhoneDataOf(owner: number): void {
   // Its body and its heart (part D): each account has its own.
   forgetOwnedFile(BODY_FILE, owner);
   forgetOwnedFile(HEART_FILE, owner);
+  // What it left under way (part B): its runs, its workout, its swim and
+  // the workouts of its watch, set aside or not.
+  forgetRunsOf(owner);
+  forgetWorkoutOf(owner);
+  forgetPoolSwimOf(owner);
+  forgetWatchRunsOf(owner);
 }
 
 /**

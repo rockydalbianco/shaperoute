@@ -29,6 +29,7 @@ import shapely
 from route_engine.activities import ENGINE_ACTIVITIES
 from route_engine.errors import CollapsedShapeError, NoRoadsError
 from route_engine.geo import (
+    EARTH_RADIUS_M,
     LatLon,
     latlon_to_local,
     latlon_to_local_array,
@@ -119,6 +120,20 @@ NAMED_ROADS_QUERY = (
     "({south},{west},{north},{east});out tags geom;"
 )
 NAMED_ROADS_TIMEOUT_S = 180
+
+# What a route downloads when no cached zone covers its area (download_box):
+# at least DOWNLOAD_MIN_SIDE_M a side, its edges on the coarsest of
+# DOWNLOAD_GRIDS_DEG (about 5.5, 2.2 and 1.1 km of latitude) that keeps each
+# side within DOWNLOAD_MAX_SIDE_M. In Bangkok a zone of 15 km a side is
+# 77,000 nodes and 31 MB of pickle, about 370 MB in an API worker
+# (warm_zones.ZONE_MB_PER_PICKLE_MB); one of 20 km about 1.8 times that,
+# as Milan's or Paris's zones already are.
+DOWNLOAD_MIN_SIDE_M = 12_000.0
+DOWNLOAD_MAX_SIDE_M = 20_000.0
+DOWNLOAD_GRIDS_DEG = (0.05, 0.02, 0.01)
+# Near the poles a degree of longitude is no shorter than this share of one
+# of latitude, for the sides of download_box.
+MIN_COS_LAT = 0.01
 
 # (south, west, north, east) in degrees.
 BBox = tuple[float, float, float, float]
@@ -372,6 +387,71 @@ def area_around(points: Sequence[LatLon], margin_m: float = AREA_MARGIN_M) -> BB
         math.floor(west / step) * step,
         math.ceil(north / step) * step,
         math.ceil(east / step) * step,
+    )
+
+
+def download_box(bbox: BBox) -> BBox:
+    """The box to download when no cached zone covers `bbox`: `bbox` grown
+    about its centre to DOWNLOAD_MIN_SIDE_M a side, its edges moved outward
+    onto the coarsest of DOWNLOAD_GRIDS_DEG that keeps each side within
+    DOWNLOAD_MAX_SIDE_M (or within the side of `bbox`, when that is wider).
+    When no grid keeps it so, `bbox` itself onto a grid; else `bbox` as it
+    is. It always contains `bbox`.
+
+    A zone downloaded for exactly the area of one request served only the
+    requests inside it: a start moved a hundred metres, or another distance,
+    downloaded a new zone of its own, 100-150 s each from Overpass (Bangkok,
+    2026-11-21/22: 13 zones in two days, two of them 0.0003 deg apart). On a
+    fixed grid, and wider than one request, the next tries nearby find the
+    zone in the cache."""
+    south, west, north, east = bbox
+    m_per_deg_lat = math.radians(1.0) * EARTH_RADIUS_M
+    cos_lat = max(math.cos(math.radians((south + north) / 2)), MIN_COS_LAT)
+    m_per_deg_lon = m_per_deg_lat * cos_lat
+    max_lat = max(DOWNLOAD_MAX_SIDE_M / m_per_deg_lat, north - south)
+    max_lon = max(DOWNLOAD_MAX_SIDE_M / m_per_deg_lon, east - west)
+    wide = _widened(
+        bbox, DOWNLOAD_MIN_SIDE_M / m_per_deg_lat, DOWNLOAD_MIN_SIDE_M / m_per_deg_lon
+    )
+    eps = 1e-9
+    for base in (wide, bbox):
+        for grid in DOWNLOAD_GRIDS_DEG:
+            s, w, n, e = _on_grid(base, grid)
+            if n - s <= max_lat + eps and e - w <= max_lon + eps:
+                return s, w, n, e
+    return bbox
+
+
+def _widened(bbox: BBox, min_lat: float, min_lon: float) -> BBox:
+    """`bbox` grown about its centre to at least `min_lat` x `min_lon` deg."""
+    south, west, north, east = bbox
+    grow_lat = max(min_lat - (north - south), 0.0) / 2
+    grow_lon = max(min_lon - (east - west), 0.0) / 2
+    return (
+        max(south - grow_lat, -90.0),
+        max(west - grow_lon, -180.0),
+        min(north + grow_lat, 90.0),
+        min(east + grow_lon, 180.0),
+    )
+
+
+def _on_grid(bbox: BBox, grid: float) -> BBox:
+    """`bbox` with its edges moved outward onto multiples of `grid` deg,
+    rounded to the 5 decimals of the cache's names. A value a hair off a
+    grid line (float noise) counts as on it."""
+
+    def down(value: float) -> float:
+        return round(math.floor(round(value / grid, 6)) * grid, 5)
+
+    def up(value: float) -> float:
+        return round(math.ceil(round(value / grid, 6)) * grid, 5)
+
+    south, west, north, east = bbox
+    return (
+        max(down(south), -90.0),
+        max(down(west), -180.0),
+        min(up(north), 90.0),
+        min(up(east), 180.0),
     )
 
 

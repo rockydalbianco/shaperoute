@@ -417,3 +417,33 @@ test("«Privacy» says the heart rate is read at the end of a gym workout too, b
     }
   }
 });
+
+test("«Privacy» says what is kept of the gear and who sees it, in all five languages (TASK-486)", () => {
+  const gear: Record<Language, RegExp[]> = {
+    en: [/You can add your gear/, /«Hide from profile»/, /an item of gear/],
+    it: [
+      /Puoi aggiungere la tua attrezzatura/,
+      /«Nascondi dal profilo»/,
+      /un attrezzo, un commento/,
+    ],
+    de: [
+      /Du kannst deine Ausrüstung hinzufügen/,
+      /«Im Profil ausblenden»/,
+      /ein Teil deiner Ausrüstung/,
+    ],
+    fr: [
+      /Tu peux ajouter ton matériel/,
+      /«Masquer du profil»/,
+      /un article de matériel/,
+    ],
+    es: [/Puedes añadir tu equipo/, /«Ocultar del perfil»/, /un artículo de equipo/],
+  };
+  for (const [language, content] of CONTENTS) {
+    const privacy = all(content.privacy);
+    for (const sentence of gear[language]) {
+      expect(privacy).toMatch(sentence);
+    }
+    // The gear is off in the app (GEAR_ON): the help does not tell it yet.
+    expect(all(content.help)).not.toMatch(gear[language][0]);
+  }
+});

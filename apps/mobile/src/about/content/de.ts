@@ -353,6 +353,7 @@ const privacy: AboutDocument = {
         "Ein Foto, das du veröffentlichst, kann die Zeichnung deines Laufs im Bild enthalten. Es ist dieselbe Zeichnung wie im Feed.",
         "Bei einem Skitag vergleicht unser Server die gespeicherte Spur mit den Liften und Pisten von OpenStreetMap, die er selbst vorhält, um festzuhalten, welche du genommen hast und wie oft. Die Namen erscheinen im Beitrag, für alle, die ihn sehen können. Nichts geht an einen anderen Dienst.",
         "Auf den Fotos, die du veröffentlichst, kannst du die Teile markieren, die du trägst: was jedes ist, die Marke und, wenn du willst, das Modell und einen Link zu einem Shop. Wer das Foto sieht, sieht sie. Geht der Lauf zurück auf «Nur ich», verlassen sie mit seinen Fotos unseren Server und bleiben auf diesem Telefon.",
+        "Du kannst deine Ausrüstung hinzufügen: Schuhe, ein Rad, Ski, einen Helm, alles, was du benutzt. Zu jedem Teil speichern wir Art, Marke, Modell, den Namen, den du ihm gibst, den Monat, in dem du es gekauft hast, deine Notiz und sein Foto. Das Foto speichern wir verkleinert, ohne die Daten, die dein Handy hinzufügt, etwa wo und wann es aufgenommen wurde. Die Aktivitäten, die du für ein Teil wählst, fügen seinen Summen ihre Distanz und Zeit hinzu; die Summen zählt unser Server aus deinen gespeicherten Aktivitäten. Andere Mitglieder sehen deine Ausrüstung auf deinem Profil, mit Summen, Notizen und Fotos, außer du schaltest für ein Teil «Im Profil ausblenden» ein. Die Sportarten, die du für ein Teil wählst, und sein Limit siehst nur du. Deine Ausrüstung wird mit deinem Konto gelöscht.",
         "Bei einem Skitag sendet die App unserem Server deine Position, auf etwa 1 km gerundet, um das nächste Skigebiet zu finden; das Wetter fragt der Server bei MET Norway mit der Position des Skigebiets ab, nie mit deiner. Skigebiet, Schnee und Ausrüstung, die du hinzufügst, stehen auf dem Beitrag, für alle, die ihn sehen können, und der Schnee zählt außerdem, ohne deinen Namen, zum Schnee des Tages im Skigebiet.",
       ],
     },
@@ -381,7 +382,7 @@ const privacy: AboutDocument = {
     {
       heading: "Meldungen",
       blocks: [
-        "Wenn du eine Zeichnung, ein markiertes Teil, einen Kommentar, ein Profil oder einen Gruppenlauf meldest, behalten wir, wer was gemeldet hat, den Grund und wann. Wer MuW betreibt, bekommt die Meldung per E-Mail und kann das Gemeldete vor den anderen Mitgliedern verbergen. Nichts wird gelöscht, und wer es geschrieben hat, sieht es weiter. Deine Meldung wird dem Verfasser nie gezeigt.",
+        "Wenn du eine Zeichnung, ein markiertes Teil, ein Teil deiner Ausrüstung, einen Kommentar, ein Profil oder einen Gruppenlauf meldest, behalten wir, wer was gemeldet hat, den Grund und wann. Wer MuW betreibt, bekommt die Meldung per E-Mail und kann das Gemeldete vor den anderen Mitgliedern verbergen. Nichts wird gelöscht, und wer es geschrieben hat, sieht es weiter. Deine Meldung wird dem Verfasser nie gezeigt.",
       ],
     },
     {

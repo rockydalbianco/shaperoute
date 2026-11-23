@@ -351,6 +351,7 @@ const privacy: AboutDocument = {
         "Una foto che pubblichi può avere dentro l'immagine il disegno della tua corsa. È lo stesso disegno che mostra il Feed.",
         "Per una giornata di sci, il nostro server confronta la traccia salvata con gli impianti e le piste di OpenStreetMap, che tiene da sé, per scrivere quali hai preso e quante volte. I nomi compaiono nel post, per chi può vederlo. Niente va a un altro servizio.",
         "Sulle foto che pubblichi puoi segnare i capi che indossi: cos'è ognuno, la marca e, se vuoi, il modello e il link a un negozio. Li vede chi vede la foto. Se la corsa torna «Solo io», lasciano il nostro server con le sue foto e restano su questo telefono.",
+        "Puoi aggiungere la tua attrezzatura: scarpe, una bici, sci, un casco, qualsiasi cosa usi. Per ogni attrezzo teniamo il tipo, la marca, il modello, il nome che gli dai, il mese in cui l'hai comprato, la tua nota e la sua foto. La foto è ridimensionata e senza i dati che il telefono aggiunge, come dove e quando è stata scattata. Le attività che scegli per un attrezzo aggiungono distanza e tempo ai suoi totali, che il nostro server conta dalle tue attività salvate. Gli altri iscritti vedono la tua attrezzatura sul tuo profilo, coi totali, le note e le foto, a meno che tu non accenda «Nascondi dal profilo» per un attrezzo. Gli sport che scegli per un attrezzo e il suo limite li vedi solo tu. La tua attrezzatura si cancella col tuo account.",
         "Per una giornata di sci, l'app manda al nostro server la tua posizione arrotondata a circa 1 km per trovare la stazione più vicina; il meteo lo chiede il server a MET Norway con la posizione della stazione, mai la tua. Stazione, neve e attrezzatura che aggiungi si vedono sul post, per chi può vederlo, e la neve conta anche, senza il tuo nome, nella neve del giorno della stazione.",
       ],
     },
@@ -379,7 +380,7 @@ const privacy: AboutDocument = {
     {
       heading: "Segnalazioni",
       blocks: [
-        "Quando segnali un disegno, un capo segnato, un commento, un profilo o una corsa di gruppo, teniamo chi ha segnalato cosa, il motivo e quando. Chi gestisce MuW la riceve per email e può nascondere agli altri iscritti ciò che è stato segnalato. Non si cancella niente, e il suo autore continua a vederlo. La tua segnalazione non è mai mostrata all'autore.",
+        "Quando segnali un disegno, un capo segnato, un attrezzo, un commento, un profilo o una corsa di gruppo, teniamo chi ha segnalato cosa, il motivo e quando. Chi gestisce MuW la riceve per email e può nascondere agli altri iscritti ciò che è stato segnalato. Non si cancella niente, e il suo autore continua a vederlo. La tua segnalazione non è mai mostrata all'autore.",
       ],
     },
     {

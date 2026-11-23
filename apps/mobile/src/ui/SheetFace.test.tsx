@@ -127,6 +127,7 @@ const SHEETS = [
   "social/TagPeople.tsx",
   "social/outfit/OutfitTagEditor.tsx",
   "social/outfit/OutfitTagSheet.tsx",
+  "feed/AddToFeed.tsx",
   "feed/PostShareSheet.tsx",
   "feed/StyleProductSheet.tsx",
   "activities/ActivitySheet.tsx",
@@ -138,5 +139,5 @@ const SHEETS = [
 test.each(SHEETS)("%s wears the sheet's face", (file) => {
   const source = readFileSync(join(__dirname, "..", file), "utf8");
   expect(source).toMatch(/const glassSheet = useSheetFace\(\);/);
-  expect(source).toMatch(/styles\.sheet,\s*glassSheet,/);
+  expect(source).toMatch(/styles\.sheet,\s*glassSheet[,\]]/);
 });

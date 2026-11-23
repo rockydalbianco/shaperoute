@@ -19,6 +19,9 @@ runs, as the totals of a profile: never numbers the phone sends.
 - GET /users/{public_id}/gear: the gear of a profile, to whoever sees the
   profile (every member but one a block keeps apart, follows.apart_sql:
   404 then, as for nobody), without the items «Hide from profile».
+- GET /drawings/{id}/gear: the items on the activity of a post, to whoever
+  sees the post (drawings.drawing_seen_sql: 404 otherwise), as on the
+  profile: without the items «Hide from profile» (part E).
 - GET /gear/{id}, GET /gear/{id}/photo: one item and its photo, to whoever
   sees it as above (a post or a tagged item opens it).
 
@@ -41,7 +44,7 @@ from datetime import date, datetime
 from typing import Annotated, Any, Literal, get_args
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Response
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, Response
 from PIL import Image, ImageOps
 from psycopg import Connection
 from psycopg import errors as pg_errors
@@ -63,10 +66,12 @@ from shaperoute_api.activities import UNKNOWN_ACTIVITY, Key, RunActivity
 from shaperoute_api.comment_filter import check_comment
 from shaperoute_api.comments import CommentRejected
 from shaperoute_api.db import Database
+from shaperoute_api.drawings import NO_DRAWING, drawing_seen_sql
 from shaperoute_api.follows import apart_sql
 from shaperoute_api.images import decode_image
 from shaperoute_api.outfit_links import has_address
 from shaperoute_api.profile_photos import FORMATS, JPEG_QUALITY, MAX_PIXELS
+from shaperoute_api.push import PushEvent, notify
 from shaperoute_api.schemas import MAX_IMAGE_BASE64, MAX_IMAGE_BYTES, ErrorBody
 
 # The list the app shows, grouped by its families; the migration's CHECK
@@ -427,6 +432,34 @@ class Gear:
             ).fetchall()
         return [_body(row, viewer_id) for row in rows]
 
+    def of_drawing(self, viewer_id: int, drawing_id: str) -> list[GearBody] | None:
+        """The items on the activity of a post (TASK-486 part E, the user's
+        choice 6), for whoever sees the post; None for no such post or one
+        `viewer_id` does not see. As on the profile: never the items «Hide
+        from profile», not even for their owner; the ones hidden after a
+        report only for their owner. A post of photos only has none."""
+        try:
+            wanted = UUID(drawing_id)
+        except ValueError:
+            return None
+        with self.database.connect() as conn:
+            drawing = conn.execute(
+                "SELECT d.run_id FROM drawings d"
+                f" WHERE d.id = %s AND {drawing_seen_sql('%s')}",
+                (wanted, viewer_id),
+            ).fetchone()
+            if drawing is None:
+                return None
+            if drawing["run_id"] is None:
+                return []
+            rows = conn.execute(
+                _SELECT + " WHERE g.id IN (SELECT ag.gear_id FROM activity_gear ag"
+                " WHERE ag.run_id = %s) AND NOT g.off_profile"
+                " AND (g.hidden_at IS NULL OR g.user_id = %s)" + _ORDER,
+                (drawing["run_id"], viewer_id),
+            ).fetchall()
+        return [_body(row, viewer_id) for row in rows]
+
     def one(self, viewer_id: int, gear_id: UUID) -> GearBody | None:
         with self.database.connect() as conn:
             row = conn.execute(
@@ -592,25 +625,64 @@ class Gear:
 
     def put_on_activity(
         self, user_id: int, key: str, gear_ids: Sequence[UUID]
-    ) -> list[GearBody]:
+    ) -> tuple[list[GearBody], list[GearBody]]:
         """The whole list of the activity; retired items too (an activity of
-        before). 422 when an id is not of an item of who asks."""
+        before). 422 when an id is not of an item of who asks. With it, the
+        items this list took past their limit (TASK-486 part G): under it
+        before, at it or over it now."""
         wanted = list(dict.fromkeys(gear_ids))
         with self.database.connect() as conn:
             run_id = self._run_id(conn, user_id, key)
             owned = conn.execute(
-                "SELECT id FROM gear WHERE user_id = %s AND id = ANY(%s)",
+                "SELECT id, limit_m, t.distance_m FROM gear g"
+                " CROSS JOIN LATERAL (SELECT coalesce(sum(r.distance_m), 0)"
+                " AS distance_m FROM activity_gear ag JOIN runs r"
+                " ON r.id = ag.run_id WHERE ag.gear_id = g.id) t"
+                " WHERE g.user_id = %s AND g.id = ANY(%s)",
                 (user_id, wanted),
             ).fetchall()
             if len(owned) != len(wanted):
                 raise AccountError(422, "invalid_request", NO_GEAR)
+            before = {row["id"]: int(row["distance_m"]) for row in owned}
             conn.execute("DELETE FROM activity_gear WHERE run_id = %s", (run_id,))
             for gear_id in wanted:
                 conn.execute(
                     "INSERT INTO activity_gear (run_id, gear_id) VALUES (%s, %s)",
                     (run_id, gear_id),
                 )
-            return self._of_run(conn, user_id, run_id)
+            now = self._of_run(conn, user_id, run_id)
+        past = [item for item in now if _crossed(item, before.get(item.id))]
+        return now, past
+
+
+def _crossed(item: GearBody, before_m: int | None) -> bool:
+    """Taken past its limit just now: under it before, at it or over it
+    after. Only a kind that goes far has one (the app sends it only then)."""
+    return (
+        item.limit_m is not None
+        and before_m is not None
+        and before_m < item.limit_m <= item.totals.distance_m
+    )
+
+
+def gear_name(item: GearBody) -> str:
+    """The name the app shows (gearKinds.gearTitle): its own, or brand and
+    model."""
+    return item.name or " ".join(part for part in (item.brand, item.model) if part)
+
+
+def limit_event(user_id: int, item: GearBody) -> PushEvent:
+    """An item past its limit, told to its owner in the bell only
+    (push.BELL_ONLY, TASK-486 part G). Its id and its limit tell it apart:
+    one line for each limit, and a new limit can be told again."""
+    return PushEvent(
+        "gear_limit",
+        user_id,
+        user_id,
+        text=gear_name(item),
+        key=f"{item.id}|{item.limit_m}",
+        gear_id=item.id,
+    )
 
 
 def gear_of(accounts: Annotated[Accounts, Depends(accounts_of)]) -> Gear:
@@ -686,9 +758,16 @@ def gear_routes() -> APIRouter:
         response_model_exclude_none=True,
     )
     def put_activity_gear(
-        key: Key, body: ActivityGearRequestBody, gear: Items, user: Me
+        key: Key,
+        body: ActivityGearRequestBody,
+        gear: Items,
+        user: Me,
+        request: Request,
     ) -> GearListBody:
-        return GearListBody(gear=gear.put_on_activity(user.id, key, body.gear_ids))
+        items, past = gear.put_on_activity(user.id, key, body.gear_ids)
+        for item in past:
+            notify(request, limit_event(user.id, item))
+        return GearListBody(gear=items)
 
     @router.get(
         "/users/{public_id}/gear",
@@ -699,6 +778,17 @@ def gear_routes() -> APIRouter:
         found = gear.of_profile(user.id, public_id)
         if found is None:
             raise HTTPException(404, NO_PROFILE)
+        return GearListBody(gear=found)
+
+    @router.get(
+        "/drawings/{drawing_id}/gear",
+        responses=NOT_FOUND,
+        response_model_exclude_none=True,
+    )
+    def post_gear(drawing_id: str, gear: Items, user: Me) -> GearListBody:
+        found = gear.of_drawing(user.id, drawing_id)
+        if found is None:
+            raise HTTPException(404, NO_DRAWING)
         return GearListBody(gear=found)
 
     @router.get(

@@ -17,6 +17,9 @@ type Props = {
   /** Its energy, "184 kcal" (gymKcal.ts; TASK-385 part C): none when
    * its sets are hidden or not here yet. */
   kcal?: string | null;
+  /** Its average heart rate (TASK-385 part G): none when its owner hides
+   * it, it has none, or its exercises are not here. */
+  heartBpm?: number | null;
 };
 
 /**
@@ -25,8 +28,8 @@ type Props = {
  * The yellow is the user's choice for this tile («Prima foto, se no
  * riquadro», 2026-11-04), the text on it `onAccent`. Part D adds the main
  * exercises, and it is the picture of the post shared too; part C the
- * energy under the time, part G will add the heart rate. A screen reader hears the card's
- * words, not the tile's.
+ * energy under the time, part G the average heart rate under it, as a
+ * swim's tile. A screen reader hears the card's words, not the tile's.
  */
 export function GymTile({
   width,
@@ -34,6 +37,7 @@ export function GymTile({
   durationS,
   exercises = [],
   kcal = null,
+  heartBpm = null,
 }: Props) {
   const small = durationS === undefined;
   return (
@@ -51,6 +55,11 @@ export function GymTile({
           {kcal !== null && (
             <Text style={[styles.name, styles.energy]} testID="gym-tile-kcal">
               {kcal}
+            </Text>
+          )}
+          {heartBpm !== null && (
+            <Text style={styles.name} testID="gym-tile-heart">
+              {`${t("Avg heart rate")} ${heartBpm} bpm`}
             </Text>
           )}
           {exercises.length > 0 && (

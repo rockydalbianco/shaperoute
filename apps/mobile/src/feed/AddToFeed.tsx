@@ -1,7 +1,16 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import type { Activity } from "../api/activities";
+import { GymByHand } from "../gym/GymByHand";
 import { sleepPostsOn, sleepReader } from "../health/sleepModules";
 import type { SleepReader } from "../health/sleepSamples";
 import { AddPastActivity } from "../imports/AddPastActivity";
@@ -18,8 +27,11 @@ import {
   space,
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 import { Tap } from "../ui/Tap";
 import { type AddToFeedEntryId, addToFeedEntries } from "./addToFeedEntries";
+import { PastActivityPost } from "./PastActivityPost";
+import { PlanPostFlow } from "./PlanPostFlow";
 import { SleepPostPage } from "./SleepPostPage";
 
 type Props = {
@@ -29,6 +41,9 @@ type Props = {
   /** A night of sleep went in the Feed, or was taken off it, from «Sleep»:
    * the Feed reads again. */
   onSleepPost?: () => void;
+  /** An activity was opened in «Already recorded», and may be a post now:
+   * the Feed reads again once the sheet closes. */
+  onActivityPosted?: () => void;
   /** The phone's reader of the sleep: none in every build until part C. */
   reader?: SleepReader | null;
   /** The fakes of the tests: whether the app was built with the file
@@ -47,16 +62,24 @@ type Props = {
  * run. «From a file» is the flow of «Add past activity» of «My activities»
  * (docs/IMPORTAZIONI.md §2): «Files» opens at once for the GPX, TCX or FIT
  * of another app, read on the phone, then the form of the end of a run,
- * marked «Imported». A chosen entry opens in the same sheet, with «‹» back
+ * marked «Imported». «Gym workout» (TASK-484 part B, ADR-0395) is a
+ * workout at the gym written by hand afterwards, kept as a recorded one is
+ * and marked «Imported». «Workout plan» (TASK-485 part B, ADR-0394) is
+ * «Choose a plan» among one's gym plans, a line and «Post». A chosen entry
+ * opens in the same sheet, with «‹» back
  * to the list; the sheet closes once the run or the post is kept, or the
  * form discarded. In an app built without the file picker there is no
  * «From a file». «Sleep» (TASK-467 part E) is last night with «Publish»,
  * a post of its own: there only while the sleep is on (`sleepPostsOn`) and
- * the phone has a reader of it, so in no build until part C.
+ * the phone has a reader of it, so in no build until part C. «Already
+ * recorded» (TASK-481 part F) lists the activities of «My activities» not
+ * in the Feed yet, and opens the form of «Edit post» of the one chosen:
+ * «‹» goes back to that list first.
  */
 export function AddToFeed({
   onRecord,
   onSleepPost,
+  onActivityPosted,
   reader = sleepReader(),
   available = filePickerAvailable(),
   pickFile,
@@ -65,7 +88,14 @@ export function AddToFeed({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [chosen, setChosen] = useState<AddToFeedEntryId | null>(null);
+  // The activity open in «Already recorded»; and whether one was, since
+  // the sheet opened.
+  const [past, setPast] = useState<Activity | null>(null);
+  const [pastOpened, setPastOpened] = useState(false);
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
+  const { width } = useWindowDimensions();
   const entries = addToFeedEntries({
     record: onRecord !== undefined,
     filePicker: available,
@@ -75,8 +105,19 @@ export function AddToFeed({
   const close = () => {
     setOpen(false);
     setChosen(null);
+    setPast(null);
+    setPastOpened(false);
+    if (pastOpened) {
+      onActivityPosted?.();
+    }
   };
-  const back = () => setChosen(null);
+  const back = () => {
+    if (chosen === "done" && past !== null) {
+      setPast(null);
+      return;
+    }
+    setChosen(null);
+  };
   const choose = (id: AddToFeedEntryId) => {
     if (id === "record") {
       close();
@@ -105,7 +146,7 @@ export function AddToFeed({
           importantForAccessibility="no"
           testID="feed-add-backdrop"
         />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, glassSheet]}>
           <View style={[styles.head, entry !== null && styles.headWithBack]}>
             {entry !== null && (
               <Pressable
@@ -155,6 +196,18 @@ export function AddToFeed({
                 ))}
               </View>
             )}
+            {entry?.id === "done" && (
+              <PastActivityPost
+                chosen={past}
+                onChoose={(activity) => {
+                  setPast(activity);
+                  setPastOpened(true);
+                }}
+                onDone={close}
+                pick={pick}
+                fetchFn={fetchFn}
+              />
+            )}
             {entry?.id === "photos" && (
               <View style={styles.card}>
                 <PhotoPostForm
@@ -162,6 +215,20 @@ export function AddToFeed({
                   onCancel={back}
                   pick={pick}
                   fetchFn={fetchFn}
+                />
+              </View>
+            )}
+            {entry?.id === "gym" && (
+              <View style={styles.card}>
+                <GymByHand onDone={close} pick={pick} fetchFn={fetchFn} />
+              </View>
+            )}
+            {entry?.id === "plan" && (
+              <View style={styles.card}>
+                <PlanPostFlow
+                  onDone={close}
+                  fetchFn={fetchFn}
+                  width={width - 2 * (space.lg + space.md)}
                 />
               </View>
             )}

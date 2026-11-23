@@ -11,6 +11,14 @@ bike network, from the squares of the same cities:
     python tools/catalog_bike.py --propose             # the keys to keep
     python tools/catalog_bike.py --write               # catalog/seed, every log
 
+The long rides, 40 and 50 km (TASK-441 B3), are beyond the engine's limit
+for a ride, which is «Draw»'s too; the catalogue has them and «Draw» does
+not (`ride_limit`):
+
+    python tools/catalog_bike.py --plan --distances 50000 40000
+    python tools/catalog_bike.py --run --distances 40000 --cities torino \
+        --extract italy-highways.osm.pbf
+
 A run is a line of ``out/TASK-441/bike.jsonl`` as catalog_seed's, with
 ``activity``; the filter is catalog_seed's own (`reasons`). Nothing here
 invents a coordinate: the engine plans, this tool asks, measures and chooses.
@@ -23,7 +31,8 @@ import html
 import json
 import sys
 import time
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -36,6 +45,12 @@ ACTIVITY = "cycling"
 # The engine draws a ride from 10 to 30 km (activities/cycling.py): the
 # catalogue takes the long end, what a run does not have.
 DISTANCES_M: tuple[int, ...] = (30_000, 25_000, 20_000)
+# The long rides (TASK-441 B3, ADR-0366): beyond that limit, which is also
+# «Draw»'s (walking.API_DISTANCE_LIMITS_M) and the size of the server's bike
+# zones (prefetch_zones.longest_route_box). Only the catalogue has them:
+# `main` lifts the limit in its own process (`ride_limit`), the engine's
+# files stay as they are. Asked for with `--distances`.
+LONG_DISTANCES_M: tuple[int, ...] = (50_000, 40_000)
 # The shapes that read on a city's roads (catalog_seed.CORE_SHAPES) and the
 # animals: at this size every one has room.
 SHAPES: tuple[str, ...] = (
@@ -79,30 +94,41 @@ def is_bike_key(key: str) -> bool:
     return key.split("/")[1].endswith(f"@{ACTIVITY}")
 
 
-def distance_of(city_index: int, shape_index: int) -> int:
-    """One distance a shape in a city, in turn: over the cities every shape
-    is drawn at every distance, and a city has a third of its shapes at each."""
-    return DISTANCES_M[(city_index + shape_index) % len(DISTANCES_M)]
+def distance_of(
+    city_index: int, shape_index: int, distances: Sequence[int] = DISTANCES_M
+) -> int:
+    """One distance a shape in a city, in turn among `distances`: over the
+    cities every shape is drawn at every distance, and a city has as many of
+    its shapes at each."""
+    return distances[(city_index + shape_index) % len(distances)]
 
 
-def plan(names: Sequence[str] = ()) -> list[Case]:
+def plan(
+    names: Sequence[str] = (), distances: Sequence[int] = DISTANCES_M
+) -> list[Case]:
     """Every case of a shape that reads, city by city, the longest first
     (its zone holds the others'). `names` keeps only those cities; a city
-    and a shape keep their turn."""
+    and a shape keep their turn among `distances`."""
     cases: list[Case] = []
     for i, city in enumerate(cs.CITIES):
         if names and city.name not in names:
             continue
         here = [
-            Case(city, s, distance_of(i, j)) for j, s in enumerate(SHAPES) if s in READS
+            Case(city, s, distance_of(i, j, distances))
+            for j, s in enumerate(SHAPES)
+            if s in READS
         ]
         cases += sorted(here, key=lambda c: (-c.distance_m, SHAPES.index(c.shape)))
     return cases
 
 
-def todo(done: Iterable[str], names: Sequence[str] = ()) -> list[Case]:
+def todo(
+    done: Iterable[str],
+    names: Sequence[str] = (),
+    distances: Sequence[int] = DISTANCES_M,
+) -> list[Case]:
     seen = set(done)
-    return [c for c in plan(names) if c.key not in seen]
+    return [c for c in plan(names, distances) if c.key not in seen]
 
 
 def reasons(run: cs.Run) -> list[str]:
@@ -124,6 +150,24 @@ def keep(bike_runs: Iterable[cs.Run], kept: Sequence[str]) -> list[str]:
 
 
 # --- The engine ----------------------------------------------------------------
+
+
+@contextmanager
+def ride_limit(longest_m: int) -> Iterator[None]:
+    """The engine's longest ride raised to `longest_m` inside the block, in
+    this process only, and put back after: how a long ride of the catalogue
+    is asked of the engine as it is (TASK-441 B3). Nothing is lowered, and
+    with `longest_m` within the limit nothing changes. The engine still
+    decides the route; «Draw», the API and the server's zones read the
+    limit from the engine's own file, which this does not touch."""
+    from route_engine import models
+
+    before = models.DISTANCE_LIMITS_M[ACTIVITY]
+    models.DISTANCE_LIMITS_M[ACTIVITY] = (before[0], max(before[1], longest_m))
+    try:
+        yield
+    finally:
+        models.DISTANCE_LIMITS_M[ACTIVITY] = before
 
 
 def run(
@@ -149,7 +193,10 @@ def run(
     OpenStreetMap extract of the roads (`osmium tags-filter ... w/highway`):
     a zone not in the cache is cut from it, as the server makes its bike
     zones (prefetch_zones, ADR-0153), with no request to Overpass and no
-    limit on how many. The engine is imported here. Returns how many cases were planned.
+    limit on how many. A case longer than the engine's limit for a ride is
+    refused as the engine refuses it, unless the caller lifted the limit
+    (`ride_limit`, as `main` does). The engine is imported here. Returns how
+    many cases were planned.
     """
     import numpy as np
     import osmnx as ox
@@ -380,19 +427,28 @@ def sample(
     ]
 
 
-def page(runs: Sequence[cs.Run], whole: bool = False, every: bool = False) -> str:
+def page(
+    runs: Sequence[cs.Run],
+    whole: bool = False,
+    every: bool = False,
+    distances: Sequence[int] | None = None,
+) -> str:
     """What the user looks at before the bike drawings enter the catalogue:
     the count by distance, then shape by shape a large sample of those that
     pass (`sample`); with `every` each one that passes, and with `whole`
-    every run, the rejected ones with why."""
-    last = {r["key"]: r for r in runs}
+    every run, the rejected ones with why. With `distances` only the runs
+    at those (the long rides apart from the others)."""
+    last = {
+        r["key"]: r for r in runs if distances is None or r["distance_m"] in distances
+    }
     drawn = [r for r in last.values() if cs.drawn(r)]
     passing = [r for r in drawn if not reasons(r)]
+    counted = distances or {*DISTANCES_M, *(r["distance_m"] for r in drawn)}
     rows = "".join(
         f"<tr><td>{d // 1000} km</td>"
         f"<td>{sum(1 for r in passing if r['distance_m'] == d)}</td>"
         f"<td>{sum(1 for r in drawn if r['distance_m'] == d)}</td></tr>"
-        for d in sorted(DISTANCES_M)
+        for d in sorted(counted)
     )
     body = (
         f'<p class="lead">{len(passing)} disegni in bici passano il filtro su '
@@ -426,7 +482,7 @@ def page(runs: Sequence[cs.Run], whole: bool = False, every: bool = False) -> st
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="python tools/catalog_bike.py",
-        description="Bike drawings for the Explore catalogue (TASK-441 B2).",
+        description="Bike drawings for the Explore catalogue (TASK-441 B2, B3).",
     )
     p.add_argument("--plan", action="store_true", help="print the cases and stop")
     p.add_argument("--run", action="store_true", help="plan the cases not in the log")
@@ -455,6 +511,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--write", action="store_true", help="rebuild catalog/seed from every log"
     )
     p.add_argument("--cities", nargs="*", default=[], help="only these cities")
+    p.add_argument(
+        "--distances",
+        nargs="+",
+        type=int,
+        choices=(*DISTANCES_M, *LONG_DISTANCES_M),
+        metavar="M",
+        help="the distances a city's shapes take in turn, and those of --page "
+        f"(default: {' '.join(map(str, DISTANCES_M))}; the long rides: "
+        f"{' '.join(map(str, LONG_DISTANCES_M))})",
+    )
     p.add_argument("--log", type=Path, default=BIKE_LOG)
     p.add_argument("--old-log", type=Path, default=cw.OLD_LOG)
     p.add_argument("--words-log", type=Path, default=cw.DEFAULT_LOG)
@@ -471,21 +537,28 @@ def main(argv: Sequence[str] | None = None) -> int:
     if unknown:
         print(f"unknown city: {', '.join(unknown)}", file=sys.stderr)
         return 2
-    cases = todo(cs.done_keys(cs.read_runs(args.log)), args.cities)
+    # Longest first whatever the order typed: a city's turn does not depend on it.
+    distances = (
+        tuple(sorted(set(args.distances), reverse=True))
+        if args.distances
+        else DISTANCES_M
+    )
+    cases = todo(cs.done_keys(cs.read_runs(args.log)), args.cities, distances)
     if args.plan:
         for c in cases:
             print(c.key)
         print(f"{len(cases)} bike cases", file=sys.stderr)
         return 0
     if args.run:
-        planned = run(
-            cases,
-            args.log,
-            args.cache_dir,
-            downloads=args.downloads,
-            mirror=args.overpass_url,
-            extract=args.extract,
-        )
+        with ride_limit(max((c.distance_m for c in cases), default=0)):
+            planned = run(
+                cases,
+                args.log,
+                args.cache_dir,
+                downloads=args.downloads,
+                mirror=args.overpass_url,
+                extract=args.extract,
+            )
         # This process's own peak, without osmium's (a child's): bytes on
         # macOS, kilobytes on Linux.
         import resource
@@ -496,7 +569,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"{planned} bike cases planned")
     runs = cs.read_runs(args.log)
     if args.page:
-        args.page.write_text(page(runs, args.whole, args.every), encoding="utf-8")
+        only = distances if args.distances else None
+        args.page.write_text(page(runs, args.whole, args.every, only), encoding="utf-8")
     if args.propose:
         print(json.dumps({"kept": keep(runs, cs.read_kept(args.kept))}, indent=1))
         return 0

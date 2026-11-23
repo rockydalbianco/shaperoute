@@ -3,7 +3,7 @@
 **Stato**: In corso (0 fatta: «Capsula»; A1 e A2 in produzione con l'OTA 14;
 A3 e A4a in produzione al più tardi con l'OTA 17; A4b e A4c in produzione
 con l'OTA 20; A5 e A5b con l'OTA 21; A5c e A6 in produzione con l'OTA 22;
-A6b con l'OTA 23)
+A6b con l'OTA 23; A7a, A7b, A5c-2 e A7c-1 in `main`)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
@@ -16,7 +16,12 @@ A4b e A4c; `feat/TASK-469-a4c-feed-cards` #1344,
 `feat/TASK-469-a6-settings-groups` #1403,
 `feat/TASK-469-a6b-account-glass` #1407; documenti di A5 e A5b
 `docs/TASK-469-a5-done` #1390, di A5c e A6 `docs/TASK-469-a5c-a6-done`
-#1409, di A6b `docs/TASK-469-a6b-done` questa)
+#1409, di A6b `docs/TASK-469-a6b-done` #1451;
+`feat/TASK-469-a7a-glass-sheets` #1453,
+`feat/TASK-469-a7b-glass-island` #1455,
+`feat/TASK-469-a5c2-feed-header` #1467; documenti di A7a, A7b e A5c-2
+`docs/TASK-469-a7-a5c2-done` #1474; `feat/TASK-469-a7c1-chips` #1472,
+documenti `docs/TASK-469-a7c1-done` questa)
 
 ## Obiettivo
 
@@ -88,7 +93,11 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
     «Days» dello sci dicono il loro scroll all'header; una pagina che se ne
     va lontana dalla cima lo rimette a riposo. «Resorts» resta a riposo:
     lì scorre solo la lista, sotto la ricerca fissa;
-  - A5c-2 il Feed, quando `FeedScreen.tsx` è libero;
+  - **A5c-2 fatta** (#1467, in `main` 15d0fe40): anche le schede «All» e
+    «Following» del Feed dicono il loro scroll all'header. Ogni scheda
+    tiene la sua lista e parla solo quella sullo schermo: una scheda
+    nascosta lontana dalla cima rimette l'header a riposo, mostrata di
+    nuovo dice dove si trova. «Style» resta a riposo per ora;
   - **A6 fatta** (#1403, in `main` 832a554f): i gruppi di righe di
     Impostazioni con gli angoli a 24 (`radius.group`) e i bordi del vetro
     posato; la faccia resta `surface`, così le parole tengono il contrasto;
@@ -96,7 +105,21 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
     riga «Blocked people» prendono la faccia dei gruppi; il riquadro prima
     di «Delete account» prende i loro angoli e tiene il bordo rosso, perché
     è un avviso e non vetro;
-  - A7 il resto (fogli, isola, chip), da elencare dopo A6.
+  - **A7a fatta** (#1453, in `main` edcb4018): i 17 fogli dal basso
+    prendono la faccia del vetro posato (`useSheetFace`): angoli in alto a
+    28, il filo di luce al posto della linea dura e un'ombra morbida verso
+    l'alto; la faccia resta `surface`;
+  - **A7b fatta** (#1455, in `main` d10104d7): l'isola prende il filo di
+    luce del vetro scuro e un'ombra corta; la faccia e le parole restano
+    come prima;
+  - **A7c-1 fatta** (#1472, in `main` 2e23489e): i chip di 11 pagine
+    social, di condivisione e del calendario escono dal vetro come quelli
+    della ricerca (`glassRaise`): filo di luce in cima e ombra corta, il
+    chip scelto tiene la sua faccia;
+  - A7c-2 i chip di quattro schermate degli sport (obiettivo in
+    palestra, pagaia, piscina, neve), in bozza #1494; poi A7c-3: volo e
+    pannello del percorso quando sono liberi, e i chip condivisi della
+    palestra (`gymStyles`), con la loro lista di file.
 - **B — Liquid Glass nativo** con `expo-glass-effect` (UIGlassEffect su
   iOS 26; `expo-blur` o opaco prima e su Android). Dipendenza nuova e
   impronta iOS che cambia: solo in una build **dopo l'uscita della 1.1.0**,
@@ -211,6 +234,38 @@ Spuntati per A1 e A2 (2026-11-12):
 - A6b (#1407): `apps/mobile/src/profile/SettingsPage.tsx`,
   `src/social/BlockedPeople.tsx`, `src/settings/SettingsGroupAccount.test.tsx`
   (nuovo).
+- A7a (#1453): `apps/mobile/src/ui/sheetFace.ts`,
+  `src/ui/SheetFace.test.tsx` (nuovi) e una riga per foglio in 17 file:
+  `src/messages/MessageSheet.tsx`, `src/messages/AttachButton.tsx`,
+  `src/liveShare/LiveShareButton.tsx`, `src/social/ReportMenu.tsx`,
+  `src/search/FilterSheet.tsx`, `src/social/SuperLikeSheet.tsx`,
+  `src/social/DrawingComments.tsx`, `src/social/TagPeople.tsx`,
+  `src/social/outfit/OutfitTagEditor.tsx`,
+  `src/social/outfit/OutfitTagSheet.tsx`, `src/feed/PostShareSheet.tsx`,
+  `src/feed/StyleProductSheet.tsx`, `src/activities/ActivitySheet.tsx`,
+  `src/ski/DayResort.tsx`, `src/gym/GymIntroSheet.tsx`,
+  `src/share/EditVideoSheet.tsx`, `src/feed/AddToFeed.tsx`.
+- A7b (#1455): `apps/mobile/src/ui/Island.tsx`,
+  `src/ui/IslandGlass.test.tsx` (nuovo).
+- A5c-2 (#1467): `apps/mobile/src/tabs/headerScroll.tsx` (`active`: solo
+  lo scroller sullo schermo parla), `src/screens/FeedScreen.tsx`,
+  `src/tabs/FeedHeaderScroll.test.tsx` (nuovo).
+- A7c-1 (#1472): una riga per chip in 11 file —
+  `apps/mobile/src/activities/ActivityCalendar.tsx`,
+  `src/feed/SleepPostPage.tsx`, `src/feed/StyleLens.tsx`,
+  `src/imports/PhotoPostForm.tsx`, `src/liveShare/LiveShareButton.tsx`,
+  `src/share/MusicRow.tsx`, `src/share/ScenesRows.tsx`,
+  `src/share/SharePost.tsx`, `src/social/PublicParts.tsx`,
+  `src/social/composer/PostComposer.tsx`,
+  `src/social/outfit/OutfitTagEditor.tsx` — e `src/ui/ChipGlass.test.tsx`
+  (nuovo). `FilterSheet.tsx` e `StartState.tsx` non toccati: usano già
+  `FilterChip`.
+- La PR di documenti di A7c-1: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/TASK-469-A7c1-chip.jpg` (nuova), `docs/STATUS.md`,
+  `docs/DECISIONS.md`, `docs/UI.md`.
+- La PR di documenti di A7a, A7b e A5c-2: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/*-A7a-*.jpg`, `*-A7b-*.jpg`, `*-A5c2-*.jpg`
+  (nuove), `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md`.
 - La PR di documenti di A6b: `docs/tasks/TASK-469.md`,
   `docs/tasks/TASK-469/TASK-469-A6b-account.jpg` (nuova), `docs/STATUS.md`,
   `docs/DECISIONS.md`, `docs/UI.md`.
@@ -306,7 +361,25 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   a729ad01. A5c e A6 in produzione con l'OTA 22 (b4c31f09), pubblicata dal
   Coordinatore; documenti #1409.
 - **2026-11-23**: A6b in produzione con l'OTA 23 (e427ed2e), pubblicata
-  dal Coordinatore.
+  dal Coordinatore. A7a, A7b e A5c-2: liste col sì del Coordinatore,
+  bozze #1453, #1455, #1467, prova nel simulatore col suo turno; l'utente
+  approva le schermate («Sì, vai a tutte»); in `main` #1453 edcb4018,
+  #1467 15d0fe40, #1455 d10104d7. A7c-1: lista col sì del Coordinatore,
+  bozza #1472, prova nel simulatore col suo turno; l'utente approva le
+  schermate («Sì, vai»); #1472 in `main` 2e23489e. Documenti di A7a, A7b
+  e A5c-2 #1474 in `main`. A7c-2: i dieci file liberi (Coordinatore),
+  bozza #1494 su quattro.
+- Imparato: Metro parte con `CI=1`, quindi niente fast refresh: ogni
+  modifica al codice vuole Metro riavviato e l'app riaperta. «Riduci
+  trasparenza» invece si applica subito. In scuro il rilievo dei chip è
+  quasi invisibile (solo il filo in cima), in chiaro si vede l'ombra.
+  Dei file con uno stile `chip`, diversi non sono chip da premere
+  (etichette di testo, il segno di pausa) o usano già `FilterChip`.
+- Imparato: nell'isola il filo di luce viene dal vetro scuro in ogni
+  tono, così il filo scuro del tono chiaro non compare sulla capsula
+  nera. Passando da una scheda del Feed all'altra, la scheda nascosta va
+  a riposo in un layout effect, prima che quella mostrata dica dove si
+  trova: l'header non sbatte in nessun ordine.
 - Imparato: «Today» dello sci nel simulatore non scorre (la pagina è più
   corta dello schermo), quindi lì lo provano solo i test. Un gruppo di una
   sola riga con gli angoli a 24 sembra quasi una capsula.
@@ -414,10 +487,38 @@ account» tiene il bordo rosso con gli angoli dei gruppi. Scuro, chiaro e
 
 ![A6b, prima e dopo, e il riquadro di Delete account](TASK-469/TASK-469-A6b-account.jpg)
 
+**A7a, i fogli dal basso** — gli angoli in alto passano da 26 (o 16) a 28,
+la linea dura in cima diventa il filo di luce del vetro e un'ombra
+morbida sale sul contenuto dietro: si vede in chiaro, appena in scuro.
+«Share» del Feed, i filtri della ricerca, il «…» di un profilo, i
+commenti e «Riduci trasparenza» (la linea sottile di prima):
+
+![A7a, fogli prima e dopo](TASK-469/TASK-469-A7a-fogli.jpg)
+
+**A7b, l'isola** — dopo una segnalazione: in scuro un filo di luce
+sottile intorno alla capsula, in chiaro un'ombra corta sotto:
+
+![A7b, l'isola prima e dopo](TASK-469/TASK-469-A7b-isola.jpg)
+
+**A5c-2, il Feed che scorre** — prima l'header del Feed non cambiava mai;
+ora in cima è a riposo, scorrendo prende la fascia di vetro, e passando a
+una scheda in cima torna a riposo. Con «Riduci trasparenza» la fascia è
+opaca:
+
+![A5c-2, il Feed a riposo e scorrendo](TASK-469/TASK-469-A5c2-feed-scorrendo.jpg)
+
+**A7c-1, i chip** — «Share your run» (Results e Music) e il foglio
+«Photos only» (Tag people, Who can see it). In scuro cambia solo un filo
+di luce in cima al chip; in chiaro il chip ha un'ombra corta sotto. Con
+«Riduci trasparenza» è uguale a prima:
+
+![A7c-1, i chip prima e dopo](TASK-469/TASK-469-A7c1-chip.jpg)
+
 ## Esito
 
 *(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14); A3 e A4a
 in `main` dal 2026-11-12, in produzione al più tardi con l'OTA 17
 (2026-11-18); A4b e A4c in produzione con l'OTA 20 (2026-11-21); A5 e A5b
 con l'OTA 21 (2026-11-22); A5c e A6 in produzione con l'OTA 22
-(2026-11-22, b4c31f09); A6b con l'OTA 23 (2026-11-23, e427ed2e).
+(2026-11-22, b4c31f09); A6b con l'OTA 23 (2026-11-23, e427ed2e); A7a, A7b, A5c-2 e A7c-1 in `main` dal
+2026-11-23.

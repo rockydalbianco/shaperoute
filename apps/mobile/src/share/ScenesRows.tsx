@@ -22,6 +22,8 @@ import {
   switched,
 } from "./videoScenes";
 import type { VideoEdit } from "./videoEdit";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 type Props = {
   edit: VideoEdit;
@@ -167,6 +169,8 @@ export function ChoiceChips<T extends string>({
   onChange,
   testID,
 }: ChipsProps<T>) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   return (
     <View style={styles.chips} accessibilityRole="radiogroup">
       {choices.map((choice) => {
@@ -174,7 +178,7 @@ export function ChoiceChips<T extends string>({
         return (
           <Pressable
             key={choice}
-            style={[styles.chip, on && styles.chipOn]}
+            style={[styles.chip, chipRaise, on && styles.chipOn]}
             onPress={() => onChange(choice)}
             accessibilityRole="radio"
             accessibilityState={{ checked: on }}

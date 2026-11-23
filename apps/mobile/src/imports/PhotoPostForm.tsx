@@ -33,6 +33,8 @@ import {
 } from "../theme/tokens";
 import { ImportedMark } from "./ImportedMark";
 import { keepVisibility, startVisibility } from "./photoPostVisibility";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /** A photo chosen, on the phone until the post goes. */
 type PhonePhoto = { n: number; base64: string };
@@ -183,6 +185,8 @@ export function VisibilityChoice({
   onChange: (visibility: PhotoPostVisibility) => void;
   disabled?: boolean;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const label = t("Who can see it");
   return (
     <View style={styles.field}>
@@ -197,7 +201,12 @@ export function VisibilityChoice({
           return (
             <Pressable
               key={id}
-              style={[styles.chip, on && styles.chipOn, disabled && styles.busy]}
+              style={[
+                styles.chip,
+                chipRaise,
+                on && styles.chipOn,
+                disabled && styles.busy,
+              ]}
               onPress={() => onChange(id)}
               disabled={disabled}
               accessibilityRole="radio"

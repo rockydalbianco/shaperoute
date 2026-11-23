@@ -591,6 +591,7 @@ lasciando le righe d'indice.
 - ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
 - ADR-0397, precisazione 2 — La tabella di base dei cibi: 314 voci da USDA SR Legacy (aprile 2018) ricavate da uno script, nomi in cinque lingue in file loro; la pagina «Nutrition» in due PR, con schermate e testi approvati · 2026-11-23 · Proposta
 - ADR-0397, precisazione 3 — Le attività nel bilancio stimate da quello che dice la lista privata (palestra dal solo tempo, escursione senza salita), oggi «finora» e fuori dal totale della settimana, il diario del telefono e non dell'account · 2026-11-23 · Proposta
+- ADR-0397, precisazione 4 — Il codice a barre su Open Food Facts in due PR (ricerca senza fotocamera, poi il lettore), solo kcal e mai kilojoule convertiti; un lettore unico degli allenamenti di Salute in `health/`, spento fino alla build nativa · 2026-11-23 · Proposta
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
 - ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB · 2026-11-23 · Attiva
 
@@ -6364,3 +6365,51 @@ Decise dall'agente su delega dell'utente:
 della somma delle attività nei giorni che ce l'hanno (già previsto nei
 conti di A1). Se un giorno servisse cancellare il diario all'uscita, è
 codice nuovo e un testo di privacy diverso.
+
+## ADR-0397, precisazione 4 — Il codice a barre su Open Food Facts e il lettore unico degli allenamenti di Salute
+
+**Data**: 2026-11-23 · **Stato**: Proposta · **Task**: TASK-489 (G, C2)
+
+**Contesto**: le parti G (il codice a barre) e C2 (la lettura da Salute)
+sono legate alla build nativa, ma quasi tutto il loro codice non lo è.
+L'utente ha visto schermate e testi di ognuna e ha detto «Sì, approvo» il
+2026-11-23.
+
+**Decisione** — scelte dell'utente:
+
+- Il codice a barre si può **scrivere a mano** («Type the code»), oltre a
+  leggerlo con la fotocamera.
+- Gli allenamenti delle altre app letti da Salute compaiono **solo in
+  «Energy you use»**, non nella lista «My activities».
+- L'app si presenta a Open Food Facts con l'indirizzo di contatto che già
+  pubblica nella privacy.
+- La frase in fondo a «How we calculate» dice che un codice a barre
+  cercato va a Open Food Facts.
+
+Decise dall'agente su delega dell'utente:
+
+- **Due PR per parte**: quello che non è nativo entra in `main` spento
+  (G1: la richiesta a Open Food Facts e il passo «Type the code»; C2a: il
+  lettore e il conto), il nativo resta in bozza fino al taglio della build
+  (G2: `expo-camera` e il lettore; C2b: accendere `HEALTH_ENERGY_ON`).
+- **Open Food Facts**: una richiesta dal telefono per ogni codice letto o
+  scritto da una persona, senza account, col `User-Agent` che loro
+  chiedono; l'API v2 (`status` 1 o 0), provata dal vivo. Si prende **solo
+  `energy-kcal_100g`**: un prodotto che ha solo i kilojoule non diventa un
+  cibo, perché MuW non scrive numeri suoi. Il prodotto trovato è un cibo
+  dell'utente col suo codice e «from Open Food Facts», separato dalla
+  tabella USDA (ODbL); riscritto dall'utente perde il segno e tiene il
+  codice. Un codice già salvato non si chiede di nuovo.
+- **Un lettore unico degli allenamenti** in `health/energyReader.ts`, per
+  TASK-489 C2 e TASK-312 D: `workouts(da, a)` è il punto d'ingresso.
+  `health/energyModules.ts` non dà nessun lettore e non carica la libreria
+  finché la build non ha il testo del permesso, come `sleepModules.ts`.
+- I numeri di Salute si leggono quando una schermata li mostra e non si
+  salvano; mentre arrivano il giorno non dice niente; un Salute che non
+  risponde, o un permesso negato, è un giorno senza dati.
+- Un allenamento di Salute è di MuW (e non si conta due volte) se viene
+  dal bundle di MuW o porta la chiave di un'attività della lista.
+
+**Conseguenze**: il testo unico del permesso di Salute lo scrive la PR di
+TASK-467 C al taglio; la C2b di questo task è una riga. Android resta
+sulla somma delle attività fino alla build con Health Connect.

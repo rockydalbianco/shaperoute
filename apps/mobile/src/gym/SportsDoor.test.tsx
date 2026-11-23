@@ -10,33 +10,45 @@ import {
   spreadDays,
 } from "./SportsDoor";
 
-// TASK-461 A2 (ADR-0371): «Cosa vuoi allenare?», at least two sports
-// («Almeno due, sempre»), their days already spread out.
+// TASK-461 A2 (ADR-0371): «Cosa vuoi allenare?», their days already
+// spread out; one sport is enough, the gym chosen at first (TASK-506 B).
 
 test("the door: seven sports to choose, those with a distance in blue", async () => {
   const onToggle = jest.fn();
   await render(<SportsDoor chosen={DOOR_CHOSEN} onToggle={onToggle} />);
-  expect(screen.getByTestId("door-gym")).not.toBeChecked();
-  expect(screen.getByTestId("door-body")).toBeChecked();
-  expect(screen.getByTestId("door-run")).toBeChecked();
+  expect(screen.getByTestId("door-gym")).toBeChecked();
+  expect(screen.getByTestId("door-body")).not.toBeChecked();
+  expect(screen.getByTestId("door-run")).not.toBeChecked();
+  expect(
+    screen.getByText("Choose one or more. Then we guide you in 5 steps."),
+  ).toBeOnTheScreen();
   expect(screen.getByTestId("door-mountain")).toHaveTextContent(/Mountains/);
   expect(screen.getByTestId("door-bike")).toHaveTextContent(/Road, gravel, MTB/);
   await fireEvent.press(screen.getByTestId("door-gym"));
   expect(onToggle).toHaveBeenCalledWith("gym");
 });
 
-test("the days proposed: three of bodyweight and two runs, as the mockup", () => {
+test("the days proposed: three of the gym alone, apart", () => {
   expect(countsFor(DOOR_CHOSEN)).toEqual({
-    gym: 0,
-    body: 3,
-    run: 2,
+    gym: 3,
+    body: 0,
+    run: 0,
     walk: 0,
     bike: 0,
     swim: 0,
     mountain: 0,
   });
   expect(spreadDays(DOOR_CHOSEN, countsFor(DOOR_CHOSEN))).toMatchObject({
-    gym: [],
+    gym: [1, 3, 5],
+    body: [],
+    run: [],
+  });
+});
+
+test("bodyweight and running, as the mockup E0: three and two", () => {
+  const both = ["body", "run"] as const;
+  expect(countsFor(both)).toMatchObject({ gym: 0, body: 3, run: 2 });
+  expect(spreadDays(both, countsFor(both))).toMatchObject({
     body: [1, 3, 5],
     run: [2, 6],
   });

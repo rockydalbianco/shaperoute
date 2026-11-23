@@ -18,10 +18,9 @@ import { isRunDay, proposedDays, proposedRunDays } from "./proposal";
 
 /**
  * «Cosa vuoi allenare?» (TASK-461 A2, ADR-0371): the door of «New plan»,
- * the user's mockup E0 of 2026-11-11 and choice «Almeno due, sempre»: a
- * plan mixes at least two sports, so two are chosen before going on. Gym,
- * bodyweight and running are here; a distance and the mountain come next
- * («Presto»).
+ * the user's mockup E0 of 2026-11-11. One sport is enough since TASK-506 B
+ * (the user's choice of 2026-11-23, in place of «Almeno due, sempre»): a
+ * plan of the gym alone, the gym chosen when the door opens.
  */
 
 /** The sports a plan of the guide mixes. */
@@ -36,11 +35,12 @@ export const PLAN_SPORTS = [
 ] as const;
 export type PlanSport = (typeof PLAN_SPORTS)[number];
 
-/** A plan mixes at least this many. */
-export const MIN_PLAN_SPORTS = 2;
+/** A plan has at least this many (two until TASK-506 B). */
+export const MIN_PLAN_SPORTS = 1;
 
-/** The sports chosen when the door opens, as the mockup E0. */
-export const DOOR_CHOSEN: readonly PlanSport[] = ["body", "run"];
+/** The sports chosen when the door opens: the gym, where «New plan» is
+ * (TASK-506 B; bodyweight and running before, as the mockup E0). */
+export const DOOR_CHOSEN: readonly PlanSport[] = ["gym"];
 
 /** How many days a week each sport has. */
 export type SportCounts = Readonly<Record<PlanSport, number>>;
@@ -202,9 +202,7 @@ export function SportsDoor({
           {t("What do you want to train?")}
         </Text>
         <Text style={styles.lead}>
-          {t(
-            "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.",
-          )}
+          {t("Choose one or more. Then we guide you in 5 steps.")}
         </Text>
       </View>
       {OPTIONS.map((one) => {

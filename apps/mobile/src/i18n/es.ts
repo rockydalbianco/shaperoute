@@ -1395,8 +1395,8 @@ export const ES: Table = {
   Beginner: "Principiante",
   // src/gym/SportsDoor.tsx, bodyweight.ts, GymPlanWizard.tsx (TASK-461 A2, approved 2026-11-11)
   "What do you want to train?": "¿Qué quieres entrenar?",
-  "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.":
-    "Elige al menos dos: un plan siempre mezcla dos deportes. Luego te guiamos en 5 pasos.",
+  "Choose one or more. Then we guide you in 5 steps.":
+    "Elige uno o más. Luego te guiamos en 5 pasos.",
   "With weights and machines": "Con pesas y máquinas",
   Bodyweight: "Peso corporal",
   "At home or in the park, no equipment": "En casa o en el parque, sin material",

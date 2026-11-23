@@ -58,6 +58,9 @@ export const FR: Table = {
   "Try again": "Réessayer",
   "No activities yet. Save a run when you finish it, and it is kept here.":
     "Pas encore d'activités. Enregistre une course quand tu la termines, et tu la retrouveras ici.",
+  "No activities yet": "Pas encore d'activités",
+  "When you finish an activity and save it, you find it here.":
+    "Quand tu termines une activité et l'enregistres, tu la retrouves ici.",
   "{when}, {where}, {facts}, public, open on the map":
     "{when}, {where}, {facts}, publique, ouvrir sur la carte",
   "{when}, {where}, {facts}, open on the map":
@@ -177,8 +180,9 @@ export const FR: Table = {
   "Remove {title} from favorites": "Retirer {title} des favoris",
   "Loading your favorites…": "Chargement de tes favoris…",
   "Your favorites could not load.": "Impossible de charger tes favoris.",
-  "No favorites yet. Tap {heart} on a route on the map to keep it here.":
-    "Pas encore de favoris. Touche {heart} sur un parcours de la carte pour le garder ici.",
+  "No favorites yet": "Pas encore de favoris",
+  "Tap {heart} on a route on the map to keep it here.":
+    "Touche {heart} sur un parcours de la carte pour le garder ici.",
 
   // src/favorites/favoriteRoute.ts
   Route: "Parcours",
@@ -2384,8 +2388,9 @@ export const FR: Table = {
   "Messages, {count} waiting": "Messages, {count} en attente",
   "Message requests": "Demandes de message",
   "Message requests, {count} waiting": "Demandes de message, {count} en attente",
-  "No messages yet. Open someone's profile and tap Message to write to them.":
-    "Pas encore de messages. Ouvre le profil de quelqu'un et touche Message pour lui écrire.",
+  "No messages yet": "Pas encore de messages",
+  "Open someone's profile and tap Message to write to them.":
+    "Ouvre le profil de quelqu'un et touche Message pour lui écrire.",
   "No message requests.": "Aucune demande de message.",
   "You: {text}": "Toi : {text}",
   "{name}, new message: {text}": "{name}, nouveau message : {text}",

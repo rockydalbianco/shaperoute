@@ -76,6 +76,14 @@ dopo.
   `surfaceRaised` dentro il giallo: la linea di un disegno è gialla anche
   lei, e le schede scrivono coi colori del tono. Le bolle dell'altro
   restano `surface` col bordo.
+  Parere della 469 (via Coordinatore, 23 novembre): ADR-0383 «il giallo
+  mai come tinta» parla della tinta del vetro (`glass.*`); la bolla è una
+  **faccia piena `accent`, non vetro**, quindi ADR-0403 cita 0383 senza
+  farne un'eccezione. Tre regole: (1) la bolla resta opaca nei tre modi
+  (vetro, «Riduci trasparenza», «Aumenta contrasto»), niente velature
+  gialle né `glass.*` tinti; (2) un eventuale rilievo usa `glassRaise`
+  com'è, senza colori nuovi — oggi non ne ha; (3) che il giallo si
+  intraveda sotto l'header di vetro va bene. La (1) è nel test.
 - **Chat vuota** (23 novembre 2026): «A, con gli spunti», scelta data qui.
   Al centro la foto (64) e il nome di chi si scrive, la riga «Say hi to
   {name}.» e tre spunti a capsula: «Hi {name}!», «I like your drawings»,

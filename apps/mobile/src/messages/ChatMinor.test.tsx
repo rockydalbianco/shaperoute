@@ -70,6 +70,16 @@ test("one's own bubble is yellow with dark words, the other's stays neutral", as
 
   const own = colours(screen.getByLabelText(/^You: Hi! Is the heart/));
   expect(own.ground).toBe(color.accent);
+  // A full face, not glass (ADR-0403, beside ADR-0383): the yellow itself,
+  // opaque, with no veil, no relief and no shadow of its own, so it is the
+  // same with «Reduce transparency» and «Increase contrast».
+  expect(own.ground).toMatch(/^#[0-9A-F]{6}$/i);
+  const face = StyleSheet.flatten(
+    screen.getByLabelText(/^You: Hi! Is the heart/).props.style,
+  );
+  expect(face.opacity).toBeUndefined();
+  expect(face.boxShadow).toBeUndefined();
+  expect(face.borderColor).toBeUndefined();
   // The words and the time: both read on the yellow, in every tone.
   expect(own.texts.length).toBeGreaterThanOrEqual(1);
   expect(new Set(own.texts)).toEqual(new Set([color.onAccent]));

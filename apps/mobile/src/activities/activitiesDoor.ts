@@ -25,6 +25,7 @@ import {
 import { type DrawingChoice, isSeen } from "../api/drawings";
 import { appBody } from "../body/bodyProfile";
 import { tellUnlocked } from "../game/unlockedRuns";
+import { forgetGearFor, keepGearFor, sendWaitingGear } from "../gear/gearOut";
 import { t, tLater } from "../i18n";
 import { metresBetween } from "../map/coordinates";
 import type { SavedRun } from "../navigation/trackStore";
@@ -125,6 +126,9 @@ export type ActivitiesDoor = ActivitiesState & {
    * tests made before it.
    */
   toSleep?: (sleep: ActivitySleepRequest | null) => void;
+  /** The ids of the gear of the next `record` (TASK-486 part C), sent once
+   * the API has the run; none: no gear. Absent from older fakes. */
+  toGear?: (gearIds: readonly string[]) => void;
   /** The runs of this account still on the phone, waiting for the API;
    * those it refused too. */
   waiting: number;
@@ -183,6 +187,7 @@ const NOTHING: ActivitiesDoor = {
   toOrder: () => {},
   toOutfit: () => {},
   toSleep: () => {},
+  toGear: () => {},
   waiting: 0,
   full: false,
   refused: [],
@@ -441,6 +446,15 @@ export function useActivitiesOf(
           ended = true;
           endSession(token);
         }
+        // The gear chosen for them (TASK-486 part C).
+        if (
+          !ended &&
+          (await sendWaitingGear(baseUrl, token, owner, { fetchFn, key })) ===
+            "session_ended"
+        ) {
+          ended = true;
+          endSession(token);
+        }
         // And what waits for Strava. A run that ends meanwhile still makes
         // another round.
         if (
@@ -517,6 +531,12 @@ export function useActivitiesOf(
     nextSleep.current = sleep;
   }, []);
 
+  // And for the gear (TASK-486 part C).
+  const nextGear = useRef<readonly string[]>([]);
+  const toGear = useCallback((gearIds: readonly string[]) => {
+    nextGear.current = gearIds;
+  }, []);
+
   // What `record` and `recordImported` share: the run on the phone, with
   // what was told for it just before «Save».
   const keep = useCallback(
@@ -533,6 +553,8 @@ export function useActivitiesOf(
       nextOutfit.current = [];
       const sleep = nextSleep.current;
       nextSleep.current = null;
+      const gear = nextGear.current;
+      nextGear.current = [];
       if (owner === null || recorded === null) {
         return false;
       }
@@ -559,6 +581,8 @@ export function useActivitiesOf(
       if (sleep !== null) {
         keepSleepFor(owner, recorded.id, sleep);
       }
+      // Its gear (gear/gearOut.ts).
+      keepGearFor(owner, recorded.id, gear);
       recount();
       justKept.current.set(recorded.id, Date.now());
       void send();
@@ -604,6 +628,7 @@ export function useActivitiesOf(
       if (owner !== null) {
         stopWaiting(owner, id);
         forgetSleepFor(owner, id);
+        forgetGearFor(owner, id);
         recount();
       }
     },
@@ -726,6 +751,7 @@ export function useActivitiesOf(
       toOrder,
       toOutfit,
       toSleep,
+      toGear,
       waiting,
       full: waiting >= MAX_WAITING,
       refused: refusedRuns,
@@ -757,6 +783,7 @@ export function useActivitiesOf(
       toOrder,
       toOutfit,
       toSleep,
+      toGear,
       waiting,
       refusedRuns,
       discard,

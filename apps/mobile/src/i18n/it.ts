@@ -3156,6 +3156,11 @@ export const IT: Table = {
   "Links and special characters can't be used here.":
     "Qui non si possono usare link né caratteri speciali.",
 
+  // src/gear/GearPicker.tsx, ActivityGear.tsx (TASK-486 part C), approved by the user on 2026-11-23
+  "Up to {count} items on an activity.": "Fino a {count} attrezzi su un'attività.",
+  "This activity is still on its way. Try again in a moment.":
+    "Questa attività sta ancora arrivando. Riprova tra poco.",
+
   // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
   "Choose a plan": "Scegli un piano",
   "No plans yet: make one in Gym › Plans.":
@@ -3213,6 +3218,16 @@ export const IT: Table = {
   "Next week is the lighter one, to recover.":
     "La prossima è la settimana più leggera, per recuperare.",
   "How did the plan feel?": "Come ti è sembrata la scheda?",
+  // src/air/ (TASK-479 part E1: the pilot's airspace file; notices 3 and 4 approved by the user on 2026-11-21, the other texts on 2026-11-23)
+  "No airspace loaded. MuW does not include airspace data.":
+    "Nessuno spazio aereo caricato. MuW non include dati di spazi aerei.",
+  "Data loaded by you: check the AIP and NOTAMs before you fly. · {file} · loaded {date}":
+    "Dati caricati da te: verifica AIP e NOTAM prima di volare. · {file} · caricato il {date}",
+  Airspace: "Spazi aerei",
+  "Airspaces: {count}": "Spazi aerei: {count}",
+  "Lines not read: {n}": "Righe non lette: {n}",
+  "This file has no airspace MuW can read.":
+    "In questo file non ci sono spazi aerei che MuW sa leggere.",
   // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts.
   Coach: "Coach",
   "Based on your last 4 weeks": "In base alle ultime 4 settimane",

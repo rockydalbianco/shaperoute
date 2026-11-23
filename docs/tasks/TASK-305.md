@@ -743,6 +743,9 @@ aperto dal Feed o da un profilo ha la linea bianca a piedi e gialla in
 volo; `flight` manca se la linea del post non ha i punti della corsa. Nella
 stessa PR lo schema openapi di `GET /me/activities/{key}` torna coi suoi
 campi. Decisione: ADR-0375 precisazione R6e.
+Il passo 19 è fatto (server `e427ed2e`), l'OTA 23 è uscita, e il
+2026-11-23 l'utente ha guardato il post di una gara sul telefono:
+«funziona tutto». R6e chiusa.
 
 **Cosa resta**:
 
@@ -750,6 +753,4 @@ campi. Decisione: ADR-0375 precisazione R6e.
   telefono, dopo l'uscita.
 - R4 (il volo sull'orologio, per il battito dal vivo): PR #1218 in bozza,
   fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
-- R6e: il passo 19 sul server (col sì dell'utente) e l'OTA 23; poi uno
-  sguardo sul telefono al post di una gara.
 - Le parti del pianificatore (A1…F) restano Proposte.

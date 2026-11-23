@@ -1,6 +1,6 @@
 # TASK-312 — Importare nel Feed attività fatte con altre app, e post di sole foto
 
-**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C in `main`**: C1 (API e migrazione `0080`, PR #1347, `cfd5e956`; server col passo 16), C1b (`GET /me/photo-posts`, PR #1355) e C1c (fuori i post del sonno, PR #1379) sul server col passo 17, C2 (app e riga della privacy, PR #1386, `3d4f0d47`) · **D: studio scritto** (sezione «Studio D»), le quattro risposte dell'utente il 2026-11-23; codice con la build nativa · poi E (studio collegamenti diretti)
+**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C in `main`**: C1 (API e migrazione `0080`, PR #1347, `cfd5e956`; server col passo 16), C1b (`GET /me/photo-posts`, PR #1355) e C1c (fuori i post del sonno, PR #1379) sul server col passo 17, C2 (app e riga della privacy, PR #1386, `3d4f0d47`) · **D: studio e risposte dell'utente** (2026-11-23, testo del permesso approvato); codice con la build nativa · **E: studio e risposte** (2026-11-23): Strava resta il file, Polar dopo D, gli altri con l'azienda
 **Fase**: 4 · **Branch**: `docs/TASK-312-import-activities` (documenti),
 `feat/TASK-312-a-imported-runs-api` (A), `feat/TASK-312-b-import-file-app`
 (B), `feat/TASK-312-c-photo-posts` (C), `docs/TASK-312-d-health-study`
@@ -641,6 +641,19 @@ Il testo unico del permesso di iOS (§2) lo concordano 312 D, 467 C e 489,
 poi va all'utente per il sì (Coordinatore, 2026-11-23). La lettura delle
 tracce è nella lista della prossima build nativa del Coordinatore.
 
+**Il testo unico, approvato dall'utente il 2026-11-23** («Approvo»),
+concordato con 467 C (sessione «TASK-467 B3») e 489 («Alimentazione»); prende
+il posto della frase di 467 approvata prima:
+«MuW reads from Apple Health your heart rate during each activity, your
+sleep and your workouts from other apps with their routes, to show them
+with your activities and in your posts: you can hide them before you
+publish. It also reads your active energy, to estimate the calories you
+use each day in Nutrition, which only you see.»
+Se la build esce con `NUTRITION_ON` ancora spento, la seconda frase
+aspetta. Le quattro traduzioni in `locales/*.json` si approvano col
+codice. In `app.json` lo scrive la prima PR della build nativa che arriva
+in `main`; le altre uniscono `main`.
+
 ## Parte E — Collegamenti diretti (studio)
 
 Lo studio di §8 di `IMPORTAZIONI.md`, scritto nella sezione «Studio E»:
@@ -704,6 +717,17 @@ permette?
 3. **Garmin, Suunto, Coros, Komoot**: si rimandano a quando c'è
    l'azienda. *Proposta: sì, una riga in `STATUS.md` «Prossimo passo»
    quando l'azienda esiste.*
+
+**Le risposte dell'utente (2026-11-23)**, col via del Coordinatore:
+
+1. «Sì, resta il file»: nessun collegamento diretto a Strava per il
+   Feed; «Send to Strava» resta com'è.
+2. «Dopo la parte D»: nessun collegamento per ora. Polar AccessLink dopo
+   che Apple Salute e Health Connect sono in produzione e se gli utenti lo
+   chiedono; prima si legge il suo accordo, e nessuna registrazione presso
+   Polar o altri senza il sì dell'utente, detto prima al Coordinatore.
+3. «Sì, quando c'è l'azienda»: Garmin, Suunto, Coros e Komoot si
+   rimandano; una riga in `STATUS.md` «Prossimo passo» lo ricorda.
 
 Fonti: Strava, «API Agreement Update: How Data Appears on 3rd Party Apps»
 (support.strava.com, articolo 31798729397773) e «An update to our

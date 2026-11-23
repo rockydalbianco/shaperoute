@@ -595,6 +595,7 @@ lasciando le righe d'indice.
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
 - ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB · 2026-11-23 · Attiva
 - ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi · 2026-11-23 · Attiva
+- ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo di ADR-0269 con `group_id`, anche senza percorso; Public, Request, Invite only; un solo admin e fino a 3 co-admin; l'elenco dei membri solo ai membri; la chat di gruppo come parte E · 2026-11-23 · Proposta
 
 
 ## Voci nuove
@@ -6483,3 +6484,50 @@ Decise dall'agente su delega dell'utente:
 **Conseguenze**: il testo unico del permesso di Salute lo scrive la PR di
 TASK-467 C al taglio; la C2b di questo task è una riga. Android resta
 sulla somma delle attività fino alla build con Health Connect.
+
+## ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo con `group_id`, anche senza percorso
+
+**Stato**: Proposta · 2026-11-23 · TASK-495 (parte 0, soli documenti).
+Le dieci scelte di `GRUPPI.md` (ingresso, ruoli, pagina, uscite, chat,
+scoperta, notifiche, avviso dell'alpinismo, cosa resta fuori) sono
+**scelte dell'utente** del 2026-11-23, una domanda alla volta; il resto è
+**deciso dall'agente su delega dell'utente**; numeri dal Coordinatore
+(fork 3).
+
+**Contesto**: l'utente vuole gruppi per camminare, pedalare e fare
+alpinismo insieme. Le corse di gruppo di TASK-309 (ADR-0269) sono uscite
+singole con percorso, e `EVENTI.md` §13 lasciava fuori i club. Due fatti
+pesano: una corsa di gruppo vuole sempre un percorso, e l'alpinismo è
+registrato senza (ADR-0373); la chat di oggi è solo fra due (una
+conversazione per coppia, ADR-0279).
+
+**Decisione**:
+- **Le uscite di un gruppo sono corse di gruppo**, nella stessa tabella,
+  con un `group_id` facoltativo e la visibilità `group`: niente secondo
+  modello di evento. «I'm going», promemoria, cambi, annullamento,
+  segnalazioni e limiti restano quelli di `EVENTI.md`.
+- **Uscite senza percorso**: il percorso diventa facoltativo solo per
+  queste, con il punto di ritrovo e una `destination` scritta (80).
+  Servono all'alpinismo e agli sport `recordOnly`.
+- **Tabelle nuove** per gruppi, membri (col ruolo e «Mute»), richieste e
+  inviti; un solo admin per gruppo con un indice unico parziale.
+- **L'elenco dei membri lo vedono solo i membri**, in ogni modo
+  d'ingresso; chi è fuori vede il numero. Con la riga del profilo visibile
+  solo a sé, l'appartenenza non si legge da fuori: è il dato nuovo della
+  privacy.
+- **La zona è una città** con un punto arrotondato a ~1 km: la vicinanza
+  di Explore (50 km, `FEED_NEAR_M`) senza tenere un indirizzo.
+- **Chi esce o è rimosso** perde le sue uscite in arrivo nel gruppo, con la
+  push di annullamento di sempre: un'uscita dei soli membri senza il suo
+  organizzatore dentro il gruppo non avrebbe chi la tiene.
+- **Un gruppo nascosto** da una segnalazione lo vedono solo i membri: non
+  compare in Explore e non entra nessuno; niente si cancella (TASK-291).
+- **La chat di gruppo è una parte a sé (E)**, dopo le altre: è un pezzo
+  nuovo, non un riuso della chat a due.
+
+**Conseguenze**: nessuna dipendenza, nessun modulo nativo: esce con un
+OTA. Una migrazione nella parte A (numero dal Coordinatore con la lista
+dei file), e una nella parte C per le colonne di `group_runs`. La parte C
+tocca i file di TASK-309 (B2 e C ancora aperte): la lista al Coordinatore
+prima. La privacy va in `main` prima dell'OTA che accende i gruppi. Le
+corse di gruppo senza gruppo restano come oggi.

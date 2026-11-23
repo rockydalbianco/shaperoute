@@ -65,7 +65,12 @@ describe("a line", () => {
     const line = journalLine(journalBase(before), after, writtenOf(before));
     expect(line.endsWith("\n")).toBe(true);
     expect(line.length).toBeLessThan(200);
-    const read = JSON.parse(line) as { n: number; f: TrackFix[]; d: number; p?: Pause[] };
+    const read = JSON.parse(line) as {
+      n: number;
+      f: TrackFix[];
+      d: number;
+      p?: Pause[];
+    };
     expect(read.n).toBe(2000);
     expect(read.f).toEqual([fix(20_000, 6000)]);
     expect(read.d).toBe(after.distanceM);

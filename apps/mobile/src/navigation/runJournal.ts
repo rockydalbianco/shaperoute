@@ -109,7 +109,11 @@ function isLine(value: unknown, checks: JournalChecks): value is JournalLine {
  * empty); one that cannot be read, or that does not start where the track
  * ends, stops the reading: what was read until then is the run.
  */
-export function replayJournal(track: Track, text: string, checks: JournalChecks): Track {
+export function replayJournal(
+  track: Track,
+  text: string,
+  checks: JournalChecks,
+): Track {
   const base = journalBase(track);
   let out = track;
   for (const raw of text.split("\n")) {

@@ -3320,4 +3320,13 @@ export const IT: Table = {
   "Warn within": "Avvisa entro",
   "Warn above or below": "Avvisa sopra o sotto",
   "Warning sound": "Suono dell'avviso",
+  // src/air/ (TASK-479 part E3: the airspace log after the flight; en/it approved by the user on 2026-11-23)
+  "Inside your airspaces: {count}": "Dentro i tuoi spazi aerei: {count}",
+  "No fix inside the volumes of your file.":
+    "Nessun punto dentro i volumi del tuo file.",
+  "{from}–{to} · {name} ({class}) · {min} min":
+    "{from}–{to} · {name} ({class}) · {min} min",
+  "Deepest: {dist} from the edge, {height} from floor or ceiling":
+    "Più dentro: {dist} dal bordo, {height} da base o tetto",
+  "Only on your phone: not in the Feed.": "Solo sul tuo telefono: non va nel Feed.",
 };

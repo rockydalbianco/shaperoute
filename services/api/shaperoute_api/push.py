@@ -16,8 +16,9 @@ a group run's, to who goes (TASK-309, group_runs.py): it starts soon, its
 time or place changed, it was cancelled; two the private messages'
 (TASK-319, messages.py): a message, and a message request once a day for
 each writer; three the monthly challenges' (TASK-343, contests.py and
-contest_clock.py): a new one opened, its last days, its results. Each to
-one recipient, and only when:
+contest_clock.py): a new one opened, its last days, its results; three a
+group's (TASK-495, groups.py): a request to join, a request accepted, an
+invite. Each to one recipient, and only when:
 
 - the recipient has «Push notifications» on (users.notify_push);
 - the recipient is not the one who acted, but for OWN_KINDS;
@@ -110,6 +111,9 @@ Kind = Literal[
     "message_request",
     "planned_live_started",
     "gear_limit",
+    "group_join_request",
+    "group_join_accepted",
+    "group_invite",
 ]
 # The events of what one did oneself, or of nobody's doing: told to
 # oneself too (the shape game, TASK-296; the contest won, TASK-299; the
@@ -248,6 +252,9 @@ class PushEvent:
     # An item of gear past its limit (TASK-486 part G): the app opens it;
     # its name is `text`, `key` its id and its limit.
     gear_id: UUID | None = None
+    # A group (TASK-495, groups.py): the app opens its page; its name is
+    # `text`, `key` its id.
+    group_id: UUID | None = None
 
     def same(self) -> tuple[str, int, int, str, str]:
         return (
@@ -555,6 +562,30 @@ TEXTS: dict[str, dict[str, str]] = {
         "es": "{title} ha llegado al límite que pusiste.",
         "fr": "{title} a atteint la limite que tu as fixée.",
     },
+    # Groups (TASK-495, GRUPPI.md §8): {title} is the group's name, {name}
+    # who asked, accepted or invited. The five texts of each approved by the
+    # user on 2026-11-23.
+    "group_join_request": {
+        "en": "{name} asked to join {title}.",
+        "de": "{name} möchte {title} beitreten.",
+        "it": "{name} ha chiesto di entrare in {title}.",
+        "es": "{name} ha pedido unirse a {title}.",
+        "fr": "{name} a demandé à rejoindre {title}.",
+    },
+    "group_join_accepted": {
+        "en": "You're in {title}!",
+        "de": "Du bist jetzt in {title}!",
+        "it": "Sei dentro {title}!",
+        "es": "¡Ya estás en {title}!",
+        "fr": "Tu fais partie de {title} !",
+    },
+    "group_invite": {
+        "en": "{name} invited you to join {title}.",
+        "de": "{name} hat dich eingeladen, {title} beizutreten.",
+        "it": "{name} ti ha invitato a entrare in {title}.",
+        "es": "{name} te ha invitado a unirte a {title}.",
+        "fr": "{name} t'a invité à rejoindre {title}.",
+    },
     "message_live_text": {
         language: "{name}" + (" : " if language == "fr" else ": ") + "🔴 {text}"
         for language in ("en", "de", "it", "es", "fr")
@@ -602,6 +633,8 @@ def data_of(event: PushEvent, actor_public_id: UUID, actor_name: str) -> dict[st
         return {"kind": event.kind, "gear_id": str(event.gear_id)}
     if event.group_run_id is not None:
         return {"kind": event.kind, "group_run_id": str(event.group_run_id)}
+    if event.group_id is not None:
+        return {"kind": event.kind, "group_id": str(event.group_id)}
     if event.planned_live_id is not None:
         return {
             "kind": event.kind,

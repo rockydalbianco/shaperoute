@@ -231,9 +231,21 @@ disegno, 0,45 s fermo, 0,3 s di dissolvenza sull'app; il giallo si vede
 almeno 2,4 secondi. Il cuore finito resta sempre i suoi 0,45 s: se il
 telefono è lento e il disegno finisce tardi, la dissolvenza aspetta.
 L'app parte sotto e si carica intanto; l'animazione prende i tocchi finché
-c'è, non si salta, e si vede una volta a ogni apertura. Sta in
+c'è e si vede una volta a ogni apertura. Sta in
 `src/intro/`, sopra `App` (`index.ts`). Al lettore di schermo dice
 «MuW».
+
+**Intera una volta per versione, poi corta** (TASK-505, ADR-0405): i
+tempi qui sopra sono dell'animazione intera, che si vede alla prima
+apertura e alla prima dopo una versione nuova dello store (`version` di
+`app.json`, non gli OTA). Le altre volte lo stesso cuore dura 1,0 s: la
+penna parte subito, 0,6 s il disegno, 0,15 s fermo, 0,25 s di
+dissolvenza. **Un tocco la chiude**, intera o corta: sfuma in 0,25 s da
+dov'è, senza pulsanti né testi; vale anche il doppio tocco del lettore di
+schermo, e il tocco resta dell'animazione, non arriva all'app sotto. Il
+telefono ricorda la versione vista in `intro-seen.json`
+(`intro/introSeen.ts`), letto prima del primo fotogramma; senza file, o
+con un file che non si legge, l'intera.
 
 **Il cuore su giallo** (TASK-221, ADR-0184): lo stesso cuore, fermo e
 piccolo, come un logo. Un quadrato giallo `accent` con gli angoli

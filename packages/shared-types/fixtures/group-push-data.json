@@ -1,0 +1,14 @@
+[
+  {
+    "kind": "group_join_request",
+    "group_id": "7a1c2f0e-5b4d-4e8a-9c3b-2d1e0f9a8b7c"
+  },
+  {
+    "kind": "group_join_accepted",
+    "group_id": "7a1c2f0e-5b4d-4e8a-9c3b-2d1e0f9a8b7c"
+  },
+  {
+    "kind": "group_invite",
+    "group_id": "5c4b3a29-1807-4f6e-9d5c-4b3a29180700"
+  }
+]

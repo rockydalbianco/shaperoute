@@ -348,3 +348,41 @@ test("«Help» and «Privacy» say «Everyone» is for an activity added from a 
     }
   }
 });
+
+test("«Privacy» says a gym plan shared in the Feed is a copy that others can copy, in all five languages (TASK-485 B)", () => {
+  const shared: Record<Language, RegExp[]> = {
+    en: [
+      /unless you share one in the Feed/,
+      /copy the plan into their own plans/,
+      /copies already made stay with whoever made them/,
+    ],
+    it: [
+      /a meno che tu non ne condivida una nel Feed/,
+      /può copiare la scheda tra le sue/,
+      /le copie già fatte restano a chi le ha fatte/,
+    ],
+    de: [
+      /außer du teilst einen im Feed/,
+      /den Plan in seine eigenen Pläne kopieren/,
+      /schon gemachte Kopien bleiben/,
+    ],
+    fr: [
+      /sauf si tu en partages un dans le Feed/,
+      /copier le programme dans ses propres programmes/,
+      /les copies déjà faites restent/,
+    ],
+    es: [
+      /salvo que compartas una en el Feed/,
+      /copiar la rutina entre sus propias rutinas/,
+      /las copias ya hechas se quedan/,
+    ],
+  };
+  for (const [language, content] of CONTENTS) {
+    const privacy = all(content.privacy);
+    for (const sentence of shared[language]) {
+      expect(privacy).toMatch(sentence);
+    }
+    // The help does not promise it: only «Privacy» tells what a shared plan carries.
+    expect(all(content.help)).not.toMatch(shared[language][0]);
+  }
+});

@@ -38,6 +38,11 @@ Suunto, Coros e Komoot e fare domanda, ognuno col sì dell'utente.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-505 — L'animazione iniziale e i file del video** (ADR-0405) ·
+  parte 0 il 2026-11-23: animazione intera solo la prima volta e dopo una
+  versione nuova, poi 1 s e saltabile; animali e musiche restano dentro.
+  Scelte dell'utente fatte; parte A col sì del Coordinatore.
+  File: — · `tasks/TASK-505.md`
 - **TASK-493 — La mappa dei decolli** (ADR-0400) · parte 0 il 2026-11-23:
   decolli e atterraggi da OSM, la scheda del decollo con lo storico dei
   voli contato dal server; scelte dell'utente fatte. Vento dopo 479 H.
@@ -55,6 +60,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   «Apply»; solo con account, omino di TASK-490 B; testi approvati. A in
   `main` (#1427); B dopo TASK-490 B (#1433), C dopo #1420.
   File: — · `tasks/TASK-491.md`
+  **Chiuso il 2026-11-23**: B (#1457) e C (#1476, `38ffa555`) in `main`; esce col prossimo OTA, col sì dell'utente al Coordinatore; vedi `archive/COMPLETATI.md`.
 - **TASK-490 — La modalità Allenamento** · A (#1424) e B (#1433, l'omino
   della settimana su «Today») in `main` il 2026-11-23, schermate e testi
   approvati dall'utente; escono col prossimo OTA. Restano C (riga del
@@ -372,6 +378,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);
   manca il passo sul server (il 12, col sì dell'utente). Poi la parte app,
   dopo TASK-414 B e TASK-413 B. File: — · `tasks/TASK-463.md`
+  **2026-11-23**: B (#1278) e C, l'accensione (#1350), in `main`; A sul
+  server dal passo 12, l'app in produzione dall'OTA 20 (2026-11-21). Fatto
+  in produzione: manca la prova dell'utente sul telefono, poi si chiude.
+  **Chiuso il 2026-11-23**: l'utente l'ha provato sul telefono («Sì,
+  funziona»); vedi `archive/COMPLETATI.md`.
 
 - **TASK-461 — Il pianificatore completo** (ADR-0371) · A1 e B1 (server:
   quattro esercizi, giorni fuori `outing`, `target`) in `main` e sul server;

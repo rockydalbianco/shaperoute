@@ -454,6 +454,33 @@ Restano fuori le stazioni, i piloni, le teleferiche merci, le zip line e le
 piste di fondo. Sul server di produzione questi comandi li lancia
 l'utente.
 
+### Decolli e atterraggi da un estratto (TASK-493 parte A, ADR-0400)
+
+La mappa dei decolli legge i siti del volo libero dal database
+(`flying_sites`), scritti dagli stessi estratti Geofabrik dello sci: Italia,
+Austria, Svizzera, Liechtenstein, Francia alpina, Baviera, Slovenia. Per
+ogni estratto:
+
+```bash
+osmium tags-filter italy-latest.osm.pbf nwr/free_flying:site nwr/free_flying:takeoff nwr/free_flying:landing -o italy-flying.osm.pbf
+```
+
+Poi un solo comando con tutti gli estratti, così `--clean` toglie solo i
+siti che nessuno ha più:
+
+```bash
+python -m shaperoute_api.flying_sites_extract --extract italy-flying.osm.pbf austria-flying.osm.pbf … --clean
+```
+
+Si leggono il tag vecchio `free_flying:site` (`takeoff`, `launch`,
+`landing`, `toplanding`, anche più d'uno con «;») e quelli nuovi
+`free_flying:takeoff` e `free_flying:landing` (`yes`), più
+`free_flying:site_orientation`, `free_flying:official` ed `ele`. Restano
+fuori `training`, `towing`, `packing`, un `sport=free_flying` senza tipo e
+le relazioni. `--osm` legge file OSM XML al posto degli estratti. L'API
+risponde con l'attribuzione «© OpenStreetMap contributors». Sul server di
+produzione i comandi li lancia l'utente.
+
 ### Le stazioni sciistiche da OpenSkiData (TASK-406 parte A, ADR-0338)
 
 Le stazioni della ricerca «Ski» vengono da un solo file di OpenSkiData

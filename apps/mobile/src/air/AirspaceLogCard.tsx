@@ -105,6 +105,11 @@ export function AirspaceLogCard({
         onRequestClose={() => setOpen(false)}
       >
         <View style={styles.backdrop}>
+          <Pressable
+            style={styles.dim}
+            onPress={() => setOpen(false)}
+            accessibilityLabel={t("Close")}
+          />
           <View style={styles.sheet} testID="airspace-log">
             <Text style={styles.title}>{t("Airspace")}</Text>
             <ScrollView contentContainerStyle={styles.list}>
@@ -165,10 +170,15 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
     textAlign: "right",
   },
-  backdrop: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: color.shadow,
+  backdrop: { flex: 1, justifyContent: "flex-end" },
+  dim: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: color.scrim,
+    opacity: 0.6,
   },
   sheet: {
     maxHeight: "80%",

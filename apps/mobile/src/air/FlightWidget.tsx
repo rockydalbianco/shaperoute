@@ -317,10 +317,10 @@ export function FlightWidget({
         {
           side: <Arrow size={arrow} deg={onScreen} color={palette.text} />,
           sideSize: arrow,
-          under: `${landing.landing.name} · ${heightChangeText(
-            landing.overM,
-            flight.altitude,
-          )} ${UNIT_LABEL[flight.altitude]}`,
+          // The height first: a narrow cell cuts the name, not the number.
+          under: `${heightChangeText(landing.overM, flight.altitude)} ${
+            UNIT_LABEL[flight.altitude]
+          } · ${landing.landing.name}`,
         },
       );
     }

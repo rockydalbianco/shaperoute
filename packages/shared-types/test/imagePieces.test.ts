@@ -9,10 +9,15 @@ import type {
   OutlinePoint,
 } from "../src/index.ts";
 
-// The same JSON is read by the API's test_images.py (TASK-297 part C2).
+// The same JSON is read by the API's test_images.py (TASK-297 part C2). A
+// free route on roads, not a swim: no placement, fit or laps (TASK-347,
+// TASK-323).
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 const fields: Same<keyof typeof traced, keyof ImageOutline> &
-  Same<keyof typeof request, keyof Omit<ImagePenUpRouteRequest, "strokes">> = true;
+  Same<
+    keyof typeof request,
+    keyof Omit<ImagePenUpRouteRequest, "strokes" | "placement" | "fit" | "laps">
+  > = true;
 
 // JSON arrays are not tuples to tsc: through unknown.
 const outline = traced as unknown as ImageOutline;

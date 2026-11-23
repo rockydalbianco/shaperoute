@@ -251,8 +251,13 @@ ripete più «Gym workout». Le quattro traduzioni della riga («Un allenamento
 già fatto, scritto a mano», «Ein Training, das du schon gemacht hast, von
 Hand eingetragen», «Une séance déjà faite, écrite à la main», «Un
 entrenamiento que ya hiciste, escrito a mano»): approvate dall'utente il
-2026-11-23 («Sì, approvo»). Restano le schermate del foglio, prima del
-«pronta». La PR #1478 (481 F) tocca gli
+2026-11-23 («Sì, approvo»). Schermate del foglio (cinque, in
+`out/TASK-484/b2/` del checkout principale; «Da una scheda» ridisegnata
+come «Choose a plan» di «Workout plan», con «Cancel»/«Back» in basso)
+approvate dall'utente il 2026-11-23 («Sì, approvo»). Dopo l'unione di
+`main` con 481 F l'ordine è: Record now, Already recorded, Photos only,
+From a file, Sleep, Gym workout, Workout plan; «Previous day»/«Next day»
+sono già nelle tabelle per TASK-489 (stesse traduzioni), i doppioni tolti. La PR #1478 (481 F) tocca gli
 stessi due file del «+»: chi entra per secondo unisce `main` tenendo
 entrambe le righe.
 
@@ -269,18 +274,19 @@ site/privacy/**/index.html                        (rigenerate con make_privacy.m
 
 - [x] **0**: scelte dell'utente scritte qui e in ADR-0395; liste dei file approvate dal
       Coordinatore.
-- [ ] **A**: un `PUT /me/gym-sessions` con `source: "manual"` si salva e
+- [x] **A**: un `PUT /me/gym-sessions` con `source: "manual"` si salva e
       torna con `source`; serie `live: true`, pause, `plan` o fine dopo
       adesso danno 422; `PUT /me/activities` con `manual` dà 422 (test).
-- [ ] **A**: uno scritto a mano non alza i livelli, non ha `new_levels`,
+- [x] **A**: uno scritto a mano non alza i livelli, non ha `new_levels`,
       non entra in classifica, badge, concorso, gioco (test).
-- [ ] **A**: un allenamento senza `source` resta `muw`, come prima (test).
-- [ ] **A**: sul server col sì dell'utente.
-- [ ] **B**: la voce compare nel foglio con un account; il flusso salva e
+- [x] **A**: un allenamento senza `source` resta `muw`, come prima (test).
+- [x] **A**: sul server col sì dell'utente.
+- [x] **B**: la voce compare nel foglio con un account; il flusso salva e
       il post parte da «Everyone» con «Imported»; «Save» spento senza
       esercizi; «Pick a time before now.» (test).
-- [ ] **B**: schermate e quattro traduzioni approvate dall'utente;
-      privacy del punto 4 nelle cinque lingue e sul sito.
+- [ ] **B**: schermate e quattro traduzioni approvate dall'utente
+      (fatto: 2026-11-22 e 2026-11-23, anche il foglio del «+»);
+      privacy del punto 4 nelle cinque lingue e sul sito (a turno).
 - [ ] **B**: `tsc` e jest dei file toccati verdi, CI verde.
 
 ## Fuori scope

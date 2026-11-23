@@ -452,6 +452,14 @@ const privacy: AboutDocument = {
       ],
     },
     {
+      heading: "Ernährung",
+      blocks: [
+        "«Ernährung» ist ein Tagebuch, das du für dich führst. Die Lebensmittel, die du hinzufügst, dein Wochenplan, was du für jeden Tag als gegessen einträgst, dein Tagesziel und die Kalorien, die du von Hand korrigierst, bleiben nur auf deinem Handy: Sie erreichen unseren Server nicht, und niemand sonst kann sie sehen. Die «Kalorienbilanz» in deinem Profil wird auf deinem Handy berechnet und nur dir angezeigt.",
+        "Um die Energie zu schätzen, die du verbrauchst, zählt MuW auf deinem Handy die Aktivitäten deines Kontos und die Körperdaten, die du in den «Einstellungen» eingegeben hast. Jede Zahl ist eine Schätzung: MuW gibt keine Diäten oder medizinischen Ratschläge.",
+        "Diese Daten waren nie auf unserem Server. Deshalb löscht weder das Abmelden noch das Löschen deines Kontos sie: Sie bleiben auf deinem Handy, bis du sie dort entfernst oder die App deinstallierst.",
+      ],
+    },
+    {
       heading: "Apple Health und Health Connect",
       blocks: [
         "Sobald du «In Apple Health speichern» (iPhone) oder «In Health Connect speichern» (Android) einschaltest, wird jede Aktivität, die du speicherst, auch dort geschrieben, auf deinem Telefon: die Sportart, wann sie begann und endete, die Distanz, die Route und, bei einem Lauf, die geschätzten aktiven Kalorien. Wenn du am Ende eines Schwimmens im Becken oder eines Trainings im Fitnessstudio auf «Herzfrequenz aus Apple Health hinzufügen» tippst, liest MuW die Herzfrequenz, die deine Uhr während dieser Aktivität aufgezeichnet hat, und nichts anderes; nach diesem ersten Tippen liest MuW sie am Ende jedes Schwimmens und jedes Trainings. Durchschnitt und Maximum bleiben mit der Aktivität auf unserem Server und erscheinen in ihrem Beitrag, außer du schaltest «Herzfrequenz zeigen» aus; die Zeit in jeder Zone bleibt auf deinem Telefon. Keine deiner Gesundheitsdaten erreicht irgendeine Werbung. Du kannst es in der Health-App oder in Health Connect beenden. Was schon dort ist, bleibt, bis du es dort löschst, auch wenn du den Lauf oder dein Konto löschst.",
@@ -476,6 +484,7 @@ const privacy: AboutDocument = {
             "Google Ireland Limited (Firebase Cloud Messaging), um Push-Benachrichtigungen an Android-Telefone zu liefern. Wenn du Push einschaltest, fragt die App bei Firebase einen Registrierungs-Token für dein Telefon an; der Push-Dienst von Expo gibt jede Benachrichtigung (wer was getan hat, und den Anfang eines Kommentars) an Google weiter, das sie an dein Telefon liefert. Google sieht den Token und den Inhalt jeder Benachrichtigung, nicht dein Konto und nicht deine Position. Der Token wird von unserem Server entfernt, wenn du Push ausschaltest, dich abmeldest oder dein Konto löschst; der auf dem Telefon verschwindet, wenn du die App deinstallierst.",
             "Resend, in den Vereinigten Staaten, verschickt die E-Mails von MuW: deine E-Mail-Adresse mit der E-Mail selbst. Bei einer Meldung bringt es dem Betreiber von MuW, was gemeldet wurde, seinen Text, den Grund und die Benutzernamen dessen, der es gemeldet hat, und dessen, der es geschrieben hat. Bei «Feedback senden» bringt es deine Nachricht, deinen Benutzernamen und deine E-Mail-Adresse.",
             "Google erhält mit seinem Dienst Web Risk von unserem Server Teile des Fingerabdrucks (Hash) mancher Links, die Mitglieder an ihre Teile setzen, um zu prüfen, dass sie nicht zu gefährlichen Seiten führen: nie den ganzen Link, und nie, wer ihn gesetzt hat oder wer ihn öffnet.",
+            "Open Food Facts erhält den Barcode, den du in «Ernährung» scannst oder eingibst, um das Produkt zu finden: Es sieht den Barcode und, wie jede Website, deine IP-Adresse, nie dein Konto oder dein Tagebuch. Das zurückgesendete Produkt bleibt auf deinem Handy.",
             "Strava, wie oben gesagt.",
           ],
         },
@@ -491,6 +500,7 @@ const privacy: AboutDocument = {
             "Wenn du dein Konto löschst, wird alles, was dir gehört, sofort gelöscht: Profil, Bild, Telefonnummer, Läufe, Zeichnungen, Favoriten, Kommentare, Reaktionen, Folgen, Spieldaten und die Neuigkeiten, die auf deine E-Mail warten. Die Routen, die unser Motor gezeichnet hat, bleiben: Sie sagen nichts darüber, wer sie angefragt hat.",
             "Jede Nacht wird eine Sicherungskopie der Datenbank gemacht und 13 Tage aufbewahrt: Ein gelöschtes Konto ist nach höchstens 14 Tagen aus jeder Sicherungskopie verschwunden.",
             "Auf deinem Handy: die Sitzung, deine Einstellungen (Sprache, Sport, Seen oder Meer), die Offline-Karten, die Läufe, die noch darauf warten, gesendet zu werden, und mit einem Konto die Gegend, in der deine Aktivitäten meist beginnen, um dir Seen und Meer in der Nähe vorzuschlagen; sie wird gelöscht, wenn du dich abmeldest.",
+            "Nur auf deinem Handy, auch nach dem Abmelden: was du in «Ernährung» einträgst.",
           ],
         },
         "Die Verbindung zwischen der App und unserem Server ist verschlüsselt (HTTPS).",

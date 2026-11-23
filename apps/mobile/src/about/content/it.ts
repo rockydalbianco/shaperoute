@@ -450,6 +450,14 @@ const privacy: AboutDocument = {
       ],
     },
     {
+      heading: "Alimentazione",
+      blocks: [
+        "«Alimentazione» è un diario che tieni per te. I cibi che aggiungi, il tuo piano della settimana, quello che scrivi di aver mangiato ogni giorno, il tuo obiettivo del giorno e le calorie che correggi a mano restano solo sul tuo telefono: non arrivano al nostro server e nessun altro può vederli. Il «Bilancio delle calorie» nel tuo profilo è calcolato sul telefono e lo vedi solo tu.",
+        "Per stimare l'energia che consumi, MuW conta sul telefono le attività del tuo account e i dati del corpo che hai inserito in «Impostazioni». Ogni numero è una stima: MuW non fornisce diete né consigli medici.",
+        "Questi dati non sono mai stati sul nostro server, quindi uscire dall'account o eliminarlo non li cancella: restano sul telefono finché non li togli lì o non disinstalli l'app.",
+      ],
+    },
+    {
       heading: "Apple Salute e Health Connect",
       blocks: [
         "Quando accendi «Salva in Apple Salute» (iPhone) o «Salva in Health Connect» (Android), ogni attività che salvi viene scritta anche lì, sul telefono: lo sport, quando è iniziata e finita, la distanza, il percorso e, per una corsa, le calorie attive stimate. Se a fine nuotata in piscina o a fine allenamento in palestra tocchi «Aggiungi il battito da Salute», MuW legge il battito che il tuo orologio ha registrato durante quell'attività, e nient'altro; dopo quel primo tocco lo legge alla fine di ogni nuotata e di ogni allenamento. Medio e massimo restano con l'attività sul nostro server e si vedono nel suo post, a meno che tu spenga «Mostra il battito»; il tempo in ogni zona resta sul telefono. Niente dei tuoi dati di salute arriva a qualche pubblicità. Puoi fermarlo nell'app Salute o in Health Connect. Quello che c'è già resta finché non lo cancelli lì, anche quando cancelli la corsa o il tuo account.",
@@ -474,6 +482,7 @@ const privacy: AboutDocument = {
             "Google Ireland Limited (Firebase Cloud Messaging), per consegnare le notifiche push ai telefoni Android. Quando accendi le push, l'app chiede a Firebase un token di registrazione per il tuo telefono; il servizio push di Expo passa ogni notifica (chi ha fatto cosa, e l'inizio di un commento) a Google, che la consegna al tuo telefono. Google vede il token e il contenuto di ogni notifica, non il tuo account né la tua posizione. Il token si toglie dal nostro server quando spegni le push, esci dall'account o lo elimini; quello sul telefono se ne va quando disinstalli l'app.",
             "Resend, negli Stati Uniti, manda le email di MuW: il tuo indirizzo email con la email stessa. Per una segnalazione porta a chi gestisce MuW ciò che è stato segnalato, il suo testo, il motivo e i nomi utente di chi l'ha segnalato e di chi l'ha scritto. Per «Mandaci un feedback» porta il tuo messaggio, il tuo nome utente e il tuo indirizzo email.",
             "Google, con il suo servizio Web Risk, riceve dal nostro server pezzi dell'impronta (hash) di alcuni link che gli iscritti mettono sui loro capi, per controllare che non portino a siti pericolosi: mai il link intero, né chi l'ha messo o chi lo apre.",
+            "Open Food Facts riceve il codice a barre che leggi o scrivi in «Alimentazione», per trovare il prodotto: vede il codice e, come ogni sito, il tuo indirizzo IP, mai il tuo account né il tuo diario. Il prodotto che rimanda resta sul tuo telefono.",
             "Strava, come detto sopra.",
           ],
         },
@@ -489,6 +498,7 @@ const privacy: AboutDocument = {
             "Quando elimini l'account, tutto quello che è tuo si cancella subito: profilo, foto, numero di telefono, corse, disegni, preferiti, commenti, reazioni, follow, dati del gioco e le novità in attesa della tua email. I percorsi disegnati dal nostro motore restano: non dicono niente di chi li ha chiesti.",
             "Una copia di sicurezza del database si fa ogni notte e si tiene 13 giorni: un account eliminato è fuori da ogni copia entro 14 giorni.",
             "Sul tuo telefono: la sessione, le tue scelte (lingua, sport, laghi o mare), le mappe offline, le corse che aspettano ancora di partire e, con un account, la zona da cui partono di solito le tue attività, per suggerirti laghi e mare vicini; si cancella quando esci dall'account.",
+            "Solo sul tuo telefono, anche dopo che esci dall'account: quello che scrivi in «Alimentazione».",
           ],
         },
         "Il collegamento fra l'app e il nostro server è cifrato (HTTPS).",

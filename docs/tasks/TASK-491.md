@@ -1,6 +1,6 @@
 # TASK-491 — Il Coach MuW: consigli dagli allenamenti fatti e la scheda che cambia con «Apply»
 
-**Stato**: In corso (parte 0 e A in `main` il 2026-11-23; poi B dopo TASK-490 B, poi C dopo #1420)
+**Stato**: Done (2026-11-23: parti 0, A, B e C in `main`)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-491-coach`
 **Dipende da**: TASK-488 (la scheda si adatta, ADR-0396: i passi `adapt`
@@ -129,25 +129,30 @@ L'elenco dei file di ogni parte va al Coordinatore prima del codice.
   con gli indirizzi che ci sono: mesi del calendario, al massimo 20
   sessioni intere, schede, attività) e `coach/applyTip.ts` («Apply» su
   P1, P1bw, P2, P3, P4; le altre «OK»), 53 test. Non la usa ancora niente.
-- **Parte B**: parte quando TASK-490 B (#1433, l'omino) è in `main`.
-  Accordi con TASK-490: `rules.ts` smette di contare le serie da sé e usa
-  `setsByMuscle` di `trainingmode/weekBody.ts` sugli ultimi 7 giorni
-  (P4, P4hi, P5); la pagina monta `WeekBodyCard` com'è, nel rosa dei
-  muscoli scelto dall'utente. I testi tradotti sono pronti in
-  `out/coach/testi-tradotti.md` nel checkout principale («Not now» c'è
-  già in `it.ts`).
-- **Parte C**: dopo TASK-488 B (#1420).
+- **Parte B** in `main` (#1457, `970b0cf6`, 2026-11-23): la pagina
+  «Coach» (`coach/CoachPage.tsx`, `TipCard.tsx`, `tipText.ts`,
+  `snooze.ts`, `useCoach.ts`) con l'omino di TASK-490 B montato com'è,
+  al massimo tre consigli, «Apply» / «Not now» (7 giorni), l'invito senza
+  account; `rules.ts` conta le serie con `setsByMuscle` di
+  `trainingmode/weekBody.ts` sugli ultimi 7 giorni; testi in it/de/es/fr.
+  Schermate approvate dall'utente («Approvo»).
+- **Parte C** in `main` (#1476, `38ffa555`, 2026-11-23): la voce «Coach»
+  in cima a «My plans» apre la pagina nello stesso foglio; a fine
+  allenamento, con account, la riga «Next time: {exercise} {kg} kg»
+  (`coach/nextTime.ts`, `coach/useNextTime.ts`): l'allenamento appena
+  finito letto con le settimane prima, solo P1 sui suoi esercizi.
+  Schermate approvate dall'utente («Approvo»).
 
 ## Criteri di accettazione
 
 - [x] Parte 0: questo file, ADR-0399 e i testi approvati dall'utente.
-- [ ] Ogni regola ha un test che la fa scattare e uno che non la fa
+- [x] Ogni regola ha un test che la fa scattare e uno che non la fa
       scattare; gli stessi dati danno gli stessi consigli.
-- [ ] Mai più di tre consigli, nell'ordine scritto sopra.
-- [ ] «Apply» cambia la scheda salvata, e in «My plans» si vede il
+- [x] Mai più di tre consigli, nell'ordine scritto sopra.
+- [x] «Apply» cambia la scheda salvata, e in «My plans» si vede il
       cambio; «Not now» nasconde il consiglio per 7 giorni.
-- [ ] Senza account: solo l'invito, nessuna richiesta all'API.
-- [ ] Nessuna dipendenza nuova, nessuna chiamata a un modello AI.
+- [x] Senza account: solo l'invito, nessuna richiesta all'API.
+- [x] Nessuna dipendenza nuova, nessuna chiamata a un modello AI.
 
 ## File toccati
 
@@ -173,4 +178,14 @@ Parti A–C: l'elenco va al Coordinatore prima del codice.
 
 ## Esito
 
-*(a fine task)*
+**Done il 2026-11-23**: parti 0 (#1426), A (#1427), B (#1457) e C (#1476)
+in `main`; testi e schermate approvati dall'utente. Esce col prossimo OTA
+di produzione (Coordinatore, col sì dell'utente).
+
+Restano, da proporre all'utente se servono:
+
+- l'invito senza account non ha un tasto per crearlo: c'è
+  il testo e basta;
+- la regola T3 (sonno) non scatta mai: il punteggio del sonno non arriva
+  ancora al Coach (`sleepScore` di `CoachRaw` resta vuoto);
+- la prova sul telefono dopo l'OTA.

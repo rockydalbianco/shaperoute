@@ -58,6 +58,9 @@ export const FR: Table = {
   "Try again": "Réessayer",
   "No activities yet. Save a run when you finish it, and it is kept here.":
     "Pas encore d'activités. Enregistre une course quand tu la termines, et tu la retrouveras ici.",
+  "No activities yet": "Pas encore d'activités",
+  "When you finish an activity and save it, you find it here.":
+    "Quand tu termines une activité et l'enregistres, tu la retrouves ici.",
   "{when}, {where}, {facts}, public, open on the map":
     "{when}, {where}, {facts}, publique, ouvrir sur la carte",
   "{when}, {where}, {facts}, open on the map":
@@ -177,8 +180,9 @@ export const FR: Table = {
   "Remove {title} from favorites": "Retirer {title} des favoris",
   "Loading your favorites…": "Chargement de tes favoris…",
   "Your favorites could not load.": "Impossible de charger tes favoris.",
-  "No favorites yet. Tap {heart} on a route on the map to keep it here.":
-    "Pas encore de favoris. Touche {heart} sur un parcours de la carte pour le garder ici.",
+  "No favorites yet": "Pas encore de favoris",
+  "Tap {heart} on a route on the map to keep it here.":
+    "Touche {heart} sur un parcours de la carte pour le garder ici.",
 
   // src/favorites/favoriteRoute.ts
   Route: "Parcours",
@@ -2384,8 +2388,9 @@ export const FR: Table = {
   "Messages, {count} waiting": "Messages, {count} en attente",
   "Message requests": "Demandes de message",
   "Message requests, {count} waiting": "Demandes de message, {count} en attente",
-  "No messages yet. Open someone's profile and tap Message to write to them.":
-    "Pas encore de messages. Ouvre le profil de quelqu'un et touche Message pour lui écrire.",
+  "No messages yet": "Pas encore de messages",
+  "Open someone's profile and tap Message to write to them.":
+    "Ouvre le profil de quelqu'un et touche Message pour lui écrire.",
   "No message requests.": "Aucune demande de message.",
   "You: {text}": "Toi : {text}",
   "{name}, new message: {text}": "{name}, nouveau message : {text}",
@@ -3204,6 +3209,8 @@ export const FR: Table = {
   "Up to {count} items on an activity.": "Jusqu'à {count} équipements par activité.",
   "This activity is still on its way. Try again in a moment.":
     "Cette activité est encore en route. Réessaie dans un instant.",
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), approved by the user on 2026-11-23
+  "From my gear": "Depuis mon équipement",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
   "Share one of your gym plans": "Partage un de tes programmes de salle",
@@ -3470,6 +3477,19 @@ export const FR: Table = {
     "Ce fichier ne contient aucune balise que MuW sait lire.",
   "This file is not a task MuW can read.":
     "Ce fichier n'est pas une manche que MuW sait lire.",
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
+  "Next turnpoint": "Prochaine balise",
+  "Glide to goal": "Plané jusqu'au but",
+  "Start gate": "Porte de départ",
+  "Task distance": "Distance de la manche",
+  Competition: "Compétition",
+  "Gate open": "Porte ouverte",
+  "Started {time}": "Parti à {time}",
+  "Whole task: {distance}": "Manche entière : {distance}",
+  "No task loaded": "Aucune manche chargée",
+  "Goal taken": "But atteint",
+  "Turnpoint {name} taken. Next: {next}.": "Balise {name} validée. Suivante : {next}.",
+  "Goal {name} taken.": "But {name} atteint.",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Bilan calorique",
   Used: "Dépensées",

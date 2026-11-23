@@ -3470,4 +3470,13 @@ export const IT: Table = {
   "Goal taken": "Goal preso",
   "Turnpoint {name} taken. Next: {next}.": "Boa {name} presa. Prossima: {next}.",
   "Goal {name} taken.": "Goal {name} preso.",
+  // src/nutrition (TASK-489 part D)
+  "Calorie balance": "Bilancio delle calorie",
+  Used: "Consumate",
+  "Previous week": "Settimana prima",
+  "Next week": "Settimana dopo",
+  "so far": "finora",
+  "Week total": "Totale della settimana",
+  "Today is not in the total until the day is over.":
+    "Oggi non entra nel totale finché il giorno non è finito.",
 };

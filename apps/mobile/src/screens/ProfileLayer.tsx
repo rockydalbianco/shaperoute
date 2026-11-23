@@ -28,6 +28,8 @@ import {
   useAskedGroupRun,
 } from "../groupRuns/groupRunDoor";
 import { GroupRunPageHost } from "../groupRuns/GroupRunPage";
+import { closeGroupPage, openGroupPage, useAskedGroup } from "../groups/groupDoor";
+import { GroupFormHost, GroupPageHost } from "../groups/GroupPage";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import { openGearItem } from "../gear/gearDoor";
 import { GearFromBellHost } from "../gear/GearFromBell";
@@ -188,6 +190,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
       setPage(null);
       closeContestPage();
       closeGroupRunPage();
+      closeGroupPage();
       setAsked((last) => ({ n: last.n + 1, hint: why }));
     },
     [setPeople],
@@ -280,6 +283,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
         setPeople(null);
         closeContestPage();
         closeGroupRunPage();
+        closeGroupPage();
       },
     }),
     [setPeople],
@@ -406,7 +410,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // Push notifications (TASK-262): this phone's token on the API while the
   // switch is on; a notification touched opens its drawing or a profile,
   // as a tagged name does, or the conversation of a message.
-  const opens: Opens = {
+  // `openGroup` is read by openTarget once it knows a group's target.
+  const opens: Opens & { openGroup: (id: string) => void } = {
     openDrawing: (id) => drawings.open({ id }),
     openProfile: followsDoor.openProfile,
     // A shape of the game unlocked (TASK-296): the app shows «Play».
@@ -418,6 +423,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     openContest: openContestPage,
     // A group run's notification (TASK-309 part B): its page.
     openGroupRun: openGroupRunPage,
+    // A group's notification (TASK-495 part B): its page.
+    openGroup: openGroupPage,
     // A planned live that started (TASK-468 part B2b1): its live view.
     openLive: openLiveView,
     // An item of one's gear past its limit (TASK-486 part G): the item.
@@ -445,6 +452,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   const contestOver = useAskedContest() !== null && drawings.opened === null;
   // The page of a group run over the app (TASK-309 part B), as a challenge's.
   const groupRunOver = useAskedGroupRun() !== null;
+  // The page of a group over the app (TASK-495 part B), as a group run's.
+  const groupOver = useAskedGroup() !== null;
   const door = useMemo(
     () => ({
       open: () => {
@@ -467,7 +476,12 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // «Messages» over the app counts too, a conversation opened from its tab
   // as well (TASK-469).
   const appUnder =
-    (shown || contestOver || groupRunOver || bell.shown || messages.screen !== null) &&
+    (shown ||
+      contestOver ||
+      groupRunOver ||
+      groupOver ||
+      bell.shown ||
+      messages.screen !== null) &&
     !overAppState.covered;
   const overPages = (
     <OverAppPages covered={overAppState.covered}>
@@ -519,6 +533,9 @@ export function ProfileLayer({ apiUrl, children }: Props) {
               {/* Over the profiles: a group run opened from a member's
       list comes over it, and back goes to it (TASK-309 part B). */}
               <FollowsContext.Provider value={followsDoor}>
+                {/* A group's page (TASK-495 part B), under its outings. */}
+                <GroupPageHost />
+                <GroupFormHost />
                 <GroupRunPageHost />
                 <GearFromBellHost />
               </FollowsContext.Provider>
@@ -573,6 +590,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                                         shown ||
                                         contestOver ||
                                         groupRunOver ||
+                                        groupOver ||
                                         bell.shown ||
                                         messages.screen !== null,
                                     }}

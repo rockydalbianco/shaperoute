@@ -43,6 +43,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   versione nuova, poi 1 s e saltabile; animali e musiche restano dentro.
   Scelte dell'utente fatte; parte A col sì del Coordinatore.
   File: — · `tasks/TASK-505.md`
+  **Chiuso il 2026-11-23**: parte A in `main` (#1527); restano l'OTA e la
+  prova sul telefono; vedi `archive/COMPLETATI.md`.
 - **TASK-493 — La mappa dei decolli** (ADR-0400) · parte 0 il 2026-11-23:
   decolli e atterraggi da OSM, la scheda del decollo con lo storico dei
   voli contato dal server; scelte dell'utente fatte. Vento dopo 479 H.
@@ -52,9 +54,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   l'avviso; scelte dell'utente fatte. File: — · `tasks/TASK-494.md`
 - **TASK-485 — La scheda della palestra come post** (ADR-0394) · 0 e A in
   `main`, A sul server (passo 18); B (#1414) e B2, la voce del «+» (#1431,
-  `ed0bd4d7`) e la privacy (#1469, `5d226b33`) in `main`; restano la copia
-  del sito e l'OTA, col sì. Poi l'apertura da profilo, notifica o
-  link. File: — · `tasks/TASK-485.md`
+  `ed0bd4d7`), la privacy (#1469, `5d226b33`) e C, l'apertura da profilo,
+  notifica o link (#1481, `2a5c7590`), in `main`; restano la copia del sito
+  e l'OTA, col sì. File: — · `tasks/TASK-485.md`
 - **TASK-491 — Il Coach MuW** · parte 0 il 2026-11-23 (ADR-0399): regole
   con il loro studio, sul telefono e senza AI; la scheda cambia solo con
   «Apply»; solo con account, omino di TASK-490 B; testi approvati. A in
@@ -80,8 +82,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
   scelte dell'utente, ADR-0393); poi A server … G avviso, file al
   Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`
-  2026-11-23: A, B, C, D in `main` (#1372, #1377, #1439, #1463), spenta
-  (`GEAR_ON = false`); poi la privacy nel turno del Coordinatore, E–G.
+  2026-11-23: A–G e la privacy in `main` (G2 con #1536), spenta
+  (`GEAR_ON = false`); restano G1 sul server e l'accensione col sì dell'utente.
 - **TASK-214 — Il motore dei percorsi sul telefono** · A, B, C, A2, B2 in
   `main`; restano tempi e memoria su un iPhone vero e le zone dove il server
   dà 404. File: — · `tasks/TASK-214.md`

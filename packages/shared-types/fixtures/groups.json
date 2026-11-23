@@ -1,0 +1,24 @@
+{
+  "groups": [
+    {
+      "id": "7a1c2f0e-5b4d-4e8a-9c3b-2d1e0f9a8b7c",
+      "name": "Dolomites Saturday Hikers",
+      "sports": ["hiking", "walking"],
+      "city": "Trento",
+      "access": "request",
+      "members": 3,
+      "photo": null,
+      "me": "admin"
+    },
+    {
+      "id": "3e9d8c7b-6a5f-4e3d-8c2b-1a0f9e8d7c6b",
+      "name": "Gravel Lake Loop",
+      "sports": ["gravel_biking", "cycling"],
+      "city": "Riva del Garda",
+      "access": "public",
+      "members": 12,
+      "photo": null,
+      "me": "none"
+    }
+  ]
+}

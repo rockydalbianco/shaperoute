@@ -599,6 +599,7 @@ lasciando le righe d'indice.
 - ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
 - ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo di ADR-0269 con `group_id`, anche senza percorso; Public, Request, Invite only; un solo admin e fino a 3 co-admin; l'elenco dei membri solo ai membri; la chat di gruppo come parte E · 2026-11-23 · Proposta
 - ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
+- ADR-0403 — Le proprie bolle nei messaggi sul giallo dell'app: una faccia piena `accent` con parole `onAccent`, non vetro; quello che la bolla porta su una piastra neutra · 2026-11-23 · Attiva
 - ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Attiva
 - ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella: rotte a parte (`/drawings/{id}/gear`, `/gear/{id}`), `gear_id` sul tag col `SET NULL`, il limite una riga sola nella campanella per attrezzo e limite, «From my gear» coi tipi della foto · 2026-11-23 · Attiva
 - ADR-0264, aggiunta (TASK-496) — Con l'app dietro i punti nuovi vanno in un diario accanto al file della corsa, il file intero ogni tanto; in tasca la mappa non riceve niente e l'orologio non scatta · 2026-11-23 · Attiva
@@ -790,6 +791,45 @@ caricarsi, da guardare sul simulatore nella parte A e da dire a TASK-500,
 che misura l'avvio. Solo JavaScript, nessuna dipendenza nuova, nessun
 testo: l'impronta iOS non cambia, esce con un OTA. O15 si riapre se i
 file del video crescono molto (ordine di grandezza: oltre 20 MB).
+
+## ADR-0403 — Le proprie bolle nei messaggi sul giallo dell'app
+
+**Stato**: Attiva · 2026-11-23 · TASK-458. Il colore è **scelta
+dell'utente** («Bolle gialle come il tema dell'app», confermata sulle
+schermate prima/dopo: «Sì, gialle così»); il modo è deciso dall'agente su
+delega dell'utente, col parere della sessione di TASK-469. Numero dal
+Coordinatore.
+
+**Contesto**: nella prova dell'11 novembre 2026 (S13) le proprie bolle e
+quelle dell'altro erano due grigi (`surfaceRaised` e `surface` col bordo,
+ADR-0279 e `docs/UI.md`: «il giallo resta del percorso»). All'utente erano
+state proposte tre strade senza giallo (blu tenue, chiaro pieno, neutro col
+bordo forte); ha scelto il giallo.
+
+**Decisione**:
+- Le proprie bolle hanno il fondo `color.accent` e parole e orario
+  `color.onAccent`: gli stessi due colori in ogni tono, 13:1
+  (`palettes.test.ts`). Nessun token nuovo e nessun valore cambiato; in
+  `tokens.ts` cambia solo il commento di `accent`, che ora nomina due
+  eccezioni volute dall'utente: «Run without a route» (ADR-0183) e queste
+  bolle.
+- È una **faccia piena, non vetro**. ADR-0383 («il giallo mai come tinta»)
+  parla della tinta del vetro (`glass.*`) e resta com'è: questa voce la
+  cita, non ne fa un'eccezione. Tre regole, dalla sessione di TASK-469:
+  (1) la bolla resta opaca nei tre modi (vetro, «Riduci trasparenza»,
+  «Aumenta contrasto»), niente velature gialle né `glass.*` tinti; (2) un
+  eventuale rilievo usa `glassRaise` com'è, senza colori nuovi (oggi non ne
+  ha); (3) che il giallo si intraveda sotto l'header di vetro va bene.
+- Quello che una propria bolla porta — un disegno, un post, una live, una
+  foto — sta su una piastra `surfaceRaised` dentro il giallo: la linea di
+  un disegno è gialla anche lei, e le schede scrivono coi colori del tono.
+- Le bolle dell'altro restano `surface` col bordo.
+
+**Conseguenze**: il giallo ha un secondo significato dentro i messaggi
+(«l'ho scritto io»), accanto a «percorso». Fuori dai messaggi la regola non
+cambia: altrove il giallo resta del percorso e di ciò che lo produce. Solo
+app, niente di nativo. Controllato da `ChatMinor.test.tsx` (fondo, parole,
+faccia opaca senza ombra né bordo, la piastra).
 
 ## ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap, la scheda del decollo con lo storico di MuW
 

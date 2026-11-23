@@ -3,8 +3,9 @@
 **Stato**: In lavorazione · parte 0 in `main` (#1365); A (server) in
 `main` (#1404), passo 18 sul server col sì dell'utente; B (app) in `main`
 (#1414, `f4737c66`, 2026-11-22), testi e traduzioni approvati il
-2026-11-23, esce con l'OTA col sì; senza la riga del foglio (dopo TASK-481
-A) e senza la privacy (a turno)
+2026-11-23; B2, la voce «Workout plan» del «+», in `main` (#1431,
+`ed0bd4d7`, 2026-11-23); B e B2 escono con l'OTA, col sì dell'utente,
+solo dopo la privacy (in corso, `feat/TASK-485-b-privacy`)
 **Fase**: 5 · **Branch**: `docs/TASK-485-gym-plan-post` (parte 0, in
 `main`); `feat/TASK-485-a-plan-posts-api` (A); B col suo branch e la sua PR
 **Dipende da**: TASK-481 (il foglio «Add to Feed» e `addToFeedEntries.ts`,
@@ -306,9 +307,21 @@ flusso e il Feed rilegge; test nuovo `FeedScreenPlans.test.tsx`), la riga
 «Share one of your gym plans» nelle quattro lingue (traduzioni da far
 approvare con la schermata). Turno sui file condivisi dopo #1419 (467 E2):
 prima del «pronta» merge di `main`, tenendo le voci degli altri.
+Esito: in `main` il 2026-11-23 (#1431, `ed0bd4d7`). Provata nel simulatore
+contro un'API locale: «Workout plan» è l'ultima voce del «+», apre «Choose
+a plan» nello stesso foglio, «Post» fa `PUT /me/plan-posts/{key}` e il Feed
+rilegge col post in cima. L'utente ha approvato le schermate e le quattro
+traduzioni («Sì, approvo»). Due merge di `main` prima del verde: con #1441
+(«Sleep», TASK-467 E2: le liste di `addToFeedEntriesSleep.test.ts` hanno
+«plan» in fondo, file in più approvato dal Coordinatore) e con #1439
+(TASK-486 C: blocchi delle traduzioni tenuti tutti e due).
 
 A turno (privacy, punto 4; in coda dopo TASK-309 B1, 417 D2, 312 C2 e 481
-A, il Coordinatore dice quando tocca):
+A, il Coordinatore dice quando tocca). Il turno è arrivato il 2026-11-23,
+dopo #1444: lista di 11 file approvata dal Coordinatore, la data resta il
+23 novembre 2026 (già in `main`), quindi `AboutPage.test.tsx` e
+`site/tests/privacy.test.mjs` non cambiano; le quattro traduzioni vanno
+all'utente:
 
 ```
 apps/mobile/src/about/content/{en,it,de,fr,es}.ts

@@ -49,7 +49,7 @@ non tracciato).
 | A2 | parole corte (2–4 lettere) su una riga nelle 63 città, la migliore dei due stili | `tools/`, catalogo | come A1, stessa PR |
 | B1 | `walks` nel catalogo: le parole a penna alzata, fino a 6 lettere, solo quelle che si leggono; due PR, prima il server poi l'app | API, esempi condivisi, `tools/`, catalogo; poi app | server, poi OTA |
 | B2 | `activity` nel catalogo: **solo bici, 20–30 km** (scelta dell'utente del 2026-11-12); due PR, prima il server poi l'app | API, esempi condivisi, `tools/`, catalogo; poi app | server, poi OTA |
-| B3 | bici a 40–50 km: il limite del motore da 30 a 50 km e le zone bici grandi | `services/route-engine`, contratto, app | **da chiedere al Coordinatore** (PR del motore, dell'utente) |
+| B3 | bici a 40–50 km, **solo nel catalogo** (scelta dell'utente del 2026-11-23): il limite del motore resta 30 km | `tools/`, catalogo | passo «catalogo» sul server |
 | C | motore: spazio nelle frasi, cifre, forme nuove a tema, i 35 contorni in attesa | `services/route-engine` | **task e ADR a parte**, da chiedere al Coordinatore |
 
 ## Parte A — cosa fare
@@ -483,6 +483,62 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
 - [x] Passo sul server (passo 14, 2026-11-21 06:43Z) e PR dell'app (#1248, `ab51d0fd`).
 - [x] OTA 18 (`593c6fbe`; iOS `4c2d6752`, Android `bc572bad`), 2026-11-21, col sì dell'utente al Coordinatore.
 - [x] L'utente l'ha provata sul telefono (sport «Bike», poi «Explore»): «funziona», 2026-11-21.
+
+## Parte B3 — le uscite lunghe in bici, 40 e 50 km (ADR-0366)
+
+**Scelta dell'utente (2026-11-23): «solo in Explore».** Le uscite da 40 e
+50 km entrano nel catalogo come disegni pronti; «Draw» in bici resta a
+10–30 km. Il limite del motore (`activities/cycling.py`) non si tocca: è
+anche il limite di «Draw» nell'API, la misura delle zone bici del server e
+del telefono, e sta nell'impronta del motore. Alzarlo era l'altra strada
+(«Draw» fino a 50 km, tutte le zone bici rifatte 2,4 volte più grandi, PR
+del motore, OTA): non scelta.
+
+**Come.** `tools/catalog_bike.py --distances 50000 40000` pianifica le otto
+forme che si leggono, a turno fra le due distanze: cinque e tre per città, a
+città alterne (è lo stesso turno di B2). Il limite dei 30 km è tolto solo
+nel processo dello strumento (`ride_limit`), per la durata del giro. Le zone
+sono tagliate dagli estratti già sul disco (`out/TASK-441/b2/extracts/`: non
+vanno cancellati finché B3 non è chiusa); nessuno scaricamento.
+
+**Cosa vede l'utente.** Con lo sport «Bike», «Explore» mostra anche uscite
+da 40 e 50 km. Su una di queste «Draw it near me» apre «Draw» a 30 km
+(`againDistanceM` riporta la distanza dentro i limiti dello sport). Nessun
+testo nuovo, nessuna PR dell'app, nessuna OTA: l'API (`recommended.py`) e
+l'app (`recommendedRoutes.ts`) non controllano la distanza di un disegno del
+catalogo.
+
+**Città.** Stima dai picchi di memoria a 30 km, col limite del pianificatore
+a 4096 MB (lo fissa il Coordinatore; guardato ogni 2 s): 26 città a 50 e
+40 km, 8 solo a 40 km, 5 tentativi a 40 km per ultimi (uno alla volta, ci si
+ferma al primo oltre il limite), 24 fuori. 272 casi, 312 coi tentativi. Il
+piano intero e lo script dei giri: `out/TASK-441/b3/PIANO-B3.md`,
+`out/TASK-441/b3/run-b3.sh`. Ogni giro sul Mac parte solo col via del
+Coordinatore, a simulatore spento.
+
+### File toccati (B3)
+
+```
+tools/catalog_bike.py, tools/test_catalog_bike.py
+tools/catalog_kept.json, catalog/seed/<città>.json, catalog/README.md
+docs/tasks/TASK-441.md
+```
+
+Niente in `services/`, `packages/`, `apps/`.
+
+### Criteri di accettazione (B3)
+
+- [x] Test deterministici dello strumento (20).
+- [x] Prova con la sola Trento (2026-11-23): picco 3107 MB, 185 s, 7
+      disegni tracciati su 8, 2 passano la regola (stella e sole a 50 km).
+- [ ] Giro finito nei gruppi 1 e 2, poi i tentativi.
+- [ ] I disegni che passano all'utente, forma per forma, e il suo sì
+      **prima del merge**.
+- [ ] `catalog/seed` riscritto con i disegni di prima intatti,
+      `catalog/README.md`.
+- [ ] CI verde, merge del Coordinatore.
+- [ ] Passo «catalogo» sul server, col sì dell'utente al Coordinatore.
+- [ ] L'utente la prova sul telefono (sport «Bike», poi «Explore»).
 
 ## Dove siamo
 

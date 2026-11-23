@@ -411,7 +411,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // switch is on; a notification touched opens its drawing or a profile,
   // as a tagged name does, or the conversation of a message.
   // `openGroup` is read by openTarget once it knows a group's target.
-  const opens: Opens & { openGroup: (id: string) => void } = {
+  const opens: Opens = {
     openDrawing: (id) => drawings.open({ id }),
     openProfile: followsDoor.openProfile,
     // A shape of the game unlocked (TASK-296): the app shows «Play».

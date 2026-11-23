@@ -25,6 +25,7 @@ import {
   space,
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 import { Tap } from "../ui/Tap";
 import { type AddToFeedEntryId, addToFeedEntries } from "./addToFeedEntries";
 import { PlanPostFlow } from "./PlanPostFlow";
@@ -76,6 +77,8 @@ export function AddToFeed({
   const [open, setOpen] = useState(false);
   const [chosen, setChosen] = useState<AddToFeedEntryId | null>(null);
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   const { width } = useWindowDimensions();
   const entries = addToFeedEntries({
     record: onRecord !== undefined,
@@ -116,7 +119,7 @@ export function AddToFeed({
           importantForAccessibility="no"
           testID="feed-add-backdrop"
         />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, glassSheet]}>
           <View style={[styles.head, entry !== null && styles.headWithBack]}>
             {entry !== null && (
               <Pressable

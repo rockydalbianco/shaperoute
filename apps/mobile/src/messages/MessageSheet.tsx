@@ -30,6 +30,7 @@ import {
 } from "../theme/tokens";
 import { sayInIsland } from "../ui/IslandLayer";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 import { Tap } from "../ui/Tap";
 
 /** What the sheet is about: a message touched long, or blocking who wrote. */
@@ -194,8 +195,12 @@ export function MessageSheet({
 /** The sheet at the foot of the screen, over the phone's home bar. */
 function Sheet({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   return (
-    <View style={[styles.sheet, { paddingBottom: insets.bottom + space.sm }]}>
+    <View
+      style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.sm }]}
+    >
       {children}
     </View>
   );

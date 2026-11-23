@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t } from "../i18n";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 import { Tap } from "../ui/Tap";
 import {
   color,
@@ -68,6 +69,8 @@ export function FilterSheet({ visible, filters, onApply, onClose }: Props) {
 
 function SheetBody({ filters, onApply, onClose }: Omit<Props, "visible">) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   const [draft, setDraft] = useState(filters);
   const change = (part: Partial<SearchFilters>) =>
     setDraft((was) => ({ ...was, ...part }));
@@ -80,7 +83,9 @@ function SheetBody({ filters, onApply, onClose }: Omit<Props, "visible">) {
         accessibilityRole="button"
         accessibilityLabel={t("Close")}
       />
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + space.lg }]}>
+      <View
+        style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.lg }]}
+      >
         <View style={styles.grip} />
         <Text style={styles.title} accessibilityRole="header">
           {t("Filters")}

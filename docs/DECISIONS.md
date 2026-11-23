@@ -589,8 +589,77 @@ lasciando le righe d'indice.
 - ADR-0390, precisazione A — La lista del «+» nell'app: «Record now» come l'avvio senza percorso di «Draw», «Photos only» dritto al modulo di C2, «From a file» con «Files» aperto subito (`fileAtOnce`), il titolo della voce aperta · 2026-11-23 · Attiva
 - ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Proposta
 - ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
+- ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
+
 
 ## Voci nuove
+
+## ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save»
+
+**Stato**: Attiva · 2026-11-23 · TASK-488, A (#1415, server e tipi) e B
+(#1420, l'app) in `main`; A sul server (passo 19, «adapt ok plans 2
+adapted 0»); B esce col prossimo OTA di produzione. La domanda, le regole,
+l'interruttore, i testi e il passo sul server sono **scelte dell'utente**
+(2026-11-22 e 23, una domanda per volta, tela «Schede palestra guidate»
+riga H); il campo, la forma dei passi e quando la risposta si tiene sono
+**decisi dall'agente su delega dell'utente**; numero dal Coordinatore.
+Estende ADR-0360 (le settimane che cambiano), ADR-0363 (i giorni di corsa)
+e ADR-0369 (la corsa su misura).
+
+**Contesto**: le schede guidate crescono sempre allo stesso passo, scritto
+nel modo («più kg», «più ripetizioni», «alterna», «sempre uguale»), con
+l'ultima settimana di un ciclo di 3 o più più leggera. Non sapevano se
+l'allenamento era stato facile o al limite. Il programma sta nel JSONB
+`gym_plans.program` (0066), validato da pydantic con `extra="forbid"`: un
+campo nuovo va sul server prima dell'app.
+
+**Decisione dell'utente**:
+1. **una domanda per allenamento**, «Facile / Giusto / Duro», una volta per
+   tutto il giorno della scheda, anche a fine corsa nei giorni di corsa;
+   senza risposta la scheda va avanti come previsto; «Change» finché non si
+   preme «Save»;
+2. **le regole di H2**: Facile un passo in più del previsto, Giusto come
+   previsto, Duro la volta dopo uguale, due «Duro» di fila un passo
+   indietro;
+3. **accesa per ogni scheda**, anche quelle già fatte, si spegne in «My
+   plans» con «Adapts to how it went»; accanto ai giorni i segni ↑ = ↓;
+4. i testi (titolo in palestra «Come ti è sembrata la scheda?», a fine
+   corsa «{corsa} della scheda: com'è andata?», la riga della settimana
+   più leggera) e le schermate approvati.
+
+**Decisione dell'agente**:
+1. **Un campo facoltativo `adapt`** nel programma: `{off, days}`, al più
+   un giorno per giorno della settimana, `{day 1–7, steps −24…24, hard
+   0–2, last easy|right|hard}`. Nessuna migrazione. Il server toglie i
+   giorni di `adapt` che il programma non ha più, invece di rifiutare la
+   scheda: l'app di prima copia `adapt` così com'è salvando.
+2. **I passi li applica il telefono** (`program.ts`) a ogni settimana di
+   quel giorno, anche a quelle scritte a mano: in «più kg» `step_kg` a
+   passo; in «più ripetizioni» un gradino della sua scala, mai sotto la
+   prima settimana; senza kg una ripetizione (5 s se tenuto); un giorno di
+   corsa un passo della sua crescita, anche con «sempre uguale». In «più
+   kg» un esercizio che non cresce non scende sotto quanto è scritto.
+3. **Le regole** (`adapt.ts`): Facile `steps + 1`, `hard = 0`; Giusto
+   `hard = 0`; Duro `steps − 1` se il modo cresce, `− 1` in più dopo un
+   «Duro», `hard` fino a 2. I giorni verso una meta (TASK-461) e le uscite
+   di altri sport non si adattano.
+4. **Si tiene con «Save»** dell'allenamento o della corsa, sulla scheda nel
+   telefono (`keepPlan`); arriva all'API con la sincronizzazione seguente
+   delle schede, senza chiamate di rete dalle schermate di fine.
+5. **Cosa cambia la volta dopo**: fino a tre righe, prima quelle che
+   cambiano, coi pesi come li scrive il telefono; se la settimana dopo è
+   quella di recupero del ciclo lo dice, perché «Facile» non mostri un
+   peso più basso senza spiegarlo.
+
+**Alternative scartate**: una domanda per esercizio; spenta per le schede
+già fatte; una tabella o una rotta nuove; la chiamata all'API dalla fine
+dell'allenamento; rifiutare (422) una scheda con risposte per giorni
+tolti.
+
+**Conseguenze**: il server prima dell'app (fatto, passo 19). Il Coach MuW
+(TASK-491, ADR-0399) legge e scrive gli stessi passi con «Apply». Un'app
+di prima dell'OTA mostra la scheda come prevista, senza i passi, e li
+conserva.
 
 ## ADR-0390, precisazione A — La lista del «+» nell'app: «Record now» come l'avvio senza percorso di «Draw», «Photos only» dritto al modulo di C2, «From a file» con «Files» aperto subito (`fileAtOnce`), il titolo della voce aperta
 

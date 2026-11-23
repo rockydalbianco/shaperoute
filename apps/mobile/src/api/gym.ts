@@ -1,6 +1,8 @@
 import {
   GYM_LEVEL_MEASURES,
   GYM_SET_KINDS,
+  HEART_BPM_MAX,
+  HEART_BPM_MIN,
   type GymExercises,
   type GymLevel,
   type GymSession,
@@ -14,7 +16,7 @@ import { type AccountOutcome, ask } from "./accounts";
  * The exercises of a workout at the gym (TASK-385 B0, ADR-0327, docs/API.md
  * «Gym»): given to whoever can see its post, unless its owner hides them.
  * The body is packages/shared-types/fixtures/gym-session.json's `rests`,
- * `rest_s` and `sets`.
+ * `rest_s` and `sets`, and its heart rate when shown (part G).
  */
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
@@ -49,13 +51,33 @@ export function isGymSet(body: unknown): body is GymSet {
   );
 }
 
+/** A heart rate the API sends (TASK-385 part G): absent, or whole beats a
+ * minute in its limits. */
+function isBpm(value: unknown): boolean {
+  return (
+    value === undefined ||
+    (typeof value === "number" &&
+      Number.isInteger(value) &&
+      value >= HEART_BPM_MIN &&
+      value <= HEART_BPM_MAX)
+  );
+}
+
 export function isGymExercises(body: unknown): body is GymExercises {
   if (typeof body !== "object" || body === null) {
     return false;
   }
-  const { rests, rest_s, sets } = body as Record<string, unknown>;
+  const { rests, rest_s, sets, heart_avg_bpm, heart_max_bpm } = body as Record<
+    string,
+    unknown
+  >;
   return (
-    isCount(rests) && isCount(rest_s) && Array.isArray(sets) && sets.every(isGymSet)
+    isCount(rests) &&
+    isCount(rest_s) &&
+    Array.isArray(sets) &&
+    sets.every(isGymSet) &&
+    isBpm(heart_avg_bpm) &&
+    isBpm(heart_max_bpm)
   );
 }
 

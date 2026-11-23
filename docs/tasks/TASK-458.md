@@ -104,16 +104,19 @@ dopo.
 
 | Inglese | Italiano | Dove | Sì |
 |---|---|---|---|
-| Show password | Mostra la password | VoiceOver sull'occhio | — |
-| Hide password | Nascondi la password | VoiceOver sull'occhio | — |
-| Say hi to {name}. | Saluta {name}. | chat vuota | inglese: sì (scelta A) |
-| Hi {name}! | Ciao {name}! | spunto | inglese: sì |
-| I like your drawings | Mi piacciono i tuoi disegni | spunto | inglese: sì |
-| Shall we run together? | Corriamo insieme? | spunto | inglese: sì |
-| Writes it in the box. Nothing is sent yet. | Lo scrive nella casella. Non viene ancora inviato niente. | VoiceOver sugli spunti | — |
-| Photos, videos and drawings come after that. | Foto, video e disegni vengono dopo. | sotto la riga della richiesta | inglese: sì |
-| New message | Nuovo messaggio | tasto e titolo della pagina | inglese: sì (scelta A) |
-| Search someone by name to write to them. | Cerca qualcuno per nome per scrivergli. | pagina «New message» senza nessuno | — |
+| Show password | Mostra la password | VoiceOver sull'occhio | sì |
+| Hide password | Nascondi la password | VoiceOver sull'occhio | sì |
+| Say hi to {name}. | Saluta {name}. | chat vuota | sì |
+| Hi {name}! | Ciao {name}! | spunto | sì |
+| I like your drawings | Mi piacciono i tuoi disegni | spunto | sì |
+| Shall we run together? | Corriamo insieme? | spunto | sì |
+| Writes it in the box. Nothing is sent yet. | Lo scrive nella casella. Non viene ancora inviato niente. | VoiceOver sugli spunti | sì |
+| Photos, videos and drawings come after that. | Foto, video e disegni vengono dopo. | sotto la riga della richiesta | sì |
+| New message | Nuovo messaggio | tasto e titolo della pagina | sì |
+| Search someone by name to write to them. | Cerca qualcuno per nome per scrivergli. | pagina «New message» senza nessuno | sì |
+
+**Approvati dall'utente il 23 novembre 2026, nelle cinque lingue: «Sì, vanno
+bene»** (le tabelle di tedesco, spagnolo e francese mostrate in chat).
 
 Tedesco, spagnolo e francese sono in `src/i18n/`. Riusati, non nuovi:
 «Search people», «Close», «Loading…», «Nobody has a name like that.»,
@@ -128,21 +131,25 @@ Tedesco, spagnolo e francese sono in `src/i18n/`. Riusati, non nuovi:
       (`SignInScreen.test.tsx`).
 - [x] Nel simulatore: scrivere la password con l'occhio aperto e chiuso;
       cosa fa il foglio «Use Strong Password?» coi campi nuovi (sopra).
-- [ ] Le proprie bolle gialle con le parole scure, quelle dell'altro
+- [x] Le proprie bolle gialle con le parole scure, quelle dell'altro
       neutre; l'allegato di una propria bolla su una piastra neutra
       (`ChatMinor.test.tsx`).
 - [x] Il giallo delle bolle confermato dall'utente sulle schermate
       («Sì, gialle così», 23 novembre 2026).
-- [ ] Una conversazione senza messaggi offre i tre spunti, che scrivono
+- [x] Una conversazione senza messaggi offre i tre spunti, che scrivono
       nella casella senza inviare; in una richiesta dice che i file vengono
       dopo (`ChatMinor.test.tsx`).
-- [ ] «New message» accanto al titolo apre la pagina, che elenca chi si
+- [x] «New message» accanto al titolo apre la pagina, che elenca chi si
       sente e chi si segue una volta sola, cerca per nome e apre la
       conversazione (`NewMessage.test.tsx`).
-- [ ] Testi nuovi approvati dall'utente, in cinque lingue.
-- [ ] Schermate prima/dopo: iscrizione, chat vuota, chat con messaggi,
-      elenco.
-- [ ] Impronta iOS invariata (`5e1b5ce5`), nessuna dipendenza nuova.
+- [x] Testi nuovi approvati dall'utente, in cinque lingue («Sì, vanno
+      bene», 23 novembre 2026).
+- [x] Schermate prima/dopo: iscrizione, chat vuota, chat con messaggi,
+      elenco (tono scuro; mostrate all'utente il 23 novembre 2026).
+- [x] Nessuna dipendenza nuova, niente di nativo: il diff tocca solo
+      `apps/mobile/src/**` e documenti, e `app.config.ts` non importa
+      niente da `src/`, quindi l'impronta iOS resta `5e1b5ce5` (non
+      rimisurata su una copia pulita).
 
 ## File toccati
 

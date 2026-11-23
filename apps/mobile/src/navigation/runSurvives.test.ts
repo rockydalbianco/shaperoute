@@ -1,7 +1,8 @@
 /**
  * The run goes on while another app is in front, the camera for a photo
  * (TASK-304, ADR-0264: the user's choice): the run file is written as the
- * app leaves the front and at each fix behind, an absence up to
+ * app leaves the front and each fix behind is written too (to the journal
+ * beside the file since TASK-496), an absence up to
  * AWAY_AFTER_MS is run (its time counted, the line joined straight), and a
  * run iOS closed lately opens again going on.
  */
@@ -36,8 +37,9 @@ jest.mock("expo-file-system", () => {
     create(): void {
       files.set(this.uri, "");
     }
-    write(text: string): void {
-      files.set(this.uri, text);
+    write(text: string, options?: { append?: boolean }): void {
+      const before = options?.append === true ? (files.get(this.uri) ?? "") : "";
+      files.set(this.uri, before + text);
     }
     textSync(): string {
       return files.get(this.uri) ?? "";
@@ -64,10 +66,10 @@ function fix(northM: number, seconds: number): TrackFix {
   return { point: north(northM), timeMs: NOW + seconds * 1000, accuracyM: 5 };
 }
 
-/** The fixes in the file, as iOS would leave it closing the app now. */
+/** The fixes on the phone, as iOS would leave them closing the app now:
+ * in the file, and in the journal beside it (TASK-496). */
 function fixesInFile(): number {
-  const text = disk.files.get(RUN_URI);
-  return text === undefined ? 0 : (JSON.parse(text) as SavedRun).track.fixes.length;
+  return loadRun()?.track.fixes.length ?? 0;
 }
 
 /** What the app tells its listeners, and what it says it is. */

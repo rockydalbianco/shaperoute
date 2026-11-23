@@ -54,7 +54,7 @@ from shaperoute_api.moderation import (
 # Then the items tagged on the photos (TASK-394).
 (OUTFIT_TAGS,) = [p for p in migrations() if p.name.endswith("_outfit_tags.sql")]
 # Then the gear (TASK-486).
-(GEAR,) = [p for p in migrations() if p.name.endswith("_gear.sql")]
+(GROUPS,) = [p for p in migrations() if p.name.endswith("_groups.sql")]
 Headers = dict[str, str]
 
 
@@ -136,10 +136,10 @@ def test_the_example_is_the_body() -> None:
 
 def test_the_migration_holds_the_same_lists() -> None:
     sql = MODERATION.read_text(encoding="utf-8")
-    # The latest check of the kinds is the gear's (TASK-486), after the
-    # items' (TASK-394), the messages' (TASK-319) and the group runs'
-    # (TASK-309).
-    kinds = GEAR.read_text(encoding="utf-8").split("reports_kind_check")[-1]
+    # The latest check of the kinds is the groups' (TASK-495), after the
+    # gear's (TASK-486), the items' (TASK-394), the messages' (TASK-319) and
+    # the group runs' (TASK-309).
+    kinds = GROUPS.read_text(encoding="utf-8").split("reports_kind_check")[-1]
     for kind in REPORT_KINDS:
         assert f"'{kind}'" in kinds
     for reason in REPORT_REASONS:

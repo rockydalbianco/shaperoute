@@ -1888,7 +1888,8 @@ export interface DrawingSearchPage extends FeedPage {
  * What a member reports with POST /reports (TASK-121, ADR-0228): a drawing
  * (a post of the feed), a comment, a member, a group run (TASK-309), a
  * private message (TASK-319: only the one it was sent to reports it), an
- * item tagged on a photo (TASK-394), or an item of gear (TASK-486).
+ * item tagged on a photo (TASK-394), an item of gear (TASK-486), or a
+ * group (TASK-495: reported of its admin).
  */
 export const REPORT_KINDS = [
   "drawing",
@@ -1898,6 +1899,7 @@ export const REPORT_KINDS = [
   "message",
   "outfit_tag",
   "gear",
+  "group",
 ] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
@@ -3281,3 +3283,4 @@ export * from "./planPosts.ts";
 export * from "./together.ts";
 export * from "./gymHistory.ts";
 export * from "./gear.ts";
+export * from "./groups.ts";

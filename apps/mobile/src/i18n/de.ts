@@ -1408,8 +1408,8 @@ export const DE: Table = {
   Beginner: "Einsteiger",
   // src/gym/SportsDoor.tsx, bodyweight.ts, GymPlanWizard.tsx (TASK-461 A2, approved 2026-11-11)
   "What do you want to train?": "Was willst du trainieren?",
-  "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.":
-    "Wähle mindestens zwei: Ein Plan mischt immer zwei Sportarten. Dann führen wir dich in 5 Schritten.",
+  "Choose one or more. Then we guide you in 5 steps.":
+    "Wähle eine oder mehrere. Dann führen wir dich in 5 Schritten.",
   "With weights and machines": "Mit Gewichten und Geräten",
   Bodyweight: "Eigengewicht",
   "At home or in the park, no equipment": "Zu Hause oder im Park, ohne Geräte",
@@ -2410,7 +2410,6 @@ export const DE: Table = {
   "Message {name}": "{name} eine Nachricht schreiben",
 
   // src/messages/ConversationScreen.tsx, MessageSheet.tsx (TASK-319)
-  "No messages yet.": "Noch keine Nachrichten.",
   "Show earlier messages": "Frühere Nachrichten zeigen",
   "Touch and hold to delete it": "Gedrückt halten, um sie zu löschen",
   "Touch and hold to report it": "Gedrückt halten, um sie zu melden",
@@ -2420,6 +2419,22 @@ export const DE: Table = {
   "{name} gets this as a message request. You can send one message until they accept it.":
     "{name} bekommt das als Nachrichtenanfrage. Bis sie angenommen ist, kannst du eine Nachricht schicken.",
   "Write a message…": "Schreib eine Nachricht…",
+  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
+  "Show password": "Passwort anzeigen",
+  "Hide password": "Passwort verbergen",
+  // src/messages/ConversationScreen.tsx (TASK-458: a conversation with nothing in it yet, the user's choice of 2026-11-23)
+  "Say hi to {name}.": "Sag {name} hallo.",
+  "Hi {name}!": "Hallo {name}!",
+  "I like your drawings": "Mir gefallen deine Zeichnungen",
+  "Shall we run together?": "Wollen wir zusammen laufen?",
+  "Writes it in the box. Nothing is sent yet.":
+    "Schreibt es ins Feld. Es wird noch nichts gesendet.",
+  "Photos, videos and drawings come after that.":
+    "Fotos, Videos und Zeichnungen kommen danach.",
+  // src/tabs/MessagesPage.tsx, src/messages/NewMessage.tsx (TASK-458: «New message» from the list)
+  "New message": "Neue Nachricht",
+  "Search someone by name to write to them.":
+    "Suche jemanden nach Namen, um zu schreiben.",
   "Delete this message for both of you?": "Diese Nachricht für euch beide löschen?",
   "Report this message": "Diese Nachricht melden",
   // src/explore/ExploredCard.tsx, social/DrawingCard.tsx, mapdraw/DrawOnMap.tsx,

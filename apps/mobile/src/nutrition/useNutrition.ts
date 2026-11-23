@@ -1,6 +1,13 @@
 import { useSyncExternalStore } from "react";
 
 import { dayOf, type Diary, diaryOfMonth, diaryWithDay, eatenAsPlanned } from "./diary";
+import {
+  ACTIVITY_KCAL,
+  type EnergyEdits,
+  REST_KCAL_PER_DAY,
+  withActivityKcal,
+  withRest,
+} from "./energyEdits";
 import type { Food } from "./foods";
 import { type LocalDay, monthOf, type Weekday } from "./localDay";
 import {
@@ -74,6 +81,15 @@ function subscribe(listener: () => void): () => void {
   return () => {
     listeners.delete(listener);
   };
+}
+
+/** Told each time something of «Nutrition» changes: for a screen outside
+ * it that shows one of its numbers (useListKcal.ts). */
+export const subscribeNutrition = subscribe;
+
+/** The energy the user corrected by hand, as it is now. */
+export function energyEdits(): EnergyEdits {
+  return current().settings.edits;
 }
 
 /** The month of the diary, read from the phone the first time it is asked. */
@@ -151,6 +167,39 @@ export function writeTarget(kcal: number | null): boolean {
     return false;
   }
   writeSettings({ ...current().settings, target });
+  return true;
+}
+
+function inRange(kcal: number, range: { min: number; max: number }): boolean {
+  const whole = Math.round(kcal);
+  return Number.isFinite(kcal) && whole >= range.min && whole <= range.max;
+}
+
+/**
+ * The kilocalories a day the body spends at rest, as the user wrote them
+ * (energyEdits.ts), or MuW's estimate again with null. False when `kcal`
+ * is not a number the field takes: nothing changes then.
+ */
+export function writeRest(kcal: number | null): boolean {
+  if (kcal !== null && !inRange(kcal, REST_KCAL_PER_DAY)) {
+    return false;
+  }
+  const settings = current().settings;
+  writeSettings({ ...settings, edits: withRest(settings.edits, kcal) });
+  return true;
+}
+
+/**
+ * The kilocalories of the activity `key` as the user wrote them, or MuW's
+ * estimate again with null. Kept on this phone only: the activity, its
+ * post and what Apple Health has of it are not touched.
+ */
+export function writeActivityKcal(key: string, kcal: number | null): boolean {
+  if (kcal !== null && !inRange(kcal, ACTIVITY_KCAL)) {
+    return false;
+  }
+  const settings = current().settings;
+  writeSettings({ ...settings, edits: withActivityKcal(settings.edits, key, kcal) });
   return true;
 }
 

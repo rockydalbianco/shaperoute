@@ -3400,4 +3400,24 @@ export const IT: Table = {
     "I valori reali cambiano con il prodotto, la ricetta e la persona. MuW non fornisce diete né consigli medici.",
   "Only you see this page. Nothing here leaves your phone.":
     "Questa pagina la vedi solo tu. Niente di quello che c'è qui esce dal tuo telefono.",
+  // src/nutrition (TASK-489 part C1)
+  "Today the energy at rest is counted up to now.":
+    "Oggi l'energia a riposo è contata fino a adesso.",
+  Surplus: "Surplus",
+  Deficit: "Deficit",
+  "At rest": "A riposo",
+  Activities: "Attività",
+  "No activities on this day.": "Nessuna attività in questo giorno.",
+  edited: "modificato",
+  "Log in to count your activities.": "Accedi per contare le tue attività.",
+  "Your activities could not be loaded. Only the energy at rest is counted.":
+    "Non è stato possibile caricare le tue attività. È contata solo l'energia a riposo.",
+  "Energy at rest": "Energia a riposo",
+  "Your own number, for example the one your dietitian measured. It takes the place of MuW's estimate.":
+    "Il tuo numero, per esempio quello misurato dal tuo dietista. Prende il posto della stima di MuW.",
+  "MuW's estimate: {kcal} kcal": "Stima di MuW: {kcal} kcal",
+  "Back to the estimate": "Torna alla stima",
+  "Calories of this activity": "Calorie di questa attività",
+  "Your number stays on this phone. Your post and Apple Health keep theirs.":
+    "Il tuo numero resta su questo telefono. Il tuo post e Salute di Apple tengono i loro.",
 };

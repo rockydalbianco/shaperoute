@@ -44,7 +44,7 @@ from datetime import date, datetime
 from typing import Annotated, Any, Literal, get_args
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Response
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, Response
 from PIL import Image, ImageOps
 from psycopg import Connection
 from psycopg import errors as pg_errors
@@ -71,6 +71,7 @@ from shaperoute_api.follows import apart_sql
 from shaperoute_api.images import decode_image
 from shaperoute_api.outfit_links import has_address
 from shaperoute_api.profile_photos import FORMATS, JPEG_QUALITY, MAX_PIXELS
+from shaperoute_api.push import PushEvent, notify
 from shaperoute_api.schemas import MAX_IMAGE_BASE64, MAX_IMAGE_BYTES, ErrorBody
 
 # The list the app shows, grouped by its families; the migration's CHECK
@@ -624,25 +625,64 @@ class Gear:
 
     def put_on_activity(
         self, user_id: int, key: str, gear_ids: Sequence[UUID]
-    ) -> list[GearBody]:
+    ) -> tuple[list[GearBody], list[GearBody]]:
         """The whole list of the activity; retired items too (an activity of
-        before). 422 when an id is not of an item of who asks."""
+        before). 422 when an id is not of an item of who asks. With it, the
+        items this list took past their limit (TASK-486 part G): under it
+        before, at it or over it now."""
         wanted = list(dict.fromkeys(gear_ids))
         with self.database.connect() as conn:
             run_id = self._run_id(conn, user_id, key)
             owned = conn.execute(
-                "SELECT id FROM gear WHERE user_id = %s AND id = ANY(%s)",
+                "SELECT id, limit_m, t.distance_m FROM gear g"
+                " CROSS JOIN LATERAL (SELECT coalesce(sum(r.distance_m), 0)"
+                " AS distance_m FROM activity_gear ag JOIN runs r"
+                " ON r.id = ag.run_id WHERE ag.gear_id = g.id) t"
+                " WHERE g.user_id = %s AND g.id = ANY(%s)",
                 (user_id, wanted),
             ).fetchall()
             if len(owned) != len(wanted):
                 raise AccountError(422, "invalid_request", NO_GEAR)
+            before = {row["id"]: int(row["distance_m"]) for row in owned}
             conn.execute("DELETE FROM activity_gear WHERE run_id = %s", (run_id,))
             for gear_id in wanted:
                 conn.execute(
                     "INSERT INTO activity_gear (run_id, gear_id) VALUES (%s, %s)",
                     (run_id, gear_id),
                 )
-            return self._of_run(conn, user_id, run_id)
+            now = self._of_run(conn, user_id, run_id)
+        past = [item for item in now if _crossed(item, before.get(item.id))]
+        return now, past
+
+
+def _crossed(item: GearBody, before_m: int | None) -> bool:
+    """Taken past its limit just now: under it before, at it or over it
+    after. Only a kind that goes far has one (the app sends it only then)."""
+    return (
+        item.limit_m is not None
+        and before_m is not None
+        and before_m < item.limit_m <= item.totals.distance_m
+    )
+
+
+def gear_name(item: GearBody) -> str:
+    """The name the app shows (gearKinds.gearTitle): its own, or brand and
+    model."""
+    return item.name or " ".join(part for part in (item.brand, item.model) if part)
+
+
+def limit_event(user_id: int, item: GearBody) -> PushEvent:
+    """An item past its limit, told to its owner in the bell only
+    (push.BELL_ONLY, TASK-486 part G). Its id and its limit tell it apart:
+    one line for each limit, and a new limit can be told again."""
+    return PushEvent(
+        "gear_limit",
+        user_id,
+        user_id,
+        text=gear_name(item),
+        key=f"{item.id}|{item.limit_m}",
+        gear_id=item.id,
+    )
 
 
 def gear_of(accounts: Annotated[Accounts, Depends(accounts_of)]) -> Gear:
@@ -718,9 +758,16 @@ def gear_routes() -> APIRouter:
         response_model_exclude_none=True,
     )
     def put_activity_gear(
-        key: Key, body: ActivityGearRequestBody, gear: Items, user: Me
+        key: Key,
+        body: ActivityGearRequestBody,
+        gear: Items,
+        user: Me,
+        request: Request,
     ) -> GearListBody:
-        return GearListBody(gear=gear.put_on_activity(user.id, key, body.gear_ids))
+        items, past = gear.put_on_activity(user.id, key, body.gear_ids)
+        for item in past:
+            notify(request, limit_event(user.id, item))
+        return GearListBody(gear=items)
 
     @router.get(
         "/users/{public_id}/gear",

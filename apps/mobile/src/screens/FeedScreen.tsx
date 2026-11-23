@@ -251,6 +251,10 @@ export function FeedScreen({
                   refreshAll();
                   refreshFollowing();
                 }}
+                onActivityPosted={() => {
+                  refreshAll();
+                  refreshFollowing();
+                }}
               />
             )}
           </View>

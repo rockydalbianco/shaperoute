@@ -2889,6 +2889,16 @@ export const DE: Table = {
   "Add to Feed": "Zum Feed hinzufügen",
   "Record now": "Jetzt aufzeichnen",
   "Start an activity now": "Starte jetzt eine Aktivität",
+  // src/feed/addToFeedEntries.ts and PastActivityPost.tsx (TASK-481 part F:
+  // «Already recorded», an activity of «My activities» posted from the «+»).
+  "Already recorded": "Schon aufgezeichnet",
+  "Post an activity from My activities": "Poste eine Aktivität aus Meine Aktivitäten",
+  "Your activities not in the Feed yet, the latest first.":
+    "Deine Aktivitäten, die noch nicht im Feed sind, die neueste zuerst.",
+  "All your activities are in the Feed already.":
+    "Alle deine Aktivitäten sind schon im Feed.",
+  "Choose «Everyone» or «Followers» and it goes in the Feed.":
+    "Wähle «Alle» oder «Follower», und sie kommt in den Feed.",
   // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
   // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
   // the first three approved by the user, 2026-11-21, the deletion's with
@@ -3399,6 +3409,25 @@ export const DE: Table = {
   "Copy the number from the label, or from your dietitian's sheet.":
     "Übernimm die Zahl vom Etikett oder vom Blatt deiner Ernährungsfachkraft.",
   "Delete food": "Lebensmittel löschen",
+  // src/nutrition (TASK-489 part B2)
+  Diary: "Tagebuch",
+  "My plan": "Mein Plan",
+  "Eaten as planned": "Wie geplant gegessen",
+  "Copy this day to…": "Diesen Tag kopieren nach…",
+  "This is the plan you write. MuW never changes it.":
+    "Das ist der Plan, den du schreibst. MuW ändert ihn nie.",
+  "How we calculate": "So rechnen wir",
+  "Food@@numbers": "Lebensmittel",
+  "Energy you use": "Energie, die du verbrauchst",
+  Estimates: "Schätzungen",
+  "Calories of the foods in the list come from USDA FoodData Central (SR Legacy, April 2018), a public-domain food composition table. Your own foods use the numbers you wrote.":
+    "Die Kalorien der Lebensmittel in der Liste stammen aus USDA FoodData Central (SR Legacy, April 2018), einer gemeinfreien Nährwerttabelle. Deine eigenen Lebensmittel nutzen die Zahlen, die du eingetragen hast.",
+  "At rest: the Mifflin-St Jeor equation, from the body data in your profile. Activities: ACSM equations and the 2024 Compendium of Physical Activities. On days when Apple Health has your active energy, that number is used instead.":
+    "In Ruhe: die Mifflin-St-Jeor-Gleichung, aus den Körperdaten in deinem Profil. Aktivitäten: ACSM-Gleichungen und das Compendium of Physical Activities 2024. An Tagen, an denen Apple Health deine Aktivitätsenergie hat, wird stattdessen diese Zahl verwendet.",
+  "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
+    "Die tatsächlichen Werte hängen vom Produkt, vom Rezept und von der Person ab. MuW gibt keine Diäten oder medizinischen Ratschläge.",
+  "Only you see this page. Nothing here leaves your phone.":
+    "Diese Seite siehst nur du. Nichts davon verlässt dein Handy.",
   // src/air/ (TASK-479 part E3: the airspace log after the flight; approved by the user on 2026-11-23)
   "Inside your airspaces: {count}": "In deinen Lufträumen: {count}",
   "No fix inside the volumes of your file.":

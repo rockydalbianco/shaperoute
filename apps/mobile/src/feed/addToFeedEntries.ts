@@ -2,14 +2,16 @@ import { t } from "../i18n";
 
 /**
  * The entries of the Feed's «+» (TASK-481, ADR-0390), in the user's order:
- * «Record now», «Photos only», «From a file», then «Sleep» (TASK-467 E),
+ * «Record now», «Already recorded» (TASK-481 part F), «Photos only», «From
+ * a file», then «Sleep» (TASK-467 E),
  * «Gym workout» (TASK-484) and «Workout plan» (TASK-485). Only the ready
  * ones are listed, with no «Soon»: each of the last three adds its own line
  * here, at its place in the order, when its flow is in the app. «Workout
  * plan» is always ready: the «+» is there only with an account, and with
- * no plans its flow says how to make one.
+ * no plans its flow says how to make one. «Already recorded» is always
+ * ready too: with no activity left to post, its flow says so.
  */
-export type AddToFeedEntryId = "record" | "photos" | "file" | "sleep" | "plan";
+export type AddToFeedEntryId = "record" | "done" | "photos" | "file" | "sleep" | "plan";
 
 export type AddToFeedEntry = {
   id: AddToFeedEntryId;
@@ -37,6 +39,14 @@ export function addToFeedEntries({
     [
       record,
       { id: "record", title: t("Record now"), detail: t("Start an activity now") },
+    ],
+    [
+      true,
+      {
+        id: "done",
+        title: t("Already recorded"),
+        detail: t("Post an activity from My activities"),
+      },
     ],
     [
       true,

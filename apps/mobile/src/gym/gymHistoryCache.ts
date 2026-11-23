@@ -51,3 +51,13 @@ export function keepHistory(owner: number, of: string, history: GymHistory): voi
     .filter((item) => !(item.owner === owner && item.of === of));
   kept.save([{ owner, of, history }, ...others].slice(0, MAX_KEPT_HISTORIES));
 }
+
+/** Lets go of every history kept for `owner` (account/phoneOwners.ts,
+ * TASK-507): another person's «Last time» is not shown. */
+export function forgetHistoriesOf(owner: number): void {
+  const list = kept.load();
+  const next = list.filter((item) => item.owner !== owner);
+  if (next.length !== list.length) {
+    kept.save(next);
+  }
+}

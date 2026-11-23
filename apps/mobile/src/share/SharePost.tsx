@@ -35,6 +35,8 @@ import { useTogether } from "./useTogether";
 import { MusicRow } from "./MusicRow";
 import { PostButton } from "./PostButton";
 import { POST_RATIO, PostImage } from "./PostImage";
+import { FIRST_LOOK, type PostLook } from "./postLook";
+import { PostLookRow } from "./PostLookRow";
 import {
   type PostResult,
   type PostRun,
@@ -76,8 +78,9 @@ type Props = {
 
 /**
  * The post of a run, to make and share (TASK-231, ADR-0194): the picture
- * on top, then which results it shows, the emoji to lay on it, «Instagram»
- * (the share sheet, where Instagram has Story, Feed and Messages) and
+ * on top; right under it (TASK-450) «Instagram» (the share sheet, where
+ * Instagram has Story, Feed and Messages) and «Export video»; then the
+ * picture's look, which results it shows, the emoji to lay on it, and
  * Strava, where the emoji and the results go as the activity's text. Once
  * shared, the post goes to the API with its saved run (TASK-258), and
  * opens as it was the next time. «Export video» shares the same post as a
@@ -128,6 +131,9 @@ function SharePage({ run, onClose }: Props) {
   const [stickers, setStickers] = useState<Sticker[]>(() =>
     kept === null ? [] : stickersOf(kept.emoji),
   );
+  // The picture's look, «Yellow» when the post opens (TASK-450): not kept
+  // with the post, as the video's style.
+  const [look, setLook] = useState<PostLook>(FIRST_LOOK);
   const [sharing, setSharing] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   // The video's music, none when the post opens (TASK-301).
@@ -266,17 +272,22 @@ function SharePage({ run, onClose }: Props) {
               height={postWidth * POST_RATIO}
             />
           ) : (
-            <PostImage
-              ref={post}
-              run={run}
-              shown={shown}
-              stickers={stickers}
-              width={postWidth}
-              onMoveSticker={(id, x, y) =>
-                setStickers((now) => moveSticker(now, id, x, y))
-              }
-              onRemoveSticker={(id) => setStickers((now) => removeSticker(now, id))}
-            />
+            // A thin edge around the picture, not in it: «Night» has the
+            // page's own dark, and its edges would not show (TASK-450).
+            <View style={styles.frame} testID="post-frame">
+              <PostImage
+                ref={post}
+                run={run}
+                shown={shown}
+                stickers={stickers}
+                look={look}
+                width={postWidth}
+                onMoveSticker={(id, x, y) =>
+                  setStickers((now) => moveSticker(now, id, x, y))
+                }
+                onRemoveSticker={(id) => setStickers((now) => removeSticker(now, id))}
+              />
+            </View>
           )}
         </View>
         {stickers.length > 0 && (
@@ -284,6 +295,42 @@ function SharePage({ run, onClose }: Props) {
             {t("Drag the emoji to move them. Tap one to take it off.")}
           </Text>
         )}
+
+        {/* The two things the post is for, right under it (TASK-450, the
+            user's choice): what dresses it comes after. */}
+        <View style={styles.actions} testID="post-actions">
+          <View style={styles.buttons}>
+            <PostButton
+              text={sharing ? t("Making the picture…") : "Instagram"}
+              onPress={() => void share()}
+              busy={busy}
+              main
+            />
+            {!gym && (
+              <PostButton
+                text={
+                  video === null
+                    ? t("Export video")
+                    : t("Making the video… {percent}%", {
+                        percent: Math.round(made * 100),
+                      })
+                }
+                onPress={() => void exportVideo()}
+                busy={busy}
+              />
+            )}
+          </View>
+          <Text style={styles.hint}>
+            {t("Pick Instagram in the list: Story, Feed or Messages.")}
+          </Text>
+          {problem !== null && (
+            <Text style={styles.problem} accessibilityRole="alert">
+              {problem}
+            </Text>
+          )}
+        </View>
+
+        {!gym && <PostLookRow run={run} look={look} onChange={setLook} />}
 
         {!gym && results.length > 0 && (
           <>
@@ -352,38 +399,7 @@ function SharePage({ run, onClose }: Props) {
           </>
         )}
 
-        <View style={styles.actions}>
-          <View style={styles.buttons}>
-            <PostButton
-              text={sharing ? t("Making the picture…") : "Instagram"}
-              onPress={() => void share()}
-              busy={busy}
-              main
-            />
-            {!gym && (
-              <PostButton
-                text={
-                  video === null
-                    ? t("Export video")
-                    : t("Making the video… {percent}%", {
-                        percent: Math.round(made * 100),
-                      })
-                }
-                onPress={() => void exportVideo()}
-                busy={busy}
-              />
-            )}
-          </View>
-          <Text style={styles.hint}>
-            {t("Pick Instagram in the list: Story, Feed or Messages.")}
-          </Text>
-          {problem !== null && (
-            <Text style={styles.problem} accessibilityRole="alert">
-              {problem}
-            </Text>
-          )}
-          {!gym && <StravaPostRow runKey={run.key} caption={caption} onSent={keep} />}
-        </View>
+        {!gym && <StravaPostRow runKey={run.key} caption={caption} onSent={keep} />}
       </ScrollView>
       {!gym && (
         <EditVideoSheet
@@ -476,6 +492,10 @@ const styles = StyleSheet.create({
   center: {
     alignItems: "center",
   },
+  frame: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: color.hairline,
+  },
   label: {
     color: color.textMuted,
     fontSize: fontSize.small,
@@ -556,7 +576,6 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: space.sm,
-    paddingTop: space.sm,
   },
   buttons: {
     flexDirection: "row",

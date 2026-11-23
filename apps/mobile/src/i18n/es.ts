@@ -1401,6 +1401,16 @@ export const ES: Table = {
   "What do you want to train?": "¿Qué quieres entrenar?",
   "Choose one or more. Then we guide you in 5 steps.":
     "Elige uno o más. Luego te guiamos en 5 pasos.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
+  Table: "Tabla",
+  "No exercises yet.": "Todavía no hay ejercicios.",
+  "Change week {n}": "Cambia la semana {n}",
+  "kg · touch a week to change it": "kg · toca una semana para cambiarla",
+  // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; approved by the user on 2026-11-23)
+  Tomorrow: "Mañana",
+  "+ 1 more": "+ 1 más",
+  "+ {n} more": "+ {n} más",
+  "This week: {done} of {total} done": "Esta semana: {done} de {total} hechos",
   "With weights and machines": "Con pesas y máquinas",
   Bodyweight: "Peso corporal",
   "At home or in the park, no equipment": "En casa o en el parque, sin material",
@@ -2395,7 +2405,6 @@ export const ES: Table = {
   "Message {name}": "Escribir a {name}",
 
   // src/messages/ConversationScreen.tsx, MessageSheet.tsx (TASK-319)
-  "No messages yet.": "Todavía no hay mensajes.",
   "Show earlier messages": "Mostrar mensajes anteriores",
   "Touch and hold to delete it": "Mantén pulsado para eliminarlo",
   "Touch and hold to report it": "Mantén pulsado para denunciarlo",
@@ -2405,6 +2414,22 @@ export const ES: Table = {
   "{name} gets this as a message request. You can send one message until they accept it.":
     "{name} lo recibirá como solicitud de mensaje. Hasta que la acepte, puedes enviar un solo mensaje.",
   "Write a message…": "Escribe un mensaje…",
+  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
+  "Show password": "Mostrar la contraseña",
+  "Hide password": "Ocultar la contraseña",
+  // src/messages/ConversationScreen.tsx (TASK-458: a conversation with nothing in it yet, the user's choice of 2026-11-23)
+  "Say hi to {name}.": "Saluda a {name}.",
+  "Hi {name}!": "¡Hola, {name}!",
+  "I like your drawings": "Me gustan tus dibujos",
+  "Shall we run together?": "¿Corremos juntos?",
+  "Writes it in the box. Nothing is sent yet.":
+    "Lo escribe en el cuadro. Todavía no se envía nada.",
+  "Photos, videos and drawings come after that.":
+    "Las fotos, los vídeos y los dibujos vienen después.",
+  // src/tabs/MessagesPage.tsx, src/messages/NewMessage.tsx (TASK-458: «New message» from the list)
+  "New message": "Nuevo mensaje",
+  "Search someone by name to write to them.":
+    "Busca a alguien por su nombre para escribirle.",
   "Delete this message for both of you?": "¿Eliminar este mensaje para los dos?",
   "Report this message": "Denunciar este mensaje",
   // src/explore/ExploredCard.tsx, social/DrawingCard.tsx, mapdraw/DrawOnMap.tsx,
@@ -3485,14 +3510,22 @@ export const ES: Table = {
   "Goal taken": "Gol alcanzado",
   "Turnpoint {name} taken. Next: {next}.": "Baliza {name} tomada. Siguiente: {next}.",
   "Goal {name} taken.": "Gol {name} alcanzado.",
-  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
-  Table: "Tabla",
-  "No exercises yet.": "Todavía no hay ejercicios.",
-  "Change week {n}": "Cambia la semana {n}",
-  "kg · touch a week to change it": "kg · toca una semana para cambiarla",
-  // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; approved by the user on 2026-11-23)
-  Tomorrow: "Mañana",
-  "+ 1 more": "+ 1 más",
-  "+ {n} more": "+ {n} más",
-  "This week: {done} of {total} done": "Esta semana: {done} de {total} hechos",
+  // src/air/ (TASK-479 part D3: the glide; approved by the user on 2026-11-23)
+  "Glide to turnpoint": "Planeo hasta la baliza",
+  "Nearest landing": "Aterrizaje más cercano",
+  "Glide ratio used": "Fineza usada",
+  "Wind used": "Viento usado",
+  Estimated: "Estimado",
+  "No wind": "Sin viento",
+  "needs {height}": "se necesitan {height}",
+  "No landings in your file": "Ningún aterrizaje en tu archivo",
+  // src/nutrition (TASK-489 part D)
+  "Calorie balance": "Balance de calorías",
+  Used: "Gastadas",
+  "Previous week": "Semana anterior",
+  "Next week": "Semana siguiente",
+  "so far": "hasta ahora",
+  "Week total": "Total de la semana",
+  "Today is not in the total until the day is over.":
+    "Hoy no entra en el total hasta que acabe el día.",
 };

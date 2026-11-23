@@ -190,7 +190,10 @@ Parte A:
 - [x] Testi nelle cinque lingue (`tables.test.ts`).
 - [x] Schermate dal simulatore e testi approvati dall'utente (2026-11-23,
       «Approvo»).
-- [ ] CI verde; merge dal Coordinatore col «Sì, unisci» dell'utente; OTA.
+- [x] CI verde e merge (#1523, `8b84b0c4`), col «Sì, unisci» dell'utente al
+      Coordinatore; prima un ritocco: la tabella nel registro degli scroll
+      orizzontali (`TabSwipeOwners.test.ts`).
+- [ ] OTA.
 
 Parte C:
 - [x] Il prossimo allenamento: oggi, fatto oggi, domani, la settimana

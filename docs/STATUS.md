@@ -38,6 +38,13 @@ Suunto, Coros e Komoot e fare domanda, ognuno col sì dell'utente.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-493 — La mappa dei decolli** (ADR-0400) · parte 0 il 2026-11-23:
+  decolli e atterraggi da OSM, la scheda del decollo con lo storico dei
+  voli contato dal server; scelte dell'utente fatte. Vento dopo 479 H.
+  File: — · `tasks/TASK-493.md`
+- **TASK-494 — Le scadenze della vela** (ADR-0401) · parte 0 il
+  2026-11-23: revisione, riserva e imbrago sull'attrezzatura di 486, con
+  l'avviso; scelte dell'utente fatte. File: — · `tasks/TASK-494.md`
 - **TASK-485 — La scheda della palestra come post** (ADR-0394) · 0 e A in
   `main`, A sul server (passo 18); B (#1414) e B2, la voce del «+» (#1431,
   `ed0bd4d7`) e la privacy (#1469, `5d226b33`) in `main`; restano la copia

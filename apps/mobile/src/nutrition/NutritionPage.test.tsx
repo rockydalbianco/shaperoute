@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 
 import { saveLanguageChoice } from "../i18n/language";
+import { FOOD_TABLE_SOURCE } from "./foodTable";
 import { NutritionPage } from "./NutritionPage";
 import { loadSettings } from "./nutritionStore";
 import { forgetNutrition } from "./useNutrition";
@@ -112,4 +113,45 @@ test("the notice is in the language of the app", async () => {
   expect(
     screen.getByText("Solo stime. MuW non fornisce diete né consigli medici."),
   ).toBeOnTheScreen();
+});
+
+test("the page has two views, the diary first", async () => {
+  await render(<NutritionPage today="2026-11-23" />);
+  await fireEvent.press(screen.getByTestId("nutrition-understood"));
+  expect(screen.getByRole("button", { name: "Diary" })).toBeSelected();
+  expect(screen.queryByTestId("nutrition-plan")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "My plan" }));
+  expect(screen.getByTestId("nutrition-plan")).toBeOnTheScreen();
+  expect(screen.queryByTestId("nutrition-diary")).toBeNull();
+  // The line on the estimates stays under both.
+  expect(
+    screen.getByText("Estimates only. MuW does not provide diets or medical advice."),
+  ).toBeOnTheScreen();
+});
+
+test("«How we calculate» says where the numbers come from", async () => {
+  await render(<NutritionPage today="2026-11-23" />);
+  await fireEvent.press(screen.getByTestId("nutrition-understood"));
+  expect(screen.queryByTestId("how-we-calculate")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "How we calculate" }));
+  expect(screen.getByRole("header", { name: "How we calculate" })).toBeOnTheScreen();
+  expect(
+    screen.getByText(/USDA FoodData Central \(SR Legacy, April 2018\)/),
+  ).toBeOnTheScreen();
+  expect(screen.getByText(/Mifflin-St Jeor/)).toBeOnTheScreen();
+  expect(
+    screen.getByText(
+      "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.",
+    ),
+  ).toBeOnTheScreen();
+  expect(
+    screen.getByText("Only you see this page. Nothing here leaves your phone."),
+  ).toBeOnTheScreen();
+});
+
+test("the source said on the page is the one the table was made from", async () => {
+  expect(FOOD_TABLE_SOURCE).toMatchObject({
+    name: "USDA FoodData Central, SR Legacy",
+    release: "2018-04",
+  });
 });

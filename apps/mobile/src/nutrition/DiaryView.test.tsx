@@ -2,8 +2,10 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react-n
 
 import { saveLanguageChoice } from "../i18n/language";
 import { diaryDayLabel, DiaryView } from "./DiaryView";
+import { FOOD_TABLE } from "./foodTable";
 import { loadDiaryMonth, loadOwnFoods, loadSettings } from "./nutritionStore";
-import { forgetNutrition, writeTarget } from "./useNutrition";
+import { NO_MEALS, withPortion } from "./plan";
+import { forgetNutrition, writePlanDay, writeTarget } from "./useNutrition";
 
 jest.mock(
   "react-native-safe-area-context",
@@ -222,4 +224,54 @@ test("in Italian the foods are looked for and shown in Italian", async () => {
   await fireEvent.press(screen.getByTestId("add-food-confirm"));
   expect(screen.getByLabelText("Pasta, cotta, 180 g, 284 kcal")).toBeOnTheScreen();
   expect(screen.getByLabelText("Mangiate, 284")).toBeOnTheScreen();
+});
+
+test("«Eaten as planned» writes the day as the plan has it", async () => {
+  // A Monday planned, written from the plan's own view of the store.
+  await act(async () => {
+    writePlanDay(
+      "mon",
+      withPortion(NO_MEALS, "lunch", {
+        food: FOOD_TABLE.find((food) => food.key === PASTA)!,
+        grams: 180,
+      }),
+    );
+  });
+  await render(<DiaryView today={TODAY} />);
+  await fireEvent.press(screen.getByRole("button", { name: "Eaten as planned" }));
+  expect(screen.getByLabelText("Pasta, cooked, 180 g, 284 kcal")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Eaten, 284")).toBeOnTheScreen();
+  expect(loadDiaryMonth("2026-11")[TODAY].lunch).toHaveLength(1);
+  // Written once: it is not offered over what the day already has.
+  expect(screen.queryByTestId("diary-as-planned")).toBeNull();
+});
+
+test("«Eaten as planned» is not there without a plan for that day of the week", async () => {
+  await act(async () => {
+    writePlanDay(
+      "tue",
+      withPortion(NO_MEALS, "lunch", {
+        food: FOOD_TABLE.find((food) => food.key === PASTA)!,
+        grams: 180,
+      }),
+    );
+  });
+  await render(<DiaryView today={TODAY} />);
+  expect(screen.queryByTestId("diary-as-planned")).toBeNull();
+});
+
+test("«Eaten as planned» never takes away what was written by hand", async () => {
+  await act(async () => {
+    writePlanDay(
+      "mon",
+      withPortion(NO_MEALS, "lunch", {
+        food: FOOD_TABLE.find((food) => food.key === PASTA)!,
+        grams: 180,
+      }),
+    );
+  });
+  await render(<DiaryView today={TODAY} />);
+  await addFood("breakfast", "pasta cooked", PASTA, "50");
+  await fireEvent.press(screen.getByTestId("add-food-confirm"));
+  expect(screen.queryByTestId("diary-as-planned")).toBeNull();
 });

@@ -3380,4 +3380,23 @@ export const IT: Table = {
   "Copy the number from the label, or from your dietitian's sheet.":
     "Copia il numero dall'etichetta, o dal foglio del tuo dietista.",
   "Delete food": "Elimina il cibo",
+  // src/nutrition (TASK-489 part B2)
+  Diary: "Diario",
+  "My plan": "Il mio piano",
+  "Eaten as planned": "Mangiato come da piano",
+  "Copy this day to…": "Copia questo giorno su…",
+  "This is the plan you write. MuW never changes it.":
+    "Questo è il piano che scrivi tu. MuW non lo cambia mai.",
+  "How we calculate": "Come calcoliamo",
+  "Food@@numbers": "Cibo",
+  "Energy you use": "Energia che consumi",
+  Estimates: "Stime",
+  "Calories of the foods in the list come from USDA FoodData Central (SR Legacy, April 2018), a public-domain food composition table. Your own foods use the numbers you wrote.":
+    "Le calorie dei cibi dell'elenco vengono da USDA FoodData Central (SR Legacy, aprile 2018), una tabella di composizione degli alimenti di pubblico dominio. I cibi tuoi usano i numeri che hai scritto tu.",
+  "At rest: the Mifflin-St Jeor equation, from the body data in your profile. Activities: ACSM equations and the 2024 Compendium of Physical Activities. On days when Apple Health has your active energy, that number is used instead.":
+    "A riposo: l'equazione di Mifflin-St Jeor, dai dati del corpo nel tuo profilo. Attività: equazioni ACSM e il Compendium of Physical Activities 2024. Nei giorni in cui Salute di Apple ha la tua energia attiva, si usa quel numero.",
+  "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
+    "I valori reali cambiano con il prodotto, la ricetta e la persona. MuW non fornisce diete né consigli medici.",
+  "Only you see this page. Nothing here leaves your phone.":
+    "Questa pagina la vedi solo tu. Niente di quello che c'è qui esce dal tuo telefono.",
 };

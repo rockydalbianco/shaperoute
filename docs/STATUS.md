@@ -244,6 +244,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-22, passo 17**: B2 estere **sul server** (`40789324`, catalogo a 1866): le corse identiche (`1546 63 40 0`), in bici 320 uscite in 54 città, Londra con le sue otto; nell'app si vedono già con lo sport «Bike», senza OTA. Resta il secondo giro delle sette città (via del Coordinatore, limite 5 GB solo per loro).
   **Passo 19 (riferito dal Coordinatore il 2026-11-23)**: le cinque città recuperate (Berlino, Dublino, Amburgo, Vienna, New York: 36 uscite, sì dell'utente sui disegni «SI VANNO BENE») in `main` (#1418, `32036bd3`) e **sul server** (`e427ed2e`, catalogo a 1902): le corse identiche (`1546 63 40 0`), in bici 356 uscite in 59 città; senza OTA. Parigi e Tokyo restano senza uscite in bici (oltre i 5 GB del pianificatore). B2 estere chiusa; restano B3 (40–50 km) e C.
   **2026-11-23, B3** (ADR-0366, precisazione B3): le uscite in bici da 40 e 50 km **solo nel catalogo** (scelta dell'utente: «solo in Explore»; «Draw» in bici resta a 10–30 km, motore non toccato): 129 uscite in 32 città, tutte quelle che passano il filtro (sì dell'utente: «Tutti i 129»), catalogo a 2031, in `main` (#1471, `ba12b1fe`); gli id di prima restano. Il server le carica col passo 21 (sì dell'utente al Coordinatore), senza OTA; poi la prova sul telefono. Dopo: C.
+  **2026-11-23, B3 chiusa**: sul server col passo 21 (`74cc96c7`, catalogo a 2031, le corse identiche) e provata dall'utente sul telefono («visto funziona»), senza OTA. Di TASK-441 resta C.
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
@@ -377,11 +378,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   prossimo OTA, copia del sito col sì dell'utente; restano le righe di 467 E2,
   484 B, 485 B, al via del Coordinatore. File: — · `tasks/TASK-481.md`
 
-- **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 (la barra
-  «Apri» di Safari) e A (l'app apre il post del link) in produzione (OTA 21),
-  provate dall'utente sull'iPhone il 2026-11-22; C: i due file `.well-known`
-  (iPhone #1392, Android #1436) online. Resta la parte D (link verificati in
-  `app.json`), con la prossima build nativa. File: — · `tasks/TASK-482.md`
+- **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 e A in
+  produzione (OTA 21), provate dall'utente; C: i due file `.well-known`
+  online. D (link verificati in `app.json`): bozza #1461, da unire solo al
+  taglio della build nativa; poi la prova dell'utente sul telefono. Sessione
+  archiviata: chi riprende legge il Registro. File: — · `tasks/TASK-482.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

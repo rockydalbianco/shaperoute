@@ -142,6 +142,29 @@ function ownerInFile(): number | null {
   }
 }
 
+/** Whether the run file holds nothing a run is made of: a run of nobody's
+ * that ended with less than a line (a start taken back at once, TASK-252),
+ * which the app never shows, nor scores, nor opens again. Such a file does
+ * not keep an account's own run set aside from coming back (TASK-507). A
+ * run under way is never this: its status is "running". */
+function slotHoldsNothing(): boolean {
+  try {
+    const file = runFile();
+    if (!file.exists) {
+      return true;
+    }
+    const data: unknown = JSON.parse(file.textSync());
+    return (
+      isSavedRun(data) &&
+      data.owner === undefined &&
+      data.status !== "running" &&
+      data.track.fixes.length < 2
+    );
+  } catch {
+    return false;
+  }
+}
+
 /** At most this many runs of one account set aside: far more than a
  * phone shared by a few people ever holds. */
 const MAX_ASIDE = 100;
@@ -192,7 +215,7 @@ function moveRuns(): void {
       break;
     }
   }
-  if (who === null || runFile().exists) {
+  if (who === null || !slotHoldsNothing()) {
     return;
   }
   for (let n = 1; n <= MAX_ASIDE; n += 1) {

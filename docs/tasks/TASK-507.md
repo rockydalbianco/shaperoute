@@ -1,9 +1,9 @@
 # TASK-507 — I dati del telefono restano di chi li ha fatti, anche quando cambia l'account
 
 **Stato**: In lavorazione · A + C in `main` (#1533, `edde967c`) · **D in PR
-dal 2026-11-24** (`fix/TASK-507-d-account-data`, #1545) · **B1 in bozza dal
-2026-11-24** (`fix/TASK-507-b1-owner-in-progress`, prova al simulatore
-prima della «pronta») · B2 nel turno su `App.tsx`
+dal 2026-11-24** (`fix/TASK-507-d-account-data`, #1545) · **B1 in PR dal
+2026-11-24** (`fix/TASK-507-b1-owner-in-progress`, #1546, provata al
+simulatore) · B2 nel turno su `App.tsx`
 **Fase**: 4 · **ADR**: ADR-0406 (dal Coordinatore, voce nella PR di
 documenti finale) · numero dal Coordinatore il 2026-11-23
 
@@ -159,8 +159,24 @@ Con la scelta dell'utente «Nascosta finché rientra».
       `poolStoreOwner`, `watchRunsOwner`).
 - [x] Test toccati verdi (1298 nelle cartelle toccate, 23 dell'app), `tsc`
       ed `eslint`.
-- [ ] Prova al simulatore, nel turno del Coordinatore, prima della
-      «pronta».
+- [x] Prova al simulatore (2026-11-24, iPhone 17, Expo Go, API e database
+      locali usa e getta; schermate in `out/TASK-507/sim/` nel checkout
+      principale):
+      - A comincia una corsa libera e l'app viene chiusa;
+      - riaperta senza nessuno dentro, la corsa va da parte
+        (`current-run.1.json`) e non si riapre;
+      - B entra e non vede niente, anche riaprendo l'app;
+      - B comincia una sua corsa e l'app viene chiusa;
+      - riaperta senza nessuno dentro, anche quella di B va da parte; le due
+        corse da parte restano identiche byte per byte;
+      - A rientra: la sua corsa torna e si riapre;
+      - A la salva: sul server la corsa è sotto A (`user_id` 1), nessuna
+        sotto B; la corsa di B resta da parte, intera.
+- [x] Trovato nella prova e corretto: una corsa partita per sbaglio senza
+      nessuno dentro e fermata subito lasciava nel file un solo punto, senza
+      proprietario, e teneva fuori la corsa di A. Ora un file così (senza
+      proprietario, fermo, meno di due punti, che l'app non mostra mai) non
+      occupa il posto (`slotHoldsNothing`, due test in più).
 
 ### File toccati (B1)
 
@@ -187,3 +203,4 @@ arrivate (`VERIFICA.md`, punto 1).
   con la #1533.
 - **2026-11-24** — Parte D in PR.
 - **2026-11-24** — Parte B1 scritta, in bozza fino alla prova al simulatore.
+- **2026-11-24** — Prova al simulatore di B1 riuscita, con una correzione (un file di un punto senza proprietario non tiene fuori la corsa che torna).

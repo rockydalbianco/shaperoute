@@ -226,6 +226,40 @@ test("a run of nobody's, from before TASK-507, is anyone's, and the next run is 
   expect(loadRun()?.owner).toBe(B);
 });
 
+test("a start of nobody's taken back at once does not keep A's run from coming back", () => {
+  const left = aLeavesARun();
+  setCurrentOwner(null);
+  expect(loadRun()).toBeNull();
+  // Signed out, «Run» tapped and stopped at once: one fix, stopped.
+  disk.files.set(
+    doc(RUN_FILE),
+    JSON.stringify({
+      version: 1,
+      route: [],
+      track: { distanceM: 0, fixes: [fix(0, 0)], pauses: [] },
+      status: "stopped",
+    }),
+  );
+  setCurrentOwner(A);
+  expect(loadRun()?.track).toEqual(left);
+});
+
+test("a run of nobody's with a line keeps the file: A's waits, whole", () => {
+  aLeavesARun();
+  setCurrentOwner(null);
+  loadRun();
+  const nobodys = {
+    version: 1,
+    route: [],
+    track: { distanceM: 10, fixes: [fix(0, 0), fix(10, 3)], pauses: [] },
+    status: "stopped",
+  };
+  disk.files.set(doc(RUN_FILE), JSON.stringify(nobodys));
+  setCurrentOwner(A);
+  expect(loadRun()?.owner).toBeUndefined();
+  expect(disk.files.has(doc("current-run.11.json"))).toBe(true);
+});
+
 test("an account deleted takes its runs, set aside or not, and leaves the others'", () => {
   aLeavesARun();
   setCurrentOwner(B);

@@ -378,11 +378,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   prossimo OTA, copia del sito col sì dell'utente; restano le righe di 467 E2,
   484 B, 485 B, al via del Coordinatore. File: — · `tasks/TASK-481.md`
 
-- **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 (la barra
-  «Apri» di Safari) e A (l'app apre il post del link) in produzione (OTA 21),
-  provate dall'utente sull'iPhone il 2026-11-22; C: i due file `.well-known`
-  (iPhone #1392, Android #1436) online. Resta la parte D (link verificati in
-  `app.json`), con la prossima build nativa. File: — · `tasks/TASK-482.md`
+- **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 e A in
+  produzione (OTA 21), provate dall'utente; C: i due file `.well-known`
+  online. D (link verificati in `app.json`): bozza #1461, da unire solo al
+  taglio della build nativa; poi la prova dell'utente sul telefono. Sessione
+  archiviata: chi riprende legge il Registro. File: — · `tasks/TASK-482.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

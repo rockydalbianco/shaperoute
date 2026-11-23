@@ -1075,6 +1075,23 @@ al Coordinatore, non di questo task.
   essa: da soli non cambiano niente, e il giorno della build i telefoni li
   trovano già.
 
+**Aggiunta 2026-11-23, parte D** (bozza #1461; decisa dall'agente su
+delega dell'utente, elenco approvato dal Coordinatore):
+
+- Android prende la pagina di un post coi suoi **tre percorsi esatti**
+  (`/p/`, `/p`, `/p/index.html`), gli stessi del file dell'iPhone: un
+  prefisso `/p` prenderebbe anche `/privacy`. Android non sa leggere cosa
+  c'è dopo `#`: la pagina `/p/` senza id aprirebbe l'app sulla prima
+  schermata — nessuno condivide quell'indirizzo.
+- Lo schema dell'app è **`muw`**, solo dichiarato: nessun bottone e nessun
+  codice lo usa (un «Open in MuW» è una scelta di prodotto).
+- Le due impronte native si muovono insieme: `fingerprint.config.js` non
+  separa queste righe per telefono, perché la build è per tutti e due gli
+  store. Per questo la PR resta bozza fino al taglio: in `main` prima
+  taglierebbe la 1.1.0 installata fuori dai suoi aggiornamenti.
+- Un test (`postLinkConfig.test.ts`) legge insieme `app.json` e i due file
+  `.well-known` del sito: il telefono apre l'app solo se dicono lo stesso.
+
 ## ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie
 
 **Stato**: Attiva · 2026-11-22 · TASK-483: parte 0 (documenti), A #1385

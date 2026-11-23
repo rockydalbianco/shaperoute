@@ -3458,4 +3458,9 @@ export const FR: Table = {
     "Au plus profond : {dist} du bord, {height} du plancher ou du plafond",
   "Only on your phone: not in the Feed.":
     "Uniquement sur votre téléphone : pas dans le Fil.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; to approve with the screenshots)
+  Table: "Tableau",
+  "No exercises yet.": "Pas encore d'exercice.",
+  "Change week {n}": "Change la semaine {n}",
+  "kg · touch a week to change it": "kg · touche une semaine pour la changer",
 };

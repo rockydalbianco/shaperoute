@@ -3439,4 +3439,9 @@ export const IT: Table = {
   "Deepest: {dist} from the edge, {height} from floor or ceiling":
     "Più dentro: {dist} dal bordo, {height} da base o tetto",
   "Only on your phone: not in the Feed.": "Solo sul tuo telefono: non va nel Feed.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; to approve with the screenshots)
+  Table: "Tabella",
+  "No exercises yet.": "Ancora nessun esercizio.",
+  "Change week {n}": "Cambia la settimana {n}",
+  "kg · touch a week to change it": "kg · tocca una settimana per cambiarla",
 };

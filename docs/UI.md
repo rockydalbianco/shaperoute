@@ -5770,3 +5770,8 @@ altri pezzi) si aggancia alle strade mentre lo disegni, tratto per tratto,
   disegno va libero come prima. Se sulle strade il disegno viene più lungo
   o più corto di oltre il 10%, una nota lo dice: «On the roads your drawing
   is 53% longer: 7.6 km. It stays where you drew it, at the same size.»
+- **Il punteggio dopo «Draw route»** (parte C3b): sotto il percorso di un
+  disegno ancorato torna «Roads follow your drawing: N%», con la
+  somiglianza del motore del percorso sullo schermo (stesso testo, già
+  tradotto). Solo con un percorso: con più percorsi le tessere A, B, C
+  dicono già ognuna la sua.

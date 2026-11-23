@@ -162,7 +162,8 @@ Parte C:
       che parte a metà settimana, un allenamento che aspetta sul telefono
       (`weekDone.test.ts`); nel riquadro (`PlanTable.test.tsx`).
 - [x] Testi nelle cinque lingue (`tables.test.ts`).
-- [ ] Schermate dal simulatore e testi approvati dall'utente.
+- [x] Schermate dal simulatore e testi approvati dall'utente (2026-11-23,
+      «Approvo»).
 - [ ] CI verde; merge dal Coordinatore col «Sì, unisci» dell'utente; OTA.
 
 Parte B: i criteri quando la parte A è in `main` (la sezione arriva con la

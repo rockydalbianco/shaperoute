@@ -78,8 +78,9 @@ test("a touch opens the item, which the others can report", async () => {
   await fireEvent.press(await screen.findByTestId(`profile-gear-${SHOES.id}`));
   expect(await screen.findByTestId("gear-sheet")).toBeOnTheScreen();
   expect(screen.getByTestId("gear-sheet-photo")).toBeOnTheScreen();
-  // The row and the sheet both say it.
-  expect(screen.getAllByText("Shoes · Nike Pegasus 41")).toHaveLength(2);
+  // The row says the kind; the sheet has it on top.
+  expect(screen.getByText("Shoes · Nike Pegasus 41")).toBeOnTheScreen();
+  expect(screen.getByText("Nike Pegasus 41")).toBeOnTheScreen();
   expect(screen.getByText(boughtLabel("2025-03-01"))).toBeOnTheScreen();
   expect(screen.getByText("Bought in Milan, ran Rome in them")).toBeOnTheScreen();
   expect(screen.getByTestId("report-menu")).toBeOnTheScreen();
@@ -104,6 +105,7 @@ test("an ended session is told", async () => {
 });
 
 test("the month an item was bought, in words", () => {
-  expect(boughtLabel("2025-03-01")).toMatch(/2025/);
+  expect(boughtLabel("2025-03-01", "en")).toBe("March 2025");
+  expect(boughtLabel("2025-03-01", "it")).toBe("marzo 2025");
   expect(boughtLabel("someday")).toBe("someday");
 });

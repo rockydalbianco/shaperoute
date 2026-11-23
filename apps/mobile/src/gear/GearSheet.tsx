@@ -5,11 +5,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { gearPhotoSource } from "../api/gear";
 import { t } from "../i18n";
+import { appLanguage } from "../i18n/language";
 import { ReportMenu } from "../social/ReportMenu";
 import { color, font, radius, space } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
 import { useUnits } from "../units/useUnits";
-import { gearSubtitle, gearTitle, lookOf, totalsLabel } from "./gearKinds";
+import { gearTitle, lookOf, totalsLabel } from "./gearKinds";
 
 type Props = {
   item: Gear;
@@ -24,13 +25,14 @@ type Props = {
   apiKey?: string | null;
 };
 
-/** "March 2025": the month an item was bought, in the phone's language. */
-export function boughtLabel(day: string): string {
+/** "March 2025", «marzo 2025»: the month an item was bought, in the app's
+ * language. */
+export function boughtLabel(day: string, language: string = appLanguage()): string {
   const [year, month] = day.split("-").map(Number);
   if (!Number.isFinite(year) || !Number.isFinite(month)) {
     return day;
   }
-  return new Date(Date.UTC(year, month - 1, 15)).toLocaleDateString(undefined, {
+  return new Date(Date.UTC(year, month - 1, 15)).toLocaleDateString(language, {
     month: "long",
     year: "numeric",
     timeZone: "UTC",
@@ -102,8 +104,11 @@ export function GearSheet({
         <Text style={styles.title} accessibilityRole="header">
           {gearTitle(item)}
         </Text>
+        {/* Under a name of its own, brand and model; the kind is on top. */}
         {item.name !== undefined && (
-          <Text style={styles.body}>{gearSubtitle(item)}</Text>
+          <Text style={styles.body}>
+            {[item.brand, item.model].filter(Boolean).join(" ")}
+          </Text>
         )}
         <Text style={styles.body}>{totalsLabel(item, units)}</Text>
         {item.bought_on !== undefined && (

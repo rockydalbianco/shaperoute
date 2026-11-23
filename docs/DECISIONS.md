@@ -598,6 +598,7 @@ lasciando le righe d'indice.
 - ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap estratti dal server, la scheda del decollo con lo storico dei voli di MuW contato dal server, mai giudizi sulle condizioni · 2026-11-23 · Proposta
 - ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
 - ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo di ADR-0269 con `group_id`, anche senza percorso; Public, Request, Invite only; un solo admin e fino a 3 co-admin; l'elenco dei membri solo ai membri; la chat di gruppo come parte E · 2026-11-23 · Proposta
+- ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
 - ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Attiva
 - ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella: rotte a parte (`/drawings/{id}/gear`, `/gear/{id}`), `gear_id` sul tag col `SET NULL`, il limite una riga sola nella campanella per attrezzo e limite, «From my gear» coi tipi della foto · 2026-11-23 · Attiva
 
@@ -6717,3 +6718,33 @@ dei file), e una nella parte C per le colonne di `group_runs`. La parte C
 tocca i file di TASK-309 (B2 e C ancora aperte): la lista al Coordinatore
 prima. La privacy va in `main` prima dell'OTA che accende i gruppi. Le
 corse di gruppo senza gruppo restano come oggi.
+
+## ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo
+
+**Stato**: Attiva · 2026-11-24 · TASK-495 parti A (#1538) e A2 (#1543).
+**Deciso dall'agente su delega dell'utente**; le regole di `GRUPPI.md`
+§2–§10 restano le scelte dell'utente.
+
+**Contesto**: la proposta lasciava aperti alcuni come: la foto, cosa
+succede a chi passa il ruolo, a chi ha chiesto quando arriva un invito o
+il gruppo diventa Public, cosa entra in «Recent activity».
+
+**Decisione** (`GRUPPI.md` §12, «Scelte della parte A»):
+- la foto del gruppo è `profile_photos.square_jpeg` (256 px), con la copia
+  piccola delle persone nelle schede: nessun codice d'immagine nuovo;
+- passato il ruolo, l'admin di prima è membro; un co-admin toglie solo i
+  membri;
+- un invito a chi ha già chiesto, o un gruppo che diventa Public, fa
+  entrare chi aspettava, fino a 300;
+- Explore: la ricerca per nome (2 caratteri o più) vale ovunque; senza
+  nome serve il punto del telefono;
+- un admin nascosto da una segnalazione nasconde il suo gruppo a tutti
+  (`follows.apart_sql` com'è);
+- «Recent activity» legge i post di una corsa di uno sport del gruppo, con
+  `drawings.shown_sql` e le schede del Feed, senza toccare `feed.py`;
+- `group_outing_new` arriva con le uscite (parte C).
+
+**Conseguenze**: una migrazione sola (`0087_groups.sql`); `feed.py` e
+`drawings.py` invariati. Chiudere un gruppo con membri dentro non c'è:
+l'admin passa il ruolo o resta; se serve, lo decide l'utente con le
+schermate della parte B.

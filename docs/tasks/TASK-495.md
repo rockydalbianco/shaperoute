@@ -1,6 +1,6 @@
 # TASK-495 — I gruppi per uscire insieme («Groups»)
 
-**Stato**: In corso (parte 0, soli documenti, 2026-11-23)
+**Stato**: In corso (0 #1515, A #1538 in `main`, A2 #1543; poi B)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-495-groups`
 **Dipende da**: TASK-309 (le corse di gruppo, `EVENTI.md`, ADR-0269),
@@ -136,8 +136,32 @@ docs/INDEX.md               (una riga: «I gruppi» → GRUPPI.md)
 docs/STATUS.md              (la voce in «In lavorazione»)
 ```
 
-Parti A–E: si scrivono qui, una per volta, dopo il sì del Coordinatore
-sulla lista.
+Parte A (#1538, lista approvata dal Coordinatore il 2026-11-23, con
+`notification_list.py` e `test_moderation.py` in più):
+```
+services/api/migrations/0087_groups.sql            (nuovo, dopo la 0086 di TASK-493)
+services/api/shaperoute_api/groups.py              (nuovo)
+services/api/shaperoute_api/push.py                (tre Kind, group_id, i testi)
+services/api/shaperoute_api/notification_list.py   (group_id nella campanella)
+services/api/shaperoute_api/app.py                 (install_groups)
+services/api/shaperoute_api/moderation.py, report_email.py   (il tipo group)
+services/api/tests/test_groups.py                  (nuovo), test_moderation.py
+packages/shared-types/src/groups.ts                (nuovo), src/index.ts (REPORT_KINDS, export)
+packages/shared-types/fixtures/group*.json, my-groups.json   (nuovi)
+packages/shared-types/test/groups.test.ts          (nuovo), moderation.test.ts
+docs/API.md («Groups»), docs/DATABASE.md
+```
+
+Parte A2 (#1543): `groups.py`, `test_groups.py`, `src/groups.ts`,
+`fixtures/group-activity.json` (nuovo), `test/groups.test.ts`, `API.md`.
+
+Parte B (lista approvata dal Coordinatore il 2026-11-24): `apps/mobile/src/groups/`
+(nuova), `src/screens/ProfileLayer.tsx`, `src/notifications/notificationTap.ts`
+e il suo test, `src/i18n/{de,es,fr,it}.ts`; `src/profile/ProfileHome.tsx`
+una riga sola, dopo #1517 di TASK-489 e col via del Coordinatore.
+
+Parti C–E e la privacy: si scrivono qui, una per volta, dopo il sì del
+Coordinatore sulla lista.
 
 ## Fuori scope
 
@@ -147,3 +171,21 @@ restano come in `EVENTI.md`.
 ## Esito
 
 *(si compila a fine task)*
+
+**Registro**
+
+- 2026-11-23 · parte 0 in `main` (#1515).
+- 2026-11-23 · parte A in `main` (#1538, `ccb318c7`): l'API dei gruppi
+  (`API.md` «Groups»), la migrazione `0087_groups.sql`, le tre push coi
+  testi approvati dall'utente lo stesso giorno, la campanella, le
+  segnalazioni. 45 test in `test_groups.py`. Sul server col prossimo passo
+  del Coordinatore (`out/TASK-495/SERVER-A.md` e `check_a.sql` nel
+  checkout principale, solo letture).
+- 2026-11-24 · parte A2 (#1543): `GET /groups/{id}/activity`, i post dei
+  membri degli ultimi 14 giorni negli sport del gruppo; armata dal
+  Coordinatore, merge al verde.
+- **Prossimo**: parte B (l'app), con le schermate e i testi all'utente
+  prima della PR; poi la privacy, prima dell'OTA di B.
+- **Da chiedere all'utente con le schermate di B**: un admin oggi chiude
+  il gruppo solo uscendo da ultimo membro; se serve «Delete group» per un
+  gruppo con membri, è una scelta di prodotto.

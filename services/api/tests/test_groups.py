@@ -55,6 +55,7 @@ from shaperoute_api.groups import (
 )
 from shaperoute_api.moderation import NOT_YOURSELF_REPORT
 from shaperoute_api.notice_email import EMAIL_KINDS
+from shaperoute_api.notification_list import NotificationList
 from shaperoute_api.push import OWN_KINDS, TEXTS, Pusher, PushEvent, data_of, text_of
 from shaperoute_api.report_email import Links, apply, reported
 
@@ -109,9 +110,12 @@ def client(database: Database, expo: FakeExpo) -> TestClient:
         accounts=accounts,
         run_places=PlaceNames(None),
     )
-    app.state.pusher = Pusher(
+    pusher = Pusher(
         database, Expo(send=expo), run=lambda task: task(), later=lambda *_: None
     )
+    # The bell listens to the pusher the app was made with: to this one too.
+    pusher.listeners.append(NotificationList(database, accounts.now).record)
+    app.state.pusher = pusher
     return TestClient(app)
 
 
@@ -575,7 +579,7 @@ def test_full_at_three_hundred(client: TestClient, database: Database) -> None:
             made_user = conn.execute(
                 "INSERT INTO users (email, username, password_hash, confirmed_16_at,"
                 " created_at) VALUES (%s, %s, 'x', now(), now()) RETURNING id",
-                (f"m{n}@example.com", f"m{n}"),
+                (f"mem{n}@example.com", f"mem{n}"),
             ).fetchone()
             assert made_user is not None
             conn.execute(
@@ -637,7 +641,7 @@ def test_hidden_from_a_report_only_the_members_see_it(
 
 def test_three_co_admins_at_most_named_by_the_admin_only(client: TestClient) -> None:
     ada = signed_up(client, "ada")
-    others = [signed_up(client, f"m{n}") for n in range(MAX_COADMINS + 1)]
+    others = [signed_up(client, f"mem{n}") for n in range(MAX_COADMINS + 1)]
     group = made(client, ada, access="public")
     for other in others:
         joined(client, other, group["id"])

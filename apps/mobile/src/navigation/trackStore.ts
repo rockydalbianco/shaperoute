@@ -10,12 +10,20 @@ import { File, Paths } from "expo-file-system";
 import { AppState, type AppStateStatus } from "react-native";
 
 import {
+  FULL_EVERY_LINES,
+  JOURNAL_FILE,
+  journalBase,
+  journalLine,
+  replayJournal,
+} from "./runJournal";
+import {
   addFix,
   continueTrack,
   emptyTrack,
   holdTrack,
   leaveTrack,
   openPause,
+  type Pause,
   pauseTrack,
   penDownTrack,
   penUpTrack,
@@ -28,11 +36,16 @@ import {
  * The run in progress, kept in a file of the app's documents (TASK-112,
  * ADR-0091): it is still there after the app is closed, and it never
  * leaves the phone. One run at a time: a new one replaces the last.
+ *
+ * With the app behind another the file is not written whole at each fix
+ * (TASK-496, an addition to ADR-0264): the new fixes go to a journal beside
+ * it (`runJournal`), and the run is the file with the journal after it.
  */
 
 export const RUN_FILE = "current-run.json";
 /** The file is written at most this often with the app in front, and when
- * the run ends. Behind another app it is written at once (TASK-304). */
+ * the run ends. Behind another app each fix is written at once (TASK-304),
+ * to the journal (TASK-496). */
 export const SAVE_EVERY_MS = 15_000;
 /** A run stopped less than this ago goes on when the same route starts again. */
 export const RESUME_WITHIN_MS = 30 * 60_000;
@@ -87,19 +100,79 @@ function runFile(): File {
   return new File(Paths.document, RUN_FILE);
 }
 
-/** Writes the run; false when the phone refuses (full, no access). */
-export function saveRun(run: SavedRun): boolean {
+function journalFile(): File {
+  return new File(Paths.document, JOURNAL_FILE);
+}
+
+/** Whether the journal holds nothing of a file older than the one there
+ * is: false once the phone refused to empty it, until it does. */
+let journalEmptied = true;
+
+/** Empties the journal: the file just written holds all of it. */
+function emptyJournal(): void {
   try {
-    const file = runFile();
-    file.create({ overwrite: true });
-    file.write(JSON.stringify(run));
+    const journal = journalFile();
+    if (journal.exists) {
+      journal.delete();
+    }
+    journalEmptied = true;
+  } catch {
+    journalEmptied = false;
+  }
+}
+
+/** Adds `line` to the journal, the `first` one after a whole file to a new
+ * journal; false when the phone refuses. */
+function addToJournal(line: string, first: boolean): boolean {
+  try {
+    const journal = journalFile();
+    if (first && !journal.exists) {
+      journal.create();
+    }
+    journal.write(line, { append: true });
     return true;
   } catch {
     return false;
   }
 }
 
-/** The run in the file, or null when there is none or it cannot be read. */
+/** Writes the run, whole; false when the phone refuses (full, no access).
+ * The journal starts again: what it held is in the file now. */
+export function saveRun(run: SavedRun): boolean {
+  try {
+    const file = runFile();
+    file.create({ overwrite: true });
+    file.write(JSON.stringify(run));
+  } catch {
+    return false;
+  }
+  emptyJournal();
+  return true;
+}
+
+/** `run` with what the journal holds after it (TASK-496). A journal that
+ * cannot be read leaves the run as the file has it. */
+function withJournal(run: SavedRun): SavedRun {
+  if (run.status !== "running") {
+    return run;
+  }
+  try {
+    const journal = journalFile();
+    if (!journal.exists) {
+      return run;
+    }
+    const track = replayJournal(run.track, journal.textSync(), {
+      fix: isFix,
+      pause: isPause,
+    });
+    return track === run.track ? run : { ...run, track };
+  } catch {
+    return run;
+  }
+}
+
+/** The run in the file, with the journal's lines after it, or null when
+ * there is none or it cannot be read. */
 export function loadRun(): SavedRun | null {
   try {
     const file = runFile();
@@ -107,7 +180,7 @@ export function loadRun(): SavedRun | null {
       return null;
     }
     const data: unknown = JSON.parse(file.textSync());
-    return isSavedRun(data) ? data : null;
+    return isSavedRun(data) ? withJournal(data) : null;
   } catch {
     return null;
   }
@@ -122,6 +195,7 @@ export function clearRun(): void {
   } catch {
     // Nothing to clear is as good as cleared.
   }
+  emptyJournal();
 }
 
 function isLatLon(value: unknown): value is LatLon {
@@ -149,7 +223,7 @@ function isFix(value: unknown): value is TrackFix {
   );
 }
 
-function isPause(value: unknown): boolean {
+function isPause(value: unknown): value is Pause {
   if (typeof value !== "object" || value === null) {
     return false;
   }
@@ -352,8 +426,10 @@ export type RunRecorder = {
  * A run of the same route the app was closed during goes on at once when
  * closed lately (TASK-304, ADR-0264), otherwise paused until «Resume»
  * (TASK-272, ADR-0240). With the app behind another the file is written
- * as it leaves the front and at each fix after (TASK-304): iOS may close
- * MuW there, and the file is what is left of the run.
+ * as it leaves the front and each fix after is written too (TASK-304): iOS
+ * may close MuW there, and the file is what is left of the run. Those fixes
+ * go to the journal, a line each, and the file is written whole again every
+ * FULL_EVERY_LINES of them (TASK-496).
  */
 export function startRun(
   route: LatLon[],
@@ -392,6 +468,16 @@ export function startRun(
 
   // The run as it would be in the file, when the last write failed.
   let notWritten: SavedRun | null = null;
+  // The whole file this recorder wrote last, for the journal's lines to
+  // follow (TASK-496); null before it, after a write the phone refused, and
+  // while the journal holds lines of an older file.
+  let base: string | null = null;
+  // What the file and the journal hold of the track, and the journal's lines.
+  let written: { fixes: number; pauses: Pause[] | undefined } = {
+    fixes: 0,
+    pauses: undefined,
+  };
+  let lines = 0;
 
   function save(): void {
     const run: SavedRun = {
@@ -405,7 +491,28 @@ export function startRun(
       track,
       status,
     };
-    notWritten = saveRun(run) ? null : run;
+    const done = saveRun(run);
+    notWritten = done ? null : run;
+    unsaved = false;
+    base = done && journalEmptied ? journalBase(track) : null;
+    written = { fixes: track.fixes.length, pauses: track.pauses };
+    lines = 0;
+  }
+
+  // With the app behind another (TASK-496): only what is new, in a line of
+  // the journal. The whole file when there is none of this recorder's to
+  // follow, every FULL_EVERY_LINES, and when the phone refuses the line.
+  function saveBehind(): void {
+    if (base === null || lines >= FULL_EVERY_LINES) {
+      save();
+      return;
+    }
+    if (!addToJournal(journalLine(base, track, written), lines === 0)) {
+      save();
+      return;
+    }
+    written = { fixes: track.fixes.length, pauses: track.pauses };
+    lines += 1;
     unsaved = false;
   }
 
@@ -451,12 +558,13 @@ export function startRun(
         save();
         return;
       }
-      if (
-        unsaved &&
-        (savedMs === null ||
-          fix.timeMs - savedMs >= SAVE_EVERY_MS ||
-          behind(AppState.currentState))
-      ) {
+      if (!unsaved) {
+        return;
+      }
+      if (savedMs !== null && behind(AppState.currentState)) {
+        savedMs = fix.timeMs;
+        saveBehind();
+      } else if (savedMs === null || fix.timeMs - savedMs >= SAVE_EVERY_MS) {
         savedMs = fix.timeMs;
         save();
       }

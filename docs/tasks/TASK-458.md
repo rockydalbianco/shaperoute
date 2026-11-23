@@ -94,10 +94,11 @@ dopo.
   and drawings come after that.» — è la risposta a «nessun allegato
   visibile». La riga vecchia resta com'è (la controlla `Messages.test.tsx`,
   che è della #1513).
-- **«New message»**: proposto un tasto a capsula accanto al titolo
-  «Messages» che apre una pagina sua (chi si sente già, poi chi si segue, la
-  ricerca per nome; un tocco apre la conversazione, niente parte da lì).
-  Scritto così; **l'aspetto del tasto aspetta il sì dell'utente**.
+- **«New message»** (23 novembre 2026): «A, capsula col testo», scelta
+  data qui (l'altra era un tondo col «+»). Un tasto neutro a capsula col
+  testo «New message» accanto al titolo «Messages» apre una pagina sua:
+  chi si sente già, poi chi si segue, la ricerca per nome; un tocco apre
+  la conversazione, niente parte da lì.
 
 ## Testi nuovi (ognuno col sì dell'utente prima del merge)
 
@@ -111,7 +112,7 @@ dopo.
 | Shall we run together? | Corriamo insieme? | spunto | inglese: sì |
 | Writes it in the box. Nothing is sent yet. | Lo scrive nella casella. Non viene ancora inviato niente. | VoiceOver sugli spunti | — |
 | Photos, videos and drawings come after that. | Foto, video e disegni vengono dopo. | sotto la riga della richiesta | inglese: sì |
-| New message | Nuovo messaggio | tasto e titolo della pagina | — |
+| New message | Nuovo messaggio | tasto e titolo della pagina | inglese: sì (scelta A) |
 | Search someone by name to write to them. | Cerca qualcuno per nome per scrivergli. | pagina «New message» senza nessuno | — |
 
 Tedesco, spagnolo e francese sono in `src/i18n/`. Riusati, non nuovi:
@@ -177,8 +178,8 @@ Lista approvata dal Coordinatore il 23 novembre 2026. `STATUS.md`,
   PR #1519 aperta come bozza. Poi, in un secondo commit, la chat vuota con
   gli spunti e «New message» (pagina e tasto), coi test verdi:
   `src/messages` più `MessagesTab` e `TabLanding` (107 test), le tabelle,
-  `tsc`, `eslint`, `prettier`. Restano: il sì dell'utente sull'aspetto del
-  tasto «New message», le schermate (turno del simulatore dal
+  `tsc`, `eslint`, `prettier`. Le tre scelte dell'utente sono fatte.
+  Restano: le schermate (turno del simulatore dal
   Coordinatore), la conferma del giallo sulle schermate, i testi
   approvati nelle cinque lingue, `docs/UI.md`.
 - Da guardare nel simulatore: su iOS un campo che torna segreto può

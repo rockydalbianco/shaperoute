@@ -955,7 +955,9 @@ export function GymPlanWizard({
           <Text style={styles.linkText}>{t("I'll write the plan myself")}</Text>
         </Pressable>
       )}
-      {step === "ready" && onDelete !== undefined && plan !== null && (
+      {/* In every step of a plan that is kept, not only the last one (the
+          user's choice of 2026-11-23, «In ogni passo»). */}
+      {onDelete !== undefined && plan !== null && (
         <Pressable
           style={({ pressed }) => [styles.link, pressed && styles.pressed]}
           onPress={() =>

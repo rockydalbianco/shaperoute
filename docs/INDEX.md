@@ -65,6 +65,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Il Coach MuW: consigli dagli allenamenti fatti, regole e studi, la scheda che cambia con «Apply» | `tasks/TASK-491.md`, ADR-0399, ADR-0396, ADR-0398, ADR-0392 |
 | La mappa dei decolli: i siti di volo da OpenStreetMap, la scheda del decollo con lo storico dei voli | `tasks/TASK-493.md`, ADR-0400, ADR-0388, ADR-0375, `tasks/TASK-479.md` |
 | Le scadenze della vela: revisione, ripiegatura della riserva, controllo dell'imbrago, l'avviso | `tasks/TASK-494.md`, ADR-0401, ADR-0393, `tasks/TASK-486.md` |
+| L'animazione all'avvio: intera la prima volta e dopo una versione nuova, corta e saltabile le altre | `tasks/TASK-505.md`, ADR-0405, ADR-0147 |
 | Le schede, lo swipe, il tasto indietro, il gesto dal bordo, i fogli, le pagine sopra l'app | `tasks/TASK-470.md`, ADR-0384, `UI.md` «Le pagine e la barra di schede» |
 | La live in chat e nel Feed, anche programmata (una gara) | `tasks/TASK-468.md`, ADR-0381, ADR-0352, `API.md` «Live shares» e «Messages» |
 | «MuW Style» | `STYLE.md`, `tasks/TASK-384.md` |
@@ -101,6 +102,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | I segni a linea: il contorno delle forme nei riquadri (`ShapeGlyph`), le icone sotto i post, gli avvisi del percorso col triangolo e la «i» (`NoteRow`), le icone in `assets/ui/icons/` | `UI.md` (la griglia delle forme, «Feed», gli avvisi «in parole semplici»), `tasks/TASK-444.md` |
 | Overpass in errore: una richiesta per job, la pausa di OSMnx, il secondo servizio | `tasks/TASK-471.md`, ADR-0385, `MAPS.md` «Overpass: come si scarica» |
 | L'attrezzatura: scarpe, bici, sci, caschi… coi km, sul profilo, nel post, dai capi taggati | ADR-0393, `tasks/TASK-486.md` |
+| I gruppi per uscire insieme («Groups»): ingresso, ruoli, la pagina, le uscite del gruppo anche senza percorso, Explore, la chat di gruppo | `GRUPPI.md`, `tasks/TASK-495.md`, ADR-0402, `EVENTI.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

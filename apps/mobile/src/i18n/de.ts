@@ -59,6 +59,9 @@ export const DE: Table = {
   "Try again": "Erneut versuchen",
   "No activities yet. Save a run when you finish it, and it is kept here.":
     "Noch keine Aktivitäten. Speichere einen Lauf, wenn du fertig bist, dann findest du ihn hier.",
+  "No activities yet": "Noch keine Aktivitäten",
+  "When you finish an activity and save it, you find it here.":
+    "Wenn du eine Aktivität beendest und speicherst, findest du sie hier.",
   "{when}, {where}, {facts}, public, open on the map":
     "{when}, {where}, {facts}, öffentlich, auf der Karte öffnen",
   "{when}, {where}, {facts}, open on the map":
@@ -178,8 +181,9 @@ export const DE: Table = {
   "Remove {title} from favorites": "{title} aus Favoriten entfernen",
   "Loading your favorites…": "Deine Favoriten werden geladen…",
   "Your favorites could not load.": "Deine Favoriten konnten nicht geladen werden.",
-  "No favorites yet. Tap {heart} on a route on the map to keep it here.":
-    "Noch keine Favoriten. Tippe auf {heart} bei einer Route auf der Karte, um sie hier zu behalten.",
+  "No favorites yet": "Noch keine Favoriten",
+  "Tap {heart} on a route on the map to keep it here.":
+    "Tippe auf {heart} bei einer Route auf der Karte, um sie hier zu behalten.",
 
   // src/favorites/favoriteRoute.ts
   Route: "Route",
@@ -727,6 +731,9 @@ export const DE: Table = {
   "Hide the picture": "Bild ausblenden",
   "Show the picture": "Bild einblenden",
   "Edit the outline": "Umriss bearbeiten",
+  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
+  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
+    "Die gelben Linien sind das, was die Route zeichnen wird: jeder Teil für sich, von einem zum nächsten geht es weiter, ohne zu zeichnen. Sehen sie nicht aus wie das Motiv, wird es die Route auch nicht: Versuche ein anderes Bild.",
   "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
     "Am besten ist ein Motiv auf einfarbigem Hintergrund: eine Zeichnung, ein Logo, ein Gegenstand auf einem leeren Tisch. Die Route folgt seiner Außenlinie. Bis zu 4 getrennte Motive werden zu einer Linie verbunden.",
   "Tracing the outline…": "Umriss wird nachgezeichnet…",
@@ -2396,8 +2403,9 @@ export const DE: Table = {
   "Messages, {count} waiting": "Nachrichten, {count} offen",
   "Message requests": "Nachrichtenanfragen",
   "Message requests, {count} waiting": "Nachrichtenanfragen, {count} offen",
-  "No messages yet. Open someone's profile and tap Message to write to them.":
-    "Noch keine Nachrichten. Öffne ein Profil und tippe auf Nachricht, um zu schreiben.",
+  "No messages yet": "Noch keine Nachrichten",
+  "Open someone's profile and tap Message to write to them.":
+    "Öffne ein Profil und tippe auf Nachricht, um zu schreiben.",
   "No message requests.": "Keine Nachrichtenanfragen.",
   "You: {text}": "Du: {text}",
   "{name}, new message: {text}": "{name}, neue Nachricht: {text}",
@@ -3217,6 +3225,8 @@ export const DE: Table = {
     "Bis zu {count} Ausrüstungsteile pro Aktivität.",
   "This activity is still on its way. Try again in a moment.":
     "Diese Aktivität ist noch unterwegs. Versuch es gleich noch einmal.",
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), approved by the user on 2026-11-23
+  "From my gear": "Aus meiner Ausrüstung",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
   "Share one of your gym plans": "Teile einen deiner Gym-Pläne",
@@ -3480,7 +3490,18 @@ export const DE: Table = {
     "Diese Datei enthält keinen Wegpunkt, den MuW lesen kann.",
   "This file is not a task MuW can read.":
     "Diese Datei ist keine Aufgabe, die MuW lesen kann.",
-  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
-  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
-    "Die gelben Linien sind das, was die Route zeichnen wird: jeder Teil für sich, von einem zum nächsten geht es weiter, ohne zu zeichnen. Sehen sie nicht aus wie das Motiv, wird es die Route auch nicht: Versuche ein anderes Bild.",
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
+  "Next turnpoint": "Nächster Wendepunkt",
+  "Glide to goal": "Gleitflug zum Ziel",
+  "Start gate": "Startfenster",
+  "Task distance": "Aufgabendistanz",
+  Competition: "Wettkampf",
+  "Gate open": "Startfenster offen",
+  "Started {time}": "Gestartet {time}",
+  "Whole task: {distance}": "Ganze Aufgabe: {distance}",
+  "No task loaded": "Keine Aufgabe geladen",
+  "Goal taken": "Ziel erreicht",
+  "Turnpoint {name} taken. Next: {next}.":
+    "Wendepunkt {name} erreicht. Nächster: {next}.",
+  "Goal {name} taken.": "Ziel {name} erreicht.",
 };

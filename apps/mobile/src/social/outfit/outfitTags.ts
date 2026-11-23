@@ -28,6 +28,11 @@ export type OutfitDraft = {
   brand: string;
   product_name: string | null;
   url: string | null;
+  /**
+   * The owner's item of gear it is (TASK-486 part F), or null; left out
+   * by an app of before, and then the API keeps what it had.
+   */
+  gear_id?: string | null;
 };
 
 export { OUTFIT_TAGS_IN_POST, OUTFIT_TAGS_ON_PHOTO };
@@ -91,7 +96,8 @@ export function isOutfitDraft(value: unknown): value is OutfitDraft {
     isOutfitItem(value.item) &&
     typeof value.brand === "string" &&
     isStringOrNull(value.product_name) &&
-    isStringOrNull(value.url)
+    isStringOrNull(value.url) &&
+    (value.gear_id === undefined || isStringOrNull(value.gear_id))
   );
 }
 
@@ -105,6 +111,7 @@ export function draftOf(tag: OutfitTag): OutfitDraft {
     brand: tag.brand,
     product_name: tag.product_name,
     url: tag.url,
+    ...(tag.gear_id === undefined ? {} : { gear_id: tag.gear_id }),
   };
 }
 
@@ -120,6 +127,7 @@ export function requestOf(draft: OutfitDraft): OutfitTagRequest {
     brand: draft.brand.trim(),
     product_name: productName === "" ? null : productName,
     url: url === "" ? null : url,
+    ...(draft.gear_id === undefined ? {} : { gear_id: draft.gear_id }),
   };
 }
 

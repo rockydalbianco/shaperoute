@@ -59,6 +59,9 @@ export const ES: Table = {
   "Try again": "Reintentar",
   "No activities yet. Save a run when you finish it, and it is kept here.":
     "Aún no hay actividades. Guarda una carrera cuando la termines y la encontrarás aquí.",
+  "No activities yet": "Aún no hay actividades",
+  "When you finish an activity and save it, you find it here.":
+    "Cuando terminas una actividad y la guardas, la encuentras aquí.",
   "{when}, {where}, {facts}, public, open on the map":
     "{when}, {where}, {facts}, pública, abrir en el mapa",
   "{when}, {where}, {facts}, open on the map":
@@ -177,8 +180,9 @@ export const ES: Table = {
   "Remove {title} from favorites": "Quitar {title} de favoritos",
   "Loading your favorites…": "Cargando tus favoritos…",
   "Your favorites could not load.": "No se han podido cargar tus favoritos.",
-  "No favorites yet. Tap {heart} on a route on the map to keep it here.":
-    "Aún no hay favoritos. Toca {heart} en una ruta del mapa para guardarla aquí.",
+  "No favorites yet": "Aún no hay favoritos",
+  "Tap {heart} on a route on the map to keep it here.":
+    "Toca {heart} en una ruta del mapa para guardarla aquí.",
 
   // src/favorites/favoriteRoute.ts
   Route: "Ruta",
@@ -721,6 +725,9 @@ export const ES: Table = {
   "Hide the picture": "Ocultar la foto",
   "Show the picture": "Mostrar la foto",
   "Edit the outline": "Editar el contorno",
+  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
+  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
+    "Las líneas amarillas son lo que dibujará la ruta: cada parte por separado, yendo de una a otra sin dibujar. Si no se parecen al sujeto, la ruta tampoco: prueba otra foto.",
   "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
     "Lo mejor es un solo sujeto sobre un fondo liso: un dibujo, un logo, un objeto en una mesa vacía. La ruta sigue su línea exterior. Hasta 4 sujetos separados se unen en una sola línea.",
   "Tracing the outline…": "Trazando el contorno…",
@@ -2381,8 +2388,9 @@ export const ES: Table = {
   "Messages, {count} waiting": "Mensajes, {count} pendientes",
   "Message requests": "Solicitudes de mensaje",
   "Message requests, {count} waiting": "Solicitudes de mensaje, {count} pendientes",
-  "No messages yet. Open someone's profile and tap Message to write to them.":
-    "Todavía no hay mensajes. Abre el perfil de alguien y toca Mensaje para escribirle.",
+  "No messages yet": "Todavía no hay mensajes",
+  "Open someone's profile and tap Message to write to them.":
+    "Abre el perfil de alguien y toca Mensaje para escribirle.",
   "No message requests.": "No hay solicitudes de mensaje.",
   "You: {text}": "Tú: {text}",
   "{name}, new message: {text}": "{name}, mensaje nuevo: {text}",
@@ -3202,6 +3210,8 @@ export const ES: Table = {
   "Up to {count} items on an activity.": "Hasta {count} equipos por actividad.",
   "This activity is still on its way. Try again in a moment.":
     "Esta actividad todavía está en camino. Vuelve a intentarlo en un momento.",
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), approved by the user on 2026-11-23
+  "From my gear": "De mi equipo",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
   "Share one of your gym plans": "Comparte uno de tus planes de gimnasio",
@@ -3465,7 +3475,17 @@ export const ES: Table = {
     "Este archivo no tiene balizas que MuW pueda leer.",
   "This file is not a task MuW can read.":
     "Este archivo no es una manga que MuW pueda leer.",
-  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
-  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
-    "Las líneas amarillas son lo que dibujará la ruta: cada parte por separado, yendo de una a otra sin dibujar. Si no se parecen al sujeto, la ruta tampoco: prueba otra foto.",
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
+  "Next turnpoint": "Próxima baliza",
+  "Glide to goal": "Planeo hasta el gol",
+  "Start gate": "Puerta de salida",
+  "Task distance": "Distancia de la manga",
+  Competition: "Competición",
+  "Gate open": "Puerta abierta",
+  "Started {time}": "Salida a las {time}",
+  "Whole task: {distance}": "Manga completa: {distance}",
+  "No task loaded": "Ninguna manga cargada",
+  "Goal taken": "Gol alcanzado",
+  "Turnpoint {name} taken. Next: {next}.": "Baliza {name} tomada. Siguiente: {next}.",
+  "Goal {name} taken.": "Gol {name} alcanzado.",
 };

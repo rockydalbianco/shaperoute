@@ -65,6 +65,7 @@ from shaperoute_api.errors import error_of
 from shaperoute_api.favorites import install_favorites
 from shaperoute_api.feed import install_feed
 from shaperoute_api.feedback import install_feedback
+from shaperoute_api.flying_sites import install_flying_sites
 from shaperoute_api.follows import install_follows
 from shaperoute_api.game import install_game
 from shaperoute_api.gear import install_gear
@@ -877,5 +878,7 @@ def create_app(
     install_outfit_tags(app)
     # A member's gear and its totals (TASK-486, ADR-0393).
     install_gear(app)
+    # The takeoffs and landings of OpenStreetMap (TASK-493, ADR-0400).
+    install_flying_sites(app)
 
     return app

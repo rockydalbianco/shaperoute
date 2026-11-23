@@ -4241,6 +4241,51 @@ del 2026-11-10).
   in `packages/shared-types/src/skiDays.ts` (`SkiDayPart`,
   `SkiDayWithParts`) e `skiSeason.ts`.
 
+### Flying sites (TASK-493 parte A, ADR-0400)
+
+I decolli e gli atterraggi del volo libero, per la mappa dei decolli. Sono
+dati di OpenStreetMap (ODbL), uguali per tutti e senza dati degli utenti,
+quindi non serve il token; la chiave dell'API serve come su ogni percorso.
+
+**Le rotte**
+- **`GET /flying-sites?south=…&west=…&north=…&east=…`**: i siti di un
+  riquadro della mappa, per `id`.
+  - Il riquadro è al massimo 5° per lato.
+  - `kind` (`takeoff` o `landing`) li filtra.
+  - `limit` va da 1 a 1000, 1000 se manca; `more` è `true` quando il
+    riquadro ne ha altri, e l'app chiede un riquadro più piccolo.
+  - Il riquadro resta fuori dal registro degli accessi, come ogni query
+    string.
+- **`GET /flying-sites/{id}`**: un sito, con `near`: i siti dell'altro tipo
+  entro 15 km (gli atterraggi di un decollo, i decolli sopra un
+  atterraggio), dal più vicino, al massimo 5.
+
+**La forma**
+- Ogni sito è: `id`, `kind`, `lat`, `lon`, `name`, `ele_m` (il tag `ele`
+  in metri, o `null`), `orientation` (i punti cardinali verso cui guarda,
+  da `N` a `NNW`, vuoto se OSM non lo dice), `official` (`true`, `false` o
+  `null`), `osm_url` (l'oggetto su openstreetmap.org) e `away_m`.
+- `away_m` è `null` tranne nei siti di `near`.
+- Il riquadro risponde `{"sites": [...], "more": false, "attribution": "©
+  OpenStreetMap contributors"}`; un sito risponde `{"site": {...},
+  "near": [...], "attribution": "…"}`. L'app mostra sempre
+  l'attribuzione.
+
+**Gli errori**
+- **`422`:** un riquadro più largo di 5° («zoom in»), con il sud sopra il
+  nord o l'ovest a destra dell'est, un valore mancante o fuori dai limiti,
+  un `kind` che non c'è.
+- **`404`:** un id che non c'è.
+
+**Da dove vengono**
+- Da un estratto OSM, con `flying_sites_extract.py` (`MAPS.md`, «Decolli e
+  atterraggi da un estratto»). Lo storico dei voli di un decollo è la
+  parte B; i tipi dell'app la parte C.
+
+**Un formato stabile**: lo legge anche TASK-479 D6 (l'atterraggio più
+vicino, con `kind=landing`). I campi si possono solo aggiungere, mai
+togliere o cambiare di senso.
+
 ### Drawing search (TASK-344, ADR-0297)
 
 La ricerca dei disegni dalla lente del Feed: le stesse regole del feed su

@@ -3569,4 +3569,10 @@ export const DE: Table = {
     "Nur für Lebensmittel gezählt, die diese Zahlen haben.",
   "No protein, carbs or fat to count for this day.":
     "Für diesen Tag gibt es kein Eiweiß, keine Kohlenhydrate und kein Fett zu zählen.",
+  // src/nutrition (TASK-489 part I: the invitation at the end of an activity; approved by the user on 2026-11-24)
+  "Count what you eat too": "Zähl auch, was du isst",
+  "Write your own diet and what you eat: MuW estimates the calories you eat and the ones you use, this activity included.":
+    "Schreib deinen eigenen Ernährungsplan auf und was du isst: MuW schätzt die Kalorien, die du isst und die du verbrauchst, diese Aktivität eingeschlossen.",
+  "This activity: {kcal} kcal (est.)": "Diese Aktivität: {kcal} kcal (gesch.)",
+  "Add what you ate": "Hinzufügen, was du gegessen hast",
 };

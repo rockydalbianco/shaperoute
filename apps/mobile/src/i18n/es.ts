@@ -3553,4 +3553,10 @@ export const ES: Table = {
     "Se cuentan solo para los alimentos que tienen estos números.",
   "No protein, carbs or fat to count for this day.":
     "No hay proteínas, carbohidratos ni grasas que contar para este día.",
+  // src/nutrition (TASK-489 part I: the invitation at the end of an activity; approved by the user on 2026-11-24)
+  "Count what you eat too": "Cuenta también lo que comes",
+  "Write your own diet and what you eat: MuW estimates the calories you eat and the ones you use, this activity included.":
+    "Escribe tu propia dieta y lo que comes: MuW estima las calorías que comes y las que gastas, incluida esta actividad.",
+  "This activity: {kcal} kcal (est.)": "Esta actividad: {kcal} kcal (est.)",
+  "Add what you ate": "Añade lo que has comido",
 };

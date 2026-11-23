@@ -1,7 +1,9 @@
+import { barcodeOf } from "./foods";
 import {
   addOwnFood,
   changeOwnFood,
   NO_OWN_FOODS,
+  ownFoodByBarcode,
   type OwnFoods,
   ownFoodsFrom,
   removeOwnFood,
@@ -106,4 +108,86 @@ test("foods that are not the user's, or twice, are left out", () => {
   expect(read.foods.map((food) => food.name)).toEqual(["Granola"]);
   // The counter never falls behind a key that is there.
   expect(read.next).toBe(5);
+});
+
+// A food by the barcode on its pack (part G).
+
+test("a barcode is its digits, as long as the codes on a pack", () => {
+  expect(barcodeOf("3017620422003")).toBe("3017620422003");
+  expect(barcodeOf(" 3017 6204-22003 ")).toBe("3017620422003");
+  expect(barcodeOf("96385074")).toBe("96385074");
+  expect(barcodeOf("036000291452")).toBe("036000291452");
+  for (const not of [
+    "",
+    "12345",
+    "30176204220",
+    "3017620422003x",
+    "pasta",
+    null,
+    3017,
+  ]) {
+    expect(barcodeOf(not)).toBeNull();
+  }
+});
+
+test("a food found by its code keeps the code and says where it comes from", () => {
+  const added = addOwnFood(NO_OWN_FOODS, {
+    name: "Nutella",
+    kcalPer100g: 539,
+    barcode: "3017 6204 22003",
+    fromOpenFoodFacts: true,
+  });
+  expect(added?.food).toMatchObject({
+    key: "own-1",
+    source: "own",
+    barcode: "3017620422003",
+    fromOpenFoodFacts: true,
+  });
+  // Read back from the phone as it was.
+  expect(ownFoodsFrom(JSON.parse(JSON.stringify(added?.own)))).toEqual(added?.own);
+});
+
+test("without a barcode a food is as before, and cannot be «from Open Food Facts»", () => {
+  const added = addOwnFood(NO_OWN_FOODS, {
+    name: "Granola",
+    kcalPer100g: 450,
+    barcode: "not a code",
+    fromOpenFoodFacts: true,
+  });
+  expect(added?.food).not.toHaveProperty("barcode");
+  expect(added?.food).not.toHaveProperty("fromOpenFoodFacts");
+});
+
+test("a food the user rewrites keeps its code, and its numbers are the user's", () => {
+  const added = addOwnFood(NO_OWN_FOODS, {
+    name: "Nutella",
+    kcalPer100g: 539,
+    barcode: "3017620422003",
+    fromOpenFoodFacts: true,
+  });
+  const changed = changeOwnFood(added!.own, "own-1", {
+    name: "Nutella",
+    kcalPer100g: 546,
+    barcode: added!.food.barcode,
+  });
+  expect(changed?.food.barcode).toBe("3017620422003");
+  expect(changed?.food).not.toHaveProperty("fromOpenFoodFacts");
+});
+
+test("a code the phone has is found among the user's foods, the latest first", () => {
+  const first = addOwnFood(NO_OWN_FOODS, {
+    name: "Nutella",
+    kcalPer100g: 539,
+    barcode: "3017620422003",
+  })!;
+  const second = addOwnFood(first.own, {
+    name: "Nutella, my jar",
+    kcalPer100g: 546,
+    barcode: "3017620422003",
+  })!;
+  expect(ownFoodByBarcode(second.own.foods, "3017 6204 22003")?.name).toBe(
+    "Nutella, my jar",
+  );
+  expect(ownFoodByBarcode(second.own.foods, "96385074")).toBeNull();
+  expect(ownFoodByBarcode(second.own.foods, "nutella")).toBeNull();
 });

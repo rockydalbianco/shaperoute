@@ -3322,4 +3322,23 @@ export const ES: Table = {
   "Week total": "Total de la semana",
   "Today is not in the total until the day is over.":
     "Hoy no entra en el total hasta que acabe el día.",
+  // src/nutrition (TASK-489 part G1)
+  "Type the code": "Escribir el código",
+  Barcode: "Código de barras",
+  "Look up": "Buscar",
+  "Looking it up…": "Buscando…",
+  "Only the barcode goes to Open Food Facts, to find the product.":
+    "A Open Food Facts solo va el código de barras, para encontrar el producto.",
+  "from Open Food Facts": "de Open Food Facts",
+  "Check the numbers against the label: you can correct them.":
+    "Comprueba los números con la etiqueta: puedes corregirlos.",
+  "Use this food": "Usar este alimento",
+  "This product is not on Open Food Facts.":
+    "Este producto no está en Open Food Facts.",
+  "Open Food Facts has no calories for this product.":
+    "Open Food Facts no tiene las calorías de este producto.",
+  "The product could not be looked up. Check your connection and try again.":
+    "No se ha podido buscar el producto. Comprueba tu conexión e inténtalo de nuevo.",
+  "Products found by barcode contain data from Open Food Facts, available under the Open Database License. They are kept apart from the USDA list.":
+    "Los productos encontrados por código de barras contienen datos de Open Food Facts, disponibles bajo la Open Database License. Se mantienen separados de la lista del USDA.",
 };

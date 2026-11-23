@@ -3236,6 +3236,11 @@ export const IT: Table = {
   "Lines not read: {n}": "Righe non lette: {n}",
   "This file has no airspace MuW can read.":
     "In questo file non ci sono spazi aerei che MuW sa leggere.",
+  // src/route/warnings.ts (TASK-347 part C3: an anchored drawing longer or shorter on the roads; texts to approve)
+  "On the roads your drawing is {share}% longer: {distance}. It stays where you drew it, at the same size.":
+    "Sulle strade il tuo disegno è più lungo del {share}%: {distance}. Resta dove l'hai disegnato, della stessa grandezza.",
+  "On the roads your drawing is {share}% shorter: {distance}. It stays where you drew it, at the same size.":
+    "Sulle strade il tuo disegno è più corto del {share}%: {distance}. Resta dove l'hai disegnato, della stessa grandezza.",
   // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts.
   Coach: "Coach",
   "Based on your last 4 weeks": "In base alle ultime 4 settimane",

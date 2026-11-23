@@ -5726,3 +5726,12 @@ altri pezzi) si aggancia alle strade mentre lo disegni, tratto per tratto,
   poi un Redo ridisegnano subito l'aggancio di prima.
 - Forme, immagini, foto e pezzi non si agganciano: arrivano nelle parti D
   ed E.
+- **«Draw route» ancorato** (parte C3): un disegno a mano si chiede con
+  `placement: "anchored"`, senza magnete (quello del motore). Il percorso
+  resta dove e come l'hai disegnato: non viene girato, spostato né
+  ingrandito, e sotto c'è il fantasma (`placed_outline`), nello stesso posto.
+  Si chiede così solo a un server che risponde alla sonda
+  (`GET /stroke-matches`); con un server vecchio, o senza risposta, il
+  disegno va libero come prima. Se sulle strade il disegno viene più lungo
+  o più corto di oltre il 10%, una nota lo dice: «On the roads your drawing
+  is 53% longer: 7.6 km. It stays where you drew it, at the same size.»

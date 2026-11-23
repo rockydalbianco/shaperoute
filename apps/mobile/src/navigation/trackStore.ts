@@ -9,6 +9,7 @@ import {
 import { File, Paths } from "expo-file-system";
 import { AppState, type AppStateStatus } from "react-native";
 
+import { currentOwner } from "../account/currentOwner";
 import {
   FULL_EVERY_LINES,
   JOURNAL_FILE,
@@ -92,6 +93,12 @@ export type SavedRun = {
   /** The route's stretches with the bike on foot (TASK-272). Absent for any
    * other route, and before TASK-272. */
   on_foot?: Stretch[];
+  /** The account signed in when the run began (TASK-507, ADR-0406): only
+   * that account sees it again; another account's run is set aside, whole,
+   * until that account signs in. Absent for a run begun with nobody signed
+   * in, and before TASK-507: anyone's, as before. In the whole file only,
+   * never in a line of the journal. */
+  owner?: number;
   track: Track;
   status: RunStatus;
 };
@@ -102,6 +109,102 @@ function runFile(): File {
 
 function journalFile(): File {
   return new File(Paths.document, JOURNAL_FILE);
+}
+
+/** Moves the text of `from` to `to`, `to` written first: a move cut short
+ * leaves both, never neither. False when the phone refuses. */
+function moveText(from: File, to: File): boolean {
+  try {
+    if (!from.exists) {
+      return true;
+    }
+    to.create({ overwrite: true });
+    to.write(from.textSync());
+    from.delete();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** The owner written in the run file, null for none or anyone's. */
+function ownerInFile(): number | null {
+  try {
+    const file = runFile();
+    if (!file.exists) {
+      return null;
+    }
+    const data: unknown = JSON.parse(file.textSync());
+    const owner = isSavedRun(data) ? data.owner : undefined;
+    return owner === undefined ? null : owner;
+  } catch {
+    return null;
+  }
+}
+
+/** At most this many runs of one account set aside: far more than a
+ * phone shared by a few people ever holds. */
+const MAX_ASIDE = 100;
+
+/** The file of the `n`th run of `owner` set aside, and its journal:
+ * «current-run.12.json», then «current-run.12-2.json»… (TASK-507). */
+function asideFiles(owner: number, n: number): { run: File; journal: File } {
+  const tag = n === 1 ? `${owner}` : `${owner}-${n}`;
+  return {
+    run: new File(Paths.document, RUN_FILE.replace(/\.json$/, `.${tag}.json`)),
+    journal: new File(
+      Paths.document,
+      JOURNAL_FILE.replace(/\.journal$/, `.${tag}.journal`),
+    ),
+  };
+}
+
+/**
+ * The run file for the account signed in now (TASK-507, the user's choice
+ * «Nascosta finché rientra»): a run of another account in it is set aside,
+ * file and journal as they are, under a name of its own
+ * («current-run.<number>.json» and its journal, then «-2», «-3»…); this
+ * account's own, set aside earlier, comes back when the file has none.
+ * Nothing is ever written over or deleted here, and a run of nobody's
+ * (before TASK-507, or begun signed out) stays for anyone.
+ */
+function takeRunSlot(): void {
+  try {
+    moveRuns();
+  } catch {
+    // The phone refuses: the run file is read as it is.
+  }
+}
+
+function moveRuns(): void {
+  const who = currentOwner();
+  const there = ownerInFile();
+  if (there !== null && there !== who) {
+    for (let n = 1; n <= MAX_ASIDE; n += 1) {
+      const aside = asideFiles(there, n);
+      if (aside.run.exists || aside.journal.exists) {
+        continue;
+      }
+      // The journal first: a file without its journal would lose its end.
+      if (moveText(journalFile(), aside.journal) && moveText(runFile(), aside.run)) {
+        journalEmptied = true;
+      }
+      break;
+    }
+  }
+  if (who === null || runFile().exists) {
+    return;
+  }
+  for (let n = 1; n <= MAX_ASIDE; n += 1) {
+    const aside = asideFiles(who, n);
+    if (!aside.run.exists) {
+      continue;
+    }
+    if (moveText(aside.journal, journalFile())) {
+      moveText(aside.run, runFile());
+    }
+    return;
+  }
 }
 
 /** Whether the journal holds nothing of a file older than the one there
@@ -174,6 +277,7 @@ function withJournal(run: SavedRun): SavedRun {
 /** The run in the file, with the journal's lines after it, or null when
  * there is none or it cannot be read. */
 export function loadRun(): SavedRun | null {
+  takeRunSlot();
   try {
     const file = runFile();
     if (!file.exists) {
@@ -280,6 +384,7 @@ function isSavedRun(value: unknown): value is SavedRun {
     (run.word === undefined || typeof run.word === "string") &&
     (run.on_foot === undefined ||
       (Array.isArray(run.on_foot) && run.on_foot.every(isWalk))) &&
+    (run.owner === undefined || typeof run.owner === "number") &&
     (run.status === "running" ||
       run.status === "stopped" ||
       run.status === "arrived") &&
@@ -440,9 +545,13 @@ export function startRun(
   rotationDeg?: number,
   { directions = [], word = null, onFoot = [] }: FollowedRoute = {},
 ): RunRecorder {
+  // Another account's run goes aside first (TASK-507): never written over.
   const saved = loadRun();
-  const taken = reopened(saved, route, nowMs);
-  let track = taken?.track ?? resumable(saved, route, nowMs) ?? emptyTrack();
+  const owner = currentOwner();
+  const mine =
+    saved === null || saved.owner === undefined || saved.owner === owner ? saved : null;
+  const taken = reopened(mine, route, nowMs);
+  let track = taken?.track ?? resumable(mine, route, nowMs) ?? emptyTrack();
   let status: RunStatus = "running";
   let savedMs: number | null = null;
   let unsaved = false;
@@ -488,6 +597,8 @@ export function startRun(
       ...sport,
       ...turned,
       ...followed,
+      // Whose it is (TASK-507): in the whole file, never in the journal.
+      ...(owner !== null ? { owner } : {}),
       track,
       status,
     };
@@ -686,4 +797,25 @@ export function endRecording(): SavedRun | null {
  */
 export function endRun(): ScorableRun | null {
   return scorable(endRecording());
+}
+
+/** Deletes every run of `owner` on the phone, set aside or in the file,
+ * with their journals: the account is deleted, or its number is now
+ * somebody else's (account/phoneOwners.ts, TASK-507). */
+export function forgetRunsOf(owner: number): void {
+  try {
+    for (let n = 1; n <= MAX_ASIDE; n += 1) {
+      const aside = asideFiles(owner, n);
+      for (const file of [aside.run, aside.journal]) {
+        if (file.exists) {
+          file.delete();
+        }
+      }
+    }
+  } catch {
+    // Nothing to delete, or the phone refuses.
+  }
+  if (ownerInFile() === owner) {
+    clearRun();
+  }
 }

@@ -39,10 +39,10 @@ Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
 - **TASK-485 — La scheda della palestra come post** (ADR-0394) · 0 e A in
-  `main`, A sul server (passo 18); B (app) in `main` (#1414, `f4737c66`),
-  testi approvati il 2026-11-23, esce con l'OTA col sì. Restano la voce del
-  «+» (dopo TASK-481 A), la privacy a turno, l'apertura da profilo, notifica
-  o link. File: — · `tasks/TASK-485.md`
+  `main`, A sul server (passo 18); B (#1414) e B2, la voce del «+» (#1431,
+  `ed0bd4d7`), in `main`; escono con l'OTA, col sì, dopo la privacy (in
+  corso, traduzioni all'utente). Poi l'apertura da profilo, notifica o
+  link. File: — · `tasks/TASK-485.md`
 - **TASK-491 — Il Coach MuW** · parte 0 il 2026-11-23 (ADR-0399): regole
   con il loro studio, sul telefono e senza AI; la scheda cambia solo con
   «Apply»; solo con account, omino di TASK-490 B; testi approvati. A in

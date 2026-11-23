@@ -3074,6 +3074,11 @@ export const ES: Table = {
     "Este diseño es de un MuW más reciente: actualiza la app.",
   "MuW could not read this file.": "MuW no pudo leer este archivo.",
   "MuW could not share the file.": "MuW no pudo compartir el archivo.",
+  // src/mapdraw/ (TASK-347 part C: a drawing anchored to the roads; texts approved by the user on 2026-11-22)
+  "Snapping to roads…": "Ajustando a las calles…",
+  "Roads follow your drawing: {percent}%": "Las calles siguen tu dibujo: {percent} %",
+  "No roads here: this line stays as you drew it.":
+    "Aquí no hay calles: la línea queda como la dibujaste.",
   // TASK-483 B: the history of an exercise at the gym.
   "Last time · {day}": "La última vez · {day}",
   History: "Historial",
@@ -3246,6 +3251,80 @@ export const ES: Table = {
   "Lines not read: {n}": "Líneas no leídas: {n}",
   "This file has no airspace MuW can read.":
     "Este archivo no tiene espacios aéreos que MuW pueda leer.",
+  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts.
+  Coach: "Coach",
+  "Based on your last 4 weeks": "Según tus últimas 4 semanas",
+  "Apply to plan": "Aplicar a la rutina",
+  "Add to {day}": "Añadir al {day}",
+  "Create an account to get tips from your workouts":
+    "Crea una cuenta para recibir consejos de tus entrenamientos",
+  "Log a few workouts and your tips will show up here":
+    "Registra algunos entrenamientos y aquí aparecerán tus consejos",
+  "Tips are general, not medical advice. If something hurts, stop and ask a professional.":
+    "Son consejos generales, no consejo médico. Si algo te duele, para y consulta a un profesional.",
+  "{exercise}: {kg} kg": "{exercise}: {kg} kg",
+  "You did all your reps at {old} kg twice in a row. Add weight and start again from {min} reps.":
+    "Hiciste todas las repeticiones con {old} kg dos veces seguidas. Sube el peso y vuelve a empezar desde {min} repeticiones.",
+  "{exercise}: one more rep": "{exercise}: una repetición más",
+  "You did all your reps twice in a row. Add one rep to each set.":
+    "Hiciste todas las repeticiones dos veces seguidas. Añade una repetición a cada serie.",
+  "You stopped below {min} reps twice in a row. A little less weight helps you finish your sets.":
+    "Te quedaste por debajo de {min} repeticiones dos veces seguidas. Con un poco menos de peso terminarás tus series.",
+  "{exercise} has stalled": "{exercise} se ha estancado",
+  "Your estimated max hasn't moved in 3 workouts. Try {min2}–{max2} reps for the next weeks.":
+    "Tu máximo estimado no se ha movido en 3 entrenamientos. Prueba {min2}–{max2} repeticiones las próximas semanas.",
+  "Add {n} sets for {muscle}": "Añade {n} series para {muscle}",
+  "{muscle} got {sets} sets this week. Around 10 a week builds muscle better.":
+    "{muscle}: {sets} series esta semana. Con unas 10 a la semana el músculo crece mejor.",
+  "A lot for {muscle}": "Mucho para {muscle}",
+  "{muscle} got {sets} sets this week. Above 20 adds tiredness more than muscle.":
+    "{muscle}: {sets} series esta semana. Más de 20 suman más cansancio que músculo.",
+  "Train {muscle} twice a week": "Entrena {muscle} dos veces por semana",
+  "All your {muscle} sets are on {day}. Split them over two days for more growth.":
+    "Todas tus series de {muscle} son el {day}. Repártelas en dos días para crecer más.",
+  "{muscle} is still recovering": "{muscle} aún se está recuperando",
+  "You trained it hard {hours} hours ago. Today pick another muscle, or keep it light.":
+    "Lo entrenaste fuerte hace {hours} horas. Hoy elige otro músculo o hazlo suave.",
+  "Keep {km} km this week": "Mantén {km} km esta semana",
+  "Last week you ran {pct}% more than your usual. Hold the distance before adding more.":
+    "La semana pasada corriste un {pct} % más de lo habitual. Mantén la distancia antes de aumentar.",
+  "Next run: slow and long": "Próxima carrera: lenta y larga",
+  "Only {pct}% of your running was easy. Most of it should feel easy, around 80%.":
+    "Solo el {pct} % de tu carrera fue suave. Casi toda debería serlo, alrededor del 80 %.",
+  "Maybe a lighter week": "Quizá una semana más ligera",
+  "This week's load is high compared with the last month.":
+    "La carga de esta semana es alta comparada con el último mes.",
+  "Time for an easy week": "Toca una semana suave",
+  "{weeks} weeks of steady work. Do about half the sets this week, same weights.":
+    "{weeks} semanas de trabajo constante. Esta semana haz más o menos la mitad de las series, con los mismos pesos.",
+  "Short night: go lighter": "Noche corta: más suave",
+  "Your sleep score was {score}. Same workout today, one set less per exercise.":
+    "Tu puntuación de sueño fue {score}. Hoy el mismo entrenamiento, con una serie menos por ejercicio.",
+  "Welcome back": "Bienvenido de nuevo",
+  "You've been away {days} days. Start this week at about 85% of your weights.":
+    "Llevas {days} días sin entrenar. Esta semana empieza con un 85 % de tus pesos.",
+  "One more strength day": "Un día más de fuerza",
+  "{count} strength day this week. Two a week keep muscles and bones strong.":
+    "{count} día de fuerza esta semana. Dos por semana mantienen fuertes músculos y huesos.",
+  "{count} strength days this week. Two a week keep muscles and bones strong.":
+    "{count} días de fuerza esta semana. Dos por semana mantienen fuertes músculos y huesos.",
+  "Why: {reason}": "Por qué: {reason}",
+  "Double progression · ACSM 2009": "Doble progresión · ACSM 2009",
+  "Load that fits the reps · ACSM 2009":
+    "Una carga adecuada a las repeticiones · ACSM 2009",
+  "Change the stimulus · ACSM 2009": "Cambiar el estímulo · ACSM 2009",
+  "Weekly volume · Schoenfeld 2017": "Volumen semanal · Schoenfeld 2017",
+  "Frequency · Schoenfeld 2016": "Frecuencia · Schoenfeld 2016",
+  "48 hours to recover · ACSM 2009": "48 horas para recuperarse · ACSM 2009",
+  "Safe increase · Nielsen 2014": "Aumento seguro · Nielsen 2014",
+  "80/20 · Seiler 2010": "80/20 · Seiler 2010",
+  "Workload ratio · Gabbett 2016": "Relación de carga · Gabbett 2016",
+  "Deload · Bosquet 2007": "Descarga · Bosquet 2007",
+  "Sleep and performance · Fullagar 2015": "Sueño y rendimiento · Fullagar 2015",
+  "Coming back · Mujika 2000": "La vuelta · Mujika 2000",
+  "WHO guidelines 2020": "Directrices de la OMS 2020",
+  OK: "OK",
+  "Nothing to change for now: keep going.": "Por ahora nada que cambiar: sigue así.",
   // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21, the other texts on 2026-11-23)
   "Nearest airspace": "Espacio aéreo más cercano",
   inside: "dentro",

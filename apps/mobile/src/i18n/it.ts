@@ -3191,6 +3191,8 @@ export const IT: Table = {
   "Up to {count} items on an activity.": "Fino a {count} attrezzi su un'attività.",
   "This activity is still on its way. Try again in a moment.":
     "Questa attività sta ancora arrivando. Riprova tra poco.",
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), approved by the user on 2026-11-23
+  "From my gear": "Dalla mia attrezzatura",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
   "Share one of your gym plans": "Condividi uno dei tuoi piani di palestra",
@@ -3455,4 +3457,17 @@ export const IT: Table = {
     "In questo file non ci sono boe che MuW sa leggere.",
   "This file is not a task MuW can read.":
     "Questo file non è una task che MuW sa leggere.",
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
+  "Next turnpoint": "Prossima boa",
+  "Glide to goal": "Planata al goal",
+  "Start gate": "Gate di partenza",
+  "Task distance": "Distanza della task",
+  Competition: "Competizione",
+  "Gate open": "Gate aperto",
+  "Started {time}": "Partito alle {time}",
+  "Whole task: {distance}": "Task intera: {distance}",
+  "No task loaded": "Nessuna task caricata",
+  "Goal taken": "Goal preso",
+  "Turnpoint {name} taken. Next: {next}.": "Boa {name} presa. Prossima: {next}.",
+  "Goal {name} taken.": "Goal {name} preso.",
 };

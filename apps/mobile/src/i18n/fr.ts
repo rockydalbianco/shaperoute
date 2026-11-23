@@ -3209,6 +3209,8 @@ export const FR: Table = {
   "Up to {count} items on an activity.": "Jusqu'à {count} équipements par activité.",
   "This activity is still on its way. Try again in a moment.":
     "Cette activité est encore en route. Réessaie dans un instant.",
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), approved by the user on 2026-11-23
+  "From my gear": "Depuis mon équipement",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
   "Share one of your gym plans": "Partage un de tes programmes de salle",
@@ -3475,4 +3477,17 @@ export const FR: Table = {
     "Ce fichier ne contient aucune balise que MuW sait lire.",
   "This file is not a task MuW can read.":
     "Ce fichier n'est pas une manche que MuW sait lire.",
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
+  "Next turnpoint": "Prochaine balise",
+  "Glide to goal": "Plané jusqu'au but",
+  "Start gate": "Porte de départ",
+  "Task distance": "Distance de la manche",
+  Competition: "Compétition",
+  "Gate open": "Porte ouverte",
+  "Started {time}": "Parti à {time}",
+  "Whole task: {distance}": "Manche entière : {distance}",
+  "No task loaded": "Aucune manche chargée",
+  "Goal taken": "But atteint",
+  "Turnpoint {name} taken. Next: {next}.": "Balise {name} validée. Suivante : {next}.",
+  "Goal {name} taken.": "But {name} atteint.",
 };

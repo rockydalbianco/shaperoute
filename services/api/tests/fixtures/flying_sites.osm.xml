@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Made-up free-flying sites for TASK-493 part A (test_flying_sites*.py).
+     Not real places: the tags are the ones OSM uses (taginfo, 2026-11-23). -->
+<osm version="0.6" generator="hand">
+  <!-- A takeoff with every tag the extract reads. -->
+  <node id="1" lat="46.0" lon="11.0">
+    <tag k="free_flying:site" v="takeoff"/>
+    <tag k="name" v="  Monte   Prova  "/>
+    <tag k="ele" v="1200"/>
+    <tag k="free_flying:site_orientation" v="SE;S;SW"/>
+    <tag k="free_flying:official" v="yes"/>
+    <tag k="free_flying:paragliding" v="yes"/>
+  </node>
+  <!-- Its landing, about 2.7 km away and 800 m below. -->
+  <node id="2" lat="46.02" lon="11.02">
+    <tag k="free_flying:site" v="landing"/>
+    <tag k="name" v="Campo Prova"/>
+    <tag k="ele" v="400 m"/>
+  </node>
+  <!-- A landing farther, about 9 km away. -->
+  <node id="3" lat="46.08" lon="11.0">
+    <tag k="free_flying:site" v="toplanding"/>
+  </node>
+  <!-- A landing beyond 15 km from node 1. -->
+  <node id="4" lat="46.2" lon="11.0">
+    <tag k="free_flying:site" v="landing"/>
+  </node>
+  <!-- Takeoff and landing at once, an altitude in feet. -->
+  <node id="5" lat="46.5" lon="11.5">
+    <tag k="free_flying:site" v="takeoff;landing"/>
+    <tag k="ele" v="4000 ft"/>
+  </node>
+  <!-- The newer key, an orientation in degrees. -->
+  <node id="6" lat="46.1" lon="11.1">
+    <tag k="free_flying:takeoff" v="yes"/>
+    <tag k="free_flying:site_orientation" v="180"/>
+    <tag k="free_flying:official" v="no"/>
+  </node>
+  <!-- Left out: not a takeoff or a landing. -->
+  <node id="7" lat="46.3" lon="11.3">
+    <tag k="free_flying:site" v="training"/>
+  </node>
+  <node id="8" lat="46.3" lon="11.31">
+    <tag k="free_flying:landing" v="discouraged"/>
+  </node>
+  <node id="9" lat="46.3" lon="11.32">
+    <tag k="sport" v="free_flying"/>
+  </node>
+  <!-- The corners of a takeoff mapped as an area. -->
+  <node id="10" lat="45.9" lon="10.9"/>
+  <node id="11" lat="45.9" lon="10.92"/>
+  <node id="12" lat="45.92" lon="10.92"/>
+  <node id="13" lat="45.92" lon="10.9"/>
+  <way id="100">
+    <nd ref="10"/>
+    <nd ref="11"/>
+    <nd ref="12"/>
+    <nd ref="13"/>
+    <nd ref="10"/>
+    <tag k="free_flying:site" v="launch"/>
+    <tag k="name" v="Prato Alto"/>
+    <tag k="ele" v="high"/>
+    <tag k="free_flying:site_orientation" v="W;NW;SW-NW"/>
+  </way>
+  <!-- Left out: none of its nodes is in the extract. -->
+  <way id="101">
+    <nd ref="900"/>
+    <nd ref="901"/>
+    <tag k="free_flying:site" v="takeoff"/>
+  </way>
+  <!-- Left out: relations. -->
+  <relation id="200">
+    <member type="node" ref="10" role=""/>
+    <tag k="free_flying:site" v="takeoff"/>
+  </relation>
+</osm>

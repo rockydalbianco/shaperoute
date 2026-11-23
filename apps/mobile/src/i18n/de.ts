@@ -3349,7 +3349,7 @@ export const DE: Table = {
   "Warn within": "Warnen innerhalb",
   "Warn above or below": "Warnen darüber oder darunter",
   "Warning sound": "Warnton",
-  // src/air/ (TASK-479 part E3: the airspace log after the flight; en/it approved by the user on 2026-11-23)
+  // src/air/ (TASK-479 part E3: the airspace log after the flight; approved by the user on 2026-11-23)
   "Inside your airspaces: {count}": "In deinen Lufträumen: {count}",
   "No fix inside the volumes of your file.":
     "Kein Punkt in den Lufträumen deiner Datei.",

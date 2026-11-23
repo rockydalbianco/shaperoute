@@ -669,8 +669,10 @@ anche (A7c-1) i chip di «Share your run», del post di sole foto e del
 composer, di «Tag people» e di chi può vedere, dei tag dell'outfit, di
 «Style», del sonno, del calendario e «Share live», e (A7c-2) quelli
 dell'obiettivo in palestra, dei posti della pagaia, della lunghezza della
-vasca e della giornata sulla neve. Restano i chip condivisi della
-palestra (`gymStyles`), del volo e del pannello del percorso: A7c-3.
+vasca e della giornata sulla neve, e (A7c-3) i chip condivisi della
+palestra (`gymStyles.chip`): il riposo, la scelta dell'esercizio, la
+guida e la storia dell'esercizio, «l'ultima volta», Coach e il post
+della scheda. Restano i chip della schermata del volo: A7c-4.
 
 **Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
 raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro
@@ -705,7 +707,11 @@ schermo e una scheda nascosta rimette l'header a riposo);
 una pagina che non lo dice tiene l'header a riposo, e una che se ne va
 lontana dalla cima lo rimette a riposo. Con «Riduci trasparenza» la fascia è opaca
 con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
-contenuto non passa sotto l'header: per quello serve la parte B.
+contenuto non passa sotto l'header: per quello serve la parte B. L'header
+sta sopra le pagine delle schede con uno `zIndex`, e resta dentro lo
+shell: la radice di `TabShell` è tenuta con `collapsable={false}`, così
+non esce sopra le pagine aperte sopra l'app (una conversazione, «Message
+requests»).
 
 **I gruppi di Impostazioni** (TASK-469 A6, `src/settings/settingsGroup.ts`):
 ogni gruppo di righe di Impostazioni ha gli angoli a 24 (`radius.group`) e i

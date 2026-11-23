@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import type { Activity } from "../api/activities";
 import { GymByHand } from "../gym/GymByHand";
 import { sleepPostsOn, sleepReader } from "../health/sleepModules";
 import type { SleepReader } from "../health/sleepSamples";
@@ -29,6 +30,7 @@ import { SheetModal } from "../ui/SheetModal";
 import { useSheetFace } from "../ui/sheetFace";
 import { Tap } from "../ui/Tap";
 import { type AddToFeedEntryId, addToFeedEntries } from "./addToFeedEntries";
+import { PastActivityPost } from "./PastActivityPost";
 import { PlanPostFlow } from "./PlanPostFlow";
 import { SleepPostPage } from "./SleepPostPage";
 
@@ -39,6 +41,9 @@ type Props = {
   /** A night of sleep went in the Feed, or was taken off it, from «Sleep»:
    * the Feed reads again. */
   onSleepPost?: () => void;
+  /** An activity was opened in «Already recorded», and may be a post now:
+   * the Feed reads again once the sheet closes. */
+  onActivityPosted?: () => void;
   /** The phone's reader of the sleep: none in every build until part C. */
   reader?: SleepReader | null;
   /** The fakes of the tests: whether the app was built with the file
@@ -66,11 +71,15 @@ type Props = {
  * form discarded. In an app built without the file picker there is no
  * «From a file». «Sleep» (TASK-467 part E) is last night with «Publish»,
  * a post of its own: there only while the sleep is on (`sleepPostsOn`) and
- * the phone has a reader of it, so in no build until part C.
+ * the phone has a reader of it, so in no build until part C. «Already
+ * recorded» (TASK-481 part F) lists the activities of «My activities» not
+ * in the Feed yet, and opens the form of «Edit post» of the one chosen:
+ * «‹» goes back to that list first.
  */
 export function AddToFeed({
   onRecord,
   onSleepPost,
+  onActivityPosted,
   reader = sleepReader(),
   available = filePickerAvailable(),
   pickFile,
@@ -79,6 +88,10 @@ export function AddToFeed({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [chosen, setChosen] = useState<AddToFeedEntryId | null>(null);
+  // The activity open in «Already recorded»; and whether one was, since
+  // the sheet opened.
+  const [past, setPast] = useState<Activity | null>(null);
+  const [pastOpened, setPastOpened] = useState(false);
   const insets = useSafeAreaInsets();
   // The sheet in the glass look (TASK-469 A7a).
   const glassSheet = useSheetFace();
@@ -92,8 +105,19 @@ export function AddToFeed({
   const close = () => {
     setOpen(false);
     setChosen(null);
+    setPast(null);
+    setPastOpened(false);
+    if (pastOpened) {
+      onActivityPosted?.();
+    }
   };
-  const back = () => setChosen(null);
+  const back = () => {
+    if (chosen === "done" && past !== null) {
+      setPast(null);
+      return;
+    }
+    setChosen(null);
+  };
   const choose = (id: AddToFeedEntryId) => {
     if (id === "record") {
       close();
@@ -171,6 +195,18 @@ export function AddToFeed({
                   </Tap>
                 ))}
               </View>
+            )}
+            {entry?.id === "done" && (
+              <PastActivityPost
+                chosen={past}
+                onChoose={(activity) => {
+                  setPast(activity);
+                  setPastOpened(true);
+                }}
+                onDone={close}
+                pick={pick}
+                fetchFn={fetchFn}
+              />
             )}
             {entry?.id === "photos" && (
               <View style={styles.card}>

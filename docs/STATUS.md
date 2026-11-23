@@ -54,10 +54,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Coach, con TASK-491) e D (tab «Food», con `NUTRITION_ON` di TASK-489).
   File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
-  ADR-0397; A1 (#1437) e A2 (314 cibi da USDA, #1460) in `main`, spente
-  dietro `NUTRITION_ON` fino alla build nativa che legge da Salute. Parte B:
-  schermate e testi approvati il 2026-11-23, in due PR (B1 = #1473, poi B2).
-  File: `apps/mobile/src/settings/SportButton.tsx` (B1) · `tasks/TASK-489.md`
+  ADR-0397; A1, A2 in `main`, spente (`NUTRITION_ON`) fino alla build nativa.
+  B, C1, D, F: schermate e testi approvati il 2026-11-23; PR in fila (B1 =
+  #1473, B2, C1, D); F aspetta il turno della privacy. File:
+  `settings/SportButton.tsx`, `activities/ActivityRow.tsx`,
+  `profile/ProfileHome.tsx` · `tasks/TASK-489.md`
 - **TASK-487 — Il Feed senza attività finte** · 2026-11-22: niente
   esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
   dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.
@@ -283,6 +284,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dall'utente sul telefono; prossima A1.
   **2026-11-23**: A1 (mappa di volo 3D/2D, quota sul terreno) in `main`
   (#1434); OTA dal Coordinatore; prossima E.
+  **2026-11-23 sera**: E1 (file OpenAir del pilota, #1454) ed E2 (spazi
+  aerei in volo: avviso, suono, mappa, widget, #1470) in `main`; prossima E3.
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`

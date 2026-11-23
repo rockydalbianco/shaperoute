@@ -590,6 +590,7 @@ lasciando le righe d'indice.
 - ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Proposta
 - ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
 - ADR-0397, precisazione 2 — La tabella di base dei cibi: 314 voci da USDA SR Legacy (aprile 2018) ricavate da uno script, nomi in cinque lingue in file loro; la pagina «Nutrition» in due PR, con schermate e testi approvati · 2026-11-23 · Proposta
+- ADR-0397, precisazione 3 — Le attività nel bilancio stimate da quello che dice la lista privata (palestra dal solo tempo, escursione senza salita), oggi «finora» e fuori dal totale della settimana, il diario del telefono e non dell'account · 2026-11-23 · Proposta
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
 - ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB · 2026-11-23 · Attiva
 
@@ -1278,6 +1279,16 @@ terreno sotto il pilota (`setCenterElevation`). La quota sul terreno si
 legge dalle stesse Terrain Tiles «terrarium» della mappa 3D, decodificate
 su un canvas in una pagina nascosta: nessuna libreria, nessun server. I
 colori del vario sono `vario` in `tokens.ts`.
+
+**Aggiunta del 2026-11-23 (parti E1 ed E2, deciso dall'agente su delega
+dell'utente)**: la parte E è divisa in E1 (il file), E2 (in volo), E3
+(dopo il volo), col sì del Coordinatore. Il file OpenAir resta sul
+telefono (`airspace.json`), uno alla volta, e non va mai al server. La
+vicinanza si calcola sul telefono a ogni secondo; i limiti FL dalla quota
+GPS con l'atmosfera standard, segnati «≈»; un volume di quota ignota
+avvisa sulla sola distanza orizzontale. Il suono d'avviso è un file nostro
+(`alert.wav`, da `tools/vario_tones.py`). I volumi sulla mappa usano i
+colori `error` e `warning` della tavolozza: nessun colore nuovo.
 
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
@@ -6303,3 +6314,47 @@ detto che è dell'utente):
 si rifà girare lo script con l'archivio; la fonte, l'edizione e la data
 dello scarico stanno in testa a `foodTable.ts` e in «How we calculate».
 «Used (est.)» e «Balance» in cima al diario si riempiono con la parte C1.
+
+## ADR-0397, precisazione 3 — Le attività nel bilancio, la settimana nel profilo, il diario del telefono
+
+**Data**: 2026-11-23 · **Stato**: Proposta · **Task**: TASK-489 (C1, D, F)
+
+**Contesto**: le parti C1 (le attività nel conto del giorno), D (la
+tabella nel profilo) e F (la privacy) avevano scelte lasciate «da vedere
+con le schermate». L'utente ha visto schermate e testi di ognuna e ha
+detto «Sì, approvo» il 2026-11-23.
+
+**Decisione** — scelte dell'utente:
+
+- **Oggi il riposo è contato fino a adesso**, e la pagina lo dice; nella
+  tabella del profilo oggi è «so far» e **non entra nel totale della
+  settimana** finché il giorno non è finito.
+- **Un giorno senza diario è vuoto**, in tutte le colonne, e fuori dal
+  totale: non è un giorno a zero calorie.
+- Il riquadro del profilo c'è **solo dopo l'avviso di «Nutrition» letto**;
+  surplus e deficit nello stesso colore, parole e non un giudizio.
+- **Il diario è del telefono, non dell'account**: uscire dall'account o
+  eliminarlo non lo cancella, e la privacy lo dice. Scartata: cancellare
+  tutto all'uscita.
+
+Decise dall'agente su delega dell'utente:
+
+- **Le calorie di un'attività si stimano da quello che dice la lista
+  privata**: sport, metri e tempo. La lista non porta il dislivello né le
+  serie, quindi la palestra è contata dal solo tempo e un'escursione senza
+  la salita: più grezze dei numeri a fine attività. Per questo la
+  correzione a mano è accanto a ogni attività. Chiedere al server il
+  dettaglio di ogni attività per un numero più fino è stato scartato:
+  una richiesta per attività a ogni apertura del diario.
+- La lista si legge dal contesto che l'app ha già
+  (`useActivitiesDoor()`); per un giorno o una settimana più vecchi delle
+  pagine tenute si chiedono le pagine dopo. **Una pagina che non arriva
+  non si richiede da sola**: quei giorni contano solo il riposo, e la
+  scheda lo dice.
+- Con `NUTRITION_ON` spento la riga della lista privata e il riquadro del
+  profilo non leggono niente dal telefono e non rendono niente di nuovo.
+
+**Conseguenze**: con la C2 l'energia attiva di Salute prende il posto
+della somma delle attività nei giorni che ce l'hanno (già previsto nei
+conti di A1). Se un giorno servisse cancellare il diario all'uscita, è
+codice nuovo e un testo di privacy diverso.

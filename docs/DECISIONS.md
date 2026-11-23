@@ -591,9 +591,55 @@ lasciando le righe d'indice.
 - ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
 - ADR-0397, precisazione 2 — La tabella di base dei cibi: 314 voci da USDA SR Legacy (aprile 2018) ricavate da uno script, nomi in cinque lingue in file loro; la pagina «Nutrition» in due PR, con schermate e testi approvati · 2026-11-23 · Proposta
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
+- ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi · 2026-11-23 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi
+
+**Stato**: Attiva · 2026-11-23 · TASK-385 parte G: G1 (#1440, `d577db69`,
+server al passo 20) e G2 (#1459, `020cb5b8`). «Un sì per tutti» è una
+**scelta dell'utente** (2026-11-23); il resto è **deciso dall'agente su
+delega dell'utente**, con `FeedPost.tsx`, `FactsText.tsx` e
+`postSections.ts` approvati in più dal Coordinatore.
+
+**Contesto**: ADR-0327 (punto 7) lasciava il battito della palestra a dopo
+TASK-345 C e TASK-374 D. Il nuoto aveva già il suo: il pulsante «Add heart
+rate from Apple Health» a fine vasca, il consenso in `pool-heart.json`, le
+zone sul telefono (ADR-0318).
+
+**Decisione**:
+
+1. **Un consenso solo**: la palestra usa il pulsante, le righe
+   (`PoolHeartLines`, invariato) e il file del nuoto. Chi l'ha dato in
+   piscina vede il battito della palestra senza toccare niente.
+2. **Il battito letto a fine allenamento**, tra inizio e fine senza le
+   pause: media, massimo, minuti per zona. Senza letture la palestra non
+   mostra niente: la riga del nuoto «…for this swim» non va bene per un
+   allenamento.
+3. **Le kcal**: col battito e con sesso, peso e anno di nascita, l'energia
+   attiva di Keytel 2005 (`body/heartKcal.ts`, lorda meno riposo come
+   ADR-0318); altrimenti il MET di oggi. I post degli altri restano al
+   corpo di 70 kg. Le kcal scritte in Salute restano quelle del MET
+   (`gymHealth.ts` invariato).
+4. **Sul server** (G1) media e massimo vanno con l'allenamento,
+   tutti e due o nessuno, la media non sopra il massimo, mai su un
+   allenamento scritto a mano; nelle colonne di `runs` della 0061, senza
+   migrazione.
+5. **Chi lo vede**: «Show heart rate» nel modulo del post (acceso). Agli
+   altri il battito arriva solo con gli esercizi mostrati: con gli esercizi
+   nascosti `GET /drawings/{id}/exercises` resta 404 anche per lui.
+   L'autore lo vede sempre.
+
+**Alternative scartate**: un secondo consenso solo per la palestra (una
+domanda in più per la stessa cosa); il battito agli altri anche con gli
+esercizi nascosti (direbbe dell'allenamento quello che l'autore ha tenuto
+per sé).
+
+**Conseguenze**: niente testi nuovi e niente nativo. Restano la frase di
+Salute in «Privacy» allargata alla palestra (G3, al turno della privacy
+col sì dell'utente) e l'OTA del Coordinatore.
 
 ## ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save»
 

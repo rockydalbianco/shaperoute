@@ -143,6 +143,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   File: — · `tasks/TASK-384.md`
 - **TASK-385 — «Gym», la palestra** · parti fino a F in `main`; prossima G
   (il battito, con TASK-345 C). File: — · `tasks/TASK-385.md`
+  **2026-11-23**: G1 (#1440, server passo 20) e G2 (#1459) in `main`; restano G3 (privacy, al suo turno) e l'OTA.
 - **TASK-388 — Movimenti stile Apple** · A, A2, B, C, C3 in `main`; C2 in PR.
   File: — · `tasks/TASK-388.md`
   **Chiuso il 2026-11-10**: C2 (#811) e C3 (#829) in `main`; vedi `archive/COMPLETATI.md`.

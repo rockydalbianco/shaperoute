@@ -182,7 +182,11 @@ e i tre nomi in alto (in `main` dal 2026-10-30); B Feed ed Explore (in `main` da
 foto su `Scrim` in `heading`, sotto i disegni in `cardTitle`, i nomi
 medium, `Tap` al posto dell'opacità, `Hairline` prima delle azioni, la
 distanza delle schede di «Explore» in `display`); C stati vuoti (C1, coi
-testi) e divisioni e tocco (C2, in PR dal 2026-10-30: nei file liberi
+testi approvati il 2026-11-23: «Favorites», «My activities» e i
+«Messages» in arrivo hanno `EmptyState` col cuore, un titolo e una frase,
+senza pulsante, come il «Feed»; le liste follower/seguiti/richieste e «No
+message requests.» restano righe brevi, perché stanno in un riquadro
+piccolo) e divisioni e tocco (C2, in PR dal 2026-10-30: nei file liberi
 `Hairline` al posto delle divisioni in `border`, i bordi di riga a un pixel
 di `hairline`, ogni comando con un aspetto alla pressione su `Tap`, che
 prende anche un `ref`); D Profile, Settings e i fogli; E «Draw» e il risultato.
@@ -663,8 +667,10 @@ aggiunge colore: ognuno tiene il suo, il giallo del chip scelto compreso.
 Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Lo hanno
 anche (A7c-1) i chip di «Share your run», del post di sole foto e del
 composer, di «Tag people» e di chi può vedere, dei tag dell'outfit, di
-«Style», del sonno, del calendario e «Share live». I chip delle
-schermate degli sport arrivano con A7c-2.
+«Style», del sonno, del calendario e «Share live», e (A7c-2) quelli
+dell'obiettivo in palestra, dei posti della pagaia, della lunghezza della
+vasca e della giornata sulla neve. Restano i chip condivisi della
+palestra (`gymStyles`), del volo e del pannello del percorso: A7c-3.
 
 **Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
 raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro

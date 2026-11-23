@@ -117,7 +117,9 @@ test("«Messages» reads its list again in place as a swipe lands on it", async 
   await act(async () =>
     pending[0](Response.json({ ...conversationsExample, conversations: [] })),
   );
-  expect(await screen.findByText(/^No messages yet\. Open/)).toBeOnTheScreen();
+  expect(
+    await screen.findByText("Open someone's profile and tap Message to write to them."),
+  ).toBeOnTheScreen();
   expect(screen.queryByRole("button", { name: ada })).toBeNull();
 });
 

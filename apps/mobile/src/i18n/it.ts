@@ -57,6 +57,9 @@ export const IT: Table = {
   "Try again": "Riprova",
   "No activities yet. Save a run when you finish it, and it is kept here.":
     "Ancora nessuna attività. Salva una corsa quando la finisci e la ritrovi qui.",
+  "No activities yet": "Ancora nessuna attività",
+  "When you finish an activity and save it, you find it here.":
+    "Quando finisci un'attività e la salvi, la ritrovi qui.",
   "{when}, {where}, {facts}, public, open on the map":
     "{when}, {where}, {facts}, pubblica, apri sulla mappa",
   "{when}, {where}, {facts}, open on the map":
@@ -176,8 +179,9 @@ export const IT: Table = {
   "Remove {title} from favorites": "Togli {title} dai preferiti",
   "Loading your favorites…": "Carico i tuoi preferiti…",
   "Your favorites could not load.": "Non è stato possibile caricare i tuoi preferiti.",
-  "No favorites yet. Tap {heart} on a route on the map to keep it here.":
-    "Ancora nessun preferito. Tocca {heart} su un percorso sulla mappa per tenerlo qui.",
+  "No favorites yet": "Ancora nessun preferito",
+  "Tap {heart} on a route on the map to keep it here.":
+    "Tocca {heart} su un percorso sulla mappa per tenerlo qui.",
 
   // src/favorites/favoriteRoute.ts
   Route: "Percorso",
@@ -2370,8 +2374,9 @@ export const IT: Table = {
   "Messages, {count} waiting": "Messaggi, {count} in attesa",
   "Message requests": "Richieste di messaggio",
   "Message requests, {count} waiting": "Richieste di messaggio, {count} in attesa",
-  "No messages yet. Open someone's profile and tap Message to write to them.":
-    "Ancora nessun messaggio. Apri il profilo di qualcuno e tocca Messaggio per scrivergli.",
+  "No messages yet": "Ancora nessun messaggio",
+  "Open someone's profile and tap Message to write to them.":
+    "Apri il profilo di qualcuno e tocca Messaggio per scrivergli.",
   "No message requests.": "Nessuna richiesta di messaggio.",
   "You: {text}": "Tu: {text}",
   "{name}, new message: {text}": "{name}, nuovo messaggio: {text}",
@@ -3185,6 +3190,8 @@ export const IT: Table = {
   "Up to {count} items on an activity.": "Fino a {count} attrezzi su un'attività.",
   "This activity is still on its way. Try again in a moment.":
     "Questa attività sta ancora arrivando. Riprova tra poco.",
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), approved by the user on 2026-11-23
+  "From my gear": "Dalla mia attrezzatura",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
   "Share one of your gym plans": "Condividi uno dei tuoi piani di palestra",
@@ -3438,6 +3445,17 @@ export const IT: Table = {
   "Deepest: {dist} from the edge, {height} from floor or ceiling":
     "Più dentro: {dist} dal bordo, {height} da base o tetto",
   "Only on your phone: not in the Feed.": "Solo sul tuo telefono: non va nel Feed.",
+  // src/air/ (TASK-479 part D1: the pilot's waypoints and task; approved by the user on 2026-11-23)
+  Waypoints: "Boe",
+  Task: "Task",
+  "Waypoints: {count} · Landings: {landings}": "Boe: {count} · Atterraggi: {landings}",
+  "Turnpoints: {count}": "Boe della task: {count}",
+  "First start: {time}": "Prima partenza: {time}",
+  "{file} · loaded {date}": "{file} · caricato il {date}",
+  "This file has no waypoint MuW can read.":
+    "In questo file non ci sono boe che MuW sa leggere.",
+  "This file is not a task MuW can read.":
+    "Questo file non è una task che MuW sa leggere.",
   // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
   "Show password": "Mostra la password",
   "Hide password": "Nascondi la password",

@@ -3269,7 +3269,7 @@ export const FR: Table = {
     "Sur les routes, ton dessin est {share} % plus long : {distance}. Il reste là où tu l'as dessiné, à la même taille.",
   "On the roads your drawing is {share}% shorter: {distance}. It stays where you drew it, at the same size.":
     "Sur les routes, ton dessin est {share} % plus court : {distance}. Il reste là où tu l'as dessiné, à la même taille.",
-  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts.
+  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts, coach/nextTime.ts.
   Coach: "Coach",
   "Based on your last 4 weeks": "D'après tes 4 dernières semaines",
   "Apply to plan": "Appliquer au programme",
@@ -3344,6 +3344,7 @@ export const FR: Table = {
   OK: "OK",
   "Nothing to change for now: keep going.":
     "Rien à changer pour l'instant : continue comme ça.",
+  "Next time: {exercise} {kg} kg": "La prochaine fois : {exercise} {kg} kg",
   // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21, the other texts on 2026-11-23)
   "Nearest airspace": "Espace aérien le plus proche",
   inside: "dedans",
@@ -3417,6 +3418,26 @@ export const FR: Table = {
     "Les valeurs réelles varient selon le produit, la recette et la personne. MuW ne fournit ni régimes ni conseils médicaux.",
   "Only you see this page. Nothing here leaves your phone.":
     "Toi seul vois cette page. Rien de ce qui s'y trouve ne quitte ton téléphone.",
+  // src/nutrition (TASK-489 part C1)
+  "Today the energy at rest is counted up to now.":
+    "Aujourd'hui, l'énergie au repos est comptée jusqu'à maintenant.",
+  Surplus: "Excédent",
+  Deficit: "Déficit",
+  "At rest": "Au repos",
+  Activities: "Activités",
+  "No activities on this day.": "Aucune activité ce jour-là.",
+  edited: "modifié",
+  "Log in to count your activities.": "Connecte-toi pour compter tes activités.",
+  "Your activities could not be loaded. Only the energy at rest is counted.":
+    "Impossible de charger tes activités. Seule l'énergie au repos est comptée.",
+  "Energy at rest": "Énergie au repos",
+  "Your own number, for example the one your dietitian measured. It takes the place of MuW's estimate.":
+    "Ton propre chiffre, par exemple celui mesuré par ton diététicien. Il remplace l'estimation de MuW.",
+  "MuW's estimate: {kcal} kcal": "Estimation de MuW : {kcal} kcal",
+  "Back to the estimate": "Revenir à l'estimation",
+  "Calories of this activity": "Calories de cette activité",
+  "Your number stays on this phone. Your post and Apple Health keep theirs.":
+    "Ton chiffre reste sur ce téléphone. Ta publication et Santé d'Apple gardent les leurs.",
   // src/air/ (TASK-479 part E3: the airspace log after the flight; approved by the user on 2026-11-23)
   "Inside your airspaces: {count}": "Dans vos espaces aériens : {count}",
   "No fix inside the volumes of your file.":

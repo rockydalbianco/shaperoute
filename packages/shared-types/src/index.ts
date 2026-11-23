@@ -3223,6 +3223,12 @@ export interface OutfitTag {
   /** Times opened and «Shop» touched, in all: to the owner only, else null. */
   opens: number | null;
   shops: number | null;
+  /**
+   * The item of gear it is (TASK-486 part F): the dot opens it. Null, or
+   * absent from an API of before, when there is none or who asks does not
+   * see that item.
+   */
+  gear_id?: string | null;
 }
 
 /** One item of PUT /me/activities/{key}/drawing/photos/{n}/tags. */
@@ -3236,6 +3242,11 @@ export interface OutfitTagRequest {
   product_name?: string | null;
   /** A shop's https page; the API cleans it before keeping it. */
   url?: string | null;
+  /**
+   * One of its owner's gear (TASK-486 part F). Not sent, an item kept keeps
+   * the one it had; null takes it off.
+   */
+  gear_id?: string | null;
 }
 
 /**

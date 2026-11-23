@@ -539,14 +539,38 @@ quello nuovo, e senza uscite lunghe i file escono identici byte per byte.
 - [x] Test deterministici dello strumento (20).
 - [x] Prova con la sola Trento (2026-11-23): picco 3107 MB, 185 s, 7
       disegni tracciati su 8, 2 passano la regola (stella e sole a 50 km).
-- [ ] Giro finito nei gruppi 1 e 2, poi i tentativi.
-- [ ] I disegni che passano all'utente, forma per forma, e il suo sì
-      **prima del merge**.
-- [ ] `catalog/seed` riscritto con i disegni di prima intatti,
+- [x] Giro finito nei gruppi 1 e 2, poi i tentativi (2026-11-23).
+- [x] I disegni che passano all'utente, forma per forma, e il suo sì
+      **prima del merge**: «Tutti i 129» (2026-11-23).
+- [x] `catalog/seed` riscritto con i disegni di prima intatti,
       `catalog/README.md`.
 - [ ] CI verde, merge del Coordinatore.
 - [ ] Passo «catalogo» sul server, col sì dell'utente al Coordinatore.
 - [ ] L'utente la prova sul telefono (sport «Bike», poi «Explore»).
+
+### Esito dei giri (B3, 2026-11-23)
+
+34 città, 272 casi, 213 disegni tracciati, **129 passano la regola** (42 da
+50 km, 87 da 40 km) in 32 città; per forma: sole 22, luna 22, farfalla 20,
+cerchio 17, cuore 15, stella 13, pesce 11, gatto 9. Dei 59 non tracciati, 39
+non si disegnano e 20 escono dalla zona ritagliata (Overpass chiuso: tutti
+cuore o cerchio alla distanza più lunga). Nessuna città dei gruppi 1 e 2
+fermata: picchi da 902 MB (Ravenna) a 4075 MB (Bergamo, 21 MB sotto il
+limite). Genova e Nizza non hanno disegni che passano. Dei cinque tentativi
+è partita solo Amsterdam, fermata a 4175 MB mentre caricava la zona: Sydney,
+Valencia, Milano e Barcellona, più grandi, non sono state provate. La
+previsione del piano (150–200 disegni) era alta.
+
+L'utente li ha visti tutti su `out/TASK-441/b3/disegni-bici-lunghi.html` e
+li tiene tutti: **il catalogo passa da 1902 a 2031 disegni**, 485 uscite in
+bici in 60 città (Levico, che aveva solo corse, è nuova). 32 file di città
+cambiano, 31 restano identici byte per byte; in quelli cambiati il testo di
+prima è l'inizio di quello nuovo, quindi ogni id pubblicato resta (controllo
+fatto su tutti i 63 file). Numeri attesi dopo il passo sul server, letti in
+locale con `RecommendedCatalog.from_dir`: nella PR.
+
+Rimasto fuori, come possibile ritocco: zona più larga per cuore e cerchio
+alla distanza più lunga (costa memoria e zone da rifare); non chiesto.
 
 ## Dove siamo
 

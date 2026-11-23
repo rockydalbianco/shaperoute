@@ -63,6 +63,8 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | «Alimentazione»: diario dei pasti, piano, bilancio delle calorie, tabella nel profilo | `tasks/TASK-489.md`, ADR-0397, ADR-0318, ADR-0281 |
 | La modalità Allenamento: scelta la palestra, l'app diventa un'app per allenarsi (Today, Workouts, Food) | `tasks/TASK-490.md`, ADR-0398, ADR-0357, ADR-0341, ADR-0392 |
 | Il Coach MuW: consigli dagli allenamenti fatti, regole e studi, la scheda che cambia con «Apply» | `tasks/TASK-491.md`, ADR-0399, ADR-0396, ADR-0398, ADR-0392 |
+| La mappa dei decolli: i siti di volo da OpenStreetMap, la scheda del decollo con lo storico dei voli | `tasks/TASK-493.md`, ADR-0400, ADR-0388, ADR-0375, `tasks/TASK-479.md` |
+| Le scadenze della vela: revisione, ripiegatura della riserva, controllo dell'imbrago, l'avviso | `tasks/TASK-494.md`, ADR-0401, ADR-0393, `tasks/TASK-486.md` |
 | Le schede, lo swipe, il tasto indietro, il gesto dal bordo, i fogli, le pagine sopra l'app | `tasks/TASK-470.md`, ADR-0384, `UI.md` «Le pagine e la barra di schede» |
 | La live in chat e nel Feed, anche programmata (una gara) | `tasks/TASK-468.md`, ADR-0381, ADR-0352, `API.md` «Live shares» e «Messages» |
 | «MuW Style» | `STYLE.md`, `tasks/TASK-384.md` |
@@ -89,6 +91,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Lo storico di un esercizio in palestra: «Last time», i campi già compilati, il suggerimento, «History» col massimale stimato | `tasks/TASK-483.md`, ADR-0392, `sports/gym.md`, ADR-0327 |
 | La corsa su misura nelle schede della palestra: il ritmo sui 10 km e il lungo nella guida, i ritmi di ogni corsa, la proposta a fine ciclo dalle corse salvate | `sports/gym.md` «Le schede guidate», ADR-0369, `API.md` «Gym», `tasks/TASK-452.md` |
 | La scheda che si adatta: «Come ti è sembrata la scheda?» a fine allenamento e a fine corsa, i passi in `adapt`, i segni ↑ = ↓ e l'interruttore in «My plans» | `sports/gym.md` «La scheda si adatta», ADR-0396, `API.md` «Gym», `tasks/TASK-488.md` |
+| «Delete plan» in ogni passo della guida quando si modifica una scheda della palestra | `sports/gym.md` «Le schede guidate» («My plans»), `tasks/TASK-492.md` |
 | Il pianificatore completo: almeno due sport, il corpo libero, i giorni fuori (camminata, hike, bici, nuoto, canoa), i piani verso una distanza o una salita | `sports/gym.md` «Il pianificatore completo» e «L'ingresso e il corpo libero», ADR-0371, `API.md` «Gym», `tasks/TASK-461.md` |
 | «Edit the drawing» su una traccia che finisce lontano dalla partenza: chiusa fino alla partenza, non corsa due volte; se si incrocia, un anello alla partenza; anche un percorso chiuso di «Explore» che si incrocia | `UI.md` «Edit the drawing: la figura sulla mappa», ADR-0353, ADR-0356 (e precisazione), ADR-0313, `tasks/TASK-425.md`, `tasks/TASK-428.md`, `tasks/TASK-432.md` |
 | «Draw on the map»: la partenza, un pallino da spostare lungo il disegno | `UI.md` «Disegnare sulla mappa» («La partenza»), ADR-0354, ADR-0336, `tasks/TASK-426.md` |

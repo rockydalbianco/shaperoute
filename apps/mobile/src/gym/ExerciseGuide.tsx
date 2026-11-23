@@ -4,6 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { t } from "../i18n";
 import type { Language } from "../i18n/languages";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 import { useUnits } from "../units/useUnits";
 import type { GymExercise } from "./catalog";
 import { ExerciseFigure } from "./ExerciseFigure";
@@ -54,6 +56,8 @@ export function ExerciseGuide({
   const history = useExerciseHistory({ exercise: exercise.key, kind: exercise.kind });
   const [historyOpen, setHistoryOpen] = useState(false);
   const [openedMs] = useState(() => Date.now());
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   if (historyOpen) {
     return (
       <ExerciseHistory
@@ -69,7 +73,7 @@ export function ExerciseGuide({
     <View style={styles.guide} testID={`guide-${exercise.key}`}>
       <View style={styles.top}>
         <Pressable
-          style={gymStyles.chip}
+          style={[gymStyles.chip, chipRaise]}
           onPress={onBack}
           accessibilityRole="button"
           accessibilityLabel={t("Back")}

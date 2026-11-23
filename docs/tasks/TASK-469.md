@@ -3,7 +3,7 @@
 **Stato**: In corso (0 fatta: «Capsula»; A1 e A2 in produzione con l'OTA 14;
 A3 e A4a in produzione al più tardi con l'OTA 17; A4b e A4c in produzione
 con l'OTA 20; A5 e A5b con l'OTA 21; A5c e A6 in produzione con l'OTA 22;
-A6b con l'OTA 23; A7a, A7b, A5c-2 e A7c-1 in `main`)
+A6b con l'OTA 23; A7a, A7b, A5c-2, A7c-1 e A7c-2 in `main`)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
@@ -116,10 +116,13 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
     social, di condivisione e del calendario escono dal vetro come quelli
     della ricerca (`glassRaise`): filo di luce in cima e ombra corta, il
     chip scelto tiene la sua faccia;
-  - A7c-2 i chip di quattro schermate degli sport (obiettivo in
-    palestra, pagaia, piscina, neve), in bozza #1494; poi A7c-3: volo e
-    pannello del percorso quando sono liberi, e i chip condivisi della
-    palestra (`gymStyles`), con la loro lista di file.
+  - **A7c-2 fatta** (#1494, in `main` c3523b12): lo stesso rilievo sui
+    chip di quattro schermate degli sport: l'obiettivo in palestra, i
+    posti della pagaia, la lunghezza della vasca e le scelte della
+    giornata sulla neve;
+  - A7c-3: i chip condivisi della palestra (`gymStyles` e le otto pagine
+    che li usano), la schermata del volo e il pannello del percorso
+    quando sono liberi, con la loro lista di file.
 - **B — Liquid Glass nativo** con `expo-glass-effect` (UIGlassEffect su
   iOS 26; `expo-blur` o opaco prima e su Android). Dipendenza nuova e
   impronta iOS che cambia: solo in una build **dopo l'uscita della 1.1.0**,
@@ -260,6 +263,17 @@ Spuntati per A1 e A2 (2026-11-12):
   `src/social/outfit/OutfitTagEditor.tsx` — e `src/ui/ChipGlass.test.tsx`
   (nuovo). `FilterSheet.tsx` e `StartState.tsx` non toccati: usano già
   `FilterChip`.
+- A7c-2 (#1494): `apps/mobile/src/gym/TargetSteps.tsx`,
+  `src/paddle/PaddleExplore.tsx`, `src/pool/PoolDraw.tsx`,
+  `src/ski/DayChoices.tsx`, `src/ui/ChipGlass.test.tsx` (la lista dei
+  file controllati). Non toccati, visti uno per uno: `GearEditor.tsx` e
+  `GearPicker.tsx` usano già `FilterChip`; in `GymDrawGuide.tsx` e
+  `NavigateScreen.tsx` «chip» è un'etichetta di testo, non un comando;
+  in `RunDashboard.tsx` `chipBars` è il segno di pausa; `gymStyles.ts`
+  è condiviso da otto pagine e va con A7c-3.
+- La PR di documenti di A7c-2: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/TASK-469-A7c2-chip-sport.jpg` (nuova),
+  `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md`.
 - La PR di documenti di A7c-1: `docs/tasks/TASK-469.md`,
   `docs/tasks/TASK-469/TASK-469-A7c1-chip.jpg` (nuova), `docs/STATUS.md`,
   `docs/DECISIONS.md`, `docs/UI.md`.
@@ -368,7 +382,9 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   bozza #1472, prova nel simulatore col suo turno; l'utente approva le
   schermate («Sì, vai»); #1472 in `main` 2e23489e. Documenti di A7a, A7b
   e A5c-2 #1474 in `main`. A7c-2: i dieci file liberi (Coordinatore),
-  bozza #1494 su quattro.
+  bozza #1494 su quattro; prova nel simulatore col suo turno; l'utente
+  approva le schermate («Sì, vai»); #1494 in `main` c3523b12. Documenti
+  di A7c-1 #1495 in `main`.
 - Imparato: Metro parte con `CI=1`, quindi niente fast refresh: ogni
   modifica al codice vuole Metro riavviato e l'app riaperta. «Riduci
   trasparenza» invece si applica subito. In scuro il rilievo dei chip è
@@ -514,11 +530,18 @@ di luce in cima al chip; in chiaro il chip ha un'ombra corta sotto. Con
 
 ![A7c-1, i chip prima e dopo](TASK-469/TASK-469-A7c1-chip.jpg)
 
+**A7c-2, i chip degli sport** — la lunghezza della vasca nel nuoto
+(«Pool length»). Come in A7c-1: in scuro un filo di luce in cima al chip,
+in chiaro un'ombra corta sotto; con «Riduci trasparenza» è uguale a
+prima:
+
+![A7c-2, i chip degli sport prima e dopo](TASK-469/TASK-469-A7c2-chip-sport.jpg)
+
 ## Esito
 
 *(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14); A3 e A4a
 in `main` dal 2026-11-12, in produzione al più tardi con l'OTA 17
 (2026-11-18); A4b e A4c in produzione con l'OTA 20 (2026-11-21); A5 e A5b
 con l'OTA 21 (2026-11-22); A5c e A6 in produzione con l'OTA 22
-(2026-11-22, b4c31f09); A6b con l'OTA 23 (2026-11-23, e427ed2e); A7a, A7b, A5c-2 e A7c-1 in `main` dal
+(2026-11-22, b4c31f09); A6b con l'OTA 23 (2026-11-23, e427ed2e); A7a, A7b, A5c-2, A7c-1 e A7c-2 in `main` dal
 2026-11-23.

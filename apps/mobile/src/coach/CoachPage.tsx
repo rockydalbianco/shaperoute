@@ -13,6 +13,8 @@ import { t } from "../i18n";
 import { useLanguage } from "../i18n/useLanguage";
 import { color, font, space } from "../theme/tokens";
 import { WeekBody } from "../trainingmode/WeekBodyCard";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 import type { CoachFetchers } from "./coachData";
 import type { Tip } from "./rules";
 import { TipCard } from "./TipCard";
@@ -35,6 +37,8 @@ type Props = {
 export function CoachPage({ onBack, fetchersOf, fetchFn }: Props) {
   const language = useLanguage();
   const coach = useCoach(fetchersOf, fetchFn);
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   return (
     <ScrollView
       style={gymStyles.screen}
@@ -43,7 +47,7 @@ export function CoachPage({ onBack, fetchersOf, fetchFn }: Props) {
     >
       <View style={styles.top}>
         <Pressable
-          style={gymStyles.chip}
+          style={[gymStyles.chip, chipRaise]}
           onPress={onBack}
           accessibilityRole="button"
           accessibilityLabel={t("Back")}

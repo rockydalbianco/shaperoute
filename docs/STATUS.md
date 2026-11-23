@@ -410,6 +410,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (`GRUPPI.md`). Poi A API, B app, C uscite (anche senza percorso, file di
   TASK-309 col via del Coordinatore), D Explore e push, privacy prima
   dell'OTA, E chat di gruppo. File: — · `tasks/TASK-495.md`
+  2026-11-24: A in `main` (#1538, migrazione 0087, sul server col prossimo
+  passo), A2 #1543 armata; poi B (l'app), file approvati dal Coordinatore.
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

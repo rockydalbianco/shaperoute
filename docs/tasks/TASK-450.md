@@ -1,6 +1,6 @@
 # TASK-450 — «Share your run»: ordine dei pulsanti e poster
 
-**Stato**: In corso · PR #1541 (bozza), schermate prima/dopo fatte, manca il sì dell'utente
+**Stato**: In corso · PR #1541 pronta (schermate approvate dall'utente il 2026-11-23); merge del Coordinatore, poi documenti di chiusura
 **Fase**: 5 · **Branch**: `feat/TASK-450-share-order-poster`
 **Dipende da**: niente
 **ADR**: nessuno finora · numero dal Coordinatore l'11 novembre 2026 (idea
@@ -128,7 +128,8 @@ foglio di condivisione di iOS.
       (`PostImageLook.test.tsx`, `SharePost.test.tsx`).
 - [x] Dal Feed il poster ha il giorno della corsa
       (`PostActionsPosterDay.test.ts`).
-- [ ] Schermate prima/dopo approvate dall'utente.
+- [x] Schermate prima/dopo approvate dall'utente (2026-11-23: «Sì, vanno
+      bene», col giorno scritto con l'anno e la cornice attorno al poster).
 - [x] Nessun testo nuovo, nessuna dipendenza nuova, niente di nativo
       (impronta iOS `5e1b5ce5` invariata: solo TypeScript in `src/`).
 

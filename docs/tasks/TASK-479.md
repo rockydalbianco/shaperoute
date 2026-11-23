@@ -1,8 +1,8 @@
 # TASK-479 — Il parapendio completo: lo strumento di volo senza accordi con terzi
 
 **Stato**: In corso · parte 0 chiusa (2026-11-21); B1 in produzione
-(OTA 20), B2 in `main` (#1368), C in produzione (OTA 22, 2026-11-22);
-prossima A1
+(OTA 20), B2 in `main` (#1368), C in produzione (OTA 22, 2026-11-22),
+A1 in `main` (#1434, 2026-11-23, OTA dal Coordinatore); prossima E
 **Fase**: 5 · **Branch**: `docs/TASK-479-paragliding-pro` (parte 0), poi
 `feat/TASK-479-<parte>-<slug>`, una parte alla volta, ognuna da `main`
 **Dipende da**: TASK-305 parti R (in `main`: lo sport «Record only», i
@@ -134,6 +134,61 @@ dell'utente alle cinque domande (in «Scelte dell'utente sulla parte 0»).
    vero: FPS della WebView, batteria per ora di volo con schermo acceso in
    2D e in 3D. Se il 3D costa più del 2D di oltre il 30 %, il 3D resta una
    scelta e la pagina «Map» del preset parte in 2D.
+
+**A1 fatta** (#1434, in `main` il 2026-11-23; l'OTA la chiede il
+Coordinatore). Fatta in file nuovi di `src/air/`: `map/**` non è toccato,
+se ne usano solo le esportazioni.
+
+**Com'è fatta** (deciso dall'agente su delega dell'utente):
+- Il widget «Map» (`FlightMap`, `flightMapPage.ts`): MapLibre in una
+  WebView, pagina sua e piccola; colline in 3D (il terreno dell'app,
+  esagerato ×1,3) o mappa piatta; la traccia dal decollo coi colori del
+  vario su scala fissa −3…+3 m/s (i colori `vario` nuovi di `tokens.ts`:
+  blu in discesa, grigio in piano, giallo e poi rosso in salita); il
+  decollo; il pilota come freccia gialla nella direzione di marcia.
+- La camera segue il pilota: «Rotta in alto» (la rotta degli ultimi 5 s,
+  tenuta ferma mentre gira in termica) o nord in alto; si zooma con due
+  dita, non si trascina. Due tasti da 64 pt sulla mappa quando è alta
+  abbastanza: 3D/2D e ▲/N; la scelta resta (`flight-map.json`) e vale per
+  ogni widget mappa. Partenza: 3D, rotta in alto.
+- In 3D la camera guarda il terreno sotto il pilota
+  (`setCenterElevation` con l'aggancio automatico spento): con MapLibre
+  5.24 il centro restava a quota zero e il pilota finiva sopra lo schermo,
+  dietro il monte (visto al simulatore).
+- Al massimo una posizione al secondo e una traccia ogni 5 s verso la
+  pagina; la traccia in al più 1500 pezzi.
+- **«Quota sul terreno»** (widget 2): quota GPS meno il terreno sotto il
+  pilota, letto da una pagina nascosta senza MapLibre (`GroundProbe`) che
+  decodifica su un canvas le stesse Terrain Tiles «terrarium» della mappa
+  3D, a zoom 12 (circa 30 m per pixel nelle Alpi: è una stima, buona a
+  qualche decina di metri). Chiesta al massimo ogni 2 s, dopo 40 m di
+  spostamento; usata solo entro 150 m e per 60 s, altrimenti «—»; la
+  pagina nascosta c'è solo se il profilo mostra il widget.
+- Preset: «Thermal» pagina 1 con la quota sul terreno al posto di «Above
+  takeoff», pagina 2 con la mappa; «XC» con una terza pagina con la
+  mappa. I profili già salvati restano come sono; «Back to preset» dà i
+  nuovi. I file `.muwlayout` passano alla versione 2: un'app della sola B2
+  dice «aggiorna l'app»; quelli della versione 1 si leggono ancora.
+
+**Misure** (simulatore iPhone 17e, volo finto sul Monte Baldo,
+2026-11-23): fotogrammi al secondo disegnati dalla mappa mentre segue il
+pilota, 3D 37–52 (circa 46), 2D 56–59: il 3D ne disegna circa il 20 % in
+meno, sotto la soglia del 30 %, quindi il preset parte in 3D. La quota sul
+terreno è credibile (terreno a circa 1950 m sul crinale del Baldo). Resta:
+la batteria per ora di volo, alla prova su un telefono vero.
+
+**Testi di A1**, approvati dall'utente il 2026-11-22. «Map», «3D» e «2D»
+restano quelli dell'app.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Height above ground | Quota sul terreno | Höhe über Grund | Hauteur sol | Altura sobre el suelo |
+| Heading up | Rotta in alto | Kurs oben | Cap en haut | Rumbo arriba |
+| North up | Nord in alto | Norden oben | Nord en haut | Norte arriba |
+
+Schermate approvate dall'utente il 2026-11-23 (3D, 2D, 2D col nord in
+alto). Fuori da A1, con le loro parti: gli atterraggi e le boe (D), gli
+spazi aerei (E), il replay e la «tenda» (A2 con F).
 
 **A2, dopo il volo** (insieme a F):
 1. Replay 3D: cursore del tempo, velocità ×1/×10/×60, pausa.
@@ -541,7 +596,8 @@ del server per il meteo (H), il barometro e la fotocamera dopo la 1.1.
 - [ ] Nessuna chiamata a openAIP, XContest, LiveTrack24, Open-Meteo,
       Windy, servizi NOTAM (grep nei test di B1).
 - [ ] Nessun testo dice «libero», «sicuro», «legale», «ce la fai».
-- [ ] A1: FPS e batteria misurati in volo simulato, scritti qui.
+- [ ] A1: FPS e batteria misurati in volo simulato, scritti qui. FPS
+      fatti (sopra, 2026-11-23); la batteria alla prova su un telefono.
 - [ ] Prima della pubblicazione: una prova con un pilota vero.
 
 ## File toccati

@@ -1,6 +1,6 @@
 # TASK-489 — «Alimentazione»: il diario di quello che mangio e il bilancio delle calorie
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-22: otto scelte dell'utente; poi A1, A2, B, C1, D, F, C2)
+**Stato**: In corso (parte 0 chiusa il 2026-11-22: otto scelte dell'utente, #1417 in `main`; quattro precisazioni il 2026-11-23; **A1 in `main`** (#1437, `dd29df5b`, 2026-11-23); poi A2, B, C1, D, F, C2, G)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-489-nutrition-part-0`
 **Dipende da**: TASK-374 (il mio corpo, `body/energy.ts`), TASK-321 (Apple
@@ -123,6 +123,51 @@ Nella sezione degli sport entra una voce nuova, **«Alimentazione»**
 
 Le domande della parte 0 sono finite il 2026-11-22.
 
+### Precisazioni del 2026-11-23 (tre differenze con TASK-490)
+
+Lo stesso giorno l'utente aveva risposto alla sessione di TASK-490 (l'«hub
+Allenamento») «C · Diario completo»: ricerca dei cibi e codice a barre
+(Open Food Facts), grammi e macronutrienti per pasto, in cima l'obiettivo
+del giorno. Tre punti non coincidevano con le scelte 2, 3 e 7: richiesti
+all'utente, uno alla volta.
+
+9. **Il codice a barre.** **Risposta: «Codice a barre, parte a sé»**:
+   restano l'elenco di base USDA e i cibi dell'utente (scelta 2); in più
+   una parte a sé, la **G**, col lettore di codici a barre che cerca il
+   prodotto su Open Food Facts. Con la risposta l'utente ha detto sì a
+   chiedere la dipendenza nativa nuova (`expo-camera`); entra nella stessa
+   build nativa da cui «Nutrition» esce. Scartate: nessun codice a barre;
+   deciderlo più avanti.
+10. **I macronutrienti.** **Risposta: «Calorie prima, macro dopo»**: resta
+    la scelta 3. La prima uscita mostra solo le kcal.
+11. **In cima alla pagina.** **Risposta: «Stima + obiettivo scritto da
+    me»**: in cima «Eaten», «Used (est.)» e «Balance»; se l'utente vuole,
+    scrive lui «My daily target» in kcal (il suo o quello del dietologo) e
+    la pagina mostra «Left». **MuW non lo propone e non lo calcola mai**:
+    il paletto e l'avviso approvato restano come sono. Scartate: solo la
+    stima; un «Daily goal» calcolato da MuW.
+
+12. **Correggere a mano il consumo** (chiesto dall'utente il 2026-11-23,
+    parole sue: «metti anche la possibilità di modificare manualmente
+    quante kcal il nostro corpo consuma al giorno a riposo… oltre agli
+    allenamenti, metti che puoi modificare anche lì le kcal»):
+    - **il riposo**: l'utente può scrivere lui le kcal al giorno che il suo
+      corpo consuma a riposo (per esempio quelle misurate dal dietologo);
+      da allora il conto usa quel numero al posto della stima di
+      Mifflin-St Jeor, con la scritta «set by you», e si può tornare alla
+      stima;
+    - **ogni allenamento**: l'utente può correggere le kcal di una singola
+      attività dell'hub; il conto usa il numero corretto, con la scritta
+      «edited», e si può tornare alla stima.
+    *Deciso dall'agente su delega dell'utente, da vedere con le schermate*:
+    le correzioni restano sul telefono e valgono per il bilancio e per la
+    lista privata; non cambiano le calorie del post né quelle scritte in
+    Salute. In un giorno che ha l'energia attiva di Salute, un'attività
+    corretta sposta il totale del giorno della differenza fra il numero
+    corretto e quello che contava prima.
+
+La tab «Cibo» di TASK-490 monta la pagina di questo task così com'è.
+
 ## Testi approvati dall'utente (2026-11-22, in inglese)
 
 | Dove | Testo |
@@ -136,6 +181,7 @@ Le domande della parte 0 sono finite il 2026-11-22.
 | La tabella | «Eaten» · «Used» · «Balance» · «Surplus» · «Deficit» (col segno + o −) |
 | I pasti | «Breakfast» · «Lunch» · «Dinner» · «Snacks» |
 | Il diario | «Eaten as planned» |
+| In cima alla pagina (2026-11-23) | «Eaten» · «Used (est.)» · «Balance» · «My daily target» · «(set by you)» · «Left» |
 
 Le traduzioni in italiano, tedesco, francese e spagnolo e gli altri testi
 delle schermate si mostrano all'utente con le schermate della parte B. Il
@@ -154,6 +200,7 @@ nelle parti F e C2.
 | D | La tabella nel profilo, solo per il proprietario | app, spenta; schermate all'utente |
 | F | Privacy: testi sul sito e nell'app, etichette dell'App Store e di Google Play, fonti e formule | testi e pubblicazione col sì dell'utente |
 | C2 | La lettura da Salute (allenamenti delle altre app, energia attiva del giorno), testo del permesso, poi l'accensione | **build nativa**, tempi dal Coordinatore; Android con la build di TASK-321 C |
+| G | Il codice a barre: il prodotto cercato su Open Food Facts (precisazione 9) | **build nativa** (`expo-camera`, dipendenza nuova col sì dell'utente); testi e privacy all'utente |
 | E | Il server, per ritrovare i dati sul telefono nuovo | dopo l'uscita; migrazione, passo e sì dell'utente |
 
 Tutte le parti prima di C2 entrano in `main` **spente** dietro
@@ -189,6 +236,15 @@ Funzioni pure con test deterministici, in `apps/mobile/src/nutrition/`:
     tempo a un'attività di MuW per più di metà della più corta è la stessa
     attività e conta una volta, quella di MuW;
   - un'attività conta nel giorno in cui è partita.
+- **«My daily target»** (precisazione 11): un numero di kcal scritto
+  dall'utente, facoltativo; «Left» = obiettivo − assunte. Nessuna funzione
+  lo propone o lo calcola.
+- **Le correzioni a mano** (precisazione 12): le kcal al giorno a riposo
+  scritte dall'utente prendono il posto di `restKcalPerMin` × 1440; le
+  kcal corrette di un'attività prendono il posto della sua stima. Con
+  l'energia attiva di Salute: attività = energia di Salute + somma di
+  (kcal corrette − kcal che l'attività contava prima). Togliere una
+  correzione riporta la stima.
 - **I file sul telefono**: cibi dell'utente, piano e diario in file JSON
   con `expo-file-system`, come `body/bodyProfile.ts`. I numeri letti da
   Salute non si salvano: si rileggono quando servono.
@@ -257,6 +313,24 @@ sì dell'utente, sul sito **non prima** dell'app che li porta.
 - **Quale build e quando lo dice il Coordinatore**: non si promettono
   tempi all'utente prima.
 
+### G — Il codice a barre (build nativa)
+
+- Il lettore legge il codice di un prodotto confezionato e lo cerca su
+  **Open Food Facts**; serve la rete. Il prodotto trovato diventa un cibo
+  del telefono (nome, kcal per 100 g, il suo codice, la scritta «from Open
+  Food Facts»), che l'utente può correggere dall'etichetta. Un prodotto
+  non trovato o senza kcal si scrive a mano, come un cibo dell'utente.
+- I prodotti di Open Food Facts restano **separati** dalla tabella USDA:
+  MuW non pubblica una base di dati mescolata. L'attribuzione a Open Food
+  Facts (ODbL) sta in «How we calculate» e accanto al prodotto.
+- A Open Food Facts va **solo il codice letto**, senza account né altri
+  dati dell'utente; lo dice la privacy (parte F).
+- Dipendenza nativa nuova: `expo-camera` (sì dell'utente del 2026-11-23 a
+  chiederla); il testo del permesso della fotocamera oggi parla solo della
+  foto da ricalcare e va riscritto, con l'approvazione dell'utente. La
+  lista dei file di `app.json` e `package.json` va al Coordinatore quando
+  la build è decisa.
+
 ### E — Il server
 
 Solo dopo l'uscita, se l'utente lo conferma: una tabella sua, la
@@ -281,12 +355,22 @@ apps/mobile/src/nutrition/diary.ts                + diary.test.ts
 apps/mobile/src/nutrition/intake.ts               + intake.test.ts
 apps/mobile/src/nutrition/dayBalance.ts           + dayBalance.test.ts
 apps/mobile/src/nutrition/nutritionStore.ts       + nutritionStore.test.ts
+apps/mobile/src/nutrition/ownTarget.ts            + ownTarget.test.ts   (aggiunto il 2026-11-23: «My daily target»)
+apps/mobile/src/nutrition/energyEdits.ts          + energyEdits.test.ts (aggiunto il 2026-11-23: riposo e attività corretti a mano)
 docs/tasks/TASK-489.md                            (il registro)
 ```
 
-Parte A2, solo file nuovi: `tools/nutrition/**` (lo script, la lista degli
-identificativi, i suoi test), `apps/mobile/src/nutrition/foodTable.ts`
-(generato), `apps/mobile/src/nutrition/foodNames/{de,es,fr,it}.ts`, i test.
+Parte A2, solo file nuovi (lista approvata dal Coordinatore il 2026-11-23;
+parte col sì dell'utente alla parte e allo scarico di USDA):
+`tools/nutrition_table.py` (lo script, solo libreria standard),
+`tools/test_nutrition_table.py`, `tools/nutrition_foods.csv` (i cibi
+scelti: identificativo FDC e nome corto), `apps/mobile/src/nutrition/foodTable.ts`
+(generato, con fonte, versione e data in testa) e `foodTable.test.ts`,
+`apps/mobile/src/nutrition/foodNames.ts` e `foodNames.test.ts`,
+`apps/mobile/src/nutrition/foodNames/{de,es,fr,it}.ts`. Lo scarico grezzo
+di USDA resta in `out/TASK-489/` sul T9, fuori dal repository e dal
+bundle; prima del «pronta» si misura il peso dei file che entrano nel
+bundle (stima: sotto i 100 KB).
 
 Le parti dopo toccano anche file esistenti, da chiedere al Coordinatore
 prima di ognuna: B `settings/SportButton.tsx` (montare la tessera),
@@ -299,8 +383,10 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 ## Fuori scope
 
 - Diete, obiettivi di calorie o di peso, consigli: mai, nemmeno dall'AI.
-- Il lettore di codici a barre e Open Food Facts (dipendenza nuova,
-  licenza ODbL): un'altra scelta, se l'utente la vorrà.
+- La ricerca per nome su Open Food Facts e una copia dei suoi dati
+  dentro l'app: solo il codice a barre, un prodotto alla volta (parte G).
+- Un obiettivo di calorie calcolato o proposto da MuW: «My daily target»
+  lo scrive solo l'utente.
 - Le tabelle CREA senza un permesso scritto.
 - Proteine, carboidrati e grassi mostrati (una parte dopo: i dati ci sono).
 - Condividere la tabella, il Feed, il profilo pubblico.
@@ -325,6 +411,33 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 
 ## Registro
 
+- **2026-11-23, A1 fatta**: #1437 in `main` (`dd29df5b`): 21 file nuovi
+  in `apps/mobile/src/nutrition/` (giorni del telefono, cibi e cibi
+  dell'utente, piano, diario, assunte, «My daily target», correzioni a
+  mano, bilancio del giorno, file sul telefono), 98 test; `NUTRITION_ON`
+  spento e niente importa ancora la cartella. Decisi dall'agente su delega
+  dell'utente: la settimana parte da lunedì; una porzione porta con sé il
+  suo cibo (un giorno scritto non cambia se il cibo cambia dopo); le
+  chiavi dei cibi dell'utente non si ridanno mai; il diario è un file al
+  mese; due allenamenti di altre app sovrapposti per più di metà del più
+  corto contano una volta, il primo.
+  Accordi con le altre sessioni: TASK-490 monta la tab «Food» in TASK-490
+  D (solo con `NUTRITION_ON` acceso) e libera `settings/SportButton.tsx`
+  per la tessera dopo la sua #1424; il testo unico di
+  `NSHealthShareUsageDescription` lo raccoglie la sessione di TASK-312 D
+  (con 467 C) e lo porta all'utente: l'energia attiva vi è detta solo per
+  il bilancio che vede il proprietario, e la frase aspetta se la build
+  esce con «Nutrition» spenta; un solo lettore di Salute in `health/` per
+  312 D e 489 C2, lo scrive chi arriva prima.
+- **2026-11-23, precisazioni**: #1417 in `main` dal 2026-11-22; via del
+  Coordinatore per A1 e «Nutrition» nella lista della prossima build
+  nativa (nessuna data; il testo del permesso di Salute si scrive una
+  volta sola con TASK-467 C). Tre differenze con le risposte date a
+  TASK-490 chiarite con l'utente (9–11): codice a barre come parte G,
+  macronutrienti dopo, «My daily target» scritto dall'utente. Richiesta
+  nuova dell'utente (12): le kcal a riposo al giorno e le kcal di ogni
+  allenamento si possono correggere a mano. Due file nuovi in più nella
+  lista di A1 (`ownTarget`, `energyEdits`), detti al Coordinatore.
 - **2026-11-22, parte 0**: numeri dal Coordinatore (fork 3); verificato in
   `main` che MuW non legge da Salute né allenamenti né energia attiva;
   licenze delle fonti dei cibi verificate; otto scelte dell'utente, una

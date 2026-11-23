@@ -59,6 +59,8 @@ import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 import { ExploreSearch } from "../explore/ExploreSearch";
 import { postRoute } from "../feed/feedRoute";
 import type { SamplePost } from "../feed/sampleFeed";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /** Where the examples come from: a spot chosen, or «Near me», from the
  * start of «Draw» as it was when «Near me» began (null: there was none).
@@ -476,9 +478,11 @@ function PlaceChip({
   here?: boolean;
   onPress: () => void;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   return (
     <Tap
-      style={[styles.chip, on && styles.chipOn]}
+      style={[styles.chip, chipRaise, on && styles.chipOn]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: on }}

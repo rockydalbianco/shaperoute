@@ -3251,6 +3251,11 @@ export const ES: Table = {
   "Lines not read: {n}": "Líneas no leídas: {n}",
   "This file has no airspace MuW can read.":
     "Este archivo no tiene espacios aéreos que MuW pueda leer.",
+  // src/route/warnings.ts (TASK-347 part C3: an anchored drawing longer or shorter on the roads; texts to approve)
+  "On the roads your drawing is {share}% longer: {distance}. It stays where you drew it, at the same size.":
+    "Por las calles tu dibujo es un {share} % más largo: {distance}. Se queda donde lo dibujaste, del mismo tamaño.",
+  "On the roads your drawing is {share}% shorter: {distance}. It stays where you drew it, at the same size.":
+    "Por las calles tu dibujo es un {share} % más corto: {distance}. Se queda donde lo dibujaste, del mismo tamaño.",
   // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts.
   Coach: "Coach",
   "Based on your last 4 weeks": "Según tus últimas 4 semanas",
@@ -3334,6 +3339,51 @@ export const ES: Table = {
   "Warn within": "Avisar a menos de",
   "Warn above or below": "Avisar por encima o por debajo",
   "Warning sound": "Sonido del aviso",
+  // src/nutrition (TASK-489 part B1)
+  "Food@@nutrition": "Comida",
+  Nutrition: "Nutrición",
+  "Before you start": "Antes de empezar",
+  "MuW does not provide diets, meal plans or medical advice. The plan here is the one you write: your own, or the one your dietitian gave you.":
+    "MuW no ofrece dietas, planes de comidas ni consejos médicos. El plan de aquí es el que escribes tú: el tuyo o el que te dio tu dietista.",
+  "Every number is an estimate, from food composition tables and from formulas for the energy you use.":
+    "Cada número es una estimación, a partir de tablas de composición de alimentos y de fórmulas para la energía que gastas.",
+  "If you have a medical condition, are pregnant or have a history of eating disorders, talk to a doctor or a dietitian before counting calories.":
+    "Si tienes una enfermedad, estás embarazada o has tenido trastornos alimentarios, habla con un médico o un dietista antes de contar calorías.",
+  "Estimates only. MuW does not provide diets or medical advice.":
+    "Solo estimaciones. MuW no ofrece dietas ni consejos médicos.",
+  "Previous day": "Día anterior",
+  "Next day": "Día siguiente",
+  Eaten: "Ingeridas",
+  "Used (est.)": "Gastadas (est.)",
+  Balance: "Balance",
+  "Set my daily target": "Poner mi objetivo diario",
+  "My daily target": "Mi objetivo diario",
+  "(set by you)": "(lo pones tú)",
+  Left: "Quedan",
+  "kcal a day": "kcal al día",
+  "Your own number, or the one your dietitian gave you. MuW never suggests one.":
+    "Tu propio número, o el que te dio tu dietista. MuW nunca propone uno.",
+  "Remove target": "Quitar objetivo",
+  Breakfast: "Desayuno",
+  Lunch: "Comida",
+  Dinner: "Cena",
+  Snacks: "Tentempiés",
+  "Add food": "Añadir alimento",
+  "Add to breakfast": "Añadir al desayuno",
+  "Add to lunch": "Añadir a la comida",
+  "Add to dinner": "Añadir a la cena",
+  "Add to snacks": "Añadir a los tentempiés",
+  "Search food": "Buscar alimento",
+  "My food": "Alimento mío",
+  "No food found.": "Ningún alimento encontrado.",
+  "Add my own food": "Añadir un alimento mío",
+  Grams: "Gramos",
+  Estimate: "Estimación",
+  "My own food": "Mi alimento",
+  "Calories in 100 g (kcal)": "Calorías en 100 g (kcal)",
+  "Copy the number from the label, or from your dietitian's sheet.":
+    "Copia el número de la etiqueta o de la hoja de tu dietista.",
+  "Delete food": "Eliminar alimento",
   // src/air/ (TASK-479 part E3: the airspace log after the flight; approved by the user on 2026-11-23)
   "Inside your airspaces: {count}": "Dentro de tus espacios aéreos: {count}",
   "No fix inside the volumes of your file.":

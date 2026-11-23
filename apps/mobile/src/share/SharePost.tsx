@@ -63,6 +63,8 @@ import { type VideoOutcome, videoProblem } from "./videoFile";
 import { hearMusic, type Music } from "./videoMusic";
 import { type VideoScene, videoScene } from "./videoScene";
 import { styleName } from "./videoStyle";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /** The share of the screen's height the post takes: the choices fit under it. */
 const POST_HEIGHT_SHARE = 0.5;
@@ -104,6 +106,8 @@ export function SharePost({ run, onClose }: Props) {
 }
 
 function SharePage({ run, onClose }: Props) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const insets = useSafeAreaInsets();
   const window = useWindowDimensions();
   const postWidth = Math.min(
@@ -290,7 +294,7 @@ function SharePage({ run, onClose }: Props) {
                 return (
                   <Pressable
                     key={result}
-                    style={[styles.chip, on && styles.chipOn]}
+                    style={[styles.chip, chipRaise, on && styles.chipOn]}
                     onPress={() => toggle(result)}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: on }}

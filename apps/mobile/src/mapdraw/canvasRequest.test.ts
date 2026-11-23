@@ -184,3 +184,45 @@ test("the pieces on the map: one asks what it always asked, two ask one drawing 
   expect(metresBetween(request.start, placedLines(heart)[0][0])).toBeLessThan(15);
   expect(request.distance_m).toBeGreaterThan(distanceOf(heart) + distanceOf(star));
 });
+
+test("a hand drawing asked anchored stays where it was drawn; shapes and pictures stay free (TASK-347 part C3)", () => {
+  const { line, placed } = drawnCircle(1000);
+  const free = asImage(canvasRequest(placed, true, "running", "km"));
+  const anchored = asImage(canvasRequest(placed, true, "running", "km", true));
+  expect(anchored.placement).toBe("anchored");
+  expect("placement" in free).toBe(false);
+  // The same outline, start and distance: only where it goes changes.
+  expect(anchored.outline).toBe(free.outline);
+  expect(anchored.start).toEqual(free.start);
+  expect(anchored.distance_m).toBe(free.distance_m);
+  expect(metresBetween(anchored.start, line[0])).toBeLessThan(15);
+  // No magnet sent: the engine's default, as for the strokes.
+  expect("fit" in anchored).toBe(false);
+  // Another route than the same drawing placed by the search.
+  expect(sameRequest(anchored, free)).toBe(false);
+  expect(
+    sameRequest(anchored, canvasRequest(placed, true, "running", "km", true)),
+  ).toBe(true);
+
+  const heart = placeAt({ kind: "shape", shape: "heart" }, TRENTO, 6200);
+  expect(canvasRequest(heart, true, "running", "km", true)).toEqual(
+    canvasRequest(heart, true, "running", "km"),
+  );
+  const picture = placeAt(
+    {
+      kind: "picture",
+      outline: [
+        [-1, -0.8],
+        [1, -0.8],
+        [0, 1],
+        [-1, -0.8],
+      ],
+      strokes: [],
+    },
+    TRENTO,
+    8000,
+  );
+  expect("placement" in canvasRequest(picture, true, "running", "km", true)).toBe(
+    false,
+  );
+});

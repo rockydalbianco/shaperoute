@@ -12,6 +12,8 @@ import { weightLabel } from "../body/bodyUnits";
 import { t, tPlural } from "../i18n";
 import { clockLabel } from "../navigation/freeRun";
 import { color, font, fontSize, fontWeight, radius, space } from "../theme/tokens";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 import { distanceLabel } from "../units/format";
 import type { Units } from "../units/units";
 import {
@@ -112,12 +114,14 @@ export function ExerciseHistory({
   onBack: () => void;
 }) {
   const [range, setRange] = useState<HistoryRange>("3M");
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const history = state.history;
   return (
     <View style={styles.page} testID="exercise-history">
       <View style={styles.top}>
         <Pressable
-          style={gymStyles.chip}
+          style={[gymStyles.chip, chipRaise]}
           onPress={onBack}
           accessibilityRole="button"
           accessibilityLabel={t("Back")}
@@ -167,6 +171,8 @@ function Shown({
   nowMs: number;
   state: ExerciseHistoryState;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const measure = history.measure;
   if (measure === undefined || history.workouts_count === 0) {
     return (
@@ -190,7 +196,7 @@ function Shown({
           {HISTORY_RANGES.map((one) => (
             <Pressable
               key={one}
-              style={[gymStyles.chip, one === range && gymStyles.chipOn]}
+              style={[gymStyles.chip, chipRaise, one === range && gymStyles.chipOn]}
               onPress={() => onRange(one)}
               accessibilityRole="button"
               accessibilityState={{ selected: one === range }}

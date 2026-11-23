@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { t } from "../i18n";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 import { gymStyles } from "./gymStyles";
 import { readDuration } from "./setKinds";
 import {
@@ -37,6 +39,8 @@ export function RestPanel({
   onChoose: (seconds: number) => void;
 }) {
   const [custom, setCustom] = useState<string | null>(null);
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const left = restLeftMs(rest, nowMs);
   const customS = custom === null ? null : readDuration(custom, "timed");
   return (
@@ -78,7 +82,7 @@ export function RestPanel({
         {REST_CHOICES_S.map((seconds) => (
           <Pressable
             key={seconds}
-            style={gymStyles.chip}
+            style={[gymStyles.chip, chipRaise]}
             onPress={() => onChoose(seconds)}
             accessibilityRole="button"
             testID={`rest-${seconds}`}
@@ -87,7 +91,7 @@ export function RestPanel({
           </Pressable>
         ))}
         <Pressable
-          style={[gymStyles.chip, custom !== null && gymStyles.chipOn]}
+          style={[gymStyles.chip, chipRaise, custom !== null && gymStyles.chipOn]}
           onPress={() => setCustom(custom === null ? "" : null)}
           accessibilityRole="button"
           testID="rest-custom"

@@ -2876,6 +2876,16 @@ export const ES: Table = {
   "Add to Feed": "Añadir al feed",
   "Record now": "Grabar ahora",
   "Start an activity now": "Empieza una actividad ahora",
+  // src/feed/addToFeedEntries.ts and PastActivityPost.tsx (TASK-481 part F:
+  // «Already recorded», an activity of «My activities» posted from the «+»).
+  "Already recorded": "Ya registrada",
+  "Post an activity from My activities": "Publica una actividad de Mis actividades",
+  "Your activities not in the Feed yet, the latest first.":
+    "Tus actividades que aún no están en el feed, la más reciente primero.",
+  "All your activities are in the Feed already.":
+    "Todas tus actividades ya están en el feed.",
+  "Choose «Everyone» or «Followers» and it goes in the Feed.":
+    "Elige «Todos» o «Seguidores» y va al feed.",
   // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
   // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
   // the first three approved by the user, 2026-11-21, the deletion's with

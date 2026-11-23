@@ -20,6 +20,7 @@ import { GymPlansSheet } from "./GymPlans";
 import { forgetPlans, mergePlans, planForToday, plansOf, workoutPlan } from "./plans";
 import { isoDate } from "./program";
 import { forgetPaceAsked } from "./runPace";
+import { SPORT_BADGES } from "./SportsDoor";
 import { loadSport } from "../settings/sport";
 import { useDrawDistance } from "../units/useDrawDistance";
 import { Alert, Text } from "react-native";
@@ -171,7 +172,7 @@ test("«New plan» is the guide: goal, days, the plan ready, the weeks, the name
   await fireEvent.press(screen.getByTestId("wizard-count-gym-2"));
   await fireEvent.press(screen.getByTestId("wizard-runs-1"));
   expect(screen.getByTestId("wizard-day-4")).toBeChecked();
-  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent("RUN");
+  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent(SPORT_BADGES.run);
   expect(screen.getByText("Full body A")).toBeOnTheScreen();
   expect(screen.getByText("Full body B")).toBeOnTheScreen();
   await fireEvent.press(screen.getByTestId("wizard-next"));
@@ -284,7 +285,7 @@ test("a bodyweight plan with running: no kg, A and B, more reps and seconds (TAS
   expect(screen.getByTestId("wizard-day-1")).toHaveTextContent("A");
   expect(screen.getByTestId("wizard-day-3")).toHaveTextContent("B");
   expect(screen.getByTestId("wizard-day-5")).toHaveTextContent("A");
-  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent("RUN");
+  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent(SPORT_BADGES.run);
   await fireEvent.press(screen.getByTestId("wizard-next"));
   await fireEvent.press(screen.getByTestId("wizard-next"));
   await fireEvent.press(screen.getByTestId("wizard-next"));
@@ -353,8 +354,8 @@ test("toward 60 km by bike with bodyweight: the target, today, when, the ladder 
   // bike Tue and Sat.
   await fireEvent.press(screen.getByTestId("wizard-next"));
   expect(screen.getByTestId("wizard-count-bike-2")).toBeSelected();
-  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent("BIKE");
-  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent("BIKE");
+  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent(SPORT_BADGES.bike);
+  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent(SPORT_BADGES.bike);
   await fireEvent.press(screen.getByTestId("wizard-next"));
 
   // 4. When I'm ready: the plan counts its weeks.
@@ -569,13 +570,13 @@ test("run days in the guide: «And running?», the week, the run's editor (TASK-
 
   // Two runs at first, on Tuesday and Saturday.
   expect(screen.getByTestId("wizard-runs-2")).toBeSelected();
-  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent("RUN");
-  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent("RUN");
+  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent(SPORT_BADGES.run);
+  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent(SPORT_BADGES.run);
   expect(screen.getByText("Easy run · 5 km")).toBeOnTheScreen();
   expect(screen.getByText("Long run · 8 km")).toBeOnTheScreen();
   // Saturday touched: rest; Sunday touched: the gym.
   await fireEvent.press(screen.getByTestId("wizard-day-6"));
-  expect(screen.getByTestId("wizard-day-6")).not.toHaveTextContent("RUN");
+  expect(screen.getByTestId("wizard-day-6")).not.toHaveTextContent(SPORT_BADGES.run);
   await fireEvent.press(screen.getByTestId("wizard-day-7"));
   expect(screen.getByTestId("wizard-day-7")).toBeChecked();
   await fireEvent.press(screen.getByTestId("wizard-day-7"));

@@ -1,10 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
+import { profileOf } from "../sports";
+import { color } from "../theme/tokens";
 import { bodyweightSession } from "./bodyweight";
 import {
   countsFor,
   DOOR_CHOSEN,
   proposalKey,
+  SPORT_BADGES,
   SportsDoor,
   sportsOf,
   spreadDays,
@@ -95,4 +98,24 @@ test("a plan's sports from its days", () => {
     ]),
   ).toEqual(["body", "run"]);
   expect(proposalKey("tone", "bar", ["body", "run"])).toBe("tone|bar|body,run");
+});
+
+test("the marks are the sports' own, as the sports' menu shows them (TASK-506 D)", () => {
+  expect(SPORT_BADGES.run).toBe(profileOf("running").emoji);
+  expect(SPORT_BADGES.walk).toBe(profileOf("walking").emoji);
+  expect(SPORT_BADGES.bike).toBe(profileOf("cycling").emoji);
+  expect(SPORT_BADGES.swim).toBe(profileOf("swimming").emoji);
+  expect(SPORT_BADGES.mountain).toBe(profileOf("hiking").emoji);
+  // No word in English left.
+  expect(Object.values(SPORT_BADGES).some((mark) => /[A-Z]{3}/.test(mark))).toBe(false);
+});
+
+test("one colour for every sport chosen: the yellow (TASK-506 D)", async () => {
+  await render(<SportsDoor chosen={["gym", "run"]} onToggle={jest.fn()} />);
+  for (const sport of ["door-gym", "door-run"]) {
+    expect(screen.getByTestId(sport)).toHaveStyle({ borderColor: color.accent });
+  }
+  expect(screen.getByTestId("door-run")).toHaveTextContent(
+    new RegExp(SPORT_BADGES.run),
+  );
 });

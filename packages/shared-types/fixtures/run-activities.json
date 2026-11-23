@@ -1,0 +1,30 @@
+{
+  "record_activities": [
+    "skiing",
+    "xc_skiing",
+    "ski_touring",
+    "paragliding",
+    "alpinism"
+  ],
+  "trackless_activities": ["gym", "stretching"],
+  "run_activities": [
+    "running",
+    "cycling",
+    "paddling",
+    "swimming",
+    "hiking",
+    "mountain_biking",
+    "inline_skating",
+    "snowshoeing",
+    "wheelchair",
+    "walking",
+    "gravel_biking",
+    "skiing",
+    "xc_skiing",
+    "ski_touring",
+    "paragliding",
+    "alpinism",
+    "gym",
+    "stretching"
+  ]
+}

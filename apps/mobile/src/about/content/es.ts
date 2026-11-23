@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "10 de octubre de 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts entered (TASK-262 C). */
-const PRIVACY_UPDATED = "28 de octubre de 2026";
+const UPDATED = "10 de noviembre de 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
+const PRIVACY_UPDATED = "23 de noviembre de 2026";
 
 const help: AboutDocument = {
   title: "Cómo funciona MuW",
@@ -22,7 +22,7 @@ const help: AboutDocument = {
       heading: "Qué es MuW",
       blocks: [
         "MuW dibuja rutas reales que trazan una forma en el mapa. Tú eliges la forma, la distancia y dónde empezar; obtienes una ruta por calles reales, con su archivo GPX.",
-        "La app tiene cuatro páginas, una al lado de otra, «Feed», «Dibuja», «Explora» y tu perfil: desliza a la izquierda o a la derecha, o toca un nombre arriba. El círculo de arriba te lleva a tu perfil.",
+        "Abajo hay cinco pestañas: «Feed», «Dibuja», «Mensajes», «Explora» y tu perfil, el círculo con tu foto. Toca una pestaña para ir allí, tócala otra vez para volver arriba. Los «Ajustes» están bajo el engranaje arriba a la derecha de tu perfil.",
       ],
     },
     {
@@ -71,7 +71,9 @@ const help: AboutDocument = {
     {
       heading: "Publicar y compartir",
       blocks: [
-        "Una carrera guardada es privada: solo la ves tú. Los demás miembros ven en tu perfil solo los totales de todas tus carreras guardadas, distancia y desnivel, nunca las carreras. Activa «Pública», al final de la carrera o en una carrera de «Mis actividades», y los demás miembros la ven como un dibujo en tu perfil, sin sus primeros y últimos 200 m.",
+        "Una carrera guardada es privada: solo la ves tú. Los demás miembros ven en tu perfil los totales de todas tus carreras guardadas, distancia y desnivel, y tus mejores marcas (los 5K, los 10K y tus otras distancias más rápidas, a pie y en bici) con el tiempo y la fecha. Una carrera privada sigue cerrada aunque tenga una mejor marca. Elige «Todos» o «Seguidores» en «Quién puede verla», al final de la carrera o en una carrera de «Mis actividades», y la ven como un dibujo en tu perfil, entera. La próxima carrera que termines empieza con tu última elección guardada: la ves antes de «Guardar» y puedes cambiarla. Una actividad añadida desde un archivo en «Mis actividades» empieza en «Solo yo»; una añadida desde un archivo con el «+» del Feed empieza en «Todos», y puedes cambiarlo antes de «Guardar».",
+        "Una carrera que publiques puede tener hasta 9 fotos y el dibujo. Mantén pulsada una y arrástrala para cambiar el orden: la primera es la que se ve en el Feed. Elige un diseño para poner el dibujo sobre una foto.",
+        "En una foto que publiques puedes etiquetar lo que llevas: qué es, la marca y, si quieres, el modelo y un enlace a la tienda. Los demás tocan la foto para ver las prendas y abrir la tienda. Debajo de tu publicación solo tú ves cuántas veces se han abierto.",
         "«Compartir» crea una imagen de tu carrera para enviarla donde quieras.",
       ],
     },
@@ -79,7 +81,7 @@ const help: AboutDocument = {
       heading: "Feed y amigos",
       blocks: [
         "«Feed» muestra dibujos de los que sacar ideas: toca uno para abrir su ruta y empezarla.",
-        "La lupa de arriba en «Feed» encuentra a otros miembros por su nombre. En un perfil puedes tocar «Seguir»; tus solicitudes, tus seguidores y a quién sigues están en «Perfil».",
+        "La búsqueda de arriba en «Explora» encuentra a otros miembros por su nombre. En un perfil puedes tocar «Seguir»; tus solicitudes, tus seguidores y a quién sigues están en «Perfil».",
         "En el dibujo público de un miembro puedes reaccionar con un emoji, enviar un súper like y escribir un comentario. No se aceptan comentarios negativos.",
       ],
     },
@@ -87,14 +89,15 @@ const help: AboutDocument = {
       heading: "Mensajes",
       blocks: [
         "«Mensaje» en el perfil de un miembro le escribe. Si te sigue, tu mensaje llega a sus «Mensajes»; si no, llega como solicitud, y puedes enviar un solo mensaje hasta que la acepte.",
-        "Tus conversaciones están en «Perfil», «Mensajes», con «Solicitudes de mensaje» arriba. Acepta una solicitud para escribiros, bórrala (quien escribió no se entera) o bloquea a quien escribió.",
+        "Tus conversaciones están en «Mensajes», la pestaña del avión de papel, con «Solicitudes de mensaje» arriba. Acepta una solicitud para escribiros, bórrala (quien escribió no se entera) o bloquea a quien escribió.",
         "Mantén pulsado un mensaje para borrar el tuyo, para los dos, o para denunciar uno que has recibido. Nadie ve si has leído un mensaje. Con las push encendidas, MuW te avisa de cada mensaje y de cada solicitud.",
+        "En una conversación, toca + para enviar una foto, un vídeo de hasta 60 segundos o un dibujo, o toca Enviar a amigos en una ruta o un dibujo. Puedes enviarlos cuando la otra persona haya aceptado tu mensaje. Los vídeos se guardan 30 días, o menos cuando nuestro espacio para vídeos se llena: los más antiguos se van primero. Toca un dibujo para abrirlo en el mapa, empezarlo, exportar su GPX o guardarlo en tus favoritos.",
       ],
     },
     {
       heading: "Correr, bici, remo",
       blocks: [
-        "Elige tu deporte con el botón junto a tu perfil, o en «Ajustes».",
+        "Elige tu deporte con el botón de arriba a la derecha, o en «Ajustes».",
         {
           bullets: [
             "Correr: hasta 21 km por calles reales, con la voz giro a giro.",
@@ -179,6 +182,7 @@ const terms: AboutDocument = {
           bullets: [
             "publiques contenido ofensivo, de odio, amenazante o acosador, ni en tu nombre de usuario, biografía, foto, títulos o comentarios;",
             "publiques contenido que no te corresponde publicar, ni datos personales de otras personas sin su permiso;",
+            "uses las prendas que etiquetas para spam, para enlaces a algo distinto de lo que llevas, para enlaces de afiliado tuyos o para publicidad que no declaras;",
             "intentes romper, sobrecargar o eludir el servicio, ni recopiles datos de sus miembros por medios automáticos.",
           ],
         },
@@ -187,7 +191,7 @@ const terms: AboutDocument = {
     {
       heading: "Lo que publicas",
       blocks: [
-        "Tus carreras, tus dibujos, sus títulos, tu perfil y tus comentarios siguen siendo tuyos.",
+        "Tus carreras, tus dibujos, sus títulos, tu perfil y tus comentarios siguen siendo tuyos. Las prendas que etiquetas en tus fotos, con sus enlaces, forman parte de lo que publicas.",
         "Al publicarlos nos permites guardarlos y mostrarlos en la app a los demás miembros, solo para hacer funcionar el servicio: un permiso gratuito y no exclusivo que termina cuando eliminas el contenido o tu cuenta.",
         "La app no acepta comentarios con palabras ofensivas: un filtro automático de palabras los rechaza. Podemos retirar contenido que vaya contra estas condiciones. Para avisarnos de un contenido que no debería estar, escribe a [contact email].",
       ],
@@ -216,7 +220,10 @@ const terms: AboutDocument = {
     },
     {
       heading: "Publicidad",
-      blocks: ["MuW no muestra publicidad."],
+      blocks: [
+        "MuW muestra publicaciones propias, marcadas «Publicidad · Enlaces de afiliado», con enlaces a tiendas (MuW Style). Si compras desde uno de estos enlaces, la tienda paga a MuW una comisión; para ti el precio no cambia. La venta es entre tú y la tienda: MuW no vende estos productos y no responde de su precio, disponibilidad, entrega o devoluciones. Las fotos de estas publicaciones están hechas con IA y lo indican: las personas que aparecen no existen, y las prendas son parecidas a los productos, no son los productos. Puedes quitar estas publicaciones del Feed en «Ajustes». MuW no muestra otra publicidad.",
+        "Los enlaces que los miembros ponen en las prendas de sus publicaciones son suyos: MuW no gana nada con ellos y no responde de los productos ni de las tiendas. Si una marca te paga o te regala lo que etiquetas, dilo en la descripción de la publicación.",
+      ],
     },
     {
       heading: "Servicios de otros",
@@ -224,9 +231,11 @@ const terms: AboutDocument = {
         {
           bullets: [
             "Los mapas vienen de OpenFreeMap y de los datos de OpenStreetMap (© colaboradores de OpenStreetMap).",
+            "Los animales 3D del vídeo vienen de Quaternius (CC0); el elefante es «Elephant Anim» de Shivoahm y SahuAvdhesh en Sketchfab (CC BY 4.0), animado y adaptado por MuW.",
             "Los lugares se buscan con Geoapify.",
             "Si conectas Strava, las carreras que envíes allí siguen las condiciones y los ajustes de privacidad de Strava.",
             "Una imagen que compartes sale por el menú de compartir del teléfono: la app que la recibe tiene sus propias condiciones.",
+            "El enlace de una prenda etiquetada abre la web de la tienda en tu navegador: la tienda tiene sus propias condiciones.",
           ],
         },
       ],
@@ -284,6 +293,7 @@ const privacy: AboutDocument = {
             "El día en que te registraste y cuándo confirmaste que tienes al menos 16 años.",
             "La sesión de cada teléfono desde el que entraste: el teléfono guarda un token en su almacenamiento seguro, el servidor solo un hash de él. Una sesión termina 90 días después de su último uso, o cuando cierras sesión.",
             "Tus tres elecciones de notificaciones en «Ajustes»: «Notificaciones por correo» y «Notificaciones push», apagadas hasta que las enciendas, y «Correo cuando no estoy», encendida hasta que la apagues. Con push encendido, el token push de tu teléfono, si es un iPhone o un Android y el idioma de la app, para enviarte notificaciones a través del servicio push de Expo, que las pasa a Apple o a Google. Una notificación dice quién hizo qué, con el principio de un comentario. El token se borra cuando apagas push, cierras sesión o borras tu cuenta.",
+            "La lista de la campana: quién hizo qué, en qué publicación, reto, concurso o carrera en grupo, y si ya la has leído, como te lo dicen las notificaciones push, también con las push apagadas. Solo la ves tú. Cada línea se guarda 90 días; lo que ya no es cierto, como una reacción quitada o una publicación que ya no ves, no aparece.",
             "El idioma de la app cuando te registraste, para escribirte nuestros correos en él.",
           ],
         },
@@ -314,7 +324,7 @@ const privacy: AboutDocument = {
     {
       heading: "Amigos de tus contactos",
       blocks: [
-        "Bajo la lupa arriba de «Feed», «Buscar amigos en tus contactos» busca a los miembros cuyo número está en los contactos de tu teléfono. La app pide los contactos al teléfono solo cuando lo tocas, y lee solo sus números de teléfono: nunca nombres, correos ni fotos.",
+        "En «Feed», «Buscar personas a las que seguir» lleva a «Buscar amigos en tus contactos», que busca a los miembros cuyo número está en los contactos de tu teléfono. La app pide los contactos al teléfono solo cuando lo tocas, y lee solo sus números de teléfono: nunca nombres, correos ni fotos.",
         "Cada número sale del teléfono cifrado: escrito con el prefijo del país y convertido en un hash (SHA-256). Nuestro servidor compara los códigos con los de los números que añadieron los miembros, responde con los miembros encontrados y no conserva nada de lo recibido: ni en la base de datos ni en un registro.",
         "El hash de un número de teléfono no es un secreto: quien tuviera los códigos podría volver a encontrar los números probando todos los números posibles. Por eso la verdadera protección es que nuestro servidor no conserva ninguno; solo viajan por la conexión cifrada.",
         "Los números de tus contactos son datos de otras personas: se comparan una vez, para encontrar cuentas, y se olvidan. Para impedir que alguien pruebe números uno a uno, el servidor cuenta las búsquedas de cada cuenta en una hora, solo en memoria. Solo se puede encontrar a quien añadió su número, y nunca a alguien que bloqueaste o que te bloqueó.",
@@ -330,9 +340,21 @@ const privacy: AboutDocument = {
       heading: "Tus carreras y sus recorridos GPS",
       blocks: [
         "Con una cuenta, cuando tocas «Guardar» al final de una carrera, la carrera entera va a nuestro servidor: cada posición con su hora y su altura, las pausas, la ruta que seguiste, distancia, duración, una puntuación de cuánto sigue la traza a la ruta (calculada por nuestro servidor y no mostrada en la app) y el nombre del lugar. Con «Descartar» no se envía nada.",
-        "Una carrera guardada es privada: solo la ve tu cuenta. Los demás miembros ven en tu perfil solo los totales de todas tus carreras guardadas, distancia y desnivel, nunca las carreras. Se queda hasta que la eliminas de «Mis actividades» o eliminas tu cuenta.",
-        "Una carrera a menudo empieza y termina en tu puerta. Por eso una carrera solo es visible para los demás miembros cuando activas «Pública», y entonces ven el recorrido sin sus primeros y últimos 200 m, con el título que le diste, y sin tiempos, pausas ni la ruta prevista.",
-        "Quien puede ver una de tus carreras también puede seguirla con «Empezar» y guardar ese mismo recorrido como archivo GPX: siempre sin sus primeros y últimos 200 m y sin tiempos.",
+        "Una carrera guardada es privada, salvo que elijas otra cosa: solo la ve tu cuenta. Una actividad que añades desde un archivo con el «+» del Feed es la excepción: empieza en «Todos», lo ves antes de «Guardar» y puedes cambiarlo. Los demás miembros ven en tu perfil los totales de todas tus carreras guardadas, distancia y desnivel, y tus mejores marcas, a pie y en bici, con el tiempo y la fecha en que las hiciste: también las de una carrera privada, que sin embargo no se abre. Se queda hasta que la eliminas de «Mis actividades» o eliminas tu cuenta.",
+        "Si eliges «Mostrarlo», los demás miembros también ven tu VO₂ máx en tu perfil. Hasta que Apple Salud llegue con una próxima actualización, es nuestra estimación a partir de tus mejores marcas de carrera de los últimos 12 meses, calculada por nuestro servidor. Desactívalo en Ajustes y desaparece de tu perfil.",
+        "Un entrenamiento en el gimnasio se guarda con sus ejercicios, series y pesos. En tu perfil, los demás miembros ven tus niveles en el gimnasio (la figura, el ejercicio y tu mejor serie), contados de todos tus entrenamientos, también los privados, pero nunca el entrenamiento. Si la publicación de un entrenamiento es para todos y muestra sus ejercicios, tu mejor serie del mes en cada ejercicio puede aparecer, con tu nombre de usuario, en la clasificación mensual de ese ejercicio, que ven los demás miembros. Oculta los ejercicios de la publicación, o hazla privada, y sale de la clasificación.",
+        "Tus rutinas de gimnasio (nombre, días, ejercicios y valores objetivo) se quedan en tu teléfono y en tu cuenta, y se borran con tu cuenta. Solo tú las ves, salvo que compartas una en el Feed: la publicación es una copia de la rutina tal como era cuando la publicaste, con su nombre, objetivo, días, semanas, ejercicios y pesos. Quien ve la publicación puede copiar la rutina entre sus propias rutinas. Cambiar o borrar tu rutina no cambia la publicación; borrar la publicación la quita del Feed, pero las copias ya hechas se quedan con quien las hizo. El calendario de tus entrenamientos lo ves solo tú.",
+        "Si añades una actividad pasada desde un archivo, guardamos su recorrido y sus horas como los de una carrera registrada con MuW. No guardamos el archivo.",
+        "Una publicación «Solo fotos» no tiene recorrido, lugar ni horas. Sus fotos llegan a nuestro servidor reducidas, sin los datos que tu teléfono les añade, como dónde y cuándo se hicieron. Las ven, con el título, la descripción y las personas que etiquetas, «Todos» o tus «Seguidores»: no hay «Solo yo». La elección empieza con tu última publicación, o en «Todos», y la ves antes de «Publicar». La publicación se queda hasta que la borres tú, o borres tu cuenta.",
+        "Una carrera a menudo empieza y termina en tu puerta. Por eso una carrera solo es visible para los demás miembros si, al guardarla, está elegido «Todos» o «Seguidores» en «Quién puede verla», y entonces ven el recorrido entero, con la salida y la llegada, con el título que le diste, y sin tiempos, pausas ni la ruta prevista, salvo en un vídeo «Juntos» (abajo). Tu elección se queda en este teléfono para la siguiente carrera: empieza con la última guardada, la ves antes de «Guardar» y puedes cambiarla. Una actividad añadida desde un archivo en «Mis actividades» empieza en «Solo yo»; una añadida desde un archivo con el «+» del Feed empieza en «Todos», y puedes cambiarlo antes de «Guardar».",
+        "Si alguien te etiqueta en la publicación de una carrera y tú grabaste esa misma carrera a la misma hora, y tu carrera es visible para esa persona, puede poner tu recorrido en un vídeo «Juntos». Tu línea avanza a tu ritmo real, con tus pausas, desde la primera salida hasta la última llegada: quien vea el vídeo verá lo rápido que ibas, pero no la hora ni la fecha. Pon tu carrera en «Solo yo» y ya no se podrá usar; un vídeo ya hecho se queda como está.",
+        "Quien puede ver una de tus carreras también puede seguirla con «Empezar» y guardar ese mismo recorrido como archivo GPX, sin tiempos.",
+        "Una publicación para «Todos» también se puede abrir con un enlace. Tú, o cualquier miembro que vea la publicación, podéis compartir su enlace, y quien tiene el enlace ve en una página web el dibujo en el mapa, tu nombre de usuario, el título, el deporte y la distancia, incluso sin MuW: nunca tus fotos, los comentarios ni tus tiempos. A los buscadores se les pide que no listen estas páginas. Desactiva «Enlaces a mis publicaciones» en Ajustes y ningún enlace a tus publicaciones funciona ya. Una publicación para «Seguidores» o «Solo yo» nunca tiene enlace.",
+        "Una foto que publiques puede llevar dentro de la imagen el dibujo de tu carrera. Es el mismo dibujo que muestra el Feed.",
+        "En una jornada de esquí, nuestro servidor compara la traza guardada con los remontes y pistas de OpenStreetMap, que guarda él mismo, para anotar cuáles tomaste y cuántas veces. Los nombres aparecen en la publicación, para quien pueda verla. Nada va a otro servicio.",
+        "En las fotos que publiques puedes etiquetar las prendas que llevas: qué es cada una, su marca y, si quieres, su modelo y un enlace a una tienda. Las ve quien ve la foto. Si la carrera vuelve a «Solo yo», salen de nuestro servidor con sus fotos y se quedan en este teléfono.",
+        "Puedes añadir tu equipo: zapatillas, una bici, esquís, un casco, cualquier cosa que uses. De cada artículo guardamos su tipo, su marca, su modelo, el nombre que le das, el mes en que lo compraste, tu nota y su foto. La foto se guarda reducida, sin los datos que tu teléfono le añade, como dónde y cuándo se hizo. Las actividades que eliges para un artículo suman su distancia y su tiempo a sus totales, que nuestro servidor cuenta a partir de tus actividades guardadas. Los demás miembros ven tu equipo en tu perfil, con sus totales, notas y fotos, salvo que actives «Ocultar del perfil» en un artículo. Los deportes que eliges para un artículo y su límite solo los ves tú. Tu equipo se borra con tu cuenta.",
+        "En una jornada de esquí, la app envía a nuestro servidor tu posición redondeada a cerca de 1 km para encontrar la estación más cercana; el tiempo lo pide el servidor a MET Norway con la posición de la estación, nunca con la tuya. La estación, la nieve y el equipo que añades se ven en la publicación, para quien pueda verla, y la nieve también cuenta, sin tu nombre, en la nieve del día de la estación.",
       ],
     },
     {
@@ -341,7 +363,7 @@ const privacy: AboutDocument = {
         {
           bullets: [
             "Una ruta que guardas en «Favoritos» se almacena entera, con su línea, que a menudo empieza cerca de tu casa. Solo la ve tu cuenta, hasta que la quitas o eliminas la cuenta.",
-            "Tus comentarios y reacciones bajo un dibujo los ven los miembros que ven ese dibujo. Puedes eliminar tus propios comentarios.",
+            "Tus comentarios, respuestas y reacciones bajo un dibujo los ven los miembros que ven ese dibujo. Una reacción a un comentario se les muestra solo como un número; el miembro que escribió ese comentario lee, en la campana, que fuiste tú. Puedes eliminar tus propios comentarios y respuestas, y quitar una reacción.",
             "A quién sigues, quién te sigue y las solicitudes para seguir se guardan con tu cuenta.",
           ],
         },
@@ -351,6 +373,7 @@ const privacy: AboutDocument = {
       heading: "Mensajes privados",
       blocks: [
         "Tus mensajes privados se guardan en nuestro servidor: quién escribió, a quién, el texto y cuándo, y para cada uno de los dos si aceptó la conversación, cuándo la leyó por última vez y hasta cuándo la quitó de su vista. No están cifrados de extremo a extremo. En la app una conversación solo la ven sus dos miembros, y nadie recibe aviso de si un mensaje se ha leído. Los guardamos para darte el servicio que pides (contrato).",
+        "Un mensaje puede llevar una foto, un vídeo o un dibujo. Una foto se guarda reducida, sin los datos que tu teléfono le añade, como dónde y cuándo se hizo. Un vídeo se guarda como lo envía tu teléfono, sin el lugar donde se grabó, y se borra 30 días después de enviarlo, o antes, los más antiguos primero, cuando nuestro espacio para vídeos se llena. Un dibujo es una copia de la ruta y llega entero, con su salida: tanto una carrera que envías, como en el Feed, como una ruta que planeas. Las fotos y los vídeos no están cifrados de extremo a extremo, no están en nuestras copias de seguridad y se borran con su mensaje, la conversación o tu cuenta. Cuando denuncias un mensaje, la persona que gestiona MuW ve también su foto, su vídeo o su dibujo.",
         "Un mensaje a alguien que no te sigue llega como solicitud; el primer mensaje de una solicitud pasa por el mismo filtro de palabras que los comentarios.",
         "Puedes borrar tus propios mensajes, para los dos. Borrar una conversación la quita de tu vista; un mensaje que ya no ve ninguno de los dos se borra. Un bloqueo borra la conversación; borrar tu cuenta borra todas tus conversaciones, con los mensajes de los dos.",
         "Cuando denuncias un mensaje, el correo a la persona que gestiona MuW contiene solo ese mensaje, nunca el resto de la conversación. Con las push encendidas, la notificación de un mensaje lleva su comienzo, a través del servicio push de Expo y de Apple o Google, como con los comentarios.",
@@ -359,7 +382,7 @@ const privacy: AboutDocument = {
     {
       heading: "Denuncias",
       blocks: [
-        "Cuando denuncias un dibujo, un comentario o un perfil, guardamos quién denunció qué, el motivo y cuándo. Quien gestiona MuW la recibe por correo y puede ocultar lo denunciado a los demás miembros. No se borra nada, y su autor lo sigue viendo. Tu denuncia nunca se muestra al autor.",
+        "Cuando denuncias un dibujo, una prenda etiquetada, un artículo de equipo, un comentario, un perfil o una carrera en grupo, guardamos quién denunció qué, el motivo y cuándo. Quien gestiona MuW la recibe por correo y puede ocultar lo denunciado a los demás miembros. No se borra nada, y su autor lo sigue viendo. Tu denuncia nunca se muestra al autor.",
       ],
     },
     {
@@ -377,7 +400,7 @@ const privacy: AboutDocument = {
     {
       heading: "El juego de las formas",
       blocks: [
-        "Con una cuenta, nuestro servidor calcula a partir de tus carreras a pie guardadas cuántos kilómetros cuentan para el juego, tus mejores tiempos en 1, 5, 10 y 21,1 km y las formas que has coleccionado. Solo tú ves tu colección y tus mejores tiempos. Si te unes a un equipo, sus miembros ven tu nombre de usuario, tu foto, las piezas de un reto que tomaste y los kilómetros que diste a cada una, nunca tus trazados, los tiempos de tus carreras ni dónde corriste. A un equipo solo se llega con su código: nunca está en una búsqueda. Borrar una carrera quita sus kilómetros del recuento, y las formas que ya coleccionaste se quedan. Cuando eliminas tu cuenta, tus datos del juego se eliminan con ella; en los retos de un equipo, las piezas que corriste se quedan para los demás, sin tu nombre.",
+        "Con una cuenta, nuestro servidor calcula a partir de tus carreras a pie guardadas cuántos kilómetros cuentan para el juego, tus mejores tiempos en distancias de 400 m a 50 km y las formas que has coleccionado. Solo tú ves tu colección y tus mejores tiempos. Los premios del juego (ediciones, marcos, títulos e insignias) solo los ves tú, hasta que eliges mostrar en tu perfil un marco, un título o hasta 3 insignias: desde entonces los ve quien puede ver tu perfil. Sin tu elección no se muestra nada, y puedes quitarlos cuando quieras. Para los retos personales, la app también envía con cada carrera la diferencia entre el reloj del teléfono y la hora UTC (la zona horaria, por ejemplo +1 hora), nunca el lugar: sirve para contar las carreras hechas antes de las 8, por la tarde o el fin de semana, y las semanas según tu hora. Tus retos personales y tu racha solo los ves tú. Si te unes a un equipo, sus miembros ven tu nombre de usuario, tu foto, las piezas de un reto que tomaste y los kilómetros que diste a cada una, nunca tus trazados, los tiempos de tus carreras ni dónde corriste. A un equipo solo se llega con su código: nunca está en una búsqueda. Borrar una carrera quita sus kilómetros del recuento, y las formas que ya coleccionaste se quedan. Cuando eliminas tu cuenta, tus datos del juego se eliminan con ella; en los retos de un equipo, las piezas que corriste se quedan para los demás, sin tu nombre.",
       ],
     },
     {
@@ -395,16 +418,23 @@ const privacy: AboutDocument = {
     {
       heading: "Tu posición",
       blocks: [
-        "La posición del teléfono se usa en el teléfono, para empezar una ruta donde estás y para seguir tu carrera. Va a nuestro servidor como inicio de una ruta que pides, dentro de una carrera que guardas, y con la búsqueda de un lugar, para poner primero los lugares cercanos.",
+        "La posición del teléfono se usa en el teléfono, para empezar una ruta donde estás y para seguir tu carrera. Va a nuestro servidor exacta como inicio de una ruta que pides, como inicio de las formas que la app te prepara cerca cuando el teléfono no puede dibujarlas por sí mismo, y dentro de una carrera que guardas. Fuera de la ruta de una carrera, cuando el teléfono no encuentra por sí mismo el camino para volver a ella, va exacta a nuestro servidor con el tramo de la ruta que tienes delante, para encontrar ese camino por las calles: el servidor no los guarda. Va redondeada a cerca de 1 km para encontrar el mapa sin conexión a tu alrededor, las rutas recomendadas, los pueblos y los dibujos cercanos, y para poner primero los lugares cercanos en una búsqueda; así redondeada no queda ligada a tu cuenta. Cuando compartes una actividad en directo, tu posición exacta va a nuestro servidor y a quien tenga el enlace, como se explica en «Compartir en directo».",
         "En iPhone, durante una carrera que has empezado, la app sigue tu posición también con el teléfono bloqueado o con otra app abierta, hasta que detienes la carrera; el iPhone lo muestra con una marca azul en la parte de arriba de la pantalla. MuW pide la posición solo mientras usas la app, nunca «Siempre».",
         "Como cualquier servicio de internet, nuestro servidor ve la dirección de internet (IP) de la que viene una petición mientras la responde. El registro del servidor no escribe posiciones, y la base de datos no guarda direcciones IP.",
         "Existe un registro de las peticiones de rutas, con su inicio, para reproducir un fallo. Está apagado en nuestro servidor; encendido, guarda como máximo 10 MB, y después se pierden las líneas más antiguas.",
       ],
     },
     {
+      heading: "Compartir en directo",
+      blocks: [
+        "Durante una actividad puedes tocar «Compartir en directo» para crear un enlace. Mientras compartes, nuestro servidor recibe cada 15 segundos tu posición exacta con la hora, los datos de la actividad (distancia, tiempo, ritmo o velocidad, desnivel, calorías) y tu pulso cuando un reloj lo envía. Cualquiera que tenga el enlace los ve en una página de getmuw.app, sin cuenta: tú eliges a quién se lo mandas, y quien lo tenga puede reenviarlo. El enlace es aleatorio y no se puede adivinar; nuestro servidor guarda solo un hash. Deja de funcionar una hora después de que termine la actividad, como mucho 24 horas después de empezar, o en cuanto dejas de compartir; entonces se borran las posiciones y el pulso. El pulso es un dato de salud: solo se comparte después de que lo hayas leído en la pantalla que aparece antes del enlace. El mapa de esa página viene de OpenFreeMap, que ve la dirección de internet (IP) de quien la abre, pero no el enlace ni tu posición. Para compartir hace falta una cuenta; al borrar la cuenta se borran sus enlaces compartidos.",
+      ],
+    },
+    {
       heading: "Publicidad",
       blocks: [
-        "MuW no muestra anuncios ni usa ningún servicio de publicidad: nada sobre ti va a una red publicitaria, y la app nunca pide rastrearte a través de otras apps.",
+        "MuW muestra sus propias publicaciones Style con enlaces a tiendas, marcadas «Publicidad · Enlaces de afiliado». MuW no usa redes publicitarias, y la app nunca pide rastrearte a través de otras apps. Cuando abres un producto o tocas «Comprar», nuestro servidor solo suma uno al recuento de ese día para ese producto: no sabe quién eres ni qué teléfono era. «Comprar» abre la web de la tienda en tu navegador a través del enlace de nuestra red de afiliación, Awin: desde ahí Awin y la tienda registran el clic y la posible compra, con sus cookies y según sus propias políticas de privacidad, para que MuW reciba su comisión. De ellos MuW solo recibe totales de clics, ventas y comisiones, nunca quién eres.",
+        "El mismo recuento, por día y sin saber quién eres, vale para las prendas que los miembros etiquetan en sus publicaciones: quien etiquetó una prenda ve cuántas veces se abrió y cuántas veces alguien fue a la tienda, nunca quién. El enlace de un miembro va directo a la tienda, sin Awin: desde ahí la tienda registra la visita con sus cookies, según su propia política de privacidad.",
       ],
     },
     {
@@ -414,22 +444,51 @@ const privacy: AboutDocument = {
       ],
     },
     {
+      heading: "La app de MuW en el Apple Watch",
+      blocks: [
+        "Con la app de MuW en el Apple Watch, durante un entrenamiento que inicias el reloj registra tu ubicación, tu frecuencia cardiaca y tus calorías activas, y guarda el entrenamiento en Apple Salud en el reloj.",
+        "El teléfono envía al reloj las rutas que eliges («Enviar al reloj» y tus favoritos). Al final de un entrenamiento el reloj envía al teléfono el recorrido, que se queda allí hasta que lo guardes o lo descartes: una carrera guardada va a nuestro servidor como se describe en «Tus carreras y sus recorridos GPS».",
+        "Durante una carrera el reloj envía al teléfono tu frecuencia cardiaca, para mostrarla en la pantalla de la carrera: no llega a nuestro servidor. El reloj pide tu ubicación solo durante un entrenamiento.",
+      ],
+    },
+    {
+      heading: "Nutrición",
+      blocks: [
+        "«Nutrición» es un diario que llevas para ti. Los alimentos que añades, tu plan de la semana, lo que escribes que comiste cada día, tu objetivo diario y las calorías que corriges a mano se guardan solo en tu teléfono: no llegan a nuestro servidor y nadie más puede verlos. El «Balance de calorías» de tu perfil se calcula en tu teléfono y solo lo ves tú.",
+        "Para estimar la energía que gastas, MuW cuenta en tu teléfono las actividades de tu cuenta y los datos del cuerpo que introdujiste en «Ajustes». Cada número es una estimación: MuW no ofrece dietas ni consejos médicos.",
+        "Estos datos nunca estuvieron en nuestro servidor, así que cerrar sesión o eliminar tu cuenta no los borra: se quedan en tu teléfono hasta que los quites allí o desinstales la app.",
+      ],
+    },
+    {
+      heading: "Apple Salud y Health Connect",
+      blocks: [
+        "Cuando activas «Guardar en Apple Salud» (iPhone) o «Guardar en Health Connect» (Android), cada actividad que guardas se escribe también allí, en tu teléfono: el deporte, cuándo empezó y terminó, la distancia, la ruta y, en una carrera, las calorías activas estimadas. Si al final de una sesión de natación en piscina o de un entrenamiento en el gimnasio tocas «Añadir la frecuencia cardiaca desde Salud», MuW lee la frecuencia cardiaca que tu reloj registró durante esa actividad, y nada más; después de ese primer toque la lee al final de cada sesión de natación y de cada entrenamiento. La media y el máximo se quedan con la actividad en nuestro servidor y se ven en su publicación, salvo que desactives «Mostrar la frecuencia cardiaca»; el tiempo en cada zona se queda en tu teléfono. Ninguno de tus datos de salud llega a ninguna publicidad. Puedes detenerlo en la app Salud o en Health Connect. Lo que ya está allí se queda hasta que lo borres allí, también cuando borras la carrera o tu cuenta.",
+      ],
+    },
+    {
       heading: "Otros que reciben datos",
       blocks: [
         {
           bullets: [
             "Hetzner aloja nuestro servidor y sus copias de seguridad, en Alemania.",
-            "Geoapify recibe las búsquedas de lugares y de los pueblos cercanos, con la posición, y, para nombrar el lugar de una carrera guardada, su inicio redondeado a alrededor de 1 km: nunca tu puerta, la carrera ni quién eres. Si nuestro servidor no responde, la búsqueda de un lugar va entonces a Photon (komoot).",
+            "Geoapify recibe las búsquedas de lugares, de pueblos cercanos y de los lugares de una ruta temática, con la posición redondeada a cerca de 1 km, y, para nombrar el lugar de una carrera guardada, su inicio redondeado igual: nunca tu puerta, la carrera ni quién eres. Si nuestro servidor no responde, la búsqueda de un lugar va entonces a Photon (komoot).",
             "OpenFreeMap sirve el mapa: como cualquier servicio de mapas, ve qué zona miras.",
-            "Nuestro servidor pide al servicio Overpass de datos de OpenStreetMap el mapa de una zona que aún no tiene: ve qué zona, no quién la pidió.",
+            "Las colinas del mapa 3D, y de un vídeo en el estilo «3D», vienen de las Terrain Tiles alojadas en Amazon Web Services: como cualquier servicio de mapas, ve qué zona miras.",
+            "Apple en el iPhone, o Google en Android, a través del servicio de direcciones del teléfono, recibe la posición desde la que empieza «Dibuja», para escribir el nombre de la calle. MuW no le envía nada más y no guarda el nombre.",
+            "Wikimedia da a nuestro servidor las fotos de los pueblos: ve qué pueblo, no quién pregunta.",
+            "Con el mapa «Satélite» Esri da las imágenes, y con el mapa «3D» Amazon Web Services da las alturas: como cualquier servicio de mapas, ven qué zona miras.",
+            "Nuestro servidor pide a los servicios Overpass de datos de OpenStreetMap (overpass-api.de y, cuando no responde, overpass.private.coffee) el mapa de una zona que aún no tiene: ven qué zona, no quién la pidió.",
+            "Para una ruta con raquetas, nuestro servidor pide a Amazon Web Services las alturas de una zona que aún no tiene: ve qué zona, no quién la pidió.",
             "unpkg sirve la biblioteca del mapa cuando arranca la app.",
             "Expo sirve las actualizaciones de la app.",
             "Google Ireland Limited (Firebase Cloud Messaging), para entregar las notificaciones push a los teléfonos Android. Cuando enciendes push, la app pide a Firebase un token de registro para tu teléfono; el servicio push de Expo pasa cada notificación (quién hizo qué, y el principio de un comentario) a Google, que la entrega a tu teléfono. Google ve el token y el contenido de cada notificación, no tu cuenta ni tu posición. El token se quita de nuestro servidor cuando apagas push, cierras sesión o borras tu cuenta; el del teléfono se va cuando desinstalas la app.",
             "Resend, en Estados Unidos, envía los correos de MuW: tu dirección de correo con el correo mismo. En una denuncia lleva a quien gestiona MuW lo denunciado, su texto, el motivo y los nombres de usuario de quien lo denunció y de quien lo escribió. En «Envíanos tus comentarios» lleva tu mensaje, tu nombre de usuario y tu dirección de correo.",
+            "Google, con su servicio Web Risk, recibe de nuestro servidor partes de la huella (hash) de algunos enlaces que los miembros ponen en sus prendas, para comprobar que no llevan a sitios peligrosos: nunca el enlace entero, ni quién lo puso o quién lo abre.",
+            "Open Food Facts recibe el código de barras que escaneas o escribes en «Nutrición», para encontrar el producto: ve el código y, como cualquier sitio, tu dirección IP, nunca tu cuenta ni tu diario. El producto que devuelve se guarda en tu teléfono.",
             "Strava, como se ha dicho arriba.",
           ],
         },
-        "Una imagen de tu carrera hecha con «Compartir» se crea en el teléfono y solo sale de él por el menú de compartir, hacia donde la envíes.",
+        "Una imagen o un vídeo de tu carrera hechos con «Compartir» se crean en el teléfono y solo salen de él por el menú de compartir, hacia donde los envíes. El vídeo muestra el mapa alrededor de tu carrera, con la salida y la llegada.",
       ],
     },
     {
@@ -441,6 +500,7 @@ const privacy: AboutDocument = {
             "Cuando eliminas tu cuenta, todo lo que es tuyo se elimina al momento: perfil, foto, número de teléfono, carreras, dibujos, favoritos, comentarios, reacciones, seguimientos, datos del juego y las novedades que esperan tu correo. Las rutas que dibujó nuestro motor se quedan: no dicen nada de quién las pidió.",
             "Cada noche se hace una copia de seguridad de la base de datos y se guarda 13 días: una cuenta eliminada sale de todas las copias en 14 días como máximo.",
             "En tu teléfono: la sesión, tus elecciones (idioma, deporte, lagos o mar), los mapas sin conexión, las carreras que aún esperan para enviarse y, con una cuenta, la zona desde la que suelen empezar tus actividades, para sugerirte lagos y mar cerca; se borra al cerrar sesión.",
+            "Solo en tu teléfono, también después de cerrar sesión: lo que escribes en «Nutrición».",
           ],
         },
         "La conexión entre la app y nuestro servidor está cifrada (HTTPS).",
@@ -453,7 +513,7 @@ const privacy: AboutDocument = {
           bullets: [
             "Para darte el servicio que pides (contrato): tu cuenta, tu perfil, las rutas que pides, y las carreras, favoritos, comentarios, reacciones y seguimientos que guardas, los correos de las notificaciones que encendiste, y el juego de las formas.",
             "Nuestro interés legítimo en que MuW funcione, sea segura y mejore: los registros breves del servidor, los recuentos que limitan las descargas de mapas y los eventos de búsqueda, que no dicen nada de quién eres; la comparación de los números de tus contactos, que no conserva ninguno; el correo cuando no estás, que puedes rechazar al registrarte, en «Ajustes» o en cada correo; los correos de las denuncias, para que MuW sea segura; el archivo de las rutas dibujadas, que no dice nada de quién eres; los mensajes de «Envíanos tus comentarios», para leerlos y responderte.",
-            "Tu consentimiento: el número de teléfono que decides añadir y la conexión con Strava. Puedes retirar un consentimiento en cualquier momento; lo que se hizo antes sigue siendo lícito.",
+            "Tu consentimiento: el número de teléfono que decides añadir, la conexión con Strava, el guardado de tus actividades en Apple Salud o Health Connect y la lectura de tu frecuencia cardiaca desde Apple Salud. Puedes retirar un consentimiento en cualquier momento; lo que se hizo antes sigue siendo lícito.",
             "Una obligación legal, cuando una ley nos pide conservar o entregar datos.",
           ],
         },

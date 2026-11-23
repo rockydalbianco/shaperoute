@@ -173,11 +173,14 @@ function api(answers: Answers) {
   });
 }
 
+/** The bodies sent; not the figures of a post (TASK-410 C), which follow
+ * each run saved. */
 function bodies(method: string, prefix: string): unknown[] {
   return fetchSpy.mock.calls
     .filter(
       ([input, init]) =>
         String(input).startsWith(`${API}${prefix}`) &&
+        !String(input).endsWith("/stats") &&
         (init?.method ?? "GET") === method,
     )
     .map(([, init]) => JSON.parse(String(init?.body)));
@@ -258,22 +261,23 @@ test("a saved run with walks opens with them dashed; one of before as one line",
     [`GET /me/activities/${STAR.id}`]: () => Response.json(STAR),
   });
   await open();
-  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
   await fireEvent.press(await screen.findByRole("button", { name: /^My activities/ }));
 
   await fireEvent.press(
     screen.getByRole("button", { name: /· II, .*open on the map$/ }),
   );
-  expect(await screen.findByText("Back to the list")).toBeOnTheScreen();
+  expect(await screen.findByTestId("activity-card-heading")).toBeOnTheScreen();
   // As at the end of the run: the letters, and the walk between them apart.
   expect(lastShown()).toContain('"letters":[[');
   expect(lastShown()).toContain('"walks":[[');
 
-  await fireEvent.press(screen.getByText("Back to the list"));
+  // The card of a run has no «Back to the list» (TASK-456): the map's «←».
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   await fireEvent.press(
     screen.getByRole("button", { name: /· Star, .*open on the map$/ }),
   );
-  expect(await screen.findByText("Back to the list")).toBeOnTheScreen();
+  expect(await screen.findByTestId("activity-card-heading")).toBeOnTheScreen();
   await waitFor(() =>
     expect(lastShown()).toContain('"coordinates":[[11.1214,46.0671]'),
   );
@@ -293,7 +297,7 @@ test("a favorite with the pen up starts with its walks, pauses at a letter's end
       "POST /track-scores": () => Response.json(trackScore),
     });
     await open();
-    await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+    await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
     await fireEvent.press(await screen.findByRole("button", { name: "Favorites, 1" }));
     await fireEvent.press(
       screen.getByRole("button", { name: "SUN · 1.3 km, open on the map" }),

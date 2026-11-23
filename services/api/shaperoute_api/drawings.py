@@ -2,17 +2,17 @@
 TASK-208, docs/API.md, «Drawings»).
 
 A run saved in My activities (activities.py) is private. Its owner may give
-it a title, a description, the members it tags, up to three photos
+it a title, a description, the members it tags, up to ten photos
 (drawing_photos.py), and say who can see it (ADR-0170): every member, the
 members who follow it with the request accepted (follows.py), or only
 itself. The photos are kept here only while others can see the drawing:
 while only its owner does, they stay on the phone (the user's choice,
 2026-10-03).
 
-What the others see is cut: the track without its first and its last
-CUT_M metres along it, without times, without the planned route, which
-begins at the runner's door (ADR-0114, point 4). The owner keeps the whole
-run in My activities.
+What the others see is the whole track, start and end included (the
+user's choice, ADR-0330: the 200 m cut of ADR-0114 spoilt the drawing),
+without times and without the planned route. The owner keeps the whole
+run, times too, in My activities.
 
 Who may see a drawing is asked in one place, drawing_seen_sql: the
 drawing, its photos and its comments (TASK-120) follow it.
@@ -21,6 +21,10 @@ Score, metres and seconds are the run's, counted by the API when it was
 saved: nothing here takes them from the app. Deleting the run, or the
 account, deletes its drawing (ON DELETE CASCADE); deleting an account
 tagged takes its name off the drawing.
+
+The lists and the drawing alone leave out what the app does not read, as
+its header X-MuW-Reads says (reads.py, TASK-387): an app of before the walks
+and the days on the snow never receives one, and finds none by its id.
 """
 
 from __future__ import annotations
@@ -38,13 +42,15 @@ import psycopg
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from psycopg import errors as pg_errors
 from psycopg.rows import DictRow
-from pydantic import BaseModel, ConfigDict, Field
-from route_engine.geo import (
-    haversine_m,
-    latlon_to_local,
-    local_to_latlon,
-    path_length_m,
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_serializer,
+    model_serializer,
 )
+from route_engine.geo import path_length_m
 
 from shaperoute_api.accounts import (
     ACCOUNT_ERRORS,
@@ -57,28 +63,39 @@ from shaperoute_api.accounts import (
 from shaperoute_api.activities import (
     EPOCH,
     MICROSECOND,
+    TRACKLESS_ACTIVITIES,
     UNKNOWN_ACTIVITY,
     Key,
     RunActivity,
+    RunSource,
     turn_kept,
 )
 from shaperoute_api.db import Database
+from shaperoute_api.flight_legs import ActivityFlightBody, flight_of
 from shaperoute_api.follows import apart_sql, follows_sql
+from shaperoute_api.outfit_tags import OutfitTagBody, tags_on_photos
 from shaperoute_api.push import notify_tagged, tagged_before
+from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.recommended import preview
+from shaperoute_api.run_stats import (
+    FlightSplitBody,
+    RunStatsBody,
+    SkiDescentsBody,
+    seen_stats,
+)
 from shaperoute_api.schemas import ErrorBody
+from shaperoute_api.sleep_seen import SEEN_SLEEP_SQL, SleepSummaryBody, seen_sleep
 
-# What the others never see of a published run, from either end (ADR-0114).
-CUT_M = 200.0
-# Less is a rounding of the cut, not a drawing.
+# A shorter track is a rounding of a fix, not a drawing.
 MIN_LEFT_M = 1.0
-# Two points closer than this are one.
-SAME_POINT_M = 0.01
 MAX_TITLE_LENGTH = 60
 MAX_DESCRIPTION_LENGTH = 500
 MAX_TAGS = 10
 # Besides the map, which is the first picture of a drawing (TASK-208).
-MAX_PHOTOS = 3
+MAX_PHOTOS = 10
+# In `item_order` (ADR-0301): the map, and a photo by its place.
+ORDER_DRAWING = "drawing"
+ORDER_PHOTO = "photo:"
 PAGE_SIZE = 20
 MAX_PAGE_SIZE = 50
 # Where a page ended: the start of its last run, in microseconds, and the id
@@ -88,6 +105,11 @@ CURSOR_PATTERN = r"^\d{1,17}-[0-9a-f]{32}$"
 # Who can see a drawing (ADR-0170): every member, the members who follow its
 # owner with the request accepted, or only its owner.
 Visibility = Literal["everyone", "followers", "only_me"]
+# Where a drawing comes from: its run's `source`, or `photos` for a post of
+# photos only, without a run (TASK-312 part C, photo_posts.py).
+PHOTOS_SOURCE = "photos"
+# `plan` for a gym plan posted (TASK-485, plan_posts.py).
+DrawingSource = RunSource | Literal["photos", "sleep", "plan"]
 # The only ones that come with the line of a description.
 LINE_BREAK = "\n"
 
@@ -102,10 +124,10 @@ VISIBILITY_TWICE = "Say who can see it once: visibility, or public, not both."
 TAG_UNKNOWN = "Only MuW members can be tagged: one of these is not."
 TAG_YOURSELF = "You cannot tag yourself."
 TAG_TWICE = "Each person is tagged once."
-TOO_SHORT = (
-    f"This run is too short to publish: its first and last {CUT_M:.0f} m are"
-    " never shown, and nothing would be left."
-)
+TOO_SHORT = "This run is too short to publish."
+# A workout at the gym and a swim in a pool have no track and a run has one
+# (TASK-385, TASK-400): the drawing cannot make one the other.
+NOT_TRACKLESS = "A workout at the gym stays one, and a run stays a run."
 NO_DRAWING = "No drawing with this id."
 PHOTOS_ON_THE_PHONE = (
     "Photos stay on the phone while only you see this run: choose Everyone or"
@@ -120,11 +142,12 @@ LatLon = tuple[float, float]
 
 
 def drawing_seen_sql(viewer: str) -> str:
-    """An SQL condition: the account `viewer` may open the drawing `d` of the
-    run `r` (FROM drawings d JOIN runs r ON r.id = d.run_id). Its owner
-    always; the others when it is for everyone, or for the followers and
-    they follow its owner with the request accepted. `viewer` is a column or
-    a placeholder holding a users.id, read once: one value for a `%s`.
+    """An SQL condition: the account `viewer` may open the drawing `d` (FROM
+    drawings d), of a run or of photos only (TASK-312 part C): its owner is
+    `d.user_id`. Its owner always; the others once it is published, when it
+    is for everyone, or for the followers and they follow its owner with the
+    request accepted. `viewer` is a column or a placeholder holding a
+    users.id, read once: one value for a `%s`.
 
     The question every reader of a drawing asks: its photos, and its
     comments (TASK-120), are seen by whoever sees it. Never across a block,
@@ -132,10 +155,13 @@ def drawing_seen_sql(viewer: str) -> str:
     from a report's email (TASK-291, ADR-0251), only its owner sees it."""
     return (
         f"EXISTS (SELECT 1 FROM (SELECT {viewer}::bigint AS id) seer"
-        " WHERE (seer.id = r.user_id OR (d.hidden_at IS NULL"
+        " WHERE (seer.id = d.user_id OR (d.hidden_at IS NULL"
+        # Implied by the visibility for a drawing of a run; a post of photos
+        # only waits for its first photo (migration 0080).
+        " AND d.published_at IS NOT NULL"
         " AND (d.visibility = 'everyone' OR (d.visibility = 'followers'"
-        f" AND {follows_sql('seer.id', 'r.user_id')}))))"
-        f" AND NOT {apart_sql('seer.id', 'r.user_id')})"
+        f" AND {follows_sql('seer.id', 'd.user_id')}))))"
+        f" AND NOT {apart_sql('seer.id', 'd.user_id')})"
     )
 
 
@@ -145,13 +171,15 @@ def shown_sql(viewer: str) -> str:
     (ADR-0159, point 8): for everyone, or for the followers and `viewer` is
     one of them or the owner. Never across a block (TASK-121): the feed and
     the profiles leave those drawings out. Hidden from a report's email
-    (TASK-291), only on its owner's own view of its profile."""
+    (TASK-291), only on its owner's own view of its profile. A post of
+    photos only waiting for its first photo is on no profile."""
     return (
         f"EXISTS (SELECT 1 FROM (SELECT {viewer}::bigint AS id) seer"
         " WHERE (d.visibility = 'everyone' OR (d.visibility = 'followers'"
-        f" AND (seer.id = r.user_id OR {follows_sql('seer.id', 'r.user_id')})))"
-        " AND (d.hidden_at IS NULL OR seer.id = r.user_id)"
-        f" AND NOT {apart_sql('seer.id', 'r.user_id')})"
+        f" AND (seer.id = d.user_id OR {follows_sql('seer.id', 'd.user_id')})))"
+        " AND d.published_at IS NOT NULL"
+        " AND (d.hidden_at IS NULL OR seer.id = d.user_id)"
+        f" AND NOT {apart_sql('seer.id', 'd.user_id')})"
     )
 
 
@@ -162,43 +190,25 @@ def published_count_sql(user_column: str, viewer: str | None = None) -> str:
     """
     shown = (
         "d.visibility = 'everyone' AND d.hidden_at IS NULL"
+        " AND d.published_at IS NOT NULL"
         if viewer is None
         else shown_sql(viewer)
     )
     return (
-        "(SELECT count(*) FROM drawings d JOIN runs r ON r.id = d.run_id"
-        f" WHERE r.user_id = {user_column} AND {shown})"
+        "(SELECT count(*) FROM drawings d"
+        f" WHERE d.user_id = {user_column} AND {shown})"
     )
 
 
 # --- What the others see of a track ---
 
 
-def _after(points: Sequence[LatLon], metres: float) -> list[LatLon]:
-    """The line from `metres` along it to its end; [] when it is shorter.
-    The first point is where those metres end, on the segment they end in."""
-    walked = 0.0
-    for i, (a, b) in enumerate(zip(points, points[1:], strict=False)):
-        step = haversine_m(a, b)
-        if walked + step > metres:
-            if walked + step - metres < SAME_POINT_M:
-                # The cut falls on `b`, give or take a rounding: not twice.
-                return list(points[i + 1 :])
-            # In metres on the plane around `a`, never in degrees.
-            share = (metres - walked) / step
-            x_m, y_m = latlon_to_local(a, b)
-            return [local_to_latlon(a, share * x_m, share * y_m), *points[i + 1 :]]
-        walked += step
-    return []
-
-
-def cut_track(points: Sequence[LatLon], cut_m: float = CUT_M) -> list[LatLon]:
-    """The track without its first and last `cut_m` metres along it; [] when
-    less than MIN_LEFT_M is left of it."""
-    if path_length_m(points) - 2 * cut_m < MIN_LEFT_M:
+def shown_track(points: Sequence[LatLon]) -> list[LatLon]:
+    """What the others see of the track: all of it (ADR-0330); [] when it is
+    shorter than MIN_LEFT_M."""
+    if path_length_m(points) < MIN_LEFT_M:
         return []
-    head_cut = _after(points, cut_m)
-    return _after(head_cut[::-1], cut_m)[::-1]
+    return list(points)
 
 
 def checked_title(value: str | None) -> str | None:
@@ -297,11 +307,15 @@ class PhotoBody(BaseModel):
     from `url` (GET /drawings/{id}/photos/{n})."""
 
     n: int
-    """Its place, 1 to MAX_PHOTOS: a place emptied stays empty."""
+    """Its place, 1 to MAX_PHOTOS: a place emptied stays empty, and a place
+    says which photo, not where it stands (`order`, ADR-0301)."""
     url: str
     """On this API; it changes when the photo does."""
     width: int
     height: int
+    outfit_tags: list[OutfitTagBody] = Field(default_factory=list)
+    """What its owner wears in it (TASK-394, outfit_tags.py): to whoever
+    sees the photo; the link and the totals to its owner only."""
 
 
 class MyDrawingBody(BaseModel):
@@ -325,8 +339,18 @@ class MyDrawingBody(BaseModel):
     description: str | None
     activity: RunActivity
     """The run's."""
+    source: RunSource = "muw"
+    """The run's (TASK-312): `file` for an activity of another app, which
+    the app shows with «Imported». Always answered; the default is for the
+    examples written before."""
     tags: list[TagBody]
     photos: list[PhotoBody]
+    """In the post's order, for an app that does not read `order`."""
+    order: list[str] | None = None
+    """The post's order, the map among the photos: `drawing`, `photo:2`
+    (TASK-348, ADR-0301). Null: never ordered, the map first and the photos
+    by place. Always answered; the default is for the examples written
+    before."""
 
 
 class MyDrawingsBody(BaseModel):
@@ -365,26 +389,73 @@ class SeenFields(BaseModel):
     fidelity: float | None
     visibility: Visibility
     description: str | None
-    activity: RunActivity
+    activity: RunActivity | None
+    """The run's; null only for a post of photos only (`source` `photos`),
+    which only an app that reads `photos` receives (reads.py)."""
+    source: DrawingSource = "muw"
+    """The run's (TASK-312): `file` for an activity of another app, shown
+    with «Imported»; `photos` for a post of photos only (part C), which has
+    no run: no place, shape, word, style, score or turn, 0 metres and 0
+    seconds, `started_at` when it was published, no line. Always answered;
+    the default is for the examples written before."""
     tags: list[TagBody]
     photos: list[PhotoBody]
+    """In the post's order, for an app that does not read `order`."""
+    order: list[str] | None = None
+    """As in MyDrawingBody (TASK-348, ADR-0301)."""
     rotation_deg: float | None = None
     """How far the planned route's shape is turned (TASK-232, ADR-0195),
     as My activities has it: the drawing is shown turned back, so it reads
     upright. Null for a run without a route, one north up and every run
     saved before. Always answered; the default is for the examples written
     before."""
+    ski_descents: SkiDescentsBody | None = None
+    """A day of alpine skiing: the metres and the seconds of its descents
+    alone, which its calories are counted on (TASK-424 part C2b,
+    run_stats.py); null for any other run, and for a day whose phone sent no
+    parts."""
+    flight_split: FlightSplitBody | None = None
+    """A race on foot and in the air (hike & fly, TASK-305 part R6a,
+    run_stats.py): each kind added up; null for any other run, and for a
+    flight with no part on foot."""
+    linkable: bool = False
+    """The drawing can be opened by its link on the site, without an account
+    (TASK-455 part C, post_links.py): it is for everyone, it has a line, and
+    its owner leaves «Links to my posts» on. The app shows «Share link» only
+    then. Always answered; the default is for the examples written before."""
+    plan: dict[str, Any] | None = None
+    """A gym plan posted (TASK-485, plan_posts.py, `source` `plan`): the plan
+    as it was posted, `GymPlanPosted`, with its exercises and kg; null for
+    any other post. Always answered; the default is for the examples
+    written before."""
+    sleep: SleepSummaryBody | None = None
+    """«Sleep last night» (TASK-467 part B1b, sleep_seen.py): the night
+    before the activity, while its owner shows it in the post; null for a
+    post without one and for one whose owner hides it, to the owner too."""
+
+    @field_serializer("sleep", mode="wrap")
+    def _stages_untold_are_left_out(
+        self, value: SleepSummaryBody | None, said: SerializerFunctionWrapHandler
+    ):
+        # As GET /drawings/{id}/sleep says a night no watch told the stages
+        # of: without `stages`, not with a null. No return type, so the
+        # schema stays the night's own.
+        night = said(value)
+        if isinstance(night, dict) and night.get("stages") is None:
+            night.pop("stages", None)
+        return night
 
 
 class DrawingBody(SeenFields):
     """A drawing as the others see it in a list, with a light preview of its
-    cut track: packages/shared-types/fixtures/drawings-details.json."""
+    track: packages/shared-types/fixtures/drawings-details.json."""
 
     track_preview: list[LatLon]
 
 
 class DrawingsBody(BaseModel):
-    """A page of a profile's drawings, the latest run first."""
+    """A page of a profile's drawings, the latest run first (a post of
+    photos only by when it was published, TASK-312 part C)."""
 
     drawings: list[DrawingBody]
     next: str | None
@@ -402,29 +473,89 @@ class DrawingDetailBody(SeenFields):
     public: bool
     """Every member sees it: `visibility` is `everyone`."""
     track: list[LatLon]
-    """The cut track, every point of it; empty only for its owner's run
-    too short to publish."""
+    """The track, every point of it, without times; empty only for its
+    owner's run too short to publish."""
+    stats: RunStatsBody | None = None
+    """Splits, elevation, cadence, calories, heart rate (TASK-410 C,
+    run_stats.py), as the one who asks may see them; null for a run without
+    any, as every run saved before them."""
+    flight: ActivityFlightBody | None = None
+    """A race on foot and in the air (TASK-305 part R6e, flight_legs.py):
+    its parts in the air as [from, to] indices into `track`, and the two
+    kinds added up, as GET /me/activities/{key} gives them. Left out of the
+    answer for any other drawing, for a flight without parts on foot, and
+    when `track` has not the run's points."""
+
+    @model_serializer(mode="wrap")
+    def _without_flight(self, handler: SerializerFunctionWrapHandler):
+        # No return type, so the answer's schema stays the drawing's own
+        # fields: with one it would be any object.
+        answer: dict[str, Any] = handler(self)
+        if answer.get("flight") is None:
+            answer.pop("flight", None)
+        return answer
 
 
 # --- The drawings in the database ---
 
+# When the drawing `d` was made, for FROM drawings d LEFT JOIN runs r: its
+# run's start, or for a post of photos only (TASK-312 part C) when it was
+# published, and while it waits for its first photo when it was last kept.
+# The order of a profile's drawings and the cursor of its pages.
+DRAWN_AT_SQL = "coalesce(r.started_at, d.published_at, d.updated_at)"
+# Its run, when it has one (TASK-312 part C): every reader of a drawing that
+# a post of photos only must also reach.
+WITH_RUN_SQL = "drawings d LEFT JOIN runs r ON r.id = d.run_id"
+
+# Whether the drawing `d` of the run `r` can be opened by its link (TASK-455
+# part C, ADR-0382, post_links.py): every member sees it, it is not hidden,
+# it has a line, and its owner is not hidden and leaves «Links to my posts»
+# on. One condition for what the app is told (`linkable`) and for what the
+# page of the link is given: they never disagree.
+LINKABLE_SQL = (
+    "(d.visibility = 'everyone' AND d.hidden_at IS NULL AND d.track IS NOT NULL"
+    " AND EXISTS (SELECT 1 FROM users owner WHERE owner.id = d.user_id"
+    " AND owner.post_links AND owner.hidden_at IS NULL))"
+)
+
 _SEEN_FIELDS = (
     "d.id, d.title, d.visibility, d.description, d.published_at,"
-    " r.started_at, r.place, r.shape, r.word, r.style, r.title AS route_title,"
-    " r.distance_m, r.duration_s, r.score, r.fidelity, r.activity,"
-    " r.route_rotation_deg"
+    f" {DRAWN_AT_SQL} AS started_at, r.place, r.shape, r.word, r.style,"
+    " r.title AS route_title, coalesce(r.distance_m, 0) AS distance_m,"
+    " coalesce(r.duration_s, 0) AS duration_s, r.score, r.fidelity, r.activity,"
+    " r.route_rotation_deg, coalesce(r.source, CASE"
+    " WHEN d.sleep_night_id IS NOT NULL THEN 'sleep'"
+    f" WHEN d.plan IS NOT NULL THEN 'plan' ELSE '{PHOTOS_SOURCE}' END) AS source,"
+    # The plan of a gym plan posted (TASK-485): on the drawing itself.
+    " d.plan,"
+    # The descents of a day of skiing (TASK-424 part C2b): one key of its
+    # run_stats row, by its primary key.
+    " (SELECT s.stats -> 'ski_descents' FROM run_stats s WHERE s.run_id = r.id)"
+    " AS ski_descents,"
+    # On foot and in the air, a flight's (TASK-305 part R6a): the same row.
+    " (SELECT s.stats -> 'flight_split' FROM run_stats s WHERE s.run_id = r.id)"
+    " AS flight_split,"
+    # The night shown in the post (TASK-467 part B1b): one row of
+    # sleep_nights, by its primary key.
+    f" {SEEN_SLEEP_SQL} AS sleep,"
+    # Whether the drawing has a link (TASK-455 part C): for everyone, with a
+    # line, and its owner leaves «Links to my posts» on.
+    f" {LINKABLE_SQL} AS linkable"
 )
-# One drawing, its cut track whole.
+# One drawing, its track whole.
 SEEN_COLUMNS = f"{_SEEN_FIELDS}, ST_AsGeoJSON(d.track, 15) AS track"
 # A drawing in a list: as `track`, the preview PostgreSQL keeps of it
 # (migration 0022, TASK-288), the points `preview` would take of the whole.
 LISTED_COLUMNS = f"{_SEEN_FIELDS}, ST_AsGeoJSON(d.preview, 15) AS track"
 MINE_COLUMNS = (
-    "r.key, r.activity, d.id, d.title, d.visibility, d.description, d.published_at"
+    "r.key, r.activity, r.source, d.id, d.title, d.visibility, d.description,"
+    " d.published_at, r.user_id"
 )
 # The run of a drawing, locked while its drawing changes.
 RUN_TO_DRAW = (
-    "SELECT id, ST_AsGeoJSON(ST_Force2D(track), 15) AS track FROM runs"
+    "SELECT id, ST_AsGeoJSON(ST_Force2D(track), 15) AS track,"
+    " EXISTS (SELECT 1 FROM pool_swims p WHERE p.run_id = runs.id) AS pool"
+    " FROM runs"
     " WHERE user_id = %s AND key = %s FOR UPDATE"
 )
 
@@ -452,16 +583,35 @@ def photo_url(drawing_id: UUID, n: int, updated_at: datetime) -> str:
 
 @dataclass(frozen=True)
 class Details:
-    """The tags and the photos of some drawings, by id."""
+    """The tags, the photos and the order of some drawings, by id."""
 
     tags: dict[UUID, list[TagBody]]
     photos: dict[UUID, list[PhotoBody]]
+    orders: dict[UUID, list[str]]
 
 
-def _details(conn: Connection, ids: Sequence[UUID]) -> Details:
-    """In two reads for a page, never the bytes of a photo."""
+def in_order(
+    item_order: Sequence[str], photos: Sequence[PhotoBody]
+) -> tuple[list[PhotoBody], list[str]]:
+    """The photos in the order chosen, and that order as it stands now: a
+    place emptied leaves it, and a photo it does not name comes last, by
+    place. An order may name a photo not sent yet: the phone sends the order
+    and the photos one by one, in any order, without network in between."""
+    by_item = {f"{ORDER_PHOTO}{photo.n}": photo for photo in photos}
+    order = [item for item in item_order if item == ORDER_DRAWING or item in by_item]
+    order += [item for item in by_item if item not in order]
+    return [by_item[item] for item in order if item in by_item], order
+
+
+def _details(
+    conn: Connection, ids: Sequence[UUID], viewer_id: int | None = None
+) -> Details:
+    """In four reads for a page, never the bytes of a photo. The items on
+    the photos as `viewer_id` sees them (outfit_tags.tags_on_photos): None,
+    as anyone but their owner."""
     tags: dict[UUID, list[TagBody]] = defaultdict(list)
     photos: dict[UUID, list[PhotoBody]] = defaultdict(list)
+    orders: dict[UUID, list[str]] = {}
     if ids:
         for row in conn.execute(
             "SELECT t.drawing_id, u.public_id, u.username FROM drawing_tags t"
@@ -472,6 +622,7 @@ def _details(conn: Connection, ids: Sequence[UUID]) -> Details:
             tags[row["drawing_id"]].append(
                 TagBody(public_id=row["public_id"], username=row["username"])
             )
+        outfits = tags_on_photos(conn, ids, viewer_id)
         for row in conn.execute(
             "SELECT drawing_id, n, width, height, updated_at FROM drawing_photos"
             " WHERE drawing_id = ANY(%s) ORDER BY n",
@@ -483,9 +634,19 @@ def _details(conn: Connection, ids: Sequence[UUID]) -> Details:
                     url=photo_url(row["drawing_id"], row["n"], row["updated_at"]),
                     width=row["width"],
                     height=row["height"],
+                    outfit_tags=outfits.get((row["drawing_id"], row["n"]), []),
                 )
             )
-    return Details(tags, photos)
+        for row in conn.execute(
+            "SELECT id, item_order FROM drawings"
+            " WHERE id = ANY(%s) AND item_order IS NOT NULL",
+            (list(ids),),
+        ):
+            drawing_id = row["id"]
+            photos[drawing_id], orders[drawing_id] = in_order(
+                row["item_order"], photos[drawing_id]
+            )
+    return Details(tags, photos, orders)
 
 
 def _seen(row: DictRow, details: Details) -> dict[str, Any]:
@@ -508,10 +669,17 @@ def _seen(row: DictRow, details: Details) -> dict[str, Any]:
         "visibility": row["visibility"],
         "description": row["description"],
         "activity": row["activity"],
+        "source": row["source"],
         "tags": details.tags.get(row["id"], []),
         "photos": details.photos.get(row["id"], []),
+        "order": details.orders.get(row["id"]),
         # The run's, as My activities answers it (activities._turn).
         "rotation_deg": turn_kept(row["route_rotation_deg"]),
+        "ski_descents": row.get("ski_descents"),
+        "flight_split": row.get("flight_split"),
+        "plan": row.get("plan"),
+        "sleep": seen_sleep(row.get("sleep")),
+        "linkable": bool(row.get("linkable")),
     }
 
 
@@ -526,7 +694,11 @@ def _after_cursor(cursor: str) -> tuple[datetime, UUID]:
 
 
 def _mine(conn: Connection, rows: Sequence[DictRow]) -> list[MyDrawingBody]:
-    details = _details(conn, [row["id"] for row in rows if row["id"] is not None])
+    # The runs of one account, which sees all of its items (TASK-394).
+    owner = rows[0]["user_id"] if rows else None
+    details = _details(
+        conn, [row["id"] for row in rows if row["id"] is not None], owner
+    )
     return [
         MyDrawingBody(
             key=row["key"],
@@ -538,8 +710,10 @@ def _mine(conn: Connection, rows: Sequence[DictRow]) -> list[MyDrawingBody]:
             visibility=row["visibility"] or "only_me",
             description=row["description"],
             activity=row["activity"],
+            source=row["source"],
             tags=details.tags.get(row["id"], []),
             photos=details.photos.get(row["id"], []),
+            order=details.orders.get(row["id"]),
         )
         for row in rows
     ]
@@ -612,11 +786,14 @@ class Drawings:
             run_id = run_of(conn, user_id, key)
             return None if run_id is None else _mine_of_run(conn, run_id)
 
-    def all_mine(self, user_id: int) -> MyDrawingsBody:
+    def all_mine(self, user_id: int, reads: Reads = EVERYTHING) -> MyDrawingsBody:
+        """The drawings of the account's runs, of the activities `reads`
+        shows."""
         with self.database.connect() as conn:
             rows = conn.execute(
                 f"SELECT {MINE_COLUMNS} FROM drawings d"
                 " JOIN runs r ON r.id = d.run_id WHERE r.user_id = %s"
+                f" AND {reads.sql('r.activity', 'r.track IS NOT NULL')}"
                 " ORDER BY r.started_at DESC, r.id DESC",
                 (user_id,),
             ).fetchall()
@@ -645,11 +822,23 @@ class Drawings:
                 tagged = (
                     None if body.tags is None else _tagged(conn, user_id, body.tags)
                 )
-                # Cut again on every change, from the run as it is kept: the
+                # Again on every change, from the run as it is kept: the
                 # same run, the same line.
-                cut = cut_track(_line(run["track"]))
-                if visibility != "only_me" and not cut:
+                shown = shown_track(_line(run["track"]))
+                # A workout at the gym has no track (TASK-385, ADR-0327):
+                # published without a line, to the apps that read it.
+                trackless = run["track"] is None
+                if visibility != "only_me" and not shown and not trackless:
                     raise AccountError(422, "invalid_request", TOO_SHORT)
+                # A swim in a pool (TASK-400) stays `swimming`; no other run
+                # without a track becomes an activity with one: an app that
+                # reads only `trackless` could not show it.
+                if body.activity is not None and (
+                    body.activity != "swimming"
+                    if run["pool"]
+                    else (body.activity in TRACKLESS_ACTIVITIES) != trackless
+                ):
+                    raise AccountError(422, "invalid_request", NOT_TRACKLESS)
                 before = conn.execute(
                     "SELECT published_at FROM drawings"
                     " WHERE run_id = %s AND visibility <> 'only_me'",
@@ -661,29 +850,38 @@ class Drawings:
                 if visibility != "only_me":
                     published_at = now if before is None else before["published_at"]
                 drawing = conn.execute(
-                    "INSERT INTO drawings (run_id, title, visibility, description,"
-                    " track, published_at, updated_at) VALUES (%s, %s, %s, %s,"
-                    " ST_GeomFromText(%s, 4326), %s, %s)"
+                    "INSERT INTO drawings (run_id, user_id, title, visibility,"
+                    " description, track, trackless, published_at, updated_at)"
+                    " VALUES (%s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s, %s,"
+                    " %s)"
                     " ON CONFLICT (run_id) DO UPDATE SET title = EXCLUDED.title,"
                     " visibility = EXCLUDED.visibility, track = EXCLUDED.track,"
+                    " trackless = EXCLUDED.trackless,"
                     " published_at = EXCLUDED.published_at,"
                     f" updated_at = EXCLUDED.updated_at{set_description}"
                     " RETURNING id",
                     (
                         run["id"],
+                        user_id,
                         title,
                         visibility,
                         description,
-                        _line_wkt(cut) if cut else None,
+                        _line_wkt(shown) if shown else None,
+                        trackless,
                         published_at,
                         now,
                     ),
                 ).fetchone()
                 assert drawing is not None
                 if visibility == "only_me":
-                    # Seen by its owner only, its photos are the phone's.
+                    # Seen by its owner only, its photos are the phone's,
+                    # and their order.
                     conn.execute(
                         "DELETE FROM drawing_photos WHERE drawing_id = %s",
+                        (drawing["id"],),
+                    )
+                    conn.execute(
+                        "UPDATE drawings SET item_order = NULL WHERE id = %s",
                         (drawing["id"],),
                     )
                 if body.activity is not None:
@@ -716,10 +914,12 @@ class Drawings:
         public_id: str,
         limit: int = PAGE_SIZE,
         cursor: str | None = None,
+        reads: Reads = EVERYTHING,
     ) -> DrawingsBody | None:
-        """A page of the drawings of a profile that `viewer_id` sees, the
-        latest run first; None: no such profile, or one a block keeps apart
-        from `viewer_id` (TASK-121), as its profile."""
+        """A page of the drawings of a profile that `viewer_id` sees, of the
+        activities `reads` shows, the latest run first; `total` counts them
+        all. None: no such profile, or one a block keeps apart from
+        `viewer_id` (TASK-121), as its profile."""
         try:
             wanted = UUID(public_id)
         except ValueError:
@@ -732,15 +932,14 @@ class Drawings:
             ).fetchone()
             if user is None:
                 return None
-            where = f"r.user_id = %s AND {shown_sql('%s')}"
+            where = f"d.user_id = %s AND {shown_sql('%s')} AND {reads.drawings_sql()}"
             values: list[Any] = [user["id"], viewer_id]
             if cursor is not None:
-                where += " AND (r.started_at, d.id) < (%s, %s)"
+                where += f" AND ({DRAWN_AT_SQL}, d.id) < (%s, %s)"
                 values += _after_cursor(cursor)
             rows = conn.execute(
-                f"SELECT {LISTED_COLUMNS} FROM drawings d"
-                f" JOIN runs r ON r.id = d.run_id WHERE {where}"
-                " ORDER BY r.started_at DESC, d.id DESC LIMIT %s",
+                f"SELECT {LISTED_COLUMNS} FROM {WITH_RUN_SQL} WHERE {where}"
+                f" ORDER BY {DRAWN_AT_SQL} DESC, d.id DESC LIMIT %s",
                 (*values, limit + 1),
             ).fetchall()
             count = conn.execute(
@@ -748,7 +947,7 @@ class Drawings:
                 (user["id"], viewer_id),
             ).fetchone()
             page, more = rows[:limit], len(rows) > limit
-            details = _details(conn, [row["id"] for row in page])
+            details = _details(conn, [row["id"] for row in page], viewer_id)
         assert count is not None
         return DrawingsBody(
             drawings=[
@@ -761,28 +960,52 @@ class Drawings:
             total=count["n"],
         )
 
-    def seen(self, viewer_id: int, drawing_id: str) -> DrawingDetailBody | None:
-        """The drawing as `viewer_id` may see it (drawing_seen_sql); None
-        otherwise, as for an id that is not there."""
+    def seen(
+        self, viewer_id: int, drawing_id: str, reads: Reads = EVERYTHING
+    ) -> DrawingDetailBody | None:
+        """The drawing as `viewer_id` may see it (drawing_seen_sql), of an
+        activity `reads` shows; None otherwise, as for an id that is not
+        there."""
         try:
             wanted = UUID(drawing_id)
         except ValueError:
             return None
         with self.database.connect() as conn:
             row = conn.execute(
-                f"SELECT {SEEN_COLUMNS}, u.public_id, u.username FROM drawings d"
-                " JOIN runs r ON r.id = d.run_id JOIN users u ON u.id = r.user_id"
-                f" WHERE d.id = %s AND {drawing_seen_sql('%s')}",
+                f"SELECT {SEEN_COLUMNS}, u.public_id, u.username,"
+                f" r.id AS run_id, d.user_id AS author_id FROM {WITH_RUN_SQL}"
+                " JOIN users u ON u.id = d.user_id"
+                f" WHERE d.id = %s AND {drawing_seen_sql('%s')}"
+                f" AND {reads.drawings_sql()}",
                 (wanted, viewer_id),
             ).fetchone()
             if row is None:
                 return None
-            details = _details(conn, [row["id"]])
+            details = _details(conn, [row["id"]], viewer_id)
+            # A post of photos only has no run, and no statistics.
+            stats = (
+                None
+                if row["run_id"] is None
+                else seen_stats(
+                    conn, row["run_id"], author=row["author_id"] == viewer_id
+                )
+            )
+            track = _line(row["track"])
+            # A race's parts in the air on the line shown (TASK-305 R6e).
+            flight = (
+                flight_of(conn, row["run_id"], len(track))
+                if row["run_id"] is not None
+                and row["activity"] == "paragliding"
+                and track
+                else None
+            )
         return DrawingDetailBody(
             **_seen(row, details),
             author=AuthorBody(public_id=row["public_id"], username=row["username"]),
             public=row["visibility"] == "everyone",
-            track=_line(row["track"]),
+            track=track,
+            stats=stats,
+            flight=flight,
         )
 
 
@@ -798,8 +1021,9 @@ def drawing_routes() -> APIRouter:
     def my_drawings(
         drawings: Annotated[Drawings, Depends(drawings_of)],
         user: Annotated[UserBody, Depends(current_user)],
+        reads: Shown,
     ) -> MyDrawingsBody:
-        return drawings.all_mine(user.id)
+        return drawings.all_mine(user.id, reads)
 
     @router.get("/me/activities/{key}/drawing", responses={404: {"model": ErrorBody}})
     def my_drawing(
@@ -834,10 +1058,11 @@ def drawing_routes() -> APIRouter:
         public_id: str,
         drawings: Annotated[Drawings, Depends(drawings_of)],
         user: Annotated[UserBody, Depends(current_user)],
+        reads: Shown,
         limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = PAGE_SIZE,
         cursor: Annotated[str | None, Query(pattern=CURSOR_PATTERN)] = None,
     ) -> DrawingsBody:
-        found = drawings.of_profile(user.id, public_id, limit, cursor)
+        found = drawings.of_profile(user.id, public_id, limit, cursor, reads)
         if found is None:
             raise HTTPException(404, NO_PROFILE)
         return found
@@ -847,8 +1072,9 @@ def drawing_routes() -> APIRouter:
         drawing_id: str,
         drawings: Annotated[Drawings, Depends(drawings_of)],
         user: Annotated[UserBody, Depends(current_user)],
+        reads: Shown,
     ) -> DrawingDetailBody:
-        found = drawings.seen(user.id, drawing_id)
+        found = drawings.seen(user.id, drawing_id, reads)
         if found is None:
             raise HTTPException(404, NO_DRAWING)
         return found

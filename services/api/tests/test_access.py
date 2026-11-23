@@ -89,6 +89,26 @@ def test_health_needs_no_key() -> None:
     assert guarded(Access(key=KEY)).get("/health").json() == {"status": "ok"}
 
 
+def test_the_page_of_a_live_share_needs_no_key_and_its_links_do() -> None:
+    # The page of the site has no key: the token of the link is its key
+    # (live_shares.py, TASK-424). Making and updating links still needs it.
+    app = FastAPI()
+
+    @app.get("/live")
+    def live() -> dict[str, str]:
+        return {"status": "expired"}
+
+    @app.post("/me/live-shares")
+    def make() -> dict[str, str]:
+        return {"id": "made"}
+
+    protect(app, Access(key=KEY), clock=Clock())
+    client = TestClient(app)
+    assert client.get("/live", params={"t": "x"}).json() == {"status": "expired"}
+    assert client.post("/me/live-shares").status_code == 401
+    assert client.get("/live/other").status_code == 401
+
+
 def test_posts_over_the_limit_wait_and_gets_do_not_count() -> None:
     clock = Clock()
     client = guarded(Access(posts_per_minute=2), clock)

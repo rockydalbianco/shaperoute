@@ -1,0 +1,54 @@
+{
+  "clock": [
+    { "ms": 0, "text": "0:00" },
+    { "ms": -500, "text": "0:00" },
+    { "ms": 7000, "text": "0:07" },
+    { "ms": 59999, "text": "0:59" },
+    { "ms": 754000, "text": "12:34" },
+    { "ms": 3723000, "text": "1:02:03" }
+  ],
+  "distance": [
+    { "metres": 0, "units": "km", "text": "0.00 km" },
+    { "metres": -5, "units": "km", "text": "0.00 km" },
+    { "metres": 4012, "units": "km", "text": "4.01 km" },
+    { "metres": 4015, "units": "km", "text": "4.01 km" },
+    { "metres": 125, "units": "km", "text": "0.13 km" },
+    { "metres": 625, "units": "km", "text": "0.63 km" },
+    { "metres": 4000, "units": "mi", "text": "2.49 mi" }
+  ],
+  "pace": [
+    { "metres": 99, "ms": 60000, "pace": "km", "units": "km", "text": null },
+    { "metres": 100, "ms": 0, "pace": "km", "units": "km", "text": null },
+    { "metres": 5000, "ms": 1420000, "pace": "km", "units": "km", "text": "4:44 /km" },
+    { "metres": 1000, "ms": 299500, "pace": "km", "units": "km", "text": "5:00 /km" },
+    { "metres": 5000, "ms": 1420000, "pace": "km", "units": "mi", "text": "7:37 /mi" },
+    {
+      "metres": 2000,
+      "ms": 600000,
+      "pace": "paddle",
+      "units": "km",
+      "text": "2:30 /500 m"
+    },
+    {
+      "metres": 2000,
+      "ms": 600000,
+      "pace": "paddle",
+      "units": "mi",
+      "text": "2:30 /500 m"
+    },
+    {
+      "metres": 400,
+      "ms": 500000,
+      "pace": "swim",
+      "units": "km",
+      "text": "2:05 /100 m"
+    },
+    {
+      "metres": 1000,
+      "ms": 125000,
+      "pace": "swim",
+      "units": "km",
+      "text": "0:13 /100 m"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+import { fireEvent, render, screen } from "@testing-library/react-native";
+import { Animated } from "react-native";
+
+import { color, motion } from "../theme/tokens";
+import { GuideRow, WatchTourButton } from "./GuideRow";
+
+// The premium look, part C2 (TASK-339, ADR-0293): the rows of «Profile» answer
+// the finger through `Tap`, in `motion.pressMs`, and still do what they did.
+
+test("the guide row shrinks under the finger and opens the guide", async () => {
+  const timing = jest.spyOn(Animated, "timing");
+  const spring = jest.spyOn(Animated, "spring");
+  const onOpen = jest.fn();
+  await render(<GuideRow onOpen={onOpen} />);
+  const row = screen.getByRole("button");
+  await fireEvent(row, "pressIn");
+  expect(timing).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({ toValue: 1, duration: motion.pressMs }),
+  );
+  await fireEvent(row, "pressOut");
+  expect(spring).toHaveBeenLastCalledWith(
+    expect.anything(),
+    expect.objectContaining({ toValue: 0, ...motion.spring.snappy }),
+  );
+  await fireEvent.press(row);
+  expect(onOpen).toHaveBeenCalledTimes(1);
+  timing.mockRestore();
+  spring.mockRestore();
+});
+
+test("«Watch the tour» answers the same way", async () => {
+  const timing = jest.spyOn(Animated, "timing");
+  const onWatch = jest.fn();
+  await render(<WatchTourButton onWatch={onWatch} />);
+  await fireEvent(screen.getByRole("button"), "pressIn");
+  expect(timing).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({ toValue: 1, duration: motion.pressMs }),
+  );
+  await fireEvent.press(screen.getByRole("button"));
+  expect(onWatch).toHaveBeenCalledTimes(1);
+  timing.mockRestore();
+});
+
+// TASK-444: a red ❓ stood here, beside the lines of the bar.
+test("the guide row has a line icon in a quiet colour, and no emoji", async () => {
+  await render(<GuideRow onOpen={() => {}} />);
+  expect(screen.getByTestId("guide-icon")).toHaveStyle({ tintColor: color.textMuted });
+  expect(screen.queryByText(/\p{Extended_Pictographic}/u)).toBeNull();
+  expect(screen.getByRole("button", { name: "Guide" })).toBeOnTheScreen();
+});

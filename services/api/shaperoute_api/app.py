@@ -27,11 +27,12 @@ from route_engine.export_gpx import route_name, to_gpx
 from route_engine.image_outline import InvalidImageError
 from route_engine.models import (
     InvalidRequestError,
-    RouteRequest,
     RouteResult,
 )
 from route_engine.optimizer import ShapeNotDrawableError
 from route_engine.outline_edits import InvalidEditError
+from route_engine.swim_turns import with_turns
+from route_engine.walking import engine_activity
 from shaperoute_ai.reading import (
     InvalidTextError,
     ModelUnavailableError,
@@ -43,19 +44,23 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from shaperoute_api.access import protect
 from shaperoute_api.accounts import Accounts, install_accounts
 from shaperoute_api.activities import PlaceNames, install_activities
+from shaperoute_api.activity_calendar import install_activity_calendar
 from shaperoute_api.activity_graphs import (
     Graphs,
     check_supported,
     ground_for,
     source_for,
 )
+from shaperoute_api.avatars import install_avatars
 from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
+from shaperoute_api.comment_reactions import install_comment_reactions
 from shaperoute_api.comments import install_comments
 from shaperoute_api.contact import install_contact
 from shaperoute_api.contact_people import install_contact_people
 from shaperoute_api.contests import install_contests
 from shaperoute_api.drawing_photos import install_drawing_photos
+from shaperoute_api.drawing_search import install_drawing_search
 from shaperoute_api.drawings import install_drawings
 from shaperoute_api.errors import error_of
 from shaperoute_api.favorites import install_favorites
@@ -63,14 +68,23 @@ from shaperoute_api.feed import install_feed
 from shaperoute_api.feedback import install_feedback
 from shaperoute_api.follows import install_follows
 from shaperoute_api.game import install_game
+from shaperoute_api.gear import install_gear
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.group_runs import install_group_runs
+from shaperoute_api.gym_calendar import install_gym_calendar
+from shaperoute_api.gym_history import install_gym_history
+from shaperoute_api.gym_leaderboard import install_gym_leaderboard
+from shaperoute_api.gym_plans import install_gym_plans
+from shaperoute_api.gym_sessions import install_gym_sessions
 from shaperoute_api.images import (
     AnyRequest,
     decode_image,
     image_request,
+    placed_outlines,
     plan_request,
+    route_request_of,
     trace,
+    with_placed,
 )
 from shaperoute_api.insights import Insights, route_fields
 from shaperoute_api.jobs import Job, JobEnd, Planner, RouteJobs
@@ -79,10 +93,15 @@ from shaperoute_api.line_directions import (
     RouteDirectionsRequestBody,
     directions_of,
 )
+from shaperoute_api.live_shares import install_live_shares
 from shaperoute_api.messages import install_messages
 from shaperoute_api.moderation import install_moderation
+from shaperoute_api.muw_routes import MuwRouteCatalog, install_muw_routes
+from shaperoute_api.notification_list import install_notification_list
 from shaperoute_api.notifications import install_notifications
+from shaperoute_api.outfit_tags import install_outfit_tags
 from shaperoute_api.outline_edits import edit_outline
+from shaperoute_api.photo_posts import install_photo_posts
 from shaperoute_api.places import (
     MAX_QUERY_LENGTH,
     MIN_QUERY_LENGTH,
@@ -90,19 +109,28 @@ from shaperoute_api.places import (
     PlaceSearch,
     PlacesUnavailableError,
 )
+from shaperoute_api.plan_posts import install_plan_posts
+from shaperoute_api.pool_swims import install_pool_swims
+from shaperoute_api.post_links import install_post_links
 from shaperoute_api.profile_photos import install_profile_photos
 from shaperoute_api.profiles import install_profiles
 from shaperoute_api.push import install_push
 from shaperoute_api.reactions import install_reactions
 from shaperoute_api.recommended import (
+    DEFAULT_PAGE,
     DEFAULT_RADIUS_M,
+    MAX_PAGE,
     MAX_RADIUS_M,
+    RUNNING,
+    CatalogPageBody,
     RecommendedCatalog,
     RecommendedRouteDetailBody,
     RecommendedRoutesBody,
 )
 from shaperoute_api.request_log import RequestLog
 from shaperoute_api.route_store import RouteStore
+from shaperoute_api.run_gpx import with_type
+from shaperoute_api.run_stats import install_run_stats
 from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
@@ -113,6 +141,7 @@ from shaperoute_api.schemas import (
     ImageOutlineRequestBody,
     ImageRouteRequestBody,
     RouteJobBody,
+    RouteJobWithFirstBody,
     RouteRequestBody,
     RouteResultBody,
     ShapeReadingBody,
@@ -120,12 +149,23 @@ from shaperoute_api.schemas import (
     TrackScoreBody,
     TrackScoreRequestBody,
 )
+from shaperoute_api.sign_in_providers import (
+    SignInProviders,
+    install_sign_in_providers,
+)
 from shaperoute_api.signals import SignalBody, SignalGate, event_of
+from shaperoute_api.sleep import install_sleep
+from shaperoute_api.sleep_posts import install_sleep_posts
 from shaperoute_api.strava import install_strava
 from shaperoute_api.strava_client import Strava
+from shaperoute_api.stretch_sessions import install_stretch_sessions
+from shaperoute_api.stroke_matches_api import install_stroke_matches
+from shaperoute_api.style_posts import install_style_posts
 from shaperoute_api.themed import ThemedJobBody, ThemedJobs, ThemedRequestBody
+from shaperoute_api.together import install_together
 from shaperoute_api.track_scores import score_run
 from shaperoute_api.user_photos import install_user_photos
+from shaperoute_api.vo2max import install_vo2max
 from shaperoute_api.way_back_api import install_way_back
 
 log = logging.getLogger(__name__)
@@ -181,20 +221,11 @@ def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
     """The engine's RouteRequest checks the values, and ImageRequest those of
     an image route: InvalidRequestError. An image has the pen up only with
     its pieces (TASK-297 C2). The activity is one of the contract's: the
-    engine may draw more (TASK-190)."""
+    engine may draw more (TASK-190); a walk is asked as a run (TASK-371)."""
     check_supported(body.activity)
     if isinstance(body, ImageRouteRequestBody):
         return image_request(body)
-    return RouteRequest(
-        start=body.start,
-        shape=body.shape,
-        word=body.word,
-        distance_m=body.distance_m,
-        activity=body.activity,
-        style=body.style,  # type: ignore[arg-type]  # RouteRequest checks it
-        pen_up=body.pen_up,
-        near=body.near,
-    )
+    return route_request_of(body)
 
 
 def gpx_file_name(request: AnyRequest, when: datetime) -> str:
@@ -206,12 +237,23 @@ def gpx_file_name(request: AnyRequest, when: datetime) -> str:
 
 
 def job_body(job: Job) -> RouteJobBody:
+    result = None
+    if job.result is not None:
+        # Where the engine placed the drawing (TASK-347): the job's, not the
+        # engine's result's.
+        result = with_placed(RouteResultBody.from_result(job.result), job.placed)
     return RouteJobBody(
-        job_id=job.job_id,
-        status=job.status,
-        result=None if job.result is None else RouteResultBody.from_result(job.result),
-        error=job.error,
+        job_id=job.job_id, status=job.status, result=result, error=job.error
     )
+
+
+def job_body_with_first(job: Job) -> RouteJobWithFirstBody:
+    """`job_body` and, while the job still computes, the route from the
+    user's own start (TASK-435, ADR-0361): for who asks with `?first=1`."""
+    first = None
+    if job.first is not None:
+        first = with_placed(RouteResultBody.from_result(job.first), job.first_placed)
+    return RouteJobWithFirstBody(**dict(job_body(job)), first=first)
 
 
 def job_recorder(request_log: RequestLog) -> JobEnd:
@@ -239,6 +281,7 @@ def create_app(
     request_log: RequestLog | None = None,
     places: PlaceSearch | None = None,
     recommended: RecommendedCatalog | None = None,
+    muw_routes: MuwRouteCatalog | None = None,
     themed: ThemedJobs | None = None,
     cities: CitySearch | None = None,
     insights: Insights | None = None,
@@ -247,6 +290,7 @@ def create_app(
     route_store: RouteStore | None = None,
     run_places: PlaceNames | None = None,
     strava: Strava | None = None,
+    sign_in: SignInProviders | None = None,
 ) -> FastAPI:
     # The search events and the learned vocabulary (TASK-130, ADR-0101).
     insights = insights or Insights(None)
@@ -319,11 +363,16 @@ def create_app(
     # A run sent to the runner's Strava (TASK-187); off unless the
     # environment has this server's Strava application.
     install_strava(app, strava)
+    # «Continue with Apple» and «Continue with Google» (TASK-322); each off
+    # unless the environment has its keys.
+    install_sign_in_providers(app, sign_in)
     # The profile picture of an account (TASK-178); it needs its token.
     install_profile_photos(app)
     # Username and bio, and the profile the others see (TASK-116); both need
     # a token.
     install_profiles(app)
+    # The VO₂ max on the profile, with its owner's yes (TASK-397).
+    install_vo2max(app)
     # The email and the phone number of an account, changed by their owner
     # (TASK-183); both need a token.
     install_contact(app)
@@ -333,12 +382,55 @@ def create_app(
     # The phones of an account, and the push notifications sent to them
     # (TASK-262); the tokens need a token.
     install_push(app)
+    # The bell's list: what push.py told an account, to read in the app
+    # (TASK-367 C); it needs a token.
+    install_notification_list(app)
     # The runs an account publishes as drawings, cut for the others
     # (TASK-117); they need a token.
     install_drawings(app)
+    # A drawing for everyone opened by its link, without an account, and
+    # the switch that turns the links of an account off (TASK-455 part C).
+    install_post_links(app)
+    # The workouts at the gym, saved without a track, and their sets
+    # (TASK-385); they need a token.
+    install_gym_sessions(app)
+    # The monthly leaderboards at the gym (TASK-385 F); they need a token.
+    install_gym_leaderboard(app)
+    install_gym_history(app)
+    # The calendar of one's own workouts at the gym (TASK-411 B); it needs
+    # a token.
+    install_gym_calendar(app)
+    # The calendar of all one's own activities, with the twelve months up
+    # to it (TASK-462 A); it needs a token.
+    install_activity_calendar(app)
+    # The plans of the gym (TASK-411 C); they need a token.
+    install_gym_plans(app)
+    # The swims in a pool, saved without a track, and their lengths
+    # (TASK-400); they need a token.
+    install_pool_swims(app)
+    # The stretching sessions, saved without a track, and their routine
+    # (TASK-475); they need a token.
+    install_stretch_sessions(app)
+    # The nights of sleep a person publishes, on the profile and in the
+    # post of an activity (TASK-467 B1); they need a token.
+    install_sleep(app)
+    install_sleep_posts(app)
+    # The figures of a run for the page of its post: splits, elevation,
+    # cadence, calories (TASK-410 C); they need a token.
+    install_run_stats(app)
+    # «Share live activity» (TASK-424): the links need a token, their page
+    # only the token of the link.
+    install_live_shares(app)
     # Up to three photos of a drawing, besides its map (TASK-208); they need
     # a token.
     install_drawing_photos(app)
+    # Posts of photos only, drawings without a run (TASK-312 part C); they
+    # need a token.
+    install_photo_posts(app)
+    # Gym plans posted, drawings without a run that carry the plan
+    # (TASK-485); they need a token.
+    install_plan_posts(app)
+    install_together(app)
     # The photos of a profile's drawings, a page at a time (TASK-324); they
     # need a token.
     install_user_photos(app)
@@ -350,9 +442,15 @@ def create_app(
     # What the members leave under a drawing with one tap, the super like
     # with a comment (TASK-119); they need a token.
     install_reactions(app)
+    # What they leave on a comment, or on a reply (TASK-454); a token too.
+    install_comment_reactions(app)
     # The drawings the members publish, read by whoever is signed in
     # (TASK-118); it needs a token.
     install_feed(app)
+    install_avatars(app)
+    # The search of the drawings from the lens of «Feed» (TASK-344); it
+    # needs a token.
+    install_drawing_search(app)
     # Blocking and reporting (TASK-121); they need a token.
     install_moderation(app)
     # Private messages, with message requests (TASK-319); after the blocks,
@@ -369,6 +467,9 @@ def create_app(
     # Group runs on a route, «I'm going» and the reminder an hour before
     # (TASK-309); they need a token.
     install_group_runs(app)
+    # A stroke drawn on the map, anchored to the roads as the finger lifts
+    # (TASK-347 A), and the probe that says this server does it.
+    install_stroke_matches(app, source)
 
     @app.get("/health")
     def health() -> dict[str, str]:
@@ -397,11 +498,15 @@ def create_app(
         return edit_outline(body)
 
     @app.get("/route-jobs/{job_id}", responses={404: {"model": ErrorBody}})
-    def get_route_job(job_id: str) -> RouteJobBody:
+    def get_route_job(
+        job_id: str, first: bool = False
+    ) -> RouteJobWithFirstBody | RouteJobBody:
         job = route_jobs.get(job_id)
         if job is None:
             raise HTTPException(404, UNKNOWN_JOB)
-        return job_body(job)
+        # The first route only to who asks (TASK-435): the body of an app
+        # that does not know it stays as it was.
+        return job_body_with_first(job) if first else job_body(job)
 
     @app.delete(
         "/route-jobs/{job_id}", status_code=204, responses={404: {"model": ErrorBody}}
@@ -442,6 +547,12 @@ def create_app(
             # Where to pause between the letters of a word with the pen up.
             body.result.walks,
         )
+        if body.result.turns:
+            # A swim's turns as waypoints, the first lap's (TASK-323).
+            turns = [turn.to_turn() for turn in body.result.turns]
+            document = with_turns(document, turns)
+        # A walk says it is one (TASK-371); every other file is as before.
+        document = with_type(document, body.request.activity)
         return Response(
             document,
             media_type="application/gpx+xml",
@@ -474,6 +585,22 @@ def create_app(
     # The «Recommended» row: the same routes, the best drawn first, then the
     # most liked and run (TASK-092, ADR-0229); it needs a token.
     install_best_routes(app, catalog)
+    # The routes MuW draws for the Feed, apart from it (TASK-365, ADR-0310).
+    install_muw_routes(app, muw_routes)
+
+    # The whole catalogue a page at a time, for the end of «Explore»
+    # (TASK-420 part E): city by city from the nearest to the point.
+    @app.get("/catalog")
+    def catalog_page(
+        lat: float = Query(ge=-90, le=90),
+        lon: float = Query(ge=-180, le=180),
+        offset: int = Query(default=0, ge=0),
+        limit: int = Query(default=DEFAULT_PAGE, ge=1, le=MAX_PAGE),
+        # The runs when it is not said, as before a route could be a ride
+        # (TASK-441 B2): an app that does not ask gets no ride.
+        activity: str = Query(default=RUNNING, max_length=40),
+    ) -> CatalogPageBody:
+        return catalog.page((lat, lon), offset, limit, activity)
 
     @app.get("/recommended-routes")
     def list_recommended_routes(
@@ -482,8 +609,11 @@ def create_app(
         radius_m: int = Query(default=DEFAULT_RADIUS_M, ge=100, le=MAX_RADIUS_M),
         shape: str | None = Query(default=None, max_length=40),
         distance_m: int | None = Query(default=None, ge=0),
+        activity: str = Query(default=RUNNING, max_length=40),
     ) -> RecommendedRoutesBody:
-        routes = catalog.near((lat, lon), radius_m, shape, distance_m)
+        routes = catalog.near(
+            (lat, lon), radius_m, shape, distance_m, activity=activity
+        )
         insights.record(
             "recommended_list",
             point=(lat, lon),
@@ -654,6 +784,7 @@ def create_app(
             plan = planner(request, ground_for(source, request.activity))
             others = [other.result for other in plan.alternatives]
             result = replace(plan.result, alternatives=others)
+            placed = placed_outlines(plan, request)
         except Exception as exc:
             elapsed = time.perf_counter() - started
             log.info("route %s: %s after %.1f s", what, type(exc).__name__, elapsed)
@@ -680,7 +811,7 @@ def create_app(
         insights.record(
             "route", ms=round((time.perf_counter() - started) * 1000), **fields
         )
-        return RouteResultBody.from_result(result)
+        return with_placed(RouteResultBody.from_result(result), placed)
 
     @app.exception_handler(RequestValidationError)
     def invalid_body(_: Request, exc: RequestValidationError) -> JSONResponse:
@@ -738,5 +869,14 @@ def create_app(
     def engine_error(request: Request, exc: Exception) -> JSONResponse:
         log.exception("route failed", exc_info=exc)
         return engine_answer(request, exc)
+
+    # MuW Style (TASK-384, ADR-0326): our posts with an AI photo and shop
+    # links, apart from GET /feed; the Awin ids from the environment.
+    install_style_posts(app)
+    # Items tagged on the photos of members' posts (TASK-394, ADR-0333): their
+    # links checked with Web Risk, the key from the environment.
+    install_outfit_tags(app)
+    # A member's gear and its totals (TASK-486, ADR-0393).
+    install_gear(app)
 
     return app

@@ -1,19 +1,48 @@
-import { useState } from "react";
+import {
+  type Activity,
+  type GymPlanFeel,
+  type LatLon,
+  SLEEP_SHOWN_DEFAULT,
+  type Visibility,
+} from "@shaperoute/shared-types";
+import { type MutableRefObject, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
-import { type DrawingChoice, isChosen, NOT_CHOSEN } from "../api/drawings";
+import { type DrawingChoice, isChosen, isSeen, NOT_CHOSEN } from "../api/drawings";
+import { GearPicker, useGearChoice } from "../gear/GearPicker";
+import { loadHealthOn } from "../health/healthChoice";
+import { healthPhone } from "../health/healthModules";
+import type { HealthPhone } from "../health/healthPhone";
+import { HealthRunEnd } from "../health/HealthRunEnd";
+import { sleepReader } from "../health/sleepModules";
+import { SleepRunEnd } from "../health/SleepRunEnd";
+import type { SleepReader } from "../health/sleepSamples";
+import { useLastNight } from "../health/useLastNight";
+import { saveToHealth, useHealth } from "../health/useHealth";
+import { adaptDayOf, answered } from "../gym/adapt";
+import { AdaptQuestion } from "../gym/AdaptQuestion";
+import { keepPlan, useKeptPlans } from "../gym/plans";
+import { RUN_NAMES } from "../gym/proposal";
 import { t } from "../i18n";
+import { ImportedMark } from "../imports/ImportedMark";
 import { showSavedLogo } from "../intro/SavedLogo";
-import { activityOf } from "../settings/sport";
+import { loadRun } from "../navigation/trackStore";
+import { runActivityOf } from "../settings/sport";
 import { useSport } from "../settings/useSport";
 import { phonePhotoUri } from "../social/drawingPhotos";
-import type { PhotoShown } from "../social/drawingsDoor";
+import type { PostLayout } from "../social/composer/layoutFrame";
+import type { ComposerPhoto } from "../social/composer/PostComposer";
+import { DRAWING_ITEM, type PostItem, renumbered } from "../social/composer/postOrder";
+import { OutfitTaggingContext, useChosenOutfits } from "../social/outfit/OutfitTagging";
 import {
   DrawingForm,
   FormScroll,
   nextPlace,
   type PickPhoto,
+  seenText,
 } from "../social/PublicParts";
+import { askToPost, takePlannedRun } from "../liveShare/plannedPost";
+import { loadVisibility, saveVisibility } from "../social/visibilityChoice";
 import { loadSendToStrava, saveSendToStrava } from "../strava/stravaChoice";
 import { StravaRunEnd } from "../strava/StravaRunEnd";
 import { useStrava } from "../strava/useStrava";
@@ -34,18 +63,46 @@ type Props = {
   onSave: () => boolean;
   /** «Discard», after a yes: the run is gone for good. */
   onDiscard: () => void;
-  /** The fakes of the tests: the photo picker, the fetch of the tag search. */
+  /** The fakes of the tests: the photo picker, the fetch of the tag search,
+   * the phone's health data. */
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
   apiKey?: string | null;
+  health?: HealthPhone | null;
+  /** The phone's reader of the sleep (TASK-467 part B2): none in every
+   * build until the native one of part C, so nothing of it shows. */
+  sleep?: SleepReader | null;
+  /**
+   * An activity added from a file of another app (TASK-312, ADR-0272), with
+   * the sport the file says (null: the one of «Settings»): «Imported» over
+   * the form, and a line that it does not count for Play or the contests.
+   * Neither «Send to Strava» (it often comes from Strava itself) nor the
+   * phone's health data (the other app wrote it there already). It starts
+   * on «Only me», or on `visibility` when given: «Everyone» from the Feed's
+   * «+» (TASK-476, the user's choice), seen over «Save» and changeable.
+   */
+  imported?: { sport: Activity | null; visibility?: Visibility };
+  /**
+   * The card folded at the end (TASK-478 part b): this form's «Save», for
+   * the strip's, so that it does all that this one does, the choices of
+   * the form with it. Null without an account: no «Save» then.
+   */
+  saveRef?: MutableRefObject<(() => void) | null>;
 };
 
 /** How much of the screen the form may take: the map and the buttons
  * keep the rest. */
 export const FORM_SHARE = 0.5;
 
-/** A photo chosen at the end of the run, on the phone until «Save». */
-type Chosen = { n: number; base64: string };
+/** A photo chosen at the end of the run, on the phone until «Save»: as
+ * it will go, and as it was taken, while its layout can still change
+ * (TASK-348). */
+type Chosen = {
+  n: number;
+  base64: string;
+  original: string;
+  layout: PostLayout | null;
+};
 
 /**
  * The way out of a run that ended, under its card (TASK-172): with an
@@ -53,17 +110,50 @@ type Chosen = { n: number; base64: string };
  * away, after asking. Nothing is saved without «Save». Without an account
  * the card keeps its «Done», and a line here says how to keep the next
  * runs. Over the buttons the form of the drawing, as Strava's (TASK-208,
- * ADR-0170): up to three photos, the title, «How did it go?», the people
+ * ADR-0170): up to 9 photos with the map among them, in the order held and
+ * dragged, each with a layout that can put the drawing in it (TASK-348),
+ * the title, «How did it go?», the people
  * tagged, what the run was (from the sport of «Settings») and who can see
- * it («Only me» at every run, the user's choice); then «Send to Strava»
- * with Strava connected (TASK-187). With «Save» the choice and the photos
- * go with the run: to the API once it has the run, the photos only while
- * others see it.
+ * it («Only me» until the account saves another choice, then the last one
+ * saved, the user's choice, ADR-0304); then «Send to Strava»
+ * with Strava connected (TASK-187), and «Save to Apple Health» (or to
+ * Health Connect) where the phone's build has it (TASK-321). With «Save»
+ * the choice and the photos go with the run: to the API once it has the
+ * run, the photos only while others see it; and the run to the phone's
+ * health data, after the user's yes. An activity added from a file has the
+ * same form, marked «Imported» (TASK-312).
  */
-export function RunEnd({ onSave, onDiscard, pick, fetchFn, apiKey }: Props) {
-  const { signedIn, signIn, toStrava, toDrawing, toPhotos, full, waiting, refused } =
-    useActivitiesDoor();
+export function RunEnd({
+  onSave,
+  onDiscard,
+  pick,
+  fetchFn,
+  apiKey,
+  health: phoneHealth = healthPhone(),
+  sleep: phoneSleep = sleepReader(),
+  imported,
+  saveRef,
+}: Props) {
+  const {
+    signedIn,
+    owner,
+    signIn,
+    toStrava,
+    toDrawing,
+    toPhotos,
+    toOrder,
+    toOutfit,
+    toSleep,
+    toGear,
+    full,
+    waiting,
+    refused,
+  } = useActivitiesDoor();
+  // The items tagged on the photos, until «Save» (TASK-394 part B).
+  const outfits = useChosenOutfits(owner);
   const strava = useStrava();
+  const health = imported === undefined ? phoneHealth : null;
+  const healthState = useHealth(health);
   const sport = useSport();
   const { height } = useWindowDimensions();
   // «Discard» asks first, here: a run thrown away does not come back.
@@ -71,27 +161,144 @@ export function RunEnd({ onSave, onDiscard, pick, fetchFn, apiKey }: Props) {
   const [failed, setFailed] = useState(false);
   // As it was left at the end of the last run (the user's choice).
   const [send, setSend] = useState(loadSendToStrava);
-  // «Only me» at every run, whatever the last one chose (the user's
-  // choice): publishing by mistake costs more than forgetting to. The
-  // activity is the sport chosen in «Settings».
+  // «Only me» until the account saves another choice, then the last one
+  // saved (the user's choice, ADR-0304): nobody is public without having
+  // chosen it. An activity added from a file is an old one: «Only me», but
+  // from the Feed's «+» «Everyone» (TASK-476, the user's choice).
+  // The activity is the sport chosen in «Settings», or the one the file says.
   const [choice, setChoice] = useState<DrawingChoice>(() => ({
     ...NOT_CHOSEN,
-    activity: activityOf(sport),
+    activity: imported?.sport ?? runActivityOf(sport),
+    visibility:
+      imported === undefined
+        ? loadVisibility(owner)
+        : (imported.visibility ?? "only_me"),
   }));
+  // The planned live this recording started (TASK-468 part B2b2, the
+  // user's choice 5): «Post it in the Feed?» once; «Post» makes the form
+  // the live's (who sees it, its title), and «Save» still decides.
+  const [planned] = useState(() => (imported === undefined ? takePlannedRun() : null));
+  // The form keeps its title as typed: drawn again once «Post» filled it.
+  const [formKey, setFormKey] = useState(0);
+  useEffect(() => {
+    if (planned === null || !signedIn) {
+      return;
+    }
+    askToPost(planned, () => {
+      setChoice((was) => ({
+        ...was,
+        visibility: planned.audience,
+        title: was.title ?? planned.title,
+      }));
+      setFormKey((was) => was + 1);
+    });
+  }, [planned, signedIn]);
+  // Started from a remembered «Everyone» or «Followers»: the form scrolls, so
+  // its words stay over «Save» too, seen before the run goes public.
+  const [startedSeen] = useState(() => isSeen(choice.visibility));
   const [photos, setPhotos] = useState<Chosen[]>([]);
+  // The pages of the post, the map among the photos (TASK-348).
+  const [items, setItems] = useState<PostItem[]>([{ kind: "drawing" }]);
+  // The line a photo can carry: the run just ended, never an imported one.
+  const [ended] = useState(() => (imported === undefined ? loadRun() : null));
+  const [line] = useState<LatLon[] | null>(
+    () => ended?.track.fixes.map((fix) => fix.point) ?? null,
+  );
+  // «Sleep last night» (TASK-467 part B2): the night before the run began,
+  // never for an activity from a file (an old one). On until turned off
+  // (the user's choice); shown, and sent, only with a post others see.
+  const [beganMs] = useState(() => ended?.track.fixes[0]?.timeMs ?? Date.now());
+  const lastNight = useLastNight(imported === undefined ? phoneSleep : null, beganMs);
+  const [sleepShown, setSleepShown] = useState(SLEEP_SHOWN_DEFAULT);
+  const night = isSeen(choice.visibility) ? lastNight : null;
+  // «Gear» (TASK-486 part C): the sport's defaults, until a tap; none for
+  // an activity from a file, an old one.
+  const gear = useGearChoice(choice.activity, { withDefaults: imported === undefined });
+  // «How did it go?» for a run day of a plan (TASK-488): a run just
+  // recorded, never one from a file; kept with «Save».
+  const plans = useKeptPlans();
+  const [adaptDay] = useState(() =>
+    imported === undefined ? adaptDayOf(plans, new Date(beganMs), "run") : null,
+  );
+  const [feel, setFeel] = useState<GymPlanFeel | null>(null);
+  const asking = signedIn && adaptDay !== null && choice.activity === "running";
 
   function save() {
-    const sending = strava.status.available && strava.status.connected && send;
+    const sending =
+      imported === undefined &&
+      strava.status.available &&
+      strava.status.connected &&
+      send;
     toStrava(sending ? { name: choice.title } : null);
     toDrawing(isChosen(choice) ? choice : null);
-    toPhotos([...photos].sort((a, b) => a.n - b.n).map((photo) => photo.base64));
+    // The photos take the places of the post's order (keepPhotos), and the
+    // order goes beside them when the map is not first.
+    const byPlace = new Map(photos.map((photo) => [photo.n, photo.base64]));
+    const post = renumbered<string>(
+      items.flatMap(
+        (item): ({ kind: "drawing" } | { kind: "photo"; photo: string })[] => {
+          if (item.kind === "drawing") {
+            return [item];
+          }
+          const base64 = byPlace.get(item.n);
+          return base64 === undefined ? [] : [{ kind: "photo", photo: base64 }];
+        },
+      ),
+    );
+    toPhotos(post.photos);
+    // The items tagged on them go with them, in the same order (TASK-394).
+    toOutfit?.(
+      items.flatMap((item) =>
+        item.kind === "photo" && byPlace.has(item.n) ? [outfits.outfitOf(item.n)] : [],
+      ),
+    );
+    toOrder(
+      post.photos.length > 0 && post.order[0] !== DRAWING_ITEM ? post.order : null,
+    );
+    // The night goes only when the post shows it: off, or with a post only
+    // its owner sees, nothing of it leaves the phone (TASK-467).
+    toSleep?.(night !== null && sleepShown ? { ...night, shown: true } : null);
+    // The gear goes with the run, whoever sees it: it counts the totals.
+    toGear?.(gear.chosen);
+    // The run as the phone keeps it, read before «Save» lets the file go:
+    // only after the user's yes to the phone's health data.
+    const run = health !== null && loadHealthOn() ? loadRun() : null;
     const kept = onSave();
     setFailed(!kept);
     if (kept) {
+      if (imported === undefined && owner !== null) {
+        saveVisibility(owner, choice.visibility);
+      }
+      if (asking && owner !== null && feel !== null) {
+        // Sent with the plans' next sync (the gym's page, «My plans»).
+        const { plan, program, session } = adaptDay;
+        keepPlan(owner, plan.key, {
+          name: plan.name,
+          days: plan.days,
+          items: plan.items,
+          program: answered(program, session, feel),
+        });
+      }
       // The Sgrava logo, over the app, says the run is kept (TASK-212).
       showSavedLogo();
+      if (run !== null) {
+        // To the phone's health data, as the form says the run was
+        // (TASK-321): written there, on the phone, with no network.
+        void saveToHealth(health, run.track, choice.activity);
+      }
     }
   }
+
+  // After every drawing: the «Save» of the form as it is now.
+  useEffect(() => {
+    if (saveRef === undefined) {
+      return;
+    }
+    saveRef.current = signedIn ? save : null;
+    return () => {
+      saveRef.current = null;
+    };
+  });
 
   if (!signedIn) {
     return (
@@ -127,44 +334,106 @@ export function RunEnd({ onSave, onDiscard, pick, fetchFn, apiKey }: Props) {
       </View>
     );
   }
-  const shown: PhotoShown[] = [...photos]
-    .sort((a, b) => a.n - b.n)
-    .map((photo) => ({
-      n: photo.n,
-      source: { uri: phonePhotoUri(photo.base64) },
-      onPhone: true,
-    }));
+  const shown: ComposerPhoto[] = photos.map((photo) => ({
+    n: photo.n,
+    source: { uri: phonePhotoUri(photo.base64) },
+    layout: photo.layout,
+    original: { uri: phonePhotoUri(photo.original) },
+  }));
   return (
     <View style={styles.end}>
       <FormScroll maxHeight={Math.round(height * FORM_SHARE)}>
         <View style={styles.form}>
-          <DrawingForm
-            choice={choice}
-            onChoice={setChoice}
-            photos={shown}
-            onAddPhoto={(base64) => {
-              const n = nextPlace(photos);
-              if (n !== null) {
-                setPhotos((was) => [...was, { n, base64 }]);
+          {imported !== undefined && (
+            <View style={styles.imported}>
+              <ImportedMark />
+              <Text style={styles.note}>
+                {t("Imported activities don't count for Play or contests.")}
+              </Text>
+            </View>
+          )}
+          <OutfitTaggingContext.Provider value={outfits.tagging}>
+            <DrawingForm
+              key={formKey}
+              choice={choice}
+              onChoice={setChoice}
+              items={items}
+              photos={shown}
+              onOrder={setItems}
+              onAddPhotos={(added) => {
+                const now = [...photos];
+                const pages = [...items];
+                for (const base64 of added) {
+                  const n = nextPlace(now);
+                  if (n === null) {
+                    break;
+                  }
+                  now.push({ n, base64, original: base64, layout: null });
+                  pages.push({ kind: "photo", n });
+                }
+                setPhotos(now);
+                setItems(pages);
+              }}
+              onRemovePhoto={(n) => {
+                outfits.forget(n);
+                setPhotos((was) => was.filter((other) => other.n !== n));
+                setItems((was) =>
+                  was.filter((item) => item.kind === "drawing" || item.n !== n),
+                );
+              }}
+              track={line}
+              rotationDeg={ended?.rotation_deg ?? null}
+              onLayout={(n, layout, made) =>
+                setPhotos((was) =>
+                  was.map((photo) =>
+                    photo.n !== n
+                      ? photo
+                      : {
+                          ...photo,
+                          base64: made?.base64 ?? photo.original,
+                          layout: made === null ? null : layout,
+                        },
+                  ),
+                )
               }
-            }}
-            onRemovePhoto={(photo) =>
-              setPhotos((was) => was.filter((other) => other.n !== photo.n))
-            }
-            pick={pick}
-            fetchFn={fetchFn}
-            apiKey={apiKey}
-          />
-          <StravaRunEnd
-            strava={strava}
-            send={send}
-            onSend={(on) => {
-              setSend(on);
-              saveSendToStrava(on);
-            }}
-          />
+              imported={imported !== undefined}
+              pick={pick}
+              fetchFn={fetchFn}
+              apiKey={apiKey}
+            />
+          </OutfitTaggingContext.Provider>
+          {asking && (
+            <AdaptQuestion
+              program={adaptDay.program}
+              session={adaptDay.session}
+              date={new Date(beganMs)}
+              feel={feel}
+              onFeel={setFeel}
+              heading={t("{run} of the plan: how did it go?", {
+                run: t(RUN_NAMES[adaptDay.session.run?.kind ?? "easy"]),
+              })}
+            />
+          )}
+          <GearPicker {...gear} />
+          {imported === undefined && (
+            <StravaRunEnd
+              strava={strava}
+              send={send}
+              onSend={(on) => {
+                setSend(on);
+                saveSendToStrava(on);
+              }}
+            />
+          )}
+          {health !== null && (
+            <HealthRunEnd store={health.store} health={healthState} />
+          )}
+          <SleepRunEnd night={night} shown={sleepShown} onShown={setSleepShown} />
         </View>
       </FormScroll>
+      {startedSeen && isSeen(choice.visibility) && (
+        <Text style={styles.note}>{seenText(choice.visibility)}</Text>
+      )}
       {failed && (
         <Text style={styles.problem} accessibilityRole="alert">
           {!full
@@ -208,6 +477,13 @@ const styles = StyleSheet.create({
   form: {
     gap: space.sm,
     paddingBottom: space.xs,
+  },
+  imported: {
+    gap: space.xs,
+  },
+  note: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
   },
   buttons: {
     flexDirection: "row",

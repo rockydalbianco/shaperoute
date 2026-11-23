@@ -1,5 +1,4 @@
 import type {
-  Activity,
   Drawing,
   DrawingDetail,
   DrawingPhoto,
@@ -9,20 +8,28 @@ import type {
   DrawingTag,
   LatLon,
   MyDrawing,
+  RunActivity,
   Visibility,
 } from "@shaperoute/shared-types";
-import { ACTIVITIES, VISIBILITIES } from "@shaperoute/shared-types";
+import {
+  PHOTOS_SOURCE,
+  PLAN_SOURCE,
+  RUN_ACTIVITIES,
+  SLEEP_SOURCE,
+  VISIBILITIES,
+} from "@shaperoute/shared-types";
 
 import { accountProblem, SESSION_ENDED } from "../account/messages";
 import { t } from "../i18n";
 import { type AccountOutcome, ask, authHeaders } from "./accounts";
+import { apiKey, keyHeaders } from "./apiUrl";
 
 /**
  * Drawings (TASK-117, ADR-0159; TASK-208, ADR-0170): the calls of
  * docs/API.md, «Drawings», all with the session token. A saved run of «My
  * activities» gets a title, a description, the people tagged, what it was
- * and who can see it; seen by others, it is in their profile, cut by the
- * API: never its first and last 200 m, never the planned route. The bodies
+ * and who can see it; seen by others, it is in their profile, whole
+ * (ADR-0330) but never with its times or the planned route. The bodies
  * are packages/shared-types/fixtures/*drawing*.json.
  */
 
@@ -36,11 +43,35 @@ type Options = { fetchFn?: typeof fetch; key?: string | null };
 export type DrawingChoice = {
   title: string | null;
   description: string | null;
-  activity: Activity;
+  activity: RunActivity;
   /** The members tagged, in order; their names are what the form shows. */
   tags: DrawingTag[];
   visibility: Visibility;
+  /** The monthly challenge chosen in the form (TASK-343 part B): not part of
+   * the drawing, its call goes after the drawing is saved. Left out: none. */
+  entry?: DrawingEntry;
 };
+
+/** In or out of a monthly challenge. Sending it again changes nothing. */
+export type DrawingEntry = { contest: string; entered: boolean };
+
+/** The entry to send with `choice`: only a drawing for everyone can take part.
+ * One hidden by another visibility waits, the same on the way back. */
+export function entryToSend(choice: DrawingChoice): DrawingEntry | null {
+  return choice.visibility === "everyone" ? (choice.entry ?? null) : null;
+}
+
+function sameEntry(a: DrawingEntry | undefined, b: DrawingEntry | undefined): boolean {
+  return a?.contest === b?.contest && a?.entered === b?.entered;
+}
+
+function isDrawingEntry(value: unknown): value is DrawingEntry {
+  return (
+    isRecord(value) &&
+    typeof value.contest === "string" &&
+    typeof value.entered === "boolean"
+  );
+}
 
 /** Nothing chosen yet: no title, a run, nobody tagged, only the owner. */
 export const NOT_CHOSEN: DrawingChoice = {
@@ -91,6 +122,7 @@ export function sameChoice(a: DrawingChoice, b: DrawingChoice): boolean {
     a.description === b.description &&
     a.activity === b.activity &&
     a.visibility === b.visibility &&
+    sameEntry(a.entry, b.entry) &&
     a.tags.length === b.tags.length &&
     a.tags.every((tag, i) => tag.public_id === b.tags[i].public_id)
   );
@@ -122,7 +154,7 @@ export function choiceFrom(value: unknown): DrawingChoice | null {
   if (typeof item.public === "boolean" && item.visibility === undefined) {
     return { ...NOT_CHOSEN, title, visibility: item.public ? "everyone" : "only_me" };
   }
-  if (!isVisibility(item.visibility) || !isActivity(item.activity)) {
+  if (!isVisibility(item.visibility) || !isRunActivity(item.activity)) {
     return null;
   }
   const tags = Array.isArray(item.tags) ? item.tags.filter(isDrawingTag) : null;
@@ -138,6 +170,7 @@ export function choiceFrom(value: unknown): DrawingChoice | null {
     activity: item.activity,
     tags,
     visibility: item.visibility,
+    ...(isDrawingEntry(item.entry) ? { entry: item.entry } : {}),
   };
 }
 
@@ -226,13 +259,19 @@ export function removeDrawingPhoto(
 }
 
 /** What an `Image` shows of a photo on the API: its address, read with the
- * token as every other call (ADR-0120). */
+ * token as every other call (ADR-0120), and with the API's key: a server
+ * with one answers 401 to a request without it, and the photo stays blank
+ * (TASK-330). */
 export function drawingPhotoSource(
   baseUrl: string,
   token: string,
   photo: DrawingPhoto,
+  key: string | null = apiKey(),
 ): { uri: string; headers: Record<string, string> } {
-  return { uri: `${baseUrl}${photo.url}`, headers: authHeaders(token) };
+  return {
+    uri: `${baseUrl}${photo.url}`,
+    headers: { ...keyHeaders(key), ...authHeaders(token) },
+  };
 }
 
 /**
@@ -277,7 +316,7 @@ export function fetchUserDrawings(
   );
 }
 
-/** GET /drawings/{id}: one drawing whole, cut as the others see it. */
+/** GET /drawings/{id}: one drawing whole, as the others see it. */
 export function fetchDrawing(
   baseUrl: string,
   token: string,
@@ -356,8 +395,12 @@ function isVisibility(value: unknown): value is Visibility {
   );
 }
 
-function isActivity(value: unknown): value is Activity {
-  return typeof value === "string" && (ACTIVITIES as readonly string[]).includes(value);
+/** What a run of this app's may be saved as: a day on the snow too
+ * (TASK-375, RUN_ACTIVITIES). */
+function isRunActivity(value: unknown): value is RunActivity {
+  return (
+    typeof value === "string" && (RUN_ACTIVITIES as readonly string[]).includes(value)
+  );
 }
 
 export function isDrawingTag(value: unknown): value is DrawingTag {
@@ -378,12 +421,45 @@ export function isDrawingPhoto(value: unknown): value is DrawingPhoto {
   );
 }
 
+/**
+ * True when `body.activity` is one this app knows, or absent. An activity
+ * added to the API after this app (a walk of TASK-371, a day on the snow of
+ * TASK-375) is read as none, so the drawing shows as a run and the page it is
+ * in still loads: one post this app cannot name never takes the whole Feed
+ * with it (TASK-375 B0). The field is dropped from the body as read; any
+ * other value still refuses the drawing. A day on the snow is one this app
+ * knows (B1 for the owner's own, B2 for everyone's).
+ */
+function readsActivity(body: Record<string, unknown>): boolean {
+  if (body.activity === undefined || isRunActivity(body.activity)) {
+    return true;
+  }
+  // A post of photos only (TASK-312 part C) and a gym plan posted (TASK-485
+  // part B) have no run, so no activity: read as none, as on an API before
+  // TASK-208. The post of a night of sleep the same (TASK-467 part E). Any
+  // other drawing with a null activity is still refused.
+  if (
+    body.activity === null &&
+    (body.source === PHOTOS_SOURCE ||
+      body.source === PLAN_SOURCE ||
+      body.source === SLEEP_SOURCE)
+  ) {
+    delete body.activity;
+    return true;
+  }
+  if (typeof body.activity !== "string") {
+    return false;
+  }
+  delete body.activity;
+  return true;
+}
+
 /** The fields of TASK-208, when the API has them: each right, or absent. */
 function hasDetailFields(body: Record<string, unknown>): boolean {
   return (
     (body.visibility === undefined || isVisibility(body.visibility)) &&
     (body.description === undefined || isStringOrNull(body.description)) &&
-    (body.activity === undefined || isActivity(body.activity)) &&
+    readsActivity(body) &&
     (body.tags === undefined ||
       (Array.isArray(body.tags) && body.tags.every(isDrawingTag))) &&
     (body.photos === undefined ||

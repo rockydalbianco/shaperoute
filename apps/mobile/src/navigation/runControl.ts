@@ -71,7 +71,19 @@ export function useRunControl(): RunControl {
   return useSyncExternalStore(subscribeRunControl, runControl, runControl);
 }
 
+/**
+ * The auto-pause each kind of outing was left with, for the next one of
+ * its kind (TASK-305): on over the ground, off in the air, where standing
+ * still over the ground is flying into the wind and the live link would say
+ * «Paused» with the pilot up there. The runner's switch changes the one of
+ * the outing under way.
+ */
+const autoPauseOf = { ground: true, air: false };
+/** The outing under the controls is a flight. */
+let inAir = false;
+
 export function setAutoPause(on: boolean): void {
+  autoPauseOf[inAir ? "air" : "ground"] = on;
   set({ autoPause: on });
 }
 
@@ -91,6 +103,9 @@ type Session = {
   /** When a run taken up again went on (TASK-304): standing still counts
    * from here, not from a last fix minutes before, with the app closed. */
   takenUpMs: number;
+  /** Standing still this long pauses it: AUTO_PAUSE_AFTER_MS, longer for a
+   * swim (TASK-323 D, SWIM_AUTO_PAUSE_AFTER_MS). */
+  stillMs: number;
 };
 
 let session: Session | null = null;
@@ -158,7 +173,7 @@ function watchStanding(): void {
   }
   const since = stillSinceMs(session);
   const now = Date.now();
-  if (since === null || now - since < AUTO_PAUSE_AFTER_MS) {
+  if (since === null || now - since < session.stillMs) {
     return;
   }
   session.recorder.pause(now, true);
@@ -192,10 +207,10 @@ function catchUpClock(mine: Session): boolean {
     return false;
   }
   const since = stillSinceMs(mine);
-  if (since === null || now - since < AUTO_PAUSE_AFTER_MS) {
+  if (since === null || now - since < mine.stillMs) {
     return false;
   }
-  mine.recorder.pause(since + AUTO_PAUSE_AFTER_MS, true);
+  mine.recorder.pause(since + mine.stillMs, true);
   set({ phase: "paused", auto: true });
   return true;
 }
@@ -227,7 +242,20 @@ export type RunSession = {
  */
 export function controlRun(
   recorder: RunRecorder,
-  { onChange, say }: { onChange: () => void; say: (text: string) => void },
+  {
+    onChange,
+    say,
+    stillMs = AUTO_PAUSE_AFTER_MS,
+    air = false,
+  }: {
+    onChange: () => void;
+    say: (text: string) => void;
+    /** How long standing still waits before the pause: a run's unless said. */
+    stillMs?: number;
+    /** A flight (TASK-305): its auto-pause is off unless the pilot turned
+     * it on in a flight before. */
+    air?: boolean;
+  },
 ): RunSession {
   // One run at a time: a run still under the controls leaves them.
   if (session !== null) {
@@ -247,9 +275,12 @@ export function controlRun(
     countdown: fresh ? setTimeout(skipCountdown, COUNTDOWN_MS) : null,
     watch: setInterval(watchStanding, AUTO_PAUSE_CHECK_MS),
     takenUpMs: Date.now(),
+    stillMs,
   };
   session = mine;
+  inAir = air;
   set({
+    autoPause: autoPauseOf[air ? "air" : "ground"],
     phase: fresh ? "countdown" : held !== null ? "paused" : "running",
     startsAtMs: fresh ? Date.now() + COUNTDOWN_MS : null,
     auto: held?.auto === true,
@@ -304,7 +335,14 @@ export function controlRun(
       clearInterval(mine.watch);
       if (session === mine) {
         session = null;
-        set({ phase: "idle", startsAtMs: null, auto: false, pen: false });
+        inAir = false;
+        set({
+          phase: "idle",
+          startsAtMs: null,
+          auto: false,
+          pen: false,
+          autoPause: autoPauseOf.ground,
+        });
       }
     },
   };

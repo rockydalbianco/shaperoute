@@ -1,0 +1,435 @@
+import {
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  AccessibilityInfo,
+  Animated,
+  BackHandler,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import {
+  SafeAreaInsetsContext,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+
+import { FeedMapShooter } from "../feed/FeedMaps";
+import { color } from "../theme/tokens";
+import { pageName, tourPart, useTourPager } from "../tour/tourParts";
+import { closeTopLayer, OnScreenContext } from "../ui/backLayers";
+import { AppHeader } from "./AppHeader";
+import { HeaderScrollContext, type HeaderScrollReport } from "./headerScroll";
+import { type BarTab, TabBar } from "./TabBar";
+import { TabReselect, TabReselectContext } from "./tabReselect";
+import {
+  pagesAround,
+  placeAt,
+  placesInView,
+  restsOnPlace,
+  type Strip,
+  STRIP_PLACES,
+  STRIP_START,
+  stripAt,
+} from "./tabStrip";
+
+export type ShellPage = BarTab & {
+  /** Built only when first reached: a page that asks the API as it opens
+   * («Explore») asks nothing until someone goes to look. */
+  lazy?: boolean;
+  render: () => ReactNode;
+};
+
+/**
+ * How many pages the strip at `x` stands from the app's `page`, signed, for
+ * the bar's capsule (TASK-388). A page holds a place on the strip only near
+ * the one on screen, and the app's page changes only when the strip rests:
+ * flicks one after the other carry the strip pages away from it. So it is
+ * counted from the page the strip has on screen, whose distance from the
+ * app's page is known up to whole rounds of the bar; the round nearest
+ * `last` keeps the capsule going the way the finger went.
+ */
+export function pagesFromPage(
+  x: number,
+  width: number,
+  now: Strip,
+  page: number,
+  count: number,
+  last: number,
+): number {
+  const along = x / width - now.place + now.page - page;
+  return along + Math.round((last - along) / count) * count;
+}
+
+type Props = {
+  /** The pages, in the order of their tabs. */
+  pages: readonly ShellPage[];
+  /** The one on screen. */
+  page: number;
+  onPage: (index: number) => void;
+  /** At the right of the header: the sport. */
+  action?: ReactNode;
+};
+
+/** Whether VoiceOver or TalkBack is on. */
+function useScreenReader(): boolean {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    let mounted = true;
+    AccessibilityInfo.isScreenReaderEnabled().then(
+      (enabled) => {
+        if (mounted) {
+          setOn(enabled);
+        }
+      },
+      () => {},
+    );
+    const listening = AccessibilityInfo.addEventListener("screenReaderChanged", setOn);
+    return () => {
+      mounted = false;
+      listening.remove();
+    };
+  }, []);
+  return on;
+}
+
+/**
+ * The pages of the app under one header, over the tab bar (TASK-367,
+ * ADR-0311). A tab touched shows its page at once; a swipe to the left or to
+ * the right slides to the page beside it, round and round: after the
+ * profile comes «Feed» (TASK-379, ADR-0323). A page stays built once
+ * reached, out of sight but with its scroll and its fields as they were
+ * left. The tab of the page on screen touched again takes it back to its
+ * top (`useTabReselect`). On Android «back» goes to the page shown before,
+ * and leaves the app from the first one shown.
+ *
+ * A row or a set of photos that slides sideways inside a page keeps the
+ * finger that starts on it: the paging scroll of React Native, one inside
+ * the other, as the pages side by side of TASK-154 were.
+ */
+export function TabShell({ pages, page, onPage, action }: Props) {
+  const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
+  const count = pages.length;
+  // VoiceOver goes by the tabs: a three-finger swipe would say «page 1001
+  // of 2000», the strip's.
+  const screenReader = useScreenReader();
+  const scroller = useRef<ScrollView>(null);
+  // The page on screen and its place on the strip; `asked` is the app's page
+  // as last seen. When the app moves (a tab, the tour, «back», the profile
+  // in place of «Messages»), its page comes at once where the strip is.
+  const [strip, setStrip] = useState<Strip & { asked: number }>(() => ({
+    page,
+    place: STRIP_START,
+    asked: page,
+  }));
+  let now = strip;
+  if (page !== strip.asked) {
+    now = { page, place: strip.place, asked: page };
+    setStrip(now);
+  }
+  // Where the scroll starts: one object, or each render would move it.
+  const [start] = useState(() => ({ x: STRIP_START * width, y: 0 }));
+  const around = pagesAround(now, count);
+  // How far a finger has slid the strip from the app's page, in pages: the
+  // bar's capsule follows it (TASK-388), set by `onScroll` as the strip
+  // moves. Counted again in the commit that brings a new page, after the
+  // bar has taken it: the capsule never shows a frame behind.
+  const [drag] = useState(() => new Animated.Value(0));
+  const scrolled = useRef({ x: start.x, drag: 0, page });
+  // A tab touched while the strip still slides: the bar has taken the
+  // capsule from where the finger left it, and it stays the bar's until a
+  // finger takes the strip again.
+  const tapped = useRef(false);
+  useLayoutEffect(() => {
+    const { x, drag: last, page: was } = scrolled.current;
+    // A new page stands where the strip is, or right by it: the round
+    // nearest none. The same page, the round the finger was on.
+    const near = page === was ? last : 0;
+    const away = tapped.current ? 0 : pagesFromPage(x, width, now, page, count, near);
+    scrolled.current = { x, drag: away, page };
+    drag.setValue(away);
+  }, [drag, now, page, count, width]);
+  // By title, not by place, as the pager kept them.
+  const [seen, setSeen] = useState<readonly string[]>(() =>
+    pages.flatMap((each, index) => (each.lazy && index !== page ? [] : [each.title])),
+  );
+  const shown = pages[now.page]?.title;
+  const built = shown === undefined || seen.includes(shown) ? seen : [...seen, shown];
+  if (built !== seen) {
+    setSeen(built);
+  }
+  // The header keeps the top edge and the bar the bottom one: the pages
+  // lie between them.
+  const between = useMemo(() => ({ ...insets, top: 0, bottom: 0 }), [insets]);
+  // One for each page, made the first time it is asked for.
+  const [reselects] = useState(() => new Map<string, TabReselect>());
+  // The pages scrolled away from their top: the header is in glass over them
+  // (TASK-469 A5b). Each page tells through its own, made once.
+  const [awayFromTop, setAwayFromTop] = useState<ReadonlySet<string>>(() => new Set());
+  const [reports] = useState(() => new Map<string, HeaderScrollReport>());
+  function reportOf(title: string): HeaderScrollReport {
+    let report = reports.get(title);
+    if (report === undefined) {
+      report = (away: boolean) =>
+        setAwayFromTop((before) => {
+          if (before.has(title) === away) {
+            return before;
+          }
+          const after = new Set(before);
+          if (away) {
+            after.add(title);
+          } else {
+            after.delete(title);
+          }
+          return after;
+        });
+      reports.set(title, report);
+    }
+    return report;
+  }
+  function reselectOf(title: string): TabReselect {
+    let reselect = reselects.get(title);
+    if (reselect === undefined) {
+      reselect = new TabReselect();
+      reselects.set(title, reselect);
+    }
+    return reselect;
+  }
+  // The tour of the first opening moves between the pages (TASK-266).
+  const titles = useMemo(() => pages.map((each) => each.title), [pages]);
+  useTourPager(titles, page, onPage);
+
+  // The app moved, or the phone turned: the strip stands on its place. Not
+  // while a finger slides it from place to place.
+  const standsOn = useRef(now.place);
+  useEffect(() => {
+    standsOn.current = now.place;
+  });
+  useEffect(() => {
+    scroller.current?.scrollTo({ x: standsOn.current * width, y: 0, animated: false });
+  }, [now.asked, width]);
+
+  // The pages shown before, for «back» on Android.
+  const asked = pages[page]?.title;
+  const before = useRef<string[]>([]);
+  const last = useRef(asked);
+  useEffect(() => {
+    const was = last.current;
+    if (asked !== was) {
+      if (was !== undefined) {
+        before.current = [...before.current.filter((title) => title !== asked), was];
+      }
+      last.current = asked;
+    }
+  }, [asked]);
+  const latest = useRef({ titles, onPage });
+  useEffect(() => {
+    latest.current = { titles, onPage };
+  });
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      // A page open over the app goes first, even one opened before the
+      // bar was built again (after the map).
+      if (closeTopLayer()) {
+        return true;
+      }
+      const previous = before.current.pop();
+      if (previous === undefined) {
+        return false;
+      }
+      const index = latest.current.titles.indexOf(previous);
+      if (index < 0) {
+        return false;
+      }
+      // Going back is no new step to come back from.
+      last.current = previous;
+      latest.current.onPage(index);
+      return true;
+    });
+    return () => subscription.remove();
+  }, []);
+
+  function onTab(index: number) {
+    if (index === page) {
+      reselectOf(pages[index].title).reselect();
+    } else {
+      tapped.current = true;
+      scrolled.current = { ...scrolled.current, drag: 0 };
+      drag.setValue(0);
+      onPage(index);
+    }
+  }
+
+  function onBeginDrag() {
+    tapped.current = false;
+  }
+
+  function onScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const x = event.nativeEvent.contentOffset.x;
+    const away = tapped.current
+      ? 0
+      : pagesFromPage(x, width, now, page, count, scrolled.current.drag);
+    scrolled.current = { x, drag: away, page };
+    drag.setValue(away);
+    // The first pixels of a page build it: it slides in whole.
+    const inView = placesInView(x, width);
+    const reached = pages
+      .filter((each, index) => {
+        const place = around.get(index);
+        return place !== undefined && inView.includes(place);
+      })
+      .map((each) => each.title)
+      .filter((title) => !built.includes(title));
+    if (reached.length > 0) {
+      setSeen([...built, ...reached]);
+    }
+    // Past half way the page beside is the one on screen, and the next one
+    // takes its place beyond it, out of sight. Not after a tab touched: the
+    // tab's page has the strip's place, and what is left of the slide (a
+    // fling or a snap the touch has not stopped) is no swipe.
+    const nearest = placeAt(x, width);
+    if (nearest !== now.place && !tapped.current) {
+      setStrip({ ...stripAt(now, nearest, count), asked: now.asked });
+    }
+  }
+
+  function restOn(x: number) {
+    if (tapped.current) {
+      // The touched tab stays: the strip goes back to its page.
+      if (placeAt(x, width) !== now.place) {
+        scroller.current?.scrollTo({ x: now.place * width, y: 0, animated: true });
+      }
+      return;
+    }
+    const rest = stripAt(now, placeAt(x, width), count);
+    if (rest !== now) {
+      setStrip({ ...rest, asked: now.asked });
+    }
+    if (rest.page !== page) {
+      onPage(rest.page);
+    }
+  }
+
+  function onMomentumEnd(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    restOn(event.nativeEvent.contentOffset.x);
+  }
+
+  // A finger lifted right on a page leaves no momentum to wait for.
+  function onDragEnd(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const x = event.nativeEvent.contentOffset.x;
+    if (restsOnPlace(x, width)) {
+      restOn(x);
+    }
+  }
+
+  function onLayout() {
+    // Android may not start where `contentOffset` says.
+    scroller.current?.scrollTo({ x: standsOn.current * width, y: 0, animated: false });
+  }
+
+  return (
+    <View style={[StyleSheet.absoluteFill, styles.shell]}>
+      {/* The maps under the drawings of every page (TASK-480): taken here,
+          before the pages and so before a page's own shooter. A page a tab
+          away is not laid out, and a map page inside it draws nothing. */}
+      <FeedMapShooter width={width} height={height} />
+      <View
+        testID="tab-maps-cover"
+        style={[StyleSheet.absoluteFill, styles.shell]}
+        pointerEvents="none"
+      />
+      <AppHeader
+        action={action}
+        scrolled={shown !== undefined && awayFromTop.has(shown)}
+      />
+      <ScrollView
+        ref={scroller}
+        testID="tab-pages"
+        style={styles.pages}
+        contentContainerStyle={{ width: STRIP_PLACES * width }}
+        horizontal
+        pagingEnabled
+        bounces={false}
+        overScrollMode="never"
+        directionalLockEnabled
+        // A touch on the clock goes to the page's own scroll.
+        scrollsToTop={false}
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        scrollEnabled={!screenReader}
+        contentOffset={start}
+        onLayout={onLayout}
+        scrollEventThrottle={16}
+        onScroll={onScroll}
+        onScrollBeginDrag={onBeginDrag}
+        onMomentumScrollEnd={onMomentumEnd}
+        onScrollEndDrag={onDragEnd}
+      >
+        <SafeAreaInsetsContext.Provider value={between}>
+          {pages.map((each, index) => {
+            const place = around.get(index);
+            const isBuilt = built.includes(each.title);
+            if (!isBuilt && place === undefined) {
+              return null;
+            }
+            const onScreen = index === now.page;
+            return (
+              <View
+                key={each.title}
+                ref={tourPart(pageName(each.title))}
+                collapsable={false}
+                testID={`tab-page-${each.title}`}
+                // Out of sight and a swipe away, still built: its state stays
+                // as it was left.
+                style={[
+                  styles.page,
+                  place === undefined ? styles.hidden : { left: place * width, width },
+                ]}
+                accessibilityElementsHidden={!onScreen}
+                importantForAccessibility={onScreen ? "auto" : "no-hide-descendants"}
+              >
+                {isBuilt && (
+                  <OnScreenContext.Provider value={onScreen}>
+                    <TabReselectContext.Provider value={reselectOf(each.title)}>
+                      <HeaderScrollContext.Provider value={reportOf(each.title)}>
+                        {each.render()}
+                      </HeaderScrollContext.Provider>
+                    </TabReselectContext.Provider>
+                  </OnScreenContext.Provider>
+                )}
+              </View>
+            );
+          })}
+        </SafeAreaInsetsContext.Provider>
+      </ScrollView>
+      <TabBar tabs={pages} page={page} onTab={onTab} drag={drag} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  shell: {
+    backgroundColor: color.background,
+  },
+  pages: {
+    flex: 1,
+  },
+  page: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+  },
+  hidden: {
+    display: "none",
+  },
+});

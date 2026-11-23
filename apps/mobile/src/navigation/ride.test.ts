@@ -31,9 +31,14 @@ function track(metres: number, seconds: number): Track {
   return { fixes: [fix(0, 0), fix(metres, seconds)], distanceM: metres };
 }
 
-test("only a bike route is ridden; a run and the rest as before", () => {
+test("only a ridden route is ridden; a run and the rest as before", () => {
   expect(isRide("cycling")).toBe(true);
+  // Gravel, MTB and Roller have a ride's numbers too (TASK-416).
+  expect(isRide("gravel_biking")).toBe(true);
+  expect(isRide("mountain_biking")).toBe(true);
+  expect(isRide("inline_skating")).toBe(true);
   expect(isRide("running")).toBe(false);
+  expect(isRide("hiking")).toBe(false);
   expect(isRide("paddling")).toBe(false);
   expect(isRide(undefined)).toBe(false);
 });

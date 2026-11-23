@@ -159,20 +159,19 @@ test("a town's photo in the place of its drawing, with its credit (TASK-283)", a
   // Who, shortened when it is long, and the licence, never.
   expect(screen.getByText("© LBM1948 ·")).toBeOnTheScreen();
   expect(screen.getByText("CC BY-SA 4.0")).toBeOnTheScreen();
-  // A photo is not waiting for a drawing; the town without one still is.
+  // The town still waiting for its drawing shows no photo yet (TASK-350).
   expect(screen.getByText("2.9 km away")).toBeOnTheScreen();
   expect(screen.getByText("6.6 km away")).toBeOnTheScreen();
   expect(screen.getByText("13 km away · Drawing…")).toBeOnTheScreen();
-  // Levico's shape is drawn all the same, but not on its card: no map, no
-  // maps' credit.
+  // Levico's shape comes first, so the maps' credit is under the row.
   expect(request).toHaveBeenCalled();
-  expect(screen.queryByTestId("route-card-map")).toBeNull();
-  expect(screen.queryByText(cardMapsCredit())).toBeNull();
+  expect(screen.getAllByTestId("route-card-pages")).toHaveLength(2);
+  expect(screen.getByText(cardMapsCredit())).toBeOnTheScreen();
   // The cards open the towns as before.
   expect(screen.getByLabelText("Levico Terme, 2.9 km away")).toBeOnTheScreen();
 });
 
-test("a photo that does not load gives its card back to the drawing", async () => {
+test("a photo that does not load leaves the drawing alone on its card", async () => {
   await shown(
     <NearbyTowns
       apiUrl={API}
@@ -180,7 +179,7 @@ test("a photo that does not load gives its card back to the drawing", async () =
       width={360}
       onCity={jest.fn()}
       fetchFn={api({ places: withPhotos.slice(0, 1) })}
-      request={never}
+      request={jest.fn(() => Promise.resolve(done)) as never}
     />,
   );
   const photo = await screen.findByTestId("route-card-photo");
@@ -189,7 +188,8 @@ test("a photo that does not load gives its card back to the drawing", async () =
   });
   expect(screen.queryByTestId("route-card-photo")).toBeNull();
   expect(screen.queryByText("CC BY-SA 4.0")).toBeNull();
-  expect(screen.getByText("2.9 km away · Drawing…")).toBeOnTheScreen();
+  expect(screen.queryByTestId("route-card-pages")).toBeNull();
+  expect(screen.getByText("2.9 km away")).toBeOnTheScreen();
 });
 
 test("the page's own credit takes the place of the section's", async () => {

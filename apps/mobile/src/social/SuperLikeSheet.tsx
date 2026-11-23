@@ -20,12 +20,17 @@ import { t } from "../i18n";
 import { HeartBadge } from "../intro/HeartBadge";
 import {
   color,
+  font,
   fontSize,
   fontWeight,
   MIN_TAP_SIZE,
   radius,
   space,
 } from "../theme/tokens";
+import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
+import { Tap } from "../ui/Tap";
+import { useReduceMotion } from "../ui/useReduceMotion";
 
 /** The side of the Sgrava heart that comes up over the drawing. */
 export const BIG_HEART_SIDE = 128;
@@ -52,17 +57,13 @@ type Props = {
  * The super like (TASK-119, ADR-0193): the Sgrava heart, big over the
  * drawing, and under it the comment it needs, over the keyboard. «Send» is
  * off under two characters; the heart counts only once the API has kept it
- * with its comment.
+ * with its comment. Under the title, who will read that comment: it is one
+ * of the post's comments, and a member who took it for a private note said
+ * so (TASK-454, the line is the user's, 2026-11-11).
  */
 export function SuperLikeSheet({ visible, sending, problem, onSend, onCancel }: Props) {
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      statusBarTranslucent
-      onRequestClose={onCancel}
-    >
+    <SheetModal visible={visible} onRequestClose={onCancel}>
       {/* Mounted with the sheet: each opening starts from an empty field. */}
       <SheetBody
         sending={sending}
@@ -70,12 +71,14 @@ export function SuperLikeSheet({ visible, sending, problem, onSend, onCancel }: 
         onSend={onSend}
         onCancel={onCancel}
       />
-    </Modal>
+    </SheetModal>
   );
 }
 
 function SheetBody({ sending, problem, onSend, onCancel }: Omit<Props, "visible">) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   const typing = useKeyboardShown();
   const [text, setText] = useState("");
   const length = [...commentOf(text)].length;
@@ -100,11 +103,17 @@ function SheetBody({ sending, problem, onSend, onCancel }: Omit<Props, "visible"
       <View
         style={[
           styles.sheet,
+          glassSheet,
           { paddingBottom: (typing ? 0 : insets.bottom) + space.sm },
         ]}
       >
         <Text style={styles.title} accessibilityRole="header">
           {t("Super like")}
+        </Text>
+        <Text style={styles.who} testID="super-like-who-reads">
+          {t(
+            "A super like comes with a comment. Everyone who sees the post can read it.",
+          )}
         </Text>
         <TextInput
           style={styles.field}
@@ -142,14 +151,10 @@ function SheetBody({ sending, problem, onSend, onCancel }: Omit<Props, "visible"
           )}
         </View>
         <View style={styles.buttons}>
-          <Pressable
-            style={styles.button}
-            onPress={onCancel}
-            accessibilityRole="button"
-          >
+          <Tap style={styles.button} onPress={onCancel} accessibilityRole="button">
             <Text style={styles.buttonText}>{t("Cancel")}</Text>
-          </Pressable>
-          <Pressable
+          </Tap>
+          <Tap
             style={[styles.button, !canSend && styles.buttonOff]}
             onPress={() => onSend(text)}
             disabled={!canSend}
@@ -157,7 +162,7 @@ function SheetBody({ sending, problem, onSend, onCancel }: Omit<Props, "visible"
             accessibilityState={{ disabled: !canSend, busy: sending }}
           >
             <Text style={styles.buttonText}>{t("Send")}</Text>
-          </Pressable>
+          </Tap>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -213,10 +218,20 @@ export function SuperLikeHeart({ onDone }: AloneProps) {
   );
 }
 
-/** The Sgrava heart on its yellow, growing to its size as it comes up. */
+/**
+ * The Sgrava heart on its yellow, growing to its size as it comes up. With
+ * «Reduce Motion» it is there at its size, and nothing grows (TASK-454
+ * part B: a double tap on a post brings it up more often).
+ */
 function BigHeart() {
   const [shown] = useState(() => new Animated.Value(0));
+  const still = useReduceMotion();
   useEffect(() => {
+    if (still) {
+      // Also when the phone says so a moment after the heart started.
+      shown.setValue(1);
+      return undefined;
+    }
     const coming = Animated.timing(shown, {
       toValue: 1,
       duration: HEART_IN_MS,
@@ -226,7 +241,7 @@ function BigHeart() {
     });
     coming.start();
     return () => coming.stop();
-  }, [shown]);
+  }, [shown, still]);
   return (
     <Animated.View
       testID="super-like-heart"
@@ -270,14 +285,18 @@ const styles = StyleSheet.create({
     gap: space.sm,
     borderTopLeftRadius: radius.sheet,
     borderTopRightRadius: radius.sheet,
-    borderTopWidth: 1,
-    borderColor: color.border,
+    // One physical pixel at the top, as the rows (TASK-339 D).
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: color.hairline,
     backgroundColor: color.surface,
   },
   title: {
+    ...font.heading,
     color: color.text,
-    fontSize: fontSize.input,
-    fontWeight: fontWeight.semibold,
+  },
+  who: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
   },
   field: {
     minHeight: MIN_TAP_SIZE,

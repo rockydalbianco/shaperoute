@@ -1,6 +1,6 @@
 # TASK-315 — Le foto di un post si scorrono nella scheda del Feed
 
-**Stato**: In corso
+**Stato**: Done · 2026-10-27 · in `main` con la #584 (chiuso nel task file il 2026-11-08 da TASK-412, col sì dell'utente)
 **Fase**: 4 · **Branch**: `feat/TASK-315-feed-photos`
 **ADR**: ADR-0275 (deciso dall'agente su delega dell'utente)
 

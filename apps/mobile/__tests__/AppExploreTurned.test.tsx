@@ -119,7 +119,7 @@ async function heartOpened(done: unknown) {
   await fireEvent(screen.getByTestId("map"), "message", {
     nativeEvent: { data: '{"type":"ready"}' },
   });
-  await fireEvent.press(screen.getByText("Explore"));
+  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
   await fireEvent.press(screen.getByText("New York"));
   await fireEvent.press(await screen.findByLabelText(/^Heart, /));
   await screen.findByText("Back to the list");
@@ -172,17 +172,19 @@ test("the card of a turned example asks for its map turned the same way", async 
   answering(TURNED);
   await render(<App />);
   await screen.findByText("Starting from your position.");
-  await fireEvent.press(screen.getByText("Explore"));
+  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
   await fireEvent.press(screen.getByText("New York"));
   await screen.findByLabelText(/^Heart, /);
   // The page that takes the pictures, one at a time: those «Feed» asked
-  // for come first, and are given up on here, until a card's is asked.
+  // for and the cards of our ideas (TASK-329), north up, come first, and are
+  // given up on here, until the turned card's is asked.
   const page = await screen.findByTestId("feed-map-page", {
     includeHiddenElements: true,
   });
   await fireEvent(page, "message", { nativeEvent: { data: '{"type":"ready"}' } });
   const last = () => messages("shoot").at(-1);
-  for (let i = 0; i < 50 && !String(last()?.key).startsWith("card:"); i += 1) {
+  const turned = () => /^card:.*@-30$/.test(String(last()?.key));
+  for (let i = 0; i < 100 && !turned(); i += 1) {
     await fireEvent(page, "message", {
       nativeEvent: { data: JSON.stringify({ type: "miss", key: last()?.key }) },
     });

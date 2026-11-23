@@ -1,10 +1,12 @@
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 
 import { t } from "../i18n";
+import { color } from "../theme/tokens";
+import { isPreview } from "../updates/channel";
 import type { AudioTrack } from "./m4a";
 import { mp4Of, type VideoSample } from "./mp4";
 import {
@@ -15,18 +17,32 @@ import {
   VIDEO_SILENCE_MS,
   type VideoOutcome,
 } from "./videoFile";
+import { prepareActorCall } from "./videoActor";
 import { type Music, musicTrack } from "./videoMusic";
-import { makeCall, VIDEO_PAGE, VIDEO_PAGE_BASE } from "./videoPage";
-import type { VideoScene } from "./videoScene";
+import {
+  makeCall,
+  type PageTimes,
+  prepareMapCall,
+  VIDEO_PAGE,
+  VIDEO_PAGE_BASE,
+} from "./videoPage";
+import { MAP_HEIGHT, MAP_WIDTH } from "./videoMap";
+import { type VideoScene, withNote } from "./videoScene";
 
 type Props = {
   scene: VideoScene;
+  /** The same post on the yellow of before, for when the map does not come
+   * (TASK-351): the video always comes out. */
+  fallback: VideoScene;
   /** The track that goes with the pictures; null for none (TASK-301). */
   music: Music | null;
   /** How much of the video is made, from 0 to 1. */
   onProgress: (share: number) => void;
   /** Once, when the share sheet closes or the video could not be made. */
   onEnd: (outcome: VideoOutcome) => void;
+  /** How long the page's steps took, in milliseconds, once the pictures are
+   * all made: the map, its picture, the encoding (TASK-351's measures). */
+  onTimes?: (ms: PageTimes) => void;
 };
 
 /**
@@ -35,25 +51,53 @@ type Props = {
  * the app puts them in an MP4 file in the cache folder and shares it.
  * Instagram is in the sheet (Reels, Story), and «Save Video» keeps it in
  * Photos. Mounted while the video is made; it lives inside the post's
- * Modal, where iOS keeps it on screen. The music's file is read while the
- * pictures are made, and goes into the MP4 as its second track.
+ * Modal, at the size of the map it draws (360 × 640 points), under a cover
+ * of the screen's own colour: a page out of sight, or see-through, may get
+ * nothing drawn on a phone, and the map never came (TASK-351's fixes of
+ * 2026-11-03 and 2026-11-04); the Feed's map page is kept the same way,
+ * under what covers it. The music's file is read while the pictures are
+ * made, and goes into the MP4 as its second track. On a map look the page
+ * draws the map first (TASK-351); when it cannot, within its own time, the
+ * `fallback` scene is made instead. On the testers' preview channel only
+ * (`isPreview`), a line at its foot says why, while the cause on the phone
+ * is looked for: the stores' build never shows it. With an animal
+ * (TASK-408) the page first loads three.js and the animal's model, read
+ * from the app's file of it; when either does not come, the video is made
+ * without the animal.
  */
-export function RunVideo({ scene, music, onProgress, onEnd }: Props) {
+export function RunVideo({
+  scene,
+  fallback,
+  music,
+  onProgress,
+  onEnd,
+  onTimes,
+}: Props) {
   const webView = useRef<WebView>(null);
   const avcC = useRef<Uint8Array | null>(null);
   const samples = useRef<VideoSample[]>([]);
   const ended = useRef(false);
   const silence = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sceneJson = useMemo(() => JSON.stringify(scene), [scene]);
+  const mapJson = useMemo(
+    () => (scene.map === null ? null : JSON.stringify(scene.map)),
+    [scene],
+  );
   // The music's packets, read once while the pictures are made; null when
   // they could not be read.
   const [audio] = useState<Promise<AudioTrack | null> | null>(() =>
     music === null ? null : musicTrack(music).catch(() => null),
   );
+  // What makes the animal ready in the page (TASK-408), or the runner's own
+  // image (TASK-417), read once; null when it could not be read: the video
+  // then comes without it.
+  const [model] = useState<Promise<string | null> | null>(() =>
+    scene.character === null ? null : prepareActorCall(scene.character),
+  );
   // The latest callbacks, for the timer and the page's messages.
-  const callbacks = useRef({ onProgress, onEnd });
+  const callbacks = useRef({ onProgress, onEnd, onTimes });
   useEffect(() => {
-    callbacks.current = { onProgress, onEnd };
+    callbacks.current = { onProgress, onEnd, onTimes };
   });
 
   function end(outcome: VideoOutcome) {
@@ -127,6 +171,15 @@ export function RunVideo({ scene, music, onProgress, onEnd }: Props) {
     end("shared");
   }
 
+  /** After the animal: the map first on the map looks, else the video. */
+  function next() {
+    if (mapJson === null) {
+      webView.current?.injectJavaScript(makeCall(sceneJson));
+    } else {
+      webView.current?.injectJavaScript(prepareMapCall(mapJson));
+    }
+  }
+
   function receive(data: string) {
     if (ended.current) {
       return;
@@ -141,9 +194,43 @@ export function RunVideo({ scene, music, onProgress, onEnd }: Props) {
         case "ready":
           if (message.codec === null) {
             end("unsupported");
+          } else if (model === null) {
+            next();
           } else {
-            webView.current?.injectJavaScript(makeCall(sceneJson));
+            void model.then((call) => {
+              if (ended.current) {
+                return;
+              }
+              if (call === null) {
+                next();
+              } else {
+                webView.current?.injectJavaScript(call);
+              }
+            });
           }
+          break;
+        case "character":
+          // Ready or not, the video goes on: without it, the pen's tip.
+          next();
+          break;
+        case "waiting":
+          // Tiles still coming: the page is alive.
+          break;
+        case "map":
+          webView.current?.injectJavaScript(
+            makeCall(
+              message.ok
+                ? sceneJson
+                : JSON.stringify(
+                    isPreview()
+                      ? withNote(
+                          fallback,
+                          `no map: ${message.why ?? "?"} ${JSON.stringify(message.ms)}`,
+                        )
+                      : fallback,
+                  ),
+            ),
+          );
           break;
         case "config":
           avcC.current = bytesOfBase64(message.avcC);
@@ -156,6 +243,7 @@ export function RunVideo({ scene, music, onProgress, onEnd }: Props) {
           break;
         case "done":
           callbacks.current.onProgress(1);
+          callbacks.current.onTimes?.(message.ms);
           void share();
           break;
         case "failed":
@@ -168,30 +256,52 @@ export function RunVideo({ scene, music, onProgress, onEnd }: Props) {
   }
 
   return (
-    <WebView
-      ref={webView}
-      testID="run-video"
-      // The WebView's own container grows (flex 1): kept out of the layout too.
-      containerStyle={styles.hidden}
-      style={styles.hidden}
+    <View
+      style={styles.page}
       pointerEvents="none"
-      source={{ html: VIDEO_PAGE, baseUrl: VIDEO_PAGE_BASE }}
-      originWhitelist={["*"]}
-      javaScriptEnabled
-      onMessage={(event) => receive(event.nativeEvent.data)}
-      onContentProcessDidTerminate={() => end("failed")}
-      onRenderProcessGone={() => end("failed")}
-    />
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      <WebView
+        ref={webView}
+        testID="run-video"
+        containerStyle={styles.web}
+        style={styles.web}
+        source={{ html: VIDEO_PAGE, baseUrl: VIDEO_PAGE_BASE }}
+        originWhitelist={["*"]}
+        javaScriptEnabled
+        scrollEnabled={false}
+        onMessage={(event) => receive(event.nativeEvent.data)}
+        onContentProcessDidTerminate={() => end("failed")}
+        onRenderProcessGone={() => end("failed")}
+      />
+      <View style={styles.cover} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  hidden: {
+  // The page at the size of its map, in the window and drawn, at the top
+  // corner of the post's screen, where the cover and the screen's own
+  // content lie over it (SharePost mounts it first).
+  page: {
     position: "absolute",
-    width: 1,
-    height: 1,
-    opacity: 0,
-    left: -10,
-    top: -10,
+    left: 0,
+    top: 0,
+    width: MAP_WIDTH,
+    height: MAP_HEIGHT,
+  },
+  web: {
+    width: MAP_WIDTH,
+    height: MAP_HEIGHT,
+    backgroundColor: color.background,
+  },
+  cover: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: color.background,
   },
 });

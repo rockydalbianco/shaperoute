@@ -1,14 +1,28 @@
+import threads from "@shaperoute/shared-types/fixtures/comment-threads.json";
 import comments from "@shaperoute/shared-types/fixtures/comments.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
-import type { Comment, CommentsPage, Session } from "@shaperoute/shared-types";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import type {
+  Comment,
+  CommentReactions,
+  CommentsPage,
+  Person,
+  Session,
+} from "@shaperoute/shared-types";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 import type { ReactNode } from "react";
 import { Alert, type AlertButton } from "react-native";
 
 import type { AccountState } from "../account/useAccount";
 import type { AccountOutcome } from "../api/accounts";
 import { blockMember, report } from "../api/moderation";
-import { forgetBlocked, useBlockedNow } from "./blockedNow";
+import { forgetBlocked, markBlocked, useBlockedNow } from "./blockedNow";
 import { CommentsContext, type CommentsDoor } from "./commentsDoor";
 import { DrawingComments } from "./DrawingComments";
 import { FollowsContext } from "./followsDoor";
@@ -226,14 +240,19 @@ async function openedSignedIn(
   {
     sessionEnded = jest.fn(),
     beside = null,
-  }: { sessionEnded?: () => void; beside?: ReactNode } = {},
+    openProfile = jest.fn(),
+  }: {
+    sessionEnded?: () => void;
+    beside?: ReactNode;
+    openProfile?: (person: Person) => void;
+  } = {},
 ) {
   await render(
     <FollowsContext.Provider
       value={{
         apiUrl: URL,
         account: { state: signedIn, sessionEnded },
-        openProfile: jest.fn(),
+        openProfile,
       }}
     >
       <CommentsContext.Provider value={value}>
@@ -290,9 +309,11 @@ test("another's comment is held to report it: the reasons, then thanks", async (
   ]);
   await tap("Why are you reporting this?", "Offensive or hateful");
   expect(report).toHaveBeenCalledWith(URL, ME.token, "comment", OTHERS.id, "offensive");
-  await waitFor(() =>
-    expect(alert).toHaveBeenCalledWith("Thanks for telling us. We will look at it."),
-  );
+  // Said in the island over the sheet, not in an alert (TASK-388).
+  expect(
+    await screen.findByText("Thanks for telling us. We will look at it."),
+  ).toBeOnTheScreen();
+  expect(alert).not.toHaveBeenCalledWith("Thanks for telling us. We will look at it.");
   // Reported, the comment stays: whoever runs the app looks at it.
   expect(screen.getByText(OTHERS.text)).toBeOnTheScreen();
   alert.mockRestore();
@@ -357,7 +378,7 @@ test("VoiceOver offers the same choices as actions", async () => {
   expect(others.props.accessibilityHint).toBe("Report or block");
   expect(
     others.props.accessibilityActions.map((a: { name: string }) => a.name),
-  ).toEqual(["report", "block"]);
+  ).toEqual(["report", "block", "profile"]);
   await fireEvent(others, "accessibilityAction", {
     nativeEvent: { actionName: "report" },
   });
@@ -366,7 +387,84 @@ test("VoiceOver offers the same choices as actions", async () => {
   expect(mine.props.accessibilityHint).toBe("Touch and hold to delete.");
   expect(mine.props.accessibilityActions.map((a: { name: string }) => a.name)).toEqual([
     "delete",
+    "profile",
   ]);
+  alert.mockRestore();
+});
+
+// The picture of who wrote a comment (TASK-338).
+test("the picture of who wrote it opens their profile, and the sheet goes", async () => {
+  const openProfile = jest.fn();
+  await openedSignedIn(door([page([OTHERS, MINE])]), "2 comments", { openProfile });
+  await fireEvent.press(screen.getByRole("button", { name: "other_runner's profile" }));
+  expect(openProfile).toHaveBeenCalledWith({
+    public_id: OTHERS.author.public_id,
+    username: "other_runner",
+    photo: null,
+  });
+  await waitFor(() => expect(screen.queryByText(OTHERS.text)).toBeNull());
+  expect(screen.getByRole("button", { name: "2 comments" })).toBeOnTheScreen();
+});
+
+test("one's own picture opens one's own profile, as a tagged name does", async () => {
+  const openProfile = jest.fn();
+  await openedSignedIn(door([page([MINE])]), "1 comment", { openProfile });
+  await fireEvent.press(screen.getByRole("button", { name: "Ada_runs's profile" }));
+  expect(openProfile).toHaveBeenCalledWith(
+    expect.objectContaining({ public_id: MINE.author.public_id }),
+  );
+});
+
+test("VoiceOver opens the profile with an action of the row", async () => {
+  const openProfile = jest.fn();
+  await openedSignedIn(door([page([OTHERS])]), "1 comment", { openProfile });
+  const others = screen.getByLabelText(/^other_runner, /);
+  expect(others.props.accessibilityActions.at(-1)).toEqual({
+    name: "profile",
+    label: "other_runner's profile",
+  });
+  await fireEvent(others, "accessibilityAction", {
+    nativeEvent: { actionName: "profile" },
+  });
+  expect(openProfile).toHaveBeenCalledWith(
+    expect.objectContaining({ public_id: OTHERS.author.public_id }),
+  );
+});
+
+test("a blocked author's picture opens nothing, as their card in «Feed»", async () => {
+  const openProfile = jest.fn();
+  await openedSignedIn(door([page([OTHERS])]), "1 comment", { openProfile });
+  expect(
+    screen.getByRole("button", { name: "other_runner's profile" }),
+  ).toBeOnTheScreen();
+  // Blocked elsewhere while the sheet is open: the page still has them.
+  await act(async () => markBlocked(OTHERS.author.public_id));
+  expect(screen.getByText(OTHERS.text)).toBeOnTheScreen();
+  expect(screen.queryByRole("button", { name: "other_runner's profile" })).toBeNull();
+  const others = screen.getByLabelText(/^other_runner, /);
+  expect(
+    others.props.accessibilityActions.map((a: { name: string }) => a.name),
+  ).toEqual(["report", "block"]);
+  await fireEvent(others, "accessibilityAction", {
+    nativeEvent: { actionName: "profile" },
+  });
+  expect(openProfile).not.toHaveBeenCalled();
+});
+
+test("held, the picture still offers the comment's choices", async () => {
+  const { alert, buttons } = alerts();
+  const openProfile = jest.fn();
+  await openedSignedIn(door([page([OTHERS])]), "1 comment", { openProfile });
+  await fireEvent(
+    screen.getByRole("button", { name: "other_runner's profile" }),
+    "longPress",
+  );
+  expect(buttons("Report or block")).toEqual([
+    "Report",
+    "Block other_runner",
+    "Cancel",
+  ]);
+  expect(openProfile).not.toHaveBeenCalled();
   alert.mockRestore();
 });
 
@@ -386,7 +484,7 @@ test("a report or a block that fails says why, and an ended session ends", async
   await tap("Report or block", "Report");
   await tap("Why are you reporting this?", "Spam");
   await waitFor(() => expect(sessionEnded).toHaveBeenCalledWith(ME.token));
-  expect(alert).not.toHaveBeenCalledWith("Thanks for telling us. We will look at it.");
+  expect(screen.queryByText("Thanks for telling us. We will look at it.")).toBeNull();
   await fireEvent(screen.getByText(OTHERS.text), "longPress");
   await tap("Report or block", "Block other_runner");
   await tap("Block other_runner?", "Block");
@@ -407,4 +505,207 @@ test("comments that did not come can be asked again", async () => {
   ).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Try again" }));
   expect(await screen.findByText(FROM_OTHER.text)).toBeOnTheScreen();
+});
+
+// TASK-454 part C (ADR-0377, the user's choices of 2026-11-11): replies one
+// level deep under their comment, and the five reactions to each.
+describe("replies and reactions to a comment", () => {
+  const PAGE = threads as CommentsPage;
+  /** By other_runner, three replies, two of them here; fire 3, wow 1, mine: fire. */
+  const [TOP] = PAGE.comments;
+  /** By Ada_runs; then by third_runner, who answers Ada_runs. */
+  const [FIRST, SECOND] = TOP.replies ?? [];
+  const THIRD: Comment = {
+    ...FIRST,
+    id: "third",
+    text: "See you at the bridge",
+    created_at: "2026-10-03T09:30:00Z",
+  };
+
+  type Answers = {
+    written?: AccountOutcome<Comment>[];
+    replies?: AccountOutcome<CommentsPage>[];
+    reacted?: AccountOutcome<CommentReactions>[];
+  };
+
+  /** A door with the replies: one page of comments, then `answers`. */
+  function threadsDoor({ written = [], replies = [], reacted = [] }: Answers = {}) {
+    const more = {
+      repliesOf: jest.fn(async () => replies.shift() ?? null),
+      react: jest.fn(async () => reacted.shift() ?? null),
+    };
+    return { ...door([{ kind: "ok", value: PAGE }], written), threads: more };
+  }
+
+  const actionOf = (comment: Comment, what: "reply" | "react") =>
+    screen.getByTestId(`comment-actions-${comment.id}-${what}`);
+
+  test("the replies stand under their comment, and say who they answer", async () => {
+    await opened(threadsDoor(), "4 comments");
+    expect(screen.getByText(TOP.text)).toBeOnTheScreen();
+    const under = screen.getByTestId(`comment-replies-${TOP.id}`);
+    expect(under).toContainElement(screen.getByText(FIRST.text));
+    expect(under).not.toContainElement(screen.getByText(TOP.text));
+    // A reply to a reply: «@name» before its words, from the API's field.
+    expect(under).toContainElement(screen.getByText("@Ada_runs "));
+    expect(
+      screen.getByLabelText(
+        /^third_runner, .*: @Ada_runs Ten minutes\? I walked it\.$/,
+      ),
+    ).toBeOnTheScreen();
+    // Two of the three came with the comment.
+    expect(screen.getByRole("button", { name: "View 1 more reply" })).toBeOnTheScreen();
+  });
+
+  test("«View more replies» brings the others, and goes", async () => {
+    const value = threadsDoor({
+      replies: [
+        {
+          kind: "ok",
+          value: { comments: [FIRST, SECOND, THIRD], next: null, total: 3 },
+        },
+      ],
+    });
+    await opened(value, "4 comments");
+    await fireEvent.press(screen.getByRole("button", { name: "View 1 more reply" }));
+    expect(await screen.findByText(THIRD.text)).toBeOnTheScreen();
+    expect(value.threads.repliesOf).toHaveBeenCalledWith(TOP.id, null);
+    expect(screen.queryByRole("button", { name: /more repl/ })).toBeNull();
+    expect(screen.getAllByText(FIRST.text)).toHaveLength(1);
+  });
+
+  test("«Reply» says who is answered over the field, and the words go under", async () => {
+    const mine: Comment = {
+      ...SECOND,
+      id: "mine",
+      text: "I ran it twice",
+      created_at: "2026-10-03T10:00:00Z",
+      mention: SECOND.author,
+    };
+    const value = threadsDoor({ written: [{ kind: "ok", value: mine }] });
+    await opened(value, "4 comments");
+    expect(screen.queryByTestId("comment-replying")).toBeNull();
+    await fireEvent.press(actionOf(SECOND, "reply"));
+    expect(screen.getByText("Replying to third_runner")).toBeOnTheScreen();
+
+    await fireEvent.changeText(screen.getByLabelText("Comment"), "I ran it twice");
+    await fireEvent.press(screen.getByRole("button", { name: "Post" }));
+    expect(value.write).toHaveBeenCalledWith(DRAWING, "I ran it twice", SECOND.id);
+    // One text with its «@name»: who is answered, then the words.
+    const words = await screen.findByText("@third_runner I ran it twice");
+    expect(screen.getByTestId(`comment-replies-${TOP.id}`)).toContainElement(words);
+    expect(screen.getByText("@third_runner ")).toBeOnTheScreen();
+    // The field is the drawing's again.
+    expect(screen.queryByTestId("comment-replying")).toBeNull();
+    expect(screen.getByLabelText("Comment").props.value).toBe("");
+    await fireEvent.press(screen.getByRole("button", { name: "Close" }));
+    expect(screen.getByRole("button", { name: "5 comments" })).toBeOnTheScreen();
+  });
+
+  test("the cross over the field gives the words back to the drawing", async () => {
+    const mine: Comment = {
+      ...TOP,
+      id: "mine",
+      text: "A new one",
+      reply_count: 0,
+      replies: [],
+    };
+    const value = threadsDoor({ written: [{ kind: "ok", value: mine }] });
+    await opened(value, "4 comments");
+    await fireEvent.press(actionOf(TOP, "reply"));
+    expect(screen.getByText("Replying to other_runner")).toBeOnTheScreen();
+    await fireEvent.press(
+      within(screen.getByTestId("comment-replying")).getByRole("button", {
+        name: "Cancel",
+      }),
+    );
+    expect(screen.queryByTestId("comment-replying")).toBeNull();
+    await fireEvent.changeText(screen.getByLabelText("Comment"), "A new one");
+    await fireEvent.press(screen.getByRole("button", { name: "Post" }));
+    expect(value.write).toHaveBeenCalledWith(DRAWING, "A new one");
+  });
+
+  test("a screen reader answers a comment from its actions", async () => {
+    await opened(threadsDoor(), "4 comments");
+    const row = screen.getByLabelText(/^Ada_runs, .*: About ten minutes/);
+    expect(row.props.accessibilityActions).toContainEqual({
+      name: "reply",
+      label: "Reply",
+    });
+    await fireEvent(row, "accessibilityAction", {
+      nativeEvent: { actionName: "reply" },
+    });
+    expect(screen.getByText("Replying to Ada_runs")).toBeOnTheScreen();
+  });
+
+  test("a reaction to a reply: one of the five, shown at once", async () => {
+    const laughed: CommentReactions = {
+      counts: { fire: 0, clap: 0, strong: 0, laugh: 3, wow: 0 },
+      total: 3,
+      mine: "laugh",
+    };
+    const value = threadsDoor({ reacted: [{ kind: "ok", value: laughed }] });
+    await opened(value, "4 comments");
+    // One's own on the comment and on the first reply; none on the second.
+    expect(actionOf(TOP, "react")).toHaveProp(
+      "accessibilityLabel",
+      "Your reaction: Fire",
+    );
+    expect(actionOf(FIRST, "react")).toHaveProp(
+      "accessibilityLabel",
+      "Your reaction: Clap",
+    );
+    expect(actionOf(SECOND, "react")).toHaveProp("accessibilityLabel", "React");
+
+    await fireEvent.press(actionOf(SECOND, "react"));
+    expect(screen.queryByRole("button", { name: "MuW heart, super like" })).toBeNull();
+    await fireEvent.press(screen.getByRole("button", { name: "Laugh" }));
+    expect(value.threads.react).toHaveBeenCalledWith(SECOND.id, "laugh");
+    await waitFor(() =>
+      expect(actionOf(SECOND, "react")).toHaveProp(
+        "accessibilityLabel",
+        "Your reaction: Laugh",
+      ),
+    );
+    expect(screen.getByTestId(`comment-actions-${SECOND.id}-summary`)).toHaveProp(
+      "accessibilityLabel",
+      "3 reactions",
+    );
+  });
+
+  test("deleting the comment one is answering leaves the field to the drawing", async () => {
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    const value = threadsDoor();
+    await opened(value, "4 comments");
+    await fireEvent.press(actionOf(FIRST, "reply"));
+    expect(screen.getByText("Replying to Ada_runs")).toBeOnTheScreen();
+    // The comment above is one's own to delete: its replies go with it.
+    await fireEvent(screen.getByLabelText(/^other_runner, /), "longPress");
+    const buttons = alert.mock.calls.at(-1)?.[2] as AlertButton[];
+    await act(async () => buttons.find((one) => one.text === "Delete")?.onPress?.());
+    expect(value.remove).toHaveBeenCalledWith(TOP.id);
+    await waitFor(() => expect(screen.queryByText(FIRST.text)).toBeNull());
+    expect(screen.queryByTestId("comment-replying")).toBeNull();
+    alert.mockRestore();
+  });
+
+  test("without the replies in the app's door, or in the API, the comments as before", async () => {
+    // The app does not reach them (a door of before).
+    await opened(door([{ kind: "ok", value: PAGE }]), "4 comments");
+    expect(screen.getByText(TOP.text)).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Reply" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /React|Your reaction/ })).toBeNull();
+    expect(screen.queryByText(FIRST.text)).toBeNull();
+  });
+
+  test("an API from before the replies: no «Reply», no reactions", async () => {
+    const value = { ...threadsDoor(), pageOf: jest.fn(async () => page([FROM_OTHER])) };
+    await opened(value, "1 comment");
+    expect(screen.getByText(FROM_OTHER.text)).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Reply" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "React" })).toBeNull();
+    expect(
+      screen.getByLabelText(/^other_runner, /).props.accessibilityActions,
+    ).not.toContainEqual({ name: "reply", label: "Reply" });
+  });
 });

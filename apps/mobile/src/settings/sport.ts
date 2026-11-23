@@ -1,14 +1,56 @@
-import type { Activity } from "@shaperoute/shared-types";
+import {
+  ACTIVITIES,
+  type Activity,
+  RECORD_ACTIVITIES,
+  type RunActivity,
+} from "@shaperoute/shared-types";
 import Constants from "expo-constants";
 import { File, Paths } from "expo-file-system";
 
-import { t, tLater } from "../i18n";
+import { t } from "../i18n";
+import { profileOf } from "../sports";
 
-/** What a route is for: a run, a bike ride since TASK-190, or paddling on a
- * lake or the sea since TASK-191 (a canoe, a kayak, a SUP). Paragliding is
- * only «Soon» for now (TASK-305 D0, ADR-0265): never chosen, so never a
- * route, and wherever the sports are told apart it goes as a run. */
-export type Sport = "run" | "bike" | "paddle" | "paragliding";
+/** What a route is for: a run, a bike ride since TASK-190, paddling on a
+ * lake or the sea since TASK-191 (a canoe, a kayak, a SUP), a walk on the
+ * foot network of a run (TASK-371 part B, ADR-0315), «Soon» until the server
+ * walks, a hike on the trails of its own network (TASK-377 part B,
+ * ADR-0321), «Soon» until the server hikes, a gravel ride on the bike's
+ * network or an MTB ride on the trails of its own (TASK-378 part B,
+ * ADR-0322) since the server has them, or swimming in open water
+ * (TASK-323, ADR-0283) since the server swims. A wheelchair or a stroller
+ * draws only a circle, a heart, a star or a moon on the ways of its own
+ * network (TASK-414 part B, ADR-0343), since the server has them.
+ * Paragliding (TASK-305 R2, ADR-0375) is a flight recorded without a
+ * shape, never a route. A day of alpine skiing («Ski») or of cross-country skiing is
+ * recorded without a shape (TASK-375, ADR-0319): `recordOnly`, and so is
+ * a ski tour («Ski touring», TASK-415 part B, ADR-0344). Snowshoes draw a
+ * small shape placed freely on the open snow, as on the water, and record
+ * a day without one (TASK-413 parts B and C, ADR-0342). A day of
+ * mountaineering («Mountaineering», TASK-463 part B, ADR-0373) is recorded
+ * without a shape too, «Soon» until it is turned on. A workout
+ * at the gym («Gym», TASK-385 part B, ADR-0327) has no route and no GPS:
+ * «Draw» offers only «Start workout». A stretching session («Stretching»,
+ * TASK-475 part B, ADR-0386) has neither: «Draw» offers the routines of
+ * TASK-466 and «Start stretching», «Soon» until it is turned on. */
+export type Sport =
+  | "run"
+  | "bike"
+  | "paddle"
+  | "walk"
+  | "hike"
+  | "gravel"
+  | "mtb"
+  | "roller"
+  | "wheelchair"
+  | "swim"
+  | "ski"
+  | "xc_ski"
+  | "skimo"
+  | "snowshoe"
+  | "gym"
+  | "paragliding"
+  | "alpinism"
+  | "stretch";
 
 export type SportOption = {
   id: Sport;
@@ -21,15 +63,162 @@ export type SportOption = {
    * turns this on and gives it its activity (activityOf).
    */
   ready: boolean;
+  /**
+   * Recorded without a shape (TASK-375, ADR-0319): «Draw» offers only
+   * «Record your day», the Route Engine never sees it, and the run is saved
+   * as its runActivityOf.
+   */
+  recordOnly?: boolean;
+  /**
+   * On in Expo Go and `preview` while `ready` is still false: tried there
+   * before the store builds have it, which leave it out as any sport not
+   * ready (shownSports). The swim went this way until TASK-387 was on the
+   * server (TASK-323, ADR-0283); no sport does now.
+   */
+  preview?: boolean;
 };
 
-/** Every sport, in the order they are shown; the ones not ready included. */
+/**
+ * What a run of each sport is saved as (TASK-375, ADR-0319), and what «Draw»
+ * asks the API for when it is one of the activities of the API (activityOf).
+ * Paragliding has none yet: wherever the sports are told apart it goes as a
+ * run.
+ */
+const ACTIVITY: { readonly [S in Sport]?: RunActivity } = {
+  run: "running",
+  bike: "cycling",
+  paddle: "paddling",
+  swim: "swimming",
+  walk: "walking",
+  hike: "hiking",
+  gravel: "gravel_biking",
+  mtb: "mountain_biking",
+  roller: "inline_skating",
+  wheelchair: "wheelchair",
+  ski: "skiing",
+  xc_ski: "xc_skiing",
+  skimo: "ski_touring",
+  snowshoe: "snowshoeing",
+  gym: "gym",
+  paragliding: "paragliding",
+  alpinism: "alpinism",
+  stretch: "stretching",
+};
+
+/** A sport of «Settings» as its profile says it (TASK-376 part B3c,
+ * ADR-0320): emoji and name, and recorded without a shape when its activity
+ * is one of those. «Settings» says only whether it is ready. */
+function fromProfile(id: Sport, ready: boolean): SportOption {
+  const activity = ACTIVITY[id];
+  if (activity === undefined) {
+    throw new Error(`no activity for ${id}`);
+  }
+  const { emoji, name } = profileOf(activity);
+  const recordOnly = (RECORD_ACTIVITIES as readonly RunActivity[]).includes(activity);
+  return recordOnly
+    ? { id, emoji, name, ready, recordOnly }
+    : { id, emoji, name, ready };
+}
+
+/** Every sport, in the order they are shown; the ones not ready included.
+ * By family, from the easiest (TASK-371, the user's «prima walk poi run,
+ * bicycle, paddle, swim»): on foot, on wheels, on the water, on the snow,
+ * then the gym and the ones still «Soon». */
 export const ALL_SPORTS: readonly SportOption[] = [
-  { id: "run", emoji: "🏃‍♂️", name: tLater("Run"), ready: true },
-  { id: "bike", emoji: "🚴", name: tLater("Bike"), ready: true },
-  { id: "paddle", emoji: "🛶", name: tLater("Paddle"), ready: true },
-  { id: "paragliding", emoji: "🪂", name: tLater("Paragliding"), ready: false },
+  // On foot. A walk is asked as "walking" (activityOf), 1-30 km; on since
+  // the server has TASK-371 part A and its migration 0043, the user's «cosa
+  // aspettiamo ad attivare Walk» (2026-11-06). A hike is asked as "hiking",
+  // 1-30 km on the server's own network; on since the server has TASK-377
+  // part A and its migration 0051, the user's «acceso appena pronto».
+  fromProfile("walk", true),
+  fromProfile("run", true),
+  fromProfile("hike", true),
+  // On wheels. Gravel and MTB are asked as "gravel_biking" and
+  // "mountain_biking" (activityOf), 10-30 km each; on since the server has
+  // TASK-378 part A and its migration 0052, the user's «Sì, accendili».
+  fromProfile("bike", true),
+  fromProfile("gravel", true),
+  fromProfile("mtb", true),
+  // Inline skating is asked as "inline_skating" (activityOf), 5-30 km on
+  // the server's own network (TASK-380 part B); on since the server has part
+  // A and its migration 0055, the user's «appena pronto».
+  fromProfile("roller", true),
+  // A wheelchair or a stroller is asked as "wheelchair" (activityOf), 1-5 km
+  // on the server's own network, a circle, a heart, a star or a moon
+  // (TASK-414 part B, ADR-0343). On since the server has part A and its
+  // migration 0071 (2026-11-12), the user's «Sì, accendi» to the screenshots
+  // (the user's choice 9: «appena pronto»).
+  fromProfile("wheelchair", true),
+  // On the water. The swim is asked as "swimming" since TASK-323 C2
+  // (activityOf); on since the server swims (TASK-323, 2026-11-04).
+  fromProfile("paddle", true),
+  fromProfile("swim", true),
+  // On the snow, saved as "skiing" and "xc_skiing" (runActivityOf). The
+  // alpine ski is on since TASK-375 D4: the server has parts A-D
+  // (migrations 0044 and 0048) and the day its numbers, lifts and pistes.
+  // The cross-country ski is on too, with its distance, pace and climb
+  // (TASK-375 C1): the server has kept "xc_skiing" since 0044, the user's
+  // «rendile disponibili» (2026-11-12).
+  fromProfile("ski", true),
+  fromProfile("xc_ski", true),
+  // Ski touring, saved as "ski_touring": on since its phases and its VAM
+  // (TASK-415 part B), the user's «Acceso con a e b» (2026-11-07), with
+  // the OTA that carries them; the server has had part A and its migration
+  // 0057 since 2026-11-08.
+  fromProfile("skimo", true),
+  // Snowshoes are asked as "snowshoeing" (activityOf), 0.5-3 km on the open
+  // snow of the server (TASK-413 parts A, ADR-0342); «Record your day» is
+  // their way without a shape (part C). On since the server has #1266
+  // (step 12), the user's «Sì, accendi» to the screenshots (2026-11-12).
+  fromProfile("snowshoe", true),
+  // A day of mountaineering, saved as "alpinism", recorded without a shape
+  // (TASK-463 parts B and C, ADR-0373), with its notice «Before you climb»
+  // and its own line under «Record your day»: on since the server has part A
+  // and its migration 0076 (step 12, 2026-11-12) and the user approved the
+  // screens (2026-11-12).
+  fromProfile("alpinism", true),
+  // Saved as "gym" (runActivityOf), without a track (TASK-385 part B); on in
+  // the store builds too, the user's «ok accendi» (2026-11-05): the server
+  // keeps its posts from the apps that cannot read them (X-MuW-Reads).
+  fromProfile("gym", true),
+  // A flight, saved as "paragliding", recorded without a shape (TASK-305
+  // part R2, ADR-0375): on with its numbers of the air and its notice; the
+  // server has had part R1 and its migration 0069 since 2026-11-12.
+  fromProfile("paragliding", true),
+  // A stretching session, saved as "stretching" without a track (TASK-475
+  // part B, ADR-0386): the routines of TASK-466 from «Draw». On since the
+  // server has part A and its migration 0079 (step 15, 2026-11-21) and the
+  // user's «Sì, approvo» to the screens (part C).
+  fromProfile("stretch", true),
 ];
+
+/** The sports offered only once «Settings» has them ready. */
+const OFFERED_WHEN_READY: { readonly [A in Activity]?: Sport } = {
+  walking: "walk",
+  hiking: "hike",
+  gravel_biking: "gravel",
+  mountain_biking: "mtb",
+  inline_skating: "roller",
+  wheelchair: "wheelchair",
+  snowshoeing: "snowshoe",
+};
+
+/**
+ * Whether `activity` is offered where a run's sport is chosen or looked for
+ * (the form to publish, the search's filters): a walk once «Walk» is ready,
+ * the server keeping walks (TASK-371), so the two come together, a hike
+ * once «Hike» is (TASK-377), a gravel or an MTB ride once «Gravel» or «MTB»
+ * is (TASK-378), a skate once «Roller» is (TASK-380), a wheelchair or a
+ * stroller once «Wheelchair & stroller» is (TASK-414), a snowshoe outing
+ * once «Snowshoes» is (TASK-413); every other as before.
+ */
+export function activityOffered(
+  activity: Activity,
+  sports: readonly SportOption[] = ALL_SPORTS,
+): boolean {
+  const sport = OFFERED_WHEN_READY[activity];
+  return sport === undefined || sports.some((s) => s.id === sport && s.ready);
+}
 
 /**
  * True in the App Store and Google Play builds, and in the updates made for
@@ -48,12 +237,18 @@ export function isStoreBuild(
 }
 
 /** `sports` as this app shows them: a store build leaves out the ones not
- * ready, so its users are promised no «Soon» (TASK-318, ADR-0278). */
+ * ready, so its users are promised no «Soon» (TASK-318, ADR-0278); Expo Go
+ * and `preview` turn on the ones tried there first (`preview`, TASK-323). */
 export function shownSports(
   sports: readonly SportOption[],
   store: boolean,
 ): readonly SportOption[] {
-  return store ? sports.filter((option) => option.ready) : sports;
+  if (store) {
+    return sports.filter((option) => option.ready);
+  }
+  return sports.map((option) =>
+    option.preview === true && !option.ready ? { ...option, ready: true } : option,
+  );
 }
 
 /** The sports of «Settings» and of the sport menu of «Draw», in order. */
@@ -118,27 +313,81 @@ export function saveSport(sport: Sport): void {
 /**
  * What «Draw» asks the API for (TASK-190, ADR-0153): a route on the roads a
  * bike may ride for «Bike», a shape on the water for «Paddle» (TASK-191,
- * ADR-0164), a run for «Run».
+ * ADR-0164), a swim within 150 m of the shore for «Open water swim»
+ * (TASK-323), a run for «Run»: the sport's activity when the API draws it
+ * (TASK-376 part B3c), a run for every other.
  */
 export function activityOf(sport: Sport): Activity {
-  switch (sport) {
-    case "bike":
-      return "cycling";
-    case "paddle":
-      return "paddling";
-    default:
-      return "running";
-  }
+  const activity = ACTIVITY[sport];
+  return isPlanned(activity) ? activity : "running";
+}
+
+function isPlanned(activity: RunActivity | undefined): activity is Activity {
+  return (ACTIVITIES as readonly (RunActivity | undefined)[]).includes(activity);
+}
+
+/** True when `sport` is recorded without a shape (TASK-375): «Draw» shows
+ * only «Record your day». */
+export function isRecordOnly(
+  sport: Sport,
+  sports: readonly SportOption[] = ALL_SPORTS,
+): boolean {
+  return sports.some((option) => option.id === sport && option.recordOnly === true);
+}
+
+/**
+ * What a run of `sport` is saved as (TASK-375, ADR-0319): its activity, so
+ * a day on the snow as "skiing" or "xc_skiing", which no route asks, a
+ * workout as "gym", a walk as "walking"; a sport without one as a run.
+ */
+export function runActivityOf(sport: Sport): RunActivity {
+  return ACTIVITY[sport] ?? "running";
 }
 
 /** The way out of «Draw» with the track only (TASK-149), in the sport's
- * words: «Ride» by bike (TASK-190), «Paddle» on the water (TASK-191). */
+ * words: «Ride» by bike (TASK-190), «Paddle» on the water (TASK-191),
+ * «Walk» on foot (TASK-371), «Hike» on the trails (TASK-377), «Swim» in
+ * open water (TASK-323). A gravel or an MTB ride is a ride (TASK-378).
+ * «Skate» on inline skates (TASK-380). «Go» in a wheelchair or pushing a
+ * stroller, which is no walk (TASK-414). */
 export function withoutRouteLabel(sport: Sport): string {
   switch (sport) {
     case "bike":
+    case "gravel":
+    case "mtb":
       return t("Ride without a route");
     case "paddle":
       return t("Paddle without a route");
+    case "walk":
+      return t("Walk without a route");
+    case "hike":
+      return t("Hike without a route");
+    case "roller":
+      return t("Skate without a route");
+    case "wheelchair":
+      return t("Go without a route");
+    case "swim":
+      return t("Swim without a route");
+    case "ski":
+    case "xc_ski":
+    case "skimo":
+    case "alpinism":
+      // No shapes on the slopes (TASK-375) nor up a mountain (TASK-463):
+      // the only way to go.
+      return t("Record your day");
+    case "snowshoe":
+      // Beside the shapes on the snow, the day as it comes (TASK-413 part
+      // C, the user's «Dentro le ciaspole», 2026-11-12).
+      return t("Record your day");
+    case "gym":
+      // No route in the gym (TASK-385 part B): the workout's own start.
+      return t("Start workout");
+    case "stretch":
+      // No route to stretch (TASK-475): the routine chosen on «Draw».
+      return t("Start stretching");
+    case "paragliding":
+      // No shapes in the air yet (TASK-305 parts R): the flight only.
+      return t("Record your flight");
     default:
       return t("Run without a route");
   }

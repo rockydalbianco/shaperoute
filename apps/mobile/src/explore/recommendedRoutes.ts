@@ -1,7 +1,9 @@
-import type { Activity, LatLon, Walk } from "@shaperoute/shared-types";
+import type { Activity, LatLon, OutlinePoint, Walk } from "@shaperoute/shared-types";
 
 import { apiKey, keyHeaders } from "../api/apiUrl";
 import { shapeWord } from "../i18n/shapeNames";
+import { metresBetween } from "../map/coordinates";
+import { nearParams } from "../places/photon";
 
 /**
  * The best routes already planned near a point, for "Explore" (TASK-126,
@@ -25,6 +27,12 @@ export type RecommendedRoute = {
   /** The distance on the roads. */
   route_m: number;
   similarity: number;
+  /**
+   * False for a route with no likeness to tell: a MuW route (TASK-405),
+   * whose card says its title and city alone. Absent for every other,
+   * which says how much it looks like its figure.
+   */
+  scored?: false;
   start: LatLon;
   /** From the point asked about to the start, in a straight line. */
   away_m: number;
@@ -32,7 +40,8 @@ export type RecommendedRoute = {
   /**
    * The points of `preview` the route comes to without drawing: a card
    * draws no segment that ends at one (an example drawn in pieces on the
-   * water, TASK-226). Absent for a route in one line.
+   * water, TASK-226; a word of the catalogue written letter by letter,
+   * TASK-441). Absent for a route in one line.
    */
   gaps?: number[];
   /**
@@ -62,9 +71,16 @@ export type RecommendedRouteDetail = {
   activity?: Activity;
   /**
    * The stretches with the pen up of a shape drawn in pieces on the water
-   * (TASK-226), as RouteResult.walks: an example's only, when it has some.
+   * (TASK-226), as RouteResult.walks: an example's, when it has some, and a
+   * word of the catalogue written letter by letter (TASK-441).
    */
   walks?: Walk[];
+  /**
+   * The outline of a figure the catalogue does not have, for a route of
+   * «RIDE IT YOURSELF» (TASK-364): what its request sends. The API's routes
+   * do not say.
+   */
+  outline?: OutlinePoint[];
   /**
    * How far its shape is turned, as RouteResult.rotation_deg (TASK-232): the
    * map turns the other way, also while it is run. Absent for a route that
@@ -95,30 +111,67 @@ export type ListOutcome =
 export type DetailOutcome =
   { kind: "route"; route: RecommendedRouteDetail } | { kind: "failed" };
 
-type Options = { fetchFn?: typeof fetch; key?: string | null; signal?: AbortSignal };
+type Options = {
+  fetchFn?: typeof fetch;
+  key?: string | null;
+  signal?: AbortSignal;
+  /** Whose drawings: a run's when left out. */
+  activity?: Activity;
+};
+
+/** The activities the catalogue has drawings of its own for (TASK-441): a
+ * walk, like every other, is shown a run's, as ever. */
+const CATALOG_ACTIVITIES: readonly Activity[] = ["cycling"];
+
+/**
+ * What a list is asked with for the drawings of `activity` (TASK-441): a
+ * ride's by its name, a run's as ever, with nothing, and an API that does
+ * not know the word answers with a run's.
+ */
+export function activityParam(activity: Activity = "running"): string {
+  return CATALOG_ACTIVITIES.includes(activity) ? `&activity=${activity}` : "";
+}
 
 export function recommendedUrl(
   baseUrl: string,
   near: LatLon,
   radiusM: number = NEAR_RADIUS_M,
+  activity: Activity = "running",
 ): string {
-  return `${baseUrl}/recommended-routes?lat=${near[0]}&lon=${near[1]}&radius_m=${radiusM}`;
+  return (
+    `${baseUrl}/recommended-routes?${nearParams(near)}&radius_m=${radiusM}` +
+    activityParam(activity)
+  );
+}
+
+/**
+ * How far each route is from the real `near`: the API was told about a
+ * kilometre (TASK-363), so its `away_m` is measured from the rounded point.
+ */
+export function measuredFrom(
+  near: LatLon,
+  routes: RecommendedRoute[],
+): RecommendedRoute[] {
+  return routes.map((route) => ({
+    ...route,
+    away_m: Math.round(metresBetween(near, route.start)),
+  }));
 }
 
 /** The routes near `near`, the best first. Never throws. */
 export async function fetchRecommended(
   baseUrl: string,
   near: LatLon,
-  { fetchFn = fetch, key = apiKey(), signal }: Options = {},
+  { fetchFn = fetch, key = apiKey(), signal, activity }: Options = {},
 ): Promise<ListOutcome> {
   try {
-    const response = await fetchFn(recommendedUrl(baseUrl, near), {
-      headers: keyHeaders(key),
-      signal,
-    });
+    const response = await fetchFn(
+      recommendedUrl(baseUrl, near, NEAR_RADIUS_M, activity),
+      { headers: keyHeaders(key), signal },
+    );
     const body: unknown = await response.json();
     return response.ok && isRecommendedList(body)
-      ? { kind: "routes", routes: body.routes }
+      ? { kind: "routes", routes: measuredFrom(near, body.routes) }
       : { kind: "failed" };
   } catch {
     return { kind: "failed" };

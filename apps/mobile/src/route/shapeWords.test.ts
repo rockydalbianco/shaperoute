@@ -138,7 +138,7 @@ test("every word names its own shape, and no word is used twice in a language", 
 
 test("the suggestion lists every shape, as the runner reads it", () => {
   expect(shapeList()).toBe(
-    "circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun",
+    "circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut, sun, airplane, anchor, bear head, bicycle, cherries, espresso cup, four leaf clover, leaning tower, music note, pear, sailboat, swan, windmill or wine glass",
   );
 });
 

@@ -20,6 +20,7 @@ from test_game_api import (
     OTHER_KEY,
     PHONE,
     SIX_KM,
+    SIX_KM_UNLOCKS,
     game_of,
     run_body,
     save,
@@ -91,6 +92,40 @@ def forget_the_game(database: Database) -> None:
         conn.execute("DELETE FROM game_unlocks")
 
 
+def without_track(database: Database, username: str, key: str) -> None:
+    """An activity saved without a track, as a gym session or a pool swim
+    is (gym_sessions.py, pool_swims.py): `source` muw, `track` NULL."""
+    with database.connect() as conn:
+        conn.execute(
+            "INSERT INTO runs (user_id, key, track, pauses, started_at,"
+            " distance_m, duration_s, created_at, activity)"
+            " SELECT id, %s, NULL, '[]', %s, 0, 3600, %s, 'gym' FROM users"
+            " WHERE username = %s",
+            (key, MORNING + timedelta(days=1), NOW, username),
+        )
+
+
+def test_an_activity_without_a_track_is_left_out(
+    client: TestClient, database: Database
+) -> None:
+    # TASK-423: the backfill of rules 3 stopped on a gym session on the
+    # server. It has no game, as when it is saved.
+    me = signed_up(client, "ada")
+    save(client, me, run_body(SIX_KM))
+    without_track(database, "ada", OTHER_KEY)
+    forget_the_game(database)
+    assert backfill(database) == Backfilled(
+        accounts=1, runs=1, unlocked=len(SIX_KM_UNLOCKS)
+    )
+    assert len(game_rows(database)) == 1
+    # Run again: nothing left to do, the session never counts as missing.
+    assert backfill(database) == Backfilled(accounts=0, runs=0, unlocked=0)
+    # An account with only a session has no game to compute.
+    signed_up(client, "bob")
+    without_track(database, "bob", KEY)
+    assert backfill(database) == Backfilled(accounts=0, runs=0, unlocked=0)
+
+
 def test_the_backfill_gives_the_rows_of_a_save(
     client: TestClient, database: Database, expo: FakeExpo
 ) -> None:
@@ -109,12 +144,20 @@ def test_the_backfill_gives_the_rows_of_a_save(
     told = len(expo.sent)
     forget_the_game(database)
 
-    assert backfill(database) == Backfilled(accounts=1, runs=2, unlocked=2)
+    assert backfill(database) == Backfilled(
+        accounts=1, runs=2, unlocked=len(SIX_KM_UNLOCKS) + 1
+    )
     assert game_rows(database) == saved
-    # At the end of the run that reached each: 6 km, then 12.
+    # At the end of the run that reached each. The first, paused after 10
+    # minutes, has no 5 km in one go: all the rest. The second has the 5 km,
+    # and 12 km in all: the square.
     end_of_first = saved[0]["ended_at"]
     end_of_second = saved[1]["ended_at"]
-    assert unlocks(database) == [("square", end_of_second), ("triangle", end_of_first)]
+    second = {"bridge", "arch", "lighthouse", "ferris_wheel", "balloon"}
+    assert unlocks(database) == sorted(
+        [(s, end_of_second if s in second else end_of_first) for s in SIX_KM_UNLOCKS]
+        + [("square", end_of_second)]
+    )
     # Nobody is told.
     assert len(expo.sent) == told
 
@@ -148,12 +191,13 @@ def test_newer_rules_compute_every_run_again(
 ) -> None:
     me = signed_up(client, "ada")
     save(client, me, run_body(SIX_KM))
-    monkeypatch.setattr(game_module, "RULES_VERSION", 2)
-    monkeypatch.setattr(game_backfill, "RULES_VERSION", 2)
+    newer = game_backfill.RULES_VERSION + 1
+    monkeypatch.setattr(game_module, "RULES_VERSION", newer)
+    monkeypatch.setattr(game_backfill, "RULES_VERSION", newer)
     assert backfill(database) == Backfilled(accounts=1, runs=1, unlocked=0)
-    assert [row["rules_version"] for row in game_rows(database)] == [2]
-    # The shape stays, once.
-    assert [shape for shape, _ in unlocks(database)] == ["triangle"]
+    assert [row["rules_version"] for row in game_rows(database)] == [newer]
+    # The shapes stay, once.
+    assert [shape for shape, _ in unlocks(database)] == sorted(SIX_KM_UNLOCKS)
 
 
 def test_the_command_needs_the_database(
@@ -176,5 +220,6 @@ def test_the_command_says_what_it_did(
     monkeypatch.setenv(DATABASE_VARIABLE, database.url)
     assert main([]) == 0
     assert capsys.readouterr().out.strip() == (
-        "game_backfill: rules 1, 1 account(s), 1 run(s), 1 shape(s) unlocked"
+        f"game_backfill: rules {game_backfill.RULES_VERSION}, 1 account(s),"
+        f" 1 run(s), {len(SIX_KM_UNLOCKS)} shape(s) unlocked, 0 edition(s)"
     )

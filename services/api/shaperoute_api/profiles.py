@@ -9,7 +9,11 @@ GET /users/{public_id} is the profile as every member sees it: username,
 bio, picture (profile_photos.py), number of drawings published
 (drawings.py), how many it follows and how many follow it, and where the one
 who asks stands towards it (follows.py); since TASK-324 its totals: metres,
-climb and reactions received (profile_totals.py). Never the email, the role, the
+climb and reactions received (profile_totals.py); since TASK-368 its
+personal bests (profile_bests.py); since TASK-397 its VO₂ max, with its
+owner's yes (vo2max.py); since TASK-385 E its levels at the gym
+(gym_levels.py); since TASK-423 E the prizes of the shape game its owner
+chose to show (game_prizes_api.py), nothing by default. Never the email, the role, the
 internal id or when the account was made. It needs the token of an account:
 what members share is for members, as the feed (ADR-0114, point 4). The id
 is the random `public_id` of the account, not `id`: a sequence would let
@@ -22,7 +26,9 @@ from __future__ import annotations
 import base64
 import re
 import unicodedata
+from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -42,7 +48,9 @@ from shaperoute_api.accounts import (
     accounts_of,
     contest_wins_sql,
     current_user,
+    now_utc,
 )
+from shaperoute_api.badges import Badge, badges_sql
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import published_count_sql
 from shaperoute_api.follows import (
@@ -52,12 +60,17 @@ from shaperoute_api.follows import (
     followers_count_sql,
     following_count_sql,
 )
+from shaperoute_api.game_prizes_api import ShownBody, shown_prizes
+from shaperoute_api.gym_leaderboard import gym_wins_sql
+from shaperoute_api.gym_levels import GymLevelBody, gym_levels_sql
+from shaperoute_api.profile_bests import PersonalBestBody, personal_bests_sql
 from shaperoute_api.profile_totals import (
     climb_total_sql,
     distance_total_sql,
     reactions_received_sql,
 )
 from shaperoute_api.schemas import ErrorBody
+from shaperoute_api.vo2max import Vo2MaxBody, shown, since_of, vo2max_sql
 
 MAX_BIO_LENGTH = 160
 
@@ -109,6 +122,33 @@ class PublicProfileBody(BaseModel):
     reactions: int = Field(
         description="The reactions others left on its drawings the one who asks sees."
     )
+    # The badges (TASK-341, ADR-0294): decided here, of the drawings the one
+    # who asks sees; «Winner» is contest_wins.
+    badges: list[Badge] = Field(
+        description="The badges it earned, in a fixed order; [] without one."
+    )
+    # The personal bests (TASK-368, ADR-0312): of every run, private ones
+    # too, the user's choice; the run opens only for who may see it.
+    personal_bests: list[PersonalBestBody] = Field(
+        description="On foot, then by bike, by distance; [] without one."
+    )
+    # The VO₂ max (TASK-397, ADR-0332): only with its owner's yes.
+    vo2max: Vo2MaxBody | None = Field(
+        description="Of Health, else estimated from the running bests; null"
+        " without the yes or without either."
+    )
+    # The levels at the gym (TASK-385 E, ADR-0327): of every workout, private
+    # ones too, the user's choice; only figure, exercise and value.
+    gym_levels: list[GymLevelBody] = Field(
+        description="The highest level first, then as the catalog; [] without one."
+    )
+    # The prizes of the shape game (TASK-423 E, ADR-0351): only those its
+    # owner chose and still has; an app before E does not read it.
+    game_prizes: ShownBody | None = Field(
+        default=None,
+        description="The frame, title and up to 3 badges chosen; null when"
+        " nothing is.",
+    )
 
 
 def checked_username(value: str) -> str:
@@ -135,6 +175,7 @@ class Profiles:
     """The profiles of the accounts in the database."""
 
     database: Database
+    now: Callable[[], datetime] = now_utc
 
     def edit(self, user_id: int, body: EditProfileRequestBody) -> UserBody:
         """The account with what `body` changes; 409 for a username taken."""
@@ -163,28 +204,38 @@ class Profiles:
             wanted = UUID(public_id)
         except ValueError:
             return None
+        now = self.now()
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT u.public_id, u.username, u.bio, p.jpeg,"
+                "SELECT u.id, u.public_id, u.username, u.bio, p.jpeg,"
                 # Only the runs published, and those the viewer may see
                 # (TASK-117, TASK-208, ADR-0114 point 4).
                 f" {published_count_sql('u.id', '%s')} AS drawings,"
                 f" {followers_count_sql('u.id')} AS followers,"
                 f" {following_count_sql('u.id')} AS following,"
                 f" {follow_state_sql('%s', 'u.id')} AS follow,"
-                f" {contest_wins_sql('u.id')} AS contest_wins,"
+                # The monthly leaderboards at the gym make a «Winner» too
+                # (TASK-385 F, the user's choice of 2026-11-06).
+                f" ({contest_wins_sql('u.id')} + {gym_wins_sql('u.id')})"
+                " AS contest_wins,"
                 f" {distance_total_sql('u.id')} AS distance_m,"
                 f" {climb_total_sql('u.id')} AS climb_m,"
-                f" {reactions_received_sql('u.id', '%s')} AS reactions"
+                f" {reactions_received_sql('u.id', '%s')} AS reactions,"
+                f" {badges_sql('u.id', '%s')} AS badges,"
+                f" {personal_bests_sql('u.id', '%s')} AS personal_bests,"
+                f" {vo2max_sql('u.id', '%s')} AS vo2max,"
+                f" {gym_levels_sql('u.id')} AS gym_levels"
                 " FROM users u LEFT JOIN profile_photos p ON p.user_id = u.id"
                 " WHERE u.public_id = %s"
                 # Across a block the profile is not there (TASK-121).
                 f" AND NOT {apart_sql('%s', 'u.id')}",
-                (viewer_id, viewer_id, viewer_id, viewer_id, wanted, viewer_id),
+                (viewer_id,) * 7 + (since_of(now), wanted, viewer_id),
             ).fetchone()
+            prizes = None if row is None else shown_prizes(conn, int(row["id"]))
         if row is None:
             return None
         jpeg = row["jpeg"]
+        vo2max = row["vo2max"]
         return PublicProfileBody(
             public_id=row["public_id"],
             username=row["username"],
@@ -198,12 +249,17 @@ class Profiles:
             distance_m=row["distance_m"],
             climb_m=row["climb_m"],
             reactions=row["reactions"],
+            badges=row["badges"],
+            personal_bests=row["personal_bests"],
+            vo2max=shown(vo2max, now.date()) if vo2max["show"] else None,
+            gym_levels=row["gym_levels"],
+            game_prizes=prizes,
         )
 
 
 def profiles_of(accounts: Annotated[Accounts, Depends(accounts_of)]) -> Profiles:
-    """In the database of the accounts."""
-    return Profiles(accounts.database)
+    """In the database of the accounts, on their clock."""
+    return Profiles(accounts.database, accounts.now)
 
 
 def profile_routes() -> APIRouter:

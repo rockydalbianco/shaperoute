@@ -33,13 +33,20 @@ export function decimal(value: number, digits = 1): string {
   return decimalIn(appLanguage(), value, digits);
 }
 
+/** What tells apart two texts the same in English and not in other
+ * languages: `t("Change@@piece")` is «Change» in English, «Cambia» in
+ * Italian, where the «Change» of a run's split is «Differenza» (TASK-402
+ * part B). English shows what comes before it. */
+export const CONTEXT_MARK = "@@";
+
 /**
  * `text` in `language`, its `{name}` marks filled from `values`. A text with
  * no translation is shown in English (ADR-0172); a number is written as the
  * language writes it.
  */
 export function translate(language: Language, text: string, values?: Values): string {
-  const written = language === "en" ? text : (TABLES[language][text] ?? text);
+  const english = text.split(CONTEXT_MARK)[0];
+  const written = language === "en" ? english : (TABLES[language][text] ?? english);
   if (values === undefined) {
     return written;
   }

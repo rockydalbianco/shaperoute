@@ -19,6 +19,8 @@ import { wordsOf } from "../voice/words";
 import { kmAnnouncement } from "./freeRun";
 import { comparisonOf } from "./kmCompare";
 import { moveOnFootJoined } from "./joinOnFoot";
+import { type LiveActivityRun, startLiveActivity } from "./liveActivity";
+import { type LockNoticeRun, startLockNotice } from "./lockNotice";
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
 import { startOnFoot } from "./onFootVoice";
 import { isPaddle, paddleAnnouncement } from "./paddle";
@@ -30,8 +32,10 @@ import { controlRun, runControl, type RunSession } from "./runControl";
 import { type RunWatch, watchRunPosition } from "./runPosition";
 import { simplifyDirections } from "./simplifyDirections";
 import { startsAnywhere } from "./startAnywhere";
+import { isSwim, SWIM_AUTO_PAUSE_AFTER_MS } from "./swim";
 import { emptyTrack, type Track } from "./trackRecorder";
 import { startRun } from "./trackStore";
+import { startWayBack, type WayBackRun } from "./wayBackRun";
 
 /** A fix at least this often apart, in metres: a stride or two. */
 export const FIX_EVERY_M = 5;
@@ -86,8 +90,13 @@ export function play(cues: Cue[]): void {
  * that moment (TASK-182): with miles each mile, on a bike every
  * RIDE_MI_EVERY, and the turns in feet. With the phone locked, or another app
  * in front, the GPS goes on where the app can (TASK-261, `runPosition`) and
- * the voice speaks, over the music (part B, `runAudio`). The position never
- * leaves the phone.
+ * the voice speaks, over the music (part B, `runAudio`); on iOS what the
+ * navigator says is also written on the lock screen (TASK-401): a Live
+ * Activity where the build has one (`liveActivity`), else a notification
+ * (`lockNotice`). Off the route the way back to it on the streets is asked
+ * for, and its turns said and written the same way (TASK-314,
+ * `wayBackRun`): the position goes to the server only for that, when the
+ * phone has no map of the area.
  */
 export function useNavigation(
   points: LatLon[] | null,
@@ -126,6 +135,9 @@ export function useNavigation(
     let run: RunSession | null = null;
     let stopRecording: (() => void) | null = null;
     let away: RunAway | null = null;
+    let notice: LockNoticeRun | null = null;
+    let live: LiveActivityRun | null = null;
+    let wayBack: WayBackRun | null = null;
     // The phone's voices, before the first words: a chosen one is used only
     // once it is known to be there.
     void loadVoices();
@@ -183,6 +195,37 @@ export function useNavigation(
         let saidUnits = appUnits();
         let saidKm = saidKmOf(recorder.track(), activity, saidUnits);
         let position: LatLon | null = null;
+        // A swim says nothing and does not vibrate: with the head in the
+        // water nobody hears it, and the phone is in the buoy (TASK-323 D);
+        // standing still waits longer before the pause.
+        const swim = isSwim(activity);
+        const cue = (cues: Cue[]) => {
+          if (!swim) {
+            play(cues);
+          }
+        };
+        // The directions on the locked phone too (TASK-401): a Live
+        // Activity where the build has it, else a notification of what the
+        // navigator says; not on a swim, with the phone in the buoy.
+        live = swim ? null : startLiveActivity(resumed.navigation);
+        notice = swim || live !== null ? null : startLockNotice();
+        // A way back found between two fixes is shown and said at once.
+        wayBack = startWayBack(activity, (place) => {
+          if (stopped || navigation.current === null) {
+            return;
+          }
+          const found = place(navigation.current, speaking().language);
+          navigation.current = found.navigation;
+          setState({
+            status: "following",
+            navigation: found.navigation,
+            position,
+            track: recorder.track(),
+          });
+          cue(found.cues);
+          notice?.said(found.cues, found.navigation);
+          live?.update(found.navigation);
+        });
         const session = controlRun(recorder, {
           // «Pause» and «Resume» change the track between two fixes.
           onChange: () => {
@@ -195,7 +238,8 @@ export function useNavigation(
               });
             }
           },
-          say: (text) => play([{ say: text, vibrate: false }]),
+          say: (text) => cue([{ say: text, vibrate: false }]),
+          ...(swim ? { stillMs: SWIM_AUTO_PAUSE_AFTER_MS } : {}),
         });
         run = session;
         setState({
@@ -206,7 +250,7 @@ export function useNavigation(
         });
         // «Head out on …» is for a run that starts, not one that goes on.
         if (recorder.track().fixes.length === 0) {
-          play(started.cues);
+          cue(started.cues);
         }
         // With the phone locked too, where the app can (TASK-261).
         subscription = await watchRunPosition(
@@ -223,12 +267,9 @@ export function useNavigation(
             position = fix;
             const { language } = speaking();
             const before = navigation.current;
-            const next = onFix(
-              before,
-              fix,
-              { accuracyM: coords.accuracy, timeMs: timestamp },
-              language,
-            );
+            const reading = { accuracyM: coords.accuracy, timeMs: timestamp };
+            const followed = onFix(before, fix, reading, language);
+            const next = wayBack?.onFix(followed, fix, reading, language) ?? followed;
             navigation.current = next.navigation;
             const drawing = movePen(
               pen,
@@ -262,8 +303,10 @@ export function useNavigation(
               track,
             });
             // The pen first: what the runner does next depends on it.
-            play(drawing.cues);
-            play(next.cues);
+            cue(drawing.cues);
+            cue(next.cues);
+            notice?.said(next.cues, next.navigation);
+            live?.update(next.navigation);
             // After the turn, which may be the way onto the stretch; from
             // where the run joined a closed route (TASK-273).
             const walking = moveOnFootJoined(
@@ -274,7 +317,7 @@ export function useNavigation(
               coords.accuracy,
             );
             bike = walking.onFoot;
-            play(walking.cues);
+            cue(walking.cues);
             // After the turn, so a kilometre never delays one.
             const units = appUnits();
             if (units !== saidUnits) {
@@ -291,11 +334,11 @@ export function useNavigation(
                 : isPaddle(activity)
                   ? paddleAnnouncement(km, track, language, units)
                   : kmAnnouncement(km, track, language, units);
-              play([{ say: said, vibrate: false }]);
+              cue([{ say: said, vibrate: false }]);
               // Then how it went against the one before (TASK-217).
               const compared = comparisonOf(km, track, activity, language, units);
               if (compared !== null) {
-                play([{ say: compared, vibrate: false }]);
+                cue([{ say: compared, vibrate: false }]);
               }
             }
           },
@@ -318,6 +361,11 @@ export function useNavigation(
       stopped = true;
       subscription?.remove();
       away?.remove();
+      notice?.end();
+      if (navigation.current !== null) {
+        live?.end(navigation.current);
+      }
+      wayBack?.end();
       run?.end();
       stopRecording?.();
       void Speech.stop();

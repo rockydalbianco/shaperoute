@@ -13,6 +13,7 @@ import { Text } from "react-native";
 import { apiError } from "../account/testing";
 import type { AccountState } from "../account/useAccount";
 import { forgetBlocked, useBlockedNow } from "../social/blockedNow";
+import { IslandLayer } from "../ui/IslandLayer";
 import { MessageButton } from "./MessageButton";
 import { MessagesContext, useMessagesOf } from "./messagesDoor";
 import { MessagesOverlay } from "./MessagesOverlay";
@@ -77,13 +78,14 @@ function Harness({ fetchFn }: { fetchFn: jest.Mock }) {
       <MessagesRow />
       <MessageButton person={ada} />
       <MessagesOverlay fetchFn={fetchFn} apiKey={null} />
+      <IslandLayer />
     </MessagesContext.Provider>
   );
 }
 
 const UNREAD = "GET /me/conversations/unread";
-const INBOX = "GET /me/conversations?box=inbox";
-const MESSAGES = `GET /conversations/${ID}/messages`;
+const INBOX = "GET /me/conversations?box=inbox&with=attachments";
+const MESSAGES = `GET /conversations/${ID}/messages?with=attachments`;
 const unread = (n = 0, requests = 0) => json({ unread: n, requests });
 
 beforeEach(forgetBlocked);
@@ -100,7 +102,7 @@ test("«Messages» counts what waits and opens the list", async () => {
   expect(
     screen.getByRole("button", { name: /^Ada_runs, new message: Yes, but the bridge/ }),
   ).toBeOnTheScreen();
-  expect(screen.getByTestId("conversation-unread")).toBeOnTheScreen();
+  expect(screen.getByTestId("conversation-unread-count")).toHaveTextContent("1");
   expect(
     screen.getByRole("button", { name: "Message requests, 2 waiting" }),
   ).toBeOnTheScreen();
@@ -127,7 +129,7 @@ test("an empty list says how to write, the requests say there are none", async (
   const { fetchFn } = api({
     [UNREAD]: unread(),
     [INBOX]: json(empty),
-    "GET /me/conversations?box=requests": json(empty),
+    "GET /me/conversations?box=requests&with=attachments": json(empty),
   });
   await render(<Harness fetchFn={fetchFn} />);
   await fireEvent.press(await screen.findByRole("button", { name: "Messages" }));
@@ -170,7 +172,7 @@ test("«Message» on a profile: the first message is a request, then the wait", 
   const { fetchFn, asked } = api({
     [UNREAD]: unread(),
     [MESSAGES]: json(conversation({ state: "first", messages: [] })),
-    [`POST /conversations/${ID}/messages`]: json(mine, 201),
+    [`POST /conversations/${ID}/messages?with=attachments`]: json(mine, 201),
   });
   await render(<Harness fetchFn={fetchFn} />);
   await fireEvent.press(
@@ -204,7 +206,10 @@ test("a negative request is said in words, and the text stays", async () => {
   const { fetchFn } = api({
     [UNREAD]: unread(),
     [MESSAGES]: json(conversation({ state: "first", messages: [] })),
-    [`POST /conversations/${ID}/messages`]: json(apiError("comment_rejected"), 422),
+    [`POST /conversations/${ID}/messages?with=attachments`]: json(
+      apiError("comment_rejected"),
+      422,
+    ),
   });
   await render(<Harness fetchFn={fetchFn} />);
   await fireEvent.press(

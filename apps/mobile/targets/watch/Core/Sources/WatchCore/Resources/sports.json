@@ -1,0 +1,203 @@
+{
+  "version": 1,
+  "sports": [
+    {
+      "activity": "running",
+      "name": "Run",
+      "emoji": "🏃‍♂️",
+      "appleWorkout": 37,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "cycling",
+      "name": "Bike",
+      "emoji": "🚴",
+      "appleWorkout": 13,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "paddling",
+      "name": "Paddle",
+      "emoji": "🛶",
+      "appleWorkout": 31,
+      "pace": "paddle",
+      "onWater": true,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "swimming",
+      "name": "Swim",
+      "emoji": "🏊",
+      "appleWorkout": 46,
+      "pace": "swim",
+      "onWater": true,
+      "guided": true,
+      "gps": true,
+      "onWatch": false
+    },
+    {
+      "activity": "hiking",
+      "name": "Hike",
+      "emoji": "⛰️",
+      "appleWorkout": 24,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "mountain_biking",
+      "name": "MTB",
+      "emoji": "🚵",
+      "appleWorkout": 13,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "inline_skating",
+      "name": "Roller",
+      "emoji": "🛼",
+      "appleWorkout": 39,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "snowshoeing",
+      "name": "Snowshoes",
+      "emoji": "❄️",
+      "appleWorkout": 24,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "wheelchair",
+      "name": "Wheelchair & stroller",
+      "emoji": "♿",
+      "appleWorkout": 70,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "walking",
+      "name": "Walk",
+      "emoji": "🚶",
+      "appleWorkout": 52,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "gravel_biking",
+      "name": "Gravel",
+      "emoji": "🚲",
+      "appleWorkout": 13,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "skiing",
+      "name": "Ski",
+      "emoji": "⛷️",
+      "appleWorkout": 61,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "xc_skiing",
+      "name": "Cross-country ski",
+      "emoji": "🎿",
+      "appleWorkout": 60,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "ski_touring",
+      "name": "Ski touring",
+      "emoji": "🏔️",
+      "appleWorkout": 60,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "paragliding",
+      "name": "Paragliding",
+      "emoji": "🪂",
+      "appleWorkout": 3000,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": true,
+      "onWatch": false
+    },
+    {
+      "activity": "alpinism",
+      "name": "Mountaineering",
+      "emoji": "🧗",
+      "appleWorkout": 9,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": true,
+      "onWatch": false
+    },
+    {
+      "activity": "gym",
+      "name": "Gym",
+      "emoji": "🏋️",
+      "appleWorkout": 50,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": false,
+      "onWatch": true
+    },
+    {
+      "activity": "stretching",
+      "name": "Stretching",
+      "emoji": "🧘",
+      "appleWorkout": 62,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": false,
+      "onWatch": false
+    }
+  ]
+}

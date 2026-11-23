@@ -13,10 +13,28 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { type Account, useAccount } from "../account/useAccount";
 import { ActivitiesContext, useActivitiesOf } from "../activities/activitiesDoor";
+import { BellContext, useBellOf } from "../bell/bellDoor";
+import { BellOverlay } from "../bell/BellOverlay";
+import {
+  closeContestPage,
+  openContestPage,
+  useAskedContest,
+} from "../contest/contestDoor";
+import { askContestOnce } from "../contest/contestKept";
+import { ContestPageHost } from "../contest/ContestPage";
+import {
+  closeGroupRunPage,
+  openGroupRunPage,
+  useAskedGroupRun,
+} from "../groupRuns/groupRunDoor";
+import { GroupRunPageHost } from "../groupRuns/GroupRunPage";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import { t, tPlural } from "../i18n";
+import { LOG_IN_TO_SEE, useIncomingPostLink } from "../links/useIncomingPostLink";
 import { MessagesContext, useMessagesOf } from "../messages/messagesDoor";
+import { useTabReselect } from "../tabs/tabReselect";
 import { MessagesOverlay } from "../messages/MessagesOverlay";
+import type { Opens } from "../notifications/openTarget";
 import { usePushNotifications } from "../notifications/usePushNotifications";
 import { ProfilePhotoContext, useProfilePhotoOf } from "../profile/useProfilePhoto";
 import { CommentsContext, useCommentsOf } from "../social/commentsDoor";
@@ -38,8 +56,10 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { OverAppPages, OverAppProvider, useOverAppState } from "./overAppContext";
 import { PeopleScreen } from "./PeopleScreen";
 import { type ProfilePage, ProfileScreen } from "./ProfileScreen";
+import { LiveViewHost, openLiveView } from "../liveShare/liveViewDoor";
 
 /** «Find friends» (TASK-215): on screen, or behind a drawing opened from it. */
 type PeopleAt = "shown" | "behind" | null;
@@ -164,6 +184,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
       setPeople(null);
       setHint(null);
       setPage(null);
+      closeContestPage();
+      closeGroupRunPage();
       setAsked((last) => ({ n: last.n + 1, hint: why }));
     },
     [setPeople],
@@ -249,10 +271,13 @@ export function ProfileLayer({ apiUrl, children }: Props) {
           setPage(home.current === "page" ? null : "account");
         }
       },
-      // «Draw it near me» (TASK-313): to «Draw», «Find friends» let go too.
+      // «Draw it near me» (TASK-313): to «Draw», «Find friends» let go too,
+      // and the page of a monthly challenge (TASK-343).
       onLeave: () => {
         setHint(null);
         setPeople(null);
+        closeContestPage();
+        closeGroupRunPage();
       },
     }),
     [setPeople],
@@ -296,6 +321,14 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // notification (TASK-262): their profile over the app, «←» back to the
   // app as it was; the account's own, the fourth page (TASK-278 part B).
   const ownId = signedIn ? (state.session.user.public_id ?? null) : null;
+  // The contest for who signs in, once (TASK-343): the form of a run needs
+  // its theme and what they entered, and «Feed» may not have been opened.
+  const contestToken = signedIn ? state.session.token : null;
+  useEffect(() => {
+    if (contestToken !== null) {
+      void askContestOnce(apiUrl, contestToken, ownId);
+    }
+  }, [apiUrl, contestToken, ownId]);
   const { opened: drawingOpened, back: closeDrawing } = drawings;
   const openSomeone = useCallback(
     (person: Person) => {
@@ -371,7 +404,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // Push notifications (TASK-262): this phone's token on the API while the
   // switch is on; a notification touched opens its drawing or a profile,
   // as a tagged name does, or the conversation of a message.
-  usePushNotifications(apiUrl, account, {
+  const opens: Opens = {
     openDrawing: (id) => drawings.open({ id }),
     openProfile: followsDoor.openProfile,
     // A shape of the game unlocked (TASK-296): the app shows «Play».
@@ -379,7 +412,35 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     // A challenge's notification (TASK-296 part D): «Play» on the challenge.
     openChallenge,
     openConversation: messages.openConversation,
-  });
+    // A monthly challenge's notification (TASK-343): its page.
+    openContest: openContestPage,
+    // A group run's notification (TASK-309 part B): its page.
+    openGroupRun: openGroupRunPage,
+    // A planned live that started (TASK-468 part B2b1): its live view.
+    openLive: openLiveView,
+  };
+  usePushNotifications(apiUrl, account, opens);
+  // The link of a post opened in the app (TASK-482 part A): its drawing, as
+  // the one of a notification touched; without an account, the fourth page
+  // first, saying why.
+  useIncomingPostLink(account, opens.openDrawing, () => showOwnPage(t(LOG_IN_TO_SEE)));
+  // The bell of the header (TASK-367 part C): its lines open what the
+  // pushes open.
+  const bell = useBellOf(apiUrl, account);
+  // A post's own Modal under the pages over the app, or «Play» over them
+  // (TASK-470 D).
+  const [overApp, overAppState] = useOverAppState();
+  // What the pages over the app see of these is what is around the layer,
+  // not the app's: in a post's slot they are inside the app (TASK-470 D).
+  const outerComments = useContext(CommentsContext);
+  const outerReactions = useContext(ReactionsContext);
+  const outerFollows = useContext(FollowsContext);
+  const outerOwn = useContext(OwnContext);
+  // The page of a monthly challenge over the app (TASK-343): out of the way
+  // while a drawing opened from it is on the map.
+  const contestOver = useAskedContest() !== null && drawings.opened === null;
+  // The page of a group run over the app (TASK-309 part B), as a challenge's.
+  const groupRunOver = useAskedGroupRun() !== null;
   const door = useMemo(
     () => ({
       open: () => {
@@ -394,6 +455,83 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     }),
     [attention, initial, photoUri, requests],
   );
+  // The pages over the app: in place, or in the slot of a post's own Modal
+  // while one is up (TASK-470 D).
+  const overInModal = overAppState.modalPages > 0;
+  // The app is under a page over it: out of the screen reader's sight. Not
+  // while «Play» covers those pages, which are kept out of sight then.
+  const appUnder =
+    (shown || contestOver || groupRunOver || bell.shown) && !overAppState.covered;
+  const overPages = (
+    <OverAppPages covered={overAppState.covered}>
+      <CommentsContext.Provider value={outerComments}>
+        <ReactionsContext.Provider value={outerReactions}>
+          <FollowsContext.Provider value={outerFollows}>
+            <OwnContext.Provider value={outerOwn}>
+              {/* Under «Find friends» and «Profile»: a name in its
+      gallery opens over it, and back comes to it. */}
+              <FollowsContext.Provider value={followsDoor}>
+                <ContestPageHost />
+              </FollowsContext.Provider>
+              {people !== null && (
+                <PeopleScreen
+                  // A member of the lists, or the search: not the same page.
+                  key={member?.public_id ?? "search"}
+                  apiUrl={apiUrl}
+                  account={account}
+                  first={member}
+                  hidden={people === "behind"}
+                  onBack={() => {
+                    setPeople(null);
+                    if (member !== null) {
+                      setMember(null);
+                      // The fourth page, or the app, is under it already.
+                      if (home.current === "layer") {
+                        setHint(null);
+                        setPage("account");
+                      }
+                    }
+                  }}
+                />
+              )}
+              {page !== null && (
+                <FollowsContext.Provider value={layerFollows}>
+                  <ProfileScreen
+                    account={account}
+                    page={page}
+                    onPage={onProfilePage}
+                    hint={hint}
+                    onBack={() => {
+                      // Closed without an account: the heart's route waits no more.
+                      forgetWaiting();
+                      setPage(null);
+                    }}
+                  />
+                </FollowsContext.Provider>
+              )}
+              {/* Over the profiles: a group run opened from a member's
+      list comes over it, and back goes to it (TASK-309 part B). */}
+              <FollowsContext.Provider value={followsDoor}>
+                <GroupRunPageHost />
+              </FollowsContext.Provider>
+              {/* Over everything: opened from a profile, «Profile» or a
+      notification, and closed back to it (TASK-319). */}
+              <MessagesOverlay />
+              <BellOverlay opens={opens} />
+              <LiveViewHost
+                apiUrl={apiUrl}
+                token={
+                  account.state.status === "signedIn"
+                    ? account.state.session.token
+                    : null
+                }
+              />
+            </OwnContext.Provider>
+          </FollowsContext.Provider>
+        </ReactionsContext.Provider>
+      </CommentsContext.Provider>
+    </OverAppPages>
+  );
   return (
     <DoorContext.Provider value={door}>
       <FavoritesContext.Provider value={favorites}>
@@ -403,67 +541,44 @@ export function ProfileLayer({ apiUrl, children }: Props) {
               <DrawingsContext.Provider value={drawings}>
                 <PeopleContext.Provider value={peopleDoor}>
                   <MessagesContext.Provider value={messages}>
-                    <View style={styles.layer}>
-                      <View
-                        style={styles.app}
-                        // Under «Profile» the app is out of the screen reader's sight too.
-                        accessibilityElementsHidden={shown}
-                        importantForAccessibility={
-                          shown ? "no-hide-descendants" : "auto"
-                        }
-                      >
-                        <CommentsContext.Provider value={comments}>
-                          <ReactionsContext.Provider value={reactions}>
-                            {/* The end of a run tags members, and a tagged
+                    <BellContext.Provider value={bell}>
+                      <View style={styles.layer}>
+                        <View
+                          style={styles.app}
+                          // Under «Profile» the app is out of the screen reader's sight too.
+                          accessibilityElementsHidden={appUnder}
+                          importantForAccessibility={
+                            appUnder ? "no-hide-descendants" : "auto"
+                          }
+                        >
+                          <CommentsContext.Provider value={comments}>
+                            <ReactionsContext.Provider value={reactions}>
+                              {/* The end of a run tags members, and a tagged
                               name opens a profile (TASK-208). */}
-                            <FollowsContext.Provider value={followsDoor}>
-                              <OwnContext.Provider value={own}>
-                                {children}
-                              </OwnContext.Provider>
-                            </FollowsContext.Provider>
-                          </ReactionsContext.Provider>
-                        </CommentsContext.Provider>
+                              <FollowsContext.Provider value={followsDoor}>
+                                <OwnContext.Provider value={own}>
+                                  <OverAppProvider
+                                    door={overApp}
+                                    slot={{
+                                      pages: overInModal ? overPages : null,
+                                      shown:
+                                        shown ||
+                                        contestOver ||
+                                        groupRunOver ||
+                                        bell.shown ||
+                                        messages.screen !== null,
+                                    }}
+                                  >
+                                    {children}
+                                  </OverAppProvider>
+                                </OwnContext.Provider>
+                              </FollowsContext.Provider>
+                            </ReactionsContext.Provider>
+                          </CommentsContext.Provider>
+                        </View>
+                        {!overInModal && overPages}
                       </View>
-                      {people !== null && (
-                        <PeopleScreen
-                          // A member of the lists, or the search: not the same page.
-                          key={member?.public_id ?? "search"}
-                          apiUrl={apiUrl}
-                          account={account}
-                          first={member}
-                          hidden={people === "behind"}
-                          onBack={() => {
-                            setPeople(null);
-                            if (member !== null) {
-                              setMember(null);
-                              // The fourth page, or the app, is under it already.
-                              if (home.current === "layer") {
-                                setHint(null);
-                                setPage("account");
-                              }
-                            }
-                          }}
-                        />
-                      )}
-                      {page !== null && (
-                        <FollowsContext.Provider value={layerFollows}>
-                          <ProfileScreen
-                            account={account}
-                            page={page}
-                            onPage={onProfilePage}
-                            hint={hint}
-                            onBack={() => {
-                              // Closed without an account: the heart's route waits no more.
-                              forgetWaiting();
-                              setPage(null);
-                            }}
-                          />
-                        </FollowsContext.Provider>
-                      )}
-                      {/* Over everything: opened from a profile, «Profile» or a
-                        notification, and closed back to it (TASK-319). */}
-                      <MessagesOverlay />
-                    </View>
+                    </BellContext.Provider>
                   </MessagesContext.Provider>
                 </PeopleContext.Provider>
               </DrawingsContext.Provider>
@@ -478,29 +593,37 @@ export function ProfileLayer({ apiUrl, children }: Props) {
 /**
  * The first page of «Profile» as the fourth page of the pager, after
  * «Explore» (TASK-278): sign up or log in, or the account with its rows.
- * What it opens comes over the app, and «←» comes back here. Built anew
- * each time it comes on screen, as «Profile» was each time it opened: the
- * lists of who follows and the drawings are read again. Asked for by the
- * heart or «Save» without an account, it says why over «Sign up», as
- * «Profile» did over the app (TASK-278 part B).
+ * What it opens comes over the app, and «←» comes back here, built anew:
+ * the lists of who follows and the drawings are read again. Left for
+ * another tab it is built anew there and then, out of sight: a swipe that
+ * comes back finds it whole at its top, never empty and filling again as
+ * it lands. Asked for by the heart or «Save» without an account, it says
+ * why over «Sign up», as «Profile» did over the app (TASK-278 part B).
  */
 export function OwnProfile({
   active,
   onBack,
+  onExplore,
 }: {
   active: boolean;
   /** Back to the map or the end of a run it was asked for from, until
    * somebody signs in: «←» and the title, as over the app (TASK-278 part
    * B, the user's choice). Left out, none, as on the other pages. */
   onBack?: () => void;
+  /** To «Explore», from the first step of a new profile (TASK-457); left
+   * out where the bar has no «Explore». */
+  onExplore?: () => void;
 }) {
   const own = useContext(OwnContext);
-  const shown = active && own !== null && !own.covered;
+  const covered = own !== null && own.covered;
   const [visit, setVisit] = useState(0);
-  const [wasShown, setWasShown] = useState(shown);
-  if (shown !== wasShown) {
-    setWasShown(shown);
-    if (shown) {
+  // Its tab touched again (TASK-367): built anew, at its top.
+  useTabReselect(() => setVisit((last) => last + 1));
+  const [was, setWas] = useState({ active, covered });
+  if (active !== was.active || covered !== was.covered) {
+    setWas({ active, covered });
+    // Another tab, or back from what it opened over the app.
+    if ((was.active && !active) || (active && was.covered && !covered)) {
       setVisit(visit + 1);
     }
   }
@@ -516,8 +639,60 @@ export function OwnProfile({
         onPage={own.open}
         hint={own.asked.hint}
         onBack={onBack}
+        onExplore={onExplore}
       />
     </FollowsContext.Provider>
+  );
+}
+
+/** What the screen reader says of the way to «Profile»: who asks to follow,
+ * or that the account must log in again. */
+function profileLabel(attention: boolean, requests: number): string {
+  return requests > 0
+    ? tPlural(
+        requests,
+        "Profile, {count} follow request",
+        "Profile, {count} follow requests",
+      )
+    : t(attention ? "Profile, log in again" : "Profile");
+}
+
+/** The tab of «Profile» in the tab bar (TASK-367): its name for the screen
+ * reader and the requests waiting, for the red number. */
+export function useProfileTab(): { label: string; requests: number } {
+  const { attention, requests } = useContext(DoorContext);
+  return { label: profileLabel(attention, requests), requests };
+}
+
+/** The side of the picture in the tab bar: as the icons, a little more. */
+const FACE_SIZE = 28;
+
+/**
+ * The picture of who is signed in as the icon of «Profile» in the tab bar
+ * (TASK-367), or their first letter, or a figure: with a thin border in the
+ * text's colour while the profile is on screen, as Instagram's.
+ */
+export function ProfileFace({ selected }: { selected: boolean }) {
+  const { attention, initial, photo } = useContext(DoorContext);
+  return (
+    <View style={[styles.face, selected && styles.faceSelected]}>
+      {initial !== null && photo !== null ? (
+        <Image
+          source={{ uri: photo }}
+          style={styles.facePhoto}
+          testID="profile-tab-photo"
+          accessibilityIgnoresInvertColors
+        />
+      ) : initial !== null ? (
+        <Text style={styles.faceInitial}>{initial}</Text>
+      ) : (
+        <View style={styles.figure}>
+          <View style={styles.head} />
+          <View style={styles.shoulders} />
+        </View>
+      )}
+      {attention && <View style={styles.dot} testID="profile-attention" />}
+    </View>
   );
 }
 
@@ -545,15 +720,7 @@ export function ProfileButton({ selected, onPress }: ButtonProps = {}) {
       onPress={onPress ?? open}
       accessibilityRole="button"
       accessibilityState={selected !== undefined ? { selected } : undefined}
-      accessibilityLabel={
-        requests > 0
-          ? tPlural(
-              requests,
-              "Profile, {count} follow request",
-              "Profile, {count} follow requests",
-            )
-          : t(attention ? "Profile, log in again" : "Profile")
-      }
+      accessibilityLabel={profileLabel(attention, requests)}
     >
       {initial !== null && photo !== null ? (
         <Image
@@ -635,6 +802,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.background,
     backgroundColor: color.warning,
+  },
+  face: {
+    width: FACE_SIZE,
+    height: FACE_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  faceSelected: {
+    borderWidth: 1.5,
+    borderColor: color.text,
+  },
+  facePhoto: {
+    width: FACE_SIZE - 3,
+    height: FACE_SIZE - 3,
+    borderRadius: radius.pill,
+  },
+  faceInitial: {
+    color: color.text,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.bold,
   },
   // The mark of the page on screen, as under the names (Pager.tsx), in the
   // room under the circle: the header keeps its height. Inside the border.

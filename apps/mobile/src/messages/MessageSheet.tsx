@@ -4,7 +4,7 @@ import {
   REPORT_REASONS,
 } from "@shaperoute/shared-types";
 import { type ReactNode, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { sessionEnded } from "../account/messages";
@@ -21,12 +21,17 @@ import {
 } from "../social/ReportMenu";
 import {
   color,
+  font,
   fontSize,
   fontWeight,
   MIN_TAP_SIZE,
   radius,
   space,
 } from "../theme/tokens";
+import { sayInIsland } from "../ui/IslandLayer";
+import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
+import { Tap } from "../ui/Tap";
 
 /** What the sheet is about: a message touched long, or blocking who wrote. */
 export type SheetFor =
@@ -74,6 +79,9 @@ export function MessageSheet({
   apiKey,
 }: Props) {
   const [step, setStep] = useState<Step>({ kind: "first" });
+  // Down on its spring first; then `onClose` takes it away (TASK-388 C).
+  const [open, setOpen] = useState(true);
+  const close = () => setOpen(false);
   const options = { fetchFn, key: apiKey };
 
   function sent(outcome: AccountOutcome<null>, done: () => void) {
@@ -92,7 +100,7 @@ export function MessageSheet({
     void deleteMessage(apiUrl, token, message.id, options).then((outcome) =>
       sent(outcome, () => {
         onDeleted(message);
-        onClose();
+        close();
       }),
     );
   }
@@ -100,7 +108,10 @@ export function MessageSheet({
   function reportFor(message: Message, reason: ReportReason) {
     setStep({ kind: "sending" });
     void report(apiUrl, token, "message", message.id, reason, options).then((outcome) =>
-      sent(outcome, () => setStep({ kind: "said", words: t(REPORTED) })),
+      sent(outcome, () => {
+        close();
+        sayInIsland(t(REPORTED));
+      }),
     );
   }
 
@@ -109,23 +120,17 @@ export function MessageSheet({
     void blockMember(apiUrl, token, person.public_id, options).then((outcome) =>
       sent(outcome, () => {
         markBlocked(person.public_id);
-        onClose();
+        close();
         onBlocked();
       }),
     );
   }
 
   return (
-    <Modal
-      visible
-      transparent
-      animationType="slide"
-      statusBarTranslucent
-      onRequestClose={onClose}
-    >
+    <SheetModal visible={open} onRequestClose={close} onHidden={onClose}>
       <Pressable
         style={styles.backdrop}
-        onPress={onClose}
+        onPress={close}
         accessible={false}
         importantForAccessibility="no"
         testID="message-sheet-backdrop"
@@ -180,18 +185,22 @@ export function MessageSheet({
         )}
         <Choice
           label={step.kind === "said" ? t("Close") : t("Cancel")}
-          onPress={onClose}
+          onPress={close}
         />
       </Sheet>
-    </Modal>
+    </SheetModal>
   );
 }
 
 /** The sheet at the foot of the screen, over the phone's home bar. */
 function Sheet({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   return (
-    <View style={[styles.sheet, { paddingBottom: insets.bottom + space.sm }]}>
+    <View
+      style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.sm }]}
+    >
       {children}
     </View>
   );
@@ -207,37 +216,30 @@ function Choice({
   danger?: boolean;
 }) {
   return (
-    <Pressable
-      style={({ pressed }) => [styles.choice, pressed && styles.pressed]}
-      onPress={onPress}
-      accessibilityRole="button"
-    >
+    <Tap style={styles.choice} onPress={onPress} accessibilityRole="button">
       <Text style={[styles.choiceText, danger && styles.danger]}>{label}</Text>
-    </Pressable>
+    </Tap>
   );
 }
 
 // As the sheet of ReportMenu.tsx.
 const styles = StyleSheet.create({
-  pressed: {
-    opacity: 0.6,
-  },
   backdrop: {
     flex: 1,
   },
   sheet: {
     gap: space.sm,
     padding: space.lg,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
-    borderTopWidth: 1,
-    borderColor: color.border,
+    // The app's sheet: its radius, one physical pixel at the top (TASK-339 D).
+    borderTopLeftRadius: radius.sheet,
+    borderTopRightRadius: radius.sheet,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: color.hairline,
     backgroundColor: color.surface,
   },
   title: {
+    ...font.heading,
     color: color.text,
-    fontSize: fontSize.input,
-    fontWeight: fontWeight.semibold,
   },
   words: {
     color: color.textMuted,

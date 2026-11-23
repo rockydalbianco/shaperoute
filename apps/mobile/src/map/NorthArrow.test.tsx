@@ -29,11 +29,35 @@ test("with north up the arrow is upright, and says it turns the map back", async
   );
 });
 
-test("the arrow is not the route's yellow: only the route is", async () => {
+test("on the run's Compass page, heading-up, a tap puts north up even facing north (TASK-422)", async () => {
+  await render(
+    <NorthArrow
+      shown={0}
+      northUp={false}
+      upHint="Where you face"
+      onPress={jest.fn()}
+    />,
+  );
+  expect(screen.getByTestId("north-arrow").props.accessibilityHint).toBe(
+    "Turns the map north up",
+  );
+});
+
+test("on the run's Compass page, with north up, the hint is the page's (TASK-422)", async () => {
+  await render(
+    <NorthArrow shown={-30} northUp upHint="Where you face" onPress={jest.fn()} />,
+  );
+  expect(screen.getByTestId("north-arrow").props.accessibilityHint).toBe(
+    "Where you face",
+  );
+});
+
+test("the arrow is not the route's yellow: its tip is red, the N the text (TASK-431)", async () => {
   await render(<NorthArrow shown={45} onPress={jest.fn()} />);
   const tip = StyleSheet.flatten(screen.getByText("▲").props.style);
   const north = StyleSheet.flatten(screen.getByText("N").props.style);
-  expect(tip.color).toBe(color.text);
+  expect(tip.color).toBe(color.north);
   expect(north.color).toBe(color.text);
+  expect(color.north).not.toBe(color.accent);
   expect(color.text).not.toBe(color.accent);
 });

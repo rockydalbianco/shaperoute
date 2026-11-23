@@ -254,9 +254,12 @@ def test_the_catalogue_gains_only_the_shapes_the_user_approved() -> None:
         if isinstance(shape, Outline) and shape.in_pieces
     }
     approved = {"smiley", "ghost", "donut", "sun"}
-    assert in_pieces == {"cat", "fish", "dog_head", "rabbit_head", "pumpkin"} | approved
+    # The new shapes in pieces the user approved on real roads (TASK-418).
+    new = {"anchor", "bear_head", "bicycle", "espresso_cup"}
+    eyes = {"cat", "fish", "dog_head", "rabbit_head", "pumpkin"}
+    assert in_pieces == eyes | approved | new
     assert {n for n, s in SHAPES.items() if isinstance(s, Outline) and s.pieces} == (
-        approved
+        approved | new
     )
     almost = {"balloon", "ice_cream", "lightning", "cloud", "drop", "apple"}
     assert not almost & set(SHAPES)

@@ -68,8 +68,10 @@ def wide_zone(tmp_path: Path, no_download: None) -> OsmnxSource:
 
 def _grid(size: int, corner: LatLon, first: int) -> Graph:
     """size x size crossings SPACING_M apart from `corner`, joined both
-    ways, with what OSMnx gives a graph and its edges."""
-    graph: Graph = nx.MultiDiGraph(crs="epsg:4326")
+    ways, with what OSMnx gives a graph and its edges. Simplified already,
+    as a download is once the foot network has read its tags (TASK-421):
+    its corners are crossings, not points along a road."""
+    graph: Graph = nx.MultiDiGraph(crs="epsg:4326", simplified=True)
     for i in range(size):
         for j in range(size):
             lat, lon = local_to_latlon(corner, i * SPACING_M, j * SPACING_M)

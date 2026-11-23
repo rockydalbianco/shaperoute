@@ -2,6 +2,7 @@ import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import type { RouteResult } from "@shaperoute/shared-types";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import * as Location from "expo-location";
+import { Alert } from "react-native";
 
 import App from "../../App";
 import type { MemorySecureStore } from "../account/testing";
@@ -9,10 +10,9 @@ import { requestRouteOnPhoneFirst } from "../engine/onPhone";
 import { RouteChoice } from "../route/RoutePanel";
 import { checkWord } from "../route/wordInput";
 import { saveUnitsChoice } from "../units/units";
-import { MapDrawButton } from "./MapDrawButton";
 
-// «Draw on the map» in the app itself (TASK-281): the button under the
-// switch of «Draw», the figure on the map, its route shown as one of
+// «Draw on the map» in the app itself (TASK-281): «Freehand», first in the
+// switch of «Draw» (TASK-340), the figure on the map, its route shown as one of
 // «Draw», and «←» back to the figure as it was. The setup is
 // `Profile.test.tsx`'s: no GPS, no account; the route comes from a stand-in.
 
@@ -89,7 +89,7 @@ test("the figure's route opens as one of «Draw», and «←» comes back to the
   // Where the map is: the figure goes there.
   await pagePosts('{"type":"centre","lngLat":[11.13,46.07]}');
 
-  await fireEvent.press(screen.getByText("Draw on the map"));
+  await fireEvent.press(screen.getByText("Freehand"));
   expect(screen.getByText("Undo")).toBeOnTheScreen();
   // Framed as it opens, with no figure yet.
   expect(sent("setCanvas").at(-1)).toMatchObject({
@@ -137,10 +137,95 @@ test("the figure's route opens as one of «Draw», and «←» comes back to the
   // From the figure, «←» goes back to «Draw».
   await fireEvent.press(screen.getByLabelText("Back"));
   await fireEvent.press(screen.getByLabelText("Back"));
-  expect(screen.getByText("Draw on the map")).toBeOnTheScreen();
+  expect(screen.getByText("Freehand")).toBeOnTheScreen();
 });
 
-test("on the water «Draw» has no «Draw on the map»", async () => {
+test("drawing by hand is on the map only: an open line stays open, and its route is a «Drawing» (TASK-331)", async () => {
+  await render(<App />);
+  await pagePosts('{"type":"ready"}');
+  await pagePosts('{"type":"centre","lngLat":[11.13,46.07]}');
+  // «Draw» has no board of its own, and no «Edit the drawing» (TASK-340).
+  await fireEvent.press(screen.getByLabelText("heart"));
+  expect(screen.queryByText("Edit the drawing")).toBeNull();
+
+  await fireEvent.press(screen.getByText("Freehand"));
+  expect(
+    screen.getByText(
+      "Draw with one finger. End where you started to close it. Two fingers move the map.",
+    ),
+  ).toBeOnTheScreen();
+  // An arch, its ends far apart, as a finger draws it.
+  const arch = Array.from({ length: 20 }, (_, i) => {
+    const a = (Math.PI * i) / 19;
+    return [11.13 + 0.01 * Math.cos(a), 46.07 + 0.007 * Math.sin(a)];
+  });
+  await pagePosts(JSON.stringify({ type: "drawn", line: arch, metresPerPx: 2 }));
+  expect(
+    screen.getByText("Each new line joins the drawing. Two fingers move the map."),
+  ).toBeOnTheScreen();
+  // On the page, the line as drawn and the ring too small to see at its start.
+  const lines = sent("setCanvas").at(-1)?.lines as [number, number][][];
+  expect(lines).toHaveLength(2);
+  expect(lines[0]).toHaveLength(4);
+  const [first] = lines[1];
+  const last = lines[1][lines[1].length - 1];
+  expect(Math.abs(first[0] - last[0])).toBeGreaterThan(0.015);
+
+  await act(async () => fireEvent.press(screen.getByText("Draw route")));
+  const [, asked] = jest.mocked(requestRouteOnPhoneFirst).mock.calls[0];
+  expect(asked).toMatchObject({ activity: "running" });
+  expect("outline" in asked && asked.outline).toHaveLength(4);
+  expect("strokes" in asked && asked.strokes).toHaveLength(1);
+  expect(screen.getByText(/^Drawing · on roads · target/)).toBeOnTheScreen();
+});
+
+test("the tools under the map: «Line» taps a line, «Clear all» asks first, «Redo» undoes «Undo» (TASK-331 B)", async () => {
+  const alert = jest
+    .spyOn(Alert, "alert")
+    .mockImplementation((_title, _message, buttons) =>
+      buttons?.find((button) => button.style === "destructive")?.onPress?.(),
+    );
+  await render(<App />);
+  await pagePosts('{"type":"ready"}');
+  await pagePosts('{"type":"centre","lngLat":[11.13,46.07]}');
+  await fireEvent.press(screen.getByText("Freehand"));
+  for (const label of ["Draw", "Line", "Erase", "Move", "Undo", "Redo", "Clear all"]) {
+    expect(screen.getByRole("button", { name: label })).toBeOnTheScreen();
+  }
+  await fireEvent.press(screen.getByRole("button", { name: "Line" }));
+  expect(
+    screen.getByText(
+      "Tap point after point. Tap the first point to close it, the last one to finish.",
+    ),
+  ).toBeOnTheScreen();
+  expect(sent("setCanvas").at(-1)).toMatchObject({ mode: "line", marks: [] });
+  const tap = (lngLat: [number, number]) =>
+    pagePosts(JSON.stringify({ type: "drawn", line: [lngLat], metresPerPx: 2 }));
+  await tap([11.13, 46.07]);
+  expect(sent("setCanvas").at(-1)).toMatchObject({
+    marks: [[11.13, 46.07]],
+    lines: [],
+  });
+  await tap([11.14, 46.07]);
+  // The line, on the small ring at its start.
+  expect(sent("setCanvas").at(-1)?.lines).toHaveLength(2);
+  expect(screen.getByText(/^≈ /)).toBeOnTheScreen();
+
+  await fireEvent.press(screen.getByRole("button", { name: "Clear all" }));
+  expect(alert).toHaveBeenCalledWith(
+    "Clear the whole drawing?",
+    undefined,
+    expect.any(Array),
+  );
+  expect(sent("setCanvas").at(-1)?.lines).toEqual([]);
+  await fireEvent.press(screen.getByRole("button", { name: "Undo" }));
+  expect(sent("setCanvas").at(-1)?.lines).toHaveLength(2);
+  await fireEvent.press(screen.getByRole("button", { name: "Redo" }));
+  expect(sent("setCanvas").at(-1)?.lines).toEqual([]);
+  alert.mockRestore();
+});
+
+test("«Freehand» comes first and opens the map, on the water too", async () => {
   const props = {
     kind: "shape" as const,
     onKind: jest.fn(),
@@ -159,10 +244,111 @@ test("on the water «Draw» has no «Draw on the map»", async () => {
     image: { status: "none" as const },
     onChooseImage: jest.fn(),
     onDistanceText: jest.fn(),
-    underKinds: <MapDrawButton onPress={jest.fn()} />,
+    onFreehand: jest.fn(),
   };
   const { rerender } = await render(<RouteChoice {...props} activity="paddling" />);
-  expect(screen.queryByText("Draw on the map")).toBeNull();
+  // With «Paddle» no word and no picture (TASK-396).
+  expect(
+    screen
+      .getAllByText(/^(Freehand|Shape|Word|Image)$/)
+      .map((text) => text.props.children as string),
+  ).toEqual(["Freehand", "Shape"]);
   await rerender(<RouteChoice {...props} activity="running" />);
-  expect(screen.getByText("Draw on the map")).toBeOnTheScreen();
+  expect(
+    screen
+      .getAllByText(/^(Freehand|Shape|Word|Image)$/)
+      .map((text) => text.props.children as string),
+  ).toEqual(["Freehand", "Shape", "Word", "Image"]);
+  // A label on two lines, as «A mano libera» is, stays in the middle.
+  expect(screen.getByText("Freehand")).toHaveStyle({ textAlign: "center" });
+
+  // It opens the map; the switch stays on what was chosen.
+  await fireEvent.press(screen.getByRole("button", { name: "Freehand" }));
+  expect(props.onFreehand).toHaveBeenCalledTimes(1);
+  expect(props.onKind).not.toHaveBeenCalled();
+  expect(screen.getByRole("button", { name: "Shape" })).toBeSelected();
+  expect(screen.getByRole("button", { name: "Freehand" })).not.toBeSelected();
+});
+
+test("with «Move» the figure turns by 15°, by the degrees typed, and is asked turned (TASK-402)", async () => {
+  await render(<App />);
+  await pagePosts('{"type":"ready"}');
+  await pagePosts('{"type":"centre","lngLat":[11.13,46.07]}');
+  await fireEvent.press(screen.getByText("Freehand"));
+  // No figure, no angle.
+  expect(screen.queryByTestId("turn-angle")).toBeNull();
+
+  await fireEvent.press(screen.getByLabelText("heart"));
+  expect(screen.getByText("0°")).toBeOnTheScreen();
+  const straight = sent("setCanvas").at(-1)?.lines;
+  await fireEvent.press(screen.getByLabelText("Turn right 15 degrees"));
+  expect(
+    screen.getByLabelText("Angle, 15 degrees. Double tap to type it"),
+  ).toBeOnTheScreen();
+  expect(sent("setCanvas").at(-1)?.lines).not.toEqual(straight);
+  await fireEvent.press(screen.getByLabelText("Turn left 15 degrees"));
+  await fireEvent.press(screen.getByLabelText("Turn left 15 degrees"));
+  expect(
+    screen.getByLabelText("Angle, -15 degrees. Double tap to type it"),
+  ).toBeOnTheScreen();
+
+  await fireEvent.press(screen.getByTestId("turn-angle"));
+  await fireEvent.changeText(screen.getByTestId("turn-typed"), "90");
+  await fireEvent(screen.getByTestId("turn-typed"), "submitEditing");
+  expect(screen.getByText("90°")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByText("Undo"));
+  expect(screen.getByTestId("turn-angle")).toHaveTextContent("\u221215°");
+  await fireEvent.press(screen.getByText("Redo"));
+
+  // Turned, the heart is asked by its outline.
+  await act(async () => fireEvent.press(screen.getByText("Draw route")));
+  const [, asked] = jest.mocked(requestRouteOnPhoneFirst).mock.calls.at(-1) ?? [];
+  expect(asked).toHaveProperty("outline");
+  expect(asked).not.toHaveProperty("shape");
+});
+
+test("with «Add» a tile adds a piece; «Delete piece» takes it away (TASK-402 part B)", async () => {
+  await render(<App />);
+  await pagePosts('{"type":"ready"}');
+  await pagePosts('{"type":"centre","lngLat":[11.13,46.07]}');
+  await fireEvent.press(screen.getByText("Freehand"));
+  // Nothing to add to yet.
+  expect(screen.queryByText("Add")).toBeNull();
+
+  await fireEvent.press(screen.getByLabelText("heart"));
+  await fireEvent.press(screen.getByText("Add"));
+  await pagePosts('{"type":"centre","lngLat":[11.17,46.07]}');
+  await fireEvent.press(screen.getByLabelText("star"));
+  // The star chosen: it alone moves, its box round it; the hint for pieces.
+  const shown = sent("setCanvas").at(-1);
+  expect(shown).toMatchObject({ mode: "move", choosing: true, chosen: [1] });
+  expect((shown?.box as unknown[]).length).toBe(5);
+  expect(
+    screen.getByText(
+      "Tap a piece to choose it, then drag, resize or turn it. Tap outside to take them all.",
+    ),
+  ).toBeOnTheScreen();
+  expect(screen.getByText("Delete piece")).toBeOnTheScreen();
+
+  // A tap far from both: the whole figure, no piece to delete.
+  await pagePosts('{"type":"tapped","lngLat":[11.5,46.5],"metresPerPx":2}');
+  expect(screen.queryByText("Delete piece")).toBeNull();
+  expect(sent("setCanvas").at(-1)).toMatchObject({ chosen: [] });
+
+  // One route for both: the heart's outline, the star a detail.
+  await act(async () => fireEvent.press(screen.getByText("Draw route")));
+  const [, asked] = jest.mocked(requestRouteOnPhoneFirst).mock.calls.at(-1) ?? [];
+  expect(asked).toHaveProperty("outline");
+  expect(asked).toHaveProperty("strokes");
+  await fireEvent.press(screen.getByLabelText("Back"));
+
+  // The star chosen again by a tap on it, and deleted: the heart alone is
+  // asked by its name, as before.
+  const star = (sent("setCanvas").at(-1)?.lines as number[][][])[1][2];
+  await pagePosts(JSON.stringify({ type: "tapped", lngLat: star, metresPerPx: 2 }));
+  await fireEvent.press(screen.getByText("Delete piece"));
+  expect(sent("setCanvas").at(-1)).toMatchObject({ choosing: false });
+  await act(async () => fireEvent.press(screen.getByText("Draw route")));
+  const [, alone] = jest.mocked(requestRouteOnPhoneFirst).mock.calls.at(-1) ?? [];
+  expect(alone).toMatchObject({ shape: "heart" });
 });

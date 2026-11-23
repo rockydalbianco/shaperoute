@@ -4,7 +4,7 @@ import {
   REPORT_REASONS,
 } from "@shaperoute/shared-types";
 import { type ReactNode, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { accountProblem, sessionEnded } from "../account/messages";
@@ -19,6 +19,10 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { sayInIsland } from "../ui/IslandLayer";
+import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
+import { Tap } from "../ui/Tap";
 import { markBlocked } from "./blockedNow";
 
 /** The reasons as the sheet says them, in English: shown with `t()`. */
@@ -75,8 +79,8 @@ export function moderationProblem(failed: Failed): string {
 /**
  * The «…» of a post in «Feed» and of another member's profile (TASK-121,
  * ADR-0228): a small sheet with «Report» and «Block». «Report» asks why,
- * from a short list, and says thanks; the report is kept for whoever runs
- * the app. «Block» asks first, saying what it does; once blocked, the
+ * from a short list; once sent, the sheet closes and the island says thanks
+ * (TASK-388). The report is kept for whoever runs the app. «Block» asks first, saying what it does; once blocked, the
  * member's cards leave «Feed» at once and `onBlocked` is called.
  */
 export function ReportMenu({
@@ -107,7 +111,11 @@ export function ReportMenu({
   function reportFor(reason: ReportReason) {
     setStep({ kind: "sending" });
     void report(apiUrl, token, target.kind, target.id, reason, options).then(
-      (outcome) => sent(outcome, () => setStep({ kind: "said", words: t(REPORTED) })),
+      (outcome) =>
+        sent(outcome, () => {
+          close();
+          sayInIsland(t(REPORTED));
+        }),
     );
   }
 
@@ -124,8 +132,8 @@ export function ReportMenu({
 
   return (
     <>
-      <Pressable
-        style={({ pressed }) => [styles.more, pressed && styles.pressed]}
+      <Tap
+        style={styles.more}
         onPress={() => setStep({ kind: "menu" })}
         accessibilityRole="button"
         accessibilityLabel={t("More")}
@@ -134,14 +142,8 @@ export function ReportMenu({
         testID="report-menu"
       >
         <Text style={styles.moreText}>…</Text>
-      </Pressable>
-      <Modal
-        visible={step.kind !== "closed"}
-        transparent
-        animationType="slide"
-        statusBarTranslucent
-        onRequestClose={close}
-      >
+      </Tap>
+      <SheetModal visible={step.kind !== "closed"} onRequestClose={close}>
         <Pressable
           style={styles.backdrop}
           onPress={close}
@@ -201,7 +203,7 @@ export function ReportMenu({
             onPress={close}
           />
         </Sheet>
-      </Modal>
+      </SheetModal>
     </>
   );
 }
@@ -210,8 +212,12 @@ export function ReportMenu({
  * only while the menu is open. */
 function Sheet({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   return (
-    <View style={[styles.sheet, { paddingBottom: insets.bottom + space.sm }]}>
+    <View
+      style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.sm }]}
+    >
       {children}
     </View>
   );
@@ -227,13 +233,9 @@ function Choice({
   danger?: boolean;
 }) {
   return (
-    <Pressable
-      style={({ pressed }) => [styles.choice, pressed && styles.pressed]}
-      onPress={onPress}
-      accessibilityRole="button"
-    >
+    <Tap style={styles.choice} onPress={onPress} accessibilityRole="button">
       <Text style={[styles.choiceText, danger && styles.danger]}>{label}</Text>
-    </Pressable>
+    </Tap>
   );
 }
 
@@ -248,9 +250,6 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.title,
     fontWeight: fontWeight.bold,
-  },
-  pressed: {
-    opacity: 0.6,
   },
   // Clear, as over the super like: a tap on it closes the sheet.
   backdrop: {

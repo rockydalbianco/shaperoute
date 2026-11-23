@@ -1,13 +1,23 @@
 /**
  * The map page's script run against a stand-in for MapLibre (TASK-281):
  * on «Draw on the map» the fingers are the page's own. With «Draw» one
- * finger draws a line and the map keeps still; with «Move» one finger moves
- * the figure or the map, two fingers size the figure or zoom the map.
+ * finger draws a line and two zoom and move the map (TASK-331); with «Move»
+ * one finger moves the figure or the map, two fingers size the figure or
+ * zoom the map; with «Erase» a tap is told as a line.
  */
 import vm from "node:vm";
 
-import { buildMapPage, CANVAS_ZOOM, FIGURE_PADDING_PX } from "../map/mapPage";
+import type { LatLon } from "@shaperoute/shared-types";
+
 import {
+  buildMapPage,
+  CANVAS_ZOOM,
+  ERASER_PX,
+  FIGURE_PADDING_PX,
+  HOLD_MS,
+} from "../map/mapPage";
+import {
+  type CanvasMode,
   clearCanvas,
   type FromPage,
   parsePageMessage,
@@ -18,7 +28,13 @@ import {
 type Touch = { clientX: number; clientY: number };
 type TouchEventLike = { touches: Touch[]; timeStamp: number };
 type Listener = (event: TouchEventLike) => void;
-type Drawn = { geometry?: { type: string; coordinates: unknown } };
+type Drawn = {
+  geometry?: { type: string; coordinates: unknown };
+  features?: {
+    properties: Record<string, unknown>;
+    geometry: { coordinates: unknown };
+  }[];
+};
 
 const WIDTH = 400;
 const HEIGHT = 600;
@@ -59,6 +75,9 @@ function runPage() {
   const framed: { bounds: unknown; options: unknown }[] = [];
   const eased: Record<string, unknown>[] = [];
   const halts = { times: 0 };
+  // The time of the touches, and the paint of the layers as the page sets it.
+  const clock = { now: 0 };
+  const paints: Record<string, unknown> = {};
   const handlers = {
     dragPan: handler(),
     touchZoomRotate: handler(),
@@ -85,6 +104,12 @@ function runPage() {
       sources.set(name, source.data);
     }
     addLayer() {}
+    getLayer(id: string) {
+      return { id };
+    }
+    setPaintProperty(layer: string, name: string, value: unknown) {
+      paints[`${layer} ${name}`] = value;
+    }
     getSource(name: string) {
       return sources.has(name)
         ? { setData: (data: Drawn) => sources.set(name, data) }
@@ -154,7 +179,7 @@ function runPage() {
   const page = context.shaperoute as { receive: (message: ToPage) => void };
   const fire = (type: string, touches: Touch[]) =>
     (listeners.get(type) ?? []).forEach((listener) =>
-      listener({ touches, timeStamp: 0 }),
+      listener({ touches, timeStamp: clock.now }),
     );
   /** Fingers at x, y, then x, y of the next one. */
   const at = (...xy: number[]): Touch[] =>
@@ -177,6 +202,17 @@ function runPage() {
         .map((data) => parsePageMessage(data))
         .filter((message): message is FromPage => message !== null),
     drawn: (name: string) => sources.get(name)?.geometry?.coordinates,
+    /** The dots a source holds: where, and whether each is the first. */
+    dots: (name: string) =>
+      (sources.get(name)?.features ?? []).map((f) => ({
+        at: f.geometry.coordinates,
+        first: f.properties.first,
+      })),
+    paints,
+    /** Time goes by between touches. */
+    wait: (ms: number) => {
+      clock.now += ms;
+    },
     down: (...xy: number[]) => fire("touchstart", at(...xy)),
     to: (...xy: number[]) => fire("touchmove", at(...xy)),
     /** Fingers lifted; those given stay on the map. */
@@ -195,10 +231,19 @@ const SQUARE: [number, number][] = [
   [45.995, 10.995],
 ];
 
-function canvas(mode: "draw" | "move", withFigure = true, frame = false) {
+function canvas(
+  mode: CanvasMode,
+  withFigure = true,
+  frame = false,
+  more: { lines?: LatLon[][]; links?: boolean[]; marks?: LatLon[] } = {},
+) {
+  const lines = more.lines ?? (withFigure ? [SQUARE] : []);
   return setCanvas({
     mode,
-    lines: withFigure ? [SQUARE] : [],
+    lines,
+    links: more.links ?? lines.map(() => false),
+    bendable: lines.map((_, i) => i),
+    marks: more.marks ?? [],
     centre: withFigure ? [46, 11] : null,
     shrink: 0.5,
     grow: 2,
@@ -251,7 +296,7 @@ test("with «Draw» one finger draws a line, and the map keeps still", () => {
   expect(page.drawn("ink")).toBeUndefined();
 });
 
-test("with «Draw» a second finger drops the line, and two fingers do nothing", () => {
+test("with «Draw» a second finger drops the line, and two fingers zoom the map (TASK-331)", () => {
   const page = runPage();
   page.send(canvas("draw", false));
   page.down(100, 100);
@@ -261,7 +306,33 @@ test("with «Draw» a second finger drops the line, and two fingers do nothing",
   page.up();
   expect(only(page.told(), "drawn")).toHaveLength(0);
   expect(page.drawn("ink")).toBeUndefined();
-  expect(page.view.zoom).toBe(CANVAS_ZOOM);
+  // Apart by 100 √2 px from 70 √2: the map zooms in, and says where it is.
+  expect(page.view.zoom).toBeCloseTo(CANVAS_ZOOM + Math.log2(100 / 70), 9);
+  expect(only(page.told(), "centre")).toHaveLength(1);
+});
+
+test("with «Draw» two fingers on the figure move the map, not the figure", () => {
+  const page = runPage();
+  page.send(canvas("draw"));
+  page.down(180, 300, 220, 300);
+  page.to(170, 300, 230, 300);
+  page.up();
+  expect(only(page.told(), "figure")).toHaveLength(0);
+  expect(page.view.zoom).toBeCloseTo(CANVAS_ZOOM + Math.log2(1.5), 9);
+});
+
+test("with «Erase» a tap is told as a line of one point, and a finger's line as a line", () => {
+  const page = runPage();
+  page.send(canvas("erase"));
+  page.down(200, 300);
+  page.up();
+  page.down(100, 100);
+  page.to(120, 100);
+  page.up();
+  const told = only(page.told(), "drawn");
+  expect(told.map((m) => m.line.length)).toEqual([1, 2]);
+  // The map keeps still.
+  expect(page.view).toEqual({ lng: 11, lat: 46, zoom: CANVAS_ZOOM });
 });
 
 test("with «Move» one finger on the figure drags it, and the app is told where", () => {
@@ -374,6 +445,9 @@ test("grown past the screen, the map steps back to show the figure whole", () =>
     setCanvas({
       mode: "move",
       lines: [SQUARE],
+      links: [false],
+      bendable: [],
+      marks: [],
       centre: [46, 11],
       shrink: 0.1,
       grow: 10,
@@ -395,4 +469,206 @@ test("grown past the screen, the map steps back to show the figure whole", () =>
   page.to(190, 300, 210, 300);
   page.up();
   expect(page.framed).toHaveLength(1);
+});
+
+/** The point of the map at x, y on the screen, north up at CANVAS_ZOOM. */
+function lngLatOf(x: number, y: number): [number, number] {
+  return [11 + (x - 200) / PX_PER_DEG, 46 - (y - 300) / PX_PER_DEG];
+}
+
+test("with «Line» a band goes from the last point to the finger, and the point lifted is told (TASK-331 B)", () => {
+  const page = runPage();
+  page.send(canvas("line", false, false, { marks: [[46, 11]] }));
+  expect(page.dots("canvas-marks")).toEqual([{ at: [11, 46], first: false }]);
+  page.down(250, 300);
+  expect(page.drawn("ink")).toEqual([[11, 46], lngLatOf(250, 300)]);
+  page.to(260, 310);
+  expect(page.drawn("ink")).toEqual([[11, 46], lngLatOf(260, 310)]);
+  page.up();
+  const [tapped] = only(page.told(), "drawn");
+  expect(tapped.line).toHaveLength(1);
+  tapped.line[0].forEach((value, i) =>
+    expect(value).toBeCloseTo(lngLatOf(260, 310)[i], 9),
+  );
+  expect(tapped.metresPerPx).toBeGreaterThan(0);
+  // The map keeps still; with two points the first is the larger one.
+  expect(page.view).toEqual({ lng: 11, lat: 46, zoom: CANVAS_ZOOM });
+  page.send(
+    canvas("line", false, false, {
+      marks: [
+        [46, 11],
+        [46.001, 11],
+      ],
+    }),
+  );
+  expect(page.dots("canvas-marks").map((dot) => dot.first)).toEqual([true, false]);
+  expect(page.drawn("ink")).toBeUndefined();
+});
+
+test("with «Erase» the ink is the eraser's wide pale band, and the line says how big a pixel is", () => {
+  const page = runPage();
+  page.send(canvas("erase"));
+  expect(page.paints["ink line-width"]).toBe(2 * ERASER_PX);
+  page.down(100, 100);
+  page.to(120, 100);
+  page.up();
+  const [rubbed] = only(page.told(), "drawn");
+  // 0.01° of longitude at 46° N over 100 px.
+  expect(rubbed.metresPerPx).toBeCloseTo(
+    (0.01 * Math.PI * 6_371_000 * Math.cos((46 * Math.PI) / 180)) / 180 / 100,
+    6,
+  );
+  page.send(canvas("draw"));
+  expect(page.paints["ink line-width"]).not.toBe(2 * ERASER_PX);
+});
+
+test("a line whose first side is a link is drawn without it, and the link dashed apart", () => {
+  const page = runPage();
+  const detail: LatLon[] = [
+    [46, 11.005],
+    [46, 11.01],
+    [46.002, 11.01],
+  ];
+  page.send(
+    canvas("draw", true, false, { lines: [SQUARE, detail], links: [false, true] }),
+  );
+  const flipped = (line: LatLon[]) => line.map(([lat, lng]) => [lng, lat]);
+  expect(page.drawn("canvas")).toEqual([flipped(SQUARE), flipped(detail.slice(1))]);
+  expect(page.drawn("canvas-links")).toEqual([flipped(detail.slice(0, 2))]);
+});
+
+test("with «Move» a line held still, then dragged, bends there and is told; a quick drag moves the figure", () => {
+  const page = runPage();
+  page.send(canvas("move"));
+  // The middle of the right side, held still, then dragged out.
+  page.down(250, 300);
+  page.wait(HOLD_MS);
+  page.to(290, 300);
+  const [preview] = page.drawn("canvas") as [number, number][][];
+  expect(preview).toHaveLength(6);
+  preview[2].forEach((value, i) => expect(value).toBeCloseTo(lngLatOf(290, 300)[i], 9));
+  page.up();
+  expect(only(page.told(), "figure")).toHaveLength(0);
+  const [held] = only(page.told(), "bent");
+  held.from.forEach((value, i) => expect(value).toBeCloseTo(lngLatOf(250, 300)[i], 9));
+  held.to.forEach((value, i) => expect(value).toBeCloseTo(lngLatOf(290, 300)[i], 9));
+  expect(held.metresPerPx).toBeGreaterThan(0);
+
+  // Not held still: the figure moves.
+  page.send(canvas("move"));
+  page.down(250, 300);
+  page.wait(HOLD_MS / 2);
+  page.to(290, 300);
+  page.up();
+  expect(only(page.told(), "bent")).toHaveLength(1);
+  expect(only(page.told(), "figure")).toHaveLength(1);
+});
+
+test("two fingers on the figure turn it too, clockwise, and the app is told by how much (TASK-402)", () => {
+  const page = runPage();
+  page.send(canvas("move"));
+  page.down(180, 300, 220, 300);
+  // A quarter turn clockwise, as far apart.
+  page.to(200, 280, 200, 320);
+  // The corner at the bottom left goes to the top left.
+  const shown = page.drawn("canvas") as number[][][];
+  expect(shown[0][0][0]).toBeCloseTo(10.995, 9);
+  expect(shown[0][0][1]).toBeCloseTo(46.005, 9);
+  page.up();
+  const [done] = only(page.told(), "figure").filter((m) => m.done);
+  expect(done.turn).toBeCloseTo(90, 9);
+  expect(done.factor).toBe(1);
+  // About the figure's middle, which stays where it was.
+  expect(done.centre[0]).toBeCloseTo(11, 9);
+  expect(done.centre[1]).toBeCloseTo(46, 9);
+});
+
+test("two fingers that barely turn size the figure without turning it (TASK-402)", () => {
+  const page = runPage();
+  page.send(canvas("move"));
+  page.down(180, 300, 220, 300);
+  page.to(170, 301, 230, 299); // under 3°
+  page.up();
+  const [done] = only(page.told(), "figure").filter((m) => m.done);
+  expect(done.factor).toBeCloseTo(1.5, 2);
+  expect(done).not.toHaveProperty("turn");
+});
+
+/** A second square, 0.012° east of the first: on the screen from (270, 250)
+ * to (370, 350). */
+const EAST_SQUARE: LatLon[] = SQUARE.map(([lat, lon]) => [lat, lon + 0.012]);
+
+/** Two pieces, the second chosen with its box, or none chosen. */
+function piecesCanvas(chosen: boolean) {
+  return setCanvas({
+    mode: "move",
+    lines: [SQUARE, EAST_SQUARE],
+    links: [false, false],
+    bendable: [0],
+    marks: [],
+    centre: chosen ? [46, 11.012] : [46, 11],
+    shrink: 0.5,
+    grow: 2,
+    choosing: true,
+    chosen: chosen ? [1] : [],
+    box: chosen ? EAST_SQUARE : [],
+    frame: false,
+  });
+}
+
+test("among pieces a tap with «Move» is told, on a piece or off them (TASK-402 part B)", () => {
+  const page = runPage();
+  page.send(piecesCanvas(false));
+  // On the figure: a finger that does not move.
+  page.down(320, 300);
+  page.up();
+  // Off the figure, too.
+  page.down(50, 550);
+  page.up();
+  const taps = only(page.told(), "tapped");
+  expect(taps).toHaveLength(2);
+  expect(taps[0].lngLat[0]).toBeCloseTo(11 + 120 / PX_PER_DEG, 9);
+  expect(taps[0].metresPerPx).toBeGreaterThan(0);
+  expect(only(page.told(), "figure")).toHaveLength(0);
+  // A figure alone, or a drag, tells no tap.
+  const alone = runPage();
+  alone.send(canvas("move"));
+  alone.down(200, 300);
+  alone.up();
+  alone.down(200, 300);
+  alone.to(250, 300);
+  alone.up();
+  expect(only(alone.told(), "tapped")).toHaveLength(0);
+});
+
+test("the piece chosen alone moves with a finger, its box with it; the others faint (TASK-402 part B)", () => {
+  const page = runPage();
+  page.send(piecesCanvas(true));
+  // The chosen square full, the other faint, the box round the chosen.
+  expect(page.drawn("canvas")).toHaveLength(1);
+  expect(page.drawn("canvas-faint")).toHaveLength(1);
+  expect(page.drawn("canvas-box")).toHaveLength(5);
+  // A finger on the first square, outside the piece chosen, moves the map.
+  page.down(200, 300);
+  page.to(200, 310);
+  page.to(200, 330);
+  page.up();
+  expect(only(page.told(), "figure")).toHaveLength(0);
+  expect(page.view.lat).not.toBe(46);
+
+  const again = runPage();
+  again.send(piecesCanvas(true));
+  again.down(320, 300);
+  again.to(320, 250);
+  again.up();
+  const [moved] = only(again.told(), "figure");
+  // The chosen square's middle went 50 px north.
+  expect(moved.centre[0]).toBeCloseTo(11.012, 9);
+  expect(moved.centre[1]).toBeCloseTo(46.005, 9);
+  const [shown] = again.drawn("canvas") as number[][][];
+  expect(shown[0][1]).toBeCloseTo(45.995 + 0.005, 9);
+  const [faint] = again.drawn("canvas-faint") as number[][][];
+  expect(faint[0][1]).toBeCloseTo(45.995, 9);
+  const box = again.drawn("canvas-box") as number[][];
+  expect(box[0][1]).toBeCloseTo(45.995 + 0.005, 9);
 });

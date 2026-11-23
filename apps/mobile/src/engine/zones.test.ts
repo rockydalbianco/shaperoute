@@ -6,6 +6,7 @@ import {
   AROUND_MARGIN_M,
   coveringZone,
   coveringZones,
+  deleteZone,
   deleteZones,
   type Download,
   downloadTelling,
@@ -106,6 +107,19 @@ test("the file name comes from Content-Disposition, only when it is a zone's", (
   expect(fileNameOf(null)).toBeNull();
 });
 
+test("a place kept is asked at its very point: its zone has no room to spare", async () => {
+  const download = answering(200, zipHeaders(TRENTO), "0123456789");
+  await downloadZone(URL_BASE, "foot", HERE, {
+    apiKey: "key",
+    now: () => 1000,
+    download,
+    kept: true,
+  });
+  expect(download.mock.calls[0][0]).toBe(
+    `${URL_BASE}/phone-zones/foot?lat=${HERE[0]}&lon=${HERE[1]}`,
+  );
+});
+
 test("a downloaded zone is saved under the API's name, with its ETag", async () => {
   const download = answering(200, zipHeaders(TRENTO), "0123456789");
   const answer = await downloadZone(URL_BASE, "foot", HERE, {
@@ -114,7 +128,7 @@ test("a downloaded zone is saved under the API's name, with its ETag", async () 
     download,
   });
   expect(download).toHaveBeenCalledWith(
-    `${URL_BASE}/phone-zones/foot?lat=46.0679&lon=11.1211`,
+    `${URL_BASE}/phone-zones/foot?lat=46.07&lon=11.12`,
     expect.stringContaining(".foot.download"),
     { headers: { "X-API-Key": "key" } },
     undefined,
@@ -164,7 +178,7 @@ describe("more room around the phone (part E)", () => {
       marginM: AROUND_MARGIN_M,
     });
     expect(download.mock.calls[0][0]).toBe(
-      `${URL_BASE}/phone-zones/foot?lat=46.0679&lon=11.1211&margin_m=6000`,
+      `${URL_BASE}/phone-zones/foot?lat=46.07&lon=11.12&margin_m=6000`,
     );
     expect(answer).toMatchObject({ kind: "saved", zone: { name: TRENTO } });
     expect(savedZones().map((zone) => zone.name)).toEqual([CENTRE, TRENTO]);
@@ -381,7 +395,7 @@ test("a zone ahead says so, with the phone's id; the zone around it does not", a
     prefetch: true,
   });
   const [around, ahead] = download.mock.calls;
-  expect(around[0]).toBe(`${URL_BASE}/phone-zones/foot?lat=46.0679&lon=11.1211`);
+  expect(around[0]).toBe(`${URL_BASE}/phone-zones/foot?lat=46.07&lon=11.12`);
   expect(around[2]).toEqual({ headers: { "X-API-Key": "k" } });
   expect(ahead[0]).toBe(`${URL_BASE}/phone-zones/foot?lat=45.4642&lon=9.19&prefetch=1`);
   expect(ahead[2]).toEqual({
@@ -447,4 +461,77 @@ test("a 429 for the zone around the phone is a failure, not a pause", async () =
     }),
   ).toEqual({ kind: "failed", why: "the server answered 429" });
   expect(prefetchPausedUntil()).toBe(0);
+});
+
+describe("the zones of the places the user keeps (TASK-334)", () => {
+  test("beyond the limit they are neither counted nor deleted", () => {
+    const zones = [
+      { ...entry("kept", 50, 0), kept: true },
+      entry("a", 5, 3),
+      entry("b", 5, 1),
+    ];
+    expect(overLimit(zones, 10)).toEqual([]);
+    expect(overLimit(zones, 5).map((zone) => zone.name)).toEqual(["b"]);
+    expect(overLimit(zones, 0).map((zone) => zone.name)).toEqual(["b", "a"]);
+  });
+
+  test("a kept zone downloads to its own file and is saved as kept", async () => {
+    const download = answering(200, zipHeaders(TRENTO), "0123456789");
+    const answer = await downloadZone(URL_BASE, "foot", HERE, {
+      apiKey: null,
+      now: () => 1000,
+      download,
+      marginM: AROUND_MARGIN_M,
+      kept: true,
+    });
+    expect(download.mock.calls[0][1]).toEqual(
+      expect.stringContaining(".foot.place.download"),
+    );
+    expect(answer).toEqual({
+      kind: "saved",
+      zone: { name: TRENTO, etag: '"1-2"', bytes: 10, usedAt: 1000, kept: true },
+    });
+    // Saved again around the phone, it stays kept.
+    await downloadZone(URL_BASE, "foot", HERE, {
+      apiKey: null,
+      now: () => 2000,
+      download: answering(200, zipHeaders(TRENTO, '"3-4"')),
+    });
+    expect(savedZones()).toEqual([
+      { name: TRENTO, etag: '"3-4"', bytes: 4, usedAt: 2000, kept: true },
+    ]);
+  });
+
+  test("a zone the phone has becomes kept with a 304", async () => {
+    await downloadZone(URL_BASE, "foot", HERE, {
+      apiKey: null,
+      now: () => 1000,
+      download: answering(200, zipHeaders(TRENTO)),
+    });
+    expect(savedZones()[0].kept).toBeUndefined();
+    const answer = await downloadZone(URL_BASE, "foot", HERE, {
+      apiKey: null,
+      now: () => 2000,
+      download: answering(304, { ETag: '"1-2"' }),
+      kept: true,
+    });
+    expect(answer).toMatchObject({ kind: "unchanged", zone: { name: TRENTO } });
+    expect(savedZones()[0]).toEqual(
+      expect.objectContaining({ usedAt: 2000, kept: true }),
+    );
+  });
+
+  test("one zone is deleted with its file", async () => {
+    for (const name of [TRENTO, TRENTO_BIKE]) {
+      await downloadZone(URL_BASE, name.startsWith("bike") ? "bike" : "foot", HERE, {
+        apiKey: null,
+        now: () => 1000,
+        download: answering(200, zipHeaders(name)),
+      });
+    }
+    const gone = savedZones()[0];
+    deleteZone(TRENTO);
+    expect(savedZones().map((zone) => zone.name)).toEqual([TRENTO_BIKE]);
+    expect(files.has(zoneUri(gone))).toBe(false);
+  });
 });

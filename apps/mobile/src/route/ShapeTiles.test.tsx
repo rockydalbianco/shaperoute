@@ -31,3 +31,14 @@ test("a shape chosen in the field brings its tile into view", async () => {
   expect(scrollTo).toHaveBeenCalledWith({ x: 1092, animated: true });
   scrollTo.mockRestore();
 });
+
+// TASK-444: the shapes by their outlines, as in the grid of «Draw».
+test("every shape is shown by its outline, none by an emoji", async () => {
+  await render(<ShapeTiles chosen={null} onPick={() => {}} />);
+  for (const shape of SHAPES) {
+    expect(
+      screen.getByTestId(`shape-glyph-${shape}`, { includeHiddenElements: true }),
+    ).toBeOnTheScreen();
+  }
+  expect(screen.queryByText(/\p{Extended_Pictographic}/u)).toBeNull();
+});

@@ -7,7 +7,6 @@ with its run. The bodies are the examples of packages/shared-types/fixtures."""
 from __future__ import annotations
 
 import json
-import math
 import shutil
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -17,12 +16,7 @@ from uuid import UUID, uuid4
 import pytest
 from argon2 import PasswordHasher
 from fastapi.testclient import TestClient
-from route_engine.geo import (
-    haversine_m,
-    latlon_to_local,
-    local_to_latlon,
-    path_length_m,
-)
+from route_engine.geo import local_to_latlon
 from route_engine.network import FileSource
 
 from shaperoute_api.accounts import AccountError, Accounts, token_hash
@@ -34,7 +28,6 @@ from shaperoute_api.activities import (
 from shaperoute_api.app import create_app
 from shaperoute_api.db import Database, migrations
 from shaperoute_api.drawings import (
-    CUT_M,
     DESCRIPTION_NOT_TEXT,
     DESCRIPTION_TOO_LONG,
     MAX_DESCRIPTION_LENGTH,
@@ -48,7 +41,6 @@ from shaperoute_api.drawings import (
     TAG_YOURSELF,
     TITLE_NOT_TEXT,
     TITLE_TOO_LONG,
-    TOO_SHORT,
     VISIBILITY_TWICE,
     DrawingBody,
     DrawingDetailBody,
@@ -57,7 +49,7 @@ from shaperoute_api.drawings import (
     MyDrawingBody,
     checked_description,
     checked_title,
-    cut_track,
+    shown_track,
 )
 from shaperoute_api.profiles import PublicProfileBody
 
@@ -81,6 +73,37 @@ NEAR_M = 0.01
 NEW_FIELDS = {"visibility", "description", "activity", "tags", "photos"}
 # And the run's turn, TASK-232 part C: the same older fixtures.
 NEW_FIELDS |= {"rotation_deg"}
+# Where the run comes from (TASK-312 part A): every fixture written before
+# is of a run of the app; the examples of a run from a file are
+# *-imported.json (test_imported_runs.py).
+SOURCE = {"source"}
+NEW_FIELDS |= SOURCE
+# The post's order (TASK-348): every fixture written before was never ordered.
+NEW_FIELDS |= {"order"}
+SOURCE |= {"order"}
+# The figures of the run (TASK-410 part C): no fixture written before has
+# them (test_run_stats.py has their examples).
+NEW_FIELDS |= {"stats"}
+# The descents of a day of skiing, TASK-424 part C2b (test_ski_parts.py).
+NEW_FIELDS |= {"ski_descents"}
+SOURCE |= {"ski_descents"}
+SOURCE |= {"stats"}
+# The night shown in the post, TASK-467 part B1b (test_sleep.py).
+NEW_FIELDS |= {"sleep"}
+SOURCE |= {"sleep"}
+# On foot and in the air, TASK-305 part R6a (test_flight_parts.py).
+NEW_FIELDS |= {"flight_split"}
+SOURCE |= {"flight_split"}
+# Whether the drawing has a link, TASK-455 part C (test_post_links.py).
+NEW_FIELDS |= {"linkable"}
+SOURCE |= {"linkable"}
+# The plan of a gym plan posted, TASK-485 (test_plan_posts.py).
+NEW_FIELDS |= {"plan"}
+SOURCE |= {"plan"}
+# A race's flights on the post's line, TASK-305 part R6e
+# (test_drawing_flight.py).
+NEW_FIELDS |= {"flight"}
+SOURCE |= {"flight"}
 THIRD_EMAIL = "third@example.com"
 
 
@@ -222,24 +245,7 @@ def message(answer: Any) -> str:
     return str(answer.json()["error"]["message"])
 
 
-def along_m(line: list[tuple[float, float]], point: tuple[float, float]) -> float:
-    """How far along `line` the place nearest to `point` is, in metres, on
-    the plane around each segment's start."""
-    best, best_along, walked = float("inf"), 0.0, 0.0
-    for a, b in zip(line, line[1:], strict=False):
-        x_m, y_m = latlon_to_local(a, b)
-        px_m, py_m = latlon_to_local(a, point)
-        span = x_m * x_m + y_m * y_m
-        ahead = 0.0 if span == 0 else (px_m * x_m + py_m * y_m) / span
-        share = max(0.0, min(1.0, ahead))
-        gap = math.hypot(px_m - share * x_m, py_m - share * y_m)
-        if gap < best:
-            best, best_along = gap, walked + share * math.sqrt(span)
-        walked += math.sqrt(span)
-    return best_along
-
-
-# --- The cut, without a database ---
+# --- What the others see, without a database ---
 
 
 def straight(length_m: float, step_m: float = 50.0) -> list[tuple[float, float]]:
@@ -249,35 +255,19 @@ def straight(length_m: float, step_m: float = 50.0) -> list[tuple[float, float]]
     return [local_to_latlon(origin, 0.0, i * step_m) for i in range(n + 1)]
 
 
-def test_the_cut_leaves_out_200_m_at_either_end() -> None:
-    line = straight(1_000)
-    cut = cut_track(line)
-    assert path_length_m(cut) == pytest.approx(1_000 - 2 * CUT_M, abs=NEAR_M)
-    assert haversine_m(line[0], cut[0]) == pytest.approx(CUT_M, abs=NEAR_M)
-    assert haversine_m(line[-1], cut[-1]) == pytest.approx(CUT_M, abs=NEAR_M)
-    for point in cut:
-        assert haversine_m(line[0], point) >= CUT_M - NEAR_M
-        assert haversine_m(line[-1], point) >= CUT_M - NEAR_M
+@pytest.mark.parametrize("length_m", [2, 150, 400, 1_000])
+def test_the_others_see_the_whole_track(length_m: float) -> None:
+    # Start and end too (ADR-0330): no metres left out at either end.
+    line = straight(length_m, step_m=min(50.0, length_m))
+    assert shown_track(line) == line
 
 
-def test_a_cut_on_a_vertex_does_not_repeat_it() -> None:
-    line = straight(1_000, step_m=100)
-    cut = cut_track(line)
-    assert len(cut) == len(line) - 4
-    assert all(a != b for a, b in zip(cut, cut[1:], strict=False))
-
-
-def test_a_cut_inside_one_long_step() -> None:
-    line = [(46.0671, 11.1214), local_to_latlon((46.0671, 11.1214), 0.0, 1_000.0)]
-    cut = cut_track(line)
-    assert len(cut) == 2
-    assert path_length_m(cut) == pytest.approx(600, abs=NEAR_M)
-
-
-@pytest.mark.parametrize("length_m", [0, 150, 399, 400])
-def test_nothing_is_left_of_a_short_track(length_m: float) -> None:
-    line = straight(length_m, step_m=max(1.0, length_m / 7)) if length_m else []
-    assert cut_track(line) == []
+@pytest.mark.parametrize("length_m", [0.0, 0.5])
+def test_nothing_is_left_of_a_track_under_a_metre(length_m: float) -> None:
+    origin = (46.0671, 11.1214)
+    assert shown_track([]) == []
+    assert shown_track([origin]) == []
+    assert shown_track([origin, local_to_latlon(origin, 0.0, length_m)]) == []
 
 
 def test_the_title_rule() -> None:
@@ -302,13 +292,13 @@ def test_the_examples_are_the_bodies() -> None:
     assert set(request) == set(DrawingRequestBody.model_fields) - {"public"}
     DrawingRequestBody.model_validate(request)
     mine = _load("my-drawing-details.json")
-    assert set(mine) == set(MyDrawingBody.model_fields)
+    assert set(mine) == set(MyDrawingBody.model_fields) - SOURCE
     MyDrawingBody.model_validate(mine)
     page = _load("drawings-details.json")
     assert set(page) == set(DrawingsBody.model_fields)
     DrawingsBody.model_validate(page)
     one = _load("drawing-details.json")
-    assert set(one) == set(DrawingDetailBody.model_fields)
+    assert set(one) == set(DrawingDetailBody.model_fields) - SOURCE
     seen = DrawingDetailBody.model_validate(one)
     # The list item is the detail without author, public and track, with a
     # preview instead.
@@ -359,8 +349,10 @@ def test_a_run_is_private_until_published(client: TestClient) -> None:
         "visibility": "only_me",
         "description": None,
         "activity": "running",
+        "source": "muw",
         "tags": [],
         "photos": [],
+        "order": None,
     }
     assert client.get("/me/drawings", headers=me).json() == {"drawings": []}
     mine = public_id(client, me)
@@ -369,7 +361,7 @@ def test_a_run_is_private_until_published(client: TestClient) -> None:
     assert listed == {"drawings": [], "next": None, "total": 0}
 
 
-def test_published_the_others_see_it_cut(client: TestClient, wall: WallClock) -> None:
+def test_published_the_others_see_it_whole(client: TestClient, wall: WallClock) -> None:
     me = signed_up(client)
     saved(client, me)
     kept = published(client, me, title="  Sunday star ")
@@ -395,14 +387,10 @@ def test_published_the_others_see_it_cut(client: TestClient, wall: WallClock) ->
         assert hidden not in body
     track = [tuple(p) for p in body["track"]]
     line = [tuple(p) for p in whole]
-    # The run is a loop: it ends where it began, at the door.
-    total = path_length_m(line)
-    assert path_length_m(track) == pytest.approx(total - 2 * CUT_M, abs=1)
-    for point in track:
-        assert along_m(line, point) >= CUT_M - 1
-        assert along_m(line, point) <= total - CUT_M + 1
-        assert haversine_m(line[0], point) >= CUT_M - 1
-        assert haversine_m(line[-1], point) >= CUT_M - 1
+    # All of it, from the start to the end (ADR-0330), without times.
+    assert len(track) == len(line)
+    for seen_point, run_point in zip(track, line, strict=True):
+        assert seen_point == pytest.approx(run_point)
     # The owner keeps the run whole in My activities.
     assert line[0] == pytest.approx(tuple(run()["track"][0]["point"]))
 
@@ -423,9 +411,9 @@ def test_the_profile_lists_and_counts_the_public_ones(client: TestClient) -> Non
     assert item["shape"] == "star"
     assert item["place"] is None
     assert len(item["track_preview"]) >= 2
+    # The preview starts where the run started: nothing is cut.
     first = tuple(run()["track"][0]["point"])
-    for point in item["track_preview"]:
-        assert haversine_m(first, tuple(point)) >= CUT_M - 1
+    assert tuple(item["track_preview"][0]) == pytest.approx(first)
     # The other run is private: not listed, not counted.
     PublicProfileBody.model_validate(client.get(f"/users/{mine}", headers=me).json())
 
@@ -465,7 +453,7 @@ def test_a_private_drawing_is_not_found_by_anyone_else(client: TestClient) -> No
         assert answer.status_code == 404
         assert message(answer) == NO_DRAWING
     assert hidden.json() == unknown.json()
-    # Its owner sees it, cut as the others would.
+    # Its owner sees it as the others would.
     own = client.get(f"/drawings/{drawing_id}", headers=me)
     assert own.status_code == 200
     assert own.json()["public"] is False
@@ -569,27 +557,19 @@ def test_a_title_refused_changes_nothing(client: TestClient) -> None:
     assert missing.status_code == 422
 
 
-def test_a_run_too_short_is_not_published(client: TestClient) -> None:
+def test_a_short_run_is_published_whole(client: TestClient) -> None:
     me = signed_up(client)
     body = run()
-    # Two fixes 300 m apart: nothing is left once 200 m go from either end.
+    # Two fixes 300 m apart: with the 200 m cut nothing was left (ADR-0330).
     body["track"] = [
         {"point": [46.0671, 11.1214], "time_ms": 1790000000000, "accuracy_m": 5.0},
         {"point": [46.0698, 11.1214], "time_ms": 1790000120000, "accuracy_m": 5.0},
     ]
     body.update(points=None, similarity=None, pauses=[])
     assert client.put(f"/me/activities/{KEY}", json=body, headers=me).status_code == 201
-    answer = client.put(
-        f"/me/activities/{KEY}/drawing",
-        json={"title": "Short", "public": True},
-        headers=me,
-    )
-    assert answer.status_code == 422
-    assert message(answer) == TOO_SHORT
-    # Titled and private it is kept, with nothing for the others.
-    kept = published(client, me, title="Short", public=False)
-    seen = client.get(f"/drawings/{kept['id']}", headers=me).json()
-    assert seen["track"] == []
+    kept = published(client, me, title="Short")
+    seen = client.get(f"/drawings/{kept['id']}", headers=other(client)).json()
+    assert seen["track"] == [[46.0671, 11.1214], [46.0698, 11.1214]]
 
 
 def test_the_profile_pages(client: TestClient) -> None:
@@ -981,14 +961,14 @@ def test_the_activity(client: TestClient) -> None:
     assert published(client, me)["activity"] == "paddling"
     answer = client.put(
         f"/me/activities/{KEY}/drawing",
-        json={"visibility": "everyone", "activity": "swimming"},
+        json={"visibility": "everyone", "activity": "climbing"},
         headers=me,
     )
     assert answer.status_code == 422
     assert code(answer) == "invalid_request"
     refused = client.put(
         f"/me/activities/{OTHER_KEY}",
-        json={**run(), "activity": "swimming"},
+        json={**run(), "activity": "climbing"},
         headers=me,
     )
     assert refused.status_code == 422
@@ -1071,8 +1051,8 @@ def test_the_migration_keeps_who_saw_each_drawing(
     database = Database(database_url)
     migrated_before(database, DETAILS_MIGRATION, tmp_path)
     me = old_account(database, wall)
-    cut = cut_track([tuple(fix["point"]) for fix in run()["track"]])
-    line = "LINESTRING(" + ",".join(f"{lon!r} {lat!r}" for lat, lon in cut) + ")"
+    whole = [tuple(fix["point"]) for fix in run()["track"]]
+    line = "LINESTRING(" + ",".join(f"{lon!r} {lat!r}" for lat, lon in whole) + ")"
     published_at = datetime(2026, 10, 2, 21, 40, tzinfo=UTC)
     with database.connect() as conn:
         for key, public in ((KEY, True), (OTHER_KEY, False)):

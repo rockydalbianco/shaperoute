@@ -1,8 +1,9 @@
 # TASK-323 — Nuoto in acque libere («Open water swim»)
 
-**Stato**: Proposto · solo documenti (questa PR). L'utente il 2026-10-28:
-«parti proprio con il progetto secondo me funziona»; le parti partono una
-alla volta, ognuna nella sua sessione
+**Stato**: Done · 2026-11-05, il nuoto acceso per tutti (#765,
+`b30bda0c`); le parti A–D in `main`, E il piano. Restano, fuori dal task,
+gli esempi sul server, i nomi a riva, l'orologio e la prova in acqua
+(«Esito»)
 **Fase**: 5 · **Branch**: `docs/TASK-323-open-water-swim` (documenti); le
 parti `feat/TASK-323-a1-swim-band` e così via
 **Dipende da**: TASK-191 (l'acqua della canoa, in `main`). La parte C dopo
@@ -167,6 +168,71 @@ File (da confermare col punto 0; con la prima strada si aggiungono
 `services/route-engine/tests/test_swimming.py`, `docs/ROUTE_ENGINE.md` §8
 (una sottosezione nuova).
 
+#### A1, dove si è (2026-10-29)
+
+Scritta in una sessione cloud, branch `claude/inspiring-lovelace-rcadwd`
+(il nome lo impone la sessione), PR in bozza
+[LPPL1316/MUW#10](https://github.com/LPPL1316/MUW/pull/10). Il Coordinatore
+non era raggiungibile: la strada del punto 0 è scelta su delega dell'utente
+e scritta nell'aggiunta ad ADR-0283; va confermata con i «File toccati» qui
+sotto prima del merge.
+
+**Il push dal cloud** (2026-10-29): su `rockydalbianco/shaperoute` la
+sessione cloud riceve 403, sia col push sia con lo strumento GitHub (l'app
+Claude non ci può scrivere). Funziona così, col sì dell'utente: `add_repo`
+di `LPPL1316/MUW` con accesso `push`, un remote `muw` nel checkout, `git
+fetch muw main`, poi `git push -u muw <branch>`. Lo specchio
+(`TEAM_WORKFLOW.md`) copia il branch su `shaperoute` in pochi secondi. La PR
+su `shaperoute` resta da aprire a mano (anche quella dà 403 dal cloud);
+dal cloud si apre in bozza su MUW. L'utente ha chiesto di dirlo al
+Coordinatore, perché valga per tutte le sessioni cloud.
+
+- **Punto 0, la prima strada**: tutto in file nuovi; `models.py`,
+  `water.py`, `water_fit.py`, `validation.py`, `paddling.py` e
+  `__main__.py` non cambiano. `route_store` lascia fuori i file del nuoto
+  (`SWIM_ONLY`), con il test. Impronte come in `main`: `route_store`
+  `abaea5bb82b3`, esempi della canoa `1b6759cb3cc4`. I punti 1 e 4 e
+  `--activity swimming` passano a B (con `models.py`); al loro posto
+  `SwimRequest` (0,5–3 km), `check_in_band` e
+  `python -m route_engine.swimming`.
+- **I campioni**: solo sulle due acque di prova del motore (la sessione
+  cloud non raggiunge Overpass né il server). Pagina per l'utente:
+  https://claude.ai/artifact/UYiPvDiPaiJetF9z5ntoEX. Levico, Caldonazzo,
+  Riccione e Jesolo si misurano sul Mac con `tests/measure_swim.py`
+  (comando in `ROUTE_ENGINE.md` §8).
+- **Il rischio c'è**: con 20–150 m un giro ci sta da 0,4–0,5 km lungo una
+  costa dritta e la riva di un lago grande.
+- **Domanda 1, risposta dell'utente (2026-10-29)**: «Giri ripetuti». La
+  fascia resta 20–150 m, le distanze 0,5–3 km; un nuoto più lungo della
+  forma la ripassa a giri, al massimo 5 (`MAX_LAPS`). I campioni del task
+  ci stanno tutti, in 1–4 giri; 5 giri arrivano a 1,7–2,1 km lungo una
+  costa dritta, 3 km solo dove un giro è di 0,6 km.
+- **Richiesta dell'utente dello stesso giorno**: «dai la possibilità di
+  disegnare anche sull'acqua e di modificare la forma più grande e più
+  piccola». Nel motore del nuoto, in A1: `SwimRequest.outline` (un disegno
+  come «Freehand») e `SwimRequest.laps` (meno giri, forma più grande; la
+  distanza resta). Per la canoa va con B (tocca `models.py`), lo schermo
+  con C. Aggiunta ad ADR-0283.
+- **Prossimo**: i posti veri sul Mac con `tests/measure_swim.py`; la
+  conferma dei «File toccati» e della canoa disegnata in B al
+  Coordinatore; poi B.
+
+File toccati da A1:
+
+```
+services/route-engine/route_engine/swim_water.py        (nuovo)
+services/route-engine/route_engine/swimming.py          (nuovo)
+services/route-engine/tests/test_swimming.py            (nuovo)
+services/route-engine/tests/measure_swim.py             (nuovo)
+services/api/shaperoute_api/route_store.py              (SWIM_ONLY)
+services/api/tests/test_swim_fingerprint.py             (nuovo)
+apps/mobile/assets/engine/engine.zip                    (rifatto)
+docs/ROUTE_ENGINE.md                                    (§8, sottosezione)
+docs/tasks/TASK-323.md
+docs/DECISIONS.md                                       (aggiunta ad ADR-0283)
+docs/STATUS.md                                          (le righe di TASK-323)
+```
+
 ### A2 — Motore: le curve e i nomi a riva
 
 1. `swim_turns.py` (nuovo): le curve del giro (dove la direzione cambia più
@@ -188,6 +254,42 @@ File: `services/route-engine/route_engine/swim_turns.py`,
 `services/route-engine/tests/test_swim_turns.py`,
 `services/route-engine/tests/fixtures/shore_names_*.json`.
 
+#### A2, dove si è (2026-10-29)
+
+Scritta nella stessa sessione cloud di A1, su richiesta dell'utente («Prima
+A2», alla domanda su B), branch `feat/TASK-323-a2-swim-turns` partito da
+A1, poi allineato a `main` dopo che A1 c'è entrata (rockydalbianco/shaperoute#640).
+«File toccati» mandati al Coordinatore prima del codice. Aggiunta ad
+ADR-0283.
+
+- `swim_turns.py`: le curve (oltre 45°, guardate 15 m prima e dopo), con
+  punto, metri dalla partenza, verso, angolo e giro; `with_turns` mette nel
+  GPX un waypoint per ogni curva del primo giro.
+- `shore_names.py`: il posto con un nome più vicino entro 300 m, col tipo e
+  la direzione in cui guardarlo, dai file di `<cache>/shore_names/` (il
+  formato che B deve scrivere è in `ROUTE_ENGINE.md` §8). Senza file,
+  nessun nome e nessun errore.
+- `SwimPlan.turns` al posto di `RouteResult.turns`, e niente
+  `export_gpx.py`: tutti e due vanno con B, insieme a `models.py`, perché
+  cambiano le impronte. Impronte come in `main`.
+- Criteri: sulla fixture `shore_names_coast.json` (tre posti) ogni curva ha
+  il nome giusto, il faro oltre 300 m nessuna; senza file nessun nome e
+  nessun errore; tutto senza rete (`tests/test_swim_turns.py`).
+
+File toccati da A2:
+
+```
+services/route-engine/route_engine/swim_turns.py         (nuovo)
+services/route-engine/route_engine/shore_names.py        (nuovo)
+services/route-engine/route_engine/swimming.py           (di A1: le curve)
+services/route-engine/tests/test_swim_turns.py           (nuovo)
+services/route-engine/tests/fixtures/shore_names_coast.json (nuovo)
+services/api/shaperoute_api/route_store.py               (SWIM_ONLY)
+apps/mobile/assets/engine/engine.zip                     (rifatto)
+docs/ROUTE_ENGINE.md, docs/tasks/TASK-323.md, docs/DECISIONS.md,
+docs/STATUS.md
+```
+
 ### B — API e server
 
 1. `swimming` nel contratto (`packages/shared-types`, `SUPPORTED_ACTIVITIES`
@@ -199,6 +301,114 @@ File: `services/route-engine/route_engine/swim_turns.py`,
    dell'Italia, come `water_extract.py`.
 4. Sul server, **col sì dell'utente**: l'estratto dei nomi e, per
    «Explore», un `draw_examples --water` per il nuoto.
+
+#### B, dove si è (2026-10-30)
+
+Scritta nella stessa sessione cloud, su richiesta dell'utente («passa alla
+parte B»), branch `feat/TASK-323-b-swim-api` allineato a `main` dopo A2
+(rockydalbianco/shaperoute#640 e LPPL1316/MUW#11). «File toccati» mandati
+al Coordinatore prima del codice. Aggiunta ad ADR-0283.
+
+- Punto 1: `swimming` nel contratto del motore e dell'API, coi giri
+  (`laps`) nella richiesta e giri e curve (`laps`, `turns`) nella risposta;
+  in `shared-types` `API_ACTIVITIES` e le fixture del nuoto. `Activity`
+  dell'app resta a tre fino alla parte C (decisione 2 dell'aggiunta).
+- Punto 2: `0040_swimming.sql` (preferiti, corse, corse di gruppo); il
+  gioco e i disegni leggono `runs.activity` e non hanno un elenco loro.
+- Punto 3: `shore_extract.py`, i posti con nome lungo la riva da un
+  estratto, nei file che il motore legge.
+- In più: un disegno a nuoto da `/image-route-jobs`; i nuoti tenuti con
+  un'impronta loro; il GPX di `POST /gpx` con le curve; Strava `Swim`;
+  `--activity swimming --laps N` nel comando del motore.
+- Punto 4 e **il blocco**: col sì dell'utente, sul server l'estratto dei
+  nomi, `draw_examples` (l'impronta degli esempi cambia) e
+  `paddleExamples.json` rifatto con l'acqua del server. Dalla sessione
+  cloud non si raggiunge: `test_paddle_examples` resta rosso finché il
+  Mac non lo rifà. `draw_examples --water` per il nuoto serve a «Explore»,
+  quindi va con la parte C.
+- `lap_m` nella risposta (2026-10-30, per la parte C: «3 laps of 320 m»
+  sotto il nuoto, scelta dell'utente): quanto è lungo un giro, senza i
+  tratti dalla riva.
+- Impronte dopo B: esempi tenuti `5b5e026cea9b` (i nuoti `b9d00c37d28d`),
+  esempi della canoa `574fbfba41eb`.
+- **Il 2026-11-03**, `main` di rockydalbianco/shaperoute unito dentro B (216
+  commit, i campi di TASK-347 accanto a quelli del nuoto); la migrazione
+  diventa `0040_swimming.sql`, il numero tenuto dal Coordinatore (la
+  `0039` l'ha presa TASK-343, la `0042` TASK-368 A; 2026-11-04). Il campo
+  `engine` di `paddleExamples.json` aggiornato a `574fbfba41eb` senza
+  ridisegnarlo: i percorsi della canoa escono identici (aggiunta ad
+  ADR-0283 del 2026-11-03). Il codice che disegna la canoa non cambia: rifatti,
+  gli esempi dovrebbero cambiare solo nel campo `engine`.
+
+#### B, la notte del server (2026-11-04)
+
+L'impronta del motore cambia con B (`models.py`, il contratto: lo sport, i
+giri, le curve; `__main__.py`, la riga di comando): percorsi
+`abaea5bb82b3` → `5b5e026cea9b`, nuoti `d4fa96ff74ea` → `b9d00c37d28d`.
+C1, C2, C4, D ed E non toccano il motore: l'impronta resta quella di B. Il
+Coordinatore ha scelto di non tenerla invariata con un alias (un alias fra
+impronte diverse va mantenuto a mano a ogni modifica): gli esempi tenuti
+si ridisegnano di notte, all'orario che sceglie l'utente. Quella notte,
+dopo il merge di B, C1, C2 e C4, col sì dell'utente e il via del
+Coordinatore (i comandi li lancia l'utente), in quest'ordine:
+
+1. **Aggiornamento e migrazione `0040`** (5–10 minuti, la build
+   dell'immagine): `git pull`, `docker compose up -d --build`; nel log
+   dell'API la `0040_swimming` fra le migrazioni applicate, senza errori.
+   La migrazione apre tre vincoli: un istante.
+2. **`draw_examples` a terra** (stima 1–2 ore: erano circa 40 minuti con le
+   città di ottobre, oggi sono di più): `--preset italy --preset featured`,
+   cerchio, cuore e stella di ogni città.
+3. **I paesi** (stima 1–2 ore, mai misurato sul server: TASK-316 C):
+   `--all Trento Caldonazzo --around Trento --around Caldonazzo`.
+4. **`draw_examples --water`** (stima 4–8 ore, da TASK-246 B): le otto
+   forme della canoa da ogni punto dei laghi e delle spiagge.
+5. **`draw_examples --swim`** (stima 2–4 ore: gli stessi punti, otto
+   forme da 1 km, più corte della canoa). Una forma che a un punto non sta
+   nella fascia è la risposta del motore, non un errore.
+6. **`paddleExamples.json`, il controllo** (pochi minuti): nel container,
+   `python -m shaperoute_api.paddle_examples --cache-dir data/cache --out
+   /tmp/paddleExamples.json`, poi confrontarlo col file in `main`. B ha
+   già messo il campo `engine` a `574fbfba41eb` senza ridisegnare, perché
+   il codice della canoa non cambia: ci si aspetta lo stesso file. Se
+   cambiano i percorsi, serve una PR a parte (file dell'app, OTA col sì
+   dell'utente).
+
+I passi 2–5 vanno uno dopo l'altro, mai due insieme. La stima totale è
+8–16 ore: i passi 4 e 5 possono andare anche nella notte dopo. Fino a
+quando un esempio non è ridisegnato, il primo telefono che lo chiede
+aspetta il motore, come in una città nuova.
+
+**L'archivio di TASK-297 non perde niente.** Le righe di `drawn_routes`
+restano nel database col loro `engine`. Con l'impronta nuova non
+rispondono più così come sono: `nearby` prende la migliore di un altro
+motore entro `NEARBY_M` e la ridisegna dal suo punto, provando prima il
+posizionamento salvato (`put_plan`, ADR-0257), e la riga nuova si
+aggiunge. Si cancellano solo oltre il tetto di 50 000 righe, le più
+vecchie mai corse né messe nei preferiti, come sempre.
+
+File toccati da B:
+
+```
+services/route-engine/route_engine/models.py, __main__.py, swimming.py,
+  swim_turns.py, shore_names.py
+services/route-engine/tests/test_swimming.py, test_contract.py,
+  test_better_distance.py, test_bike_network.py, test_cli.py,
+  test_paddling.py (il nuoto non è più «un'attività che non c'è»)
+services/api/shaperoute_api/paddling.py, jobs.py, images.py, schemas.py,
+  app.py, activities.py, strava.py, route_store.py, shore_extract.py (nuovo)
+services/api/migrations/0040_swimming.sql (nuovo)
+services/api/tests/test_swimming_api.py, test_shore_extract.py (nuovi),
+  test_contract.py, test_cycling.py, test_route_store.py,
+  test_swim_fingerprint.py, test_better_distance.py, test_rotation.py,
+  test_request_log.py (i campi nuovi `laps` e `turns`)
+packages/shared-types/src/index.ts, test/contract.test.ts,
+  fixtures/contract.json, fixtures/route-request-swimming.json (nuovo),
+  fixtures/route-result-swimming.json (nuovo)
+apps/mobile/assets/engine/engine.zip (rifatto)
+docs/API.md, docs/DATABASE.md, docs/ROUTE_ENGINE.md, docs/DECISIONS.md,
+docs/STATUS.md, docs/tasks/TASK-323.md
+```
 
 ### C — App: lo sport
 
@@ -212,6 +422,167 @@ File: `services/route-engine/route_engine/swim_turns.py`,
 4. I posti d'acqua in «Explore» con gli esempi a nuoto.
 5. Testi in cinque lingue, col sì dell'utente.
 
+#### C, dove si è (2026-10-30)
+
+Scritta nella stessa sessione cloud, su richiesta dell'utente («passa alla
+parte C»), branch `feat/TASK-323-c-swim-app` partito da quello di B
+(MUW#12, non ancora in `main`): a C serve il contratto del nuoto. Quando B
+entra, si fa il merge di `main` dentro C. Il Coordinatore («Coordinatore
+automatico 23 ore») era archiviato: i «File toccati» sono qui e nella PR.
+Aggiunta ad ADR-0283.
+
+- **Testi inglesi approvati dall'utente** il 2026-10-30 («Sì, così»): 🏊
+  «Open water swim», l'avviso «Before you swim» com'era proposto in
+  ADR-0283, la riga «Within 150 m of the shore. Never swim alone.».
+- **C1, fatta**: la riga dello sport con `ready: false` dopo «Paddle»
+  (in Expo Go e `preview` con «Soon», nascosta nello store da TASK-318;
+  finché è «Soon» va come una corsa, come il parapendio); in `src/swim/`
+  l'avviso col suo file `swim-notice.json` e `useSwimNotice`, la riga sotto
+  il giro (`SwimRouteNote`), l'elenco delle curve del primo giro
+  (`SwimTurns`, `turns.ts`). Test con la fixture del contratto.
+- **Approvati dall'utente** il 2026-10-30 («Sì, così», seconda domanda):
+  i testi delle curve («TURNS», «Turn left · {place}», «{distance} from the
+  start», «The same turns every lap, {laps} laps, then back to the
+  shore.») e le traduzioni di tutti i testi nuovi in italiano, tedesco,
+  spagnolo e francese.
+- **C2, dopo B in `main`**: `Activity` dell'app con `swimming`, che tocca
+  `src/health/appleWorkout.ts` e `healthConnectWorkout.ts` di TASK-321
+  (condizione 3: col via del Coordinatore, il tipo di allenamento del nuoto
+  in Salute e in Health Connect); `activityOf("swim")` = `"swimming"`; in
+  `App.tsx` l'avviso al «Start» di un nuoto, e nel pannello del percorso la
+  riga e l'elenco; `ready: true` quando il server nuota.
+- **Punto 4 («Explore» a nuoto)**: aspetta gli esempi disegnati
+  sull'acqua del server (`draw_examples --water`), col sì dell'utente.
+
+File toccati da C1:
+
+```
+apps/mobile/src/swim/safetyNotice.ts, SwimNotice.tsx, SwimRouteNote.tsx,
+  turns.ts, SwimTurns.tsx, safetyNotice.test.tsx, SwimTurns.test.tsx
+  (nuovi)
+apps/mobile/src/settings/sport.ts, sport.test.ts, SportSetting.test.tsx,
+  SportButton.test.tsx, SportStoreBuild.test.tsx,
+  SportVoiceItalian.test.tsx
+apps/mobile/src/profile/SettingsPage.test.tsx (conta le righe «Soon»)
+apps/mobile/src/i18n/de.ts, es.ts, fr.ts, it.ts
+docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-323.md
+```
+
+#### C2, dove si è (2026-10-30)
+
+Scritta nella stessa sessione, su richiesta dell'utente («passa alla parte
+C2»), branch `feat/TASK-323-c2-swim-on` partito da C1. Aggiunta ad
+ADR-0283. Le scelte dell'utente, una domanda per volta: le righe del nuoto
+nei file di Apple Salute di TASK-321 («Add the entries»), le distanze a
+mezzo km («Half-km steps»), i pulsanti sul risultato («Buttons on the
+result»), i testi e le traduzioni («Yes, like this»).
+
+- `Activity` con `swimming`; `activityOf("swim")` = `"swimming"`, la riga
+  ancora `ready: false`.
+- Le distanze: 0,5–3 km di mezzo km da 1 km, 0,5–1,5 mi di mezzo miglio
+  (`distanceStep`, `SWIMMING_START_KM`).
+- Sul risultato (`SwimResult`): «3 laps of 320 m», «Bigger shape» e
+  «Smaller shape», la riga sotto il giro, le curve. `lap_m` aggiunto alla
+  risposta in B (`ec03204`).
+- Sull'acqua come la canoa (`isOnWater`): niente indicazioni, gli errori
+  dell'acqua, la ricerca delle spiagge, le forme a pezzi; «Word» no,
+  «Image» e «Draw on the map» sì.
+- L'avviso del nuoto a ogni «Start» di un nuoto (risultato, «Explore», un
+  disegno aperto).
+- **Prima di `ready: true`**: B in `main` e sul server col sì dell'utente,
+  C4 («Explore» a nuoto: oggi con lo sport del nuoto mostrerebbe gli esempi
+  della corsa). La corsa a nuoto (niente voce, passo per 100 m) è D.
+
+- **2026-11-04, dal Mac**: le righe del nuoto in Apple Salute («Nuoto»,
+  `HKWorkoutActivityType.swimming`, la distanza in «Distanza a nuoto») e in
+  Health Connect (`EXERCISE_TYPE_SWIMMING_OPEN_WATER`) approvate
+  dall'utente («Sì, così»); il via del Coordinatore sui due file di
+  TASK-321 (la parte C è ferma). Impronta iOS `6f8bba4c`, invariata.
+
+File toccati da C2:
+
+```
+packages/shared-types/src/index.ts, test/contract.test.ts
+apps/mobile/App.tsx (l'avviso, i giri, la ricerca sull'acqua)
+apps/mobile/src/swim/water.ts, SwimResult.tsx e i loro test (nuovi)
+apps/mobile/src/settings/sport.ts, sport.test.ts
+apps/mobile/src/route/RoutePanel.tsx, distance.ts, problems.ts,
+  WhileRouting.tsx, drawAgain.ts, penUpShapes.ts, distanceMiles.test.ts,
+  swimDistance.test.ts (nuovo)
+apps/mobile/src/health/appleWorkout.ts, healthConnectWorkout.ts,
+  appleHealth.test.ts (TASK-321, col sì dell'utente), swimWorkout.test.ts
+  (nuovo)
+apps/mobile/src/social/PublicParts.tsx
+apps/mobile/src/search/searchFilters.ts (TASK-344, col via del Coordinatore:
+  il chip «Open water swim» nella ricerca del Feed, subito, scelta
+  dell'utente del 2026-11-04)
+apps/mobile/src/api/favorites.test.ts, src/favorites/favoriteRoute.test.ts
+  (il nuoto non è più «un'attività che non c'è»)
+apps/mobile/src/i18n/de.ts, es.ts, fr.ts, it.ts
+apps/mobile/__tests__/AppSwim.test.tsx (nuovo)
+docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-323.md
+```
+
+#### C4, dove si è (2026-10-30)
+
+Scritta nella stessa sessione, su richiesta dell'utente («passa alla parte
+C4»), branch `feat/TASK-323-c4-swim-explore` partito da C2. Aggiunta ad
+ADR-0283. Il sottotitolo e le traduzioni approvati dall'utente («Yes, like
+this»).
+
+- «Explore» con «Open water swim» è `PaddleExplore` con `swim`: gli stessi
+  laghi e spiagge, «Near me», i filtri; «Shapes to swim, within 150 m of
+  the shore».
+- `SWIM_EXAMPLES` (`src/swim/swimExamples.ts`): le otto forme a 1 km da
+  ogni punto, `swimming`, a pezzi quelle a pezzi, nessuna con l'app.
+- `draw_examples --swim` (con `--water-name` per pochi punti): i nuoti
+  dei punti prima di ogni telefono; una forma che non ci sta è una
+  risposta.
+- **Prima in preview, dove si è** (2026-11-05). In preview il nuoto era
+  ancora «Soon»: la #765 (`ready: true`, «Subito per tutti») è ferma per
+  TASK-387. L'utente ha scelto «Subito in preview»: acceso in Expo Go e
+  `preview` con `preview: true` nella riga, lo store senza fino alla #765;
+  niente nuoti pubblicati nel Feed finché TASK-387 non è sul server
+  (aggiunta ad ADR-0283). Branch `feat/TASK-323-swim-preview`, poi un OTA
+  della sola `preview`. File toccati: `apps/mobile/src/settings/sport.ts`,
+  `sport.test.ts`, `SportSetting.test.tsx`, `SportButton.test.tsx`,
+  `SportStoreBuild.test.tsx`, `apps/mobile/src/profile/SettingsPage.test.tsx`,
+  `docs/DECISIONS.md`, `docs/STATUS.md`, questo file.
+- **Per accendere il nuoto** (`ready: true` in `sport.ts`, una riga): B,
+  C1, C2 e C4 in `main`, poi col sì dell'utente il server (migrazione
+  0040), l'estratto dei nomi a riva e `draw_examples --swim`.
+
+File toccati da C4:
+
+```
+apps/mobile/src/swim/swimExamples.ts, SwimExplore.test.tsx (nuovi)
+apps/mobile/src/paddle/PaddleExplore.tsx (il nuoto con `swim`)
+apps/mobile/src/explore/exampleRoutes.ts (le forme a pezzi anche a nuoto)
+apps/mobile/App.tsx (la pagina «Explore» col nuoto)
+apps/mobile/__tests__/AppSwim.test.tsx
+apps/mobile/src/i18n/de.ts, es.ts, fr.ts, it.ts
+services/api/shaperoute_api/draw_examples.py, tests/test_draw_swims.py (nuovo)
+docs/API.md, docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-323.md
+```
+
+**Acceso, dove si è** (2026-11-04). L'utente ha scelto «Subito per tutti»:
+`ready: true`, con il prossimo OTA anche nelle build dello store, senza
+prima la prova in acqua. Poi «Dopo lo sci»: la PR entra dopo TASK-375 B1,
+che tocca gli stessi file, con `main` unito dentro. Prima dell'OTA,
+`draw_examples --swim` sul server; le curve restano senza il nome a riva
+finché non gira `shore_extract` (aggiunta ad ADR-0283). Branch
+`feat/TASK-323-swim-ready`. File toccati:
+
+```
+apps/mobile/src/settings/sport.ts (la riga del nuoto, `ready: true`)
+apps/mobile/src/settings/sport.test.ts, SportSetting.test.tsx,
+  SportButton.test.tsx, SportStoreBuild.test.tsx
+apps/mobile/src/profile/SettingsPage.test.tsx (le righe «Soon»)
+apps/mobile/__tests__/AppSwim.test.tsx, src/navigation/swimRun.test.ts
+  (solo i commenti)
+docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-323.md
+```
+
 ### D — App: nuotare con il telefono nella boa
 
 1. La schermata della corsa per il nuoto: niente voce, il passo per 100 m,
@@ -222,6 +593,42 @@ File: `services/route-engine/route_engine/swim_turns.py`,
 4. Il codice nativo che serve (condizione 3) va nella build 1.0.1 con E e
    con Apple Salute di TASK-321; quello solo JavaScript può uscire prima,
    con l'impronta iOS misurata su una copia pulita.
+
+#### D, dove si è (2026-10-30)
+
+Scritta nella stessa sessione, su richiesta dell'utente («passa alla parte
+D»), branch `feat/TASK-323-d-swim-run` partito da C4. Aggiunta ad
+ADR-0283. La proposta e le traduzioni approvate dall'utente («Yes, like
+this», due volte). TASK-312 B è in `main` e la sua parte C non tocca
+`src/imports/`.
+
+- **In acqua**: niente voce né vibrazioni (le indicazioni, i chilometri,
+  «pausa»), niente interruttore «Voice»; la pausa da fermi dopo 30 s
+  (`stillMs` di `controlRun`); fermo sotto 1 km/h.
+- **La schermata**: quella della canoa col passo di 100 m: «Avg /100 m»,
+  «Last 100 m», i parziali ogni 100 m (`navigation/swim.ts`).
+- **Dopo**: Feed, «My activities», la scheda da condividere con «Open water
+  swim» e il passo di 100 m; il gioco non conta un nuoto.
+- **I file dell'orologio**: GPX e TCX con «swim», FIT `sport` 5; la
+  piscina non ha traccia.
+- **Resta**: la prova in acqua col telefono nella boa (primavera 2027); il
+  codice nativo non serve.
+
+File toccati da D:
+
+```
+apps/mobile/src/navigation/swim.ts, swim.test.ts, swimRun.test.ts (nuovi)
+apps/mobile/src/navigation/runControl.ts, runStats.ts, useNavigation.ts,
+  useFreeRun.ts
+apps/mobile/src/screens/RunPanel.tsx, RunDashboard.tsx, RunSwim.test.tsx
+  (nuovo)
+apps/mobile/src/feed/FeedPost.tsx, src/activities/activityText.ts,
+  src/share/postRun.ts, src/game/RunGameStrip.tsx, RunGameStrip.test.tsx
+apps/mobile/src/imports/fit.ts, fileTrack.ts, swimImport.test.ts (nuovo)
+apps/mobile/src/i18n/de.ts, es.ts, fr.ts, it.ts
+docs/IMPORTAZIONI.md, docs/DECISIONS.md, docs/STATUS.md,
+  docs/tasks/TASK-323.md
+```
 
 ### E — Apple Watch (solo col sì dell'utente su dipendenze e build)
 
@@ -237,16 +644,86 @@ File: `services/route-engine/route_engine/swim_turns.py`,
    la nostra app dell'orologio: è di TASK-321 e dello studio D di TASK-312;
    qui si usa quello che decidono, senza toccare i loro file.
 
+#### E, il piano (2026-10-30)
+
+L'utente, alla richiesta «passa alla parte E», ha scelto «Wait for B, then
+the Mac»: **sì alle due dipendenze**, ma il codice parte dopo. Dalla
+sessione cloud non si può: non c'è Xcode per compilare e provare lo Swift
+dell'orologio, e `app.json`, `package.json` e `react-native.config.js` sono
+della parte B di TASK-321 (la build 1.0.1, branch
+`feat/TASK-321-b-health-ios`), che li sta cambiando adesso. Questo è il
+piano per la sessione che lo farà.
+
+**Quando parte**: TASK-321 B in `main` (HealthKit acceso, gli entitlements,
+il testo del permesso), le parti B, C1, C2, C4 e D di questo task in
+`main`, una sessione sul Mac con Xcode e un Apple Watch per provare. Il
+nuoto acceso (`ready: true`) non serve per scrivere il codice, serve per
+la prova.
+
+**Le dipendenze** (sì dell'utente del 2026-10-30; versioni da ricontrollare
+quando si parte, una sola riga in `package.json` ciascuna):
+
+- `@bacons/apple-targets` 5.0.0: il plugin di Expo che aggiunge il target
+  dell'orologio da una cartella `targets/watch/` (il suo
+  `expo-target.config.js` e i sorgenti Swift) a ogni `prebuild`;
+- `react-native-watch-connectivity` 2.0.0: `WCSession` dal JavaScript, per
+  mandare il giro all'orologio e ricevere la traccia.
+
+**Come è fatto**:
+
+1. **Il telefono** (`src/watch/`, file nuovi): `watchSwim.ts`, puro, fa il
+   pacchetto per l'orologio dal risultato del nuoto: i punti (diradati
+   come le anteprime, entro il limite di un messaggio di `WCSession`), le
+   curve del primo giro con il lato, i metri dalla partenza e il nome a
+   riva, i giri, `lap_m`, la distanza. `useWatch.ts`: se c'è un orologio
+   con l'app, al «Start» di un nuoto (dopo l'avviso) manda il pacchetto e
+   dice sul telefono «On your watch» (testo da approvare); alla fine riceve
+   la traccia e la mette nella corsa come quella del telefono, con «Save»
+   e il modulo di sempre.
+2. **L'orologio** (`targets/watch/`, Swift e SwiftUI): un
+   `HKWorkoutSession` `.swimming` con `swimmingLocationType` `.openWater`
+   (l'orologio salva l'allenamento in Salute: «un'attività, un
+   allenamento», il telefono non lo riscrive, regola di TASK-321); il GPS
+   dell'orologio; il blocco dell'acqua all'avvio. `SwimGuide.swift`, puro:
+   dove si è lungo il giro, i metri alla prossima curva, fuori rotta oltre
+   25 m. Le vibrazioni: prima di una curva a destra e a sinistra con due
+   schemi diversi, fuori rotta un terzo (da provare in acqua e da far
+   scegliere all'utente). Lo schermo: una freccia grande e i metri alla
+   prossima curva, per chi alza la testa. Alla fine la traccia al
+   telefono (`transferFile`, anche se il telefono non c'è subito).
+3. **I test**: `jest` per `src/watch/`; XCTest per `SwimGuide` (la
+   posizione lungo il giro, la curva che viene, il fuori rotta), sul Mac.
+4. **La prova in acqua** (primavera 2027) dice se le vibrazioni si sentono
+   nuotando e se i 25 m vanno bene; poi la build 1.0.1 con TASK-321 B e
+   l'invio ad Apple, col sì dell'utente.
+
+**Da chiedere all'utente quando si parte** (una domanda per volta): gli
+schemi delle vibrazioni, i pochi testi dell'orologio e del telefono nelle
+cinque lingue, la riga della privacy (la posizione dell'orologio durante il
+nuoto).
+
+File toccati da E (previsti, da confermare quando parte):
+
+```
+apps/mobile/targets/watch/ (nuova: il target, lo Swift, i test XCTest)
+apps/mobile/src/watch/ (nuova: watchSwim.ts, useWatch.ts e i test)
+apps/mobile/package.json (le due dipendenze), app.json (il plugin), con
+  TASK-321 B già in main
+apps/mobile/App.tsx (il «Start» di un nuoto con l'orologio)
+apps/mobile/src/i18n/*.ts, site/privacy/ (testi e privacy, col sì)
+docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-323.md
+```
+
 ## Criteri di accettazione (del task intero)
 
-- [ ] Dalla CLI, senza rete né chiavi, un giro a nuoto sta tutto fra la
+- [x] Dalla CLI, senza rete né chiavi, un giro a nuoto sta tutto fra la
       distanza minima e massima dalla riva scelte e parte e torna alla
       stessa spiaggia.
-- [ ] La canoa dà gli stessi percorsi di prima, punto per punto.
+- [x] La canoa dà gli stessi percorsi di prima, punto per punto.
 - [ ] Ogni curva ha un nome a riva dove l'estratto ne ha uno entro 300 m.
-- [ ] «Open water swim» si sceglie nell'app, con l'avviso di sicurezza
+- [x] «Open water swim» si sceglie nell'app, con l'avviso di sicurezza
       approvato dall'utente.
-- [ ] Un nuoto registrato (telefono nella boa o file dell'orologio) diventa
+- [x] Un nuoto registrato (telefono nella boa o file dell'orologio) diventa
       un disegno nel Feed.
 - [ ] (E) L'Apple Watch vibra alle curve e fuori rotta in una prova in
       acqua.
@@ -286,4 +763,21 @@ Una per volta, quando serve la parte:
 
 ## Esito
 
-*(si compila a fine task)*
+Chiuso il 2026-11-05. Il nuoto in acque libere si sceglie in ogni build:
+in Expo Go e `preview` dalla #800, per tutti dalla #765 (`b30bda0c`), in
+produzione con l'OTA che l'utente approva. Disegni, Explore, Start, il
+giro registrato nel Feed, Apple Salute e Health Connect come nuoto. Il
+server (migrazione 0040) tiene i nuoti lontani dalle app che non li
+leggono (TASK-387, `X-MuW-Reads`). Impronta iOS invariata, 6f8bba4c.
+
+Due criteri restano aperti, ognuno col sì dell'utente:
+
+- i nomi a riva: le curve hanno il nome solo dopo `shore_extract` sul
+  server; fino ad allora il motore le dice senza nome;
+- (E) l'Apple Watch: il piano è in `main` (#744), il codice va scritto sul
+  Mac con Xcode, la prova in acqua in primavera 2027.
+
+Sul server, coi comandi del Coordinatore: `draw_examples --swim` (2–4 ore,
+dopo gli estratti dello sci; senza esempi il telefono disegna da sé il
+primo nuoto, più lento) e il controllo di `paddleExamples.json` a
+ridisegno finito.

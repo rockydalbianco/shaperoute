@@ -23,11 +23,22 @@ afterEach(() => saveUnitsChoice("phone"));
 
 const ACTIVITIES = ["running", "cycling", "paddling"] as const;
 
-test("the limits are whole miles inside today's: 1–13, 7–18, 1–3", () => {
+test("the limits are whole miles inside today's: 1–13, 7–18, 1–3; a swim's by half", () => {
   expect(APP_DISTANCE_LIMITS_MI).toEqual({
     running: [1, 13],
     cycling: [7, 18],
     paddling: [1, 3],
+    // By half a mile (TASK-323 C2): whole ones would be 1 mi alone.
+    swimming: [0.5, 1.5],
+    hiking: [1, 18],
+    mountain_biking: [7, 18],
+    inline_skating: [4, 18],
+    // By half a mile too, as a swim (TASK-413).
+    snowshoeing: [0.5, 1.5],
+    // Whole miles inside 1–5 km (TASK-414).
+    wheelchair: [1, 3],
+    walking: [1, 18],
+    gravel_biking: [7, 18],
   });
   expect(distanceLimits("running")).toEqual([1, 13]);
   expect(distanceLimits("running", "km")).toEqual(APP_DISTANCE_LIMITS_KM.running);

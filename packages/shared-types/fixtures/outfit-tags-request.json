@@ -1,0 +1,18 @@
+{
+  "tags": [
+    {
+      "x": 0.42,
+      "y": 0.88,
+      "item": "shoes",
+      "brand": "Nike",
+      "product_name": "Pegasus 41",
+      "url": "https://www.nike.com/it/t/pegasus-41-scarpa-da-running-su-strada-uomo?utm_source=instagram&size=44#reviews"
+    },
+    {
+      "x": 0.5,
+      "y": 0.35,
+      "item": "jacket",
+      "brand": "Salomon"
+    }
+  ]
+}

@@ -1,12 +1,13 @@
 import type { Person } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { sessionEnded } from "../account/messages";
 import { fetchBlocked, unblockMember } from "../api/moderation";
 import { personPhotoUri } from "../api/people";
 import { t } from "../i18n";
 import { Avatar } from "../profile/Avatar";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import {
   color,
   fontSize,
@@ -15,6 +16,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { markUnblocked } from "./blockedNow";
 import { useFollowsDoor } from "./followsDoor";
 import { moderationProblem } from "./ReportMenu";
@@ -34,7 +36,8 @@ type Props = {
 };
 
 /**
- * «Blocked people» in «Profile» (TASK-121, ADR-0228): a row that opens the
+ * «Blocked people» in «Settings», under the account (TASK-121, ADR-0228;
+ * on the first page of «Profile» until TASK-457): a row that opens the
  * list of the members the account blocked, the last first, each with
  * «Unblock». The list is read when the row is opened; an unblocked member
  * leaves it at once. Unblocking brings back no follow: it was ended by the
@@ -42,6 +45,7 @@ type Props = {
  */
 export function BlockedPeople({ fetchFn, apiKey }: Props) {
   const { apiUrl, account } = useFollowsDoor();
+  const group = useSettingsGroup();
   const { state, sessionEnded: onSessionEnded } = account;
   const token = state.status === "signedIn" ? state.session.token : null;
   const [open, setOpen] = useState(false);
@@ -145,20 +149,22 @@ export function BlockedPeople({ fetchFn, apiKey }: Props) {
 
   return (
     <View style={styles.section}>
-      <Pressable
-        style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      <Tap
+        style={[styles.row, group]}
         onPress={() => {
           setProblem(null);
           setOpen(!open);
         }}
         accessibilityRole="button"
+        // One name for the row: the emoji and the arrow are not read.
         accessibilityLabel={t("Blocked people")}
         accessibilityState={{ expanded: open }}
         testID="blocked-people"
       >
+        <Text style={styles.emoji}>🚫</Text>
         <Text style={styles.rowText}>{t("Blocked people")}</Text>
         <Text style={styles.rowArrow}>{open ? "⌄" : "›"}</Text>
-      </Pressable>
+      </Tap>
       {open && (
         <View style={styles.list}>
           {problem !== null && (
@@ -186,11 +192,8 @@ export function BlockedPeople({ fetchFn, apiKey }: Props) {
                   <Text style={styles.name} numberOfLines={1}>
                     {person.username}
                   </Text>
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.action,
-                      (pressed || waiting) && styles.pressed,
-                    ]}
+                  <Tap
+                    style={[styles.action, waiting && styles.dim]}
                     onPress={() => unblock(person)}
                     disabled={waiting}
                     accessibilityRole="button"
@@ -198,22 +201,19 @@ export function BlockedPeople({ fetchFn, apiKey }: Props) {
                     accessibilityState={{ disabled: waiting }}
                   >
                     <Text style={styles.actionText}>{t("Unblock")}</Text>
-                  </Pressable>
+                  </Tap>
                 </View>
               );
             })}
           {list?.kind === "ready" && list.next !== null && (
-            <Pressable
-              style={({ pressed }) => [
-                styles.more,
-                (pressed || loadingMore) && styles.pressed,
-              ]}
+            <Tap
+              style={[styles.more, loadingMore && styles.dim]}
               onPress={loadMore}
               disabled={loadingMore}
               accessibilityRole="button"
             >
               <Text style={styles.moreText}>{t("Show more")}</Text>
-            </Pressable>
+            </Tap>
           )}
         </View>
       )}
@@ -225,26 +225,30 @@ const styles = StyleSheet.create({
   section: {
     gap: space.md,
   },
-  // As the row of «Settings» (ProfileHome.tsx), without its badge.
+  // As the other rows of «Settings» (`../profile/PhotoRow`), where it sits
+  // since TASK-457: an emoji, the name, and the arrow of a row that opens.
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: space.md,
-    minHeight: MIN_TAP_SIZE,
-    padding: space.md,
+    minHeight: MIN_TAP_SIZE + space.sm,
+    paddingHorizontal: space.md,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: color.border,
     backgroundColor: color.surface,
   },
-  pressed: {
+  dim: {
     opacity: 0.6,
+  },
+  emoji: {
+    fontSize: fontSize.input + space.xs,
   },
   rowText: {
     flex: 1,
     color: color.text,
     fontSize: fontSize.input,
-    fontWeight: fontWeight.semibold,
+    fontWeight: fontWeight.medium,
   },
   rowArrow: {
     color: color.textMuted,

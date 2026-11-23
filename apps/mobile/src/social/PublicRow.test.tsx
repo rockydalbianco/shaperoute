@@ -1,11 +1,13 @@
+import open from "@shaperoute/shared-types/fixtures/contest.json";
 import myDetails from "@shaperoute/shared-types/fixtures/my-drawing-details.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
-import type { MyDrawing, Session } from "@shaperoute/shared-types";
+import type { Contest, MyDrawing, Session } from "@shaperoute/shared-types";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useState } from "react";
 
 import { apiError } from "../account/testing";
 import type { Account } from "../account/useAccount";
+import { forgetContest, setContest } from "../contest/contestKept";
 import { DrawingsContext, useDrawingsOf } from "./drawingsDoor";
 import { keepPhoto, loadDrawingPhotos } from "./drawingPhotos";
 import { FollowsContext } from "./followsDoor";
@@ -133,6 +135,96 @@ beforeEach(() => {
   files.clear();
 });
 
+describe("«Enter “{theme}”» on a run of «My activities» (TASK-343 part B)", () => {
+  const THEME = {
+    ...(open as Contest),
+    starts_at: "2020-01-01T00:00:00Z",
+    ends_at: "2999-12-31T23:59:59Z",
+    theme: { en: { title: "Animals", description: "Draw an animal." } },
+    entrants: 3,
+    entered: [],
+  } as Contest;
+  const FOR_EVERYONE = { ...MINE, visibility: "everyone", public: true };
+  const ENTRY = `/contests/${THEME.id}/entries/${MINE.id}`;
+  const NAME = "Enter “Animals”";
+  const ACCOUNT = signedIn.user.public_id ?? null;
+
+  afterEach(() => {
+    forgetContest();
+  });
+
+  test("on: the drawing is saved, then entered", async () => {
+    setContest({ account: ACCOUNT, contest: THEME });
+    const { fetchFn, names } = api({
+      [`GET ${DRAWING}`]: () => Response.json(FOR_EVERYONE),
+      [`PUT ${DRAWING}`]: kept,
+      [`PUT ${ENTRY}`]: () => new Response(null, { status: 204 }),
+    });
+    await render(<Row fetchFn={fetchFn} />);
+    await fireEvent.press(await screen.findByRole("switch", { name: NAME }));
+    await waitFor(() =>
+      expect(names().slice(0, 3)).toEqual([
+        `GET ${DRAWING}`,
+        `PUT ${DRAWING}`,
+        `PUT ${ENTRY}`,
+      ]),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("switch", { name: NAME }).props.accessibilityState.checked,
+      ).toBe(true),
+    );
+  });
+
+  test("already entered it starts on, and off withdraws it", async () => {
+    setContest({
+      account: ACCOUNT,
+      contest: { ...THEME, entered: [MINE.id] } as Contest,
+    });
+    const { fetchFn, names } = api({
+      [`GET ${DRAWING}`]: () => Response.json(FOR_EVERYONE),
+      [`PUT ${DRAWING}`]: kept,
+      [`DELETE ${ENTRY}`]: () => new Response(null, { status: 204 }),
+    });
+    await render(<Row fetchFn={fetchFn} />);
+    const on = await screen.findByRole("switch", { name: NAME });
+    expect(on.props.accessibilityState.checked).toBe(true);
+    await fireEvent.press(on);
+    await waitFor(() => expect(names()).toContain(`DELETE ${ENTRY}`));
+  });
+
+  test("refused: it says why and goes back off; the drawing is saved", async () => {
+    setContest({ account: ACCOUNT, contest: THEME });
+    const { fetchFn } = api({
+      [`GET ${DRAWING}`]: () => Response.json(FOR_EVERYONE),
+      [`PUT ${DRAWING}`]: kept,
+      [`PUT ${ENTRY}`]: () =>
+        Response.json(apiError("not_entrant", "No."), { status: 409 }),
+    });
+    await render(<Row fetchFn={fetchFn} />);
+    await fireEvent.press(await screen.findByRole("switch", { name: NAME }));
+    expect(await screen.findByText(/This run cannot take part/)).toBeTruthy();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("switch", { name: NAME }).props.accessibilityState.checked,
+      ).toBe(false),
+    );
+  });
+
+  test("with today's API, no switch and no call of the challenge", async () => {
+    setContest({ account: ACCOUNT, contest: open as Contest });
+    const { fetchFn, names } = api({
+      [`GET ${DRAWING}`]: () => Response.json(FOR_EVERYONE),
+      [`PUT ${DRAWING}`]: kept,
+    });
+    await render(<Row fetchFn={fetchFn} />);
+    await screen.findByDisplayValue("Sunday heart by the river");
+    expect(screen.queryByRole("switch")).toBeNull();
+    await fireEvent.press(screen.getByRole("radio", { name: "Followers" }));
+    await waitFor(() => expect(names()).toEqual([`GET ${DRAWING}`, `PUT ${DRAWING}`]));
+  });
+});
+
 test("the form shows what the API has, and a chip sends the choice whole at once", async () => {
   const { fetchFn, calls } = api({
     [`GET ${DRAWING}`]: () => Response.json(MINE),
@@ -144,16 +236,12 @@ test("the form shows what the API has, and a chip sends the choice whole at once
   expect(screen.getByRole("radio", { name: "Followers", checked: true })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Remove adam.trento" })).toBeTruthy();
   // The API's photo, read with the token.
-  const photo = screen.getByLabelText("Photo 1");
+  const photo = screen.getByTestId("photo-image-1");
   expect(photo.props.source).toEqual({
     uri: `${URL}${MINE.photos?.[0].url}`,
     headers: { Authorization: `Bearer ${signedIn.token}` },
   });
-  expect(
-    screen.getByText(
-      "Your followers see it in your profile, without the first and last 200 m.",
-    ),
-  ).toBeTruthy();
+  expect(screen.getByText("Your followers see it in your profile.")).toBeTruthy();
 
   await fireEvent.press(screen.getByRole("radio", { name: "Everyone" }));
   await waitFor(() => expect(calls).toHaveLength(2));
@@ -161,11 +249,7 @@ test("the form shows what the API has, and a chip sends the choice whole at once
     name: `PUT ${DRAWING}`,
     body: { ...BODY, visibility: "everyone" },
   });
-  expect(
-    await screen.findByText(
-      "Every member sees it in your profile, without the first and last 200 m.",
-    ),
-  ).toBeTruthy();
+  expect(await screen.findByText("Every member sees it in your profile.")).toBeTruthy();
 });
 
 test("the title goes when typing is over, and only when it changed", async () => {
@@ -258,4 +342,42 @@ test("a choice the API refuses is said, and the form goes back to what it kept",
   await fireEvent.press(await screen.findByRole("radio", { name: "Everyone" }));
   expect(await screen.findByText("This run is too short to publish.")).toBeTruthy();
   expect(screen.getByRole("radio", { name: "Followers", checked: true })).toBeTruthy();
+});
+
+// The order of the post (TASK-348, ADR-0301).
+
+test("the pages show in the API's order, and a move sends the order after the drawing", async () => {
+  const photo = MINE.photos?.[0];
+  if (photo === undefined) {
+    throw new Error("the example has a photo");
+  }
+  const second = { ...photo, n: 2, url: photo.url.replace("/photos/1", "/photos/2") };
+  const ordered: MyDrawing = {
+    ...MINE,
+    photos: [second, photo],
+    order: ["photo:2", "drawing", "photo:1"],
+  };
+  const { fetchFn, names, calls } = api({
+    [`GET ${DRAWING}`]: () => Response.json(ordered),
+    [`PUT ${DRAWING}`]: () => Response.json(ordered),
+    [`PUT ${DRAWING}/order`]: (init) =>
+      Response.json({ ...ordered, order: JSON.parse(String(init?.body)).order }),
+  });
+  await render(<Row fetchFn={fetchFn} />);
+  expect(await screen.findByDisplayValue("Sunday heart by the river")).toBeTruthy();
+  const tiles = screen
+    .getAllByLabelText(/^(Drawing|Photo \d)$/)
+    .map((tile) => tile.props.testID as string);
+  expect(tiles).toEqual(["tile-photo-2", "tile-drawing", "tile-photo-1"]);
+
+  await fireEvent(screen.getByTestId("tile-drawing"), "accessibilityAction", {
+    nativeEvent: { actionName: "moveLeft" },
+  });
+  await waitFor(() => expect(names()).toContain(`PUT ${DRAWING}/order`));
+  expect(names().indexOf(`PUT ${DRAWING}`)).toBeLessThan(
+    names().indexOf(`PUT ${DRAWING}/order`),
+  );
+  expect(calls.find((call) => call.name === `PUT ${DRAWING}/order`)?.body).toEqual({
+    order: ["drawing", "photo:2", "photo:1"],
+  });
 });

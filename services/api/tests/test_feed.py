@@ -118,7 +118,17 @@ def test_the_example_is_the_body() -> None:
     # A post is a drawing of a profile's list, with its author.
     assert set(FeedPostBody.model_fields) == set(DrawingBody.model_fields) | {"author"}
     post = page["posts"][0]
-    assert set(post) == set(FeedPostBody.model_fields)
+    # Written before TASK-312 and TASK-348: a post of a run of the app, never
+    # ordered (feed-imported.json, test_imported_runs.py).
+    assert set(post) == set(FeedPostBody.model_fields) - {
+        "source",
+        "order",
+        "ski_descents",
+        "sleep",
+        "flight_split",
+        "linkable",
+        "plan",
+    }
     assert set(post["author"]) == set(AuthorBody.model_fields)
     assert post["author"] == _load("drawing-details.json")["author"]
     assert re.match(CURSOR_PATTERN, page["next"])
@@ -167,6 +177,8 @@ def test_own_first_then_followed_then_the_others_each_newest_first(
     assert mine["author"] == {
         "public_id": public_id(client, me),
         "username": _load("sign-up-request.json")["username"],
+        # Without a picture (TASK-355 part B, test_feed_counts.py).
+        "photo": None,
     }
     assert mine["visibility"] == "everyone"
     assert mine["published_at"] is not None

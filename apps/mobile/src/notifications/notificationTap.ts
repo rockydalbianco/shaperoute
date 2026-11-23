@@ -1,7 +1,10 @@
-import type {
-  ChallengePushKind,
-  MessagePushKind,
-  Person,
+import {
+  type ChallengePushKind,
+  type ContestPushKind,
+  type GroupRunPushKind,
+  type MessagePushKind,
+  type Person,
+  PLANNED_LIVE_PUSH_KIND,
 } from "@shaperoute/shared-types";
 
 /**
@@ -13,14 +16,21 @@ import type {
  * in the collection. The challenge for a piece done, a shape completed or
  * a day left (TASK-296 part C): its data names the challenge; without a
  * good id, «Play» on its «Challenges» tab. The conversation with who wrote
- * for a message or a message request (TASK-319). Anything else: nothing.
+ * for a message or a message request (TASK-319). The page of a monthly
+ * challenge for its three notifications (TASK-343 part B): not the game's
+ * challenge above. Anything else: nothing.
  */
 export type TapTarget =
   | { kind: "drawing"; id: string }
   | { kind: "profile"; person: Person }
   | { kind: "conversation"; person: Person }
   | { kind: "play" }
-  | { kind: "challenge"; id: string };
+  | { kind: "challenge"; id: string }
+  | { kind: "contest"; id: string }
+  /** A planned live that started (TASK-468 part B2b1): its live view. */
+  | { kind: "live"; shareId: string; plannedLiveId: string }
+  /** A group run soon, changed or cancelled (TASK-309 part B): its page. */
+  | { kind: "group_run"; id: string };
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -34,6 +44,20 @@ const CHALLENGE_KINDS: readonly ChallengePushKind[] = [
 /** The kinds of a private message's notifications (TASK-319). */
 const MESSAGE_KINDS: readonly MessagePushKind[] = ["message", "message_request"];
 
+/** The kinds of a group run's notifications (TASK-309). */
+const GROUP_RUN_KINDS: readonly GroupRunPushKind[] = [
+  "group_run_soon",
+  "group_run_changed",
+  "group_run_cancelled",
+];
+
+/** The kinds of a monthly challenge's notifications (TASK-343). */
+const CONTEST_KINDS: readonly ContestPushKind[] = [
+  "contest_open",
+  "contest_last_days",
+  "contest_results",
+];
+
 function field(data: object, name: string): string | null {
   const value: unknown = (data as Record<string, unknown>)[name];
   return typeof value === "string" ? value : null;
@@ -44,7 +68,13 @@ export function tapTarget(data: unknown): TapTarget | null {
     return null;
   }
   const kind = field(data, "kind");
-  if (kind === "shape_unlocked") {
+  // The game's own news (TASK-296; editions and frames, TASK-423 part E):
+  // «Play». An older server sends the runner's profile with them too.
+  if (
+    kind === "shape_unlocked" ||
+    kind === "edition_up" ||
+    kind === "collection_done"
+  ) {
     return { kind: "play" };
   }
   if (kind !== null && (CHALLENGE_KINDS as readonly string[]).includes(kind)) {
@@ -52,6 +82,25 @@ export function tapTarget(data: unknown): TapTarget | null {
     return challenge !== null && ID.test(challenge)
       ? { kind: "challenge", id: challenge }
       : { kind: "play" };
+  }
+  if (kind !== null && (CONTEST_KINDS as readonly string[]).includes(kind)) {
+    const contest = field(data, "contest_id");
+    return contest !== null && ID.test(contest)
+      ? { kind: "contest", id: contest }
+      : null;
+  }
+  if (kind !== null && (GROUP_RUN_KINDS as readonly string[]).includes(kind)) {
+    const groupRun = field(data, "group_run_id");
+    return groupRun !== null && ID.test(groupRun)
+      ? { kind: "group_run", id: groupRun }
+      : null;
+  }
+  if (kind === PLANNED_LIVE_PUSH_KIND) {
+    const share = field(data, "share_id");
+    const planned = field(data, "planned_live_id");
+    return share !== null && ID.test(share) && planned !== null && ID.test(planned)
+      ? { kind: "live", shareId: share, plannedLiveId: planned }
+      : null;
   }
   const drawing = field(data, "drawing_id");
   if (drawing !== null && ID.test(drawing)) {

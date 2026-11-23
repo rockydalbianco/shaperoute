@@ -148,6 +148,26 @@ e prosegue (`faulthandler_timeout` nei `pyproject.toml` dell'API e del
 route-engine): in un job fallito per il tempo, quello stack dice quale
 test si era fermato e dove (TASK-248, ADR-0212).
 
+I test dell'API girano divisi in quattro parti, una per job della matrice
+`api-tests` (TASK-438): `tools/ci_api_shards.py` dà ogni file di
+`services/api/tests` a una parte sola, bilanciando sul numero di test, e
+la prima parte controlla che pytest non raccolga test da un file che
+nessuna parte esegue. Il check obbligatorio resta `api`: un job finale,
+verde solo se tutte le parti lo sono. Un file di test nuovo entra da solo
+in una parte; per cambiare il numero delle parti basta la lista `shard`
+in `ci.yml`. In locale non cambia niente: `pytest` esegue tutta la suite.
+
+Una PR di soli documenti non fa girare i test (TASK-393, ADR-0331): ogni
+job di `ci.yml` comincia con `tools/ci_changes.py`, che guarda cosa la PR
+cambia in `main`, e se sono solo documenti salta gli altri passi e finisce
+verde, con lo stesso nome. Documenti sono tutto `docs/` e i `.md` fuori da
+`apps/`, `packages/`, `services/`, `tools/`, `site/`, `deploy/`; un solo
+altro file e gira tutto, come su `main` a ogni push. Se un test comincia a
+leggere un file di `docs/` o un `.md` fuori da quelle cartelle, va cambiata
+la regola in `tools/ci_changes.py` nella stessa PR. Il sito ha i suoi
+filtri in `site.yml` e legge `docs/DEPLOY.md`. Un push nuovo su una PR
+cancella il run della CI ancora in corso per quella PR.
+
 ## Quando un test non va scritto
 
 Non si testano: i valori costanti, le funzioni che si limitano a chiamarne

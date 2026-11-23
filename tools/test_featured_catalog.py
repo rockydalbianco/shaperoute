@@ -83,9 +83,9 @@ def test_every_featured_city_has_its_centre_here() -> None:
 
 # Featured cities still without their shapes, and why. Strict: the day the
 # shapes are in the catalogue the test fails until the city leaves this table.
-MISSING = {
-    "Berlin": "no zone to plan on: not on the server (TASK-137), Overpass closed",
-}
+# Berlin left it on 2026-11-10: its zone came from Overpass in the night of
+# 2026-11-09 (TASK-419), and the three shapes are in the catalogue.
+MISSING: dict[str, str] = {}
 
 
 @pytest.mark.parametrize(

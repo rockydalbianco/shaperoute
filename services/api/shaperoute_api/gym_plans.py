@@ -1,0 +1,671 @@
+"""The plans of the gym (TASK-411 part C, ADR-0341 point 3, docs/sports/
+gym.md «Le schede»): a name, the days of the week it is for, its exercises
+in order, each with the sets to do and the values aimed at.
+
+A plan made with the guide is a program (`program`, migration 0066): its
+workouts of the week, each on its day with its own exercises or a run
+(TASK-433 C), and a cycle of weeks that changes as its owner chose; the
+phone works out each week's values, the API keeps what it was given and
+knows which days are planned.
+
+GET /me/gym-plans lists the account's plans in their order; PUT
+/me/gym-plans/{key} keeps one, with the key the phone chose, so a plan
+made without a network goes up later and sent twice is one row (201, then
+200); DELETE /me/gym-plans/{key} drops it, and dropping one that is not
+there is no error. A plan sent older than the one kept does not replace
+it: two phones of one account keep the latest. Only the owner: under /me;
+they go with the account. At most MAX_PLANS plans of MAX_ITEMS exercises.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta
+from typing import Annotated, Any, Literal
+
+from fastapi import APIRouter, Depends, FastAPI, Response
+from psycopg.types.json import Jsonb
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
+
+from shaperoute_api.accounts import (
+    ACCOUNT_ERRORS,
+    AccountError,
+    Accounts,
+    UserBody,
+    accounts_of,
+    current_user,
+)
+from shaperoute_api.activities import Key
+from shaperoute_api.db import Database
+from shaperoute_api.gym_catalog import EXERCISES_BY_KEY, SetKind
+from shaperoute_api.gym_sessions import (
+    ALLOWED,
+    EXERCISE_PATTERN,
+    MAX_NAME_LENGTH,
+    VALUE_FIELDS,
+)
+from shaperoute_api.schemas import ErrorBody
+
+MAX_PLANS = 20
+MAX_ITEMS = 30
+MAX_SETS = 20
+PLANS_FULL = "An account keeps at most 20 plans."
+MAX_WEEKS = 24
+"""A cycle of the gym is 4, 6 or 8 weeks; a plan toward a distance or a
+climb (TASK-461 B) runs up to 24 weeks to its day."""
+MAX_CYCLE_WEEKS = 12
+"""The weeks of a program without a target, which repeats."""
+MAX_SESSIONS = 7
+MAX_PROGRAM_ITEMS = 300
+
+Goal = Literal["muscle", "strength", "tone", "fit"]
+"""What the guide asked first: more muscle, more strength, tone, fitness."""
+Mode = Literal["load", "reps", "alternate", "same"]
+"""How the weeks change: more load each week, more reps each week, two
+weeks in turn, or always the same."""
+
+
+class GymPlanItemBody(BaseModel):
+    """An exercise of a plan: packages/shared-types src/gym.ts,
+    `GymPlanItem`. The values are those aimed at, each optional, of the
+    fields of its kind only (as a set's, gym_sessions.py)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    exercise: str | None = Field(default=None, pattern=EXERCISE_PATTERN)
+    name: str | None = Field(default=None, min_length=1, max_length=MAX_NAME_LENGTH)
+    kind: SetKind
+    sets: int = Field(ge=1, le=MAX_SETS)
+    reps: int | None = Field(default=None, ge=1, le=10_000)
+    load_kg: float | None = Field(default=None, ge=0, le=2_000, allow_inf_nan=False)
+    duration_s: int | None = Field(default=None, ge=1, le=86_400)
+    distance_m: int | None = Field(default=None, ge=0, le=1_000_000)
+    speed_kmh: float | None = Field(default=None, ge=0, le=60, allow_inf_nan=False)
+    incline_pct: float | None = Field(default=None, ge=-10, le=40, allow_inf_nan=False)
+    level: int | None = Field(default=None, ge=1, le=100)
+    floors: int | None = Field(default=None, ge=0, le=10_000)
+
+    @model_validator(mode="after")
+    def the_fields_of_its_kind(self) -> GymPlanItemBody:
+        if (self.exercise is None) == (self.name is None):
+            raise ValueError("an item is of an exercise of the catalog, or a named one")
+        allowed = ALLOWED[self.kind]
+        if self.exercise is not None:
+            exercise = EXERCISES_BY_KEY.get(self.exercise)
+            if exercise is None:
+                raise ValueError(f"no exercise {self.exercise} in the catalog")
+            if exercise.kind != self.kind:
+                raise ValueError(f"{self.exercise} is of the kind {exercise.kind}")
+            if self.kind == "cardio":
+                allowed = frozenset({"duration_s", *exercise.fields})
+        given = {field for field in VALUE_FIELDS if getattr(self, field) is not None}
+        extra = given - allowed
+        if extra:
+            raise ValueError(f"a {self.kind} item has no {', '.join(sorted(extra))}")
+        return self
+
+
+def _days_once(sessions: list[GymPlanSessionBody]) -> None:
+    days = [session.day for session in sessions]
+    if len(set(days)) != len(days):
+        raise ValueError("a day of the week has one workout")
+
+
+RunKind = Literal["easy", "intervals", "long"]
+"""A run day of a program (TASK-433 C): easy, intervals or long."""
+
+
+class GymPlanRunBody(BaseModel):
+    """The run of a run day: packages/shared-types src/gym.ts, `GymPlanRun`.
+    An easy or long run is a distance or a time; intervals are how many,
+    each a distance or a time."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: RunKind
+    distance_m: int | None = Field(default=None, ge=100, le=100_000)
+    duration_s: int | None = Field(default=None, ge=60, le=6 * 3600)
+    reps: int | None = Field(default=None, ge=1, le=50)
+    rep_m: int | None = Field(default=None, ge=50, le=5_000)
+    rep_s: int | None = Field(default=None, ge=10, le=1_800)
+
+    @model_validator(mode="after")
+    def the_fields_of_its_kind(self) -> GymPlanRunBody:
+        if self.kind == "intervals":
+            if self.reps is None or (self.rep_m is None) == (self.rep_s is None):
+                raise ValueError("intervals are reps, each in metres or seconds")
+            if self.distance_m is not None or self.duration_s is not None:
+                raise ValueError("intervals are given by their reps")
+        else:
+            if (self.distance_m is None) == (self.duration_s is None):
+                raise ValueError(f"a {self.kind} run is a distance or a time")
+            if any(value is not None for value in (self.reps, self.rep_m, self.rep_s)):
+                raise ValueError(f"a {self.kind} run has no reps")
+        return self
+
+
+OutingSport = Literal["walk", "hike", "bike", "gravel", "mtb", "swim", "paddle"]
+"""The sports of a day out that is not a run (TASK-461 B and C, ADR-0371):
+a run day stays a `run`, so an app older than the outings shows it."""
+OutingKind = Literal["easy", "intervals", "long", "brisk", "climb"]
+"""Easy, intervals (a swim's sets too) and long as for a run; brisk, the
+quality day on foot; climb, a hike measured by its climb."""
+
+OUTING_MAX_M: dict[str, int] = {
+    "walk": 100_000,
+    "hike": 100_000,
+    "bike": 300_000,
+    "gravel": 300_000,
+    "mtb": 300_000,
+    "swim": 10_000,
+    "paddle": 100_000,
+}
+"""The longest day of each sport: a bike plan goes up to 150 km and more."""
+ON_FOOT = ("walk", "hike")
+OUTING_ACTIVITY: dict[str, str] = {
+    "walk": "walking",
+    "hike": "hiking",
+    "bike": "cycling",
+    "gravel": "gravel_biking",
+    "mtb": "mountain_biking",
+    "swim": "swimming",
+    "paddle": "paddling",
+}
+"""The activity a day out of each sport is done by: any of that sport that
+day (a pool swim and one in open water are both `swimming`)."""
+
+
+class GymPlanOutingBody(BaseModel):
+    """A day out of a plan that is not a run (TASK-461 B and C, ADR-0371):
+    packages/shared-types src/gym.ts, `GymPlanOuting`. A distance or a
+    time, or reps each a distance or a time; on foot also the metres of
+    climb; a swim in a pool or in open water."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    sport: OutingSport
+    kind: OutingKind
+    distance_m: int | None = Field(default=None, ge=100, le=300_000)
+    duration_s: int | None = Field(default=None, ge=60, le=12 * 3600)
+    reps: int | None = Field(default=None, ge=1, le=50)
+    rep_m: int | None = Field(default=None, ge=25, le=5_000)
+    rep_s: int | None = Field(default=None, ge=10, le=1_800)
+    climb_m: int | None = Field(default=None, ge=50, le=5_000)
+    """Metres of climb to look for: a day on foot only."""
+    pool: bool | None = None
+    """A swim in a pool (true) or in open water (false); a swim only."""
+
+    @model_validator(mode="after")
+    def the_fields_of_its_sport_and_kind(self) -> GymPlanOutingBody:
+        timed = (self.distance_m is not None) + (self.duration_s is not None)
+        if self.kind == "intervals":
+            if self.reps is None or (self.rep_m is None) == (self.rep_s is None):
+                raise ValueError("intervals are reps, each in metres or seconds")
+            if timed:
+                raise ValueError("intervals are given by their reps")
+        else:
+            if any(value is not None for value in (self.reps, self.rep_m, self.rep_s)):
+                raise ValueError(f"a {self.kind} day has no reps")
+            if self.kind == "climb":
+                if self.sport != "hike" or self.climb_m is None or timed > 1:
+                    raise ValueError("a climb is a hike's metres of climb")
+            elif timed != 1:
+                raise ValueError(f"a {self.kind} day is a distance or a time")
+        if self.kind == "brisk" and self.sport not in ON_FOOT:
+            raise ValueError("a brisk day is on foot")
+        if self.climb_m is not None and self.sport not in ON_FOOT:
+            raise ValueError("a climb is on foot")
+        if (self.pool is not None) != (self.sport == "swim"):
+            raise ValueError("a swim says its water, nothing else does")
+        if self.distance_m is not None and self.distance_m > OUTING_MAX_M[self.sport]:
+            raise ValueError(f"a day of {self.sport} is shorter")
+        return self
+
+
+TargetSport = Literal["run", "walk", "hike", "bike", "gravel", "mtb", "swim", "paddle"]
+
+
+class GymPlanTargetBody(BaseModel):
+    """What a plan leads to (TASK-461 B and C, ADR-0371): its last day is a
+    distance of a sport, or a hike's climb; on a date, or when ready.
+    `GymPlanTarget`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    sport: TargetSport
+    distance_m: int | None = Field(default=None, ge=500, le=300_000)
+    climb_m: int | None = Field(default=None, ge=100, le=5_000)
+    on: date | None = None
+    """The day of the race or of the outing; absent: when ready."""
+
+    @model_validator(mode="after")
+    def a_distance_or_a_climb(self) -> GymPlanTargetBody:
+        if (self.distance_m is None) == (self.climb_m is None):
+            raise ValueError("a target is a distance or a climb")
+        if self.climb_m is not None and self.sport != "hike":
+            raise ValueError("a climb is a hike's")
+        return self
+
+
+class GymPlanSessionBody(BaseModel):
+    """A workout of a program: packages/shared-types src/gym.ts,
+    `GymPlanSession`. A run day (TASK-433 C) has its `run` and no
+    exercises; a day out of another sport (TASK-461 B) its `outing`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    day: int = Field(ge=1, le=7)
+    """The day of the week it is for, 1 Monday to 7 Sunday."""
+    name: str = Field(min_length=1, max_length=MAX_NAME_LENGTH)
+    items: list[GymPlanItemBody] = Field(default_factory=list, max_length=MAX_ITEMS)
+    run: GymPlanRunBody | None = None
+    outing: GymPlanOutingBody | None = None
+
+    @model_validator(mode="after")
+    def a_run_or_exercises(self) -> GymPlanSessionBody:
+        if self.run is not None and self.items:
+            raise ValueError("a run day has no exercises")
+        if self.outing is not None and (self.items or self.run is not None):
+            raise ValueError("a day out has no exercises and no run")
+        return self
+
+
+class GymPlanWeekBody(BaseModel):
+    """A week of the cycle written by hand: `GymPlanWeek`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    week: int = Field(ge=2, le=MAX_WEEKS)
+    sessions: list[GymPlanSessionBody] = Field(max_length=MAX_SESSIONS)
+
+    @model_validator(mode="after")
+    def one_workout_a_day(self) -> GymPlanWeekBody:
+        _days_once(self.sessions)
+        return self
+
+
+class GymPlanRunnerBody(BaseModel):
+    """How its owner runs, asked by the guide for a plan with run days:
+    packages/shared-types src/gym.ts, `GymPlanRunner`. The paces of the
+    run days are worked out from it on the phone."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    pace_10k_s: int = Field(ge=180, le=900)
+    """Seconds a kilometre over 10 km: 3:00 to 15:00."""
+    long_m: int | None = Field(default=None, ge=1_000, le=60_000)
+    long_s: int | None = Field(default=None, ge=600, le=6 * 3600)
+    """The longest run done without strain: a distance or a time."""
+
+    @model_validator(mode="after")
+    def a_distance_or_a_time(self) -> GymPlanRunnerBody:
+        if (self.long_m is None) == (self.long_s is None):
+            raise ValueError("the long run is a distance or a time")
+        return self
+
+
+Feel = Literal["easy", "right", "hard"]
+"""How a workout of the plan went, asked at its end (TASK-488, ADR-0396)."""
+
+MAX_ADAPT_STEPS = 24
+
+
+class GymPlanAdaptDayBody(BaseModel):
+    """A day of the week the plan adapted to its answers: packages/
+    shared-types src/gym.ts, `GymPlanAdaptDay`. The phone adds `steps` to
+    the steps of every week it works out for that day."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    day: int = Field(ge=1, le=7)
+    steps: int = Field(ge=-MAX_ADAPT_STEPS, le=MAX_ADAPT_STEPS)
+    """Steps more (or fewer) than the mode's, from the answers so far."""
+    hard: int = Field(default=0, ge=0, le=2)
+    """«Hard» answers in a row, up to 2: the second steps back."""
+    last: Feel
+    """The last answer, for the mark beside the day."""
+
+
+class GymPlanAdaptBody(BaseModel):
+    """The plan that adapts to how its workouts went (TASK-488, ADR-0396):
+    `GymPlanAdapt`. Absent: on, nothing answered yet."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    off: bool = False
+    """Its owner turned it off: no question, the weeks as the mode says."""
+    days: list[GymPlanAdaptDayBody] = Field(default_factory=list, max_length=7)
+
+    @model_validator(mode="after")
+    def a_day_once(self) -> GymPlanAdaptBody:
+        numbers = [one.day for one in self.days]
+        if len(set(numbers)) != len(numbers):
+            raise ValueError("a day adapts once")
+        return self
+
+
+class GymProgramBody(BaseModel):
+    """The weeks of a plan made with the guide: `GymProgram`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    goal: Goal | None = None
+    starts_on: date
+    """Its first day: the week of the cycle is counted from its Monday."""
+    weeks: int = Field(ge=1, le=MAX_WEEKS)
+    mode: Mode
+    step_kg: float = Field(default=0, ge=0, le=20, allow_inf_nan=False)
+    rest_s: int | None = Field(default=None, ge=10, le=600)
+    sessions: list[GymPlanSessionBody] = Field(min_length=1, max_length=MAX_SESSIONS)
+    """The first week; the others are worked out from it by `mode`."""
+    custom: list[GymPlanWeekBody] = Field(
+        default_factory=list, max_length=MAX_WEEKS - 1
+    )
+    """The weeks written by hand, in place of the ones worked out."""
+    runner: GymPlanRunnerBody | None = None
+    """How its owner runs, for the paces of its run days; absent without."""
+    target: GymPlanTargetBody | None = None
+    """What it leads to (TASK-461 B and C); absent from a cycle that
+    repeats."""
+    adapt: GymPlanAdaptBody | None = None
+    """How its days adapted to the answers (TASK-488); absent from a plan
+    nobody answered for, and from an app older than it."""
+
+    @model_validator(mode="after")
+    def weeks_of_the_cycle(self) -> GymProgramBody:
+        _days_once(self.sessions)
+        if self.weeks > MAX_CYCLE_WEEKS and self.target is None:
+            raise ValueError(
+                f"a cycle is at most {MAX_CYCLE_WEEKS} weeks; more lead to a target"
+            )
+        numbers = [week.week for week in self.custom]
+        if len(set(numbers)) != len(numbers):
+            raise ValueError("a week is written once")
+        if any(number > self.weeks for number in numbers):
+            raise ValueError("a week written is one of the cycle")
+        count = sum(len(one.items) for one in self.sessions) + sum(
+            len(one.items) for week in self.custom for one in week.sessions
+        )
+        if count > MAX_PROGRAM_ITEMS:
+            raise ValueError(f"a program has at most {MAX_PROGRAM_ITEMS} exercises")
+        if self.adapt is not None:
+            # A day taken out of the plan (by an app that copies `adapt` as
+            # it is) loses its answers, rather than the plan being refused.
+            planned = self.days()
+            self.adapt.days = [one for one in self.adapt.days if one.day in planned]
+        return self
+
+    def days(self) -> list[int]:
+        """Every day of the week one of its weeks has a workout on."""
+        every = [one.day for one in self.sessions] + [
+            one.day for week in self.custom for one in week.sessions
+        ]
+        return sorted(set(every))
+
+    def sessions_on(self, day: date) -> list[GymPlanSessionBody]:
+        """The workout planned on `day`, if any: none before it starts."""
+        if day < self.starts_on:
+            return []
+        monday = self.starts_on - timedelta(days=self.starts_on.weekday())
+        week = (day - monday).days // 7 % self.weeks + 1
+        written = next((one for one in self.custom if one.week == week), None)
+        sessions = self.sessions if written is None else written.sessions
+        return [one for one in sessions if one.day == day.isoweekday()]
+
+
+def planned_on(days: int, program: GymProgramBody | None, day: date) -> bool:
+    """Whether a plan kept with the days `days` (bit 0 Monday) and its
+    `program` has a workout on `day`."""
+    if program is None:
+        return bool(days & (1 << day.weekday()))
+    return bool(program.sessions_on(day))
+
+
+def program_of(row: dict[str, Any]) -> GymProgramBody | None:
+    """The program of a row of gym_plans; None for a plan of one workout."""
+    kept = row["program"]
+    return None if kept is None else GymProgramBody.model_validate(kept)
+
+
+class GymPlanRequestBody(BaseModel):
+    """PUT /me/gym-plans/{key}: packages/shared-types/fixtures/gym-plans.json,
+    a plan of `plans`, without its key."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=MAX_NAME_LENGTH)
+    days: list[int] = Field(default_factory=list, max_length=7)
+    """The days of the week it is for, 1 Monday to 7 Sunday."""
+    items: list[GymPlanItemBody] = Field(default_factory=list, max_length=MAX_ITEMS)
+    position: int = Field(default=0, ge=0, le=100)
+    updated_at: AwareDatetime
+    """When the phone last changed it: an older one does not replace it."""
+    program: GymProgramBody | None = None
+    """Its weeks, when made with the guide; null makes it a plan of one
+    workout again. Not sent (an app older than the guide) it stays as it
+    was."""
+
+    @model_validator(mode="after")
+    def days_of_the_week(self) -> GymPlanRequestBody:
+        if any(not 1 <= day <= 7 for day in self.days):
+            raise ValueError("a day of the week is 1 (Monday) to 7 (Sunday)")
+        if len(set(self.days)) != len(self.days):
+            raise ValueError("a day is given once")
+        return self
+
+
+class GymPlanBody(GymPlanRequestBody):
+    """A plan as kept: packages/shared-types src/gym.ts, `GymPlan`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    key: str
+
+
+class GymPlansBody(BaseModel):
+    """GET /me/gym-plans: packages/shared-types/fixtures/gym-plans.json."""
+
+    plans: list[GymPlanBody] = Field(description="In their order, then by key.")
+
+
+# --- A plan as a post (TASK-485, ADR-0394, plan_posts.py) ---
+#
+# What a post shows of a plan, and what «Use this plan» copies: its name,
+# days, exercises with their kg and its weeks. Never what is its owner's
+# own, which the privacy does not name: the first day (`starts_on`), the
+# paces (`runner`), the date of the target. Each is refused if sent.
+
+
+class GymPlanTargetPostedBody(GymPlanTargetBody):
+    """The target of a plan posted: a distance or a climb, without a date
+    (whoever copies it starts when ready). `GymPlanPostedTarget`."""
+
+    on: None = None
+    """Never sent: the date is its owner's."""
+
+
+class GymProgramPostedBody(GymProgramBody):
+    """The weeks of a plan posted: `GymPlanPostedProgram`."""
+
+    starts_on: None = None
+    """Never sent: whoever copies the plan chooses the first day."""
+    runner: None = None
+    """Never sent: the paces are worked out from how each one runs."""
+    target: GymPlanTargetPostedBody | None = None
+
+
+class GymPlanPostedBody(BaseModel):
+    """A plan as a post shows it, kept as it was posted:
+    packages/shared-types src/gym.ts, `GymPlanPosted`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=MAX_NAME_LENGTH)
+    days: list[int] = Field(default_factory=list, max_length=7)
+    """The days of the week it is for, 1 Monday to 7 Sunday."""
+    items: list[GymPlanItemBody] = Field(default_factory=list, max_length=MAX_ITEMS)
+    program: GymProgramPostedBody | None = None
+    """Its weeks, when made with the guide."""
+
+    @model_validator(mode="after")
+    def days_of_the_week(self) -> GymPlanPostedBody:
+        if any(not 1 <= day <= 7 for day in self.days):
+            raise ValueError("a day of the week is 1 (Monday) to 7 (Sunday)")
+        if len(set(self.days)) != len(self.days):
+            raise ValueError("a day is given once")
+        return self
+
+
+def days_mask(days: list[int]) -> int:
+    """The days as kept: bit 0 Monday to bit 6 Sunday."""
+    return sum(1 << (day - 1) for day in set(days))
+
+
+def mask_days(mask: int) -> list[int]:
+    return [day for day in range(1, 8) if mask & (1 << (day - 1))]
+
+
+def _plan(row: dict[str, Any]) -> GymPlanBody:
+    return GymPlanBody(
+        key=row["key"],
+        name=row["name"],
+        days=mask_days(row["days"]),
+        items=[GymPlanItemBody.model_validate(item) for item in row["items"]],
+        position=row["position"],
+        updated_at=row["updated_at"],
+        program=program_of(row),
+    )
+
+
+PLAN_COLUMNS = "key, name, days, items, position, updated_at, program"
+
+
+@dataclass
+class GymPlans:
+    """The plans, in the database of the accounts."""
+
+    database: Database
+    now: Callable[[], datetime]
+
+    def all(self, owner: int) -> GymPlansBody:
+        with self.database.connect() as conn:
+            rows = conn.execute(
+                f"SELECT {PLAN_COLUMNS} FROM gym_plans WHERE user_id = %s"
+                " ORDER BY position, key",
+                (owner,),
+            ).fetchall()
+        return GymPlansBody(plans=[_plan(row) for row in rows])
+
+    def keep(
+        self, owner: int, key: str, body: GymPlanRequestBody
+    ) -> tuple[GymPlanBody, bool]:
+        """The plan as kept, and whether it is new. 422 for one more than
+        MAX_PLANS."""
+        items = [item.model_dump(exclude_none=True) for item in body.items]
+        days = body.days
+        # The program is changed only when sent: an app older than the
+        # guide leaves it as it was.
+        sent = "program" in body.model_fields_set
+        program = None
+        if body.program is not None:
+            program = Jsonb(body.program.model_dump(mode="json", exclude_none=True))
+            days = body.program.days()
+        with self.database.connect() as conn:
+            # One account's plans change one at a time: the count below is
+            # the count when the row goes in.
+            conn.execute("SELECT 1 FROM users WHERE id = %s FOR UPDATE", (owner,))
+            kept = conn.execute(
+                f"SELECT {PLAN_COLUMNS} FROM gym_plans"
+                " WHERE user_id = %s AND key = %s",
+                (owner, key),
+            ).fetchone()
+            if kept is None:
+                count = conn.execute(
+                    "SELECT count(*) AS n FROM gym_plans WHERE user_id = %s",
+                    (owner,),
+                ).fetchone()
+                assert count is not None
+                if count["n"] >= MAX_PLANS:
+                    raise AccountError(422, "invalid_request", PLANS_FULL)
+            elif kept["updated_at"] > body.updated_at:
+                return _plan(kept), False
+            row = conn.execute(
+                "INSERT INTO gym_plans"
+                " (user_id, key, name, days, items, position, updated_at,"
+                " created_at, program) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                " ON CONFLICT (user_id, key) DO UPDATE SET name = EXCLUDED.name,"
+                " days = EXCLUDED.days, items = EXCLUDED.items,"
+                " position = EXCLUDED.position, updated_at = EXCLUDED.updated_at,"
+                " program = CASE WHEN %s THEN EXCLUDED.program"
+                " ELSE gym_plans.program END"
+                f" RETURNING {PLAN_COLUMNS}",
+                (
+                    owner,
+                    key,
+                    body.name,
+                    days_mask(days),
+                    Jsonb(items),
+                    body.position,
+                    body.updated_at,
+                    self.now(),
+                    program,
+                    sent,
+                ),
+            ).fetchone()
+            assert row is not None
+        return _plan(row), kept is None
+
+    def drop(self, owner: int, key: str) -> None:
+        with self.database.connect() as conn:
+            conn.execute(
+                "DELETE FROM gym_plans WHERE user_id = %s AND key = %s", (owner, key)
+            )
+
+
+# --- The endpoints ---
+
+
+def gym_plans_of(accounts: Annotated[Accounts, Depends(accounts_of)]) -> GymPlans:
+    """In the database of the accounts, on the same clock."""
+    return GymPlans(accounts.database, accounts.now)
+
+
+Plans = Annotated[GymPlans, Depends(gym_plans_of)]
+Me = Annotated[UserBody, Depends(current_user)]
+
+
+def gym_plan_routes() -> APIRouter:
+    router = APIRouter(tags=["gym"], responses=ACCOUNT_ERRORS)
+
+    # The values of an item are left out when not aimed at, not null.
+    @router.get("/me/gym-plans", response_model_exclude_none=True)
+    def list_gym_plans(plans: Plans, user: Me) -> GymPlansBody:
+        return plans.all(user.id)
+
+    # Sent twice it is kept once: 201 the first time, then 200.
+    @router.put(
+        "/me/gym-plans/{key}",
+        responses={201: {"model": GymPlanBody}, 422: {"model": ErrorBody}},
+        response_model_exclude_none=True,
+    )
+    def keep_gym_plan(
+        key: Key, body: GymPlanRequestBody, response: Response, plans: Plans, user: Me
+    ) -> GymPlanBody:
+        plan, created = plans.keep(user.id, key, body)
+        if created:
+            response.status_code = 201
+        return plan
+
+    @router.delete("/me/gym-plans/{key}", status_code=204)
+    def drop_gym_plan(key: Key, plans: Plans, user: Me) -> Response:
+        plans.drop(user.id, key)
+        return Response(status_code=204)
+
+    return router
+
+
+def install_gym_plans(app: FastAPI) -> None:
+    """Without a database the endpoints answer 503, as the others of the
+    accounts."""
+    app.include_router(gym_plan_routes())

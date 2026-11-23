@@ -1,10 +1,12 @@
 """The photos of a drawing, besides its map (TASK-208, ADR-0170,
 docs/API.md, «Drawings»).
 
-Up to MAX_PHOTOS per drawing, each in its place, 1 to 3: putting a photo in
+Up to MAX_PHOTOS per drawing, each in its place, 1 to 10: putting a photo in
 a place replaces the one there, deleting it leaves the place empty and the
 others where they are, so a request sent again by a phone without network
-changes nothing the second time.
+changes nothing the second time. Where each stands in the post, the map among
+them, is the drawing's order (TASK-348, ADR-0301): changing it moves no photo
+from its place, and an app that does not read it gets `photos` in that order.
 
 They are kept here only while others can see the drawing, everyone or the
 followers: while only its owner does, they stay on the phone, which sends
@@ -18,7 +20,8 @@ JPEG. The file of the phone is never kept, so neither is its EXIF: where
 and when it was taken stays on the phone. They are kept in the database,
 with the rest of the account (ADR-0115).
 
-The owner puts and deletes them through its run in My activities; whoever
+The owner puts and deletes them through its run in My activities, or
+through its post of photos only (photo_posts.py, TASK-312 part C); whoever
 may see the drawing (drawings.drawing_seen_sql) reads them, as JPEG files.
 Deleting the run, the drawing's run, or the account deletes them.
 """
@@ -35,7 +38,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path, Response
 from PIL import Image, ImageOps
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from route_engine.models import InvalidRequestError
 
 from shaperoute_api.access import RateLimiter
@@ -52,6 +55,9 @@ from shaperoute_api.db import Database
 from shaperoute_api.drawings import (
     MAX_PHOTOS,
     NO_DRAWING,
+    ORDER_DRAWING,
+    ORDER_PHOTO,
+    Connection,
     Drawings,
     MyDrawingBody,
     drawing_seen_sql,
@@ -66,7 +72,7 @@ from shaperoute_api.schemas import MAX_IMAGE_BASE64, MAX_IMAGE_BYTES, ErrorBody
 # photo (ADR-0170).
 PHOTO_SIDE = 1080
 JPEG_QUALITY = 82
-# Three photos a run, and a few runs: a minute is plenty.
+# Ten photos a run, and a run more: a minute is plenty.
 MAX_UPLOADS_PER_MINUTE = 20
 # The address of a photo changes when the photo does (drawings.photo_url):
 # a day in the phone's own cache, never in a shared one.
@@ -75,7 +81,7 @@ CACHE_CONTROL = "private, max-age=86400"
 NO_PHOTO = "This drawing has no photo here."
 TOO_MANY_PHOTOS = "Too many photos in a minute: wait a moment and try again."
 
-Place = Annotated[int, Path(ge=1, le=MAX_PHOTOS, description="Its place, 1-3.")]
+Place = Annotated[int, Path(ge=1, le=MAX_PHOTOS, description="Its place, 1-10.")]
 
 
 class DrawingPhotoRequestBody(BaseModel):
@@ -91,6 +97,35 @@ class DrawingPhotoRequestBody(BaseModel):
             "MB before encoding."
         ),
     )
+
+
+class DrawingOrderRequestBody(BaseModel):
+    """PUT /me/activities/{key}/drawing/order: where each stands in the post:
+    packages/shared-types/fixtures/drawing-order-request.json."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    order: list[str] = Field(
+        max_length=MAX_PHOTOS + 1,
+        description=(
+            "The map once, `drawing`, and the photos by place, `photo:2`, "
+            "each once; it may name a photo not sent yet."
+        ),
+    )
+
+    @field_validator("order")
+    @classmethod
+    def _each_once(cls, order: list[str]) -> list[str]:
+        known = {ORDER_DRAWING} | {
+            f"{ORDER_PHOTO}{n}" for n in range(1, MAX_PHOTOS + 1)
+        }
+        if unknown := [item for item in order if item not in known]:
+            raise ValueError(f"unknown items: {unknown}")
+        if len(set(order)) != len(order):
+            raise ValueError("an item comes twice")
+        if ORDER_DRAWING not in order:
+            raise ValueError(f"{ORDER_DRAWING} is missing")
+        return order
 
 
 @dataclass(frozen=True)
@@ -150,6 +185,21 @@ def _opaque(picture: Image.Image) -> Image.Image:
     return picture.convert("RGB")
 
 
+def store_photo(
+    conn: Connection, drawing_id: UUID, n: int, photo: Photo, now: datetime
+) -> None:
+    """The photo in place `n` of the drawing, the one there replaced: of a
+    run's drawing here, of a post of photos only in photo_posts.py."""
+    conn.execute(
+        "INSERT INTO drawing_photos (drawing_id, n, jpeg, width, height,"
+        " updated_at) VALUES (%s, %s, %s, %s, %s, %s)"
+        " ON CONFLICT (drawing_id, n) DO UPDATE SET jpeg = EXCLUDED.jpeg,"
+        " width = EXCLUDED.width, height = EXCLUDED.height,"
+        " updated_at = EXCLUDED.updated_at",
+        (drawing_id, n, photo.jpeg, photo.width, photo.height, now),
+    )
+
+
 @dataclass
 class DrawingPhotos:
     """The photos of the drawings, in the database."""
@@ -166,14 +216,7 @@ class DrawingPhotos:
             drawing_id = shared_drawing(conn, user_id, key)
             if drawing_id is None:
                 return False
-            conn.execute(
-                "INSERT INTO drawing_photos (drawing_id, n, jpeg, width, height,"
-                " updated_at) VALUES (%s, %s, %s, %s, %s, %s)"
-                " ON CONFLICT (drawing_id, n) DO UPDATE SET jpeg = EXCLUDED.jpeg,"
-                " width = EXCLUDED.width, height = EXCLUDED.height,"
-                " updated_at = EXCLUDED.updated_at",
-                (drawing_id, n, photo.jpeg, photo.width, photo.height, now),
-            )
+            store_photo(conn, drawing_id, n, photo, now)
         return True
 
     def remove(self, user_id: int, key: str, n: int) -> bool:
@@ -189,6 +232,19 @@ class DrawingPhotos:
             )
         return True
 
+    def put_order(self, user_id: int, key: str, order: list[str]) -> bool:
+        """The order of the run's drawing; False: no such run. 409 while only
+        its owner sees the drawing (shared_drawing), as for its photos."""
+        with self.database.connect() as conn:
+            drawing_id = shared_drawing(conn, user_id, key)
+            if drawing_id is None:
+                return False
+            conn.execute(
+                "UPDATE drawings SET item_order = %s WHERE id = %s",
+                (order, drawing_id),
+            )
+        return True
+
     def seen(self, viewer_id: int, drawing_id: str, n: int) -> bytes:
         """The JPEG in place `n`, for one who may see the drawing; 404 when
         it may not, as for a drawing that is not there, or when the place is
@@ -199,7 +255,7 @@ class DrawingPhotos:
             raise HTTPException(404, NO_DRAWING) from None
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT p.jpeg FROM drawings d JOIN runs r ON r.id = d.run_id"
+                "SELECT p.jpeg FROM drawings d"
                 " LEFT JOIN drawing_photos p ON p.drawing_id = d.id AND p.n = %s"
                 f" WHERE d.id = %s AND {drawing_seen_sql('%s')}",
                 (n, wanted, viewer_id),
@@ -261,6 +317,24 @@ def drawing_photo_routes() -> APIRouter:
         if not photos.remove(user.id, key, n):
             raise HTTPException(404, UNKNOWN_ACTIVITY)
         return Response(status_code=204)
+
+    @router.put(
+        "/me/activities/{key}/drawing/order",
+        responses={404: {"model": ErrorBody}, 409: {"model": ErrorBody}},
+    )
+    def put_order(
+        key: Key,
+        body: DrawingOrderRequestBody,
+        photos: Photos,
+        user: Me,
+    ) -> MyDrawingBody:
+        if not photos.put_order(user.id, key, body.order):
+            raise HTTPException(404, UNKNOWN_ACTIVITY)
+        drawing = Drawings(photos.database, photos.now).mine(user.id, key)
+        if drawing is None:
+            # The run was deleted right after its order went in.
+            raise HTTPException(404, UNKNOWN_ACTIVITY)
+        return drawing
 
     @router.get(
         "/drawings/{drawing_id}/photos/{n}",

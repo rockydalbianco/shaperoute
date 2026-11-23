@@ -97,8 +97,8 @@ const store = jest.requireMock<MemorySecureStore>("expo-secure-store");
 const API = "http://192.168.1.23:8000";
 const SESSION_KEY = "shaperoute.session";
 const BEGAN = Date.UTC(2026, 9, 26, 7, 0, 0);
-// Asked from where «Draw» starts: the position of the phone.
-const FEED = "/feed?lat=46.067&lon=11.1215";
+// The «All» tab: never with the phone's position (TASK-362).
+const FEED = "/feed?filter=all";
 const [[START_LAT, START_LON]] = drawing.track;
 /** A metre to the east, in degrees, at the drawing's latitude. */
 const METRE_EAST = 1 / (111_320 * Math.cos((START_LAT * Math.PI) / 180));
@@ -171,7 +171,12 @@ async function drawingOpened() {
   });
   await fireEvent.press(screen.getByRole("tab", { name: "Feed" }));
   await fireEvent.press(await screen.findByText(String(feed.posts[0].title)));
-  expect(await screen.findByText(String(drawing.description))).toBeOnTheScreen();
+  // The page of the post (TASK-410): a tap on its drawing opens the map.
+  await fireEvent.press(await screen.findByTestId("post-map"));
+  // The tap waits to know it is alone (TASK-454 part B), and the page of the
+  // post has the description too: «Start» is on the map only.
+  await screen.findByRole("button", { name: "Start" });
+  expect(screen.getByText(String(drawing.description))).toBeOnTheScreen();
 }
 
 jest.spyOn(Vibration, "vibrate").mockImplementation(() => {});

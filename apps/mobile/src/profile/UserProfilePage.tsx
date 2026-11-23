@@ -12,8 +12,14 @@ import { FollowButton } from "../social/FollowButton";
 import { ReportMenu } from "../social/ReportMenu";
 import { color, fontSize, space } from "../theme/tokens";
 import { ProfileGallery } from "./ProfileGallery";
+import { ProfileGroupRuns } from "../groupRuns/ProfileGroupRuns";
+import { ProfileGear } from "../gear/ProfileGear";
 import { ProfileHeader } from "./ProfileHeader";
+import { GymLevels } from "../gym/GymLevels";
+import { PersonalBests } from "./PersonalBests";
 import { ProfileStats, totalsOf } from "./ProfileStats";
+import { UserSleep } from "./UserSleep";
+import { Vo2MaxRow } from "./Vo2MaxRow";
 
 type Failed = Exclude<AccountOutcome<unknown>, { kind: "ok" }>;
 
@@ -140,7 +146,7 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
   if (blocked === asked) {
     return (
       <Text style={styles.message} accessibilityLiveRegion="polite">
-        {t("You blocked {user}. Unblock them from Blocked people in your profile.", {
+        {t("You blocked {user}. Unblock them from Blocked people in Settings.", {
           user: profile.username,
         })}
       </Text>
@@ -162,6 +168,8 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
           bio={profile.bio}
           photo={profilePhotoUri(profile)}
           winner={(profile.contest_wins ?? 0) > 0}
+          badges={profile.badges ?? null}
+          gamePrizes={profile.game_prizes ?? null}
           detail={profileDetail({
             ...profile,
             followers:
@@ -210,6 +218,42 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
         )}
       </View>
       {totals !== null && <ProfileStats totals={totals} />}
+      {/* The personal bests (TASK-368): none from an older API. */}
+      {profile.personal_bests && <PersonalBests bests={profile.personal_bests} />}
+      {/* The VO₂ max (TASK-397): only after its owner's yes. */}
+      {profile.vo2max && <Vo2MaxRow vo2max={profile.vo2max} own={own} />}
+      {/* The night they share (TASK-467 B3): nothing until part C turns it on. */}
+      <UserSleep
+        apiUrl={apiUrl}
+        token={token}
+        publicId={profile.public_id}
+        onSessionEnded={onSessionEnded}
+        fetchFn={fetchFn}
+        apiKey={apiKey}
+      />
+      {/* The levels at the gym (TASK-385 E): none from an older API. */}
+      {profile.gym_levels && <GymLevels levels={profile.gym_levels} />}
+      {/* Their group runs, coming and past (TASK-309 part B): none, nothing. */}
+      <ProfileGroupRuns
+        apiUrl={apiUrl}
+        token={token}
+        publicId={profile.public_id}
+        onSessionEnded={onSessionEnded}
+        fetchFn={fetchFn}
+        apiKey={apiKey}
+      />
+      {/* Their gear, in use then retired (TASK-486 part D): none, nothing. */}
+      <ProfileGear
+        apiUrl={apiUrl}
+        token={token}
+        publicId={profile.public_id}
+        owner={
+          own ? null : { public_id: profile.public_id, username: profile.username }
+        }
+        onSessionEnded={onSessionEnded}
+        fetchFn={fetchFn}
+        apiKey={apiKey}
+      />
       <ProfileGallery
         publicId={profile.public_id}
         own={false}

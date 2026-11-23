@@ -1,5 +1,5 @@
 import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
   AppState,
   Linking,
@@ -12,11 +12,14 @@ import {
 } from "react-native";
 import { WebView } from "react-native-webview";
 
+import { type Lifts, splitAtLifts } from "../activities/snowLifts";
+import { type AirLeg, splitAtAir } from "../air/flightLegs";
 import { t } from "../i18n";
 import { useLanguage } from "../i18n/useLanguage";
 import { usePocketOn } from "../navigation/pocketOn";
 import { cumulative } from "../navigation/progress";
 import { useRunBehind } from "../navigation/runBehind";
+import { type WayBackShown, wayLineFrom } from "../navigation/wayBackShown";
 import { MapLoadingBar } from "../route/LoadingBar";
 import {
   color,
@@ -27,28 +30,39 @@ import {
   space,
 } from "../theme/tokens";
 import { fromLngLat, type LngLat } from "./coordinates";
+import { useMapCover } from "./mapCover";
 import { type MapKind, useMapKind } from "./mapKind";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
   type CanvasMode,
   clearCanvas,
+  clearFlight,
+  clearLifts,
   clearProgress,
   clearRejoin,
   clearRoute,
   clearStops,
+  focus as focusMap,
   clearTrack,
+  face,
   follow,
   pageScript,
   parsePageMessage,
+  setAnchored,
   setCanvas,
+  setCover,
   setDoubleTap,
   setKind,
   setMove,
   setPick,
   setPosition,
+  showFlight,
+  showLifts,
+  showTrackFramed,
+  showGhost,
   showOthers,
   showProgress,
-  showRejoin,
+  showRejoinLine,
   showRoute,
   showStops,
   showTrack,
@@ -57,28 +71,58 @@ import {
 } from "./messages";
 import { doneMetres, splitRoute } from "./routeSplit";
 import type { Turn } from "./turnedMap";
+import type { SkiLabel } from "../skimode/skiDayLabels";
 
 /** One empty list, so the map is not told again and again of no routes. */
 const NO_OTHERS: LatLon[][] = [];
+const NO_LABELS: readonly SkiLabel[] = [];
+/** No shape under the route. */
+const NO_GHOST: LatLon[][] = [];
 
 /** The figure of «Draw on the map» as the map shows it (TASK-281). */
 export type MapCanvas = {
   mode: CanvasMode;
   lines: LatLon[][];
+  /** Line by line, whether its first side is a link, dashed (TASK-331
+   * part B); the lines a finger may bend; the points of a straight line
+   * being tapped. */
+  links: boolean[];
+  bendable: number[];
+  marks: LatLon[];
   centre: LatLon | null;
   /** How much two fingers may shrink and grow the figure. */
   shrink: number;
   grow: number;
+  /** With pieces (TASK-402 part B): whether a tap with «Move» chooses one;
+   * the lines of the piece chosen, which alone the fingers move, the
+   * others faint; and the box drawn round it. None for the whole figure. */
+  choosing?: boolean;
+  chosen?: number[];
+  box?: LatLon[];
   /** A new number frames the map on the figure, or on the start without
    * one; the same one does not frame it again. */
   framing: number;
+  /** Where the route of the figure starts, a dot, none on the water; the
+   * line a finger drags it along with «Move», only to its two ends
+   * (`startEnds`); with no line it stays (TASK-426, ADR-0354). */
+  start?: LatLon | null;
+  startLine?: LatLon[];
+  startEnds?: boolean;
 };
+
+/** A drawing anchored to the roads, as the map draws it (TASK-347 part C). */
+export type AnchoredOnMap = { ghost: boolean; snapped: LatLon[][]; far: LatLon[][] };
 
 /** What the page of «Draw on the map» tells the app (TASK-281). */
 export type CanvasEvent =
-  | { type: "drawn"; line: LatLon[] }
-  | { type: "figure"; centre: LatLon; factor: number; done: boolean }
-  | { type: "centre"; point: LatLon };
+  | { type: "drawn"; line: LatLon[]; metresPerPx: number }
+  | { type: "bent"; from: LatLon; to: LatLon; metresPerPx: number }
+  | { type: "figure"; centre: LatLon; factor: number; done: boolean; turn?: number }
+  | { type: "centre"; point: LatLon }
+  /** A tap with «Move», among pieces (TASK-402 part B). */
+  | { type: "tapped"; point: LatLon; metresPerPx: number }
+  /** The start dot left with «Move» (TASK-426): where on its line. */
+  | { type: "started"; point: LatLon; metresPerPx: number };
 
 type Props = {
   /** Where the route will start; the map centres on it with a marker. */
@@ -93,29 +137,55 @@ type Props = {
   onFoot?: Stretch[] | null;
   /** The other routes to choose from, grey under the route (TASK-093). */
   others?: LatLon[][];
+  /** The shape asked for as the search placed it, a result's
+   * `placed_outline`: dotted under the route and the others, to compare
+   * the route with (TASK-442). None, or no line, draws nothing. */
+  ghost?: LatLon[][] | null;
+  /** Something shown over the map and under its bar and its error, as the
+   * shape while its route is drawn (TASK-442). It takes no part in the
+   * map: the page is told nothing of it. */
+  over?: ReactNode;
   /** The run to draw over the route, or null for none (TASK-113). */
   track?: LatLon[] | null;
+  /** The lifts of a day of skiing, as stretches of `track` (TASK-375 part
+   * C2): dashed, the descents solid. None draws the track as a run's. */
+  lifts?: Lifts | null;
+  /** The numbers of the descents and the lifts on them (TASK-429 part B):
+   * none, the lines alone. */
+  liftLabels?: readonly SkiLabel[];
+  /** A race's flights, as stretches of `track` (TASK-305 part R6c): yellow
+   * over the white of the parts on foot. None draws the track as a run's. */
+  flightAir?: readonly AirLeg[] | null;
   /** While navigating, the phone's position: the map follows it (TASK-049). */
   following?: LatLon | null;
   /** Where the runner is heading, in degrees clockwise from north: the
    * marker followed is an arrow turned that way (TASK-164). */
   heading?: number | null;
+  /** On the run's «Compass» page, where the phone points, in degrees
+   * clockwise from north (TASK-431, ADR-0359): the arrow turns there,
+   * standing still too, and opens its cone. Null off that page. */
+  facing?: number | null;
   /** While running the route, how far along it the runner is (TASK-224):
    * the part run stays solid yellow, the part left is dashed and blinks.
    * None draws the route whole, as before. `points` and `along` are the
    * line `alongM` is measured on, when the navigator gives it: a closed
    * route is run from where the runner joined it (TASK-273), and the line
    * run starts there. Off the route, `rejoin` is where the runner gets back
-   * on it, from where they are: the map draws dots there (TASK-303). */
+   * on it, from where they are: the map draws dots there (TASK-303), along
+   * `wayBack` when the engine found the way on the streets (TASK-314). */
   progress?: {
     alongM: number;
     arrived: boolean;
     points?: LatLon[];
     along?: number[];
     rejoin?: { from: LatLon; to: LatLon } | null;
+    wayBack?: WayBackShown | null;
   } | null;
   /** The places of a themed route (TASK-129), or null for none. */
   stops?: { name: string; point: LatLon; passed: boolean }[] | null;
+  /** A place of a themed route tapped under the map (TASK-329): the map
+   * goes there. A new one for each tap; the same one is not asked twice. */
+  focus?: { point: LatLon } | null;
   /** With it, a double tap on the map calls it and no longer zooms
    * (TASK-119); two fingers still do. Without, the map is as before. */
   onDoubleTap?: () => void;
@@ -140,6 +210,10 @@ type Props = {
   canvas?: MapCanvas | null;
   /** A line drawn, the figure moved or sized, the map moved (TASK-281). */
   onCanvas?: (event: CanvasEvent) => void;
+  /** The figure anchored to the roads (TASK-347 part C): a ghost under the
+   * route of its strokes, and the stretches far from the finger. None, or
+   * no canvas, draws the figure as before. */
+  anchored?: AnchoredOnMap | null;
   /** Choosing the start on the map (TASK-292): the map framed on `start`,
    * and a pin in its middle that stays there while fingers move the map. */
   picking?: boolean;
@@ -158,11 +232,18 @@ export function MapView({
   walks = null,
   onFoot = null,
   others = NO_OTHERS,
+  ghost = null,
+  over,
   track = null,
+  lifts = null,
+  liftLabels = NO_LABELS,
+  flightAir = null,
   following = null,
   heading = null,
+  facing = null,
   progress = null,
   stops = null,
+  focus = null,
   onDoubleTap,
   moving = false,
   onMoved,
@@ -171,6 +252,7 @@ export function MapView({
   onTurned,
   canvas = null,
   onCanvas,
+  anchored = null,
   picking = false,
   onCentre,
   onError,
@@ -200,16 +282,28 @@ export function MapView({
   const routeShown = useRef(false);
   const followed = useRef(false);
   const trackShown = useRef(false);
+  // Framed on a track without a route (TASK-478): only when nothing is
+  // followed and no route frames the map.
+  const framesTrack = following === null && (route === null || route.length === 0);
+  const liftsShown = useRef(false);
+  const flightShown = useRef(false);
   const stopsShown = useRef(false);
   const othersShown = useRef(false);
+  const ghostShown = useRef(false);
+  // What lies over the top of the map, as the screen around it says
+  // (TASK-443), and whether the page was told.
+  const cover = useMapCover();
+  const coverTold = useRef(false);
   const progressShown = useRef(false);
   const rejoinShown = useRef(false);
   const doubleTapAsked = useRef(false);
   const moveAsked = useRef(false);
   const turnAsked = useRef<Turn | null>(null);
+  const focusAsked = useRef<{ point: LatLon } | null>(null);
   // The figure the page was told of last, and the framing it was asked.
   const canvasShown = useRef(false);
   const framed = useRef<number | null>(null);
+  const anchoredShown = useRef(false);
   const pickAsked = useRef(false);
   // The map's kind, chosen with its button (TASK-264), and the last one the
   // page was told.
@@ -225,9 +319,11 @@ export function MapView({
       ? progress.points
       : null;
   const runAlong = runPoints === null ? null : (progress?.along ?? null);
-  // Off the route, the way back to it (TASK-303).
+  // Off the route, the way back to it (TASK-303), on the streets once the
+  // engine found it (TASK-314).
   const rejoinFrom = progress?.rejoin?.from ?? null;
   const rejoinTo = progress?.rejoin?.to ?? null;
+  const wayBack = progress?.wayBack ?? null;
   // Under the black screen of pocket mode nobody sees the blinking.
   const pocket = usePocketOn();
 
@@ -258,6 +354,18 @@ export function MapView({
     return () => watching.remove();
   }, [failed]);
 
+  // Before the route, so it is framed clear of the status bar and of the
+  // buttons at once (TASK-443). None after some: framed as never told.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (cover !== null || coverTold.current) {
+      webView.current?.injectJavaScript(pageScript(setCover(cover)));
+      coverTold.current = cover !== null;
+    }
+  }, [ready, cover]);
+
   // A new start, even at the same place, centres the map on it again.
   useEffect(() => {
     if (ready && start) {
@@ -276,6 +384,19 @@ export function MapView({
       othersShown.current = others.length > 0;
     }
   }, [ready, others]);
+
+  // The shape under the route (TASK-442): it does not move the map either.
+  // None after one: the shape of the last result goes away.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    const lines = ghost ?? NO_GHOST;
+    if (lines.length > 0 || ghostShown.current) {
+      webView.current?.injectJavaScript(pageScript(showGhost(lines)));
+      ghostShown.current = lines.length > 0;
+    }
+  }, [ready, ghost]);
 
   // After the start, so the map frames the route rather than the start.
   useEffect(() => {
@@ -298,13 +419,41 @@ export function MapView({
       return;
     }
     if (track && track.length > 1) {
-      webView.current?.injectJavaScript(pageScript(showTrack(track)));
+      const frame = framesTrack;
+      if (lifts !== null && lifts.length > 0) {
+        const cut = splitAtLifts(track, lifts);
+        webView.current?.injectJavaScript(
+          pageScript(showLifts(cut.skied, cut.lifts, liftLabels, frame)),
+        );
+        liftsShown.current = true;
+      } else if (flightAir !== null && flightAir.length > 0) {
+        const cut = splitAtAir(track, flightAir);
+        webView.current?.injectJavaScript(
+          pageScript(showFlight(cut.foot, cut.air, frame)),
+        );
+        flightShown.current = true;
+      } else {
+        webView.current?.injectJavaScript(
+          pageScript(frame ? showTrackFramed(track) : showTrack(track)),
+        );
+      }
       trackShown.current = true;
     } else if (trackShown.current) {
       webView.current?.injectJavaScript(pageScript(clearTrack()));
       trackShown.current = false;
     }
-  }, [ready, track]);
+    if ((!track || lifts === null || lifts.length === 0) && liftsShown.current) {
+      webView.current?.injectJavaScript(pageScript(clearLifts()));
+      liftsShown.current = false;
+    }
+    if (
+      (!track || flightAir === null || flightAir.length === 0) &&
+      flightShown.current
+    ) {
+      webView.current?.injectJavaScript(pageScript(clearFlight()));
+      flightShown.current = false;
+    }
+  }, [ready, track, lifts, liftLabels, flightAir, framesTrack]);
 
   useEffect(() => {
     if (!ready) {
@@ -341,6 +490,19 @@ export function MapView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, following]);
 
+  // On «Compass», where the phone points (TASK-431): the arrow turns with
+  // the map though the runner stands still. Told once off the page, so the
+  // cone closes; never before the page has said anything.
+  const faced = useRef(false);
+  const facingDeg = facing === null ? null : Math.round(facing) % 360;
+  useEffect(() => {
+    if (!ready || (facingDeg === null && !faced.current)) {
+      return;
+    }
+    faced.current = facingDeg !== null;
+    webView.current?.injectJavaScript(pageScript(face(facingDeg)));
+  }, [ready, facingDeg]);
+
   // Running the route: cut where the runner is. After, the route whole again.
   useEffect(() => {
     if (!ready) {
@@ -361,19 +523,22 @@ export function MapView({
   }, [ready, route, along, walks, doneM, pocket, runPoints, runAlong]);
 
   // Off the route: dots from the runner to where it goes on, moved with
-  // each fix (TASK-303). Back on it, or the run over, none.
+  // each fix (TASK-303), along the streets of the way back when there is one
+  // (TASK-314). Back on it, or the run over, none.
   useEffect(() => {
     if (!ready) {
       return;
     }
     if (rejoinFrom !== null && rejoinTo !== null) {
-      webView.current?.injectJavaScript(pageScript(showRejoin(rejoinFrom, rejoinTo)));
+      const line =
+        wayBack === null ? [rejoinFrom, rejoinTo] : wayLineFrom(wayBack, rejoinFrom);
+      webView.current?.injectJavaScript(pageScript(showRejoinLine(line)));
       rejoinShown.current = true;
     } else if (rejoinShown.current) {
       webView.current?.injectJavaScript(pageScript(clearRejoin()));
       rejoinShown.current = false;
     }
-  }, [ready, rejoinFrom, rejoinTo]);
+  }, [ready, rejoinFrom, rejoinTo, wayBack]);
 
   // Asked for only where a double tap means something: elsewhere it zooms.
   const wantsDoubleTap = onDoubleTap !== undefined;
@@ -408,6 +573,14 @@ export function MapView({
     turnAsked.current = turn;
   }, [ready, turn]);
 
+  // A place tapped under the map: asked of the map once, as the north arrow.
+  useEffect(() => {
+    if (ready && focus !== null && focus !== focusAsked.current) {
+      webView.current?.injectJavaScript(pageScript(focusMap(focus.point)));
+    }
+    focusAsked.current = focus;
+  }, [ready, focus]);
+
   // After the route, which a figure takes the place of: told each new
   // figure, framed once for each new `framing`, and again when the page
   // loads again.
@@ -422,10 +595,19 @@ export function MapView({
           setCanvas({
             mode: canvas.mode,
             lines: canvas.lines,
+            links: canvas.links,
+            bendable: canvas.bendable,
+            marks: canvas.marks,
             centre: canvas.centre,
             shrink: canvas.shrink,
             grow: canvas.grow,
+            choosing: canvas.choosing,
+            chosen: canvas.chosen,
+            box: canvas.box,
             frame: canvas.framing !== framed.current,
+            start: canvas.start,
+            startLine: canvas.startLine,
+            startEnds: canvas.startEnds,
           }),
         ),
       );
@@ -437,6 +619,28 @@ export function MapView({
       framed.current = null;
     }
   }, [ready, canvas]);
+
+  // After the figure, which it is drawn with (TASK-347 part C): told each
+  // change, and again when the page loads again; cleared with the figure.
+  useEffect(() => {
+    if (!ready) {
+      anchoredShown.current = false;
+      return;
+    }
+    if (canvas && anchored) {
+      webView.current?.injectJavaScript(pageScript(setAnchored(anchored)));
+      anchoredShown.current = true;
+    } else if (canvas && anchoredShown.current) {
+      webView.current?.injectJavaScript(
+        pageScript(setAnchored({ ghost: false, snapped: [], far: [] })),
+      );
+      anchoredShown.current = false;
+    } else if (!canvas) {
+      anchoredShown.current = false;
+    }
+    // A canvas told again keeps what the page drew of it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, anchored, canvas === null]);
 
   // After the start, which the map is framed on: asked for only while the
   // start is chosen on the map (TASK-292), and again when the page loads
@@ -496,13 +700,37 @@ export function MapView({
           } else if (message?.type === "turned") {
             onTurned?.(message.bearing);
           } else if (message?.type === "drawn") {
-            onCanvas?.({ type: "drawn", line: message.line.map(fromLngLat) });
+            onCanvas?.({
+              type: "drawn",
+              line: message.line.map(fromLngLat),
+              metresPerPx: message.metresPerPx,
+            });
+          } else if (message?.type === "bent") {
+            onCanvas?.({
+              type: "bent",
+              from: fromLngLat(message.from),
+              to: fromLngLat(message.to),
+              metresPerPx: message.metresPerPx,
+            });
           } else if (message?.type === "figure") {
             onCanvas?.({
               type: "figure",
               centre: fromLngLat(message.centre),
               factor: message.factor,
               done: message.done,
+              ...(message.turn ? { turn: message.turn } : {}),
+            });
+          } else if (message?.type === "tapped") {
+            onCanvas?.({
+              type: "tapped",
+              point: fromLngLat(message.lngLat),
+              metresPerPx: message.metresPerPx,
+            });
+          } else if (message?.type === "started") {
+            onCanvas?.({
+              type: "started",
+              point: fromLngLat(message.lngLat),
+              metresPerPx: message.metresPerPx,
             });
           } else if (message?.type === "centre") {
             const point = fromLngLat(message.lngLat);
@@ -531,6 +759,7 @@ export function MapView({
         // iOS may stop the page to free memory: without a reload it stays white.
         onContentProcessDidTerminate={() => webView.current?.reload()}
       />
+      {over}
       {loading && !failed && (
         <View style={styles.loading} pointerEvents="none">
           <MapLoadingBar />

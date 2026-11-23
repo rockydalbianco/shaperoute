@@ -9,6 +9,8 @@ import {
 } from "react";
 import { AppState } from "react-native";
 
+import type { ActivitySleepRequest } from "@shaperoute/shared-types";
+
 import type { Account } from "../account/useAccount";
 import { sessionEnded } from "../account/messages";
 import type { AccountOutcome } from "../api/accounts";
@@ -21,12 +23,17 @@ import {
   savePost,
 } from "../api/activities";
 import { type DrawingChoice, isSeen } from "../api/drawings";
+import { appBody } from "../body/bodyProfile";
 import { tellUnlocked } from "../game/unlockedRuns";
+import { forgetGearFor, keepGearFor, sendWaitingGear } from "../gear/gearOut";
 import { t, tLater } from "../i18n";
 import { metresBetween } from "../map/coordinates";
 import type { SavedRun } from "../navigation/trackStore";
 import { keepForDrawing, sendWaitingDrawings } from "../social/drawingOutbox";
+import { keepOrder } from "../social/drawingOrder";
 import { forgetPhotosOf, keepPhotos } from "../social/drawingPhotos";
+import { keepOutfits } from "../social/outfit/outfitKept";
+import type { OutfitDraft } from "../social/outfit/outfitTags";
 import { keepForStrava, sendWaitingToStrava } from "../strava/stravaOutbox";
 import {
   keepWaiting,
@@ -40,7 +47,9 @@ import {
   toStravaOf,
   type Waiting,
 } from "./outbox";
-import { type Drawn, recordedRun } from "./recordedRun";
+import { type Drawn, type RecordedRun, recordedRun } from "./recordedRun";
+import { runStatsRequest, sendRunStats } from "./runStatsOut";
+import { forgetSleepFor, keepSleepFor, sendWaitingSleep } from "./sleepOut";
 import { activityProblem, type ActivitiesState, useActivities } from "./useActivities";
 
 /** A run of this phone the API will not take (TASK-257), as «My
@@ -64,6 +73,8 @@ export type RefusedRun = {
 export type ActivitiesDoor = ActivitiesState & {
   /** Somebody is signed in: a run that ends can be saved. */
   signedIn: boolean;
+  /** The account's id; null signed out. */
+  owner: number | null;
   /**
    * «Save» on a run that ended: it goes to the API, now or when there is a
    * network. `drawn` is what its route draws. True once the run is safe on
@@ -72,6 +83,18 @@ export type ActivitiesDoor = ActivitiesState & {
    * on the phone already (`full`).
    */
   record: (run: SavedRun, drawn: Drawn | null) => boolean;
+  /**
+   * «Save» on an activity added from a file (TASK-312): the same as
+   * `record`, for a run already made by `importedRun`. The choices told
+   * before go with it, as with `record`.
+   */
+  recordImported: (run: RecordedRun) => boolean;
+  /**
+   * Whether the run `id` is already the account's: waiting on the phone, in
+   * the list, or on the API (asked by its key alone). False when the API
+   * cannot say: «Save» keeps it once anyway.
+   */
+  alreadyKept: (id: string) => Promise<boolean>;
   /**
    * What the next `record` does with Strava (TASK-187): the run goes on to
    * Strava once the API has it, with this name; null: it does not. Told
@@ -91,6 +114,21 @@ export type ActivitiesDoor = ActivitiesState & {
    * others see it. Told just before «Save», forgotten by `record`.
    */
   toPhotos: (photos: readonly string[]) => void;
+  /** And where the map stands among them (TASK-348); null: first. */
+  toOrder: (order: readonly string[] | null) => void;
+  /** And the items tagged on each of them, in their order (TASK-394 part B);
+   * absent from the fakes of the tests made before it. */
+  toOutfit?: (tags: readonly (readonly OutfitDraft[])[]) => void;
+  /**
+   * «Sleep last night» of the next `record` (TASK-467 part B2): the night
+   * to show in its post, sent once the API has the run; null: none, and
+   * nothing of the night leaves the phone. Absent from the fakes of the
+   * tests made before it.
+   */
+  toSleep?: (sleep: ActivitySleepRequest | null) => void;
+  /** The ids of the gear of the next `record` (TASK-486 part C), sent once
+   * the API has the run; none: no gear. Absent from older fakes. */
+  toGear?: (gearIds: readonly string[]) => void;
   /** The runs of this account still on the phone, waiting for the API;
    * those it refused too. */
   waiting: number;
@@ -110,8 +148,9 @@ export type ActivitiesDoor = ActivitiesState & {
   signIn: () => void;
   /** The run of the list being fetched whole, by id; null when none. */
   opening: string | null;
-  /** Fetches the run whole and shows it on the map. */
-  open: (activity: Activity) => void;
+  /** Fetches the run whole and shows it on the map: only its id is read,
+   * so a record of the profile opens its run by key (TASK-368). */
+  open: (activity: Pick<Activity, "id">) => void;
   /** The run on the map; null when none. */
   opened: ActivityDetail | null;
   /** The map lets the run go. */
@@ -138,10 +177,17 @@ const NOTHING: ActivitiesDoor = {
   remove: () => {},
   clearProblem: () => {},
   signedIn: false,
+  owner: null,
   record: () => false,
+  recordImported: () => false,
+  alreadyKept: () => Promise.resolve(false),
   toStrava: () => {},
   toDrawing: () => {},
   toPhotos: () => {},
+  toOrder: () => {},
+  toOutfit: () => {},
+  toSleep: () => {},
+  toGear: () => {},
   waiting: 0,
   full: false,
   refused: [],
@@ -321,12 +367,33 @@ export function useActivitiesOf(
             if (drawing !== null) {
               keepForDrawing({ owner, key: run.id, ...drawing });
             }
+            // The figures of its post (TASK-410 C): its profile and its
+            // calories, counted with the body that stays on this phone.
+            // Once, outside the loop's wait: a post without them still shows.
+            const stats = runStatsRequest(
+              run.request,
+              {
+                activity: drawing?.activity ?? outcome.value.activity ?? null,
+                metres: outcome.value.distance_m,
+                seconds: outcome.value.duration_s,
+              },
+              appBody(),
+              new Date().getFullYear(),
+            );
+            if (stats !== null) {
+              // A day of skiing's parts go with them, and again without
+              // them to an API that refuses them (TASK-429 part B2).
+              void sendRunStats(baseUrl, token, run.id, stats, { fetchFn, key });
+            }
             stopWaiting(owner, run.id);
             // The shape game (TASK-296): what the run unlocked, now that the
             // API has counted it. Outside the loop's wait: the next run goes.
+            // A run from a file counts for none of it (TASK-312).
             const keptAt = justKept.current.get(run.id) ?? null;
             justKept.current.delete(run.id);
-            void tellUnlocked(baseUrl, token, run.id, keptAt, { fetchFn, key });
+            if (run.request.source !== "file") {
+              void tellUnlocked(baseUrl, token, run.id, keptAt, { fetchFn, key });
+            }
             saved = true;
             gone = true;
             continue;
@@ -364,6 +431,25 @@ export function useActivitiesOf(
         if (
           !ended &&
           (await sendWaitingDrawings(baseUrl, token, owner, { fetchFn, key })) ===
+            "session_ended"
+        ) {
+          ended = true;
+          endSession(token);
+        }
+        // The nights shown in the posts of the runs the API has now
+        // (TASK-467 part B2).
+        if (
+          !ended &&
+          (await sendWaitingSleep(baseUrl, token, owner, { fetchFn, key })) ===
+            "session_ended"
+        ) {
+          ended = true;
+          endSession(token);
+        }
+        // The gear chosen for them (TASK-486 part C).
+        if (
+          !ended &&
+          (await sendWaitingGear(baseUrl, token, owner, { fetchFn, key })) ===
             "session_ended"
         ) {
           ended = true;
@@ -427,15 +513,48 @@ export function useActivitiesOf(
     nextPhotos.current = photos;
   }, []);
 
-  const record = useCallback(
-    (run: SavedRun, drawn: Drawn | null) => {
+  // And for the order of the post (TASK-348).
+  const nextOrder = useRef<readonly string[] | null>(null);
+  const toOrder = useCallback((order: readonly string[] | null) => {
+    nextOrder.current = order;
+  }, []);
+
+  // And for the items tagged on the photos (TASK-394 part B).
+  const nextOutfit = useRef<readonly (readonly OutfitDraft[])[]>([]);
+  const toOutfit = useCallback((tags: readonly (readonly OutfitDraft[])[]) => {
+    nextOutfit.current = tags;
+  }, []);
+
+  // And for «Sleep last night» (TASK-467 part B2).
+  const nextSleep = useRef<ActivitySleepRequest | null>(null);
+  const toSleep = useCallback((sleep: ActivitySleepRequest | null) => {
+    nextSleep.current = sleep;
+  }, []);
+
+  // And for the gear (TASK-486 part C).
+  const nextGear = useRef<readonly string[]>([]);
+  const toGear = useCallback((gearIds: readonly string[]) => {
+    nextGear.current = gearIds;
+  }, []);
+
+  // What `record` and `recordImported` share: the run on the phone, with
+  // what was told for it just before «Save».
+  const keep = useCallback(
+    (recorded: RecordedRun | null) => {
       const strava = nextStrava.current;
       nextStrava.current = null;
       const drawing = nextDrawing.current;
       nextDrawing.current = null;
       const photos = nextPhotos.current;
       nextPhotos.current = [];
-      const recorded = owner === null ? null : recordedRun(run, drawn);
+      const order = nextOrder.current;
+      nextOrder.current = null;
+      const outfit = nextOutfit.current;
+      nextOutfit.current = [];
+      const sleep = nextSleep.current;
+      nextSleep.current = null;
+      const gear = nextGear.current;
+      nextGear.current = [];
       if (owner === null || recorded === null) {
         return false;
       }
@@ -454,6 +573,16 @@ export function useActivitiesOf(
       // Its photos beside it (TASK-208): with the run safe, a photo the
       // phone will not write is a photo lost, not a run.
       keepPhotos(owner, recorded.id, photos);
+      keepOutfits(owner, recorded.id, outfit);
+      if (order !== null) {
+        keepOrder(owner, recorded.id, order);
+      }
+      // Its night, only when its post shows it (sleepOut.ts).
+      if (sleep !== null) {
+        keepSleepFor(owner, recorded.id, sleep);
+      }
+      // Its gear (gear/gearOut.ts).
+      keepGearFor(owner, recorded.id, gear);
       recount();
       justKept.current.set(recorded.id, Date.now());
       void send();
@@ -462,12 +591,44 @@ export function useActivitiesOf(
     [owner, recount, send],
   );
 
+  const record = useCallback(
+    (run: SavedRun, drawn: Drawn | null) =>
+      keep(owner === null ? null : recordedRun(run, drawn)),
+    [keep, owner],
+  );
+
+  const recordImported = useCallback((run: RecordedRun) => keep(run), [keep]);
+
+  const { list } = activities;
+  const alreadyKept = useCallback(
+    async (id: string) => {
+      if (owner === null || token === null || baseUrl === null) {
+        return false;
+      }
+      if (
+        loadOutbox().some((run) => run.owner === owner && run.id === id) ||
+        list.some((activity) => activity.id === id)
+      ) {
+        return true;
+      }
+      // Only the key goes: the file stays on the phone until «Save».
+      const outcome = await fetchActivity(baseUrl, token, id, { fetchFn, key });
+      if (sessionEnded(outcome)) {
+        endSession(token);
+      }
+      return outcome.kind === "ok";
+    },
+    [baseUrl, endSession, fetchFn, key, list, owner, token],
+  );
+
   // A refused run in «My activities» (TASK-257): thrown away after a yes,
   // or sent once more.
   const discard = useCallback(
     (id: string) => {
       if (owner !== null) {
         stopWaiting(owner, id);
+        forgetSleepFor(owner, id);
+        forgetGearFor(owner, id);
         recount();
       }
     },
@@ -498,7 +659,7 @@ export function useActivitiesOf(
   // The last run asked for wins.
   const asked = useRef<string | null>(null);
   const open = useCallback(
-    (activity: Activity) => {
+    (activity: Pick<Activity, "id">) => {
       if (token === null || baseUrl === null) {
         return;
       }
@@ -580,10 +741,17 @@ export function useActivitiesOf(
       problem: activities.problem ?? openProblem,
       clearProblem,
       signedIn: owner !== null,
+      owner,
       record,
+      recordImported,
+      alreadyKept,
       toStrava,
       toDrawing,
       toPhotos,
+      toOrder,
+      toOutfit,
+      toSleep,
+      toGear,
       waiting,
       full: waiting >= MAX_WAITING,
       refused: refusedRuns,
@@ -607,9 +775,15 @@ export function useActivitiesOf(
       clearProblem,
       owner,
       record,
+      recordImported,
+      alreadyKept,
       toStrava,
       toDrawing,
       toPhotos,
+      toOrder,
+      toOutfit,
+      toSleep,
+      toGear,
       waiting,
       refusedRuns,
       discard,

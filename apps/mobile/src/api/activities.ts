@@ -1,6 +1,8 @@
 import type {
-  Activity as Sport,
+  ActivityFlight,
+  RunActivity,
   LatLon,
+  RunSource,
   TrackFix,
   Walk,
 } from "@shaperoute/shared-types";
@@ -37,7 +39,7 @@ export type Activity = {
   fidelity: number | null;
   /** What the run was (TASK-251): on the water its pace is a paddler's.
    * Absent from an API before TASK-251, which only knew runs. */
-  activity?: Sport;
+  activity?: RunActivity;
   /**
    * How far the planned route's shape is turned, as RouteResult.rotation_deg
    * (TASK-232): the drawing is shown turned back. Null for a run without a
@@ -45,6 +47,13 @@ export type Activity = {
    * older than TASK-232 part C. Read through `bearingOf`.
    */
   rotation_deg?: number | null;
+  /**
+   * Where the run comes from (TASK-312, ADR-0272): "file" for an activity
+   * of another app added from its file, shown «Imported». Missing from an
+   * API older than TASK-312 part A: every run was recorded with MuW. Read
+   * through `isImported`.
+   */
+  source?: RunSource;
   /** The planned route; null for a run without one. */
   route_preview: LatLon[] | null;
   track_preview: LatLon[];
@@ -74,6 +83,13 @@ export type ActivityDetail = Omit<Activity, "route_preview" | "track_preview"> &
    * than TASK-258.
    */
   post?: RunPost | null;
+  /**
+   * A race on foot and in the air (TASK-305 part R6d): its parts in the air
+   * on `track` and the two kinds added up. Missing for any other run, and
+   * from an API older than R6d. Read through `activityFlightOf`
+   * (src/air/flightLegs.ts), which trusts only what fits the track.
+   */
+  flight?: ActivityFlight;
 };
 
 /** An emoji on the post: its centre as shares of the picture's width and
@@ -112,6 +128,11 @@ export type SavedPause = {
   /** Only as true: a pause of the pen between two letters (TASK-199). */
   pen?: boolean;
 };
+
+/** Whether a run of the list, or whole, came from a file (TASK-312). */
+export function isImported(run: Pick<Activity, "source">): boolean {
+  return run.source !== undefined && run.source !== "muw";
+}
 
 /** A page of the list, the latest run first. */
 export type ActivitiesPage = {
@@ -167,7 +188,71 @@ export type ActivityRequest = {
    * than TASK-232 part C refuses the field.
    */
   rotation_deg?: number;
+  /**
+   * "file" for an activity added from a file of another app (TASK-312):
+   * sent only then, since an API older than TASK-312 part A refuses the
+   * field. Such a run is never sent again without it: it would count as
+   * one recorded with MuW, for Play and the contests.
+   */
+  source?: RunSource;
+  /**
+   * How far the phone's clock was from UTC as the run began, in minutes
+   * (+60 in Rome in winter; TASK-423 part C): the API reads the personal
+   * challenges and the streak on the runner's own week and hours with it.
+   * Added as the run is sent (`withOffset`); an API older than TASK-423
+   * part C refuses the field.
+   */
+  utc_offset_min?: number;
 };
+
+/** The most a clock is from UTC, as the API takes it: UTC−14 to UTC+14. */
+export const UTC_OFFSET_MAX_MIN = 840;
+
+/** How far the phone's clock is from UTC at the moment `ms`, in minutes:
+ * +60 in Rome in winter, −300 in New York. */
+export function utcOffsetAt(ms: number): number {
+  // 0 - …, not -…: on UTC that is 0, never -0.
+  const offset = 0 - new Date(ms).getTimezoneOffset();
+  return Number.isFinite(offset) ? offset : 0;
+}
+
+/**
+ * `request` with the phone's offset from UTC at its first fix
+ * (TASK-423 part C, docs/GIOCO.md §6.6): the same object when it has one
+ * already, has no fix, comes from a file of another app (it does not count
+ * for Play), or the offset is not one the API takes.
+ */
+export function withOffset(
+  request: ActivityRequest,
+  offsetAt: (ms: number) => number = utcOffsetAt,
+): ActivityRequest {
+  const first = request.track[0];
+  if (
+    request.utc_offset_min !== undefined ||
+    request.source === "file" ||
+    first === undefined
+  ) {
+    return request;
+  }
+  const offset = Math.round(offsetAt(first.time_ms));
+  if (!Number.isFinite(offset) || Math.abs(offset) > UTC_OFFSET_MAX_MIN) {
+    return request;
+  }
+  return { ...request, utc_offset_min: offset };
+}
+
+/**
+ * `request` as an app older than TASK-423 part D sends it, without the
+ * offset from UTC: an API before TASK-423 part C refuses the field, and
+ * keeps the run on UTC. The same object when it has none.
+ */
+export function withoutOffset(request: ActivityRequest): ActivityRequest {
+  if (request.utc_offset_min === undefined) {
+    return request;
+  }
+  const { utc_offset_min: _offset, ...older } = request;
+  return older;
+}
 
 /**
  * `request` as an app older than TASK-199 sends it: without the walks,
@@ -219,6 +304,11 @@ export function withoutTurn(request: ActivityRequest): ActivityRequest {
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
 
+type SaveOptions = Options & {
+  /** The phone's offset from UTC at a moment; the tests give theirs. */
+  offsetAt?: (ms: number) => number;
+};
+
 /** GET /me/activities: a page, the first without a `cursor`. */
 export function fetchActivities(
   baseUrl: string,
@@ -253,7 +343,9 @@ export function fetchActivity(
 }
 
 /**
- * PUT /me/activities/{key}: saved once, however many times it is sent. A
+ * PUT /me/activities/{key}: saved once, however many times it is sent,
+ * with the phone's offset from UTC (TASK-423). An API older than TASK-423
+ * part C refuses the offset: the run goes again without it. A
  * run with the heights of its fixes that the API refuses is first sent
  * again without them (TASK-324, ADR-0284); a run along a turned route then
  * without the turn (TASK-232, ADR-0195); a run along a word with the pen up
@@ -266,7 +358,7 @@ export async function saveActivity(
   token: string,
   id: string,
   request: ActivityRequest,
-  options: Options = {},
+  { offsetAt, ...options }: SaveOptions = {},
 ): Promise<AccountOutcome<Activity>> {
   const put = (body: ActivityRequest) =>
     ask(
@@ -278,9 +370,9 @@ export async function saveActivity(
     );
   const refused = (outcome: AccountOutcome<Activity>) =>
     outcome.kind === "api_error" && outcome.code === "invalid_request";
-  let sent = request;
+  let sent = withOffset(request, offsetAt);
   let outcome = await put(sent);
-  for (const older of [withoutHeights, withoutTurn, withoutPenUp]) {
+  for (const older of [withoutOffset, withoutHeights, withoutTurn, withoutPenUp]) {
     const next = older(sent);
     if (refused(outcome) && next !== sent) {
       sent = next;
@@ -397,7 +489,8 @@ function hasFields(body: Record<string, unknown>): boolean {
     typeof body.duration_s === "number" &&
     isNumber(body.score) &&
     isNumber(body.fidelity) &&
-    (body.rotation_deg === undefined || isNumber(body.rotation_deg))
+    (body.rotation_deg === undefined || isNumber(body.rotation_deg)) &&
+    (body.source === undefined || typeof body.source === "string")
   );
 }
 

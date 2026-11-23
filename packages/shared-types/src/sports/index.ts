@@ -1,0 +1,73 @@
+/**
+ * The sports of the contract (TASK-376, ADR-0320), in its order: those the
+ * route engine plans, then those recorded without a shape, then those saved
+ * without a track (TASK-385). A new sport is a file of this folder and a
+ * line here; index.ts derives its tables.
+ */
+import { ALPINISM } from "./alpinism.ts";
+import { CYCLING } from "./cycling.ts";
+import { GRAVEL_BIKING } from "./gravel_biking.ts";
+import { GYM } from "./gym.ts";
+import { HIKING } from "./hiking.ts";
+import { INLINE_SKATING } from "./inline_skating.ts";
+import { MOUNTAIN_BIKING } from "./mountain_biking.ts";
+import { PADDLING } from "./paddling.ts";
+import { PARAGLIDING } from "./paragliding.ts";
+import { RUNNING } from "./running.ts";
+import { SKI_TOURING } from "./ski_touring.ts";
+import { SKIING } from "./skiing.ts";
+import { SNOWSHOEING } from "./snowshoeing.ts";
+import { STRETCHING } from "./stretching.ts";
+import { SWIMMING } from "./swimming.ts";
+import { WALKING } from "./walking.ts";
+import { WHEELCHAIR } from "./wheelchair.ts";
+import { XC_SKIING } from "./xc_skiing.ts";
+
+export {
+  activitiesOf,
+  type PlannedSport,
+  type RecordedSport,
+  type TracklessSport,
+} from "./base.ts";
+export {
+  ALPINISM,
+  CYCLING,
+  GRAVEL_BIKING,
+  GYM,
+  HIKING,
+  INLINE_SKATING,
+  MOUNTAIN_BIKING,
+  PADDLING,
+  PARAGLIDING,
+  RUNNING,
+  SKI_TOURING,
+  SKIING,
+  SNOWSHOEING,
+  STRETCHING,
+  SWIMMING,
+  WALKING,
+  WHEELCHAIR,
+  XC_SKIING,
+};
+
+export const PLANNED_SPORTS = [
+  RUNNING,
+  CYCLING,
+  PADDLING,
+  SWIMMING,
+  HIKING,
+  MOUNTAIN_BIKING,
+  INLINE_SKATING,
+  SNOWSHOEING,
+  WHEELCHAIR,
+  WALKING,
+  GRAVEL_BIKING,
+] as const;
+export const RECORDED_SPORTS = [
+  SKIING,
+  XC_SKIING,
+  SKI_TOURING,
+  PARAGLIDING,
+  ALPINISM,
+] as const;
+export const TRACKLESS_SPORTS = [GYM, STRETCHING] as const;

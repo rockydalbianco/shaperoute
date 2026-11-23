@@ -97,7 +97,7 @@ beforeEach(() => {
 });
 
 describe("the post", () => {
-  it("shows the title, the drawing without its ends, and every result", async () => {
+  it("shows the title, the drawing, and every result", async () => {
     await shown(<SharePost run={RUN} onClose={() => {}} />);
     expect(screen.getByText("Heart in Trento")).toBeOnTheScreen();
     expect(screen.getAllByTestId("post-drawing").length).toBeGreaterThan(0);
@@ -116,6 +116,24 @@ describe("the post", () => {
     expect(screen.getByRole("checkbox", { name: "Pace" })).not.toBeChecked();
     await fireEvent.press(screen.getByRole("checkbox", { name: "Pace" }));
     expect(screen.getByText("5:25 /km")).toBeOnTheScreen();
+    await screen.findByText("Send to Strava");
+  });
+
+  it("offers the animals in «Character», in «Edit video», none chosen when the post opens (TASK-408)", async () => {
+    await shown(<SharePost run={RUN} onClose={() => {}} />);
+    expect(screen.queryByText("Character")).toBeNull();
+    expect(screen.getByText("Night · No animal")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId("edit-video-open"));
+    expect(screen.getByText("Character")).toBeOnTheScreen();
+    expect(screen.getByRole("radio", { name: "No animal" })).toBeChecked();
+    for (const name of ["Horse", "White horse", "Stag", "Fox", "Shiba Inu", "Alpaca"]) {
+      expect(screen.getByRole("radio", { name })).not.toBeChecked();
+    }
+    await fireEvent.press(screen.getByRole("radio", { name: "Fox" }));
+    expect(screen.getByRole("radio", { name: "Fox" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "No animal" })).not.toBeChecked();
+    await fireEvent.press(screen.getByTestId("edit-video-done"));
+    expect(screen.getByText("Night · Fox")).toBeOnTheScreen();
     await screen.findByText("Send to Strava");
   });
 

@@ -16,7 +16,11 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useActivitiesDoor } from "./src/activities/activitiesDoor";
 import { ActivityCard } from "./src/activities/ActivityCard";
 import { type Drawn, sameLine } from "./src/activities/recordedRun";
+import { EndFoldedStrip } from "./src/activities/EndFoldedStrip";
 import { RunEnd } from "./src/activities/RunEnd";
+import { snowParts } from "./src/activities/snowDay";
+import { type Lifts, snowLiftsOf } from "./src/activities/snowLifts";
+import { activityFlightOf, flightAirOf } from "./src/air/flightLegs";
 import { apiUrl } from "./src/api/apiUrl";
 import { PickStart } from "./src/location/PickStart";
 import {
@@ -37,32 +41,44 @@ import {
   refreshGameCatalog,
   useGameCatalog,
 } from "./src/game/gameCatalog";
-import { PlayScreen } from "./src/game/PlayScreen";
+import { PlayOverlay } from "./src/game/PlayOverlay";
+import { PlayRow } from "./src/game/PlayRow";
 import { onOpenPlay } from "./src/game/unlocks";
+import { GymWorkoutHost } from "./src/gym/GymWorkoutHost";
+import { PoolSwimHost } from "./src/pool/PoolSwimHost";
+import { startGymWorkout } from "./src/gym/useWorkout";
 import {
   loadRecentCities,
   remember,
   saveRecentCities,
 } from "./src/explore/recentCities";
+import { mapStops } from "./src/explore/StopPhotos";
 import { ThemedCard, themedGpx } from "./src/explore/ThemedCard";
 import { startViewOf, useStartDirections } from "./src/explore/useStartDirections";
+import { isHere, nearMeRequest } from "./src/explore/themedIdeas";
 import { useThemedRoute } from "./src/explore/useThemedRoute";
 import { FavoriteHeart } from "./src/favorites/FavoriteHeart";
+import { SaveRouteButton } from "./src/favorites/SaveRouteButton";
+import { useWatchRuns } from "./src/watch/useWatchRuns";
 import {
   drawnKeepable,
   exploredKeepable,
   themedKeepable,
 } from "./src/favorites/favoriteRoute";
 import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
+import { DrawAgainContext, useDrawAgainOf } from "./src/feed/drawAgainDoor";
+import { EditRunContext, useEditRunOf } from "./src/feed/editRunDoor";
 import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
+import { fetchMuwRoute, muwCardRoute } from "./src/feed/muwRoute";
+import type { SamplePost } from "./src/feed/sampleFeed";
 import { PhoneEngineView } from "./src/engine/PhoneEngineView";
 import { usePhoneZones } from "./src/engine/usePhoneZones";
 import { ZoneNotice } from "./src/engine/ZoneNotice";
 import { useLanguage } from "./src/i18n/useLanguage";
 import { CanvasTop } from "./src/mapdraw/CanvasTop";
 import { DrawOnMap } from "./src/mapdraw/DrawOnMap";
+import { drawingOf } from "./src/mapdraw/edit";
 import { FigureTiles } from "./src/mapdraw/FigureTiles";
-import { MapDrawButton } from "./src/mapdraw/MapDrawButton";
 import {
   changedRequest,
   drawnTile,
@@ -75,6 +91,7 @@ import { useMapCanvas } from "./src/mapdraw/useMapCanvas";
 import { MapView } from "./src/map/MapView";
 import { NorthArrow } from "./src/map/NorthArrow";
 import { useTurnedMap } from "./src/map/turnedMap";
+import { useHeadingUpMap } from "./src/map/useHeadingUpMap";
 import {
   canResume,
   endFreeRun,
@@ -108,20 +125,20 @@ import { ImageEditsContext } from "./src/route/imageEdits";
 import { type ImageAsked, imageAsked } from "./src/route/imagePieces";
 import type { ChoiceKind } from "./src/route/problems";
 import { withPenUp } from "./src/route/penUpHint";
+import { drawKindOf, figuresOf, shapeOfSport } from "./src/route/sportDraw";
 import { shapeAsked } from "./src/route/penUpShapes";
+import { drawLabel, drawWhat } from "./src/route/drawLabel";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
+import { averagePace } from "./src/route/runTime";
+import { WaitingShape } from "./src/route/ShapeGhost";
 import { shapeName, toShape } from "./src/route/shapeWords";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import { useImageOutline } from "./src/route/useImageOutline";
-import { requestLines, shapeLines } from "./src/route/figureLines";
-import { figureOf, freehandRequest } from "./src/route/freehand";
-import { FreehandBoard } from "./src/route/FreehandBoard";
-import { EditDrawingButton } from "./src/route/FreehandChoice";
-import { useFreehand } from "./src/route/useFreehand";
-import { DrawIdeas, toursFrom } from "./src/route/DrawIdeas";
+import { drawingTrack, routeTrack, type TrackInPlace } from "./src/route/figureLines";
+import { EditDrawingButton } from "./src/route/EditDrawingButton";
 import { NearYou } from "./src/route/NearYou";
 import { useNearYou } from "./src/route/nearYouShapes";
-import { sampleOf, samplePicture } from "./src/route/samplePictures";
+import { samplePicture } from "./src/route/samplePictures";
 import {
   type AnyRouteRequest,
   type RouteState,
@@ -140,17 +157,35 @@ import {
   FreeRunCard,
 } from "./src/screens/FreeRunScreen";
 import { MapScreen } from "./src/screens/MapScreen";
+import { showsMap } from "./src/screens/mapOver";
+import { useCoverOverApp } from "./src/screens/overAppContext";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
-import { Pager } from "./src/screens/Pager";
 import { pageTitle } from "./src/screens/pageTitles";
 import {
   OwnProfile,
-  ProfileButton,
+  ProfileFace,
   ProfileLayer,
   useOwnPage,
+  useProfileTab,
 } from "./src/screens/ProfileLayer";
+import { useInboxTab, useMessagesDoor } from "./src/messages/messagesDoor";
+import { MessagesPage } from "./src/tabs/MessagesPage";
+import { type ShellPage, TabShell } from "./src/tabs/TabShell";
 import { StretchReminder } from "./src/screens/StretchReminder";
+import { clearSkiDay, queueSkiDay } from "./src/ski/skiDayStore";
+import { useSkiDayOutbox } from "./src/ski/useSkiDayOutbox";
+import { MorningStretchLayer } from "./src/stretch/MorningStretchLayer";
 import { StretchScreen } from "./src/stretch/StretchScreen";
+import {
+  StretchSessionHost,
+  startStretchSession,
+} from "./src/stretchSport/StretchSessionHost";
+import { useSwimNotice } from "./src/swim/safetyNotice";
+import { SwimNotice } from "./src/swim/SwimNotice";
+import { isOnWater } from "./src/swim/water";
+import { isPlacedFree } from "./src/snow/snow";
+import { useSnowNotice } from "./src/snow/safetyNotice";
+import { SnowNotice } from "./src/snow/SnowNotice";
 import { PaddleExplore } from "./src/paddle/PaddleExplore";
 import { MoveShape } from "./src/paddle/MoveShape";
 import { PaddleNotice } from "./src/paddle/PaddleNotice";
@@ -159,13 +194,33 @@ import { usePaddleNotice } from "./src/paddle/safetyNotice";
 import { useMoveExample } from "./src/paddle/useMoveExample";
 import { useMoveShape } from "./src/paddle/useMoveShape";
 import { activityOf, withoutRouteLabel } from "./src/settings/sport";
+import { withoutRouteIcon } from "./src/screens/RunNoRouteButton";
 import { SportButton } from "./src/settings/SportButton";
 import { useSport } from "./src/settings/useSport";
+import { MessagesButton } from "./src/skimode/MessagesButton";
+import { type SkiLabel, skiDayLabels } from "./src/skimode/skiDayLabels";
+import { SkiDaysPage } from "./src/skimode/SkiDaysPage";
+import { SkiMessages } from "./src/skimode/SkiMessages";
+import { SkiResortsPage } from "./src/skimode/SkiResortsPage";
+import { SkiTabIcon } from "./src/skimode/SkiTabIcon";
+import { SkiTodayPage } from "./src/skimode/SkiTodayPage";
+import { useSkiDayMap } from "./src/skimode/useSkiDayMap";
 import { DrawingCard } from "./src/social/DrawingCard";
 import { drawingDoubleTapped } from "./src/social/DrawingReactions";
 import { drawnOf, followedOf } from "./src/social/drawingRoute";
 import { useDrawingsDoor } from "./src/social/drawingsDoor";
-import { color, space, statusBarStyle } from "./src/theme/tokens";
+import { t } from "./src/i18n";
+import { color, statusBarStyle } from "./src/theme/tokens";
+import { TrainingTabIcon } from "./src/trainingmode/TrainingTabIcon";
+import { TrainingTodayPage } from "./src/trainingmode/TrainingTodayPage";
+import { TrainingWorkoutsPage } from "./src/trainingmode/TrainingWorkoutsPage";
+import {
+  barPagesOf,
+  modeOf,
+  pageAfterModeChange,
+  pagesOfMode,
+  shellPagesOf,
+} from "./src/trainingmode/trainingMode";
 import { useDrawDistance } from "./src/units/useDrawDistance";
 import { useUnits } from "./src/units/useUnits";
 
@@ -193,19 +248,26 @@ type Screen =
   | "runFinish"
   | "feed"
   | "profile"
+  | "messages"
   | "canvas"
   | "pickStart"
-  | "play";
+  | "play"
+  // The pages of the ski mode (TASK-429, ADR-0357): «Days» and «Resorts».
+  | "skiDays"
+  | "skiResorts"
+  // The page of the training mode (TASK-490, ADR-0398): «Workouts».
+  | "trainingWorkouts";
 
-/** The screens that are pages side by side, left to right, one swipe apart
- * (TASK-154, ADR-0124; the profile after «Explore», TASK-278); the others
- * take the whole screen. «Play», the shape game (TASK-296, ADR-0255), is
- * among them only while the API has the game. */
-function pagesOf(playOn: boolean): readonly Screen[] {
-  return playOn
-    ? ["feed", "choose", "explore", "play", "profile"]
-    : ["feed", "choose", "explore", "profile"];
-}
+/** The screens that are pages of the tab bar, in the order of their tabs
+ * (TASK-367, ADR-0311): «Feed», «Draw», «Messages», «Explore», «Profile».
+ * The others take the whole screen, the bar and the header with them.
+ * «Play», the shape game (TASK-296, ADR-0255), is not among them since
+ * 2026-10-29 (the user's choice): it opens from its row under the distance
+ * of «Draw», over the app. With «Ski» chosen, the ski mode's pages instead
+ * (TASK-429, ADR-0357): «Today», «Days», «Resorts», «Feed», «Profile»
+ * (`src/skimode/skiMode.ts`); with «Gym», the training mode's (TASK-490,
+ * ADR-0398): «Today», «Workouts», «Feed», «Profile»
+ * (`src/trainingmode/trainingMode.ts`). */
 
 /** A run that ended, shown on the finish screen. */
 type Finished = {
@@ -282,16 +344,41 @@ type FreeFinished = {
   line: LatLon[];
   /** «Run» again would go on with its track. */
   resumable: boolean;
+  lifts: Lifts | null;
+  /** The numbers of its descents and lifts on the map (TASK-429 part B). */
+  liftLabels: SkiLabel[];
 };
 
 function freeFinishedRun(run: FreeRun, resumable: boolean): FreeFinished {
-  return { run, line: run.track.fixes.map((fix) => fix.point), resumable };
+  const line = run.track.fixes.map((fix) => fix.point);
+  const lifts = snowLiftsOf(run);
+  return {
+    run,
+    line,
+    resumable,
+    lifts,
+    liftLabels: lifts === null ? [] : skiDayLabels(line, snowParts(run.track)),
+  };
 }
 
 /** A run without a route left when the app was last open, if any. */
 function leftFreeRun(): FreeFinished | null {
   const run = pendingFreeRun();
   return run === null ? null : freeFinishedRun(run, canResume(run, Date.now()));
+}
+
+/** The track «Edit the drawing» puts on the map, of a route or a drawing
+ * on a card (TASK-320, TASK-331, TASK-369): none for lines that make no
+ * drawing (`drawingOf`). On the water too (TASK-369 part B, ADR-0313):
+ * «Draw route» asks for it with the sport of «Draw», as every drawing of
+ * the map, and a canoe paddles it where it fits. */
+function cardTrack(track: TrackInPlace | null): TrackInPlace | null {
+  return track === null || drawingOf(track.lines) === null ? null : track;
+}
+
+/** Whether «Edit & run» puts a post's line on the map (TASK-410). */
+function editsLine(line: readonly LatLon[]): boolean {
+  return cardTrack(routeTrack(line)) !== null;
 }
 
 export default function App() {
@@ -357,29 +444,48 @@ function MuW() {
     remove: removeActivity,
     record: recordRun,
     signedIn,
+    list: savedRuns,
   } = useActivitiesDoor();
+  // The resort, snow and gear of the days of skiing saved (TASK-406 D2).
+  useSkiDayOutbox();
+  // The time under the distance of «Draw» (TASK-361): the pace of the last
+  // runs saved, or a usual one.
+  const pace = useMemo(() => averagePace(savedRuns), [savedRuns]);
   // And so does a drawing opened from a profile (TASK-117).
   const {
     opened: drawing,
     back: backFromDrawing,
     leave: leaveDrawing,
   } = useDrawingsDoor();
-  // «Play» is a page while the API has the shape game (TASK-296): asked
-  // once as the app opens, kept on the phone for the next opening.
+  // «Play» has its row in «Draw» while the API has the shape game
+  // (TASK-296): asked once as the app opens, kept on the phone for the next
+  // opening.
   const playOn = useGameCatalog() !== null;
-  const pages = pagesOf(playOn);
+  // The sport of «Settings» decides the pages: with «Ski», the ski mode's.
+  const barSport = useSport();
+  // «app», «ski» or «training» (TASK-490): a mode has its own bar, and
+  // «Messages» in the header instead of a tab.
+  const mode = modeOf(barSport);
+  const ownBar = mode !== "app";
+  const pages: readonly Screen[] = barPagesOf(barSport);
   useEffect(() => {
     void refreshGameCatalog(API_URL);
   }, []);
   if (screenNow === "play" && !playOn) {
-    // The API said it has no game while the page was on screen.
+    // The API said it has no game while the game was on screen.
     setScreen("choose");
   }
   const onPage = pages.includes(screenNow);
-  const screen: Screen =
-    (favorite !== null || activity !== null || drawing !== null) && onPage
-      ? "map"
-      : screenNow;
+  const screen: Screen = showsMap(
+    screenNow,
+    pages,
+    favorite !== null || activity !== null || drawing !== null,
+  )
+    ? "map"
+    : screenNow;
+  // «Play» over the pages over the app (a profile, a conversation) keeps
+  // them, out of sight, until its «←» (TASK-470 D).
+  useCoverOverApp(screen === "play");
   // The fourth page asked for from elsewhere (TASK-278 part B, the user's
   // choice): from the map or the end of a run with nobody signed in (the
   // heart, «Save»), «←» goes back there, and so does signing in, with the
@@ -402,6 +508,15 @@ function MuW() {
   // route, and over it what was run. Or a drawing: the run cut as the
   // others see it, in the route's yellow as in «Feed», the map framed on it.
   const reviewing = screen === "map" && (activity !== null || drawing !== null);
+  // A post of a day of skiing with its parts: its lifts and numbers, in the
+  // ski mode's colours (TASK-429 part C).
+  const skiDayMap = useSkiDayMap(drawing);
+  // A race's post (TASK-305 part R6e): its flights on its line, when the
+  // API gives them and they fit it.
+  const postAir = useMemo(
+    () => (drawing === null ? null : (activityFlightOf(drawing)?.air ?? null)),
+    [drawing],
+  );
   const reviewed = useMemo(
     () =>
       activity !== null
@@ -413,17 +528,41 @@ function MuW() {
             walks: activity.walks ?? null,
             others: NO_OTHERS,
             track: activity.track,
+            // A race: the flights yellow over the white (TASK-305 R6d).
+            flightAir: activityFlightOf(activity)?.air ?? null,
           }
-        : drawing !== null
+        : drawing !== null && skiDayMap !== null
           ? {
+              // A day of skiing as at its end: the track, not a route.
               start: null,
-              route: drawing.track.length > 1 ? drawing.track : null,
+              route: null,
               walks: null,
               others: NO_OTHERS,
-              track: null,
+              track: drawing.track,
+              lifts: skiDayMap.lifts,
+              liftLabels: skiDayMap.labels,
             }
-          : null,
-    [activity, drawing],
+          : drawing !== null && postAir !== null
+            ? {
+                // A race as in «My activities»: white on foot, the flights
+                // yellow over it, the map framed on the line.
+                start: null,
+                route: null,
+                walks: null,
+                others: NO_OTHERS,
+                track: drawing.track,
+                flightAir: postAir,
+              }
+            : drawing !== null
+              ? {
+                  start: null,
+                  route: drawing.track.length > 1 ? drawing.track : null,
+                  walks: null,
+                  others: NO_OTHERS,
+                  track: null,
+                }
+              : null,
+    [activity, drawing, skiDayMap, postAir],
   );
   const { position, refresh } = useCurrentPosition();
   // The size of the first maps of the phone while they download (TASK-214).
@@ -468,11 +607,6 @@ function MuW() {
   // Past RouteChoice to the image panel (TASK-079).
   const { edits, add, undo } = image;
   const imageEdits = useMemo(() => ({ ...edits, add, undo }), [edits, add, undo]);
-  // The figure drawn by hand (TASK-320), kept beside the picture: going to
-  // «Freehand» and back loses neither. The board is one, over whatever is
-  // on screen; where it was opened from says what «Save» does.
-  const freehand = useFreehand();
-  const [board, setBoard] = useState<"freehand" | "shape" | "result" | null>(null);
   const { draw, cancel, retry, state } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
   const {
@@ -495,20 +629,41 @@ function MuW() {
     () => (themed.state.status === "done" ? themedGpx(themed.state.result) : null),
     [themed.state],
   );
+  // Its places on the map, those passed by numbered as the photos under it
+  // (TASK-329); a photo tapped takes the map to its place.
+  const themedStops = useMemo(
+    () => (themed.state.status === "done" ? mapStops(themed.state.result.stops) : null),
+    [themed.state],
+  );
+  const [placeFocus, setPlaceFocus] = useState<{ point: LatLon } | null>(null);
 
   const start = useMemo(
     () => chooseStart(startMode, position, place),
     [startMode, position, place],
   );
+  // One of our ideas opened far from the start: «Make it near me» asks its
+  // words from the start instead of «Start».
+  const farIdea =
+    themed.state.status === "done" &&
+    themed.state.idea !== undefined &&
+    start !== null &&
+    !isHere(themed.state.idea, start.point)
+      ? { idea: themed.state.idea, from: start.point }
+      : null;
 
   // One of them (ADR-0051): the kinds not chosen are not sent. An image
   // sends the outline the engine traced and the user has seen (ADR-0069),
   // with the details drawn on it (TASK-079), or with the pen up its pieces
-  // instead (TASK-297); a figure drawn by hand its outline and details as a
-  // line drawn on the map sends them (TASK-320).
+  // instead (TASK-297); a figure drawn by hand is asked from the map
+  // (TASK-331).
   // On the water only a shape of the catalogue is drawn (TASK-191): a word or
-  // a picture chosen before «Paddle» waits for another sport.
-  const drawKind: ChoiceKind = sportActivity === "paddling" ? "shape" : kind;
+  // a picture chosen before «Paddle» waits for another sport. A swim draws a
+  // shape or a drawing, a word chosen before it waits too (TASK-323). A
+  // wheelchair draws four shapes only: another chosen before waits too
+  // (TASK-414). Each sport says it in its profile.
+  const drawKind: ChoiceKind = drawKindOf(kind, sportActivity);
+  const sportShape = shapeOfSport(shape, sportActivity);
+  const resultFigures = figuresOf(sportActivity);
   const drawn:
     | { shape: Shape }
     | { shape: PenUpShape; pen_up: true }
@@ -516,9 +671,9 @@ function MuW() {
     | ImageAsked
     | null =
     drawKind === "shape"
-      ? shape !== null
+      ? sportShape !== null
         ? // A shape in pieces with the pen up, on the roads (TASK-223).
-          shapeAsked(shape, penUp, sportActivity)
+          shapeAsked(sportShape, penUp, sportActivity)
         : null
       : drawKind === "word"
         ? wordCheck.ok
@@ -529,13 +684,9 @@ function MuW() {
               ...(penUp ? { pen_up: true as const } : {}),
             }
           : null
-        : drawKind === "freehand"
-          ? freehand.figure !== null
-            ? freehandRequest(freehand.figure)
-            : null
-          : image.state.status === "traced"
-            ? imageAsked(image.state.outline, penUp)
-            : null;
+        : image.state.status === "traced"
+          ? imageAsked(image.state.outline, penUp)
+          : null;
   const request: AnyRouteRequest | null =
     start && drawn !== null && distanceM !== null
       ? { start: start.point, ...drawn, distance_m: distanceM, activity: sportActivity }
@@ -552,6 +703,9 @@ function MuW() {
     start: start?.point ?? null,
   });
   const [fromCanvas, setFromCanvas] = useState(false);
+  // The figure on the map came from an edit («Edit & run» of a post, «Edit
+  // the drawing» of «Explore»): its route gets «Save» beside «Start».
+  const [fromEdit, setFromEdit] = useState(false);
   const asked = fromCanvas ? mapDraw.request : request;
   // A new start, shape, word or distance leaves the last answer behind; so
   // does a figure moved or changed.
@@ -575,15 +729,38 @@ function MuW() {
       : fromCanvas
         ? placedTile(mapDraw.placed)
         : drawnTile(view.request);
-  // «Edit the drawing» under the route drawn (TASK-320): the lines of the
-  // figure asked for, to open in the board; none for a word, nor on the
-  // water, where only the catalogue is drawn.
-  const resultLines = useMemo(
+  // «Edit the drawing» on the card of a route of «Explore» (an example, a
+  // search, a favorite, a message's drawing, an example of the Feed) and of
+  // a themed route: the line of the route, where it is and as big, an
+  // emoji's and a word's too (TASK-369, ADR-0313).
+  const exploredTrack = useMemo(
     () =>
-      view.status === "done" && sportActivity !== "paddling"
-        ? requestLines(view.request)
+      explored?.status === "done"
+        ? cardTrack(routeTrack(explored.result.points))
         : null,
-    [view, sportActivity],
+    [explored],
+  );
+  const themedTrack = useMemo(
+    () =>
+      themed.state.status === "done"
+        ? cardTrack(routeTrack(themed.state.result.points))
+        : null,
+    [themed.state],
+  );
+  // A member's drawing gives its track, where it was run and as big
+  // (TASK-346, ADR-0299).
+  const drawingTrackInPlace = useMemo(
+    () => cardTrack(drawing !== null ? drawingTrack(drawing) : null),
+    [drawing],
+  );
+  // «Edit the drawing» under A, B and C (TASK-403, ADR-0337): the line of
+  // the route chosen, where it is.
+  const resultTrack = useMemo(
+    () =>
+      view.status === "done" && chosen !== null
+        ? cardTrack(routeTrack(chosen.points))
+        : null,
+    [view.status, chosen],
   );
   const others = useMemo(
     () =>
@@ -609,6 +786,24 @@ function MuW() {
   const startDirections = useStartDirections(API_URL);
   // Start on the water: the safety notice first, the first time (TASK-191).
   const paddleNotice = usePaddleNotice();
+  // A swim has its own notice, read once on this phone (TASK-323 C).
+  const swimNotice = useSwimNotice();
+  // Snowshoes have the avalanche notice, read once on this phone (TASK-413 B).
+  const snowNotice = useSnowNotice();
+  /** The notice before «Start» of a route of `activity`, the first time: on
+   * the water (paddle or swim) and on the snow; none on the networks. */
+  function noticeOf(activity: Activity | undefined) {
+    switch (activity) {
+      case "paddling":
+        return paddleNotice;
+      case "swimming":
+        return swimNotice;
+      case "snowshoeing":
+        return snowNotice;
+      default:
+        return null;
+    }
+  }
   // A run opened again with the app follows the route of its file (TASK-272).
   const [exploreRun, setExploreRun] = useState<ExploreRun | null>(() =>
     reopened !== null && !isFreeRun(reopened) ? reopenedRoute(reopened) : null,
@@ -680,6 +875,10 @@ function MuW() {
   const freeStart =
     freeTrack.fixes[0]?.point ?? (position.status === "ok" ? position.point : null);
   const freeFinishing = screen === "runFinish" && freeFinished !== null;
+  // The «Save» of the form under the end card, for the folded card's strip
+  // (TASK-478 part b).
+  const endSave = useRef<(() => void) | null>(null);
+  const ended = finishing ? finished.run : freeFinishing ? freeFinished.run : null;
   // Where the runner is heading, with a route or without (TASK-164): the
   // arrow on the map.
   const runTrack = navigating ? trackOfNavigation(navigation) : freeTrack;
@@ -713,11 +912,9 @@ function MuW() {
   // «Explore» prepared around the start until it is first opened: then
   // the page asks for itself. On the water it has its own (TASK-246).
   const [exploreSeen, setExploreSeen] = useState(false);
-  useEffect(() => {
-    if (screen === "explore") {
-      setExploreSeen(true);
-    }
-  }, [screen]);
+  if (screen === "explore" && !exploreSeen) {
+    setExploreSeen(true);
+  }
   const aheadLat = start?.point[0];
   const aheadLon = start?.point[1];
   useEffect(() => {
@@ -725,6 +922,7 @@ function MuW() {
       !mayWorkAhead ||
       exploreSeen ||
       sport === "paddle" ||
+      sport === "swim" ||
       API_URL === null ||
       aheadLat === undefined ||
       aheadLon === undefined
@@ -748,6 +946,13 @@ function MuW() {
             ? (followedRotation ?? move.left?.rotationDeg ?? null)
             : followedRotation,
   );
+  // The run's «Compass» page (TASK-422, ADR-0350): the map turned where the
+  // phone points, over the drawing's turn; off that page, the drawing's.
+  const mapTurn = useHeadingUpMap(turned, {
+    on: running || navigating,
+    trackDeg: heading,
+    lastFixMs: runTrack.fixes[runTrack.fixes.length - 1]?.timeMs ?? null,
+  });
   const exploredExport: ExportState =
     explored?.status === "done" &&
     gpx.state.status !== "idle" &&
@@ -782,6 +987,18 @@ function MuW() {
         : exploring
           ? (favorite?.keepable ?? exploredFavorite)
           : drawnFavorite;
+
+  // A workout of the Apple Watch, opened from its card on top of «My
+  // activities» (TASK-370 part B3c2): the end of a run of always.
+  useWatchRuns((watch) => {
+    if (watch.kind === "route") {
+      setFinished(finishedRun(watch.run, false));
+      setScreen("finish");
+    } else {
+      setFreeFinished(freeFinishedRun(watch.run, false));
+      setScreen("runFinish");
+    }
+  });
 
   /** Stop or Finish: the run ends, and with a line to judge shows its score. */
   function onEndRun() {
@@ -825,6 +1042,7 @@ function MuW() {
 
   /** The end of a run without a route leaves the screen. */
   function leaveFreeFinish() {
+    clearSkiDay();
     setFreeFinished(null);
     setScreen("choose");
   }
@@ -870,6 +1088,9 @@ function MuW() {
         ? recordRun(finished.run, drawnBy(finished.run.route))
         : freeFinished !== null && recordRun(freeFinished.run, null);
     if (kept) {
+      if (freeFinished !== null && sport === "ski") {
+        queueSkiDay(freeFinished.run);
+      }
       onDiscardRun();
     }
     return kept;
@@ -895,6 +1116,18 @@ function MuW() {
     setExploreRun(null);
   }
 
+  /**
+   * A drawing of «Feed» found by the search at the top of «Explore»
+   * (TASK-367 part B): fetched whole as «Feed» fetches it, and back goes to
+   * «Explore», where the search was.
+   */
+  function openFoundExample(post: SamplePost) {
+    closeExplore();
+    openExplored(postRoute(post), fetchPostRoute(post));
+    setRouteList("explore");
+    setScreen("map");
+  }
+
   /** Start on a route of "Explore": its directions first (TASK-145). A
    * favorite of a word with the pen up brings its walks (TASK-199), a bike
    * route its stretches with the bike on foot (TASK-206), and is followed
@@ -914,8 +1147,11 @@ function MuW() {
     // Turned on the map, it stays turned while it is run (TASK-232).
     const turn =
       route.rotation_deg !== undefined ? { rotation_deg: route.rotation_deg } : {};
-    if (activity === "paddling") {
-      paddleNotice.ask(() => {
+    // On the water and on the snow, no directions: the shape is placed
+    // freely (TASK-413 B: isPlacedFree).
+    const notice = noticeOf(activity);
+    if (isPlacedFree(activity) && notice !== null) {
+      notice.ask(() => {
         startDirections.reset();
         setExploreRun({
           points: route.points,
@@ -972,8 +1208,9 @@ function MuW() {
       });
       setScreen("navigate");
     };
-    if (route.activity === "paddling") {
-      paddleNotice.ask(run);
+    const notice = noticeOf(route.activity);
+    if (notice !== null) {
+      notice.ask(run);
       return;
     }
     run();
@@ -998,9 +1235,38 @@ function MuW() {
     setScreen("choose");
   }
 
+  // The same for the cards of «Feed» (TASK-355).
+  const drawAgainDoor = useDrawAgainOf(sportActivity, onDrawAgain);
+  // «Edit & run» on the page of a post (TASK-410): its line where it is.
+  const editRunDoor = useEditRunOf(
+    (line) => editTrackOf(cardTrack(routeTrack(line))),
+    editsLine,
+  );
+
   /** The button's action for `again`, when «Draw» can draw it. */
   function drawAgainOf(again: DrawAgain | null): (() => void) | undefined {
     return drawsAgain(again, sportActivity) ? () => onDrawAgain(again) : undefined;
+  }
+
+  /** «Edit the drawing» on a card (TASK-346, ADR-0299, TASK-369): the
+   * track of a member's drawing, or the line of a route, on the map of
+   * «Draw on the map» where it is and as big, to change there; the card is
+   * left as «Draw it near me» leaves it. Drawing on it, moving it and «Draw
+   * route» are the map's; nothing is asked before «Draw route», and «←» goes
+   * to «Draw». */
+  function editTrackOf(track: TrackInPlace | null): (() => void) | undefined {
+    if (track === null) {
+      return undefined;
+    }
+    return () => {
+      Keyboard.dismiss();
+      closeExplore();
+      leaveDrawing();
+      if (mapDraw.editInPlace(track.lines, track.centre, track.unitM)) {
+        setFromEdit(true);
+        setScreen("canvas");
+      }
+    };
   }
 
   function onDraw() {
@@ -1009,6 +1275,7 @@ function MuW() {
     // The drawn route takes the map back from "Explore".
     closeExplore();
     setFromCanvas(false);
+    setFromEdit(false);
     // The same route already drawn is shown again, not asked for again.
     if (request && (fromCanvas || view.status !== "done")) {
       draw(request);
@@ -1016,10 +1283,12 @@ function MuW() {
     setScreen("map");
   }
 
-  /** «Draw on the map» (TASK-281): the map of the start, to draw on. */
+  /** «Freehand» in «Draw» (TASK-281, TASK-340): the map of the start, to
+   * draw on. */
   function onOpenCanvas() {
     Keyboard.dismiss();
     mapDraw.open();
+    setFromEdit(false);
     setScreen("canvas");
   }
 
@@ -1079,50 +1348,6 @@ function MuW() {
     draw(changedRequest(view.request, choice, penUp));
   }
 
-  /** «Edit the drawing» under the shape chosen in «Draw» (TASK-320): the
-   * board on the shape's lines, as the engine draws them. */
-  function onEditShape(shape: Shape) {
-    Keyboard.dismiss();
-    freehand.set(figureOf(shapeLines(shape)));
-    setBoard("shape");
-  }
-
-  /** «Edit the drawing» or «Draw with your finger» under «Freehand»: the
-   * board on the figure drawn, or empty. */
-  function onEditFreehand() {
-    Keyboard.dismiss();
-    setBoard("freehand");
-  }
-
-  /** «Edit the drawing» under the route drawn: the board on the figure the
-   * route was asked for. */
-  function onEditResult() {
-    if (resultLines === null) {
-      return;
-    }
-    freehand.set(figureOf(resultLines));
-    setBoard("result");
-  }
-
-  /** «Save» on the board: the figure is kept already, so saving is closing
-   * (ADR-0191). Opened on a shape, or on the result, the choice of «Draw»
-   * becomes «Freehand» with the figure; from the result, «Draw» is back,
-   * at the same distance and from the same start. */
-  function onBoardSave() {
-    const from = board;
-    setBoard(null);
-    if (from === "shape" || from === "result") {
-      setKind("freehand");
-    }
-    if (from === "result") {
-      if (view.status === "done") {
-        distance.choose(view.request.distance_m);
-      }
-      setFromCanvas(false);
-      setScreen("choose");
-    }
-  }
-
   /** A run of «My activities» leaves the map for the list it came from. */
   function onActivityList() {
     closeActivity();
@@ -1170,11 +1395,21 @@ function MuW() {
     setScreen("choose");
   }
 
-  // The page on screen; -1 while the map or a run takes the whole screen.
+  // The page on screen; -1 while the map, a run or «Play» takes the whole
+  // screen.
   const page = pages.indexOf(screen);
 
+  // With the routes of «Draw» on the map to choose from (TASK-442): under
+  // the one chosen, the shape asked for as the search placed it; while they
+  // are drawn, the shape itself over the map.
+  const drawnOnMap =
+    screen === "map" && !reviewing && !theming && !exploring && exploreRun === null;
+  const ghost = drawnOnMap ? (chosen?.placed_outline ?? null) : null;
+  const waitingFor = drawnOnMap && view.status === "waiting" ? view.request : null;
+
   // The card of a shape unlocked, or its notification, asks for «Play»
-  // (TASK-296): only while a page is on screen, never over a run.
+  // (TASK-296): only while a page is on screen, never over a run; already
+  // open, it stays as it is.
   const latestPage = useRef({ onPage, showPage });
   latestPage.current = { onPage, showPage };
   useEffect(
@@ -1187,7 +1422,38 @@ function MuW() {
     [],
   );
 
-  /** Another page, by a swipe, its name or the profile's circle. */
+  // The list of «Messages» asked for from elsewhere is its tab's (TASK-367):
+  // only while a page is on screen, never over a run.
+  useInboxTab(() => {
+    if (latestPage.current.onPage) {
+      latestPage.current.showPage("messages");
+    }
+  });
+  const messages = useMessagesDoor();
+  const messagesWaiting =
+    messages.unread === null ? 0 : messages.unread.unread + messages.unread.requests;
+  // A mode coming on opens «Today»; going off, its own pages («Days»,
+  // «Resorts», «Workouts») go to «Draw» (TASK-429, TASK-490). Only on a
+  // page of the bar being left: never over a run. The bar of the new mode
+  // has no page of the old one, so it cannot say (TASK-490).
+  const wasMode = useRef(mode);
+  useEffect(() => {
+    const was = wasMode.current;
+    const next = pageAfterModeChange(screenNow, was, mode);
+    wasMode.current = mode;
+    const onPageLeft = (pagesOfMode(was) as readonly string[]).includes(screenNow);
+    if (next !== null && onPageLeft) {
+      latestPage.current.showPage(next);
+    }
+    // Only when the mode changes: the page then is the one to leave.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+  // «Messages» of the ski and training modes, over the app: «Back» returns where they
+  // were opened from.
+  const messagesFrom = useRef<Screen>("choose");
+  const profileTab = useProfileTab();
+
+  /** Another page, by its tab. */
   function showPage(next: Screen) {
     // A keyboard left open would follow to the next page.
     Keyboard.dismiss();
@@ -1223,6 +1489,30 @@ function MuW() {
           running ||
           freeFinishing
         }
+        // At the end of an activity the card scrolls: «Save» and «Discard»
+        // under a tall end card stay on the screen (TASK-477).
+        scrolls={finishing || freeFinishing}
+        // Folded, a strip of how far and how long, and «Save» (TASK-478 b).
+        endStrip={
+          ended === null
+            ? undefined
+            : (open) => (
+                <EndFoldedStrip
+                  track={ended.track}
+                  activity={ended.activity}
+                  onOpen={open}
+                  onSave={
+                    signedIn
+                      ? () => {
+                          endSave.current?.();
+                          // Not kept: the card says why.
+                          open();
+                        }
+                      : undefined
+                  }
+                />
+              )
+        }
         onBack={onBack}
         mapError={mapError}
         banner={
@@ -1242,8 +1532,13 @@ function MuW() {
           ) : undefined
         }
         compass={
-          turned.arrow ? (
-            <NorthArrow shown={turned.shown} onPress={turned.onArrow} />
+          mapTurn.arrow ? (
+            <NorthArrow
+              shown={mapTurn.shown}
+              onPress={mapTurn.onArrow}
+              northUp={mapTurn.compass ? mapTurn.northUp : undefined}
+              upHint={mapTurn.compass ? t("Turns the map where you face") : undefined}
+            />
           ) : undefined
         }
         map={
@@ -1267,11 +1562,8 @@ function MuW() {
                         ? explored.route.start
                         : (exploreRun?.points[0] ?? start?.point ?? null)
             }
-            stops={
-              theming && themed.state.status === "done"
-                ? themed.state.result.stops
-                : null
-            }
+            stops={theming ? themedStops : null}
+            focus={theming ? placeFocus : null}
             route={
               finishing
                 ? finished.run.route
@@ -1316,6 +1608,10 @@ function MuW() {
                     ? null
                     : (followedOnFoot ?? move.left?.onFoot ?? null)
             }
+            // The shape asked for, under the route drawn, and over the map
+            // while it is drawn (TASK-442).
+            ghost={ghost}
+            over={waitingFor && <WaitingShape request={waitingFor} />}
             // Only while choosing, a drawn route or an example of "Explore"
             // (TASK-155): running, or on a themed route, one route is the route.
             others={
@@ -1336,6 +1632,9 @@ function MuW() {
                     ? freeLine
                     : null
             }
+            lifts={freeFinishing ? freeFinished.lifts : null}
+            flightAir={freeFinishing ? flightAirOf(freeFinished.run) : null}
+            liftLabels={freeFinishing ? freeFinished.liftLabels : undefined}
             following={
               navigating && navigation.status === "following"
                 ? navigation.position
@@ -1344,6 +1643,8 @@ function MuW() {
                   : null
             }
             heading={heading}
+            // On «Compass», the arrow faces where the map turned (TASK-431).
+            facing={mapTurn.facing}
             // Running the route: the part run solid, the part left dashed
             // and blinking (TASK-224).
             progress={
@@ -1357,12 +1658,13 @@ function MuW() {
             }
             moving={movingShape || movingExample}
             onMoved={movingExample ? moveExample.onMoved : move.onMoved}
-            bearing={turned.bearing}
-            turn={turned.turn}
-            onTurned={turned.onTurned}
+            bearing={mapTurn.bearing}
+            turn={mapTurn.turn}
+            onTurned={mapTurn.onTurned}
             // «Draw on the map» (TASK-281): the figure, and the fingers.
             canvas={canvasOn ? mapDraw.canvas : null}
             onCanvas={mapDraw.onCanvas}
+            anchored={canvasOn ? mapDraw.anchored : null}
             // «Choose on the map» (TASK-292): the pin in the middle.
             picking={pickOn}
             onCentre={setPickedCentre}
@@ -1385,9 +1687,15 @@ function MuW() {
             onPhoto={mapDraw.choosePhoto}
             onUndo={mapDraw.undo}
             canUndo={mapDraw.canUndo}
+            onRedo={mapDraw.redo}
+            canRedo={mapDraw.canRedo}
+            onClear={mapDraw.clear}
             distanceM={mapDraw.distanceM}
             problem={mapDraw.problem}
             onDraw={mapDraw.request === null ? null : onDrawCanvas}
+            onTurn={mapDraw.turnTo}
+            pieces={mapDraw.pieces}
+            anchoring={mapDraw.anchoring}
           />
         ) : reviewing && activity !== null ? (
           <ActivityCard
@@ -1406,6 +1714,7 @@ function MuW() {
             onBack={backFromDrawing}
             onStart={onStartDrawing}
             onDrawAgain={drawAgainOf(againOfDrawing(drawing))}
+            onEditDrawing={editTrackOf(drawingTrackInPlace)}
           />
         ) : (finishing || freeFinishing) && stretchAsked ? (
           // «Stretch» opens the exercises (part B) over «Your run», where
@@ -1450,7 +1759,13 @@ function MuW() {
               closeExplore();
               setScreen(routeList);
             }}
-            fromDraw={routeList === "choose"}
+            onNearMe={
+              farIdea === null
+                ? undefined
+                : () => themed.ask(nearMeRequest(farIdea.idea, farIdea.from))
+            }
+            apiUrl={API_URL}
+            onPlace={(point) => setPlaceFocus({ point })}
             start={startViewOf(
               startDirections.state,
               themed.state.status === "done" ? themed.state.result.points : null,
@@ -1460,6 +1775,7 @@ function MuW() {
                 onStartExplore(themed.state.result);
               }
             }}
+            onEditDrawing={editTrackOf(themedTrack)}
           />
         ) : exploring ? (
           <ExploredCard
@@ -1487,6 +1803,7 @@ function MuW() {
                 ? drawAgainOf(againOfRequest(explored.request))
                 : undefined
             }
+            onEditDrawing={editTrackOf(exploredTrack)}
           />
         ) : finishing ? (
           <FinishCard
@@ -1549,14 +1866,31 @@ function MuW() {
                 draw(withPenUp(view.request));
               }
             }}
+            onSwimLaps={(laps) => {
+              // «Bigger shape», «Smaller shape» (TASK-323 C2): the same swim
+              // in a lap fewer or more. Its request stays the one on screen
+              // (sameRequest leaves the laps out, as `near`), and «Draw
+              // route» shows it again; another shape, distance or start asks
+              // the engine's laps.
+              if (view.status === "done") {
+                draw({ ...view.request, laps });
+              }
+            }}
             onStart={() => {
-              if (view.status === "done" && view.request.activity === "paddling") {
-                paddleNotice.ask(() => setScreen("navigate"));
+              const notice =
+                view.status === "done" ? noticeOf(view.request.activity) : null;
+              if (notice !== null) {
+                notice.ask(() => setScreen("navigate"));
               } else {
                 setScreen("navigate");
               }
             }}
             onMove={move.available ? move.begin : undefined}
+            save={
+              fromEdit && fromCanvas && drawnFavorite !== null ? (
+                <SaveRouteButton route={drawnFavorite} />
+              ) : undefined
+            }
             movedElsewhere={move.elsewhere}
             choices={choices}
             chosen={chosenIndex}
@@ -1566,12 +1900,15 @@ function MuW() {
                 <FigureTiles
                   chosen={resultTile}
                   onChoose={onChangeFigure}
-                  // On the water only the shapes, as in «Draw».
-                  pictures={sportActivity !== "paddling"}
+                  // As in «Draw»: on the water no picture, in a wheelchair
+                  // its four shapes and no drawing by hand (TASK-414).
+                  pictures={resultFigures.pictures}
+                  shapes={resultFigures.shapes}
                   testID="result-figures"
                 />
-                {/* The figure of the route in the board (TASK-320). */}
-                {resultLines !== null && <EditDrawingButton onPress={onEditResult} />}
+                {resultFigures.editDrawing && (
+                  <EditDrawingButton onPress={editTrackOf(resultTrack)} />
+                )}
               </>
             }
           />
@@ -1579,274 +1916,408 @@ function MuW() {
         {/* Under the card of a run that ended: «Save» or «Discard», with an
             account (TASK-172). */}
         {(finishing || freeFinishing) && (
-          <RunEnd onSave={onSaveRun} onDiscard={onDiscardRun} />
+          <RunEnd onSave={onSaveRun} onDiscard={onDiscardRun} saveRef={endSave} />
         )}
         {/* The stretching, over the whole screen, until done or skipped
             (TASK-285 part B). */}
         {stretching && <StretchScreen onLeave={() => setStretching(false)} />}
       </MapScreen>
+      {/* The morning routine, from its notification, over any page (TASK-466
+          part D): never over a run. */}
+      <MorningStretchLayer
+        blocked={stretching || screen === "run" || screen === "navigate"}
+      />
       {/* Over the map, opposite the way back: keep the route shown. */}
       <FavoriteHeart route={onMap} />
       {page !== -1 && (
-        <Pager
+        <TabShell
+          // Built again when a mode comes or goes (TASK-429, TASK-490): other
+          // tabs, whose lights start from the page on screen.
+          key={mode}
           page={page}
-          onPage={(index) => showPage(pages[index])}
-          action={
-            // The sport at the left of the way to «Profile» (TASK-205),
-            // whose circle is the name of the profile's page (TASK-278).
-            <View style={styles.actions}>
-              <SportButton />
-              <ProfileButton
-                selected={screen === "profile"}
-                onPress={() => showPage("profile")}
-              />
-            </View>
+          onPage={(index) =>
+            // Nobody signed in has no messages: their tab is the way to sign in.
+            showPage(
+              pages[index] === "messages" && !signedIn ? "profile" : pages[index],
+            )
           }
-          pages={[
-            {
-              title: pageTitle("feed"),
-              render: () => (
-                <FeedScreen
-                  active={screen === "feed"}
-                  // For the drawings nearby (TASK-118), as «Explore».
-                  near={start?.point ?? null}
-                  onOpen={(post) => {
-                    closeExplore();
-                    openExplored(postRoute(post), fetchPostRoute(post));
-                    setRouteList("feed");
-                    setScreen("map");
+          // The sport at the right of the header (TASK-205, TASK-367); in the
+          // ski and training modes «Messages» beside it, which has no tab
+          // there (TASK-429, TASK-490).
+          action={
+            ownBar ? (
+              <View style={styles.headerActions}>
+                <MessagesButton
+                  waiting={messagesWaiting}
+                  onPress={() => {
+                    messagesFrom.current = screen;
+                    showPage(signedIn ? "messages" : "profile");
                   }}
                 />
-              ),
-            },
-            {
-              title: pageTitle("draw"),
-              render: () => (
-                <ChooseScreen
-                  status={startStatus(startMode, position, start)}
-                  denied={startMode === "gps" && position.status === "denied"}
-                  mode={startMode}
-                  onMode={(mode) => {
-                    setStartMode(mode);
-                    if (mode === "gps") {
-                      // Asked again, as the old button did: the permission may be on now.
-                      refresh();
+                <SportButton />
+              </View>
+            ) : (
+              <SportButton />
+            )
+          }
+          pages={shellPagesOf<ShellPage>(
+            barSport,
+            [
+              {
+                title: pageTitle("feed"),
+                label: pageTitle("feed"),
+                icon: "house",
+                render: () => (
+                  <DrawAgainContext.Provider value={drawAgainDoor}>
+                    <EditRunContext.Provider value={editRunDoor}>
+                      <FeedScreen
+                        active={screen === "feed"}
+                        onOpen={(post) => {
+                          closeExplore();
+                          openExplored(postRoute(post), fetchPostRoute(post));
+                          setRouteList("feed");
+                          setScreen("map");
+                        }}
+                        onOpenMuw={(route) => {
+                          closeExplore();
+                          openExplored(muwCardRoute(route), fetchMuwRoute(route));
+                          setRouteList("feed");
+                          setScreen("map");
+                        }}
+                        // «Record now» of the «+» (TASK-481): as «Draw»'s
+                        // start without a route, for the chosen sport.
+                        onRecord={() => {
+                          if (sport === "gym") startGymWorkout();
+                          else if (sport === "stretch") startStretchSession();
+                          else if (sport === "snowshoe")
+                            snowNotice.ask(() => setScreen("run"));
+                          else setScreen("run");
+                        }}
+                      />
+                    </EditRunContext.Provider>
+                  </DrawAgainContext.Provider>
+                ),
+              },
+              {
+                title: pageTitle("draw"),
+                label: pageTitle("draw"),
+                icon: "pencil",
+                render: () => (
+                  <ChooseScreen
+                    status={startStatus(startMode, position, start)}
+                    denied={startMode === "gps" && position.status === "denied"}
+                    mode={startMode}
+                    onMode={(mode) => {
+                      setStartMode(mode);
+                      if (mode === "gps") {
+                        // Asked again, as the old button did: the permission may be on now.
+                        refresh();
+                      }
+                    }}
+                    searching={showsSearch(startMode, position)}
+                    onPlace={(chosen) => {
+                      setPlace(chosen);
+                      // A small lake's shapes fit at less than 2 km (TASK-240).
+                      const fits = distanceOnSpot(chosen, distanceM);
+                      if (fits !== null) {
+                        distance.choose(fits);
+                      }
+                    }}
+                    near={
+                      position.status === "ok" ? position.point : (place?.point ?? null)
                     }
-                  }}
-                  searching={showsSearch(startMode, position)}
-                  onPlace={(chosen) => {
-                    setPlace(chosen);
-                    // A small lake's shapes fit at less than 2 km (TASK-240).
-                    const fits = distanceOnSpot(chosen, distanceM);
-                    if (fits !== null) {
-                      distance.choose(fits);
+                    // On the water the search knows the lakes and the beaches,
+                    // for a swim too (TASK-323).
+                    suggest={isOnWater(sportActivity) ? spotPlaces : undefined}
+                    searchHint={isOnWater(sportActivity) ? SPOT_SEARCH_HINT : undefined}
+                    onPickOnMap={onOpenPick}
+                    mapError={mapError}
+                    onMapRetry={() => {
+                      setMapError(null);
+                      setMapTries((tries) => tries + 1);
+                    }}
+                    footer={
+                      <>
+                        <ZoneNotice bytes={firstMaps} />
+                        <DrawButton
+                          enabled={request !== null}
+                          onDraw={onDraw}
+                          // What it draws and how far (TASK-361).
+                          label={drawLabel(drawWhat(drawn), distanceM)}
+                          testID="draw-route"
+                        />
+                      </>
                     }
-                  }}
-                  near={
-                    position.status === "ok" ? position.point : (place?.point ?? null)
-                  }
-                  // On the water the search knows the lakes and the beaches.
-                  suggest={sportActivity === "paddling" ? spotPlaces : undefined}
-                  searchHint={
-                    sportActivity === "paddling" ? SPOT_SEARCH_HINT : undefined
-                  }
-                  onPickOnMap={onOpenPick}
-                  mapError={mapError}
-                  onMapRetry={() => {
-                    setMapError(null);
-                    setMapTries((tries) => tries + 1);
-                  }}
-                  footer={
-                    <>
-                      <ZoneNotice bytes={firstMaps} />
-                      <DrawButton enabled={request !== null} onDraw={onDraw} />
-                    </>
-                  }
-                  onRun={() => {
-                    Keyboard.dismiss();
-                    setScreen("run");
-                  }}
-                  runLabel={withoutRouteLabel(sport)}
-                >
-                  <ImageEditsContext.Provider value={imageEdits}>
-                    <RouteChoice
-                      kind={drawKind}
-                      onKind={setKind}
-                      shapeText={shapeText}
-                      shape={shape}
-                      onShapeText={setShapeText}
-                      reading={reading}
-                      onShapeDone={() => {
-                        if (reading) {
-                          shapeReading.read(shapeText);
-                        }
-                      }}
-                      wordText={wordText}
-                      onWordText={setWordText}
-                      wordCheck={wordCheck}
-                      letterStyle={letterStyle}
-                      onLetterStyle={setLetterStyle}
-                      penUp={penUp}
-                      onPenUp={setPenUp}
-                      image={image.state}
-                      onChooseImage={image.choose}
-                      distanceText={distance.text}
-                      distanceM={distanceM}
-                      onDistanceText={distance.type}
-                      activity={sportActivity}
-                      underKinds={<MapDrawButton onPress={onOpenCanvas} />}
-                      freehand={freehand.figure}
-                      onEditFreehand={onEditFreehand}
-                      onEditShape={onEditShape}
-                    />
-                  </ImageEditsContext.Provider>
-                  {/* Shapes ready to run near the phone, or in other cities
+                    onRun={() => {
+                      Keyboard.dismiss();
+                      // A workout at the gym has its own screen (TASK-385 B).
+                      if (sport === "gym") startGymWorkout();
+                      // A stretching session, the routine ticked on «Draw»
+                      // (TASK-475 part B).
+                      else if (sport === "stretch") startStretchSession();
+                      // The day on snowshoes, through the avalanche notice
+                      // the first time (TASK-413 C).
+                      else if (sport === "snowshoe")
+                        snowNotice.ask(() => setScreen("run"));
+                      else setScreen("run");
+                    }}
+                    runLabel={withoutRouteLabel(sport)}
+                    runIcon={withoutRouteIcon(sport)}
+                  >
+                    <ImageEditsContext.Provider value={imageEdits}>
+                      <RouteChoice
+                        kind={drawKind}
+                        onKind={setKind}
+                        shapeText={shapeText}
+                        shape={shape}
+                        onShapeText={setShapeText}
+                        reading={reading}
+                        onShapeDone={() => {
+                          if (reading) {
+                            shapeReading.read(shapeText);
+                          }
+                        }}
+                        wordText={wordText}
+                        onWordText={setWordText}
+                        wordCheck={wordCheck}
+                        letterStyle={letterStyle}
+                        onLetterStyle={setLetterStyle}
+                        penUp={penUp}
+                        onPenUp={setPenUp}
+                        image={image.state}
+                        onChooseImage={image.choose}
+                        distanceText={distance.text}
+                        distanceM={distanceM}
+                        onDistanceText={distance.type}
+                        activity={sportActivity}
+                        onFreehand={onOpenCanvas}
+                        pace={pace}
+                      />
+                    </ImageEditsContext.Provider>
+                    {/* The shape game, right under the distance (the user's
+                      choice of 2026-10-29), while the API has it. */}
+                    {playOn && <PlayRow onPress={() => showPage("play")} />}
+                    {/* Shapes ready to run near the phone, or in other cities
                       (TASK-306): one opens as a route of «Explore», and «←»
                       comes back here. */}
-                  {sportActivity === "running" && (
-                    <NearYou
-                      cards={nearYou}
+                    {sportActivity === "running" && (
+                      <NearYou
+                        cards={nearYou}
+                        onOpen={(route) => {
+                          Keyboard.dismiss();
+                          closeExplore();
+                          openExplored(route);
+                          setRouteList("choose");
+                          setScreen("map");
+                        }}
+                      />
+                    )}
+                  </ChooseScreen>
+                ),
+              },
+              {
+                title: pageTitle("messages"),
+                label:
+                  messagesWaiting > 0
+                    ? t("Messages, {count} waiting", { count: messagesWaiting })
+                    : pageTitle("messages"),
+                icon: "send",
+                count: messagesWaiting,
+                // It asks the API for the conversations as it opens.
+                lazy: true,
+                render: () => <MessagesPage active={screen === "messages"} />,
+              },
+              {
+                title: pageTitle("explore"),
+                label: pageTitle("explore"),
+                icon: "search",
+                // It asks the API for its routes as it opens: not before.
+                lazy: true,
+                render: () =>
+                  // On the water, the lakes and the beaches (TASK-191), a
+                  // swim's too (TASK-323 C4).
+                  sport === "paddle" || sport === "swim" ? (
+                    <PaddleExplore
+                      apiUrl={API_URL}
+                      near={start?.point ?? null}
+                      swim={sport === "swim"}
                       onOpen={(route) => {
-                        Keyboard.dismiss();
                         closeExplore();
                         openExplored(route);
-                        setRouteList("choose");
+                        setRouteList("explore");
                         setScreen("map");
                       }}
+                      onOpenExample={openFoundExample}
                     />
-                  )}
-                  {/* The city tours and the ready-made pictures (TASK-280):
-                      none on the water, where there are no towns or photos. */}
-                  {sportActivity !== "paddling" && (
-                    <DrawIdeas
-                      where={toursFrom(start)}
-                      onTour={(category) => {
-                        if (start === null) {
-                          return;
+                  ) : (
+                    <ExploreScreen
+                      apiUrl={API_URL}
+                      near={start?.point ?? null}
+                      activity={sportActivity}
+                      onOpen={(route) => {
+                        closeExplore();
+                        openExplored(route);
+                        setRouteList("explore");
+                        setScreen("map");
+                      }}
+                      onOpenExample={openFoundExample}
+                      city={exploreCity}
+                      onCity={(city) => {
+                        setExploreCity(city);
+                        if (city !== null) {
+                          const recent = remember(recentCities, city);
+                          setRecentCities(recent);
+                          saveRecentCities(recent);
                         }
+                      }}
+                      recent={recentCities}
+                      onAsk={(request) => {
                         Keyboard.dismiss();
                         closeExplore();
-                        // As a category of «Explore» with «Near me»: around
-                        // the start, the category alone (ADR-0099).
-                        themed.ask({ text: category, centre: start.point, city: null });
-                        setRouteList("choose");
+                        themed.ask(request);
+                        setRouteList("explore");
                         setScreen("map");
                       }}
-                      chosen={
-                        drawKind === "image" && image.state.status === "traced"
-                          ? sampleOf(image.state.picture)
-                          : null
-                      }
-                      onPicture={(picture) => {
-                        setKind("image");
-                        image.show(samplePicture(picture), picture.outline);
+                      onIdea={(idea) => {
+                        Keyboard.dismiss();
+                        closeExplore();
+                        // Planned already: it opens at once, nothing asked.
+                        themed.show(idea);
+                        setRouteList("explore");
+                        setScreen("map");
                       }}
                     />
-                  )}
-                </ChooseScreen>
-              ),
-            },
-            {
-              title: pageTitle("explore"),
-              // It asks the API for its routes as it opens: not before.
-              lazy: true,
-              render: () =>
-                // On the water, the lakes and the beaches (TASK-191).
-                sport === "paddle" ? (
-                  <PaddleExplore
-                    apiUrl={API_URL}
-                    near={start?.point ?? null}
-                    onOpen={(route) => {
-                      closeExplore();
-                      openExplored(route);
-                      setRouteList("explore");
-                      setScreen("map");
-                    }}
-                  />
-                ) : (
-                  <ExploreScreen
-                    apiUrl={API_URL}
-                    near={start?.point ?? null}
-                    onOpen={(route) => {
-                      closeExplore();
-                      openExplored(route);
-                      setRouteList("explore");
-                      setScreen("map");
-                    }}
-                    city={exploreCity}
-                    onCity={(city) => {
-                      setExploreCity(city);
-                      if (city !== null) {
-                        const recent = remember(recentCities, city);
-                        setRecentCities(recent);
-                        saveRecentCities(recent);
-                      }
-                    }}
-                    recent={recentCities}
-                    onAsk={(request) => {
-                      Keyboard.dismiss();
-                      closeExplore();
-                      themed.ask(request);
-                      setRouteList("explore");
-                      setScreen("map");
-                    }}
+                  ),
+              },
+              {
+                // The account's own profile (TASK-278): its picture is its tab.
+                title: pageTitle("profile"),
+                label: profileTab.label,
+                face: (selected) => <ProfileFace selected={selected} />,
+                count: profileTab.requests,
+                lazy: true,
+                render: () => (
+                  <OwnProfile
+                    active={screen === "profile"}
+                    onBack={profileFrom !== null ? backFromProfile : undefined}
+                    // The first step of a new profile (TASK-457); the ski
+                    // mode's bar has no «Explore».
+                    onExplore={ownBar ? undefined : () => showPage("explore")}
                   />
                 ),
-            },
-            // The shape game (TASK-296, ADR-0255), while the API has it: it
-            // asks for the account's collection as it opens.
-            ...(playOn
-              ? [
-                  {
-                    title: pageTitle("play"),
-                    lazy: true,
-                    render: () => (
-                      <PlayScreen
-                        active={screen === "play"}
-                        onSignIn={() => showPage("profile")}
-                      />
-                    ),
-                  },
-                ]
-              : []),
+              },
+            ],
             {
-              // The account's own profile, after «Explore» (TASK-278): no
-              // name in the header, where its circle is.
-              title: pageTitle("profile"),
-              unnamed: true,
-              lazy: true,
-              render: () => (
-                <OwnProfile
-                  active={screen === "profile"}
-                  onBack={profileFrom !== null ? backFromProfile : undefined}
-                />
-              ),
+              // The ski mode's own pages (TASK-429 part A, ADR-0357).
+              ski: {
+                choose: {
+                  title: t("Today"),
+                  label: t("Today"),
+                  face: (selected) => <SkiTabIcon name="today" selected={selected} />,
+                  render: () => (
+                    <SkiTodayPage
+                      onRecord={() => {
+                        Keyboard.dismiss();
+                        setScreen("run");
+                      }}
+                    />
+                  ),
+                },
+                skiDays: {
+                  title: t("Days@@ski"),
+                  label: t("Days@@ski"),
+                  face: (selected) => <SkiTabIcon name="days" selected={selected} />,
+                  lazy: true,
+                  render: () => <SkiDaysPage onLogIn={() => showPage("profile")} />,
+                },
+                skiResorts: {
+                  title: t("Resorts"),
+                  label: t("Resorts"),
+                  face: (selected) => <SkiTabIcon name="resorts" selected={selected} />,
+                  lazy: true,
+                  render: () => <SkiResortsPage apiUrl={API_URL} />,
+                },
+              },
+              // The training mode's own pages (TASK-490 part A, ADR-0398).
+              training: {
+                choose: {
+                  title: t("Today"),
+                  label: t("Today"),
+                  face: (selected) => (
+                    <TrainingTabIcon name="today" selected={selected} />
+                  ),
+                  render: () => (
+                    <TrainingTodayPage
+                      onStart={() => {
+                        Keyboard.dismiss();
+                        startGymWorkout();
+                      }}
+                    />
+                  ),
+                },
+                trainingWorkouts: {
+                  title: t("Workouts"),
+                  label: t("Workouts"),
+                  face: (selected) => (
+                    <TrainingTabIcon name="workouts" selected={selected} />
+                  ),
+                  lazy: true,
+                  render: () => (
+                    <TrainingWorkoutsPage onLogIn={() => showPage("profile")} />
+                  ),
+                },
+              },
             },
-          ]}
+          )}
         />
       )}
-      {/* The board to draw a figure by hand (TASK-320), over everything. */}
-      <FreehandBoard
-        visible={board !== null}
-        onClose={onBoardSave}
-        figure={freehand.figure}
-        problem={freehand.problem}
-        onLine={freehand.addLine}
-        onErase={freehand.erase}
-        onUndo={freehand.undo}
-        canUndo={freehand.canUndo}
-      />
+      {/* «Messages» of the ski and training modes over the app (TASK-429 part A, TASK-490). */}
+      {ownBar && screen === "messages" && (
+        <SkiMessages onBack={() => showPage(messagesFrom.current)} />
+      )}
+      {/* The shape game (TASK-296, ADR-0255) over the app, opened from its
+          row in «Draw»: «←» goes back there. */}
+      {screen === "play" && (
+        <PlayOverlay
+          onBack={() => setScreen("choose")}
+          onSignIn={() => showPage("profile")}
+        />
+      )}
       {/* Before the first «Start» on the water (TASK-191). */}
       <PaddleNotice
         visible={paddleNotice.asking}
         onAccept={paddleNotice.accept}
         onDismiss={paddleNotice.dismiss}
       />
+      {/* Before the first «Start» of a swim (TASK-323 C). */}
+      <SwimNotice
+        visible={swimNotice.asking}
+        onAccept={swimNotice.accept}
+        onDismiss={swimNotice.dismiss}
+      />
+      {/* Before the first «Start» on snowshoes (TASK-413 B). */}
+      <SnowNotice
+        visible={snowNotice.asking}
+        onAccept={snowNotice.accept}
+        onDismiss={snowNotice.dismiss}
+      />
+      {/* A workout at the gym (TASK-385 B) and a swim in a pool (TASK-400
+          B), over everything until saved. Out of the map's card, which has
+          nothing while «Draw» shows: «Start workout» there opened nothing. */}
+      <GymWorkoutHost />
+      {/* A stretching session of the sport «Stretching» (TASK-475 part B). */}
+      <StretchSessionHost />
+      <PoolSwimHost />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // The ski mode's «Messages» and sport, side by side (TASK-429).
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   screen: {
     flex: 1,
     backgroundColor: color.background,
@@ -1855,10 +2326,5 @@ const styles = StyleSheet.create({
     flex: 1,
     // Under the page while the WebView starts, so it never flashes white.
     backgroundColor: color.map.background,
-  },
-  actions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.sm,
   },
 });

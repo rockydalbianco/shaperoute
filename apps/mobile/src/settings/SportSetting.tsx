@@ -10,6 +10,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Hairline } from "../ui/Hairline";
+import { useSettingsGroup } from "./settingsGroup";
 import { loadSport, saveSport, type Sport, SPORTS, type SportOption } from "./sport";
 
 type Props = {
@@ -23,6 +25,7 @@ type Props = {
  * come: nothing is promised to work. The choice stays on the phone.
  */
 export function SportSetting({ sports = SPORTS }: Props) {
+  const group = useSettingsGroup();
   const [chosen, setChosen] = useState<Sport>(() => loadSport(sports));
   const choose = (sport: Sport) => {
     setChosen(sport);
@@ -31,10 +34,10 @@ export function SportSetting({ sports = SPORTS }: Props) {
   return (
     <View style={styles.section}>
       <Text style={styles.label}>{t("SPORT")}</Text>
-      <View style={styles.menu} accessibilityRole="radiogroup">
+      <View style={[styles.menu, group]} accessibilityRole="radiogroup">
         {sports.map((option, at) => (
           <View key={option.id}>
-            {at > 0 && <View style={styles.divider} />}
+            {at > 0 && <Hairline style={styles.inset} />}
             {option.ready ? (
               <Pressable
                 style={styles.row}
@@ -71,6 +74,10 @@ export function SportSetting({ sports = SPORTS }: Props) {
 // The rows of «Settings» (`../profile/SettingsPage`), so the section sits
 // among the others as one of them.
 const styles = StyleSheet.create({
+  /** A division set in from the card's edge, as the rows' words are. */
+  inset: {
+    marginHorizontal: space.md,
+  },
   section: {
     gap: space.lg,
   },
@@ -92,11 +99,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: space.md,
     paddingHorizontal: space.md,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginHorizontal: space.md,
-    backgroundColor: color.border,
   },
   emoji: {
     fontSize: fontSize.input + space.xs,

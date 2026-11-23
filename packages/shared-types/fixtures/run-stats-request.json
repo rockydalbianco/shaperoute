@@ -1,0 +1,11 @@
+{
+  "elevation": [
+    { "distance_m": 0, "altitude_m": 194.0 },
+    { "distance_m": 1000, "altitude_m": 201.5 },
+    { "distance_m": 2000, "altitude_m": 215.0 },
+    { "distance_m": 3000, "altitude_m": 208.0 },
+    { "distance_m": 4000, "altitude_m": 196.5 }
+  ],
+  "cadence_spm": 168,
+  "kcal": 355
+}

@@ -4,8 +4,11 @@ import { Pressable, Text, View } from "react-native";
 
 import type { Account } from "../account/useAccount";
 import { t } from "../i18n";
+import { Hairline } from "../ui/Hairline";
+import { Tap } from "../ui/Tap";
 import { ContactField, contactStyles as styles } from "./ContactField";
 import { checkPhone, phoneOfUser } from "./contactFields";
+import { useSettingsGroup } from "./settingsGroup";
 
 type Props = {
   user: User;
@@ -23,6 +26,7 @@ type Busy = "save" | "remove" | null;
  * closes and the row shows the number as the API keeps it.
  */
 export function PhoneSetting({ user, account }: Props) {
+  const group = useSettingsGroup();
   const kept = phoneOfUser(user);
   const [open, setOpen] = useState(false);
   const [phone, setPhone] = useState(kept ?? "");
@@ -66,9 +70,9 @@ export function PhoneSetting({ user, account }: Props) {
 
   const value = kept ?? t("Add");
   return (
-    <View style={styles.menu}>
-      <Pressable
-        style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+    <View style={[styles.menu, group]}>
+      <Tap
+        style={styles.row}
         onPress={toggle}
         disabled={busy !== null}
         accessibilityRole="button"
@@ -79,10 +83,10 @@ export function PhoneSetting({ user, account }: Props) {
         <Text style={styles.emoji}>📱</Text>
         <Text style={styles.rowText}>{t("Phone number")}</Text>
         <Text style={styles.value}>{value}</Text>
-      </Pressable>
+      </Tap>
       {open && (
         <View>
-          <View style={styles.divider} />
+          <Hairline style={styles.inset} />
           <View style={styles.form}>
             <ContactField
               label={t("PHONE NUMBER")}

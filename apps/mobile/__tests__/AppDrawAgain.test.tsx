@@ -16,6 +16,7 @@ import App from "../App";
 import { apiError, type MemorySecureStore } from "../src/account/testing";
 import { forgetFeed } from "../src/feed/useFeed";
 import { SAMPLE_FEED } from "../src/feed/sampleFeed";
+import { chosenShape } from "../src/route/testing";
 
 // Every test renders the whole app, and the first one loads it cold.
 jest.setTimeout(20_000);
@@ -48,8 +49,8 @@ jest.mock("expo-secure-store", () =>
 const store = jest.requireMock<MemorySecureStore>("expo-secure-store");
 const API = "http://192.168.1.23:8000";
 const SESSION_KEY = "shaperoute.session";
-// Asked from where «Draw» starts: the position of the phone.
-const FEED = "/feed?lat=46.067&lon=11.1215";
+// The «All» tab: never with the phone's position (TASK-362).
+const FEED = "/feed?filter=all";
 
 // The second drawing of the sample feed, opened as a route of «Explore».
 const POST = SAMPLE_FEED[1];
@@ -81,7 +82,7 @@ function expectDraw(distance: string) {
   expect(screen.getByLabelText("Distance in km")).toHaveDisplayValue(distance);
   // From where «Draw» starts, as before.
   expect(screen.getByText("Starting from your position.")).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+  expect(screen.getByTestId("draw-route")).toBeEnabled();
 }
 
 beforeEach(() => {
@@ -123,8 +124,10 @@ afterEach(() => {
 });
 
 test("a route of «Explore» gives «Draw» its shape and its distance, asking for nothing", async () => {
+  // From the list of «Explore»: «Feed» has no made-up drawing to open.
   await onFeed();
-  await fireEvent.press(screen.getByText(POST.title));
+  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
+  await fireEvent.press(await screen.findByText("Star · 5.1 km"));
   await screen.findByText("Start");
   const before = fetchSpy.mock.calls.length;
 
@@ -134,7 +137,7 @@ test("a route of «Explore» gives «Draw» its shape and its distance, asking f
   expect(
     screen.getByRole("button", { name: "Shape", selected: true }),
   ).toBeOnTheScreen();
-  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("star");
+  expect(chosenShape()).toBe("star");
   // The route is left: no card of it, and nothing drawn yet.
   expect(screen.queryByText("Back to the list")).toBeNull();
   expect(asked("POST", "/route-jobs")).toHaveLength(0);
@@ -171,7 +174,12 @@ test("a member's drawing gives «Draw» its shape, the drawing left for good", a
   store.kept.set(SESSION_KEY, JSON.stringify(session));
   await onFeed();
   await fireEvent.press(await screen.findByText(String(feed.posts[0].title)));
-  expect(await screen.findByText(String(drawing.description))).toBeOnTheScreen();
+  // The page of the post (TASK-410): a tap on its drawing opens the map.
+  await fireEvent.press(await screen.findByTestId("post-map"));
+  // The tap waits to know it is alone (TASK-454 part B), and the page of the
+  // post has the description too: «Start» is on the map only.
+  await screen.findByRole("button", { name: "Start" });
+  expect(screen.getByText(String(drawing.description))).toBeOnTheScreen();
 
   await fireEvent.press(screen.getByRole("button", { name: "Draw it near me" }));
 
@@ -179,7 +187,7 @@ test("a member's drawing gives «Draw» its shape, the drawing left for good", a
   expect(drawing.shape).toBe("star");
   expect(drawing.distance_m).toBe(4004);
   expectDraw("4");
-  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("star");
+  expect(chosenShape()).toBe("star");
   expect(screen.queryByText(String(drawing.description))).toBeNull();
   expect(screen.queryByRole("button", { name: "Back to the profile" })).toBeNull();
   // Nothing of the other's route travels, and nothing is drawn yet.
@@ -214,7 +222,12 @@ test.each([
   });
   await onFeed();
   await fireEvent.press(await screen.findByText(String(feed.posts[0].title)));
-  expect(await screen.findByText(String(drawing.description))).toBeOnTheScreen();
+  // The page of the post (TASK-410): a tap on its drawing opens the map.
+  await fireEvent.press(await screen.findByTestId("post-map"));
+  // The tap waits to know it is alone (TASK-454 part B), and the page of the
+  // post has the description too: «Start» is on the map only.
+  await screen.findByRole("button", { name: "Start" });
+  expect(screen.getByText(String(drawing.description))).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Start" })).toBeOnTheScreen();
   expect(screen.queryByRole("button", { name: "Draw it near me" })).toBeNull();
 });

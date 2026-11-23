@@ -28,5 +28,7 @@ test("the short list of reasons, «other» last", () => {
     "user",
     "group_run",
     "message",
+    "outfit_tag",
+    "gear",
   ]);
 });

@@ -57,7 +57,7 @@ from shaperoute_api.schemas import ErrorBody
 log = logging.getLogger(__name__)
 
 # How many pieces a shape is cut into.
-MIN_PIECES, MAX_PIECES = 2, 12
+MIN_PIECES, MAX_PIECES = 2, 20
 # What a distance piece asks, in metres.
 MIN_PIECE_M, MAX_PIECE_M = 1_000, 50_000
 # A fast piece: one of these distances, in one run, under a pace between
@@ -65,7 +65,7 @@ MIN_PIECE_M, MAX_PIECE_M = 1_000, 50_000
 FAST_DISTANCES_M: tuple[int, ...] = (1_000, 5_000)
 MIN_PACE_S, MAX_PACE_S = 150, 900
 # How long a challenge lasts, in days.
-MIN_DAYS, MAX_DAYS, DEFAULT_DAYS = 1, 14, 7
+MIN_DAYS, MAX_DAYS, DEFAULT_DAYS = 1, 30, 7
 # A run started before the deadline counts if saved within this after it:
 # the runs still queued on a phone. Then the challenge is over.
 GRACE = timedelta(hours=3)

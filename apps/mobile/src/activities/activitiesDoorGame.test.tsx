@@ -74,6 +74,11 @@ function api(worth: Record<string, unknown>) {
   const calls: string[] = [];
   const fetchFn = jest.fn(async (url: string, init?: RequestInit) => {
     const path = url.replace(URL, "");
+    // The figures of the post (TASK-410 C) go after each run saved: their
+    // own test is activitiesDoorStats.test.tsx.
+    if (path.endsWith("/stats")) {
+      return Response.json({}, { status: 200 });
+    }
     calls.push(`${init?.method ?? "GET"} ${path}`);
     if (init?.method === "PUT") {
       return Response.json(activities.activities[0], { status: 200 });
@@ -138,7 +143,13 @@ test("a run that waited is told of its shapes at once", async () => {
   const { fetchFn, calls } = api({ a: run });
   await door(fetchFn);
   await waitFor(() => expect(told).toHaveBeenCalledTimes(1));
-  expect(told).toHaveBeenCalledWith({ shapeIds: ["triangle"], keptAt: null });
+  // With the edition and the collection the API's example names (TASK-423 E).
+  expect(told).toHaveBeenCalledWith({
+    shapeIds: ["triangle"],
+    keptAt: null,
+    editions: [{ shapeId: "lightning", edition: "silver" }],
+    collectionsDone: ["geometry"],
+  });
   expect(calls).toContain("PUT /me/activities/a");
   expect(calls).toContain("GET /game/runs/a");
 });
@@ -168,7 +179,9 @@ test("a run that unlocked nothing, or an API before the game, tells nothing", as
     owner: OWNER,
     request: request as ActivityRequest,
   } as Waiting);
-  const { fetchFn, calls } = api({ a: { ...run, unlocked: [] } });
+  const { fetchFn, calls } = api({
+    a: { ...run, unlocked: [], editions: [], collections_done: [] },
+  });
   await door(fetchFn);
   await waitFor(() => expect(calls).toContain("GET /game/runs/b"));
   await waitFor(() => expect(calls.filter((c) => c.startsWith("PUT"))).toHaveLength(2));

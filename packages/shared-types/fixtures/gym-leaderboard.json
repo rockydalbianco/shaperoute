@@ -1,0 +1,35 @@
+{
+  "month": "2026-11",
+  "exercise": "bench_press",
+  "measure": "load_kg",
+  "people": 3,
+  "rows": [
+    {
+      "rank": 1,
+      "user": {
+        "public_id": "5f0c2a8e-3b1d-4c6e-9a7f-2d4b6e8f0a1c",
+        "username": "ada_lifts"
+      },
+      "value": 100,
+      "drawing_id": "0b7e3c1a-9d2f-4e5a-8c6b-1f3a5d7e9b2c"
+    },
+    {
+      "rank": 2,
+      "user": {
+        "public_id": "8c1f7a52-3d4e-4b9a-9f61-2a7c0e5d9b13",
+        "username": "Runner_42"
+      },
+      "value": 80,
+      "drawing_id": "3c9f1e5b-7a2d-4f6c-8e0b-5a1d3f7c9e2a"
+    }
+  ],
+  "mine": {
+    "rank": 2,
+    "user": {
+      "public_id": "8c1f7a52-3d4e-4b9a-9f61-2a7c0e5d9b13",
+      "username": "Runner_42"
+    },
+    "value": 80,
+    "drawing_id": "3c9f1e5b-7a2d-4f6c-8e0b-5a1d3f7c9e2a"
+  }
+}

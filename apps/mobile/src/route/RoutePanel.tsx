@@ -1,7 +1,6 @@
 import {
   type Activity,
   type LetterStyle,
-  MAX_SHAPE_TEXT_LENGTH,
   type RouteResult,
   type Shape,
   SHAPES,
@@ -21,7 +20,13 @@ import {
 import { isImageRequest } from "../api/routes";
 import { drawnOf, sendSignal } from "../api/signals";
 import { decimal, t, tLater, tPlural } from "../i18n";
+import { isDrawnOutline } from "../mapdraw/canvasRequest";
 import { Segmented } from "../screens/Segmented";
+import { StepTitle } from "../screens/StepTitle";
+import { profileOf } from "../sports";
+import { ON_FOOT_LETTERS, ON_FOOT_PARTS } from "../sports/running";
+import { SwimResult } from "../swim/SwimResult";
+import { isSnowshoeRoute, isPlacedFree } from "../snow/snow";
 import { milesAtLeast, tenthsToM, unitsNumber } from "../units/distanceInput";
 import { distanceLabel, inUnits, METRES_PER_MILE } from "../units/format";
 import { appUnits, type Units } from "../units/units";
@@ -38,25 +43,28 @@ import {
   LONG_DISTANCE_KM,
   switchDistance,
 } from "./distance";
-import { DistanceStepper } from "./DistanceStepper";
-import { type FreehandFigure, isDrawnOutline } from "./freehand";
-import { EditDrawingButton, FreehandChoice } from "./FreehandChoice";
+import { DistanceDial } from "./DistanceDial";
 import { ImageChoice } from "./ImageChoice";
 import { piecesOf } from "./imagePieces";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
+import { NoteRow } from "./NoteRow";
 import { penUpHint } from "./penUpHint";
 import { offersPenUp } from "./penUpShapes";
 import type { ImageSource } from "./pickImage";
 import { type ChoiceKind, problemText } from "./problems";
+import { OtherShapeField } from "./OtherShapeField";
 import { RouteTiles } from "./RouteTiles";
-import { ShapeTiles } from "./ShapeTiles";
+import { type Pace, runTimeText } from "./runTime";
+import { ShapeGrid } from "./ShapeGrid";
+import { ShapePreview } from "./ShapePreview";
 import { shapeList, shapeName } from "./shapeWords";
+import { drawsByHand, shapeOfSport } from "./sportDraw";
 import type { ExportState } from "./useGpxExport";
 import type { ImageState } from "./useImageOutline";
 import type { AnyRouteRequest, RouteProblem, RouteState } from "./useRouteRequest";
 import type { ShapeReadingState } from "./useShapeReading";
 import { penSplit } from "./walks";
-import { type Note, toNotes } from "./warnings";
+import { type Note, shownNotes, toNotes } from "./warnings";
 import { WhileRouting } from "./WhileRouting";
 import {
   MAX_WORD_FIELD_LENGTH,
@@ -65,13 +73,14 @@ import {
   wordDistanceM,
 } from "./wordInput";
 
-// Translated where shown, with t() (TASK-210).
+// Translated where shown, with t() (TASK-210). «Freehand» first (TASK-340,
+// the user's choice of 2026-10-29): it opens the map to draw on, and the
+// switch never stays on it.
+const FREEHAND = { value: "freehand", label: tLater("Freehand") } as const;
 const DRAW_KINDS = [
   { value: "shape", label: tLater("Shape") },
   { value: "word", label: tLater("Word") },
   { value: "image", label: tLater("Image") },
-  // A figure drawn by hand on the board (TASK-320).
-  { value: "freehand", label: tLater("Freehand") },
 ] as const;
 
 // The letters of a word (TASK-080, ADR-0075): "block" is square in the API.
@@ -123,15 +132,12 @@ type ChoiceProps = {
   /** Whose distances the field offers (TASK-190): a run's unless said. On
    * the water only shapes are drawn (TASK-191): no word, no picture. */
   activity?: Activity;
-  /** Under the switch, off the water: «Draw on the map» (TASK-281). */
-  underKinds?: ReactNode;
-  /** The figure drawn by hand (TASK-320), shown with «Freehand», and the
-   * board to draw or change it; under the shape chosen, «Edit the drawing»
-   * opens the board on the shape's lines. Without them the fourth choice
-   * shows nothing to draw with. */
-  freehand?: FreehandFigure | null;
-  onEditFreehand?: () => void;
-  onEditShape?: (shape: Shape) => void;
+  /** «Freehand», first in the switch off the water (TASK-340): the map of
+   * the start, to draw on (TASK-281). Without it the switch has three. */
+  onFreehand?: () => void;
+  /** The runner's pace (`runTime.ts`), for the time under the distance of
+   * a run (TASK-361); none: no time. */
+  pace?: Pace;
 };
 
 /**
@@ -161,10 +167,8 @@ export function RouteChoice({
   distanceM,
   onDistanceText,
   activity = "running",
-  underKinds,
-  freehand = null,
-  onEditFreehand,
-  onEditShape,
+  onFreehand,
+  pace,
 }: ChoiceProps) {
   // The distance is asked in the app's units, at once (TASK-182).
   const units = useUnits();
@@ -178,56 +182,65 @@ export function RouteChoice({
       onDistanceText(switchDistance(distanceText, activity, units));
     }
   }, [units, distanceText, activity, onDistanceText]);
-  const shapesOnly = activity === "paddling";
+  // A swim draws a shape or a drawing, never a word (TASK-323); paddling
+  // neither a word nor an image (TASK-191, TASK-396): one chosen before
+  // waits for another sport, as App.tsx asks. Each sport says it in src/sports.
+  // A wheelchair draws only a circle, a heart, a star or a moon (TASK-414):
+  // no other shape, none typed, no drawing by hand; a shape chosen before
+  // that is not one of them waits for another sport, as App.tsx asks.
+  const {
+    noWords = false,
+    noImages = false,
+    drawNote,
+    timeAt,
+    shapes,
+  } = profileOf(activity);
+  const left = (value: ChoiceKind) =>
+    (noWords && value === "word") || (noImages && value === "image");
+  const shownKind = left(kind) ? "shape" : kind;
+  const kinds = DRAW_KINDS.filter((option) => !left(option.value));
+  const shownShape = shapeOfSport(shape, activity);
+  // No drawing by hand where the sport takes none (sportDraw.drawsByHand).
+  const freehand = drawsByHand(activity) ? onFreehand : undefined;
   return (
     <View style={styles.panel}>
-      <Text style={styles.label}>{t("DRAW")}</Text>
-      {shapesOnly ? (
-        <Text style={styles.note}>{t("On the water, a shape of the catalogue.")}</Text>
-      ) : (
+      {/* The steps of «Draw» (TASK-361): «1 START» is the start's card. */}
+      <StepTitle number={2} label={t("WHAT YOU DRAW")} />
+      {drawNote !== undefined && <Text style={styles.note}>{t(drawNote)}</Text>}
+      <Segmented<ChoiceKind | "freehand">
+        options={translated(freehand ? [FREEHAND, ...kinds] : kinds)}
+        value={shownKind}
+        onChange={(value) => (value === "freehand" ? freehand?.() : onKind(value))}
+        style={styles.kinds}
+      />
+      {shownKind === "shape" ? (
         <>
-          <Segmented
-            options={translated(DRAW_KINDS)}
-            value={kind}
-            onChange={onKind}
-            style={styles.kinds}
-          />
-          {underKinds}
-        </>
-      )}
-      {kind === "shape" || shapesOnly ? (
-        <>
-          <ShapeTiles chosen={shape} onPick={onShapeText} />
-          <TextInput
-            style={styles.field}
-            value={shapeText}
-            onChangeText={onShapeText}
-            onEndEditing={onShapeDone}
-            maxLength={MAX_SHAPE_TEXT_LENGTH}
-            placeholder={t("heart, star, horse…")}
-            placeholderTextColor={color.textFaint}
-            keyboardAppearance="dark"
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="done"
-            selectTextOnFocus
-            accessibilityLabel={t("Shape")}
-          />
-          <ShapeNote text={shapeText} shape={shape} reading={reading} />
-          {onPenUp && !shapesOnly && offersPenUp(shape) && (
+          {/* Two rows, nothing cut at the edge (TASK-361); the field for a
+              shape out of the catalogue behind «Type another shape», the
+              user's choice of 2026-10-30. */}
+          <ShapeGrid chosen={shownShape} onPick={onShapeText} shapes={shapes} />
+          {shapes === undefined && (
+            <OtherShapeField
+              text={shapeText}
+              shape={shape}
+              onText={onShapeText}
+              onDone={onShapeDone}
+            >
+              <ShapeNote text={shapeText} shape={shape} reading={reading} />
+            </OtherShapeField>
+          )}
+          {shownShape !== null && distanceM !== null && (
+            <ShapePreview shape={shownShape} distanceM={distanceM} />
+          )}
+          {onPenUp && !isPlacedFree(activity) && offersPenUp(shownShape) && (
             <PenSwitch
               label={t("Lift the pen between parts")}
               on={penUp}
               onChange={onPenUp}
             />
           )}
-          {/* The shape's lines in the board, to change by hand (TASK-320):
-              not on the water, where only the catalogue is drawn. */}
-          {onEditShape && shape !== null && !shapesOnly && (
-            <EditDrawingButton onPress={() => onEditShape(shape)} />
-          )}
         </>
-      ) : kind === "image" ? (
+      ) : shownKind === "image" ? (
         <>
           <ImageChoice state={image} onChoose={onChooseImage} penUp={penUp} />
           {/* A picture with pieces apart, its holes too (TASK-297). */}
@@ -241,8 +254,6 @@ export function RouteChoice({
               />
             )}
         </>
-      ) : kind === "freehand" ? (
-        <FreehandChoice figure={freehand} onEdit={() => onEditFreehand?.()} />
       ) : (
         <>
           <TextInput
@@ -250,8 +261,8 @@ export function RouteChoice({
             value={wordText}
             onChangeText={onWordText}
             maxLength={MAX_WORD_FIELD_LENGTH}
-            placeholder="CIAO"
-            placeholderTextColor={color.textFaint}
+            placeholder={t("Write a word, e.g. CIAO")}
+            placeholderTextColor={color.textMuted}
             keyboardAppearance="dark"
             autoCapitalize="characters"
             autoCorrect={false}
@@ -287,12 +298,27 @@ export function RouteChoice({
           )}
         </>
       )}
-      <Text style={[styles.label, styles.section]}>{t("DISTANCE")}</Text>
-      <DistanceStepper
+      <View style={styles.section}>
+        <StepTitle number={3} label={t("DISTANCE")} />
+      </View>
+      {/* Half a km a step, held it runs on, the number typed with a tap; the
+          time under it for a run (TASK-361), a walk, at the walker's pace
+          (TASK-371), and a skate, at the skater's (TASK-380). */}
+      <DistanceDial
         text={distanceText}
         onText={onDistanceText}
-        editable
         activity={activity}
+        timeText={
+          !pace
+            ? null
+            : timeAt === "runner"
+              ? runTimeText(distanceM, pace, units)
+              : timeAt === "walker" && pace.walking
+                ? runTimeText(distanceM, pace.walking, units)
+                : timeAt === "skater" && pace.skating
+                  ? runTimeText(distanceM, pace.skating, units)
+                  : null
+        }
       />
       {distanceM === null ? (
         <Text style={styles.problem}>
@@ -321,9 +347,16 @@ export function RouteChoice({
 export function DrawButton({
   enabled,
   onDraw,
+  label = t("Draw route"),
+  testID,
 }: {
   enabled: boolean;
   onDraw: () => void;
+  /** What it draws and how far (TASK-361, `drawLabel.ts`): «Draw a 7.8 km
+   * circle». «Draw route» unless said. */
+  label?: string;
+  /** «Draw»'s own, for the tests: its words change with the choice. */
+  testID?: string;
 }) {
   return (
     <Pressable
@@ -332,8 +365,11 @@ export function DrawButton({
       disabled={!enabled}
       accessibilityRole="button"
       accessibilityState={{ disabled: !enabled }}
+      testID={testID}
     >
-      <Text style={styles.drawText}>{t("Draw route")}</Text>
+      <Text style={styles.drawText} numberOfLines={1} adjustsFontSizeToFit>
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -375,6 +411,13 @@ type OutcomeProps = {
    * under a word in one line that did not come out (penUpHint.ts). Without
    * it no line is offered. */
   onLiftPen?: () => void;
+  /** A swim drawn again in `laps` laps (TASK-323 C2): «Bigger shape» and
+   * «Smaller shape» under it. Without it no button is offered. */
+  onSwimLaps?: (laps: number) => void;
+  /** «Save» beside «Start» (a route drawn from an edit: «Edit & run», «Edit
+   * the drawing»): the two in one row, «Start» on the right. Without it
+   * «Start» alone, as before. */
+  save?: ReactNode;
 };
 
 /** Under the map: the wait, the route, or why there is none. */
@@ -395,6 +438,8 @@ export function RouteOutcome({
   onRetry,
   figures,
   onLiftPen,
+  onSwimLaps,
+  save,
 }: OutcomeProps) {
   // The distances are written in the app's units, at once (TASK-182).
   const units = useUnits();
@@ -407,6 +452,9 @@ export function RouteOutcome({
   // The request a «Try» under the route left (TASK-234): no line offers to
   // go back to it.
   const [left, setLeft] = useState<Left | null>(null);
+  // The route whose notes were all opened with «Show more» (TASK-337):
+  // another route, or the other of A and B, shows the first ones again.
+  const [allNotesOf, setAllNotesOf] = useState<RouteResult | null>(null);
   // Where the shape comes out better: the request's, from the engine's
   // choice, whichever route is on screen.
   const better =
@@ -468,7 +516,19 @@ export function RouteOutcome({
           <WhileRouting request={view.request} startedAt={view.startedAt} />
         </View>
       );
-    case "done":
+    case "done": {
+      // Only with directions: a route traced without them has no turns. On
+      // the water there are none to follow: the line is the way.
+      const startsHere = view.result.directions.length > 0 || placedFree(view.request);
+      const startButton = (
+        <Pressable
+          style={[styles.draw, save !== undefined && styles.halfRow]}
+          onPress={() => use("start", onStart)}
+          accessibilityRole="button"
+        >
+          <Text style={styles.drawText}>{t("Start")}</Text>
+        </Pressable>
+      );
       return (
         <View style={styles.panel}>
           <View>
@@ -482,7 +542,36 @@ export function RouteOutcome({
               units={units}
             />
           </View>
+          {profileOf(view.request.activity).laps === true && (
+            <SwimResult result={view.result} onLaps={onSwimLaps} />
+          )}
           <RouteTiles choices={choices} chosen={chosen} onChoose={onChoose} />
+          {/* A drawing made by hand left where it was drawn (TASK-347 part
+              C3b, ADR-0300): the score it had under the map while drawn
+              becomes the engine's, of the route on screen. With tiles, each
+              says its own. */}
+          {isImageRequest(view.request) &&
+            view.request.placement === "anchored" &&
+            choices.length < 2 && (
+              <Text
+                style={styles.target}
+                testID="route-score"
+                accessibilityLiveRegion="polite"
+              >
+                {t("Roads follow your drawing: {percent}%", {
+                  percent: Math.round(
+                    (choices[chosen] ?? view.result).similarity * 100,
+                  ),
+                })}
+              </Text>
+            )}
+          {/* The first route is on screen, the others are coming (TASK-435):
+              said, so that tiles appearing later are no surprise. */}
+          {view.more === true && (
+            <Text style={styles.target} accessibilityLiveRegion="polite">
+              {t("Looking for other routes…")}
+            </Text>
+          )}
           {better !== null && (
             <BetterDistance
               text={betterDistanceText(kindOf(view.request), better, units)}
@@ -503,9 +592,11 @@ export function RouteOutcome({
             />
           )}
           {liftPenLine}
-          {toNotes(view.result.warnings).map((note) => (
-            <NoteRow key={note.text} note={note} />
-          ))}
+          <Notes
+            notes={toNotes(view.result.warnings)}
+            all={allNotesOf === view.result}
+            onShowAll={() => setAllNotesOf(view.result)}
+          />
           {movedElsewhere && (
             <NoteRow
               note={{
@@ -514,17 +605,15 @@ export function RouteOutcome({
               }}
             />
           )}
+          <SportCaution activity={view.request.activity} />
           {figures}
-          {/* Only with directions: a route traced without them has no turns.
-              On the water there are none to follow: the line is the way. */}
-          {(view.result.directions.length > 0 || onWater(view.request)) && (
-            <Pressable
-              style={styles.draw}
-              onPress={() => use("start", onStart)}
-              accessibilityRole="button"
-            >
-              <Text style={styles.drawText}>{t("Start")}</Text>
-            </Pressable>
+          {save === undefined ? (
+            startsHere && startButton
+          ) : (
+            <View style={styles.saveStart}>
+              {save}
+              {startsHere && startButton}
+            </View>
           )}
           {onMove && (
             <Pressable
@@ -548,6 +637,7 @@ export function RouteOutcome({
           {exporting.status === "failed" && <Problem problem={exporting.problem} />}
         </View>
       );
+    }
     case "failed":
       return (
         <>
@@ -634,68 +724,19 @@ export function PenSplit({
   }
   const drawn = decimal(inUnits(split.lettersM, units));
   const between = decimal(inUnits(split.walksM, units));
-  if (units === "mi") {
-    return (
-      <Text style={styles.target}>
-        {result.word !== null
-          ? activity === "cycling"
-            ? t("{letters} mi of letters + {between} mi riding between them", {
-                letters: drawn,
-                between,
-              })
-            : t("{letters} mi of letters + {between} mi walking between them", {
-                letters: drawn,
-                between,
-              })
-          : activity === "paddling"
-            ? t("{drawn} mi of drawing + {between} mi paddling between the parts", {
-                drawn,
-                between,
-              })
-            : activity === "cycling"
-              ? t("{drawn} mi of drawing + {between} mi riding between the parts", {
-                  drawn,
-                  between,
-                })
-              : t("{drawn} mi of drawing + {between} mi walking between the parts", {
-                  drawn,
-                  between,
-                })}
-      </Text>
-    );
-  }
-  if (result.word === null) {
-    return (
-      <Text style={styles.target}>
-        {activity === "paddling"
-          ? // On the water (TASK-226): the whole is the distance asked.
-            t("{drawn} km of drawing + {between} km paddling between the parts", {
-              drawn,
-              between,
-            })
-          : activity === "cycling"
-            ? t("{drawn} km of drawing + {between} km riding between the parts", {
-                drawn,
-                between,
-              })
-            : t("{drawn} km of drawing + {between} km walking between the parts", {
-                drawn,
-                between,
-              })}
-      </Text>
-    );
-  }
+  // Ridden on a bike, paddled or swum on the water (TASK-226, TASK-323),
+  // walked on foot: each sport says it in src/sports.
+  const sport = profileOf(activity);
+  const texts =
+    result.word !== null
+      ? (sport.lettersBetween ?? ON_FOOT_LETTERS)
+      : (sport.partsBetween ?? ON_FOOT_PARTS);
   return (
     <Text style={styles.target}>
-      {activity === "cycling"
-        ? t("{letters} km of letters + {between} km riding between them", {
-            letters: drawn,
-            between,
-          })
-        : t("{letters} km of letters + {between} km walking between them", {
-            letters: drawn,
-            between,
-          })}
+      {t(
+        units === "mi" ? texts.mi : texts.km,
+        result.word !== null ? { letters: drawn, between } : { drawn, between },
+      )}
     </Text>
   );
 }
@@ -817,7 +858,8 @@ function WordNote({
 }
 
 /** What the route draws, for the line under its distance: a figure drawn
- * by hand is a «Drawing» (TASK-320), known by the outline the board made. */
+ * by hand is a «Drawing» (TASK-320), known by the outline of its request
+ * (TASK-331). */
 function nameOf(request: AnyRouteRequest): string {
   if (isImageRequest(request)) {
     return isDrawnOutline(request.outline) ? t("Drawing") : t("Picture");
@@ -825,9 +867,10 @@ function nameOf(request: AnyRouteRequest): string {
   return routeName(request);
 }
 
-/** A route on the water (TASK-191): it follows no road, and has no turns. */
-function onWater(request: AnyRouteRequest): boolean {
-  return request.activity === "paddling";
+/** A route on the water (TASK-191), a swim too (TASK-323), or on the snow
+ * (TASK-413 B): it follows no road, and has no turns. */
+function placedFree(request: AnyRouteRequest): boolean {
+  return isPlacedFree(request.activity);
 }
 
 /** The line under the route's distance: what it is, what it runs on, and
@@ -835,12 +878,18 @@ function onWater(request: AnyRouteRequest): boolean {
 function targetLine(request: AnyRouteRequest, units: Units): string {
   if (units === "mi") {
     const miles = { name: nameOf(request), mi: unitsNumber(request.distance_m, "mi") };
-    return onWater(request)
+    if (isSnowshoeRoute(request.activity)) {
+      return t("{name} · on the snow · target {mi} mi", miles);
+    }
+    return placedFree(request)
       ? t("{name} · on the water · target {mi} mi", miles)
       : t("{name} · on roads · target {mi} mi", miles);
   }
   const values = { name: nameOf(request), km: request.distance_m / 1000 };
-  return onWater(request)
+  if (isSnowshoeRoute(request.activity)) {
+    return t("{name} · on the snow · target {km} km", values);
+  }
+  return placedFree(request)
     ? t("{name} · on the water · target {km} km", values)
     : t("{name} · on roads · target {km} km", values);
 }
@@ -937,17 +986,29 @@ function Problem({
           <Text style={styles.secondaryText}>{tryText(tryDistanceM, units)}</Text>
         </Pressable>
       )}
-      {pickShape && onPickShape && <ShapeChoices onPick={onPickShape} />}
+      {pickShape && onPickShape && (
+        <ShapeChoices
+          onPick={onPickShape}
+          shapes={activity === undefined ? undefined : profileOf(activity).shapes}
+        />
+      )}
       {detail && <Text style={styles.detail}>{detail}</Text>}
     </View>
   );
 }
 
-/** The shapes of the catalogue, each writing itself in the shape field. */
-function ShapeChoices({ onPick }: { onPick: (shape: Shape) => void }) {
+/** The shapes of the catalogue, each writing itself in the shape field; a
+ * sport's own when it has them (TASK-414). */
+function ShapeChoices({
+  onPick,
+  shapes = SHAPES,
+}: {
+  onPick: (shape: Shape) => void;
+  shapes?: readonly Shape[];
+}) {
   return (
     <View style={styles.choices}>
-      {SHAPES.map((shape) => (
+      {shapes.map((shape) => (
         <Pressable
           key={shape}
           style={[styles.secondary, styles.chip]}
@@ -973,7 +1034,7 @@ function BetterDistance({
   onTry: () => void;
 }) {
   return (
-    <View style={[styles.noteRow, styles.info, styles.problemBox]}>
+    <View style={[styles.noteRow, styles.problemBox]}>
       <Text style={styles.noteText}>{text}</Text>
       <Pressable
         style={[styles.secondary, styles.choice]}
@@ -986,17 +1047,45 @@ function BetterDistance({
   );
 }
 
+/** What the sport tells under every route (TASK-377): a hike's trails can
+ * be demanding. Nothing for a sport whose profile says nothing. */
+function SportCaution({ activity }: { activity: Activity }) {
+  const { caution } = profileOf(activity);
+  return caution === undefined ? null : (
+    <NoteRow note={{ tone: "caution", text: t(caution) }} />
+  );
+}
+
 /**
- * A warning of the engine in plain words (warnings.ts), with a stripe that says
- * whether to watch for it (warning) or just to know it.
+ * The route's notes, the first two only (TASK-337): more pushed the map out
+ * of sight. «Show more» opens the rest under them.
  */
-function NoteRow({ note }: { note: Note }) {
+function Notes({
+  notes,
+  all,
+  onShowAll,
+}: {
+  notes: Note[];
+  all: boolean;
+  onShowAll: () => void;
+}) {
+  const shown = shownNotes(notes, all);
   return (
-    <View
-      style={[styles.noteRow, note.tone === "caution" ? styles.caution : styles.info]}
-    >
-      <Text style={styles.noteText}>{note.text}</Text>
-    </View>
+    <>
+      {shown.map((note) => (
+        <NoteRow key={note.text} note={note} />
+      ))}
+      {shown.length < notes.length && (
+        <Pressable
+          style={styles.moreNotes}
+          onPress={onShowAll}
+          hitSlop={space.sm}
+          accessibilityRole="button"
+        >
+          <Text style={styles.moreNotesText}>{t("Show more")}</Text>
+        </Pressable>
+      )}
+    </>
   );
 }
 
@@ -1082,6 +1171,14 @@ const styles = StyleSheet.create({
   off: {
     opacity: 0.4,
   },
+  // «Save» and «Start» side by side, as wide each (a route from an edit).
+  saveStart: {
+    flexDirection: "row",
+    gap: space.sm,
+  },
+  halfRow: {
+    flex: 1,
+  },
   // Dark on yellow: white does not reach the contrast minimum (ADR-0046).
   drawText: {
     color: color.onAccent,
@@ -1118,23 +1215,27 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.body,
   },
+  // A box as a note's (NoteRow), with a button under its words.
   noteRow: {
     paddingVertical: space.sm,
     paddingHorizontal: space.md,
-    borderLeftWidth: 3,
     borderRadius: radius.sm,
     backgroundColor: color.surfaceRaised,
-  },
-  // Not yellow: that means "route", and a warning is something else.
-  caution: {
-    borderLeftColor: color.warning,
-  },
-  info: {
-    borderLeftColor: color.borderStrong,
   },
   noteText: {
     color: color.text,
     fontSize: fontSize.small,
+  },
+  // A quiet line, not a button: it should take less room than a note.
+  moreNotes: {
+    alignSelf: "flex-start",
+    paddingVertical: space.xs,
+    paddingHorizontal: space.md,
+  },
+  moreNotesText: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.semibold,
   },
   problem: {
     color: color.error,

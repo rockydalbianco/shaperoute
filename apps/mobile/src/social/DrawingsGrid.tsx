@@ -1,11 +1,20 @@
-import type { Drawing } from "@shaperoute/shared-types";
-import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { type Drawing, isPhotoPost, PLAN_SOURCE } from "@shaperoute/shared-types";
+import { useEffect, useRef, useState } from "react";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { accountProblem } from "../account/messages";
 import { dayLabel } from "../activities/activityText";
-import { RunDrawing } from "../activities/RunDrawing";
+import { RUN_DRAWING_PAD, RunDrawing } from "../activities/RunDrawing";
+import { isTrackless } from "../activities/snow";
+import { isGymPlanPosted } from "../api/planPosts";
+import { CardMapsCredit } from "../explore/RouteCard";
+import { useFeedMap } from "../feed/FeedMaps";
+import { isSleepPost } from "../feed/sleepPost";
+import { SleepTile } from "../feed/SleepTile";
+import { GymTile } from "../gym/GymTile";
+import { isPoolLine, PoolTile } from "../pool/PoolTile";
 import { t } from "../i18n";
+import { bearingOf } from "../map/turnedMap";
 import {
   color,
   fontSize,
@@ -14,7 +23,12 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
+import { drawingPhotoSource } from "../api/drawings";
 import { useDrawingsDoor } from "./drawingsDoor";
+import { useFollowsDoor } from "./followsDoor";
+import { PlanGridTile } from "./PlanGridTile";
+import { useSeen } from "./scrollSight";
 
 /** Three drawings a row, as a profile shows its pictures. */
 const COLUMNS = 3;
@@ -50,8 +64,9 @@ type Props = {
 /**
  * «Drawings» in a profile (TASK-117, ADR-0159): the runs it made public,
  * the latest first, three a row, a page at a time. Each is the run as the
- * others see it, small and without its first and last 200 m; a tap opens
- * it on the map. Never its score (TASK-241).
+ * others see it, small and whole (ADR-0330), on the map
+ * of where it was run (TASK-332); a tap opens it on the map. Never its
+ * score (TASK-241).
  */
 export function DrawingsGrid({ publicId, own, titled = true }: Props) {
   const { pageOf, open, opening, openProblem } = useDrawingsDoor();
@@ -168,31 +183,17 @@ export function DrawingsGrid({ publicId, own, titled = true }: Props) {
         <>
           <View style={styles.grid}>
             {shown.drawings.map((drawing) => (
-              <Pressable
+              <DrawingCell
                 key={drawing.id}
-                style={({ pressed }) => [
-                  styles.cell,
-                  { width: cell },
-                  (pressed || opening === drawing.id) && styles.pressed,
-                ]}
-                onPress={() => open(drawing)}
+                drawing={drawing}
+                size={cell}
+                opening={opening === drawing.id}
                 disabled={opening !== null}
-                accessibilityRole="button"
-                accessibilityLabel={t("{title}, open on the map", {
-                  title: drawingName(drawing),
-                })}
-                testID="drawing-cell"
-              >
-                <RunDrawing
-                  route={drawing.track_preview}
-                  track={NO_TRACK}
-                  width={cell}
-                  height={cell}
-                  rotationDeg={drawing.rotation_deg}
-                />
-              </Pressable>
+                onOpen={() => open(drawing)}
+              />
             ))}
           </View>
+          <CardMapsCredit />
           {shown.next !== null && (
             <Pressable
               style={[styles.button, loadingMore && styles.busy]}
@@ -215,7 +216,107 @@ export function DrawingsGrid({ publicId, own, titled = true }: Props) {
 /** A drawing is one line: the run, drawn in the route's yellow as in «Feed». */
 const NO_TRACK: Drawing["track_preview"] = [];
 
+type CellProps = {
+  drawing: Drawing;
+  /** The side of the square. */
+  size: number;
+  /** This one is being opened. */
+  opening: boolean;
+  disabled: boolean;
+  onOpen: () => void;
+};
+
+/**
+ * One drawing of the grid, on a picture of the map of where it was run, as
+ * in «Feed» (TASK-332, ADR-0131). The picture is asked for once the
+ * drawing has come on screen: a long grid does not ask for all of its
+ * maps at once. Until it comes, the line on the dark.
+ */
+function DrawingCell({ drawing, size, opening, disabled, onOpen }: CellProps) {
+  const place = useRef<View>(null);
+  const { seen, look } = useSeen(place);
+  const map = useFeedMap(
+    drawing.id,
+    seen ? drawing.track_preview : NO_TRACK,
+    size,
+    size,
+    RUN_DRAWING_PAD,
+    bearingOf(drawing.rotation_deg),
+  );
+  // The shared type of a post's `source` names only a run's.
+  const source: string | undefined = drawing.source;
+  const plan =
+    source === PLAN_SOURCE && isGymPlanPosted(drawing.plan) ? drawing.plan : null;
+  return (
+    <Tap
+      ref={place}
+      onLayout={look}
+      style={[styles.cell, { width: size }, opening && styles.dim]}
+      onPress={onOpen}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={t("{title}, open on the map", {
+        title: drawingName(drawing),
+      })}
+      testID="drawing-cell"
+    >
+      {/* A post of photos only has no line: its first photo (TASK-312 C). */}
+      {isPhotoPost(drawing) ? (
+        <FirstPhoto drawing={drawing} size={size} />
+      ) : /* The post of a night of sleep: its score (TASK-467 part E). */
+      isSleepPost(drawing) ? (
+        <SleepTile sleep={drawing.sleep} size={size} />
+      ) : /* A gym plan posted: its name and week (TASK-485 part C). */
+      plan !== null ? (
+        <PlanGridTile plan={plan} size={size} />
+      ) : /* A workout at the gym has no line: its tile (TASK-385 B0). */
+      isTrackless(drawing.activity) ? (
+        <GymTile width={size} height={size} />
+      ) : isPoolLine(drawing.activity, drawing.track_preview) ? (
+        // A swim in a pool, the same (TASK-400 part C).
+        <PoolTile width={size} height={size} />
+      ) : (
+        <RunDrawing
+          route={drawing.track_preview}
+          track={NO_TRACK}
+          width={size}
+          height={size}
+          rotationDeg={drawing.rotation_deg}
+          map={map}
+        />
+      )}
+    </Tap>
+  );
+}
+
+/** The first photo of a post of photos only, in its order, read with the
+ * token; the dark while it cannot be read. */
+function FirstPhoto({ drawing, size }: { drawing: Drawing; size: number }) {
+  const { apiUrl, account } = useFollowsDoor();
+  const photos = drawing.photos ?? [];
+  const first =
+    photos.find((photo) => drawing.order?.[0] === `photo:${photo.n}`) ?? photos[0];
+  const token =
+    account.state.status === "signedIn" ? account.state.session.token : null;
+  if (first === undefined || apiUrl === null || token === null) {
+    return <View style={[styles.photo, { width: size, height: size }]} />;
+  }
+  return (
+    <Image
+      source={drawingPhotoSource(apiUrl, token, first)}
+      style={[styles.photo, { width: size, height: size }]}
+      resizeMode="cover"
+      accessible={false}
+      testID="drawing-cell-photo"
+    />
+  );
+}
+
 const styles = StyleSheet.create({
+  photo: {
+    borderRadius: radius.md,
+    backgroundColor: color.surfaceRaised,
+  },
   section: {
     gap: space.md,
   },
@@ -232,7 +333,7 @@ const styles = StyleSheet.create({
   cell: {
     gap: space.xs,
   },
-  pressed: {
+  dim: {
     opacity: 0.6,
   },
   message: {

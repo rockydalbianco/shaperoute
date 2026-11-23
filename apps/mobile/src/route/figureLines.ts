@@ -1,120 +1,151 @@
 import {
+  type DrawingDetail,
   type LatLon,
-  type OutlinePoint,
-  type Shape,
-  SHAPES,
+  MAX_OUTLINE_POINTS,
 } from "@shaperoute/shared-types";
 
 import { type AnyRouteRequest, isImageRequest } from "../api/routes";
-import { outlineOf } from "../favorites/favoriteRoute";
-import { lookOf } from "../mapdraw/figure";
-import type { BoardPoint, FreehandLines } from "./freehand";
+import { firstLineOf } from "../mapdraw/drawing";
+import { drawingOf, type FigureLines } from "../mapdraw/edit";
+import { fromPlane, toPlane } from "../mapdraw/plane";
 
 /**
- * The lines of a figure the app proposes, as the board of «Draw» opens them
- * (TASK-320, ADR-0280): a shape of the catalogue as the engine draws it, a
- * route asked for, the points of a route run. In the board's square, from
- * the top left, y down; `figureOf` (freehand.ts) makes the figure of them.
+ * The lines of a figure the app proposes, as «Edit the drawing» puts them
+ * on the map of «Draw on the map» (TASK-320, TASK-331): a route asked for,
+ * the points of a route run. In the engine's frame, [-1, 1] with y up;
+ * `drawingOf` (mapdraw/edit.ts) makes the drawing of them. A shape of the
+ * catalogue — an emoji — is not changed, so it has none (ADR-0288). The
+ * track of a member's drawing goes on the map where it was run and as big
+ * (TASK-346, ADR-0299): with its lines, its middle and its size. Since
+ * TASK-369 (ADR-0313) so does the line of every route and drawing, an emoji
+ * and a word too: the track, not the figure asked for.
  */
-
-/** A point of the engine's frame, [-1, 1] with y up, on the board. */
-function onBoard([x, y]: OutlinePoint): BoardPoint {
-  return [(x + 1) / 2, (1 - y) / 2];
-}
-
-function isShape(value: string | null | undefined): value is Shape {
-  return (SHAPES as readonly string[]).includes(value ?? "");
-}
-
-function same(a: OutlinePoint, b: OutlinePoint): boolean {
-  return a[0] === b[0] && a[1] === b[1];
-}
 
 /**
- * The line of a shape with the pen down, as the engine runs it, taken
- * apart: the engine draws an eye, a ray or the snail's shell as an
- * excursion inside the one line, out from a point of the outline and back
- * to it (`travelled_points`), so the line comes back to that very point.
- * Each excursion becomes a detail hung there: the way out alone when the
- * way back retraces it (a ray, the shell); out and around when it loops
- * (an eye), the detail ending on its own point, as the engine reads a loop.
- * What is left is the outline.
+ * The lines of the figure a route was asked for: a picture or a drawing by
+ * the outline and the details it sent. Null for a shape of the catalogue
+ * and for a word (letters with the pen up are not a closed figure).
  */
-export function splitExcursions(line: readonly OutlinePoint[]): FreehandLines {
-  const outline: OutlinePoint[] = [];
-  const details: OutlinePoint[][] = [];
-  let i = 0;
-  while (i < line.length) {
-    // The last return to this point, so an eye's own loop stays inside.
-    let back = -1;
-    for (let j = line.length - 1; j > i; j -= 1) {
-      // The line's own closing on its first point is no excursion.
-      if (same(line[j], line[i]) && !(i === 0 && j === line.length - 1)) {
-        back = j;
-        break;
-      }
-    }
-    outline.push(line[i]);
-    if (back === -1) {
-      i += 1;
-      continue;
-    }
-    // How far the way back retraces the way out.
-    let retraced = 0;
-    while (
-      i + retraced < back - retraced &&
-      same(line[i + retraced], line[back - retraced])
-    ) {
-      retraced += 1;
-    }
-    const detail =
-      back - i === 2 * retraced
-        ? // There and back along the same points: the way out, to the tip.
-          line.slice(i, i + retraced + 1)
-        : // Out, around, and back: closed on the point the loop left from.
-          line.slice(i, back - retraced + 2);
-    if (detail.length >= 2) {
-      details.push(detail);
-    }
-    i = back + 1;
+export function requestLines(request: AnyRouteRequest): FigureLines | null {
+  return isImageRequest(request)
+    ? { outline: request.outline, details: request.strokes ?? [] }
+    : null;
+}
+
+/** The lines of a route run where it was run (TASK-346): in the frame of
+ * the figure, with the point of the map at its middle and the metres of
+ * one unit, so `figure.onMap` gives back the points of the track. */
+export type TrackInPlace = { lines: FigureLines; centre: LatLon; unitM: number };
+
+/** At most `size` points of the line, evenly spread, first and last kept. */
+function spread<T>(points: readonly T[], size: number): T[] {
+  if (points.length <= size) {
+    return [...points];
   }
-  return { outline, details };
-}
-
-/** The lines of a shape of the catalogue, with the pen down
- * (`catalogueShapes.json`): its one line taken apart into the outline and
- * the details the engine runs inside it; any line after it a detail. */
-export function shapeLines(shape: Shape): FreehandLines {
-  const [first, ...more] = lookOf({ kind: "shape", shape }).lines;
-  const { outline, details } = splitExcursions(first);
-  return {
-    outline: outline.map(onBoard),
-    details: [...details, ...more].map((detail) => detail.map(onBoard)),
-  };
+  const step = (points.length - 1) / (size - 1);
+  return Array.from({ length: size }, (_, i) => points[Math.round(i * step)]);
 }
 
 /**
- * The lines of the figure a route was asked for: a shape of the catalogue
- * by its lines, a picture or a drawing by the outline and the details it
- * sent. Null for a word (letters with the pen up are not a closed figure),
- * and for a shape the app does not know.
+ * The line of a route run where it was run and as big: centred on the
+ * middle of its box and scaled into [-1, 1], y up, in metres on the plane
+ * (never in degrees), so it is put back on the map just where it was. A
+ * line that ends near its start (CLOSED_SHARE) is one closed outline of at
+ * most MAX_OUTLINE_POINTS corners, as a favorite keeps the outline of an
+ * image (`favoriteRoute.outlineOf`). One that ends away from it is closed
+ * too, by a straight side from its end back to its start (TASK-425,
+ * ADR-0353): hung open on a ring at its start (TASK-369) the route ran it
+ * out and back, twice the distance of the track. When closing it makes no
+ * outline (`drawingOf`) — it crosses itself, or the side back crosses it —
+ * the closed line is a loop hung on a ring at its start (TASK-428,
+ * ADR-0356): a detail that ends on its own first point is run once, and a
+ * detail may cross itself. So is a track that ends near its start and
+ * crosses itself (TASK-432): a word, a butterfly, most routes of «Explore»;
+ * with no drawing of it, «Edit the drawing» had no button. Only when that
+ * makes no drawing either does it stay open, as a first line drawn on the
+ * map does (`firstLineOf`, TASK-331), run out and back.
  */
-export function requestLines(request: AnyRouteRequest): FreehandLines | null {
-  if (isImageRequest(request)) {
-    return {
-      outline: request.outline.map(onBoard),
-      details: (request.strokes ?? []).map((stroke) => stroke.map(onBoard)),
-    };
+export function trackInPlace(points: readonly LatLon[]): TrackInPlace {
+  const origin = points[0];
+  const xys = points.map((point) => toPlane(origin, point));
+  const xs = xys.map(([x]) => x);
+  const ys = xys.map(([, y]) => y);
+  const middle: [number, number] = [
+    (Math.min(...xs) + Math.max(...xs)) / 2,
+    (Math.min(...ys) + Math.max(...ys)) / 2,
+  ];
+  const centre = fromPlane(origin, middle);
+  const atCentre = points.map((point) => toPlane(centre, point));
+  const unitM = Math.max(
+    (Math.max(...xs) - Math.min(...xs)) / 2,
+    (Math.max(...ys) - Math.min(...ys)) / 2,
+    1e-6,
+  );
+  const units = atCentre.map(([x, y]): [number, number] => [x / unitM, y / unitM]);
+  const closed: FigureLines = { outline: closedOutline(units), details: [] };
+  if (drawingOf(closed) === null) {
+    const loop = loopLines(units);
+    if (loop !== null && drawingOf(loop) !== null) {
+      return { lines: loop, centre, unitM };
+    }
+    const open = openLines(units);
+    if (open !== null) {
+      return { lines: open, centre, unitM };
+    }
   }
-  if (request.word != null && request.word !== "") {
+  return { lines: closed, centre, unitM };
+}
+
+/** The track as one closed outline of at most MAX_OUTLINE_POINTS corners:
+ * a last side back to its first point when it does not end on it. */
+function closedOutline(units: readonly [number, number][]): [number, number][] {
+  const outline = spread(units, MAX_OUTLINE_POINTS);
+  const [first, last] = [outline[0], outline[outline.length - 1]];
+  return first[0] === last[0] && first[1] === last[1] ? outline : [...outline, first];
+}
+
+/** The lines of a track as a first line drawn on the map: open on a ring
+ * at its start, or the outline `firstLineOf` keeps of one that ends near
+ * it; null for one with more points than a route runs (it is then
+ * closed). */
+function openLines(units: readonly [number, number][]): FigureLines | null {
+  const lines = firstLineOf(units);
+  return lines === null || "problem" in lines ? null : lines;
+}
+
+/** The open lines of a track with a last side from the end of the line
+ * back to its first point: a loop, run once (TASK-428). Whole, where
+ * `outlineOf` would keep the largest ring of a line that crosses itself
+ * and cut the rest. Null when the track makes no open lines. */
+function loopLines(units: readonly [number, number][]): FigureLines | null {
+  const open = openLines(units);
+  if (open === null || open.details.length !== 1) {
     return null;
   }
-  return isShape(request.shape) ? shapeLines(request.shape) : null;
+  const line = open.details[0];
+  return { outline: open.outline, details: [[...line, line[0]]] };
 }
 
-/** The line of a route run, straightened and closed as a favorite keeps the
- * outline of an image (`favoriteRoute.outlineOf`): what a drawing without
- * a shape opens in the board. */
-export function trackLines(points: LatLon[]): FreehandLines {
-  return { outline: outlineOf(points).map(onBoard), details: [] };
+/** What a member's drawing says of its figure (GET /drawings/{id}). */
+type DrawnRun = Pick<DrawingDetail, "track">;
+
+/**
+ * The track of a member's drawing (TASK-320 part B), where it was run
+ * (TASK-346): the one line the API gives of it, whatever it draws — a
+ * picture, a figure drawn by hand, an emoji, a word, a free run, one
+ * imported from another app, a drawing paddled (TASK-369, ADR-0313). Null
+ * for a post of photos alone and a track too short to follow.
+ */
+export function drawingTrack(drawing: DrawnRun): TrackInPlace | null {
+  return drawing.track.length >= 2 ? trackInPlace(drawing.track) : null;
+}
+
+/**
+ * The line of a route of «Explore» where it is (TASK-369, ADR-0313): an
+ * example, a search, a favorite, a drawing of a message, an example of the
+ * Feed, a shape «NEAR YOU», a themed route, by the points of its result.
+ * Null for a route too short to follow.
+ */
+export function routeTrack(points: readonly LatLon[]): TrackInPlace | null {
+  return points.length >= 2 ? trackInPlace(points) : null;
 }

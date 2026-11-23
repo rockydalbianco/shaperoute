@@ -1,16 +1,19 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import { MoveShape } from "../paddle/MoveShape";
 import type { MoveExample } from "../paddle/useMoveExample";
 import {
   color,
+  font,
   fontSize,
   fontWeight,
   MIN_TAP_SIZE,
   radius,
   space,
 } from "../theme/tokens";
+import { Hairline } from "../ui/Hairline";
+import { Tap } from "../ui/Tap";
 import { PenSplit } from "../route/RoutePanel";
 import { RouteTiles } from "../route/RouteTiles";
 import type { ExportState } from "../route/useGpxExport";
@@ -36,9 +39,17 @@ type Props = {
   /** «Draw it near me» (TASK-313): its shape or word chosen in «Draw»;
    * without it, a figure «Draw» cannot choose, there is no button. */
   onDrawAgain?: () => void;
+  /** «Edit the drawing» (TASK-320): its figure on the map of «Draw on the
+   * map» (TASK-331); without it, an emoji or a figure that is no drawing,
+   * there is no button. */
+  onEditDrawing?: () => void;
 };
 
-/** Under the map: a route of "Explore", to run, look at and export (TASK-126). */
+/**
+ * Under the map: a route of "Explore", to run, look at and export (TASK-126).
+ * The distance is the large light number, the actions come after a hairline
+ * and answer the finger through `Tap` (TASK-339, ADR-0293).
+ */
 export function ExploredCard({
   explored,
   exporting,
@@ -48,6 +59,7 @@ export function ExploredCard({
   onStart,
   move,
   onDrawAgain,
+  onEditDrawing,
 }: Props) {
   const { route } = explored;
   const title = routeTitle(route);
@@ -65,11 +77,15 @@ export function ExploredCard({
       <View>
         <Text style={styles.result}>{distanceLabel(route.route_m, units)}</Text>
         <Text style={styles.target}>
-          {t("{title} · {city} · looks {percent}% like it", {
-            title,
-            city: cityName(route.city),
-            percent: Math.round(route.similarity * 100),
-          })}
+          {/* A route with no likeness to tell, a MuW one, says only what
+              and where (TASK-405). */}
+          {route.scored === false
+            ? `${title} · ${cityName(route.city)}`
+            : t("{title} · {city} · looks {percent}% like it", {
+                title,
+                city: cityName(route.city),
+                percent: Math.round(route.similarity * 100),
+              })}
         </Text>
         {/* A word with the pen up: its letters and the walks between them,
             as «Draw» says it (TASK-279). */}
@@ -113,27 +129,21 @@ export function ExploredCard({
           onChoose={start.status === "loading" ? keepChoice : open.choose}
         />
       )}
+      {/* The actions, after a hairline. */}
+      <Hairline />
       {open !== null && <ExploreStart start={start} onStart={onStart} />}
       {open !== null && onDrawAgain !== undefined && (
-        <Pressable
-          style={styles.secondary}
-          onPress={onDrawAgain}
-          accessibilityRole="button"
-        >
+        <Tap style={styles.secondary} onPress={onDrawAgain} accessibilityRole="button">
           <Text style={styles.secondaryText}>{t("Draw it near me")}</Text>
-        </Pressable>
+        </Tap>
       )}
       {open !== null && move?.available && (
-        <Pressable
-          style={styles.secondary}
-          onPress={move.begin}
-          accessibilityRole="button"
-        >
+        <Tap style={styles.secondary} onPress={move.begin} accessibilityRole="button">
           <Text style={styles.secondaryText}>{t("Move the shape")}</Text>
-        </Pressable>
+        </Tap>
       )}
       {open !== null && (
-        <Pressable
+        <Tap
           style={styles.secondary}
           onPress={onExport}
           disabled={exporting.status === "preparing"}
@@ -142,14 +152,24 @@ export function ExploredCard({
           <Text style={styles.secondaryText}>
             {exporting.status === "preparing" ? t("Preparing GPX…") : t("Export GPX")}
           </Text>
-        </Pressable>
+        </Tap>
       )}
       {exporting.status === "failed" && (
         <Text style={styles.error}>{t("The GPX could not be made. Try again.")}</Text>
       )}
-      <Pressable style={styles.secondary} onPress={onList} accessibilityRole="button">
+      {/* After «Start», «Draw it near me» and «Export GPX», which stay put. */}
+      {open !== null && onEditDrawing !== undefined && (
+        <Tap
+          style={styles.secondary}
+          onPress={onEditDrawing}
+          accessibilityRole="button"
+        >
+          <Text style={styles.secondaryText}>{t("Edit the drawing")}</Text>
+        </Tap>
+      )}
+      <Tap style={styles.secondary} onPress={onList} accessibilityRole="button">
         <Text style={styles.secondaryText}>{t("Back to the list")}</Text>
-      </Pressable>
+      </Tap>
     </View>
   );
 }
@@ -160,18 +180,19 @@ const styles = StyleSheet.create({
   panel: {
     gap: space.md,
   },
+  // The number people look for: large and light, its digits lined up.
   result: {
+    ...font.display,
+    fontVariant: ["tabular-nums"],
     color: color.text,
-    fontSize: fontSize.display,
-    fontWeight: fontWeight.bold,
   },
   target: {
+    ...font.small,
     color: color.textMuted,
-    fontSize: fontSize.small,
   },
   error: {
+    ...font.small,
     color: color.error,
-    fontSize: fontSize.small,
   },
   secondary: {
     minHeight: MIN_TAP_SIZE,

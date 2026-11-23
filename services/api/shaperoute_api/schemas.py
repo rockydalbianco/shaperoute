@@ -10,19 +10,22 @@ from dataclasses import asdict
 from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from route_engine.anchored import PLACEMENTS
 from route_engine.directions import GROUP_M, Turn
 from route_engine.image_outline import MAX_POINTS as MAX_OUTLINE_POINTS
 from route_engine.image_outline import MAX_SUBJECT_POINTS
 from route_engine.models import (
-    DISTANCE_LIMITS_M,
     MAX_DISTANCE_M,
-    SUPPORTED_ACTIVITIES,
+    MAX_SWIM_LAPS,
+    Landmark,
     RouteResult,
+    SwimTurn,
 )
 from route_engine.outline_edits import MAX_DETAIL_POINTS, MAX_DRAWN_POINTS
 from route_engine.pen_up import walks_problem
 from route_engine.pieces import compose_shape
 from route_engine.shapes import SUPPORTED_SHAPES, in_pieces
+from route_engine.walking import API_ACTIVITIES, API_DISTANCE_LIMITS_M
 from route_engine.words import (
     ALPHABET,
     LETTER_DISTANCE_M,
@@ -30,6 +33,8 @@ from route_engine.words import (
     spell_letters,
 )
 from shaperoute_ai.reading import MAX_TEXT_LENGTH
+
+from shaperoute_api.sports import API_SPORTS
 
 # The largest image POST /image-outlines takes, and its length in base64
 # (ADR-0069): a phone photo re-encoded as JPEG is 1-4 MB.
@@ -56,14 +61,19 @@ MAX_ON_FOOT = 1000
 # Each activity has its own distances (TASK-190): "1000–50000 for running,
 # 10000–30000 for cycling".
 DISTANCE_DESCRIPTION = "Target distance in metres, " + ", ".join(
-    f"{DISTANCE_LIMITS_M[a][0]}–{DISTANCE_LIMITS_M[a][1]} for {a}"
-    for a in SUPPORTED_ACTIVITIES
+    f"{API_DISTANCE_LIMITS_M[a][0]}–{API_DISTANCE_LIMITS_M[a][1]} for {a}"
+    for a in API_ACTIVITIES
 )
+# Each sport's words are in its file (shaperoute_api/sports, TASK-376).
 ACTIVITY_DESCRIPTION = (
-    f"One of: {', '.join(SUPPORTED_ACTIVITIES)}; cycling is drawn on the "
-    f"roads a bike may ride, one-way streets kept (TASK-190); paddling on a "
-    f"lake or the sea within 1 km of the shore, from a start on the shore, "
-    f"a shape of the catalogue only (TASK-191)."
+    f"One of: {', '.join(API_ACTIVITIES)}; "
+    + "; ".join(sport.description for sport in API_SPORTS if sport.description)
+    + "."
+)
+LAPS_DESCRIPTION = (
+    f"A swim (TASK-323): how many times round its shape, 1 to {MAX_SWIM_LAPS}; "
+    "fewer for a larger shape, the distance staying the same. Null: the "
+    "fewest it fits in. With another activity, invalid_request."
 )
 WALKS_DESCRIPTION = (
     "A word with the pen up (TASK-197), or a shape in pieces (TASK-223): "
@@ -88,6 +98,22 @@ def _check_walks(walks: list[Walk], count: int, what: str = "walk") -> None:
     problem = walks_problem(walks, count, what)
     if problem is not None:
         raise ValueError(problem)
+
+
+# Where the shape goes (TASK-347, ADR-0300) and the magnet of an anchored one.
+PLACEMENT_DESCRIPTION = (
+    f"One of: {', '.join(PLACEMENTS)}. free: the search turns, scales and moves "
+    "the shape to where the roads draw it best, as before. anchored: the shape "
+    "stays where and as it was drawn (its first point on start, upright, at the "
+    "scale of distance_m), traced once with the magnet fit and never rescaled; "
+    "a distance off by more than 10% is a warning, not a refusal. Only on the "
+    "roads: on the water, invalid_request."
+)
+FIT_DESCRIPTION = (
+    "With placement anchored: the magnet, from 0 (faithful to the drawing: "
+    "tight zones and corridor) to 1 (today's tracing, wide); the engine's "
+    "default when missing. With placement free, invalid_request."
+)
 
 
 class RouteRequestBody(BaseModel):
@@ -146,6 +172,54 @@ class RouteRequestBody(BaseModel):
         ),
         examples=[None],
     )
+    # Missing from an app of before TASK-323.
+    laps: int | None = Field(
+        default=None, description=LAPS_DESCRIPTION, examples=[None]
+    )
+    # Missing from an app of before TASK-347.
+    placement: str = Field(default="free", description=PLACEMENT_DESCRIPTION)
+    fit: float | None = Field(
+        default=None, description=FIT_DESCRIPTION, examples=[None]
+    )
+
+
+class LandmarkBody(BaseModel):
+    """A place with a name on the shore, to turn opposite: Landmark in
+    packages/shared-types (route_engine/shore_names.py, TASK-323)."""
+
+    name: str
+    kind: str = Field(description='From OpenStreetMap, like "beach_resort".')
+    point: tuple[float, float] = Field(description="Where it is, as [lat, lon].")
+    distance_m: float = Field(description="From the turn.")
+    bearing_deg: float = Field(
+        description="Where to look from the turn, degrees clockwise from north."
+    )
+
+
+class SwimTurnBody(BaseModel):
+    """Where a swim turns: SwimTurn in packages/shared-types
+    (route_engine/swim_turns.py, TASK-323)."""
+
+    point: tuple[float, float] = Field(description="The turn as [lat, lon].")
+    at_m: float = Field(description="Along the swim from its start.")
+    side: Literal["left", "right"]
+    angle_deg: float = Field(description="How much it turns, 0-180°.")
+    lap: int = Field(description="The lap it is in, from 1.")
+    landmark: LandmarkBody | None = Field(
+        default=None,
+        description="The place on the shore to turn opposite; null without one.",
+    )
+
+    def to_turn(self) -> SwimTurn:
+        mark = self.landmark
+        return SwimTurn(
+            point=self.point,
+            at_m=self.at_m,
+            side=self.side,
+            angle_deg=self.angle_deg,
+            lap=self.lap,
+            landmark=None if mark is None else Landmark(**mark.model_dump()),
+        )
 
 
 class DirectionBody(BaseModel):
@@ -248,6 +322,39 @@ class RouteResultBody(BaseModel):
             "circle; each alternative has its own."
         ),
     )
+    # Missing from an older API, and in a GPX request from an older app.
+    laps: int = Field(
+        default=1,
+        description="A swim (TASK-323): how many times round its shape; 1 else.",
+    )
+    lap_m: float | None = Field(
+        default=None,
+        ge=0,
+        description=(
+            "A swim (TASK-323): how long one lap is, in metres, the shape "
+            "without the legs from the shore and back; null for any other route."
+        ),
+    )
+    turns: list[SwimTurnBody] = Field(
+        default_factory=list,
+        description=(
+            "A swim (TASK-323): where it turns, in order, every lap's, each "
+            "with the place on the shore to turn opposite when there is one; "
+            "empty for any other route."
+        ),
+    )
+
+    # Missing from an older API, and in a GPX request from an older app.
+    placed_outline: list[list[tuple[float, float]]] = Field(
+        default_factory=list,
+        description=(
+            "The drawing as the engine placed it, in [lat, lon] lines (TASK-347, "
+            "ADR-0300): turned, scaled and moved by the search when free, left "
+            "where it was drawn when anchored; one closed line for a shape, one "
+            "open line per letter or piece with the pen up. The app draws it as "
+            "a ghost under the route. Empty on the water."
+        ),
+    )
 
     @model_validator(mode="after")
     def _walks_within_points(self) -> Self:
@@ -288,6 +395,22 @@ ErrorCode = Literal[
     "comment_rejected",
     # No contest open, nor one closed less than a week ago (TASK-299).
     "no_contest",
+    # An entry in a monthly challenge refused (TASK-343, ADR-0296): the
+    # contest takes no entries (ended, closed, or without a theme); the
+    # drawing cannot take part (another's, not for everyone, imported,
+    # published outside the period, hidden).
+    "contest_closed",
+    "not_entrant",
+    # A run added from a file is not sent to Strava (TASK-312, ADR-0272).
+    "imported_run",
+    # Signing in with Apple or Google (TASK-322, ADR-0282): no account yet
+    # for that identity or its email, so the app asks for a username; the
+    # server has no keys for that provider.
+    "new_account",
+    "provider_unavailable",
+    # An item tagged on a photo refused (TASK-394, ADR-0333): `reason` says
+    # why, for the app's words.
+    "outfit_tag_rejected",
 ]
 
 # Why an image gives no outline: InvalidImageError.reason in
@@ -315,6 +438,21 @@ EditReason = Literal[
 # ADR-0176).
 CommentReason = Literal["negative"]
 
+# Why an item tagged on a photo was refused: outfit_tags.py and
+# outfit_links.py (TASK-394, ADR-0333). Not an https page on a domain name,
+# a shortener, a link MuW cannot open (its list, or Web Risk), an address
+# written in the brand or the model, more than 5 on the photo or 10 in the
+# post, words of the filter (comment_filter.py).
+OutfitTagReason = Literal[
+    "not_https",
+    "shortened",
+    "blocked",
+    "link_in_text",
+    "too_many_on_photo",
+    "too_many_in_post",
+    "words",
+]
+
 
 class ErrorDetail(BaseModel):
     code: ErrorCode
@@ -324,8 +462,9 @@ class ErrorDetail(BaseModel):
     suggested_distance_m: int | None = None
     # Only with image_not_usable: why the engine found no outline (TASK-073);
     # with outline_edit_rejected, why the drawing was refused (TASK-079);
-    # with comment_rejected, why the comment was (TASK-120).
-    reason: ImageReason | EditReason | CommentReason | None = None
+    # with comment_rejected, why the comment was (TASK-120); with
+    # outfit_tag_rejected, why the item was (TASK-394).
+    reason: ImageReason | EditReason | CommentReason | OutfitTagReason | None = None
 
 
 class ErrorBody(BaseModel):
@@ -345,6 +484,21 @@ class RouteJobBody(BaseModel):
     status: JobStatus
     result: RouteResultBody | None = Field(description="Only when status is done.")
     error: ErrorDetail | None = Field(description="Only when status is failed.")
+
+
+class RouteJobWithFirstBody(RouteJobBody):
+    """A route job read with `?first=1` (TASK-435, ADR-0361): the RouteJob
+    of packages/shared-types with its `first`. Who does not ask gets a
+    RouteJobBody, as before: an app that does not know the field is sent
+    no route more at each read."""
+
+    first: RouteResultBody | None = Field(
+        description=(
+            "Only while the job is computing: the route from the user's own "
+            "start, with no alternatives, as soon as it is planned and the "
+            "nearby starts are not yet. The whole answer is `result`, as ever."
+        )
+    )
 
 
 class GpxRequestBody(BaseModel):
@@ -558,6 +712,15 @@ class ImageRouteRequestBody(BaseModel):
             "the pen up (TASK-197); the distance is the drawing's. Without "
             "pieces, true is refused: invalid_request."
         ),
+    )
+    # Missing from an app of before TASK-323.
+    laps: int | None = Field(
+        default=None, description=LAPS_DESCRIPTION, examples=[None]
+    )
+    # Missing from an app of before TASK-347.
+    placement: str = Field(default="free", description=PLACEMENT_DESCRIPTION)
+    fit: float | None = Field(
+        default=None, description=FIT_DESCRIPTION, examples=[None]
     )
 
 

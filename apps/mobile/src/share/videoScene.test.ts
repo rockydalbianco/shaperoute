@@ -1,21 +1,35 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
 import { fitLines } from "../activities/fitLines";
-import { color } from "../theme/tokens";
+import { PITCH_3D } from "../map/mapKindStyle";
+import { color, SHADES, videoLine } from "../theme/tokens";
 import { POST_RESULTS, type PostRun, resultValue } from "./postRun";
 import type { Sticker } from "./stickers";
 import {
+  MAP_CREDIT,
+  MAP_WAIT_MS,
+  STILL_ZOOM,
+  TERRAIN_CREDIT,
+  TURN_DEG,
+} from "./videoMap";
+import { CHASE_PITCH, CHASE_SAMPLES } from "./videoChase";
+import { DAY, NIGHT } from "./videoStyle";
+import {
+  imageHop,
   lengthOf,
   MAX_POINTS,
+  MAX_POINTS_3D,
   pointAlong,
   pointsOf,
   thinned,
+  thinnedTrack,
   VIDEO_FPS,
   VIDEO_HEIGHT,
   VIDEO_SECONDS,
   VIDEO_WIDTH,
   type VideoOp,
   videoScene,
+  withNote,
 } from "./videoScene";
 
 /** A straight line north, a point every 50 m. */
@@ -50,16 +64,21 @@ function words(frame: VideoOp[]): string[] {
   return frame.filter((op): op is Words => op.k === "text").map((op) => op.text);
 }
 
-const scene = videoScene(RUN, POST_RESULTS, STICKERS);
+const scene = videoScene(RUN, POST_RESULTS, STICKERS, "paper");
 const last = scene.frames[scene.frames.length - 1];
 
-describe("videoScene", () => {
-  it("is a vertical video of about 12 seconds on the yellow of MuW", () => {
+describe("videoScene, on paper", () => {
+  it("is a vertical video of about 12 seconds on the yellow of MuW, with no map", () => {
     expect([scene.width, scene.height, scene.fps]).toEqual([1080, 1920, 30]);
     expect(VIDEO_WIDTH / VIDEO_HEIGHT).toBeCloseTo(9 / 16);
     expect(scene.frames).toHaveLength(VIDEO_SECONDS * VIDEO_FPS);
-    expect(scene.paper).toBe(color.accent);
-    expect(scene.ink).toBe(color.onAccent);
+    expect(scene.look).toBe("paper");
+    expect(scene.colors.paper).toBe(color.accent);
+    expect(scene.colors.ink).toBe(color.onAccent);
+    expect(scene.map).toBeNull();
+    expect(scene.frames.every((frame) => frame.every((op) => op.k !== "map"))).toBe(
+      true,
+    );
   });
 
   it("starts empty, the logo and the title coming in", () => {
@@ -87,7 +106,7 @@ describe("videoScene", () => {
 
   it("shows the pen's tip only while the line draws", () => {
     const tips = (frame: VideoOp[]) =>
-      frame.filter((op) => op.k === "dot" && op.fill === color.accent && op.alpha > 0);
+      frame.filter((op) => op.k === "dot" && op.fill === "line" && op.alpha > 0);
     expect(tips(scene.frames[5 * VIDEO_FPS])).toHaveLength(1);
     expect(tips(last)).toHaveLength(0);
   });
@@ -110,7 +129,7 @@ describe("videoScene", () => {
   });
 
   it("shows only the results on", () => {
-    const only = videoScene(RUN, ["distance"], []);
+    const only = videoScene(RUN, ["distance"], [], "paper");
     const end = words(only.frames[only.frames.length - 1]);
     expect(end).toContain(resultValue(RUN, "distance"));
     expect(end).not.toContain("Time");
@@ -126,11 +145,12 @@ describe("videoScene", () => {
     ]);
   });
 
-  it("leaves out the ends of the track: a short run has numbers only", () => {
+  it("draws no line of one fix: the run has numbers only", () => {
     const short = videoScene(
-      { ...RUN, track: north(350), distanceM: 350 },
+      { ...RUN, track: north(0), distanceM: 350 },
       POST_RESULTS,
       [],
+      "paper",
     );
     expect(short.paths[1]).toEqual([]);
     expect(short.frames.every((frame) => runLine(frame) === undefined)).toBe(true);
@@ -150,7 +170,7 @@ describe("videoScene", () => {
   });
 
   it("draws a run along a turned route turned back, as the post", () => {
-    const turned = videoScene({ ...RUN, rotationDeg: 90 }, POST_RESULTS, []);
+    const turned = videoScene({ ...RUN, rotationDeg: 90 }, POST_RESULTS, [], "paper");
     const xs = turned.paths[1].filter((_, i) => i % 2 === 0);
     const ys = turned.paths[1].filter((_, i) => i % 2 === 1);
     expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(
@@ -159,10 +179,233 @@ describe("videoScene", () => {
   });
 
   it("has no title words when the run has no title", () => {
-    const untitled = videoScene({ ...RUN, title: null }, POST_RESULTS, []);
+    const untitled = videoScene({ ...RUN, title: null }, POST_RESULTS, [], "paper");
     expect(words(untitled.frames[untitled.frames.length - 1])).not.toContain(
       "Heart in Trento",
     );
+  });
+});
+
+describe("videoScene, at night", () => {
+  const night = videoScene(RUN, POST_RESULTS, STICKERS, "night");
+  const end = night.frames[night.frames.length - 1];
+  const texts = (frame: VideoOp[]) =>
+    frame.filter((op): op is Words => op.k === "text");
+
+  it("lays the map under the line, framed on the drawing's box", () => {
+    expect(night.look).toBe("night");
+    const map = night.map;
+    expect(map).not.toBeNull();
+    expect([map?.width, map?.height, map?.pixelRatio]).toEqual([360, 640, 3]);
+    // The box of the drawing, 20 % to 70 % of the height and 8 % in from
+    // the sides, as the room kept clear around the centre.
+    expect(map?.camera.padding.top).toBeCloseTo(128, 5);
+    expect(map?.camera.padding.bottom).toBeCloseTo(192, 5);
+    expect(map?.camera.padding.left).toBeCloseTo(28.8, 5);
+    expect(map?.camera.padding.right).toBeCloseTo(28.8, 5);
+    // The middle of the run: longitude first.
+    expect(map?.camera.center[0]).toBeCloseTo(11.12, 6);
+    expect(map?.camera.center[1]).toBeCloseTo(46.07 + 2600 / 111_195, 5);
+    expect(map?.camera.zoom).toBeGreaterThan(11);
+    expect(map?.camera.zoom).toBeLessThan(13);
+    expect(map?.camera.bearing).toBe(0);
+    expect(map?.camera.pitch).toBe(0);
+    expect(map?.waitMs).toBe(MAP_WAIT_MS);
+    expect(map?.style.layers.length).toBeGreaterThan(5);
+  });
+
+  it("takes every colour from the dark tone at its darkest, the line in the yellow", () => {
+    expect(night.colors).toEqual({
+      paper: NIGHT.map.background,
+      ink: NIGHT.text,
+      muted: NIGHT.textMuted,
+      faint: NIGHT.textFaint,
+      accent: NIGHT.accent,
+      onAccent: NIGHT.onAccent,
+      dot: NIGHT.text,
+      line: NIGHT.accent,
+      scrim: NIGHT.scrim,
+    });
+    expect(NIGHT.map).toEqual(SHADES.dark.darkest.map);
+    const known = new Set<string>(Object.values(NIGHT.map));
+    for (const hex of JSON.stringify(night.map?.style).match(/#[0-9A-Fa-f]{6}/g) ??
+      []) {
+      expect(known.has(hex)).toBe(true);
+    }
+    expect(runLine(end)).toMatchObject({ color: "line", width: 17.3 });
+  });
+
+  it("writes the title regular and tight, the labels small, spaced and in capitals, the numbers large and light", () => {
+    const title = texts(end).find((op) => op.text === "Heart in Trento");
+    expect(title).toMatchObject({
+      weight: 400,
+      size: 83.1,
+      tracking: -1.7,
+      color: "ink",
+    });
+    const label = texts(end).find((op) => op.text === "DISTANCE");
+    expect(label).toMatchObject({
+      weight: 600,
+      size: 30.5,
+      tracking: 3.3,
+      color: "muted",
+    });
+    expect(texts(end).some((op) => op.text === "Distance")).toBe(false);
+    const value = texts(end).find((op) => op.text === resultValue(RUN, "distance"));
+    expect(value).toMatchObject({
+      weight: 300,
+      size: 121.8,
+      tracking: -2.8,
+      color: "ink",
+    });
+    expect(texts(end).find((op) => op.text === "MuW")).toMatchObject({ weight: 700 });
+  });
+
+  it("puts the map first, the yellow square under the heart, the dark under the words, the credit last", () => {
+    const kinds = end.map((op) => op.k);
+    expect(kinds[0]).toBe("map");
+    expect(kinds.indexOf("rect")).toBeLessThan(kinds.indexOf("line"));
+    expect(end.find((op) => op.k === "rect")).toMatchObject({
+      color: "accent",
+      w: 97.2,
+      h: 97.2,
+    });
+    const scrim = kinds.indexOf("scrim");
+    expect(scrim).toBeGreaterThan(kinds.lastIndexOf("line"));
+    expect(scrim).toBeLessThan(
+      end.findIndex((op) => op.k === "text" && op.text === "DISTANCE"),
+    );
+    expect(end.find((op) => op.k === "scrim")).toEqual({
+      k: "scrim",
+      top: 1152,
+      peak: 0.82,
+      alpha: 1,
+    });
+    expect(end.filter((op) => op.k === "line" && op.path === 1)).toHaveLength(1);
+    const credit = texts(end).find((op) => op.text === MAP_CREDIT);
+    expect(credit).toMatchObject({ color: "faint", align: "center", weight: 400 });
+    expect(credit?.y).toBeGreaterThan(1920 * 0.95);
+    // The numbers sit above the credit.
+    const value = texts(end).find((op) => op.text === resultValue(RUN, "pace"));
+    expect((value?.y ?? 0) + (value?.size ?? 0) * 1.2).toBeLessThan(credit?.y ?? 0);
+  });
+
+  it("brings the map and the dark in with the logo, then keeps them", () => {
+    const at = (frame: number, kind: "map" | "scrim") =>
+      night.frames[frame].find((op) => op.k === kind)?.alpha;
+    expect(at(0, "map")).toBe(0);
+    expect(at(0, "scrim")).toBe(0);
+    expect(at(VIDEO_FPS / 2, "map")).toBe(1);
+    expect(at(VIDEO_FPS * 6, "map")).toBe(1);
+    expect(at(VIDEO_FPS * 6, "scrim")).toBe(1);
+  });
+
+  it("turns the map as the drawing is turned", () => {
+    const turned = videoScene({ ...RUN, rotationDeg: 90 }, POST_RESULTS, [], "night");
+    expect(turned.map?.camera.bearing).toBe(-90);
+  });
+
+  it("frames no map for a run too short to draw, and stays dark", () => {
+    const short = videoScene(
+      { ...RUN, track: north(0), distanceM: 350 },
+      POST_RESULTS,
+      [],
+      "night",
+    );
+    expect(short.map).toBeNull();
+    expect(short.colors.paper).toBe(NIGHT.map.background);
+    expect(short.frames.every((frame) => frame.every((op) => op.k !== "map"))).toBe(
+      true,
+    );
+  });
+
+  it("keeps the drawing inside its box, and the video the same size as on paper", () => {
+    const path = night.paths[1];
+    for (let i = 0; i < path.length; i += 2) {
+      expect(path[i]).toBeGreaterThanOrEqual(1080 * 0.08);
+      expect(path[i]).toBeLessThanOrEqual(1080 * 0.92);
+      expect(path[i + 1]).toBeGreaterThanOrEqual(1920 * 0.2);
+      expect(path[i + 1]).toBeLessThanOrEqual(1920 * 0.7);
+    }
+    expect(night.frames).toHaveLength(VIDEO_SECONDS * VIDEO_FPS);
+    expect(Math.max(...night.frames.map((frame) => frame.length))).toBeLessThan(24);
+  });
+});
+
+describe("videoScene, by day", () => {
+  const day = videoScene(RUN, POST_RESULTS, STICKERS, "day");
+  const end = day.frames[day.frames.length - 1];
+
+  it("takes every colour from the light tone at its brightest, the veil from its map's ground", () => {
+    expect(day.look).toBe("day");
+    expect(day.colors).toEqual({
+      paper: DAY.map.background,
+      ink: DAY.text,
+      muted: DAY.textMuted,
+      faint: DAY.textFaint,
+      accent: DAY.accent,
+      onAccent: DAY.onAccent,
+      dot: DAY.text,
+      line: DAY.accent,
+      scrim: DAY.map.background,
+    });
+    const known = new Set<string>(Object.values(DAY.map));
+    for (const hex of JSON.stringify(day.map?.style).match(/#[0-9A-Fa-f]{6}/g) ?? []) {
+      expect(known.has(hex)).toBe(true);
+    }
+    expect(end.find((op) => op.k === "scrim")).toEqual({
+      k: "scrim",
+      top: 1152,
+      peak: 0.94,
+      alpha: 1,
+    });
+  });
+
+  it("runs the line on its dark edge, as on the light map", () => {
+    const lines = end.filter((op): op is Line => op.k === "line" && op.path === 1);
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toMatchObject({ color: "onAccent", alpha: 0.85, width: 25.6 });
+    expect(lines[1]).toMatchObject({ color: "line", width: 17.3 });
+    expect(lines[0].upTo).toBe(lines[1].upTo);
+    // The edge grows with the line, from the start.
+    const early = day.frames[3 * VIDEO_FPS].filter(
+      (op): op is Line => op.k === "line" && op.path === 1,
+    );
+    expect(early).toHaveLength(2);
+    expect(early[0].upTo).toBe(early[1].upTo);
+    expect(early[1].upTo).toBeLessThan(lines[1].upTo);
+  });
+
+  it("is otherwise the same video as at night", () => {
+    const night = videoScene(RUN, POST_RESULTS, STICKERS, "night");
+    expect(day.frames).toHaveLength(night.frames.length);
+    expect(day.paths).toEqual(night.paths);
+    expect(day.map?.camera).toEqual(night.map?.camera);
+    const texts = (frame: VideoOp[]) =>
+      frame.filter((op): op is Words => op.k === "text").map((op) => op.text);
+    expect(texts(end)).toEqual(texts(night.frames[night.frames.length - 1]));
+  });
+});
+
+describe("withNote", () => {
+  it("writes the note small at the foot of every picture, and changes nothing else", () => {
+    const noted = withNote(scene, "no map: timeout");
+    expect(noted.frames).toHaveLength(scene.frames.length);
+    for (let i = 0; i < noted.frames.length; i += 1) {
+      const frame = noted.frames[i];
+      expect(frame.slice(0, -1)).toEqual(scene.frames[i]);
+      expect(frame[frame.length - 1]).toMatchObject({
+        k: "text",
+        text: "no map: timeout",
+        align: "center",
+        color: "ink",
+        size: 21.6,
+        alpha: 1,
+      });
+      expect((frame[frame.length - 1] as Words).y).toBeGreaterThan(1920 * 0.95);
+    }
+    expect(noted.paths).toBe(scene.paths);
+    expect(noted.look).toBe("paper");
   });
 });
 
@@ -208,6 +451,7 @@ describe("the size of a video, whatever the run", () => {
       { ...RUN, track: zigzag(20_000), distanceM: 400_000 },
       POST_RESULTS,
       [],
+      "paper",
     );
     expect(long.paths[1].length / 2).toBeLessThanOrEqual(MAX_POINTS + 2);
     expect(long.frames).toHaveLength(VIDEO_SECONDS * VIDEO_FPS);
@@ -260,5 +504,503 @@ describe("lengthOf and pointAlong", () => {
     expect(pointAlong(path, 15)).toEqual([15, 0]);
     expect(pointAlong(path, 50)).toEqual([30, 20]);
     expect(pointAlong(path, 999)).toEqual([30, 40]);
+  });
+});
+
+describe("thinnedTrack", () => {
+  it("keeps a short track whole, and at most the points asked of a long one, with its ends", () => {
+    const short = north(2000);
+    expect(thinnedTrack(short)).toEqual(short);
+    const long = north(20_000);
+    const kept = thinnedTrack(long);
+    expect(kept.length).toBeLessThanOrEqual(MAX_POINTS_3D);
+    expect(kept.length).toBeGreaterThan(MAX_POINTS_3D / 2);
+    expect(kept[0]).toEqual(long[0]);
+    expect(kept[kept.length - 1]).toEqual(long[long.length - 1]);
+    expect(thinnedTrack(long, 50).length).toBeLessThanOrEqual(50);
+    expect(thinnedTrack([long[0], long[1]])).toEqual([long[0], long[1]]);
+    expect(thinnedTrack([])).toEqual([]);
+  });
+});
+
+describe("videoScene, in 3D", () => {
+  const relief = videoScene(RUN, POST_RESULTS, STICKERS, "3d");
+  const end = relief.frames[relief.frames.length - 1];
+  const night = videoScene(RUN, POST_RESULTS, STICKERS, "night");
+  type Ground = Extract<VideoOp, { k: "map" }>;
+  type Dot = Extract<VideoOp, { k: "dot" }>;
+  const ground = (frame: VideoOp[]) => frame.find((op): op is Ground => op.k === "map");
+
+  it("is the night's map leaning on its hills, the line given to the page in steps of metres", () => {
+    expect(relief.look).toBe("3d");
+    expect(relief.colors).toEqual(night.colors);
+    expect(relief.map?.camera.pitch).toBe(PITCH_3D);
+    expect(relief.map?.terrain).not.toBeNull();
+    expect(relief.map?.camera.center).toEqual(night.map?.camera.center);
+    expect(relief.map?.camera.zoom).toEqual(night.map?.camera.zoom);
+    expect(relief.map?.camera.bearing).toEqual(night.map?.camera.bearing);
+    expect(night.map?.line).toEqual([]);
+    const line = relief.map?.line ?? [];
+    expect(line.length).toBeLessThanOrEqual(MAX_POINTS_3D);
+    expect(line.length).toBeGreaterThan(2);
+    // The whole track, start and end too, as the flat line is (ADR-0330).
+    for (const [lon, lat] of line) {
+      expect(lon).toBe(11.12);
+      expect(lat).toBeGreaterThanOrEqual(46.07 - 1e-9);
+      expect(lat).toBeLessThanOrEqual(46.07 + 5200 / 111_195 + 1e-9);
+    }
+    expect(line[0][1]).toBeCloseTo(46.07, 6);
+    expect(line[line.length - 1][1]).toBeCloseTo(46.07 + 5200 / 111_195, 6);
+  });
+
+  it("turns the camera from one side to the other, slow at both ends, or zooms the picture slowly", () => {
+    const turnAt = (s: number) => ground(relief.frames[s * VIDEO_FPS])?.turn ?? NaN;
+    const zoomAt = (s: number) => ground(relief.frames[s * VIDEO_FPS])?.zoom ?? NaN;
+    expect(ground(relief.frames[0])).toEqual({
+      k: "map",
+      alpha: 0,
+      turn: -TURN_DEG,
+      zoom: 1,
+    });
+    expect(turnAt(6)).toBeCloseTo(0, 1);
+    expect(zoomAt(6)).toBeCloseTo(1 + (STILL_ZOOM - 1) / 2, 2);
+    expect(ground(end)?.turn).toBeCloseTo(TURN_DEG, 1);
+    expect(ground(end)?.zoom).toBeCloseTo(STILL_ZOOM, 2);
+    expect(turnAt(1) - turnAt(0)).toBeLessThan(turnAt(6) - turnAt(5));
+    expect(ground(night.frames[0])).toEqual({ k: "map", alpha: 0 });
+  });
+
+  it("gives the page the run's line as a share of itself, and the pen's tip along it", () => {
+    expect(runLine(end)?.share).toBe(1);
+    // Midway through the 8 seconds of drawing.
+    expect(runLine(relief.frames[5 * VIDEO_FPS])?.share).toBeCloseTo(0.5, 2);
+    const drawing = relief.frames[3 * VIDEO_FPS];
+    const tip = drawing
+      .filter((op): op is Dot => op.k === "dot")
+      .find((op) => op.fill === "line");
+    expect(tip).toMatchObject({ path: 1, share: runLine(drawing)?.share });
+    expect(runLine(night.frames[3 * VIDEO_FPS])?.share).toBeUndefined();
+  });
+
+  it("credits the hills' heights with the map, and is otherwise the night's video", () => {
+    expect(words(end)).toContain(`${MAP_CREDIT} · ${TERRAIN_CREDIT}`);
+    const nightEnd = night.frames[night.frames.length - 1];
+    const butCredit = (frame: VideoOp[]) =>
+      words(frame).filter((text) => !text.includes(MAP_CREDIT));
+    expect(butCredit(end)).toEqual(butCredit(nightEnd));
+    expect(relief.frames).toHaveLength(night.frames.length);
+    expect(relief.paths).toEqual(night.paths);
+  });
+});
+
+describe("videoScene, with an animal (TASK-408)", () => {
+  type Animal = Extract<VideoOp, { k: "character" }>;
+  function animal(frame: VideoOp[]): Animal | undefined {
+    return frame.find((op): op is Animal => op.k === "character");
+  }
+  const withHorse = videoScene(RUN, POST_RESULTS, STICKERS, "night", {
+    character: "horse",
+  });
+
+  it("has no animal unless one is asked", () => {
+    expect(scene.character).toBeNull();
+    expect(scene.frames.some((frame) => animal(frame) !== undefined)).toBe(false);
+  });
+
+  it("puts the animal on the tip of the line, over the pen, from the first stroke to the end", () => {
+    expect(withHorse.character).toBe("horse");
+    withHorse.frames.forEach((frame) => {
+      const line = runLine(frame);
+      const horse = animal(frame);
+      expect(horse === undefined).toBe(line === undefined);
+      if (line !== undefined && horse !== undefined) {
+        expect(horse.path).toBe(line.path);
+        expect(horse.upTo).toBe(line.upTo);
+        expect(frame.indexOf(horse)).toBeGreaterThan(frame.indexOf(line));
+        expect(horse.size).toBeCloseTo(VIDEO_WIDTH * 0.2, 1);
+      }
+    });
+  });
+
+  it("gallops while the line draws, then rests at its end", () => {
+    const middle = animal(withHorse.frames[5 * VIDEO_FPS]);
+    const end = animal(withHorse.frames[withHorse.frames.length - 1]);
+    expect(middle?.clip).toBe("run");
+    expect(middle?.time).toBe(4);
+    expect(end?.clip).toBe("rest");
+    expect(end?.upTo).toBe(
+      runLine(withHorse.frames[withHorse.frames.length - 1])?.upTo,
+    );
+  });
+
+  it("follows the line as the map lays it in 3D", () => {
+    const relief = videoScene(RUN, POST_RESULTS, STICKERS, "3d", { character: "fox" });
+    const frame = relief.frames[5 * VIDEO_FPS];
+    expect(animal(frame)?.share).toBe(runLine(frame)?.share);
+  });
+
+  it("leaves the rest of the video as it was", () => {
+    const without = videoScene(RUN, POST_RESULTS, STICKERS, "night");
+    expect(
+      withHorse.frames.map((frame) => frame.filter((op) => op.k !== "character")),
+    ).toEqual(without.frames);
+  });
+});
+
+describe("videoScene, with the runner's own image (TASK-417)", () => {
+  type Animal = Extract<VideoOp, { k: "character" }>;
+  function actor(frame: VideoOp[]): Animal | undefined {
+    return frame.find((op): op is Animal => op.k === "character");
+  }
+  const withImage = videoScene(RUN, POST_RESULTS, STICKERS, "night", {
+    character: "my_image",
+  });
+  const withHorse = videoScene(RUN, POST_RESULTS, STICKERS, "night", {
+    character: "horse",
+  });
+
+  it("runs the line where the animal would, hopping as it runs and still at rest", () => {
+    expect(withImage.character).toBe("my_image");
+    const hops: number[] = [];
+    withImage.frames.forEach((frame, i) => {
+      const image = actor(frame);
+      const horse = actor(withHorse.frames[i]);
+      expect(image === undefined).toBe(horse === undefined);
+      if (image === undefined || horse === undefined) {
+        return;
+      }
+      const { hop, ...rest } = image;
+      expect(rest).toEqual(horse);
+      expect(hop).toBeGreaterThanOrEqual(0);
+      expect(hop).toBeLessThanOrEqual(Math.ceil(VIDEO_WIDTH * 0.2 * 0.07));
+      if (image.clip === "rest") {
+        expect(hop).toBe(0);
+      }
+      hops.push(hop ?? 0);
+    });
+    expect(Math.max(...hops)).toBeGreaterThan(5);
+  });
+
+  it("hops on the ground at the start, up and down again and again", () => {
+    expect(imageHop(0, 200)).toBe(0);
+    expect(imageHop(0.2, 200)).toBeCloseTo(14, 5);
+    expect(imageHop(0.4, 200)).toBeCloseTo(0, 5);
+    expect(imageHop(-1, 200)).toBe(0);
+  });
+
+  it("gives an animal no hop", () => {
+    expect(withHorse.frames.some((frame) => actor(frame)?.hop !== undefined)).toBe(
+      false,
+    );
+  });
+});
+
+describe("videoScene, as «Edit video» makes it (TASK-408 C1)", () => {
+  type Emoji = Extract<VideoOp, { k: "emoji" }>;
+  function emoji(frame: VideoOp[], text: string): Emoji[] {
+    return frame.filter((op): op is Emoji => op.k === "emoji" && op.text === text);
+  }
+  const night = videoScene(RUN, POST_RESULTS, [], "night");
+
+  it("draws the line and the pen's tip in the colour chosen, the yellow when none is", () => {
+    const pink = videoScene(RUN, POST_RESULTS, [], "night", { line: "pink" });
+    expect(night.colors.line).toBe(NIGHT.accent);
+    expect(pink.colors.line).toBe(videoLine.pink);
+    expect(pink.colors.accent).toBe(NIGHT.accent);
+    expect(pink.frames).toEqual(night.frames);
+    const white = videoScene(RUN, POST_RESULTS, [], "day", { line: "white" });
+    expect(white.colors.line).toBe(videoLine.white);
+  });
+
+  it("keeps the ink line on paper, whatever the colour", () => {
+    const paper = videoScene(RUN, POST_RESULTS, [], "paper", { line: "green" });
+    expect(paper.colors.line).toBe(color.onAccent);
+  });
+
+  it("pops the emoji of the way where the line reaches it, three times, under the animal", () => {
+    const along = videoScene(RUN, POST_RESULTS, [], "night", {
+      along: "⭐",
+      character: "horse",
+    });
+    expect(emoji(along.frames[0], "⭐")).toHaveLength(0);
+    const last = along.frames[along.frames.length - 1];
+    const stars = emoji(last, "⭐");
+    expect(stars).toHaveLength(3);
+    const line = runLine(last) as Line;
+    stars.forEach((star, i) => {
+      expect(star.scale).toBe(1);
+      expect(star.share).toBeUndefined();
+      const [x, y] = pointAlong(
+        night.paths[1],
+        lengthOf(night.paths[1]) * ((i + 1) / 4),
+      );
+      expect(star.x).toBeCloseTo(x, 0);
+      expect(star.y).toBeCloseTo(y, 0);
+      expect(last.indexOf(star)).toBeGreaterThan(last.indexOf(line));
+      expect(last.indexOf(star)).toBeLessThan(
+        last.findIndex((op) => op.k === "character"),
+      );
+    });
+    // Each pops once the line has drawn past it, not before.
+    along.frames.forEach((frame) => {
+      const drawn = runLine(frame)?.upTo ?? 0;
+      const whole = lengthOf(night.paths[1]);
+      const shown = emoji(frame, "⭐").length;
+      expect(shown).toBeLessThanOrEqual(Math.floor((drawn / whole) * 4 + 0.01));
+    });
+  });
+
+  it("lays the emoji of the way on the line as the map lays it in 3D", () => {
+    const relief = videoScene(RUN, POST_RESULTS, [], "3d", { along: "🔥" });
+    const last = relief.frames[relief.frames.length - 1];
+    expect(emoji(last, "🔥").map((op) => op.share)).toEqual([0.25, 0.5, 0.75]);
+  });
+
+  it("bursts the emoji of the end around the drawing once it is whole, six of them", () => {
+    const end = videoScene(RUN, POST_RESULTS, [], "night", { end: "🎆" });
+    expect(emoji(end.frames[8 * VIDEO_FPS], "🎆")).toHaveLength(0);
+    const last = emoji(end.frames[end.frames.length - 1], "🎆");
+    expect(last).toHaveLength(6);
+    for (const op of last) {
+      expect(op.scale).toBe(1);
+      expect(op.size).toBeCloseTo(VIDEO_WIDTH * 0.12, 1);
+      // Under the title, over the numbers.
+      expect(op.y).toBeGreaterThan(VIDEO_HEIGHT * 0.2);
+      expect(op.y).toBeLessThan(VIDEO_HEIGHT * 0.7);
+    }
+  });
+
+  it("adds nothing without emoji: the video as before", () => {
+    const none = videoScene(RUN, POST_RESULTS, [], "night", { along: null, end: null });
+    expect(none.frames).toEqual(night.frames);
+  });
+
+  it("draws «2D» on the night's ground with no map, no veil and no credit, the line in its colour", () => {
+    const flat = videoScene(RUN, POST_RESULTS, [], "2d", { line: "light_blue" });
+    expect(flat.map).toBeNull();
+    expect(flat.colors.paper).toBe(NIGHT.map.background);
+    expect(flat.colors.line).toBe(videoLine.lightBlue);
+    const last = flat.frames[flat.frames.length - 1];
+    expect(last.some((op) => op.k === "map" || op.k === "scrim")).toBe(false);
+    expect(words(last)).not.toContain(MAP_CREDIT);
+    expect(flat.paths).toEqual(night.paths);
+    expect(runLine(last)).toMatchObject({ color: "line", width: 17.3 });
+    expect(runLine(last)?.share).toBeUndefined();
+  });
+});
+
+describe("videoScene, with the scenes of «Edit video» (TASK-408 C2)", () => {
+  type Map = Extract<VideoOp, { k: "map" }>;
+  type Rect = Extract<VideoOp, { k: "rect" }>;
+  const at = (s: { frames: VideoOp[][] }, seconds: number) =>
+    s.frames[Math.round(seconds * VIDEO_FPS)];
+  const value = resultValue(RUN, "distance") as string;
+  const shownWords = (frame: VideoOp[]) =>
+    frame
+      .filter((op): op is Words => op.k === "text" && op.alpha > 0)
+      .map((op) => op.text);
+  const opened = { off: [] as never[] };
+
+  it("draws the same pictures with the scenes as the post opens", () => {
+    const plain = videoScene(RUN, POST_RESULTS, STICKERS, "night");
+    const same = videoScene(RUN, POST_RESULTS, STICKERS, "night", {
+      order: ["opening", "route", "ending"],
+      off: ["opening"],
+      opening: "title",
+      cut: "cut",
+      ending: "drawing",
+    });
+    expect(same.frames).toEqual(plain.frames);
+    expect(same.paths).toEqual(plain.paths);
+    expect(same.map).toEqual(plain.map);
+  });
+
+  it("is 12 seconds long whatever is on", () => {
+    for (const off of [[], ["route"], ["opening", "route"]] as const) {
+      expect(videoScene(RUN, POST_RESULTS, [], "night", { off }).frames).toHaveLength(
+        VIDEO_SECONDS * VIDEO_FPS,
+      );
+    }
+  });
+
+  it("opens with the line drawing itself from above, no numbers, then the route draws it again", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", { ...opened, cut: "cut" });
+    const drawing = runLine(at(s, 1.5)) as Line;
+    expect(drawing.upTo).toBeGreaterThan(0);
+    expect(drawing.share).toBeUndefined();
+    expect(shownWords(at(s, 1.5))).not.toContain(value);
+    // Whole before the cut, then the route starts from nothing at 3 s.
+    expect((runLine(at(s, 2.7)) as Line).upTo).toBeCloseTo(lengthOf(s.paths[1]), -1);
+    expect(runLine(at(s, 3.1))).toBeUndefined();
+    expect((runLine(at(s, 6)) as Line).upTo).toBeLessThan(lengthOf(s.paths[1]));
+  });
+
+  it("cuts at once, or fades the opening into the route over its last half second", () => {
+    const cut = videoScene(RUN, POST_RESULTS, [], "night", { ...opened, cut: "cut" });
+    const fade = videoScene(RUN, POST_RESULTS, [], "night", { ...opened, cut: "fade" });
+    expect((runLine(at(cut, 2.8)) as Line).alpha).toBe(1);
+    const fading = runLine(at(fade, 2.8)) as Line;
+    expect(fading.alpha).toBeGreaterThan(0);
+    expect(fading.alpha).toBeLessThan(1);
+  });
+
+  it("asks the page for the map from straight above under the opening on «3D», and only there", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "3d", opened);
+    expect(s.map?.flat).toBe(true);
+    const flat = (frame: VideoOp[]) =>
+      frame.some((op) => op.k === "map" && (op as Map).flat === true);
+    expect(flat(at(s, 1.5))).toBe(true);
+    expect(flat(at(s, 4))).toBe(false);
+    expect(videoScene(RUN, POST_RESULTS, [], "3d").map?.flat).toBeUndefined();
+    expect(
+      videoScene(RUN, POST_RESULTS, [], "night", opened).map?.flat,
+    ).toBeUndefined();
+    expect(
+      videoScene(RUN, POST_RESULTS, [], "3d", { ...opened, opening: "title" }).map
+        ?.flat,
+    ).toBeUndefined();
+  });
+
+  it("opens with the run's title large in the middle, the small one hidden meanwhile", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", {
+      ...opened,
+      opening: "title",
+      cut: "cut",
+    });
+    const titles = at(s, 1.5).filter(
+      (op): op is Words => op.k === "text" && op.text === "Heart in Trento",
+    );
+    const big = titles.find((op) => op.alpha > 0) as Words;
+    const small = titles.find((op) => op !== big) as Words;
+    expect(big.y).toBeGreaterThan(VIDEO_HEIGHT * 0.3);
+    expect(big.size).toBeGreaterThan(small.size);
+    expect(small.alpha).toBe(0);
+    expect(shownWords(at(s, 4))).toContain("Heart in Trento");
+  });
+
+  it("ends on the numbers large in the middle, over a veil, the small ones gone", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", { ending: "numbers" });
+    const end = at(s, 11);
+    const big = end.filter(
+      (op): op is Words =>
+        op.k === "text" && op.text === value && op.align === "center",
+    );
+    expect(big).toHaveLength(1);
+    expect(big[0].alpha).toBe(1);
+    const small = end.find(
+      (op): op is Words => op.k === "text" && op.text === value && op.align === "left",
+    ) as Words;
+    expect(small.alpha).toBe(0);
+    expect(end.some((op) => op.k === "rect" && (op as Rect).color === "paper")).toBe(
+      true,
+    );
+  });
+
+  it("ends on the heart of MuW drawing itself on its square in the middle", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", { ending: "heart" });
+    expect(s.paths).toHaveLength(3);
+    const end = at(s, 11.5);
+    const square = end.find(
+      (op): op is Rect =>
+        op.k === "rect" && op.color === "accent" && op.w > VIDEO_WIDTH / 4,
+    ) as Rect;
+    expect(square.x + square.w / 2).toBeCloseTo(VIDEO_WIDTH / 2, -1);
+    expect(end.some((op) => op.k === "line" && op.path === 2 && op.upTo > 0)).toBe(
+      true,
+    );
+    expect(videoScene(RUN, POST_RESULTS, [], "night").paths).toHaveLength(2);
+  });
+
+  it("ends on all three: the whole drawing with the numbers first, the heart after", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", { ending: "all" });
+    const hearted = (frame: VideoOp[]) =>
+      frame.some((op) => op.k === "line" && op.path === 2);
+    expect(hearted(at(s, 9.8))).toBe(false);
+    expect(shownWords(at(s, 9.8))).toContain(value);
+    expect(hearted(at(s, 11.5))).toBe(true);
+  });
+
+  it("gives the opening and the ending the route's seconds when it is off, the line whole in the ending", () => {
+    const s = videoScene(RUN, POST_RESULTS, STICKERS, "night", {
+      off: ["route"],
+      cut: "cut",
+    });
+    expect((runLine(at(s, 7)) as Line).upTo).toBeCloseTo(lengthOf(s.paths[1]), 0);
+    expect(at(s, 7).some((op) => op.k === "emoji")).toBe(true);
+    expect(at(s, 5.5).some((op) => op.k === "emoji")).toBe(false);
+  });
+
+  it("follows the order the runner chose: the ending first, then the route drawing from nothing", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", {
+      order: ["ending", "route", "opening"],
+    });
+    expect((runLine(at(s, 1)) as Line).upTo).toBeCloseTo(lengthOf(s.paths[1]), 0);
+    expect((runLine(at(s, 5)) as Line).upTo).toBeLessThan(lengthOf(s.paths[1]) / 2);
+  });
+
+  it("keeps the map's credit on through the opening", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", { ...opened, cut: "cut" });
+    expect(shownWords(at(s, 2))).toContain(MAP_CREDIT);
+  });
+});
+
+describe("videoScene, with the camera of the route on «3D» (TASK-408 C2b)", () => {
+  type Map = Extract<VideoOp, { k: "map" }>;
+  type Animal = Extract<VideoOp, { k: "character" }>;
+  const mapOf = (frame: VideoOp[]) => frame.find((op): op is Map => op.k === "map");
+  const at = (s: { frames: VideoOp[][] }, seconds: number) =>
+    s.frames[Math.round(seconds * VIDEO_FPS)];
+  const behind = videoScene(RUN, POST_RESULTS, [], "3d", {
+    camera: "behind",
+    character: "horse",
+  });
+
+  it("gives the page cameras along the run to try, only with «Camera behind»", () => {
+    expect(behind.map?.chase?.cameras).toHaveLength(CHASE_SAMPLES);
+    expect(videoScene(RUN, POST_RESULTS, [], "3d").map?.chase).toBeUndefined();
+    expect(
+      videoScene(RUN, POST_RESULTS, [], "night", { camera: "behind" }).map?.chase,
+    ).toBeUndefined();
+  });
+
+  it("comes down to the animal over the route's first second, follows it, and goes back up after", () => {
+    expect(mapOf(at(behind, 0))?.u).toBeUndefined();
+    const coming = mapOf(at(behind, 0.5)) as Map;
+    expect(coming.u).toBeGreaterThan(0);
+    expect(coming.u).toBeLessThan(1);
+    const running = mapOf(at(behind, 5)) as Map;
+    expect(running.u).toBe(1);
+    expect(running.chase?.pitch).toBe(CHASE_PITCH);
+    // The run goes north: the camera looks north, its middle further north
+    // as the line draws.
+    expect(running.chase?.bearing).toBeCloseTo(0, 0);
+    const later = mapOf(at(behind, 7)) as Map;
+    expect(later.chase?.center[1]).toBeGreaterThan(running.chase?.center[1] as number);
+    expect(mapOf(at(behind, 9.5))?.u).toBeLessThan(1);
+    expect(mapOf(at(behind, 11))?.u).toBeUndefined();
+  });
+
+  it("sees the animal from as low as the camera leans", () => {
+    const animal = at(behind, 5).find(
+      (op): op is Animal => op.k === "character",
+    ) as Animal;
+    expect(animal.tilt).toBe(90 - CHASE_PITCH);
+  });
+
+  it("draws the whole video from straight above with «Line in 2D»", () => {
+    const flat = videoScene(RUN, POST_RESULTS, [], "3d", { camera: "line" });
+    expect(flat.map?.flat).toBe(true);
+    for (const seconds of [0.5, 5, 11]) {
+      const map = mapOf(at(flat, seconds)) as Map;
+      expect(map.flat).toBe(true);
+      expect(map.turn).toBeUndefined();
+    }
+    expect((runLine(at(flat, 5)) as Line).share).toBeUndefined();
+  });
+
+  it("keeps the turn around the run with «Camera around», as before", () => {
+    expect(
+      videoScene(RUN, POST_RESULTS, STICKERS, "3d", { camera: "around" }).frames,
+    ).toEqual(videoScene(RUN, POST_RESULTS, STICKERS, "3d").frames);
   });
 });

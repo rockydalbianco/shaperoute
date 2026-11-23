@@ -1,6 +1,6 @@
 import type { User } from "@shaperoute/shared-types";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import {
@@ -11,18 +11,29 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { tourTexts } from "../tour/tourTexts";
-import { MessagesRow } from "../messages/MessagesRow";
-import { BlockedPeople } from "../social/BlockedPeople";
 import { useBlocksVersion } from "../social/blockedNow";
 import { FollowLists } from "../social/FollowLists";
 import { useFollowsDoor } from "../social/followsDoor";
+import { TAB_ICON_SIZE } from "../tabs/TabBar";
+import { Tap } from "../ui/Tap";
+import { BadgesSection } from "./BadgesSection";
+import { FirstStep, profileStage } from "./FirstStep";
 import { photoBusyText, PhotoChoices } from "./PhotoChoices";
 import { ProfileGallery } from "./ProfileGallery";
+import { ProfileGroupRuns } from "../groupRuns/ProfileGroupRuns";
+import { ProfileGear } from "../gear/ProfileGear";
 import { ProfileHeader } from "./ProfileHeader";
-import { ProfileStats, useOwnTotals } from "./ProfileStats";
+import { OwnSleep } from "./OwnSleep";
+import { OwnVo2Max } from "./OwnVo2Max";
+import { GymLevels } from "../gym/GymLevels";
+import { WeekStrip } from "../activities/WeekStrip";
+import { PersonalBests } from "./PersonalBests";
+import { ProfileStats, totalsOf, useOwnProfile } from "./ProfileStats";
 import { bioOf } from "./profileFields";
 import { useProfilePhoto } from "./useProfilePhoto";
+
+/** The gear of «Settings», from Lucide as the tab bar's icons (TASK-367). */
+const GEAR = require("../../assets/ui/tabs/settings.png");
 
 /** What «Profile» opens from its first page. */
 export type ProfileSection = "favorites" | "activities" | "settings";
@@ -43,23 +54,29 @@ type Props = {
   onOpen: (section: ProfileSection) => void;
   /** «Edit profile»: username and bio (TASK-116). */
   onEdit: () => void;
-  /** «Guide», under «Settings»: how the app works and its tour (TASK-266). */
-  onGuide?: () => void;
+  /** The first step of a new profile opens «Explore» (TASK-457); left out,
+   * its card has no button. */
+  onExplore?: () => void;
 };
 
 /**
  * The first page of «Profile» with an account (TASK-177): who it is, with
  * the bio and «Edit profile» (TASK-116), who asks to follow it, who does
  * and whom it follows (TASK-211), what it keeps in two tiles with their
- * number, the way to «Settings», and the drawings it made public
+ * number, the way to «Settings» (its gear at the top right since
+ * TASK-367), and the drawings it made public
  * (TASK-117), as the others see them. A tap on the circle opens the ways
  * to change the picture under it, as the row of «Settings» (TASK-207).
- * Under «Settings», «Guide» (TASK-266), then «Blocked people», to unblock
- * (TASK-121); after a block the lists of who follows are read again: a
- * block ends every follow. Over «Settings», «Messages» (TASK-319), with
- * the number of what waits for an answer. Its totals under «Edit profile»,
- * and its drawings and photos at the bottom, as the others see them
- * (TASK-324).
+ * After a block the lists of who follows are read again: a block ends
+ * every follow. «Messages» is a tab of its own (TASK-367). Its totals under
+ * «Edit profile», and its drawings and photos at the bottom, as the others
+ * see them (TASK-324).
+ *
+ * In blocks, top to bottom (TASK-457): who it is; what it did (the totals
+ * and the week, or the first step while nothing was done, then bests, VO₂
+ * max and gym); who follows; what it keeps; its badges; what it made.
+ * «Guide» and «Blocked people» are in «Settings»: this page says only what
+ * is of the account.
  */
 export function ProfileHome({
   user,
@@ -67,25 +84,43 @@ export function ProfileHome({
   activities,
   onOpen,
   onEdit,
-  onGuide,
+  onExplore,
 }: Props) {
   const photo = useProfilePhoto();
   const blocks = useBlocksVersion();
   const { apiUrl, account } = useFollowsDoor();
   const publicId = user.public_id ?? null;
-  // Null while they come, and from an API older than TASK-324.
-  const totals = useOwnTotals(publicId);
+  // Null while it comes; the totals also from an API older than TASK-324.
+  const own = useOwnProfile(publicId);
+  const totals = own === null ? null : totalsOf(own);
+  // Nothing done yet: the first step, not a row of zeros (TASK-457). An API
+  // without the totals says nothing of it: the profile as it was.
+  const stage =
+    own !== null && totals === null ? "active" : profileStage(activities, totals);
   const [photoOpen, setPhotoOpen] = useState(false);
   const busyText = photoBusyText(photo.busy);
   return (
     <View style={styles.home}>
+      {/* «Settings» at the top right, as Instagram's (TASK-367, ADR-0311). */}
+      <Tap
+        style={styles.gear}
+        onPress={() => onOpen("settings")}
+        accessibilityRole="button"
+        accessibilityLabel={t("Settings")}
+        hitSlop={space.xs}
+      >
+        <Image source={GEAR} style={styles.gearIcon} />
+      </Tap>
       <View style={styles.top}>
         <ProfileHeader
           username={user.username}
           bio={bioOf(user)}
           photo={photo.uri}
           detail={user.email}
-          winner={(user.contest_wins ?? 0) > 0}
+          // The profile's count has the gym's monthly wins too (TASK-385 F).
+          winner={(own?.contest_wins ?? user.contest_wins ?? 0) > 0}
+          badges={own?.badges ?? null}
+          gamePrizes={own?.game_prizes ?? null}
           photoButton={{
             open: photoOpen,
             busy: photo.busy !== null,
@@ -110,10 +145,23 @@ export function ProfileHome({
         >
           <Text style={styles.editText}>{t("Edit profile")}</Text>
         </Pressable>
-        {totals !== null && <ProfileStats totals={totals} />}
+        {/* What it did: the totals, then the week and the calendar of every
+            sport (TASK-462; nothing from an API without it). */}
+        {stage === "active" && totals !== null && <ProfileStats totals={totals} />}
+        {stage === "active" && <WeekStrip bests={own?.personal_bests} />}
+        {stage === "new" && <FirstStep onExplore={onExplore} />}
+        {/* The personal bests (TASK-368): none from an older API. */}
+        {own?.personal_bests && <PersonalBests bests={own.personal_bests} />}
+        {/* The VO₂ max (TASK-397): none from an API older than it. */}
+        {own?.vo2max !== undefined && <OwnVo2Max />}
+        {/* Last night's sleep (TASK-467 B3): nothing until part C turns it on. */}
+        <OwnSleep />
+        {/* The levels at the gym (TASK-385 E): none from an older API. */}
+        {own?.gym_levels && <GymLevels levels={own.gym_levels} own />}
       </View>
       {/* Built again at every block and unblock: it reads its lists anew. */}
       <FollowLists key={blocks} />
+      {/* What it keeps. */}
       <View style={styles.tiles}>
         <Tile
           emoji={SECTION_EMOJI.favorites}
@@ -128,14 +176,28 @@ export function ProfileHome({
           onPress={() => onOpen("activities")}
         />
       </View>
-      <MessagesRow />
-      <SectionRow
-        emoji={SECTION_EMOJI.settings}
-        name={t("Settings")}
-        onPress={() => onOpen("settings")}
-      />
-      {onGuide && <SectionRow emoji="❓" name={tourTexts().guide} onPress={onGuide} />}
-      <BlockedPeople />
+      {/* The badges of the drawings, with how each is earned (TASK-457). */}
+      <BadgesSection badges={own?.badges ?? null} />
+      {/* Its group runs, coming and past (TASK-309 part B): none, nothing. */}
+      {apiUrl !== null && account.state.status === "signedIn" && publicId !== null && (
+        <ProfileGroupRuns
+          apiUrl={apiUrl}
+          token={account.state.session.token}
+          publicId={publicId}
+          onSessionEnded={account.sessionEnded}
+        />
+      )}
+      {/* Its gear, in use then retired (TASK-486 part D): none, nothing. */}
+      {apiUrl !== null && account.state.status === "signedIn" && publicId !== null && (
+        <ProfileGear
+          apiUrl={apiUrl}
+          token={account.state.session.token}
+          publicId={publicId}
+          owner={null}
+          onSessionEnded={account.sessionEnded}
+        />
+      )}
+      {/* What it made. */}
       <ProfileGallery
         publicId={publicId}
         own
@@ -165,7 +227,7 @@ function Tile({
       onPress={onPress}
       accessibilityRole="button"
       // One name for the whole tile: the emoji is not read on its own.
-      accessibilityLabel={count !== null ? `${name}, ${count}` : name}
+      accessibilityLabel={count !== null && count > 0 ? `${name}, ${count}` : name}
     >
       <View style={styles.tileTop}>
         <View style={styles.badge}>
@@ -173,41 +235,33 @@ function Tile({
         </View>
         <Text style={styles.rowArrow}>›</Text>
       </View>
-      <Text style={[styles.count, count === null && styles.countUnknown]}>
-        {count !== null ? String(count) : "–"}
-      </Text>
+      {/* Nothing kept yet: the name alone, not a zero (TASK-457). */}
+      {count !== 0 && (
+        <Text style={[styles.count, count === null && styles.countUnknown]}>
+          {count !== null ? String(count) : "–"}
+        </Text>
+      )}
       <Text style={styles.tileName}>{name}</Text>
     </Pressable>
   );
 }
 
-/** A row of the first page that opens a page: «Settings», «Guide». */
-function SectionRow({
-  emoji,
-  name,
-  onPress,
-}: {
-  emoji: string;
-  name: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={name}
-    >
-      <View style={styles.badge}>
-        <Text style={styles.emoji}>{emoji}</Text>
-      </View>
-      <Text style={styles.rowText}>{name}</Text>
-      <Text style={styles.rowArrow}>›</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
+  gear: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    zIndex: 1,
+    width: MIN_TAP_SIZE,
+    height: MIN_TAP_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  gearIcon: {
+    width: TAB_ICON_SIZE,
+    height: TAB_ICON_SIZE,
+    tintColor: color.text,
+  },
   home: {
     gap: space.lg,
   },
@@ -250,8 +304,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: space.md,
   },
+  // The name at the bottom, also in a tile without its number: beside a
+  // tile that has one, the two names stay on one line (TASK-457).
   tile: {
     flex: 1,
+    justifyContent: "space-between",
     gap: space.xs,
     padding: space.md,
     borderRadius: radius.lg,
@@ -289,24 +346,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.body,
     fontWeight: fontWeight.semibold,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
-    padding: space.md,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: color.border,
-    backgroundColor: color.surface,
-  },
   pressed: {
     opacity: 0.6,
-  },
-  rowText: {
-    flex: 1,
-    color: color.text,
-    fontSize: fontSize.input,
-    fontWeight: fontWeight.semibold,
   },
   rowArrow: {
     color: color.textMuted,

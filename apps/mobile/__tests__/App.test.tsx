@@ -7,6 +7,7 @@ import * as Sharing from "expo-sharing";
 
 import response from "../src/places/fixtures/photon-via-belenzani-trento.json";
 import App from "../App";
+import { chosenShape, pickShape, shapeField, typeShape } from "../src/route/testing";
 
 jest.mock("react-native-webview");
 jest.mock(
@@ -152,13 +153,14 @@ afterEach(() => {
 test("opens on the choice, with the app name and a heart", async () => {
   requestPermission.mockReturnValue(new Promise(() => {}));
   await render(<App />);
-  expect(screen.getByText("MuW")).toBeOnTheScreen();
+  // In the header of the pages (TASK-367).
+  expect(screen.getByLabelText("MuW")).toBeOnTheScreen();
   expect(
     screen.getByRole("button", { name: "heart", selected: true }),
   ).toBeOnTheScreen();
   expect(screen.queryByRole("button", { name: "Back" })).not.toBeOnTheScreen();
   expect(screen.getByText("Finding your position…")).toBeOnTheScreen();
-  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("heart");
+  expect(chosenShape()).toBe("heart");
   expect(screen.queryByText(/Unknown shape/)).not.toBeOnTheScreen();
 });
 
@@ -251,7 +253,7 @@ test("a map that cannot load says so", async () => {
 test("Draw route is off until there is a start", async () => {
   requestPermission.mockReturnValue(new Promise(() => {}));
   await render(<App />);
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+  expect(screen.getByTestId("draw-route")).toBeDisabled();
 });
 
 /** The result card: the distance on roads, and the target under it. */
@@ -282,9 +284,9 @@ test("draws the route for the chosen shape and the distance typed", async () => 
   jest.useFakeTimers();
   apiAnswers(job("computing"), jobDone);
   await atTrento();
-  await fireEvent.changeText(screen.getByLabelText("Shape"), "cerchio");
+  await typeShape("cerchio");
   await fireEvent.changeText(distanceField(), "7,5");
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   await nextPoll();
 
@@ -306,14 +308,14 @@ test("a distance that is not valid turns Draw route off and says why", async () 
   for (const text of ["0,5", "22", "abc", ""]) {
     await fireEvent.changeText(distanceField(), text);
     expect(screen.getByText("Enter a distance between 1 and 21 km.")).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
-    await fireEvent.press(screen.getByText("Draw route"));
+    expect(screen.getByTestId("draw-route")).toBeDisabled();
+    await fireEvent.press(screen.getByTestId("draw-route"));
   }
   expect(apiCalls("POST")).toEqual([]);
 
   await fireEvent.changeText(distanceField(), "21");
   expect(screen.queryByText(/Enter a distance/)).not.toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+  expect(screen.getByTestId("draw-route")).toBeEnabled();
 });
 
 test("above 15 km the panel warns that the route takes longer", async () => {
@@ -330,7 +332,7 @@ test("while waiting it says what the API is doing, with a spinner", async () => 
   jest.useFakeTimers();
   apiAnswers(job("downloading_map"), job("computing"));
   await atTrento();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   expect(screen.getByText(/^Warming up: .+…$/)).toBeOnTheScreen();
 
   await nextPoll();
@@ -347,12 +349,12 @@ test("Cancel stops waiting and tells the API to drop the job", async () => {
   jest.useFakeTimers();
   apiAnswers(job("computing"));
   await atTrento();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   await fireEvent.press(screen.getByText("Cancel"));
   await act(() => jest.advanceTimersByTimeAsync(0));
 
-  expect(screen.getByText("Draw route")).toBeOnTheScreen();
+  expect(screen.getByTestId("draw-route")).toBeOnTheScreen();
   expect(screen.queryByText(/Drawing a/)).not.toBeOnTheScreen();
   expect(apiCalls("DELETE").map(([url]) => String(url))).toEqual([
     `${API}/route-jobs/4f2c9e1a`,
@@ -364,7 +366,7 @@ test("an error from the API is explained, with the engine's reason", async () =>
   jest.useFakeTimers();
   apiAnswers(jobFailed);
   await atTrento();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   expect(
     screen.getByText(
@@ -379,7 +381,7 @@ test("Try N km draws again at the distance the shape fits", async () => {
   jest.useFakeTimers();
   apiAnswers(jobFailed, jobDone);
   await atTrento();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   apiAnswers(jobDone);
   await fireEvent.press(screen.getByRole("button", { name: "Try 4 km" }));
@@ -396,7 +398,7 @@ test("an API that does not answer says so for the runner, and where it was looke
   getPosition.mockResolvedValue(positionAt(46.0671, 11.1214));
   fetchSpy.mockRejectedValue(new TypeError("Network request failed"));
   await render(<App />);
-  await fireEvent.press(await screen.findByText("Draw route"));
+  await fireEvent.press(await screen.findByTestId("draw-route"));
   expect(
     await screen.findByText("No connection. Check the network and try again."),
   ).toBeOnTheScreen();
@@ -408,7 +410,7 @@ test("a new start takes the old route away", async () => {
   jest.useFakeTimers();
   apiAnswers(jobDone);
   await atTrento();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   expectRoute("4.0", "5");
 
@@ -430,7 +432,7 @@ test("a new distance takes the old route away", async () => {
   jest.useFakeTimers();
   apiAnswers(jobDone);
   await atTrento();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   expectRoute("4.0", "5");
 
@@ -447,7 +449,7 @@ test("Export GPX shares the route as a file", async () => {
   apiAnswers(jobDone);
   await atTrento();
   expect(screen.queryByText("Export GPX")).not.toBeOnTheScreen();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
 
   await fireEvent.press(screen.getByText("Export GPX"));
@@ -477,7 +479,7 @@ test("Export GPX says so when the phone cannot share", async () => {
   sharingAvailable.mockResolvedValue(false);
   apiAnswers(jobDone);
   await atTrento();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   await fireEvent.press(screen.getByText("Export GPX"));
   await act(() => jest.advanceTimersByTimeAsync(0));
@@ -490,9 +492,9 @@ test("a shape written in Italian is sent by its name", async () => {
   jest.useFakeTimers();
   apiAnswers(job("computing"));
   await atTrento();
-  await fireEvent.changeText(screen.getByLabelText("Shape"), "Cavallo");
+  await typeShape("Cavallo");
   expect(screen.getByText("→ horse")).toBeOnTheScreen();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
 
   expect(lastRouteRequest()).toEqual({
@@ -509,24 +511,24 @@ test("an unknown word turns Draw route off until the AI has read it", async () =
   apiAnswers(jobDone);
   await atTrento();
   for (const text of ["drago", "casa"]) {
-    await fireEvent.changeText(screen.getByLabelText("Shape"), text);
+    await typeShape(text);
     expect(screen.getByText("Press Done and the AI will read it.")).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
-    await fireEvent.press(screen.getByText("Draw route"));
+    expect(screen.getByTestId("draw-route")).toBeDisabled();
+    await fireEvent.press(screen.getByTestId("draw-route"));
   }
-  await fireEvent.changeText(screen.getByLabelText("Shape"), "");
+  await typeShape("");
   expect(
     screen.getByText(
-      "Unknown shape. Try: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun.",
+      "Unknown shape. Try: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut, sun, airplane, anchor, bear head, bicycle, cherries, espresso cup, four leaf clover, leaning tower, music note, pear, sailboat, swan, windmill or wine glass.",
     ),
   ).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+  expect(screen.getByTestId("draw-route")).toBeDisabled();
   expect(apiCalls("POST")).toEqual([]);
 
-  await fireEvent.changeText(screen.getByLabelText("Shape"), "star");
+  await typeShape("star");
   expect(screen.queryByText(/Unknown shape|Press Done/)).not.toBeOnTheScreen();
   expect(screen.queryByText("→ star")).not.toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+  expect(screen.getByTestId("draw-route")).toBeEnabled();
 });
 
 test("the AI reads the words the table does not know, once", async () => {
@@ -534,12 +536,12 @@ test("the AI reads the words the table does not know, once", async () => {
   apiAnswers(job("computing"));
   readShape = (text) => Response.json({ text, shape: "horse" });
   await atTrento();
-  const field = screen.getByLabelText("Shape");
+  const field = await shapeField();
   await fireEvent.changeText(field, "stemma della Ferrari");
   await fireEvent(field, "endEditing");
   expect(await screen.findByText("→ horse")).toBeOnTheScreen();
   await fireEvent(field, "endEditing");
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
 
   const readings = apiCalls("POST").filter(([input]) =>
@@ -556,7 +558,7 @@ test("the AI reads the words the table does not know, once", async () => {
 test("words the table knows are not sent to the AI", async () => {
   apiAnswers(jobDone);
   await atTrento();
-  const field = screen.getByLabelText("Shape");
+  const field = await shapeField();
   await fireEvent.changeText(field, "Cavallo");
   await fireEvent(field, "endEditing");
   expect(screen.getByText("→ horse")).toBeOnTheScreen();
@@ -566,17 +568,17 @@ test("words the table knows are not sent to the AI", async () => {
 test("words with no shape of the catalogue keep Draw route off", async () => {
   apiAnswers(jobDone);
   await atTrento();
-  const field = screen.getByLabelText("Shape");
+  const field = await shapeField();
   await fireEvent.changeText(field, "Batman");
   await fireEvent(field, "endEditing");
   expect(
     await screen.findByText(/^No shape in the catalogue for “Batman”\. Describe/),
   ).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+  expect(screen.getByTestId("draw-route")).toBeDisabled();
 
   await fireEvent.press(screen.getByRole("button", { name: "star" }));
   expect(field.props.value).toBe("star");
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+  expect(screen.getByTestId("draw-route")).toBeEnabled();
 });
 
 test("when the AI is off the app says so, and asks again next time", async () => {
@@ -592,32 +594,32 @@ test("when the AI is off the app says so, and asks again next time", async () =>
       { status: 503 },
     );
   await atTrento();
-  const field = screen.getByLabelText("Shape");
+  const field = await shapeField();
   await fireEvent.changeText(field, "Garfield");
   await fireEvent(field, "endEditing");
   expect(
     await screen.findByText(
-      "This word cannot be read right now. Try one of these: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun.",
+      "This word cannot be read right now. Try one of these: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut, sun, airplane, anchor, bear head, bicycle, cherries, espresso cup, four leaf clover, leaning tower, music note, pear, sailboat, swan, windmill or wine glass.",
     ),
   ).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+  expect(screen.getByTestId("draw-route")).toBeDisabled();
 
   readShape = (text) => Response.json({ text, shape: "cat" });
   await fireEvent(field, "endEditing");
   expect(await screen.findByText("→ cat")).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+  expect(screen.getByTestId("draw-route")).toBeEnabled();
 });
 
 test("a new shape takes the old route away", async () => {
   jest.useFakeTimers();
   apiAnswers(jobDone);
   await atTrento();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   expectRoute("4.0", "5");
 
   await goBack();
-  await fireEvent.changeText(screen.getByLabelText("Shape"), "stella");
+  await typeShape("stella");
 
   expect(screen.queryByText(/on roads · target/)).not.toBeOnTheScreen();
   expect(lastScript()).toContain('"clearRoute"');
@@ -630,21 +632,21 @@ test("Draw route opens the map, and Back returns to the same choice", async () =
   await atTrento();
   await fireEvent.press(screen.getByRole("button", { name: "star" }));
   await fireEvent.changeText(distanceField(), "8");
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
 
   expectRoute("4.0", "8");
-  expect(screen.queryByLabelText("Shape")).not.toBeOnTheScreen();
+  expect(screen.queryByTestId("shape-grid")).not.toBeOnTheScreen();
 
   await goBack();
-  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("star");
+  expect(chosenShape()).toBe("star");
   expect(distanceField()).toHaveDisplayValue("8");
   expect(
     screen.getByRole("button", { name: "star", selected: true }),
   ).toBeOnTheScreen();
 
   // The same route again is shown, not asked for again.
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   expectRoute("4.0", "8");
   expect(apiCalls("POST")).toHaveLength(1);
   jest.useRealTimers();
@@ -654,12 +656,12 @@ test("Back while waiting drops the job, as Cancel does", async () => {
   jest.useFakeTimers();
   apiAnswers(job("computing"));
   await atTrento();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   await goBack();
   await act(() => jest.advanceTimersByTimeAsync(0));
 
-  expect(screen.getByText("Draw route")).toBeOnTheScreen();
+  expect(screen.getByTestId("draw-route")).toBeOnTheScreen();
   expect(apiCalls("DELETE")).toHaveLength(1);
   jest.useRealTimers();
 });
@@ -671,12 +673,12 @@ test("a shape picked after a failure goes back to the choice", async () => {
     error: { ...jobFailed.error, suggested_distance_m: null },
   });
   await atTrento();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   await fireEvent.press(screen.getByRole("button", { name: "moon" }));
 
-  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("moon");
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+  expect(chosenShape()).toBe("moon");
+  expect(screen.getByTestId("draw-route")).toBeEnabled();
   jest.useRealTimers();
 });
 
@@ -687,20 +689,20 @@ test("a shape picked after a failure is written as read: dog head", async () => 
     error: { ...jobFailed.error, suggested_distance_m: null },
   });
   await atTrento();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   await fireEvent.press(screen.getByRole("button", { name: "dog head" }));
 
-  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("dog head");
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+  expect(chosenShape()).toBe("dog head");
+  expect(screen.getByTestId("draw-route")).toBeEnabled();
   jest.useRealTimers();
 });
 
-test("− and + change the distance by a km, between 1 and 21", async () => {
+test("− and + change the distance by half a km, between 1 and 21", async () => {
   requestPermission.mockReturnValue(new Promise(() => {}));
   await render(<App />);
   await fireEvent.press(screen.getByRole("button", { name: "Longer" }));
-  expect(distanceField()).toHaveDisplayValue("6");
+  expect(distanceField()).toHaveDisplayValue("5.5");
   for (let i = 0; i < 10; i++) {
     await fireEvent.press(screen.getByRole("button", { name: "Shorter" }));
   }
@@ -711,7 +713,7 @@ test("touching a tile chooses that shape", async () => {
   requestPermission.mockReturnValue(new Promise(() => {}));
   await render(<App />);
   await fireEvent.press(screen.getByRole("button", { name: "fish" }));
-  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("fish");
+  expect(chosenShape()).toBe("fish");
   expect(
     screen.getByRole("button", { name: "fish", selected: true }),
   ).toBeOnTheScreen();
@@ -723,14 +725,15 @@ test("touching a tile chooses that shape", async () => {
 test("the dog's head tile writes the name the runner reads", async () => {
   requestPermission.mockReturnValue(new Promise(() => {}));
   await render(<App />);
-  await fireEvent.press(screen.getByRole("button", { name: "dog head" }));
-  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("dog head");
+  // Not among the first seven tiles: after «See all» (TASK-361).
+  await pickShape("dog head");
+  expect(chosenShape()).toBe("dog head");
   expect(
     screen.getByRole("button", { name: "dog head", selected: true }),
   ).toBeOnTheScreen();
   expect(screen.queryByText("→ dog head")).not.toBeOnTheScreen();
 
-  await fireEvent.changeText(screen.getByLabelText("Shape"), "cane");
+  await typeShape("cane");
   expect(screen.getByText("→ dog head")).toBeOnTheScreen();
   expect(
     screen.getByRole("button", { name: "dog head", selected: true }),
@@ -747,7 +750,7 @@ test("with the GPS on, another place can be the start, and stays so", async () =
   expect(
     screen.getByText("Search for a city or street to start from."),
   ).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+  expect(screen.getByTestId("draw-route")).toBeDisabled();
   await fireEvent.changeText(
     screen.getByPlaceholderText("City or street"),
     "Belenzani",
@@ -758,7 +761,7 @@ test("with the GPS on, another place can be the start, and stays so", async () =
     screen.getByText("Starting from Via Rodolfo Belenzani, Trento."),
   ).toBeOnTheScreen();
 
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   expect(lastRouteRequest()).toMatchObject({ start: [46.0692621, 11.1211947] });
   jest.useRealTimers();
@@ -806,7 +809,7 @@ test("a word is sent as `word`, and named while waiting and on the result", asyn
   expect(
     screen.getByRole("button", { name: "Word", selected: true }),
   ).toBeOnTheScreen();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   expect(screen.getByText(/Drawing “CIAO”, 12 km…/)).toBeOnTheScreen();
 
@@ -837,7 +840,7 @@ test("square letters are sent as style block (TASK-080)", async () => {
   expect(
     screen.getByText("Square letters follow the street grid: best for short words."),
   ).toBeOnTheScreen();
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   await nextPoll();
   expect(lastRouteRequest()).toMatchObject({ word: "CIAO", style: "block" });
   jest.useRealTimers();
@@ -849,11 +852,11 @@ test("a distance short for the word keeps Draw route off, and Use N km fixes it"
   expect(
     screen.getByText("“CIAO” needs at least 12 km: 3 km for each letter."),
   ).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+  expect(screen.getByTestId("draw-route")).toBeDisabled();
 
   await fireEvent.press(screen.getByText("Use 12 km"));
   expect(distanceField()).toHaveDisplayValue("12");
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+  expect(screen.getByTestId("draw-route")).toBeEnabled();
 });
 
 test("a letter out of the alphabet keeps Draw route off and says which", async () => {
@@ -865,7 +868,7 @@ test("a letter out of the alphabet keeps Draw route off and says which", async (
       "No letter “À”: a word can use only the letters A to Z, without accents.",
     ),
   ).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+  expect(screen.getByTestId("draw-route")).toBeDisabled();
   expect(apiCalls("POST")).toEqual([]);
 });
 
@@ -874,7 +877,7 @@ test("Shape and Word each keep what was written in them", async () => {
   await chooseWord("kiwi");
   await fireEvent.press(screen.getByRole("button", { name: "Shape" }));
   expect(screen.queryByLabelText("Word")).not.toBeOnTheScreen();
-  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("heart");
+  expect(chosenShape()).toBe("heart");
   expect(
     screen.getByRole("button", { name: "heart", selected: true }),
   ).toBeOnTheScreen();

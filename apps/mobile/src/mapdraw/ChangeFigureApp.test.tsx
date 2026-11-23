@@ -6,6 +6,7 @@
  * chosen. The requests alone are in resultFigure.test.ts, the figure on the
  * map in useMapCanvasChange.test.ts.
  */
+import { SHAPES } from "@shaperoute/shared-types";
 import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
 import * as Location from "expo-location";
@@ -107,9 +108,12 @@ async function startingAt(where: [number, number]) {
   });
 }
 
-/** «Draw route», and the route at the first poll, after 500 ms. */
+/** «Draw route», and the route at the first poll, after 500 ms: the button
+ * of «Draw» (its words say what it draws, TASK-361), or of the map. */
 async function drawRoute() {
-  await fireEvent.press(screen.getByRole("button", { name: "Draw route" }));
+  await fireEvent.press(
+    screen.queryByTestId("draw-route") ?? screen.getByText("Draw route"),
+  );
   await act(() => jest.advanceTimersByTimeAsync(500));
 }
 
@@ -152,8 +156,10 @@ afterEach(() => {
 test("from «Draw» a shape of the row is drawn from the same start, as long; «←» finds it chosen", async () => {
   await startingAt(TRENTO);
   await drawRoute();
-  // The 17 shapes and the 16 pictures, the heart drawn marked.
-  expect(row().getAllByRole("button")).toHaveLength(33);
+  // The shapes and the pictures, the heart drawn marked.
+  expect(row().getAllByRole("button")).toHaveLength(
+    SHAPES.length + SAMPLE_PICTURES.length,
+  );
   expect(row().getByRole("button", { name: "heart" })).toBeSelected();
   expect(row().getByRole("button", { name: "Rocket" })).toBeOnTheScreen();
 
@@ -178,9 +184,9 @@ test("from «Draw» a shape of the row is drawn from the same start, as long; «
   // asked for again.
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(
-    within(screen.getByTestId("shape-tiles")).getByRole("button", { name: "star" }),
+    within(screen.getByTestId("shape-grid")).getByRole("button", { name: "star" }),
   ).toBeSelected();
-  await fireEvent.press(screen.getByRole("button", { name: "Draw route" }));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   expect(posted("/route-jobs")).toHaveLength(2);
   expect(screen.getByRole("button", { name: "Start" })).toBeOnTheScreen();
 });
@@ -204,10 +210,8 @@ test("from «Draw» a picture of the row sends its outline and puts «Draw» on 
 
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.getByRole("button", { name: "Image" })).toBeSelected();
-  expect(
-    within(screen.getByTestId("pictures")).getByRole("button", { name: "Rocket" }),
-  ).toBeSelected();
-  await fireEvent.press(screen.getByRole("button", { name: "Draw route" }));
+  expect(screen.getByTestId("image-preview")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("draw-route"));
   expect(posted("/image-route-jobs")).toHaveLength(1);
 });
 
@@ -216,7 +220,7 @@ test("on the water only the shapes, and a shape left somewhere stays there", asy
   apiAnswers(WATER_DONE);
   await startingAt(RICCIONE);
   await drawRoute();
-  expect(row().getAllByRole("button")).toHaveLength(17);
+  expect(row().getAllByRole("button")).toHaveLength(SHAPES.length);
   expect(row().queryByRole("button", { name: "Rocket" })).toBeNull();
 
   // Moved with a finger (TASK-238): asked again with `near`.
@@ -235,7 +239,7 @@ test("on the water only the shapes, and a shape left somewhere stays there", asy
 
 test("from «Draw on the map» the new figure takes the place of the old; «Undo» brings it back", async () => {
   await startingAt(TRENTO);
-  await fireEvent.press(screen.getByRole("button", { name: "Draw on the map" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Freehand" }));
   await fireEvent(screen.getByTestId("map"), "message", {
     nativeEvent: { data: '{"type":"centre","lngLat":[11.13,46.07]}' },
   });
@@ -245,7 +249,9 @@ test("from «Draw on the map» the new figure takes the place of the old; «Undo
   await drawRoute();
   expect(row().getByRole("button", { name: "heart" })).toBeSelected();
   // The tiles of the map, without «+ photo».
-  expect(row().getAllByRole("button")).toHaveLength(33);
+  expect(row().getAllByRole("button")).toHaveLength(
+    SHAPES.length + SAMPLE_PICTURES.length,
+  );
   expect(row().queryByText("+ photo")).toBeNull();
 
   await change("star");
@@ -262,7 +268,7 @@ test("from «Draw on the map» the new figure takes the place of the old; «Undo
   expect(tiles().getByRole("button", { name: "star" })).toBeSelected();
   expect(screen.getByText("≈ 5.0 km")).toBeOnTheScreen();
   // The same figure: its route shown again, not asked for again.
-  await fireEvent.press(screen.getByRole("button", { name: "Draw route" }));
+  await fireEvent.press(screen.getByText("Draw route"));
   expect(posted("/route-jobs")).toHaveLength(2);
   expect(screen.getByRole("button", { name: "Start" })).toBeOnTheScreen();
 

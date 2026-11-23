@@ -10,7 +10,9 @@
 Una pagina sola, in inglese, in `site/`, che **spiega come si usa l'app**
 (scelta dell'utente, 2026-10-05). HTML, CSS e JavaScript scritti a mano:
 nessuna dipendenza, nessun passo di build, niente cookie, niente dati di
-chi visita, niente caricato da altri siti.
+chi visita, niente caricato da altri siti. **Un'eccezione sola**: la mappa
+della pagina dal vivo (`live/`, sotto) carica le tile e i font da
+OpenFreeMap, scelta dell'utente del 2026-11-08 (TASK-424, scelta 8).
 
 Dall'alto in basso:
 
@@ -22,8 +24,8 @@ Dall'alto in basso:
    Sotto, le quattro pagine dell'app: «Feed», «Draw», «Explore», «Profile».
 3. **«Best drawings»**: dieci disegni, sei corse e quattro uscite in
    canoa, con un filtro («All», «Run», «Paddle»).
-4. **«Get the app»**: per ora «Download — coming soon», in cima e in
-   fondo. Il link arriva quando l'app è sull'App Store (TASK-152).
+4. **«Get the app»**: «Download the app», in cima e in fondo, porta
+   alla pagina di MuW sull'App Store (dal 2026-10-28, TASK-237 F).
 
 ## I file
 
@@ -38,15 +40,18 @@ Dall'alto in basso:
 | `site/main.js` | collega i tasti alla pagina |
 | `site/assets/` | il segno e la scritta di MuW, ricavati da `docs/brand/muw-*.svg` (la scritta nel colore del testo, per lo sfondo scuro) |
 | `site/tools/` | gli script che ricavano i disegni dai percorsi veri |
+| `site/live/` | la pagina di un link dal vivo (TASK-424, sotto) |
+| `site/.well-known/` | i due file che l'iPhone e Android leggono per sapere che il link di un post può aprire l'app (TASK-482 parte C, sotto) |
 | `site/tests/` | i test (`node --test`) |
 
 ## Mettere il link per scaricare l'app
 
 In `site/config.js`, `downloadUrl`: l'indirizzo `https://…` dell'app
 sull'App Store. Con `null` i due tasti dicono «Download — coming soon»;
-con l'indirizzo diventano «Download the app». Vanno poi cambiati a mano
-il titolo e la frase di «Get the app» in `index.html` («On iPhone, soon.»,
-«MuW is in preview on iPhone…»).
+con l'indirizzo diventano «Download the app». Il titolo e la frase di
+«Get the app» in `index.html` si cambiano a mano insieme al link (oggi
+«On iPhone, now.», «MuW is free on the App Store, for iPhone.»); quando
+arriva Google Play (TASK-294) cambiano anche loro.
 
 ## Cambiare i testi della guida
 
@@ -113,6 +118,172 @@ node site/tools/make_support.mjs
 
 Le risposte nominano i tasti come li mostra l'app in ogni lingua (un test
 lo controlla): se l'app cambia un nome, cambia anche qui.
+
+## La pagina dal vivo
+
+`getmuw.app/live/#<token>` (TASK-424, ADR-0352): il link di «Share live»
+dell'app. Chi lo apre, senza app né account, vede dal vivo la registrazione
+di chi l'ha mandato. Il token sta dopo il `#`, quindi non arriva mai al
+server del sito; la pagina lo manda all'API, `GET
+https://api.getmuw.app/live?t=<token>&after=<seq>` (`API.md`, «Live
+shares»), ogni 10 s, subito ancora quando la risposta dice `more`, ogni
+minuto quando l'attività è finita, e smette quando il link è fermato o
+scaduto. L'API lascia leggere `/live` solo a `https://getmuw.app` (CORS).
+
+| File | Cosa contiene |
+|---|---|
+| `live/index.html` | la pagina |
+| `live/view.js` | cosa mostrare, senza DOM: il token, la richiesta, le risposte, la riga sotto il titolo, i numeri, lo stile della mappa (funzioni pure, provate dai test con la fixture `live-view.json`) |
+| `live/live.js` | la pagina, la mappa e i timer |
+| `live/texts.js` | i testi approvati in «Testi» del task, in cinque lingue; la lingua viene dal browser, l'inglese se non è una di queste |
+| `live/live.css` | l'aspetto, sopra `styles.css`; i colori della mappa ricalcano quelli scuri di `tokens.ts` (un test li confronta) |
+| `live/maplibre-gl.js`, `.css` | MapLibre GL JS **copiato**, alla stessa versione dell'app (`apps/mobile/src/map/mapPage.ts`, oggi 5.24.0): un test controlla che i file abbiano gli hash SRI dell'app |
+
+- **Cosa mostra**: la mappa col percorso fatto e la posizione (l'ultimo
+  punto), poi distanza, tempo, passo o velocità medi (la velocità per le
+  bici, il roller e lo sci, il passo per 500 m in canoa e per 100 m a nuoto,
+  come nell'app), dislivello, calorie e battito quando ci sono. Nuoto in
+  piscina: tempo, vasche stimate, calorie, battito, senza mappa. Palestra:
+  tempo, esercizio in corso, calorie, battito, senza mappa. Parapendio
+  (TASK-305 R3): al posto della media, velocità del momento, quota,
+  variometro col segno e quota massima (ft/min in miglia); da un'app di
+  prima, la velocità media. Miglia e piedi
+  per un browser degli Stati Uniti e del Regno Unito, come l'app dal
+  telefono.
+- **La riga sotto il titolo**: «Updated N s ago»; «No update since HH:MM»
+  dopo 2 minuti senza aggiornamenti (il tempo allora si ferma all'ultimo
+  del telefono); «Finished at HH:MM»; «Sharing stopped»; «This link has
+  expired», anche per un indirizzo senza token valido. Il tempo avanza fra
+  due risposte solo mentre il link è `live`.
+- **Da fuori** carica solo le tile e i font di OpenFreeMap, col credito
+  OpenFreeMap, OpenMapTiles, OpenStreetMap sulla mappa. OpenFreeMap vede
+  l'indirizzo IP di chi apre la pagina, non il token né la posizione (la
+  privacy lo dice, «Sharing live»). La pagina non va nei motori di ricerca
+  (`noindex`).
+- **Cambiare versione di MapLibre**: quando l'app la cambia, si ricopiano
+  `dist/maplibre-gl.js` e `.css` del pacchetto npm di quella versione; il
+  test fallisce finché gli hash non sono quelli di `mapPage.ts`.
+
+**Guardarla in locale.** L'API del Mac non va bene: lascia leggere `/live`
+solo a `https://getmuw.app`. Con il server del sito (sotto) e un finto
+`/live` che risponde dalla fixture, `?api=` (accettato solo da
+`127.0.0.1` e `localhost`) porta la pagina lì:
+`http://127.0.0.1:8237/live/?api=http://127.0.0.1:8299#<token>`. Il finto
+`/live` usato per la parte A2 sta, fuori da git, in
+`out/TASK-424/live-stand-in.mjs` della copia principale.
+
+## La pagina di un post
+
+`getmuw.app/p/#<id del disegno>` (TASK-455 parte D, ADR-0382): il link di
+un post, quello che «Share link» dell'app dà. Chi lo apre, senza app né
+account, vede il disegno sulla mappa. L'id sta dopo il `#`, quindi non
+arriva mai al server del sito; la pagina lo manda all'API una volta sola,
+`GET https://api.getmuw.app/post?id=<id>` (`API.md`, «Post links»). L'API
+lascia leggere `/post` solo a `https://getmuw.app` (CORS).
+
+| File | Cosa contiene |
+|---|---|
+| `p/index.html` | la pagina |
+| `p/view.js` | cosa mostrare, senza DOM: l'id, la richiesta, cosa diventa una risposta, la riga sotto il nome, la linea per la mappa (funzioni pure, provate dai test con la fixture `post-link.json`) |
+| `p/post.js` | la pagina e la mappa |
+| `p/texts.js` | i testi approvati (tre il 2026-11-12, due il 2026-11-21) in cinque lingue, e i nomi degli sport, quelli dell'app |
+| `p/post.css` | il poco che è solo suo |
+| `p/bar.js` | la barra di Safari su iPhone: aggiunge il link del post al meta `apple-itunes-app` mentre la pagina viene letta |
+| `p/link-card.png` | l'immagine dell'anteprima del link (1200×630), disegnata da `tools/link-card.html` |
+
+- **MapLibre, lo stile e i colori della mappa sono quelli della pagina dal
+  vivo**: la pagina carica `../live/maplibre-gl.js`, `.css` e
+  `../live/live.css`, e prende da `live/view.js` l'indirizzo dell'API, lo
+  stile e i confini. Un solo posto da aggiornare quando l'app cambia
+  versione, e un solo test degli hash.
+- **Cosa mostra**: il titolo del post (senza titolo, il nome di chi l'ha
+  disegnato fa da titolo), «{user} drew this on MuW», lo sport come lo
+  chiama l'app e la distanza («Run · 4.3 km»; miglia per un browser degli
+  Stati Uniti e del Regno Unito), la mappa con **la linea intera, come la
+  vede già un iscritto**, e «Get MuW», che porta dove si scarica l'app
+  (`config.js`). Mai foto, commenti, reazioni, descrizione, luogo, giorno o
+  tempi: l'API non li manda e la pagina non ha dove metterli.
+- **La mappa è girata come il disegno** (correzione del 2026-11-21): se il
+  motore ha girato la forma (`rotation_deg` di `GET /post`), la mappa
+  prende il `bearing` opposto, come nell'app (`bearingOf` di `p/view.js`,
+  lo stesso conto di `apps/mobile/src/map/turnedMap.ts`), e la linea è
+  inquadrata sulla mappa già girata. Solo su una mappa girata c'è la
+  bussola di MapLibre: un tocco rimette il nord in alto.
+- **Un link che non apre niente**: «This drawing is no longer available.»
+  e «Get MuW», senza mappa. Vale per un `404` dell'API (un post
+  «Followers», privato, nascosto, cancellato, di un autore che ha spento
+  «Links to my posts», un id che non c'è: l'API risponde uguale per tutti),
+  per un indirizzo senza un id valido e per una risposta che non è un
+  disegno.
+- **Se l'API non risponde**: la pagina riprova dopo 2, 5 e 10 secondi,
+  senza dire niente di un disegno di cui non sa niente; se ancora non ha
+  risposta dice «We couldn't load this drawing.» con il pulsante «Try
+  again», che ricomincia da capo (testi approvati il 2026-11-21, nelle
+  cinque lingue; non è la frase del disegno che non c'è più, perché il
+  disegno può esserci). A un `429` aspetta quanto dice `Retry-After`.
+- **Non va nei motori di ricerca** (`noindex, nofollow, noarchive` nella
+  pagina, `X-Robots-Tag` nella risposta dell'API), non manda da dove si
+  arriva (`no-referrer`) e non tiene niente sul dispositivo. Da fuori
+  carica solo le tile e i font di OpenFreeMap, come la pagina dal vivo.
+- **L'anteprima nelle app di chat** (2026-11-21): chi riceve il link in
+  WhatsApp o iMessage vede una scheda **uguale per ogni post**, con i testi
+  approvati dall'utente («A drawing on MuW», «Open the link to see the line
+  on the map.») e `p/link-card.png`: il cuore del logo come percorso su
+  strade inventate, senza tile di mappa. Non mostra il disegno del post e
+  non può: l'id sta dopo il `#` e chi prepara l'anteprima non lo manda a
+  nessuno. È in inglese per tutti, perché quelle app leggono la pagina
+  senza eseguirla. Niente `og:url` né `canonical`: un'app che li seguisse
+  aprirebbe la pagina senza l'id. L'immagine si rifà con Chrome dal file
+  `site/tools/link-card.html` (il comando è in testa al file).
+- **La barra di Safari su iPhone** (TASK-482 parte B2, una prova del
+  2026-11-21 voluta dall'utente: «Sì, proviamola»): `p/index.html` ha il
+  meta `apple-itunes-app` con il numero dell'app nell'App Store (lo stesso
+  di `downloadUrl`: un test li tiene uguali), e subito dopo carica
+  `p/bar.js`, uno script non modulo e senza `defer` che, mentre la pagina
+  viene letta, aggiunge come `app-argument` l'indirizzo della pagina con
+  l'id del post. Il meta è nella pagina così com'è, e non aggiunto dopo,
+  perché Safari lo legge al caricamento (consiglio del Coordinatore);
+  `post.js` lo tiene giusto se cambia il `#`. Safari mostra allora in cima
+  la sua barra: «Apri» per chi ha MuW, «Visualizza» verso l'App Store per
+  chi non l'ha; c'è anche per un link che non apre niente, col solo nome
+  dell'app. La barra la disegna Safari, ed è Safari a chiedere ad Apple i
+  dati dell'app: la pagina non carica niente di nuovo da fuori, e l'id del
+  post non lascia il telefono (`app-argument` passa dall'iPhone all'app).
+  **Che «Apri» porti al post dentro l'app dipende dalla parte A di
+  TASK-482** (l'app che legge il link) e va provato su un telefono vero:
+  fino ad allora, al più, apre l'app.
+
+- **Il link che apre l'app senza passare dalla pagina** (TASK-482 parti C
+  e D, ADR-0391; l'utente il 2026-11-22: «Sì, nella prossima» build
+  nativa). Sul sito c'è la metà dell'iPhone:
+  `site/.well-known/apple-app-site-association`, un JSON senza estensione
+  che dice ad Apple quale app (la squadra e l'identificativo di
+  `apps/mobile/app.json`: un test li tiene uguali) può aprire quali
+  indirizzi — solo `/p/`, `/p` e `/p/index.html`, e solo con qualcosa a
+  forma di id di un disegno dopo il `#`; nessun'altra pagina del sito.
+  **Da solo non fa niente**: serve che l'app dichiari il dominio
+  (`associatedDomains` in `app.json`, parte D), cosa che arriva solo con
+  una build dagli store. Il server deve dire che il file è JSON
+  (`DEPLOY.md` F.14, punto 4). La metà di Android è
+  `site/.well-known/assetlinks.json`: dice a Google che l'app
+  `app.getmuw.android` (il pacchetto di `app.json`: un test li tiene
+  uguali), firmata con una delle chiavi di Play di cui porta l'impronta
+  SHA-256, può aprire i link del sito. Le impronte sono pubbliche e le dà
+  la Play Console («Firma dell'app»): la chiave in uso (certificato
+  classico e post-quantistico) e la precedente, mai quella di caricamento
+  (`DEPLOY.md` F.14, punto 4). A differenza del file dell'iPhone non sceglie le
+  pagine: quali indirizzi l'app prende (solo `/p`) lo dirà il filtro in
+  `app.json`, con la parte D. Anche questo **da solo non fa niente**.
+
+**Guardarla in locale.** Come la pagina dal vivo: il server del sito
+(sotto) e un finto `/post` che risponde dalla fixture, con `?api=`
+(accettato solo da `127.0.0.1` e `localhost`):
+`http://127.0.0.1:8237/p/?api=http://127.0.0.1:8299#<id>`. Il finto `/post`
+usato per la parte D sta, fuori da git, in `out/TASK-455/post-stand-in.mjs`.
+
+**Online** la pagina c'è solo dopo che il sito è stato copiato con dentro
+`site/p` (`DEPLOY.md` F.14), e funziona solo dopo il passo sul server della
+parte C: prima, ogni link dice «no longer available».
 
 ## Online
 

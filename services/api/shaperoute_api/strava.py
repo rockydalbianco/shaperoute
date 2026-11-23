@@ -43,11 +43,12 @@ from shaperoute_api.accounts import (
     now_utc,
     token_hash,
 )
-from shaperoute_api.activities import UNKNOWN_ACTIVITY, Key
+from shaperoute_api.activities import MUW, UNKNOWN_ACTIVITY, Key
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import MAX_DESCRIPTION_LENGTH
 from shaperoute_api.run_gpx import run_gpx
 from shaperoute_api.schemas import ErrorBody
+from shaperoute_api.sports import API_SPORTS
 from shaperoute_api.strava_client import (
     ACTIVITY_URL,
     CALLBACK_PATH,
@@ -74,9 +75,12 @@ RECORDED = "Recorded with MuW"
 # A name typed in the app longer than this is cut, not refused: the run
 # still goes.
 MAX_NAME = 100
-# What Strava calls each activity of a run (TASK-208); paddling as stand-up
-# paddling, the user's choice (2026-10-03).
-SPORT_TYPES = {"running": "Run", "cycling": "Ride", "paddling": "StandUpPaddling"}
+# What Strava calls each activity of a run (TASK-208): in each sport's file
+# (shaperoute_api/sports, TASK-376).
+# A workout at the gym has no track to upload (TASK-385): never sent.
+SPORT_TYPES = {
+    sport.activity: sport.strava_type for sport in API_SPORTS if not sport.trackless
+}
 
 STATE_BYTES = 32
 STATE_LIFE = timedelta(minutes=10)
@@ -96,6 +100,12 @@ RUN_REFUSED = "Strava could not read this run."
 NOT_DESCRIBED = (
     "Strava did not let MuW change this activity: change its text on Strava."
 )
+# A run added from another app's file (TASK-312, ADR-0272): it came from
+# there, often from Strava itself.
+IMPORTED = "This activity was added from another app: it is not sent to Strava."
+# A workout at the gym (TASK-385, ADR-0327): Strava reads a track, and it has
+# none.
+TRACKLESS = "This activity has no track: it is not sent to Strava."
 
 T = TypeVar("T")
 SendStatus = Literal["not_sent", "processing", "sent"]
@@ -271,7 +281,10 @@ def disconnect(database: Database, strava: Strava | None, user_id: int) -> None:
         log.warning("Strava did not take a revocation: the tokens are deleted here")
 
 
-RUN_STATE = "id, strava_status, strava_upload_id, strava_activity_id"
+RUN_STATE = (
+    "id, source, strava_status, strava_upload_id, strava_activity_id,"
+    " track IS NULL AS trackless"
+)
 # The track as (lat, lon, seconds since the first point), in order.
 RUN_TO_SEND = (
     f"{RUN_STATE}, started_at, place, shape, word, title, pauses, activity,"
@@ -519,8 +532,13 @@ class StravaRuns:
         with self._answering():
             # First with no lock: an unknown run is a 404 before the token
             # is a 409, and a run on Strava with nothing new for it asks
-            # Strava nothing. A run sent stays sent.
+            # Strava nothing. A run sent stays sent. A run of another app is
+            # never sent (TASK-312): a 409 of its own, before the token.
             known = self._known(user_id, key)
+            if known["source"] != MUW:
+                raise AccountError(409, "imported_run", IMPORTED)
+            if known["trackless"]:
+                raise AccountError(422, "invalid_request", TRACKLESS)
             posted = typed_description(post)
             if known["strava_status"] == "sent" and (
                 posted is None or not known["strava_activity_id"]
@@ -591,6 +609,7 @@ class StravaRuns:
             [(pause["from_s"], pause["to_s"]) for pause in run["pauses"]],
             run["started_at"],
             name,
+            run["activity"],
         )
         # A run that followed no route drew nothing: it was only recorded.
         description = strava_description(

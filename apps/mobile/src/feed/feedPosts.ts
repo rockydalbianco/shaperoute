@@ -1,6 +1,7 @@
 import type { FeedPost } from "@shaperoute/shared-types";
 
 import { dayLabel } from "../activities/activityText";
+import { isSkiDescents } from "../api/runStats";
 import { shapeName } from "../i18n/shapeNames";
 import type { SamplePost } from "./sampleFeed";
 
@@ -15,6 +16,14 @@ export type ShownPost = SamplePost & { drawing: FeedPost };
 /** A post of the list is a member's drawing, not an example. */
 export function isShown(post: SamplePost): post is ShownPost {
   return "drawing" in post;
+}
+
+/** A member's drawing of an activity added from a file of another app
+ * (TASK-312): its card says «Imported». An example never is. */
+export function isImportedPost(post: SamplePost): boolean {
+  return (
+    isShown(post) && post.drawing.source !== undefined && post.drawing.source !== "muw"
+  );
 }
 
 /**
@@ -49,6 +58,8 @@ export function shownPost(post: FeedPost): ShownPost {
     line: post.track_preview,
     activity: post.activity ?? "running",
     ...(post.rotation_deg != null ? { rotation_deg: post.rotation_deg } : {}),
+    // A day of skiing's descents, for its calories (TASK-424 part C2b).
+    ...(isSkiDescents(post.ski_descents) ? { ski_descents: post.ski_descents } : {}),
     drawing: post,
   };
 }

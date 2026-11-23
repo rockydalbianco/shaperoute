@@ -715,6 +715,7 @@ def plan_nearby(
     good_grace_s: float = NEARBY_GOOD_GRACE_S,
     processes: bool = True,
     free_mb: Callable[[], float | None] = free_memory_mb,
+    on_first: Callable[[Plan], None] | None = None,
 ) -> NearbyPlan:
     """The best of `job` planned from `start` and from the nearby starts.
 
@@ -726,6 +727,13 @@ def plan_nearby(
     NEARBY_MAX_NODES, and with fewer workers when `free_mb` says they do not
     fit. Raises the start's ShapeNotDrawableError when no start can draw the
     shape.
+
+    `on_first` is told the start's own plan as soon as it is there, once,
+    while the nearby starts are still planned (TASK-435, ADR-0361): a route
+    to show before the whole answer. Not when the start has no route, nor
+    when there is no nearby start to wait for: the answer is then whole
+    already. It changes nothing of the answer: the nearby starts' deadline
+    is set before it is called.
     """
     began = time.monotonic()
     distance_m = float(job.distance_m)
@@ -753,6 +761,8 @@ def plan_nearby(
         if _good(tried[0].plan):
             # Waited for briefly, for the alternatives only (TASK-093).
             deadline = min(deadline, done + good_grace_s)
+        if on_first is not None and nearby and tried[0].plan is not None:
+            on_first(tried[0].plan)
         for i, n in enumerate(nearby):
             if workers is None:
                 assert here is not None  # there are nearby starts

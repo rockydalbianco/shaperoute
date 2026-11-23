@@ -48,7 +48,16 @@ copy() {
     part="$dir/.$name.part"
     # Explicit returns: under "copy || …" bash ignores set -e, and a failed
     # dump must never go on to delete the old copies.
-    pg_dump --format=custom --no-owner --file="$part" || return 1
+    # The live shares (TASK-424, ADR-0352) live an hour or a day: their rows
+    # stay out of the copies, so a position shared live is never kept for
+    # 14 days. The tables themselves are copied, empty. So are the rows of
+    # who a live was sent to (TASK-468, ADR-0381): they point at a live
+    # share, and a copy holding them without it would not restore.
+    pg_dump --format=custom --no-owner \
+        --exclude-table-data=live_shares \
+        --exclude-table-data=live_share_points \
+        --exclude-table-data=live_share_recipients \
+        --file="$part" || return 1
     mv "$part" "$dir/$name" || return 1
     find "$dir" -maxdepth 1 -name 'shaperoute-*.dump' \
         -mmin +$((keep_days * 24 * 60)) -delete

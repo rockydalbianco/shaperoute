@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import { Animated, StyleSheet } from "react-native";
 
+import { color, font, fontWeight, motion, radius } from "../theme/tokens";
 import { FeedMapShooter, forgetFeedMaps } from "./FeedMaps";
 import { FeedPost, MAP_CREDIT, postFacts, shapeLabel } from "./FeedPost";
+import { creditLine } from "./RouteMap";
 import type { SamplePost } from "./sampleFeed";
 
 const POST: SamplePost = {
@@ -33,9 +36,9 @@ test("a shape is written as it is read", () => {
 });
 
 test("the facts of a drawing: what, how far, how long", () => {
-  expect(postFacts(POST)).toBe("Dog head · 10.5 km · 1 h 04 min");
+  expect(postFacts(POST)).toBe("Dog head · 10.5 km · 1 h 04 min · 6:05 /km · 736 kcal");
   expect(postFacts({ ...POST, shape: "moon", route_m: 4884, minutes: 27 })).toBe(
-    "Moon · 4.9 km · 27 min",
+    "Moon · 4.9 km · 27 min · 5:32 /km · 342 kcal",
   );
 });
 
@@ -45,7 +48,9 @@ test("shows who ran it and where, the title and the facts", async () => {
   expect(screen.getByText("F")).toBeOnTheScreen();
   expect(screen.getByText("Firenze")).toBeOnTheScreen();
   expect(screen.getByText("Dog walk, without the dog")).toBeOnTheScreen();
-  expect(screen.getByText("Dog head · 10.5 km · 1 h 04 min")).toBeOnTheScreen();
+  expect(
+    screen.getByText("Dog head · 10.5 km · 1 h 04 min · 6:05 /km · 736 kcal"),
+  ).toBeOnTheScreen();
 });
 
 test("writes no score over the drawing", async () => {
@@ -65,7 +70,7 @@ test("draws the line, one view for each stretch, as wide as the card", async () 
 test("until its picture is taken there is no map, and no credit for one", async () => {
   await render(<FeedPost post={POST} width={358} />);
   expect(screen.queryByTestId("feed-map")).toBeNull();
-  expect(screen.queryByText(MAP_CREDIT)).toBeNull();
+  expect(screen.queryByText(creditLine())).toBeNull();
 });
 
 test("lays the map under the line, and says whose it is", async () => {
@@ -100,14 +105,14 @@ test("lays the map under the line, and says whose it is", async () => {
   expect(MAP_CREDIT).toContain("OpenFreeMap");
   expect(MAP_CREDIT).toContain("© OpenMapTiles");
   expect(MAP_CREDIT).toContain("OpenStreetMap");
-  expect(screen.getByText(MAP_CREDIT)).toBeOnTheScreen();
+  expect(screen.getByText(creditLine())).toBeOnTheScreen();
 });
 
 test("a screen reader hears the drawing as one thing", async () => {
   await render(<FeedPost post={POST} width={358} />);
   expect(
     screen.getByLabelText(
-      "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min.",
+      "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min · 6:05 /km · 736 kcal.",
     ),
   ).toBeOnTheScreen();
 });
@@ -121,11 +126,44 @@ test("a tap opens its route, and a screen reader hears where it leads", async ()
   const onOpen = jest.fn();
   await render(<FeedPost post={POST} width={358} onOpen={onOpen} />);
   const card = screen.getByRole("button", {
-    name: "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min.",
+    name: "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min · 6:05 /km · 736 kcal.",
   });
   expect(card).toHaveProp("accessibilityHint", "Opens the route on the map");
   await fireEvent.press(card);
   expect(onOpen).toHaveBeenCalledTimes(1);
+});
+
+test("the large radius and no border; the names medium; the finger answered through Tap (TASK-339)", async () => {
+  // Seen, not run: an animation left running would spill into the next test.
+  const timing = jest
+    .spyOn(Animated, "timing")
+    .mockReturnValue({ start: jest.fn(), stop: jest.fn(), reset: jest.fn() });
+  await render(<FeedPost post={POST} width={358} onOpen={jest.fn()} />);
+  const card = screen.getByTestId("feed-post");
+  expect(card).toHaveStyle({
+    borderRadius: radius.card,
+    backgroundColor: color.surface,
+  });
+  expect(
+    (StyleSheet.flatten(card.props.style) as { borderWidth?: number }).borderWidth,
+  ).toBeUndefined();
+  expect(screen.getByText("F")).toHaveStyle({ fontWeight: fontWeight.medium });
+  expect(screen.getByText("fede_km")).toHaveStyle({ fontWeight: fontWeight.medium });
+  expect(screen.getByText("Dog walk, without the dog")).toHaveStyle({
+    fontSize: font.cardTitle.fontSize,
+    fontWeight: font.cardTitle.fontWeight,
+  });
+  // Pressed, the card shrinks and dims in `motion.pressMs`, on the native driver.
+  await fireEvent(card, "pressIn", { nativeEvent: { pageX: 80, pageY: 300 } });
+  expect(timing).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      toValue: 1,
+      duration: motion.pressMs,
+      useNativeDriver: true,
+    }),
+  );
+  timing.mockRestore();
 });
 
 test("a swipe that ends on the card is not a tap", async () => {
@@ -159,12 +197,16 @@ describe("a drawing on the water (TASK-228)", () => {
   };
 
   test("says its sport before the facts, on the card and to who listens", async () => {
-    expect(postFacts(PADDLED)).toBe("Paddle · Dog head · 2.0 km · 30 min");
+    expect(postFacts(PADDLED)).toBe(
+      "Paddle · Dog head · 2.0 km · 30 min · 7:30 /500 m · 66 kcal",
+    );
     await render(<FeedPost post={PADDLED} width={358} onOpen={() => {}} />);
     expect(screen.getByText("Riccione")).toBeOnTheScreen();
-    expect(screen.getByText("Paddle · Dog head · 2.0 km · 30 min")).toBeOnTheScreen();
+    expect(
+      screen.getByText("Paddle · Dog head · 2.0 km · 30 min · 7:30 /500 m · 66 kcal"),
+    ).toBeOnTheScreen();
     expect(screen.getByRole("button")).toHaveAccessibleName(
-      "ale.paddle in Riccione: Dog paddle off Riccione. Paddle · Dog head · 2.0 km · 30 min.",
+      "ale.paddle in Riccione: Dog paddle off Riccione. Paddle · Dog head · 2.0 km · 30 min · 7:30 /500 m · 66 kcal.",
     );
   });
 

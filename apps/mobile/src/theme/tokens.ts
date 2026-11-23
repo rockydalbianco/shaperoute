@@ -29,22 +29,30 @@ const FIXED = {
    * Text and icons ON `accent`. White fails the contrast minimum on yellow and
    * becomes unreadable in sunlight, which is where this app is used.
    */
-  onAccent: "#0A0A0B",
+  onAccent: "#0B0A08",
 
   /**
    * Someone waits for the user's answer: the number on the way to «Profile»
-   * and on «Requests» (TASK-239). Red by the user's choice; nothing else is.
+   * and on «Requests» (TASK-239). Red by the user's choice; so are the
+   * calories (`energy`, TASK-424 part C3), and nothing else is.
    */
   badge: "#E02D2D",
   /** The number on `badge`: 4.6:1. */
   onBadge: "#FFFFFF",
+  /**
+   * The calories on the yellow (TASK-424 part C3): a gym workout's tile and
+   * its picture to share. 6.3:1 on `accent`.
+   */
+  energyOnAccent: "#8F1216",
+  /** The calories over a photo, on `scrim` like `onScrim`: 6.8:1. */
+  energyOnScrim: "#FF6363",
 
   /**
    * The dark laid over the app around the part the tour shows (TASK-266),
    * with an opacity: dark in both tones, so the part in the light stands
    * out on a light screen too.
    */
-  scrim: "#0A0A0B",
+  scrim: "#0B0A08",
   /** The edge of the light on `scrim`. */
   onScrim: "#FFFFFF",
 
@@ -56,6 +64,20 @@ const FIXED = {
   strava: "#FC5200",
   /** Text on `strava`: white, as Strava's own button; semibold, 3:1. */
   onStrava: "#FFFFFF",
+
+  /**
+   * A day of skiing on its map, in the ski mode only (TASK-429, ADR-0357,
+   * the user's choice): the descents in the brand yellow, solid, and the
+   * lifts in a red lighter than `badge`, dashed. There the app draws no
+   * route, so the yellow keeps one meaning; numbers on the lines and a
+   * legend in words say it without the colours.
+   */
+  ski: {
+    descent: "#FFD02B",
+    lift: "#FF5A4E",
+    /** The numbers on the lines: dark, as `onAccent`. */
+    onLine: "#0B0A08",
+  },
 } as const;
 
 /**
@@ -92,9 +114,38 @@ export type Shade = {
   readonly warning: string;
   /** A request that failed. */
   readonly error: string;
+  /**
+   * The calories, wherever they are shown (TASK-424 part C3, the user's
+   * choice of 2026-11-10: «segnate con colore rosso in tutte»): 4.5:1 at
+   * least on `background`, `surface` and `surfaceRaised`, at every step.
+   */
+  readonly energy: string;
 
   /** Where a moved route begins (ADR-0040). Cyan, so it never reads as route. */
   readonly startHere: string;
+
+  /**
+   * The runner on the map while running (TASK-431, ADR-0359): the ring
+   * around the arrow and the cone of where the phone points. Blue, so it
+   * reads neither as the route (yellow) nor as «Start here» (cyan).
+   */
+  readonly you: string;
+  /** The tip of the north arrow (TASK-431): north at a glance. */
+  readonly north: string;
+  /**
+   * A run day of a plan of the gym (TASK-433 C): the «RUN» mark beside the
+   * yellow letters of the gym's days. The cyan of `startHere`, the user's
+   * choice, kept as its own token so that each keeps one meaning.
+   */
+  readonly runDay: string;
+  /**
+   * The muscles an exercise of the gym works, lit on the body drawn beside
+   * its figure (TASK-465, ADR-0376). A pink, so it reads neither as the
+   * load (yellow) nor as the calories (red); 3:1 at least on `background`,
+   * `surface` and `surfaceRaised`, and never the only sign: a main muscle
+   * is filled, one that helps has an outline.
+   */
+  readonly muscle: string;
 
   readonly map: {
     readonly background: string;
@@ -119,89 +170,114 @@ export type Shade = {
 };
 
 /** Every colour of the app, in the tone chosen. */
-export type Palette = typeof FIXED & Shade;
+export type Palette = typeof FIXED &
+  Shade & {
+    /**
+     * A division drawn as thin as the screen allows (`../ui/Hairline`): the
+     * text at a fifth of its strength, so it sits on the background and on
+     * a card alike. The one translucent colour; the map never uses it.
+     */
+    readonly hairline: string;
+  };
 
 /**
  * Each tone at its darkest step and at its brightest (TASK-263, ADR-0231);
  * the steps between are mixed from the two, colour by colour. The dark
- * tone at its darkest is the app as it always was (ADR-0046); at its
- * brightest, anthracite. The light tone goes from a light grey to white;
- * its warnings, errors and «Start here» are darker, to read on it.
+ * tone at its darkest is the app as it always was (ADR-0046), its greys
+ * warmed a touch towards the yellow (TASK-339, ADR-0293: a grey with no hue
+ * reads cold beside it); at its brightest, anthracite. The light tone goes
+ * from a warm light grey to white; its warnings, errors and «Start here»
+ * are darker, to read on it.
  */
 export const SHADES: Readonly<
   Record<Tone, { readonly darkest: Shade; readonly brightest: Shade }>
 > = {
   dark: {
     darkest: {
-      background: "#0A0A0B",
-      surface: "#141416",
-      surfaceRaised: "#2B2B31",
-      border: "#3D3D44",
-      borderStrong: "#74747E",
-      text: "#F5F5F4",
-      textMuted: "#9B9B9F",
-      textFaint: "#8A8A90",
+      background: "#0B0A08",
+      surface: "#161411",
+      surfaceRaised: "#2C2924",
+      border: "#3D3934",
+      borderStrong: "#7B746B",
+      text: "#F6F3EC",
+      textMuted: "#A49D93",
+      textFaint: "#908980",
       warning: "#FF7A59",
       error: "#FF6B6B",
+      energy: "#FF6363",
       startHere: "#4DD2FF",
+      you: "#3D9BFF",
+      north: "#FF5B4F",
+      runDay: "#4DD2FF",
+      muscle: "#FF6FB5",
       map: {
-        background: "#0D0E10",
+        background: "#100F0C",
         water: "#101F29",
         waterLine: "#1D3C4E",
-        green: "#121A13",
-        builtUp: "#101012",
-        building: "#17181B",
-        roadFaint: "#1C1D21",
-        roadMinor: "#26272C",
-        roadMedium: "#303238",
-        roadMajor: "#3A3D45",
-        label: "#8A8A90",
-        labelHalo: "#0D0E10",
+        green: "#141A12",
+        builtUp: "#131210",
+        building: "#1A1915",
+        roadFaint: "#1F1D19",
+        roadMinor: "#292722",
+        roadMedium: "#34312B",
+        roadMajor: "#3F3B34",
+        label: "#908980",
+        labelHalo: "#100F0C",
       },
     },
     brightest: {
-      background: "#2C2D31",
-      surface: "#37383D",
-      surfaceRaised: "#4C4D55",
-      border: "#5C5D66",
-      borderStrong: "#9A9BA5",
-      text: "#F5F5F4",
-      textMuted: "#C4C4C8",
-      textFaint: "#B6B6BB",
+      background: "#2D2B27",
+      surface: "#38352F",
+      surfaceRaised: "#4D4942",
+      border: "#5D5951",
+      borderStrong: "#A09A90",
+      text: "#F6F3EC",
+      textMuted: "#C8C3BA",
+      textFaint: "#BAB4AB",
       warning: "#FF9478",
       error: "#FF8A8A",
+      energy: "#FFA3A3",
       startHere: "#6EDBFF",
+      you: "#5AAEFF",
+      north: "#FF7068",
+      runDay: "#6EDBFF",
+      muscle: "#FF8FC5",
       map: {
-        background: "#2A2B2F",
+        background: "#2B2925",
         water: "#1F3A4B",
         waterLine: "#30586E",
-        green: "#26332A",
-        builtUp: "#2D2E32",
-        building: "#36373C",
-        roadFaint: "#3B3C42",
-        roadMinor: "#46484F",
-        roadMedium: "#52555D",
-        roadMajor: "#5E626C",
-        label: "#B6B6BB",
-        labelHalo: "#2A2B2F",
+        green: "#28332A",
+        builtUp: "#2E2C28",
+        building: "#37352F",
+        roadFaint: "#3C3A34",
+        roadMinor: "#484540",
+        roadMedium: "#55524B",
+        roadMajor: "#625E56",
+        label: "#BAB4AB",
+        labelHalo: "#2B2925",
       },
     },
   },
   light: {
     darkest: {
-      background: "#DCDCD8",
-      surface: "#D0D0CC",
-      surfaceRaised: "#C2C2C0",
-      border: "#ABABAA",
-      borderStrong: "#66666D",
-      text: "#0A0A0B",
-      textMuted: "#45454B",
-      textFaint: "#505057",
+      background: "#DDDAD3",
+      surface: "#D1CEC7",
+      surfaceRaised: "#C4C0B9",
+      border: "#ADA9A2",
+      borderStrong: "#6B655D",
+      text: "#0B0A08",
+      textMuted: "#4A4640",
+      textFaint: "#55504A",
       warning: "#9A330A",
       error: "#A1221B",
+      energy: "#8F1216",
       startHere: "#006E94",
+      you: "#1565C0",
+      north: "#C42F24",
+      runDay: "#006E94",
+      muscle: "#A8185F",
       map: {
-        background: "#D9D7D0",
+        background: "#DAD7CF",
         water: "#9CC2D8",
         waterLine: "#6E9FBD",
         green: "#C6D6BC",
@@ -211,22 +287,27 @@ export const SHADES: Readonly<
         roadMinor: "#BDBAB2",
         roadMedium: "#AFACA4",
         roadMajor: "#A19E95",
-        label: "#55555B",
-        labelHalo: "#D9D7D0",
+        label: "#5A554E",
+        labelHalo: "#DAD7CF",
       },
     },
     brightest: {
       background: "#FFFFFF",
-      surface: "#F3F3F1",
-      surfaceRaised: "#E6E6E8",
-      border: "#D2D2D6",
-      borderStrong: "#75757D",
-      text: "#0A0A0B",
-      textMuted: "#55555B",
-      textFaint: "#626269",
+      surface: "#F4F2ED",
+      surfaceRaised: "#EAE7E1",
+      border: "#D9D5CE",
+      borderStrong: "#7B746B",
+      text: "#0B0A08",
+      textMuted: "#5C564F",
+      textFaint: "#68625A",
       warning: "#B23C0B",
       error: "#B3261E",
+      energy: "#B71C1C",
       startHere: "#007BA3",
+      you: "#1460B8",
+      north: "#C8352A",
+      runDay: "#007BA3",
+      muscle: "#B81D6A",
       map: {
         background: "#F5F4F0",
         water: "#B5D6E8",
@@ -238,7 +319,7 @@ export const SHADES: Readonly<
         roadMinor: "#D6D4CD",
         roadMedium: "#C9C6BE",
         roadMajor: "#BBB8AF",
-        label: "#626269",
+        label: "#68625A",
         labelHalo: "#F5F4F0",
       },
     },
@@ -274,7 +355,9 @@ function mixShade(from: Shade, to: Shade, share: number): Shade {
 export function paletteOf(choice: ToneChoice): Palette {
   const { darkest, brightest } = SHADES[choice.tone];
   const share = stepOf(choice) / (BRIGHTNESS_STEPS - 1);
-  return { ...FIXED, ...mixShade(darkest, brightest, share) };
+  const shade = mixShade(darkest, brightest, share);
+  // `#RRGGBBAA`: the text at 20 %.
+  return { ...FIXED, ...shade, hairline: `${shade.text}33` };
 }
 
 /**
@@ -292,6 +375,64 @@ export const color: Palette = paletteOf(tone);
  */
 export const statusBarStyle: "light" | "dark" = tone.tone === "dark" ? "light" : "dark";
 
+/**
+ * How much of the glass is the tone's background (TASK-469, ADR-0383).
+ * The app has no blur without a native module, so whatever lies under the
+ * glass shows through as it is: at 88 % the text and the secondary text on
+ * it keep 4.5:1 even over a white photo in the dark tone and a black one in
+ * the light tone, at every step (`glass.test.ts`). The glass reads by its
+ * rim of light and its shadow more than by what shows through.
+ */
+export const GLASS_VEIL = 0.88;
+
+/** The colours of the glass in a tone (TASK-469, ADR-0383). */
+export type GlassColors = {
+  /** The tint: the tone's background. */
+  readonly tint: string;
+  /** How much of the tint covers what lies under: `GLASS_VEIL`. */
+  readonly veil: number;
+  /** The tint at `veil`, as `#RRGGBBAA`: the face of the glass. */
+  readonly fill: string;
+  /** The light caught by the top edge. */
+  readonly rimTop: string;
+  /** The thin edge all round. */
+  readonly rim: string;
+  /** The soft shadow the glass casts under it. */
+  readonly shadow: string;
+  /** What marks the chosen thing on the glass: the text, faint. Never yellow. */
+  readonly selected: string;
+};
+
+/** `share` (0–1) as the two hex digits of an alpha. */
+function alphaHex(share: number): string {
+  return Math.round(share * 255)
+    .toString(16)
+    .padStart(2, "0")
+    .toUpperCase();
+}
+
+/**
+ * The glass of `choice`'s tone. Dark: a white rim, brighter on top, and a
+ * deep shadow. Light: a near-white top rim, an edge of the text at 8 % and
+ * a light shadow. The shadow is `scrim` in both, as the rest of the dark.
+ */
+export function glassOf(choice: ToneChoice): GlassColors {
+  const palette = paletteOf(choice);
+  const dark = choice.tone === "dark";
+  return {
+    tint: palette.background,
+    veil: GLASS_VEIL,
+    fill: `${palette.background}${alphaHex(GLASS_VEIL)}`,
+    rimTop: dark ? `#FFFFFF${alphaHex(0.22)}` : `#FFFFFF${alphaHex(0.95)}`,
+    rim: dark ? `#FFFFFF${alphaHex(0.08)}` : `${palette.text}${alphaHex(0.08)}`,
+    shadow: `${FIXED.scrim}${alphaHex(dark ? 0.55 : 0.16)}`,
+    selected: `${palette.text}${alphaHex(0.12)}`,
+  };
+}
+
+/** The glass in the tone the app is shown in. */
+export const glass: GlassColors = glassOf(tone);
+
 /** Spacing, in the 4 px steps the layouts are built on. */
 export const space = {
   xs: 4,
@@ -306,8 +447,14 @@ export const radius = {
   sm: 8,
   md: 12,
   lg: 16,
+  /** A card whose face is a photo or a drawing (TASK-339). */
+  xl: 20,
   /** Sheets that rise from the bottom edge. */
   sheet: 26,
+  /** A card of the glass look «Capsula» (TASK-469, ADR-0383). */
+  card: 28,
+  /** A group of rows of the glass look, as in «Settings» (TASK-469 A6). */
+  group: 24,
   pill: 999,
 } as const;
 
@@ -318,6 +465,8 @@ export const fontSize = {
   small: 13,
   body: 15,
   input: 16,
+  /** A title over a photo, the first line of an empty state (`font.heading`). */
+  heading: 20,
   title: 25,
   /** The distance on the result: the number people look for. */
   display: 40,
@@ -327,10 +476,112 @@ export const fontSize = {
 } as const;
 
 export const fontWeight = {
+  light: "300",
   regular: "400",
   medium: "500",
   semibold: "600",
   bold: "700",
+} as const;
+
+/**
+ * Letter-spacing by size (TASK-339, ADR-0293): large text is set a little
+ * tighter, as display faces are; the uppercase labels a little wider, so
+ * they read as labels and not as shouting. In points.
+ */
+export const tracking = {
+  display: -1,
+  title: -0.6,
+  heading: -0.3,
+  cardTitle: -0.2,
+  label: 1.2,
+} as const;
+
+/**
+ * The text styles of the app (TASK-339, ADR-0293): a size, a weight, its
+ * tracking and its line height together, so a screen spreads one and adds
+ * the colour. Titles are large and light, not bold: the weight is kept for
+ * the yellow controls and for the kilometres of a run, read at arm's length
+ * (`fontSize.hero`). Numbers that must line up add `fontVariant:
+ * ["tabular-nums"]` where they are drawn.
+ */
+export const font = {
+  /** The number people look for: the distance on the result. */
+  display: {
+    fontSize: 44,
+    fontWeight: fontWeight.light,
+    letterSpacing: tracking.display,
+    lineHeight: 50,
+  },
+  /** The name of a page: the header, the top of a sub-page. */
+  title: {
+    fontSize: 30,
+    fontWeight: fontWeight.regular,
+    letterSpacing: tracking.title,
+    lineHeight: 36,
+  },
+  /** A title over a photo, the first line of an empty state. */
+  heading: {
+    fontSize: fontSize.heading,
+    fontWeight: fontWeight.medium,
+    letterSpacing: tracking.heading,
+    lineHeight: 26,
+  },
+  /** The title of a card. */
+  cardTitle: {
+    fontSize: 17,
+    fontWeight: fontWeight.medium,
+    letterSpacing: tracking.cardTitle,
+    lineHeight: 22,
+  },
+  body: { fontSize: fontSize.body, fontWeight: fontWeight.regular, lineHeight: 22 },
+  small: { fontSize: fontSize.small, fontWeight: fontWeight.regular, lineHeight: 18 },
+  detail: { fontSize: fontSize.detail, fontWeight: fontWeight.regular, lineHeight: 16 },
+  /** Section labels; uppercase where they are written, as before. */
+  label: {
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
+    letterSpacing: tracking.label,
+    lineHeight: 14,
+  },
+} as const;
+
+/**
+ * How the app moves (TASK-339, ADR-0293; springs TASK-388, ADR-0329): short,
+ * and what moves settles on a spring that passes its mark by a hair, as
+ * iOS does, never elastic. Durations in milliseconds.
+ */
+export const motion = {
+  /** A control under the finger (`../ui/Tap`): this much smaller and dimmer,
+   * in `pressMs`; let go, it comes back on `spring.snappy`. */
+  pressScale: 0.97,
+  pressOpacity: 0.85,
+  pressMs: 120,
+  /** The release before the springs: `Tap` no longer uses it; it goes once
+   * the pull requests still open that read it are in (TASK-388). */
+  releaseMs: 180,
+  /**
+   * The app's springs, for `Animated.spring` through `../ui/motion` only: no
+   * screen makes up its own. Mass 1. In the words of SwiftUI, `response` is
+   * 2π/√stiffness and the damping fraction damping/(2√stiffness):
+   * - `snappy`, ~0.38 s, passes its mark by ~2.5%: a control let go, the
+   *   tab bar's capsule, an icon taking its tab;
+   * - `smooth`, ~0.48 s, passes by less than 0.1%: a sheet, a page;
+   * - `island`, ~0.5 s, passes by ~1.7%: the island opening and closing.
+   */
+  spring: {
+    snappy: { stiffness: 270, damping: 25, mass: 1 },
+    smooth: { stiffness: 170, damping: 24, mass: 1 },
+    island: { stiffness: 160, damping: 20, mass: 1 },
+    /** ~0.39 s, critically damped, never passes its mark: the tab bar,
+     * where a bounce at every change of page read as clunky (TASK-388 A2).
+     * It has taken over from `snappy` there. */
+    glide: { stiffness: 256, damping: 32, mass: 1 },
+  },
+  /** Something arriving on screen: a fade, rising this many points. */
+  appearMs: 220,
+  appearRise: 6,
+  /** A sheet rising from the bottom edge. */
+  sheetMs: 280,
 } as const;
 
 /**
@@ -364,6 +615,30 @@ export const otherRoute = {
   color: color.textFaint,
   width: 2.5,
   opacity: 0.8,
+} as const;
+
+/**
+ * The shape asked for, as the search placed it (TASK-442): a thin dotted
+ * line under the route, so the eye can tell how much the route looks like
+ * it; and the same outline over the map while the route is drawn, breathing
+ * between two opacities with a dot going round it. Never yellow, which is
+ * the route's; thinner and lighter than the other routes to choose from.
+ */
+export const shapeGhost = {
+  color: color.text,
+  width: 1.5,
+  opacity: 0.55,
+  /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
+  dash: [2, 2],
+  /** While the route is drawn: the line over the map, in points, and the
+   * two opacities it breathes between, one way in `breathMs`. */
+  waitWidth: 2,
+  waitDim: 0.35,
+  waitBright: 0.8,
+  breathMs: 1400,
+  /** The dot going round the outline, in points across, and one lap. */
+  pen: 8,
+  lapMs: 5000,
 } as const;
 
 /** The route drawn on the map. */
@@ -432,4 +707,60 @@ export const onFoot = {
   opacity: 0.9,
   /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
   dash: [1.5, 1.5],
+} as const;
+
+/**
+ * The colours a run's video can draw its line in, the runner's choice in
+ * «Edit video» (TASK-408, ADR-0339): the route's yellow (`accent`, of the
+ * video's own palette), then four light ones that read on the dark map and,
+ * on their dark edge, on the light one.
+ */
+export const videoLine = {
+  lightBlue: "#7CC4FF",
+  pink: "#FF8FB8",
+  green: "#8EE08A",
+  white: "#FFFFFF",
+} as const;
+
+/**
+ * The prizes of the shape game (TASK-423 part E, ADR-0351): the ring of each
+ * collection's frame, one colour per collection, light enough to read on the
+ * dark surfaces and on a photo; and the silver and gold of the editions.
+ * Never alone: a frame always has its collection's name, an edition its word.
+ */
+export const gamePrize = {
+  frame: {
+    geometry: "#FFD02B",
+    animals: "#F2A65A",
+    sea: "#4FB3E8",
+    sky: "#9BB8FF",
+    nature: "#7DD87A",
+    city: "#C9A0FF",
+    milestones: "#FF7A7A",
+    seasons: "#FF9ED2",
+    legends: "#E8C76A",
+    greece: "#7FD6C8",
+  },
+  silver: "#C7CDD6",
+  gold: "#E8B23A",
+} as const;
+
+/**
+ * The climb's colours on a flight's track (TASK-479 part A1, ADR-0388): a
+ * fixed scale from −3 to +3 m/s, the same on every flight. Sinking blue,
+ * level a warm grey, climbing the brand yellow up to red; each reads on
+ * the dark and the light map. The numbers say the climb: the colour only
+ * shows where it was.
+ */
+export const vario = {
+  /** −3 m/s and less. */
+  sinkStrong: "#3D6BFF",
+  /** −1 m/s. */
+  sink: "#7DB8FF",
+  /** 0 m/s. */
+  level: "#A8A196",
+  /** +1 m/s. */
+  climb: "#FFD02B",
+  /** +3 m/s and more. */
+  climbStrong: "#FF4D2E",
 } as const;

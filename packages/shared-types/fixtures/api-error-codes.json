@@ -16,5 +16,11 @@
   "session_expired",
   "accounts_unavailable",
   "comment_rejected",
-  "no_contest"
+  "no_contest",
+  "contest_closed",
+  "not_entrant",
+  "imported_run",
+  "new_account",
+  "provider_unavailable",
+  "outfit_tag_rejected"
 ]

@@ -13,14 +13,7 @@ import {
   type GameCatalog,
 } from "@shaperoute/shared-types";
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import type { Language } from "../i18n/languages";
@@ -33,8 +26,10 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { metresPer } from "../units/format";
 import type { Units } from "../units/units";
+import { collectionNameIn, shapesByCollection } from "./collections";
 import { goalDistanceLabel, goalPaceLabel, goalText } from "./goalText";
 import { shapeNameIn } from "./ShapeCard";
 import { ShapeOutline } from "./ShapeOutline";
@@ -68,9 +63,9 @@ function clamp(value: number, low: number, high: number): number {
 
 /**
  * A new challenge for the team (TASK-296 part D, docs/GIOCO.md §6.2): a
- * shape of the catalog, how many pieces (2 to 12), what each piece asks (so
- * many kilometres, or 1 or 5 km under a pace) and how many days (1 to 14,
- * 7 by default). The API checks the same limits; the form keeps inside
+ * shape of the catalog, by collection (TASK-423), how many pieces (2 to
+ * 20), what each piece asks (so many kilometres, or 1 or 5 km under a pace)
+ * and how many days (1 to 30, 7 by default). The API checks the same limits; the form keeps inside
  * them so it never asks something refused.
  */
 export function NewChallenge({
@@ -84,6 +79,15 @@ export function NewChallenge({
   onCancel,
 }: Props) {
   const [shapeId, setShapeId] = useState(catalog.shapes[0]?.id ?? "");
+  // The shapes by collection; the one shown is the chosen shape's.
+  const groups = shapesByCollection(catalog);
+  const [groupId, setGroupId] = useState<string | null>(
+    () =>
+      groups.find((group) => group.shapes.some((shape) => shape.id === shapeId))
+        ?.collection?.id ?? null,
+  );
+  const group =
+    groups.find((each) => (each.collection?.id ?? null) === groupId) ?? groups[0];
   const [pieces, setPieces] = useState(() =>
     clamp(members, CHALLENGE_PIECES_MIN, CHALLENGE_PIECES_MAX),
   );
@@ -134,12 +138,38 @@ export function NewChallenge({
       </Text>
 
       <Text style={styles.label}>{t("Shape")}</Text>
+      {groups.length > 1 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={styles.shapes}>
+            {groups.map((each) => {
+              const id = each.collection?.id ?? null;
+              const selected = id === (group?.collection?.id ?? null);
+              const name =
+                each.collection === null
+                  ? t("Other shapes")
+                  : collectionNameIn(each.collection, language);
+              return (
+                <Tap
+                  key={id ?? ""}
+                  style={[styles.group, selected && styles.shapeSelected]}
+                  onPress={() => setGroupId(id)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  testID={`new-collection-${id ?? "other"}`}
+                >
+                  <Text style={styles.shapeName}>{name}</Text>
+                </Tap>
+              );
+            })}
+          </View>
+        </ScrollView>
+      )}
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.shapes}>
-          {catalog.shapes.map((shape) => {
+          {(group?.shapes ?? []).map((shape) => {
             const selected = shape.id === shapeId;
             return (
-              <Pressable
+              <Tap
                 key={shape.id}
                 style={[styles.shape, selected && styles.shapeSelected]}
                 onPress={() => setShapeId(shape.id)}
@@ -157,7 +187,7 @@ export function NewChallenge({
                 <Text style={styles.shapeName} numberOfLines={1}>
                   {shapeNameIn(shape, language)}
                 </Text>
-              </Pressable>
+              </Tap>
             );
           })}
         </View>
@@ -251,7 +281,7 @@ export function NewChallenge({
         </Text>
       )}
       <View style={styles.buttons}>
-        <Pressable
+        <Tap
           style={[styles.start, !canStart && styles.off]}
           onPress={() => onStart({ shape_id: shapeId, pieces, piece, days })}
           disabled={!canStart}
@@ -263,15 +293,15 @@ export function NewChallenge({
           ) : (
             <Text style={styles.startText}>{t("Start the challenge")}</Text>
           )}
-        </Pressable>
-        <Pressable
+        </Tap>
+        <Tap
           style={styles.cancel}
           onPress={onCancel}
           accessibilityRole="button"
           testID="new-cancel"
         >
           <Text style={styles.cancelText}>{t("Cancel")}</Text>
-        </Pressable>
+        </Tap>
       </View>
     </View>
   );
@@ -293,7 +323,7 @@ function Stepper({
 }) {
   return (
     <View style={styles.stepper}>
-      <Pressable
+      <Tap
         style={styles.step}
         onPress={() => onStep(-1)}
         accessibilityRole="button"
@@ -301,11 +331,11 @@ function Stepper({
         testID={`${testID}-less`}
       >
         <Text style={styles.stepText}>−</Text>
-      </Pressable>
+      </Tap>
       <Text style={styles.value} testID={testID}>
         {value}
       </Text>
-      <Pressable
+      <Tap
         style={styles.step}
         onPress={() => onStep(1)}
         accessibilityRole="button"
@@ -313,7 +343,7 @@ function Stepper({
         testID={`${testID}-more`}
       >
         <Text style={styles.stepText}>+</Text>
-      </Pressable>
+      </Tap>
     </View>
   );
 }
@@ -347,6 +377,15 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     backgroundColor: color.surface,
     width: SHAPE_SIDE + space.md * 2,
+  },
+  group: {
+    justifyContent: "center",
+    minHeight: MIN_TAP_SIZE,
+    paddingHorizontal: space.md,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: color.surface,
   },
   shapeSelected: {
     borderColor: color.borderStrong,

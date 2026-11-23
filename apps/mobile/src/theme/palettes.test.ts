@@ -29,41 +29,51 @@ const EVERY = TONES.flatMap((tone) =>
   STEPS.map((step) => [tone, step, at(tone, step)] as const),
 );
 
-test("with no choice the app has the colours it always had (ADR-0046)", () => {
+test("with no choice the app is dark at its darkest (ADR-0046), warm (ADR-0293)", () => {
   expect(color).toEqual({
     accent: "#FFD02B",
-    onAccent: "#0A0A0B",
-    background: "#0A0A0B",
-    surface: "#141416",
-    surfaceRaised: "#2B2B31",
-    border: "#3D3D44",
-    borderStrong: "#74747E",
-    text: "#F5F5F4",
-    textMuted: "#9B9B9F",
-    textFaint: "#8A8A90",
+    onAccent: "#0B0A08",
+    background: "#0B0A08",
+    surface: "#161411",
+    surfaceRaised: "#2C2924",
+    border: "#3D3934",
+    borderStrong: "#7B746B",
+    text: "#F6F3EC",
+    textMuted: "#A49D93",
+    textFaint: "#908980",
     warning: "#FF7A59",
     error: "#FF6B6B",
+    energy: "#FF6363",
     badge: "#E02D2D",
     onBadge: "#FFFFFF",
+    energyOnAccent: "#8F1216",
+    energyOnScrim: "#FF6363",
     // The tour's dark and the edge of its light (TASK-266).
-    scrim: "#0A0A0B",
+    scrim: "#0B0A08",
     onScrim: "#FFFFFF",
     startHere: "#4DD2FF",
+    you: "#3D9BFF",
+    north: "#FF5B4F",
+    runDay: "#4DD2FF",
+    muscle: "#FF6FB5",
     strava: "#FC5200",
     onStrava: "#FFFFFF",
+    ski: { descent: "#FFD02B", lift: "#FF5A4E", onLine: "#0B0A08" },
+    // The text at 20 %, for the thin divisions (TASK-339).
+    hairline: "#F6F3EC33",
     map: {
-      background: "#0D0E10",
+      background: "#100F0C",
       water: "#101F29",
       waterLine: "#1D3C4E",
-      green: "#121A13",
-      builtUp: "#101012",
-      building: "#17181B",
-      roadFaint: "#1C1D21",
-      roadMinor: "#26272C",
-      roadMedium: "#303238",
-      roadMajor: "#3A3D45",
-      label: "#8A8A90",
-      labelHalo: "#0D0E10",
+      green: "#141A12",
+      builtUp: "#131210",
+      building: "#1A1915",
+      roadFaint: "#1F1D19",
+      roadMinor: "#292722",
+      roadMedium: "#34312B",
+      roadMajor: "#3F3B34",
+      label: "#908980",
+      labelHalo: "#100F0C",
     },
   });
   expect(statusBarStyle).toBe("light");
@@ -110,12 +120,31 @@ test.each(EVERY)("%s at step %i keeps the contrasts", (_tone, _step, c) => {
       expect(contrast(text, under)).toBeGreaterThanOrEqual(4.5);
     }
   }
+  // The calories in red (TASK-424 part C3), on everything they are shown on.
+  for (const under of [c.background, c.surface, c.surfaceRaised]) {
+    expect(contrast(c.energy, under)).toBeGreaterThanOrEqual(4.5);
+  }
+  expect(contrast(c.energyOnAccent, c.accent)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(c.energyOnScrim, c.scrim)).toBeGreaterThanOrEqual(4.5);
   // A control is seen as one (TASK-086): WCAG's 3:1 for its edge.
   expect(contrast(c.borderStrong, c.background)).toBeGreaterThanOrEqual(3);
   expect(contrast(c.borderStrong, c.surface)).toBeGreaterThanOrEqual(3);
   // The map: place names and «Start here».
   expect(contrast(c.map.label, c.map.labelHalo)).toBeGreaterThanOrEqual(4.5);
   expect(contrast(c.startHere, c.map.background)).toBeGreaterThanOrEqual(3);
+  // The runner's ring and cone on the map, the north tip on its button and
+  // the line under the page open (TASK-431).
+  expect(contrast(c.you, c.map.background)).toBeGreaterThanOrEqual(3);
+  expect(contrast(c.you, c.background)).toBeGreaterThanOrEqual(3);
+  expect(contrast(c.north, c.surfaceRaised)).toBeGreaterThanOrEqual(3);
+  // The «RUN» mark of a run day, bold, on a card and on its chip (TASK-433 C).
+  for (const under of [c.surface, c.surfaceRaised]) {
+    expect(contrast(c.runDay, under)).toBeGreaterThanOrEqual(3);
+  }
+  // A muscle lit on the body of an exercise, a graphic (TASK-465).
+  for (const under of [c.background, c.surface, c.surfaceRaised]) {
+    expect(contrast(c.muscle, under)).toBeGreaterThanOrEqual(3);
+  }
   // Text on yellow does not depend on the tone.
   expect(contrast(c.onAccent, c.accent)).toBeGreaterThanOrEqual(7);
 });

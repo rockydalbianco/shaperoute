@@ -1,14 +1,22 @@
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { FeedPost as Post, Session } from "@shaperoute/shared-types";
-import { act, fireEvent, render, screen } from "@testing-library/react-native";
-import { Text } from "react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
+import { StyleSheet, Text, type ViewStyle } from "react-native";
 
 import type { AccountState } from "../account/useAccount";
-import { Pager } from "../screens/Pager";
+import { TabShell } from "../tabs/TabShell";
 import { forgetBlocked } from "../social/blockedNow";
 import { FollowsContext } from "../social/followsDoor";
-import { FeedPost } from "./FeedPost";
+import { color, font, space } from "../theme/tokens";
+import { FeedPost, postFacts } from "./FeedPost";
 import { forgetFeedMaps } from "./FeedMaps";
 import { shownPost } from "./feedPosts";
 
@@ -53,6 +61,19 @@ beforeEach(() => {
   forgetBlocked();
 });
 
+/** The rendered tree as JSON, and every node in it `where` says. */
+type Json = { props: Record<string, unknown>; children: (Json | string)[] | null };
+function nodes(
+  node: Json | string | null | undefined,
+  where: (node: Json) => boolean,
+): Json[] {
+  if (node == null || typeof node === "string") {
+    return [];
+  }
+  const own = where(node) ? [node] : [];
+  return [...own, ...(node.children ?? []).flatMap((child) => nodes(child, where))];
+}
+
 async function swipeTo(page: number) {
   await act(() =>
     fireEvent(screen.getByTestId("feed-pages"), "momentumScrollEnd", {
@@ -74,8 +95,64 @@ test("a drawing with photos shows them after it, read with the token", async () 
   expect(screen.getByTestId("feed-pages")).toBeOnTheScreen();
   expect(screen.getByTestId("feed-drawing")).toBeOnTheScreen();
   expect(sources()).toEqual([SOURCES[0]]);
-  // As wide as the card, as tall as the drawing.
-  expect(screen.getByTestId("feed-photo")).toHaveStyle({ width: WIDTH, height: 222 });
+  // A page as wide as the card, the photo filling it.
+  const pages = within(screen.getByTestId("feed-pages")).getAllByTestId(
+    "feed-page-tap",
+  );
+  expect(pages[1]).toHaveStyle({ width: WIDTH });
+  expect(screen.getByTestId("feed-photo")).toHaveStyle({
+    position: "absolute",
+    left: 0,
+    top: 0,
+  });
+});
+
+test("the words stay under the drawing, and lie over a photo on a capsule of glass (TASK-339, TASK-469 A4c)", async () => {
+  await show(WITH_PHOTO);
+  const post = shownPost(WITH_PHOTO);
+  const [drawingPage, photoPage] = within(
+    screen.getByTestId("feed-pages"),
+  ).getAllByTestId("feed-page-tap");
+  // Under the drawing, so as not to cover the figure: the card's title; the
+  // numbers in boxes under the pages (TASK-410 part F), not a line of facts.
+  expect(within(drawingPage).queryByTestId("feed-photo-words")).toBeNull();
+  expect(within(drawingPage).getByText(post.title)).toHaveStyle({
+    fontSize: font.cardTitle.fontSize,
+    fontWeight: font.cardTitle.fontWeight,
+    color: color.text,
+  });
+  expect(within(drawingPage).queryByText(postFacts(post))).toBeNull();
+  expect(screen.getByTestId("feed-summary")).toBeOnTheScreen();
+  // Over the photo: on a capsule of glass inside it, out of the way of the
+  // finger, and not read twice (the card is read as one thing).
+  const hidden = { includeHiddenElements: true };
+  const words = within(photoPage).getByTestId("feed-photo-words", hidden);
+  expect(words).toHaveProp("pointerEvents", "none");
+  expect(words).toHaveProp("accessibilityElementsHidden", true);
+  expect(within(drawingPage).getByText(post.title)).toBeOnTheScreen();
+  expect(screen.getAllByText(post.title)).toHaveLength(1);
+  expect(within(words).getByText(post.title, hidden)).toHaveStyle({
+    fontSize: font.heading.fontSize,
+    fontWeight: font.heading.fontWeight,
+    color: color.text,
+  });
+  expect(within(words).queryByText(postFacts(post), hidden)).toBeNull();
+  // The capsule: 8 pt from the photo's edges; the dark of `Scrim` is gone, from
+  // the photo as from the drawing.
+  expect(StyleSheet.flatten(words.props.style) as ViewStyle).toMatchObject({
+    position: "absolute",
+    left: space.sm,
+    right: space.sm,
+    bottom: space.sm,
+  });
+  const [drawingJson, photoJson] = nodes(
+    screen.toJSON() as unknown as Json | null,
+    (node) => node.props.testID === "feed-page-tap",
+  );
+  const stretched = (page: Json) =>
+    nodes(page, (node) => node.props.resizeMode === "stretch");
+  expect(stretched(photoJson)).toHaveLength(0);
+  expect(stretched(drawingJson)).toHaveLength(0);
 });
 
 test("only the photo after the one shown is loaded, and those seen stay", async () => {
@@ -131,13 +208,20 @@ test("swiping the photos to the last never turns the app's page", async () => {
         openProfile: jest.fn(),
       }}
     >
-      <Pager
+      <TabShell
         pages={[
           {
             title: "Feed",
+            label: "Feed",
+            icon: "house",
             render: () => <FeedPost post={shownPost(TWO_PHOTOS)} width={WIDTH} />,
           },
-          { title: "Draw", render: () => <Text>Draw</Text> },
+          {
+            title: "Draw",
+            label: "Draw",
+            icon: "pencil",
+            render: () => <Text>Draw</Text>,
+          },
         ]}
         page={0}
         onPage={onPage}
@@ -149,15 +233,15 @@ test("swiping the photos to the last never turns the app's page", async () => {
   expect(screen.getAllByTestId(/^feed-dot(-on)?$/).at(-1)?.props.testID).toBe(
     "feed-dot-on",
   );
-  // The photos bounce at their ends, where the pages do not: a swipe past
-  // the last photo stays in the card.
+  // The photos bounce at their ends; the pages of the tab bar do not
+  // slide at all (TASK-367): a swipe past the last photo stays in the card.
   expect(screen.getByTestId("feed-pages").props.bounces).not.toBe(false);
-  expect(screen.getByTestId("pager").props.bounces).toBe(false);
 });
 
 test("a tap on a card with photos still opens the drawing", async () => {
   const onOpen = jest.fn();
   await show(WITH_PHOTO, signedIn, onOpen);
   await fireEvent.press(screen.getByTestId("feed-post"));
-  expect(onOpen).toHaveBeenCalledTimes(1);
+  // The tap waits to know it is alone (TASK-454 part B).
+  await waitFor(() => expect(onOpen).toHaveBeenCalledTimes(1));
 });

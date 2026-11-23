@@ -2,7 +2,6 @@ import type { LatLon } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import {
   Keyboard,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,6 +19,7 @@ import { decimal, t, tLater } from "../i18n";
 import { HeartBadge } from "../intro/HeartBadge";
 import { metresBetween } from "../map/coordinates";
 import type { Place } from "../places/photon";
+import { SWIM_EXAMPLES } from "../swim/swimExamples";
 import {
   color,
   fontSize,
@@ -28,6 +28,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { distanceLabel, inUnits } from "../units/format";
 import { appUnits } from "../units/units";
 import { useUnits } from "../units/useUnits";
@@ -53,6 +54,13 @@ import {
   WATER_SPOTS,
   type WaterSpot,
 } from "./waterSpots";
+import { useHeaderScroll } from "../tabs/headerScroll";
+import { useScrollToTopOnReselect } from "../tabs/tabReselect";
+import { ExploreSearch } from "../explore/ExploreSearch";
+import { postRoute } from "../feed/feedRoute";
+import type { SamplePost } from "../feed/sampleFeed";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /** Where the examples come from: a spot chosen, or «Near me», from the
  * start of «Draw» as it was when «Near me» began (null: there was none).
@@ -108,6 +116,12 @@ type Props = {
   /** The start of «Draw», for «Near me». */
   near: LatLon | null;
   onOpen: (route: RecommendedRoute) => void;
+  /** With «Open water swim» (TASK-323 C4): the same places, their shapes
+   * swum (SWIM_EXAMPLES), 1 km from each point. */
+  swim?: boolean;
+  /** An example of «Feed» found by the search at the top (TASK-367 part B);
+   * left out, its route opens as a route of «Explore». */
+  onOpenExample?: (post: SamplePost) => void;
 };
 
 /**
@@ -127,10 +141,20 @@ type Props = {
  * activities», else the start «Near me» began from. «Lakes» and «Sea» show
  * one kind alone, and «Show more» the next places.
  */
-export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
+export function PaddleExplore({
+  apiUrl,
+  near,
+  onOpen,
+  onOpenExample,
+  swim = false,
+}: Props) {
   // The places say how far in the app's units, at once (TASK-182).
   useUnits();
   const insets = useSafeAreaInsets();
+  // Its tab touched again: back to the top (TASK-367).
+  const scroll = useScrollToTopOnReselect<ScrollView>();
+  // The header turns to glass once the list scrolls (TASK-469 A5b).
+  const headerScroll = useHeaderScroll();
   const { width } = useWindowDimensions();
   const [chosen, setChosen] = useState<Chosen>(() => kept);
   const [started, setStarted] = useState<LatLon | null>(() => firstStart ?? near);
@@ -163,7 +187,9 @@ export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
         ? { label: t("Your start"), point: here }
         : null;
   const { examples, retry } = useCityExamples(apiUrl, place, {
-    set: examplesAt(spot?.distance_m ?? USUAL_DISTANCE_M),
+    // A swim's distance is the same from every point: a small lake's
+    // shorter paddle is for the paddle.
+    set: swim ? SWIM_EXAMPLES : examplesAt(spot?.distance_m ?? USUAL_DISTANCE_M),
   });
   // Read once as the page opens: the activities note it as they come.
   const [home] = useState(loadHomeArea);
@@ -201,17 +227,27 @@ export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
       : searchSpots(WATER_SPOTS, typed, near).slice(0, SUGGESTIONS_SHOWN);
   return (
     <View style={[StyleSheet.absoluteFill, styles.screen]}>
-      <View style={[styles.header, { paddingTop: insets.top + space.sm }]}>
+      {/* The search, as on the run's «Explore» (TASK-367 part B). */}
+      <View style={[styles.search, { paddingTop: insets.top + space.sm }]}>
+        <ExploreSearch
+          onOpenExample={onOpenExample ?? ((post) => onOpen(postRoute(post)))}
+        />
+      </View>
+      <View style={[styles.header, { paddingTop: space.sm }]}>
         <View style={styles.titles}>
           <Text style={styles.title}>{t("On the water")}</Text>
           <Text style={styles.subtitle}>
-            {t("Shapes to paddle, within 1 km of the shore")}
+            {swim
+              ? t("Shapes to swim, within 150 m of the shore")
+              : t("Shapes to paddle, within 1 km of the shore")}
           </Text>
         </View>
         {/* The sign of Sgrava, as in the run's «Explore» (TASK-222). */}
         <HeartBadge size={MIN_TAP_SIZE} />
       </View>
       <ScrollView
+        ref={scroll}
+        {...headerScroll}
         contentContainerStyle={[
           styles.list,
           { paddingBottom: insets.bottom + space.lg },
@@ -275,9 +311,9 @@ export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
             accessibilityLabel={t("Type a lake or a beach")}
           />
           {suggestions?.map((found) => (
-            <Pressable
+            <Tap
               key={found.spot.name}
-              style={({ pressed }) => [styles.choice, pressed && styles.pressed]}
+              style={styles.choice}
               onPress={() => choose({ kind: "spot", spot: found.spot })}
               accessibilityRole="button"
               accessibilityLabel={found.spot.name}
@@ -290,7 +326,7 @@ export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
                   {whereText(found)}
                 </Text>
               )}
-            </Pressable>
+            </Tap>
           ))}
           {suggestions !== null && suggestions.length === 0 && (
             <Text style={styles.hint}>
@@ -421,13 +457,9 @@ function WaterExamples({
         </Text>
       ))}
       {failed.length > 0 && (
-        <Pressable
-          style={({ pressed }) => [styles.retry, pressed && styles.pressed]}
-          onPress={onRetry}
-          accessibilityRole="button"
-        >
+        <Tap style={styles.retry} onPress={onRetry} accessibilityRole="button">
           <Text style={styles.retryText}>{t("Try again")}</Text>
-        </Pressable>
+        </Tap>
       )}
     </View>
   );
@@ -446,13 +478,11 @@ function PlaceChip({
   here?: boolean;
   onPress: () => void;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.chip,
-        on && styles.chipOn,
-        pressed && styles.pressed,
-      ]}
+    <Tap
+      style={[styles.chip, chipRaise, on && styles.chipOn]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: on }}
@@ -463,11 +493,14 @@ function PlaceChip({
         </View>
       )}
       <Text style={[styles.chipText, on && styles.chipTextOn]}>{label}</Text>
-    </Pressable>
+    </Tap>
   );
 }
 
 const styles = StyleSheet.create({
+  search: {
+    paddingHorizontal: space.lg,
+  },
   screen: {
     backgroundColor: color.background,
   },
@@ -607,9 +640,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: space.md,
-  },
-  pressed: {
-    opacity: 0.6,
   },
   retry: {
     minHeight: MIN_TAP_SIZE,

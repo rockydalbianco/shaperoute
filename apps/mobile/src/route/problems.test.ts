@@ -29,7 +29,7 @@ const OUR_SIDE = "Something went wrong on our side. Try again in a moment.";
 test.each<[RouteProblem, string, string | undefined]>([
   [
     { kind: "api_error", code: "map_data_unavailable", message: "Overpass timed out" },
-    "Map data for this area could not be downloaded. Try again later.",
+    "The map service is busy, so this area could not be loaded. Try again in a few minutes.",
     "Overpass timed out",
   ],
   [
@@ -222,6 +222,25 @@ describe("on the water (TASK-191)", () => {
   const TOO_SMALL =
     "the heart does not fit on the water within 1 km of the shore here, even at 0.6 km";
 
+  test("a drawing refused by an API before TASK-369 B says the water takes a shape, with no «Try again»", () => {
+    const OLD = "on the water only a shape of the catalogue is drawn, not an image";
+    expect(
+      problemText(
+        { kind: "api_error", code: "invalid_request", message: OLD },
+        "shape",
+        "paddling",
+      ),
+    ).toEqual({ text: "On the water, a shape of the catalogue.", detail: OLD });
+    // On the roads the same words are still ours to fix.
+    expect(
+      problemText(
+        { kind: "api_error", code: "invalid_request", message: OLD },
+        "shape",
+        "running",
+      ).retry,
+    ).toBe(true);
+  });
+
   test("no water near the start says so, with no distance nor shapes", () => {
     expect(
       problemText(
@@ -273,6 +292,58 @@ describe("on the water (TASK-191)", () => {
         pickShape: true,
       });
     }
+  });
+
+  test("a drawing says it is a drawing, and offers no shapes (TASK-396)", () => {
+    for (const activity of ["paddling", "swimming"] as const) {
+      expect(
+        problemText(
+          {
+            kind: "api_error",
+            code: "shape_not_drawable",
+            message: TOO_SMALL,
+            suggested_distance_m: null,
+          },
+          "image",
+          activity,
+        ),
+      ).toEqual({
+        text: "This drawing does not fit on the water near this start. Try a shorter distance, or another start.",
+        detail: TOO_SMALL,
+      });
+    }
+    expect(
+      problemText(
+        {
+          kind: "api_error",
+          code: "shape_not_drawable",
+          message: TOO_BIG,
+          suggested_distance_m: 2500,
+        },
+        "image",
+        "paddling",
+      ),
+    ).toEqual({
+      text: "This drawing does not fit on the water here at this distance. It fits at about 2.5 km.",
+      detail: TOO_BIG,
+      tryDistanceM: 2500,
+    });
+    expect(
+      problemText(
+        {
+          kind: "api_error",
+          code: "shape_not_drawable",
+          message: TOO_BIG,
+          suggested_distance_m: 3218.688,
+        },
+        "image",
+        "paddling",
+        null,
+        "mi",
+      ).text,
+    ).toBe(
+      "This drawing does not fit on the water here at this distance. It fits at about 2 mi.",
+    );
   });
 
   test("the roads' words stay for a run and a bike route", () => {
@@ -395,4 +466,31 @@ test("a line refused without a known reason still says something", () => {
   expect(
     problemText({ ...problem, code: "image_not_usable", reason: "short" }).text,
   ).toMatch(/one clear outline/);
+});
+
+test("an outline the engine cannot draw says it does not fit, with no «Try again» (TASK-382)", () => {
+  const CROSSES =
+    "outline: the outline crosses itself: the sides starting at points 1 and 38 meet";
+  const refused: RouteProblem = {
+    kind: "api_error",
+    code: "invalid_request",
+    message: CROSSES,
+  };
+  expect(problemText(refused, "image", "running")).toEqual({
+    text: "This outline does not fit the roads here. Try another distance, another start, or a simpler picture.",
+    detail: CROSSES,
+  });
+  // On the water, a drawing's words (TASK-396).
+  expect(problemText(refused, "image", "paddling")).toEqual({
+    text: "This drawing does not fit on the water near this start. Try a shorter distance, or another start.",
+    detail: CROSSES,
+  });
+  // Any other refusal is still ours to fix.
+  expect(
+    problemText(
+      { kind: "api_error", code: "invalid_request", message: "distance_m: missing" },
+      "image",
+      "paddling",
+    ).retry,
+  ).toBe(true);
 });

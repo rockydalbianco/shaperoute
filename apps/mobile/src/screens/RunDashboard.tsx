@@ -1,12 +1,5 @@
 import type { Activity } from "@shaperoute/shared-types";
-import {
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import {
   Animated,
   Modal,
@@ -20,8 +13,11 @@ import {
 } from "react-native";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 
+import { isFlight } from "../air/flight";
 import { RunGameLine, useRunGameStrip } from "../game/RunGameStrip";
 import { t, tLater } from "../i18n";
+import { LiveShareButton } from "../liveShare/LiveShareButton";
+import { useLiveShareFeed } from "../liveShare/useLiveShareFeed";
 import { openMusic } from "../navigation/music";
 import {
   pauseRun,
@@ -32,8 +28,17 @@ import {
 } from "../navigation/runControl";
 import { PADDLE_PACE_M, PADDLE_PACE_UNIT } from "../navigation/paddle";
 import { speedChange, speedNumber } from "../navigation/ride";
-import { changeLabel, type Split, splits } from "../navigation/runMetrics";
+import { changeLabel, climbM, type Split, splits } from "../navigation/runMetrics";
+import {
+  FIRST_PAGE,
+  runPage,
+  type RunPage,
+  setRunPage,
+  swipedTo,
+  useRunPage,
+} from "../navigation/runPage";
 import { paceClock } from "../navigation/runStats";
+import { SWIM_PACE_M, SWIM_PACE_UNIT } from "../navigation/swim";
 import { openPause, type Track } from "../navigation/trackRecorder";
 import { usePocketMode } from "../navigation/usePocketMode";
 import { useRunAwake } from "../navigation/useRunAwake";
@@ -45,9 +50,14 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { runActivityOf } from "../settings/sport";
+import { usePlanToGo } from "../gym/planToGo";
+import { useSport } from "../settings/useSport";
 import { metresPer } from "../units/format";
 import type { Units } from "../units/units";
 import { VoiceSetting } from "../voice/VoiceSetting";
+import { useWatch } from "../watch/useWatch";
+import { WatchHeart } from "../watch/WatchHeart";
 import { Countdown } from "./Countdown";
 import { HoldButton, ROUND_BUTTON } from "./HoldButton";
 import { confirmPocketMode, PocketScreen } from "./PocketScreen";
@@ -59,32 +69,25 @@ import {
   RunStrip,
   useRunNumbers,
 } from "./RunPanel";
+import { FoldHandle, foldedAfter, RunFoldedStrip, upOrDown } from "./RunFoldedStrip";
+import { RunPageGlyph } from "./RunPageGlyphs";
 
 /**
- * A run in progress, with a route or without one (TASK-169, ADR-0137): two
- * pages a swipe apart. «Map» is the map with the turn over it and, under
- * it, a few numbers; «Data» is every number, the kilometres one by one and
- * the run's switches, with no map. Both have the same way to pause, to go
- * on and to stop. With miles (TASK-182) the kilometres are miles, one by
- * one too: worked out here from the track, which stays in metres. Under
- * the numbers of both pages, on a run on foot with an account, the game's
- * line (TASK-296 part E): the next shape to collect, or the pace piece in
- * hand against its target; read once as the run starts.
+ * A run in progress, with a route or without one (TASK-169, ADR-0137):
+ * three pages a swipe apart (TASK-422, ADR-0350). «Compass», on the left,
+ * is the map alone, turned where the phone points, with only the run's
+ * buttons under it; «Map» is the map with the turn over it and, under it,
+ * a few numbers; «Data» is every number, the kilometres one by one and the
+ * run's switches, with no map. All have the same way to pause, to go on
+ * and to stop. With miles (TASK-182) the kilometres are miles, one by one
+ * too: worked out here from the track, which stays in metres. Under the
+ * numbers of «Map» and «Data», on a run on foot with an account, the
+ * game's line (TASK-296 part E): the next shape to collect, or the pace
+ * piece in hand against its target; read once as the run starts. The page
+ * open lives in `runPage.ts`: the map above the card reads it too.
  */
 
-export type RunPage = "map" | "data";
-
-/** A finger that moved this far sideways, and less up or down, is a swipe. */
-export const SWIPE_M = 48;
-
-/** The page a drag of (`dx`, `dy`) points asks for, or null: to the left
- * for «Data», which lies on the right, and to the right for «Map». */
-export function swipedTo(dx: number, dy: number): RunPage | null {
-  if (Math.abs(dx) < SWIPE_M || Math.abs(dx) < 2 * Math.abs(dy)) {
-    return null;
-  }
-  return dx < 0 ? "data" : "map";
-}
+export { type RunPage, SWIPE_M, swipedTo } from "../navigation/runPage";
 
 /** Whether a drag has gone sideways enough to be taken from what is under it. */
 function sideways(dx: number, dy: number): boolean {
@@ -127,7 +130,16 @@ export function RunCard({
   fetchFn,
   apiKey,
 }: Props) {
-  const numbers = useRunNumbers(track, live && !arrived, route, activity);
+  // The sport «Save» takes, the one of «Settings»: its calories (TASK-424
+  // part C2), and the watch's activity.
+  const chosen = useSport();
+  const sport = runActivityOf(chosen);
+  // Recorded freely on a day of a plan (TASK-461 B2c): what is left of it,
+  // as of a route.
+  const climbed = useMemo(() => climbM(track), [track]);
+  const planDay = usePlanToGo(chosen, track.distanceM, climbed);
+  const shown = route ?? planDay ?? undefined;
+  const numbers = useRunNumbers(track, live && !arrived, shown, activity, sport);
   const control = useRunControl();
   const pocket = usePocketMode(live && !arrived);
   // The screen on for the whole run, pocket mode or not (TASK-255).
@@ -135,22 +147,46 @@ export function RunCard({
   // The game's line (TASK-296 part E): the API asked once, here, as the
   // run starts; the line then follows the track, on both pages.
   const game = useRunGameStrip(track, activity, { fetchFn, key: apiKey });
-  const [page, setPage] = useState<RunPage>("map");
+  // The Apple Watch along (TASK-370 A3): the same state on both, its heart
+  // rate here.
+  const bpm = useWatch(sport, onStop);
+  const page = useRunPage();
+  // The next run opens on «Map» again.
+  useEffect(() => () => setRunPage(FIRST_PAGE), []);
   const paused = openPause(track) !== null;
-  // One function for the whole run: a swipe in progress keeps its page.
-  const toMap = useCallback(() => setPage("map"), []);
-  const toData = useMemo(
+  // «Share live» (TASK-424 part B1): the numbers go to the live link, when
+  // the runner made one; the end of this screen ends it.
+  // A flight sends the numbers of the air too (TASK-305 part R2).
+  useLiveShareFeed(track, numbers.energy, bpm, paused, isFlight(sport));
+  const share = (
+    <LiveShareButton canStart={live && !arrived} fetchFn={fetchFn} apiKey={apiKey} />
+  );
+  // The card of «Map» folded to a strip (TASK-472): only while running,
+  // paused it is open with «Stop» and «Resume».
+  const [folded, setFolded] = useState(false);
+  const foldable =
+    page === "map" && live && !arrived && !paused && track.fixes.length > 0;
+  // One responder for the whole run: the page it starts from is read as
+  // the finger lifts; up or down, on «Map», folds the card or opens it.
+  const swipe = useMemo(
     () =>
       PanResponder.create({
-        onMoveShouldSetPanResponder: (_event, { dx, dy }) => sideways(dx, dy),
+        onMoveShouldSetPanResponder: (_event, { dx, dy }) =>
+          sideways(dx, dy) || (foldable && upOrDown(dx, dy)),
         onPanResponderRelease: (_event, { dx, dy }) => {
-          if (swipedTo(dx, dy) === "data") {
-            setPage("data");
+          const to = swipedTo(dx, dy, runPage());
+          if (to !== null) {
+            setRunPage(to);
+          } else if (foldable) {
+            setFolded(foldedAfter(dx, dy, folded));
           }
         },
       }),
-    [],
+    [folded, foldable],
   );
+  // «Compass» (TASK-422): the map, and under it only the way to pause and
+  // to stop. No number is drawn, so the map takes the room.
+  const compassPage = page === "compass";
 
   const buttons = (
     <RunButtons
@@ -167,29 +203,45 @@ export function RunCard({
   const dark = <PocketScreen on={pocket.on} onExit={pocket.exit} />;
 
   return (
-    <View style={styles.card} {...toData.panHandlers}>
-      {paused ? (
-        <>
-          <Kilometres numbers={numbers} />
-          <RunGrid numbers={numbers} />
-        </>
+    <View style={styles.card} testID="run-card" {...swipe.panHandlers}>
+      {foldable && folded ? (
+        <RunFoldedStrip
+          numbers={numbers}
+          onOpen={() => setFolded(false)}
+          onPause={pauseRun}
+        />
       ) : (
-        <RunStrip numbers={numbers} />
+        <>
+          {foldable && <FoldHandle folded={false} onPress={() => setFolded(true)} />}
+          {!compassPage &&
+            (paused ? (
+              <>
+                <Kilometres numbers={numbers} />
+                <RunGrid numbers={numbers} />
+              </>
+            ) : (
+              <RunStrip numbers={numbers} />
+            ))}
+          {!compassPage && <RunGameLine text={game} />}
+          {!compassPage && <WatchHeart bpm={bpm} />}
+          {!compassPage && shown && <RouteBar route={shown} numbers={numbers} />}
+          {!compassPage && page !== "data" && share}
+          {buttons}
+          <PageTabs page={page} onPage={setRunPage} />
+        </>
       )}
-      <RunGameLine text={game} />
-      {route && <RouteBar route={route} numbers={numbers} />}
-      {buttons}
-      <PageTabs page={page} onPage={setPage} />
-      {page === "map" && dark}
+      {page !== "data" && dark}
       <Countdown />
       <DataPage
         open={page === "data"}
-        onClose={toMap}
+        onClose={setRunPage}
         track={track}
         numbers={numbers}
+        bpm={bpm}
         game={game}
-        route={route}
+        route={shown}
         heading={heading}
+        share={share}
         buttons={buttons}
         dark={dark}
       />
@@ -385,18 +437,22 @@ function PhoneIcon() {
   );
 }
 
-/** «Map» and «Data»: a thumb's height, not the smallest a control may be. */
+/** «Compass», «Map» and «Data»: a thumb's height, not the smallest a
+ * control may be. */
 export const PAGE_TAB_HEIGHT = MIN_TAP_SIZE + space.md;
 
 const PAGES: readonly { page: RunPage; title: string }[] = [
+  { page: "compass", title: tLater("Compass") },
   { page: "map", title: tLater("Map") },
   { page: "data", title: tLater("Data") },
 ];
 
 /**
- * The two pages by name, in the order they lie in: touched, or swiped to.
- * Two buttons as wide as the card and taller than the smallest tap (TASK-186):
- * they are hit while running, without looking for them.
+ * The three pages by name, in the order they lie in: touched, or swiped to.
+ * Three buttons as wide as the card and taller than the smallest tap
+ * (TASK-186): they are hit while running, without looking for them. Each
+ * has its drawing over its name (TASK-431, ADR-0359); the page open is
+ * lighter, its drawing blue (`you`) and a blue line under it.
  */
 function PageTabs({
   page,
@@ -418,9 +474,17 @@ function PageTabs({
             accessibilityState={{ selected }}
             accessibilityLabel={t(each.title)}
           >
+            <RunPageGlyph
+              page={each.page}
+              tint={selected ? color.you : color.textMuted}
+            />
             <Text style={[styles.tabText, selected && styles.tabTextSelected]}>
               {t(each.title)}
             </Text>
+            <View
+              testID={selected ? "run-page-tab-line" : undefined}
+              style={[styles.tabLine, selected && styles.tabLineSelected]}
+            />
           </Pressable>
         );
       })}
@@ -430,13 +494,18 @@ function PageTabs({
 
 type DataProps = {
   open: boolean;
-  onClose: () => void;
+  /** The page has slid away: the one it leaves for. */
+  onClose: (page: RunPage) => void;
   track: Track;
   numbers: RunNumbers;
+  /** The watch's heart rate, as the card has it; null for none. */
+  bpm: number | null;
   /** The game's line, as the card has it; null for none. */
   game: string | null;
   route?: RouteProgress;
   heading?: ReactNode;
+  /** «Share live», or «Sharing live» (TASK-424 part B1). */
+  share: ReactNode;
   buttons: ReactNode;
   dark: ReactNode;
 };
@@ -444,17 +513,20 @@ type DataProps = {
 /**
  * «Data»: the page with every number and no map. It lies to the right of
  * the map and slides over it; a swipe to the right, or «Map», slides it
- * back. The run's switches live here: they are set once, not while running;
- * under «Voice», the language and the voice it speaks with (TASK-209).
+ * back, «Compass» slides it back and opens that page. The run's switches
+ * live here: they are set once, not while running; under «Voice», the
+ * language and the voice it speaks with (TASK-209).
  */
 function DataPage({
   open,
   onClose,
   track,
   numbers,
+  bpm,
   game,
   route,
   heading,
+  share,
   buttons,
   dark,
 }: DataProps) {
@@ -476,13 +548,14 @@ function DataPage({
   }, [open, width, x]);
 
   const toMap = useMemo(() => {
-    /** The page slides away, then it is closed: never cut short. */
-    const close = () =>
+    /** The page slides away, then it is closed: never cut short. A swipe
+     * leaves for «Map», next to it; a name touched for its page. */
+    const close = (to: RunPage = "map") =>
       Animated.timing(x, {
         toValue: width,
         duration: SLIDE_MS,
         useNativeDriver: true,
-      }).start(onClose);
+      }).start(() => onClose(to));
     /** The page slides back where it was: a swipe too short, or taken. */
     const stay = () =>
       Animated.timing(x, {
@@ -497,7 +570,7 @@ function DataPage({
         // The page follows the finger to the right.
         onPanResponderMove: (_event, { dx }) => x.setValue(Math.max(0, dx)),
         onPanResponderRelease: (_event, { dx, dy }) => {
-          if (swipedTo(dx, dy) === "map") {
+          if (swipedTo(dx, dy, "data") === "map") {
             close();
           } else {
             stay();
@@ -517,7 +590,7 @@ function DataPage({
       transparent
       animationType="none"
       statusBarTranslucent
-      onRequestClose={toMap.close}
+      onRequestClose={() => toMap.close()}
     >
       <Animated.View
         style={[
@@ -546,11 +619,16 @@ function DataPage({
           <Kilometres numbers={numbers} hero />
           {route && <RouteBar route={route} numbers={numbers} />}
           <RunGrid numbers={numbers} />
+          {/* Every number of the run, the heart rate too (TASK-424 part
+              C1, the user's choice): «Map» keeps it under its three. */}
+          <WatchHeart bpm={bpm} />
           <RunGameLine text={game} />
+          {open && share}
           <Splits
             track={track}
             ride={numbers.ride}
             paddle={numbers.paddle}
+            swim={numbers.swim}
             units={numbers.units}
           />
           <View style={styles.switches}>
@@ -559,12 +637,15 @@ function DataPage({
               on={control.autoPause}
               onChange={setAutoPause}
             />
-            <Switch label={t("Voice")} on={control.voice} onChange={setVoice} />
+            {/* A swim says nothing (TASK-323 D): no voice to switch. */}
+            {!numbers.swim && (
+              <Switch label={t("Voice")} on={control.voice} onChange={setVoice} />
+            )}
           </View>
-          <VoiceSetting />
+          {!numbers.swim && <VoiceSetting />}
         </ScrollView>
         {buttons}
-        <PageTabs page="data" onPage={(page) => page === "map" && toMap.close()} />
+        <PageTabs page="data" onPage={(page) => page !== "data" && toMap.close(page)} />
         {dark}
       </Animated.View>
     </Modal>
@@ -606,11 +687,17 @@ function splitChange(row: Split, ride: boolean): string {
 
 /** What a row of the splits is read as: "Kilometre 2: 5:30", on a bike
  * "Kilometre 2: 24.3 km/h"; with miles "Mile 2: 8:51", "Mile 2: 15.1 mph".
- * On the water, with miles too, "1000 metres: 5:10" (TASK-251). */
-function splitName(row: Split, ride: boolean, paddle: boolean, units: Units): string {
-  if (paddle) {
+ * On the water, with miles too, "1000 metres: 5:10" (TASK-251); a swim's
+ * "300 metres: 2:05" (TASK-323 D). */
+function splitName(
+  row: Split,
+  ride: boolean,
+  waterM: number | null,
+  units: Units,
+): string {
+  if (waterM !== null) {
     return t("{metres} metres: {pace}", {
-      metres: row.km * PADDLE_PACE_M,
+      metres: row.km * waterM,
       pace: paceClock(row.seconds),
     });
   }
@@ -627,33 +714,45 @@ function splitName(row: Split, ride: boolean, paddle: boolean, units: Units): st
 /** Each whole kilometre, its pace, and how it went against the one before;
  * a bar beside each, longer the faster it was (TASK-204). On a bike, the
  * speed (TASK-216). With miles, each whole mile (TASK-182). On the water,
- * each 500 m and their time, a paddler's pace, with miles too (TASK-251). */
+ * each 500 m and their time, a paddler's pace, with miles too (TASK-251);
+ * swum, each 100 m (TASK-323 D). */
 function Splits({
   track,
   ride,
   paddle,
+  swim,
   units,
 }: {
   track: Track;
   ride: boolean;
   paddle: boolean;
+  swim: boolean;
   units: Units;
 }) {
-  const everyM = paddle ? PADDLE_PACE_M : metresPer(units);
+  // The metres of a row on the water; null elsewhere.
+  const waterM = paddle ? PADDLE_PACE_M : swim ? SWIM_PACE_M : null;
+  const water = waterM !== null;
+  const everyM = waterM ?? metresPer(units);
   const rows = useMemo(() => splits(track, everyM), [track, everyM]);
   // On the water a row is named by its metres, "1500": wider than a "12".
-  const nameStyle = paddle ? styles.splitMetres : styles.splitKm;
+  const nameStyle = water ? styles.splitMetres : styles.splitKm;
   const fastest = Math.min(...rows.map((row) => row.seconds));
   const slowest = Math.max(...rows.map((row) => row.seconds));
   return (
     <View style={styles.splits}>
       <View style={styles.splitRow}>
         <Text style={[styles.splitHead, nameStyle]}>
-          {paddle ? "m" : units === "mi" ? t("Mi") : t("Km")}
+          {water ? "m" : units === "mi" ? t("Mi") : t("Km")}
         </Text>
         <View style={styles.splitBarCell} />
         <Text style={[styles.splitHead, styles.splitCell]}>
-          {ride ? t("Speed") : paddle ? PADDLE_PACE_UNIT : t("Pace")}
+          {ride
+            ? t("Speed")
+            : paddle
+              ? PADDLE_PACE_UNIT
+              : swim
+                ? SWIM_PACE_UNIT
+                : t("Pace")}
         </Text>
         <Text style={[styles.splitHead, styles.splitCell]}>{t("Change")}</Text>
       </View>
@@ -661,9 +760,11 @@ function Splits({
         <Text style={styles.noSplits}>
           {paddle
             ? t("Your first 500 metres will show here.")
-            : units === "mi"
-              ? t("Your first mile will show here.")
-              : t("Your first kilometre will show here.")}
+            : swim
+              ? t("Your first 100 metres will show here.")
+              : units === "mi"
+                ? t("Your first mile will show here.")
+                : t("Your first kilometre will show here.")}
         </Text>
       ) : (
         // In the page's scroll, not one of their own (TASK-268).
@@ -675,12 +776,12 @@ function Splits({
               style={styles.splitRow}
               accessible
               accessibilityLabel={
-                splitName(row, ride, paddle, units) +
+                splitName(row, ride, waterM, units) +
                 (row.change === null ? "" : `, ${splitChange(row, ride)}`)
               }
             >
               <Text style={[styles.splitText, nameStyle]}>
-                {paddle ? row.km * PADDLE_PACE_M : row.km}
+                {waterM !== null ? row.km * waterM : row.km}
               </Text>
               <View style={styles.splitBarCell}>
                 <View
@@ -931,7 +1032,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: space.xs,
     gap: space.xs,
-    borderRadius: radius.pill,
+    borderRadius: radius.lg,
     backgroundColor: color.background,
   },
   tab: {
@@ -939,23 +1040,34 @@ const styles = StyleSheet.create({
     minHeight: PAGE_TAB_HEIGHT,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: "transparent",
+    gap: space.xs / 2,
+    paddingTop: space.xs,
+    borderRadius: radius.md,
+    overflow: "hidden",
   },
-  // The page on screen is told by a lighter surface, not by yellow: that is
-  // the route's.
+  // The page on screen is told by a lighter surface and the runner's blue,
+  // not by yellow: that is the route's (TASK-431).
   tabSelected: {
     backgroundColor: color.surfaceRaised,
-    borderColor: color.borderStrong,
   },
   tabText: {
     color: color.textMuted,
-    fontSize: fontSize.input,
+    fontSize: fontSize.small,
     fontWeight: fontWeight.bold,
   },
   tabTextSelected: {
     color: color.text,
+  },
+  // A line under the page open, as wide as half the tab.
+  tabLine: {
+    width: "50%",
+    height: 3,
+    borderRadius: 2,
+    marginTop: space.xs / 2,
+    backgroundColor: "transparent",
+  },
+  tabLineSelected: {
+    backgroundColor: color.you,
   },
   // What is left between the turn and the buttons: the numbers scroll in it.
   numbers: {

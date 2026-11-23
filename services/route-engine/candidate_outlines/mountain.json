@@ -1,0 +1,56 @@
+{
+  "name": "mountain",
+  "source": "two mountain peaks, the higher with snow (TASK-418)",
+  "license": "drawn for ShapeRoute, no third-party rights",
+  "category": "symbols",
+  "points": [
+    [
+      -0.2,
+      0.9
+    ],
+    [
+      0.18,
+      0.15
+    ],
+    [
+      0.45,
+      0.5
+    ],
+    [
+      1.0,
+      -0.7
+    ],
+    [
+      -1.0,
+      -0.7
+    ],
+    [
+      -0.2,
+      0.9
+    ]
+  ],
+  "pieces": [
+    [
+      [
+        -0.35,
+        0.35
+      ],
+      [
+        -0.25,
+        0.45
+      ],
+      [
+        -0.15,
+        0.35
+      ],
+      [
+        -0.05,
+        0.45
+      ],
+      [
+        -0.01,
+        0.37
+      ]
+    ]
+  ]
+}

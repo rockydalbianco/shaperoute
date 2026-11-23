@@ -1,0 +1,314 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import catalog from "../fixtures/gym-exercises.json" with { type: "json" };
+import gymCalendar from "../fixtures/gym-calendar.json" with { type: "json" };
+import gymLeaderboard from "../fixtures/gym-leaderboard.json" with { type: "json" };
+import gymLevels from "../fixtures/gym-levels.json" with { type: "json" };
+import gymPlans from "../fixtures/gym-plans.json" with { type: "json" };
+import runActivities from "../fixtures/run-activities.json" with { type: "json" };
+import session from "../fixtures/gym-session.json" with { type: "json" };
+import byHand from "../fixtures/gym-session-manual.json" with { type: "json" };
+import withHeart from "../fixtures/gym-session-heart.json" with { type: "json" };
+import {
+  GYM_LEVEL_MEASURES,
+  GYM_SOURCES,
+  GYM_OUTING_KINDS,
+  GYM_OUTING_SPORTS,
+  GYM_PLAN_FEELS,
+  GYM_PLAN_MODES,
+  GYM_RUN_KINDS,
+  GYM_SET_KINDS,
+  HEART_BPM_MAX,
+  HEART_BPM_MIN,
+  MAX_GYM_ADAPT_STEPS,
+  MAX_GYM_PLAN_ITEMS,
+  MAX_GYM_PLAN_WEEKS,
+  MAX_GYM_PLANS,
+  MAX_GYM_PROGRAM_ITEMS,
+  type GymCalendar,
+  type GymLeaderboard,
+  type GymLevel,
+  type GymPlans,
+  type GymSessionRequest,
+  type GymSetKind,
+  RUN_ACTIVITIES,
+  RUN_SOURCES,
+  TRACKLESS_ACTIVITIES,
+  type TracklessActivity,
+} from "../src/index.ts";
+import { TRACKLESS_SPORTS } from "../src/sports/index.ts";
+
+// The same fixtures are checked by the API's test_gym_catalog.py and
+// test_gym.py (TASK-385, ADR-0327).
+
+test("a workout at the gym is the activity saved without a track", () => {
+  assert.deepEqual([...TRACKLESS_ACTIVITIES], runActivities.trackless_activities);
+  // A stretching session after it (TASK-475).
+  assert.deepEqual(
+    TRACKLESS_SPORTS.map((sport) => sport.trackless),
+    [true, true],
+  );
+  // One of RUN_ACTIVITIES since the app shows a post without a line (B0),
+  // after all those with a track.
+  assert.deepEqual(RUN_ACTIVITIES.slice(-TRACKLESS_ACTIVITIES.length), [
+    ...TRACKLESS_ACTIVITIES,
+  ]);
+  const gym: TracklessActivity = "gym";
+  assert.equal(gym, "gym");
+});
+
+test("the example workout is a request of the contract", () => {
+  const request: GymSessionRequest = {
+    ...session,
+    sets: session.sets.map((item) => ({ ...item, kind: item.kind as GymSetKind })),
+  };
+  assert.ok(Date.parse(request.ended_at) > Date.parse(request.started_at));
+  for (const item of request.sets ?? []) {
+    assert.ok(GYM_SET_KINDS.includes(item.kind));
+    assert.ok((item.exercise === undefined) !== (item.name === undefined));
+  }
+});
+
+test("a workout with its heart rate: both, in range, the average not above (part G)", () => {
+  const request: GymSessionRequest = {
+    ...withHeart,
+    sets: withHeart.sets.map((item) => ({ ...item, kind: item.kind as GymSetKind })),
+  };
+  const { heart_avg_bpm, heart_max_bpm } = request;
+  assert.ok(heart_avg_bpm !== undefined && heart_max_bpm !== undefined);
+  assert.ok(HEART_BPM_MIN <= heart_avg_bpm && heart_avg_bpm <= heart_max_bpm);
+  assert.ok(heart_max_bpm <= HEART_BPM_MAX);
+  assert.equal(request.heart_shown, true);
+  // The same workout as the example, with its heart rate added.
+  const { heart_avg_bpm: _a, heart_max_bpm: _m, heart_shown: _s, ...rest } = withHeart;
+  assert.deepEqual(rest, session);
+  // The other examples say nothing of it, as an app before part G.
+  assert.ok(!("heart_avg_bpm" in session) && !("heart_avg_bpm" in byHand));
+});
+
+test("a workout written by hand has sets none of them live, and no timer", () => {
+  const source = GYM_SOURCES.find((s) => s === byHand.source);
+  assert.equal(source, "manual");
+  const request: GymSessionRequest = {
+    ...byHand,
+    source,
+    sets: byHand.sets.map((item) => ({ ...item, kind: item.kind as GymSetKind })),
+  };
+  const length_s =
+    (Date.parse(request.ended_at) - Date.parse(request.started_at)) / 1000;
+  assert.ok(length_s > 0);
+  assert.ok((request.sets ?? []).length > 0);
+  for (const item of request.sets ?? []) {
+    assert.equal(item.live, false);
+    assert.ok(item.at_s <= length_s);
+  }
+  assert.ok(!("pauses" in byHand) && !("rests" in byHand) && !("plan" in byHand));
+  // Every source of a workout is a source of a run (TASK-312).
+  assert.ok(GYM_SOURCES.every((s) => (RUN_SOURCES as readonly string[]).includes(s)));
+  // The recorded example says nothing of it, as an older app.
+  assert.ok(!("source" in session));
+});
+
+test("the catalog names each exercise once, of a kind and a scale it has", () => {
+  const keys = catalog.exercises.map((exercise) => exercise.key);
+  assert.equal(keys.length, 95);
+  assert.equal(new Set(keys).size, keys.length);
+  for (const exercise of catalog.exercises) {
+    assert.ok(
+      (GYM_SET_KINDS as readonly string[]).includes(exercise.kind),
+      exercise.key,
+    );
+    if (exercise.scale !== null) {
+      assert.ok(exercise.scale in catalog.scales, exercise.key);
+    }
+  }
+  for (const scale of Object.values(catalog.scales)) {
+    assert.equal(scale.levels.length, catalog.figures.length);
+    assert.deepEqual(
+      [...scale.levels].sort((a, b) => a - b),
+      scale.levels,
+    );
+  }
+});
+
+test("a level on the profile is the one its value reaches on its scale", () => {
+  const levels = gymLevels.gym_levels as GymLevel[];
+  assert.ok(levels.length > 0);
+  const scales: Record<
+    string,
+    { measure: string; levels: number[]; cap: number | null }
+  > = catalog.scales;
+  for (const level of levels) {
+    assert.ok(GYM_LEVEL_MEASURES.includes(level.measure));
+    const exercise = catalog.exercises.find((item) => item.key === level.exercise);
+    assert.ok(exercise?.scale, level.exercise);
+    const scale = scales[exercise.scale];
+    assert.equal(scale.measure, level.measure);
+    const reached = scale.levels.filter((step) => level.value >= step).length;
+    assert.equal(level.level, reached, level.exercise);
+    assert.ok(level.level >= 1 && level.level <= catalog.figures.length);
+  }
+  // The highest level first.
+  const order = levels.map((level) => level.level);
+  assert.deepEqual(
+    order,
+    [...order].sort((a, b) => b - a),
+  );
+});
+
+test("a leaderboard ranks the best first, measured as its exercise's scale", () => {
+  const board: GymLeaderboard = {
+    ...gymLeaderboard,
+    measure: gymLeaderboard.measure as GymLeaderboard["measure"],
+  };
+  const exercise = catalog.exercises.find((item) => item.key === board.exercise);
+  assert.ok(exercise?.scale);
+  const scales: Record<string, { measure: string }> = catalog.scales;
+  assert.equal(scales[exercise.scale].measure, board.measure);
+  assert.match(board.month, /^\d{4}-(0[1-9]|1[0-2])$/);
+  const ranks = board.rows.map((row) => row.rank);
+  assert.deepEqual(
+    ranks,
+    [...ranks].sort((a, b) => a - b),
+  );
+  const values = board.rows.map((row) => row.value);
+  assert.deepEqual(
+    values,
+    [...values].sort((a, b) => b - a),
+  );
+  assert.ok(board.people >= board.rows.length);
+  assert.ok(board.rows.some((row) => row.rank === board.mine?.rank));
+});
+
+test("a calendar lists its days in order, and its count and time add up", () => {
+  const calendar: GymCalendar = gymCalendar;
+  assert.match(calendar.month, /^\d{4}-(0[1-9]|1[0-2])$/);
+  const days = calendar.days.map((day) => day.day);
+  assert.deepEqual(
+    days,
+    [...days].sort((a, b) => a - b),
+  );
+  const workouts = calendar.days.flatMap((day) => day.workouts);
+  assert.ok(calendar.days.every((day) => day.workouts.length > 0));
+  assert.equal(calendar.count, workouts.length);
+  assert.equal(
+    calendar.duration_s,
+    workouts.reduce((total, workout) => total + workout.duration_s, 0),
+  );
+  assert.deepEqual(calendar.last, workouts.at(-1));
+  for (const skipped of calendar.skipped ?? []) {
+    assert.ok(
+      !calendar.days.some(
+        (day) =>
+          day.day === skipped.day && day.workouts.some((w) => w.plan === skipped.plan),
+      ),
+    );
+  }
+});
+
+test("a plan's days are of the week once, its exercises of the catalog and its kind", () => {
+  const plans = gymPlans as GymPlans;
+  assert.ok(plans.plans.length <= MAX_GYM_PLANS);
+  for (const plan of plans.plans) {
+    assert.ok(plan.name.length >= 1 && plan.name.length <= 40);
+    assert.ok(plan.days.every((day) => day >= 1 && day <= 7));
+    assert.equal(new Set(plan.days).size, plan.days.length);
+    assert.ok(plan.items.length <= MAX_GYM_PLAN_ITEMS);
+    const program = plan.program ?? null;
+    const sessions =
+      program === null
+        ? []
+        : [...program.sessions, ...program.custom.flatMap((week) => week.sessions)];
+    const items = [...plan.items, ...sessions.flatMap((one) => one.items)];
+    for (const item of items) {
+      assert.ok(item.sets >= 1 && item.sets <= 20);
+      assert.ok((item.exercise === undefined) !== (item.name === undefined));
+      if (item.exercise !== undefined) {
+        const exercise = catalog.exercises.find((one) => one.key === item.exercise);
+        assert.equal(exercise?.kind, item.kind);
+      }
+    }
+    if (program !== null) {
+      // The days kept are the program's, its weeks of its cycle.
+      assert.deepEqual(plan.days, [...new Set(sessions.map((one) => one.day))].sort());
+      assert.ok(program.weeks >= 1 && program.weeks <= MAX_GYM_PLAN_WEEKS);
+      assert.ok((GYM_PLAN_MODES as readonly string[]).includes(program.mode));
+      assert.ok(
+        program.custom.every((week) => week.week >= 2 && week.week <= program.weeks),
+      );
+      assert.ok(sessions.length > 0 && items.length <= MAX_GYM_PROGRAM_ITEMS);
+      if (program.runner !== undefined) {
+        // A pace of 3:00 to 15:00 a km; the long run a distance or a time.
+        const { pace_10k_s, long_m, long_s } = program.runner;
+        assert.ok(pace_10k_s >= 180 && pace_10k_s <= 900);
+        assert.ok((long_m === undefined) !== (long_s === undefined));
+      }
+      if (program.adapt !== undefined) {
+        // A planned day once, within 24 steps, «hard» up to 2 in a row.
+        const days = program.adapt.days.map((one) => one.day);
+        assert.equal(new Set(days).size, days.length);
+        for (const one of program.adapt.days) {
+          assert.ok(plan.days.includes(one.day));
+          assert.ok(Math.abs(one.steps) <= MAX_GYM_ADAPT_STEPS);
+          assert.ok(one.hard >= 0 && one.hard <= 2);
+          assert.ok((GYM_PLAN_FEELS as readonly string[]).includes(one.last));
+        }
+      }
+      for (const session of sessions) {
+        if (session.run !== undefined) {
+          // A run day has no exercises, and a distance, a time or its reps.
+          assert.equal(session.items.length, 0);
+          assert.ok((GYM_RUN_KINDS as readonly string[]).includes(session.run.kind));
+          const { distance_m, duration_s, reps } = session.run;
+          assert.ok(
+            session.run.kind === "intervals"
+              ? reps !== undefined
+              : (distance_m === undefined) !== (duration_s === undefined),
+          );
+        }
+        if (session.outing !== undefined) {
+          // A day out (TASK-461 B): no exercises, no run; its sport and kind;
+          // a distance or a time, its reps, or a hike's climb; a swim's water.
+          const outing = session.outing;
+          assert.equal(session.items.length, 0);
+          assert.equal(session.run, undefined);
+          assert.ok((GYM_OUTING_SPORTS as readonly string[]).includes(outing.sport));
+          assert.ok((GYM_OUTING_KINDS as readonly string[]).includes(outing.kind));
+          if (outing.kind === "intervals") {
+            assert.ok(outing.reps !== undefined);
+            assert.ok((outing.rep_m === undefined) !== (outing.rep_s === undefined));
+          } else if (outing.kind === "climb") {
+            assert.equal(outing.sport, "hike");
+            assert.ok(outing.climb_m !== undefined);
+          } else {
+            assert.ok(
+              (outing.distance_m === undefined) !== (outing.duration_s === undefined),
+            );
+          }
+          assert.equal(outing.pool !== undefined, outing.sport === "swim");
+          // Its name says the sport and the amount: an older app shows it.
+          assert.ok(session.name.length > 0);
+        }
+      }
+      if (program.target !== undefined) {
+        // What it leads to: a distance, or a hike's climb.
+        const { sport, distance_m, climb_m } = program.target;
+        assert.ok((distance_m === undefined) !== (climb_m === undefined));
+        assert.ok(climb_m === undefined || sport === "hike");
+      }
+    }
+  }
+  const outings = plans.plans.flatMap((plan) =>
+    (plan.program?.sessions ?? []).flatMap((one) =>
+      one.outing === undefined ? [] : [one],
+    ),
+  );
+  // The example has a ride, a pool swim, a brisk walk and a climb.
+  assert.deepEqual([...new Set(outings.map((one) => one.outing?.sport))].sort(), [
+    "bike",
+    "hike",
+    "swim",
+    "walk",
+  ]);
+});

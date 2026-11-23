@@ -1,16 +1,26 @@
-import type { DrawingPhoto } from "@shaperoute/shared-types";
+import type { DrawingPhoto, LatLon } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 
+import { useActivitiesDoor } from "../activities/activitiesDoor";
+import { isTrackless } from "../activities/snow";
 import {
   choiceOf as choiceOfDrawing,
   type DrawingChoice,
   isSeen,
   sameChoice,
 } from "../api/drawings";
+import { tileLast } from "../gym/GymPostForm";
+import { ShowExercises } from "../gym/ShowExercises";
 import { t } from "../i18n";
+import { GYM_MAX_PHOTOS } from "../sports/gym";
 import { space } from "../theme/tokens";
+import type { PostLayout } from "./composer/layoutFrame";
+import type { ComposerPhoto } from "./composer/PostComposer";
+import { itemsOf, orderOf as orderOfItems, type PostItem } from "./composer/postOrder";
+import { phonePhotoUri } from "./drawingPhotos";
 import { type ChoiceShown, type PhotoShown, useDrawingsDoor } from "./drawingsDoor";
+import { OutfitTaggingContext, useRunOutfits } from "./outfit/OutfitTagging";
 import {
   DrawingForm,
   FormScroll,
@@ -23,11 +33,23 @@ import {
 
 type Line = { text: string; alert: boolean };
 
-/** How much of the screen the form may take on the card. */
+/** How much of the screen the form may take, unless told. */
 export const CARD_FORM_SHARE = 0.4;
 
 type Props = {
   activityKey: string;
+  /** A run from a file of another app: it cannot enter a monthly challenge. */
+  imported?: boolean;
+  /** The run's line and turn: with them, a photo added here can carry its
+   * drawing (TASK-348). */
+  track?: readonly LatLon[] | null;
+  rotationDeg?: number | null;
+  /** How much of the screen the form may take: more in the sheet «Edit
+   * post» than on a card (TASK-456). */
+  formShare?: number;
+  /** The post's title as the form has it now, once the API said what was
+   * chosen and at every change: the run's card shows it (TASK-456). */
+  onTitle?: (title: string | null) => void;
   /** The fakes of the tests. */
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
@@ -36,7 +58,7 @@ type Props = {
 
 /**
  * The form of the drawing on a run of «My activities» (TASK-117, TASK-208),
- * on its card: to open the run to the others after the end of the run,
+ * in the sheet «Edit post» of its card (TASK-456): to open the run to the others after the end of the run,
  * change its title, its description, its photos, the people tagged, what
  * it was, or take it back. Nothing until the API says what was chosen;
  * nothing at all from an API without drawings. The title and the
@@ -45,8 +67,26 @@ type Props = {
  * they go to the API while others see the run, and come back here when
  * only the owner does (ADR-0170).
  */
-export function PublicRow({ activityKey, pick, fetchFn, apiKey }: Props) {
-  const { choiceOf, choose, photosOf, keepPhotoOf, removePhotoOf } = useDrawingsDoor();
+export function PublicRow({
+  activityKey,
+  imported,
+  track,
+  rotationDeg,
+  formShare = CARD_FORM_SHARE,
+  onTitle,
+  pick,
+  fetchFn,
+  apiKey,
+}: Props) {
+  const {
+    choiceOf,
+    choose,
+    photosOf,
+    keepPhotoOf,
+    removePhotoOf,
+    orderOf,
+    keepOrderOf,
+  } = useDrawingsDoor();
   const { height } = useWindowDimensions();
   const [shown, setShown] = useState<ChoiceShown | null>(null);
   // As the form has it, and as the API last had it.
@@ -59,6 +99,11 @@ export function PublicRow({ activityKey, pick, fetchFn, apiKey }: Props) {
     setKeptState(next);
   }
   const [apiPhotos, setApiPhotos] = useState<DrawingPhoto[]>([]);
+  const [apiOrder, setApiOrder] = useState<string[] | null>(null);
+  // The photos added on this card, as taken: their layout can still change
+  // until it closes (TASK-348; then the picture is what was published).
+  const [taken, setTaken] = useState<ReadonlyMap<number, string>>(new Map());
+  const [layouts, setLayouts] = useState<ReadonlyMap<number, PostLayout>>(new Map());
   // Counted up to show the photos of the phone again after a change.
   const [changed, setChanged] = useState(0);
   const [busy, setBusy] = useState(0);
@@ -74,6 +119,26 @@ export function PublicRow({ activityKey, pick, fetchFn, apiKey }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [activityKey, apiPhotos, changed, loaded, photosOf],
   );
+  const items: PostItem[] = useMemo(
+    () => {
+      const order = orderOf(activityKey, apiOrder);
+      const pages = itemsOf(
+        order,
+        photos.map((photo) => photo.n),
+      );
+      // A workout never ordered has its tile last (TASK-385 part D).
+      return order === null && choice !== null && isTrackless(choice.activity)
+        ? tileLast(pages)
+        : pages;
+    },
+    // `changed` says the files changed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activityKey, apiOrder, changed, orderOf, photos, choice?.activity],
+  );
+  // The items tagged on the photos (TASK-394 part B): sent as a photo is.
+  const outfit = useRunOutfits(useActivitiesDoor().owner, activityKey, apiPhotos, () =>
+    photosChanged(),
+  );
 
   useEffect(() => {
     live.current = true;
@@ -86,6 +151,7 @@ export function PublicRow({ activityKey, pick, fetchFn, apiKey }: Props) {
         setChoice(answer.choice);
         setKept(answer.choice);
         setApiPhotos(answer.photos);
+        setApiOrder(answer.order ?? null);
         setLine(
           answer.waiting
             ? { text: waitingText(answer.choice.visibility), alert: false }
@@ -97,6 +163,14 @@ export function PublicRow({ activityKey, pick, fetchFn, apiKey }: Props) {
       live.current = false;
     };
   }, [activityKey, choiceOf]);
+
+  // The title the form has, said to the card.
+  const title = choice === null ? undefined : choice.title;
+  useEffect(() => {
+    if (title !== undefined) {
+      onTitle?.(title);
+    }
+  }, [onTitle, title]);
 
   if (shown === null || shown.kind === "off" || choice === null || kept === null) {
     return null;
@@ -125,9 +199,17 @@ export function PublicRow({ activityKey, pick, fetchFn, apiKey }: Props) {
       switch (chosen.kind) {
         case "saved": {
           const now = choiceOfDrawing(chosen.drawing);
-          setKept(now);
+          // The API's answer says nothing of the challenge. An entry refused
+          // goes back to what it was, in the form too.
+          const entry =
+            chosen.entryProblem === undefined ? next.entry : keptRef.current?.entry;
+          setKept({ ...now, ...(entry === undefined ? {} : { entry }) });
           setApiPhotos(chosen.drawing.photos ?? []);
-          if (photosLeave) {
+          setApiOrder(chosen.drawing.order ?? null);
+          if (chosen.entryProblem !== undefined) {
+            setChoice((was) => (was === null ? was : { ...was, entry }));
+            setLine({ text: chosen.entryProblem, alert: true });
+          } else if (photosLeave) {
             setLine({ text: t(PHOTOS_LEAVE), alert: false });
           }
           return;
@@ -148,6 +230,8 @@ export function PublicRow({ activityKey, pick, fetchFn, apiKey }: Props) {
 
   const current = choice;
   const last = kept;
+  // A workout at the gym (TASK-385 part D): ten photos, and its switch.
+  const gym = isTrackless(current.activity);
 
   /** A change of the chips or the tags goes at once; the text when typing
    * is over. */
@@ -164,6 +248,26 @@ export function PublicRow({ activityKey, pick, fetchFn, apiKey }: Props) {
     }
   }
 
+  /** A change of the photos or their order: to the API now while others
+   * see the run, else shown again from the phone. */
+  function photosChanged() {
+    if (isSeen(last.visibility)) {
+      apply(last);
+    } else {
+      setChanged((count) => count + 1);
+    }
+  }
+
+  const composed: ComposerPhoto[] = photos.map((photo) => {
+    const original = taken.get(photo.n);
+    return {
+      n: photo.n,
+      source: photo.source,
+      layout: layouts.get(photo.n) ?? null,
+      original: original === undefined ? null : { uri: phonePhotoUri(original) },
+    };
+  });
+
   function onTextDone() {
     if (!sameChoice(current, last)) {
       apply(current);
@@ -172,42 +276,97 @@ export function PublicRow({ activityKey, pick, fetchFn, apiKey }: Props) {
 
   return (
     <View style={styles.block}>
-      <FormScroll maxHeight={Math.round(height * CARD_FORM_SHARE)}>
-        <DrawingForm
-          choice={current}
-          onChoice={onChoice}
-          onTextDone={onTextDone}
-          photos={photos}
-          onAddPhoto={(base64) => {
-            const n = nextPlace(photos);
-            if (n === null || !keepPhotoOf(activityKey, n, base64)) {
-              setLine({
-                text: t("This photo could not be kept on the phone. Try again."),
-                alert: true,
+      <FormScroll maxHeight={Math.round(height * formShare)}>
+        <OutfitTaggingContext.Provider value={outfit}>
+          <DrawingForm
+            choice={current}
+            onChoice={onChoice}
+            onTextDone={onTextDone}
+            items={items}
+            photos={composed}
+            onOrder={(next) => {
+              if (!keepOrderOf(activityKey, orderOfItems(next))) {
+                setLine({
+                  text: t("This photo could not be kept on the phone. Try again."),
+                  alert: true,
+                });
+                return;
+              }
+              photosChanged();
+            }}
+            onAddPhotos={(added) => {
+              const places = photos.map((photo) => ({ n: photo.n }));
+              const kept = new Map(taken);
+              let refused = false;
+              for (const base64 of added) {
+                const n = nextPlace(places, gym ? GYM_MAX_PHOTOS : undefined);
+                if (n === null) {
+                  break;
+                }
+                if (!keepPhotoOf(activityKey, n, base64)) {
+                  refused = true;
+                  break;
+                }
+                places.push({ n });
+                kept.set(n, base64);
+              }
+              setTaken(kept);
+              if (refused) {
+                setLine({
+                  text: t("This photo could not be kept on the phone. Try again."),
+                  alert: true,
+                });
+              }
+              // While others see the run, the photos go to the API now.
+              photosChanged();
+            }}
+            onRemovePhoto={(n) => {
+              const photo = photos.find((other) => other.n === n);
+              removePhotoOf(activityKey, n, photo !== undefined && !photo.onPhone);
+              setApiPhotos((was) => was.filter((other) => other.n !== n));
+              photosChanged();
+            }}
+            track={track}
+            rotationDeg={rotationDeg}
+            onLayout={(n, layout, made) => {
+              const original = taken.get(n);
+              if (original === undefined) {
+                return;
+              }
+              if (!keepPhotoOf(activityKey, n, made?.base64 ?? original)) {
+                setLine({
+                  text: t("This photo could not be kept on the phone. Try again."),
+                  alert: true,
+                });
+                return;
+              }
+              setLayouts((was) => {
+                const next = new Map(was);
+                if (made === null || layout === null) {
+                  next.delete(n);
+                } else {
+                  next.set(n, layout);
+                }
+                return next;
               });
-              return;
+              photosChanged();
+            }}
+            disabled={busy > 0}
+            imported={imported}
+            extra={
+              gym ? (
+                <ShowExercises
+                  gymKey={activityKey}
+                  disabled={busy > 0}
+                  fetchFn={fetchFn}
+                />
+              ) : undefined
             }
-            // While others see the run, the photo goes to the API now.
-            if (isSeen(last.visibility)) {
-              apply(last);
-            } else {
-              setChanged((count) => count + 1);
-            }
-          }}
-          onRemovePhoto={(photo) => {
-            removePhotoOf(activityKey, photo.n, !photo.onPhone);
-            setApiPhotos((was) => was.filter((other) => other.n !== photo.n));
-            if (isSeen(last.visibility)) {
-              apply(last);
-            } else {
-              setChanged((count) => count + 1);
-            }
-          }}
-          disabled={busy > 0}
-          pick={pick}
-          fetchFn={fetchFn}
-          apiKey={apiKey}
-        />
+            pick={pick}
+            fetchFn={fetchFn}
+            apiKey={apiKey}
+          />
+        </OutfitTaggingContext.Provider>
       </FormScroll>
       {line !== null && <PublicLine text={line.text} alert={line.alert} />}
     </View>
@@ -215,7 +374,9 @@ export function PublicRow({ activityKey, pick, fetchFn, apiKey }: Props) {
 }
 
 const styles = StyleSheet.create({
+  // In a sheet shorter than the form (the keyboard is up), the form scrolls.
   block: {
+    flexShrink: 1,
     gap: space.sm,
     paddingTop: space.xs,
   },

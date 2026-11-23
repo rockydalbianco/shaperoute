@@ -10,9 +10,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * fill, and nothing here may be made up to fill them.
  */
 
-const UPDATED = "10 October 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C) and the figure drawn by hand (TASK-320) entered. */
-const PRIVACY_UPDATED = "28 October 2026";
+const UPDATED = "10 November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the replies and the reactions to a comment (TASK-454 C). Redated for the group runs among the reports (TASK-309 B). Redated for the posts of photos only (TASK-312 C2). «From a file» for the «+» of the Feed, which also records now (TASK-481 A). A gym plan shared in the Feed (TASK-485 B). Gear (TASK-486). The heart rate of a workout at the gym (TASK-385 G3). */
+const PRIVACY_UPDATED = "23 November 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -23,7 +23,7 @@ const help: AboutDocument = {
       heading: "What MuW is",
       blocks: [
         "MuW draws real routes that trace a shape on the map. You choose the shape, the distance and where to start; you get a route on real streets, with its GPX file.",
-        "The app has four pages side by side, «Feed», «Draw», «Explore» and your profile: swipe left or right, or tap a name at the top. The circle at the top takes you to your profile.",
+        "At the bottom there are five tabs: «Feed», «Draw», «Messages», «Explore» and your profile, the circle with your picture. Tap a tab to go there, tap it again to go back to the top. «Settings» is under the gear at the top right of your profile.",
       ],
     },
     {
@@ -72,7 +72,9 @@ const help: AboutDocument = {
     {
       heading: "Publish and share",
       blocks: [
-        "A saved run is private: only you see it. Other members see on your profile only the totals of all your saved runs, distance and elevation gain, never the runs themselves. Turn on «Public», at the end of the run or on a run in «My activities», and the other members see it as a drawing on your profile, without its first and last 200 m.",
+        "A saved run is private: only you see it. Other members see on your profile the totals of all your saved runs, distance and elevation gain, and your personal bests (the 5K, the 10K and your other fastest distances, on foot and by bike) with their time and date. A private run stays closed even when it holds a best. Choose «Everyone» or «Followers» under «Who can see it», at the end of the run or on a run in «My activities», and they see it as a drawing on your profile, whole. The next run you finish starts from the last choice you saved: you see it before «Save» and can change it. An activity added from a file in «My activities» starts on «Only me»; one added from a file with the «+» of the Feed starts on «Everyone», and you can change it before «Save».",
+        "A run you publish can have up to 9 photos and the drawing. Hold one and drag it to change the order: the first is what people see in the Feed. Choose a layout to put the drawing on a photo.",
+        "On a photo you publish you can tag what you're wearing: what it is, the brand and, if you like, the model and a link to the shop. Others tap the photo to see the items and open the shop. Under your post only you see how many times they were opened.",
         "«Share» makes a picture of your run to send wherever you like.",
       ],
     },
@@ -80,7 +82,7 @@ const help: AboutDocument = {
       heading: "Feed and friends",
       blocks: [
         "«Feed» shows drawings to take ideas from: tap one to open its route and start it.",
-        "The lens at the top of «Feed» finds other members by name. On a profile you can tap «Follow»; your requests, your followers and who you follow are in «Profile».",
+        "The search at the top of «Explore» finds other members by name. On a profile you can tap «Follow»; your requests, your followers and who you follow are in «Profile».",
         "On a member's public drawing you can react with an emoji, send a super like and write a comment. Negative comments are not accepted.",
       ],
     },
@@ -88,14 +90,15 @@ const help: AboutDocument = {
       heading: "Messages",
       blocks: [
         "«Message» on a member's profile writes to them. If they follow you, your message arrives in their «Messages»; if not, it arrives as a request, and you can send one message until they accept it.",
-        "Your conversations are in «Profile», «Messages», with «Message requests» at the top. Accept a request and you both write freely; delete it (who wrote is not told), or block who wrote.",
+        "Your conversations are in «Messages», the tab with the paper plane, with «Message requests» at the top. Accept a request and you both write freely; delete it (who wrote is not told), or block who wrote.",
         "Hold a message to delete yours, for both of you, or to report one you received. Nobody sees whether you read a message. With push on, MuW tells you of each message and of each request.",
+        "In a conversation, tap + to send a photo, a video of up to 60 seconds or a drawing, or tap Send to a friend on a route or a drawing. You can send them once the other person has accepted your message. Videos are kept for 30 days, or less when our space for videos is full: the oldest go first. Tap a drawing to open it on the map, start it, export its GPX or keep it in your favorites.",
       ],
     },
     {
       heading: "Run, Bike, Paddle",
       blocks: [
-        "Choose your sport with the button next to your profile, or in «Settings».",
+        "Choose your sport with the button at the top right, or in «Settings».",
         {
           bullets: [
             "Run: up to 21 km on real streets, with the voice turn by turn.",
@@ -180,6 +183,7 @@ const terms: AboutDocument = {
           bullets: [
             "publish offensive, hateful, threatening or harassing content, in your username, bio, picture, titles or comments;",
             "publish content that is not yours to publish, or other people's personal data without their permission;",
+            "use the items you tag for spam, for links to anything other than what you are wearing, for affiliate links of your own, or for advertising you do not declare;",
             "try to break, overload or get around the service, or collect data about its members by automated means.",
           ],
         },
@@ -188,7 +192,7 @@ const terms: AboutDocument = {
     {
       heading: "What you publish",
       blocks: [
-        "Your runs, your drawings, their titles, your profile and your comments stay yours.",
+        "Your runs, your drawings, their titles, your profile and your comments stay yours. The items you tag on your photos, with their links, are part of what you publish.",
         "By publishing them you allow us to keep them and to show them in the app to the other members, only to run the service: a free, non-exclusive permission that ends when you delete the content or your account.",
         "The app does not accept comments with offensive words: an automatic word filter refuses them. We may remove content that goes against these terms. To tell us about content that should not be there, write to [contact email].",
       ],
@@ -217,7 +221,10 @@ const terms: AboutDocument = {
     },
     {
       heading: "Advertising",
-      blocks: ["MuW shows no advertising."],
+      blocks: [
+        "MuW shows posts of its own, marked «Ad · Affiliate links», with links to shops (MuW Style). If you buy through one of these links, the shop pays MuW a commission; the price for you does not change. The sale is between you and the shop: MuW does not sell these products and does not answer for their price, availability, delivery or returns. The photos of these posts are made with AI and say so: the people in them do not exist, and the items shown are similar to the products, not the products themselves. You can hide these posts from the Feed in «Settings». MuW shows no other advertising.",
+        "The links members add to the items on their posts are theirs: MuW earns nothing from them and does not answer for the products or the shops. If a brand pays you or gives you what you tag, say so in the post's description.",
+      ],
     },
     {
       heading: "Services of others",
@@ -225,9 +232,11 @@ const terms: AboutDocument = {
         {
           bullets: [
             "The maps come from OpenFreeMap and from the data of OpenStreetMap (© OpenStreetMap contributors).",
+            'The 3D animals in the video come from Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm and SahuAvdhesh on Sketchfab (CC BY 4.0), animated and adapted by MuW.',
             "Places are searched with Geoapify.",
             "If you connect Strava, the runs you send there follow Strava's own terms and privacy settings.",
             "A picture you share leaves through the phone's share sheet: the app that receives it has its own terms.",
+            "The link of a tagged item opens the shop's site in your browser: the shop has its own terms.",
           ],
         },
       ],
@@ -285,6 +294,7 @@ const privacy: AboutDocument = {
             "The day you signed up and when you confirmed that you are at least 16.",
             "The session of each phone you logged in from: the phone keeps a token in its secure storage, the server keeps only a hash of it. A session ends 90 days after its last use, or when you log out.",
             "Your three notification choices in «Settings»: «Email notifications» and «Push notifications», off until you turn them on, and «Email when I'm away», on until you turn it off. With push on, your phone's push token, whether it is an iPhone or Android and the app's language, to send you notifications through Expo's push service, which hands them to Apple or Google. A notification says who did what, with the beginning of a comment. The token goes when you turn push off, log out or delete your account.",
+            "The bell's list: who did what, on which post, challenge, contest or group run, and whether you have read it, as the push notifications tell you, even with push off. Only you see it. Each line is kept 90 days; what is no longer true, such as a reaction taken back or a post you no longer see, does not show.",
             "The app's language when you signed up, to write our emails in it.",
           ],
         },
@@ -315,7 +325,7 @@ const privacy: AboutDocument = {
     {
       heading: "Friends from your contacts",
       blocks: [
-        "Under the lens at the top of «Feed», «Find friends in your contacts» looks for the members whose number is in your phone's contacts. The app asks the phone for the contacts only when you tap it, and reads only their phone numbers: never names, emails or pictures.",
+        "In «Feed», «Find people to follow» leads to «Find friends in your contacts», which looks for the members whose number is in your phone's contacts. The app asks the phone for the contacts only when you tap it, and reads only their phone numbers: never names, emails or pictures.",
         "Each number leaves the phone coded: written with its country code and turned into a hash (SHA-256). Our server compares the codes with those of the numbers members added, answers with the members it found, and keeps nothing it received: not in the database, not in a log.",
         "A hash of a phone number is not a secret: whoever had the codes could find the numbers again by trying every possible number. That is why the real protection is that our server keeps none of them; they travel only over the encrypted connection.",
         "Your contacts' numbers are other people's data: they are compared once, to find accounts, and forgotten. To stop anyone from trying numbers one by one, the server counts the searches of each account in an hour, in memory only. Only members who added their number can be found, and never someone you blocked or who blocked you.",
@@ -331,9 +341,21 @@ const privacy: AboutDocument = {
       heading: "Your runs and their GPS tracks",
       blocks: [
         "With an account, when you tap «Save» at the end of a run the whole run goes to our server: every position with its time and height, the pauses, the route you followed, distance, duration, a score of how closely the track follows the route (worked out by our server and not shown in the app) and the name of the place. With «Discard», nothing is sent.",
-        "A saved run is private: only your account sees it. Other members see on your profile only the totals of all your saved runs, distance and elevation gain, never the runs themselves. It stays until you delete it from «My activities» or delete your account.",
-        "A run often starts and ends at your door. This is why a run becomes visible to the other members only when you turn on «Public», and then they see the track without its first and last 200 m, with the title you gave it, and without times, pauses or the planned route.",
-        "Whoever can see one of your runs can also follow it with «Start» and save that same track as a GPX file: still without its first and last 200 m and without times.",
+        "A saved run is private unless you choose otherwise: only your account sees it. An activity you add from a file with the «+» of the Feed is the exception: it starts on «Everyone», which you see before «Save» and can change. Other members see on your profile the totals of all your saved runs, distance and elevation gain, and your personal bests, on foot and by bike, with the time and the date you set them: those of a private run too, which still does not open. It stays until you delete it from «My activities» or delete your account.",
+        "If you choose «Show it», other members also see your VO₂ max on your profile. Until Apple Health comes in a later update, it is our estimate from your running bests of the last 12 months, worked out by our server. Turn it off in Settings and it disappears from your profile.",
+        "A workout at the gym is saved with its exercises, sets and weights. Other members see on your profile your milestones at the gym (the figure, the exercise and your best set), counted from all your workouts, private ones too, but never the workout. If the post of a workout is for everyone and shows its exercises, your best set of the month in each exercise may appear, with your username, on that exercise's monthly leaderboard, which other members see. Hide the post's exercises, or make it private, and it leaves the leaderboard.",
+        "Your gym plans (their names, days, exercises and target values) are kept on your phone and on your account, and they are deleted with your account. Only you see them, unless you share one in the Feed: the post is a copy of the plan as it was when you posted it, with its name, goal, days, weeks, exercises and weights. Whoever sees the post can copy the plan into their own plans. Changing or deleting your plan does not change the post; deleting the post takes it off the Feed, while copies already made stay with whoever made them. The calendar of your workouts is seen only by you.",
+        "If you add a past activity from a file, we keep its track and times like a run recorded with MuW. We do not keep the file.",
+        "A post with «Photos only» has no track, no place and no times. Its photos go to our server resized, without the data your phone adds, such as where and when they were taken. They are seen, with the title, the description and the people you tag, by «Everyone» or by your «Followers»: there is no «Only me». The choice starts from your last post, or on «Everyone», and you see it before «Post». The post stays until you delete it or your account.",
+        "A run often starts and ends at your door. This is why a run becomes visible to the other members only when «Everyone» or «Followers» is chosen under «Who can see it» when you save it, and then they see the whole track, start and end included, with the title you gave it, and without times, pauses or the planned route, except in a «Together» video (below). Your choice is kept on this phone for your next run: it starts from the last one you saved, you see it before «Save», and you can change it. An activity added from a file in «My activities» starts on «Only me»; one added from a file with the «+» of the Feed starts on «Everyone», and you can change it before «Save».",
+        "If someone tags you in the post of a run and you recorded that same run at the same time, and your run is visible to them, they can put your track in a «Together» video. Your line moves at your real pace, with your pauses, from the first start to the last finish: whoever sees the video sees how fast you went, but not the time of day or the date. Make your run «Only me» and it can no longer be used; a video already made stays as it is.",
+        "Whoever can see one of your runs can also follow it with «Start» and save that same track as a GPX file, without times.",
+        "A post for «Everyone» can also be opened with a link. You, or any member who sees the post, can share its link, and whoever has the link sees the drawing on the map, your username, the title, the sport and the distance on a web page, even without MuW: never your photos, the comments or your times. Search engines are asked not to list these pages. Turn off «Links to my posts» in Settings and no link to your posts works any more. A post for «Followers» or «Only me» never has a link.",
+        "A photo you publish can have the drawing of your run inside the picture. It is the same drawing the Feed shows.",
+        "For a day of skiing, our server compares the saved track with the lifts and pistes of OpenStreetMap, which it keeps itself, to write which ones you took and how many times. The names show on the post, for whoever can see it. Nothing goes to another service.",
+        "On the photos you publish you can tag the items you are wearing: what each one is, its brand and, if you like, its model and a link to a shop. Whoever sees the photo sees them. If the run goes back to «Only me», they leave our server with its photos and stay on this phone.",
+        "You can add your gear: shoes, a bike, skis, a helmet, anything you use. For each item we keep its kind, brand, model, the name you give it, the month you bought it, your note and its photo. The photo is kept resized, without the data your phone adds to it, such as where and when it was taken. The activities you choose for an item add their distance and time to its totals, which our server counts from your saved activities. Other members see your gear on your profile, with its totals, notes and photos, unless you turn on «Hide from profile» for an item. The sports you choose for an item and its limit are seen only by you. Your gear is deleted with your account.",
+        "For a day of skiing, the app sends our server your position rounded to about 1 km to find the nearest resort; the server asks MET Norway for the weather with the resort's position, never yours. The resort, snow and gear you add show on the post, for whoever can see it, and the snow also counts, without your name, in the resort's snow of the day.",
       ],
     },
     {
@@ -342,7 +364,7 @@ const privacy: AboutDocument = {
         {
           bullets: [
             "A route you keep in «Favorites» is stored whole, with its line, which often starts near your home. Only your account sees it, until you remove it or delete the account.",
-            "Your comments and reactions under a drawing are seen by the members who see that drawing. You can delete your own comments.",
+            "Your comments, replies and reactions under a drawing are seen by the members who see that drawing. A reaction to a comment is shown to them only as a number; the member who wrote that comment reads, in the bell, that it was you. You can delete your own comments and replies, and take back a reaction.",
             "Who you follow, who follows you and the requests to follow are kept with your account.",
           ],
         },
@@ -352,6 +374,7 @@ const privacy: AboutDocument = {
       heading: "Private messages",
       blocks: [
         "Your private messages are kept on our server: who wrote, to whom, the text and when, and for each of the two whether they accepted the conversation, when they last read it and up to when they deleted it from their view. They are not end-to-end encrypted. In the app only the two members of a conversation see it, and nobody is told whether a message was read. We keep them to give you the service you ask for (contract).",
+        "A message can carry a photo, a video or a drawing. A photo is kept resized, without the data your phone adds to it, such as where and when it was taken. A video is kept as your phone sends it, without the place it was shot, and is deleted 30 days after it was sent, or earlier, oldest first, when our space for videos is full. A drawing is a copy of the route and arrives whole, with its start: a run you send, as in the Feed, as well as a route you plan. Photos and videos are not end-to-end encrypted, are not in our backup copies, and are deleted with their message, the conversation or your account. When you report a message, the person who runs MuW sees its photo, video or drawing too.",
         "A message to someone who does not follow you arrives as a request; the first message of a request goes through the same word filter as comments.",
         "You can delete your own messages, for both of you. Deleting a conversation takes it out of your view; a message that neither of you sees any more is deleted. A block deletes the conversation; deleting your account deletes all your conversations, with the messages of both.",
         "When you report a message, the email to the person who runs MuW holds that message only, never the rest of the conversation. With push on, the notification of a message carries its beginning, through Expo's push service and Apple or Google, as for comments.",
@@ -360,7 +383,7 @@ const privacy: AboutDocument = {
     {
       heading: "Reports",
       blocks: [
-        "When you report a drawing, a comment or a profile, we keep who reported what, the reason and when. The person who runs MuW receives it by email and may hide what was reported from the other members. Nothing is deleted, and its author still sees it. Your report is never shown to the author.",
+        "When you report a drawing, a tagged item, an item of gear, a comment, a profile or a group run, we keep who reported what, the reason and when. The person who runs MuW receives it by email and may hide what was reported from the other members. Nothing is deleted, and its author still sees it. Your report is never shown to the author.",
       ],
     },
     {
@@ -378,7 +401,7 @@ const privacy: AboutDocument = {
     {
       heading: "The shape game",
       blocks: [
-        "With an account, our server works out from your saved runs on foot how many kilometres count for the game, your best times over 1, 5, 10 and 21.1 km, and the shapes you collected. Only you see your collection and your best times. If you join a team, its members see your username, your picture, the pieces of a challenge you took and the kilometres you gave to each, never your tracks, the times of your runs or where you ran. A team is found only with its code: it is never in a search. Deleting a run takes its kilometres out of the count, and the shapes you already collected stay. When you delete your account, your game data is deleted with it; in a team's challenges the pieces you ran stay for the others, without your name.",
+        "With an account, our server works out from your saved runs on foot how many kilometres count for the game, your best times over distances from 400 m to 50 km, and the shapes you collected. Only you see your collection and your best times. The game's prizes (editions, frames, titles and badges) are seen only by you, until you choose to show a frame, a title or up to 3 badges on your profile: from then on, whoever can see your profile sees them. Nothing is shown unless you choose it, and you can take them off whenever you like. For the personal challenges the app also sends, with each run, the difference between the phone's clock and UTC (the time zone, for example +1 hour), never the place: it is used to count the runs made before 8, in the evening or at the weekend, and the weeks by your own time. Only you see your personal challenges and your streak. If you join a team, its members see your username, your picture, the pieces of a challenge you took and the kilometres you gave to each, never your tracks, the times of your runs or where you ran. A team is found only with its code: it is never in a search. Deleting a run takes its kilometres out of the count, and the shapes you already collected stay. When you delete your account, your game data is deleted with it; in a team's challenges the pieces you ran stay for the others, without your name.",
       ],
     },
     {
@@ -396,16 +419,23 @@ const privacy: AboutDocument = {
     {
       heading: "Your position",
       blocks: [
-        "The phone's position is used on the phone, to start a route where you are and to follow your run. It goes to our server as the start of a route you ask for, inside a run you save, and with a search for a place, to put the places near you first.",
+        "The phone's position is used on the phone, to start a route where you are and to follow your run. It goes to our server exactly as it is as the start of a route you ask for, as the start of the shapes the app prepares for you nearby when the phone cannot draw them itself, and inside a run you save. Off the route of a run, when the phone cannot find the way back to it by itself, it goes there exactly as it is with the stretch of the route ahead, to find that way on the streets: the server does not keep them. It goes rounded to about 1 km to find the offline map around you, recommended routes, towns and drawings nearby, and to put the places near you first in a search; rounded like this it is not kept with your account. When you share an activity live, your exact position goes to our server and to whoever has the link, as described under «Sharing live».",
         "On iPhone, during a run you started, the app keeps following your position also with the phone locked or another app open, until you stop the run; the iPhone shows it with a blue mark at the top of the screen. MuW asks for the position only while you use the app, never «Always».",
         "Like any internet service, our server sees the internet (IP) address a request comes from while it answers it. The server's log does not write positions, and the database holds no IP addresses.",
         "A register of the route requests, with their start, exists to reproduce a defect. It is off on our server; switched on, it holds at most 10 MB, then the oldest lines are lost.",
       ],
     },
     {
+      heading: "Sharing live",
+      blocks: [
+        "During an activity you can tap «Share live» to create a link. While you share, our server receives every 15 seconds your exact position with its time, the activity's numbers (distance, time, pace or speed, elevation gain, calories) and your heart rate when a watch sends it. Anyone who has the link can see them on a page of getmuw.app, without an account: you choose whom you send it to, and whoever has it can pass it on. The link is random and cannot be guessed; our server keeps only a hash of it. It stops working one hour after the activity ends, at most 24 hours after it started, or as soon as you stop sharing; then the positions and the heart rate are deleted. Your heart rate is health data: it is shared only after you have read it on the screen that comes before the link. The map on that page comes from OpenFreeMap, which sees the internet (IP) address of whoever opens it, but not the link or your position. Sharing needs an account; deleting the account deletes its shares.",
+      ],
+    },
+    {
       heading: "Advertising",
       blocks: [
-        "MuW shows no adverts and uses no advertising service: nothing about you goes to an advertising network, and the app never asks to track you across other apps.",
+        "MuW shows its own Style posts with links to shops, marked «Ad · Affiliate links». MuW uses no advertising network, and the app never asks to track you across other apps. When you open a product or tap «Shop», our server only adds one to that day's count for that product: it does not know who you are or which phone it was. «Shop» opens the shop's site in your browser through the link of our affiliate network, Awin: from there Awin and the shop record the click and any purchase, with their cookies and under their own privacy policies, so that MuW can be paid its commission. From them MuW receives only totals of clicks, sales and commissions, never who you are.",
+        "The same count, by day and without knowing who you are, applies to the items members tag on their posts: whoever tagged an item sees how many times it was opened and how many times someone went to the shop, never who. A member's link goes straight to the shop, without Awin: from there the shop records the visit with its cookies, under its own privacy policy.",
       ],
     },
     {
@@ -415,22 +445,51 @@ const privacy: AboutDocument = {
       ],
     },
     {
+      heading: "The MuW app on Apple Watch",
+      blocks: [
+        "With the MuW app on Apple Watch, during a workout you start the watch records your position, your heart rate and your active calories, and saves the workout in Apple Health on the watch.",
+        "The phone sends the watch the routes you choose («Send to watch» and your favorites). At the end of a workout the watch sends the phone its track, which stays there until you save it or discard it: a run you save goes to our server as described under «Your runs and their GPS tracks».",
+        "During a run the watch sends the phone your heart rate, to show it on the run's screen: it does not reach our server. The watch asks for your position only during a workout.",
+      ],
+    },
+    {
+      heading: "Nutrition",
+      blocks: [
+        "«Nutrition» is a diary you keep for yourself. The foods you add, your weekly plan, what you write that you ate each day, your daily target and the calories you correct by hand are kept on your phone only: they do not reach our server and nobody else can see them. The «Calorie balance» on your profile is worked out on your phone and shown only to you.",
+        "To estimate the energy you use, MuW counts on your phone the activities of your account and the body data you entered in «Settings». Every number is an estimate: MuW does not provide diets or medical advice.",
+        "This data was never on our server, so logging out or deleting your account does not delete it: it stays on your phone until you remove it there or uninstall the app.",
+      ],
+    },
+    {
+      heading: "Apple Health and Health Connect",
+      blocks: [
+        "Once you turn on «Save to Apple Health» (iPhone) or «Save to Health Connect» (Android), every activity you save is also written there, on your phone: the sport, when it started and ended, the distance, the route and, for a run, the estimated active calories. If at the end of a swim in a pool or a workout at the gym you tap «Add heart rate from Apple Health», MuW reads the heart rate your watch recorded during that activity, and nothing else; after that first tap it reads it at the end of each swim and workout. Its average and maximum stay with the activity on our server and show in its post, unless you turn off «Show heart rate»; the time in each zone stays on your phone. None of your health data reaches any advertising. You can stop it in the Health app or in Health Connect. What is already there stays until you delete it there, also when you delete the run or your account.",
+      ],
+    },
+    {
       heading: "Others who receive data",
       blocks: [
         {
           bullets: [
             "Hetzner hosts our server and its backups, in Germany.",
-            "Geoapify receives the searches for places and for the towns near you, with the position, and, to name the place of a saved run, its start rounded to about 1 km: never your door, the run or who you are. If our server does not answer, a place search goes to Photon (komoot) instead.",
+            "Geoapify receives the searches for places, for the towns near you and for the places of a themed route, with the position rounded to about 1 km, and, to name the place of a saved run, its start rounded the same way: never your door, the run or who you are. If our server does not answer, a place search goes to Photon (komoot) instead.",
             "OpenFreeMap serves the map: like any map service, it sees which area you look at.",
-            "The Overpass service of OpenStreetMap data is asked by our server for the map of an area it does not have yet: it sees which area, not who asked.",
+            "The hills of the 3D map, and of a video in the «3D» style, come from the Terrain Tiles kept on Amazon Web Services: like any map service, it sees which area you look at.",
+            "Apple on an iPhone, or Google on Android, through the phone's own address service, receives the position «Draw» starts from, to write the name of its street. MuW sends it nothing else and does not keep the name.",
+            "Wikimedia serves our server the photos of towns: it sees which town, not who asked.",
+            "With the «Satellite» map Esri serves the images, and with the «3D» map Amazon Web Services serves the heights: like any map service, they see which area you look at.",
+            "The Overpass services of OpenStreetMap data (overpass-api.de and, when it does not answer, overpass.private.coffee) are asked by our server for the map of an area it does not have yet: they see which area, not who asked.",
+            "For a snowshoe route our server asks Amazon Web Services for the heights of an area it does not have yet: it sees which area, not who asked.",
             "unpkg serves the map library when the app starts.",
             "Expo serves the app's updates.",
             "Google Ireland Limited (Firebase Cloud Messaging), to deliver push notifications to Android phones. When you turn push on, the app asks Firebase for a registration token for your phone; Expo's push service hands each notification (who did what, and the beginning of a comment) to Google, which delivers it to your phone. Google sees the token and the content of each notification, not your account or your position. The token is dropped from our server when you turn push off, log out or delete your account; the one on the phone goes when you uninstall the app.",
             "Resend, in the United States, sends MuW's emails: your email address with the email itself. For a report it carries to the person who runs MuW what was reported, its text, the reason, and the usernames of who reported it and who wrote it. For «Send feedback» it carries your message, your username and your email address.",
+            "Google, with its Web Risk service, receives from our server parts of the fingerprint (hash) of some links that members add to their items, to check that they do not lead to dangerous sites: never the whole link, nor who added it or who opens it.",
+            "Open Food Facts receives the barcode you scan or type in «Nutrition», to find the product: it sees the barcode and, like any site, your IP address, never your account or your diary. The product it sends back is kept on your phone.",
             "Strava, as said above.",
           ],
         },
-        "A picture of your run made with «Share» is made on the phone and leaves it only through the share sheet, where you send it.",
+        "A picture or a video of your run made with «Share» is made on the phone and leaves it only through the share sheet, where you send it. The video shows the map around your run, start and end included.",
       ],
     },
     {
@@ -442,6 +501,7 @@ const privacy: AboutDocument = {
             "When you delete your account, everything that is yours is deleted at once: profile, picture, phone number, runs, drawings, favorites, comments, reactions, follows, game data and the news waiting for your email. The routes our engine drew stay: they say nothing about who asked for them.",
             "A backup of the database is made every night and kept for 13 days: a deleted account is out of every backup within 14 days.",
             "On your phone: the session, your choices (language, sport, lakes or sea), the offline maps, the runs still waiting to be sent and, with an account, the area your activities usually start from, to suggest lakes and the sea near it; it is deleted when you log out.",
+            "On your phone only, also after you log out: what you write in «Nutrition».",
           ],
         },
         "The connection between the app and our server is encrypted (HTTPS).",
@@ -454,7 +514,7 @@ const privacy: AboutDocument = {
           bullets: [
             "To give you the service you ask for (contract): your account, your profile, the routes you ask for, the runs, favorites, comments, reactions and follows you save, the emails of the notifications you turned on, and the shape game.",
             "Our legitimate interest in keeping MuW working, safe and better: the server's short logs, the counts that cap the map downloads, and the search events, which say nothing about who you are; the comparison of your contacts' numbers, which keeps none of them; the email when you are away, which you can refuse at sign-up, in «Settings» or in each email; the reports' emails, to keep MuW safe; the archive of drawn routes, which says nothing about who you are; the messages of «Send feedback», to read them and answer you.",
-            "Your consent: the phone number you choose to add and the connection to Strava. You can take a consent back at any time; what was done before stays lawful.",
+            "Your consent: the phone number you choose to add, the connection to Strava, saving your activities to Apple Health or Health Connect and reading your heart rate from Apple Health. You can take a consent back at any time; what was done before stays lawful.",
             "A legal obligation, when a law asks us to keep or hand over data.",
           ],
         },

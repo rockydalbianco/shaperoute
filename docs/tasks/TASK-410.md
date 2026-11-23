@@ -1,0 +1,640 @@
+# TASK-410 — La pagina del post: più dati e più ordine
+
+**Stato**: In lavorazione — B, F, C e D (#1043) in `main` (2026-11-10); D esce con l'OTA 3; A è TASK-355 B; poi E
+**Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
+per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
+
+## Obiettivo
+
+Toccando un post nel Feed si apre una pagina sola, ordinata: in alto il
+video dell'attività, sotto i dati in card con un titolo, una per tipo di
+dato, e un foglio dal basso con le quattro azioni. Chi guarda il post di
+un altro vede gli stessi dati, tranne quelli che l'autore tiene per sé.
+
+## La richiesta (brief del 2026-11-06)
+
+1. **Foto dell'autore** accanto al nome, più grande di oggi, con
+   `profile/Avatar.tsx` (foto, o lettera se non c'è).
+2. **Video** dell'attività (TASK-351/408) in alto, a tutta larghezza, con
+   play e pausa.
+3. **Foglio dal basso** con quattro azioni a icona: 👍 Mi piace ·
+   💬 Commenta · ↗ Condividi · ✏️ Modifica e corri. Le impostazioni del
+   post (visibilità…) dentro il foglio. Riusare `ActionBar`, `SharePost`,
+   `drawAgainDoor`.
+4. **Sezioni** in card: a) riepilogo (distanza, tempo, passo medio, km più
+   veloce, cadenza media, calorie, dislivello positivo); b) meteo; c) tabella
+   dei passi, una riga per km (min/km a sinistra, numero del km a destra),
+   il più veloce evidenziato, miglia per chi usa le miglia; d) grafico del
+   dislivello; e) battito: minimo, medio, massimo, tempo e % per zona a barre
+   orizzontali. **Una sezione senza dati non si mostra.** Vale per ogni
+   sport, con le sole metriche che hanno senso.
+
+## Com'è oggi (main `758bccd1`, verificato)
+
+- **Nessuna pagina del post.** Toccare un post apre il disegno sulla mappa
+  con `social/DrawingCard.tsx` sotto (`App.tsx` ~1486): titolo, giorno,
+  foto, descrizione, reazioni, commenti, Start, GPX, «Draw it near me».
+  Niente passi, niente grafici.
+- **Foto dell'autore**: `FeedPost.tsx` 362-383 disegna una lettera sua, non
+  `Avatar`. `GET /feed` e `GET /drawings/{id}` danno dell'autore solo
+  `public_id` e `username` (`AuthorBody`, `drawings.py:336`). Il server ha
+  già la foto piccola da 128 px (`follows.py` `small_photo`, cache LRU), in
+  base64 dentro `PersonBody` per ricerca, messaggi, notifiche. **È la parte B
+  di TASK-355** («foto dell'autore, conteggi, skeleton»), non ancora fatta.
+- **Video**: si fa solo sul telefono dell'autore (`share/RunVideo.tsx`, una
+  WebView con MapLibre e three.js, ~12 s, indipendente dai tempi della
+  corsa) e si condivide come file. **Non va mai al server** e l'app **non ha
+  un lettore video** (né `expo-video` né `expo-av`).
+- **Foglio dal basso**: c'è `ui/SheetModal.tsx` (Modal con molla), usato da
+  commenti, segnalazione, filtri. Nessuna libreria di bottom sheet.
+- **Impostazioni del post** (`DrawingChoice`: titolo, descrizione, attività,
+  tag, visibilità) si cambiano in `RunEnd`, in «My activities»
+  (`ActivityCard` `PublicRow`) e nei moduli palestra e piscina.
+- **Metriche**:
+  - passi per km: `navigation/runMetrics.ts` `splits(track, unitM)`, usato
+    solo sullo schermo della corsa (`RunDashboard` `Splits`); miglia con
+    `splits(track, metresPer(units))`; il km più veloce si trova in linea;
+  - dislivello: `climbM(track)` sul telefono; il server salva `runs.climb_m`
+    ma **butta via l'altitudine dei punti**: un profilo non esiste;
+  - battito: **non esiste**. TASK-345 B (dai file importati) e C (da Apple
+    Salute) lo portano, con `heart_avg_bpm`, `heart_max_bpm`, `heart_shown`;
+    le zone ci sono (`body/heartZones.ts`, TASK-374 B), il tempo in zona è
+    TASK-374 D;
+  - cadenza: **non esiste** da nessuna parte;
+  - calorie: `feed/postEnergy.ts` (TASK-345 A) le stima dalla distanza; per
+    gli altri con 70 kg fissi; i dati del corpo «restano su questo telefono»
+    (testo di TASK-374);
+  - il server ha la traccia con i tempi (`runs.track` `LineStringM`): i
+    passi per km si possono calcolare lì, **anche per le corse vecchie**.
+- **Meteo**: solo `resort_weather.py` (MET Norway Locationforecast, senza
+  chiave, CC BY 4.0, `urllib`). **Sono solo previsioni**: MET non ha un
+  archivio, quindi il meteo di una corsa passata non si può chiedere dopo.
+- **Grafici**: `react-native-svg` **non c'è**; nessun componente grafico.
+- **Registro degli sport** (`src/sports/`, TASK-376): nessuna lista di
+  metriche per sport; ci sono `pace` (paddle/swim), `onWater`, `isRide()`.
+
+## Proposta
+
+### La pagina
+
+Una pagina a tutto schermo, `feed/PostPage.tsx` (file nuovo), aperta dal
+Feed al tocco di un post. Dall'alto:
+
+1. **Intestazione**: foto dell'autore 40 pt (oggi la lettera è 28 pt), nome,
+   luogo e giorno; il menu «Segnala» dov'è oggi.
+2. **Video** a tutta larghezza, in una finestra **4:5** che mostra il centro
+   della scena (il video vero è 9:16, 1080 × 1920: a tutta altezza
+   coprirebbe la prima schermata e i dati non si vedrebbero); ⤢ lo apre a
+   tutto schermo in 9:16. Prima un fermo immagine (il disegno sulla mappa,
+   come la card del Feed) con ▶. Al tocco parte la scena del video **dentro la
+   pagina**, nella stessa WebView di TASK-351/408, dalla traccia di
+   `GET /drawings/{id}`: niente file da caricare, niente lettore nuovo,
+   niente di nativo. Pausa e ripresa al tocco. La WebView si crea solo al
+   primo ▶ e si chiude lasciando la pagina.
+3. **Titolo e descrizione** del post, poi le **sezioni** (sotto).
+4. **Il foglio**: una barra fissa in basso con le quattro icone, sempre
+   visibile; trascinata in su (o con la maniglia) si apre e mostra, **solo
+   sui propri post**, le impostazioni: visibilità, «Show heart rate»,
+   titolo e descrizione. Un componente nuovo (`feed/PostSheet.tsx`) con
+   `Animated` e `PanResponder` di React Native: niente librerie.
+   - 👍 **Mi piace**: la reazione 👍 di `DrawingReactions`; tenuto premuto,
+     le sei reazioni (la scelta 3 di TASK-355).
+   - 💬 **Commenta**: apre `DrawingComments` come oggi.
+   - ↗ **Condividi**: sui propri post `SharePost` (scelta 5 di TASK-355,
+     «Solo i miei»); sui post degli altri l'icona non c'è (da confermare,
+     scelta 5 qui sotto).
+   - ✏️ **Modifica e corri**: `drawAgainDoor` apre il disegno nella modifica
+     di TASK-369 e poi la corsa sullo stesso percorso. Nascosta per neve e
+     palestra, come «Draw it near me» oggi.
+
+### Le sezioni
+
+Ogni sezione è una card con un titolo. Si costruisce da una funzione pura
+(`feed/postSections.ts`, nuovo, con i test) che dà la lista delle sezioni da
+mostrare: **una sezione senza dati non entra nella lista**, e una riga senza
+valore non entra nella card (mai «—»).
+
+| Sezione | Dati | Da dove |
+|---|---|---|
+| Riepilogo | distanza, tempo, passo (o velocità per le bici), km più veloce, cadenza, calorie, dislivello + | campi del post + `stats` (parte C) |
+| Meteo | temperatura, condizioni (icona MET), vento | `stats.weather` (parte E) |
+| Passi | una riga per km/miglio: tempo a sinistra, numero a destra, barra di lunghezza relativa; il più veloce in `accent` | `stats.splits`, calcolati dal server |
+| Dislivello | profilo altitudine/distanza, totale in alto | `stats.elevation` (fino a 120 punti) |
+| Battito | min, medio, max; Z1–Z5 a barre orizzontali con tempo e % | `stats.heart` (TASK-345 B/C + zone) |
+
+**Per sport** un file nuovo, `sports/postMetrics.ts`: per ogni sport quali
+righe e sezioni hanno senso. Proposta: corsa, camminata, escursione tutte;
+bici, gravel, roller velocità al posto del passo, niente cadenza; nuoto e
+canoa passo per 100 m / 500 m, niente dislivello; sci niente passi per km;
+palestra solo riepilogo e battito.
+
+**Grafici senza librerie**: `react-native-svg` non c'è e aggiungerlo cambia
+l'impronta iOS (una build nuova). Il profilo del dislivello si disegna con
+colonne sottili di `View` (una per punto, altezza relativa, colore
+`textMuted` su `surface`); le zone con barre di `View`. Va con un OTA.
+
+### I dati sul server (parte C)
+
+- **Una tabella nuova `run_stats`** (chiave della corsa, una colonna `jsonb`
+  `stats`, `updated_at`), in un modulo nuovo dell'API
+  (`shaperoute_api/run_stats.py`). **Non tocca `schemas.py`**, quindi non
+  tocca `engine.zip` né il motore (vincolo del Coordinatore).
+- **Passi per km**: li calcola il server dalla traccia con i tempi, per le
+  corse nuove e, con un backfill (col sì dell'utente), per le vecchie.
+- **Profilo del dislivello e cadenza**: li manda il telefono a fine attività
+  con `PUT /me/activities/{key}/stats` (il profilo ridotto a 120 punti;
+  la cadenza solo quando c'è: file importati con cadenza, orologio). Le corse
+  vecchie non li avranno: la sezione non c'è.
+- **Battito**: viene da TASK-345 B/C; al riassunto si aggiungono minimo e
+  secondi per zona. **Vincolo per TASK-345 B** (Coordinatore, 2026-11-06):
+  un posto solo, `run_stats`, niente colonne nuove in `runs`. Chi parte
+  prima fra TASK-345 B e la parte C di questo task crea la tabella; l'altro
+  ci scrive. La nota nel task file di 345 la passa il Coordinatore.
+- **Calorie**: le calcola il telefono dell'autore con i suoi dati
+  (`body/energy.ts`) e manda solo il numero; per chi guarda vale la regola
+  di privacy della scelta 2.
+- `GET /drawings/{id}` restituisce `stats`, **già filtrato dal server**
+  secondo le scelte dell'autore (il battito solo se `heart_shown`, ecc.).
+  `GET /feed` non lo manda: la card resta leggera.
+
+### Il meteo (parte E)
+
+MET Norway non ha un archivio. Proposta: **quando la corsa si salva entro
+3 ore dalla fine**, il server chiede a MET l'ora dell'attività (temperatura,
+simbolo, vento) nel punto di partenza arrotondato a ~1 km, con lo stesso
+trasporto di `resort_weather.py`, e lo salva in `stats.weather`. Corse
+importate o salvate più tardi: niente meteo, e la sezione non c'è. Un
+archivio storico (Open-Meteo) sarebbe un fornitore nuovo, gratuito solo per
+uso non commerciale: sconsigliato. Credito «MET Norway» sotto la card.
+
+### Le corse vecchie
+
+La pagina funziona con i soli campi di oggi: intestazione, video, titolo e
+riepilogo con distanza, tempo, passo, calorie stimate. Il resto appare
+quando c'è.
+
+## Le parti (una PR ciascuna)
+
+- **A — Foto dell'autore** (server + app): è TASK-355 B (scelta 1). Il
+  server aggiunge `photo_url` all'autore in `GET /feed` e
+  `GET /drawings/{id}`, un URL della foto da 128 px con versione
+  (`/people/{id}/photo?v=…`, cache HTTP), invece del base64 che
+  appesantirebbe ogni pagina del Feed; l'app usa `Avatar` (40 pt nella
+  pagina, 32 pt nella card).
+- **B — La pagina** (solo app, OTA): `PostPage`, il video nella pagina, il
+  foglio con le quattro azioni e le impostazioni, il riepilogo con i campi
+  di oggi.
+- **C — `run_stats`** (server + app): migrazione (primo numero libero al
+  merge), `run_stats.py`, passi dal server, `PUT …/stats` a fine attività,
+  `stats` filtrato in `GET /drawings/{id}`; backfill dei passi col sì.
+- **D — Le sezioni** (solo app, OTA): passi, dislivello, battito e zone,
+  `postSections.ts`, `postMetrics.ts`, i grafici a `View`.
+- **E — Il meteo** (server + app): MET al salvataggio, la card, il credito,
+  la riga della privacy.
+
+Ordine: A e B in parallelo (file diversi), poi C, poi D ed E. Server, OTA e
+testi di privacy col sì dell'utente.
+
+## Scelte dell'utente (una alla volta, con la proposta)
+
+1. **La foto dell'autore**: resta TASK-355 B (proposta), o si chiude dentro
+   TASK-410 con una riga qui?
+   **Risposta dell'utente (2026-11-06): «Resta TASK-355 B».** La parte A di
+   questo task è TASK-355 B, con il suo task file; qui non si duplica.
+2. **Battito e calorie degli altri**: il 2026-10-29 l'utente ha scelto per
+   il battito «On, publisher can hide» (TASK-345); il brief propone «solo
+   l'autore, a meno che non scelga di mostrarli». Proposta: tenere la scelta
+   del 29, estesa a tutta la sezione battito (min, medio, max, zone) e alle
+   calorie calcolate col suo corpo.
+   **Risposta dell'utente (2026-11-07): «Visibili, nascondibili».** Resta la
+   regola del 2026-10-29: battito (min, medio, max, zone) e calorie si vedono
+   nei post degli altri; l'autore li spegne con «Show heart rate» nel foglio.
+   Il filtro è nel server: un dato spento non arriva al telefono di chi
+   guarda.
+3. **Il video per chi guarda**: la scena giocata nella pagina dalla traccia,
+   con l'aspetto standard (proposta), o il file vero dell'autore caricato sul
+   server (serve un lettore nativo: build 1.0.3)?
+   **Risposta dell'utente (2026-11-07): «File vero caricato».** È il lavoro di
+   TASK-336 (ADR-0292): caricare il video della corsa nel post (parte A, API)
+   e mostrarlo con `expo-video` (parte C), dipendenza già approvata
+   dall'utente il 2026-10-29 («expo-video in 1.0.2»), che ora va con la
+   build nativa dopo la 1.0.2 (TASK-407). Qui non si duplica: la pagina usa
+   il lettore e il file di TASK-336. Senza video caricato (post vecchi, o
+   l'autore non l'ha messo) in alto c'è il disegno sulla mappa, fermo, senza
+   ▶. La parte B esce prima con un OTA, col disegno fermo; il video compare
+   quando c'è TASK-336 C nella build.
+4. **Il meteo**: MET al salvataggio, solo per le corse salvate entro 3 ore
+   (proposta), con la riga della privacy («il punto di partenza, arrotondato
+   a ~1 km, va a MET Norway per il meteo»).
+   **Risposta dell'utente (2026-11-07): «Sì, MET entro 3 ore».** Niente
+   archivio storico. Il testo esatto della riga della privacy, nelle cinque
+   lingue, va all'utente prima del merge della parte E.
+5. **Il foglio**: barra fissa con le quattro icone, impostazioni trascinando
+   in su; 👍 = reazione 👍; «Condividi» solo sui propri post (proposta).
+   **Risposta dell'utente (2026-11-07): «Sì, come proposto».** Barra fissa
+   con le icone; impostazioni (visibilità, «Show heart rate», titolo,
+   descrizione) trascinando in su, solo sui propri post; 👍 al tocco, le sei
+   reazioni tenendo premuto; «Condividi» solo sui propri post, sugli altri
+   tre icone; ✏️ nascosta per neve e palestra.
+6. **I testi** delle sezioni e delle righe nelle cinque lingue, prima del
+   merge di B e D.
+
+   Proposta (2026-11-07). Riusati senza cambiarli: «Avg pace», «Avg speed»,
+   «Who can see it», «Everyone», «Followers», «Only me», «Title»
+   (`PublicParts`), «Description», «bpm». Nuovi:
+
+   | en | it | es | de | fr |
+   |---|---|---|---|---|
+   | **Parte B** | | | | |
+   | Like | Mi piace | Me gusta | Gefällt mir | J'aime |
+   | Comment | Commenta | Comentar | Kommentieren | Commenter |
+   | Share | Condividi | Compartir | Teilen | Partager |
+   | Edit & run | Modifica e corri | Editar y correr | Bearbeiten und laufen | Modifier et courir |
+   | Post settings | Impostazioni del post | Ajustes de la publicación | Beitragseinstellungen | Réglages de la publication |
+   | Show heart rate | Mostra il battito | Mostrar el pulso | Herzfrequenz zeigen | Afficher la fréquence cardiaque |
+   | Play the video *(VoiceOver)* | Riproduci il video | Reproducir el vídeo | Video abspielen | Lire la vidéo |
+   | Pause the video *(VoiceOver)* | Metti in pausa il video | Pausar el vídeo | Video pausieren | Mettre la vidéo en pause |
+   | Full screen *(VoiceOver)* | Schermo intero | Pantalla completa | Vollbild | Plein écran |
+   | **Parte D** | | | | |
+   | Summary | Riepilogo | Resumen | Übersicht | Résumé |
+   | Distance | Distanza | Distancia | Distanz | Distance |
+   | Time | Tempo | Tiempo | Zeit | Temps |
+   | Fastest km | Km più veloce | Km más rápido | Schnellster km | Km le plus rapide |
+   | Fastest mile | Miglio più veloce | Milla más rápida | Schnellste Meile | Mile la plus rapide |
+   | Avg cadence | Cadenza media | Cadencia media | Ø Kadenz | Cadence moy. |
+   | Calories | Calorie | Calorías | Kalorien | Calories |
+   | Elevation gain | Dislivello positivo | Desnivel positivo | Höhenmeter bergauf | Dénivelé positif |
+   | Splits | Parziali | Parciales | Zwischenzeiten | Temps intermédiaires |
+   | Pace | Passo | Ritmo | Tempo | Allure |
+   | Km | Km | Km | Km | Km |
+   | Mile | Miglio | Milla | Meile | Mile |
+   | Fastest: km {n} · {pace} | Il più veloce: km {n} · {pace} | El más rápido: km {n} · {pace} | Am schnellsten: km {n} · {pace} | Le plus rapide : km {n} · {pace} |
+   | Fastest: mile {n} · {pace} | Il più veloce: miglio {n} · {pace} | El más rápido: milla {n} · {pace} | Am schnellsten: Meile {n} · {pace} | Le plus rapide : mile {n} · {pace} |
+   | Elevation | Altimetria | Altimetría | Höhenprofil | Profil altimétrique |
+   | Elevation along the route, from {min} to {max} m *(VoiceOver)* | Altitudine lungo il percorso, da {min} a {max} m | Altitud a lo largo de la ruta, de {min} a {max} m | Höhe entlang der Strecke, von {min} bis {max} m | Altitude le long du parcours, de {min} à {max} m |
+   | Heart rate | Battito | Pulso | Herzfrequenz | Fréquence cardiaque |
+   | Min | Min | Mín. | Min. | Min |
+   | Average | Medio | Media | Durchschnitt | Moyenne |
+   | Max | Max | Máx. | Max. | Max |
+   | Zones from max heart rate {bpm} bpm | Zone dalla frequenza massima di {bpm} bpm | Zonas según una frecuencia máxima de {bpm} bpm | Zonen ab maximaler Herzfrequenz {bpm} bpm | Zones selon une fréquence max de {bpm} bpm |
+
+   «Show heart rate» è la stessa chiave di TASK-345 B: un sì vale per tutti e
+   due. I testi del meteo (parte E) e la riga della privacy vengono a parte.
+
+   **Risposta dell'utente (2026-11-07): «Sì, approvo».** Testi delle parti B
+   e D approvati come in tabella, nelle cinque lingue.
+
+**Scelte chiuse il 2026-11-07.** Restano da chiedere, quando arrivano le
+loro parti: i testi del meteo e la riga della privacy (parte E); server, OTA
+e backfill dei passi, ognuno col sì dell'utente.
+
+## Criteri di accettazione
+
+- [ ] La pagina si apre dal Feed e funziona con un post senza `stats`.
+- [ ] Una sezione senza dati non c'è; una riga senza valore non c'è.
+- [ ] La tabella dei passi: una riga per km (o miglio), il più veloce
+      evidenziato, l'ultimo km parziale indicato come tale.
+- [ ] Le % per zona sommano a 100 (arrotondate) e si calcolano dai secondi
+      (spostato a quando ci sono i secondi per zona: vedi «Parte D»).
+- [ ] Foto se c'è, lettera se no, nel Feed e nella pagina.
+- [ ] Colori solo da `tokens.ts`; testi con i18n nelle cinque lingue.
+- [ ] Niente dipendenze nuove; `schemas.py` e `engine.zip` intatti.
+- [ ] Test deterministici: tabella dei km, % per zona, sezioni che
+      spariscono, foto/lettera.
+- [ ] Provato sul simulatore con un post con tutti i dati e uno senza.
+
+## File toccati
+
+Questa PR (documenti):
+
+```
+docs/tasks/TASK-410.md   (nuovo)
+docs/DECISIONS.md        (ADR-0340, Proposto)
+docs/STATUS.md           (una riga)
+docs/INDEX.md            (una riga)
+```
+
+Le parti elencano i loro file quando partono.
+
+## Fuori scope
+
+- Il battito in tempo reale e l'app dell'orologio (TASK-370).
+- Leggere il battito da Apple Salute (TASK-345 C) e il tempo in zona a fine
+  corsa sullo schermo della corsa (TASK-374 D).
+- Caricare il video e il lettore: sono TASK-336 (scelta 3).
+- ~~La card del Feed: resta com'è, salvo la foto (parte A).~~ Superato dalla
+  scelta dell'utente del 2026-11-08 («Tutto come la pagina»): è la parte F.
+- Un punteggio o una «precisione» (ADR-0207, nessun punteggio).
+
+## Bozza visiva
+
+Canvas privato, quattro tavole (cima della pagina; le sezioni; il foglio
+aperto su un proprio post; un post vecchio di un altro, senza `stats`):
+https://claude.ai/artifact/AoKBE6wBXbbzvZvndRERk9
+
+## Parte B — la pagina, il foglio, il riepilogo (2026-11-08)
+
+Via del Coordinatore il 2026-11-08 (A e B in parallelo, poi C). Branch
+`feat/TASK-410-b-post-page`, solo app, esce con un OTA col sì dell'utente.
+`postSections.ts` e `postMetrics.ts`, previsti nella parte D, passano in B
+(Coordinatore): qui costruiscono il solo riepilogo, D aggiunge le sezioni.
+
+**7. Il tasto «Like»** (scelta nuova, 2026-11-08): l'app non ha una
+reazione 👍 (le sei sono il cuore Sgrava, 🔥 👏 💪 😂 😮), e aggiungerla
+vorrebbe server e API. **Risposta dell'utente: «Apre le sei».** Il tocco su
+«Like» apre sopra la barra le sei reazioni di `DrawingReactions`, già
+aperte (`barAtStart`); un altro tocco le chiude.
+
+Cosa fa:
+
+- Il tocco su un post di un membro nel Feed apre `PostPage` (un `Modal` a
+  tutto schermo) invece del disegno sulla mappa; «‹» torna al Feed. Gli
+  esempi aprono ancora il percorso sulla mappa.
+- In alto la lettera dell'autore a 40 pt (`Avatar`; la foto arriva con
+  TASK-355 B), nome, luogo · giorno · sport, il «…» sui post degli altri.
+- Il disegno fermo (`RouteMap`), senza ▶: il video arriva con TASK-336.
+  Palestra, piscina e post senza linea non hanno la finestra.
+- Titolo, descrizione, poi le card di `postSections` (oggi il riepilogo:
+  distanza, tempo, passo o velocità, calorie; una riga senza valore non
+  c'è, una card vuota non c'è).
+- `PostSheet`: barra fissa con 👍 Like, 💬 Comment (col numero), ↗ Share
+  (solo sui propri), ✏️ Edit & run (non su neve, palestra, piscina). Sui
+  propri post si trascina in su (o si tocca la maniglia) e mostra
+  `PostSettings`: chi la vede, titolo, descrizione, «Save». La corsa si
+  trova fra `GET /me/drawings` per id e si salva con `DrawingsDoor.choose`,
+  come in «My activities». «Show heart rate» arriva con TASK-345 B.
+- «Edit & run» passa la linea del post a `editTrackOf` di `App.tsx`
+  (TASK-369) con una porta nuova, `editRunDoor.ts`.
+
+Deciso dall'agente su delega: le icone sono le emoji del brief (l'app non
+ha icone né SVG); «Comment» riusa la chiave che c'era («Commento» in
+italiano, non «Commenta»); i testi del video («Play the video», «Pause the
+video», «Full screen») e «Show heart rate» non entrano in B, perché nessuno
+li mostrerebbe (il test delle tabelle li rifiuta): entrano con le loro parti.
+Un tocco sul disegno della pagina lo apre sulla mappa come prima, con la
+sua card («Start», «Export GPX», «Send to a friend», «Edit the drawing»):
+senza, quelle azioni non si sarebbero più raggiunte dal Feed (la CI lo ha
+mostrato con tre test dell'app).
+
+File toccati (parte B):
+
+```
+apps/mobile/src/feed/PostPage.tsx            (nuovo)
+apps/mobile/src/feed/PostSheet.tsx           (nuovo)
+apps/mobile/src/feed/PostSettings.tsx        (nuovo)
+apps/mobile/src/feed/postSections.ts         (nuovo)
+apps/mobile/src/feed/editRunDoor.ts          (nuovo)
+apps/mobile/src/sports/postMetrics.ts        (nuovo)
+apps/mobile/src/feed/PostPage.test.tsx       (nuovo)
+apps/mobile/src/feed/postSections.test.ts    (nuovo)
+apps/mobile/src/screens/FeedScreen.tsx
+apps/mobile/src/screens/FeedScreenPosts.test.tsx
+apps/mobile/__tests__/AppFeedDrawing.test.tsx
+apps/mobile/__tests__/AppDrawingStart.test.tsx, AppDrawAgain.test.tsx, AppEditDrawing.test.tsx
+apps/mobile/src/social/DrawingReactions.tsx  (prop `barAtStart`)
+apps/mobile/App.tsx                          (la porta di «Edit & run»)
+apps/mobile/src/i18n/{it,es,de,fr}.ts        (Like, Edit & run, Post settings, Summary)
+docs/tasks/TASK-410.md, docs/STATUS.md, docs/DECISIONS.md (ADR-0340)
+```
+
+Provata sul simulatore (Expo Go, 2026-11-08) con un post completo di un
+altro (riepilogo di quattro righe, Like ed Edit & run) e un post senza dati
+proprio (palestra: solo il tempo, niente mappa né Edit & run; Share e
+impostazioni trascinando in su). Schermate in `out/TASK-410-b/` del
+worktree.
+
+**Esito della parte B** (2026-11-08): #949 in `main` (08803c33), dopo un
+giro rosso della CI (un import vietato in `sports/` e tre test dell'app
+che aprivano la mappa dal Feed: da qui il tocco sul disegno). OTA di
+produzione iOS: gruppo `8b1af1b4-8365-490c-ad74-00df811b9254`, update
+`01a1bc27-a1fc-7961-a799-713e3aca2e42`, commit `a0f38012`, runtime
+`6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`; con TASK-416 e TASK-408 C1.
+Sì dell'utente: «si confermo esatto» (parte B) e «Sì, OTA tutto» (nella
+sessione del Coordinatore).
+
+## Parte F — la card del Feed come la pagina (2026-11-08)
+
+Dopo aver visto la pagina, l'utente ha chiesto lo stesso aspetto «anche da
+fuori nello scorrimento». Domanda con le anteprime; **risposta dell'utente
+(2026-11-08): «Tutto come la pagina»**: nome in alto, disegno, titolo, i
+numeri in riquadri (distanza, tempo, passo o velocità, calorie) al posto
+della riga di testo, e sotto la stessa barra a icone della pagina. Supera
+la **scelta 4 di TASK-355** («Draw it near me» giallo nella card): al suo
+posto «Edit & run». «Draw it near me» resta sul disegno aperto sulla mappa.
+Via del Coordinatore il 2026-11-08: è la parte F di TASK-410, stesso numero.
+
+Cosa fa:
+
+- `PostActions` (nuovo): la barra delle quattro azioni, una sola per la
+  card e per il foglio della pagina (`PostSheet` la usa); `postOfDrawing`
+  passa qui. `ActionBar` e il suo test non ci sono più; il testo
+  «Reactions» esce dalle quattro tabelle (nessuno lo mostra).
+- `FeedPost`: un post di un membro ha sotto le pagine `SummaryBoxes`
+  (nuovo, da `summaryRows`), sotto il titolo niente riga di testo, né sotto
+  il disegno né sopra la foto; poi la barra. Gli esempi restano come erano.
+  «Edit & run» non c'è su neve, palestra e piscina.
+- Il foglio dei commenti si crea al primo «Comment»: una card non ne porta
+  uno che non apre.
+- `DrawAgainContext` di `App.tsx` non ha più chi lo usa nella card: resta
+  lì, innocuo; toglierlo tocca `App.tsx` e i suoi test (da fare a parte).
+
+File toccati (parte F):
+
+```
+apps/mobile/src/feed/PostActions.tsx         (nuovo)
+apps/mobile/src/feed/PostActions.test.tsx    (nuovo)
+apps/mobile/src/feed/SummaryBoxes.tsx        (nuovo)
+apps/mobile/src/feed/FeedPost.tsx
+apps/mobile/src/feed/PostSheet.tsx
+apps/mobile/src/feed/ActionBar.tsx           (tolto)
+apps/mobile/src/feed/ActionBar.test.tsx      (tolto)
+apps/mobile/src/feed/FeedPostPhotos.test.tsx, hikeFeed.test.tsx, snowFeed.test.tsx
+apps/mobile/src/screens/FeedScreenPosts.test.tsx
+apps/mobile/__tests__/AppFeedDrawing.test.tsx
+apps/mobile/src/i18n/{it,es,de,fr}.ts        («Reactions» tolto)
+docs/tasks/TASK-410.md, docs/STATUS.md, docs/DECISIONS.md
+```
+
+Provata sul simulatore (Expo Go, 2026-11-08): la card di una corsa di un
+altro (quattro riquadri, Like ed Edit & run), di una bici (velocità in
+km/h) e di un proprio allenamento in palestra (solo il tempo, Like e Share,
+niente Edit & run).
+
+## Parte C — `run_stats` sul server (2026-11-08)
+
+Lista dei file approvata dal Coordinatore il 2026-11-08. Aggiunte dello
+stesso giorno: `services/api/tests/test_drawings.py` (due righe, `stats` in
+`NEW_FIELDS` e `SOURCE` come `order` di TASK-348), approvata dal
+Coordinatore; i tre test di `activitiesDoor` che contano le richieste (il
+finto API risponde 200 a `…/stats` e lo toglie dalla lista) e il nuovo
+`activitiesDoorStats.test.tsx`, approvati dal Coordinatore; `api/drawings.ts`
+esce dalla lista. Dopo la prima CI, due test dell'app intera che contano i
+PUT di `/me/activities/` (`AppActivities`, `AppPenUpSaved`): non contano
+`…/stats`, approvati dal Coordinatore. Dopo la seconda CI,
+`drawing-details-imported.json` prende `"stats": null`, come risponde il
+server (`test_imported_runs.py` confronta la fixture col corpo intero):
+approvato dal Coordinatore. Branch `feat/TASK-410-c-run-stats`, #1001 in
+`main` (`72ac332b`).
+
+```
+services/api/migrations/0064_run_stats.sql       (nuovo; numero in bozza, il vero al merge)
+services/api/shaperoute_api/run_stats.py         (nuovo)
+services/api/shaperoute_api/drawings.py          (stats in DrawingDetailBody e in seen)
+services/api/shaperoute_api/app.py               (install_run_stats)
+services/api/tests/test_run_stats.py             (nuovo)
+services/api/tests/test_drawings.py              (stats fra i campi nuovi delle fixture vecchie)
+packages/shared-types/fixtures/run-stats.json, run-stats-request.json (nuovi)
+packages/shared-types/fixtures/drawing-details-imported.json ("stats": null)
+apps/mobile/src/api/runStats.ts (+ test)         (nuovo: tipi, guardia, statsOf, PUT)
+apps/mobile/src/activities/runStatsOut.ts (+ test) (nuovo: profilo e calorie)
+apps/mobile/src/activities/activitiesDoor.ts     (manda le stats dopo il salvataggio)
+apps/mobile/src/activities/activitiesDoorStats.test.tsx (nuovo)
+apps/mobile/src/activities/activitiesDoorQueue/Drawing/Game.test.tsx (rispondono a …/stats)
+apps/mobile/__tests__/AppActivities.test.tsx, AppPenUpSaved.test.tsx (non contano …/stats fra i PUT)
+docs/API.md («Run stats»), docs/DATABASE.md (la 0064)
+docs/tasks/TASK-410.md
+```
+
+Cosa fa:
+
+- **Tabella `run_stats`**: `run_id`, `stats` `jsonb`, `updated_at`. Dentro:
+  `splits_km`, `splits_mile`, `elevation`, `cadence_spm`, `kcal`.
+- **Battito**: **non** in `run_stats`. Scelta del Coordinatore
+  (2026-11-08): la #979 (TASK-409 B1) lo tiene in `runs` (`heart_avg_bpm`,
+  `heart_max_bpm`, `heart_shown`, migrazione 0061, entrata in `main` il
+  2026-11-08), e la parte C lo legge da lì. Da scrivere come precisazione
+  di ADR-0340 nella PR dei documenti dopo il merge.
+- **Il filtro**: battito e calorie degli altri solo con `heart_shown`;
+  all'autore sempre. Senza dati, o per una corsa di prima, `stats` è
+  `null`. `GET /feed` non lo manda.
+- **L'app**: dopo che il server ha preso la corsa, `activitiesDoor` manda
+  una volta `PUT …/stats` con il profilo (dalle altezze dei punti, al più
+  120 punti a passi uguali) e le calorie (`activeKcal` col corpo del
+  telefono, metri e secondi contati dal server, come `postEnergy`). La
+  cadenza resta `null`: oggi nessuna registrazione la dà. `statsOf` legge
+  `stats` dal dettaglio del post per la parte D.
+
+Decisioni dell'agente su delega dell'utente (da riportare in DECISIONS.md
+con la precisazione):
+
+- I passi si contano a ogni `PUT …/stats`, non al salvataggio della corsa:
+  `activities.py` resta com'è; le corse senza `PUT` (app vecchie) li
+  avranno col backfill.
+- L'ultimo pezzo dopo l'ultimo km intero è un passo solo da 100 m in su
+  (`MIN_PARTIAL_M`): pochi metri darebbero un passo senza senso.
+- Il profilo lo calcola il telefono, come dice il task, anche se le altezze
+  arrivano già al server (TASK-324): così `activities.py` non cambia.
+- `PUT …/stats` non si ripete se fallisce: la pagina funziona anche senza.
+- `api/drawings.ts` non cambia: `stats` si legge con `statsOf`, senza
+  toccare il tipo `DrawingDetail` di `shared-types`.
+
+Restano, ognuno col sì dell'utente chiesto dal Coordinatore: il deploy del
+server con la migrazione in produzione, il backfill dei passi
+(`python -m shaperoute_api.run_stats`), l'OTA della parte app.
+
+## OTA del 2026-11-10 (parti F e C)
+
+Il deploy con la 0064 e il backfill dei passi sono entrati nel passo unico
+sul server del 2026-11-10. Al «via ota» dell'utente è uscito l'OTA di
+produzione da `main` 88e5f88f, solo iOS, da una copia pulita: gruppo
+`4eca1d42-cb1c-407a-84aa-0d929ede781d`, update
+`01a1c482-7073-7baa-8070-7289e90a2387`, runtime `6f8bba4c…`. Stesso commit
+sul canale preview (gruppo `b0f9913b-b8cf-4765-92b2-796924d597c1`, runtime
+`exposdk:57.0.0`) per l'iPhone di prova. Porta la card del Feed come la
+pagina (F) e l'invio delle stats (C). La parte D (#1043) esce col secondo
+OTA, dopo il passo server 2, col sì dell'utente.
+
+## Parte D — le sezioni nella pagina del post (2026-11-10)
+
+Chiesta dall'utente il 2026-11-10 («continua con la parte d»); lista dei
+file approvata dal Coordinatore lo stesso giorno. Branch
+`feat/TASK-410-d-sections`, solo app, esce con un OTA (quello unico se è in
+`main` in tempo, altrimenti il successivo).
+
+```
+apps/mobile/src/feed/postSections.ts + postSections.test.ts
+apps/mobile/src/sports/postMetrics.ts
+apps/mobile/src/feed/PostPage.tsx + PostPage.test.tsx
+apps/mobile/src/feed/usePostStats.ts           (nuovo)
+apps/mobile/src/feed/PostSplits.tsx            (nuovo)
+apps/mobile/src/feed/PostElevation.tsx         (nuovo)
+apps/mobile/src/feed/PostSplits.test.tsx       (nuovo, anche PostElevation)
+apps/mobile/src/i18n/{it,es,de,fr}.ts          (i testi della D approvati il 2026-11-07)
+docs/tasks/TASK-410.md
+```
+
+Cosa fa:
+
+- All'apertura la pagina legge `GET /drawings/{id}` una volta
+  (`usePostStats`, `statsOf` della parte C). Senza stats, o senza rete,
+  resta il riepilogo di prima.
+- **Riepilogo**: distanza, tempo, passo (o velocità), km più veloce,
+  cadenza media, calorie, dislivello positivo; ogni riga solo quando c'è.
+- **Parziali**: una riga per km (o miglio con le miglia): il passo a
+  sinistra, una barra lunga quanto è stato veloce, il numero a destra; il
+  più veloce in `accent`; l'ultimo pezzo con la sua lunghezza («0.43») al
+  posto del numero, in corsivo; sotto «Il più veloce: km 3 · 4:59 /km».
+- **Altimetria**: il dislivello in alto, poi una colonna di `View` per
+  punto del profilo (al più 120), dalla più bassa alla più alta; VoiceOver
+  legge «Altitudine lungo il percorso, da … a … m».
+- **Battito**: medio e massimo, come li manda il server (`runs.heart_*`),
+  solo se l'autore li mostra.
+- **Per sport** (`postMetrics`): parziali a piedi e su ruote, non in acqua,
+  sulla neve, in palestra; altimetria ovunque tranne acqua e palestra;
+  cadenza solo a piedi.
+
+Decisioni (le prime due del Coordinatore su delega dell'utente, il resto
+dell'agente su delega dell'utente; in DECISIONS nella PR dei documenti):
+
+- **Zone e battito minimo non ci sono**: nessuno li manda ancora
+  (`stats.heart` ha medio e massimo). Le barre delle zone, il minimo e il
+  criterio «% per zona» arrivano quando TASK-345 C / TASK-374 D danno i
+  secondi per zona.
+- **Il dislivello si conta dal profilo** (120 punti, la regola dei 3 m di
+  `climbM`): è una **sotto stima** di quello della traccia intera, che il
+  post non ha.
+- **Calorie**: quelle dell'autore (`stats.kcal`) quando ci sono; se l'autore
+  le nasconde, la stima di prima (70 kg), che non dice niente del suo corpo.
+- In miglia il dislivello è in piedi; la cadenza si scrive «168 spm» e il
+  battito «148 bpm», unità non tradotte come «kcal».
+- La barra di un parziale è lunga quanto il suo passo rispetto al più
+  veloce (il più veloce piena).
+
+Provata sul simulatore (Expo Go, 2026-11-10) con un harness temporaneo che
+apre la pagina di un post di un altro: con le stats dell'esempio
+(`run-stats.json`: riepilogo con km più veloce, cadenza, calorie e
+dislivello; parziali col 3 in giallo e «0.43» in corsivo; altimetria;
+battito) e senza (solo il riepilogo di prima). Schermate in
+`out/TASK-410-d/` della copia principale.
+
+**Esito della parte D** (2026-11-10): #1043 in `main` (`bc03b9a7`), dopo
+due merge di `main` (conflitto solo nel task file). Esce con l'OTA 3, dopo il
+passo server 2, col sì dell'utente.
+
+## Correzione: «Edit & run» e «‹» (2026-11-10)
+
+Segnalato dall'utente sull'iPhone dopo l'OTA 3: «Edit & run» non faceva
+niente, né sulla card né nella pagina, e «‹» della pagina non rispondeva.
+Branch `fix/TASK-410-edit-run`, solo app, esce con un OTA col sì
+dell'utente.
+
+- **«‹» sotto l'orologio.** Dentro un `Modal` i margini dell'app valgono 0:
+  la pagina ora ha un suo `SafeAreaProvider` con `initialWindowMetrics`,
+  come «Heart rate zones» e la ricerca (TASK-366). Anche la barra dei
+  quattro ora sta sopra il bordo basso del telefono.
+- **Nella pagina** la mappa di «Draw on the map» si apriva sotto la pagina,
+  che restava sopra: ora la pagina si chiude prima.
+- **Sulla card** una corsa chiusa il cui contorno non fa un disegno
+  (andata e ritorno sulla stessa strada, un otto) lasciava il tasto senza
+  effetto. Il difetto di `figureLines.ts` lo corregge TASK-432 (#1079, la
+  stessa regola su tutto il catalogo); con la sua versione l'andata e
+  ritorno e l'otto fanno un disegno (provato). Qui resta solo il tasto
+  nascosto dove la linea non fa comunque un disegno (`editRunDoor`).
+
+File: `App.tsx`, `src/feed/PostPage.tsx`, `src/feed/editRunDoor.ts`, i
+test `PostPageInset.test.tsx` e `__tests__/AppEditRun.test.tsx` (nuovi),
+più questo task file. Entra dopo la #1079.
+
+## Esito
+
+*(a fine task)*

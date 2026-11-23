@@ -19,34 +19,71 @@ beforeEach(() => {
   jest.mocked(saveSport).mockClear();
 });
 
-test("«Run» is chosen, «Bike» (TASK-190) and «Paddle» (TASK-191) can be", async () => {
+test("«Run» is chosen, «Bike» (TASK-190), «Paddle» (TASK-191), «Swim» (TASK-323) and «Ski» (TASK-375) can be", async () => {
   await render(<SportSetting />);
   expect(screen.getByText("SPORT")).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Run" })).toBeChecked();
   expect(screen.getByRole("radio", { name: "Bike" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Paddle" })).not.toBeChecked();
-  expect(screen.getAllByRole("radio")).toHaveLength(3);
-  // Only «Paragliding» says «Soon» (TASK-305 D0).
-  expect(screen.getAllByText("Soon")).toHaveLength(1);
+  expect(screen.getByRole("radio", { name: "Swim" })).not.toBeChecked();
+  expect(screen.getByRole("radio", { name: "Ski" })).not.toBeChecked();
+  // And «Gym» (TASK-385 B), on in Expo Go and preview, «Hike» (TASK-377),
+  // «Gravel» and «MTB» (TASK-378), «Walk» (TASK-371), «Ski touring»
+  // (TASK-415 B).
+  // And «Paragliding» (TASK-305 R2), «Cross-country ski» (TASK-375) and
+  // «Wheelchair & stroller» (TASK-414 B).
+  // And «Snowshoes» (TASK-413), «Mountaineering» (TASK-463 C) and
+  // «Stretching» (TASK-475 C).
+  expect(screen.getAllByRole("radio")).toHaveLength(18);
+  expect(screen.getByRole("radio", { name: "Walk" })).not.toBeChecked();
+  expect(screen.getByRole("radio", { name: "Hike" })).not.toBeChecked();
+  expect(screen.getByRole("radio", { name: "Gravel" })).not.toBeChecked();
+  expect(screen.getByRole("radio", { name: "MTB" })).not.toBeChecked();
+  // And «Roller» (TASK-380).
+  expect(screen.getByRole("radio", { name: "Roller" })).not.toBeChecked();
+  // «Cross-country ski» (TASK-375), «Wheelchair & stroller» (TASK-414 B),
+  // «Snowshoes» (TASK-413), «Mountaineering» (TASK-463 C) and «Stretching»
+  // (TASK-475 C) are on too: no sport says «Soon».
+  expect(screen.queryByText("Soon")).toBeNull();
+  expect(screen.getByRole("radio", { name: "Stretching" })).not.toBeChecked();
+  expect(screen.getByRole("radio", { name: "Snowshoes" })).not.toBeChecked();
+  expect(screen.getByRole("radio", { name: "Mountaineering" })).not.toBeChecked();
+  expect(
+    screen.getByRole("radio", { name: "Wheelchair & stroller" }),
+  ).not.toBeChecked();
+  expect(screen.getByRole("radio", { name: "Cross-country ski" })).not.toBeChecked();
+  expect(screen.queryByLabelText("Ski, coming soon")).toBeNull();
 });
 
-test("«Paragliding» 🪂 is the last row, says «Soon» and a tap changes nothing (TASK-305 D0)", async () => {
+test("«Swim» 🏊 is chosen with a tap, and kept (TASK-323)", async () => {
   await render(<SportSetting />);
-  const row = screen.getByLabelText("Paragliding, coming soon");
-  expect(row).toBeOnTheScreen();
+  expect(screen.getByText("🏊")).toBeOnTheScreen();
+  expect(screen.queryByLabelText("Swim, coming soon")).toBeNull();
+  await fireEvent.press(screen.getByRole("radio", { name: "Swim" }));
+  expect(saveSport).toHaveBeenCalledWith("swim");
+  expect(screen.getByRole("radio", { name: "Swim" })).toBeChecked();
+  expect(screen.getByRole("radio", { name: "Run" })).not.toBeChecked();
+});
+
+test("«Paragliding» 🪂 is the last row, chosen with a tap (TASK-305 R2)", async () => {
+  await render(<SportSetting />);
+  expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
   expect(screen.getByText("🪂")).toBeOnTheScreen();
-  expect(screen.queryByRole("radio", { name: "Paragliding" })).toBeNull();
-  await fireEvent.press(row);
-  expect(saveSport).not.toHaveBeenCalled();
-  expect(screen.getByRole("radio", { name: "Run" })).toBeChecked();
+  await fireEvent.press(screen.getByRole("radio", { name: "Paragliding" }));
+  expect(screen.getByRole("radio", { name: "Paragliding" })).toBeChecked();
 });
 
 test("a sport not ready says «Soon» and takes no tap", async () => {
   await render(<SportSetting sports={RUN_ONLY} />);
   expect(screen.getAllByRole("radio")).toHaveLength(1);
   expect(screen.getByLabelText("Bike, coming soon")).toBeOnTheScreen();
-  // Bike, Paddle and Paragliding (TASK-305 D0).
-  expect(screen.getAllByText("Soon")).toHaveLength(3);
+  // Bike, Paddle, Swim (TASK-323), Walk (TASK-371), Hike
+  // (TASK-377), Gravel and MTB (TASK-378), Roller (TASK-380), Ski and
+  // Cross-country ski (TASK-375), Ski touring (TASK-415 B), Gym (TASK-385 B)
+  // Paragliding (TASK-305 R2), Wheelchair & stroller (TASK-414 B) and
+  // Snowshoes (TASK-413 B), Mountaineering (TASK-463 B), Stretching
+  // (TASK-475 B).
+  expect(screen.getAllByText("Soon")).toHaveLength(17);
 });
 
 test("a sport that is ready is chosen with a tap, and kept", async () => {

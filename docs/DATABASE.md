@@ -38,11 +38,12 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 | `generated_routes` | ogni percorso dell'API (ADR-0086): richiesta, tipo (forma, parola, immagine), distanza, somiglianza, linea, **punto di partenza mostrato** (a più di 500 m da quello vero), centro, data; utente se era entrato, se no nessuno | TASK-092 |
 | `favorites` | percorso tenuto fra i preferiti: utente, chiave fatta dall'app sulla linea (unica per utente), città, forma o parola e stile, titolo, distanza chiesta e sulle strade, somiglianza, **linea intera**, data; i tratti a piedi di una parola con la penna alzata (TASK-199); i tratti con la bici a mano (TASK-206) | TASK-171, TASK-199, TASK-206 |
 | `runs` | corsa salvata: utente, chiave fatta dall'app, percorso pianificato, cosa disegna, traccia (`LineStringM`, M = secondi dall'inizio), pause, inizio, distanza, durata, punteggio, fedeltà, luogo (TASK-172); i tratti a piedi del percorso di una parola con la penna alzata (TASK-199); l'attività, a piedi, in bici o in canoa (TASK-208); il post condiviso, emoji e risultati, mai l'immagine (TASK-258); i metri saliti (TASK-324) | TASK-172, TASK-199, TASK-208, TASK-258, TASK-324 |
-| `drawings` | il disegno di una corsa: **traccia tagliata** (senza 200 m all'inizio e alla fine), titolo dato dall'utente (TASK-117); chi lo vede (tutti, chi segue, solo io) e la descrizione (TASK-208) | TASK-117, TASK-208 |
+| `drawings` | il disegno di una corsa: **traccia intera senza orari** (tagliata di 200 m all'inizio e alla fine fino ad ADR-0330), titolo dato dall'utente (TASK-117); chi lo vede (tutti, chi segue, solo io) e la descrizione (TASK-208) | TASK-117, TASK-208 |
 | `drawing_photos` | fino a 3 foto di un disegno oltre alla mappa: posto 1–3, JPEG al più 1080 px di lato, senza EXIF | TASK-208 |
 | `drawing_tags` | gli iscritti taggati in un disegno, in ordine, al più 10 | TASK-208 |
 | `reactions` | disegno, chi reagisce (coppia unica: una a testa), quale delle sei, data | TASK-119 |
-| `comments` | disegno, autore, testo (1–500), data | TASK-120 |
+| `comments` | disegno, autore, testo (1–500), data; il commento sotto cui sta una risposta e chi nomina (TASK-454) | TASK-120, TASK-454 |
+| `comment_reactions` | commento, chi reagisce (coppia unica: una a testa), quale delle cinque, data | TASK-454 |
 | `reports` | chi segnala, cosa (disegno, commento, utente) e il suo id, motivo da un elenco corto, data; una riga per chi segnala e per cosa | TASK-121 |
 | `blocks` | chi blocca, chi è bloccato, data; una riga tiene lontani i due nei due sensi | TASK-121 |
 | `report_links_used` | i link delle email delle segnalazioni già usati: il loro numero a caso e quando | TASK-291 |
@@ -206,11 +207,13 @@ Migrazione `0009_drawings.sql` (TASK-117, ADR-0159):
   (presente solo quando `public` è vero), `updated_at`. Una riga per una
   corsa che il suo iscritto ha titolato o pubblicato; una corsa mai
   toccata non ne ha, ed è privata.
-- `track` è quello che vedono gli altri: la traccia della corsa senza i
-  primi e gli ultimi 200 m lungo di lei, senza M (niente orari), tagliata
-  dall'API da `runs.track` a ogni `PUT` del disegno: la stessa corsa dà
-  la stessa linea. Assente quando non resta niente (meno di un metro):
-  allora la riga non può essere pubblica (un vincolo).
+- `track` è quello che vedono gli altri: la traccia intera della corsa,
+  partenza e arrivo compresi (ADR-0330; fino ad allora senza i primi e
+  gli ultimi 200 m), senza M (niente orari), presa dall'API da
+  `runs.track` a ogni `PUT` del disegno: la stessa corsa dà la stessa
+  linea. Assente sotto un metro: allora la riga non può essere pubblica
+  (un vincolo). Le righe tagliate di prima le ridisegna
+  `python -m shaperoute_api.drawing_retrack --apply` (TASK-390).
 - Una tabella sua, non colonne in `runs`: la riga si legge con chi ne è
   l'autore (`runs.user_id`) e cade con la corsa e con l'account. L'id del
   disegno è un altro dalla chiave della corsa, che è del telefono e unica
@@ -692,8 +695,74 @@ Migrazione `0033_messages.sql` (TASK-319, ADR-0279, `API.md`
   crittografia end-to-end. Nessun endpoint li mostra a chi gestisce MuW:
   di una segnalazione arriva per email solo il messaggio segnalato. Test
   in `test_messages.py`.
-Migrazione `0034_run_climb.sql` (TASK-324, ADR-0284; il numero è il primo
-libero in `main` al merge):
+Migrazione `0034_run_source.sql` (TASK-312 parte A, ADR-0272,
+`IMPORTAZIONI.md`; il numero è il primo libero in `main` al merge, la 0033
+è di TASK-319):
+
+- `runs.source` (`text NOT NULL DEFAULT 'muw'`, `CHECK` fra `muw` e
+  `file`): da dove viene la corsa. `muw`, registrata dall'app; `file`, un
+  file GPX, TCX o FIT di un'altra app letto dal telefono e salvato con lo
+  stesso `PUT /me/activities/{key}`. Lo scrive solo il primo `PUT`. **Le
+  righe di prima sono tutte `muw`**. Apple Salute e i provider avranno i
+  loro valori con le parti D ed E, con un'altra migrazione.
+- **Solo le corse `muw` contano** per il gioco (`game_runs`,
+  `game_unlocks`, `game_contributions`: `after_run_saved` e
+  `game_backfill` le saltano, `GIOCO.md`) e per il concorso
+  (`contests.py`, `CONCORSI.md`). Il segno lo manda l'app, come le
+  posizioni: non è una prova. Nessun indice: si legge con la corsa.
+- Gli orari di una corsa `file` sono quelli del file e stanno nella riga
+  come quelli di ogni corsa: si cancellano con la corsa e con l'account. Il
+  file non si tiene. Test in `test_imported_runs.py`.
+Migrazione `0035_drawn_routes_placement.sql` (TASK-297 parte A2, aggiunta
+ad ADR-0256; il numero è il primo libero in `main` al merge: dalla 0030
+alla 0034 sono di altri task):
+
+- In `drawn_routes`, **dove il motore ha messo la forma** del percorso,
+  per ridisegnarlo da lì dopo un cambio del motore (`API.md`, «L'archivio
+  dei percorsi»): `placed_start` (`geography(Point, 4326)`: la partenza
+  chiesta, o il punto a 250–500 m dove la ricerca l'ha spostata),
+  `offset_m` (quanto è lontano), `rotation_deg`, `phase` (dove il percorso
+  entra nella forma, 0–1) e `scale_m` (i metri di un'unità della forma
+  normalizzata). `double precision`: gli stessi numeri ridisegnano lo
+  stesso percorso. Tutte e cinque o nessuna: niente per un percorso da una
+  partenza vicina o da 2 km, sull'acqua, o tenuto prima di questa
+  migrazione (quei percorsi si ridisegnano come prima, dalla partenza).
+- Niente di chi: sono numeri del motore. Una riga ridisegnata uguale
+  (stessa linea, stessa richiesta, stesso motore) non si ripete: prende
+  il `drawn_at` di adesso, il risultato e il piazzamento nuovi, e tiene
+  `runs` e `favorites`.
+
+Migrazione `0036_user_identities.sql` (TASK-322 parte A, ADR-0282,
+`API.md` «Sign in with Apple and Google»; il numero è il primo libero in
+`main` al merge, la 0035 è di TASK-324):
+
+- `user_identities`: un account Apple o Google che è entrato. Chiave
+  `(provider, subject)`: `provider` (`apple` o `google`), `subject` (il
+  `sub` del suo token, che non cambia). `user_id` (`ON DELETE CASCADE`,
+  con un indice per la cancellazione), `email` (quella che il provider
+  garantiva all'ultima entrata: con «Hide My Email» un indirizzo di
+  Apple), `apple_refresh_token` (solo Apple, tenuto solo per revocare
+  l'accesso a `DELETE /me`; `NULL` per Google, e per Apple quando lo
+  scambio del codice non è riuscito), `created_at`. Un account può averne
+  più d'una: Apple e Google con la stessa email aprono lo stesso.
+- **`users` non cambia**: un account nato da Apple o Google ha un
+  `password_hash` vero, l'Argon2id di 32 byte casuali buttati, così resta
+  `NOT NULL` e «Forgot password» (TASK-300) funziona anche per lui; ha
+  `email_confirmed` vero, perché il provider ha verificato l'email.
+- **Stessa email, la sicurezza**: un'identità che si lega a un account con
+  l'email non confermata gli cambia la password con una a caso e cancella
+  le sue sessioni (`sign_in_providers.ProviderAccounts`). Del nome e della
+  foto di Google non si tiene niente. Test in `test_sign_in_providers.py`.
+
+Migrazione `0037_run_climb.sql` (TASK-324, ADR-0284; il numero è il primo
+libero in `main` al merge: la 0036 è di TASK-322 A):
+
+- **`ADD COLUMN IF NOT EXISTS`**: la stessa colonna è arrivata nei due
+  repository con altri nomi mentre erano divergenti (`0034_run_climb` nel
+  `main` di MUW, `0035_run_climb` in quello di `shaperoute`, TASK-325). Un
+  database che ne ha applicata una ha la colonna e non la versione `0037`:
+  la migrazione non fa niente e la registra. Test in
+  `test_profile_totals.py`.
 
 - `runs.climb_m` (`integer`, `>= 0`, facoltativa): i metri saliti, contati
   dall'API dalle altezze delle posizioni (`run_climb.py`). `NULL` per le
@@ -704,13 +773,711 @@ libero in `main` al merge):
   profilo (`user_photos.py`) passano da `drawings` e `drawing_photos` come
   la griglia. Test in `test_profile_totals.py`.
 
+Migrazione `0038_message_media.sql` (TASK-333 parte A, ADR-0289,
+`API.md` «Gli allegati»; il numero è il primo libero in `main` al merge,
+dato dal Coordinatore):
+
+- `messages` ha tre colonne in più: `attachment` (`photo`, `video`,
+  `drawing` o `NULL`), `drawing` (`jsonb`, il disegno intero, il corpo di
+  un preferito) e `drawing_card` (`jsonb`, come la conversazione lo
+  mostra: nomi, metri, sport, rotazione, al più 64 punti), tutte e due
+  solo per un disegno. Il testo può essere vuoto solo con un allegato
+  (`messages_text_check` rifatto).
+- `message_media`: una riga per ogni foto o video caricato, con l'`id`
+  casuale che è anche il nome del file in `data/media/messages/`
+  (`<id>.jpg`, `.mp4` o `.mov`, la locandina `<id>.poster.jpg`). `owner_id`
+  (`ON DELETE CASCADE`), `message_id` (unico, `ON DELETE CASCADE`: `NULL`
+  finché non è mandato), `kind`, `media_type`, `bytes`, `width`, `height`
+  (come si vede), `duration_ms` (solo i video), `poster_bytes`,
+  `created_at`, `stored` (falso per un video scaduto: il file è andato).
+  Due indici: i caricamenti di un account in un giorno, per i limiti, e
+  quelli mai mandati, per il giro di ogni ora.
+- **I file non sono nel database**, quindi nemmeno nelle copie di ogni
+  notte: se il disco del server si rompe, i messaggi restano e i loro
+  allegati dicono che non ci sono più. Cancellare un messaggio, una
+  conversazione o un account toglie la riga subito, il file al giro di
+  ogni ora (`message_media.MessageMedia.sweep`). Test in
+  `test_message_media.py`.
+
+Migrazione `0042_run_bests.sql` (TASK-368 parte A, ADR-0312, `API.md`
+«Profile»; il numero è del Coordinatore, la `0040` era del nuoto):
+
+- `run_bests`: i record di ogni corsa, una riga per sport e distanza che la
+  corsa copre: `run_id` (`ON DELETE CASCADE`), `sport` (`running` o
+  `cycling`), `distance` (il nome: `5k`, `half`, `marathon`, `160k`),
+  `seconds` (`> 0`, in movimento). Chiave `(run_id, sport, distance)`.
+- **Per corsa, non per account**: ogni corsa tiene i suoi tempi per tutti e
+  due gli sport, qualunque fosse; il profilo prende il migliore fra le corse
+  dello sport che hanno adesso (`runs.activity`). Così cambiare lo sport di
+  una corsa pubblicandola non chiede di ricontare niente, e cancellarla
+  porta via i suoi tempi lasciando il migliore dopo.
+- Si scrivono nella transazione del salvataggio (`activities.save`), dal
+  calcolo fatto prima di aprirla. Le corse salvate prima della `0042` non ne
+  hanno finché non gira `python -m shaperoute_api.personal_bests_backfill`
+  (una volta, col sì dell'utente; ripetuto non cambia niente).
+- Nessun indice oltre la chiave: il profilo legge le corse di un account con
+  `runs_user_started_idx` e i loro tempi per chiave. Con 1000 corse e 14 000
+  righe la parte dei record costa circa 10 ms (TASK-368, PR). Test in
+  `test_personal_bests.py`.
+
+Migrazione `0040_swimming.sql` (TASK-323 parte B, ADR-0283; il numero è
+quello che il Coordinatore teneva per il nuoto dal 2026-10-30. Entra dopo la
+`0041`: il runner applica per nome quelle che mancano, quindi su ogni
+database finisce applicata una volta sola):
+
+- I vincoli dell'attività di `favorites` (`0010`), `runs` (`0014`) e
+  `group_runs` (`0032`) prendono anche `'swimming'`: il nuoto in acque
+  libere è un'attività dell'API, e un nuoto si tiene col cuore, si salva
+  come corsa e si propone come corsa di gruppo. Gli stessi nomi
+  (`*_activity_check`), tolti e rimessi; nessuna riga cambia.
+- `drawn_routes.activity` (`0026`) non ha un elenco, solo la lunghezza: non
+  cambia. I giri e le curve di un nuoto stanno nel corpo del risultato
+  (`RouteResult.laps`, `.turns`), dove già sta il resto del percorso.
+
+Migrazione `0043_walking.sql` (TASK-371 parte A, ADR-0315; numero del
+Coordinatore, la `0042` è di TASK-368 A):
+
+- Gli stessi tre vincoli (`favorites`, `runs`, `group_runs`) prendono anche
+  `'walking'`: una camminata si tiene col cuore, si salva e si propone come
+  corsa di gruppo come camminata, anche se il motore la disegna come una
+  corsa. Nessuna riga cambia.
+
+Migrazione `0044_record_only.sql` (TASK-375 parte A, ADR-0319; il numero
+dal Coordinatore, uno solo per lo sci alpino e quello di fondo):
+
+- Il vincolo `runs_activity_check` prende anche `'skiing'` e
+  `'xc_skiing'`: una giornata sulla neve si salva come corsa. La
+  migrazione **rilegge** il vincolo che trova (`pg_get_constraintdef`) e lo
+  riscrive con i due nomi in più, invece di ripetere l'elenco: le attività
+  aggiunte prima (la `0043` della camminata, TASK-371) restano. Lo riscrive come elenco di nomi fra
+  apici, come gli altri, così la prossima lo rilegge allo stesso modo.
+- `favorites` e `group_runs` no: tengono un percorso da rifare, e queste
+  attività non ne hanno.
+- Nessuna riga cambia. Test in `test_record_only.py`.
+
+Migrazione `0045_notification_list.sql` (TASK-367 parte C1, ADR-0311, `API.md`
+«The bell»; il numero è del Coordinatore: la `0043` è della camminata, la
+`0044` di «Record only»):
+
+- `notifications`: le righe della campanella. Una per ogni evento che
+  `push.py` lascia passare (non il proprio, salvo i suoi tipi, una volta al
+  giorno), **qualunque** sia l'interruttore delle push: la lista si legge
+  nell'app, non si manda. Non i messaggi privati, che hanno la loro scheda.
+  `id`, `recipient_id` e `actor_id` (`ON DELETE CASCADE` su `users`),
+  `kind` (quello della push), `drawing_id` e `comment_id` (`CASCADE` su
+  `drawings` e `comments`), `same` (cosa distingue due eventi dello stesso
+  tipo fra le stesse persone: il disegno, il commento, la sfida, la corsa di
+  gruppo, il concorso, il numero), `extra` (`jsonb`: il resto dell'evento
+  per il testo e per cosa apre), `at`, `read_at` (vuota finché non è letta).
+- `UNIQUE (recipient_id, actor_id, kind, same)`: lo stesso evento di nuovo
+  (una reazione cambiata, una corsa di gruppo cambiata due volte) prende il
+  posto di quello prima, non letto e in cima.
+- **Nessun testo**: si scrive quando la lista si legge, nella lingua
+  dell'account, e quello che non è più vero resta fuori (come l'email delle
+  notizie). Le righe vanno via dopo `KEPT_DAYS` (90 giorni, approvati
+  dall'utente con la frase della privacy), con l'account, con chi ha agito, con il
+  disegno o il commento.
+- Indici: `(recipient_id, id DESC)` per la lista, `at` per le righe
+  vecchie, `actor_id`, `drawing_id` e `comment_id` per le cancellazioni.
+  Test in `test_notification_list.py`.
+
+Migrazione `0046_style_posts.sql` (TASK-384 parte A, ADR-0326, `API.md`
+«Style», `STYLE.md`; il numero è del Coordinatore):
+
+- **`style_posts`**: i post di MuW Style, caricati con `style_import.py`
+  solo dopo il sì dell'utente. `id` (`MS-001`…), `theme` (`running`,
+  `trail`, `bike`, `gym`, `athleisure`), `gender` (`women`, `men`), `title`
+  (`jsonb`, le cinque lingue), `image` (il nome del file sotto
+  `data/media/style`: la foto **non** è nel database né nelle copie),
+  `image_tool` (cosa l'ha generata), `publish_at` (da quando si vede),
+  `hidden_at` (nascosto: un post non si cancella, così i conteggi restano),
+  `created_at`. Indice `(publish_at DESC, id DESC)` sui non nascosti.
+- **`post_product_tags`**: i puntini. `id`, `post_id` (`ON DELETE CASCADE`),
+  `x` e `y` (0–1 dall'alto a sinistra), `item`, `brand`, `product_name`,
+  `price_eur` e `price_seen_at` (il prezzo e quando è stato letto),
+  `retailer` (`zalando`, `amazon`, `decathlon`), `url` (la pagina del
+  negozio, mai il link affiliato: quello si fa a ogni «Shop»),
+  `checked_at` (l'ultimo controllo del link, per il controllo giornaliero
+  che arriva col feed di Awin), `active` (falso per un prodotto finito: il
+  puntino sparisce, e un post senza puntini attivi non si vede).
+- **`product_tag_clicks`**: `(tag_id, day)` chiave, `opens` e `shops`. Solo
+  numeri per puntino e per giorno: **nessun account, nessun indirizzo,
+  nessun telefono** (ADR-0326 punto 3; `test_style_posts.py`,
+  `test_nothing_personal_is_kept`, lo controlla sulle colonne).
+- Nessuna riga di prima cambia, e `drawings` e `GET /feed` non si toccano.
+  Test in `test_style_posts.py` e `test_style_import.py`.
+
+Migrazione `0047_gym.sql` (TASK-385 parte A, ADR-0327, `API.md` «Gym»; il
+numero è del Coordinatore):
+
+- **`runs`**: `gym` entra nel CHECK delle attività (letto e allargato, come
+  la 0044); `track` diventa facoltativa, ma solo per `gym`
+  (`runs_track_check`: `track IS NOT NULL OR activity = 'gym'`). Le corse
+  di prima restano come sono.
+- **`drawings`**: una colonna `trackless` (falsa di base), che l'API mette
+  vera quando pubblica una corsa senza traccia. Il CHECK di 0014 (un
+  disegno visibile ha una traccia) diventa `drawings_track_check`:
+  `visibility = 'only_me' OR track IS NOT NULL OR trackless`; e
+  `drawings_trackless_check` vieta un disegno `trackless` con una traccia.
+  `preview` resta nulla per questi.
+- **`gym_sessions`**: una riga per allenamento, chiave la sua corsa (`ON
+  DELETE CASCADE`): `show_exercises`, `rests` (quanti recuperi) e `rest_s`
+  (i loro secondi sommati); ogni recupero resta sul telefono.
+- **`gym_sets`**: le serie in ordine, `(run_id, n)` chiave (`ON DELETE
+  CASCADE`): `exercise` (la chiave del catalogo) **o** `name` (scritto a
+  mano), `kind` (`load`, `bodyweight`, `timed`, `cardio`), `reps`,
+  `load_kg`, `duration_s`, `distance_m`, `speed_kmh`, `incline_pct`,
+  `level`, `floors`, `at_s` (quando è stata segnata, dall'inizio) e `live`
+  (durante l'allenamento o aggiunta dopo). I campi di ogni tipo li
+  controlla `gym_sessions.py`; il database tiene solo i limiti larghi.
+- Nessuna posizione: un allenamento in palestra non ha luoghi né distanza
+  (`distance_m` 0, `place` nullo). Test in `test_gym.py`.
+
+Migrazione `0058_gym_plans.sql` (TASK-411 parte C, ADR-0341):
+
+- **`gym_plans`**: le schede di un account, chiave `(user_id, key)` con la
+  chiave scelta dal telefono (`ON DELETE CASCADE` sull'account): `name`
+  1–40, `days` (sette bit, il bit 0 lunedì), `items` (JSONB, gli esercizi
+  in ordine con `sets` e i valori obiettivo; li controlla `gym_plans.py`),
+  `position`, `updated_at` (l'ultima modifica sul telefono: una più vecchia
+  non la sostituisce) e `created_at` (quando è arrivata all'API: i giorni
+  saltati contano da lì). Test in `test_gym_plans.py`.
+- **`gym_sessions.plan_key`**: la chiave della scheda seguita, nullable;
+  una chiave e non un riferimento, l'allenamento può arrivare prima della
+  scheda e una scheda eliminata lo lascia com'era.
+
+Migrazione `0066_gym_plan_weeks.sql` (TASK-433, le schede guidate):
+
+- **`gym_plans.program`**: JSONB nullable, le settimane di una scheda fatta
+  con la guida (obiettivo, primo giorno, ciclo, modo, allenamenti della
+  prima settimana, settimane scritte a mano; li controlla `gym_plans.py`);
+  null per una scheda di un allenamento sui suoi giorni, come prima. Con un
+  `program`, `days` tiene i giorni dei suoi allenamenti e `items` è vuoto.
+
+Migrazione `0048_run_ski_names.sql` (TASK-375 parte D2, ADR-0319, `API.md`
+«Ski names»; il numero è del Coordinatore. La `0047` è della palestra, e
+questa non ne ha bisogno):
+
+- **`runs.ski_names`** (`jsonb`, facoltativa, un oggetto): gli impianti presi e
+  le piste fatte in una giornata di sci, in questa forma: `{"lifts": [...],
+  "pistes": [...]}`. Ogni voce è `{"name", "type", "times"}`, nell'ordine
+  della giornata.
+- **Quando si scrive:** l'API la scrive una volta, quando la giornata si
+  salva, dai riquadri dello sci della cache (`ski_names.py`). Le giornate
+  già salvate restano come sono anche con riquadri nuovi.
+- **Senza nome:** gli impianti senza nome non ci sono, come ha scelto
+  l'utente.
+- **Valori vuoti:** `NULL` per ogni altra attività e per una giornata
+  salvata da un server senza i riquadri. Due elenchi vuoti per una
+  giornata in cui non si è trovato niente.
+- Nessuna riga di prima cambia, e nessun backfill: prima di questa nessuna
+  giornata di sci si poteva salvare. Test in `test_ski_names_api.py`.
+
+Migrazione `0049_vo2max.sql` (TASK-397 parte A, ADR-0332 e la sua
+precisazione, `API.md` «VO₂ max»; il numero è del Coordinatore):
+
+- **`vo2max`**, una riga per account che ha risposto a «Show your VO₂
+  max?»: `user_id` (chiave, `ON DELETE CASCADE` su `users`), `show` (il sì
+  del titolare, `false` finché non lo dà), `value` (ml/kg/min, fra 10 e 90),
+  `source` (`apple_health` o `health_connect`) e `measured_on` (il giorno,
+  mai l'ora).
+- **Il valore viene da Salute e solo col sì**: `value`, `source` e
+  `measured_on` sono tutti e tre `NULL` o tutti e tre presenti, e `show`
+  spento vuole `value` `NULL` (`CHECK`). Spegnere il sì lo cancella nella
+  stessa scrittura; un valore nuovo prende il posto del vecchio, nessuna
+  cronologia.
+- **La stima non si tiene**: si calcola a ogni lettura dai `run_bests`
+  degli ultimi 365 giorni (`vo2max_estimate.py`), così non c'è niente da
+  rimettere in pari quando un record cambia o una corsa si cancella.
+- Nessun indice oltre la chiave; nessuna riga di prima cambia, nessun
+  backfill. Test in `test_vo2max.py`.
+
+Migrazione `0050_outfit_tags.sql` (TASK-394 parte A, ADR-0333, `API.md`
+«Outfit tags»; il numero è del Coordinatore). Tabelle sue, fuori da quelle
+di Style (`0046`): un post di MuW e uno di un iscritto hanno regole
+diverse.
+
+- **`drawing_outfit_tags`**: i capi su una foto. `id` (`uuid`),
+  `drawing_id` e `n` con la chiave esterna su `drawing_photos` (`ON DELETE
+  CASCADE`: **il capo segue la foto**, e se ne va con lei, con il disegno
+  tornato `only_me` che toglie le foto dal server, con la corsa e con
+  l'account), `position` (0–4, l'ordine mandato), `x` e `y` (0–1),
+  `item` (la lista fissa), `brand` (1–40), `product_name` (1–80,
+  facoltativo), `url` (`https://`, al più 1000, già pulito) e `store` (il
+  nome che «Shop on» dice), tutti e due presenti o tutti e due `NULL`,
+  `hidden_at` (nascosto da una segnalazione: lo vede solo il
+  proprietario), `created_at`. Indice `(drawing_id, n, position)`.
+- **Il trigger `drawing_photo_replaced`**: quando il JPEG di una foto
+  cambia nello stesso posto (`UPDATE OF jpeg`, con `OLD.jpeg IS DISTINCT
+  FROM NEW.jpeg`), i capi di quel posto si cancellano: è un'altra foto. La
+  stessa foto rimandata dall'app li tiene. Un trigger perché
+  `drawing_photos.py` non cambi.
+- **`outfit_tag_clicks`**: `(tag_id, day)` chiave, `opens` e `shops`, `ON
+  DELETE CASCADE` sul capo. Solo numeri per capo e per giorno: **nessun
+  account, nessun indirizzo, nessun telefono** (`test_outfit_tags.py`,
+  `test_nothing_personal_is_kept`, lo controlla sulle colonne).
+- **`outfit_blocked_domains`**: l'elenco di MuW, `domain` chiave (minuscolo,
+  ASCII), `note`, `created_at`. Un dominio blocca anche gli host sotto di
+  lui. Si scrive a mano sul server, dopo una segnalazione.
+- **`reports`**: `outfit_tag` entra nel CHECK dei tipi
+  (`reports_kind_check`, letto dalla `0033` e allargato).
+- Nessuna riga di prima cambia, nessun backfill. Test in
+  `test_outfit_tags.py`.
+
+Migrazione `0053_pool_swims.sql` (TASK-400 parte A, ADR-0334, `API.md`
+«Pool swim»; il numero è del Coordinatore, la `0052` è di TASK-378 A):
+
+- **`runs`**: `runs_track_check` diventa `track IS NOT NULL OR activity IN
+  ('gym', 'swimming')`: un nuoto in piscina va senza traccia. Il nuoto in
+  acque libere ha la traccia come prima; `pool_swims` dice quale è quale.
+- **`pool_swims`**: una riga per nuoto in piscina, chiave la sua corsa (`ON
+  DELETE CASCADE`): `pool_length_m` (`numeric(5, 2)`, da 10 a 100) e
+  `lengths` (da 1 a 1000). `runs.distance_m` è il loro prodotto, al metro.
+- Nessuna posizione, nessuna riga di prima cambia, nessun backfill. Test in
+  `test_pool_swims.py`.
+
+Migrazione `0063_live_shares.sql` (TASK-424 parte A1, ADR-0352, `API.md`
+«Live shares»; numero in bozza del Coordinatore, quello vero il primo
+libero al merge):
+
+- **`live_shares`**: una riga per link. `id` (uuid casuale), `user_id`
+  (`CASCADE` su `users`), `token_hash` (SHA-256 del token, 32 byte,
+  unico: il token non si tiene), `activity`, `pool_length_m` (solo per la
+  piscina), `created_at`, `expires_at`, `finished_at`, `stopped_at`,
+  `paused`, `stats` (`jsonb`, gli ultimi numeri), `updated_at`.
+- **`live_share_points`**: i punti del link, esatti (`lat`, `lon`, `at`),
+  `CASCADE` sul link; `id` è il `seq` che la pagina chiede.
+- **Si cancellano presto**: punti e `stats` allo stop subito, alla
+  scadenza dal giro di pulizia (5 minuti); la riga vuota un giorno dopo.
+  Fuori dalle copie notturne (`backup.sh`, `--exclude-table-data`). Test
+  in `test_live_shares.py`.
+
+Migrazione `0073_live_audiences.sql` (TASK-468 parte A1a, ADR-0381, `API.md`
+«Live shares», «In chat e nel Feed»; il numero è del Coordinatore, dopo
+la `0072` di TASK-467 B1):
+
+- **`live_shares`**: `token_hash` diventa facoltativo (una live solo in
+  chat o nel Feed non ha link finché non lo si chiede; resta unico);
+  `audience_feed` (`none`/`followers`/`everyone`, default `none`: i link
+  di prima restano com'erano); `heart_visible` (default `false`).
+- **`live_share_recipients`**: a chi la live è stata mandata in chat
+  (`share_id`, `user_id`, `sent_at`), chiave sulla coppia; `CASCADE` sulla
+  live e sull'account, quindi va via con la riga vuota della live, un
+  giorno dopo la fine. Nessuna posizione. Test in `test_live_shares.py`.
+
+Migrazione `0075_planned_lives.sql` (TASK-468 parte A2a, ADR-0381, `API.md`
+«Le live programmate e la fila «Live» del Feed»; il numero è del
+Coordinatore, dopo la `0074` di TASK-455 A):
+
+- **`planned_lives`**: una live programmata. `owner_id` (`CASCADE` su
+  `users`), `activity`, `title` (1–60), `starts_at`, `audience_feed`
+  (`followers`/`everyone`), `heart_visible`, `created_at`, `updated_at`,
+  `post_id` (il post che è diventata, `SET NULL` su `drawings`). Indice
+  `(owner_id, starts_at, id)` per la fila e il profilo.
+- **`planned_live_reminders`**: «Remind me» (`planned_live_id`, `user_id`,
+  `created_at`), chiave sulla coppia; `CASCADE` sulla live e sull'account.
+- **`live_shares.planned_live_id`**: la live programmata che la
+  condivisione ha fatto partire (`SET NULL`). Il legame va dalla
+  condivisione alla programmata e non al contrario: i dati di
+  `live_shares` restano fuori dalle copie notturne, e una chiave da una
+  tabella copiata a una lasciata fuori ne romperebbe il ripristino.
+  Indici: `live_shares_planned` e `live_shares_in_feed` (`user_id,
+  created_at` delle live con `audience_feed` diverso da `none`).
+- **Le copie notturne**: `planned_lives` e `planned_live_reminders`
+  restano nelle copie, come le corse di gruppo: niente posizioni, e
+  nessuna chiave verso tabelle lasciate fuori. Test in
+  `test_planned_lives.py`.
+
+Migrazione `0054_ski_resorts.sql` (TASK-406 parte A, ADR-0338, `API.md`
+«Ski resorts»; il numero è del Coordinatore):
+
+- **`ski_resorts`**: una riga per stazione sciistica.
+  - **Identità:** `id` (chiave, l'id di OpenSkiData, stabile da un import
+    all'altro), `name` (1–120), `country` (ISO a due lettere o `NULL`),
+    `region`.
+  - **Dove:** `center` (`geography(Point)`, indice GIST per le più vicine)
+    e il riquadro `south`, `west`, `north`, `east`.
+  - **Numeri:** `lifts`, `piste_km` e `piste_km_by_difficulty` (`jsonb`,
+    un oggetto), `min_elevation_m`, `max_elevation_m`.
+  - **Altro:** `website` (`http(s)://`, al più 300) e `updated_at`.
+- **Chi la scrive:** solo l'import (`resort_import.py`), che rimpiazza
+  ogni riga per `id`. Con `--clean` toglie anche le stazioni che il file
+  non ha più.
+- **Nessun dato degli utenti**: le stesse righe per tutti. Nessuna riga di
+  prima cambia, nessun backfill. Test in `test_ski_resorts_api.py` e
+  `test_resort_import.py`.
+
+Migrazione `0056_ski_days.sql` (TASK-406 parte D1, ADR-0338, `API.md`
+«Ski resorts»; il numero è del Coordinatore, il primo libero al merge):
+
+- **`runs`**: tre colonne per la giornata di sci, scritte da `PUT
+  /me/activities/{key}/ski` solo su `skiing`. Sono `NULL` quando chi
+  scia non le ha date.
+  - `ski_resort_id`: riferimento a `ski_resorts(id)` con `ON DELETE SET
+    NULL`. Una stazione tolta da un import lascia la giornata senza
+    stazione.
+  - `ski_gear`: testo libero, da 1 a 60.
+  - `snow`: uno di `powder`, `groomed`, `icy`, `spring`, `heavy` (CHECK).
+- **Indice `runs_ski_resort`** su `(ski_resort_id, started_at DESC)`,
+  solo dove c'è la stazione: serve alla neve dei membri nelle ultime 24
+  ore.
+- Nessuna posizione nuova, nessuna riga di prima cambia, nessun backfill.
+  Test in `test_ski_days_api.py`.
+
+Migrazione `0057_ski_touring.sql` (TASK-415 parte A, ADR-0344; il numero è
+del Coordinatore: la `0056` è di TASK-406 D1, entrata prima):
+
+- Il vincolo `runs_activity_check` prende anche `'ski_touring'`: una gita
+  di scialpinismo si salva come corsa, come una giornata di sci (`0044`).
+  La migrazione rilegge il vincolo che trova e lo riscrive col nome in più,
+  in fondo, come la `0044`.
+- `favorites`, `group_runs` e `run_bests` no: nessun percorso da rifare,
+  nessun record personale.
+- Nessuna riga cambia. Test in `test_ski_touring_api.py`.
+
+Migrazione `0068_snowshoeing.sql` (TASK-413 parte A2, ADR-0342; numero in
+bozza, quello vero è il primo libero al merge, dal Coordinatore):
+
+- I vincoli `runs_activity_check`, `favorites_activity_check` e
+  `group_runs_activity_check` prendono anche `'snowshoeing'`: un percorso
+  sulla neve si salva, si tiene tra i preferiti e si propone come corsa di
+  gruppo. La migrazione rilegge ciascun vincolo e lo riscrive col nome in
+  più, in fondo, come la `0055`.
+- `run_bests` no: nessun record personale, come Hike.
+- Nessuna riga cambia. Test in `test_snowshoeing_api.py`.
+
+Migrazione `0069_paragliding.sql` (TASK-305 parte R1, ADR-0375; il numero
+è del Coordinatore, il primo libero in `main` al merge):
+
+- Il vincolo `runs_activity_check` prende anche `'paragliding'`: un volo
+  si salva come corsa, come una giornata di sci (`0044`). La migrazione
+  rilegge il vincolo che trova e lo riscrive col nome in più, in fondo,
+  come la `0057`: l'ordine con un'altra migrazione che lo allarga non
+  conta.
+- `favorites`, `group_runs` e `run_bests` no: nessun percorso da rifare,
+  nessun record personale.
+- Nessuna riga cambia. Test in `test_paragliding_api.py`.
+
+Migrazione `0070_comment_replies.sql` (TASK-454 parte C1, ADR-0377, `API.md`
+«Comments», «Risposte e reazioni ai commenti»; il numero è il primo
+libero in `main` al merge):
+
+- **`comments.parent_id`** (`uuid`, null, `ON DELETE CASCADE` su
+  `comments`): il commento sotto cui sta una risposta. **Un livello solo**:
+  è sempre un commento senza `parent_id` (lo controlla `comments.py`, non
+  un vincolo: la risposta a una risposta va sotto lo stesso commento).
+  Cancellare un commento cancella le sue risposte.
+- **`comments.mention_user_id`** (`bigint`, null, `ON DELETE SET NULL` su
+  `users`): chi nomina la risposta a una risposta («@nome» davanti al
+  testo, che resta com'è scritto). Null per una risposta al commento, e
+  quando quell'account viene cancellato.
+- Due indici parziali: le risposte di un commento dal più vecchio
+  (`parent_id`, `created_at`, `id`), e quelle che nominano un account.
+- **`comment_reactions`**: `comment_id` (`ON DELETE CASCADE` su
+  `comments`), `user_id` (`ON DELETE CASCADE` su `users`), `kind` (uno fra
+  `fire`, `clap`, `strong`, `laugh`, `wow`: quelli di `reactions` senza
+  `super_like`, scelta dell'utente), `created_at`. Chiave la coppia: una
+  reazione a testa per commento. Un indice su `user_id`.
+- Una risposta è una riga di `comments` come le altre: `hidden_at`,
+  segnalazioni, blocchi e `notifications.comment_id` valgono anche per lei.
+- Nessuna riga cambia: i commenti di prima sono commenti senza risposte.
+  Test in `test_comment_threads.py`.
+
+Migrazione `0071_wheelchair.sql` (TASK-414 parte A, ADR-0343; numero in
+bozza, quello vero è il primo libero al merge, dal Coordinatore):
+
+- I vincoli `runs_activity_check`, `favorites_activity_check`,
+  `group_runs_activity_check` e `run_bests_sport_check` prendono anche
+  `'wheelchair'`: un percorso in carrozzina o col passeggino si salva, si
+  tiene tra i preferiti, si propone come corsa di gruppo e ha record
+  personali suoi su 1 e 5 km (scelta 7). La migrazione rilegge ciascun
+  vincolo e lo riscrive col nome in più, in fondo, come la `0055`.
+- Nessuna riga cambia. Test in `test_wheelchair_api.py`.
+
+Migrazione `0076_alpinism.sql` (TASK-463 parte A, ADR-0373; il primo numero
+libero dopo la `0075` di TASK-468 A2a, #1245):
+
+- Il vincolo `runs_activity_check` prende anche `'alpinism'`: una giornata
+  di alpinismo si salva come corsa, registrata senza percorso, come lo
+  scialpinismo (`0057`) e il parapendio (`0069`). La migrazione rilegge il
+  vincolo che trova e lo riscrive col nome in più, in fondo.
+- `favorites`, `group_runs` e `run_bests` no: nessun percorso da rifare,
+  nessun record personale.
+- Il server la ha prima del contratto (`shared-types`): nessuna app la
+  legge finché la parte app non porta contratto e profilo insieme.
+- Nessuna riga cambia. Test in `test_alpinism_api.py`.
+
+Migrazione `0061_run_heart.sql` (TASK-409 parte B1, ADR-0334 precisazione D;
+numero in bozza dal Coordinatore, quello vero è il primo libero al merge):
+
+- **`runs`**: `heart_avg_bpm` e `heart_max_bpm` (`smallint`, null) e
+  `heart_shown` (`boolean`, `NOT NULL DEFAULT true`). Il vincolo
+  `runs_heart_check`: tutti e due o nessuno, da 30 a 230, il medio non sopra
+  il massimo. È un **dato sulla salute** (GDPR art. 9): arriva solo dopo il
+  consenso alla lettura sul telefono (il pulsante a fine nuoto, TASK-409).
+- Oggi li scrive solo un nuoto in piscina (`pool_swims.py`); le altre corse
+  restano null (TASK-345 B li userà per ogni sport). Si cancellano con la
+  corsa e con l'account. Nessun backfill. Test in `test_pool_swims.py`.
+
+Migrazione `0062_followed_resorts.sql` (TASK-406 parte D3a, ADR-0338, `API.md`
+«Seguire una stazione e i suoi post»; il numero è il primo libero al merge):
+
+- **`resort_follows`**: le stazioni che un account segue, «Your resorts».
+  - `user_id` verso `users(id)` e `resort_id` verso `ski_resorts(id)`, tutti
+    e due con `ON DELETE CASCADE`: un account cancellato, o una stazione
+    tolta da un import, se le porta via.
+  - `created_at`, per l'ordine: l'ultima seguita prima.
+  - Chiave `(user_id, resort_id)`: seguire due volte vale una.
+- La vede solo l'account. Nessuna posizione, nessuna riga di prima cambia,
+  nessun backfill. Test in `test_resort_follows.py`.
+
+Migrazione `0064_run_stats.sql` (TASK-410 parte C, ADR-0340, `API.md`
+«Run stats»; numero in bozza, il vero è del Coordinatore, il primo libero al
+merge):
+
+- **`run_stats`**: al più una riga per corsa, chiave `run_id` (`ON DELETE
+  CASCADE`), `stats` (`jsonb`, un oggetto) e `updated_at`. In `stats`:
+  `splits_km` e `splits_mile` (li conta il server dalla traccia), poi
+  `elevation` (al più 120 punti), `cadence_spm` e `kcal` (li manda il
+  telefono a fine attività). Una chiave assente o `null` è un dato che la
+  corsa non ha.
+- **Il battito non è qui**: sta in `runs` (`heart_avg_bpm`,
+  `heart_max_bpm`, `heart_shown`, TASK-409 B), e `heart_shown` decide anche
+  le calorie per chi guarda (scelta del Coordinatore, 2026-11-08).
+- Nessuna colonna nuova in `runs`, nessuna riga di prima cambia. Il
+  backfill dei passi delle corse vecchie (`python -m
+  shaperoute_api.run_stats`) scrive solo le righe che mancano, e si lancia
+  col sì dell'utente. Test in `test_run_stats.py`.
+- **Due chiavi in più in `stats`** (TASK-424 parte C2b, con TASK-429;
+  nessuna migrazione nuova): `ski_parts`, i tratti di una giornata di sci
+  (risalite e discese, al più 500, con `start_s`/`end_s` sui secondi della
+  traccia), e `ski_descents` `{metres, moving_s}`, la somma delle sole
+  discese, calcolata al `PUT`. Le liste dei post leggono `ski_descents`
+  con una sottoquery sulla chiave primaria (`drawings.py`, `_SEEN_FIELDS`).
+  Test in `test_ski_parts.py`.
+
+Migrazione `0072_sleep_nights.sql` (TASK-467 parte B1, ADR-0380, `API.md`
+«Sleep»; numero in bozza dal Coordinatore, quello vero è il primo libero al
+merge):
+
+- **`sleep_nights`**: una riga per notte di sonno **pubblicata**, mai i
+  campioni di Apple Salute né gli orari.
+  - `user_id` verso `users(id)` con `ON DELETE CASCADE`: un account
+    cancellato si porta via le sue notti.
+  - `night` (`date`): il giorno del risveglio. `UNIQUE (user_id, night)`.
+  - `score` (`smallint`, 0–100), `asleep_min` (1–1440), `awake_min`
+    (0–1440); `rem_min`, `light_min`, `deep_min` (null se nessun orologio
+    ha detto le fasi). Il vincolo `sleep_nights_stages_check`: le tre fasi
+    tutte o nessuna, non negative, insieme non più di `asleep_min`.
+  - `shared` (`boolean`, `NOT NULL DEFAULT false`): il sì del proprietario
+    a mostrarla nel profilo. `saved_at`.
+  - Un indice parziale `(user_id, night DESC) WHERE shared`: l'ultima notte
+    condivisa di un profilo.
+- **`runs`**: `sleep_night_id` (verso `sleep_nights(id)`, `ON DELETE SET
+  NULL`: togliere la notte lascia l'attività com'era) e `sleep_shown`
+  (`boolean`, `NOT NULL DEFAULT true`, la scelta dell'utente del
+  2026-11-12: nel post dell'attività il sonno parte acceso). Un indice
+  parziale su `sleep_night_id` dove non è null.
+- **Si tiene solo quello che è pubblicato**, e questa regola sta **nel
+  database**, non in `activities.py`: la funzione `sleep_night_left()` e
+  due trigger su `runs`, `runs_sleep_night_deleted` (`AFTER DELETE`) e
+  `runs_sleep_night_changed` (`AFTER UPDATE OF sleep_night_id`, quando il
+  riferimento cambia o si toglie). Scattano solo per una corsa che aveva
+  una notte, e cancellano quella notte se non è `shared` e nessun'altra
+  corsa la porta. Così vale per ogni strada che cancella una corsa o le
+  toglie la notte, anche quelle scritte dopo. Tre casi, coi test:
+  l'attività cancellata, il sonno tolto dall'attività (o sostituito con
+  un'altra notte), l'account cancellato (qui basta la cascata da `users`,
+  e i trigger non trovano più niente). L'altra metà è in `sleep.py`:
+  quando `shared` si spegne e nessuna attività porta la notte, la cancella.
+- È un **dato sulla salute** (GDPR art. 9): arriva solo col gesto di chi lo
+  pubblica («Share», o «Publish» con «Sleep last night» in vista). Si
+  cancella con `DELETE /me/sleep/{night}` e con l'account, per cascata.
+  **Non c'è un'esportazione automatica** dei dati di un account: la copia
+  che uno chiede per email si fa a mano, e comprende il sonno con queste
+  due query (sola lettura; `…` è `users.id`): le notti, `SELECT night,
+  score, asleep_min, awake_min, rem_min, light_min, deep_min, shared,
+  saved_at FROM sleep_nights WHERE user_id = … ORDER BY night`; e le due
+  colonne nuove di `runs`, cioè in quali attività una notte compare e se si
+  vede, `SELECT r.key, r.started_at, n.night, r.sleep_shown FROM runs r
+  JOIN sleep_nights n ON n.id = r.sleep_night_id WHERE r.user_id = … ORDER
+  BY r.started_at`.
+- Nessuna riga di prima cambia, nessun backfill. Test in `test_sleep.py`.
+
+Migrazione `0074_message_post.sql` (TASK-455 parte A, ADR-0382, `API.md`
+«Un post in un messaggio»; il numero è il primo libero in `main` al merge,
+dato dal Coordinatore):
+
+- `messages.attachment` accetta anche `post` (`messages_attachment_check`
+  rifatto).
+- `messages.post_id` (`uuid`, `REFERENCES drawings (id) ON DELETE SET
+  NULL`): il disegno a cui il messaggio rimanda. **Solo l'id**: la scheda
+  si legge da `drawings` a ogni pagina, con `drawing_seen_sql` di chi
+  chiede, e niente del disegno è copiato nel messaggio (`drawing` e
+  `drawing_card` restano `NULL`). Cancellato il disegno (con la corsa o
+  con l'account dell'autore) la colonna torna `NULL` e il messaggio resta,
+  con `attachment` `post`: «non più disponibile». `messages_post_check`:
+  un `post_id` solo con `attachment = 'post'`.
+- `messages_of_post`: l'indice parziale dei messaggi che rimandano a un
+  disegno, per il `SET NULL` quando si cancella. Test in
+  `test_message_posts.py`.
+
+Migrazione `0077_message_live.sql` (TASK-468 parte A1b, ADR-0381, `API.md`
+«Una live in un messaggio»; il numero è del Coordinatore):
+
+- `messages.attachment` accetta anche `live` (`messages_attachment_check`
+  rifatto con tutti i tipi: `photo`, `video`, `drawing`, `post`, `live`).
+- `messages.live_share_id` (`uuid`), **senza chiave esterna**: le copie
+  notturne tengono `messages` e lasciano fuori i dati di `live_shares`
+  (`deploy/backup.sh`), e una chiave dall'una all'altra ne romperebbe il
+  ripristino. Quando la riga della live va via (un giorno dopo la fine)
+  l'id non rimanda più a niente: la scheda è `null`, «Live ended».
+  `messages_live_check`: un `live_share_id` solo con `attachment =
+  'live'`. Test in `test_message_lives.py`.
+
+Migrazione `0078_post_links.sql` (TASK-455 parte C, ADR-0382, `API.md`
+«Post links»; numero provvisorio del Coordinatore, quello vero è il primo
+libero al merge):
+
+- `users.post_links` (`boolean NOT NULL DEFAULT true`): «Links to my
+  posts». Acceso all'inizio anche per gli account di prima (scelta
+  dell'utente del 2026-11-12, detta nella privacy). Finché è vero, i
+  disegni `everyone` dell'account si aprono dal loro link senza account
+  (`post_links.py`); falso, nessuno. Nessuna tabella dei link: il link è
+  l'id del disegno, e chi lo può aprire si chiede a ogni richiesta
+  (`drawings.LINKABLE_SQL`). Nessuna riga di prima cambia. Test in
+  `test_post_links.py`.
+
+Migrazione `0079_stretching.sql` (TASK-475 parte A, ADR-0386, `API.md`
+«Stretching»; numero del Coordinatore):
+
+- **`runs`**: `stretching` entra in `runs_activity_check` (letto e allargato
+  come la `0047`), e `runs_track_check` diventa `track IS NOT NULL OR
+  activity IN ('gym', 'swimming', 'stretching')`: una sessione di
+  stretching va senza traccia.
+- **`stretch_sessions`**: una riga per sessione, chiave la sua corsa (`ON
+  DELETE CASCADE`): `routine` (la chiave sul telefono, `^[A-Za-z0-9_]{1,40}$`),
+  `minutes` (da 1 a 60) ed `exercises` (da 0 a 100).
+- Nessuna posizione, nessuna riga di prima cambia, nessun backfill. Test in
+  `test_stretching_api.py`.
+
+Migrazione `0080_photo_posts.sql` (TASK-312 parte C, ADR-0272, `API.md`
+«Photo posts», `IMPORTAZIONI.md` §4; numero del Coordinatore,
+dopo la 0079 di TASK-475 A). **Un post di sole foto è un disegno senza corsa**:
+
+- `drawings.user_id` (`bigint NOT NULL`, `ON DELETE CASCADE` su `users`,
+  indice `drawings_user_idx`): di chi è il disegno, riempito da `runs` per
+  le righe di prima. Da qui leggono l'autore `drawing_seen_sql`,
+  `shown_sql` e chi parte da un disegno (Feed, profilo, foto, commenti,
+  reazioni, segnalazioni, push, campanello, email): così blocchi, nascosti
+  e «Followers» valgono anche per un post senza corsa. Chi parte da `runs`
+  (concorso, gioco, badge, totali, sport) non lo vede mai.
+- `drawings.run_id` diventa facoltativo; `drawings.key` (stessa forma
+  della chiave di una corsa) c'è solo senza corsa
+  (`drawings_run_or_key_check`), unica per account
+  (`drawings_user_key_key`): un post rimandato senza rete resta uno.
+- `drawings_photo_post_check`: senza corsa mai `only_me`, mai traccia,
+  sempre `trackless`.
+- Il vincolo di 0014 fra `visibility` e `published_at` diventa
+  `drawings_published_check` e vale solo con una corsa: un post senza
+  corsa ha `published_at` vuoto finché non ha una foto (lo mette la prima,
+  lo toglie l'ultima cancellata), e `drawing_seen_sql`/`shown_sql` per gli
+  altri vogliono `published_at` pieno. Test in `test_photo_posts.py` e
+  `test_photo_posts_seen.py`.
+
+Migrazione `0081_gym_by_hand.sql` (TASK-484 parte A, ADR-0395, `API.md`
+«Gym»; numero del Coordinatore: la prima entrata prende il primo libero). **Un allenamento in palestra
+scritto a mano**: il vincolo `runs_source_check` di 0034 accetta anche
+`manual`, che scrive solo `PUT /me/gym-sessions/{key}`. Nessuna colonna
+nuova, nessuna riga di prima cambia, nessun backfill. I livelli
+(`gym_levels.py`) leggono solo `source = 'muw'`, come già classifica,
+badge, concorso e gioco. Test in `test_gym.py`, `test_gym_levels.py` e
+`test_imported_runs.py`.
+
+Migrazione `0082_sleep_posts.sql` (TASK-467 parte E, «ADR-0380,
+precisazione E», `API.md` «Sleep»; numero del Coordinatore, dopo la 0081
+di TASK-484 A). **Il post di una notte di sonno è un disegno
+senza corsa che porta la sua notte**:
+
+- `drawings.sleep_night_id` (`bigint`, `ON DELETE CASCADE` su
+  `sleep_nights`): la notte di cui è il post. Vincolo
+  `drawings_sleep_post_check`: solo un disegno senza corsa ne ha una sua
+  (la notte di una corsa sta sulla corsa, `0072`), ed è pubblicato appena
+  nasce (`published_at` pieno: non aspetta una foto). Indice unico
+  `drawings_of_sleep_night`: un post per notte.
+- La funzione `sleep_night_left` della `0072` è riscritta: una notte resta
+  finché è nel profilo, una corsa la porta **o un post è suo**. Un trigger
+  nuovo, `drawings_sleep_night_deleted`, la chiama quando il post viene
+  cancellato, da chiunque: la notte va via se niente altro la pubblica.
+- Una richiesta di copia dei dati comprende i post del sonno: sono righe
+  di `drawings` con `sleep_night_id`, e le loro notti sono in
+  `sleep_nights` (le query del sonno della `0072` le trovano già).
+
+Migrazione `0083_gear.sql` (TASK-486 parte A, ADR-0393, `API.md`
+«Gear»; numero del Coordinatore, dopo la 0081 di TASK-484 e la 0082 di
+TASK-467 E1).
+**L'attrezzatura di un iscritto**:
+
+- **`gear`**: un attrezzo. `id` (`uuid`), `user_id` verso `users(id)` con
+  `ON DELETE CASCADE`; `kind` dalla lista di `gear.GearKind` (il `CHECK`
+  ha gli stessi nomi, un test lo legge); `brand` (1–40), `model` (1–80),
+  `name` (1–40), `bought_on` (dal 1950), `note` (1–500), `limit_m`
+  (1000–100 000 000); `off_profile` («Hide from profile»), `retired_at`
+  («Retire»), `hidden_at` (nascosto dall'email di una segnalazione),
+  `created_at`. Indice `(user_id, created_at)`.
+- **`gear_photos`**: una foto per attrezzo, `jpeg` com'è uscito da
+  `gear.gear_jpeg`, `updated_at` (la versione nell'indirizzo); via con
+  l'attrezzo.
+- **`activity_gear`**: `(run_id, gear_id)`, chiave primaria la coppia;
+  via con l'attività o con l'attrezzo. Indice su `gear_id` per i totali,
+  che si contano a ogni lettura da `runs.distance_m` e `runs.duration_s`
+  (nessun totale salvato che possa sbagliare).
+- **`gear_defaults`**: `(gear_id, activity)`, gli sport che partono con
+  l'attrezzo già scelto. `activity` sono i nomi di `runs.activity`,
+  controllati da `gear.py` e non da un `CHECK`: uno sport nuovo non chiede
+  una migrazione qui.
+- Il legame coi capi taggati (`drawing_outfit_tags.gear_id`) arriva con
+  la parte F, nella migrazione `0085_outfit_gear_link.sql` (sotto).
+- **`reports.kind`** con `gear`. Nessuna riga di prima cambia, nessun
+  backfill. Test in `test_gear.py` e `test_moderation.py`.
+
+Migrazione `0084_plan_posts.sql` (TASK-485 parte A, ADR-0394, `API.md`
+«Plan posts»; numero del Coordinatore, dopo la 0083 di TASK-486).
+**Una scheda della palestra pubblicata è un disegno senza corsa che porta
+una copia della scheda**:
+
+- `drawings.plan` (`jsonb`): la scheda com'era a «Post», controllata da
+  `gym_plans.GymPlanPostedBody` (nome, giorni, esercizi coi kg, il
+  programma; mai `starts_on`, `runner` né la data della meta). Una copia,
+  non un riferimento a `gym_plans`: cambiare o cancellare la scheda non
+  tocca il post, e rimandato il post la tiene com'era.
+- Vincolo `drawings_plan_post_check`: solo un disegno senza corsa e senza
+  notte ne ha una, pubblicato appena nasce (`published_at` pieno), e
+  `plan` è un oggetto. Valgono anche i vincoli della `0080` (mai «Only
+  me», nessuna traccia).
+- Un disegno senza corsa è di sole foto solo senza notte e senza `plan`
+  (`photo_posts.PHOTO_POST_SQL`). Una richiesta di copia dei dati
+  comprende le schede pubblicate: sono righe di `drawings`. Nessuna riga di
+  prima cambia, nessun backfill. Test in `test_plan_posts.py`.
+
+Migrazione `0085_outfit_gear_link.sql` (TASK-486 parte F, ADR-0393,
+`API.md` «Outfit tags»; numero del Coordinatore). Un capo taggato su una
+foto può essere un attrezzo del suo proprietario (la scelta 3
+dell'utente):
+
+- **`drawing_outfit_tags.gear_id`** (`uuid`, facoltativo) con la chiave
+  esterna su `gear` `ON DELETE SET NULL`: cancellato l'attrezzo, il capo
+  resta con le sue parole, senza il legame. Indice parziale su `gear_id`.
+  Nessuna riga di prima cambia, nessun backfill. Test in
+  `test_outfit_gear.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno
-nel database; il taglio dei 200 m nell'API, in metri. Una corsa salvata
-ha due linee: quella intera in `runs`, che vede solo il proprietario
-(TASK-172), e quella tagliata in `drawings`, calcolata quando la titola o
-la pubblica, che vedono gli altri (TASK-117). Gli orari stanno nella
+nel database. Una corsa salvata ha due linee: quella con gli orari in
+`runs`, che vede solo il proprietario (TASK-172), e quella senza orari in
+`drawings`, scritta quando la titola o la pubblica, che vedono gli altri
+(TASK-117; intera da ADR-0330). Gli orari stanno nella
 coordinata M della traccia intera. Il GPX si scrive al volo quando serve.
 
 ## Copie di sicurezza
@@ -741,4 +1508,7 @@ ADR-0111).
 - Una corsa va a Strava solo quando il suo proprietario lo chiede, e solo
   all'atleta che lui ha collegato (TASK-187); a Strava si chiede il solo
   permesso di aggiungere attività, niente in lettura.
+- Una posizione condivisa dal vivo (TASK-424) va a chi ha il link solo
+  finché il link vale; poi si cancella, e non entra nelle copie di
+  sicurezza.
 - Età minima 16 anni.

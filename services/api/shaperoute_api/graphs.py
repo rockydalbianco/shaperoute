@@ -24,10 +24,15 @@ from route_engine.network import BBox, Graph, read_graph
 from route_engine.sidewalks import NamedRoad
 from route_engine.zone_crop import ZoneCrop
 
+from shaperoute_api.overpass_fallback import with_second_service
+from shaperoute_api.overpass_pause import short_overpass_pause
+
 log = logging.getLogger(__name__)
 
 # A zone graph takes hundreds of MB in memory (Milan's pickle alone is 44 MB).
 MAX_ZONES = 2
+# Of what a failed download says, in the error the app gets.
+REASON_CHARS = 200
 
 
 _gc_guard = threading.Lock()
@@ -79,10 +84,15 @@ class ZoneGraphs:
         source: ZoneSource,
         max_zones: int = MAX_ZONES,
         read: Callable[[Path], Graph] = read_graph,
+        widen: Callable[[BBox], BBox] | None = None,
     ) -> None:
         self._source = source
         self._max_zones = max_zones
         self._read = read
+        # The area a download asks for, for a request no zone covers: the
+        # request's own when None; network.download_box on the server, so
+        # the next tries nearby find the zone in the cache.
+        self._widen = widen
         self._zones: OrderedDict[Path, ZoneCrop] = OrderedDict()
         # One lock per zone (ADR-0032): downloading a zone makes only the
         # requests for that zone wait. The guard only covers the two dicts.
@@ -105,7 +115,11 @@ class ZoneGraphs:
 
     def load(self, bbox: BBox) -> Graph:
         started = time.perf_counter()
-        key = self._source.covering_path(bbox) or self._source.cache_path(bbox)
+        # A zone not cached yet goes under the name of what is downloaded
+        # for it: the requests waiting on the same download wait together.
+        key = self._source.covering_path(bbox) or self._source.cache_path(
+            self._download_area(bbox)
+        )
         with self._lock_for(key):
             zone, origin = self._zone(key, bbox)
         # Outside the lock: the zone is only read, and the crop is this
@@ -133,7 +147,8 @@ class ZoneGraphs:
         # Checked again: another request may have downloaded it meanwhile.
         path = self._source.covering_path(bbox)
         if path is None:
-            zone, origin = ZoneCrop(self._download(bbox)), "network"
+            area = self._download_area(bbox)
+            zone, origin = ZoneCrop(self._download(area)), "network"
         else:
             zone, origin = ZoneCrop(self._read(path)), "disk"
         with self._guard:
@@ -142,11 +157,28 @@ class ZoneGraphs:
                 self._zones.popitem(last=False)
         return zone, origin
 
+    def _download_area(self, bbox: BBox) -> BBox:
+        return bbox if self._widen is None else self._widen(bbox)
+
     def _download(self, bbox: BBox) -> Graph:
         try:
-            # Downloads the zone and saves it in the cache, like the CLI.
-            return self._source.load(bbox)
+            # Downloads the zone and saves it in the cache, like the CLI;
+            # someone is waiting for this one, so without OSMnx's minute
+            # when Overpass's status says nothing, and once more from the
+            # second service, if the server has one, when Overpass answers
+            # with an error (TASK-471, ADR-0385).
+            with short_overpass_pause():
+                return with_second_service(lambda: self._source.load(bbox))
         except Exception as exc:
             raise MapDataUnavailableError(
-                f"OpenStreetMap data for this area could not be downloaded: {exc}"
+                "OpenStreetMap data for this area could not be downloaded: "
+                f"{_reason(exc)}"
             ) from exc
+
+
+def _reason(exc: Exception) -> str:
+    """Why a download failed, in a line: OSMnx's error carries the whole
+    page Overpass answered with (its 502 page is a dozen lines), which is
+    not for the app's error nor for the request log (TASK-471)."""
+    lines = str(exc).strip().splitlines()
+    return lines[0][:REASON_CHARS] if lines else type(exc).__name__

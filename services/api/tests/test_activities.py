@@ -49,6 +49,18 @@ PLACE_KEY = "test-key"
 TURN = {"rotation_deg"}
 # The post of a run (TASK-258): the runs opened whole were written before it.
 POST = {"post"}
+# Where a run comes from (TASK-312 part A): every fixture written before is
+# a run of the app, as an older app sends it and an older API answers it.
+SOURCE = {"source"}
+# The climb in the list (TASK-461 D1): the fixtures written before are what
+# an older API answers.
+CLIMB = {"climb_m"}
+# A race's parts (TASK-305 part R6d): left out of the answer for any other
+# run (activity-flight.json).
+FLIGHT_PARTS = {"flight"}
+# The phone's offset for the game (TASK-423 C): only a newer app sends it.
+OFFSET = {"utc_offset_min"}
+MUW = {"source": "muw"}
 
 
 def _load(name: str) -> Any:
@@ -159,41 +171,63 @@ def test_the_fixtures_are_the_contract() -> None:
     # TASK-208, in activity-request-cycling.json (test_drawings.py).
     body = _load("activity-request.json")
     assert set(body) == (
-        set(ActivityRequestBody.model_fields) - {"walks", "activity"} - TURN
+        set(ActivityRequestBody.model_fields)
+        - {"walks", "activity"}
+        - TURN
+        - SOURCE
+        - OFFSET
     )
     assert set(body["pauses"][0]) == set(PauseBody.model_fields) - {"pen"}
     ActivityRequestBody.model_validate(body)
     listed = _load("activities.json")
     assert set(listed) == set(ActivitiesBody.model_fields)
     for activity in listed["activities"]:
-        assert set(activity) == set(ActivityBody.model_fields) - TURN
+        assert set(activity) == set(ActivityBody.model_fields) - TURN - SOURCE - CLIMB
     ActivitiesBody.model_validate(listed)
     whole = _load("activity.json")
     assert set(whole) == (
-        set(ActivityDetailBody.model_fields) - {"walks", "pauses"} - TURN - POST
+        set(ActivityDetailBody.model_fields)
+        - {"walks", "pauses"}
+        - TURN
+        - POST
+        - SOURCE
+        - FLIGHT_PARTS
     )
     # A word with the pen up (TASK-199): every field but the activity.
     walked = _load("activity-request-walks.json")
-    assert set(walked) == set(ActivityRequestBody.model_fields) - {"activity"} - TURN
+    assert set(walked) == (
+        set(ActivityRequestBody.model_fields) - {"activity"} - TURN - SOURCE - OFFSET
+    )
     assert set(walked["pauses"][0]) == set(PauseBody.model_fields)
     ActivityRequestBody.model_validate(walked)
     whole_walked = _load("activity-walks.json")
     assert set(whole_walked) == (
-        set(ActivityDetailBody.model_fields) - {"pauses"} - TURN - POST
+        set(ActivityDetailBody.model_fields)
+        - {"pauses"}
+        - TURN
+        - POST
+        - SOURCE
+        - FLIGHT_PARTS
     )
     # The same run opened from the API of TASK-200: every field.
     whole_paused = _load("activity-pauses.json")
-    assert set(whole_paused) == set(ActivityDetailBody.model_fields) - TURN - POST
+    assert set(whole_paused) == (
+        set(ActivityDetailBody.model_fields) - TURN - POST - SOURCE - FLIGHT_PARTS
+    )
     assert {**whole_paused, "pauses": None} == {**whole_walked, "pauses": None}
     ActivityDetailBody.model_validate(whole_paused)
     # A run along a route whose shape is turned (TASK-232 part C): the
     # request of before with its turn, and the run whole with every field.
     turned = _load("activity-request-turned.json")
-    assert set(turned) == set(ActivityRequestBody.model_fields) - {"walks", "activity"}
+    assert set(turned) == (
+        set(ActivityRequestBody.model_fields) - {"walks", "activity"} - SOURCE - OFFSET
+    )
     assert {**turned, "rotation_deg": None} == {**body, "rotation_deg": None}
     assert ActivityRequestBody.model_validate(turned).rotation_deg == -30
     whole_turned = _load("activity-turned.json")
-    assert set(whole_turned) == set(ActivityDetailBody.model_fields) - POST
+    assert set(whole_turned) == (
+        set(ActivityDetailBody.model_fields) - POST - SOURCE - FLIGHT_PARTS
+    )
     assert ActivityDetailBody.model_validate(whole_turned).rotation_deg == -30
 
 
@@ -242,11 +276,33 @@ def test_a_run_saved_is_listed_as_the_example(client: TestClient) -> None:
     saved = client.put(f"/me/activities/{KEY}", json=request(), headers=me)
     assert saved.status_code == 201
     # The example of before TASK-232 part C: north up.
-    expected = {**_load("activities.json")["activities"][0], "rotation_deg": None}
+    expected = {
+        **_load("activities.json")["activities"][0],
+        "rotation_deg": None,
+        **MUW,
+        "climb_m": None,
+    }
     assert saved.json() == expected
     listed = client.get("/me/activities", headers=me)
     assert listed.status_code == 200
     assert listed.json() == {"activities": [expected], "next": None, "total": 1}
+
+
+def test_the_list_says_each_runs_climb(client: TestClient) -> None:
+    # TASK-461 D1 (ADR-0371): «Già scritto dai tuoi hike: 452 m il 26
+    # ottobre». A run whose fixes have heights says what it climbed; one
+    # without, null.
+    me = signed_up(client)
+    body = request()
+    for index, fix in enumerate(body["track"]):
+        fix["altitude_m"] = 200.0 + 10.0 * index
+    saved = client.put(f"/me/activities/{KEY}", json=body, headers=me)
+    assert saved.status_code == 201
+    listed = client.get("/me/activities", headers=me).json()["activities"]
+    assert listed[0]["climb_m"] == saved.json()["climb_m"]
+    assert listed[0]["climb_m"] is not None and listed[0]["climb_m"] > 0
+    flat = client.put(f"/me/activities/{OTHER_KEY}", json=request(), headers=me)
+    assert flat.json()["climb_m"] is None
 
 
 def test_a_run_opens_whole_as_the_example(client: TestClient) -> None:
@@ -262,6 +318,7 @@ def test_a_run_opens_whole_as_the_example(client: TestClient) -> None:
         "walks": [],
         "pauses": [{"from_s": 300.0, "to_s": 360.0, "auto": True}],
         "rotation_deg": None,
+        **MUW,
     }
 
 
@@ -278,7 +335,7 @@ def test_a_run_along_a_turned_route_keeps_the_turn(client: TestClient) -> None:
     assert [run["rotation_deg"] for run in listed] == [-30]
     whole = client.get(f"/me/activities/{KEY}", headers=me)
     assert whole.status_code == 200
-    assert whole.json() == {**_load("activity-turned.json"), "post": None}
+    assert whole.json() == {**_load("activity-turned.json"), "post": None, **MUW}
     # Half degrees come back as sent: the water tries every 5°, and a
     # `real` column holds them.
     client.put(
@@ -557,6 +614,7 @@ def test_a_run_with_walks_has_the_score_of_its_letters(client: TestClient) -> No
         **_load("activity-pauses.json"),
         "rotation_deg": None,
         "post": None,
+        **MUW,
     }
 
 

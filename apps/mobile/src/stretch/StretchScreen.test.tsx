@@ -4,22 +4,28 @@ import { AccessibilityInfo } from "react-native";
 import type { Exercise } from "./exercises";
 import { nearest } from "./Figure";
 import { QUAD, STAND } from "./poses";
-import { clockLabel, STAND_MS, StretchScreen, TICK_MS } from "./StretchScreen";
+import { clockLabel, READY_S, StretchScreen, SWITCH_S, TICK_MS } from "./StretchScreen";
 
 jest.mock("expo-keep-awake", () => ({
   activateKeepAwakeAsync: jest.fn(() => Promise.resolve()),
   deactivateKeepAwake: jest.fn(() => Promise.resolve()),
 }));
 
-const mockPlay = jest.fn();
-const mockSeekTo = jest.fn(() => Promise.resolve());
-jest.mock("expo-audio", () => ({
-  createAudioPlayer: jest.fn(() => ({ play: mockPlay, seekTo: mockSeekTo })),
+/** Every sound played, in order. */
+const mockPlayed: string[] = [];
+jest.mock("./chime", () => ({
+  chime: () => mockPlayed.push("ding"),
+  tick: () => mockPlayed.push("tick"),
 }));
+
+/** The sounds played so far. */
+function sounds(): string[] {
+  return [...mockPlayed];
+}
 
 beforeEach(() => {
   jest.useFakeTimers();
-  mockPlay.mockClear();
+  mockPlayed.length = 0;
   jest
     .spyOn(AccessibilityInfo, "announceForAccessibility")
     .mockImplementation(() => {});
@@ -49,6 +55,7 @@ const TWO: readonly Exercise[] = [
     sides: true,
     seconds: 3,
     pose: QUAD,
+    breath: { thighNear: -8 },
   },
   {
     key: "b",
@@ -59,6 +66,48 @@ const TWO: readonly Exercise[] = [
     pose: STAND,
   },
 ];
+
+describe("how long to stretch (TASK-466 part B)", () => {
+  it("asks first, under the routine's name, with 3, 5 and 10 minutes", async () => {
+    await render(<StretchScreen onLeave={jest.fn()} />);
+    expect(screen.getByTestId("stretch-chooser")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "After run" })).toBeTruthy();
+    expect(screen.getByText("How long?")).toBeTruthy();
+    for (const label of ["3 min", "5 min", "10 min", "Not now"]) {
+      expect(screen.getByRole("button", { name: label })).toBeTruthy();
+    }
+    // Nothing runs before the choice.
+    await wait(TICK_MS * 30);
+    expect(screen.queryByTestId("stretch-screen")).toBeNull();
+    expect(sounds()).toEqual([]);
+  });
+
+  it("runs the routine of the length chosen, holds and all", async () => {
+    await render(<StretchScreen onLeave={jest.fn()} />);
+    await press("3 min");
+    expect(screen.queryByTestId("stretch-chooser")).toBeNull();
+    expect(screen.getByText("1 of 4")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Quad stretch" })).toBeTruthy();
+    expect(screen.getByText("Get ready")).toBeTruthy();
+    await wait(TICK_MS * READY_S);
+    expect(screen.getByText(clockLabel(20))).toBeTruthy();
+  });
+
+  it("asks about the routine it is given, and longer means more stretches", async () => {
+    await render(<StretchScreen onLeave={jest.fn()} routine="morning" />);
+    expect(screen.getByRole("header", { name: "Morning" })).toBeTruthy();
+    await press("10 min");
+    expect(screen.getByText("1 of 10")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Overhead reach" })).toBeTruthy();
+  });
+
+  it("leaves with «Not now», before any exercise", async () => {
+    const onLeave = jest.fn();
+    await render(<StretchScreen onLeave={onLeave} />);
+    await press("Not now");
+    expect(onLeave).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe("the stretching after a run", () => {
   it("writes the seconds left as a clock", () => {
@@ -74,53 +123,71 @@ describe("the stretching after a run", () => {
     expect(nearest(10, 40)).toBe(40);
   });
 
-  it("starts with the first exercise, its line, the right side and the time", async () => {
+  it("starts with «Get ready» on the first exercise, its line and the right side", async () => {
     await render(<StretchScreen onLeave={jest.fn()} exercises={TWO} />);
     expect(screen.getByText("1 of 2")).toBeTruthy();
     expect(screen.getByRole("header", { name: "Quad stretch" })).toBeTruthy();
     expect(screen.getByText("Pull the heel.")).toBeTruthy();
     expect(screen.getByText("Right side")).toBeTruthy();
-    expect(screen.getByText("0:03")).toBeTruthy();
+    expect(screen.getByText("Get ready")).toBeTruthy();
+    expect(screen.getByText(clockLabel(READY_S))).toBeTruthy();
     expect(screen.getByText("Stop if it hurts.")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Skip" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "End" })).toBeTruthy();
     // Drawn for the eyes only: the name and the line say what it does.
     expect(screen.queryByTestId("stretch-figure")).toBeNull();
     expect(
       screen.getByTestId("stretch-figure", { includeHiddenElements: true }),
     ).toBeTruthy();
+    expect(sounds()).toEqual([]);
   });
 
-  it("counts down, rings, switches sides, goes on to the next and then leaves", async () => {
+  it("holds after «Get ready», ticks the last seconds, rings, switches sides and goes on", async () => {
     const onLeave = jest.fn();
     await render(<StretchScreen onLeave={onLeave} exercises={TWO} />);
-    await wait(TICK_MS);
-    expect(screen.getByText("0:02")).toBeTruthy();
-    await wait(TICK_MS * 2);
-    // The right side is over: the bell, the other side, the time again.
-    expect(mockPlay).toHaveBeenCalledTimes(1);
-    expect(screen.getByText("Left side")).toBeTruthy();
+    await wait(TICK_MS * READY_S);
+    // In the pose: the hold's time starts with a tick.
+    expect(screen.queryByText("Get ready")).toBeNull();
     expect(screen.getByText("0:03")).toBeTruthy();
+    expect(sounds()).toEqual(["tick"]);
+    await wait(TICK_MS * 2);
+    expect(screen.getByText("0:01")).toBeTruthy();
+    expect(sounds()).toEqual(["tick", "tick", "tick"]);
+    await wait(TICK_MS);
+    // The right side is over: the bell, then a shorter wait to switch.
+    expect(sounds()).toEqual(["tick", "tick", "tick", "ding"]);
+    expect(screen.getByText("Left side")).toBeTruthy();
+    expect(screen.getByText("Switch sides")).toBeTruthy();
+    expect(screen.getByText(clockLabel(SWITCH_S))).toBeTruthy();
     expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith(
       "Switch sides",
     );
-    await wait(STAND_MS + TICK_MS * 3);
+    await wait(TICK_MS * SWITCH_S);
+    // The last side of this exercise: the next one is named.
+    expect(screen.getByText("0:03")).toBeTruthy();
+    expect(screen.getByText("Next: Calf stretch")).toBeTruthy();
+    await wait(TICK_MS * 3);
     // The second exercise, on both sides at once: no side to name.
-    expect(mockPlay).toHaveBeenCalledTimes(2);
     expect(screen.getByText("2 of 2")).toBeTruthy();
+    expect(screen.getByText("Get ready")).toBeTruthy();
     expect(screen.queryByText("Left side")).toBeNull();
     expect(screen.queryByText("Right side")).toBeNull();
+    expect(screen.queryByText("Next: Calf stretch")).toBeNull();
     expect(screen.getByRole("button", { name: "Done" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Skip" })).toBeNull();
     expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith(
       "Calf stretch",
     );
+    await wait(TICK_MS * (READY_S + 1));
     expect(onLeave).not.toHaveBeenCalled();
-    await wait(TICK_MS * 2);
-    expect(mockPlay).toHaveBeenCalledTimes(3);
+    await wait(TICK_MS);
+    expect(sounds().filter((s) => s === "ding")).toHaveLength(3);
     expect(onLeave).toHaveBeenCalledTimes(1);
   });
 
   it("holds the time on «Pause» and goes on with «Resume»", async () => {
     await render(<StretchScreen onLeave={jest.fn()} exercises={TWO} />);
+    await wait(TICK_MS * READY_S);
     await press("Pause");
     await wait(TICK_MS * 5);
     expect(screen.getByText("0:03")).toBeTruthy();
@@ -130,11 +197,22 @@ describe("the stretching after a run", () => {
     expect(screen.getByText("0:02")).toBeTruthy();
   });
 
-  it("leaves at once on «Skip», from any exercise", async () => {
+  it("skips to the next exercise's «Get ready» on «Skip», both sides at once", async () => {
+    const onLeave = jest.fn();
+    await render(<StretchScreen onLeave={onLeave} exercises={TWO} />);
+    await wait(TICK_MS * (READY_S + 1));
+    await press("Skip");
+    expect(screen.getByText("2 of 2")).toBeTruthy();
+    expect(screen.getByText("Get ready")).toBeTruthy();
+    expect(screen.getByText(clockLabel(READY_S))).toBeTruthy();
+    expect(onLeave).not.toHaveBeenCalled();
+  });
+
+  it("leaves at once on «End», from any exercise", async () => {
     const onLeave = jest.fn();
     await render(<StretchScreen onLeave={onLeave} exercises={TWO} />);
     await wait(TICK_MS);
-    await press("Skip");
+    await press("End");
     expect(onLeave).toHaveBeenCalledTimes(1);
   });
 
@@ -145,14 +223,14 @@ describe("the stretching after a run", () => {
     );
     await wait(TICK_MS);
     await unmount();
-    await wait(TICK_MS * 20);
+    await wait(TICK_MS * 30);
     expect(onLeave).not.toHaveBeenCalled();
   });
 
-  it("says the time left to a screen reader every ten seconds", async () => {
+  it("says the time left to a screen reader every ten seconds of a hold", async () => {
     const long: readonly Exercise[] = [{ ...TWO[1], seconds: 25 }];
     await render(<StretchScreen onLeave={jest.fn()} exercises={long} />);
-    await wait(TICK_MS * 5);
+    await wait(TICK_MS * (READY_S + 5));
     expect(screen.getByRole("timer", { name: "20 seconds left" })).toBeTruthy();
     expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith(
       "20 seconds left",

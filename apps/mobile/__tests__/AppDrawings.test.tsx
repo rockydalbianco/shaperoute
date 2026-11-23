@@ -26,6 +26,7 @@ import { dayLabel, startedLabel } from "../src/activities/activityText";
 import { loadOutbox, saveOutbox, type Waiting } from "../src/activities/outbox";
 import { clearRun, type SavedRun, saveRun } from "../src/navigation/trackStore";
 import { loadDrawingOutbox } from "../src/social/drawingOutbox";
+import { saveVisibility } from "../src/social/visibilityChoice";
 import { loadStravaOutbox } from "../src/strava/stravaOutbox";
 
 // Every test renders the whole app, and the first one loads it cold.
@@ -228,7 +229,7 @@ async function open() {
 }
 
 async function openProfile() {
-  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
 }
 
 /** The star of «My activities», opened on the map. */
@@ -246,7 +247,12 @@ async function openStar(answers: Answers) {
   await fireEvent.press(
     await screen.findByRole("button", { name: `${STAR_ROW}, open on the map` }),
   );
-  await screen.findByText("Back to the list");
+  await screen.findByTestId("activity-card-heading");
+}
+
+/** «Edit post» on the card of the run: the sheet with its form (TASK-456). */
+async function editPost() {
+  await fireEvent.press(await screen.findByRole("button", { name: "Edit post" }));
 }
 
 beforeEach(() => {
@@ -284,17 +290,9 @@ test("«Who can see it» starts at «Only me»; «Everyone», and «Save» publi
   expect(
     await screen.findByRole("radio", { name: "Only me", checked: true }),
   ).toBeOnTheScreen();
-  expect(
-    screen.queryByText(
-      "Every member sees it in your profile, without the first and last 200 m.",
-    ),
-  ).toBeNull();
+  expect(screen.queryByText("Every member sees it in your profile.")).toBeNull();
   await fireEvent.press(screen.getByRole("radio", { name: "Everyone" }));
-  expect(
-    screen.getByText(
-      "Every member sees it in your profile, without the first and last 200 m.",
-    ),
-  ).toBeOnTheScreen();
+  expect(screen.getByText("Every member sees it in your profile.")).toBeOnTheScreen();
   expect(screen.getByLabelText("Title").props.placeholder).toBe("Give it a name");
   await fireEvent.changeText(screen.getByLabelText("Title"), " Sunday heart ");
 
@@ -313,6 +311,26 @@ test("«Who can see it» starts at «Only me»; «Everyone», and «Save» publi
     choice({ title: "Sunday heart", visibility: "everyone" }),
   );
   await waitFor(() => expect(loadDrawingOutbox()).toEqual([]));
+  expect(loadOutbox()).toEqual([]);
+});
+
+test("a remembered «Everyone» publishes nothing without «Save»: the app closed and opened again", async () => {
+  signedIn();
+  saveVisibility(session.user.id, "everyone");
+  api(ACCOUNT);
+  saveRun(ENDED);
+  const first = await render(<App />);
+  await screen.findByText("Your run");
+  expect(
+    await screen.findByRole("radio", { name: "Everyone", checked: true }),
+  ).toBeOnTheScreen();
+  await first.unmount();
+  // Killed on the form: the run is still only on the phone.
+  await render(<App />);
+  await screen.findByText("Your run");
+  await screen.findByRole("radio", { name: "Everyone", checked: true });
+  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(0);
+  expect(calls("PUT", RUN_DRAWING)).toHaveLength(0);
   expect(loadOutbox()).toEqual([]);
 });
 
@@ -419,16 +437,15 @@ test("on a run of «My activities», «Public» publishes it and the title chang
       }),
     [`PUT ${STAR_DRAWING}`]: kept(STAR.id),
   });
+  // Not on the card: in its sheet.
+  expect(screen.queryByRole("radio", { name: "Everyone" })).toBeNull();
+  await editPost();
   await fireEvent.press(await screen.findByRole("radio", { name: "Everyone" }));
   expect(
     await screen.findByRole("radio", { name: "Everyone", checked: true }),
   ).toBeOnTheScreen();
   expect(bodyOf("PUT", STAR_DRAWING)).toEqual(choice({ visibility: "everyone" }));
-  expect(
-    screen.getByText(
-      "Every member sees it in your profile, without the first and last 200 m.",
-    ),
-  ).toBeOnTheScreen();
+  expect(screen.getByText("Every member sees it in your profile.")).toBeOnTheScreen();
 
   const title = screen.getByLabelText("Title");
   await fireEvent.changeText(title, "Star of Trento");
@@ -440,6 +457,10 @@ test("on a run of «My activities», «Public» publishes it and the title chang
   // Typing over, nothing new: no call.
   await fireEvent(screen.getByLabelText("Title"), "endEditing");
   expect(calls("PUT", STAR_DRAWING)).toHaveLength(2);
+  // The card is headed by the title now, with when it was under it.
+  expect(screen.getByTestId("activity-card-heading")).toHaveTextContent(
+    "Star of Trento",
+  );
 });
 
 test("without a network the choice waits on the phone, and says so", async () => {
@@ -456,6 +477,9 @@ test("without a network the choice waits on the phone, and says so", async () =>
       throw new TypeError("Network request failed");
     },
   });
+  // The title the API has heads the card.
+  expect(await screen.findByTestId("activity-card-heading")).toHaveTextContent("Star");
+  await editPost();
   await fireEvent.press(await screen.findByRole("radio", { name: "Everyone" }));
   expect(
     await screen.findByText(
@@ -486,6 +510,7 @@ test("a run too short to publish says why", async () => {
         status: 422,
       }),
   });
+  await editPost();
   await fireEvent.press(await screen.findByRole("radio", { name: "Everyone" }));
   expect(
     await screen.findByText("This run is too short to publish."),
@@ -500,6 +525,8 @@ test("an API without drawings shows no «Public» on a run", async () => {
   await openStar({});
   await waitFor(() => expect(calls("GET", STAR_DRAWING)).toHaveLength(1));
   expect(screen.queryByRole("radio", { name: "Everyone" })).toBeNull();
+  // Nor a form to open (TASK-456).
+  expect(screen.queryByRole("button", { name: "Edit post" })).toBeNull();
 });
 
 test("a public run is marked in «My activities»", async () => {
@@ -527,6 +554,39 @@ test("a public run is marked in «My activities»", async () => {
     await screen.findByRole("button", { name: `${STAR_ROW}, public, open on the map` }),
   ).toBeOnTheScreen();
   expect(screen.getAllByTestId("activity-public")).toHaveLength(1);
+});
+
+test("a run whose post has a title is headed by it in «My activities», the day under it", async () => {
+  signedIn();
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () => Response.json(activities),
+    "GET /me/drawings": () =>
+      Response.json({
+        drawings: [
+          {
+            key: STAR.id,
+            id: drawing.id,
+            title: "My first star",
+            public: true,
+            published_at: "2026-10-03T09:00:00Z",
+          },
+        ],
+      }),
+  });
+  await open();
+  await openProfile();
+  await fireEvent.press(await screen.findByRole("button", { name: /^My activities/ }));
+  expect(
+    await screen.findByRole("button", {
+      name: `My first star, ${STAR_ROW}, public, open on the map`,
+    }),
+  ).toBeOnTheScreen();
+  const [star, other] = screen.getAllByTestId("activity-heading");
+  expect(star).toHaveTextContent("My first star");
+  expect(screen.getByText(STAR_WHEN)).toBeOnTheScreen();
+  // The other run has no post: its day heads it, as before.
+  expect(other).toHaveTextContent(startedLabel(activities.activities[1].started_at));
 });
 
 // --- The profile ---

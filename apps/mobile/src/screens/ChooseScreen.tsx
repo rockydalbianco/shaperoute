@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -9,14 +9,22 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { FlightPage } from "../air/FlightPage";
+import { GymDrawGuide } from "../gym/GymDrawGuide";
+import { PlanTodayCard } from "../gym/PlanTodayCard";
 import { t, tLater } from "../i18n";
-import { HeartBadge } from "../intro/HeartBadge";
+import { useStartAddress } from "../location/startAddress";
 import { OpenSettings } from "../permissions/OpenSettings";
 import { PlaceSearch, type SuggestPlaces } from "../places/PlaceSearch";
+import { usePoolChoice } from "../pool/poolChoice";
+import { PoolDraw, SwimPlaceChoice } from "../pool/PoolDraw";
 import type { LatLon } from "@shaperoute/shared-types";
 
 import type { Place } from "../places/photon";
 import type { StartMode } from "../location/startMode";
+import { isRecordOnly } from "../settings/sport";
+import { useHeaderScroll } from "../tabs/headerScroll";
+import { useSport } from "../settings/useSport";
 import {
   color,
   fontSize,
@@ -28,7 +36,10 @@ import {
 import { TourPartView } from "../tour/TourPartView";
 import { TourScrollView } from "../tour/TourScrollView";
 import { TOUR_PART } from "../tour/tourSteps";
+import { RunNoRouteButton } from "./RunNoRouteButton";
 import { Segmented } from "./Segmented";
+import { StepTitle } from "./StepTitle";
+import { StretchRoutines } from "../stretchSport/StretchRoutines";
 
 /** "My position" also asks the GPS again, as the old button did, so it works
  * after the permission is given in Settings. Translated where shown, with
@@ -37,9 +48,6 @@ const START_MODES = [
   { value: "gps", label: tLater("My position") },
   { value: "place", label: tLater("Another place") },
 ] as const;
-
-/** The heart beside the name: as tall as the title's letters and a little more. */
-const BADGE_SIZE = 32;
 
 type Props = {
   /** Where the route will start, in words (UI.md, «La partenza»). */
@@ -73,6 +81,8 @@ type Props = {
   onRun?: () => void;
   /** Its button's words: «Bike» has its own (TASK-190). */
   runLabel?: string;
+  /** Its button's sign beside the words (TASK-361): a bike rides. */
+  runIcon?: string;
 };
 
 /**
@@ -96,8 +106,30 @@ export function ChooseScreen({
   footer,
   onRun,
   runLabel = t("Run without a route"),
+  runIcon,
 }: Props) {
   const insets = useSafeAreaInsets();
+  // The header turns to glass once the page scrolls (TASK-469 A5b).
+  const headerScroll = useHeaderScroll();
+  // A day on the snow has no shape to draw (TASK-375, ADR-0319): «Draw» is
+  // its recording only; a workout at the gym, its start (TASK-385 part B).
+  const sport = useSport();
+  const gym = sport === "gym";
+  // A stretching session (TASK-475 part B): its routines and their start.
+  const stretch = sport === "stretch";
+  const recordOnly = (isRecordOnly(sport) || gym || stretch) && onRun !== undefined;
+  // A swim in open water or in a pool (TASK-400 part B, ADR-0334): in a
+  // pool no start, no shape, no route, the pool and «Start swim».
+  const { place } = usePoolChoice();
+  const swim = sport === "swim" && onRun !== undefined;
+  const pool = swim && place === "pool";
+  // The start by its street (TASK-361): only while the GPS is the start and
+  // answers; any other line (searching, refused, a place) says more.
+  const onGps = mode === "gps" && !searching && !denied;
+  const address = useStartAddress(onGps ? near : null);
+  // The button at the foot covers the end of the page: the page ends that
+  // much lower, so its last card scrolls into sight (TASK-361).
+  const [footerHeight, setFooterHeight] = useState(0);
   return (
     // The km field is low on the screen: the content shrinks so the keyboard
     // does not cover it.
@@ -105,73 +137,191 @@ export function ChooseScreen({
       style={[StyleSheet.absoluteFill, styles.screen]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      {/* The tour of the first opening scrolls it to its parts (TASK-266). */}
-      <TourScrollView
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + space.lg }]}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.titleRow}>
-          <View style={styles.brand}>
-            {/* The heart of the launch on its yellow, as a logo (TASK-221). */}
-            <HeartBadge size={BADGE_SIZE} />
-            <Text style={styles.title}>MuW</Text>
+      {/* The page and the button docked on it: the keyboard's padding
+          shrinks this box, so the button rides above the keyboard. */}
+      <View style={styles.page}>
+        {/* The tour of the first opening scrolls it to its parts (TASK-266). */}
+        <TourScrollView
+          {...headerScroll}
+          contentContainerStyle={[
+            styles.content,
+            {
+              paddingTop: insets.top + space.lg,
+              // The button's height has the safe area in it; before it is
+              // measured, the safe area alone.
+              paddingBottom: Math.max(footerHeight, insets.bottom) + space.xl,
+            },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          testID="draw-page"
+        >
+          {/* The logo is in the header above, once (TASK-392). */}
+          <View style={styles.titleRow}>
+            <View style={styles.titleButtons}>
+              {/* The whole of it: "Run" alone read as running the route
+                drawn below (TASK-158). Outlined: the yellow is the
+                route's (TASK-361). */}
+              {onRun && !recordOnly && !pool && (
+                <RunNoRouteButton label={runLabel} icon={runIcon} onPress={onRun} />
+              )}
+            </View>
           </View>
-          <View style={styles.titleButtons}>
-            {onRun && (
-              <Pressable
-                style={styles.run}
-                onPress={onRun}
-                accessibilityRole="button"
-                accessibilityLabel={runLabel}
-              >
-                {/* The whole of it: "Run" alone read as running the route
-                    drawn below (TASK-158). */}
-                <Text style={styles.runText}>{runLabel}</Text>
-              </Pressable>
-            )}
-          </View>
-        </View>
-        <TourPartView name={TOUR_PART.start} style={styles.startCard}>
-          <Text style={styles.label}>{t("START")}</Text>
-          <Segmented
-            options={START_MODES.map((option) => ({
-              ...option,
-              label: t(option.label),
-            }))}
-            value={mode}
-            onChange={onMode}
-          />
-          <Text style={styles.status}>{status}</Text>
-          {denied && <OpenSettings />}
-          {searching && (
-            <PlaceSearch
-              onSelect={onPlace}
-              near={near}
-              suggest={suggest}
-              placeholder={searchHint}
+          {swim && <SwimPlaceChoice place={place} />}
+          {!gym && !stretch && onRun && (
+            <PlanTodayCard sport={sport} onRecord={onRun} />
+          )}
+          {pool ? (
+            <PoolDraw />
+          ) : recordOnly && gym ? (
+            // The gym's own page: today's plan or «Start workout», the month,
+            // the plans, how it works (TASK-411 B, C and F).
+            <GymDrawGuide
+              onStart={onRun}
+              startLabel={runLabel}
+              startIcon={runIcon}
+              hint={t("No route in the gym: MuW times your workout.")}
             />
+          ) : recordOnly && stretch ? (
+            // The routines of TASK-466, one ticked, and «Start stretching».
+            <>
+              <StretchRoutines />
+              <RecordDay
+                label={runLabel}
+                icon={runIcon}
+                onPress={onRun}
+                hint={t(
+                  "No route for stretching: choose a routine and MuW guides you.",
+                )}
+              />
+            </>
+          ) : recordOnly ? (
+            <>
+              <RecordDay
+                label={runLabel}
+                icon={runIcon}
+                onPress={onRun}
+                // A flight is not a day on the slopes (TASK-305 part R2), nor
+                // is a day of mountaineering (TASK-463 part B).
+                hint={
+                  sport === "paragliding"
+                    ? t("No shapes in the air yet: MuW records your flight.")
+                    : sport === "alpinism"
+                      ? t("No shapes up a mountain: MuW records your day.")
+                      : undefined
+                }
+              />
+              {/* Under it, ready to fly, the month and the bests (part R5b). */}
+              {sport === "paragliding" && <FlightPage />}
+            </>
+          ) : (
+            <>
+              <TourPartView name={TOUR_PART.start} style={styles.startCard}>
+                <StepTitle number={1} label={t("START")} />
+                <Segmented
+                  options={START_MODES.map((option) => ({
+                    ...option,
+                    label: t(option.label),
+                  }))}
+                  value={mode}
+                  onChange={onMode}
+                />
+                {address !== null ? (
+                  <Text
+                    style={styles.address}
+                    numberOfLines={2}
+                    accessibilityLabel={t("Starting from {place}.", { place: address })}
+                    testID="start-address"
+                  >
+                    📍 {address}
+                  </Text>
+                ) : (
+                  <Text style={styles.status}>{status}</Text>
+                )}
+                {denied && <OpenSettings />}
+                {searching && (
+                  <PlaceSearch
+                    onSelect={onPlace}
+                    near={near}
+                    suggest={suggest}
+                    placeholder={searchHint}
+                  />
+                )}
+                {/* No street to write: the start chosen on the map (TASK-292). */}
+                {searching && onPickOnMap && (
+                  <Pressable
+                    style={styles.linkButton}
+                    onPress={onPickOnMap}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.link}>{t("Choose on the map")}</Text>
+                  </Pressable>
+                )}
+              </TourPartView>
+              {mapError && <MapError onRetry={onMapRetry} />}
+              {children}
+            </>
           )}
-          {/* No street to write: the start chosen on the map (TASK-292). */}
-          {searching && onPickOnMap && (
-            <Pressable
-              style={styles.linkButton}
-              onPress={onPickOnMap}
-              accessibilityRole="button"
+        </TourScrollView>
+        {/* Docked over the page's foot: the page's own padding keeps its last
+          card above it, however tall the button and the notices get. No
+          route, no button for it, on the snow. */}
+        {!recordOnly && !pool && (
+          <View
+            style={styles.footerDock}
+            testID="draw-footer"
+            onLayout={(event) => setFooterHeight(event.nativeEvent.layout.height)}
+          >
+            <TourPartView
+              name={TOUR_PART.draw}
+              style={[styles.footer, { paddingBottom: insets.bottom + space.sm }]}
             >
-              <Text style={styles.link}>{t("Choose on the map")}</Text>
-            </Pressable>
-          )}
-        </TourPartView>
-        {mapError && <MapError onRetry={onMapRetry} />}
-        {children}
-      </TourScrollView>
-      <TourPartView
-        name={TOUR_PART.draw}
-        style={[styles.footer, { paddingBottom: insets.bottom + space.sm }]}
-      >
-        {footer}
-      </TourPartView>
+              {footer}
+            </TourPartView>
+          </View>
+        )}
+      </View>
     </KeyboardAvoidingView>
+  );
+}
+
+/**
+ * «Draw» for a sport recorded without a shape (TASK-375, ADR-0319): no start,
+ * no shape, no distance, only the yellow «Record your day» and the line
+ * that says why; for the gym «Start workout» and its own line (TASK-385
+ * part B).
+ */
+export function RecordDay({
+  label,
+  icon,
+  onPress,
+  hint,
+}: {
+  label: string;
+  icon?: string;
+  onPress: () => void;
+  /** The line under it; absent, the slopes'. */
+  hint?: string;
+}) {
+  return (
+    <View style={styles.recordCard} testID="record-day">
+      <Pressable
+        style={({ pressed }) => [styles.recordButton, pressed && styles.recordPressed]}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        testID="run-no-route"
+      >
+        {icon !== undefined && (
+          <Text style={styles.recordText} importantForAccessibility="no">
+            {icon}
+          </Text>
+        )}
+        <Text style={styles.recordText}>{label}</Text>
+      </Pressable>
+      <Text style={styles.status}>
+        {hint ?? t("No shapes on the slopes: MuW records your day.")}
+      </Text>
+    </View>
   );
 }
 
@@ -212,35 +362,11 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-  },
-  brand: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.sm,
-  },
-  title: {
-    color: color.text,
-    fontSize: fontSize.title,
-    fontWeight: fontWeight.bold,
+    justifyContent: "flex-end",
   },
   titleButtons: {
     flexDirection: "row",
     gap: space.sm,
-  },
-  // Yellow, the user's choice (TASK-220, ADR-0183): the one control yellow
-  // without being the route's. Dark text on it, as on every yellow.
-  run: {
-    minHeight: MIN_TAP_SIZE,
-    paddingHorizontal: space.md,
-    borderRadius: radius.pill,
-    justifyContent: "center",
-    backgroundColor: color.accent,
-  },
-  runText: {
-    color: color.onAccent,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
   },
   startCard: {
     gap: space.sm,
@@ -248,15 +374,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     backgroundColor: color.surface,
   },
-  label: {
-    color: color.textMuted,
-    fontSize: fontSize.label,
-    fontWeight: fontWeight.semibold,
-    letterSpacing: 1.2,
-  },
   status: {
     color: color.textMuted,
     fontSize: fontSize.body,
+  },
+  address: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
   },
   linkButton: {
     minHeight: MIN_TAP_SIZE,
@@ -272,8 +397,40 @@ const styles = StyleSheet.create({
   mapError: {
     gap: space.xs,
   },
+  recordCard: {
+    gap: space.md,
+    padding: space.md,
+    borderRadius: radius.lg,
+    backgroundColor: color.surface,
+  },
+  recordButton: {
+    minHeight: MIN_TAP_SIZE,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.sm,
+    borderRadius: radius.pill,
+    backgroundColor: color.accent,
+  },
+  recordPressed: {
+    opacity: 0.85,
+  },
+  recordText: {
+    color: color.onAccent,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.bold,
+  },
   error: {
     color: color.error,
+  },
+  page: {
+    flex: 1,
+  },
+  footerDock: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   footer: {
     paddingHorizontal: space.lg,

@@ -16,7 +16,11 @@ its drawing shows it, and Strava takes it (drawings.py, strava.py). A run
 along a route whose shape the engine turned keeps the turn (TASK-232,
 ADR-0195): the app shows the run turned back, so the drawing reads upright.
 A fix may carry the phone's height (TASK-324, ADR-0284): the API counts the
-metres climbed itself (run_climb.py), for the totals of the profile.
+metres climbed itself (run_climb.py), for the totals of the profile. It
+counts the run's bests over the distances of the profile too (TASK-368,
+personal_bests.py): deleting the run deletes them. The list leaves out the
+runs of an activity the app does not read, as its header X-MuW-Reads says
+(reads.py, TASK-387): a phone with an older app on the same account.
 """
 
 from __future__ import annotations
@@ -24,13 +28,14 @@ from __future__ import annotations
 import json
 import math
 import os
+import pathlib
 import threading
 import urllib.parse
 from collections import OrderedDict
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Annotated, Any, Literal, NotRequired
+from typing import Annotated, Any, Literal, NotRequired, cast
 
 from fastapi import (
     APIRouter,
@@ -44,7 +49,15 @@ from fastapi import (
 )
 from psycopg.rows import DictRow
 from psycopg.types.json import Jsonb
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 from route_engine.geo import haversine_m
 from route_engine.pen_up import walks_problem
 from route_engine.track_score import (
@@ -69,9 +82,12 @@ from shaperoute_api.accounts import (
 )
 from shaperoute_api.best_routes import line_key
 from shaperoute_api.db import Database
+from shaperoute_api.flight_legs import ActivityFlightBody, flight_of
 from shaperoute_api.game import after_run_saved, notify_unlocked
 from shaperoute_api.insights import Insights
+from shaperoute_api.personal_bests import keep_run_bests, run_bests
 from shaperoute_api.places import KEY_VARIABLE, Fetch, fetch_json
+from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.recommended import preview
 from shaperoute_api.route_archive import count_run
 from shaperoute_api.run_climb import climb_m
@@ -83,6 +99,8 @@ from shaperoute_api.schemas import (
     TrackFixBody,
     Walk,
 )
+from shaperoute_api.ski_names import names_json, ski_names_from
+from shaperoute_api.sports import API_SPORTS
 
 # Years of a run a day, and one account cannot fill the database.
 MAX_ACTIVITIES = 2_000
@@ -121,8 +139,46 @@ MAX_ALTITUDE_M = 10_000.0
 
 LatLon = tuple[float, float]
 Key = Annotated[str, Path(pattern=KEY_PATTERN)]
-# What a run was (TASK-208): the activities of the API, SUPPORTED_ACTIVITIES.
-RunActivity = Literal["running", "cycling", "paddling"]
+# What a run was (TASK-208): the activities of the API, walking.API_ACTIVITIES,
+# and those recorded without a shape, RECORD_ACTIVITIES (TASK-375, ADR-0319).
+RunActivity = Literal[
+    "running",
+    "cycling",
+    "paddling",
+    "swimming",
+    "hiking",
+    "mountain_biking",
+    "inline_skating",
+    "snowshoeing",
+    "wheelchair",
+    "walking",
+    "gravel_biking",
+    "skiing",
+    "xc_skiing",
+    "ski_touring",
+    "paragliding",
+    "alpinism",
+    "gym",
+    "stretching",
+]
+# A day on the snow: recorded and shown, never planned by the engine. Its
+# speeds are no runner's nor rider's, so it gives no personal best. The
+# sports say it (shaperoute_api/sports, TASK-376); RunActivity stays a
+# Literal for the types, the same names (test_sport_registry_api.py).
+RECORD_ACTIVITIES: tuple[RunActivity, ...] = tuple(
+    cast(RunActivity, sport.activity) for sport in API_SPORTS if sport.record_only
+)
+# A workout at the gym (TASK-385, ADR-0327): saved without a track by
+# gym_sessions.py, never by PUT /me/activities/{key}, which wants one.
+TRACKLESS_ACTIVITIES: tuple[RunActivity, ...] = tuple(
+    cast(RunActivity, sport.activity) for sport in API_SPORTS if sport.trackless
+)
+# Where a run comes from (TASK-312, ADR-0272): recorded by the app, or a file
+# of another app read on the phone; `manual`, a workout at the gym written by
+# hand (TASK-484, ADR-0395), saved only by gym_sessions.py. Only `muw` counts
+# for the shape game and the contest.
+RunSource = Literal["muw", "file", "manual"]
+MUW: RunSource = "muw"
 
 
 def _on_earth(points: Sequence[LatLon]) -> None:
@@ -203,6 +259,14 @@ class ActivityRequestBody(BaseModel):
     (TASK-232, ADR-0195): the app shows the run turned the other way, so the
     drawing reads upright. Only with `points`, and only when the route is
     turned: an older app, and a route north up, send nothing."""
+    source: RunSource = MUW
+    """Where the run comes from (TASK-312): `file` for an activity of
+    another app; missing from an older app, which only recorded. Like the
+    rest of the body, it counts only the first time."""
+    utc_offset_min: int | None = Field(default=None, ge=-840, le=840)
+    """The minutes the phone's clock was ahead of UTC when the run started
+    (TASK-423 part C): the local day and hour of the game's personal
+    challenges. Never a place; missing from an older app (UTC)."""
 
     @field_validator("track")
     @classmethod
@@ -227,6 +291,12 @@ class ActivityRequestBody(BaseModel):
             raise ValueError("walks are stretches of points: there are none")
         if self.rotation_deg is not None and self.points is None:
             raise ValueError("rotation_deg is the route's: there is none")
+        if self.source != MUW and self.points is not None:
+            raise ValueError("a run from another app followed no route of MuW")
+        if self.source == "manual":
+            raise ValueError("a workout written by hand is saved by /me/gym-sessions")
+        if self.activity in TRACKLESS_ACTIVITIES:
+            raise ValueError("a workout at the gym is saved by /me/gym-sessions")
         # As POST /track-scores checks them (schemas.py).
         problem = walks_problem(self.walks, len(self.points or []))
         if problem is not None:
@@ -257,6 +327,14 @@ class ActivityBody(BaseModel):
     answered; the default is for the examples written before."""
     activity: RunActivity
     """What the run was (TASK-251): the app writes a paddler's pace."""
+    source: RunSource = MUW
+    """Where it comes from (TASK-312): the app writes «Imported» for `file`.
+    Always answered; the default is for the examples written before."""
+    climb_m: int | None = None
+    """The metres climbed (TASK-324), for «Quanta salita fai oggi?» of the
+    gym's plans (TASK-461 D1, ADR-0371): null for a run whose fixes had no
+    heights and for every run saved before TASK-324. Always answered; the
+    default is for the examples written before."""
     route_preview: list[LatLon] | None
     track_preview: list[LatLon]
 
@@ -351,6 +429,8 @@ class ActivityDetailBody(BaseModel):
     """As in the list: the planned route's turn, or null."""
     activity: RunActivity
     """What the run was (TASK-251)."""
+    source: RunSource = MUW
+    """As in the list (TASK-312)."""
     similarity: float | None
     """The planned route's."""
     points: list[LatLon] | None
@@ -366,6 +446,19 @@ class ActivityDetailBody(BaseModel):
     """The post as it was last shared (TASK-258); null for a run whose post
     was never shared. Always answered; the default is for the examples
     written before."""
+    flight: ActivityFlightBody | None = None
+    """A race on foot and in the air (TASK-305 part R6d): its parts in the
+    air on `track` and the two kinds added up. Left out of the answer for
+    any other run, and for a flight without parts on foot."""
+
+    @model_serializer(mode="wrap")
+    def _without_flight(self, handler: SerializerFunctionWrapHandler):
+        # No return type, so the answer's schema stays the run's own fields:
+        # with one it would be any object.
+        answer: dict[str, Any] = handler(self)
+        if answer.get("flight") is None:
+            answer.pop("flight", None)
+        return answer
 
 
 # --- The place a run starts from ---
@@ -574,7 +667,7 @@ def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:
 COLUMNS = (
     "id, key, started_at, place, shape, word, style, title, distance_m,"
     " duration_s, score, fidelity, route_similarity, walks, activity,"
-    " route_rotation_deg,"
+    " route_rotation_deg, source, climb_m,"
     " ST_AsGeoJSON(route, 15) AS route,"
     " ST_AsGeoJSON(ST_Force2D(track), 15) AS track"
 )
@@ -597,7 +690,10 @@ def _track_wkt(track: Sequence[TrackPoint]) -> str:
     )
 
 
-def _line(geojson: str) -> list[LatLon]:
+def _line(geojson: str | None) -> list[LatLon]:
+    # A workout at the gym has no track (TASK-385): no line.
+    if geojson is None:
+        return []
     coordinates: list[list[float]] = json.loads(geojson)["coordinates"]
     return [(lat, lon) for lon, lat in coordinates]
 
@@ -619,6 +715,7 @@ def _fields(row: DictRow) -> dict[str, Any]:
         "fidelity": None if fidelity is None else round(fidelity, 4),
         "rotation_deg": turn_kept(row["route_rotation_deg"]),
         "activity": row["activity"],
+        "source": row["source"],
     }
 
 
@@ -632,6 +729,7 @@ def _listed(row: DictRow) -> ActivityBody:
     route = row["route"]
     return ActivityBody(
         **_fields(row),
+        climb_m=row["climb_m"],
         route_preview=None if route is None else preview(_line(route)),
         track_preview=preview(_line(row["track"])),
     )
@@ -695,14 +793,22 @@ class Activities:
     database: Database
     places: PlaceNames
     now: Callable[[], datetime] = now_utc
+    ski_dir: pathlib.Path | None = None
+    """The ski tiles of the cache (ski_names_api.install_ski_names); None:
+    a day of skiing is saved without its lifts and pistes."""
 
     def listing(
-        self, user_id: int, limit: int = PAGE_SIZE, cursor: str | None = None
+        self,
+        user_id: int,
+        limit: int = PAGE_SIZE,
+        cursor: str | None = None,
+        reads: Reads = EVERYTHING,
     ) -> ActivitiesBody:
-        """A page, the latest run first. The cursor is a place in the order,
-        not a row: the next page is right even after a run of this one was
+        """A page, the latest run first, of the activities `reads` shows;
+        `total` counts them all. The cursor is a place in the order, not a
+        row: the next page is right even after a run of this one was
         deleted, or a new one saved."""
-        where = "user_id = %s"
+        where = f"user_id = %s AND {reads.sql('activity', 'track IS NOT NULL')}"
         values: list[Any] = [user_id]
         if cursor is not None:
             where += " AND (started_at, id) < (%s, %s)"
@@ -732,8 +838,20 @@ class Activities:
             ).fetchone()
 
     def get(self, user_id: int, key: str) -> ActivityDetailBody | None:
-        row = self._row(user_id, key, DETAIL_COLUMNS)
-        return None if row is None else _whole(row)
+        with self.database.connect() as conn:
+            row = conn.execute(
+                f"SELECT {DETAIL_COLUMNS} FROM runs WHERE user_id = %s AND key = %s",
+                (user_id, key),
+            ).fetchone()
+            if row is None:
+                return None
+            # A race's parts on foot and in the air (TASK-305 part R6d).
+            flight = (
+                flight_of(conn, int(row["id"]))
+                if row["activity"] == "paragliding"
+                else None
+            )
+        return _whole(row).model_copy(update={"flight": flight})
 
     def save(
         self, user_id: int, key: str, body: ActivityRequestBody
@@ -744,6 +862,22 @@ class Activities:
         if saved is not None:
             return _listed(saved), False
         run = recorded(body, self.now())
+        # Counted before the transaction, as the place: it keeps the lock
+        # of the account short.
+        found = (
+            []
+            if body.activity in RECORD_ACTIVITIES
+            else run_bests(run.track, run.pauses)
+        )
+        # The lifts and pistes of a day of skiing, found once, here
+        # (TASK-375 part D2): the post shows them (ski_names_api.py).
+        ski_names = (
+            Jsonb(
+                names_json(ski_names_from([p.latlon for p in run.track], self.ski_dir))
+            )
+            if body.activity == "skiing" and self.ski_dir is not None
+            else None
+        )
         # Asked before the transaction: the service may take seconds.
         place = self.places.name_of(run.start)
         with self.database.connect() as conn:
@@ -768,10 +902,10 @@ class Activities:
                 "INSERT INTO runs (user_id, key, route, route_similarity, shape,"
                 " word, style, title, track, pauses, started_at, distance_m,"
                 " duration_s, score, fidelity, place, created_at, walks, activity,"
-                " route_rotation_deg, climb_m)"
+                " route_rotation_deg, climb_m, source, ski_names)"
                 " VALUES (%s, %s, ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s,"
                 " ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
-                " %s, %s)"
+                " %s, %s, %s, %s)"
                 f" RETURNING {COLUMNS}",
                 (
                     user_id,
@@ -795,21 +929,28 @@ class Activities:
                     body.activity,
                     body.rotation_deg,
                     run.climb_m,
+                    body.source,
+                    ski_names,
                 ),
             ).fetchone()
             assert row is not None
+            # Its personal bests, of any run (TASK-368, ADR-0312).
+            keep_run_bests(conn, row["id"], found)
             # What the run is worth to the shape game, in the same
-            # transaction (TASK-296, game.py).
-            after_run_saved(
-                conn,
-                user_id,
-                row["id"],
-                run.started_at,
-                run.track,
-                run.pauses,
-                body.activity,
-                self.now(),
-            )
+            # transaction (TASK-296, game.py). A run of another app is
+            # worth nothing to it (TASK-312, ADR-0272).
+            if body.source == MUW:
+                after_run_saved(
+                    conn,
+                    user_id,
+                    row["id"],
+                    run.started_at,
+                    run.track,
+                    run.pauses,
+                    body.activity,
+                    self.now(),
+                    body.utc_offset_min,
+                )
             # One more run along this line, for whoever asks it next
             # (ADR-0256): the line's name only, never who ran it.
             if body.points is not None:
@@ -843,7 +984,8 @@ def activities_of(
 ) -> Activities:
     """In the database of the accounts, on the same clock."""
     places: PlaceNames = request.app.state.run_places
-    return Activities(accounts.database, places, accounts.now)
+    ski_dir = getattr(request.app.state, "ski_dir", None)
+    return Activities(accounts.database, places, accounts.now, ski_dir)
 
 
 def activity_routes() -> APIRouter:
@@ -853,10 +995,11 @@ def activity_routes() -> APIRouter:
     def list_activities(
         activities: Annotated[Activities, Depends(activities_of)],
         user: Annotated[UserBody, Depends(current_user)],
+        reads: Shown,
         limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = PAGE_SIZE,
         cursor: Annotated[str | None, Query(pattern=CURSOR_PATTERN)] = None,
     ) -> ActivitiesBody:
-        return activities.listing(user.id, limit, cursor)
+        return activities.listing(user.id, limit, cursor, reads)
 
     @router.get("/me/activities/{key}", responses={404: {"model": ErrorBody}})
     def get_activity(
@@ -888,8 +1031,10 @@ def activity_routes() -> APIRouter:
                 # it went: nothing of who ran it, nor where.
                 insights: Insights = request.app.state.run_insights
                 insights.record("run_scored", quality=round(activity.score / 100, 3))
-            # The shapes the new run unlocked, told after its write (TASK-296).
-            notify_unlocked(request, user.id, key)
+            # The shapes the new run unlocked, told after its write
+            # (TASK-296); a run of another app unlocks none (TASK-312).
+            if activity.source == MUW:
+                notify_unlocked(request, user.id, key)
         return activity
 
     # The post, as shared: the last one wins (TASK-258).

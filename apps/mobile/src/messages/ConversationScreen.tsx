@@ -1,10 +1,16 @@
-import type {
-  ConversationState,
-  Message,
-  MessagesPage,
-  Person,
+import {
+  MESSAGE_VIDEO_MAX_BYTES,
+  MESSAGE_VIDEO_MAX_S,
+  type ConversationState,
+  type Message,
+  type MessageAttachment,
+  type MessageAttachmentWithLive,
+  type MessageDrawing,
+  type MessagePostCard,
+  type MessagesPage,
+  type Person,
 } from "@shaperoute/shared-types";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
   AppState,
   FlatList,
@@ -16,8 +22,11 @@ import {
 } from "react-native";
 
 import { sessionEnded } from "../account/messages";
+import type { AccountOutcome } from "../api/accounts";
+import { putPoster, uploadMedia, type Upload } from "../api/messageMedia";
 import {
   acceptConversation,
+  fetchMessageDrawing,
   clearConversation,
   fetchMessages,
   messageProblem,
@@ -26,6 +35,8 @@ import {
   sendMessage,
 } from "../api/messages";
 import { personPhotoUri } from "../api/people";
+import { useFavoritesDoor } from "../favorites/favoritesDoor";
+import { useDrawingsDoor } from "../social/drawingsDoor";
 import { t } from "../i18n";
 import { Avatar } from "../profile/Avatar";
 import { ReportMenu } from "../social/ReportMenu";
@@ -37,11 +48,27 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { type AttachKind, AttachButton, type FileKind } from "./AttachButton";
+import { AttachmentPreview, type DraftStatus } from "./AttachmentPreview";
+import { attachmentLabel } from "./attachmentText";
+import { DrawingPicker } from "./DrawingPicker";
+import { favoriteOfMessage } from "./messageDrawing";
+import { MediaViewer } from "./MediaViewer";
+import { liveCardOpens } from "./LiveMessageCard";
+import { MessageMedia } from "./MessageMedia";
 import { MessageSheet, type SheetFor } from "./MessageSheet";
+import { dayTitle, opensDay, timeLabel } from "./messageTime";
 import { useMessagesDoor } from "./messagesDoor";
+import { type MessageFile, pickMessageFile } from "./pickMessageMedia";
+import { VideoPoster } from "./VideoPoster";
+import { LiveViewScreen } from "../liveShare/LiveViewScreen";
 
 /** How often an open conversation is read again: a reply within seconds. */
 export const CONVERSATION_EVERY_MS = 5_000;
+
+/** How far from the top the older messages are asked for, in screens of the
+ * list: they are there before the scroll gets to them. */
+const OLDER_WITHIN_SCREENS = 0.5;
 
 /** The side of the other's picture in the title. */
 const PHOTO_SIDE = 36;
@@ -54,7 +81,54 @@ type Held = {
   /** The latest first, as the API gives them. */
   messages: Message[];
   next: string | null;
+  /** What may be attached now (TASK-333): nothing in a request, nothing
+   * on a server before the attachments, no video while it is full. */
+  files: AttachKind[];
 };
+
+/** A photo or a video chosen, until its message is sent. */
+type Draft = {
+  file: MessageFile;
+  text: string;
+  status: DraftStatus;
+  /** Kept by the API already: a try again sends the message only. */
+  mediaId: string | null;
+};
+
+/** A video's first picture, made while the text is written: its JPEG in
+ * the cache, or null without one. */
+type Poster = { promise: Promise<string | null>; done: (uri: string | null) => void };
+
+function posterToCome(): Poster {
+  let done: (uri: string | null) => void = () => {};
+  const promise = new Promise<string | null>((resolve) => {
+    done = resolve;
+  });
+  return { promise, done };
+}
+
+/** Why a photo or a video did not go, when the API says more than «try
+ * again»; null for the rest. */
+export function fileProblem(
+  outcome: AccountOutcome<unknown>,
+  kind: FileKind,
+): string | null {
+  if (outcome.kind !== "api_error") {
+    return null;
+  }
+  switch (outcome.code) {
+    case "too_many_requests":
+      return kind === "video"
+        ? t("Too many videos today. Try again tomorrow.")
+        : t("Too many photos today. Try again tomorrow.");
+    // The server's room for videos is full (507).
+    case "http_error":
+      return t("Videos can't be sent right now. Try again later.");
+    case "invalid_request":
+      return outcome.message;
+  }
+  return messageProblem(outcome);
+}
 
 type Shown = Held | { asked: string; problem: string };
 
@@ -66,6 +140,9 @@ type Props = {
   fetchFn?: typeof fetch;
   apiKey?: string | null;
   everyMs?: number;
+  /** The tests' own: the library, and the files sent. */
+  pick?: typeof pickMessageFile;
+  upload?: Upload;
 };
 
 /** The newer messages of `page` over the ones held, the latest first. */
@@ -88,10 +165,13 @@ export function merged(held: Message[], page: Message[]): Message[] {
  * and under them what who reads may do, as the API's `state` says: write
  * («open»); write one message, which the other gets as a request
  * («first»); wait for the other to accept («waiting»); or answer the
- * other's request with «Accept», «Delete» or «Block» («request»). Read
- * again every few seconds while it is on screen, and marked read when the
- * other wrote. A message touched long is deleted (one's own) or reported
- * (the other's); the «…» of the title reports or blocks the member.
+ * other's request with «Accept», «Delete» or «Block» («request»). Each
+ * message says its time, and a title opens each day (TASK-353). The older
+ * pages come while scrolling up; «Show earlier messages» stays for when
+ * that fails. Read again every few seconds while it is on screen, and
+ * marked read when the other wrote. A message touched long is deleted
+ * (one's own) or reported (the other's); the «…» of the title reports or
+ * blocks the member.
  */
 export function ConversationScreen({
   person,
@@ -99,8 +179,12 @@ export function ConversationScreen({
   fetchFn,
   apiKey,
   everyMs = CONVERSATION_EVERY_MS,
+  pick = pickMessageFile,
+  upload,
 }: Props) {
-  const { apiUrl, account, recount } = useMessagesDoor();
+  const { apiUrl, account, recount, close, openConversation } = useMessagesDoor();
+  const favorites = useFavoritesDoor();
+  const drawings = useDrawingsDoor();
   const { state, sessionEnded: onSessionEnded } = account;
   const token = state.status === "signedIn" ? state.session.token : null;
   const asked = `${token ?? ""} ${person.public_id}`;
@@ -111,6 +195,12 @@ export function ConversationScreen({
   const [busy, setBusy] = useState(false);
   const [sheet, setSheet] = useState<SheetFor | null>(null);
   const [loadingOlder, setLoadingOlder] = useState(false);
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [viewing, setViewing] = useState<MessageAttachment | null>(null);
+  // A live share opened from its card (TASK-468 part B1): whose, and which.
+  const [watching, setWatching] = useState<{ id: string; name: string } | null>(null);
+  const [choosingDrawing, setChoosingDrawing] = useState(false);
+  const poster = useRef<Poster | null>(null);
   // Asked to read again at once: a message refused may mean a request
   // still waiting, or a conversation gone.
   const [reads, setReads] = useState(0);
@@ -186,6 +276,13 @@ export function ConversationScreen({
           asked,
           person: page.person,
           state: page.state,
+          // A post is sent from «Share» under it, not from the «+».
+          files:
+            page.state === "open"
+              ? (page.attachments?.kinds ?? []).filter(
+                  (kind): kind is AttachKind => kind !== "post",
+                )
+              : [],
           messages:
             was !== null && "state" in was && was.asked === asked
               ? merged(was.messages, page.messages)
@@ -286,6 +383,178 @@ export function ConversationScreen({
     });
   }
 
+  /** A drawing chosen in «Drawing»: it goes at once, with what was written. */
+  function sendDrawing(drawing: MessageDrawing) {
+    setChoosingDrawing(false);
+    if (token === null || apiUrl === null) {
+      return;
+    }
+    setSending(true);
+    setProblem(null);
+    void sendMessage(apiUrl, token, person.public_id, text, options, { drawing }).then(
+      (outcome) => {
+        setSending(false);
+        if (outcome.kind !== "ok") {
+          if (outcome.kind === "api_error" && outcome.code === "http_error") {
+            setReads((n) => n + 1);
+          }
+          failed(outcome);
+          return;
+        }
+        setText("");
+        changed.current += 1;
+        const sent = outcome.value;
+        update((was) => ({
+          ...was,
+          messages: [sent, ...was.messages.filter((m) => m.id !== sent.id)],
+        }));
+      },
+    );
+  }
+
+  /** A drawing touched: fetched whole and opened on the map, as a
+   * favorite; «←» of its card comes back here. */
+  function openDrawing(message: Message) {
+    if (token === null || apiUrl === null) {
+      return;
+    }
+    setProblem(null);
+    void fetchMessageDrawing(apiUrl, token, message.id, options).then((outcome) => {
+      if (outcome.kind !== "ok") {
+        failed(outcome);
+        return;
+      }
+      favorites.show(favoriteOfMessage(outcome.value, new Date()), () =>
+        openConversation(person),
+      );
+      close();
+    });
+  }
+
+  /** A post touched: opened as a notification opens one (the user's
+   * choice, 2026-11-12): the conversation closes and the drawing comes on
+   * the map with its card, its photos, comments and reactions. */
+  function openPost(id: string) {
+    drawings.open({ id });
+    close();
+  }
+
+  /** The tap of a live share's bubble (TASK-468 part B1): the live in the
+   * app while it can be seen; none once it has ended. */
+  function liveOpener(message: Message) {
+    const live = (message.attachment as MessageAttachmentWithLive | null)?.live;
+    if (!liveCardOpens(live ?? null) || live === undefined || live === null) {
+      return null;
+    }
+    const me = state.status === "signedIn" ? state.session.user.username : "";
+    const name = message.mine ? me : person.username;
+    return () => setWatching({ id: live.share_id, name });
+  }
+
+  /** The tap of a post's bubble; none for a post who reads may not open. */
+  function postOpener(card: MessagePostCard | null | undefined) {
+    return card ? () => openPost(card.id) : null;
+  }
+
+  function choose(kind: AttachKind) {
+    if (kind === "drawing") {
+      setChoosingDrawing(true);
+      return;
+    }
+    setProblem(null);
+    void pick(kind).then((picked) => {
+      switch (picked.kind) {
+        case "picked":
+          // What was written goes with it.
+          setDraft({ file: picked.file, text, status: "ready", mediaId: null });
+          setText("");
+          poster.current = picked.file.kind === "video" ? posterToCome() : null;
+          return;
+        case "too_long":
+          setProblem(
+            t("This video is longer than {seconds} seconds. Choose a shorter one.", {
+              seconds: MESSAGE_VIDEO_MAX_S,
+            }),
+          );
+          return;
+        case "too_large":
+          setProblem(
+            t("This video is too large: at most {mb} MB. Choose a shorter one.", {
+              mb: MESSAGE_VIDEO_MAX_BYTES / 1_000_000,
+            }),
+          );
+          return;
+        case "pick_failed":
+          setProblem(t("Could not open the picture. Try again."));
+          return;
+        case "cancelled":
+          return;
+      }
+    });
+  }
+
+  function cancelDraft() {
+    setDraft(null);
+    poster.current = null;
+  }
+
+  /** The file first, its first picture if a video, then the message. */
+  async function sendDraft() {
+    if (token === null || apiUrl === null || held === null || draft === null) {
+      return;
+    }
+    const { file } = draft;
+    setDraft({ ...draft, status: "sending" });
+    setProblem(null);
+    const fail = (outcome: AccountOutcome<unknown>, mediaId: string | null) => {
+      setDraft((was) => (was === null ? was : { ...was, status: "failed", mediaId }));
+      setProblem(fileProblem(outcome, file.kind));
+      if (sessionEnded(outcome)) {
+        onSessionEnded(token);
+      }
+    };
+    let mediaId = draft.mediaId;
+    if (mediaId === null) {
+      const kept = await uploadMedia(apiUrl, token, file.uri, file.mimeType, {
+        key: apiKey,
+        upload,
+      });
+      if (kept.kind !== "ok") {
+        fail(kept, null);
+        return;
+      }
+      mediaId = kept.value.id;
+      const first = await poster.current?.promise;
+      if (first) {
+        // Without it the video still goes, as a dark square.
+        await putPoster(apiUrl, token, mediaId, first, { key: apiKey, upload });
+      }
+    }
+    const outcome = await sendMessage(
+      apiUrl,
+      token,
+      person.public_id,
+      draft.text,
+      options,
+      { media_id: mediaId },
+    );
+    if (outcome.kind !== "ok") {
+      if (outcome.kind === "api_error" && outcome.code === "http_error") {
+        // No longer open (a block, a request): the reading says so.
+        setReads((n) => n + 1);
+      }
+      fail(outcome, mediaId);
+      return;
+    }
+    cancelDraft();
+    changed.current += 1;
+    const sent = outcome.value;
+    update((was) => ({
+      ...was,
+      messages: [sent, ...was.messages.filter((m) => m.id !== sent.id)],
+    }));
+  }
+
   function accept() {
     if (token === null || apiUrl === null) {
       return;
@@ -323,7 +592,13 @@ export function ConversationScreen({
   }
 
   function loadOlder() {
-    if (token === null || apiUrl === null || held === null || held.next === null) {
+    if (
+      token === null ||
+      apiUrl === null ||
+      held === null ||
+      held.next === null ||
+      loadingOlder
+    ) {
       return;
     }
     setLoadingOlder(true);
@@ -397,32 +672,59 @@ export function ConversationScreen({
             </View>
           ) : (
             <FlatList
+              testID="conversation-messages"
               style={styles.messages}
               contentContainerStyle={styles.messagesContent}
               data={shown.messages}
               keyExtractor={(m) => m.id}
               // The latest at the bottom, where the box is.
               inverted
-              renderItem={({ item }) => (
+              onEndReached={loadOlder}
+              onEndReachedThreshold={OLDER_WITHIN_SCREENS}
+              renderItem={({ item, index }) => (
                 <Bubble
                   message={item}
+                  day={
+                    opensDay(shown.messages, index)
+                      ? dayTitle(item.created_at, new Date())
+                      : null
+                  }
+                  media={
+                    item.attachment && token !== null && apiUrl !== null ? (
+                      <MessageMedia
+                        attachment={item.attachment}
+                        apiUrl={apiUrl}
+                        token={token}
+                        apiKey={apiKey}
+                      />
+                    ) : null
+                  }
+                  onOpen={
+                    (item.attachment?.kind as string | undefined) === "live"
+                      ? liveOpener(item)
+                      : item.attachment?.kind === "drawing"
+                        ? () => openDrawing(item)
+                        : item.attachment?.kind === "post"
+                          ? postOpener(item.attachment.post)
+                          : item.attachment && item.attachment.media_id !== null
+                            ? () => setViewing(item.attachment ?? null)
+                            : null
+                  }
                   onLongPress={() => setSheet({ kind: "message", message: item })}
                 />
               )}
               ListFooterComponent={
-                shown.next !== null ? (
+                shown.next === null ? null : loadingOlder ? (
+                  <Text style={styles.note}>{t("Loading…")}</Text>
+                ) : (
                   <Pressable
-                    style={({ pressed }) => [
-                      styles.older,
-                      (pressed || loadingOlder) && styles.pressed,
-                    ]}
+                    style={({ pressed }) => [styles.older, pressed && styles.pressed]}
                     onPress={loadOlder}
-                    disabled={loadingOlder}
                     accessibilityRole="button"
                   >
                     <Text style={styles.olderText}>{t("Show earlier messages")}</Text>
                   </Pressable>
-                ) : null
+                )
               }
             />
           )}
@@ -431,19 +733,71 @@ export function ConversationScreen({
               {problem}
             </Text>
           )}
-          <Foot
-            state={shown.state}
-            name={who.username}
-            text={text}
-            sending={sending}
-            busy={busy}
-            onText={setText}
-            onSend={send}
-            onAccept={accept}
-            onDelete={remove}
-            onBlock={() => setSheet({ kind: "block", person: who })}
-          />
+          {draft !== null && shown.state === "open" ? (
+            <AttachmentPreview
+              file={draft.file}
+              text={draft.text}
+              status={draft.status}
+              onText={(words) =>
+                setDraft((was) => (was === null ? was : { ...was, text: words }))
+              }
+              onSend={() => void sendDraft()}
+              onCancel={cancelDraft}
+            />
+          ) : (
+            <Foot
+              state={shown.state}
+              name={who.username}
+              text={text}
+              sending={sending}
+              busy={busy}
+              files={shown.files}
+              onText={setText}
+              onSend={send}
+              onAttach={choose}
+              onAccept={accept}
+              onDelete={remove}
+              onBlock={() => setSheet({ kind: "block", person: who })}
+            />
+          )}
         </>
+      )}
+      {draft !== null && draft.file.kind === "video" && draft.mediaId === null && (
+        <VideoPoster
+          key={draft.file.uri}
+          videoUri={draft.file.uri}
+          onPoster={(uri) => poster.current?.done(uri)}
+        />
+      )}
+      {choosingDrawing && token !== null && apiUrl !== null && (
+        <DrawingPicker
+          apiUrl={apiUrl}
+          token={token}
+          onPick={sendDrawing}
+          onClose={() => setChoosingDrawing(false)}
+          fetchFn={fetchFn}
+          apiKey={apiKey}
+        />
+      )}
+      {viewing !== null && token !== null && apiUrl !== null && (
+        <MediaViewer
+          attachment={viewing}
+          apiUrl={apiUrl}
+          token={token}
+          apiKey={apiKey}
+          onClose={() => setViewing(null)}
+        />
+      )}
+      {watching !== null && token !== null && apiUrl !== null && (
+        <LiveViewScreen
+          shareId={watching.id}
+          name={watching.name}
+          apiUrl={apiUrl}
+          token={token}
+          fetchFn={fetchFn}
+          apiKey={apiKey}
+          onClose={() => setWatching(null)}
+        />
       )}
       {sheet !== null && token !== null && apiUrl !== null && (
         <MessageSheet
@@ -470,33 +824,54 @@ export function ConversationScreen({
 
 function Bubble({
   message,
+  day,
+  media,
+  onOpen,
   onLongPress,
 }: {
   message: Message;
+  /** The title of the day this message opens; null inside a day. */
+  day: string | null;
+  /** What it carries (TASK-333), above its text. */
+  media: ReactNode;
+  /** A photo or a video: opened on the whole screen. */
+  onOpen: (() => void) | null;
   onLongPress: () => void;
 }) {
+  const words = [
+    message.attachment ? attachmentLabel(message.attachment) : "",
+    message.text,
+  ]
+    .filter((part) => part !== "")
+    .join(", ");
+  const said = message.mine ? t("You: {text}", { text: words }) : words;
+  const time = timeLabel(message.created_at);
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.bubble,
-        message.mine ? styles.mine : styles.theirs,
-        pressed && styles.pressed,
-      ]}
-      onLongPress={onLongPress}
-      accessibilityRole="text"
-      accessibilityLabel={
-        message.mine ? t("You: {text}", { text: message.text }) : message.text
-      }
-      accessibilityHint={
-        message.mine
-          ? t("Touch and hold to delete it")
-          : t("Touch and hold to report it")
-      }
-      accessibilityActions={[{ name: "longpress" }]}
-      onAccessibilityAction={onLongPress}
-    >
-      <Text style={styles.bubbleText}>{message.text}</Text>
-    </Pressable>
+    <View style={styles.message}>
+      {day !== null && day !== "" && <Text style={styles.day}>{day}</Text>}
+      <Pressable
+        style={({ pressed }) => [
+          styles.bubble,
+          message.mine ? styles.mine : styles.theirs,
+          pressed && styles.pressed,
+        ]}
+        onPress={onOpen ?? undefined}
+        onLongPress={onLongPress}
+        accessibilityRole={onOpen === null ? "text" : "button"}
+        accessibilityLabel={time === "" ? said : `${said}, ${time}`}
+        accessibilityHint={
+          message.mine
+            ? t("Touch and hold to delete it")
+            : t("Touch and hold to report it")
+        }
+        accessibilityActions={[{ name: "longpress" }]}
+        onAccessibilityAction={onLongPress}
+      >
+        {media}
+        {message.text !== "" && <Text style={styles.bubbleText}>{message.text}</Text>}
+        {time !== "" && <Text style={styles.time}>{time}</Text>}
+      </Pressable>
+    </View>
   );
 }
 
@@ -506,8 +881,10 @@ type FootProps = {
   text: string;
   sending: boolean;
   busy: boolean;
+  files: AttachKind[];
   onText: (text: string) => void;
   onSend: () => void;
+  onAttach: (kind: AttachKind) => void;
   onAccept: () => void;
   onDelete: () => void;
   onBlock: () => void;
@@ -520,8 +897,10 @@ function Foot({
   text,
   sending,
   busy,
+  files,
   onText,
   onSend,
+  onAttach,
   onAccept,
   onDelete,
   onBlock,
@@ -561,6 +940,9 @@ function Foot({
         </Text>
       )}
       <View style={styles.box}>
+        {state === "open" && (
+          <AttachButton kinds={files} disabled={sending} onPick={onAttach} />
+        )}
         <TextInput
           style={styles.input}
           value={text}
@@ -650,9 +1032,20 @@ const styles = StyleSheet.create({
     gap: space.sm,
     paddingVertical: space.sm,
   },
+  message: {
+    gap: space.sm,
+  },
+  day: {
+    alignSelf: "center",
+    paddingVertical: space.xs,
+    color: color.textMuted,
+    fontSize: fontSize.detail,
+    fontWeight: fontWeight.semibold,
+  },
   // Neutral, both: the yellow belongs to the route.
   bubble: {
     maxWidth: "80%",
+    gap: space.sm,
     paddingHorizontal: space.md,
     paddingVertical: space.sm,
     borderRadius: radius.lg,
@@ -670,6 +1063,11 @@ const styles = StyleSheet.create({
   bubbleText: {
     color: color.text,
     fontSize: fontSize.body,
+  },
+  time: {
+    alignSelf: "flex-end",
+    color: color.textMuted,
+    fontSize: fontSize.label,
   },
   older: {
     minHeight: MIN_TAP_SIZE,

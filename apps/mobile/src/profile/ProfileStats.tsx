@@ -6,7 +6,15 @@ import { sessionEnded } from "../account/messages";
 import { fetchProfile } from "../api/profiles";
 import { decimal, t } from "../i18n";
 import { useFollowsDoor } from "../social/followsDoor";
-import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
+import {
+  color,
+  font,
+  fontSize,
+  fontWeight,
+  radius,
+  space,
+  tracking,
+} from "../theme/tokens";
 import { inUnits } from "../units/format";
 import type { Units } from "../units/units";
 import { useUnits } from "../units/useUnits";
@@ -75,23 +83,25 @@ function Stat({ label, value, unit }: { label: string; value: string; unit?: str
   );
 }
 
+type Asked = { fetchFn?: typeof fetch; apiKey?: string | null };
+
 /**
- * The totals of one's own «Profile»: as the others see them, from GET
- * /users/{public_id} with the account's token. Null while they come, and
- * from an API older than TASK-324.
+ * One's own «Profile» as the others see it, from GET /users/{public_id}
+ * with the account's token: the totals (TASK-324, `totalsOf`) and the
+ * badges (TASK-341). Null while it comes.
  */
-export function useOwnTotals(
+export function useOwnProfile(
   publicId: string | null,
-  { fetchFn, apiKey }: { fetchFn?: typeof fetch; apiKey?: string | null } = {},
-): ProfileTotals | null {
+  { fetchFn, apiKey }: Asked = {},
+): PublicProfile | null {
   const { apiUrl, account } = useFollowsDoor();
   const { state, sessionEnded: onSessionEnded } = account;
   const token = state.status === "signedIn" ? state.session.token : null;
   const asked = `${token ?? ""} ${publicId ?? ""}`;
-  // The totals of one account and token: another's are not these.
+  // The profile of one account and token: another's is not this.
   const [answer, setAnswer] = useState<{
     asked: string;
-    totals: ProfileTotals | null;
+    profile: PublicProfile;
   } | null>(null);
 
   useEffect(() => {
@@ -105,7 +115,7 @@ export function useOwnTotals(
           return;
         }
         if (outcome.kind === "ok") {
-          setAnswer({ asked, totals: totalsOf(outcome.value) });
+          setAnswer({ asked, profile: outcome.value });
         } else if (sessionEnded(outcome)) {
           onSessionEnded(token);
         }
@@ -116,7 +126,7 @@ export function useOwnTotals(
     };
   }, [apiKey, apiUrl, asked, fetchFn, onSessionEnded, publicId, token]);
 
-  return answer !== null && answer.asked === asked ? answer.totals : null;
+  return answer !== null && answer.asked === asked ? answer.profile : null;
 }
 
 const styles = StyleSheet.create({
@@ -131,23 +141,25 @@ const styles = StyleSheet.create({
     paddingVertical: space.md,
     paddingHorizontal: space.sm,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: color.border,
     backgroundColor: color.surface,
   },
+  // The totals light and in tabular digits, as the distances of the cards
+  // (TASK-339 D): the number is the picture, the bold is for the route.
   value: {
     color: color.text,
     fontSize: fontSize.title,
-    fontWeight: fontWeight.bold,
+    fontWeight: fontWeight.light,
+    letterSpacing: tracking.title,
+    fontVariant: ["tabular-nums"],
   },
   unit: {
     color: color.textMuted,
     fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
+    fontWeight: fontWeight.regular,
+    letterSpacing: 0,
   },
   label: {
+    ...font.small,
     color: color.textMuted,
-    fontSize: fontSize.small,
-    fontWeight: fontWeight.semibold,
   },
 });

@@ -68,6 +68,23 @@ test("each tile and «Settings» open their page", async () => {
   expect(onOpen.mock.calls).toEqual([["favorites"], ["activities"], ["settings"]]);
 });
 
+test("a tile with nothing in it says its name alone, not a zero (TASK-457)", async () => {
+  await show({ favorites: 0, activities: 0 });
+  expect(screen.getByRole("button", { name: "Favorites" })).toHaveTextContent(
+    "❤️›Favorites",
+  );
+  expect(screen.getByRole("button", { name: "My activities" })).toHaveTextContent(
+    "🏃‍♂️›My activities",
+  );
+  expect(screen.queryByText("0")).toBeNull();
+});
+
+test("neither «Guide» nor «Blocked people» is on this page (TASK-457)", async () => {
+  await show();
+  expect(screen.queryByRole("button", { name: "Guide" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Blocked people" })).toBeNull();
+});
+
 test("until a list has come its tile says no number", async () => {
   await show({ favorites: null, activities: null });
   expect(screen.getByRole("button", { name: "Favorites" })).toBeOnTheScreen();

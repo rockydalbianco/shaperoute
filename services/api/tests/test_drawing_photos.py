@@ -30,10 +30,16 @@ from shaperoute_api.drawing_photos import (
     MAX_UPLOADS_PER_MINUTE,
     NO_PHOTO,
     PHOTO_SIDE,
+    DrawingOrderRequestBody,
     DrawingPhotoRequestBody,
     fitted_jpeg,
 )
-from shaperoute_api.drawings import MAX_PHOTOS, NO_DRAWING, PHOTOS_ON_THE_PHONE
+from shaperoute_api.drawings import (
+    MAX_PHOTOS,
+    NO_DRAWING,
+    ORDER_DRAWING,
+    PHOTOS_ON_THE_PHONE,
+)
 
 REPO = Path(__file__).resolve().parents[3]
 FIXTURES = REPO / "packages" / "shared-types" / "fixtures"
@@ -83,6 +89,7 @@ def sent(image: bytes) -> dict[str, str]:
 
 
 PHOTO = file_of(bands((1600, 1200)))
+SMALL = file_of(bands((60, 40)))
 
 
 class WallClock:
@@ -277,7 +284,9 @@ def test_a_place_emptied_stays_empty_and_the_others_stay_where_they_are(
     # Removed twice: the same.
     assert client.delete(photo_path(2), headers=me).status_code == 204
     mine = client.get(f"/me/activities/{KEY}/drawing", headers=me).json()
-    assert [photo["n"] for photo in mine["photos"]] == [1, 3]
+    assert [photo["n"] for photo in mine["photos"]] == [
+        n for n in range(1, MAX_PHOTOS + 1) if n != 2
+    ]
     empty = client.get(f"/drawings/{mine['id']}/photos/2", headers=me)
     assert empty.status_code == 404
     assert message(empty) == NO_PHOTO
@@ -290,7 +299,7 @@ def test_a_place_emptied_stays_empty_and_the_others_stay_where_they_are(
 
 
 @pytest.mark.parametrize("n", [0, MAX_PHOTOS + 1])
-def test_a_fourth_photo_is_refused(
+def test_a_place_past_the_last_is_refused(
     client: TestClient, database: Database, n: int
 ) -> None:
     me = signed_up(client)
@@ -300,6 +309,131 @@ def test_a_fourth_photo_is_refused(
     assert code(answer) == "invalid_request"
     assert client.delete(photo_path(n), headers=me).status_code == 422
     assert photo_rows(database) == 0
+
+
+def order_path(key: str = KEY) -> str:
+    return f"/me/activities/{key}/drawing/order"
+
+
+def test_the_example_of_the_order_is_a_request() -> None:
+    body = DrawingOrderRequestBody.model_validate(_load("drawing-order-request.json"))
+    assert ORDER_DRAWING in body.order
+
+
+def test_ten_photos_fit_and_the_order_moves_them_without_changing_their_places(
+    client: TestClient,
+) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    seen_by(client, me, "everyone")
+    assert MAX_PHOTOS == 10
+    for n in range(1, MAX_PHOTOS + 1):
+        answer = put_photo(client, me, n, SMALL)
+    # Never ordered: the map first and the photos by place, as for an app
+    # before ADR-0301.
+    assert answer["order"] is None
+    assert [photo["n"] for photo in answer["photos"]] == list(range(1, 11))
+
+    wanted = [
+        "photo:3",
+        "drawing",
+        *[f"photo:{n}" for n in (1, 2, 4, 5, 6, 7, 8, 9, 10)],
+    ]
+    moved = client.put(order_path(), json={"order": wanted}, headers=me)
+    assert moved.status_code == 200, moved.text
+    assert moved.json()["order"] == wanted
+    assert [photo["n"] for photo in moved.json()["photos"]] == [
+        3,
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+    ]
+    # Whoever sees the drawing reads the same, each photo at its own place.
+    other_one = other(client)
+    seen = client.get(f"/drawings/{moved.json()['id']}", headers=other_one).json()
+    assert seen["order"] == wanted
+    assert seen["photos"][0]["url"].startswith(f"/drawings/{seen['id']}/photos/3?")
+    assert client.get(seen["photos"][0]["url"], headers=other_one).status_code == 200
+    # Sent again by a phone without network: the same.
+    again = client.put(order_path(), json={"order": wanted}, headers=me)
+    assert again.json() == moved.json()
+
+
+def test_the_order_follows_the_photos_there_are(client: TestClient) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    seen_by(client, me, "everyone")
+    put_photo(client, me, 1, SMALL)
+    put_photo(client, me, 2, SMALL)
+    # It may name a photo not sent yet: it has no place in the answer yet.
+    wanted = ["photo:4", "photo:2", "drawing", "photo:1"]
+    answer = client.put(order_path(), json={"order": wanted}, headers=me).json()
+    assert answer["order"] == ["photo:2", "drawing", "photo:1"]
+    # Sent now, it stands where it was asked to.
+    assert put_photo(client, me, 4, SMALL)["order"] == wanted
+    # A place emptied leaves the order; a photo it does not name comes last.
+    assert client.delete(photo_path(2), headers=me).status_code == 204
+    assert put_photo(client, me, 3, SMALL)["order"] == [
+        "photo:4",
+        "drawing",
+        "photo:1",
+        "photo:3",
+    ]
+
+
+@pytest.mark.parametrize(
+    "order",
+    [
+        [],
+        ["photo:1"],
+        ["drawing", "drawing"],
+        ["drawing", "photo:1", "photo:1"],
+        ["drawing", "photo:0"],
+        ["drawing", "photo:11"],
+        ["drawing", "video:1"],
+        ["drawing", "photo:01"],
+        ["drawing", *[f"photo:{n}" for n in range(1, 11)], "photo:1"],
+    ],
+)
+def test_an_order_that_cannot_be_is_refused(
+    client: TestClient, order: list[str]
+) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    seen_by(client, me, "everyone")
+    answer = client.put(order_path(), json={"order": order}, headers=me)
+    assert answer.status_code == 422
+    assert code(answer) == "invalid_request"
+
+
+def test_the_order_of_a_run_only_its_owner_sees_stays_on_the_phone(
+    client: TestClient,
+) -> None:
+    me = signed_up(client)
+    wanted = {"order": ["photo:1", "drawing"]}
+    assert client.put(order_path(), json=wanted, headers=me).status_code == 404
+    saved(client, me)
+    assert client.put(order_path(), json=wanted, headers=me).status_code == 409
+    seen_by(client, me, "followers")
+    assert client.put(order_path(), json=wanted, headers=me).status_code == 200
+    # Made its owner's only and opened again: the phone sends it again.
+    seen_by(client, me, "only_me")
+    assert seen_by(client, me, "everyone")["order"] is None
+
+
+def test_the_order_of_another_members_run_cannot_be_set(client: TestClient) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    seen_by(client, me, "everyone")
+    wanted = {"order": ["photo:1", "drawing"]}
+    answer = client.put(order_path(), json=wanted, headers=other(client))
+    assert answer.status_code == 404
 
 
 def test_the_photos_of_a_run_only_its_owner_sees_stay_on_the_phone(

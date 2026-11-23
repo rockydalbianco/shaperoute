@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "10. Oktober 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts entered (TASK-262 C). */
-const PRIVACY_UPDATED = "28. Oktober 2026";
+const UPDATED = "10. November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
+const PRIVACY_UPDATED = "23. November 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -22,7 +22,7 @@ const help: AboutDocument = {
       heading: "Was MuW ist",
       blocks: [
         "MuW zeichnet echte Routen, die auf der Karte eine Form ergeben. Du wählst die Form, die Distanz und den Start; du bekommst eine Route auf echten Straßen, mit ihrer GPX-Datei.",
-        "Die App hat vier Seiten nebeneinander, «Feed», «Zeichnen», «Entdecken» und dein Profil: Wische nach links oder rechts oder tippe oben auf einen Namen. Der Kreis oben bringt dich zu deinem Profil.",
+        "Unten gibt es fünf Tabs: «Feed», «Zeichnen», «Nachrichten», «Entdecken» und dein Profil, der Kreis mit deinem Foto. Tippe auf einen Tab, um dorthin zu gehen, tippe noch einmal darauf, um nach oben zurückzukehren. Die «Einstellungen» findest du unter dem Zahnrad oben rechts in deinem Profil.",
       ],
     },
     {
@@ -71,7 +71,9 @@ const help: AboutDocument = {
     {
       heading: "Veröffentlichen und teilen",
       blocks: [
-        "Ein gespeicherter Lauf ist privat: Nur du siehst ihn. Andere Mitglieder sehen auf deinem Profil nur die Summen aller deiner gespeicherten Läufe, Distanz und Anstieg, nie die Läufe selbst. Schalte «Öffentlich» ein, am Ende des Laufs oder bei einem Lauf in «Meine Aktivitäten», und die anderen Mitglieder sehen ihn als Zeichnung auf deinem Profil, ohne seine ersten und letzten 200 m.",
+        "Ein gespeicherter Lauf ist privat: Nur du siehst ihn. Andere Mitglieder sehen auf deinem Profil die Summen aller deiner gespeicherten Läufe, Distanz und Anstieg, und deine Bestzeiten (die 5K, die 10K und deine anderen schnellsten Distanzen, zu Fuß und mit dem Rad) mit Zeit und Datum. Ein privater Lauf bleibt geschlossen, auch wenn er eine Bestzeit enthält. Wähle unter «Wer kann es sehen» «Alle» oder «Follower», am Ende des Laufs oder bei einem Lauf in «Meine Aktivitäten», und sie sehen ihn als Zeichnung auf deinem Profil, ganz. Der nächste Lauf, den du beendest, beginnt mit deiner zuletzt gespeicherten Wahl: Du siehst sie vor «Speichern» und kannst sie ändern. Eine aus einer Datei in «Meine Aktivitäten» hinzugefügte Aktivität beginnt mit «Nur ich»; eine aus einer Datei mit dem «+» im Feed hinzugefügte beginnt mit «Alle», und du kannst das vor «Speichern» ändern.",
+        "Ein Lauf, den du veröffentlichst, kann bis zu 9 Fotos und die Zeichnung haben. Halte eines gedrückt und zieh es, um die Reihenfolge zu ändern: Das erste sieht man im Feed. Wähle ein Layout, um die Zeichnung auf ein Foto zu legen.",
+        "Auf einem Foto, das du veröffentlichst, kannst du markieren, was du trägst: was es ist, die Marke und, wenn du willst, das Modell und einen Link zum Shop. Andere tippen auf das Foto, um die Teile zu sehen und den Shop zu öffnen. Unter deinem Beitrag siehst nur du, wie oft sie geöffnet wurden.",
         "«Teilen» macht ein Bild deines Laufs, das du verschicken kannst, wohin du willst.",
       ],
     },
@@ -79,7 +81,7 @@ const help: AboutDocument = {
       heading: "Feed und Freunde",
       blocks: [
         "«Feed» zeigt Zeichnungen, die dich auf Ideen bringen: Tippe auf eine, um ihre Route zu öffnen und loszulaufen.",
-        "Die Lupe oben in «Feed» findet andere Mitglieder über ihren Namen. Auf einem Profil kannst du auf «Folgen» tippen; deine Anfragen, deine Follower und wem du folgst, findest du in «Profil».",
+        "Die Suche oben in «Entdecken» findet andere Mitglieder über ihren Namen. Auf einem Profil kannst du auf «Folgen» tippen; deine Anfragen, deine Follower und wem du folgst, findest du in «Profil».",
         "Auf der öffentlichen Zeichnung eines Mitglieds kannst du mit einem Emoji reagieren, ein Super Like senden und einen Kommentar schreiben. Negative Kommentare werden nicht angenommen.",
       ],
     },
@@ -87,14 +89,15 @@ const help: AboutDocument = {
       heading: "Nachrichten",
       blocks: [
         "«Nachricht» auf dem Profil eines Mitglieds schreibt ihm. Folgt es dir, landet deine Nachricht in seinen «Nachrichten»; sonst kommt sie als Anfrage an, und du kannst eine Nachricht schicken, bis die Anfrage angenommen ist.",
-        "Deine Unterhaltungen sind in «Profil», «Nachrichten», mit «Nachrichtenanfragen» oben. Nimm eine Anfrage an, um euch zu schreiben, lösche sie (wer geschrieben hat, erfährt es nicht) oder blockiere, wer geschrieben hat.",
+        "Deine Unterhaltungen sind in «Nachrichten», dem Tab mit dem Papierflieger, mit «Nachrichtenanfragen» oben. Nimm eine Anfrage an, um euch zu schreiben, lösche sie (wer geschrieben hat, erfährt es nicht) oder blockiere, wer geschrieben hat.",
         "Halte eine Nachricht gedrückt, um deine für euch beide zu löschen oder eine erhaltene zu melden. Niemand sieht, ob du eine Nachricht gelesen hast. Mit Push meldet dir MuW jede Nachricht und jede Anfrage.",
+        "Tippe in einer Unterhaltung auf +, um ein Foto, ein Video bis 60 Sekunden oder eine Zeichnung zu senden, oder tippe bei einer Route oder einer Zeichnung auf An Freunde senden. Du kannst sie senden, sobald die andere Person deine Nachricht angenommen hat. Videos bleiben 30 Tage, oder kürzer, wenn unser Platz für Videos voll ist: Die ältesten gehen zuerst. Tippe auf eine Zeichnung, um sie auf der Karte zu öffnen, zu starten, als GPX zu exportieren oder in deinen Favoriten zu behalten.",
       ],
     },
     {
       heading: "Laufen, Rad, Paddeln",
       blocks: [
-        "Wähle deinen Sport mit der Taste neben deinem Profil oder in «Einstellungen».",
+        "Wähle deinen Sport mit der Taste oben rechts oder in «Einstellungen».",
         {
           bullets: [
             "Laufen: bis zu 21 km auf echten Straßen, mit der Stimme Abbiegung für Abbiegung.",
@@ -179,6 +182,7 @@ const terms: AboutDocument = {
           bullets: [
             "beleidigende, hasserfüllte, bedrohende oder belästigende Inhalte veröffentlichen, weder im Benutzernamen noch in Bio, Bild, Titeln oder Kommentaren;",
             "Inhalte veröffentlichen, die du nicht veröffentlichen darfst, oder personenbezogene Daten anderer ohne deren Erlaubnis;",
+            "die Teile, die du markierst, für Spam nutzen, für Links zu etwas anderem als dem, was du trägst, für eigene Affiliate-Links oder für Werbung, die du nicht kennzeichnest;",
             "versuchen, den Dienst zu stören, zu überlasten oder zu umgehen, oder mit automatischen Mitteln Daten über seine Mitglieder sammeln.",
           ],
         },
@@ -187,7 +191,7 @@ const terms: AboutDocument = {
     {
       heading: "Was du veröffentlichst",
       blocks: [
-        "Deine Läufe, deine Zeichnungen, ihre Titel, dein Profil und deine Kommentare bleiben deine.",
+        "Deine Läufe, deine Zeichnungen, ihre Titel, dein Profil und deine Kommentare bleiben deine. Die Teile, die du auf deinen Fotos markierst, gehören mit ihren Links zu dem, was du veröffentlichst.",
         "Mit der Veröffentlichung erlaubst du uns, sie aufzubewahren und sie in der App den anderen Mitgliedern zu zeigen, nur um den Dienst zu betreiben: eine kostenlose, nicht ausschließliche Erlaubnis, die endet, wenn du den Inhalt oder dein Konto löschst.",
         "Die App nimmt keine Kommentare mit beleidigenden Wörtern an: Ein automatischer Wortfilter lehnt sie ab. Wir können Inhalte entfernen, die gegen diese Bedingungen verstoßen. Um uns auf Inhalte hinzuweisen, die nicht da sein sollten, schreib an [contact email].",
       ],
@@ -216,7 +220,10 @@ const terms: AboutDocument = {
     },
     {
       heading: "Werbung",
-      blocks: ["MuW zeigt keine Werbung."],
+      blocks: [
+        "MuW zeigt eigene Beiträge, gekennzeichnet mit «Werbung · Affiliate-Links», mit Links zu Shops (MuW Style). Wenn du über einen dieser Links kaufst, zahlt der Shop MuW eine Provision; für dich ändert sich der Preis nicht. Der Kauf findet zwischen dir und dem Shop statt: MuW verkauft diese Produkte nicht und haftet nicht für Preis, Verfügbarkeit, Lieferung oder Rücksendung. Die Fotos dieser Beiträge sind mit KI erstellt und als solche gekennzeichnet: Die Personen darauf gibt es nicht, und die gezeigten Teile ähneln den Produkten, sind aber nicht die Produkte selbst. Du kannst diese Beiträge in «Einstellungen» aus dem Feed ausblenden. Andere Werbung zeigt MuW nicht.",
+        "Die Links, die Mitglieder an die Teile in ihren Beiträgen setzen, sind ihre: MuW verdient nichts daran und haftet nicht für die Produkte oder die Shops. Wenn eine Marke dich bezahlt oder dir schenkt, was du markierst, sag es in der Beschreibung des Beitrags.",
+      ],
     },
     {
       heading: "Dienste anderer",
@@ -224,9 +231,11 @@ const terms: AboutDocument = {
         {
           bullets: [
             "Die Karten stammen von OpenFreeMap und aus den Daten von OpenStreetMap (© OpenStreetMap-Mitwirkende).",
+            "Die 3D-Tiere im Video stammen von Quaternius (CC0); der Elefant ist „Elephant Anim“ von Shivoahm und SahuAvdhesh auf Sketchfab (CC BY 4.0), von MuW animiert und angepasst.",
             "Orte werden mit Geoapify gesucht.",
             "Wenn du Strava verbindest, gelten für die Läufe, die du dorthin sendest, die Bedingungen und Datenschutzeinstellungen von Strava.",
             "Ein Bild, das du teilst, verlässt das Handy über das Teilen-Menü: Die App, die es empfängt, hat ihre eigenen Bedingungen.",
+            "Der Link eines markierten Teils öffnet die Seite des Shops in deinem Browser: Der Shop hat seine eigenen Bedingungen.",
           ],
         },
       ],
@@ -284,6 +293,7 @@ const privacy: AboutDocument = {
             "Der Tag deiner Registrierung und wann du bestätigt hast, dass du mindestens 16 bist.",
             "Die Sitzung jedes Handys, mit dem du dich angemeldet hast: Das Handy bewahrt ein Token in seinem sicheren Speicher auf, der Server nur einen Hash davon. Eine Sitzung endet 90 Tage nach ihrer letzten Nutzung oder wenn du dich abmeldest.",
             "Deine drei Einstellungen zu Benachrichtigungen in «Einstellungen»: «E-Mail-Benachrichtigungen» und «Push-Benachrichtigungen», aus, bis du sie einschaltest, und «E-Mail, wenn ich weg bin», an, bis du ihn ausschaltest. Mit Push an: der Push-Token deines Telefons, ob es ein iPhone oder ein Android ist, und die Sprache der App, um dir Benachrichtigungen über den Push-Dienst von Expo zu senden, der sie an Apple oder Google weitergibt. Eine Benachrichtigung sagt, wer was getan hat, mit dem Anfang eines Kommentars. Der Token wird gelöscht, wenn du Push ausschaltest, dich abmeldest oder dein Konto löschst.",
+            "Die Liste der Glocke: wer was getan hat, bei welchem Beitrag, welcher Challenge, welchem Wettbewerb oder Gruppenlauf, und ob du es schon gelesen hast, so wie es dir die Push-Benachrichtigungen sagen, auch mit Push aus. Nur du siehst sie. Jede Zeile bleibt 90 Tage; was nicht mehr stimmt, etwa eine zurückgenommene Reaktion oder ein Beitrag, den du nicht mehr siehst, erscheint nicht.",
             "Die Sprache der App bei deiner Anmeldung, um dir unsere E-Mails in dieser Sprache zu schreiben.",
           ],
         },
@@ -314,7 +324,7 @@ const privacy: AboutDocument = {
     {
       heading: "Freunde aus deinen Kontakten",
       blocks: [
-        "Unter der Lupe oben in «Feed» sucht «Freunde in deinen Kontakten finden» die Mitglieder, deren Nummer in den Kontakten deines Handys steht. Die App fragt das Handy erst nach den Kontakten, wenn du darauf tippst, und liest nur die Telefonnummern: nie Namen, E-Mails oder Bilder.",
+        "In «Feed» führt «Personen zum Folgen finden» zu «Freunde in deinen Kontakten finden», das die Mitglieder sucht, deren Nummer in den Kontakten deines Handys steht. Die App fragt das Handy erst nach den Kontakten, wenn du darauf tippst, und liest nur die Telefonnummern: nie Namen, E-Mails oder Bilder.",
         "Jede Nummer verlässt das Handy verschlüsselt: mit Ländervorwahl geschrieben und in einen Hash (SHA-256) umgewandelt. Unser Server vergleicht die Codes mit denen der Nummern, die Mitglieder hinzugefügt haben, antwortet mit den gefundenen Mitgliedern und behält nichts von dem, was er erhalten hat: weder in der Datenbank noch in einem Protokoll.",
         "Ein Hash einer Telefonnummer ist kein Geheimnis: Wer die Codes hätte, könnte die Nummern wiederfinden, indem er alle möglichen Nummern ausprobiert. Deshalb ist der eigentliche Schutz, dass unser Server keinen davon behält; sie gehen nur über die verschlüsselte Verbindung.",
         "Die Nummern deiner Kontakte sind Daten anderer Menschen: Sie werden einmal verglichen, um Konten zu finden, und dann vergessen. Damit niemand Nummern einzeln ausprobiert, zählt der Server die Suchen jedes Kontos in einer Stunde, nur im Arbeitsspeicher. Gefunden wird nur, wer seine Nummer hinzugefügt hat, und nie jemand, den du blockiert hast oder der dich blockiert hat.",
@@ -330,9 +340,21 @@ const privacy: AboutDocument = {
       heading: "Deine Läufe und ihre GPS-Spuren",
       blocks: [
         "Mit einem Konto geht der ganze Lauf an unseren Server, wenn du am Ende eines Laufs auf «Speichern» tippst: jede Position mit ihrer Uhrzeit und Höhe, die Pausen, die Route, der du gefolgt bist, Distanz, Dauer, eine Punktzahl dafür, wie genau die Spur der Route folgt (von unserem Server berechnet und in der App nicht angezeigt), und der Name des Ortes. Mit «Verwerfen» wird nichts gesendet.",
-        "Ein gespeicherter Lauf ist privat: Nur dein Konto sieht ihn. Andere Mitglieder sehen auf deinem Profil nur die Summen aller deiner gespeicherten Läufe, Distanz und Anstieg, nie die Läufe selbst. Er bleibt, bis du ihn in «Meine Aktivitäten» löschst oder dein Konto löschst.",
-        "Ein Lauf beginnt und endet oft an deiner Haustür. Deshalb wird ein Lauf für die anderen Mitglieder erst sichtbar, wenn du «Öffentlich» einschaltest, und dann sehen sie die Spur ohne ihre ersten und letzten 200 m, mit dem Titel, den du ihr gegeben hast, und ohne Zeiten, Pausen oder die geplante Route.",
-        "Wer einen deiner Läufe sehen kann, kann ihm auch mit «Start» folgen und dieselbe Spur als GPX-Datei speichern: immer ohne ihre ersten und letzten 200 m und ohne Zeiten.",
+        "Ein gespeicherter Lauf ist privat, solange du nichts anderes wählst: Nur dein Konto sieht ihn. Eine Ausnahme ist eine Aktivität, die du aus einer Datei mit dem «+» im Feed hinzufügst: Sie beginnt mit «Alle», das du vor «Speichern» siehst und ändern kannst. Andere Mitglieder sehen auf deinem Profil die Summen aller deiner gespeicherten Läufe, Distanz und Anstieg, und deine Bestzeiten, zu Fuß und mit dem Rad, mit der Zeit und dem Datum, an dem du sie aufgestellt hast: auch die eines privaten Laufs, der sich aber nicht öffnet. Er bleibt, bis du ihn in «Meine Aktivitäten» löschst oder dein Konto löschst.",
+        "Wenn du «Zeigen» wählst, sehen andere Mitglieder auf deinem Profil auch deine VO₂max. Bis Apple Health mit einem späteren Update kommt, ist sie unsere Schätzung aus deinen Lauf-Bestzeiten der letzten 12 Monate, berechnet von unserem Server. Schalte sie in den Einstellungen aus, und sie verschwindet von deinem Profil.",
+        "Ein Training im Fitnessstudio wird mit seinen Übungen, Sätzen und Gewichten gespeichert. Andere Mitglieder sehen auf deinem Profil deine Stufen im Fitnessstudio (die Figur, die Übung und deinen besten Satz), gezählt aus all deinen Trainings, auch den privaten, aber nie das Training selbst. Ist der Beitrag eines Trainings für alle sichtbar und zeigt er seine Übungen, kann dein bester Satz des Monats in jeder Übung mit deinem Benutzernamen in der Monatsrangliste dieser Übung erscheinen, die andere Mitglieder sehen. Blende die Übungen des Beitrags aus oder mach ihn privat, und er verlässt die Rangliste.",
+        "Deine Trainingspläne (Name, Tage, Übungen und Zielwerte) bleiben auf deinem Telefon und in deinem Konto und werden mit deinem Konto gelöscht. Nur du siehst sie, außer du teilst einen im Feed: Der Beitrag ist eine Kopie des Plans, wie er beim Posten war, mit Name, Ziel, Tagen, Wochen, Übungen und Gewichten. Wer den Beitrag sieht, kann den Plan in seine eigenen Pläne kopieren. Wenn du deinen Plan änderst oder löschst, ändert sich der Beitrag nicht; löschst du den Beitrag, verschwindet er aus dem Feed, aber schon gemachte Kopien bleiben bei denen, die sie gemacht haben. Den Kalender deiner Trainings siehst nur du.",
+        "Wenn du eine frühere Aktivität aus einer Datei hinzufügst, speichern wir ihre Spur und ihre Uhrzeiten wie bei einem mit MuW aufgezeichneten Lauf. Die Datei selbst speichern wir nicht.",
+        "Ein Beitrag «Nur Fotos» hat keine Spur, keinen Ort und keine Uhrzeiten. Seine Fotos kommen verkleinert auf unseren Server, ohne die Daten, die dein Handy hinzufügt, etwa wo und wann sie aufgenommen wurden. Wer sie sieht, mit dem Titel, der Beschreibung und den Personen, die du markierst, wählst du: «Alle» oder deine «Follower»; «Nur ich» gibt es nicht. Die Wahl beginnt mit der deines letzten Beitrags, oder mit «Alle», und du siehst sie vor «Posten». Der Beitrag bleibt, bis du ihn oder dein Konto löschst.",
+        "Ein Lauf beginnt und endet oft an deiner Haustür. Deshalb wird ein Lauf für die anderen Mitglieder nur sichtbar, wenn beim Speichern unter «Wer kann es sehen» «Alle» oder «Follower» gewählt ist, und dann sehen sie die ganze Spur, mit Start und Ziel, mit dem Titel, den du ihr gegeben hast, und ohne Zeiten, Pausen oder die geplante Route, außer in einem «Zusammen»-Video (unten). Deine Wahl bleibt für den nächsten Lauf auf diesem Telefon: Er beginnt mit der zuletzt gespeicherten, du siehst sie vor «Speichern» und kannst sie ändern. Eine aus einer Datei in «Meine Aktivitäten» hinzugefügte Aktivität beginnt mit «Nur ich»; eine aus einer Datei mit dem «+» im Feed hinzugefügte beginnt mit «Alle», und du kannst das vor «Speichern» ändern.",
+        "Wenn dich jemand im Beitrag eines Laufs markiert und du denselben Lauf zur selben Zeit aufgezeichnet hast und dein Lauf für diese Person sichtbar ist, kann sie deine Strecke in ein «Zusammen»-Video aufnehmen. Deine Linie bewegt sich in deinem echten Tempo, mit deinen Pausen, vom ersten Start bis zum letzten Ziel: Wer das Video sieht, sieht, wie schnell du warst, aber nicht die Uhrzeit oder das Datum. Stell deinen Lauf auf «Nur ich», dann kann er nicht mehr verwendet werden; ein schon gemachtes Video bleibt, wie es ist.",
+        "Wer einen deiner Läufe sehen kann, kann ihm auch mit «Start» folgen und dieselbe Spur als GPX-Datei speichern, ohne Zeiten.",
+        "Ein Beitrag für «Alle» lässt sich auch mit einem Link öffnen. Du oder jedes Mitglied, das den Beitrag sieht, kann seinen Link teilen, und wer den Link hat, sieht auf einer Webseite die Zeichnung auf der Karte, deinen Benutzernamen, den Titel, die Sportart und die Distanz, auch ohne MuW: nie deine Fotos, die Kommentare oder deine Zeiten. Suchmaschinen werden gebeten, diese Seiten nicht aufzulisten. Schalte «Links zu meinen Beiträgen» in den Einstellungen aus, und kein Link zu deinen Beiträgen funktioniert mehr. Ein Beitrag für «Follower» oder «Nur ich» hat nie einen Link.",
+        "Ein Foto, das du veröffentlichst, kann die Zeichnung deines Laufs im Bild enthalten. Es ist dieselbe Zeichnung wie im Feed.",
+        "Bei einem Skitag vergleicht unser Server die gespeicherte Spur mit den Liften und Pisten von OpenStreetMap, die er selbst vorhält, um festzuhalten, welche du genommen hast und wie oft. Die Namen erscheinen im Beitrag, für alle, die ihn sehen können. Nichts geht an einen anderen Dienst.",
+        "Auf den Fotos, die du veröffentlichst, kannst du die Teile markieren, die du trägst: was jedes ist, die Marke und, wenn du willst, das Modell und einen Link zu einem Shop. Wer das Foto sieht, sieht sie. Geht der Lauf zurück auf «Nur ich», verlassen sie mit seinen Fotos unseren Server und bleiben auf diesem Telefon.",
+        "Du kannst deine Ausrüstung hinzufügen: Schuhe, ein Rad, Ski, einen Helm, alles, was du benutzt. Zu jedem Teil speichern wir Art, Marke, Modell, den Namen, den du ihm gibst, den Monat, in dem du es gekauft hast, deine Notiz und sein Foto. Das Foto speichern wir verkleinert, ohne die Daten, die dein Handy hinzufügt, etwa wo und wann es aufgenommen wurde. Die Aktivitäten, die du für ein Teil wählst, fügen seinen Summen ihre Distanz und Zeit hinzu; die Summen zählt unser Server aus deinen gespeicherten Aktivitäten. Andere Mitglieder sehen deine Ausrüstung auf deinem Profil, mit Summen, Notizen und Fotos, außer du schaltest für ein Teil «Im Profil ausblenden» ein. Die Sportarten, die du für ein Teil wählst, und sein Limit siehst nur du. Deine Ausrüstung wird mit deinem Konto gelöscht.",
+        "Bei einem Skitag sendet die App unserem Server deine Position, auf etwa 1 km gerundet, um das nächste Skigebiet zu finden; das Wetter fragt der Server bei MET Norway mit der Position des Skigebiets ab, nie mit deiner. Skigebiet, Schnee und Ausrüstung, die du hinzufügst, stehen auf dem Beitrag, für alle, die ihn sehen können, und der Schnee zählt außerdem, ohne deinen Namen, zum Schnee des Tages im Skigebiet.",
       ],
     },
     {
@@ -341,7 +363,7 @@ const privacy: AboutDocument = {
         {
           bullets: [
             "Eine Route, die du in «Favoriten» behältst, wird ganz gespeichert, mit ihrer Linie, die oft nahe bei dir zu Hause beginnt. Nur dein Konto sieht sie, bis du sie entfernst oder das Konto löschst.",
-            "Deine Kommentare und Reaktionen unter einer Zeichnung sehen die Mitglieder, die diese Zeichnung sehen. Du kannst deine eigenen Kommentare löschen.",
+            "Deine Kommentare, Antworten und Reaktionen unter einer Zeichnung sehen die Mitglieder, die diese Zeichnung sehen. Eine Reaktion auf einen Kommentar sehen sie nur als Zahl; das Mitglied, das diesen Kommentar geschrieben hat, liest in der Glocke, dass du es warst. Du kannst deine eigenen Kommentare und Antworten löschen und eine Reaktion zurücknehmen.",
             "Wem du folgst, wer dir folgt und die Anfragen zum Folgen werden mit deinem Konto gespeichert.",
           ],
         },
@@ -351,6 +373,7 @@ const privacy: AboutDocument = {
       heading: "Private Nachrichten",
       blocks: [
         "Deine privaten Nachrichten liegen auf unserem Server: wer geschrieben hat, an wen, der Text und wann, und für jeden der beiden, ob er die Unterhaltung angenommen hat, wann er sie zuletzt gelesen hat und bis wann er sie aus seiner Ansicht gelöscht hat. Sie sind nicht Ende-zu-Ende-verschlüsselt. In der App sehen eine Unterhaltung nur ihre beiden Mitglieder, und niemand erfährt, ob eine Nachricht gelesen wurde. Wir speichern sie, um dir den Dienst zu geben, den du verlangst (Vertrag).",
+        "Eine Nachricht kann ein Foto, ein Video oder eine Zeichnung enthalten. Ein Foto speichern wir verkleinert, ohne die Daten, die dein Handy hinzufügt, etwa wo und wann es aufgenommen wurde. Ein Video speichern wir so, wie dein Handy es schickt, ohne den Ort, an dem es gedreht wurde, und löschen es 30 Tage nach dem Senden, oder früher, die ältesten zuerst, wenn unser Platz für Videos voll ist. Eine Zeichnung ist eine Kopie der Route und kommt ganz an, mit ihrem Start: ein Lauf, den du schickst, wie im Feed, ebenso wie eine geplante Route. Fotos und Videos sind nicht Ende-zu-Ende-verschlüsselt, liegen nicht in unseren Sicherungskopien und werden mit ihrer Nachricht, der Unterhaltung oder deinem Konto gelöscht. Wenn du eine Nachricht meldest, sieht die Person, die MuW betreibt, auch ihr Foto, ihr Video oder ihre Zeichnung.",
         "Eine Nachricht an jemanden, der dir nicht folgt, kommt als Anfrage an; die erste Nachricht einer Anfrage geht durch denselben Wortfilter wie die Kommentare.",
         "Du kannst deine eigenen Nachrichten für euch beide löschen. Eine Unterhaltung zu löschen nimmt sie aus deiner Ansicht; eine Nachricht, die keiner von euch mehr sieht, wird gelöscht. Eine Blockierung löscht die Unterhaltung; wenn du dein Konto löschst, werden alle deine Unterhaltungen gelöscht, mit den Nachrichten von beiden.",
         "Wenn du eine Nachricht meldest, enthält die E-Mail an die Person, die MuW betreibt, nur diese Nachricht, nie den Rest der Unterhaltung. Mit Push trägt die Benachrichtigung einer Nachricht ihren Anfang, über den Push-Dienst von Expo und Apple oder Google, wie bei Kommentaren.",
@@ -359,7 +382,7 @@ const privacy: AboutDocument = {
     {
       heading: "Meldungen",
       blocks: [
-        "Wenn du eine Zeichnung, einen Kommentar oder ein Profil meldest, behalten wir, wer was gemeldet hat, den Grund und wann. Wer MuW betreibt, bekommt die Meldung per E-Mail und kann das Gemeldete vor den anderen Mitgliedern verbergen. Nichts wird gelöscht, und wer es geschrieben hat, sieht es weiter. Deine Meldung wird dem Verfasser nie gezeigt.",
+        "Wenn du eine Zeichnung, ein markiertes Teil, ein Teil deiner Ausrüstung, einen Kommentar, ein Profil oder einen Gruppenlauf meldest, behalten wir, wer was gemeldet hat, den Grund und wann. Wer MuW betreibt, bekommt die Meldung per E-Mail und kann das Gemeldete vor den anderen Mitgliedern verbergen. Nichts wird gelöscht, und wer es geschrieben hat, sieht es weiter. Deine Meldung wird dem Verfasser nie gezeigt.",
       ],
     },
     {
@@ -377,7 +400,7 @@ const privacy: AboutDocument = {
     {
       heading: "Das Formenspiel",
       blocks: [
-        "Mit einem Konto berechnet unser Server aus deinen gespeicherten Läufen zu Fuß, wie viele Kilometer für das Spiel zählen, deine Bestzeiten über 1, 5, 10 und 21,1 km und die Formen, die du gesammelt hast. Nur du siehst deine Sammlung und deine Bestzeiten. Wenn du einem Team beitrittst, sehen seine Mitglieder deinen Benutzernamen, dein Bild, die Teile einer Herausforderung, die du übernommen hast, und die Kilometer, die du zu jedem beigetragen hast, nie deine Strecken, die Zeiten deiner Läufe oder wo du gelaufen bist. Ein Team findet man nur mit seinem Code: Es ist nie in einer Suche. Wenn du einen Lauf löschst, fallen seine Kilometer aus der Zählung, und die Formen, die du schon gesammelt hast, bleiben. Wenn du dein Konto löschst, werden deine Spieldaten mit gelöscht; in den Herausforderungen eines Teams bleiben die Teile, die du gelaufen bist, für die anderen, ohne deinen Namen.",
+        "Mit einem Konto berechnet unser Server aus deinen gespeicherten Läufen zu Fuß, wie viele Kilometer für das Spiel zählen, deine Bestzeiten über Distanzen von 400 m bis 50 km und die Formen, die du gesammelt hast. Nur du siehst deine Sammlung und deine Bestzeiten. Die Preise des Spiels (Editionen, Rahmen, Titel und Abzeichen) siehst nur du, bis du dich entscheidest, auf deinem Profil einen Rahmen, einen Titel oder bis zu 3 Abzeichen zu zeigen: Ab dann sieht sie, wer dein Profil sehen kann. Ohne deine Wahl wird nichts gezeigt, und du kannst sie jederzeit wieder entfernen. Für die persönlichen Herausforderungen sendet die App mit jedem Lauf auch den Unterschied zwischen der Uhr des Telefons und UTC (die Zeitzone, zum Beispiel +1 Stunde), nie den Ort: Damit zählen wir die Läufe vor 8 Uhr, am Abend oder am Wochenende und die Wochen nach deiner Zeit. Deine persönlichen Herausforderungen und deine Serie siehst nur du. Wenn du einem Team beitrittst, sehen seine Mitglieder deinen Benutzernamen, dein Bild, die Teile einer Herausforderung, die du übernommen hast, und die Kilometer, die du zu jedem beigetragen hast, nie deine Strecken, die Zeiten deiner Läufe oder wo du gelaufen bist. Ein Team findet man nur mit seinem Code: Es ist nie in einer Suche. Wenn du einen Lauf löschst, fallen seine Kilometer aus der Zählung, und die Formen, die du schon gesammelt hast, bleiben. Wenn du dein Konto löschst, werden deine Spieldaten mit gelöscht; in den Herausforderungen eines Teams bleiben die Teile, die du gelaufen bist, für die anderen, ohne deinen Namen.",
       ],
     },
     {
@@ -395,16 +418,23 @@ const privacy: AboutDocument = {
     {
       heading: "Dein Standort",
       blocks: [
-        "Der Standort des Handys wird auf dem Handy genutzt, um eine Route dort zu beginnen, wo du bist, und um deinem Lauf zu folgen. Er geht an unseren Server als Start einer Route, die du anforderst, innerhalb eines Laufs, den du speicherst, und mit der Suche nach einem Ort, um die Orte in deiner Nähe zuerst zu zeigen.",
+        "Der Standort des Handys wird auf dem Handy genutzt, um eine Route dort zu beginnen, wo du bist, und um deinem Lauf zu folgen. Er geht genau an unseren Server als Start einer Route, die du anforderst, als Start der Formen, die die App dir in der Nähe vorbereitet, wenn das Handy sie nicht selbst zeichnen kann, und innerhalb eines Laufs, den du speicherst. Abseits der Route eines Laufs, wenn das Handy den Weg zurück nicht selbst findet, geht er genau an unseren Server, mit dem Stück der Route vor dir, um diesen Weg über die Straßen zu finden: Der Server behält beides nicht. Auf etwa 1 km gerundet geht er an den Server, um die Offline-Karte um dich herum, empfohlene Routen, Orte und Zeichnungen in der Nähe zu finden und bei einer Suche die Orte in deiner Nähe zuerst zu zeigen; so gerundet bleibt er nicht mit deinem Konto verbunden. Wenn du eine Aktivität live teilst, geht deine genaue Position an unseren Server und an alle, die den Link haben, wie unter «Live teilen» beschrieben.",
         "Auf dem iPhone folgt die App während eines Laufs, den du gestartet hast, deinem Standort auch bei gesperrtem Handy oder wenn eine andere App offen ist, bis du den Lauf beendest; das iPhone zeigt das mit einer blauen Markierung oben auf dem Bildschirm. MuW fragt nur nach dem Standort, während du die App benutzt, nie «Immer».",
         "Wie jeder Internetdienst sieht unser Server die Internetadresse (IP), von der eine Anfrage kommt, während er sie beantwortet. Das Protokoll des Servers schreibt keine Positionen, und die Datenbank enthält keine IP-Adressen.",
         "Ein Register der Routenanfragen mit ihrem Start gibt es, um einen Fehler nachzustellen. Auf unserem Server ist es ausgeschaltet; eingeschaltet fasst es höchstens 10 MB, dann gehen die ältesten Zeilen verloren.",
       ],
     },
     {
+      heading: "Live teilen",
+      blocks: [
+        "Während einer Aktivität kannst du auf «Live teilen» tippen, um einen Link zu erstellen. Solange du teilst, erhält unser Server alle 15 Sekunden deine genaue Position mit der Uhrzeit, die Werte der Aktivität (Distanz, Zeit, Pace oder Tempo, Höhenmeter, Kalorien) und deinen Puls, wenn eine Uhr ihn sendet. Wer den Link hat, sieht sie auf einer Seite von getmuw.app, ohne Konto: Du entscheidest, wem du ihn schickst, und wer ihn hat, kann ihn weitergeben. Der Link ist zufällig und nicht zu erraten; unser Server speichert nur einen Hash davon. Er funktioniert eine Stunde nach dem Ende der Aktivität nicht mehr, spätestens 24 Stunden nach ihrem Beginn, oder sobald du das Teilen beendest; dann werden die Positionen und der Puls gelöscht. Dein Puls ist ein Gesundheitsdatum: Er wird nur geteilt, nachdem du es auf dem Bildschirm vor dem Link gelesen hast. Die Karte auf dieser Seite kommt von OpenFreeMap, das die Internetadresse (IP) der Person sieht, die sie öffnet, aber weder den Link noch deine Position. Zum Teilen brauchst du ein Konto; wenn du das Konto löschst, werden auch seine Freigaben gelöscht.",
+      ],
+    },
+    {
       heading: "Werbung",
       blocks: [
-        "MuW zeigt keine Anzeigen und nutzt keinen Werbedienst: Nichts über dich geht an ein Werbenetzwerk, und die App fragt nie, ob sie dich über andere Apps hinweg verfolgen darf.",
+        "MuW zeigt eigene Style-Beiträge mit Links zu Shops, gekennzeichnet mit «Werbung · Affiliate-Links». MuW nutzt kein Werbenetzwerk, und die App fragt nie, ob sie dich über andere Apps hinweg verfolgen darf. Wenn du ein Produkt öffnest oder auf «Kaufen» tippst, zählt unser Server nur für diesen Tag und dieses Produkt eins dazu: Er weiß nicht, wer du bist oder welches Telefon es war. «Kaufen» öffnet die Seite des Shops in deinem Browser über den Link unseres Affiliate-Netzwerks Awin: Ab dort erfassen Awin und der Shop den Klick und einen möglichen Kauf, mit ihren Cookies und nach ihren eigenen Datenschutzerklärungen, damit MuW seine Provision erhält. Von ihnen bekommt MuW nur Summen von Klicks, Verkäufen und Provisionen, nie, wer du bist.",
+        "Dieselbe Zählung, pro Tag und ohne zu wissen, wer du bist, gilt für die Teile, die Mitglieder in ihren Beiträgen markieren: Wer ein Teil markiert hat, sieht, wie oft es geöffnet wurde und wie oft jemand zum Shop gegangen ist, nie wer. Der Link eines Mitglieds führt direkt zum Shop, ohne Awin: Ab dort erfasst der Shop den Besuch mit seinen Cookies, nach seiner eigenen Datenschutzerklärung.",
       ],
     },
     {
@@ -414,22 +444,51 @@ const privacy: AboutDocument = {
       ],
     },
     {
+      heading: "Die MuW-App auf der Apple Watch",
+      blocks: [
+        "Mit der MuW-App auf der Apple Watch zeichnet die Uhr während eines Trainings, das du startest, deinen Standort, deine Herzfrequenz und deine aktiven Kalorien auf und speichert das Training in Apple Health auf der Uhr.",
+        "Das Telefon schickt der Uhr die Routen, die du wählst («An die Uhr senden» und deine Favoriten). Am Ende eines Trainings schickt die Uhr dem Telefon die Spur; sie bleibt dort, bis du sie speicherst oder verwirfst: Ein gespeicherter Lauf geht an unseren Server, wie unter «Deine Läufe und ihre GPS-Spuren» beschrieben.",
+        "Während eines Laufs schickt die Uhr dem Telefon deine Herzfrequenz, um sie auf dem Laufbildschirm zu zeigen: Sie erreicht unseren Server nicht. Die Uhr fragt nach deinem Standort nur während eines Trainings.",
+      ],
+    },
+    {
+      heading: "Ernährung",
+      blocks: [
+        "«Ernährung» ist ein Tagebuch, das du für dich führst. Die Lebensmittel, die du hinzufügst, dein Wochenplan, was du für jeden Tag als gegessen einträgst, dein Tagesziel und die Kalorien, die du von Hand korrigierst, bleiben nur auf deinem Handy: Sie erreichen unseren Server nicht, und niemand sonst kann sie sehen. Die «Kalorienbilanz» in deinem Profil wird auf deinem Handy berechnet und nur dir angezeigt.",
+        "Um die Energie zu schätzen, die du verbrauchst, zählt MuW auf deinem Handy die Aktivitäten deines Kontos und die Körperdaten, die du in den «Einstellungen» eingegeben hast. Jede Zahl ist eine Schätzung: MuW gibt keine Diäten oder medizinischen Ratschläge.",
+        "Diese Daten waren nie auf unserem Server. Deshalb löscht weder das Abmelden noch das Löschen deines Kontos sie: Sie bleiben auf deinem Handy, bis du sie dort entfernst oder die App deinstallierst.",
+      ],
+    },
+    {
+      heading: "Apple Health und Health Connect",
+      blocks: [
+        "Sobald du «In Apple Health speichern» (iPhone) oder «In Health Connect speichern» (Android) einschaltest, wird jede Aktivität, die du speicherst, auch dort geschrieben, auf deinem Telefon: die Sportart, wann sie begann und endete, die Distanz, die Route und, bei einem Lauf, die geschätzten aktiven Kalorien. Wenn du am Ende eines Schwimmens im Becken oder eines Trainings im Fitnessstudio auf «Herzfrequenz aus Apple Health hinzufügen» tippst, liest MuW die Herzfrequenz, die deine Uhr während dieser Aktivität aufgezeichnet hat, und nichts anderes; nach diesem ersten Tippen liest MuW sie am Ende jedes Schwimmens und jedes Trainings. Durchschnitt und Maximum bleiben mit der Aktivität auf unserem Server und erscheinen in ihrem Beitrag, außer du schaltest «Herzfrequenz zeigen» aus; die Zeit in jeder Zone bleibt auf deinem Telefon. Keine deiner Gesundheitsdaten erreicht irgendeine Werbung. Du kannst es in der Health-App oder in Health Connect beenden. Was schon dort ist, bleibt, bis du es dort löschst, auch wenn du den Lauf oder dein Konto löschst.",
+      ],
+    },
+    {
       heading: "Andere, die Daten erhalten",
       blocks: [
         {
           bullets: [
             "Hetzner betreibt unseren Server und seine Sicherungskopien, in Deutschland.",
-            "Geoapify erhält die Suchen nach Orten und nach den Orten in deiner Nähe, mit der Position, und, um den Ort eines gespeicherten Laufs zu benennen, seinen auf etwa 1 km gerundeten Start: nie deine Haustür, den Lauf oder wer du bist. Antwortet unser Server nicht, geht eine Ortssuche stattdessen an Photon (komoot).",
+            "Geoapify erhält die Suchen nach Orten, nach Orten in deiner Nähe und nach den Plätzen einer Themenroute, mit der auf etwa 1 km gerundeten Position, und, um den Ort eines gespeicherten Laufs zu benennen, seinen ebenso gerundeten Start: nie deine Haustür, den Lauf oder wer du bist. Antwortet unser Server nicht, geht eine Ortssuche stattdessen an Photon (komoot).",
             "OpenFreeMap liefert die Karte: Wie jeder Kartendienst sieht es, welche Gegend du anschaust.",
-            "Den Overpass-Dienst für OpenStreetMap-Daten fragt unser Server nach der Karte einer Gegend, die er noch nicht hat: Er sieht, welche Gegend, nicht wer gefragt hat.",
+            "Die Hügel der 3D-Karte und eines Videos im Stil «3D» kommen von den Terrain Tiles auf Amazon Web Services: Wie jeder Kartendienst sieht es, welche Gegend du anschaust.",
+            "Apple auf dem iPhone oder Google auf Android erhält über den Adressdienst des Telefons die Position, von der «Zeichnen» startet, um den Namen der Straße anzuzeigen. MuW sendet sonst nichts und speichert den Namen nicht.",
+            "Wikimedia liefert unserem Server die Fotos der Orte: Es sieht welchen Ort, nicht wer fragt.",
+            "Bei der Karte «Satellit» liefert Esri die Bilder und bei der Karte «3D» liefert Amazon Web Services die Höhen: Wie jeder Kartendienst sehen sie, welches Gebiet du ansiehst.",
+            "Die Overpass-Dienste für OpenStreetMap-Daten (overpass-api.de und, wenn er nicht antwortet, overpass.private.coffee) fragt unser Server nach der Karte einer Gegend, die er noch nicht hat: Sie sehen, welche Gegend, nicht wer gefragt hat.",
+            "Für eine Schneeschuh-Route fragt unser Server Amazon Web Services nach den Höhen einer Gegend, die er noch nicht hat: Es sieht, welche Gegend, nicht wer gefragt hat.",
             "unpkg liefert die Kartenbibliothek, wenn die App startet.",
             "Expo liefert die Updates der App.",
             "Google Ireland Limited (Firebase Cloud Messaging), um Push-Benachrichtigungen an Android-Telefone zu liefern. Wenn du Push einschaltest, fragt die App bei Firebase einen Registrierungs-Token für dein Telefon an; der Push-Dienst von Expo gibt jede Benachrichtigung (wer was getan hat, und den Anfang eines Kommentars) an Google weiter, das sie an dein Telefon liefert. Google sieht den Token und den Inhalt jeder Benachrichtigung, nicht dein Konto und nicht deine Position. Der Token wird von unserem Server entfernt, wenn du Push ausschaltest, dich abmeldest oder dein Konto löschst; der auf dem Telefon verschwindet, wenn du die App deinstallierst.",
             "Resend, in den Vereinigten Staaten, verschickt die E-Mails von MuW: deine E-Mail-Adresse mit der E-Mail selbst. Bei einer Meldung bringt es dem Betreiber von MuW, was gemeldet wurde, seinen Text, den Grund und die Benutzernamen dessen, der es gemeldet hat, und dessen, der es geschrieben hat. Bei «Feedback senden» bringt es deine Nachricht, deinen Benutzernamen und deine E-Mail-Adresse.",
+            "Google erhält mit seinem Dienst Web Risk von unserem Server Teile des Fingerabdrucks (Hash) mancher Links, die Mitglieder an ihre Teile setzen, um zu prüfen, dass sie nicht zu gefährlichen Seiten führen: nie den ganzen Link, und nie, wer ihn gesetzt hat oder wer ihn öffnet.",
+            "Open Food Facts erhält den Barcode, den du in «Ernährung» scannst oder eingibst, um das Produkt zu finden: Es sieht den Barcode und, wie jede Website, deine IP-Adresse, nie dein Konto oder dein Tagebuch. Das zurückgesendete Produkt bleibt auf deinem Handy.",
             "Strava, wie oben gesagt.",
           ],
         },
-        "Ein Bild deines Laufs, das du mit «Teilen» machst, entsteht auf dem Handy und verlässt es nur über das Teilen-Menü, dorthin, wohin du es sendest.",
+        "Ein Bild oder ein Video deines Laufs, das du mit «Teilen» machst, entsteht auf dem Handy und verlässt es nur über das Teilen-Menü, dorthin, wohin du es sendest. Das Video zeigt die Karte rund um deinen Lauf, mit Start und Ziel.",
       ],
     },
     {
@@ -441,6 +500,7 @@ const privacy: AboutDocument = {
             "Wenn du dein Konto löschst, wird alles, was dir gehört, sofort gelöscht: Profil, Bild, Telefonnummer, Läufe, Zeichnungen, Favoriten, Kommentare, Reaktionen, Folgen, Spieldaten und die Neuigkeiten, die auf deine E-Mail warten. Die Routen, die unser Motor gezeichnet hat, bleiben: Sie sagen nichts darüber, wer sie angefragt hat.",
             "Jede Nacht wird eine Sicherungskopie der Datenbank gemacht und 13 Tage aufbewahrt: Ein gelöschtes Konto ist nach höchstens 14 Tagen aus jeder Sicherungskopie verschwunden.",
             "Auf deinem Handy: die Sitzung, deine Einstellungen (Sprache, Sport, Seen oder Meer), die Offline-Karten, die Läufe, die noch darauf warten, gesendet zu werden, und mit einem Konto die Gegend, in der deine Aktivitäten meist beginnen, um dir Seen und Meer in der Nähe vorzuschlagen; sie wird gelöscht, wenn du dich abmeldest.",
+            "Nur auf deinem Handy, auch nach dem Abmelden: was du in «Ernährung» einträgst.",
           ],
         },
         "Die Verbindung zwischen der App und unserem Server ist verschlüsselt (HTTPS).",
@@ -453,7 +513,7 @@ const privacy: AboutDocument = {
           bullets: [
             "Um dir den Dienst zu geben, um den du bittest (Vertrag): dein Konto, dein Profil, die Routen, die du anfragst, und die Läufe, Favoriten, Kommentare, Reaktionen und das Folgen, die du speicherst, die E-Mails der Benachrichtigungen, die du eingeschaltet hast, und das Formenspiel.",
             "Unser berechtigtes Interesse, MuW funktionsfähig, sicher und besser zu halten: die kurzen Protokolle des Servers, die Zählungen, die die Kartendownloads begrenzen, und die Suchereignisse, die nichts darüber sagen, wer du bist; der Abgleich der Nummern deiner Kontakte, von denen keine behalten wird; die E-Mail, wenn du weg bist, die du bei der Anmeldung, in «Einstellungen» oder in jeder E-Mail ablehnen kannst; die E-Mails der Meldungen, um MuW sicher zu halten; das Archiv der gezeichneten Routen, das nichts darüber sagt, wer du bist; die Nachrichten von «Feedback senden», um sie zu lesen und dir zu antworten.",
-            "Deine Einwilligung: die Telefonnummer, die du hinzufügst, und die Verbindung mit Strava. Du kannst eine Einwilligung jederzeit widerrufen; was vorher geschah, bleibt rechtmäßig.",
+            "Deine Einwilligung: die Telefonnummer, die du hinzufügst, die Verbindung mit Strava, das Speichern deiner Aktivitäten in Apple Health oder Health Connect und das Lesen deiner Herzfrequenz aus Apple Health. Du kannst eine Einwilligung jederzeit widerrufen; was vorher geschah, bleibt rechtmäßig.",
             "Eine rechtliche Pflicht, wenn ein Gesetz von uns verlangt, Daten aufzubewahren oder herauszugeben.",
           ],
         },

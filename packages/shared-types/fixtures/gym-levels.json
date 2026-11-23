@@ -1,0 +1,8 @@
+{
+  "note": "TASK-385 E: the levels at the gym of a profile (PublicProfile.gym_levels) and those a workout reached first (GymExercises.new_levels). Checked by test/gym.test.ts and the API's test_gym_levels.py.",
+  "gym_levels": [
+    { "exercise": "bench_press", "level": 5, "value": 100, "measure": "load_kg" },
+    { "exercise": "plank", "level": 3, "value": 120, "measure": "duration_s" },
+    { "exercise": "pull_up", "level": 2, "value": 4, "measure": "reps" }
+  ]
+}

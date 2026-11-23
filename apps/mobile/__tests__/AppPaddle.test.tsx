@@ -1,6 +1,6 @@
 /**
  * The app with «Paddle» (TASK-191): «Draw» asks for `activity: "paddling"`
- * at 1–5 km, from 2 km, a shape only; the route says it is on the water and
+ * at 1–5 km, from 2 km, a shape or a drawing by hand (TASK-396); the route says it is on the water and
  * «Start» follows it without directions, through the safety notice the
  * first time; «Explore» has the lakes and the beaches. The panel is in
  * src/route/RoutePanelPaddle.test.tsx, «Explore» on the water in
@@ -16,6 +16,7 @@ import { forgetWaterChoice } from "../src/paddle/PaddleExplore";
 import { NOTICE_TITLE } from "../src/paddle/PaddleNotice";
 import { forgetNoticeSeen } from "../src/paddle/safetyNotice";
 import { loadSport, saveSport } from "../src/settings/sport";
+import { typeShape } from "../src/route/testing";
 
 jest.mock("react-native-webview");
 jest.mock(
@@ -124,7 +125,7 @@ function distanceField() {
 }
 
 async function draw() {
-  await fireEvent.press(screen.getByText("Draw route"));
+  await fireEvent.press(screen.getByTestId("draw-route"));
   // The first poll comes after 500 ms.
   await act(() => jest.advanceTimersByTimeAsync(500));
 }
@@ -158,13 +159,17 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test("with «Paddle», «Draw» starts at 2 km, a shape only, and asks for paddling", async () => {
+test("with «Paddle», «Draw» starts at 2 km, a shape or a drawing, and asks for paddling", async () => {
   apiAnswers(waterDone);
   await atRiccione();
   expect(distanceField()).toHaveDisplayValue("2");
   expect(
     screen.getByRole("button", { name: "Paddle without a route" }),
   ).toBeOnTheScreen();
+  expect(
+    screen.getByText("On the water, the drawing goes where it fits near the start."),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Freehand" })).toBeOnTheScreen();
   expect(screen.queryByRole("button", { name: "Word" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Image" })).toBeNull();
   await draw();
@@ -174,13 +179,44 @@ test("with «Paddle», «Draw» starts at 2 km, a shape only, and asks for paddl
   expect(screen.getByText("heart · on the water · target 2 km")).toBeOnTheScreen();
 });
 
+test("«Freehand» on the water: the drawing is asked for paddling (TASK-396)", async () => {
+  apiAnswers(waterDone);
+  await atRiccione();
+  await fireEvent.press(screen.getByRole("button", { name: "Freehand" }));
+  expect(screen.getByText("Undo")).toBeOnTheScreen();
+  // A square by hand off the shore, [lon, lat] as the map page sends it.
+  const [lat, lon] = RICCIONE;
+  const line = [
+    [lon + 0.002, lat],
+    [lon + 0.006, lat],
+    [lon + 0.006, lat + 0.004],
+    [lon + 0.002, lat + 0.004],
+    [lon + 0.002, lat],
+  ];
+  await fireEvent(screen.getByTestId("map"), "message", {
+    nativeEvent: { data: JSON.stringify({ type: "drawn", line, metresPerPx: 2 }) },
+  });
+  await fireEvent.press(screen.getByText("Draw route"));
+  await act(() => jest.advanceTimersByTimeAsync(500));
+  // A drawing is an image's job, as on the roads (ADR-0161).
+  expect(routeBodies()).toEqual([]);
+  const [asked] = fetchSpy.mock.calls
+    .filter(([input]) => String(input) === `${API}/image-route-jobs`)
+    .map(([, init]) => JSON.parse(String(init?.body)) as Record<string, unknown>);
+  // From the drawing's own start, where the line begins.
+  expect(asked).toMatchObject({ activity: "paddling" });
+  expect(asked).toHaveProperty("outline");
+  expect(asked).not.toHaveProperty("shape");
+  expect(asked).not.toHaveProperty("word");
+});
+
 test("on the water the distances are 1 to 5 km", async () => {
   apiAnswers(waterDone);
   await atRiccione();
   for (const text of ["0,5", "5,5", "10"]) {
     await fireEvent.changeText(distanceField(), text);
     expect(screen.getByText("Enter a distance between 1 and 5 km.")).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+    expect(screen.getByTestId("draw-route")).toBeDisabled();
   }
   await fireEvent.changeText(distanceField(), "3,5");
   await draw();
@@ -237,7 +273,7 @@ test("a word chosen before «Paddle» is not sent: the shape is, at 2 km", async
 test("a shape in pieces is asked piece by piece on the water, by itself", async () => {
   apiAnswers(waterDone);
   await atRiccione();
-  await fireEvent.changeText(screen.getByLabelText("Shape"), "cat");
+  await typeShape("cat");
   // The pen goes up by itself on the water (TASK-226): nothing to switch.
   expect(screen.queryByRole("switch")).toBeNull();
   await draw();
@@ -305,11 +341,11 @@ test("a shape too big for the water offers the half km it fits at", async () => 
 test("«Explore» has the lakes and the beaches; their routes start without directions", async () => {
   apiAnswers(waterDone);
   await atRiccione();
-  await fireEvent.press(screen.getByText("Explore"));
+  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
   expect(
     screen.getByText("Shapes to paddle, within 1 km of the shore"),
   ).toBeOnTheScreen();
-  expect(screen.queryByText("Best near you")).toBeNull();
+  expect(screen.queryByTestId("explore-title")).toBeNull();
   // «Near me» is on at once, and the start is on Riccione's beach (TASK-233).
   expect(screen.getByRole("button", { name: "Near me" })).toBeSelected();
   expect(screen.getByText("RICCIONE · FROM THE BEACH")).toBeOnTheScreen();
@@ -328,7 +364,7 @@ test("with «Run», «Explore» is the one of before", async () => {
   jest.mocked(loadSport).mockReturnValue("run");
   fetchSpy.mockImplementation(async () => Response.json({ routes: [] }));
   await atRiccione();
-  await fireEvent.press(screen.getByText("Explore"));
-  expect(screen.getByText("Best near you")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
+  expect(screen.getByTestId("explore-title")).toBeOnTheScreen();
   expect(screen.queryByText("On the water")).toBeNull();
 });

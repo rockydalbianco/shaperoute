@@ -1,0 +1,11 @@
+{
+  "counts": {
+    "fire": 3,
+    "clap": 0,
+    "strong": 0,
+    "laugh": 0,
+    "wow": 1
+  },
+  "total": 4,
+  "mine": "fire"
+}

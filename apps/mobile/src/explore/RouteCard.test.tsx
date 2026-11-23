@@ -1,7 +1,9 @@
 import type { LatLon } from "@shaperoute/shared-types";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, within } from "@testing-library/react-native";
+import { Animated, StyleSheet } from "react-native";
 
 import { lineCamera } from "../feed/feedMapPage";
+import { color, font, motion, radius } from "../theme/tokens";
 import { FeedMapShooter, forgetFeedMaps } from "../feed/FeedMaps";
 import {
   cardMapsCredit,
@@ -36,7 +38,60 @@ test("two cards stand side by side in the width they are given", () => {
   expect(cardDrawingHeight(173)).toBe(114);
 });
 
-test("a photo takes the drawing's place, with its credit in two (TASK-283)", async () => {
+test("a swipe moves the lit dot to the photo", async () => {
+  await render(
+    <RouteCard
+      width={173}
+      line={SQUARE}
+      photo={{ source: { uri: "http://api.test/city-photos/Q1.jpg" }, credit: null }}
+      title="Viana"
+    />,
+  );
+  expect(screen.getByTestId("route-card-dot-1")).toHaveStyle({ opacity: 0.4 });
+  await fireEvent.scroll(screen.getByTestId("route-card-pages"), {
+    nativeEvent: { contentOffset: { x: 173, y: 0 } },
+  });
+  expect(screen.getByTestId("route-card-dot-0")).toHaveStyle({ opacity: 0.4 });
+  expect(screen.getByTestId("route-card-dot-1")).not.toHaveStyle({ opacity: 0.4 });
+});
+
+test("a tap on either page opens the route, a slide does not", async () => {
+  const onPress = jest.fn();
+  await render(
+    <RouteCard
+      width={173}
+      line={SQUARE}
+      photo={{ source: { uri: "http://api.test/city-photos/Q1.jpg" }, credit: null }}
+      title="Viana"
+      onPress={onPress}
+    />,
+  );
+  await fireEvent.press(screen.getByTestId("route-card-first-page"));
+  await fireEvent.press(screen.getByTestId("route-card-second-page"));
+  expect(onPress).toHaveBeenCalledTimes(2);
+  const page = screen.getByTestId("route-card-second-page");
+  await fireEvent(page, "pressIn", { nativeEvent: { pageX: 100, pageY: 10 } });
+  await fireEvent.press(page, {
+    nativeEvent: { pageX: 100 + TAP_SLOP + 1, pageY: 10 },
+  });
+  expect(onPress).toHaveBeenCalledTimes(2);
+});
+
+test("with no line the photo is alone, with no pages", async () => {
+  await render(
+    <RouteCard
+      width={173}
+      line={null}
+      photo={{ source: { uri: "http://api.test/city-photos/Q1.jpg" }, credit: null }}
+      title="Viana"
+    />,
+  );
+  expect(screen.getByTestId("route-card-photo")).toBeOnTheScreen();
+  expect(screen.queryByTestId("route-card-pages")).toBeNull();
+  expect(screen.queryByTestId("route-card-dots")).toBeNull();
+});
+
+test("the photo comes a swipe after the drawing, its credit in two (TASK-350)", async () => {
   await render(
     <RouteCard
       width={173}
@@ -50,10 +105,15 @@ test("a photo takes the drawing's place, with its credit in two (TASK-283)", asy
   expect(screen.getByTestId("route-card-photo").props.source).toEqual({
     uri: "http://api.test/city-photos/Q1.jpg",
   });
-  // No line, no map; a licence that asks for nothing, nothing written.
-  const drawing = screen.getByTestId("route-card-drawing");
-  expect(drawing.children).toHaveLength(1);
-  expect(screen.queryByTestId("route-card-map")).toBeNull();
+  // The line first, the photo on the second page, two dots to say so; a
+  // licence that asks for nothing, nothing written.
+  const first = screen.getByTestId("route-card-first-page");
+  const second = screen.getByTestId("route-card-second-page");
+  expect(first.children.length).toBeGreaterThan(0);
+  expect(within(first).queryByTestId("route-card-photo")).toBeNull();
+  expect(within(second).getByTestId("route-card-photo")).toBeOnTheScreen();
+  expect(second.children).toHaveLength(1);
+  expect(screen.getByTestId("route-card-dots")).toBeOnTheScreen();
   expect(creditParts("© LBM1948 · CC BY-SA 4.0")).toEqual([
     "© LBM1948 ·",
     "CC BY-SA 4.0",
@@ -220,4 +280,66 @@ test("the makers of the maps are named as they ask, once for the cards", async (
   );
   await render(<CardMapsCredit />);
   expect(screen.getByText(cardMapsCredit())).toBeOnTheScreen();
+});
+
+test("the large radius and no border, the words in the card's title style (TASK-339)", async () => {
+  await render(
+    <RouteCard
+      width={173}
+      line={SQUARE}
+      title="Star · 5.1 km"
+      detail="Trento · 450 m away"
+      onPress={jest.fn()}
+    />,
+  );
+  const card = screen.getByTestId("route-card");
+  expect(card).toHaveStyle({
+    borderRadius: radius.card,
+    backgroundColor: color.surface,
+  });
+  expect(
+    (StyleSheet.flatten(card.props.style) as { borderWidth?: number }).borderWidth,
+  ).toBeUndefined();
+  expect(screen.getByText("Star · 5.1 km")).toHaveStyle({
+    fontSize: font.cardTitle.fontSize,
+    fontWeight: font.cardTitle.fontWeight,
+    color: color.text,
+  });
+  expect(screen.getByText("Trento · 450 m away")).toHaveStyle({
+    fontSize: font.detail.fontSize,
+    color: color.textMuted,
+  });
+});
+
+test("the card and its pages answer the finger through Tap (TASK-339)", async () => {
+  // Seen, not run: an animation left running would spill into the next test.
+  const timing = jest
+    .spyOn(Animated, "timing")
+    .mockReturnValue({ start: jest.fn(), stop: jest.fn(), reset: jest.fn() });
+  const down = { nativeEvent: { pageX: 100, pageY: 10 } };
+  await render(
+    <RouteCard width={173} line={SQUARE} title="Star" onPress={jest.fn()} />,
+  );
+  await fireEvent(screen.getByTestId("route-card"), "pressIn", down);
+  expect(timing).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      toValue: 1,
+      duration: motion.pressMs,
+      useNativeDriver: true,
+    }),
+  );
+  timing.mockClear();
+  await render(
+    <RouteCard
+      width={173}
+      line={SQUARE}
+      photo={{ source: { uri: "http://api.test/city-photos/Q1.jpg" }, credit: null }}
+      title="Viana"
+      onPress={jest.fn()}
+    />,
+  );
+  await fireEvent(screen.getByTestId("route-card-second-page"), "pressIn", down);
+  expect(timing).toHaveBeenCalledTimes(1);
+  timing.mockRestore();
 });

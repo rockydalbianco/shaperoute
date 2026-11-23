@@ -1,7 +1,14 @@
 import { Component } from "react";
 import { ScrollView, type ScrollViewProps } from "react-native";
 
+import { useTabReselect } from "../tabs/tabReselect";
 import { TourScroll, TourScrollContext } from "./tourParts";
+
+/** Back to the top when the tab of the page is touched again (TASK-367). */
+function ToTopOnReselect({ scroll }: { scroll: TourScroll }) {
+  useTabReselect(() => scroll.view?.scrollTo({ y: 0, animated: true }));
+  return null;
+}
 
 /**
  * A `ScrollView` whose parts the tour of the first opening can scroll to
@@ -18,9 +25,13 @@ export class TourScrollView extends Component<ScrollViewProps> {
       <ScrollView
         {...props}
         ref={this.scroll.hold}
-        onScroll={this.scroll.onScroll}
+        onScroll={(event) => {
+          this.scroll.onScroll(event);
+          this.props.onScroll?.(event);
+        }}
         scrollEventThrottle={16}
       >
+        <ToTopOnReselect scroll={this.scroll} />
         <TourScrollContext.Provider value={this.scroll}>
           {children}
         </TourScrollContext.Provider>

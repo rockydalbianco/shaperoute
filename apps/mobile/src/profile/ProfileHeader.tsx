@@ -1,16 +1,23 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import type { GamePrizesShown, ProfileBadge } from "@shaperoute/shared-types";
+import { StyleSheet, Text, View } from "react-native";
 
-import { WinnerBadge } from "../contest/WinnerBadge";
 import { t } from "../i18n";
 import {
   color,
+  font,
   fontSize,
   fontWeight,
   MIN_TAP_SIZE,
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
+import { useGameCatalog } from "../game/gameCatalog";
+import { GamePrizesRow } from "../game/GamePrizesRow";
+import { isGamePrizesShown } from "../game/prizesApi";
+import { ProfileFrame } from "../game/ProfileFrame";
 import { Avatar } from "./Avatar";
+import { BadgeRow } from "./BadgeRow";
 
 export const PROFILE_AVATAR_SIZE = 2 * MIN_TAP_SIZE;
 
@@ -38,13 +45,29 @@ type Props = {
   photoButton?: PhotoButton;
   /** It won a contest (`contest_wins` ≥ 1): the «Winner» badge under the name. */
   winner?: boolean;
+  /**
+   * The badges it earned (TASK-341), after «Winner»; null or left out from an
+   * API older than TASK-341. Those still to earn are not here, on one's own
+   * neither (TASK-457): «Badges» lower down says them.
+   */
+  badges?: readonly ProfileBadge[] | null;
+  /**
+   * The prizes of the shape game its owner chose to show (TASK-423 E2b):
+   * the frame around the photo, the title and up to 3 badges under the
+   * name; null or left out: none.
+   */
+  gamePrizes?: GamePrizesShown | null;
 };
+
+/** A frame's ring around the photo: the photo keeps its size inside it. */
+const FRAME_RING = 7;
 
 /**
  * Who a profile is (TASK-116): the picture, the name, a line about it and
  * the bio. The same on one's own «Profile» and on another member's; on
  * one's own the circle has a «+» and changes the picture (TASK-207). Who
- * won a contest has the «Winner» badge under the name, for good (TASK-299).
+ * won a contest has the «Winner» badge under the name, for good (TASK-299),
+ * and the badges of the drawings follow it (TASK-341).
  */
 export function ProfileHeader({
   username,
@@ -53,15 +76,45 @@ export function ProfileHeader({
   detail,
   photoButton,
   winner = false,
+  badges = null,
+  gamePrizes = null,
 }: Props) {
-  const avatar = <Avatar name={username} size={PROFILE_AVATAR_SIZE} photo={photo} />;
+  const catalog = useGameCatalog();
+  // Read as the API says it; a broken answer shows nothing.
+  const prizes = isGamePrizesShown(gamePrizes) ? gamePrizes : null;
+  const frame = prizes?.frame ?? null;
+  const hardest =
+    frame === null
+      ? undefined
+      : catalog?.shapes.filter((shape) => shape.collection === frame).at(-1);
+  const photoCircle = (
+    <Avatar name={username} size={PROFILE_AVATAR_SIZE} photo={photo} />
+  );
+  // A frame the catalog on the phone knows goes around the photo.
+  const framed = frame !== null && hardest !== undefined;
+  const side = framed ? PROFILE_AVATAR_SIZE + 2 * FRAME_RING : PROFILE_AVATAR_SIZE;
+  const avatar =
+    framed && hardest !== undefined ? (
+      <ProfileFrame
+        collection={frame}
+        outline={hardest.outline}
+        size={side}
+        got
+        badgeSide="left"
+        testID="profile-frame"
+      >
+        {photoCircle}
+      </ProfileFrame>
+    ) : (
+      photoCircle
+    );
   return (
     <View style={styles.who}>
       {photoButton === undefined ? (
         avatar
       ) : (
-        <Pressable
-          style={({ pressed }) => [styles.circle, pressed && styles.pressed]}
+        <Tap
+          style={[styles.circle, { width: side, height: side }]}
           onPress={photoButton.onPress}
           disabled={photoButton.busy}
           accessibilityRole="button"
@@ -77,10 +130,11 @@ export function ProfileHeader({
           <View style={styles.plus} testID="photo-plus">
             <Text style={styles.plusText}>+</Text>
           </View>
-        </Pressable>
+        </Tap>
       )}
       <Text style={styles.username}>{username}</Text>
-      {winner && <WinnerBadge />}
+      <GamePrizesRow shown={prizes} />
+      <BadgeRow winner={winner} badges={badges} />
       <Text style={styles.detail}>{detail}</Text>
       {bio !== "" && <Text style={styles.bio}>{bio}</Text>}
     </View>
@@ -96,9 +150,6 @@ const styles = StyleSheet.create({
   circle: {
     width: PROFILE_AVATAR_SIZE,
     height: PROFILE_AVATAR_SIZE,
-  },
-  pressed: {
-    opacity: 0.6,
   },
   // White on the dark ring of the page: the yellow belongs to the route.
   plus: {
@@ -120,20 +171,20 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.bold,
     lineHeight: fontSize.input + space.sm,
   },
+  // The name large and light, as a page's title (TASK-339 D).
   username: {
+    ...font.title,
     marginTop: space.sm,
     color: color.text,
-    fontSize: fontSize.title,
-    fontWeight: fontWeight.bold,
   },
   detail: {
+    ...font.small,
     color: color.textMuted,
-    fontSize: fontSize.body,
   },
   bio: {
+    ...font.body,
     marginTop: space.sm,
     color: color.text,
-    fontSize: fontSize.body,
     textAlign: "center",
   },
 });

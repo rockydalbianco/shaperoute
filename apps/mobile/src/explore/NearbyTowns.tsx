@@ -40,11 +40,11 @@ export function awayKm(awayM: number): string {
 
 /**
  * Under «Near me» (TASK-236): the towns around the start, six at most, a
- * card each in a row to scroll. A card shows the town's photo, with its
- * credit (TASK-283, the user's choice); a town without one, or whose photo
- * does not load, a shape drawn in it, when the API has drawn it. A tap
- * opens the town as a city of «Explore». Nothing while the towns are not
- * known, and where there are none.
+ * card each in a row to scroll. A card shows a shape drawn in the town, when
+ * the API has drawn it, and a swipe after it the town's photo with its credit
+ * (TASK-283, TASK-350); a town whose shape cannot be drawn shows its photo
+ * alone. A tap opens the town as a city of «Explore». Nothing while the
+ * towns are not known, and where there are none.
  */
 export function NearbyTowns({
   apiUrl,
@@ -95,7 +95,7 @@ export function NearbyTowns({
   const samples = useNearbySamples(apiUrl, towns, { request });
   // And the region's examples the API keeps, behind them (TASK-316).
   useRegionAhead(apiUrl, near, towns, fetchFn);
-  // The photos that did not load: their towns go back to the drawing.
+  // The photos that did not load: their towns keep the drawing alone.
   const [broken, setBroken] = useState<ReadonlySet<string>>(NO_PHOTOS);
   // One source a photo, as long as the towns are the same: a new one
   // would have the photo read again.
@@ -131,14 +131,11 @@ export function NearbyTowns({
       onError: () => setBroken((was) => new Set(was).add(url)),
     };
   };
-  const drawn = towns.some((town, i) => {
-    const sample = samples[i];
-    return (
-      photoOf(town) === undefined &&
+  const drawn = samples.some(
+    (sample) =>
       (sample.status === "ready" || sample.status === "drawing") &&
-      sample.route !== null
-    );
-  });
+      sample.route !== null,
+  );
   return (
     <View style={styles.section}>
       <Text style={styles.label}>{t("NEARBY TOWNS")}</Text>
@@ -150,7 +147,9 @@ export function NearbyTowns({
               sample.status === "ready" || sample.status === "drawing"
                 ? sample.route
                 : null;
-            const photo = photoOf(town);
+            const waiting = route === null && sample.status !== "failed";
+            // The drawing comes first: no photo before it, unless it never will.
+            const photo = waiting ? undefined : photoOf(town);
             const name = cityShort(town.label);
             const away = miles
               ? t("{mi} mi away", { mi: awayNumber(town.away_m, "mi") })
@@ -162,11 +161,7 @@ export function NearbyTowns({
                 line={route?.preview ?? null}
                 rotationDeg={route?.rotation_deg}
                 title={name}
-                detail={
-                  photo === undefined && route === null && sample.status !== "failed"
-                    ? `${away} · ${t("Drawing…")}`
-                    : away
-                }
+                detail={waiting ? `${away} · ${t("Drawing…")}` : away}
                 map
                 photo={photo}
                 onPress={() => onCity({ label: town.label, point: town.point })}

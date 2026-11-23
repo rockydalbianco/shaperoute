@@ -1,29 +1,54 @@
-import type { DrawingDetail, DrawingPhoto } from "@shaperoute/shared-types";
+import {
+  type DrawingDetail,
+  type DrawingPhoto,
+  isPhotoPost,
+  PLAN_SOURCE,
+} from "@shaperoute/shared-types";
 import { useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { dayLabel } from "../activities/activityText";
+import { isOnSnow, isTrackless } from "../activities/snow";
+import { isGymPlanPosted } from "../api/planPosts";
 import { useWinnerDrawingId } from "../contest/contestKept";
 import { WinnerBadge } from "../contest/WinnerBadge";
 import { ExploreStart } from "../explore/ExploreStart";
+import { PlanPost } from "../feed/PlanPostTile";
+import { SleepPostCard } from "../feed/SleepPostCard";
+import { isSleepPost } from "../feed/sleepPost";
+import { GymDetail } from "../gym/GymDetail";
+import { PoolFigures } from "../pool/PoolFigures";
+import { isPoolLine } from "../pool/PoolTile";
 import type { StartView } from "../explore/useStartDirections";
 import { t } from "../i18n";
+import { ImportedMark } from "../imports/ImportedMark";
+import { drawingOfDrawing } from "../messages/messageDrawing";
+import { postOfDrawing } from "../messages/messagePost";
+import { useMessagesDoor } from "../messages/messagesDoor";
+import { SendDrawingButton } from "../messages/SendDrawingButton";
+import { durationLabel } from "../screens/FinishScreen";
+import { SkiDayLine } from "../ski/SkiDayLine";
 import {
   color,
+  font,
   fontSize,
   fontWeight,
   MIN_TAP_SIZE,
   radius,
   space,
 } from "../theme/tokens";
+import { Hairline } from "../ui/Hairline";
+import { Tap } from "../ui/Tap";
 import { runDistanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { DrawingComments } from "./DrawingComments";
 import { DrawingReactions } from "./DrawingReactions";
-import { followable } from "./drawingRoute";
+import { followable, runnable } from "./drawingRoute";
 import { useDrawingsDoor } from "./drawingsDoor";
 import { useFollowsDoor } from "./followsDoor";
+import { OutfitTagLayer, OutfitTotals } from "./outfit/OutfitTagLayer";
 import { activityName } from "./PublicParts";
+import { SkiNamesList } from "./SkiNamesList";
 import { useDrawingGpx } from "./useDrawingGpx";
 
 type Props = {
@@ -35,7 +60,25 @@ type Props = {
   /** «Draw it near me» (TASK-313): its shape or word chosen in «Draw»;
    * without it, a drawing «Draw» cannot choose, there is no button. */
   onDrawAgain?: () => void;
+  /** «Edit the drawing» (TASK-320): its figure on the map of «Draw on the
+   * map» (TASK-331); without it, an emoji or a drawing that gives no
+   * figure, there is no button. */
+  onEditDrawing?: () => void;
 };
+
+/**
+ * Whether «Send to a friend» copies this drawing into a message: only one's
+ * own. The copy carries the whole track, and whoever receives it keeps it
+ * (ADR-0289). Somebody else's drawing is never copied (TASK-455, ADR-0382,
+ * the user's choices 3 and 4): it goes as a post, a pointer that opens only
+ * for who may see the drawing, so one for its owner's followers too.
+ */
+export function copySendable(
+  drawing: Pick<DrawingDetail, "author">,
+  me: string | null,
+): boolean {
+  return me !== null && drawing.author.public_id === me;
+}
 
 /** «Start» on a drawing asks for nothing first: it is never loading. */
 const READY: StartView = { status: "idle" };
@@ -47,21 +90,41 @@ export const PHOTO_HEIGHT = 160;
  * A drawing on the map (TASK-117), under it: its title (without one, the
  * day it was run), the day, what it was and the km (the miles with
  * «Miles», TASK-182); then its photos, to scroll sideways, how it went,
- * and the names tagged, each of which opens its profile (TASK-208). Never
+ * and the names tagged, each of which opens its profile (TASK-208); a day
+ * of skiing, its lifts and pistes by name (TASK-375 part D). Never
  * the score (TASK-241, the user's choice), nor the time of day: the
  * others see the drawing, not when somebody runs. Its comments open from
  * a button (TASK-120), and next to it are its reactions (TASK-119). Under
  * them «Start», to run the track as the map shows it, without turn
  * directions, and «Export GPX», the same track as a file (TASK-307);
- * after them «Draw it near me», its shape or word in «Draw» (TASK-313).
+ * after them «Draw it near me», its shape or word in «Draw» (TASK-313),
+ * and «Edit the drawing», its figure on the map (TASK-320, TASK-331).
  * The drawing that won the contest kept on the phone has the «Winner» band
- * on top (TASK-299).
+ * on top (TASK-299). An activity added from a file of another app says
+ * «Imported» under its facts (TASK-312). A gym plan posted (TASK-485 part
+ * C), opened from a profile, a notification, a link or a chat, shows its
+ * tile as in the Feed, opened whole by a tap, with «Use this plan» on
+ * somebody else's; it was never run, so nothing of a run. The title is the card's, medium
+ * and not bold, the reactions and the buttons come after a hairline and
+ * answer the finger through `Tap` (TASK-339, ADR-0293).
  */
-export function DrawingCard({ drawing, onBack, onStart, onDrawAgain }: Props) {
+export function DrawingCard({
+  drawing,
+  onBack,
+  onStart,
+  onDrawAgain,
+  onEditDrawing,
+}: Props) {
   const day = dayLabel(drawing.started_at);
   const units = useUnits();
   const { photoSource } = useDrawingsDoor();
   const { openProfile } = useFollowsDoor();
+  const { account } = useMessagesDoor();
+  // An account of an API before the profiles has no public_id: nobody's.
+  const me =
+    account.state.status === "signedIn"
+      ? (account.state.session.user.public_id ?? null)
+      : null;
   const { exporting, exportGpx } = useDrawingGpx();
   const exported = exporting(drawing.id);
   const won = useWinnerDrawingId() === drawing.id;
@@ -69,9 +132,29 @@ export function DrawingCard({ drawing, onBack, onStart, onDrawAgain }: Props) {
   const [superLikes, setSuperLikes] = useState(0);
   const photos = drawing.photos ?? [];
   const tags = drawing.tags ?? [];
+  // A workout at the gym has no distance: its time (TASK-385 B0).
+  const gym = isTrackless(drawing.activity);
+  // A swim in a pool: no line to draw again nor edit (TASK-400 part C).
+  const pool = isPoolLine(drawing.activity, drawing.track);
+  // A post of photos only (TASK-312 part C) has no run: no numbers, no
+  // line, and it is not sent in a chat.
+  const photosOnly = isPhotoPost(drawing);
+  // The post of a night of sleep (TASK-467 part E) the same: its night
+  // where a run has its numbers.
+  const night = isSleepPost(drawing);
+  // A gym plan posted (TASK-485 part C): its tile where a run has its
+  // numbers. The shared type of a post's `source` names only a run's.
+  const source: string | undefined = drawing.source;
+  const plan =
+    source === PLAN_SOURCE && isGymPlanPosted(drawing.plan) ? drawing.plan : null;
+  const runless = photosOnly || night || plan !== null;
+  // The tile's width is the card's, known once it is laid out.
+  const [planWidth, setPlanWidth] = useState(0);
   const facts = [
     ...(drawing.activity === undefined ? [] : [activityName(drawing.activity)]),
-    runDistanceLabel(drawing.distance_m, units),
+    gym
+      ? durationLabel(drawing.duration_s * 1000)
+      : runDistanceLabel(drawing.distance_m, units),
   ].join(" · ");
   return (
     <View style={styles.card}>
@@ -80,7 +163,11 @@ export function DrawingCard({ drawing, onBack, onStart, onDrawAgain }: Props) {
         <View style={styles.words}>
           <Text style={styles.title}>{drawing.title ?? day}</Text>
           {drawing.title !== null && <Text style={styles.message}>{day}</Text>}
-          <Text style={styles.facts}>{facts}</Text>
+          {!runless && <Text style={styles.facts}>{facts}</Text>}
+          {drawing.source !== undefined &&
+            drawing.source !== "muw" &&
+            !night &&
+            plan === null && <ImportedMark />}
         </View>
       </View>
       {photos.length > 0 && (
@@ -90,17 +177,41 @@ export function DrawingCard({ drawing, onBack, onStart, onDrawAgain }: Props) {
           contentContainerStyle={styles.photos}
         >
           {photos.map((photo) => (
-            <Photo key={photo.n} photo={photo} source={photoSource(photo)} />
+            <Photo
+              key={photo.n}
+              photo={photo}
+              source={photoSource(photo)}
+              author={drawing.author}
+            />
           ))}
         </ScrollView>
       )}
-      {drawing.description != null && drawing.description !== "" && (
+      <OutfitTotals photos={photos} />
+      {night && <SleepPostCard sleep={drawing.sleep} detail />}
+      {plan !== null && (
+        <View
+          onLayout={(event) => setPlanWidth(event.nativeEvent.layout.width)}
+          testID="drawing-plan"
+        >
+          {planWidth > 0 && (
+            <PlanPost
+              plan={plan}
+              description={drawing.description ?? null}
+              mine={copySendable(drawing, me)}
+              drawingId={drawing.id}
+              width={planWidth}
+            />
+          )}
+        </View>
+      )}
+      {/* A plan's line is in its tile, above it. */}
+      {plan === null && drawing.description != null && drawing.description !== "" && (
         <Text style={styles.description}>{drawing.description}</Text>
       )}
       {tags.length > 0 && (
         <View style={styles.tags} accessibilityLabel={t("Tagged")}>
           {tags.map((tag) => (
-            <Pressable
+            <Tap
               key={tag.public_id}
               style={styles.tag}
               onPress={() =>
@@ -114,16 +225,32 @@ export function DrawingCard({ drawing, onBack, onStart, onDrawAgain }: Props) {
               accessibilityLabel={t("{name}'s profile", { name: tag.username })}
             >
               <Text style={styles.tagText}>{tag.username}</Text>
-            </Pressable>
+            </Tap>
           ))}
         </View>
       )}
+      {/* The lifts and pistes of a day of skiing (TASK-375 part D). */}
+      {drawing.activity === "skiing" && <SkiNamesList drawingId={drawing.id} />}
+      {/* Its resort, snow and gear (TASK-406 part D2). */}
+      {drawing.activity === "skiing" && <SkiDayLine drawingId={drawing.id} />}
+      {/* The exercises of a workout at the gym (TASK-385 B0). */}
+      {gym && <GymDetail drawingId={drawing.id} />}
+      {/* The lengths, the pool and the pace of a swim in a pool (TASK-400 C). */}
+      {pool && (
+        <PoolFigures
+          drawingId={drawing.id}
+          metres={drawing.distance_m}
+          durationS={drawing.duration_s}
+        />
+      )}
+      {/* The reactions and the actions, after a hairline. */}
+      <Hairline />
       <DrawingReactions
         drawingId={drawing.id}
         onSuperLiked={() => setSuperLikes((count) => count + 1)}
         beside={<DrawingComments key={superLikes} drawingId={drawing.id} />}
       />
-      {followable(drawing) && onStart !== undefined && (
+      {runnable(drawing) && onStart !== undefined && (
         <>
           <ExploreStart start={READY} onStart={onStart} />
           <Text style={styles.message}>
@@ -132,7 +259,7 @@ export function DrawingCard({ drawing, onBack, onStart, onDrawAgain }: Props) {
         </>
       )}
       {followable(drawing) && (
-        <Pressable
+        <Tap
           style={styles.button}
           onPress={() => exportGpx(drawing)}
           disabled={exported === "preparing"}
@@ -141,23 +268,50 @@ export function DrawingCard({ drawing, onBack, onStart, onDrawAgain }: Props) {
           <Text style={styles.buttonText}>
             {exported === "preparing" ? t("Preparing GPX…") : t("Export GPX")}
           </Text>
-        </Pressable>
+        </Tap>
       )}
       {exported === "failed" && (
         <Text style={styles.error}>{t("The GPX could not be made. Try again.")}</Text>
       )}
-      {onDrawAgain !== undefined && (
-        <Pressable
+      {/* «Send to a friend»: one's own track as the map shows it, copied
+          into a message (TASK-333); somebody else's drawing as a post, a
+          pointer (TASK-455). */}
+      {runless ? null : copySendable(drawing, me) ? (
+        runnable(drawing) && (
+          <SendDrawingButton
+            drawing={() => drawingOfDrawing(drawing)}
+            style={styles.button}
+            textStyle={styles.buttonText}
+          />
+        )
+      ) : (
+        <SendDrawingButton
+          post={postOfDrawing(drawing)}
           style={styles.button}
-          onPress={onDrawAgain}
-          accessibilityRole="button"
-        >
-          <Text style={styles.buttonText}>{t("Draw it near me")}</Text>
-        </Pressable>
+          textStyle={styles.buttonText}
+        />
       )}
-      <Pressable style={styles.button} onPress={onBack} accessibilityRole="button">
+      {onDrawAgain !== undefined &&
+        !isOnSnow(drawing.activity) &&
+        !gym &&
+        !pool &&
+        plan === null && (
+          <Tap style={styles.button} onPress={onDrawAgain} accessibilityRole="button">
+            <Text style={styles.buttonText}>{t("Draw it near me")}</Text>
+          </Tap>
+        )}
+      {onEditDrawing !== undefined &&
+        !isOnSnow(drawing.activity) &&
+        !gym &&
+        !pool &&
+        plan === null && (
+          <Tap style={styles.button} onPress={onEditDrawing} accessibilityRole="button">
+            <Text style={styles.buttonText}>{t("Edit the drawing")}</Text>
+          </Tap>
+        )}
+      <Tap style={styles.button} onPress={onBack} accessibilityRole="button">
         <Text style={styles.buttonText}>{t("Back to the profile")}</Text>
-      </Pressable>
+      </Tap>
     </View>
   );
 }
@@ -165,20 +319,26 @@ export function DrawingCard({ drawing, onBack, onStart, onDrawAgain }: Props) {
 function Photo({
   photo,
   source,
+  author,
 }: {
   photo: DrawingPhoto;
   source: { uri: string; headers?: Record<string, string> } | null;
+  author: { public_id: string; username: string } | null;
 }) {
   if (source === null) {
     return null;
   }
   const width = Math.round((PHOTO_HEIGHT * photo.width) / Math.max(photo.height, 1));
   return (
-    <Image
-      source={source}
-      style={[styles.photo, { width }]}
-      accessibilityLabel={t("Photo {n}", { n: photo.n })}
-    />
+    <View style={[styles.photo, { width }]}>
+      <Image
+        source={source}
+        style={StyleSheet.absoluteFill}
+        accessibilityLabel={t("Photo {n}", { n: photo.n })}
+      />
+      {/* The items worn: a tap on the photo shows them (TASK-394 part B). */}
+      <OutfitTagLayer photo={photo} fit="contain" toggle="photo" author={author} />
+    </View>
   );
 }
 
@@ -195,23 +355,22 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  // The card's title, medium and not bold (ADR-0293).
   title: {
+    ...font.cardTitle,
     color: color.text,
-    fontSize: fontSize.input,
-    fontWeight: fontWeight.semibold,
   },
   message: {
+    ...font.small,
     color: color.textMuted,
-    fontSize: fontSize.small,
   },
   error: {
+    ...font.small,
     color: color.error,
-    fontSize: fontSize.small,
   },
   facts: {
+    ...font.body,
     color: color.text,
-    fontSize: fontSize.input,
-    fontWeight: fontWeight.semibold,
   },
   photos: {
     gap: space.sm,
@@ -219,11 +378,12 @@ const styles = StyleSheet.create({
   photo: {
     height: PHOTO_HEIGHT,
     borderRadius: radius.md,
+    overflow: "hidden",
     backgroundColor: color.surfaceRaised,
   },
   description: {
+    ...font.body,
     color: color.text,
-    fontSize: fontSize.body,
   },
   tags: {
     flexDirection: "row",
@@ -239,10 +399,11 @@ const styles = StyleSheet.create({
     borderColor: color.borderStrong,
     backgroundColor: color.surfaceRaised,
   },
+  // A name is medium, not bold.
   tagText: {
     color: color.text,
     fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
+    fontWeight: fontWeight.medium,
   },
   button: {
     minHeight: MIN_TAP_SIZE,

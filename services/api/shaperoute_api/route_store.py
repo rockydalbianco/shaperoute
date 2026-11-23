@@ -47,7 +47,13 @@ from typing import Any
 
 import route_engine
 from route_engine.directions import Direction
-from route_engine.models import RouteRequest, RouteResult
+from route_engine.models import (
+    SNOW_ACTIVITIES,
+    Landmark,
+    RouteRequest,
+    RouteResult,
+    SwimTurn,
+)
 
 log = logging.getLogger(__name__)
 
@@ -75,16 +81,143 @@ CELL_DECIMALS = 4
 # (TASK-314, ADR-0274). Changing them keeps the routes kept; a test fails
 # when a module of the engine imports one.
 NOT_ROUTES = frozenset({"way_back.py"})
+# Files of the engine that draw only swims (TASK-323, ADR-0283): the swims
+# kept have a fingerprint of their own, with them, and changing them keeps
+# every other route kept. A test fails when a module that draws other routes
+# imports one; models.py imports swim_turns.py for a type only.
+SWIM_ONLY = frozenset(
+    {"shore_names.py", "swim_turns.py", "swim_water.py", "swimming.py"}
+)
+SWIMMING = "swimming"
+# Files of the engine that trace only what is never kept (TASK-347,
+# ADR-0300): a drawing anchored where the user drew it, and a stroke of one.
+# Changing them keeps the routes kept; a test fails when a module that
+# draws other routes imports one.
+ANCHORED_ONLY = frozenset({"anchored.py", "stroke_match.py"})
+# Files of the engine that draw only a drawing paddled on the water
+# (TASK-369, ADR-0313), never kept either: changing them keeps the routes
+# kept; a test fails when a module that draws other routes imports one.
+DRAWN_WATER_ONLY = frozenset({"drawn_water.py"})
+# Files of the engine that draw only on the snow (TASK-413, ADR-0342):
+# snowshoeing, no route of which is kept yet, and the heights, which only
+# the snow reads for now (TASK-347 part G is to read them for every route:
+# then they leave this set). Changing them keeps the routes kept; a test
+# fails when a module that draws other routes imports one.
+SNOW_ONLY = frozenset({"heights.py", "snow.py", "snowshoeing.py"})
+# The walk (TASK-371, ADR-0315): the API's own activity, drawn as a run on the
+# foot network, so a walk is a run kept. Changing it keeps the routes kept; a
+# test fails when a module that draws routes imports it.
+WALK_ONLY = frozenset({"walking.py"})
+# An engine whose code moved without drawing anything else (TASK-376,
+# ADR-0320): its fingerprint and the earlier one it draws the same routes
+# as, {moved: earlier}, so the routes kept and the examples stay. A line only
+# with its proof in tests/fixtures/same_routes/ (test_same_routes.py: the
+# same points for a fixed set of routes), never for a change of behaviour.
+# Read in a chain: a later move points at the fingerprint before it.
+SAME_ROUTES_AS: dict[str, str] = {
+    # TASK-376 B1: the networks and the activities moved to their registers.
+    "c9702b94404d": "5b5e026cea9b",  # every route but a swim
+    "11647a97e632": "b9d00c37d28d",  # the swims
+    "fb16815e3876": "574fbfba41eb",  # the app's paddling examples
+    # TASK-395: a trace that draws nothing is passed over, not divided by.
+    "e13ded92b52d": "c9702b94404d",  # every route but a swim
+    "db4ee081c4a4": "11647a97e632",  # the swims
+    # TASK-377: a hike, an activity with no route kept, on a network of its
+    # own; every route of before drawn the same (ADR-0321).
+    "9be259696402": "e13ded92b52d",  # every route but a swim
+    "822413512e24": "db4ee081c4a4",  # the swims
+    "05b33f547d79": "fb16815e3876",  # the app's paddling examples
+    # TASK-378: an MTB ride on a network of its own, one-way streets and the
+    # stretches on foot a property of the network; every route of before
+    # drawn the same (ADR-0322).
+    "54061c20df45": "9be259696402",  # every route but a swim
+    "25b3163837e8": "822413512e24",  # the swims
+    "1751ee7eca8a": "05b33f547d79",  # the app's paddling examples
+    # TASK-380: a skate on a network of its own, an activity with no route
+    # kept; every route of before drawn the same (ADR-0324).
+    "66509163156f": "54061c20df45",  # every route but a swim
+    "07f13e87d494": "25b3163837e8",  # the swims
+    "6b1ca82cd4e3": "1751ee7eca8a",  # the app's paddling examples
+    # TASK-413 A1: snowshoeing on the snow, in modules of its own (SNOW_ONLY)
+    # and a line of ENGINE_ONLY; every route of before drawn the same
+    # (ADR-0342).
+    "5e374d843dda": "66509163156f",  # every route but a swim
+    "4ad203b6a8ac": "07f13e87d494",  # the swims
+    "2bee8b8f1e4f": "6b1ca82cd4e3",  # the app's paddling examples
+    # TASK-421: the foot network leaves closed gates and closed ways out
+    # (ADR-0349). Runs and walks are drawn anew (no line for them); the
+    # swims and the paddling never touch the foot network.
+    "17d7608bd912": "4ad203b6a8ac",  # the swims
+    "8a62c5877031": "2bee8b8f1e4f",  # the app's paddling examples
+    # TASK-418: fourteen new shapes in the catalogue (ADR-0346); every route
+    # of before drawn the same.
+    "2bca806f467b": "8ab61d8e87f9",  # every route but a swim
+    "55b54eea0e14": "17d7608bd912",  # the swims
+    "cf585f8fb31b": "8a62c5877031",  # the app's paddling examples
+    # TASK-435: plan_nearby tells the start's own plan as soon as it is
+    # there (ADR-0361); every route drawn the same.
+    "b4967ef32e9a": "2bca806f467b",  # every route but a swim
+    "3ce5d60ec0cd": "55b54eea0e14",  # the swims
+    # TASK-436: the two tables a search works out once for its graph, made
+    # in blocks (ADR-0362); every route of before drawn the same.
+    "ca29e58777cb": "b4967ef32e9a",  # every route but a swim
+    "c9c2683a72ea": "3ce5d60ec0cd",  # the swims
+    "3984555281d5": "cf585f8fb31b",  # the app's paddling examples
+    # TASK-413 A2: snowshoeing moves from ENGINE_ONLY to ENGINE_ACTIVITIES,
+    # in the contract, and nothing is anchored on the snow (anchored.py);
+    # every route of before drawn the same (ADR-0342).
+    "427ed1a16a97": "ca29e58777cb",  # every route but a swim
+    "d943bfbe8c44": "c9c2683a72ea",  # the swims
+    "f54db2ee707d": "3984555281d5",  # the app's paddling examples
+    # TASK-414: a wheelchair on a network of its own (networks/wheel.py), the
+    # simple shapes only (Activity.shapes); every route of before drawn the
+    # same (ADR-0343).
+    "e0834d054b6e": "427ed1a16a97",  # every route but a swim
+    "1063cc95fea3": "d943bfbe8c44",  # the swims
+    "4c549677eefb": "f54db2ee707d",  # the app's paddling examples
+    # A zone not cached is downloaded wider, on a grid (network.download_box,
+    # Bangkok 2026-11-22); a route on a zone draws as before.
+    "83b84d67c7f4": "e0834d054b6e",  # every route but a swim
+    "780424973b42": "1063cc95fea3",  # the swims
+    "9b27551516c0": "4c549677eefb",  # the app's paddling examples
+}
 
 
-def engine_fingerprint(folder: Path | None = None) -> str:
+def same_routes_as(fingerprint: str, aliases: dict[str, str] | None = None) -> str:
+    """The earliest fingerprint whose routes `fingerprint` draws the same,
+    following SAME_ROUTES_AS (or `aliases`) from line to line."""
+    aliases = SAME_ROUTES_AS if aliases is None else aliases
+    seen = {fingerprint}
+    while fingerprint in aliases:
+        fingerprint = aliases[fingerprint]
+        if fingerprint in seen:
+            raise ValueError(f"SAME_ROUTES_AS goes round at {fingerprint}")
+        seen.add(fingerprint)
+    return fingerprint
+
+
+def engine_fingerprint(folder: Path | None = None, swims: bool = False) -> str:
     """The engine's code and outlines, as a few letters: another engine,
     other routes. From the files' content, not their dates: a new image of
-    the same code keeps what it drew. `folder`: the engine's own."""
+    the same code keeps what it drew. `folder`: the engine's own. Without
+    `swims` the files that draw only swims are left out (SWIM_ONLY): the
+    fingerprint of every route but a swim. The files of what is never kept
+    are always left out (ANCHORED_ONLY, DRAWN_WATER_ONLY), the snow's
+    (SNOW_ONLY), and the walk's,
+    which draws as a run (WALK_ONLY). An engine that only moved its code
+    keeps the earlier fingerprint (SAME_ROUTES_AS)."""
+    return same_routes_as(code_fingerprint(folder, swims))
+
+
+def code_fingerprint(folder: Path | None = None, swims: bool = False) -> str:
+    """The fingerprint of the engine's files as they are, before
+    SAME_ROUTES_AS (engine_fingerprint)."""
     folder = Path(route_engine.__file__).parent if folder is None else folder
+    never_kept = NOT_ROUTES | ANCHORED_ONLY | DRAWN_WATER_ONLY | SNOW_ONLY | WALK_ONLY
+    left_out = never_kept if swims else never_kept | SWIM_ONLY
     digest = hashlib.sha256()
     for path in sorted(folder.rglob("*")):
-        if path.relative_to(folder).as_posix() in NOT_ROUTES:
+        if path.relative_to(folder).as_posix() in left_out:
             continue
         if path.suffix in (".py", ".json") and path.is_file():
             digest.update(path.relative_to(folder).as_posix().encode())
@@ -127,6 +260,32 @@ def result_from(data: dict[str, Any]) -> RouteResult:
         centre=None if data.get("centre") is None else _pair(data["centre"]),
         # Kept before TASK-232: upright.
         rotation_deg=float(data.get("rotation_deg", 0.0)),
+        # Kept before TASK-323, or not a swim: one lap, no turns.
+        laps=int(data.get("laps", 1)),
+        lap_m=None if data.get("lap_m") is None else float(data["lap_m"]),
+        turns=[_turn(turn) for turn in data.get("turns", [])],
+    )
+
+
+def _turn(data: dict[str, Any]) -> SwimTurn:
+    mark = data.get("landmark")
+    return SwimTurn(
+        point=_pair(data["point"]),
+        at_m=float(data["at_m"]),
+        side=str(data["side"]),  # type: ignore[arg-type]
+        angle_deg=float(data["angle_deg"]),
+        lap=int(data["lap"]),
+        landmark=(
+            None
+            if mark is None
+            else Landmark(
+                name=str(mark["name"]),
+                kind=str(mark["kind"]),
+                point=_pair(mark["point"]),
+                distance_m=float(mark["distance_m"]),
+                bearing_deg=float(mark["bearing_deg"]),
+            )
+        ),
     )
 
 
@@ -149,6 +308,8 @@ class RouteStore:
     ) -> None:
         self._directory = directory
         self._engine = engine_fingerprint() if engine is None else engine
+        # The swims' (TASK-323): the engine with the files of the swims.
+        self._swim_engine = engine_fingerprint(swims=True) if engine is None else engine
         self._keep_s = keep_s
         self._max_routes = max_routes
         self._max_centres = max_centres
@@ -230,7 +391,7 @@ class RouteStore:
                 return False
         kept = {
             "saved_at": self._clock(),
-            "engine": self._engine,
+            "engine": self._engine_of(request),
             "request": self._same(request),
             "result": asdict(result),
         }
@@ -276,14 +437,30 @@ class RouteStore:
         }
         if request.pen_up:
             same["pen_up"] = True
+        if request.laps is not None:
+            same["laps"] = request.laps  # a swim (TASK-323), as the pen up
         return same
+
+    def _engine_of(self, request: RouteRequest) -> str:
+        """The fingerprint a route of `request` is kept by: a swim's has
+        the files of the swims (SWIM_ONLY), the others leave them out."""
+        return self._swim_engine if request.activity == SWIMMING else self._engine
 
     def _path(self, request: object) -> Path | None:
         if not isinstance(request, RouteRequest):
             return None  # an image: its outline is the user's own
         if request.near is not None:
             return None  # a shape moved by the user (TASK-238): theirs too
-        same = json.dumps([self._engine, self._same(request)], sort_keys=True)
+        if getattr(request, "placement", "free") != "free":
+            return None  # anchored where the user drew it (TASK-347): theirs
+        if request.activity in SNOW_ACTIVITIES:
+            # The snow's files are out of the fingerprint (SNOW_ONLY): a
+            # route on the snow kept would outlive the rules that drew it
+            # (TASK-413, ADR-0342).
+            return None
+        same = json.dumps(
+            [self._engine_of(request), self._same(request)], sort_keys=True
+        )
         name = hashlib.sha256(same.encode()).hexdigest()[:24]
         on_water = cell(request.start) in self._water
         folder = self._water_directory if on_water else self._directory

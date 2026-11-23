@@ -2,6 +2,7 @@ import drawing from "@shaperoute/shared-types/fixtures/drawing.json";
 import detail from "@shaperoute/shared-types/fixtures/drawing-details.json";
 import photoRequest from "@shaperoute/shared-types/fixtures/drawing-photo-request.json";
 import request from "@shaperoute/shared-types/fixtures/drawing-request-details.json";
+import drawingDetailsPhotos from "@shaperoute/shared-types/fixtures/drawing-details-photos.json";
 import drawings from "@shaperoute/shared-types/fixtures/drawings.json";
 import myDrawing from "@shaperoute/shared-types/fixtures/my-drawing.json";
 import myDetails from "@shaperoute/shared-types/fixtures/my-drawing-details.json";
@@ -235,6 +236,110 @@ test("the drawings of a profile come a page at a time", async () => {
     "http://api/users/a%20b/drawings?cursor=abc%2F1",
   );
   expect(fetchFn.mock.calls[1][1]).toMatchObject({ method: "GET", headers: AUTH });
+});
+
+// Activities this app does not know: one the API may add one day, and one
+// that is no name at all.
+const UNKNOWN = ["rowing", "sledging"];
+
+test.each(UNKNOWN)(
+  "a drawing of %s is read as one of no activity, and its page still loads",
+  (activity) => {
+    // The guards drop the field from the body they read: each its own copy.
+    const page = structuredClone({
+      ...drawings,
+      drawings: [{ ...drawings.drawings[0], activity }, ...drawings.drawings.slice(1)],
+    });
+    expect(isDrawingsPage(page)).toBe(true);
+    expect(page.drawings[0]).not.toHaveProperty("activity");
+    expect(page.drawings[0].id).toBe(drawings.drawings[0].id);
+    const one = { ...structuredClone(detail), activity };
+    expect(isDrawingDetail(one)).toBe(true);
+    expect(one).not.toHaveProperty("activity");
+  },
+);
+
+test.each(["skiing", "xc_skiing"])(
+  "a drawing of %s keeps it, in a profile page and whole (TASK-375 B2)",
+  (activity) => {
+    const page = structuredClone({
+      ...drawings,
+      drawings: [{ ...drawings.drawings[0], activity }, ...drawings.drawings.slice(1)],
+    });
+    expect(isDrawingsPage(page)).toBe(true);
+    expect(page.drawings[0]).toHaveProperty("activity", activity);
+    const one = { ...structuredClone(detail), activity };
+    expect(isDrawingDetail(one)).toBe(true);
+    expect(one.activity).toBe(activity);
+  },
+);
+
+test("the owner's own drawing keeps a day on the snow, not an activity unknown", () => {
+  // B1: so changing who sees it never sends it back as a run.
+  for (const activity of ["skiing", "xc_skiing"]) {
+    const mine = { ...structuredClone(myDetails), activity };
+    expect(isMyDrawing(mine)).toBe(true);
+    expect(mine.activity).toBe(activity);
+    expect(choiceOf(mine as MyDrawing).activity).toBe(activity);
+  }
+  const rowing = { ...structuredClone(myDetails), activity: "rowing" };
+  expect(isMyDrawing(rowing)).toBe(true);
+  expect(rowing).not.toHaveProperty("activity");
+});
+
+test("a day on the snow waiting on the phone keeps its activity", () => {
+  expect(choiceFrom({ ...CHOSEN, activity: "skiing" })).toEqual({
+    ...CHOSEN,
+    activity: "skiing",
+  });
+  expect(choiceFrom({ ...CHOSEN, activity: "xc_skiing" })?.activity).toBe("xc_skiing");
+});
+
+test("a day on the snow is sent as itself", async () => {
+  const fetchFn = answers({ status: 200, body: myDetails });
+  await saveDrawing(
+    URL,
+    TOKEN,
+    KEY,
+    { ...CHOSEN, activity: "skiing" },
+    options(fetchFn),
+  );
+  expect(JSON.parse(String(fetchFn.mock.calls[0][1]?.body))).toMatchObject({
+    activity: "skiing",
+  });
+});
+
+test("an activity this app knows stays, one that is no name still refuses", () => {
+  const listed = drawings.drawings[0];
+  const known = { ...structuredClone(listed), activity: "cycling" };
+  expect(isDrawing(known)).toBe(true);
+  expect(known.activity).toBe("cycling");
+  expect(isDrawing({ ...structuredClone(listed), activity: 3 })).toBe(false);
+  expect(isDrawing({ ...structuredClone(listed), activity: null })).toBe(false);
+});
+
+test("a post of photos only, without a run, is read with no activity (TASK-312 C2)", () => {
+  const photos = structuredClone(drawingDetailsPhotos);
+  expect(isDrawingDetail(photos)).toBe(true);
+  expect("activity" in photos).toBe(false);
+  const listed = structuredClone(drawings.drawings[0]);
+  // Only a post of photos only: a run's drawing with no activity is not one.
+  expect(isDrawing({ ...listed, activity: null, source: "photos" })).toBe(true);
+  expect(isDrawing({ ...listed, activity: null, source: "file" })).toBe(false);
+});
+
+test("a profile page with a day on the snow comes whole", async () => {
+  const page = {
+    ...drawings,
+    drawings: [
+      { ...drawings.drawings[0], activity: "skiing" },
+      ...drawings.drawings.slice(1),
+    ],
+  };
+  const fetchFn = answers({ status: 200, body: page });
+  const got = await fetchUserDrawings(URL, TOKEN, "a", null, options(fetchFn));
+  expect(got.kind).toBe("ok");
+  expect(got.kind === "ok" && got.value.drawings).toHaveLength(page.drawings.length);
 });
 
 test("a drawing is asked by its id", async () => {

@@ -6,15 +6,19 @@ import type { Language } from "../i18n/languages";
 import { translate } from "../i18n/translate";
 import {
   color,
+  type Palette,
   onFoot,
   otherRoute,
   route,
   routeAhead,
   routeCasing,
+  shapeGhost,
   stop,
   track,
   walk,
 } from "../theme/tokens";
+import { BEND_SHARE, CORNER_SHARE } from "../mapdraw/tools";
+import { MIN_TURN_DEG } from "../mapdraw/turn";
 import { toLngLat } from "./coordinates";
 import { kindLayers, PITCH_3D, TERRAIN_SPEC, withKinds } from "./mapKindStyle";
 import { darkMapStyle, LABEL_FONT } from "./mapStyle";
@@ -58,6 +62,9 @@ export const ITALY_BOUNDS: [southWest: LatLon, northEast: LatLon] = [
 
 /** Zoom used to show a start: a few streets around it. */
 export const START_ZOOM = 15;
+/** A place of a themed route, tapped under the map (TASK-329): as close as
+ * the street it is on, never farther than the map already was. */
+export const PLACE_ZOOM = 16;
 
 /** Zoom while navigating: the next junction and the streets around it. */
 export const FOLLOW_ZOOM = 17;
@@ -92,6 +99,13 @@ export const AHEAD_BEAT_MS = routeAhead.beatMs;
 export const OTHER_ROUTE_COLOR = otherRoute.color;
 export const OTHER_ROUTE_WIDTH = otherRoute.width;
 export const OTHER_ROUTE_OPACITY = otherRoute.opacity;
+
+/** The shape asked for as the search placed it, dotted under the route and
+ * the other routes (TASK-442). */
+export const GHOST_COLOR = shapeGhost.color;
+export const GHOST_WIDTH = shapeGhost.width;
+export const GHOST_OPACITY = shapeGhost.opacity;
+export const GHOST_DASH = shapeGhost.dash;
 
 /** The walks of a word with the pen up, dashed under the route (TASK-198). */
 export const WALK_COLOR = walk.color;
@@ -142,10 +156,56 @@ export const INK_STEP_PX = 3;
 export const GRAB_PX = 24;
 export const FIGURE_PADDING_PX = 60;
 
+/**
+ * The tools of TASK-331 part B: how far around a finger the eraser rubs a
+ * line out, how near a finger takes a point or a line (closing a straight
+ * line, holding a line to bend it), and how long it is held still before a
+ * drag bends the line instead of moving the figure. The eraser's band on
+ * the map, and the dots of a straight line being tapped.
+ */
+export const ERASER_PX = 14;
+export const REACH_PX = 24;
+export const HOLD_MS = 450;
+export const ERASER_COLOR = color.text;
+export const ERASER_OPACITY = 0.35;
+export const MARK_RADIUS = 6;
+export const FIRST_MARK_RADIUS = 9;
+
+/** The pieces of TASK-402 part B: the lines of the pieces not chosen, this
+ * faint; and the box round the piece chosen, a thin line. */
+export const FAINT_OPACITY = 0.35;
+export const BOX_WIDTH = 1.5;
+
+/** A drawing anchored to the roads (TASK-347 part C, ADR-0300): the lines as
+ * the finger drew them stay as a ghost, the same yellow, thin and faint,
+ * under the route the roads draw; where the roads went far from the finger
+ * the route takes the colour of what the user should know (`warning`). */
+export const DRAWN_GHOST_WIDTH = 2;
+export const DRAWN_GHOST_OPACITY = 0.45;
+export const FAR_COLOR = color.warning;
+
+/** Where the route of the figure starts (TASK-426, ADR-0354): a dot in the
+ * colour of a start, which a finger drags with «Move». */
+export const START_DOT_RADIUS = 9;
+export const START_DOT_COLOR = color.startHere;
+
 /** The run over its route (TASK-113). */
 export const TRACK_COLOR = track.color;
 export const TRACK_WIDTH = track.width;
 export const TRACK_OPACITY = track.opacity;
+/** The lifts of a day of skiing (TASK-375 part C2): the track's line,
+ * dashed as the stretches with the bike on foot. */
+export const LIFT_DASH = onFoot.dash;
+/** A day of skiing in the ski mode (TASK-429 part B, ADR-0357): the
+ * descents and the lifts in their colours, and the numbers on them, dark
+ * in a dot of the line's colour. */
+export const SKI_DESCENT_COLOR = color.ski.descent;
+export const SKI_LIFT_COLOR = color.ski.lift;
+export const SKI_LABEL_COLOR = color.ski.onLine;
+export const SKI_LABEL_RADIUS = 10;
+/** A race on foot and in the air (TASK-305 part R6c): the flights in the
+ * route's yellow over the white of the parts on foot. */
+export const FLIGHT_AIR_COLOR = ROUTE_COLOR;
 
 /**
  * The start asked for. MapLibre's default marker is a light blue that reads
@@ -154,15 +214,25 @@ export const TRACK_OPACITY = track.opacity;
 export const POSITION_COLOR = color.text;
 
 /**
- * The runner while running (TASK-164): an arrow in the marker's colour,
- * turned where the runner is heading, on a faint disc of the same colour;
- * the dark edge keeps it readable over the yellow of the route.
+ * The runner while running (TASK-164; drawn anew by TASK-431, ADR-0359,
+ * the user's variant «B»): a large arrow in the marker's colour, turned
+ * where the runner is heading, in a blue ring (`you`); the dark edge keeps
+ * it readable over the yellow of the route. On «Compass» a blue cone,
+ * fading outwards, opens ahead of it: where the phone points. The box is
+ * the cone's, the arrow at its centre; it lets the fingers through.
  */
-export const HEADING_ARROW_SIZE = 36;
+export const HEADING_ARROW_SIZE = 160;
+/** The class of the cone in the arrow, shown on «Compass» only. */
+export const FACING_CONE_CLASS = "facing-cone";
 export const HEADING_ARROW_SVG =
-  `<svg xmlns="http://www.w3.org/2000/svg" width="${HEADING_ARROW_SIZE}" height="${HEADING_ARROW_SIZE}" viewBox="0 0 36 36">` +
-  `<circle cx="18" cy="18" r="17" fill="${POSITION_COLOR}" fill-opacity="0.18"/>` +
-  `<path d="M18 5 L27.5 28 L18 23 L8.5 28 Z" fill="${POSITION_COLOR}" stroke="${color.map.background}" stroke-width="1.5" stroke-linejoin="round"/>` +
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${HEADING_ARROW_SIZE}" height="${HEADING_ARROW_SIZE}" viewBox="0 0 160 160">` +
+  `<defs><radialGradient id="facing-fade" cx="80" cy="80" r="78" gradientUnits="userSpaceOnUse">` +
+  `<stop offset="0.25" stop-color="${color.you}" stop-opacity="0.6"/>` +
+  `<stop offset="1" stop-color="${color.you}" stop-opacity="0"/>` +
+  `</radialGradient></defs>` +
+  `<path class="${FACING_CONE_CLASS}" display="none" d="M80 80 L52 8 A77 77 0 0 1 108 8 Z" fill="url(#facing-fade)"/>` +
+  `<circle cx="80" cy="80" r="27" fill="${color.you}" fill-opacity="0.22" stroke="${color.you}" stroke-width="2.5"/>` +
+  `<path d="M80 56 L96 98 L80 89 L64 98 Z" fill="${POSITION_COLOR}" stroke="${color.map.background}" stroke-width="2" stroke-linejoin="round"/>` +
   `</svg>`;
 
 /**
@@ -172,6 +242,62 @@ export const HEADING_ARROW_SVG =
  */
 export const START_HERE_COLOR = color.startHere;
 export const START_HERE_LABEL = tLater("Start here");
+
+/**
+ * The mark of «Start here» (TASK-443): a flag in a disc, centred on the
+ * point, so it is told from the pin of the start asked for by its shape and
+ * not by its colour alone. The flag is in the map's own colour, which
+ * reads on the cyan in every tone.
+ */
+export const START_PIN_SIZE = 32;
+export const START_PIN_CLASS = "start-here";
+export const START_PIN_SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${START_PIN_SIZE}" height="${START_PIN_SIZE}" viewBox="0 0 32 32">` +
+  `<circle cx="16" cy="16" r="14" fill="${START_HERE_COLOR}" stroke="${color.map.background}" stroke-width="2"/>` +
+  `<path d="M12.5 9 V23.5" fill="none" stroke="${color.map.background}" stroke-width="2.5" stroke-linecap="round"/>` +
+  `<path d="M12.5 9.5 L23 13.5 L12.5 17.5 Z" fill="${color.map.background}" stroke="${color.map.background}" stroke-width="1.5" stroke-linejoin="round"/>` +
+  `</svg>`;
+/**
+ * Its words, in the colours of a control of the app and no longer the
+ * white of MapLibre's popup: over the mark, or under it where over it they
+ * would be in the status bar or under a button; `START_LABEL_GAP_PX` from
+ * the mark, never closer than `START_LABEL_EDGE_PX` to the sides.
+ */
+export const START_LABEL_CLASS = "start-here-label";
+export const START_LABEL_BELOW_CLASS = "below";
+export const START_LABEL_COLORS = {
+  background: color.surfaceRaised,
+  border: color.borderStrong,
+  text: color.text,
+};
+export const START_LABEL_GAP_PX = 6;
+export const START_LABEL_EDGE_PX = 8;
+
+/**
+ * Framing a route (TASK-443). A page told nothing of what lies over it
+ * leaves `FRAME_PADDING_PX` on every side, as it always did. One told
+ * (`setCover`) keeps the route under the status bar and over the
+ * attribution with `FRAME_GAP_PX` to spare, as large as it gets with no
+ * point of it within `BUTTON_GAP_PX` of a button: under the status bar if
+ * that is so, or else under the first row of buttons, and so on down.
+ * `ATTRIBUTION_PX` is the height of the attribution when the page cannot
+ * measure it.
+ */
+export const FRAME_PADDING_PX = 40;
+export const FRAME_GAP_PX = 16;
+export const BUTTON_GAP_PX = 8;
+export const ATTRIBUTION_PX = 20;
+
+/**
+ * The attribution in the colours of the app (TASK-443), in place of
+ * MapLibre's light grey band: its words and its links stay as the style
+ * gives them, always open, and readable in every tone (the licences of
+ * OpenStreetMap and OpenFreeMap ask for it; `mapPageAttribution.test.ts`).
+ */
+export function attributionColors(of: Pick<Palette, "surface" | "textMuted" | "text">) {
+  return { background: of.surface, text: of.textMuted, link: of.text };
+}
+export const ATTRIBUTION_COLORS = attributionColors(color);
 
 /** Behind the map while it loads, so the page never flashes white. */
 export const MAP_BACKGROUND = color.map.background;
@@ -223,6 +349,37 @@ export function buildMapPage(language: Language = appLanguage()): string {
 <link rel="stylesheet" href="${MAPLIBRE_CSS_URL}" integrity="${MAPLIBRE_CSS_SRI}" crossorigin="anonymous">
 <style>
   html, body, #map { margin: 0; width: 100%; height: 100%; background: ${MAP_BACKGROUND}; }
+  .maplibregl-ctrl.maplibregl-ctrl-attrib {
+    background-color: ${ATTRIBUTION_COLORS.background};
+    color: ${ATTRIBUTION_COLORS.text};
+    border-top-left-radius: 6px;
+  }
+  .maplibregl-ctrl.maplibregl-ctrl-attrib a { color: ${ATTRIBUTION_COLORS.link}; }
+  .${START_PIN_CLASS} {
+    width: ${START_PIN_SIZE}px;
+    height: ${START_PIN_SIZE}px;
+    line-height: 0;
+    pointer-events: none;
+  }
+  .${START_LABEL_CLASS} {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    margin-bottom: ${START_LABEL_GAP_PX}px;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    border: 1px solid ${START_LABEL_COLORS.border};
+    border-radius: 8px;
+    background: ${START_LABEL_COLORS.background};
+    color: ${START_LABEL_COLORS.text};
+    font: 600 14px/18px -apple-system, system-ui, sans-serif;
+    white-space: nowrap;
+  }
+  .${START_LABEL_CLASS}.${START_LABEL_BELOW_CLASS} {
+    bottom: auto;
+    top: 100%;
+    margin: ${START_LABEL_GAP_PX}px 0 0;
+  }
 </style>
 </head>
 <body>
@@ -247,7 +404,17 @@ export function buildMapPage(language: Language = appLanguage()): string {
     var styleLoaded = false;
     var marker = null;
     var arrow = null;
+    var arrowElement = null;
+    // Where the phone points, on «Compass» (TASK-431): the arrow turns there
+    // and opens its cone. Null off that page.
+    var facing = null;
     var startHere = null;
+    // The words of «Start here», placed anew as the map moves (TASK-443).
+    var startLabel = null;
+    // What lies over the top of the map, when the app has told (TASK-443).
+    var cover = null;
+    // The points the map is framed on: none of them under a button.
+    var framedPoints = [];
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
     // The route as showRoute sent it: drawn whole when no run is on it.
@@ -262,11 +429,33 @@ export function buildMapPage(language: Language = appLanguage()): string {
     // Off the route (TASK-303): the dotted line back to it.
     var rejoin = noRoute;
     var track = noRoute;
+    // A day of skiing (TASK-375 part C2): its lifts, dashed.
+    var lifts = noRoute;
+    // A race on foot and in the air (TASK-305 part R6c): its flights.
+    var flightAir = noRoute;
+    // A day of skiing shown (TASK-429 part B): its lines in the ski mode's
+    // colours, and the numbers of its descents and lifts.
+    var skiDay = false;
+    var skiLabels = noRoute;
     var stops = noRoute;
     var others = noRoute;
-    // «Draw on the map» (TASK-281): the figure as drawn, and the line a
-    // finger is drawing.
+    // The shape asked for, where the search placed it (TASK-442).
+    var ghost = noRoute;
+    // «Draw on the map» (TASK-281): the figure as drawn, its links dashed
+    // and the dots of a straight line being tapped (TASK-331 part B), and
+    // the line a finger is drawing.
     var figure = noRoute;
+    var faint = noRoute;
+    var chosenBox = noRoute;
+    var links = noRoute;
+    // The drawing anchored to the roads (TASK-347 part C): the route of its
+    // strokes, the stretches where the roads went far from the finger, and
+    // whether the figure is a ghost under them.
+    var snapped = noRoute;
+    var farAway = noRoute;
+    var ghostFigure = false;
+    var marks = noRoute;
+    var startDot = noRoute;
     var ink = [];
     // The bearing the map keeps (TASK-232): the one of the route shown, so
     // its drawing is upright, until the app or two fingers turn the map.
@@ -294,6 +483,21 @@ export function buildMapPage(language: Language = appLanguage()): string {
     map.addControl(new maplibregl.AttributionControl({ compact: false }));
     map.once("style.load", function () {
       styleLoaded = true;
+      // The shape asked for as the search placed it, under everything
+      // drawn: the route is compared with it (TASK-442).
+      map.addSource("ghost", { type: "geojson", data: ghost });
+      map.addLayer({
+        id: "ghost",
+        type: "line",
+        source: "ghost",
+        layout: { "line-join": "round", "line-cap": "butt" },
+        paint: {
+          "line-color": ${toScript(GHOST_COLOR)},
+          "line-width": ${GHOST_WIDTH},
+          "line-opacity": ${GHOST_OPACITY},
+          "line-dasharray": ${toScript(GHOST_DASH)},
+        },
+      });
       // The other routes to choose from, under the route.
       map.addSource("others", { type: "geojson", data: others });
       map.addLayer({
@@ -433,10 +637,70 @@ export function buildMapPage(language: Language = appLanguage()): string {
         source: "track",
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "line-color": ${toScript(TRACK_COLOR)},
+          "line-color": skiDay ? ${toScript(SKI_DESCENT_COLOR)} : ${toScript(TRACK_COLOR)},
           "line-width": ${TRACK_WIDTH},
           "line-opacity": ${TRACK_OPACITY},
         },
+      });
+      // The lifts of a day of skiing, beside its descents: the same line,
+      // dashed.
+      map.addSource("lifts", { type: "geojson", data: lifts });
+      map.addLayer({
+        id: "lifts",
+        type: "line",
+        source: "lifts",
+        layout: { "line-join": "round" },
+        paint: {
+          "line-color": skiDay ? ${toScript(SKI_LIFT_COLOR)} : ${toScript(TRACK_COLOR)},
+          "line-width": ${TRACK_WIDTH},
+          "line-opacity": ${TRACK_OPACITY},
+          "line-dasharray": ${toScript(LIFT_DASH)},
+        },
+      });
+      // The flights of a race (TASK-305 part R6c): yellow over the white
+      // of the parts on foot.
+      map.addSource("flight-air", { type: "geojson", data: flightAir });
+      map.addLayer({
+        id: "flight-air",
+        type: "line",
+        source: "flight-air",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(FLIGHT_AIR_COLOR)},
+          "line-width": ${TRACK_WIDTH},
+          "line-opacity": ${TRACK_OPACITY},
+        },
+      });
+      // Their numbers (TASK-429 part B): a dot of the line's colour, the
+      // number dark on it.
+      map.addSource("ski-labels", { type: "geojson", data: skiLabels });
+      map.addLayer({
+        id: "ski-label-dots",
+        type: "circle",
+        source: "ski-labels",
+        paint: {
+          "circle-radius": ${SKI_LABEL_RADIUS},
+          "circle-color": [
+            "match",
+            ["get", "kind"],
+            "lift",
+            ${toScript(SKI_LIFT_COLOR)},
+            ${toScript(SKI_DESCENT_COLOR)},
+          ],
+        },
+      });
+      map.addLayer({
+        id: "ski-label-text",
+        type: "symbol",
+        source: "ski-labels",
+        layout: {
+          "text-field": ["get", "text"],
+          "text-font": ${toScript(LABEL_FONT)},
+          "text-size": 11,
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+        },
+        paint: { "text-color": ${toScript(SKI_LABEL_COLOR)} },
       });
       // «Draw on the map» (TASK-281): the figure in the route's yellow, as
       // the route will draw it, and the line a finger is drawing, over all.
@@ -452,6 +716,72 @@ export function buildMapPage(language: Language = appLanguage()): string {
           "line-opacity": ${ROUTE_OPACITY},
         },
       });
+      // The pieces not chosen, faint, and the box round the one chosen
+      // (TASK-402 part B).
+      map.addSource("canvas-faint", { type: "geojson", data: faint });
+      map.addLayer({
+        id: "canvas-faint",
+        type: "line",
+        source: "canvas-faint",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(ROUTE_COLOR)},
+          "line-width": ${ROUTE_WIDTH},
+          "line-opacity": ${FAINT_OPACITY},
+        },
+      });
+      map.addSource("canvas-box", { type: "geojson", data: chosenBox });
+      map.addLayer({
+        id: "canvas-box",
+        type: "line",
+        source: "canvas-box",
+        paint: {
+          "line-color": ${toScript(ROUTE_COLOR)},
+          "line-width": ${BOX_WIDTH},
+          "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      map.addSource("canvas-links", { type: "geojson", data: links });
+      map.addLayer({
+        id: "canvas-links",
+        type: "line",
+        source: "canvas-links",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(ROUTE_COLOR)},
+          "line-width": ${ROUTE_WIDTH},
+          "line-opacity": ${ROUTE_OPACITY},
+          "line-dasharray": ${toScript(WALK_DASH)},
+        },
+      });
+      map.addSource("canvas-snapped", { type: "geojson", data: snapped });
+      map.addLayer({
+        id: "canvas-snapped",
+        type: "line",
+        source: "canvas-snapped",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(ROUTE_COLOR)},
+          "line-width": ${ROUTE_WIDTH},
+          "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      map.addSource("canvas-far", { type: "geojson", data: farAway });
+      map.addLayer({
+        id: "canvas-far",
+        type: "line",
+        source: "canvas-far",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(FAR_COLOR)},
+          "line-width": ${ROUTE_WIDTH},
+          "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      // Drawn again after a reload of the style: the figure a ghost again.
+      if (ghostFigure) {
+        ghostLooks();
+      }
       map.addSource("ink", { type: "geojson", data: inkData() });
       map.addLayer({
         id: "ink",
@@ -464,6 +794,39 @@ export function buildMapPage(language: Language = appLanguage()): string {
           "line-opacity": ${ROUTE_OPACITY},
         },
       });
+      map.addSource("canvas-marks", { type: "geojson", data: marks });
+      map.addLayer({
+        id: "canvas-marks",
+        type: "circle",
+        source: "canvas-marks",
+        paint: {
+          "circle-radius": [
+            "case",
+            ["get", "first"],
+            ${FIRST_MARK_RADIUS},
+            ${MARK_RADIUS},
+          ],
+          "circle-color": ${toScript(ROUTE_COLOR)},
+          "circle-stroke-color": ${toScript(stop.outline)},
+          "circle-stroke-width": 2,
+        },
+      });
+      // Where the route of the figure starts (TASK-426), over all.
+      map.addSource("canvas-start", { type: "geojson", data: startDot });
+      map.addLayer({
+        id: "canvas-start",
+        type: "circle",
+        source: "canvas-start",
+        paint: {
+          "circle-radius": ${START_DOT_RADIUS},
+          "circle-color": ${toScript(START_DOT_COLOR)},
+          "circle-stroke-color": ${toScript(stop.outline)},
+          "circle-stroke-width": 3,
+        },
+      });
+      if (canvas) {
+        inkLooks(canvas.mode);
+      }
       // A kind told before the style was drawn shows now.
       if (kind !== "standard") {
         showKind();
@@ -474,6 +837,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       if (arrow) {
         arrow.remove();
         arrow = null;
+        arrowElement = null;
       }
       if (marker) {
         marker.setLngLat(lngLat);
@@ -493,15 +857,33 @@ export function buildMapPage(language: Language = appLanguage()): string {
         element.style.width = "${HEADING_ARROW_SIZE}px";
         element.style.height = "${HEADING_ARROW_SIZE}px";
         element.style.lineHeight = "0";
+        // The cone is wide: a finger on it moves the map, not the arrow.
+        element.style.pointerEvents = "none";
         element.innerHTML = ${toScript(HEADING_ARROW_SVG)};
+        arrowElement = element;
         // Turned with the map: north of the arrow is north of the map.
         arrow = new maplibregl.Marker({ element: element, rotationAlignment: "map" })
           .setLngLat(lngLat)
           .addTo(map);
       }
       arrow.setLngLat(lngLat);
+      // On «Compass» where the phone points, as the map (TASK-431).
+      if (facing !== null) {
+        heading = facing;
+      }
       if (typeof heading === "number") {
         arrow.setRotation(heading);
+      }
+      showCone();
+    }
+    // The cone ahead of the arrow: open while the phone's direction is told.
+    function showCone() {
+      var cone =
+        arrowElement && arrowElement.querySelector
+          ? arrowElement.querySelector(".${FACING_CONE_CLASS}")
+          : null;
+      if (cone) {
+        cone.style.display = facing !== null ? "inline" : "none";
       }
     }
     function setStartHere(lngLat) {
@@ -509,16 +891,60 @@ export function buildMapPage(language: Language = appLanguage()): string {
         startHere.remove();
         startHere = null;
       }
+      startLabel = null;
       if (lngLat) {
-        var label = new maplibregl.Popup({ closeButton: false, closeOnClick: false })
-          .setText(${toScript(translate(language, START_HERE_LABEL))});
-        startHere = new maplibregl.Marker({ color: ${toScript(START_HERE_COLOR)} })
+        // A flag in a disc, not a pin as the start asked for (TASK-443),
+        // and its words in the app's colours. Fingers go through to the map.
+        var element = document.createElement("div");
+        element.className = ${toScript(START_PIN_CLASS)};
+        element.innerHTML = ${toScript(START_PIN_SVG)};
+        startLabel = document.createElement("div");
+        startLabel.className = ${toScript(START_LABEL_CLASS)};
+        startLabel.textContent = ${toScript(translate(language, START_HERE_LABEL))};
+        element.appendChild(startLabel);
+        startHere = new maplibregl.Marker({ element: element })
           .setLngLat(lngLat)
-          .setPopup(label)
-          .addTo(map)
-          .togglePopup();
+          .addTo(map);
+        placeStartLabel();
       }
     }
+    // The words of «Start here» over their mark, or under it where over it
+    // they would be in the status bar or under a button; moved sideways
+    // where they would leave the map (TASK-443).
+    function placeStartLabel() {
+      if (!startHere || !startLabel) {
+        return;
+      }
+      var at = map.project(startHere.getLngLat());
+      var width = startLabel.offsetWidth;
+      var height = startLabel.offsetHeight;
+      var half = width / 2;
+      var edge = ${START_LABEL_EDGE_PX};
+      var mapWidth = map.getContainer().clientWidth;
+      var shift = 0;
+      if (at.x - half < edge) {
+        shift = edge + half - at.x;
+      } else if (at.x + half > mapWidth - edge) {
+        shift = mapWidth - edge - half - at.x;
+      }
+      var top = at.y - ${START_PIN_SIZE / 2 + START_LABEL_GAP_PX} - height;
+      var left = at.x - half + shift;
+      var hidden =
+        top < (cover ? cover.top : 0) + edge ||
+        (cover ? cover.buttons : []).some(function (button) {
+          return (
+            left < button.x + button.width &&
+            left + width > button.x &&
+            top < button.y + button.height &&
+            top + height > button.y
+          );
+        });
+      startLabel.className = hidden
+        ? ${toScript(`${START_LABEL_CLASS} ${START_LABEL_BELOW_CLASS}`)}
+        : ${toScript(START_LABEL_CLASS)};
+      startLabel.style.transform = "translateX(calc(-50% + " + shift + "px))";
+    }
+    map.on("move", placeStartLabel);
     function setRoute(data) {
       route = data;
       var source = map.getSource("route");
@@ -618,11 +1044,55 @@ export function buildMapPage(language: Language = appLanguage()): string {
         source.setData(others);
       }
     }
+    function setGhost(data) {
+      ghost = data;
+      var source = map.getSource("ghost");
+      if (source) {
+        source.setData(ghost);
+      }
+    }
     function setTrack(data) {
       track = data;
       var source = map.getSource("track");
       if (source) {
         source.setData(track);
+      }
+    }
+    function setLifts(data) {
+      lifts = data;
+      var source = map.getSource("lifts");
+      if (source) {
+        source.setData(lifts);
+      }
+    }
+    function setFlightAir(data) {
+      flightAir = data;
+      var source = map.getSource("flight-air");
+      if (source) {
+        source.setData(flightAir);
+      }
+    }
+    // The colours of a day of skiing on, or the run's back (TASK-429).
+    function setSkiDay(on, labels) {
+      skiDay = on;
+      skiLabels = labels;
+      if (map.getLayer("track")) {
+        map.setPaintProperty(
+          "track",
+          "line-color",
+          on ? ${toScript(SKI_DESCENT_COLOR)} : ${toScript(TRACK_COLOR)},
+        );
+      }
+      if (map.getLayer("lifts")) {
+        map.setPaintProperty(
+          "lifts",
+          "line-color",
+          on ? ${toScript(SKI_LIFT_COLOR)} : ${toScript(TRACK_COLOR)},
+        );
+      }
+      var source = map.getSource("ski-labels");
+      if (source) {
+        source.setData(skiLabels);
       }
     }
     // The map turned, by the app or by two fingers: the app is told each
@@ -642,9 +1112,135 @@ export function buildMapPage(language: Language = appLanguage()): string {
         inFrame = false;
       }
     });
+    // The room the attribution takes at the bottom of the map.
+    function attributionRoom() {
+      var bar =
+        typeof document !== "undefined" && document.querySelector
+          ? document.querySelector(".maplibregl-ctrl-attrib")
+          : null;
+      return (bar && bar.offsetHeight) || ${ATTRIBUTION_PX};
+    }
+    // A place in the pixels of the whole world at a zoom, as MapLibre
+    // counts them (Web Mercator, 512 to a tile).
+    function worldOf(lng, lat, scale) {
+      var sin = Math.sin((lat * Math.PI) / 180);
+      return [
+        ((lng + 180) / 360) * scale,
+        (0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * scale,
+      ];
+    }
+    // Whether a point the map is framed on would be under a button, or
+    // within ${BUTTON_GAP_PX} px of one, on the flat map as \`camera\` shows it.
+    function underButtons(camera) {
+      var box = map.getContainer();
+      var scale = 512 * Math.pow(2, camera.zoom);
+      var middle = worldOf(camera.center.lng, camera.center.lat, scale);
+      var turn = ((camera.bearing || 0) * Math.PI) / 180;
+      var cos = Math.cos(turn);
+      var sin = Math.sin(turn);
+      var gap = ${BUTTON_GAP_PX};
+      return framedPoints.some(function (point) {
+        var at = worldOf(point[0], point[1], scale);
+        var dx = at[0] - middle[0];
+        var dy = at[1] - middle[1];
+        var x = box.clientWidth / 2 + dx * cos + dy * sin;
+        var y = box.clientHeight / 2 - dx * sin + dy * cos;
+        return cover.buttons.some(function (button) {
+          return (
+            x > button.x - gap &&
+            x < button.x + button.width + gap &&
+            y > button.y - gap &&
+            y < button.y + button.height + gap
+          );
+        });
+      });
+    }
+    // The room left around a route framed (TASK-443). Told what lies over
+    // the map: under the status bar and over the attribution, and from the
+    // top as little as leaves no point under a button, row after row of
+    // them. The leaning map is not measured: under every button.
+    function framePadding() {
+      if (!cover) {
+        return ${FRAME_PADDING_PX};
+      }
+      var gap = ${FRAME_GAP_PX};
+      var bottom = attributionRoom() + gap;
+      var height = map.getContainer().clientHeight;
+      var tops = [cover.top];
+      cover.buttons
+        .map(function (button) {
+          return button.y + button.height;
+        })
+        .sort(function (a, b) {
+          return a - b;
+        })
+        .forEach(function (under) {
+          if (under > tops[tops.length - 1]) {
+            tops.push(under);
+          }
+        });
+      var room = function (top) {
+        return { top: top + gap, bottom: bottom, left: gap, right: gap };
+      };
+      var lowest = room(tops[tops.length - 1]);
+      // A map too low to hold the route under its buttons: under the
+      // status bar, whatever is under a button.
+      if (height - lowest.top - lowest.bottom < ${FRAME_PADDING_PX}) {
+        return room(tops[0]);
+      }
+      if (kind === "3d") {
+        return lowest;
+      }
+      for (var i = 0; i < tops.length - 1; i += 1) {
+        var tried = room(tops[i]);
+        var camera = map.cameraForBounds(framed, { padding: tried, bearing: wanted });
+        if (camera && !underButtons(camera)) {
+          return tried;
+        }
+      }
+      return lowest;
+    }
+    // A track without a route (TASK-478): the map framed on all its lines,
+    // as on a route, upright.
+    function frameLines(lines) {
+      var points = [];
+      lines.forEach(function (line) {
+        line.forEach(function (point) {
+          points.push(point);
+        });
+      });
+      if (points.length === 0) {
+        return;
+      }
+      framed = points.reduce(function (box, point) {
+        return box.extend(point);
+      }, new maplibregl.LngLatBounds(points[0], points[0]));
+      framedPoints = points;
+      frame();
+    }
     function frame() {
       inFrame = true;
-      map.fitBounds(framed, { padding: 40, bearing: wanted });
+      map.fitBounds(framed, { padding: framePadding(), bearing: wanted });
+    }
+    // The map's view changed its size: the card under it grew with its
+    // route, or shrank (TASK-443). Still framed on its route, it frames it
+    // again, at once; moved by the user, it stays where it was left.
+    map.on("resize", function () {
+      if (framed && inFrame && !following) {
+        map.fitBounds(framed, {
+          padding: framePadding(),
+          bearing: wanted,
+          animate: false,
+        });
+      }
+      placeStartLabel();
+    });
+    function setCover(next) {
+      cover = next;
+      if (framed && inFrame && !following) {
+        frame();
+      }
+      placeStartLabel();
     }
     // The map's kind (TASK-264, ADR-0232): the layers of the style it shows,
     // the hills under the 3D map, and how far the map leans. The route and
@@ -658,7 +1254,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       var pitch = kind === "3d" ? ${PITCH_3D} : 0;
       if (framed && inFrame && !following) {
         // Framed on its route, it is framed again, leaning or flat.
-        map.fitBounds(framed, { padding: 40, bearing: wanted, pitch: pitch });
+        map.fitBounds(framed, { padding: framePadding(), bearing: wanted, pitch: pitch });
       } else {
         map.easeTo({ pitch: pitch, duration: 600 });
       }
@@ -883,18 +1479,26 @@ export function buildMapPage(language: Language = appLanguage()): string {
     }
     // «Draw on the map» (TASK-281, ADR-0245): while the app asks, the
     // fingers on the map are the page's own, and MapLibre's gestures are
-    // off. With «Draw» one finger draws a yellow line and the map keeps
-    // still. With «Move» one finger drags the figure, when it starts on it,
-    // or the map; two fingers size the figure, when their middle is on it,
-    // or zoom the map. The app is told of each line drawn (\`drawn\`), of the
-    // figure moved or sized (\`figure\`), and of where the map is
-    // (\`centre\`): a figure is put there.
+    // off. With «Draw» one finger draws a yellow line, and two move and zoom
+    // the map (TASK-331). With «Line» (TASK-331 part B) a finger taps the
+    // points of a straight line, a band from the last one following it;
+    // with «Erase» it rubs lines out, in a wide pale band; both are told as
+    // a line drawn, and two fingers move and zoom the map. With «Move» one
+    // finger drags the figure, when it starts on it, or the map, or bends a
+    // line it held still first, or drags the start dot along the figure's
+    // line (TASK-426); two fingers size the figure, when their middle is on
+    // it, or zoom the map. The app is told of each line drawn (\`drawn\`)
+    // and bent (\`bent\`), with the metres of a pixel, of the figure moved
+    // or sized (\`figure\`), of the start left (\`started\`), and of where
+    // the map is (\`centre\`): a figure is put there.
     var canvas = null;
     var canvasListening = false;
     var gesture = null;
     var inkLast = null;
     var GESTURES = ["dragPan", "touchZoomRotate", "doubleClickZoom", "dragRotate", "touchPitch"];
     var gesturesBefore = null;
+    // The Earth's radius of the app's plane (mapdraw/plane.ts).
+    var EARTH_M = 6371000;
     function inkData() {
       return ink.length > 1
         ? {
@@ -904,24 +1508,269 @@ export function buildMapPage(language: Language = appLanguage()): string {
           }
         : noRoute;
     }
-    function drawInk() {
-      var source = map.getSource("ink");
+    function setSource(name, data) {
+      var source = map.getSource(name);
       if (source) {
-        source.setData(inkData());
+        source.setData(data);
       }
     }
-    function drawFigure(lines) {
-      figure = lines.length > 0
+    function drawInk() {
+      setSource("ink", inkData());
+    }
+    // The eraser's band is wide and pale; the ink of a line, the route's.
+    function inkLooks(mode) {
+      if (!map.setPaintProperty || !map.getLayer || !map.getLayer("ink")) {
+        return;
+      }
+      var rubbing = mode === "erase";
+      map.setPaintProperty("ink", "line-color", rubbing ? ${toScript(ERASER_COLOR)} : ${toScript(ROUTE_COLOR)});
+      map.setPaintProperty("ink", "line-width", rubbing ? ${2 * ERASER_PX} : ${ROUTE_WIDTH});
+      map.setPaintProperty("ink", "line-opacity", rubbing ? ${ERASER_OPACITY} : ${ROUTE_OPACITY});
+    }
+    function multiLine(lines) {
+      return lines.length > 0
         ? {
             type: "Feature",
             properties: {},
             geometry: { type: "MultiLineString", coordinates: lines },
           }
         : noRoute;
-      var source = map.getSource("canvas");
-      if (source) {
-        source.setData(figure);
+    }
+    // Whether line \`i\` moves with the fingers: all of them, or those of
+    // the piece chosen (TASK-402 part B).
+    function moves(i) {
+      return !canvas || canvas.chosen.length === 0 || canvas.chosen.indexOf(i) >= 0;
+    }
+    // The figure's lines; the first side of a line that is a link apart,
+    // dashed (TASK-331 part B); the pieces not chosen faint.
+    function drawFigure(lines) {
+      var drawnLines = [];
+      var faintLines = [];
+      var linkLines = [];
+      lines.forEach(function (line, i) {
+        var to = moves(i) ? drawnLines : faintLines;
+        if (canvas && canvas.links[i] && line.length > 2) {
+          linkLines.push(line.slice(0, 2));
+          to.push(line.slice(1));
+        } else {
+          to.push(line);
+        }
+      });
+      figure = multiLine(drawnLines);
+      faint = multiLine(faintLines);
+      links = multiLine(linkLines);
+      setSource("canvas", figure);
+      setSource("canvas-faint", faint);
+      setSource("canvas-links", links);
+    }
+    // The figure as a ghost under the route of its strokes, or as the route
+    // itself (TASK-347 part C).
+    function ghostLooks() {
+      if (!map.getLayer("canvas")) {
+        return;
       }
+      map.setPaintProperty(
+        "canvas",
+        "line-width",
+        ghostFigure ? ${DRAWN_GHOST_WIDTH} : ${ROUTE_WIDTH},
+      );
+      map.setPaintProperty(
+        "canvas",
+        "line-opacity",
+        ghostFigure ? ${DRAWN_GHOST_OPACITY} : ${ROUTE_OPACITY},
+      );
+    }
+    // The route of the strokes anchored, and its stretches far from the
+    // finger (TASK-347 part C).
+    function drawAnchored(ghostOn, snappedLines, farLines) {
+      snapped = multiLine(snappedLines);
+      farAway = multiLine(farLines);
+      setSource("canvas-snapped", snapped);
+      setSource("canvas-far", farAway);
+      if (ghostOn !== ghostFigure) {
+        ghostFigure = ghostOn;
+        ghostLooks();
+      }
+    }
+    // The box round the piece chosen.
+    function drawBox(ring) {
+      chosenBox = ring.length > 1
+        ? { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: ring } }
+        : noRoute;
+      setSource("canvas-box", chosenBox);
+    }
+    // The dots of a straight line being tapped: the first larger, to close
+    // it on.
+    function drawMarks(points) {
+      marks = {
+        type: "FeatureCollection",
+        features: points.map(function (p, i) {
+          return {
+            type: "Feature",
+            properties: { first: i === 0 && points.length > 1 },
+            geometry: { type: "Point", coordinates: p },
+          };
+        }),
+      };
+      setSource("canvas-marks", marks);
+    }
+    // The dot where the route of the figure starts (TASK-426), or none.
+    function drawStart(lngLat) {
+      startDot = lngLat
+        ? { type: "Feature", properties: {}, geometry: { type: "Point", coordinates: lngLat } }
+        : noRoute;
+      setSource("canvas-start", startDot);
+    }
+    // Whether a finger at \`point\` is on the start dot, which may move.
+    function onStart(point) {
+      return Boolean(
+        canvas.start &&
+          canvas.startLine.length > 1 &&
+          screenDist(map.project(canvas.start), point) <= ${GRAB_PX},
+      );
+    }
+    // Where the start goes for a finger at \`point\`: the point of its line
+    // nearest on the screen, or the nearer of its two ends.
+    function startAt(point) {
+      var line = canvas.startLine;
+      var best = null;
+      if (canvas.startEnds) {
+        [line[0], line[line.length - 1]].forEach(function (end) {
+          var away = screenDist(map.project(end), point);
+          if (!best || away < best.away) {
+            best = { at: end, away: away };
+          }
+        });
+        return best.at;
+      }
+      for (var i = 1; i < line.length; i += 1) {
+        var at = nearestOnScreen(point, map.project(line[i - 1]), map.project(line[i]));
+        var away = screenDist(at, point);
+        if (!best || away < best.away) {
+          best = { at: at, away: away };
+        }
+      }
+      return lngLatAt(best.at);
+    }
+    // How many metres a pixel of the map is, in its middle.
+    function metresPerPx() {
+      var surface = map.getCanvasContainer();
+      var x = surface.clientWidth / 2;
+      var y = surface.clientHeight / 2;
+      var a = map.unproject([x, y]);
+      var b = map.unproject([x + 100, y]);
+      var rad = Math.PI / 180;
+      var east = (b.lng - a.lng) * rad * EARTH_M * Math.cos(a.lat * rad);
+      var north = (b.lat - a.lat) * rad * EARTH_M;
+      return Math.hypot(east, north) / 100;
+    }
+    // With «Line», a band from the last point tapped to the finger.
+    function bandTo(at) {
+      var last = canvas.marks[canvas.marks.length - 1];
+      ink = last ? [last, lngLatAt(at)] : [];
+      drawInk();
+    }
+    function screenDist(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+    function nearestOnScreen(p, a, b) {
+      var dx = b.x - a.x;
+      var dy = b.y - a.y;
+      var squared = dx * dx + dy * dy;
+      var t = squared === 0 ? 0 : ((p.x - a.x) * dx + (p.y - a.y) * dy) / squared;
+      t = Math.max(0, Math.min(1, t));
+      return { x: a.x + t * dx, y: a.y + t * dy };
+    }
+    // The line a finger holds with «Move»: of those it may bend, the nearest
+    // within ${REACH_PX} px, after its link, and its point there.
+    function grabAt(point) {
+      var best = null;
+      canvas.bendable.forEach(function (index) {
+        var line = canvas.lines[index];
+        var from = canvas.links[index] ? 1 : 0;
+        for (var i = from + 1; line && i < line.length; i += 1) {
+          var at = nearestOnScreen(point, map.project(line[i - 1]), map.project(line[i]));
+          var away = screenDist(at, point);
+          if (away <= ${REACH_PX} && (!best || away < best.away)) {
+            best = { index: index, side: i - 1, at: at, away: away };
+          }
+        }
+      });
+      return best;
+    }
+    // The bend of a line held at \`grab\`, the finger at \`start\`, as the app
+    // makes it (mapdraw/tools.ts): the corner held, or a new one, goes as
+    // far as the finger, and the line along ${BEND_SHARE} of the figure's
+    // size either side, less and less. The outline goes round; the start of
+    // a detail stays.
+    function bendOf(grab, start) {
+      var points = canvas.lines[grab.index].map(function (p) {
+        var q = map.project(p);
+        return { x: q.x, y: q.y };
+      });
+      var ring = grab.index === 0;
+      var a = grab.side;
+      var b = grab.side + 1;
+      var corner = screenDist(points[a], grab.at) <= screenDist(points[b], grab.at) ? a : b;
+      if (screenDist(points[corner], grab.at) > ${CORNER_SHARE * REACH_PX}) {
+        points.splice(b, 0, grab.at);
+        corner = b;
+      }
+      if (ring && corner === points.length - 1) {
+        corner = 0;
+      }
+      if (!ring && corner === 0) {
+        return null;
+      }
+      var along = [0];
+      for (var i = 1; i < points.length; i += 1) {
+        along.push(along[i - 1] + screenDist(points[i - 1], points[i]));
+      }
+      var box = screenBox();
+      return {
+        kind: "bend",
+        index: grab.index,
+        points: points,
+        corner: corner,
+        ring: ring,
+        along: along,
+        reach: ${BEND_SHARE} * Math.max(box.right - box.left, box.bottom - box.top),
+        from: lngLatAt(points[corner]),
+        start: start,
+        at: start,
+      };
+    }
+    function bendShare(away, reach) {
+      if (away >= reach) {
+        return 0;
+      }
+      var r = away / reach;
+      return (1 - r * r) * (1 - r * r);
+    }
+    // Where the corner held goes: as far as the finger went.
+    function bendTarget(bend) {
+      var held = bend.points[bend.corner];
+      return { x: held.x + bend.at.x - bend.start.x, y: held.y + bend.at.y - bend.start.y };
+    }
+    function bendTo(at) {
+      gesture.at = at;
+      var bend = gesture;
+      var to = bendTarget(bend);
+      var by = { x: to.x - bend.points[bend.corner].x, y: to.y - bend.points[bend.corner].y };
+      var total = bend.along[bend.along.length - 1];
+      var moved = bend.points.map(function (p, k) {
+        var apartAlong = Math.abs(bend.along[k] - bend.along[bend.corner]);
+        var away = bend.ring ? Math.min(apartAlong, total - apartAlong) : apartAlong;
+        var part = !bend.ring && k === 0 ? 0 : bendShare(away, bend.reach);
+        return lngLatAt({ x: p.x + part * by.x, y: p.y + part * by.y });
+      });
+      if (bend.ring) {
+        moved[moved.length - 1] = moved[0];
+      }
+      var lines = canvas.lines.slice();
+      lines[bend.index] = moved;
+      drawFigure(lines);
+      drawMarks([moved[bend.corner]]);
     }
     function pointOf(touch) {
       return { x: touch.clientX, y: touch.clientY };
@@ -936,15 +1785,34 @@ export function buildMapPage(language: Language = appLanguage()): string {
     function middleOf(a, b) {
       return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
     }
+    // The direction from one finger to the other on the screen, in degrees,
+    // growing clockwise (y down).
+    function angleOf(a, b) {
+      return (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+    }
+    // How far two fingers turned from \`from\` to \`now\`, within (−180°,
+    // 180°]; less than ${MIN_TURN_DEG}° is none, so sizing does not twist
+    // the figure (TASK-402).
+    function turnOf(from, now) {
+      var turn = (((now - from) % 360) + 540) % 360 - 180;
+      return Math.abs(turn) < ${MIN_TURN_DEG} ? 0 : turn;
+    }
     function eachPoint(lines, visit) {
       lines.forEach(function (line) {
         line.forEach(visit);
       });
     }
-    // The figure's box on the screen, with room for a finger around it.
+    // The lines the fingers move: all, or those of the piece chosen.
+    function movingLines() {
+      return canvas.lines.filter(function (line, i) {
+        return moves(i);
+      });
+    }
+    // The figure's box on the screen, or the piece's chosen, with room for
+    // a finger around it.
     function screenBox() {
       var box = null;
-      eachPoint(canvas.lines, function (lngLat) {
+      eachPoint(movingLines(), function (lngLat) {
         var p = map.project(lngLat);
         box = box
           ? {
@@ -969,10 +1837,11 @@ export function buildMapPage(language: Language = appLanguage()): string {
         point.y <= box.bottom + ${GRAB_PX}
       );
     }
-    // The middle of the figure's box on the map: it grows from there.
+    // The middle of the figure's box on the map, or the piece's chosen: it
+    // grows from there.
     function figureMiddle() {
       var box = null;
-      eachPoint(canvas.lines, function (p) {
+      eachPoint(movingLines(), function (p) {
         box = box
           ? [Math.min(box[0], p[0]), Math.min(box[1], p[1]), Math.max(box[2], p[0]), Math.max(box[3], p[1])]
           : [p[0], p[1], p[0], p[1]];
@@ -987,10 +1856,35 @@ export function buildMapPage(language: Language = appLanguage()): string {
     function sizedPoint(p, anchor, factor) {
       return [anchor[0] + factor * (p[0] - anchor[0]), anchor[1] + factor * (p[1] - anchor[1])];
     }
+    // Sized and turned \`turn\` degrees clockwise about \`anchor\` (TASK-402):
+    // turned on the screen, in pixels, where the map keeps its angles, not
+    // in degrees of longitude and latitude.
+    function heldPoint(p, anchor, factor, turn) {
+      if (turn === 0) {
+        return sizedPoint(p, anchor, factor);
+      }
+      var a = (turn * Math.PI) / 180;
+      var at = map.project(p);
+      var middle = map.project(anchor);
+      var dx = at.x - middle.x;
+      var dy = at.y - middle.y;
+      var lngLat = map.unproject([
+        middle.x + factor * (dx * Math.cos(a) - dy * Math.sin(a)),
+        middle.y + factor * (dx * Math.sin(a) + dy * Math.cos(a)),
+      ]);
+      return [lngLat.lng, lngLat.lat];
+    }
+    // The lines that move changed, the others as they are.
     function mapLines(lines, change) {
-      return lines.map(function (line) {
-        return line.map(change);
+      return lines.map(function (line, i) {
+        return moves(i) ? line.map(change) : line;
       });
+    }
+    // The figure, or the piece chosen and its box, changed on the screen.
+    function drawChanged(change) {
+      drawFigure(mapLines(canvas.lines, change));
+      drawBox(canvas.box.map(change));
+      drawStart(canvas.start && moves(0) ? change(canvas.start) : canvas.start);
     }
     function tellCentre() {
       var centre = map.getCenter();
@@ -998,14 +1892,27 @@ export function buildMapPage(language: Language = appLanguage()): string {
     }
     // A move or a size kept: the page draws the figure there until the app
     // sends it back, and the room to grow is what is left of it.
-    function keepFigure(lines, centre, factor) {
+    function keepFigure(change, factor, turn) {
+      var lines = mapLines(canvas.lines, change);
+      var centre = canvas.centre && change(canvas.centre);
       canvas.lines = lines;
       canvas.centre = centre;
+      canvas.box = canvas.box.map(change);
+      if (moves(0)) {
+        canvas.start = canvas.start && change(canvas.start);
+        canvas.startLine = canvas.startLine.map(change);
+      }
+      drawStart(canvas.start);
       canvas.shrink /= factor;
       canvas.grow /= factor;
       drawFigure(lines);
+      drawBox(canvas.box);
       if (centre) {
-        post({ type: "figure", centre: centre, factor: factor, done: true });
+        post(
+          turn
+            ? { type: "figure", centre: centre, factor: factor, done: true, turn: turn }
+            : { type: "figure", centre: centre, factor: factor, done: true },
+        );
       }
       // Grown past the screen, the map steps back to show it whole: there
       // is room again to zoom the map around it.
@@ -1021,7 +1928,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
         frameCanvas();
       }
     }
-    function startGesture(touches) {
+    function startGesture(touches, time) {
       // A finger on the map stops it where it is: a line drawn while the
       // map still eases into place would not be where it was drawn.
       if (map.stop) {
@@ -1029,24 +1936,41 @@ export function buildMapPage(language: Language = appLanguage()): string {
       }
       if (touches.length === 1) {
         var at = pointOf(touches[0]);
-        if (canvas.mode === "draw") {
+        if (canvas.mode === "draw" || canvas.mode === "erase") {
           ink = [lngLatAt(at)];
           inkLast = at;
           gesture = { kind: "ink" };
           drawInk();
+        } else if (canvas.mode === "line") {
+          gesture = { kind: "tap", at: at };
+          bandTo(at);
+        } else if (onStart(at)) {
+          // The start dot, dragged along the figure's line (TASK-426).
+          gesture = { kind: "start", from: at, at: canvas.start };
         } else if (onFigure(at)) {
-          gesture = { kind: "drag", from: at, by: null };
+          // Held still on a line first, the drag bends it.
+          gesture = { kind: "drag", from: at, by: null, since: time, grab: grabAt(at) };
         } else {
-          gesture = { kind: "pan", last: at };
+          gesture = { kind: "pan", from: at, last: at };
         }
         return;
       }
-      if (touches.length === 2 && canvas.mode === "move") {
+      if (touches.length === 2) {
         var a = pointOf(touches[0]);
         var b = pointOf(touches[1]);
         var middle = middleOf(a, b);
-        gesture = onFigure(middle)
-          ? { kind: "size", from: apart(a, b), anchor: figureMiddle(), factor: 1, told: 1 }
+        // Only with «Move» do two fingers size the figure; else they move
+        // and zoom the map, the figure on it.
+        gesture = canvas.mode === "move" && onFigure(middle)
+          ? {
+              kind: "size",
+              from: apart(a, b),
+              anchor: figureMiddle(),
+              factor: 1,
+              told: 1,
+              angle: angleOf(a, b),
+              turn: 0,
+            }
           : {
               kind: "zoom",
               from: apart(a, b),
@@ -1055,7 +1979,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
             };
         return;
       }
-      // With «Draw», two fingers do nothing: the map keeps still.
+      // Three fingers or more do nothing.
       gesture = { kind: "wait" };
     }
     // \`lifted\`: the fingers left the map; otherwise another one came, and
@@ -1067,48 +1991,94 @@ export function buildMapPage(language: Language = appLanguage()): string {
         return;
       }
       if (was.kind === "ink") {
-        if (lifted && ink.length >= 3) {
+        // With «Erase» a tap is enough: it rubs out where it is.
+        if (lifted && (ink.length >= 3 || canvas.mode === "erase")) {
           // Shown until the app answers with the figure.
-          post({ type: "drawn", line: ink });
+          post({ type: "drawn", line: ink, metresPerPx: metresPerPx() });
         } else {
           ink = [];
           drawInk();
         }
+      } else if (was.kind === "tap") {
+        // The point is where the finger left the map; the band shows until
+        // the app answers.
+        if (lifted) {
+          post({ type: "drawn", line: [lngLatAt(was.at)], metresPerPx: metresPerPx() });
+        } else {
+          ink = [];
+          drawInk();
+        }
+      } else if (was.kind === "bend") {
+        if (lifted) {
+          // The line stays bent until the app answers.
+          post({
+            type: "bent",
+            from: was.from,
+            to: lngLatAt(bendTarget(was)),
+            metresPerPx: metresPerPx(),
+          });
+        } else {
+          drawFigure(canvas.lines);
+          drawMarks(canvas.marks);
+        }
+      } else if (was.kind === "start") {
+        if (lifted && was.at !== canvas.start) {
+          // The dot stays there until the app answers.
+          post({ type: "started", lngLat: was.at, metresPerPx: metresPerPx() });
+        } else {
+          drawStart(canvas.start);
+          if (lifted) {
+            tellTap(was.from);
+          }
+        }
       } else if (was.kind === "drag") {
         if (was.by) {
-          keepFigure(
-            mapLines(canvas.lines, function (p) {
-              return shiftedPoint(p, was.by);
-            }),
-            canvas.centre && shiftedPoint(canvas.centre, was.by),
-            1,
-          );
+          keepFigure(function (p) {
+            return shiftedPoint(p, was.by);
+          }, 1);
+        } else if (lifted) {
+          tellTap(was.from);
         }
       } else if (was.kind === "size") {
-        if (was.factor !== 1) {
+        if (was.factor !== 1 || was.turn !== 0) {
           keepFigure(
-            mapLines(canvas.lines, function (p) {
-              return sizedPoint(p, was.anchor, was.factor);
-            }),
-            canvas.centre && sizedPoint(canvas.centre, was.anchor, was.factor),
+            function (p) {
+              return heldPoint(p, was.anchor, was.factor, was.turn);
+            },
             was.factor,
+            was.turn,
           );
         }
       } else if (was.kind === "pan" || was.kind === "zoom") {
+        if (lifted && was.kind === "pan" && screenDist(was.from, was.last) < ${MOVE_MIN_PX}) {
+          tellTap(was.from);
+        }
         tellCentre();
       }
     }
-    function dropGesture() {
-      if (gesture && (gesture.kind === "drag" || gesture.kind === "size")) {
-        drawFigure(canvas.lines);
+    // A tap with «Move» among pieces: the app chooses the one there, or
+    // none (TASK-402 part B).
+    function tellTap(at) {
+      if (canvas.choosing && canvas.mode === "move") {
+        post({ type: "tapped", lngLat: lngLatAt(at), metresPerPx: metresPerPx() });
       }
-      if (gesture && gesture.kind === "ink") {
+    }
+    function dropGesture() {
+      if (gesture && (gesture.kind === "drag" || gesture.kind === "size" || gesture.kind === "bend")) {
+        drawFigure(canvas.lines);
+        drawBox(canvas.box);
+        drawMarks(canvas.marks);
+      }
+      if (gesture && (gesture.kind === "drag" || gesture.kind === "size" || gesture.kind === "start")) {
+        drawStart(canvas.start);
+      }
+      if (gesture && (gesture.kind === "ink" || gesture.kind === "tap")) {
         ink = [];
         drawInk();
       }
       gesture = null;
     }
-    function moveGesture(touches) {
+    function moveGesture(touches, time) {
       if (gesture.kind === "ink" && touches.length === 1) {
         var at = pointOf(touches[0]);
         if (Math.hypot(at.x - inkLast.x, at.y - inkLast.y) >= ${INK_STEP_PX}) {
@@ -1116,6 +2086,14 @@ export function buildMapPage(language: Language = appLanguage()): string {
           inkLast = at;
           drawInk();
         }
+      } else if (gesture.kind === "tap" && touches.length === 1) {
+        gesture.at = pointOf(touches[0]);
+        bandTo(gesture.at);
+      } else if (gesture.kind === "bend" && touches.length === 1) {
+        bendTo(pointOf(touches[0]));
+      } else if (gesture.kind === "start" && touches.length === 1) {
+        gesture.at = startAt(pointOf(touches[0]));
+        drawStart(gesture.at);
       } else if (gesture.kind === "drag" && touches.length === 1) {
         var now = pointOf(touches[0]);
         var from = gesture.from;
@@ -1125,13 +2103,21 @@ export function buildMapPage(language: Language = appLanguage()): string {
         if (!gesture.by && !far) {
           return;
         }
+        if (!gesture.by && gesture.grab && time - gesture.since >= ${HOLD_MS}) {
+          var bend = bendOf(gesture.grab, from);
+          if (bend) {
+            gesture = bend;
+            bendTo(now);
+            return;
+          }
+        }
         var a = map.unproject([from.x, from.y]);
         var b = map.unproject([now.x, now.y]);
         var by = [b.lng - a.lng, b.lat - a.lat];
         gesture.by = by;
-        drawFigure(mapLines(canvas.lines, function (p) {
+        drawChanged(function (p) {
           return shiftedPoint(p, by);
-        }));
+        });
       } else if (gesture.kind === "pan" && touches.length === 1) {
         var to = pointOf(touches[0]);
         map.panBy([gesture.last.x - to.x, gesture.last.y - to.y], { animate: false });
@@ -1143,10 +2129,12 @@ export function buildMapPage(language: Language = appLanguage()): string {
         if (gesture.kind === "size") {
           var factor = Math.min(canvas.grow, Math.max(canvas.shrink, ratio));
           var anchor = gesture.anchor;
+          var turn = turnOf(gesture.angle, angleOf(first, second));
           gesture.factor = factor;
-          drawFigure(mapLines(canvas.lines, function (p) {
-            return sizedPoint(p, anchor, factor);
-          }));
+          gesture.turn = turn;
+          drawChanged(function (p) {
+            return heldPoint(p, anchor, factor, turn);
+          });
           // The distance on screen follows, a step at a time.
           if (canvas.centre && Math.abs(factor / gesture.told - 1) >= 0.01) {
             gesture.told = factor;
@@ -1174,11 +2162,11 @@ export function buildMapPage(language: Language = appLanguage()): string {
         }
         // Another finger ends what one was doing.
         endGesture(false);
-        startGesture(event.touches);
+        startGesture(event.touches, event.timeStamp);
       }, passive);
       surface.addEventListener("touchmove", function (event) {
         if (canvas && gesture) {
-          moveGesture(event.touches);
+          moveGesture(event.touches, event.timeStamp);
         }
       }, passive);
       surface.addEventListener("touchend", function (event) {
@@ -1247,14 +2235,27 @@ export function buildMapPage(language: Language = appLanguage()): string {
       canvas = {
         mode: message.mode,
         lines: message.lines,
+        links: message.links,
+        bendable: message.bendable,
+        marks: message.marks,
         centre: message.centre,
         shrink: message.shrink,
         grow: message.grow,
+        choosing: message.choosing === true,
+        chosen: message.chosen || [],
+        box: message.box || [],
+        start: message.start || null,
+        startLine: message.startLine || [],
+        startEnds: message.startEnds === true,
       };
       // The app has answered the line drawn: the figure takes its place.
       ink = [];
+      inkLooks(message.mode);
       drawInk();
       drawFigure(message.lines);
+      drawBox(canvas.box);
+      drawMarks(message.marks);
+      drawStart(canvas.start);
       if (message.frame) {
         frameCanvas();
       }
@@ -1266,8 +2267,13 @@ export function buildMapPage(language: Language = appLanguage()): string {
       canvas = null;
       gesture = null;
       ink = [];
+      inkLooks("draw");
       drawInk();
       drawFigure([]);
+      drawAnchored(false, [], []);
+      drawBox([]);
+      drawMarks([]);
+      drawStart(null);
       GESTURES.forEach(function (name) {
         var handler = map[name];
         if (handler && gesturesBefore && gesturesBefore[name]) {
@@ -1357,10 +2363,23 @@ export function buildMapPage(language: Language = appLanguage()): string {
           var bounds = points.reduce(function (box, point) {
             return box.extend(point);
           }, new maplibregl.LngLatBounds(points[0], points[0]));
+          framedPoints = points.slice();
+          // The shape asked for under the route (TASK-442), whole in view
+          // with it (TASK-443).
+          if (ghost.geometry) {
+            ghost.geometry.coordinates.forEach(function (line) {
+              line.forEach(function (point) {
+                bounds.extend(point);
+                framedPoints.push(point);
+              });
+            });
+          }
           setStartHere(message.startHere);
           if (message.startHere && marker) {
             // Where the user is and where to go, both in view.
-            bounds.extend(marker.getLngLat());
+            var asked = marker.getLngLat();
+            bounds.extend(asked);
+            framedPoints.push([asked.lng, asked.lat]);
           }
           // Turned as its drawing is (TASK-232): the shape reads upright.
           drawn = message.bearing || 0;
@@ -1369,8 +2388,8 @@ export function buildMapPage(language: Language = appLanguage()): string {
           frame();
         } else if (message.type === "follow") {
           // An arrow once the heading is known; it stays one when a fix
-          // comes without it.
-          if (typeof message.heading === "number" || arrow) {
+          // comes without it. On «Compass» the phone's direction is one.
+          if (typeof message.heading === "number" || arrow || facing !== null) {
             showArrow(message.lngLat, message.heading);
           } else {
             showPin(message.lngLat);
@@ -1383,8 +2402,20 @@ export function buildMapPage(language: Language = appLanguage()): string {
             bearing: wanted,
             duration: 500,
           });
+        } else if (message.type === "face") {
+          // Where the phone points, on «Compass» (TASK-431): the arrow
+          // turns there with the map, standing still too, and opens its
+          // cone; null closes it, and the next fix turns the arrow as the
+          // line run.
+          facing = typeof message.heading === "number" ? message.heading : null;
+          if (arrow) {
+            showArrow(arrow.getLngLat(), null);
+          } else if (marker && following && facing !== null) {
+            showArrow(marker.getLngLat(), null);
+          }
         } else if (message.type === "stopFollow") {
           following = false;
+          facing = null;
           if (arrow) {
             showPin(arrow.getLngLat());
           }
@@ -1394,6 +2425,9 @@ export function buildMapPage(language: Language = appLanguage()): string {
             properties: {},
             geometry: { type: "LineString", coordinates: message.coordinates },
           });
+          if (message.frame) {
+            frameLines([message.coordinates]);
+          }
         } else if (message.type === "showStops") {
           setStops({
             type: "FeatureCollection",
@@ -1407,14 +2441,75 @@ export function buildMapPage(language: Language = appLanguage()): string {
           });
         } else if (message.type === "clearStops") {
           setStops(noRoute);
+        } else if (message.type === "focus") {
+          map.flyTo({
+            center: message.lngLat,
+            zoom: Math.max(map.getZoom(), ${PLACE_ZOOM}),
+            bearing: wanted,
+          });
         } else if (message.type === "showOthers") {
           setOthers({
             type: "Feature",
             properties: {},
             geometry: { type: "MultiLineString", coordinates: message.lines },
           });
+        } else if (message.type === "setCover") {
+          setCover(message.cover);
+        } else if (message.type === "showGhost") {
+          setGhost(
+            message.lines.length === 0
+              ? noRoute
+              : {
+                  type: "Feature",
+                  properties: {},
+                  geometry: { type: "MultiLineString", coordinates: message.lines },
+                },
+          );
         } else if (message.type === "clearTrack") {
           setTrack(noRoute);
+        } else if (message.type === "showLifts") {
+          setTrack({
+            type: "Feature",
+            properties: {},
+            geometry: { type: "MultiLineString", coordinates: message.skied },
+          });
+          if (message.frame) {
+            frameLines(message.skied.concat(message.lifts));
+          }
+          setLifts({
+            type: "Feature",
+            properties: {},
+            geometry: { type: "MultiLineString", coordinates: message.lifts },
+          });
+          setSkiDay(true, {
+            type: "FeatureCollection",
+            features: (message.labels || []).map(function (label) {
+              return {
+                type: "Feature",
+                properties: { text: label.text, kind: label.kind },
+                geometry: { type: "Point", coordinates: label.point },
+              };
+            }),
+          });
+        } else if (message.type === "showFlight") {
+          setTrack({
+            type: "Feature",
+            properties: {},
+            geometry: { type: "MultiLineString", coordinates: message.foot },
+          });
+          setFlightAir({
+            type: "Feature",
+            properties: {},
+            geometry: { type: "MultiLineString", coordinates: message.air },
+          });
+          if (message.frame) {
+            frameLines(message.foot.concat(message.air));
+          }
+        } else if (message.type === "clearFlight") {
+          setFlightAir(noRoute);
+        } else if (message.type === "clearLifts") {
+          setLifts(noRoute);
+          setSkiDay(false, noRoute);
         } else if (message.type === "showProgress") {
           showProgress(message);
         } else if (message.type === "clearProgress") {
@@ -1434,6 +2529,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
           // A map turned for its route is north-up again without it; one
           // turned by the user stays as it was left.
           framed = null;
+          framedPoints = [];
           if (drawn !== 0) {
             drawn = 0;
             wanted = 0;
@@ -1444,6 +2540,10 @@ export function buildMapPage(language: Language = appLanguage()): string {
           setKind(message.kind);
         } else if (message.type === "setCanvas") {
           setCanvas(message);
+        } else if (message.type === "setAnchored") {
+          if (canvas) {
+            drawAnchored(message.ghost, message.snapped, message.far);
+          }
         } else if (message.type === "clearCanvas") {
           clearCanvas();
         } else if (message.type === "setPick") {

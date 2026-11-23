@@ -14,7 +14,10 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   l'esclusione di `highway=cycleway`. In Trentino le ciclabili sono quasi
   sempre ciclopedonali, e il filtro `walk` le scartava: nel rettangolo del
   cuore da 5 km a Levico mancavano 4,6 km di ciclabili, lungo il lago e a
-  sud del paese. Filtro in `FOOT_FILTER`, `route_engine/network.py`.
+  sud del paese. Filtro in `FOOT_FILTER`, `route_engine/networks/foot.py`.
+  Da TASK-421 il download non semplifica e toglie i cancelli chiusi e le
+  vie `access=no` prima di unire le vie in archi («I cancelli chiusi»,
+  sotto).
 - Il grafo si costruisce con `network_type="walk"` insieme al filtro: è ciò
   che rende ogni strada percorribile nei due sensi. Con il solo filtro
   OSMnx rispetta i sensi unici, che a piedi non valgono, e alcuni punti
@@ -40,7 +43,16 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
 
 - **Un download alla volta**, mai istanze OSMnx in parallelo per aggirare i
   limiti del server (lo raccomanda OSMnx stesso). Il limitatore di OSMnx
-  resta attivo.
+  resta attivo. **Dal TASK-471 (ADR-0385)**, solo per le zone chieste
+  dall'app (`ZoneGraphs`): quando la pagina dello stato di Overpass non
+  dice nulla di utile OSMnx aspetta 5 s invece dei suoi 60 fissi; l'attesa
+  che Overpass chiede da sé resta. Il lavoro a lotti tiene i 60 s.
+- **Un job chiede una volta** (ADR-0385): dopo un download fallito lo
+  stesso job non ne prova un altro; e con
+  `SHAPEROUTE_OVERPASS_FALLBACK_URL` impostata sul server, a un errore
+  HTTP o di connessione del principale segue un solo tentativo sul
+  secondo servizio, anche per l'acqua e la neve. Mai per il lavoro a
+  lotti.
 - **Un tentativo per grafo**: se Overpass non risponde si salta e si
   riprova più tardi, non in un ciclo stretto. Il 2026-09-22 sera, dopo due
   download, Overpass ha smesso di accettare connessioni per il resto della
@@ -279,6 +291,59 @@ chiesta**, non quello della partenza. Dal centro di Venezia a 5 km l'area
 è tutta laguna e isola; un'area che prende più terraferma che isola dà la
 terraferma, e la partenza si aggancia lì.
 
+### I cancelli chiusi (TASK-421, ADR-0349)
+
+Un cancello è un **nodo** di OpenStreetMap (`barrier=gate`, `lift_gate`,
+`swing_gate`…) con i suoi tag; `FOOT_FILTER` filtra solo le vie e non lo
+vede, e OSMnx semplificando perdeva i tag dei nodi. Da TASK-421 il download
+della rete foot non semplifica (`download_foot_graph`, come `roller` e
+`bike`): chiede i tag dei nodi `barrier`, `access`, `foot`, `locked`
+(`FOOT_NODE_TAGS`) e `foot` sulle vie, `foot_ways` toglie i nodi che
+bloccano chi va a piedi e le vie chiuse, poi semplifica. Togliere il nodo
+taglia la via lì: il percorso non passa.
+
+- **Nodi tolti** (`blocks_foot`): `foot=no|private`; una `fence` o un `wall`
+  come nodo; un `gate`, `lift_gate`, `swing_gate`, `sliding_gate`,
+  `wicket_gate`, `turnstile`, `entrance` o altra barriera con `access=no`,
+  `access=private` o `locked=yes`. **Restano**: un cancello senza tag, uno
+  con `foot=yes|designated|permissive|destination` (vince su tutto), i
+  `kissing_gate`, `stile`, `bollard`, `kerb`, `cycle_barrier`, `block`,
+  `cattle_grid`, `log`, `chain`, `planter`, `height_restrictor`… anche con
+  `access=no` (parla ai veicoli), e `access=customers|destination|permit`.
+- **Vie tolte** (`closed_to_foot`): `foot=no|private`; `access=no|private`
+  senza un `foot` che apre. `access=destination` resta. Il filtro Overpass
+  non cambia: l'estratto lo legge come prima (`zone_extract`), e serve anche
+  i tag dei nodi.
+- La rete `hike` passa dallo stesso download e perde gli stessi nodi.
+- **Misure** (dalle risposte Overpass in cache, senza rete): Trento 9 km
+  1.871 nodi `barrier`, 122 tolti (6,5 %), 7,0 km di vie chiuse, rete
+  841,8 → 832,0 km; Milano 17 km 28.462 (quasi tutti `kerb`), 123 tolti,
+  46,0 km di vie (38,6 km di `service` con `access=no`), 3.224,8 → 3.176,7
+  km; Levico 126, 26 tolti, 2,1 km, 628,9 → 626,1 km; Parigi 11.755, 132
+  tolti, 14,7 km, 1.391,6 → 1.375,4 km. Il banco di corsa prima e dopo è
+  in `tasks/TASK-421.md`: Trento e Milano uguali, a Levico le forme piccole
+  dal Lido non attraversano più i vialetti privati del lido e del parco.
+- **Le zone già in cache non cambiano da sole**: sono semplificate e senza
+  tag, e i cancelli ci restano finché non si rifanno. Sul Mac le zone che
+  hanno la risposta grezza in `data/cache/http/` (18 su 52 il 2026-11-08:
+  Trento, Levico, Milano, Mantova, Asiago, Fiemme, Torino, Barcellona,
+  Parigi, New York…) si rifanno **senza rete**: spostare altrove il
+  `foot_*.graphml` col suo `.pickle` e chiedere la zona di nuovo (CLI o
+  banco): OSMnx rilegge la risposta dalla cache HTTP, con lo stesso filtro
+  e riquadro. Le altre vogliono Overpass. Sul server le 53 zone di
+  «Explore» sono rifatte il 2026-11-10 e le vecchie che ci stavano dentro
+  messe da parte (`DEPLOY.md` F.15): l'API prende la zona **più piccola**
+  che contiene la richiesta, quindi una vecchia dentro una nuova
+  vincerebbe. Le circa 400 zone fuori da «Explore» hanno ancora i
+  cancelli.
+- **Il bordo della zona**: OSMnx semplificava con 500 m di margine e poi
+  ritagliava, buttando le strade con un capo fuori; ora ritaglia prima e
+  semplifica dopo (come `bike` e `roller`), e il tratto interno di una
+  strada che esce resta (Levico: 3.531 → 3.621 nodi, 607 → 629 km, stessa
+  risposta). Al banco, la rete ricostruita così senza la regola dà le
+  stesse 72 forme della cache di oggi, punto per punto (una sola diversa,
+  con la stessa somiglianza).
+
 ### Zone scaricate prima (TASK-137, ADR-0119)
 
 `python -m shaperoute_api.prefetch_zones --preset italy` (o `featured`, o
@@ -364,6 +429,71 @@ contro i 185 della zona a piedi; Milano 52.493 nodi, 24 MB, 236 MB contro
 zona di 26 km dovrebbe stare fra 0,15 e 0,6 GB in memoria e 70–150 MB su
 disco; l'API ne tiene una alla volta (`API.md`, «Grafi»). Non ancora
 provata su una zona vera (task file di TASK-190).
+
+### Impianti e piste da sci da un estratto (TASK-375 parte D, ADR-0319)
+
+I nomi degli impianti presi e delle piste fatte in una giornata di sci
+(`ski_names.py`) vengono dalle linee di OSM. Come l'acqua, si prendono da
+un estratto Geofabrik, una volta per paese alpino: Italia, Austria,
+Svizzera, Francia, Germania, Slovenia. Per ogni estratto:
+
+```bash
+osmium tags-filter italy-latest.osm.pbf w/aerialway nwr/piste:type=downhill -o italy-ski.osm.pbf
+```
+
+Poi un solo comando per tutti:
+
+```bash
+python -m shaperoute_api.ski_extract --extract italy-ski.osm.pbf austria-ski.osm.pbf switzerland-ski.osm.pbf france-ski.osm.pbf germany-ski.osm.pbf slovenia-ski.osm.pbf --cache-dir data/cache
+```
+
+Il comando scrive riquadri di 0,25° in `data/cache/ski/<lat>_<lon>.json`.
+Un estratto passato di nuovo si unisce a ciò che c'è già, e una via con lo
+stesso id sostituisce la vecchia: un impianto di confine resta uno solo.
+Restano fuori le stazioni, i piloni, le teleferiche merci, le zip line e le
+piste di fondo. Sul server di produzione questi comandi li lancia
+l'utente.
+
+### Le stazioni sciistiche da OpenSkiData (TASK-406 parte A, ADR-0338)
+
+Le stazioni della ricerca «Ski» vengono da un solo file di OpenSkiData
+([openskidata.org](https://openskidata.org/)): `ski_areas.geojson`, circa
+21 MB. È rifatto ogni notte dalle aree sciistiche di OpenStreetMap e di
+Skimap.org.
+
+**Le condizioni d'uso**
+- Licenza ODbL, anche per uso commerciale.
+- Si citano OpenStreetMap contributors, OpenSkiMap.org, Skimap.org e Who's
+  On First.
+- I download automatici sono al massimo uno al giorno, con un User-Agent
+  di MuW, e le loro tile vettoriali non si usano mai.
+- Il formato non è promesso stabile. Se un campo che serve manca, o è di un
+  altro tipo, l'import si ferma e dice quale campo, senza scrivere niente.
+  La scrittura è una sola transazione: tutte le stazioni o nessuna.
+
+Non serve riscaricare gli estratti OSM: il file ha già le stazioni
+raggruppate, con impianti, km di piste e quote. I riquadri dello sci di
+TASK-375 restano come sono.
+
+**Cosa si tiene**
+- Le aree `operating` con `downhill` fra le attività e con un nome.
+- Il 2026-11-06 erano 4.768 su 12.404, in 73 paesi. Restano fuori quelle
+  chiuse, abbandonate o in progetto, quelle di solo fondo e le 932 senza
+  nome, quasi tutte con uno o due impianti.
+- Ogni stazione tiene:
+  - il centro in cui OpenSkiMap la mostra;
+  - il riquadro del contorno;
+  - gli impianti di ogni tipo;
+  - i km delle piste da discesa per difficoltà;
+  - le quote;
+  - il primo sito che è un indirizzo `http(s)`.
+
+Una volta a stagione, sul server (comando dell'utente):
+
+```bash
+curl -fsSL -A "MuW/1.0 (getmuw.app)" -o ski_areas.geojson https://tiles.openskimap.org/geojson/ski_areas.geojson
+python -m shaperoute_api.resort_import --geojson ski_areas.geojson --clean
+```
 
 ## Dal disegno alla strada
 

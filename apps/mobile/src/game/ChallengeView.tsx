@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { dayLabel } from "../activities/activityText";
+import { selectionFeel } from "../haptics/haptics";
 import { decimal, t, tPlural } from "../i18n";
 import type { Language } from "../i18n/languages";
 import {
@@ -18,6 +19,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { inUnits } from "../units/format";
 import type { Units } from "../units/units";
 import { goalDistanceLabel, goalText } from "./goalText";
@@ -200,18 +202,22 @@ export function ChallengeView({
               <Text style={styles.pieceState}>{state}</Text>
             </View>
             {canTake && (
-              <Pressable
+              <Tap
                 style={[styles.button, busy && styles.off]}
-                onPress={() => onHold(piece.idx)}
+                onPress={() => {
+                  // A piece taken: a light tick (TASK-423, the motion of «Play»).
+                  selectionFeel();
+                  onHold(piece.idx);
+                }}
                 disabled={busy}
                 accessibilityRole="button"
                 testID={`take-${piece.idx}`}
               >
                 <Text style={styles.buttonText}>{t("Take this piece")}</Text>
-              </Pressable>
+              </Tap>
             )}
             {canLeave && (
-              <Pressable
+              <Tap
                 style={[styles.button, busy && styles.off]}
                 onPress={() => onRelease(piece.idx)}
                 disabled={busy}
@@ -219,7 +225,7 @@ export function ChallengeView({
                 testID={`leave-${piece.idx}`}
               >
                 <Text style={styles.buttonText}>{t("Leave")}</Text>
-              </Pressable>
+              </Tap>
             )}
           </View>
         );

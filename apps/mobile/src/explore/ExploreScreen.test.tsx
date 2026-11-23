@@ -1,6 +1,6 @@
 import list from "@shaperoute/shared-types/fixtures/recommended-routes.json";
 import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, within } from "@testing-library/react-native";
 
 import { FeedMapShooter, forgetFeedMaps } from "../feed/FeedMaps";
 import { shapeLabel } from "../feed/FeedPost";
@@ -9,6 +9,7 @@ import { EXAMPLE_SHAPES, forgetExamples, MORE_SHAPES } from "./exampleRoutes";
 import { awayText, ExploreScreen, kmLabel } from "./ExploreScreen";
 import type { RecommendedRoute } from "./recommendedRoutes";
 import { cardMapsCredit } from "./RouteCard";
+import { THEMED_IDEAS } from "./themedIdeas";
 import { POSTS_SHOWN } from "./WhileDrawing";
 
 jest.mock(
@@ -117,7 +118,9 @@ test("while the examples are drawn, drawings of the feed to look at (TASK-163)",
   expect(order.indexOf("MEANWHILE, FROM THE FEED")).toBeGreaterThan(
     order.indexOf("EXAMPLES IN VERCELLI"),
   );
-  expect(order.at(-1)).toBe("Ask for a route");
+  expect(order.indexOf("Ask for a route")).toBeGreaterThan(
+    order.indexOf("MEANWHILE, FROM THE FEED"),
+  );
 });
 
 test("the drawings stay when the last example arrives", async () => {
@@ -173,7 +176,7 @@ function texts(): string[] {
   return screen.getAllByText(/./).map((node) => String(node.props.children));
 }
 
-test("«Ask for a route» waits closed under the routes, and a touch opens it", async () => {
+test("«Ask for a route» is a line under the routes; open, our four categories in view (TASK-420)", async () => {
   // An answer for each request: the towns near the start are asked too.
   fetchMock.mockImplementation(() => Promise.resolve(Response.json(list)));
   const onAsk = jest.fn();
@@ -187,32 +190,69 @@ test("«Ask for a route» waits closed under the routes, and a touch opens it", 
     />,
   );
   await screen.findByText("Star · 5.1 km");
-  // A quiet line at the foot of the page: its categories are not there yet.
-  const closed = screen.getByRole("button", { name: "Ask for a route" });
+  // A line under the routes opens it (the user's choice of 2026-11-10).
   expect(screen.queryByText("ASK FOR A ROUTE")).toBeNull();
-  expect(screen.queryByText("Food")).toBeNull();
+  const line = screen.getByRole("button", { name: "Ask for a route" });
+  const before = texts();
+  expect(before.indexOf("Ask for a route")).toBeGreaterThan(
+    before.indexOf("CIAO · 15.2 km"),
+  );
+  await fireEvent.press(line);
   const order = texts();
-  expect(order.indexOf("Ask for a route")).toBeGreaterThan(
+  expect(order.indexOf("ASK FOR A ROUTE")).toBeGreaterThan(
     order.indexOf("CIAO · 15.2 km"),
   );
-  expect(order.indexOf("Ask for a route")).toBeGreaterThan(order.indexOf("CITY"));
-
-  await fireEvent.press(closed);
-  expect(screen.getByText("ASK FOR A ROUTE")).toBeOnTheScreen();
-  expect(screen.queryByRole("button", { name: "Ask for a route" })).toBeNull();
-  // Opened, it is where it was: under the routes.
-  expect(texts().indexOf("ASK FOR A ROUTE")).toBeGreaterThan(
-    texts().indexOf("CIAO · 15.2 km"),
-  );
-  await fireEvent.press(screen.getByText("Food"));
+  expect(order.indexOf("ASK FOR A ROUTE")).toBeGreaterThan(order.indexOf("CITY"));
+  for (const category of [
+    "Famous Places",
+    "Best Views",
+    "Hidden Gems",
+    "Photography",
+  ]) {
+    expect(screen.getByText(category)).toBeOnTheScreen();
+  }
+  expect(screen.queryByText("Food")).toBeNull();
+  await fireEvent.press(screen.getByText("Hidden Gems"));
   expect(onAsk).toHaveBeenCalledWith({
-    text: "Food",
+    text: "Hidden Gems",
     centre: [46.067, 11.1215],
     city: null,
   });
 });
 
-test("«Ask for a route» is at the foot of the page also without routes", async () => {
+test("our ideas are in it, above the categories, and one opens as it is", async () => {
+  fetchMock.mockImplementation(() => Promise.resolve(Response.json(list)));
+  const onIdea = jest.fn();
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={[46.067, 11.1215]}
+      onOpen={jest.fn()}
+      onAsk={jest.fn()}
+      onIdea={onIdea}
+    />,
+  );
+  await screen.findByText("Star · 5.1 km");
+  await fireEvent.press(screen.getByRole("button", { name: "Ask for a route" }));
+  const order = texts();
+  expect(order.indexOf("IDEAS FROM EUROPE")).toBeGreaterThan(
+    order.indexOf("ASK FOR A ROUTE"),
+  );
+  expect(order.indexOf("IDEAS FROM EUROPE")).toBeLessThan(
+    order.indexOf("Famous Places"),
+  );
+  const ideas = within(screen.getByTestId("themed-ideas"));
+  expect(ideas.getAllByRole("button")).toHaveLength(THEMED_IDEAS.length);
+  const first = THEMED_IDEAS[0];
+  await fireEvent.press(ideas.getAllByRole("button")[0]);
+  expect(onIdea).toHaveBeenCalledWith(first);
+  // Nothing asked for it: it was planned already.
+  expect(fetchMock.mock.calls.some(([url]) => String(url).includes("themed"))).toBe(
+    false,
+  );
+});
+
+test("«Ask for a route» is at the foot of the page also without routes, and opens there", async () => {
   fetchMock.mockResolvedValue(Response.json({ routes: [] }));
   await render(
     <ExploreScreen
@@ -223,17 +263,25 @@ test("«Ask for a route» is at the foot of the page also without routes", async
     />,
   );
   await screen.findByText(/No recommended routes near this start yet/);
+  await fireEvent.press(screen.getByRole("button", { name: "Ask for a route" }));
   const order = texts();
-  expect(order.at(-1)).toBe("Ask for a route");
+  expect(order.indexOf("ASK FOR A ROUTE")).toBeGreaterThan(
+    order.indexOf(
+      "No recommended routes near this start yet. Draw one: the best ones will show up here.",
+    ),
+  );
+  expect(order.at(-1)).toBe("Make my route");
 });
 
-test("without a way to ask there is no line to open", async () => {
+test("without a way to ask there is no «Ask for a route»", async () => {
   fetchMock.mockResolvedValue(Response.json(list));
   await render(
     <ExploreScreen apiUrl="http://api" near={[46.067, 11.1215]} onOpen={jest.fn()} />,
   );
   await screen.findByText("Star · 5.1 km");
-  expect(screen.queryByText("Ask for a route")).toBeNull();
+  expect(screen.queryByText("ASK FOR A ROUTE")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Ask for a route" })).toBeNull();
+  expect(screen.queryByTestId("themed-ideas")).toBeNull();
 });
 
 test("no filters: every route near the start is a card (TASK-176)", async () => {
@@ -245,8 +293,11 @@ test("no filters: every route near the start is a card (TASK-176)", async () => 
   expect(screen.queryByText(/^Shape/)).toBeNull();
   expect(screen.queryByText(/^Distance/)).toBeNull();
   expect(screen.getAllByTestId("route-card")).toHaveLength(routes.length);
-  // The cards are the only buttons of the page: nothing to set first.
-  expect(screen.getAllByRole("button")).toHaveLength(routes.length);
+  // The cards are the only buttons of the page but the search at its top
+  // (TASK-367 part B): nothing to set first.
+  const buttons = screen.getAllByRole("button");
+  expect(buttons[0]).toHaveAccessibleName("Search");
+  expect(buttons).toHaveLength(routes.length + 1);
 });
 
 test("the routes are cards, two side by side between the page's margins", async () => {
@@ -371,4 +422,25 @@ test("under «Near me», the towns around the start; a chosen city has none", as
   expect(onCity).toHaveBeenCalledWith({ label: town.label, point: town.point });
   await view.rerender(page(vercelli));
   expect(screen.queryByText("NEARBY TOWNS")).toBeNull();
+});
+
+test("the search at the top opens the search of drawings, people and places (TASK-367)", async () => {
+  await render(
+    <ExploreScreen apiUrl="http://api" near={[46.067, 11.1215]} onOpen={jest.fn()} />,
+  );
+  expect(screen.getByText("Search drawings, people, places")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Search" }));
+  expect(screen.getByTestId("search-page")).toBeOnTheScreen();
+});
+
+test("a screen with its own way back has no search at the top", async () => {
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={[46.067, 11.1215]}
+      onOpen={jest.fn()}
+      onBack={jest.fn()}
+    />,
+  );
+  expect(screen.queryByTestId("explore-search")).toBeNull();
 });

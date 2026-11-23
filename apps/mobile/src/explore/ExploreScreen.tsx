@@ -1,8 +1,8 @@
-import type { LatLon } from "@shaperoute/shared-types";
-import { useEffect, useMemo, useRef, useState } from "react";
+import type { Activity, LatLon } from "@shaperoute/shared-types";
+import { useEffect, useMemo, useState } from "react";
 import {
+  FlatList,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -23,6 +23,7 @@ import { distanceLabel, nearDistanceLabel, wholeDistanceLabel } from "../units/f
 import { type Units, appUnits } from "../units/units";
 import { useUnits } from "../units/useUnits";
 import {
+  activityParam,
   cityName,
   fetchRecommended,
   NEAR_RADIUS_M,
@@ -32,6 +33,9 @@ import {
 import { HeartBadge } from "../intro/HeartBadge";
 import type { Place } from "../places/photon";
 import { AskForRoute } from "./AskForRoute";
+import type { ThemedIdea } from "./themedIdeas";
+import { IdeasFromEurope } from "./IdeasFromEurope";
+import { RideItYourself } from "./RideItYourself";
 import {
   addedExamples,
   cityKey,
@@ -51,6 +55,14 @@ import { RecommendedRow } from "./RecommendedRow";
 import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
 import type { ThemedRequest } from "./themedRoutes";
 import { stillDrawing, useWaited, WhileDrawing } from "./WhileDrawing";
+import { useHeaderScroll } from "../tabs/headerScroll";
+import { useScrollToTopOnReselect } from "../tabs/tabReselect";
+import { postRoute } from "../feed/feedRoute";
+import type { SamplePost } from "../feed/sampleFeed";
+import { ExploreSearch } from "./ExploreSearch";
+import { AskLine } from "./AskLine";
+import { type FarRow, farRows, groupByCity, useCatalog } from "./catalogList";
+import { FarFooter, FarHeader, FarRowView } from "./FartherAway";
 
 type ListState =
   | { status: "loading" }
@@ -72,6 +84,14 @@ type Props = {
   recent?: Place[];
   /** A shape through the places of a theme (TASK-129). */
   onAsk?: (request: ThemedRequest) => void;
+  /** One of our ideas in the cities of Europe, opened as it is. */
+  onIdea?: (idea: ThemedIdea) => void;
+  /** An example of «Feed» found by the search at the top (TASK-367 part B);
+   * left out, its route opens as a route of «Explore». */
+  onOpenExample?: (post: SamplePost) => void;
+  /** The sport's activity (TASK-441): a ride's drawings for the bike, a
+   * run's for every other and when left out. */
+  activity?: Activity;
 };
 
 const NO_ROUTES: RecommendedRoute[] = [];
@@ -115,30 +135,35 @@ export function ExploreScreen({
   onCity,
   recent = [],
   onAsk,
+  onIdea,
+  onOpenExample,
+  activity = "running",
 }: Props) {
   // A city searched for takes the place of the start (TASK-129).
   const near = city?.point ?? start;
   const insets = useSafeAreaInsets();
+  // Its tab touched again: back to the top (TASK-367).
+  const scroll = useScrollToTopOnReselect<FlatList<FarRow>>();
+  // The header turns to glass once the list scrolls (TASK-469 A5b).
+  const headerScroll = useHeaderScroll();
   // The cards are written again when «Settings» changes the units (TASK-182).
   const units = useUnits();
   // What the page has between its side margins: two cards side by side.
   const { width } = useWindowDimensions();
   const contentWidth = width - 2 * space.lg;
   const card = cardWidth(contentWidth);
+  // «Ask for a route» opens under its line (TASK-420).
+  const [asking, setAsking] = useState(false);
   // The answer for one start: another start shows "loading" until its own.
   const [answer, setAnswer] = useState<{ key: string; list: ListState } | null>(null);
-  // "Ask for a route" waits closed at the foot of the page (TASK-157).
-  const [asking, setAsking] = useState(false);
-  const page = useRef<ScrollView>(null);
-  const shownAsking = useRef(false);
   const lat = near?.[0];
   const lon = near?.[1];
   const key =
     apiUrl === null || lat === undefined || lon === undefined
       ? null
-      : `${apiUrl} ${lat},${lon}`;
+      : `${apiUrl} ${lat},${lon}${activityParam(activity)}`;
   // The list fetched as the app opened (TASK-306), read once a start: it is
-  // not asked again.
+  // not asked again. It is a run's: a ride's has another key, and is asked.
   const ahead = useMemo(() => (key === null ? undefined : listAhead(key)), [key]);
 
   useEffect(() => {
@@ -152,21 +177,22 @@ export function ExploreScreen({
       return;
     }
     const controller = new AbortController();
-    void fetchRecommended(apiUrl, [lat, lon], { signal: controller.signal }).then(
-      (outcome) => {
-        if (!controller.signal.aborted) {
-          setAnswer({
-            key,
-            list:
-              outcome.kind === "routes"
-                ? { status: "done", routes: outcome.routes }
-                : { status: "failed" },
-          });
-        }
-      },
-    );
+    void fetchRecommended(apiUrl, [lat, lon], {
+      signal: controller.signal,
+      activity,
+    }).then((outcome) => {
+      if (!controller.signal.aborted) {
+        setAnswer({
+          key,
+          list:
+            outcome.kind === "routes"
+              ? { status: "done", routes: outcome.routes }
+              : { status: "failed" },
+        });
+      }
+    });
     return () => controller.abort();
-  }, [key, apiUrl, lat, lon, ahead]);
+  }, [key, apiUrl, lat, lon, ahead, activity]);
 
   const list: ListState =
     key === null
@@ -177,6 +203,18 @@ export function ExploreScreen({
           ? { status: "done", routes: ahead }
           : { status: "loading" };
   const routes = list.status === "done" ? list.routes : NO_ROUTES;
+  // Every drawing of the catalog, city by city from the nearest (TASK-420,
+  // the user's choice of 2026-11-10), under the ones near the start.
+  const catalog = useCatalog(apiUrl, near, { activity });
+  const farRowsOfPage = useMemo(() => {
+    const shownNear = new Set(routes.map((route) => route.id));
+    return farRows(groupByCity(catalog.routes, shownNear));
+  }, [catalog.routes, routes]);
+  const farCount =
+    catalog.total === null ? 0 : Math.max(0, catalog.total - routes.length);
+  // The foot of the list speaks only once the list has something: before,
+  // the page's own notes say what is going on.
+  const farStatus = farRowsOfPage.length > 0 ? catalog.status : "none";
   // Near a chosen city, its own routes and its neighbours' (TASK-192):
   // Caldonazzo has Levico's within "near you", and none starting in it.
   // Near the start they are all one list.
@@ -241,6 +279,9 @@ export function ExploreScreen({
       key={route.id}
       width={width}
       line={route.preview}
+      // A word of the catalogue written letter by letter (TASK-441): the
+      // walks between the letters are not drawn.
+      gaps={route.gaps}
       rotationDeg={route.rotation_deg}
       title={`${capitalised(routeTitle(route))} · ${distanceLabel(route.route_m, units)}`}
       detail={`${cityName(route.city)} · ${awayText(route.away_m)}`}
@@ -253,7 +294,21 @@ export function ExploreScreen({
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.screen]}>
-      <View style={[styles.header, { paddingTop: insets.top + space.sm }]}>
+      {/* The search of drawings, people and places (TASK-367 part B): the
+          lens of «Feed» before. Not on a screen with its own way back. */}
+      {!onBack && (
+        <View style={[styles.search, { paddingTop: insets.top + space.sm }]}>
+          <ExploreSearch
+            onOpenExample={onOpenExample ?? ((post) => onOpen(postRoute(post)))}
+          />
+        </View>
+      )}
+      <View
+        style={[
+          styles.header,
+          { paddingTop: onBack ? insets.top + space.sm : space.sm },
+        ]}
+      >
         {onBack && (
           <Pressable
             style={styles.back}
@@ -265,140 +320,191 @@ export function ExploreScreen({
           </Pressable>
         )}
         <View style={styles.titles}>
-          <Text style={styles.title}>{t("Best near you")}</Text>
+          <Text style={styles.title} testID="explore-title">
+            {t("Explore")}
+          </Text>
           <Text style={styles.subtitle}>
-            {t("Starting within {distance} of {place}", {
-              distance: kmOrMiles(NEAR_RADIUS_M, units),
-              place: city?.label ?? t("your start"),
-            })}
+            {catalog.total !== null && catalog.cities !== null
+              ? t("{count} drawings in {cities} cities · the nearest first", {
+                  count: catalog.total,
+                  cities: catalog.cities,
+                })
+              : catalog.total !== null
+                ? t("{count} drawings · the nearest first", { count: catalog.total })
+                : t("Starting within {distance} of {place}", {
+                    distance: kmOrMiles(NEAR_RADIUS_M, units),
+                    place: city?.label ?? t("your start"),
+                  })}
           </Text>
         </View>
         {/* The sign of Sgrava, under the button of «Profile» and as wide
             (TASK-222, ADR-0184): a picture, not a button. */}
         <HeartBadge size={MIN_TAP_SIZE} />
       </View>
-      <ScrollView
-        ref={page}
-        // Opened, "Ask for a route" is below the fold: the page goes to it.
-        onContentSizeChange={() => {
-          if (asking && !shownAsking.current) {
-            shownAsking.current = true;
-            page.current?.scrollToEnd({ animated: true });
-          }
-        }}
+      <FlatList
+        ref={scroll}
+        {...headerScroll}
+        data={farRowsOfPage}
+        keyExtractor={(row) => row.key}
+        renderItem={({ item }) => (
+          <FarRowView row={item} units={units} card={(route) => routeCard(route)} />
+        )}
+        onEndReached={
+          catalog.more || catalog.status === "failed" ? catalog.loadMore : undefined
+        }
+        onEndReachedThreshold={1}
+        initialNumToRender={6}
+        windowSize={5}
         contentContainerStyle={[
           styles.list,
           { paddingBottom: insets.bottom + space.lg },
         ]}
         keyboardShouldPersistTaps="handled"
-      >
-        {onCity && (
-          <CityPicker apiUrl={apiUrl} city={city} onCity={onCity} recent={recent} />
-        )}
-        {/* Under «Near me», the towns around the start (TASK-236); the page
+        testID="explore-list"
+        ListFooterComponent={
+          <FarFooter
+            status={farStatus}
+            more={farRowsOfPage.length > 0 && catalog.more}
+            onRetry={catalog.loadMore}
+          />
+        }
+        ListHeaderComponent={
+          <View style={styles.header_}>
+            {onCity && (
+              <CityPicker apiUrl={apiUrl} city={city} onCity={onCity} recent={recent} />
+            )}
+            {/* Under «Near me», the towns around the start (TASK-236); the page
             has the maps' credit when it has routes. */}
-        {onCity && city === null && (
-          <NearbyTowns
-            apiUrl={apiUrl}
-            near={start}
-            width={contentWidth}
-            onCity={onCity}
-            credit={routes.length === 0}
-          />
-        )}
-        {examplesCity !== null && examples !== null && (
-          <CityExamples
-            city={examplesCity}
-            examples={examples}
-            onOpen={onOpen}
-            onRetry={retry}
-            width={contentWidth}
-          />
-        )}
-        {examplesCity !== null && wordsRow}
-        {examplesKey !== null && waited && (
-          <WhileDrawing cityKey={examplesKey} drawing={drawing} />
-        )}
-        {list.status === "loading" && (
-          <Text style={styles.note}>{t("Loading routes…")}</Text>
-        )}
-        {list.status === "failed" && (
-          <Text style={styles.note}>
-            {near === null
-              ? t("Choose a start first: the routes are the ones near it.")
-              : t("The routes could not load. Check the connection and try again.")}
-          </Text>
-        )}
-        {list.status === "done" && routes.length === 0 && examplesCity === null && (
-          <Text style={styles.note}>
-            {t(
-              "No recommended routes near this start yet. Draw one: the best ones will show up here.",
+            {onCity && city === null && (
+              <NearbyTowns
+                apiUrl={apiUrl}
+                near={start}
+                width={contentWidth}
+                onCity={onCity}
+                credit={routes.length === 0}
+              />
             )}
-          </Text>
-        )}
-        {/* Above the cards: there it is read without scrolling to their end. */}
-        {routes.length > 0 && !credited && <CardMapsCredit />}
-        {/* The ones the API recommends, in a row above all of them
+            {examplesCity !== null && examples !== null && (
+              <CityExamples
+                city={examplesCity}
+                examples={examples}
+                onOpen={onOpen}
+                onRetry={retry}
+                width={contentWidth}
+              />
+            )}
+            {examplesCity !== null && wordsRow}
+            {examplesKey !== null && waited && (
+              <WhileDrawing cityKey={examplesKey} drawing={drawing} />
+            )}
+            {list.status === "loading" && (
+              <Text style={styles.note}>{t("Loading routes…")}</Text>
+            )}
+            {list.status === "failed" && (
+              <Text style={styles.note}>
+                {near === null
+                  ? t("Choose a start first: the routes are the ones near it.")
+                  : t("The routes could not load. Check the connection and try again.")}
+              </Text>
+            )}
+            {list.status === "done" && routes.length === 0 && examplesCity === null && (
+              <Text style={styles.note}>
+                {t(
+                  "No recommended routes near this start yet. Draw one: the best ones will show up here.",
+                )}
+              </Text>
+            )}
+            {/* Above the cards: there it is read without scrolling to their end. */}
+            {routes.length > 0 && !credited && <CardMapsCredit />}
+            {/* The ones the API recommends, in a row above all of them
             (TASK-092, ADR-0229); only with an account, else nothing. */}
-        {list.status === "done" && routes.length > 0 && (
-          <RecommendedRow
-            apiUrl={apiUrl}
-            near={near}
-            width={contentWidth}
-            card={routeCard}
-          />
-        )}
-        {/* The drawing first: two cards side by side (TASK-167). */}
-        {own.length > 0 && (
-          <View style={styles.grid}>
-            {cards.map((route) => routeCard(route))}
-            {/* The shape being drawn for the city: the next card, on its way. */}
-            {added.map(
-              (example) =>
-                example.status === "drawing" && (
-                  <RouteCard
-                    key={example.shape}
-                    width={card}
-                    line={null}
-                    title={capitalised(
-                      routeTitle({ shape: example.shape, word: null }),
-                    )}
-                    detail={t("Drawing…")}
-                  />
-                ),
+            {list.status === "done" && routes.length > 0 && (
+              <RecommendedRow
+                apiUrl={apiUrl}
+                near={near}
+                width={contentWidth}
+                card={routeCard}
+              />
             )}
-          </View>
-        )}
-        {own.length > 0 && wordsRow}
-        {/* The neighbours' routes, under the city's own: alternatives a short
+            {/* The drawing first: two cards side by side (TASK-167); near the
+            start, under their label, since the page goes on (TASK-420). */}
+            {own.length > 0 && city === null && (
+              <View style={styles.section}>
+                <Text style={styles.label}>{t("NEAR YOU")}</Text>
+                <Text style={styles.sectionDetail}>
+                  {t("within {distance} · {count}", {
+                    distance: kmOrMiles(NEAR_RADIUS_M, units),
+                    count: own.length,
+                  })}
+                </Text>
+              </View>
+            )}
+            {own.length > 0 && (
+              <View style={styles.grid}>
+                {cards.map((route) => routeCard(route))}
+                {/* The shape being drawn for the city: the next card, on its way. */}
+                {added.map(
+                  (example) =>
+                    example.status === "drawing" && (
+                      <RouteCard
+                        key={example.shape}
+                        width={card}
+                        line={null}
+                        title={capitalised(
+                          routeTitle({ shape: example.shape, word: null }),
+                        )}
+                        detail={t("Drawing…")}
+                      />
+                    ),
+                )}
+              </View>
+            )}
+            {own.length > 0 && wordsRow}
+            {/* The neighbours' routes, under the city's own: alternatives a short
             run away (TASK-192). */}
-        {city !== null && nearby.length > 0 && (
-          <Text style={styles.label}>
-            {t("NEAR {city}", { city: cityShort(city.label).toUpperCase() })}
-          </Text>
-        )}
-        {nearby.length > 0 && (
-          <View style={styles.grid}>{nearby.map((route) => routeCard(route))}</View>
-        )}
-        {/* Under the routes already there, and closed: the page is for looking
-            first (TASK-157). */}
-        {onAsk &&
-          (asking ? (
-            <AskForRoute
-              city={city}
-              where={city?.label ?? t("your start")}
-              onAsk={(text) => onAsk({ text, centre: near, city: city?.label ?? null })}
-            />
-          ) : (
-            <Pressable
-              style={styles.ask}
-              onPress={() => setAsking(true)}
-              accessibilityRole="button"
-            >
-              <Text style={styles.askText}>{t("Ask for a route")}</Text>
-            </Pressable>
-          ))}
-      </ScrollView>
+            {city !== null && nearby.length > 0 && (
+              <Text style={styles.label}>
+                {t("NEAR {city}", { city: cityShort(city.label).toUpperCase() })}
+              </Text>
+            )}
+            {nearby.length > 0 && (
+              <View style={styles.grid}>{nearby.map((route) => routeCard(route))}</View>
+            )}
+            {/* Under the routes already there, as one line that opens it, with
+            our ideas in it (the user's choices of 2026-10-29 and 2026-11-10). */}
+            {onAsk && (
+              <AskLine open={asking} onToggle={() => setAsking((was) => !was)}>
+                <AskForRoute
+                  city={city}
+                  where={city?.label ?? t("your start")}
+                  onAsk={(text) =>
+                    onAsk({ text, centre: near, city: city?.label ?? null })
+                  }
+                  ideas={
+                    onIdea && (
+                      // Their maps after those of the routes above them.
+                      <>
+                        <IdeasFromEurope
+                          width={contentWidth - 2 * space.md}
+                          onIdea={onIdea}
+                          maps={list.status !== "loading"}
+                          apiUrl={apiUrl}
+                        />
+                        <RideItYourself
+                          width={contentWidth - 2 * space.md}
+                          onOpen={onOpen}
+                          maps={list.status !== "loading"}
+                        />
+                      </>
+                    )
+                  }
+                />
+              </AskLine>
+            )}
+            {farRowsOfPage.length > 0 && <FarHeader count={farCount} />}
+          </View>
+        }
+      />
     </View>
   );
 }
@@ -410,6 +516,9 @@ function capitalised(text: string): string {
 const styles = StyleSheet.create({
   screen: {
     backgroundColor: color.background,
+  },
+  search: {
+    paddingHorizontal: space.lg,
   },
   header: {
     flexDirection: "row",
@@ -448,6 +557,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.lg,
     gap: space.sm,
   },
+  // What is above the catalog's rows: the page as it was, with its gaps.
+  header_: {
+    gap: space.sm,
+  },
+  section: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    gap: space.sm,
+  },
+  sectionDetail: {
+    color: color.textFaint,
+    fontSize: fontSize.detail,
+  },
   note: {
     color: color.textMuted,
     fontSize: fontSize.body,
@@ -460,18 +583,6 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
     letterSpacing: 1.2,
     marginTop: space.sm,
-  },
-  // Quiet on purpose: a line of text at the foot of the page, not a card.
-  ask: {
-    minHeight: MIN_TAP_SIZE,
-    justifyContent: "center",
-    alignSelf: "flex-start",
-    marginTop: space.lg,
-  },
-  askText: {
-    color: color.textMuted,
-    fontSize: fontSize.body,
-    textDecorationLine: "underline",
   },
   grid: {
     flexDirection: "row",

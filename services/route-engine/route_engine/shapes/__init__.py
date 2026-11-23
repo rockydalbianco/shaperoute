@@ -46,6 +46,22 @@ SHAPES: dict[str, ShapeFn] = {
     "ghost": read_outline(OUTLINES / "ghost.json"),  # its eyes
     "donut": read_outline(OUTLINES / "donut.json"),  # its hole
     "sun": read_outline(OUTLINES / "sun.json"),  # eight rays
+    # The new shapes the user approved on real roads (TASK-418, TASK-419),
+    # drawn by tools/draw_new_shapes.py (ADR-0346), with the pen down.
+    "airplane": read_outline(OUTLINES / "airplane.json"),
+    "anchor": read_outline(OUTLINES / "anchor.json"),  # its ring
+    "bear_head": read_outline(OUTLINES / "bear_head.json"),  # eyes and snout
+    "bicycle": read_outline(OUTLINES / "bicycle.json"),  # its wheels
+    "cherries": read_outline(OUTLINES / "cherries.json"),
+    "espresso_cup": read_outline(OUTLINES / "espresso_cup.json"),  # the steam
+    "four_leaf_clover": read_outline(OUTLINES / "four_leaf_clover.json"),
+    "leaning_tower": read_outline(OUTLINES / "leaning_tower.json"),
+    "music_note": read_outline(OUTLINES / "music_note.json"),
+    "pear": read_outline(OUTLINES / "pear.json"),
+    "sailboat": read_outline(OUTLINES / "sailboat.json"),
+    "swan": read_outline(OUTLINES / "swan.json"),
+    "windmill": read_outline(OUTLINES / "windmill.json"),
+    "wine_glass": read_outline(OUTLINES / "wine_glass.json"),
 }
 
 SUPPORTED_SHAPES: tuple[str, ...] = tuple(SHAPES)

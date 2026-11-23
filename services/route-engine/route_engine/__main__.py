@@ -15,7 +15,14 @@ of a lake or the sea, from a start on the shore; the water is cached in
 `<cache-dir>/water/` (TASK-191). With `--pen-up` a shape in pieces is drawn
 piece by piece there too, the pen up between them (TASK-226). `--near
 LAT,LON` asks for the shape on the water near that point, where its centre
-is wanted (TASK-238).
+is wanted (TASK-238). `--activity swimming` draws an open-water swim,
+0.5-3 km, 20-150 m from the shore, lap after lap (`--laps N`), its turns
+named after the places of `<cache-dir>/shore_names/` (TASK-323); a drawing
+on the water is swum with `python -m route_engine.swimming --outline`.
+`--activity snowshoeing` places a shape of the catalogue, 0.5-3 km, freely
+on open snow, off steep slopes, woods, pistes, rock and towns, from a way in
+on foot; the snow is cached in `<cache-dir>/snow/` and the heights in
+`<cache-dir>/heights/` (TASK-413).
 """
 
 from __future__ import annotations
@@ -28,14 +35,19 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+import numpy as np
+
 from route_engine.export_gpx import route_name, to_gpx
-from route_engine.geo import haversine_m, path_length_m
+from route_engine.geo import haversine_m, latlon_to_local_array, path_length_m
+from route_engine.heights import TerrariumTiles
 from route_engine.image_outline import InvalidImageError, outline_data
 from route_engine.models import (
     ACTIVITIES,
     DISTANCE_LIMITS_M,
+    FREE_ACTIVITIES,
     NEAR_ON_WATER_ONLY,
     PEN_UP_WITHOUT_WORD,
+    SNOW_ACTIVITIES,
     WATER_ACTIVITIES,
     InvalidRequestError,
     RouteRequest,
@@ -51,9 +63,8 @@ from route_engine.nearby_starts import (
     plan_nearby,
 )
 from route_engine.network import (
-    BIKE_FILTER,
-    BIKE_NETWORK_NAME,
     EDGE_REUSE_PENALTY,
+    FOOT_NETWORK_NAME,
     NETWORKS,
     OsmnxSource,
 )
@@ -77,6 +88,11 @@ from route_engine.shapes.outline import (
     parse_outline,
     read_outline,
 )
+from route_engine.shore_names import FolderShoreNames
+from route_engine.snow import OverpassSnowSource
+from route_engine.snowshoeing import plan_snowshoeing, snow_area
+from route_engine.swim_turns import turn_label, with_turns
+from route_engine.swimming import SwimRequest, plan_swimming, swim_bbox
 from route_engine.track_score import (
     TrackNotScorableError,
     TrackPoint,
@@ -136,11 +152,13 @@ def _km(limits: tuple[int, int]) -> str:
 
 
 def _source(cache_dir: Path, activity: str) -> OsmnxSource:
-    """The graphs of the network `activity` is drawn on (network.NETWORKS):
-    the foot network as before TASK-190, the bike network in its own files."""
-    if NETWORKS[activity] == BIKE_NETWORK_NAME:
-        return OsmnxSource(cache_dir, BIKE_NETWORK_NAME, BIKE_FILTER)
-    return OsmnxSource(cache_dir)
+    """The graphs of the network `activity` is drawn on (network.NETWORKS),
+    each network in its own files: as OsmnxSource.for_activity, but the foot
+    network's is `OsmnxSource(cache_dir)` as before, where the tests stand
+    in for the graphs."""
+    if NETWORKS[activity] == FOOT_NETWORK_NAME:
+        return OsmnxSource(cache_dir)
+    return OsmnxSource.for_activity(cache_dir, activity)
 
 
 def _parse_start(value: str) -> tuple[float, float]:
@@ -207,9 +225,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--near",
         type=_parse_start,
         metavar="LAT,LON",
-        help="with --activity paddling: where the centre of the shape is "
+        help="with --activity paddling, swimming or snowshoeing: where the centre "
+        "of the shape is "
         "wanted, e.g. the centre printed for a route before, moved; the shape "
         "is placed at the nearest place to it where it fits",
+    )
+    parser.add_argument(
+        "--laps",
+        type=int,
+        help="with --activity swimming: how many times round the shape, "
+        "fewer for a larger shape (default: the fewest it fits in)",
     )
     parser.add_argument(
         "--out", type=Path, help="write the route to this GPX file (never overwritten)"
@@ -234,14 +259,17 @@ def _build_parser() -> argparse.ArgumentParser:
         help=f"one of: {', '.join(ACTIVITIES)}; cycling routes are "
         f"{_km(DISTANCE_LIMITS_M['cycling'])} km, on the bike network; "
         f"paddling routes {_km(DISTANCE_LIMITS_M['paddling'])} km, a shape on "
-        "the water within 1 km of the shore (default: running)",
+        "the water within 1 km of the shore; swims "
+        f"{_km(DISTANCE_LIMITS_M['swimming'])} km, 20-150 m from it; "
+        f"snowshoe routes {_km(DISTANCE_LIMITS_M['snowshoeing'])} km, a shape "
+        "on open snow (default: running)",
     )
     parser.add_argument(
         "--cache-dir",
         type=Path,
         default=Path("data/cache"),
-        help="where road graphs, and the water in water/, are cached "
-        "(default: data/cache)",
+        help="where road graphs, the water in water/, the snow in snow/ and "
+        "the heights in heights/ are cached (default: data/cache)",
     )
     parser.add_argument(
         "--no-optimize",
@@ -293,6 +321,17 @@ def parse_args(
         if args.no_optimize:
             parser.error(
                 "--no-optimize is for roads: on the water the shape is placed "
+                "where it fits"
+            )
+    elif args.activity in SNOW_ACTIVITIES:
+        if args.nearby:
+            parser.error(
+                "--nearby is for roads: on the snow the start is looked for "
+                "along the ways in"
+            )
+        if args.no_optimize:
+            parser.error(
+                "--no-optimize is for roads: on the snow the shape is placed "
                 "where it fits"
             )
     elif args.near is not None:
@@ -347,10 +386,11 @@ def parse_args(
                 shape=args.shape,
                 distance_m=args.distance,
                 activity=args.activity,
-                # On the water the request says it (TASK-226); on roads the
-                # pieces are composed below, as a word's letters.
-                pen_up=args.pen_up and args.activity in WATER_ACTIVITIES,
+                # On the water and the snow the request says it (TASK-226);
+                # on roads the pieces are composed below, as a word's letters.
+                pen_up=args.pen_up and args.activity in FREE_ACTIVITIES,
                 near=args.near,
+                laps=args.laps,
             )
         else:
             request = OutlineRequest(
@@ -426,9 +466,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Wrote {args.save_outline}: the traced outline")
     if args.out is None and args.track is None:
         return 0
+    if request.activity == "swimming":
+        assert isinstance(request, RouteRequest)  # words, outlines refused
+        return _main_swimming(request, args)
     if request.activity in WATER_ACTIVITIES:
         assert isinstance(request, RouteRequest)  # words, outlines refused
         return _main_on_water(request, args)
+    if request.activity in SNOW_ACTIVITIES:
+        assert isinstance(request, RouteRequest)  # words, outlines refused
+        return _main_on_snow(request, args)
 
     optimize = not args.no_optimize
     source = _source(args.cache_dir, request.activity)
@@ -600,6 +646,111 @@ def _main_on_water(request: RouteRequest, args: argparse.Namespace) -> int:
     )
     for warning in route.warnings:
         print(f"  warning: {warning}")
+    if args.track is not None:
+        return _print_track_score(
+            args.track, route.points, route.similarity, route.walks
+        )
+    return 0
+
+
+def _main_on_snow(request: RouteRequest, args: argparse.Namespace) -> int:
+    """A route on the snow (TASK-413): the shape where it fits on the snow
+    one may walk on, from a way in on foot."""
+    source = OverpassSnowSource(args.cache_dir)
+    tiles = TerrariumTiles(args.cache_dir)
+    bbox = snow_area(request)
+    cached = source.is_cached(bbox)
+    print("Snow: " + ("from the cache" if cached else "downloading from OSM..."))
+    cached = tiles.is_cached(bbox)
+    print("Heights: " + ("from the cache" if cached else "downloading the tiles..."))
+    try:
+        plan = plan_snowshoeing(request, source, tiles)
+    except ShapeNotDrawableError as exc:
+        print(f"No route: {exc}", file=sys.stderr)
+        return 1
+    route, on_snow = plan.result, plan.route
+    when = datetime.now(UTC)
+    if args.out is not None:
+        name = route_name(request.name, request.distance_m, when)
+        document = to_gpx(route.points, name, when, route.walks)
+        args.out.write_text(document, encoding="utf-8")
+        print(f"Wrote {args.out}: {len(route.points)} points")
+    way_lat, way_lon = on_snow.shore_start
+    print(
+        f"  placement:  rotation {on_snow.rotation_deg:.0f} deg, "
+        f"scale {on_snow.scale:.0%} of full size"
+    )
+    print(
+        f"  way in:     {way_lat:.5f}, {way_lon:.5f} "
+        f"({on_snow.shore_access}), {on_snow.move_m:.0f} m from the start"
+    )
+    print(f"  leg:        {on_snow.approach_m:.0f} m each way, way in to shape")
+    centre_lat, centre_lon = on_snow.centre
+    asked = ""
+    if request.near is not None:
+        off = haversine_m(on_snow.centre, request.near)
+        asked = f", {off:.0f} m from where it was asked"
+    print(f"  centre:     {centre_lat:.5f}, {centre_lon:.5f}{asked}")
+    print(f"  similarity: {route.similarity:.2f} (the shape itself)")
+    print(f"  on snow:    {route.distance_m:.0f} m (target {request.distance_m} m)")
+    if route.walks:
+        pen_up = ", ".join(
+            f"{path_length_m(route.points[a : b + 1]):.0f} m" for a, b in route.walks
+        )
+        print(f"  pen up:     {len(route.walks)} stretches, not drawn: {pen_up}")
+    slopes = plan.area.slopes.slope_at(
+        latlon_to_local_array(request.start, np.asarray(route.points, dtype=float))
+    )
+    print(
+        f"  checks:     the shape {on_snow.nearest_land_m:.0f} m from what is off "
+        f"at the nearest, slope at most {float(slopes.max()):.0f} deg"
+    )
+    for warning in route.warnings:
+        print(f"  warning: {warning}")
+    if args.track is not None:
+        return _print_track_score(
+            args.track, route.points, route.similarity, route.walks
+        )
+    return 0
+
+
+def _main_swimming(request: RouteRequest, args: argparse.Namespace) -> int:
+    """A swim (TASK-323): the shape lap after lap in the bathers' band, with
+    its turns, as `python -m route_engine.swimming` prints it."""
+    swim = SwimRequest.of(request)
+    source = OverpassWaterSource(args.cache_dir)
+    if source.is_cached(swim_bbox(swim)):
+        print("Water: from the cache")
+    else:
+        print("Water: downloading from OpenStreetMap...")
+    try:
+        plan = plan_swimming(swim, source, names=FolderShoreNames(args.cache_dir))
+    except ShapeNotDrawableError as exc:
+        print(f"No route: {exc}", file=sys.stderr)
+        return 1
+    route, result = plan.result, plan.route
+    if args.out is not None:
+        when = datetime.now(UTC)
+        name = route_name(request.name, request.distance_m, when)
+        document = with_turns(to_gpx(route.points, name, when, route.walks), plan.turns)
+        args.out.write_text(document, encoding="utf-8")
+        print(f"Wrote {args.out}: {len(route.points)} points")
+    laps = "1 lap" if plan.laps == 1 else f"{plan.laps} laps"
+    print(f"  laps:       {laps} of {plan.lap_m:.0f} m")
+    print(
+        f"  shore:      {result.shore_start[0]:.5f}, {result.shore_start[1]:.5f} "
+        f"({result.shore_access}), {result.move_m:.0f} m from the start"
+    )
+    print(f"  leg:        {result.approach_m:.0f} m each way, shore to shape")
+    print(f"  in water:   {route.distance_m:.0f} m (target {request.distance_m} m)")
+    print(
+        f"  checks:     the swim {result.farthest_shore_m:.0f} m from the shore "
+        "at the farthest"
+    )
+    first = [turn for turn in plan.turns if turn.lap == 1]
+    print(f"  turns:      {len(first)} in the first lap")
+    for turn in first:
+        print(f"    {turn.at_m:5.0f} m  {turn_label(turn)}, {turn.angle_deg:.0f}°")
     if args.track is not None:
         return _print_track_score(
             args.track, route.points, route.similarity, route.walks

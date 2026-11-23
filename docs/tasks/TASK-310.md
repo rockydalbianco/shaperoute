@@ -1,6 +1,6 @@
 # TASK-310 — La CI rossa per pytest 9.2: versione fermata sotto la 9.2
 
-**Stato**: In corso
+**Stato**: Done · 2026-10-27 · in `main` con la #582 (chiuso nel task file il 2026-11-08 da TASK-412, col sì dell'utente)
 **Fase**: 4 · **Branch**: `chore/TASK-310-pin-pytest`
 **ADR**: ADR-0270
 

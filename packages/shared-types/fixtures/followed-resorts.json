@@ -1,0 +1,25 @@
+{
+  "resorts": [
+    {
+      "id": "c0ffee01a1b2c3d4e5f60718293a4b5c6d7e8f90",
+      "name": "Alpe Bianca",
+      "country": "IT",
+      "region": "Trentino-Alto Adige",
+      "lat": 46.3812,
+      "lon": 11.5234,
+      "bbox": [46.355, 11.481, 46.402, 11.566],
+      "lifts": 24,
+      "piste_km": 117.8,
+      "piste_km_by_difficulty": {
+        "easy": 35.9,
+        "intermediate": 58.4,
+        "advanced": 19.5,
+        "freeride": 4.0
+      },
+      "min_elevation_m": 1200,
+      "max_elevation_m": 2500,
+      "website": "https://alpebianca.example/",
+      "away_m": null
+    }
+  ]
+}

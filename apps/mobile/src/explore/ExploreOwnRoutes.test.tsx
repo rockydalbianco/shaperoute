@@ -145,11 +145,19 @@ test("a hamlet of the neighbour is a place of its own too", async () => {
 });
 
 test("a city with routes of its own: a neighbour's come after them, under the label", async () => {
-  fetchMock.mockImplementation(withCatalog(routes));
   const vercelli: Place = {
     label: "Vercelli, Piedmont, Italy",
     point: [45.3252, 8.4228],
   };
+  // The phone measures how far they are: the fixture's routes, in Vercelli.
+  fetchMock.mockImplementation(
+    withCatalog(
+      routes.map((r) => ({
+        ...r,
+        start: [vercelli.point[0] + r.away_m / 111_195, vercelli.point[1]],
+      })),
+    ),
+  );
   await render(
     <ExploreScreen
       apiUrl="http://api"
@@ -186,6 +194,9 @@ test("near the start, with no city chosen: one list, no label", async () => {
   );
   await screen.findByText("Star · 5.1 km");
   expect(screen.getAllByTestId("route-card")).toHaveLength(levico.length);
-  expect(screen.queryByText(/^NEAR /)).toBeNull();
+  // Only «NEAR YOU» over the list, since the page goes on with the catalog
+  // (TASK-420); no town's name.
+  expect(screen.getByText("NEAR YOU")).toBeOnTheScreen();
+  expect(screen.queryByText(/^NEAR (?!YOU)/)).toBeNull();
   expect(routeJobShapes()).toEqual([]);
 });

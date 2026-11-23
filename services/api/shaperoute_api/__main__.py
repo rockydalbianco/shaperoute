@@ -13,6 +13,7 @@ import argparse
 import logging
 import socket
 from collections.abc import Sequence
+from functools import partial
 from pathlib import Path
 
 import psycopg
@@ -49,6 +50,7 @@ from shaperoute_api.feedback import (
     FeedbackSetup,
     install_feedback_email,
 )
+from shaperoute_api.images import plan_request
 from shaperoute_api.insights import Insights
 from shaperoute_api.insights.events import DEFAULT_DIR as INSIGHTS_DIR
 from shaperoute_api.insights.events import OFF_VARIABLE as INSIGHTS_OFF
@@ -57,6 +59,12 @@ from shaperoute_api.insights.events import wanted as insights_wanted
 from shaperoute_api.insights.vocabulary import DEFAULT_PATH as VOCABULARY
 from shaperoute_api.insights.vocabulary import Vocabulary
 from shaperoute_api.kept_routes import install_kept_routes
+from shaperoute_api.media_files import MediaConfigError
+from shaperoute_api.message_media import (
+    SweepRound,
+    install_message_media,
+    message_media_from,
+)
 from shaperoute_api.nearby_cities import NearbyCities, install_nearby_cities
 from shaperoute_api.notice_email import (
     NoticeEmails,
@@ -76,9 +84,16 @@ from shaperoute_api.report_email import (
     install_report_email,
 )
 from shaperoute_api.request_log import DEFAULT_DIR, ON_VARIABLE, RequestLog, wanted
+from shaperoute_api.resort_follows import install_resort_follows
 from shaperoute_api.route_archive import RouteArchive
+from shaperoute_api.route_processes import WORKERS, RouteProcesses
 from shaperoute_api.route_store import STORE_FOLDER, RouteStore
+from shaperoute_api.ski_days import install_ski_days
+from shaperoute_api.ski_names_api import install_ski_names
+from shaperoute_api.ski_resorts_api import install_ski_resorts
+from shaperoute_api.ski_season import install_ski_season
 from shaperoute_api.themed import StopFinder, ThemedJobs
+from shaperoute_api.warm_zones import ZonesConfigError, warm_graphs, zones_mb_from_env
 from shaperoute_api.water_spots import read_spots
 
 DEFAULT_PORT = 8000
@@ -112,6 +127,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help=f"where Ollama answers (default: {DEFAULT_URL})",
     )
     parser.add_argument(
+        "--media-dir",
+        type=Path,
+        default=Path("data/media"),
+        help=(
+            "where the photos and videos of the messages are kept"
+            " (default: data/media; never in the database)"
+        ),
+    )
+    parser.add_argument(
         "--request-log",
         action="store_true",
         help=(
@@ -124,6 +148,16 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         type=Path,
         default=DEFAULT_DIR,
         help=f"where the request log is written (default: {DEFAULT_DIR})",
+    )
+    parser.add_argument(
+        "--route-processes",
+        type=int,
+        default=WORKERS,
+        help=(
+            f"draw the routes in this many worker processes, their zones kept "
+            f"in memory (default: {WORKERS}, TASK-276); 0 draws them in the "
+            f"API's own threads"
+        ),
     )
     parser.add_argument(
         "--no-route-store",
@@ -181,11 +215,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         notice_setup = NoticeSetup.from_env()
         report_setup = ReportSetup.from_env()
         feedback_setup = FeedbackSetup.from_env()
+        zones_mb = zones_mb_from_env()
     except (
         AccessConfigError,
         AwayConfigError,
         ReportConfigError,
         FeedbackConfigError,
+        ZonesConfigError,
     ) as exc:
         raise SystemExit(str(exc)) from None
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
@@ -233,6 +269,9 @@ def main(argv: Sequence[str] | None = None) -> None:
         EventLog(args.insights_dir) if insights_wanted(args.no_insights) else None,
         Vocabulary.load(args.vocabulary),
     )
+    # The photos of the towns nearby (TASK-283), beside the zones; those of
+    # the places a themed route passes by too (TASK-329).
+    photos = CityPhotos(args.cache_dir / PHOTOS_FOLDER)
     # Themed routes (TASK-129): the places with the key of the place search,
     # the AI only for words the tables do not know.
     themed = ThemedJobs(
@@ -241,9 +280,25 @@ def main(argv: Sequence[str] | None = None) -> None:
         cities=cities,
         insights=insights,
         ai=ThemeReader(OllamaModel(args.ai_model, args.ai_url)),
+        photos=photos,
     )
+    # Each route in a worker process of its own, kept warm (TASK-276,
+    # ADR-0242): the API's threads drew one route at a time, on one core.
+    # Its foot zones kept up to SHAPEROUTE_ZONES_MB, the most used read as
+    # it starts (TASK-464, ADR-0374).
+    processes = (
+        None
+        if args.route_processes < 1
+        else RouteProcesses(
+            partial(warm_graphs, args.cache_dir, zones_mb),
+            workers=args.route_processes,
+        )
+    )
+    if processes is not None:
+        processes.start()
     app = create_app(
         graphs,
+        planner=plan_request if processes is None else processes,
         reader=reader,
         request_log=request_log,
         places=places,
@@ -255,8 +310,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         route_store=archive,
     )
     # The towns near the user, under "Near me" in "Explore" (TASK-236), with
-    # their photos beside the zones (TASK-283).
-    photos = CityPhotos(args.cache_dir / PHOTOS_FOLDER)
+    # their photos (TASK-283).
     install_nearby_cities(app, NearbyCities(places.key, photos=photos), route_store)
     # The towns' examples already kept, read ahead by the app (TASK-316):
     # from the centres' files only, never the archive of users' starts.
@@ -264,6 +318,13 @@ def main(argv: Sequence[str] | None = None) -> None:
     install_city_photos(app, photos)
     # The cached zones, for the phone that draws on them (TASK-214).
     install_phone_zones(app, args.cache_dir)
+    # The lifts and pistes of a day of skiing, from the ski tiles (TASK-375).
+    install_ski_names(app, args.cache_dir)
+    # The ski resorts of the world, by name and near a place (TASK-406).
+    install_ski_resorts(app)
+    install_ski_days(app)
+    install_ski_season(app)
+    install_resort_follows(app)
     # The email to who has not opened the app for two weeks (TASK-284): off
     # without the database, Resend's key, the links' secret and the domain.
     away = (
@@ -290,6 +351,20 @@ def main(argv: Sequence[str] | None = None) -> None:
         else ReportEmails(database, report_setup)
     )
     install_report_email(app, report_emails)
+    # The photos and videos of the messages (TASK-333), files under
+    # --media-dir with their rows in the database, and the hourly round
+    # that takes away those no longer kept: off without the database.
+    try:
+        message_media = (
+            None
+            if accounts is None
+            else message_media_from(accounts.database, args.media_dir, accounts.now)
+        )
+    except MediaConfigError as exc:
+        raise SystemExit(str(exc)) from None
+    install_message_media(app, message_media)
+    if message_media is not None:
+        SweepRound(message_media).start()
     # Each message of «Send feedback» emailed to whoever runs MuW (TASK-308):
     # off without Resend and the address; the messages are kept either way.
     feedback_emails = None if feedback_setup is None else FeedbackEmails(feedback_setup)
@@ -375,6 +450,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         # The app's end closes the pool; this, when the app never started.
         if database is not None:
             database.close()
+        if processes is not None:
+            processes.close()
 
 
 if __name__ == "__main__":

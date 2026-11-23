@@ -24,6 +24,8 @@ import {
 const URL = "http://api";
 const TOKEN = "the-token";
 const ID = activity.id;
+/** The phone's offset from UTC (TASK-423), whatever the machine's. */
+const offsetAt = () => 60;
 
 test("the turned examples of the API are what the app reads", () => {
   expect(isActivityDetail(turnedActivity)).toBe(true);
@@ -58,16 +60,28 @@ test("a turned run an older API refuses goes once more without the turn", async 
   const fetchFn: jest.Mock = answers(
     {
       status: 422,
+      body: apiError(
+        "invalid_request",
+        "utc_offset_min: Extra inputs are not permitted",
+      ),
+    },
+    {
+      status: 422,
       body: apiError("invalid_request", "rotation_deg: Extra inputs are not permitted"),
     },
     { status: 201, body: saved },
   );
   const body = turnedRequest as ActivityRequest;
-  const outcome = await saveActivity(URL, TOKEN, ID, body, { fetchFn, key: null });
+  const outcome = await saveActivity(URL, TOKEN, ID, body, {
+    fetchFn,
+    key: null,
+    offsetAt,
+  });
   expect(outcome).toEqual({ kind: "ok", value: saved });
-  expect(fetchFn).toHaveBeenCalledTimes(2);
-  expect(String(fetchFn.mock.calls[0][1]?.body)).toBe(JSON.stringify(turnedRequest));
-  expect(String(fetchFn.mock.calls[1][1]?.body)).toBe(JSON.stringify(request));
+  // The offset of TASK-423 goes first, then the turn.
+  expect(fetchFn).toHaveBeenCalledTimes(3);
+  expect(String(fetchFn.mock.calls[1][1]?.body)).toBe(JSON.stringify(turnedRequest));
+  expect(String(fetchFn.mock.calls[2][1]?.body)).toBe(JSON.stringify(request));
 });
 
 test("a turned run with walks: without the turn, then as an older app, no more", async () => {
@@ -77,22 +91,28 @@ test("a turned run with walks: without the turn, then as an older app, no more",
     body: apiError("invalid_request", "Extra inputs are not permitted"),
   };
   const body = { ...walkedRequest, rotation_deg: -30 } as ActivityRequest;
-  const fetchFn: jest.Mock = answers(refused, refused, { status: 201, body: saved });
-  expect(await saveActivity(URL, TOKEN, ID, body, { fetchFn, key: null })).toEqual({
+  const fetchFn: jest.Mock = answers(refused, refused, refused, {
+    status: 201,
+    body: saved,
+  });
+  expect(
+    await saveActivity(URL, TOKEN, ID, body, { fetchFn, key: null, offsetAt }),
+  ).toEqual({
     kind: "ok",
     value: saved,
   });
-  expect(fetchFn).toHaveBeenCalledTimes(3);
-  expect(String(fetchFn.mock.calls[1][1]?.body)).toBe(JSON.stringify(walkedRequest));
-  expect(String(fetchFn.mock.calls[2][1]?.body)).toBe(
+  // Without the offset, without the turn, then as an older app.
+  expect(fetchFn).toHaveBeenCalledTimes(4);
+  expect(String(fetchFn.mock.calls[2][1]?.body)).toBe(JSON.stringify(walkedRequest));
+  expect(String(fetchFn.mock.calls[3][1]?.body)).toBe(
     JSON.stringify(withoutPenUp(walkedRequest as ActivityRequest)),
   );
-  // Refused three times: three requests, the last answer.
-  const again: jest.Mock = answers(refused, refused, refused);
+  // Refused four times: four requests, the last answer.
+  const again: jest.Mock = answers(refused, refused, refused, refused);
   expect(
-    await saveActivity(URL, TOKEN, ID, body, { fetchFn: again, key: null }),
+    await saveActivity(URL, TOKEN, ID, body, { fetchFn: again, key: null, offsetAt }),
   ).toMatchObject({ kind: "api_error", code: "invalid_request" });
-  expect(again).toHaveBeenCalledTimes(3);
+  expect(again).toHaveBeenCalledTimes(4);
 });
 
 test("a run kept with its turn is not sent again", async () => {

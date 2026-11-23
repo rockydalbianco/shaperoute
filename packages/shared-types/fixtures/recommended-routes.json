@@ -40,25 +40,6 @@
       "rotation_deg": 0
     },
     {
-      "id": "trento-heart-21000-2",
-      "city": "trento",
-      "shape": "heart",
-      "word": null,
-      "style": null,
-      "distance_m": 21000,
-      "route_m": 21300,
-      "similarity": 0.93,
-      "start": [46.09, 11.15],
-      "away_m": 3372,
-      "preview": [
-        [46.09, 11.15],
-        [46.1, 11.16],
-        [46.095, 11.17],
-        [46.09, 11.15]
-      ],
-      "rotation_deg": 0
-    },
-    {
       "id": "trento-ciao-15000-3",
       "city": "trento",
       "shape": null,
@@ -74,6 +55,25 @@
         [46.07, 11.13],
         [46.072, 11.125],
         [46.0675, 11.122]
+      ],
+      "rotation_deg": 0
+    },
+    {
+      "id": "trento-heart-21000-2",
+      "city": "trento",
+      "shape": "heart",
+      "word": null,
+      "style": null,
+      "distance_m": 21000,
+      "route_m": 21300,
+      "similarity": 0.93,
+      "start": [46.09, 11.15],
+      "away_m": 3372,
+      "preview": [
+        [46.09, 11.15],
+        [46.1, 11.16],
+        [46.095, 11.17],
+        [46.09, 11.15]
       ],
       "rotation_deg": 0
     }

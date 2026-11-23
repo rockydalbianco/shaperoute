@@ -12,13 +12,35 @@
  * app does not have, and the first Android build failed on it. Ads come
  * with the company (the user's choice), and on Android with a new native
  * build then.
+ *
+ * Apple Health and Health Connect (TASK-321, ADR-0281) each come with their
+ * own native build. The iPhone's libraries are linked on iOS since the
+ * 1.0.1 (part B), with the HealthKit entitlement and the permission text in
+ * app.json; `@react-native-healthkit/core` comes with the iPhone library.
+ * On Android they are not linked: Health Connect waits for a new Android
+ * build (part C), so its library is linked on no platform yet and today's
+ * Android build keeps its fingerprint. The app never loads a library
+ * without its native module (`src/health/healthModules.ts`).
+ *
+ * The Apple Watch app (TASK-370, A-flip at the 1.1) talks to the iPhone
+ * through react-native-watch-connectivity: an iPhone library, linked on iOS
+ * only, so that the Android build keeps its fingerprint. The app reaches it
+ * only through `src/watch/watchLink.ts`, which finds no module elsewhere.
  */
 const storeBuild = process.env.APP_VARIANT === "production";
+
+const iosOnly = { platforms: { android: null } };
+const notYet = { platforms: { ios: null, android: null } };
 
 module.exports = {
   dependencies: {
     "react-native-google-mobile-ads": {
       platforms: storeBuild ? { ios: null, android: null } : { android: null },
     },
+    "@kingstinct/react-native-healthkit": iosOnly,
+    "@react-native-healthkit/core": iosOnly,
+    "react-native-nitro-modules": iosOnly,
+    "react-native-health-connect": notYet,
+    "react-native-watch-connectivity": iosOnly,
   },
 };

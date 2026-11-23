@@ -1,10 +1,22 @@
-import type { Comment, CommentsPage } from "@shaperoute/shared-types";
+import type {
+  Comment,
+  CommentReactionKind,
+  CommentReactions,
+  CommentsPage,
+} from "@shaperoute/shared-types";
 import { createContext, useCallback, useContext, useMemo, useRef } from "react";
 
 import { sessionEnded } from "../account/messages";
 import type { Account } from "../account/useAccount";
 import type { AccountOutcome } from "../api/accounts";
-import { deleteComment, fetchComments, postComment } from "../api/comments";
+import {
+  deleteComment,
+  deleteCommentReaction,
+  fetchComments,
+  fetchReplies,
+  postComment,
+  putCommentReaction,
+} from "../api/comments";
 import { fetchProfile, profilePhotoUri } from "../api/profiles";
 
 /**
@@ -13,14 +25,38 @@ import { fetchProfile, profilePhotoUri } from "../api/profiles";
  * picture of who wrote it. Every call is null with nobody signed in.
  */
 export type CommentsDoor = {
+  /** The comments, each with its first replies (TASK-454). */
   pageOf: (
     drawingId: string,
     cursor: string | null,
   ) => Promise<AccountOutcome<CommentsPage> | null>;
-  write: (drawingId: string, text: string) => Promise<AccountOutcome<Comment> | null>;
+  /** With `replyTo`, the id of a comment or of a reply: a reply under it. */
+  write: (
+    drawingId: string,
+    text: string,
+    replyTo?: string,
+  ) => Promise<AccountOutcome<Comment> | null>;
   remove: (commentId: string) => Promise<AccountOutcome<null> | null>;
   /** The picture of a profile, asked once per account; null without one. */
   photoOf: (publicId: string) => Promise<string | null>;
+  /**
+   * What came with the replies (TASK-454 part C, ADR-0377). A door without
+   * them (a test of one screen) offers neither «Reply» nor reactions.
+   */
+  threads?: CommentThreads;
+};
+
+/** The other replies of a comment, and the reactions to one. */
+export type CommentThreads = {
+  repliesOf: (
+    commentId: string,
+    cursor: string | null,
+  ) => Promise<AccountOutcome<CommentsPage> | null>;
+  /** One's own reaction becomes `kind`; null takes it away. */
+  react: (
+    commentId: string,
+    kind: CommentReactionKind | null,
+  ) => Promise<AccountOutcome<CommentReactions> | null>;
 };
 
 const NOTHING: CommentsDoor = {
@@ -81,14 +117,46 @@ export function useCommentsOf(
   );
 
   const write = useCallback(
-    async (drawingId: string, text: string) => {
+    async (drawingId: string, text: string, replyTo?: string) => {
       if (token === null || baseUrl === null) {
         return null;
       }
-      const outcome = await postComment(baseUrl, token, drawingId, text, {
+      const outcome = await postComment(
+        baseUrl,
+        token,
+        drawingId,
+        text,
+        { fetchFn, key },
+        replyTo ?? null,
+      );
+      return checked(token, outcome);
+    },
+    [baseUrl, checked, fetchFn, key, token],
+  );
+
+  const repliesOf = useCallback(
+    async (commentId: string, cursor: string | null) => {
+      if (token === null || baseUrl === null) {
+        return null;
+      }
+      const outcome = await fetchReplies(baseUrl, token, commentId, cursor, {
         fetchFn,
         key,
       });
+      return checked(token, outcome);
+    },
+    [baseUrl, checked, fetchFn, key, token],
+  );
+
+  const react = useCallback(
+    async (commentId: string, kind: CommentReactionKind | null) => {
+      if (token === null || baseUrl === null) {
+        return null;
+      }
+      const outcome =
+        kind === null
+          ? await deleteCommentReaction(baseUrl, token, commentId, { fetchFn, key })
+          : await putCommentReaction(baseUrl, token, commentId, kind, { fetchFn, key });
       return checked(token, outcome);
     },
     [baseUrl, checked, fetchFn, key, token],
@@ -131,7 +199,7 @@ export function useCommentsOf(
   );
 
   return useMemo(
-    () => ({ pageOf, write, remove, photoOf }),
-    [pageOf, write, remove, photoOf],
+    () => ({ pageOf, write, remove, photoOf, threads: { repliesOf, react } }),
+    [pageOf, write, remove, photoOf, repliesOf, react],
   );
 }

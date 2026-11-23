@@ -1,15 +1,16 @@
 # TASK-305 — Parapendio: proposta e prova di fattibilità
 
-**Stato**: Proposto · solo documenti e misure (questa PR). L'utente il
-2026-10-26: «è una bella idea», senza navigatore; le parti partono dopo le
-tre condizioni dello studio (licenza degli spazi aerei, decolli scelti,
-parere legale)
-**Fase**: 5 · **Branch**: `docs/TASK-305-paragliding-proposal` (documenti);
-le parti, se si fanno, `feat/TASK-305-a1-air-cone` e così via
-**Dipende da**: nulla per lo studio. Le parti dipendono da scelte
-dell'utente (in fondo) e da due licenze da sciogliere (spazi aerei,
-decolli).
-**ADR**: ADR-0265 (proposto)
+**Stato**: In lavorazione · parti R (la registrazione in volo, ADR-0375):
+PR di documenti, poi R1 → R2 → R3. Le parti del pianificatore (A1…F)
+restano Proposte: partono dopo le tre condizioni dello studio (licenza
+degli spazi aerei, decolli scelti, parere legale)
+**Fase**: 5 · **Branch**: `docs/TASK-305-paragliding-proposal` (studio),
+`docs/TASK-305-r-recording` (le parti R); il codice
+`feat/TASK-305-r1-paragliding-api` e così via
+**Dipende da**: nulla per le parti R. Le parti del pianificatore dipendono
+da scelte dell'utente (in fondo) e da due licenze da sciogliere (spazi
+aerei, decolli).
+**ADR**: ADR-0265 (proposto, il pianificatore), ADR-0375 (le parti R)
 
 ## Obiettivo
 
@@ -77,6 +78,23 @@ traiettorie è un costo a parte; se non si può fare bene, lo studio dice
   Le traduzioni nelle altre lingue si fanno con la parte D1 e si fanno
   approvare all'utente.
 
+## Scelte dell'utente (2026-11-11)
+
+- **La registrazione prima del pianificatore**: «per il parapendio continua
+  lo sviluppo ma lavora sulla registrazione: un mio amico fa la gara e vuole
+  condividerci la posizione, la velocità, i battiti, le calorie in tempo
+  reale più tracciare il tutto». Il parapendio si accende come sport
+  «Record only» (TASK-375, ADR-0319), come lo sci e lo scialpinismo: si
+  registra il volo, si condivide dal vivo col link di TASK-424, si salva e
+  si pubblica. Le parti del pianificatore restano dove sono. Non è una
+  guida in volo: l'app registra e mostra numeri, non dice dove andare
+  (la scelta del 2026-10-26 resta).
+- **I numeri del volo sul link**: «Sì, numeri del volo». Chi guarda il
+  link vede, oltre a posizione, traccia, distanza, tempo, battito e
+  calorie, anche **la quota, il variometro (m/s), la velocità del momento,
+  la quota massima e il tempo di volo**. Servono un passo sul server e la
+  copia del sito, ognuno col sì dell'utente.
+
 ## Il punto, in breve
 
 - **Il modello**: niente strade, il cono di planata. Da ogni punto della
@@ -121,6 +139,220 @@ traiettorie è un costo a parte; se non si può fare bene, lo studio dice
   fonte di spazi aerei con licenza prima del codice; un elenco di decolli
   scelti a mano dove la forma è ≥ 1,5 km; un parere legale e una prova con
   un pilota e il club prima di pubblicare.
+
+## Le parti R — la registrazione in volo (ADR-0375)
+
+Ordine dal Coordinatore (2026-11-11): questa PR di documenti, poi R1 → R2
+→ R3. Ogni parte è un branch e una PR; la lista dei file va al
+Coordinatore prima di ogni PR; il merge è suo («#NNNN pronta»). Server,
+OTA e sito solo col sì dell'utente, dato al Coordinatore. Il 2026-11-11
+l'utente ha deciso: nessun OTA di produzione per due giorni, poi
+un'uscita completa.
+
+### R1 — Contratto, API, migrazione
+
+Come TASK-415 A (`23a3c23f`, lo scialpinismo):
+
+1. `paragliding` come attività registrata senza forma: un file nuovo in
+   `packages/shared-types/src/sports/` e in
+   `services/api/shaperoute_api/sports/` (`record_only=True`; Strava non
+   ha il parapendio: `strava_type="Workout"`), le fixture
+   `run-activities.json` e `reads.json`, `reads.py` (un'app vecchia non
+   riceve i voli che non sa leggere).
+2. La migrazione che allarga `runs_activity_check` leggendolo, come 0044:
+   `0069_paragliding.sql` (il primo numero libero in main al merge; era
+   provvisoriamente 0070).
+3. `LiveStatsBody` (`live_shares.py`, `extra="forbid"`) e `LiveStats` di
+   `liveShare.ts` prendono quattro campi facoltativi: `alt_m` (quota
+   adesso, m, −500…9000), `max_alt_m`, `vario_mps` (m/s, −30…30, un
+   decimale) e `speed_mps` (velocità adesso, 0…100). Un'app vecchia non li
+   manda; una pagina vecchia non li legge.
+4. **Il server prima dell'app e della pagina**: con `extra="forbid"` un
+   update coi campi nuovi a un server vecchio prende 422. Il controllo
+   dopo il passo sta in `out/TASK-305/SERVER-R1.md`, senza TestClient
+   (l'immagine di produzione non ha httpx).
+
+### R2 — App: il volo registrato
+
+1. `paragliding` in `settings/sport.ts` prende la sua attività e diventa
+   `ready` e `recordOnly`: «Draw» mostra solo «Record your flight» (il
+   testo da approvare); il pianificatore non c'è.
+2. I numeri del volo dalla quota dei fix (TASK-324, già nei fix): quota
+   adesso, quota massima, variometro su una finestra di 10 s (la quota del
+   GPS è rumorosa, un fix solo non basta), velocità del momento dalla
+   velocità del fix, tempo di volo. Niente barometro: è un modulo nativo
+   nuovo e una dipendenza da chiedere.
+3. Le calorie con la formula di C2 di TASK-424 e il MET del volo libero
+   del Compendium (3,5, «hang gliding»), in rosso come le altre (C3).
+4. L'update dal vivo manda i quattro campi nuovi; la fine del volo mostra
+   tempo di volo, distanza, quota massima, dislivello, velocità massima e
+   calorie; il post nel Feed ha il tipo `paragliding`.
+5. Un avviso breve prima del primo volo registrato su quel telefono, da
+   far approvare all'utente; la proposta: «MuW is not a flight
+   instrument: it records your flight and shares it. Fly with your own
+   instrument, licence and judgement.»
+
+**Testi di R2**, approvati dall'utente il 2026-11-12 (en e it, poi
+de/fr/es; «Sì, approvo»). Quota, quota massima e velocità massima usano le
+parole che l'app ha già («Altitude», «Max altitude», «Top speed»);
+«Vario» è quello di R3.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Record your flight | Registra il volo | Flug aufzeichnen | Enregistrer le vol | Registra tu vuelo |
+| Before you fly | Prima di volare | Vor dem Flug | Avant de voler | Antes de volar |
+| MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement. | MuW non è uno strumento di volo: registra il volo e lo condivide. Vola con il tuo strumento, il tuo brevetto e il tuo giudizio. | MuW ist kein Fluginstrument: Es zeichnet deinen Flug auf und teilt ihn. Flieg mit deinem eigenen Instrument, deiner Lizenz und deinem Urteilsvermögen. | MuW n'est pas un instrument de vol : il enregistre votre vol et le partage. Volez avec votre propre instrument, votre licence et votre jugement. | MuW no es un instrumento de vuelo: graba tu vuelo y lo comparte. Vuela con tu propio instrumento, tu licencia y tu criterio. |
+| Got it | Ho capito | Verstanden | Compris | Entendido |
+| Flight time | Tempo di volo | Flugzeit | Temps de vol | Tiempo de vuelo |
+| Your flight | Il tuo volo | Dein Flug | Votre vol | Tu vuelo |
+| White: where you flew. | Bianco: dove hai volato. | Weiß: wo du geflogen bist. | Blanc : là où vous avez volé. | Blanco: por donde volaste. |
+| No shapes in the air yet: MuW records your flight. | Niente forme in volo, per ora: MuW registra il tuo volo. | Noch keine Formen in der Luft: MuW zeichnet deinen Flug auf. | Pas encore de formes en vol : MuW enregistre votre vol. | Todavía no hay formas en el aire: MuW registra tu vuelo. |
+
+File, a grandi linee (la lista vera al Coordinatore prima della PR, col
+turno: `settings/sport.ts`, `sports/**` e `social/PublicParts.tsx` sono
+oggi della #1160, poi di TASK-413 B e TASK-463): `settings/sport.ts`, i
+file della registrazione libera e dei dati dal vivo, `src/air/` (nuovi),
+le lingue, i test.
+
+**Il battito dal vivo viene solo dall'orologio** (TASK-424, ADR-0352): il
+telefono non lo misura. La build 1.1.0 dell'orologio (in revisione da
+Apple) non ha il parapendio nel suo `sports.json`, quindi un volo avviato
+dal telefono non parte al polso. Il battito in tempo reale chiede una
+parte in più (R4: il parapendio nell'app dell'orologio, codice nativo,
+una build nuova dopo la 1.1), da proporre all'utente.
+
+### R3 — La pagina del link
+
+`site/live/`: per l'attività `paragliding` la pagina mostra quota,
+variometro (sale/scende), velocità del momento, quota massima e tempo di
+volo, nelle cinque lingue; le altre attività come oggi. La copia sul sito
+è una pubblicazione: col sì dell'utente, dal Coordinatore
+(`out/coordinatore/sito.sh <sha>`).
+
+I numeri, dopo distanza e tempo: velocità del momento (la media se l'app
+è di prima), quota, variometro col segno (+ sale, − scende; m/s, ft/min
+in miglia), quota massima, poi dislivello, calorie e battito come per le
+altre attività.
+
+**Testi di R3** (le tre etichette nuove; le altre sono quelle approvate di
+TASK-424). **Approvati dall'utente il 2026-11-12**: en e it («Sì,
+approvo»), poi de/fr/es («Sì, approvo»), con le parole che l'app ha già
+per quota e quota massima.
+
+| lingua | quota | variometro | quota massima |
+|---|---|---|---|
+| en | Altitude | Vario | Max altitude |
+| it | Quota | Variometro | Quota massima |
+| de | Höhe | Vario | Max. Höhe |
+| fr | Altitude | Vario | Alt. max |
+| es | Altitud | Variómetro | Alt. máx. |
+
+### R5 — Sotto «Record your flight»: i tuoi voli, i record, pronto al decollo
+
+**Scelte dell'utente (2026-11-12).** Fra quattro proposte ha scelto «I
+tuoi voli», «Record personali» e «Pronto al decollo» (non «Ultimo volo»).
+Su «Share live at start» ha scelto «Come l'ultima volta»: l'interruttore
+resta com'era al volo precedente e si vede sempre nella scheda «Pronto al
+decollo» prima di partire. Crea solo il link, come oggi (nessun pubblico di
+TASK-468), e in volo resta il segno «Sharing live». Coordinatore: nessuna
+ADR nuova, ma «ADR-0375, precisazione R5» e «ADR-0352, precisazione».
+
+**R5a — server: i record del volo.**
+- Il telefono manda in più, a fine volo, `max_alt_m` (il punto più alto
+  dal GPS) e `top_speed_mps` (la velocità massima sul suolo) con
+  `PUT /me/activities/{key}/stats`.
+- Il server li tiene solo per un volo, nella colonna JSON
+  `run_stats.stats`, quindi nessuna migrazione. Per gli altri sport li
+  **ignora** invece di rifiutarli: il telefono li può mandare senza chiedersi
+  che sport è.
+- `GET /me/flight-bests`, solo del proprietario, dà il più alto, il più
+  lungo, il più lontano e il più veloce. Ognuno è `{id, started_at, value}`
+  o `null`; a parità vince il primo volato, e un volo cancellato si porta
+  via i suoi record.
+- Codice in `run_stats.py`, nello stesso router, senza toccare `app.py`;
+  tipi in `packages/shared-types/src/flightBests.ts`.
+- **Prima il server, poi l'app**: un server senza R5a rifiuta i due campi
+  (422).
+
+**R5b — app**, dopo R5a sul server:
+- sotto «Record your flight», tre schede:
+  - «I tuoi voli»: il mese, da `GET /me/activity-calendar?sport=paragliding`;
+    si tocca e apre il calendario sui voli;
+  - i record;
+  - «Pronto al decollo»: la precisione del GPS, pronto fino a 10 m, e
+    l'interruttore;
+- a fine volo il telefono manda i due campi;
+- una riga in `FreeRunScreen.tsx` accende il link a fine conto alla
+  rovescia.
+
+**Testi di R5**, approvati dall'utente il 2026-11-12 (en/it «Sì,
+approvo», poi de/fr/es «Sì, approvo»). Quota massima e velocità massima
+usano le parole che l'app ha già.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Your flights | I tuoi voli | Deine Flüge | Vos vols | Tus vuelos |
+| 1 flight · {time} | 1 volo · {time} | 1 Flug · {time} | 1 vol · {time} | 1 vuelo · {time} |
+| {count} flights · {time} | {count} voli · {time} | {count} Flüge · {time} | {count} vols · {time} | {count} vuelos · {time} |
+| No flights this month | Nessun volo questo mese | Keine Flüge in diesem Monat | Aucun vol ce mois-ci | Ningún vuelo este mes |
+| Your best flights | I tuoi record di volo | Deine Flugrekorde | Vos records de vol | Tus récords de vuelo |
+| Longest flight | Volo più lungo | Längster Flug | Vol le plus long | Vuelo más largo |
+| Farthest flight | Volo più lontano | Weitester Flug | Vol le plus lointain | Vuelo más lejano |
+| Ready to fly | Pronto al decollo | Startbereit | Prêt à décoller | Listo para despegar |
+| Waiting for GPS… | In attesa del GPS… | Warte auf GPS… | En attente du GPS… | Esperando el GPS… |
+| GPS ready · ±{m} m | GPS pronto · ±{m} m | GPS bereit · ±{m} m | GPS prêt · ±{m} m | GPS listo · ±{m} m |
+| Weak GPS · ±{m} m: wait in the open | GPS debole · ±{m} m: aspetta all'aperto | Schwaches GPS · ±{m} m: warte im Freien | GPS faible · ±{m} m : attendez à découvert | GPS débil · ±{m} m: espera al aire libre |
+| Share live at start | Condividi dal vivo alla partenza | Beim Start live teilen | Partager en direct au départ | Compartir en directo al empezar |
+| When the countdown ends, MuW makes the link and opens the share sheet. | Finito il conto alla rovescia, MuW crea il link e apre la condivisione. | Nach dem Countdown erstellt MuW den Link und öffnet das Teilen-Menü. | À la fin du compte à rebours, MuW crée le lien et ouvre le partage. | Al terminar la cuenta atrás, MuW crea el enlace y abre el menú para compartir. |
+
+### R6 — Corsa e volo nella stessa attività (hike & fly)
+
+**Scelta dell'utente (2026-11-12)**: nelle gare di parapendio si corre e si
+vola, quindi una registrazione deve tenere tutte e due le cose. Fra
+«Dentro Paragliding» e uno sport nuovo «Hike & fly» ha scelto **«Dentro
+Paragliding»**.
+- È una sola registrazione. L'app divide da sola i tratti a piedi da quelli
+  in aria, e c'è un bottone «A piedi | In volo» per correggerla.
+- Alla fine e nel Feed ci sono il tempo totale, «A piedi» (tempo, km,
+  dislivello) e «In volo» (tempo, km, quota massima).
+- Sulla mappa la linea è bianca a piedi e gialla in aria.
+- Chi fa solo il volo lo vede come oggi.
+
+Coordinatore: «ADR-0375, precisazione R6», nessuna migrazione.
+
+**Come capisce da sola** (GPS, senza barometro):
+- **decollo**: per almeno 15 s si sale o si scende più di 1,5 m/s, oppure
+  per almeno 20 s si va oltre 25 km/h;
+- **atterraggio**: per almeno 60 s si va sotto 9 km/h e si sale o si
+  scende meno di 0,7 m/s;
+- un tratto più corto di 60 s si unisce a quello vicino;
+- il bottone corregge la fase finché il GPS non vede il cambio opposto.
+
+**Parti**:
+- **R6a, server, prima dell'app**: `flight_parts` e `flight_split` (API.md,
+  «A piedi e in volo»).
+- **R6b, app**: la divisione in tratti (`src/air/flightParts.ts`), il
+  bottone, la fine, il Feed, le calorie tratto per tratto.
+- **R6c, la mappa a due colori**: tocca i file della mappa, a turno, per
+  ultima.
+- **R6d, la gara riaperta**: R6d-a sul server dà `flight` nell'attività
+  aperta (i tratti in aria come coppie di punti della traccia salvata, e i
+  tempi divisi); R6d-b nell'app colora la mappa e scrive i tempi sotto la
+  scheda di «My activities».
+- **R6e, il post della gara**: `flight` anche in `GET /drawings/{id}`, e
+  la mappa del post aperto dal Feed o da un profilo a due colori.
+
+**Testi di R6**, approvati dall'utente il 2026-11-12 (en/it «Sì, approvo»,
+poi de/fr/es «Sì, approvo»):
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| On foot *(c'è già)* | A piedi | Zu Fuß | À pied | A pie |
+| In the air | In volo | In der Luft | En vol | En el aire |
+| Total | Totale | Gesamt | Total | Total |
+| MuW switches by itself; touch to correct it. | MuW cambia da sola; tocca per correggere. | MuW wechselt von selbst; tippe, um es zu korrigieren. | MuW change tout seul ; touchez pour corriger. | MuW cambia solo; toca para corregir. |
+| On foot {time} · In the air {time} | A piedi {time} · In volo {time} | Zu Fuß {time} · In der Luft {time} | À pied {time} · En vol {time} | A pie {time} · En el aire {time} |
+| White: on foot. Yellow: in the air. | Bianco: a piedi. Giallo: in volo. | Weiß: zu Fuß. Gelb: in der Luft. | Blanc : à pied. Jaune : en vol. | Blanco: a pie. Amarillo: en el aire. |
 
 ## Cosa fare (se l'utente decide di sì)
 
@@ -389,6 +621,15 @@ e TASK-299): **prima di archiviare il worktree vanno copiati in
 capo con `fetch_dem.py`, `run_study.py`, `fly_sim.py` e `build_grid.py`
 (circa 40 minuti, terreno dall'API pubblica di OpenTopoData).
 
+## File toccati (PR di documenti delle parti R)
+
+```
+docs/tasks/TASK-305.md          (le parti R, le scelte del 2026-11-11)
+docs/DECISIONS.md               (ADR-0375, voce e riga d'indice)
+docs/STATUS.md                  (la voce di TASK-305)
+docs/INDEX.md                   (una riga: il parapendio registrato)
+```
+
 ## Fuori scope
 
 - Codice dell'app, del motore o dell'API: niente, nemmeno uno stub.
@@ -423,3 +664,93 @@ riga in Settings con «Soon» da subito, il nome «Paragliding» e l'avviso di
 sicurezza (2026-10-27; la riga è la parte D0). Restano le tre condizioni
 del verdetto prima della parte A1 e, prima della build 1.0.1, la scelta se
 tenere «Soon» nelle build per lo store.
+
+Il 2026-11-11 l'utente ha chiesto la registrazione in volo con la
+condivisione dal vivo, prima del pianificatore: parti R (ADR-0375), da
+questa PR di documenti.
+
+**Esito R1** (2026-11-12): PR #1177 in main (83bbbc5d). `paragliding` è
+nel contratto come attività «Record only» (Strava «Workout», GPX
+`paragliding`), la migrazione `0069_paragliding` allarga solo
+`runs_activity_check`, e `LiveStatsBody` prende `alt_m`, `max_alt_m`,
+`vario_mps` e `speed_mps`. Nell'app il profilo c'è ma resta nascosto, e
+il parapendio è fuori dall'orologio (`NOT_ON_WATCH`: il tipo Apple 3000
+«other» è quello che i test dell'orologio usano per uno sport non
+offerto); un volo non è una giornata sulla neve (`SNOW_ACTIVITIES` in
+`social/PublicParts.tsx`). Server al passo 9 il 2026-11-12 alle 08:38Z
+(02214e9b), controlli di `out/TASK-305/SERVER-R1.md` passati. Nota per
+R2: `activities/snow.ts` e `sports/postMetrics.ts` trattano ogni attività
+«Record only» come neve (niente parziali al km): da rivedere per il volo.
+
+**Esito R3** (2026-11-12): PR #1191 in main (60c801aa). Per `paragliding`
+la pagina del link mostra, dopo distanza e tempo, velocità del momento,
+quota, variometro col segno (m/s; ft/min in miglia) e quota massima; da
+un'app di prima la velocità media. Testi approvati dall'utente («Testi di
+R3»). Copia sul sito alle 09:33Z dal Coordinatore col sì dell'utente («Sì,
+copia»; quella di prima, e60e0b35, in `/srv/getmuw-site.old`): cambiano
+solo `live/texts.js` e `live/view.js`, i cinque file serviti sono uguali al
+commit e i controlli di `out/TASK-305/SITO-R3.md` sono passati. Un volo
+vero sulla pagina si vedrà dopo l'aggiornamento completo con R2 (#1201).
+
+**Esito R2** (2026-11-12): PR #1201 in main (f0909495), con le schermate
+approvate dall'utente («Sì, approvo») dopo la prova nel simulatore
+(iPhone 17e, quota finta in salita e in discesa). «Paragliding» è uno
+sport da scegliere, anche nelle build per lo store; «Draw» mostra solo
+«Record your flight»; l'avviso «Before you fly» una volta per telefono; in
+volo quota, variometro, quota massima e dislivello sopra i numeri della
+registrazione; il link dal vivo riceve `alt_m`, `max_alt_m`, `vario_mps`
+e `speed_mps`; la fine del volo ha i suoi numeri. Dalla prova due
+correzioni: i riquadri due per riga («Max altitude» si tagliava) e la riga
+del volo sotto il bottone (`ChooseScreen.tsx`, col sì del Coordinatore).
+Esce con l'aggiornamento completo del 2026-11-12.
+
+**Esito R5** (2026-11-12): server #1258 in main (291c41ff), acceso al passo
+12 (~16:56Z, server eee85a69, letture di `out/TASK-305/SERVER-R5a.md` come
+attese); app #1260 in main, in produzione con l'OTA 16 (16:42Z), dopo la
+prova nel simulatore e le schermate approvate dall'utente («Sì, approvo»).
+Dalla prova una correzione: il foglio di «Share live at start» aspettava
+«Before you fly». Decisioni: ADR-0375 precisazione R5, ADR-0352
+precisazione.
+
+**Esito R6** (2026-11-18): server #1291 in main, acceso al passo 13
+(13:41Z, letture di `out/TASK-305/SERVER-R6a.md` come attese); app #1293 in
+main (9c4abf1e), esce col prossimo OTA. Le schermate della gara finta nel
+simulatore sono approvate dall'utente («Sì, approvo», 2026-11-12). Dalla
+prova tre correzioni: i tempi dei tratti in millisecondi interi, la
+velocità massima dei soli tratti in aria, una riga di riquadri in meno
+alla fine di una gara. Decisione: ADR-0375 precisazione R6. R6c, la mappa a
+due colori, è in bozza (#1313).
+
+**Esito R6c e R6d** (2026-11-22): R6c (#1313, `dfe61bcd`) in produzione con
+l'OTA 20: alla fine di una gara la mappa inquadra piedi e volo. R6d-a
+(#1342) in main e sul server al passo 15 (letture di
+`out/TASK-305/SERVER-R6d.md`); R6d-b (#1352) in main, esce col prossimo
+OTA. Le schermate del simulatore (una gara finta sopra Malcesine, riaperta
+da «My activities») sono approvate dall'utente («Sì, approvo», 2026-11-22):
+linea bianca a piedi e gialla in volo, «A piedi 30:00 · In volo 15:00», la
+legenda. Decisione: ADR-0375 precisazione R6d.
+
+**Un volo nelle liste** (2026-11-22, chiesto dall'utente dopo la prova di
+R6d): #1399 in main (`07d6daa6`), esce con l'OTA dopo la 21. In «My
+activities», nella scheda e nella riga del Feed un volo senza luogo né
+disegno si chiama «Paragliding» invece di «Run», e ha la velocità media
+invece del passo per km. R6d è in produzione con l'OTA 21.
+
+**Esito R6e** (2026-11-23, «Sì, fallo» dell'utente il 2026-11-22): server
+#1411 (`e427ed2e`) in main, sul server col passo 19 (col sì dell'utente);
+app #1412 (`7a0972de`) in main, esce con l'OTA 23. Il post di una gara
+aperto dal Feed o da un profilo ha la linea bianca a piedi e gialla in
+volo; `flight` manca se la linea del post non ha i punti della corsa. Nella
+stessa PR lo schema openapi di `GET /me/activities/{key}` torna coi suoi
+campi. Decisione: ADR-0375 precisazione R6e.
+Il passo 19 è fatto (server `e427ed2e`), l'OTA 23 è uscita, e il
+2026-11-23 l'utente ha guardato il post di una gara sul telefono:
+«funziona tutto». R6e chiusa.
+
+**Cosa resta**:
+
+- Una prova di un volo vero, col link dal vivo aperto da un altro
+  telefono, dopo l'uscita.
+- R4 (il volo sull'orologio, per il battito dal vivo): PR #1218 in bozza,
+  fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
+- Le parti del pianificatore (A1…F) restano Proposte.

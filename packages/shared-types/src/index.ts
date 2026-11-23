@@ -7,6 +7,19 @@
  * and services/route-engine/tests/test_contract.py.
  */
 
+import {
+  activitiesOf,
+  PLANNED_SPORTS,
+  RECORDED_SPORTS,
+  RUNNING,
+  TRACKLESS_SPORTS,
+} from "./sports/index.ts";
+import type { GymLevel } from "./gym.ts";
+import type { FlightSplit } from "./flightParts.ts";
+import type { SkiDescents } from "./skiParts.ts";
+import type { SLEEP_SOURCE, SleepSummary } from "./sleep.ts";
+import type { GymPlanPosted, PLAN_SOURCE } from "./planPosts.ts";
+
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
 
@@ -29,12 +42,27 @@ export const SHAPES = [
   "ghost",
   "donut",
   "sun",
+  "airplane",
+  "anchor",
+  "bear_head",
+  "bicycle",
+  "cherries",
+  "espresso_cup",
+  "four_leaf_clover",
+  "leaning_tower",
+  "music_note",
+  "pear",
+  "sailboat",
+  "swan",
+  "windmill",
+  "wine_glass",
 ] as const;
 export type Shape = (typeof SHAPES)[number];
 
 /** The shapes that may be drawn with the pen up (TASK-223, ADR-0185): the
  * outline, then each piece on its own, walking from one to the next. The
- * first five lift off their eyes; the others have pieces apart. */
+ * first five lift off their eyes; the others have pieces apart, the last four
+ * the new shapes of TASK-418, which the app draws with the pen down. */
 export const PEN_UP_SHAPES = [
   "cat",
   "fish",
@@ -45,31 +73,84 @@ export const PEN_UP_SHAPES = [
   "ghost",
   "donut",
   "sun",
+  "anchor",
+  "bear_head",
+  "bicycle",
+  "espresso_cup",
 ] as const satisfies readonly Shape[];
 export type PenUpShape = (typeof PEN_UP_SHAPES)[number];
 
-/** What a route is for: on foot, by bike on the roads a bike may ride,
- * one-way streets kept (TASK-190, ADR-0153), or paddling on a lake or the
- * sea within 1 km of the shore, a shape of the catalogue only (TASK-191,
- * ADR-0161). */
-export const ACTIVITIES = ["running", "cycling", "paddling"] as const;
+/** Where a drawing goes (TASK-347, ADR-0300): searched for by the engine,
+ * or left where the finger drew it. The same names as the route engine. */
+export const PLACEMENTS = ["free", "anchored"] as const;
+export type Placement = (typeof PLACEMENTS)[number];
+
+/** What a route is for in the app: on foot, by bike on the roads a bike
+ * may ride, one-way streets kept (TASK-190, ADR-0153), paddling on a lake
+ * or the sea within 1 km of the shore, a shape of the catalogue only
+ * (TASK-191, ADR-0161), swimming in open water 20–150 m from the shore,
+ * lap after lap, a shape of the catalogue or a drawing (TASK-323,
+ * ADR-0283), or walking, drawn as a run on the same foot network (TASK-371,
+ * ADR-0315). Each sport says its own in sports/ (TASK-376, ADR-0320). */
+export const ACTIVITIES = activitiesOf(PLANNED_SPORTS);
 export type Activity = (typeof ACTIVITIES)[number];
 
+/** The activities of the API (route_engine/walking.py API_ACTIVITIES):
+ * the app's, since part C2 of TASK-323 for swimming and part B of TASK-371
+ * for walking. */
+export const API_ACTIVITIES = ACTIVITIES;
+export type ApiActivity = (typeof API_ACTIVITIES)[number];
+
+/** The activities recorded without a shape (TASK-375, ADR-0319): alpine
+ * skiing and cross-country skiing. The route engine plans none of them, so
+ * they are no ApiActivity: only a saved run says them. */
+export const RECORD_ACTIVITIES = activitiesOf(RECORDED_SPORTS);
+export type RecordActivity = (typeof RECORD_ACTIVITIES)[number];
+
+/** The activities saved without a track (TASK-385, ADR-0327): a workout at
+ * the gym, PUT /me/gym-sessions/{key}. The app reads them since part B0,
+ * which shows a post without a line. */
+export const TRACKLESS_ACTIVITIES = activitiesOf(TRACKLESS_SPORTS);
+export type TracklessActivity = (typeof TRACKLESS_ACTIVITIES)[number];
+
+/** What a saved run was: an activity of the API, one recorded without a
+ * shape (PUT /me/activities/{key}), or one saved without a track
+ * (PUT /me/gym-sessions/{key}). */
+export const RUN_ACTIVITIES = [
+  ...API_ACTIVITIES,
+  ...RECORD_ACTIVITIES,
+  ...TRACKLESS_ACTIVITIES,
+] as const;
+export type RunActivity = (typeof RUN_ACTIVITIES)[number];
+
+/** Where a saved run comes from (TASK-312, ADR-0272): "muw", recorded by
+ * the app; "file", a GPX, TCX or FIT file of another app, read on the phone
+ * and saved with the same PUT /me/activities/{key}; "manual", a workout at
+ * the gym written by hand afterwards, saved by PUT /me/gym-sessions/{key}
+ * (TASK-484, ADR-0395). Only "muw" counts for the shape game, the contest
+ * and the gym's levels and leaderboard; the app shows «Imported» for the
+ * others. */
+export const RUN_SOURCES = ["muw", "file", "manual"] as const;
+export type RunSource = (typeof RUN_SOURCES)[number];
+
 /** Plausible target distances for running, in metres. */
-export const MIN_DISTANCE_M = 1_000;
-export const MAX_DISTANCE_M = 50_000;
+export const MIN_DISTANCE_M = RUNNING.distanceM[0];
+export const MAX_DISTANCE_M = RUNNING.distanceM[1];
 
 /** The target distances of each activity, [lowest, highest] in metres:
  * running as above, cycling 10–30 km (TASK-190), paddling 1–5 km
- * (TASK-191). Outside them the API answers `invalid_request`, with the
- * limits in the message. */
+ * (TASK-191), swimming 0.5–3 km, every lap and the legs from the shore
+ * (TASK-323), walking 1–30 km (TASK-371). Outside them the API answers
+ * `invalid_request`, with the limits in the message. */
 export const DISTANCE_LIMITS_M: Readonly<
-  Record<Activity, readonly [lowest: number, highest: number]>
-> = {
-  running: [MIN_DISTANCE_M, MAX_DISTANCE_M],
-  cycling: [10_000, 30_000],
-  paddling: [1_000, 5_000],
-};
+  Record<ApiActivity, readonly [lowest: number, highest: number]>
+> = Object.fromEntries(
+  PLANNED_SPORTS.map((sport) => [sport.activity, sport.distanceM]),
+) as Record<ApiActivity, readonly [lowest: number, highest: number]>;
+
+/** A swim goes round its shape at most this many times (TASK-323): 130 m of
+ * band hold about half a kilometre of shape. */
+export const MAX_SWIM_LAPS = 5;
 
 /**
  * The letters a word may use (route_engine/letters.json, ADR-0044): A to Z
@@ -124,6 +205,29 @@ interface RouteRequestFields {
    * another activity; absent or null leaves the place to the engine.
    */
   near?: LatLon | null;
+  /**
+   * A swim (TASK-323): how many times round its shape, 1 to MAX_SWIM_LAPS;
+   * fewer for a larger shape, the distance staying the same. Absent or null:
+   * the fewest it fits in. Refused with another activity.
+   */
+  laps?: number | null;
+  /**
+   * Where the shape goes (TASK-347, ADR-0300): "free", the search turns,
+   * scales and moves it to where the roads draw it best, as before;
+   * "anchored", it stays where and as it was drawn (its first point on
+   * `start`, upright, at the scale of `distance_m`), traced once and never
+   * rescaled: a distance off by more than 10% is a warning, not a refusal.
+   * Only on the roads. Absent means "free", as an older app sends it; an API
+   * older than TASK-347 refuses the field, so the app sends it only after
+   * the probe (GET /stroke-matches).
+   */
+  placement?: Placement;
+  /**
+   * With `placement` "anchored": the magnet, from 0 (faithful to the
+   * drawing: tight zones and corridor) to 1 (today's tracing, wide); absent,
+   * the engine's default. Refused with "free".
+   */
+  fit?: number;
 }
 
 /** A shape of the catalogue, or a word written one letter at a time: one
@@ -165,6 +269,34 @@ export type Walk = [from: number, to: number];
  * ADR-0167): [from, to] indices into `RouteResult.points`, both included.
  */
 export type Stretch = [from: number, to: number];
+
+/** A place with a name on the shore, to turn opposite during a swim
+ * (route_engine/shore_names.py, TASK-323): data from OpenStreetMap. */
+export interface Landmark {
+  name: string;
+  /** From OpenStreetMap, like "beach_resort", "pier", "lighthouse". */
+  kind: string;
+  point: LatLon;
+  /** From the turn. */
+  distance_m: number;
+  /** Where to look from the turn, degrees clockwise from north. */
+  bearing_deg: number;
+}
+
+/** Where a swim turns (route_engine/swim_turns.py, TASK-323): where the
+ * direction changes by more than 45°, in order, every lap's. */
+export interface SwimTurn {
+  point: LatLon;
+  /** Along the swim from its start, in metres. */
+  at_m: number;
+  side: "left" | "right";
+  /** How much it turns, 0–180°. */
+  angle_deg: number;
+  /** The lap it is in, from 1. */
+  lap: number;
+  /** The place on the shore to turn opposite; null without one. */
+  landmark?: Landmark | null;
+}
 
 export interface RouteResult {
   /**
@@ -223,6 +355,32 @@ export interface RouteResult {
    * stays north-up.
    */
   rotation_deg?: number;
+  /**
+   * A swim (TASK-323): how many times round its shape; 1 for any other
+   * route. Missing from an older API.
+   */
+  laps?: number;
+  /**
+   * A swim (TASK-323): how long one lap is, in metres, the shape without the
+   * legs from the shore and back; null for any other route. Missing from an
+   * older API.
+   */
+  lap_m?: number | null;
+  /**
+   * A swim (TASK-323): where it turns, in order, every lap's, each with the
+   * place on the shore to turn opposite when there is one. Empty for any
+   * other route; missing from an older API.
+   */
+  turns?: SwimTurn[];
+  /**
+   * The drawing as the engine placed it, in WGS84 lines (TASK-347,
+   * ADR-0300): turned, scaled and moved by the search when `placement` was
+   * "free", left where it was drawn when "anchored"; one closed line for a
+   * shape, one open line per letter or piece drawn with the pen up. The app
+   * draws it as a ghost under the route, so the drawing never disappears
+   * when the route arrives. Empty on the water; missing from an older API.
+   */
+  placed_outline?: LatLon[][];
 }
 
 /** Routes besides the one chosen by the engine: three to choose from. */
@@ -304,6 +462,30 @@ export const API_ERROR_CODES = [
   "comment_rejected",
   /** No contest open, nor one closed less than a week ago (TASK-299). */
   "no_contest",
+  /**
+   * An entry in a monthly challenge, 409 (TASK-343): the contest takes no
+   * entries now (ended, closed, or without a theme).
+   */
+  "contest_closed",
+  /**
+   * An entry in a monthly challenge, 409 (TASK-343): the drawing cannot take
+   * part (another's, not for everyone, imported, outside the period, hidden).
+   */
+  "not_entrant",
+  /** «Send to Strava» of a run added from another app's file, 409 (TASK-312). */
+  "imported_run",
+  /**
+   * POST /session/{provider}, 404 (TASK-322): no account yet for that Apple
+   * or Google account nor its email; NewAccountError carries the email.
+   */
+  "new_account",
+  /** The API has no keys for Apple or for Google, 503 (TASK-322). */
+  "provider_unavailable",
+  /**
+   * An item tagged on a photo, 422 (TASK-394): `reason` is one of
+   * OUTFIT_TAG_REASONS, for the app's words.
+   */
+  "outfit_tag_rejected",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
@@ -322,9 +504,10 @@ export interface ApiError {
      * Only with "image_not_usable", else null: why the engine found no
      * outline (TASK-073). Missing from an API older than TASK-073. With
      * "outline_edit_rejected", why the drawing was refused (TASK-079); with
-     * "comment_rejected", why the comment was (TASK-120).
+     * "comment_rejected", why the comment was (TASK-120); with
+     * "outfit_tag_rejected", why the item was (TASK-394).
      */
-    reason?: ImageReason | EditReason | CommentReason | null;
+    reason?: ImageReason | EditReason | CommentReason | OutfitTagReason | null;
   };
 }
 
@@ -349,6 +532,22 @@ export interface RouteJob {
   result: RouteResult | null;
   /** Only when `status` is "failed". */
   error: ApiError["error"] | null;
+}
+
+/**
+ * The answer to GET /route-jobs/{job_id}?first=1 (TASK-435, ADR-0361): the
+ * RouteJob and, while it computes, its first route. Without `?first=1`, and
+ * from an API before it, the answer is a RouteJob: `first` is missing, and
+ * who reads must take it as none.
+ */
+export interface RouteJobWithFirst extends RouteJob {
+  /**
+   * The route from the user's own start, with no alternatives, as soon as
+   * it is planned and the nearby starts are not yet; null before that, when
+   * nothing is waited for, and once the job has its answer. The whole
+   * answer is `result`, as ever.
+   */
+  first: RouteResult | null;
 }
 
 /** What the app sends to POST /gpx to get the route as a GPX file (ADR-0033). */
@@ -487,6 +686,55 @@ export interface ImageRouteRequest {
   /** True only with the pieces of the outline: ImagePenUpRouteRequest
    * (TASK-297); without them it is refused (TASK-197). */
   pen_up?: false;
+  /** A swim of a drawing (TASK-323): as RouteRequest.laps. */
+  laps?: number | null;
+  /** As in RouteRequest (TASK-347): "anchored" leaves the outline where it
+   * was drawn, its first point on `start`, at the scale of `distance_m`.
+   * This is what «Draw route» sends for a drawing made on the map. */
+  placement?: Placement;
+  /** As in RouteRequest: the magnet of an anchored outline, 0 to 1. */
+  fit?: number;
+}
+
+/** The most points of one stroke sent to POST /stroke-matches (TASK-347):
+ * the app simplifies the finger's line first, and splits a longer stroke. */
+export const MAX_STROKE_POINTS = 500;
+/** The longest stroke, in metres along its points; a longer one is split. */
+export const MAX_STROKE_M = 10_000;
+
+/**
+ * One stroke drawn on the map, to anchor to the roads as the finger lifts
+ * (TASK-347, ADR-0300): what the app sends to POST /stroke-matches, or to
+ * the engine on the phone first. Sent only to a server that knows it: GET
+ * /stroke-matches answers 204 there and 404 on an older API.
+ */
+export interface StrokeMatchRequest {
+  activity: Activity;
+  /** The magnet, 0 (faithful to the drawing) to 1 (today's tracing, wide);
+   * absent, the engine's default. */
+  fit?: number;
+  /** The stroke as drawn, in order: 2 to MAX_STROKE_POINTS points, at most
+   * MAX_STROKE_M long. */
+  line: LatLon[];
+  /** Where the stroke before ended: the route starts at the road node
+   * nearest to it, so the strokes join along the roads. Absent for the
+   * first stroke. */
+  from?: LatLon;
+}
+
+/** The roads that draw a stroke: the answer of POST /stroke-matches. */
+export interface StrokeMatchResult {
+  /** The route along the roads, from the node of `from` (or the one nearest
+   * to the first point) to the roads near the last point; the last point is
+   * the next stroke's `from`. */
+  points: LatLon[];
+  /** For each point of the stroke as sent, in order, how far the route runs
+   * from it, in metres: the app colours the far ones. */
+  away_m: number[];
+  /** True when the drawn points are, on average, farther from a road than
+   * the engine's sparse-network threshold: the stroke is in the fields, the
+   * match is a guess, and the app may leave the stroke as a ghost. */
+  off_roads: boolean;
 }
 
 /** The most points of all the strokes of an outline together, as the
@@ -557,6 +805,64 @@ export const PASSWORD_LENGTH = { min: 8, max: 128 } as const;
 export interface SignInRequest {
   email: string;
   password: string;
+}
+
+/**
+ * «Continue with Apple» and «Continue with Google» (TASK-322, ADR-0282):
+ * besides email and password, an account opens with these. Apple only on
+ * iPhone.
+ */
+export const SIGN_IN_PROVIDERS = ["apple", "google"] as const;
+export type SignInProvider = (typeof SIGN_IN_PROVIDERS)[number];
+
+/**
+ * GET /session/providers: the ones the API has the keys of, none without
+ * its database. The app shows only their buttons.
+ */
+export interface SignInProviders {
+  providers: SignInProvider[];
+}
+
+/**
+ * What the app sends to POST /session/{provider}. The answer is a Session:
+ * 200 for an account that was there (the same Apple or Google account, or
+ * one already signed up with its email), 201 for a new one. The first time,
+ * without `username`: 404 NewAccountError, and the app sends the same again
+ * with the username and the box. A token that does not hold: 401
+ * "wrong_credentials".
+ */
+export interface ProviderSignInRequest {
+  /**
+   * The token Apple's or Google's sheet gave: it lasts 10 minutes for
+   * Apple, an hour for Google.
+   */
+  id_token: string;
+  /**
+   * Apple only: the code of the same sign-in, so the API can revoke the
+   * access when the account is deleted.
+   */
+  authorization_code?: string | null;
+  /** Apple only: the string the app made; Apple gets its SHA-256, in hex. */
+  nonce?: string | null;
+  /** A new account only, as in SignUpRequest; ignored otherwise. */
+  username?: string | null;
+  /** A new account only: the "I am at least 16" box; false is refused. */
+  at_least_16?: boolean;
+  /**
+   * A new account only: the box «Don't send me these emails», as in
+   * SignUpRequest.
+   */
+  away_email?: boolean;
+  /** A new account only: the app's language, for the texts of the emails. */
+  language?: PushLanguage | null;
+}
+
+/**
+ * 404 of POST /session/{provider}: the email Apple or Google gave, shown
+ * above the username.
+ */
+export interface NewAccountError {
+  error: ApiError["error"] & { code: "new_account"; email: string };
 }
 
 export const USER_ROLES = ["user", "admin"] as const;
@@ -726,7 +1032,144 @@ export interface PublicProfile {
   distance_m?: number;
   climb_m?: number;
   reactions?: number;
+  /**
+   * The badges it earned (TASK-341, ADR-0294), in the order of
+   * PROFILE_BADGES, decided by the API on the drawings the one who asks
+   * sees. «Winner» is `contest_wins`. Missing from an API older than TASK-341.
+   */
+  badges?: ProfileBadge[];
+  /**
+   * The personal bests (TASK-368, ADR-0312): on foot, then by bike, by
+   * distance; only the distances it has a best of. Missing from an API
+   * older than TASK-368.
+   */
+  personal_bests?: PersonalBest[];
+  /**
+   * The VO₂ max (TASK-397, ADR-0332): null without its owner's yes, or
+   * without a value of Health of the last 365 days and without a running
+   * best to estimate it from. Missing from an API older than TASK-397.
+   */
+  vo2max?: Vo2Max | null;
+  /**
+   * The levels at the gym (TASK-385 E, ADR-0327): of every workout, private
+   * ones too; the highest level first, then as the catalog. Missing from an
+   * API older than TASK-385 E.
+   */
+  gym_levels?: GymLevel[];
+  /**
+   * The prizes of the shape game its owner chose to show (TASK-423 part E):
+   * null when none; missing from an API older than TASK-423 E.
+   */
+  game_prizes?: GamePrizesShown | null;
 }
+
+/** Where a VO₂ max comes from (TASK-397). */
+export type Vo2MaxSource = "apple_health" | "health_connect" | "estimate";
+
+/**
+ * A VO₂ max as the profile shows it (TASK-397): of Apple Health or Health
+ * Connect if measured in the last 365 days, else MuW's estimate from the
+ * running bests of the last 365 days (Daniels's VDOT).
+ */
+export interface Vo2Max {
+  /** Millilitres of oxygen per kg per minute, rounded. */
+  value: number;
+  source: Vo2MaxSource;
+  /** YYYY-MM-DD: the day it was measured; for the estimate, of the run. */
+  measured_on: string;
+  /** The best the estimate comes from (5k … marathon); null for Health. */
+  from_distance: (typeof RUNNING_BEST_DISTANCES)[number] | null;
+}
+
+/**
+ * GET and PUT /me/vo2max (TASK-397): the owner's yes, off until given,
+ * and what the others see with it (null when there is none).
+ */
+export interface Vo2MaxSettings {
+  show: boolean;
+  vo2max: Vo2Max | null;
+}
+
+/** PUT /me/vo2max: the yes, or its end (the value of Health goes too). */
+export interface Vo2MaxSettingsRequest {
+  show: boolean;
+}
+
+/**
+ * PUT /me/vo2max/reading (TASK-397): the last value of Health, only after
+ * the yes (409 without), between 10 and 90; the day, never the hour.
+ */
+export interface Vo2MaxReadingRequest {
+  value: number;
+  measured_on: string;
+  source: Exclude<Vo2MaxSource, "estimate">;
+}
+
+/** The distances of the personal bests on foot (TASK-368), in their order. */
+export const RUNNING_BEST_DISTANCES = [
+  "5k",
+  "10k",
+  "15k",
+  "half",
+  "30k",
+  "marathon",
+  "60k",
+] as const;
+/** By bike: 160k is the hundred miles. */
+export const CYCLING_BEST_DISTANCES = [
+  "10k",
+  "20k",
+  "40k",
+  "50k",
+  "100k",
+  "160k",
+] as const;
+
+/** On inline skates (TASK-380, ADR-0324): a run's races, bests of their own. */
+export const INLINE_SKATING_BEST_DISTANCES = ["5k", "10k", "half", "marathon"] as const;
+
+/** In a wheelchair or pushing a stroller (TASK-414, ADR-0343, the user's
+ * choice 7): bests of its own over 1 and 5 km. */
+export const WHEELCHAIR_BEST_DISTANCES = ["1k", "5k"] as const;
+
+/**
+ * The fastest stretch of a distance inside any run of the account, private
+ * ones too (TASK-368): moving seconds, the pauses left out.
+ */
+export interface PersonalBest {
+  /** A gravel or an MTB ride's bests are their own (TASK-378, ADR-0322), a
+   * skate's (TASK-380, ADR-0324) and a wheelchair's (TASK-414, ADR-0343). */
+  sport:
+    | "running"
+    | "cycling"
+    | "gravel_biking"
+    | "mountain_biking"
+    | "inline_skating"
+    | "wheelchair";
+  distance:
+    | (typeof RUNNING_BEST_DISTANCES)[number]
+    | (typeof CYCLING_BEST_DISTANCES)[number]
+    | (typeof WHEELCHAIR_BEST_DISTANCES)[number];
+  distance_m: number;
+  seconds: number;
+  /** When the run it was made in began: its day. */
+  started_at: string;
+  /** The drawing of that run, for who may see it (GET /drawings/{id}); else null. */
+  drawing: string | null;
+  /** The run's key, for its owner only (GET /me/activities/{key}); else null. */
+  key: string | null;
+}
+
+/**
+ * The badges of a profile (TASK-341): a first drawing, ten drawings, a
+ * drawing of 30 km or more, of runs recorded by the app.
+ */
+export const PROFILE_BADGES = [
+  "first_drawing",
+  "ten_drawings",
+  "long_drawing",
+] as const;
+export type ProfileBadge = (typeof PROFILE_BADGES)[number];
 
 /**
  * Where a member stands towards a profile (TASK-211): it asked and waits
@@ -785,12 +1228,6 @@ export interface PeoplePage {
 export const DRAWING_TITLE_MAX_LENGTH = 60;
 
 /**
- * What the other members never see of a public run, from either end of its
- * track, in metres along it (ADR-0114, point 4): the API cuts it.
- */
-export const DRAWING_CUT_M = 200;
-
-/**
  * Who can see a drawing (TASK-208, ADR-0170): every member, the members who
  * follow its owner with the request accepted, or only its owner.
  */
@@ -800,8 +1237,14 @@ export type Visibility = (typeof VISIBILITIES)[number];
 /** The limits of a drawing, checked by the API too (TASK-208). */
 export const DRAWING_DESCRIPTION_MAX_LENGTH = 500;
 export const DRAWING_MAX_TAGS = 10;
-/** Besides the map, the first picture of a drawing. */
-export const DRAWING_MAX_PHOTOS = 3;
+/**
+ * Besides the map, the photos the app offers in a post: 9, so the post has
+ * at most 10 pages with the map among them (TASK-348, the user's choice «10
+ * col disegno»). The API keeps DRAWING_PHOTO_PLACES places.
+ */
+export const DRAWING_MAX_PHOTOS = 9;
+/** The places of the photos of a drawing on the API (TASK-348, ADR-0301). */
+export const DRAWING_PHOTO_PLACES = 10;
 
 /**
  * PUT /me/activities/{key}/drawing (TASK-117, TASK-208): a saved run's
@@ -819,8 +1262,9 @@ export interface DrawingRequest {
    * lines and all; null or "": none; missing: as it was.
    */
   description?: string | null;
-  /** What the run was; missing: as it was. */
-  activity?: Activity;
+  /** What the run was; missing: as it was. A day on the snow too
+   * (TASK-375, RunActivity). */
+  activity?: RunActivity;
   /** The public_id of the members tagged, in order; []: none; missing: as they were. */
   tags?: string[];
 }
@@ -833,6 +1277,16 @@ export interface DrawingPhotoRequest {
   image: string;
 }
 
+/**
+ * PUT /me/activities/{key}/drawing/order (TASK-348, ADR-0301): where each
+ * stands in the post. The map once, `drawing`, and the photos by place,
+ * `photo:2`, each once; it may name a photo not sent yet. The answer is a
+ * MyDrawing.
+ */
+export interface DrawingOrderRequest {
+  order: string[];
+}
+
 /** A member tagged in a drawing: never the email. */
 export interface DrawingTag {
   public_id: string;
@@ -841,12 +1295,20 @@ export interface DrawingTag {
 
 /** A photo of a drawing, besides its map (TASK-208). */
 export interface DrawingPhoto {
-  /** Its place, 1 to DRAWING_MAX_PHOTOS: a place emptied stays empty. */
+  /**
+   * Its place, 1 to DRAWING_PHOTO_PLACES: a place emptied stays empty, and a
+   * place says which photo, not where it stands (`order`).
+   */
   n: number;
   /** A JPEG on the API, read with the token; it changes with the photo. */
   url: string;
   width: number;
   height: number;
+  /**
+   * What its owner wears in it (TASK-394): missing from an API before it.
+   * The link and the totals only to the owner.
+   */
+  outfit_tags?: OutfitTag[];
 }
 
 /**
@@ -866,9 +1328,19 @@ export interface MyDrawing {
   /** The fields of TASK-208: an API before has none. */
   visibility?: Visibility;
   description?: string | null;
-  activity?: Activity;
+  /** What the run was: the owner's own keeps a day on the snow (TASK-375,
+   * RunActivity). */
+  activity?: RunActivity;
+  /** The run's (TASK-312); missing from an API before it: "muw". */
+  source?: RunSource;
   tags?: DrawingTag[];
   photos?: DrawingPhoto[];
+  /**
+   * The post's order, the map among the photos: `drawing`, `photo:2`
+   * (TASK-348, ADR-0301); `photos` comes in it. Null or missing: never
+   * ordered or an older server, the map first and the photos by place.
+   */
+  order?: string[] | null;
 }
 
 /** GET /me/drawings: the runs with a title or made public, latest first. */
@@ -905,9 +1377,18 @@ interface DrawingFields {
   /** The fields of TASK-208: an API before has none. */
   visibility?: Visibility;
   description?: string | null;
-  activity?: Activity;
+  activity?: RunActivity;
+  /** The run's (TASK-312): "file" is shown with «Imported». Missing from an
+   * API before it: "muw". */
+  source?: RunSource;
   tags?: DrawingTag[];
   photos?: DrawingPhoto[];
+  /**
+   * The post's order, the map among the photos: `drawing`, `photo:2`
+   * (TASK-348, ADR-0301); `photos` comes in it. Null or missing: never
+   * ordered or an older server, the map first and the photos by place.
+   */
+  order?: string[] | null;
   /**
    * How far the planned route's shape is turned, as RouteResult.rotation_deg
    * (TASK-232, ADR-0195): the drawing is shown turned back, so it reads
@@ -915,6 +1396,41 @@ interface DrawingFields {
    * saved before; missing from an API before TASK-232 part C.
    */
   rotation_deg?: number | null;
+  /**
+   * A day of alpine skiing: the metres and the seconds of its descents
+   * alone, which its calories are counted on (TASK-424 part C2b,
+   * skiParts.ts). Null for any other run and for a day whose phone sent no
+   * parts; missing from an API before it.
+   */
+  ski_descents?: SkiDescents | null;
+  /**
+   * A race on foot and in the air (hike & fly, TASK-305 part R6a,
+   * flightParts.ts): each kind added up. Null for any other run and for a
+   * flight with no part on foot; missing from an API before it.
+   */
+  flight_split?: FlightSplit | null;
+  /**
+   * «Sleep last night» (TASK-467 part B1b, sleep.ts): the night before the
+   * activity, while its owner shows it in the post, in every list of posts
+   * and in the drawing whole, so that nothing more is asked for it. Null
+   * for a post without one and for one whose owner hides it, to the owner
+   * too (GET /me/activities/{key}/sleep has the switch); missing from an
+   * API before it.
+   */
+  sleep?: SleepSummary | null;
+  /**
+   * A gym plan posted (TASK-485, planPosts.ts, `source` `plan`): the plan as
+   * it was posted, with its exercises and kg. Null for any other post;
+   * missing from an API before it.
+   */
+  plan?: GymPlanPosted | null;
+  /**
+   * The drawing can be opened by its link on the site, without an account
+   * (TASK-455 part C, PostLink): it is for everyone, it has a line, and its
+   * owner leaves «Links to my posts» on. The app shows «Share link» only
+   * then, on one's own post too. Missing from an API before it: no link.
+   */
+  linkable?: boolean;
 }
 
 /** One drawing of GET /users/{public_id}/drawings. */
@@ -933,8 +1449,8 @@ export interface DrawingsPage {
 }
 
 /**
- * GET /drawings/{id}: one drawing whole. The track is cut: never its first
- * and last DRAWING_CUT_M metres, never its times or the planned route.
+ * GET /drawings/{id}: one drawing whole. The track is all of it, start and
+ * end too (ADR-0330), never its times or the planned route.
  */
 export interface DrawingDetail extends DrawingFields {
   author: DrawingAuthor;
@@ -942,6 +1458,28 @@ export interface DrawingDetail extends DrawingFields {
   public: boolean;
   /** Empty only for the owner's private run too short to publish. */
   track: LatLon[];
+}
+
+/** A lift taken or a piste skied in a day of skiing (TASK-375 part D). */
+export interface SkiUse {
+  name: string;
+  /** The lift's aerialway ("chair_lift"…) or the piste's difficulty
+   * ("intermediate"…); empty when OpenStreetMap has none. */
+  type: string;
+  /** How many times, 1 or more. */
+  times: number;
+}
+
+/**
+ * GET /drawings/{id}/ski-names (ADR-0319): the lifts and pistes of a day of
+ * skiing, each once, in the order of the day. Lifts without a name are left
+ * out. Two empty lists for another sport, or a day where none was found:
+ * the post then shows nothing. A 404 as for the drawing itself, also for an
+ * app whose X-MuW-Reads does not say `skiing`.
+ */
+export interface SkiNames {
+  lifts: SkiUse[];
+  pistes: SkiUse[];
 }
 
 /** The limit of a comment, checked by the API too (TASK-120). */
@@ -961,7 +1499,46 @@ export type CommentReason = (typeof COMMENT_REASONS)[number];
  */
 export interface CommentRequest {
   text: string;
+  /**
+   * The comment of this drawing these words answer, a reply too (TASK-454):
+   * they go under its comment. Left out, a comment of the drawing.
+   */
+  reply_to?: string;
 }
+
+/**
+ * The reactions to a comment (TASK-454, ADR-0377), in the order the app
+ * shows them: those of a drawing without the MuW heart, which is a
+ * drawing's only. Codes, never the emoji: the app draws them.
+ */
+export const COMMENT_REACTION_KINDS = [
+  "fire",
+  "clap",
+  "strong",
+  "laugh",
+  "wow",
+] as const;
+export type CommentReactionKind = (typeof COMMENT_REACTION_KINDS)[number];
+
+/** PUT /comments/{id}/reaction: one for each member on a comment. */
+export interface CommentReactionRequest {
+  kind: CommentReactionKind;
+}
+
+/**
+ * The reactions of a comment as who asks sees them: with each comment, and
+ * the answer of PUT and DELETE /comments/{id}/reaction.
+ */
+export interface CommentReactions {
+  /** How many of each kind, all five, zero included. */
+  counts: Record<CommentReactionKind, number>;
+  total: number;
+  /** The reaction of who asks; null when it left none. */
+  mine: CommentReactionKind | null;
+}
+
+/** The replies that come with their comment when the threads are asked for. */
+export const COMMENT_REPLIES_SHOWN = 2;
 
 /** One comment under a drawing, as who asks sees it. */
 export interface Comment {
@@ -973,14 +1550,37 @@ export interface Comment {
   created_at: string;
   /** Who asks may delete it: it wrote it, or it owns the drawing. */
   deletable: boolean;
+  // What follows came with the replies (TASK-454): an API from before does
+  // not send it.
+  /** The comment a reply stands under; null for a comment. */
+  parent_id?: string | null;
+  /**
+   * Who a reply to a reply answers, shown as «@name» before its words; null
+   * for the others, and when who asks does not see that member.
+   */
+  mention?: DrawingAuthor | null;
+  /** How many replies who asks reads under it; 0 for a reply. */
+  reply_count?: number;
+  /**
+   * With `?threads=true`, the oldest COMMENT_REPLIES_SHOWN of them, the
+   * others from GET /comments/{id}/replies; null when the threads were not
+   * asked for, and for a reply.
+   */
+  replies?: Comment[] | null;
+  reactions?: CommentReactions;
 }
 
-/** GET /drawings/{id}/comments: a page, the oldest first. */
+/**
+ * GET /drawings/{id}/comments: a page, the oldest first. With
+ * `?threads=true` the comments only, each with its first replies; without,
+ * the replies among the comments by time, as before them (TASK-454). GET
+ * /comments/{id}/replies: a page of the replies of a comment.
+ */
 export interface CommentsPage {
   comments: Comment[];
   /** The `cursor` of the next page; null on the last one. */
   next: string | null;
-  /** How many comments the drawing has, on every page. */
+  /** How many comments and replies there are, on every page. */
   total: number;
 }
 
@@ -1064,7 +1664,35 @@ export const FEED_NEAR_M = 50_000;
  * who published it. Opened whole with GET /drawings/{id}.
  */
 export interface FeedPost extends Drawing {
-  author: DrawingAuthor;
+  author: FeedAuthor;
+  /**
+   * How many reactions the post has and the reader's own, as
+   * GET /drawings/{id}/reactions counts them (TASK-355 part B). Missing from
+   * an API of before, and from the search, the contests and the resorts.
+   */
+  reactions?: FeedReactions;
+  /**
+   * The comments and replies the reader reads, as `total` of
+   * GET /drawings/{id}/comments. Missing as `reactions` is.
+   */
+  comments?: number;
+}
+
+/** Who published a post of the feed. */
+export interface FeedAuthor extends DrawingAuthor {
+  /**
+   * Where its picture is read, `/users/{public_id}/photo?v=…`, a square JPEG
+   * of 128 px with the token; a new picture has a new address. Null without
+   * one; missing from an API of before (TASK-355 part B).
+   */
+  photo?: string | null;
+}
+
+/** The reactions of a post, as its card shows them. */
+export interface FeedReactions {
+  total: number;
+  /** The reader's own; null when it left none. */
+  mine: ReactionKind | null;
 }
 
 /**
@@ -1082,9 +1710,186 @@ export interface FeedPage {
 }
 
 /**
+ * The tabs of «Feed» (TASK-362, ADR-0308), as GET /feed?filter=… names them:
+ * `all` is what everyone may see, `following` the reader's own and those of
+ * the people it follows. Either way the last published first, with no groups
+ * and no point.
+ */
+export type FeedFilter = "all" | "following";
+
+/** GET /feed?filter=…: a page of one tab, which says its tab. An API before
+ * the tabs ignores `filter` and leaves `filter` out of the page. */
+export interface FilteredFeedPage extends FeedPage {
+  filter: FeedFilter;
+}
+
+/** GET /feed?filter=following: a page that says apart a reader who follows
+ * nobody from one whose people have published nothing. */
+export interface FollowingFeedPage extends FilteredFeedPage {
+  follows_anyone: boolean;
+}
+
+// --- Posts of photos only (TASK-312 part C, ADR-0272) ---
+//
+// A drawing without a run: photos taken elsewhere, from Instagram too,
+// with a title, a description and the members tagged. Only an app that
+// says `photos` in X-MuW-Reads receives one (reads.json), in GET /feed,
+// GET /users/{id}/drawings, GET /users/{id}/photos and GET /drawings/{id}:
+// the types of the posts of runs above stay as they were, and the app
+// tells the two apart with isPhotoPost where it reads them.
+
+/** `source` of a post of photos only, and the value said in X-MuW-Reads. */
+export const PHOTOS_SOURCE = "photos" as const;
+/** Where a drawing comes from: its run, photos only, a night of sleep
+ * (TASK-467 part E, sleep.ts) or a gym plan posted (TASK-485,
+ * planPosts.ts). */
+export type DrawingSource =
+  RunSource | typeof PHOTOS_SOURCE | typeof SLEEP_SOURCE | typeof PLAN_SOURCE;
+/** Never «Only me»: its photos are on the server only while others see it. */
+export const PHOTO_POST_VISIBILITIES = ["everyone", "followers"] as const;
+export type PhotoPostVisibility = (typeof PHOTO_POST_VISIBILITIES)[number];
+/** Its places, 1 to 10: there is no map among them. */
+export const PHOTO_POST_MAX_PHOTOS = 10;
+
+/** PUT /me/photo-posts/{key}: the post as it should be now, the key made
+ * by the phone as a run's; sent again, it changes nothing. */
+export interface PhotoPostRequest {
+  title?: string | null;
+  description?: string | null;
+  visibility: PhotoPostVisibility;
+  /** The public_id of the members tagged, in order; [] or missing: none. */
+  tags?: string[];
+}
+
+/** PUT /me/photo-posts/{key}/order: the photos by place, `photo:2`, each
+ * once; no `drawing`. The photos themselves go to
+ * PUT /me/photo-posts/{key}/photos/{n} as DrawingPhotoRequest. */
+export interface PhotoPostOrderRequest {
+  order: string[];
+}
+
+/** A post of photos only as its owner has it: GET, PUT /me/photo-posts/{key}
+ * and its photos and order. */
+export interface MyPhotoPost {
+  key: string;
+  /** What the others open it with: GET /drawings/{id}. */
+  id: string;
+  title: string | null;
+  description: string | null;
+  visibility: PhotoPostVisibility;
+  /** Set by its first photo; null while it has none, and nobody but its
+   * owner finds it. */
+  published_at: string | null;
+  tags: DrawingTag[];
+  photos: DrawingPhoto[];
+  order: string[] | null;
+}
+
+/** GET /me/photo-posts: every post of photos only of the account, the last
+ * published first (those waiting for a photo by when they were last kept).
+ * The app finds there the key of a post it opened by its id (part C1b). */
+export interface MyPhotoPosts {
+  photo_posts: MyPhotoPost[];
+}
+
+/** What a post of photos only has instead of a run's numbers. */
+interface WithoutRun {
+  id: string;
+  title: string | null;
+  /** When it was published. */
+  started_at: string;
+  published_at: string | null;
+  place: null;
+  shape: null;
+  word: null;
+  style: null;
+  route_title: null;
+  distance_m: 0;
+  duration_s: 0;
+  score: null;
+  fidelity: null;
+  visibility: PhotoPostVisibility;
+  description: string | null;
+  activity: null;
+  source: typeof PHOTOS_SOURCE;
+  tags: DrawingTag[];
+  photos: DrawingPhoto[];
+  order: string[] | null;
+  rotation_deg: null;
+  ski_descents: null;
+  flight_split: null;
+  sleep: null;
+  /** Not a gym plan posted (TASK-485). */
+  plan: null;
+  /** Never: a link shows a line, and it has none. */
+  linkable: false;
+}
+
+/** A post of photos only in GET /users/{id}/drawings. */
+export interface PhotoDrawing extends WithoutRun {
+  track_preview: [];
+}
+
+/** A post of photos only in GET /feed. */
+export interface PhotoFeedPost extends PhotoDrawing {
+  author: DrawingAuthor;
+}
+
+/** A post of photos only in GET /drawings/{id}. */
+export interface PhotoDrawingDetail extends WithoutRun {
+  author: DrawingAuthor;
+  public: boolean;
+  track: [];
+  stats: null;
+}
+
+/** Whether a drawing an API answered is a post of photos only. */
+export function isPhotoPost(post: { source?: string | null }): boolean {
+  return post.source === PHOTOS_SOURCE;
+}
+
+/** The orders of GET /search/drawings (TASK-344, ADR-0297): the last
+ * published, the longest, the one with the most reactions first. */
+export const DRAWING_SORTS = ["recent", "longest", "popular"] as const;
+export type DrawingSort = (typeof DRAWING_SORTS)[number];
+
+/** How complex a drawing's line is, a filter of GET /search/drawings. */
+export const DRAWING_COMPLEXITIES = ["simple", "medium", "complex"] as const;
+export type DrawingComplexity = (typeof DRAWING_COMPLEXITIES)[number];
+
+/**
+ * How complex a line is: its length over the diagonal of the rectangle it
+ * fits in, on at most 64 of its points. Below the first, simple; below the
+ * second, medium; complex above. The same on the server
+ * (drawing_search.py) and for the examples on the phone.
+ */
+export const DRAWING_SIMPLE_BELOW = 3.6;
+export const DRAWING_MEDIUM_BELOW = 4.5;
+
+/** Posts a page of GET /search/drawings holds unless `limit` says. */
+export const DRAWING_SEARCH_PAGE_SIZE = 20;
+
+/**
+ * GET /search/drawings?q=…&named=…&shape=…&activity=…&min_m=…&max_m=…
+ * &place=…&complexity=…&sort=…&limit=20&cursor=… (TASK-344): the drawings
+ * the reader may see that hold every word of `q`, capitals and accents
+ * aside, or are of a shape in `named`, and pass every filter. A list
+ * filter is sent once for each value. Never a private one. A page is the
+ * feed's.
+ */
+export interface DrawingSearchPage extends FeedPage {
+  /**
+   * `shape=word` finds the words drawn (TASK-344 part B). An API before
+   * it leaves this out and finds nothing for it: the app hides «Words».
+   */
+  words?: boolean;
+}
+
+/**
  * What a member reports with POST /reports (TASK-121, ADR-0228): a drawing
- * (a post of the feed), a comment, a member, a group run (TASK-309), or a
- * private message (TASK-319: only the one it was sent to reports it).
+ * (a post of the feed), a comment, a member, a group run (TASK-309), a
+ * private message (TASK-319: only the one it was sent to reports it), an
+ * item tagged on a photo (TASK-394), or an item of gear (TASK-486).
  */
 export const REPORT_KINDS = [
   "drawing",
@@ -1092,6 +1897,8 @@ export const REPORT_KINDS = [
   "user",
   "group_run",
   "message",
+  "outfit_tag",
+  "gear",
 ] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
@@ -1111,7 +1918,7 @@ export type ReportReason = (typeof REPORT_REASONS)[number];
 /**
  * POST /reports: kept once for each reporter and thing, the latest reason
  * kept; 204. `id` is the drawing's id, the comment's id, the member's
- * public_id or the message's id. PUT and DELETE /users/{public_id}/block keep two members
+ * public_id, the message's id or the item's id. PUT and DELETE /users/{public_id}/block keep two members
  * apart both ways, and GET /me/blocked is a PeoplePage of those blocked.
  */
 export interface ReportRequest {
@@ -1162,16 +1969,30 @@ export type PushData =
  * unlocked. Its `data` carries the runner's own profile, as a follow
  * event's would; the app opens «Play» instead.
  */
-export type GamePushKind = "shape_unlocked";
+export type GamePushKind = "shape_unlocked" | "edition_up" | "collection_done";
 
 /**
  * What a shape of the game asks (GET /game/catalog): so many metres in
  * all, or `distance_m` in one run at `pace_s` seconds a kilometre or
- * better. The fields of the other kind are null.
+ * better. The fields of the other kind are null. `single_run` (TASK-423):
+ * a milestone of one run, «One run of 5 km»; its pace is so slow that any
+ * run of the distance meets it. Absent from an API before TASK-423.
  */
 export type GameGoal =
-  | { kind: "distance"; total_m: number; distance_m: null; pace_s: null }
-  | { kind: "pace"; total_m: null; distance_m: number; pace_s: number };
+  | {
+      kind: "distance";
+      total_m: number;
+      distance_m: null;
+      pace_s: null;
+      single_run?: boolean;
+    }
+  | {
+      kind: "pace";
+      total_m: null;
+      distance_m: number;
+      pace_s: number;
+      single_run?: boolean;
+    };
 
 /** A shape to collect, as the API's catalog serves it. */
 export interface GameShape {
@@ -1182,13 +2003,30 @@ export interface GameShape {
   /** Closed (the last point is the first), from 0 to 1, y downwards as on
    * a screen: a drawing, never a place. */
   outline: [number, number][];
+  /** The id of its collection (TASK-423); absent from an older API. */
+  collection?: string;
+}
+
+/** A collection of shapes (TASK-423, ADR-0351): «Animals», «Sky». */
+export interface GameCollection {
+  id: string;
+  names: Record<PushLanguage, string>;
 }
 
 /** GET /game/catalog: the shapes of the game. Without an account; an API
- * before the game answers 404, and the app shows no «Play» (ADR-0255). */
+ * before the game answers 404, and the app shows no «Play» (ADR-0255).
+ * `collections`, in order, from TASK-423; absent from an older API. */
 export interface GameCatalog {
   rules_version: number;
   shapes: GameShape[];
+  collections?: GameCollection[];
+}
+
+/** How far along a collection the account is: «7 / 13» (TASK-423). */
+export interface GameCollectionState {
+  id: string;
+  unlocked: number;
+  total: number;
 }
 
 /** One shape of the catalog, for the account: when it was unlocked, or how
@@ -1197,7 +2035,20 @@ export interface GameShapeState {
   id: string;
   unlocked_at: string | null;
   progress: number;
+  /**
+   * The edition of a pace or milestone shape (TASK-423 part E): bronze once
+   * unlocked, silver once its goal is met in 3 runs, gold in 10; null
+   * before, and for a shape of the total kilometres. Absent from an older
+   * API.
+   */
+  edition?: GameEdition | null;
+  /** The counted runs that met its goal; null for a shape of the total
+   * kilometres. Absent from an older API. */
+  edition_runs?: number | null;
 }
+
+/** The editions of a shape (TASK-423 part E, ADR-0351). */
+export type GameEdition = "bronze" | "silver" | "gold";
 
 /** GET /game/me: the game of the account. `best_s` has the best moving
  * seconds by distance in metres, as text: {"1000": 287.4}. */
@@ -1206,6 +2057,68 @@ export interface GameMe {
   longest_m: number;
   best_s: Record<string, number>;
   shapes: GameShapeState[];
+  /** Each collection in catalog order (TASK-423); absent from an older API. */
+  collections?: GameCollectionState[];
+}
+
+/**
+ * What a personal challenge's number is (TASK-423 part C): metres, a count
+ * of outings, days, or seconds a kilometre, where lower is better.
+ */
+export type GamePersonalUnit = "m" | "count" | "days" | "pace_s";
+
+/** A personal challenge: its id and its three steps, bronze to gold. */
+export interface GamePersonalChallenge {
+  /** "week_km", "early", "month_days": the app names it. */
+  id: string;
+  unit: GamePersonalUnit;
+  /** Bronze, silver, gold: to reach, or for "pace_s" to beat. */
+  tiers: number[];
+}
+
+/** A challenge of this week or month, for the account. */
+export interface GamePersonalStanding extends GamePersonalChallenge {
+  /** Where the account is; null for a pace without a run of the distance. */
+  value: number | null;
+  /** 0 to 3: the steps reached. */
+  tier: number;
+}
+
+/** A week or a month on the runner's clock: `end` is the day after it. */
+export interface GamePersonalPeriod {
+  start: string;
+  end: string;
+  challenges: GamePersonalStanding[];
+}
+
+/** One line of the streak: weeks in a row with at least `runs` outings. */
+export interface GameStreak {
+  runs: number;
+  current: number;
+  best: number;
+}
+
+/** A step reached in a week or a month gone by: its medal. */
+export interface GamePersonalFinished extends GamePersonalChallenge {
+  period: "week" | "month";
+  start: string;
+  /** 1 bronze, 2 silver, 3 gold. */
+  tier: number;
+  done_at: string;
+}
+
+/**
+ * GET /game/personal (TASK-423 part C, ADR-0351): the account's personal
+ * challenges and streak, on the phone's clock (`utc_offset_min` in the
+ * query). An API before it answers 404.
+ */
+export interface GamePersonal {
+  week: GamePersonalPeriod;
+  month: GamePersonalPeriod;
+  /** Three lines: 1, 2 and 3 outings a week. */
+  streaks: GameStreak[];
+  /** The medals of the last 8 weeks, newest first, this period's left out. */
+  finished: GamePersonalFinished[];
 }
 
 /** Why a run does not count for the game, or counts less (docs/GIOCO.md §4). */
@@ -1219,6 +2132,61 @@ export interface RunGame {
   counted_m: number;
   best_s: Record<string, number>;
   unlocked: string[];
+  /** The silver and gold editions the run gave (TASK-423 part E); absent
+   * from an older API. */
+  editions?: GameEditionUp[];
+  /** The collections the run completed, each a new frame (TASK-423 part
+   * E); absent from an older API. */
+  collections_done?: string[];
+}
+
+/** An edition a run gave. */
+export interface GameEditionUp {
+  shape_id: string;
+  edition: "silver" | "gold";
+}
+
+/**
+ * A title or a badge of the game (TASK-423 part E): reached or not, and how
+ * far along, in its own unit (metres, weeks, medals, editions, challenges).
+ */
+export interface GamePrizeState {
+  id: string;
+  got: boolean;
+  value: number;
+  target: number;
+}
+
+/** The frame of a collection: got once all its shapes are unlocked. */
+export interface GameFrame {
+  /** The collection's id. */
+  id: string;
+  got: boolean;
+  unlocked: number;
+  total: number;
+}
+
+/** What an account shows of the game on its public profile: one frame, one
+ * title, up to `GAME_SHOWN_BADGES_MAX` badges. Nothing by default. */
+export interface GamePrizesShown {
+  frame: string | null;
+  title: string | null;
+  badges: string[];
+}
+
+export const GAME_SHOWN_BADGES_MAX = 3;
+
+/**
+ * GET /game/prizes, and the answer of PUT /game/prizes/shown (TASK-423 part
+ * E, ADR-0351): the account's frames, titles and badges, its editions and
+ * what it shows. An API before part E answers 404.
+ */
+export interface GamePrizes {
+  frames: GameFrame[];
+  titles: GamePrizeState[];
+  badges: GamePrizeState[];
+  editions: { silver: number; gold: number };
+  shown: GamePrizesShown;
 }
 
 /** The most hashes one POST /people/from-contacts takes (TASK-262 C). */
@@ -1266,9 +2234,14 @@ export interface ChallengePushData {
   challenge_id: string;
 }
 
-/** The limits of a challenge, as the API checks them (docs/GIOCO.md §6.2). */
+/**
+ * The limits of a challenge, as the API checks them (docs/GIOCO.md §6.2):
+ * `MIN_PIECES, MAX_PIECES` and `MIN_DAYS, MAX_DAYS, DEFAULT_DAYS` of
+ * services/api/shaperoute_api/game_challenges.py; up to 20 pieces and 30
+ * days from TASK-423 part C. test/gameTeams.test.ts holds them together.
+ */
 export const CHALLENGE_PIECES_MIN = 2;
-export const CHALLENGE_PIECES_MAX = 12;
+export const CHALLENGE_PIECES_MAX = 20;
 export const CHALLENGE_PIECE_M_MIN = 1_000;
 export const CHALLENGE_PIECE_M_MAX = 50_000;
 /** A fast piece is run over one of these distances, in metres. */
@@ -1276,7 +2249,7 @@ export const CHALLENGE_FAST_DISTANCES_M: readonly number[] = [1_000, 5_000];
 export const CHALLENGE_PACE_S_MIN = 150;
 export const CHALLENGE_PACE_S_MAX = 900;
 export const CHALLENGE_DAYS_MIN = 1;
-export const CHALLENGE_DAYS_MAX = 14;
+export const CHALLENGE_DAYS_MAX = 30;
 export const CHALLENGE_DAYS_DEFAULT = 7;
 /** A team takes this many members, and an account is in this many teams. */
 export const TEAM_MEMBERS_MAX = 20;
@@ -1446,6 +2419,90 @@ export interface Contest {
   top: ContestEntry[];
   mine?: ContestMine | null;
   winner: ContestWinner | null;
+}
+
+// --- The monthly challenges (TASK-343, ADR-0296; docs/CONCORSI.md §15) ---
+
+/** A theme in one language. */
+export interface ContestThemeText {
+  /** 1 to 60 characters. */
+  title: string;
+  /** 1 to 500 characters. */
+  description: string;
+}
+
+/**
+ * The theme of a monthly challenge, by language: the app shows its own,
+ * English when it is missing.
+ */
+export interface ContestTheme {
+  en: ContestThemeText;
+  de?: ContestThemeText | null;
+  it?: ContestThemeText | null;
+  es?: ContestThemeText | null;
+  fr?: ContestThemeText | null;
+}
+
+/**
+ * GET /contests/current for a monthly challenge: a `Contest` with its theme.
+ * Only the drawings entered take part, so `top`, `mine` and `winner` are of
+ * those. `entrants` counts the accounts with a drawing that takes part;
+ * `entered`, only with a token, the drawings of who asks entered, whether
+ * they still take part or not. A contest without a theme has none of these
+ * three fields.
+ */
+export interface ThemedContest extends Contest {
+  theme: ContestTheme;
+  entrants: number;
+  entered?: string[];
+}
+
+/** The orders of the gallery: by place, or the latest published first. */
+export type ContestGalleryOrder = "top" | "new";
+
+/**
+ * GET /contests/{id}/entries?order=top|new&cursor=: a page of 30 of the
+ * whole standings of a contest. With a token a post across a block with who
+ * asks is left out, and the others keep their `rank`.
+ */
+export interface ContestEntriesPage {
+  entries: ContestEntry[];
+  /** The `cursor` of the next page, of the same order; null on the last. */
+  next: string | null;
+}
+
+/** A contest closed, in the archive. */
+export interface PastContest {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  closed_at: string;
+  /** Null for a contest without a theme. */
+  theme: ContestTheme | null;
+  entrants: number;
+  /** The first three, as in `Contest`. */
+  top: ContestEntry[];
+  winner: ContestWinner;
+}
+
+/** GET /contests?state=closed&cursor=: a page of 10, the latest closed first. */
+export interface PastContestsPage {
+  contests: PastContest[];
+  next: string | null;
+}
+
+/**
+ * The push notifications of a monthly challenge, beside `PushKind`: a new
+ * one opened, its last 3 days, its results. Their `data` is
+ * `{ kind, contest_id }`, and the app opens the page of the challenge. The
+ * winner still hears `contest_won`.
+ */
+export type ContestPushKind = "contest_open" | "contest_last_days" | "contest_results";
+
+/** The `data` of a monthly challenge's notification. */
+export interface ContestPushData {
+  kind: ContestPushKind;
+  contest_id: string;
 }
 
 /** The longest message «Send feedback» takes (TASK-308). */
@@ -1660,19 +2717,29 @@ export type ConversationBox = "inbox" | "requests";
  * MESSAGE_MAX_LENGTH characters once the spaces at either end are gone; new
  * lines are kept. The answer is the Message (201). The one message of a
  * request is refused as a comment ("comment_rejected") when negative.
+ * With an attachment (TASK-333) the text may be empty; outside an "open"
+ * conversation an attachment is 409.
  */
 export interface MessageRequest {
   text: string;
+  attachment?: MessageAttachmentRequest;
 }
 
 /** One message, as who asks sees it. */
 export interface Message {
   id: string;
-  /** Plain text: shown as text, never as a link or HTML. */
+  /**
+   * Plain text: shown as text, never as a link or HTML. Asked without
+   * `?with=attachments`, a message with an attachment says «[Photo]»,
+   * «[Video]» or «[Drawing]» before it, for an app of before.
+   */
   text: string;
   created_at: string;
   /** Who asks wrote it, and may delete it (DELETE /messages/{id}). */
   mine: boolean;
+  /** What it carries besides its text; null: nothing. Missing from an API
+   * before TASK-333. */
+  attachment?: MessageAttachment | null;
 }
 
 /**
@@ -1687,7 +2754,15 @@ export interface MessagesPage {
   messages: Message[];
   /** The `cursor` of the page of older ones; null on the oldest. */
   next: string | null;
+  /**
+   * What who asks may attach now (TASK-333): null outside an "open"
+   * conversation. Missing from an API before it: then no «+».
+   */
+  attachments?: AttachmentsAllowed | null;
 }
+
+/** The most `unread_count` counts: beyond it the app says «9+» anyway. */
+export const CONVERSATION_UNREAD_COUNT_MAX = 10;
 
 /** One conversation in a list: who with, and its latest message. */
 export interface Conversation {
@@ -1695,6 +2770,11 @@ export interface Conversation {
   last: Message;
   /** The other wrote since who asks last read it (PUT …/read). */
   unread: boolean;
+  /**
+   * How many it wrote since, up to CONVERSATION_UNREAD_COUNT_MAX (TASK-353);
+   * missing on a server of before.
+   */
+  unread_count?: number;
 }
 
 /**
@@ -1733,6 +2813,198 @@ export interface MessagePushData {
   public_id: string;
   username: string;
 }
+
+// --- Attachments of the private messages (TASK-333, ADR-0289) ---
+
+/** What a message may carry besides its text. */
+export const MESSAGE_ATTACHMENT_KINDS = ["photo", "video", "drawing"] as const;
+export type MessageAttachmentKind = (typeof MESSAGE_ATTACHMENT_KINDS)[number];
+/** The user's limits of 2026-10-29, checked by the API too. */
+export const MESSAGE_VIDEO_MAX_S = 60;
+export const MESSAGE_VIDEO_MAX_BYTES = 40_000_000;
+/** A video is kept this long after its message, then `expired`. */
+export const MESSAGE_VIDEO_DAYS = 30;
+/** Ask the pages and POST with this, `?with=attachments`, to read the
+ * attachments: without, the text says «[Photo]» and the like. */
+export const WITH_ATTACHMENTS = "attachments";
+
+/**
+ * A drawing sent in a message: a copy of the route, the body PUT
+ * /me/favorites/{key} takes (the app's FavoriteRequest). A run of who sends
+ * it goes cut as in the Feed; a route planned goes whole, with its start.
+ * GET /messages/{id}/drawing answers it.
+ */
+export interface MessageDrawing {
+  city: string;
+  shape: string | null;
+  word: string | null;
+  style: LetterStyle | null;
+  title: string | null;
+  distance_m: number;
+  route_m: number;
+  similarity: number;
+  points: LatLon[];
+  walks?: Walk[];
+  activity?: Activity;
+  on_foot?: Stretch[];
+  rotation_deg?: number | null;
+}
+
+/**
+ * A message's attachment: a photo or video sent first with POST
+ * /me/message-media (the file's bytes as the body, Content-Type image/jpeg,
+ * image/png, video/mp4 or video/quicktime), a drawing, or a post (TASK-455).
+ * One of them.
+ */
+export type MessageAttachmentRequest =
+  | { media_id: string; drawing?: undefined; post_id?: undefined }
+  | { drawing: MessageDrawing; media_id?: undefined; post_id?: undefined }
+  | MessagePostRequest;
+
+/** POST /me/message-media (201): the file kept, to send within the hour. */
+export interface MessageMedia {
+  id: string;
+  kind: "photo" | "video";
+  /** As shown: a photo at most 1080 px on its longer side. */
+  width: number | null;
+  height: number | null;
+  /** A video's length. */
+  duration_ms: number | null;
+  bytes: number;
+}
+
+/** A drawing as the conversation shows it; GET /messages/{id}/drawing has
+ * it whole, as a MessageDrawing. */
+export interface MessageDrawingCard {
+  title: string | null;
+  shape: string | null;
+  word: string | null;
+  style: LetterStyle | null;
+  distance_m: number;
+  route_m: number;
+  activity: string;
+  rotation_deg: number | null;
+  /** At most 64 points of its line. */
+  preview: LatLon[];
+}
+
+/** What a message carries besides its text. */
+export interface MessageAttachment {
+  /** `post` (MESSAGE_POST_KIND) only for an app that says it reads one. */
+  kind: MessageAttachmentKind | typeof MESSAGE_POST_KIND;
+  /** A photo's or a video's: GET /message-media/{media_id}, with the key
+   * and the token. Null for a drawing and a video expired. */
+  media_id: string | null;
+  width: number | null;
+  height: number | null;
+  duration_ms: number | null;
+  /** A video's first picture: GET /message-media/{media_id}/poster. */
+  poster: boolean;
+  /** A video MESSAGE_VIDEO_DAYS after its message: «This video has expired.» */
+  expired: boolean;
+  drawing: MessageDrawingCard | null;
+  /** A post's card (TASK-455), with the kind MESSAGE_POST_KIND; null for
+   * any other attachment, and for a post who asks may not open, or gone:
+   * «This post is no longer available.» Absent from an API of before. */
+  post?: MessagePostCard | null;
+}
+
+// --- The link of a post (TASK-455 part C, ADR-0382) ---
+
+/** Where the link of a post leads: this, then the drawing's id. The page
+ * reads the id after the «#», which no server is sent. */
+export const POST_LINK_PAGE = "https://getmuw.app/p/#";
+
+/**
+ * GET /post?id=<the drawing's id>: what the link of a post shows, asked by
+ * the page of the site with no account and no API key. Only a drawing every
+ * member sees, of an owner who leaves «Links to my posts» on; any other is
+ * 404, as an id that is not there. Never the photos, the comments, the
+ * description, the place nor a time.
+ */
+export interface PostLink {
+  /** The drawing's. */
+  id: string;
+  /** Who drew it. */
+  username: string;
+  /** Its owner's; null: none. */
+  title: string | null;
+  shape: string | null;
+  word: string | null;
+  /** As in a drawing: what its route draws without a shape or a word. */
+  route_title: string | null;
+  distance_m: number;
+  activity: string;
+  rotation_deg: number | null;
+  /** The line as every member sees it already, whole. */
+  track: LatLon[];
+}
+
+/**
+ * GET and PUT /me/post-links: «Links to my posts», on from the start. Off,
+ * no link to the account's drawings works, its owner's own included, and
+ * none of them is `linkable`.
+ */
+export interface PostLinksSwitch {
+  post_links: boolean;
+}
+
+// --- A post in a private message (TASK-455, ADR-0382) ---
+
+/**
+ * The kind of an attachment that is a post: a pointer to a drawing somebody
+ * published, never a copy. Only an app that says READS_MESSAGE_POST receives
+ * it, so it is not among MESSAGE_ATTACHMENT_KINDS, which every app that asks
+ * `?with=attachments` reads; the others read «[Post]» before the text.
+ */
+export const MESSAGE_POST_KIND = "post";
+/** Said in the header X-MuW-Reads, among the kinds the app reads, by an app
+ * that shows a post attached. An API of before leaves it out. */
+export const READS_MESSAGE_POST = "post";
+
+/** A post to send: the id of a drawing who sends sees. 404 for one it does
+ * not see; 422 for its own that only it sees. */
+export interface MessagePostRequest {
+  post_id: string;
+  media_id?: undefined;
+  drawing?: undefined;
+}
+
+/**
+ * A post as the conversation shows it to who asks. The API answers it at
+ * every reading only while who asks may open the post itself (who can see
+ * it, a follow accepted, no block): nothing of it is kept in the message.
+ * GET /drawings/{id} has it whole.
+ */
+export interface MessagePostCard {
+  /** The drawing's. */
+  id: string;
+  author: Person;
+  /** Its owner's; null: none. */
+  title: string | null;
+  shape: string | null;
+  word: string | null;
+  style: string | null;
+  /** As in a drawing: what its route draws without a shape or a word. */
+  route_title: string | null;
+  distance_m: number;
+  activity: string;
+  rotation_deg: number | null;
+  /** At most 64 points of its line; none for a post without one. */
+  preview: LatLon[];
+}
+
+/**
+ * What may be attached in a conversation now. "video" leaves while the
+ * server is full of them (POST /me/message-media is then 507). An app that
+ * says READS_MESSAGE_POST also finds MESSAGE_POST_KIND here (TASK-455).
+ */
+export interface AttachmentsAllowed {
+  kinds: (MessageAttachmentKind | typeof MESSAGE_POST_KIND)[];
+  video_max_s: number;
+  video_max_bytes: number;
+  photo_max_bytes: number;
+}
 /**
  * A photo of a drawing on a profile (TASK-324): GET /users/{public_id}/photos.
  * Read as DrawingPhoto from `url`; a tap opens its drawing.
@@ -1750,6 +3022,140 @@ export interface UserPhotosPage {
   photos: UserPhoto[];
   /** The `cursor` of the next page; null on the last one. */
   next: string | null;
+}
+
+/** A route MuW draws for the Feed (TASK-365, ADR-0310): nobody ran it, so it has no person, date, time or pace. */
+export interface MuwRoute {
+  id: string;
+  city: string;
+  activity: string;
+  /** The title in every language of the app, by language id. */
+  titles: Record<string, string>;
+  route_m: number;
+  /** An estimate from elevation tiles, not a measure. */
+  climb_m: number;
+  difficulty: "easy" | "moderate" | "hard";
+  start: LatLon;
+  /** At most 64 points of the line. */
+  preview: LatLon[];
+  /** As `RouteResult.rotation_deg`. */
+  rotation_deg: number;
+  /** What it draws, as a route request says it: a shape, or a word with its
+   * style; null and null from a file without its figure. */
+  shape?: string | null;
+  word?: string | null;
+  style?: string | null;
+}
+
+/** GET /muw-routes. An older server answers 404: no routes. */
+export interface MuwRoutesPage {
+  routes: MuwRoute[];
+}
+
+/** GET /muw-routes/{id}: the route whole. */
+export interface MuwRouteDetail extends Omit<MuwRoute, "start" | "preview"> {
+  points: LatLon[];
+  /** As `RouteResult.on_foot`. */
+  on_foot: Stretch[];
+  license: string;
+  /** The figure's own outline when the catalogue does not have it: what is
+   * the request the route opens with; the line is still `points`. */
+  outline?: OutlinePoint[] | null;
+}
+
+// --- The bell (TASK-367 part C, ADR-0311; docs/API.md, «The bell») ---
+
+/**
+ * One line of the bell (GET /notifications): what a push told the account,
+ * kept for it to read in the app. `kind` is the push's (reaction, comment,
+ * tag, follow_request, contest_open, …: every kind but the private
+ * messages'); `text` is the push's text in the account's language; `opens`
+ * is the push's `data`: what the app opens when the line is touched.
+ */
+export interface NotificationLine {
+  /** Ascending: a newer line has a larger id. */
+  id: number;
+  kind: string;
+  text: string;
+  at: string;
+  read: boolean;
+  /** Who acted; the account itself for its own kinds (the game, a contest). */
+  actor: Person;
+  opens: NotificationOpens;
+}
+
+/**
+ * What a line of the bell opens, as the API's push.data_of says it: a
+ * monthly challenge, a group run, a challenge of the game, a drawing, or
+ * the profile of who acted.
+ */
+export type NotificationOpens =
+  | { kind: string; contest_id: string }
+  | { kind: string; group_run_id: string }
+  | { kind: string; challenge_id: string }
+  | { kind: string; drawing_id: string }
+  /** An item of gear past its limit (TASK-486 part G): it opens the item. */
+  | { kind: string; gear_id: string }
+  | { kind: string; public_id: string; username: string };
+
+/** GET /notifications: the newest first, with how many are unread. */
+export interface NotificationsPage {
+  notifications: NotificationLine[];
+  unread: number;
+  /** Ask with ?before= for the next page; null at the end. */
+  before: number | null;
+}
+
+/** POST /notifications/read: the newest line the app showed; 204. */
+export interface NotificationsReadRequest {
+  up_to: number;
+}
+
+// --- MuW Style (TASK-384, ADR-0326): our posts with an AI photo and shop
+// links, apart from GET /feed. An API before them answers 404. ---
+
+export const STYLE_THEMES = ["running", "trail", "bike", "gym", "athleisure"] as const;
+export type StyleTheme = (typeof STYLE_THEMES)[number];
+export type StyleGender = "women" | "men";
+
+/** A dot on the photo and its product. */
+export interface StyleTag {
+  id: number;
+  /** From the left and the top of the photo, 0–1. */
+  x: number;
+  y: number;
+  item: string;
+  brand: string;
+  product_name: string;
+  retailer: "zalando" | "amazon" | "decathlon";
+  /** null when read more than 7 days ago: the app says «See price». */
+  price_eur: number | null;
+  price_seen_on: string | null;
+}
+
+/** GET /style/{id}: the photo is at image_url, a JPEG. */
+export interface StylePost {
+  id: string;
+  theme: StyleTheme;
+  gender: StyleGender;
+  /** In the five languages of the app. */
+  title: Record<string, string>;
+  image_url: string;
+  image_tool: string;
+  published_at: string;
+  tags: StyleTag[];
+}
+
+/** GET /style?theme=&gender=&before=&limit=: the newest first. */
+export interface StylePage {
+  posts: StylePost[];
+  /** Ask with ?before= for the next page; null at the end. */
+  before: string | null;
+}
+
+/** POST /style/tags/{id}/shop: what the app opens in the browser. */
+export interface StyleShop {
+  url: string;
 }
 
 /**
@@ -1782,3 +3188,128 @@ export interface ImagePenUpRouteRequest extends Omit<ImageRouteRequest, "pen_up"
   pieces: OutlinePoint[][];
   pen_up: true;
 }
+
+export * from "./gym.ts";
+export * from "./poolSwim.ts";
+export * from "./stretchSession.ts";
+export * from "./activityCalendar.ts";
+export * from "./flightBests.ts";
+export * from "./liveShare.ts";
+
+/**
+ * The items a member tags on the photos of its own posts (TASK-394,
+ * ADR-0333): the list the app shows, in this order (its words: Shoes, Top,
+ * Jacket…).
+ */
+export const OUTFIT_ITEMS = [
+  "shoes",
+  "top",
+  "jacket",
+  "shorts",
+  "tights",
+  "socks",
+  "cap",
+  "glasses",
+  "watch",
+  "backpack",
+  "other",
+] as const;
+export type OutfitItem = (typeof OUTFIT_ITEMS)[number];
+
+/** At most on a photo, and in a post; checked by the API too. */
+export const OUTFIT_TAGS_ON_PHOTO = 5;
+export const OUTFIT_TAGS_IN_POST = 10;
+export const OUTFIT_BRAND_MAX_LENGTH = 40;
+export const OUTFIT_MODEL_MAX_LENGTH = 80;
+
+/**
+ * Why the API refuses an item with "outfit_tag_rejected": a link that is not
+ * an https page on a domain name, a shortener, a link MuW cannot open (its
+ * list of domains, or Web Risk), an address in the brand or the model, more
+ * than 5 on the photo or 10 in the post, words of the filter.
+ */
+export const OUTFIT_TAG_REASONS = [
+  "not_https",
+  "shortened",
+  "blocked",
+  "link_in_text",
+  "too_many_on_photo",
+  "too_many_in_post",
+  "words",
+] as const;
+export type OutfitTagReason = (typeof OUTFIT_TAG_REASONS)[number];
+
+/** An item on a photo, in DrawingPhoto.outfit_tags. */
+export interface OutfitTag {
+  id: string;
+  /** From the left and the top of the photo, 0–1. */
+  x: number;
+  y: number;
+  item: OutfitItem;
+  brand: string;
+  product_name: string | null;
+  /** What «Shop on {store}» names; null: no link, no «Shop». */
+  store: string | null;
+  /** The link as kept, to the owner only, to change it; the others ask /shop. */
+  url: string | null;
+  /** Hidden from a report: only its owner ever sees one. */
+  hidden: boolean;
+  /** Times opened and «Shop» touched, in all: to the owner only, else null. */
+  opens: number | null;
+  shops: number | null;
+  /**
+   * The item of gear it is (TASK-486 part F): the dot opens it. Null, or
+   * absent from an API of before, when there is none or who asks does not
+   * see that item.
+   */
+  gear_id?: string | null;
+}
+
+/** One item of PUT /me/activities/{key}/drawing/photos/{n}/tags. */
+export interface OutfitTagRequest {
+  /** One already on this photo: it stays, with its counts. */
+  id?: string | null;
+  x: number;
+  y: number;
+  item: OutfitItem;
+  brand: string;
+  product_name?: string | null;
+  /** A shop's https page; the API cleans it before keeping it. */
+  url?: string | null;
+  /**
+   * One of its owner's gear (TASK-486 part F). Not sent, an item kept keeps
+   * the one it had; null takes it off.
+   */
+  gear_id?: string | null;
+}
+
+/**
+ * PUT /me/activities/{key}/drawing/photos/{n}/tags: every item of the photo,
+ * in order; the answer is OutfitTags, as its owner sees them.
+ */
+export interface OutfitTagsRequest {
+  tags: OutfitTagRequest[];
+}
+
+export interface OutfitTags {
+  tags: OutfitTag[];
+}
+
+/**
+ * POST /outfit-tags/{id}/shop: what the app opens in the browser; null:
+ * «This link isn't available.». POST /outfit-tags/{id}/open is 204.
+ */
+export interface OutfitShop {
+  url: string | null;
+}
+export * from "./skiResorts.ts";
+export * from "./skiDays.ts";
+export * from "./skiSeason.ts";
+export * from "./resortFollows.ts";
+export * from "./skiParts.ts";
+export * from "./flightParts.ts";
+export * from "./sleep.ts";
+export * from "./planPosts.ts";
+export * from "./together.ts";
+export * from "./gymHistory.ts";
+export * from "./gear.ts";

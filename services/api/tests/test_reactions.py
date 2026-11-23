@@ -193,7 +193,8 @@ def test_the_examples_are_the_bodies() -> None:
     ReactionsBody.model_validate(summary)
     result = _load("reaction-result.json")
     assert set(result) == set(ReactionResultBody.model_fields)
-    assert set(result["comment"]) == set(CommentBody.model_fields)
+    # A comment from before the replies (TASK-454): a part of its body.
+    assert set(result["comment"]) <= set(CommentBody.model_fields)
     ReactionResultBody.model_validate(result)
     assert result["comment"]["text"] == _load("super-like-request.json")["comment"]
 

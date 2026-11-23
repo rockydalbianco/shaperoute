@@ -50,4 +50,6 @@ def test_the_pen_up_length_is_the_one_the_engine_sizes_by() -> None:
 def test_the_file_says_where_it_comes_from_and_stays_small() -> None:
     data = json.loads(text())
     assert data["about"].startswith("Written by tools/catalogue_shapes.py")
-    assert len(text()) < 80_000
+    # About 3 kB a shape (31 shapes, 97 kB, TASK-418): a budget per shape, so
+    # the catalogue may grow but no shape gets heavy.
+    assert len(text()) < 4_000 * len(data["shapes"])

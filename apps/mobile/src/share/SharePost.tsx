@@ -1,5 +1,5 @@
 import * as Sharing from "expo-sharing";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -9,9 +9,17 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  initialWindowMetrics,
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
+import { isTrackless } from "../activities/snow";
+import { GymSharePicture } from "../gym/GymSharePicture";
+import { PoolSharePicture } from "../pool/PoolSharePicture";
+import { isPoolLine } from "../pool/PoolTile";
 import { t } from "../i18n";
 import {
   color,
@@ -21,6 +29,9 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { EditVideoSheet } from "./EditVideoSheet";
+import { togetherTracks } from "./togetherClock";
+import { useTogether } from "./useTogether";
 import { MusicRow } from "./MusicRow";
 import { PostButton } from "./PostButton";
 import { POST_RATIO, PostImage } from "./PostImage";
@@ -45,9 +56,15 @@ import {
   stickersOf,
 } from "./stickers";
 import { StravaPostRow } from "./StravaPostRow";
+import { actorName } from "./videoActor";
+import { FIRST_EDIT, type VideoEdit } from "./videoEdit";
+import { sceneName } from "./videoScenes";
 import { type VideoOutcome, videoProblem } from "./videoFile";
 import { hearMusic, type Music } from "./videoMusic";
 import { type VideoScene, videoScene } from "./videoScene";
+import { styleName } from "./videoStyle";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /** The share of the screen's height the post takes: the choices fit under it. */
 const POST_HEIGHT_SHARE = 0.5;
@@ -64,10 +81,33 @@ type Props = {
  * Strava, where the emoji and the results go as the activity's text. Once
  * shared, the post goes to the API with its saved run (TASK-258), and
  * opens as it was the next time. «Export video» shares the same post as a
- * short video of the run drawing itself (TASK-295), with the track chosen
- * in «Music» (TASK-301).
+ * short video of the run drawing itself over the map of the run (TASK-295,
+ * TASK-351), with the track chosen in «Music» (TASK-301), as chosen in
+ * «Edit video» (TASK-408): its style, the animal running the line, the
+ * line's colour, the emoji of the way and of the end. A workout at the gym shares its yellow tile alone
+ * (TASK-385 part D): no line to draw, so no results, emoji, video nor
+ * Strava. A swim in a pool shares its tile alone too (TASK-400 part C).
  */
 export function SharePost({ run, onClose }: Props) {
+  return (
+    <Modal
+      visible
+      animationType="slide"
+      presentationStyle="fullScreen"
+      onRequestClose={onClose}
+    >
+      {/* Its own edges: from the Feed it opens inside the Pager, whose pages
+          have no top edge, and «Close» went under the status bar. */}
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <SharePage run={run} onClose={onClose} />
+      </SafeAreaProvider>
+    </Modal>
+  );
+}
+
+function SharePage({ run, onClose }: Props) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const insets = useSafeAreaInsets();
   const window = useWindowDimensions();
   const postWidth = Math.min(
@@ -75,6 +115,9 @@ export function SharePost({ run, onClose }: Props) {
     (window.height * POST_HEIGHT_SHARE) / POST_RATIO,
   );
   const results = useMemo(() => resultsOf(run), [run]);
+  // A swim in a pool goes as a workout: its tile alone (TASK-400 part C).
+  const pool = isPoolLine(run.activity, run.track);
+  const gym = isTrackless(run.activity) || pool;
   const { keepPost } = useActivitiesDoor();
   const kept = run.post ?? null;
   // Every result the run has, on: the runner turns off what they keep. A
@@ -89,9 +132,28 @@ export function SharePost({ run, onClose }: Props) {
   const [problem, setProblem] = useState<string | null>(null);
   // The video's music, none when the post opens (TASK-301).
   const [music, setMusic] = useState<Music | null>(null);
-  // The video being made, with its music, and how much of it is (TASK-295).
+  // The video as «Edit video» makes it: «Night», no animal, the yellow
+  // line, no emoji of its own when the post opens (TASK-351, TASK-408).
+  const [edit, setEdit] = useState<VideoEdit>(FIRST_EDIT);
+  const [editing, setEditing] = useState(false);
+  // «Together» (TASK-417 part D2b): the people tagged who ran with the
+  // author, for a post of the Feed only; asked once, as the post opens.
+  const together = useTogether(run.drawingId ?? null);
+  const page = together.page;
+  /** The scene's options of an edit: the runners when «Together» is on. */
+  const optionsOf = useCallback(
+    (next: VideoEdit) => ({
+      ...next,
+      runners: next.together && page !== null ? togetherTracks(page, next.line) : null,
+    }),
+    [page],
+  );
+  // The video being made, with its music, and how much of it is (TASK-295);
+  // the map under it, and the post on yellow for when the map does not
+  // come (TASK-351).
   const [video, setVideo] = useState<{
     scene: VideoScene;
+    fallback: VideoScene;
     music: Music | null;
   } | null>(null);
   const [made, setMade] = useState(0);
@@ -110,7 +172,8 @@ export function SharePost({ run, onClose }: Props) {
 
   /** The post as it is now, to the API with its run; nothing before «Save». */
   function keep() {
-    if (run.key !== null) {
+    // A workout's post has nothing of a run's to keep (TASK-385 part D).
+    if (run.key !== null && !gym) {
       keepPost(run.key, postRequestOf(run, shown, placedOf(stickers)));
     }
   }
@@ -135,7 +198,11 @@ export function SharePost({ run, onClose }: Props) {
     }
     hearMusic(null);
     setMade(0);
-    setVideo({ scene: videoScene(run, shown, stickers), music });
+    setVideo({
+      scene: videoScene(run, shown, stickers, edit.style, optionsOf(edit)),
+      fallback: videoScene(run, shown, stickers, "paper", optionsOf(edit)),
+      music,
+    });
   }
 
   function videoEnded(outcome: VideoOutcome) {
@@ -147,30 +214,58 @@ export function SharePost({ run, onClose }: Props) {
   }
 
   const busy = sharing || video !== null;
+  // The video with an edit, for the preview in «Edit video» (part C2c).
+  const sceneOf = useCallback(
+    (next: VideoEdit) => videoScene(run, shown, stickers, next.style, optionsOf(next)),
+    [optionsOf, run, shown, stickers],
+  );
 
   return (
-    <Modal
-      visible
-      animationType="slide"
-      presentationStyle="fullScreen"
-      onRequestClose={onClose}
-    >
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <View style={styles.header}>
-          <Pressable style={styles.close} onPress={onClose} accessibilityRole="button">
-            <Text style={styles.link}>{t("Close")}</Text>
-          </Pressable>
-          <Text style={styles.title} accessibilityRole="header">
-            {t("Share your run")}
-          </Text>
-        </View>
-        <ScrollView
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: insets.bottom + space.xxl },
-          ]}
-        >
-          <View style={styles.center}>
+    <View style={[styles.screen, { paddingTop: insets.top }]}>
+      {/* Under the screen's content, at the top corner (RunVideo). */}
+      {video !== null && (
+        <RunVideo
+          scene={video.scene}
+          fallback={video.fallback}
+          music={video.music}
+          onProgress={setMade}
+          onEnd={videoEnded}
+        />
+      )}
+      <View style={styles.header}>
+        <Pressable style={styles.close} onPress={onClose} accessibilityRole="button">
+          <Text style={styles.link}>{t("Close")}</Text>
+        </Pressable>
+        <Text style={styles.title} accessibilityRole="header">
+          {t(gym ? "Share" : "Share your run")}
+        </Text>
+      </View>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: insets.bottom + space.xxl },
+        ]}
+      >
+        <View style={styles.center}>
+          {pool ? (
+            <PoolSharePicture
+              ref={post}
+              poolKey={run.key}
+              drawingId={run.drawingId ?? null}
+              durationS={Math.round(run.durationMs / 1000)}
+              metres={Math.round(run.distanceM)}
+              width={postWidth}
+              height={postWidth * POST_RATIO}
+            />
+          ) : gym ? (
+            <GymSharePicture
+              ref={post}
+              gymKey={run.key}
+              durationS={Math.round(run.durationMs / 1000)}
+              width={postWidth}
+              height={postWidth * POST_RATIO}
+            />
+          ) : (
             <PostImage
               ref={post}
               run={run}
@@ -182,69 +277,90 @@ export function SharePost({ run, onClose }: Props) {
               }
               onRemoveSticker={(id) => setStickers((now) => removeSticker(now, id))}
             />
-          </View>
-          {stickers.length > 0 && (
-            <Text style={styles.hint}>
-              {t("Drag the emoji to move them. Tap one to take it off.")}
-            </Text>
           )}
+        </View>
+        {stickers.length > 0 && (
+          <Text style={styles.hint}>
+            {t("Drag the emoji to move them. Tap one to take it off.")}
+          </Text>
+        )}
 
-          {results.length > 0 && (
-            <>
-              <Text style={styles.label}>{t("Results")}</Text>
-              <View style={styles.chips}>
-                {results.map((result) => {
-                  const on = shown.includes(result);
-                  return (
-                    <Pressable
-                      key={result}
-                      style={[styles.chip, on && styles.chipOn]}
-                      onPress={() => toggle(result)}
-                      accessibilityRole="checkbox"
-                      accessibilityState={{ checked: on }}
-                    >
-                      <Text style={[styles.chipText, on && styles.chipTextOn]}>
-                        {resultName(result)}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </>
-          )}
-
-          <Text style={styles.label}>{t("Add emoji")}</Text>
-          <View style={styles.emojiRow}>
-            {POST_EMOJI.map((emoji) => (
-              <Pressable
-                key={emoji}
-                style={styles.emoji}
-                onPress={() => setStickers((now) => addSticker(now, emoji))}
-                accessibilityRole="button"
-                accessibilityLabel={t("Add {emoji}", { emoji })}
-              >
-                <Text style={styles.emojiText}>{emoji}</Text>
-              </Pressable>
-            ))}
-          </View>
-          {stickers.length >= MAX_STICKERS && (
-            <Text style={styles.hint}>
-              {t("Up to {count} emoji: tap one on the post to take it off.", {
-                count: MAX_STICKERS,
+        {!gym && results.length > 0 && (
+          <>
+            <Text style={styles.label}>{t("Results")}</Text>
+            <View style={styles.chips}>
+              {results.map((result) => {
+                const on = shown.includes(result);
+                return (
+                  <Pressable
+                    key={result}
+                    style={[styles.chip, chipRaise, on && styles.chipOn]}
+                    onPress={() => toggle(result)}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: on }}
+                  >
+                    <Text style={[styles.chipText, on && styles.chipTextOn]}>
+                      {resultName(result)}
+                    </Text>
+                  </Pressable>
+                );
               })}
-            </Text>
-          )}
+            </View>
+          </>
+        )}
 
-          <MusicRow music={music} onChange={setMusic} />
+        {!gym && (
+          <>
+            <Text style={styles.label}>{t("Add emoji")}</Text>
+            <View style={styles.emojiRow}>
+              {POST_EMOJI.map((emoji) => (
+                <Pressable
+                  key={emoji}
+                  style={styles.emoji}
+                  onPress={() => setStickers((now) => addSticker(now, emoji))}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("Add {emoji}", { emoji })}
+                >
+                  <Text style={styles.emojiText}>{emoji}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {stickers.length >= MAX_STICKERS && (
+              <Text style={styles.hint}>
+                {t("Up to {count} emoji: tap one on the post to take it off.", {
+                  count: MAX_STICKERS,
+                })}
+              </Text>
+            )}
 
-          <View style={styles.actions}>
-            <View style={styles.buttons}>
-              <PostButton
-                text={sharing ? t("Making the picture…") : "Instagram"}
-                onPress={() => void share()}
-                busy={busy}
-                main
-              />
+            <Pressable
+              style={styles.editRow}
+              onPress={() => setEditing(true)}
+              accessibilityRole="button"
+              accessibilityHint={editSummary(edit)}
+              testID="edit-video-open"
+            >
+              <View style={styles.editWords}>
+                <Text style={styles.editTitle}>{t("Edit video")}</Text>
+                <Text style={styles.hint} numberOfLines={1}>
+                  {editSummary(edit)}
+                </Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </Pressable>
+            <MusicRow music={music} onChange={setMusic} />
+          </>
+        )}
+
+        <View style={styles.actions}>
+          <View style={styles.buttons}>
+            <PostButton
+              text={sharing ? t("Making the picture…") : "Instagram"}
+              onPress={() => void share()}
+              busy={busy}
+              main
+            />
+            {!gym && (
               <PostButton
                 text={
                   video === null
@@ -256,29 +372,51 @@ export function SharePost({ run, onClose }: Props) {
                 onPress={() => void exportVideo()}
                 busy={busy}
               />
-            </View>
-            <Text style={styles.hint}>
-              {t("Pick Instagram in the list: Story, Feed or Messages.")}
-            </Text>
-            {problem !== null && (
-              <Text style={styles.problem} accessibilityRole="alert">
-                {problem}
-              </Text>
             )}
-            <StravaPostRow runKey={run.key} caption={caption} onSent={keep} />
           </View>
-        </ScrollView>
-        {video !== null && (
-          <RunVideo
-            scene={video.scene}
-            music={video.music}
-            onProgress={setMade}
-            onEnd={videoEnded}
-          />
-        )}
-      </View>
-    </Modal>
+          <Text style={styles.hint}>
+            {t("Pick Instagram in the list: Story, Feed or Messages.")}
+          </Text>
+          {problem !== null && (
+            <Text style={styles.problem} accessibilityRole="alert">
+              {problem}
+            </Text>
+          )}
+          {!gym && <StravaPostRow runKey={run.key} caption={caption} onSent={keep} />}
+        </View>
+      </ScrollView>
+      {!gym && (
+        <EditVideoSheet
+          visible={editing}
+          run={run}
+          edit={edit}
+          onChange={setEdit}
+          onClose={() => setEditing(false)}
+          sceneOf={sceneOf}
+          together={together.state}
+        />
+      )}
+    </View>
   );
+}
+
+/** What «Edit video» has chosen, in a line: the style, the animal, the
+ * emoji of the way and of the end. */
+function editSummary(edit: VideoEdit): string {
+  const parts = [styleName(edit.style), actorName(edit.character)];
+  const emoji = [edit.along, edit.end].filter((e): e is string => e !== null);
+  if (emoji.length > 0) {
+    parts.push(emoji.join(" "));
+  }
+  // The scenes on, in order, once they are not the ones of before (C2).
+  const scenes = edit.order.filter((scene) => !edit.off.includes(scene));
+  if (
+    edit.off.join() !== FIRST_EDIT.off.join() ||
+    edit.order.join() !== FIRST_EDIT.order.join()
+  ) {
+    parts.push(scenes.map(sceneName).join(" › "));
+  }
+  return parts.join(" · ");
 }
 
 type ButtonProps = {
@@ -390,6 +528,30 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface,
   },
   emojiText: {
+    fontSize: fontSize.title,
+  },
+  editRow: {
+    minHeight: MIN_TAP_SIZE,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+  },
+  editWords: {
+    flex: 1,
+    gap: space.xs,
+  },
+  editTitle: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  chevron: {
+    color: color.textMuted,
     fontSize: fontSize.title,
   },
   actions: {

@@ -1,7 +1,6 @@
 import type { Person } from "@shaperoute/shared-types";
 import {
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -20,6 +19,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 import { useFollowsDoor } from "./followsDoor";
 import { PeopleSearch } from "./PeopleSearch";
 
@@ -41,21 +42,17 @@ type Props = {
  */
 export function TagPeople({ visible, onPick, onClose, fetchFn, apiKey }: Props) {
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      statusBarTranslucent
-      onRequestClose={onClose}
-    >
+    <SheetModal visible={visible} onRequestClose={onClose}>
       {/* Mounted with the sheet: each opening starts from an empty field. */}
       <SheetBody onPick={onPick} onClose={onClose} fetchFn={fetchFn} apiKey={apiKey} />
-    </Modal>
+    </SheetModal>
   );
 }
 
 function SheetBody({ onPick, onClose, fetchFn, apiKey }: Omit<Props, "visible">) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   const { apiUrl, account } = useFollowsDoor();
   return (
     <KeyboardAvoidingView
@@ -69,7 +66,9 @@ function SheetBody({ onPick, onClose, fetchFn, apiKey }: Omit<Props, "visible">)
         accessibilityRole="button"
         accessibilityLabel={t("Close")}
       />
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + space.sm }]}>
+      <View
+        style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.sm }]}
+      >
         <View style={styles.header}>
           <Text style={styles.title} accessibilityRole="header">
             {t("Tag people")}

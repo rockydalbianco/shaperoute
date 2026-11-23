@@ -5,25 +5,23 @@ import {
   DRAWING_MAX_TAGS,
   DRAWING_TITLE_MAX_LENGTH,
   type DrawingTag,
+  type LatLon,
   type Person,
+  RECORD_ACTIVITIES,
+  type RunActivity,
   VISIBILITIES,
   type Visibility,
 } from "@shaperoute/shared-types";
 import { type ReactNode, useState } from "react";
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { isTrackless } from "../activities/snow";
 import type { DrawingChoice } from "../api/drawings";
+import { EnterSwitch } from "../contest/EnterSwitch";
 import { t, tLater } from "../i18n";
-import { OpenSettings } from "../permissions/OpenSettings";
 import type { ImageSource } from "../route/pickImage";
+import { activityOffered } from "../settings/sport";
+import { profileOf } from "../sports";
 import {
   color,
   fontSize,
@@ -32,9 +30,18 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import type { PhotoShown } from "./drawingsDoor";
-import { pickDrawingPhoto, type PickedDrawingPhoto } from "./pickDrawingPhoto";
+import type { Flattened } from "./composer/flattenPhoto";
+import type { PostLayout } from "./composer/layoutFrame";
+import {
+  type ComposerPhoto,
+  type PickMany,
+  PostComposer,
+} from "./composer/PostComposer";
+import type { PostItem } from "./composer/postOrder";
+import type { PickedDrawingPhoto } from "./pickDrawingPhoto";
 import { TagPeople } from "./TagPeople";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /**
  * The form of a run's drawing (TASK-117, TASK-208, ADR-0170), as Strava's,
@@ -57,13 +64,9 @@ export const PHOTOS_LEAVE = tLater("Its photos leave MuW and stay only on this p
 export function seenText(visibility: Visibility): string | null {
   switch (visibility) {
     case "everyone":
-      return t(
-        "Every member sees it in your profile, without the first and last 200 m.",
-      );
+      return t("Every member sees it in your profile.");
     case "followers":
-      return t(
-        "Your followers see it in your profile, without the first and last 200 m.",
-      );
+      return t("Your followers see it in your profile.");
     case "only_me":
       return null;
   }
@@ -76,22 +79,20 @@ export function waitingText(visibility: Visibility): string {
     : t("Saved on the phone. Others see it when you are back online.");
 }
 
-/** What a run was, as a word. */
-export function activityName(activity: Activity): string {
-  switch (activity) {
-    case "running":
-      return t("Run");
-    case "cycling":
-      return t("Bike");
-    case "paddling":
-      return t("Paddle");
-  }
+/** What a run was, as a word: a day on the snow by its sport (TASK-375),
+ * the name each sport says in src/sports (TASK-376 part B3c). */
+export function activityName(activity: RunActivity): string {
+  return t(profileOf(activity).name);
 }
 
-/** The first empty place for a photo, 1 to DRAWING_MAX_PHOTOS; null when
- * every place is taken. */
-export function nextPlace(photos: readonly { n: number }[]): number | null {
-  for (let n = 1; n <= DRAWING_MAX_PHOTOS; n += 1) {
+/** The first empty place for a photo, 1 to `max` (DRAWING_MAX_PHOTOS;
+ * GYM_MAX_PHOTOS for a workout, TASK-385 part D); null when every place is
+ * taken. */
+export function nextPlace(
+  photos: readonly { n: number }[],
+  max: number = DRAWING_MAX_PHOTOS,
+): number | null {
+  for (let n = 1; n <= max; n += 1) {
     if (!photos.some((photo) => photo.n === n)) {
       return n;
     }
@@ -100,6 +101,19 @@ export function nextPlace(photos: readonly { n: number }[]): number | null {
 }
 
 export type PickPhoto = (source: ImageSource) => Promise<PickedDrawingPhoto>;
+
+/** A picker of one photo, as the composer asks for several: the fakes of
+ * the tests, and a phone that hands over one at a time. */
+export function oneAtATime(pick: PickPhoto): PickMany {
+  return async (source) => {
+    const one = await pick(source);
+    if (one.kind !== "picked") {
+      return one;
+    }
+    const { base64, width, height } = one;
+    return { kind: "picked", photos: [{ base64, width, height }], tooLarge: false };
+  };
+}
 
 /** A line under the form: what the others see, or what went wrong. */
 export function PublicLine({ text, alert }: { text: string; alert?: boolean }) {
@@ -189,6 +203,8 @@ function Chips<T extends string>({
   onChange,
   disabled,
 }: ChipsProps<T>) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
@@ -202,7 +218,12 @@ function Chips<T extends string>({
           return (
             <Pressable
               key={option.id}
-              style={[styles.chip, on && styles.chipOn, disabled && styles.busy]}
+              style={[
+                styles.chip,
+                chipRaise,
+                on && styles.chipOn,
+                disabled && styles.busy,
+              ]}
               onPress={() => onChange(option.id)}
               disabled={disabled}
               accessibilityRole="radio"
@@ -219,22 +240,63 @@ function Chips<T extends string>({
   );
 }
 
-const ACTIVITIES_SHOWN: readonly Activity[] = ["running", "cycling", "paddling"];
+// A walk once «Walk» can be chosen (activityOffered, TASK-371), a hike
+// once «Hike» can (TASK-377), a gravel or an MTB ride once «Gravel» or
+// «MTB» can (TASK-378), a skate once «Roller» can (TASK-380), a wheelchair
+// or a stroller once «Wheelchair & stroller» can (TASK-414), snowshoes
+// once «Snowshoes» can (TASK-413 B).
+const ACTIVITIES_SHOWN: readonly Activity[] = (
+  [
+    "running",
+    "cycling",
+    "paddling",
+    "walking",
+    "hiking",
+    "gravel_biking",
+    "mountain_biking",
+    "inline_skating",
+    "wheelchair",
+    "snowshoeing",
+  ] as const
+).filter((activity) => activityOffered(activity));
 
-/** «Activity»: what the run was, Run, Bike or Paddle. */
+/** A day on the snow is one or the other (TASK-375): never a run, a ride
+ * or a paddle, which have a route. A paragliding flight is recorded without
+ * a shape too (TASK-305, ADR-0375), but it is no day on the snow: it stays
+ * a flight; and so does a day of mountaineering (TASK-463, ADR-0373). */
+const SNOW_ACTIVITIES: readonly RunActivity[] = RECORD_ACTIVITIES.filter(
+  (activity) => activity !== "paragliding" && activity !== "alpinism",
+);
+
+function isSnowActivity(activity: RunActivity): boolean {
+  return SNOW_ACTIVITIES.includes(activity);
+}
+
+/** «Activity»: what the run was, Run, Bike or Paddle; for a day on the snow,
+ * Ski or Cross-country ski (TASK-375); a workout at the gym stays one, Gym
+ * alone (TASK-385 B0): it has no track to be a run. */
 export function ActivityChips({
   value,
   onChange,
   disabled,
+  alone = false,
 }: {
-  value: Activity;
-  onChange: (activity: Activity) => void;
+  value: RunActivity;
+  onChange: (activity: RunActivity) => void;
   disabled?: boolean;
+  /** Its own activity only: a swim in a pool stays a swim (TASK-400 C). */
+  alone?: boolean;
 }) {
+  const shown: readonly RunActivity[] =
+    alone || isTrackless(value) || value === "paragliding"
+      ? [value]
+      : isSnowActivity(value)
+        ? SNOW_ACTIVITIES
+        : ACTIVITIES_SHOWN;
   return (
     <Chips
       label={t("Activity")}
-      options={ACTIVITIES_SHOWN.map((id) => ({ id, text: activityName(id) }))}
+      options={shown.map((id) => ({ id, text: activityName(id) }))}
       value={value}
       onChange={onChange}
       disabled={disabled}
@@ -288,6 +350,8 @@ export function TagsField({
   fetchFn?: typeof fetch;
   apiKey?: string | null;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const [choosing, setChoosing] = useState(false);
   function pick(person: Person) {
     setChoosing(false);
@@ -303,7 +367,7 @@ export function TagsField({
         {tags.map((tag) => (
           <Pressable
             key={tag.public_id}
-            style={[styles.chip, styles.chipOn, disabled && styles.busy]}
+            style={[styles.chip, chipRaise, styles.chipOn, disabled && styles.busy]}
             onPress={() =>
               onChange(tags.filter((other) => other.public_id !== tag.public_id))
             }
@@ -316,7 +380,7 @@ export function TagsField({
         ))}
         {tags.length < DRAWING_MAX_TAGS && (
           <Pressable
-            style={[styles.chip, disabled && styles.busy]}
+            style={[styles.chip, chipRaise, disabled && styles.busy]}
             onPress={() => setChoosing(true)}
             disabled={disabled}
             accessibilityRole="button"
@@ -336,144 +400,31 @@ export function TagsField({
   );
 }
 
-/** Words for a photo that did not come; null when it was only not chosen. */
-function pickProblem(
-  kind: Exclude<PickedDrawingPhoto["kind"], "picked">,
-): string | null {
-  switch (kind) {
-    case "cancelled":
-      return null;
-    case "denied":
-      return t(
-        "The camera is off for this app. Allow it in Settings, or choose a picture instead.",
-      );
-    case "too_large":
-      return t("This picture is too large. Choose a smaller one.");
-    case "pick_failed":
-      return t("Could not open the picture. Try again.");
-  }
-}
-
-/** The side of a photo in the row. */
-export const PHOTO_THUMB = 72;
-
-/**
- * The photos of the run, up to DRAWING_MAX_PHOTOS, each with its ×, and
- * «Add photo», which asks for the library or the camera.
- */
-export function PhotosRow({
-  photos,
-  onAdd,
-  onRemove,
-  disabled,
-  pick = pickDrawingPhoto,
-}: {
-  photos: readonly PhotoShown[];
-  /** A photo chosen and shrunk, JPEG in base64. */
-  onAdd: (base64: string) => void;
-  onRemove: (photo: PhotoShown) => void;
-  disabled?: boolean;
-  pick?: PickPhoto;
-}) {
-  const [choosing, setChoosing] = useState(false);
-  const [picking, setPicking] = useState(false);
-  const [problem, setProblem] = useState<Exclude<
-    PickedDrawingPhoto["kind"],
-    "picked"
-  > | null>(null);
-  async function choose(source: ImageSource) {
-    setChoosing(false);
-    setPicking(true);
-    setProblem(null);
-    const picked = await pick(source);
-    setPicking(false);
-    if (picked.kind === "picked") {
-      onAdd(picked.base64);
-    } else {
-      setProblem(picked.kind);
-    }
-  }
-  const problemText = problem === null ? null : pickProblem(problem);
-  const busy = disabled || picking;
-  return (
-    <View style={styles.field}>
-      <View style={styles.photos}>
-        {photos.map((photo) => (
-          <View key={photo.n} style={styles.photo}>
-            <Image
-              source={photo.source}
-              style={styles.thumb}
-              accessibilityLabel={t("Photo {n}", { n: photo.n })}
-            />
-            <Pressable
-              style={styles.remove}
-              onPress={() => onRemove(photo)}
-              disabled={busy}
-              accessibilityRole="button"
-              accessibilityLabel={t("Remove photo {n}", { n: photo.n })}
-            >
-              <Text style={styles.removeText}>×</Text>
-            </Pressable>
-          </View>
-        ))}
-        {photos.length < DRAWING_MAX_PHOTOS && !choosing && (
-          <Pressable
-            style={[styles.add, busy && styles.busy]}
-            onPress={() => setChoosing(true)}
-            disabled={busy}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: busy, busy: picking }}
-          >
-            <Text style={styles.chipText}>
-              {picking ? t("Opening…") : t("Add photo")}
-            </Text>
-          </Pressable>
-        )}
-      </View>
-      {choosing && (
-        <View style={styles.chips}>
-          <Pressable
-            style={styles.chip}
-            onPress={() => void choose("library")}
-            accessibilityRole="button"
-          >
-            <Text style={styles.chipText}>{t("Choose a picture")}</Text>
-          </Pressable>
-          <Pressable
-            style={styles.chip}
-            onPress={() => void choose("camera")}
-            accessibilityRole="button"
-          >
-            <Text style={styles.chipText}>{t("Take a photo")}</Text>
-          </Pressable>
-          <Pressable
-            style={styles.chip}
-            onPress={() => setChoosing(false)}
-            accessibilityRole="button"
-          >
-            <Text style={styles.chipText}>{t("Cancel")}</Text>
-          </Pressable>
-        </View>
-      )}
-      {problemText !== null && (
-        <>
-          <PublicLine text={problemText} alert />
-          {problem === "denied" && <OpenSettings />}
-        </>
-      )}
-    </View>
-  );
-}
-
 export type DrawingFormProps = {
   choice: DrawingChoice;
   onChoice: (next: DrawingChoice) => void;
   /** Typing in the title or the description is over (the keyboard closed). */
   onTextDone?: () => void;
-  photos: readonly PhotoShown[];
-  onAddPhoto: (base64: string) => void;
-  onRemovePhoto: (photo: PhotoShown) => void;
+  /** The pages of the post, the map among the photos (TASK-348). */
+  items: readonly PostItem[];
+  photos: readonly ComposerPhoto[];
+  onOrder: (items: PostItem[]) => void;
+  /** Photos chosen and shrunk, JPEG in base64, in the order tapped. */
+  onAddPhotos: (photos: string[]) => void;
+  onRemovePhoto: (n: number) => void;
+  /** The run's line and turn: with them, a photo can carry its drawing. */
+  track?: readonly LatLon[] | null;
+  rotationDeg?: number | null;
+  onLayout?: (n: number, layout: PostLayout | null, made: Flattened | null) => void;
   disabled?: boolean;
+  /** A run from a file of another app: it cannot enter a monthly challenge. */
+  imported?: boolean;
+  /** Under who can see it, on a workout at the gym: «Show exercises»
+   * (TASK-385 part D). */
+  extra?: ReactNode;
+  /** A swim in a pool (TASK-400 part C): its tile, a swim alone, no
+   * contest. */
+  pool?: boolean;
   /** The fakes of the tests. */
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
@@ -483,17 +434,26 @@ export type DrawingFormProps = {
 /**
  * The whole form, in the user's order (2026-10-03): the photos by the map,
  * the title, «How did it go?», the people tagged, the activity and who can
- * see it. The title and the description are written as typed; the rest
- * changes the choice at once.
+ * see it, and under that the switch that enters a monthly challenge, while
+ * one is open (TASK-343 part B). The title and the description are written
+ * as typed; the rest changes the choice at once.
  */
 export function DrawingForm({
   choice,
   onChoice,
   onTextDone,
+  items,
   photos,
-  onAddPhoto,
+  onOrder,
+  onAddPhotos,
   onRemovePhoto,
+  track,
+  rotationDeg,
+  onLayout,
   disabled,
+  imported = false,
+  extra,
+  pool = false,
   pick,
   fetchFn,
   apiKey,
@@ -504,12 +464,19 @@ export function DrawingForm({
   const seen = seenText(choice.visibility);
   return (
     <View style={styles.form}>
-      <PhotosRow
+      <PostComposer
+        items={items}
         photos={photos}
-        onAdd={onAddPhoto}
+        onOrder={onOrder}
+        onAdd={onAddPhotos}
         onRemove={onRemovePhoto}
+        track={track}
+        rotationDeg={rotationDeg}
+        onLayout={onLayout}
         disabled={disabled}
-        pick={pick}
+        pick={pick === undefined ? undefined : oneAtATime(pick)}
+        gym={isTrackless(choice.activity)}
+        pool={pool}
       />
       <DrawingTitle
         value={title}
@@ -540,12 +507,25 @@ export function DrawingForm({
         value={choice.activity}
         onChange={(activity) => onChoice({ ...choice, activity })}
         disabled={disabled}
+        alone={pool}
       />
       <VisibilityChips
         value={choice.visibility}
         onChange={(visibility) => onChoice({ ...choice, visibility })}
         disabled={disabled}
       />
+      {extra}
+      {/* A workout at the gym draws nothing for the contest (TASK-385 B0). */}
+      {choice.visibility === "everyone" &&
+        !imported &&
+        !pool &&
+        !isTrackless(choice.activity) && (
+          <EnterSwitch
+            entry={choice.entry}
+            onEntry={(entry) => onChoice({ ...choice, entry })}
+            disabled={disabled}
+          />
+        )}
       {seen !== null && <PublicLine text={seen} />}
       {choice.visibility === "only_me" && photos.length > 0 && (
         <PublicLine text={t(ONLY_ME_PHOTOS)} />
@@ -630,51 +610,6 @@ const styles = StyleSheet.create({
   },
   busy: {
     opacity: 0.6,
-  },
-  photos: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    gap: space.sm,
-  },
-  photo: {
-    width: PHOTO_THUMB,
-    height: PHOTO_THUMB,
-  },
-  thumb: {
-    width: PHOTO_THUMB,
-    height: PHOTO_THUMB,
-    borderRadius: radius.md,
-    backgroundColor: color.surfaceRaised,
-  },
-  remove: {
-    position: "absolute",
-    top: -space.xs,
-    right: -space.xs,
-    width: 24,
-    height: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-    backgroundColor: color.surfaceRaised,
-  },
-  removeText: {
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.bold,
-    lineHeight: fontSize.body + 2,
-  },
-  add: {
-    height: PHOTO_THUMB,
-    justifyContent: "center",
-    paddingHorizontal: space.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: color.borderStrong,
-    backgroundColor: color.surface,
   },
   line: {
     color: color.textMuted,

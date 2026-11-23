@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { t, tLater } from "../i18n";
 import {
@@ -10,6 +10,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Hairline } from "../ui/Hairline";
+import { Tap } from "../ui/Tap";
 import { phoneUnits } from "../units/phoneUnits";
 import {
   loadUnitsChoice,
@@ -19,6 +21,7 @@ import {
   type UnitsChoice,
 } from "../units/units";
 import { useUnits } from "../units/useUnits";
+import { useSettingsGroup } from "./settingsGroup";
 
 // In English; shown with t() in the app's language (TASK-210).
 const NAMES: Readonly<Record<Units, string>> = {
@@ -34,6 +37,7 @@ const NAMES: Readonly<Record<Units, string>> = {
  * phone and the app turns to it at once.
  */
 export function UnitsSetting() {
+  const group = useSettingsGroup();
   const units = useUnits();
   const [choice, setChoice] = useState<UnitsChoice>(loadUnitsChoice);
   const [open, setOpen] = useState(false);
@@ -44,9 +48,9 @@ export function UnitsSetting() {
     saveUnitsChoice(next);
   };
   return (
-    <View style={styles.menu}>
-      <Pressable
-        style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+    <View style={[styles.menu, group]}>
+      <Tap
+        style={styles.row}
         onPress={() => setOpen(!open)}
         accessibilityRole="button"
         // One name for the row: the emoji is not read on its own.
@@ -56,7 +60,7 @@ export function UnitsSetting() {
         <Text style={styles.emoji}>📏</Text>
         <Text style={styles.rowText}>{t("Units")}</Text>
         <Text style={styles.value}>{shown}</Text>
-      </Pressable>
+      </Tap>
       {open && (
         <View accessibilityRole="radiogroup">
           <Choice
@@ -90,9 +94,9 @@ type ChoiceProps = {
 function Choice({ name, detail, chosen, onPress }: ChoiceProps) {
   return (
     <View>
-      <View style={styles.divider} />
-      <Pressable
-        style={({ pressed }) => [styles.row, styles.choice, pressed && styles.pressed]}
+      <Hairline style={styles.inset} />
+      <Tap
+        style={[styles.row, styles.choice]}
         onPress={onPress}
         accessibilityRole="radio"
         accessibilityLabel={detail === undefined ? name : `${name}, ${detail}`}
@@ -101,7 +105,7 @@ function Choice({ name, detail, chosen, onPress }: ChoiceProps) {
         <Text style={styles.rowText}>{name}</Text>
         {detail !== undefined && <Text style={styles.value}>{detail}</Text>}
         {chosen && <Text style={styles.check}>✓</Text>}
-      </Pressable>
+      </Tap>
     </View>
   );
 }
@@ -109,6 +113,10 @@ function Choice({ name, detail, chosen, onPress }: ChoiceProps) {
 // The rows of «Settings» (`../profile/SettingsPage`), as «Language» has
 // them (`./LanguageSetting`), so the row sits among the others as one of them.
 const styles = StyleSheet.create({
+  /** A division set in from the card's edge, as the rows' words are. */
+  inset: {
+    marginHorizontal: space.md,
+  },
   menu: {
     borderRadius: radius.lg,
     borderWidth: 1,
@@ -125,14 +133,6 @@ const styles = StyleSheet.create({
   // The choices start where the row's name does, under it.
   choice: {
     paddingLeft: space.md + space.xl + space.md,
-  },
-  pressed: {
-    opacity: 0.6,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginHorizontal: space.md,
-    backgroundColor: color.border,
   },
   emoji: {
     fontSize: fontSize.input + space.xs,

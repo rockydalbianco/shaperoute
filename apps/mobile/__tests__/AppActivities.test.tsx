@@ -14,7 +14,14 @@ import session from "@shaperoute/shared-types/fixtures/session.json";
 import signUpRequest from "@shaperoute/shared-types/fixtures/sign-up-request.json";
 import trackScore from "@shaperoute/shared-types/fixtures/track-score.json";
 import type { LatLon } from "@shaperoute/shared-types";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 import * as Location from "expo-location";
 
 import App from "../App";
@@ -22,6 +29,7 @@ import { apiError, type MemorySecureStore } from "../src/account/testing";
 import { activityKey } from "../src/activities/activityKey";
 import { SIGN_IN_TO_KEEP_RUNS } from "../src/activities/activitiesDoor";
 import { startedLabel } from "../src/activities/activityText";
+import { utcOffsetAt } from "../src/api/activities";
 import {
   loadOutbox,
   MAX_WAITING,
@@ -35,6 +43,11 @@ import {
   type SavedRun,
   saveRun,
 } from "../src/navigation/trackStore";
+
+/** A run as sent: with the phone's offset from UTC at its first fix (TASK-423). */
+const OFFSET = {
+  utc_offset_min: utcOffsetAt(activityRequest.track[0].time_ms),
+};
 
 // Every test renders the whole app, and the first one loads it cold: on a
 // busy machine that alone can take the five seconds a test has.
@@ -165,8 +178,19 @@ async function open() {
 }
 
 async function openActivities() {
-  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
   await fireEvent.press(await screen.findByRole("button", { name: /^My activities/ }));
+}
+
+/** Opens the «…» of the run of the list that began at `when` (TASK-456). */
+async function openMenuOf(when: string) {
+  const row = screen
+    .getAllByTestId("activity-row")
+    .find((one) => within(one).queryByText(when) !== null);
+  if (row === undefined) {
+    throw new Error(`no run of ${when} in the list`);
+  }
+  await fireEvent.press(within(row).getByTestId("activity-menu"));
 }
 
 beforeEach(() => {
@@ -194,9 +218,9 @@ test("«My activities» in «Profile» lists the runs, with how many they are", 
   signedIn();
   api({ ...ACCOUNT, "GET /me/activities": () => Response.json(activities) });
   await open();
-  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
-  // Under «Favorites», with its number.
-  expect(screen.getByRole("button", { name: "Favorites, 0" })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
+  // Under «Favorites», which keeps nothing yet: its name alone (TASK-457).
+  expect(screen.getByRole("button", { name: "Favorites" })).toBeOnTheScreen();
   await fireEvent.press(
     await screen.findByRole("button", { name: "My activities, 2" }),
   );
@@ -224,7 +248,7 @@ test("«My activities» in «Profile» lists the runs, with how many they are", 
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.queryByRole("header", { name: "My activities" })).toBeNull();
   expect(
-    screen.getByRole("button", { name: /^Profile/, selected: true }),
+    screen.getByRole("tab", { name: /^Profile/, selected: true }),
   ).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("tab", { name: "Draw" }));
   expect(screen.getByRole("tab", { name: "Draw", selected: true })).toBeOnTheScreen();
@@ -245,7 +269,7 @@ test("a run opens on the map, its route under what was run, and goes back to the
     }),
   );
   // «Profile» gets out of the way: the map, with the run's card under it.
-  expect(await screen.findByText("Back to the list")).toBeOnTheScreen();
+  expect(await screen.findByTestId("activity-card-heading")).toBeOnTheScreen();
   expect(screen.queryByRole("header", { name: "My activities" })).toBeNull();
   expect(screen.queryByRole("tab")).toBeNull();
   expect(screen.getByText(STAR_WHEN)).toBeOnTheScreen();
@@ -264,8 +288,13 @@ test("a run opens on the map, its route under what was run, and goes back to the
   expect(scripts("showRoute").at(-1)).toContain(`[${lon},${lat}]`);
   expect(scripts("showTrack").at(-1)).toContain(`[${lon},${lat}]`);
 
+  // The card has no way back of its own (TASK-456), and neither «Delete»
+  // nor the form of the post in sight.
+  expect(screen.queryByText("Back to the list")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+  expect(screen.queryByLabelText("Title")).toBeNull();
   // Back: the list it came from, over the page left under it.
-  await fireEvent.press(screen.getByText("Back to the list"));
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.getByRole("header", { name: "My activities" })).toBeOnTheScreen();
   expect(screen.getAllByTestId("activity-row")).toHaveLength(2);
   // Then the page of the profile (TASK-278), and «Draw».
@@ -273,7 +302,7 @@ test("a run opens on the map, its route under what was run, and goes back to the
   await fireEvent.press(screen.getByRole("tab", { name: "Draw" }));
   expect(screen.getByRole("tab", { name: "Draw", selected: true })).toBeOnTheScreen();
   // The map lets the run go.
-  expect(screen.queryByText("Back to the list")).toBeNull();
+  expect(screen.queryByTestId("activity-card-heading")).toBeNull();
 });
 
 test("the way back on the map goes to the list too; a run without a route has no yellow", async () => {
@@ -323,19 +352,21 @@ test("a run is deleted from the list only after a yes", async () => {
   });
   await open();
   await openActivities();
-  await fireEvent.press(
-    screen.getByRole("button", { name: `Delete the run of ${STAR_WHEN}` }),
-  );
+  // No «Delete» in sight on the rows (TASK-456): it is in the «…» of each.
+  expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+  await openMenuOf(STAR_WHEN);
+  await fireEvent.press(screen.getByRole("button", { name: "Delete" }));
   expect(screen.getByText("Delete this run? It cannot be undone.")).toBeOnTheScreen();
   // No: the run stays, and nothing is asked.
   await fireEvent.press(screen.getByRole("button", { name: "Keep it" }));
-  expect(screen.queryByText("Delete this run? It cannot be undone.")).toBeNull();
+  await waitFor(() =>
+    expect(screen.queryByText("Delete this run? It cannot be undone.")).toBeNull(),
+  );
   expect(screen.getByText("Trento · Star")).toBeOnTheScreen();
   expect(calls("DELETE", `/me/activities/${STAR.id}`)).toHaveLength(0);
   // Yes: gone at once.
-  await fireEvent.press(
-    screen.getByRole("button", { name: `Delete the run of ${STAR_WHEN}` }),
-  );
+  await openMenuOf(STAR_WHEN);
+  await fireEvent.press(screen.getByRole("button", { name: "Delete" }));
   await fireEvent.press(screen.getByRole("button", { name: "Delete run" }));
   expect(screen.queryByText("Trento · Star")).toBeNull();
   expect(screen.getAllByTestId("activity-row")).toHaveLength(1);
@@ -357,9 +388,8 @@ test("a run the API does not delete comes back, and says why", async () => {
   });
   await open();
   await openActivities();
-  await fireEvent.press(
-    screen.getByRole("button", { name: `Delete the run of ${FREE_WHEN}` }),
-  );
+  await openMenuOf(FREE_WHEN);
+  await fireEvent.press(screen.getByRole("button", { name: "Delete" }));
   await fireEvent.press(screen.getByRole("button", { name: "Delete run" }));
   expect(await screen.findByRole("alert")).toBeOnTheScreen();
   expect(screen.getAllByTestId("activity-row")).toHaveLength(2);
@@ -385,10 +415,13 @@ test("a run is deleted from the map too, and the list is back without it", async
   await fireEvent.press(
     screen.getByRole("button", { name: new RegExp(`^${STAR_WHEN}, `) }),
   );
-  await fireEvent.press(await screen.findByRole("button", { name: "Delete" }));
+  // «Delete» is in the card's «…» (TASK-456), and asks there.
+  await fireEvent.press(await screen.findByTestId("activity-menu"));
+  await fireEvent.press(screen.getByRole("button", { name: "Delete" }));
   expect(screen.getByText("Delete this run? It cannot be undone.")).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Keep it" }));
-  expect(screen.getByText("Back to the list")).toBeOnTheScreen();
+  expect(screen.getByTestId("activity-card-heading")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("activity-menu"));
   await fireEvent.press(screen.getByRole("button", { name: "Delete" }));
   await fireEvent.press(screen.getByRole("button", { name: "Delete run" }));
   expect(screen.getByRole("header", { name: "My activities" })).toBeOnTheScreen();
@@ -409,7 +442,7 @@ test("«Show more» brings the next page", async () => {
       Response.json({ activities: [FREE], next: null, total: 2 }),
   });
   await open();
-  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
   // All of them are counted, not the page.
   await fireEvent.press(
     await screen.findByRole("button", { name: "My activities, 2" }),
@@ -464,7 +497,7 @@ test("a session that ended while listing signs the app out", async () => {
         : Response.json(activities),
   });
   await open();
-  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
   await screen.findByRole("button", { name: "My activities, 2" });
   ended = true;
   await fireEvent.press(screen.getByRole("button", { name: "My activities, 2" }));
@@ -476,7 +509,7 @@ test("a session that ended while listing signs the app out", async () => {
 test("without an account there are no activities, and nothing is asked", async () => {
   api({});
   await open();
-  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
   expect(screen.queryByRole("button", { name: /^My activities/ })).toBeNull();
   expect(calls("GET", "/me/activities")).toHaveLength(0);
 });
@@ -542,11 +575,15 @@ test("«Save» keeps the run: the fixes and the route, never the app's numbers",
   const [, init] = calls("PUT", `/me/activities/${KEY}`)[0];
   expect(init?.headers).toMatchObject({ Authorization: `Bearer ${session.token}` });
   // What its route draws went with the app that drew it: the line alone.
-  expect(JSON.parse(String(init?.body))).toEqual({ ...activityRequest, shape: null });
+  expect(JSON.parse(String(init?.body))).toEqual({
+    ...activityRequest,
+    shape: null,
+    ...OFFSET,
+  });
   // Saved: nothing waits on the phone, and «Profile» counts it.
   await waitFor(() => expect(loadOutbox()).toEqual([]));
   expect(loadRun()).toBeNull();
-  await fireEvent.press(await screen.findByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(await screen.findByRole("tab", { name: /^Profile/ }));
   expect(
     await screen.findByRole("button", { name: "My activities, 1" }),
   ).toBeOnTheScreen();
@@ -571,6 +608,7 @@ test("a run without a route is saved too, with no route in it", async () => {
     points: null,
     similarity: null,
     shape: null,
+    ...OFFSET,
   });
   expect(calls("POST", "/track-scores")).toHaveLength(0);
   await waitFor(() => expect(loadOutbox()).toEqual([]));
@@ -658,7 +696,7 @@ test("without a network the run waits on the phone", async () => {
   await waitFor(() => expect(loadOutbox().map((run) => run.id)).toEqual([KEY]));
   expect(loadOutbox()[0].owner).toBe(session.user.id);
   expect(loadOutbox()[0].request.track).toHaveLength(5);
-  await fireEvent.press(await screen.findByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(await screen.findByRole("tab", { name: /^Profile/ }));
   await fireEvent.press(await screen.findByRole("button", { name: /^My activities/ }));
   expect(
     await screen.findByText("1 run is on this phone, waiting for a connection."),
@@ -695,7 +733,7 @@ test("what waited goes at the next opening with a network, once", async () => {
   // Nobody touched anything: it went with the opening.
   await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
   await waitFor(() => expect(loadOutbox()).toEqual([]));
-  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
   await fireEvent.press(
     await screen.findByRole("button", { name: "My activities, 1" }),
   );
@@ -713,7 +751,7 @@ test("with nothing waiting, an opening sends nothing", async () => {
     "GET /me/activities": () => Response.json(activities),
   });
   await open();
-  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
   await screen.findByRole("button", { name: "My activities, 2" });
   expect(fetchSpy.mock.calls.filter(([, init]) => init?.method === "PUT")).toEqual([]);
 });
@@ -731,7 +769,8 @@ test("a run the API will never take stays on the phone, with the reason and «Di
   });
   await openOnRun(FREE_ENDED);
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
-  await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
+  // Refused with the phone's offset, then once more without it (TASK-423).
+  await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(2));
   await waitFor(() => expect(loadOutbox()[0]?.refused?.message).toBe(REASON));
 
   await screen.findByText("Starting from your position.");
@@ -743,7 +782,7 @@ test("a run the API will never take stays on the phone, with the reason and «Di
   expect(screen.queryByText(/waiting for a connection/)).toBeNull();
   // The page asks its list again; the run is not sent again.
   await waitFor(() => expect(calls("GET", "/me/activities").length).toBeGreaterThan(1));
-  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1);
+  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(2);
 
   await fireEvent.press(screen.getByRole("button", { name: /^Discard the run of / }));
   await fireEvent.press(screen.getByRole("button", { name: "Keep it" }));
@@ -818,7 +857,7 @@ test("without an account the run ends with «Done», as before, and a line invit
   // The line goes to the page of the profile (TASK-278 part B), which says
   // why, with «←» back to the run.
   await fireEvent.press(screen.getByRole("button", { name: SIGN_IN_TO_KEEP_RUNS }));
-  expect(screen.getByTestId("profile-page-mark")).toBeOnTheScreen();
+  expect(screen.getByRole("tab", { name: /^Profile/ })).toBeSelected();
   expect(screen.getByRole("header", { name: "Profile" })).toBeOnTheScreen();
   expect(screen.getByText(SIGN_IN_TO_KEEP_RUNS)).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
@@ -838,7 +877,7 @@ test("signed up from that line, the end of the run comes back with «Save» and 
   await openOnRun(FREE_ENDED);
   await fireEvent.press(screen.getByRole("button", { name: SIGN_IN_TO_KEEP_RUNS }));
   // The page of the profile (TASK-278 part B); the run waits under it.
-  expect(screen.getByTestId("profile-page-mark")).toBeOnTheScreen();
+  expect(screen.getByRole("tab", { name: /^Profile/ })).toBeSelected();
   expect(screen.queryByText("Your run")).toBeNull();
 
   await fireEvent.changeText(screen.getByLabelText("email"), signUpRequest.email);
@@ -852,7 +891,7 @@ test("signed up from that line, the end of the run comes back with «Save» and 
   ).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Discard" })).toBeOnTheScreen();
   expect(screen.getByText("Your run")).toBeOnTheScreen();
-  expect(screen.queryByTestId("profile-page-mark")).toBeNull();
+  expect(screen.queryByRole("tab", { name: /^Profile/, selected: true })).toBeNull();
   expect(loadRun()).not.toBeNull();
   expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(0);
 });
@@ -914,10 +953,13 @@ test("a run along a route still on the map is saved with what the route draws", 
   await screen.findByText("Your run");
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
 
+  // The run's own PUT: the figures of its post (TASK-410 C) go after it.
   const puts = () =>
     fetchSpy.mock.calls.filter(
       ([input, init]) =>
-        init?.method === "PUT" && String(input).startsWith(`${API}/me/activities/`),
+        init?.method === "PUT" &&
+        String(input).startsWith(`${API}/me/activities/`) &&
+        !String(input).endsWith("/stats"),
     );
   await waitFor(() => expect(puts()).toHaveLength(1));
   const [url, init] = puts()[0];

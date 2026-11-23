@@ -291,3 +291,96 @@ def test_a_download_does_not_hold_up_a_zone_in_memory() -> None:
     assert answered.wait(5)
     source.release.set()
     downloading.join(5)
+
+
+def test_a_download_does_not_wait_osmnx_minute_for_a_silent_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A zone downloaded for a route someone is waiting for (TASK-471,
+    ADR-0385): when Overpass's status page says nothing usable, OSMnx
+    would wait a minute before the request; inside ZoneGraphs' download it
+    waits five seconds, and its minute is back afterwards. No network: the
+    status page is a fake answer, the wait is asked as OSMnx asks it."""
+    import osmnx._overpass as overpass
+
+    class Page:
+        text = "# 502 Gateway Timeout\n\nThis server is at capacity.\n"
+
+    monkeypatch.setattr(overpass.requests, "get", lambda url, **kwargs: Page())
+
+    def osmnx_wait() -> float:
+        return float(overpass._get_overpass_pause("https://overpass.example/api"))
+
+    class Waiting(FakeSource):
+        waited: float | None = None
+
+        def load(self, bbox: BBox) -> Graph:
+            self.waited = osmnx_wait()
+            return super().load(bbox)
+
+    source = Waiting([], download=grid(46.0, 11.0))
+    graphs = ZoneGraphs(source, read=CountingReader(source))
+    assert osmnx_wait() == 60
+    graphs.load(inside(ZONE_A))
+    assert source.downloads == 1 and source.waited == 5.0
+    assert osmnx_wait() == 60
+
+
+def test_an_error_of_overpass_is_tried_once_on_the_servers_second_service(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """With a second Overpass service set on the server (TASK-471,
+    ADR-0385) a zone's download that Overpass answers with an error is
+    tried once more, there; with none set, once, as before."""
+    import osmnx as ox
+    from osmnx._errors import ResponseStatusCodeError
+
+    from shaperoute_api.overpass_fallback import FALLBACK_VARIABLE
+
+    class Busy(FakeSource):
+        """Overpass answers 502 at its usual address only."""
+
+        def __init__(self) -> None:
+            super().__init__([], download=grid(46.0, 11.0))
+            self.usual = ox.settings.overpass_url
+            self.asked: list[str] = []
+
+        def load(self, bbox: BBox) -> Graph:
+            self.asked.append(ox.settings.overpass_url)
+            if ox.settings.overpass_url == self.usual:
+                self.downloads += 1
+                raise ResponseStatusCodeError("502 Bad Gateway")
+            return super().load(bbox)
+
+    monkeypatch.delenv(FALLBACK_VARIABLE, raising=False)
+    source = Busy()
+    with pytest.raises(MapDataUnavailableError, match="502 Bad Gateway"):
+        ZoneGraphs(source, read=CountingReader(source)).load(inside(ZONE_A))
+    assert source.asked == [source.usual]
+
+    monkeypatch.setenv(FALLBACK_VARIABLE, "https://overpass.example/api")
+    source = Busy()
+    graph = ZoneGraphs(source, read=CountingReader(source)).load(inside(ZONE_A))
+    assert len(graph) > 0
+    assert source.asked == [source.usual, "https://overpass.example/api"]
+    assert ox.settings.overpass_url == source.usual
+
+
+def test_the_error_says_why_in_a_line_not_with_overpass_whole_page() -> None:
+    page = (
+        "'overpass-api.de' responded: 502 Bad Gateway # 502 Gateway Timeout\n\n"
+        "This Overpass API server is currently at capacity.\n\n## What to do\n"
+    )
+    source = FakeSource([], download=ValueError(page))
+    with pytest.raises(MapDataUnavailableError) as raised:
+        ZoneGraphs(source, read=CountingReader(source)).load(inside(ZONE_A))
+    assert str(raised.value) == (
+        "OpenStreetMap data for this area could not be downloaded: "
+        "'overpass-api.de' responded: 502 Bad Gateway # 502 Gateway Timeout"
+    )
+    # An error that says nothing is named; a long line is cut.
+    for failure, reason in [(OSError(), "OSError"), (ValueError("x" * 500), "x" * 200)]:
+        source = FakeSource([], download=failure)
+        with pytest.raises(MapDataUnavailableError) as raised:
+            ZoneGraphs(source, read=CountingReader(source)).load(inside(ZONE_A))
+        assert str(raised.value).endswith(f"downloaded: {reason}")

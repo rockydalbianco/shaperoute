@@ -88,7 +88,7 @@ function api(answers: Answers) {
         { status: 202 },
       );
     }
-    if (method === "GET" && path === "/route-jobs/4f2c9e1a") {
+    if (method === "GET" && path.split("?")[0] === "/route-jobs/4f2c9e1a") {
       return Response.json(jobDone);
     }
     return Response.json(apiError("http_error", path), { status: 404 });
@@ -150,7 +150,7 @@ test.each([
           Response.json({ ...BIKE_LISTED, id: DRAWN_KEY }, { status: 201 }),
       });
       await open();
-      await fireEvent.press(screen.getByText("Draw route"));
+      await fireEvent.press(screen.getByTestId("draw-route"));
       // The first poll comes after 500 ms.
       await act(() => jest.advanceTimersByTimeAsync(500));
       await fireEvent.press(screen.getByRole("button", { name: "Add to favorites" }));
@@ -202,7 +202,7 @@ test("a bike favorite opened with «Run» chosen exports as a bike route", async
       }),
   });
   await open();
-  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
   await fireEvent.press(await screen.findByRole("button", { name: "Favorites, 2" }));
   await fireEvent.press(
     screen.getByRole("button", { name: "Heart · 20.5 km, open on the map" }),

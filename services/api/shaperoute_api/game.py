@@ -24,7 +24,7 @@ endpoints, hooks and clock.
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Container, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any, Literal, Protocol
@@ -44,7 +44,7 @@ from shaperoute_api.accounts import (
     current_user,
 )
 from shaperoute_api.db import Database
-from shaperoute_api.game_catalog import CATALOG, GameShape
+from shaperoute_api.game_catalog import CATALOG, COLLECTIONS, GameShape
 from shaperoute_api.game_challenges import (
     PieceDoneBody,
     fill,
@@ -52,6 +52,18 @@ from shaperoute_api.game_challenges import (
     notify_pieces,
     pieces_done_bodies,
     pieces_done_by,
+)
+from shaperoute_api.game_personal_api import install_game_personal, record_personal
+from shaperoute_api.game_prizes import EDITION_RUNS, has_editions
+from shaperoute_api.game_prizes_api import (
+    EditionUpBody,
+    best_editions,
+    collections_done_by,
+    edition_counts,
+    editions_by,
+    install_game_prizes,
+    record_editions,
+    solo_unlocked,
 )
 from shaperoute_api.game_rules import (
     DAILY_CAP,
@@ -97,12 +109,17 @@ class _Pause(Protocol):
 
 class GoalBody(BaseModel):
     """What a shape asks: `total_m` in all, or `distance_m` in one run at
-    `pace_s` a kilometre or better."""
+    `pace_s` a kilometre or better. Only these two kinds: the apps already
+    installed refuse the whole catalog for a kind they do not know."""
 
     kind: Literal["distance", "pace"]
     total_m: int | None = None
     distance_m: int | None = None
     pace_s: int | None = None
+    single_run: bool = Field(
+        default=False,
+        description="A milestone of one run (TASK-423): any run of distance_m.",
+    )
 
 
 class GameShapeBody(BaseModel):
@@ -112,11 +129,20 @@ class GameShapeBody(BaseModel):
     outline: list[tuple[float, float]] = Field(
         description="Closed, from 0 to 1, y downwards as on a screen."
     )
+    collection: str = Field(description="The id of its collection (TASK-423).")
+
+
+class CollectionBody(BaseModel):
+    id: str
+    names: dict[str, str] = Field(description="The name in en, de, it, es, fr.")
 
 
 class GameCatalogBody(BaseModel):
     rules_version: int
     shapes: list[GameShapeBody]
+    collections: list[CollectionBody] = Field(
+        description="In order; each shape names one (TASK-423)."
+    )
 
 
 class ShapeStateBody(BaseModel):
@@ -126,6 +152,23 @@ class ShapeStateBody(BaseModel):
     team_unlocked_at: datetime | None = Field(
         default=None, description="When a team's challenge gave the shape (part C)."
     )
+    # The editions (TASK-423 part E): only for a pace or milestone shape.
+    edition: Literal["bronze", "silver", "gold"] | None = Field(
+        default=None,
+        description="Bronze once unlocked, silver in 3 runs, gold in 10; null"
+        " before, and for a shape of the total kilometres.",
+    )
+    edition_runs: int | None = Field(
+        default=None,
+        description="The counted runs that met its goal; null for a shape of"
+        " the total kilometres.",
+    )
+
+
+class CollectionStateBody(BaseModel):
+    id: str
+    unlocked: int = Field(description="Its shapes the account unlocked.")
+    total: int
 
 
 class GameMeBody(BaseModel):
@@ -137,6 +180,9 @@ class GameMeBody(BaseModel):
         description="The best moving seconds by distance in metres: {'1000': 287.4}."
     )
     shapes: list[ShapeStateBody]
+    collections: list[CollectionStateBody] = Field(
+        description="How far along each collection is, in catalog order (TASK-423)."
+    )
 
 
 class RunGameBody(BaseModel):
@@ -151,13 +197,24 @@ class RunGameBody(BaseModel):
         default_factory=list,
         description="The pieces of a team's challenge the run finished (part C).",
     )
+    editions: list[EditionUpBody] = Field(
+        default_factory=list,
+        description="The silver and gold editions the run gave (TASK-423 E).",
+    )
+    collections_done: list[str] = Field(
+        default_factory=list,
+        description="The collections the run completed: a new frame (TASK-423 E).",
+    )
 
 
 def _goal(shape: GameShape) -> GoalBody:
     if isinstance(shape.goal, DistanceGoal):
         return GoalBody(kind="distance", total_m=shape.goal.total_m)
     return GoalBody(
-        kind="pace", distance_m=shape.goal.distance_m, pace_s=shape.goal.pace_s
+        kind="pace",
+        distance_m=shape.goal.distance_m,
+        pace_s=shape.goal.pace_s,
+        single_run=shape.goal.single_run,
     )
 
 
@@ -169,10 +226,26 @@ CATALOG_BODY = GameCatalogBody(
             names=shape.names,
             goal=_goal(shape),
             outline=list(shape.outline),
+            collection=shape.collection,
         )
         for shape in CATALOG
     ],
+    collections=[CollectionBody(id=c.id, names=c.names) for c in COLLECTIONS],
 )
+
+
+def collection_states(unlocked: Container[str]) -> list[CollectionStateBody]:
+    """How many shapes of each collection are among `unlocked`."""
+    return [
+        CollectionStateBody(
+            id=c.id,
+            unlocked=sum(
+                1 for s in CATALOG if s.collection == c.id and s.id in unlocked
+            ),
+            total=sum(1 for s in CATALOG if s.collection == c.id),
+        )
+        for c in COLLECTIONS
+    ]
 
 
 # --- A run, as the game records it ---
@@ -187,16 +260,27 @@ def after_run_saved(
     pauses: Sequence[_Pause],
     activity: str,
     now: datetime,
+    utc_offset_min: int | None = None,
 ) -> list[str]:
     """In the transaction that saved the run, after its row: its game, the
-    shapes it unlocked (returned), and the pieces of its teams' challenges
-    it filled (part C)."""
+    shapes it unlocked (returned), the pieces of its teams' challenges it
+    filled (part C), the steps of the personal challenges it reached
+    (TASK-423 part C) and the editions it gave (TASK-423 part E).
+    `utc_offset_min`: the phone's clock against UTC, as the app sent it."""
     fixes = [Fix(p.lat, p.lon, p.time_s or 0.0) for p in track]
     kept = [RunPause(p.from_s, p.to_s, p.auto) for p in pauses]
     unlocked = record(
-        conn, user_id, run_id, started_at, evaluate(fixes, kept, activity), now
+        conn,
+        user_id,
+        run_id,
+        started_at,
+        evaluate(fixes, kept, activity),
+        now,
+        utc_offset_min,
     )
     _fill_pieces(conn, user_id, run_id, started_at, now)
+    record_personal(conn, user_id, run_id, now)
+    record_editions(conn, user_id, run_id, now)
     return unlocked
 
 
@@ -226,11 +310,14 @@ def record(
     started_at: datetime,
     game: RunGame,
     unlocked_at: datetime,
+    utc_offset_min: int | None = None,
 ) -> list[str]:
     """Writes the run's row, with the rules that need the account's other
     runs, then the shapes it unlocked: their ids, in catalog order. The
     caller holds the account's row locked (activities.save,
-    game_backfill), so its runs change one at a time."""
+    game_backfill), so its runs change one at a time. `utc_offset_min`: the
+    one the app sent (the backfill passes it on); without one, a row's own
+    stays."""
     ended_at = started_at + timedelta(seconds=game.elapsed_s)
     counted, reason, metres, best = (
         game.counted,
@@ -246,12 +333,14 @@ def record(
             reason, metres = DAILY_CAP, kept
     conn.execute(
         "INSERT INTO game_runs (run_id, user_id, rules_version, counted, reason,"
-        " counted_m, best_s, started_at, ended_at)"
-        " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        " counted_m, best_s, started_at, ended_at, utc_offset_min)"
+        " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
         " ON CONFLICT (run_id) DO UPDATE SET rules_version = EXCLUDED.rules_version,"
         " counted = EXCLUDED.counted, reason = EXCLUDED.reason,"
         " counted_m = EXCLUDED.counted_m, best_s = EXCLUDED.best_s,"
-        " started_at = EXCLUDED.started_at, ended_at = EXCLUDED.ended_at",
+        " started_at = EXCLUDED.started_at, ended_at = EXCLUDED.ended_at,"
+        " utc_offset_min = coalesce(EXCLUDED.utc_offset_min,"
+        " game_runs.utc_offset_min)",
         (
             run_id,
             user_id,
@@ -262,6 +351,7 @@ def record(
             Jsonb({str(d): s for d, s in best.items()}),
             started_at,
             ended_at,
+            utc_offset_min,
         ),
     )
     return _unlock(conn, user_id, run_id, unlocked_at)
@@ -352,10 +442,18 @@ class Game:
                 " WHERE user_id = %s",
                 (user_id,),
             ).fetchall()
+            runs = edition_counts(conn, user_id)
+            best = best_editions(conn, user_id)
         unlocked = {
             r["shape_id"]: r["unlocked_at"] for r in rows if r["edition"] == "solo"
         }
         team = {r["shape_id"]: r["unlocked_at"] for r in rows if r["edition"] == "team"}
+
+        def edition(shape_id: str) -> Literal["bronze", "silver", "gold"] | None:
+            if shape_id not in runs or shape_id not in unlocked:
+                return None
+            return best.get(shape_id, "bronze")
+
         return GameMeBody(
             counted_m=totals.counted_m,
             longest_m=totals.longest_m,
@@ -368,9 +466,12 @@ class Game:
                         1.0 if shape.id in unlocked else progress(shape.goal, totals)
                     ),
                     team_unlocked_at=team.get(shape.id),
+                    edition=edition(shape.id),
+                    edition_runs=runs.get(shape.id) if has_editions(shape) else None,
                 )
                 for shape in CATALOG
             ],
+            collections=collection_states(unlocked.keys()),
         )
 
     def run(self, user_id: int, key: str) -> RunGameBody | None:
@@ -387,6 +488,8 @@ class Game:
                 return None
             shapes = _unlocked_by(conn, user_id, row["run_id"])
             pieces = pieces_done_by(conn, user_id, row["run_id"])
+            editions = editions_by(conn, user_id, row["run_id"])
+            done = collections_done_by(solo_unlocked(conn, user_id), shapes)
         return RunGameBody(
             counted=row["counted"],
             reason=row["reason"],
@@ -394,6 +497,8 @@ class Game:
             best_s=row["best_s"],
             unlocked=shapes,
             pieces_done=pieces_done_bodies(pieces),
+            editions=editions,
+            collections_done=done,
         )
 
 
@@ -408,11 +513,20 @@ def _unlocked_by(conn: Connection[DictRow], user_id: int, run_id: int) -> list[s
     return [shape.id for shape in CATALOG if shape.id in found]
 
 
+# What the pushes of part E name: the shape or the collection, by language;
+# an edition by its runs (push.py words it).
+SHAPE_NAMES: dict[str, dict[str, str]] = {s.id: dict(s.names) for s in CATALOG}
+COLLECTION_NAMES: dict[str, dict[str, str]] = {c.id: dict(c.names) for c in COLLECTIONS}
+EDITION_NUMBER: dict[str, int] = dict(EDITION_RUNS)
+
+
 def notify_unlocked(request: Request, user_id: int, key: str) -> None:
-    """After a new run is saved, outside its transaction: a push for each
-    shape it unlocked (push.py; the app does not show it while open), then
-    the pushes of the teams' challenges it filled (game_challenges.py).
-    Never raises."""
+    """After a new run is saved, outside its transaction: one push if it
+    unlocked shapes, however many (push.py; the app does not show it while
+    open): with 94 shapes a run can unlock ten at once (TASK-423). One if it
+    gave an edition, one if it completed a collection (TASK-423 part E).
+    Then the pushes of the teams' challenges it filled (game_challenges.py).
+    Never raises. The backfill sends none."""
     accounts: Accounts | None = getattr(request.app.state, "accounts", None)
     if accounts is None:
         return
@@ -421,8 +535,37 @@ def notify_unlocked(request: Request, user_id: int, key: str) -> None:
     except Exception:
         log.exception("game: the shapes of a run were not read")
         game = None
-    for shape_id in game.unlocked if game is not None else []:
-        notify(request, PushEvent("shape_unlocked", user_id, user_id, key=shape_id))
+    if game is not None and game.unlocked:
+        notify(
+            request, PushEvent("shape_unlocked", user_id, user_id, key=game.unlocked[0])
+        )
+    # TASK-423 part E: one push for the first edition the run gave, one for
+    # the first collection it completed, however many.
+    if game is not None and game.editions:
+        first = game.editions[0]
+        notify(
+            request,
+            PushEvent(
+                "edition_up",
+                user_id,
+                user_id,
+                key=f"{first.shape_id}:{first.edition}",
+                number=EDITION_NUMBER[first.edition],
+                names=SHAPE_NAMES[first.shape_id],
+            ),
+        )
+    if game is not None and game.collections_done:
+        done = game.collections_done[0]
+        notify(
+            request,
+            PushEvent(
+                "collection_done",
+                user_id,
+                user_id,
+                key=done,
+                names=COLLECTION_NAMES[done],
+            ),
+        )
     notify_pieces(request, user_id, key)
 
 
@@ -478,6 +621,8 @@ def install_game(app: FastAPI) -> None:
     app.include_router(game_routes())
     install_game_teams(app)
     install_game_challenges(app)
+    install_game_personal(app)
+    install_game_prizes(app)
 
 
 def kept_run(row: dict[str, Any]) -> tuple[list[Fix], list[RunPause]]:

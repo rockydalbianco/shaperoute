@@ -43,13 +43,14 @@ function locationOptions(config: Record<string, any>): Record<string, unknown> {
   return entry[1];
 }
 
-it("the iPhone fingerprint reads the config as build 7 had it", () => {
+it("the iPhone fingerprint reads the config without the Android settings", () => {
   const config = expoConfig();
   // The package name of part B is in app.json: taken out as well.
   expect(config.android.package).toBe("app.getmuw.android");
   const read = JSON.parse(transform("expoConfig", stringifyJsonSorted(config))!);
 
-  // The options and the Android permissions of the 1.0 build, no more.
+  // The options of the 1.0 build, and its Android permissions with those the
+  // contacts' plugin adds since the 1.0.1 (TASK-321 B).
   expect(Object.keys(locationOptions(read)).sort()).toEqual([
     "isIosBackgroundLocationEnabled",
     "locationWhenInUsePermission",
@@ -58,6 +59,8 @@ it("the iPhone fingerprint reads the config as build 7 had it", () => {
     "android.permission.ACCESS_COARSE_LOCATION",
     "android.permission.ACCESS_FINE_LOCATION",
     "android.permission.MODIFY_AUDIO_SETTINGS",
+    "android.permission.READ_CONTACTS",
+    "android.permission.WRITE_CONTACTS",
   ]);
   expect(read.android.package).toBeUndefined();
   // Written as the fingerprint writes a config that never had them.
@@ -74,6 +77,16 @@ it("a config without the Android settings is read as it is", () => {
   config.android.permissions = config.android.permissions.filter(
     (name: string) => !name.startsWith("android.permission.FOREGROUND_SERVICE"),
   );
+  // Nor the watch's (TASK-370, iosOnlyFingerprint.test.ts).
+  config.plugins = config.plugins.filter(
+    (plugin: unknown) =>
+      !["./plugins/withWatchCore.js", "@bacons/apple-targets"].includes(
+        (Array.isArray(plugin) ? plugin[0] : plugin) as string,
+      ),
+  );
+  delete config.extra.eas.build;
+  // Nor the Live Activity's key (TASK-401 B, the 1.1).
+  delete config.ios.infoPlist.NSSupportsLiveActivities;
   const written = stringifyJsonSorted(config);
   expect(transform("expoConfig", written)).toBe(written);
 });
@@ -94,7 +107,8 @@ it("the Android fingerprint keeps the Android settings", () => {
 });
 
 it("every other source is read as it is", () => {
-  expect(transform("expoAutolinkingConfig:ios", "modules")).toBe("modules");
+  // The iPhone's own source gets the watch (iosOnlyFingerprint.test.ts).
+  expect(transform("expoAutolinkingConfig:ios", "modules")).toMatch(/^modules\n/);
   expect(transform("packageJson:scripts", "{}")).toBe("{}");
   const file = Buffer.from("code") as unknown as string;
   expect(

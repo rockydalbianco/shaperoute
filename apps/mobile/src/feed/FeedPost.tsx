@@ -1,65 +1,82 @@
-import { useMemo, useRef, useState } from "react";
+import { type ReactNode, useMemo, useRef, useState } from "react";
 import {
   type GestureResponderEvent,
   Image,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { type GymExercises, PLAN_SOURCE } from "@shaperoute/shared-types";
 
+import { sportPaceLabel } from "../activities/activityText";
+import { isOnSnow, isTrackless } from "../activities/snow";
+import { authHeaders } from "../api/accounts";
+import { keyHeaders } from "../api/apiUrl";
 import { drawingPhotoSource } from "../api/drawings";
+import { isGymPlanPosted } from "../api/planPosts";
 import { cityName } from "../explore/recommendedRoutes";
-import { thumbSegments } from "../explore/RouteThumb";
-import { t, tLater } from "../i18n";
+import { RouteThumb } from "../explore/RouteThumb";
+import { GymTile } from "../gym/GymTile";
+import { mainExercises } from "../gym/mainExercises";
+import { NewLevels } from "../gym/NewLevels";
+import { useGymExercises } from "../gym/useGymExercises";
+import { isPoolLine, PoolTile } from "../pool/PoolTile";
+import { usePoolFigures } from "../pool/usePoolFigures";
+import { SleepLine } from "../health/SleepLine";
+import { t } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
+import { useLanguage } from "../i18n/useLanguage";
 import { bearingOf } from "../map/turnedMap";
 import { durationLabel } from "../screens/FinishScreen";
-import { SPORTS } from "../settings/sport";
+import { segmentTrackFace } from "../screens/Segmented";
 import { useBlockedNow } from "../social/blockedNow";
+import { itemsOf } from "../social/composer/postOrder";
 import { useFollowsDoor } from "../social/followsDoor";
+import { agoLabel } from "../social/commentText";
+import { OutfitTagLayer, OutfitTotals } from "../social/outfit/OutfitTagLayer";
 import { ReportMenu } from "../social/ReportMenu";
 import {
   color,
+  font,
   fontSize,
   fontWeight,
   MIN_TAP_SIZE,
   radius,
-  route as routeLine,
   space,
 } from "../theme/tokens";
+import { DEFAULT_ACTIVITY, findProfile } from "../sports";
+import { Hairline } from "../ui/Hairline";
+import { Tap } from "../ui/Tap";
+import { useGlassMode } from "../ui/useGlassMode";
 import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
-import { useFeedMap } from "./FeedMaps";
-import { isShown } from "./feedPosts";
+import { useEditRunDoor } from "./editRunDoor";
+import { postSplit, postSplitLine } from "../air/flightSplit";
+import { isImportedPost, isShown } from "./feedPosts";
+import { PhotoViewer } from "./PhotoViewer";
+import { PlanPost } from "./PlanPostTile";
+import { PostActions } from "./PostActions";
+import type { PostReactionsHandle } from "./PostReactions";
+import { gymPostEnergy, postEnergy } from "./postEnergy";
+import { FactsText, factsEnergy } from "./FactsText";
+import { summaryRows } from "./postSections";
+import { drawingHeight, RouteMap } from "./RouteMap";
+import { SummaryBoxes } from "./SummaryBoxes";
 import type { SamplePost } from "./sampleFeed";
 import { turnedLine } from "./turnedLine";
+import { useDoubleTap } from "./useDoubleTap";
 
-/** How tall the drawing is, for how wide: most figures are wider than tall. */
-const DRAWING_RATIO = 0.62;
-/** The line of a drawing this wide: thicker than on a card of «Explore». */
-const LINE_WIDTH = 3;
-/** Clear around the line, on every side. */
-const DRAWING_PAD = space.xl;
+export { drawingHeight, MAP_CREDIT } from "./RouteMap";
+
 /** How far a finger may move, in points, and still have tapped. */
 const TAP_SLOP = 12;
 /** The side of a dot under the photos. */
 const DOT = 6;
-
-/** How tall the drawing of a card `width` wide is. */
-export function drawingHeight(width: number): number {
-  return Math.round(width * DRAWING_RATIO);
-}
-
-/**
- * Whose the map is, as its makers ask to be named (`ATTRIBUTION` in
- * `map/mapStyle`), on every picture of it. In two lines, in a corner.
- * In English: shown with `t(MAP_CREDIT)` (TASK-210).
- */
-export const MAP_CREDIT = tLater("OpenFreeMap © OpenMapTiles\nData from OpenStreetMap");
+/** The side of the figure in the corner of a photo (TASK-355). */
+const THUMB = 56;
 
 type Props = {
   post: SamplePost;
@@ -74,31 +91,51 @@ export function shapeLabel(shape: string): string {
   return shapeName(shape);
 }
 
-/** The sports' names, as their buttons say them: shown with `t(name)`, in
- * the app's language («Pagaia», «Bici»; TASK-210, part H). */
-const PADDLE = SPORTS.find((sport) => sport.id === "paddle")?.name ?? tLater("Paddle");
-const BIKE = SPORTS.find((sport) => sport.id === "bike")?.name ?? tLater("Bike");
+function sameWords(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
 
 /**
- * "Moon · 4.9 km · 27 min": what was drawn, how far, how long. A drawing on
- * the water says so first, "Paddle · Moon · 2.0 km · 24 min" (TASK-228), one
- * on a bike "Bike · …" (TASK-118). In the app's units (TASK-182): "Moon ·
- * 3.0 mi · 27 min". A member's drawing says what it draws in its own
+ * "Moon · 4.9 km · 27 min · 5:32 /km": what was drawn, how far, how long,
+ * the average pace (TASK-326). A drawing on the water says so first, and
+ * its pace is a paddler's, "Paddle · Moon · 2.0 km · 24 min · 6:00 /500 m"
+ * (TASK-228); one on a bike "Bike · …" (TASK-118), its pace a kilometre's
+ * as in «My activities». In the app's units (TASK-182): "Moon · 3.0 mi ·
+ * 27 min · 8:54 /mi". A member's drawing says what it draws in its own
  * words, a word or a route's title, and a run without a route says only
- * how far and how long.
+ * how far, how long and how fast. A run too short has no pace. An activity
+ * added from a file of another app says so before all, "Imported · 4.9 km ·
+ * 27 min" (TASK-312). A run ends with its energy, "· 355 kcal" (TASK-345).
+ * What the title of the card already says is not said twice (TASK-355).
+ * A workout at the gym counts its energy from its `exercises`: its sets
+ * (TASK-385 C) and its heart rate (part G).
  */
-export function postFacts(post: SamplePost): string {
-  const what = post.what === undefined ? shapeLabel(post.shape) : post.what;
+export function postFacts(post: SamplePost, exercises?: GymExercises | null): string {
+  const named = post.what === undefined ? shapeLabel(post.shape) : post.what;
+  const what = named !== null && sameWords(named, post.title) ? null : named;
+  // A member's drawing has the seconds; an example only its minutes.
+  const ms = isShown(post) ? post.drawing.duration_s * 1000 : post.minutes * 60_000;
+  // A workout at the gym has no distance nor pace: its time (TASK-385 B0).
+  const gym = isTrackless(post.activity);
   const facts = [
     what,
-    distanceLabel(post.route_m),
+    gym ? null : distanceLabel(post.route_m),
     durationLabel(post.minutes * 60_000),
+    gym ? null : sportPaceLabel(post.activity, post.route_m, ms),
+    gym ? gymPostEnergy(post, exercises) : postEnergy(post),
   ]
     .filter((fact): fact is string => fact !== null)
     .join(" · ");
+  // The sport's name, as its button says it (src/sports), shown with
+  // `t(name)` in the app's language («Pagaia», «Bici»; TASK-210, part H);
+  // a run says none.
+  const profile = findProfile(post.activity);
   const sport =
-    post.activity === "paddling" ? PADDLE : post.activity === "cycling" ? BIKE : null;
-  return sport === null ? facts : `${t(sport)} · ${facts}`;
+    profile === undefined || profile.activity === DEFAULT_ACTIVITY
+      ? null
+      : profile.name;
+  const withSport = sport === null ? facts : `${t(sport)} · ${facts}`;
+  return isImportedPost(post) ? `${t("Imported")} · ${withSport}` : withSport;
 }
 
 /**
@@ -115,36 +152,51 @@ export function postFacts(post: SamplePost): string {
  * it whole, with its reactions and comments, as from a profile. On a
  * member's drawing, but not on one's own, a «…» reports the drawing or
  * blocks its author (TASK-121): once blocked, the card goes away at once.
- * A drawing with photos shows them in the card, after the drawing, one
- * whole width each, to swipe sideways, and under them a dot for each with
- * the one shown lit (TASK-315).
+ * A drawing with photos shows them in the card, one whole width each, to
+ * swipe sideways, in the post's order with the drawing among them (TASK-348;
+ * the drawing first when never ordered), a dot for each under them with
+ * the one shown lit (TASK-315), and over them which of how many it is. The card has the large radius and no
+ * border, and answers the finger through `Tap` (TASK-339, ADR-0293): under
+ * the drawing its words stay below it, so as not to cover the figure; on a
+ * photo they lie over it, light on the dark that rises from its foot, with
+ * the figure small in a corner. A member's drawing says when it was run, as
+ * a comment says when it was written, and has its actions under the card
+ * (`PostActions`, TASK-410 F); the «…» and the actions stay outside the card's
+ * button, where a screen reader reaches them. So does its author's name with
+ * the initial: a tap on them opens the author's profile, as a tagged name
+ * does (TASK-399). A tap on a photo opens it on the whole screen, where
+ * «Save» keeps it on the phone; a tap on the drawing opens its route.
  */
 export function FeedPost({ post, width, onOpen }: Props) {
+  const mode = useGlassMode();
   // The line of facts is written again when «Settings» changes the units
   // (TASK-182).
-  useUnits();
-  const { apiUrl, account } = useFollowsDoor();
+  const units = useUnits();
+  const { apiUrl, account, openProfile } = useFollowsDoor();
+  const editRun = useEditRunDoor();
   // Which of the drawing (0) and its photos is shown, and the furthest
   // reached: the photos up to the one after it are loaded, and stay.
   const [page, setPage] = useState(0);
   const [reached, setReached] = useState(0);
+  // The photo shown on the whole screen, by its place; null when none.
+  const [viewing, setViewing] = useState<number | null>(null);
   const author = isShown(post) ? post.drawing.author : null;
   const blocked = useBlockedNow(author === null ? null : author.public_id);
-  const height = drawingHeight(width);
   const bearing = bearingOf(post.rotation_deg);
-  const segments = useMemo(
-    () =>
-      thumbSegments(
-        turnedLine(post.line, bearing),
-        width,
-        height,
-        DRAWING_PAD,
-        post.gaps,
-      ),
-    [post.line, bearing, post.gaps, width, height],
-  );
-  const map = useFeedMap(post.id, post.line, width, height, DRAWING_PAD, bearing);
+  const upright = useMemo(() => turnedLine(post.line, bearing), [post.line, bearing]);
   const city = cityName(post.city);
+  const ago = isShown(post) ? agoLabel(post.drawing.started_at) : "";
+  // A member's workout at the gym names its main exercises on its tile,
+  // unless its owner hides them (TASK-385 part D).
+  const language = useLanguage();
+  const exercises = useGymExercises(isShown(post) ? post.drawing.id : post.id, {
+    on: isShown(post) && isTrackless(post.activity),
+  });
+  // A swim in a pool: its lengths and pool on its tile (TASK-400 part C).
+  const pool = isPoolLine(post.activity, post.line);
+  const figures = usePoolFigures(isShown(post) ? post.drawing.id : post.id, {
+    on: isShown(post) && pool,
+  });
   // Where the finger came down. «Feed» is the first page: a swipe towards
   // it moves nothing, so nothing takes the touch away, and it would end as
   // a tap on the card it crossed.
@@ -152,17 +204,30 @@ export function FeedPost({ post, width, onOpen }: Props) {
   function onPressIn({ nativeEvent }: GestureResponderEvent) {
     down.current = { x: nativeEvent.pageX, y: nativeEvent.pageY };
   }
-  function onPress({ nativeEvent }: GestureResponderEvent) {
-    const from = down.current;
-    down.current = null;
-    const moved =
-      from === null
-        ? 0
-        : Math.hypot(nativeEvent.pageX - from.x, nativeEvent.pageY - from.y);
-    if (moved <= TAP_SLOP) {
-      onOpen?.();
-    }
+  // A tap, not the end of a swipe, does what it is for.
+  function tapped(action: () => void) {
+    return ({ nativeEvent }: GestureResponderEvent) => {
+      const from = down.current;
+      down.current = null;
+      const moved =
+        from === null
+          ? 0
+          : Math.hypot(nativeEvent.pageX - from.x, nativeEvent.pageY - from.y);
+      if (moved <= TAP_SLOP) {
+        action();
+      }
+    };
   }
+  // Two taps on the picture are the post's super like (TASK-454 part B):
+  // asked of the reactions its row of actions reads. One tap waits to know
+  // it is alone, only where the row is: an example opens at once.
+  const reactions = useRef<PostReactionsHandle>(null);
+  const tap = useDoubleTap(
+    onOpen !== undefined && isShown(post)
+      ? () => reactions.current?.superLike()
+      : undefined,
+  );
+  const onPress = tapped(() => tap(() => onOpen?.()));
   if (blocked) {
     return null;
   }
@@ -187,159 +252,449 @@ export function FeedPost({ post, width, onOpen }: Props) {
       ? (post.drawing.photos ?? []).map((photo) => ({
           n: photo.n,
           source: drawingPhotoSource(apiUrl, state.session.token, photo),
+          drawn: photo,
         }))
       : [];
+  // A workout at the gym has no line: its tile in place of the map, and
+  // never ordered, its first photo first (the user's choice, TASK-385).
+  const gym = isTrackless(post.activity);
+  // The pages in the post's order, the map among the photos (TASK-348,
+  // ADR-0301); never ordered, the map first.
+  const order = isShown(post) ? post.drawing.order : null;
+  const ordered = itemsOf(
+    order,
+    photos.map((photo) => photo.n),
+  );
+  const pages =
+    photos.length === 0
+      ? []
+      : (gym || pool) && (order === null || order === undefined)
+        ? [
+            ...ordered.filter((item) => item.kind !== "drawing"),
+            { kind: "drawing" as const },
+          ]
+        : ordered;
+  // A photo's page is the one shown, a whole width each: the tap opens it.
+  const onPhotoPress = tapped(() => {
+    // The photo that was tapped, whatever is shown once the wait is over.
+    const item = pages[page];
+    tap(() => {
+      if (item !== undefined && item.kind === "photo") {
+        setViewing(item.n);
+      }
+    });
+  });
+  // Each page of the photos takes a tap itself (TASK-330): were the card
+  // the one touched, iOS would not let the photos scroll inside it, and the
+  // swipe would turn the app's page to «Draw» instead. A page is as wide as
+  // the card and as tall as the tallest, the drawing with its words.
+  // A photo's page opens the photo on the whole screen, to look at and to
+  // save; the drawing's opens its route, as the card does.
+  function tappable(key: string | number, shown: ReactNode, isPhoto = false) {
+    if (onOpen === undefined) {
+      return (
+        <View key={key} style={{ width }}>
+          {shown}
+        </View>
+      );
+    }
+    return (
+      <Tap
+        key={key}
+        style={{ width }}
+        onPressIn={onPressIn}
+        onPress={isPhoto ? onPhotoPress : onPress}
+        accessible={false}
+        testID="feed-page-tap"
+      >
+        {shown}
+      </Tap>
+    );
+  }
   function onPaged({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) {
     const shown = Math.round(nativeEvent.contentOffset.x / width);
     setPage(shown);
     setReached((was) => Math.max(was, shown));
   }
+  // A race on foot and in the air (TASK-305 part R6b): its two times.
+  const split = postSplit(post);
+  const splitText = split === null ? null : postSplitLine(split);
+  const facts = postFacts(post, exercises);
+  const withSplit = splitText === null ? facts : `${facts} · ${splitText}`;
+  const heard = ago === "" ? withSplit : `${ago} · ${withSplit}`;
   // A member's run may have no place found (TASK-118): then none is read.
   const label =
     city === ""
       ? t("{user}: {title}. {facts}.", {
           user: post.user,
           title: post.title,
-          facts: postFacts(post),
+          facts: heard,
         })
       : t("{user} in {city}: {title}. {facts}.", {
           user: post.user,
           city,
           title: post.title,
-          facts: postFacts(post),
+          facts: heard,
         });
-  const drawing = (
-    <View style={[styles.drawing, { width, height }]} testID="feed-drawing">
-      {map !== null && (
-        <Image
-          testID="feed-map"
-          style={StyleSheet.absoluteFill}
-          source={{ uri: map }}
-          accessible={false}
+  const drawing = pool ? (
+    <PoolTile
+      width={width}
+      height={drawingHeight(width)}
+      durationS={isShown(post) ? post.drawing.duration_s : post.minutes * 60}
+      metres={post.route_m}
+      figures={figures}
+    />
+  ) : gym ? (
+    <GymTile
+      width={width}
+      height={drawingHeight(width)}
+      durationS={isShown(post) ? post.drawing.duration_s : post.minutes * 60}
+      exercises={exercises === null ? [] : mainExercises(exercises.sets, language)}
+      kcal={gymPostEnergy(post, exercises)}
+      heartBpm={exercises?.heart_avg_bpm ?? null}
+    />
+  ) : (
+    <RouteMap
+      id={post.id}
+      line={post.line}
+      gaps={post.gaps}
+      rotationDeg={post.rotation_deg}
+      width={width}
+      marks={isShown(post)}
+    />
+  );
+  // Under the drawing, so as not to cover the figure.
+  // A member's post has its numbers in boxes under the card, as its page
+  // (TASK-410 part F); an example its line of facts.
+  const shown = isShown(post);
+  const words = (
+    <View style={styles.words}>
+      <Text style={styles.title}>{post.title}</Text>
+      {splitText !== null && (
+        <Text style={styles.facts} testID="feed-flight-split">
+          {splitText}
+        </Text>
+      )}
+      {!shown && (
+        <FactsText
+          style={styles.facts}
+          facts={postFacts(post, exercises)}
+          kcal={factsEnergy(post, exercises)}
         />
       )}
-      {segments.map((s, i) => (
-        <View
-          key={i}
-          style={[
-            styles.segment,
-            {
-              left: s.left,
-              top: s.top - LINE_WIDTH / 2,
-              width: s.length + LINE_WIDTH / 2,
-              transform: [{ rotate: `${s.angle}deg` }],
-            },
-          ]}
-        />
-      ))}
-      {map !== null && <Text style={styles.credit}>{t(MAP_CREDIT)}</Text>}
+      {/* The figures this workout reached first (TASK-385 E). */}
+      {gym && <NewLevels exercises={exercises} />}
     </View>
   );
+  // Over a photo, on a capsule of glass laid inside it, 8 pt from its edges
+  // (TASK-469 A4c, ADR-0383, «Capsula»; before, light words on `Scrim`).
+  // The same words as under the drawing: a screen reader hears the card as
+  // one thing, so these are hidden from it.
+  const wordsOnPhoto = (
+    <>
+      {/* No figure in the corner of a workout at the gym: it has none. */}
+      {!gym && !pool && (
+        <View
+          style={styles.thumb}
+          pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          testID="feed-photo-thumb"
+        >
+          <RouteThumb line={upright} width={THUMB} height={THUMB} />
+        </View>
+      )}
+      <View
+        style={[styles.wordsOnPhoto, segmentTrackFace(mode)]}
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        testID="feed-photo-words"
+      >
+        <Text style={styles.titleOnPhoto}>{post.title}</Text>
+        {splitText !== null && <Text style={styles.factsOnPhoto}>{splitText}</Text>}
+        {!shown && (
+          <FactsText
+            style={styles.factsOnPhoto}
+            facts={postFacts(post, exercises)}
+            kcal={factsEnergy(post, exercises)}
+          />
+        )}
+      </View>
+    </>
+  );
+  // The author's picture at its own address on the API (TASK-355 part B),
+  // read with the token and the key as the photos are; the initial without.
+  const face =
+    author?.photo != null && apiUrl !== null && state.status === "signedIn"
+      ? {
+          uri: `${apiUrl}${author.photo}`,
+          headers: { ...keyHeaders(), ...authHeaders(state.session.token) },
+        }
+      : null;
+  const whoBody = (
+    <>
+      <View style={styles.avatar}>
+        {face === null ? (
+          <Text style={styles.initial}>{post.user.charAt(0).toUpperCase()}</Text>
+        ) : (
+          <Image
+            source={face}
+            style={styles.face}
+            accessibilityIgnoresInvertColors
+            testID="feed-author-photo"
+          />
+        )}
+      </View>
+      <View style={styles.names}>
+        <Text style={styles.user}>{post.user}</Text>
+        {(city !== "" || ago !== "") && (
+          <View style={styles.whereWhen}>
+            {city !== "" && (
+              <Text style={styles.city} numberOfLines={1}>
+                {city}
+              </Text>
+            )}
+            {ago !== "" && (
+              <Text style={styles.when}>{city === "" ? ago : `· ${ago}`}</Text>
+            )}
+          </View>
+        )}
+      </View>
+    </>
+  );
+  // A member's name opens their profile (TASK-399): a button of its own,
+  // outside the card's, or the tap would open the route. An example's
+  // name is only words.
+  const who =
+    author === null ? (
+      <View style={styles.who}>{whoBody}</View>
+    ) : (
+      <Tap
+        style={styles.who}
+        onPressIn={onPressIn}
+        onPress={tapped(() =>
+          openProfile({
+            public_id: author.public_id,
+            username: author.username,
+            photo: null,
+          }),
+        )}
+        accessibilityRole="button"
+        accessibilityLabel={t("{name}'s profile", { name: author.username })}
+        testID="feed-author"
+      >
+        {whoBody}
+      </Tap>
+    );
   const body = (
     <>
-      <View style={styles.who}>
-        <View style={styles.avatar}>
-          <Text style={styles.initial}>{post.user.charAt(0).toUpperCase()}</Text>
-        </View>
-        <View style={styles.names}>
-          <Text style={styles.user}>{post.user}</Text>
-          {city !== "" && <Text style={styles.city}>{city}</Text>}
-        </View>
-        {menu}
-      </View>
+      {author === null && who}
       {photos.length === 0 ? (
-        drawing
+        <>
+          {drawing}
+          {words}
+        </>
       ) : (
         <>
           {/* It bounces at its ends, as by default: a swipe past the last
               photo stays here and never turns the app's page. */}
-          <ScrollView
-            style={{ width, height }}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={onPaged}
-            testID="feed-pages"
-          >
-            {drawing}
-            {photos.map((photo, i) =>
-              // Photo i is page i + 1: loaded once the page before it was
-              // shown, never further on (the phone's data is the runner's).
-              i <= reached ? (
-                <Image
-                  key={photo.n}
-                  testID="feed-photo"
-                  style={[styles.photo, { width, height }]}
-                  source={photo.source}
-                  accessible={false}
-                />
-              ) : (
-                <View
-                  key={photo.n}
-                  testID="feed-photo-later"
-                  style={[styles.photo, { width, height }]}
-                />
-              ),
-            )}
-          </ScrollView>
+          <View>
+            <ScrollView
+              style={{ width }}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={onPaged}
+              testID="feed-pages"
+            >
+              {pages.map((item, i) => {
+                if (item.kind === "drawing") {
+                  return tappable(
+                    "drawing",
+                    <>
+                      {drawing}
+                      {words}
+                    </>,
+                  );
+                }
+                const photo = photos.find((one) => one.n === item.n);
+                return tappable(
+                  item.n,
+                  // Loaded once the page before it was shown, never further
+                  // on (the phone's data is the runner's).
+                  photo !== undefined && i <= reached + 1 ? (
+                    <>
+                      <Image
+                        testID="feed-photo"
+                        style={[StyleSheet.absoluteFill, styles.photo]}
+                        source={photo.source}
+                        resizeMode="cover"
+                        accessible={false}
+                      />
+                      {wordsOnPhoto}
+                      {/* The items worn, under the page counter (TASK-394). */}
+                      <OutfitTagLayer
+                        photo={photo.drawn}
+                        fit="cover"
+                        toggle="hanger"
+                        author={author}
+                        hangerStyle={{ top: space.xxl + space.sm, left: space.md }}
+                      />
+                    </>
+                  ) : (
+                    <View
+                      testID="feed-photo-later"
+                      style={[StyleSheet.absoluteFill, styles.photo]}
+                    />
+                  ),
+                  photo !== undefined,
+                );
+              })}
+            </ScrollView>
+            {/* Which page of how many, over the page's top left corner: the
+                figure is in the other. */}
+            <View
+              style={[styles.counter, segmentTrackFace(mode)]}
+              pointerEvents="none"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              testID="feed-counter"
+            >
+              <Text style={styles.counterText}>{`${page + 1}/${pages.length}`}</Text>
+            </View>
+          </View>
           <View style={styles.dots} testID="feed-dots">
-            {[0, ...photos.map((photo) => photo.n)].map((key, i) => (
+            {pages.map((item, i) => (
               <View
-                key={key}
+                key={item.kind === "drawing" ? "drawing" : item.n}
                 testID={i === page ? "feed-dot-on" : "feed-dot"}
                 style={[styles.dot, i === page && styles.dotOn]}
               />
             ))}
           </View>
+          {isShown(post) && <OutfitTotals photos={post.drawing.photos ?? []} />}
         </>
       )}
-      <View style={styles.words}>
-        <Text style={styles.title}>{post.title}</Text>
-        <Text style={styles.facts}>{postFacts(post)}</Text>
-      </View>
     </>
   );
-  if (onOpen === undefined) {
-    return (
+  const card =
+    onOpen === undefined ? (
       <View
-        style={styles.card}
+        style={[styles.card, author !== null && styles.under]}
         testID="feed-post"
         accessible
         accessibilityLabel={label}
       >
         {body}
       </View>
+    ) : (
+      <Tap
+        style={[styles.card, author !== null && styles.under]}
+        onPressIn={onPressIn}
+        onPress={onPress}
+        testID="feed-post"
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityHint={t("Opens the route on the map")}
+      >
+        {body}
+      </Tap>
+    );
+  const whole = photos.find((photo) => photo.n === viewing);
+  const viewer =
+    whole === undefined || !isShown(post) ? null : (
+      <PhotoViewer
+        source={whole.source}
+        drawingId={post.drawing.id}
+        n={whole.n}
+        onClose={() => setViewing(null)}
+      />
+    );
+  if (!isShown(post)) {
+    return card;
+  }
+  const mine =
+    state.status === "signedIn" &&
+    state.session.user.public_id === post.drawing.author.public_id;
+  // A gym plan posted (TASK-485 part B): its tile in place of the drawing,
+  // opened whole by a tap; no numbers, it was never run.
+  // The shared type of a post's `source` names only a run's.
+  const source: string | undefined = post.drawing.source;
+  const plan = source === PLAN_SOURCE ? post.drawing.plan : null;
+  if (isGymPlanPosted(plan)) {
+    return (
+      <View style={styles.card} testID="feed-plan-post">
+        {who}
+        <PlanPost
+          plan={plan}
+          description={post.drawing.description ?? null}
+          mine={mine}
+          drawingId={post.drawing.id}
+          width={width}
+        />
+        {menu !== null && <View style={styles.menu}>{menu}</View>}
+        {onOpen !== undefined && (
+          <>
+            <Hairline />
+            <PostActions post={post} mine={mine} reactionsHandle={reactions} />
+          </>
+        )}
+      </View>
     );
   }
+  // «Edit & run» where there is a line to run: not on the snow, at the gym
+  // nor in a pool.
+  const onEditRun =
+    gym || pool || isOnSnow(post.drawing.activity) ? undefined : editRun(post.line);
   return (
-    <Pressable
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
-      onPressIn={onPressIn}
-      onPress={onPress}
-      testID="feed-post"
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityHint={t("Opens the route on the map")}
-    >
-      {body}
-    </Pressable>
+    <View style={styles.card}>
+      {who}
+      {card}
+      <SummaryBoxes rows={summaryRows(post, units, exercises)} />
+      <SleepLine drawingId={post.drawing.id} sleep={post.drawing.sleep} />
+      {menu !== null && <View style={styles.menu}>{menu}</View>}
+      {onOpen !== undefined && (
+        <>
+          <Hairline />
+          <PostActions
+            post={post}
+            mine={mine}
+            onEditRun={onEditRun}
+            reactionsHandle={reactions}
+          />
+        </>
+      )}
+      {viewer}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // A drawing or a photo at its face, no border (TASK-339); the radius of
+  // the glass look's cards (TASK-469 A4c).
   card: {
-    borderRadius: radius.lg,
+    borderRadius: radius.card,
     backgroundColor: color.surface,
     overflow: "hidden",
   },
-  pressed: {
-    opacity: 0.6,
+  // Under the author's name: the corners above are the post's.
+  under: {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
   },
   who: {
     flexDirection: "row",
     alignItems: "center",
     gap: space.md,
     padding: space.md,
+    // Where the «…» lies over the row.
+    paddingRight: MIN_TAP_SIZE + space.md,
+  },
+  menu: {
+    position: "absolute",
+    top: space.sm,
+    right: space.sm,
   },
   avatar: {
     width: MIN_TAP_SIZE - space.sm,
@@ -347,54 +702,64 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
     backgroundColor: color.surfaceRaised,
   },
+  face: {
+    width: MIN_TAP_SIZE - space.sm,
+    height: MIN_TAP_SIZE - space.sm,
+    borderRadius: radius.pill,
+  },
+  // Names are medium, not bold: the weight is the yellow controls' (ADR-0293).
   initial: {
     color: color.text,
     fontSize: fontSize.body,
-    fontWeight: fontWeight.bold,
+    fontWeight: fontWeight.medium,
   },
   names: {
     flex: 1,
     gap: 2,
   },
   user: {
+    ...font.body,
     color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
+    fontWeight: fontWeight.medium,
   },
+  whereWhen: {
+    flexDirection: "row",
+    gap: space.xs,
+  },
+  // The place gives way to the date, on a long name.
   city: {
+    ...font.detail,
+    flexShrink: 1,
     color: color.textMuted,
-    fontSize: fontSize.detail,
   },
-  drawing: {
-    backgroundColor: color.map.background,
-    overflow: "hidden",
-  },
-  segment: {
-    position: "absolute",
-    height: LINE_WIDTH,
-    borderRadius: LINE_WIDTH / 2,
-    backgroundColor: routeLine.color,
-  },
-  credit: {
-    position: "absolute",
-    right: space.sm,
-    bottom: space.xs,
-    color: color.textFaint,
-    fontSize: fontSize.label,
-    textAlign: "right",
+  when: {
+    ...font.detail,
+    color: color.textMuted,
   },
   photo: {
     backgroundColor: color.surfaceRaised,
+  },
+  // A capsule of glass laid on the photo (TASK-469 A4c): `segmentTrackFace`.
+  counter: {
+    position: "absolute",
+    top: space.md,
+    left: space.md,
+    paddingHorizontal: space.sm,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+  },
+  counterText: {
+    ...font.small,
+    color: color.text,
+    fontWeight: fontWeight.semibold,
   },
   dots: {
     flexDirection: "row",
     justifyContent: "center",
     gap: space.xs,
-    paddingTop: space.sm,
+    paddingBottom: space.md,
   },
   dot: {
     width: DOT,
@@ -410,12 +775,38 @@ const styles = StyleSheet.create({
     padding: space.md,
   },
   title: {
+    ...font.cardTitle,
     color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
   },
   facts: {
+    ...font.small,
     color: color.textMuted,
-    fontSize: fontSize.small,
+  },
+  thumb: {
+    position: "absolute",
+    top: space.md,
+    right: space.md,
+  },
+  // A capsule of glass inside the photo, 8 pt from its edges, its short
+  // sides fully round as the tab bar's (the user's choice, 2026-11-21); the
+  // words in the text's colours, which keep 4.5:1 on the glass over any
+  // photo (theme/glass.test.ts). The round ends want more room on the sides.
+  wordsOnPhoto: {
+    position: "absolute",
+    left: space.sm,
+    right: space.sm,
+    bottom: space.sm,
+    gap: space.xs,
+    paddingHorizontal: space.xl,
+    paddingVertical: space.md,
+    borderRadius: radius.pill,
+  },
+  titleOnPhoto: {
+    ...font.heading,
+    color: color.text,
+  },
+  factsOnPhoto: {
+    ...font.small,
+    color: color.textMuted,
   },
 });

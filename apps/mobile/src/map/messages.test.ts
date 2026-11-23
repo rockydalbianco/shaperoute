@@ -3,6 +3,7 @@ import {
   clearRoute,
   clearStops,
   clearTrack,
+  face,
   follow,
   pageScript,
   parsePageMessage,
@@ -189,6 +190,12 @@ test("follow sends the heading in whole degrees, stopFollow ends it", () => {
   expect(stopFollow()).toEqual({ type: "stopFollow" });
 });
 
+test("face sends where the phone points in whole degrees, null off Compass (TASK-431)", () => {
+  expect(face(91.4)).toEqual({ type: "face", heading: 91 });
+  expect(face(359.7)).toEqual({ type: "face", heading: 0 });
+  expect(face(null)).toEqual({ type: "face", heading: null });
+});
+
 test("showTrack sends the run in MapLibre order, clearTrack removes it", () => {
   expect(
     showTrack([
@@ -275,4 +282,33 @@ test("showProgress sends the part run and the part left in MapLibre order (TASK-
   // In pocket mode the dashes keep still.
   expect(showProgress(split, false)).toMatchObject({ blink: false });
   expect(clearProgress()).toEqual({ type: "clearProgress" });
+});
+
+test("parsePageMessage reads how far two fingers turned the figure (TASK-402)", () => {
+  expect(
+    parsePageMessage(
+      '{"type":"figure","centre":[11,46],"factor":1,"done":true,"turn":-30}',
+    ),
+  ).toEqual({ type: "figure", centre: [11, 46], factor: 1, done: true, turn: -30 });
+  // None, or 0, is no turn.
+  expect(
+    parsePageMessage(
+      '{"type":"figure","centre":[11,46],"factor":1,"done":true,"turn":0}',
+    ),
+  ).toEqual({ type: "figure", centre: [11, 46], factor: 1, done: true });
+  expect(
+    parsePageMessage(
+      '{"type":"figure","centre":[11,46],"factor":1,"done":true,"turn":"x"}',
+    ),
+  ).toBeNull();
+});
+
+test("parsePageMessage reads a tap that chooses a piece (TASK-402 part B)", () => {
+  expect(
+    parsePageMessage('{"type":"tapped","lngLat":[11,46],"metresPerPx":2.5}'),
+  ).toEqual({ type: "tapped", lngLat: [11, 46], metresPerPx: 2.5 });
+  expect(parsePageMessage('{"type":"tapped","lngLat":[11,46]}')).toBeNull();
+  expect(
+    parsePageMessage('{"type":"tapped","lngLat":[11],"metresPerPx":2.5}'),
+  ).toBeNull();
 });

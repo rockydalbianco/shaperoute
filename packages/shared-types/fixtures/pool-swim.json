@@ -1,0 +1,7 @@
+{
+  "started_at": "2026-11-05T07:00:00Z",
+  "ended_at": "2026-11-05T07:42:00Z",
+  "pauses": [{ "from_s": 1200, "to_s": 1320 }],
+  "pool_length_m": 25,
+  "lengths": 60
+}

@@ -109,7 +109,7 @@ describe("«Terms» is a draft", () => {
   test.each(CONTENTS)("in «%s», with its day", (_, content) => {
     expect(content.terms.draft).toBe(true);
     expect(content.terms.updated).toMatch(
-      /^10 (October|ottobre) 2026$|^10\. Oktober 2026$|^10 de octubre de 2026$|^10 octobre 2026$/,
+      /^10 (November|novembre) 2026$|^10\. November 2026$|^10 de noviembre de 2026$/,
     );
   });
 
@@ -126,8 +126,9 @@ describe("«Terms» is a draft", () => {
 describe("«Privacy» is final, approved by the user (TASK-237 D)", () => {
   test.each(CONTENTS)("in «%s», with the day of the approval", (_, content) => {
     expect(content.privacy.draft).toBe(false);
+    // Redated for the group runs among the reports (TASK-309 part B).
     expect(content.privacy.updated).toMatch(
-      /^28 (October|ottobre) 2026$|^28\. Oktober 2026$|^28 de octubre de 2026$|^28 octobre 2026$/,
+      /^23 November 2026$|^23 novembre 2026$|^23\. November 2026$|^23 de noviembre de 2026$/,
     );
   });
 
@@ -292,7 +293,7 @@ test("«Privacy» says how the account is deleted and what goes with it", () => 
   );
   expect(english).toMatch(/«Settings», «Delete account»/);
   expect(english).toMatch(/out of every backup within 14 days/);
-  expect(english).toMatch(/without its first and last 200 m/);
+  expect(english).toMatch(/the whole track, start and end included/);
   expect(english).toMatch(/at least 16/);
   const italian = all(IT.privacy);
   expect(italian).toMatch(
@@ -300,7 +301,7 @@ test("«Privacy» says how the account is deleted and what goes with it", () => 
   );
   expect(italian).toMatch(/«Impostazioni», «Elimina account»/);
   expect(italian).toMatch(/fuori da ogni copia entro 14 giorni/);
-  expect(italian).toMatch(/senza i primi e gli ultimi 200 m/);
+  expect(italian).toMatch(/la traccia intera, partenza e arrivo compresi/);
   expect(italian).toMatch(/almeno 16 anni/);
 });
 
@@ -325,4 +326,124 @@ test("each language reads its own texts (TASK-210 F)", () => {
 test("the three texts are told from the other pages of «Profile»", () => {
   expect(ABOUT_IDS.every(isAboutId)).toBe(true);
   expect(isAboutId("settings")).toBe(false);
+});
+
+test("«Help» and «Privacy» say «Everyone» is for an activity added from a file with the Feed's «+», not one recorded from it (TASK-481 A)", () => {
+  const fromFile: Record<Language, RegExp> = {
+    en: /from a file with the «\+» of the Feed/,
+    it: /da un file col «\+» del Feed/,
+    de: /aus einer Datei mit dem «\+» im Feed/,
+    fr: /depuis un fichier avec le «\+» du Feed/,
+    es: /desde un archivo con el «\+» del Feed/,
+  };
+  for (const [language, content] of CONTENTS) {
+    for (const text of [all(content.help), all(content.privacy)]) {
+      const plus = text
+        .split(/(?<=\.)\s/)
+        .filter((sentence) => sentence.includes("«+»"));
+      expect(plus.length).toBeGreaterThan(0);
+      for (const sentence of plus) {
+        expect(sentence).toMatch(fromFile[language]);
+      }
+    }
+  }
+});
+
+test("«Privacy» says a gym plan shared in the Feed is a copy that others can copy, in all five languages (TASK-485 B)", () => {
+  const shared: Record<Language, RegExp[]> = {
+    en: [
+      /unless you share one in the Feed/,
+      /copy the plan into their own plans/,
+      /copies already made stay with whoever made them/,
+    ],
+    it: [
+      /a meno che tu non ne condivida una nel Feed/,
+      /può copiare la scheda tra le sue/,
+      /le copie già fatte restano a chi le ha fatte/,
+    ],
+    de: [
+      /außer du teilst einen im Feed/,
+      /den Plan in seine eigenen Pläne kopieren/,
+      /schon gemachte Kopien bleiben/,
+    ],
+    fr: [
+      /sauf si tu en partages un dans le Feed/,
+      /copier le programme dans ses propres programmes/,
+      /les copies déjà faites restent/,
+    ],
+    es: [
+      /salvo que compartas una en el Feed/,
+      /copiar la rutina entre sus propias rutinas/,
+      /las copias ya hechas se quedan/,
+    ],
+  };
+  for (const [language, content] of CONTENTS) {
+    const privacy = all(content.privacy);
+    for (const sentence of shared[language]) {
+      expect(privacy).toMatch(sentence);
+    }
+    // The help does not promise it: only «Privacy» tells what a shared plan carries.
+    expect(all(content.help)).not.toMatch(shared[language][0]);
+  }
+});
+
+test("«Privacy» says the heart rate is read at the end of a gym workout too, by itself after the first tap (TASK-385 G3)", () => {
+  const gym: Record<Language, RegExp[]> = {
+    en: [
+      /or a workout at the gym you tap «Add heart rate from Apple Health»/,
+      /at the end of each swim and workout/,
+    ],
+    it: [
+      /o a fine allenamento in palestra tocchi «Aggiungi il battito da Salute»/,
+      /alla fine di ogni nuotata e di ogni allenamento/,
+    ],
+    de: [
+      /oder eines Trainings im Fitnessstudio auf «Herzfrequenz aus Apple Health hinzufügen»/,
+      /am Ende jedes Schwimmens und jedes Trainings/,
+    ],
+    es: [
+      /o de un entrenamiento en el gimnasio tocas «Añadir la frecuencia cardiaca desde Salud»/,
+      /al final de cada sesión de natación y de cada entrenamiento/,
+    ],
+    fr: [
+      /ou d'une séance en salle de sport, tu touches «Ajouter la fréquence cardiaque depuis Santé»/,
+      /à la fin de chaque nage et de chaque séance/,
+    ],
+  };
+  for (const [language, content] of CONTENTS) {
+    const privacy = all(content.privacy);
+    for (const sentence of gym[language]) {
+      expect(privacy).toMatch(sentence);
+    }
+  }
+});
+
+test("«Privacy» says what is kept of the gear and who sees it, in all five languages (TASK-486)", () => {
+  const gear: Record<Language, RegExp[]> = {
+    en: [/You can add your gear/, /«Hide from profile»/, /an item of gear/],
+    it: [
+      /Puoi aggiungere la tua attrezzatura/,
+      /«Nascondi dal profilo»/,
+      /un attrezzo, un commento/,
+    ],
+    de: [
+      /Du kannst deine Ausrüstung hinzufügen/,
+      /«Im Profil ausblenden»/,
+      /ein Teil deiner Ausrüstung/,
+    ],
+    fr: [
+      /Tu peux ajouter ton matériel/,
+      /«Masquer du profil»/,
+      /un article de matériel/,
+    ],
+    es: [/Puedes añadir tu equipo/, /«Ocultar del perfil»/, /un artículo de equipo/],
+  };
+  for (const [language, content] of CONTENTS) {
+    const privacy = all(content.privacy);
+    for (const sentence of gear[language]) {
+      expect(privacy).toMatch(sentence);
+    }
+    // The gear is off in the app (GEAR_ON): the help does not tell it yet.
+    expect(all(content.help)).not.toMatch(gear[language][0]);
+  }
 });

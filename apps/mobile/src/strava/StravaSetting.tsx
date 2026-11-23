@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import {
   color,
   fontSize,
@@ -10,6 +11,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Hairline } from "../ui/Hairline";
 import { ConnectWithStrava, StravaLine } from "./StravaParts";
 import { useStrava } from "./useStrava";
 
@@ -19,6 +21,7 @@ import { useStrava } from "./useStrava";
  * no Strava.
  */
 export function StravaSetting() {
+  const group = useSettingsGroup();
   const strava = useStrava();
   const { status, busy, problem } = strava;
   const [confirming, setConfirming] = useState(false);
@@ -30,7 +33,7 @@ export function StravaSetting() {
     <View style={styles.section}>
       <Text style={styles.label}>STRAVA</Text>
       {status.connected ? (
-        <View style={styles.menu}>
+        <View style={[styles.menu, group]}>
           <View
             style={styles.row}
             accessible
@@ -46,7 +49,7 @@ export function StravaSetting() {
                 : t("Connected as {athlete}", { athlete: status.athlete })}
             </Text>
           </View>
-          <View style={styles.divider} />
+          <Hairline style={styles.inset} />
           {confirming ? (
             <View style={styles.confirm}>
               <Text style={styles.confirmText}>
@@ -105,6 +108,10 @@ export function StravaSetting() {
 
 // The rows of «Settings» (`../profile/SettingsPage`), as SportSetting's.
 const styles = StyleSheet.create({
+  /** A division set in from the card's edge, as the rows' words are. */
+  inset: {
+    marginHorizontal: space.md,
+  },
   section: {
     gap: space.lg,
   },
@@ -126,11 +133,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: space.md,
     paddingHorizontal: space.md,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginHorizontal: space.md,
-    backgroundColor: color.border,
   },
   rowText: {
     flex: 1,

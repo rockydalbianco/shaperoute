@@ -1,15 +1,14 @@
 /**
  * A member's drawing in «Feed» (TASK-118, ADR-0227): signed in, the page
- * shows the drawings the API gives, a tap opens one whole on the map, and
- * «←» comes back to «Feed», not to «Profile». An API without a feed leaves
+ * shows the drawings the API gives, a tap opens the page of one (TASK-410),
+ * and «Back» comes back to «Feed». An API without a feed leaves
  * the examples, without a word. The page alone is in
  * src/screens/FeedScreenPosts.test.tsx; the example drawings in
  * AppFeed.test.tsx.
  */
-import drawing from "@shaperoute/shared-types/fixtures/drawing-details.json";
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, within } from "@testing-library/react-native";
 import * as Location from "expo-location";
 
 import App from "../App";
@@ -76,8 +75,8 @@ const ACCOUNT: Answers = {
   "GET /me/favorites": () => Response.json({ favorites: [] }),
   "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
 };
-// Asked from where «Draw» starts: the position of the phone.
-const FEED = "/feed?lat=46.067&lon=11.1215";
+// The «All» tab: never with the phone's position (TASK-362).
+const FEED = "/feed?filter=all";
 
 async function onFeed() {
   store.kept.set(SESSION_KEY, JSON.stringify(session));
@@ -108,45 +107,42 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-test("a member's drawing opens whole from «Feed», and «←» comes back to «Feed»", async () => {
+test("a member's drawing opens its page from «Feed», and «Back» comes back to «Feed»", async () => {
   api({
     ...ACCOUNT,
     [`GET ${FEED}`]: () => Response.json(feed),
-    [`GET /drawings/${drawing.id}`]: () => Response.json(drawing),
   });
   await onFeed();
   // The drawings the members published, asked from where the phone is.
   expect(await screen.findByText("Ada_runs")).toBeOnTheScreen();
-  expect(screen.getByText("Star · 4.0 km · 19 min")).toBeOnTheScreen();
+  // Its numbers in boxes, as on its page (TASK-410 part F).
+  expect(screen.getAllByTestId("feed-summary")[0]).toHaveTextContent(
+    /4\.00 km.*19:00.*4:45 \/km.*280 kcal/,
+  );
   expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
   expect(asked(FEED)).toBe(1);
 
   await fireEvent.press(screen.getByText(String(STAR.title)));
-  // On the map, with the drawing's card: its day and km, and «Start» on
-  // its track (TASK-307, in AppDrawingStart.test.tsx).
-  expect(await screen.findByText(String(drawing.description))).toBeOnTheScreen();
-  expect(screen.getByText(/4\.00 km/)).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Start" })).toBeOnTheScreen();
-  expect(screen.queryByRole("tab")).toBeNull();
-  expect(asked(`/drawings/${drawing.id}`)).toBe(1);
+  // The page of the post (TASK-410): its summary from the feed's own
+  // fields, nothing more asked of the API.
+  const page = await screen.findByTestId("post-page");
+  expect(page).toBeOnTheScreen();
+  expect(screen.getByTestId("post-summary")).toBeOnTheScreen();
+  expect(within(page).getByTestId("post-like")).toBeOnTheScreen();
 
-  await fireEvent.press(screen.getByRole("button", { name: "Back to the profile" }));
-  // «Feed» again, as it was; «Profile» stays closed.
-  expect(
-    await screen.findByRole("tab", { name: "Feed", selected: true }),
-  ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  // «Feed» again, as it was; not asked again.
+  expect(screen.queryByTestId("post-page")).toBeNull();
+  expect(screen.getByRole("tab", { name: "Feed", selected: true })).toBeOnTheScreen();
   expect(screen.getByText("Ada_runs")).toBeOnTheScreen();
-  expect(screen.queryByText("Drawings")).toBeNull();
-  expect(screen.queryByText("Log out")).toBeNull();
-  // Built again under the map, «Feed» keeps what it had: not asked again.
   expect(asked(FEED)).toBe(1);
 });
 
-test("an API without a feed leaves the examples, without a word", async () => {
+test("an API that does not answer offers to ask again, in place of the examples", async () => {
   api(ACCOUNT);
   await onFeed();
-  expect(await screen.findByText(SAMPLE_FEED[0].user)).toBeOnTheScreen();
-  expect(screen.getByText(SAMPLE_FEED[0].title)).toBeOnTheScreen();
+  expect(await screen.findByText("Couldn't load the Feed.")).toBeOnTheScreen();
+  expect(screen.getByText("Try again")).toBeOnTheScreen();
+  expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
   expect(asked(FEED)).toBe(1);
-  expect(screen.queryByText(/no longer|cannot|could not|wrong/i)).toBeNull();
 });

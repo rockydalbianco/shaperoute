@@ -5,6 +5,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-
 import { Alert, Text } from "react-native";
 
 import type { AccountOutcome } from "../api/accounts";
+import { color } from "../theme/tokens";
 import { drawingDoubleTapped, DrawingReactions } from "./DrawingReactions";
 import { ReactionsContext, type ReactionsDoor } from "./reactionsDoor";
 import { withMine } from "./reactionKinds";
@@ -111,7 +112,8 @@ test("one's own reaction, the three most used and how many, next to the comments
   expect(screen.getByText("4 comments")).toBeTruthy();
 });
 
-test("without reactions: a face to leave the first, and no count", async () => {
+// TASK-454: a faded 🙂 stood on the button; now the heart of «Like», in a line.
+test("without reactions: the line heart to leave the first, and no count", async () => {
   const empty: ReactionsSummary = {
     counts: { super_like: 0, fire: 0, clap: 0, strong: 0, laugh: 0, wow: 0 },
     total: 0,
@@ -119,6 +121,17 @@ test("without reactions: a face to leave the first, and no count", async () => {
   };
   await shown(door(ok(empty)), "React");
   expect(screen.queryByTestId("reactions-summary")).toBeNull();
+  const heart = screen.getByTestId("no-reaction-icon", { includeHiddenElements: true });
+  expect(heart).toHaveStyle({ tintColor: color.text });
+  expect(heart).toHaveProp("accessible", false);
+  expect(screen.queryByText(/\p{Extended_Pictographic}/u)).toBeNull();
+});
+
+test("with one's own reaction the button shows it, not the heart", async () => {
+  await shown(door(ok(SUMMARY)), "Your reaction: Fire");
+  expect(
+    screen.queryByTestId("no-reaction-icon", { includeHiddenElements: true }),
+  ).toBeNull();
 });
 
 test("the button opens the bar of the six, one's own marked", async () => {
@@ -238,7 +251,10 @@ describe("the super like", () => {
     expect(
       await screen.findByRole("button", { name: `Your reaction: ${HEART}` }),
     ).toBeTruthy();
-    expect(screen.queryByRole("header", { name: "Super like" })).toBeNull();
+    // The sheet goes down on its spring, then it is gone (TASK-388 C).
+    await waitFor(() =>
+      expect(screen.queryByRole("header", { name: "Super like" })).toBeNull(),
+    );
     expect(onSuperLiked).toHaveBeenCalledTimes(1);
   });
 
@@ -250,7 +266,9 @@ describe("the super like", () => {
     await fireEvent.changeText(screen.getByLabelText("Comment"), "Almost");
     await fireEvent.press(screen.getByRole("button", { name: "Cancel" }));
 
-    expect(screen.queryByRole("header", { name: "Super like" })).toBeNull();
+    await waitFor(() =>
+      expect(screen.queryByRole("header", { name: "Super like" })).toBeNull(),
+    );
     expect(value.leave).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "Your reaction: Fire" })).toBeTruthy();
     expect(onSuperLiked).not.toHaveBeenCalled();

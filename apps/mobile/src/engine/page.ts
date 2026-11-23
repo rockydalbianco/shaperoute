@@ -13,7 +13,9 @@
  * `window.sgrava.plan(...)` (injectJavaScript); it answers with
  * `ReactNativeWebView.postMessage`, one JSON message each (`PageMessage`).
  * `window.sgrava.wayBack(...)` gives the way back to a route (TASK-314),
- * `on_phone.way_back_json`, as `plan` gives a route.
+ * `on_phone.way_back_json`, as `plan` gives a route, and
+ * `window.sgrava.match(...)` a stroke drawn on the map anchored to the roads
+ * (TASK-347 part B), `on_phone.match_json`.
  */
 
 /** What the page says to the app. */
@@ -31,6 +33,8 @@ export type BootArgs = { pyodide: string; engine: string };
 export type PlanArgs = { id: number; body: string; zones: PageZone[] };
 /** The body of POST /way-back, answered with its JSON (TASK-314). */
 export type WayBackArgs = PlanArgs;
+/** The body of POST /stroke-matches, answered with its JSON (TASK-347). */
+export type MatchArgs = PlanArgs;
 /** The zone a route of `activity` from `point` will use, read into memory
  * ahead (part E); answered as a result whose JSON is true or false. */
 export type WarmArgs = {
@@ -254,7 +258,14 @@ const SCRIPT = String.raw`
     });
   }
 
-  window.sgrava = { boot: boot, plan: plan, warm: warm, wayBack: wayBack };
+  function match(args) {
+    return run(args, function () {
+      py.globals.set("BODY", args.body);
+      return py.runPython("on_phone.match_json(BODY, GRAPHS)");
+    });
+  }
+
+  window.sgrava = { boot: boot, plan: plan, warm: warm, wayBack: wayBack, match: match };
 })();
 `;
 
@@ -273,8 +284,8 @@ export const ENGINE_PAGE = `<!doctype html>
 
 /** The JavaScript that asks the page to do `call` with `args`. */
 export function pageCall(
-  call: "boot" | "plan" | "warm" | "wayBack",
-  args: BootArgs | PlanArgs | WarmArgs | WayBackArgs,
+  call: "boot" | "plan" | "warm" | "wayBack" | "match",
+  args: BootArgs | PlanArgs | WarmArgs | WayBackArgs | MatchArgs,
 ): string {
   return `window.sgrava.${call}(${JSON.stringify(args)}); true;`;
 }

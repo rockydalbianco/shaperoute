@@ -1,0 +1,14 @@
+{
+  "night": "2026-09-21",
+  "score": 82,
+  "asleep_min": 452,
+  "awake_min": 18,
+  "stages": {
+    "rem_min": 96,
+    "light_min": 268,
+    "deep_min": 72
+  },
+  "id": "7c1e5b02-93fa-4d6c-8e17-0a4b6d2f9c35",
+  "visibility": "everyone",
+  "published_at": "2026-09-21T07:05:00Z"
+}

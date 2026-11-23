@@ -11,10 +11,12 @@ block keeps one, unblocking someone not blocked is done already.
 GET /me/blocked lists the members blocked, the last first, to unblock them.
 
 POST /reports keeps what a member reports, a drawing, a comment, a
-member, a group run (TASK-309) or a private message (TASK-319: only the
-other member of its conversation reports it), with a reason from a short
-list: one row for each reporter and thing, the latest reason kept. No
-endpoint reads them (ADR-0228): a new report is emailed to whoever runs
+member, a group run (TASK-309), a private message (TASK-319: only the
+other member of its conversation reports it) or an item tagged on a photo
+(TASK-394, outfit_tags.py) or an item of gear (TASK-486, gear.py),
+with a reason from a short list: one row for
+each reporter and thing, the latest reason kept. No endpoint reads them
+(ADR-0228): a new report is emailed to whoever runs
 the app, with a link that hides the thing (report_email.py, TASK-291,
 ADR-0251); the same member reporting it again with another reason sends
 nothing.
@@ -62,9 +64,12 @@ from shaperoute_api.follows import (
 from shaperoute_api.report_email import notify_report
 from shaperoute_api.schemas import ErrorBody
 
-ReportKind = Literal["drawing", "comment", "user", "group_run", "message"]
+ReportKind = Literal[
+    "drawing", "comment", "user", "group_run", "message", "outfit_tag", "gear"
+]
 """What is reported: a drawing (a post of the feed), a comment, a member, a
-group run (TASK-309), a private message (messages.py)."""
+group run (TASK-309), a private message (messages.py), an item tagged on a
+photo (outfit_tags.py), an item of gear (gear.py, TASK-486)."""
 ReportReason = Literal["spam", "offensive", "harassment", "sexual", "other"]
 """The short list the app shows, in this order. Codes, never the words: the
 app says them in its language. The migration's CHECK holds the same list."""
@@ -85,10 +90,7 @@ NOTHING_TO_REPORT = "Nothing to report with this id."
 # The table of each kind, and the column of the account that owns a row. A
 # message only for a member of its conversation: the second placeholder.
 OWNER_OF: dict[ReportKind, str] = {
-    "drawing": (
-        "SELECT r.user_id AS owner FROM drawings d JOIN runs r ON r.id = d.run_id"
-        " WHERE d.id = %s"
-    ),
+    "drawing": ("SELECT user_id AS owner FROM drawings WHERE id = %s"),
     "comment": "SELECT user_id AS owner FROM comments WHERE id = %s",
     "user": "SELECT id AS owner FROM users WHERE public_id = %s",
     "group_run": "SELECT owner_id AS owner FROM group_runs WHERE id = %s",
@@ -97,6 +99,11 @@ OWNER_OF: dict[ReportKind, str] = {
         " AND EXISTS (SELECT 1 FROM conversation_members cm"
         " WHERE cm.conversation_id = m.conversation_id AND cm.user_id = %s)"
     ),
+    "outfit_tag": (
+        "SELECT d.user_id AS owner FROM drawing_outfit_tags t"
+        " JOIN drawings d ON d.id = t.drawing_id WHERE t.id = %s"
+    ),
+    "gear": "SELECT user_id AS owner FROM gear WHERE id = %s",
 }
 
 
@@ -111,7 +118,8 @@ class ReportRequestBody(BaseModel):
     kind: ReportKind
     id: UUID
     """The drawing's id, the comment's id, the member's public_id, the
-    group run's id or the message's id."""
+    group run's id, the message's id, the tagged item's id or the gear's
+    id."""
     reason: ReportReason
 
 

@@ -2,7 +2,7 @@ import type { LatLon, OutlinePoint, Shape } from "@shaperoute/shared-types";
 
 import catalogue from "./catalogueShapes.json";
 import { lineLength } from "./geometry";
-import { fromPlane } from "./plane";
+import { fromPlane, toPlane } from "./plane";
 
 /**
  * The figure of «Draw on the map» (TASK-281, ADR-0245): what is on the map
@@ -17,15 +17,25 @@ export type Unit = OutlinePoint;
 /** What is on the map: a line drawn with a finger and the lines drawn after
  * it, hung on it as details (ADR-0074); a shape of the catalogue; or the
  * outline the engine traced from a photo (ADR-0069), or from one of the
- * ready-made pictures of «Draw» (TASK-280), which `sample` names. */
+ * ready-made pictures of «Draw» (TASK-280), which `sample` names. A
+ * drawing's `linked` says, detail by detail, whether its first side is a
+ * straight link that joins it to the drawing, not drawn: the map shows it
+ * dashed, and the route runs it (TASK-331 part B). */
 export type Figure =
-  | { kind: "drawing"; outline: Unit[]; details: Unit[][] }
+  | { kind: "drawing"; outline: Unit[]; details: Unit[][]; linked?: boolean[] }
   | { kind: "shape"; shape: Shape }
   | { kind: "picture"; outline: Unit[]; strokes: Unit[][]; sample?: string };
 
 /** A figure on the map: the middle of its frame, and the metres of one of
- * its units. Its size on the map is all there is to its distance. */
-export type Placed = { figure: Figure; centre: LatLon; unitM: number };
+ * its units. Its size on the map is all there is to its distance. `turnDeg`:
+ * how far it is turned on the map about its middle, clockwise (TASK-402,
+ * ADR-0336); none is 0°. */
+export type Placed = {
+  figure: Figure;
+  centre: LatLon;
+  unitM: number;
+  turnDeg?: number;
+};
 
 /** How a figure is drawn and sized: its lines, how long the engine takes
  * them to be in units (the distance asked for is that times `unitM`), and
@@ -76,9 +86,28 @@ export function lookOf(figure: Figure, apart = false): Look {
   };
 }
 
-/** A point of the figure on the map. */
-export function onMap(placed: Placed, [x, y]: Unit): LatLon {
+/** `point` of a figure turned `deg` clockwise about the middle of its
+ * frame, y up. */
+export function turnedUnit([x, y]: Unit, deg: number): Unit {
+  if (deg === 0) {
+    return [x, y];
+  }
+  const a = (deg * Math.PI) / 180;
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+  return [x * cos + y * sin, -x * sin + y * cos];
+}
+
+/** A point of the figure on the map, turned with it. */
+export function onMap(placed: Placed, point: Unit): LatLon {
+  const [x, y] = turnedUnit(point, placed.turnDeg ?? 0);
   return fromPlane(placed.centre, [x * placed.unitM, y * placed.unitM]);
+}
+
+/** `point` of the map in the units of `placed`, turned back. */
+export function unitsOn(placed: Placed, point: LatLon): Unit {
+  const [x, y] = toPlane(placed.centre, point);
+  return turnedUnit([x / placed.unitM, y / placed.unitM], -(placed.turnDeg ?? 0));
 }
 
 /** The lines of the figure on the map. */

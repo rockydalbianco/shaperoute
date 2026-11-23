@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import {
   color,
   fontSize,
@@ -10,6 +11,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { Avatar } from "./Avatar";
 import { photoBusyText, PhotoChoices } from "./PhotoChoices";
 import { useProfilePhoto } from "./useProfilePhoto";
@@ -23,14 +25,15 @@ const PHOTO_SIZE = MIN_TAP_SIZE - space.xs;
  * library, a photo taken now, or none.
  */
 export function PhotoRow({ name }: { name: string }) {
+  const group = useSettingsGroup();
   const photo = useProfilePhoto();
   const [open, setOpen] = useState(false);
   const busy = photo.busy !== null;
   const busyText = photoBusyText(photo.busy);
   return (
-    <View style={styles.menu}>
-      <Pressable
-        style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+    <View style={[styles.menu, group]}>
+      <Tap
+        style={styles.row}
         onPress={() => {
           photo.clearProblem();
           setOpen(!open);
@@ -49,7 +52,7 @@ export function PhotoRow({ name }: { name: string }) {
         <Text style={styles.rowText}>{t("Profile picture")}</Text>
         {busyText !== null && <Text style={styles.busyText}>{busyText}</Text>}
         <Avatar name={name} size={PHOTO_SIZE} photo={photo.uri} />
-      </Pressable>
+      </Tap>
       {open && (
         <View style={styles.choices}>
           <PhotoChoices photo={photo} onChosen={() => setOpen(false)} />
@@ -75,9 +78,6 @@ const styles = StyleSheet.create({
     gap: space.md,
     paddingHorizontal: space.md,
     paddingVertical: space.xs,
-  },
-  pressed: {
-    opacity: 0.6,
   },
   emoji: {
     fontSize: fontSize.input + space.xs,

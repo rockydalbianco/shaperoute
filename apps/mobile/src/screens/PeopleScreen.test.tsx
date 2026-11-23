@@ -1,11 +1,13 @@
 import people from "@shaperoute/shared-types/fixtures/people.json";
 import publicProfile from "@shaperoute/shared-types/fixtures/public-profile.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
-import type { Session } from "@shaperoute/shared-types";
+import type { LatLon, Session } from "@shaperoute/shared-types";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { Dimensions } from "react-native";
 
 import { answers } from "../account/testing";
 import type { AccountState } from "../account/useAccount";
+import { forgetFeedMaps, useFeedMap } from "../feed/FeedMaps";
 import { SEARCH_DELAY_MS } from "../social/PeopleSearch";
 import { PeopleScreen } from "./PeopleScreen";
 
@@ -20,6 +22,7 @@ const [ada] = people.people;
 
 beforeEach(() => {
   jest.useFakeTimers();
+  forgetFeedMaps();
 });
 
 afterEach(() => {
@@ -56,6 +59,9 @@ test("a name found opens the profile; back finds the names as they were", async 
   expect(await screen.findByText(publicProfile.bio)).toBeOnTheScreen();
   expect(screen.getByRole("header", { name: "Profile" })).toBeOnTheScreen();
   expect(fetchFn.mock.calls[1][0]).toBe(`${URL}/users/${ada.public_id}`);
+  // Beside it, the group runs of the profile (TASK-309 part B1).
+  const asked = fetchFn.mock.calls.map(([url]) => String(url));
+  expect(asked.slice(2).every((url) => url.includes("/group-runs"))).toBe(true);
   expect(screen.queryByPlaceholderText("Name")).not.toBeOnTheScreen();
 
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
@@ -63,7 +69,7 @@ test("a name found opens the profile; back finds the names as they were", async 
   expect(screen.getByPlaceholderText("Name").props.value).toBe("ada");
   expect(screen.getByRole("button", { name: "Ada_runs" })).toBeOnTheScreen();
   // Nothing asked again.
-  expect(fetchFn).toHaveBeenCalledTimes(2);
+  expect(fetchFn).toHaveBeenCalledTimes(asked.length);
   expect(onBack).not.toHaveBeenCalled();
 
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
@@ -103,4 +109,39 @@ test("behind a drawing the page is out of sight, and keeps what was typed", asyn
     />,
   );
   expect(screen.getByPlaceholderText("Name").props.value).toBe("a");
+});
+
+test("over the big map its own page takes the maps of the drawings, not while hidden", async () => {
+  const square: LatLon[] = [
+    [46.06, 11.12],
+    [46.06, 11.13],
+    [46.07, 11.13],
+    [46.06, 11.12],
+  ];
+  // A drawing of the profile, waiting for its map; «Feed» is not there.
+  function Drawing() {
+    useFeedMap("a", square, 96, 96, 8);
+    return null;
+  }
+  const people = (hidden: boolean) => (
+    <>
+      <Drawing />
+      <PeopleScreen
+        apiUrl={URL}
+        account={{ state: signedIn, sessionEnded: jest.fn() }}
+        onBack={jest.fn()}
+        hidden={hidden}
+        fetchFn={jest.fn()}
+        apiKey={null}
+      />
+    </>
+  );
+  const page = () =>
+    screen.queryByTestId("feed-map-page", { includeHiddenElements: true });
+  const view = await render(people(true));
+  expect(page()).toBeNull();
+
+  await view.rerender(people(false));
+  const { width, height } = Dimensions.get("window");
+  expect(page()?.parent).toHaveStyle({ width, height });
 });

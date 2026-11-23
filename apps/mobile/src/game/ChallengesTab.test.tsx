@@ -1,6 +1,8 @@
 import catalog from "@shaperoute/shared-types/fixtures/game-catalog.json";
 import challenge from "@shaperoute/shared-types/fixtures/game-challenge.json";
 import team from "@shaperoute/shared-types/fixtures/game-team.json";
+import themedContest from "@shaperoute/shared-types/fixtures/contest-themed.json";
+import personal from "@shaperoute/shared-types/fixtures/game-personal.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type {
   GameCatalog,
@@ -13,6 +15,8 @@ import { Share } from "react-native";
 
 import { apiError } from "../account/testing";
 import type { AccountState } from "../account/useAccount";
+import { askedContest, closeContestPage } from "../contest/contestDoor";
+import { forgetContest } from "../contest/contestKept";
 import { FollowsContext } from "../social/followsDoor";
 import {
   clearRequestedChallenge,
@@ -22,6 +26,7 @@ import {
 import { ChallengesTab } from "./ChallengesTab";
 import { forgetGameCatalog, setGameCatalog } from "./gameCatalog";
 import { forgetChallenges } from "./useChallenge";
+import { forgetPersonal } from "./usePersonal";
 import { forgetTeams } from "./useTeams";
 
 // The phone's documents folder, in memory: the catalog.
@@ -67,11 +72,20 @@ const NOW = () => Date.parse("2026-10-26T05:00:00Z");
 type Answer = { status: number; body?: unknown };
 type Routes = Record<string, (body: unknown) => Answer>;
 
-/** A fake API that answers by method and path, whatever the order. */
+/** What a server before TASK-423 part C says, and with no monthly
+ * challenge: no personal cards, no row of the month. */
+const NOT_FOUND = () => ({ status: 404, body: apiError("http_error", "Not Found") });
+const QUIET: Routes = {
+  "GET /game/personal": NOT_FOUND,
+  "GET /contests/current": NOT_FOUND,
+};
+
+/** A fake API that answers by method and path (its query aside), whatever
+ * the order. */
 function fakeApi(routes: Routes): jest.Mock {
   return jest.fn(async (url: string, init?: RequestInit) => {
-    const key = `${init?.method ?? "GET"} ${url.replace(API, "")}`;
-    const route = routes[key];
+    const key = `${init?.method ?? "GET"} ${url.replace(API, "").split("?")[0]}`;
+    const route = routes[key] ?? QUIET[key];
     if (route === undefined) {
       throw new Error(`No answer for ${key}`);
     }
@@ -117,6 +131,9 @@ async function shown(
 beforeEach(() => {
   forgetTeams();
   forgetChallenges();
+  forgetPersonal();
+  forgetContest();
+  closeContestPage();
   clearRequestedChallenge();
   setGameCatalog(CATALOG);
 });
@@ -161,7 +178,9 @@ test("no network and nothing yet: the account's words and «Try again»", async 
   });
   await shown(fetchFn);
   await waitFor(() => expect(screen.getByTestId("challenges-retry")).toBeOnTheScreen());
-  expect(screen.getByText(/^No connection\./)).toBeOnTheScreen();
+  // The teams' words, and the personal challenges' (TASK-423), each with its own way back.
+  expect(screen.getAllByText(/^No connection\./)).toHaveLength(2);
+  expect(screen.getByTestId("personal-retry")).toBeOnTheScreen();
   down = false;
   await fireEvent.press(screen.getByTestId("challenges-retry"));
   await waitFor(() => expect(screen.getByTestId("challenges-empty")).toBeOnTheScreen());
@@ -219,7 +238,8 @@ test("a team is created with its name, and opens", async () => {
   await fireEvent.changeText(screen.getByTestId("team-name"), " Night owls ");
   await fireEvent.press(screen.getByTestId("team-create"));
   await waitFor(() => expect(screen.getByTestId("team-view")).toBeOnTheScreen());
-  expect(JSON.parse(fetchFn.mock.calls[1][1].body)).toEqual({ name: "Night owls" });
+  const post = fetchFn.mock.calls.find(([, init]) => init?.method === "POST");
+  expect(JSON.parse(post?.[1].body)).toEqual({ name: "Night owls" });
   expect(screen.getByRole("header", { name: "Night owls" })).toBeOnTheScreen();
   expect(screen.getByTestId("team-no-challenge")).toBeOnTheScreen();
 });
@@ -370,4 +390,145 @@ test("a challenge's notification opens its challenge, whose team the challenge n
     expect(screen.getByRole("header", { name: "Trento runners" })).toBeOnTheScreen(),
   );
   expect(screen.getByTestId("team-code")).toHaveTextContent("Code K7PQ2M");
+});
+
+// --- One list: In progress · Available · Finished (TASK-423 part D) ---
+
+/** Where each test id first shows in the tab, top to bottom. */
+function order(...ids: string[]): number[] {
+  const tree = JSON.stringify(screen.toJSON());
+  return ids.map((id) => tree.indexOf(`"testID":"${id}"`));
+}
+
+const QUIET_TEAM: GameTeam = {
+  ...TEAM,
+  id: "t-quiet",
+  name: "Quiet ones",
+  challenge: null,
+};
+const LATE_TEAM: GameTeam = {
+  ...TEAM,
+  id: "t-late",
+  name: "Late ones",
+  challenge: { ...GOING, id: "c-late", status: "expired" },
+};
+
+test("the personal challenges and the streak are in progress, the medals finished", async () => {
+  const fetchFn = fakeApi({
+    "GET /game/teams": () => ({
+      status: 200,
+      body: { teams: [WITH_CHALLENGE, QUIET_TEAM, LATE_TEAM] },
+    }),
+    "GET /game/personal": () => ({ status: 200, body: personal }),
+  });
+  await shown(fetchFn);
+  await waitFor(() => expect(screen.getByTestId("streak-card")).toBeOnTheScreen());
+  // On the phone's clock: the offset goes with the request.
+  expect(fetchFn.mock.calls.map(([url]) => url)).toContainEqual(
+    expect.stringMatching(/\/game\/personal\?utc_offset_min=-?\d+$/),
+  );
+  // The week ends on the day of NOW; the month in six days.
+  expect(screen.getByTestId("personal-week")).toHaveTextContent(
+    "This week · Ends today",
+  );
+  expect(screen.getByTestId("personal-month")).toHaveTextContent(
+    "This month · 6 days left",
+  );
+  expect(screen.getByTestId("personal-week_long_outings")).toHaveTextContent(
+    /Long outings.*Bronze.*Outings of 3 km or more.*2 \/ 3.*2 · 3 · 5/,
+  );
+  expect(screen.getByTestId("personal-long_run")).toHaveTextContent(/9 \/ 12 km/);
+  expect(screen.getByTestId("personal-month_days")).toHaveTextContent(/2 \/ 8/);
+  expect(screen.getByTestId("streak-1")).toHaveTextContent(
+    /1 outing a week.*3 weeks · best 5/,
+  );
+  expect(screen.getByTestId("streak-3")).toHaveTextContent(
+    /3 outings a week.*0 weeks · best 1/,
+  );
+  expect(screen.getByTestId("medal-fast_1k-2026-10-12")).toHaveTextContent(
+    /Fast kilometre.*Silver.*Week of Mon 12 Oct 2026/,
+  );
+  expect(screen.getByTestId("ended-t-late")).toHaveTextContent(/Late ones.*Time is up/);
+  // In order: the cards and the team going, then the other teams and the
+  // forms, then what is finished.
+  const [week, going, quiet, create, medal, late] = order(
+    "personal-week",
+    `team-${TEAM.id}`,
+    "team-t-quiet",
+    "team-name",
+    "medal-fast_1k-2026-10-12",
+    "ended-t-late",
+  );
+  expect([week, going, quiet, create, medal, late].every((at) => at >= 0)).toBe(true);
+  expect(
+    week < going && going < quiet && quiet < create && create < medal && medal < late,
+  ).toBe(true);
+  expect(screen.getAllByRole("header").map((header) => header.props.children)).toEqual([
+    "In progress",
+    "Available",
+    "Finished",
+  ]);
+});
+
+test("a server before the personal challenges: no cards and no error", async () => {
+  const fetchFn = fakeApi({
+    "GET /game/teams": () => ({ status: 200, body: { teams: [QUIET_TEAM] } }),
+  });
+  await shown(fetchFn);
+  await waitFor(() => expect(screen.getByTestId("team-t-quiet")).toBeOnTheScreen());
+  await waitFor(() =>
+    expect(screen.getByTestId("in-progress-empty")).toBeOnTheScreen(),
+  );
+  expect(screen.queryByTestId("streak-card")).toBeNull();
+  expect(screen.queryByTestId("personal-retry")).toBeNull();
+  expect(screen.getByTestId("finished-empty")).toHaveTextContent(
+    "Nothing finished yet.",
+  );
+});
+
+test("the monthly challenge not entered yet is available; its archive is finished", async () => {
+  const notYet = { ...themedContest, mine: null };
+  const fetchFn = fakeApi({
+    "GET /game/teams": () => ({ status: 200, body: { teams: [] } }),
+    "GET /contests/current": () => ({ status: 200, body: notYet }),
+  });
+  await shown(fetchFn);
+  await waitFor(() => expect(screen.getByTestId("month-challenge")).toBeOnTheScreen());
+  expect(screen.getByTestId("month-challenge")).toHaveTextContent(
+    /Animals.*Monthly challenge · \d+ days left/,
+  );
+  expect(screen.getByTestId("month-archive")).toHaveTextContent(
+    /Past monthly challenges/,
+  );
+  const [available, row, finished] = order(
+    "challenges-empty",
+    "month-challenge",
+    "month-archive",
+  );
+  expect(row).toBeLessThan(available);
+  expect(row).toBeLessThan(finished);
+  // Touched: the page of the challenge (TASK-343), over the app.
+  await fireEvent.press(screen.getByTestId("month-challenge"));
+  expect(askedContest()).toEqual({ id: themedContest.id });
+});
+
+test("the monthly challenge once entered is in progress, before the teams' part", async () => {
+  const fetchFn = fakeApi({
+    "GET /game/teams": () => ({ status: 200, body: { teams: [] } }),
+    "GET /contests/current": () => ({ status: 200, body: themedContest }),
+  });
+  await shown(fetchFn);
+  await waitFor(() => expect(screen.getByTestId("month-challenge")).toBeOnTheScreen());
+  await waitFor(() => {
+    const [entered, empty] = order("month-challenge", "challenges-empty");
+    expect(entered).toBeLessThan(empty);
+  });
+  expect(screen.queryByTestId("in-progress-empty")).toBeNull();
+});
+
+test("signed out, the monthly challenge is not asked for", async () => {
+  const fetchFn = fakeApi({});
+  await shown(fetchFn, SIGNED_OUT);
+  expect(screen.getByTestId("challenges-sign-in")).toBeOnTheScreen();
+  expect(fetchFn).not.toHaveBeenCalled();
 });

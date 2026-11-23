@@ -80,17 +80,38 @@ test("a sport not ready is not a choice in the menu", async () => {
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
   expect(screen.getAllByRole("radio")).toHaveLength(1);
   expect(screen.getByLabelText("Bike, coming soon")).toBeOnTheScreen();
-  // Bike, Paddle and Paragliding (TASK-305 D0).
-  expect(screen.getAllByText("Soon")).toHaveLength(3);
+  // Bike, Paddle, Swim (TASK-323), Walk (TASK-371), Hike
+  // (TASK-377), Gravel and MTB (TASK-378), Roller (TASK-380), Ski and
+  // Cross-country ski (TASK-375), Ski touring (TASK-415 B), Gym (TASK-385 B)
+  // Paragliding (TASK-305 R2), Wheelchair & stroller (TASK-414 B) and
+  // Snowshoes (TASK-413 B), Mountaineering (TASK-463 B), Stretching
+  // (TASK-475 B).
+  expect(screen.getAllByText("Soon")).toHaveLength(17);
 });
 
-test("the app's menu ends with «Paragliding» «Soon», as «Settings» (TASK-305 D0)", async () => {
+test("in the menu «Swim» is a choice like the others (TASK-323)", async () => {
   await render(<SportButton />);
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
-  expect(screen.getAllByRole("radio")).toHaveLength(3);
-  await fireEvent.press(screen.getByLabelText("Paragliding, coming soon"));
-  expect(saveSport).not.toHaveBeenCalled();
-  expect(screen.getByRole("radio", { name: "Run" })).toBeChecked();
+  expect(screen.queryByLabelText("Swim, coming soon")).toBeNull();
+  await fireEvent.press(screen.getByRole("radio", { name: "Swim" }));
+  expect(saveSport).toHaveBeenCalledWith("swim");
+  expect(screen.getByRole("button", { name: "Sport, Swim" })).toBeOnTheScreen();
+  expect(screen.getByText("🏊")).toBeOnTheScreen();
+});
+
+test("the app's menu ends with «Paragliding», as «Settings» (TASK-305 R2)", async () => {
+  await render(<SportButton />);
+  await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
+  // Walk (TASK-371), run, the hike (TASK-377), bike, gravel and MTB
+  // (TASK-378), the skate (TASK-380), paddle, the swim in Expo Go, the alpine
+  // and the cross-country ski (TASK-375), ski touring (TASK-415 B), the gym
+  // in Expo Go (TASK-385 B), the flight (TASK-305 R2), the wheelchair
+  // (TASK-414 B), the snowshoes (TASK-413), mountaineering (TASK-463 C) and
+  // stretching (TASK-475 C).
+  expect(screen.getAllByRole("radio")).toHaveLength(18);
+  expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
+  await fireEvent.press(screen.getByRole("radio", { name: "Paragliding" }));
+  expect(saveSport).toHaveBeenCalledWith("paragliding");
 });
 
 test("the sport on the phone, and one chosen in «Settings» later, show at once", async () => {
@@ -98,5 +119,40 @@ test("the sport on the phone, and one chosen in «Settings» later, show at once
   await render(<SportButton sports={SOME} />);
   expect(screen.getByRole("button", { name: "Sport, Bike" })).toBeOnTheScreen();
   await act(async () => saveSport("run"));
+  expect(screen.getByRole("button", { name: "Sport, Run" })).toBeOnTheScreen();
+});
+
+// The ski mode (TASK-429 part A): the row of «Ski» says it changes the app,
+// and in the mode the menu says how to leave it.
+
+/** «Run» and «Ski», both ready. */
+const WITH_SKI: SportOption[] = [
+  { id: "run", emoji: "🏃‍♂️", name: "Run", ready: true },
+  { id: "ski", emoji: "⛷️", name: "Ski", ready: true, recordOnly: true },
+];
+
+test("the row of «Ski» says it turns MuW into a ski app", async () => {
+  await render(<SportButton sports={WITH_SKI} />);
+  await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
+  expect(screen.getByText("Turns MuW into your ski app")).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "Ski" })).toHaveProp(
+    "accessibilityHint",
+    "Turns MuW into your ski app",
+  );
+  // Out of the mode, nothing says how to leave it.
+  expect(screen.queryByTestId("sport-ski-mode")).toBeNull();
+});
+
+test("in the ski mode the menu says how to go back, and another sport leaves it", async () => {
+  jest.mocked(loadSport).mockReturnValue("ski");
+  await render(<SportButton sports={WITH_SKI} />);
+  await fireEvent.press(screen.getByRole("button", { name: "Sport, Ski" }));
+  expect(screen.getByText("Ski mode")).toBeOnTheScreen();
+  expect(
+    screen.getByText("Choose another sport to go back to MuW as always."),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "Ski" })).toBeChecked();
+  await fireEvent.press(screen.getByRole("radio", { name: "Run" }));
+  expect(saveSport).toHaveBeenCalledWith("run");
   expect(screen.getByRole("button", { name: "Sport, Run" })).toBeOnTheScreen();
 });

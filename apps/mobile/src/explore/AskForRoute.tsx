@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { type ReactNode, useState } from "react";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 import { t } from "../i18n";
 
 import type { Place } from "../places/photon";
@@ -11,12 +11,14 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { CATEGORIES, exampleFor, requestFor, whereFor } from "./presets";
 
 /** The longest request the API reads (themed.py). */
 export const MAX_REQUEST_LENGTH = 200;
-/** The categories always shown (TASK-143): Food and Famous Places. */
-export const QUICK_CATEGORIES = 2;
+/** The categories always shown: Famous Places, Best Views, Hidden Gems and
+ * Photography (the user's choice of 2026-10-29). */
+export const QUICK_CATEGORIES = 4;
 
 type Props = {
   /** The city the requests are for, or null for the start. */
@@ -24,14 +26,16 @@ type Props = {
   /** Where the request starts from, in words: the city or "your start". */
   where: string;
   onAsk: (text: string) => void;
+  /** Our ideas, above the categories: what to take a route from. */
+  ideas?: ReactNode;
 };
 
 /**
- * "Ask for a route" (TASK-129, TASK-134, TASK-143): two categories, one tap
- * each ("Food in New York"), the others behind "More…"; or a request in
- * words.
+ * "Ask for a route" (TASK-129, TASK-134, TASK-143): our ideas first, then
+ * four categories, one tap each ("Famous Places in Rome"), the others behind
+ * "More…"; or a request in words.
  */
-export function AskForRoute({ city = null, where, onAsk }: Props) {
+export function AskForRoute({ city = null, where, onAsk, ideas }: Props) {
   const [text, setText] = useState("");
   const [all, setAll] = useState(false);
   const ready = text.trim() !== "";
@@ -40,14 +44,15 @@ export function AskForRoute({ city = null, where, onAsk }: Props) {
   return (
     <View style={styles.section}>
       <Text style={styles.label}>{t("ASK FOR A ROUTE")}</Text>
+      {ideas}
       <Text style={styles.note}>
         {t("A shape through real places {place}. Tap one to make it.", { place })}
       </Text>
       <View style={styles.grid}>
         {shown.map((category) => (
-          <Pressable
+          <Tap
             key={category}
-            style={({ pressed }) => [styles.category, pressed && styles.pressed]}
+            style={styles.category}
             onPress={() => onAsk(requestFor(category, city))}
             accessibilityRole="button"
             accessibilityLabel={requestFor(category, city)}
@@ -56,11 +61,11 @@ export function AskForRoute({ city = null, where, onAsk }: Props) {
             <Text style={styles.categoryWhere} numberOfLines={1}>
               {place}
             </Text>
-          </Pressable>
+          </Tap>
         ))}
         {!all && (
-          <Pressable
-            style={({ pressed }) => [styles.category, pressed && styles.pressed]}
+          <Tap
+            style={styles.category}
             onPress={() => setAll(true)}
             accessibilityRole="button"
             accessibilityLabel={t("More categories")}
@@ -69,7 +74,7 @@ export function AskForRoute({ city = null, where, onAsk }: Props) {
             <Text style={styles.categoryWhere} numberOfLines={1}>
               {t("{count} more", { count: CATEGORIES.length - QUICK_CATEGORIES })}
             </Text>
-          </Pressable>
+          </Tap>
         )}
       </View>
       <Text style={styles.label}>{t("OR IN YOUR WORDS")}</Text>
@@ -87,19 +92,15 @@ export function AskForRoute({ city = null, where, onAsk }: Props) {
       <Text style={styles.note}>
         {t("From {where}. Name a city in the words to go elsewhere.", { where })}
       </Text>
-      <Pressable
-        style={({ pressed }) => [
-          styles.make,
-          !ready && styles.makeOff,
-          pressed && styles.pressed,
-        ]}
+      <Tap
+        style={[styles.make, !ready && styles.makeOff]}
         onPress={() => onAsk(text.trim())}
         disabled={!ready}
         accessibilityRole="button"
         accessibilityState={{ disabled: !ready }}
       >
         <Text style={styles.makeText}>{t("Make my route")}</Text>
-      </Pressable>
+      </Tap>
     </View>
   );
 }
@@ -123,9 +124,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.small,
   },
   // A light touch: what is pressed dims, nothing moves.
-  pressed: {
-    opacity: 0.6,
-  },
   // Two columns on a phone, more where there is room.
   grid: {
     flexDirection: "row",

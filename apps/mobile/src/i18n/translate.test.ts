@@ -13,6 +13,13 @@ test("a text with no translation is shown in English (ADR-0172)", () => {
   expect(translate("de", "A text nobody translated")).toBe("A text nobody translated");
 });
 
+test("a text told apart by its context reads as the English before the mark", () => {
+  expect(translate("en", "Change@@piece")).toBe("Change");
+  expect(translate("it", "Change@@piece")).toBe("Cambia");
+  expect(translate("it", "Change")).toBe("Differenza");
+  expect(translate("de", "Untranslated@@somewhere")).toBe("Untranslated");
+});
+
 test("marks are filled, numbers written as the language writes them", () => {
   expect(translate("en", "{name}, coming soon", { name: "Units" })).toBe(
     "Units, coming soon",

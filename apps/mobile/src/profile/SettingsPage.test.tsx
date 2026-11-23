@@ -66,24 +66,45 @@ test("the account, by name and email", async () => {
   expect(screen.getByText("runner@example.com")).toBeOnTheScreen();
 });
 
-test("every row works: only «Paragliding» says «Soon»", async () => {
+test("every row works: only the sports to come say «Soon»", async () => {
   await show();
   // The notifications were the last settings to come (TASK-185). The bike
-  // (TASK-190) and paddling (TASK-191) are ready in «Sport» (TASK-189);
-  // paragliding is the one sport to come (TASK-305 D0).
-  expect(screen.getAllByText("Soon")).toHaveLength(1);
-  expect(screen.getAllByLabelText(/coming soon$/)).toHaveLength(1);
-  expect(screen.getByLabelText("Paragliding, coming soon")).toBeOnTheScreen();
+  // (TASK-190), paddling (TASK-191), swimming in open water (TASK-323) and
+  // the alpine ski (TASK-375 D4) are ready in «Sport» (TASK-189), and the
+  // hike (TASK-377), gravel and MTB (TASK-378), walking (TASK-371) and the
+  // skate (TASK-380), paragliding (TASK-305 R2), cross-country skiing
+  // (TASK-375), the wheelchair (TASK-414 B), the snowshoes (TASK-413) and
+  // mountaineering (TASK-463 C) and stretching (TASK-475 C): no sport is to
+  // come.
+  expect(screen.queryByText("Soon")).toBeNull();
+  expect(screen.queryAllByLabelText(/coming soon$/)).toHaveLength(0);
+  expect(screen.queryByLabelText("Stretching, coming soon")).toBeNull();
+  expect(screen.queryByLabelText("Snowshoes, coming soon")).toBeNull();
+  expect(screen.queryByLabelText("Mountaineering, coming soon")).toBeNull();
+  expect(screen.queryByLabelText("Wheelchair & stroller, coming soon")).toBeNull();
+  expect(screen.queryByLabelText("Cross-country ski, coming soon")).toBeNull();
+  expect(screen.queryByLabelText("Walk, coming soon")).toBeNull();
+  expect(screen.queryByLabelText("Roller, coming soon")).toBeNull();
+  expect(screen.queryByLabelText("MTB, coming soon")).toBeNull();
+  expect(screen.queryByLabelText("Ski, coming soon")).toBeNull();
+  expect(screen.queryByLabelText("Open water swim, coming soon")).toBeNull();
+  expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
   // The picture (TASK-178), the email and the phone number (TASK-183), the
-  // language (TASK-210), the units (TASK-182), the tone (TASK-263), the
-  // three texts of «ABOUT» (TASK-184) and the ways out are buttons.
-  // «Send feedback» waits for a server that takes it (TASK-308, below).
-  expect(screen.getAllByRole("button")).toHaveLength(11);
+  // language (TASK-210), «Add a place» (TASK-334), the units (TASK-182),
+  // the body (TASK-374), the morning stretch (TASK-466 part D), the tone
+  // (TASK-263), the three texts of «ABOUT» (TASK-184) and the ways out are
+  // buttons. «Send feedback» waits for a server that takes it (TASK-308,
+  // below).
+  expect(screen.getAllByRole("button")).toHaveLength(14);
   expect(screen.getByRole("button", { name: "Profile picture" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Change email" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Phone number, Add" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Language, English" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Units, Kilometres" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Body, Not set" })).toBeOnTheScreen();
+  expect(
+    screen.getByRole("button", { name: "Morning stretch, Off" }),
+  ).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Tone, Dark" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Log out" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Delete account" })).toBeOnTheScreen();
@@ -110,7 +131,7 @@ test("on the server of today, which answers 404, there is no «FEEDBACK» to wri
   expect(fetchFn).toHaveBeenCalledTimes(1);
   expect(screen.queryByText("FEEDBACK")).toBeNull();
   expect(screen.queryByRole("button", { name: "Send feedback" })).toBeNull();
-  expect(screen.getAllByRole("button")).toHaveLength(11);
+  expect(screen.getAllByRole("button")).toHaveLength(14);
 });
 
 test("without a network nothing is shown either (TASK-308)", async () => {
@@ -137,7 +158,17 @@ test("the notifications are three switches kept in the account, email and push o
   expect(screen.getByText("NOTIFICATIONS")).toBeOnTheScreen();
   const email = screen.getByRole("switch", { name: "Email notifications" });
   const push = screen.getByRole("switch", { name: "Push notifications" });
-  expect(screen.getAllByRole("switch")).toHaveLength(3);
+  // The three of the notifications; MuW Style's is in «Preferences» (TASK-384).
+  const notifications = [
+    "Email notifications",
+    "Push notifications",
+    "Email when I'm away",
+  ];
+  expect(
+    screen
+      .getAllByRole("switch")
+      .filter((row) => notifications.includes(row.props.accessibilityLabel)),
+  ).toHaveLength(3);
   expect(email).not.toBeChecked();
   expect(push).not.toBeChecked();
   expect(screen.getByRole("switch", { name: "Email when I'm away" })).toBeChecked();

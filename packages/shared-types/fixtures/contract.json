@@ -16,7 +16,21 @@
     "smiley",
     "ghost",
     "donut",
-    "sun"
+    "sun",
+    "airplane",
+    "anchor",
+    "bear_head",
+    "bicycle",
+    "cherries",
+    "espresso_cup",
+    "four_leaf_clover",
+    "leaning_tower",
+    "music_note",
+    "pear",
+    "sailboat",
+    "swan",
+    "windmill",
+    "wine_glass"
   ],
   "pen_up_shapes": [
     "cat",
@@ -27,15 +41,39 @@
     "smiley",
     "ghost",
     "donut",
-    "sun"
+    "sun",
+    "anchor",
+    "bear_head",
+    "bicycle",
+    "espresso_cup"
   ],
-  "activities": ["running", "cycling", "paddling"],
+  "activities": [
+    "running",
+    "cycling",
+    "paddling",
+    "swimming",
+    "hiking",
+    "mountain_biking",
+    "inline_skating",
+    "snowshoeing",
+    "wheelchair",
+    "walking",
+    "gravel_biking"
+  ],
   "min_distance_m": 1000,
   "max_distance_m": 50000,
   "distance_limits_m": {
     "running": [1000, 50000],
     "cycling": [10000, 30000],
-    "paddling": [1000, 5000]
+    "paddling": [1000, 5000],
+    "swimming": [500, 3000],
+    "hiking": [1000, 30000],
+    "mountain_biking": [10000, 30000],
+    "inline_skating": [5000, 30000],
+    "snowshoeing": [500, 3000],
+    "wheelchair": [1000, 5000],
+    "walking": [1000, 30000],
+    "gravel_biking": [10000, 30000]
   },
   "letters": [
     "A",

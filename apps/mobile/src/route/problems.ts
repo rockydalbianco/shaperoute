@@ -7,6 +7,8 @@ import {
 } from "@shaperoute/shared-types";
 
 import { decimal, t, tLater } from "../i18n";
+import { isSnowshoeRoute } from "../snow/snow";
+import { isOnWater } from "../swim/water";
 import { nearestTenths, tenthsToM, unitsNumber } from "../units/distanceInput";
 import { METRES_PER_MILE } from "../units/format";
 import { appUnits, type Units } from "../units/units";
@@ -20,15 +22,22 @@ import type { EditProblem, ImageProblem } from "./useImageOutline";
 import type { RouteProblem } from "./useRouteRequest";
 import type { DrawKind } from "./wordInput";
 
-/** What the route draws: a shape, a word, the outline of an image, or a
- * figure drawn by hand (TASK-320), asked for as an image's outline is. */
-export type ChoiceKind = DrawKind | "image" | "freehand";
+/** What the route draws: a shape, a word, or the outline of an image. A
+ * figure drawn by hand is drawn on the map (TASK-331). */
+export type ChoiceKind = DrawKind | "image";
 
 /**
  * What the screen says: what happened and what to do, then details. The
  * way out, when there is one to tap (TASK-031): a distance the shape fits,
  * or the shapes of the catalogue.
  */
+/** How an API before TASK-369 part B refuses a drawing on the water
+ * (images.ImageRequest, ADR-0161). */
+const NOT_AN_IMAGE = "only a shape of the catalogue is drawn, not an image";
+/** How the API refuses an outline the engine cannot draw, one that crosses
+ * itself for one (images.outline_of, `parse_outline`; TASK-382). */
+const OUTLINE_REFUSED = "outline: ";
+
 export type ProblemText = {
   text: string;
   /** For whoever develops the app: the API's words, an address, a code.
@@ -106,7 +115,6 @@ function fitsAtText(kind: ChoiceKind, fits: number, units: Units): string {
           km,
         );
       case "image":
-      case "freehand":
         return t(
           "This image does not fit the roads here at this distance. It fits at about {km} km.",
           km,
@@ -126,7 +134,6 @@ function fitsAtText(kind: ChoiceKind, fits: number, units: Units): string {
         miles,
       );
     case "image":
-    case "freehand":
       return t(
         "This image does not fit the roads here at this distance. It fits at about {mi} mi.",
         miles,
@@ -155,11 +162,22 @@ export function problemText(
     case "api_error":
       switch (problem.code) {
         case "shape_not_drawable": {
-          if (activity === "paddling") {
+          // On the snow (TASK-413 B), its own words: a shape of the
+          // catalogue only, no word and no drawing.
+          if (isSnowshoeRoute(activity)) {
+            return snowProblemText(
+              problem.message,
+              fitsAtM(problem.suggested_distance_m, activity, units, asked, true),
+              units,
+            );
+          }
+          // A swim's are the water's too (TASK-323): the same words.
+          if (isOnWater(activity)) {
             return waterProblemText(
               problem.message,
               fitsAtM(problem.suggested_distance_m, activity, units, asked, true),
               units,
+              kind,
             );
           }
           // Offered only within the distances «Draw» offers for it.
@@ -179,7 +197,7 @@ export function problemText(
               detail: devDetail(problem.message),
             };
           }
-          if (kind === "image" || kind === "freehand") {
+          if (kind === "image") {
             return {
               text: t(
                 "This outline does not fit the roads here. Try another distance, another start, or a simpler picture.",
@@ -197,7 +215,9 @@ export function problemText(
         }
         case "map_data_unavailable":
           return {
-            text: t("Map data for this area could not be downloaded. Try again later."),
+            text: t(
+              "The map service is busy, so this area could not be loaded. Try again in a few minutes.",
+            ),
             detail: devDetail(problem.message),
             retry: true,
           };
@@ -243,6 +263,29 @@ export function problemText(
             ),
             detail: devDetail(problem.message),
           };
+        case "invalid_request":
+          // A drawing paddled (TASK-369 B) asked of an API from before it,
+          // which refuses it: said as «Draw» says it, with no «Try again».
+          if (activity === "paddling" && problem.message.includes(NOT_AN_IMAGE)) {
+            return {
+              text: t("On the water, a shape of the catalogue."),
+              detail: devDetail(problem.message),
+            };
+          }
+          // An outline the engine cannot draw (TASK-382): said as one that
+          // does not fit, with no «Try again», which would ask it again.
+          if (problem.message.startsWith(OUTLINE_REFUSED)) {
+            if (isOnWater(activity)) {
+              return waterProblemText(problem.message, null, units, kind);
+            }
+            return {
+              text: t(
+                "This outline does not fit the roads here. Try another distance, another start, or a simpler picture.",
+              ),
+              detail: devDetail(problem.message),
+            };
+          }
+          return ourSide(`${problem.code}: ${problem.message}`);
         default:
           return ourSide(`${problem.code}: ${problem.message}`);
       }
@@ -298,6 +341,7 @@ function waterProblemText(
   message: string,
   fits: number | null,
   units: Units,
+  kind: ChoiceKind,
 ): ProblemText {
   if (message.includes(NO_WATER)) {
     return {
@@ -312,6 +356,31 @@ function waterProblemText(
             ),
       detail: devDetail(message),
     };
+  }
+  // A drawing, by hand or from a picture (TASK-396): its own words, and no
+  // shapes of the catalogue to choose instead.
+  if (kind === "image") {
+    return fits !== null
+      ? {
+          text:
+            units === "mi"
+              ? t(
+                  "This drawing does not fit on the water here at this distance. It fits at about {mi} mi.",
+                  { mi: unitsNumber(fits, "mi") },
+                )
+              : t(
+                  "This drawing does not fit on the water here at this distance. It fits at about {km} km.",
+                  { km: fits / 1000 },
+                ),
+          detail: devDetail(message),
+          tryDistanceM: fits,
+        }
+      : {
+          text: t(
+            "This drawing does not fit on the water near this start. Try a shorter distance, or another start.",
+          ),
+          detail: devDetail(message),
+        };
   }
   if (fits !== null) {
     return {
@@ -332,6 +401,59 @@ function waterProblemText(
   return {
     text: t(
       "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:",
+    ),
+    detail: devDetail(message),
+    pickShape: true,
+  };
+}
+
+/** The engine's words when no snow is near (route_engine/snow.py
+ * no_snow_error): a town too (TASK-413 A3). */
+const NO_SNOW = "no open snow";
+
+/**
+ * A shape not placed on the snow (TASK-413 B), said for the snow distances
+ * «Draw» offers: no open snow near the start (towns, woods, pistes and
+ * steep slopes are left out), the distance it fits at, or another shape.
+ */
+function snowProblemText(
+  message: string,
+  fits: number | null,
+  units: Units,
+): ProblemText {
+  if (message.includes(NO_SNOW)) {
+    return {
+      // The engine looks within 2 km: a mile from the snow is within them.
+      text:
+        units === "mi"
+          ? t(
+              "There is no open snow near this start. Start within 1 mile of open snow, away from towns, woods and pistes.",
+            )
+          : t(
+              "There is no open snow near this start. Start within 2 km of open snow, away from towns, woods and pistes.",
+            ),
+      detail: devDetail(message),
+    };
+  }
+  if (fits !== null) {
+    return {
+      text:
+        units === "mi"
+          ? t(
+              "This shape does not fit on the snow here at this distance. It fits at about {mi} mi.",
+              { mi: unitsNumber(fits, "mi") },
+            )
+          : t(
+              "This shape does not fit on the snow here at this distance. It fits at about {km} km.",
+              { km: fits / 1000 },
+            ),
+      detail: devDetail(message),
+      tryDistanceM: fits,
+    };
+  }
+  return {
+    text: t(
+      "This shape does not fit on the snow here. Try a shorter distance, another shape, or another start:",
     ),
     detail: devDetail(message),
     pickShape: true,

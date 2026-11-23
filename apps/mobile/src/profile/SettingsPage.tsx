@@ -1,31 +1,41 @@
 import type { User } from "@shaperoute/shared-types";
 import { type ReactNode, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { AboutRows } from "../about/AboutRows";
 import type { AboutId } from "../about/documents";
 import type { Account } from "../account/useAccount";
 import { apiUrl } from "../api/apiUrl";
 import { OfflineMapsSetting } from "../engine/OfflineMapsSetting";
+import { GearSetting } from "../gear/GearSetting";
 import { t } from "../i18n";
+import { BodySetting } from "../settings/BodySetting";
 import { EmailSetting } from "../settings/EmailSetting";
 import { FeedbackSetting } from "../settings/FeedbackSetting";
 import { LanguageSetting } from "../settings/LanguageSetting";
 import { NotificationsSetting } from "../settings/NotificationsSetting";
 import { PhoneSetting } from "../settings/PhoneSetting";
+import { PostLinksSetting } from "../settings/PostLinksSetting";
 import { SportSetting } from "../settings/SportSetting";
+import { StyleSetting } from "../settings/StyleSetting";
 import { ToneSetting } from "../settings/ToneSetting";
 import { UnitsSetting } from "../settings/UnitsSetting";
+import { Vo2MaxSetting } from "../settings/Vo2MaxSetting";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import { useFeedbackService } from "../settings/useFeedbackService";
+import { BlockedPeople } from "../social/BlockedPeople";
 import { StravaSetting } from "../strava/StravaSetting";
+import { MorningStretchSetting } from "../stretch/MorningStretchSetting";
 import {
   color,
+  font,
   fontSize,
   fontWeight,
   MIN_TAP_SIZE,
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { PhotoRow } from "./PhotoRow";
 
 type Props = {
@@ -49,10 +59,11 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
 
 /**
  * «Settings» in «Profile» (TASK-177), in sections: the account with its
- * email and phone number (TASK-183) and the ways out of it, the sport
+ * email and phone number (TASK-183), the people it blocked (TASK-121,
+ * here since TASK-457) and the ways out of it, the sport
  * (TASK-189), Strava (TASK-187), the language
  * (TASK-210), the offline maps (TASK-214) and the units (TASK-182) among
- * the preferences, the two notification switches (TASK-185), «Send
+ * the preferences with the body under them (TASK-374), the two notification switches (TASK-185), «Send
  * feedback» (TASK-308) and the texts of «ABOUT» (TASK-184). Every row
  * works: none says «Soon» any more.
  * «Delete account» asks first, on the screen (ADR-0120: the API does not).
@@ -64,6 +75,8 @@ export function SettingsPage({
   feedbackApi = { baseUrl: apiUrl() },
 }: Props) {
   const [confirming, setConfirming] = useState(false);
+  // The account card wears the glass of the groups (TASK-469 A6b).
+  const group = useSettingsGroup();
   const { baseUrl: feedbackUrl, fetchFn, key } = feedbackApi;
   // Only on a server that takes it: an older one answers 404 (TASK-308).
   const takesFeedback = useFeedbackService(feedbackUrl, { fetchFn, key });
@@ -71,21 +84,35 @@ export function SettingsPage({
   return (
     <View style={styles.page}>
       <Section label={t("ACCOUNT")}>
-        <View style={styles.card}>
+        <View style={[styles.card, group]}>
           <Text style={styles.username}>{user.username}</Text>
           <Text style={styles.email}>{user.email}</Text>
         </View>
         <PhotoRow name={user.username} />
         <EmailSetting user={user} account={account} />
         <PhoneSetting user={user} account={account} />
+        {/* Whom the account blocked, to unblock (TASK-121); here and not on
+            the profile since TASK-457. */}
+        <BlockedPeople />
       </Section>
       <SportSetting />
+      {/* Shoes, bikes, skis and the rest, with their kilometres (TASK-486). */}
+      <GearSetting account={account} />
       <StravaSetting />
       <Section label={t("PREFERENCES")}>
         <LanguageSetting />
         <OfflineMapsSetting />
         <UnitsSetting />
+        <BodySetting />
+        {/* The reminder after the alarm, kept on this phone (TASK-466 part D). */}
+        <MorningStretchSetting />
+        {/* The yes of the VO₂ max on the profile, kept by the API (TASK-397). */}
+        <Vo2MaxSetting account={account} />
+        {/* Whether the links to one's posts work, kept by the API (TASK-455). */}
+        <PostLinksSetting account={account} />
         <ToneSetting />
+        {/* MuW Style is advertising: it can be turned off (TASK-384). */}
+        <StyleSetting />
       </Section>
       {/* Kept in the account; nothing is sent yet (TASK-185). */}
       <Section label={t("NOTIFICATIONS")}>
@@ -107,14 +134,14 @@ export function SettingsPage({
       </Section>
       {/* The ways out of the account, last. */}
       <View style={styles.section}>
-        <Pressable
+        <Tap
           style={styles.button}
           onPress={account.signOut}
           disabled={deleting}
           accessibilityRole="button"
         >
           <Text style={styles.buttonText}>{t("Log out")}</Text>
-        </Pressable>
+        </Tap>
         {confirming ? (
           <View style={styles.confirm}>
             <Text style={styles.confirmText}>
@@ -122,7 +149,7 @@ export function SettingsPage({
                 "Delete your account? Everything that is yours goes with it, at once. It cannot be undone.",
               )}
             </Text>
-            <Pressable
+            <Tap
               style={[styles.button, styles.danger, deleting && styles.busy]}
               onPress={account.deleteAccount}
               disabled={deleting}
@@ -132,8 +159,8 @@ export function SettingsPage({
               <Text style={[styles.buttonText, styles.dangerText]}>
                 {t(deleting ? "Deleting…" : "Delete my account")}
               </Text>
-            </Pressable>
-            <Pressable
+            </Tap>
+            <Tap
               style={styles.button}
               onPress={() => {
                 setConfirming(false);
@@ -143,16 +170,16 @@ export function SettingsPage({
               accessibilityRole="button"
             >
               <Text style={styles.buttonText}>{t("Keep my account")}</Text>
-            </Pressable>
+            </Tap>
           </View>
         ) : (
-          <Pressable
+          <Tap
             style={styles.quiet}
             onPress={() => setConfirming(true)}
             accessibilityRole="button"
           >
             <Text style={styles.dangerText}>{t("Delete account")}</Text>
-          </Pressable>
+          </Tap>
         )}
         {account.problem && <Text style={styles.problem}>{account.problem}</Text>}
       </View>
@@ -168,27 +195,24 @@ const styles = StyleSheet.create({
     gap: space.lg,
   },
   label: {
+    ...font.label,
     color: color.textMuted,
-    fontSize: fontSize.label,
-    fontWeight: fontWeight.semibold,
-    letterSpacing: 1.2,
   },
+  // The account as a quiet card, the name as a heading (TASK-339 D); its
+  // edges are those of the groups (TASK-469 A6b, `group`).
   card: {
     gap: space.xs,
     padding: space.md,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: color.border,
     backgroundColor: color.surface,
   },
   username: {
+    ...font.heading,
     color: color.text,
-    fontSize: fontSize.input,
-    fontWeight: fontWeight.semibold,
   },
   email: {
+    ...font.small,
     color: color.textMuted,
-    fontSize: fontSize.body,
   },
   // Neutral: the yellow belongs to the route (docs/UI.md, «Il tema»).
   button: {
@@ -210,10 +234,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignSelf: "flex-start",
   },
+  // A warning, not glass: the corners of the groups, the edge in red.
   confirm: {
     gap: space.md,
     padding: space.md,
-    borderRadius: radius.lg,
+    borderRadius: radius.group,
     borderWidth: 1,
     borderColor: color.error,
     backgroundColor: color.surface,

@@ -68,17 +68,25 @@ test("an older app's request has no heights; one without is the same", () => {
 
 test("a run with heights an older API refuses goes again without them", async () => {
   const [saved] = activities.activities;
-  const fetchFn: jest.Mock = answers(
-    {
-      status: 422,
-      body: apiError("invalid_request", "Extra inputs are not permitted"),
-    },
-    { status: 201, body: saved },
-  );
-  const outcome = await saveActivity(URL, TOKEN, ID, high, { fetchFn, key: null });
+  const refused = {
+    status: 422,
+    body: apiError("invalid_request", "Extra inputs are not permitted"),
+  };
+  const fetchFn: jest.Mock = answers(refused, refused, { status: 201, body: saved });
+  const offsetAt = () => 60;
+  const outcome = await saveActivity(URL, TOKEN, ID, high, {
+    fetchFn,
+    key: null,
+    offsetAt,
+  });
   expect(outcome).toEqual({ kind: "ok", value: saved });
-  expect(JSON.parse(String(fetchFn.mock.calls[0][1]?.body))).toEqual(high);
-  expect(JSON.parse(String(fetchFn.mock.calls[1][1]?.body))).toEqual(plain);
+  // An API before TASK-324 is older than TASK-423 too: the offset goes first.
+  expect(JSON.parse(String(fetchFn.mock.calls[0][1]?.body))).toEqual({
+    ...high,
+    utc_offset_min: 60,
+  });
+  expect(JSON.parse(String(fetchFn.mock.calls[1][1]?.body))).toEqual(high);
+  expect(JSON.parse(String(fetchFn.mock.calls[2][1]?.body))).toEqual(plain);
 });
 
 test("an API that takes the heights is asked once", async () => {

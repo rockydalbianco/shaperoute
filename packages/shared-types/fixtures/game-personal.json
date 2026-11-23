@@ -1,0 +1,59 @@
+{
+  "week": {
+    "start": "2026-10-19",
+    "end": "2026-10-26",
+    "challenges": [
+      {
+        "id": "week_long_outings",
+        "unit": "count",
+        "tiers": [2, 3, 5],
+        "value": 2,
+        "tier": 1
+      },
+      { "id": "evening", "unit": "count", "tiers": [1, 2, 3], "value": 1, "tier": 1 },
+      {
+        "id": "long_run",
+        "unit": "m",
+        "tiers": [8000, 12000, 18000],
+        "value": 9000,
+        "tier": 1
+      }
+    ]
+  },
+  "month": {
+    "start": "2026-10-01",
+    "end": "2026-11-01",
+    "challenges": [
+      {
+        "id": "month_days",
+        "unit": "days",
+        "tiers": [8, 12, 16],
+        "value": 2,
+        "tier": 0
+      },
+      {
+        "id": "month_early",
+        "unit": "count",
+        "tiers": [3, 6, 10],
+        "value": 1,
+        "tier": 0
+      }
+    ]
+  },
+  "streaks": [
+    { "runs": 1, "current": 3, "best": 5 },
+    { "runs": 2, "current": 1, "best": 2 },
+    { "runs": 3, "current": 0, "best": 1 }
+  ],
+  "finished": [
+    {
+      "id": "fast_1k",
+      "unit": "pace_s",
+      "tiers": [360, 300, 255],
+      "period": "week",
+      "start": "2026-10-12",
+      "tier": 2,
+      "done_at": "2026-10-15T07:12:00Z"
+    }
+  ]
+}

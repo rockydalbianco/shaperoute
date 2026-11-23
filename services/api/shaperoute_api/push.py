@@ -15,7 +15,9 @@ teams' (part C): a piece finished, a challenge complete, a day left; three
 a group run's, to who goes (TASK-309, group_runs.py): it starts soon, its
 time or place changed, it was cancelled; two the private messages'
 (TASK-319, messages.py): a message, and a message request once a day for
-each writer. Each to one recipient, and only when:
+each writer; three the monthly challenges' (TASK-343, contests.py and
+contest_clock.py): a new one opened, its last days, its results. Each to
+one recipient, and only when:
 
 - the recipient has «Push notifications» on (users.notify_push);
 - the recipient is not the one who acted, but for OWN_KINDS;
@@ -38,6 +40,12 @@ The texts are in the language the app said with the token, else English.
 An event let through (not one's own, the first of the day) also goes to
 the listeners, before the push: the email of the notices keeps the five
 events of the people for its daily email (notice_email.py, TASK-262 B).
+
+Two more are a comment's (TASK-454 part C1, ADR-0377; comments.py and
+comment_reactions.py): a reply, told to who it answers as every event
+above; and a reaction to a comment, which goes to the listeners only
+(BELL_ONLY): it is read in the bell and no phone rings (the user's choice,
+2026-11-11).
 """
 
 from __future__ import annotations
@@ -82,30 +90,52 @@ Kind = Literal[
     "follow_accepted",
     "reaction",
     "comment",
+    "comment_reply",
+    "comment_reaction",
     "tag",
     "shape_unlocked",
+    "edition_up",
+    "collection_done",
     "piece_done",
     "challenge_done",
     "challenge_ending",
     "contest_won",
+    "contest_open",
+    "contest_last_days",
+    "contest_results",
     "group_run_soon",
     "group_run_changed",
     "group_run_cancelled",
     "message",
     "message_request",
+    "planned_live_started",
+    "gear_limit",
 ]
 # The events of what one did oneself, or of nobody's doing: told to
 # oneself too (the shape game, TASK-296; the contest won, TASK-299; the
-# reminder of a group run, to its organiser too, TASK-309).
+# reminder of a group run, to its organiser too, TASK-309; the monthly
+# challenges, TASK-343, where the one told is also the "actor").
 OWN_KINDS: frozenset[str] = frozenset(
     {
         "shape_unlocked",
+        "edition_up",
+        "collection_done",
         "challenge_done",
         "challenge_ending",
         "contest_won",
+        "contest_open",
+        "contest_last_days",
+        "contest_results",
         "group_run_soon",
+        "gear_limit",
     }
 )
+
+# The events the listeners hear of and no phone is sent: a reaction to a
+# comment is read in the bell only (TASK-454, the user's choice); so is an
+# item of gear past its limit (TASK-486 part G: no push in the first
+# version, the user's choice 5).
+BELL_ONLY: frozenset[str] = frozenset({"comment_reaction", "gear_limit"})
 
 # An Expo push token: "ExponentPushToken[…]", or "ExpoPushToken[…]".
 TOKEN_PATTERN = r"^Expo(nent)?PushToken\[[A-Za-z0-9_\-]{1,180}\]$"
@@ -118,6 +148,9 @@ RECEIPT_KEPT_S = 24 * 60 * 60
 SAME_EVENT_S = 24 * 60 * 60
 # A comment in a notification: its beginning.
 MAX_QUOTED = 100
+# The runs of a gold edition of the game (game_prizes.EDITION_RUNS): its
+# push has its own words.
+GOLD_RUNS = 10
 
 
 class PushTokenRequestBody(BaseModel):
@@ -184,13 +217,14 @@ class PushEvent:
     kind: Kind
     actor_id: int
     recipient_id: int
-    # The drawing of a reaction, a comment, a tag.
+    # The drawing of a reaction, a comment, a reply, a tag.
     drawing_id: UUID | None = None
     # The reaction's code (reactions.py), the comment's text.
     reaction: str | None = None
     text: str | None = None
-    # What tells two events of the same kind apart: a comment's id. Two
-    # reactions of one person to one drawing are the same event.
+    # What tells two events of the same kind apart: a comment's id, a
+    # reply's, the id of the comment a reaction was left on. Two reactions
+    # of one person to one drawing, or to one comment, are the same event.
     key: str = ""
     # A challenge of the shape game (TASK-296 C): the app opens it; its text
     # has a number (a piece's, or the pieces missing) and the shape's name
@@ -200,6 +234,20 @@ class PushEvent:
     names: Mapping[str, str] | None = None
     # A group run (TASK-309): the app opens it; its title is `text`.
     group_run_id: UUID | None = None
+    # A monthly challenge (TASK-343): the app opens its page; the theme's
+    # title, by language, is in `names`.
+    contest_id: UUID | None = None
+    # A planned live that started (TASK-468 part A2b): the app opens its
+    # live view; its title is `text`.
+    planned_live_id: UUID | None = None
+    live_share_id: UUID | None = None
+    # What a private message carries (TASK-333): "photo", "video",
+    # "drawing", "post" (TASK-455) or "live" (TASK-468); its text, if any,
+    # is `text`.
+    attachment: str | None = None
+    # An item of gear past its limit (TASK-486 part G): the app opens it;
+    # its name is `text`, `key` its id and its limit.
+    gear_id: UUID | None = None
 
     def same(self) -> tuple[str, int, int, str, str]:
         return (
@@ -257,6 +305,21 @@ TEXTS: dict[str, dict[str, str]] = {
         "es": "{name} ha comentado tu publicación: {text}",
         "fr": "{name} a commenté ta publication : {text}",
     },
+    # A comment's (TASK-454): the English ones are the user's.
+    "comment_reply": {
+        "en": "{name} replied to your comment: {text}",
+        "de": "{name} hat auf deinen Kommentar geantwortet: {text}",
+        "it": "{name} ha risposto al tuo commento: {text}",
+        "es": "{name} ha respondido a tu comentario: {text}",
+        "fr": "{name} a répondu à ton commentaire : {text}",
+    },
+    "comment_reaction": {
+        "en": "{name} reacted to your comment.",
+        "de": "{name} hat auf deinen Kommentar reagiert.",
+        "it": "{name} ha reagito al tuo commento.",
+        "es": "{name} ha reaccionado a tu comentario.",
+        "fr": "{name} a réagi à ton commentaire.",
+    },
     "tag": {
         "en": "{name} tagged you in a post.",
         "de": "{name} hat dich in einem Beitrag markiert.",
@@ -274,6 +337,33 @@ TEXTS: dict[str, dict[str, str]] = {
         " en Play.",
         "fr": "Tu as débloqué une nouvelle forme ! Tu la trouveras dans ta"
         " collection, dans Play.",
+    },
+    # The prizes of the game (TASK-423 E): the shape's name, or the
+    # collection's, in the phone's language; {n} the runs of the edition.
+    "edition_up": {
+        "en": "{shape}: silver edition! You met its goal in {n} runs.",
+        "de": "{shape}: Silber-Edition! Du hast das Ziel in {n} Läufen erreicht.",
+        "it": "{shape}: edizione d'argento! Hai raggiunto l'obiettivo in {n} corse.",
+        "es": "{shape}: ¡edición de plata! Has cumplido el objetivo en {n} carreras.",
+        "fr": "{shape} : édition argent ! Tu as atteint l'objectif en {n} courses.",
+    },
+    "edition_up_gold": {
+        "en": "{shape}: gold edition! You met its goal in {n} runs.",
+        "de": "{shape}: Gold-Edition! Du hast das Ziel in {n} Läufen erreicht.",
+        "it": "{shape}: edizione d'oro! Hai raggiunto l'obiettivo in {n} corse.",
+        "es": "{shape}: ¡edición de oro! Has cumplido el objetivo en {n} carreras.",
+        "fr": "{shape} : édition or ! Tu as atteint l'objectif en {n} courses.",
+    },
+    "collection_done": {
+        "en": "{shape} collection complete! A new frame for your profile," " in Play.",
+        "de": "Sammlung {shape} komplett! Ein neuer Rahmen für dein Profil,"
+        " unter Play.",
+        "it": "Collezione {shape} completata! Una nuova cornice per il tuo"
+        " profilo, in Play.",
+        "es": "¡Colección {shape} completada! Un nuevo marco para tu perfil,"
+        " en Play.",
+        "fr": "Collection {shape} terminée ! Un nouveau cadre pour ton profil,"
+        " dans Play.",
     },
     # The game's teams (TASK-296 C): the shape's name first, in the phone's
     # language, then the news; {n} is the piece, or the pieces missing.
@@ -312,8 +402,54 @@ TEXTS: dict[str, dict[str, str]] = {
         "fr": "Tu as gagné le concours MuW ! Ta publication a reçu le plus de"
         " réactions.",
     },
+    # The monthly challenges (TASK-343, CONCORSI.md §15): {theme} is the
+    # theme's title in the phone's language; the app opens the page of the
+    # challenge. A new one, to whoever has the pushes on; its last 3 days,
+    # to who published a drawing and entered none; the results, to who
+    # took part (the winner hears contest_won).
+    "contest_open": {
+        "en": "New MuW challenge: “{theme}”. Run your drawing and enter it"
+        " when you publish.",
+        "de": "Neue MuW-Challenge: „{theme}“. Lauf deine Zeichnung und melde sie"
+        " beim Veröffentlichen an.",
+        "it": "Nuova sfida MuW: «{theme}». Corri il tuo disegno e iscrivilo quando"
+        " lo pubblichi.",
+        "es": "Nuevo reto MuW: «{theme}». Corre tu dibujo e inscríbelo al"
+        " publicarlo.",
+        "fr": "Nouveau défi MuW : « {theme} ». Cours ton dessin et inscris-le en"
+        " le publiant.",
+    },
+    "contest_last_days": {
+        "en": "3 days left for the MuW challenge “{theme}”: publish a run and"
+        " enter it!",
+        "de": "Noch 3 Tage für die MuW-Challenge „{theme}“: veröffentliche einen"
+        " Lauf und melde ihn an!",
+        "it": "Mancano 3 giorni alla sfida MuW «{theme}»: pubblica una corsa e"
+        " iscrivila!",
+        "es": "Quedan 3 días para el reto MuW «{theme}»: ¡publica una carrera e"
+        " inscríbela!",
+        "fr": "Plus que 3 jours pour le défi MuW « {theme} » : publie une course"
+        " et inscris-la !",
+    },
+    "contest_results": {
+        "en": "The MuW challenge “{theme}” is over: see who won!",
+        "de": "Die MuW-Challenge „{theme}“ ist vorbei: sieh nach, wer gewonnen" " hat!",
+        "it": "La sfida MuW «{theme}» è finita: guarda chi ha vinto!",
+        "es": "El reto MuW «{theme}» ha terminado: ¡mira quién ha ganado!",
+        "fr": "Le défi MuW « {theme} » est terminé : découvre qui a gagné !",
+    },
     # Group runs (TASK-309, docs/EVENTI.md §8): {title} is the group run's,
     # {name} its organiser. No time: the server does not know the phone's.
+    # A planned live that started, to who asked «Remind me» (TASK-468 part
+    # A2b; en and it approved by the user 2026-11-12, the others in the same
+    # sense).
+    "planned_live_started": {
+        "en": "{name} is live: {title}",
+        "de": "{name} ist live: {title}",
+        "it": "{name} è live: {title}",
+        "es": "{name} está en directo: {title}",
+        "fr": "{name} est en live : {title}",
+    },
     "group_run_soon": {
         "en": "{title} starts soon: see you at the start!",
         "de": "{title} beginnt gleich: wir sehen uns am Start!",
@@ -351,6 +487,78 @@ TEXTS: dict[str, dict[str, str]] = {
         "es": "{name} quiere enviarte un mensaje.",
         "fr": "{name} veut t'envoyer un message.",
     },
+    # A message with an attachment (TASK-333, approved 2026-10-29): what it
+    # carries, or with a text the text after its sign.
+    "message_photo": {
+        "en": "{name}: 📷 Photo",
+        "de": "{name}: 📷 Foto",
+        "it": "{name}: 📷 Foto",
+        "es": "{name}: 📷 Foto",
+        "fr": "{name} : 📷 Photo",
+    },
+    "message_video": {
+        "en": "{name}: 🎬 Video",
+        "de": "{name}: 🎬 Video",
+        "it": "{name}: 🎬 Video",
+        "es": "{name}: 🎬 Vídeo",
+        "fr": "{name} : 🎬 Vidéo",
+    },
+    "message_drawing": {
+        "en": "{name}: 🗺️ Drawing",
+        "de": "{name}: 🗺️ Zeichnung",
+        "it": "{name}: 🗺️ Disegno",
+        "es": "{name}: 🗺️ Dibujo",
+        "fr": "{name} : 🗺️ Dessin",
+    },
+    "message_photo_text": {
+        language: "{name}" + (" : " if language == "fr" else ": ") + "📷 {text}"
+        for language in ("en", "de", "it", "es", "fr")
+    },
+    "message_video_text": {
+        language: "{name}" + (" : " if language == "fr" else ": ") + "🎬 {text}"
+        for language in ("en", "de", "it", "es", "fr")
+    },
+    "message_drawing_text": {
+        language: "{name}" + (" : " if language == "fr" else ": ") + "🗺️ {text}"
+        for language in ("en", "de", "it", "es", "fr")
+    },
+    # A message with a post (TASK-455, ADR-0382; «🗺️ Post» approved
+    # 2026-11-12): that it carries one and nothing of it, since who receives
+    # it may not be among those who see the post.
+    "message_post": {
+        "en": "{name}: 🗺️ Post",
+        "de": "{name}: 🗺️ Beitrag",
+        "it": "{name}: 🗺️ Post",
+        "es": "{name}: 🗺️ Publicación",
+        "fr": "{name} : 🗺️ Publication",
+    },
+    "message_post_text": {
+        language: "{name}" + (" : " if language == "fr" else ": ") + "🗺️ {text}"
+        for language in ("en", "de", "it", "es", "fr")
+    },
+    # A live share sent in a message (TASK-468 part A1b, ADR-0381; en and it
+    # approved by the user 2026-11-12, the others with the same sense).
+    "message_live": {
+        "en": "{name} is sharing a live activity with you",
+        "de": "{name} teilt eine Live-Aktivität mit dir",
+        "it": "{name} ti condivide un'attività dal vivo",
+        "es": "{name} comparte contigo una actividad en directo",
+        "fr": "{name} partage une activité en direct avec toi",
+    },
+    # An item of gear past the limit its owner set (TASK-486 part G): to the
+    # owner only, in the bell. No number: the limit is in the owner's units.
+    # The five texts approved by the user on 2026-11-23.
+    "gear_limit": {
+        "en": "{title} reached the limit you set.",
+        "de": "{title} hat das Limit erreicht, das du festgelegt hast.",
+        "it": "{title} ha raggiunto il limite che hai scelto.",
+        "es": "{title} ha llegado al límite que pusiste.",
+        "fr": "{title} a atteint la limite que tu as fixée.",
+    },
+    "message_live_text": {
+        language: "{name}" + (" : " if language == "fr" else ": ") + "🔴 {text}"
+        for language in ("en", "de", "it", "es", "fr")
+    },
 }
 
 
@@ -365,24 +573,41 @@ def text_of(event: PushEvent, name: str, language: str | None) -> str:
     which: str = event.kind
     if event.kind == "reaction" and event.reaction == "super_like":
         which = "super_like"
+    if event.kind == "edition_up" and event.number == GOLD_RUNS:
+        which = "edition_up_gold"
+    if event.kind == "message" and event.attachment is not None:
+        which = f"message_{event.attachment}" + ("_text" if event.text else "")
     texts = TEXTS[which]
     template = texts.get(language or "en", texts["en"])
     names = event.names or {}
+    named = names.get(language or "en") or names.get("en", "")
     return template.format(
         name=name,
         emoji=REACTION_EMOJI.get(event.reaction or "", ""),
         text=quoted(event.text),
         title=quoted(event.text),
-        shape=names.get(language or "en") or names.get("en", ""),
+        shape=named,
+        theme=named,
         n="" if event.number is None else event.number,
     )
 
 
 def data_of(event: PushEvent, actor_public_id: UUID, actor_name: str) -> dict[str, str]:
-    """What the app opens when the notification is touched: the group run,
-    the challenge, the drawing, or the profile of who acted."""
+    """What the app opens when the notification is touched: the monthly
+    challenge, the group run, the challenge of the game, the drawing, or
+    the profile of who acted."""
+    if event.contest_id is not None:
+        return {"kind": event.kind, "contest_id": str(event.contest_id)}
+    if event.gear_id is not None:
+        return {"kind": event.kind, "gear_id": str(event.gear_id)}
     if event.group_run_id is not None:
         return {"kind": event.kind, "group_run_id": str(event.group_run_id)}
+    if event.planned_live_id is not None:
+        return {
+            "kind": event.kind,
+            "planned_live_id": str(event.planned_live_id),
+            "share_id": str(event.live_share_id or ""),
+        }
     if event.challenge_id is not None:
         return {"kind": event.kind, "challenge_id": str(event.challenge_id)}
     if event.drawing_id is not None:
@@ -463,6 +688,8 @@ class Pusher:
             if (own and event.kind not in OWN_KINDS) or not self._first(event):
                 return
             self._tell(event)
+            if event.kind in BELL_ONLY:
+                return
             messages = self.messages(event)
             if messages:
                 assert self.run is not None
@@ -594,8 +821,7 @@ def _sees(conn: Connection[DictRow], viewer_id: int, drawing_id: UUID) -> bool:
     from shaperoute_api.drawings import drawing_seen_sql
 
     row = conn.execute(
-        "SELECT 1 FROM drawings d JOIN runs r ON r.id = d.run_id"
-        f" WHERE d.id = %s AND {drawing_seen_sql('%s')}",
+        f"SELECT 1 FROM drawings d WHERE d.id = %s AND {drawing_seen_sql('%s')}",
         (drawing_id, viewer_id),
     ).fetchone()
     return row is not None
@@ -659,8 +885,7 @@ def notify_owner(
         return
     owner = _one(
         pusher,
-        "SELECT r.user_id AS id FROM drawings d JOIN runs r ON r.id = d.run_id"
-        " WHERE d.id = %s",
+        "SELECT user_id AS id FROM drawings WHERE id = %s",
         (wanted,),
     )
     if owner is not None:

@@ -1,9 +1,8 @@
 /**
  * «Feed» with the drawings the members publish (TASK-118, ADR-0227): the
- * page reads them with the account, shows them on the cards of the
- * examples, opens one whole on a tap, and falls back to the examples when
- * there are none. The examples themselves, the ads and the maps are in
- * FeedScreen.test.tsx.
+ * page reads them with the account, opens one whole on a tap, and says
+ * so when there are none: the made-up examples are no longer shown
+ * (2026-11-22). The ads and the maps are in FeedScreen.test.tsx.
  */
 import page from "@shaperoute/shared-types/fixtures/feed.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
@@ -36,9 +35,19 @@ let feedAnswer: () => Response | Promise<Response>;
 /** What the page asked the API, but for the contest, which it asks as it
  * opens to know whether to show its card (TASK-299). */
 function asked(): string[] {
-  return fetchSpy.mock.calls
-    .map(([url]) => String(url).replace(API, ""))
-    .filter((path) => path !== "/contests/current");
+  return (
+    fetchSpy.mock.calls
+      .map(([url]) => String(url).replace(API, ""))
+      // The contest's card, MuW Style (TASK-384) and the «Live» row
+      // (TASK-468) are read beside the feed.
+      .filter(
+        (path) =>
+          path !== "/contests/current" &&
+          !path.startsWith("/style") &&
+          !path.startsWith("/muw-routes") &&
+          !path.startsWith("/lives"),
+      )
+  );
 }
 
 function Around({
@@ -88,21 +97,28 @@ afterEach(() => {
 test("signed in, the page shows the drawings the members published", async () => {
   await render(
     <Around>
-      <FeedScreen onOpen={() => {}} near={[46.0671, 11.1214]} />
+      <FeedScreen onOpen={() => {}} />
     </Around>,
   );
   expect(await screen.findByText("Ada_runs")).toBeOnTheScreen();
   expect(screen.getByText("Sunday heart by the river")).toBeOnTheScreen();
   expect(screen.getByText("Trento")).toBeOnTheScreen();
-  expect(screen.getByText("Star · 4.0 km · 19 min")).toBeOnTheScreen();
+  // Its numbers in boxes, as on its page (TASK-410 part F).
+  expect(screen.getAllByTestId("feed-summary")[0]).toHaveTextContent(
+    /4\.00 km.*19:00.*4:45 \/km.*280 kcal/,
+  );
   // The second, a word on a bike without a title, named by its day.
   expect(screen.getByText("adam.trento")).toBeOnTheScreen();
-  expect(screen.getByText("Bike · ciao · 6.1 km · 34 min")).toBeOnTheScreen();
+  // On a bike, its speed in place of the pace (TASK-410 part F).
+  expect(screen.getAllByTestId("feed-summary")[1]).toHaveTextContent(
+    /6\.\d\d km.*km\/h.*125 kcal/,
+  );
   expect(screen.queryByTestId("feed-loading")).toBeNull();
   expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
-  // Asked once, with the token, from where the phone is.
-  expect(asked()).toEqual(["/feed?lat=46.0671&lon=11.1214"]);
-  expect(fetchSpy.mock.calls[0][1]).toMatchObject({
+  // Asked once, with the token, never with the phone's position.
+  expect(asked()).toEqual(["/feed?filter=all"]);
+  const feedCall = fetchSpy.mock.calls.find(([url]) => String(url).includes("/feed"));
+  expect(feedCall?.[1]).toMatchObject({
     headers: { Authorization: `Bearer ${SESSION.token}` },
   });
 });
@@ -118,7 +134,9 @@ test("while the first page comes, no example takes its place", async () => {
       <FeedScreen onOpen={() => {}} />
     </Around>,
   );
-  expect(screen.getByTestId("feed-loading")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("feed-loading", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
   expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
   expect(screen.queryByTestId("feed-post")).toBeNull();
   await act(async () => release(Response.json(page)));
@@ -126,7 +144,7 @@ test("while the first page comes, no example takes its place", async () => {
   expect(screen.getByText("Ada_runs")).toBeOnTheScreen();
 });
 
-test("a tap on a member's drawing opens it whole, not as a route of «Explore»", async () => {
+test("a tap on a member's drawing opens its page, not a route of «Explore»", async () => {
   const open = jest.fn();
   const onOpen = jest.fn();
   await render(
@@ -135,10 +153,17 @@ test("a tap on a member's drawing opens it whole, not as a route of «Explore»"
     </Around>,
   );
   await fireEvent.press(await screen.findByText("Sunday heart by the river"));
-  expect(open).toHaveBeenCalledWith(STAR);
+  // The page of the post (TASK-410), over the feed; not the map. The tap
+  // waits to know it is alone (TASK-454 part B).
+  expect(await screen.findByTestId("post-page")).toBeOnTheScreen();
+  expect(open).not.toHaveBeenCalled();
   expect(onOpen).not.toHaveBeenCalled();
-  await fireEvent.press(screen.getByText("adam.trento"));
-  expect(open).toHaveBeenLastCalledWith(WORD);
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(screen.queryByTestId("post-page")).toBeNull();
+  // The second card; its author's name opens the profile (TASK-399).
+  await fireEvent.press(screen.getAllByTestId("feed-post")[1]!);
+  expect(await screen.findByTestId("post-page")).toBeOnTheScreen();
+  expect(open).not.toHaveBeenCalled();
 });
 
 test("a drawing that did not open says why, above the list", async () => {
@@ -152,30 +177,33 @@ test("a drawing that did not open says why, above the list", async () => {
   ).toBeOnTheScreen();
 });
 
-test("with nothing published yet, the examples take the place of the drawings", async () => {
+test("with nothing published yet, the page says so, with no made-up drawing", async () => {
   feedAnswer = () => Response.json({ posts: [], next: null });
-  const onOpen = jest.fn();
   await render(
     <Around>
-      <FeedScreen onOpen={onOpen} />
+      <FeedScreen onOpen={() => {}} />
     </Around>,
   );
-  expect(await screen.findByText(SAMPLE_FEED[0].user)).toBeOnTheScreen();
-  expect(screen.queryByText("Ada_runs")).toBeNull();
-  // An example opens its route, as before.
-  await fireEvent.press(screen.getByText(SAMPLE_FEED[0].title));
-  expect(onOpen).toHaveBeenCalledWith(SAMPLE_FEED[0]);
+  expect(await screen.findByTestId("feed-no-posts-all")).toBeOnTheScreen();
+  expect(screen.getByText("Nobody has published anything yet.")).toBeOnTheScreen();
+  expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
+  expect(screen.queryByTestId("feed-post")).toBeNull();
+  expect(screen.queryByTestId("feed-log-in")).toBeNull();
 });
 
-test("an API without a feed, or one that does not answer, leaves the examples", async () => {
+test("an answer that does not come offers to ask again, in place of the examples", async () => {
   feedAnswer = () => Response.json(apiError("http_error"), { status: 404 });
   await render(
     <Around>
       <FeedScreen onOpen={() => {}} />
     </Around>,
   );
-  expect(await screen.findByText(SAMPLE_FEED[0].user)).toBeOnTheScreen();
-  expect(asked()).toEqual(["/feed"]);
+  expect(await screen.findByTestId("feed-failed")).toBeOnTheScreen();
+  expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
+  feedAnswer = () => Response.json(page);
+  await fireEvent.press(screen.getByText("Try again"));
+  expect(await screen.findByText("Ada_runs")).toBeOnTheScreen();
+  expect(asked()).toEqual(["/feed?filter=all", "/feed?filter=all"]);
 });
 
 test("built behind «Draw», the page asks for no drawings until it is on the screen", async () => {
@@ -185,15 +213,16 @@ test("built behind «Draw», the page asks for no drawings until it is on the sc
     </Around>,
   );
   expect(asked()).toEqual([]);
-  // Not on the screen, and nothing read yet: the examples.
-  expect(screen.getByText(SAMPLE_FEED[0].user)).toBeOnTheScreen();
+  // Not on the screen, and nothing read yet: no drawing, and no made-up one.
+  expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
+  expect(screen.queryByTestId("feed-post")).toBeNull();
   await rerender(
     <Around>
       <FeedScreen onOpen={() => {}} active />
     </Around>,
   );
   expect(await screen.findByText("Ada_runs")).toBeOnTheScreen();
-  expect(asked()).toEqual(["/feed"]);
+  expect(asked()).toEqual(["/feed?filter=all"]);
 });
 
 test("the end of the list asks for the next page after the cursor", async () => {
@@ -212,7 +241,12 @@ test("the end of the list asks for the next page after the cursor", async () => 
     screen.getByTestId("feed-list").props.onEndReached();
   });
   expect(await screen.findByText("Another")).toBeOnTheScreen();
-  await waitFor(() => expect(asked()).toEqual(["/feed", `/feed?cursor=${page.next}`]));
+  await waitFor(() =>
+    expect(asked()).toEqual([
+      "/feed?filter=all",
+      `/feed?filter=all&cursor=${page.next}`,
+    ]),
+  );
   // The drawings read so far all stay.
   expect(screen.getByText("Ada_runs")).toBeOnTheScreen();
 });

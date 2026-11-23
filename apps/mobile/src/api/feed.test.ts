@@ -1,7 +1,8 @@
 import page from "@shaperoute/shared-types/fixtures/feed.json";
-import { FEED_PAGE_SIZE } from "@shaperoute/shared-types";
+import { FEED_PAGE_SIZE, type FeedPost } from "@shaperoute/shared-types";
 
 import { answers, apiError } from "../account/testing";
+import { shownPost } from "../feed/feedPosts";
 import { feedPath, fetchFeed, isFeedPage, isFeedPost } from "./feed";
 
 const URL = "http://api";
@@ -32,14 +33,61 @@ test("the example of the API is what the app reads", () => {
   expect(FEED_PAGE_SIZE).toBe(20);
 });
 
+test.each(["rowing", "sledging"])(
+  "a page with a post of %s, an activity this app does not know, loads; the post shows as a run",
+  (activity) => {
+    // The guard drops the field from the body it reads: its own copy.
+    const read = structuredClone(page);
+    read.posts[1] = { ...read.posts[1], activity };
+    expect(isFeedPage(read)).toBe(true);
+    expect(read.posts).toHaveLength(2);
+    expect(read.posts[1]).not.toHaveProperty("activity");
+    expect(shownPost(read.posts[1] as FeedPost).activity).toBe("running");
+    // The other post keeps its own.
+    expect(read.posts[0].activity).toBe("running");
+  },
+);
+
+test.each(["skiing", "xc_skiing"])(
+  "a post of %s keeps it, and its card says its sport (TASK-375 B2)",
+  (activity) => {
+    const read = structuredClone(page);
+    read.posts[1] = { ...read.posts[1], activity };
+    expect(isFeedPage(read)).toBe(true);
+    expect(read.posts[1].activity).toBe(activity);
+    expect(shownPost(read.posts[1] as FeedPost).activity).toBe(activity);
+  },
+);
+
+test("a page with a day on the snow comes whole from the API", async () => {
+  const body = structuredClone(page);
+  body.posts[0] = { ...body.posts[0], activity: "skiing" };
+  const fetchFn = answers({ status: 200, body });
+  const got = await fetchFeed(URL, TOKEN, {}, options(fetchFn));
+  expect(got.kind === "ok" && got.value.posts).toHaveLength(2);
+});
+
 test("the query says where the phone is, then the cursor", () => {
   expect(feedPath({})).toBe("/feed");
   expect(feedPath({ cursor: null, near: null })).toBe("/feed");
-  expect(feedPath({ near: [46.0671, 11.1214] })).toBe("/feed?lat=46.0671&lon=11.1214");
+  expect(feedPath({ near: [46.0671, 11.1214] })).toBe("/feed?lat=46.07&lon=11.12");
   expect(feedPath({ cursor: page.next })).toBe(`/feed?cursor=${page.next}`);
   expect(feedPath({ cursor: page.next, near: [46.0671, 11.1214] })).toBe(
-    `/feed?lat=46.0671&lon=11.1214&cursor=${page.next}`,
+    `/feed?lat=46.07&lon=11.12&cursor=${page.next}`,
   );
+});
+
+test("the point never leaves the phone with more than two decimals", () => {
+  expect(feedPath({ near: [-33.86785, 151.20732] })).toBe(
+    "/feed?lat=-33.87&lon=151.21",
+  );
+  expect(feedPath({ near: [46.5, -0.001] })).toBe("/feed?lat=46.5&lon=0");
+  // Every page of one read says the same point.
+  const near: [number, number] = [46.0671, 11.1214];
+  const first = new URLSearchParams(feedPath({ near }).split("?")[1]);
+  const next = new URLSearchParams(feedPath({ near, cursor: page.next }).split("?")[1]);
+  expect(next.get("lat")).toBe(first.get("lat"));
+  expect(next.get("lon")).toBe(first.get("lon"));
 });
 
 test("a page is asked with the token, the next after the cursor", async () => {
@@ -62,10 +110,10 @@ test("a page is asked with the token, the next after the cursor", async () => {
   );
   expect(second).toEqual({ kind: "ok", value: { ...page, next: null } });
   const [url, init] = fetchFn.mock.calls[0];
-  expect(url).toBe("http://api/feed?lat=46.0671&lon=11.1214");
+  expect(url).toBe("http://api/feed?lat=46.07&lon=11.12");
   expect(init).toMatchObject({ method: "GET", headers: AUTH });
   expect(fetchFn.mock.calls[1][0]).toBe(
-    `http://api/feed?lat=46.0671&lon=11.1214&cursor=${page.next}`,
+    `http://api/feed?lat=46.07&lon=11.12&cursor=${page.next}`,
   );
 });
 

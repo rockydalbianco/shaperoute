@@ -35,14 +35,14 @@ test.each(DOG_HEAD)("in «%s» the field reads every shape's name back", (langua
 });
 
 test.each([
-  ["de", "Kreis, Herz, Stern, ", ", Donut oder Sonne"],
+  ["de", "Kreis, Herz, Stern, ", ", Schwan, Windmühle oder Weinglas"],
   [
     "it",
     "cerchio, cuore, stella, ",
-    ", albero di Natale, faccina, fantasmino, ciambella o sole",
+    ", sole, aereo, ancora, testa d'orso, bicicletta, ciliegie, tazzina di caffè, quadrifoglio, torre di Pisa, nota musicale, pera, barca a vela, cigno, mulino a vento o calice",
   ],
-  ["es", "círculo, corazón, estrella, ", ", dónut o sol"],
-  ["fr", "cercle, cœur, étoile, ", ", donut ou soleil"],
+  ["es", "círculo, corazón, estrella, ", ", cisne, molino de viento o copa de vino"],
+  ["fr", "cercle, cœur, étoile, ", ", cygne, moulin à vent ou verre à vin"],
 ] as const)("in «%s» the shapes to suggest are in it", (language, first, last) => {
   saveLanguageChoice(language);
   expect(shapeList().startsWith(first)).toBe(true);

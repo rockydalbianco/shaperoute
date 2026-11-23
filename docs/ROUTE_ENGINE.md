@@ -631,6 +631,32 @@ within 2 km: too few roads, the shape collapses onto a single road node
 wherever it is placed» (TASK-277, aggiunta ad ADR-0040). Prima era un
 `ValueError` che finiva in `engine_error`.
 
+### I cancelli chiusi sulla rete a piedi (TASK-421)
+
+Un cancello è un **nodo** di OpenStreetMap con i suoi tag; il filtro
+Overpass della rete `foot` sceglie le vie e non lo vede, e OSMnx
+semplificando buttava i tag dei nodi: nelle zone fatte prima di TASK-421
+un cancello chiuso è un punto qualunque di un arco, e il percorso ci passa
+(l'utente l'ha trovato correndo, 2026-11-08). Da TASK-421 (ADR-0349) il
+download della rete `foot` non semplifica, chiede i tag dei nodi `barrier`,
+`access`, `foot`, `locked` e `foot` sulle vie, e `foot_ways`
+(`networks/foot.py`) toglie prima di semplificare:
+
+- i nodi che bloccano chi va a piedi (`blocks_foot`): `foot=no|private`;
+  `fence` o `wall` come nodo; `gate`, `lift_gate`, `swing_gate` e ogni altra
+  barriera con `access=no|private` o `locked=yes`. Un cancello senza tag,
+  un `kissing_gate`, uno `stile`, un dissuasore o un cordolo passano, anche
+  con `access=no` (parla ai veicoli); `foot=yes|designated|permissive|
+  destination` vince su tutto. Togliere il nodo taglia la via lì: si passa
+  o no, niente tratti «a piedi» (ADR-0343, punto 2);
+- le vie chiuse (`closed_to_foot`): `foot=no|private`, o `access=no|private`
+  senza un `foot` che apre. `access=destination|customers|permit` restano.
+
+La rete `hike` passa dallo stesso download e perde gli stessi nodi; `bike`,
+`mtb` e `roller` hanno le loro regole. Le zone in cache fatte prima restano
+coi cancelli finché non si rifanno (`MAPS.md`, «I cancelli chiusi»;
+`DEPLOY.md` F.15). Misure e banco prima/dopo in `tasks/TASK-421.md`.
+
 ### La rete della bici (TASK-190)
 
 Una richiesta `activity: "cycling"` (10–30 km, `DISTANCE_LIMITS_M` in
@@ -714,6 +740,103 @@ Su 4 percorsi appena pianificati (Trento, Bologna, con le alternative) le
 indicazioni ricavate dai punti sono identiche a quelle del motore: nodo,
 svolta, via, `along` e distanza.
 
+### Il disegno ancorato e i tratti (TASK-347 parte A)
+
+Chi disegna a mano sulla mappa (TASK-331) vuole «la strada che disegna
+questa forma qui», non una forma spostata, girata e riscalata dove le
+strade la disegnano meglio (§5). Dal TASK-347 (ADR-0300) il motore ha una
+**modalità ancorata**, in due moduli nuovi accanto ai suoi:
+`stroke_match.py` e `anchored.py`. Nessun file del motore di prima cambia:
+i due moduli restano fuori dall'impronta del motore che l'API usa per
+tenere gli esempi disegnati (`route_store.ANCHORED_ONLY`, come
+`SWIM_ONLY` per il nuoto), perché niente di ciò che disegnano viene mai
+tenuto: un disegno ancorato è dell'utente, come il contorno di una foto.
+
+**Un tratto** (`stroke_match.snap_stroke(line, graph, activity, fit,
+start_node)`): la stessa procedura di §4, zone e corridoio, su una
+polilinea **aperta** in WGS84, senza chiusura e senza ricerca. Il percorso
+parte da `start_node`, il nodo dove è finito il tratto prima (così i tratti
+si collegano lungo le strade da soli), o dal nodo più vicino al primo
+punto; passa per una zona attorno a ogni **ancora** del tratto e finisce
+nella zona dell'ultimo punto. Le ancore sono i vertici che Douglas-Peucker
+tiene entro un quarto della fascia (`thin`), al più 64 (`MAX_ANCHORS`,
+quanti i punti di una forma): un tratto di centinaia di punti costa al più
+64 passi di routing. Dove il tratto torna su sé stesso entro la fascia le
+strade appena usate non costano di più (come i tratti di una forma,
+ADR-0039): si torna sulla stessa strada. Gli speroni interni si potano
+come per una forma; restano le **punte** (dove il tratto gira più di 60°)
+e i due capi, che sono ciò che lo disegna, e il capo finale è da dove
+parte il tratto dopo. Il risultato (`StrokeMatch`) dà i punti del
+percorso, per ogni punto disegnato la distanza dal percorso (`away_m`: l'app
+colora i punti lontani) e `off_roads`, vero quando la distanza media
+punto→nodo supera la soglia della rete rada di §4 (`SPARSE_THRESHOLD_M`,
+150 m): il tratto è in campagna, l'aggancio è un'ipotesi. Tutti i punti
+col medesimo nodo più vicino, e nessun altro nodo di partenza:
+`CollapsedShapeError`, come per un contorno. Un grafo della rete sbagliata
+è rifiutato come sempre (`check_network`).
+
+**Il magnete** (`fit`, in [0, 1]) è la forza con cui le strade seguono il
+disegno: raggio delle zone e fascia del corridoio sono una stessa quota
+della **lunghezza del tratto**, fra lo **0,5 %** a `fit` 0 (`TIGHT_SHARE`,
+fedele al disegno: su 3 km, 15 m, un dito a zoom 16) e il **2 %** a `fit` 1
+(`LOOSE_SHARE`, i valori di oggi, `ZONE_RADIUS` e `CORRIDOR_BAND`: 60 m, un
+dito a zoom 13–14, dove si disegnano i 5 km), in proporzione; mai meno di
+**10 m** (`FLOOR_M`: un dito non è più preciso, e una fascia di un metro
+peserebbe ogni strada solo per la sua distanza). Senza `fit`, 1
+(`DEFAULT_FIT`): un disegno ancorato senza magnete è il tracciamento di
+`--no-optimize` (TASK-017), punto per punto. Il magnete stretto segue il
+dito anche dove fa un giro che la strada dritta non fa; quello largo prende
+la strada dritta a 60 m dal dito. Le due quote e il pavimento sono scelte
+dell'agente su delega dell'utente (ADR-0300, aggiunta parte A), da tarare
+sul telefono nella parte C.
+
+**Il disegno intero** (`anchored.plan_anchored(shape, name, start,
+distance_m, source, fit=, activity=, one_way=, word=)`): `plan_shape`
+senza ricerca. La forma si proietta come il piazzamento iniziale (§3):
+primo punto sulla partenza, dritta, alla scala per cui il perimetro è la
+distanza chiesta (il doppio per una linea `one_way`, di cui si tiene
+l'andata, TASK-041); si aggancia una volta con zone e fascia del magnete;
+la distanza si **controlla e non si corregge**: oltre il ±10 %
+(`DISTANCE_TOLERANCE`) il risultato lo dice in `warnings` («on the roads
+the drawing is 5.6 km, 12% longer than the 5 km drawn; anchored, it is not
+rescaled») e il percorso arriva comunque. Riscalare la figura ancorata per
+far tornare la distanza tradirebbe «l'ho disegnato qui» (ADR-0300). Una
+parola a penna alzata si traccia lettera per lettera con `pen_up.trace` e
+le sue zone (il magnete non la tocca). I passi dopo il tracciamento
+(controlli, misure, `on_foot`) ripetono quelli di `plan_shape`, come fa
+già `ShapeJob.here` (ADR-0071). Il piano (`AnchoredPlan`, un `Plan` senza
+`search`) porta i nodi del percorso, per le indicazioni, e **la forma come
+piazzata** (`placed`): l'API la manda all'app come `placed_outline`, una
+linea chiusa, o una per lettera o pezzo a penna alzata (`placed_lines`), e
+fa lo stesso per un percorso cercato con la forma dove la ricerca l'ha
+messa (`plan.search.best.shape`): così il disegno resta sulla mappa come
+fantasma sotto il percorso, e non sparisce più quando il percorso arriva
+(TASK-282, assorbito). Sull'acqua niente ancoraggio: non ci sono strade
+(`ANCHORED_ON_LAND_ONLY`); il magnete solo con un disegno ancorato
+(`FIT_WITH_ANCHORED_ONLY`): la ricerca ha le sue zone (ADR-0039).
+
+Da riga di comando, offline coi grafi in cache (§7):
+
+```
+python -m route_engine.anchored --stroke tratto.json --from 46.0702,11.1265 \
+    --fit 0.5 --cache-dir data/cache
+python -m route_engine.anchored --shape heart --distance 5000 \
+    --start 46.0671,11.1214 --fit 0.5 --out heart_anchored.gpx --json
+```
+
+`--stroke` legge una lista JSON di punti `[lat, lon]` (o il corpo di una
+`StrokeMatchRequest`) e stampa il `StrokeMatch` come JSON; `--shape` e
+`--outline` stampano il resoconto e, con `--json`, il risultato con
+`placed_outline`. I tempi misurati stanno in `tasks/TASK-347.md`, parte A.
+
+Test deterministici: `tests/test_stroke_match.py` (griglie: un tratto
+dritto, una W con le punte, il tratto che parte dal nodo di prima, magnete
+stretto contro largo, andata e ritorno, campagna, un nodo solo, 451 punti
+in 64 ancore, una strada vera di Levico), `tests/test_anchored.py` (il
+disegno dove è, la distanza non corretta, lo stesso tracciamento di
+`--no-optimize`, una parola a penna alzata, la CLI) e
+`tests/test_contract_anchored.py` (le fixture del contratto).
+
 ## 5. Ottimizzazione e somiglianza
 
 La forma non si disegna a scala e rotazione fisse: si adatta alle strade
@@ -790,6 +913,43 @@ il budget compra un altro tracciamento: era l'1,3 % dei tracciamenti. La
 ricerca fa gli stessi tentativi di oggi più qualcuno in coda alla fase: dove
 converge è identica, dove non converge non peggiora. Lo script che rifà le
 misure è `tests/measure_stop_earlier.py`.
+
+### Il piazzamento di prima (TASK-297 A2)
+
+Dopo un cambio del motore l'archivio dell'API (ADR-0256, `API.md`) ha
+percorsi disegnati dal motore di prima, che non rispondono più. Ne tiene
+il piazzamento: partenza, rotazione, fase e scala della ricerca vicino
+alla partenza. `search` prende quel piazzamento, facoltativo (`first`, e
+la sua scala `first_scale_m`; senza, la scala iniziale):
+
+1. **Per primo**: si traccia e si riscala verso la distanza come ogni
+   piazzamento, fino a 4 tracciamenti, anche se è inclinato o parte da un
+   punto spostato. Se il percorso è buono la ricerca finisce lì.
+2. **Se non è buono, la ricerca di sempre**: i suoi tracciamenti restano
+   da parte (`Search.set_aside`, contati ma non scelti) e la ricerca
+   riparte come senza `first`, con il suo budget intero: stessi
+   tentativi, stesso risultato, 1–4 tracciamenti in più. Sceglierli fra
+   gli altri è stato provato e scartato: riscalato verso la distanza, il
+   cerchio della città finta ha dato un tracciato più economico del
+   migliore ma sotto 0,60 di somiglianza, e il piano che la ricerca dava
+   è stato rifiutato.
+3. **Senza `first`** la ricerca è quella di prima, tracciamento per
+   tracciamento: `tests/test_first_placement.py` ne tiene le impronte,
+   prese su `main` prima del cambio.
+
+`plan_shape` e `plan_route` passano `first` alla ricerca vicino alla
+partenza; la ricerca lontana (ADR-0040) non lo prende, e un piazzamento a
+più di 500 m dalla partenza è rifiutato (`ValueError`). Lo stesso
+piazzamento dalla stessa partenza rifà lo stesso percorso: a Trento 36 su
+36 (ADR-0257); nei test sulla griglia, sui cuori inclinati di 30°, sul
+cerchio spostato di 500 m e sulle parole, in un tracciamento.
+Lo script che misura il pianificatore dell'API senza e con il piazzamento
+di prima, prima e dopo un cambio, è `tests/measure_first_placement.py`: sulle
+17 forme del catalogo in quattro luoghi finti (griglia, città finta,
+griglia girata di 30°, Levico) i 68 piani senza `first` sono quelli di
+prima; con il piazzamento di prima i 19 buoni danno lo stesso percorso con
+19 tracciamenti della partenza invece di 56, i 23 non buoni lo stesso
+percorso con 714 invece di 657.
 
 ### Forme inclinate (TASK-232)
 
@@ -929,6 +1089,17 @@ Le 8 richieste fatte dall'iPhone il 2026-10-01, rifatte dal registro,
 danno lo stesso percorso scelto punto per punto. Dove le partenze vicine
 sono poche (una sola a Levico, via Montebello) le alternative possono
 mancare: l'app mostra allora il percorso da solo, come prima.
+
+**Il piano della partenza, appena c'è** (TASK-435, ADR-0361):
+`plan_nearby(..., on_first=...)` chiama `on_first` una volta col piano
+della partenza dell'utente appena è pronto, mentre le partenze vicine
+stanno ancora calcolando: l'API lo mostra all'app prima della risposta
+intera. Non lo chiama quando la partenza non ha un percorso, né quando non
+ci sono partenze vicine da aspettare (nessun nodo vicino, grafo oltre
+`NEARBY_MAX_NODES`, memoria): lì la risposta è già intera. Non cambia la
+risposta: la scadenza dei figli si calcola prima della chiamata, e scelta,
+alternative e punti restano gli stessi (`test_nearby_first.py`, e la riga
+di `SAME_ROUTES_AS`).
 
 ### Dove la forma viene meglio (TASK-234)
 
@@ -1460,6 +1631,19 @@ python -m route_engine --shape heart --distance 20000 \
 Con `--activity paddling` una forma del catalogo sull'acqua di un lago o
 del mare, 1–5 km, dalla riva (§8).
 
+Una camminata (TASK-371, ADR-0315) è una corsa sulla stessa rete foot, con
+le sue distanze, 1–30 km: `python -m route_engine.walking` prende gli
+argomenti di `python -m route_engine` senza `--activity`, controlla la
+distanza e disegna una corsa. `models.py` non la conosce: l'attività
+`walking` è dell'API (`walking.API_ACTIVITIES`), e `walking.py` resta fuori
+dall'impronta del motore (`route_store.WALK_ONLY`), quindi nessun percorso
+tenuto si ridisegna.
+
+```
+python -m route_engine.walking --shape heart --distance 5000 \
+    --start 46.0671,11.1214 --out heart_a_piedi_trento.gpx
+```
+
 Il GPX si apre in un visualizzatore (gpx.studio, geojson.io) e si guarda.
 Questo è il ciclo di lavoro di tutta la fase 1: **generare, guardare,
 correggere**. Finché non produce un cuore riconoscibile, non si costruisce
@@ -1530,6 +1714,19 @@ dell'API (`SUPPORTED_ACTIVITIES`, parte B). Sull'acqua si disegna solo una
 forma del catalogo: una parola, un'immagine o un contorno da file sono
 `InvalidRequestError` («on the water only a shape of the catalogue is
 drawn, not a word»).
+
+**Un disegno sull'acqua** (TASK-369 parte B, ADR-0313): «Edit the drawing»
+fa un disegno di ogni percorso, e la canoa lo pagaia con
+`drawn_water.plan_drawn_water(outline, distance_m, start, source, pen_up)`,
+un modulo nuovo accanto a `paddling.py`: lo stesso
+`water_fit.plan_on_water` di una forma (dove ci sta nella fascia vicino
+alla partenza, girato e riscalato, non esattamente dov'era disegnato), lo
+stesso `check_on_water`; i dettagli si fanno andata e ritorno, con la penna
+alzata i pezzi uno per uno. `paddling.py`, `water_fit.py` e `models.py` non
+cambiano: il rifiuto «not an image» lo toglie l'API per la sola canoa
+(`images.ImageRequest`). Il modulo resta fuori dall'impronta del motore
+(`route_store.DRAWN_WATER_ONLY`, come `ANCHORED_ONLY`), perché nessun
+percorso tenuto è un disegno: gli esempi tenuti restano.
 
 **Una forma a pezzi sull'acqua** (TASK-226, ADR-0188): con la penna alzata
 (`pen_up` nella richiesta, §2 «Pezzi staccati dal contorno») il contorno e
@@ -1636,3 +1833,162 @@ python -m route_engine.water --shape heart --distance 2000 \
     --water-file services/route-engine/tests/fixtures/water_coast.json \
     --out heart_coast.gpx
 ```
+
+### Il nuoto in acque libere (TASK-323 A1)
+
+L'acqua è quella della canoa, la fascia è **rovesciata** (ADR-0283): la
+canoa sta oltre i 200 m dalla riva al mare, chi nuota sta **fra 20 e 150 m
+dalla riva**, al mare e sui laghi. La forma piazzata è il percorso, dalla
+riva e ritorno, come per la canoa; il motore decide dove e quanto grande.
+130 m di fascia tengono una forma di circa mezzo chilometro, e un nuoto più
+lungo **la ripassa a giri** (scelta dell'utente del 2026-10-29, dopo i
+campioni): dalla riva, la forma una volta dopo l'altra, ritorno.
+
+- `swim_water.py` — **la fascia di chi nuota**: prende l'area di
+  `water.build_area` così com'è (acqua, terra, ostacoli, punti della riva) e
+  rifà solo tre cose. La fascia: l'acqua navigabile entro
+  `SwimBand.max_shore_m` dalla riva, meno `min_shore_m` dalla terra (scogli
+  compresi), 30 m dagli ostacoli come la canoa, e **200 m dai pericoli**
+  (`danger_margin_m`): porti, marine, bacini portuali (`leisure=marina`,
+  `landuse=harbour`, `water=harbour`) e le **foci** di fiumi e canali
+  (`water=river|canal`, solo il tratto entro 50 m dal lago o dal mare: più
+  su il fiume corre dietro la spiaggia e non toglie acqua a nessuno).
+  L'acqua dei tratti dalla riva (`wet`): entro `max_shore_m` dalla riva e
+  fuori dai 200 m dei pericoli, così anche il tratto resta coi bagnanti. Le
+  entrate: solo `beach` e `path`, non scivoli e moli dove ci sono barche, e
+  nessuna entro 200 m da un pericolo.
+- `swimming.py` — **la richiesta**: `SwimRequest` (partenza, distanza di
+  tutto il nuoto **0,5–3 km**, una forma del catalogo **o un contorno
+  disegnato a mano** come lo manda «Freehand», TASK-320, i giri, penna
+  alzata e `near` come sull'acqua della canoa), `plan_swimming` (la forma
+  con 128 punti, `water_fit.fit_shape` sull'area di chi nuota, i giri, gli
+  errori detti con le parole del nuoto) e
+  `check_in_band`: i controlli di `check_on_water` e in più nessun punto
+  oltre `max_shore_m` dalla riva, la forma (senza i tratti) ad almeno
+  `min_shore_m` dalla terra, tutto il giro a 200 m dai pericoli, entro 2 m
+  (i buffer sono poligoni: 200 m disegnati con 16 segmenti a quarto sono
+  corti fino a 1 m). Un nuoto che non li rispetta è un errore del motore.
+
+**I giri** (`swim_on`): un giro è piazzato come un percorso della canoa,
+tratti compresi, lungo la distanza diviso i giri; poi la forma si ripete
+dal punto dove arriva il tratto (`lapped`, che sposta anche i tratti a
+penna alzata di ogni giro), e il tratto si nuota una volta all'andata e una
+al ritorno. Con più di un giro i tratti sarebbero contati una volta a giro:
+un secondo piazzamento chiede il giro che, coi tratti del primo, fa la
+distanza, e si tiene il più vicino. Il nuoto intero sta entro il ±10%.
+
+- **Senza giri chiesti** il motore prende **i meno giri** in cui la forma
+  ci sta, da 1 a `MAX_LAPS` = 5: la forma più grande. Un giro più lungo di
+  quello che un errore ha già detto che ci sta non si prova.
+- **Con i giri chiesti** (`SwimRequest.laps`) la forma è grande quanto quei
+  giri la fanno: **è così che la si fa più grande o più piccola** senza
+  cambiare la distanza (richiesta dell'utente dello stesso giorno). Troppo
+  pochi giri, e l'errore dice in quanti ci sta («it fits in 3 laps»).
+- **Troppo lungo anche in 5 giri**: l'errore dice a quanti km ci sta in 5
+  giri del giro più lungo (`best_distance_m`), come per la canoa.
+- `SwimPlan.laps` e `SwimPlan.lap_m` (la forma, senza i tratti) dicono
+  com'è venuto; `RouteResult.points` è il nuoto intero, i giri uno dopo
+  l'altro, e `shape` è `None` per un disegno, come per un'immagine.
+
+**La canoa non cambia di un metro**: `water.py`, `water_fit.py`,
+`paddling.py` e `validation.py` sono quelli di prima, e nessun modulo che
+disegna altri percorsi importa i file del nuoto (il comando
+`python -m route_engine` sì, ma l'API non lo importa). L'impronta con cui
+`route_store` tiene gli esempi li lascia fuori (`SWIM_ONLY`, come
+`NOT_ROUTES` per la via del ritorno): un cambio del nuoto non fa ridisegnare
+gli altri percorsi. **Dalla parte B** `swimming` è un'attività del contratto
+(`models.SUPPORTED_ACTIVITIES`, `WATER_ACTIVITIES`, 500–3000 m),
+`RouteRequest.laps` dice i giri, `RouteResult.laps` e `.turns` li
+riportano, e i tipi delle curve (`SwimTurn`, `Landmark`) stanno in
+`models.py`; `SwimRequest.of` legge una `RouteRequest` di nuoto. Toccare
+`models.py` ha cambiato una volta l'impronta degli esempi tenuti e quella
+degli esempi della canoa nell'app (`paddleExamples.json`, da rifare con
+l'acqua del server). I nuoti tenuti hanno un'impronta loro, coi file del
+nuoto (`engine_fingerprint(swims=True)`).
+
+**Quanto grande ci sta un giro** (`tests/measure_swim.py`, sulle due acque
+di prova: la costa dritta e la riva del lago di 6 × 1,8 km; un giro solo,
+tratti compresi):
+
+| Fascia dalla riva | Cerchio | Cuore | Stella |
+|---|---|---|---|
+| 20–150 m (scelta) | 0,4 km | 0,4 km | 0,5 km |
+| 20–200 m | 0,5 km | 0,6–0,8 km | 0,7 km |
+| 20–300 m | 0,8 km | 1–1,5 km | 1,2 km |
+| 20–500 m | 1,5 km | 2 km | 2–2,5 km |
+
+Una fascia larga 130 m tiene un cerchio di 130 m di diametro, 0,41 km: lungo
+una costa dritta o la riva di un lago grande le forme del nuoto stanno sotto
+il mezzo chilometro, e di più solo in una baia, in un lago stretto o attorno
+a un'isola. A giri, i campioni del task (cerchio, cuore e stella a 0,5, 1 e
+1,5 km) ci stanno tutti, in 1–4 giri da 216–395 m; con 5 giri al massimo
+si arriva a 1,7–2,1 km, e 3 km solo dove un giro ci sta da 0,6 km. La
+griglia della ricerca (celle di 10 m, `CELL_SAFETY`) toglie
+circa 25 m di larghezza alla fascia: con celle di 5 m il cuore sul lago va
+da 0,4 a 0,8 km, ma cambiarle vuol dire toccare `water_fit.py`. I posti veri
+(Levico, Caldonazzo, Riccione, Jesolo) si misurano dove c'è la loro acqua:
+
+```
+cd services/route-engine
+python tests/measure_swim.py --cache-dir ../../data/cache \
+    --place "Levico,46.0085,11.283" --place "Caldonazzo,46.02,11.24" \
+    --place "Riccione,44.00355,12.66338" --place "Jesolo,45.50137,12.63925" \
+    --json ../../out/TASK-323/swim-real.json
+```
+
+**Dalla CLI**, senza rete né chiavi con l'acqua in `<cache-dir>/water/` (la
+stessa della canoa: l'area chiesta è quella di `water_bbox`), o da un file:
+
+```
+python -m route_engine.swimming --shape heart --distance 1000 \
+    --start 44.0007195,12.6512502 \
+    --water-file services/route-engine/tests/fixtures/water_coast.json \
+    --out heart_coast.gpx
+```
+
+**Le curve e i nomi a riva** (TASK-323 A2): in acqua non si guarda il
+telefono e la voce non si sente; ci si orienta alzando la testa verso un
+punto a terra. Il motore dà le curve del nuoto, ognuna col posto a riva
+davanti a cui girare: sono dati, l'app e l'orologio le dicono con le loro
+parole (parte C).
+
+- `swim_turns.py` — **le curve**: dove la direzione cambia di più di
+  `TURN_MIN_DEG` = 45°, guardata `TURN_WINDOW_M` = 15 m prima e dopo il
+  punto; di una fila di punti così, il più stretto. Le punte di una stella
+  e la cuspide di un cuore sono curve, la curva di un cerchio (100 m di
+  diametro o più) no. Ogni curva ha il punto, i metri dalla partenza, il
+  verso (`left`, `right`), l'angolo e il giro; il primo e l'ultimo punto,
+  sulla riva, non sono curve. Dove il tratto dalla riva arriva sulla forma
+  e prosegue quasi dritto, come sulla punta della stella, non si gira.
+- `shore_names.py` — **i nomi**: per ogni curva il posto con un nome più
+  vicino entro `LANDMARK_REACH_M` = 300 m (la fascia sta entro 150 m dalla
+  riva, quindi è sulla riva davanti), il primo per nome a pari distanza,
+  con il tipo e la direzione in cui guardarlo (gradi da nord, in senso
+  orario). I posti sono file in `<cache>/shore_names/`, tagliati dal server
+  lungo la riva (parte B): `{"bbox": [s, w, n, e], "places": [{"name",
+  "kind", "lat", "lon"}]}`; si leggono i file la cui area tocca quella del
+  nuoto. Senza file, o con un file che non si legge, le curve non hanno
+  nome e niente fallisce. Mai rete.
+- **Dove stanno**: `RouteResult.turns` (dalla parte B; in A2 erano in
+  `SwimPlan`), tutte le curve di tutti i giri in ordine;
+  `plan_swimming(..., names=)` le nomina.
+- **Nel GPX** (`with_turns`): un waypoint per ogni curva del primo giro,
+  prima della traccia, col nome «Turn left · Bagno 54» e il tipo `turn`; i
+  giri dopo girano negli stessi posti.
+
+Stampa i giri e quanto è lungo ognuno, la scala, la rotazione, la partenza
+sulla riva e il suo tipo, il tratto, il centro, quanto la forma sta lontana
+dalla terra e quanto il nuoto dalla riva, e quanto da un porto. `--laps N`
+chiede i giri (meno giri, forma più grande); `--outline FILE` nuota un
+contorno disegnato, in JSON come quelli del catalogo, al posto di `--shape`.
+Stampa anche le curve del primo giro col loro posto a riva, presi da
+`<cache-dir>/shore_names/` o da `--names-file`, e il GPX di `--out` le ha
+come waypoint. Dalla parte B anche `python -m route_engine --activity
+swimming [--laps N]` disegna un nuoto, coi nomi di
+`<cache-dir>/shore_names/`; un disegno a mano si nuota col comando del
+nuoto (`--outline`). I file dei nomi li scrive, da un estratto di
+OpenStreetMap, `python -m shaperoute_api.shore_extract --extract
+places.osm.pbf --bbox S,W,N,E --cache-dir data/cache` (il filtro di osmium
+è nella sua docstring): i posti con un nome di un tipo che serve (moli,
+fari, stabilimenti balneari, alberghi, chiese, bar, luoghi storici) entro
+300 m dalla costa o dal bordo di un lago.

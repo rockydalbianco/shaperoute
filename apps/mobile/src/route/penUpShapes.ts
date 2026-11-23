@@ -5,6 +5,8 @@ import {
   type Shape,
 } from "@shaperoute/shared-types";
 
+import { isPlacedFree } from "../snow/snow";
+
 /**
  * The shapes «Draw» offers with the pen up (TASK-223, ADR-0185): those the
  * user judged so on real roads, each piece drawn on its own and walked to.
@@ -60,7 +62,8 @@ export function apartOnWater(shape: Shape | null): shape is PenUpShape {
 /**
  * What «Draw» sends for `shape`. On the roads, with the pen up when the
  * switch is on and the shape is offered so. On the water the switch does
- * not count: a shape drawn in pieces there is always asked so (TASK-226).
+ * not count: a shape drawn in pieces there is always asked so (TASK-226),
+ * paddled or swum (TASK-323).
  * Otherwise the request of before, field for field.
  */
 export function shapeAsked(
@@ -68,7 +71,9 @@ export function shapeAsked(
   penUp: boolean,
   activity: Activity,
 ): { shape: Shape } | { shape: PenUpShape; pen_up: true } {
-  const lifted =
-    activity === "paddling" ? apartOnWater(shape) : penUp && offersPenUp(shape);
+  // On the snow as on the water (TASK-413 B): the engine places it freely.
+  const lifted = isPlacedFree(activity)
+    ? apartOnWater(shape)
+    : penUp && offersPenUp(shape);
   return lifted ? { shape: shape as PenUpShape, pen_up: true } : { shape };
 }

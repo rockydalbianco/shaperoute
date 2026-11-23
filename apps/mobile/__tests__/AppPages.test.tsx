@@ -31,8 +31,6 @@ jest.mock("expo-location", () => ({
 }));
 
 const API = "http://192.168.1.23:8000";
-// The window of the tests (react-native's jest setup): a page is this wide.
-const WIDTH = 750;
 
 let fetchSpy: jest.SpiedFunction<typeof fetch>;
 
@@ -47,21 +45,25 @@ function listCalls(): number {
  * asks as it opens to know whether to show «Play» (TASK-296), and the
  * contest, which «Feed» asks to know whether to show its card (TASK-299). */
 function askedBesidesTheGame(): string[] {
-  return fetchSpy.mock.calls
-    .map(([url]) => String(url).replace(API, ""))
-    .filter((path) => path !== "/game/catalog" && path !== "/contests/current");
+  return (
+    fetchSpy.mock.calls
+      .map(([url]) => String(url).replace(API, ""))
+      // MuW Style (TASK-384) is read with «Feed», as the contest is.
+      .filter(
+        (path) =>
+          path !== "/game/catalog" &&
+          path !== "/contests/current" &&
+          !path.startsWith("/style") &&
+          !path.startsWith("/muw-routes"),
+      )
+  );
 }
 
-/** A swipe that comes to rest on the page at `index`. */
+/** The page at `index` as the pages lay side by side before TASK-367
+ * («Feed», «Draw», «Explore», the profile): its tab touched. */
 async function swipeTo(index: number) {
-  const pager = screen.getByTestId("pager");
-  // On the way the next page comes into view, then the scroll rests.
-  await fireEvent.scroll(pager, {
-    nativeEvent: { contentOffset: { x: index * WIDTH, y: 0 } },
-  });
-  await fireEvent(pager, "momentumScrollEnd", {
-    nativeEvent: { contentOffset: { x: index * WIDTH, y: 0 } },
-  });
+  const tabs = ["Feed", "Draw", "Explore", /^Profile/];
+  await fireEvent.press(screen.getByRole("tab", { name: tabs[index] }));
 }
 
 async function atTrento() {
@@ -95,15 +97,15 @@ afterEach(() => {
   fetchSpy.mockRestore();
 });
 
-test("opens on «Draw», between «Feed» and «Explore», and asks the API nothing", async () => {
+test("opens on «Draw», the second of the five tabs, and asks the API nothing", async () => {
   await atTrento();
   expect(screen.getAllByRole("tab").map((tab) => tab.props.accessibilityLabel)).toEqual(
-    ["Feed", "Draw", "Explore"],
+    ["Feed", "Draw", "Messages", "Explore", "Profile"],
   );
   expect(screen.getByRole("tab", { name: "Draw", selected: true })).toBeOnTheScreen();
-  expect(screen.getByText("Draw route")).toBeOnTheScreen();
+  expect(screen.getByTestId("draw-route")).toBeOnTheScreen();
   // «Explore» is one swipe away, and has not asked for its routes yet.
-  expect(screen.queryByText("Best near you")).toBeNull();
+  expect(screen.queryByTestId("explore-title")).toBeNull();
   expect(askedBesidesTheGame()).toEqual([]);
   // An API without the shape game: no «Play» page (TASK-296).
   expect(screen.queryByRole("tab", { name: "Play" })).toBeNull();
@@ -115,33 +117,35 @@ test("a swipe to the left goes to «Explore», which asks for its routes then", 
   expect(
     screen.getByRole("tab", { name: "Explore", selected: true }),
   ).toBeOnTheScreen();
-  expect(screen.getByText("Best near you")).toBeOnTheScreen();
+  expect(screen.getByTestId("explore-title")).toBeOnTheScreen();
   expect(await screen.findByText("Star · 5.1 km")).toBeOnTheScreen();
   expect(listCalls()).toBe(1);
   // «Draw» is the page beside it now: out of sight, as it was left.
-  expect(screen.queryByText("Draw route")).toBeNull();
+  expect(screen.queryByTestId("draw-route")).toBeNull();
   expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
 
   await swipeTo(1);
-  expect(screen.getByText("Draw route")).toBeOnTheScreen();
-  expect(screen.queryByText("Best near you")).toBeNull();
+  expect(screen.getByTestId("draw-route")).toBeOnTheScreen();
+  expect(screen.queryByTestId("explore-title")).toBeNull();
   // Back on «Explore» the list is still there: it is not asked for again.
   await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
   expect(screen.getByText("Star · 5.1 km")).toBeOnTheScreen();
   expect(listCalls()).toBe(1);
 });
 
-test("a swipe to the right goes to «Feed», with its example drawings", async () => {
+test("a swipe to the right goes to «Feed», without made-up drawings", async () => {
   await atTrento();
   await swipeTo(0);
   expect(screen.getByRole("tab", { name: "Feed", selected: true })).toBeOnTheScreen();
-  expect(screen.getByText("A horse through Levico")).toBeOnTheScreen();
-  expect(screen.getAllByTestId("feed-post").length).toBeGreaterThanOrEqual(2);
-  expect(screen.queryByText("Draw route")).toBeNull();
+  // Without an account, the words to log in, no example (TASK-487).
+  expect(screen.getByTestId("feed-log-in")).toBeOnTheScreen();
+  expect(screen.queryByText("A horse through Levico")).toBeNull();
+  expect(screen.queryByTestId("feed-post")).toBeNull();
+  expect(screen.queryByTestId("draw-route")).toBeNull();
   // «Explore» was never in view: it asked nothing.
   expect(askedBesidesTheGame()).toEqual([]);
   await fireEvent.press(screen.getByRole("tab", { name: "Draw" }));
-  expect(screen.getByText("Draw route")).toBeOnTheScreen();
+  expect(screen.getByTestId("draw-route")).toBeOnTheScreen();
 });
 
 test("what was chosen on «Draw» is still there after a look at the other pages", async () => {
@@ -168,6 +172,6 @@ test("a route of «Explore» takes the whole screen; back, «Explore» is the pa
   expect(
     screen.getByRole("tab", { name: "Explore", selected: true }),
   ).toBeOnTheScreen();
-  expect(screen.getByText("Best near you")).toBeOnTheScreen();
-  expect(screen.queryByText("Draw route")).toBeNull();
+  expect(screen.getByTestId("explore-title")).toBeOnTheScreen();
+  expect(screen.queryByTestId("draw-route")).toBeNull();
 });

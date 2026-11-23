@@ -1,0 +1,27 @@
+{
+  "header": "X-MuW-Reads",
+  "old_app_activities": ["running", "cycling", "paddling"],
+  "kinds": [
+    "swimming",
+    "hiking",
+    "mountain_biking",
+    "inline_skating",
+    "snowshoeing",
+    "wheelchair",
+    "walking",
+    "gravel_biking",
+    "skiing",
+    "xc_skiing",
+    "ski_touring",
+    "paragliding",
+    "alpinism",
+    "gym",
+    "stretching",
+    "trackless",
+    "pool",
+    "photos",
+    "sleep",
+    "plans"
+  ],
+  "this_app": "swimming,hiking,mountain_biking,inline_skating,snowshoeing,wheelchair,walking,gravel_biking,skiing,xc_skiing,ski_touring,paragliding,alpinism,gym,stretching,trackless,pool,photos,plans"
+}

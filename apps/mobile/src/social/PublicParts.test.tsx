@@ -1,19 +1,20 @@
 import people from "@shaperoute/shared-types/fixtures/people.json";
+import open from "@shaperoute/shared-types/fixtures/contest.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
-import { DRAWING_MAX_TAGS, type Session } from "@shaperoute/shared-types";
+import { type Contest, DRAWING_MAX_TAGS, type Session } from "@shaperoute/shared-types";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import { answers } from "../account/testing";
-import { NOT_CHOSEN } from "../api/drawings";
+import { type DrawingChoice, NOT_CHOSEN } from "../api/drawings";
+import { forgetContest, setContest } from "../contest/contestKept";
 import { FollowsContext } from "./followsDoor";
-import type { PhotoShown } from "./drawingsDoor";
+import type { ComposerPhoto } from "./composer/PostComposer";
 import type { PickedDrawingPhoto } from "./pickDrawingPhoto";
 import {
   ActivityChips,
   DrawingForm,
   nextPlace,
   ONLY_ME_PHOTOS,
-  PhotosRow,
   TagsField,
   VisibilityChips,
 } from "./PublicParts";
@@ -34,10 +35,11 @@ const follows = (fetchFn: jest.Mock) => ({
   fetchFn,
 });
 
-const PHOTO: PhotoShown = {
+const PHOTO: ComposerPhoto = {
   n: 1,
   source: { uri: "data:image/jpeg;base64,AAAA" },
-  onPhone: true,
+  layout: null,
+  original: null,
 };
 
 const picked = (kind: PickedDrawingPhoto["kind"]) =>
@@ -50,7 +52,9 @@ const picked = (kind: PickedDrawingPhoto["kind"]) =>
 test("the first empty place is the photo's", () => {
   expect(nextPlace([])).toBe(1);
   expect(nextPlace([{ n: 1 }, { n: 3 }])).toBe(2);
-  expect(nextPlace([{ n: 1 }, { n: 2 }, { n: 3 }])).toBeNull();
+  // Nine photos and the map: ten pages (TASK-348, «10 col disegno»).
+  expect(nextPlace([1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ n })))).toBe(9);
+  expect(nextPlace([1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => ({ n })))).toBeNull();
 });
 
 test("«Who can see it» and «Activity» are one of a few, said at once", async () => {
@@ -116,29 +120,41 @@ test("with the most people tagged, no more can be", async () => {
   expect(screen.getByRole("button", { name: "Remove runner9" })).toBeTruthy();
 });
 
+async function formWith(photos: ComposerPhoto[], pick = picked("picked")) {
+  const onAddPhotos = jest.fn();
+  const onRemovePhoto = jest.fn();
+  await render(
+    <FollowsContext.Provider value={follows(answers())}>
+      <DrawingForm
+        choice={NOT_CHOSEN}
+        onChoice={jest.fn()}
+        items={[
+          { kind: "drawing" },
+          ...photos.map((p) => ({ kind: "photo" as const, n: p.n })),
+        ]}
+        photos={photos}
+        onOrder={jest.fn()}
+        onAddPhotos={onAddPhotos}
+        onRemovePhoto={onRemovePhoto}
+        pick={pick}
+      />
+    </FollowsContext.Provider>,
+  );
+  return { onAddPhotos, onRemovePhoto };
+}
+
 test("«Add photo» asks where from, and the photo chosen is handed over", async () => {
   const pick = picked("picked");
-  const onAdd = jest.fn();
-  await render(
-    <PhotosRow photos={[]} onAdd={onAdd} onRemove={jest.fn()} pick={pick} />,
-  );
+  const { onAddPhotos } = await formWith([], pick);
   await fireEvent.press(screen.getByRole("button", { name: "Add photo" }));
   await fireEvent.press(screen.getByRole("button", { name: "Choose a picture" }));
   expect(pick).toHaveBeenCalledWith("library");
   await screen.findByRole("button", { name: "Add photo" });
-  expect(onAdd).toHaveBeenCalledWith("c2hydW5r");
+  expect(onAddPhotos).toHaveBeenCalledWith(["c2hydW5r"]);
 });
 
 test("a camera refused says so, with the way to Settings; a photo has its ×", async () => {
-  const onRemove = jest.fn();
-  await render(
-    <PhotosRow
-      photos={[PHOTO]}
-      onAdd={jest.fn()}
-      onRemove={onRemove}
-      pick={picked("denied")}
-    />,
-  );
+  const { onRemovePhoto } = await formWith([PHOTO], picked("denied"));
   await fireEvent.press(screen.getByRole("button", { name: "Add photo" }));
   await fireEvent.press(screen.getByRole("button", { name: "Take a photo" }));
   expect(
@@ -149,7 +165,7 @@ test("a camera refused says so, with the way to Settings; a photo has its ×", a
   expect(screen.getByRole("button", { name: "Open Settings" })).toBeTruthy();
   expect(screen.getByLabelText("Photo 1")).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Remove photo 1" }));
-  expect(onRemove).toHaveBeenCalledWith(PHOTO);
+  expect(onRemovePhoto).toHaveBeenCalledWith(1);
 });
 
 test("the form: the title and «How did it go?» as typed, trimmed; a warning for the photos of «Only me»", async () => {
@@ -159,8 +175,10 @@ test("the form: the title and «How did it go?» as typed, trimmed; a warning fo
       <DrawingForm
         choice={NOT_CHOSEN}
         onChoice={onChoice}
+        items={[{ kind: "drawing" }, { kind: "photo", n: 1 }]}
         photos={[PHOTO]}
-        onAddPhoto={jest.fn()}
+        onOrder={jest.fn()}
+        onAddPhotos={jest.fn()}
         onRemovePhoto={jest.fn()}
       />
     </FollowsContext.Provider>,
@@ -176,4 +194,77 @@ test("the form: the title and «How did it go?» as typed, trimmed; a warning fo
   expect(screen.getByText(ONLY_ME_PHOTOS)).toBeTruthy();
   await fireEvent.press(screen.getByRole("radio", { name: "Everyone" }));
   expect(onChoice).toHaveBeenLastCalledWith({ ...NOT_CHOSEN, visibility: "everyone" });
+});
+
+describe("«Enter “{theme}”» (TASK-343 part B)", () => {
+  const THEME = {
+    ...(open as Contest),
+    starts_at: "2020-01-01T00:00:00Z",
+    ends_at: "2999-12-31T23:59:59Z",
+    theme: { en: { title: "Animals", description: "Draw an animal." } },
+  } as Contest;
+  const FOR_EVERYONE = { ...NOT_CHOSEN, visibility: "everyone" as const };
+
+  async function form(
+    choice: DrawingChoice,
+    onChoice: (next: DrawingChoice) => void = jest.fn(),
+    imported = false,
+  ) {
+    await render(
+      <FollowsContext.Provider value={follows(answers())}>
+        <DrawingForm
+          choice={choice}
+          onChoice={onChoice}
+          items={[{ kind: "drawing" }]}
+          photos={[]}
+          onOrder={jest.fn()}
+          onAddPhotos={jest.fn()}
+          onRemovePhoto={jest.fn()}
+          imported={imported}
+        />
+      </FollowsContext.Provider>,
+    );
+  }
+
+  afterEach(() => {
+    forgetContest();
+  });
+
+  test("with a challenge open and «Everyone», it changes the choice", async () => {
+    setContest({ account: null, contest: THEME });
+    const onChoice = jest.fn();
+    await form(FOR_EVERYONE, onChoice);
+    const name = "Enter “Animals”";
+    expect(screen.getByRole("switch", { name }).props.accessibilityState.checked).toBe(
+      false,
+    );
+    await fireEvent.press(screen.getByRole("switch", { name }));
+    expect(onChoice).toHaveBeenLastCalledWith({
+      ...FOR_EVERYONE,
+      entry: { contest: THEME.id, entered: true },
+    });
+  });
+
+  test("not for «Followers» or «Only me»", async () => {
+    setContest({ account: null, contest: THEME });
+    await form({ ...NOT_CHOSEN, visibility: "followers" });
+    expect(screen.queryByRole("switch")).toBeNull();
+  });
+
+  test("not for a run from a file of another app", async () => {
+    setContest({ account: null, contest: THEME });
+    await form(FOR_EVERYONE, jest.fn(), true);
+    expect(screen.queryByRole("switch")).toBeNull();
+  });
+
+  test("not without a theme, as with today's API", async () => {
+    setContest({ account: null, contest: open as Contest });
+    await form(FOR_EVERYONE);
+    expect(screen.queryByRole("switch")).toBeNull();
+  });
+
+  test("not on a phone that never heard of a contest", async () => {
+    await form(FOR_EVERYONE);
+    expect(screen.queryByRole("switch")).toBeNull();
+  });
 });

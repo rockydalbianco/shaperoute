@@ -75,6 +75,8 @@ export function NearYou({ cards, onOpen }: Props) {
               key={key}
               width={card}
               line={route.preview}
+              // The letters of a word apart, as in «Explore» (TASK-441).
+              gaps={route.gaps}
               rotationDeg={route.rotation_deg}
               title={`${name} · ${distance}`}
               detail={city ?? undefined}

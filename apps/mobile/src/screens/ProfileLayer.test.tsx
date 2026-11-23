@@ -46,8 +46,6 @@ jest.mock("expo-secure-store", () =>
 const store = jest.requireMock<MemorySecureStore>("expo-secure-store");
 const API = "http://192.168.1.23:8000";
 const KEY = "shaperoute.session";
-// The window of the tests (react-native's jest setup).
-const WIDTH = 750;
 const NO_RUNS = { activities: [], next: null, total: 0 };
 const NOBODY = { people: [], next: null, total: 0 };
 const [, adam] = people.people;
@@ -98,20 +96,17 @@ async function open() {
   await screen.findByText(/^Location is off for MuW/);
 }
 
-/** The circle at the right of the names. */
+/** The tab of the profile, its picture (TASK-367). */
 function circle() {
-  return screen.getByRole("button", { name: /^Profile/ });
+  return screen.getByRole("tab", { name: /^Profile/ });
 }
 
-/** The profile is the page on screen: the circle has the page's mark, no
- * name has it, and nothing of «Profile» is over the app. */
+/** The profile is the page on screen: its tab is the one selected, and
+ * nothing of «Profile» is over the app. */
 function onProfilePage() {
-  expect(
-    screen.getByRole("button", { name: /^Profile/, selected: true }),
-  ).toBeOnTheScreen();
-  expect(screen.getByTestId("profile-page-mark")).toBeOnTheScreen();
-  expect(screen.getAllByRole("tab")).toHaveLength(3);
-  expect(screen.queryByRole("tab", { selected: true })).toBeNull();
+  expect(screen.getByRole("tab", { name: /^Profile/ })).toBeSelected();
+  expect(screen.getAllByRole("tab")).toHaveLength(5);
+  expect(screen.getAllByRole("tab", { selected: true })).toHaveLength(1);
   expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
 }
 
@@ -129,21 +124,16 @@ afterEach(() => {
   fetchSpy.mockRestore();
 });
 
-test("a swipe to the left from «Explore» shows the profile, one to the right goes back", async () => {
+test("the tab of the profile from «Explore» shows it, the tab of «Explore» goes back", async () => {
   await open();
   await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
   // Not built before someone goes there.
   expect(
     screen.queryByTestId("account-submit", { includeHiddenElements: true }),
   ).toBeNull();
-  expect(screen.queryByTestId("profile-page-mark")).toBeNull();
+  expect(screen.queryByRole("tab", { name: /^Profile/, selected: true })).toBeNull();
 
-  await fireEvent.scroll(screen.getByTestId("pager"), {
-    nativeEvent: { contentOffset: { x: 2 * WIDTH + 12, y: 0 } },
-  });
-  await fireEvent(screen.getByTestId("pager"), "momentumScrollEnd", {
-    nativeEvent: { contentOffset: { x: 3 * WIDTH, y: 0 } },
-  });
+  await fireEvent.press(circle());
   onProfilePage();
   // Without an account, «Sign up» and «Log in» as before.
   expect(
@@ -152,15 +142,13 @@ test("a swipe to the left from «Explore» shows the profile, one to the right g
   expect(screen.getByRole("button", { name: "Log in" })).toBeOnTheScreen();
   expect(screen.getByTestId("account-submit")).toBeOnTheScreen();
 
-  await fireEvent(screen.getByTestId("pager"), "momentumScrollEnd", {
-    nativeEvent: { contentOffset: { x: 2 * WIDTH, y: 0 } },
-  });
+  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
   expect(
     screen.getByRole("tab", { name: "Explore", selected: true }),
   ).toBeOnTheScreen();
-  expect(screen.queryByTestId("profile-page-mark")).toBeNull();
+  expect(screen.queryByRole("tab", { name: /^Profile/, selected: true })).toBeNull();
   expect(
-    screen.getByRole("button", { name: "Profile", selected: false }),
+    screen.getByRole("tab", { name: "Profile", selected: false }),
   ).toBeOnTheScreen();
   // Out of sight, out of the screen reader's too.
   expect(screen.queryByTestId("account-submit")).toBeNull();
@@ -174,16 +162,16 @@ test.each(["Feed", "Draw", "Explore"])(
   async (from) => {
     await open();
     await fireEvent.press(screen.getByRole("tab", { name: from }));
-    expect(screen.queryByTestId("profile-page-mark")).toBeNull();
+    expect(screen.queryByRole("tab", { name: /^Profile/, selected: true })).toBeNull();
     await fireEvent.press(circle());
     onProfilePage();
     expect(screen.queryByRole("header", { name: "Profile" })).toBeNull();
     expect(screen.getByTestId("account-submit")).toBeOnTheScreen();
     // The pages are there, one swipe apart, as they were left.
     expect(
-      screen.getByText("Draw route", { includeHiddenElements: true }),
+      screen.getByTestId("draw-route", { includeHiddenElements: true }),
     ).toBeTruthy();
-    expect(screen.queryByText("Draw route")).toBeNull();
+    expect(screen.queryByTestId("draw-route")).toBeNull();
     // Touched again, it stays there.
     await fireEvent.press(circle());
     onProfilePage();
@@ -213,16 +201,21 @@ test("«Settings» and «Edit profile» open over the app, and «←» comes bac
   onProfilePage();
 });
 
-test("«Guide» opens over the app, and «←» comes back to the page, not to «Settings»", async () => {
+test("with an account the guide is «Help» in «Settings», and «←» comes back there", async () => {
   signedIn();
   api(ACCOUNT);
   await open();
   await fireEvent.press(circle());
-  await fireEvent.press(await screen.findByRole("button", { name: "Guide" }));
-  expect(screen.getByRole("header", { name: "Guide" })).toBeOnTheScreen();
+  expect(await screen.findByText(session.user.username)).toBeOnTheScreen();
+  // No «Guide» row on the page since TASK-457.
+  expect(screen.queryByRole("button", { name: "Guide" })).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Settings" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Help" }));
+  expect(screen.getByRole("header", { name: "Help" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Watch the tour" })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
-  expect(screen.queryByRole("header", { name: "Guide" })).toBeNull();
+  expect(screen.getByRole("header", { name: "Settings" })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.queryByRole("header", { name: "Settings" })).toBeNull();
   onProfilePage();
 });
@@ -284,10 +277,15 @@ test("a drawing opened from the page goes back to it", async () => {
   expect(await screen.findByText("Drawings")).toBeOnTheScreen();
 });
 
-test("from «Feed» without an account «Find friends» goes to the page, saying why", async () => {
+test("from the search of «Explore» without an account «People» goes to the page, saying why", async () => {
   await open();
-  await fireEvent.press(screen.getByRole("tab", { name: "Feed" }));
-  await fireEvent.press(screen.getByRole("button", { name: "Find friends" }));
+  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
+  // The search at the top of «Explore» (TASK-367 part B, the lens of «Feed»
+  // before, TASK-344); its tab «People» says why first.
+  await fireEvent.press(screen.getByRole("button", { name: "Search" }));
+  await fireEvent.press(screen.getByTestId("search-tab-people"));
+  await fireEvent.press(screen.getByText("Log in to find your friends."));
+  expect(screen.queryByTestId("search-page")).toBeNull();
   // The page, as from the circle (TASK-278 part B): no «←», no title.
   onProfilePage();
   expect(screen.queryByRole("header", { name: "Profile" })).toBeNull();

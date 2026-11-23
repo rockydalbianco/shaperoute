@@ -6,6 +6,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { answers } from "../account/testing";
 import type { AccountState } from "../account/useAccount";
 import { forgetBlocked } from "../social/blockedNow";
+import { IslandLayer } from "../ui/IslandLayer";
 import { UserProfilePage } from "./UserProfilePage";
 
 jest.mock(
@@ -22,15 +23,37 @@ const ID = "3b9d2e10-7c4a-4f8e-a1d6-5e2f9c0b7a44";
 const signedIn: AccountState = { status: "signedIn", session: session as Session };
 const profile = { ...publicProfile, public_id: ID, follow: "none" } as PublicProfile;
 
+/** The page's own requests go to `fetchFn`, in order; its group runs
+ * (TASK-309 part B) get the 404 of an API of before, apart. */
+function apart(fetchFn: jest.Mock): typeof fetch {
+  return (async (url: string, init?: RequestInit) =>
+    String(url).endsWith("/group-runs")
+      ? Response.json(
+          {
+            error: {
+              code: "http_error",
+              message: "Not Found",
+              suggested_distance_m: null,
+              reason: null,
+            },
+          },
+          { status: 404 },
+        )
+      : fetchFn(url, init)) as typeof fetch;
+}
+
 async function show(fetchFn: jest.Mock) {
   await render(
-    <UserProfilePage
-      apiUrl={URL}
-      account={{ state: signedIn, sessionEnded: jest.fn() }}
-      publicId={ID}
-      fetchFn={fetchFn}
-      apiKey={null}
-    />,
+    <>
+      <UserProfilePage
+        apiUrl={URL}
+        account={{ state: signedIn, sessionEnded: jest.fn() }}
+        publicId={ID}
+        fetchFn={apart(fetchFn)}
+        apiKey={null}
+      />
+      <IslandLayer />
+    </>,
   );
 }
 
@@ -62,7 +85,7 @@ test("blocked, the profile shows no more and says where to unblock", async () =>
   await fireEvent.press(screen.getByRole("button", { name: "Block" }));
   expect(
     await screen.findByText(
-      "You blocked Ada_runs. Unblock them from Blocked people in your profile.",
+      "You blocked Ada_runs. Unblock them from Blocked people in Settings.",
     ),
   ).toBeOnTheScreen();
   expect(screen.queryByRole("button", { name: "Follow" })).toBeNull();

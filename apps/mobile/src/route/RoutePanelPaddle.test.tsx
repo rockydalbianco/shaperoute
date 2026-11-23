@@ -1,5 +1,6 @@
 /**
- * «Draw» on the water (TASK-191): a shape of the catalogue only, 1–5 km, a
+ * «Draw» on the water (TASK-191): a shape of the catalogue or a drawing by
+ * hand (TASK-396), no word and no picture, 1–5 km, a
  * route that says it is on the water and starts with «Start» though it has
  * no turns, and the texts of a shape that does not fit there. The whole app
  * with «Paddle» is in AppPaddle.test.tsx.
@@ -46,18 +47,34 @@ function choice(
   );
 }
 
-test("on the water there is no word nor picture to choose: the shapes only", async () => {
-  await render(choice("2", jest.fn()));
-  expect(screen.getByText("On the water, a shape of the catalogue.")).toBeTruthy();
+test("on the water there is no word nor picture to choose: a shape, or «Freehand»", async () => {
+  const onFreehand = jest.fn();
+  await render(
+    <RouteChoice {...choice("2", jest.fn()).props} onFreehand={onFreehand} />,
+  );
+  expect(
+    screen.getByText("On the water, the drawing goes where it fits near the start."),
+  ).toBeTruthy();
+  expect(
+    screen
+      .getAllByText(/^(Freehand|Shape|Word|Image)$/)
+      .map((text) => text.props.children as string),
+  ).toEqual(["Freehand", "Shape"]);
+  await fireEvent.press(screen.getByRole("button", { name: "Freehand" }));
+  expect(onFreehand).toHaveBeenCalledTimes(1);
   expect(screen.queryByRole("button", { name: "Word" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Image" })).toBeNull();
-  expect(screen.getByLabelText("Shape")).toBeTruthy();
+  expect(screen.getByTestId("shape-grid")).toBeTruthy();
+  expect(screen.getByTestId("other-shape-link")).toBeTruthy();
 });
 
-test("a word chosen before «Paddle» shows the shapes, not the word", async () => {
-  await render(choice("2", jest.fn(), { kind: "word" }));
-  expect(screen.queryByLabelText("Word")).toBeNull();
-  expect(screen.getByLabelText("Shape")).toBeTruthy();
+test("a word or a picture chosen before «Paddle» shows the shapes", async () => {
+  for (const kind of ["word", "image"] as const) {
+    await render(choice("2", jest.fn(), { kind }));
+    expect(screen.queryByLabelText("Word")).toBeNull();
+    expect(screen.getByRole("button", { name: "Shape" })).toBeSelected();
+    expect(screen.getByTestId("shape-grid")).toBeTruthy();
+  }
 });
 
 test("the distance keeps to 1–5 km, in half km too", async () => {
@@ -67,10 +84,12 @@ test("the distance keeps to 1–5 km, in half km too", async () => {
   await rerender(choice("2,5", onDistanceText));
   expect(screen.queryByText(/Enter a distance/)).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Longer" }));
-  expect(onDistanceText).toHaveBeenLastCalledWith("3,5");
+  // Half a km a step (TASK-361).
+  expect(onDistanceText).toHaveBeenLastCalledWith("3");
   await rerender(choice("5", onDistanceText));
   await fireEvent.press(screen.getByRole("button", { name: "Longer" }));
-  expect(onDistanceText).toHaveBeenLastCalledWith("5");
+  // At the limit nothing moves.
+  expect(onDistanceText).toHaveBeenCalledTimes(1);
 });
 
 const paddleHeart: RouteRequest = {

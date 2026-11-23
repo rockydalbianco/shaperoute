@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Image, StyleSheet, Text } from "react-native";
 
 import {
   color,
@@ -8,7 +8,12 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { tourTexts } from "./tourTexts";
+
+/** From Lucide (ISC, assets/ui/icons/LICENSE-lucide.txt), as the bar's
+ * icons: white, coloured by `tintColor`. A red ❓ stood here (TASK-444). */
+const HELP = require("../../assets/ui/icons/circle-help.png");
 
 type Props = {
   /** Opens «How MuW works». */
@@ -23,17 +28,17 @@ type Props = {
 export function GuideRow({ onOpen }: Props) {
   const name = tourTexts().guide;
   return (
-    <Pressable
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+    <Tap
+      style={styles.row}
       onPress={onOpen}
       accessibilityRole="button"
-      // One name for the row: the emoji and the arrow are not read.
+      // One name for the row: the icon and the arrow are not read.
       accessibilityLabel={name}
     >
-      <Text style={styles.emoji}>❓</Text>
+      <Image source={HELP} style={styles.icon} testID="guide-icon" />
       <Text style={styles.name}>{name}</Text>
       <Text style={styles.arrow}>›</Text>
-    </Pressable>
+    </Tap>
   );
 }
 
@@ -44,14 +49,14 @@ export function GuideRow({ onOpen }: Props) {
 export function WatchTourButton({ onWatch }: { onWatch: () => void }) {
   const name = tourTexts().watch;
   return (
-    <Pressable
-      style={({ pressed }) => [styles.watch, pressed && styles.pressed]}
+    <Tap
+      style={styles.watch}
       onPress={onWatch}
       accessibilityRole="button"
       accessibilityLabel={name}
     >
       <Text style={styles.watchText}>▶︎ {name}</Text>
-    </Pressable>
+    </Tap>
   );
 }
 
@@ -67,11 +72,10 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     backgroundColor: color.surface,
   },
-  pressed: {
-    opacity: 0.6,
-  },
-  emoji: {
-    fontSize: fontSize.input + space.xs,
+  icon: {
+    width: 22,
+    height: 22,
+    tintColor: color.textMuted,
   },
   name: {
     flex: 1,

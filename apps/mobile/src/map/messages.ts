@@ -3,7 +3,9 @@ import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
 import { onFootLines } from "../route/onFoot";
 import { piecesOf, walksOf } from "../route/walks";
 import { type LngLat, metresBetween, toLngLat } from "./coordinates";
+import type { MapCover } from "./mapCover";
 import type { MapKind } from "./mapKind";
+import type { SkiLabel } from "../skimode/skiDayLabels";
 import type { RouteSplit } from "./routeSplit";
 
 /**
@@ -42,12 +44,37 @@ export type ToPage =
     }
   | { type: "clearProgress" }
   | { type: "showOthers"; lines: LngLat[][] }
-  | { type: "showTrack"; coordinates: LngLat[] }
+  | { type: "showGhost"; lines: LngLat[][] }
+  /** What lies over the top of the map (TASK-443), or null for nothing
+   * told: the route is framed clear of it. */
+  | { type: "setCover"; cover: MapCover | null }
+  /** `frame`: the map is framed on the line (TASK-478), at the end of a
+   * run without a route; never while following the runner. */
+  | { type: "showTrack"; coordinates: LngLat[]; frame?: true }
   | { type: "clearTrack" }
+  | {
+      type: "showLifts";
+      skied: LngLat[][];
+      lifts: LngLat[][];
+      /** As `showTrack`'s (TASK-478). */
+      frame?: true;
+      /** The numbers on the lines (TASK-429 part B); none from an app before. */
+      labels?: { point: LngLat; text: string; kind: "lift" | "descent" }[];
+    }
+  | { type: "clearLifts" }
+  /** A race on foot and in the air (TASK-305 part R6c): white on foot,
+   * yellow in the air. */
+  | { type: "showFlight"; foot: LngLat[][]; air: LngLat[][]; frame?: true }
+  | { type: "clearFlight" }
   | { type: "follow"; lngLat: LngLat; heading: number | null }
+  /** Where the phone points on «Compass» (TASK-431), or null off it. */
+  | { type: "face"; heading: number | null }
   | { type: "stopFollow" }
   | { type: "showStops"; stops: StopFeature[] }
   | { type: "clearStops" }
+  /** A place of a themed route tapped under the map (TASK-329): the map
+   * goes there, as close as a street. */
+  | { type: "focus"; lngLat: LngLat }
   /** With `on`, a double tap is told to the app and no longer zooms the
    * map (TASK-119); two fingers still do. */
   | { type: "setDoubleTap"; on: boolean }
@@ -63,6 +90,11 @@ export type ToPage =
    * figure on it (`setCanvas`). */
   | ({ type: "setCanvas" } & CanvasOnPage)
   | { type: "clearCanvas" }
+  /** A drawing anchored to the roads (TASK-347 part C), apart from the
+   * figure so it never clears the ink of a line being drawn: the figure a
+   * ghost under the route of its strokes, and the stretches of it where the
+   * roads went far from the finger. */
+  | { type: "setAnchored"; ghost: boolean; snapped: LngLat[][]; far: LngLat[][] }
   /** Choosing the start on the map (TASK-292): with `on`, the start's pin
    * stays in the middle of the map, which moves under it, and the page
    * tells where the middle is (`centre`). */
@@ -73,25 +105,50 @@ export type ToPage =
   | { type: "clearRejoin" };
 
 /** What fingers do on the map of «Draw on the map» (TASK-281): «Draw», one
- * finger draws and the map keeps still; «Move», one finger moves the
- * figure, or the map away from it, and two fingers size the figure, or
- * zoom the map away from it. */
-export type CanvasMode = "draw" | "move";
+ * finger draws, and two move and zoom the map (TASK-331); «Line» (TASK-331
+ * part B), a finger taps the points of a straight line, told as a line
+ * drawn, a band from the last point following it; «Erase», a finger rubs
+ * lines out, told as a line drawn; «Move», one finger moves the figure, or
+ * the map away from it, or bends a line held still first (`bent`), and two
+ * fingers size the figure, or zoom the map away from it. With «Line» and
+ * «Erase» too, two fingers move and zoom the map. */
+export type CanvasMode = "draw" | "line" | "erase" | "move";
 
 /** The figure on the map of «Draw on the map», as the page draws it. */
 export type CanvasOnPage = {
   mode: CanvasMode;
   /** The figure's lines; none without a figure. */
   lines: LngLat[][];
+  /** Line by line, whether its first side is a link, drawn dashed
+   * (TASK-331 part B). */
+  links: boolean[];
+  /** The lines a finger may bend with «Move», by their index. */
+  bendable: number[];
+  /** The points of a straight line being tapped, the first to close it. */
+  marks: LngLat[];
   /** The middle of the figure's frame, told back moved or sized. */
   centre: LngLat | null;
   /** How much two fingers may shrink and grow the figure: beyond, it stays
    * as big as the distances of «Draw» allow. */
   shrink: number;
   grow: number;
+  /** With pieces (TASK-402 part B): whether a tap with «Move» is told
+   * (`tapped`) to choose one; the lines of the piece chosen, which alone
+   * one finger drags and two size and turn, the others faint; and the box
+   * round it, closed. None chosen: all the lines move, and no box. */
+  choosing?: boolean;
+  chosen?: number[];
+  box?: LngLat[];
   /** Frame the map on the figure, or on the start without one: as the
    * screen opens and as a figure is put on it. */
   frame: boolean;
+  /** Where the route of the figure starts, a dot; none on the water
+   * (TASK-426, ADR-0354). With «Move» a finger on it drags it along
+   * `startLine`, or only to its two ends (`startEnds`), and the page tells
+   * where it was left (`started`); with no line, it stays. */
+  start?: LngLat | null;
+  startLine?: LngLat[];
+  startEnds?: boolean;
 };
 
 /** A place of a themed route on the map (TASK-129). */
@@ -110,15 +167,27 @@ export type FromPage =
   /** The map turned, by the app or by two fingers (TASK-232): its bearing
    * now, in whole degrees clockwise from north. */
   | { type: "turned"; bearing: number }
-  /** «Draw on the map» (TASK-281): a line drawn with one finger, lifted. */
-  | { type: "drawn"; line: LngLat[] }
+  /** «Draw on the map» (TASK-281): a line drawn with one finger, lifted;
+   * and how many metres a pixel of the map is then, so the app knows a
+   * finger's reach (TASK-331 part B). */
+  | { type: "drawn"; line: LngLat[]; metresPerPx: number }
+  /** A line held and dragged with «Move» (TASK-331 part B): from the point
+   * held to where the finger left it. */
+  | { type: "bent"; from: LngLat; to: LngLat; metresPerPx: number }
   /** The figure moved or sized by the fingers: the middle of its frame
-   * now, and how many times bigger. While two fingers still size it
-   * `done` is false, for the distance on screen. */
-  | { type: "figure"; centre: LngLat; factor: number; done: boolean }
+   * now, and how many times bigger; `turn`, how many degrees two fingers
+   * turned it, clockwise (TASK-402), none as 0. While two fingers still
+   * size it `done` is false, for the distance on screen. */
+  | { type: "figure"; centre: LngLat; factor: number; done: boolean; turn?: number }
   /** The middle of the map, where a figure is put (TASK-281), or the
    * point chosen as the start (TASK-292). */
   | { type: "centre"; lngLat: LngLat }
+  /** A tap with «Move» where pieces are chosen (TASK-402 part B): where,
+   * and how many metres a pixel is, for a finger's reach. */
+  | { type: "tapped"; lngLat: LngLat; metresPerPx: number }
+  /** The start dot dragged with «Move» and left (TASK-426): where on its
+   * line, and how many metres a pixel is, for a finger's reach. */
+  | { type: "started"; lngLat: LngLat; metresPerPx: number }
   | { type: "error"; message: string };
 
 export function setPosition(point: LatLon): ToPage {
@@ -176,6 +245,18 @@ export function follow(point: LatLon, heading: number | null = null): ToPage {
   };
 }
 
+/**
+ * Where the phone points while «Compass» is open (TASK-431, ADR-0359),
+ * degrees clockwise from north: the runner's arrow turns there, standing
+ * still too, and opens its cone. Null off that page: the cone closes.
+ */
+export function face(heading: number | null): ToPage {
+  return {
+    type: "face",
+    heading: heading === null ? null : Math.round(heading) % 360,
+  };
+}
+
 /** The run is over: the arrow goes back to being the position marker. */
 export function stopFollow(): ToPage {
   return { type: "stopFollow" };
@@ -186,8 +267,57 @@ export function showTrack(points: LatLon[]): ToPage {
   return { type: "showTrack", coordinates: points.map(toLngLat) };
 }
 
+/** The track, and the map framed on it (TASK-478): a run without a route
+ * that ended, or one opened again. */
+export function showTrackFramed(points: LatLon[]): ToPage {
+  return { type: "showTrack", coordinates: points.map(toLngLat), frame: true };
+}
+
 export function clearTrack(): ToPage {
   return { type: "clearTrack" };
+}
+
+/** A day of skiing (TASK-375 part C2): the track as what was skied, solid
+ * as a run's, and the lifts dashed. In the colours of the ski mode, with
+ * the numbers of the descents and the lifts on them (TASK-429 part B,
+ * ADR-0357). */
+export function showLifts(
+  skied: LatLon[][],
+  lifts: LatLon[][],
+  labels: readonly SkiLabel[] = [],
+  frame = false,
+): ToPage {
+  return {
+    type: "showLifts",
+    ...(frame ? { frame: true as const } : {}),
+    skied: skied.map((line) => line.map(toLngLat)),
+    lifts: lifts.map((line) => line.map(toLngLat)),
+    labels: labels.map((label) => ({
+      point: toLngLat(label.point),
+      text: label.text,
+      kind: label.kind,
+    })),
+  };
+}
+
+export function clearLifts(): ToPage {
+  return { type: "clearLifts" };
+}
+
+/** A race on foot and in the air (TASK-305 part R6c, the user's words of
+ * 2026-11-12, «White: on foot. Yellow: in the air.»): the track white where
+ * the pilot went on foot, the flights yellow over it. */
+export function showFlight(foot: LatLon[][], air: LatLon[][], frame = false): ToPage {
+  return {
+    type: "showFlight",
+    ...(frame ? { frame: true as const } : {}),
+    foot: foot.map((line) => line.map(toLngLat)),
+    air: air.map((line) => line.map(toLngLat)),
+  };
+}
+
+export function clearFlight(): ToPage {
+  return { type: "clearFlight" };
 }
 
 /** Marks the places of a themed route, named when the route passes by. */
@@ -206,6 +336,11 @@ export function showStops(
 
 export function clearStops(): ToPage {
   return { type: "clearStops" };
+}
+
+/** Takes the map to `point`, a place of a themed route (TASK-329). */
+export function focus(point: LatLon): ToPage {
+  return { type: "focus", lngLat: toLngLat(point) };
 }
 
 export function clearRoute(): ToPage {
@@ -235,7 +370,13 @@ export function clearProgress(): ToPage {
 /** Off the route (TASK-303): the dotted line from the runner, `from`, to
  * the point of the route to get back to, `to`, in a straight line. */
 export function showRejoin(from: LatLon, to: LatLon): ToPage {
-  return { type: "showRejoin", line: [toLngLat(from), toLngLat(to)] };
+  return showRejoinLine([from, to]);
+}
+
+/** Off the route, the dotted line along the way back on the streets
+ * (TASK-314): from the runner, its first point, to the route, its last. */
+export function showRejoinLine(line: LatLon[]): ToPage {
+  return { type: "showRejoin", line: line.map(toLngLat) };
 }
 
 /** Back on the route, or the run over: no dotted line. */
@@ -247,6 +388,23 @@ export function clearRejoin(): ToPage {
  * the map (TASK-093); none clears them. */
 export function showOthers(routes: LatLon[][]): ToPage {
   return { type: "showOthers", lines: routes.map((points) => points.map(toLngLat)) };
+}
+
+/** Draws the shape asked for as the search placed it, faint under the
+ * route and the other routes, without moving the map (TASK-442): the
+ * `placed_outline` of a result; none clears it. */
+export function showGhost(lines: LatLon[][]): ToPage {
+  return { type: "showGhost", lines: lines.map((points) => points.map(toLngLat)) };
+}
+
+/**
+ * Tells the map what lies over its top (TASK-443): the status bar and the
+ * buttons. A route is framed under the first and clear of the others, and
+ * «Start here» is written clear of both; a map still framed on its route
+ * frames it again. Null: nothing told, framed as a map never told.
+ */
+export function setCover(cover: MapCover | null): ToPage {
+  return { type: "setCover", cover };
 }
 
 /**
@@ -289,28 +447,60 @@ export function setKind(kind: MapKind): ToPage {
 
 /**
  * «Draw on the map» (TASK-281): the figure drawn on the map, and what
- * fingers do there. The page tells the app of lines drawn (`drawn`), of the
- * figure moved or sized (`figure`) and of where the map is (`centre`).
+ * fingers do there. The page tells the app of lines drawn (`drawn`), of
+ * lines bent (`bent`), of the figure moved or sized (`figure`), of a tap
+ * that chooses a piece (`tapped`) and of where the map is (`centre`).
  */
 export function setCanvas(canvas: {
   mode: CanvasMode;
   lines: LatLon[][];
+  links: boolean[];
+  bendable: number[];
+  marks: LatLon[];
   centre: LatLon | null;
   shrink: number;
   grow: number;
+  choosing?: boolean;
+  chosen?: number[];
+  box?: LatLon[];
   frame: boolean;
+  start?: LatLon | null;
+  startLine?: LatLon[];
+  startEnds?: boolean;
 }): ToPage {
   return {
     type: "setCanvas",
     ...canvas,
     lines: canvas.lines.map((line) => line.map(toLngLat)),
+    marks: canvas.marks.map(toLngLat),
     centre: canvas.centre === null ? null : toLngLat(canvas.centre),
+    ...(canvas.box === undefined ? {} : { box: canvas.box.map(toLngLat) }),
+    ...(canvas.start === undefined
+      ? {}
+      : { start: canvas.start === null ? null : toLngLat(canvas.start) }),
+    ...(canvas.startLine === undefined
+      ? {}
+      : { startLine: canvas.startLine.map(toLngLat) }),
   };
 }
 
 /** The map is the map again: fingers move it, and no figure is on it. */
 export function clearCanvas(): ToPage {
   return { type: "clearCanvas" };
+}
+
+/** The drawing on the map anchored to the roads (TASK-347 part C). */
+export function setAnchored(anchored: {
+  ghost: boolean;
+  snapped: LatLon[][];
+  far: LatLon[][];
+}): ToPage {
+  return {
+    type: "setAnchored",
+    ghost: anchored.ghost,
+    snapped: anchored.snapped.map((line) => line.map(toLngLat)),
+    far: anchored.far.map((line) => line.map(toLngLat)),
+  };
 }
 
 /**
@@ -339,6 +529,11 @@ function isLngLat(value: unknown): value is LngLat {
     Number.isFinite(value[0]) &&
     Number.isFinite(value[1])
   );
+}
+
+/** Metres a pixel of the map is: a number above nought. */
+function isScale(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
 }
 
 /** Reads a message posted by the page; anything unexpected gives null. */
@@ -373,10 +568,28 @@ export function parsePageMessage(data: string): FromPage | null {
     }
     return null;
   }
-  if (message.type === "drawn" && "line" in message) {
-    const line = message.line;
-    return Array.isArray(line) && line.length > 0 && line.every(isLngLat)
-      ? { type: "drawn", line: line.map(([lng, lat]) => [lng, lat] as LngLat) }
+  if (message.type === "drawn" && "line" in message && "metresPerPx" in message) {
+    const { line, metresPerPx } = message;
+    return Array.isArray(line) &&
+      line.length > 0 &&
+      line.every(isLngLat) &&
+      isScale(metresPerPx)
+      ? {
+          type: "drawn",
+          line: line.map(([lng, lat]) => [lng, lat] as LngLat),
+          metresPerPx,
+        }
+      : null;
+  }
+  if (
+    message.type === "bent" &&
+    "from" in message &&
+    "to" in message &&
+    "metresPerPx" in message
+  ) {
+    const { from, to, metresPerPx } = message;
+    return isLngLat(from) && isLngLat(to) && isScale(metresPerPx)
+      ? { type: "bent", from: [from[0], from[1]], to: [to[0], to[1]], metresPerPx }
       : null;
   }
   if (
@@ -386,12 +599,33 @@ export function parsePageMessage(data: string): FromPage | null {
     "done" in message
   ) {
     const { centre, factor, done } = message;
+    const turn = "turn" in message ? message.turn : 0;
     return isLngLat(centre) &&
       typeof factor === "number" &&
       Number.isFinite(factor) &&
       factor > 0 &&
-      typeof done === "boolean"
-      ? { type: "figure", centre: [centre[0], centre[1]], factor, done }
+      typeof done === "boolean" &&
+      typeof turn === "number" &&
+      Number.isFinite(turn)
+      ? {
+          type: "figure",
+          centre: [centre[0], centre[1]],
+          factor,
+          done,
+          ...(turn !== 0 ? { turn } : {}),
+        }
+      : null;
+  }
+  if (message.type === "tapped" && "lngLat" in message && "metresPerPx" in message) {
+    const { lngLat, metresPerPx } = message;
+    return isLngLat(lngLat) && isScale(metresPerPx)
+      ? { type: "tapped", lngLat: [lngLat[0], lngLat[1]], metresPerPx }
+      : null;
+  }
+  if (message.type === "started" && "lngLat" in message && "metresPerPx" in message) {
+    const { lngLat, metresPerPx } = message;
+    return isLngLat(lngLat) && isScale(metresPerPx)
+      ? { type: "started", lngLat: [lngLat[0], lngLat[1]], metresPerPx }
       : null;
   }
   if (message.type === "centre" && "lngLat" in message) {

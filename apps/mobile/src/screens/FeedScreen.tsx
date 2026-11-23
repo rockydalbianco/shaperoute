@@ -1,7 +1,11 @@
-import type { LatLon } from "@shaperoute/shared-types";
-import { useCallback, useMemo } from "react";
 import {
-  ActivityIndicator,
+  type FeedFilter,
+  isPhotoPost,
+  type MuwRoute,
+  type StylePost as StylePostBody,
+} from "@shaperoute/shared-types";
+import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
+import {
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -18,79 +22,428 @@ import type { FeedAds } from "../ads/feedAds";
 import { useFeedAds } from "../ads/useFeedAds";
 import { FeedContest } from "../contest/FeedContest";
 import { useContest } from "../contest/useContest";
+import { AddToFeed } from "../feed/AddToFeed";
+import { onPlanPostsSent, usePlanPostOutbox } from "../feed/PlanPostFlow";
 import { FeedAd } from "../feed/FeedAd";
 import { FeedMapShooter } from "../feed/FeedMaps";
 import { drawingHeight, FeedPost } from "../feed/FeedPost";
 import { isShown, type ShownPost, shownPost } from "../feed/feedPosts";
-import { SAMPLE_FEED, type SamplePost } from "../feed/sampleFeed";
+import { PhotoFeedPost } from "../feed/PhotoFeedPost";
+import { PhotoPostPage } from "../feed/PhotoPostPage";
+import { PostPage } from "../feed/PostPage";
+import { SleepFeedPost } from "../feed/SleepFeedPost";
+import { isSleepPost } from "../feed/sleepPost";
+import { SleepPostDetailPage } from "../feed/SleepPostDetailPage";
+import { loadFeedTab, saveFeedTab } from "../feed/feedTabChoice";
+import { type FeedTab, feedTabName, FeedTabs } from "../feed/FeedTabs";
+import { FeedSkeleton } from "../feed/FeedSkeleton";
+import type { SamplePost } from "../feed/sampleFeed";
 import { type FeedItem, feedWithAds } from "../feed/feedWithAds";
-import { useFeed } from "../feed/useFeed";
+import { type Feed, type FeedShown, useFeed } from "../feed/useFeed";
+// MuW Style (TASK-384, ADR-0326): its posts in «All» and its lens.
+import { feedWithStyle, type StyleItem } from "../feed/feedWithStyle";
+import { useStyleInFeed } from "../feed/styleInFeedChoice";
+import { StyleLens } from "../feed/StyleLens";
+import { StylePost } from "../feed/StylePost";
+import { useStylePosts } from "../feed/useStylePosts";
+// The routes MuW drew (TASK-365, ADR-0310): in «All», one row in 6 at most.
+import { feedWithMuw, type MuwItem } from "../feed/feedWithMuw";
+import { MuwPost } from "../feed/MuwPost";
+import { MUW_ROUTES_IN_FEED } from "../feed/muwInFeed";
+import { useMuwRoutes } from "../feed/useMuwRoutes";
+import { t } from "../i18n";
+import { LivesRow } from "../liveShare/LivesRow";
 import { useDrawingsDoor } from "../social/drawingsDoor";
-import { FindFriendsButton } from "../social/FindFriendsButton";
-import { color, fontSize, space } from "../theme/tokens";
+import { usePeopleDoor } from "../social/peopleDoor";
+import { onPhotoPostsSent, usePhotoPostOutbox } from "../social/usePhotoPostOutbox";
+import { color, font, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
+import { EmptyState } from "../ui/EmptyState";
+import { HEART } from "../ui/outlines";
+import { Tap } from "../ui/Tap";
+import { useHeaderScroll } from "../tabs/headerScroll";
+import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 
 type Props = {
   /** An example drawing was tapped: its route goes on the map. */
   onOpen: (post: SamplePost) => void;
+  /** A route MuW drew was tapped: it goes on the map, as one of «Explore». */
+  onOpenMuw?: (route: MuwRoute) => void;
+  /** «Record now» of the «+» (TASK-481): a recording starts, as from
+   * «Draw»; without it the «+» has no «Record now». */
+  onRecord?: () => void;
   /** «Feed» is the page on the screen. Built behind «Draw» at the start, it
    * asks for no ad (and no consent), and no drawings, until it is
    * (TASK-235, TASK-118). */
   active?: boolean;
   /** The ad network: AdMob in a build of the app, none in Expo Go. */
   ads?: FeedAds;
-  /** Where the phone is, for the drawings nearby; null when unknown. */
-  near?: LatLon | null;
 };
 
 /** A row of the list: a member's drawing, or an example. */
 type Post = SamplePost | ShownPost;
-type Item = FeedItem<Post, NativeAd>;
+type Item = FeedItem<Post, NativeAd> | StyleItem | MuwItem;
 
 /** How far from the end of the list, in screens, the next page is asked. */
 const MORE_AT_SCREENS = 1;
 
+/** The rows of a tab: only the members' real drawings. The made-up examples
+ * of ADR-0127 are gone (the user's choice, 2026-11-22): without an account,
+ * or while nobody has published anything, the tab says so instead. */
+function postsOf(shown: FeedShown): readonly Post[] {
+  return shown.kind === "ready" ? shown.posts.map(shownPost) : NO_POSTS;
+}
+
+const NO_POSTS: readonly Post[] = [];
+
 /**
  * «Feed», the page at the left of «Draw» (TASK-154): the drawings the
- * members publish (TASK-118, ADR-0227), the account's own first, then
- * those of the people it follows, then the others' nearby, the last
- * published first; a pull reads them again, the end of the list reads
- * more. Without an account, and while nobody has published anything the
- * account may see, it shows examples: figures of the catalogue with
- * made-up runners (TASK-156, ADR-0127). Nothing on the page says they are
- * examples: the user's choice. Under each line is the map of its streets
- * (TASK-162): a picture, taken by a map page that the list covers. A tap
- * on a member's drawing opens it whole on the map, with its reactions and
- * comments, as from a profile (TASK-117); one on an example opens its
- * route (TASK-188). Above the drawings, at the right, the lens that finds
- * friends by name (TASK-215, TASK-219); under it, while the API has a
- * contest, its card (TASK-299, docs/CONCORSI.md §7), asked with the feed
- * and with each pull. Between the drawings, one ad every 5 (TASK-235,
- * ADR-0198).
+ * members publish (TASK-118, ADR-0227), in two tabs (TASK-362, ADR-0308):
+ * «All», what everyone may see, and «Following», the account's own and those
+ * of the people it follows, the last published first in both. Each tab keeps
+ * its own list, read and place: both stay built, and the one not on the
+ * screen is only hidden. The last tab chosen opens again. A pull reads the
+ * open tab again, the end of its list reads more. Without an account there
+ * are no tabs, only «All». While nobody has published anything the account
+ * may see, «All» says so, and without an account it asks to log in: the
+ * made-up examples of TASK-156 (ADR-0127) are no longer shown (the user's
+ * choice, 2026-11-22). Under each line is the map of
+ * its streets (TASK-162): a picture, taken by a map page that the list
+ * covers. A tap on a member's drawing opens it whole on the map, with its
+ * reactions and comments, as from a profile (TASK-117). The search that was its lens is at the top
+ * of «Explore» since TASK-367 part B; above the drawings of «All»,
+ * while the API has a contest, its card (TASK-299, docs/CONCORSI.md §7),
+ * asked with the feed and with each pull. Between the drawings, one ad every
+ * 5 (TASK-235, ADR-0198). While the API has MuW Style posts (TASK-384,
+ * ADR-0326), one row in 8 of «All» at most is one of them, unless «Settings»
+ * turned them off, and a third tab, «Style», has them all; without an
+ * account the tabs are then «All» and «Style». While the API has routes MuW
+ * drew (TASK-365, ADR-0310), one row in 6 of «All» at most is one of them;
+ * a tap opens it on the map. At the right of the
+ * bar, with an account, a «+» lists what can be added (TASK-481): a
+ * recording started now, an activity from a file (TASK-476) or a
+ * post of photos only (TASK-312 part C), whose card and page are their own
+ * (PhotoFeedPost, PhotoPostPage); once one reaches the API, the open tabs
+ * read again.
  */
 export function FeedScreen({
   onOpen,
+  onOpenMuw,
+  onRecord,
   active = true,
   ads = feedAds(),
-  near = null,
 }: Props) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const cardWidth = width - 2 * space.lg;
-  const { shown, signedIn, refreshing, refresh, more } = useFeed(active, near);
+  const [chosen, setChosen] = useState(loadFeedTab);
+  // Built the first time it is opened, and kept from then on.
+  const [opened, setOpened] = useState(chosen === "following");
+  // An API before the tabs ignores `filter` (TASK-362): the app shows the feed
+  // it sends, as before, without tabs, until the server is updated. «All»
+  // then reads in place of «Following», even when that was the choice.
+  const following = useFeed(active && chosen === "following", "following");
+  const olderApi = (shown: FeedShown) =>
+    shown.kind === "ready" && shown.filtered === false;
+  // MuW Style: the lens only while the API has a post (TASK-384).
+  const stylePosts = useStylePosts(active);
+  const withStyle = stylePosts.length > 0;
+  const styleInFeed = useStyleInFeed();
+  // The routes MuW drew: none while they are off (TASK-430), not even asked.
+  const fetchedMuw = useMuwRoutes(active && MUW_ROUTES_IN_FEED);
+  const muwRoutes = MUW_ROUTES_IN_FEED ? fetchedMuw : NO_MUW;
+  const [styleOpened, setStyleOpened] = useState(chosen === "style");
+  const all = useFeed(
+    active &&
+      (chosen === "all" ||
+        (chosen === "style" && !withStyle) ||
+        olderApi(following.shown)),
+    "all",
+  );
+  const tabsKnown = !olderApi(following.shown) && !olderApi(all.shown);
+  const signedIn = all.signedIn;
+  const withFollowing = signedIn && tabsKnown;
+  const withTabs = withFollowing || withStyle;
+  // The «+» of the bar: an account. «Photos only» needs no file picker.
+  const withAdd = signedIn;
+  // The posts of photos only and the gym plans posted (TASK-485) left on
+  // the phone go from here, the page always built; once one reaches the
+  // API the tabs read again.
+  usePhotoPostOutbox();
+  usePlanPostOutbox();
+  const refreshAll = all.refresh;
+  const refreshFollowing = following.refresh;
+  useEffect(
+    () =>
+      onPhotoPostsSent(() => {
+        refreshAll();
+        refreshFollowing();
+      }),
+    [refreshAll, refreshFollowing],
+  );
+  useEffect(
+    () =>
+      onPlanPostsSent(() => {
+        refreshAll();
+        refreshFollowing();
+      }),
+    [refreshAll, refreshFollowing],
+  );
+  // Without an account there is no «Following»; the choice waits for the next one.
+  const tab: FeedTab =
+    (chosen === "following" && !withFollowing) || (chosen === "style" && !withStyle)
+      ? "all"
+      : chosen;
   const { open, openProblem } = useDrawingsDoor();
+  const { open: findPeople } = usePeopleDoor();
   const contest = useContest(active);
-  const onRefresh = useCallback(() => {
-    refresh();
-    contest.refresh();
-  }, [contest, refresh]);
-  const posts: readonly Post[] = useMemo(() => {
-    if (shown.kind === "ready" && shown.posts.length > 0) {
-      return shown.posts.map(shownPost);
+  const onChoose = useCallback((next: FeedTab) => {
+    setChosen(next);
+    saveFeedTab(next);
+    if (next === "following") {
+      setOpened(true);
     }
-    return shown.kind === "loading" ? [] : SAMPLE_FEED;
-  }, [shown]);
-  const { ads: placed, see } = useFeedAds(posts.length, active, ads);
-  const items = useMemo(() => feedWithAds(posts, placed), [posts, placed]);
+    if (next === "style") {
+      setStyleOpened(true);
+    }
+  }, []);
+  const onRefreshAll = useCallback(() => {
+    all.refresh();
+    contest.refresh();
+  }, [all, contest]);
+  const problem =
+    openProblem !== null ? (
+      <Text style={styles.problem} accessibilityRole="alert">
+        {openProblem}
+      </Text>
+    ) : null;
+  // The page of a member's post, over the feed (TASK-410, ADR-0340).
+  const [page, setPage] = useState<ShownPost | null>(null);
+  const shared = {
+    active,
+    ads,
+    cardWidth,
+    insetBottom: insets.bottom,
+    openPost: setPage,
+    onOpen,
+  };
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      <FeedMapShooter width={cardWidth} height={drawingHeight(cardWidth)} />
+      <View style={[StyleSheet.absoluteFill, styles.screen]}>
+        {/* The tabs, with an account (TASK-362). */}
+        {(withTabs || withAdd) && (
+          <View style={[styles.bar, { paddingTop: insets.top + space.lg }]}>
+            {withTabs ? (
+              <FeedTabs
+                tab={tab}
+                onChoose={onChoose}
+                following={withFollowing}
+                style={withStyle}
+              />
+            ) : (
+              <View style={styles.barSpace} />
+            )}
+            {/* «Add to Feed», with an account (TASK-476, TASK-481). */}
+            {withAdd && (
+              <AddToFeed
+                onRecord={onRecord}
+                onSleepPost={() => {
+                  refreshAll();
+                  refreshFollowing();
+                }}
+                onActivityPosted={() => {
+                  refreshAll();
+                  refreshFollowing();
+                }}
+              />
+            )}
+          </View>
+        )}
+        <FeedList
+          {...shared}
+          tab="all"
+          feed={all}
+          visible={tab === "all"}
+          stylePosts={styleInFeed ? stylePosts : NO_STYLE}
+          muwRoutes={muwRoutes}
+          onOpenMuw={onOpenMuw}
+          onRefresh={onRefreshAll}
+          header={
+            <View style={styles.header}>
+              {contest.contest !== null && (
+                <FeedContest
+                  contest={contest.contest}
+                  mine={contest.mine}
+                  width={cardWidth}
+                  onOpen={signedIn ? open : undefined}
+                />
+              )}
+              {/* The «Live» row (TASK-468 part B2a): one's own and the
+                  followed accounts' lives. */}
+              {signedIn && <LivesRow active={active} />}
+              {problem}
+            </View>
+          }
+          empty={
+            !signedIn ? (
+              <EmptyState
+                outline={HEART}
+                title={feedTabName("all")}
+                message={t("Log in from Profile to see the activities.")}
+                testID="feed-log-in"
+              />
+            ) : all.shown.kind === "ready" ? (
+              <EmptyState
+                outline={HEART}
+                title={feedTabName("all")}
+                message={t("Nobody has published anything yet.")}
+                testID="feed-no-posts-all"
+              />
+            ) : null
+          }
+        />
+        {withFollowing && opened && (
+          <FeedList
+            {...shared}
+            tab="following"
+            feed={following}
+            visible={tab === "following"}
+            onRefresh={following.refresh}
+            header={
+              <View style={styles.header}>
+                {following.shown.kind === "ready" &&
+                  following.shown.followsAnyone === false &&
+                  following.shown.posts.length > 0 && (
+                    <View style={styles.nudge} testID="feed-follow-nudge">
+                      <Text style={styles.nudgeText}>
+                        {t("Follow people to see their drawings here.")}
+                      </Text>
+                      <Tap
+                        style={styles.quietButton}
+                        onPress={findPeople}
+                        accessibilityRole="button"
+                      >
+                        <Text style={styles.quietButtonText}>
+                          {t("Find people to follow")}
+                        </Text>
+                      </Tap>
+                    </View>
+                  )}
+                {problem}
+              </View>
+            }
+            empty={
+              following.shown.kind === "ready" ? (
+                following.shown.followsAnyone === false ? (
+                  <EmptyState
+                    outline={HEART}
+                    title={feedTabName("following")}
+                    message={t("Follow people to see their drawings here.")}
+                    action={{ label: t("Find people to follow"), onPress: findPeople }}
+                    testID="feed-no-follows"
+                  />
+                ) : (
+                  <EmptyState
+                    outline={HEART}
+                    title={feedTabName("following")}
+                    message={t(
+                      "The people you follow have not published anything yet.",
+                    )}
+                    testID="feed-no-posts"
+                  />
+                )
+              ) : null
+            }
+          />
+        )}
+        {withStyle && styleOpened && (
+          <StyleLens
+            visible={tab === "style"}
+            cardWidth={cardWidth}
+            insetBottom={insets.bottom}
+          />
+        )}
+      </View>
+      {page !== null && isPhotoPost(page.drawing) && (
+        <PhotoPostPage post={page} onClose={() => setPage(null)} />
+      )}
+      {/* The post of a night of sleep has its own page too (TASK-467 part
+          E); taken off the Feed there, the open tabs read again. */}
+      {page !== null && isSleepPost(page.drawing) && (
+        <SleepPostDetailPage
+          post={page}
+          onClose={() => setPage(null)}
+          onRemoved={() => {
+            refreshAll();
+            refreshFollowing();
+          }}
+        />
+      )}
+      {page !== null && !isPhotoPost(page.drawing) && !isSleepPost(page.drawing) && (
+        <PostPage
+          post={page}
+          onClose={() => setPage(null)}
+          onMap={() => {
+            setPage(null);
+            open(page.drawing);
+          }}
+        />
+      )}
+    </View>
+  );
+}
+
+const NO_STYLE: readonly StylePostBody[] = [];
+const NO_MUW: readonly MuwRoute[] = [];
+
+type ListProps = {
+  tab: FeedFilter;
+  feed: Feed;
+  /** This tab is the one on the screen: hidden, the list keeps its place. */
+  visible: boolean;
+  active: boolean;
+  ads: FeedAds;
+  cardWidth: number;
+  insetBottom: number;
+  header: ReactElement;
+  /** What a tab shows when it has read that it has nothing. */
+  empty: ReactElement | null;
+  /** The MuW Style posts to put between the drawings: only in «All». */
+  stylePosts?: readonly StylePostBody[];
+  /** The routes MuW drew, to put between the drawings: only in «All». */
+  muwRoutes?: readonly MuwRoute[];
+  onOpenMuw?: (route: MuwRoute) => void;
+  onRefresh: () => void;
+  /** Opens the page of a member's post (TASK-410). */
+  openPost: (post: ShownPost) => void;
+  onOpen: (post: SamplePost) => void;
+};
+
+/** The list of one tab, with its own ads. */
+function FeedList({
+  tab,
+  feed,
+  visible,
+  active,
+  ads,
+  cardWidth,
+  insetBottom,
+  header,
+  empty,
+  stylePosts = NO_STYLE,
+  muwRoutes = NO_MUW,
+  onOpenMuw,
+  onRefresh,
+  openPost,
+  onOpen,
+}: ListProps) {
+  const { shown, signedIn, refreshing, refresh, more } = feed;
+  const posts = useMemo(() => postsOf(shown), [shown]);
+  const { ads: placed, see } = useFeedAds(posts.length, active && visible, ads);
+  const items = useMemo<Item[]>(
+    () => feedWithMuw(feedWithStyle(feedWithAds(posts, placed), stylePosts), muwRoutes),
+    [posts, placed, stylePosts, muwRoutes],
+  );
   // The posts that have been on the screen: an ad never goes where the user
   // is looking.
   const onViewableItemsChanged = useCallback(
@@ -103,45 +456,44 @@ export function FeedScreen({
     },
     [see],
   );
+  // Its tab touched again: back to the newest drawings (TASK-367).
+  const scroll = useScrollToTopOnReselect<FlatList<Item>>(visible);
+  // The header turns to glass as the list scrolls (TASK-469 A5c-2).
+  const headerScroll = useHeaderScroll(visible);
   return (
-    <View style={StyleSheet.absoluteFill}>
-      <FeedMapShooter width={cardWidth} height={drawingHeight(cardWidth)} />
+    <View style={visible ? styles.list : styles.hidden}>
       <FlatList<Item>
-        style={[StyleSheet.absoluteFill, styles.screen]}
+        ref={scroll}
+        {...headerScroll}
         contentContainerStyle={[
           styles.content,
-          {
-            paddingTop: insets.top + space.lg,
-            paddingBottom: insets.bottom + space.xl,
-          },
+          { paddingBottom: insetBottom + space.xl },
         ]}
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <View style={styles.lens}>
-              <FindFriendsButton />
-            </View>
-            {contest.contest !== null && (
-              <FeedContest
-                contest={contest.contest}
-                mine={contest.mine}
-                width={cardWidth}
-                onOpen={signedIn ? open : undefined}
-              />
-            )}
-            {openProblem !== null && (
-              <Text style={styles.problem} accessibilityRole="alert">
-                {openProblem}
-              </Text>
-            )}
-          </View>
-        }
+        ListHeaderComponent={header}
         ListEmptyComponent={
           shown.kind === "loading" ? (
-            <ActivityIndicator
-              color={color.textMuted}
-              style={styles.loading}
-              testID="feed-loading"
+            // The shape of the cards to come (TASK-355 part B), not a spinner.
+            <FeedSkeleton />
+          ) : shown.kind === "failed" ? (
+            <EmptyState
+              outline={HEART}
+              title={feedTabName(tab)}
+              message={t("Couldn't load the Feed.")}
+              action={{ label: t("Try again"), onPress: refresh }}
+              testID="feed-failed"
             />
+          ) : (
+            empty
+          )
+        }
+        ListFooterComponent={
+          shown.kind === "ready" && shown.moreFailed === true ? (
+            <View style={styles.moreFailed} testID="feed-more-failed">
+              <Text style={styles.nudgeText}>{t("Couldn't load the Feed.")}</Text>
+              <Tap style={styles.quietButton} onPress={more} accessibilityRole="button">
+                <Text style={styles.quietButtonText}>{t("Try again")}</Text>
+              </Tap>
+            </View>
           ) : null
         }
         refreshControl={
@@ -153,19 +505,48 @@ export function FeedScreen({
             />
           ) : undefined
         }
-        onEndReached={more}
+        onEndReached={visible ? more : undefined}
         onEndReachedThreshold={MORE_AT_SCREENS}
         data={items}
         keyExtractor={(item) =>
-          item.kind === "post" ? item.post.id : `ad-${item.slot}`
+          item.kind === "post"
+            ? item.post.id
+            : item.kind === "style"
+              ? `style-${item.style.id}`
+              : item.kind === "muw"
+                ? `muw-${item.route.id}`
+                : `ad-${item.slot}`
         }
         renderItem={({ item }) =>
-          item.kind === "post" ? (
+          item.kind === "style" ? (
+            <StylePost post={item.style} width={cardWidth} />
+          ) : item.kind === "muw" ? (
+            <MuwPost
+              route={item.route}
+              width={cardWidth}
+              onOpen={(route) => onOpenMuw?.(route)}
+            />
+          ) : item.kind === "post" &&
+            isShown(item.post) &&
+            isPhotoPost(item.post.drawing) ? (
+            <PhotoFeedPost
+              post={item.post}
+              width={cardWidth}
+              onOpen={() => isShown(item.post) && openPost(item.post)}
+            />
+          ) : item.kind === "post" &&
+            isShown(item.post) &&
+            isSleepPost(item.post.drawing) ? (
+            <SleepFeedPost
+              post={item.post}
+              onOpen={() => isShown(item.post) && openPost(item.post)}
+            />
+          ) : item.kind === "post" ? (
             <FeedPost
               post={item.post}
               width={cardWidth}
               onOpen={() =>
-                isShown(item.post) ? open(item.post.drawing) : onOpen(item.post)
+                isShown(item.post) ? openPost(item.post) : onOpen(item.post)
               }
             />
           ) : ads.views === null ? null : (
@@ -173,7 +554,7 @@ export function FeedScreen({
           )
         }
         onViewableItemsChanged={onViewableItemsChanged}
-        testID="feed-list"
+        testID={tab === "all" ? "feed-list" : "feed-list-following"}
         // A drawing is a hundred views: a few at a time, the others as they come.
         initialNumToRender={2}
         maxToRenderPerBatch={2}
@@ -188,22 +569,60 @@ const styles = StyleSheet.create({
   screen: {
     backgroundColor: color.background,
   },
+  bar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+    paddingHorizontal: space.lg,
+    paddingBottom: space.md,
+  },
+  barSpace: {
+    flex: 1,
+  },
+  list: {
+    flex: 1,
+  },
+  hidden: {
+    display: "none",
+  },
   header: {
     gap: space.md,
-  },
-  // The lens at the right, under the button of «Profile».
-  lens: {
-    alignItems: "flex-end",
   },
   problem: {
     color: color.error,
     fontSize: fontSize.small,
   },
-  loading: {
-    paddingVertical: space.xl,
-  },
   content: {
     gap: space.md,
     paddingHorizontal: space.lg,
+  },
+  nudge: {
+    gap: space.sm,
+    padding: space.lg,
+    borderRadius: radius.md,
+    backgroundColor: color.surface,
+  },
+  nudgeText: {
+    ...font.body,
+    color: color.textMuted,
+  },
+  moreFailed: {
+    alignItems: "center",
+    gap: space.sm,
+    paddingVertical: space.lg,
+  },
+  quietButton: {
+    alignSelf: "flex-start",
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    paddingHorizontal: space.lg,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  quietButtonText: {
+    ...font.label,
+    color: color.text,
   },
 });

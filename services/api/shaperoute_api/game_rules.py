@@ -22,8 +22,13 @@ from dataclasses import dataclass, field
 from route_engine.geo import haversine_m
 
 # Raised whenever a rule below changes: game_backfill.py computes the runs
-# again.
-RULES_VERSION = 1
+# again. 2: a walk counts its metres (TASK-371). A hike counts as a walk
+# (TASK-377) and kept 2: no run saved before it could be a hike (0051); so
+# did a skate (TASK-380, 0055), with its own "vehicle" thresholds too. 3:
+# best times over 11 distances, not 4 (TASK-423 part B, ADR-0351). A
+# wheelchair route counts as a walk (TASK-414) and kept 3: no run saved
+# before it could be one (0071).
+RULES_VERSION = 3
 
 # A stretch of at least VEHICLE_WINDOW_M covered faster than this is not
 # run: 2:23 a kilometre, quicker than a world record over 1500 m.
@@ -35,6 +40,11 @@ VEHICLE_SHARE = 0.10
 # MEAN_SPEED_FROM_M.
 MAX_MEAN_SPEED_MPS = 6.0
 MEAN_SPEED_FROM_M = 3_000.0
+# A skater rolls faster than a runner, downhill above all: 35 km/h over
+# VEHICLE_WINDOW_M and 28 km/h on average (TASK-380, ADR-0324, the user's
+# choice of 2026-11-06). What each threshold drops: docs/sports/roller.md.
+SKATE_VEHICLE_SPEED_MPS = 35 / 3.6
+SKATE_MAX_MEAN_SPEED_MPS = 28 / 3.6
 # Two fixes further apart than this in time: the step between them counts
 # in the metres, never inside a best time.
 MAX_GAP_S = 30.0
@@ -42,8 +52,22 @@ MAX_GAP_S = 30.0
 MAX_FIX_INTERVAL_S = 10.0
 # The metres of one account that count in one day (UTC).
 DAILY_CAP_M = 120_000
-# The distances of the best times, in metres: what the pace shapes ask.
-BEST_DISTANCES_M: tuple[int, ...] = (1_000, 5_000, 10_000, 21_097)
+# The distances of the best times, in metres: what the pace shapes ask
+# (TASK-423): 400 m, 1 km, the mile, 3, 5, 10 and 15 km, the half, 30 km,
+# the marathon; and 50 km, for the ultra of one run.
+BEST_DISTANCES_M: tuple[int, ...] = (
+    400,
+    1_000,
+    1_609,
+    3_000,
+    5_000,
+    10_000,
+    15_000,
+    21_097,
+    30_000,
+    42_195,
+    50_000,
+)
 # A shape not unlocked yet shows at most this much of its way.
 MAX_PROGRESS = 0.99
 
@@ -53,6 +77,24 @@ VEHICLE = "vehicle"
 OVERLAP = "overlap"
 DAILY_CAP = "daily_cap"
 RUNNING = "running"
+# A walk counts its metres as a run does, with the same checks, but no best
+# times: the pace shapes, like the personal bests, are a run's (TASK-371,
+# ADR-0315, the user's choice).
+WALKING = "walking"
+# A hike counts as a walk (TASK-377, ADR-0321, the user's choice 5).
+HIKING = "hiking"
+# A skate counts as a walk too (TASK-380, ADR-0324, the user's choice 4): a
+# skater is a person on foot, with thresholds of its own (speed_limits); the
+# personal bests of a skate are its own.
+INLINE_SKATING = "inline_skating"
+# Snowshoeing counts as a hike, so as a walk (TASK-413, ADR-0342, the user's
+# choice 5): its metres with a run's checks, no best times.
+SNOWSHOEING = "snowshoeing"
+# A wheelchair or a stroller counts as a walk (TASK-414, ADR-0343, the
+# user's choice 7): its metres with a run's checks, no best times; its
+# personal bests are its own.
+WHEELCHAIR = "wheelchair"
+ON_FOOT = (RUNNING, WALKING, HIKING, INLINE_SKATING, SNOWSHOEING, WHEELCHAIR)
 
 
 @dataclass(frozen=True)
@@ -101,9 +143,11 @@ class _Step:
 def evaluate(
     fixes: Sequence[Fix], pauses: Sequence[RunPause], activity: str
 ) -> RunGame:
-    """The run as the game sees it. Only runs on foot count."""
+    """The run as the game sees it. Only runs, walks, hikes, skates,
+    snowshoe routes and wheelchair routes count, and only a run has best
+    times."""
     elapsed_s = fixes[-1].t_s - fixes[0].t_s if fixes else 0.0
-    if activity != RUNNING:
+    if activity not in ON_FOOT:
         return RunGame(False, NOT_RUNNING, 0, {}, elapsed_s)
     if len(fixes) < 2:
         return RunGame(True, None, 0, {}, elapsed_s)
@@ -117,18 +161,26 @@ def evaluate(
         )
         for i, (a, b) in enumerate(zip(fixes, fixes[1:], strict=False))
     ]
-    fast = _vehicle_steps(steps)
+    vehicle_mps, mean_mps = speed_limits(activity)
+    fast = _vehicle_steps(steps, vehicle_mps)
     run_m = sum(s.length_m for s in steps if not s.stopped)
     moving_s = sum(s.moving_s for s in steps if not s.stopped)
     vehicle_m = sum(s.length_m for s, f in zip(steps, fast, strict=True) if f)
     if run_m > 0 and vehicle_m > VEHICLE_SHARE * run_m:
         return RunGame(False, VEHICLE, 0, {}, elapsed_s)
-    if run_m > MEAN_SPEED_FROM_M and (
-        moving_s <= 0 or run_m / moving_s > MAX_MEAN_SPEED_MPS
-    ):
+    if run_m > MEAN_SPEED_FROM_M and (moving_s <= 0 or run_m / moving_s > mean_mps):
         return RunGame(False, VEHICLE, 0, {}, elapsed_s)
-    best = best_times(steps, fast, clock)
+    best = best_times(steps, fast, clock) if activity == RUNNING else {}
     return RunGame(True, None, round(run_m - vehicle_m), best, elapsed_s)
+
+
+def speed_limits(activity: str) -> tuple[float, float]:
+    """The speed over VEHICLE_WINDOW_M past which a stretch is a vehicle's,
+    and the most mean speed beyond MEAN_SPEED_FROM_M, in m/s: a skate's own,
+    a run's for the rest."""
+    if activity == INLINE_SKATING:
+        return SKATE_VEHICLE_SPEED_MPS, SKATE_MAX_MEAN_SPEED_MPS
+    return VEHICLE_SPEED_MPS, MAX_MEAN_SPEED_MPS
 
 
 def moving_clock(times: Sequence[float], pauses: Sequence[RunPause]) -> list[float]:
@@ -166,22 +218,22 @@ def _stopped_between(pauses: Sequence[RunPause], from_s: float, to_s: float) -> 
     return any(not p.auto and from_s <= p.from_s < to_s for p in pauses)
 
 
-def _vehicle_steps(steps: Sequence[_Step]) -> list[bool]:
+def _vehicle_steps(steps: Sequence[_Step], vehicle_mps: float) -> list[bool]:
     """Which steps lie in a stretch of at least VEHICLE_WINDOW_M covered
-    faster than VEHICLE_SPEED_MPS. A pause the runner asked for ends a
+    faster than `vehicle_mps`. A pause the runner asked for ends a
     stretch."""
     fast = [False] * len(steps)
     start = 0
     for end in range(len(steps) + 1):
         if end == len(steps) or steps[end].stopped:
             chain = steps[start:end]
-            for i, f in enumerate(_fast_in(chain)):
+            for i, f in enumerate(_fast_in(chain, vehicle_mps)):
                 fast[start + i] = f
             start = end + 1
     return fast
 
 
-def _fast_in(chain: Sequence[_Step]) -> list[bool]:
+def _fast_in(chain: Sequence[_Step], vehicle_mps: float) -> list[bool]:
     """Two indices along the chain: each window is the shortest run of
     steps from i reaching VEHICLE_WINDOW_M."""
     n = len(chain)
@@ -194,7 +246,7 @@ def _fast_in(chain: Sequence[_Step]) -> list[bool]:
             j += 1
         if length < VEHICLE_WINDOW_M:
             break
-        if moving <= 0 or length / moving > VEHICLE_SPEED_MPS:
+        if moving <= 0 or length / moving > vehicle_mps:
             for k in range(max(i, marked), j):
                 fast[k] = True
             marked = max(marked, j)
@@ -269,10 +321,17 @@ class DistanceGoal:
 
 @dataclass(frozen=True)
 class PaceGoal:
-    """`distance_m` in one run at `pace_s` a kilometre or better."""
+    """`distance_m` in one run at `pace_s` a kilometre or better.
+
+    `single_run`: a milestone of one run (the first 5K, the first marathon:
+    TASK-423, ADR-0351). Its pace is so slow that any run of the distance
+    meets it, and the app says «One run of 5 km»; it stays a pace goal so
+    that the apps already installed, which know only `distance` and `pace`,
+    keep reading the catalog."""
 
     distance_m: int
     pace_s: int
+    single_run: bool = False
 
     @property
     def target_s(self) -> float:

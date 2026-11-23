@@ -87,6 +87,11 @@ type Answer = { status: number; body?: unknown } | Error;
 function api(puts: Record<string, Answer | Answer[]>) {
   const sent: string[] = [];
   const fetchFn = jest.fn(async (url: string, init?: RequestInit) => {
+    // The figures of the post (TASK-410 C) go after each run saved: their
+    // own test is activitiesDoorStats.test.tsx.
+    if (url.endsWith("/stats")) {
+      return Response.json({}, { status: 200 });
+    }
     if (init?.method !== "PUT") {
       return Response.json(activities, { status: 200 });
     }
@@ -217,7 +222,8 @@ test("a run the API will never take stays, with its reason, and is not sent agai
   const { result } = await door(fetchFn);
 
   await waitFor(() => expect(result.current.refused).toHaveLength(1));
-  expect(sent).toEqual(["a", "b"]);
+  // Refused with the phone's offset, then once more without it (TASK-423).
+  expect(sent).toEqual(["a", "a", "b"]);
   const [refused] = result.current.refused;
   expect(refused.id).toBe("a");
   expect(refused.message).toBe(
@@ -232,7 +238,7 @@ test("a run the API will never take stays, with its reason, and is not sent agai
   // The next round leaves it be.
   await act(async () => appState("active"));
   await act(async () => result.current.refresh());
-  expect(sent).toEqual(["a", "b"]);
+  expect(sent).toEqual(["a", "a", "b"]);
 });
 
 test("«Discard» takes a refused run off the phone", async () => {
@@ -250,13 +256,13 @@ test("«Discard» takes a refused run off the phone", async () => {
 test("«Try again» sends a refused run once more", async () => {
   keepWaiting(run("a"));
   // The account had a full list; a run deleted since makes room.
-  const { fetchFn, sent } = api({ a: [NEVER, OK] });
+  const { fetchFn, sent } = api({ a: [NEVER, NEVER, OK] });
   const { result } = await door(fetchFn);
   await waitFor(() => expect(result.current.refused).toHaveLength(1));
 
   await act(async () => result.current.retry("a"));
   await waitFor(() => expect(result.current.waiting).toBe(0));
-  expect(sent).toEqual(["a", "a"]);
+  expect(sent).toEqual(["a", "a", "a"]);
   expect(result.current.refused).toEqual([]);
 });
 

@@ -1,4 +1,6 @@
 import comment from "@shaperoute/shared-types/fixtures/comment.json";
+import reactions from "@shaperoute/shared-types/fixtures/comment-reactions.json";
+import reply from "@shaperoute/shared-types/fixtures/comment-reply.json";
 import publicProfile from "@shaperoute/shared-types/fixtures/public-profile.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { Session } from "@shaperoute/shared-types";
@@ -79,4 +81,75 @@ test("the picture of who wrote is asked once per profile", async () => {
   expect(first).toBe(`data:image/jpeg;base64,${publicProfile.photo}`);
   expect(again).toBe(first);
   expect(fetchFn).toHaveBeenCalledTimes(1);
+});
+
+// TASK-454 part C (ADR-0377): the replies and the reactions to a comment.
+describe("replies and reactions", () => {
+  const AUTH = { headers: { Authorization: `Bearer ${signedIn.token}` } };
+
+  test("nobody signed in: nothing asked for", async () => {
+    const fetchFn = answers();
+    const { result } = await renderHook(() =>
+      useCommentsOf(
+        URL,
+        account({ state: { status: "signedOut", notice: null } }),
+        options(fetchFn),
+      ),
+    );
+    expect(await result.current.threads?.repliesOf("c", null)).toBeNull();
+    expect(await result.current.threads?.react("c", "fire")).toBeNull();
+    expect(await result.current.threads?.react("c", null)).toBeNull();
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  test("a reply goes under what it answers, with the session's token", async () => {
+    const fetchFn = answers({ status: 201, body: reply });
+    const { result } = await renderHook(() =>
+      useCommentsOf(URL, account(), options(fetchFn)),
+    );
+    const outcome = await result.current.write("d", reply.text, "answered");
+    expect(outcome).toEqual({ kind: "ok", value: reply });
+    const [url, init] = fetchFn.mock.calls[0];
+    expect(url).toBe("http://api/drawings/d/comments");
+    expect(init).toMatchObject(AUTH);
+    expect(JSON.parse(String(init?.body))).toEqual({
+      text: reply.text,
+      reply_to: "answered",
+    });
+  });
+
+  test("the replies of a comment, a reaction left and one taken away", async () => {
+    const page = { comments: [reply], next: null, total: 1 };
+    const fetchFn = answers(
+      { status: 200, body: page },
+      { status: 200, body: reactions },
+      { status: 200, body: reactions },
+    );
+    const { result } = await renderHook(() =>
+      useCommentsOf(URL, account(), options(fetchFn)),
+    );
+    const { threads } = result.current;
+    expect(await threads?.repliesOf("c", "n2")).toEqual({ kind: "ok", value: page });
+    expect(await threads?.react("c", "fire")).toEqual({ kind: "ok", value: reactions });
+    await threads?.react("c", null);
+    const calls = fetchFn.mock.calls.map(([url, init]) => `${init?.method} ${url}`);
+    expect(calls).toEqual([
+      "GET http://api/comments/c/replies?cursor=n2",
+      "PUT http://api/comments/c/reaction",
+      "DELETE http://api/comments/c/reaction",
+    ]);
+    for (const [, init] of fetchFn.mock.calls) {
+      expect(init).toMatchObject(AUTH);
+    }
+  });
+
+  test("a session the API says is over is ended", async () => {
+    const fetchFn = answers({ status: 401, body: apiError("session_expired") });
+    const signedInAccount = account();
+    const { result } = await renderHook(() =>
+      useCommentsOf(URL, signedInAccount, options(fetchFn)),
+    );
+    await result.current.threads?.react("c", "wow");
+    expect(signedInAccount.sessionEnded).toHaveBeenCalledWith(signedIn.token);
+  });
 });

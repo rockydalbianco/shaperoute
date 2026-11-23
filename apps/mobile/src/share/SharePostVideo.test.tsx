@@ -9,19 +9,27 @@ import type { ReactNode } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ActivitiesContext, useActivitiesDoor } from "../activities/activitiesDoor";
+import { isPreview } from "../updates/channel";
 import { audioTrackOf } from "./m4a";
 import type { PostRun } from "./postRun";
 import { SharePost } from "./SharePost";
+import { characterModel } from "./videoCharacter";
 import { VIDEO_FILE, VIDEO_SILENCE_MS } from "./videoFile";
 import { musicTrack } from "./videoMusic";
+import { DAY } from "./videoStyle";
 import type { VideoPageMessage } from "./videoPage";
 
 jest.mock("expo-file-system");
 jest.mock("react-native-view-shot");
 jest.mock("react-native-webview");
+jest.mock("../updates/channel");
 jest.mock("expo-sharing", () => ({
   isAvailableAsync: jest.fn(async () => true),
   shareAsync: jest.fn(async () => {}),
+}));
+jest.mock("./videoCharacter", () => ({
+  ...jest.requireActual<typeof import("./videoCharacter")>("./videoCharacter"),
+  characterModel: jest.fn(),
 }));
 jest.mock("./videoMusic", () => ({
   ...jest.requireActual<typeof import("./videoMusic")>("./videoMusic"),
@@ -47,6 +55,9 @@ const { injectJavaScript: inject } =
 const share = jest.mocked(Sharing.shareAsync);
 const available = jest.mocked(Sharing.isAvailableAsync);
 const track = jest.mocked(musicTrack);
+const model = jest.mocked(characterModel);
+/** Whether this copy is the testers' preview: off, as on the stores' build. */
+const preview = jest.mocked(isPreview);
 /** The app's «Energy», as the phone reads it. */
 const ENERGY = audioTrackOf(
   new Uint8Array(readFileSync(join(__dirname, "../../assets/music/energy.m4a"))),
@@ -100,13 +111,24 @@ function base64(bytes: number[]): string {
 
 /** What the hidden page would say. */
 async function page(message: VideoPageMessage) {
-  await fireEvent(screen.getByTestId("run-video"), "message", {
-    nativeEvent: { data: JSON.stringify(message) },
-  });
+  await fireEvent(
+    screen.getByTestId("run-video", { includeHiddenElements: true }),
+    "message",
+    {
+      nativeEvent: { data: JSON.stringify(message) },
+    },
+  );
 }
 
 async function exportVideo() {
   await fireEvent.press(screen.getByRole("button", { name: "Export video" }));
+}
+
+/** «Edit video» opened, and `choice` tapped in it, then «Done» (TASK-408). */
+async function choose(choice: string) {
+  await fireEvent.press(screen.getByTestId("edit-video-open"));
+  await fireEvent.press(screen.getByRole("radio", { name: choice }));
+  await fireEvent.press(screen.getByTestId("edit-video-done"));
 }
 
 beforeEach(() => {
@@ -117,12 +139,15 @@ beforeEach(() => {
   written.clear();
   track.mockReset();
   track.mockResolvedValue(ENERGY);
+  model.mockReset();
+  model.mockResolvedValue(new Uint8Array([0x67, 0x6c, 0x54, 0x46]));
   Object.values(mockPlayer).forEach((call) => call.mockClear());
 });
 
-/** The page makes two pictures and is done. */
+/** The page has the map, makes two pictures and is done. */
 async function twoPictures() {
   await page({ type: "ready", codec: "avc1.42e028" });
+  await page({ type: "map", ok: true, why: null, ms: {} });
   await page({ type: "config", avcC: base64([1, 0x42, 0xe0, 0x28]) });
   await page({
     type: "chunks",
@@ -131,7 +156,7 @@ async function twoPictures() {
       { key: false, time: 33_333, data: base64([0, 0, 0, 1, 0x41]) },
     ],
   });
-  await page({ type: "done", frames: 360 });
+  await page({ type: "done", frames: 360, ms: {} });
 }
 
 function shared(): Uint8Array {
@@ -148,6 +173,8 @@ describe("Music", () => {
     await shown();
     expect(screen.getByText("Music")).toBeOnTheScreen();
     expect(screen.getByText("Tap a track to hear it.")).toBeOnTheScreen();
+    // «None» and the ten tracks: the style and the animal are in «Edit
+    // video» (TASK-408).
     expect(screen.getAllByRole("radio")).toHaveLength(11);
     expect(screen.getByRole("radio", { name: "None" })).toBeChecked();
     await fireEvent.press(screen.getByRole("radio", { name: "Energy" }));
@@ -205,14 +232,27 @@ describe("Music", () => {
 describe("Export video", () => {
   it("makes the video in the hidden page, writes an MP4 and shares it", async () => {
     await shown();
-    expect(screen.queryByTestId("run-video")).toBeNull();
+    expect(
+      screen.queryByTestId("run-video", { includeHiddenElements: true }),
+    ).toBeNull();
     await exportVideo();
-    expect(screen.getByTestId("run-video")).toBeOnTheScreen();
+    expect(
+      screen.getByTestId("run-video", { includeHiddenElements: true }),
+    ).toBeOnTheScreen();
 
     await page({ type: "ready", codec: "avc1.42e028" });
+    // The map first (TASK-351), then the scene once the page has it.
     expect(inject).toHaveBeenCalledTimes(1);
-    const call = inject.mock.calls[0][0];
+    const first = inject.mock.calls[0][0];
+    expect(first.startsWith("window.muwVideo.prepareMap({")).toBe(true);
+    expect(first).toContain('"pixelRatio":3');
+    await page({ type: "waiting", ms: 4000 });
+    expect(inject).toHaveBeenCalledTimes(1);
+    await page({ type: "map", ok: true, why: null, ms: { map: 700 } });
+    expect(inject).toHaveBeenCalledTimes(2);
+    const call = inject.mock.calls[1][0];
     expect(call.startsWith("window.muwVideo.make({")).toBe(true);
+    expect(call).toContain('"look":"night"');
     expect(call).toContain('"width":1080');
     expect(call).toContain("Heart in Trento");
 
@@ -228,7 +268,7 @@ describe("Export video", () => {
     expect(screen.getByText("Making the video… 50%")).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "Instagram" })).toBeDisabled();
 
-    await page({ type: "done", frames: 360 });
+    await page({ type: "done", frames: 360, ms: { encode: 7000 } });
     expect(share).toHaveBeenCalledWith(
       `file:///cache/${VIDEO_FILE}`,
       expect.objectContaining({ mimeType: "video/mp4", UTI: "public.mpeg-4" }),
@@ -240,8 +280,110 @@ describe("Export video", () => {
       0, 0, 0, 2, 0x65, 0x88, 0, 0, 0, 1, 0x41,
     ]);
     expect(keepPost).toHaveBeenCalledWith("run-1", expect.anything());
-    expect(screen.queryByTestId("run-video")).toBeNull();
+    expect(
+      screen.queryByTestId("run-video", { includeHiddenElements: true }),
+    ).toBeNull();
     expect(screen.getByRole("button", { name: "Export video" })).toBeEnabled();
+  });
+
+  it("makes the video in the style chosen: Day after a tap on its tile", async () => {
+    await shown();
+    await fireEvent.press(screen.getByTestId("edit-video-open"));
+    expect(screen.getByText("Style")).toBeOnTheScreen();
+    expect(screen.getByRole("radio", { name: "Night" })).toBeChecked();
+    await fireEvent.press(screen.getByRole("radio", { name: "Day" }));
+    expect(screen.getByRole("radio", { name: "Day" })).toBeChecked();
+    await fireEvent.press(screen.getByTestId("edit-video-done"));
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    const first = inject.mock.calls[0][0];
+    expect(first.startsWith("window.muwVideo.prepareMap({")).toBe(true);
+    // The light map's ground, in the style the page gets.
+    expect(first).toContain(DAY.map.background);
+    await page({ type: "map", ok: true, why: null, ms: {} });
+    expect(inject.mock.calls[1][0]).toContain('"look":"day"');
+  });
+
+  it("makes the video in 3D after a tap on its tile: the map leaning on its hills, the turn for the page to try", async () => {
+    await shown();
+    await choose("3D");
+    expect(screen.getByRole("radio", { name: "3D" })).toBeChecked();
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    const first = inject.mock.calls[0][0];
+    expect(first.startsWith("window.muwVideo.prepareMap({")).toBe(true);
+    expect(first).toContain('"pitch":55');
+    expect(first).toContain('"terrain":{"source":"terrain","exaggeration":1.3}');
+    expect(first).toContain('"turn":{"from":-10,"to":10}');
+    expect(first).toContain('"line":[[');
+    await page({ type: "map", ok: true, why: null, ms: { frame: 4 }, mode: "orbit" });
+    expect(inject.mock.calls[1][0]).toContain('"look":"3d"');
+    expect(inject.mock.calls[1][0]).toContain("Terrain Tiles");
+  });
+
+  it("falls back on the post on yellow when the map does not come, and still shares", async () => {
+    await shown();
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    await page({ type: "map", ok: false, why: "timeout", ms: { map: 15_000 } });
+    expect(inject).toHaveBeenCalledTimes(2);
+    const call = inject.mock.calls[1][0];
+    expect(call.startsWith("window.muwVideo.make({")).toBe(true);
+    expect(call).toContain('"look":"paper"');
+    expect(call).not.toContain('"look":"night"');
+    expect(call).toContain("Heart in Trento");
+    // The stores' build never says why: the reason is for the preview only.
+    expect(preview).toHaveBeenCalled();
+    expect(call).not.toContain("no map");
+    await page({ type: "config", avcC: base64([1, 0x42, 0xe0, 0x28]) });
+    await page({
+      type: "chunks",
+      list: [{ key: true, time: 0, data: base64([0, 0, 0, 2, 0x65, 0x88]) }],
+    });
+    await page({ type: "done", frames: 360, ms: {} });
+    expect(share).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("The video could not be made. Try again.")).toBeNull();
+    expect(keepPost).toHaveBeenCalledWith("run-1", expect.anything());
+  });
+
+  it("says why at the foot of the yellow video on the testers' preview", async () => {
+    preview.mockReturnValueOnce(true);
+    await shown();
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    await page({ type: "map", ok: false, why: "timeout", ms: { map: 15_000 } });
+    expect(inject).toHaveBeenCalledTimes(2);
+    const call = inject.mock.calls[1][0];
+    expect(call).toContain('"look":"paper"');
+    // The page's reason, written at the foot while the cause is looked for.
+    expect(call).toContain('no map: timeout {\\"map\\":15000}');
+  });
+
+  it("keeps waiting while the page says the tiles are still coming", async () => {
+    jest.useFakeTimers();
+    try {
+      await shown();
+      await exportVideo();
+      await page({ type: "ready", codec: "avc1.42e028" });
+      await act(async () => {
+        jest.advanceTimersByTime(VIDEO_SILENCE_MS - 2000);
+      });
+      await page({ type: "waiting", ms: VIDEO_SILENCE_MS - 2000 });
+      await act(async () => {
+        jest.advanceTimersByTime(VIDEO_SILENCE_MS - 2000);
+      });
+      expect(
+        screen.getByTestId("run-video", { includeHiddenElements: true }),
+      ).toBeOnTheScreen();
+      await act(async () => {
+        jest.advanceTimersByTime(3000);
+      });
+      expect(
+        screen.queryByTestId("run-video", { includeHiddenElements: true }),
+      ).toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it("says so when the phone cannot make videos, and shares nothing", async () => {
@@ -250,7 +392,9 @@ describe("Export video", () => {
     await page({ type: "ready", codec: null });
     expect(inject).not.toHaveBeenCalled();
     expect(screen.getByText("This phone cannot make the video.")).toBeOnTheScreen();
-    expect(screen.queryByTestId("run-video")).toBeNull();
+    expect(
+      screen.queryByTestId("run-video", { includeHiddenElements: true }),
+    ).toBeNull();
     expect(share).not.toHaveBeenCalled();
     expect(keepPost).not.toHaveBeenCalled();
   });
@@ -270,7 +414,7 @@ describe("Export video", () => {
     await shown();
     await exportVideo();
     await page({ type: "ready", codec: "avc1.42e028" });
-    await page({ type: "done", frames: 360 });
+    await page({ type: "done", frames: 360, ms: {} });
     expect(
       screen.getByText("The video could not be made. Try again."),
     ).toBeOnTheScreen();
@@ -286,11 +430,15 @@ describe("Export video", () => {
       await act(async () => {
         jest.advanceTimersByTime(VIDEO_SILENCE_MS - 1000);
       });
-      expect(screen.getByTestId("run-video")).toBeOnTheScreen();
+      expect(
+        screen.getByTestId("run-video", { includeHiddenElements: true }),
+      ).toBeOnTheScreen();
       await act(async () => {
         jest.advanceTimersByTime(1000);
       });
-      expect(screen.queryByTestId("run-video")).toBeNull();
+      expect(
+        screen.queryByTestId("run-video", { includeHiddenElements: true }),
+      ).toBeNull();
       expect(
         screen.getByText("The video could not be made. Try again."),
       ).toBeOnTheScreen();
@@ -303,9 +451,151 @@ describe("Export video", () => {
     available.mockResolvedValueOnce(false);
     await shown();
     await exportVideo();
-    expect(screen.queryByTestId("run-video")).toBeNull();
+    expect(
+      screen.queryByTestId("run-video", { includeHiddenElements: true }),
+    ).toBeNull();
     expect(
       screen.getByText("This phone cannot open the share sheet."),
     ).toBeOnTheScreen();
+  });
+});
+
+describe("the animal of the video (TASK-408)", () => {
+  it("sends the animal's model to the page first, then the map, then the scene with the animal", async () => {
+    await shown();
+    await choose("Fox");
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    await act(async () => {});
+    expect(model).toHaveBeenCalledWith("fox");
+    expect(inject).toHaveBeenCalledTimes(1);
+    expect(inject.mock.calls[0][0]).toBe(
+      `window.muwVideo.prepareCharacter({"model":"${base64([0x67, 0x6c, 0x54, 0x46])}"}); true;`,
+    );
+    await page({ type: "character", ok: true, why: null, ms: 300 });
+    expect(inject.mock.calls[1][0].startsWith("window.muwVideo.prepareMap({")).toBe(
+      true,
+    );
+    await page({ type: "map", ok: true, why: null, ms: {} });
+    expect(inject.mock.calls[2][0]).toContain('"character":"fox"');
+    expect(inject.mock.calls[2][0]).toContain('"k":"character"');
+  });
+
+  it("goes on without the animal when the page cannot make it ready, as with no network", async () => {
+    await shown();
+    await choose("Horse");
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    await act(async () => {});
+    await page({ type: "character", ok: false, why: "three did not load", ms: 10_000 });
+    expect(inject.mock.calls[1][0].startsWith("window.muwVideo.prepareMap({")).toBe(
+      true,
+    );
+    await page({ type: "map", ok: true, why: null, ms: {} });
+    await page({ type: "config", avcC: base64([1, 0x42, 0xe0, 0x28]) });
+    await page({
+      type: "chunks",
+      list: [{ key: true, time: 0, data: base64([0, 0, 0, 2, 0x65, 0x88]) }],
+    });
+    await page({ type: "done", frames: 360, ms: {} });
+    expect(share).toHaveBeenCalledTimes(1);
+  });
+
+  it("asks the page for no animal when its model cannot be read", async () => {
+    model.mockRejectedValueOnce(new Error("no file"));
+    await shown();
+    await choose("Wolf");
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    await act(async () => {});
+    expect(inject).toHaveBeenCalledTimes(1);
+    expect(inject.mock.calls[0][0].startsWith("window.muwVideo.prepareMap({")).toBe(
+      true,
+    );
+  });
+
+  it("reads no model with «No animal», the video as before", async () => {
+    await shown();
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    expect(model).not.toHaveBeenCalled();
+    expect(inject.mock.calls[0][0].startsWith("window.muwVideo.prepareMap({")).toBe(
+      true,
+    );
+  });
+});
+
+describe("«Edit video» (TASK-408 C1)", () => {
+  it("makes the video with the line's colour and the emoji chosen in the sheet", async () => {
+    await shown();
+    await fireEvent.press(screen.getByTestId("edit-video-open"));
+    await fireEvent.press(screen.getByRole("radio", { name: "Pink" }));
+    await fireEvent.press(screen.getByTestId("along-⭐"));
+    await fireEvent.press(screen.getByTestId("end-🎆"));
+    await fireEvent.press(screen.getByTestId("edit-video-done"));
+    expect(screen.getByText("Night · No animal · ⭐ 🎆")).toBeOnTheScreen();
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    await page({ type: "map", ok: true, why: null, ms: {} });
+    const scene = inject.mock.calls[1][0];
+    expect(scene).toContain('"line":"#FF8FB8"');
+    expect(scene).toContain('"text":"⭐"');
+    expect(scene).toContain('"text":"🎆"');
+  });
+
+  it("makes the «2D» video straight away, with no map to wait for", async () => {
+    await shown();
+    await choose("2D");
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    expect(inject).toHaveBeenCalledTimes(1);
+    expect(inject.mock.calls[0][0]).not.toContain("prepareMap");
+    expect(inject.mock.calls[0][0]).toContain('"look":"2d"');
+    expect(inject.mock.calls[0][0]).toContain('"map":null');
+  });
+});
+
+describe("«Edit video», the scenes (TASK-408 C2)", () => {
+  it("makes the video with the opening, the order and the ending chosen in the sheet", async () => {
+    await shown();
+    await fireEvent.press(screen.getByTestId("edit-video-open"));
+    await fireEvent.press(screen.getByRole("radio", { name: "3D" }));
+    await fireEvent.press(screen.getByTestId("scene-opening"));
+    await fireEvent.press(screen.getByRole("radio", { name: "Heart" }));
+    await fireEvent.press(screen.getByTestId("edit-video-done"));
+    expect(
+      screen.getByText("3D · No animal · Opening › The route › Ending"),
+    ).toBeOnTheScreen();
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    // The page takes the map from straight above too, for the opening.
+    expect(inject.mock.calls[0][0]).toContain('"flat":true');
+    await page({ type: "map", ok: true, why: null, ms: {} });
+    const scene = JSON.parse(
+      inject.mock.calls[1][0]
+        .replace(/^window\.muwVideo\.make\(/, "")
+        .replace(/\);?\s*(true;?)?\s*$/, ""),
+    ) as { paths: number[][]; frames: { k: string; flat?: boolean }[][] };
+    // The ending's heart is the third line; the opening's map is flat.
+    expect(scene.paths).toHaveLength(3);
+    expect(scene.frames[45].some((op) => op.k === "map" && op.flat === true)).toBe(
+      true,
+    );
+  });
+});
+
+describe("«Edit video», the camera behind the animal (TASK-408 C2b)", () => {
+  it("asks the page to try the cameras along the run before the video", async () => {
+    await shown();
+    await fireEvent.press(screen.getByTestId("edit-video-open"));
+    await fireEvent.press(screen.getByRole("radio", { name: "3D" }));
+    await fireEvent.press(screen.getByRole("radio", { name: "Camera behind" }));
+    await fireEvent.press(screen.getByTestId("edit-video-done"));
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    const prepare = inject.mock.calls.find((call) =>
+      (call[0] as string).includes("prepareMap"),
+    )?.[0] as string;
+    expect(prepare).toContain('"chase":{"cameras":[');
   });
 });

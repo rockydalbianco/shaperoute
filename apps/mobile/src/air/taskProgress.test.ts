@@ -236,3 +236,13 @@ describe("the numbers of the task", () => {
     expect(left?.totalM).toBeCloseTo(4600, -1);
   });
 });
+
+describe("the start's crossing", () => {
+  it("counts going in as well as out: the file's direction is obsolete", () => {
+    const task = taskOf();
+    // Into the start from outside it, after the gate.
+    const fixes = flyThrough([at(0, -5), at(0, 0)], NOON + 60_000);
+    const progress = progressOver(task, fixes, fixes[0].timeMs);
+    expect(progress.taken.map((one) => one.index)).toEqual([1]);
+  });
+});

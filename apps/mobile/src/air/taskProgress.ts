@@ -7,8 +7,9 @@ import { distanceM, type Route, shortestRoute } from "./taskRoute";
 
 /**
  * How far the pilot is along the task (TASK-479 part D2, ADR-0388), from
- * the track in the air: the start is taken crossing its cylinder's edge
- * the way the file says (in or out), once its first gate is open; a
+ * the track in the air: the start is taken crossing its cylinder's edge,
+ * in or out, once its first gate is open (XCTrack's format calls the
+ * file's direction obsolete: readers ignore it); a
  * turnpoint, the end of speed section and a goal cylinder when the track
  * comes inside, between two fixes too; a goal line when the track crosses
  * it forwards. Turnpoints are taken in order, never skipped. A start
@@ -96,9 +97,7 @@ function takes(
       return false;
     }
     const was = distanceM(step.point, centre, task.earth);
-    return task.start.direction === "exit"
-      ? was <= radiusM && here > radiusM
-      : was > radiusM && here <= radiusM;
+    return was <= radiusM !== here <= radiusM;
   }
   const last = index === task.turnpoints.length - 1;
   if (last && task.goal.type === "line") {

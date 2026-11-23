@@ -546,7 +546,10 @@ export function startRun(
           fix.timeMs - last.timeMs > AWAY_AFTER_MS &&
           !pausedByHandAfter(track, last.timeMs)
         ) {
-          track = leaveTrack(track, leftAtMs);
+          // Worth writing even when this fix is not kept (TASK-496).
+          const left = leaveTrack(track, leftAtMs);
+          unsaved = unsaved || left !== track;
+          track = left;
         }
         leftAtMs = null;
       }

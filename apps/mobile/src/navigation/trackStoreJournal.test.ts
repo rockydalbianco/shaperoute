@@ -143,9 +143,12 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
+/** How much ROUTE looks like its shape: a run of it can be opened again. */
+const SIMILARITY = 0.9;
+
 /** A run of ROUTE with `fixes` fixes 10 m and 3 s apart, in front. */
 function runOf(fixes: number) {
-  const run = startRun(ROUTE, NOW);
+  const run = startRun(ROUTE, NOW, SIMILARITY);
   for (let i = 0; i < fixes; i += 1) {
     run.onFix(fix(10 * i, 3 * i), false);
   }
@@ -235,7 +238,7 @@ describe("closed by iOS behind another app", () => {
     state = "active";
     const nowMs = NOW + 39 * 3000 + 2 * MINUTE;
     expect(interruptedRun(loadRun(), nowMs)?.track).toEqual(left);
-    const again = startRun(ROUTE, nowMs);
+    const again = startRun(ROUTE, nowMs, SIMILARITY);
     expect(again.track()).toEqual(left);
     again.onFix(fix(600, 39 * 3 + 125), false);
     expect(again.track().fixes).toHaveLength(41);
@@ -576,12 +579,12 @@ describe("any run, whatever happens in it", () => {
 
 describe("what a locked phone writes over a long run", () => {
   test("grows with the run, not with its square", () => {
-    // 10 km locked, a fix every 5 m: 2000 fixes behind.
+    // 12 km locked, a fix every 6 m: 2000 fixes behind.
     const run = runOf(2);
     goTo("background");
     written();
     for (let i = 2; i < 2002; i += 1) {
-      run.onFix(fix(5 * i + 5, 2 * i), false);
+      run.onFix(fix(6 * i + 4, 2 * i), false);
     }
     const journalled = written();
     const wholeFile = disk.files.get(RUN_URI)?.length ?? 0;

@@ -1,6 +1,6 @@
 # TASK-450 — «Share your run»: ordine dei pulsanti e poster
 
-**Stato**: In corso · parte 0 (domande all'utente, turno sulla cartella)
+**Stato**: In corso · codice scritto, mancano le schermate prima/dopo col sì dell'utente
 **Fase**: 5 · **Branch**: `feat/TASK-450-share-order-poster`
 **Dipende da**: niente
 **ADR**: nessuno finora · numero dal Coordinatore l'11 novembre 2026 (idea
@@ -69,33 +69,74 @@ nell'app e nelle quattro lingue; la data è scritta come nel resto dell'app.
    condividere».
 5. Schermate prima/dopo del foglio e del poster, col sì dell'utente.
 
+## Come è fatto
+
+- **Ordine** (`SharePost.tsx`): il blocco dei due pulsanti, con la riga
+  «Pick Instagram in the list…» e l'errore, sale subito sotto il poster;
+  la riga di Strava resta in fondo.
+- **I fondi** (`postLook.ts`, `PostLookRow.tsx`, file nuovi): `PostLook` =
+  `yellow | night | day`. «Night» e «Day» sono le palette `NIGHT` e `DAY`
+  di `videoStyle.ts` (i token a un loro estremo, qualunque tono abbia
+  l'app); «Yellow» è `accent` + `onAccent`. `PostImage` prende `look` e
+  colora fondo, linea e scritte. La scelta è uno stato della pagina: non
+  va all'API (`RunPostRequest` invariato).
+- **Titolo** (`postRun.ts`, `ActivityCard.tsx`): `postOfActivity(activity,
+  postTitle)`; la scheda passa il titolo del post che ha già
+  (`choiceOf`, TASK-456). Un titolo vuoto o di soli spazi lascia quello di
+  prima.
+- **Giorno** (`postRun.ts`, `PostImage.tsx`): `PostRun.startedAt`, da
+  `started_at` in «My activities» e dal primo fix a fine corsa; scritto con
+  `dayLabel` («Sat 21 Nov 2026», testo già nell'app). Titolo e giorno
+  stanno in una colonna che parte a 0,085 dell'altezza: due righe di titolo
+  più il giorno finiscono sopra il disegno (0,2).
+- **Dal Feed** («Poster and video»): il titolo c'era già; il giorno è una
+  riga in `feed/PostActions.tsx` (`postOfDrawing`, `startedAt:
+  drawing.started_at`), file aggiunto alla lista col sì del Coordinatore
+  (2026-11-23).
+
 ## Criteri di accettazione
 
-*(si fissano con le risposte dell'utente)*
-
-- [ ] «Instagram» ed «Export video» sono dove l'utente ha scelto.
-- [ ] Da «My activities» il poster di una corsa col post titolato porta
-      quel titolo.
-- [ ] Il poster ha ciò che l'utente ha scelto (risposte 2 e 3).
+- [x] «Instagram» ed «Export video» stanno subito sotto il poster, prima di
+      «Style», «Results», «Add emoji», «Edit video», «Music» e Strava
+      (`SharePost.test.tsx`, «the page's order»).
+- [x] Da «My activities» il poster di una corsa col post titolato porta
+      quel titolo (`ActivityCardPoster.test.tsx`, `postRun.test.ts`).
+- [x] Sotto il titolo c'è il giorno della corsa, anche a fine corsa; due
+      righe di titolo e il giorno finiscono sopra il disegno
+      (`PostImageLook.test.tsx`).
+- [x] «Style» offre «Yellow», «Night», «Day»; «Yellow» all'apertura; i
+      colori vengono dai token; la scelta non va all'API
+      (`PostImageLook.test.tsx`, `SharePost.test.tsx`).
+- [x] Dal Feed il poster ha il giorno della corsa
+      (`PostActionsPosterDay.test.ts`).
 - [ ] Schermate prima/dopo approvate dall'utente.
-- [ ] Impronta iOS invariata (`5e1b5ce5`), nessuna dipendenza nuova.
+- [x] Nessun testo nuovo, nessuna dipendenza nuova, niente di nativo
+      (impronta iOS `5e1b5ce5` invariata: solo TypeScript in `src/`).
 
 ## File toccati
 
-Elenco previsto, da confermare col Coordinatore.
+Turno su `apps/mobile/src/share/**` e lista approvati dal Coordinatore
+(fork 3) il 2026-11-23; il task file va nella PR di codice.
 
 ```
 apps/mobile/src/share/SharePost.tsx
 apps/mobile/src/share/SharePost.test.tsx
+apps/mobile/src/share/SharePostVideo.test.tsx   (due test: ora la pagina ha anche le tessere del poster)
 apps/mobile/src/share/PostImage.tsx
 apps/mobile/src/share/postRun.ts
 apps/mobile/src/share/postRun.test.ts
-apps/mobile/src/activities/ActivityCard.tsx
-apps/mobile/src/i18n/{de,es,fr,it}.ts        (solo se ci sono testi nuovi)
-docs/UI.md                                   («Il post da condividere»)
-docs/tasks/TASK-450.md
-file nuovi in apps/mobile/src/share/         (test del poster; la riga dei fondi, se l'utente la vuole)
+apps/mobile/src/share/postLook.ts               (nuovo)
+apps/mobile/src/share/PostLookRow.tsx           (nuovo)
+apps/mobile/src/share/PostImageLook.test.tsx    (nuovo)
+apps/mobile/src/activities/ActivityCard.tsx     (una riga)
+apps/mobile/src/activities/ActivityCardPoster.test.tsx (nuovo)
+apps/mobile/src/feed/PostActions.tsx            (una riga, sì del Coordinatore)
+apps/mobile/src/feed/PostActionsPosterDay.test.ts (nuovo)
+docs/UI.md                                      («Il post da condividere»)
+docs/tasks/TASK-450.md                          (nuovo)
 ```
+
+`apps/mobile/src/i18n/*.ts` non si tocca: nessun testo nuovo.
 
 ## Fuori scope
 

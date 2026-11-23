@@ -2,13 +2,14 @@ import type { LatLon } from "@shaperoute/shared-types";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import * as Sharing from "expo-sharing";
 import type { ReactNode } from "react";
-import { Linking } from "react-native";
+import { Linking, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { captureRef } from "react-native-view-shot";
 
 import { ActivitiesContext, useActivitiesDoor } from "../activities/activitiesDoor";
 import type { StravaActivity, StravaOutcome } from "../api/strava";
 import { StravaContext, type StravaState } from "../strava/useStrava";
+import { lookColours } from "./postLook";
 import type { PostRun } from "./postRun";
 import { SharePost, SharePostButton } from "./SharePost";
 import { MAX_STICKERS, POST_EMOJI } from "./stickers";
@@ -193,6 +194,80 @@ describe("the post", () => {
       nativeEvent: { actionName: "activate" },
     });
     expect(screen.queryByTestId("post-sticker")).toBeNull();
+    await screen.findByText("Send to Strava");
+  });
+});
+
+describe("the page's order (TASK-450)", () => {
+  /** Where `text` first comes in the page, top to bottom. */
+  function placeOf(text: string): number {
+    const place = JSON.stringify(screen.toJSON()).indexOf(JSON.stringify(text));
+    expect(place).toBeGreaterThan(-1);
+    return place;
+  }
+
+  it("has «Instagram» and «Export video» right under the post, before what dresses it", async () => {
+    await shown(<SharePost run={RUN} onClose={() => {}} />);
+    await screen.findByText("Send to Strava");
+    const order = [
+      "Heart in Trento",
+      "Instagram",
+      "Export video",
+      "Pick Instagram in the list: Story, Feed or Messages.",
+      "Style",
+      "Results",
+      "Add emoji",
+      "Edit video",
+      "Music",
+      "Send to Strava",
+    ].map(placeOf);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
+  it("says what went wrong under the buttons, not at the foot of the page", async () => {
+    capture.mockRejectedValueOnce(new Error("no picture"));
+    await shown(<SharePost run={RUN} onClose={() => {}} />);
+    await fireEvent.press(screen.getByRole("button", { name: "Instagram" }));
+    await screen.findByText("The picture could not be made. Try again.");
+    expect(placeOf("The picture could not be made. Try again.")).toBeLessThan(
+      placeOf("Results"),
+    );
+    await screen.findByText("Send to Strava");
+  });
+});
+
+describe("the post's look (TASK-450)", () => {
+  /** The ground of the picture, as it is drawn now. */
+  function ground(): unknown {
+    return StyleSheet.flatten(screen.getByTestId("post-image").props.style)
+      .backgroundColor;
+  }
+
+  it("opens on «Yellow», and takes «Night» and «Day» from the row", async () => {
+    await shown(<SharePost run={RUN} onClose={() => {}} />);
+    expect(screen.getByRole("radio", { name: "Yellow" })).toBeChecked();
+    expect(ground()).toBe(lookColours("yellow").ground);
+
+    await fireEvent.press(screen.getByRole("radio", { name: "Night" }));
+    expect(screen.getByRole("radio", { name: "Night" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "Yellow" })).not.toBeChecked();
+    expect(ground()).toBe(lookColours("night").ground);
+
+    await fireEvent.press(screen.getByRole("radio", { name: "Day" }));
+    expect(ground()).toBe(lookColours("day").ground);
+    await screen.findByText("Send to Strava");
+  });
+
+  it("is not kept with the post: the API gets what it always got", async () => {
+    await shown(<SharePost run={RUN} onClose={() => {}} />);
+    await fireEvent.press(screen.getByRole("radio", { name: "Night" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Instagram" }));
+    await waitFor(() => expect(keepPost).toHaveBeenCalledTimes(1));
+    expect(Object.keys(keepPost.mock.calls[0][1]).sort()).toEqual([
+      "emoji",
+      "results",
+      "title",
+    ]);
     await screen.findByText("Send to Strava");
   });
 });

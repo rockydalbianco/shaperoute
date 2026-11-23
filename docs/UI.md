@@ -4782,6 +4782,12 @@ Acceso, la notte pubblicata da sola è un post come gli altri, senza corsa:
 scheda di una corsa in «My activities». Apre a tutto schermo «Share your
 run», con «Close» in alto a sinistra:
 
+- **L'ordine della pagina** (TASK-450, scelta dell'utente del 2026-11-23):
+  il post; subito sotto «Instagram» ed «Export video», con la riga «Pick
+  Instagram in the list…» e l'eventuale errore; poi «Style» (i fondi del
+  post), «Results», «Add emoji», «Edit video», «Music» e Strava. Le due
+  azioni si raggiungono senza scorrere; dove le voci qui sotto dicono
+  «sopra» o «accanto», vale quest'ordine.
 - **Il post**, in alto: 9:16, sul giallo di Sgrava. Il cuore del logo e
   «Sgrava», il titolo (quello della corsa, o luogo e forma; nessuno a
   fine corsa), il disegno della corsa in nero **senza i primi e gli ultimi
@@ -4789,6 +4795,25 @@ run», con «Close» in alto a sinistra:
   «Time», «Pace» (il passo manca sotto i 100 m). **Il punteggio non è fra i risultati**
   (TASK-241 parte C, chiesto dall'utente): non si può accendere, non è
   sul post e non va nel testo per Strava.
+- **Titolo e giorno sul post** (TASK-450, scelte dell'utente del
+  2026-11-23): da «My activities» il titolo è quello del **post**, scritto
+  in «Edit post», quando c'è; altrimenti quello del percorso o «luogo ·
+  forma», come prima. Dal Feed è già il titolo del post. Sotto il titolo,
+  piccolo, il giorno della corsa come lo scrive l'app («Sat 21 Nov 2026»),
+  sempre: da «My activities», dal Feed (il giorno della corsa, non quello
+  della pubblicazione) e a fine corsa, dove sta da solo perché il titolo
+  non c'è ancora. Titolo (due righe al più) e giorno finiscono sopra il disegno.
+- **«Style»**, sotto i due pulsanti (TASK-450, scelta dell'utente del
+  2026-11-23): tre tessere 9:16 col disegno della corsa, una accesa.
+  «Yellow», accesa all'apertura: il giallo del logo con tutto in nero,
+  com'era. «Night»: il fondo scuro dell'app al suo passo più scuro, la
+  linea nel giallo del percorso, le scritte chiare. «Day»: il fondo chiaro
+  dell'app al suo passo più chiaro, linea e scritte scure. Sono le palette
+  del video («Night», «Day»), qualunque tono abbia l'app; i colori vengono
+  solo dai token. Il quadrato giallo del logo resta giallo su tutti e tre.
+  La scelta vale per l'immagine di «Instagram» e non si salva col post,
+  come stile e musica del video. Le tessere di palestra e piscina restano
+  com'erano, senza «Style».
 - **«Results»**: una pastiglia per risultato, accesa all'inizio; spenta,
   il risultato sparisce dal post e dal testo per Strava.
 - **«Add emoji»**: 🔥 ❤️ 💪 🏃 🎉 😅 🥵 😎 ⚡ 🏆 ☀️ 🌧️. Un tocco mette l'emoji

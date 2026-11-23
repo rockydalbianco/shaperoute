@@ -4,6 +4,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { dayLabel } from "../activities/activityText";
 import { t, tPlural } from "../i18n";
 import { color, font, radius, space } from "../theme/tokens";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 import type { Units } from "../units/units";
 import { lastTime, type Suggestion, suggestion } from "./exerciseHistory";
 import { setLabel } from "./ExerciseList";
@@ -51,6 +53,8 @@ export function LastTime({
   units: Units;
   onHistory: () => void;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const last = lastTime(history);
   if (last === null || history.kind === undefined) {
     return null;
@@ -63,7 +67,7 @@ export function LastTime({
           {t("Last time · {day}", { day: dayLabel(last.started_at) })}
         </Text>
         <Pressable
-          style={gymStyles.chip}
+          style={[gymStyles.chip, chipRaise]}
           onPress={onHistory}
           accessibilityRole="button"
           testID="open-history"

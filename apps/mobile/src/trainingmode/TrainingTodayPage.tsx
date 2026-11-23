@@ -7,6 +7,7 @@ import { withoutRouteIcon } from "../screens/RunNoRouteButton";
 import { withoutRouteLabel } from "../settings/sport";
 import { useHeaderScroll } from "../tabs/headerScroll";
 import { color, font, space } from "../theme/tokens";
+import { TrainingCoachRow } from "./TrainingCoachRow";
 import { WeekBody } from "./WeekBodyCard";
 
 type Props = {
@@ -21,8 +22,8 @@ type Props = {
  * «Today», the first page of the training mode (TASK-490 part A, ADR-0398):
  * the gym of «Draw» as it is (`GymDrawGuide`: today's plan or «Start
  * workout», the month, the plans, «How it works»). On top, with an
- * account, the body of the week (part B, `WeekBody`); the Coach's line
- * comes with part C.
+ * account, the body of the week (part B, `WeekBody`) and the Coach's line
+ * that opens its page (part C, `TrainingCoachRow`).
  */
 export function TrainingTodayPage({ onStart, guide }: Props) {
   const headerScroll = useHeaderScroll();
@@ -38,6 +39,7 @@ export function TrainingTodayPage({ onStart, guide }: Props) {
         {t("Today")}
       </Text>
       <WeekBody />
+      <TrainingCoachRow />
       {guide ?? (
         <GymDrawGuide
           onStart={onStart}

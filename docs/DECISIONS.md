@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6b in produzione, A7a, A7b, A5c-2, A7c-1 in `main`); B Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6b in produzione, A7a, A7b, A5c-2, A7c-1, A7c-2 in `main`); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -595,9 +595,84 @@ lasciando le righe d'indice.
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
 - ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB · 2026-11-23 · Attiva
 - ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi · 2026-11-23 · Attiva
+- ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap estratti dal server, la scheda del decollo con lo storico dei voli di MuW contato dal server, mai giudizi sulle condizioni · 2026-11-23 · Proposta
+- ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
 
 
 ## Voci nuove
+## ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap, la scheda del decollo con lo storico di MuW
+
+**Stato**: Proposta · 2026-11-23 · TASK-493 (parte 0, soli documenti).
+La richiesta e la scelta di farne un task a sé sono **dell'utente**
+(2026-11-23); le cinque scelte della parte 0 sono **dell'utente** («Sì, tutte»,
+2026-11-23: il bottone «Takeoffs» nel parapendio, tutti i voli salvati
+contati senza nomi e solo da 3 piloti in su, i record dai soli post
+pubblici col nome, solo OSM con «Add it on OpenStreetMap», chi è in volo
+adesso col link solo se già pubblico); il resto è **deciso dall'agente su delega dell'utente**, numeri
+dal Coordinatore (fork 3).
+
+**Contesto**: chi vola vuole vedere sulla mappa i decolli e quanta gente
+vola da ognuno. TASK-479 prevede i decolli e gli atterraggi da OSM per la
+mappa 3D (A) e l'atterraggio più vicino (D), ma non li ha ancora
+scaricati; lo studio di TASK-305 (fonti, §1) dice che solo OSM ha una
+licenza che permette l'uso commerciale.
+
+**Decisione**:
+- **Solo OpenStreetMap** (`free_flying:takeoff`, `free_flying:landing`,
+  la vecchia `free_flying:site`), con l'attribuzione sempre visibile;
+  niente ParaglidingEarth, DHV, XContest finché non c'è una licenza
+  scritta.
+- **I siti li estrae il server** dagli estratti OSM che già scarica, in
+  una tabella nuova; l'app li legge per riquadro. La tabella può servire
+  anche a TASK-479 D, da concordare.
+- **Lo storico lo conta il server**: un volo è di un decollo se parte
+  entro 300 m e 150 m di quota; numeri per mese, piloti diversi, oggi, in
+  volo adesso. Contano tutti i voli salvati, anche privati, ma solo
+  come numeri senza nomi, e si vedono da 3 piloti diversi in su (scelta
+  dell'utente).
+- **Nessun giudizio sulle condizioni**: quota, orientamento, dislivello e
+  numeri, mai «volabile», «buono», «sicuro».
+- **File nuovi fuori da `src/air/`** (di TASK-479); il vento della parte
+  D dipende da TASK-479 H.
+
+**Conseguenze**: una migrazione (numero dal Coordinatore con la lista dei
+file), un job settimanale sul server, una riga di privacy prima dell'OTA;
+server e OTA col sì dell'utente.
+
+## ADR-0401 — Le scadenze della vela: revisione, riserva e imbrago sull'attrezzatura, con l'avviso
+
+**Stato**: Proposta · 2026-11-23 · TASK-494 (parte 0, soli documenti).
+La richiesta e la scelta di farne un task a sé sono **dell'utente**
+(2026-11-23); le quattro scelte della parte 0 sono **dell'utente** («Sì,
+tutte», 2026-11-23: revisione, riserva, imbrago e una scadenza libera con
+gli intervalli del pilota; il tipo `reserve`; classe e taglia sul
+profilo, scadenze e peso solo al proprietario; la campanella 30 giorni
+prima e il giorno stesso, una riga in «Pronto al decollo»); il
+resto è **deciso dall'agente su delega dell'utente**, numeri dal
+Coordinatore (fork 3).
+
+**Contesto**: l'attrezzatura (TASK-486, ADR-0393) ha già i tipi
+`paraglider` e `harness`, conta le ore dai voli agganciati e ha un limite
+in metri con l'avviso nella campanella. Un pilota ha anche scadenze sue:
+la revisione della vela, la ripiegatura della riserva, il controllo
+dell'imbrago.
+
+**Decisione**:
+- **Tabelle nuove accanto a `gear`**, non campi nuovi nel suo corpo: le
+  app di oggi leggono l'attrezzo come prima. Un file nuovo accanto a
+  `gear.py`, che resta di TASK-486.
+- **Gli intervalli li sceglie il pilota** (mesi, ore o tutti e due, vale
+  la prima scadenza); i valori tipici già scritti con «Check your
+  manual». Nessun catalogo dei costruttori.
+- **La prossima scadenza la calcola il server** dalle ore dei voli
+  agganciati, come i totali dell'attrezzo.
+- **L'avviso dice il fatto**, mai «non volare».
+
+**Conseguenze**: una migrazione (numero dal Coordinatore con la lista dei
+file); nessun file `gear` toccato prima che il Coordinatore approvi la
+lista; una riga di privacy prima dell'OTA; server e OTA col sì
+dell'utente.
+
 
 ## ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi
 
@@ -2808,6 +2883,12 @@ subito dopo il loro stile, una riga per componente, senza un componente
 comune: ogni pagina ha il suo chip con forma e colori suoi, e riunirli
 toccherebbe molto più codice. Un test legge i sorgenti e chiede che ogni
 uso di `styles.chip` sia seguito dal rilievo. Deciso dall'agente su
+delega dell'utente.
+**A7c-2 (#1494)**: lo stesso rilievo su quattro schermate degli sport
+(`TargetSteps`, `PaddleExplore`, `PoolDraw`, `DayChoices`), aggiunte alla
+lista del test. Prende il rilievo solo un chip che si preme: le etichette
+di testo e il segno di pausa che nel codice si chiamano «chip» restano
+piatti, perché il rilievo dice «qui si tocca». Deciso dall'agente su
 delega dell'utente.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s

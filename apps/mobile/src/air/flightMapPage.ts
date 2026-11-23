@@ -38,6 +38,8 @@ export const TRACK_WIDTH = 4;
 export const PILOT_PX = 34;
 /** How see-through the airspaces are. */
 export const AIRSPACE_OPACITY = 0.2;
+/** How see-through the next cylinder of the task is. */
+export const TASK_FILL_OPACITY = 0.15;
 
 /** The scale of the climb: m/s and its colour, from the tokens. */
 export const VARIO_STOPS: readonly [number, string][] = [
@@ -59,6 +61,16 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
   // Prohibited, restricted and danger areas in the error colour, the others
   // in the warning colour: the palette's, as everywhere.
   const airspaceColor = ["case", ["get", "danger"], palette.error, palette.warning];
+  // The task (part D2): the next cylinder in the accent and thicker, the
+  // ones taken muted, the others in the text's colour.
+  const taskColor = [
+    "case",
+    ["get", "next"],
+    palette.accent,
+    ["get", "taken"],
+    palette.textMuted,
+    palette.text,
+  ];
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -159,6 +171,47 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
         },
         "flight-track",
       );
+      // The pilot's task (part D2): rings and the goal line on the ground,
+      // the way left dashed; under the track.
+      map.addSource("flight-task", { type: "geojson", data: NONE });
+      map.addLayer(
+        {
+          id: "flight-task-next",
+          type: "fill",
+          source: "flight-task",
+          filter: ["all", ["==", ["get", "part"], "cylinder"], ["get", "next"]],
+          paint: { "fill-color": ${toScript(palette.accent)}, "fill-opacity": ${TASK_FILL_OPACITY} },
+        },
+        "flight-track",
+      );
+      map.addLayer(
+        {
+          id: "flight-task-edge",
+          type: "line",
+          source: "flight-task",
+          filter: ["!=", ["get", "part"], "route"],
+          paint: {
+            "line-color": ${toScript(taskColor)},
+            "line-width": ["case", ["get", "next"], 4, 2],
+          },
+        },
+        "flight-track",
+      );
+      map.addLayer(
+        {
+          id: "flight-task-route",
+          type: "line",
+          source: "flight-task",
+          filter: ["==", ["get", "part"], "route"],
+          layout: { "line-cap": "round" },
+          paint: {
+            "line-color": ${toScript(palette.accent)},
+            "line-width": 2,
+            "line-dasharray": [2, 2],
+          },
+        },
+        "flight-track",
+      );
       map.addSource("flight-takeoff", { type: "geojson", data: NONE });
       map.addLayer({
         id: "flight-takeoff",
@@ -256,6 +309,13 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
     }
   }
 
+  function setTask(collection) {
+    var source = map.getSource("flight-task");
+    if (source) {
+      source.setData(collection);
+    }
+  }
+
   function setTakeoff(lat, lon) {
     var source = map.getSource("flight-takeoff");
     if (source) {
@@ -273,6 +333,7 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
     setTrack: setTrack,
     setTakeoff: setTakeoff,
     setAirspace: setAirspace,
+    setTask: setTask,
   };
 
   // The frames the map drew a second, told every few seconds: what the

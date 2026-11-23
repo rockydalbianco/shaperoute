@@ -23,6 +23,7 @@ import { useFeedAds } from "../ads/useFeedAds";
 import { FeedContest } from "../contest/FeedContest";
 import { useContest } from "../contest/useContest";
 import { AddToFeed } from "../feed/AddToFeed";
+import { onPlanPostsSent, usePlanPostOutbox } from "../feed/PlanPostFlow";
 import { FeedAd } from "../feed/FeedAd";
 import { FeedMapShooter } from "../feed/FeedMaps";
 import { drawingHeight, FeedPost } from "../feed/FeedPost";
@@ -163,14 +164,24 @@ export function FeedScreen({
   const withTabs = withFollowing || withStyle;
   // The «+» of the bar: an account. «Photos only» needs no file picker.
   const withAdd = signedIn;
-  // The posts of photos only left on the phone go from here, the page
-  // always built; once one reaches the API the tabs read again.
+  // The posts of photos only and the gym plans posted (TASK-485) left on
+  // the phone go from here, the page always built; once one reaches the
+  // API the tabs read again.
   usePhotoPostOutbox();
+  usePlanPostOutbox();
   const refreshAll = all.refresh;
   const refreshFollowing = following.refresh;
   useEffect(
     () =>
       onPhotoPostsSent(() => {
+        refreshAll();
+        refreshFollowing();
+      }),
+    [refreshAll, refreshFollowing],
+  );
+  useEffect(
+    () =>
+      onPlanPostsSent(() => {
         refreshAll();
         refreshFollowing();
       }),

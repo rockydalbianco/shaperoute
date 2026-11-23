@@ -1,7 +1,8 @@
 # TASK-488 — La scheda si adatta a com'è andata
 
-**Stato**: In lavorazione · 2026-11-22 · PR A (server e tipi) #1415 aperta;
-PR B (l'app) dopo che A è in `main` e sul server
+**Stato**: Done · 2026-11-23 · A #1415 e B #1420 in `main`, A sul server
+(passo 19); esce col prossimo OTA di produzione, poi la prova sul telefono
+(«Uscita e prova»)
 **Fase**: 5 · **Branch**: `feat/TASK-488-a-adapt-server`, `feat/TASK-488-b-adapt-app`
 **Dipende da**: TASK-433 (schede guidate), TASK-452 (corsa su misura), TASK-461 (pianificatore)
 **ADR**: ADR-0396 · numeri dal Coordinatore il 2026-11-22
@@ -96,6 +97,26 @@ quanto è scritto.
 - [x] Segni e interruttore in «My plans», la guida che tiene le risposte
       (`GymPlans.test.tsx`).
 - [x] Testi nelle cinque lingue.
-- [ ] CI verde; A in `main` e sul server (passo col sì dell'utente), poi B.
-- [ ] Schermate dal simulatore all'utente; OTA col suo sì; prova sul
+- [x] CI verde; A in `main` (#1415, `29ac99be`) e sul server (passo 19
+      del 2026-11-22, col sì dell'utente: «adapt ok plans 2 adapted 0»),
+      poi B in `main` (#1420, `32096511`, 2026-11-23).
+- [x] Schermate dal simulatore all'utente (`out/TASK-488/`), approvate il
+      2026-11-23.
+- [ ] OTA di produzione col sì dell'utente (Coordinatore); prova sul
       telefono.
+
+## Esito
+
+La domanda a fine allenamento e a fine corsa, le regole di H2, i segni e
+l'interruttore in «My plans» sono in `main`; il server tiene `adapt` dal
+passo 19. Documenti: ADR-0396 in `DECISIONS.md`, riga in `INDEX.md` e in
+`archive/COMPLETATI.md` (PR di soli documenti).
+
+## Uscita e prova
+
+- **OTA**: B esce col prossimo OTA di produzione, che il Coordinatore
+  chiede all'utente quando la coda si calma.
+- **Prova sul telefono** dopo l'OTA: finire un allenamento di una scheda
+  con account, rispondere «Facile», vedere cosa cambia la volta dopo,
+  «Save»; in «My plans» il segno ↑ accanto al giorno e l'interruttore;
+  un giorno di corsa della scheda con la sua domanda a fine corsa.

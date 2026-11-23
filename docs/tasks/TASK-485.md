@@ -296,6 +296,17 @@ Il 2026-11-23 l'utente ha approvato le quattro traduzioni e i tre testi
 («Sì, approvo»). Voce: ADR-0394 precisazione B. Esce con l'OTA, col sì
 dell'utente.
 
+**B2, la voce del «+» (2026-11-23, dopo TASK-481 A #1421).** Lista
+approvata dal Coordinatore (fork 3): `addToFeedEntries.ts` (+ test, voce
+`plan` ultima, sempre pronta perché il «+» c'è solo con un account),
+`AddToFeed.tsx` (+ test, «Workout plan» apre `PlanPostFlow` nello stesso
+foglio), `screens/FeedScreen.tsx` (la coda dei piani montata accanto a
+quella delle foto: un post rimasto sul telefono parte senza riaprire il
+flusso e il Feed rilegge; test nuovo `FeedScreenPlans.test.tsx`), la riga
+«Share one of your gym plans» nelle quattro lingue (traduzioni da far
+approvare con la schermata). Turno sui file condivisi dopo #1419 (467 E2):
+prima del «pronta» merge di `main`, tenendo le voci degli altri.
+
 A turno (privacy, punto 4; in coda dopo TASK-309 B1, 417 D2, 312 C2 e 481
 A, il Coordinatore dice quando tocca):
 

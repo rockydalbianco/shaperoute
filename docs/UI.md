@@ -701,7 +701,10 @@ ogni gruppo di righe di Impostazioni ha gli angoli a 24 (`radius.group`) e i
 bordi del vetro posato dei segmenti: il filo di luce intorno e quello in
 cima. La faccia resta `surface`, così le parole tengono il contrasto. Con
 «Riduci trasparenza» il bordo è la linea sottile di prima, con «Aumenta
-contrasto» il bordo forte. Ogni gruppo lo prende con `useSettingsGroup()`.
+contrasto» il bordo forte. Ogni gruppo lo prende con `useSettingsGroup()`;
+anche la scheda dell'account e la riga «Blocked people» (A6b). Il riquadro
+prima di «Delete account» prende solo gli angoli e tiene il bordo rosso:
+è un avviso, non vetro.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce

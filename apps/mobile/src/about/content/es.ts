@@ -353,6 +353,7 @@ const privacy: AboutDocument = {
         "Una foto que publiques puede llevar dentro de la imagen el dibujo de tu carrera. Es el mismo dibujo que muestra el Feed.",
         "En una jornada de esquí, nuestro servidor compara la traza guardada con los remontes y pistas de OpenStreetMap, que guarda él mismo, para anotar cuáles tomaste y cuántas veces. Los nombres aparecen en la publicación, para quien pueda verla. Nada va a otro servicio.",
         "En las fotos que publiques puedes etiquetar las prendas que llevas: qué es cada una, su marca y, si quieres, su modelo y un enlace a una tienda. Las ve quien ve la foto. Si la carrera vuelve a «Solo yo», salen de nuestro servidor con sus fotos y se quedan en este teléfono.",
+        "Puedes añadir tu equipo: zapatillas, una bici, esquís, un casco, cualquier cosa que uses. De cada artículo guardamos su tipo, su marca, su modelo, el nombre que le das, el mes en que lo compraste, tu nota y su foto. La foto se guarda reducida, sin los datos que tu teléfono le añade, como dónde y cuándo se hizo. Las actividades que eliges para un artículo suman su distancia y su tiempo a sus totales, que nuestro servidor cuenta a partir de tus actividades guardadas. Los demás miembros ven tu equipo en tu perfil, con sus totales, notas y fotos, salvo que actives «Ocultar del perfil» en un artículo. Los deportes que eliges para un artículo y su límite solo los ves tú. Tu equipo se borra con tu cuenta.",
         "En una jornada de esquí, la app envía a nuestro servidor tu posición redondeada a cerca de 1 km para encontrar la estación más cercana; el tiempo lo pide el servidor a MET Norway con la posición de la estación, nunca con la tuya. La estación, la nieve y el equipo que añades se ven en la publicación, para quien pueda verla, y la nieve también cuenta, sin tu nombre, en la nieve del día de la estación.",
       ],
     },
@@ -381,7 +382,7 @@ const privacy: AboutDocument = {
     {
       heading: "Denuncias",
       blocks: [
-        "Cuando denuncias un dibujo, una prenda etiquetada, un comentario, un perfil o una carrera en grupo, guardamos quién denunció qué, el motivo y cuándo. Quien gestiona MuW la recibe por correo y puede ocultar lo denunciado a los demás miembros. No se borra nada, y su autor lo sigue viendo. Tu denuncia nunca se muestra al autor.",
+        "Cuando denuncias un dibujo, una prenda etiquetada, un artículo de equipo, un comentario, un perfil o una carrera en grupo, guardamos quién denunció qué, el motivo y cuándo. Quien gestiona MuW la recibe por correo y puede ocultar lo denunciado a los demás miembros. No se borra nada, y su autor lo sigue viendo. Tu denuncia nunca se muestra al autor.",
       ],
     },
     {
@@ -453,7 +454,7 @@ const privacy: AboutDocument = {
     {
       heading: "Apple Salud y Health Connect",
       blocks: [
-        "Cuando activas «Guardar en Apple Salud» (iPhone) o «Guardar en Health Connect» (Android), cada actividad que guardas se escribe también allí, en tu teléfono: el deporte, cuándo empezó y terminó, la distancia, la ruta y, en una carrera, las calorías activas estimadas. Si al final de una sesión de natación en piscina tocas «Añadir la frecuencia cardiaca desde Salud», MuW lee la frecuencia cardiaca que tu reloj registró durante esa sesión, y nada más. La media y el máximo se quedan con la sesión en nuestro servidor y se ven en su publicación, salvo que desactives «Mostrar la frecuencia cardiaca»; el tiempo en cada zona se queda en tu teléfono. Ninguno de tus datos de salud llega a ninguna publicidad. Puedes detenerlo en la app Salud o en Health Connect. Lo que ya está allí se queda hasta que lo borres allí, también cuando borras la carrera o tu cuenta.",
+        "Cuando activas «Guardar en Apple Salud» (iPhone) o «Guardar en Health Connect» (Android), cada actividad que guardas se escribe también allí, en tu teléfono: el deporte, cuándo empezó y terminó, la distancia, la ruta y, en una carrera, las calorías activas estimadas. Si al final de una sesión de natación en piscina o de un entrenamiento en el gimnasio tocas «Añadir la frecuencia cardiaca desde Salud», MuW lee la frecuencia cardiaca que tu reloj registró durante esa actividad, y nada más; después de ese primer toque la lee al final de cada sesión de natación y de cada entrenamiento. La media y el máximo se quedan con la actividad en nuestro servidor y se ven en su publicación, salvo que desactives «Mostrar la frecuencia cardiaca»; el tiempo en cada zona se queda en tu teléfono. Ninguno de tus datos de salud llega a ninguna publicidad. Puedes detenerlo en la app Salud o en Health Connect. Lo que ya está allí se queda hasta que lo borres allí, también cuando borras la carrera o tu cuenta.",
       ],
     },
     {

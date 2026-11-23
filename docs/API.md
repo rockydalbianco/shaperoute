@@ -470,7 +470,9 @@ che non è un numero fra −180 e 180 si legge `0`.
 query di `/recommended-routes` e di `/catalog`. **Senza, le corse**, come
 prima che il catalogo avesse altro: un'app che non lo chiede riceve le
 stesse risposte di prima, byte per byte. Con `activity=cycling` le uscite
-disegnate per la bici (20–30 km) e solo quelle; un'attività che il catalogo
+disegnate per la bici e solo quelle (da 20 a 30 km; da TASK-441 B3 anche da
+40 e 50 km, che stanno solo nel catalogo: «Draw» in bici resta a 10–30 km,
+e l'API non controlla la distanza di un disegno del catalogo); un'attività che il catalogo
 non ha dà una lista vuota (`total` e `cities` a 0 in `/catalog`), mai un
 errore. Nella risposta, nell'elenco e nel percorso intero, il campo
 `activity` **c'è solo quando non è una corsa** (`"cycling"`): manca, non è
@@ -3699,6 +3701,7 @@ parte B (l'app), finché nessuna app lo chiama.
 | `GET /me/activities/{key}/gear` | gli attrezzi di un'attività mia | `200` `{gear}`, `404` |
 | `PUT /me/activities/{key}/gear` | tutta la lista, `{gear_ids}` | `200` `{gear}` |
 | `GET /users/{public_id}/gear` | l'attrezzatura di un profilo | `200` `{gear}`, `404` |
+| `GET /drawings/{id}/gear` | gli attrezzi dell'attività di un post, per chi vede il post | `200` `{gear}`, `404` |
 | `GET /gear/{id}` | un attrezzo | `200`, `404` |
 | `GET /gear/{id}/photo?v=` | la sua foto | `200` `image/jpeg`, `404` |
 
@@ -3736,6 +3739,12 @@ parte B (l'app), finché nessuna app lo chiama.
   senza gli attrezzi `off_profile` e quelli nascosti dopo una
   segnalazione. Il proprietario sul suo profilo lo vede come gli altri
   (più i suoi nascosti dopo una segnalazione).
+- **Nel post** (parte E): `GET /drawings/{id}/gear` dà gli attrezzi
+  agganciati all'attività del post a chi vede il post
+  (`drawings.drawing_seen_sql`, se no `404`), con le stesse regole del
+  profilo; un post di sole foto ha la lista vuota. Una rotta a parte, come
+  `/stretch` e `/pool-swim`: il dettaglio del disegno non cambia. Test in
+  `test_gear_post.py`.
 - **La foto**: diritta, al più **1024 px** sul lato lungo, un JPEG nuovo
   senza l'EXIF del telefono; al più 10 al minuto per account (`429`).
 - **Segnalazioni**: `POST /reports` con `kind: "gear"`; dall'email

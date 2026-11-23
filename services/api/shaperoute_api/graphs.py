@@ -84,10 +84,15 @@ class ZoneGraphs:
         source: ZoneSource,
         max_zones: int = MAX_ZONES,
         read: Callable[[Path], Graph] = read_graph,
+        widen: Callable[[BBox], BBox] | None = None,
     ) -> None:
         self._source = source
         self._max_zones = max_zones
         self._read = read
+        # The area a download asks for, for a request no zone covers: the
+        # request's own when None; network.download_box on the server, so
+        # the next tries nearby find the zone in the cache.
+        self._widen = widen
         self._zones: OrderedDict[Path, ZoneCrop] = OrderedDict()
         # One lock per zone (ADR-0032): downloading a zone makes only the
         # requests for that zone wait. The guard only covers the two dicts.
@@ -110,7 +115,11 @@ class ZoneGraphs:
 
     def load(self, bbox: BBox) -> Graph:
         started = time.perf_counter()
-        key = self._source.covering_path(bbox) or self._source.cache_path(bbox)
+        # A zone not cached yet goes under the name of what is downloaded
+        # for it: the requests waiting on the same download wait together.
+        key = self._source.covering_path(bbox) or self._source.cache_path(
+            self._download_area(bbox)
+        )
         with self._lock_for(key):
             zone, origin = self._zone(key, bbox)
         # Outside the lock: the zone is only read, and the crop is this
@@ -138,7 +147,8 @@ class ZoneGraphs:
         # Checked again: another request may have downloaded it meanwhile.
         path = self._source.covering_path(bbox)
         if path is None:
-            zone, origin = ZoneCrop(self._download(bbox)), "network"
+            area = self._download_area(bbox)
+            zone, origin = ZoneCrop(self._download(area)), "network"
         else:
             zone, origin = ZoneCrop(self._read(path)), "disk"
         with self._guard:
@@ -146,6 +156,9 @@ class ZoneGraphs:
             while len(self._zones) > self._max_zones:
                 self._zones.popitem(last=False)
         return zone, origin
+
+    def _download_area(self, bbox: BBox) -> BBox:
+        return bbox if self._widen is None else self._widen(bbox)
 
     def _download(self, bbox: BBox) -> Graph:
         try:

@@ -51,6 +51,8 @@ import {
   totalsLine,
   WEEKDAYS,
 } from "./calendarText";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /** The height of the tallest bar of the twelve months. */
 const BAR_HEIGHT = 72;
@@ -469,10 +471,13 @@ function Chip({
   onPress: () => void;
   testID?: string;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   return (
     <Pressable
       style={({ pressed }) => [
         styles.chip,
+        chipRaise,
         on && styles.chipOn,
         pressed && styles.pressed,
       ]}

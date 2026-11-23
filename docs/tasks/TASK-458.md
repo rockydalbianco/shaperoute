@@ -76,8 +76,20 @@ dopo.
   `surfaceRaised` dentro il giallo: la linea di un disegno è gialla anche
   lei, e le schede scrivono coi colori del tono. Le bolle dell'altro
   restano `surface` col bordo.
-- Chat vuota: da chiedere.
-- «New message»: da chiedere.
+- **Chat vuota** (23 novembre 2026): «A, con gli spunti», scelta data qui.
+  Al centro la foto (64) e il nome di chi si scrive, la riga «Say hi to
+  {name}.» e tre spunti a capsula: «Hi {name}!», «I like your drawings»,
+  «Shall we run together?». Un tocco scrive il testo nella casella e non
+  invia niente. Vale con lo stato `first` e con `open`, finché non c'è
+  nessun messaggio; sostituisce «No messages yet.», che esce dalle tabelle.
+  Sotto la riga della richiesta (`first`) una riga in più: «Photos, videos
+  and drawings come after that.» — è la risposta a «nessun allegato
+  visibile». La riga vecchia resta com'è (la controlla `Messages.test.tsx`,
+  che è della #1513).
+- **«New message»**: proposto un tasto a capsula accanto al titolo
+  «Messages» che apre una pagina sua (chi si sente già, poi chi si segue, la
+  ricerca per nome; un tocco apre la conversazione, niente parte da lì).
+  Scritto così; **l'aspetto del tasto aspetta il sì dell'utente**.
 
 ## Testi nuovi (ognuno col sì dell'utente prima del merge)
 
@@ -85,6 +97,18 @@ dopo.
 |---|---|---|---|
 | Show password | Mostra la password | VoiceOver sull'occhio | — |
 | Hide password | Nascondi la password | VoiceOver sull'occhio | — |
+| Say hi to {name}. | Saluta {name}. | chat vuota | inglese: sì (scelta A) |
+| Hi {name}! | Ciao {name}! | spunto | inglese: sì |
+| I like your drawings | Mi piacciono i tuoi disegni | spunto | inglese: sì |
+| Shall we run together? | Corriamo insieme? | spunto | inglese: sì |
+| Writes it in the box. Nothing is sent yet. | Lo scrive nella casella. Non viene ancora inviato niente. | VoiceOver sugli spunti | — |
+| Photos, videos and drawings come after that. | Foto, video e disegni vengono dopo. | sotto la riga della richiesta | inglese: sì |
+| New message | Nuovo messaggio | tasto e titolo della pagina | — |
+| Search someone by name to write to them. | Cerca qualcuno per nome per scrivergli. | pagina «New message» senza nessuno | — |
+
+Tedesco, spagnolo e francese sono in `src/i18n/`. Riusati, non nuovi:
+«Search people», «Close», «Loading…», «Nobody has a name like that.»,
+«Message {name}» (VoiceOver sulle righe). Tolto: «No messages yet.».
 
 ## Criteri di accettazione
 
@@ -98,7 +122,12 @@ dopo.
       neutre; l'allegato di una propria bolla su una piastra neutra
       (`ChatMinor.test.tsx`).
 - [ ] Il giallo delle bolle confermato dall'utente sulle schermate.
-- [ ] Chat vuota e «New message»: le scelte dell'utente fatte, con test.
+- [ ] Una conversazione senza messaggi offre i tre spunti, che scrivono
+      nella casella senza inviare; in una richiesta dice che i file vengono
+      dopo (`ChatMinor.test.tsx`).
+- [ ] «New message» accanto al titolo apre la pagina, che elenca chi si
+      sente e chi si segue una volta sola, cerca per nome e apre la
+      conversazione (`NewMessage.test.tsx`).
 - [ ] Testi nuovi approvati dall'utente, in cinque lingue.
 - [ ] Schermate prima/dopo: iscrizione, chat vuota, chat con messaggi,
       elenco.
@@ -137,10 +166,13 @@ Lista approvata dal Coordinatore il 23 novembre 2026. `STATUS.md`,
   le bolle gialle in un commit (`4a99dba7`), coi test verdi in locale:
   `SignInScreen.test.tsx`, tutta `src/messages` (77 test),
   `i18n/tables.test.ts`, `tsc`, `prettier`, `eslint` sui file toccati.
-  PR aperta come bozza. Restano: le scelte dell'utente su chat vuota e
-  «New message», le schermate (turno del simulatore dal Coordinatore, in
-  coda dopo 469 A7c-3, 479 D2, 486 F2 e la prova dell'app), la conferma
-  del giallo sulle schermate, i testi approvati.
+  PR #1519 aperta come bozza. Poi, in un secondo commit, la chat vuota con
+  gli spunti e «New message» (pagina e tasto), coi test verdi:
+  `src/messages` più `MessagesTab` e `TabLanding` (107 test), le tabelle,
+  `tsc`, `eslint`, `prettier`. Restano: il sì dell'utente sull'aspetto del
+  tasto «New message», le schermate (turno del simulatore dal
+  Coordinatore), la conferma del giallo sulle schermate, i testi
+  approvati nelle cinque lingue, `docs/UI.md`.
 - Da guardare nel simulatore: su iOS un campo che torna segreto può
   svuotarsi al primo tasto dopo il tocco sull'occhio. Se succede, il testo
   va tenuto da `onChangeText`.

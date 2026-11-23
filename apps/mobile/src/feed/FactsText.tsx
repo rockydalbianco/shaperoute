@@ -1,4 +1,4 @@
-import type { GymSet } from "@shaperoute/shared-types";
+import type { GymExercises } from "@shaperoute/shared-types";
 import { type StyleProp, Text, type TextProps, type TextStyle } from "react-native";
 
 import { isTrackless } from "../activities/snow";
@@ -13,12 +13,13 @@ import type { SamplePost } from "./sampleFeed";
  * reader hears one line.
  */
 
-/** The calories that end the facts of `post`, as postFacts writes them. */
+/** The calories that end the facts of `post`, as postFacts writes them: a
+ * workout's from its exercises and heart rate (TASK-385 parts C and G). */
 export function factsEnergy(
   post: SamplePost,
-  sets?: readonly GymSet[] | null,
+  exercises?: GymExercises | null,
 ): string | null {
-  return isTrackless(post.activity) ? gymPostEnergy(post, sets) : postEnergy(post);
+  return isTrackless(post.activity) ? gymPostEnergy(post, exercises) : postEnergy(post);
 }
 
 export function FactsText({

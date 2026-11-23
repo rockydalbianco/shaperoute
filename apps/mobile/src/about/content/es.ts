@@ -452,6 +452,14 @@ const privacy: AboutDocument = {
       ],
     },
     {
+      heading: "Nutrición",
+      blocks: [
+        "«Nutrición» es un diario que llevas para ti. Los alimentos que añades, tu plan de la semana, lo que escribes que comiste cada día, tu objetivo diario y las calorías que corriges a mano se guardan solo en tu teléfono: no llegan a nuestro servidor y nadie más puede verlos. El «Balance de calorías» de tu perfil se calcula en tu teléfono y solo lo ves tú.",
+        "Para estimar la energía que gastas, MuW cuenta en tu teléfono las actividades de tu cuenta y los datos del cuerpo que introdujiste en «Ajustes». Cada número es una estimación: MuW no ofrece dietas ni consejos médicos.",
+        "Estos datos nunca estuvieron en nuestro servidor, así que cerrar sesión o eliminar tu cuenta no los borra: se quedan en tu teléfono hasta que los quites allí o desinstales la app.",
+      ],
+    },
+    {
       heading: "Apple Salud y Health Connect",
       blocks: [
         "Cuando activas «Guardar en Apple Salud» (iPhone) o «Guardar en Health Connect» (Android), cada actividad que guardas se escribe también allí, en tu teléfono: el deporte, cuándo empezó y terminó, la distancia, la ruta y, en una carrera, las calorías activas estimadas. Si al final de una sesión de natación en piscina o de un entrenamiento en el gimnasio tocas «Añadir la frecuencia cardiaca desde Salud», MuW lee la frecuencia cardiaca que tu reloj registró durante esa actividad, y nada más; después de ese primer toque la lee al final de cada sesión de natación y de cada entrenamiento. La media y el máximo se quedan con la actividad en nuestro servidor y se ven en su publicación, salvo que desactives «Mostrar la frecuencia cardiaca»; el tiempo en cada zona se queda en tu teléfono. Ninguno de tus datos de salud llega a ninguna publicidad. Puedes detenerlo en la app Salud o en Health Connect. Lo que ya está allí se queda hasta que lo borres allí, también cuando borras la carrera o tu cuenta.",
@@ -476,6 +484,7 @@ const privacy: AboutDocument = {
             "Google Ireland Limited (Firebase Cloud Messaging), para entregar las notificaciones push a los teléfonos Android. Cuando enciendes push, la app pide a Firebase un token de registro para tu teléfono; el servicio push de Expo pasa cada notificación (quién hizo qué, y el principio de un comentario) a Google, que la entrega a tu teléfono. Google ve el token y el contenido de cada notificación, no tu cuenta ni tu posición. El token se quita de nuestro servidor cuando apagas push, cierras sesión o borras tu cuenta; el del teléfono se va cuando desinstalas la app.",
             "Resend, en Estados Unidos, envía los correos de MuW: tu dirección de correo con el correo mismo. En una denuncia lleva a quien gestiona MuW lo denunciado, su texto, el motivo y los nombres de usuario de quien lo denunció y de quien lo escribió. En «Envíanos tus comentarios» lleva tu mensaje, tu nombre de usuario y tu dirección de correo.",
             "Google, con su servicio Web Risk, recibe de nuestro servidor partes de la huella (hash) de algunos enlaces que los miembros ponen en sus prendas, para comprobar que no llevan a sitios peligrosos: nunca el enlace entero, ni quién lo puso o quién lo abre.",
+            "Open Food Facts recibe el código de barras que escaneas o escribes en «Nutrición», para encontrar el producto: ve el código y, como cualquier sitio, tu dirección IP, nunca tu cuenta ni tu diario. El producto que devuelve se guarda en tu teléfono.",
             "Strava, como se ha dicho arriba.",
           ],
         },
@@ -491,6 +500,7 @@ const privacy: AboutDocument = {
             "Cuando eliminas tu cuenta, todo lo que es tuyo se elimina al momento: perfil, foto, número de teléfono, carreras, dibujos, favoritos, comentarios, reacciones, seguimientos, datos del juego y las novedades que esperan tu correo. Las rutas que dibujó nuestro motor se quedan: no dicen nada de quién las pidió.",
             "Cada noche se hace una copia de seguridad de la base de datos y se guarda 13 días: una cuenta eliminada sale de todas las copias en 14 días como máximo.",
             "En tu teléfono: la sesión, tus elecciones (idioma, deporte, lagos o mar), los mapas sin conexión, las carreras que aún esperan para enviarse y, con una cuenta, la zona desde la que suelen empezar tus actividades, para sugerirte lagos y mar cerca; se borra al cerrar sesión.",
+            "Solo en tu teléfono, también después de cerrar sesión: lo que escribes en «Nutrición».",
           ],
         },
         "La conexión entre la app y nuestro servidor está cifrada (HTTPS).",

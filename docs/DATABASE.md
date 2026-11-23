@@ -1437,7 +1437,7 @@ TASK-467 E1).
   controllati da `gear.py` e non da un `CHECK`: uno sport nuovo non chiede
   una migrazione qui.
 - Il legame coi capi taggati (`drawing_outfit_tags.gear_id`) arriva con
-  la parte F, in una migrazione sua, insieme a `outfit_tags.py`.
+  la parte F, nella migrazione `0085_outfit_gear_link.sql` (sotto).
 - **`reports.kind`** con `gear`. Nessuna riga di prima cambia, nessun
   backfill. Test in `test_gear.py` e `test_moderation.py`.
 
@@ -1459,6 +1459,17 @@ una copia della scheda**:
   (`photo_posts.PHOTO_POST_SQL`). Una richiesta di copia dei dati
   comprende le schede pubblicate: sono righe di `drawings`. Nessuna riga di
   prima cambia, nessun backfill. Test in `test_plan_posts.py`.
+
+Migrazione `0085_outfit_gear_link.sql` (TASK-486 parte F, ADR-0393,
+`API.md` «Outfit tags»; numero del Coordinatore). Un capo taggato su una
+foto può essere un attrezzo del suo proprietario (la scelta 3
+dell'utente):
+
+- **`drawing_outfit_tags.gear_id`** (`uuid`, facoltativo) con la chiave
+  esterna su `gear` `ON DELETE SET NULL`: cancellato l'attrezzo, il capo
+  resta con le sue parole, senza il legame. Indice parziale su `gear_id`.
+  Nessuna riga di prima cambia, nessun backfill. Test in
+  `test_outfit_gear.py`.
 
 ## Come si memorizza una traccia
 

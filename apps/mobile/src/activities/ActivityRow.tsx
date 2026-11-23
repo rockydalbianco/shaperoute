@@ -7,6 +7,7 @@ import { GymTile } from "../gym/GymTile";
 import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
 import { clockLabel } from "../navigation/freeRun";
+import { useListKcal } from "../nutrition/useListKcal";
 import { poolKcal, poolKcalLabel } from "../pool/poolKcal";
 import { isPoolSwimRun, PoolTile } from "../pool/PoolTile";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
@@ -63,21 +64,23 @@ export function ActivityRow({
   const gym = isTrackless(activity.activity);
   // A swim in a pool ends with its energy, "· 206 kcal" (TASK-409 part A).
   const body = useBody();
-  const kcal = pool
-    ? poolKcalLabel(
-        poolKcal(
-          activity.distance_m,
-          activity.duration_s,
-          body,
-          new Date(activity.started_at).getFullYear(),
-        ),
-      )
-    : null;
-  const facts = gym
-    ? clockLabel(activity.duration_s * 1000)
-    : kcal === null
-      ? runFacts(activity)
-      : `${runFacts(activity)} · ${kcal}`;
+  // With «Nutrition» on, every activity ends with the calories its day's
+  // balance counts, «(edited)» when the user wrote them (TASK-489 part C1).
+  const counted = useListKcal(activity, body);
+  const kcal =
+    counted ??
+    (pool
+      ? poolKcalLabel(
+          poolKcal(
+            activity.distance_m,
+            activity.duration_s,
+            body,
+            new Date(activity.started_at).getFullYear(),
+          ),
+        )
+      : null);
+  const numbers = gym ? clockLabel(activity.duration_s * 1000) : runFacts(activity);
+  const facts = kcal === null ? numbers : `${numbers} · ${kcal}`;
   // As a screen reader says the run: its title first, as the card shows it.
   const said = title === null ? when : `${title}, ${when}`;
   return (

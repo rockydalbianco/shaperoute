@@ -3272,6 +3272,14 @@ database, `503`. Tipi in `shared-types` (`OutfitTag`, `OutfitTagRequest`,
   suoi; uno senza `id` è nuovo. `[]` li toglie tutti. Un `id` che non è di
   questa foto, o due volte: `422 invalid_request`. Al più **5 per foto e
   10 per post**.
+- **Da un attrezzo** (TASK-486 parte F, ADR-0393): un capo può portare
+  `gear_id`, un attrezzo di chi tagga (se no `422 invalid_request`);
+  l'app ne prende tipo, marca e modello, e il pallino apre l'attrezzo. Un
+  capo mandato col suo `id` e senza il campo (un'app di prima) tiene il
+  `gear_id` che aveva; `null` lo toglie. Nelle foto `gear_id` arriva a chi
+  vedrebbe l'attrezzo (`gear.py`): agli altri mai uno «Hide from profile»
+  o nascosto dopo una segnalazione, e allora è `null`. Cancellato
+  l'attrezzo, il capo resta senza legame. Test in `test_outfit_gear.py`.
 - **Solo dove stanno le foto**: la corsa del proprietario, con il disegno
   visto da altri (`409` mentre è `only_me`, come per le foto), e una foto
   già mandata in quel posto (`404` «No photo in this place: send the photo
@@ -3701,6 +3709,7 @@ parte B (l'app), finché nessuna app lo chiama.
 | `GET /me/activities/{key}/gear` | gli attrezzi di un'attività mia | `200` `{gear}`, `404` |
 | `PUT /me/activities/{key}/gear` | tutta la lista, `{gear_ids}` | `200` `{gear}` |
 | `GET /users/{public_id}/gear` | l'attrezzatura di un profilo | `200` `{gear}`, `404` |
+| `GET /drawings/{id}/gear` | gli attrezzi dell'attività di un post, per chi vede il post | `200` `{gear}`, `404` |
 | `GET /gear/{id}` | un attrezzo | `200`, `404` |
 | `GET /gear/{id}/photo?v=` | la sua foto | `200` `image/jpeg`, `404` |
 
@@ -3738,6 +3747,12 @@ parte B (l'app), finché nessuna app lo chiama.
   senza gli attrezzi `off_profile` e quelli nascosti dopo una
   segnalazione. Il proprietario sul suo profilo lo vede come gli altri
   (più i suoi nascosti dopo una segnalazione).
+- **Nel post** (parte E): `GET /drawings/{id}/gear` dà gli attrezzi
+  agganciati all'attività del post a chi vede il post
+  (`drawings.drawing_seen_sql`, se no `404`), con le stesse regole del
+  profilo; un post di sole foto ha la lista vuota. Una rotta a parte, come
+  `/stretch` e `/pool-swim`: il dettaglio del disegno non cambia. Test in
+  `test_gear_post.py`.
 - **La foto**: diritta, al più **1024 px** sul lato lungo, un JPEG nuovo
   senza l'EXIF del telefono; al più 10 al minuto per account (`429`).
 - **Segnalazioni**: `POST /reports` con `kind: "gear"`; dall'email

@@ -2889,6 +2889,16 @@ export const DE: Table = {
   "Add to Feed": "Zum Feed hinzufügen",
   "Record now": "Jetzt aufzeichnen",
   "Start an activity now": "Starte jetzt eine Aktivität",
+  // src/feed/addToFeedEntries.ts and PastActivityPost.tsx (TASK-481 part F:
+  // «Already recorded», an activity of «My activities» posted from the «+»).
+  "Already recorded": "Schon aufgezeichnet",
+  "Post an activity from My activities": "Poste eine Aktivität aus Meine Aktivitäten",
+  "Your activities not in the Feed yet, the latest first.":
+    "Deine Aktivitäten, die noch nicht im Feed sind, die neueste zuerst.",
+  "All your activities are in the Feed already.":
+    "Alle deine Aktivitäten sind schon im Feed.",
+  "Choose «Everyone» or «Followers» and it goes in the Feed.":
+    "Wähle «Alle» oder «Follower», und sie kommt in den Feed.",
   // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
   // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
   // the first three approved by the user, 2026-11-21, the deletion's with
@@ -3271,7 +3281,7 @@ export const DE: Table = {
     "Auf den Straßen ist deine Zeichnung {share} % länger: {distance}. Sie bleibt, wo du sie gezeichnet hast, in derselben Größe.",
   "On the roads your drawing is {share}% shorter: {distance}. It stays where you drew it, at the same size.":
     "Auf den Straßen ist deine Zeichnung {share} % kürzer: {distance}. Sie bleibt, wo du sie gezeichnet hast, in derselben Größe.",
-  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts.
+  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts, coach/nextTime.ts.
   Coach: "Coach",
   "Based on your last 4 weeks": "Aus deinen letzten 4 Wochen",
   "Apply to plan": "In den Plan übernehmen",
@@ -3345,6 +3355,7 @@ export const DE: Table = {
   "WHO guidelines 2020": "WHO-Leitlinien 2020",
   OK: "OK",
   "Nothing to change for now: keep going.": "Im Moment nichts zu ändern: weiter so.",
+  "Next time: {exercise} {kg} kg": "Nächstes Mal: {exercise} {kg} kg",
   // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21, the other texts on 2026-11-23)
   "Nearest airspace": "Nächster Luftraum",
   inside: "innen",
@@ -3399,4 +3410,43 @@ export const DE: Table = {
   "Copy the number from the label, or from your dietitian's sheet.":
     "Übernimm die Zahl vom Etikett oder vom Blatt deiner Ernährungsfachkraft.",
   "Delete food": "Lebensmittel löschen",
+  // src/nutrition (TASK-489 part B2)
+  Diary: "Tagebuch",
+  "My plan": "Mein Plan",
+  "Eaten as planned": "Wie geplant gegessen",
+  "Copy this day to…": "Diesen Tag kopieren nach…",
+  "This is the plan you write. MuW never changes it.":
+    "Das ist der Plan, den du schreibst. MuW ändert ihn nie.",
+  "How we calculate": "So rechnen wir",
+  "Food@@numbers": "Lebensmittel",
+  "Energy you use": "Energie, die du verbrauchst",
+  Estimates: "Schätzungen",
+  "Calories of the foods in the list come from USDA FoodData Central (SR Legacy, April 2018), a public-domain food composition table. Your own foods use the numbers you wrote.":
+    "Die Kalorien der Lebensmittel in der Liste stammen aus USDA FoodData Central (SR Legacy, April 2018), einer gemeinfreien Nährwerttabelle. Deine eigenen Lebensmittel nutzen die Zahlen, die du eingetragen hast.",
+  "At rest: the Mifflin-St Jeor equation, from the body data in your profile. Activities: ACSM equations and the 2024 Compendium of Physical Activities. On days when Apple Health has your active energy, that number is used instead.":
+    "In Ruhe: die Mifflin-St-Jeor-Gleichung, aus den Körperdaten in deinem Profil. Aktivitäten: ACSM-Gleichungen und das Compendium of Physical Activities 2024. An Tagen, an denen Apple Health deine Aktivitätsenergie hat, wird stattdessen diese Zahl verwendet.",
+  "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
+    "Die tatsächlichen Werte hängen vom Produkt, vom Rezept und von der Person ab. MuW gibt keine Diäten oder medizinischen Ratschläge.",
+  "Only you see this page. Nothing here leaves your phone.":
+    "Diese Seite siehst nur du. Nichts davon verlässt dein Handy.",
+  // src/nutrition (TASK-489 part C1)
+  "Today the energy at rest is counted up to now.":
+    "Heute wird die Energie in Ruhe bis jetzt gezählt.",
+  Surplus: "Überschuss",
+  Deficit: "Defizit",
+  "At rest": "In Ruhe",
+  Activities: "Aktivitäten",
+  "No activities on this day.": "Keine Aktivitäten an diesem Tag.",
+  edited: "bearbeitet",
+  "Log in to count your activities.": "Melde dich an, um deine Aktivitäten zu zählen.",
+  "Your activities could not be loaded. Only the energy at rest is counted.":
+    "Deine Aktivitäten konnten nicht geladen werden. Es wird nur die Energie in Ruhe gezählt.",
+  "Energy at rest": "Energie in Ruhe",
+  "Your own number, for example the one your dietitian measured. It takes the place of MuW's estimate.":
+    "Deine eigene Zahl, zum Beispiel die von deiner Ernährungsfachkraft gemessene. Sie ersetzt die Schätzung von MuW.",
+  "MuW's estimate: {kcal} kcal": "Schätzung von MuW: {kcal} kcal",
+  "Back to the estimate": "Zurück zur Schätzung",
+  "Calories of this activity": "Kalorien dieser Aktivität",
+  "Your number stays on this phone. Your post and Apple Health keep theirs.":
+    "Deine Zahl bleibt auf diesem Handy. Dein Beitrag und Apple Health behalten ihre.",
 };

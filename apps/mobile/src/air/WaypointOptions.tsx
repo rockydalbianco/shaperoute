@@ -6,6 +6,7 @@ import { appLanguage } from "../i18n/language";
 import type { Palette } from "../theme/tokens";
 import { airspacePickerAvailable } from "./airspaceFile";
 import { loadedDay } from "./AirspaceOptions";
+import { TaskShare } from "./TaskShare";
 import { pickTask, pickWaypoints } from "./waypointFile";
 import { setTask, setWaypoints, useTask, useWaypoints } from "./waypointStore";
 
@@ -164,6 +165,8 @@ export function WaypointOptions({
           <Text style={muted} testID="task-file">
             {t(FILE_LINE, { file: task.fileName, date: loadedDay(task.loadedAtMs) })}
           </Text>
+          {/* Part D4: the task passed on, as a file or a QR code. */}
+          <TaskShare loaded={task} chip={chip} palette={palette} />
         </>
       ) : null}
       {note !== null ? (

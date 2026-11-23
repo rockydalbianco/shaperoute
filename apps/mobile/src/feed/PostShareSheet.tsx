@@ -17,6 +17,7 @@ import {
   space,
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 import { Tap } from "../ui/Tap";
 import { sharePostLink } from "./postLink";
 
@@ -62,6 +63,8 @@ type Props = {
  */
 export function PostShareSheet({ visible, post, poster, link, onClose }: Props) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   const sendable = usePostSendable();
   const [sending, setSending] = useState(false);
   const [run, setRun] = useState<PostRun | null>(null);
@@ -81,7 +84,9 @@ export function PostShareSheet({ visible, post, poster, link, onClose }: Props) 
         importantForAccessibility="no"
         testID="post-share-backdrop"
       />
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + space.sm }]}>
+      <View
+        style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.sm }]}
+      >
         {sendable && (
           <Choice label={t("Send to a friend")} onPress={() => setSending(true)} />
         )}

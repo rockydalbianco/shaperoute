@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { type GymSet, PLAN_SOURCE } from "@shaperoute/shared-types";
+import { type GymExercises, PLAN_SOURCE } from "@shaperoute/shared-types";
 
 import { sportPaceLabel } from "../activities/activityText";
 import { isOnSnow, isTrackless } from "../activities/snow";
@@ -107,9 +107,10 @@ function sameWords(a: string, b: string): boolean {
  * added from a file of another app says so before all, "Imported · 4.9 km ·
  * 27 min" (TASK-312). A run ends with its energy, "· 355 kcal" (TASK-345).
  * What the title of the card already says is not said twice (TASK-355).
- * A workout at the gym counts its energy from its `sets` (TASK-385 C).
+ * A workout at the gym counts its energy from its `exercises`: its sets
+ * (TASK-385 C) and its heart rate (part G).
  */
-export function postFacts(post: SamplePost, sets?: readonly GymSet[] | null): string {
+export function postFacts(post: SamplePost, exercises?: GymExercises | null): string {
   const named = post.what === undefined ? shapeLabel(post.shape) : post.what;
   const what = named !== null && sameWords(named, post.title) ? null : named;
   // A member's drawing has the seconds; an example only its minutes.
@@ -121,7 +122,7 @@ export function postFacts(post: SamplePost, sets?: readonly GymSet[] | null): st
     gym ? null : distanceLabel(post.route_m),
     durationLabel(post.minutes * 60_000),
     gym ? null : sportPaceLabel(post.activity, post.route_m, ms),
-    gym ? gymPostEnergy(post, sets) : postEnergy(post),
+    gym ? gymPostEnergy(post, exercises) : postEnergy(post),
   ]
     .filter((fact): fact is string => fact !== null)
     .join(" · ");
@@ -318,7 +319,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
   // A race on foot and in the air (TASK-305 part R6b): its two times.
   const split = postSplit(post);
   const splitText = split === null ? null : postSplitLine(split);
-  const facts = postFacts(post, exercises?.sets);
+  const facts = postFacts(post, exercises);
   const withSplit = splitText === null ? facts : `${facts} · ${splitText}`;
   const heard = ago === "" ? withSplit : `${ago} · ${withSplit}`;
   // A member's run may have no place found (TASK-118): then none is read.
@@ -349,7 +350,8 @@ export function FeedPost({ post, width, onOpen }: Props) {
       height={drawingHeight(width)}
       durationS={isShown(post) ? post.drawing.duration_s : post.minutes * 60}
       exercises={exercises === null ? [] : mainExercises(exercises.sets, language)}
-      kcal={gymPostEnergy(post, exercises?.sets)}
+      kcal={gymPostEnergy(post, exercises)}
+      heartBpm={exercises?.heart_avg_bpm ?? null}
     />
   ) : (
     <RouteMap
@@ -376,8 +378,8 @@ export function FeedPost({ post, width, onOpen }: Props) {
       {!shown && (
         <FactsText
           style={styles.facts}
-          facts={postFacts(post, exercises?.sets)}
-          kcal={factsEnergy(post, exercises?.sets)}
+          facts={postFacts(post, exercises)}
+          kcal={factsEnergy(post, exercises)}
         />
       )}
       {/* The figures this workout reached first (TASK-385 E). */}
@@ -414,8 +416,8 @@ export function FeedPost({ post, width, onOpen }: Props) {
         {!shown && (
           <FactsText
             style={styles.factsOnPhoto}
-            facts={postFacts(post, exercises?.sets)}
-            kcal={factsEnergy(post, exercises?.sets)}
+            facts={postFacts(post, exercises)}
+            kcal={factsEnergy(post, exercises)}
           />
         )}
       </View>
@@ -649,7 +651,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
     <View style={styles.card}>
       {who}
       {card}
-      <SummaryBoxes rows={summaryRows(post, units, exercises?.sets)} />
+      <SummaryBoxes rows={summaryRows(post, units, exercises)} />
       <SleepLine drawingId={post.drawing.id} sleep={post.drawing.sleep} />
       {menu !== null && <View style={styles.menu}>{menu}</View>}
       {onOpen !== undefined && (

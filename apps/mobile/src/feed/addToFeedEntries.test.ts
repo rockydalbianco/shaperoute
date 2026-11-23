@@ -3,30 +3,37 @@ import { addToFeedEntries } from "./addToFeedEntries";
 // The entries of the Feed's «+» (TASK-481, ADR-0390): the ready ones, in
 // the user's order, without «Soon».
 
-test("all ready: «Record now», «Photos only», «From a file», in this order", () => {
+test("all ready: «Record now», «Photos only», «From a file», «Workout plan», in this order", () => {
   const entries = addToFeedEntries({ record: true, filePicker: true });
-  expect(entries.map((entry) => entry.id)).toEqual(["record", "photos", "file"]);
+  expect(entries.map((entry) => entry.id)).toEqual([
+    "record",
+    "photos",
+    "file",
+    "plan",
+  ]);
   expect(entries.map((entry) => entry.title)).toEqual([
     "Record now",
     "Photos only",
     "From a file",
+    "Workout plan",
   ]);
   expect(entries[0].detail).toBe("Start an activity now");
   expect(entries[1].detail).toBe("Up to 10 photos, also from Instagram");
   expect(entries[2].detail).toBe("GPX, TCX or FIT from Strava, Garmin, Komoot…");
+  expect(entries[3].detail).toBe("Share one of your gym plans");
 });
 
 test("without the file picker in the app there is no «From a file»", () => {
   const entries = addToFeedEntries({ record: true, filePicker: false });
-  expect(entries.map((entry) => entry.id)).toEqual(["record", "photos"]);
+  expect(entries.map((entry) => entry.id)).toEqual(["record", "photos", "plan"]);
 });
 
 test("without a way to record there is no «Record now»", () => {
   const entries = addToFeedEntries({ record: false, filePicker: true });
-  expect(entries.map((entry) => entry.id)).toEqual(["photos", "file"]);
+  expect(entries.map((entry) => entry.id)).toEqual(["photos", "file", "plan"]);
 });
 
-test("«Photos only» is always there", () => {
+test("«Photos only» and «Workout plan» are always there", () => {
   const entries = addToFeedEntries({ record: false, filePicker: false });
-  expect(entries.map((entry) => entry.id)).toEqual(["photos"]);
+  expect(entries.map((entry) => entry.id)).toEqual(["photos", "plan"]);
 });

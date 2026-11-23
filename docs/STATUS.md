@@ -39,10 +39,10 @@ Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
 - **TASK-485 — La scheda della palestra come post** (ADR-0394) · 0 e A in
-  `main`, A sul server (passo 18); B (app) in `main` (#1414, `f4737c66`),
-  testi approvati il 2026-11-23, esce con l'OTA col sì. Restano la voce del
-  «+» (dopo TASK-481 A), la privacy a turno, l'apertura da profilo, notifica
-  o link. File: — · `tasks/TASK-485.md`
+  `main`, A sul server (passo 18); B (#1414) e B2, la voce del «+» (#1431,
+  `ed0bd4d7`), in `main`; escono con l'OTA, col sì, dopo la privacy (in
+  corso, traduzioni all'utente). Poi l'apertura da profilo, notifica o
+  link. File: — · `tasks/TASK-485.md`
 - **TASK-491 — Il Coach MuW** · parte 0 il 2026-11-23 (ADR-0399): regole
   con il loro studio, sul telefono e senza AI; la scheda cambia solo con
   «Apply»; solo con account, omino di TASK-490 B; testi approvati. A in
@@ -265,6 +265,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   nelle liste si chiama «Paragliding» e ha la velocità, col prossimo OTA.
   **2026-11-23**: R6e in main (#1411 server col passo 19, #1412 app con
   l'OTA 23): il post di una gara dal Feed a due colori.
+  **2026-11-23, R6e chiusa**: passo 19 fatto e OTA 23 uscita; l'utente ha
+  visto il post di una gara sul telefono («funziona tutto»). Resta: un volo
+  vero; R4 in bozza (#1218).
 - **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
   scelta dell'utente del 2026-11-21, senza accordi con terzi: schermata di
   widget, vario sonoro, mappa 3D, spazi aerei dal file del pilota, gare,
@@ -303,6 +306,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-23**: **E2 in `main`**, spenta: il post del sonno nel Feed,
   nella sua pagina e nella griglia (#1419, `d0b89470`) e la voce «Sleep»
   del «+» (#1441, `57e4d4b4`). Poi una build di prova nuova, poi la C.
+  **2026-11-23**: **C0 in `main`** (#1458, `cffb2c4d`): il sonno acceso solo
+  sul canale di prova `preview`, spento negli store. Arriva sulla build di
+  prova con la prossima pubblicazione su `preview`; poi la prova e la C.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`
@@ -357,8 +363,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
 - **TASK-481 — Il «+» del Feed: tutte le voci** (ADR-0390) · A (la lista:
   «Record now», «Photos only», «From a file») in `main` il 2026-11-23 (#1421),
-  esce col prossimo OTA; restano la privacy e le righe di 467 E2, 484 B, 485 B,
-  al via del Coordinatore. File: — · `tasks/TASK-481.md`
+  privacy («from a file», cinque lingue e sito) in `main` (#1444); escono col
+  prossimo OTA, copia del sito col sì dell'utente; restano le righe di 467 E2,
+  484 B, 485 B, al via del Coordinatore. File: — · `tasks/TASK-481.md`
 
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 (la barra
   «Apri» di Safari) e A (l'app apre il post del link) in produzione (OTA 21),

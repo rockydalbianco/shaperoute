@@ -1,5 +1,5 @@
 import type { ImageRouteRequest, LatLon } from "@shaperoute/shared-types";
-import { act, renderHook } from "@testing-library/react-native";
+import { act, renderHook, waitFor } from "@testing-library/react-native";
 
 import { strokeMatchesOnServer } from "../api/strokeMatches";
 import { matchStroke } from "../engine/matchOnPhone";
@@ -66,8 +66,11 @@ test("a server that answers the probe draws a hand drawing where it was drawn", 
   await act(async () =>
     result.current.onCanvas({ type: "drawn", line: roundLine(), metresPerPx: PX_M }),
   );
+  // Nothing at once: the probe waits for the stroke's answer.
+  expect(strokeMatchesOnServer).not.toHaveBeenCalled();
+  await waitFor(() => expect(placement(result.current.request)).toBe("anchored"));
   expect(strokeMatchesOnServer).toHaveBeenCalledWith("http://api.test");
-  expect(placement(result.current.request)).toBe("anchored");
+  expect(matchStroke).toHaveBeenCalled();
   // Sized from the result, it stays anchored.
   let sized: unknown = null;
   await act(async () => {
@@ -89,6 +92,7 @@ test("an older server, or no answer, keeps the drawing free", async () => {
   await act(async () =>
     result.current.onCanvas({ type: "drawn", line: roundLine(), metresPerPx: PX_M }),
   );
+  await waitFor(() => expect(strokeMatchesOnServer).toHaveBeenCalled());
   expect(result.current.request).not.toBeNull();
   expect(placement(result.current.request)).toBeUndefined();
 
@@ -101,6 +105,9 @@ test("an older server, or no answer, keeps the drawing free", async () => {
       metresPerPx: PX_M,
     }),
   );
+  await waitFor(() =>
+    expect(strokeMatchesOnServer).toHaveBeenLastCalledWith("http://other.test"),
+  );
   expect(placement(other.result.current.request)).toBeUndefined();
 });
 
@@ -112,9 +119,11 @@ test("the answer belongs to its server: another server is asked again", async ()
   await act(async () =>
     result.current.onCanvas({ type: "drawn", line: roundLine(), metresPerPx: PX_M }),
   );
-  expect(placement(result.current.request)).toBe("anchored");
+  await waitFor(() => expect(placement(result.current.request)).toBe("anchored"));
   await act(async () => rerender({ apiUrl: "http://old.test" }));
-  expect(strokeMatchesOnServer).toHaveBeenLastCalledWith("http://old.test");
+  await waitFor(() =>
+    expect(strokeMatchesOnServer).toHaveBeenLastCalledWith("http://old.test"),
+  );
   expect(placement(result.current.request)).toBeUndefined();
 });
 
@@ -132,6 +141,8 @@ test("without a server, nothing is probed and the drawing stays free", async () 
   await act(async () =>
     result.current.onCanvas({ type: "drawn", line: roundLine(), metresPerPx: PX_M }),
   );
+  await waitFor(() => expect(matchStroke).toHaveBeenCalled());
+  await act(async () => {});
   expect(strokeMatchesOnServer).not.toHaveBeenCalled();
   expect(placement(result.current.request)).toBeUndefined();
 });

@@ -957,10 +957,13 @@ export function useMapCanvas({
   );
   // «Draw route» asks a hand drawing anchored (TASK-347 part C3) only of a
   // server that answered the probe: an older one refuses the field. The
-  // answer is kept for its server, so another server asks again.
+  // answer is kept for its server, so another server asks again. Asked once
+  // a stroke has its answer, as the strokes are sent: a line only put on
+  // the map sends nothing at once.
+  const strokeAnswered = matching.strokes.some((stroke) => stroke.state !== "pending");
   const [probed, setProbed] = useState<{ url: string; knows: boolean } | null>(null);
   useEffect(() => {
-    if (!handDrawn || apiUrl === null) {
+    if (!handDrawn || !strokeAnswered || apiUrl === null) {
       return;
     }
     let going = true;
@@ -972,7 +975,7 @@ export function useMapCanvas({
     return () => {
       going = false;
     };
-  }, [handDrawn, apiUrl]);
+  }, [handDrawn, strokeAnswered, apiUrl]);
   const anchors = probed !== null && probed.url === apiUrl && probed.knows;
 
   // The app renders again with new units (TASK-182): the request follows.

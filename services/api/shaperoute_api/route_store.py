@@ -175,6 +175,11 @@ SAME_ROUTES_AS: dict[str, str] = {
     "e0834d054b6e": "427ed1a16a97",  # every route but a swim
     "1063cc95fea3": "d943bfbe8c44",  # the swims
     "4c549677eefb": "f54db2ee707d",  # the app's paddling examples
+    # A zone not cached is downloaded wider, on a grid (network.download_box,
+    # Bangkok 2026-11-22); a route on a zone draws as before.
+    "83b84d67c7f4": "e0834d054b6e",  # every route but a swim
+    "780424973b42": "1063cc95fea3",  # the swims
+    "9b27551516c0": "4c549677eefb",  # the app's paddling examples
 }
 
 

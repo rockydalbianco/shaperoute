@@ -353,6 +353,7 @@ const privacy: AboutDocument = {
         "Une photo que tu publies peut contenir le dessin de ta course dans l'image. C'est le même dessin que celui du Feed.",
         "Pour une journée de ski, notre serveur compare la trace enregistrée aux remontées et pistes d'OpenStreetMap, qu'il garde lui-même, pour noter celles que tu as prises et combien de fois. Les noms apparaissent dans la publication, pour qui peut la voir. Rien ne part vers un autre service.",
         "Sur les photos que tu publies, tu peux identifier les articles que tu portes : ce qu'est chacun, sa marque et, si tu veux, son modèle et un lien vers une boutique. Ceux qui voient la photo les voient. Si la course repasse en «Moi seulement», ils quittent notre serveur avec ses photos et restent sur ce téléphone.",
+        "Tu peux ajouter ton matériel : chaussures, un vélo, des skis, un casque, tout ce que tu utilises. Pour chaque article, nous gardons son type, sa marque, son modèle, le nom que tu lui donnes, le mois où tu l'as acheté, ta note et sa photo. La photo est gardée réduite, sans les données que ton téléphone y ajoute, comme le lieu et le moment où elle a été prise. Les activités que tu choisis pour un article ajoutent leur distance et leur durée à ses totaux, que notre serveur compte à partir de tes activités enregistrées. Les autres membres voient ton matériel sur ton profil, avec ses totaux, ses notes et ses photos, sauf si tu actives «Masquer du profil» pour un article. Les sports que tu choisis pour un article et sa limite, toi seul les vois. Ton matériel est supprimé avec ton compte.",
         "Pour une journée de ski, l'app envoie à notre serveur ta position arrondie à environ 1 km pour trouver la station la plus proche ; la météo, c'est le serveur qui la demande à MET Norway avec la position de la station, jamais la tienne. La station, la neige et l'équipement que tu ajoutes apparaissent sur la publication, pour qui peut la voir, et la neige compte aussi, sans ton nom, dans la neige du jour de la station.",
       ],
     },
@@ -381,7 +382,7 @@ const privacy: AboutDocument = {
     {
       heading: "Signalements",
       blocks: [
-        "Quand tu signales un dessin, un article identifié, un commentaire, un profil ou une course en groupe, nous gardons qui a signalé quoi, la raison et quand. La personne qui gère MuW le reçoit par e-mail et peut masquer ce qui a été signalé aux autres membres. Rien n'est supprimé, et son auteur le voit toujours. Ton signalement n'est jamais montré à l'auteur.",
+        "Quand tu signales un dessin, un article identifié, un article de matériel, un commentaire, un profil ou une course en groupe, nous gardons qui a signalé quoi, la raison et quand. La personne qui gère MuW le reçoit par e-mail et peut masquer ce qui a été signalé aux autres membres. Rien n'est supprimé, et son auteur le voit toujours. Ton signalement n'est jamais montré à l'auteur.",
       ],
     },
     {
@@ -453,7 +454,7 @@ const privacy: AboutDocument = {
     {
       heading: "Apple Santé et Health Connect",
       blocks: [
-        "Dès que tu actives «Enregistrer dans Apple Santé» (iPhone) ou «Enregistrer dans Health Connect» (Android), chaque activité que tu enregistres y est aussi écrite, sur ton téléphone : le sport, quand elle a commencé et fini, la distance, le parcours et, pour une course, les calories actives estimées. Si, à la fin d'une nage en piscine, tu touches «Ajouter la fréquence cardiaque depuis Santé», MuW lit la fréquence cardiaque que ta montre a enregistrée pendant cette nage, et rien d'autre. La moyenne et le maximum restent avec la nage sur notre serveur et s'affichent dans sa publication, sauf si tu désactives «Afficher la fréquence cardiaque» ; le temps dans chaque zone reste sur ton téléphone. Aucune de tes données de santé n'atteint une publicité. Tu peux l'arrêter dans l'app Santé ou dans Health Connect. Ce qui y est déjà reste jusqu'à ce que tu l'y supprimes, même quand tu supprimes la course ou ton compte.",
+        "Dès que tu actives «Enregistrer dans Apple Santé» (iPhone) ou «Enregistrer dans Health Connect» (Android), chaque activité que tu enregistres y est aussi écrite, sur ton téléphone : le sport, quand elle a commencé et fini, la distance, le parcours et, pour une course, les calories actives estimées. Si, à la fin d'une nage en piscine ou d'une séance en salle de sport, tu touches «Ajouter la fréquence cardiaque depuis Santé», MuW lit la fréquence cardiaque que ta montre a enregistrée pendant cette activité, et rien d'autre ; après ce premier toucher, MuW la lit à la fin de chaque nage et de chaque séance. La moyenne et le maximum restent avec l'activité sur notre serveur et s'affichent dans sa publication, sauf si tu désactives «Afficher la fréquence cardiaque» ; le temps dans chaque zone reste sur ton téléphone. Aucune de tes données de santé n'atteint une publicité. Tu peux l'arrêter dans l'app Santé ou dans Health Connect. Ce qui y est déjà reste jusqu'à ce que tu l'y supprimes, même quand tu supprimes la course ou ton compte.",
       ],
     },
     {

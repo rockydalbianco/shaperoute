@@ -590,7 +590,9 @@ lasciando le righe d'indice.
 - ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Proposta
 - ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
 - ADR-0397, precisazione 2 — La tabella di base dei cibi: 314 voci da USDA SR Legacy (aprile 2018) ricavate da uno script, nomi in cinque lingue in file loro; la pagina «Nutrition» in due PR, con schermate e testi approvati · 2026-11-23 · Proposta
+- ADR-0397, precisazione 3 — Le attività nel bilancio stimate da quello che dice la lista privata (palestra dal solo tempo, escursione senza salita), oggi «finora» e fuori dal totale della settimana, il diario del telefono e non dell'account · 2026-11-23 · Proposta
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
+- ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB · 2026-11-23 · Attiva
 - ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi · 2026-11-23 · Attiva
 
 
@@ -640,6 +642,70 @@ per sé).
 **Conseguenze**: niente testi nuovi e niente nativo. Restano la frase di
 Salute in «Privacy» allargata alla palestra (G3, al turno della privacy
 col sì dell'utente) e l'OTA del Coordinatore.
+
+## ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB
+
+**Stato**: Attiva · 2026-11-23 · TASK-441, parte B3 (#1471, `ba12b1fe`).
+Le scelte di prodotto sono dell'utente: **«solo in Explore»** (le uscite da
+40 e 50 km sono disegni pronti del catalogo; «Draw» in bici resta a
+10–30 km) e **«Tutti i 129»** (entrano tutte quelle che passano il filtro).
+Le altre sono **decise dall'agente su delega dell'utente**; il limite di
+memoria è del Coordinatore.
+
+**Contesto**: la precisazione del 2026-11-18 chiudeva con «i 40–50 km (B3)
+vogliono il limite del motore alzato: una PR a parte». Guardando il codice,
+quel limite (`activities/cycling.py`, 30 km) è anche il limite di «Draw»
+nell'API, la misura delle zone della bici sul server e sul telefono, il
+campo della distanza nell'app, e sta nell'impronta del motore e in
+`engine.zip`. Alzarlo voleva dire «Draw» in bici fino a 50 km, ogni zona
+della bici rifatta circa 2,4 volte più grande, una PR del motore e un'OTA:
+una scelta di prodotto, chiesta all'utente e non presa.
+
+**Decisione**:
+
+1. **Il motore non cambia.** `tools/catalog_bike.py --distances 50000
+   40000` toglie il limite dei 30 km solo nel proprio processo
+   (`ride_limit`, per la durata del giro). Nessun file in `services/`,
+   `packages/`, `apps/`; nessuna OTA.
+2. **Stesse otto forme, stesso filtro, stesso registro**
+   (`out/TASK-441/bike.jsonl`, chiave `città/forma@cycling/distanza`):
+   cinque forme a una distanza e tre all'altra, a turno per città. Entra
+   ogni uscita che passa `catalog_seed.reasons`; l'utente le ha guardate
+   tutte su una pagina prima del merge.
+3. **Le uscite da 40 km in su stanno dopo le uscite che c'erano nel file di
+   città** (`catalog_seed._place`, `LATER_RIDES_FROM_M`). L'id di un
+   percorso è il suo posto nel file (`recommended.py`): ordinate per
+   somiglianza in mezzo alle altre, le uscite lunghe avrebbero cambiato
+   l'id delle uscite da 20–30 km già pubblicate. Chi aggiunge altri
+   percorsi a un file già pubblicato li mette in fondo, per la stessa
+   ragione.
+4. **Limite del pianificatore a 4096 MB per ogni città**, guardato ogni 2 s
+   (deciso dal Coordinatore, non alzato): 26 città a 50 e 40 km, 8 solo a
+   40 km, le più grandi come tentativi, fermandosi al primo oltre il
+   limite. Zone ritagliate dagli estratti già sul disco, Overpass chiuso.
+5. **Nessun controllo nuovo sulla distanza**: l'API e l'app non guardano
+   la distanza di un disegno del catalogo. Su un'uscita da 40 o 50 km
+   «Draw it near me» apre «Draw» a 30 km (`againDistanceM` riporta la
+   distanza dentro i limiti dello sport): accettato così.
+
+**Motivo**: il catalogo è fatto di disegni calcolati una volta sul Mac, e
+può permettersi zone e tempi che «Draw» sul telefono e sul server non può.
+Tenere fermo il motore lascia intatte le zone, l'impronta e ogni risposta
+di oggi; l'ordine nel file è l'unica cosa che poteva rompere qualcosa di
+pubblicato, e si è visto solo provando la scrittura a vuoto.
+
+**Conseguenze**: 34 città, 272 casi, 213 disegnati, **129 entrano** (42 da
+50 km, 87 da 40) in 32 città; il catalogo va a **2031 percorsi**, 485
+uscite in bici in 60 città (Levico è nuova). 31 file di città identici byte
+per byte, nei 32 cambiati il testo di prima è l'inizio del nuovo. La
+memoria a 50 km è da 1,5 a 2,5 volte quella a 30 km (Bergamo 4075 MB);
+Genova e Nizza non hanno uscite che passano; Amsterdam passa i 4 GB anche a
+40 km, e Sydney, Valencia, Milano e Barcellona non sono state provate. 20
+casi falliscono perché un candidato esce dalla zona ritagliata (cuore e
+cerchio alla distanza più lunga): una zona più larga per quei casi è un
+ritocco possibile, non fatto. La previsione del piano (150–200 disegni) era
+alta. Il server le carica con un passo «catalogo» (sì dell'utente al
+Coordinatore).
 
 ## ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save»
 
@@ -1259,6 +1325,16 @@ terreno sotto il pilota (`setCenterElevation`). La quota sul terreno si
 legge dalle stesse Terrain Tiles «terrarium» della mappa 3D, decodificate
 su un canvas in una pagina nascosta: nessuna libreria, nessun server. I
 colori del vario sono `vario` in `tokens.ts`.
+
+**Aggiunta del 2026-11-23 (parti E1 ed E2, deciso dall'agente su delega
+dell'utente)**: la parte E è divisa in E1 (il file), E2 (in volo), E3
+(dopo il volo), col sì del Coordinatore. Il file OpenAir resta sul
+telefono (`airspace.json`), uno alla volta, e non va mai al server. La
+vicinanza si calcola sul telefono a ogni secondo; i limiti FL dalla quota
+GPS con l'atmosfera standard, segnati «≈»; un volume di quota ignota
+avvisa sulla sola distanza orizzontale. Il suono d'avviso è un file nostro
+(`alert.wav`, da `tools/vario_tones.py`). I volumi sulla mappa usano i
+colori `error` e `warning` della tavolozza: nessun colore nuovo.
 
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
@@ -6284,3 +6360,47 @@ detto che è dell'utente):
 si rifà girare lo script con l'archivio; la fonte, l'edizione e la data
 dello scarico stanno in testa a `foodTable.ts` e in «How we calculate».
 «Used (est.)» e «Balance» in cima al diario si riempiono con la parte C1.
+
+## ADR-0397, precisazione 3 — Le attività nel bilancio, la settimana nel profilo, il diario del telefono
+
+**Data**: 2026-11-23 · **Stato**: Proposta · **Task**: TASK-489 (C1, D, F)
+
+**Contesto**: le parti C1 (le attività nel conto del giorno), D (la
+tabella nel profilo) e F (la privacy) avevano scelte lasciate «da vedere
+con le schermate». L'utente ha visto schermate e testi di ognuna e ha
+detto «Sì, approvo» il 2026-11-23.
+
+**Decisione** — scelte dell'utente:
+
+- **Oggi il riposo è contato fino a adesso**, e la pagina lo dice; nella
+  tabella del profilo oggi è «so far» e **non entra nel totale della
+  settimana** finché il giorno non è finito.
+- **Un giorno senza diario è vuoto**, in tutte le colonne, e fuori dal
+  totale: non è un giorno a zero calorie.
+- Il riquadro del profilo c'è **solo dopo l'avviso di «Nutrition» letto**;
+  surplus e deficit nello stesso colore, parole e non un giudizio.
+- **Il diario è del telefono, non dell'account**: uscire dall'account o
+  eliminarlo non lo cancella, e la privacy lo dice. Scartata: cancellare
+  tutto all'uscita.
+
+Decise dall'agente su delega dell'utente:
+
+- **Le calorie di un'attività si stimano da quello che dice la lista
+  privata**: sport, metri e tempo. La lista non porta il dislivello né le
+  serie, quindi la palestra è contata dal solo tempo e un'escursione senza
+  la salita: più grezze dei numeri a fine attività. Per questo la
+  correzione a mano è accanto a ogni attività. Chiedere al server il
+  dettaglio di ogni attività per un numero più fino è stato scartato:
+  una richiesta per attività a ogni apertura del diario.
+- La lista si legge dal contesto che l'app ha già
+  (`useActivitiesDoor()`); per un giorno o una settimana più vecchi delle
+  pagine tenute si chiedono le pagine dopo. **Una pagina che non arriva
+  non si richiede da sola**: quei giorni contano solo il riposo, e la
+  scheda lo dice.
+- Con `NUTRITION_ON` spento la riga della lista privata e il riquadro del
+  profilo non leggono niente dal telefono e non rendono niente di nuovo.
+
+**Conseguenze**: con la C2 l'energia attiva di Salute prende il posto
+della somma delle attività nei giorni che ce l'hanno (già previsto nei
+conti di A1). Se un giorno servisse cancellare il diario all'uscita, è
+codice nuovo e un testo di privacy diverso.

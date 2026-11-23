@@ -5404,7 +5404,7 @@ salva come `alpinism`.
 - Nel modulo del post non è un giorno sulla neve: resta alpinismo. Sull'orologio non
   c'è, finché una sua build non lo conosce.
 
-## Il contacalorie: «Nutrition» (TASK-489 parte B, ADR-0397)
+## Il contacalorie: «Nutrition» (TASK-489 parti B, C1 e D, ADR-0397)
 
 **Spenta in ogni build di oggi** dalla costante `NUTRITION_ON`
 (`nutrition/nutritionOn.ts`): si accende con la build nativa che legge
@@ -5431,8 +5431,12 @@ qui esce dal telefono.
   calculate»**.
 - **«Diary»** (`nutrition/DiaryView.tsx`): il giorno in cima, «Today»,
   «Yesterday» o la data, con le frecce; dopo oggi non si va. Tre numeri:
-  «Eaten», «Used (est.)» e «Balance»; gli ultimi due sono «—» finché la
-  parte C1 non conta le attività. Sotto, **«My daily target»**: un numero
+  «Eaten», «Used (est.)» e «Balance». «Used (est.)» è il riposo più le
+  attività della lista privata partite quel giorno; **oggi il riposo è
+  contato fino a adesso**, e sotto i numeri c'è «Today the energy at rest
+  is counted up to now.». «Balance» è mangiate meno consumate, col segno e
+  sotto «Surplus» o «Deficit» («−660», «Deficit»); senza niente di
+  mangiato scritto è «—». Sotto, **«My daily target»**: un numero
   di kcal che scrive solo l'utente, e quante ne restano; MuW non ne propone
   mai uno. Poi i quattro pasti, «Breakfast», «Lunch», «Dinner», «Snacks»,
   ognuno coi suoi cibi (nome, grammi, kcal), il totale e «Add food». Un
@@ -5441,6 +5445,34 @@ qui esce dal telefono.
   settimana. C'è **solo finché il giorno è vuoto** e il piano ha quel
   giorno: non scrive mai sopra quello che è stato segnato a mano (scelta
   dell'utente, 2026-11-23).
+- **«Energy you use»** (`nutrition/EnergySheet.tsx`), toccando «Used
+  (est.)»: la riga «At rest» e, sotto «Activities», ogni attività del
+  giorno con sport, quantità, ora e calorie («Run · 4.01 km», «07:10»,
+  «280 kcal»), poi il totale. Senza attività: «No activities on this
+  day.». Senza account: «Log in to count your activities.». Se la lista
+  non arriva: «Your activities could not be loaded. Only the energy at
+  rest is counted.». Mentre arriva, «Used (est.)» è «—».
+- **Scrivere il proprio numero**: toccando «At rest» si apre «Energy at
+  rest» (kcal al giorno, per esempio quelle misurate dal dietista);
+  toccando un'attività «Calories of this activity», con «Your number
+  stays on this phone. Your post and Apple Health keep theirs.». Il campo
+  parte vuoto, «MuW's estimate: 1764 kcal» resta in vista, «Back to the
+  estimate» toglie il numero scritto. Un numero scritto a mano lo dice:
+  «(set by you)» sul riposo, «edited» sull'attività. La palestra è stimata
+  dal solo tempo e un'escursione senza la salita: la lista non dice di più.
+- **Nella lista privata** («My activities»): ogni attività chiude la riga
+  dei numeri con le calorie che il bilancio conta, «7.2 km · 38:12 · 412
+  kcal»; «250 kcal (edited)» se corrette a mano.
+- **«Calorie balance» nel proprio profilo** (`nutrition/OwnBalance.tsx`),
+  sotto il sonno, con «Only you see this»: la settimana da lunedì a
+  domenica, una riga al giorno con «Eaten», «Used» e «Balance» col segno;
+  le frecce portano alle settimane prima («16 Nov – 22 Nov»), mai oltre
+  «This week». Oggi è «Thu 26 · so far» e non entra in «Week total» finché
+  il giorno non è finito («Today is not in the total until the day is
+  over.»); un giorno senza diario è «—» e non entra nel totale. Sotto il
+  totale «Surplus» o «Deficit», nello stesso colore. Il riquadro compare
+  solo dopo l'avviso letto; sul profilo degli altri non esiste, e niente
+  va all'API.
 - **Aggiungere un cibo** (`nutrition/AddFoodSheet.tsx`): si cerca per nome
   fra i cibi propri e i 314 della tabella (USDA FoodData Central, SR
   Legacy), nella lingua dell'app; si scrivono i grammi e si vede la stima
@@ -5726,3 +5758,12 @@ altri pezzi) si aggancia alle strade mentre lo disegni, tratto per tratto,
   poi un Redo ridisegnano subito l'aggancio di prima.
 - Forme, immagini, foto e pezzi non si agganciano: arrivano nelle parti D
   ed E.
+- **«Draw route» ancorato** (parte C3): un disegno a mano si chiede con
+  `placement: "anchored"`, senza magnete (quello del motore). Il percorso
+  resta dove e come l'hai disegnato: non viene girato, spostato né
+  ingrandito, e sotto c'è il fantasma (`placed_outline`), nello stesso posto.
+  Si chiede così solo a un server che risponde alla sonda
+  (`GET /stroke-matches`); con un server vecchio, o senza risposta, il
+  disegno va libero come prima. Se sulle strade il disegno viene più lungo
+  o più corto di oltre il 10%, una nota lo dice: «On the roads your drawing
+  is 53% longer: 7.6 km. It stays where you drew it, at the same size.»

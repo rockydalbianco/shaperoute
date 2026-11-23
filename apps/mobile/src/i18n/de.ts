@@ -2889,6 +2889,16 @@ export const DE: Table = {
   "Add to Feed": "Zum Feed hinzufügen",
   "Record now": "Jetzt aufzeichnen",
   "Start an activity now": "Starte jetzt eine Aktivität",
+  // src/feed/addToFeedEntries.ts and PastActivityPost.tsx (TASK-481 part F:
+  // «Already recorded», an activity of «My activities» posted from the «+»).
+  "Already recorded": "Schon aufgezeichnet",
+  "Post an activity from My activities": "Poste eine Aktivität aus Meine Aktivitäten",
+  "Your activities not in the Feed yet, the latest first.":
+    "Deine Aktivitäten, die noch nicht im Feed sind, die neueste zuerst.",
+  "All your activities are in the Feed already.":
+    "Alle deine Aktivitäten sind schon im Feed.",
+  "Choose «Everyone» or «Followers» and it goes in the Feed.":
+    "Wähle «Alle» oder «Follower», und sie kommt in den Feed.",
   // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
   // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
   // the first three approved by the user, 2026-11-21, the deletion's with
@@ -3266,6 +3276,11 @@ export const DE: Table = {
   "Lines not read: {n}": "Nicht gelesene Zeilen: {n}",
   "This file has no airspace MuW can read.":
     "Diese Datei enthält keinen Luftraum, den MuW lesen kann.",
+  // src/route/warnings.ts (TASK-347 part C3: an anchored drawing longer or shorter on the roads; texts to approve)
+  "On the roads your drawing is {share}% longer: {distance}. It stays where you drew it, at the same size.":
+    "Auf den Straßen ist deine Zeichnung {share} % länger: {distance}. Sie bleibt, wo du sie gezeichnet hast, in derselben Größe.",
+  "On the roads your drawing is {share}% shorter: {distance}. It stays where you drew it, at the same size.":
+    "Auf den Straßen ist deine Zeichnung {share} % kürzer: {distance}. Sie bleibt, wo du sie gezeichnet hast, in derselben Größe.",
   // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts.
   Coach: "Coach",
   "Based on your last 4 weeks": "Aus deinen letzten 4 Wochen",
@@ -3349,4 +3364,68 @@ export const DE: Table = {
   "Warn within": "Warnen innerhalb",
   "Warn above or below": "Warnen darüber oder darunter",
   "Warning sound": "Warnton",
+  // src/nutrition (TASK-489 part B1)
+  "Food@@nutrition": "Essen",
+  Nutrition: "Ernährung",
+  "Before you start": "Bevor du anfängst",
+  "MuW does not provide diets, meal plans or medical advice. The plan here is the one you write: your own, or the one your dietitian gave you.":
+    "MuW gibt keine Diäten, Ernährungspläne oder medizinischen Ratschläge. Der Plan hier ist der, den du schreibst: dein eigener oder der von deiner Ernährungsfachkraft.",
+  "Every number is an estimate, from food composition tables and from formulas for the energy you use.":
+    "Jede Zahl ist eine Schätzung aus Nährwerttabellen und aus Formeln für die Energie, die du verbrauchst.",
+  "If you have a medical condition, are pregnant or have a history of eating disorders, talk to a doctor or a dietitian before counting calories.":
+    "Wenn du eine Erkrankung hast, schwanger bist oder eine Essstörung hattest, sprich mit einer Ärztin, einem Arzt oder einer Ernährungsfachkraft, bevor du Kalorien zählst.",
+  "Estimates only. MuW does not provide diets or medical advice.":
+    "Nur Schätzungen. MuW gibt keine Diäten oder medizinischen Ratschläge.",
+  "Previous day": "Vorheriger Tag",
+  "Next day": "Nächster Tag",
+  Eaten: "Gegessen",
+  "Used (est.)": "Verbraucht (gesch.)",
+  Balance: "Bilanz",
+  "Set my daily target": "Mein Tagesziel festlegen",
+  "My daily target": "Mein Tagesziel",
+  "(set by you)": "(von dir festgelegt)",
+  Left: "Übrig",
+  "kcal a day": "kcal pro Tag",
+  "Your own number, or the one your dietitian gave you. MuW never suggests one.":
+    "Deine eigene Zahl oder die von deiner Ernährungsfachkraft. MuW schlägt nie eine vor.",
+  "Remove target": "Ziel entfernen",
+  Breakfast: "Frühstück",
+  Lunch: "Mittagessen",
+  Dinner: "Abendessen",
+  Snacks: "Snacks",
+  "Add food": "Lebensmittel hinzufügen",
+  "Add to breakfast": "Zum Frühstück hinzufügen",
+  "Add to lunch": "Zum Mittagessen hinzufügen",
+  "Add to dinner": "Zum Abendessen hinzufügen",
+  "Add to snacks": "Zu den Snacks hinzufügen",
+  "Search food": "Lebensmittel suchen",
+  "My food": "Mein Lebensmittel",
+  "No food found.": "Kein Lebensmittel gefunden.",
+  "Add my own food": "Eigenes Lebensmittel hinzufügen",
+  Grams: "Gramm",
+  Estimate: "Schätzung",
+  "My own food": "Eigenes Lebensmittel",
+  "Calories in 100 g (kcal)": "Kalorien in 100 g (kcal)",
+  "Copy the number from the label, or from your dietitian's sheet.":
+    "Übernimm die Zahl vom Etikett oder vom Blatt deiner Ernährungsfachkraft.",
+  "Delete food": "Lebensmittel löschen",
+  // src/nutrition (TASK-489 part B2)
+  Diary: "Tagebuch",
+  "My plan": "Mein Plan",
+  "Eaten as planned": "Wie geplant gegessen",
+  "Copy this day to…": "Diesen Tag kopieren nach…",
+  "This is the plan you write. MuW never changes it.":
+    "Das ist der Plan, den du schreibst. MuW ändert ihn nie.",
+  "How we calculate": "So rechnen wir",
+  "Food@@numbers": "Lebensmittel",
+  "Energy you use": "Energie, die du verbrauchst",
+  Estimates: "Schätzungen",
+  "Calories of the foods in the list come from USDA FoodData Central (SR Legacy, April 2018), a public-domain food composition table. Your own foods use the numbers you wrote.":
+    "Die Kalorien der Lebensmittel in der Liste stammen aus USDA FoodData Central (SR Legacy, April 2018), einer gemeinfreien Nährwerttabelle. Deine eigenen Lebensmittel nutzen die Zahlen, die du eingetragen hast.",
+  "At rest: the Mifflin-St Jeor equation, from the body data in your profile. Activities: ACSM equations and the 2024 Compendium of Physical Activities. On days when Apple Health has your active energy, that number is used instead.":
+    "In Ruhe: die Mifflin-St-Jeor-Gleichung, aus den Körperdaten in deinem Profil. Aktivitäten: ACSM-Gleichungen und das Compendium of Physical Activities 2024. An Tagen, an denen Apple Health deine Aktivitätsenergie hat, wird stattdessen diese Zahl verwendet.",
+  "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
+    "Die tatsächlichen Werte hängen vom Produkt, vom Rezept und von der Person ab. MuW gibt keine Diäten oder medizinischen Ratschläge.",
+  "Only you see this page. Nothing here leaves your phone.":
+    "Diese Seite siehst nur du. Nichts davon verlässt dein Handy.",
 };

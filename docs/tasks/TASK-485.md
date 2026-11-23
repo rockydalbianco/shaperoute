@@ -4,8 +4,9 @@
 `main` (#1404), passo 18 sul server col sì dell'utente; B (app) in `main`
 (#1414, `f4737c66`, 2026-11-22), testi e traduzioni approvati il
 2026-11-23; B2, la voce «Workout plan» del «+», in `main` (#1431,
-`ed0bd4d7`, 2026-11-23); B e B2 escono con l'OTA, col sì dell'utente,
-solo dopo la privacy (in corso, `feat/TASK-485-b-privacy`)
+`ed0bd4d7`, 2026-11-23); privacy in `main` (#1469, `5d226b33`,
+2026-11-23); restano la copia della privacy sul sito e l'OTA, ciascuna
+col sì dell'utente chiesto dal Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-485-gym-plan-post` (parte 0, in
 `main`); `feat/TASK-485-a-plan-posts-api` (A); B col suo branch e la sua PR
 **Dipende da**: TASK-481 (il foglio «Add to Feed» e `addToFeedEntries.ts`,
@@ -320,8 +321,10 @@ A turno (privacy, punto 4; in coda dopo TASK-309 B1, 417 D2, 312 C2 e 481
 A, il Coordinatore dice quando tocca). Il turno è arrivato il 2026-11-23,
 dopo #1444: lista di 11 file approvata dal Coordinatore, la data resta il
 23 novembre 2026 (già in `main`), quindi `AboutPage.test.tsx` e
-`site/tests/privacy.test.mjs` non cambiano; le quattro traduzioni vanno
-all'utente:
+`site/tests/privacy.test.mjs` non cambiano. L'utente ha approvato le
+quattro traduzioni («Sì, approvo») e il merge («Sì, unisci»): in `main` il
+2026-11-23 (#1469, `5d226b33`). Testi in
+`out/TASK-485/PRIVACY-B.md` (checkout principale). I file erano:
 
 ```
 apps/mobile/src/about/content/{en,it,de,fr,es}.ts

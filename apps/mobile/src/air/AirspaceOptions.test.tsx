@@ -10,6 +10,7 @@ import { Pressable, Text, View } from "react-native";
 import { color } from "../theme/tokens";
 import { pickAirspace } from "./airspaceFile";
 import { AirspaceOptions, NO_AIRSPACE } from "./AirspaceOptions";
+import { airspaceAlertsNow, resetAirspaceAlerts } from "./airspaceAlertPrefs";
 import { airspaceNow, resetAirspace, setAirspace } from "./airspaceStore";
 
 jest.mock("expo-file-system", () => {
@@ -80,6 +81,7 @@ beforeEach(() => {
   resetAirspace();
   // The file of the test before, gone.
   setAirspace(null);
+  resetAirspaceAlerts();
   jest.mocked(pickAirspace).mockReset();
 });
 
@@ -121,4 +123,16 @@ it("takes the file away with «Remove»", async () => {
   await fireEvent.press(screen.getByText("Remove"));
   expect(airspaceNow()).toBeNull();
   expect(screen.getByText(NO_AIRSPACE)).toBeTruthy();
+});
+
+it("sets how near the warning comes, once a file is loaded", async () => {
+  jest.mocked(pickAirspace).mockResolvedValue(airspaceOf(TEXT, "a.txt", 0) as never);
+  await show();
+  expect(screen.queryByText("Warn within")).toBeNull();
+  await fireEvent.press(screen.getByText("Load file"));
+  expect(screen.getByText("Warn within")).toBeTruthy();
+  expect(screen.getByText("Warn above or below")).toBeTruthy();
+  await fireEvent.press(screen.getByText("2.0 km"));
+  await fireEvent.press(screen.getByText("50 m"));
+  expect(airspaceAlertsNow()).toMatchObject({ horizontalM: 2000, verticalM: 50 });
 });

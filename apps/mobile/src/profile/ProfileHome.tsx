@@ -21,6 +21,7 @@ import { FirstStep, profileStage } from "./FirstStep";
 import { photoBusyText, PhotoChoices } from "./PhotoChoices";
 import { ProfileGallery } from "./ProfileGallery";
 import { ProfileGroupRuns } from "../groupRuns/ProfileGroupRuns";
+import { ProfileGear } from "../gear/ProfileGear";
 import { ProfileHeader } from "./ProfileHeader";
 import { OwnSleep } from "./OwnSleep";
 import { OwnVo2Max } from "./OwnVo2Max";
@@ -183,6 +184,16 @@ export function ProfileHome({
           apiUrl={apiUrl}
           token={account.state.session.token}
           publicId={publicId}
+          onSessionEnded={account.sessionEnded}
+        />
+      )}
+      {/* Its gear, in use then retired (TASK-486 part D): none, nothing. */}
+      {apiUrl !== null && account.state.status === "signedIn" && publicId !== null && (
+        <ProfileGear
+          apiUrl={apiUrl}
+          token={account.state.session.token}
+          publicId={publicId}
+          owner={null}
           onSessionEnded={account.sessionEnded}
         />
       )}

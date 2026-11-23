@@ -23,7 +23,7 @@ from route_engine.models import (
     WATER_ACTIVITIES,
     InvalidRequestError,
 )
-from route_engine.network import OsmnxSource
+from route_engine.network import OsmnxSource, download_box
 from route_engine.optimizer import GraphLoader
 from route_engine.walking import API_ACTIVITIES, drawn_as
 from route_engine.water import WaterSource
@@ -79,12 +79,14 @@ class ActivityGraphs:
         folder and the snow in its `snow/` folder, with the heights in
         `heights/`, downloaded there when missing, as the CLI does
         (OsmnxSource.for_activity, water.OverpassWaterSource,
-        snow.OverpassSnowSource, heights.TerrariumTiles)."""
+        snow.OverpassSnowSource, heights.TerrariumTiles). A zone not cached
+        is downloaded wider than the request, on a grid (download_box)."""
         return cls(
             {
                 activity: ZoneGraphs(
                     OsmnxSource.for_activity(cache_dir, activity),
                     max_zones=ZONES_IN_MEMORY[activity],
+                    widen=download_box,
                 )
                 for activity in ROAD_ACTIVITIES
             },

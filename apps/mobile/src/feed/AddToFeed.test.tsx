@@ -80,23 +80,26 @@ test("the «+» opens «Add to Feed» on the list, in the user's order", async (
     "Already recorded",
     "Photos only",
     "From a file",
+    "Gym workout",
     "Workout plan",
   ];
   const rows = titles.map((title) => screen.getByText(title));
-  expect(rows).toHaveLength(5);
+  expect(rows).toHaveLength(6);
   expect(screen.getByText("Start an activity now")).toBeTruthy();
   expect(screen.getByText("Post an activity from My activities")).toBeTruthy();
   expect(screen.getByText("Up to 10 photos, also from Instagram")).toBeTruthy();
   expect(screen.getByText("GPX, TCX or FIT from Strava, Garmin, Komoot…")).toBeTruthy();
+  expect(screen.getByText("A workout you already did, written by hand")).toBeTruthy();
   expect(screen.getByText("Share one of your gym plans")).toBeTruthy();
   const ids = screen
-    .getAllByTestId(/^feed-add-(record|done|photos|file|plan)$/)
+    .getAllByTestId(/^feed-add-(record|done|photos|file|gym|plan)$/)
     .map((row) => row.props.testID);
   expect(ids).toEqual([
     "feed-add-record",
     "feed-add-done",
     "feed-add-photos",
     "feed-add-file",
+    "feed-add-gym",
     "feed-add-plan",
   ]);
   // The list is the opener: no form, no «Back», nothing picked yet.
@@ -156,6 +159,20 @@ test("«Workout plan» opens «Choose a plan» in the sheet; «‹» goes back t
   expect(screen.queryByText("Photos only")).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.queryByTestId("plan-post-choose")).toBeNull();
+  expect(screen.getByText("Photos only")).toBeTruthy();
+});
+
+test("«Gym workout» opens the workout written by hand under the sheet's title; «‹» goes back", async () => {
+  await show(spies());
+  await openSheet();
+  await fireEvent.press(screen.getByText("Gym workout"));
+  expect(screen.getByRole("header", { name: "Gym workout" })).toBeTruthy();
+  expect(screen.getByTestId("gym-by-hand")).toBeTruthy();
+  // One title only: the sheet's.
+  expect(screen.getAllByText("Gym workout")).toHaveLength(1);
+  expect(screen.getByTestId("by-hand-save")).toBeDisabled();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(screen.queryByTestId("gym-by-hand")).toBeNull();
   expect(screen.getByText("Photos only")).toBeTruthy();
 });
 

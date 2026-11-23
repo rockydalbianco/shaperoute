@@ -3172,6 +3172,16 @@ export const IT: Table = {
   "Links and special characters can't be used here.":
     "Qui non si possono usare link né caratteri speciali.",
 
+  // src/gym/GymByHand.tsx (TASK-484 B: a gym workout written by hand)
+  "Gym workout": "Allenamento in palestra",
+  Started: "Iniziato alle",
+  Duration: "Durata",
+  "Pick a time before now.": "Scegli un orario prima di adesso.",
+  "From a plan": "Da una scheda",
+  "A workout you already did, written by hand":
+    "Un allenamento già fatto, scritto a mano",
+  "Workouts written by hand don't count for Play, contests, levels or the leaderboard.":
+    "Gli allenamenti scritti a mano non contano per il gioco, i concorsi, i livelli e la classifica.",
   // src/gear/GearPicker.tsx, ActivityGear.tsx (TASK-486 part C), approved by the user on 2026-11-23
   "Up to {count} items on an activity.": "Fino a {count} attrezzi su un'attività.",
   "This activity is still on its way. Try again in a moment.":

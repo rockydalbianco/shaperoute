@@ -3234,4 +3234,14 @@ export const ES: Table = {
   "Next week is the lighter one, to recover.":
     "La próxima es la semana más ligera, para recuperar.",
   "How did the plan feel?": "¿Qué tal te pareció el plan?",
+  // src/air/ (TASK-479 part E1: the pilot's airspace file; notices 3 and 4 approved by the user on 2026-11-21, the other texts on 2026-11-23)
+  "No airspace loaded. MuW does not include airspace data.":
+    "Ningún espacio aéreo cargado. MuW no incluye datos de espacio aéreo.",
+  "Data loaded by you: check the AIP and NOTAMs before you fly. · {file} · loaded {date}":
+    "Datos cargados por ti: comprueba el AIP y los NOTAM antes de volar. · {file} · cargado el {date}",
+  Airspace: "Espacios aéreos",
+  "Airspaces: {count}": "Espacios aéreos: {count}",
+  "Lines not read: {n}": "Líneas no leídas: {n}",
+  "This file has no airspace MuW can read.":
+    "Este archivo no tiene espacios aéreos que MuW pueda leer.",
 };

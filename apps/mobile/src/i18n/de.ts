@@ -3248,4 +3248,14 @@ export const DE: Table = {
   "Next week is the lighter one, to recover.":
     "Nächste Woche ist die leichtere, zum Erholen.",
   "How did the plan feel?": "Wie fühlte sich der Plan an?",
+  // src/air/ (TASK-479 part E1: the pilot's airspace file; notices 3 and 4 approved by the user on 2026-11-21, the other texts on 2026-11-23)
+  "No airspace loaded. MuW does not include airspace data.":
+    "Kein Luftraum geladen. MuW enthält keine Luftraumdaten.",
+  "Data loaded by you: check the AIP and NOTAMs before you fly. · {file} · loaded {date}":
+    "Von dir geladene Daten: Prüfe AIP und NOTAMs vor dem Flug. · {file} · geladen am {date}",
+  Airspace: "Luftraum",
+  "Airspaces: {count}": "Lufträume: {count}",
+  "Lines not read: {n}": "Nicht gelesene Zeilen: {n}",
+  "This file has no airspace MuW can read.":
+    "Diese Datei enthält keinen Luftraum, den MuW lesen kann.",
 };

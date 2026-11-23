@@ -3,7 +3,7 @@
 **Stato**: In corso (0 fatta: «Capsula»; A1 e A2 in produzione con l'OTA 14;
 A3 e A4a in produzione al più tardi con l'OTA 17; A4b e A4c in produzione
 con l'OTA 20; A5 e A5b con l'OTA 21; A5c e A6 in produzione con l'OTA 22;
-A6b in bozza, #1407)
+A6b con l'OTA 23)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
@@ -16,7 +16,7 @@ A4b e A4c; `feat/TASK-469-a4c-feed-cards` #1344,
 `feat/TASK-469-a6-settings-groups` #1403,
 `feat/TASK-469-a6b-account-glass` #1407; documenti di A5 e A5b
 `docs/TASK-469-a5-done` #1390, di A5c e A6 `docs/TASK-469-a5c-a6-done`
-questa)
+#1409, di A6b `docs/TASK-469-a6b-done` questa)
 
 ## Obiettivo
 
@@ -92,8 +92,10 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
   - **A6 fatta** (#1403, in `main` 832a554f): i gruppi di righe di
     Impostazioni con gli angoli a 24 (`radius.group`) e i bordi del vetro
     posato; la faccia resta `surface`, così le parole tengono il contrasto;
-  - A6b la scheda dell'account, il riquadro prima di «Delete account» e la
-    riga «Blocked people» (#1407, in bozza);
+  - **A6b fatta** (#1407, in `main` a729ad01): la scheda dell'account e la
+    riga «Blocked people» prendono la faccia dei gruppi; il riquadro prima
+    di «Delete account» prende i loro angoli e tiene il bordo rosso, perché
+    è un avviso e non vetro;
   - A7 il resto (fogli, isola, chip), da elencare dopo A6.
 - **B — Liquid Glass nativo** con `expo-glass-effect` (UIGlassEffect su
   iOS 26; `expo-blur` o opaco prima e su Android). Dipendenza nuova e
@@ -209,6 +211,9 @@ Spuntati per A1 e A2 (2026-11-12):
 - A6b (#1407): `apps/mobile/src/profile/SettingsPage.tsx`,
   `src/social/BlockedPeople.tsx`, `src/settings/SettingsGroupAccount.test.tsx`
   (nuovo).
+- La PR di documenti di A6b: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/TASK-469-A6b-account.jpg` (nuova), `docs/STATUS.md`,
+  `docs/DECISIONS.md`, `docs/UI.md`.
 - La PR di documenti di A5c e A6: `docs/tasks/TASK-469.md`,
   `docs/tasks/TASK-469/*-A5c-*.jpg`, `*-A6-*.jpg` (nuove), `docs/STATUS.md`,
   `docs/DECISIONS.md`, `docs/UI.md`.
@@ -297,8 +302,11 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   #1391 in `main` 9a2364ef. A6 (#1403): lista col sì del Coordinatore,
   `GearSetting.tsx` aggiunto col suo sì; l'utente approva («Sì, vai»);
   #1403 in `main` 832a554f. A6b: lista col sì del Coordinatore, bozza
-  #1407. A5c e A6 in produzione con l'OTA 22 (b4c31f09), pubblicata dal
-  Coordinatore.
+  #1407; l'utente approva le schermate («Sì, vai»); #1407 in `main`
+  a729ad01. A5c e A6 in produzione con l'OTA 22 (b4c31f09), pubblicata dal
+  Coordinatore; documenti #1409.
+- **2026-11-23**: A6b in produzione con l'OTA 23 (e427ed2e), pubblicata
+  dal Coordinatore.
 - Imparato: «Today» dello sci nel simulatore non scorre (la pagina è più
   corta dello schermo), quindi lì lo provano solo i test. Un gruppo di una
   sola riga con gli angoli a 24 sembra quasi una capsula.
@@ -398,10 +406,18 @@ dell'account resta a 16 fino alla A6b:
 
 ![A6, prima e dopo, e Riduci trasparenza](TASK-469/TASK-469-A6-impostazioni.jpg)
 
+**A6b, l'account e «Blocked people»** — la scheda dell'account prende un
+bordo e gli angoli a 24 (prima non aveva bordo); «Blocked people», una
+sola riga, diventa quasi una capsula. Il riquadro prima di «Delete
+account» tiene il bordo rosso con gli angoli dei gruppi. Scuro, chiaro e
+«Riduci trasparenza» (la linea sottile di prima):
+
+![A6b, prima e dopo, e il riquadro di Delete account](TASK-469/TASK-469-A6b-account.jpg)
+
 ## Esito
 
 *(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14); A3 e A4a
 in `main` dal 2026-11-12, in produzione al più tardi con l'OTA 17
 (2026-11-18); A4b e A4c in produzione con l'OTA 20 (2026-11-21); A5 e A5b
 con l'OTA 21 (2026-11-22); A5c e A6 in produzione con l'OTA 22
-(2026-11-22, b4c31f09).
+(2026-11-22, b4c31f09); A6b con l'OTA 23 (2026-11-23, e427ed2e).

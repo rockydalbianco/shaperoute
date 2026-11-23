@@ -1,7 +1,7 @@
 # TASK-494 — Le scadenze della vela: revisione, ripiegatura della riserva e i dati della vela
 
-**Stato**: Proposto · parte 0 (questa PR, soli documenti): le domande
-all'utente
+**Stato**: Proposto · parte 0 (questa PR, soli documenti), scelte
+dell'utente fatte il 2026-11-23; prossima la parte A
 **Fase**: 5 · **Branch**: `docs/TASK-493-494-takeoffs-glider-checks` (parte 0), poi
 `feat/TASK-494-<parte>-…` per ogni parte
 **ADR**: ADR-0401 · numeri dal Coordinatore (fork 3), 2026-11-23
@@ -44,7 +44,7 @@ prima che arrivino, a una data o a un numero di ore di volo.
 - Date e promemoria sono dati che raccogliamo: una riga di privacy prima
   dell'OTA.
 
-## Le parti (proposta, l'ordine dopo le risposte)
+## Le parti
 
 ### Parte 0 — documenti (questa PR)
 
@@ -74,7 +74,11 @@ Il task, l'ADR, le domande all'utente.
   riga se una scadenza dell'attrezzatura del volo è passata (testo
   approvato dall'utente).
 
-## Domande all'utente (parte 0)
+## Scelte dell'utente (2026-11-23)
+
+Le 4 proposte qui sotto, tutte accettate dall'utente: «Sì, tutte». L'ordine
+delle parti (A → B → C) è **deciso dall'agente su delega dell'utente**.
+
 
 1. **Quali scadenze.** Proposta: revisione della vela (di solito ogni 24
    mesi o 100 ore), ripiegatura della riserva (di solito ogni 6–12 mesi),

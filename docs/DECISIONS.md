@@ -604,9 +604,11 @@ lasciando le righe d'indice.
 
 **Stato**: Proposta · 2026-11-23 · TASK-493 (parte 0, soli documenti).
 La richiesta e la scelta di farne un task a sé sono **dell'utente**
-(2026-11-23); le domande della parte 0 (dove si apre, quali voli contano,
-i record coi nomi, i decolli mancanti, chi vola adesso) aspettano le sue
-risposte; il resto è **deciso dall'agente su delega dell'utente**, numeri
+(2026-11-23); le cinque scelte della parte 0 sono **dell'utente** («Sì, tutte»,
+2026-11-23: il bottone «Takeoffs» nel parapendio, tutti i voli salvati
+contati senza nomi e solo da 3 piloti in su, i record dai soli post
+pubblici col nome, solo OSM con «Add it on OpenStreetMap», chi è in volo
+adesso col link solo se già pubblico); il resto è **deciso dall'agente su delega dell'utente**, numeri
 dal Coordinatore (fork 3).
 
 **Contesto**: chi vola vuole vedere sulla mappa i decolli e quanta gente
@@ -625,8 +627,9 @@ licenza che permette l'uso commerciale.
   anche a TASK-479 D, da concordare.
 - **Lo storico lo conta il server**: un volo è di un decollo se parte
   entro 300 m e 150 m di quota; numeri per mese, piloti diversi, oggi, in
-  volo adesso. Quali voli contano e la soglia dei piloti sono domande
-  all'utente.
+  volo adesso. Contano tutti i voli salvati, anche privati, ma solo
+  come numeri senza nomi, e si vedono da 3 piloti diversi in su (scelta
+  dell'utente).
 - **Nessun giudizio sulle condizioni**: quota, orientamento, dislivello e
   numeri, mai «volabile», «buono», «sicuro».
 - **File nuovi fuori da `src/air/`** (di TASK-479); il vento della parte
@@ -640,8 +643,11 @@ server e OTA col sì dell'utente.
 
 **Stato**: Proposta · 2026-11-23 · TASK-494 (parte 0, soli documenti).
 La richiesta e la scelta di farne un task a sé sono **dell'utente**
-(2026-11-23); le domande della parte 0 (quali scadenze, il tipo
-«riserva», chi vede cosa, come si avvisa) aspettano le sue risposte; il
+(2026-11-23); le quattro scelte della parte 0 sono **dell'utente** («Sì,
+tutte», 2026-11-23: revisione, riserva, imbrago e una scadenza libera con
+gli intervalli del pilota; il tipo `reserve`; classe e taglia sul
+profilo, scadenze e peso solo al proprietario; la campanella 30 giorni
+prima e il giorno stesso, una riga in «Pronto al decollo»); il
 resto è **deciso dall'agente su delega dell'utente**, numeri dal
 Coordinatore (fork 3).
 

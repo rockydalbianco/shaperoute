@@ -1,7 +1,7 @@
 # TASK-493 — La mappa dei decolli: i siti di volo con lo storico di MuW
 
-**Stato**: Proposto · parte 0 (questa PR, soli documenti): le domande
-all'utente
+**Stato**: Proposto · parte 0 (questa PR, soli documenti), scelte
+dell'utente fatte il 2026-11-23; prossima la parte A
 **Fase**: 5 · **Branch**: `docs/TASK-493-494-takeoffs-glider-checks` (parte 0), poi
 `feat/TASK-493-<parte>-…` per ogni parte
 **ADR**: ADR-0400 · numeri dal Coordinatore (fork 3), 2026-11-23
@@ -65,7 +65,7 @@ XContest, Burnair.
 - I numeri dei voli sono dati degli iscritti: una riga di privacy prima
   dell'OTA.
 
-## Le parti (proposta, l'ordine dopo le risposte)
+## Le parti
 
 ### Parte 0 — documenti (questa PR)
 
@@ -100,7 +100,11 @@ Il task, l'ADR, le domande all'utente.
 - Il vento previsto in quota accanto all'orientamento del decollo: solo
   numeri e frecce, mai «volabile», «buono», «sicuro».
 
-## Domande all'utente (parte 0)
+## Scelte dell'utente (2026-11-23)
+
+Le 5 proposte qui sotto, tutte accettate dall'utente: «Sì, tutte». L'ordine
+delle parti (A → B → C → D) è **deciso dall'agente su delega dell'utente**.
+
 
 1. **Dove si apre la mappa.** Proposta: dalla scelta dello sport
    «Paragliding», un bottone «Takeoffs» accanto a «I tuoi voli», a tutto

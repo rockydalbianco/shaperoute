@@ -51,6 +51,7 @@ export type ToPage =
   /** `frame`: the map is framed on the line (TASK-478), at the end of a
    * run without a route; never while following the runner. */
   | { type: "showTrack"; coordinates: LngLat[]; frame?: true }
+  | { type: "extendTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
   | {
       type: "showLifts";
@@ -271,6 +272,13 @@ export function showTrack(points: LatLon[]): ToPage {
  * that ended, or one opened again. */
 export function showTrackFramed(points: LatLon[]): ToPage {
   return { type: "showTrack", coordinates: points.map(toLngLat), frame: true };
+}
+
+/** The run's new fixes, after the line the page was told with `showTrack`
+ * (TASK-496): the page keeps the line, and a fix sends its own point, not
+ * the whole run again. */
+export function extendTrack(points: LatLon[]): ToPage {
+  return { type: "extendTrack", coordinates: points.map(toLngLat) };
 }
 
 export function clearTrack(): ToPage {

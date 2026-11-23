@@ -4365,7 +4365,11 @@ screen goes dark but stays on, so directions go on. Do not lock the phone:
 if you press the side button, directions stop. To come back, hold the
 screen for 2 seconds.» La luminosità torna com'era all'uscita, all'arrivo
 (che toglie anche il pulsante), con «Stop» e quando l'app esce dal primo
-piano.
+piano. Sotto lo schermo nero la mappa non riceve niente della corsa e
+l'orologio dei numeri non scatta; uscendo la mappa riceve una volta i
+punti che mancano e la posizione, e l'orologio si legge subito (TASK-496).
+In vista, a ogni posizione vanno alla mappa solo i punti nuovi, e la mappa
+segue chi corre in 250 ms.
 
 **La traccia della corsa** (TASK-112, ADR-0091). Durante la navigazione
 l'app tiene la linea di quello che si è corso: ogni posizione del GPS,
@@ -4373,7 +4377,12 @@ tranne quelle con errore oltre 40 m e quelle a meno di 5 m dalla
 precedente, con distanza e durata. Anche in modalità tasca. La traccia sta
 in un file nei documenti dell'app (`current-run.json`), insieme al percorso
 pianificato: si scrive alla prima posizione, poi al più ogni 15 secondi, a
-«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Una corsa per volta:
+«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Con l'app dietro
+un'altra o il telefono bloccato ogni posizione tenuta si scrive subito
+(TASK-304), ma solo lei: una riga in coda al diario `current-run.journal`,
+accanto al file; il file intero si riscrive uscendo dal primo piano, a una
+pausa, alla fine e ogni 300 righe, e la corsa riaperta è il file con il
+diario dopo (TASK-496, aggiunta ad ADR-0264). Una corsa per volta:
 «Start» sullo stesso percorso entro 30 minuti continua la traccia, un altro
 percorso la sostituisce alla prima posizione. La traccia non esce dal
 telefono: la usano i numeri della corsa e la schermata di fine corsa

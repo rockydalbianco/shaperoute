@@ -1187,6 +1187,24 @@ di TASK-481 A e portato su un ramo da `main` quando quella è entrata:
   permesso di Salute (TASK-312 D), che scrive la PR indicata dal
   Coordinatore al taglio della build nativa.
 
+- **2026-11-23, la frase del permesso di Salute per la build nativa.**
+  Scelta dell'utente fra tre (A: solo battito e sonno; B: anche gli
+  allenamenti delle altre app; C: anche l'energia attiva di
+  «Alimentazione»): **«B: anche allenamenti»**. È la prima frase di
+  quella unica raccolta da TASK-312 D, senza la seconda su
+  «Alimentazione», che in questa build è spenta: «MuW reads from Apple
+  Health your heart rate during each activity, your sleep and your
+  workouts from other apps with their routes, to show them with your
+  activities and in your posts: you can hide them before you publish.»
+  L'italiano l'utente l'ha letto nella scelta; tedesco, spagnolo e
+  francese: «Sì, vanno bene». Scritta sulla bozza in `app.json`, nei
+  cinque `locales/*.json` e in `health/nativeConfig.test.ts`; sostituisce
+  la frase della risposta 7. Oggi l'app da Salute legge solo battito e
+  sonno: la lettura degli allenamenti (312 D) potrà uscire dopo con un
+  aggiornamento, e App Privacy e le note di revisione devono dire lo
+  stesso. La lettura dell'energia attiva (489 C2) chiederà un'altra build
+  nativa. La frase dell'orologio resta quella del solo battito.
+
 - **2026-11-23, parte C0 — il sonno acceso solo sulla build di prova.**
   Scelta del Coordinatore, al posto dell'aggiornamento sulla build
   `233f0c6a`: la build di prova nuova da `main` la sostituisce sul

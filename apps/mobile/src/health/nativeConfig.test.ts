@@ -42,23 +42,23 @@ const APPROVED =
 const APPROVED_READ: [Record<string, Record<string, string>>, string][] = [
   [
     en,
-    "MuW reads your heart rate during each activity and your sleep from Apple Health, to show them with your activities and in your posts. You can hide them before you publish.",
+    "MuW reads from Apple Health your heart rate during each activity, your sleep and your workouts from other apps with their routes, to show them with your activities and in your posts: you can hide them before you publish.",
   ],
   [
     it,
-    "MuW legge da Apple Salute il tuo battito durante ogni attività e il tuo sonno, per mostrarli con le tue attività e nei tuoi post. Puoi nasconderli prima di pubblicare.",
+    "MuW legge da Apple Salute il tuo battito durante ogni attività, il tuo sonno e i tuoi allenamenti delle altre app con i loro percorsi, per mostrarli con le tue attività e nei tuoi post: puoi nasconderli prima di pubblicare.",
   ],
   [
     de,
-    "MuW liest aus Apple Health deine Herzfrequenz während jeder Aktivität und deinen Schlaf, um sie mit deinen Aktivitäten und in deinen Beiträgen zu zeigen. Du kannst sie vor dem Veröffentlichen ausblenden.",
+    "MuW liest aus Apple Health deine Herzfrequenz während jeder Aktivität, deinen Schlaf und deine Trainings aus anderen Apps mit ihren Routen, um sie mit deinen Aktivitäten und in deinen Beiträgen zu zeigen: Du kannst sie vor dem Veröffentlichen ausblenden.",
   ],
   [
     fr,
-    "MuW lit dans Apple Santé ta fréquence cardiaque pendant chaque activité et ton sommeil, pour les afficher avec tes activités et dans tes publications. Tu peux les masquer avant de publier.",
+    "MuW lit dans Apple Santé ta fréquence cardiaque pendant chaque activité, ton sommeil et tes entraînements d'autres apps avec leurs itinéraires, pour les afficher avec tes activités et dans tes publications : tu peux les masquer avant de publier.",
   ],
   [
     es,
-    "MuW lee de Apple Salud tu frecuencia cardíaca durante cada actividad y tu sueño, para mostrarlos con tus actividades y en tus publicaciones. Puedes ocultarlos antes de publicar.",
+    "MuW lee de Apple Salud tu frecuencia cardíaca durante cada actividad, tu sueño y tus entrenamientos de otras apps con sus rutas, para mostrarlos con tus actividades y en tus publicaciones: puedes ocultarlos antes de publicar.",
   ],
 ];
 

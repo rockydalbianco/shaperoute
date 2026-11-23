@@ -3501,4 +3501,13 @@ export const DE: Table = {
   "Turnpoint {name} taken. Next: {next}.":
     "Wendepunkt {name} erreicht. Nächster: {next}.",
   "Goal {name} taken.": "Ziel {name} erreicht.",
+  // src/air/ (TASK-479 part D3: the glide; waiting for the user's approval)
+  "Glide to turnpoint": "Gleitflug zum Wendepunkt",
+  "Nearest landing": "Nächster Landeplatz",
+  "Glide ratio used": "Verwendete Gleitzahl",
+  "Wind used": "Verwendeter Wind",
+  Estimated: "Geschätzt",
+  "No wind": "Kein Wind",
+  "needs {height}": "braucht {height}",
+  "No landings in your file": "Keine Landeplätze in deiner Datei",
 };

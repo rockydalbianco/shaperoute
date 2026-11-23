@@ -3470,4 +3470,13 @@ export const IT: Table = {
   "Goal taken": "Goal preso",
   "Turnpoint {name} taken. Next: {next}.": "Boa {name} presa. Prossima: {next}.",
   "Goal {name} taken.": "Goal {name} preso.",
+  // src/air/ (TASK-479 part D3: the glide; waiting for the user's approval)
+  "Glide to turnpoint": "Planata alla boa",
+  "Nearest landing": "Atterraggio più vicino",
+  "Glide ratio used": "Efficienza usata",
+  "Wind used": "Vento usato",
+  Estimated: "Stimato",
+  "No wind": "Nessun vento",
+  "needs {height}": "servono {height}",
+  "No landings in your file": "Nessun atterraggio nel tuo file",
 };

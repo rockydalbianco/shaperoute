@@ -1113,7 +1113,11 @@ senza cambiare niente. È la stessa scelta della sezione «Sport» di
 
 **«Profile» senza account**: «Sign up» e «Log in», due pulsanti affiancati.
 «Sign up» chiede email, nome (da 3 a 20 fra lettere, cifre, `_` e `.`),
-password (almeno 8 caratteri) e la casella «I am at least 16» (ADR-0114);
+password (almeno 8 caratteri; nel campo, anche in «Log in», un occhio la
+mostra e la nasconde senza perdere il testo, VoiceOver «Show password» /
+«Hide password»; a iOS l'email è detta come nome dell'account e la
+password nuova con le sue regole: TASK-458) e la casella «I am at least
+16» (ADR-0114);
 sotto, piccola e grigia, «If you don't open MuW for 2 weeks, we email you
 once with what's new.» e la casella **non spuntata** «Don't send me these
 emails» (TASK-284, ADR-0244): spuntata, la richiesta manda `away_email:
@@ -1861,9 +1865,12 @@ l'app, come «Find friends»:
   someone's profile and tap Message to write to them.»; le richieste vuote:
   «No message requests.». Venti per volta, poi «Show more».
 - **La conversazione**: titolo con foto e nome e il «…» di «Report or
-  block» della persona; i messaggi dal basso, i propri a destra su
-  `surfaceRaised`, quelli dell'altro a sinistra su `surface` con il bordo
-  (il giallo resta del percorso), ognuno con il suo orario in basso a
+  block» della persona; i messaggi dal basso, i propri a destra **sul
+  giallo dell'app** (`accent`, parole e orario `onAccent`: scelta
+  dell'utente, TASK-458, ADR-0403; quello che portano — disegno, post,
+  live, foto — su una piastra `surfaceRaised` dentro il giallo), quelli
+  dell'altro a sinistra su `surface` con il bordo, ognuno con il suo
+  orario in basso a
   destra e sopra il primo di ogni giorno il titolo «Today», «Yesterday» o la
   data intera («Fri 2 Oct 2026»), sull'orologio del telefono (TASK-353). I
   vecchi arrivano scorrendo verso l'alto, con «Loading…»; «Show earlier
@@ -1878,6 +1885,20 @@ l'app, come «Find friends»:
   «Delete» chiude la conversazione. Si rilegge ogni 5 secondi mentre è
   aperta, e quando l'app torna sullo schermo; l'altro che scrive la segna
   letta (nessuna conferma all'altro).
+- **Una conversazione senza messaggi** (TASK-458, scelta dell'utente): al
+  centro la foto e il nome, «Say hi to {name}.» e tre spunti a capsula —
+  «Hi {name}!», «I like your drawings», «Shall we run together?» — che
+  scrivono il testo nella casella senza inviarlo (VoiceOver: «Writes it in
+  the box. Nothing is sent yet.»). In una richiesta, sotto la riga «{name}
+  gets this as a message request…», la riga «Photos, videos and drawings
+  come after that.»: il «+» arriva quando l'altro accetta.
+- **«New message»** (TASK-458): un tasto neutro a capsula accanto al titolo
+  della scheda «Messages» apre una pagina sua, col titolo «New message»,
+  «Close» e la casella «Search people»: prima chi si sente già, poi chi si
+  segue, ognuno una volta; un nome scritto cerca fra tutti («Nobody has a
+  name like that.»). Senza nessuno: «Search someone by name to write to
+  them.». Un tocco chiude la pagina e apre la conversazione; da lì non
+  parte niente.
 - **Un tocco lungo su un messaggio** (VoiceOver: «Touch and hold to delete
   it» / «… to report it») apre il foglio: il proprio, «Delete this message
   for both of you?» e «Delete»; dell'altro, «Report this message», poi i

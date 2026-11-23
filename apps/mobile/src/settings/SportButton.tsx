@@ -19,6 +19,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { NUTRITION_ON } from "../nutrition/nutritionOn";
+import { NutritionFamily } from "../nutrition/NutritionTile";
 import { isSkiMode } from "../skimode/skiMode";
 import { isTrainingMode } from "../trainingmode/trainingMode";
 import { Hairline } from "../ui/Hairline";
@@ -192,6 +194,9 @@ export function SportButton({ sports = SPORTS }: Props) {
                 </View>
               </View>
             ))}
+            {/* «Nutrition» is not a sport: it opens its page (TASK-489,
+                ADR-0397). Off until the native build that reads Health. */}
+            {NUTRITION_ON && <NutritionFamily size={tile} />}
           </ScrollView>
         </View>
       </Modal>

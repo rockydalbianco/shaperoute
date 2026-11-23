@@ -19,6 +19,9 @@ runs, as the totals of a profile: never numbers the phone sends.
 - GET /users/{public_id}/gear: the gear of a profile, to whoever sees the
   profile (every member but one a block keeps apart, follows.apart_sql:
   404 then, as for nobody), without the items «Hide from profile».
+- GET /drawings/{id}/gear: the items on the activity of a post, to whoever
+  sees the post (drawings.drawing_seen_sql: 404 otherwise), as on the
+  profile: without the items «Hide from profile» (part E).
 - GET /gear/{id}, GET /gear/{id}/photo: one item and its photo, to whoever
   sees it as above (a post or a tagged item opens it).
 
@@ -63,6 +66,7 @@ from shaperoute_api.activities import UNKNOWN_ACTIVITY, Key, RunActivity
 from shaperoute_api.comment_filter import check_comment
 from shaperoute_api.comments import CommentRejected
 from shaperoute_api.db import Database
+from shaperoute_api.drawings import NO_DRAWING, drawing_seen_sql
 from shaperoute_api.follows import apart_sql
 from shaperoute_api.images import decode_image
 from shaperoute_api.outfit_links import has_address
@@ -427,6 +431,34 @@ class Gear:
             ).fetchall()
         return [_body(row, viewer_id) for row in rows]
 
+    def of_drawing(self, viewer_id: int, drawing_id: str) -> list[GearBody] | None:
+        """The items on the activity of a post (TASK-486 part E, the user's
+        choice 6), for whoever sees the post; None for no such post or one
+        `viewer_id` does not see. As on the profile: never the items «Hide
+        from profile», not even for their owner; the ones hidden after a
+        report only for their owner. A post of photos only has none."""
+        try:
+            wanted = UUID(drawing_id)
+        except ValueError:
+            return None
+        with self.database.connect() as conn:
+            drawing = conn.execute(
+                "SELECT d.run_id FROM drawings d"
+                f" WHERE d.id = %s AND {drawing_seen_sql('%s')}",
+                (wanted, viewer_id),
+            ).fetchone()
+            if drawing is None:
+                return None
+            if drawing["run_id"] is None:
+                return []
+            rows = conn.execute(
+                _SELECT + " WHERE g.id IN (SELECT ag.gear_id FROM activity_gear ag"
+                " WHERE ag.run_id = %s) AND NOT g.off_profile"
+                " AND (g.hidden_at IS NULL OR g.user_id = %s)" + _ORDER,
+                (drawing["run_id"], viewer_id),
+            ).fetchall()
+        return [_body(row, viewer_id) for row in rows]
+
     def one(self, viewer_id: int, gear_id: UUID) -> GearBody | None:
         with self.database.connect() as conn:
             row = conn.execute(
@@ -699,6 +731,17 @@ def gear_routes() -> APIRouter:
         found = gear.of_profile(user.id, public_id)
         if found is None:
             raise HTTPException(404, NO_PROFILE)
+        return GearListBody(gear=found)
+
+    @router.get(
+        "/drawings/{drawing_id}/gear",
+        responses=NOT_FOUND,
+        response_model_exclude_none=True,
+    )
+    def post_gear(drawing_id: str, gear: Items, user: Me) -> GearListBody:
+        found = gear.of_drawing(user.id, drawing_id)
+        if found is None:
+            raise HTTPException(404, NO_DRAWING)
         return GearListBody(gear=found)
 
     @router.get(

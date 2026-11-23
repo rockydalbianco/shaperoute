@@ -7,6 +7,9 @@ import { SIGN_IN_TO_KEEP_RUNS, useActivitiesDoor } from "../activities/activitie
 import { keepSleepFor } from "../activities/sleepOut";
 import { isSeen } from "../api/drawings";
 import { heartKcal } from "../body/heartKcal";
+import { apiFetchers, type CoachFetchers } from "../coach/coachData";
+import { nextTimeText } from "../coach/nextTime";
+import { useNextTime } from "../coach/useNextTime";
 import { useBody } from "../body/useBody";
 import { heartReader } from "../health/heartModules";
 import type { HeartReader } from "../health/heartSamples";
@@ -81,6 +84,7 @@ export function GymEnd({
   health: phone = healthPhone(),
   sleep: sleepPhone = sleepReader(),
   heart: reader = heartReader(),
+  coach = apiFetchers,
 }: {
   workout: Workout;
   onSave: (workout: Workout, post?: GymPost) => GymSaved;
@@ -96,6 +100,9 @@ export function GymEnd({
   sleep?: SleepReader | null;
   /** Where the heart rate is read (TASK-385 part G); for the tests, a fake. */
   heart?: HeartReader | null;
+  /** Where «Next time» reads the account's workouts (TASK-491 part C); for
+   * the tests, a fake. */
+  coach?: (apiUrl: string, token: string) => CoachFetchers;
 }) {
   const insets = useSafeAreaInsets();
   const units = useUnits();
@@ -125,6 +132,9 @@ export function GymEnd({
       : adaptDayOf(plans, new Date(workout.startedMs), "gym", workout.plan.key),
   );
   const [feel, setFeel] = useState<GymPlanFeel | null>(null);
+  // «Next time: Bench press 62.5 kg» (TASK-491 part C): all the reps at
+  // the same weight twice in a row, this workout the second.
+  const nextTime = useNextTime(workout, coach);
 
   function edit(set: LoggedSet) {
     const entry = entryOf(set);
@@ -250,6 +260,11 @@ export function GymEnd({
           </Text>
         )}
         {rests !== null && <Text style={gymStyles.muted}>{rests}</Text>}
+        {signedIn && nextTime !== null && (
+          <Text style={styles.nextTime} testID="gym-end-next-time">
+            {nextTimeText(nextTime, appLanguage())}
+          </Text>
+        )}
         {/* The swim's «No heart rate from your watch for this swim.» does
             not fit a workout: with no readings, nothing. */}
         {heartState.kind !== "none" && (
@@ -417,6 +432,11 @@ const styles = StyleSheet.create({
   // The calories, in red wherever they are (TASK-424 part C3).
   energy: {
     color: color.energy,
+  },
+  nextTime: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
   },
   head: {
     alignItems: "center",

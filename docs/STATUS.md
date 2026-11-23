@@ -352,8 +352,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   più tardi con l'OTA 17; A4b e A4c card (#1333, #1344) con l'OTA 20; A5
   cerchi dell'header e A5b header che scorre con l'OTA 21; A5c (Profilo,
   sci, #1391) e A6 gruppi di Impostazioni (#1403) con l'OTA 22; A6b account
-  (#1407) con l'OTA 23; A7a fogli, A7b isola, A5c-2 Feed in `main`.
-  Ora A7c-1 chip (#1472 bozza), poi A7c-2; B dopo la 1.1.0. File: — ·
+  (#1407) con l'OTA 23; A7a fogli, A7b isola, A5c-2 Feed, A7c-1 chip in
+  `main`. Ora A7c-2 chip degli sport (#1494 bozza); B dopo la 1.1.0. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A

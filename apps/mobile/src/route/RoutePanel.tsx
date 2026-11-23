@@ -533,6 +533,25 @@ export function RouteOutcome({
             <SwimResult result={view.result} onLaps={onSwimLaps} />
           )}
           <RouteTiles choices={choices} chosen={chosen} onChoose={onChoose} />
+          {/* A drawing made by hand left where it was drawn (TASK-347 part
+              C3b, ADR-0300): the score it had under the map while drawn
+              becomes the engine's, of the route on screen. With tiles, each
+              says its own. */}
+          {isImageRequest(view.request) &&
+            view.request.placement === "anchored" &&
+            choices.length < 2 && (
+              <Text
+                style={styles.target}
+                testID="route-score"
+                accessibilityLiveRegion="polite"
+              >
+                {t("Roads follow your drawing: {percent}%", {
+                  percent: Math.round(
+                    (choices[chosen] ?? view.result).similarity * 100,
+                  ),
+                })}
+              </Text>
+            )}
           {/* The first route is on screen, the others are coming (TASK-435):
               said, so that tiles appearing later are no surprise. */}
           {view.more === true && (

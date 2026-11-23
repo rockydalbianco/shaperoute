@@ -523,9 +523,12 @@ def test_nothing_personal_is_kept(
         " WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = ANY(%s)",
         list(tables),
     )
+    # The item of gear a tag is (TASK-486 part F): the owner's own, never
+    # who opened it.
     assert {r["table_name"] for r in references} == {
         "drawing_photos",
         "drawing_outfit_tags",
+        "gear",
     }
 
 

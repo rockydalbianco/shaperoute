@@ -660,8 +660,11 @@ hanno lo stesso aspetto, con la loro molla e il loro tick.
 città in Explore e quelli della ricerca (`FilterChip`) escono dalla pagina
 come la pillola dei segmenti: un filo di luce in cima e un'ombra corta. Non
 aggiunge colore: ognuno tiene il suo, il giallo del chip scelto compreso.
-Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Gli altri
-chip dell'app non lo hanno ancora.
+Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Lo hanno
+anche (A7c-1) i chip di «Share your run», del post di sole foto e del
+composer, di «Tag people» e di chi può vedere, dei tag dell'outfit, di
+«Style», del sonno, del calendario e «Share live». I chip delle
+schermate degli sport arrivano con A7c-2.
 
 **Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
 raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro
@@ -5767,3 +5770,8 @@ altri pezzi) si aggancia alle strade mentre lo disegni, tratto per tratto,
   disegno va libero come prima. Se sulle strade il disegno viene più lungo
   o più corto di oltre il 10%, una nota lo dice: «On the roads your drawing
   is 53% longer: 7.6 km. It stays where you drew it, at the same size.»
+- **Il punteggio dopo «Draw route»** (parte C3b): sotto il percorso di un
+  disegno ancorato torna «Roads follow your drawing: N%», con la
+  somiglianza del motore del percorso sullo schermo (stesso testo, già
+  tradotto). Solo con un percorso: con più percorsi le tessere A, B, C
+  dicono già ognuna la sua.

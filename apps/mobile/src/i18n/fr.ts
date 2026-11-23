@@ -3204,6 +3204,8 @@ export const FR: Table = {
   "Up to {count} items on an activity.": "Jusqu'à {count} équipements par activité.",
   "This activity is still on its way. Try again in a moment.":
     "Cette activité est encore en route. Réessaie dans un instant.",
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), to approve
+  "From my gear": "Depuis mon équipement",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
   "Share one of your gym plans": "Partage un de tes programmes de salle",

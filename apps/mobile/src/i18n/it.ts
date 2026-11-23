@@ -3186,6 +3186,8 @@ export const IT: Table = {
   "Up to {count} items on an activity.": "Fino a {count} attrezzi su un'attività.",
   "This activity is still on its way. Try again in a moment.":
     "Questa attività sta ancora arrivando. Riprova tra poco.",
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), to approve
+  "From my gear": "Dalla mia attrezzatura",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
   "Share one of your gym plans": "Condividi uno dei tuoi piani di palestra",

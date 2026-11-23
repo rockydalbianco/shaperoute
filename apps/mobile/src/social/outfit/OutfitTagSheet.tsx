@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { sessionEnded } from "../../account/messages";
 import { countOutfitOpen, fetchOutfitShop } from "../../api/outfitTags";
+import { TagGear } from "../../gear/TagGear";
 import { color, font, MIN_TAP_SIZE, radius, space } from "../../theme/tokens";
 import { SheetModal } from "../../ui/SheetModal";
 import { useSheetFace } from "../../ui/sheetFace";
@@ -119,6 +120,17 @@ export function OutfitTagSheet({
           {tag.brand}
         </Text>
         {model !== "" && <Text style={styles.model}>{model}</Text>}
+        {/* The item of gear it is, which opens it (TASK-486 part F). */}
+        {tag.gear_id != null && (
+          <TagGear
+            gearId={tag.gear_id}
+            owner={mine ? null : author}
+            apiUrl={apiUrl}
+            token={token}
+            onSessionEnded={onSessionEnded}
+            fetchFn={fetchFn}
+          />
+        )}
         {tag.store !== null &&
           (gone ? (
             <Text style={styles.line} testID="outfit-unavailable">

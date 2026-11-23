@@ -520,11 +520,19 @@ Coordinatore, a simulatore spento.
 
 ```
 tools/catalog_bike.py, tools/test_catalog_bike.py
+tools/catalog_seed.py                                   (le uscite lunghe in fondo al file)
 tools/catalog_kept.json, catalog/seed/<città>.json, catalog/README.md
 docs/tasks/TASK-441.md
 ```
 
 Niente in `services/`, `packages/`, `apps/`.
+
+**Gli id restano fermi.** L'API numera un disegno col suo posto nel file
+della città (`recommended.py`). Le uscite lunghe, ordinate per somiglianza
+in mezzo alle altre, avrebbero spostato le uscite da 20–30 km già
+pubblicate, cambiandone l'id. `catalog_seed.city_files` le mette quindi dopo
+tutte le altre (`_place`, da 40 km in su): il testo di prima è l'inizio di
+quello nuovo, e senza uscite lunghe i file escono identici byte per byte.
 
 ### Criteri di accettazione (B3)
 

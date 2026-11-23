@@ -230,6 +230,31 @@ def test_a_city_file_says_the_activity_and_lists_the_rides_last() -> None:
     assert routes[1]["distance_m"] == 30_000
 
 
+def test_a_long_ride_goes_after_the_rides_which_keep_their_place() -> None:
+    # The API numbers a route by its place in the file: a long ride drawn
+    # later, even a more alike one, must not move a ride already there.
+    rides = [
+        _run("trento", "heart", 30_000, similarity=0.95),
+        _run("trento", "star", 20_000, similarity=0.91),
+    ]
+    before = cs.city_files(rides, [r["key"] for r in rides])["trento.json"]
+    long = [
+        _run("trento", "sun", 50_000, similarity=0.99),
+        _run("trento", "moon", 40_000, similarity=0.93),
+    ]
+    runs = [*long, *rides]
+    after = cs.city_files(runs, [r["key"] for r in runs])["trento.json"]
+    places = [(r["shape"], r["distance_m"]) for r in json.loads(after)["routes"]]
+    assert places == [
+        ("heart", 30_000),
+        ("star", 20_000),
+        ("sun", 50_000),
+        ("moon", 40_000),
+    ]
+    # The text of before is the beginning of the text of after.
+    assert after.startswith(before.rstrip("\n")[: -len("]}")])
+
+
 def test_the_sample_is_the_worst_the_middle_and_the_best() -> None:
     runs = [_run(f"c{i}", "heart", 30_000, similarity=0.90 + i / 100) for i in range(9)]
     bands = cb.sample(runs, per_band=2)

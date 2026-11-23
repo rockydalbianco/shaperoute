@@ -250,7 +250,9 @@ export function GymByHand({
 }
 
 /** «From a plan»: the plans with a workout, then the days of the one
- * touched when it has more than one. */
+ * touched when it has more than one; as «Choose a plan» of «Workout plan»
+ * looks (rows with «›»), inside the sheet that already has its «‹». At the
+ * bottom «Cancel» goes back to the form, «Back» from the days to the plans. */
 function PlanChoice({
   workouts,
   plan,
@@ -272,46 +274,42 @@ function PlanChoice({
         )
       : workouts.filter((one) => one.key === plan);
   return (
-    <View style={styles.flow} testID="by-hand-plans">
-      <View style={styles.choiceHead}>
+    <View style={styles.choices} testID="by-hand-plans">
+      <Text style={styles.choiceTitle} accessibilityRole="header">
+        {plan === null ? t("From a plan") : rows[0]?.plan}
+      </Text>
+      {rows.map((one) => (
         <Pressable
-          style={styles.arrow}
-          onPress={onBack}
+          key={`${one.key}-${one.day ?? 0}`}
+          style={({ pressed }) => [styles.choice, pressed && styles.pressed]}
+          onPress={() => (plan === null ? onPlan(one.key) : onTake(one))}
           accessibilityRole="button"
-          accessibilityLabel={t("Back")}
-          testID="by-hand-plans-back"
+          testID={
+            plan === null
+              ? `by-hand-plan-${one.key}`
+              : `by-hand-plan-day-${one.day ?? 0}`
+          }
         >
-          <Text style={styles.arrowText}>‹</Text>
+          <Text style={styles.choiceText}>
+            {plan === null
+              ? one.plan
+              : one.day === null
+                ? one.name
+                : `${t(WEEKDAYS[one.day - 1])} · ${one.name}`}
+          </Text>
+          <Text style={styles.chevron}>›</Text>
         </Pressable>
-        <Text style={gymStyles.title} accessibilityRole="header">
-          {plan === null ? t("From a plan") : rows[0]?.plan}
+      ))}
+      <Pressable
+        style={gymStyles.button}
+        onPress={onBack}
+        accessibilityRole="button"
+        testID="by-hand-plans-back"
+      >
+        <Text style={gymStyles.buttonText}>
+          {plan === null ? t("Cancel") : t("Back")}
         </Text>
-      </View>
-      <View style={styles.card}>
-        {rows.map((one, index) => (
-          <View key={`${one.key}-${one.day ?? 0}`}>
-            {index > 0 && <View style={styles.rule} />}
-            <Pressable
-              style={({ pressed }) => [styles.choice, pressed && styles.pressed]}
-              onPress={() => (plan === null ? onPlan(one.key) : onTake(one))}
-              accessibilityRole="button"
-              testID={
-                plan === null
-                  ? `by-hand-plan-${one.key}`
-                  : `by-hand-plan-day-${one.day ?? 0}`
-              }
-            >
-              <Text style={gymStyles.text}>
-                {plan === null
-                  ? one.plan
-                  : one.day === null
-                    ? one.name
-                    : `${t(WEEKDAYS[one.day - 1])} · ${one.name}`}
-              </Text>
-            </Pressable>
-          </View>
-        ))}
-      </View>
+      </Pressable>
     </View>
   );
 }
@@ -361,28 +359,32 @@ const styles = StyleSheet.create({
   imported: {
     gap: space.xs,
   },
-  choiceHead: {
-    flexDirection: "row",
-    alignItems: "center",
+  choices: {
     gap: space.md,
   },
-  card: {
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: color.border,
-    backgroundColor: color.surface,
-    overflow: "hidden",
-  },
-  rule: {
-    height: 1,
-    backgroundColor: color.surfaceRaised,
+  choiceTitle: {
+    ...font.heading,
+    color: color.text,
   },
   choice: {
-    minHeight: MIN_TAP_SIZE + space.sm,
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    minHeight: MIN_TAP_SIZE,
     paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    borderRadius: radius.md,
+    backgroundColor: color.surfaceRaised,
+  },
+  choiceText: {
+    ...font.body,
+    flex: 1,
+    color: color.text,
+  },
+  chevron: {
+    ...font.body,
+    color: color.textMuted,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
 });

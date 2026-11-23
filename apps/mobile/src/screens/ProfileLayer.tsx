@@ -460,8 +460,11 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   const overInModal = overAppState.modalPages > 0;
   // The app is under a page over it: out of the screen reader's sight. Not
   // while «Play» covers those pages, which are kept out of sight then.
+  // «Messages» over the app counts too, a conversation opened from its tab
+  // as well (TASK-469).
   const appUnder =
-    (shown || contestOver || groupRunOver || bell.shown) && !overAppState.covered;
+    (shown || contestOver || groupRunOver || bell.shown || messages.screen !== null) &&
+    !overAppState.covered;
   const overPages = (
     <OverAppPages covered={overAppState.covered}>
       <CommentsContext.Provider value={outerComments}>

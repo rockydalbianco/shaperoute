@@ -3701,6 +3701,7 @@ parte B (l'app), finché nessuna app lo chiama.
 | `GET /me/activities/{key}/gear` | gli attrezzi di un'attività mia | `200` `{gear}`, `404` |
 | `PUT /me/activities/{key}/gear` | tutta la lista, `{gear_ids}` | `200` `{gear}` |
 | `GET /users/{public_id}/gear` | l'attrezzatura di un profilo | `200` `{gear}`, `404` |
+| `GET /drawings/{id}/gear` | gli attrezzi dell'attività di un post, per chi vede il post | `200` `{gear}`, `404` |
 | `GET /gear/{id}` | un attrezzo | `200`, `404` |
 | `GET /gear/{id}/photo?v=` | la sua foto | `200` `image/jpeg`, `404` |
 
@@ -3738,6 +3739,12 @@ parte B (l'app), finché nessuna app lo chiama.
   senza gli attrezzi `off_profile` e quelli nascosti dopo una
   segnalazione. Il proprietario sul suo profilo lo vede come gli altri
   (più i suoi nascosti dopo una segnalazione).
+- **Nel post** (parte E): `GET /drawings/{id}/gear` dà gli attrezzi
+  agganciati all'attività del post a chi vede il post
+  (`drawings.drawing_seen_sql`, se no `404`), con le stesse regole del
+  profilo; un post di sole foto ha la lista vuota. Una rotta a parte, come
+  `/stretch` e `/pool-swim`: il dettaglio del disegno non cambia. Test in
+  `test_gear_post.py`.
 - **La foto**: diritta, al più **1024 px** sul lato lungo, un JPEG nuovo
   senza l'EXIF del telefono; al più 10 al minuto per account (`429`).
 - **Segnalazioni**: `POST /reports` con `kind: "gear"`; dall'email

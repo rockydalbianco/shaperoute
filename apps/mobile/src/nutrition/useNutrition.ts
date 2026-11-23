@@ -1,6 +1,12 @@
 import { useSyncExternalStore } from "react";
 
 import { dayOf, type Diary, diaryOfMonth, diaryWithDay, eatenAsPlanned } from "./diary";
+import {
+  ACTIVITY_KCAL,
+  REST_KCAL_PER_DAY,
+  withActivityKcal,
+  withRest,
+} from "./energyEdits";
 import type { Food } from "./foods";
 import { type LocalDay, monthOf, type Weekday } from "./localDay";
 import {
@@ -151,6 +157,39 @@ export function writeTarget(kcal: number | null): boolean {
     return false;
   }
   writeSettings({ ...current().settings, target });
+  return true;
+}
+
+function inRange(kcal: number, range: { min: number; max: number }): boolean {
+  const whole = Math.round(kcal);
+  return Number.isFinite(kcal) && whole >= range.min && whole <= range.max;
+}
+
+/**
+ * The kilocalories a day the body spends at rest, as the user wrote them
+ * (energyEdits.ts), or MuW's estimate again with null. False when `kcal`
+ * is not a number the field takes: nothing changes then.
+ */
+export function writeRest(kcal: number | null): boolean {
+  if (kcal !== null && !inRange(kcal, REST_KCAL_PER_DAY)) {
+    return false;
+  }
+  const settings = current().settings;
+  writeSettings({ ...settings, edits: withRest(settings.edits, kcal) });
+  return true;
+}
+
+/**
+ * The kilocalories of the activity `key` as the user wrote them, or MuW's
+ * estimate again with null. Kept on this phone only: the activity, its
+ * post and what Apple Health has of it are not touched.
+ */
+export function writeActivityKcal(key: string, kcal: number | null): boolean {
+  if (kcal !== null && !inRange(kcal, ACTIVITY_KCAL)) {
+    return false;
+  }
+  const settings = current().settings;
+  writeSettings({ ...settings, edits: withActivityKcal(settings.edits, key, kcal) });
   return true;
 }
 

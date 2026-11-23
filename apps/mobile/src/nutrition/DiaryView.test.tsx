@@ -1,11 +1,20 @@
+import fixture from "@shaperoute/shared-types/fixtures/activities.json";
 import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
 
+import { ActivitiesContext, type ActivitiesDoor } from "../activities/activitiesDoor";
+import type { Activity } from "../api/activities";
 import { saveLanguageChoice } from "../i18n/language";
 import { diaryDayLabel, DiaryView } from "./DiaryView";
 import { FOOD_TABLE } from "./foodTable";
 import { loadDiaryMonth, loadOwnFoods, loadSettings } from "./nutritionStore";
 import { NO_MEALS, withPortion } from "./plan";
-import { forgetNutrition, writePlanDay, writeTarget } from "./useNutrition";
+import {
+  forgetNutrition,
+  writeDay,
+  writePlanDay,
+  writeRest,
+  writeTarget,
+} from "./useNutrition";
 
 jest.mock(
   "react-native-safe-area-context",
@@ -74,8 +83,7 @@ test("a day with nothing written has four empty meals and no number", async () =
     expect(screen.getByRole("header", { name: meal })).toBeOnTheScreen();
   }
   expect(screen.getByLabelText("Eaten, —")).toBeOnTheScreen();
-  // The energy used and the balance come with the activities (part C1).
-  expect(screen.getByLabelText("Used (est.), —")).toBeOnTheScreen();
+  // No balance for a day with nothing eaten written: not a deficit of a day.
   expect(screen.getByLabelText("Balance, —")).toBeOnTheScreen();
 });
 
@@ -274,4 +282,237 @@ test("«Eaten as planned» never takes away what was written by hand", async () 
   await addFood("breakfast", "pasta cooked", PASTA, "50");
   await fireEvent.press(screen.getByTestId("add-food-confirm"));
   expect(screen.queryByTestId("diary-as-planned")).toBeNull();
+});
+
+// What the body used, and the balance (part C1).
+
+/** 18:00 of TODAY on the phone: three quarters of the day gone. */
+const EVENING = new Date(2026, 10, 23, 18, 0);
+/** A day at rest with no body data: one MET for 70 kg. */
+const REST = 1764;
+const REST_SO_FAR = 1323;
+/** The run of the fixture, 4007 m in 19 minutes, for 70 kg. */
+const RUN = 280;
+const STAR = fixture.activities[0] as unknown as Activity;
+const MORNING_RUN: Activity = {
+  ...STAR,
+  id: "run",
+  started_at: new Date(2026, 10, 23, 7, 10).toISOString(),
+};
+
+/** The private list as «Profile» hands it to the app. */
+function door(fields: Partial<ActivitiesDoor>): ActivitiesDoor {
+  return {
+    status: "ready",
+    list: [],
+    more: false,
+    loadingMore: false,
+    problem: null,
+    loadMore: () => {},
+    ...fields,
+  } as unknown as ActivitiesDoor;
+}
+
+async function showDiary(fields: Partial<ActivitiesDoor>, now: Date = EVENING) {
+  await render(
+    <ActivitiesContext.Provider value={door(fields)}>
+      <DiaryView today={TODAY} now={now} />
+    </ActivitiesContext.Provider>,
+  );
+}
+
+test("«Used (est.)» is the rest so far and the activities of the day", async () => {
+  await showDiary({ list: [MORNING_RUN] });
+  expect(screen.getByLabelText(`Used (est.), ${REST_SO_FAR + RUN}`)).toBeOnTheScreen();
+  expect(
+    screen.getByText("Today the energy at rest is counted up to now."),
+  ).toBeOnTheScreen();
+  // Nothing eaten written yet: no balance.
+  expect(screen.getByLabelText("Balance, —")).toBeOnTheScreen();
+});
+
+test("a day that is over counts its whole rest, and does not say «so far»", async () => {
+  await showDiary({ list: [MORNING_RUN] });
+  await fireEvent.press(screen.getByTestId("diary-previous"));
+  expect(screen.getByLabelText(`Used (est.), ${REST}`)).toBeOnTheScreen();
+  expect(screen.queryByTestId("diary-so-far")).toBeNull();
+});
+
+test("«Balance» is eaten less used, with its sign and its word", async () => {
+  await showDiary({ list: [MORNING_RUN] });
+  await addFood("lunch", "pasta cooked", PASTA, "180");
+  await fireEvent.press(screen.getByTestId("add-food-confirm"));
+  const balance = REST_SO_FAR + RUN - 284;
+  expect(screen.getByLabelText(`Balance, −${balance}, Deficit`)).toBeOnTheScreen();
+
+  // More eaten than used: a surplus, with its plus.
+  await act(async () => {
+    writeRest(1);
+  });
+  expect(
+    screen.getByLabelText(`Balance, +${284 - 1 - RUN}, Surplus`),
+  ).toBeOnTheScreen();
+});
+
+test("with nobody signed in only the rest is counted, and the sheet says why", async () => {
+  await render(<DiaryView today={TODAY} now={EVENING} />);
+  expect(screen.getByLabelText(`Used (est.), ${REST_SO_FAR}`)).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("diary-used"));
+  expect(screen.getByRole("header", { name: "Energy you use" })).toBeOnTheScreen();
+  expect(screen.getByText("Log in to count your activities.")).toBeOnTheScreen();
+  expect(screen.getByTestId("energy-used")).toHaveTextContent(`${REST_SO_FAR} kcal`);
+});
+
+test("a list that did not come leaves the rest alone, and the sheet says so", async () => {
+  await showDiary({ status: "failed" });
+  expect(screen.getByLabelText(`Used (est.), ${REST_SO_FAR}`)).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("diary-used"));
+  expect(
+    screen.getByText(
+      "Your activities could not be loaded. Only the energy at rest is counted.",
+    ),
+  ).toBeOnTheScreen();
+});
+
+test("while the activities of the day are on their way, nothing is said of it", async () => {
+  await showDiary({ status: "loading" });
+  expect(screen.getByLabelText("Used (est.), —")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("diary-used"));
+  expect(screen.getByText("Loading…")).toBeOnTheScreen();
+});
+
+test("a day older than the pages held asks for the next page", async () => {
+  const loadMore = jest.fn();
+  await showDiary({ list: [MORNING_RUN], more: true, loadMore });
+  // Today is not covered either: nothing here began before it.
+  expect(loadMore).toHaveBeenCalledTimes(1);
+  expect(screen.getByLabelText("Used (est.), —")).toBeOnTheScreen();
+});
+
+test("a page that did not come is not asked for again by itself", async () => {
+  const loadMore = jest.fn();
+  await showDiary({ list: [MORNING_RUN], more: true, problem: "No network", loadMore });
+  expect(loadMore).not.toHaveBeenCalled();
+  expect(screen.getByLabelText(`Used (est.), ${REST_SO_FAR}`)).toBeOnTheScreen();
+});
+
+test("«Energy you use» lists the rest and each activity with its calories", async () => {
+  await showDiary({ list: [MORNING_RUN] });
+  await fireEvent.press(screen.getByTestId("diary-used"));
+  expect(screen.getByLabelText(`At rest, ${REST_SO_FAR} kcal`)).toBeOnTheScreen();
+  expect(screen.getByRole("header", { name: "Activities" })).toBeOnTheScreen();
+  expect(screen.getByLabelText(`Run · 4.01 km, 07:10, ${RUN} kcal`)).toBeOnTheScreen();
+  expect(screen.getByTestId("energy-used")).toHaveTextContent(
+    `${REST_SO_FAR + RUN} kcal`,
+  );
+  // «Close» is the way out: the sheet has no other number to save.
+  expect(screen.getByRole("button", { name: "Close" })).toBeOnTheScreen();
+});
+
+test("a day without activities says so", async () => {
+  await showDiary({ list: [] });
+  await fireEvent.press(screen.getByTestId("diary-used"));
+  expect(screen.getByText("No activities on this day.")).toBeOnTheScreen();
+});
+
+test("the rest is written by the user, and the estimate comes back", async () => {
+  await showDiary({ list: [MORNING_RUN] });
+  await fireEvent.press(screen.getByTestId("diary-used"));
+  await fireEvent.press(screen.getByTestId("energy-rest"));
+  expect(screen.getByRole("header", { name: "Energy at rest" })).toBeOnTheScreen();
+  expect(screen.getByTestId("energy-edit-estimate")).toHaveTextContent(
+    `MuW's estimate: ${REST} kcal`,
+  );
+  // The field starts empty: MuW's number is not the user's.
+  expect(screen.getByTestId("energy-edit-input")).toHaveProp("value", "");
+  expect(screen.queryByTestId("energy-edit-estimate-back")).toBeNull();
+  expect(screen.getByTestId("energy-edit-save")).toBeDisabled();
+
+  await fireEvent.changeText(screen.getByTestId("energy-edit-input"), "2000");
+  await fireEvent.press(screen.getByTestId("energy-edit-save"));
+  expect(loadSettings().edits.restKcalPerDay).toBe(2000);
+  expect(screen.getByLabelText("At rest (set by you), 1500 kcal")).toBeOnTheScreen();
+  expect(screen.getByLabelText(`Used (est.), ${1500 + RUN}`)).toBeOnTheScreen();
+
+  await fireEvent.press(screen.getByTestId("energy-rest"));
+  expect(screen.getByTestId("energy-edit-input")).toHaveProp("value", "2000");
+  // The estimate is still in sight beside the user's number.
+  expect(screen.getByTestId("energy-edit-estimate")).toHaveTextContent(
+    `MuW's estimate: ${REST} kcal`,
+  );
+  await fireEvent.press(screen.getByTestId("energy-edit-estimate-back"));
+  expect(loadSettings().edits.restKcalPerDay).toBeNull();
+  expect(screen.getByLabelText(`At rest, ${REST_SO_FAR} kcal`)).toBeOnTheScreen();
+});
+
+test("the calories of an activity are written by the user, and say «edited»", async () => {
+  await showDiary({ list: [MORNING_RUN] });
+  await fireEvent.press(screen.getByTestId("diary-used"));
+  await fireEvent.press(screen.getByTestId("energy-activity-run"));
+  expect(
+    screen.getByRole("header", { name: "Calories of this activity" }),
+  ).toBeOnTheScreen();
+  expect(screen.getByText("Run · 4.01 km · 07:10")).toBeOnTheScreen();
+  expect(
+    screen.getByText(
+      "Your number stays on this phone. Your post and Apple Health keep theirs.",
+    ),
+  ).toBeOnTheScreen();
+  expect(screen.getByTestId("energy-edit-estimate")).toHaveTextContent(
+    `MuW's estimate: ${RUN} kcal`,
+  );
+
+  await fireEvent.changeText(screen.getByTestId("energy-edit-input"), "350");
+  await fireEvent.press(screen.getByTestId("energy-edit-save"));
+  expect(loadSettings().edits.activities).toEqual({ run: 350 });
+  expect(
+    screen.getByLabelText("Run · 4.01 km, 07:10, 350 kcal, edited"),
+  ).toBeOnTheScreen();
+  expect(screen.getByLabelText(`Used (est.), ${REST_SO_FAR + 350}`)).toBeOnTheScreen();
+
+  await fireEvent.press(screen.getByTestId("energy-activity-run"));
+  await fireEvent.press(screen.getByTestId("energy-edit-estimate-back"));
+  expect(loadSettings().edits.activities).toEqual({});
+  expect(screen.getByLabelText(`Run · 4.01 km, 07:10, ${RUN} kcal`)).toBeOnTheScreen();
+});
+
+test("a number the field does not take cannot be saved, and «Cancel» keeps what was", async () => {
+  await showDiary({ list: [MORNING_RUN] });
+  await fireEvent.press(screen.getByTestId("diary-used"));
+  await fireEvent.press(screen.getByTestId("energy-rest"));
+  await fireEvent.changeText(screen.getByTestId("energy-edit-input"), "0");
+  expect(screen.getByTestId("energy-edit-save")).toBeDisabled();
+  await fireEvent.changeText(screen.getByTestId("energy-edit-input"), "1800");
+  await fireEvent.press(screen.getByRole("button", { name: "Cancel" }));
+  expect(loadSettings().edits.restKcalPerDay).toBeNull();
+  expect(screen.getByLabelText(`At rest, ${REST_SO_FAR} kcal`)).toBeOnTheScreen();
+});
+
+test("the balance of a day written before follows the diary of that day", async () => {
+  await act(async () => {
+    writeDay(
+      "2026-11-22",
+      withPortion(NO_MEALS, "dinner", { food: FOOD_TABLE[0], grams: 100 }),
+    );
+  });
+  await showDiary({ list: [MORNING_RUN] });
+  await fireEvent.press(screen.getByTestId("diary-previous"));
+  const eaten = Math.round(FOOD_TABLE[0].kcalPer100g);
+  expect(screen.getByLabelText(`Balance, −${REST - eaten}, Deficit`)).toBeOnTheScreen();
+});
+
+test("in Italian the energy is said in Italian", async () => {
+  await act(async () => saveLanguageChoice("it"));
+  await showDiary({ list: [MORNING_RUN] });
+  expect(
+    screen.getByText("Oggi l'energia a riposo è contata fino a adesso."),
+  ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("diary-used"));
+  expect(screen.getByRole("header", { name: "Energia che consumi" })).toBeOnTheScreen();
+  expect(screen.getByLabelText(`A riposo, ${REST_SO_FAR} kcal`)).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("energy-rest"));
+  expect(screen.getByRole("header", { name: "Energia a riposo" })).toBeOnTheScreen();
+  expect(screen.getByTestId("energy-edit-estimate")).toHaveTextContent(
+    `Stima di MuW: ${REST} kcal`,
+  );
 });

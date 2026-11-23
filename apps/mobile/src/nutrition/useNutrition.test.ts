@@ -19,9 +19,11 @@ import {
   removeFood,
   seeNotice,
   useNutrition,
+  writeActivityKcal,
   writeDay,
   writeDayAsPlanned,
   writePlanDay,
+  writeRest,
   writeTarget,
 } from "./useNutrition";
 
@@ -209,4 +211,31 @@ test("with nothing planned for that day of the week the diary stays as it is", (
   writeDayAsPlanned("2026-11-24");
   expect(mealsOn("2026-11-24")).toBe(NO_MEALS);
   expect(loadDiaryMonth("2026-11")).toEqual({});
+});
+
+test("the rest written by the user is kept, and taken away with null", () => {
+  expect(writeRest(1720)).toBe(true);
+  expect(loadSettings().edits.restKcalPerDay).toBe(1720);
+  // Not a number the field takes: nothing changes.
+  expect(writeRest(0)).toBe(false);
+  expect(writeRest(Number.NaN)).toBe(false);
+  expect(writeRest(20001)).toBe(false);
+  expect(loadSettings().edits.restKcalPerDay).toBe(1720);
+  expect(writeRest(null)).toBe(true);
+  expect(loadSettings().edits.restKcalPerDay).toBeNull();
+});
+
+test("the calories written for an activity are kept by its key", () => {
+  expect(writeActivityKcal("run-1", 350)).toBe(true);
+  expect(writeActivityKcal("gym-1", 0)).toBe(true);
+  expect(loadSettings().edits.activities).toEqual({ "run-1": 350, "gym-1": 0 });
+  expect(writeActivityKcal("run-1", -5)).toBe(false);
+  expect(loadSettings().edits.activities["run-1"]).toBe(350);
+  expect(writeActivityKcal("run-1", null)).toBe(true);
+  expect(loadSettings().edits.activities).toEqual({ "gym-1": 0 });
+  // The notice and the target are not touched by a correction.
+  seeNotice();
+  writeTarget(2200);
+  writeRest(1800);
+  expect(loadSettings()).toMatchObject({ noticeSeen: true, target: 2200 });
 });

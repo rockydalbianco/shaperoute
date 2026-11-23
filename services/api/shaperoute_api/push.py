@@ -547,6 +547,7 @@ TEXTS: dict[str, dict[str, str]] = {
     },
     # An item of gear past the limit its owner set (TASK-486 part G): to the
     # owner only, in the bell. No number: the limit is in the owner's units.
+    # The five texts approved by the user on 2026-11-23.
     "gear_limit": {
         "en": "{title} reached the limit you set.",
         "de": "{title} hat das Limit erreicht, das du festgelegt hast.",

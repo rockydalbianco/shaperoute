@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { countStyleOpen, fetchStyleShop } from "../api/style";
 import { color, font, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 import { Tap } from "../ui/Tap";
 import { STORE_NAMES, stylePriceLine, styleShopLabel, styleWords } from "./styleWords";
 
@@ -36,6 +37,8 @@ export function StyleProductSheet({
   openUrl = (url) => Linking.openURL(url),
 }: Props) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   const words = styleWords();
   const [busy, setBusy] = useState(false);
   // Down first, then gone (TASK-388 C3): the post hears of it once the
@@ -68,7 +71,7 @@ export function StyleProductSheet({
         testID="style-sheet-backdrop"
       />
       <View
-        style={[styles.sheet, { paddingBottom: insets.bottom + space.sm }]}
+        style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.sm }]}
         testID="style-sheet"
       >
         <Text style={styles.brand}>{tag.brand}</Text>

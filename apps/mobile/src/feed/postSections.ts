@@ -1,4 +1,4 @@
-import type { GymSet } from "@shaperoute/shared-types";
+import type { GymExercises } from "@shaperoute/shared-types";
 
 import { sportPaceLabel } from "../activities/activityText";
 import type { ElevationPoint, RunSplit, RunStats } from "../api/runStats";
@@ -164,7 +164,7 @@ function profileOf(post: ShownPost, stats: RunStats | null): ElevationPoint[] | 
 export function summaryRows(
   post: ShownPost,
   units: Units = appUnits(),
-  sets?: readonly GymSet[] | null,
+  exercises?: GymExercises | null,
   stats: RunStats | null = null,
 ): PostRow[] {
   const metrics = postMetrics(post.drawing.activity);
@@ -189,7 +189,7 @@ export function summaryRows(
       ? `${kcal} kcal`
       : metrics.distance
         ? postEnergy(post)
-        : gymPostEnergy(post, sets);
+        : gymPostEnergy(post, exercises);
   const profile = profileOf(post, stats);
   const climb = profile === null ? null : profileClimbM(profile);
   // A race on foot and in the air (TASK-305 part R6b): the time of each.
@@ -328,13 +328,13 @@ export function heartSection(stats: RunStats | null): PostSection | null {
 export function postSections(
   post: ShownPost,
   units: Units = appUnits(),
-  sets?: readonly GymSet[] | null,
+  exercises?: GymExercises | null,
   stats: RunStats | null = null,
 ): PostSection[] {
   const summary: PostSection = {
     kind: "summary",
     title: t("Summary"),
-    rows: summaryRows(post, units, sets, stats),
+    rows: summaryRows(post, units, exercises, stats),
   };
   const sections = [
     summary.rows.length > 0 ? summary : null,

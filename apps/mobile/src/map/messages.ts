@@ -90,6 +90,11 @@ export type ToPage =
    * figure on it (`setCanvas`). */
   | ({ type: "setCanvas" } & CanvasOnPage)
   | { type: "clearCanvas" }
+  /** A drawing anchored to the roads (TASK-347 part C), apart from the
+   * figure so it never clears the ink of a line being drawn: the figure a
+   * ghost under the route of its strokes, and the stretches of it where the
+   * roads went far from the finger. */
+  | { type: "setAnchored"; ghost: boolean; snapped: LngLat[][]; far: LngLat[][] }
   /** Choosing the start on the map (TASK-292): with `on`, the start's pin
    * stays in the middle of the map, which moves under it, and the page
    * tells where the middle is (`centre`). */
@@ -482,6 +487,20 @@ export function setCanvas(canvas: {
 /** The map is the map again: fingers move it, and no figure is on it. */
 export function clearCanvas(): ToPage {
   return { type: "clearCanvas" };
+}
+
+/** The drawing on the map anchored to the roads (TASK-347 part C). */
+export function setAnchored(anchored: {
+  ghost: boolean;
+  snapped: LatLon[][];
+  far: LatLon[][];
+}): ToPage {
+  return {
+    type: "setAnchored",
+    ghost: anchored.ghost,
+    snapped: anchored.snapped.map((line) => line.map(toLngLat)),
+    far: anchored.far.map((line) => line.map(toLngLat)),
+  };
 }
 
 /**

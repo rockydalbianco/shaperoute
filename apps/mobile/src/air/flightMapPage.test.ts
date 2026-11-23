@@ -229,3 +229,33 @@ it("reads only its own messages", () => {
   expect(parseFlightMapMessage('{"type":"fps","fps":"x"}')).toBeNull();
   expect(parseFlightMapMessage("{")).toBeNull();
 });
+
+it("draws the pilot's airspaces: volumes in 3D, areas on the plain map, under the track", () => {
+  const page = runPage();
+  page.load();
+  const ids = page.layers.map((layer) => layer.id);
+  expect(ids).toEqual(
+    expect.arrayContaining([
+      "flight-airspace-volume",
+      "flight-airspace-area",
+      "flight-airspace-edge",
+    ]),
+  );
+  const volume = page.layers.find((layer) => layer.id === "flight-airspace-volume")!;
+  expect(volume.paint?.["fill-extrusion-color"]).toEqual([
+    "case",
+    ["get", "danger"],
+    color.error,
+    color.warning,
+  ]);
+  expect(page.visibility.get("flight-airspace-volume")).toBe("visible");
+  expect(page.visibility.get("flight-airspace-area")).toBe("none");
+  page.flight.setView(false, true);
+  expect(page.visibility.get("flight-airspace-volume")).toBe("none");
+  expect(page.visibility.get("flight-airspace-area")).toBe("visible");
+  const areas = { type: "FeatureCollection", features: [] };
+  (page.flight as unknown as { setAirspace: (data: unknown) => void }).setAirspace(
+    areas,
+  );
+  expect(page.data("flight-airspace")).toBe(areas);
+});

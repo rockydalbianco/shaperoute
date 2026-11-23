@@ -1,6 +1,6 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta) · **B3 in `main`** (#1292, `b6e36fcb`: app, la scheda «Sleep» del profilo, spenta) · **C avviata** (bozza #1334, da non unire: il lettore vero e il sonno acceso; build di prova per il solo iPhone dell'utente dal 2026-11-21) · **E1 in `main`** (#1373, `f38b1980`: il post del sonno da solo, server e contratto, migrazione `0082`; sul server col passo 17, col sì dell'utente) · **E2 in `main`** (app, spenta: #1419, `d0b89470`: il post del sonno nel Feed, nella sua pagina e nella griglia di un profilo; #1441, `57e4d4b4`: la voce «Sleep» del «+») · **C0** (il sonno acceso solo sul canale di prova `preview`, con `isPreview()`; spento negli store), poi privacy, App Privacy e la build nativa (C), D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta) · **B3 in `main`** (#1292, `b6e36fcb`: app, la scheda «Sleep» del profilo, spenta) · **C avviata** (bozza #1334, da non unire: il lettore vero e il sonno acceso; build di prova per il solo iPhone dell'utente dal 2026-11-21) · **E1 in `main`** (#1373, `f38b1980`: il post del sonno da solo, server e contratto, migrazione `0082`; sul server col passo 17, col sì dell'utente) · **E2 in `main`** (app, spenta: #1419, `d0b89470`: il post del sonno nel Feed, nella sua pagina e nella griglia di un profilo; #1441, `57e4d4b4`: la voce «Sleep» del «+») · **C0 in `main`** (#1458, `cffb2c4d`: il sonno acceso solo sul canale di prova `preview`, con `isPreview()`; spento negli store), poi privacy, App Privacy e la build nativa (C), D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
 `feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1),
 `feat/TASK-467-b1b-sleep-in-feed` (B1b), `feat/TASK-467-b2-sleep-post` (B2),
@@ -1211,3 +1211,12 @@ di TASK-481 A e portato su un ramo da `main` quando quella è entrata:
   (quella unica di TASK-312 D, scritta dalla PR di build nativa che
   indica il Coordinatore), la privacy, l'App Privacy, le note di
   revisione, `this_app` di `fixtures/reads.json` e la costante a `true`.
+- **2026-11-23, C0 in `main`** (#1458, `cffb2c4d`). La build di prova
+  nuova (`5b7d0c74`, profilo `preview`, da `main` `ce822b5d`) è di prima
+  del merge: il sonno le arriva con la prima pubblicazione su `preview`,
+  che fa il Coordinatore. Poi la prova dell'utente sul telefono (il «+» ›
+  «Sleep» › «Publish», il post nel Feed, la sua pagina, «Remove post», la
+  tessera nella griglia, la scheda «Sleep» del profilo, «Sleep last
+  night» a fine attività) e le traduzioni dei testi. La bozza #1334 ha
+  `main` unito (`71c29f9e`): della C le restano il nativo, i testi, la
+  privacy e la costante a `true`.

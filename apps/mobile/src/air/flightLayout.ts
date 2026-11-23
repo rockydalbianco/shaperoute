@@ -47,7 +47,9 @@ export type WidgetId =
   | "altitudeChart"
   // Part A1.
   | "aboveGround"
-  | "map";
+  | "map"
+  // Part E2.
+  | "nearestAirspace";
 
 /** Each widget's name on screen, in the user's words of 2026-11-21. */
 export const WIDGET_NAME: Readonly<Record<WidgetId, string>> = {
@@ -70,6 +72,7 @@ export const WIDGET_NAME: Readonly<Record<WidgetId, string>> = {
   altitudeChart: tLater("Last 10 min"),
   aboveGround: tLater("Height above ground"),
   map: tLater("Map"),
+  nearestAirspace: tLater("Nearest airspace"),
 };
 
 export const WIDGETS: readonly WidgetId[] = Object.keys(WIDGET_NAME) as WidgetId[];

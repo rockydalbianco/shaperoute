@@ -161,6 +161,41 @@ uscite a Berlino, Dublino, New York, Amburgo e Vienna**, e il seme ha
 110 da 30). **Parigi e Tokyo non hanno uscite in bici**: passano anche i
 5 GB.
 
+### Le uscite lunghe in bici, 40 e 50 km (TASK-441 B3)
+
+```
+zsh out/TASK-441/b3/run-b3.sh 1                # 50 e 40 km, una città alla volta
+zsh out/TASK-441/b3/run-b3.sh 2                # solo 40 km
+python tools/catalog_bike.py --page out/TASK-441/b3/disegni-bici-lunghi.html --every --distances 50000 40000
+python tools/catalog_bike.py --propose         # le chiavi da tenere
+python tools/catalog_bike.py --write           # catalog/seed dai quattro registri
+```
+
+Le uscite da 40 e 50 km stanno **solo nel catalogo** (scelta dell'utente,
+2026-11-23): «Draw» in bici resta a 10–30 km e il limite del motore
+(`activities/cycling.py`) non cambia. `catalog_bike.py --distances 50000
+40000` alza il limite solo nel proprio processo (`ride_limit`) e disegna le
+stesse otto forme, cinque a una distanza e tre all'altra, a turno per città.
+Stesso registro (`out/TASK-441/bike.jsonl`), stesso filtro, zone ritagliate
+dagli estratti già sul disco (nessun download; Overpass chiuso: un candidato
+che esce dalla zona ritagliata fallisce, quasi sempre cuore o cerchio alla
+distanza più lunga).
+
+**In un file di città le uscite lunghe stanno dopo le uscite che c'erano**
+(`catalog_seed._place`, `LATER_RIDES_FROM_M`): l'API numera un percorso col
+suo posto nel file (`recommended.py`), quindi corse e uscite da 20–30 km
+tengono il loro id.
+
+Dal 23 novembre 2026 il seme ha **2031 percorsi**: entrano **129 uscite
+lunghe in 32 città** (42 da 50 km, 87 da 40), tutte quelle che passano il
+filtro delle 213 disegnate in 34 città (limite del pianificatore 4 GB). In
+tutto 485 uscite in bici in 60 città (Levico è nuova: aveva solo corse).
+Otto città hanno solo i 40 km (Brescia, Torino, Lubiana, Padova, Porto,
+Edimburgo, Firenze, Zagabria: a 50 km la zona non sta nei 4 GB); Genova e
+Nizza non ne hanno nessuna che passi; Amsterdam passa i 4 GB anche a 40 km,
+e Sydney, Valencia, Milano e Barcellona, più grandi, non sono state provate.
+Le altre città hanno uscite fino a 30 km, come prima.
+
 ### Le città in evidenza
 
 Le città che «Explore» mostra per prime (`FEATURED_CITIES` nell'app) e che

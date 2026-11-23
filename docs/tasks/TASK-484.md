@@ -250,8 +250,9 @@ written by hand». Il foglio mostra già il titolo della voce: il flusso non
 ripete più «Gym workout». Le quattro traduzioni della riga («Un allenamento
 già fatto, scritto a mano», «Ein Training, das du schon gemacht hast, von
 Hand eingetragen», «Une séance déjà faite, écrite à la main», «Un
-entrenamiento que ya hiciste, escrito a mano») vanno all'utente con le
-schermate del foglio, prima del «pronta». La PR #1478 (481 F) tocca gli
+entrenamiento que ya hiciste, escrito a mano»): approvate dall'utente il
+2026-11-23 («Sì, approvo»). Restano le schermate del foglio, prima del
+«pronta». La PR #1478 (481 F) tocca gli
 stessi due file del «+»: chi entra per secondo unisce `main` tenendo
 entrambe le righe.
 

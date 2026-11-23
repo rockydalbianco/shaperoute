@@ -3,7 +3,8 @@
 **Stato**: In corso · parte 0 chiusa (2026-11-21); B1 in produzione
 (OTA 20), B2 in `main` (#1368), C in produzione (OTA 22, 2026-11-22),
 A1 in `main` (#1434, 2026-11-23, OTA dal Coordinatore), E1 ed E2 in
-`main` (#1454, #1470, 2026-11-23); prossima E3
+`main` (#1454, #1470, 2026-11-23), E3 in `main` (#1498, 2026-11-23);
+prossima D (D1 #1503)
 **Fase**: 5 · **Branch**: `docs/TASK-479-paragliding-pro` (parte 0), poi
 `feat/TASK-479-<parte>-<slug>`, una parte alla volta, ognuna da `main`
 **Dipende da**: TASK-305 parti R (in `main`: lo sport «Record only», i
@@ -539,6 +540,38 @@ file caricato) ed E2 (dentro, a 282 m, 3D, 2D, widget, opzioni), al
 simulatore con un volo finto sul Monte Baldo e un file inventato. Il
 suono dell'avviso è partito all'entrata e 60 s dopo (dai log del
 simulatore); da sentire alla prova sul telefono.
+
+**E3 fatta** (#1498, in `main` il 2026-11-23). **Com'è fatta** (deciso
+dall'agente su delega dell'utente):
+- Il registro (`airspaceLog.ts`): per ogni volume del file, i tratti
+  della traccia in volo passati dentro (contorno e quote), con inizio,
+  fine, distanza massima dal bordo e margine massimo da base o tetto. Un
+  buco nella traccia o un punto fuori chiude il tratto. I limiti dal
+  terreno contano come rispettati (dopo il volo la quota sul terreno sotto
+  ogni punto non c'è) e il tratto è segnato «≈», come i limiti FL.
+- Nella scheda di fine volo, una sola riga «Airspace · …›», così «Save» e
+  «Discard» restano a vista; apre un foglio con i tratti, la nota sugli
+  FL, «Solo sul tuo telefono: non va nel Feed.» e l'avviso 3 col nome e la
+  data del file. La riga c'è solo con un file caricato. Il registro non
+  va mai al server né nel Feed.
+- Il grafico della quota (widget 28) mostra dietro ogni colonna le fasce
+  dei volumi sopra quel punto (opacità 0,3, P, R e Q in `palette.error`,
+  gli altri in `palette.warning`); la scala si allarga per i limiti entro
+  300 m dalla quota volata.
+
+**Testi di E3**, approvati dall'utente il 2026-11-23:
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Inside your airspaces: {count} | Dentro i tuoi spazi aerei: {count} | In deinen Lufträumen: {count} | Dans vos espaces aériens : {count} | Dentro de tus espacios aéreos: {count} |
+| No fix inside the volumes of your file. | Nessun punto dentro i volumi del tuo file. | Kein Punkt in den Lufträumen deiner Datei. | Aucun point dans les volumes de votre fichier. | Ningún punto dentro de los volúmenes de tu archivo. |
+| {from}–{to} · {name} ({class}) · {min} min | uguale | uguale | uguale | uguale |
+| Deepest: {dist} from the edge, {height} from floor or ceiling | Più dentro: {dist} dal bordo, {height} da base o tetto | Am tiefsten: {dist} vom Rand, {height} von Unter- oder Obergrenze | Au plus profond : {dist} du bord, {height} du plancher ou du plafond | Lo más dentro: {dist} del borde, {height} de la base o el techo |
+| Only on your phone: not in the Feed. | Solo sul tuo telefono: non va nel Feed. | Nur auf deinem Telefon: nicht im Feed. | Uniquement sur votre téléphone : pas dans le Fil. | Solo en tu teléfono: no va al Feed. |
+
+Schermate approvate dall'utente il 2026-11-23 (il grafico con le fasce,
+la riga nella scheda di fine volo, il foglio del registro), al simulatore
+con un volo finto e un file inventato.
 
 ### Parte F — Dopo il volo
 

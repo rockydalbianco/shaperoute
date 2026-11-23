@@ -54,10 +54,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Coach, con TASK-491) e D (tab «Food», con `NUTRITION_ON` di TASK-489).
   File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
-  parte 0 chiusa (scelte dell'utente del 22 e 23 novembre, ADR-0397); A1
-  (i conti, file nuovi) in `main` il 2026-11-23 (#1437), spenta dietro
-  `NUTRITION_ON` fino alla build nativa che legge da Salute. Poi A2 (la
-  tabella USDA). File: — · `tasks/TASK-489.md`
+  ADR-0397; A1 (#1437) e A2 (314 cibi da USDA, #1460) in `main`, spente
+  dietro `NUTRITION_ON` fino alla build nativa che legge da Salute. Parte B:
+  schermate e testi approvati il 2026-11-23, in due PR (B1 = #1473, poi B2).
+  File: `apps/mobile/src/settings/SportButton.tsx` (B1) · `tasks/TASK-489.md`
 - **TASK-487 — Il Feed senza attività finte** · 2026-11-22: niente
   esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
   dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.

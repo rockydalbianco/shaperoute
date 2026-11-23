@@ -589,6 +589,7 @@ lasciando le righe d'indice.
 - ADR-0390, precisazione A — La lista del «+» nell'app: «Record now» come l'avvio senza percorso di «Draw», «Photos only» dritto al modulo di C2, «From a file» con «Files» aperto subito (`fileAtOnce`), il titolo della voce aperta · 2026-11-23 · Attiva
 - ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Proposta
 - ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
+- ADR-0397, precisazione 2 — La tabella di base dei cibi: 314 voci da USDA SR Legacy (aprile 2018) ricavate da uno script, nomi in cinque lingue in file loro; la pagina «Nutrition» in due PR, con schermate e testi approvati · 2026-11-23 · Proposta
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
 
 
@@ -6174,3 +6175,46 @@ coincidevano con ADR-0397: richiesti all'utente, uno alla volta.
 com'è. Il testo del permesso della fotocamera (oggi solo la foto da
 ricalcare) e la riga della privacy sul codice mandato a Open Food Facts
 vanno approvati dall'utente prima della build.
+
+## ADR-0397, precisazione 2 — La tabella di base dei cibi da USDA SR Legacy e la pagina «Nutrition» in due PR
+
+**Data**: 2026-11-23 · **Stato**: Proposta · **Task**: TASK-489 (A2, B)
+
+**Contesto**: ADR-0397 dice «un elenco di base piccolo e curato da USDA
+dentro l'app»; restava da scegliere l'edizione, come si costruisce il file
+e dove stanno i nomi tradotti. L'utente ha detto sì alla parte A2 e allo
+scarico dell'archivio, poi alle schermate e ai testi della parte B.
+
+**Decisione** (decisa dall'agente su delega dell'utente, salvo dove è
+detto che è dell'utente):
+
+- **L'edizione**: USDA FoodData Central, **SR Legacy** (aprile 2018,
+  7.793 cibi, CC0 1.0), non Foundation Foods: quest'ultima è aggiornata ma
+  ha poche centinaia di cibi quasi tutti crudi, e mancano pasta cotta,
+  pane e piatti comuni.
+- **Nessun numero scritto a mano**: `tools/nutrition_foods.csv` elenca i
+  cibi scelti (identificativo FDC, nome corto, descrizione di USDA);
+  `tools/nutrition_table.py` legge l'archivio di USDA, riconosciuto dal
+  suo SHA-256, e scrive `apps/mobile/src/nutrition/foodTable.ts`. Un
+  identificativo che non corrisponde alla descrizione, un cibo senza
+  energia o un numero che l'app non terrebbe fermano lo script. L'archivio
+  resta fuori dal repository.
+- **314 cibi**, crudo e cotto come voci diverse. Fuori le voci che USDA
+  ha solo di marca e lo strutto (902 kcal per 100 g, sopra il massimo di
+  900 dell'app): chi li vuole li aggiunge fra i cibi suoi.
+- **La chiave** di un cibo della tabella è `usda-<identificativo FDC>`.
+- **I nomi**: in inglese nella tabella; italiano, tedesco, spagnolo e
+  francese scritti da MuW in `nutrition/foodNames/`, non in `i18n/`
+  (cambiano con la tabella, non con le schermate). Si traducono solo i
+  nomi: i numeri sono gli stessi in ogni lingua.
+- **La pagina** (scelta dell'utente: schermate e testi approvati il
+  2026-11-23): `NutritionPage`, con le viste «Diary» e «My plan», aperta
+  dalla tessera «Nutrition» in una famiglia «Food» in fondo al pannello
+  degli sport e, nella modalità Allenamento, dalla tab «Food» di TASK-490
+  D. In due PR di codice (B1 e B2), tutte e due spente dietro
+  `NUTRITION_ON`.
+
+**Conseguenze**: per aggiungere un cibo si aggiunge una riga alla lista e
+si rifà girare lo script con l'archivio; la fonte, l'edizione e la data
+dello scarico stanno in testa a `foodTable.ts` e in «How we calculate».
+«Used (est.)» e «Balance» in cima al diario si riempiono con la parte C1.

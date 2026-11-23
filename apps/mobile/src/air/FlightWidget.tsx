@@ -303,7 +303,9 @@ export function FlightWidget({
           ? box(t(GATE_OPEN), undefined, {
               under: first === undefined ? undefined : clockText(first),
             })
-          : box(durationText(gate.opensInMs), undefined, { under: clockText(first) });
+          : box(`−${durationText(gate.opensInMs)}`, undefined, {
+              under: clockText(first),
+            });
       }
       if (done) {
         return box(NO_VALUE, undefined, { under: t(GOAL_TAKEN_LINE) });

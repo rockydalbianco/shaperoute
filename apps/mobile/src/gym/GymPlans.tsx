@@ -31,6 +31,7 @@ import { GymPlanWizard, type WizardStep } from "./GymPlanWizard";
 import { gymStyles } from "./gymStyles";
 import { adapts, markOf, withAdapt } from "./adapt";
 import { isoDay, useGymPlans } from "./plans";
+import { PlanTable } from "./PlanTable";
 import { cycleWeekOf, sessionsOfWeek } from "./program";
 import { gymIndex, isRunDay, sessionLetter } from "./proposal";
 
@@ -105,6 +106,8 @@ function PlansPage({
   );
   // «Coach» (TASK-491 part C): its page over the list, «‹» back to it.
   const [coaching, setCoaching] = useState(false);
+  // «Table» (TASK-506 A): the key of the plan shown as a table.
+  const [tableOf, setTableOf] = useState<string | null>(null);
   const page = {
     paddingTop: insets.top + space.lg,
     paddingBottom: insets.bottom + space.lg,
@@ -115,6 +118,24 @@ function PlansPage({
     return (
       <View style={[styles.coach, page]} testID="gym-coach">
         <CoachPage onBack={() => setCoaching(false)} fetchFn={fetchFn} />
+      </View>
+    );
+  }
+
+  const tabled = plans.find((one) => one.key === tableOf);
+  if (tabled?.program != null) {
+    return (
+      <View style={[styles.screen, page]} testID="gym-plan-table">
+        <PlanTable
+          name={tabled.name}
+          program={tabled.program}
+          today={today}
+          onBack={() => setTableOf(null)}
+          onWeeks={() => {
+            setTableOf(null);
+            setEditing({ key: tabled.key, at: "weeks" });
+          }}
+        />
       </View>
     );
   }
@@ -183,6 +204,7 @@ function PlansPage({
               program={plan.program}
               today={today}
               onEdit={(at) => setEditing({ key: plan.key, at })}
+              onTable={() => setTableOf(plan.key)}
               onAdapt={(on) =>
                 keep(plan.key, {
                   name: plan.name,
@@ -231,19 +253,22 @@ function PlansPage({
 }
 
 /** A plan with weeks: its name, the week it is in and the cycle as
- * dashes, this week's workouts on their days (today ringed), «Edit» and
- * «Weeks». */
+ * dashes, this week's workouts on their days (today ringed), «Edit»,
+ * «Weeks» and «Table». */
 function ProgramCard({
   plan,
   program,
   today,
   onEdit,
+  onTable,
   onAdapt,
 }: {
   plan: GymPlan;
   program: GymProgram;
   today: Date;
   onEdit: (at: WizardStep) => void;
+  /** «Table»: the whole plan on one page (TASK-506 A). */
+  onTable: () => void;
   /** «Adapts to how it went» turned on or off (TASK-488). */
   onAdapt: (on: boolean) => void;
 }) {
@@ -383,6 +408,14 @@ function ProgramCard({
           testID="gym-plan-weeks"
         >
           <Text style={styles.ghostText}>{t("Weeks")}</Text>
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.ghost, pressed && styles.pressed]}
+          onPress={onTable}
+          accessibilityRole="button"
+          testID="gym-plan-table-open"
+        >
+          <Text style={styles.ghostText}>{t("Table")}</Text>
         </Pressable>
       </View>
     </View>

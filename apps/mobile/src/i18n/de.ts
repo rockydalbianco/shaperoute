@@ -1410,6 +1410,11 @@ export const DE: Table = {
   "What do you want to train?": "Was willst du trainieren?",
   "Choose one or more. Then we guide you in 5 steps.":
     "Wähle eine oder mehrere. Dann führen wir dich in 5 Schritten.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
+  Table: "Tabelle",
+  "No exercises yet.": "Noch keine Übungen.",
+  "Change week {n}": "Woche {n} ändern",
+  "kg · touch a week to change it": "kg · tippe auf eine Woche, um sie zu ändern",
   "With weights and machines": "Mit Gewichten und Geräten",
   Bodyweight: "Eigengewicht",
   "At home or in the park, no equipment": "Zu Hause oder im Park, ohne Geräte",

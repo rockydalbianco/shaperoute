@@ -2751,6 +2751,14 @@ export const FR: Table = {
   "Find an exercise": "Chercher un exercice",
   "Workout at the gym": "Séance en salle",
 
+  // src/trainingmode/ (TASK-490 part B: the body of the week)
+  "of your body trained": "de ton corps entraîné",
+  "{percent}% of your body trained this week.":
+    "{percent} % de ton corps entraîné cette semaine.",
+  "10 sets or more: {muscles}.": "10 séries ou plus : {muscles}.",
+  "5 to 9 sets: {muscles}.": "De 5 à 9 séries : {muscles}.",
+  "1 to 4 sets: {muscles}.": "De 1 à 4 séries : {muscles}.",
+
   // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
   "Runs@@ski": "Descentes",
   Legend: "Légende",
@@ -3165,6 +3173,11 @@ export const FR: Table = {
     "Ces mots ne peuvent pas être utilisés. Essaie d'autres mots.",
   "Links and special characters can't be used here.":
     "Les liens et les caractères spéciaux ne sont pas acceptés ici.",
+
+  // src/gear/GearPicker.tsx, ActivityGear.tsx (TASK-486 part C), approved by the user on 2026-11-23
+  "Up to {count} items on an activity.": "Jusqu'à {count} équipements par activité.",
+  "This activity is still on its way. Try again in a moment.":
+    "Cette activité est encore en route. Réessaie dans un instant.",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
   "Share one of your gym plans": "Partage un de tes programmes de salle",

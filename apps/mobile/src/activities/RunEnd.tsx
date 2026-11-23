@@ -9,6 +9,7 @@ import { type MutableRefObject, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { type DrawingChoice, isChosen, isSeen, NOT_CHOSEN } from "../api/drawings";
+import { GearPicker, useGearChoice } from "../gear/GearPicker";
 import { loadHealthOn } from "../health/healthChoice";
 import { healthPhone } from "../health/healthModules";
 import type { HealthPhone } from "../health/healthPhone";
@@ -143,6 +144,7 @@ export function RunEnd({
     toOrder,
     toOutfit,
     toSleep,
+    toGear,
     full,
     waiting,
     refused,
@@ -209,6 +211,9 @@ export function RunEnd({
   const lastNight = useLastNight(imported === undefined ? phoneSleep : null, beganMs);
   const [sleepShown, setSleepShown] = useState(SLEEP_SHOWN_DEFAULT);
   const night = isSeen(choice.visibility) ? lastNight : null;
+  // «Gear» (TASK-486 part C): the sport's defaults, until a tap; none for
+  // an activity from a file, an old one.
+  const gear = useGearChoice(choice.activity, { withDefaults: imported === undefined });
   // «How did it go?» for a run day of a plan (TASK-488): a run just
   // recorded, never one from a file; kept with «Save».
   const plans = useKeptPlans();
@@ -253,6 +258,8 @@ export function RunEnd({
     // The night goes only when the post shows it: off, or with a post only
     // its owner sees, nothing of it leaves the phone (TASK-467).
     toSleep?.(night !== null && sleepShown ? { ...night, shown: true } : null);
+    // The gear goes with the run, whoever sees it: it counts the totals.
+    toGear?.(gear.chosen);
     // The run as the phone keeps it, read before «Save» lets the file go:
     // only after the user's yes to the phone's health data.
     const run = health !== null && loadHealthOn() ? loadRun() : null;
@@ -407,6 +414,7 @@ export function RunEnd({
               })}
             />
           )}
+          <GearPicker {...gear} />
           {imported === undefined && (
             <StravaRunEnd
               strava={strava}

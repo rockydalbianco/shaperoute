@@ -1,5 +1,6 @@
 import { type ReactNode, type Ref, useEffect, useRef, useState } from "react";
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -38,6 +39,54 @@ const MODES = [
  * takes.
  */
 export const PASSWORD_RULES = `minlength: ${PASSWORD_LENGTH.min}; maxlength: ${PASSWORD_LENGTH.max};`;
+
+/**
+ * What the box of the password remembers after the eye hid it again. iOS
+ * empties a box that turns secret at its next key (seen in the simulator,
+ * TASK-458): it says the box is empty, and then, for a letter, says the
+ * letter alone. What was written is kept here to be put back.
+ */
+export type EyeMemory = {
+  /** The text when the eye hid it again, until the next key. */
+  held: string | null;
+  /** The text iOS has just emptied, and when: its letter may follow. */
+  emptied: { text: string; at: number } | null;
+};
+
+export const NO_MEMORY: EyeMemory = { held: null, emptied: null };
+
+/** The letter iOS types after it emptied the box comes at once. */
+const LETTER_FOLLOWS_MS = 100;
+
+/**
+ * The password after a key, and what is remembered for the next. An empty
+ * box right after the eye is a delete, of one letter and not of all, unless
+ * a letter follows it at once: then nothing was deleted, and the letter
+ * goes after what was written. More than one letter at once (a paste, the
+ * password iOS fills) is taken as it is.
+ */
+export function afterKey(
+  memory: EyeMemory,
+  next: string,
+  now: number,
+): { password: string; memory: EyeMemory } {
+  const { held, emptied } = memory;
+  if (emptied !== null && next.length === 1 && now - emptied.at <= LETTER_FOLLOWS_MS) {
+    return { password: emptied.text + next, memory: NO_MEMORY };
+  }
+  if (held !== null && held.length > 1) {
+    if (next === "") {
+      return {
+        password: held.slice(0, -1),
+        memory: { held: null, emptied: { text: held, at: now } },
+      };
+    }
+    if (next.length === 1) {
+      return { password: held + next, memory: NO_MEMORY };
+    }
+  }
+  return { password: next, memory: NO_MEMORY };
+}
 
 /** The eye in the password's box: its square, lid, line and pupil. */
 const EYE_SIDE = 24;
@@ -96,6 +145,8 @@ export function SignInScreen({
   const [password, setPassword] = useState("");
   // Hidden until the eye is touched (TASK-458).
   const [passwordShown, setPasswordShown] = useState(false);
+  // What the eye remembers from the touch that hides the password again.
+  const eye = useRef<EyeMemory>(NO_MEMORY);
   const [atLeast16, setAtLeast16] = useState(false);
   const [noAwayEmail, setNoAwayEmail] = useState(false);
   const usernameField = useRef<TextInput>(null);
@@ -185,7 +236,11 @@ export function SignInScreen({
         ref={passwordField}
         label={t("PASSWORD")}
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(next) => {
+          const after = afterKey(eye.current, next, Date.now());
+          eye.current = after.memory;
+          setPassword(after.password);
+        }}
         placeholder={signingUp ? t("At least 8 characters") : undefined}
         secureTextEntry={!passwordShown}
         autoComplete={signingUp ? "new-password" : "current-password"}
@@ -196,7 +251,13 @@ export function SignInScreen({
         end={
           <Pressable
             style={({ pressed }) => [styles.eyeButton, pressed && styles.eyePressed]}
-            onPress={() => setPasswordShown(!passwordShown)}
+            onPress={() => {
+              eye.current =
+                passwordShown && Platform.OS === "ios"
+                  ? { held: password, emptied: null }
+                  : NO_MEMORY;
+              setPasswordShown(!passwordShown);
+            }}
             accessibilityRole="button"
             accessibilityLabel={passwordShown ? t("Hide password") : t("Show password")}
             hitSlop={space.xs}
@@ -399,7 +460,7 @@ const styles = StyleSheet.create({
   eyeGap: {
     position: "absolute",
     width: EYE_SIDE,
-    height: EYE_STROKE * 3,
+    height: EYE_STROKE * 2,
     backgroundColor: color.surface,
     transform: [{ rotate: "-45deg" }],
   },

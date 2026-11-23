@@ -121,12 +121,13 @@ Tedesco, spagnolo e francese sono in `src/i18n/`. Riusati, non nuovi:
 
 ## Criteri di accettazione
 
-- [ ] L'occhio mostra e nasconde la password senza perdere il testo, in
-      «Sign up» e «Log in» (`SignInScreen.test.tsx`).
-- [ ] I campi dicono a iOS nome dell'account, password nuova e regole
+- [x] L'occhio mostra e nasconde la password senza perdere il testo, in
+      «Sign up» e «Log in», anche al primo tasto dopo averla nascosta
+      (`SignInScreen.test.tsx`, e nel simulatore).
+- [x] I campi dicono a iOS nome dell'account, password nuova e regole
       (`SignInScreen.test.tsx`).
-- [ ] Nel simulatore: scrivere la password con l'occhio aperto e chiuso;
-      cosa fa il foglio «Use Strong Password?» coi campi nuovi.
+- [x] Nel simulatore: scrivere la password con l'occhio aperto e chiuso;
+      cosa fa il foglio «Use Strong Password?» coi campi nuovi (sopra).
 - [ ] Le proprie bolle gialle con le parole scure, quelle dell'altro
       neutre; l'allegato di una propria bolla su una piastra neutra
       (`ChatMinor.test.tsx`).
@@ -182,6 +183,26 @@ Lista approvata dal Coordinatore il 23 novembre 2026. `STATUS.md`,
   Restano: le schermate (turno del simulatore dal
   Coordinatore), la conferma del giallo sulle schermate, i testi
   approvati nelle cinque lingue, `docs/UI.md`.
-- Da guardare nel simulatore: su iOS un campo che torna segreto può
-  svuotarsi al primo tasto dopo il tocco sull'occhio. Se succede, il testo
-  va tenuto da `onChangeText`.
+- 2026-11-23, simulatore (iPhone 17e, iOS 27, Expo Go, API di prova su
+  8051 con un PostGIS usa e getta e quattro account finti): schermate
+  prima/dopo in `out/TASK-458/shots/` del worktree (fuori da git).
+  - **L'occhio**: su iOS un campo che torna segreto si svuota al tasto
+    dopo. iOS manda due eventi: il campo vuoto, poi subito la lettera sola.
+    Corretto con `afterKey` in `SignInScreen.tsx`: la lettera va dopo il
+    testo che c'era, un «cancella» toglie una lettera sola; riprovato nel
+    simulatore (testo + lettera, e «cancella»).
+  - **Il foglio «Use Strong Password?»**: compare ancora quando si tocca
+    la password di «Sign up», coi campi nuovi come coi vecchi. È un foglio
+    di iOS: sta al posto della tastiera, copre le caselle e il pulsante ma
+    non i tre campi, e si chiude con la «×». Toglierlo vuol dire non
+    dichiarare la password come nuova (niente password forte, niente
+    salvataggio proposto): non fatto. Nel simulatore «Fill Strong
+    Password» non riempie (nessun Portachiavi iCloud).
+  - Chat vuota con gli spunti, bolle gialle con la piastra sotto il
+    disegno, capsula «New message» e la sua pagina con la ricerca: come
+    nei test. Non fotografato il tono chiaro.
+  - Visto e **non toccato** (c'è anche su `main`): con una conversazione
+    aperta dalla scheda «Messages», l'header dell'app resta sopra la riga
+    del titolo e copre la «←». Segnalato al Coordinatore.
+  - Nel simulatore i tasti mandati in fretta si perdono, e fuori da un
+    campo la «r» ricarica Expo Go: una lettera, una pausa.

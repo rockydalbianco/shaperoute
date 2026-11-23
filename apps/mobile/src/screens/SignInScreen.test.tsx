@@ -1,6 +1,12 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
-import { PASSWORD_RULES, SignInScreen, type SignInMode } from "./SignInScreen";
+import {
+  afterKey,
+  NO_MEMORY,
+  PASSWORD_RULES,
+  SignInScreen,
+  type SignInMode,
+} from "./SignInScreen";
 
 function show({
   initialMode = "signUp",
@@ -187,4 +193,60 @@ test("«Log in» asks iOS for the saved password, with no rules", async () => {
   expect(password.props.textContentType).toBe("password");
   expect(password.props.autoComplete).toBe("current-password");
   expect(password.props.passwordRules).toBeUndefined();
+});
+
+test("a password hidden again keeps its text at the next key, though iOS empties the box", async () => {
+  const { shown, onLogIn } = show({ initialMode: "logIn" });
+  await shown;
+  await fireEvent.changeText(screen.getByLabelText("password"), "secret password");
+  await fireEvent.press(screen.getByRole("button", { name: "Show password" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Hide password" }));
+  // What iOS sends after the box turned secret again (seen in the
+  // simulator): the box empty, then at once the one letter typed.
+  await fireEvent.changeText(screen.getByLabelText("password"), "");
+  await fireEvent.changeText(screen.getByLabelText("password"), "!");
+  expect(screen.getByLabelText("password").props.value).toBe("secret password!");
+  // The key after that is an ordinary one: a box emptied by hand stays empty.
+  await fireEvent.changeText(screen.getByLabelText("password"), "");
+  expect(screen.getByLabelText("password").props.value).toBe("");
+  await fireEvent.changeText(screen.getByLabelText("password"), "secret password!");
+  await fireEvent.press(submit());
+  expect(onLogIn).toHaveBeenCalledWith({ email: "", password: "secret password!" });
+});
+
+test("after the eye, a delete takes one letter and a letter goes after the text", () => {
+  const hidden = { held: "secret", emptied: null };
+  // A delete: iOS says the box is empty, and nothing follows.
+  const deleted = afterKey(hidden, "", 1_000);
+  expect(deleted.password).toBe("secre");
+  // A letter long after is an ordinary key: it does not bring the text back.
+  expect(afterKey(deleted.memory, "x", 5_000)).toEqual({
+    password: "x",
+    memory: NO_MEMORY,
+  });
+  // A letter: the box empty, then the letter at once.
+  expect(afterKey(deleted.memory, "!", 1_010)).toEqual({
+    password: "secret!",
+    memory: NO_MEMORY,
+  });
+  // Where the letter comes alone, it goes after the text all the same.
+  expect(afterKey(hidden, "!", 1_000).password).toBe("secret!");
+  // A whole text at once (a paste, the password iOS fills) is taken as it is.
+  expect(afterKey(hidden, "another one", 1_000).password).toBe("another one");
+  // One letter had nothing before it to lose.
+  expect(afterKey({ held: "s", emptied: null }, "", 1_000).password).toBe("");
+  // Without the eye, every key is ordinary.
+  expect(afterKey(NO_MEMORY, "", 1_000)).toEqual({ password: "", memory: NO_MEMORY });
+});
+
+test("while the password is shown, and before the eye is touched, the keys are ordinary", async () => {
+  const { shown } = show({ initialMode: "logIn" });
+  await shown;
+  await fireEvent.changeText(screen.getByLabelText("password"), "secret password");
+  await fireEvent.changeText(screen.getByLabelText("password"), "s");
+  expect(screen.getByLabelText("password").props.value).toBe("s");
+  await fireEvent.changeText(screen.getByLabelText("password"), "secret password");
+  await fireEvent.press(screen.getByRole("button", { name: "Show password" }));
+  await fireEvent.changeText(screen.getByLabelText("password"), "s");
+  expect(screen.getByLabelText("password").props.value).toBe("s");
 });

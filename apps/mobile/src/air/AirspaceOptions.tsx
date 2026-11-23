@@ -4,8 +4,22 @@ import { StyleSheet, Text, View } from "react-native";
 import { t, tLater } from "../i18n";
 import { appLanguage } from "../i18n/language";
 import type { Palette } from "../theme/tokens";
+import { useUnits } from "../units/useUnits";
+import {
+  HORIZONTAL_CHOICES,
+  setAirspaceAlerts,
+  useAirspaceAlerts,
+  VERTICAL_CHOICES,
+} from "./airspaceAlertPrefs";
 import { airspacePickerAvailable, pickAirspace } from "./airspaceFile";
 import { setAirspace, useAirspace } from "./airspaceStore";
+import {
+  type AltitudeUnit,
+  altitudeText,
+  distanceText,
+  distanceUnit,
+  UNIT_LABEL,
+} from "./flightUnits";
 
 /**
  * The pilot's airspace file among the flight screen's options (TASK-479
@@ -37,12 +51,17 @@ export function AirspaceOptions({
   chip,
   row,
   palette,
+  altitudeUnit = "m",
 }: {
   chip: Chip;
   row: Row;
   palette: Palette;
+  /** The pilot's altitude unit, for the warning's height (part E2). */
+  altitudeUnit?: AltitudeUnit;
 }) {
   const loaded = useAirspace();
+  const alerts = useAirspaceAlerts();
+  const units = useUnits();
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const load = async () => {
@@ -99,6 +118,41 @@ export function AirspaceOptions({
               date: loadedDay(loaded.loadedAtMs),
             })}
           </Text>
+          {/* The warning (part E2): how near, across and up or down, and
+              whether it sounds. */}
+          {row(
+            t("Warn within"),
+            HORIZONTAL_CHOICES.map((metres) =>
+              chip(
+                `h${metres}`,
+                `${distanceText(metres, units)} ${distanceUnit(metres, units)}`,
+                alerts.horizontalM === metres,
+                () => setAirspaceAlerts({ ...alerts, horizontalM: metres }),
+              ),
+            ),
+          )}
+          {row(
+            t("Warn above or below"),
+            VERTICAL_CHOICES.map((metres) =>
+              chip(
+                `v${metres}`,
+                `${altitudeText(metres, altitudeUnit)} ${UNIT_LABEL[altitudeUnit]}`,
+                alerts.verticalM === metres,
+                () => setAirspaceAlerts({ ...alerts, verticalM: metres }),
+              ),
+            ),
+          )}
+          {row(
+            t("Warning sound"),
+            <>
+              {chip("sound-on", t("On"), alerts.sound, () =>
+                setAirspaceAlerts({ ...alerts, sound: true }),
+              )}
+              {chip("sound-off", t("Off"), !alerts.sound, () =>
+                setAirspaceAlerts({ ...alerts, sound: false }),
+              )}
+            </>,
+          )}
         </>
       )}
       {note !== null ? (

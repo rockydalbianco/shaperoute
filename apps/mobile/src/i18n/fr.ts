@@ -3456,6 +3456,18 @@ export const FR: Table = {
     "Au plus profond : {dist} du bord, {height} du plancher ou du plafond",
   "Only on your phone: not in the Feed.":
     "Uniquement sur votre téléphone : pas dans le Fil.",
+  // src/air/ (TASK-479 part D1: the pilot's waypoints and task; approved by the user on 2026-11-23)
+  Waypoints: "Balises",
+  Task: "Manche",
+  "Waypoints: {count} · Landings: {landings}":
+    "Balises : {count} · Atterrissages : {landings}",
+  "Turnpoints: {count}": "Balises de la manche : {count}",
+  "First start: {time}": "Premier départ : {time}",
+  "{file} · loaded {date}": "{file} · chargé le {date}",
+  "This file has no waypoint MuW can read.":
+    "Ce fichier ne contient aucune balise que MuW sait lire.",
+  "This file is not a task MuW can read.":
+    "Ce fichier n'est pas une manche que MuW sait lire.",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Bilan calorique",
   Used: "Dépensées",

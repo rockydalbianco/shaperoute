@@ -597,9 +597,68 @@ lasciando le righe d'indice.
 - ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi · 2026-11-23 · Attiva
 - ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap estratti dal server, la scheda del decollo con lo storico dei voli di MuW contato dal server, mai giudizi sulle condizioni · 2026-11-23 · Proposta
 - ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
+- ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Proposta
 
 
 ## Voci nuove
+## ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta e saltabile le altre; animali e musiche del video restano dentro l'app
+
+**Stato**: Proposta · 2026-11-23 · TASK-505 (parte 0, soli documenti).
+Le due scelte sono **dell'utente** (2026-11-23, risposte in
+`tasks/TASK-505.md`); il come è deciso dall'agente su delega dell'utente.
+Aggiorna ADR-0147 nei tempi e in «non si salta con un tocco»; il resto di
+ADR-0147 vale.
+
+**Contesto**: la lettura del codice del 2026-11-23 ha trovato due cose che
+non sono errori ma scelte (O6 e O15). A ogni apertura a freddo
+l'animazione del cuore tiene lo schermo 2,7 s senza poterla saltare
+(ADR-0147, scelta dell'utente del 2026-10-02: «almeno due secondi»). E gli
+animali e le musiche del video (13 modelli e 10 brani, 5,6 MB) stanno in
+ogni installazione anche se servono solo a chi fa un video.
+
+**Decisione**:
+1. **Due animazioni** (scelta dell'utente). L'intera, quella di ADR-0147
+   (0,35 + 1,6 + 0,45 + 0,3 = 2,7 s), alla prima apertura e alla prima
+   dopo una versione nuova dello store. Le altre volte la corta: la penna
+   parte subito, il cuore si disegna in 0,6 s, resta 0,15 s, sfuma in
+   0,25 s: 1,0 s in tutto. È lo stesso cuore, più veloce: non un altro
+   disegno.
+2. **Un tocco la chiude** (scelta dell'utente), intera o corta: da
+   dovunque sia arrivata sfuma in 0,25 s. Nessun pulsante e nessun testo:
+   tutto lo schermo è il tasto.
+3. **«Versione nuova» è la `version` di `app.json`** (oggi 1.1.0), letta
+   con `expo-constants`: cambia con le uscite sugli store, non con gli
+   OTA, che sono decine al mese e ridarebbero l'intera ogni due giorni.
+4. **Il telefono lo ricorda in un file**, `intro-seen.json` nei documenti
+   dell'app con la versione dell'ultima animazione intera vista, letto
+   subito all'avvio come `tour/tourSeen.ts`: niente attesa prima del primo
+   fotogramma. Si scrive quando l'animazione finisce o viene chiusa. Chi
+   ha già l'app non ha il file: vede l'intera una volta dopo l'OTA, poi la
+   corta. File mancante o illeggibile: l'intera.
+5. **Animali e musiche restano dentro l'app** (scelta dell'utente): O15
+   si chiude senza lavoro.
+
+**Scartate**: lasciare l'animazione com'è, o intera sempre ma saltabile
+(proposte all'utente, non scelte); contare gli OTA come versione nuova
+(punto 3); togliere del tutto l'animazione dopo la prima volta (il giallo
+copre il momento in cui l'app sotto si carica, e nessuno l'ha chiesto).
+Per O15: scaricare animali e musiche al primo uso, tutti o tranne i primi.
+Si poteva: sono dati e non codice, quindi non è il caso scartato da
+ADR-0177 (Pyodide e il motore, regole 2.5.2 e 4.7 di Apple), e senza rete
+il video esce già senza animale (ADR-0339, precisazione B, punto 2). Non
+conviene: 5,6 MB su 28 di file dell'app, di cui 21 del motore, e accanto a
+zone da 7 MB l'una; in cambio servono un posto sul server, un'attesa e un
+testo nuovo al primo video, un video senza animale e senza musica a chi è
+senza rete; e il risparmio arriva solo con una build nuova, perché un OTA
+non toglie file da un'app installata.
+
+**Conseguenze**: dalla seconda apertura l'app si tocca 1,7 s prima; con
+l'animazione corta si vede prima anche un'app che non ha finito di
+caricarsi, da guardare sul simulatore nella parte A e da dire a TASK-500,
+che misura l'avvio. Solo JavaScript, nessuna dipendenza nuova, nessun
+testo: l'impronta iOS non cambia, esce con un OTA. O15 si riapre se i
+file del video crescono molto (ordine di grandezza: oltre 20 MB).
+
 ## ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap, la scheda del decollo con lo storico di MuW
 
 **Stato**: Proposta · 2026-11-23 · TASK-493 (parte 0, soli documenti).

@@ -38,6 +38,11 @@ Suunto, Coros e Komoot e fare domanda, ognuno col sì dell'utente.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-505 — L'animazione iniziale e i file del video** (ADR-0405) ·
+  parte 0 il 2026-11-23: animazione intera solo la prima volta e dopo una
+  versione nuova, poi 1 s e saltabile; animali e musiche restano dentro.
+  Scelte dell'utente fatte; parte A col sì del Coordinatore.
+  File: — · `tasks/TASK-505.md`
 - **TASK-493 — La mappa dei decolli** (ADR-0400) · parte 0 il 2026-11-23:
   decolli e atterraggi da OSM, la scheda del decollo con lo storico dei
   voli contato dal server; scelte dell'utente fatte. Vento dopo 479 H.

@@ -663,8 +663,10 @@ aggiunge colore: ognuno tiene il suo, il giallo del chip scelto compreso.
 Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Lo hanno
 anche (A7c-1) i chip di «Share your run», del post di sole foto e del
 composer, di «Tag people» e di chi può vedere, dei tag dell'outfit, di
-«Style», del sonno, del calendario e «Share live». I chip delle
-schermate degli sport arrivano con A7c-2.
+«Style», del sonno, del calendario e «Share live», e (A7c-2) quelli
+dell'obiettivo in palestra, dei posti della pagaia, della lunghezza della
+vasca e della giornata sulla neve. Restano i chip condivisi della
+palestra (`gymStyles`), del volo e del pannello del percorso: A7c-3.
 
 **Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
 raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro

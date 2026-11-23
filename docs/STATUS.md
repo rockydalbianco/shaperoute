@@ -46,9 +46,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   «Apply»; solo con account, omino di TASK-490 B; testi approvati. A in
   `main` (#1427); B dopo TASK-490 B (#1433), C dopo #1420.
   File: — · `tasks/TASK-491.md`
-- **TASK-490 — La modalità Allenamento** · parte 0 chiusa il 2026-11-23
-  (ADR-0398): scelta «Gym», la barra è Today · Workouts · Food · Feed ·
-  Profile come per lo sci; il Cibo è la pagina di TASK-489. Prossima la A.
+- **TASK-490 — La modalità Allenamento** · A (#1424) e B (#1433, l'omino
+  della settimana su «Today») in `main` il 2026-11-23, schermate e testi
+  approvati dall'utente; escono col prossimo OTA. Restano C (riga del
+  Coach, con TASK-491) e D (tab «Food», con `NUTRITION_ON` di TASK-489).
   File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
   parte 0 chiusa (scelte dell'utente del 22 e 23 novembre, ADR-0397); A1

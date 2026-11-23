@@ -5968,6 +5968,30 @@ migrazione; tutto con un OTA. `App.tsx` si tocca dopo TASK-481 A (#1421),
 `SportButton.tsx` prima di TASK-489 B. Un utente che si allena e corre
 cambia barra quando cambia sport, come lo sciatore.
 
+**Precisazione (2026-11-23, parti A e B in `main`, #1424 e #1433)**:
+- **Correzione della barra, anche per lo sci** (ok del Coordinatore,
+  deciso dall'agente su delega dell'utente): lasciando un modo mentre si
+  è su una sua pagina («Days», «Resorts», «Workouts») l'app ora atterra
+  su «Draw» con la barra. Prima `App.tsx` guardava la barra nuova invece
+  di quella lasciata e la barra spariva, anche nella modalità sci. La
+  copre `trainingmode/trainingModeShell.test.tsx`.
+- **L'icona di «Workouts»** è un manubrio nuovo
+  (`assets/ui/tabs/dumbbell*.png`), con lo spessore delle linee Lucide.
+- **L'omino della settimana** (parte B) usa il **rosa dei muscoli**
+  (`color.muscle`, come la guida degli esercizi di ADR-0376), **scelta
+  dell'utente** al posto dei verdi della bozza del Coach, in tre aspetti
+  che non dipendono solo dal colore: contorno (1–4 serie), metà (5–9),
+  pieno (10 o più), con la legenda «Sets» e un'etichetta per lo screen
+  reader che elenca i muscoli per livello.
+- **Come si contano le serie** (deciso dall'agente su delega
+  dell'utente): una serie vale 1 per i muscoli principali dell'esercizio
+  e ½ per i secondari; la settimana parte lunedì alle 00:00 dell'ora del
+  telefono; la percentuale «of your body trained» è la media, sui 17
+  muscoli, di min(serie / 10, 1). Dati: gli allenamenti del mese della
+  palestra, le loro serie e quelle in attesa d'invio; senza account
+  l'omino non c'è. Il Coach (ADR-0399) riusa `setsByMuscle` e
+  `WeekBodyCard`.
+
 ## ADR-0399 — Il Coach MuW: consigli da regole scritte con il loro studio, la scheda che cambia solo con «Apply»
 
 **Stato**: Proposta · 2026-11-23 · TASK-491 (parte 0, soli documenti).

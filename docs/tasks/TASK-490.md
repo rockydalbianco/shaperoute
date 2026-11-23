@@ -1,6 +1,6 @@
 # TASK-490 — La modalità Allenamento: scelta la palestra, MuW diventa un'app per allenarsi
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-23: tre scelte dell'utente; poi A, B, C, D)
+**Stato**: In corso (0, A e B in `main` il 2026-11-23; restano C e D)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-490-training-mode-part-0`
 **Dipende da**: TASK-429 (la modalità sci, ADR-0357: il modello), TASK-411
@@ -103,17 +103,56 @@ apps/mobile/src/i18n/{de,es,fr,it}.ts  (solo chiavi nuove)
 docs/tasks/TASK-490.md
 ```
 
-Parte B (file nuovi): `apps/mobile/src/trainingmode/weekBody.ts` + test,
-`apps/mobile/src/trainingmode/WeekBodyCard.tsx` + test.
+Parte A, file in più approvati dal Coordinatore il 2026-11-23:
+`apps/mobile/assets/ui/tabs/dumbbell*.png` (6, nuovi) e
+`apps/mobile/src/trainingmode/trainingModeShell.test.tsx` (nuovo).
+
+Parte B (#1433):
+
+```
+apps/mobile/src/trainingmode/weekBody.ts       + weekBody.test.ts
+apps/mobile/src/trainingmode/useWeekBody.ts
+apps/mobile/src/trainingmode/WeekBodyCard.tsx  + WeekBodyCard.test.tsx
+apps/mobile/src/trainingmode/TrainingTodayPage.tsx + test (una riga: <WeekBody />)
+apps/mobile/src/i18n/{de,es,fr,it}.ts  (5 chiavi nuove)
+```
+
+Chiusura A e B (soli documenti, `docs/TASK-490-ab-closing`):
+
+```
+docs/tasks/TASK-490.md
+docs/DECISIONS.md          (precisazione in ADR-0398)
+docs/STATUS.md             (la voce del task)
+```
 
 ## Criteri di accettazione (parte A)
 
-- [ ] Scelto «Gym», la barra è «Today» · «Workouts» · «Feed» · «Profile»
+- [x] Scelto «Gym», la barra è «Today» · «Workouts» · «Feed» · «Profile»
       (più «Food» solo con `NUTRITION_ON`); «Messages» in alto.
-- [ ] Scelto un altro sport, l'app torna com'era; la modalità sci non cambia.
-- [ ] «Today» mostra la palestra di «Draw» com'è oggi; «Start workout»
+- [x] Scelto un altro sport, l'app torna com'era; la modalità sci non cambia
+      (salvo la correzione della barra, ADR-0398 precisazione).
+- [x] «Today» mostra la palestra di «Draw» com'è oggi; «Start workout»
       apre l'allenamento come prima.
-- [ ] «Workouts» apre schede e mese coi fogli di oggi, mostra gli
+- [x] «Workouts» apre schede e mese coi fogli di oggi, mostra gli
       allenamenti fatti e lo storico di un esercizio.
-- [ ] Test deterministici dei file nuovi; test dei file toccati e `tsc` verdi.
-- [ ] Schermate e testi approvati dall'utente (quattro tab compresi).
+- [x] Test deterministici dei file nuovi; test dei file toccati e `tsc` verdi.
+- [x] Schermate e testi approvati dall'utente (quattro tab compresi).
+
+## Criteri di accettazione (parte B)
+
+- [x] In cima a «Today» l'omino della settimana (da lunedì), muscoli in
+      rosa in tre aspetti, legenda «Sets» e la percentuale del corpo allenato.
+- [x] Senza account l'omino non c'è; lo screen reader legge i muscoli per livello.
+- [x] Test deterministici dei file nuovi; test dei file toccati e `tsc` verdi.
+- [x] Schermate e testi approvati dall'utente.
+
+## Esito
+
+- **A** in `main` il 2026-11-23 (#1424, `cc24c61a`): schermate, testi e
+  quattro tab approvati dall'utente («Sì, approvo»).
+- **B** in `main` il 2026-11-23 (#1433, `d5d1cc33`): sul simulatore, con
+  due allenamenti di prova, «52% of your body trained»; figure alte 140;
+  rosa scelto dall'utente, schermate e testi approvati («Sì, approvo»).
+- Restano: l'OTA (lo pubblica il Coordinatore) e la prova sul telefono;
+  **C** (riga «Coach · next time», con TASK-491); **D** (tab «Food»: serve
+  da TASK-489 il nome e le props della pagina «Nutrition»).

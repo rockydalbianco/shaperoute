@@ -2733,6 +2733,14 @@ export const IT: Table = {
   "Find an exercise": "Cerca un esercizio",
   "Workout at the gym": "Allenamento in palestra",
 
+  // src/trainingmode/ (TASK-490 part B: the body of the week)
+  "of your body trained": "del corpo allenato",
+  "{percent}% of your body trained this week.":
+    "{percent}% del corpo allenato questa settimana.",
+  "10 sets or more: {muscles}.": "10 serie o più: {muscles}.",
+  "5 to 9 sets: {muscles}.": "Da 5 a 9 serie: {muscles}.",
+  "1 to 4 sets: {muscles}.": "Da 1 a 4 serie: {muscles}.",
+
   // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
   "Runs@@ski": "Discese",
   Legend: "Legenda",
@@ -3148,6 +3156,11 @@ export const IT: Table = {
   "Links and special characters can't be used here.":
     "Qui non si possono usare link né caratteri speciali.",
 
+  // src/gear/GearPicker.tsx, ActivityGear.tsx (TASK-486 part C), approved by the user on 2026-11-23
+  "Up to {count} items on an activity.": "Fino a {count} attrezzi su un'attività.",
+  "This activity is still on its way. Try again in a moment.":
+    "Questa attività sta ancora arrivando. Riprova tra poco.",
+
   // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
   "Choose a plan": "Scegli un piano",
   "No plans yet: make one in Gym › Plans.":
@@ -3178,4 +3191,41 @@ export const IT: Table = {
   "Height above ground": "Quota sul terreno",
   "Heading up": "Rotta in alto",
   "North up": "Nord in alto",
+  // The plan that adapts (TASK-488): gym/AdaptQuestion.tsx, gym/GymPlans.tsx.
+  "Easy@@feel": "Facile",
+  "Right@@feel": "Giusto",
+  "Hard@@feel": "Duro",
+  "could do more": "potevo di più",
+  "as planned": "come previsto",
+  "at my limit": "al limite",
+  "Next time the plan adjusts to your answer.":
+    "La prossima volta la scheda si regola su quello che rispondi.",
+  "No answer? It goes on as planned.": "Non rispondi? Va avanti come previsto.",
+  "Easy: up we go": "Facile: si sale",
+  "Right: as planned": "Giusto: come previsto",
+  "Hard: the same next time": "Duro: la prossima volta uguale",
+  "Hard again: one step back": "Di nuovo duro: un passo indietro",
+  "Change@@answer": "Cambia",
+  "Next {day}, {name}:": "La prossima volta ({day}), {name}:",
+  "Easy: one step more than planned. Right: as planned. Hard: the same next time; after two «Hard» in a row, one step back.":
+    "Facile: un passo in più del previsto. Giusto: come previsto. Duro: la prossima volta uguale; dopo due «Duro» di fila, un passo indietro.",
+  "{run} of the plan: how did it go?": "{run} della scheda: com'è andata?",
+  "↑ one step more · = the same · ↓ one step back":
+    "↑ un passo in più · = uguale · ↓ un passo indietro",
+  "Adapts to how it went": "Si adatta a com'è andata",
+  "Off: no question at the end, the weeks grow as planned.":
+    "Spenta: a fine allenamento nessuna domanda, le settimane crescono come previsto.",
+  "Next week is the lighter one, to recover.":
+    "La prossima è la settimana più leggera, per recuperare.",
+  "How did the plan feel?": "Come ti è sembrata la scheda?",
+  // src/air/ (TASK-479 part E1: the pilot's airspace file; notices 3 and 4 approved by the user on 2026-11-21, the other texts on 2026-11-23)
+  "No airspace loaded. MuW does not include airspace data.":
+    "Nessuno spazio aereo caricato. MuW non include dati di spazi aerei.",
+  "Data loaded by you: check the AIP and NOTAMs before you fly. · {file} · loaded {date}":
+    "Dati caricati da te: verifica AIP e NOTAM prima di volare. · {file} · caricato il {date}",
+  Airspace: "Spazi aerei",
+  "Airspaces: {count}": "Spazi aerei: {count}",
+  "Lines not read: {n}": "Righe non lette: {n}",
+  "This file has no airspace MuW can read.":
+    "In questo file non ci sono spazi aerei che MuW sa leggere.",
 };

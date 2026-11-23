@@ -411,3 +411,15 @@ simulatore: tre linee (gialla, azzurra, rosa) con i nomi. **Restano**: la
 frase della privacy (testi approvati il 2026-11-08, scelta 5), in un PR a
 parte quando tocca a lei, dopo 312 C2; l'OTA e uno sguardo sul
 telefono; poi E.
+
+**La frase della privacy in `main`** con la #1430 (`177214fa`, 2026-11-23),
+col «Sì, unisci» dell'utente: in «Your runs and their GPS tracks» la
+promessa «senza orari, pause né il percorso pianificato» prende «tranne in
+un video «Insieme» (sotto)», e un paragrafo nuovo dice chi può mettere la
+tua traccia in un video «Together», cosa mostra (passo vero e pause, mai
+ora né data) e che «Only me» lo ferma. Testo della scelta 5, con due
+aggiustamenti detti all'utente: i nomi «Together» e «Only me» come li
+mostra l'app in ogni lingua (Insieme, Solo io…), e l'eccezione tradotta
+dall'agente (nel task c'era solo l'inglese). Data della privacy 23 novembre
+2026. **Restano**: la copia sul sito (Coordinatore, col sì dell'utente),
+l'OTA e uno sguardo sul telefono; poi E.

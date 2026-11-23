@@ -30,6 +30,8 @@ li tiene il Coordinatore (`AGENTI.md`, «L'albero»), col sì dell'utente.
 per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 **TASK-480**: «Explore» senza mappe sotto i disegni, corretto in `main`
 (#1363); esce con l'OTA 20, col sì dell'utente al Coordinatore.
+**TASK-312 E**: quando MuW ha l'azienda, leggere gli accordi di Garmin,
+Suunto, Coros e Komoot e fare domanda, ognuno col sì dell'utente.
 
 ## In lavorazione
 
@@ -46,15 +48,16 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   «Apply»; solo con account, omino di TASK-490 B; testi approvati. A in
   `main` (#1427); B dopo TASK-490 B (#1433), C dopo #1420.
   File: — · `tasks/TASK-491.md`
-- **TASK-490 — La modalità Allenamento** · parte 0 chiusa il 2026-11-23
-  (ADR-0398): scelta «Gym», la barra è Today · Workouts · Food · Feed ·
-  Profile come per lo sci; il Cibo è la pagina di TASK-489. Prossima la A.
+- **TASK-490 — La modalità Allenamento** · A (#1424) e B (#1433, l'omino
+  della settimana su «Today») in `main` il 2026-11-23, schermate e testi
+  approvati dall'utente; escono col prossimo OTA. Restano C (riga del
+  Coach, con TASK-491) e D (tab «Food», con `NUTRITION_ON` di TASK-489).
   File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
-  parte 0 chiusa il 2026-11-22 (otto scelte dell'utente, ADR-0397): cibi da
-  USDA più i propri, piano a settimana, solo sul telefono, tabella solo per
-  il proprietario; spenta (`NUTRITION_ON`) fino alla build nativa che legge
-  da Salute. Poi A1 (i conti). File: — · `tasks/TASK-489.md`
+  parte 0 chiusa (scelte dell'utente del 22 e 23 novembre, ADR-0397); A1
+  (i conti, file nuovi) in `main` il 2026-11-23 (#1437), spenta dietro
+  `NUTRITION_ON` fino alla build nativa che legge da Salute. Poi A2 (la
+  tabella USDA). File: — · `tasks/TASK-489.md`
 - **TASK-487 — Il Feed senza attività finte** · 2026-11-22: niente
   esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
   dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.
@@ -179,6 +182,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   col passo 15; poi D2 (l'app, privacy dall'utente) ed E.
   **2026-11-22**: D2a (#1357) e D2b (#1375) in `main`; restano la frase della
   privacy (dopo 312 C2), l'OTA ed E.
+  **2026-11-23**: frase della privacy «Together» in `main` (#1430); restano
+  la copia sul sito, l'OTA ed E.
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
   0, A, B in produzione; C1 (#1096, OTA 5), C2 (#1098), C2b (#1110) e C3
   (#1123, calorie in rosso) in `main`. Restano: il server di C2b (passo 7)
@@ -260,6 +265,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   nelle liste si chiama «Paragliding» e ha la velocità, col prossimo OTA.
   **2026-11-23**: R6e in main (#1411 server col passo 19, #1412 app con
   l'OTA 23): il post di una gara dal Feed a due colori.
+  **2026-11-23, R6e chiusa**: passo 19 fatto e OTA 23 uscita; l'utente ha
+  visto il post di una gara sul telefono («funziona tutto»). Resta: un volo
+  vero; R4 in bozza (#1218).
 - **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
   scelta dell'utente del 2026-11-21, senza accordi con terzi: schermata di
   widget, vario sonoro, mappa 3D, spazi aerei dal file del pilota, gare,
@@ -335,7 +343,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   più tardi con l'OTA 17; A4b e A4c card (#1333, #1344) con l'OTA 20; A5
   cerchi dell'header e A5b header che scorre con l'OTA 21; A5c (Profilo,
   sci, #1391) e A6 gruppi di Impostazioni (#1403) con l'OTA 22; A6b account
-  in bozza (#1407). Poi A5c-2 Feed, A7; B dopo la 1.1.0. File: — ·
+  (#1407) con l'OTA 23. Poi A5c-2 Feed, A7; B dopo la 1.1.0. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
@@ -350,16 +358,16 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
   **Chiuso il 2026-11-21**: B2b/C2 (#1294), D1 (#1341, `climb_m` nell'elenco) e B2c (#1338, «mancano» mentre si registra) in `main`; restano il passo sul server di D1 e l'OTA di B2c, col sì dell'utente; vedi `archive/COMPLETATI.md`.
 
-- **TASK-481 — Il «+» del Feed: tutte le voci** · parte 0 (documenti) fatta
-  il 2026-11-21 con le scelte dell'utente (sei voci, ADR-0390); A (la lista e
-  «Record now») dopo il merge di TASK-312 C2, lista dei file al Coordinatore.
-  File: — · `tasks/TASK-481.md`
+- **TASK-481 — Il «+» del Feed: tutte le voci** (ADR-0390) · A (la lista:
+  «Record now», «Photos only», «From a file») in `main` il 2026-11-23 (#1421),
+  esce col prossimo OTA; restano la privacy e le righe di 467 E2, 484 B, 485 B,
+  al via del Coordinatore. File: — · `tasks/TASK-481.md`
 
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 (la barra
   «Apri» di Safari) e A (l'app apre il post del link) in produzione (OTA 21),
-  provate dall'utente sull'iPhone il 2026-11-22; C: il file per l'iPhone è
-  online (#1392). Restano il file Android e la parte D (link verificati), con
-  la prossima build nativa. File: — · `tasks/TASK-482.md`
+  provate dall'utente sull'iPhone il 2026-11-22; C: i due file `.well-known`
+  (iPhone #1392, Android #1436) online. Resta la parte D (link verificati in
+  `app.json`), con la prossima build nativa. File: — · `tasks/TASK-482.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

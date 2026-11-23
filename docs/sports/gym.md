@@ -254,6 +254,20 @@ salvate delle ultime 4 settimane dicono un ritmo più veloce, «Your runs say
 5:20/km over 10 km: update the paces?» li cambia solo col sì.
 `runPace.ts`, `RunnerStep.tsx`.
 
+**La scheda si adatta** (TASK-488, ADR-0396): a fine allenamento di un giorno
+della scheda «How did it go?» con «Easy», «Right», «Hard», una volta per
+tutto il giorno; anche a fine corsa in un giorno di corsa della scheda. Facile
+è un passo in più del modo (es. +5 kg invece di +2,5, una ripetizione in più
+senza kg), Giusto come previsto, Duro la volta dopo uguale, due «Duro» di fila
+un passo indietro. Sotto le tre risposte ciò che cambia la volta dopo
+(«62,5 kg → 67,5 kg») con «Change» fino a «Save»; senza risposta niente
+cambia. I passi stanno in `program.adapt` per giorno della settimana e il
+telefono li somma a ogni settimana di quel giorno; i giorni verso una meta e
+le uscite seguono la loro scala. In «My plans» ↑ = ↓ sotto i giorni e
+l'interruttore «Adapts to how it went» (acceso per ogni scheda; spento, le
+risposte restano). La risposta parte verso l'API con la sincronizzazione
+seguente delle schede. `adapt.ts`, `AdaptQuestion.tsx`.
+
 **Il pianificatore completo** (TASK-461, ADR-0371): un piano nuovo mescola
 sempre almeno due sport (scelta dell'utente del 2026-11-11, «Almeno due,
 sempre»): palestra, corpo libero, corsa, camminata e hike, bici, nuoto e

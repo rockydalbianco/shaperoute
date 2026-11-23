@@ -40,3 +40,8 @@ test("the tab icons are bolder on the tab on screen", async () => {
   expect(screen.getByTestId("training-tab-today-on")).toBeOnTheScreen();
   expect(screen.getByTestId("training-tab-workouts-off")).toBeOnTheScreen();
 });
+
+test("without an account, no body of the week over the gym", async () => {
+  await render(<TrainingTodayPage onStart={jest.fn()} guide={<Text>Push</Text>} />);
+  expect(screen.queryByTestId("week-body")).toBeNull();
+});

@@ -1,6 +1,6 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta) · **B3 in `main`** (#1292, `b6e36fcb`: app, la scheda «Sleep» del profilo, spenta) · **C avviata** (bozza #1334, da non unire: il lettore vero e il sonno acceso; build di prova per il solo iPhone dell'utente dal 2026-11-21) · **E1 in `main`** (#1373, `f38b1980`: il post del sonno da solo, server e contratto, migrazione `0082`; sul server col passo 17, col sì dell'utente) · **E2 in `main`** (app, spenta: #1419, `d0b89470`: il post del sonno nel Feed, nella sua pagina e nella griglia di un profilo; #1441, `57e4d4b4`: la voce «Sleep» del «+»), poi una build di prova nuova, privacy, App Privacy e la build nativa, D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta) · **B3 in `main`** (#1292, `b6e36fcb`: app, la scheda «Sleep» del profilo, spenta) · **C avviata** (bozza #1334, da non unire: il lettore vero e il sonno acceso; build di prova per il solo iPhone dell'utente dal 2026-11-21) · **E1 in `main`** (#1373, `f38b1980`: il post del sonno da solo, server e contratto, migrazione `0082`; sul server col passo 17, col sì dell'utente) · **E2 in `main`** (app, spenta: #1419, `d0b89470`: il post del sonno nel Feed, nella sua pagina e nella griglia di un profilo; #1441, `57e4d4b4`: la voce «Sleep» del «+») · **C0** (il sonno acceso solo sul canale di prova `preview`, con `isPreview()`; spento negli store), poi privacy, App Privacy e la build nativa (C), D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
 `feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1),
 `feat/TASK-467-b1b-sleep-in-feed` (B1b), `feat/TASK-467-b2-sleep-post` (B2),
@@ -1175,3 +1175,28 @@ di TASK-481 A e portato su un ramo da `main` quando quella è entrata:
   e i tre test qui sopra. La build di prova `233f0c6a` ha runtime
   `exposdk:57.0.0` sul canale `preview-sleep`, lo stesso di `app.json`:
   un `eas update` su quel canale la raggiunge senza una build nuova.
+
+- **2026-11-23, parte C0 — il sonno acceso solo sulla build di prova.**
+  Scelta del Coordinatore, al posto dell'aggiornamento sulla build
+  `233f0c6a`: la build di prova nuova da `main` la sostituisce sul
+  telefono, quindi il sonno deve arrivare da `main`. `sleepPostsOn()` è
+  `SLEEP_POSTS_ON || isPreview()` (`src/updates/channel.ts`, il canale
+  `preview` di EAS Update, come per TASK-351): sugli store il canale è
+  `production` e la costante resta falsa, quindi lì niente si vede, il
+  lettore è `null` e la libreria di Salute non viene nemmeno cercata;
+  in Expo Go il canale è `null`. Sul canale `preview` il lettore è quello
+  vero di Apple Salute (`health/appleSleep.ts`, dalla bozza #1334) e l'app
+  dice `sleep` in `X-MuW-Reads`. Non con `APP_VARIANT`: non arriva al
+  codice dell'app, e passarlo da `app.config.ts` sposterebbe l'impronta
+  della build degli store. Niente di nativo cambia (`app.json`,
+  `locales/`, `eas.json`, `app.config.ts` intatti). Deciso dall'agente su
+  delega dell'utente, con l'ok del Coordinatore all'elenco.
+  **Cosa manca alla build di prova rispetto alla C**: il foglio di Apple
+  Salute, quando chiede il sonno, mostra la frase di oggi che parla solo
+  del battito (la frase nuova è nativa: parte C); la riga di privacy sul
+  sonno, nell'app e sul sito, non c'è ancora. La build interna ce l'ha
+  solo l'utente; le due cose gliele dice il Coordinatore prima della
+  prova. Restano alla parte C, sulla bozza #1334: la frase del permesso
+  (quella unica di TASK-312 D, scritta dalla PR di build nativa che
+  indica il Coordinatore), la privacy, l'App Privacy, le note di
+  revisione, `this_app` di `fixtures/reads.json` e la costante a `true`.

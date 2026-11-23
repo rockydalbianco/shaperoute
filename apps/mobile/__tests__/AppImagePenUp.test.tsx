@@ -98,7 +98,8 @@ async function pictureAtTrento() {
 }
 
 async function draw() {
-  await fireEvent.press(screen.getByText("Draw route"));
+  // The button says what it draws (TASK-361): «Draw the picture, 6 km».
+  await fireEvent.press(screen.getByText(/^Draw the picture, /));
   // The first poll comes after 500 ms.
   await act(() => jest.advanceTimersByTimeAsync(500));
 }

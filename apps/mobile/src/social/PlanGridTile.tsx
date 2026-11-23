@@ -37,7 +37,9 @@ export function PlanGridTile({ plan, size }: Props) {
       importantForAccessibility="no-hide-descendants"
       testID={PLAN_GRID_TILE_TEST_ID}
     >
-      <Text style={styles.kind} numberOfLines={1}>
+      {/* Long in some languages («Piano di allenamento»): on two lines,
+          not cut; the name then keeps one. */}
+      <Text style={styles.kind} numberOfLines={2}>
         {t("Workout plan")}
       </Text>
       <Text style={styles.name} numberOfLines={2}>

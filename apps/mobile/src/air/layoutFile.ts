@@ -12,7 +12,9 @@ import { isProfile, type Profile } from "./flightLayout";
  */
 
 export const LAYOUT_KIND = "muw-flight-layout";
-export const LAYOUT_VERSION = 1;
+/** 2 since part A1: a file with the map or the height above the ground is
+ * refused by an app of B2 as «from a newer MuW», not misread. */
+export const LAYOUT_VERSION = 2;
 export const LAYOUT_EXTENSION = ".muwlayout";
 
 export type LayoutFile = {

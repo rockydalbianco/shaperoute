@@ -1,6 +1,14 @@
 import type { GymPlan, GymProgram } from "@shaperoute/shared-types";
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
 import {
   initialWindowMetrics,
   SafeAreaProvider,
@@ -20,6 +28,7 @@ import {
 import { WEEK_DAYS } from "./planLimits";
 import { GymPlanWizard, type WizardStep } from "./GymPlanWizard";
 import { gymStyles } from "./gymStyles";
+import { adapts, markOf, withAdapt } from "./adapt";
 import { isoDay, useGymPlans } from "./plans";
 import { cycleWeekOf, sessionsOfWeek } from "./program";
 import { gymIndex, isRunDay, sessionLetter } from "./proposal";
@@ -151,6 +160,14 @@ function PlansPage({
               program={plan.program}
               today={today}
               onEdit={(at) => setEditing({ key: plan.key, at })}
+              onAdapt={(on) =>
+                keep(plan.key, {
+                  name: plan.name,
+                  days: plan.days,
+                  items: plan.items,
+                  program: withAdapt(plan.program!, on),
+                })
+              }
             />
           ) : (
             <Pressable
@@ -198,16 +215,21 @@ function ProgramCard({
   program,
   today,
   onEdit,
+  onAdapt,
 }: {
   plan: GymPlan;
   program: GymProgram;
   today: Date;
   onEdit: (at: WizardStep) => void;
+  /** «Adapts to how it went» turned on or off (TASK-488). */
+  onAdapt: (on: boolean) => void;
 }) {
   const where = cycleWeekOf(program, today);
   const week = where?.week ?? 1;
   const sessions = sessionsOfWeek(program, week, where?.cycle ?? 0);
   const todayDay = isoDay(today);
+  // ↑ = ↓ under the days the answers moved (TASK-488, the mockup H3).
+  const marked = sessions.some((one) => markOf(program, one.day) !== null);
   // A, B, C… for the gym's days, «RUN» for a run day (TASK-433 C).
   const letters = new Map(
     program.sessions.map((session) => [
@@ -289,9 +311,38 @@ function ProgramCard({
               ) : (
                 <View style={styles.dayEmpty} />
               )}
+              {marked && (
+                <Text
+                  style={styles.dayMark}
+                  testID={`gym-plan-mark-${number}`}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                >
+                  {session === undefined ? " " : (markOf(program, number) ?? " ")}
+                </Text>
+              )}
             </View>
           );
         })}
+      </View>
+      {marked && (
+        <Text style={gymStyles.muted}>
+          {t("↑ one step more · = the same · ↓ one step back")}
+        </Text>
+      )}
+      <View style={styles.adapt}>
+        <View style={styles.planText}>
+          <Text style={styles.adaptTitle}>{t("Adapts to how it went")}</Text>
+          <Text style={gymStyles.muted}>
+            {t("Off: no question at the end, the weeks grow as planned.")}
+          </Text>
+        </View>
+        <Switch
+          value={adapts(program)}
+          onValueChange={onAdapt}
+          accessibilityLabel={t("Adapts to how it went")}
+          testID="gym-plan-adapt"
+        />
       </View>
       <View style={gymStyles.row}>
         <Pressable
@@ -467,6 +518,21 @@ const styles = StyleSheet.create({
   },
   dayLetterPast: {
     color: color.onAccent,
+  },
+  dayMark: {
+    color: color.text,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.bold,
+  },
+  adapt: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+  },
+  adaptTitle: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
   },
   ghost: {
     flex: 1,

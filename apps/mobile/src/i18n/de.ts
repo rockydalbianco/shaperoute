@@ -3199,6 +3199,39 @@ export const DE: Table = {
   Sleep: "Schlaf",
   "Already in the Feed": "Schon im Feed",
   "Remove post": "Beitrag entfernen",
+  "Last night's sleep score, from Apple Health":
+    "Dein Schlafwert der letzten Nacht, aus Apple Health",
   "Your score, hours slept and sleep stages go in the Feed.":
     "Dein Wert, die geschlafenen Stunden und die Schlafphasen kommen in den Feed.",
+  // src/air/ (TASK-479 part A1: the flight map and the height above the ground; texts approved by the user on 2026-11-22)
+  "Height above ground": "Höhe über Grund",
+  "Heading up": "Kurs oben",
+  "North up": "Norden oben",
+  // The plan that adapts (TASK-488): gym/AdaptQuestion.tsx, gym/GymPlans.tsx.
+  "Easy@@feel": "Leicht",
+  "Right@@feel": "Passend",
+  "Hard@@feel": "Hart",
+  "could do more": "hätte mehr gekonnt",
+  "as planned": "wie geplant",
+  "at my limit": "am Limit",
+  "Next time the plan adjusts to your answer.":
+    "Beim nächsten Mal passt sich der Plan deiner Antwort an.",
+  "No answer? It goes on as planned.": "Keine Antwort? Es geht wie geplant weiter.",
+  "Easy: up we go": "Leicht: eine Stufe mehr",
+  "Right: as planned": "Passend: wie geplant",
+  "Hard: the same next time": "Hart: nächstes Mal gleich",
+  "Hard again: one step back": "Wieder hart: eine Stufe zurück",
+  "Change@@answer": "Ändern",
+  "Next {day}, {name}:": "Nächstes Mal ({day}), {name}:",
+  "Easy: one step more than planned. Right: as planned. Hard: the same next time; after two «Hard» in a row, one step back.":
+    "Leicht: eine Stufe mehr als geplant. Passend: wie geplant. Hart: nächstes Mal gleich; nach zweimal „Hart“ hintereinander eine Stufe zurück.",
+  "{run} of the plan: how did it go?": "{run} des Plans: Wie war's?",
+  "↑ one step more · = the same · ↓ one step back":
+    "↑ eine Stufe mehr · = gleich · ↓ eine Stufe zurück",
+  "Adapts to how it went": "Passt sich an, wie es lief",
+  "Off: no question at the end, the weeks grow as planned.":
+    "Aus: am Ende keine Frage, die Wochen steigen wie geplant.",
+  "Next week is the lighter one, to recover.":
+    "Nächste Woche ist die leichtere, zum Erholen.",
+  "How did the plan feel?": "Wie fühlte sich der Plan an?",
 };

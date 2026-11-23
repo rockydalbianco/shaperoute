@@ -1,8 +1,10 @@
 import {
+  GYM_PLAN_FEELS,
   GYM_PLAN_MODES,
   GYM_RUN_KINDS,
   GYM_SET_KINDS,
   type GymPlan,
+  type GymPlanAdapt,
   type GymPlanItem,
   type GymPlanRequest,
   type GymPlanRun,
@@ -109,15 +111,37 @@ export function isGymPlanRunner(body: unknown): body is GymPlanRunner {
   );
 }
 
+/** How a plan adapted to its owner's answers (TASK-488, ADR-0396). */
+export function isGymPlanAdapt(body: unknown): body is GymPlanAdapt {
+  if (typeof body !== "object" || body === null) {
+    return false;
+  }
+  const { off, days } = body as Record<string, unknown>;
+  return (
+    typeof off === "boolean" &&
+    Array.isArray(days) &&
+    days.every((one) => {
+      if (typeof one !== "object" || one === null) {
+        return false;
+      }
+      const { day, steps, hard, last } = one as Record<string, unknown>;
+      return (
+        Number.isInteger(day) &&
+        Number.isInteger(steps) &&
+        Number.isInteger(hard) &&
+        (GYM_PLAN_FEELS as readonly unknown[]).includes(last)
+      );
+    })
+  );
+}
+
 /** The weeks of a plan made with the guide (migration 0066). */
 export function isGymProgram(body: unknown): body is GymProgram {
   if (typeof body !== "object" || body === null) {
     return false;
   }
-  const { starts_on, weeks, mode, step_kg, sessions, custom, runner } = body as Record<
-    string,
-    unknown
-  >;
+  const { starts_on, weeks, mode, step_kg, sessions, custom, runner, adapt } =
+    body as Record<string, unknown>;
   return (
     typeof starts_on === "string" &&
     /^\d{4}-\d{2}-\d{2}$/.test(starts_on) &&
@@ -128,6 +152,7 @@ export function isGymProgram(body: unknown): body is GymProgram {
     Number.isFinite(step_kg) &&
     isSessions(sessions) &&
     (runner === undefined || isGymPlanRunner(runner)) &&
+    (adapt === undefined || isGymPlanAdapt(adapt)) &&
     Array.isArray(custom) &&
     custom.every(
       (week) =>

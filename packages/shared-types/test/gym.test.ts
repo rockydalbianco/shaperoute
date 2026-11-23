@@ -9,6 +9,7 @@ import gymPlans from "../fixtures/gym-plans.json" with { type: "json" };
 import runActivities from "../fixtures/run-activities.json" with { type: "json" };
 import session from "../fixtures/gym-session.json" with { type: "json" };
 import byHand from "../fixtures/gym-session-manual.json" with { type: "json" };
+import withHeart from "../fixtures/gym-session-heart.json" with { type: "json" };
 import {
   GYM_LEVEL_MEASURES,
   GYM_SOURCES,
@@ -18,6 +19,8 @@ import {
   GYM_PLAN_MODES,
   GYM_RUN_KINDS,
   GYM_SET_KINDS,
+  HEART_BPM_MAX,
+  HEART_BPM_MIN,
   MAX_GYM_ADAPT_STEPS,
   MAX_GYM_PLAN_ITEMS,
   MAX_GYM_PLAN_WEEKS,
@@ -65,6 +68,23 @@ test("the example workout is a request of the contract", () => {
     assert.ok(GYM_SET_KINDS.includes(item.kind));
     assert.ok((item.exercise === undefined) !== (item.name === undefined));
   }
+});
+
+test("a workout with its heart rate: both, in range, the average not above (part G)", () => {
+  const request: GymSessionRequest = {
+    ...withHeart,
+    sets: withHeart.sets.map((item) => ({ ...item, kind: item.kind as GymSetKind })),
+  };
+  const { heart_avg_bpm, heart_max_bpm } = request;
+  assert.ok(heart_avg_bpm !== undefined && heart_max_bpm !== undefined);
+  assert.ok(HEART_BPM_MIN <= heart_avg_bpm && heart_avg_bpm <= heart_max_bpm);
+  assert.ok(heart_max_bpm <= HEART_BPM_MAX);
+  assert.equal(request.heart_shown, true);
+  // The same workout as the example, with its heart rate added.
+  const { heart_avg_bpm: _a, heart_max_bpm: _m, heart_shown: _s, ...rest } = withHeart;
+  assert.deepEqual(rest, session);
+  // The other examples say nothing of it, as an app before part G.
+  assert.ok(!("heart_avg_bpm" in session) && !("heart_avg_bpm" in byHand));
 });
 
 test("a workout written by hand has sets none of them live, and no timer", () => {

@@ -1,4 +1,4 @@
-import { SLEEP_SHOWN_DEFAULT } from "@shaperoute/shared-types";
+import { type GymPlanFeel, SLEEP_SHOWN_DEFAULT } from "@shaperoute/shared-types";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -20,6 +20,8 @@ import { appLanguage } from "../i18n/language";
 import { clockLabel } from "../navigation/freeRun";
 import { color, fontSize, fontWeight, space } from "../theme/tokens";
 import { useUnits } from "../units/useUnits";
+import { adaptDayOf, answered } from "./adapt";
+import { AdaptQuestion } from "./AdaptQuestion";
 import { countsLabel, restsLabel, rowsOf, setLabel } from "./ExerciseList";
 import { ExercisePicker } from "./ExercisePicker";
 import { type GymPost, GymPostForm, newGymPost } from "./GymPostForm";
@@ -29,6 +31,7 @@ import { gymStyles } from "./gymStyles";
 import { SetFields, type SetTexts, textsOf, valuesOfTexts } from "./SetFields";
 import type { PickPhoto } from "../social/PublicParts";
 import { entryOf, type Entry, setOf, valuesOf } from "./setKinds";
+import { keepPlan, useKeptPlans } from "./plans";
 import type { GymSaved } from "./useGymOutbox";
 import { changeWorkout, endGymWorkout } from "./useWorkout";
 import {
@@ -99,6 +102,15 @@ export function GymEnd({
   const lastNight = useLastNight(sleepPhone, workout.startedMs);
   const [sleepShown, setSleepShown] = useState(SLEEP_SHOWN_DEFAULT);
   const night = signedIn && isSeen(post.choice.visibility) ? lastNight : null;
+  // «How did it go?» for the day of the plan it followed (TASK-488), kept
+  // with «Save».
+  const plans = useKeptPlans();
+  const [adaptDay] = useState(() =>
+    workout.plan == null
+      ? null
+      : adaptDayOf(plans, new Date(workout.startedMs), "gym", workout.plan.key),
+  );
+  const [feel, setFeel] = useState<GymPlanFeel | null>(null);
 
   function edit(set: LoggedSet) {
     const entry = entryOf(set);
@@ -129,6 +141,16 @@ export function GymEnd({
       // it leaves the phone.
       if (owner !== null && night !== null && sleepShown) {
         keepSleepFor(owner, workout.key, { ...night, shown: true });
+      }
+      if (owner !== null && adaptDay !== null && feel !== null) {
+        // Sent with the plans' next sync (the gym's page, «My plans»).
+        const { plan, program, session } = adaptDay;
+        keepPlan(owner, plan.key, {
+          name: plan.name,
+          days: plan.days,
+          items: plan.items,
+          program: answered(program, session, feel),
+        });
       }
       // Written there, on the phone, with no network; never fails «Save».
       void saveGymToHealth(phone, workout);
@@ -269,6 +291,15 @@ export function GymEnd({
             >
               <Text style={gymStyles.buttonText}>{t("+ Exercise")}</Text>
             </Pressable>
+            {signedIn && adaptDay !== null && (
+              <AdaptQuestion
+                program={adaptDay.program}
+                session={adaptDay.session}
+                date={new Date(workout.startedMs)}
+                feel={feel}
+                onFeel={setFeel}
+              />
+            )}
             {signedIn && (
               <GymPostForm
                 post={post}

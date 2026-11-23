@@ -1,6 +1,6 @@
 # TASK-491 — Il Coach MuW: consigli dagli allenamenti fatti e la scheda che cambia con «Apply»
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-23: scelte e testi approvati; A nella #1427, poi B e C)
+**Stato**: In corso (parte 0 e A in `main` il 2026-11-23; poi B dopo TASK-490 B, poi C dopo #1420)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-491-coach`
 **Dipende da**: TASK-488 (la scheda si adatta, ADR-0396: i passi `adapt`
@@ -119,6 +119,24 @@ professional.», in GymEnd «Next time: {exercise} {kg} kg».
 | C | Gli ingressi: la voce in «My plans» e la riga «Next time» in GymEnd | app, dopo TASK-488 B (#1420) |
 
 L'elenco dei file di ogni parte va al Coordinatore prima del codice.
+
+## Dove siamo
+
+- **Parte 0** in `main` (#1426, 2026-11-23): scelte, ADR-0399, testi
+  approvati dall'utente («Approvo»).
+- **Parte A** in `main` (#1427, `66c9a2d1`, 2026-11-23):
+  `coach/rules.ts` (13 regole, `coachTips`), `coach/coachData.ts` (letture
+  con gli indirizzi che ci sono: mesi del calendario, al massimo 20
+  sessioni intere, schede, attività) e `coach/applyTip.ts` («Apply» su
+  P1, P1bw, P2, P3, P4; le altre «OK»), 53 test. Non la usa ancora niente.
+- **Parte B**: parte quando TASK-490 B (#1433, l'omino) è in `main`.
+  Accordi con TASK-490: `rules.ts` smette di contare le serie da sé e usa
+  `setsByMuscle` di `trainingmode/weekBody.ts` sugli ultimi 7 giorni
+  (P4, P4hi, P5); la pagina monta `WeekBodyCard` com'è, nel rosa dei
+  muscoli scelto dall'utente. I testi tradotti sono pronti in
+  `out/coach/testi-tradotti.md` nel checkout principale («Not now» c'è
+  già in `it.ts`).
+- **Parte C**: dopo TASK-488 B (#1420).
 
 ## Criteri di accettazione
 

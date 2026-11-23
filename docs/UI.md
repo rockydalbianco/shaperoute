@@ -690,7 +690,9 @@ sul contenuto, in 200 ms (subito con «Riduci movimento»), e la lascia
 quando la pagina torna in cima. Conta la pagina sullo schermo: cambiando
 scheda l'header segue quella nuova. Ogni pagina lo dice con
 `useHeaderScroll()` sul suo scroller principale (Disegna, Explore,
-Explore sull'acqua, Messaggi, Profilo, «Today» e «Days» dello sci, A5c);
+Explore sull'acqua, Messaggi, Profilo, «Today» e «Days» dello sci, A5c;
+«All» e «Following» del Feed, A5c-2, dove parla solo la scheda sullo
+schermo e una scheda nascosta rimette l'header a riposo);
 una pagina che non lo dice tiene l'header a riposo, e una che se ne va
 lontana dalla cima lo rimette a riposo. Con «Riduci trasparenza» la fascia è opaca
 con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
@@ -714,6 +716,16 @@ restano un attimo, poi va via nello stesso modo. Non prende i tocchi. Con
 to {name}.» di «Send to a friend» e «Thanks for telling us. We will look at
 it.» dopo ogni segnalazione (post, profilo, messaggio, commento): il foglio
 si chiude e il grazie arriva nell'isola. Altri punti li decide l'utente.
+Sul vetro (TASK-469 A7b) l'isola ha il filo di luce del vetro scuro in
+ogni tono e un'ombra corta; con «Riduci trasparenza» e «Aumenta
+contrasto» resta come prima.
+
+**I fogli di vetro** (TASK-469 A7a, `src/ui/sheetFace.ts`): ogni foglio
+dal basso prende `useSheetFace()` dopo il suo stile: angoli in alto a 28,
+il filo di luce del vetro al posto della linea in cima e un'ombra
+morbida verso l'alto; la faccia resta `surface`. Con «Riduci
+trasparenza» la linea sottile di prima, con «Aumenta contrasto» il
+bordo forte.
 
 **Fogli e liste** (TASK-388 C): i fogli dal basso (il «+» dei messaggi, il
 foglio di un messaggio, i filtri della ricerca, il super like, «Tag

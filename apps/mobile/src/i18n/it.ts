@@ -3275,8 +3275,6 @@ export const IT: Table = {
     "A riposo: l'equazione di Mifflin-St Jeor, dai dati del corpo nel tuo profilo. Attività: equazioni ACSM e il Compendium of Physical Activities 2024. Nei giorni in cui Salute di Apple ha la tua energia attiva, si usa quel numero.",
   "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
     "I valori reali cambiano con il prodotto, la ricetta e la persona. MuW non fornisce diete né consigli medici.",
-  "Only you see this page. Nothing here leaves your phone.":
-    "Questa pagina la vedi solo tu. Niente di quello che c'è qui esce dal tuo telefono.",
   // src/nutrition (TASK-489 part C1)
   "Today the energy at rest is counted up to now.":
     "Oggi l'energia a riposo è contata fino a adesso.",
@@ -3325,4 +3323,6 @@ export const IT: Table = {
     "Non è stato possibile cercare il prodotto. Controlla la connessione e riprova.",
   "Products found by barcode contain data from Open Food Facts, available under the Open Database License. They are kept apart from the USDA list.":
     "I prodotti trovati col codice a barre contengono dati di Open Food Facts, disponibili con la Open Database License. Restano separati dall'elenco USDA.",
+  "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
+    "Questa pagina la vedi solo tu. Quello che scrivi qui resta sul tuo telefono; un codice a barre che cerchi va a Open Food Facts.",
 };

@@ -17,7 +17,9 @@ type Props = {
  * foods' numbers are USDA's (FoodData Central, SR Legacy, April 2018: the
  * table of foodTable.ts) or the user's own; the energy used is an estimate
  * from published equations, or Apple Health's when it has the day. It says
- * again that MuW gives no diets, and that the page never leaves the phone.
+ * again that MuW gives no diets, and that what is written here stays on the
+ * phone: only a barcode the user looks up goes out, to Open Food Facts
+ * (part G; the sentence changed with the user's yes on 2026-11-23).
  */
 export function HowWeCalculate({ visible, onClose }: Props) {
   return (
@@ -76,7 +78,9 @@ export function HowWeCalculate({ visible, onClose }: Props) {
           )}
         </Text>
         <Text style={styles.small}>
-          {t("Only you see this page. Nothing here leaves your phone.")}
+          {t(
+            "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.",
+          )}
         </Text>
       </ScrollView>
     </NutritionSheet>

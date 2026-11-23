@@ -24,8 +24,14 @@ from route_engine.anchored import AnchoredPlan, check_placement, placed_lines
 from route_engine.anchored import plan_anchored as trace_anchored
 from route_engine.drawn_water import plan_drawn_water
 from route_engine.geo import LatLon
-from route_engine.image_outline import ANALYSIS_SIDE, MAX_POINTS, outline_data
+from route_engine.image_outline import (
+    ANALYSIS_SIDE,
+    MAX_POINTS,
+    MAX_SUBJECT_POINTS,
+    outline_data,
+)
 from route_engine.models import (
+    PEN_UP_WITHOUT_WORD,
     SNOW_ACTIVITIES,
     WATER_ACTIVITIES,
     InvalidRequestError,
@@ -65,6 +71,12 @@ log = logging.getLogger(__name__)
 
 # What an image route is called in names and messages, like "heart".
 IMAGE_NAME = "image"
+# An image is drawn with the pen up only with its pieces apart (TASK-297,
+# ADR-0258): those POST /image-outlines answers when asked with pen_up.
+PEN_UP_WITHOUT_IMAGE_PIECES = (
+    f"{PEN_UP_WITHOUT_WORD}, or the pieces of an image outline "
+    f"(POST /image-outlines with pen_up)"
+)
 # The canoe, which paddles a drawing too (TASK-369).
 PADDLING = "paddling"
 # Normalized points may overshoot [-1, 1] by rounding, no more.
@@ -186,15 +198,20 @@ def decode_image(text: str) -> bytes:
     return data
 
 
-def trace(image: bytes) -> ImageOutlineBody:
+def trace(image: bytes, pen_up: bool = False) -> ImageOutlineBody:
     """The outline of the image's subject, both for the route and for the
     picture, with its other subjects as strokes (TASK-084);
-    InvalidImageError, with its reason, when there is none."""
-    data = outline_data(image, name=IMAGE_NAME, source="an image from the app")
+    InvalidImageError, with its reason, when there is none. With `pen_up`
+    the other subjects and the holes are pieces instead, drawn one at a
+    time (TASK-297, ADR-0258); without, the answer is as before."""
+    data = outline_data(
+        image, name=IMAGE_NAME, source="an image from the app", pen_up=pen_up
+    )
     outline = parse_outline(data)
     width, height = _analysed_size(image)
     pixels: list[list[float]] = data["points"]  # type: ignore[assignment]
     stroke_pixels: list[list[list[float]]] = data.get("strokes", [])  # type: ignore[assignment]
+    piece_pixels: list[list[list[float]]] = data.get("pieces", [])  # type: ignore[assignment]
 
     def shares(line: list[list[float]]) -> list[tuple[float, float]]:
         # The engine's y is upwards: the row of a pixel is -y.
@@ -209,6 +226,8 @@ def trace(image: bytes) -> ImageOutlineBody:
         aspect=round(width / height, DIGITS),
         strokes=[rounded(stroke) for stroke in outline.strokes],
         image_strokes=[shares(stroke) for stroke in stroke_pixels],
+        pieces=[rounded(piece) for piece in outline.pieces],
+        image_pieces=[shares(piece) for piece in piece_pixels],
     )
 
 
@@ -227,12 +246,14 @@ def _analysed_size(image: bytes) -> tuple[float, float]:
 def outline_of(
     points: list[tuple[float, float]],
     strokes: list[list[tuple[float, float]]] | None = None,
+    pieces: list[list[tuple[float, float]]] | None = None,
 ) -> Outline:
     """The outline an image route request sends back, with its other
     subjects (TASK-084) and the details drawn on it (TASK-079) as strokes,
-    checked as any input (ADR-0069): InvalidRequestError,
-    which says what is wrong with it."""
+    and its pieces apart (TASK-297), checked as any input (ADR-0069):
+    InvalidRequestError, which says what is wrong with it."""
     strokes = strokes or []
+    pieces = pieces or []
     if len(points) - 1 > MAX_POINTS:
         raise InvalidRequestError(
             f"outline: at most {MAX_POINTS} corners, got {len(points) - 1}"
@@ -243,7 +264,12 @@ def outline_of(
             f"strokes: at most {MAX_DETAIL_POINTS} points to travel in all, "
             f"got {detail_points}"
         )
-    for x, y in [*points, *(p for stroke in strokes for p in stroke)]:
+    piece_points = sum(len(piece) for piece in pieces)
+    if piece_points > MAX_SUBJECT_POINTS:
+        raise InvalidRequestError(
+            f"pieces: at most {MAX_SUBJECT_POINTS} points in all, got {piece_points}"
+        )
+    for x, y in [*points, *(p for line in (*strokes, *pieces) for p in line)]:
         if not (math.isfinite(x) and math.isfinite(y)):
             raise InvalidRequestError("outline: every point must be a finite number")
         if abs(x) > 1 + SLACK or abs(y) > 1 + SLACK:
@@ -259,6 +285,8 @@ def outline_of(
     }
     if strokes:
         data["strokes"] = [[[x, y] for x, y in stroke] for stroke in strokes]
+    if pieces:
+        data["pieces"] = [[[x, y] for x, y in piece] for piece in pieces]
     try:
         # Details drawn by hand may cross (TASK-079, ADR-0074).
         return parse_outline(data, allow_crossings=True)

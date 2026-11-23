@@ -1,6 +1,6 @@
 # TASK-297 — Ricerche dall'archivio dei percorsi (A) e loghi con la penna alzata (C); il piazzamento imparato, misurato e scartato (B)
 
-**Stato**: In lavorazione · documenti in `main` (#538, `9391893c`) · parte A in `main` (#539, `0c4ada00`, su `preview` e0e4e126) · **C, motore: PR #547 aperta (2026-10-25)** · TASK-298 nella sua sessione · **A2: in `main` di `LPPL1316/MUW` con la #7 (`e789e9c`, 2026-10-29)** · poi C2
+**Stato**: In lavorazione · documenti in `main` (#538, `9391893c`) · parte A in `main` (#539, `0c4ada00`, su `preview` e0e4e126) · **C, motore: PR #547 aperta (2026-10-25)** · TASK-298 nella sua sessione · **A2: in `main` di `LPPL1316/MUW` con la #7 (`e789e9c`, 2026-10-29)** · C in `main` (#547) · **C2a (API) in PR dal 2026-11-23** (`feat/TASK-297-c2a-image-pieces-api`) · poi C2b (l'app), dopo che TASK-469 A7c-3 libera `RoutePanel.tsx`
 **Fase**: 4 · **Branch**: `docs/TASK-297-proposal` (documenti),
 `feat/TASK-297-a-route-archive` (A), `feat/TASK-297-a2-first-placement`
 (A2, dopo la #497), `feat/TASK-297-c-image-pieces` (C, motore),
@@ -320,12 +320,21 @@ Parte C (motore):
       passa da `image_outline.py`); nella PR #547 l'elenco di cosa
       rifare (condizione 4).
 
-Parte C2 (API e app):
-- [ ] `POST /image-outlines` e `POST /image-route-jobs` con i pezzi
-      (test); `pen_up` senza pezzi rifiutato con il motivo.
-- [ ] L'interruttore sulla foto, i pezzi disegnati, i tratti a piedi
+Parte C2 (API e app), divisa il 2026-11-23 in C2a (l'API) e C2b (l'app),
+perché l'app tocca `RoutePanel.tsx`, che TASK-469 A7c-3 tiene:
+- [x] C2a: `POST /image-outlines` con `pen_up` dà `pieces` e
+      `image_pieces` (vuoti senza, il resto come prima); `POST
+      /image-route-jobs` prende `pieces` e `pen_up`, e i pezzi si
+      disegnano come le lettere di una parola; `pen_up` senza pezzi
+      rifiutato con il motivo (`test_image_pieces_api.py`, i test del
+      contratto nei due lati). `engine.zip` rifatto (`schemas.py` e
+      `images.py` ci stanno dentro). Nessun testo, niente nell'app.
+- [ ] C2b: l'interruttore sulla foto, i pezzi disegnati, i tratti a piedi
       sulla mappa (test jest); impronta iOS invariata; lint, typecheck,
       test e format:check verdi.
+- [ ] Aperto per C2b: un contorno modificato a mano
+      (`/image-outline-edits`) torna senza pezzi; l'app spegne la penna
+      alzata quando si disegna un dettaglio, o una parte dopo li tiene.
 
 ## File toccati
 
@@ -389,7 +398,17 @@ apps/mobile/assets/engine/engine.zip                      (rifatto: `test_phone_
 docs/ROUTE_ENGINE.md §2, docs/DECISIONS.md (aggiunta ad ADR-0258), docs/STATUS.md, docs/tasks/TASK-297.md
 ```
 
-Parte C2 (API e app):
+Parte C2a (API, 2026-11-23):
+```
+services/api/shaperoute_api/schemas.py, images.py, app.py (`to_request` e `/image-outlines`)
+services/api/tests/test_image_pieces_api.py                (nuovo)
+services/api/tests/test_images.py, test_contract.py        (i campi nuovi, facoltativi)
+packages/shared-types/src/index.ts, test/contract.test.ts
+apps/mobile/assets/engine/engine.zip                       (rifatto, per ultimo)
+docs/API.md, docs/tasks/TASK-297.md
+```
+
+Parte C2b (app), come era scritta per C2:
 ```
 services/api/shaperoute_api/images.py, schemas.py
 services/api/tests/test_images.py

@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from route_engine.anchored import PLACEMENTS
 from route_engine.directions import GROUP_M, Turn
 from route_engine.image_outline import MAX_POINTS as MAX_OUTLINE_POINTS
+from route_engine.image_outline import MAX_SUBJECT_POINTS
 from route_engine.models import (
     MAX_DISTANCE_M,
     MAX_SWIM_LAPS,
@@ -610,6 +611,15 @@ class ImageOutlineRequestBody(BaseModel):
             f"MB before encoding: one clear subject on a plain background."
         ),
     )
+    # Missing from an app of before TASK-297 part C2.
+    pen_up: bool = Field(
+        default=False,
+        description=(
+            "The other subjects and the holes of the image apart, as `pieces` "
+            "to draw one at a time with the pen up (TASK-297, ADR-0258), "
+            "instead of strokes hung on the outline. False: as before."
+        ),
+    )
 
 
 class ImageOutlineBody(BaseModel):
@@ -643,6 +653,19 @@ class ImageOutlineBody(BaseModel):
         default_factory=list,
         description="The same strokes over the image, like image_points.",
     )
+    pieces: list[list[tuple[float, float]]] = Field(
+        default_factory=list,
+        description=(
+            "Asked with pen_up (TASK-297, ADR-0258): the other subjects and "
+            "the holes of the image, in the frame of points, each drawn on "
+            "its own with a walk between; the largest first. None without "
+            "pen_up, or for one subject without holes."
+        ),
+    )
+    image_pieces: list[list[tuple[float, float]]] = Field(
+        default_factory=list,
+        description="The same pieces over the image, like image_points.",
+    )
 
 
 class ImageRouteRequestBody(BaseModel):
@@ -675,9 +698,22 @@ class ImageRouteRequestBody(BaseModel):
     )
     distance_m: int = Field(description=DISTANCE_DESCRIPTION, examples=[15000])
     activity: str = Field(default="running", description=ACTIVITY_DESCRIPTION)
+    # Missing from an app of before TASK-297 part C2.
+    pieces: list[list[tuple[float, float]]] = Field(
+        default_factory=list,
+        max_length=MAX_SUBJECT_POINTS // 2,
+        description=(
+            f"The pieces of an ImageOutline, unchanged (TASK-297): at most "
+            f"{MAX_SUBJECT_POINTS} points in all. None for an outline without."
+        ),
+    )
     pen_up: bool = Field(
         default=False,
-        description="Only for a word (TASK-197): true is refused, invalid_request.",
+        description=(
+            "With `pieces` (TASK-297, ADR-0258): each piece drawn on its own, "
+            "walking between them, as the letters of a word. Without pieces, "
+            "true is refused, invalid_request."
+        ),
     )
     # Missing from an app of before TASK-323.
     laps: int | None = Field(

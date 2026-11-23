@@ -1351,8 +1351,10 @@ disegna da sola, e fra una e l'altra si cammina senza disegnare
 - **Facoltativo**, `false` se manca: le app già installate non lo mandano
   e ricevono il percorso di sempre. Con `word`, o con una **forma a pezzi**
   (TASK-223, sotto). Con un'altra forma è `invalid_request` (`pen_up is for
-  the letters of a word, or the pieces of a shape; heart has none`), in una
-  richiesta d'immagine anche (`pen_up is for the letters of a word`).
+  the letters of a word, or the pieces of a shape; heart has none`). Una
+  richiesta d'immagine lo accetta con i suoi `pieces` (TASK-297 C2, sotto);
+  senza è `invalid_request` (`pen_up is for the letters of a word, or the
+  pieces of an image outline (POST /image-outlines with pen_up)`).
 - La distanza chiesta vale per le **lettere**, la parte che la corsa
   registra; `distance_m` del risultato resta la lunghezza di tutti i
   `points`, tratti a piedi compresi (a Trento, «CIAO» da 15 km: 15,4 km di
@@ -1435,6 +1437,14 @@ multipart, che vorrebbe `python-multipart`. La risposta, in meno di 2 s:
   il collegamento, dalla linea già disegnata al soggetto; il resto è il
   contorno del soggetto, che si chiude sul secondo punto. Vuoti con un
   soggetto solo. L'app li disegna e li rimanda senza cambiarli.
+- `pen_up` nella richiesta (dal TASK-297 C2, facoltativo, `false` se
+  manca): gli altri soggetti e i **fori** che valgono almeno il 3 % del
+  loro soggetto tornano come `pieces` e `image_pieces` (nei due sistemi di
+  `points` e `image_points`), staccati, dal più grande al più piccolo,
+  invece dei tratti appesi al contorno (ADR-0258). Senza `pen_up` i due
+  campi sono vuoti e il resto è quello di prima. Il contorno con la penna
+  alzata non ha i gambi verso gli altri soggetti, quindi i suoi `points`
+  sono diversi: per cambiare scelta l'app richiede il contorno.
 
 Un'immagine che non dà un contorno è rifiutata con `422`
 `image_not_usable` e il motivo del motore in `reason`: `format`,
@@ -1468,6 +1478,14 @@ un'immagine oltre il limite sono `invalid_request`.
   Un disegno fatto a mano sulla mappa (TASK-331) arriva così, `anchored`:
   il contorno normalizzato con `start` sul suo primo punto e `distance_m`
   la sua lunghezza, e il motore lo traccia dov'è, senza cercare.
+- `pieces` e `pen_up` (dal TASK-297 C2, facoltativi): i `pieces` di
+  `/image-outlines` chiesti con `pen_up`, senza cambiarli, al più 150
+  punti in tutto (`MAX_SUBJECT_POINTS`). Con `"pen_up": true` ogni pezzo
+  si disegna da solo e fra uno e l'altro si cammina, come le lettere di
+  una parola: il risultato ha `walks`. Senza `pen_up` i pezzi si
+  disegnano con la penna giù, legati al resto. `pen_up` senza pezzi è
+  `invalid_request` con il motivo. Un contorno modificato a mano
+  (`/image-outline-edits`) torna senza pezzi.
 - `strokes` (dal TASK-079, facoltativo): gli altri soggetti della foto
   (TASK-084) e i dettagli disegnati a mano, gli `strokes` di un
   `ImageOutline`, senza cambiarli. Si controllano come il contorno: numeri

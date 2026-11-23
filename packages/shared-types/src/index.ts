@@ -643,6 +643,10 @@ export type ImageReason = (typeof IMAGE_REASONS)[number];
  */
 export interface ImageOutlineRequest {
   image: string;
+  /** The other subjects and the holes apart, as `pieces` to draw with the
+   * pen up (TASK-297, ADR-0258), instead of strokes hung on the outline.
+   * Absent or false: as before. */
+  pen_up?: boolean;
 }
 
 /** A point of an outline as [x, y]. */
@@ -666,6 +670,13 @@ export interface ImageOutline {
   strokes?: OutlinePoint[][];
   /** The same strokes over the image, like `image_points`. */
   image_strokes?: OutlinePoint[][];
+  /** Asked with `pen_up` (TASK-297, ADR-0258): the other subjects and the
+   * holes, in the frame of `points`, each drawn on its own with a walk
+   * between, the largest first. Empty without; missing from an API older
+   * than TASK-297 part C2. */
+  pieces?: OutlinePoint[][];
+  /** The same pieces over the image, like `image_points`. */
+  image_pieces?: OutlinePoint[][];
 }
 
 /**
@@ -683,8 +694,13 @@ export interface ImageRouteRequest {
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
-  /** No letters to draw with the pen up: true is refused (TASK-197). */
-  pen_up?: false;
+  /** The `pieces` of an ImageOutline, unchanged (TASK-297); absent or
+   * empty for an outline without. */
+  pieces?: OutlinePoint[][];
+  /** With `pieces` (TASK-297, ADR-0258): each drawn on its own, walking
+   * between them, as the letters of a word; the result says the walks.
+   * Without pieces, true is refused. */
+  pen_up?: boolean;
   /** A swim of a drawing (TASK-323): as RouteRequest.laps. */
   laps?: number | null;
   /** As in RouteRequest (TASK-347): "anchored" leaves the outline where it

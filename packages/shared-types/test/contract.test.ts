@@ -220,21 +220,28 @@ const shapeReadingFields: Same<
   Same<keyof typeof shapeReading, keyof ShapeReading> &
   Same<keyof typeof shapeReadingNone, keyof ShapeReading> = true;
 
-// The traced outline and its request without the details of TASK-079.
-const imageFields: Same<keyof typeof imageOutlineRequest, keyof ImageOutlineRequest> &
+// The traced outline and its request without the details of TASK-079, nor
+// the pieces with the pen up of TASK-297 part C2.
+const imageFields: Same<
+  keyof typeof imageOutlineRequest,
+  keyof Omit<ImageOutlineRequest, "pen_up">
+> &
   Same<
     keyof typeof imageOutline,
-    keyof Omit<ImageOutline, "strokes" | "image_strokes">
+    keyof Omit<ImageOutline, "strokes" | "image_strokes" | "pieces" | "image_pieces">
   > &
   Same<
     keyof typeof imageRouteRequest,
-    keyof Omit<ImageRouteRequest, "strokes" | "pen_up" | "laps" | "placement" | "fit">
+    keyof Omit<
+      ImageRouteRequest,
+      "strokes" | "pieces" | "pen_up" | "laps" | "placement" | "fit"
+    >
   > &
   Same<keyof typeof imageResult, keyof OlderResult> &
   Same<keyof typeof imageError.error, keyof ApiError["error"]> = true;
 
 const editFields: Same<keyof typeof imageEditRequest, keyof ImageOutlineEditRequest> &
-  Same<keyof typeof imageEdited, keyof ImageOutline> &
+  Same<keyof typeof imageEdited, keyof Omit<ImageOutline, "pieces" | "image_pieces">> &
   Same<keyof typeof editError.error, keyof ApiError["error"]> = true;
 
 // Checked by `tsc` too: the fixtures are values of the types.

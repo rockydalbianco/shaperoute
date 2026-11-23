@@ -26,7 +26,6 @@ from psycopg_pool import PoolTimeout
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.image_outline import InvalidImageError
 from route_engine.models import (
-    PEN_UP_WITHOUT_WORD,
     InvalidRequestError,
     RouteResult,
 )
@@ -78,6 +77,7 @@ from shaperoute_api.gym_leaderboard import install_gym_leaderboard
 from shaperoute_api.gym_plans import install_gym_plans
 from shaperoute_api.gym_sessions import install_gym_sessions
 from shaperoute_api.images import (
+    PEN_UP_WITHOUT_IMAGE_PIECES,
     AnyRequest,
     ImageRequest,
     decode_image,
@@ -222,15 +222,17 @@ def validation_message(errors: Sequence[Any]) -> str:
 def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
     """The engine's RouteRequest checks the values, and ImageRequest those of
     an image route: InvalidRequestError. An image has no letters to draw
-    with the pen up (TASK-197). The activity is one of the contract's: the
+    with the pen up (TASK-197), but its pieces apart do (TASK-297): pen_up
+    without them is refused. The activity is one of the contract's: the
     engine may draw more (TASK-190); a walk is asked as a run (TASK-371)."""
     check_supported(body.activity)
     if isinstance(body, ImageRouteRequestBody):
-        if body.pen_up:
-            raise InvalidRequestError(PEN_UP_WITHOUT_WORD)
+        if body.pen_up and not body.pieces:
+            raise InvalidRequestError(PEN_UP_WITHOUT_IMAGE_PIECES)
         return ImageRequest(
             start=body.start,
-            outline=outline_of(body.outline, body.strokes),
+            outline=outline_of(body.outline, body.strokes, body.pieces),
+            pen_up=body.pen_up,
             distance_m=body.distance_m,
             activity=engine_activity(body.activity, body.distance_m),
             laps=body.laps,
@@ -501,7 +503,7 @@ def create_app(
     # route is asked for. A plain def: decoding a photo takes a moment.
     @app.post("/image-outlines", responses=IMAGE_OUTLINE_RESPONSES)
     def trace_image(body: ImageOutlineRequestBody) -> ImageOutlineBody:
-        return trace(decode_image(body.image))
+        return trace(decode_image(body.image), pen_up=body.pen_up)
 
     # A part or a detail drawn on the outline (TASK-079, ADR-0074): the
     # engine decides what it becomes; nothing is kept between two edits.

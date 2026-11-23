@@ -120,7 +120,8 @@ afterEach(() => {
 
 test("it opens on today, an hour ended before now, Save off without exercises", async () => {
   await show();
-  expect(screen.getByRole("header", { name: "Gym workout" })).toBeOnTheScreen();
+  // The title is the sheet's («Add to Feed», AddToFeed.test.tsx).
+  expect(screen.queryByRole("header", { name: "Gym workout" })).toBeNull();
   expect(screen.getByTestId("by-hand-day")).toHaveTextContent("Today");
   expect(screen.getByTestId("by-hand-start").props.value).toBe("19:05");
   expect(screen.getByTestId("by-hand-duration").props.value).toBe("1:00");

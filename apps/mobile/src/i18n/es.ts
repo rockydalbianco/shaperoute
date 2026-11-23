@@ -3186,6 +3186,8 @@ export const ES: Table = {
   Duration: "Duración",
   "Pick a time before now.": "Elige una hora anterior a ahora.",
   "From a plan": "De un plan",
+  "A workout you already did, written by hand":
+    "Un entrenamiento que ya hiciste, escrito a mano",
   "Workouts written by hand don't count for Play, contests, levels or the leaderboard.":
     "Los entrenamientos escritos a mano no cuentan para el juego, los concursos, los niveles ni la clasificación.",
   // src/gear/GearPicker.tsx, ActivityGear.tsx (TASK-486 part C), approved by the user on 2026-11-23

@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { GymByHand } from "../gym/GymByHand";
 import { sleepPostsOn, sleepReader } from "../health/sleepModules";
 import type { SleepReader } from "../health/sleepSamples";
 import { AddPastActivity } from "../imports/AddPastActivity";
@@ -56,7 +57,9 @@ type Props = {
  * run. «From a file» is the flow of «Add past activity» of «My activities»
  * (docs/IMPORTAZIONI.md §2): «Files» opens at once for the GPX, TCX or FIT
  * of another app, read on the phone, then the form of the end of a run,
- * marked «Imported». «Workout plan» (TASK-485 part B, ADR-0394) is
+ * marked «Imported». «Gym workout» (TASK-484 part B, ADR-0395) is a
+ * workout at the gym written by hand afterwards, kept as a recorded one is
+ * and marked «Imported». «Workout plan» (TASK-485 part B, ADR-0394) is
  * «Choose a plan» among one's gym plans, a line and «Post». A chosen entry
  * opens in the same sheet, with «‹» back
  * to the list; the sheet closes once the run or the post is kept, or the
@@ -177,6 +180,11 @@ export function AddToFeed({
                   pick={pick}
                   fetchFn={fetchFn}
                 />
+              </View>
+            )}
+            {entry?.id === "gym" && (
+              <View style={styles.card}>
+                <GymByHand onDone={close} pick={pick} fetchFn={fetchFn} />
               </View>
             )}
             {entry?.id === "plan" && (

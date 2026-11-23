@@ -211,6 +211,9 @@ apps/mobile/src/gym/byHand.test.ts               (nuovo)
 apps/mobile/src/gym/useGymOutbox.ts              (salvare una richiesta già fatta)
 apps/mobile/src/feed/addToFeedEntries.ts         (la riga «Gym workout», dopo TASK-481 A)
 apps/mobile/src/feed/addToFeedEntries.test.ts
+apps/mobile/src/feed/addToFeedEntriesSleep.test.ts  (l'ordine delle voci; sì del Coordinatore 2026-11-23)
+apps/mobile/src/feed/AddToFeed.tsx               (apre GymByHand nel foglio; sì del Coordinatore 2026-11-23)
+apps/mobile/src/feed/AddToFeed.test.tsx          (sì del Coordinatore 2026-11-23)
 apps/mobile/src/i18n/{it,de,fr,es}.ts
 docs/tasks/TASK-484.md
 ```
@@ -239,6 +242,18 @@ copiato, «Scegli un orario prima di adesso.», fondo con «Importata» e post,
 più due in inglese. L'utente: «Sì, approvo» — aspetto e testi nelle quattro
 lingue, «Previous day»/«Next day» compresi. Se la riga del foglio cambia
 l'aspetto (titolo spostato), una schermata in più prima della PR.
+
+**La voce nel «+» (2026-11-23).** TASK-481 A in `main`: «Gym workout» è la
+voce tra «Sleep» e «Workout plan», sempre pronta (il «+» c'è solo con un
+account), con la riga approvata in TASK-481 «A workout you already did,
+written by hand». Il foglio mostra già il titolo della voce: il flusso non
+ripete più «Gym workout». Le quattro traduzioni della riga («Un allenamento
+già fatto, scritto a mano», «Ein Training, das du schon gemacht hast, von
+Hand eingetragen», «Une séance déjà faite, écrite à la main», «Un
+entrenamiento que ya hiciste, escrito a mano») vanno all'utente con le
+schermate del foglio, prima del «pronta». La PR #1478 (481 F) tocca gli
+stessi due file del «+»: chi entra per secondo unisce `main` tenendo
+entrambe le righe.
 
 A turno (privacy, punto 4; in coda dopo 309 B1, 417 D2, 312 C2, 481 A e
 485, il Coordinatore dice quando tocca):

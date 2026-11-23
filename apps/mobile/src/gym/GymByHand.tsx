@@ -50,7 +50,7 @@ type Props = {
 
 /**
  * «Gym workout» of the Feed's «+» (TASK-484 part B, ADR-0395): a workout
- * at the gym written by hand afterwards. Its day («‹ ›» from today back to
+ * at the gym written by hand afterwards, under the sheet's own title. Its day («‹ ›» from today back to
  * 2020), the time it began and how long it lasted, its exercises in the
  * editor of the plans (a row each, sets × reps at one weight) or copied
  * «From a plan», then «Imported» with what it does not count for, the form
@@ -134,9 +134,6 @@ export function GymByHand({
   const after = shiftDay(day, 1, today);
   return (
     <View style={styles.flow} testID="gym-by-hand">
-      <Text style={gymStyles.title} accessibilityRole="header">
-        {t("Gym workout")}
-      </Text>
       <View style={styles.field}>
         <Text style={styles.label}>{t("Day")}</Text>
         <View style={styles.day}>

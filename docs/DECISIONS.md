@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6b in produzione, A7a, A7b, A5c-2, A7c-1, A7c-2 in `main`); B Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A7c-3 in produzione con l'OTA 25); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -3121,6 +3121,24 @@ lista del test. Prende il rilievo solo un chip che si preme: le etichette
 di testo e il segno di pausa che nel codice si chiamano «chip» restano
 piatti, perché il rilievo dice «qui si tocca». Deciso dall'agente su
 delega dell'utente.
+**A7c-3 (#1509)**: i chip condivisi della palestra prendono il rilievo
+nelle otto pagine che usano `gymStyles.chip`, non in `gymStyles.ts`: il
+rilievo dipende dal modo di accessibilità, che si legge con un hook, e
+uno stile condiviso non può farlo. Il controllo sui sorgenti conta ora
+anche `gymStyles.chip`. Il pannello del percorso resta fuori: il suo
+«chip» è un bottone secondario più stretto accanto ad altri bottoni
+piatti. Deciso dall'agente su delega dell'utente.
+**Correzione di A5b (#1534)**: A5b ha dato all'header `zIndex: 1`,
+perché l'ombra della fascia cada sulle pagine. Con la nuova architettura
+quello `zIndex` ordina dentro il più vicino antenato che resta una vista
+sua: la radice di `TabShell` veniva appiattita, e l'header usciva sopra
+le pagine aperte sopra l'app quando l'app sotto non era nascosta al
+lettore di schermo, cioè per «Messages» aperto dalla sua scheda. Due
+righe: `collapsable={false}` sulla radice di `TabShell`, che chiude lo
+`zIndex` dentro lo shell per ogni pagina presente e futura, e `appUnder`
+in `ProfileLayer` che conta anche «Messages», così sotto una
+conversazione l'app è nascosta al lettore di schermo come sotto ogni
+altra pagina. Deciso dall'agente su delega dell'utente.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

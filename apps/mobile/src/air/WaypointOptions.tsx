@@ -52,7 +52,7 @@ export function WaypointOptions({
   chip,
   row,
   palette,
-  nowMs = Date.now(),
+  nowMs,
 }: {
   chip: Chip;
   row: Row;
@@ -63,6 +63,9 @@ export function WaypointOptions({
   const task = useTask();
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // The day the options opened on: the gates are that day's.
+  const [openedMs] = useState(() => Date.now());
+  const dayMs = nowMs ?? openedMs;
   const unreadable = () => t("MuW could not read this file.");
   const loadWaypoints = async () => {
     setBusy(true);
@@ -94,7 +97,7 @@ export function WaypointOptions({
   const muted = [styles.line, { color: palette.textMuted }];
   const text = [styles.line, { color: palette.text }];
   const firstGate = task?.task.start?.gates[0];
-  const firstStart = firstGate === undefined ? null : gateTime(firstGate, nowMs);
+  const firstStart = firstGate === undefined ? null : gateTime(firstGate, dayMs);
   return (
     <View style={styles.box} testID="waypoint-options">
       {row(

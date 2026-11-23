@@ -508,7 +508,13 @@ def test_the_pieces_fixtures_are_what_the_api_answers_and_takes(
     )
     assert len(traced.pieces) == len(traced.image_pieces) == 1
     body = _fixture("image-route-request-pen-up.json")
-    assert set(body) == set(images.ImageRouteRequestBody.model_fields) - {"strokes"}
+    # Free, on roads, not a swim: no placement, fit or laps (TASK-347, TASK-323).
+    assert set(body) == set(images.ImageRouteRequestBody.model_fields) - {
+        "strokes",
+        "placement",
+        "fit",
+        "laps",
+    }
     assert body["outline"] == [list(p) for p in traced.points]
     assert body["pieces"] == [[list(p) for p in piece] for piece in traced.pieces]
     response = http.post("/image-route-jobs", json=body)
@@ -605,7 +611,7 @@ def test_an_image_with_the_pen_up_has_the_walks_in_its_result(
     word and no shape."""
     called: dict[str, Any] = {}
 
-    def plan_nearby(job: Any, start: Any, source: Any) -> Any:
+    def plan_nearby(job: Any, start: Any, source: Any, **_: Any) -> Any:
         called.update(job=job)
         result = RouteResult(
             points=[*RESULT.points[:2], (46.069, 11.123), RESULT.points[-1]],

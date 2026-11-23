@@ -32,7 +32,6 @@ from route_engine.models import (
 from route_engine.optimizer import ShapeNotDrawableError
 from route_engine.outline_edits import InvalidEditError
 from route_engine.swim_turns import with_turns
-from route_engine.walking import engine_activity
 from shaperoute_ai.reading import (
     InvalidTextError,
     ModelUnavailableError,

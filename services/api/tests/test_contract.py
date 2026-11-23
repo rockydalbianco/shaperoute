@@ -543,11 +543,16 @@ def test_an_image_route_request_is_a_route_request_with_an_outline() -> None:
         "style",
         "near",
     }
-    assert _names(ImageRouteRequestBody) == engine | {
-        "outline",
-        "strokes",
-        "pieces",
-    } | PLACEMENT
+    assert (
+        _names(ImageRouteRequestBody)
+        == engine
+        | {
+            "outline",
+            "strokes",
+            "pieces",
+        }
+        | PLACEMENT
+    )
 
 
 def test_image_reasons_and_limits_match_shared_types() -> None:

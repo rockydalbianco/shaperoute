@@ -3354,4 +3354,15 @@ export const DE: Table = {
     "Per Barcode gefundene Produkte enthalten Daten von Open Food Facts, verfügbar unter der Open Database License. Sie bleiben von der USDA-Liste getrennt.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Diese Seite siehst nur du. Was du hier einträgst, bleibt auf deinem Handy; ein Barcode, den du suchst, geht an Open Food Facts.",
+  // src/nutrition (TASK-489 part C2)
+  "Use Apple Health": "Apple Health verwenden",
+  "MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there.":
+    "MuW liest deine Aktivitätsenergie und die Trainings, die andere Apps aufgezeichnet haben, um die Energie zu zählen, die du verbrauchst. Sie werden auf deinem Handy gelesen und bleiben dort.",
+  "Active energy": "Aktivitätsenergie",
+  "from Apple Health": "von Apple Health",
+  "Your activities are already inside Apple Health's active energy: they are not added again.":
+    "Deine Aktivitäten stecken schon in der Aktivitätsenergie von Apple Health: Sie werden nicht noch einmal addiert.",
+  "Apple Health has nothing for this day: your activities are counted.":
+    "Apple Health hat nichts für diesen Tag: Deine Aktivitäten werden gezählt.",
+  "Stop using Apple Health": "Apple Health nicht mehr verwenden",
 };

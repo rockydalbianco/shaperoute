@@ -122,5 +122,7 @@ test("the requests open over the tab, and «←» comes back to it", async () =>
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.queryByText("No message requests.")).toBeNull();
   expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
-  expect(await screen.findByText(/^No messages yet\. Open/)).toBeOnTheScreen();
+  expect(
+    await screen.findByText("Open someone's profile and tap Message to write to them."),
+  ).toBeOnTheScreen();
 });

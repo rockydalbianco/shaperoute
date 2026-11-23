@@ -48,6 +48,8 @@ type Props = {
   /** The pilot's airspaces near them, as the page draws them (part E2);
    * null without a file. Sent with the track. */
   airspace?: unknown;
+  /** The pilot's task, as the page draws it (part D2); null without one. */
+  task?: unknown;
 };
 
 function call(view: WebView | null, script: string): void {
@@ -63,6 +65,7 @@ export function FlightMap({
   palette,
   height,
   airspace = null,
+  task = null,
 }: Props) {
   const language = useLanguage();
   const page = useMemo(
@@ -127,8 +130,14 @@ export function FlightMap({
           airspace ?? { type: "FeatureCollection", features: [] },
         )});`,
       );
+      call(
+        view.current,
+        `window.flight.setTask(${JSON.stringify(
+          task ?? { type: "FeatureCollection", features: [] },
+        )});`,
+      );
     }
-  }, [ready, last, track, takeoffMs, headingDeg, circling, airspace]);
+  }, [ready, last, track, takeoffMs, headingDeg, circling, airspace, task]);
 
   const buttons = height >= BUTTONS_MIN_HEIGHT;
   const button = [

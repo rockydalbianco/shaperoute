@@ -1,4 +1,5 @@
 import {
+  type Gear,
   OUTFIT_ITEMS,
   type OutfitItem,
   type OutfitTagReason,
@@ -21,6 +22,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { GearTagChoice, tagOfGear } from "../../gear/GearTagChoice";
 import { t } from "../../i18n";
 import {
   color,
@@ -74,8 +76,15 @@ type Props = {
   onDone: (tags: OutfitDraft[]) => void;
 };
 
-/** What the form holds while an item is written. */
-type Form = { item: OutfitItem; brand: string; model: string; url: string };
+/** What the form holds while an item is written; `gearId` is the item of
+ * one's gear it is (TASK-486 part F), left out by an app of before. */
+type Form = {
+  item: OutfitItem;
+  brand: string;
+  model: string;
+  url: string;
+  gearId?: string | null;
+};
 
 const EMPTY: Form = { item: "shoes", brand: "", model: "", url: "" };
 
@@ -85,7 +94,18 @@ function formOf(tag: OutfitDraft): Form {
     brand: tag.brand,
     model: tag.product_name ?? "",
     url: tag.url ?? "",
+    gearId: tag.gear_id,
   };
+}
+
+/** «From my gear»: an item fills the kind, brand and model; none lets the
+ * item go and keeps what was written. */
+function withGear(form: Form, item: Gear | null): Form {
+  if (item === null) {
+    return { ...form, gearId: null };
+  }
+  const { gearId, ...tag } = tagOfGear(item);
+  return { ...form, ...tag, gearId };
 }
 
 /**
@@ -186,6 +206,7 @@ export function OutfitTagEditor({
       brand: form.brand.trim(),
       product_name: form.model.trim() === "" ? null : form.model.trim(),
       url: form.url.trim() === "" ? null : form.url.trim(),
+      ...(form.gearId === undefined ? {} : { gear_id: form.gearId }),
     };
     const wrong = draftProblem(draft);
     if (wrong !== null) {
@@ -314,6 +335,10 @@ export function OutfitTagEditor({
             )}
             {editing !== null && (
               <View style={styles.form} testID="outfit-form">
+                <GearTagChoice
+                  chosen={form.gearId ?? null}
+                  onChoose={(item) => setForm((was) => withGear(was, item))}
+                />
                 <Text style={styles.label}>{words.item}</Text>
                 <View style={styles.chips} accessibilityRole="radiogroup">
                   {OUTFIT_ITEMS.map((item) => {

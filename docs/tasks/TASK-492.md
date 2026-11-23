@@ -1,6 +1,6 @@
 # TASK-492 — «Delete plan» in ogni passo della modifica di una scheda
 
-**Stato**: In lavorazione · 2026-11-23 · PR da aprire
+**Stato**: In lavorazione · 2026-11-23 · PR #1487, schermate approvate dall'utente
 **Fase**: 5 · **Branch**: `feat/TASK-492-delete-plan-in-edit`
 **Dipende da**: TASK-433 (schede guidate)
 **ADR**: nessuno (un ingresso in più a una cosa che c'è già) · numero dal
@@ -42,5 +42,6 @@ Lista approvata dal Coordinatore il 2026-11-23:
       stessa domanda; «Delete» toglie la scheda e torna a «My plans»
       (`GymPlans.test.tsx`).
 - [x] Una scheda nuova non ha «Delete plan» (`GymPlans.test.tsx`).
-- [ ] Schermata dal simulatore all'utente.
+- [x] Schermate dal simulatore all'utente (passo 3, conferma, passo 4;
+      `out/TASK-492/`), approvate il 2026-11-23 («Approvo»).
 - [ ] CI verde; merge e OTA dal Coordinatore col sì dell'utente.

@@ -525,3 +525,10 @@ le foto pronte di «Draw» non hanno pezzi (vengono da
 Il 2026-11-23 il branch, rimasto senza PR, è stato allineato a `main` (un
 mese di lavoro: `placement`, `laps`, la camminata, il disegno ancorato) e
 messo in PR su richiesta dell'utente; `engine.zip` rifatto dopo il merge.
+**Limite voluto**: i pezzi vengono solo dal tracciamento della foto fatto
+dal motore, mai da una linea disegnata a mano. Per questo
+`POST /image-outline-edits` risponde con `pieces` e `image_pieces` vuoti.
+Dopo «Edit the outline» (che si vede solo a penna giù) l'interruttore
+sparisce e il contorno modificato si disegna a penna giù. Lo fissa
+`test_an_edited_outline_has_no_pieces_and_is_drawn_with_the_pen_down`. Una
+modifica che tenga i pezzi sarebbe un task a parte.

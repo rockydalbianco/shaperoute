@@ -3458,6 +3458,18 @@ export const FR: Table = {
     "Au plus profond : {dist} du bord, {height} du plancher ou du plafond",
   "Only on your phone: not in the Feed.":
     "Uniquement sur votre téléphone : pas dans le Fil.",
+  // src/air/ (TASK-479 part D1: the pilot's waypoints and task; approved by the user on 2026-11-23)
+  Waypoints: "Balises",
+  Task: "Manche",
+  "Waypoints: {count} · Landings: {landings}":
+    "Balises : {count} · Atterrissages : {landings}",
+  "Turnpoints: {count}": "Balises de la manche : {count}",
+  "First start: {time}": "Premier départ : {time}",
+  "{file} · loaded {date}": "{file} · chargé le {date}",
+  "This file has no waypoint MuW can read.":
+    "Ce fichier ne contient aucune balise que MuW sait lire.",
+  "This file is not a task MuW can read.":
+    "Ce fichier n'est pas une manche que MuW sait lire.",
   // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
   "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
     "Les lignes jaunes sont ce que le parcours dessinera : chaque partie à part, en allant de l'une à l'autre sans dessiner. Si elles ne ressemblent pas au sujet, le parcours non plus : essaie une autre photo.",

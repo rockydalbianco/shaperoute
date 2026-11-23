@@ -1,6 +1,7 @@
 # TASK-492 — «Delete plan» in ogni passo della modifica di una scheda
 
-**Stato**: In lavorazione · 2026-11-23 · PR #1487, schermate approvate dall'utente
+**Stato**: Done · 2026-11-23 · #1487 in `main` (82405767); esce col prossimo OTA
+(«Uscita e prova»)
 **Fase**: 5 · **Branch**: `feat/TASK-492-delete-plan-in-edit`
 **Dipende da**: TASK-433 (schede guidate)
 **ADR**: nessuno (un ingresso in più a una cosa che c'è già) · numero dal
@@ -44,4 +45,19 @@ Lista approvata dal Coordinatore il 2026-11-23:
 - [x] Una scheda nuova non ha «Delete plan» (`GymPlans.test.tsx`).
 - [x] Schermate dal simulatore all'utente (passo 3, conferma, passo 4;
       `out/TASK-492/`), approvate il 2026-11-23 («Approvo»).
-- [ ] CI verde; merge e OTA dal Coordinatore col sì dell'utente.
+- [x] CI verde; merge dal Coordinatore il 2026-11-23 (#1487).
+- [ ] OTA di produzione dal Coordinatore, col sì dell'utente.
+
+## Esito
+
+«Delete plan» in ogni passo della modifica di una scheda è in `main`
+(#1487). Documenti: riga in `INDEX.md` e in `archive/COMPLETATI.md` (PR di
+soli documenti).
+
+## Uscita e prova
+
+- **OTA**: esce col prossimo OTA di produzione, che il Coordinatore chiede
+  all'utente.
+- **Prova sul telefono** dopo l'OTA: in «My plans» «Edit» su una scheda,
+  «Delete plan» sotto il bottone principale già al passo 3; «Delete» nella
+  domanda toglie la scheda e torna a «My plans».

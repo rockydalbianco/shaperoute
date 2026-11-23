@@ -3439,6 +3439,17 @@ export const IT: Table = {
   "Deepest: {dist} from the edge, {height} from floor or ceiling":
     "Più dentro: {dist} dal bordo, {height} da base o tetto",
   "Only on your phone: not in the Feed.": "Solo sul tuo telefono: non va nel Feed.",
+  // src/air/ (TASK-479 part D1: the pilot's waypoints and task; approved by the user on 2026-11-23)
+  Waypoints: "Boe",
+  Task: "Task",
+  "Waypoints: {count} · Landings: {landings}": "Boe: {count} · Atterraggi: {landings}",
+  "Turnpoints: {count}": "Boe della task: {count}",
+  "First start: {time}": "Prima partenza: {time}",
+  "{file} · loaded {date}": "{file} · caricato il {date}",
+  "This file has no waypoint MuW can read.":
+    "In questo file non ci sono boe che MuW sa leggere.",
+  "This file is not a task MuW can read.":
+    "Questo file non è una task che MuW sa leggere.",
   // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
   "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
     "Le linee gialle sono quello che il percorso disegnerà: ogni parte per conto suo, andando dall'una all'altra senza disegnare. Se non somigliano al soggetto, nemmeno il percorso gli somiglierà: prova un'altra foto.",

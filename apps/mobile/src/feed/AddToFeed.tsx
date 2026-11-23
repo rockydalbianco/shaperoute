@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { sleepPostsOn, sleepReader } from "../health/sleepModules";
@@ -20,6 +27,7 @@ import {
 import { SheetModal } from "../ui/SheetModal";
 import { Tap } from "../ui/Tap";
 import { type AddToFeedEntryId, addToFeedEntries } from "./addToFeedEntries";
+import { PlanPostFlow } from "./PlanPostFlow";
 import { SleepPostPage } from "./SleepPostPage";
 
 type Props = {
@@ -47,7 +55,9 @@ type Props = {
  * run. «From a file» is the flow of «Add past activity» of «My activities»
  * (docs/IMPORTAZIONI.md §2): «Files» opens at once for the GPX, TCX or FIT
  * of another app, read on the phone, then the form of the end of a run,
- * marked «Imported». A chosen entry opens in the same sheet, with «‹» back
+ * marked «Imported». «Workout plan» (TASK-485 part B, ADR-0394) is
+ * «Choose a plan» among one's gym plans, a line and «Post». A chosen entry
+ * opens in the same sheet, with «‹» back
  * to the list; the sheet closes once the run or the post is kept, or the
  * form discarded. In an app built without the file picker there is no
  * «From a file». «Sleep» (TASK-467 part E) is last night with «Publish»,
@@ -66,6 +76,7 @@ export function AddToFeed({
   const [open, setOpen] = useState(false);
   const [chosen, setChosen] = useState<AddToFeedEntryId | null>(null);
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const entries = addToFeedEntries({
     record: onRecord !== undefined,
     filePicker: available,
@@ -162,6 +173,15 @@ export function AddToFeed({
                   onCancel={back}
                   pick={pick}
                   fetchFn={fetchFn}
+                />
+              </View>
+            )}
+            {entry?.id === "plan" && (
+              <View style={styles.card}>
+                <PlanPostFlow
+                  onDone={close}
+                  fetchFn={fetchFn}
+                  width={width - 2 * (space.lg + space.md)}
                 />
               </View>
             )}

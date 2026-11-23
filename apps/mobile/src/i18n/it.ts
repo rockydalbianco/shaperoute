@@ -3161,6 +3161,8 @@ export const IT: Table = {
   "This activity is still on its way. Try again in a moment.":
     "Questa attività sta ancora arrivando. Riprova tra poco.",
 
+  // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
+  "Share one of your gym plans": "Condividi uno dei tuoi piani di palestra",
   // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
   "Choose a plan": "Scegli un piano",
   "No plans yet: make one in Gym › Plans.":

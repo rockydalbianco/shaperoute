@@ -204,6 +204,43 @@ describe("the airspaces of the pilot's file (part E2)", () => {
     await showScreen();
     expect(screen.queryByTestId("airspace-alert")).toBeNull();
   });
+
+  it("bands the altitude chart where the pilot was over a volume (E3)", async () => {
+    const [lat, lon] = TRACK.fixes[TRACK.fixes.length - 1].point;
+    setAirspace({
+      fileName: "test.txt",
+      loadedAtMs: 0,
+      unread: 0,
+      airspaces: [
+        {
+          class: "D",
+          name: "TEST BOX",
+          floor: { kind: "ground" },
+          ceiling: { kind: "aboveSea", metres: 3000 },
+          points: [
+            [lat - 0.01, lon - 0.01],
+            [lat - 0.01, lon + 0.01],
+            [lat + 0.01, lon + 0.01],
+            [lat + 0.01, lon - 0.01],
+          ],
+        },
+      ],
+    });
+    await showScreen();
+    await fireEvent.press(screen.getByTestId("flight-screen-layout"));
+    await fireEvent.press(screen.getByText("XC"));
+    await fireEvent.press(screen.getByTestId("flight-options-done"));
+    expect(screen.getByTestId("widget-altitudeChart")).toBeTruthy();
+    expect(screen.getAllByTestId("altitude-chart-band").length).toBeGreaterThan(0);
+  });
+
+  it("bands nothing without a file (E3)", async () => {
+    await showScreen();
+    await fireEvent.press(screen.getByTestId("flight-screen-layout"));
+    await fireEvent.press(screen.getByText("XC"));
+    await fireEvent.press(screen.getByTestId("flight-options-done"));
+    expect(screen.queryAllByTestId("altitude-chart-band")).toHaveLength(0);
+  });
 });
 
 describe("the vario's sound (part C)", () => {

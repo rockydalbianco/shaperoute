@@ -2416,7 +2416,8 @@ tenuto per leggerlo nell'app (`notification_list.py`, tabella
 - **Quello che non è più vero resta fuori**, come nell'email delle
   notizie: una richiesta ritirata, un follow finito, una reazione tolta,
   un commento cancellato o nascosto, un tag tolto, un disegno che non si
-  vede più; niente attraverso un blocco o da un account nascosto per una
+  vede più, un attrezzo cancellato (`gear_limit`, TASK-486 parte G, solo
+  nella campanella come `comment_reaction`); niente attraverso un blocco o da un account nascosto per una
   segnalazione. Il commento e la reazione si leggono come sono adesso.
 - **Per quanto**: `KEPT_DAYS`, 90 giorni dall'evento (durata e frase della
   privacy approvate dall'utente il 2026-11-04: «Sì, approvo»); le righe più vecchie non si mostrano e vanno via
@@ -3272,6 +3273,14 @@ database, `503`. Tipi in `shared-types` (`OutfitTag`, `OutfitTagRequest`,
   suoi; uno senza `id` è nuovo. `[]` li toglie tutti. Un `id` che non è di
   questa foto, o due volte: `422 invalid_request`. Al più **5 per foto e
   10 per post**.
+- **Da un attrezzo** (TASK-486 parte F, ADR-0393): un capo può portare
+  `gear_id`, un attrezzo di chi tagga (se no `422 invalid_request`);
+  l'app ne prende tipo, marca e modello, e il pallino apre l'attrezzo. Un
+  capo mandato col suo `id` e senza il campo (un'app di prima) tiene il
+  `gear_id` che aveva; `null` lo toglie. Nelle foto `gear_id` arriva a chi
+  vedrebbe l'attrezzo (`gear.py`): agli altri mai uno «Hide from profile»
+  o nascosto dopo una segnalazione, e allora è `null`. Cancellato
+  l'attrezzo, il capo resta senza legame. Test in `test_outfit_gear.py`.
 - **Solo dove stanno le foto**: la corsa del proprietario, con il disegno
   visto da altri (`409` mentre è `only_me`, come per le foto), e una foto
   già mandata in quel posto (`404` «No photo in this place: send the photo
@@ -3734,6 +3743,15 @@ parte B (l'app), finché nessuna app lo chiama.
   (anche ritirati: un'attività di prima), se no `422`; un id due volte
   conta una. L'app manda i predefiniti dello sport a fine attività (parte
   C). Cancellare l'attività toglie i suoi agganci e i suoi metri.
+- **Il limite** (parte G, la scelta 5 dell'utente): quando la lista di
+  un'attività porta un attrezzo da sotto il suo `limit_m` a pari o sopra,
+  il proprietario ha una riga nella campanella, `gear_limit` («The red
+  ones reached the limit you set.», senza numero: il limite è nelle sue
+  unità), che apre l'attrezzo (`opens`: `{kind, gear_id}`). Solo nella
+  campanella, nessun telefono suona (`push.BELL_ONLY`). Una riga per
+  limite: la stessa lista di nuovo, o un'altra attività con l'attrezzo
+  già oltre, non ne aggiunge; un limite nuovo si dice di nuovo. Cancellato
+  l'attrezzo, la riga sparisce. Test in `test_gear_limit.py`.
 - **Chi lo vede**: chi vede il profilo, cioè ogni iscritto tranne uno che
   un blocco tiene lontano (`follows.apart_sql`, `404` come per nessuno),
   senza gli attrezzi `off_profile` e quelli nascosti dopo una

@@ -19,6 +19,7 @@ import {
 } from "../theme/tokens";
 import { runDistanceLabel } from "../units/format";
 import { speedUnit } from "../units/runFormat";
+import { AirspaceLogCard } from "./AirspaceLogCard";
 import { flightNow, topSpeedMps } from "./flight";
 import { flightParts, flightSplit, type FlightSide } from "./flightParts";
 import { airTopSpeedMps, flightKcal } from "./flightSplit";
@@ -60,6 +61,14 @@ export function FlightFinishCard({ run, activity, onResume, onDone }: Props) {
     return flightParts(track, first === undefined ? [] : phaseMarksOf(first));
   }, [track]);
   const split = flightSplit(parts);
+  // The airspace log looks only at the flight's parts in the air (E3).
+  const airWindows = useMemo(
+    () =>
+      parts
+        .filter((part) => part.kind === "air")
+        .map((part) => ({ startMs: part.startMs, endMs: part.endMs })),
+    [parts],
+  );
   // A race: the speed and the time of the flight are its parts in the air.
   const flightTop = split === null ? top : airTopSpeedMps(track, parts);
   const energy =
@@ -145,6 +154,7 @@ export function FlightFinishCard({ run, activity, onResume, onDone }: Props) {
           <Tile label={t("Calories")} value={energy} unit="kcal" energy />
         </View>
       )}
+      <AirspaceLogCard track={track} windows={airWindows} units={numbers.units} />
       <View style={styles.buttons}>
         <SharePostButton makeRun={() => postOfTrack(track)} />
         {onResume && (

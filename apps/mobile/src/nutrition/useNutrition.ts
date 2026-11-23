@@ -1,8 +1,15 @@
 import { useSyncExternalStore } from "react";
 
-import { dayOf, type Diary, diaryOfMonth, diaryWithDay } from "./diary";
+import { dayOf, type Diary, diaryOfMonth, diaryWithDay, eatenAsPlanned } from "./diary";
+import {
+  ACTIVITY_KCAL,
+  type EnergyEdits,
+  REST_KCAL_PER_DAY,
+  withActivityKcal,
+  withRest,
+} from "./energyEdits";
 import type { Food } from "./foods";
-import { type LocalDay, monthOf } from "./localDay";
+import { type LocalDay, monthOf, type Weekday } from "./localDay";
 import {
   loadDiaryMonth,
   loadOwnFoods,
@@ -22,7 +29,14 @@ import {
   removeOwnFood,
 } from "./ownFoods";
 import { targetOf } from "./ownTarget";
-import { type DayMeals, NO_MEALS, planWithFood, type WeekPlan } from "./plan";
+import {
+  copyDay,
+  type DayMeals,
+  NO_MEALS,
+  planWithDay,
+  planWithFood,
+  type WeekPlan,
+} from "./plan";
 
 /**
  * What «Nutrition» holds while the app is open (TASK-489 part B, ADR-0397):
@@ -69,6 +83,15 @@ function subscribe(listener: () => void): () => void {
   };
 }
 
+/** Told each time something of «Nutrition» changes: for a screen outside
+ * it that shows one of its numbers (useListKcal.ts). */
+export const subscribeNutrition = subscribe;
+
+/** The energy the user corrected by hand, as it is now. */
+export function energyEdits(): EnergyEdits {
+  return current().settings.edits;
+}
+
 /** The month of the diary, read from the phone the first time it is asked. */
 function monthOfDiary(month: string): Diary {
   let diary = months.get(month);
@@ -93,6 +116,37 @@ export function writeDay(day: LocalDay, meals: DayMeals): boolean {
   return saveDiaryMonth(month, diary);
 }
 
+/**
+ * «Eaten as planned»: `day` becomes what the plan has for its day of the
+ * week, as the plan is now. Nothing changes with nothing planned that day.
+ */
+export function writeDayAsPlanned(day: LocalDay): boolean {
+  const month = monthOf(day);
+  const before = monthOfDiary(month);
+  const diary = diaryOfMonth(eatenAsPlanned(before, day, current().plan), month);
+  if (diary[day] === before[day]) {
+    return true;
+  }
+  months.set(month, diary);
+  change({ ...current() });
+  return saveDiaryMonth(month, diary);
+}
+
+function writePlan(plan: WeekPlan): boolean {
+  change({ ...current(), plan });
+  return savePlan(plan);
+}
+
+/** `meals` become what the plan has for `weekday`. */
+export function writePlanDay(weekday: Weekday, meals: DayMeals): boolean {
+  return writePlan(planWithDay(current().plan, weekday, meals));
+}
+
+/** The plan of `from` written over the one of `to`. */
+export function copyPlanDay(from: Weekday, to: Weekday): boolean {
+  return writePlan(copyDay(current().plan, from, to));
+}
+
 function writeSettings(settings: NutritionSettings): boolean {
   change({ ...current(), settings });
   return saveSettings(settings);
@@ -113,6 +167,39 @@ export function writeTarget(kcal: number | null): boolean {
     return false;
   }
   writeSettings({ ...current().settings, target });
+  return true;
+}
+
+function inRange(kcal: number, range: { min: number; max: number }): boolean {
+  const whole = Math.round(kcal);
+  return Number.isFinite(kcal) && whole >= range.min && whole <= range.max;
+}
+
+/**
+ * The kilocalories a day the body spends at rest, as the user wrote them
+ * (energyEdits.ts), or MuW's estimate again with null. False when `kcal`
+ * is not a number the field takes: nothing changes then.
+ */
+export function writeRest(kcal: number | null): boolean {
+  if (kcal !== null && !inRange(kcal, REST_KCAL_PER_DAY)) {
+    return false;
+  }
+  const settings = current().settings;
+  writeSettings({ ...settings, edits: withRest(settings.edits, kcal) });
+  return true;
+}
+
+/**
+ * The kilocalories of the activity `key` as the user wrote them, or MuW's
+ * estimate again with null. Kept on this phone only: the activity, its
+ * post and what Apple Health has of it are not touched.
+ */
+export function writeActivityKcal(key: string, kcal: number | null): boolean {
+  if (kcal !== null && !inRange(kcal, ACTIVITY_KCAL)) {
+    return false;
+  }
+  const settings = current().settings;
+  writeSettings({ ...settings, edits: withActivityKcal(settings.edits, key, kcal) });
   return true;
 }
 

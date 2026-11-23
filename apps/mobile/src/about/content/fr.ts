@@ -452,6 +452,14 @@ const privacy: AboutDocument = {
       ],
     },
     {
+      heading: "Nutrition",
+      blocks: [
+        "«Nutrition» est un journal que tu tiens pour toi. Les aliments que tu ajoutes, ton plan de la semaine, ce que tu notes avoir mangé chaque jour, ton objectif du jour et les calories que tu corriges à la main restent uniquement sur ton téléphone : ils n'arrivent pas sur notre serveur et personne d'autre ne peut les voir. Le «Bilan calorique» de ton profil est calculé sur ton téléphone et n'est affiché qu'à toi.",
+        "Pour estimer l'énergie que tu dépenses, MuW compte sur ton téléphone les activités de ton compte et les données corporelles que tu as saisies dans les «Réglages». Chaque chiffre est une estimation : MuW ne fournit ni régimes ni conseils médicaux.",
+        "Ces données n'ont jamais été sur notre serveur : te déconnecter ou supprimer ton compte ne les efface donc pas. Elles restent sur ton téléphone jusqu'à ce que tu les retires là ou que tu désinstalles l'app.",
+      ],
+    },
+    {
       heading: "Apple Santé et Health Connect",
       blocks: [
         "Dès que tu actives «Enregistrer dans Apple Santé» (iPhone) ou «Enregistrer dans Health Connect» (Android), chaque activité que tu enregistres y est aussi écrite, sur ton téléphone : le sport, quand elle a commencé et fini, la distance, le parcours et, pour une course, les calories actives estimées. Si, à la fin d'une nage en piscine ou d'une séance en salle de sport, tu touches «Ajouter la fréquence cardiaque depuis Santé», MuW lit la fréquence cardiaque que ta montre a enregistrée pendant cette activité, et rien d'autre ; après ce premier toucher, MuW la lit à la fin de chaque nage et de chaque séance. La moyenne et le maximum restent avec l'activité sur notre serveur et s'affichent dans sa publication, sauf si tu désactives «Afficher la fréquence cardiaque» ; le temps dans chaque zone reste sur ton téléphone. Aucune de tes données de santé n'atteint une publicité. Tu peux l'arrêter dans l'app Santé ou dans Health Connect. Ce qui y est déjà reste jusqu'à ce que tu l'y supprimes, même quand tu supprimes la course ou ton compte.",
@@ -477,6 +485,7 @@ const privacy: AboutDocument = {
             "Google Ireland Limited (Firebase Cloud Messaging), pour livrer les notifications push aux téléphones Android. Quand tu allumes le push, l'app demande à Firebase un jeton d'enregistrement pour ton téléphone ; le service push d'Expo transmet chaque notification (qui a fait quoi, et le début d'un commentaire) à Google, qui la livre à ton téléphone. Google voit le jeton et le contenu de chaque notification, pas ton compte ni ta position. Le jeton est retiré de notre serveur quand tu éteins le push, te déconnectes ou supprimes ton compte ; celui du téléphone disparaît quand tu désinstalles l'app.",
             "Resend, aux États-Unis, envoie les e-mails de MuW : ton adresse e-mail avec l'e-mail lui-même. Pour un signalement, il apporte à la personne qui gère MuW ce qui a été signalé, son texte, la raison et les noms d'utilisateur de qui l'a signalé et de qui l'a écrit. Pour «Envoie-nous ton avis», il apporte ton message, ton nom d'utilisateur et ton adresse e-mail.",
             "Google, avec son service Web Risk, reçoit de notre serveur des morceaux de l'empreinte (hash) de certains liens que les membres ajoutent à leurs articles, pour vérifier qu'ils ne mènent pas à des sites dangereux : jamais le lien entier, ni qui l'a ajouté ou qui l'ouvre.",
+            "Open Food Facts reçoit le code-barres que tu scannes ou saisis dans «Nutrition», pour trouver le produit : il voit le code et, comme tout site, ton adresse IP, jamais ton compte ni ton journal. Le produit renvoyé reste sur ton téléphone.",
             "Strava, comme dit plus haut.",
           ],
         },
@@ -492,6 +501,7 @@ const privacy: AboutDocument = {
             "Quand tu supprimes ton compte, tout ce qui est à toi est supprimé tout de suite : profil, photo, numéro de téléphone, courses, dessins, favoris, commentaires, réactions, abonnements, données du jeu et les nouvelles qui attendent ton e-mail. Les parcours que notre moteur a dessinés restent : ils ne disent rien de qui les a demandés.",
             "Une sauvegarde de la base de données est faite chaque nuit et gardée 13 jours : un compte supprimé sort de toutes les sauvegardes en 14 jours au plus.",
             "Sur ton téléphone : la session, tes choix (langue, sport, lacs ou mer), les cartes hors ligne, les courses qui attendent encore d'être envoyées et, avec un compte, la zone d'où partent d'habitude tes activités, pour te suggérer des lacs et la mer à proximité ; elle est effacée quand tu te déconnectes.",
+            "Uniquement sur ton téléphone, même après ta déconnexion : ce que tu écris dans «Nutrition».",
           ],
         },
         "La connexion entre l'app et notre serveur est chiffrée (HTTPS).",

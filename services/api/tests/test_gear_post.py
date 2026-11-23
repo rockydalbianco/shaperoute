@@ -9,11 +9,13 @@ its owner. A block keeps it apart either way.
 
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import Any
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
 from test_drawing_photos import (
+    WallClock,
     client,  # noqa: F401  (the fixtures of the photos' tests)
     database,  # noqa: F401
     other,
@@ -32,10 +34,14 @@ def post_gear(app: TestClient, drawing_id: str, viewer: Headers) -> Any:
     return app.get(f"/drawings/{drawing_id}/gear", headers=viewer)
 
 
-def test_whoever_sees_the_post_sees_its_gear(client: TestClient) -> None:  # noqa: F811
+def test_whoever_sees_the_post_sees_its_gear(
+    client: TestClient, wall: WallClock  # noqa: F811
+) -> None:
     me = signed_up(client)
     you = other(client)
     shoes = add(client, me, limit_m=700_000, defaults=["running"])
+    # The clock stands still in the tests: the helmet is added later.
+    wall.t += timedelta(minutes=1)
     helmet = add(client, me, kind="helmet", brand="Petzl", model=None, name=None)
     add(client, me, brand="Not on this run")
     drawing_id = post_of(client, me)

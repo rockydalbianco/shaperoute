@@ -98,7 +98,7 @@ def extra_of(event: PushEvent) -> dict[str, Any]:
         extra["number"] = event.number
     if event.names is not None:
         extra["names"] = dict(event.names)
-    for name in ("challenge_id", "group_run_id", "contest_id"):
+    for name in ("challenge_id", "group_run_id", "contest_id", "gear_id"):
         value = getattr(event, name)
         if value is not None:
             extra[name] = str(value)
@@ -157,6 +157,9 @@ def shown_sql(reads: Reads) -> str:
         " WHERE cr.comment_id = n.comment_id AND cr.user_id = n.actor_id)"
         " WHEN 'tag' THEN EXISTS (SELECT 1 FROM drawing_tags t"
         " WHERE t.drawing_id = n.drawing_id AND t.user_id = n.recipient_id)"
+        # An item of gear past its limit (TASK-486 part G): while it is there.
+        " WHEN 'gear_limit' THEN EXISTS (SELECT 1 FROM gear g"
+        " WHERE g.id::text = n.extra->>'gear_id' AND g.user_id = n.recipient_id)"
         " ELSE true END"
         " AND (n.drawing_id IS NULL OR EXISTS (SELECT 1 FROM drawings d"
         " LEFT JOIN runs r ON r.id = d.run_id WHERE d.id = n.drawing_id"
@@ -245,6 +248,7 @@ def notification_of(row: Mapping[str, Any], language: Language) -> NotificationB
         names=extra.get("names"),
         group_run_id=_uuid(extra.get("group_run_id")),
         contest_id=_uuid(extra.get("contest_id")),
+        gear_id=_uuid(extra.get("gear_id")),
     )
     actor = _person(row)  # type: ignore[arg-type]
     return NotificationBody(

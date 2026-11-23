@@ -453,6 +453,14 @@ const privacy: AboutDocument = {
       ],
     },
     {
+      heading: "Nutrition",
+      blocks: [
+        "«Nutrition» is a diary you keep for yourself. The foods you add, your weekly plan, what you write that you ate each day, your daily target and the calories you correct by hand are kept on your phone only: they do not reach our server and nobody else can see them. The «Calorie balance» on your profile is worked out on your phone and shown only to you.",
+        "To estimate the energy you use, MuW counts on your phone the activities of your account and the body data you entered in «Settings». Every number is an estimate: MuW does not provide diets or medical advice.",
+        "This data was never on our server, so logging out or deleting your account does not delete it: it stays on your phone until you remove it there or uninstall the app.",
+      ],
+    },
+    {
       heading: "Apple Health and Health Connect",
       blocks: [
         "Once you turn on «Save to Apple Health» (iPhone) or «Save to Health Connect» (Android), every activity you save is also written there, on your phone: the sport, when it started and ended, the distance, the route and, for a run, the estimated active calories. If at the end of a swim in a pool or a workout at the gym you tap «Add heart rate from Apple Health», MuW reads the heart rate your watch recorded during that activity, and nothing else; after that first tap it reads it at the end of each swim and workout. Its average and maximum stay with the activity on our server and show in its post, unless you turn off «Show heart rate»; the time in each zone stays on your phone. None of your health data reaches any advertising. You can stop it in the Health app or in Health Connect. What is already there stays until you delete it there, also when you delete the run or your account.",
@@ -478,6 +486,7 @@ const privacy: AboutDocument = {
             "Google Ireland Limited (Firebase Cloud Messaging), to deliver push notifications to Android phones. When you turn push on, the app asks Firebase for a registration token for your phone; Expo's push service hands each notification (who did what, and the beginning of a comment) to Google, which delivers it to your phone. Google sees the token and the content of each notification, not your account or your position. The token is dropped from our server when you turn push off, log out or delete your account; the one on the phone goes when you uninstall the app.",
             "Resend, in the United States, sends MuW's emails: your email address with the email itself. For a report it carries to the person who runs MuW what was reported, its text, the reason, and the usernames of who reported it and who wrote it. For «Send feedback» it carries your message, your username and your email address.",
             "Google, with its Web Risk service, receives from our server parts of the fingerprint (hash) of some links that members add to their items, to check that they do not lead to dangerous sites: never the whole link, nor who added it or who opens it.",
+            "Open Food Facts receives the barcode you scan or type in «Nutrition», to find the product: it sees the barcode and, like any site, your IP address, never your account or your diary. The product it sends back is kept on your phone.",
             "Strava, as said above.",
           ],
         },
@@ -493,6 +502,7 @@ const privacy: AboutDocument = {
             "When you delete your account, everything that is yours is deleted at once: profile, picture, phone number, runs, drawings, favorites, comments, reactions, follows, game data and the news waiting for your email. The routes our engine drew stay: they say nothing about who asked for them.",
             "A backup of the database is made every night and kept for 13 days: a deleted account is out of every backup within 14 days.",
             "On your phone: the session, your choices (language, sport, lakes or sea), the offline maps, the runs still waiting to be sent and, with an account, the area your activities usually start from, to suggest lakes and the sea near it; it is deleted when you log out.",
+            "On your phone only, also after you log out: what you write in «Nutrition».",
           ],
         },
         "The connection between the app and our server is encrypted (HTTPS).",

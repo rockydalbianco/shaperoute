@@ -19,6 +19,7 @@ import {
   varioText,
 } from "./flightUnits";
 import type { Near } from "./airspaceNear";
+import type { ProfileBand } from "./airspaceProfile";
 import { acrossText, limitLabel } from "./airspaceText";
 import { WIDGET_NAME, type WidgetId } from "./flightLayout";
 import type { FlightScreenData } from "./useFlightScreenData";
@@ -77,6 +78,9 @@ type Props = {
   /** The nearest volume of the pilot's airspace file (part E2): null
    * when none is near or none is loaded. */
   nearest?: Near | null;
+  /** The volumes of the file under the altitude chart, bar by bar (part
+   * E3); none without a file. */
+  bands?: readonly ProfileBand[][];
 };
 
 function Box({
@@ -180,6 +184,7 @@ export function FlightWidget({
   width,
   height,
   nearest = null,
+  bands = [],
 }: Props) {
   const name = t(WIDGET_NAME[widget]);
   const now = data.instrument;
@@ -355,6 +360,7 @@ export function FlightWidget({
             width={width - 20}
             height={Math.max(20, height - 70)}
             palette={palette}
+            bands={bands}
           />
         </View>
       );

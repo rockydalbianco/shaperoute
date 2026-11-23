@@ -38,6 +38,7 @@ import {
   UNIT_LABEL,
   VARIO_UNITS,
 } from "./flightUnits";
+import { AirspaceOptions } from "./AirspaceOptions";
 import { FlightEditor } from "./FlightEditor";
 import { FlightMap } from "./FlightMap";
 import { FlightWidget } from "./FlightWidget";
@@ -226,6 +227,13 @@ function Options({
       )}
       <VarioSoundOptions
         unit={prefs.units.vario}
+        chip={(key, label, on, onPress) => (
+          <Chip key={key} label={label} on={on} onPress={onPress} palette={palette} />
+        )}
+        row={row}
+        palette={palette}
+      />
+      <AirspaceOptions
         chip={(key, label, on, onPress) => (
           <Chip key={key} label={label} on={on} onPress={onPress} palette={palette} />
         )}

@@ -10,6 +10,12 @@ import type { SamplePicture } from "../route/samplePictures";
 import { type ImageState, useImageOutline } from "../route/useImageOutline";
 import { isPlacedFree } from "../snow/snow";
 import { appUnits } from "../units/units";
+import {
+  type AnchoredLines,
+  type Anchoring,
+  anchoredLines,
+  anchoringOf,
+} from "./anchoring";
 import { canvasRequest, figureApart, piecesRequest } from "./canvasRequest";
 import { isOpenLine, linkedOf, newDrawing, withDetail } from "./drawing";
 import { asDrawing, drawingOf, type FigureLines, touchesLines } from "./edit";
@@ -42,6 +48,7 @@ import {
   piecesTurnedBy,
 } from "./pieces";
 import { type FigureChoice, figureOf } from "./resultFigure";
+import { useMapMatching } from "./useMapMatching";
 import { startedAt, startLineOf } from "./startPoint";
 import {
   bent,
@@ -147,6 +154,10 @@ export type MapCanvasState = {
   turnBy: (deg: number) => void;
   /** The degrees typed: the figure, or the piece chosen, turned to them. */
   turnTo: (deg: number) => void;
+  /** A drawing alone, anchored to the roads as it is drawn (TASK-347 part
+   * C): what the map draws of it, and what the panel says. */
+  anchored: AnchoredLines;
+  anchoring: Anchoring;
   /** «Draw route»: the request for the figure where it is. */
   request: AnyRouteRequest | null;
   /** Why the last line drawn, the last tool or tile gave nothing. */
@@ -176,6 +187,8 @@ export type MapCanvasState = {
 
 /** One empty list, so the map is not told again and again of no marks. */
 const NO_MARKS: LatLon[] = [];
+/** No lines to anchor, the same each time. */
+const NO_LINES: LatLon[][] = [];
 
 /** Metres between two points of the map. */
 function metresApart(a: LatLon, b: LatLon): number {
@@ -925,6 +938,23 @@ export function useMapCanvas({
     answers,
   ]);
 
+  // A drawing alone is anchored to the roads as it is drawn (TASK-347 part
+  // C, ADR-0300): its lines as the map shows them. Shapes, pictures and
+  // pieces wait for parts D and E.
+  const handDrawn =
+    placed !== null && placed.figure.kind === "drawing" && pieces.length <= 1;
+  const matching = useMapMatching({
+    apiUrl,
+    activity,
+    lines: handDrawn ? canvas.lines : NO_LINES,
+    enabled: handDrawn,
+  });
+  const anchored = useMemo(() => anchoredLines(matching.strokes), [matching.strokes]);
+  const anchoring = useMemo(
+    () => anchoringOf(matching.strokes, matching.snapping),
+    [matching.strokes, matching.snapping],
+  );
+
   // The app renders again with new units (TASK-182): the request follows.
   // With pieces, the drawing they make (TASK-402 part B).
   const units = appUnits();
@@ -1047,6 +1077,8 @@ export function useMapCanvas({
       deleteChosen,
     },
     distanceM: distanceNow,
+    anchored,
+    anchoring,
     turnDeg: target === null ? 0 : turnOf(target),
     turnBy,
     turnTo,

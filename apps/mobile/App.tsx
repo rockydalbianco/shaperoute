@@ -1666,6 +1666,7 @@ function MuW() {
             // «Draw on the map» (TASK-281): the figure, and the fingers.
             canvas={canvasOn ? mapDraw.canvas : null}
             onCanvas={mapDraw.onCanvas}
+            anchored={canvasOn ? mapDraw.anchored : null}
             // «Choose on the map» (TASK-292): the pin in the middle.
             picking={pickOn}
             onCentre={setPickedCentre}
@@ -1696,6 +1697,7 @@ function MuW() {
             onDraw={mapDraw.request === null ? null : onDrawCanvas}
             onTurn={mapDraw.turnTo}
             pieces={mapDraw.pieces}
+            anchoring={mapDraw.anchoring}
           />
         ) : reviewing && activity !== null ? (
           <ActivityCard

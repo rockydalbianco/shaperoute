@@ -72,16 +72,22 @@ test("the «+» opens «Add to Feed» on the list, in the user's order", async (
   expect(screen.queryByText("From a file")).toBeNull();
   await openSheet();
   expect(screen.getByRole("header", { name: "Add to Feed" })).toBeTruthy();
-  const titles = ["Record now", "Photos only", "From a file"];
+  const titles = ["Record now", "Photos only", "From a file", "Workout plan"];
   const rows = titles.map((title) => screen.getByText(title));
-  expect(rows).toHaveLength(3);
+  expect(rows).toHaveLength(4);
   expect(screen.getByText("Start an activity now")).toBeTruthy();
   expect(screen.getByText("Up to 10 photos, also from Instagram")).toBeTruthy();
   expect(screen.getByText("GPX, TCX or FIT from Strava, Garmin, Komoot…")).toBeTruthy();
+  expect(screen.getByText("Share one of your gym plans")).toBeTruthy();
   const ids = screen
-    .getAllByTestId(/^feed-add-(record|photos|file)$/)
+    .getAllByTestId(/^feed-add-(record|photos|file|plan)$/)
     .map((row) => row.props.testID);
-  expect(ids).toEqual(["feed-add-record", "feed-add-photos", "feed-add-file"]);
+  expect(ids).toEqual([
+    "feed-add-record",
+    "feed-add-photos",
+    "feed-add-file",
+    "feed-add-plan",
+  ]);
   // The list is the opener: no form, no «Back», nothing picked yet.
   expect(screen.queryByTestId("imported-form")).toBeNull();
   expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
@@ -125,6 +131,21 @@ test("«Photos only» opens its form in the sheet; «‹» and «Cancel» go bac
   await fireEvent.press(screen.getByRole("button", { name: "Cancel" }));
   expect(screen.queryByTestId("photo-post-form")).toBeNull();
   expect(screen.getByText("From a file")).toBeTruthy();
+});
+
+test("«Workout plan» opens «Choose a plan» in the sheet; «‹» goes back to the list", async () => {
+  await show(spies());
+  await openSheet();
+  await fireEvent.press(screen.getByText("Workout plan"));
+  expect(screen.getByRole("header", { name: "Workout plan" })).toBeTruthy();
+  expect(screen.getByTestId("plan-post-choose")).toBeTruthy();
+  expect(screen.getByText("Choose a plan")).toBeTruthy();
+  // No plans on this phone: the way to make one.
+  expect(screen.getByText("No plans yet: make one in Gym › Plans.")).toBeTruthy();
+  expect(screen.queryByText("Photos only")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(screen.queryByTestId("plan-post-choose")).toBeNull();
+  expect(screen.getByText("Photos only")).toBeTruthy();
 });
 
 test("«From a file» opens «Files» at once", async () => {

@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
 import { space } from "../theme/tokens";
+import { gymStyles } from "./gymStyles";
 import { ExerciseList } from "./ExerciseList";
 import { Leaderboard } from "./Leaderboard";
 import { NewLevels } from "./NewLevels";
@@ -21,7 +23,8 @@ type Props = {
  * (part D), with the levels it reached first (part E). Nothing shows while
  * they come, when its owner hides them (404) or when the API does not give
  * them. An exercise's name opens its monthly leaderboard (part F, the
- * user's choice of 2026-11-06).
+ * user's choice of 2026-11-06). Its average heart rate over them when its
+ * owner shows it (part G), as a swim's figures have it (PoolFigures).
  */
 export function GymDetail({ drawingId, fetchFn }: Props) {
   const exercises = useGymExercises(drawingId, { fetchFn });
@@ -31,6 +34,11 @@ export function GymDetail({ drawingId, fetchFn }: Props) {
   }
   return (
     <View style={styles.detail}>
+      {exercises.heart_avg_bpm !== undefined && (
+        <Text style={gymStyles.text} testID="gym-detail-heart">
+          {`${t("Avg heart rate")}: ${exercises.heart_avg_bpm} bpm`}
+        </Text>
+      )}
       <NewLevels exercises={exercises} />
       <ExerciseList exercises={exercises} onExercise={setBoard} />
       <Leaderboard

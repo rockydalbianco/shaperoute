@@ -28,6 +28,7 @@ import {
   space,
 } from "../theme/tokens";
 import { distanceLabel } from "../units/format";
+import type { Anchoring } from "./anchoring";
 import type { Placed } from "./figure";
 import { FigureTiles } from "./FigureTiles";
 import { placedTile } from "./resultFigure";
@@ -106,6 +107,10 @@ type Props = {
   /** The pieces of the figure (TASK-402 part B): «Change | Add» over the
    * tiles, the piece chosen and «Delete piece». None leaves them out. */
   pieces?: PiecesState;
+  /** A drawing anchored to the roads as it is drawn (TASK-347 part C):
+   * «Snapping to roads…» or the score over the distance, and the notice of
+   * a stroke in the fields. None leaves them out. */
+  anchoring?: Anchoring;
 };
 
 /**
@@ -116,7 +121,10 @@ type Props = {
  * ready-made pictures of «Draw»), the distance the figure would make, and
  * «Draw route». With «Move», the figure's angle between «−15°» and «+15°»
  * (TASK-402). On a figure, «Change | Add» over the tiles, and with a piece
- * chosen «Delete piece» after its angle (TASK-402 part B).
+ * chosen «Delete piece» after its angle (TASK-402 part B). A drawing anchored
+ * to the roads (TASK-347 part C): «Snapping to roads…» while a stroke is
+ * anchored, then how closely the roads follow it, over the distance; a
+ * stroke in the fields says so in the note.
  */
 export function DrawOnMap({
   mode,
@@ -136,6 +144,7 @@ export function DrawOnMap({
   onDraw,
   onTurn,
   pieces,
+  anchoring,
 }: Props) {
   // What the angle and the tiles are of: the piece chosen, or the figure.
   const chosen = pieces?.chosen ?? null;
@@ -172,6 +181,7 @@ export function DrawOnMap({
         amongPieces={(pieces?.count ?? 0) > 1}
         photo={photo}
         problem={problem}
+        offRoads={anchoring?.offRoads === true}
       />
       {pieces !== undefined && placed !== null ? (
         <Segmented
@@ -194,6 +204,7 @@ export function DrawOnMap({
         photoBusy={photo.status === "tracing"}
         testID="map-tiles"
       />
+      <Fidelity anchoring={anchoring} />
       <View style={styles.foot}>
         <Text style={styles.distance} testID="map-distance">
           {distanceM === null ? " " : `≈ ${distanceLabel(distanceM)}`}
@@ -332,18 +343,47 @@ function Turn({
 /** One line: why the last line, tool or photo gave nothing, the photo
  * being traced, or what the fingers do; with «Draw» on a figure, that a
  * line joins it. */
+/** «Snapping to roads…» while a stroke is anchored, then the score
+ * (TASK-347 part C); nothing before either. */
+function Fidelity({ anchoring }: { anchoring?: Anchoring }) {
+  if (anchoring === undefined) {
+    return null;
+  }
+  if (anchoring.snapping) {
+    return (
+      <Text
+        style={styles.fidelity}
+        testID="map-snapping"
+        accessibilityLiveRegion="polite"
+      >
+        {t("Snapping to roads…")}
+      </Text>
+    );
+  }
+  if (anchoring.score === null) {
+    return null;
+  }
+  return (
+    <Text style={styles.fidelity} testID="map-score" accessibilityLiveRegion="polite">
+      {t("Roads follow your drawing: {percent}%", { percent: anchoring.score })}
+    </Text>
+  );
+}
+
 function Note({
   mode,
   onFigure,
   amongPieces,
   photo,
   problem,
+  offRoads,
 }: {
   mode: CanvasMode;
   onFigure: boolean;
   amongPieces: boolean;
   photo: ImageState;
   problem: CanvasProblem | null;
+  offRoads: boolean;
 }) {
   if (problem !== null) {
     return <Text style={styles.problem}>{t(PROBLEMS[problem])}</Text>;
@@ -359,6 +399,13 @@ function Note({
         : null;
   if (refused !== null) {
     return <Text style={styles.problem}>{imageProblemText(refused).text}</Text>;
+  }
+  if (offRoads) {
+    return (
+      <Text style={styles.offRoads} testID="map-off-roads">
+        {t("No roads here: this line stays as you drew it.")}
+      </Text>
+    );
   }
   const hint =
     mode === "draw" && onFigure
@@ -455,6 +502,16 @@ const styles = StyleSheet.create({
   problem: {
     minHeight: NOTE_HEIGHT,
     color: color.error,
+    fontSize: fontSize.small,
+  },
+  fidelity: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.semibold,
+  },
+  offRoads: {
+    minHeight: NOTE_HEIGHT,
+    color: color.warning,
     fontSize: fontSize.small,
   },
   foot: {

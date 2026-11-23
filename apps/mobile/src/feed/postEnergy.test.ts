@@ -1,6 +1,6 @@
 import { loadSession } from "../account/sessionStore";
 import { NO_BODY, saveBody } from "../body/bodyProfile";
-import { postEnergy } from "./postEnergy";
+import { gymPostEnergy, postEnergy } from "./postEnergy";
 import type { SamplePost } from "./sampleFeed";
 
 jest.mock("expo-file-system");
@@ -96,4 +96,42 @@ test("every activity its calories in the Feed (TASK-424 part C2)", () => {
   ).toBe(postEnergy({ ...day, ski_descents: { metres: 2900, moving_s: 285 } }));
   // The gym counts its sets (gymPostEnergy).
   expect(postEnergy({ ...snow, activity: "gym" })).toBeNull();
+});
+
+// TASK-385 part G: a workout's energy from its heart rate, one's own only.
+
+test("a workout with its heart rate: Keytel for one's own, the sets' for another's", () => {
+  const gym: SamplePost = { ...RUN, activity: "gym", route_m: 0, minutes: 60 };
+  const sets = [
+    {
+      exercise: "bench_press",
+      kind: "load" as const,
+      reps: 10,
+      load_kg: 60,
+      at_s: 60,
+      live: true,
+    },
+  ];
+  const exercises = {
+    rests: 0,
+    rest_s: 0,
+    sets,
+    heart_avg_bpm: 118,
+    heart_max_bpm: 126,
+  };
+  // Another's post: a body with no data, the hour of weights (gymKcal.test.ts).
+  expect(gymPostEnergy(gym, exercises)).toBe("184 kcal");
+  expect(gymPostEnergy(gym, sets)).toBe("184 kcal");
+  saveBody({ ...NO_BODY, sex: "male", weightKg: 70, birthYear: 1986 });
+  jest.mocked(loadSession).mockReturnValue({
+    token: "t",
+    user: { username: "Ada_runs" } as never,
+  });
+  // One's own, as the end of the workout counted it (GymEndHeart.test.tsx).
+  expect(gymPostEnergy(gym, exercises, undefined, 2026)).toBe("519 kcal");
+  // Without the heart rate, or given the sets alone: the sets'.
+  const { heart_avg_bpm: _avg, heart_max_bpm: _max, ...without } = exercises;
+  expect(gymPostEnergy(gym, without, undefined, 2026)).toBe("184 kcal");
+  expect(gymPostEnergy(gym, sets, undefined, 2026)).toBe("184 kcal");
+  expect(gymPostEnergy(gym, null)).toBeNull();
 });

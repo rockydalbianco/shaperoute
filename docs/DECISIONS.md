@@ -1213,6 +1213,16 @@ legge dalle stesse Terrain Tiles «terrarium» della mappa 3D, decodificate
 su un canvas in una pagina nascosta: nessuna libreria, nessun server. I
 colori del vario sono `vario` in `tokens.ts`.
 
+**Aggiunta del 2026-11-23 (parti E1 ed E2, deciso dall'agente su delega
+dell'utente)**: la parte E è divisa in E1 (il file), E2 (in volo), E3
+(dopo il volo), col sì del Coordinatore. Il file OpenAir resta sul
+telefono (`airspace.json`), uno alla volta, e non va mai al server. La
+vicinanza si calcola sul telefono a ogni secondo; i limiti FL dalla quota
+GPS con l'atmosfera standard, segnati «≈»; un volume di quota ignota
+avvisa sulla sola distanza orizzontale. Il suono d'avviso è un file nostro
+(`alert.wav`, da `tools/vario_tones.py`). I volumi sulla mappa usano i
+colori `error` e `warning` della tavolozza: nessun colore nuovo.
+
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
 **Stato**: Attiva (A e B in `main`, A sul server, 2026-11-23) · 2026-11-21 · TASK-485 parte 0 (numero dal

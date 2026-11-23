@@ -3500,6 +3500,15 @@ export const ES: Table = {
   "Goal taken": "Gol alcanzado",
   "Turnpoint {name} taken. Next: {next}.": "Baliza {name} tomada. Siguiente: {next}.",
   "Goal {name} taken.": "Gol {name} alcanzado.",
+  // src/air/ (TASK-479 part D3: the glide; approved by the user on 2026-11-23)
+  "Glide to turnpoint": "Planeo hasta la baliza",
+  "Nearest landing": "Aterrizaje más cercano",
+  "Glide ratio used": "Fineza usada",
+  "Wind used": "Viento usado",
+  Estimated: "Estimado",
+  "No wind": "Sin viento",
+  "needs {height}": "se necesitan {height}",
+  "No landings in your file": "Ningún aterrizaje en tu archivo",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Balance de calorías",
   Used: "Gastadas",

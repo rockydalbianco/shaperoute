@@ -25,6 +25,8 @@ import {
   space,
 } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /** The page, in every state: what a test looks for. */
 export const SLEEP_POST_PAGE_TEST_ID = "sleep-post-page";
@@ -75,6 +77,8 @@ export function SleepPostPage({
   fetchFn,
   apiKey,
 }: Props) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const on = sleepPostsOn() && reader !== null;
   const { apiUrl, account } = useFollowsDoor();
   const { state, sessionEnded: onSessionEnded } = account;
@@ -277,7 +281,12 @@ export function SleepPostPage({
                 return (
                   <Pressable
                     key={option}
-                    style={[styles.chip, chosen && styles.chipOn, busy && styles.busy]}
+                    style={[
+                      styles.chip,
+                      chipRaise,
+                      chosen && styles.chipOn,
+                      busy && styles.busy,
+                    ]}
                     onPress={() => setVisibility(option)}
                     disabled={busy}
                     accessibilityRole="radio"

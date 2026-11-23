@@ -127,7 +127,8 @@ export function useRouteRequest(baseUrl: string | null): {
  * to the screen. An image's outline is the same when it is the one traced
  * for the same picture, or the same edit of it (TASK-079): the same arrays.
  * A word with the pen up is another route than the same word without
- * (TASK-198). */
+ * (TASK-198). A drawing anchored is another route than the same drawing
+ * placed by the search (TASK-347 part C3). */
 export function sameRequest(a: AnyRouteRequest, b: AnyRouteRequest): boolean {
   const drawn =
     isImageRequest(a) || isImageRequest(b)
@@ -144,6 +145,7 @@ export function sameRequest(a: AnyRouteRequest, b: AnyRouteRequest): boolean {
     a.start[1] === b.start[1] &&
     drawn &&
     a.distance_m === b.distance_m &&
-    a.activity === b.activity
+    a.activity === b.activity &&
+    (a.placement ?? "free") === (b.placement ?? "free")
   );
 }

@@ -21,6 +21,8 @@ import {
 } from "./poolChoice";
 import { parsePoolLength } from "./poolSwim";
 import { startPoolSwim } from "./usePoolSwim";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /** «Open water» or «Pool» (TASK-400 part B, ADR-0334, point 1). */
 const PLACES: { value: SwimPlace; label: string }[] = [
@@ -55,6 +57,8 @@ export function SwimPlaceChoice({ place }: { place: SwimPlace }) {
  * chosen comes back.
  */
 export function PoolDraw() {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const { poolLengthM } = usePoolChoice();
   const listed = POOL_LENGTHS_M.includes(poolLengthM);
   const [other, setOther] = useState(!listed);
@@ -84,7 +88,7 @@ export function PoolDraw() {
           return (
             <Pressable
               key={metres}
-              style={[styles.chip, on && styles.chipOn]}
+              style={[styles.chip, chipRaise, on && styles.chipOn]}
               onPress={() => pick(metres)}
               accessibilityRole="radio"
               accessibilityState={{ checked: on }}
@@ -97,7 +101,7 @@ export function PoolDraw() {
           );
         })}
         <Pressable
-          style={[styles.chip, other && styles.chipOn]}
+          style={[styles.chip, chipRaise, other && styles.chipOn]}
           onPress={() => setOther(true)}
           accessibilityRole="radio"
           accessibilityState={{ checked: other }}

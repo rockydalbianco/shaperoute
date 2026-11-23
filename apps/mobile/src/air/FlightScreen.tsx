@@ -38,6 +38,12 @@ import {
   UNIT_LABEL,
   VARIO_UNITS,
 } from "./flightUnits";
+import { useAirspaceAlerts } from "./airspaceAlertPrefs";
+import { AirspaceAlertLine } from "./AirspaceAlertLine";
+import { airspaceFeatures, alertOf, nearAirspaces } from "./airspaceNear";
+import { placeSeries, type ProfileBand, profileBands } from "./airspaceProfile";
+import { AirspaceOptions } from "./AirspaceOptions";
+import { useAirspace } from "./airspaceStore";
 import { FlightEditor } from "./FlightEditor";
 import { FlightMap } from "./FlightMap";
 import { FlightWidget } from "./FlightWidget";
@@ -232,6 +238,14 @@ function Options({
         row={row}
         palette={palette}
       />
+      <AirspaceOptions
+        altitudeUnit={prefs.units.altitude}
+        chip={(key, label, on, onPress) => (
+          <Chip key={key} label={label} on={on} onPress={onPress} palette={palette} />
+        )}
+        row={row}
+        palette={palette}
+      />
       <Pressable
         accessibilityRole="button"
         onPress={onDone}
@@ -308,11 +322,31 @@ export function FlightScreen({
   const data = useFlightScreenData(track, at, takeoffMs, sharingLive);
   const palette = useMemo(() => paletteFor(prefs.look), [prefs.look]);
   const pages = pagesOf(prefs);
-  // The ground's height is read only for a profile that shows it (A1).
-  const showsGround = pages.some((one) =>
-    one.some((cell) => cell.widget === "aboveGround"),
-  );
+  const airspace = useAirspace();
+  const alerts = useAirspaceAlerts();
+  // The ground is read for a profile that shows it (A1), and for the
+  // airspaces whose limits stand on it (E2).
+  const showsGround =
+    airspace !== null ||
+    pages.some((one) => one.some((cell) => cell.widget === "aboveGround"));
   const here = track.fixes[track.fixes.length - 1]?.point ?? null;
+  // The pilot against the airspaces of their file (E2), at every tick.
+  const altM = data.instrument.altM;
+  const groundM =
+    altM !== null && data.aboveGroundM !== null ? altM - data.aboveGroundM : null;
+  const near =
+    airspace === null || here === null
+      ? []
+      : nearAirspaces(airspace.airspaces, here, altM, groundM);
+  const alert = alertOf(near, alerts);
+  // The volumes under the altitude chart (E3), when a page has one.
+  const charted = pages.some((one) =>
+    one.some((cell) => cell.widget === "altitudeChart"),
+  );
+  const bands: ProfileBand[][] =
+    airspace === null || !charted
+      ? []
+      : profileBands(placeSeries(track, at), airspace.airspaces, groundM);
   const change = (next: FlightPrefs) => {
     setPrefs(next);
     saveFlightPrefs(next);
@@ -425,6 +459,12 @@ export function FlightScreen({
             </Text>
           </Pressable>
         </View>
+        <AirspaceAlertLine
+          alert={alert}
+          units={appUnits}
+          altitudeUnit={prefs.units.altitude}
+          palette={palette}
+        />
         {locked && hint ? (
           <Text style={[styles.hint, { color: palette.text }]}>
             {t("Hold to unlock")}
@@ -463,10 +503,15 @@ export function FlightScreen({
                           circling={data.circling}
                           palette={palette}
                           height={h}
+                          airspace={
+                            airspace === null ? null : airspaceFeatures(near, groundM)
+                          }
                         />
                       ) : (
                         <FlightWidget
                           widget={cell.widget}
+                          nearest={near[0] ?? null}
+                          bands={bands}
                           data={data}
                           flight={unitsOf(cell)}
                           units={appUnits}

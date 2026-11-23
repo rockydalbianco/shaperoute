@@ -5,6 +5,8 @@ What a line holds, and what it never holds:
 - the words of a search, normalised, at most MAX_TEXT characters, with
   e-mail addresses and long numbers blanked out;
 - where, only as a cell of about 1 km (CELL_DECIMALS), or a city's name;
+- for a drawing or a photo, once the server is told so, its shape in a
+  square from 0 to 1, without place or size (outlines.py, TASK-311 D);
 - how it went: outcome, error code, number of results, similarity, places
   passed, milliseconds; which vocabulary version and which reader (table,
   learned, ai) answered;
@@ -128,6 +130,12 @@ class Event:
     via: str | None = None
     hint: str | None = None
     place: bool | None = None
+    # A route's sport, pen up and style; a drawing's or a photo's shape in
+    # a square from 0 to 1, never its place or size (TASK-311 part D).
+    activity: str | None = None
+    pen_up: bool | None = None
+    style: str | None = None
+    outline: list[list[list[float]]] | None = None
     vocab: int = 0
     ts: str = field(
         default_factory=lambda: datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")

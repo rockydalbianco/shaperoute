@@ -23,6 +23,7 @@ import {
 import { numberSize } from "./FlightWidget";
 import { resetFlightNotice } from "./flightNotice";
 import { flightOf, T0 } from "./syntheticFlight";
+import { resetAirspace, setAirspace } from "./airspaceStore";
 import { useFlightScreen } from "./useFlightScreen";
 import {
   DEFAULT_VARIO_PREFS,
@@ -164,6 +165,81 @@ describe("the map and the height above the ground (part A1)", () => {
     saveFlightPrefs({ ...prefs, current: 2 });
     await showScreen();
     expect(screen.queryByTestId("ground-probe")).toBeNull();
+  });
+});
+
+describe("the airspaces of the pilot's file (part E2)", () => {
+  beforeEach(() => {
+    resetAirspace();
+    setAirspace(null);
+  });
+
+  it("warns on the screen when the pilot is inside one of their volumes", async () => {
+    const [lat, lon] = TRACK.fixes[TRACK.fixes.length - 1].point;
+    setAirspace({
+      fileName: "test.txt",
+      loadedAtMs: 0,
+      unread: 0,
+      airspaces: [
+        {
+          class: "R",
+          name: "TEST BOX",
+          floor: { kind: "aboveSea", metres: 500 },
+          ceiling: { kind: "unlimited" },
+          points: [
+            [lat - 0.01, lon - 0.01],
+            [lat - 0.01, lon + 0.01],
+            [lat + 0.01, lon + 0.01],
+            [lat + 0.01, lon - 0.01],
+          ],
+        },
+      ],
+    });
+    await showScreen();
+    expect(screen.getByTestId("airspace-alert")).toBeTruthy();
+    expect(screen.getByText("TEST BOX (R) · inside · floor 500 m")).toBeTruthy();
+  });
+
+  it("warns of nothing without a file", async () => {
+    await showScreen();
+    expect(screen.queryByTestId("airspace-alert")).toBeNull();
+  });
+
+  it("bands the altitude chart where the pilot was over a volume (E3)", async () => {
+    const [lat, lon] = TRACK.fixes[TRACK.fixes.length - 1].point;
+    setAirspace({
+      fileName: "test.txt",
+      loadedAtMs: 0,
+      unread: 0,
+      airspaces: [
+        {
+          class: "D",
+          name: "TEST BOX",
+          floor: { kind: "ground" },
+          ceiling: { kind: "aboveSea", metres: 3000 },
+          points: [
+            [lat - 0.01, lon - 0.01],
+            [lat - 0.01, lon + 0.01],
+            [lat + 0.01, lon + 0.01],
+            [lat + 0.01, lon - 0.01],
+          ],
+        },
+      ],
+    });
+    await showScreen();
+    await fireEvent.press(screen.getByTestId("flight-screen-layout"));
+    await fireEvent.press(screen.getByText("XC"));
+    await fireEvent.press(screen.getByTestId("flight-options-done"));
+    expect(screen.getByTestId("widget-altitudeChart")).toBeTruthy();
+    expect(screen.getAllByTestId("altitude-chart-band").length).toBeGreaterThan(0);
+  });
+
+  it("bands nothing without a file (E3)", async () => {
+    await showScreen();
+    await fireEvent.press(screen.getByTestId("flight-screen-layout"));
+    await fireEvent.press(screen.getByText("XC"));
+    await fireEvent.press(screen.getByTestId("flight-options-done"));
+    expect(screen.queryAllByTestId("altitude-chart-band")).toHaveLength(0);
   });
 });
 

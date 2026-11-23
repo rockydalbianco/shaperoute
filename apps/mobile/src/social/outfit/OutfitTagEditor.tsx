@@ -31,6 +31,7 @@ import {
   space,
 } from "../../theme/tokens";
 import { SheetModal } from "../../ui/SheetModal";
+import { useSheetFace } from "../../ui/sheetFace";
 import { useOutfitTagging } from "./OutfitTagging";
 import {
   brandReady,
@@ -45,6 +46,8 @@ import {
   roomProblem,
 } from "./outfitTags";
 import { dotLabel, outfitWords } from "./outfitWords";
+import { glassRaise } from "../../ui/glassRaise";
+import { useGlassMode } from "../../ui/useGlassMode";
 
 /** The photos of a post are 4:5 (TASK-348): the box the photo is shown in. */
 const BOX_RATIO = 5 / 4;
@@ -101,7 +104,11 @@ export function OutfitTagEditor({
   refused,
   onDone,
 }: Props) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   const { width: screen } = useWindowDimensions();
   const words = outfitWords();
   const [tags, setTags] = useState<OutfitDraft[]>(() => [...kept]);
@@ -224,7 +231,11 @@ export function OutfitTagEditor({
           testID="outfit-editor-backdrop"
         />
         <View
-          style={[styles.sheet, { paddingBottom: insets.bottom + space.sm }]}
+          style={[
+            styles.sheet,
+            glassSheet,
+            { paddingBottom: insets.bottom + space.sm },
+          ]}
           testID="outfit-editor"
         >
           <View style={styles.header}>
@@ -310,7 +321,7 @@ export function OutfitTagEditor({
                     return (
                       <Pressable
                         key={item}
-                        style={[styles.chip, on && styles.chipOn]}
+                        style={[styles.chip, chipRaise, on && styles.chipOn]}
                         onPress={() => setForm((was) => ({ ...was, item }))}
                         accessibilityRole="radio"
                         accessibilityState={{ checked: on }}
@@ -337,7 +348,7 @@ export function OutfitTagEditor({
                     {suggested.map((brand) => (
                       <Pressable
                         key={brand}
-                        style={styles.chip}
+                        style={[styles.chip, chipRaise]}
                         onPress={() => setForm((was) => ({ ...was, brand }))}
                         accessibilityRole="button"
                       >
@@ -418,6 +429,8 @@ export function TagWhatYouWear({
   places: readonly number[];
   disabled?: boolean;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const outfit = useOutfitTagging();
   const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -436,6 +449,7 @@ export function TagWhatYouWear({
         <Pressable
           style={[
             styles.chip,
+            chipRaise,
             tags.length > 0 && styles.chipOn,
             disabled && styles.busy,
           ]}

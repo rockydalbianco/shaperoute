@@ -22,7 +22,7 @@ import { isoDate } from "./program";
 import { forgetPaceAsked } from "./runPace";
 import { loadSport } from "../settings/sport";
 import { useDrawDistance } from "../units/useDrawDistance";
-import { Text } from "react-native";
+import { Alert, Text } from "react-native";
 import { forgetHeldWorkout } from "./useWorkout";
 import { logSet, newWorkout, planStep } from "./workout";
 import { WorkoutScreen } from "./WorkoutScreen";
@@ -706,4 +706,44 @@ test("the days the answers moved: ↑ and =, «Adapts to how it went» turns it 
   await act(async () => {});
   const again = plansOf(OWNER).find((one) => one.key === LIFT_AND_RUN.key)!;
   expect(again.program?.adapt).toEqual(LIFT_AND_RUN.program!.adapt);
+});
+
+test("«Delete plan» in every step of the guide, not only the last", async () => {
+  mergePlans(OWNER, [MUSCLE, LIFT_AND_RUN]);
+  await shown(
+    <GymPlansSheet
+      visible
+      onClose={jest.fn()}
+      fetchFn={api([MUSCLE, LIFT_AND_RUN]) as unknown as typeof fetch}
+    />,
+  );
+  // «Edit» opens on the plan's step: «Delete plan» is already there.
+  await fireEvent.press(screen.getAllByTestId("gym-plan-edit")[0]);
+  expect(screen.getByTestId("plan-delete")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  expect(screen.getByTestId("plan-delete")).toBeOnTheScreen();
+
+  // The same question as before; «Delete» takes the plan away.
+  const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+  await fireEvent.press(screen.getByTestId("plan-delete"));
+  const [title, , buttons] = alert.mock.calls[0];
+  expect(title).toMatch(/^Delete “.+”\?$/);
+  await act(async () => {
+    buttons?.find((one) => one.style === "destructive")?.onPress?.();
+  });
+  expect(screen.getByTestId("gym-plans")).toBeOnTheScreen();
+  expect(plansOf(OWNER)).toHaveLength(1);
+  alert.mockRestore();
+});
+
+test("a new plan has nothing to delete", async () => {
+  await shown(
+    <GymPlansSheet
+      visible
+      startNew
+      onClose={jest.fn()}
+      fetchFn={api([]) as unknown as typeof fetch}
+    />,
+  );
+  expect(screen.queryByTestId("plan-delete")).toBeNull();
 });

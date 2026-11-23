@@ -222,7 +222,10 @@ In «My plans» una scheda con le settimane è un riquadro: «In progress»,
 «Week 2 of 4» con le tacche del ciclo, i giorni di questa settimana con la
 lettera dell'allenamento (oggi cerchiato), «Edit» (passo 3) e «Weeks» (passo
 4); le schede di prima sono righe «sempre uguale» e si aprono nella guida
-allo stesso modo. In «Draw» «Today» mostra l'allenamento del giorno della
+allo stesso modo. Aperta una scheda che esiste, «Delete plan» (con la
+stessa domanda prima) è sotto il bottone principale in ogni passo della
+guida, non solo all'ultimo (TASK-492, scelta dell'utente del 2026-11-23,
+«In ogni passo»). In «Draw» «Today» mostra l'allenamento del giorno della
 settimana del ciclo, coi valori di quella settimana, e «Week 2 of 4»;
 l'allenamento parte col recupero dell'obiettivo per ogni esercizio. Il
 calendario segna saltati i giorni con un allenamento nella settimana del

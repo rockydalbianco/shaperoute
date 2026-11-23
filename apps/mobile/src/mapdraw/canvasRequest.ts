@@ -107,12 +107,19 @@ export function isDrawnOutline(outline: OutlinePoint[]): boolean {
  * (`POST /image-route-jobs`). `start` is where the figure starts on the map,
  * `distance_m` its distance in whole metres, to the tenth of a km or of a
  * mile as a distance typed in «Draw»: the route says «target 5.7 km».
+ *
+ * With `anchored` (TASK-347 part C3, ADR-0300), a drawing made by hand is
+ * asked `placement: "anchored"`: the route stays where and as it was drawn,
+ * never turned, moved or rescaled. Only for a server that answered the
+ * probe (GET /stroke-matches): an older one refuses the field. Shapes and
+ * pictures stay free.
  */
 export function canvasRequest(
   placed: Placed,
   penUp: boolean,
   activity: Activity,
   units: Units = appUnits(),
+  anchored = false,
 ): AnyRouteRequest {
   // A shape of the catalogue turned is asked by its outline (ADR-0336).
   const figure = shownFigure(placed);
@@ -135,6 +142,9 @@ export function canvasRequest(
     ...common,
     outline,
     ...(strokes.length > 0 ? { strokes } : {}),
+    ...(anchored && figure.kind === "drawing"
+      ? { placement: "anchored" as const }
+      : {}),
   };
   return request;
 }

@@ -1,3 +1,4 @@
+import type { GymSessionRequest } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useRef } from "react";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
@@ -33,6 +34,9 @@ export type GymSaved = GymKept | "signed_out" | "nothing";
  */
 export function useGymOutbox(fetchFn?: typeof fetch): {
   save: (workout: Workout, post?: GymPost) => GymSaved;
+  /** «Save» of a request made already: a workout written by hand
+   * (TASK-484 part B), the same way as a recorded one. */
+  saveRequest: (key: string, request: GymSessionRequest, post?: GymPost) => GymSaved;
 } {
   const { apiUrl, account } = useFollowsDoor();
   const { owner, refresh } = useActivitiesDoor();
@@ -116,19 +120,15 @@ export function useGymOutbox(fetchFn?: typeof fetch): {
     void send();
   }, [send, token, owner]);
 
-  const save = useCallback(
-    (workout: Workout, post?: GymPost): GymSaved => {
+  const saveRequest = useCallback(
+    (key: string, request: GymSessionRequest, post?: GymPost): GymSaved => {
       const who = latest.current.owner;
       if (who === null) {
         return "signed_out";
       }
-      const request = sessionRequest(workout);
-      if (request === null) {
-        return "nothing";
-      }
       const kept = keepGymWaiting({
         owner: who,
-        key: workout.key,
+        key,
         request,
         ...(post === undefined
           ? {}
@@ -138,9 +138,9 @@ export function useGymOutbox(fetchFn?: typeof fetch): {
         if (post !== undefined) {
           // The photos take the places of the post's order, as a run's.
           const { photos, order } = postPhotos(post);
-          keepPhotos(who, workout.key, photos);
+          keepPhotos(who, key, photos);
           if (order !== null) {
-            keepOrder(who, workout.key, order);
+            keepOrder(who, key, order);
           }
           saveVisibility(who, post.choice.visibility);
         }
@@ -151,5 +151,19 @@ export function useGymOutbox(fetchFn?: typeof fetch): {
     [send],
   );
 
-  return { save };
+  const save = useCallback(
+    (workout: Workout, post?: GymPost): GymSaved => {
+      if (latest.current.owner === null) {
+        return "signed_out";
+      }
+      const request = sessionRequest(workout);
+      if (request === null) {
+        return "nothing";
+      }
+      return saveRequest(workout.key, request, post);
+    },
+    [saveRequest],
+  );
+
+  return { save, saveRequest };
 }

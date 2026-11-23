@@ -68,6 +68,16 @@ test("anything else opens nothing", () => {
   }
 });
 
+test("an item of gear past its limit opens the item (TASK-486 part G)", () => {
+  const gear = "6f1c2a7e-3b4d-4e8f-9a01-2b3c4d5e6f70";
+  expect(tapTarget({ kind: "gear_limit", gear_id: gear })).toEqual({
+    kind: "gear",
+    id: gear,
+  });
+  expect(tapTarget({ kind: "gear_limit", gear_id: "nope" })).toBeNull();
+  expect(tapTarget({ kind: "gear_limit" })).toBeNull();
+});
+
 test("a group run's three notifications open its page", () => {
   const run = "5b0c6a1e-3d2f-4e8a-9b7c-1d2e3f4a5b6c";
   for (const kind of ["group_run_soon", "group_run_changed", "group_run_cancelled"]) {

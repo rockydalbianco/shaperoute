@@ -1400,8 +1400,13 @@ export const FR: Table = {
   Beginner: "Débutant",
   // src/gym/SportsDoor.tsx, bodyweight.ts, GymPlanWizard.tsx (TASK-461 A2, approved 2026-11-11)
   "What do you want to train?": "Que veux-tu entraîner ?",
-  "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.":
-    "Choisis-en au moins deux : un plan mélange toujours deux sports. Ensuite, on te guide en 5 étapes.",
+  "Choose one or more. Then we guide you in 5 steps.":
+    "Choisis-en un ou plusieurs. Ensuite, on te guide en 5 étapes.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
+  Table: "Tableau",
+  "No exercises yet.": "Pas encore d'exercice.",
+  "Change week {n}": "Change la semaine {n}",
+  "kg · touch a week to change it": "kg · touche une semaine pour la changer",
   "With weights and machines": "Avec poids et machines",
   Bodyweight: "Poids du corps",
   "At home or in the park, no equipment": "À la maison ou au parc, sans matériel",
@@ -3490,9 +3495,13 @@ export const FR: Table = {
   "Goal taken": "But atteint",
   "Turnpoint {name} taken. Next: {next}.": "Balise {name} validée. Suivante : {next}.",
   "Goal {name} taken.": "But {name} atteint.",
-  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
-  Table: "Tableau",
-  "No exercises yet.": "Pas encore d'exercice.",
-  "Change week {n}": "Change la semaine {n}",
-  "kg · touch a week to change it": "kg · touche une semaine pour la changer",
+  // src/nutrition (TASK-489 part D)
+  "Calorie balance": "Bilan calorique",
+  Used: "Dépensées",
+  "Previous week": "Semaine précédente",
+  "Next week": "Semaine suivante",
+  "so far": "jusqu'ici",
+  "Week total": "Total de la semaine",
+  "Today is not in the total until the day is over.":
+    "Aujourd'hui n'entre dans le total qu'une fois la journée terminée.",
 };

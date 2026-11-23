@@ -43,6 +43,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   versione nuova, poi 1 s e saltabile; animali e musiche restano dentro.
   Scelte dell'utente fatte; parte A col sì del Coordinatore.
   File: — · `tasks/TASK-505.md`
+  **Chiuso il 2026-11-23**: parte A in `main` (#1527); restano l'OTA e la
+  prova sul telefono; vedi `archive/COMPLETATI.md`.
 - **TASK-493 — La mappa dei decolli** (ADR-0400) · parte 0 il 2026-11-23:
   decolli e atterraggi da OSM, la scheda del decollo con lo storico dei
   voli contato dal server; scelte dell'utente fatte. Vento dopo 479 H.

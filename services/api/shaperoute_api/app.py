@@ -73,6 +73,7 @@ from shaperoute_api.game import install_game
 from shaperoute_api.gear import install_gear
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.group_runs import install_group_runs
+from shaperoute_api.groups import install_groups
 from shaperoute_api.gym_calendar import install_gym_calendar
 from shaperoute_api.gym_history import install_gym_history
 from shaperoute_api.gym_leaderboard import install_gym_leaderboard
@@ -480,6 +481,9 @@ def create_app(
     # Group runs on a route, «I'm going» and the reminder an hour before
     # (TASK-309); they need a token.
     install_group_runs(app)
+    # Groups to go out together: members, requests, invites, roles
+    # (TASK-495); they need a token.
+    install_groups(app)
     # A stroke drawn on the map, anchored to the roads as the finger lifts
     # (TASK-347 A), and the probe that says this server does it.
     install_stroke_matches(app, source)

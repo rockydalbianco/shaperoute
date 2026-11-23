@@ -3,6 +3,7 @@ import { useSyncExternalStore } from "react";
 import { dayOf, type Diary, diaryOfMonth, diaryWithDay, eatenAsPlanned } from "./diary";
 import {
   ACTIVITY_KCAL,
+  type EnergyEdits,
   REST_KCAL_PER_DAY,
   withActivityKcal,
   withRest,
@@ -80,6 +81,15 @@ function subscribe(listener: () => void): () => void {
   return () => {
     listeners.delete(listener);
   };
+}
+
+/** Told each time something of «Nutrition» changes: for a screen outside
+ * it that shows one of its numbers (useListKcal.ts). */
+export const subscribeNutrition = subscribe;
+
+/** The energy the user corrected by hand, as it is now. */
+export function energyEdits(): EnergyEdits {
+  return current().settings.edits;
 }
 
 /** The month of the diary, read from the phone the first time it is asked. */

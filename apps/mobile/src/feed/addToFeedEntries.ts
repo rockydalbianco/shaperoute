@@ -2,12 +2,18 @@ import { t } from "../i18n";
 
 /**
  * The entries of the Feed's «+» (TASK-481, ADR-0390), in the user's order:
- * «Record now», «Photos only», «From a file», then «Sleep» (TASK-467 E),
+ * «Record now», «Already recorded» (TASK-481 part F), «Photos only», «From
+ * a file», then «Sleep» (TASK-467 E),
  * «Gym workout» (TASK-484) and «Workout plan» (TASK-485). Only the ready
  * ones are listed, with no «Soon»: each of the last three adds its own line
- * here, at its place in the order, when its flow is in the app.
+ * here, at its place in the order, when its flow is in the app. «Gym
+ * workout» and «Workout plan» are always ready: the «+» is there only with
+ * an account; with no plans the second says how to make one. «Already
+ * recorded» is always ready too: with no activity left to post, its flow
+ * says so.
  */
-export type AddToFeedEntryId = "record" | "photos" | "file" | "sleep";
+export type AddToFeedEntryId =
+  "record" | "done" | "photos" | "file" | "sleep" | "gym" | "plan";
 
 export type AddToFeedEntry = {
   id: AddToFeedEntryId;
@@ -39,6 +45,14 @@ export function addToFeedEntries({
     [
       true,
       {
+        id: "done",
+        title: t("Already recorded"),
+        detail: t("Post an activity from My activities"),
+      },
+    ],
+    [
+      true,
+      {
         id: "photos",
         title: t("Photos only"),
         detail: t("Up to 10 photos, also from Instagram"),
@@ -58,6 +72,22 @@ export function addToFeedEntries({
         id: "sleep",
         title: t("Sleep"),
         detail: t("Last night's sleep score, from Apple Health"),
+      },
+    ],
+    [
+      true,
+      {
+        id: "gym",
+        title: t("Gym workout"),
+        detail: t("A workout you already did, written by hand"),
+      },
+    ],
+    [
+      true,
+      {
+        id: "plan",
+        title: t("Workout plan"),
+        detail: t("Share one of your gym plans"),
       },
     ],
   ];

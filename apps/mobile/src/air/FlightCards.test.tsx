@@ -18,6 +18,7 @@ import {
 } from "../screens/FreeRunScreen";
 import type { Sport } from "../settings/sport";
 import { saveUnitsChoice } from "../units/units";
+import { resetAirspace, setAirspace } from "./airspaceStore";
 import { FlightFinishCard } from "./FlightFinishCard";
 import { FlightLive, varioText } from "./FlightLive";
 import { resetFlightNotice } from "./flightNotice";
@@ -25,6 +26,31 @@ import { resetFlightNotice } from "./flightNotice";
 let mockSport: Sport = "paragliding";
 jest.mock("../settings/useSport", () => ({ useSport: () => mockSport }));
 
+jest.mock("expo-file-system", () => {
+  const files = new Map<string, string>();
+  class File {
+    uri: string;
+    constructor(directory: { uri: string }, name: string) {
+      this.uri = `${directory.uri}${name}`;
+    }
+    get exists(): boolean {
+      return files.has(this.uri);
+    }
+    create(): void {
+      files.set(this.uri, "");
+    }
+    write(text: string): void {
+      files.set(this.uri, text);
+    }
+    textSync(): string {
+      return files.get(this.uri) ?? "";
+    }
+    delete(): void {
+      files.delete(this.uri);
+    }
+  }
+  return { File, Paths: { document: { uri: "file:///documents/" } } };
+});
 jest.mock("expo-brightness", () => ({
   getBrightnessAsync: jest.fn(() => Promise.resolve(0.6)),
   setBrightnessAsync: jest.fn(() => Promise.resolve()),
@@ -128,4 +154,40 @@ test("a flight ends on its own card and banner, from the sport of «Settings»",
   await render(<FreeFinishBanner />);
   expect(screen.getByText("Your flight")).toBeOnTheScreen();
   expect(screen.getByText("White: where you flew.")).toBeOnTheScreen();
+});
+
+test("the end of a flight has its airspace line only with a file (E3)", async () => {
+  resetAirspace();
+  setAirspace(null);
+  const card = () => (
+    <FlightFinishCard run={flown(flight())} activity="paragliding" onDone={jest.fn()} />
+  );
+  await render(card());
+  expect(screen.queryByTestId("airspace-log-row")).toBeNull();
+  // Invented: a box around the whole flight, from the ground up.
+  setAirspace({
+    fileName: "test.txt",
+    loadedAtMs: 0,
+    unread: 0,
+    airspaces: [
+      {
+        class: "R",
+        name: "TEST BOX",
+        floor: { kind: "ground" },
+        ceiling: { kind: "unlimited" },
+        points: [
+          [START[0] - 0.1, START[1] - 0.1],
+          [START[0] - 0.1, START[1] + 0.1],
+          [START[0] + 0.1, START[1] + 0.1],
+          [START[0] + 0.1, START[1] - 0.1],
+        ],
+      },
+    ],
+  });
+  await render(card());
+  expect(screen.getByTestId("airspace-log-row")).toHaveTextContent(
+    "Inside your airspaces: 1 ›",
+    { exact: false },
+  );
+  setAirspace(null);
 });

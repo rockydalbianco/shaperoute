@@ -6,6 +6,8 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { t, tLater } from "../i18n";
 import { color, font, fontWeight, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { loadGear, loadSnow, saveGear, saveSnow } from "./skiDayStore";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /** The five snows, in the order of the choice (the user's, 2026-11-07). */
 export const SNOW_LABELS: Readonly<Record<SnowType, string>> = {
@@ -23,6 +25,8 @@ export const SNOW_LABELS: Readonly<Record<SnowType, string>> = {
  * they change; «Save» sends them with the day.
  */
 export function DayChoices() {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const [snow, setSnow] = useState<SnowType | null>(loadSnow);
   const [gear, setGear] = useState(loadGear);
   return (
@@ -36,7 +40,7 @@ export function DayChoices() {
           return (
             <Pressable
               key={type}
-              style={[styles.chip, chosen && styles.chosen]}
+              style={[styles.chip, chipRaise, chosen && styles.chosen]}
               onPress={() => {
                 const next = chosen ? null : type;
                 setSnow(next);

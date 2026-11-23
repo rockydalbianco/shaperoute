@@ -11,6 +11,8 @@ import {
   space,
 } from "../theme/tokens";
 import { endMusic, hearMusic, MUSIC, type Music, musicName } from "./videoMusic";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 type Props = {
   /** The track the video gets; null for none. */
@@ -24,6 +26,8 @@ type Props = {
  * tap on «None» stops it. «None» is chosen when the post opens.
  */
 export function MusicRow({ music, onChange }: Props) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   // The track stops when the post closes.
   useEffect(() => endMusic, []);
 
@@ -42,7 +46,7 @@ export function MusicRow({ music, onChange }: Props) {
           return (
             <Pressable
               key={choice ?? "none"}
-              style={[styles.chip, on && styles.chipOn]}
+              style={[styles.chip, chipRaise, on && styles.chipOn]}
               onPress={() => pick(choice)}
               accessibilityRole="radio"
               accessibilityState={{ checked: on }}

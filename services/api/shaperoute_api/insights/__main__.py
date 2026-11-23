@@ -19,6 +19,9 @@
   history           the versions of the vocabulary and why
   validate          the vocabulary checked against the catalogue and tables
   import-history    the old request log as events, without the starts
+  outlines --out F  the shapes drawn by hand or from a photo, as one HTML
+                    page: those that came out, then those that did not
+                    (TASK-311 part D; --since/--until for a month)
 
 --since/--until YYYY-MM-DD keep the events of those days only, for any
 command. It reads files of this computer only: no AI, no service, no cost.
@@ -52,6 +55,7 @@ from shaperoute_api.insights.analyze import (
     top_queries,
 )
 from shaperoute_api.insights.events import DEFAULT_DIR, Event, cell, read_events
+from shaperoute_api.insights.outlines import page
 from shaperoute_api.insights.vocabulary import DEFAULT_PATH, Vocabulary, phrase_key
 from shaperoute_api.request_log import DEFAULT_DIR as REQUESTS_DIR
 from shaperoute_api.request_log import FILE_NAME as REQUESTS_FILE
@@ -160,12 +164,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     revert.add_argument("version", type=int)
     imported = sub.add_parser("import-history")
     imported.add_argument("--requests", type=Path, default=REQUESTS_DIR / REQUESTS_FILE)
+    drawn = sub.add_parser("outlines")
+    drawn.add_argument("--out", type=Path, required=True, help="the HTML page")
     args = parser.parse_args(argv)
 
     vocab = Vocabulary.load(args.vocab)
     if args.command == "import-history":
         return import_history(args.requests, args.dir)
     events = between(read_events(args.dir), args.since, args.until)
+
+    if args.command == "outlines":
+        days = " – ".join(d for d in (args.since, args.until) if d)
+        args.out.write_text(
+            page(events, f"Drawings asked{f' ({days})' if days else ''}"),
+            encoding="utf-8",
+        )
+        print(f"written {args.out}")
+        return 0
 
     if args.command == "validate":
         problems = problems_of(vocab)

@@ -18,6 +18,9 @@ import {
   speedText,
   varioText,
 } from "./flightUnits";
+import type { Near } from "./airspaceNear";
+import type { ProfileBand } from "./airspaceProfile";
+import { acrossText, limitLabel } from "./airspaceText";
 import { WIDGET_NAME, type WidgetId } from "./flightLayout";
 import type { FlightScreenData } from "./useFlightScreenData";
 import { AltitudeChart } from "./widgets/AltitudeChart";
@@ -72,6 +75,12 @@ type Props = {
   palette: Palette;
   width: number;
   height: number;
+  /** The nearest volume of the pilot's airspace file (part E2): null
+   * when none is near or none is loaded. */
+  nearest?: Near | null;
+  /** The volumes of the file under the altitude chart, bar by bar (part
+   * E3); none without a file. */
+  bands?: readonly ProfileBand[][];
 };
 
 function Box({
@@ -174,6 +183,8 @@ export function FlightWidget({
   palette,
   width,
   height,
+  nearest = null,
+  bands = [],
 }: Props) {
   const name = t(WIDGET_NAME[widget]);
   const now = data.instrument;
@@ -207,6 +218,21 @@ export function FlightWidget({
         altitudeText(data.aboveGroundM, flight.altitude),
         UNIT_LABEL[flight.altitude],
       );
+    case "nearestAirspace": {
+      if (nearest === null) {
+        return box(NO_VALUE);
+      }
+      const { airspace } = nearest;
+      const across = acrossText(nearest, units);
+      return box(across, undefined, {
+        under: `${airspace.class} ${airspace.name} · ${limitLabel(
+          airspace.floor,
+          flight.altitude,
+        )}–${limitLabel(airspace.ceiling, flight.altitude)}${nearest.approx ? " ≈" : ""}`,
+        background: nearest.inside ? palette.warning : undefined,
+        ink: nearest.inside ? palette.onAccent : undefined,
+      });
+    }
     case "map":
       // The flight screen draws the map itself (FlightMap): here only its
       // name, as in the editor.
@@ -334,6 +360,7 @@ export function FlightWidget({
             width={width - 20}
             height={Math.max(20, height - 70)}
             palette={palette}
+            bands={bands}
           />
         </View>
       );

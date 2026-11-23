@@ -2,8 +2,9 @@
 
 **Stato**: In corso (B2 e A in produzione, provate dall'utente sull'iPhone il
 2026-11-22: link in Safari → «Apri» → il post dentro MuW; C: i due file
-`.well-known`, iPhone e Android, sono online; resta la parte D, con la
-prossima build nativa)
+`.well-known`, iPhone e Android, sono online; D: scritta, bozza #1461, da
+unire solo al taglio della prossima build nativa — poi la prova sul
+telefono. Per chi riprende: l'ultima voce del Registro)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-482-post-link-opens-app`
 **Dipende da**: TASK-455 (il link di un post, `getmuw.app/p/#<id>`, parti
@@ -139,6 +140,9 @@ e `site/tests/well-known.test.mjs` (nuovi), `docs/DEPLOY.md` (F.14),
 Parte C, metà Android (#1436): `site/.well-known/assetlinks.json` (nuovo),
 `site/tests/well-known.test.mjs`, `docs/DEPLOY.md` (F.14), `docs/SITO.md`.
 
+Parte D (bozza #1461): `apps/mobile/app.json`,
+`apps/mobile/__tests__/postLinkConfig.test.ts` (nuovo).
+
 ## Fuori scope
 
 - Un «Copy link» vero (vuole `expo-clipboard`, una dipendenza nativa): con
@@ -248,3 +252,49 @@ Parte C, metà Android (#1436): `site/.well-known/assetlinks.json` (nuovo),
   WhatsApp, anche su Android. I due file sul sito ci sono già. Elenco dei
   file al Coordinatore prima del codice; se Play cambia chiave di firma,
   `assetlinks.json` va aggiornato (`DEPLOY.md` F.14).
+- 2026-11-23: l'utente: **«continua con la prossima build»**. Elenco dei
+  file della parte D al Coordinatore, approvato: bozza da `main`, «DO NOT
+  MERGE fino al taglio» (non c'è un ramo comune della build),
+  `fingerprint.config.js` non si tocca (la build è per tutti e due gli
+  store), l'ordine dei merge su `app.json` lo decide lui al taglio
+  (467 C, 312 D, 489, 479, 482 D). La data della build la chiede lui
+  all'utente.
+- 2026-11-23: **parte D scritta, bozza #1461**
+  (`feat/TASK-482-d-app-links`, `23214e48`, CI verde). In `app.json`:
+  `ios.associatedDomains` = `applinks:getmuw.app`; un filtro Android
+  `VIEW` con `autoVerify`, `https://getmuw.app`, i tre percorsi **esatti**
+  `/p/`, `/p`, `/p/index.html` (mai un prefisso: `/p` prenderebbe anche
+  `/privacy`); `scheme` = `muw`, solo dichiarato. Il test nuovo legge
+  insieme l'app e i due file del sito. Controllato con `APP_VARIANT=production
+  npx expo config --type introspect`: l'iPhone prende l'entitlement dei
+  domini associati e gli schemi `muw` + identificativo; il manifest
+  Android prende il filtro coi tre percorsi e uno per `muw://`. Nessun
+  JavaScript dell'app cambia: la parte A legge già qualunque indirizzo.
+- 2026-11-23: proposta all'utente una build di prova per l'iPhone con la
+  parte D dentro — risposta: **«Aspetto la build vera»**. Non riproporla.
+  Poi: **«quando hai finito, archiviati»**: la sessione che ha fatto il
+  task si chiude qui.
+- **Per chi riprende, al taglio della build nativa** (lo dice il
+  Coordinatore):
+  1. riallineare #1461 a `main` quando lo chiede lui (i conflitti sono
+     solo su `app.json`: tenere le righe di tutti), rilanciare
+     `postLinkConfig.test.ts` e gli altri test di config; le impronte le
+     misura chi taglia, e si muovono tutte e due;
+  2. nel log della build iOS guardare che EAS accenda «Associated
+     Domains» sull'App ID (serve l'accesso ad Apple dell'utente se rifà i
+     profili);
+  3. **la prova, che è dell'utente, con la build nuova sul telefono**: il
+     link di un post toccato in WhatsApp → il post dentro MuW, senza
+     Safari; su iPhone e su Android (Android solo con l'app installata da
+     Play: un APK di prova è firmato con la chiave di caricamento, che non
+     è in `assetlinks.json`). **Mai dimostrato da nessuno**: che l'iPhone
+     accetti i percorsi con l'id dopo `#` del file
+     `apple-app-site-association`. Se non li accetta: togliere `"#"` dai
+     tre `components` del file sul sito (una PR del sito e una copia, senza
+     build) — l'app prende comunque solo gli id a forma di disegno;
+  4. dopo la prova: PR di soli documenti (questo registro, un'aggiunta ad
+     ADR-0391 se qualcosa è cambiato, `UI.md`/`SITO.md` se serve), stato
+     `Done`, riga in `archive/COMPLETATI.md`, «TASK-482 fatto» al
+     Coordinatore.
+  Fuori scope restano il «Copy link» vero e un bottone «Open in MuW»
+  con lo schema `muw` (scelte di prodotto, da chiedere all'utente).

@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6b in produzione); B Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6b in produzione, A7a, A7b, A5c-2, A7c-1 in `main`); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -589,10 +589,124 @@ lasciando le righe d'indice.
 - ADR-0390, precisazione A — La lista del «+» nell'app: «Record now» come l'avvio senza percorso di «Draw», «Photos only» dritto al modulo di C2, «From a file» con «Files» aperto subito (`fileAtOnce`), il titolo della voce aperta · 2026-11-23 · Attiva
 - ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Proposta
 - ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
+- ADR-0397, precisazione 2 — La tabella di base dei cibi: 314 voci da USDA SR Legacy (aprile 2018) ricavate da uno script, nomi in cinque lingue in file loro; la pagina «Nutrition» in due PR, con schermate e testi approvati · 2026-11-23 · Proposta
+- ADR-0397, precisazione 3 — Le attività nel bilancio stimate da quello che dice la lista privata (palestra dal solo tempo, escursione senza salita), oggi «finora» e fuori dal totale della settimana, il diario del telefono e non dell'account · 2026-11-23 · Proposta
+- ADR-0397, precisazione 4 — Il codice a barre su Open Food Facts in due PR (ricerca senza fotocamera, poi il lettore), solo kcal e mai kilojoule convertiti; un lettore unico degli allenamenti di Salute in `health/`, spento fino alla build nativa · 2026-11-23 · Proposta
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
+- ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB · 2026-11-23 · Attiva
+- ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi · 2026-11-23 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi
+
+**Stato**: Attiva · 2026-11-23 · TASK-385 parte G: G1 (#1440, `d577db69`,
+server al passo 20) e G2 (#1459, `020cb5b8`). «Un sì per tutti» è una
+**scelta dell'utente** (2026-11-23); il resto è **deciso dall'agente su
+delega dell'utente**, con `FeedPost.tsx`, `FactsText.tsx` e
+`postSections.ts` approvati in più dal Coordinatore.
+
+**Contesto**: ADR-0327 (punto 7) lasciava il battito della palestra a dopo
+TASK-345 C e TASK-374 D. Il nuoto aveva già il suo: il pulsante «Add heart
+rate from Apple Health» a fine vasca, il consenso in `pool-heart.json`, le
+zone sul telefono (ADR-0318).
+
+**Decisione**:
+
+1. **Un consenso solo**: la palestra usa il pulsante, le righe
+   (`PoolHeartLines`, invariato) e il file del nuoto. Chi l'ha dato in
+   piscina vede il battito della palestra senza toccare niente.
+2. **Il battito letto a fine allenamento**, tra inizio e fine senza le
+   pause: media, massimo, minuti per zona. Senza letture la palestra non
+   mostra niente: la riga del nuoto «…for this swim» non va bene per un
+   allenamento.
+3. **Le kcal**: col battito e con sesso, peso e anno di nascita, l'energia
+   attiva di Keytel 2005 (`body/heartKcal.ts`, lorda meno riposo come
+   ADR-0318); altrimenti il MET di oggi. I post degli altri restano al
+   corpo di 70 kg. Le kcal scritte in Salute restano quelle del MET
+   (`gymHealth.ts` invariato).
+4. **Sul server** (G1) media e massimo vanno con l'allenamento,
+   tutti e due o nessuno, la media non sopra il massimo, mai su un
+   allenamento scritto a mano; nelle colonne di `runs` della 0061, senza
+   migrazione.
+5. **Chi lo vede**: «Show heart rate» nel modulo del post (acceso). Agli
+   altri il battito arriva solo con gli esercizi mostrati: con gli esercizi
+   nascosti `GET /drawings/{id}/exercises` resta 404 anche per lui.
+   L'autore lo vede sempre.
+
+**Alternative scartate**: un secondo consenso solo per la palestra (una
+domanda in più per la stessa cosa); il battito agli altri anche con gli
+esercizi nascosti (direbbe dell'allenamento quello che l'autore ha tenuto
+per sé).
+
+**Conseguenze**: niente testi nuovi e niente nativo. Restano la frase di
+Salute in «Privacy» allargata alla palestra (G3, al turno della privacy
+col sì dell'utente) e l'OTA del Coordinatore.
+
+## ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB
+
+**Stato**: Attiva · 2026-11-23 · TASK-441, parte B3 (#1471, `ba12b1fe`).
+Le scelte di prodotto sono dell'utente: **«solo in Explore»** (le uscite da
+40 e 50 km sono disegni pronti del catalogo; «Draw» in bici resta a
+10–30 km) e **«Tutti i 129»** (entrano tutte quelle che passano il filtro).
+Le altre sono **decise dall'agente su delega dell'utente**; il limite di
+memoria è del Coordinatore.
+
+**Contesto**: la precisazione del 2026-11-18 chiudeva con «i 40–50 km (B3)
+vogliono il limite del motore alzato: una PR a parte». Guardando il codice,
+quel limite (`activities/cycling.py`, 30 km) è anche il limite di «Draw»
+nell'API, la misura delle zone della bici sul server e sul telefono, il
+campo della distanza nell'app, e sta nell'impronta del motore e in
+`engine.zip`. Alzarlo voleva dire «Draw» in bici fino a 50 km, ogni zona
+della bici rifatta circa 2,4 volte più grande, una PR del motore e un'OTA:
+una scelta di prodotto, chiesta all'utente e non presa.
+
+**Decisione**:
+
+1. **Il motore non cambia.** `tools/catalog_bike.py --distances 50000
+   40000` toglie il limite dei 30 km solo nel proprio processo
+   (`ride_limit`, per la durata del giro). Nessun file in `services/`,
+   `packages/`, `apps/`; nessuna OTA.
+2. **Stesse otto forme, stesso filtro, stesso registro**
+   (`out/TASK-441/bike.jsonl`, chiave `città/forma@cycling/distanza`):
+   cinque forme a una distanza e tre all'altra, a turno per città. Entra
+   ogni uscita che passa `catalog_seed.reasons`; l'utente le ha guardate
+   tutte su una pagina prima del merge.
+3. **Le uscite da 40 km in su stanno dopo le uscite che c'erano nel file di
+   città** (`catalog_seed._place`, `LATER_RIDES_FROM_M`). L'id di un
+   percorso è il suo posto nel file (`recommended.py`): ordinate per
+   somiglianza in mezzo alle altre, le uscite lunghe avrebbero cambiato
+   l'id delle uscite da 20–30 km già pubblicate. Chi aggiunge altri
+   percorsi a un file già pubblicato li mette in fondo, per la stessa
+   ragione.
+4. **Limite del pianificatore a 4096 MB per ogni città**, guardato ogni 2 s
+   (deciso dal Coordinatore, non alzato): 26 città a 50 e 40 km, 8 solo a
+   40 km, le più grandi come tentativi, fermandosi al primo oltre il
+   limite. Zone ritagliate dagli estratti già sul disco, Overpass chiuso.
+5. **Nessun controllo nuovo sulla distanza**: l'API e l'app non guardano
+   la distanza di un disegno del catalogo. Su un'uscita da 40 o 50 km
+   «Draw it near me» apre «Draw» a 30 km (`againDistanceM` riporta la
+   distanza dentro i limiti dello sport): accettato così.
+
+**Motivo**: il catalogo è fatto di disegni calcolati una volta sul Mac, e
+può permettersi zone e tempi che «Draw» sul telefono e sul server non può.
+Tenere fermo il motore lascia intatte le zone, l'impronta e ogni risposta
+di oggi; l'ordine nel file è l'unica cosa che poteva rompere qualcosa di
+pubblicato, e si è visto solo provando la scrittura a vuoto.
+
+**Conseguenze**: 34 città, 272 casi, 213 disegnati, **129 entrano** (42 da
+50 km, 87 da 40) in 32 città; il catalogo va a **2031 percorsi**, 485
+uscite in bici in 60 città (Levico è nuova). 31 file di città identici byte
+per byte, nei 32 cambiati il testo di prima è l'inizio del nuovo. La
+memoria a 50 km è da 1,5 a 2,5 volte quella a 30 km (Bergamo 4075 MB);
+Genova e Nizza non hanno uscite che passano; Amsterdam passa i 4 GB anche a
+40 km, e Sydney, Valencia, Milano e Barcellona non sono state provate. 20
+casi falliscono perché un candidato esce dalla zona ritagliata (cuore e
+cerchio alla distanza più lunga): una zona più larga per quei casi è un
+ritocco possibile, non fatto. La previsione del piano (150–200 disegni) era
+alta. Il server le carica con un passo «catalogo» (sì dell'utente al
+Coordinatore).
 
 ## ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save»
 
@@ -701,9 +815,11 @@ file» (ripete «Photos only»); per «Record now» solo `setScreen("run")`
 (con la palestra avrebbe aperto la corsa).
 
 **Conseguenze**: esce col prossimo OTA (Coordinatore, col sì
-dell'utente). Restano il turno della privacy («from a file» in due frasi,
-cinque lingue e sito) e le righe di TASK-467 E2, TASK-484 B e TASK-485 B,
-ognuna al via del Coordinatore.
+dell'utente). La privacy è fatta (#1444, `9b946507`, 2026-11-23): «from a
+file» nella frase del «+» in «Help» e «Privacy», cinque lingue (le quattro
+traduzioni approvate dall'utente) e pagine del sito rifatte con
+`make_privacy.mjs`; la data resta il 23 novembre. Restano le righe di
+TASK-467 E2, TASK-484 B e TASK-485 B, ognuna al via del Coordinatore.
 
 ## ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima
 
@@ -959,6 +1075,23 @@ al Coordinatore, non di questo task.
   essa: da soli non cambiano niente, e il giorno della build i telefoni li
   trovano già.
 
+**Aggiunta 2026-11-23, parte D** (bozza #1461; decisa dall'agente su
+delega dell'utente, elenco approvato dal Coordinatore):
+
+- Android prende la pagina di un post coi suoi **tre percorsi esatti**
+  (`/p/`, `/p`, `/p/index.html`), gli stessi del file dell'iPhone: un
+  prefisso `/p` prenderebbe anche `/privacy`. Android non sa leggere cosa
+  c'è dopo `#`: la pagina `/p/` senza id aprirebbe l'app sulla prima
+  schermata — nessuno condivide quell'indirizzo.
+- Lo schema dell'app è **`muw`**, solo dichiarato: nessun bottone e nessun
+  codice lo usa (un «Open in MuW» è una scelta di prodotto).
+- Le due impronte native si muovono insieme: `fingerprint.config.js` non
+  separa queste righe per telefono, perché la build è per tutti e due gli
+  store. Per questo la PR resta bozza fino al taglio: in `main` prima
+  taglierebbe la 1.1.0 installata fuori dai suoi aggiornamenti.
+- Un test (`postLinkConfig.test.ts`) legge insieme `app.json` e i due file
+  `.well-known` del sito: il telefono apre l'app solo se dicono lo stesso.
+
 ## ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie
 
 **Stato**: Attiva · 2026-11-22 · TASK-483: parte 0 (documenti), A #1385
@@ -1210,6 +1343,23 @@ terreno sotto il pilota (`setCenterElevation`). La quota sul terreno si
 legge dalle stesse Terrain Tiles «terrarium» della mappa 3D, decodificate
 su un canvas in una pagina nascosta: nessuna libreria, nessun server. I
 colori del vario sono `vario` in `tokens.ts`.
+
+**Aggiunta del 2026-11-23 (parti E1 ed E2, deciso dall'agente su delega
+dell'utente)**: la parte E è divisa in E1 (il file), E2 (in volo), E3
+(dopo il volo), col sì del Coordinatore. Il file OpenAir resta sul
+telefono (`airspace.json`), uno alla volta, e non va mai al server. La
+vicinanza si calcola sul telefono a ogni secondo; i limiti FL dalla quota
+GPS con l'atmosfera standard, segnati «≈»; un volume di quota ignota
+avvisa sulla sola distanza orizzontale. Il suono d'avviso è un file nostro
+(`alert.wav`, da `tools/vario_tones.py`). I volumi sulla mappa usano i
+colori `error` e `warning` della tavolozza: nessun colore nuovo.
+
+**Aggiunta del 2026-11-23 (parte E3, deciso dall'agente su delega
+dell'utente)**: il registro degli spazi aerei dopo il volo si calcola sul
+telefono e resta lì, mai al server né nel Feed. Dopo il volo i limiti dal
+terreno contano come rispettati e il tratto è segnato «≈»: la quota sul
+terreno sotto ogni punto non c'è. Nel grafico della quota le fasce dei
+volumi usano i colori `error` e `warning` della tavolozza.
 
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
@@ -2635,6 +2785,30 @@ chiede prima di «Delete account» prende solo gli angoli (`radius.group`) e
 tiene il bordo `color.error`: è un avviso, e il vetro lo farebbe sembrare
 una riga qualsiasi. «Log out» e «Keep my account» restano come sono, già
 capsule. Deciso dall'agente su delega dell'utente.
+**A7a (#1453)**: `SheetModal` non disegna il foglio, ogni foglio ha il
+suo stile; quindi un aiuto solo, `sheetFace` / `useSheetFace`, in un file
+nuovo, messo dopo lo stile del foglio così vince sugli angoli e sul bordo
+e lascia al foglio il suo padding. Sul vetro: angoli in alto a 28
+(`radius.card`), il filo e la luce in cima disegnati dentro e un'ombra
+verso l'alto; la faccia resta `surface` per il contrasto. Con «Riduci
+trasparenza» la linea sottile di prima, con «Aumenta contrasto» il bordo
+forte. Deciso dall'agente su delega dell'utente.
+**A7b (#1455)**: l'isola è sempre scura, quindi prende il filo di luce
+del vetro del tono scuro in ogni tono (`glassOf` col tono scuro) e
+l'ombra corta del tono attivo; faccia e parole non cambiano. Deciso
+dall'agente su delega dell'utente.
+**A5c-2 (#1467)**: le schede del Feed restano montate tutte e due, quindi
+`useHeaderScroll(active)` fa parlare solo lo scroller sullo schermo. Una
+scheda nascosta va a riposo in un layout effect, che corre prima
+dell'effect con cui la scheda mostrata dice dove si trova: l'ordine
+delle schede nell'albero non conta. «Style» resta fuori per ora.
+Deciso dall'agente su delega dell'utente.
+**A7c-1 (#1472)**: gli altri chip prendono `glassRaise(useGlassMode())`
+subito dopo il loro stile, una riga per componente, senza un componente
+comune: ogni pagina ha il suo chip con forma e colori suoi, e riunirli
+toccherebbe molto più codice. Un test legge i sorgenti e chiede che ogni
+uso di `styles.chip` sia seguito dal rilievo. Deciso dall'agente su
+delega dell'utente.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 
@@ -6174,3 +6348,138 @@ coincidevano con ADR-0397: richiesti all'utente, uno alla volta.
 com'è. Il testo del permesso della fotocamera (oggi solo la foto da
 ricalcare) e la riga della privacy sul codice mandato a Open Food Facts
 vanno approvati dall'utente prima della build.
+
+## ADR-0397, precisazione 2 — La tabella di base dei cibi da USDA SR Legacy e la pagina «Nutrition» in due PR
+
+**Data**: 2026-11-23 · **Stato**: Proposta · **Task**: TASK-489 (A2, B)
+
+**Contesto**: ADR-0397 dice «un elenco di base piccolo e curato da USDA
+dentro l'app»; restava da scegliere l'edizione, come si costruisce il file
+e dove stanno i nomi tradotti. L'utente ha detto sì alla parte A2 e allo
+scarico dell'archivio, poi alle schermate e ai testi della parte B.
+
+**Decisione** (decisa dall'agente su delega dell'utente, salvo dove è
+detto che è dell'utente):
+
+- **L'edizione**: USDA FoodData Central, **SR Legacy** (aprile 2018,
+  7.793 cibi, CC0 1.0), non Foundation Foods: quest'ultima è aggiornata ma
+  ha poche centinaia di cibi quasi tutti crudi, e mancano pasta cotta,
+  pane e piatti comuni.
+- **Nessun numero scritto a mano**: `tools/nutrition_foods.csv` elenca i
+  cibi scelti (identificativo FDC, nome corto, descrizione di USDA);
+  `tools/nutrition_table.py` legge l'archivio di USDA, riconosciuto dal
+  suo SHA-256, e scrive `apps/mobile/src/nutrition/foodTable.ts`. Un
+  identificativo che non corrisponde alla descrizione, un cibo senza
+  energia o un numero che l'app non terrebbe fermano lo script. L'archivio
+  resta fuori dal repository.
+- **314 cibi**, crudo e cotto come voci diverse. Fuori le voci che USDA
+  ha solo di marca e lo strutto (902 kcal per 100 g, sopra il massimo di
+  900 dell'app): chi li vuole li aggiunge fra i cibi suoi.
+- **La chiave** di un cibo della tabella è `usda-<identificativo FDC>`.
+- **I nomi**: in inglese nella tabella; italiano, tedesco, spagnolo e
+  francese scritti da MuW in `nutrition/foodNames/`, non in `i18n/`
+  (cambiano con la tabella, non con le schermate). Si traducono solo i
+  nomi: i numeri sono gli stessi in ogni lingua.
+- **La pagina** (scelta dell'utente: schermate e testi approvati il
+  2026-11-23): `NutritionPage`, con le viste «Diary» e «My plan», aperta
+  dalla tessera «Nutrition» in una famiglia «Food» in fondo al pannello
+  degli sport e, nella modalità Allenamento, dalla tab «Food» di TASK-490
+  D. In due PR di codice (B1 e B2), tutte e due spente dietro
+  `NUTRITION_ON`.
+
+**Conseguenze**: per aggiungere un cibo si aggiunge una riga alla lista e
+si rifà girare lo script con l'archivio; la fonte, l'edizione e la data
+dello scarico stanno in testa a `foodTable.ts` e in «How we calculate».
+«Used (est.)» e «Balance» in cima al diario si riempiono con la parte C1.
+
+## ADR-0397, precisazione 3 — Le attività nel bilancio, la settimana nel profilo, il diario del telefono
+
+**Data**: 2026-11-23 · **Stato**: Proposta · **Task**: TASK-489 (C1, D, F)
+
+**Contesto**: le parti C1 (le attività nel conto del giorno), D (la
+tabella nel profilo) e F (la privacy) avevano scelte lasciate «da vedere
+con le schermate». L'utente ha visto schermate e testi di ognuna e ha
+detto «Sì, approvo» il 2026-11-23.
+
+**Decisione** — scelte dell'utente:
+
+- **Oggi il riposo è contato fino a adesso**, e la pagina lo dice; nella
+  tabella del profilo oggi è «so far» e **non entra nel totale della
+  settimana** finché il giorno non è finito.
+- **Un giorno senza diario è vuoto**, in tutte le colonne, e fuori dal
+  totale: non è un giorno a zero calorie.
+- Il riquadro del profilo c'è **solo dopo l'avviso di «Nutrition» letto**;
+  surplus e deficit nello stesso colore, parole e non un giudizio.
+- **Il diario è del telefono, non dell'account**: uscire dall'account o
+  eliminarlo non lo cancella, e la privacy lo dice. Scartata: cancellare
+  tutto all'uscita.
+
+Decise dall'agente su delega dell'utente:
+
+- **Le calorie di un'attività si stimano da quello che dice la lista
+  privata**: sport, metri e tempo. La lista non porta il dislivello né le
+  serie, quindi la palestra è contata dal solo tempo e un'escursione senza
+  la salita: più grezze dei numeri a fine attività. Per questo la
+  correzione a mano è accanto a ogni attività. Chiedere al server il
+  dettaglio di ogni attività per un numero più fino è stato scartato:
+  una richiesta per attività a ogni apertura del diario.
+- La lista si legge dal contesto che l'app ha già
+  (`useActivitiesDoor()`); per un giorno o una settimana più vecchi delle
+  pagine tenute si chiedono le pagine dopo. **Una pagina che non arriva
+  non si richiede da sola**: quei giorni contano solo il riposo, e la
+  scheda lo dice.
+- Con `NUTRITION_ON` spento la riga della lista privata e il riquadro del
+  profilo non leggono niente dal telefono e non rendono niente di nuovo.
+
+**Conseguenze**: con la C2 l'energia attiva di Salute prende il posto
+della somma delle attività nei giorni che ce l'hanno (già previsto nei
+conti di A1). Se un giorno servisse cancellare il diario all'uscita, è
+codice nuovo e un testo di privacy diverso.
+
+## ADR-0397, precisazione 4 — Il codice a barre su Open Food Facts e il lettore unico degli allenamenti di Salute
+
+**Data**: 2026-11-23 · **Stato**: Proposta · **Task**: TASK-489 (G, C2)
+
+**Contesto**: le parti G (il codice a barre) e C2 (la lettura da Salute)
+sono legate alla build nativa, ma quasi tutto il loro codice non lo è.
+L'utente ha visto schermate e testi di ognuna e ha detto «Sì, approvo» il
+2026-11-23.
+
+**Decisione** — scelte dell'utente:
+
+- Il codice a barre si può **scrivere a mano** («Type the code»), oltre a
+  leggerlo con la fotocamera.
+- Gli allenamenti delle altre app letti da Salute compaiono **solo in
+  «Energy you use»**, non nella lista «My activities».
+- L'app si presenta a Open Food Facts con l'indirizzo di contatto che già
+  pubblica nella privacy.
+- La frase in fondo a «How we calculate» dice che un codice a barre
+  cercato va a Open Food Facts.
+
+Decise dall'agente su delega dell'utente:
+
+- **Due PR per parte**: quello che non è nativo entra in `main` spento
+  (G1: la richiesta a Open Food Facts e il passo «Type the code»; C2a: il
+  lettore e il conto), il nativo resta in bozza fino al taglio della build
+  (G2: `expo-camera` e il lettore; C2b: accendere `HEALTH_ENERGY_ON`).
+- **Open Food Facts**: una richiesta dal telefono per ogni codice letto o
+  scritto da una persona, senza account, col `User-Agent` che loro
+  chiedono; l'API v2 (`status` 1 o 0), provata dal vivo. Si prende **solo
+  `energy-kcal_100g`**: un prodotto che ha solo i kilojoule non diventa un
+  cibo, perché MuW non scrive numeri suoi. Il prodotto trovato è un cibo
+  dell'utente col suo codice e «from Open Food Facts», separato dalla
+  tabella USDA (ODbL); riscritto dall'utente perde il segno e tiene il
+  codice. Un codice già salvato non si chiede di nuovo.
+- **Un lettore unico degli allenamenti** in `health/energyReader.ts`, per
+  TASK-489 C2 e TASK-312 D: `workouts(da, a)` è il punto d'ingresso.
+  `health/energyModules.ts` non dà nessun lettore e non carica la libreria
+  finché la build non ha il testo del permesso, come `sleepModules.ts`.
+- I numeri di Salute si leggono quando una schermata li mostra e non si
+  salvano; mentre arrivano il giorno non dice niente; un Salute che non
+  risponde, o un permesso negato, è un giorno senza dati.
+- Un allenamento di Salute è di MuW (e non si conta due volte) se viene
+  dal bundle di MuW o porta la chiave di un'attività della lista.
+
+**Conseguenze**: il testo unico del permesso di Salute lo scrive la PR di
+TASK-467 C al taglio; la C2b di questo task è una riga. Android resta
+sulla somma delle attività fino alla build con Health Connect.

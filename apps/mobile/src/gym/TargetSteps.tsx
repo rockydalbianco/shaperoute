@@ -26,6 +26,8 @@ import {
   ladderValue,
   isLightWeek,
 } from "./targetWeeks";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /**
  * The guide's steps toward a target (TASK-461 B and C, ADR-0371; rows F
@@ -168,10 +170,13 @@ function Chip({
   onPress: () => void;
   testID: string;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   return (
     <Pressable
       style={({ pressed }) => [
         styles.chip,
+        chipRaise,
         on && styles.optionOn,
         pressed && styles.pressed,
       ]}

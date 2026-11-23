@@ -40,6 +40,8 @@ import {
 import type { PostItem } from "./composer/postOrder";
 import type { PickedDrawingPhoto } from "./pickDrawingPhoto";
 import { TagPeople } from "./TagPeople";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /**
  * The form of a run's drawing (TASK-117, TASK-208, ADR-0170), as Strava's,
@@ -201,6 +203,8 @@ function Chips<T extends string>({
   onChange,
   disabled,
 }: ChipsProps<T>) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
@@ -214,7 +218,12 @@ function Chips<T extends string>({
           return (
             <Pressable
               key={option.id}
-              style={[styles.chip, on && styles.chipOn, disabled && styles.busy]}
+              style={[
+                styles.chip,
+                chipRaise,
+                on && styles.chipOn,
+                disabled && styles.busy,
+              ]}
               onPress={() => onChange(option.id)}
               disabled={disabled}
               accessibilityRole="radio"
@@ -341,6 +350,8 @@ export function TagsField({
   fetchFn?: typeof fetch;
   apiKey?: string | null;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const [choosing, setChoosing] = useState(false);
   function pick(person: Person) {
     setChoosing(false);
@@ -356,7 +367,7 @@ export function TagsField({
         {tags.map((tag) => (
           <Pressable
             key={tag.public_id}
-            style={[styles.chip, styles.chipOn, disabled && styles.busy]}
+            style={[styles.chip, chipRaise, styles.chipOn, disabled && styles.busy]}
             onPress={() =>
               onChange(tags.filter((other) => other.public_id !== tag.public_id))
             }
@@ -369,7 +380,7 @@ export function TagsField({
         ))}
         {tags.length < DRAWING_MAX_TAGS && (
           <Pressable
-            style={[styles.chip, disabled && styles.busy]}
+            style={[styles.chip, chipRaise, disabled && styles.busy]}
             onPress={() => setChoosing(true)}
             disabled={disabled}
             accessibilityRole="button"

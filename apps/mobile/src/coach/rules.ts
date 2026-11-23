@@ -1,6 +1,7 @@
 import type { GymPlanItem, GymSetKind } from "@shaperoute/shared-types";
 
-import { type Muscle, musclesOf } from "../gym/muscles";
+import { type Muscle, MUSCLES, musclesOf } from "../gym/muscles";
+import { setsByMuscle as weekSets } from "../trainingmode/weekBody";
 
 /**
  * The Coach's rules (TASK-491 part A, ADR-0399): the workouts of the last
@@ -33,7 +34,6 @@ export const STALL_GAIN = 0.01;
  * that helps counts half a set. */
 export const WEEKLY_SETS_LOW = 10;
 export const WEEKLY_SETS_HIGH = 20;
-export const SECONDARY_SHARE = 0.5;
 /** Sets added at most by one tip. */
 export const MAX_ADDED_SETS = 4;
 /** Twice a week beats once (Schoenfeld, Ogborn, Krieger, Sports Med 2016):
@@ -289,24 +289,23 @@ function hasPlanItem(input: CoachInput, plan: string | undefined, exercise: stri
   );
 }
 
-/** Sets of each muscle in a span: a main muscle a set, a helper half. */
+/** Sets of each muscle in a span, counted as the body of the week counts
+ * them (TASK-490 part B, `trainingmode/weekBody.ts`): a main muscle a set,
+ * a helper half. Muscles with no sets are left out. */
 export function setsByMuscle(workouts: readonly CoachWorkout[]): Map<Muscle, number> {
-  const sets = new Map<Muscle, number>();
-  const add = (muscle: Muscle, amount: number) =>
-    sets.set(muscle, (sets.get(muscle) ?? 0) + amount);
-  for (const workout of workouts) {
-    for (const one of workout.exercises) {
-      const worked = musclesOf(one.exercise);
-      if (worked === null) {
-        continue;
-      }
-      worked.primary.forEach((muscle) => add(muscle, one.sets.length));
-      worked.secondary.forEach((muscle) =>
-        add(muscle, one.sets.length * SECONDARY_SHARE),
-      );
-    }
-  }
-  return sets;
+  const count = weekSets(
+    workouts.flatMap((workout) =>
+      workout.exercises.flatMap((one) =>
+        one.sets.map(() => ({ exercise: one.exercise })),
+      ),
+    ),
+  );
+  return new Map(
+    MUSCLES.filter((muscle) => count[muscle] > 0).map((muscle) => [
+      muscle,
+      count[muscle],
+    ]),
+  );
 }
 
 function loadMinutes(input: CoachInput, from: number, to: number): number {

@@ -2,6 +2,7 @@ import type { Activity, LatLon, Shape } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AnyRouteRequest } from "../api/routes";
+import { strokeMatchesOnServer } from "../api/strokeMatches";
 import { ERASER_PX, REACH_PX } from "../map/mapPage";
 import type { CanvasEvent, MapCanvas } from "../map/MapView";
 import type { CanvasMode } from "../map/messages";
@@ -10,6 +11,12 @@ import type { SamplePicture } from "../route/samplePictures";
 import { type ImageState, useImageOutline } from "../route/useImageOutline";
 import { isPlacedFree } from "../snow/snow";
 import { appUnits } from "../units/units";
+import {
+  type AnchoredLines,
+  type Anchoring,
+  anchoredLines,
+  anchoringOf,
+} from "./anchoring";
 import { canvasRequest, figureApart, piecesRequest } from "./canvasRequest";
 import { isOpenLine, linkedOf, newDrawing, withDetail } from "./drawing";
 import { asDrawing, drawingOf, type FigureLines, touchesLines } from "./edit";
@@ -42,6 +49,7 @@ import {
   piecesTurnedBy,
 } from "./pieces";
 import { type FigureChoice, figureOf } from "./resultFigure";
+import { useMapMatching } from "./useMapMatching";
 import { startedAt, startLineOf } from "./startPoint";
 import {
   bent,
@@ -147,6 +155,10 @@ export type MapCanvasState = {
   turnBy: (deg: number) => void;
   /** The degrees typed: the figure, or the piece chosen, turned to them. */
   turnTo: (deg: number) => void;
+  /** A drawing alone, anchored to the roads as it is drawn (TASK-347 part
+   * C): what the map draws of it, and what the panel says. */
+  anchored: AnchoredLines;
+  anchoring: Anchoring;
   /** «Draw route»: the request for the figure where it is. */
   request: AnyRouteRequest | null;
   /** Why the last line drawn, the last tool or tile gave nothing. */
@@ -176,6 +188,8 @@ export type MapCanvasState = {
 
 /** One empty list, so the map is not told again and again of no marks. */
 const NO_MARKS: LatLon[] = [];
+/** No lines to anchor, the same each time. */
+const NO_LINES: LatLon[][] = [];
 
 /** Metres between two points of the map. */
 function metresApart(a: LatLon, b: LatLon): number {
@@ -925,6 +939,45 @@ export function useMapCanvas({
     answers,
   ]);
 
+  // A drawing alone is anchored to the roads as it is drawn (TASK-347 part
+  // C, ADR-0300): its lines as the map shows them. Shapes, pictures and
+  // pieces wait for parts D and E.
+  const handDrawn =
+    placed !== null && placed.figure.kind === "drawing" && pieces.length <= 1;
+  const matching = useMapMatching({
+    apiUrl,
+    activity,
+    lines: handDrawn ? canvas.lines : NO_LINES,
+    enabled: handDrawn,
+  });
+  const anchored = useMemo(() => anchoredLines(matching.strokes), [matching.strokes]);
+  const anchoring = useMemo(
+    () => anchoringOf(matching.strokes, matching.snapping),
+    [matching.strokes, matching.snapping],
+  );
+  // «Draw route» asks a hand drawing anchored (TASK-347 part C3) only of a
+  // server that answered the probe: an older one refuses the field. The
+  // answer is kept for its server, so another server asks again. Asked once
+  // a stroke has its answer, as the strokes are sent: a line only put on
+  // the map sends nothing at once.
+  const strokeAnswered = matching.strokes.some((stroke) => stroke.state !== "pending");
+  const [probed, setProbed] = useState<{ url: string; knows: boolean } | null>(null);
+  useEffect(() => {
+    if (!handDrawn || !strokeAnswered || apiUrl === null) {
+      return;
+    }
+    let going = true;
+    void strokeMatchesOnServer(apiUrl).then((knows) => {
+      if (going) {
+        setProbed({ url: apiUrl, knows: knows === true });
+      }
+    });
+    return () => {
+      going = false;
+    };
+  }, [handDrawn, strokeAnswered, apiUrl]);
+  const anchors = probed !== null && probed.url === apiUrl && probed.knows;
+
   // The app renders again with new units (TASK-182): the request follows.
   // With pieces, the drawing they make (TASK-402 part B).
   const units = appUnits();
@@ -932,8 +985,14 @@ export function useMapCanvas({
     () =>
       placed === null
         ? null
-        : canvasRequest(joined?.placed ?? placed, penUp, activity, units),
-    [placed, joined, penUp, activity, units],
+        : canvasRequest(
+            joined?.placed ?? placed,
+            penUp,
+            activity,
+            units,
+            anchors && handDrawn,
+          ),
+    [placed, joined, penUp, activity, units, anchors, handDrawn],
   );
 
   // What the figure would make, following two fingers: of a piece chosen,
@@ -1001,9 +1060,22 @@ export function useMapCanvas({
         placeTurned(placed.figure, placed.centre, metres, turnOf(placed)),
       );
       setKept(sized);
-      return canvasRequest(sized, penUp, activity, units);
+      // A hand drawing stays anchored as it was asked before.
+      return canvasRequest(sized, penUp, activity, units, anchors && handDrawn);
     },
-    [placed, pieces, rest, shown, within, placeTurned, penUp, activity, units],
+    [
+      placed,
+      pieces,
+      rest,
+      shown,
+      within,
+      placeTurned,
+      penUp,
+      activity,
+      units,
+      anchors,
+      handDrawn,
+    ],
   );
 
   const changeTo = useCallback(
@@ -1047,6 +1119,8 @@ export function useMapCanvas({
       deleteChosen,
     },
     distanceM: distanceNow,
+    anchored,
+    anchoring,
     turnDeg: target === null ? 0 : turnOf(target),
     turnBy,
     turnTo,

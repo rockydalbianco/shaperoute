@@ -37,6 +37,8 @@ import {
 } from "./layoutFrame";
 import { type PickedPhotos, pickPhotos } from "./pickPhotos";
 import { dropIndex, moved, type PostItem } from "./postOrder";
+import { glassRaise } from "../../ui/glassRaise";
+import { useGlassMode } from "../../ui/useGlassMode";
 
 /** At most 10 pages in a post, the map among them (the user's choice, «10
  * col disegno»): 9 photos and the drawing. */
@@ -109,6 +111,8 @@ export function PostComposer({
   pool = false,
   flatten = flattenPhoto,
 }: Props) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const [choosing, setChoosing] = useState(false);
   const [picking, setPicking] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -331,21 +335,21 @@ export function PostComposer({
       {choosing && (
         <View style={styles.chips}>
           <Pressable
-            style={styles.chip}
+            style={[styles.chip, chipRaise]}
             onPress={() => void choose("library")}
             accessibilityRole="button"
           >
             <Text style={styles.chipText}>{t("Choose a picture")}</Text>
           </Pressable>
           <Pressable
-            style={styles.chip}
+            style={[styles.chip, chipRaise]}
             onPress={() => void choose("camera")}
             accessibilityRole="button"
           >
             <Text style={styles.chipText}>{t("Take a photo")}</Text>
           </Pressable>
           <Pressable
-            style={styles.chip}
+            style={[styles.chip, chipRaise]}
             onPress={() => setChoosing(false)}
             accessibilityRole="button"
           >
@@ -362,7 +366,12 @@ export function PostComposer({
               return (
                 <Pressable
                   key={layout}
-                  style={[styles.chip, on && styles.chipOn, busy && styles.busy]}
+                  style={[
+                    styles.chip,
+                    chipRaise,
+                    on && styles.chipOn,
+                    busy && styles.busy,
+                  ]}
                   onPress={() => chooseLayout(chosen, layout)}
                   disabled={busy}
                   accessibilityRole="button"

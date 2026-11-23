@@ -247,7 +247,9 @@ def test_the_comments_reactions_are_the_drawings_without_the_heart() -> None:
 
 def test_the_two_new_events_have_their_words_and_one_rings_no_phone() -> None:
     assert {"comment_reply", "comment_reaction"} <= BELL_KINDS
-    assert BELL_ONLY == {"comment_reaction"}
+    # A reply rings, a reaction does not (BELL_ONLY has others too, as the
+    # gear past its limit, TASK-486 part G).
+    assert "comment_reaction" in BELL_ONLY and "comment_reply" not in BELL_ONLY
     for kind in ("comment_reply", "comment_reaction"):
         assert set(TEXTS[kind]) == {"en", "de", "it", "es", "fr"}
     # The user's words (2026-11-11).

@@ -3266,4 +3266,9 @@ export const DE: Table = {
   "Lines not read: {n}": "Nicht gelesene Zeilen: {n}",
   "This file has no airspace MuW can read.":
     "Diese Datei enthält keinen Luftraum, den MuW lesen kann.",
+  // src/route/warnings.ts (TASK-347 part C3: an anchored drawing longer or shorter on the roads; texts to approve)
+  "On the roads your drawing is {share}% longer: {distance}. It stays where you drew it, at the same size.":
+    "Auf den Straßen ist deine Zeichnung {share} % länger: {distance}. Sie bleibt, wo du sie gezeichnet hast, in derselben Größe.",
+  "On the roads your drawing is {share}% shorter: {distance}. It stays where you drew it, at the same size.":
+    "Auf den Straßen ist deine Zeichnung {share} % kürzer: {distance}. Sie bleibt, wo du sie gezeichnet hast, in derselben Größe.",
 };

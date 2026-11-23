@@ -2,6 +2,7 @@ import type { Activity, LatLon, Shape } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AnyRouteRequest } from "../api/routes";
+import { strokeMatchesOnServer } from "../api/strokeMatches";
 import { ERASER_PX, REACH_PX } from "../map/mapPage";
 import type { CanvasEvent, MapCanvas } from "../map/MapView";
 import type { CanvasMode } from "../map/messages";
@@ -954,6 +955,25 @@ export function useMapCanvas({
     () => anchoringOf(matching.strokes, matching.snapping),
     [matching.strokes, matching.snapping],
   );
+  // «Draw route» asks a hand drawing anchored (TASK-347 part C3) only of a
+  // server that answered the probe: an older one refuses the field. The
+  // answer is kept for its server, so another server asks again.
+  const [probed, setProbed] = useState<{ url: string; knows: boolean } | null>(null);
+  useEffect(() => {
+    if (!handDrawn || apiUrl === null) {
+      return;
+    }
+    let going = true;
+    void strokeMatchesOnServer(apiUrl).then((knows) => {
+      if (going) {
+        setProbed({ url: apiUrl, knows: knows === true });
+      }
+    });
+    return () => {
+      going = false;
+    };
+  }, [handDrawn, apiUrl]);
+  const anchors = probed !== null && probed.url === apiUrl && probed.knows;
 
   // The app renders again with new units (TASK-182): the request follows.
   // With pieces, the drawing they make (TASK-402 part B).
@@ -962,8 +982,14 @@ export function useMapCanvas({
     () =>
       placed === null
         ? null
-        : canvasRequest(joined?.placed ?? placed, penUp, activity, units),
-    [placed, joined, penUp, activity, units],
+        : canvasRequest(
+            joined?.placed ?? placed,
+            penUp,
+            activity,
+            units,
+            anchors && handDrawn,
+          ),
+    [placed, joined, penUp, activity, units, anchors, handDrawn],
   );
 
   // What the figure would make, following two fingers: of a piece chosen,
@@ -1031,9 +1057,22 @@ export function useMapCanvas({
         placeTurned(placed.figure, placed.centre, metres, turnOf(placed)),
       );
       setKept(sized);
-      return canvasRequest(sized, penUp, activity, units);
+      // A hand drawing stays anchored as it was asked before.
+      return canvasRequest(sized, penUp, activity, units, anchors && handDrawn);
     },
-    [placed, pieces, rest, shown, within, placeTurned, penUp, activity, units],
+    [
+      placed,
+      pieces,
+      rest,
+      shown,
+      within,
+      placeTurned,
+      penUp,
+      activity,
+      units,
+      anchors,
+      handDrawn,
+    ],
   );
 
   const changeTo = useCallback(

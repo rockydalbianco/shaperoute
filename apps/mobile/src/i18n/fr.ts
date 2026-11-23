@@ -3254,4 +3254,9 @@ export const FR: Table = {
   "Lines not read: {n}": "Lignes non lues : {n}",
   "This file has no airspace MuW can read.":
     "Ce fichier ne contient aucun espace aérien que MuW sait lire.",
+  // src/route/warnings.ts (TASK-347 part C3: an anchored drawing longer or shorter on the roads; texts to approve)
+  "On the roads your drawing is {share}% longer: {distance}. It stays where you drew it, at the same size.":
+    "Sur les routes, ton dessin est {share} % plus long : {distance}. Il reste là où tu l'as dessiné, à la même taille.",
+  "On the roads your drawing is {share}% shorter: {distance}. It stays where you drew it, at the same size.":
+    "Sur les routes, ton dessin est {share} % plus court : {distance}. Il reste là où tu l'as dessiné, à la même taille.",
 };

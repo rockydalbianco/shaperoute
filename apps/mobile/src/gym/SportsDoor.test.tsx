@@ -1,42 +1,57 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
+import { profileOf } from "../sports";
+import { color } from "../theme/tokens";
 import { bodyweightSession } from "./bodyweight";
 import {
   countsFor,
   DOOR_CHOSEN,
   proposalKey,
+  SPORT_BADGES,
   SportsDoor,
   sportsOf,
   spreadDays,
 } from "./SportsDoor";
 
-// TASK-461 A2 (ADR-0371): «Cosa vuoi allenare?», at least two sports
-// («Almeno due, sempre»), their days already spread out.
+// TASK-461 A2 (ADR-0371): «Cosa vuoi allenare?», their days already
+// spread out; one sport is enough, the gym chosen at first (TASK-506 B).
 
 test("the door: seven sports to choose, those with a distance in blue", async () => {
   const onToggle = jest.fn();
   await render(<SportsDoor chosen={DOOR_CHOSEN} onToggle={onToggle} />);
-  expect(screen.getByTestId("door-gym")).not.toBeChecked();
-  expect(screen.getByTestId("door-body")).toBeChecked();
-  expect(screen.getByTestId("door-run")).toBeChecked();
+  expect(screen.getByTestId("door-gym")).toBeChecked();
+  expect(screen.getByTestId("door-body")).not.toBeChecked();
+  expect(screen.getByTestId("door-run")).not.toBeChecked();
+  expect(
+    screen.getByText("Choose one or more. Then we guide you in 5 steps."),
+  ).toBeOnTheScreen();
   expect(screen.getByTestId("door-mountain")).toHaveTextContent(/Mountains/);
   expect(screen.getByTestId("door-bike")).toHaveTextContent(/Road, gravel, MTB/);
   await fireEvent.press(screen.getByTestId("door-gym"));
   expect(onToggle).toHaveBeenCalledWith("gym");
 });
 
-test("the days proposed: three of bodyweight and two runs, as the mockup", () => {
+test("the days proposed: three of the gym alone, apart", () => {
   expect(countsFor(DOOR_CHOSEN)).toEqual({
-    gym: 0,
-    body: 3,
-    run: 2,
+    gym: 3,
+    body: 0,
+    run: 0,
     walk: 0,
     bike: 0,
     swim: 0,
     mountain: 0,
   });
   expect(spreadDays(DOOR_CHOSEN, countsFor(DOOR_CHOSEN))).toMatchObject({
-    gym: [],
+    gym: [1, 3, 5],
+    body: [],
+    run: [],
+  });
+});
+
+test("bodyweight and running, as the mockup E0: three and two", () => {
+  const both = ["body", "run"] as const;
+  expect(countsFor(both)).toMatchObject({ gym: 0, body: 3, run: 2 });
+  expect(spreadDays(both, countsFor(both))).toMatchObject({
     body: [1, 3, 5],
     run: [2, 6],
   });
@@ -83,4 +98,24 @@ test("a plan's sports from its days", () => {
     ]),
   ).toEqual(["body", "run"]);
   expect(proposalKey("tone", "bar", ["body", "run"])).toBe("tone|bar|body,run");
+});
+
+test("the marks are the sports' own, as the sports' menu shows them (TASK-506 D)", () => {
+  expect(SPORT_BADGES.run).toBe(profileOf("running").emoji);
+  expect(SPORT_BADGES.walk).toBe(profileOf("walking").emoji);
+  expect(SPORT_BADGES.bike).toBe(profileOf("cycling").emoji);
+  expect(SPORT_BADGES.swim).toBe(profileOf("swimming").emoji);
+  expect(SPORT_BADGES.mountain).toBe(profileOf("hiking").emoji);
+  // No word in English left.
+  expect(Object.values(SPORT_BADGES).some((mark) => /[A-Z]{3}/.test(mark))).toBe(false);
+});
+
+test("one colour for every sport chosen: the yellow (TASK-506 D)", async () => {
+  await render(<SportsDoor chosen={["gym", "run"]} onToggle={jest.fn()} />);
+  for (const sport of ["door-gym", "door-run"]) {
+    expect(screen.getByTestId(sport)).toHaveStyle({ borderColor: color.accent });
+  }
+  expect(screen.getByTestId("door-run")).toHaveTextContent(
+    new RegExp(SPORT_BADGES.run),
+  );
 });

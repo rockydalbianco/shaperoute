@@ -1394,8 +1394,8 @@ export const IT: Table = {
   Beginner: "Principiante",
   // src/gym/SportsDoor.tsx, bodyweight.ts, GymPlanWizard.tsx (TASK-461 A2, approved 2026-11-11)
   "What do you want to train?": "Cosa vuoi allenare?",
-  "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.":
-    "Scegline almeno due: un piano mescola sempre due sport. Poi ti guidiamo in 5 passi.",
+  "Choose one or more. Then we guide you in 5 steps.":
+    "Scegline uno o più. Poi ti guidiamo in 5 passi.",
   "With weights and machines": "Con pesi e macchine",
   Bodyweight: "Corpo libero",
   "At home or in the park, no equipment": "A casa o al parco, senza attrezzi",
@@ -3479,4 +3479,13 @@ export const IT: Table = {
   "No wind": "Nessun vento",
   "needs {height}": "servono {height}",
   "No landings in your file": "Nessun atterraggio nel tuo file",
+  // src/nutrition (TASK-489 part D)
+  "Calorie balance": "Bilancio delle calorie",
+  Used: "Consumate",
+  "Previous week": "Settimana prima",
+  "Next week": "Settimana dopo",
+  "so far": "finora",
+  "Week total": "Totale della settimana",
+  "Today is not in the total until the day is over.":
+    "Oggi non entra nel totale finché il giorno non è finito.",
 };

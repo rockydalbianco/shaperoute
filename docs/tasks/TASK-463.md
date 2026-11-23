@@ -1,10 +1,10 @@
 # TASK-463 — Alpinismo: uno sport registrato senza percorso
 
-**Stato**: Fatto in produzione, manca la prova dell'utente — A sul server
+**Stato**: Done (2026-11-23, provato dall'utente sul telefono: «Sì,
+funziona») — A sul server
 dal passo 12 (2026-11-12, `eee85a69`); B (#1278, 2026-11-12) e C,
 l'accensione (#1350, `ed1f1db7`, 2026-11-21 15:33Z), in `main`. C esce per
-la prima volta con l'OTA 20 (2026-11-21, da `ed9925a7`). Resta la prova
-dell'utente sul telefono.
+la prima volta con l'OTA 20 (2026-11-21, da `ed9925a7`).
 **Fase**: 4 · **ADR**: ADR-0373 · numeri dal Coordinatore · migrazione
 `0076` (la `0075` è di TASK-468 A2a, #1245)
 
@@ -231,11 +231,10 @@ Fatto in produzione: l'alpinismo è uno sport registrato senza percorso.
 Lo si sceglie in «Settings», si registra la giornata e la si salva come
 attività. Il server è dal passo 12, l'app dall'OTA 20.
 
-**Da fare**:
+Provato dall'utente sul telefono il 2026-11-23: «Sì, funziona». Task
+chiuso.
 
-- La prova dell'utente sul telefono: scegliere «Mountaineering»,
-  registrare e salvare una giornata, vederla nelle attività e nel
-  calendario. Col suo «funziona» il task si chiude: la riga in
-  `archive/COMPLETATI.md` e «Chiuso» in `STATUS.md`.
+**Fuori, per dopo**:
+
 - L'orologio non offre ancora lo sport (`NOT_ON_WATCH`): serve una build
   nuova dell'orologio.

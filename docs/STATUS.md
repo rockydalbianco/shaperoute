@@ -374,6 +374,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-23**: B (#1278) e C, l'accensione (#1350), in `main`; A sul
   server dal passo 12, l'app in produzione dall'OTA 20 (2026-11-21). Fatto
   in produzione: manca la prova dell'utente sul telefono, poi si chiude.
+  **Chiuso il 2026-11-23**: l'utente l'ha provato sul telefono («Sì,
+  funziona»); vedi `archive/COMPLETATI.md`.
 
 - **TASK-461 — Il pianificatore completo** (ADR-0371) · A1 e B1 (server:
   quattro esercizi, giorni fuori `outing`, `target`) in `main` e sul server;

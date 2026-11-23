@@ -701,9 +701,11 @@ file» (ripete «Photos only»); per «Record now» solo `setScreen("run")`
 (con la palestra avrebbe aperto la corsa).
 
 **Conseguenze**: esce col prossimo OTA (Coordinatore, col sì
-dell'utente). Restano il turno della privacy («from a file» in due frasi,
-cinque lingue e sito) e le righe di TASK-467 E2, TASK-484 B e TASK-485 B,
-ognuna al via del Coordinatore.
+dell'utente). La privacy è fatta (#1444, `9b946507`, 2026-11-23): «from a
+file» nella frase del «+» in «Help» e «Privacy», cinque lingue (le quattro
+traduzioni approvate dall'utente) e pagine del sito rifatte con
+`make_privacy.mjs`; la data resta il 23 novembre. Restano le righe di
+TASK-467 E2, TASK-484 B e TASK-485 B, ognuna al via del Coordinatore.
 
 ## ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima
 

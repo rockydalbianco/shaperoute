@@ -48,6 +48,7 @@ import {
   follow,
   pageScript,
   parsePageMessage,
+  setAnchored,
   setCanvas,
   setCover,
   setDoubleTap,
@@ -108,6 +109,9 @@ export type MapCanvas = {
   startLine?: LatLon[];
   startEnds?: boolean;
 };
+
+/** A drawing anchored to the roads, as the map draws it (TASK-347 part C). */
+export type AnchoredOnMap = { ghost: boolean; snapped: LatLon[][]; far: LatLon[][] };
 
 /** What the page of «Draw on the map» tells the app (TASK-281). */
 export type CanvasEvent =
@@ -206,6 +210,10 @@ type Props = {
   canvas?: MapCanvas | null;
   /** A line drawn, the figure moved or sized, the map moved (TASK-281). */
   onCanvas?: (event: CanvasEvent) => void;
+  /** The figure anchored to the roads (TASK-347 part C): a ghost under the
+   * route of its strokes, and the stretches far from the finger. None, or
+   * no canvas, draws the figure as before. */
+  anchored?: AnchoredOnMap | null;
   /** Choosing the start on the map (TASK-292): the map framed on `start`,
    * and a pin in its middle that stays there while fingers move the map. */
   picking?: boolean;
@@ -244,6 +252,7 @@ export function MapView({
   onTurned,
   canvas = null,
   onCanvas,
+  anchored = null,
   picking = false,
   onCentre,
   onError,
@@ -294,6 +303,7 @@ export function MapView({
   // The figure the page was told of last, and the framing it was asked.
   const canvasShown = useRef(false);
   const framed = useRef<number | null>(null);
+  const anchoredShown = useRef(false);
   const pickAsked = useRef(false);
   // The map's kind, chosen with its button (TASK-264), and the last one the
   // page was told.
@@ -609,6 +619,28 @@ export function MapView({
       framed.current = null;
     }
   }, [ready, canvas]);
+
+  // After the figure, which it is drawn with (TASK-347 part C): told each
+  // change, and again when the page loads again; cleared with the figure.
+  useEffect(() => {
+    if (!ready) {
+      anchoredShown.current = false;
+      return;
+    }
+    if (canvas && anchored) {
+      webView.current?.injectJavaScript(pageScript(setAnchored(anchored)));
+      anchoredShown.current = true;
+    } else if (canvas && anchoredShown.current) {
+      webView.current?.injectJavaScript(
+        pageScript(setAnchored({ ghost: false, snapped: [], far: [] })),
+      );
+      anchoredShown.current = false;
+    } else if (!canvas) {
+      anchoredShown.current = false;
+    }
+    // A canvas told again keeps what the page drew of it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, anchored, canvas === null]);
 
   // After the start, which the map is framed on: asked for only while the
   // start is chosen on the map (TASK-292), and again when the page loads

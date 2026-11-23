@@ -16,6 +16,8 @@ test("this app says every activity it can save, and only values the API knows", 
     ...RUN_ACTIVITIES,
     "trackless",
     "pool",
+    "photos",
+    "plans",
   ]);
   for (const kind of READS) {
     expect(reads.kinds).toContain(kind);
@@ -25,6 +27,16 @@ test("this app says every activity it can save, and only values the API knows", 
 test("a post without a track is said, now that its screens show one (TASK-385 B0)", () => {
   expect(READS).toContain("trackless");
   expect(READS).toContain("gym");
+});
+
+test("a post of photos only is said, now that the app shows one (TASK-312 C2)", () => {
+  expect(READS).toContain("photos");
+});
+
+test("a gym plan posted is said, now that the Feed shows one (TASK-485 B)", () => {
+  expect(READS).toContain("plans");
+  // Not yet the posts of a night of sleep.
+  expect(READS).not.toContain("sleep");
 });
 
 test("a swim in a pool is said, now that the app records one (TASK-400 B)", () => {

@@ -689,10 +689,24 @@ prende una fascia di vetro con il filo di luce in basso e un'ombra corta
 sul contenuto, in 200 ms (subito con «Riduci movimento»), e la lascia
 quando la pagina torna in cima. Conta la pagina sullo schermo: cambiando
 scheda l'header segue quella nuova. Ogni pagina lo dice con
-`useHeaderScroll()` sul suo scroller principale; una pagina che non lo
-dice tiene l'header a riposo. Con «Riduci trasparenza» la fascia è opaca
+`useHeaderScroll()` sul suo scroller principale (Disegna, Explore,
+Explore sull'acqua, Messaggi, Profilo, «Today» e «Days» dello sci, A5c;
+«All» e «Following» del Feed, A5c-2, dove parla solo la scheda sullo
+schermo e una scheda nascosta rimette l'header a riposo);
+una pagina che non lo dice tiene l'header a riposo, e una che se ne va
+lontana dalla cima lo rimette a riposo. Con «Riduci trasparenza» la fascia è opaca
 con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
 contenuto non passa sotto l'header: per quello serve la parte B.
+
+**I gruppi di Impostazioni** (TASK-469 A6, `src/settings/settingsGroup.ts`):
+ogni gruppo di righe di Impostazioni ha gli angoli a 24 (`radius.group`) e i
+bordi del vetro posato dei segmenti: il filo di luce intorno e quello in
+cima. La faccia resta `surface`, così le parole tengono il contrasto. Con
+«Riduci trasparenza» il bordo è la linea sottile di prima, con «Aumenta
+contrasto» il bordo forte. Ogni gruppo lo prende con `useSettingsGroup()`;
+anche la scheda dell'account e la riga «Blocked people» (A6b). Il riquadro
+prima di «Delete account» prende solo gli angoli e tiene il bordo rosso:
+è un avviso, non vetro.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
@@ -702,6 +716,16 @@ restano un attimo, poi va via nello stesso modo. Non prende i tocchi. Con
 to {name}.» di «Send to a friend» e «Thanks for telling us. We will look at
 it.» dopo ogni segnalazione (post, profilo, messaggio, commento): il foglio
 si chiude e il grazie arriva nell'isola. Altri punti li decide l'utente.
+Sul vetro (TASK-469 A7b) l'isola ha il filo di luce del vetro scuro in
+ogni tono e un'ombra corta; con «Riduci trasparenza» e «Aumenta
+contrasto» resta come prima.
+
+**I fogli di vetro** (TASK-469 A7a, `src/ui/sheetFace.ts`): ogni foglio
+dal basso prende `useSheetFace()` dopo il suo stile: angoli in alto a 28,
+il filo di luce del vetro al posto della linea in cima e un'ombra
+morbida verso l'alto; la faccia resta `surface`. Con «Riduci
+trasparenza» la linea sottile di prima, con «Aumenta contrasto» il
+bordo forte.
 
 **Fogli e liste** (TASK-388 C): i fogli dal basso (il «+» dei messaggi, il
 foglio di un messaggio, i filtri della ricerca, il super like, «Tag
@@ -4709,6 +4733,40 @@ quando è accesa. Testi approvati dall'utente (11 e 12 novembre 2026).
   consiglio; non si chiama mai «di Apple». Nessuna voce nel Feed: il post
   della notte da sola arriva con TASK-312 C.
 
+### Il post del sonno nel Feed (TASK-467 parte E, ADR-0380 precisazione E)
+
+**Spento in ogni build di oggi**, dalla stessa costante `SLEEP_POSTS_ON`:
+spenta, l'app non dice `sleep` in `X-MuW-Reads` (`api/reads.ts`), quindi
+il server non le manda nessun post del sonno e niente di qui si vede.
+Acceso, la notte pubblicata da sola è un post come gli altri, senza corsa:
+
+- **Nel Feed** (`feed/SleepFeedPost.tsx`): chi l'ha pubblicata e da
+  quanto; dove una corsa ha la mappa, la notte (`feed/SleepPostCard.tsx`):
+  «Sleep score», «82 · Very good», «7 h 40 min» e le fasi quando un
+  orologio le ha dette; sotto, le azioni di ogni post **senza «Share»**
+  (non ha linea né link, e non si manda in chat). Un tocco sulla notte
+  apre la pagina, due sono il super like; «…» sul post di un altro.
+- **La pagina del post** (`feed/SleepPostDetailPage.tsx`): autore e
+  giorno, la notte con sotto «Worked out by MuW from Apple Health data. It
+  can differ from the score in the Health app.», la barra di ogni post.
+  Sul proprio, sotto la barra, **«Remove post»**: lo toglie dal Feed al
+  tocco, senza conferma (si ripubblica dal «+»), e le schede rileggono.
+- **Nella griglia di un profilo** (`feed/SleepTile.tsx`): al posto della
+  linea il punteggio sopra «Sleep». Aperto da lì, sulla scheda del
+  disegno c'è la notte al posto dei numeri della corsa; niente «Imported»,
+  niente «Send to a friend», niente GPX.
+- **Pubblicarlo**: la pagina «Sleep» (`feed/SleepPostPage.tsx`: la notte
+  come sul profilo, «Everyone» / «Followers», «Publish», «Your score,
+  hours slept and sleep stages go in the Feed.»; già pubblicata: «Already
+  in the Feed» e «Remove post») si apre dalla voce **«Sleep»** del «+» del
+  Feed (TASK-481), la quarta, dopo «From a file», con sotto «Last night's
+  sleep score, from Apple Health». Si apre nello stesso foglio, sotto il
+  titolo «Sleep» del foglio e con «‹» per tornare alla lista; «Publish»
+  chiude il foglio e le schede del Feed rileggono. La voce c'è solo con
+  l'interruttore acceso **e** un telefono che sa leggere il sonno: in
+  nessuna build fino alla parte C.
+- Mai l'ora in cui si è andati a letto o ci si è svegliati.
+
 ## Il post da condividere (TASK-231, ADR-0194)
 
 «Share» sta sulla scheda di fine corsa (con un percorso e senza) e sulla
@@ -5314,6 +5372,11 @@ TASK-305.md, «Testi di R6».
     1:43:30» come nel Feed, e la legenda «White: on foot. Yellow: in the
     air.». Un'API di prima, o un `flight` che non sta sulla traccia: la
     gara come una corsa, tutta bianca.
+  - **Il post della gara aperto dal Feed o da un profilo** (parte R6e): la
+    mappa del post ha gli stessi due colori, coi tratti dal `flight` di
+    `GET /drawings/{id}`, la mappa inquadrata sulla linea. Un'API di prima,
+    o una linea del post con punti diversi da quelli della corsa: il post
+    come oggi, tutto giallo.
 - **Un volo nelle liste** (TASK-305, 2026-11-22): in «My activities», nella
   scheda sotto la mappa e nella riga del Feed un volo ha la velocità media
   («15.1 km/h», come la pagina del post) al posto del passo per km; senza
@@ -5340,6 +5403,65 @@ salva come `alpinism`.
   «Climbing».
 - Nel modulo del post non è un giorno sulla neve: resta alpinismo. Sull'orologio non
   c'è, finché una sua build non lo conosce.
+
+## Il contacalorie: «Nutrition» (TASK-489 parte B, ADR-0397)
+
+**Spenta in ogni build di oggi** dalla costante `NUTRITION_ON`
+(`nutrition/nutritionOn.ts`): si accende con la build nativa che legge
+allenamenti ed energia attiva da Apple Salute. Quello che segue è com'è
+quando è accesa. Schermate e testi approvati dall'utente il 2026-11-23,
+nelle cinque lingue in `tasks/TASK-489.md`. Niente di quello che si scrive
+qui esce dal telefono.
+
+- **L'ingresso**: in fondo al pannello degli sport, una famiglia a sé,
+  «Food», con la tessera **«Nutrition»** 🥗 (`nutrition/NutritionTile.tsx`).
+  Non è uno sport: il tocco apre la pagina sopra il pannello e lo sport
+  scelto non cambia; la ✕ riporta al pannello. Nella modalità allenamento la
+  stessa pagina è la tab «Food» (TASK-490 D).
+- **L'avviso**, la prima volta su quel telefono: «Before you start» — «MuW
+  does not provide diets, meal plans or medical advice. The plan here is
+  the one you write: your own, or the one your dietitian gave you.»,
+  «Every number is an estimate, from food composition tables and from
+  formulas for the energy you use.», «If you have a medical condition, are
+  pregnant or have a history of eating disorders, talk to a doctor or a
+  dietitian before counting calories.», un solo pulsante «I understand».
+  Prima del tocco non si può scrivere niente; dopo non torna più.
+- **Due viste**, «Diary» | «My plan», e sotto sempre «Estimates only. MuW
+  does not provide diets or medical advice.» col collegamento **«How we
+  calculate»**.
+- **«Diary»** (`nutrition/DiaryView.tsx`): il giorno in cima, «Today»,
+  «Yesterday» o la data, con le frecce; dopo oggi non si va. Tre numeri:
+  «Eaten», «Used (est.)» e «Balance»; gli ultimi due sono «—» finché la
+  parte C1 non conta le attività. Sotto, **«My daily target»**: un numero
+  di kcal che scrive solo l'utente, e quante ne restano; MuW non ne propone
+  mai uno. Poi i quattro pasti, «Breakfast», «Lunch», «Dinner», «Snacks»,
+  ognuno coi suoi cibi (nome, grammi, kcal), il totale e «Add food». Un
+  pasto vuoto mostra «—», non zero.
+- **«Eaten as planned»**: copia nel giorno il piano di quel giorno della
+  settimana. C'è **solo finché il giorno è vuoto** e il piano ha quel
+  giorno: non scrive mai sopra quello che è stato segnato a mano (scelta
+  dell'utente, 2026-11-23).
+- **Aggiungere un cibo** (`nutrition/AddFoodSheet.tsx`): si cerca per nome
+  fra i cibi propri e i 314 della tabella (USDA FoodData Central, SR
+  Legacy), nella lingua dell'app; si scrivono i grammi e si vede la stima
+  prima di «Add». Toccando un cibo già segnato si cambiano i grammi o lo si
+  toglie con «Remove».
+- **«My own food»**, da «Add my own food» nella ricerca: nome e
+  «Calories in 100 g (kcal)», da copiare
+  dall'etichetta o dal foglio del dietista. Si corregge e si elimina con
+  «Edit» dal passo dei grammi; un cibo eliminato resta nei giorni già
+  segnati.
+- **«My plan»** (`nutrition/PlanView.tsx`): i sette giorni della settimana
+  («Mon» … «Sun»), aperto su quello di oggi; per ogni giorno gli stessi
+  quattro pasti e il totale. **«Copy this day to…»** scrive un giorno sopra
+  un altro. Sotto: «This is the plan you write. MuW never changes it.». Non
+  c'è nessun piano finché l'utente non lo scrive.
+- **«How we calculate»**: da dove vengono i numeri dei cibi (la tabella e
+  la sua edizione), come si stima l'energia usata (Mifflin-St Jeor per il
+  riposo, le attività), che sono stime, e «Only you see this page. Nothing
+  here leaves your phone.».
+- I pulsanti sono quelli neutri dell'app, mai gialli; i numeri non hanno il
+  separatore delle migliaia.
 
 ## Export del GPX
 
@@ -5575,3 +5697,32 @@ pagina per liberare memoria, la WebView la ricarica da sola.
 - **Le notifiche** e le righe della campanella delle corse di gruppo aprono
   la pagina.
 
+## Il disegno a mano agganciato alle strade (TASK-347 parte C, ADR-0300)
+
+In «Draw on the map» un disegno a mano (la figura «drawing», da sola, senza
+altri pezzi) si aggancia alle strade mentre lo disegni, tratto per tratto,
+300 ms dopo che il dito si alza: prima sul telefono, poi sul server
+(`engine/matchOnPhone.ts`, parte B).
+
+- **Sulla mappa**: il disegno come l'ha fatto il dito resta come
+  **fantasma**, lo stesso giallo, sottile (2 pt) e semitrasparente (0,45).
+  Sopra c'è il **percorso agganciato** in giallo pieno, come un percorso.
+  Dove la strada passa a più di 40 m dal dito (`FAR_M`), quel tratto del
+  percorso prende il colore `warning`. Le linee agganciate arrivano alla
+  pagina con un messaggio a parte (`setAnchored`), così non cancellano mai
+  la linea che il dito sta disegnando.
+- **Sotto la mappa**, sopra la distanza: «Snapping to roads…» mentre un
+  tratto si aggancia, poi «Roads follow your drawing: 87%». Il numero è la
+  quota dei punti disegnati con una strada entro 40 m; dopo «Draw route»
+  sarà la somiglianza del motore (parte C3). Non va nei post. Il numero si
+  legge con VoiceOver (regione «polite»), quindi il colore non è l'unico
+  segnale.
+- **Fuori strada**: se un tratto è in campagna resta fantasma e la nota
+  dice «No roads here: this line stays as you drew it.» nel colore
+  `warning`.
+- **Senza risposta** (niente rete e niente zona, o un server vecchio): il
+  tratto resta fantasma senza avvisi e si riprova al tratto dopo.
+- **Undo e Redo**: le risposte restano in memoria (200), quindi un Undo e
+  poi un Redo ridisegnano subito l'aggancio di prima.
+- Forme, immagini, foto e pezzi non si agganciano: arrivano nelle parti D
+  ed E.

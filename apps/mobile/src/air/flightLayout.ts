@@ -44,7 +44,12 @@ export type WidgetId =
   | "clock"
   | "gpsAccuracy"
   | "live"
-  | "altitudeChart";
+  | "altitudeChart"
+  // Part A1.
+  | "aboveGround"
+  | "map"
+  // Part E2.
+  | "nearestAirspace";
 
 /** Each widget's name on screen, in the user's words of 2026-11-21. */
 export const WIDGET_NAME: Readonly<Record<WidgetId, string>> = {
@@ -65,6 +70,9 @@ export const WIDGET_NAME: Readonly<Record<WidgetId, string>> = {
   gpsAccuracy: tLater("GPS accuracy"),
   live: tLater("Live"),
   altitudeChart: tLater("Last 10 min"),
+  aboveGround: tLater("Height above ground"),
+  map: tLater("Map"),
+  nearestAirspace: tLater("Nearest airspace"),
 };
 
 export const WIDGETS: readonly WidgetId[] = Object.keys(WIDGET_NAME) as WidgetId[];
@@ -78,6 +86,7 @@ export type UnitKind = "altitude" | "vario" | "speed";
 export const WIDGET_UNIT_KIND: Readonly<Partial<Record<WidgetId, UnitKind>>> = {
   altitude: "altitude",
   aboveTakeoff: "altitude",
+  aboveGround: "altitude",
   thermalGain: "altitude",
   altitudeChart: "altitude",
   vario: "vario",
@@ -126,9 +135,9 @@ const cell = (widget: WidgetId, col: number, row: number, w = 2, h = 1): Cell =>
 
 /**
  * The presets' pages. Where an approved widget is not here yet, its part
- * brings it: «Thermal» has «Above takeoff» until the height above the
- * ground (A1) and its second page's map; «XC» has «Track» and «Flight
- * time» until the XC distance (F) and the nearest landing (D).
+ * brings it: «XC» has «Track» and «Flight time» until the XC distance (F)
+ * and the nearest landing (D). Part A1 brought the height above the ground
+ * and the map: on «Thermal»'s second page and on a third page of «XC».
  */
 export const PRESET_PAGES: Readonly<Record<PresetId, readonly Page[]>> = {
   thermal: [
@@ -138,12 +147,13 @@ export const PRESET_PAGES: Readonly<Record<PresetId, readonly Page[]>> = {
       cell("varioAvg", 0, 4),
       cell("thermalGain", 2, 4),
       cell("altitude", 0, 5),
-      cell("aboveTakeoff", 2, 5),
+      cell("aboveGround", 2, 5),
     ],
     [
-      cell("wind", 0, 0, 4, 2),
-      cell("flightTime", 0, 2, 4, 1),
-      cell("altitudeChart", 0, 3, 4, 3),
+      cell("map", 0, 0, 4, 4),
+      cell("wind", 0, 4, 2, 2),
+      cell("flightTime", 2, 4),
+      cell("aboveTakeoff", 2, 5),
     ],
   ],
   xc: [
@@ -164,6 +174,13 @@ export const PRESET_PAGES: Readonly<Record<PresetId, readonly Page[]>> = {
       cell("gpsAccuracy", 0, 4),
       cell("clock", 2, 4),
       cell("live", 0, 5, 4, 1),
+    ],
+    [
+      cell("map", 0, 0, 4, 4),
+      cell("altitude", 0, 4),
+      cell("varioAvg", 2, 4),
+      cell("aboveGround", 0, 5),
+      cell("groundSpeed", 2, 5),
     ],
   ],
   minimal: [

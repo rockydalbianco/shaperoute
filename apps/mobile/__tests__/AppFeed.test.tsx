@@ -104,41 +104,8 @@ afterEach(() => {
   fetchSpy.mockRestore();
 });
 
-test("a tap on a drawing opens its route on the map, to keep or to run", async () => {
+test("back from a route of «Explore», «Explore» is the page", async () => {
   await onFeed();
-  expect(POST.id).toBe("trento-star-5000-0");
-  await fireEvent.press(screen.getByText(POST.title));
-
-  // The card of a route of "Explore", over the whole screen.
-  expect(await screen.findByText("Start")).toBeOnTheScreen();
-  expect(screen.getByText("5.1 km")).toBeOnTheScreen();
-  expect(screen.getByText("star · Trento · looks 100% like it")).toBeOnTheScreen();
-  expect(screen.getByText("Export GPX")).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Add to favorites" })).toBeOnTheScreen();
-  expect(screen.queryByRole("tab")).toBeNull();
-  // Asked for by its id, once; the map shows the whole line, not the drawing's.
-  expect(asked()).toEqual([`/recommended-routes/${POST.id}`]);
-  const shown = injectJavaScript.mock.calls
-    .map(([script]) => String(script))
-    .findLast((s) => s.includes('"type":"showRoute"'));
-  const [lat, lon] = ROUTE.points[0];
-  expect(shown).toContain(`"coordinates":[[${lon},${lat}]`);
-});
-
-test("back from a drawing's route, «Feed» is the page; from one of «Explore», «Explore»", async () => {
-  await onFeed();
-  await fireEvent.press(screen.getByText(POST.title));
-  await screen.findByText("Start");
-  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
-  expect(screen.getByRole("tab", { name: "Feed", selected: true })).toBeOnTheScreen();
-  expect(screen.getByText(POST.title)).toBeOnTheScreen();
-
-  // «Back to the list» is the same way back.
-  await fireEvent.press(screen.getByText(POST.title));
-  await fireEvent.press(await screen.findByText("Back to the list"));
-  expect(screen.getByRole("tab", { name: "Feed", selected: true })).toBeOnTheScreen();
-
-  // A route of "Explore" still goes back to "Explore".
   await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
   await fireEvent.press(await screen.findByText("Star · 5.1 km"));
   await fireEvent.press(await screen.findByText("Back to the list"));
@@ -147,31 +114,18 @@ test("back from a drawing's route, «Feed» is the page; from one of «Explore»
   ).toBeOnTheScreen();
 });
 
-test("a route no longer in the catalogue says so, and no other route opens", async () => {
-  // Under the id there is another route by now, and none like it nearby.
-  underItsId = () => Response.json({ ...ROUTE, shape: "circle", route_m: 4727 });
+test("«Feed» shows no made-up drawing to open", async () => {
   await onFeed();
-  await fireEvent.press(screen.getByText(POST.title));
-
-  expect(
-    await screen.findByText("The route could not load. Try again."),
-  ).toBeOnTheScreen();
-  expect(screen.queryByText("Start")).toBeNull();
-  expect(screen.queryByRole("button", { name: "Add to favorites" })).toBeNull();
-  const [lat, lon] = POST.line[0];
-  expect(asked()).toEqual([
-    `/recommended-routes/${POST.id}`,
-    `/recommended-routes?lat=${lat.toFixed(2)}&lon=${lon.toFixed(2)}&radius_m=5000`,
-  ]);
-  await fireEvent.press(screen.getByText("Back to the list"));
-  expect(screen.getByRole("tab", { name: "Feed", selected: true })).toBeOnTheScreen();
+  expect(screen.queryByText(POST.title)).toBeNull();
+  expect(screen.queryByTestId("feed-post")).toBeNull();
+  expect(screen.getByTestId("feed-log-in")).toBeOnTheScreen();
 });
 
 test("a drawing found by the search at the top of «Explore» is fetched as «Feed» fetches it; back is «Explore»", async () => {
   // The most liked drawing is the first featured one (TASK-367 part B).
   const found = [...SAMPLE_FEED].sort((a, b) => b.score - a.score)[0];
   // Under its id there is another route by now, and none like it nearby:
-  // as from «Feed», it says so, and that other route does not open.
+  // it says so, and that other route does not open.
   const answer = fetchSpy.getMockImplementation()!;
   fetchSpy.mockImplementation(async (input, init) =>
     String(input) === `${API}/recommended-routes/${found.id}`

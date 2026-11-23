@@ -1,5 +1,6 @@
 import {
   type Activity,
+  type GymPlanFeel,
   type LatLon,
   SLEEP_SHOWN_DEFAULT,
   type Visibility,
@@ -8,6 +9,7 @@ import { type MutableRefObject, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { type DrawingChoice, isChosen, isSeen, NOT_CHOSEN } from "../api/drawings";
+import { GearPicker, useGearChoice } from "../gear/GearPicker";
 import { loadHealthOn } from "../health/healthChoice";
 import { healthPhone } from "../health/healthModules";
 import type { HealthPhone } from "../health/healthPhone";
@@ -17,6 +19,10 @@ import { SleepRunEnd } from "../health/SleepRunEnd";
 import type { SleepReader } from "../health/sleepSamples";
 import { useLastNight } from "../health/useLastNight";
 import { saveToHealth, useHealth } from "../health/useHealth";
+import { adaptDayOf, answered } from "../gym/adapt";
+import { AdaptQuestion } from "../gym/AdaptQuestion";
+import { keepPlan, useKeptPlans } from "../gym/plans";
+import { RUN_NAMES } from "../gym/proposal";
 import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
 import { showSavedLogo } from "../intro/SavedLogo";
@@ -138,6 +144,7 @@ export function RunEnd({
     toOrder,
     toOutfit,
     toSleep,
+    toGear,
     full,
     waiting,
     refused,
@@ -204,6 +211,17 @@ export function RunEnd({
   const lastNight = useLastNight(imported === undefined ? phoneSleep : null, beganMs);
   const [sleepShown, setSleepShown] = useState(SLEEP_SHOWN_DEFAULT);
   const night = isSeen(choice.visibility) ? lastNight : null;
+  // «Gear» (TASK-486 part C): the sport's defaults, until a tap; none for
+  // an activity from a file, an old one.
+  const gear = useGearChoice(choice.activity, { withDefaults: imported === undefined });
+  // «How did it go?» for a run day of a plan (TASK-488): a run just
+  // recorded, never one from a file; kept with «Save».
+  const plans = useKeptPlans();
+  const [adaptDay] = useState(() =>
+    imported === undefined ? adaptDayOf(plans, new Date(beganMs), "run") : null,
+  );
+  const [feel, setFeel] = useState<GymPlanFeel | null>(null);
+  const asking = signedIn && adaptDay !== null && choice.activity === "running";
 
   function save() {
     const sending =
@@ -240,6 +258,8 @@ export function RunEnd({
     // The night goes only when the post shows it: off, or with a post only
     // its owner sees, nothing of it leaves the phone (TASK-467).
     toSleep?.(night !== null && sleepShown ? { ...night, shown: true } : null);
+    // The gear goes with the run, whoever sees it: it counts the totals.
+    toGear?.(gear.chosen);
     // The run as the phone keeps it, read before «Save» lets the file go:
     // only after the user's yes to the phone's health data.
     const run = health !== null && loadHealthOn() ? loadRun() : null;
@@ -248,6 +268,16 @@ export function RunEnd({
     if (kept) {
       if (imported === undefined && owner !== null) {
         saveVisibility(owner, choice.visibility);
+      }
+      if (asking && owner !== null && feel !== null) {
+        // Sent with the plans' next sync (the gym's page, «My plans»).
+        const { plan, program, session } = adaptDay;
+        keepPlan(owner, plan.key, {
+          name: plan.name,
+          days: plan.days,
+          items: plan.items,
+          program: answered(program, session, feel),
+        });
       }
       // The Sgrava logo, over the app, says the run is kept (TASK-212).
       showSavedLogo();
@@ -372,6 +402,19 @@ export function RunEnd({
               apiKey={apiKey}
             />
           </OutfitTaggingContext.Provider>
+          {asking && (
+            <AdaptQuestion
+              program={adaptDay.program}
+              session={adaptDay.session}
+              date={new Date(beganMs)}
+              feel={feel}
+              onFeel={setFeel}
+              heading={t("{run} of the plan: how did it go?", {
+                run: t(RUN_NAMES[adaptDay.session.run?.kind ?? "easy"]),
+              })}
+            />
+          )}
+          <GearPicker {...gear} />
           {imported === undefined && (
             <StravaRunEnd
               strava={strava}

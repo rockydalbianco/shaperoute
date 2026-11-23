@@ -23,6 +23,7 @@ import {
 import { numberSize } from "./FlightWidget";
 import { resetFlightNotice } from "./flightNotice";
 import { flightOf, T0 } from "./syntheticFlight";
+import { resetAirspace, setAirspace } from "./airspaceStore";
 import { useFlightScreen } from "./useFlightScreen";
 import {
   DEFAULT_VARIO_PREFS,
@@ -144,6 +145,64 @@ describe("FlightScreen", () => {
     expect(profileName(kept.profiles[kept.current])).toBe("XC");
     expect(kept.look).toBe("sun");
     expect(kept.units).toEqual({ altitude: "ft", vario: "mps", speed: "kmh" });
+  });
+});
+
+describe("the map and the height above the ground (part A1)", () => {
+  beforeEach(() => {
+    saveFlightPrefs(defaultFlightPrefs("km"));
+  });
+
+  it("«Thermal» reads the ground and has the map on its second page", async () => {
+    await showScreen();
+    expect(screen.getByTestId("widget-aboveGround")).toBeTruthy();
+    expect(screen.getByTestId("ground-probe")).toBeTruthy();
+    expect(screen.getByTestId("flight-map")).toBeTruthy();
+  });
+
+  it("reads no ground for a profile that does not show it", async () => {
+    const prefs = defaultFlightPrefs("km");
+    saveFlightPrefs({ ...prefs, current: 2 });
+    await showScreen();
+    expect(screen.queryByTestId("ground-probe")).toBeNull();
+  });
+});
+
+describe("the airspaces of the pilot's file (part E2)", () => {
+  beforeEach(() => {
+    resetAirspace();
+    setAirspace(null);
+  });
+
+  it("warns on the screen when the pilot is inside one of their volumes", async () => {
+    const [lat, lon] = TRACK.fixes[TRACK.fixes.length - 1].point;
+    setAirspace({
+      fileName: "test.txt",
+      loadedAtMs: 0,
+      unread: 0,
+      airspaces: [
+        {
+          class: "R",
+          name: "TEST BOX",
+          floor: { kind: "aboveSea", metres: 500 },
+          ceiling: { kind: "unlimited" },
+          points: [
+            [lat - 0.01, lon - 0.01],
+            [lat - 0.01, lon + 0.01],
+            [lat + 0.01, lon + 0.01],
+            [lat + 0.01, lon - 0.01],
+          ],
+        },
+      ],
+    });
+    await showScreen();
+    expect(screen.getByTestId("airspace-alert")).toBeTruthy();
+    expect(screen.getByText("TEST BOX (R) · inside · floor 500 m")).toBeTruthy();
+  });
+
+  it("warns of nothing without a file", async () => {
+    await showScreen();
+    expect(screen.queryByTestId("airspace-alert")).toBeNull();
   });
 });
 

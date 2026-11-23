@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import type { Track } from "../navigation/trackRecorder";
+import { aboveGroundOf } from "./groundStore";
 import { altitudeSeries, type Instrument, instrumentNow } from "./instrument";
 import {
   type Assistant,
@@ -26,7 +27,21 @@ export type FlightScreenData = {
   altitudes: (number | null)[];
   /** The live link is being shared. */
   live: boolean;
+  /** Circling at the last fix (part A1: the map holds its course). */
+  circling: boolean;
+  /** Metres over the ground under the pilot, from the terrain's tiles
+   * (part A1, `groundStore`); null when not known. */
+  aboveGroundM: number | null;
 };
+
+function aboveGroundNow(
+  track: Track,
+  instrument: Instrument,
+  nowMs: number,
+): number | null {
+  const last = track.fixes[track.fixes.length - 1];
+  return aboveGroundOf(last?.point ?? null, instrument.altM, nowMs);
+}
 
 export function flightScreenData(
   track: Track,
@@ -35,14 +50,18 @@ export function flightScreenData(
   live: boolean,
 ): FlightScreenData {
   const all = circlings(track);
+  const circling = circlingNow(track, all);
+  const instrument = instrumentNow(track, nowMs, takeoffMs, circling);
   return {
     nowMs,
-    instrument: instrumentNow(track, nowMs, takeoffMs, circlingNow(track, all)),
+    instrument,
     thermal: thermalNow(track, nowMs, all),
     wind: windNow(track, all),
     assistant: assistantOf(track),
     altitudes: altitudeSeries(track, nowMs),
     live,
+    circling,
+    aboveGroundM: aboveGroundNow(track, instrument, nowMs),
   };
 }
 
@@ -56,13 +75,16 @@ export function useFlightScreenData(
   const wind = useMemo(() => windNow(track, all), [track, all]);
   const assistant = useMemo(() => assistantOf(track), [track]);
   const circling = useMemo(() => circlingNow(track, all), [track, all]);
+  const instrument = instrumentNow(track, nowMs, takeoffMs, circling);
   return {
     nowMs,
-    instrument: instrumentNow(track, nowMs, takeoffMs, circling),
+    instrument,
     thermal: thermalNow(track, nowMs, all),
     wind,
     assistant,
     altitudes: altitudeSeries(track, nowMs),
     live,
+    circling,
+    aboveGroundM: aboveGroundNow(track, instrument, nowMs),
   };
 }

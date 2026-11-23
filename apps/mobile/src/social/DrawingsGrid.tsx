@@ -1,6 +1,6 @@
-import type { Drawing } from "@shaperoute/shared-types";
+import { type Drawing, isPhotoPost } from "@shaperoute/shared-types";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { accountProblem } from "../account/messages";
 import { dayLabel } from "../activities/activityText";
@@ -8,6 +8,8 @@ import { RUN_DRAWING_PAD, RunDrawing } from "../activities/RunDrawing";
 import { isTrackless } from "../activities/snow";
 import { CardMapsCredit } from "../explore/RouteCard";
 import { useFeedMap } from "../feed/FeedMaps";
+import { isSleepPost } from "../feed/sleepPost";
+import { SleepTile } from "../feed/SleepTile";
 import { GymTile } from "../gym/GymTile";
 import { isPoolLine, PoolTile } from "../pool/PoolTile";
 import { t } from "../i18n";
@@ -21,7 +23,9 @@ import {
   space,
 } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
+import { drawingPhotoSource } from "../api/drawings";
 import { useDrawingsDoor } from "./drawingsDoor";
+import { useFollowsDoor } from "./followsDoor";
 import { useSeen } from "./scrollSight";
 
 /** Three drawings a row, as a profile shows its pictures. */
@@ -250,8 +254,14 @@ function DrawingCell({ drawing, size, opening, disabled, onOpen }: CellProps) {
       })}
       testID="drawing-cell"
     >
-      {/* A workout at the gym has no line: its tile (TASK-385 B0). */}
-      {isTrackless(drawing.activity) ? (
+      {/* A post of photos only has no line: its first photo (TASK-312 C). */}
+      {isPhotoPost(drawing) ? (
+        <FirstPhoto drawing={drawing} size={size} />
+      ) : /* The post of a night of sleep: its score (TASK-467 part E). */
+      isSleepPost(drawing) ? (
+        <SleepTile sleep={drawing.sleep} size={size} />
+      ) : /* A workout at the gym has no line: its tile (TASK-385 B0). */
+      isTrackless(drawing.activity) ? (
         <GymTile width={size} height={size} />
       ) : isPoolLine(drawing.activity, drawing.track_preview) ? (
         // A swim in a pool, the same (TASK-400 part C).
@@ -270,7 +280,34 @@ function DrawingCell({ drawing, size, opening, disabled, onOpen }: CellProps) {
   );
 }
 
+/** The first photo of a post of photos only, in its order, read with the
+ * token; the dark while it cannot be read. */
+function FirstPhoto({ drawing, size }: { drawing: Drawing; size: number }) {
+  const { apiUrl, account } = useFollowsDoor();
+  const photos = drawing.photos ?? [];
+  const first =
+    photos.find((photo) => drawing.order?.[0] === `photo:${photo.n}`) ?? photos[0];
+  const token =
+    account.state.status === "signedIn" ? account.state.session.token : null;
+  if (first === undefined || apiUrl === null || token === null) {
+    return <View style={[styles.photo, { width: size, height: size }]} />;
+  }
+  return (
+    <Image
+      source={drawingPhotoSource(apiUrl, token, first)}
+      style={[styles.photo, { width: size, height: size }]}
+      resizeMode="cover"
+      accessible={false}
+      testID="drawing-cell-photo"
+    />
+  );
+}
+
 const styles = StyleSheet.create({
+  photo: {
+    borderRadius: radius.md,
+    backgroundColor: color.surfaceRaised,
+  },
   section: {
     gap: space.md,
   },

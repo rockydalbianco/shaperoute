@@ -115,6 +115,24 @@ function withoutLoadInWeek(
   };
 }
 
+/**
+ * An exercise moved `shift` steps by its owner's answers (TASK-488,
+ * ADR-0396): `stepKg` a step with kg (never under 0), otherwise a rep (and
+ * 5 s if held) a step, never under one rep or one step of time.
+ */
+function shifted(item: GymPlanItem, shift: number, stepKg: number): GymPlanItem {
+  if (item.load_kg !== undefined && stepKg > 0) {
+    return { ...item, load_kg: round(Math.max(0, item.load_kg + shift * stepKg)) };
+  }
+  return {
+    ...item,
+    ...(item.reps === undefined ? {} : { reps: Math.max(1, item.reps + shift) }),
+    ...(item.kind !== "timed" || item.duration_s === undefined
+      ? {}
+      : { duration_s: Math.max(HOLD_STEP_S, item.duration_s + HOLD_STEP_S * shift) }),
+  };
+}
+
 /** An exercise of the first week, as it is in `week` (1-based) of the
  * `cycle`-th cycle. */
 export function itemInWeek(
@@ -124,7 +142,19 @@ export function itemInWeek(
   stepKg: number,
   week: number,
   cycle: number,
+  shift: number = 0,
 ): GymPlanItem {
+  if (shift !== 0 && !(mode === "reps" && item.load_kg !== undefined)) {
+    // An exercise «more kg each week» does not make heavier (one without
+    // kg) never grew: «Hard», which holds the others' step, leaves it as
+    // written, and it never goes under what is written.
+    const still = mode === "load" && (item.load_kg === undefined || stepKg === 0);
+    return shifted(
+      itemInWeek(item, mode, weeks, stepKg, week, cycle),
+      still ? Math.max(0, shift) : shift,
+      stepKg,
+    );
+  }
   const w = week - 1;
   const heavier = (steps: number): Partial<GymPlanItem> =>
     item.load_kg === undefined ? {} : { load_kg: round(item.load_kg + steps * stepKg) };
@@ -138,7 +168,9 @@ export function itemInWeek(
       if (item.load_kg === undefined) {
         return withoutLoadInWeek(item, weeks, week, cycle);
       }
-      const step = cycle * weeks + w;
+      // Its answers move it along the same ladder (TASK-488), never under
+      // the first week.
+      const step = Math.max(0, cycle * weeks + w + shift);
       return {
         ...item,
         ...(item.reps === undefined ? {} : { reps: item.reps + (step % 3) }),
@@ -156,6 +188,8 @@ export function itemInWeek(
 const RUN_STEP = 0.1;
 /** The lighter last week: this much of the cycle's first. */
 const RUN_LIGHTER = 0.8;
+/** Answers that step back (TASK-488) never take a run under half of it. */
+const RUN_LOWEST = 0.5;
 
 function roundTo(value: number, step: number, lowest: number): number {
   return Math.max(lowest, Math.round(value / step) * step);
@@ -170,12 +204,14 @@ export function runInWeek(
   week: number,
   cycle: number,
   personal: boolean = false,
+  shift: number = 0,
 ): GymPlanRun {
-  if (mode === "same") {
+  if (mode === "same" && shift === 0) {
     return run;
   }
-  const lighter = weeks >= 3 && week === weeks;
-  const steps = lighter ? cycle : cycle + week - 1;
+  const lighter = mode !== "same" && weeks >= 3 && week === weeks;
+  // Its answers (TASK-488) add steps; «Always the same» moves only by them.
+  const steps = (mode === "same" ? 0 : lighter ? cycle : cycle + week - 1) + shift;
   // A long run made for its runner (TASK-452): a kilometre (five minutes)
   // more a week, the lighter week at 80% of the cycle's first.
   if (personal && run.kind === "long") {
@@ -190,12 +226,16 @@ export function runInWeek(
         : { duration_s: roundTo((run.duration_s + steps * 300) * scale, 60, 60) }),
     };
   }
-  const factor = (1 + RUN_STEP * steps) * (lighter ? RUN_LIGHTER : 1);
+  const factor =
+    Math.max(RUN_LOWEST, 1 + RUN_STEP * steps) * (lighter ? RUN_LIGHTER : 1);
   if (run.kind === "intervals") {
     const reps = run.reps ?? 1;
     return {
       ...run,
-      reps: Math.min(50, Math.max(1, lighter ? reps + cycle - 2 : reps + steps)),
+      reps: Math.min(
+        50,
+        Math.max(1, lighter ? reps + cycle - 2 + shift : reps + steps),
+      ),
     };
   }
   return {
@@ -209,6 +249,19 @@ export function runInWeek(
   };
 }
 
+/**
+ * The steps a day of the program moved by its owner's answers (TASK-488,
+ * ADR-0396): 0 for a day nobody answered for, and for a plan that does not
+ * adapt. A day out of another sport and a day of the target's ladder keep
+ * their own steps (program.adapt never has them: adapt.ts).
+ */
+export function shiftOf(program: GymProgram, day: number): number {
+  if (program.adapt === undefined || program.adapt.off) {
+    return 0;
+  }
+  return program.adapt.days.find((one) => one.day === day)?.steps ?? 0;
+}
+
 /** The workouts of `week` of the `cycle`-th cycle, with their values. */
 export function sessionsOfWeek(
   program: GymProgram,
@@ -220,14 +273,19 @@ export function sessionsOfWeek(
     // Written by hand: as written, a step heavier each new cycle (none for
     // «same»).
     const steps = program.mode === "same" ? 0 : cycle;
-    return written.sessions.map((session) => ({
-      ...session,
-      items: session.items.map((item) =>
-        item.load_kg === undefined
-          ? item
-          : { ...item, load_kg: round(item.load_kg + steps * program.step_kg) },
-      ),
-    }));
+    return written.sessions.map((session) => {
+      const shift = shiftOf(program, session.day);
+      return {
+        ...session,
+        items: session.items.map((item) => {
+          const grown =
+            item.load_kg === undefined
+              ? item
+              : { ...item, load_kg: round(item.load_kg + steps * program.step_kg) };
+          return shift === 0 ? grown : shifted(grown, shift, program.step_kg);
+        }),
+      };
+    });
   }
   const target = program.target;
   return program.sessions.map((session) =>
@@ -239,10 +297,19 @@ export function sessionsOfWeek(
   );
 
   function weekOf(session: GymPlanSession): GymPlanSession {
+    const shift = shiftOf(program, session.day);
     return {
       ...session,
       items: session.items.map((item) =>
-        itemInWeek(item, program.mode, program.weeks, program.step_kg, week, cycle),
+        itemInWeek(
+          item,
+          program.mode,
+          program.weeks,
+          program.step_kg,
+          week,
+          cycle,
+          shift,
+        ),
       ),
       ...(session.run === undefined
         ? {}
@@ -254,6 +321,7 @@ export function sessionsOfWeek(
               week,
               cycle,
               program.runner !== undefined,
+              shift,
             ),
           }),
     };

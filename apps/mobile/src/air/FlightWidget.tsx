@@ -18,6 +18,8 @@ import {
   speedText,
   varioText,
 } from "./flightUnits";
+import type { Near } from "./airspaceNear";
+import { acrossText, limitLabel } from "./airspaceText";
 import { WIDGET_NAME, type WidgetId } from "./flightLayout";
 import type { FlightScreenData } from "./useFlightScreenData";
 import { AltitudeChart } from "./widgets/AltitudeChart";
@@ -72,6 +74,9 @@ type Props = {
   palette: Palette;
   width: number;
   height: number;
+  /** The nearest volume of the pilot's airspace file (part E2): null
+   * when none is near or none is loaded. */
+  nearest?: Near | null;
 };
 
 function Box({
@@ -174,6 +179,7 @@ export function FlightWidget({
   palette,
   width,
   height,
+  nearest = null,
 }: Props) {
   const name = t(WIDGET_NAME[widget]);
   const now = data.instrument;
@@ -202,6 +208,30 @@ export function FlightWidget({
         heightChangeText(now.aboveTakeoffM, flight.altitude),
         UNIT_LABEL[flight.altitude],
       );
+    case "aboveGround":
+      return box(
+        altitudeText(data.aboveGroundM, flight.altitude),
+        UNIT_LABEL[flight.altitude],
+      );
+    case "nearestAirspace": {
+      if (nearest === null) {
+        return box(NO_VALUE);
+      }
+      const { airspace } = nearest;
+      const across = acrossText(nearest, units);
+      return box(across, undefined, {
+        under: `${airspace.class} ${airspace.name} · ${limitLabel(
+          airspace.floor,
+          flight.altitude,
+        )}–${limitLabel(airspace.ceiling, flight.altitude)}${nearest.approx ? " ≈" : ""}`,
+        background: nearest.inside ? palette.warning : undefined,
+        ink: nearest.inside ? palette.onAccent : undefined,
+      });
+    }
+    case "map":
+      // The flight screen draws the map itself (FlightMap): here only its
+      // name, as in the editor.
+      return box(NO_VALUE, undefined);
     case "vario":
     case "varioAvg": {
       const mps = widget === "vario" ? now.varioMps : now.varioAvgMps;

@@ -4,6 +4,7 @@ import { saveStyleInFeed, useStyleInFeed } from "../feed/styleInFeedChoice";
 import { styleWords } from "../feed/styleWords";
 import { color, fontSize, radius, space } from "../theme/tokens";
 import { contactStyles } from "./ContactField";
+import { useSettingsGroup } from "./settingsGroup";
 
 /**
  * «Style posts in the Feed» in «Settings» (TASK-384, ADR-0326): MuW Style is
@@ -11,11 +12,12 @@ import { contactStyles } from "./ContactField";
  * lens «Style» still has them all. On at the start; kept on the phone.
  */
 export function StyleSetting() {
+  const group = useSettingsGroup();
   const on = useStyleInFeed();
   const words = styleWords();
   return (
     <View style={styles.setting}>
-      <View style={contactStyles.menu}>
+      <View style={[contactStyles.menu, group]}>
         <Pressable
           style={({ pressed }) => [contactStyles.row, pressed && contactStyles.pressed]}
           onPress={() => saveStyleInFeed(!on)}

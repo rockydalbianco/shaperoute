@@ -28,6 +28,7 @@ import {
   space,
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 import { Tap } from "../ui/Tap";
 import { useReduceMotion } from "../ui/useReduceMotion";
 
@@ -76,6 +77,8 @@ export function SuperLikeSheet({ visible, sending, problem, onSend, onCancel }: 
 
 function SheetBody({ sending, problem, onSend, onCancel }: Omit<Props, "visible">) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   const typing = useKeyboardShown();
   const [text, setText] = useState("");
   const length = [...commentOf(text)].length;
@@ -100,6 +103,7 @@ function SheetBody({ sending, problem, onSend, onCancel }: Omit<Props, "visible"
       <View
         style={[
           styles.sheet,
+          glassSheet,
           { paddingBottom: (typing ? 0 : insets.bottom) + space.sm },
         ]}
       >

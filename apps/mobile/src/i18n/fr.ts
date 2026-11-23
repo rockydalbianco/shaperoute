@@ -2496,6 +2496,10 @@ export const FR: Table = {
   "The people you follow have not published anything yet.":
     "Les personnes que tu suis n'ont encore rien publié.",
   "Couldn't load the Feed.": "Impossible de charger le Feed.",
+  // src/screens/FeedScreen.tsx: «All» without examples (2026-11-22)
+  "Log in from Profile to see the activities.":
+    "Connecte-toi depuis le Profil pour voir les activités.",
+  "Nobody has published anything yet.": "Personne n'a encore rien publié.",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)
   "≈ {time} at {pace}": "≈ {time} à {pace}",
@@ -2737,6 +2741,24 @@ export const FR: Table = {
   "Log in to see your days.": "Connecte-toi pour voir tes journées.",
   "No days on the snow yet.": "Pas encore de journée sur la neige.",
 
+  // src/trainingmode/, settings/SportButton.tsx (TASK-490 part A: the training mode)
+  "Training mode": "Mode entraînement",
+  "Turns MuW into your training app": "Fait de MuW ton appli d'entraînement",
+  Workouts: "Entraînements",
+  "Log in to keep your plans and see your workouts.":
+    "Connecte-toi pour garder tes programmes et voir tes entraînements.",
+  Exercises: "Exercices",
+  "Find an exercise": "Chercher un exercice",
+  "Workout at the gym": "Séance en salle",
+
+  // src/trainingmode/ (TASK-490 part B: the body of the week)
+  "of your body trained": "de ton corps entraîné",
+  "{percent}% of your body trained this week.":
+    "{percent} % de ton corps entraîné cette semaine.",
+  "10 sets or more: {muscles}.": "10 séries ou plus : {muscles}.",
+  "5 to 9 sets: {muscles}.": "De 5 à 9 séries : {muscles}.",
+  "1 to 4 sets: {muscles}.": "De 1 à 4 séries : {muscles}.",
+
   // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
   "Runs@@ski": "Descentes",
   Legend: "Légende",
@@ -2850,8 +2872,21 @@ export const FR: Table = {
   "Links to my posts": "Liens vers mes publications",
   "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.":
     "Qui voit tes publications pour «Tout le monde» peut partager leur lien. Qui a le lien voit le dessin sur la carte, ton nom d'utilisateur, le titre, le sport et la distance, même sans MuW. Désactive-le et les liens cessent de fonctionner.",
-  // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
-  "Add activity": "Ajouter une activité",
+  // src/feed/AddToFeed.tsx and addToFeedEntries.ts (TASK-476, TASK-481:
+  // the Feed's «+»; the English approved by the user, 2026-11-21).
+  "Add to Feed": "Ajouter au fil",
+  "Record now": "Enregistrer maintenant",
+  "Start an activity now": "Commencer une activité maintenant",
+  // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
+  // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
+  // the first three approved by the user, 2026-11-21, the deletion's with
+  // the screenshots, 2026-11-22).
+  "Photos only": "Photos seulement",
+  "Up to 10 photos, also from Instagram": "Jusqu'à 10 photos, même depuis Instagram",
+  "Add at least one photo.": "Ajoute au moins une photo.",
+  "Delete this post? It cannot be undone.":
+    "Supprimer cette publication ? C'est irréversible.",
+  "Delete post": "Supprimer la publication",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
   // 2026-11-08 and 2026-11-12.
   Snowshoes: "Raquettes",
@@ -3041,6 +3076,37 @@ export const FR: Table = {
     "Cette disposition vient d'une version plus récente de MuW : mettez l'app à jour.",
   "MuW could not read this file.": "MuW n'a pas pu lire ce fichier.",
   "MuW could not share the file.": "MuW n'a pas pu partager le fichier.",
+  // src/mapdraw/ (TASK-347 part C: a drawing anchored to the roads; texts approved by the user on 2026-11-22)
+  "Snapping to roads…": "Ajustement aux routes…",
+  "Roads follow your drawing: {percent}%":
+    "Les routes suivent ton dessin : {percent} %",
+  "No roads here: this line stays as you drew it.":
+    "Pas de routes ici : la ligne reste comme tu l'as dessinée.",
+  // TASK-483 B: the history of an exercise at the gym.
+  "Last time · {day}": "La dernière fois · {day}",
+  History: "Historique",
+  "Try {set}": "Essaie {set}",
+  "Try {set} again": "Réessaie {set}",
+  "{count} rep": "{count} répétition",
+  "{count} reps": "{count} répétitions",
+  "Estimated max": "Max estimé",
+  "Best set (reps)": "Meilleure série (reps)",
+  "Longest set": "Série la plus longue",
+  Farthest: "Distance max",
+  "All time": "Tout",
+  Records: "Records",
+  Heaviest: "Plus lourd",
+  "Most reps": "Plus de répétitions",
+  "Best volume": "Meilleur volume",
+  "Longest time": "Temps le plus long",
+  "{count} workout": "{count} séance",
+  "{count} workouts": "{count} séances",
+  PR: "PR",
+  "Estimated from your sets of up to 12 reps.":
+    "Estimé à partir de tes séries jusqu'à 12 répétitions.",
+  "No workouts in this period.": "Aucune séance sur cette période.",
+  "No workouts with this exercise yet.": "Pas encore de séance avec cet exercice.",
+  "From {low} to {high}, {count} workouts": "De {low} à {high}, {count} séances",
   // src/air/ (TASK-479 part C: the vario's sound; texts approved by the user on 2026-11-22)
   "Vario sound": "Son du vario",
   "Beeps from": "Bips dès",
@@ -3124,4 +3190,162 @@ export const FR: Table = {
   "From a plan": "D’un programme",
   "Workouts written by hand don't count for Play, contests, levels or the leaderboard.":
     "Les séances écrites à la main ne comptent ni pour le jeu, ni pour les concours, ni pour les niveaux, ni pour le classement.",
+  // src/gear/GearPicker.tsx, ActivityGear.tsx (TASK-486 part C), approved by the user on 2026-11-23
+  "Up to {count} items on an activity.": "Jusqu'à {count} équipements par activité.",
+  "This activity is still on its way. Try again in a moment.":
+    "Cette activité est encore en route. Réessaie dans un instant.",
+
+  // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
+  "Share one of your gym plans": "Partage un de tes programmes de salle",
+  // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
+  "Choose a plan": "Choisis un programme",
+  "No plans yet: make one in Gym › Plans.":
+    "Aucun programme pour l'instant : crée-en un dans Salle de sport › Programmes.",
+  "Say something about this plan (optional)":
+    "Dis quelque chose sur ce programme (facultatif)",
+  "Who sees it: {who}": "Qui le voit : {who}",
+  "Workout plan": "Programme d'entraînement",
+  "{count} day a week": "{count} jour par semaine",
+  "{count} days a week": "{count} jours par semaine",
+  "Use this plan": "Utiliser ce programme",
+  "Added to your plans": "Ajouté à tes programmes",
+  "You already have 20 plans: delete one to add this.":
+    "Tu as déjà 20 programmes : supprimes-en un pour ajouter celui-ci.",
+  "Delete this post?": "Supprimer cette publication ?",
+  "Copies already made stay with whoever made them.":
+    "Les copies déjà faites restent à ceux qui les ont faites.",
+
+  // The post of a night of sleep (TASK-467 part E).
+  Sleep: "Sommeil",
+  "Already in the Feed": "Déjà dans le Feed",
+  "Remove post": "Retirer la publication",
+  "Last night's sleep score, from Apple Health":
+    "Le score de sommeil de la nuit dernière, depuis Apple Santé",
+  "Your score, hours slept and sleep stages go in the Feed.":
+    "Ton score, tes heures de sommeil et tes phases de sommeil vont dans le Feed.",
+  // src/air/ (TASK-479 part A1: the flight map and the height above the ground; texts approved by the user on 2026-11-22)
+  "Height above ground": "Hauteur sol",
+  "Heading up": "Cap en haut",
+  "North up": "Nord en haut",
+  // The plan that adapts (TASK-488): gym/AdaptQuestion.tsx, gym/GymPlans.tsx.
+  "Easy@@feel": "Facile",
+  "Right@@feel": "Juste",
+  "Hard@@feel": "Dur",
+  "could do more": "j'aurais pu plus",
+  "as planned": "comme prévu",
+  "at my limit": "à la limite",
+  "Next time the plan adjusts to your answer.":
+    "La prochaine fois, le programme s'ajuste à ta réponse.",
+  "No answer? It goes on as planned.": "Pas de réponse ? Il continue comme prévu.",
+  "Easy: up we go": "Facile : on monte",
+  "Right: as planned": "Juste : comme prévu",
+  "Hard: the same next time": "Dur : pareil la prochaine fois",
+  "Hard again: one step back": "Encore dur : un pas en arrière",
+  "Change@@answer": "Changer",
+  "Next {day}, {name}:": "La prochaine fois ({day}), {name} :",
+  "Easy: one step more than planned. Right: as planned. Hard: the same next time; after two «Hard» in a row, one step back.":
+    "Facile : un pas de plus que prévu. Juste : comme prévu. Dur : pareil la prochaine fois ; après deux « Dur » de suite, un pas en arrière.",
+  "{run} of the plan: how did it go?": "{run} du programme : comment ça s'est passé ?",
+  "↑ one step more · = the same · ↓ one step back":
+    "↑ un pas de plus · = pareil · ↓ un pas en arrière",
+  "Adapts to how it went": "S'adapte à comment ça s'est passé",
+  "Off: no question at the end, the weeks grow as planned.":
+    "Désactivé : pas de question à la fin, les semaines progressent comme prévu.",
+  "Next week is the lighter one, to recover.":
+    "La semaine prochaine est la plus légère, pour récupérer.",
+  "How did the plan feel?": "Comment as-tu trouvé le programme ?",
+  // src/air/ (TASK-479 part E1: the pilot's airspace file; notices 3 and 4 approved by the user on 2026-11-21, the other texts on 2026-11-23)
+  "No airspace loaded. MuW does not include airspace data.":
+    "Aucun espace aérien chargé. MuW ne fournit pas de données d'espace aérien.",
+  "Data loaded by you: check the AIP and NOTAMs before you fly. · {file} · loaded {date}":
+    "Données chargées par vous : vérifiez l'AIP et les NOTAM avant de voler. · {file} · chargé le {date}",
+  Airspace: "Espaces aériens",
+  "Airspaces: {count}": "Espaces aériens : {count}",
+  "Lines not read: {n}": "Lignes non lues : {n}",
+  "This file has no airspace MuW can read.":
+    "Ce fichier ne contient aucun espace aérien que MuW sait lire.",
+  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts.
+  Coach: "Coach",
+  "Based on your last 4 weeks": "D'après tes 4 dernières semaines",
+  "Apply to plan": "Appliquer au programme",
+  "Add to {day}": "Ajouter au {day}",
+  "Create an account to get tips from your workouts":
+    "Crée un compte pour recevoir des conseils tirés de tes séances",
+  "Log a few workouts and your tips will show up here":
+    "Enregistre quelques séances et tes conseils apparaîtront ici",
+  "Tips are general, not medical advice. If something hurts, stop and ask a professional.":
+    "Ces conseils sont généraux, pas un avis médical. Si tu as mal, arrête-toi et demande à un professionnel.",
+  "{exercise}: {kg} kg": "{exercise} : {kg} kg",
+  "You did all your reps at {old} kg twice in a row. Add weight and start again from {min} reps.":
+    "Tu as fait toutes tes répétitions à {old} kg deux fois de suite. Ajoute du poids et repars de {min} répétitions.",
+  "{exercise}: one more rep": "{exercise} : une répétition de plus",
+  "You did all your reps twice in a row. Add one rep to each set.":
+    "Tu as fait toutes tes répétitions deux fois de suite. Ajoute une répétition à chaque série.",
+  "You stopped below {min} reps twice in a row. A little less weight helps you finish your sets.":
+    "Tu t'es arrêté sous les {min} répétitions deux fois de suite. Un peu moins de poids t'aidera à finir tes séries.",
+  "{exercise} has stalled": "{exercise} stagne",
+  "Your estimated max hasn't moved in 3 workouts. Try {min2}–{max2} reps for the next weeks.":
+    "Ton max estimé n'a pas bougé en 3 séances. Essaie {min2}–{max2} répétitions les prochaines semaines.",
+  "Add {n} sets for {muscle}": "Ajoute {n} séries pour {muscle}",
+  "{muscle} got {sets} sets this week. Around 10 a week builds muscle better.":
+    "{muscle} : {sets} séries cette semaine. Avec environ 10 par semaine, le muscle progresse mieux.",
+  "A lot for {muscle}": "Beaucoup pour {muscle}",
+  "{muscle} got {sets} sets this week. Above 20 adds tiredness more than muscle.":
+    "{muscle} : {sets} séries cette semaine. Au-delà de 20, on gagne plus de fatigue que de muscle.",
+  "Train {muscle} twice a week": "Entraîne {muscle} deux fois par semaine",
+  "All your {muscle} sets are on {day}. Split them over two days for more growth.":
+    "Toutes tes séries pour {muscle} sont le {day}. Répartis-les sur deux jours pour progresser davantage.",
+  "{muscle} is still recovering": "{muscle} récupère encore",
+  "You trained it hard {hours} hours ago. Today pick another muscle, or keep it light.":
+    "Tu l'as travaillé dur il y a {hours} heures. Aujourd'hui choisis un autre muscle, ou reste léger.",
+  "Keep {km} km this week": "Garde {km} km cette semaine",
+  "Last week you ran {pct}% more than your usual. Hold the distance before adding more.":
+    "La semaine dernière tu as couru {pct} % de plus que d'habitude. Garde cette distance avant d'augmenter.",
+  "Next run: slow and long": "Prochaine sortie : lente et longue",
+  "Only {pct}% of your running was easy. Most of it should feel easy, around 80%.":
+    "Seulement {pct} % de ta course était facile. La plupart devrait l'être, environ 80 %.",
+  "Maybe a lighter week": "Peut-être une semaine plus légère",
+  "This week's load is high compared with the last month.":
+    "La charge de cette semaine est élevée par rapport au mois dernier.",
+  "Time for an easy week": "C'est le moment d'une semaine facile",
+  "{weeks} weeks of steady work. Do about half the sets this week, same weights.":
+    "{weeks} semaines de travail régulier. Cette semaine, fais environ la moitié des séries, avec les mêmes poids.",
+  "Short night: go lighter": "Nuit courte : vas-y plus doucement",
+  "Your sleep score was {score}. Same workout today, one set less per exercise.":
+    "Ton score de sommeil était de {score}. Même séance aujourd'hui, avec une série de moins par exercice.",
+  "Welcome back": "Bon retour",
+  "You've been away {days} days. Start this week at about 85% of your weights.":
+    "Tu t'es arrêté {days} jours. Cette semaine, reprends à environ 85 % de tes poids.",
+  "One more strength day": "Un jour de force en plus",
+  "{count} strength day this week. Two a week keep muscles and bones strong.":
+    "{count} jour de force cette semaine. Deux par semaine gardent muscles et os solides.",
+  "{count} strength days this week. Two a week keep muscles and bones strong.":
+    "{count} jours de force cette semaine. Deux par semaine gardent muscles et os solides.",
+  "Why: {reason}": "Pourquoi : {reason}",
+  "Double progression · ACSM 2009": "Double progression · ACSM 2009",
+  "Load that fits the reps · ACSM 2009":
+    "Une charge adaptée aux répétitions · ACSM 2009",
+  "Change the stimulus · ACSM 2009": "Changer le stimulus · ACSM 2009",
+  "Weekly volume · Schoenfeld 2017": "Volume hebdomadaire · Schoenfeld 2017",
+  "Frequency · Schoenfeld 2016": "Fréquence · Schoenfeld 2016",
+  "48 hours to recover · ACSM 2009": "48 heures pour récupérer · ACSM 2009",
+  "Safe increase · Nielsen 2014": "Augmentation sûre · Nielsen 2014",
+  "80/20 · Seiler 2010": "80/20 · Seiler 2010",
+  "Workload ratio · Gabbett 2016": "Ratio de charge · Gabbett 2016",
+  "Deload · Bosquet 2007": "Décharge · Bosquet 2007",
+  "Sleep and performance · Fullagar 2015": "Sommeil et performance · Fullagar 2015",
+  "Coming back · Mujika 2000": "La reprise · Mujika 2000",
+  "WHO guidelines 2020": "Recommandations de l'OMS 2020",
+  OK: "OK",
+  "Nothing to change for now: keep going.":
+    "Rien à changer pour l'instant : continue comme ça.",
+  // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21, the other texts on 2026-11-23)
+  "Nearest airspace": "Espace aérien le plus proche",
+  inside: "dedans",
+  "{name} ({class}) · {dist} · floor {floor}":
+    "{name} ({class}) · {dist} · plancher {floor}",
+  "FL limits from GPS altitude (≈).": "Limites en FL d'après l'altitude GPS (≈).",
+  "Warn within": "Avertir à moins de",
+  "Warn above or below": "Avertir au-dessus ou en dessous",
+  "Warning sound": "Son de l'avertissement",
 };

@@ -124,8 +124,10 @@ afterEach(() => {
 });
 
 test("a route of «Explore» gives «Draw» its shape and its distance, asking for nothing", async () => {
+  // From the list of «Explore»: «Feed» has no made-up drawing to open.
   await onFeed();
-  await fireEvent.press(screen.getByText(POST.title));
+  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
+  await fireEvent.press(await screen.findByText("Star · 5.1 km"));
   await screen.findByText("Start");
   const before = fetchSpy.mock.calls.length;
 

@@ -339,6 +339,8 @@ Coordinatore: «ADR-0375, precisazione R6», nessuna migrazione.
   aperta (i tratti in aria come coppie di punti della traccia salvata, e i
   tempi divisi); R6d-b nell'app colora la mappa e scrive i tempi sotto la
   scheda di «My activities».
+- **R6e, il post della gara**: `flight` anche in `GET /drawings/{id}`, e
+  la mappa del post aperto dal Feed o da un profilo a due colori.
 
 **Testi di R6**, approvati dall'utente il 2026-11-12 (en/it «Sì, approvo»,
 poi de/fr/es «Sì, approvo»):
@@ -728,15 +730,27 @@ da «My activities») sono approvate dall'utente («Sì, approvo», 2026-11-22):
 linea bianca a piedi e gialla in volo, «A piedi 30:00 · In volo 15:00», la
 legenda. Decisione: ADR-0375 precisazione R6d.
 
+**Un volo nelle liste** (2026-11-22, chiesto dall'utente dopo la prova di
+R6d): #1399 in main (`07d6daa6`), esce con l'OTA dopo la 21. In «My
+activities», nella scheda e nella riga del Feed un volo senza luogo né
+disegno si chiama «Paragliding» invece di «Run», e ha la velocità media
+invece del passo per km. R6d è in produzione con l'OTA 21.
+
+**Esito R6e** (2026-11-23, «Sì, fallo» dell'utente il 2026-11-22): server
+#1411 (`e427ed2e`) in main, sul server col passo 19 (col sì dell'utente);
+app #1412 (`7a0972de`) in main, esce con l'OTA 23. Il post di una gara
+aperto dal Feed o da un profilo ha la linea bianca a piedi e gialla in
+volo; `flight` manca se la linea del post non ha i punti della corsa. Nella
+stessa PR lo schema openapi di `GET /me/activities/{key}` torna coi suoi
+campi. Decisione: ADR-0375 precisazione R6e.
+Il passo 19 è fatto (server `e427ed2e`), l'OTA 23 è uscita, e il
+2026-11-23 l'utente ha guardato il post di una gara sul telefono:
+«funziona tutto». R6e chiusa.
+
 **Cosa resta**:
 
 - Una prova di un volo vero, col link dal vivo aperto da un altro
   telefono, dopo l'uscita.
 - R4 (il volo sull'orologio, per il battito dal vivo): PR #1218 in bozza,
   fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
-- Il post di una gara aperto dal Feed o da un profilo
-  (`GET /drawings/{id}`) resta tutto bianco: i due colori lì sono per dopo.
-- Nella scheda di «My activities» un volo senza luogo si chiama «Run» e
-  mostra un passo in /km, come prima di R6d: da correggere a parte, se
-  l'utente lo vuole.
 - Le parti del pianificatore (A1…F) restano Proposte.

@@ -20,6 +20,7 @@ import {
 } from "../theme/tokens";
 import { Hairline } from "../ui/Hairline";
 import { Tap } from "../ui/Tap";
+import { useSettingsGroup } from "./settingsGroup";
 
 /**
  * «Language» in «Settings» (TASK-210, ADR-0172): the language the app is
@@ -29,6 +30,7 @@ import { Tap } from "../ui/Tap";
  * The choice stays on the phone and the app turns to it at once.
  */
 export function LanguageSetting() {
+  const group = useSettingsGroup();
   const language = useLanguage();
   const [choice, setChoice] = useState<LanguageChoice>(loadLanguageChoice);
   const [open, setOpen] = useState(false);
@@ -39,7 +41,7 @@ export function LanguageSetting() {
     saveLanguageChoice(next);
   };
   return (
-    <View style={styles.menu}>
+    <View style={[styles.menu, group]}>
       <Tap
         style={styles.row}
         onPress={() => setOpen(!open)}

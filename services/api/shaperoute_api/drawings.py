@@ -48,6 +48,7 @@ from pydantic import (
     Field,
     SerializerFunctionWrapHandler,
     field_serializer,
+    model_serializer,
 )
 from route_engine.geo import path_length_m
 
@@ -70,6 +71,7 @@ from shaperoute_api.activities import (
     turn_kept,
 )
 from shaperoute_api.db import Database
+from shaperoute_api.flight_legs import ActivityFlightBody, flight_of
 from shaperoute_api.follows import apart_sql, follows_sql
 from shaperoute_api.outfit_tags import OutfitTagBody, tags_on_photos
 from shaperoute_api.push import notify_tagged, tagged_before
@@ -106,7 +108,8 @@ Visibility = Literal["everyone", "followers", "only_me"]
 # Where a drawing comes from: its run's `source`, or `photos` for a post of
 # photos only, without a run (TASK-312 part C, photo_posts.py).
 PHOTOS_SOURCE = "photos"
-DrawingSource = RunSource | Literal["photos", "sleep"]
+# `plan` for a gym plan posted (TASK-485, plan_posts.py).
+DrawingSource = RunSource | Literal["photos", "sleep", "plan"]
 # The only ones that come with the line of a description.
 LINE_BREAK = "\n"
 
@@ -420,6 +423,11 @@ class SeenFields(BaseModel):
     (TASK-455 part C, post_links.py): it is for everyone, it has a line, and
     its owner leaves «Links to my posts» on. The app shows «Share link» only
     then. Always answered; the default is for the examples written before."""
+    plan: dict[str, Any] | None = None
+    """A gym plan posted (TASK-485, plan_posts.py, `source` `plan`): the plan
+    as it was posted, `GymPlanPosted`, with its exercises and kg; null for
+    any other post. Always answered; the default is for the examples
+    written before."""
     sleep: SleepSummaryBody | None = None
     """«Sleep last night» (TASK-467 part B1b, sleep_seen.py): the night
     before the activity, while its owner shows it in the post; null for a
@@ -471,6 +479,21 @@ class DrawingDetailBody(SeenFields):
     """Splits, elevation, cadence, calories, heart rate (TASK-410 C,
     run_stats.py), as the one who asks may see them; null for a run without
     any, as every run saved before them."""
+    flight: ActivityFlightBody | None = None
+    """A race on foot and in the air (TASK-305 part R6e, flight_legs.py):
+    its parts in the air as [from, to] indices into `track`, and the two
+    kinds added up, as GET /me/activities/{key} gives them. Left out of the
+    answer for any other drawing, for a flight without parts on foot, and
+    when `track` has not the run's points."""
+
+    @model_serializer(mode="wrap")
+    def _without_flight(self, handler: SerializerFunctionWrapHandler):
+        # No return type, so the answer's schema stays the drawing's own
+        # fields: with one it would be any object.
+        answer: dict[str, Any] = handler(self)
+        if answer.get("flight") is None:
+            answer.pop("flight", None)
+        return answer
 
 
 # --- The drawings in the database ---
@@ -500,8 +523,11 @@ _SEEN_FIELDS = (
     f" {DRAWN_AT_SQL} AS started_at, r.place, r.shape, r.word, r.style,"
     " r.title AS route_title, coalesce(r.distance_m, 0) AS distance_m,"
     " coalesce(r.duration_s, 0) AS duration_s, r.score, r.fidelity, r.activity,"
-    f" r.route_rotation_deg, coalesce(r.source, CASE WHEN d.sleep_night_id IS NULL"
-    f" THEN '{PHOTOS_SOURCE}' ELSE 'sleep' END) AS source,"
+    " r.route_rotation_deg, coalesce(r.source, CASE"
+    " WHEN d.sleep_night_id IS NOT NULL THEN 'sleep'"
+    f" WHEN d.plan IS NOT NULL THEN 'plan' ELSE '{PHOTOS_SOURCE}' END) AS source,"
+    # The plan of a gym plan posted (TASK-485): on the drawing itself.
+    " d.plan,"
     # The descents of a day of skiing (TASK-424 part C2b): one key of its
     # run_stats row, by its primary key.
     " (SELECT s.stats -> 'ski_descents' FROM run_stats s WHERE s.run_id = r.id)"
@@ -651,6 +677,7 @@ def _seen(row: DictRow, details: Details) -> dict[str, Any]:
         "rotation_deg": turn_kept(row["route_rotation_deg"]),
         "ski_descents": row.get("ski_descents"),
         "flight_split": row.get("flight_split"),
+        "plan": row.get("plan"),
         "sleep": seen_sleep(row.get("sleep")),
         "linkable": bool(row.get("linkable")),
     }
@@ -963,12 +990,22 @@ class Drawings:
                     conn, row["run_id"], author=row["author_id"] == viewer_id
                 )
             )
+            track = _line(row["track"])
+            # A race's parts in the air on the line shown (TASK-305 R6e).
+            flight = (
+                flight_of(conn, row["run_id"], len(track))
+                if row["run_id"] is not None
+                and row["activity"] == "paragliding"
+                and track
+                else None
+            )
         return DrawingDetailBody(
             **_seen(row, details),
             author=AuthorBody(public_id=row["public_id"], username=row["username"]),
             public=row["visibility"] == "everyone",
-            track=_line(row["track"]),
+            track=track,
             stats=stats,
+            flight=flight,
         )
 
 

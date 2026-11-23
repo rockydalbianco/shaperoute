@@ -1,6 +1,6 @@
 # TASK-312 — Importare nel Feed attività fatte con altre app, e post di sole foto
 
-**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C1 in `main`** (API e migrazione `0080` dei post di sole foto, PR #1347, `cfd5e956`; server col passo del Coordinatore e il sì dell'utente) · poi C2 (app), D (studio Apple Salute), E (studio collegamenti diretti)
+**Stato**: In lavorazione · documenti in `main` (#600) · **A in `main`** (API, PR #613) · **B in `main`** (app, file, PR #622, `5d7a5eda`) · **C in `main`**: C1 (API e migrazione `0080`, PR #1347, `cfd5e956`; server col passo 16), C1b (`GET /me/photo-posts`, PR #1355) e C1c (fuori i post del sonno, PR #1379) sul server col passo 17, C2 (app e riga della privacy, PR #1386, `3d4f0d47`) · **D: studio e risposte dell'utente** (2026-11-23, testo del permesso approvato); codice con la build nativa · **E: studio e risposte** (2026-11-23): Strava resta il file, Polar dopo D, gli altri con l'azienda
 **Fase**: 4 · **Branch**: `docs/TASK-312-import-activities` (documenti),
 `feat/TASK-312-a-imported-runs-api` (A), `feat/TASK-312-b-import-file-app`
 (B), `feat/TASK-312-c-photo-posts` (C), `docs/TASK-312-d-health-study`
@@ -417,6 +417,52 @@ il numero vero al merge). In più, chiesto al Coordinatore:
 - 35 test nuovi (`test_photo_posts.py`, `test_photo_posts_seen.py`), tipi
   e test in `shared-types`, fixture fatte dalle risposte vere dell'API.
 
+### Parte C1c — i post del sonno restano fuori (2026-11-22)
+
+Con 467 E1 (migrazione `0082`, `drawings.sleep_night_id`) anche il post del
+sonno è un disegno senza corsa. Le quattro letture di `photo_posts.py`
+(`POST_OF_KEY`, `_post`, `all_mine`, `remove`) vogliono ora
+`run_id IS NULL AND sleep_night_id IS NULL` (`PHOTO_POST_SQL`), e un `PUT`
+sulla chiave di un post del sonno risponde `409 not_a_photo_post`. PR #1379
+in `main` (`fdc49ddd`), con un test. Sul server col passo 17, insieme a C1b
+(server a `40789324`: `/me/photo-posts` 401 senza chiave, controlli
+`10|0|0|0|0`, nessun Traceback).
+
+### Parte C2 — com'è fatta (2026-11-22, PR #1386, `3d4f0d47`)
+
+«File toccati» approvati dal Coordinatore (lista in
+`side-session-notes`, poi nel corpo della PR); in più, chiesti e approvati:
+`services/api/tests/test_reads.py`, `apps/mobile/src/tabs/TabSwipeOwners.test.ts`,
+`services/api/tests/test_photo_posts.py`.
+
+- `reads.json`: `this_app` dice anche `photos`; l'app manda `photos` in
+  `X-MuW-Reads` (`api/reads.ts`), e `api/drawings.ts` accetta `activity`
+  `null` solo con `source: "photos"`;
+- `api/photoPosts.ts` e la coda del telefono (`social/photoPostOutbox.ts`,
+  `usePhotoPostOutbox.ts`): il post e le sue foto partono anche più tardi,
+  senza rete, una foto alla volta, e si scordano all'uscita dall'account;
+- `imports/PhotoPostForm.tsx`: da 1 a 10 foto, titolo, descrizione,
+  persone taggate, «Everyone» o «Followers» dall'ultima scelta
+  (`photoPostVisibility.ts`); «Photos only» in «Add past activity» e nel
+  «+» del Feed, anche senza il selettore di file (il «+» c'è con
+  l'account);
+- nel Feed `feed/PhotoFeedPost.tsx` (foto da scorrere, foto dell'autore,
+  «Imported», reazioni, commenti, segnalazione) e `PhotoPostPage.tsx`;
+  `PhotoPostSettings.tsx` cambia titolo, descrizione e chi lo vede, e
+  cancella con «Delete this post? It cannot be undone.» / «Delete post»;
+  niente «Share», niente numeri della corsa, niente invio in chat; nella
+  griglia del profilo la prima foto;
+- la riga della privacy nelle cinque lingue e sul sito
+  (`make_privacy.mjs`), data 22 novembre 2026;
+- provato nel simulatore (Expo Go, API locale): creare, Feed, pagina,
+  impostazioni, cancellare (`DELETE` 204).
+
+Approvati dall'utente il 2026-11-22: le schermate e i testi della
+cancellazione («Approvo»), «Importata» in italiano resta, le traduzioni
+della riga della privacy («Approvo»); il merge con «Sì, unisci» (tocca la
+privacy), chiesto dal Coordinatore. #1397 (TASK-487) è entrata prima: il
+conflitto su `FeedScreen.tsx` era solo nel commento.
+
 ## Parte D — Apple Salute e Health Connect (studio)
 
 Lo studio di §7 di `IMPORTAZIONI.md`, scritto in
@@ -424,12 +470,279 @@ Lo studio di §7 di `IMPORTAZIONI.md`, scritto in
 dell'utente (la libreria, i permessi, la privacy) e il codice con la
 build nativa.
 
+### Studio D (2026-11-23)
+
+Scritto dall'agente col via del Coordinatore. Nessun codice; le scelte in
+fondo sono dell'utente.
+
+**1. Cosa c'è già nell'app.** Le due librerie sono già nelle dipendenze
+(TASK-321, ADR-0281): `@kingstinct/react-native-healthkit` 16.2.0 per
+l'iPhone e `react-native-health-connect` 4.1.3 per Android, tenute fuori
+dal linking finché non arriva la build nativa (`health/healthModules.ts`).
+**Nessuna dipendenza nuova** per leggere: la domanda «quale libreria» di
+§7 è già risolta. Oggi MuW da Salute:
+
+| Chi | Scrive | Legge |
+| --- | --- | --- |
+| TASK-321 (in `main`) | allenamento, traccia, distanza, energia di una corsa | battito durante l'attività (`heartSamples.ts`) |
+| TASK-467 C (#1334, bozza) | — | sonno (`HKCategoryTypeIdentifierSleepAnalysis`) |
+| TASK-489 C2 (piano) | — | allenamenti delle altre app (`HKWorkoutTypeIdentifier`) ed energia attiva del giorno (`HKQuantityTypeIdentifierActiveEnergyBurned`); Android: allenamenti e calorie attive |
+| **TASK-312 D (questo studio)** | — | **la traccia** di quegli allenamenti (`HKWorkoutRouteTypeIdentifier`); Android `ExerciseRoute` |
+
+Su Health Connect oggi MuW chiede solo permessi di scrittura
+(`health/healthConnect.ts`).
+
+**2. Cosa si aggiunge alla lista della prossima build nativa.** La build
+avrà un solo `NSHealthShareUsageDescription` per tutti (Coordinatore,
+2026-11-23). Rispetto a 467 C e 489 C2, D aggiunge **un solo tipo di
+lettura**:
+
+- iPhone: `HKWorkoutRouteTypeIdentifier` in `toRead` (gli allenamenti li
+  chiede già 489 C2; il permesso della traccia è un interruttore a parte
+  nel foglio di Salute). Nessun entitlement nuovo:
+  `com.apple.developer.healthkit` c'è già in `app.json`.
+- Android: `android.permission.health.READ_EXERCISE` (lo chiede già 489
+  C2) e **`android.permission.health.READ_EXERCISE_ROUTES`** (nuovo). Se
+  si vuole andare oltre i 30 giorni, anche
+  `android.permission.health.READ_HEALTH_DATA_HISTORY` (scelta 3).
+- Il testo del permesso deve nominare anche «le tracce» degli
+  allenamenti. Proposta inglese, da approvare insieme a 467 C e 489 C2:
+  «MuW reads from Apple Health your heart rate during each activity, your
+  sleep, your active energy and your workouts from other apps with their
+  routes, to show them with your activities, in your posts and in your
+  food diary. You can hide them before you publish.» Poi le quattro
+  traduzioni in `locales/*.json`.
+
+**3. Quali app scrivono la traccia.** Senza traccia non c'è disegno.
+
+- **Apple Allenamento** (Apple Watch, iPhone) scrive la traccia di ogni
+  allenamento all'aperto: è il caso più comune su iPhone.
+- **Garmin Connect** scrive in Salute allenamento, distanza e calorie, ma
+  **non la traccia**: lo dicono più utenti sul forum Garmin, e Garmin
+  Connect non compare fra le fonti di «Workout Routes» in Salute.
+- **Strava**: scrive gli allenamenti in Salute; della traccia ci sono
+  solo segnalazioni discordanti degli utenti, nessuna pagina di Strava.
+- **Polar Flow**: la sua scheda dell'App Store elenca allenamenti, battito
+  e passi, non la traccia. **Suunto, Coros**: nessuna fonte trovata.
+- App ponte come RunGap scrivono anche la traccia: chi usa Garmin può
+  passare di lì, non è cosa di MuW.
+
+Le fonti sono quasi tutte forum: **la verifica vera è sul telefono**. In
+Salute › Profilo › App e servizi si vede quali app hanno scritto «Workout
+Routes». Prima del codice, sull'iPhone dell'utente (che usa le app vere),
+si guarda quali fonti hanno tracce e se ne scrive l'elenco qui.
+
+Su Android: la traccia la scrivono le app che usano `ExerciseRoute` di
+Health Connect; da verificare allo stesso modo con la build Android di
+TASK-321 C.
+
+**4. Come si legge.**
+
+- iPhone: si leggono gli allenamenti (`queryWorkoutSamples`), poi la
+  traccia di ognuno (`getWorkoutRoutes()` sull'allenamento, che dietro
+  usa `HKWorkoutRouteQuery`). Salute **non dice se la lettura è stata
+  negata**: un allenamento senza traccia può voler dire «l'app non l'ha
+  scritta» o «permesso negato». La riga sotto l'elenco lo dice in tutti e
+  due i casi.
+- Android: si leggono le `ExerciseSession`; la traccia di un'altra app
+  vuole `READ_EXERCISE_ROUTES` e l'app in primo piano; se manca il
+  consenso, Health Connect risponde `ConsentRequired` e
+  `requestExerciseRoute(recordId)` apre la richiesta per quella sola
+  sessione. Il gesto dell'utente («scegli questo allenamento») è il
+  momento giusto per chiederla.
+- **Gli allenamenti scritti da MuW stesso si saltano** (sorgente
+  `HKSource` col bundle di MuW; su Android `dataOrigin` col pacchetto di
+  MuW): sono già corse di MuW.
+- Il codice di lettura è lo stesso di 489 C2: un modulo solo in `health/`
+  che legge gli allenamenti, e due usi (il diario del cibo prende le
+  calorie, «Add past activity» prende la traccia).
+
+**5. Dove entra nell'app e sul server.** La strada c'è già: è quella del
+file (parte B). In «Add past activity» una voce «From Apple Health» (su
+Android «From Health Connect») apre l'elenco degli allenamenti con
+traccia; uno scelto diventa una traccia come quella di un GPX e va nello
+stesso modulo con «Imported», fuori da gioco e concorsi.
+
+- Sul server serve un valore nuovo di `runs.source` (oggi `muw`, `file`,
+  `manual`): una migrazione e lo schema. Oppure si riusa `file`. Scelta
+  tecnica, al momento del codice.
+- La chiave dell'attività può venire dall'UUID dell'allenamento di
+  Salute: importarlo due volte dà la stessa corsa.
+
+**6. Regole.**
+
+- **Apple 5.1.3 e 27.x**: i dati di Salute mai per pubblicità, marketing
+  o data mining, mai venduti; pubblicarli solo col gesto esplicito di chi
+  li pubblica. MuW avrà gli annunci (ADR-0198): la traccia letta da Salute
+  non li tocca mai. Pubblicare è già un gesto esplicito («Save» nel
+  modulo).
+- **Privacy**: una riga nuova, da approvare. Come quella dei file: la
+  traccia e gli orari dell'allenamento scelto arrivano al server solo
+  quando lo salvi, con le stesse regole di una corsa salvata (traccia
+  tagliata di 200 m). Su App Store «Health» copre già i dati che escono
+  dal telefono (467 C lo aggiorna per il sonno).
+- **Google Play**: il modulo della dichiarazione di Health Connect su
+  Play Console, con ogni permesso di lettura e il suo uso; il permesso
+  della cronologia è uno di quelli da giustificare.
+- **Build nativa**: tutto entra solo con lei (iOS dopo la 1.1.0, Android
+  con TASK-321 C). Quale build e quando lo dice il Coordinatore.
+
+**7. Le scelte dell'utente, una per volta, con una proposta.**
+
+1. **Si fa?** «From Apple Health» in «Add past activity», insieme alla
+   build di 467 C e 489 C2 (un solo testo del permesso). *Proposta: sì,
+   con la stessa build.*
+2. **Gli allenamenti senza traccia** (Garmin, probabilmente Polar):
+   nascosti, o nell'elenco in grigio con «No route in Apple Health».
+   *Proposta: in grigio, con la riga che dice perché.*
+3. **Quanto indietro su Android**: i 30 giorni di base, o tutta la
+   cronologia (permesso in più, da giustificare a Google). *Proposta: i 30
+   giorni; la cronologia dopo, se la chiedono.* Su iPhone nessun limite.
+4. **Il testo del permesso unico** (§2) e **la riga della privacy** (§6):
+   testi dell'utente.
+
+Fonti: Apple, «Reading route data» e `HKWorkoutRouteQuery`
+(developer.apple.com/documentation/healthkit); Android, «Add exercise
+routes» e `HealthPermission`
+(developer.android.com/health-and-fitness/health-connect/features/exercise-routes);
+Android Developers Blog, marzo 2025 (i 30 giorni e
+`READ_HEALTH_DATA_HISTORY`); Google Play, «Health apps»
+(support.google.com/googleplay/android-developer/answer/12991134); forum
+Garmin, «garmin connect does not sync workout routes … to apple health»
+(forums.garmin.com, thread 352961); Apple Community, thread 251755357
+(Strava); App Store, Polar Flow (id717172678); `getWorkoutRoutes()` in
+`WorkoutProxy.nitro.ts` della libreria (v14, da ricontrollare sulla 16.2
+prima del codice).
+
+**Le risposte dell'utente (2026-11-23)**, col via del Coordinatore:
+
+1. «Sì, stessa build»: «From Apple Health» / «From Health Connect» in
+   «Add past activity», con la build nativa di 467 C e 489 C2.
+2. «In grigio con il perché»: gli allenamenti senza traccia restano
+   nell'elenco, non si scelgono, con «No route in Apple Health».
+3. Android: «30 giorni», poi l'utente ha aggiunto «fai anche precedente se
+   l'utente lo vuole». Quindi: si parte dai 30 giorni; in fondo
+   all'elenco «Show older workouts» chiede
+   `READ_HEALTH_DATA_HISTORY` e mostra anche quelli più vecchi
+   («Sì, va bene»). Il permesso va dichiarato su Play Console.
+4. Riga della privacy approvata («Approvo», poi «Sì, va bene» per la
+   frase sulla cronologia), nella sezione «Apple Health and Health
+   Connect», traduzioni da approvare col codice:
+   «If you add a past activity «From Apple Health» (iPhone) or «From
+   Health Connect» (Android), MuW reads on your phone the workouts other
+   apps saved there, with their routes; on Android, those of the last 30
+   days, and older ones too if you allow it. Only the workout you choose
+   reaches our server, when you save it: we keep its route and times like
+   a run recorded with MuW. None of it reaches any advertising.»
+   Fra i consensi: «reading your workouts from Apple Health or Health
+   Connect».
+
+Il testo unico del permesso di iOS (§2) lo concordano 312 D, 467 C e 489,
+poi va all'utente per il sì (Coordinatore, 2026-11-23). La lettura delle
+tracce è nella lista della prossima build nativa del Coordinatore.
+
+**Il testo unico, approvato dall'utente il 2026-11-23** («Approvo»),
+concordato con 467 C (sessione «TASK-467 B3») e 489 («Alimentazione»); prende
+il posto della frase di 467 approvata prima:
+«MuW reads from Apple Health your heart rate during each activity, your
+sleep and your workouts from other apps with their routes, to show them
+with your activities and in your posts: you can hide them before you
+publish. It also reads your active energy, to estimate the calories you
+use each day in Nutrition, which only you see.»
+Se la build esce con `NUTRITION_ON` ancora spento, la seconda frase
+aspetta. Le quattro traduzioni in `locales/*.json` si approvano col
+codice. In `app.json` lo scrive la prima PR della build nativa che arriva
+in `main`; le altre uniscono `main`.
+
 ## Parte E — Collegamenti diretti (studio)
 
 Lo studio di §8 di `IMPORTAZIONI.md`, scritto nella sezione «Studio E»:
 una tabella per provider (Strava, Garmin, Polar, Suunto, Coros, Wahoo,
 Komoot), con le fonti. Nessun codice, nessun account aperto a nome
 dell'utente. Poi l'utente sceglie quali.
+
+### Studio E (2026-11-23)
+
+Scritto dall'agente col via del Coordinatore. Nessun codice, nessun
+account aperto. Le fonti sono in fondo: dove sono di seconda mano (blog,
+forum) lo dice la tabella, e il testo dell'accordo di ogni provider va
+letto per intero prima di qualsiasi codice.
+
+**La domanda che decide.** Un'attività presa da un altro servizio
+diventa un post del Feed, quindi la vedono altri iscritti. Il provider lo
+permette?
+
+| Provider | Chi può entrare | Azienda | Costo | Formati | Mostrarla ad altri | Note |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Strava** | chiunque crea un'app (Standard tier) | no | dal 30 giugno 2026 **11,99 $/mese** per il Standard tier (post di Strava, ripreso da heise e altri) | JSON, stream GPS | **no**: dall'11 novembre 2024 i dati di un utente si mostrano **solo a lui** (accordo API, pagina di supporto di Strava) | niente uso per l'AI; dal 2026 niente intermediari; i dati di un Garmin passati da Strava vogliono comunque l'attribuzione a Garmin |
+| **Garmin Connect** | programma per aziende, con modulo e revisione | **sì** | gratis per le aziende approvate (pagina del programma); termini commerciali a parte per l'Activity API enterprise | JSON e FIT | sì, con l'**attribuzione** «Garmin [modello]» su ogni schermata e immagine, anche condivise (linee guida del marchio) | **domande nuove sospese** da settembre 2026 (forum Garmin, the5krunner, Terra), nessuna data di riapertura; la chiave «Personal» dà solo i propri dati |
+| **Polar AccessLink** | chiunque abbia un account Polar Flow registra un client | no | gratis | FIT, GPX, TCX | da leggere nell'accordo «API Limited License» | dà solo gli allenamenti caricati su Flow **negli ultimi 30 giorni** |
+| **Suunto** | Partner Program, modulo e revisione («adatti al marchio») | **sì** (non per uso personale) | gratis | FIT con la traccia GPS; webhook per gli allenamenti nuovi | da leggere nell'accordo, che arriva con la domanda | OAuth2 per ogni utente |
+| **Coros** | Partner API per piattaforme già avviate | **sì**, e una base di utenti dimostrata | non pubblicato | FIT, GPX | da leggere nei «Terms of Use», documentazione privata | domanda via `api@coros.com`; c'è anche un server MCP senza domanda, non adatto a MuW |
+| **Wahoo** | Cloud API con OAuth, app approvata (sandbox → produzione) | non detto | gratis «per ora» (accordo API di Wahoo) | FIT | da leggere nell'accordo e nei «Service Terms» | uno sviluppatore sul forum di Intervals.icu parla di condizioni sgradevoli, senza dire quali |
+| **Komoot** | nessuna API pubblica; partner B2B su domanda (`komoot.de/b2b/connect`, da fonte di seconda mano) | **sì** (B2B) | non pubblicato | tour (piani e uscite) | non trovato | i partner citati sono marchi grandi (Garmin, Bosch, Suunto, Wahoo); le librerie non ufficiali usano endpoint interni e non vanno usate |
+
+**Cosa ne esce.**
+
+- **Strava resta fuori dal Feed.** L'accordo vieta proprio quello che MuW
+  farebbe, mostrare l'attività ad altri, e dal 2026 l'accesso costa ogni
+  mese. Il file esportato dall'utente (parte B) è un suo dato e resta la
+  strada per Strava. «Send to Strava» (ADR-0156) non c'entra: è MuW che
+  scrive su Strava.
+- **Garmin, Suunto, Coros e Komoot vogliono un'azienda.** MuW oggi non ne
+  ha una (la stessa attesa degli annunci): prima dell'azienda non si può
+  nemmeno fare domanda. Garmin in più ha le domande sospese.
+- **Polar è l'unico che si può provare subito**: gratis, senza azienda, con FIT e
+  GPX. Il limite dei 30 giorni dice che serve per le attività nuove, non
+  per lo storico. Prima va letto l'accordo sulla parte «mostrare ad
+  altri».
+- **Wahoo** forse senza azienda, ma l'accordo va letto prima.
+- **Gli aggregatori a pagamento** (Terra e simili): scartati. Costano, e
+  dal 2026 Strava non accetta più dati che passano da intermediari.
+- **Il collegamento diretto vuole il server**: OAuth per ogni utente, i
+  token salvati, i webhook per le attività nuove, e l'importazione nella
+  stessa strada dei file (`runs.source` con un valore per provider). Più
+  una riga della privacy per ognuno.
+- **Senza collegamenti c'è già molto**: il file da qualunque app (parte
+  B) e, con la build nativa, Apple Salute e Health Connect (parte D) per
+  le app che ci scrivono la traccia.
+
+**Le scelte dell'utente, una per volta, con una proposta.**
+
+1. **Strava**: niente collegamento diretto per il Feed, resta il file.
+   *Proposta: sì, resta il file.*
+2. **Il primo collegamento**: Polar AccessLink, dopo aver letto il suo
+   accordo, oppure nessuno per ora. *Proposta: nessuno finché non ci sono
+   la parte D in produzione e richieste vere degli utenti; poi Polar.*
+3. **Garmin, Suunto, Coros, Komoot**: si rimandano a quando c'è
+   l'azienda. *Proposta: sì, una riga in `STATUS.md` «Prossimo passo»
+   quando l'azienda esiste.*
+
+**Le risposte dell'utente (2026-11-23)**, col via del Coordinatore:
+
+1. «Sì, resta il file»: nessun collegamento diretto a Strava per il
+   Feed; «Send to Strava» resta com'è.
+2. «Dopo la parte D»: nessun collegamento per ora. Polar AccessLink dopo
+   che Apple Salute e Health Connect sono in produzione e se gli utenti lo
+   chiedono; prima si legge il suo accordo, e nessuna registrazione presso
+   Polar o altri senza il sì dell'utente, detto prima al Coordinatore.
+3. «Sì, quando c'è l'azienda»: Garmin, Suunto, Coros e Komoot si
+   rimandano; una riga in `STATUS.md` «Prossimo passo» lo ricorda.
+
+Fonti: Strava, «API Agreement Update: How Data Appears on 3rd Party Apps»
+(support.strava.com, articolo 31798729397773) e «An update to our
+developer program» (communityhub.strava.com, 13428); heise.de (11315017)
+e TechRepublic sul 2026; DC Rainmaker, novembre 2024. Garmin, «Activity
+API» e «Program FAQ» (developer.garmin.com/gc-developer-program), «API
+Brand Guidelines» (developer.garmin.com/brand-guidelines); the5krunner
+(14 settembre 2026) e il blog di Terra sulla sospensione. Polar,
+«AccessLink API v3» (polar.com/accesslink-api) e «Polar API agreement»
+(polar.com/en/legal/polar-api-agreement). Suunto, FAQ di
+apizone.suunto.com. Coros, «Submit an API Application»
+(support.coros.com, articolo 17085887816340). Wahoo, «Wahoo API
+Agreement» (wahoofitness.com/wahoo-api-agreement); forum di
+Intervals.icu. Komoot: nessuna pagina ufficiale trovata, solo un elenco di
+terzi; da verificare su komoot.de/b2b.
 
 ## Testi da approvare (parti B e C)
 
@@ -478,6 +791,9 @@ the people you tag, by «Everyone» or by your «Followers»: there is no
 you see it before «Post». The post stays until you delete it or your
 account.» (Le traduzioni vanno all'utente con le schermate di C2.)
 
+**Traduzioni della privacy di C approvate dall'utente il 2026-11-22**
+(«Approvo»), quelle della PR #1386; la data è il 22 novembre 2026.
+
 ## Proposte da confermare con l'utente
 
 - Il pulsante in «My activities», con le due scelte (§2).
@@ -509,12 +825,16 @@ TASK-121.
       «From a file» non c'è. *Misurata dal Coordinatore su una copia
       pulita di `72af7335`; i test in `AddPastActivity.test.tsx` e
       `pickActivityFile.test.ts`.*
-- [ ] **C**: un post di sole foto si pubblica a «Everyone» o
+- [x] **C**: un post di sole foto si pubblica a «Everyone» o
       «Followers», si vede nel Feed con le foto e «Imported», e non entra
-      nel concorso.
+      nel concorso. *Test in `test_photo_posts.py`,
+      `test_photo_posts_seen.py`, `FeedScreenPhotos.test.tsx`; provato nel
+      simulatore il 2026-11-22.*
 - [ ] **D** ed **E**: gli studi scritti, con le fonti, e la scelta
       dell'utente registrata.
-- [ ] I testi e la privacy approvati dall'utente prima del merge di B e C.
+- [x] I testi e la privacy approvati dall'utente prima del merge di B e C.
+      *B il 2026-10-29; C il 2026-11-21 (testi, riga inglese) e il
+      2026-11-22 (schermate, cancellazione, traduzioni).*
 
 ## File toccati (documenti, questa PR)
 
@@ -538,3 +858,7 @@ docs/STATUS.md              (una voce in «In lavorazione»)
 ## Esito
 
 *(si compila a fine task)*
+
+**Parte C fatta, 2026-11-22**: C1, C1b, C1c in `main` e sul server; C2
+(#1386) in `main` (`3d4f0d47`), in produzione con l'OTA 23 (la chiede il
+Coordinatore all'utente), poi uno sguardo sul telefono. Restano D ed E.

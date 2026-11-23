@@ -1,16 +1,21 @@
+import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import type { Language } from "../i18n/languages";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
+import { useUnits } from "../units/useUnits";
 import type { GymExercise } from "./catalog";
 import { ExerciseFigure } from "./ExerciseFigure";
+import { ExerciseHistory } from "./ExerciseHistoryPage";
 import { groupName } from "./groups";
+import { GuideHistoryLine } from "./GuideHistoryLine";
 import { guideOf } from "./guides";
 import { gymStyles } from "./gymStyles";
 import { moveOf } from "./moves";
 import { MuscleCaption, MuscleMap } from "./MuscleMap";
 import { musclesOf } from "./muscles";
+import { useExerciseHistory } from "./useExerciseHistory";
 
 /** The side of the big figure of the guide. */
 export const GUIDE_FIGURE_SIZE = 200;
@@ -27,7 +32,9 @@ export function hasGuide(key: string, language: Language): boolean {
  * it the body with the muscles it works (TASK-465), its three steps and
  * what to watch out for; «Add to workout» when it is opened
  * from «+ Exercise». In place of what was on the screen, not over it: the
- * picker and the workout are already in a sheet.
+ * picker and the workout are already in a sheet. Under «Watch out», the
+ * exercise's best and «History» (TASK-483 B, the user's «Sì, anche
+ * fuori»), the history opening in place of the guide.
  */
 export function ExerciseGuide({
   exercise,
@@ -43,6 +50,21 @@ export function ExerciseGuide({
   const guide = guideOf(exercise.key, language);
   const move = moveOf(exercise.key);
   const worked = musclesOf(exercise.key);
+  const units = useUnits();
+  const history = useExerciseHistory({ exercise: exercise.key, kind: exercise.kind });
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [openedMs] = useState(() => Date.now());
+  if (historyOpen) {
+    return (
+      <ExerciseHistory
+        title={exercise.names[language]}
+        state={history}
+        units={units}
+        nowMs={openedMs}
+        onBack={() => setHistoryOpen(false)}
+      />
+    );
+  }
   return (
     <View style={styles.guide} testID={`guide-${exercise.key}`}>
       <View style={styles.top}>
@@ -112,6 +134,11 @@ export function ExerciseGuide({
             </View>
           </>
         )}
+        <GuideHistoryLine
+          state={history}
+          units={units}
+          onHistory={() => setHistoryOpen(true)}
+        />
         {onAdd !== undefined && (
           <Pressable
             style={[gymStyles.button, gymStyles.primary]}

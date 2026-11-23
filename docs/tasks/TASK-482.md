@@ -1,6 +1,9 @@
 # TASK-482 — Il link di un post apre l'app
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-22; B2 online; A in #1374; C e D con la prossima build nativa)
+**Stato**: In corso (B2 e A in produzione, provate dall'utente sull'iPhone il
+2026-11-22: link in Safari → «Apri» → il post dentro MuW; C: i due file
+`.well-known`, iPhone e Android, sono online; resta la parte D, con la
+prossima build nativa)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-482-post-link-opens-app`
 **Dipende da**: TASK-455 (il link di un post, `getmuw.app/p/#<id>`, parti
@@ -129,6 +132,13 @@ Parte A (#1374): `apps/mobile/src/links/postLinkIn.ts` e
 `usePushNotifications`), una riga in ciascuno di
 `apps/mobile/src/i18n/it.ts`, `de.ts`, `fr.ts`, `es.ts`.
 
+Parte C, metà iPhone (#1392): `site/.well-known/apple-app-site-association`
+e `site/tests/well-known.test.mjs` (nuovi), `docs/DEPLOY.md` (F.14),
+`docs/SITO.md`.
+
+Parte C, metà Android (#1436): `site/.well-known/assetlinks.json` (nuovo),
+`site/tests/well-known.test.mjs`, `docs/DEPLOY.md` (F.14), `docs/SITO.md`.
+
 ## Fuori scope
 
 - Un «Copy link» vero (vuole `expo-clipboard`, una dipendenza nativa): con
@@ -181,3 +191,60 @@ Parte A (#1374): `apps/mobile/src/links/postLinkIn.ts` e
   prossima build nativa (lo tiene il Coordinatore); la parte C (i due file
   `.well-known` e come il server li serve) va preparata prima che quella
   build esca, o i link verificati non si verificano.
+- 2026-11-22: **parte A in `main` e in produzione**: #1374 unita dal
+  Coordinatore (`f5bfc284`), poi nell'**OTA 21** (la pubblica il
+  Coordinatore, col sì dell'utente).
+- 2026-11-22: **parte C, metà iPhone: #1392 unita (`2a807976`) e online**.
+  `site/.well-known/apple-app-site-association` dice all'iPhone che i link
+  `/p/#<id>` (anche `/p` e `/p/index.html`) sono di MuW
+  (`D6WUSJZKVZ.com.lppl1316.sgrava`, letto da `app.json` nel test). Il file
+  non ha estensione: Caddy lo serve come `application/json` con una riga
+  `header` (DEPLOY.md F.14), messa dall'utente; sito copiato da `8de9cbf5`.
+  Controllato da fuori: `200`, `application/json`, nessun rinvio, uguale al
+  file del repository. **Da solo non cambia niente**: serve quando l'app
+  dichiara `applinks:getmuw.app` (parte D, build nativa).
+- 2026-11-22: **prova dell'utente sull'iPhone dopo l'OTA 21** — alla
+  domanda «Dopo l'aggiornamento, «Apri» nella barra di Safari porta al post
+  dentro MuW?» la risposta è **«Sì, apre il post»**. Era il punto non
+  dimostrato della parte A: iOS passa all'app l'indirizzo scritto in
+  `app-argument`. Non provato sul telefono: il link aperto da chi non è
+  entrato (lo coprono i test). Su Android non c'è la barra: lì il post
+  nell'app arriva con la parte D.
+- **Resta, con la prossima build nativa (la decide l'utente)**:
+  `site/.well-known/assetlinks.json` per Android (serve l'impronta SHA-256
+  con cui Play firma `app.getmuw.android`: Play Console → Integrità
+  dell'app, da chiedere all'utente allora) e la parte D in
+  `apps/mobile/app.json` (`ios.associatedDomains`, i filtri Android
+  verificati, uno `scheme` vero) — con quella il link si apre nell'app
+  direttamente da WhatsApp, senza passare da Safari. Elenchi dei file al
+  Coordinatore prima del codice.
+- 2026-11-23: l'utente scrive «CONTINUA». Senza build nativa avanza solo
+  la **metà Android della parte C**: elenco dei file al Coordinatore
+  (approvato), e all'utente la domanda sull'impronta di Play — risposta:
+  **«Leggila tu»**. Letta dal suo Chrome nella Play Console (account
+  dell'app, «Firma dell'app» di MuW, sola lettura). La pagina tiene i
+  valori dietro i tasti «copia»: si leggono senza toccare gli appunti.
+  Trovato: la chiave «In uso» con due certificati (classico `ED:A9…`,
+  post-quantistico `CB:28…`), una chiave di firma precedente (`64:9D…`,
+  primo utilizzo 26 ottobre — l'unica nel «JSON Digital Asset Links» che
+  Play propone) e la chiave di caricamento (`E5:29…`).
+- 2026-11-23: **#1436 unita (`5a2dac46`)**: `site/.well-known/assetlinks.json`
+  dice a Google che `app.getmuw.android`, firmata con una delle **tre**
+  chiavi di firma di Play, può aprire i link del sito; la chiave di
+  caricamento è fuori e un test la tiene fuori (aggiunta ad ADR-0391, con
+  l'OK del Coordinatore). Il file finisce in `.json`: nessuna riga nuova
+  per Caddy. Test del sito 102/102.
+- 2026-11-23: **metà Android online**: sito copiato dal Coordinatore da
+  main `177214fa`, col sì dell'utente. Controllato da fuori:
+  `/.well-known/assetlinks.json` risponde `200 application/json`, senza
+  redirect, uguale al file del repository; il file dell'iPhone risponde
+  come prima. Il servizio di Google che legge questi file
+  (`digitalassetlinks.googleapis.com`, `statements:list`) vede tre
+  dichiarazioni per `app.getmuw.android`, una per impronta.
+- **Resta solo la parte D, con la prossima build nativa (la decide
+  l'utente)**: in `apps/mobile/app.json` `ios.associatedDomains`
+  (`applinks:getmuw.app`), i filtri Android verificati per `/p` e uno
+  `scheme` vero — con quella il link si apre nell'app direttamente da
+  WhatsApp, anche su Android. I due file sul sito ci sono già. Elenco dei
+  file al Coordinatore prima del codice; se Play cambia chiave di firma,
+  `assetlinks.json` va aggiornato (`DEPLOY.md` F.14).

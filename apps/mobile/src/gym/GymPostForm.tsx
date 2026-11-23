@@ -20,6 +20,9 @@ export type GymPost = {
   /** «Show exercises»: on until turned off (the user's «Visibili,
    * nascondibili»). */
   show: boolean;
+  /** «Show heart rate» (TASK-385 part G): on until turned off, as a
+   * swim's; absent is on. */
+  showHeart?: boolean;
 };
 
 /** A post not touched yet: a workout at the gym, seen by whom the last
@@ -78,6 +81,8 @@ type Props = {
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
   apiKey?: string | null;
+  /** Whether the workout has its heart rate: «Show heart rate» shows. */
+  heart?: boolean;
 };
 
 /**
@@ -85,9 +90,18 @@ type Props = {
  * user's «Sì, anche alla fine»), as at the end of a run: up to
  * GYM_MAX_PHOTOS photos with the yellow tile among them (the user's «10
  * foto»), the title, «How did it go?», the people tagged, who can see it,
- * and «Show exercises». It goes with «Save», with the workout.
+ * and «Show exercises». It goes with «Save», with the workout. With its
+ * heart rate, «Show heart rate» (TASK-385 part G), as a swim's.
  */
-export function GymPostForm({ post, onPost, disabled, pick, fetchFn, apiKey }: Props) {
+export function GymPostForm({
+  post,
+  onPost,
+  disabled,
+  pick,
+  fetchFn,
+  apiKey,
+  heart = false,
+}: Props) {
   const shown: ComposerPhoto[] = post.photos.map((photo) => ({
     n: photo.n,
     source: { uri: phonePhotoUri(photo.base64) },
@@ -125,12 +139,22 @@ export function GymPostForm({ post, onPost, disabled, pick, fetchFn, apiKey }: P
       }
       track={null}
       extra={
-        <SwitchRow
-          label={t("Show exercises")}
-          on={post.show}
-          onChange={(show) => onPost({ ...post, show })}
-          disabled={disabled}
-        />
+        <>
+          <SwitchRow
+            label={t("Show exercises")}
+            on={post.show}
+            onChange={(show) => onPost({ ...post, show })}
+            disabled={disabled}
+          />
+          {heart && (
+            <SwitchRow
+              label={t("Show heart rate")}
+              on={post.showHeart ?? true}
+              onChange={(showHeart) => onPost({ ...post, showHeart })}
+              disabled={disabled}
+            />
+          )}
+        </>
       }
       disabled={disabled}
       pick={pick}

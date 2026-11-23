@@ -1,9 +1,25 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Animated, StyleSheet, useWindowDimensions } from "react-native";
+import {
+  Animated,
+  StyleSheet,
+  useWindowDimensions,
+  type ViewStyle,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
+import {
+  color,
+  fontSize,
+  fontWeight,
+  glass,
+  type GlassColors,
+  glassOf,
+  radius,
+  space,
+  tone,
+} from "../theme/tokens";
 import { fadeTo, springTo } from "./motion";
+import { type GlassMode, useGlassMode } from "./useGlassMode";
 import { useReduceMotion } from "./useReduceMotion";
 
 /** How long the island stays open with its words, in milliseconds. */
@@ -14,6 +30,40 @@ export const ISLAND_STEP_MS = 120;
 export const ISLAND_HEIGHT = 40;
 /** How small it is born and goes back: a share of its width and height. */
 export const ISLAND_BORN = { wide: 0.3, tall: 0.75 } as const;
+
+/** The glass of the dark tone: the island is dark in every tone. */
+const DARK_GLASS: GlassColors = glassOf({ ...tone, tone: "dark" });
+
+/**
+ * The island in `mode` (TASK-469 A7b, ADR-0383, «Capsula»): dark glass —
+ * the thin rim of the dark tone's glass with the light caught by its top
+ * edge, and a short shadow under it. The face stays `scrim`, so its words
+ * keep their contrast over any page. With «Reduce Transparency» or
+ * «Increase Contrast» nothing is added: the dark capsule, as before.
+ */
+export function islandFace(
+  mode: GlassMode,
+  dark: GlassColors = DARK_GLASS,
+  shadow: string = glass.shadow,
+): ViewStyle {
+  if (mode !== "glass") {
+    return {};
+  }
+  return {
+    boxShadow: [
+      { offsetX: 0, offsetY: 4, blurRadius: 12, color: shadow },
+      {
+        inset: true,
+        offsetX: 0,
+        offsetY: 0,
+        blurRadius: 0,
+        spreadDistance: 1,
+        color: dark.rim,
+      },
+      { inset: true, offsetX: 0, offsetY: 1, blurRadius: 0, color: dark.rimTop },
+    ],
+  };
+}
 
 export type IslandSay = {
   /** A new number for each thing said: the same words twice play twice. */
@@ -42,6 +92,7 @@ export function Island({ say, onDone }: Props) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const still = useReduceMotion();
+  const face = islandFace(useGlassMode());
   const [wide] = useState(() => new Animated.Value(0));
   const [tall] = useState(() => new Animated.Value(0));
   const [words] = useState(() => new Animated.Value(0));
@@ -104,6 +155,7 @@ export function Island({ say, onDone }: Props) {
       pointerEvents="none"
       style={[
         styles.island,
+        face,
         {
           top: insets.top + space.xs,
           maxWidth: width - 2 * space.xl,

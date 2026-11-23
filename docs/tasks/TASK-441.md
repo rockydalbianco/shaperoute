@@ -49,7 +49,7 @@ non tracciato).
 | A2 | parole corte (2–4 lettere) su una riga nelle 63 città, la migliore dei due stili | `tools/`, catalogo | come A1, stessa PR |
 | B1 | `walks` nel catalogo: le parole a penna alzata, fino a 6 lettere, solo quelle che si leggono; due PR, prima il server poi l'app | API, esempi condivisi, `tools/`, catalogo; poi app | server, poi OTA |
 | B2 | `activity` nel catalogo: **solo bici, 20–30 km** (scelta dell'utente del 2026-11-12); due PR, prima il server poi l'app | API, esempi condivisi, `tools/`, catalogo; poi app | server, poi OTA |
-| B3 | bici a 40–50 km: il limite del motore da 30 a 50 km e le zone bici grandi | `services/route-engine`, contratto, app | **da chiedere al Coordinatore** (PR del motore, dell'utente) |
+| B3 | bici a 40–50 km, **solo nel catalogo** (scelta dell'utente del 2026-11-23): il limite del motore resta 30 km | `tools/`, catalogo | passo «catalogo» sul server |
 | C | motore: spazio nelle frasi, cifre, forme nuove a tema, i 35 contorni in attesa | `services/route-engine` | **task e ADR a parte**, da chiedere al Coordinatore |
 
 ## Parte A — cosa fare
@@ -484,7 +484,127 @@ apps/mobile/App.tsx                                     (una riga: lo sport a Ex
 - [x] OTA 18 (`593c6fbe`; iOS `4c2d6752`, Android `bc572bad`), 2026-11-21, col sì dell'utente al Coordinatore.
 - [x] L'utente l'ha provata sul telefono (sport «Bike», poi «Explore»): «funziona», 2026-11-21.
 
+## Parte B3 — le uscite lunghe in bici, 40 e 50 km (ADR-0366)
+
+**Scelta dell'utente (2026-11-23): «solo in Explore».** Le uscite da 40 e
+50 km entrano nel catalogo come disegni pronti; «Draw» in bici resta a
+10–30 km. Il limite del motore (`activities/cycling.py`) non si tocca: è
+anche il limite di «Draw» nell'API, la misura delle zone bici del server e
+del telefono, e sta nell'impronta del motore. Alzarlo era l'altra strada
+(«Draw» fino a 50 km, tutte le zone bici rifatte 2,4 volte più grandi, PR
+del motore, OTA): non scelta.
+
+**Come.** `tools/catalog_bike.py --distances 50000 40000` pianifica le otto
+forme che si leggono, a turno fra le due distanze: cinque e tre per città, a
+città alterne (è lo stesso turno di B2). Il limite dei 30 km è tolto solo
+nel processo dello strumento (`ride_limit`), per la durata del giro. Le zone
+sono tagliate dagli estratti già sul disco (`out/TASK-441/b2/extracts/`: non
+vanno cancellati finché B3 non è chiusa); nessuno scaricamento.
+
+**Cosa vede l'utente.** Con lo sport «Bike», «Explore» mostra anche uscite
+da 40 e 50 km. Su una di queste «Draw it near me» apre «Draw» a 30 km
+(`againDistanceM` riporta la distanza dentro i limiti dello sport). Nessun
+testo nuovo, nessuna PR dell'app, nessuna OTA: l'API (`recommended.py`) e
+l'app (`recommendedRoutes.ts`) non controllano la distanza di un disegno del
+catalogo.
+
+**Città.** Stima dai picchi di memoria a 30 km, col limite del pianificatore
+a 4096 MB (lo fissa il Coordinatore; guardato ogni 2 s): 26 città a 50 e
+40 km, 8 solo a 40 km, 5 tentativi a 40 km per ultimi (uno alla volta, ci si
+ferma al primo oltre il limite), 24 fuori. 272 casi, 312 coi tentativi. Il
+piano intero e lo script dei giri: `out/TASK-441/b3/PIANO-B3.md`,
+`out/TASK-441/b3/run-b3.sh`. Ogni giro sul Mac parte solo col via del
+Coordinatore, a simulatore spento.
+
+### File toccati (B3)
+
+```
+tools/catalog_bike.py, tools/test_catalog_bike.py
+tools/catalog_seed.py                                   (le uscite lunghe in fondo al file)
+tools/catalog_kept.json, catalog/seed/<città>.json, catalog/README.md
+docs/tasks/TASK-441.md
+```
+
+Niente in `services/`, `packages/`, `apps/`.
+
+**Gli id restano fermi.** L'API numera un disegno col suo posto nel file
+della città (`recommended.py`). Le uscite lunghe, ordinate per somiglianza
+in mezzo alle altre, avrebbero spostato le uscite da 20–30 km già
+pubblicate, cambiandone l'id. `catalog_seed.city_files` le mette quindi dopo
+tutte le altre (`_place`, da 40 km in su): il testo di prima è l'inizio di
+quello nuovo, e senza uscite lunghe i file escono identici byte per byte.
+
+### Criteri di accettazione (B3)
+
+- [x] Test deterministici dello strumento (20).
+- [x] Prova con la sola Trento (2026-11-23): picco 3107 MB, 185 s, 7
+      disegni tracciati su 8, 2 passano la regola (stella e sole a 50 km).
+- [x] Giro finito nei gruppi 1 e 2, poi i tentativi (2026-11-23).
+- [x] I disegni che passano all'utente, forma per forma, e il suo sì
+      **prima del merge**: «Tutti i 129» (2026-11-23).
+- [x] `catalog/seed` riscritto con i disegni di prima intatti,
+      `catalog/README.md`.
+- [x] CI verde, merge del Coordinatore (#1471, `ba12b1fe`, 2026-11-23).
+- [ ] Passo «catalogo» sul server, col sì dell'utente al Coordinatore
+      (passo 21, preparato dal Coordinatore coi numeri attesi della #1471).
+- [ ] L'utente la prova sul telefono (sport «Bike», poi «Explore»).
+
+### Esito dei giri (B3, 2026-11-23)
+
+34 città, 272 casi, 213 disegni tracciati, **129 passano la regola** (42 da
+50 km, 87 da 40 km) in 32 città; per forma: sole 22, luna 22, farfalla 20,
+cerchio 17, cuore 15, stella 13, pesce 11, gatto 9. Dei 59 non tracciati, 39
+non si disegnano e 20 escono dalla zona ritagliata (Overpass chiuso: tutti
+cuore o cerchio alla distanza più lunga). Nessuna città dei gruppi 1 e 2
+fermata: picchi da 902 MB (Ravenna) a 4075 MB (Bergamo, 21 MB sotto il
+limite). Genova e Nizza non hanno disegni che passano. Dei cinque tentativi
+è partita solo Amsterdam, fermata a 4175 MB mentre caricava la zona: Sydney,
+Valencia, Milano e Barcellona, più grandi, non sono state provate. La
+previsione del piano (150–200 disegni) era alta.
+
+L'utente li ha visti tutti su `out/TASK-441/b3/disegni-bici-lunghi.html` e
+li tiene tutti: **il catalogo passa da 1902 a 2031 disegni**, 485 uscite in
+bici in 60 città (Levico, che aveva solo corse, è nuova). 32 file di città
+cambiano, 31 restano identici byte per byte; in quelli cambiati il testo di
+prima è l'inizio di quello nuovo, quindi ogni id pubblicato resta (controllo
+fatto su tutti i 63 file). Numeri attesi dopo il passo sul server, letti in
+locale con `RecommendedCatalog.from_dir`: nella PR.
+
+Rimasto fuori, come possibile ritocco: zona più larga per cuore e cerchio
+alla distanza più lunga (costa memoria e zone da rifare); non chiesto.
+
 ## Dove siamo
+
+*2026-11-23, B2 estere, le cinque*: **la #1418 è in `main`** (`32036bd3`)
+**e sul server** (passo 19, server a `e427ed2e`, riferito dal
+Coordinatore). Tutti i controlli di `out/TASK-441/SERVER-B2-SETTE.md` danno
+i valori attesi: `1902 recommended routes`; le corse di prima identiche
+(`60 50 50 pen-up 19 …`, `1546 63 40 0`); Londra `8
+london-circle-20000-25` com'era; Berlino `8 berlin-circle-20000-23
+['cycling'] [20000, 25000, 30000]`; New York `4 newyork-sun-25000-31`;
+`356 59 40 berlin-circle-20000-23`; l'uscita letta intera `circle cycling
+20000 20870 points 1295`. Niente OTA: con lo sport «Bike», «Explore»
+mostra già le uscite nelle cinque città. **Il secondo giro di B2 è
+chiuso**: 30 città estere su 32 hanno le uscite in bici (208 disegni);
+Parigi e Tokyo no (pianificatore oltre i 5 GB, limite non alzato). Resta:
+chiedere all'utente se cancellare gli estratti
+(`out/TASK-441/b2/extracts/`, 15 GB); poi B3 (40–50 km) e C, non
+iniziate.
+
+*2026-11-22, pomeriggio, B2 estere, le sette*: **secondo giro finito**
+(13:00–13:37, a Mac vuoto, limite a 5 GB solo per loro, deciso dal
+Coordinatore; `out/TASK-441/b2/run-sette.sh`). **Cinque città disegnate**:
+Berlino (pianificatore a 4145 MB), Dublino (4852), Amburgo (5057), Vienna
+(4662) e New York (5121 MB, un MB sopra il limite a disegni già fatti:
+come Madrid, i disegni ci sono). 40 casi, **36 passano il filtro** (New
+York 4 su 8). **Parigi (5412 MB) e Tokyo (5239) restano senza uscite in
+bici**: fermate anche a 5 GB. Catalogo da 1866 a **1902** (356 uscite in
+bici in 59 città). Pagina per l'utente:
+`out/TASK-441/b2/disegni-bici-cinque-citta.html`; il suo sì: **«SI VANNO
+BENE»** (2026-11-22). PR di solo catalogo `feat/TASK-441-b2-estere-2`: 5 file di
+`catalog/seed`, `tools/catalog_kept.json`, `catalog/README.md`, questo
+file. Poi un passo sul server (sì dell'utente al Coordinatore), la PR dei
+documenti, e gli estratti (15 GB) da cancellare.
 
 *2026-11-22, B2 estere*: **la #1380 è in `main`** (`ef7b1d83`) **e sul
 server** (passo 17, server a `40789324`, riferito dal Coordinatore):

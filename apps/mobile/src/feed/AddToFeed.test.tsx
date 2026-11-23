@@ -11,9 +11,10 @@ import {
 import type { PickFile, Picked } from "../imports/pickActivityFile";
 import { AddToFeed } from "./AddToFeed";
 
-// The Feed's «+» (TASK-476): a sheet «Add activity» with «From a file»,
-// the flow of «Add past activity» (TASK-312) without its own button; the
-// sheet closes once the run is kept or the form discarded.
+// The Feed's «+» (TASK-476, TASK-481): a sheet «Add to Feed» that opens on
+// the list of its ready entries, in the user's order; a chosen entry opens
+// in the same sheet, «‹» goes back to the list, and the sheet closes once
+// the run or the post is kept, or the form discarded.
 
 jest.mock("expo-file-system");
 jest.mock(
@@ -38,13 +39,18 @@ function spies() {
   };
 }
 
-async function show(door: Partial<ActivitiesDoor>, available = true) {
-  const pickFile: PickFile = jest.fn(async () => file("strava-run.gpx"));
+async function show(
+  door: Partial<ActivitiesDoor>,
+  available = true,
+  onRecord?: () => void,
+  picked: Awaited<ReturnType<PickFile>> = file("strava-run.gpx"),
+) {
+  const pickFile: PickFile = jest.fn(async () => picked);
   function WithDoor() {
     const nothing = useActivitiesDoor();
     return (
       <ActivitiesContext.Provider value={{ ...nothing, signedIn: true, ...door }}>
-        <AddToFeed available={available} pickFile={pickFile} />
+        <AddToFeed available={available} pickFile={pickFile} onRecord={onRecord} />
       </ActivitiesContext.Provider>
     );
   }
@@ -53,50 +59,140 @@ async function show(door: Partial<ActivitiesDoor>, available = true) {
 }
 
 async function openSheet() {
-  await fireEvent.press(screen.getByRole("button", { name: "Add activity" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Add to Feed" }));
 }
 
-test("without the file picker in the app there is no «+»", async () => {
-  await show(spies(), false);
-  expect(screen.queryByTestId("feed-add")).toBeNull();
-});
+async function chooseFile() {
+  await openSheet();
+  await fireEvent.press(screen.getByText("From a file"));
+}
 
-test("the «+» opens «Add activity» with «From a file» at once", async () => {
-  await show(spies());
+test("the «+» opens «Add to Feed» on the list, in the user's order", async () => {
+  await show(spies(), true, jest.fn());
   expect(screen.queryByText("From a file")).toBeNull();
   await openSheet();
-  expect(screen.getByRole("header", { name: "Add activity" })).toBeTruthy();
-  expect(screen.getByText("From a file")).toBeTruthy();
+  expect(screen.getByRole("header", { name: "Add to Feed" })).toBeTruthy();
+  const titles = ["Record now", "Photos only", "From a file", "Workout plan"];
+  const rows = titles.map((title) => screen.getByText(title));
+  expect(rows).toHaveLength(4);
+  expect(screen.getByText("Start an activity now")).toBeTruthy();
+  expect(screen.getByText("Up to 10 photos, also from Instagram")).toBeTruthy();
   expect(screen.getByText("GPX, TCX or FIT from Strava, Garmin, Komoot…")).toBeTruthy();
-  // No second button of its own: the sheet is the opener.
-  expect(screen.queryByText("Add past activity")).toBeNull();
+  expect(screen.getByText("Share one of your gym plans")).toBeTruthy();
+  const ids = screen
+    .getAllByTestId(/^feed-add-(record|photos|file|plan)$/)
+    .map((row) => row.props.testID);
+  expect(ids).toEqual([
+    "feed-add-record",
+    "feed-add-photos",
+    "feed-add-file",
+    "feed-add-plan",
+  ]);
+  // The list is the opener: no form, no «Back», nothing picked yet.
+  expect(screen.queryByTestId("imported-form")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
 });
 
-test("«Close» closes the sheet", async () => {
+test("without the file picker in the app there is no «From a file»", async () => {
+  await show(spies(), false, jest.fn());
+  await openSheet();
+  expect(screen.queryByText("From a file")).toBeNull();
+  expect(screen.getByText("Record now")).toBeTruthy();
+  expect(screen.getByText("Photos only")).toBeTruthy();
+});
+
+test("without a way to record there is no «Record now»", async () => {
   await show(spies());
   await openSheet();
+  expect(screen.queryByText("Record now")).toBeNull();
+  expect(screen.getByText("Photos only")).toBeTruthy();
+});
+
+test("«Record now» closes the sheet and starts a recording", async () => {
+  const onRecord = jest.fn();
+  await show(spies(), true, onRecord);
+  await openSheet();
+  await fireEvent.press(screen.getByText("Record now"));
+  expect(onRecord).toHaveBeenCalledTimes(1);
+  await waitFor(() => expect(screen.queryByText("Photos only")).toBeNull());
+});
+
+test("«Photos only» opens its form in the sheet; «‹» and «Cancel» go back to the list", async () => {
+  await show(spies());
+  await openSheet();
+  await fireEvent.press(screen.getByText("Photos only"));
+  expect(screen.getByTestId("photo-post-form")).toBeTruthy();
+  expect(screen.getByRole("header", { name: "Photos only" })).toBeTruthy();
+  expect(screen.queryByText("From a file")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(screen.queryByTestId("photo-post-form")).toBeNull();
+  expect(screen.getByRole("header", { name: "Add to Feed" })).toBeTruthy();
+  await fireEvent.press(screen.getByText("Photos only"));
+  await fireEvent.press(screen.getByRole("button", { name: "Cancel" }));
+  expect(screen.queryByTestId("photo-post-form")).toBeNull();
+  expect(screen.getByText("From a file")).toBeTruthy();
+});
+
+test("«Workout plan» opens «Choose a plan» in the sheet; «‹» goes back to the list", async () => {
+  await show(spies());
+  await openSheet();
+  await fireEvent.press(screen.getByText("Workout plan"));
+  expect(screen.getByRole("header", { name: "Workout plan" })).toBeTruthy();
+  expect(screen.getByTestId("plan-post-choose")).toBeTruthy();
+  expect(screen.getByText("Choose a plan")).toBeTruthy();
+  // No plans on this phone: the way to make one.
+  expect(screen.getByText("No plans yet: make one in Gym › Plans.")).toBeTruthy();
+  expect(screen.queryByText("Photos only")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(screen.queryByTestId("plan-post-choose")).toBeNull();
+  expect(screen.getByText("Photos only")).toBeTruthy();
+});
+
+test("«From a file» opens «Files» at once", async () => {
+  const pickFile = await show(spies());
+  await chooseFile();
+  expect(await screen.findByTestId("imported-form")).toBeTruthy();
+  expect(pickFile).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole("header", { name: "From a file" })).toBeTruthy();
+});
+
+test("a file canceled leaves «From a file» alone to pick again, no «Photos only»", async () => {
+  const pickFile = await show(spies(), true, undefined, { kind: "canceled" });
+  await chooseFile();
+  await waitFor(() => expect(pickFile).toHaveBeenCalledTimes(1));
+  // The header and the choice again, with its help.
+  expect(await screen.findAllByText("From a file")).toHaveLength(2);
+  expect(screen.queryByText("Photos only")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(screen.getByText("Photos only")).toBeTruthy();
+});
+
+test("«Close» closes the sheet, and it opens again on the list", async () => {
+  await show(spies());
+  await openSheet();
+  await fireEvent.press(screen.getByText("Photos only"));
   await fireEvent.press(screen.getByRole("button", { name: "Close" }));
-  await waitFor(() => expect(screen.queryByText("From a file")).toBeNull());
+  await waitFor(() => expect(screen.queryByTestId("photo-post-form")).toBeNull());
+  await openSheet();
+  expect(screen.getByRole("header", { name: "Add to Feed" })).toBeTruthy();
+  expect(screen.getByText("From a file")).toBeTruthy();
 });
 
 test("a file becomes the form, and «Save» keeps it and closes the sheet", async () => {
   const door = spies();
-  const pickFile = await show(door);
-  await openSheet();
-  await fireEvent.press(screen.getByText("From a file"));
+  await show(door);
+  await chooseFile();
   expect(await screen.findByTestId("imported-form")).toBeTruthy();
-  expect(pickFile).toHaveBeenCalledTimes(1);
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
   expect(door.recordImported).toHaveBeenCalledTimes(1);
   await waitFor(() => expect(screen.queryByTestId("imported-form")).toBeNull());
-  await waitFor(() => expect(screen.queryByText("From a file")).toBeNull());
+  await waitFor(() => expect(screen.queryByText("Photos only")).toBeNull());
 });
 
 test("from the «+» the form starts on «Everyone», said over «Save»", async () => {
   const door = spies();
   await show(door);
-  await openSheet();
-  await fireEvent.press(screen.getByText("From a file"));
+  await chooseFile();
   await screen.findByTestId("imported-form");
   expect(screen.getByRole("radio", { name: "Everyone", checked: true })).toBeTruthy();
   // Under «Who can see it», and again over «Save».
@@ -110,8 +206,7 @@ test("from the «+» the form starts on «Everyone», said over «Save»", async
 test("«Everyone» can still be changed before «Save»", async () => {
   const door = spies();
   await show(door);
-  await openSheet();
-  await fireEvent.press(screen.getByText("From a file"));
+  await chooseFile();
   await screen.findByTestId("imported-form");
   await fireEvent.press(screen.getByRole("radio", { name: "Only me" }));
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));

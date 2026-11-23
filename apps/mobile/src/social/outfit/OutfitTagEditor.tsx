@@ -31,6 +31,7 @@ import {
   space,
 } from "../../theme/tokens";
 import { SheetModal } from "../../ui/SheetModal";
+import { useSheetFace } from "../../ui/sheetFace";
 import { useOutfitTagging } from "./OutfitTagging";
 import {
   brandReady,
@@ -102,6 +103,8 @@ export function OutfitTagEditor({
   onDone,
 }: Props) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   const { width: screen } = useWindowDimensions();
   const words = outfitWords();
   const [tags, setTags] = useState<OutfitDraft[]>(() => [...kept]);
@@ -224,7 +227,11 @@ export function OutfitTagEditor({
           testID="outfit-editor-backdrop"
         />
         <View
-          style={[styles.sheet, { paddingBottom: insets.bottom + space.sm }]}
+          style={[
+            styles.sheet,
+            glassSheet,
+            { paddingBottom: insets.bottom + space.sm },
+          ]}
           testID="outfit-editor"
         >
           <View style={styles.header}>

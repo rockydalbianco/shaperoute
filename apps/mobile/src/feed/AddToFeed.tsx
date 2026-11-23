@@ -1,9 +1,20 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { sleepPostsOn, sleepReader } from "../health/sleepModules";
+import type { SleepReader } from "../health/sleepSamples";
 import { AddPastActivity } from "../imports/AddPastActivity";
+import { PhotoPostForm } from "../imports/PhotoPostForm";
 import { filePickerAvailable, type PickFile } from "../imports/pickActivityFile";
+import type { PickPhoto } from "../social/PublicParts";
 import { t } from "../i18n";
 import {
   color,
@@ -14,37 +25,87 @@ import {
   space,
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
+import { Tap } from "../ui/Tap";
+import { type AddToFeedEntryId, addToFeedEntries } from "./addToFeedEntries";
+import { PlanPostFlow } from "./PlanPostFlow";
+import { SleepPostPage } from "./SleepPostPage";
 
 type Props = {
+  /** «Record now»: the sheet closes and the recording starts (App.tsx);
+   * without it the entry is not there. */
+  onRecord?: () => void;
+  /** A night of sleep went in the Feed, or was taken off it, from «Sleep»:
+   * the Feed reads again. */
+  onSleepPost?: () => void;
+  /** The phone's reader of the sleep: none in every build until part C. */
+  reader?: SleepReader | null;
   /** The fakes of the tests: whether the app was built with the file
-   * picker, and the picker. */
+   * picker, the pickers, and the network. */
   available?: boolean;
   pickFile?: PickFile;
+  pick?: PickPhoto;
+  fetchFn?: typeof fetch;
 };
 
 /**
- * The «+» at the right of the Feed's bar (TASK-476): a sheet «Add activity»
- * with what an account can add to the Feed from outside the app. Today
- * «From a file», the GPX, TCX or FIT of another app, as «Add past activity»
- * of «My activities» (TASK-312, docs/IMPORTAZIONI.md): read on the phone,
- * then the form of the end of a run, marked «Imported». The sheet closes
- * once the run is kept, or the form discarded. In an app built without the
- * file picker there is nothing to add, and there is no «+».
+ * The «+» at the right of the Feed's bar (TASK-476): a sheet «Add to Feed»
+ * that opens on the list of its ready entries (TASK-481, ADR-0390,
+ * addToFeedEntries.ts). «Record now» closes it and starts a recording.
+ * «Photos only» (TASK-312 part C) is the form of a post of photos without a
+ * run. «From a file» is the flow of «Add past activity» of «My activities»
+ * (docs/IMPORTAZIONI.md §2): «Files» opens at once for the GPX, TCX or FIT
+ * of another app, read on the phone, then the form of the end of a run,
+ * marked «Imported». «Workout plan» (TASK-485 part B, ADR-0394) is
+ * «Choose a plan» among one's gym plans, a line and «Post». A chosen entry
+ * opens in the same sheet, with «‹» back
+ * to the list; the sheet closes once the run or the post is kept, or the
+ * form discarded. In an app built without the file picker there is no
+ * «From a file». «Sleep» (TASK-467 part E) is last night with «Publish»,
+ * a post of its own: there only while the sleep is on (`sleepPostsOn`) and
+ * the phone has a reader of it, so in no build until part C.
  */
-export function AddToFeed({ available = filePickerAvailable(), pickFile }: Props) {
+export function AddToFeed({
+  onRecord,
+  onSleepPost,
+  reader = sleepReader(),
+  available = filePickerAvailable(),
+  pickFile,
+  pick,
+  fetchFn,
+}: Props) {
   const [open, setOpen] = useState(false);
+  const [chosen, setChosen] = useState<AddToFeedEntryId | null>(null);
   const insets = useSafeAreaInsets();
-  if (!available) {
-    return null;
-  }
-  const close = () => setOpen(false);
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
+  const { width } = useWindowDimensions();
+  const entries = addToFeedEntries({
+    record: onRecord !== undefined,
+    filePicker: available,
+    sleep: sleepPostsOn() && reader !== null,
+  });
+  const entry = entries.find(({ id }) => id === chosen) ?? null;
+  const close = () => {
+    setOpen(false);
+    setChosen(null);
+  };
+  const back = () => setChosen(null);
+  const choose = (id: AddToFeedEntryId) => {
+    if (id === "record") {
+      close();
+      onRecord?.();
+      return;
+    }
+    setChosen(id);
+  };
   return (
     <>
       <Pressable
         style={({ pressed }) => [styles.plus, pressed && styles.pressed]}
         onPress={() => setOpen(true)}
         accessibilityRole="button"
-        accessibilityLabel={t("Add activity")}
+        accessibilityLabel={t("Add to Feed")}
         hitSlop={space.xs}
         testID="feed-add"
       >
@@ -58,10 +119,21 @@ export function AddToFeed({ available = filePickerAvailable(), pickFile }: Props
           importantForAccessibility="no"
           testID="feed-add-backdrop"
         />
-        <View style={styles.sheet}>
-          <View style={styles.head}>
-            <Text style={styles.title} accessibilityRole="header">
-              {t("Add activity")}
+        <View style={[styles.sheet, glassSheet]}>
+          <View style={[styles.head, entry !== null && styles.headWithBack]}>
+            {entry !== null && (
+              <Pressable
+                style={({ pressed }) => [styles.close, pressed && styles.pressed]}
+                onPress={back}
+                accessibilityRole="button"
+                accessibilityLabel={t("Back")}
+                testID="feed-add-back"
+              >
+                <Text style={styles.backText}>‹</Text>
+              </Pressable>
+            )}
+            <Text style={styles.title} accessibilityRole="header" numberOfLines={1}>
+              {entry?.title ?? t("Add to Feed")}
             </Text>
             <Pressable
               style={({ pressed }) => [styles.close, pressed && styles.pressed]}
@@ -81,7 +153,62 @@ export function AddToFeed({ available = filePickerAvailable(), pickFile }: Props
             keyboardShouldPersistTaps="handled"
             automaticallyAdjustKeyboardInsets
           >
-            <AddPastActivity opened onDone={close} pickFile={pickFile} />
+            {entry === null && (
+              <View style={styles.list}>
+                {entries.map(({ id, title, detail }) => (
+                  <Tap
+                    key={id}
+                    style={styles.entry}
+                    onPress={() => choose(id)}
+                    accessibilityRole="button"
+                    testID={`feed-add-${id}`}
+                  >
+                    <Text style={styles.entryTitle}>{title}</Text>
+                    <Text style={styles.entryDetail}>{detail}</Text>
+                  </Tap>
+                ))}
+              </View>
+            )}
+            {entry?.id === "photos" && (
+              <View style={styles.card}>
+                <PhotoPostForm
+                  onPosted={close}
+                  onCancel={back}
+                  pick={pick}
+                  fetchFn={fetchFn}
+                />
+              </View>
+            )}
+            {entry?.id === "plan" && (
+              <View style={styles.card}>
+                <PlanPostFlow
+                  onDone={close}
+                  fetchFn={fetchFn}
+                  width={width - 2 * (space.lg + space.md)}
+                />
+              </View>
+            )}
+            {entry?.id === "file" && (
+              <AddPastActivity
+                opened
+                fileAtOnce
+                onDone={close}
+                available={available}
+                pickFile={pickFile}
+                pick={pick}
+                fetchFn={fetchFn}
+              />
+            )}
+            {entry?.id === "sleep" && (
+              <View style={styles.card}>
+                <SleepPostPage
+                  reader={reader}
+                  onChanged={onSleepPost}
+                  onDone={close}
+                  fetchFn={fetchFn}
+                />
+              </View>
+            )}
           </ScrollView>
         </View>
       </SheetModal>
@@ -128,9 +255,17 @@ const styles = StyleSheet.create({
     paddingTop: space.sm,
   },
   title: {
+    flex: 1,
     color: color.text,
     fontSize: fontSize.title,
     fontWeight: fontWeight.semibold,
+  },
+  headWithBack: {
+    paddingLeft: space.sm,
+  },
+  backText: {
+    color: color.text,
+    fontSize: fontSize.title,
   },
   close: {
     width: MIN_TAP_SIZE,
@@ -145,5 +280,36 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: space.lg,
     paddingTop: space.sm,
+  },
+  list: {
+    gap: space.sm,
+  },
+  // As the choices of «Add past activity», which the list took over.
+  entry: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    gap: 2,
+    padding: space.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: color.surface,
+  },
+  entryTitle: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  entryDetail: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
+  },
+  card: {
+    gap: space.sm,
+    padding: space.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: color.surface,
   },
 });

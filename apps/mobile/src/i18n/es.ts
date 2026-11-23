@@ -3246,7 +3246,7 @@ export const ES: Table = {
   "Lines not read: {n}": "Líneas no leídas: {n}",
   "This file has no airspace MuW can read.":
     "Este archivo no tiene espacios aéreos que MuW pueda leer.",
-  // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21)
+  // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21, the other texts on 2026-11-23)
   "Nearest airspace": "Espacio aéreo más cercano",
   inside: "dentro",
   "{name} ({class}) · {dist} · floor {floor}":

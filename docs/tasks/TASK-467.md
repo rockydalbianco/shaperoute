@@ -1176,6 +1176,17 @@ di TASK-481 A e portato su un ramo da `main` quando quella è entrata:
   `exposdk:57.0.0` sul canale `preview-sleep`, lo stesso di `app.json`:
   un `eas update` su quel canale la raggiunge senza una build nuova.
 
+- **2026-11-23, la prova sul telefono e i testi.** Sulla build di prova
+  `5b7d0c74` (canale `preview`, con la C0) l'utente ha visto il «+» con
+  «Sonno» («ottimo si vede il più») e ha pubblicato il post («Sì,
+  pubblica»). I testi in italiano del sonno, visti lì: «Sì, vanno bene».
+  Sulla bozza, per il taglio della C: `this_app` di `fixtures/reads.json`
+  dice `sleep`, con i test che lo leggono (anche
+  `services/api/tests/test_photo_posts.py`, una riga), e il profilo
+  `preview-sleep` è tolto da `eas.json`. Manca solo la frase unica del
+  permesso di Salute (TASK-312 D), che scrive la PR indicata dal
+  Coordinatore al taglio della build nativa.
+
 - **2026-11-23, parte C0 — il sonno acceso solo sulla build di prova.**
   Scelta del Coordinatore, al posto dell'aggiornamento sulla build
   `233f0c6a`: la build di prova nuova da `main` la sostituisce sul

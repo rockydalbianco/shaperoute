@@ -54,11 +54,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Coach, con TASK-491) e D (tab «Food», con `NUTRITION_ON` di TASK-489).
   File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
-  ADR-0397; A1, A2 in `main`, spente (`NUTRITION_ON`) fino alla build nativa.
-  B, C1, D, F: schermate e testi approvati il 2026-11-23; PR in fila (B1 =
-  #1473, B2, C1, D); F aspetta il turno della privacy. File:
-  `settings/SportButton.tsx`, `activities/ActivityRow.tsx`,
-  `profile/ProfileHome.tsx` · `tasks/TASK-489.md`
+  ADR-0397; A1, A2, B1, B2 in `main`, spente (`NUTRITION_ON`) fino alla
+  build nativa. Tutte le parti approvate dall'utente il 2026-11-23; PR in
+  fila: C1 = #1501, D, G1, C2a; privacy = #1496. Per la build nativa: G2,
+  C2b, accensione. File: `activities/ActivityRow.tsx`,
+  `profile/ProfileHome.tsx`, `about/content/*` · `tasks/TASK-489.md`
 - **TASK-487 — Il Feed senza attività finte** · 2026-11-22: niente
   esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
   dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.
@@ -352,8 +352,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   più tardi con l'OTA 17; A4b e A4c card (#1333, #1344) con l'OTA 20; A5
   cerchi dell'header e A5b header che scorre con l'OTA 21; A5c (Profilo,
   sci, #1391) e A6 gruppi di Impostazioni (#1403) con l'OTA 22; A6b account
-  (#1407) con l'OTA 23; A7a fogli, A7b isola, A5c-2 Feed in `main`.
-  Ora A7c-1 chip (#1472 bozza), poi A7c-2; B dopo la 1.1.0. File: — ·
+  (#1407) con l'OTA 23; A7a fogli, A7b isola, A5c-2 Feed, A7c-1 chip in
+  `main`. Ora A7c-2 chip degli sport (#1494 bozza); B dopo la 1.1.0. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A

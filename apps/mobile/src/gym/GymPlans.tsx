@@ -15,6 +15,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
+import { CoachPage } from "../coach/CoachPage";
 import { t } from "../i18n";
 import {
   color,
@@ -102,11 +103,21 @@ function PlansPage({
   const [editing, setEditing] = useState<{ key: string; at: WizardStep } | null>(
     startNew ? { key: "new", at: "goal" } : null,
   );
+  // «Coach» (TASK-491 part C): its page over the list, «‹» back to it.
+  const [coaching, setCoaching] = useState(false);
   const page = {
     paddingTop: insets.top + space.lg,
     paddingBottom: insets.bottom + space.lg,
   };
   const today = new Date();
+
+  if (coaching) {
+    return (
+      <View style={[styles.coach, page]} testID="gym-coach">
+        <CoachPage onBack={() => setCoaching(false)} fetchFn={fetchFn} />
+      </View>
+    );
+  }
 
   if (editing !== null) {
     const plan = plans.find((one) => one.key === editing.key) ?? null;
@@ -152,6 +163,18 @@ function PlansPage({
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.list}>
+        <Pressable
+          style={({ pressed }) => [styles.plan, pressed && styles.pressed]}
+          onPress={() => setCoaching(true)}
+          accessibilityRole="button"
+          testID="gym-plans-coach"
+        >
+          <View style={styles.planText}>
+            <Text style={styles.name}>{t("Coach")}</Text>
+            <Text style={gymStyles.muted}>{t("Based on your last 4 weeks")}</Text>
+          </View>
+          <Text style={styles.chevron}>›</Text>
+        </Pressable>
         {plans.map((plan) =>
           plan.program != null ? (
             <ProgramCard
@@ -379,6 +402,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  // The Coach's page keeps its own side margins.
+  coach: {
+    flex: 1,
+    backgroundColor: color.background,
   },
   title: {
     color: color.text,

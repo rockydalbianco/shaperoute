@@ -660,8 +660,11 @@ hanno lo stesso aspetto, con la loro molla e il loro tick.
 città in Explore e quelli della ricerca (`FilterChip`) escono dalla pagina
 come la pillola dei segmenti: un filo di luce in cima e un'ombra corta. Non
 aggiunge colore: ognuno tiene il suo, il giallo del chip scelto compreso.
-Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Gli altri
-chip dell'app non lo hanno ancora.
+Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Lo hanno
+anche (A7c-1) i chip di «Share your run», del post di sole foto e del
+composer, di «Tag people» e di chi può vedere, dei tag dell'outfit, di
+«Style», del sonno, del calendario e «Share live». I chip delle
+schermate degli sport arrivano con A7c-2.
 
 **Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
 raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro
@@ -5404,7 +5407,7 @@ salva come `alpinism`.
 - Nel modulo del post non è un giorno sulla neve: resta alpinismo. Sull'orologio non
   c'è, finché una sua build non lo conosce.
 
-## Il contacalorie: «Nutrition» (TASK-489 parti B, C1 e D, ADR-0397)
+## Il contacalorie: «Nutrition» (TASK-489 parti B, C1, D, G e C2, ADR-0397)
 
 **Spenta in ogni build di oggi** dalla costante `NUTRITION_ON`
 (`nutrition/nutritionOn.ts`): si accende con la build nativa che legge
@@ -5490,8 +5493,35 @@ qui esce dal telefono.
   c'è nessun piano finché l'utente non lo scrive.
 - **«How we calculate»**: da dove vengono i numeri dei cibi (la tabella e
   la sua edizione), come si stima l'energia usata (Mifflin-St Jeor per il
-  riposo, le attività), che sono stime, e «Only you see this page. Nothing
-  here leaves your phone.».
+  riposo, le attività), che sono stime, e «Only you see this page. What
+  you write here stays on your phone; a barcode you look up goes to Open
+  Food Facts.». Per i prodotti trovati col codice a barre nomina Open Food
+  Facts e la Open Database License, col collegamento a openfoodfacts.org.
+- **Un cibo dal codice a barre** (parte G, `nutrition/BarcodeStep.tsx`):
+  nella ricerca, sotto «Add my own food», «Type the code» apre il campo
+  «Barcode» con «Only the barcode goes to Open Food Facts, to find the
+  product.» e «Look up» (attivo solo con un codice di 8, 12, 13 o 14
+  cifre). Il prodotto trovato: nome, «from Open Food Facts», kcal per
+  100 g, il codice, «Check the numbers against the label: you can correct
+  them.», poi «Use this food», «Edit», «Cancel». Non trovato: «This
+  product is not on Open Food Facts.»; senza calorie: «Open Food Facts has
+  no calories for this product.»; in tutti e due i casi «Add my own food»
+  tiene il codice. Senza rete: «The product could not be looked up. Check
+  your connection and try again.» con «Try again». Il lettore con la
+  fotocamera («Scan a barcode») arriva con la build nativa.
+- **Con Salute di Apple** (parte C2, spenta fino alla build nativa): in
+  «Energy you use», prima del sì, il pulsante **«Use Apple Health»** e
+  sotto «MuW reads your active energy and the workouts other apps
+  recorded, to count the energy you use. They are read on your phone and
+  stay there.». Dopo il sì: in un giorno che ha l'energia attiva di Salute
+  la riga «Active energy» col segno «from Apple Health» conta da sola, le
+  attività restano in elenco in grigio e sotto c'è «Your activities are
+  already inside Apple Health's active energy: they are not added again.»;
+  in un giorno senza, «Apple Health has nothing for this day: your
+  activities are counted.» e gli allenamenti delle altre app stanno
+  nell'elenco con «from Apple Health». In fondo «Stop using Apple Health».
+  Mentre Salute risponde «Used (est.)» è «—». Gli allenamenti delle altre
+  app non entrano in «My activities».
 - I pulsanti sono quelli neutri dell'app, mai gialli; i numeri non hanno il
   separatore delle migliaia.
 
@@ -5767,3 +5797,8 @@ altri pezzi) si aggancia alle strade mentre lo disegni, tratto per tratto,
   disegno va libero come prima. Se sulle strade il disegno viene più lungo
   o più corto di oltre il 10%, una nota lo dice: «On the roads your drawing
   is 53% longer: 7.6 km. It stays where you drew it, at the same size.»
+- **Il punteggio dopo «Draw route»** (parte C3b): sotto il percorso di un
+  disegno ancorato torna «Roads follow your drawing: N%», con la
+  somiglianza del motore del percorso sullo schermo (stesso testo, già
+  tradotto). Solo con un percorso: con più percorsi le tessere A, B, C
+  dicono già ognuna la sua.

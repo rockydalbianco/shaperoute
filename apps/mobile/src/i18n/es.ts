@@ -3276,7 +3276,7 @@ export const ES: Table = {
     "Por las calles tu dibujo es un {share} % más largo: {distance}. Se queda donde lo dibujaste, del mismo tamaño.",
   "On the roads your drawing is {share}% shorter: {distance}. It stays where you drew it, at the same size.":
     "Por las calles tu dibujo es un {share} % más corto: {distance}. Se queda donde lo dibujaste, del mismo tamaño.",
-  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts.
+  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts, coach/nextTime.ts.
   Coach: "Coach",
   "Based on your last 4 weeks": "Según tus últimas 4 semanas",
   "Apply to plan": "Aplicar a la rutina",
@@ -3350,6 +3350,7 @@ export const ES: Table = {
   "WHO guidelines 2020": "Directrices de la OMS 2020",
   OK: "OK",
   "Nothing to change for now: keep going.": "Por ahora nada que cambiar: sigue así.",
+  "Next time: {exercise} {kg} kg": "La próxima vez: {exercise} {kg} kg",
   // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21, the other texts on 2026-11-23)
   "Nearest airspace": "Espacio aéreo más cercano",
   inside: "dentro",
@@ -3404,4 +3405,43 @@ export const ES: Table = {
   "Copy the number from the label, or from your dietitian's sheet.":
     "Copia el número de la etiqueta o de la hoja de tu dietista.",
   "Delete food": "Eliminar alimento",
+  // src/nutrition (TASK-489 part B2)
+  Diary: "Diario",
+  "My plan": "Mi plan",
+  "Eaten as planned": "Comido según el plan",
+  "Copy this day to…": "Copiar este día a…",
+  "This is the plan you write. MuW never changes it.":
+    "Este es el plan que escribes tú. MuW nunca lo cambia.",
+  "How we calculate": "Cómo calculamos",
+  "Food@@numbers": "Alimentos",
+  "Energy you use": "Energía que gastas",
+  Estimates: "Estimaciones",
+  "Calories of the foods in the list come from USDA FoodData Central (SR Legacy, April 2018), a public-domain food composition table. Your own foods use the numbers you wrote.":
+    "Las calorías de los alimentos de la lista vienen de USDA FoodData Central (SR Legacy, abril de 2018), una tabla de composición de alimentos de dominio público. Tus alimentos usan los números que escribiste.",
+  "At rest: the Mifflin-St Jeor equation, from the body data in your profile. Activities: ACSM equations and the 2024 Compendium of Physical Activities. On days when Apple Health has your active energy, that number is used instead.":
+    "En reposo: la ecuación de Mifflin-St Jeor, con los datos del cuerpo de tu perfil. Actividades: ecuaciones del ACSM y el Compendium of Physical Activities 2024. Los días en que Salud de Apple tiene tu energía activa, se usa ese número.",
+  "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
+    "Los valores reales cambian con el producto, la receta y la persona. MuW no ofrece dietas ni consejos médicos.",
+  "Only you see this page. Nothing here leaves your phone.":
+    "Esta página solo la ves tú. Nada de lo que hay aquí sale de tu teléfono.",
+  // src/nutrition (TASK-489 part C1)
+  "Today the energy at rest is counted up to now.":
+    "Hoy la energía en reposo se cuenta hasta ahora.",
+  Surplus: "Superávit",
+  Deficit: "Déficit",
+  "At rest": "En reposo",
+  Activities: "Actividades",
+  "No activities on this day.": "Ninguna actividad este día.",
+  edited: "editado",
+  "Log in to count your activities.": "Inicia sesión para contar tus actividades.",
+  "Your activities could not be loaded. Only the energy at rest is counted.":
+    "No se han podido cargar tus actividades. Solo se cuenta la energía en reposo.",
+  "Energy at rest": "Energía en reposo",
+  "Your own number, for example the one your dietitian measured. It takes the place of MuW's estimate.":
+    "Tu propio número, por ejemplo el que midió tu dietista. Sustituye a la estimación de MuW.",
+  "MuW's estimate: {kcal} kcal": "Estimación de MuW: {kcal} kcal",
+  "Back to the estimate": "Volver a la estimación",
+  "Calories of this activity": "Calorías de esta actividad",
+  "Your number stays on this phone. Your post and Apple Health keep theirs.":
+    "Tu número se queda en este teléfono. Tu publicación y Salud de Apple conservan los suyos.",
 };

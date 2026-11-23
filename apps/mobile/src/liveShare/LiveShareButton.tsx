@@ -28,6 +28,8 @@ import {
   useLiveShare,
 } from "./liveShareStore";
 import { SendLiveSheet } from "./SendLiveSheet";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /**
  * «Share live» on the recording screen (TASK-424 part B1, ADR-0352;
@@ -118,6 +120,8 @@ export function confirmStopSharing(): void {
 }
 
 export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const { apiUrl, account } = useFollowsDoor();
   const status = useLiveShare();
   const sport = runActivityOf(useSport());
@@ -181,7 +185,7 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
   if (status.kind === "sharing") {
     control = (
       <Tap
-        style={[styles.chip, styles.live]}
+        style={[styles.chip, chipRaise, styles.live]}
         onPress={() => sharingMenu(() => setChoosing(true))}
         accessibilityRole="button"
         accessibilityLabel={t("Sharing live")}
@@ -200,7 +204,7 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
   } else {
     control = (
       <Tap
-        style={styles.chip}
+        style={[styles.chip, chipRaise]}
         onPress={() => {
           setProblem(null);
           setOpen(true);

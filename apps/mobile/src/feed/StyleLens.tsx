@@ -23,6 +23,8 @@ import { EmptyState } from "../ui/EmptyState";
 import { HEART } from "../ui/outlines";
 import { StylePost } from "./StylePost";
 import { styleWords } from "./styleWords";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 const THEMES: readonly StyleTheme[] = ["running", "trail", "bike", "gym", "athleisure"];
 const GENDERS: readonly StyleGender[] = ["women", "men"];
@@ -48,6 +50,8 @@ type Props = {
  * touched again is let go. The end of the list reads more.
  */
 export function StyleLens({ visible, cardWidth, insetBottom, fetchFn }: Props) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const { apiUrl } = useFollowsDoor();
   const words = styleWords();
   const [theme, setTheme] = useState<StyleTheme | null>(null);
@@ -191,7 +195,7 @@ export function StyleLens({ visible, cardWidth, insetBottom, fetchFn }: Props) {
         ListFooterComponent={
           shown.kind === "ready" && shown.moreFailed ? (
             <Pressable
-              style={styles.chip}
+              style={[styles.chip, chipRaise]}
               onPress={more}
               accessibilityRole="button"
               testID="style-more-failed"
@@ -221,9 +225,11 @@ function Chip({
   chosen: boolean;
   onPress: () => void;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   return (
     <Pressable
-      style={[styles.chip, chosen && styles.chipChosen]}
+      style={[styles.chip, chipRaise, chosen && styles.chipChosen]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: chosen }}

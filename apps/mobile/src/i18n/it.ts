@@ -3148,7 +3148,7 @@ export const IT: Table = {
   "Links and special characters can't be used here.":
     "Qui non si possono usare link né caratteri speciali.",
 
-  // src/gear/GearPicker.tsx, ActivityGear.tsx (TASK-486 part C), to approve
+  // src/gear/GearPicker.tsx, ActivityGear.tsx (TASK-486 part C), approved by the user on 2026-11-23
   "Up to {count} items on an activity.": "Fino a {count} attrezzi su un'attività.",
   "This activity is still on its way. Try again in a moment.":
     "Questa attività sta ancora arrivando. Riprova tra poco.",

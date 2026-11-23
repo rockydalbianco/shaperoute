@@ -30,6 +30,8 @@ li tiene il Coordinatore (`AGENTI.md`, «L'albero»), col sì dell'utente.
 per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 **TASK-480**: «Explore» senza mappe sotto i disegni, corretto in `main`
 (#1363); esce con l'OTA 20, col sì dell'utente al Coordinatore.
+**TASK-312 E**: quando MuW ha l'azienda, leggere gli accordi di Garmin,
+Suunto, Coros e Komoot e fare domanda, ognuno col sì dell'utente.
 
 ## In lavorazione
 

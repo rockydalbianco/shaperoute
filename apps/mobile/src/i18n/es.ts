@@ -3507,6 +3507,10 @@ export const ES: Table = {
   "Week total": "Total de la semana",
   "Today is not in the total until the day is over.":
     "Hoy no entra en el total hasta que acabe el día.",
+  // src/nutrition (TASK-489 part D2: Nutrition from the profile; approved by the user on 2026-11-24)
+  "Write what you eat and see your calorie balance.":
+    "Escribe lo que comes y mira tu balance de calorías.",
+  "Open Nutrition": "Abrir Nutrición",
   // src/nutrition (TASK-489 part G1)
   "Type the code": "Escribir el código",
   Barcode: "Código de barras",

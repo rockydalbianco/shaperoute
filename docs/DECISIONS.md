@@ -591,9 +591,74 @@ lasciando le righe d'indice.
 - ADR-0397, precisazione — Il codice a barre come parte a sé su Open Food Facts (`expo-camera`, solo il codice esce dal telefono), macronutrienti dopo, «My daily target» scritto solo dall'utente, riposo e kcal di ogni allenamento correggibili a mano · 2026-11-23 · Proposta
 - ADR-0397, precisazione 2 — La tabella di base dei cibi: 314 voci da USDA SR Legacy (aprile 2018) ricavate da uno script, nomi in cinque lingue in file loro; la pagina «Nutrition» in due PR, con schermate e testi approvati · 2026-11-23 · Proposta
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
+- ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB · 2026-11-23 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB
+
+**Stato**: Attiva · 2026-11-23 · TASK-441, parte B3 (#1471, `ba12b1fe`).
+Le scelte di prodotto sono dell'utente: **«solo in Explore»** (le uscite da
+40 e 50 km sono disegni pronti del catalogo; «Draw» in bici resta a
+10–30 km) e **«Tutti i 129»** (entrano tutte quelle che passano il filtro).
+Le altre sono **decise dall'agente su delega dell'utente**; il limite di
+memoria è del Coordinatore.
+
+**Contesto**: la precisazione del 2026-11-18 chiudeva con «i 40–50 km (B3)
+vogliono il limite del motore alzato: una PR a parte». Guardando il codice,
+quel limite (`activities/cycling.py`, 30 km) è anche il limite di «Draw»
+nell'API, la misura delle zone della bici sul server e sul telefono, il
+campo della distanza nell'app, e sta nell'impronta del motore e in
+`engine.zip`. Alzarlo voleva dire «Draw» in bici fino a 50 km, ogni zona
+della bici rifatta circa 2,4 volte più grande, una PR del motore e un'OTA:
+una scelta di prodotto, chiesta all'utente e non presa.
+
+**Decisione**:
+
+1. **Il motore non cambia.** `tools/catalog_bike.py --distances 50000
+   40000` toglie il limite dei 30 km solo nel proprio processo
+   (`ride_limit`, per la durata del giro). Nessun file in `services/`,
+   `packages/`, `apps/`; nessuna OTA.
+2. **Stesse otto forme, stesso filtro, stesso registro**
+   (`out/TASK-441/bike.jsonl`, chiave `città/forma@cycling/distanza`):
+   cinque forme a una distanza e tre all'altra, a turno per città. Entra
+   ogni uscita che passa `catalog_seed.reasons`; l'utente le ha guardate
+   tutte su una pagina prima del merge.
+3. **Le uscite da 40 km in su stanno dopo le uscite che c'erano nel file di
+   città** (`catalog_seed._place`, `LATER_RIDES_FROM_M`). L'id di un
+   percorso è il suo posto nel file (`recommended.py`): ordinate per
+   somiglianza in mezzo alle altre, le uscite lunghe avrebbero cambiato
+   l'id delle uscite da 20–30 km già pubblicate. Chi aggiunge altri
+   percorsi a un file già pubblicato li mette in fondo, per la stessa
+   ragione.
+4. **Limite del pianificatore a 4096 MB per ogni città**, guardato ogni 2 s
+   (deciso dal Coordinatore, non alzato): 26 città a 50 e 40 km, 8 solo a
+   40 km, le più grandi come tentativi, fermandosi al primo oltre il
+   limite. Zone ritagliate dagli estratti già sul disco, Overpass chiuso.
+5. **Nessun controllo nuovo sulla distanza**: l'API e l'app non guardano
+   la distanza di un disegno del catalogo. Su un'uscita da 40 o 50 km
+   «Draw it near me» apre «Draw» a 30 km (`againDistanceM` riporta la
+   distanza dentro i limiti dello sport): accettato così.
+
+**Motivo**: il catalogo è fatto di disegni calcolati una volta sul Mac, e
+può permettersi zone e tempi che «Draw» sul telefono e sul server non può.
+Tenere fermo il motore lascia intatte le zone, l'impronta e ogni risposta
+di oggi; l'ordine nel file è l'unica cosa che poteva rompere qualcosa di
+pubblicato, e si è visto solo provando la scrittura a vuoto.
+
+**Conseguenze**: 34 città, 272 casi, 213 disegnati, **129 entrano** (42 da
+50 km, 87 da 40) in 32 città; il catalogo va a **2031 percorsi**, 485
+uscite in bici in 60 città (Levico è nuova). 31 file di città identici byte
+per byte, nei 32 cambiati il testo di prima è l'inizio del nuovo. La
+memoria a 50 km è da 1,5 a 2,5 volte quella a 30 km (Bergamo 4075 MB);
+Genova e Nizza non hanno uscite che passano; Amsterdam passa i 4 GB anche a
+40 km, e Sydney, Valencia, Milano e Barcellona non sono state provate. 20
+casi falliscono perché un candidato esce dalla zona ritagliata (cuore e
+cerchio alla distanza più lunga): una zona più larga per quei casi è un
+ritocco possibile, non fatto. La previsione del piano (150–200 disegni) era
+alta. Il server le carica con un passo «catalogo» (sì dell'utente al
+Coordinatore).
 
 ## ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save»
 

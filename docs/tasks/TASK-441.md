@@ -544,8 +544,9 @@ quello nuovo, e senza uscite lunghe i file escono identici byte per byte.
       **prima del merge**: «Tutti i 129» (2026-11-23).
 - [x] `catalog/seed` riscritto con i disegni di prima intatti,
       `catalog/README.md`.
-- [ ] CI verde, merge del Coordinatore.
-- [ ] Passo «catalogo» sul server, col sì dell'utente al Coordinatore.
+- [x] CI verde, merge del Coordinatore (#1471, `ba12b1fe`, 2026-11-23).
+- [ ] Passo «catalogo» sul server, col sì dell'utente al Coordinatore
+      (passo 21, preparato dal Coordinatore coi numeri attesi della #1471).
 - [ ] L'utente la prova sul telefono (sport «Bike», poi «Explore»).
 
 ### Esito dei giri (B3, 2026-11-23)

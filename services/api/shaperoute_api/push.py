@@ -109,6 +109,7 @@ Kind = Literal[
     "message",
     "message_request",
     "planned_live_started",
+    "gear_limit",
 ]
 # The events of what one did oneself, or of nobody's doing: told to
 # oneself too (the shape game, TASK-296; the contest won, TASK-299; the
@@ -126,12 +127,15 @@ OWN_KINDS: frozenset[str] = frozenset(
         "contest_last_days",
         "contest_results",
         "group_run_soon",
+        "gear_limit",
     }
 )
 
 # The events the listeners hear of and no phone is sent: a reaction to a
-# comment is read in the bell only (TASK-454, the user's choice).
-BELL_ONLY: frozenset[str] = frozenset({"comment_reaction"})
+# comment is read in the bell only (TASK-454, the user's choice); so is an
+# item of gear past its limit (TASK-486 part G: no push in the first
+# version, the user's choice 5).
+BELL_ONLY: frozenset[str] = frozenset({"comment_reaction", "gear_limit"})
 
 # An Expo push token: "ExponentPushToken[…]", or "ExpoPushToken[…]".
 TOKEN_PATTERN = r"^Expo(nent)?PushToken\[[A-Za-z0-9_\-]{1,180}\]$"
@@ -241,6 +245,9 @@ class PushEvent:
     # "drawing", "post" (TASK-455) or "live" (TASK-468); its text, if any,
     # is `text`.
     attachment: str | None = None
+    # An item of gear past its limit (TASK-486 part G): the app opens it;
+    # its name is `text`, `key` its id and its limit.
+    gear_id: UUID | None = None
 
     def same(self) -> tuple[str, int, int, str, str]:
         return (
@@ -538,6 +545,15 @@ TEXTS: dict[str, dict[str, str]] = {
         "es": "{name} comparte contigo una actividad en directo",
         "fr": "{name} partage une activité en direct avec toi",
     },
+    # An item of gear past the limit its owner set (TASK-486 part G): to the
+    # owner only, in the bell. No number: the limit is in the owner's units.
+    "gear_limit": {
+        "en": "{title} reached the limit you set.",
+        "de": "{title} hat das Limit erreicht, das du festgelegt hast.",
+        "it": "{title} ha raggiunto il limite che hai scelto.",
+        "es": "{title} ha llegado al límite que pusiste.",
+        "fr": "{title} a atteint la limite que tu as fixée.",
+    },
     "message_live_text": {
         language: "{name}" + (" : " if language == "fr" else ": ") + "🔴 {text}"
         for language in ("en", "de", "it", "es", "fr")
@@ -581,6 +597,8 @@ def data_of(event: PushEvent, actor_public_id: UUID, actor_name: str) -> dict[st
     the profile of who acted."""
     if event.contest_id is not None:
         return {"kind": event.kind, "contest_id": str(event.contest_id)}
+    if event.gear_id is not None:
+        return {"kind": event.kind, "gear_id": str(event.gear_id)}
     if event.group_run_id is not None:
         return {"kind": event.kind, "group_run_id": str(event.group_run_id)}
     if event.planned_live_id is not None:

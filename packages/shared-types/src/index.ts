@@ -3093,6 +3093,8 @@ export type NotificationOpens =
   | { kind: string; group_run_id: string }
   | { kind: string; challenge_id: string }
   | { kind: string; drawing_id: string }
+  /** An item of gear past its limit (TASK-486 part G): it opens the item. */
+  | { kind: string; gear_id: string }
   | { kind: string; public_id: string; username: string };
 
 /** GET /notifications: the newest first, with how many are unread. */

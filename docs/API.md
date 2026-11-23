@@ -2416,7 +2416,8 @@ tenuto per leggerlo nell'app (`notification_list.py`, tabella
 - **Quello che non è più vero resta fuori**, come nell'email delle
   notizie: una richiesta ritirata, un follow finito, una reazione tolta,
   un commento cancellato o nascosto, un tag tolto, un disegno che non si
-  vede più; niente attraverso un blocco o da un account nascosto per una
+  vede più, un attrezzo cancellato (`gear_limit`, TASK-486 parte G, solo
+  nella campanella come `comment_reaction`); niente attraverso un blocco o da un account nascosto per una
   segnalazione. Il commento e la reazione si leggono come sono adesso.
 - **Per quanto**: `KEPT_DAYS`, 90 giorni dall'evento (durata e frase della
   privacy approvate dall'utente il 2026-11-04: «Sì, approvo»); le righe più vecchie non si mostrano e vanno via
@@ -3734,6 +3735,15 @@ parte B (l'app), finché nessuna app lo chiama.
   (anche ritirati: un'attività di prima), se no `422`; un id due volte
   conta una. L'app manda i predefiniti dello sport a fine attività (parte
   C). Cancellare l'attività toglie i suoi agganci e i suoi metri.
+- **Il limite** (parte G, la scelta 5 dell'utente): quando la lista di
+  un'attività porta un attrezzo da sotto il suo `limit_m` a pari o sopra,
+  il proprietario ha una riga nella campanella, `gear_limit` («The red
+  ones reached the limit you set.», senza numero: il limite è nelle sue
+  unità), che apre l'attrezzo (`opens`: `{kind, gear_id}`). Solo nella
+  campanella, nessun telefono suona (`push.BELL_ONLY`). Una riga per
+  limite: la stessa lista di nuovo, o un'altra attività con l'attrezzo
+  già oltre, non ne aggiunge; un limite nuovo si dice di nuovo. Cancellato
+  l'attrezzo, la riga sparisce. Test in `test_gear_limit.py`.
 - **Chi lo vede**: chi vede il profilo, cioè ogni iscritto tranne uno che
   un blocco tiene lontano (`follows.apart_sql`, `404` come per nessuno),
   senza gli attrezzi `off_profile` e quelli nascosti dopo una

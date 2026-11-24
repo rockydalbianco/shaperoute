@@ -61,6 +61,7 @@ import { EmptyState } from "../ui/EmptyState";
 import { HEART } from "../ui/outlines";
 import { Tap } from "../ui/Tap";
 import { useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 
 type Props = {
@@ -133,6 +134,8 @@ export function FeedScreen({
   ads = feedAds(),
 }: Props) {
   const insets = useSafeAreaInsets();
+  // The lists go on under the tab bar: its room at their end (TASK-469 B2a).
+  const barRoom = useTabBarRoom();
   const { width } = useWindowDimensions();
   const cardWidth = width - 2 * space.lg;
   const [chosen, setChosen] = useState(loadFeedTab);
@@ -222,7 +225,7 @@ export function FeedScreen({
     active,
     ads,
     cardWidth,
-    insetBottom: insets.bottom,
+    insetBottom: insets.bottom + barRoom,
     openPost: setPage,
     onOpen,
   };
@@ -360,7 +363,7 @@ export function FeedScreen({
           <StyleLens
             visible={tab === "style"}
             cardWidth={cardWidth}
-            insetBottom={insets.bottom}
+            insetBottom={insets.bottom + barRoom}
           />
         )}
       </View>

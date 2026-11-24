@@ -552,7 +552,7 @@ export interface RouteJobWithFirst extends RouteJob {
 
 /** What the app sends to POST /gpx to get the route as a GPX file (ADR-0033). */
 export interface GpxRequest {
-  request: RouteRequest | ImageRouteRequest;
+  request: RouteRequest | ImageRouteRequest | ImagePenUpRouteRequest;
   result: RouteResult;
 }
 
@@ -683,7 +683,8 @@ export interface ImageRouteRequest {
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
-  /** No letters to draw with the pen up: true is refused (TASK-197). */
+  /** True only with the pieces of the outline: ImagePenUpRouteRequest
+   * (TASK-297); without them it is refused (TASK-197). */
   pen_up?: false;
   /** A swim of a drawing (TASK-323): as RouteRequest.laps. */
   laps?: number | null;
@@ -1888,7 +1889,8 @@ export interface DrawingSearchPage extends FeedPage {
  * What a member reports with POST /reports (TASK-121, ADR-0228): a drawing
  * (a post of the feed), a comment, a member, a group run (TASK-309), a
  * private message (TASK-319: only the one it was sent to reports it), an
- * item tagged on a photo (TASK-394), or an item of gear (TASK-486).
+ * item tagged on a photo (TASK-394), an item of gear (TASK-486), or a
+ * group (TASK-495: reported of its admin).
  */
 export const REPORT_KINDS = [
   "drawing",
@@ -1898,6 +1900,7 @@ export const REPORT_KINDS = [
   "message",
   "outfit_tag",
   "gear",
+  "group",
 ] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
@@ -3157,6 +3160,37 @@ export interface StyleShop {
   url: string;
 }
 
+/**
+ * An image with the pen up (TASK-297 part C2, ADR-0258): the other subjects
+ * and the holes of a picture are pieces apart from its outline, each drawn
+ * on its own, and the route walks from one to the next without drawing, as
+ * between the letters of a word with the pen up (TASK-197). These two fields
+ * join ImageOutline above: TypeScript merges the two declarations.
+ */
+export interface ImageOutline {
+  /** Lines apart from the outline, in the frame of `points`, the largest
+   * first; a closed one repeats its first point. What an
+   * ImagePenUpRouteRequest sends back instead of the strokes. Empty when
+   * the picture has none, or more than a route has walks, and after an
+   * edit (TASK-079); missing from an API older than TASK-297. */
+  pieces?: OutlinePoint[][];
+  /** The same pieces over the image, like `image_points`. */
+  image_pieces?: OutlinePoint[][];
+}
+
+/**
+ * What the app sends to POST /image-route-jobs to draw an image with the pen
+ * up: its outline, then each of its pieces on its own. The result has
+ * `walks`, as a word with the pen up, and neither shape nor word; the
+ * distance is the drawing's, the walks on top. The API refuses `pen_up`
+ * without pieces, and pieces without `pen_up`.
+ */
+export interface ImagePenUpRouteRequest extends Omit<ImageRouteRequest, "pen_up"> {
+  /** The `pieces` of an ImageOutline, unchanged: at least one. */
+  pieces: OutlinePoint[][];
+  pen_up: true;
+}
+
 export * from "./gym.ts";
 export * from "./poolSwim.ts";
 export * from "./stretchSession.ts";
@@ -3281,3 +3315,4 @@ export * from "./planPosts.ts";
 export * from "./together.ts";
 export * from "./gymHistory.ts";
 export * from "./gear.ts";
+export * from "./groups.ts";

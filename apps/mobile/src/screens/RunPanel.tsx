@@ -9,6 +9,7 @@ import { isPaddle, PADDLE_PACE_M, per500S } from "../navigation/paddle";
 import { distanceLabel } from "../navigation/phrases";
 import { isRide, speedNumber } from "../navigation/ride";
 import { useRunControl } from "../navigation/runControl";
+import { useRunSeen } from "../navigation/runSeen";
 import { skiedDay, trackEffort } from "../activities/trackEffort";
 import { activeKcal } from "../body/energy";
 import { useBody } from "../body/useBody";
@@ -122,7 +123,10 @@ export type RunNumbers = {
  * a pause, and a run that is over stops it at its last fix. Along a route
  * of `activity` "cycling" the paces are speeds (TASK-216), and of
  * "paddling" speeds and a pace of 500 m (TASK-251). In the app's units, and
- * again when «Settings» changes them (TASK-182).
+ * again when «Settings» changes them (TASK-182). With nobody to see them,
+ * the app behind another or pocket mode on, the clock does not tick
+ * (TASK-496): the numbers are those of the last fix, for the live link
+ * that reads them, and the clock is read again as the screen is back.
  */
 export function useRunNumbers(
   track: Track,
@@ -140,9 +144,15 @@ export function useRunNumbers(
   const pause = openPause(track);
   const ticking =
     live && pause === null && phase !== "countdown" && track.fixes.length > 0;
-  const now = useNow(ticking, TICK_MS);
+  const seen = useRunSeen(ticking);
+  const now = useNow(ticking && seen, TICK_MS);
   const last = track.fixes[track.fixes.length - 1];
-  const at = pause !== null ? pause.fromMs : ticking ? now : (last?.timeMs ?? 0);
+  const lastMs = last?.timeMs ?? 0;
+  // Unseen, the time of the last fix. Seen, the clock, and never before
+  // that fix: the clock read before the screen went is older than the run,
+  // until its next tick.
+  const at =
+    pause !== null ? pause.fromMs : ticking && seen ? Math.max(now, lastMs) : lastMs;
   const ms = activeMs(track, at);
   const average = averagePaceS(track, ms);
   // A swimmer is slower than a walker and still swimming (TASK-323 D).

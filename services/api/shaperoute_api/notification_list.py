@@ -84,6 +84,7 @@ def same_of(event: PushEvent) -> str:
         event.group_run_id,
         event.contest_id,
         event.number,
+        event.group_id,
     )
     return "|".join("" if part is None else str(part) for part in parts)
 
@@ -98,7 +99,7 @@ def extra_of(event: PushEvent) -> dict[str, Any]:
         extra["number"] = event.number
     if event.names is not None:
         extra["names"] = dict(event.names)
-    for name in ("challenge_id", "group_run_id", "contest_id", "gear_id"):
+    for name in ("challenge_id", "group_run_id", "contest_id", "gear_id", "group_id"):
         value = getattr(event, name)
         if value is not None:
             extra[name] = str(value)
@@ -249,6 +250,7 @@ def notification_of(row: Mapping[str, Any], language: Language) -> NotificationB
         group_run_id=_uuid(extra.get("group_run_id")),
         contest_id=_uuid(extra.get("contest_id")),
         gear_id=_uuid(extra.get("gear_id")),
+        group_id=_uuid(extra.get("group_id")),
     )
     actor = _person(row)  # type: ignore[arg-type]
     return NotificationBody(

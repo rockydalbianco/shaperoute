@@ -66,8 +66,16 @@ test("on glass, the light on top and the short shadow: never yellow", () => {
 // Every chip of these pages takes the raise right after its own style.
 const CHIPS = [
   "activities/ActivityCalendar.tsx",
+  "coach/CoachPage.tsx",
+  "feed/PlanPostFlow.tsx",
   "feed/SleepPostPage.tsx",
   "feed/StyleLens.tsx",
+  "gym/ExerciseGuide.tsx",
+  "gym/ExerciseHistoryPage.tsx",
+  "gym/ExercisePicker.tsx",
+  "gym/GuideHistoryLine.tsx",
+  "gym/LastTime.tsx",
+  "gym/RestPanel.tsx",
   "gym/TargetSteps.tsx",
   "imports/PhotoPostForm.tsx",
   "liveShare/LiveShareButton.tsx",
@@ -85,8 +93,9 @@ const CHIPS = [
 test.each(CHIPS)("%s: each chip stands out of the glass", (file) => {
   const source = readFileSync(join(__dirname, "..", file), "utf8");
   expect(source).toMatch(/const chipRaise = glassRaise\(useGlassMode\(\)\);/);
-  const uses = source.match(/styles\.chip(?=[,\]}\s])/g) ?? [];
-  const raised = source.match(/styles\.chip,\s*chipRaise[,\]]/g) ?? [];
+  // Its own `styles.chip` or the gym's shared `gymStyles.chip`.
+  const uses = source.match(/\b(?:gymStyles|styles)\.chip(?=[,\]}\s])/g) ?? [];
+  const raised = source.match(/\b(?:gymStyles|styles)\.chip,\s*chipRaise[,\]]/g) ?? [];
   expect(uses.length).toBeGreaterThan(0);
   expect(raised).toHaveLength(uses.length);
 });

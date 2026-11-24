@@ -220,8 +220,8 @@ scheda buona):
 
 In «My plans» una scheda con le settimane è un riquadro: «In progress»,
 «Week 2 of 4» con le tacche del ciclo, i giorni di questa settimana con la
-lettera dell'allenamento (oggi cerchiato), «Edit» (passo 3) e «Weeks» (passo
-4); le schede di prima sono righe «sempre uguale» e si aprono nella guida
+lettera dell'allenamento (oggi cerchiato), «Edit» (passo 3), «Weeks» (passo
+4) e «Table»; le schede di prima sono righe «sempre uguale» e si aprono nella guida
 allo stesso modo. Aperta una scheda che esiste, «Delete plan» (con la
 stessa domanda prima) è sotto il bottone principale in ogni passo della
 guida, non solo all'ultimo (TASK-492, scelta dell'utente del 2026-11-23,
@@ -231,6 +231,27 @@ l'allenamento parte col recupero dell'obiettivo per ogni esercizio. Il
 calendario segna saltati i giorni con un allenamento nella settimana del
 ciclo. Calcolo in `apps/mobile/src/gym/program.ts`, proposta in
 `proposal.ts`, la guida in `GymPlanWizard.tsx`.
+
+**La tabella del piano** (TASK-506 A, scelta dell'utente del 2026-11-23, «Da
+guardare + Settimane»): «Table» in «My plans» mostra tutto il piano su una
+pagina, una linguetta per allenamento («A · Mon», «Run · Tue»), una riga
+per esercizio, una colonna per settimana del ciclo in corso con serie ×
+ripetizioni e i kg (i valori di «Today», con le settimane scritte a mano e
+i passi delle risposte). La settimana di oggi è contornata di giallo, le
+passate e la più leggera sono spente; «—» dove un esercizio in quella
+settimana non c'è; una corsa o un giorno fuori è una riga sola. Si guarda
+soltanto: l'intestazione di una settimana apre il passo «Weeks» della
+guida. `tableOfPlan.ts`, `PlanTable.tsx`.
+
+**Il prossimo allenamento** (TASK-506 C, scelta dell'utente del
+2026-11-23): nel riquadro del piano, sotto i giorni, l'allenamento che
+viene: quello di oggi finché non è fatto, poi il primo giorno dopo («Today ·
+B», «Tomorrow · Run», «Fri · C»), il suo nome, i primi tre esercizi coi
+valori di quella settimana e «+ 2 more», l'omino coi muscoli che lavora; una
+corsa o un giorno fuori in una riga. Con un account, sotto i giorni del
+piano «This week: 1 of 3 done» dal calendario della palestra (un giorno
+passato è fatto se non è saltato, oggi con un allenamento in palestra
+oggi). `NextWorkout.tsx`, `weekDone.ts`.
 
 La prima volta che si tocca «Palestra» in «Draw» (mai all'avvio, mai con
 un altro sport) sale un riquadro «Your plan, step by step» con le barre
@@ -244,8 +265,9 @@ corsa, riposo). Un giorno di corsa è Lenta, Ripetute o Lungo, in km o
 minuti; con le settimane +10% circa (le ripetute +1), l'ultima settimana di
 un ciclo di 3 o più all'80% della prima. In «Draw» quel giorno «Today» dice
 la corsa e «Go to the run · 5.5 km» passa a «Run» coi km già scritti; una
-corsa fatta quel giorno conta come fatta nel calendario. La sigla «RUN» ha
-il suo colore (`runDay`). `runDay.ts`, `RunDayEditor.tsx`.
+corsa fatta quel giorno conta come fatta nel calendario. Il segno della
+corsa (la sigla «RUN» fino a TASK-506 D, ora quello del menu degli sport) ha
+il suo colore (`runDay`) nelle caselle dei giorni. `runDay.ts`, `RunDayEditor.tsx`.
 
 **La corsa su misura** (TASK-452): con almeno una corsa la guida chiede
 «How do you run today?»: il ritmo sui 10 km (o il livello) e il lungo di oggi
@@ -272,8 +294,8 @@ risposte restano). La risposta parte verso l'API con la sincronizzazione
 seguente delle schede. `adapt.ts`, `AdaptQuestion.tsx`.
 
 **Il pianificatore completo** (TASK-461, ADR-0371): un piano nuovo mescola
-sempre almeno due sport (scelta dell'utente del 2026-11-11, «Almeno due,
-sempre»): palestra, corpo libero, corsa, camminata e hike, bici, nuoto e
+uno o più sport (fino al 2026-11-23 almeno due, «Almeno due, sempre» del
+2026-11-11; dal 2026-11-23 ne basta uno, TASK-506 B): palestra, corpo libero, corsa, camminata e hike, bici, nuoto e
 canoa, montagna. Un piano può portare a un obiettivo (`target`): una
 distanza di uno sport (corsa 5–42,2 km, bici 30–150 km, nuoto 1–5 km…) o la
 salita di una gita in montagna (500–2000 m), in una data o «Quando sono
@@ -287,11 +309,18 @@ oltre il massimo di Draw, il promemoria alle 8) è nel task file.
 
 **L'ingresso e il corpo libero** (TASK-461 A2). «New plan» apre prima
 «What do you want to train?» (in italiano «Cosa vuoi allenare?»): Palestra,
-Corpo libero e Corsa si scelgono, almeno due («Next · 2 chosen»; con uno
-solo il tasto resta spento); «Toward a distance» e «Mountains» dicono «Soon».
-All'apertura sono scelti corpo libero e corsa. Una scheda di sola palestra
-non si può più fare da nuova; le schede di prima si aprono come prima, senza
-ingresso. Poi i cinque passi:
+Corpo libero e Corsa si scelgono, uno o più («Next · 1 chosen»; senza
+nessuno il tasto resta spento); «Toward a distance» e «Mountains» dicono
+«Soon». All'apertura è scelta la Palestra, dove «New plan» sta: un piano di
+sola palestra è «Continue» fino in fondo (TASK-506 B, scelta dell'utente
+del 2026-11-23 sulla tela «Schede palestra · migliorie»; prima erano
+scelti corpo libero e corsa e servivano due sport). Le schede di prima si
+aprono come prima, senza ingresso. Ogni sport ha nel suo quadratino il
+segno del menu degli sport (lo stesso profilo dello sport: oggi l'emoji,
+🏃 🚶 🚴 🏊 ⛰️), non più una sigla in inglese, e lo stesso segno sta nelle
+caselle dei giorni e nelle linguette della guida; scelto, ogni sport ha il
+bordo giallo (prima gli sport di distanza erano azzurri) — TASK-506 D, punto
+U7 della prova del 2026-11-23. Poi i cinque passi:
 1. senza palestra gli obiettivi sono quelli del corpo libero: «More muscle»
    4 × 12 recupero 60 s, «More strength» 5 × 6 con gli esercizi più duri
    recupero 2 min, «Tone up» 3 × 15 recupero 30 s, «Get back in shape» 3 ×

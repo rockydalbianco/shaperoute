@@ -12,6 +12,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { EmptyState } from "../ui/EmptyState";
+import { HEART } from "../ui/outlines";
 import { useUnits } from "../units/useUnits";
 import { HEART_EMPTY, HEART_KEPT } from "./FavoriteHeart";
 import { favoriteHeading, favoritePlace, favoriteTitle } from "./favoriteRoute";
@@ -123,11 +125,15 @@ export function FavoritesList({ margin }: Props) {
           </Pressable>
         </>
       ) : (
-        <Text style={styles.message}>
-          {t("No favorites yet. Tap {heart} on a route on the map to keep it here.", {
+        // A page with nothing in it yet (TASK-339 part C1).
+        <EmptyState
+          outline={HEART}
+          title={t("No favorites yet")}
+          message={t("Tap {heart} on a route on the map to keep it here.", {
             heart: HEART_EMPTY,
           })}
-        </Text>
+          testID="favorites-empty"
+        />
       )}
     </View>
   );

@@ -9,6 +9,7 @@ import { Tour } from "../tour/Tour";
 import { useTour } from "../tour/useTour";
 import { AppBoundary } from "./AppBoundary";
 import { markFirstPage } from "./firstPage";
+import { markWholeIntroSeen, wholeIntroSeen } from "./introSeen";
 import { LaunchIntro } from "./LaunchIntro";
 import { SavedLogoLayer } from "./SavedLogo";
 
@@ -23,10 +24,14 @@ import { SavedLogoLayer } from "./SavedLogo";
  * logo after «Save», the card of a shape the run unlocked (TASK-296): it
  * waits for the logo to go. Over the app, the island of `sayInIsland`
  * (TASK-388). When the animation ends, what the app does
- * ahead of the user may start (TASK-306, firstPage.ts).
+ * ahead of the user may start (TASK-306, firstPage.ts). The animation is
+ * the whole one at the first opening and at the first after a new version
+ * of the app, the short one every other time (TASK-505, introSeen.ts).
  */
 export function Root() {
   const [intro, setIntro] = useState(true);
+  // Which of the two this opening shows: read once, before the first frame.
+  const [short] = useState(() => wholeIntroSeen());
   const tour = useTour();
   return (
     <View style={styles.root}>
@@ -40,9 +45,15 @@ export function Root() {
         ) : null}
         {intro ? (
           <LaunchIntro
+            short={short}
             onDone={() => {
               setIntro(false);
               markFirstPage();
+              if (!short) {
+                // Seen to its end or closed with a touch: the short one
+                // from the next opening.
+                markWholeIntroSeen();
+              }
             }}
           />
         ) : null}

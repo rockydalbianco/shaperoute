@@ -3,7 +3,8 @@
 **Stato**: In corso (0 fatta: «Capsula»; A1 e A2 in produzione con l'OTA 14;
 A3 e A4a in produzione al più tardi con l'OTA 17; A4b e A4c in produzione
 con l'OTA 20; A5 e A5b con l'OTA 21; A5c e A6 in produzione con l'OTA 22;
-A6b con l'OTA 23; A7a, A7b, A5c-2 e A7c-1 in `main`)
+A6b con l'OTA 23; A7a, A7b, A5c-2 e A7c-1 con l'OTA 24; A7c-2, A7c-3 e
+la correzione dell'header sopra le pagine con l'OTA 25)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
@@ -116,10 +117,22 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
     social, di condivisione e del calendario escono dal vetro come quelli
     della ricerca (`glassRaise`): filo di luce in cima e ombra corta, il
     chip scelto tiene la sua faccia;
-  - A7c-2 i chip di quattro schermate degli sport (obiettivo in
-    palestra, pagaia, piscina, neve), in bozza #1494; poi A7c-3: volo e
-    pannello del percorso quando sono liberi, e i chip condivisi della
-    palestra (`gymStyles`), con la loro lista di file.
+  - **A7c-2 fatta** (#1494, in `main` c3523b12): lo stesso rilievo sui
+    chip di quattro schermate degli sport: l'obiettivo in palestra, i
+    posti della pagaia, la lunghezza della vasca e le scelte della
+    giornata sulla neve;
+  - **A7c-3 fatta** (#1509, in `main` ea3ea46a): lo stesso rilievo sui
+    chip condivisi della palestra (`gymStyles.chip`) nelle otto pagine
+    che li usano: il riposo, la scelta dell'esercizio, la guida e la
+    storia dell'esercizio, «l'ultima volta», Coach e il post della
+    scheda. Il pannello del percorso resta com'è: lì «chip» è solo un
+    bottone secondario più stretto;
+  - **Correzione di A5b** (#1534, in `main` 0868720f): l'header non esce
+    più sopra le pagine aperte sopra l'app. Aprendo una conversazione o
+    «Message requests» dalla scheda «Messages», il logo, la campanella e
+    lo sport coprivano la «←» e la riga del titolo; in produzione
+    dall'OTA 21;
+  - A7c-4: i chip della schermata del volo, quando è libera.
 - **B — Liquid Glass nativo** con `expo-glass-effect` (UIGlassEffect su
   iOS 26; `expo-blur` o opaco prima e su Android). Dipendenza nuova e
   impronta iOS che cambia: solo in una build **dopo l'uscita della 1.1.0**,
@@ -260,6 +273,34 @@ Spuntati per A1 e A2 (2026-11-12):
   `src/social/outfit/OutfitTagEditor.tsx` — e `src/ui/ChipGlass.test.tsx`
   (nuovo). `FilterSheet.tsx` e `StartState.tsx` non toccati: usano già
   `FilterChip`.
+- A7c-2 (#1494): `apps/mobile/src/gym/TargetSteps.tsx`,
+  `src/paddle/PaddleExplore.tsx`, `src/pool/PoolDraw.tsx`,
+  `src/ski/DayChoices.tsx`, `src/ui/ChipGlass.test.tsx` (la lista dei
+  file controllati). Non toccati, visti uno per uno: `GearEditor.tsx` e
+  `GearPicker.tsx` usano già `FilterChip`; in `GymDrawGuide.tsx` e
+  `NavigateScreen.tsx` «chip» è un'etichetta di testo, non un comando;
+  in `RunDashboard.tsx` `chipBars` è il segno di pausa; `gymStyles.ts`
+  è condiviso da otto pagine e va con A7c-3.
+- A7c-3 (#1509): `apps/mobile/src/coach/CoachPage.tsx`,
+  `src/feed/PlanPostFlow.tsx`, `src/gym/ExerciseGuide.tsx`,
+  `src/gym/ExerciseHistoryPage.tsx`, `src/gym/ExercisePicker.tsx`,
+  `src/gym/GuideHistoryLine.tsx`, `src/gym/LastTime.tsx`,
+  `src/gym/RestPanel.tsx`, `src/ui/ChipGlass.test.tsx` (la lista e il
+  controllo, che ora conta anche `gymStyles.chip`). Non toccati:
+  `gym/gymStyles.ts` (il rilievo va dove il chip è usato) e
+  `route/RoutePanel.tsx` (non è un chip).
+- Correzione dell'header (#1534): `apps/mobile/src/tabs/TabShell.tsx`,
+  `src/screens/ProfileLayer.tsx` (la sola espressione `appUnder`),
+  `src/tabs/HeaderScroll.test.tsx`,
+  `src/screens/ProfileLayerMessages.test.tsx` (nuovo).
+- La PR di documenti di A7c-3 e della correzione:
+  `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/TASK-469-A7c3-chip-palestra.jpg` e
+  `TASK-469-fix-header-sopra-pagine.jpg` (nuove), `docs/STATUS.md`,
+  `docs/DECISIONS.md`, `docs/UI.md`.
+- La PR di documenti di A7c-2: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/TASK-469-A7c2-chip-sport.jpg` (nuova),
+  `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md`.
 - La PR di documenti di A7c-1: `docs/tasks/TASK-469.md`,
   `docs/tasks/TASK-469/TASK-469-A7c1-chip.jpg` (nuova), `docs/STATUS.md`,
   `docs/DECISIONS.md`, `docs/UI.md`.
@@ -368,7 +409,27 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   bozza #1472, prova nel simulatore col suo turno; l'utente approva le
   schermate («Sì, vai»); #1472 in `main` 2e23489e. Documenti di A7a, A7b
   e A5c-2 #1474 in `main`. A7c-2: i dieci file liberi (Coordinatore),
-  bozza #1494 su quattro.
+  bozza #1494 su quattro; prova nel simulatore col suo turno; l'utente
+  approva le schermate («Sì, vai»); #1494 in `main` c3523b12. Documenti
+  di A7c-1 #1495 e di A7c-2 #1506 in `main`. A7c-3: lista col sì del
+  Coordinatore tranne la schermata del volo (di TASK-479), bozza #1509,
+  prova nel simulatore col suo turno; l'utente approva le schermate
+  («Sì, vai»); #1509 in `main` ea3ea46a. Lo stesso giorno TASK-458
+  segnala, tramite il Coordinatore, l'header sopra la conversazione
+  aperta dalla scheda «Messages»: la causa è A5b; bozza #1534, difetto
+  riprodotto e correzione provata nel simulatore con un database e
+  un'API di prova; l'utente approva («Sì, vai»); #1534 in `main`
+  0868720f. Il Coordinatore pubblica l'OTA 25 di produzione da b532fc17,
+  con dentro A7c-2, A7c-3 e la correzione; A7a, A7b, A5c-2 e A7c-1 erano
+  già nell'OTA 24 (832dc598).
+- Imparato (il difetto di A5b): con la nuova architettura uno `zIndex`
+  ordina dentro il più vicino antenato che resta una vista sua, non
+  dentro il genitore. Una vista con solo posizione e colore di fondo
+  viene appiattita, e il figlio con `zIndex` finisce a confrontarsi con
+  i fratelli di un antenato più in alto. Quando si aggiunge uno
+  `zIndex`, il genitore va tenuto con `collapsable={false}`. Jest non lo
+  vede: serve una schermata, e va provata ogni strada che apre la pagina
+  (dalla scheda era rotto, da un profilo no).
 - Imparato: Metro parte con `CI=1`, quindi niente fast refresh: ogni
   modifica al codice vuole Metro riavviato e l'app riaperta. «Riduci
   trasparenza» invece si applica subito. In scuro il rilievo dei chip è
@@ -514,11 +575,34 @@ di luce in cima al chip; in chiaro il chip ha un'ombra corta sotto. Con
 
 ![A7c-1, i chip prima e dopo](TASK-469/TASK-469-A7c1-chip.jpg)
 
+**A7c-2, i chip degli sport** — la lunghezza della vasca nel nuoto
+(«Pool length»). Come in A7c-1: in scuro un filo di luce in cima al chip,
+in chiaro un'ombra corta sotto; con «Riduci trasparenza» è uguale a
+prima:
+
+![A7c-2, i chip degli sport prima e dopo](TASK-469/TASK-469-A7c2-chip-sport.jpg)
+
+**A7c-3, i chip della palestra** — il pannello del riposo (0:30, 1:00,
+1:30, 2:00, 3:00, Custom). Come gli altri chip: in scuro un filo di luce
+in cima, in chiaro un'ombra corta sotto; con «Riduci trasparenza» è
+uguale a prima. «−15 s», «+15 s» e «Skip» sono bottoni e non cambiano:
+
+![A7c-3, i chip della palestra prima e dopo](TASK-469/TASK-469-A7c3-chip-palestra.jpg)
+
+**La correzione dell'header sopra le pagine** — sopra com'era in
+produzione dall'OTA 21, sotto con la correzione. Dalla scheda «Messages»
+l'header copriva la riga del titolo della conversazione e di «Message
+requests»; da un profilo era già a posto (la terza colonna, di
+controllo):
+
+![L'header sopra le pagine, prima e dopo](TASK-469/TASK-469-fix-header-sopra-pagine.jpg)
+
 ## Esito
 
 *(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14); A3 e A4a
 in `main` dal 2026-11-12, in produzione al più tardi con l'OTA 17
 (2026-11-18); A4b e A4c in produzione con l'OTA 20 (2026-11-21); A5 e A5b
 con l'OTA 21 (2026-11-22); A5c e A6 in produzione con l'OTA 22
-(2026-11-22, b4c31f09); A6b con l'OTA 23 (2026-11-23, e427ed2e); A7a, A7b, A5c-2 e A7c-1 in `main` dal
-2026-11-23.
+(2026-11-22, b4c31f09); A6b con l'OTA 23 (2026-11-23, e427ed2e); A7a, A7b, A5c-2 e A7c-1 con l'OTA 24
+(2026-11-23, 832dc598); A7c-2, A7c-3 e la correzione dell'header sopra le
+pagine con l'OTA 25 (b532fc17).

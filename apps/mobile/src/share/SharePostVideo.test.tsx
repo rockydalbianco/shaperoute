@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
 import type { LatLon } from "@shaperoute/shared-types";
-import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
 import * as Sharing from "expo-sharing";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -173,9 +173,10 @@ describe("Music", () => {
     await shown();
     expect(screen.getByText("Music")).toBeOnTheScreen();
     expect(screen.getByText("Tap a track to hear it.")).toBeOnTheScreen();
-    // «None» and the ten tracks: the style and the animal are in «Edit
-    // video» (TASK-408).
-    expect(screen.getAllByRole("radio")).toHaveLength(11);
+    // «None» and the ten tracks, after the three looks of the picture
+    // (TASK-450): the video's style and the animal are in «Edit video»
+    // (TASK-408).
+    expect(screen.getAllByRole("radio")).toHaveLength(3 + 11);
     expect(screen.getByRole("radio", { name: "None" })).toBeChecked();
     await fireEvent.press(screen.getByRole("radio", { name: "Energy" }));
     expect(screen.getByRole("radio", { name: "Energy" })).toBeChecked();
@@ -289,10 +290,15 @@ describe("Export video", () => {
   it("makes the video in the style chosen: Day after a tap on its tile", async () => {
     await shown();
     await fireEvent.press(screen.getByTestId("edit-video-open"));
-    expect(screen.getByText("Style")).toBeOnTheScreen();
-    expect(screen.getByRole("radio", { name: "Night" })).toBeChecked();
-    await fireEvent.press(screen.getByRole("radio", { name: "Day" }));
-    expect(screen.getByRole("radio", { name: "Day" })).toBeChecked();
+    // The video's «Style», in the sheet: the page has the picture's own,
+    // with a «Night» and a «Day» too (TASK-450).
+    const sheet = within(screen.getByTestId("edit-video"));
+    expect(sheet.getByText("Style")).toBeOnTheScreen();
+    expect(sheet.getByRole("radio", { name: "Night" })).toBeChecked();
+    await fireEvent.press(sheet.getByRole("radio", { name: "Day" }));
+    expect(sheet.getByRole("radio", { name: "Day" })).toBeChecked();
+    // The picture keeps its yellow: the video's style is not its look.
+    expect(screen.getByTestId("post-look-yellow")).toBeChecked();
     await fireEvent.press(screen.getByTestId("edit-video-done"));
     await exportVideo();
     await page({ type: "ready", codec: "avc1.42e028" });

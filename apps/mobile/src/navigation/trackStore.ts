@@ -9,6 +9,14 @@ import {
 import { File, Paths } from "expo-file-system";
 import { AppState, type AppStateStatus } from "react-native";
 
+import { currentOwner } from "../account/currentOwner";
+import {
+  FULL_EVERY_LINES,
+  JOURNAL_FILE,
+  journalBase,
+  journalLine,
+  replayJournal,
+} from "./runJournal";
 import {
   addFix,
   continueTrack,
@@ -16,6 +24,7 @@ import {
   holdTrack,
   leaveTrack,
   openPause,
+  type Pause,
   pauseTrack,
   penDownTrack,
   penUpTrack,
@@ -28,11 +37,16 @@ import {
  * The run in progress, kept in a file of the app's documents (TASK-112,
  * ADR-0091): it is still there after the app is closed, and it never
  * leaves the phone. One run at a time: a new one replaces the last.
+ *
+ * With the app behind another the file is not written whole at each fix
+ * (TASK-496, an addition to ADR-0264): the new fixes go to a journal beside
+ * it (`runJournal`), and the run is the file with the journal after it.
  */
 
 export const RUN_FILE = "current-run.json";
 /** The file is written at most this often with the app in front, and when
- * the run ends. Behind another app it is written at once (TASK-304). */
+ * the run ends. Behind another app each fix is written at once (TASK-304),
+ * to the journal (TASK-496). */
 export const SAVE_EVERY_MS = 15_000;
 /** A run stopped less than this ago goes on when the same route starts again. */
 export const RESUME_WITHIN_MS = 30 * 60_000;
@@ -79,6 +93,12 @@ export type SavedRun = {
   /** The route's stretches with the bike on foot (TASK-272). Absent for any
    * other route, and before TASK-272. */
   on_foot?: Stretch[];
+  /** The account signed in when the run began (TASK-507, ADR-0406): only
+   * that account sees it again; another account's run is set aside, whole,
+   * until that account signs in. Absent for a run begun with nobody signed
+   * in, and before TASK-507: anyone's, as before. In the whole file only,
+   * never in a line of the journal. */
+  owner?: number;
   track: Track;
   status: RunStatus;
 };
@@ -87,27 +107,207 @@ function runFile(): File {
   return new File(Paths.document, RUN_FILE);
 }
 
-/** Writes the run; false when the phone refuses (full, no access). */
-export function saveRun(run: SavedRun): boolean {
+function journalFile(): File {
+  return new File(Paths.document, JOURNAL_FILE);
+}
+
+/** Moves the text of `from` to `to`, `to` written first: a move cut short
+ * leaves both, never neither. False when the phone refuses. */
+function moveText(from: File, to: File): boolean {
   try {
-    const file = runFile();
-    file.create({ overwrite: true });
-    file.write(JSON.stringify(run));
+    if (!from.exists) {
+      return true;
+    }
+    to.create({ overwrite: true });
+    to.write(from.textSync());
+    from.delete();
     return true;
   } catch {
     return false;
   }
 }
 
-/** The run in the file, or null when there is none or it cannot be read. */
-export function loadRun(): SavedRun | null {
+/** The owner written in the run file, null for none or anyone's. */
+function ownerInFile(): number | null {
   try {
     const file = runFile();
     if (!file.exists) {
       return null;
     }
     const data: unknown = JSON.parse(file.textSync());
-    return isSavedRun(data) ? data : null;
+    const owner = isSavedRun(data) ? data.owner : undefined;
+    return owner === undefined ? null : owner;
+  } catch {
+    return null;
+  }
+}
+
+/** Whether the run file holds nothing a run is made of: a run of nobody's
+ * that ended with less than a line (a start taken back at once, TASK-252),
+ * which the app never shows, nor scores, nor opens again. Such a file does
+ * not keep an account's own run set aside from coming back (TASK-507). A
+ * run under way is never this: its status is "running". */
+function slotHoldsNothing(): boolean {
+  try {
+    const file = runFile();
+    if (!file.exists) {
+      return true;
+    }
+    const data: unknown = JSON.parse(file.textSync());
+    return (
+      isSavedRun(data) &&
+      data.owner === undefined &&
+      data.status !== "running" &&
+      data.track.fixes.length < 2
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** At most this many runs of one account set aside: far more than a
+ * phone shared by a few people ever holds. */
+const MAX_ASIDE = 100;
+
+/** The file of the `n`th run of `owner` set aside, and its journal:
+ * «current-run.12.json», then «current-run.12-2.json»… (TASK-507). */
+function asideFiles(owner: number, n: number): { run: File; journal: File } {
+  const tag = n === 1 ? `${owner}` : `${owner}-${n}`;
+  return {
+    run: new File(Paths.document, RUN_FILE.replace(/\.json$/, `.${tag}.json`)),
+    journal: new File(
+      Paths.document,
+      JOURNAL_FILE.replace(/\.journal$/, `.${tag}.journal`),
+    ),
+  };
+}
+
+/**
+ * The run file for the account signed in now (TASK-507, the user's choice
+ * «Nascosta finché rientra»): a run of another account in it is set aside,
+ * file and journal as they are, under a name of its own
+ * («current-run.<number>.json» and its journal, then «-2», «-3»…); this
+ * account's own, set aside earlier, comes back when the file has none.
+ * Nothing is ever written over or deleted here, and a run of nobody's
+ * (before TASK-507, or begun signed out) stays for anyone.
+ */
+function takeRunSlot(): void {
+  try {
+    moveRuns();
+  } catch {
+    // The phone refuses: the run file is read as it is.
+  }
+}
+
+function moveRuns(): void {
+  const who = currentOwner();
+  const there = ownerInFile();
+  if (there !== null && there !== who) {
+    for (let n = 1; n <= MAX_ASIDE; n += 1) {
+      const aside = asideFiles(there, n);
+      if (aside.run.exists || aside.journal.exists) {
+        continue;
+      }
+      // The journal first: a file without its journal would lose its end.
+      if (moveText(journalFile(), aside.journal) && moveText(runFile(), aside.run)) {
+        journalEmptied = true;
+      }
+      break;
+    }
+  }
+  if (who === null || !slotHoldsNothing()) {
+    return;
+  }
+  for (let n = 1; n <= MAX_ASIDE; n += 1) {
+    const aside = asideFiles(who, n);
+    if (!aside.run.exists) {
+      continue;
+    }
+    if (moveText(aside.journal, journalFile())) {
+      moveText(aside.run, runFile());
+    }
+    return;
+  }
+}
+
+/** Whether the journal holds nothing of a file older than the one there
+ * is: false once the phone refused to empty it, until it does. */
+let journalEmptied = true;
+
+/** Empties the journal: the file just written holds all of it. */
+function emptyJournal(): void {
+  try {
+    const journal = journalFile();
+    if (journal.exists) {
+      journal.delete();
+    }
+    journalEmptied = true;
+  } catch {
+    journalEmptied = false;
+  }
+}
+
+/** Adds `line` to the journal, the `first` one after a whole file to a new
+ * journal; false when the phone refuses. */
+function addToJournal(line: string, first: boolean): boolean {
+  try {
+    const journal = journalFile();
+    if (first && !journal.exists) {
+      journal.create();
+    }
+    journal.write(line, { append: true });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Writes the run, whole; false when the phone refuses (full, no access).
+ * The journal starts again: what it held is in the file now. */
+export function saveRun(run: SavedRun): boolean {
+  try {
+    const file = runFile();
+    file.create({ overwrite: true });
+    file.write(JSON.stringify(run));
+  } catch {
+    return false;
+  }
+  emptyJournal();
+  return true;
+}
+
+/** `run` with what the journal holds after it (TASK-496). A journal that
+ * cannot be read leaves the run as the file has it. */
+function withJournal(run: SavedRun): SavedRun {
+  if (run.status !== "running") {
+    return run;
+  }
+  try {
+    const journal = journalFile();
+    if (!journal.exists) {
+      return run;
+    }
+    const track = replayJournal(run.track, journal.textSync(), {
+      fix: isFix,
+      pause: isPause,
+    });
+    return track === run.track ? run : { ...run, track };
+  } catch {
+    return run;
+  }
+}
+
+/** The run in the file, with the journal's lines after it, or null when
+ * there is none or it cannot be read. */
+export function loadRun(): SavedRun | null {
+  takeRunSlot();
+  try {
+    const file = runFile();
+    if (!file.exists) {
+      return null;
+    }
+    const data: unknown = JSON.parse(file.textSync());
+    return isSavedRun(data) ? withJournal(data) : null;
   } catch {
     return null;
   }
@@ -122,6 +322,7 @@ export function clearRun(): void {
   } catch {
     // Nothing to clear is as good as cleared.
   }
+  emptyJournal();
 }
 
 function isLatLon(value: unknown): value is LatLon {
@@ -149,7 +350,7 @@ function isFix(value: unknown): value is TrackFix {
   );
 }
 
-function isPause(value: unknown): boolean {
+function isPause(value: unknown): value is Pause {
   if (typeof value !== "object" || value === null) {
     return false;
   }
@@ -206,6 +407,7 @@ function isSavedRun(value: unknown): value is SavedRun {
     (run.word === undefined || typeof run.word === "string") &&
     (run.on_foot === undefined ||
       (Array.isArray(run.on_foot) && run.on_foot.every(isWalk))) &&
+    (run.owner === undefined || typeof run.owner === "number") &&
     (run.status === "running" ||
       run.status === "stopped" ||
       run.status === "arrived") &&
@@ -352,8 +554,10 @@ export type RunRecorder = {
  * A run of the same route the app was closed during goes on at once when
  * closed lately (TASK-304, ADR-0264), otherwise paused until «Resume»
  * (TASK-272, ADR-0240). With the app behind another the file is written
- * as it leaves the front and at each fix after (TASK-304): iOS may close
- * MuW there, and the file is what is left of the run.
+ * as it leaves the front and each fix after is written too (TASK-304): iOS
+ * may close MuW there, and the file is what is left of the run. Those fixes
+ * go to the journal, a line each, and the file is written whole again every
+ * FULL_EVERY_LINES of them (TASK-496).
  */
 export function startRun(
   route: LatLon[],
@@ -364,9 +568,13 @@ export function startRun(
   rotationDeg?: number,
   { directions = [], word = null, onFoot = [] }: FollowedRoute = {},
 ): RunRecorder {
+  // Another account's run goes aside first (TASK-507): never written over.
   const saved = loadRun();
-  const taken = reopened(saved, route, nowMs);
-  let track = taken?.track ?? resumable(saved, route, nowMs) ?? emptyTrack();
+  const owner = currentOwner();
+  const mine =
+    saved === null || saved.owner === undefined || saved.owner === owner ? saved : null;
+  const taken = reopened(mine, route, nowMs);
+  let track = taken?.track ?? resumable(mine, route, nowMs) ?? emptyTrack();
   let status: RunStatus = "running";
   let savedMs: number | null = null;
   let unsaved = false;
@@ -392,6 +600,16 @@ export function startRun(
 
   // The run as it would be in the file, when the last write failed.
   let notWritten: SavedRun | null = null;
+  // The whole file this recorder wrote last, for the journal's lines to
+  // follow (TASK-496); null before it, after a write the phone refused, and
+  // while the journal holds lines of an older file.
+  let base: string | null = null;
+  // What the file and the journal hold of the track, and the journal's lines.
+  let written: { fixes: number; pauses: Pause[] | undefined } = {
+    fixes: 0,
+    pauses: undefined,
+  };
+  let lines = 0;
 
   function save(): void {
     const run: SavedRun = {
@@ -402,10 +620,33 @@ export function startRun(
       ...sport,
       ...turned,
       ...followed,
+      // Whose it is (TASK-507): in the whole file, never in the journal.
+      ...(owner !== null ? { owner } : {}),
       track,
       status,
     };
-    notWritten = saveRun(run) ? null : run;
+    const done = saveRun(run);
+    notWritten = done ? null : run;
+    unsaved = false;
+    base = done && journalEmptied ? journalBase(track) : null;
+    written = { fixes: track.fixes.length, pauses: track.pauses };
+    lines = 0;
+  }
+
+  // With the app behind another (TASK-496): only what is new, in a line of
+  // the journal. The whole file when there is none of this recorder's to
+  // follow, every FULL_EVERY_LINES, and when the phone refuses the line.
+  function saveBehind(): void {
+    if (base === null || lines >= FULL_EVERY_LINES) {
+      save();
+      return;
+    }
+    if (!addToJournal(journalLine(base, track, written), lines === 0)) {
+      save();
+      return;
+    }
+    written = { fixes: track.fixes.length, pauses: track.pauses };
+    lines += 1;
     unsaved = false;
   }
 
@@ -439,7 +680,10 @@ export function startRun(
           fix.timeMs - last.timeMs > AWAY_AFTER_MS &&
           !pausedByHandAfter(track, last.timeMs)
         ) {
-          track = leaveTrack(track, leftAtMs);
+          // Worth writing even when this fix is not kept (TASK-496).
+          const left = leaveTrack(track, leftAtMs);
+          unsaved = unsaved || left !== track;
+          track = left;
         }
         leftAtMs = null;
       }
@@ -451,12 +695,13 @@ export function startRun(
         save();
         return;
       }
-      if (
-        unsaved &&
-        (savedMs === null ||
-          fix.timeMs - savedMs >= SAVE_EVERY_MS ||
-          behind(AppState.currentState))
-      ) {
+      if (!unsaved) {
+        return;
+      }
+      if (savedMs !== null && behind(AppState.currentState)) {
+        savedMs = fix.timeMs;
+        saveBehind();
+      } else if (savedMs === null || fix.timeMs - savedMs >= SAVE_EVERY_MS) {
         savedMs = fix.timeMs;
         save();
       }
@@ -575,4 +820,25 @@ export function endRecording(): SavedRun | null {
  */
 export function endRun(): ScorableRun | null {
   return scorable(endRecording());
+}
+
+/** Deletes every run of `owner` on the phone, set aside or in the file,
+ * with their journals: the account is deleted, or its number is now
+ * somebody else's (account/phoneOwners.ts, TASK-507). */
+export function forgetRunsOf(owner: number): void {
+  try {
+    for (let n = 1; n <= MAX_ASIDE; n += 1) {
+      const aside = asideFiles(owner, n);
+      for (const file of [aside.run, aside.journal]) {
+        if (file.exists) {
+          file.delete();
+        }
+      }
+    }
+  } catch {
+    // Nothing to delete, or the phone refuses.
+  }
+  if (ownerInFile() === owner) {
+    clearRun();
+  }
 }

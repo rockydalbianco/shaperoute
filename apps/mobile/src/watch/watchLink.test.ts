@@ -69,10 +69,11 @@ test("a message is sent with its version, and a watch that is not there is no er
   expect(native.sendMessage).toHaveBeenCalledWith({ v: 1, ...PAUSE });
 });
 
-test("what the watch keeps goes as user info", () => {
+test("what the watch keeps goes as user info", async () => {
   const { native, emitter } = fakeNative();
   const link = linkOn(native, emitter);
   link.transfer({ type: "settings", units: "mi", at: 3 });
+  await settle();
   expect(native.transferUserInfo).toHaveBeenCalledWith({
     v: 1,
     type: "settings",
@@ -83,6 +84,23 @@ test("what the watch keeps goes as user info", () => {
     throw new Error("no session");
   });
   expect(() => link.transfer({ type: "settings", units: "km", at: 4 })).not.toThrow();
+  await settle();
+});
+
+test("nothing is transferred to a watch without the app, nor without a watch (TASK-517)", async () => {
+  // A transfer that fails closes the app inside react-native-watch-connectivity.
+  const { native, emitter } = fakeNative();
+  const link = linkOn(native, emitter);
+  native.getIsWatchAppInstalled.mockImplementationOnce(() => Promise.resolve(false));
+  link.transfer({ type: "settings", units: "km", at: 1 });
+  await settle();
+  native.getIsPaired.mockImplementationOnce(() => Promise.resolve(false));
+  link.transfer({ type: "settings", units: "km", at: 2 });
+  await settle();
+  native.getIsPaired.mockImplementationOnce(() => Promise.reject(new Error("no session")));
+  link.transfer({ type: "settings", units: "km", at: 3 });
+  await settle();
+  expect(native.transferUserInfo).not.toHaveBeenCalled();
 });
 
 test("messages, the application context and user info are read; a wrong one is left out", async () => {
@@ -179,11 +197,12 @@ describe("watchLink in an app with and without the native module", () => {
     expect(loadLink(fakeNative().native, "android")).toBeNull();
   });
 
-  test("with it the link sends through the module", () => {
+  test("with it the link sends through the module", async () => {
     const { native } = fakeNative();
     const link = loadLink(native);
     expect(link).not.toBeNull();
     link?.transfer({ type: "settings", units: "km", at: 1 });
+    await settle();
     expect(native.transferUserInfo).toHaveBeenCalledTimes(1);
   });
 });

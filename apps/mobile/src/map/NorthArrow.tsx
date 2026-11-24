@@ -9,6 +9,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { headingLabel } from "./headingLabel";
 import { arrowTurnDeg, isTurned } from "./turnedMap";
 
 type Props = {
@@ -20,6 +21,10 @@ type Props = {
   northUp?: boolean;
   /** What a tap does with north up, when not the drawing's turn. */
   upHint?: string;
+  /** On the run's «Compass» page (TASK-518 B): where one faces, in degrees
+   * clockwise from north, written under the arrow («NE · 42°»); null with
+   * north up («N»). Elsewhere absent, and nothing is written. */
+  facing?: number | null;
 };
 
 /**
@@ -28,9 +33,9 @@ type Props = {
  * drawing again, or where the phone points on the run's «Compass» page
  * (TASK-422).
  */
-export function NorthArrow({ shown, onPress, northUp, upHint }: Props) {
+export function NorthArrow({ shown, onPress, northUp, upHint, facing }: Props) {
   const up = northUp ?? !isTurned(shown);
-  return (
+  const arrow = (
     <Pressable
       testID="north-arrow"
       style={styles.button}
@@ -55,6 +60,17 @@ export function NorthArrow({ shown, onPress, northUp, upHint }: Props) {
       </View>
     </Pressable>
   );
+  if (facing === undefined) {
+    return arrow;
+  }
+  return (
+    <View style={styles.column}>
+      {arrow}
+      <Text style={styles.heading} testID="north-arrow-heading">
+        {headingLabel(facing)}
+      </Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -68,6 +84,23 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  // The arrow and, on «Compass», where one faces under it (TASK-518 B).
+  column: {
+    alignSelf: "flex-end",
+    alignItems: "center",
+    gap: space.xs,
+  },
+  heading: {
+    color: color.text,
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
+    fontVariant: ["tabular-nums"],
+    paddingHorizontal: space.sm,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+    overflow: "hidden",
     backgroundColor: color.surfaceRaised,
   },
   needle: {

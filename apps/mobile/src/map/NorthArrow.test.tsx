@@ -61,3 +61,18 @@ test("the arrow is not the route's yellow: its tip is red, the N the text (TASK-
   expect(color.north).not.toBe(color.accent);
   expect(color.text).not.toBe(color.accent);
 });
+
+test("on Compass, where one faces is written under the arrow (TASK-518 B)", async () => {
+  await render(
+    <NorthArrow shown={-42} northUp={false} facing={42} onPress={jest.fn()} />,
+  );
+  expect(screen.getByTestId("north-arrow-heading")).toHaveTextContent("NE · 42°");
+  // North up: only «N».
+  await render(<NorthArrow shown={0} northUp facing={null} onPress={jest.fn()} />);
+  expect(screen.getByTestId("north-arrow-heading")).toHaveTextContent(/^N$/);
+});
+
+test("elsewhere nothing is written under the arrow (TASK-518 B)", async () => {
+  await render(<NorthArrow shown={-30} onPress={jest.fn()} />);
+  expect(screen.queryByTestId("north-arrow-heading")).toBeNull();
+});

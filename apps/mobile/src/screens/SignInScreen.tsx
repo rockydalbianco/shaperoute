@@ -1,5 +1,6 @@
-import { type Ref, useEffect, useRef, useState } from "react";
+import { type ReactNode, type Ref, useEffect, useRef, useState } from "react";
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -7,6 +8,8 @@ import {
   type TextInputProps,
   View,
 } from "react-native";
+
+import { PASSWORD_LENGTH } from "@shaperoute/shared-types";
 
 import type { AccountEmail } from "../account/accountEmail";
 import type { SignInFields, SignUpFields } from "../account/fields";
@@ -29,6 +32,67 @@ const MODES = [
   { value: "signUp", label: tLater("Sign up") },
   { value: "logIn", label: tLater("Log in") },
 ] as const;
+
+/**
+ * What a password of the account is, in the words iOS reads before it
+ * offers a strong one (`UITextInputPasswordRules`): the lengths the server
+ * takes.
+ */
+export const PASSWORD_RULES = `minlength: ${PASSWORD_LENGTH.min}; maxlength: ${PASSWORD_LENGTH.max};`;
+
+/**
+ * What the box of the password remembers after the eye hid it again. iOS
+ * empties a box that turns secret at its next key (seen in the simulator,
+ * TASK-458): it says the box is empty, and then, for a letter, says the
+ * letter alone. What was written is kept here to be put back.
+ */
+export type EyeMemory = {
+  /** The text when the eye hid it again, until the next key. */
+  held: string | null;
+  /** The text iOS has just emptied, and when: its letter may follow. */
+  emptied: { text: string; at: number } | null;
+};
+
+export const NO_MEMORY: EyeMemory = { held: null, emptied: null };
+
+/** The letter iOS types after it emptied the box comes at once. */
+const LETTER_FOLLOWS_MS = 100;
+
+/**
+ * The password after a key, and what is remembered for the next. An empty
+ * box right after the eye is a delete, of one letter and not of all, unless
+ * a letter follows it at once: then nothing was deleted, and the letter
+ * goes after what was written. More than one letter at once (a paste, the
+ * password iOS fills) is taken as it is.
+ */
+export function afterKey(
+  memory: EyeMemory,
+  next: string,
+  now: number,
+): { password: string; memory: EyeMemory } {
+  const { held, emptied } = memory;
+  if (emptied !== null && next.length === 1 && now - emptied.at <= LETTER_FOLLOWS_MS) {
+    return { password: emptied.text + next, memory: NO_MEMORY };
+  }
+  if (held !== null && held.length > 1) {
+    if (next === "") {
+      return {
+        password: held.slice(0, -1),
+        memory: { held: null, emptied: { text: held, at: now } },
+      };
+    }
+    if (next.length === 1) {
+      return { password: held + next, memory: NO_MEMORY };
+    }
+  }
+  return { password: next, memory: NO_MEMORY };
+}
+
+/** The eye in the password's box: its square, lid, line and pupil. */
+const EYE_SIDE = 24;
+const EYE_LID = 15;
+const EYE_STROKE = 2;
+const EYE_PUPIL = 6;
 
 type Props = {
   /** The form shown first: "Log in" after a session ended. */
@@ -57,6 +121,13 @@ type Props = {
  * checked before they leave; what goes wrong is said under the button.
  * Under the boxes, what the email when away is, and the unticked box that
  * says no to it (TASK-284, ADR-0244).
+ *
+ * What iOS is told about the fields (TASK-458): the email is the account's
+ * name in both forms, so the Keychain keeps it with the password and not
+ * the username of the profile; the new password comes with the rules of
+ * the account, so the strong password iOS offers is one the server takes.
+ * The eye in the password's box shows what is being typed, and hides it
+ * again: the text stays as it is.
  */
 export function SignInScreen({
   initialMode,
@@ -72,6 +143,10 @@ export function SignInScreen({
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  // Hidden until the eye is touched (TASK-458).
+  const [passwordShown, setPasswordShown] = useState(false);
+  // What the eye remembers from the touch that hides the password again.
+  const eye = useRef<EyeMemory>(NO_MEMORY);
   const [atLeast16, setAtLeast16] = useState(false);
   const [noAwayEmail, setNoAwayEmail] = useState(false);
   const usernameField = useRef<TextInput>(null);
@@ -132,7 +207,9 @@ export function SignInScreen({
         placeholder={t("name@example.com")}
         keyboardType="email-address"
         autoComplete="email"
-        textContentType={signingUp ? "emailAddress" : "username"}
+        // The name of the account for iOS, in both forms: it is what
+        // «Log in» asks for later.
+        textContentType="username"
         returnKeyType="next"
         submitBehavior="submit"
         onSubmitEditing={() =>
@@ -147,7 +224,9 @@ export function SignInScreen({
           onChangeText={setUsername}
           placeholder={t("3 to 20 letters, digits, _ or .")}
           autoComplete="username-new"
-          textContentType="nickname"
+          // Not the name of the account: iOS keeps the email with the
+          // password.
+          textContentType="none"
           returnKeyType="next"
           submitBehavior="submit"
           onSubmitEditing={() => passwordField.current?.focus()}
@@ -157,13 +236,35 @@ export function SignInScreen({
         ref={passwordField}
         label={t("PASSWORD")}
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(next) => {
+          const after = afterKey(eye.current, next, Date.now());
+          eye.current = after.memory;
+          setPassword(after.password);
+        }}
         placeholder={signingUp ? t("At least 8 characters") : undefined}
-        secureTextEntry
+        secureTextEntry={!passwordShown}
         autoComplete={signingUp ? "new-password" : "current-password"}
         textContentType={signingUp ? "newPassword" : "password"}
+        passwordRules={signingUp ? PASSWORD_RULES : undefined}
         returnKeyType={signingUp ? "next" : "go"}
         onSubmitEditing={signingUp ? undefined : submit}
+        end={
+          <Pressable
+            style={({ pressed }) => [styles.eyeButton, pressed && styles.eyePressed]}
+            onPress={() => {
+              eye.current =
+                passwordShown && Platform.OS === "ios"
+                  ? { held: password, emptied: null }
+                  : NO_MEMORY;
+              setPasswordShown(!passwordShown);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={passwordShown ? t("Hide password") : t("Show password")}
+            hitSlop={space.xs}
+          >
+            <EyeGlyph crossed={passwordShown} />
+          </Pressable>
+        }
       />
       {signingUp && (
         <Pressable
@@ -233,23 +334,48 @@ export function SignInScreen({
 type FieldProps = TextInputProps & {
   label: string;
   ref?: Ref<TextInput>;
+  /** A control inside the box, at its end: the eye of the password. */
+  end?: ReactNode;
 };
 
 /** A labelled field, dark like the rest of the app. */
-function Field({ label, ref, ...input }: FieldProps) {
+function Field({ label, ref, end, ...input }: FieldProps) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput
-        ref={ref}
-        style={styles.input}
-        placeholderTextColor={color.textFaint}
-        keyboardAppearance="dark"
-        autoCapitalize="none"
-        autoCorrect={false}
-        accessibilityLabel={label.toLowerCase()}
-        {...input}
-      />
+      <View>
+        <TextInput
+          ref={ref}
+          style={[styles.input, end !== undefined && styles.inputWithEnd]}
+          placeholderTextColor={color.textFaint}
+          keyboardAppearance="dark"
+          autoCapitalize="none"
+          autoCorrect={false}
+          accessibilityLabel={label.toLowerCase()}
+          {...input}
+        />
+        {end}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * An eye, drawn (the app has no icons): a lid with its two corners and the
+ * pupil; crossed while the password is shown, when a touch hides it again.
+ * Hidden from the screen reader: the button around it says what it does.
+ */
+function EyeGlyph({ crossed }: { crossed: boolean }) {
+  return (
+    <View
+      style={styles.eye}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      <View style={styles.eyeLid} />
+      <View style={styles.eyePupil} />
+      {crossed && <View style={styles.eyeGap} />}
+      {crossed && <View style={styles.eyeBar} />}
     </View>
   );
 }
@@ -288,6 +414,63 @@ const styles = StyleSheet.create({
     fontSize: fontSize.input,
     color: color.text,
     backgroundColor: color.surface,
+  },
+  // Room for the eye: the text never runs under it.
+  inputWithEnd: {
+    paddingRight: MIN_TAP_SIZE,
+  },
+  eyeButton: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: MIN_TAP_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  eyePressed: {
+    opacity: 0.6,
+  },
+  eye: {
+    width: EYE_SIDE,
+    height: EYE_SIDE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  // A square on its corner, two corners round and two sharp, pressed flat.
+  eyeLid: {
+    position: "absolute",
+    width: EYE_LID,
+    height: EYE_LID,
+    borderWidth: EYE_STROKE,
+    borderColor: color.textMuted,
+    borderTopLeftRadius: EYE_LID,
+    borderBottomRightRadius: EYE_LID,
+    borderTopRightRadius: EYE_STROKE,
+    borderBottomLeftRadius: EYE_STROKE,
+    transform: [{ scaleY: 0.7 }, { rotate: "45deg" }],
+  },
+  eyePupil: {
+    width: EYE_PUPIL,
+    height: EYE_PUPIL,
+    borderRadius: EYE_PUPIL / 2,
+    backgroundColor: color.textMuted,
+  },
+  // The field's colour under the bar, so the bar reads over the lid.
+  eyeGap: {
+    position: "absolute",
+    width: EYE_SIDE,
+    height: EYE_STROKE * 2,
+    backgroundColor: color.surface,
+    transform: [{ rotate: "-45deg" }],
+  },
+  eyeBar: {
+    position: "absolute",
+    width: EYE_SIDE,
+    height: EYE_STROKE,
+    borderRadius: EYE_STROKE / 2,
+    backgroundColor: color.textMuted,
+    transform: [{ rotate: "-45deg" }],
   },
   check: {
     minHeight: MIN_TAP_SIZE,

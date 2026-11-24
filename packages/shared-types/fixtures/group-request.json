@@ -1,0 +1,8 @@
+{
+  "name": "Dolomites Saturday Hikers",
+  "description": "Easy and medium hikes around Trento, most Saturdays.\nAll paces welcome.",
+  "sports": ["hiking", "walking"],
+  "city": "Trento",
+  "area": [46.067, 11.1215],
+  "access": "request"
+}

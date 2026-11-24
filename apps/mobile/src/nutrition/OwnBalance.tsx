@@ -19,12 +19,14 @@ import type { BalanceKind } from "./dayBalance";
 import { intakeOf } from "./intake";
 import { addDays, type LocalDay, localDayOf, weekdayOf, weekOf } from "./localDay";
 import { NUTRITION_ON } from "./nutritionOn";
+import { NutritionWindow } from "./NutritionWindow";
 import { weekdayName } from "./PlanView";
 import { useDaysEnergy } from "./useDayEnergy";
 import { useNutrition } from "./useNutrition";
 import { todayLeftOut, type WeekRow, weekRows, weekTotal } from "./weekBalance";
 
 export const OWN_BALANCE_TEST_ID = "own-balance";
+export const NUTRITION_ENTRY_TEST_ID = "nutrition-profile-entry";
 
 /** «16 Nov»: a day with its month, as the profile writes a day. */
 function dayAndMonth(day: LocalDay): string {
@@ -60,25 +62,59 @@ type Props = {
  * and the activities on this phone at every look: nothing of it goes to the
  * API, so nobody else can see it, and the card says so.
  *
- * Not there while «Nutrition» is off, and not before its notice was read:
- * the profile of who does not count calories stays as it was. Nothing is
- * read from the phone in the first case.
+ * Not there while «Nutrition» is off: nothing is read from the phone then.
+ * Before its notice was read the profile has only a row «Nutrition» that
+ * opens the page (part D2, the user's request of 2026-11-24), and no
+ * number; after it, the card ends with «Open Nutrition». Both open the same
+ * page as the tile of the sport panel.
  */
 export function OwnBalance({ now }: Props) {
-  return NUTRITION_ON ? <Card now={now} /> : null;
+  return NUTRITION_ON ? <OnProfile now={now} /> : null;
 }
 
-function Card({ now }: Props) {
+function OnProfile({ now }: Props) {
+  const { settings } = useNutrition();
+  // Outside the two: the page stays open when its notice is read in it and
+  // the row becomes the card.
+  const [open, setOpen] = useState(false);
+  const show = () => setOpen(true);
+  return (
+    <>
+      {settings.noticeSeen ? <Card now={now} onOpen={show} /> : <Entry onOpen={show} />}
+      <NutritionWindow open={open} onClose={() => setOpen(false)} />
+    </>
+  );
+}
+
+/** The way in for who has not opened «Nutrition» yet. */
+function Entry({ onOpen }: { onOpen: () => void }) {
+  return (
+    <Tap
+      style={[styles.box, styles.entry]}
+      onPress={onOpen}
+      accessibilityRole="button"
+      accessibilityLabel={`${t("Nutrition")}, ${t("Write what you eat and see your calorie balance.")}`}
+      testID={NUTRITION_ENTRY_TEST_ID}
+    >
+      <Text style={styles.entryEmoji}>🥗</Text>
+      <View style={styles.entryText}>
+        <Text style={styles.title}>{t("Nutrition")}</Text>
+        <Text style={styles.note}>
+          {t("Write what you eat and see your calorie balance.")}
+        </Text>
+      </View>
+      <Text style={styles.chevron}>›</Text>
+    </Tap>
+  );
+}
+
+function Card({ now, onOpen }: Props & { onOpen: () => void }) {
   const nutrition = useNutrition();
   const at = now ?? new Date();
   const today = localDayOf(at);
   const [inWeek, setInWeek] = useState<LocalDay>(today);
   const days = weekOf(inWeek);
-  // Nothing is asked of the list before the notice of «Nutrition» was read.
-  const energies = useDaysEnergy(nutrition.settings.noticeSeen ? days : [], at);
-  if (!nutrition.settings.noticeSeen) {
-    return null;
-  }
+  const energies = useDaysEnergy(days, at);
   const rows = weekRows(
     energies,
     (day) => intakeOf(nutrition.mealsOn(day))?.kcal ?? null,
@@ -166,6 +202,14 @@ function Card({ now }: Props) {
       <Text style={styles.note}>
         {t("Estimates only. MuW does not provide diets or medical advice.")}
       </Text>
+      <Tap
+        style={styles.open}
+        onPress={onOpen}
+        accessibilityRole="button"
+        testID="balance-open"
+      >
+        <Text style={styles.link}>{t("Open Nutrition")}</Text>
+      </Tap>
     </View>
   );
 }
@@ -288,5 +332,33 @@ const styles = StyleSheet.create({
     textAlign: "right",
     color: color.textMuted,
     fontSize: fontSize.small,
+  },
+  entry: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    minHeight: MIN_TAP_SIZE,
+  },
+  entryEmoji: {
+    fontSize: fontSize.heading,
+  },
+  entryText: {
+    flex: 1,
+    gap: space.xs,
+  },
+  chevron: {
+    color: color.textMuted,
+    fontSize: fontSize.heading,
+  },
+  open: {
+    alignSelf: "flex-start",
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+  },
+  link: {
+    color: color.text,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.semibold,
+    textDecorationLine: "underline",
   },
 });

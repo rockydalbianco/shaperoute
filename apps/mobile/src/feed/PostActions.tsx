@@ -46,6 +46,8 @@ export function postOfDrawing({ drawing }: Pick<ShownPost, "drawing">): PostRun 
     // A swim in a pool reads its lengths by it (TASK-400 part C).
     drawingId: drawing.id,
     title: drawing.title,
+    // Its day, under the title on the poster (TASK-450).
+    startedAt: drawing.started_at,
     track: drawing.track_preview,
     distanceM: drawing.distance_m,
     durationMs: drawing.duration_s * 1000,

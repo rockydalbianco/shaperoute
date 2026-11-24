@@ -1,8 +1,7 @@
 # TASK-505 — L'animazione iniziale e i file del video: le due scelte dell'utente
 
-**Stato**: Proposto · parte 0 (questa PR, soli documenti), scelte
-dell'utente fatte il 2026-11-23; prossima la parte A, quando il
-Coordinatore dà il via sulla lista dei file
+**Stato**: Done (2026-11-23) — parte 0 (#1526) e parte A (#1527) in
+`main`; restano l'OTA e la prova sul telefono, vedi «Cosa resta»
 **Fase**: 5 · **Branch**: `docs/TASK-505-intro-video-assets` (parte 0), poi
 `feat/TASK-505-a-short-intro`
 **ADR**: ADR-0405 · numeri dal Coordinatore (fork 3), 2026-11-23
@@ -53,8 +52,9 @@ le ha fatte decidere all'utente prima di scrivere codice.
 
 ## Parti
 
-- **0 — Domande e documenti** (questa PR). Fatta.
-- **A — L'animazione corta** (solo app, solo JavaScript). File:
+- **0 — Domande e documenti** (#1526). Fatta.
+- **A — L'animazione corta** (solo app, solo JavaScript; #1527, in `main`
+  il 2026-11-23, `9eb84fd4`). Fatta. File:
   - `apps/mobile/src/intro/LaunchIntro.tsx` e `LaunchIntro.test.tsx`: i
     tempi corti, quale delle due si vede, il tocco che la chiude;
   - `apps/mobile/src/intro/Root.tsx`: legge se l'intera è già stata vista
@@ -66,8 +66,8 @@ le ha fatte decidere all'utente prima di scrivere codice.
   si pubblica con un OTA. Da guardare una volta sul simulatore, al turno
   che dà il Coordinatore: con l'animazione di 1 s l'app sotto si vede
   prima, anche se non ha finito di caricarsi.
-- **Chiusura**: documenti (`ARCHITECTURE` non cambia; ADR-0405 «Attiva»),
-  una riga in `archive/COMPLETATI.md`.
+- **Chiusura**: documenti (`UI.md` «L'animazione all'avvio»; ADR-0405
+  «Attiva»), una riga in `archive/COMPLETATI.md`. Fatta.
 
 O15 non ha parti: chiusa dalla scelta 2.
 
@@ -97,3 +97,44 @@ O15 non ha parti: chiusa dalla scelta 2.
 
 - 2026-11-23, parte 0: verificati O6 e O15 su `main`, due domande
   all'utente, risposte nella tabella. O15 chiusa senza lavoro.
+- 2026-11-23, parte A (#1527, testa `6f715fab`, in `main` `9eb84fd4`):
+  `intro/introSeen.ts` ricorda in `intro-seen.json` la versione
+  dell'ultima animazione intera vista; `LaunchIntro` ha i tempi corti
+  (0 + 0,6 + 0,15 + 0,25 s) e il tocco che la chiude in 0,25 s, anche dal
+  doppio tocco di VoiceOver; `Root.tsx` sceglie quale delle due e segna
+  l'intera quando finisce o viene chiusa. Test: 7 suite e 58 test della
+  cartella `intro`, CI verde. Impronta iOS di produzione `5e1b5ce5`,
+  invariata (misurata dal Coordinatore sulla testa `6f715fab`).
+- 2026-11-23, simulatore (iPhone 18 Pro, Expo Go, Metro dal ramo): due
+  aperture a freddo in un video. La prima, senza il file: animazione
+  intera, giallo per circa 2,3 s fino a metà dissolvenza, poi il file
+  contiene `{"version":"1.1.0"}`. La seconda: animazione corta, circa
+  0,9 s fino a metà dissolvenza, e la prima pagina sotto è già completa.
+  Fotogrammi e video sul Mac, `out/TASK-505/` del checkout principale.
+
+## Non visto nel simulatore
+
+1. **Il tocco che la chiude**: provato solo nei test (jest); nel
+   simulatore non c'era modo di toccare.
+2. **La mappa dopo 1 s**: l'app nel simulatore era su uno sport «solo
+   registra» («Record your day»), la cui prima pagina non ha mappa. La
+   mappa sotto è la stessa di sempre: cambia solo quando l'animazione
+   sfuma (Coordinatore, 2026-11-23: non blocca).
+3. **Uno schermo fermo per circa un secondo** durante il disegno del
+   cuore intero, nella prima ripresa, col carico del Mac sopra 100; poi la
+   linea è ripartita dal punto dove il suo orologio l'aveva. Nella seconda
+   apertura, a carico più basso, no. Il codice dei tempi dell'intera è
+   quello di `main`: attribuito al carico, **non confrontato con `main`**.
+   Passato a TASK-500 come nota «da confrontare con `main` sotto carico».
+
+## Cosa resta
+
+- **OTA**: la parte A esce col prossimo OTA di produzione, che pubblica il
+  Coordinatore col sì dell'utente. Chi ha già l'app vede l'intera una
+  volta dopo l'OTA, poi la corta.
+- **Prova sul telefono dopo l'OTA** (utente): chiudere e riaprire l'app,
+  la seconda volta l'animazione dura un secondo; un tocco sul giallo la
+  chiude subito; guardare com'è la mappa di «Run» quando il giallo sfuma.
+- **TASK-500** misura l'avvio con l'animazione corta: dalla seconda
+  apertura quello che l'app fa in anticipo (`markFirstPage`) parte dopo
+  1,0 s invece di 2,7.

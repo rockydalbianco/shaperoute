@@ -337,7 +337,11 @@ export function TabShell({ pages, page, onPage, action }: Props) {
   }
 
   return (
-    <View style={[StyleSheet.absoluteFill, styles.shell]}>
+    // Never flattened: the header stands over the pages by a `zIndex`, which
+    // sorts inside the nearest view that is kept. Flattened, that is a view
+    // above the shell, and the header came out over the pages opened over
+    // the app, a conversation's own title row among them (TASK-469).
+    <View style={[StyleSheet.absoluteFill, styles.shell]} collapsable={false}>
       {/* The maps under the drawings of every page (TASK-480): taken here,
           before the pages and so before a page's own shooter. A page a tab
           away is not laid out, and a map page inside it draws nothing. */}

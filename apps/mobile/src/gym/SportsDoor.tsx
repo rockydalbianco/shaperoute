@@ -1,7 +1,12 @@
-import type { GymPlanGoal, GymPlanSession } from "@shaperoute/shared-types";
+import type {
+  GymPlanGoal,
+  GymPlanSession,
+  RunActivity,
+} from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { t, tLater } from "../i18n";
+import { profileOf } from "../sports";
 import {
   color,
   font,
@@ -18,10 +23,9 @@ import { isRunDay, proposedDays, proposedRunDays } from "./proposal";
 
 /**
  * «Cosa vuoi allenare?» (TASK-461 A2, ADR-0371): the door of «New plan»,
- * the user's mockup E0 of 2026-11-11 and choice «Almeno due, sempre»: a
- * plan mixes at least two sports, so two are chosen before going on. Gym,
- * bodyweight and running are here; a distance and the mountain come next
- * («Presto»).
+ * the user's mockup E0 of 2026-11-11. One sport is enough since TASK-506 B
+ * (the user's choice of 2026-11-23, in place of «Almeno due, sempre»): a
+ * plan of the gym alone, the gym chosen when the door opens.
  */
 
 /** The sports a plan of the guide mixes. */
@@ -36,11 +40,12 @@ export const PLAN_SPORTS = [
 ] as const;
 export type PlanSport = (typeof PLAN_SPORTS)[number];
 
-/** A plan mixes at least this many. */
-export const MIN_PLAN_SPORTS = 2;
+/** A plan has at least this many (two until TASK-506 B). */
+export const MIN_PLAN_SPORTS = 1;
 
-/** The sports chosen when the door opens, as the mockup E0. */
-export const DOOR_CHOSEN: readonly PlanSport[] = ["body", "run"];
+/** The sports chosen when the door opens: the gym, where «New plan» is
+ * (TASK-506 B; bodyweight and running before, as the mockup E0). */
+export const DOOR_CHOSEN: readonly PlanSport[] = ["gym"];
 
 /** How many days a week each sport has. */
 export type SportCounts = Readonly<Record<PlanSport, number>>;
@@ -175,16 +180,25 @@ const OPTIONS: readonly { sport: PlanSport; title: string; line: string }[] = [
   },
 ];
 
-/** The mark of each sport of the door, in its square. */
-export const SPORT_BADGES: Readonly<Record<PlanSport, string>> = {
-  gym: "GYM",
-  body: "BODY",
-  run: "RUN",
-  walk: "WALK",
-  bike: "BIKE",
-  swim: "SWIM",
-  mountain: "▲",
+/** The sport profile whose mark each sport of a plan shows: the same the
+ * sports' menu shows. Bodyweight has no sport of its own: the door draws
+ * its figure, and a day of it has its letter, never this mark. */
+const MARK_OF: Readonly<Record<PlanSport, RunActivity>> = {
+  gym: "gym",
+  body: "gym",
+  run: "running",
+  walk: "walking",
+  bike: "cycling",
+  swim: "swimming",
+  mountain: "hiking",
 };
+
+/** The mark of each sport of the door, in its square, and of a day of it in
+ * the guide (TASK-506 D, in place of «RUN», «BIKE»… in English): taken
+ * from the sport profiles, as the sports' menu, so it changes with them. */
+export const SPORT_BADGES: Readonly<Record<PlanSport, string>> = Object.fromEntries(
+  PLAN_SPORTS.map((sport) => [sport, profileOf(MARK_OF[sport]).emoji]),
+) as Record<PlanSport, string>;
 
 const ICON = 44;
 
@@ -202,22 +216,20 @@ export function SportsDoor({
           {t("What do you want to train?")}
         </Text>
         <Text style={styles.lead}>
-          {t(
-            "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.",
-          )}
+          {t("Choose one or more. Then we guide you in 5 steps.")}
         </Text>
       </View>
       {OPTIONS.map((one) => {
         const on = chosen.includes(one.sport);
-        // The sports with a distance in the run's blue (TASK-461 B, C).
-        const run = ENDURANCE_SPORTS.includes(one.sport);
+        // One colour for every sport chosen, the yellow (TASK-506 D: the
+        // sports with a distance were in the run's blue).
         const strength = one.sport === "gym" || one.sport === "body";
         return (
           <Pressable
             key={one.sport}
             style={({ pressed }) => [
               styles.option,
-              on && (run ? styles.optionRun : styles.optionOn),
+              on && styles.optionOn,
               pressed && styles.pressed,
             ]}
             onPress={() => onToggle(one.sport)}
@@ -227,7 +239,7 @@ export function SportsDoor({
           >
             <View style={styles.icon}>
               {!strength ? (
-                <Text style={styles.runBadge}>{SPORT_BADGES[one.sport]}</Text>
+                <Text style={styles.mark}>{SPORT_BADGES[one.sport]}</Text>
               ) : (
                 <ExerciseFigure
                   move={one.sport === "gym" ? MOVES.bench : MOVES.push_up}
@@ -240,7 +252,7 @@ export function SportsDoor({
               <Text style={styles.optionTitle}>{t(one.title)}</Text>
               <Text style={styles.optionLine}>{t(one.line)}</Text>
             </View>
-            <View style={[styles.box, on && (run ? styles.boxRun : styles.boxOn)]}>
+            <View style={[styles.box, on && styles.boxOn]}>
               {on && <Text style={styles.boxText}>✓</Text>}
             </View>
           </Pressable>
@@ -283,10 +295,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: color.accent,
   },
-  optionRun: {
-    borderWidth: 2,
-    borderColor: color.runDay,
-  },
   pressed: {
     opacity: 0.7,
   },
@@ -298,10 +306,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  runBadge: {
-    color: color.runDay,
-    fontSize: fontSize.small,
-    fontWeight: fontWeight.bold,
+  mark: {
+    color: color.text,
+    fontSize: fontSize.heading,
   },
   optionText: {
     flex: 1,
@@ -328,10 +335,6 @@ const styles = StyleSheet.create({
   boxOn: {
     borderColor: color.accent,
     backgroundColor: color.accent,
-  },
-  boxRun: {
-    borderColor: color.runDay,
-    backgroundColor: color.runDay,
   },
   boxText: {
     color: color.onAccent,

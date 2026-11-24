@@ -126,3 +126,14 @@ export function stretchRequest(done: StretchDone): StretchSessionRequest | null 
     exercises: done.exercises,
   };
 }
+
+/** Takes every session of `owner` out of the file: they are not of the
+ * account signed in (account/phoneOwners.ts, TASK-507), or the account is
+ * deleted. Those of the other accounts stay. */
+export function forgetStretchOf(owner: number): void {
+  const list = kept.load();
+  const next = list.filter((item) => item.owner !== owner);
+  if (next.length !== list.length) {
+    kept.save(next);
+  }
+}

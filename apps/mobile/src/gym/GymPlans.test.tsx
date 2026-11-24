@@ -20,6 +20,7 @@ import { GymPlansSheet } from "./GymPlans";
 import { forgetPlans, mergePlans, planForToday, plansOf, workoutPlan } from "./plans";
 import { isoDate } from "./program";
 import { forgetPaceAsked } from "./runPace";
+import { SPORT_BADGES } from "./SportsDoor";
 import { loadSport } from "../settings/sport";
 import { useDrawDistance } from "../units/useDrawDistance";
 import { Alert, Text } from "react-native";
@@ -129,16 +130,19 @@ test("in Draw: «Today» with today's plan; «Start without the plan» starts a 
   expect(started?.current).toBeNull();
 });
 
-/** The door of «New plan» (TASK-461 A2): bodyweight and running chosen
- * at first; the gym and running instead. */
+/** The door of «New plan» (TASK-461 A2): the gym chosen at first
+ * (TASK-506 B); running too. */
 async function gymAndRun() {
   expect(screen.getByText("NEW PLAN")).toBeOnTheScreen();
-  expect(screen.getByTestId("door-body")).toBeChecked();
-  expect(screen.getByTestId("door-run")).toBeChecked();
-  await fireEvent.press(screen.getByTestId("door-body"));
-  // One sport is not a plan: «Almeno due, sempre».
+  expect(screen.getByTestId("door-gym")).toBeChecked();
+  expect(screen.getByTestId("door-run")).not.toBeChecked();
+  // None is not a plan; one is.
+  await fireEvent.press(screen.getByTestId("door-gym"));
   expect(screen.getByTestId("wizard-next")).toBeDisabled();
   await fireEvent.press(screen.getByTestId("door-gym"));
+  expect(screen.getByText("Next · 1 chosen")).toBeOnTheScreen();
+  expect(screen.getByTestId("wizard-next")).toBeEnabled();
+  await fireEvent.press(screen.getByTestId("door-run"));
   expect(screen.getByText("Next · 2 chosen")).toBeOnTheScreen();
   await fireEvent.press(screen.getByTestId("wizard-next"));
   // Running first with a distance: «Just keep fit» as before (TASK-461 B).
@@ -168,7 +172,7 @@ test("«New plan» is the guide: goal, days, the plan ready, the weeks, the name
   await fireEvent.press(screen.getByTestId("wizard-count-gym-2"));
   await fireEvent.press(screen.getByTestId("wizard-runs-1"));
   expect(screen.getByTestId("wizard-day-4")).toBeChecked();
-  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent("RUN");
+  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent(SPORT_BADGES.run);
   expect(screen.getByText("Full body A")).toBeOnTheScreen();
   expect(screen.getByText("Full body B")).toBeOnTheScreen();
   await fireEvent.press(screen.getByTestId("wizard-next"));
@@ -224,13 +228,43 @@ test("«New plan» is the guide: goal, days, the plan ready, the weeks, the name
   expect(plansOf(OWNER)[0].state).toBe("sent");
 });
 
+test("a plan of the gym alone: one sport is enough (TASK-506 B)", async () => {
+  const fetchFn = api([]);
+  await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />);
+  await fireEvent.press(screen.getByTestId("gym-guide-new-plan"));
+  await act(async () => {});
+  expect(screen.getByTestId("door-gym")).toBeChecked();
+  expect(screen.getByText("Next · 1 chosen")).toBeOnTheScreen();
+  // «Continue» to the end makes a good plan, as with two sports.
+  for (
+    let step = 0;
+    step < 10 && screen.queryByTestId("gym-plan-program") === null;
+    step++
+  ) {
+    await fireEvent.press(screen.getByTestId("wizard-next"));
+    await act(async () => {});
+  }
+  const [kept] = plansOf(OWNER);
+  expect(kept.days).toEqual([1, 3, 5]);
+  expect(
+    kept.program?.sessions.every(
+      (one) => one.run === undefined && one.outing === undefined,
+    ),
+  ).toBe(true);
+  expect(kept.program?.sessions.every((one) => one.items.length > 0)).toBe(true);
+  expect(kept.program).toMatchObject({ goal: "muscle", mode: "load", weeks: 4 });
+});
+
 test("a bodyweight plan with running: no kg, A and B, more reps and seconds (TASK-461 A2)", async () => {
   const fetchFn = api([]);
   await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />);
   await fireEvent.press(screen.getByTestId("gym-guide-new-plan"));
   await act(async () => {});
-  // The door as it opens: bodyweight and running, running to keep fit.
+  // The door: bodyweight and running instead of the gym, running to keep fit.
   expect(screen.getByTestId("door-mountain")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("door-gym"));
+  await fireEvent.press(screen.getByTestId("door-body"));
+  await fireEvent.press(screen.getByTestId("door-run"));
   await fireEvent.press(screen.getByTestId("wizard-next"));
   await fireEvent.press(screen.getByTestId("wizard-next"));
 
@@ -251,7 +285,7 @@ test("a bodyweight plan with running: no kg, A and B, more reps and seconds (TAS
   expect(screen.getByTestId("wizard-day-1")).toHaveTextContent("A");
   expect(screen.getByTestId("wizard-day-3")).toHaveTextContent("B");
   expect(screen.getByTestId("wizard-day-5")).toHaveTextContent("A");
-  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent("RUN");
+  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent(SPORT_BADGES.run);
   await fireEvent.press(screen.getByTestId("wizard-next"));
   await fireEvent.press(screen.getByTestId("wizard-next"));
   await fireEvent.press(screen.getByTestId("wizard-next"));
@@ -297,8 +331,9 @@ test("toward 60 km by bike with bodyweight: the target, today, when, the ladder 
   await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />);
   await fireEvent.press(screen.getByTestId("gym-guide-new-plan"));
   await act(async () => {});
-  // The door: bodyweight and the bike instead of running.
-  await fireEvent.press(screen.getByTestId("door-run"));
+  // The door: bodyweight and the bike instead of the gym.
+  await fireEvent.press(screen.getByTestId("door-gym"));
+  await fireEvent.press(screen.getByTestId("door-body"));
   await fireEvent.press(screen.getByTestId("door-bike"));
   await fireEvent.press(screen.getByTestId("wizard-next"));
 
@@ -319,8 +354,8 @@ test("toward 60 km by bike with bodyweight: the target, today, when, the ladder 
   // bike Tue and Sat.
   await fireEvent.press(screen.getByTestId("wizard-next"));
   expect(screen.getByTestId("wizard-count-bike-2")).toBeSelected();
-  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent("BIKE");
-  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent("BIKE");
+  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent(SPORT_BADGES.bike);
+  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent(SPORT_BADGES.bike);
   await fireEvent.press(screen.getByTestId("wizard-next"));
 
   // 4. When I'm ready: the plan counts its weeks.
@@ -535,13 +570,13 @@ test("run days in the guide: «And running?», the week, the run's editor (TASK-
 
   // Two runs at first, on Tuesday and Saturday.
   expect(screen.getByTestId("wizard-runs-2")).toBeSelected();
-  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent("RUN");
-  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent("RUN");
+  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent(SPORT_BADGES.run);
+  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent(SPORT_BADGES.run);
   expect(screen.getByText("Easy run · 5 km")).toBeOnTheScreen();
   expect(screen.getByText("Long run · 8 km")).toBeOnTheScreen();
   // Saturday touched: rest; Sunday touched: the gym.
   await fireEvent.press(screen.getByTestId("wizard-day-6"));
-  expect(screen.getByTestId("wizard-day-6")).not.toHaveTextContent("RUN");
+  expect(screen.getByTestId("wizard-day-6")).not.toHaveTextContent(SPORT_BADGES.run);
   await fireEvent.press(screen.getByTestId("wizard-day-7"));
   expect(screen.getByTestId("wizard-day-7")).toBeChecked();
   await fireEvent.press(screen.getByTestId("wizard-day-7"));
@@ -587,7 +622,9 @@ test("run days in the guide: «And running?», the week, the run's editor (TASK-
     run: { kind: "easy", distance_m: 7500 },
   });
   expect(kept.program?.runner).toEqual({ pace_10k_s: 325, long_m: 14000 });
-  expect(screen.getByTestId("gym-plan-program")).toHaveTextContent(/RUN/);
+  expect(screen.getByTestId("gym-plan-program")).toHaveTextContent(
+    new RegExp(SPORT_BADGES.run),
+  );
 });
 
 test("in Draw on a run day: the run of the week, and «Go to the run» turns to Run", async () => {

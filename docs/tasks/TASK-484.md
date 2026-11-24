@@ -1,9 +1,9 @@
 # TASK-484 — Allenamento in palestra scritto a mano, nel Feed
 
-**Stato**: In lavorazione · parte 0 fatta (#1366, 2026-11-21); parte A
-in `main` (#1371) e sul server (passo 17, 2026-11-22); parte B: i file
-nuovi sul branch `feat/TASK-484-b-gym-by-hand-app`, l'aggancio aspetta
-TASK-481 A
+**Stato**: Done · 2026-11-24 · parte 0 #1366; A #1371 e sul server
+(passo 17, 2026-11-22); B #1489 e privacy #1505 in `main` (2026-11-23),
+in produzione con l'OTA 25; provata dall'utente sul telefono («Sì
+funziona»)
 **Fase**: 5 · **Branch**: `docs/TASK-484-gym-by-hand` (parte 0)
 **Dipende da**: TASK-481 A (il foglio «Add to Feed» con la lista e
 `addToFeedEntries.ts`), TASK-385 (la palestra, ADR-0327), TASK-411 C (le
@@ -270,6 +270,15 @@ apps/mobile/src/about/documents.test.ts           (+ AboutPage.test.tsx, site/te
 site/privacy/**/index.html                        (rigenerate con make_privacy.mjs)
 ```
 
+**La privacy (2026-11-23, #1505).** Le quattro traduzioni delle tre frasi
+(la riga nuova dopo quella del file, i traguardi «contati dagli
+allenamenti che registri con MuW», l'eccezione del «+» nella privacy e due
+volte nell'aiuto): approvate dall'utente il 2026-11-23 («Sì, approvo»).
+La data della privacy resta il 23 novembre 2026, già messa lo stesso
+giorno da TASK-489 F (#1496). Il test del «+» di TASK-481 A in
+`documents.test.ts` chiede ora anche la frase a mano; un test nuovo
+controlla la riga e i traguardi nelle cinque lingue.
+
 ## Criteri di accettazione
 
 - [x] **0**: scelte dell'utente scritte qui e in ADR-0395; liste dei file approvate dal
@@ -284,10 +293,10 @@ site/privacy/**/index.html                        (rigenerate con make_privacy.m
 - [x] **B**: la voce compare nel foglio con un account; il flusso salva e
       il post parte da «Everyone» con «Imported»; «Save» spento senza
       esercizi; «Pick a time before now.» (test).
-- [ ] **B**: schermate e quattro traduzioni approvate dall'utente
-      (fatto: 2026-11-22 e 2026-11-23, anche il foglio del «+»);
-      privacy del punto 4 nelle cinque lingue e sul sito (a turno).
-- [ ] **B**: `tsc` e jest dei file toccati verdi, CI verde.
+- [x] **B**: schermate e quattro traduzioni approvate dall'utente
+      (2026-11-22 e 2026-11-23, anche il foglio del «+»);
+      privacy del punto 4 nelle cinque lingue e sul sito (#1505).
+- [x] **B**: `tsc` e jest dei file toccati verdi, CI verde.
 
 ## Fuori scope
 
@@ -299,4 +308,9 @@ site/privacy/**/index.html                        (rigenerate con make_privacy.m
 
 ## Esito
 
-*(si compila a fine task)*
+Done il 2026-11-24. Dal «+» del Feed, «Gym workout» scrive a mano un
+allenamento già fatto (a mano o «Da una scheda»), che si salva con
+`source: "manual"` e va nel Feed come «Imported», da «Everyone»; fuori da
+livelli, classifiche, badge e concorso. Parte 0 #1366, A #1371 (server,
+passo 17), B #1489, privacy #1505; OTA 25 di produzione; l'utente l'ha
+provato sul telefono: «Sì funziona».

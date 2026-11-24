@@ -584,7 +584,7 @@ lasciando le righe d'indice.
 - ADR-0397 — «Alimentazione»: un contacalorie senza diete, cibi da USDA più quelli dell'utente, piano a settimana e diario solo sul telefono, bilancio = assunte − (riposo + attività) senza doppi conti, tabella solo per il proprietario, spenta fino alla build nativa che legge da Salute · 2026-11-22 · Proposta
 - ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share» · 2026-11-22 · Attiva
 - ADR-0375, precisazione R6e — Il post di una gara a due colori: `flight` anche in `GET /drawings/{id}`, solo se la linea del post ha i punti della corsa; lo schema openapi delle due risposte torna coi suoi campi · 2026-11-23 · Attiva
-- ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Proposta
+- ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Attiva
 - ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima · 2026-11-23 · Attiva
 - ADR-0390, precisazione A — La lista del «+» nell'app: «Record now» come l'avvio senza percorso di «Draw», «Photos only» dritto al modulo di C2, «From a file» con «Files» aperto subito (`fileAtOnce`), il titolo della voce aperta · 2026-11-23 · Attiva
 - ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Attiva
@@ -6841,7 +6841,8 @@ conta solo per quanto Salute ha misurato dal telefono.
 
 ## ADR-0398 — La modalità Allenamento: scelta «Gym», MuW diventa un'app per allenarsi come con lo sci
 
-**Stato**: Proposta · 2026-11-23 · TASK-490 (parte 0, soli documenti).
+**Stato**: Attiva · 2026-11-24 · TASK-490, parti A–E in `main` (#1424, #1433,
+#1510, #1553, #1571); escono col prossimo OTA. Prima: Proposta (parte 0).
 La barra, l'ingresso solo da «Gym» e il Cibo come pagina di TASK-489 sono
 **scelte dell'utente** (2026-11-22, task file); le quattro tab finché il
 Cibo è spento sono del Coordinatore, da far vedere all'utente nelle

@@ -1,3 +1,4 @@
+import { NUTRITION_ON } from "../nutrition/nutritionOn";
 import { APP_PAGES, SKI_PAGES } from "../skimode/skiMode";
 import {
   barPagesOf,
@@ -7,6 +8,7 @@ import {
   pagesOfMode,
   shellPagesOf,
   TRAINING_PAGES,
+  trainingPagesOf,
 } from "./trainingMode";
 
 describe("the training mode (TASK-490)", () => {
@@ -25,12 +27,13 @@ describe("the training mode (TASK-490)", () => {
   });
 
   it("gives Today, Workouts, Feed and Profile with «Gym»", () => {
-    expect(barPagesOf("gym")).toEqual([
+    expect(trainingPagesOf(false)).toEqual([
       "choose",
       "trainingWorkouts",
       "feed",
       "profile",
     ]);
+    expect(barPagesOf("gym")).toEqual(trainingPagesOf(NUTRITION_ON));
     expect(TRAINING_PAGES).not.toContain("messages");
     expect(TRAINING_PAGES).not.toContain("explore");
   });
@@ -49,7 +52,20 @@ describe("the training mode (TASK-490)", () => {
     expect(pageAfterModeChange("trainingWorkouts", "training", "ski")).toBe("choose");
   });
 
+  it("puts «Food» after «Workouts» only while «Nutrition» is on (part D)", () => {
+    expect(trainingPagesOf(true)).toEqual([
+      "choose",
+      "trainingWorkouts",
+      "trainingFood",
+      "feed",
+      "profile",
+    ]);
+    expect(trainingPagesOf(false)).not.toContain("trainingFood");
+    expect(TRAINING_PAGES).toEqual(trainingPagesOf(NUTRITION_ON));
+  });
+
   it("sends the pages the app has no more to «Draw» when it goes off", () => {
+    expect(pageAfterModeChange("trainingFood", "training", "app")).toBe("choose");
     expect(pageAfterModeChange("trainingWorkouts", "training", "app")).toBe("choose");
     expect(pageAfterModeChange("skiResorts", "ski", "app")).toBe("choose");
     expect(pageAfterModeChange("feed", "training", "app")).toBeNull();
@@ -89,4 +105,23 @@ test("the pages of each mode's bar, whatever the sport", () => {
   expect(pagesOfMode("training")).toBe(TRAINING_PAGES);
   expect(pagesOfMode("ski")).toBe(SKI_PAGES);
   expect(pagesOfMode("app")).toBe(APP_PAGES);
+});
+
+test("with «Nutrition» on, the bar of «Gym» has «Food» drawn by the mode", () => {
+  jest.isolateModules(() => {
+    jest.doMock("../nutrition/nutritionOn", () => ({ NUTRITION_ON: true }));
+    const mode = jest.requireActual<typeof import("./trainingMode")>("./trainingMode");
+    const app = ["Feed", "Draw", "Messages", "Explore", "Profile"];
+    expect(mode.barPagesOf("gym")).toContain("trainingFood");
+    expect(
+      mode.shellPagesOf("gym", app, {
+        ski: { choose: "Today ski", skiDays: "Days", skiResorts: "Resorts" },
+        training: {
+          choose: "Today gym",
+          trainingWorkouts: "Workouts",
+          trainingFood: "Food",
+        },
+      }),
+    ).toEqual(["Today gym", "Workouts", "Food", "Feed", "Profile"]);
+  });
 });

@@ -1,8 +1,10 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import { color, font, MIN_TAP_SIZE, space } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { NutritionSheet } from "./AddFoodSheet";
+import { OPEN_FOOD_FACTS_SITE } from "./openFoodFacts";
 
 type Props = {
   visible: boolean;
@@ -15,7 +17,9 @@ type Props = {
  * foods' numbers are USDA's (FoodData Central, SR Legacy, April 2018: the
  * table of foodTable.ts) or the user's own; the energy used is an estimate
  * from published equations, or Apple Health's when it has the day. It says
- * again that MuW gives no diets, and that the page never leaves the phone.
+ * again that MuW gives no diets, and that what is written here stays on the
+ * phone: only a barcode the user looks up goes out, to Open Food Facts
+ * (part G; the sentence changed with the user's yes on 2026-11-23).
  */
 export function HowWeCalculate({ visible, onClose }: Props) {
   return (
@@ -43,6 +47,20 @@ export function HowWeCalculate({ visible, onClose }: Props) {
             "Calories of the foods in the list come from USDA FoodData Central (SR Legacy, April 2018), a public-domain food composition table. Your own foods use the numbers you wrote.",
           )}
         </Text>
+        {/* Their licence asks to name it and them, with a link (part G). */}
+        <Text style={styles.text}>
+          {t(
+            "Products found by barcode contain data from Open Food Facts, available under the Open Database License. They are kept apart from the USDA list.",
+          )}
+        </Text>
+        <Tap
+          style={styles.link}
+          onPress={() => void Linking.openURL(OPEN_FOOD_FACTS_SITE).catch(() => {})}
+          accessibilityRole="link"
+          testID="how-open-food-facts"
+        >
+          <Text style={styles.linkText}>openfoodfacts.org</Text>
+        </Tap>
         <Text style={styles.heading} accessibilityRole="header">
           {t("Energy you use")}
         </Text>
@@ -60,7 +78,9 @@ export function HowWeCalculate({ visible, onClose }: Props) {
           )}
         </Text>
         <Text style={styles.small}>
-          {t("Only you see this page. Nothing here leaves your phone.")}
+          {t(
+            "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.",
+          )}
         </Text>
       </ScrollView>
     </NutritionSheet>
@@ -101,6 +121,16 @@ const styles = StyleSheet.create({
     ...font.body,
     color: color.textMuted,
     marginTop: space.xs,
+  },
+  link: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    alignSelf: "flex-start",
+  },
+  linkText: {
+    ...font.body,
+    color: color.text,
+    textDecorationLine: "underline",
   },
   small: {
     ...font.small,

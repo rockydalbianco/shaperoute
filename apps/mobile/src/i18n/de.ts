@@ -613,6 +613,8 @@ export const DE: Table = {
   "Long routes take longer: up to a few minutes.":
     "Lange Routen dauern länger: bis zu ein paar Minuten.",
   "Draw route": "Route zeichnen",
+  "Choose a start first": "Wähle zuerst einen Start",
+  "Choose what to draw first": "Wähle zuerst, was du zeichnest",
   Start: "Start",
   "Preparing GPX…": "GPX wird vorbereitet…",
   "Export GPX": "GPX exportieren",
@@ -1670,6 +1672,14 @@ export const DE: Table = {
   Lisbon: "Lissabon",
   Prague: "Prag",
   Berlin: "Berlin",
+  // src/explore/presets.ts: the cities to tap in «Explore» (TASK-508)
+  "New York": "New York",
+  Tokyo: "Tokio",
+  Milan: "Mailand",
+  Torino: "Turin",
+  Dubai: "Dubai",
+  Sydney: "Sydney",
+  "San Francisco": "San Francisco",
   "Getting directions…": "Wegbeschreibung wird geholt…",
   CITY: "STADT",
   "Type a city or a place": "Stadt oder Ort eingeben",
@@ -1789,6 +1799,8 @@ export const DE: Table = {
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
     "Push-Benachrichtigungen melden dir Folgeanfragen, Reaktionen, Kommentare und Markierungen sofort. E-Mail-Benachrichtigungen schicken dieselben Neuigkeiten in höchstens einer E-Mail am Tag. E-Mail, wenn ich weg bin: eine E-Mail, wenn du MuW 2 Wochen lang nicht öffnest.",
+  "Push notifications are off. Tap to turn them on.":
+    "Push-Benachrichtigungen sind aus. Tippe, um sie einzuschalten.",
   "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.":
     "Mitteilungen für MuW sind auf diesem Telefon aus. Erlaube sie in den Einstellungen, um sie einzuschalten.",
 

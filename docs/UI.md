@@ -3865,8 +3865,10 @@ cui tiene i numeri.
 - **«Compass»** (TASK-422, ADR-0350; chiesta dall'utente il 2026-11-08):
   solo la mappa, grande. Sotto restano i pulsanti della corsa («Pocket»,
   «Pause», «Music»; in pausa «Stop» da tenere e «Resume»; all'arrivo
-  «Finish») e i tre nomi; niente numeri, barra del percorso, riga del gioco
-  né battito. Sopra la mappa il banner resta (la svolta, o la partenza).
+  «Finish») e i tre nomi; sopra i pulsanti **una riga sola, piccola**:
+  quanta strada e quanto tempo («2.34 km · 12:05», nelle unità della corsa;
+  TASK-518 A, scelta dell'utente del 2026-11-24, al posto di «niente
+  numeri»); niente passo, barra del percorso, riga del gioco né battito. Sopra la mappa il banner resta (la svolta, o la partenza).
   **La mappa gira dove punta il telefono**: la direzione verso cui si è
   rivolti sta in alto (heading-up). Da fermi comanda la bussola del
   telefono; correndo la bussola finché è calibrata (media o alta), e quando

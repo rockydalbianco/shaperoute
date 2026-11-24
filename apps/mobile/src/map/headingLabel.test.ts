@@ -13,10 +13,6 @@ test("the nearest point and the whole degrees", () => {
   expect(headingLabel(-90)).toBe("W · 270°");
 });
 
-test("north up: only «N»", () => {
-  expect(headingLabel(null)).toBe("N");
-});
-
 test("in the app's language", () => {
   saveLanguageChoice("it");
   expect(headingLabel(225)).toBe("SO · 225°");

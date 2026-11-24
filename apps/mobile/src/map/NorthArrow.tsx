@@ -21,10 +21,10 @@ type Props = {
   northUp?: boolean;
   /** What a tap does with north up, when not the drawing's turn. */
   upHint?: string;
-  /** On the run's «Compass» page (TASK-518 B): where one faces, in degrees
-   * clockwise from north, written under the arrow («NE · 42°»); null with
-   * north up («N»). Elsewhere absent, and nothing is written. */
-  facing?: number | null;
+  /** On the run's «Compass» page, heading-up (TASK-518 B): where one
+   * faces, in degrees clockwise from north, written under the arrow
+   * («NE · 42°»). Absent with north up and elsewhere: nothing is written. */
+  facing?: number;
 };
 
 /**

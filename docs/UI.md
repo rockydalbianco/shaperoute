@@ -3887,7 +3887,8 @@ cui tiene i numeri.
   nord, solo su questa pagina, **la direzione scritta**: «NE · 42°», il più
   vicino degli otto punti nella lingua dell'app (le sigle della voce, «SO»,
   «O» in italiano) e i gradi interi da nord, che cambiano con la mappa; col
-  nord in alto solo «N» (TASK-518 B, scelta dell'utente del 2026-11-24).
+  nord in alto niente, la freccia dice già N (TASK-518 B, scelte
+  dell'utente del 2026-11-24, «1 e 2» e «Niente etichetta»).
 - **«Map»**: la mappa con sopra il banner (la svolta, o la partenza senza
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra

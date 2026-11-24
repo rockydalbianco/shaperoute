@@ -24,6 +24,12 @@ export type Food = {
   carbsPer100g: number | null;
   fatPer100g: number | null;
   source: FoodSource;
+  /** The barcode on its pack, for a food of the user's found or written by
+   * its code (part G); absent for every other food. */
+  barcode?: string;
+  /** Its name and numbers are the ones Open Food Facts gave for its
+   * barcode, not yet rewritten by the user: shown «from Open Food Facts». */
+  fromOpenFoodFacts?: true;
 };
 
 /** The values a field takes; outside them a food is not kept. Pure fat is
@@ -51,6 +57,21 @@ export function foodName(value: unknown): string | null {
   return name.length > 0 && name.length <= FOOD_NAME_MAX ? name : null;
 }
 
+/**
+ * A barcode as it is kept: its digits alone, the spaces and dashes of a
+ * typed one left out; null unless it is as long as the codes on a pack
+ * (EAN-8, UPC-A, EAN-13, or 14 digits on a case).
+ */
+export function barcodeOf(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const digits = value.replace(/[\s-]/g, "");
+  return /^\d+$/.test(digits) && [8, 12, 13, 14].includes(digits.length)
+    ? digits
+    : null;
+}
+
 function isSource(value: unknown): value is FoodSource {
   return value === "table" || value === "own";
 }
@@ -73,6 +94,7 @@ export function foodFrom(data: unknown): Food | null {
   ) {
     return null;
   }
+  const barcode = barcodeOf(raw.barcode);
   return {
     key: raw.key,
     name,
@@ -81,6 +103,11 @@ export function foodFrom(data: unknown): Food | null {
     carbsPer100g: within(raw.carbsPer100g, GRAMS_PER_100G),
     fatPer100g: within(raw.fatPer100g, GRAMS_PER_100G),
     source: raw.source,
+    // Only a food of the user's has a pack: the table's have none.
+    ...(raw.source === "own" && barcode !== null ? { barcode } : {}),
+    ...(raw.source === "own" && barcode !== null && raw.fromOpenFoodFacts === true
+      ? { fromOpenFoodFacts: true as const }
+      : {}),
   };
 }
 

@@ -3441,8 +3441,6 @@ export const IT: Table = {
     "A riposo: l'equazione di Mifflin-St Jeor, dai dati del corpo nel tuo profilo. Attività: equazioni ACSM e il Compendium of Physical Activities 2024. Nei giorni in cui Salute di Apple ha la tua energia attiva, si usa quel numero.",
   "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
     "I valori reali cambiano con il prodotto, la ricetta e la persona. MuW non fornisce diete né consigli medici.",
-  "Only you see this page. Nothing here leaves your phone.":
-    "Questa pagina la vedi solo tu. Niente di quello che c'è qui esce dal tuo telefono.",
   // src/nutrition (TASK-489 part C1)
   "Today the energy at rest is counted up to now.":
     "Oggi l'energia a riposo è contata fino a adesso.",
@@ -3518,4 +3516,25 @@ export const IT: Table = {
   "Write what you eat and see your calorie balance.":
     "Scrivi quello che mangi e guarda il tuo bilancio delle calorie.",
   "Open Nutrition": "Apri Alimentazione",
+  // src/nutrition (TASK-489 part G1)
+  "Type the code": "Scrivi il codice",
+  Barcode: "Codice a barre",
+  "Look up": "Cerca",
+  "Looking it up…": "Lo cerco…",
+  "Only the barcode goes to Open Food Facts, to find the product.":
+    "A Open Food Facts va solo il codice a barre, per trovare il prodotto.",
+  "from Open Food Facts": "da Open Food Facts",
+  "Check the numbers against the label: you can correct them.":
+    "Controlla i numeri sull'etichetta: puoi correggerli.",
+  "Use this food": "Usa questo cibo",
+  "This product is not on Open Food Facts.":
+    "Questo prodotto non è su Open Food Facts.",
+  "Open Food Facts has no calories for this product.":
+    "Open Food Facts non ha le calorie di questo prodotto.",
+  "The product could not be looked up. Check your connection and try again.":
+    "Non è stato possibile cercare il prodotto. Controlla la connessione e riprova.",
+  "Products found by barcode contain data from Open Food Facts, available under the Open Database License. They are kept apart from the USDA list.":
+    "I prodotti trovati col codice a barre contengono dati di Open Food Facts, disponibili con la Open Database License. Restano separati dall'elenco USDA.",
+  "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
+    "Questa pagina la vedi solo tu. Quello che scrivi qui resta sul tuo telefono; un codice a barre che cerchi va a Open Food Facts.",
 };

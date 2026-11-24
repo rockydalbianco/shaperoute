@@ -30,7 +30,6 @@ import {
   type RecommendedRoute,
   routeTitle,
 } from "./recommendedRoutes";
-import { HeartBadge } from "../intro/HeartBadge";
 import type { Place } from "../places/photon";
 import { AskForRoute } from "./AskForRoute";
 import type { ThemedIdea } from "./themedIdeas";
@@ -340,9 +339,6 @@ export function ExploreScreen({
                   })}
           </Text>
         </View>
-        {/* The sign of Sgrava, under the button of «Profile» and as wide
-            (TASK-222, ADR-0184): a picture, not a button. */}
-        <HeartBadge size={MIN_TAP_SIZE} />
       </View>
       <FlatList
         ref={scroll}

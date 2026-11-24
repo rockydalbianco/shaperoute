@@ -1,7 +1,7 @@
 # TASK-518 — «Compass»: la riga dei numeri e la direzione scritta
 
-**Stato**: In lavorazione · 2026-11-24 · parte A nel branch
-`feat/TASK-518-a-compass-line`; parte B dopo (aspetta il turno di `App.tsx`)
+**Stato**: In lavorazione · 2026-11-24 · A #1577, B #1578; schermate e
+scelte approvate dall'utente
 **Fase**: 5 · **Branch**: `feat/TASK-518-a-compass-line` (A), poi un branch
 da `main` per la B
 **Dipende da**: TASK-422 (la pagina «Compass», ADR-0350), TASK-431 (la
@@ -32,6 +32,10 @@ Sulla tela «Compass · migliorie»
    «Torna alla partenza», che era sulla tela, è stata tolta prima della
    domanda: correndo senza percorso il banner «La tua partenza, in linea
    retta» c'è già.
+3. **Le schermate** dal simulatore (una corsa simulata, A e B insieme,
+   `out/TASK-518/` del checkout principale): «Approvo».
+4. **Col nord in alto**: «Niente etichetta» — sotto la freccia del nord non
+   si scrive niente (la freccia dice già N), invece della «N» della tela.
 
 ## Parte A — Una riga sola: quanta strada e quanto tempo
 
@@ -44,12 +48,19 @@ Sulla tela «Compass · migliorie»
 - `screens/CompassLine.tsx`; in `RunDashboard.tsx` montata solo con
   «Compass» aperta.
 
-## Parte B — La direzione scritta (dopo)
+## Parte B — La direzione scritta
 
-Sotto la freccia del nord, su «Compass», l'etichetta con la direzione verso
-cui si guarda: «NE · 42°» (otto direzioni nelle lingue dell'app; col nord
-in alto solo «N»). Le sigle sono testi nuovi in quattro lingue: prima del
-merge vanno all'utente con le schermate, e il suo sì al Coordinatore.
+- Sotto la freccia del nord, solo su «Compass» con la mappa che gira dove
+  si guarda, una piccola etichetta: «NE · 42°», il più vicino degli otto
+  punti e i gradi interi da nord, che cambiano con la mappa (le stesse
+  regole: almeno 4°, non più di una volta ogni 400 ms). Col nord in alto, e
+  sulle altre mappe, niente.
+- Le sigle sono quelle della voce (`compassPoint` di
+  `navigation/runStats.ts`, già tradotte: «SO», «O» in italiano): **nessun
+  testo nuovo**.
+- `map/headingLabel.ts`; in `NorthArrow.tsx` la prop facoltativa `facing`;
+  in `App.tsx` una riga nel `compass={…}` (turno dal Coordinatore il
+  2026-11-24, dopo la 508 C).
 
 ## File toccati
 
@@ -62,7 +73,8 @@ Parte A: nuovi `apps/mobile/src/screens/CompassLine.tsx` (+
 
 Parte B: nuovi `map/headingLabel.ts` (+ test); modificati
 `map/NorthArrow.tsx` (+ `NorthArrow.test.tsx`), `App.tsx` (una riga nel
-`compass={…}`, al suo turno), `i18n/{it,de,fr,es}.ts`, `docs/UI.md`.
+`compass={…}`, al suo turno), `docs/UI.md`. Nessun file di i18n: le sigle
+c'erano già.
 
 STATUS, DECISIONS (l'aggiunta ad ADR-0350, la chiusura di TASK-431) e INDEX
 in una PR di soli documenti dopo il merge.
@@ -72,7 +84,14 @@ in una PR di soli documenti dopo il merge.
 Parte A:
 - [x] Su «Compass» la riga con distanza e tempo, anche in pausa; su «Map»
       no; le miglia (`CompassLine.test.tsx`, `RunDashboard.test.tsx`).
-- [ ] Schermata dal simulatore (una corsa simulata) all'utente.
+- [x] Schermata dal simulatore (una corsa simulata) approvata dall'utente
+      (2026-11-24, «Approvo»).
 - [ ] CI verde; merge dal Coordinatore; OTA.
 
-Parte B: i criteri quando parte.
+Parte B (#1578):
+- [x] «NE · 42°» coi gradi interi, l'italiano «SO», «O»
+      (`headingLabel.test.ts`); sotto la freccia solo con `facing`, niente
+      col nord in alto né altrove (`NorthArrow.test.tsx`).
+- [x] Schermate approvate dall'utente, «Niente etichetta» col nord in alto
+      (2026-11-24).
+- [ ] CI verde; merge dal Coordinatore; OTA.

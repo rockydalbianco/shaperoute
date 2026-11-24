@@ -78,6 +78,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Le parole del catalogo a penna alzata: `walks` nel seme, `gaps` nelle liste, la lista di quelle lette a occhio | `../catalog/README.md` («Le parole a penna alzata»), `tasks/TASK-441.md` (parte B1), ADR-0366 |
 | Le uscite in bici del catalogo: `activity` nel seme e nelle risposte, il parametro `activity`, le zone da un estratto, le otto forme | `../catalog/README.md` («Le uscite in bici»), `tasks/TASK-441.md` (parte B2), ADR-0366 precisazione, `API.md` «`GET /recommended-routes`», `MAPS.md` «Le zone della bici» |
 | Le forme candidate e quelle approvate: `candidate_outlines/`, `tools/draw_new_shapes.py` (`APPROVED`), `ZONE_SHAPES` | `tasks/TASK-418.md`, ADR-0346 e la precisazione B, ADR-0036 |
+| Le forme nuove d'inverno, delle feste e di sport, i 35 contorni candidati: `tools/draw_theme_shapes.py`, la prova sulle strade, la registrazione di tutte insieme | `tasks/TASK-516.md`, ADR-0411, ADR-0346 e la precisazione B, `tasks/TASK-418.md` |
 | Aggiungere uno sport, il banco `tools/sport_bench/` | `sports/README.md`, `sports/COME-AGGIUNGERE.md`, `sports/CONDIVISO.md`, ADR-0320 |
 | Uno sport in particolare (corsa, bici, canoa, hike, gravel, roller, gym, skimo, wheelchair, snowshoes) | `sports/<sport>.md` e il suo task file se aperto |
 | L'alpinismo registrato senza percorso; uno sport sul server prima del contratto (`SERVER_FIRST`) | `tasks/TASK-463.md`, ADR-0373, ADR-0319, `sports/COME-AGGIUNGERE.md` |

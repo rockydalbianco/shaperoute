@@ -607,9 +607,61 @@ lasciando le righe d'indice.
 - ADR-0407 — «Longevity»: cinquanta storie animate dentro l'app, ognuna da una fonte pubblica ufficiale citata, senza revisione di un professionista e con scritto che MuW non è fatta da professionisti; video delle persone e compensi dopo · 2026-11-24 · Attiva
 - ADR-0408 — La modalità «Nutrition»: scelta come uno sport la barra diventa Today · Plan · Explore · Feed · Profile; la scheda «Food» dell'allenamento resta; dopo TASK-490 D ed E · 2026-11-24 · Attiva
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
+- ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
 
 
 ## Voci nuove
+## ADR-0411 — Le forme nuove del motore: inverno, feste, sport e i 35 contorni di TASK-418, giudicate sulla carta, poi sulle strade, poi registrate tutte insieme
+
+**Stato**: Proposta · 2026-11-24 · TASK-516 (parte 0; la parte A sono i
+contorni). Il pezzo da cui partire è una scelta **dell'utente**
+(2026-11-24, «Forme invernali e contorni»); il come è deciso dall'agente
+su delega dell'utente, sulla strada di ADR-0346 e della sua precisazione B.
+
+**Contesto**: TASK-441 ha portato il catalogo di «Explore» a 2031 disegni
+senza toccare il motore. La sua parte C chiedeva forme nuove: a tema
+(inverno, feste, sport) e i 35 contorni candidati di TASK-418 mai
+registrati. Il motore ha 43 forme; registrare una forma cambia il motore,
+il contratto, l'API, l'AI, l'app e `engine.zip`, e l'impronta del motore.
+
+**Decisione**:
+
+1. **Undici forme nuove** come candidate: `snowman`, `snowflake`,
+   `reindeer`, `santa_hat`, `candy_cane`, `bell`, `stocking`, `comet`,
+   `ball`, `racket`, `skis`. Si disegnano come in ADR-0346 (primitive,
+   buchi e dettagli come pezzi, partenza in alto) con uno **strumento
+   nuovo**, `tools/draw_theme_shapes.py`, che riusa le primitive di
+   `draw_new_shapes.py` con un registro suo: i file e il test di TASK-418
+   restano come sono. I file vanno in `candidate_outlines/`, fuori dal
+   pacchetto (ADR-0346, punto 2).
+2. **Tre giudizi dell'utente, in ordine**: la sagoma sulla carta (parte A,
+   una per una), i disegni sulle strade (parte B, come TASK-419, per le
+   nuove e per le 35), quali forme entrano e in che categoria della
+   ricerca (parte C).
+3. **Una sola registrazione** per tutte le forme scelte (parte C), con la
+   lista dei file di TASK-418 B: una sola impronta nuova del motore, una
+   sola prova «stessi percorsi», un solo `engine.zip`, un solo passo sul
+   server con un OTA. `prefetch_zones.ZONE_SHAPES` resta sulle 17 forme di
+   prima (ADR-0346 B).
+4. **Il catalogo dopo il motore** (parte D): i disegni nuovi in fondo ai
+   file di città, così gli id di prima non cambiano.
+5. **La penna alzata** per le forme nuove con pezzi l'API la accetta (viene
+   dal motore, `PEN_UP_SHAPES`), l'app la offre solo dopo un giudizio
+   dell'utente (come ADR-0346 B, punto 3).
+
+**Scartate**: registrare ogni forma appena approvata (un'impronta e un
+OTA per volta: più passi sul server e più prove per lo stesso lavoro);
+aggiungere le forme nuove a `draw_new_shapes.py` (cambia un file e un test
+che contano 49 forme scelte dall'utente in TASK-418); frasi con lo spazio e
+cifre insieme alle forme (toccano la scrittura delle lettere, un'altra
+parte del motore: dopo, per scelta dell'utente).
+
+**Conseguenze**: fino alla parte C nulla cambia per l'app, il server o il
+catalogo. La parte C ha bisogno della prova `test_same_routes` con la
+fixture della nuova impronta e delle righe di `SAME_ROUTES_AS`, del
+controllo dell'impronta nativa iOS, e la PR la unisce l'utente; server e
+OTA escono insieme, ciascuno col suo sì.
+
 ## ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; i due giri verso gli iscritti solo se nominati
 
 **Stato**: Proposta · 2026-11-24 · TASK-515 (parte 0; il codice è la parte

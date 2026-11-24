@@ -123,7 +123,14 @@ function AtTheEnd({ kcal }: { kcal: number | null }) {
             accessibilityRole="button"
             testID="nutrition-invite-not-now"
           >
-            <Text style={gymStyles.buttonText}>{t("Not now")}</Text>
+            <Text
+              style={gymStyles.buttonText}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+            >
+              {t("Not now")}
+            </Text>
           </Tap>
           <Tap
             style={gymStyles.button}
@@ -131,7 +138,14 @@ function AtTheEnd({ kcal }: { kcal: number | null }) {
             accessibilityRole="button"
             testID="nutrition-invite-open"
           >
-            <Text style={gymStyles.buttonText}>{t("Open Nutrition")}</Text>
+            <Text
+              style={gymStyles.buttonText}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+            >
+              {t("Open Nutrition")}
+            </Text>
           </Tap>
         </View>
       </View>

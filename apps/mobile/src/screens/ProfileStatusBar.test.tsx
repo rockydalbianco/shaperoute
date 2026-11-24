@@ -8,7 +8,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Account } from "../account/useAccount";
 import { HeaderScrollContext } from "../tabs/headerScroll";
 import { TabBarRoomContext } from "../tabs/tabBarRoom";
-import { color } from "../theme/tokens";
+import { color, space } from "../theme/tokens";
 import { ProfileScreen } from "./ProfileScreen";
 
 // «Settings» scrolled with its text under the clock (TASK-508): a page of
@@ -104,19 +104,34 @@ test("the page ends above the tab bar's room (TASK-469 part B)", async () => {
   const ROOM = 80;
   await render(
     onPhone(
-      <TabBarRoomContext.Provider value={ROOM}>{settings()}</TabBarRoomContext.Provider>,
+      <TabBarRoomContext.Provider value={ROOM}>
+        {settings()}
+      </TabBarRoomContext.Provider>,
     ),
   );
-  const title = screen.getByRole("header", { name: "Settings" });
-  // The scroller's content: the first ancestor with a bottom padding.
-  let node = title.parent;
-  let bottom: number | undefined;
-  while (node !== null && bottom === undefined) {
-    const style = StyleSheet.flatten(node.props.style) as ViewStyle | undefined;
-    if (typeof style?.paddingBottom === "number" && style.paddingBottom >= ROOM) {
-      bottom = style.paddingBottom;
+  // The content of the page's scroller, wherever it is laid out.
+  type Node = {
+    props: { style?: unknown; contentContainerStyle?: unknown };
+    children: (Node | string)[] | null;
+  };
+  const bottoms: number[] = [];
+  const walk = (node: Node | string | (Node | string)[] | null) => {
+    if (node === null || typeof node === "string") {
+      return;
     }
-    node = node.parent;
-  }
-  expect(bottom).toBeGreaterThanOrEqual(34 + ROOM);
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    for (const each of [node.props.style, node.props.contentContainerStyle]) {
+      const style = StyleSheet.flatten(each as ViewStyle) as ViewStyle | undefined;
+      if (typeof style?.paddingBottom === "number") {
+        bottoms.push(style.paddingBottom);
+      }
+    }
+    (node.children ?? []).forEach(walk);
+  };
+  walk(screen.toJSON() as unknown as Node);
+  const bottom = Math.max(...bottoms);
+  expect(bottom).toBe(34 + space.xl + ROOM);
 });

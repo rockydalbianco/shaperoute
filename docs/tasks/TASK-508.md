@@ -109,3 +109,8 @@ Sì del Coordinatore il 24-11: nessuna PR aperta tocca questi file, salvo
   scritti; test locali e schermate in attesa di «carico ok» e del turno di
   simulatore (dato e ripreso due volte: prima a TASK-495 B, poi a TASK-506
   per un crash in produzione).
+- 2026-11-24 sera: turno di simulatore di 4 minuti (iPhone 17e, Expo Go,
+  ramo locale con A e B insieme): le sei schermate «dopo» sono in
+  `out/TASK-508/shots/` del checkout principale, accanto alle «prima» del
+  23-11. Test dei file toccati della PR A verdi uno alla volta, `tsc`
+  verde.

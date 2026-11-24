@@ -731,6 +731,9 @@ export const DE: Table = {
   "Hide the picture": "Bild ausblenden",
   "Show the picture": "Bild einblenden",
   "Edit the outline": "Umriss bearbeiten",
+  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
+  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
+    "Die gelben Linien sind das, was die Route zeichnen wird: jeder Teil für sich, von einem zum nächsten geht es weiter, ohne zu zeichnen. Sehen sie nicht aus wie das Motiv, wird es die Route auch nicht: Versuche ein anderes Bild.",
   "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
     "Am besten ist ein Motiv auf einfarbigem Hintergrund: eine Zeichnung, ein Logo, ein Gegenstand auf einem leeren Tisch. Die Route folgt seiner Außenlinie. Bis zu 4 getrennte Motive werden zu einer Linie verbunden.",
   "Tracing the outline…": "Umriss wird nachgezeichnet…",

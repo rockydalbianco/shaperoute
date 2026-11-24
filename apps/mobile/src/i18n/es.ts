@@ -725,6 +725,9 @@ export const ES: Table = {
   "Hide the picture": "Ocultar la foto",
   "Show the picture": "Mostrar la foto",
   "Edit the outline": "Editar el contorno",
+  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
+  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
+    "Las líneas amarillas son lo que dibujará la ruta: cada parte por separado, yendo de una a otra sin dibujar. Si no se parecen al sujeto, la ruta tampoco: prueba otra foto.",
   "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
     "Lo mejor es un solo sujeto sobre un fondo liso: un dibujo, un logo, un objeto en una mesa vacía. La ruta sigue su línea exterior. Hasta 4 sujetos separados se unen en una sola línea.",
   "Tracing the outline…": "Trazando el contorno…",

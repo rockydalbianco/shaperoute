@@ -1,8 +1,7 @@
 # TASK-311 — Parole scritte meglio, e sul server tutto quello che si chiede
 
-**Stato**: In lavorazione (parte A fatta: la misura su 1000 parole; B
-fatta, «Lift the pen» sotto una parola su una riga, #601; C e D da
-cominciare)
+**Stato**: Fermo — in attesa · 2026-11-24 (scelta dell'utente del 2026-11-24 sui task aperti): A e B fatte; C e D sono idee approvate e mai partite, da rivalutare più avanti; si riprendono col sì dell'utente.
+Prima del 2026-11-24: In lavorazione (parte A fatta: la misura su 1000 parole; B fatta, «Lift the pen» sotto una parola su una riga, #601; C e D da cominciare)
 **Fase**: 4 · **Branch**: `feat/TASK-311-a-words-measure` (A, con questo
 file), `feat/TASK-311-b-pen-up-hint` (B), poi un branch per ciascuna delle
 parti C e D

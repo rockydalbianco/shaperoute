@@ -83,6 +83,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-514 — La modalità «Nutrition»** · ADR-0408; parte 0 chiusa il
   2026-11-24; parte dopo TASK-490 D ed E, in una sessione sua. File: — ·
   `tasks/TASK-514.md`
+- **TASK-515 — Le email dell'account in produzione («Forgot password?»)** ·
+  ADR-0410; parte 0 il 2026-11-24: il server non ha mai avuto Resend; scelte
+  dell'utente fatte (solo email dell'account, segnalazioni e feedback).
+  Poi A (i due giri a parte), Resend dell'utente, il passo sul server.
+  File: — · `tasks/TASK-515.md`
 - **TASK-487 — Il Feed senza attività finte** · 2026-11-22: niente
   esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
   dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.

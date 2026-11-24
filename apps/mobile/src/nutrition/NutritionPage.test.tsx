@@ -145,7 +145,9 @@ test("«How we calculate» says where the numbers come from", async () => {
     ),
   ).toBeOnTheScreen();
   expect(
-    screen.getByText("Only you see this page. Nothing here leaves your phone."),
+    screen.getByText(
+      "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.",
+    ),
   ).toBeOnTheScreen();
 });
 

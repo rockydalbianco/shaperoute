@@ -3472,8 +3472,6 @@ export const DE: Table = {
     "In Ruhe: die Mifflin-St-Jeor-Gleichung, aus den Körperdaten in deinem Profil. Aktivitäten: ACSM-Gleichungen und das Compendium of Physical Activities 2024. An Tagen, an denen Apple Health deine Aktivitätsenergie hat, wird stattdessen diese Zahl verwendet.",
   "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
     "Die tatsächlichen Werte hängen vom Produkt, vom Rezept und von der Person ab. MuW gibt keine Diäten oder medizinischen Ratschläge.",
-  "Only you see this page. Nothing here leaves your phone.":
-    "Diese Seite siehst nur du. Nichts davon verlässt dein Handy.",
   // src/nutrition (TASK-489 part C1)
   "Today the energy at rest is counted up to now.":
     "Heute wird die Energie in Ruhe bis jetzt gezählt.",
@@ -3551,4 +3549,25 @@ export const DE: Table = {
   "Write what you eat and see your calorie balance.":
     "Schreib auf, was du isst, und sieh deine Kalorienbilanz.",
   "Open Nutrition": "Ernährung öffnen",
+  // src/nutrition (TASK-489 part G1)
+  "Type the code": "Code eingeben",
+  Barcode: "Barcode",
+  "Look up": "Suchen",
+  "Looking it up…": "Suche läuft…",
+  "Only the barcode goes to Open Food Facts, to find the product.":
+    "Nur der Barcode geht an Open Food Facts, um das Produkt zu finden.",
+  "from Open Food Facts": "von Open Food Facts",
+  "Check the numbers against the label: you can correct them.":
+    "Vergleiche die Zahlen mit dem Etikett: Du kannst sie korrigieren.",
+  "Use this food": "Dieses Lebensmittel verwenden",
+  "This product is not on Open Food Facts.":
+    "Dieses Produkt ist nicht bei Open Food Facts.",
+  "Open Food Facts has no calories for this product.":
+    "Open Food Facts hat keine Kalorien für dieses Produkt.",
+  "The product could not be looked up. Check your connection and try again.":
+    "Das Produkt konnte nicht gesucht werden. Prüfe deine Verbindung und versuche es erneut.",
+  "Products found by barcode contain data from Open Food Facts, available under the Open Database License. They are kept apart from the USDA list.":
+    "Per Barcode gefundene Produkte enthalten Daten von Open Food Facts, verfügbar unter der Open Database License. Sie bleiben von der USDA-Liste getrennt.",
+  "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
+    "Diese Seite siehst nur du. Was du hier einträgst, bleibt auf deinem Handy; ein Barcode, den du suchst, geht an Open Food Facts.",
 };

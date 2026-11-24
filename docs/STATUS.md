@@ -383,7 +383,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (#1407) con l'OTA 23; A7a fogli, A7b isola, A5c-2 Feed, A7c-1 chip con
   l'OTA 24; A7c-2 chip degli sport (#1494), A7c-3 chip della palestra
   (#1509) e la correzione dell'header sopra le pagine (#1534, difetto di
-  A5b) con l'OTA 25. Poi A7c-4 (chip del volo); B dopo la 1.1.0. File: — ·
+  A5b) con l'OTA 25. Poi A7c-4 (chip del volo). Parte B avviata
+  dall'utente il 2026-11-24: piano B0–B4 nel task file, la dipendenza
+  (B1) col suo sì e nel taglio nativo. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A

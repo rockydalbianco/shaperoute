@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A7c-3 in produzione con l'OTA 25); B Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A7c-3 in produzione con l'OTA 25); B avviata il 2026-11-24, a fette
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -575,7 +575,7 @@ lasciando le righe d'indice.
 - ADR-0393 — L'attrezzatura: una lista per iscritto con foto e nota, più attrezzi per attività, i totali contati dal server, visibile come il profilo, legata ai capi taggati · 2026-11-21 · Proposta
 - ADR-0390 — Il «+» del Feed per pubblicare tutto: una lista di sei voci in ordine, ognuna costruita dal task che la possiede e mostrata solo quando è pronta; «Everyone» anche per la palestra scritta a mano e la scheda pubblicata · 2026-11-21 · Attiva
 - ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda in `drawings.plan`, kg compresi, ritmi e data della meta esclusi, solo alle app che dicono `plans`; «Use this plan» con la rotta delle schede che c'è · 2026-11-21 · Attiva
-- ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Proposta
+- ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli · 2026-11-21 · Attiva
 - ADR-0380, precisazione E — Il post del sonno da solo: un disegno senza corsa che porta la sua notte, un tipo `sleep` in `X-MuW-Reads`, la notte tenuta finché un post è suo · 2026-11-21 · Attiva
 - ADR-0375, precisazione R6d — La gara riaperta: i tratti in aria dalla traccia salvata, calcolati a ogni lettura; la mappa a due colori e i tempi divisi in «My activities» · 2026-11-22 · Attiva
 - ADR-0392 — Lo storico di ogni esercizio in palestra: «Last time» coi campi già compilati, «History» col massimale stimato, un indirizzo che legge solo le proprie serie · 2026-11-22 · Attiva
@@ -1889,7 +1889,7 @@ routine di stretching pubblicata) può usare lo stesso modo con un tipo suo.
 
 ## ADR-0395 — La palestra scritta a mano: lo stesso `PUT /me/gym-sessions` con `source` `manual`, l'editor delle schede, fuori anche dai livelli
 
-**Stato**: Proposta · 2026-11-21 · TASK-484 parte 0 (solo documenti).
+**Stato**: Attiva · 2026-11-24 (TASK-484 Done: B #1489, privacy #1505, OTA 25) · proposta 2026-11-21 · TASK-484 parte 0 (solo documenti).
 L'editor, che cosa conta, i testi e le righe della privacy sono **scelte
 dell'utente** (2026-11-21, una domanda per volta); la rotta, il valore di
 `source`, i controlli dell'API e il giorno senza calendario nativo sono
@@ -3158,7 +3158,7 @@ post funziona o no.
 
 **Stato**: **Attiva per la parte A** (A1 #1219 e A2 #1225 in `main` e in
 produzione con l'OTA 14, 2026-11-12; le fette seguenti in corso); la parte
-B resta Proposta · 2026-11-12 · TASK-469. La
+B è avviata dal 2026-11-24, a fette · 2026-11-12 · TASK-469. La
 direzione è scelta dell'utente (2026-11-12, «Capsula» fra tre direzioni:
 https://claude.ai/artifact/HD397UmJcu94vNZvGBH2bs); il modo è deciso
 dall'agente su delega dell'utente, coi vincoli del Coordinatore; numero
@@ -3191,6 +3191,21 @@ dichiarati «Sufficient Contrast» e il tema scuro.
   dissolvenze brevi.
 - **Parte B** con `expo-glass-effect` solo in una build dopo l'uscita
   della 1.1.0, col sì dell'utente.
+- **Parte B, il modo (2026-11-24)**: l'utente l'ha avviata («Inizia parte
+  b»); l'installazione della dipendenza aspetta il suo sì a parte. Un
+  solo modulo nuovo, `expo-glass-effect` ~57.0.5, quello di Expo per
+  l'SDK 57: niente `expo-blur`, perché dove il vetro vero non c'è (iOS
+  sotto il 26, Android) il ripiego è il vetro velato della parte A, già
+  provato sul contrasto. Il modulo entra con un componente a parte,
+  `src/ui/NativeGlass.tsx`, che non lo importa in cima al file e ripiega
+  senza errori se la build non lo ha: così le fette che lo usano non
+  possono rompere una build vecchia. La dipendenza cambia l'impronta iOS
+  e va nel taglio nativo ordinato dal Coordinatore; le superfici (barra,
+  header col contenuto sotto, fogli) seguono una per fetta, solo JS.
+  L'isola resta velata. Sul vetro vero il contrasto lo regola iOS: ogni
+  superficie si misura sulle schermate nei casi peggiori e resta velata
+  se scende sotto 4,5:1. Deciso dall'agente su delega dell'utente; la
+  scelta di installare è dell'utente.
 
 **Conseguenze**: la A arriva in fette piccole dopo l'aggiornamento
 completo, prima i token e `src/ui/Glass.tsx`; l'impronta iOS resta

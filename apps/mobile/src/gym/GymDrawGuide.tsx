@@ -112,12 +112,17 @@ export function plansCount(count: number): string {
  * which opens the calendar, and the plans. «How it works» in three steps
  * until the first workout is saved. The calendar is asked again when the
  * account's activities change: a workout just saved counts.
+ *
+ * `todayOnly` (TASK-490 E, «Today» of the training mode): the card of
+ * today and nothing else, no «New plan», tiles or help, which «Workouts»
+ * shows. Without it, as always («Draw»).
  */
 export function GymDrawGuide({
   onStart,
   startLabel,
   startIcon,
   hint,
+  todayOnly = false,
   fetchFn,
 }: {
   /** «Start workout» of Draw: today's plan when there is one. */
@@ -126,6 +131,8 @@ export function GymDrawGuide({
   startIcon?: string;
   /** The line under the title without a plan. */
   hint?: string;
+  /** Only today's card: «Today» of the training mode (TASK-490 E). */
+  todayOnly?: boolean;
   fetchFn?: typeof fetch;
 }) {
   const { apiUrl, account } = useFollowsDoor();
@@ -353,7 +360,7 @@ export function GymDrawGuide({
         <View style={styles.box} testID="record-day">
           {startButton(start, "run-no-route")}
           {hint !== undefined && <Text style={styles.muted}>{hint}</Text>}
-          {owner !== null && (
+          {owner !== null && !todayOnly && (
             <Pressable
               style={({ pressed }) => [styles.ghost, pressed && styles.pressed]}
               onPress={() => {
@@ -368,7 +375,7 @@ export function GymDrawGuide({
           )}
         </View>
       )}
-      {(shown !== null || (owner !== null && plans.length > 0)) && (
+      {!todayOnly && (shown !== null || (owner !== null && plans.length > 0)) && (
         <View style={styles.tiles}>
           {shown !== null && (
             <Pressable
@@ -399,15 +406,17 @@ export function GymDrawGuide({
           )}
         </View>
       )}
-      <Pressable
-        style={({ pressed }) => [styles.link, pressed && styles.pressed]}
-        onPress={showGymIntro}
-        accessibilityRole="button"
-        testID="gym-guide-intro"
-      >
-        <Text style={[styles.muted, styles.underline]}>{t("How plans work")}</Text>
-      </Pressable>
-      {firstTime && (
+      {!todayOnly && (
+        <Pressable
+          style={({ pressed }) => [styles.link, pressed && styles.pressed]}
+          onPress={showGymIntro}
+          accessibilityRole="button"
+          testID="gym-guide-intro"
+        >
+          <Text style={[styles.muted, styles.underline]}>{t("How plans work")}</Text>
+        </Pressable>
+      )}
+      {firstTime && !todayOnly && (
         <View style={styles.box} testID="gym-guide-steps">
           <Text style={styles.stepsTitle} accessibilityRole="header">
             {t("How it works")}

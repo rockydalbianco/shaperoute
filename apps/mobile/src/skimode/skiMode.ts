@@ -23,16 +23,18 @@ export const APP_PAGES: readonly BarPage[] = [
 ];
 
 /**
- * The pages of the ski mode: Today, Days, Resorts, Feed, Profile. «Today»
- * is the page «choose» of the app: every way back to «Draw» (the end of a
- * day, «Discard») lands on it with nothing else changed. «Messages» has no
- * tab here: it opens from its button in the header.
+ * The pages of the ski mode: Feed, Today, Days, Resorts, Profile. As in
+ * every mode, «Feed» stays first and «Profile» last, the mode's own pages
+ * in between (the user's choice of 2026-11-24, TASK-490 E, ADR-0398).
+ * «Today» is the page «choose» of the app: every way back to «Draw» (the
+ * end of a day, «Discard») lands on it with nothing else changed.
+ * «Messages» has no tab here: it opens from its button in the header.
  */
 export const SKI_PAGES: readonly BarPage[] = [
+  "feed",
   "choose",
   "skiDays",
   "skiResorts",
-  "feed",
   "profile",
 ];
 

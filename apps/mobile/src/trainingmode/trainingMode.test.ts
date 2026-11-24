@@ -26,11 +26,12 @@ describe("the training mode (TASK-490)", () => {
     expect(modeOf("stretch")).toBe("app");
   });
 
-  it("gives Today, Workouts, Feed and Profile with «Gym»", () => {
+  it("gives Feed, Today, Workouts and Profile with «Gym»", () => {
+    // «Feed» first and «Profile» last, as in every mode (part E).
     expect(trainingPagesOf(false)).toEqual([
+      "feed",
       "choose",
       "trainingWorkouts",
-      "feed",
       "profile",
     ]);
     expect(barPagesOf("gym")).toEqual(trainingPagesOf(NUTRITION_ON));
@@ -54,10 +55,10 @@ describe("the training mode (TASK-490)", () => {
 
   it("puts «Food» after «Workouts» only while «Nutrition» is on (part D)", () => {
     expect(trainingPagesOf(true)).toEqual([
+      "feed",
       "choose",
       "trainingWorkouts",
       "trainingFood",
-      "feed",
       "profile",
     ]);
     expect(trainingPagesOf(false)).not.toContain("trainingFood");
@@ -85,16 +86,16 @@ describe("the training mode (TASK-490)", () => {
       training: { choose: "Today gym", trainingWorkouts: "Workouts" },
     };
     expect(shellPagesOf("gym", app, own)).toEqual([
+      "Feed",
       "Today gym",
       "Workouts",
-      "Feed",
       "Profile",
     ]);
     expect(shellPagesOf("ski", app, own)).toEqual([
+      "Feed",
       "Today ski",
       "Days",
       "Resorts",
-      "Feed",
       "Profile",
     ]);
     expect(shellPagesOf("run", app, own)).toBe(app);
@@ -122,6 +123,6 @@ test("with «Nutrition» on, the bar of «Gym» has «Food» drawn by the mode",
           trainingFood: "Food",
         },
       }),
-    ).toEqual(["Today gym", "Workouts", "Food", "Feed", "Profile"]);
+    ).toEqual(["Feed", "Today gym", "Workouts", "Food", "Profile"]);
   });
 });

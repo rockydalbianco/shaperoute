@@ -7,7 +7,8 @@ import { color } from "../theme/tokens";
  * The icons of the training mode's tabs (TASK-490 part A, ADR-0398), at the
  * lines of the bar's Lucide icons (1.8 and 2.6 on 24): «Today» a dumbbell,
  * drawn with the Mac's Swift as the ski mode's were, «Workouts» the
- * calendar of the ski mode's «Days». White, coloured by `tintColor`.
+ * calendar of the ski mode's «Days», «Food» Lucide's utensils (part D,
+ * drawn the same way). White, coloured by `tintColor`.
  */
 export const TRAINING_TAB_ICONS = {
   today: {
@@ -17,6 +18,10 @@ export const TRAINING_TAB_ICONS = {
   workouts: {
     off: require("../../assets/ui/tabs/calendar.png"),
     on: require("../../assets/ui/tabs/calendar-active.png"),
+  },
+  food: {
+    off: require("../../assets/ui/tabs/utensils.png"),
+    on: require("../../assets/ui/tabs/utensils-active.png"),
   },
 } satisfies Record<string, { off: ImageSourcePropType; on: ImageSourcePropType }>;
 

@@ -30,6 +30,9 @@ li tiene il Coordinatore (`AGENTI.md`, «L'albero»), col sì dell'utente.
 per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 **TASK-480**: «Explore» senza mappe sotto i disegni, corretto in `main`
 (#1363); esce con l'OTA 20, col sì dell'utente al Coordinatore.
+**TASK-496**: batteria in corsa, in `main` (#1529, #1531); esce col
+prossimo OTA, col sì dell'utente al Coordinatore. La batteria si vede solo
+sul telefono dell'utente: una corsa a schermo bloccato e in tasca.
 **TASK-312 E**: quando MuW ha l'azienda, leggere gli accordi di Garmin,
 Suunto, Coros e Komoot e fare domanda, ognuno col sì dell'utente.
 
@@ -38,27 +41,48 @@ Suunto, Coros e Komoot e fare domanda, ognuno col sì dell'utente.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-505 — L'animazione iniziale e i file del video** (ADR-0405) ·
+  parte 0 il 2026-11-23: animazione intera solo la prima volta e dopo una
+  versione nuova, poi 1 s e saltabile; animali e musiche restano dentro.
+  Scelte dell'utente fatte; parte A col sì del Coordinatore.
+  File: — · `tasks/TASK-505.md`
+  **Chiuso il 2026-11-23**: parte A in `main` (#1527); restano l'OTA e la
+  prova sul telefono; vedi `archive/COMPLETATI.md`.
+- **TASK-493 — La mappa dei decolli** (ADR-0400) · parte 0 il 2026-11-23:
+  decolli e atterraggi da OSM, la scheda del decollo con lo storico dei
+  voli contato dal server; scelte dell'utente fatte. Vento dopo 479 H.
+  File: — · `tasks/TASK-493.md`
+- **TASK-494 — Le scadenze della vela** (ADR-0401) · parte 0 il
+  2026-11-23: revisione, riserva e imbrago sull'attrezzatura di 486, con
+  l'avviso; scelte dell'utente fatte. File: — · `tasks/TASK-494.md`
 - **TASK-485 — La scheda della palestra come post** (ADR-0394) · 0 e A in
   `main`, A sul server (passo 18); B (#1414) e B2, la voce del «+» (#1431,
-  `ed0bd4d7`) e la privacy (#1469, `5d226b33`) in `main`; restano la copia
-  del sito e l'OTA, col sì. Poi l'apertura da profilo, notifica o
-  link. File: — · `tasks/TASK-485.md`
+  `ed0bd4d7`), la privacy (#1469, `5d226b33`) e C, l'apertura da profilo,
+  notifica o link (#1481, `2a5c7590`), in `main`; restano la copia del sito
+  e l'OTA, col sì. File: — · `tasks/TASK-485.md`
 - **TASK-491 — Il Coach MuW** · parte 0 il 2026-11-23 (ADR-0399): regole
   con il loro studio, sul telefono e senza AI; la scheda cambia solo con
   «Apply»; solo con account, omino di TASK-490 B; testi approvati. A in
   `main` (#1427); B dopo TASK-490 B (#1433), C dopo #1420.
   File: — · `tasks/TASK-491.md`
+  **Chiuso il 2026-11-23**: B (#1457) e C (#1476, `38ffa555`) in `main`; esce col prossimo OTA, col sì dell'utente al Coordinatore; vedi `archive/COMPLETATI.md`.
 - **TASK-490 — La modalità Allenamento** · A (#1424) e B (#1433, l'omino
   della settimana su «Today») in `main` il 2026-11-23, schermate e testi
   approvati dall'utente; escono col prossimo OTA. Restano C (riga del
   Coach, con TASK-491) e D (tab «Food», con `NUTRITION_ON` di TASK-489).
   File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
-  ADR-0397; A1, A2, B1, B2 in `main`, spente (`NUTRITION_ON`) fino alla
-  build nativa. Tutte le parti approvate dall'utente il 2026-11-23; PR in
-  fila: C1 = #1501, D, G1, C2a; privacy = #1496. Per la build nativa: G2,
-  C2b, accensione. File: `activities/ActivityRow.tsx`,
-  `profile/ProfileHome.tsx`, `about/content/*` · `tasks/TASK-489.md`
+  ADR-0397; A1–D e la privacy in `main`, spente (`NUTRITION_ON`). In fila:
+  D2 = #1547, G1, C2a, H (pagina animata), I (invito a fine attività);
+  decise e non scritte J (ingresso) e K (peso). Build nativa: G2, C2b,
+  accensione. File: `nutrition/*`, `activities/RunEnd.tsx`,
+  `gym/GymEnd.tsx` · `tasks/TASK-489.md`
+- **TASK-513 — «Longevity»: cinquanta storie animate** · ADR-0407; parte 0
+  chiusa il 2026-11-24, nessun codice; il codice in una sessione sua.
+  File: — · `tasks/TASK-513.md`
+- **TASK-514 — La modalità «Nutrition»** · ADR-0408; parte 0 chiusa il
+  2026-11-24; parte dopo TASK-490 D ed E, in una sessione sua. File: — ·
+  `tasks/TASK-514.md`
 - **TASK-487 — Il Feed senza attività finte** · 2026-11-22: niente
   esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
   dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.
@@ -67,8 +91,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
   scelte dell'utente, ADR-0393); poi A server … G avviso, file al
   Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`
-  2026-11-23: A, B, C, D in `main` (#1372, #1377, #1439, #1463), spenta
-  (`GEAR_ON = false`); poi la privacy nel turno del Coordinatore, E–G.
+  2026-11-23: A–G e la privacy in `main` (G2 con #1536), spenta
+  (`GEAR_ON = false`); restano G1 sul server e l'accensione col sì dell'utente.
 - **TASK-214 — Il motore dei percorsi sul telefono** · A, B, C, A2, B2 in
   `main`; restano tempi e memoria su un iPhone vero e le zone dove il server
   dà 404. File: — · `tasks/TASK-214.md`
@@ -244,6 +268,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-22, passo 17**: B2 estere **sul server** (`40789324`, catalogo a 1866): le corse identiche (`1546 63 40 0`), in bici 320 uscite in 54 città, Londra con le sue otto; nell'app si vedono già con lo sport «Bike», senza OTA. Resta il secondo giro delle sette città (via del Coordinatore, limite 5 GB solo per loro).
   **Passo 19 (riferito dal Coordinatore il 2026-11-23)**: le cinque città recuperate (Berlino, Dublino, Amburgo, Vienna, New York: 36 uscite, sì dell'utente sui disegni «SI VANNO BENE») in `main` (#1418, `32036bd3`) e **sul server** (`e427ed2e`, catalogo a 1902): le corse identiche (`1546 63 40 0`), in bici 356 uscite in 59 città; senza OTA. Parigi e Tokyo restano senza uscite in bici (oltre i 5 GB del pianificatore). B2 estere chiusa; restano B3 (40–50 km) e C.
   **2026-11-23, B3** (ADR-0366, precisazione B3): le uscite in bici da 40 e 50 km **solo nel catalogo** (scelta dell'utente: «solo in Explore»; «Draw» in bici resta a 10–30 km, motore non toccato): 129 uscite in 32 città, tutte quelle che passano il filtro (sì dell'utente: «Tutti i 129»), catalogo a 2031, in `main` (#1471, `ba12b1fe`); gli id di prima restano. Il server le carica col passo 21 (sì dell'utente al Coordinatore), senza OTA; poi la prova sul telefono. Dopo: C.
+  **2026-11-23, B3 chiusa**: sul server col passo 21 (`74cc96c7`, catalogo a 2031, le corse identiche) e provata dall'utente sul telefono («visto funziona»), senza OTA. Di TASK-441 resta C.
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
@@ -287,6 +312,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (#1434); OTA dal Coordinatore; prossima E.
   **2026-11-23 sera**: E1 (file OpenAir del pilota, #1454) ed E2 (spazi
   aerei in volo: avviso, suono, mappa, widget, #1470) in `main`; prossima E3.
+  **2026-11-23**: E3 (registro dopo il volo, fasce nel grafico, #1498) in
+  `main`; prossima D (D1 #1503).
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
@@ -353,14 +380,23 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   più tardi con l'OTA 17; A4b e A4c card (#1333, #1344) con l'OTA 20; A5
   cerchi dell'header e A5b header che scorre con l'OTA 21; A5c (Profilo,
   sci, #1391) e A6 gruppi di Impostazioni (#1403) con l'OTA 22; A6b account
-  (#1407) con l'OTA 23; A7a fogli, A7b isola, A5c-2 Feed, A7c-1 chip in
-  `main`. Ora A7c-2 chip degli sport (#1494 bozza); B dopo la 1.1.0. File: — ·
+  (#1407) con l'OTA 23; A7a fogli, A7b isola, A5c-2 Feed, A7c-1 chip con
+  l'OTA 24; A7c-2 chip degli sport (#1494), A7c-3 chip della palestra
+  (#1509) e la correzione dell'header sopra le pagine (#1534, difetto di
+  A5b) con l'OTA 25. Poi A7c-4 (chip del volo). Parte B avviata
+  dall'utente il 2026-11-24: piano B0–B4 nel task file, la dipendenza
+  (B1) col suo sì e nel taglio nativo. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);
   manca il passo sul server (il 12, col sì dell'utente). Poi la parte app,
   dopo TASK-414 B e TASK-413 B. File: — · `tasks/TASK-463.md`
+  **2026-11-23**: B (#1278) e C, l'accensione (#1350), in `main`; A sul
+  server dal passo 12, l'app in produzione dall'OTA 20 (2026-11-21). Fatto
+  in produzione: manca la prova dell'utente sul telefono, poi si chiude.
+  **Chiuso il 2026-11-23**: l'utente l'ha provato sul telefono («Sì,
+  funziona»); vedi `archive/COMPLETATI.md`.
 
 - **TASK-461 — Il pianificatore completo** (ADR-0371) · A1 e B1 (server:
   quattro esercizi, giorni fuori `outing`, `target`) in `main` e sul server;
@@ -375,11 +411,19 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   prossimo OTA, copia del sito col sì dell'utente; restano le righe di 467 E2,
   484 B, 485 B, al via del Coordinatore. File: — · `tasks/TASK-481.md`
 
-- **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 (la barra
-  «Apri» di Safari) e A (l'app apre il post del link) in produzione (OTA 21),
-  provate dall'utente sull'iPhone il 2026-11-22; C: i due file `.well-known`
-  (iPhone #1392, Android #1436) online. Resta la parte D (link verificati in
-  `app.json`), con la prossima build nativa. File: — · `tasks/TASK-482.md`
+- **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 e A in
+  produzione (OTA 21), provate dall'utente; C: i due file `.well-known`
+  online. D (link verificati in `app.json`): bozza #1461, da unire solo al
+  taglio della build nativa; poi la prova dell'utente sul telefono. Sessione
+  archiviata: chi riprende legge il Registro. File: — · `tasks/TASK-482.md`
+
+- **TASK-495 — I gruppi per uscire insieme («Groups»)** (ADR-0402) ·
+  parte 0 il 2026-11-23: tutti i default approvati dall'utente
+  (`GRUPPI.md`). Poi A API, B app, C uscite (anche senza percorso, file di
+  TASK-309 col via del Coordinatore), D Explore e push, privacy prima
+  dell'OTA, E chat di gruppo. File: — · `tasks/TASK-495.md`
+  2026-11-24: A in `main` (#1538, migrazione 0087, sul server col prossimo
+  passo), A2 #1543 armata; poi B (l'app), file approvati dal Coordinatore.
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

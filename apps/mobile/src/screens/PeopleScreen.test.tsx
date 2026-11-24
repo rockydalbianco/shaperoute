@@ -18,6 +18,8 @@ jest.mock("../health/sleepModules", () => ({
   sleepPostsOn: () => false,
 }));
 
+// The answers here are the profiles': their gear (TASK-486) is gear/ProfileGear's.
+jest.mock("../gear/gearOn", () => ({ GEAR_ON: false }));
 jest.mock(
   "react-native-safe-area-context",
   () => jest.requireActual("react-native-safe-area-context/jest/mock").default,

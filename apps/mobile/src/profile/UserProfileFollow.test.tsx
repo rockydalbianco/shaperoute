@@ -14,6 +14,10 @@ jest.mock("../health/sleepModules", () => ({
   sleepPostsOn: () => false,
 }));
 
+// The answers here are the profile's, in order: its gear (TASK-486) is
+// gear/ProfileGear's.
+jest.mock("../gear/gearOn", () => ({ GEAR_ON: false }));
+
 // Following from another member's profile (TASK-211, ADR-0173): «Follow»
 // asks, «Requested» takes it back, «Following» stops after asking.
 

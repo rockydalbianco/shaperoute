@@ -58,6 +58,9 @@ export const FR: Table = {
   "Try again": "Réessayer",
   "No activities yet. Save a run when you finish it, and it is kept here.":
     "Pas encore d'activités. Enregistre une course quand tu la termines, et tu la retrouveras ici.",
+  "No activities yet": "Pas encore d'activités",
+  "When you finish an activity and save it, you find it here.":
+    "Quand tu termines une activité et l'enregistres, tu la retrouves ici.",
   "{when}, {where}, {facts}, public, open on the map":
     "{when}, {where}, {facts}, publique, ouvrir sur la carte",
   "{when}, {where}, {facts}, open on the map":
@@ -177,8 +180,9 @@ export const FR: Table = {
   "Remove {title} from favorites": "Retirer {title} des favoris",
   "Loading your favorites…": "Chargement de tes favoris…",
   "Your favorites could not load.": "Impossible de charger tes favoris.",
-  "No favorites yet. Tap {heart} on a route on the map to keep it here.":
-    "Pas encore de favoris. Touche {heart} sur un parcours de la carte pour le garder ici.",
+  "No favorites yet": "Pas encore de favoris",
+  "Tap {heart} on a route on the map to keep it here.":
+    "Touche {heart} sur un parcours de la carte pour le garder ici.",
 
   // src/favorites/favoriteRoute.ts
   Route: "Parcours",
@@ -720,6 +724,9 @@ export const FR: Table = {
   "Hide the picture": "Masquer la photo",
   "Show the picture": "Afficher la photo",
   "Edit the outline": "Modifier le contour",
+  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
+  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
+    "Les lignes jaunes sont ce que le parcours dessinera : chaque partie à part, en allant de l'une à l'autre sans dessiner. Si elles ne ressemblent pas au sujet, le parcours non plus : essaie une autre photo.",
   "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
     "Un seul sujet sur un fond uni marche le mieux : un dessin, un logo, un objet sur une table vide. Le parcours suit sa ligne extérieure. Jusqu'à 4 sujets séparés sont reliés en une seule ligne.",
   "Tracing the outline…": "Tracé du contour…",
@@ -1396,8 +1403,18 @@ export const FR: Table = {
   Beginner: "Débutant",
   // src/gym/SportsDoor.tsx, bodyweight.ts, GymPlanWizard.tsx (TASK-461 A2, approved 2026-11-11)
   "What do you want to train?": "Que veux-tu entraîner ?",
-  "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.":
-    "Choisis-en au moins deux : un plan mélange toujours deux sports. Ensuite, on te guide en 5 étapes.",
+  "Choose one or more. Then we guide you in 5 steps.":
+    "Choisis-en un ou plusieurs. Ensuite, on te guide en 5 étapes.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
+  Table: "Tableau",
+  "No exercises yet.": "Pas encore d'exercice.",
+  "Change week {n}": "Change la semaine {n}",
+  "kg · touch a week to change it": "kg · touche une semaine pour la changer",
+  // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; approved by the user on 2026-11-23)
+  Tomorrow: "Demain",
+  "+ 1 more": "+ 1 autre",
+  "+ {n} more": "+ {n} autres",
+  "This week: {done} of {total} done": "Cette semaine : {done} sur {total} faits",
   "With weights and machines": "Avec poids et machines",
   Bodyweight: "Poids du corps",
   "At home or in the park, no equipment": "À la maison ou au parc, sans matériel",
@@ -2384,8 +2401,9 @@ export const FR: Table = {
   "Messages, {count} waiting": "Messages, {count} en attente",
   "Message requests": "Demandes de message",
   "Message requests, {count} waiting": "Demandes de message, {count} en attente",
-  "No messages yet. Open someone's profile and tap Message to write to them.":
-    "Pas encore de messages. Ouvre le profil de quelqu'un et touche Message pour lui écrire.",
+  "No messages yet": "Pas encore de messages",
+  "Open someone's profile and tap Message to write to them.":
+    "Ouvre le profil de quelqu'un et touche Message pour lui écrire.",
   "No message requests.": "Aucune demande de message.",
   "You: {text}": "Toi : {text}",
   "{name}, new message: {text}": "{name}, nouveau message : {text}",
@@ -2393,7 +2411,6 @@ export const FR: Table = {
   "Message {name}": "Écrire à {name}",
 
   // src/messages/ConversationScreen.tsx, MessageSheet.tsx (TASK-319)
-  "No messages yet.": "Pas encore de messages.",
   "Show earlier messages": "Afficher les messages précédents",
   "Touch and hold to delete it": "Maintiens appuyé pour le supprimer",
   "Touch and hold to report it": "Maintiens appuyé pour le signaler",
@@ -2403,6 +2420,22 @@ export const FR: Table = {
   "{name} gets this as a message request. You can send one message until they accept it.":
     "{name} le reçoit comme demande de message. Tant qu'elle n'est pas acceptée, tu peux envoyer un seul message.",
   "Write a message…": "Écris un message…",
+  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
+  "Show password": "Afficher le mot de passe",
+  "Hide password": "Masquer le mot de passe",
+  // src/messages/ConversationScreen.tsx (TASK-458: a conversation with nothing in it yet, the user's choice of 2026-11-23)
+  "Say hi to {name}.": "Dis bonjour à {name}.",
+  "Hi {name}!": "Salut {name} !",
+  "I like your drawings": "J'aime tes dessins",
+  "Shall we run together?": "On court ensemble ?",
+  "Writes it in the box. Nothing is sent yet.":
+    "L'écrit dans la zone de texte. Rien n'est encore envoyé.",
+  "Photos, videos and drawings come after that.":
+    "Les photos, les vidéos et les dessins viennent après.",
+  // src/tabs/MessagesPage.tsx, src/messages/NewMessage.tsx (TASK-458: «New message» from the list)
+  "New message": "Nouveau message",
+  "Search someone by name to write to them.":
+    "Cherche quelqu'un par son nom pour lui écrire.",
   "Delete this message for both of you?": "Supprimer ce message pour vous deux ?",
   "Report this message": "Signaler ce message",
   // src/explore/ExploredCard.tsx, social/DrawingCard.tsx, mapdraw/DrawOnMap.tsx,
@@ -3204,6 +3237,8 @@ export const FR: Table = {
   "Up to {count} items on an activity.": "Jusqu'à {count} équipements par activité.",
   "This activity is still on its way. Try again in a moment.":
     "Cette activité est encore en route. Réessaie dans un instant.",
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), approved by the user on 2026-11-23
+  "From my gear": "Depuis mon équipement",
 
   // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
   "Share one of your gym plans": "Partage un de tes programmes de salle",
@@ -3426,8 +3461,6 @@ export const FR: Table = {
     "Au repos : l'équation de Mifflin-St Jeor, à partir des données corporelles de ton profil. Activités : équations de l'ACSM et le Compendium of Physical Activities 2024. Les jours où Santé d'Apple a ton énergie active, c'est ce chiffre qui est utilisé.",
   "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
     "Les valeurs réelles varient selon le produit, la recette et la personne. MuW ne fournit ni régimes ni conseils médicaux.",
-  "Only you see this page. Nothing here leaves your phone.":
-    "Toi seul vois cette page. Rien de ce qui s'y trouve ne quitte ton téléphone.",
   // src/nutrition (TASK-489 part C1)
   "Today the energy at rest is counted up to now.":
     "Aujourd'hui, l'énergie au repos est comptée jusqu'à maintenant.",
@@ -3458,4 +3491,72 @@ export const FR: Table = {
     "Au plus profond : {dist} du bord, {height} du plancher ou du plafond",
   "Only on your phone: not in the Feed.":
     "Uniquement sur votre téléphone : pas dans le Fil.",
+  // src/air/ (TASK-479 part D1: the pilot's waypoints and task; approved by the user on 2026-11-23)
+  Waypoints: "Balises",
+  Task: "Manche",
+  "Waypoints: {count} · Landings: {landings}":
+    "Balises : {count} · Atterrissages : {landings}",
+  "Turnpoints: {count}": "Balises de la manche : {count}",
+  "First start: {time}": "Premier départ : {time}",
+  "{file} · loaded {date}": "{file} · chargé le {date}",
+  "This file has no waypoint MuW can read.":
+    "Ce fichier ne contient aucune balise que MuW sait lire.",
+  "This file is not a task MuW can read.":
+    "Ce fichier n'est pas une manche que MuW sait lire.",
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
+  "Next turnpoint": "Prochaine balise",
+  "Glide to goal": "Plané jusqu'au but",
+  "Start gate": "Porte de départ",
+  "Task distance": "Distance de la manche",
+  Competition: "Compétition",
+  "Gate open": "Porte ouverte",
+  "Started {time}": "Parti à {time}",
+  "Whole task: {distance}": "Manche entière : {distance}",
+  "No task loaded": "Aucune manche chargée",
+  "Goal taken": "But atteint",
+  "Turnpoint {name} taken. Next: {next}.": "Balise {name} validée. Suivante : {next}.",
+  "Goal {name} taken.": "But {name} atteint.",
+  // src/air/ (TASK-479 part D3: the glide; approved by the user on 2026-11-23)
+  "Glide to turnpoint": "Plané jusqu'à la balise",
+  "Nearest landing": "Atterrissage le plus proche",
+  "Glide ratio used": "Finesse utilisée",
+  "Wind used": "Vent utilisé",
+  Estimated: "Estimé",
+  "No wind": "Pas de vent",
+  "needs {height}": "il faut {height}",
+  "No landings in your file": "Aucun atterrissage dans votre fichier",
+  // src/nutrition (TASK-489 part D)
+  "Calorie balance": "Bilan calorique",
+  Used: "Dépensées",
+  "Previous week": "Semaine précédente",
+  "Next week": "Semaine suivante",
+  "so far": "jusqu'ici",
+  "Week total": "Total de la semaine",
+  "Today is not in the total until the day is over.":
+    "Aujourd'hui n'entre dans le total qu'une fois la journée terminée.",
+  // src/nutrition (TASK-489 part D2: Nutrition from the profile; approved by the user on 2026-11-24)
+  "Write what you eat and see your calorie balance.":
+    "Note ce que tu manges et vois ton bilan calorique.",
+  "Open Nutrition": "Ouvrir Nutrition",
+  // src/nutrition (TASK-489 part G1)
+  "Type the code": "Saisir le code",
+  Barcode: "Code-barres",
+  "Look up": "Rechercher",
+  "Looking it up…": "Recherche en cours…",
+  "Only the barcode goes to Open Food Facts, to find the product.":
+    "Seul le code-barres est envoyé à Open Food Facts, pour trouver le produit.",
+  "from Open Food Facts": "d'Open Food Facts",
+  "Check the numbers against the label: you can correct them.":
+    "Vérifie les chiffres sur l'étiquette : tu peux les corriger.",
+  "Use this food": "Utiliser cet aliment",
+  "This product is not on Open Food Facts.":
+    "Ce produit n'est pas sur Open Food Facts.",
+  "Open Food Facts has no calories for this product.":
+    "Open Food Facts n'a pas les calories de ce produit.",
+  "The product could not be looked up. Check your connection and try again.":
+    "Impossible de rechercher le produit. Vérifie ta connexion et réessaie.",
+  "Products found by barcode contain data from Open Food Facts, available under the Open Database License. They are kept apart from the USDA list.":
+    "Les produits trouvés par code-barres contiennent des données d'Open Food Facts, disponibles sous l'Open Database License. Ils restent séparés de la liste USDA.",
+  "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
+    "Toi seul vois cette page. Ce que tu écris ici reste sur ton téléphone ; un code-barres que tu recherches est envoyé à Open Food Facts.",
 };

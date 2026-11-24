@@ -396,3 +396,17 @@ export function useGymPlans(fetchFn?: typeof fetch): {
     },
   };
 }
+
+/** Takes every plan of `owner` out of the file, changes not sent included:
+ * they are not of the account signed in (account/phoneOwners.ts,
+ * TASK-507), or the account is deleted. Those of the other accounts stay. */
+export function forgetPlansOf(owner: number): void {
+  const list = everything();
+  const next = list.filter((plan) => plan.owner !== owner);
+  if (next.length !== list.length) {
+    put(next);
+  }
+  if (shownOwner === owner) {
+    shownOwner = null;
+  }
+}

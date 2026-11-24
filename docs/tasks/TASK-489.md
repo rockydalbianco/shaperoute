@@ -1,6 +1,6 @@
 # TASK-489 — «Alimentazione»: il diario di quello che mangio e il bilancio delle calorie
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-22: otto scelte dell'utente, #1417 in `main`; quattro precisazioni il 2026-11-23; **A1 e A2 in `main`** (#1437, #1460, 2026-11-23); schermate e testi di tutte le parti (B, C1, D, F, G, C2) approvati il 2026-11-23; **B1 e B2 in `main`** (#1473, #1490); in fila, una PR dopo l'altra: C1 = #1501, D, G1, C2a; F = #1496 col sì dell'utente; restano per la build nativa G2 (il lettore con la fotocamera), C2b (accendere la lettura da Salute) e l'accensione)
+**Stato**: In corso (parte 0 chiusa il 2026-11-22; **A1, A2, B1, B2, C1, D e la privacy F in `main`** (#1437, #1460, #1473, #1490, #1501, #1517, #1496), tutte spente (`NUTRITION_ON`); in fila, una PR dopo l'altra: **D2 = #1547**, G1, C2a, H, I (scritte in locale); decise il 2026-11-24 e non scritte: J (l'ingresso) e K (il peso); per la build nativa G2, C2b e l'accensione; la modalità è TASK-514, le storie TASK-513)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-489-nutrition-part-0`
 **Dipende da**: TASK-374 (il mio corpo, `body/energy.ts`), TASK-321 (Apple
@@ -567,6 +567,40 @@ sui giorni che hanno l'energia attiva di Salute.
 - Salute non dice se la lettura è stata negata: un permesso negato si legge
   come «nessun dato», e il giorno usa le attività.
 
+### Testi delle parti D2, H e I (approvati dall'utente il 2026-11-24)
+
+D2, «Sì approvo continua»:
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Sotto «Nutrition», nel profilo | Write what you eat and see your calorie balance. | Scrivi quello che mangi e guarda il tuo bilancio delle calorie. | Schreib auf, was du isst, und sieh deine Kalorienbilanz. | Escribe lo que comes y mira tu balance de calorías. | Note ce que tu manges et vois ton bilan calorique. |
+| In fondo a «Calorie balance» | Open Nutrition | Apri Alimentazione | Ernährung öffnen | Abrir Nutrición | Ouvrir Nutrition |
+
+H, «Sì, approvo»:
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Titolo della scheda | Protein, carbs and fat (est.) | Proteine, carboidrati e grassi (stima) | Eiweiß, Kohlenhydrate und Fett (gesch.) | Proteínas, carbohidratos y grasas (est.) | Protéines, glucides et lipides (est.) |
+| Barra | Protein | Proteine | Eiweiß | Proteínas | Protéines |
+| Barra | Carbs | Carboidrati | Kohlenhydrate | Carbohidratos | Glucides |
+| Barra | Fat | Grassi | Fett | Grasas | Lipides |
+| Accanto ai grammi | {percent}% of the energy | {percent}% dell'energia | {percent}% der Energie | {percent}% de la energía | {percent}% de l'énergie |
+| Un cibo senza questi numeri | Counted only for the foods that have these numbers. | Contati solo per i cibi che hanno questi numeri. | Nur für Lebensmittel gezählt, die diese Zahlen haben. | Se cuentan solo para los alimentos que tienen estos números. | Comptés uniquement pour les aliments qui ont ces chiffres. |
+| Giorno senza questi numeri | No protein, carbs or fat to count for this day. | Niente proteine, carboidrati o grassi da contare per questo giorno. | Für diesen Tag gibt es kein Eiweiß, keine Kohlenhydrate und kein Fett zu zählen. | No hay proteínas, carbohidratos ni grasas que contar para este día. | Pas de protéines, de glucides ni de lipides à compter pour ce jour. |
+
+I, «Sì va bene» (letto come il sì a questa parte: era l'ultima domanda
+davanti all'utente):
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| Titolo dell'invito | Count what you eat too | Conta anche quello che mangi | Zähl auch, was du isst | Cuenta también lo que comes | Compte aussi ce que tu manges |
+| Sotto il titolo | Write your own diet and what you eat: MuW estimates the calories you eat and the ones you use, this activity included. | Scrivi la tua dieta e quello che mangi: MuW stima le calorie che mangi e quelle che consumi, compresa questa attività. | Schreib deinen eigenen Ernährungsplan auf und was du isst: MuW schätzt die Kalorien, die du isst und die du verbrauchst, diese Aktivität eingeschlossen. | Escribe tu propia dieta y lo que comes: MuW estima las calorías que comes y las que gastas, incluida esta actividad. | Écris ton propre plan alimentaire et ce que tu manges : MuW estime les calories que tu manges et celles que tu dépenses, cette activité comprise. |
+| Per chi la usa già | This activity: {kcal} kcal (est.) | Questa attività: {kcal} kcal (stima) | Diese Aktivität: {kcal} kcal (gesch.) | Esta actividad: {kcal} kcal (est.) | Cette activité : {kcal} kcal (est.) |
+| Tasto per chi la usa già | Add what you ate | Aggiungi cosa hai mangiato | Hinzufügen, was du gegessen hast | Añade lo que has comido | Ajoute ce que tu as mangé |
+
+Approvata e **non usata**: «Counted in today's balance». Le schermate di
+fine attività vengono prima di «Save»: lì la frase sarebbe falsa.
+
 ## Le parti
 
 | Parte | Cosa | Dove va |
@@ -808,6 +842,71 @@ due PR concordate col Coordinatore:
   write here stays on your phone; a barcode you look up goes to Open Food
   Facts.».
 
+### D2 — «Nutrition» dal profilo (richiesta del 2026-11-24)
+
+«Anche dal profilo puoi trovare questa sezione». Chi non ha letto l'avviso
+vede in `<OwnBalance />` una riga «Nutrition» che apre la pagina; chi la
+usa ha «Open Nutrition» in fondo alla scheda. `NutritionWindow.tsx` è la
+finestra della pagina, usata dalla tessera e dal profilo.
+`profile/ProfileHome.tsx` non si tocca. PR #1547.
+
+### H — La pagina del giorno animata (richiesta del 2026-11-24)
+
+«Una cosa innovativa che attira l'attenzione, tabella di animazione del
+cibo stile Apple, tutto più integrato». Nessuna dipendenza nuova (l'app
+non ha una libreria di disegno): `Ring.tsx` disegna un anello con due
+finestre e due mezzi anelli che girano, con le molle di `ui/motion`.
+
+- `dayRings.ts`: la scala dei due anelli. `EnergyRings.tsx`: consumato
+  fuori, mangiato dentro, la tacca dell'obiettivo dell'utente.
+- `CountUp.tsx`: i numeri che contano; chi legge lo schermo sente sempre
+  il valore finale.
+- `intake.ts`: `macrosOf`, `macroShares`. `MacroBars.tsx`: le tre barre.
+- `WeekStrip.tsx`: la settimana sotto il diario; `weekText.ts`: il nome
+  della settimana, uscito da `OwnBalance.tsx`.
+- `useDayEnergy.ts`: un parametro dice chi chiede le pagine mancanti (il
+  giorno no, la settimana sì), altrimenti la stessa pagina partiva due
+  volte.
+- `MealCard.tsx`: i cibi in cascata, la figura del pasto. Un tocco leggero
+  del telefono quando si aggiunge un cibo.
+
+Da fare prima della «pronta»: la prova al simulatore degli anelli, anche
+con «Riduci movimento», con `NUTRITION_ON` acceso solo in locale (turno
+dal Coordinatore). I colori sono quelli del tema: un colore suo si decide
+davanti alle schermate.
+
+### I — L'invito a fine attività (richiesta del 2026-11-24)
+
+«Alla fine di una corsa invita la gente a usare la modalità nutrizione […]
+con il tasto per entrare». `NutritionInvite.tsx`, una riga in
+`activities/RunEnd.tsx` e una in `gym/GymEnd.tsx`. Le impostazioni tengono
+quante volte l'invito è stato visto e il «Not now». A fine corsa le kcal
+non si mostrano (quella schermata non le calcola); a fine allenamento sì.
+
+### J — L'ingresso (richiesta del 2026-11-24; decisa, non scritta)
+
+«Una home page dove ci sono delle regole e spiego come funziona, gli
+obiettivi in breve, un'anteprima […] fare delle domande per avvicinare
+l'utente». Quattro passi la prima volta: anteprima, regole, domande (perché
+sei qui; hai già un numero; i dati del corpo), punto di partenza. Sul
+numero l'utente ha scelto «MuW», poi «solamente una stima, solo una demo»
+e «è meglio inserire le calorie manualmente»: vedi ADR-0397, precisazione
+5, punto 4. Proposta in `out/TASK-489/PROPOSTA-PARTE-J-INGRESSO.md`. I
+testi non sono ancora scritti. Lista dei file dopo la parte I.
+
+### K — Il peso (richiesta del 2026-11-24; decisa, non scritta)
+
+«Dopo ogni tot settimane chiedi di pesare l'utente […] vedi anche il
+grafico dei chili […] e poi pubblicare anche quell'attività», e «deve
+essere un po' più completa»: post modificabile, foto, video, commenti,
+grafico anche in percentuale, statistiche, congratulazioni alle tappe.
+K1 = pesata, grafico, statistiche, obiettivo di peso scritto dall'utente
+(tocca `body/`: dopo il merge di TASK-507 D). K2 = il post del peso
+(compositore, Feed, server, migrazione, privacy). Vedi ADR-0397,
+precisazione 5, punto 6. Proposta in
+`out/TASK-489/PROPOSTA-PARTE-K-PESO.md`. Il Coordinatore valuta sessioni
+dedicate per J e K.
+
 ### E — Il server
 
 Solo dopo l'uscita, se l'utente lo conferma: una tabella sua, la
@@ -927,6 +1026,20 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 
 ## Registro
 
+- **2026-11-24, richieste nuove dell'utente**: D2 (dal profilo), H (la
+  pagina animata), I (l'invito a fine attività), J (l'ingresso con le
+  domande), K (il peso), le storie di «Longevity» (TASK-513) e la modalità
+  (TASK-514). D2 è #1547; H e I sono scritte su rami locali sopra C2a
+  (`feat/TASK-489-h-animated-day`, `feat/TASK-489-i-invite`) e diventano
+  PR dopo C2a; non sono state viste nel simulatore. Due paletti cambiati
+  dall'utente dopo aver letto cosa comportano: l'obiettivo di calorie può
+  proporlo MuW, come stima in secondo piano; i consigli generali entrano
+  senza revisione di un professionista, da fonti ufficiali citate.
+  ADR-0397 precisazione 5, ADR-0407, ADR-0408. Nota per C2: la frase del
+  permesso di Salute scelta per la build nativa non nomina l'energia
+  attiva, che chiede una build successiva.
+- **2026-11-24, D in `main`** (#1517), dopo C1 (#1501) e la privacy
+  (#1496) il 2026-11-23.
 - **2026-11-23, parte C2a scritta**: l'utente ha detto «Sì, parti con la
   parte C2» e, viste le tre schermate e i sette testi, «Sì, approvo». Sul
   ramo `feat/TASK-489-c2a-health-energy`, sopra la G1; diventa una PR

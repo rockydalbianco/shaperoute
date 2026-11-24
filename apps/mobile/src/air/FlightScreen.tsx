@@ -51,6 +51,14 @@ import { GroundProbe } from "./GroundProbe";
 import { useFlightScreenData } from "./useFlightScreenData";
 import { setVarioPrefs, useVarioPrefs } from "./varioPrefs";
 import { VarioSoundOptions } from "./VarioSoundOptions";
+import { WaypointOptions } from "./WaypointOptions";
+import { glideWith } from "./glide";
+import { GlideOptions } from "./GlideOptions";
+import { useGlidePrefs } from "./glidePrefs";
+import { nearestLanding } from "./nearestLanding";
+import { taskFeatures } from "./taskMapData";
+import { type TaskNow, taskNowOf } from "./taskProgress";
+import { useTask, useWaypoints } from "./waypointStore";
 
 /**
  * The flight screen (TASK-479 part B1, ADR-0388): pages of widgets on a
@@ -246,6 +254,19 @@ function Options({
         row={row}
         palette={palette}
       />
+      <WaypointOptions
+        chip={(key, label, on, onPress) => (
+          <Chip key={key} label={label} on={on} onPress={onPress} palette={palette} />
+        )}
+        row={row}
+        palette={palette}
+      />
+      <GlideOptions
+        chip={(key, label, on, onPress) => (
+          <Chip key={key} label={label} on={on} onPress={onPress} palette={palette} />
+        )}
+        row={row}
+      />
       <Pressable
         accessibilityRole="button"
         onPress={onDone}
@@ -347,6 +368,21 @@ export function FlightScreen({
     airspace === null || !charted
       ? []
       : profileBands(placeSeries(track, at), airspace.airspaces, groundM);
+  // The pilot's task at this tick (D2): where they are along it.
+  const loadedTask = useTask();
+  const taskNow: TaskNow | null =
+    loadedTask === null ? null : taskNowOf(loadedTask.task, track.fixes, takeoffMs);
+  const taskMap =
+    taskNow === null
+      ? null
+      : taskFeatures(taskNow.task, taskNow.progress, taskNow.here, taskNow.left);
+  // The glide the pilot chose (D3), and the nearest landing of their file.
+  const glide = glideWith(useGlidePrefs(), data.wind);
+  const loadedWaypoints = useWaypoints();
+  const landing =
+    loadedWaypoints === null || here === null
+      ? undefined
+      : nearestLanding(loadedWaypoints.waypoints, here, altM, glide);
   const change = (next: FlightPrefs) => {
     setPrefs(next);
     saveFlightPrefs(next);
@@ -506,12 +542,16 @@ export function FlightScreen({
                           airspace={
                             airspace === null ? null : airspaceFeatures(near, groundM)
                           }
+                          task={taskMap}
                         />
                       ) : (
                         <FlightWidget
                           widget={cell.widget}
                           nearest={near[0] ?? null}
                           bands={bands}
+                          task={taskNow}
+                          glide={glide}
+                          landing={landing}
                           data={data}
                           flight={unitsOf(cell)}
                           units={appUnits}

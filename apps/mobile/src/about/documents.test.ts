@@ -128,7 +128,7 @@ describe("«Privacy» is final, approved by the user (TASK-237 D)", () => {
     expect(content.privacy.draft).toBe(false);
     // Redated for the group runs among the reports (TASK-309 part B).
     expect(content.privacy.updated).toMatch(
-      /^23 November 2026$|^23 novembre 2026$|^23\. November 2026$|^23 de noviembre de 2026$/,
+      /^24 November 2026$|^24 novembre 2026$|^24\. November 2026$|^24 de noviembre de 2026$/,
     );
   });
 
@@ -328,13 +328,20 @@ test("the three texts are told from the other pages of «Profile»", () => {
   expect(isAboutId("settings")).toBe(false);
 });
 
-test("«Help» and «Privacy» say «Everyone» is for an activity added from a file with the Feed's «+», not one recorded from it (TASK-481 A)", () => {
+test("«Help» and «Privacy» say «Everyone» is for an activity added from a file, or a gym workout written by hand, with the Feed's «+», not one recorded from it (TASK-481 A, TASK-484 B)", () => {
   const fromFile: Record<Language, RegExp> = {
-    en: /from a file with the «\+» of the Feed/,
-    it: /da un file col «\+» del Feed/,
-    de: /aus einer Datei mit dem «\+» im Feed/,
-    fr: /depuis un fichier avec le «\+» du Feed/,
-    es: /desde un archivo con el «\+» del Feed/,
+    en: /from a file/,
+    it: /da un file/,
+    de: /aus einer Datei/,
+    fr: /depuis un fichier/,
+    es: /desde un archivo/,
+  };
+  const byHand: Record<Language, RegExp> = {
+    en: /gym workout (?:you write|written) by hand/,
+    it: /allenamento in palestra scritto a mano/,
+    de: /(?:Training im Fitnessstudio, das du von Hand einträgst|von Hand eingetragenes Training im Fitnessstudio)/,
+    fr: /séance en salle écrite à la main/,
+    es: /entrenamiento de gimnasio (?:que escribes|escrito) a mano/,
   };
   for (const [language, content] of CONTENTS) {
     for (const text of [all(content.help), all(content.privacy)]) {
@@ -344,8 +351,30 @@ test("«Help» and «Privacy» say «Everyone» is for an activity added from a 
       expect(plus.length).toBeGreaterThan(0);
       for (const sentence of plus) {
         expect(sentence).toMatch(fromFile[language]);
+        expect(sentence).toMatch(byHand[language]);
       }
     }
+  }
+});
+
+test("«Privacy» says what a gym workout written by hand keeps, and that the gym milestones count only what MuW records (TASK-484 B)", () => {
+  const kept: Record<Language, RegExp> = {
+    en: /gym workout written by hand, we keep its day, time, duration, exercises, sets and weights/,
+    it: /allenamento in palestra scritto a mano, ne teniamo giorno, ora, durata, esercizi, serie e pesi/,
+    de: /von Hand einträgst, speichern wir Tag, Uhrzeit, Dauer, Übungen, Sätze und Gewichte/,
+    fr: /écrite à la main, nous gardons son jour, son heure, sa durée, ses exercices, ses séries et ses poids/,
+    es: /escrito a mano, guardamos su día, hora, duración, ejercicios, series y pesos/,
+  };
+  const milestones: Record<Language, RegExp> = {
+    en: /counted from the workouts you record with MuW/,
+    it: /contati dagli allenamenti che registri con MuW/,
+    de: /gezählt aus den Trainings, die du mit MuW aufzeichnest/,
+    fr: /comptés sur les séances que tu enregistres avec MuW/,
+    es: /contados de los entrenamientos que registras con MuW/,
+  };
+  for (const [language, content] of CONTENTS) {
+    expect(all(content.privacy)).toMatch(kept[language]);
+    expect(all(content.privacy)).toMatch(milestones[language]);
   }
 });
 

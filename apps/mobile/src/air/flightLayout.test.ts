@@ -86,7 +86,12 @@ describe("cells", () => {
 describe("prefs", () => {
   it("start with a profile per preset, «Thermal» on screen, dark, in the app's units", () => {
     const prefs = loadFlightPrefs("km", memory());
-    expect(prefs.profiles.map(profileName)).toEqual(["Thermal", "XC", "Minimal"]);
+    expect(prefs.profiles.map(profileName)).toEqual([
+      "Thermal",
+      "XC",
+      "Minimal",
+      "Competition",
+    ]);
     expect(prefs.current).toBe(0);
     expect(pagesOf(prefs)).toEqual(PRESET_PAGES.thermal);
     expect(prefs.look).toBe("dark");
@@ -111,7 +116,7 @@ describe("prefs", () => {
 
   it("are left out when not whole", () => {
     const whole = defaultFlightPrefs("km");
-    expect(isFlightPrefs({ ...whole, current: 3 })).toBe(false);
+    expect(isFlightPrefs({ ...whole, current: 4 })).toBe(false);
     expect(isFlightPrefs({ ...whole, profiles: [] })).toBe(false);
     expect(
       upgradeFlightPrefs({ preset: "race", look: "dark", units: whole.units }),
@@ -126,5 +131,41 @@ describe("prefs", () => {
 
   it("name a second copy with its number", () => {
     expect(profileName(profileOf("xc", 2))).toBe("XC 2");
+  });
+});
+
+describe("«Competition» (part D2)", () => {
+  it("is added once to the profiles kept before it", () => {
+    const list = memory();
+    const before = defaultFlightPrefs("km");
+    const old = {
+      ...before,
+      profiles: before.profiles.filter((one) => one.from !== "competition"),
+    };
+    delete (old as { competitionAdded?: true }).competitionAdded;
+    list.items = [old];
+    const prefs = loadFlightPrefs("km", list);
+    expect(prefs.profiles.map(profileName)).toEqual([
+      "Thermal",
+      "XC",
+      "Minimal",
+      "Competition",
+    ]);
+    // Deleted by the pilot, it stays deleted.
+    const without = { ...prefs, profiles: prefs.profiles.slice(0, 3) };
+    expect(saveFlightPrefs(without, list)).toBe(true);
+    expect(loadFlightPrefs("km", list).profiles).toHaveLength(3);
+  });
+
+  it("has the task's widgets and fits", () => {
+    const widgets = PRESET_PAGES.competition.flat().map((cell) => cell.widget);
+    expect(widgets).toEqual(
+      expect.arrayContaining([
+        "nextTurnpoint",
+        "glideToGoal",
+        "startGate",
+        "taskDistance",
+      ]),
+    );
   });
 });

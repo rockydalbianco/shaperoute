@@ -545,9 +545,18 @@ quello nuovo, e senza uscite lunghe i file escono identici byte per byte.
 - [x] `catalog/seed` riscritto con i disegni di prima intatti,
       `catalog/README.md`.
 - [x] CI verde, merge del Coordinatore (#1471, `ba12b1fe`, 2026-11-23).
-- [ ] Passo «catalogo» sul server, col sì dell'utente al Coordinatore
-      (passo 21, preparato dal Coordinatore coi numeri attesi della #1471).
-- [ ] L'utente la prova sul telefono (sport «Bike», poi «Explore»).
+- [x] Passo «catalogo» sul server, col sì dell'utente al Coordinatore
+      (passo 21, server a `74cc96c7`, 2026-11-23 ~14:40Z): `2031
+      recommended routes`, tutti i numeri attesi della #1471, «Explore»
+      senza `activity` invariato.
+- [x] L'utente la prova sul telefono (sport «Bike», poi «Explore»):
+      «visto funziona» (2026-11-23).
+
+**B3 chiusa il 2026-11-23**: in `main` (#1471, docs #1483), sul server dal
+passo 21, provata sul telefono dall'utente. Niente OTA (solo catalogo).
+Gli estratti `out/TASK-441/b2/extracts/` a B3 non servono più. Resta un
+ritocco possibile, non chiesto: zona più larga per cuore e cerchio alla
+distanza più lunga.
 
 ### Esito dei giri (B3, 2026-11-23)
 
@@ -574,6 +583,10 @@ Rimasto fuori, come possibile ritocco: zona più larga per cuore e cerchio
 alla distanza più lunga (costa memoria e zone da rifare); non chiesto.
 
 ## Dove siamo
+
+*2026-11-23, B3 chiusa*: le 129 uscite in bici da 40 e 50 km sono in
+`main` (#1471), sul server (passo 21, `74cc96c7`, catalogo a 2031) e
+provate dall'utente sul telefono («visto funziona»). Di TASK-441 resta C.
 
 *2026-11-23, B2 estere, le cinque*: **la #1418 è in `main`** (`32036bd3`)
 **e sul server** (passo 19, server a `e427ed2e`, riferito dal

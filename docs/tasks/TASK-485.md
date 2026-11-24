@@ -5,8 +5,9 @@
 (#1414, `f4737c66`, 2026-11-22), testi e traduzioni approvati il
 2026-11-23; B2, la voce «Workout plan» del «+», in `main` (#1431,
 `ed0bd4d7`, 2026-11-23); privacy in `main` (#1469, `5d226b33`,
-2026-11-23); restano la copia della privacy sul sito e l'OTA, ciascuna
-col sì dell'utente chiesto dal Coordinatore
+2026-11-23); C, l'apertura da profilo, notifica, link o chat, in `main`
+(#1481, `2a5c7590`, 2026-11-23); restano la copia della privacy sul sito
+e l'OTA, ciascuna col sì dell'utente chiesto dal Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-485-gym-plan-post` (parte 0, in
 `main`); `feat/TASK-485-a-plan-posts-api` (A); B col suo branch e la sua PR
 **Dipende da**: TASK-481 (il foglio «Add to Feed» e `addToFeedEntries.ts`,
@@ -332,6 +333,29 @@ apps/mobile/src/about/documents.test.ts              (+ AboutPage.test.tsx, site
 site/privacy/**/index.html                           (rigenerate con make_privacy.mjs)
 ```
 
+**C, un piano pubblicato aperto fuori dal Feed (2026-11-23, #1481).** Il
+profilo, la campanella, la notifica push, il link del post e il post in
+una chat aprono tutti per id con `drawings.open`, cioè sulla mappa con
+`social/DrawingCard.tsx`; `PostPage.tsx` resta del solo Feed, che il piano
+lo mostrava già. Il link non aspetta TASK-482 D (nativa): la strada JS è
+già in produzione, quindi tutta la C esce con l'OTA. Lista approvata dal
+Coordinatore (fork 3):
+
+```
+apps/mobile/src/social/DrawingCard.tsx       (il riquadro del Feed, «Use this plan» se non è tuo; niente km, invio, GPX, «Draw it near me», «Edit the drawing»)
+apps/mobile/src/social/DrawingsGrid.tsx      (la cella del piano nella griglia del profilo)
+apps/mobile/src/social/PlanGridTile.tsx      (nuovo: «Workout plan», il nome, la settimana a quadratini)
+apps/mobile/src/social/DrawingCardPlan.test.tsx, DrawingsGridPlan.test.tsx   (nuovi)
+```
+
+Nessun testo nuovo («Workout plan» c'era già), nessun cambio all'API. Un
+piano che non si legge tiene la cella di prima. Provata nel simulatore
+contro un'API locale: la griglia mostra la cella del piano; toccata apre
+la scheda sulla mappa col riquadro e «Usa questo piano»; il riquadro apre
+il piano intero coi kg e chiudendo si torna alla scheda. L'utente ha
+approvato le schermate («Sì, approvo»). In `main` il 2026-11-23
+(`2a5c7590`). Esce con l'OTA, col sì dell'utente.
+
 ## Criteri di accettazione
 
 - [x] **0**: scelte dell'utente scritte qui e in ADR-0394; parti e liste dei
@@ -351,8 +375,9 @@ site/privacy/**/index.html                           (rigenerate con make_privac
 ## Fuori scope
 
 - La routine di stretching pubblicata (TASK-466 E).
-- Foto nel post della scheda; ricerca, link pubblico e chat per una scheda
-  pubblicata (come per i post di sole foto, dopo, se l'utente li vuole).
+- Foto nel post della scheda; ricerca per una scheda pubblicata (come per
+  i post di sole foto, dopo, se l'utente la vuole). L'apertura dal link e
+  da una chat è entrata con la parte C.
 - «Update post» da una scheda cambiata (scartato, scelta 3).
 
 ## Esito

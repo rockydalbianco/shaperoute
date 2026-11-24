@@ -56,6 +56,7 @@ import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
 import type { ThemedRequest } from "./themedRoutes";
 import { stillDrawing, useWaited, WhileDrawing } from "./WhileDrawing";
 import { useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 import { postRoute } from "../feed/feedRoute";
 import type { SamplePost } from "../feed/sampleFeed";
@@ -146,6 +147,8 @@ export function ExploreScreen({
   const scroll = useScrollToTopOnReselect<FlatList<FarRow>>();
   // The header turns to glass once the list scrolls (TASK-469 A5b).
   const headerScroll = useHeaderScroll();
+  // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
+  const barRoom = useTabBarRoom();
   // The cards are written again when «Settings» changes the units (TASK-182).
   const units = useUnits();
   // What the page has between its side margins: two cards side by side.
@@ -357,7 +360,7 @@ export function ExploreScreen({
         windowSize={5}
         contentContainerStyle={[
           styles.list,
-          { paddingBottom: insets.bottom + space.lg },
+          { paddingBottom: insets.bottom + space.lg + barRoom },
         ]}
         keyboardShouldPersistTaps="handled"
         testID="explore-list"

@@ -30,5 +30,6 @@ test("the short list of reasons, «other» last", () => {
     "message",
     "outfit_tag",
     "gear",
+    "group",
   ]);
 });

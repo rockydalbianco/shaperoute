@@ -89,6 +89,28 @@ def test_a_detail_comes_back_as_a_stroke_in_both_frames(
     assert stroke == [[-1.0, 0.0], [0.0, 0.0]]
 
 
+@pytest.mark.parametrize(
+    ("kind", "line"),
+    [
+        ("part", [[0.55, 0.3], [0.8, 0.3], [0.8, 0.5], [0.55, 0.5]]),
+        ("detail", [[0.41, 0.4], [0.5, 0.4]]),
+    ],
+)
+def test_an_edited_outline_has_no_pieces_and_is_drawn_with_the_pen_down(
+    client: tuple[TestClient, list[AnyRequest]], kind: str, line: list[list[float]]
+) -> None:
+    """The pieces of the pen up (TASK-297 C2, ADR-0258) come from the
+    engine's trace of the picture, never from a line drawn by hand: an edit
+    answers none, so the app hides the switch and draws the edited outline
+    with the pen down. The app shows «Edit the outline» only with the pen
+    down, so a picture drawn apart is never edited."""
+    http, _ = client
+    response = _edit(http, kind=kind, line=line)
+    assert response.status_code == 200, response.json()
+    body = response.json()
+    assert body["pieces"] == [] and body["image_pieces"] == []
+
+
 def test_edits_add_up_and_their_route_follows_the_details(
     client: tuple[TestClient, list[AnyRequest]],
 ) -> None:

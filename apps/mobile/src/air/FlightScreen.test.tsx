@@ -10,6 +10,7 @@ import {
   render,
   renderHook,
   screen,
+  within,
 } from "@testing-library/react-native";
 
 import { FIXED_LINE, FlightScreen } from "./FlightScreen";
@@ -24,6 +25,10 @@ import { numberSize } from "./FlightWidget";
 import { resetFlightNotice } from "./flightNotice";
 import { flightOf, T0 } from "./syntheticFlight";
 import { resetAirspace, setAirspace } from "./airspaceStore";
+import { glidePrefsNow, resetGlidePrefs } from "./glidePrefs";
+import { resetTaskProgress } from "./taskProgress";
+import { destination } from "./taskRoute";
+import { resetWaypointStore, setTask } from "./waypointStore";
 import { useFlightScreen } from "./useFlightScreen";
 import {
   DEFAULT_VARIO_PREFS,
@@ -243,6 +248,99 @@ describe("the airspaces of the pilot's file (part E2)", () => {
   });
 });
 
+describe("the pilot's task (part D2)", () => {
+  beforeEach(() => {
+    resetTaskProgress();
+    resetWaypointStore();
+    resetGlidePrefs();
+    setTask(null);
+  });
+
+  async function showCompetition() {
+    await showScreen();
+    await fireEvent.press(screen.getByTestId("flight-screen-layout"));
+    await fireEvent.press(screen.getByText("Competition"));
+    await fireEvent.press(screen.getByTestId("flight-options-done"));
+  }
+
+  it("shows the next turnpoint, the glide to goal and the way left", async () => {
+    const here = TRACK.fixes[TRACK.fixes.length - 1].point;
+    const north = (km: number) => destination(here, 0, km * 1000);
+    const point = (name: string, at: [number, number], radiusM: number) => ({
+      waypoint: {
+        name,
+        code: null,
+        point: at,
+        altM: 500,
+        landing: false,
+        description: null,
+      },
+      radiusM,
+      kind: "turnpoint" as const,
+    });
+    // An invented task: B1 5 km north of the pilot, the goal 10 km.
+    setTask({
+      fileName: "test.xctsk",
+      loadedAtMs: T0,
+      task: {
+        earth: "wgs84",
+        turnpoints: [
+          { ...point("TO", here, 400), kind: "takeoff" },
+          point("B1", north(5), 1000),
+          { ...point("GO", north(10), 400), kind: "goal" },
+        ],
+        start: null,
+        goal: { type: "cylinder", deadline: null },
+      },
+    });
+    await showCompetition();
+    expect(
+      within(screen.getByTestId("widget-nextTurnpoint")).getByText("4.0"),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByTestId("widget-nextTurnpoint")).getByText(/^B1 · \d+°/),
+    ).toBeTruthy();
+    // The way left: to the goal's edge.
+    expect(
+      within(screen.getByTestId("widget-taskDistance")).getByText("9.6"),
+    ).toBeTruthy();
+    // Above or below the goal: a number with its sign, never a «yes».
+    expect(
+      within(screen.getByTestId("widget-glideToGoal")).getByText(/^[+-]?\d+$/),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByTestId("widget-glideToGoal")).getByText(/^L\/D 8 · /),
+    ).toBeTruthy();
+    // No start in this task.
+    expect(within(screen.getByTestId("widget-startGate")).getByText("–")).toBeTruthy();
+    // Over B1 at the end of the leg (D3): a number, with the glide used.
+    expect(
+      within(screen.getByTestId("widget-glideToTurnpoint")).getByText(/^[+-]?\d+$/),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByTestId("widget-glideToTurnpoint")).getByText("B1 · L/D 8"),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByTestId("widget-nextTurnpoint")).getByText(/needs \d+ m$/),
+    ).toBeTruthy();
+  });
+
+  it("works the heights out with the glide ratio the pilot chose (D3)", async () => {
+    await showScreen();
+    await fireEvent.press(screen.getByTestId("flight-screen-layout"));
+    await fireEvent.press(screen.getByText("12"));
+    await fireEvent.press(screen.getByText("No wind"));
+    expect(glidePrefsNow()).toEqual({ ld: 12, wind: "none" });
+  });
+
+  it("tells when no task is loaded", async () => {
+    await showCompetition();
+    expect(
+      within(screen.getByTestId("widget-nextTurnpoint")).getByText("No task loaded"),
+    ).toBeTruthy();
+  });
+});
+
 describe("the vario's sound (part C)", () => {
   beforeEach(() => {
     resetVarioPrefs();
@@ -366,6 +464,7 @@ describe("the editor (part B2)", () => {
       "Thermal",
       "XC",
       "Minimal",
+      "Competition",
       "Thermal 2",
     ]);
     expect(screen.getByText("Thermal 2")).toBeTruthy();

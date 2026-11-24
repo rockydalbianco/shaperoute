@@ -30,6 +30,9 @@ li tiene il Coordinatore (`AGENTI.md`, «L'albero»), col sì dell'utente.
 per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 **TASK-480**: «Explore» senza mappe sotto i disegni, corretto in `main`
 (#1363); esce con l'OTA 20, col sì dell'utente al Coordinatore.
+**TASK-496**: batteria in corsa, in `main` (#1529, #1531); esce col
+prossimo OTA, col sì dell'utente al Coordinatore. La batteria si vede solo
+sul telefono dell'utente: una corsa a schermo bloccato e in tasca.
 **TASK-312 E**: quando MuW ha l'azienda, leggere gli accordi di Garmin,
 Suunto, Coros e Komoot e fare domanda, ognuno col sì dell'utente.
 
@@ -69,11 +72,17 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Coach, con TASK-491) e D (tab «Food», con `NUTRITION_ON` di TASK-489).
   File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
-  ADR-0397; A1, A2, B1, B2 in `main`, spente (`NUTRITION_ON`) fino alla
-  build nativa. Tutte le parti approvate dall'utente il 2026-11-23; PR in
-  fila: C1 = #1501, D, G1, C2a; privacy = #1496. Per la build nativa: G2,
-  C2b, accensione. File: `activities/ActivityRow.tsx`,
-  `profile/ProfileHome.tsx`, `about/content/*` · `tasks/TASK-489.md`
+  ADR-0397; A1–D e la privacy in `main`, spente (`NUTRITION_ON`). In fila:
+  D2 = #1547, G1, C2a, H (pagina animata), I (invito a fine attività);
+  decise e non scritte J (ingresso) e K (peso). Build nativa: G2, C2b,
+  accensione. File: `nutrition/*`, `activities/RunEnd.tsx`,
+  `gym/GymEnd.tsx` · `tasks/TASK-489.md`
+- **TASK-513 — «Longevity»: cinquanta storie animate** · ADR-0407; parte 0
+  chiusa il 2026-11-24, nessun codice; il codice in una sessione sua.
+  File: — · `tasks/TASK-513.md`
+- **TASK-514 — La modalità «Nutrition»** · ADR-0408; parte 0 chiusa il
+  2026-11-24; parte dopo TASK-490 D ed E, in una sessione sua. File: — ·
+  `tasks/TASK-514.md`
 - **TASK-487 — Il Feed senza attività finte** · 2026-11-22: niente
   esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
   dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.
@@ -371,9 +380,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   più tardi con l'OTA 17; A4b e A4c card (#1333, #1344) con l'OTA 20; A5
   cerchi dell'header e A5b header che scorre con l'OTA 21; A5c (Profilo,
   sci, #1391) e A6 gruppi di Impostazioni (#1403) con l'OTA 22; A6b account
-  (#1407) con l'OTA 23; A7a fogli, A7b isola, A5c-2 Feed, A7c-1 chip e
-  A7c-2 chip degli sport (#1494) in `main`. Poi A7c-3 (chip condivisi
-  della palestra, volo, pannello del percorso); B dopo la 1.1.0. File: — ·
+  (#1407) con l'OTA 23; A7a fogli, A7b isola, A5c-2 Feed, A7c-1 chip con
+  l'OTA 24; A7c-2 chip degli sport (#1494), A7c-3 chip della palestra
+  (#1509) e la correzione dell'header sopra le pagine (#1534, difetto di
+  A5b) con l'OTA 25. Poi A7c-4 (chip del volo). Parte B avviata
+  dall'utente il 2026-11-24: piano B0–B4 nel task file, la dipendenza
+  (B1) col suo sì e nel taglio nativo. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
@@ -410,6 +422,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (`GRUPPI.md`). Poi A API, B app, C uscite (anche senza percorso, file di
   TASK-309 col via del Coordinatore), D Explore e push, privacy prima
   dell'OTA, E chat di gruppo. File: — · `tasks/TASK-495.md`
+  2026-11-24: A in `main` (#1538, migrazione 0087, sul server col prossimo
+  passo), A2 #1543 armata; poi B (l'app), file approvati dal Coordinatore.
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

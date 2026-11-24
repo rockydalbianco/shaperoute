@@ -1,6 +1,13 @@
 # TASK-458 — Iscrizione e chat: i punti minori
 
-**Stato**: In lavorazione · 2026-11-23
+**Stato**: Done · 2026-11-23 · #1519 in `main` (merge `b532fc17`), in
+produzione con l'OTA 25
+**Esito**: l'occhio nella password di «Sign up» e «Log in», che tiene il
+testo anche quando iOS svuota il campo tornato segreto; i campi detti
+giusti a iOS; le proprie bolle gialle (ADR-0403); una conversazione vuota
+con tre spunti; «New message» accanto al titolo «Messages». Il foglio «Use
+Strong Password?» è di iOS ed è rimasto. **Provato dall'utente sul
+telefono il 24 novembre 2026, con l'OTA 25: «Ottimo funziona tutto».**
 **Fase**: 5 · **Branch**: `fix/TASK-458-signup-chat-minor`
 **ADR**: ADR-0403 (le bolle gialle di chi scrive), dato dal Coordinatore
 il 23 novembre 2026; cita ADR-0383 e ADR-0279 senza toccarne le voci ·
@@ -214,3 +221,15 @@ Lista approvata dal Coordinatore il 23 novembre 2026. `STATUS.md`,
     del titolo e copre la «←». Segnalato al Coordinatore.
   - Nel simulatore i tasti mandati in fretta si perdono, e fuori da un
     campo la «r» ricarica Expo Go: una lettera, una pausa.
+- 2026-11-23, sera: #1519 in `main` (`b532fc17`) col «Sì, unisci»
+  dell'utente al Coordinatore; i testi della task spostati dalla coda
+  delle tabelle alle chiavi dei messaggi per non tornare in conflitto con
+  chi aggiunge in coda. OTA 25 di produzione pubblicata dal Coordinatore.
+  Documenti di chiusura: ADR-0403 in `docs/DECISIONS.md`, la riga in
+  `docs/archive/COMPLETATI.md`. Nessuna voce in `STATUS.md` (non ne aveva)
+  né in `INDEX.md` (parola del Coordinatore).
+- 2026-11-24: provato dall'utente sul telefono, «Ottimo funziona tutto».
+  Nello stesso messaggio ha chiesto il recupero della password sotto
+  «Accedi»: nell'app c'è da TASK-300 («Forgot password?»), ma in
+  produzione `GET /account-email` risponde 404 e il link non si vede. È
+  un lavoro a parte, TASK-515 (numero dal Coordinatore).

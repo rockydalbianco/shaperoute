@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import activity from "../fixtures/group-activity.json" with { type: "json" };
 import members from "../fixtures/group-members.json" with { type: "json" };
 import pushData from "../fixtures/group-push-data.json" with { type: "json" };
 import request from "../fixtures/group-request.json" with { type: "json" };
@@ -16,6 +17,7 @@ import {
   REPORT_KINDS,
   RUN_ACTIVITIES,
   type Group,
+  type GroupActivity,
   type GroupAccess,
   type GroupDetail,
   type GroupMe,
@@ -126,4 +128,10 @@ test("a group's push opens the group, and a group can be reported", () => {
   );
   assert.ok(opened.every((one) => one.group_id.length === 36));
   assert.ok((REPORT_KINDS as readonly string[]).includes("group"));
+});
+
+test("the recent activity of a group is a page of the Feed's cards", () => {
+  const recent: GroupActivity = activity as unknown as GroupActivity;
+  assert.ok(Array.isArray(recent.posts));
+  assert.equal(recent.next, null);
 });

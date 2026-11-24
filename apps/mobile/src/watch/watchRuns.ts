@@ -1,6 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { File } from "expo-file-system";
 
+import { currentOwner, onOwnerChange } from "../account/currentOwner";
 import { t } from "../i18n";
 import { type KeptList, keptList } from "../storage/keptList";
 import type { WatchFile, WatchFiles } from "./watchLink";
@@ -17,12 +18,14 @@ import { decodeWatchTrack, type WatchTrack } from "./watchTrack";
 /** The file, in the app's documents, with a copy beside it (keptList). */
 export const WATCH_RUNS_FILE = "watch-runs.json";
 
-/** At most this many wait: an older one is let go of. */
+/** At most this many wait for each account: an older one is let go of. */
 export const WATCH_RUNS_KEPT = 10;
 
 /** A workout waiting: the file's JSON as the watch wrote it, read again
- * whenever it is shown, so a file the app no longer reads is left out. */
-type Kept = { id: string; receivedAtMs: number; file: unknown };
+ * whenever it is shown, so a file the app no longer reads is left out; with
+ * the account signed in when it came (TASK-507), absent for one that came
+ * with nobody signed in, and before TASK-507: anyone's. */
+type Kept = { id: string; receivedAtMs: number; file: unknown; owner?: number };
 
 export type PendingWatchRun = { id: string; receivedAtMs: number; track: WatchTrack };
 
@@ -30,10 +33,11 @@ function isKept(value: unknown): value is Kept {
   if (value === null || typeof value !== "object") {
     return false;
   }
-  const { id, receivedAtMs, file } = value as Record<string, unknown>;
+  const { id, receivedAtMs, file, owner } = value as Record<string, unknown>;
   return (
     typeof id === "string" &&
     typeof receivedAtMs === "number" &&
+    (owner === undefined || typeof owner === "number") &&
     decodeWatchTrack(file).ok
   );
 }
@@ -91,6 +95,15 @@ function changed(): void {
 
 /** Called whenever the workouts waiting change; returns the function that
  * stops. */
+// Another account signed in, or none (TASK-507): the card shows its own.
+onOwnerChange(changed);
+
+/** Whether `run` is of the account signed in now, or nobody's: another
+ * account's waits, hidden, until it signs in again (TASK-507). */
+function isMine(run: Kept): boolean {
+  return run.owner === undefined || run.owner === currentOwner();
+}
+
 export function subscribeWatchRuns(listener: () => void): () => void {
   listeners.add(listener);
   return () => {
@@ -104,6 +117,7 @@ export function pendingWatchRuns(
 ): PendingWatchRun[] {
   return doors.store
     .load()
+    .filter(isMine)
     .flatMap(({ id, receivedAtMs, file }) => {
       const read = decodeWatchTrack(file);
       return read.ok ? [{ id, receivedAtMs, track: read.track }] : [];
@@ -131,10 +145,23 @@ export async function receiveWatchFile(
       json = null;
     }
     if (decodeWatchTrack(json).ok) {
+      const owner = currentOwner();
       const list = doors.store.load().filter((run) => run.id !== file.id);
-      const next = [{ id: file.id, receivedAtMs: doors.now(), file: json }, ...list]
-        .sort((a, b) => b.receivedAtMs - a.receivedAtMs)
-        .slice(0, WATCH_RUNS_KEPT);
+      const came: Kept = {
+        id: file.id,
+        receivedAtMs: doors.now(),
+        file: json,
+        ...(owner !== null ? { owner } : {}),
+      };
+      // At most WATCH_RUNS_KEPT of each account: another's are never pushed
+      // out by this one's (TASK-507).
+      const sorted = [came, ...list].sort((a, b) => b.receivedAtMs - a.receivedAtMs);
+      const counted = new Map<number | undefined, number>();
+      const next = sorted.filter((run) => {
+        const n = (counted.get(run.owner) ?? 0) + 1;
+        counted.set(run.owner, n);
+        return n <= WATCH_RUNS_KEPT;
+      });
       kept = doors.store.save(next);
     }
   }
@@ -176,4 +203,18 @@ export function openWatchRun(
   }
   forgetWatchRun(run.id, doors);
   opener(run);
+}
+
+/** Lets go of every workout of `owner` waiting: the account is deleted, or
+ * its number is now somebody else's (account/phoneOwners.ts, TASK-507). */
+export function forgetWatchRunsOf(
+  owner: number,
+  doors: WatchRunDoors = PHONE_WATCH_RUN_DOORS,
+): void {
+  const list = doors.store.load();
+  const next = list.filter((run) => run.owner !== owner);
+  if (next.length !== list.length) {
+    doors.store.save(next);
+    changed();
+  }
 }

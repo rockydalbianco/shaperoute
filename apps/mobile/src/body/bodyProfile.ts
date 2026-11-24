@@ -1,4 +1,4 @@
-import { File, Paths } from "expo-file-system";
+import { onOwnerChange, ownedFile } from "../account/currentOwner";
 
 /**
  * The runner's body (TASK-374, ADR-0318): sex, weight, height and year of
@@ -89,10 +89,12 @@ function thisYear(): number {
   return new Date().getFullYear();
 }
 
-/** The body kept on this phone; empty when none was kept or it does not read. */
+/** The body of the account signed in (TASK-507: each account its own,
+ * none with nobody signed in); empty when none was kept or it does not
+ * read. */
 export function loadBody(year: number = thisYear()): BodyProfile {
   try {
-    const file = new File(Paths.document, BODY_FILE);
+    const file = ownedFile(BODY_FILE);
     if (!file.exists) {
       return NO_BODY;
     }
@@ -116,6 +118,14 @@ export function appBody(): BodyProfile {
 /** Told of each new body, while the app is open. */
 const listeners = new Set<(body: BodyProfile) => void>();
 
+// Another account signed in, or none (TASK-507): its body, told to all.
+onOwnerChange(() => {
+  current = loadBody();
+  for (const listener of listeners) {
+    listener(current);
+  }
+});
+
 /** Calls `listener` with each body saved from now on, until the returned
  * function is called. */
 export function subscribeBody(listener: (body: BodyProfile) => void): () => void {
@@ -133,7 +143,7 @@ export function subscribeBody(listener: (body: BodyProfile) => void): () => void
 export function saveBody(body: BodyProfile, year: number = thisYear()): void {
   const kept = bodyOf(body, year);
   try {
-    const file = new File(Paths.document, BODY_FILE);
+    const file = ownedFile(BODY_FILE);
     if (isEmptyBody(kept)) {
       if (file.exists) {
         file.delete();

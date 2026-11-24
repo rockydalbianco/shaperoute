@@ -28,6 +28,7 @@ from shaperoute_api.activities import PlaceNames
 from shaperoute_api.app import create_app
 from shaperoute_api.db import Database, migrations
 from shaperoute_api.expo_push import Expo
+from shaperoute_api.feed import FeedPageBody
 from shaperoute_api.groups import (
     ALPINISM_NOT_PUBLIC,
     CITY_WRONG,
@@ -43,6 +44,7 @@ from shaperoute_api.groups import (
     ONLY_ADMINS,
     ONLY_MEMBERS,
     PASS_FIRST,
+    RECENT,
     SPORTS_WRONG,
     THEY_HAVE_TOO_MANY,
     TOO_MANY_COADMINS,
@@ -96,15 +98,22 @@ class Ticking:
 
     def __init__(self) -> None:
         self.ticks = 0
+        # Moved by hand: days gone by.
+        self.later = timedelta(0)
 
     def __call__(self) -> datetime:
         self.ticks += 1
-        return NOW + timedelta(seconds=self.ticks)
+        return NOW + self.later + timedelta(seconds=self.ticks)
 
 
 @pytest.fixture
-def client(database: Database, expo: FakeExpo) -> TestClient:
-    accounts = Accounts(database, now=Ticking(), hasher=FAST_HASHER)
+def ticking() -> Ticking:
+    return Ticking()
+
+
+@pytest.fixture
+def client(database: Database, expo: FakeExpo, ticking: Ticking) -> TestClient:
+    accounts = Accounts(database, now=ticking, hasher=FAST_HASHER)
     app = create_app(
         FileSource(Path("unused.graphml")),
         accounts=accounts,
@@ -214,6 +223,7 @@ def test_the_examples_are_the_bodies() -> None:
     GroupsBody.model_validate(_load("groups.json"))
     MyGroupsBody.model_validate(_load("my-groups.json"))
     MembersPageBody.model_validate(_load("group-members.json"))
+    FeedPageBody.model_validate(_load("group-activity.json"))
 
 
 def test_the_app_knows_the_same_limits() -> None:
@@ -226,6 +236,7 @@ def test_the_app_knows_the_same_limits() -> None:
         ("GROUPS_ADMIN_MAX", MAX_ADMIN_OF),
         ("GROUP_MEMBERS_MAX", MAX_MEMBERS),
         ("GROUP_COADMINS_MAX", MAX_COADMINS),
+        ("GROUP_RECENT_DAYS", RECENT.days),
     ):
         assert f"export const {name} = {value};" in source, name
     assert 'export const GROUP_NEVER_PUBLIC_SPORT = "alpinism";' in source
@@ -266,6 +277,7 @@ def test_the_endpoints_want_a_session(client: TestClient) -> None:
         ("PUT", f"/groups/{some}/mute"),
         ("DELETE", f"/groups/{some}/mute"),
         ("GET", f"/groups/{some}/members"),
+        ("GET", f"/groups/{some}/activity"),
         ("DELETE", f"/groups/{some}/members/{who}"),
         ("PUT", f"/groups/{some}/members/{who}/role"),
         ("GET", f"/groups/{some}/requests"),
@@ -822,3 +834,92 @@ def test_deleting_an_account_takes_its_requests_and_invites(
     assert rows(database, "SELECT * FROM group_requests") == []
     assert rows(database, "SELECT * FROM group_invites") == []
     assert page(client, ada, group["id"])["members"] == 1
+
+
+# --- Recent activity (GRUPPI.md §5, part A2) ---
+
+
+def posted(
+    client: TestClient,
+    headers: Headers,
+    key: str,
+    title: str,
+    visibility: str = "everyone",
+    **run: Any,
+) -> None:
+    """A run of the example, saved and published as a post."""
+    body = {**_load("activity-request.json"), "title": title, **run}
+    saved = client.put(f"/me/activities/{key}", json=body, headers=headers)
+    assert saved.status_code == 201, saved.text
+    drawing = {"title": title, "visibility": visibility}
+    answer = client.put(f"/me/activities/{key}/drawing", json=drawing, headers=headers)
+    assert answer.status_code == 200, answer.text
+
+
+def recent(client: TestClient, headers: Headers, group_id: str, query: str = "") -> Any:
+    return client.get(f"/groups/{group_id}/activity{query}", headers=headers)
+
+
+def titles(answer: Any) -> list[str]:
+    assert answer.status_code == 200, answer.text
+    return [post["title"] for post in answer.json()["posts"]]
+
+
+def test_recent_activity_is_the_members_posts_of_the_group_s_sports(
+    client: TestClient,
+) -> None:
+    ada, bob, cleo = (signed_up(client, n) for n in ("ada", "bob", "cleo"))
+    group = made(client, ada, access="public", sports=["running"])
+    joined(client, bob, group["id"])
+    posted(client, ada, "a000000000000001", "Ada's run")
+    posted(client, bob, "b000000000000001", "Bob's ride", activity="cycling")
+    posted(client, bob, "b000000000000002", "Bob's run")
+    posted(client, bob, "b000000000000003", "Bob's secret", visibility="only_me")
+    posted(client, cleo, "c000000000000001", "Cleo's run")
+    assert titles(recent(client, ada, group["id"])) == ["Bob's run", "Ada's run"]
+    first = recent(client, ada, group["id"], "?limit=1")
+    assert titles(first) == ["Bob's run"]
+    after = first.json()["next"]
+    assert titles(recent(client, ada, group["id"], f"?limit=1&cursor={after}")) == [
+        "Ada's run"
+    ]
+    # Outside the group: nothing of it.
+    answer = recent(client, cleo, group["id"])
+    assert error(answer, 403, "http_error") == ONLY_MEMBERS
+
+
+def test_recent_activity_respects_followers_blocks_and_leaving(
+    client: TestClient,
+) -> None:
+    ada, bob, cleo, dan = (signed_up(client, n) for n in ("ada", "bob", "cleo", "dan"))
+    group = made(client, ada, access="public", sports=["running"])
+    for who in (bob, cleo, dan):
+        joined(client, who, group["id"])
+    posted(client, bob, "b000000000000001", "Bob's run")
+    posted(client, cleo, "c000000000000001", "Cleo for followers", "followers")
+    # «Followers» only to a follower, as in the Feed.
+    assert titles(recent(client, dan, group["id"])) == ["Bob's run"]
+    # A block between two members: the other's posts are gone.
+    block(client, bob, dan)
+    assert titles(recent(client, dan, group["id"])) == []
+    # Out of the group: nothing at all.
+    ok(leave(client, dan, group["id"]))
+    assert recent(client, dan, group["id"]).status_code == 403
+    # Who left takes its posts out of the group's activity.
+    ok(leave(client, cleo, group["id"]))
+    posted(client, cleo, "c000000000000002", "Cleo's run")
+    assert titles(recent(client, ada, group["id"])) == ["Bob's run"]
+
+
+def test_recent_activity_is_the_last_fourteen_days(
+    client: TestClient, ticking: Ticking
+) -> None:
+    ada, bob = signed_up(client, "ada"), signed_up(client, "bob")
+    group = made(client, ada, access="public", sports=["running"])
+    joined(client, bob, group["id"])
+    posted(client, bob, "b000000000000001", "Old run")
+    ticking.later = timedelta(days=13, hours=23)
+    posted(client, bob, "b000000000000002", "New run")
+    assert titles(recent(client, ada, group["id"])) == ["New run", "Old run"]
+    ticking.later = timedelta(days=14, hours=1)
+    assert titles(recent(client, ada, group["id"])) == ["New run"]

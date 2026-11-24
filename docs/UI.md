@@ -681,8 +681,10 @@ anche (A7c-1) i chip di «Share your run», del post di sole foto e del
 composer, di «Tag people» e di chi può vedere, dei tag dell'outfit, di
 «Style», del sonno, del calendario e «Share live», e (A7c-2) quelli
 dell'obiettivo in palestra, dei posti della pagaia, della lunghezza della
-vasca e della giornata sulla neve. Restano i chip condivisi della
-palestra (`gymStyles`), del volo e del pannello del percorso: A7c-3.
+vasca e della giornata sulla neve, e (A7c-3) i chip condivisi della
+palestra (`gymStyles.chip`): il riposo, la scelta dell'esercizio, la
+guida e la storia dell'esercizio, «l'ultima volta», Coach e il post
+della scheda. Restano i chip della schermata del volo: A7c-4.
 
 **Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
 raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro
@@ -717,7 +719,11 @@ schermo e una scheda nascosta rimette l'header a riposo);
 una pagina che non lo dice tiene l'header a riposo, e una che se ne va
 lontana dalla cima lo rimette a riposo. Con «Riduci trasparenza» la fascia è opaca
 con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
-contenuto non passa sotto l'header: per quello serve la parte B.
+contenuto non passa sotto l'header: per quello serve la parte B. L'header
+sta sopra le pagine delle schede con uno `zIndex`, e resta dentro lo
+shell: la radice di `TabShell` è tenuta con `collapsable={false}`, così
+non esce sopra le pagine aperte sopra l'app (una conversazione, «Message
+requests»).
 
 **I gruppi di Impostazioni** (TASK-469 A6, `src/settings/settingsGroup.ts`):
 ogni gruppo di righe di Impostazioni ha gli angoli a 24 (`radius.group`) e i
@@ -2861,6 +2867,29 @@ dell'anteprima, con i dettagli disegnati (`POST /image-route-jobs`). «Choose an
 foto; annullare il selettore lascia quella di prima. Sotto la distanza del
 risultato si legge «Picture · on roads · target 15 km».
 
+**Con la penna alzata** (TASK-297 C2, ADR-0258). Quando il contorno ha
+dei pezzi (`pieces` di `/image-outlines`: gli altri soggetti e i fori di un
+logo, `API.md`), sotto l'anteprima c'è l'interruttore **«Lift the pen
+between parts»**, lo stesso delle forme in pezzi e lo stesso stato di
+quello delle parole, acceso all'avvio: così è proposto acceso. Acceso,
+l'anteprima disegna i pezzi gialli come i tratti, senza i trattini che li
+collegano, e con i fori; la riga sotto dice *The yellow lines are what the
+route will draw: each part on its own, going from one to the next without
+drawing. If they do not look like the subject, the route will not either:
+try another picture.* (testo nuovo, **approvato dall'utente** nelle
+cinque lingue il 2026-10-27); «Edit the outline» non c'è, perché le
+modifiche sono della linea con la penna giù (confermato dall'utente il
+2026-10-27). La richiesta manda `pieces` e `pen_up: true` al
+posto degli `strokes`. Il percorso torna con i `walks` e si mostra come una
+forma in pezzi: i tratti a piedi tratteggiati sulla mappa, «6.0 km of
+drawing + 0.4 km walking between the parts», la registrazione in pausa sui
+tratti a piedi e la voce «the next part», come per le parole (TASK-198,
+TASK-223). Spento, tutto come prima, con «Edit the outline». Senza pezzi
+(un soggetto senza fori, una foto pronta di «Draw», un contorno modificato,
+un'API più vecchia) l'interruttore non c'è. Pezzi che l'app non sa
+disegnare (non uno per uno sopra la foto, fuori dalla cornice) si lasciano
+fuori, non il contorno.
+
 Se l'immagine è rifiutata, al posto dell'anteprima il motivo in parole
 semplici, con sotto il testo del motore:
 
@@ -4398,7 +4427,11 @@ screen goes dark but stays on, so directions go on. Do not lock the phone:
 if you press the side button, directions stop. To come back, hold the
 screen for 2 seconds.» La luminosità torna com'era all'uscita, all'arrivo
 (che toglie anche il pulsante), con «Stop» e quando l'app esce dal primo
-piano.
+piano. Sotto lo schermo nero la mappa non riceve niente della corsa e
+l'orologio dei numeri non scatta; uscendo la mappa riceve una volta i
+punti che mancano e la posizione, e l'orologio si legge subito (TASK-496).
+In vista, a ogni posizione vanno alla mappa solo i punti nuovi, e la mappa
+segue chi corre in 250 ms.
 
 **La traccia della corsa** (TASK-112, ADR-0091). Durante la navigazione
 l'app tiene la linea di quello che si è corso: ogni posizione del GPS,
@@ -4406,7 +4439,12 @@ tranne quelle con errore oltre 40 m e quelle a meno di 5 m dalla
 precedente, con distanza e durata. Anche in modalità tasca. La traccia sta
 in un file nei documenti dell'app (`current-run.json`), insieme al percorso
 pianificato: si scrive alla prima posizione, poi al più ogni 15 secondi, a
-«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Una corsa per volta:
+«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Con l'app dietro
+un'altra o il telefono bloccato ogni posizione tenuta si scrive subito
+(TASK-304), ma solo lei: una riga in coda al diario `current-run.journal`,
+accanto al file; il file intero si riscrive uscendo dal primo piano, a una
+pausa, alla fine e ogni 300 righe, e la corsa riaperta è il file con il
+diario dopo (TASK-496, aggiunta ad ADR-0264). Una corsa per volta:
 «Start» sullo stesso percorso entro 30 minuti continua la traccia, un altro
 percorso la sostituisce alla prima posizione. La traccia non esce dal
 telefono: la usano i numeri della corsa e la schermata di fine corsa
@@ -4815,6 +4853,12 @@ Acceso, la notte pubblicata da sola è un post come gli altri, senza corsa:
 scheda di una corsa in «My activities». Apre a tutto schermo «Share your
 run», con «Close» in alto a sinistra:
 
+- **L'ordine della pagina** (TASK-450, scelta dell'utente del 2026-11-23):
+  il post; subito sotto «Instagram» ed «Export video», con la riga «Pick
+  Instagram in the list…» e l'eventuale errore; poi «Style» (i fondi del
+  post), «Results», «Add emoji», «Edit video», «Music» e Strava. Le due
+  azioni si raggiungono senza scorrere; dove le voci qui sotto dicono
+  «sopra» o «accanto», vale quest'ordine.
 - **Il post**, in alto: 9:16, sul giallo di Sgrava. Il cuore del logo e
   «Sgrava», il titolo (quello della corsa, o luogo e forma; nessuno a
   fine corsa), il disegno della corsa in nero **senza i primi e gli ultimi
@@ -4822,6 +4866,27 @@ run», con «Close» in alto a sinistra:
   «Time», «Pace» (il passo manca sotto i 100 m). **Il punteggio non è fra i risultati**
   (TASK-241 parte C, chiesto dall'utente): non si può accendere, non è
   sul post e non va nel testo per Strava.
+- **Titolo e giorno sul post** (TASK-450, scelte dell'utente del
+  2026-11-23): da «My activities» il titolo è quello del **post**, scritto
+  in «Edit post», quando c'è; altrimenti quello del percorso o «luogo ·
+  forma», come prima. Dal Feed è già il titolo del post. Sotto il titolo,
+  piccolo, il giorno della corsa come lo scrive l'app («Sat 21 Nov 2026»),
+  sempre: da «My activities», dal Feed (il giorno della corsa, non quello
+  della pubblicazione) e a fine corsa, dove sta da solo perché il titolo
+  non c'è ancora. Titolo (due righe al più) e giorno finiscono sopra il disegno.
+- **«Style»**, sotto i due pulsanti (TASK-450, scelta dell'utente del
+  2026-11-23): tre tessere 9:16 col disegno della corsa, una accesa.
+  «Yellow», accesa all'apertura: il giallo del logo con tutto in nero,
+  com'era. «Night»: il fondo scuro dell'app al suo passo più scuro, la
+  linea nel giallo del percorso, le scritte chiare. «Day»: il fondo chiaro
+  dell'app al suo passo più chiaro, linea e scritte scure. Sono le palette
+  del video («Night», «Day»), qualunque tono abbia l'app; i colori vengono
+  solo dai token. Il quadrato giallo del logo resta giallo su tutti e tre.
+  La scelta vale per l'immagine di «Instagram» e non si salva col post,
+  come stile e musica del video. Le tessere di palestra e piscina restano
+  com'erano, senza «Style». Nella pagina il post ha attorno un filo
+  (`hairline`) che non entra nell'immagine: con «Night» ha lo stesso scuro
+  della pagina.
 - **«Results»**: una pastiglia per risultato, accesa all'inizio; spenta,
   il risultato sparisce dal post e dal testo per Strava.
 - **«Add emoji»**: 🔥 ❤️ 💪 🏃 🎉 😅 🥵 😎 ⚡ 🏆 ☀️ 🌧️. Un tocco mette l'emoji

@@ -50,6 +50,9 @@ const ROWS = [
   // In the gym's guide, over the whole screen: the tabs of a week of more
   // than four workouts (TASK-433 C).
   "gym/GymPlanWizard.tsx",
+  // In «My plans», over the whole screen: the tabs of a plan's workouts and
+  // its weeks beyond four in the table (TASK-506 A).
+  "gym/PlanTable.tsx",
   // In the activity calendar, over the whole screen: the chips of the
   // sports (TASK-462 B).
   "activities/ActivityCalendar.tsx",

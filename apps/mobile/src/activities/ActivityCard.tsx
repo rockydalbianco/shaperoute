@@ -153,7 +153,8 @@ export function ActivityCard({ activity, onDelete }: Props) {
       )}
       <View style={styles.buttons}>
         <View style={styles.half}>
-          <SharePostButton makeRun={() => postOfActivity(activity)} />
+          {/* The poster has the post's title, as the card (TASK-450). */}
+          <SharePostButton makeRun={() => postOfActivity(activity, shown)} />
         </View>
         {editable && (
           // In a half of its own, as «Share»: the two are as wide.

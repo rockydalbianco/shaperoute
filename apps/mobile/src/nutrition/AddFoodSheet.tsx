@@ -18,6 +18,7 @@ import type { Language } from "../i18n/languages";
 import { color, font, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
 import { Tap } from "../ui/Tap";
+import { BarcodeStep } from "./BarcodeStep";
 import { foodNameIn, foodTableIn } from "./foodNames";
 import { type Food, kcalOf, searchFoods } from "./foods";
 import { kcalLabel } from "./MealCard";
@@ -98,6 +99,8 @@ type Props = {
   /** «Remove», for a portion already written. */
   onRemove: () => void;
   onClose: () => void;
+  /** The fake fetch of the tests, for a product looked up by its barcode. */
+  fetchFn?: typeof fetch;
 };
 
 /**
@@ -117,7 +120,10 @@ export function AddFoodSheet(props: Props) {
 }
 
 type Step =
-  { at: "search" } | { at: "grams"; food: Food } | { at: "own"; food: Food | null };
+  | { at: "search" }
+  | { at: "grams"; food: Food }
+  | { at: "own"; food: Food | null; barcode?: string }
+  | { at: "barcode" };
 
 function Body({
   meal,
@@ -127,6 +133,7 @@ function Body({
   onPortion,
   onRemove,
   onClose,
+  fetchFn,
 }: Props) {
   const [query, setQuery] = useState("");
   const [step, setStep] = useState<Step>(
@@ -134,11 +141,25 @@ function Body({
   );
   const [grams, setGrams] = useState(portion ? String(portion.grams) : "");
 
+  if (step.at === "barcode") {
+    return (
+      <BarcodeStep
+        own={ownFoods}
+        onFood={(food) => setStep({ at: "grams", food })}
+        onEdit={(food) => setStep({ at: "own", food })}
+        onOwn={(barcode) => setStep({ at: "own", food: null, barcode })}
+        onCancel={() => setStep({ at: "search" })}
+        fetchFn={fetchFn}
+      />
+    );
+  }
+
   if (step.at === "own") {
     return (
       <OwnFoodForm
         food={step.food}
         startName={query.trim()}
+        barcode={step.barcode}
         onSaved={(food) => setStep({ at: "grams", food })}
         onDeleted={() => setStep({ at: "search" })}
         onCancel={() =>
@@ -158,7 +179,11 @@ function Body({
         <Text style={styles.title} accessibilityRole="header">
           {foodNameIn(food, language)}
         </Text>
-        <Text style={styles.muted}>{`${kcalLabel(food.kcalPer100g)} / 100 g`}</Text>
+        <Text style={styles.muted}>
+          {food.fromOpenFoodFacts === true
+            ? `${kcalLabel(food.kcalPer100g)} / 100 g · ${t("from Open Food Facts")}`
+            : `${kcalLabel(food.kcalPer100g)} / 100 g`}
+        </Text>
         <Text style={styles.label}>{t("Grams")}</Text>
         <TextInput
           style={gymStyles.input}
@@ -284,6 +309,16 @@ function Body({
           testID="add-food-own"
         >
           <Text style={styles.linkText}>{t("Add my own food")}</Text>
+        </Tap>
+        {/* A packaged product by the code on its pack (part G); the
+            scanner comes with the native build. */}
+        <Tap
+          style={styles.link}
+          onPress={() => setStep({ at: "barcode" })}
+          accessibilityRole="button"
+          testID="add-food-barcode"
+        >
+          <Text style={styles.linkText}>{t("Type the code")}</Text>
         </Tap>
       </ScrollView>
     </View>

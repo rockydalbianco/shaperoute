@@ -724,6 +724,9 @@ export const FR: Table = {
   "Hide the picture": "Masquer la photo",
   "Show the picture": "Afficher la photo",
   "Edit the outline": "Modifier le contour",
+  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
+  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
+    "Les lignes jaunes sont ce que le parcours dessinera : chaque partie à part, en allant de l'une à l'autre sans dessiner. Si elles ne ressemblent pas au sujet, le parcours non plus : essaie une autre photo.",
   "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
     "Un seul sujet sur un fond uni marche le mieux : un dessin, un logo, un objet sur une table vide. Le parcours suit sa ligne extérieure. Jusqu'à 4 sujets séparés sont reliés en une seule ligne.",
   "Tracing the outline…": "Tracé du contour…",
@@ -1402,6 +1405,16 @@ export const FR: Table = {
   "What do you want to train?": "Que veux-tu entraîner ?",
   "Choose one or more. Then we guide you in 5 steps.":
     "Choisis-en un ou plusieurs. Ensuite, on te guide en 5 étapes.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
+  Table: "Tableau",
+  "No exercises yet.": "Pas encore d'exercice.",
+  "Change week {n}": "Change la semaine {n}",
+  "kg · touch a week to change it": "kg · touche une semaine pour la changer",
+  // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; approved by the user on 2026-11-23)
+  Tomorrow: "Demain",
+  "+ 1 more": "+ 1 autre",
+  "+ {n} more": "+ {n} autres",
+  "This week: {done} of {total} done": "Cette semaine : {done} sur {total} faits",
   "With weights and machines": "Avec poids et machines",
   Bodyweight: "Poids du corps",
   "At home or in the park, no equipment": "À la maison ou au parc, sans matériel",
@@ -3448,8 +3461,6 @@ export const FR: Table = {
     "Au repos : l'équation de Mifflin-St Jeor, à partir des données corporelles de ton profil. Activités : équations de l'ACSM et le Compendium of Physical Activities 2024. Les jours où Santé d'Apple a ton énergie active, c'est ce chiffre qui est utilisé.",
   "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
     "Les valeurs réelles varient selon le produit, la recette et la personne. MuW ne fournit ni régimes ni conseils médicaux.",
-  "Only you see this page. Nothing here leaves your phone.":
-    "Toi seul vois cette page. Rien de ce qui s'y trouve ne quitte ton téléphone.",
   // src/nutrition (TASK-489 part C1)
   "Today the energy at rest is counted up to now.":
     "Aujourd'hui, l'énergie au repos est comptée jusqu'à maintenant.",
@@ -3505,6 +3516,15 @@ export const FR: Table = {
   "Goal taken": "But atteint",
   "Turnpoint {name} taken. Next: {next}.": "Balise {name} validée. Suivante : {next}.",
   "Goal {name} taken.": "But {name} atteint.",
+  // src/air/ (TASK-479 part D3: the glide; approved by the user on 2026-11-23)
+  "Glide to turnpoint": "Plané jusqu'à la balise",
+  "Nearest landing": "Atterrissage le plus proche",
+  "Glide ratio used": "Finesse utilisée",
+  "Wind used": "Vent utilisé",
+  Estimated: "Estimé",
+  "No wind": "Pas de vent",
+  "needs {height}": "il faut {height}",
+  "No landings in your file": "Aucun atterrissage dans votre fichier",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Bilan calorique",
   Used: "Dépensées",
@@ -3514,6 +3534,31 @@ export const FR: Table = {
   "Week total": "Total de la semaine",
   "Today is not in the total until the day is over.":
     "Aujourd'hui n'entre dans le total qu'une fois la journée terminée.",
+  // src/nutrition (TASK-489 part D2: Nutrition from the profile; approved by the user on 2026-11-24)
+  "Write what you eat and see your calorie balance.":
+    "Note ce que tu manges et vois ton bilan calorique.",
+  "Open Nutrition": "Ouvrir Nutrition",
+  // src/nutrition (TASK-489 part G1)
+  "Type the code": "Saisir le code",
+  Barcode: "Code-barres",
+  "Look up": "Rechercher",
+  "Looking it up…": "Recherche en cours…",
+  "Only the barcode goes to Open Food Facts, to find the product.":
+    "Seul le code-barres est envoyé à Open Food Facts, pour trouver le produit.",
+  "from Open Food Facts": "d'Open Food Facts",
+  "Check the numbers against the label: you can correct them.":
+    "Vérifie les chiffres sur l'étiquette : tu peux les corriger.",
+  "Use this food": "Utiliser cet aliment",
+  "This product is not on Open Food Facts.":
+    "Ce produit n'est pas sur Open Food Facts.",
+  "Open Food Facts has no calories for this product.":
+    "Open Food Facts n'a pas les calories de ce produit.",
+  "The product could not be looked up. Check your connection and try again.":
+    "Impossible de rechercher le produit. Vérifie ta connexion et réessaie.",
+  "Products found by barcode contain data from Open Food Facts, available under the Open Database License. They are kept apart from the USDA list.":
+    "Les produits trouvés par code-barres contiennent des données d'Open Food Facts, disponibles sous l'Open Database License. Ils restent séparés de la liste USDA.",
+  "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
+    "Toi seul vois cette page. Ce que tu écris ici reste sur ton téléphone ; un code-barres que tu recherches est envoyé à Open Food Facts.",
   // src/groups (TASK-495 part B)
   "Find your city": "Cherche ta ville",
   "New group": "Nouveau groupe",

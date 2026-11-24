@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { selectionFeel } from "../haptics/haptics";
 import { t } from "../i18n";
+import { shapeName as shapeTitle } from "../i18n/shapeNames";
 import {
   color,
   fontSize,
@@ -85,7 +86,9 @@ export function ShapeGrid({ chosen, onPick, shapes = SHAPES }: Props) {
               style={[styles.name, selected && styles.selectedName]}
               numberOfLines={2}
             >
-              {shapeName(shape)}
+              {/* With its capital, as every label of the page (TASK-508);
+                  the field takes the word as a sentence writes it. */}
+              {shapeTitle(shape)}
             </Text>
           </Pressable>
         );

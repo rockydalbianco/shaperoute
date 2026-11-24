@@ -1,8 +1,10 @@
 # TASK-508 — Rifiniture dell'interfaccia (U1, U11–U14)
 
-**Stato**: In lavorazione · 2026-11-24 · in attesa del sì del Coordinatore
-sulla lista dei file
-**Fase**: 5 · **Branch**: `feat/TASK-508-ui-polish`
+**Stato**: In lavorazione · 2026-11-24 · due PR (scelta del Coordinatore):
+A tecnica (U1, U11 a capo e maiuscole, U13 orologio), B coi testi (U11
+pulsante spento, U12, U13 push, U14)
+**Fase**: 5 · **Branch**: `feat/TASK-508-a-ui-polish` (A), poi
+`feat/TASK-508-b-texts` (B)
 **ADR**: da chiedere al Coordinatore (il giallo di «Log in» / «Sign up»,
 seconda eccezione alla regola 1 di `UI.md` «Il tema») · numero di task dal
 «Coordinatore (fork 3)» il 23 novembre 2026 (gruppo L di
@@ -52,20 +54,38 @@ vedere all'utente con le schermate.
 
 ## File toccati
 
-In attesa del sì del Coordinatore (chiesto il 24-11):
+Sì del Coordinatore il 24-11: nessuna PR aperta tocca questi file, salvo
+`App.tsx` (a turno: dopo TASK-507 B2).
 
-- `apps/mobile/src/social/FollowLists.tsx`
-- `apps/mobile/src/screens/Segmented.tsx`, `apps/mobile/src/route/RoutePanel.tsx`
+**PR A, tecnica**:
+
+- `apps/mobile/src/social/FollowLists.tsx` + `FollowListsNames.test.tsx` (nuovo)
+- `apps/mobile/src/screens/Segmented.tsx` + `SegmentedOneLine.test.tsx` (nuovo)
+- `apps/mobile/src/route/RoutePanel.tsx` (la prop `oneLine` al selettore di «Draw»)
 - `apps/mobile/src/route/ShapeGrid.tsx`, `apps/mobile/src/route/ShapeTiles.tsx`
-- `apps/mobile/App.tsx` (il `footer` di «Draw»), nuovo `apps/mobile/src/route/DrawHint.tsx`
+  + `ShapeTileNames.test.tsx` (nuovo)
+- `apps/mobile/src/screens/ProfileScreen.tsx` + `ProfileStatusBar.test.tsx`
+  (nuovo); dentro anche `useTabBarRoom` nel fondo dello scroller, chiesto dal
+  Coordinatore per TASK-469 parte B (oggi vale 0)
+- `apps/mobile/src/ui/StatusBarCover.tsx` + test (nuovi)
+- `docs/tasks/TASK-508.md`
+
+**PR B, coi testi** (dopo la A):
+
+- `apps/mobile/App.tsx` (il `footer` di «Draw»: quando il Coordinatore dà
+  il turno), nuovo `apps/mobile/src/route/DrawHint.tsx` + test (scritti, in
+  `out/TASK-508/` del checkout principale finché non servono)
 - `apps/mobile/src/explore/presets.ts`, `apps/mobile/src/explore/ExploreTools.tsx`,
-  `apps/mobile/src/explore/ExploreScreen.tsx`
-- `apps/mobile/src/screens/ProfileScreen.tsx`, nuovo `apps/mobile/src/ui/StatusBarCover.tsx`
-- `apps/mobile/src/settings/NotificationsSetting.tsx`
+  `apps/mobile/src/explore/ExploreScreen.tsx` (dopo #1559, già in `main`)
+- `apps/mobile/src/settings/NotificationsSetting.tsx` (sì del Coordinatore
+  da avere)
 - `apps/mobile/src/screens/SignInScreen.tsx`
-- `apps/mobile/src/i18n/{it,de,fr,es}.ts` (chiavi nuove nei blocchi giusti, non in coda)
-- i test accanto ai file toccati · `docs/tasks/TASK-508.md`
-- nella PR dei documenti: `docs/UI.md`, `docs/DECISIONS.md`, `docs/archive/COMPLETATI.md`
+- `apps/mobile/src/i18n/{it,de,fr,es}.ts`: le città nel blocco delle città
+  (accanto a `London`), le altre nel blocco della loro schermata, non in coda
+- i test accanto ai file toccati
+
+**PR dei documenti** (dopo i merge): `docs/UI.md`, `docs/DECISIONS.md`
+(l'ADR del giallo di «Log in»), `docs/archive/COMPLETATI.md`, questo file.
 
 ## Criteri di accettazione
 
@@ -84,4 +104,8 @@ In attesa del sì del Coordinatore (chiesto il 24-11):
 ## Cronologia
 
 - 2026-11-24: riverifica su `main`, cinque domande all'utente (sopra),
-  lista dei file al Coordinatore. Nessun codice ancora.
+  lista dei file al Coordinatore.
+- 2026-11-24 sera: sì del Coordinatore, due PR. Codice e test della PR A
+  scritti; test locali e schermate in attesa di «carico ok» e del turno di
+  simulatore (dato e ripreso due volte: prima a TASK-495 B, poi a TASK-506
+  per un crash in produzione).

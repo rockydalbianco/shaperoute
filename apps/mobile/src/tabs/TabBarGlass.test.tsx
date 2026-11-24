@@ -10,6 +10,7 @@ import {
   TAB_BAR_INSET,
   TAB_GLASS_HEIGHT,
   TabBar,
+  tabBarBand,
   tabCapsuleX,
   tabGlassLift,
 } from "./TabBar";
@@ -63,12 +64,26 @@ test("the glass floats inset from the sides, lifted over the home indicator", as
 test("with a home indicator the band is as tall as the bar was: the pages keep their room", async () => {
   await bar("glass", 34);
   expect(styleOf("tab-bar").height).toBe(TAB_BAR_HEIGHT + 34);
+  expect(tabBarBand(34)).toBe(TAB_BAR_HEIGHT + 34);
+});
+
+test("the band floats over the pages, with no face of its own: they go on under it", async () => {
+  await bar("glass", 34);
+  const band = styleOf("tab-bar");
+  expect(band.position).toBe("absolute");
+  expect(band.bottom).toBe(0);
+  expect(band.left).toBe(0);
+  expect(band.right).toBe(0);
+  expect(band.backgroundColor).toBeUndefined();
+  // Around the glass a touch goes to the page under it.
+  expect(screen.getByTestId("tab-bar").props.pointerEvents).toBe("box-none");
 });
 
 test("without a home indicator the glass still floats clear of the edge", async () => {
   await bar("glass", 0);
   expect(styleOf("tab-glass").bottom).toBe(space.sm);
   expect(styleOf("tab-bar").height).toBe(TAB_GLASS_HEIGHT + space.sm + space.xs);
+  expect(tabBarBand(0)).toBe(TAB_GLASS_HEIGHT + space.sm + space.xs);
 });
 
 test("on the glass the capsule of the tab on screen is the text, faint, never yellow", async () => {

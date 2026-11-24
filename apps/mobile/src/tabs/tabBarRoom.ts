@@ -6,8 +6,8 @@ import { createContext, useContext } from "react";
  * over them, so each one adds this room after the last thing it shows —
  * to the end of its scroller, and under anything it keeps at the bottom.
  *
- * Given by the tab shell. Zero outside it, and zero until the bar floats:
- * a page that asks for it today looks as it did.
+ * Given by the tab shell: the band of the bar, the home indicator's room
+ * in it. Zero outside the shell, where there is no bar.
  *
  * Not the safe area: that one reaches the sheets a page opens too, and
  * they are not under the bar.

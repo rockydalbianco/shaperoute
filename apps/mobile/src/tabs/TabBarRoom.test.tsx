@@ -3,14 +3,17 @@ import { join } from "node:path";
 
 import { render, screen } from "@testing-library/react-native";
 import { type StyleProp, StyleSheet, Text, type ViewStyle } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { SkiTodayPage } from "../skimode/SkiTodayPage";
 import { space } from "../theme/tokens";
+import { TAB_BAR_HEIGHT, tabBarBand } from "./TabBar";
 import { TabBarRoomContext, useTabBarRoom } from "./tabBarRoom";
+import { type ShellPage, TabShell } from "./TabShell";
 
 // The pages of the tab bar go on under the bar (TASK-469 B2a, ADR-0383):
 // each leaves the bar's room after the last thing it shows. The shell gives
-// the room; until the bar floats it is zero, and the pages look as before.
+// the room: the band of the bar, which floats over them.
 
 function Room() {
   return <Text testID="room">{useTabBarRoom()}</Text>;
@@ -28,6 +31,29 @@ test("inside it, the room the shell gives", async () => {
     </TabBarRoomContext.Provider>,
   );
   expect(screen.getByTestId("room")).toHaveTextContent("72");
+});
+
+function Shell() {
+  const pages: ShellPage[] = [
+    { title: "Feed", label: "Feed", icon: "house", render: () => <Room /> },
+    { title: "Draw", label: "Draw", icon: "pencil", render: () => <Text>Draw</Text> },
+  ];
+  return (
+    <SafeAreaProvider
+      initialMetrics={{
+        frame: { x: 0, y: 0, width: 390, height: 844 },
+        insets: { top: 47, left: 0, right: 0, bottom: 34 },
+      }}
+    >
+      <TabShell pages={pages} page={0} onPage={() => {}} />
+    </SafeAreaProvider>
+  );
+}
+
+test("the shell gives its pages the band of the bar, the home indicator in it", async () => {
+  await render(<Shell />);
+  expect(screen.getByTestId("room")).toHaveTextContent(String(tabBarBand(34)));
+  expect(tabBarBand(34)).toBe(TAB_BAR_HEIGHT + 34);
 });
 
 /** The end of the page's scroller: the padding under its last thing. */

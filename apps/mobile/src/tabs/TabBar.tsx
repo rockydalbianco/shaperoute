@@ -90,6 +90,18 @@ export function tabCapsuleX(index: number, width: number, count: number): number
 export function tabGlassLift(bottomInset: number): number {
   return Math.max(bottomInset - TAB_GLASS_SINK, space.sm);
 }
+
+/**
+ * How tall the band of the bar is, from the bottom edge of the screen: the
+ * room a page leaves at its end, since the pages go on under the bar
+ * (TASK-469 B2a). On a phone with a home indicator, as tall as the bar was.
+ */
+export function tabBarBand(bottomInset: number): number {
+  return Math.max(
+    TAB_BAR_HEIGHT + bottomInset,
+    TAB_GLASS_HEIGHT + tabGlassLift(bottomInset) + space.xs,
+  );
+}
 /** How small an icon gets under the finger. */
 export const TAB_PRESS_SCALE = 0.9;
 /** How far the icon taking its tab rises, in points. */
@@ -141,10 +153,7 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
   const count = tabs.length;
   const slot = (width - 2 * TAB_BAR_INSET) / Math.max(count, 1);
   const lift = tabGlassLift(insets.bottom);
-  const band = Math.max(
-    TAB_BAR_HEIGHT + insets.bottom,
-    TAB_GLASS_HEIGHT + lift + space.xs,
-  );
+  const band = tabBarBand(insets.bottom);
 
   // The capsule's tab, as a number: 2.5 is half way from the third to the fourth.
   const [at] = useState(() => new Animated.Value(page));
@@ -271,6 +280,8 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
   return (
     <View
       style={[styles.bar, { height: band }]}
+      // Only the glass takes the finger: around it the page is under.
+      pointerEvents="box-none"
       accessibilityRole="tablist"
       testID="tab-bar"
     >
@@ -387,10 +398,14 @@ function Glyph({ tab, selected, on, still }: GlyphProps) {
 }
 
 const styles = StyleSheet.create({
-  // The band at the foot of the app, the page's background; the glass
-  // floats in it (TASK-469, ADR-0383).
+  // The band at the foot of the app: over the pages, which go on under
+  // it, with no face of its own; the glass floats in it (TASK-469 B2a,
+  // ADR-0383).
   bar: {
-    backgroundColor: color.background,
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   glass: {
     position: "absolute",

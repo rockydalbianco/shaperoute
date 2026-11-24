@@ -17,7 +17,10 @@ nuova. Per arrivarci il server di produzione deve poter mandare email.
 
 L'utente, chiudendo TASK-458 il 2026-11-24: «nella sezione accedi farei la
 possibilità di recuperare la password se qualcuno l'ha persa». La funzione
-c'è dal 26 ottobre (TASK-300, #559) ma in produzione non si vede.
+c'è dal 26 ottobre (TASK-300, #559) ma in produzione non si vede: lo ha
+guardato l'utente sul telefono lo stesso giorno («No non c'era», riferito
+dalla sessione di TASK-458), e ha chiesto di partire subito («SI ADESSO»:
+vale per cominciare il lavoro, non per account, chiavi o server).
 
 ## Verificato il 2026-11-24 (`main` = `faf37daf`)
 

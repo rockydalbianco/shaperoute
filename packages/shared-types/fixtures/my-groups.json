@@ -1,0 +1,26 @@
+{
+  "groups": [
+    {
+      "id": "7a1c2f0e-5b4d-4e8a-9c3b-2d1e0f9a8b7c",
+      "name": "Dolomites Saturday Hikers",
+      "sports": ["hiking", "walking"],
+      "city": "Trento",
+      "access": "request",
+      "members": 3,
+      "photo": null,
+      "me": "admin"
+    }
+  ],
+  "invites": [
+    {
+      "id": "5c4b3a29-1807-4f6e-9d5c-4b3a29180700",
+      "name": "North Face Club",
+      "sports": ["alpinism"],
+      "city": "Bolzano",
+      "access": "invite",
+      "members": 6,
+      "photo": null,
+      "me": "invited"
+    }
+  ]
+}

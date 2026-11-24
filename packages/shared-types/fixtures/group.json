@@ -1,0 +1,15 @@
+{
+  "id": "7a1c2f0e-5b4d-4e8a-9c3b-2d1e0f9a8b7c",
+  "name": "Dolomites Saturday Hikers",
+  "sports": ["hiking", "walking"],
+  "city": "Trento",
+  "access": "request",
+  "members": 3,
+  "photo": null,
+  "me": "admin",
+  "description": "Easy and medium hikes around Trento, most Saturdays.\nAll paces welcome.",
+  "area": [46.07, 11.12],
+  "big_photo": null,
+  "muted": false,
+  "created_at": "2026-11-23T10:00:00Z"
+}

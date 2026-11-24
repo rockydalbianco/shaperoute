@@ -1,5 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 
+import { onOwnerChange } from "../account/currentOwner";
 import { gymKey } from "./gymKey";
 import { planForToday } from "./plans";
 import {
@@ -41,6 +42,15 @@ function subscribe(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
+
+// Another account signed in, or none (TASK-507): its own workout is read
+// again, another's stays hidden in the file until that account is back.
+onOwnerChange(() => {
+  held = undefined;
+  for (const listener of [...listeners]) {
+    listener();
+  }
+});
 
 /** «Start workout»: a new workout, unless one is under way already. It
  * follows today's plan (TASK-411 C, ADR-0341 point 4), or `plan` when given;

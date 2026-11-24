@@ -724,6 +724,9 @@ export const FR: Table = {
   "Hide the picture": "Masquer la photo",
   "Show the picture": "Afficher la photo",
   "Edit the outline": "Modifier le contour",
+  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
+  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
+    "Les lignes jaunes sont ce que le parcours dessinera : chaque partie à part, en allant de l'une à l'autre sans dessiner. Si elles ne ressemblent pas au sujet, le parcours non plus : essaie une autre photo.",
   "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
     "Un seul sujet sur un fond uni marche le mieux : un dessin, un logo, un objet sur une table vide. Le parcours suit sa ligne extérieure. Jusqu'à 4 sujets séparés sont reliés en une seule ligne.",
   "Tracing the outline…": "Tracé du contour…",
@@ -1400,8 +1403,18 @@ export const FR: Table = {
   Beginner: "Débutant",
   // src/gym/SportsDoor.tsx, bodyweight.ts, GymPlanWizard.tsx (TASK-461 A2, approved 2026-11-11)
   "What do you want to train?": "Que veux-tu entraîner ?",
-  "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.":
-    "Choisis-en au moins deux : un plan mélange toujours deux sports. Ensuite, on te guide en 5 étapes.",
+  "Choose one or more. Then we guide you in 5 steps.":
+    "Choisis-en un ou plusieurs. Ensuite, on te guide en 5 étapes.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
+  Table: "Tableau",
+  "No exercises yet.": "Pas encore d'exercice.",
+  "Change week {n}": "Change la semaine {n}",
+  "kg · touch a week to change it": "kg · touche une semaine pour la changer",
+  // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; approved by the user on 2026-11-23)
+  Tomorrow: "Demain",
+  "+ 1 more": "+ 1 autre",
+  "+ {n} more": "+ {n} autres",
+  "This week: {done} of {total} done": "Cette semaine : {done} sur {total} faits",
   "With weights and machines": "Avec poids et machines",
   Bodyweight: "Poids du corps",
   "At home or in the park, no equipment": "À la maison ou au parc, sans matériel",
@@ -2398,7 +2411,6 @@ export const FR: Table = {
   "Message {name}": "Écrire à {name}",
 
   // src/messages/ConversationScreen.tsx, MessageSheet.tsx (TASK-319)
-  "No messages yet.": "Pas encore de messages.",
   "Show earlier messages": "Afficher les messages précédents",
   "Touch and hold to delete it": "Maintiens appuyé pour le supprimer",
   "Touch and hold to report it": "Maintiens appuyé pour le signaler",
@@ -2408,6 +2420,22 @@ export const FR: Table = {
   "{name} gets this as a message request. You can send one message until they accept it.":
     "{name} le reçoit comme demande de message. Tant qu'elle n'est pas acceptée, tu peux envoyer un seul message.",
   "Write a message…": "Écris un message…",
+  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
+  "Show password": "Afficher le mot de passe",
+  "Hide password": "Masquer le mot de passe",
+  // src/messages/ConversationScreen.tsx (TASK-458: a conversation with nothing in it yet, the user's choice of 2026-11-23)
+  "Say hi to {name}.": "Dis bonjour à {name}.",
+  "Hi {name}!": "Salut {name} !",
+  "I like your drawings": "J'aime tes dessins",
+  "Shall we run together?": "On court ensemble ?",
+  "Writes it in the box. Nothing is sent yet.":
+    "L'écrit dans la zone de texte. Rien n'est encore envoyé.",
+  "Photos, videos and drawings come after that.":
+    "Les photos, les vidéos et les dessins viennent après.",
+  // src/tabs/MessagesPage.tsx, src/messages/NewMessage.tsx (TASK-458: «New message» from the list)
+  "New message": "Nouveau message",
+  "Search someone by name to write to them.":
+    "Cherche quelqu'un par son nom pour lui écrire.",
   "Delete this message for both of you?": "Supprimer ce message pour vous deux ?",
   "Report this message": "Signaler ce message",
   // src/explore/ExploredCard.tsx, social/DrawingCard.tsx, mapdraw/DrawOnMap.tsx,
@@ -3488,6 +3516,15 @@ export const FR: Table = {
   "Goal taken": "But atteint",
   "Turnpoint {name} taken. Next: {next}.": "Balise {name} validée. Suivante : {next}.",
   "Goal {name} taken.": "But {name} atteint.",
+  // src/air/ (TASK-479 part D3: the glide; approved by the user on 2026-11-23)
+  "Glide to turnpoint": "Plané jusqu'à la balise",
+  "Nearest landing": "Atterrissage le plus proche",
+  "Glide ratio used": "Finesse utilisée",
+  "Wind used": "Vent utilisé",
+  Estimated: "Estimé",
+  "No wind": "Pas de vent",
+  "needs {height}": "il faut {height}",
+  "No landings in your file": "Aucun atterrissage dans votre fichier",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Bilan calorique",
   Used: "Dépensées",
@@ -3497,6 +3534,10 @@ export const FR: Table = {
   "Week total": "Total de la semaine",
   "Today is not in the total until the day is over.":
     "Aujourd'hui n'entre dans le total qu'une fois la journée terminée.",
+  // src/nutrition (TASK-489 part D2: Nutrition from the profile; approved by the user on 2026-11-24)
+  "Write what you eat and see your calorie balance.":
+    "Note ce que tu manges et vois ton bilan calorique.",
+  "Open Nutrition": "Ouvrir Nutrition",
   // src/nutrition (TASK-489 part G1)
   "Type the code": "Saisir le code",
   Barcode: "Code-barres",

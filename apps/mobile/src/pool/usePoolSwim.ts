@@ -1,5 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 
+import { onOwnerChange } from "../account/currentOwner";
 import { gymKey } from "../gym/gymKey";
 import { newPoolSwim, type PoolSwim } from "./poolSwim";
 import { loadPoolSwim, savePoolSwim } from "./poolStore";
@@ -34,6 +35,15 @@ function subscribe(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
+
+// Another account signed in, or none (TASK-507): its own swim is read
+// again, another's stays hidden in the file until that account is back.
+onOwnerChange(() => {
+  held = undefined;
+  for (const listener of [...listeners]) {
+    listener();
+  }
+});
 
 /** «Start swim»: a new swim in a pool of `poolLengthM`, unless one is under
  * way already. Its key is made as a workout's: no first fix to make it. */

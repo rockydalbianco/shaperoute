@@ -25,6 +25,7 @@ import { numberSize } from "./FlightWidget";
 import { resetFlightNotice } from "./flightNotice";
 import { flightOf, T0 } from "./syntheticFlight";
 import { resetAirspace, setAirspace } from "./airspaceStore";
+import { glidePrefsNow, resetGlidePrefs } from "./glidePrefs";
 import { resetTaskProgress } from "./taskProgress";
 import { destination } from "./taskRoute";
 import { resetWaypointStore, setTask } from "./waypointStore";
@@ -251,6 +252,7 @@ describe("the pilot's task (part D2)", () => {
   beforeEach(() => {
     resetTaskProgress();
     resetWaypointStore();
+    resetGlidePrefs();
     setTask(null);
   });
 
@@ -311,6 +313,24 @@ describe("the pilot's task (part D2)", () => {
     ).toBeTruthy();
     // No start in this task.
     expect(within(screen.getByTestId("widget-startGate")).getByText("–")).toBeTruthy();
+    // Over B1 at the end of the leg (D3): a number, with the glide used.
+    expect(
+      within(screen.getByTestId("widget-glideToTurnpoint")).getByText(/^[+-]?\d+$/),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByTestId("widget-glideToTurnpoint")).getByText("B1 · L/D 8"),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByTestId("widget-nextTurnpoint")).getByText(/needs \d+ m$/),
+    ).toBeTruthy();
+  });
+
+  it("works the heights out with the glide ratio the pilot chose (D3)", async () => {
+    await showScreen();
+    await fireEvent.press(screen.getByTestId("flight-screen-layout"));
+    await fireEvent.press(screen.getByText("12"));
+    await fireEvent.press(screen.getByText("No wind"));
+    expect(glidePrefsNow()).toEqual({ ld: 12, wind: "none" });
   });
 
   it("tells when no task is loaded", async () => {

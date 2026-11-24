@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A6b in produzione, A7a, A7b, A5c-2, A7c-1, A7c-2 in `main`); B Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A7c-3 in produzione con l'OTA 25); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -598,13 +598,145 @@ lasciando le righe d'indice.
 - ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap estratti dal server, la scheda del decollo con lo storico dei voli di MuW contato dal server, mai giudizi sulle condizioni · 2026-11-23 · Proposta
 - ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
 - ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo di ADR-0269 con `group_id`, anche senza percorso; Public, Request, Invite only; un solo admin e fino a 3 co-admin; l'elenco dei membri solo ai membri; la chat di gruppo come parte E · 2026-11-23 · Proposta
-- ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Proposta
+- ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
+- ADR-0403 — Le proprie bolle nei messaggi sul giallo dell'app: una faccia piena `accent` con parole `onAccent`, non vetro; quello che la bolla porta su una piastra neutra · 2026-11-23 · Attiva
+- ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Attiva
+- ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella: rotte a parte (`/drawings/{id}/gear`, `/gear/{id}`), `gear_id` sul tag col `SET NULL`, il limite una riga sola nella campanella per attrezzo e limite, «From my gear» coi tipi della foto · 2026-11-23 · Attiva
+- ADR-0264, aggiunta (TASK-496) — Con l'app dietro i punti nuovi vanno in un diario accanto al file della corsa, il file intero ogni tanto; in tasca la mappa non riceve niente e l'orologio non scatta · 2026-11-23 · Attiva
 
 
 ## Voci nuove
+## ADR-0264, aggiunta (TASK-496) — Con l'app dietro i punti nuovi vanno in un diario accanto al file della corsa; quello che nessuno vede non lavora
+
+**Stato**: Attiva · 2026-11-23 · TASK-496 (punti O1 e O2 della lettura del
+codice del 2026-11-23). **Scelta dell'utente** del 2026-11-23, alla
+domanda «a telefono bloccato oggi ogni punto GPS riscrive tutto il file
+della corsa. Propongo di scrivere solo i punti nuovi in un piccolo diario
+accanto al file, e il file intero uscendo dall'app, in pausa, alla fine e
+ogni 300 punti circa. La tua scelta della TASK-304 resta uguale: nessun
+punto perso se iOS chiude MuW. Cambia solo come viene mantenuta. Va
+bene?»: **«Sì, così»**. Il resto (il formato del diario, ogni quanto il
+file intero, la mappa e l'orologio) è **deciso dall'agente su delega
+dell'utente**. Numero e forma (un'aggiunta, non un ADR nuovo) dal
+Coordinatore. **Precisa il punto 4 di ADR-0264**; la promessa non cambia.
+
+**Contesto**: il punto 4 di ADR-0264 dice che con l'app dietro «ogni
+posizione tenuta riscrive» il file. `saveRun` fa `JSON.stringify` di tutta
+la corsa e una scrittura sincrona: a telefono bloccato il lavoro cresce col
+quadrato della lunghezza della corsa (un punto ogni 5 m). In modalità tasca
+la mappa sotto lo schermo nero riceveva a ogni punto tutta la traccia e
+un'animazione di 500 ms, e l'orologio del pannello scattava ogni secondo
+anche in tasca e con l'app dietro.
+
+**Decisione**:
+
+1. **Un diario accanto al file** (`current-run.journal`, `runJournal.ts`):
+   con l'app «background» o «inactive» ogni scrittura è una riga JSON in
+   coda al diario, con i soli punti nuovi, i metri, le pause solo se sono
+   cambiate, quanti punti c'erano prima e la chiave del file intero a cui
+   segue. La corsa sul telefono è il file con il diario dopo.
+2. **Il file intero** si scrive: uscendo dal primo piano, a una pausa, alla
+   penna alzata, all'arrivo, a «Stop», e ogni 300 righe di diario
+   (`FULL_EVERY_LINES`). In primo piano resta ogni 15 s. Dopo ogni file
+   intero il diario si svuota.
+3. **`loadRun` legge file + diario**, solo per una corsa `running`. Una
+   riga che non si legge (può essere solo l'ultima, tagliata da una
+   chiusura a metà scrittura) o che non parte da dove la traccia finisce
+   ferma la lettura lì; una riga di un altro file intero si salta. La
+   chiave dice la corsa (l'ora del primo punto), quanti punti ha, l'ultimo
+   e le pause: i punti si aggiungono soltanto, quindi due file con la
+   stessa chiave tengono la stessa traccia. Il file non ha campi nuovi:
+   una corsa di prima del diario si legge come sempre.
+4. **Se il telefono rifiuta**: la riga, si scrive il file intero; di
+   svuotare il diario, si scrive il file intero a ogni punto finché non lo
+   svuota; tutto, la corsa resta in memoria per «Stop» (TASK-252).
+5. **La pausa di un'assenza oltre 10 minuti si scrive subito**, anche
+   quando il punto che la porta non è tenuto: prima restava in memoria
+   fino al punto dopo (trovato dai test di questa task).
+6. **In modalità tasca la pagina della mappa non riceve niente della
+   corsa**: traccia, posizione, bussola, progresso, rientro e mappa
+   girata. Entrando le si dice una volta di smettere di lampeggiare
+   (TASK-224); uscendo, una volta, com'è adesso. Con l'app in
+   «background» la pagina non c'è già (punto 5 di ADR-0264).
+7. **In vista vanno alla pagina solo i punti nuovi** (`extendTrack`): la
+   pagina tiene la linea. La linea intera torna dopo una pagina
+   ricaricata, una traccia tolta, un'altra linea e quando la traccia è
+   inquadrata. Sci e volo restano a traccia intera.
+8. **La mappa segue chi corre in 250 ms** (`FOLLOW_MS`); il primo
+   movimento, quello che porta la mappa su chi corre, resta di 500 ms.
+9. **L'orologio dei numeri non scatta quando nessuno lo vede**
+   (`useRunSeen`: app «background» o «inactive», o tasca). I numeri sono
+   allora quelli dell'ultimo punto, così il link dal vivo li riceve
+   giusti; al ritorno l'orologio si legge subito. `useNow` non cambia.
+
+**Alternative scartate**: il file intero ogni 15 s anche dietro (resta un
+lavoro che cresce con la corsa, e fino a 15 s di punti persi: contro la
+scelta dell'utente); un contatore nel file per legare il diario (il file
+avrebbe un campo nuovo e decine di test lo confrontano per intero); una
+scrittura atomica del file intero con file temporaneo e spostamento (il
+comportamento di `File.move` su un file che esiste non è verificato: resta
+com'era, e col diario il file intero si scrive molte meno volte); niente
+animazione nel seguire (a scatti); toccare `useNow` (lo usano il conto
+alla rovescia, lo sci e il volo).
+
+**Conseguenze**: a telefono bloccato una posizione scrive circa 180 byte
+invece dell'intera corsa. **Misurato, non sul telefono**: in Node con un
+disco in memoria, 12 km dietro scrivevano 209,5 MB di testo e ora 1,0 MB
+(48 km: 3349 MB e 12,6 MB); nel simulatore, sul disco del Mac, il file
+intero di 4000 punti costa 11 ms a scrittura e una riga 0,4 ms, e dopo
+un'uscita forzata con l'app dietro la corsa è tornata con tutti i 176
+punti (155 nel file, 21 nel diario). **Non misurato**: la batteria e i
+tempi sul telefono. Nella pagina MapLibre ridisegna ancora tutta la linea
+a ogni punto: non cresce più il messaggio che le arriva. Nessun cambio
+nativo, nessuna dipendenza: l'impronta iOS resta `5e1b5ce5`. Resta fuori
+lo stato della corsa in `App.tsx` (TASK-504).
+
+## ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella
+
+**Stato**: Attiva · 2026-11-23 · TASK-486 parti E, F, G. Le scelte 5 e 6
+sono **dell'utente** (2026-11-21), come i testi e le schermate (approvati
+il 2026-11-23); il come è **deciso dall'agente su delega dell'utente**.
+
+**Contesto**: ADR-0393 dice cosa si vede (una riga nel dettaglio del post,
+i capi taggati da «From my gear», l'avviso del limite senza push), non
+dove passano i dati.
+
+**Decisione**:
+- **Rotte a parte, non campi nuovi**: `GET /drawings/{id}/gear` (parte E)
+  e `GET /gear/{id}` (parte F) invece di `gear` dentro `DrawingDetail` o
+  nel tag. `schemas.py` ed `engine.zip` restano fuori, e le app di prima
+  non vedono niente di diverso. Si vede quello che si vede del post e del
+  profilo: «Hide from profile» mai, nemmeno al proprietario; nascosto dopo
+  una segnalazione, solo al proprietario; un blocco tiene lontano.
+- **Il tag tiene `gear_id`** (migrazione 0085), con `ON DELETE SET NULL`:
+  cancellare l'attrezzo lascia il capo taggato com'era. Mandato senza
+  `gear_id`, un tag che c'era tiene quello che aveva (le app di prima);
+  `null` lo toglie. `gear_id` arriva solo a chi vede l'attrezzo.
+- **«From my gear» coi tipi della foto**: le scarpe di ogni tipo (anche
+  scarponi e scarpette) diventano «Shoes», zaino e orologio restano loro,
+  il resto «Other»: la foto ha meno tipi dell'attrezzatura e «Other» non
+  dice mai una cosa sbagliata.
+- **Il limite è una riga sola nella campanella** (`gear_limit`, in
+  `BELL_ONLY`, niente push) quando un'attività porta l'attrezzo da sotto il
+  limite a sopra; la chiave è attrezzo e limite, quindi un limite nuovo è
+  una riga nuova. Toccata, apre l'editor dell'attrezzo (ritirarlo o
+  cambiare il limite); un attrezzo cancellato si porta via la sua riga.
+
+**Alternative scartate**: `gear` in `DrawingDetail` (toccava `schemas.py`
+e quindi `engine.zip`); copiare marca e modello nel tag senza legarlo
+(il pallino non avrebbe aperto l'attrezzo); una riga per ogni attività
+oltre il limite (troppe).
+
+**Conseguenze**: per chi costruisce sopra l'attrezzatura (TASK-494,
+ADR-0401): un tipo nuovo va in `GearKind` del server, in `GEAR_KINDS`
+dei tipi condivisi e in `GEAR_LOOKS` dell'app (il compilatore lo chiede);
+le sue righe nella campanella sono un `kind` nuovo, non `gear_limit`, con
+la sua condizione in `shown_sql`; per aprire l'attrezzo dalla campanella
+c'è già `openGearItem` (`gear/gearDoor.ts`).
+
 ## ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta e saltabile le altre; animali e musiche del video restano dentro l'app
 
-**Stato**: Proposta · 2026-11-23 · TASK-505 (parte 0, soli documenti).
+**Stato**: Attiva · 2026-11-23 · TASK-505 (parte A in `main`, #1527).
 Le due scelte sono **dell'utente** (2026-11-23, risposte in
 `tasks/TASK-505.md`); il come è deciso dall'agente su delega dell'utente.
 Aggiorna ADR-0147 nei tempi e in «non si salta con un tocco»; il resto di
@@ -659,6 +791,45 @@ caricarsi, da guardare sul simulatore nella parte A e da dire a TASK-500,
 che misura l'avvio. Solo JavaScript, nessuna dipendenza nuova, nessun
 testo: l'impronta iOS non cambia, esce con un OTA. O15 si riapre se i
 file del video crescono molto (ordine di grandezza: oltre 20 MB).
+
+## ADR-0403 — Le proprie bolle nei messaggi sul giallo dell'app
+
+**Stato**: Attiva · 2026-11-23 · TASK-458. Il colore è **scelta
+dell'utente** («Bolle gialle come il tema dell'app», confermata sulle
+schermate prima/dopo: «Sì, gialle così»); il modo è deciso dall'agente su
+delega dell'utente, col parere della sessione di TASK-469. Numero dal
+Coordinatore.
+
+**Contesto**: nella prova dell'11 novembre 2026 (S13) le proprie bolle e
+quelle dell'altro erano due grigi (`surfaceRaised` e `surface` col bordo,
+ADR-0279 e `docs/UI.md`: «il giallo resta del percorso»). All'utente erano
+state proposte tre strade senza giallo (blu tenue, chiaro pieno, neutro col
+bordo forte); ha scelto il giallo.
+
+**Decisione**:
+- Le proprie bolle hanno il fondo `color.accent` e parole e orario
+  `color.onAccent`: gli stessi due colori in ogni tono, 13:1
+  (`palettes.test.ts`). Nessun token nuovo e nessun valore cambiato; in
+  `tokens.ts` cambia solo il commento di `accent`, che ora nomina due
+  eccezioni volute dall'utente: «Run without a route» (ADR-0183) e queste
+  bolle.
+- È una **faccia piena, non vetro**. ADR-0383 («il giallo mai come tinta»)
+  parla della tinta del vetro (`glass.*`) e resta com'è: questa voce la
+  cita, non ne fa un'eccezione. Tre regole, dalla sessione di TASK-469:
+  (1) la bolla resta opaca nei tre modi (vetro, «Riduci trasparenza»,
+  «Aumenta contrasto»), niente velature gialle né `glass.*` tinti; (2) un
+  eventuale rilievo usa `glassRaise` com'è, senza colori nuovi (oggi non ne
+  ha); (3) che il giallo si intraveda sotto l'header di vetro va bene.
+- Quello che una propria bolla porta — un disegno, un post, una live, una
+  foto — sta su una piastra `surfaceRaised` dentro il giallo: la linea di
+  un disegno è gialla anche lei, e le schede scrivono coi colori del tono.
+- Le bolle dell'altro restano `surface` col bordo.
+
+**Conseguenze**: il giallo ha un secondo significato dentro i messaggi
+(«l'ho scritto io»), accanto a «percorso». Fuori dai messaggi la regola non
+cambia: altrove il giallo resta del percorso e di ciò che lo produce. Solo
+app, niente di nativo. Controllato da `ChatMinor.test.tsx` (fondo, parole,
+faccia opaca senza ombra né bordo, la piastra).
 
 ## ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap, la scheda del decollo con lo storico di MuW
 
@@ -2169,6 +2340,20 @@ di prima. Partendo da zero la regola del decimo dà piani lunghi (corsa da
 attività: finché il server non la dà, l'app la chiede. Il promemoria alle
 8 è una notifica locale del telefono (B2b).
 
+**Aggiunta 2026-11-23** (TASK-506 parte B, scelta dell'utente sulla tela
+«Schede palestra · migliorie»: «1, 2, 3», poi «Sì, tutte e due» sulla
+regola): un piano nuovo ha **uno o più** sport, non più almeno due
+(«Almeno due, sempre» del 2026-11-11). `MIN_PLAN_SPORTS` passa da 2 a 1;
+all'apertura di «Nuovo piano» è scelta la Palestra (prima corpo libero e
+corsa), perché la guida si apre solo dalle pagine della palestra (Draw e la
+modalità allenamento di ADR-0398): un piano di sola palestra è «Continue»
+fino in fondo. Il resto di questa decisione non cambia: `outing`, `target`
+e le settimane verso la meta restano come sopra. Con la parte D gli sport
+dell'ingresso e i giorni fuori mostrano il segno del loro profilo
+(`profileOf(...).emoji`, lo stesso del menu degli sport) invece delle sigle
+«RUN», «BIKE»…, e un solo colore di selezione, il giallo. Nessuna
+migrazione, nessun cambio al server.
+
 ## ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende
 
 **Stato**: Accettata · 2026-11-12 · TASK-471 (#1251 e #1269 in `main`;
@@ -2950,6 +3135,24 @@ lista del test. Prende il rilievo solo un chip che si preme: le etichette
 di testo e il segno di pausa che nel codice si chiamano «chip» restano
 piatti, perché il rilievo dice «qui si tocca». Deciso dall'agente su
 delega dell'utente.
+**A7c-3 (#1509)**: i chip condivisi della palestra prendono il rilievo
+nelle otto pagine che usano `gymStyles.chip`, non in `gymStyles.ts`: il
+rilievo dipende dal modo di accessibilità, che si legge con un hook, e
+uno stile condiviso non può farlo. Il controllo sui sorgenti conta ora
+anche `gymStyles.chip`. Il pannello del percorso resta fuori: il suo
+«chip» è un bottone secondario più stretto accanto ad altri bottoni
+piatti. Deciso dall'agente su delega dell'utente.
+**Correzione di A5b (#1534)**: A5b ha dato all'header `zIndex: 1`,
+perché l'ombra della fascia cada sulle pagine. Con la nuova architettura
+quello `zIndex` ordina dentro il più vicino antenato che resta una vista
+sua: la radice di `TabShell` veniva appiattita, e l'header usciva sopra
+le pagine aperte sopra l'app quando l'app sotto non era nascosta al
+lettore di schermo, cioè per «Messages» aperto dalla sua scheda. Due
+righe: `collapsable={false}` sulla radice di `TabShell`, che chiude lo
+`zIndex` dentro lo shell per ogni pagina presente e futura, e `appUnder`
+in `ProfileLayer` che conta anche «Messages», così sotto una
+conversazione l'app è nascosta al lettore di schermo come sotto ogni
+altra pagina. Deciso dall'agente su delega dell'utente.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 
@@ -6673,3 +6876,33 @@ dei file), e una nella parte C per le colonne di `group_runs`. La parte C
 tocca i file di TASK-309 (B2 e C ancora aperte): la lista al Coordinatore
 prima. La privacy va in `main` prima dell'OTA che accende i gruppi. Le
 corse di gruppo senza gruppo restano come oggi.
+
+## ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo
+
+**Stato**: Attiva · 2026-11-24 · TASK-495 parti A (#1538) e A2 (#1543).
+**Deciso dall'agente su delega dell'utente**; le regole di `GRUPPI.md`
+§2–§10 restano le scelte dell'utente.
+
+**Contesto**: la proposta lasciava aperti alcuni come: la foto, cosa
+succede a chi passa il ruolo, a chi ha chiesto quando arriva un invito o
+il gruppo diventa Public, cosa entra in «Recent activity».
+
+**Decisione** (`GRUPPI.md` §12, «Scelte della parte A»):
+- la foto del gruppo è `profile_photos.square_jpeg` (256 px), con la copia
+  piccola delle persone nelle schede: nessun codice d'immagine nuovo;
+- passato il ruolo, l'admin di prima è membro; un co-admin toglie solo i
+  membri;
+- un invito a chi ha già chiesto, o un gruppo che diventa Public, fa
+  entrare chi aspettava, fino a 300;
+- Explore: la ricerca per nome (2 caratteri o più) vale ovunque; senza
+  nome serve il punto del telefono;
+- un admin nascosto da una segnalazione nasconde il suo gruppo a tutti
+  (`follows.apart_sql` com'è);
+- «Recent activity» legge i post di una corsa di uno sport del gruppo, con
+  `drawings.shown_sql` e le schede del Feed, senza toccare `feed.py`;
+- `group_outing_new` arriva con le uscite (parte C).
+
+**Conseguenze**: una migrazione sola (`0087_groups.sql`); `feed.py` e
+`drawings.py` invariati. Chiudere un gruppo con membri dentro non c'è:
+l'admin passa il ruolo o resta; se serve, lo decide l'utente con le
+schermate della parte B.

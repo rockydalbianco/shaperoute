@@ -29,6 +29,8 @@ import {
 } from "../groupRuns/groupRunDoor";
 import { GroupRunPageHost } from "../groupRuns/GroupRunPage";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
+import { openGearItem } from "../gear/gearDoor";
+import { GearFromBellHost } from "../gear/GearFromBell";
 import { t, tPlural } from "../i18n";
 import { LOG_IN_TO_SEE, useIncomingPostLink } from "../links/useIncomingPostLink";
 import { MessagesContext, useMessagesOf } from "../messages/messagesDoor";
@@ -418,6 +420,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     openGroupRun: openGroupRunPage,
     // A planned live that started (TASK-468 part B2b1): its live view.
     openLive: openLiveView,
+    // An item of one's gear past its limit (TASK-486 part G): the item.
+    openGear: openGearItem,
   };
   usePushNotifications(apiUrl, account, opens);
   // The link of a post opened in the app (TASK-482 part A): its drawing, as
@@ -460,8 +464,11 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   const overInModal = overAppState.modalPages > 0;
   // The app is under a page over it: out of the screen reader's sight. Not
   // while «Play» covers those pages, which are kept out of sight then.
+  // «Messages» over the app counts too, a conversation opened from its tab
+  // as well (TASK-469).
   const appUnder =
-    (shown || contestOver || groupRunOver || bell.shown) && !overAppState.covered;
+    (shown || contestOver || groupRunOver || bell.shown || messages.screen !== null) &&
+    !overAppState.covered;
   const overPages = (
     <OverAppPages covered={overAppState.covered}>
       <CommentsContext.Provider value={outerComments}>
@@ -513,6 +520,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
       list comes over it, and back goes to it (TASK-309 part B). */}
               <FollowsContext.Provider value={followsDoor}>
                 <GroupRunPageHost />
+                <GearFromBellHost />
               </FollowsContext.Provider>
               {/* Over everything: opened from a profile, «Profile» or a
       notification, and closed back to it (TASK-319). */}

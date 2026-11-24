@@ -3,7 +3,6 @@ import type {
   Direction,
   LatLon,
   LetterStyle,
-  OutlinePoint,
   PenUpShape,
   Shape,
   Stretch,
@@ -123,6 +122,7 @@ import {
   drawsAgain,
 } from "./src/route/drawAgain";
 import { ImageEditsContext } from "./src/route/imageEdits";
+import { type ImageAsked, imageAsked } from "./src/route/imagePieces";
 import type { ChoiceKind } from "./src/route/problems";
 import { withPenUp } from "./src/route/penUpHint";
 import { drawKindOf, figuresOf, shapeOfSport } from "./src/route/sportDraw";
@@ -653,8 +653,9 @@ function MuW() {
 
   // One of them (ADR-0051): the kinds not chosen are not sent. An image
   // sends the outline the engine traced and the user has seen (ADR-0069),
-  // with the details drawn on it (TASK-079); a figure drawn by hand is
-  // asked from the map (TASK-331).
+  // with the details drawn on it (TASK-079), or with the pen up its pieces
+  // instead (TASK-297); a figure drawn by hand is asked from the map
+  // (TASK-331).
   // On the water only a shape of the catalogue is drawn (TASK-191): a word or
   // a picture chosen before «Paddle» waits for another sport. A swim draws a
   // shape or a drawing, a word chosen before it waits too (TASK-323). A
@@ -667,7 +668,7 @@ function MuW() {
     | { shape: Shape }
     | { shape: PenUpShape; pen_up: true }
     | { word: string; style: LetterStyle; pen_up?: true }
-    | { outline: OutlinePoint[]; strokes?: OutlinePoint[][] }
+    | ImageAsked
     | null =
     drawKind === "shape"
       ? sportShape !== null
@@ -684,10 +685,7 @@ function MuW() {
             }
           : null
         : image.state.status === "traced"
-          ? {
-              outline: image.state.outline.points,
-              strokes: image.state.outline.strokes,
-            }
+          ? imageAsked(image.state.outline, penUp)
           : null;
   const request: AnyRouteRequest | null =
     start && drawn !== null && distanceM !== null

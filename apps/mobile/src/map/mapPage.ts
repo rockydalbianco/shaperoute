@@ -68,6 +68,12 @@ export const PLACE_ZOOM = 16;
 
 /** Zoom while navigating: the next junction and the streets around it. */
 export const FOLLOW_ZOOM = 17;
+/** How long the map takes to come to the runner as the run starts. */
+export const FOLLOW_START_MS = 500;
+/** And to follow the runner to each fix after: shorter, as a fix comes
+ * every second or two and each move is drawn frame by frame (TASK-496; it
+ * was as long as the first). */
+export const FOLLOW_MS = 250;
 
 /** The route line: the brand yellow, the one thing on the map that has it. */
 export const ROUTE_COLOR = route.color;
@@ -2395,12 +2401,13 @@ export function buildMapPage(language: Language = appLanguage()): string {
             showPin(message.lngLat);
           }
           // The map stays turned as the drawing while it is run.
+          var followed = following;
           following = true;
           map.easeTo({
             center: message.lngLat,
             zoom: ${FOLLOW_ZOOM},
             bearing: wanted,
-            duration: 500,
+            duration: followed ? ${FOLLOW_MS} : ${FOLLOW_START_MS},
           });
         } else if (message.type === "face") {
           // Where the phone points, on «Compass» (TASK-431): the arrow
@@ -2465,6 +2472,20 @@ export function buildMapPage(language: Language = appLanguage()): string {
                   geometry: { type: "MultiLineString", coordinates: message.lines },
                 },
           );
+        } else if (message.type === "extendTrack") {
+          // The new fixes of a run, after the line drawn (TASK-496). A
+          // line of one stretch only: a day of skiing and a flight are
+          // told whole.
+          if (track.geometry && track.geometry.type === "LineString") {
+            setTrack({
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "LineString",
+                coordinates: track.geometry.coordinates.concat(message.coordinates),
+              },
+            });
+          }
         } else if (message.type === "clearTrack") {
           setTrack(noRoute);
         } else if (message.type === "showLifts") {

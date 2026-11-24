@@ -30,7 +30,9 @@ export type TapTarget =
   /** A planned live that started (TASK-468 part B2b1): its live view. */
   | { kind: "live"; shareId: string; plannedLiveId: string }
   /** A group run soon, changed or cancelled (TASK-309 part B): its page. */
-  | { kind: "group_run"; id: string };
+  | { kind: "group_run"; id: string }
+  /** An item of one's gear past its limit (TASK-486 part G): the item. */
+  | { kind: "gear"; id: string };
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -94,6 +96,10 @@ export function tapTarget(data: unknown): TapTarget | null {
     return groupRun !== null && ID.test(groupRun)
       ? { kind: "group_run", id: groupRun }
       : null;
+  }
+  if (kind === "gear_limit") {
+    const gear = field(data, "gear_id");
+    return gear !== null && ID.test(gear) ? { kind: "gear", id: gear } : null;
   }
   if (kind === PLANNED_LIVE_PUSH_KIND) {
     const share = field(data, "share_id");

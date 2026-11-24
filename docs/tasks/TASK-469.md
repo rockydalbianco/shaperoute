@@ -4,7 +4,8 @@
 A3 e A4a in produzione al più tardi con l'OTA 17; A4b e A4c in produzione
 con l'OTA 20; A5 e A5b con l'OTA 21; A5c e A6 in produzione con l'OTA 22;
 A6b con l'OTA 23; A7a, A7b, A5c-2 e A7c-1 con l'OTA 24; A7c-2, A7c-3 e
-la correzione dell'header sopra le pagine con l'OTA 25)
+la correzione dell'header sopra le pagine con l'OTA 25; parte B avviata
+dall'utente il 2026-11-24, per ora solo il piano)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
@@ -137,7 +138,71 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
   iOS 26; `expo-blur` o opaco prima e su Android). Dipendenza nuova e
   impronta iOS che cambia: solo in una build **dopo l'uscita della 1.1.0**,
   col sì dell'utente e chiedendo prima al Coordinatore. Prima di installare
-  qualcosa ci si ferma e si chiede.
+  qualcosa ci si ferma e si chiede. **Avviata dall'utente il 2026-11-24
+  («Inizia parte b»)**; il piano è in «La parte B» qui sotto.
+
+## La parte B
+
+La 1.1.0 è uscita l'11 novembre; l'utente ha detto «Inizia parte b» il
+2026-11-24. Il Coordinatore è d'accordo sul piano e ha scelto di
+estendere ADR-0383 (nessun numero nuovo).
+
+**Cosa si sa della libreria** (letto nella documentazione di Expo per
+l'SDK 57, niente installato):
+
+- `expo-glass-effect` ~57.0.5 è il modulo di Expo per questo SDK ed è
+  dentro Expo Go: nel simulatore si prova senza una build.
+- Dà `GlassView`, `GlassContainer`, `isLiquidGlassAvailable()` e
+  `isGlassEffectAPIAvailable()`. Il vetro vero c'è solo su iOS 26 e
+  seguenti; altrove `GlassView` è una vista normale. Il ripiego è quindi
+  il vetro velato della parte A: **`expo-blur` non serve**.
+- Con `opacity: 0` su un `GlassView` o su un suo genitore il vetro non si
+  disegna. La fascia dell'header oggi sfuma con l'opacità: sul vetro vero
+  va usato `glassEffectStyle` animato.
+- Su alcune beta di iOS 26 l'API manca: si chiede prima
+  `isGlassEffectAPIAvailable()`.
+- `isLiquidGlassAvailable()` può dire sì anche con «Riduci trasparenza»:
+  il modo resta quello di `useGlassMode`.
+- `colorScheme` (`auto`, `light`, `dark`) segue il tono scelto nell'app,
+  non quello del telefono.
+
+**Le fette**, ognuna con la sua lista al Coordinatore prima del codice:
+
+- **B0** (questa, solo documenti): il piano.
+- **B1 — la dipendenza**: `apps/mobile/package.json`,
+  `package-lock.json`, e i file nuovi `src/ui/NativeGlass.tsx` e
+  `src/ui/NativeGlass.test.tsx`. Nessuna schermata lo usa: l'aspetto non
+  cambia. Parte solo col **sì dell'utente sull'installazione**. Cambia
+  l'impronta iOS (oggi `5e1b5ce5`), quindi resta una bozza «DO NOT MERGE»
+  fino al taglio nativo, che ordina il Coordinatore insieme alle altre
+  fette native (467 C, 482 D, 489 G2).
+- **B2 — la barra delle schede** sul vetro vero: `src/ui/Glass.tsx`,
+  `src/tabs/TabBar.tsx`. Solo JS.
+- **B3 — l'header**, col contenuto che gli passa sotto:
+  `src/tabs/AppHeader.tsx`, `src/tabs/TabShell.tsx`,
+  `src/tabs/headerScroll.tsx`. La fetta grossa.
+- **B4 — i fogli dal basso**: `src/ui/sheetFace.ts`,
+  `src/ui/SheetModal.tsx`.
+
+**Vincoli in più per B**:
+
+1. `NativeGlass` ripiega senza errori quando il modulo nativo non c'è:
+   non lo importa in cima al file, lo cerca una volta dentro un
+   `try/catch`. Usa il vetro vero solo se il modulo c'è, le due domande
+   di disponibilità dicono sì e il modo è «glass»; in ogni altro caso
+   disegna la velatura della parte A. Un test copre il modulo assente.
+   Così un bundle con B2–B4 non rompe una build che non ha il modulo.
+2. **Contrasto**: sul vetro vero la leggibilità sopra foto e mappe la
+   regola iOS, e il test di `theme/glass.test.ts` non la copre più. Ogni
+   superficie si misura sulle schermate nei casi peggiori (foto bianca
+   sotto il tono scuro, nera sotto il chiaro): se testo o icone scendono
+   sotto 4,5:1, quella superficie resta velata. Stile `regular`, mai
+   `clear`.
+3. «Riduci trasparenza» e «Aumenta contrasto» restano opachi come oggi.
+4. L'isola resta velata: niente blur sopra la mappa mentre si registra.
+5. Android e iOS sotto il 26 restano come oggi.
+6. Il pacchetto si prova in Expo Go mettendolo solo nel `node_modules`
+   del worktree della fetta, mai in quello del checkout principale.
 
 ## Inventario delle superfici
 
@@ -421,7 +486,14 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   un'API di prova; l'utente approva («Sì, vai»); #1534 in `main`
   0868720f. Il Coordinatore pubblica l'OTA 25 di produzione da b532fc17,
   con dentro A7c-2, A7c-3 e la correzione; A7a, A7b, A5c-2 e A7c-1 erano
-  già nell'OTA 24 (832dc598).
+  già nell'OTA 24 (832dc598). Documenti #1548 in `main`.
+- **2026-11-24**: l'utente prova sul telefono, dopo l'OTA 25, la
+  conversazione aperta dalla scheda «Messages»: «Top funziona tutto». La
+  correzione dell'header è chiusa. Lo stesso giorno: «Inizia parte b».
+  Letta la documentazione di `expo-glass-effect`, piano a fette B0–B4 al
+  Coordinatore, che lo approva: si estende ADR-0383, B1 va nel taglio
+  nativo. Chiesto all'utente il sì per installare la dipendenza; niente
+  installato fino ad allora.
 - Imparato (il difetto di A5b): con la nuova architettura uno `zIndex`
   ordina dentro il più vicino antenato che resta una vista sua, non
   dentro il genitore. Una vista con solo posizione e colore di fondo
@@ -605,4 +677,6 @@ in `main` dal 2026-11-12, in produzione al più tardi con l'OTA 17
 con l'OTA 21 (2026-11-22); A5c e A6 in produzione con l'OTA 22
 (2026-11-22, b4c31f09); A6b con l'OTA 23 (2026-11-23, e427ed2e); A7a, A7b, A5c-2 e A7c-1 con l'OTA 24
 (2026-11-23, 832dc598); A7c-2, A7c-3 e la correzione dell'header sopra le
-pagine con l'OTA 25 (b532fc17).
+pagine con l'OTA 25 (2026-11-24, b532fc17), provata dall'utente sul
+telefono lo stesso giorno («Top funziona tutto»). La parte B è avviata
+dal 2026-11-24: per ora solo il piano.

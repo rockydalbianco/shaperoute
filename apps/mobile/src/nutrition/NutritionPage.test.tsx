@@ -55,9 +55,22 @@ afterEach(async () => {
   disk.files.clear();
 });
 
-test("the first time, the page is «Before you start» and nothing else", async () => {
+/** Through the door of the first time (part J): what it does, the rules,
+ * the question skipped, «Start». */
+async function enter() {
+  await fireEvent.press(screen.getByTestId("welcome-next"));
+  await fireEvent.press(screen.getByTestId("nutrition-understood"));
+  await fireEvent.press(screen.getByTestId("welcome-skip"));
+  await fireEvent.press(screen.getByTestId("welcome-start-button"));
+}
+
+test("the first time, the page is its door: what it does, then «Before you start»", async () => {
   await render(<NutritionPage today="2026-11-23" />);
   expect(screen.getByRole("header", { name: "Nutrition" })).toBeOnTheScreen();
+  expect(screen.getByTestId("welcome-how")).toBeOnTheScreen();
+  expect(screen.getByText("Example")).toBeOnTheScreen();
+  expect(screen.queryByTestId("nutrition-diary")).toBeNull();
+  await fireEvent.press(screen.getByTestId("welcome-next"));
   expect(screen.getByRole("header", { name: "Before you start" })).toBeOnTheScreen();
   expect(screen.getByText(NO_DIETS)).toBeOnTheScreen();
   expect(
@@ -74,9 +87,15 @@ test("the first time, the page is «Before you start» and nothing else", async 
   expect(screen.queryByTestId("nutrition-diary")).toBeNull();
 });
 
-test("«I understand» opens the diary and is remembered", async () => {
+test("«I understand» is remembered, and after the door the diary opens", async () => {
   const first = await render(<NutritionPage today="2026-11-23" />);
+  await fireEvent.press(screen.getByTestId("welcome-next"));
   await fireEvent.press(screen.getByRole("button", { name: "I understand" }));
+  expect(loadSettings().noticeSeen).toBe(true);
+  // The door goes on: the page is not there yet.
+  expect(screen.queryByTestId("nutrition-diary")).toBeNull();
+  await fireEvent.press(screen.getByTestId("welcome-skip"));
+  await fireEvent.press(screen.getByTestId("welcome-start-button"));
   expect(screen.getByTestId("nutrition-diary")).toBeOnTheScreen();
   expect(screen.queryByText(NO_DIETS)).toBeNull();
   expect(loadSettings().noticeSeen).toBe(true);
@@ -91,7 +110,7 @@ test("«I understand» opens the diary and is remembered", async () => {
 
 test("the diary always says that the numbers are estimates and MuW gives no diets", async () => {
   await render(<NutritionPage today="2026-11-23" />);
-  await fireEvent.press(screen.getByTestId("nutrition-understood"));
+  await enter();
   expect(
     screen.getByText("Estimates only. MuW does not provide diets or medical advice."),
   ).toBeOnTheScreen();
@@ -99,7 +118,7 @@ test("the diary always says that the numbers are estimates and MuW gives no diet
 
 test("without a day given, the diary opens on the phone's today", async () => {
   await render(<NutritionPage />);
-  await fireEvent.press(screen.getByTestId("nutrition-understood"));
+  await enter();
   expect(screen.getByTestId("diary-day")).toHaveTextContent("Today");
 });
 
@@ -107,6 +126,7 @@ test("the notice is in the language of the app", async () => {
   await act(async () => saveLanguageChoice("it"));
   await render(<NutritionPage today="2026-11-23" />);
   expect(screen.getByRole("header", { name: "Alimentazione" })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Avanti" }));
   expect(screen.getByRole("header", { name: "Prima di iniziare" })).toBeOnTheScreen();
   expect(
     screen.getByText(
@@ -114,6 +134,8 @@ test("the notice is in the language of the app", async () => {
     ),
   ).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Ho capito" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Salta" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Inizia" }));
   expect(
     screen.getByText("Solo stime. MuW non fornisce diete né consigli medici."),
   ).toBeOnTheScreen();
@@ -121,7 +143,7 @@ test("the notice is in the language of the app", async () => {
 
 test("the page has two views, the diary first", async () => {
   await render(<NutritionPage today="2026-11-23" />);
-  await fireEvent.press(screen.getByTestId("nutrition-understood"));
+  await enter();
   expect(screen.getByRole("button", { name: "Diary" })).toBeSelected();
   expect(screen.queryByTestId("nutrition-plan")).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "My plan" }));
@@ -135,7 +157,7 @@ test("the page has two views, the diary first", async () => {
 
 test("«How we calculate» says where the numbers come from", async () => {
   await render(<NutritionPage today="2026-11-23" />);
-  await fireEvent.press(screen.getByTestId("nutrition-understood"));
+  await enter();
   expect(screen.queryByTestId("how-we-calculate")).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "How we calculate" }));
   expect(screen.getByRole("header", { name: "How we calculate" })).toBeOnTheScreen();

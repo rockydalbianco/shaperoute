@@ -6,8 +6,8 @@ produzione con l'OTA 25
 testo anche quando iOS svuota il campo tornato segreto; i campi detti
 giusti a iOS; le proprie bolle gialle (ADR-0403); una conversazione vuota
 con tre spunti; «New message» accanto al titolo «Messages». Il foglio «Use
-Strong Password?» è di iOS ed è rimasto. Resta la prova dell'utente sul
-telefono: l'occhio, e quel foglio con un Portachiavi vero.
+Strong Password?» è di iOS ed è rimasto. **Provato dall'utente sul
+telefono il 24 novembre 2026, con l'OTA 25: «Ottimo funziona tutto».**
 **Fase**: 5 · **Branch**: `fix/TASK-458-signup-chat-minor`
 **ADR**: ADR-0403 (le bolle gialle di chi scrive), dato dal Coordinatore
 il 23 novembre 2026; cita ADR-0383 e ADR-0279 senza toccarne le voci ·
@@ -228,3 +228,8 @@ Lista approvata dal Coordinatore il 23 novembre 2026. `STATUS.md`,
   Documenti di chiusura: ADR-0403 in `docs/DECISIONS.md`, la riga in
   `docs/archive/COMPLETATI.md`. Nessuna voce in `STATUS.md` (non ne aveva)
   né in `INDEX.md` (parola del Coordinatore).
+- 2026-11-24: provato dall'utente sul telefono, «Ottimo funziona tutto».
+  Nello stesso messaggio ha chiesto il recupero della password sotto
+  «Accedi»: nell'app c'è da TASK-300 («Forgot password?»), ma in
+  produzione `GET /account-email` risponde 404 e il link non si vede. È
+  un lavoro a parte, TASK-515 (numero dal Coordinatore).

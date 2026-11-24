@@ -1,4 +1,5 @@
 import { File, Paths } from "expo-file-system";
+import { useSyncExternalStore } from "react";
 
 /**
  * The account signed in on this phone now (TASK-507, ADR-0406), for the
@@ -35,6 +36,12 @@ export function onOwnerChange(listener: () => void): () => void {
   return () => {
     listeners.delete(listener);
   };
+}
+
+/** The account signed in, for a screen: it renders again when another
+ * account (or none) signs in (TASK-507 part B2). */
+export function useCurrentOwner(): number | null {
+  return useSyncExternalStore(onOwnerChange, currentOwner, currentOwner);
 }
 
 /**

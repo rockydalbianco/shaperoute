@@ -42,6 +42,9 @@ const LOADING: Lists = {
   following: { kind: "loading" },
 };
 
+/** How small a tile's name may get before it is cut (TASK-508). */
+const NAME_MIN_SCALE = 0.8;
+
 /** In English: shown with `t()` (TASK-210). */
 const NAMES: Record<FollowList, string> = {
   requests: tLater("Requests"),
@@ -341,7 +344,14 @@ export function FollowLists({ fetchFn, apiKey }: Props) {
                   <View style={styles.dot} testID="requests-waiting" />
                 )}
               </View>
-              <Text style={styles.countName} numberOfLines={1}>
+              <Text
+                style={styles.countName}
+                numberOfLines={1}
+                // A longer word of another language gets smaller, not cut.
+                adjustsFontSizeToFit
+                minimumFontScale={NAME_MIN_SCALE}
+                testID={`follow-count-name-${list}`}
+              >
                 {name}
               </Text>
             </Tap>
@@ -547,7 +557,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: color.badge,
   },
+  // As wide as its tile, not as its own words (TASK-508): a text measured
+  // to its words and then placed on whole pixels came out a hair narrower
+  // and was cut, «Follow…».
   countName: {
+    alignSelf: "stretch",
+    paddingHorizontal: space.xs,
+    textAlign: "center",
     color: color.textMuted,
     fontSize: fontSize.small,
     fontWeight: fontWeight.semibold,

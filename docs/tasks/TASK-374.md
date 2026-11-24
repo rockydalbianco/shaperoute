@@ -1,7 +1,6 @@
 # TASK-374 — Il mio corpo: calorie giuste e zone di frequenza cardiaca
 
-**Stato**: In lavorazione · A e B in `main` e in produzione; C e D al prossimo taglio nativo (la 1.0.2 è stata solo per gli screenshot, poi è uscita la 1.1.0), con un testo unico del permesso di Salute insieme a 345 C, 397 C e 467 C.
-Prima del 2026-11-24: In corso: parti A (#739, `22ec9572`) e B (#746, `a1ff05da`) in `main`; poi C e D nella 1.0.2
+**Stato**: In corso: parti A (#739, `22ec9572`) e B (#746, `a1ff05da`) in `main`; poi C e D nella 1.0.2
 **Fase**: 4 · **Branch**: `docs/TASK-374-body-calories-hr-zones` (documenti),
 `feat/TASK-374-a-body-calories` (parte A), `feat/TASK-374-b-hr-zones` (parte B)
 · **ADR**: ADR-0318 · numeri dal Coordinatore (2026-11-04)

@@ -1,7 +1,6 @@
 # TASK-355 — Una scheda del Feed che si capisce in un colpo d'occhio
 
-**Stato**: In lavorazione · A, B1 (#1356, server passo 17) e B2 (#1370) in `main` e in produzione (OTA 25); resta solo la prova sul telefono, nella prova generale del 2026-11-24 (`out/strategia-2026-11-24/PROVA-GENERALE.md`); poi si chiude.
-Prima del 2026-11-24: In lavorazione — parte A in main (#700, 2026-11-03); B1 (server, #1356) e B2 (app, #1370) in main il 2026-11-21, server col passo 17; resta il tocco sul telefono dopo l'OTA
+**Stato**: In lavorazione — parte A in main (#700, 2026-11-03); B1 (server, #1356) e B2 (app, #1370) in main il 2026-11-21, server col passo 17; resta il tocco sul telefono dopo l'OTA
 **Fase**: 4 · **Branch**: `docs/TASK-355-feed-clarity` (documenti),
 `feat/TASK-355-a-feed-card` (A), `feat/TASK-355-b-feed-counts` (B)
 · **ADR**: ADR-0306 · numeri dal Coordinatore (2026-10-30)

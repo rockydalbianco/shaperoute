@@ -1,7 +1,6 @@
 # TASK-410 — La pagina del post: più dati e più ordine
 
-**Stato**: In lavorazione · B, F, C, D (#1043) e la correzione #1078 in `main` e in produzione; A è TASK-355 B; resta E, il meteo (server e app, testi e privacy da approvare).
-Prima del 2026-11-24: In lavorazione — B, F, C e D (#1043) in `main` (2026-11-10); D esce con l'OTA 3; A è TASK-355 B; poi E
+**Stato**: In lavorazione — B, F, C e D (#1043) in `main` (2026-11-10); D esce con l'OTA 3; A è TASK-355 B; poi E
 **Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
 per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
 

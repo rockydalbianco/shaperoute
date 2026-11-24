@@ -1,7 +1,8 @@
 # TASK-397 — Il VO₂ max nel profilo pubblico
 
-**Stato**: In lavorazione · A e B in produzione (#832, migrazione 0049; #835); C, il VO₂ max letto da Salute, al prossimo taglio nativo (non più «con la 1.0.2»), insieme a 374 C; D dopo TASK-321 C.
-Prima del 2026-11-24: In lavorazione · proposta in main (#810), testi e informativa della parte A approvati (#824); parte A (API) in main (#832); parte B (app) in main (#835, 2026-11-05); C (Salute) con la 1.0.2, D dopo
+**Stato**: In lavorazione · proposta in main (#810), testi e informativa
+della parte A approvati (#824); parte A (API) in main (#832); parte B (app)
+in main (#835, 2026-11-05); C (Salute) con la 1.0.2, D dopo
 **Fase**: 5 · **Branch**: `docs/TASK-397-vo2max-proposal` (documenti);
 `feat/TASK-397-a-vo2max-api` (parte A); `feat/TASK-397-b-vo2max-app` (parte B)
 **Dipende da**: TASK-368 (i record, chiuso) per la stima; la #806 (TASK-376

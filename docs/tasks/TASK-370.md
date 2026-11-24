@@ -1,7 +1,10 @@
 # TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono
 
-**Stato**: In lavorazione · A e B nella 1.1.0 (build 14, sullo Store dal 2026-11-11; #1116 in `main` il 2026-11-21); resta C, sport per sport, alla prossima build dell'orologio.
-Prima del 2026-11-24: In lavorazione · proposta e piano della parte A in `main`; A1 in `main` (#839, 2026-11-05); A2 in `main` (#866 e #883, 2026-11-06); A3 in `main` (#943, 2026-11-08); A-flip con B4 e B5 nella **1.1.0 build 14**, inviata ad Apple il 2026-11-11 (branch di rilascio `release/1.1.0`, #1116 in bozza fino all'approvazione)
+**Stato**: In lavorazione · proposta e piano della parte A in `main`; A1 in
+`main` (#839, 2026-11-05); A2 in `main` (#866 e #883, 2026-11-06); A3 in
+`main` (#943, 2026-11-08); A-flip con B4 e B5 nella **1.1.0 build 14**,
+inviata ad Apple il 2026-11-11 (branch di rilascio `release/1.1.0`, #1116 in
+bozza fino all'approvazione)
 **Fase**: 5 · **Branch**: `docs/TASK-370-apple-watch` (documenti); il codice
 `feat/TASK-370-a-…`, `feat/TASK-370-b-…`, …
 **Dipende da**: TASK-321 B (HealthKit nella build, in `main`), TASK-376 B3 (il

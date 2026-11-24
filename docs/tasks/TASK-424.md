@@ -1,7 +1,7 @@
 # TASK-424 — I dati dal vivo per ogni sport e «Share live activity»
 
-**Stato**: In lavorazione · A1, A2, B1, B2, C, C2, C2b, C3 (#1123) in `main` e in produzione, server e `site/live` online; resta solo la prova sul telefono, nella prova generale del 2026-11-24 (`out/strategia-2026-11-24/PROVA-GENERALE.md`); poi si chiude.
-Prima del 2026-11-24: In corso · parte 0 (#981), A1 (#983) e A2 (#1010) in `main`; prossima B1; il server e la copia del sito col sì dell'utente
+**Stato**: In corso · parte 0 (#981), A1 (#983) e A2 (#1010) in `main`;
+prossima B1; il server e la copia del sito col sì dell'utente
 **Fase**: 5 · **Branch**: `docs/TASK-424-live-share` (parte 0) · **ADR**:
 ADR-0352 · numeri dal Coordinatore (2026-11-08)
 

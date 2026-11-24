@@ -1,9 +1,6 @@
 # TASK-343 — Le sfide del mese: un tema per concorso, l'iscrizione, la galleria, l'archivio
 
-**Stato**: In lavorazione — documenti in `main` (#648), parte A in `main`
-(#657, `5303a198`), parte B in `main` (#667), la 0039 sul server; il punto 2
-(`EnterOnPost` montato in `DrawingCard`) nella PR `feat/TASK-343-enter-on-post`
-del 2026-11-24, su parola del Coordinatore (fork 3); poi l'OTA e la chiusura
+**Stato**: Done · 2026-11-24 · documenti (#648), A (#657, migrazione 0039 sul server), B (#667) e il punto 2, `EnterOnPost` montato in `DrawingCard` (#1574, `6b8d8010`), in `main`: una sfida col tema nel Feed, la sua pagina con la galleria «Top» | «New» e l'archivio, l'iscrizione dal modulo di fine corsa, da «My activities» e dal proprio post aperto; esce col prossimo OTA di produzione (Coordinatore, col sì dell'utente), poi uno sguardo sul telefono all'interruttore del post.
 **Fase**: 4 · **Branch**: `feat/TASK-343-a-themed-contest-api` (A),
 `feat/TASK-343-b-themed-contest-app` (B)
 **ADR**: ADR-0296 (estende ADR-0260) · **Migrazione**: una, in A; il

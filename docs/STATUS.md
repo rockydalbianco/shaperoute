@@ -99,10 +99,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sull'iPhone e C (Android) al taglio nativo. File: — · `tasks/TASK-321.md`
 - **TASK-322 — Entrare con Apple e Google** · A (API) in `main`; prossima B
   (app), C (chiavi sul server) col sì. File: — · `tasks/TASK-322.md`
-- **TASK-343 — Le sfide del mese** · documenti e A in `main`; B nella PR
-  #667; server con la 0039 col sì. File: — · `tasks/TASK-343.md`
-  **2026-11-10**: B in `main` (#667), la 0039 è sul server; non chiuso:
-  `EnterOnPost` non è ancora montato in `DrawingCard` (task file, punto 2).
 - **TASK-347 — Il disegno libero ancorato alle strade** · A fatta; prossima
   B (il telefono). File: — · `tasks/TASK-347.md`
   **2026-11-22**: B in `main` (#1389); C1 #1398, poi C2 (schermate) e C3.

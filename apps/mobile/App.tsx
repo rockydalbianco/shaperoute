@@ -128,6 +128,7 @@ import type { ChoiceKind } from "./src/route/problems";
 import { withPenUp } from "./src/route/penUpHint";
 import { drawKindOf, figuresOf, shapeOfSport } from "./src/route/sportDraw";
 import { shapeAsked } from "./src/route/penUpShapes";
+import { DrawHint, drawMissing } from "./src/route/DrawHint";
 import { drawLabel, drawWhat } from "./src/route/drawLabel";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { averagePace } from "./src/route/runTime";
@@ -690,6 +691,15 @@ function MuW() {
         : image.state.status === "traced"
           ? imageAsked(image.state.outline, penUp)
           : null;
+  // Something written or picked, even if it cannot be drawn yet: its own
+  // field says why (a word the AI is reading, a letter no word has). Only
+  // nothing at all gets the line over «Draw route» (TASK-508).
+  const givenToDraw =
+    drawKind === "shape"
+      ? shapeText.trim() !== ""
+      : drawKind === "word"
+        ? wordText.trim() !== ""
+        : image.state.status !== "none";
   const request: AnyRouteRequest | null =
     start && drawn !== null && distanceM !== null
       ? { start: start.point, ...drawn, distance_m: distanceM, activity: sportActivity }
@@ -2083,6 +2093,13 @@ function MuW() {
                     footer={
                       <>
                         <ZoneNotice bytes={firstMaps} />
+                        {/* Why the button is off (TASK-508). */}
+                        <DrawHint
+                          missing={drawMissing({
+                            start: start !== null,
+                            shape: drawn !== null || givenToDraw,
+                          })}
+                        />
                         <DrawButton
                           enabled={request !== null}
                           onDraw={onDraw}

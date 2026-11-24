@@ -2,7 +2,7 @@
 
 **Stato**: In lavorazione — parte 0 (domande e documenti) il 2026-11-24
 **Fase**: 5 · **Branch**: `docs/TASK-515-account-emails-part-0` (parte 0)
-**ADR**: ADR-NNNN · numero del task dal Coordinatore (fork 3), 2026-11-24
+**ADR**: ADR-0410 · numeri dal Coordinatore (fork 3), 2026-11-24
 **Dipende da**: TASK-300 (ADR-0261), TASK-284 (ADR-0244), TASK-262 B
 (ADR-0226), TASK-291 (ADR-0251), TASK-308 (ADR-0268): tutti Done, tutti
 spenti in produzione.
@@ -135,7 +135,7 @@ cui il piano va riguardato: prima si conta quanti sono gli assenti.
   nessun server.
 - **A — I due giri si accendono a parte** (API, piccola). Con le tre
   variabili partono le email dell'account; «quando sono via» e il
-  riassunto partono solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina (ADR-NNNN).
+  riassunto partono solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina (ADR-0410).
   Vuota, nessuno dei due: una email a tutti gli iscritti deve essere un
   gesto voluto, non una dimenticanza. File:
   - nuovo `services/api/shaperoute_api/email_rounds.py` (legge e controlla
@@ -164,7 +164,7 @@ cui il piano va riguardato: prima si conta quanti sono gli assenti.
   riceve la conferma; una segnalazione e un feedback di prova arrivano
   all'utente. Il Coordinatore guarda nel log che nessuna email sia
   rifiutata.
-- **Chiusura**: `DEPLOY.md`, ADR-NNNN «Attiva», una riga in
+- **Chiusura**: `DEPLOY.md`, ADR-0410 «Attiva», una riga in
   `archive/COMPLETATI.md`.
 
 Ordine: 0 → A e U insieme → S → P → chiusura. La privacy non ha una
@@ -187,18 +187,21 @@ parte: resta com'è (scelta 5).
 - [x] Detto che oggi il recupero non si accende da solo, e proposta la
       parte di codice.
 - [x] Le sei risposte dell'utente registrate.
-- [ ] ADR-NNNN in `DECISIONS.md` e la sua riga nell'indice.
+- [x] ADR-0410 in `DECISIONS.md` e la sua riga nell'indice.
 - [ ] PR di soli documenti «pronta» al Coordinatore.
 - [ ] Parti successive e lista dei file mandate al Coordinatore.
 
 ## File toccati (parte 0)
 
 - `docs/tasks/TASK-515.md` (nuovo)
-- `docs/DECISIONS.md` (ADR-NNNN in «Voci nuove» e nell'indice)
+- `docs/DECISIONS.md` (ADR-0410 in «Voci nuove» e nell'indice)
 - `docs/STATUS.md` (la voce del task)
 - `docs/INDEX.md` (una riga)
 
 ## Dove si è (2026-11-24)
 
-Parte 0: domande fatte, risposte sopra. Chiesti al Coordinatore il numero
-dell'ADR e il sì sulla lista dei file della parte A.
+Parte 0: domande fatte, risposte sopra; ADR-0410 scritto come «Proposta».
+La PR di soli documenti va al Coordinatore, con la lista dei file della
+parte A: la parte A parte col suo sì. L'utente può fare Resend quando
+vuole («Cosa fa l'utente su Resend»). Nessuna parte tocca
+`apps/mobile/`.

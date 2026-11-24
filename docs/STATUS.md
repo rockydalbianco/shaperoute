@@ -84,7 +84,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   2026-11-24; parte dopo TASK-490 D ed E, in una sessione sua. File: — ·
   `tasks/TASK-514.md`
 - **TASK-515 — Le email dell'account in produzione («Forgot password?»)** ·
-  ADR-NNNN; parte 0 il 2026-11-24: il server non ha mai avuto Resend; scelte
+  ADR-0410; parte 0 il 2026-11-24: il server non ha mai avuto Resend; scelte
   dell'utente fatte (solo email dell'account, segnalazioni e feedback).
   Poi A (i due giri a parte), Resend dell'utente, il passo sul server.
   File: — · `tasks/TASK-515.md`

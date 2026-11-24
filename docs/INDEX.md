@@ -63,7 +63,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | «Alimentazione»: diario dei pasti, piano, bilancio delle calorie, tabella nel profilo | `tasks/TASK-489.md`, ADR-0397, ADR-0318, ADR-0281 |
 | «Longevity»: le storie animate nella «Explore» di «Nutrition» | `tasks/TASK-513.md`, ADR-0407, ADR-0397 (precisazione 5) |
 | La modalità «Nutrition»: la barra Today · Plan · Explore · Feed · Profile | `tasks/TASK-514.md`, ADR-0408, ADR-0357, ADR-0398 |
-| Le email del server in produzione: quali partono, Resend, «Forgot password?» | `tasks/TASK-515.md`, ADR-NNNN, ADR-0261, ADR-0244, `DEPLOY.md` «Email di ritorno» |
+| Le email del server in produzione: quali partono, Resend, «Forgot password?» | `tasks/TASK-515.md`, ADR-0410, ADR-0261, ADR-0244, `DEPLOY.md` «Email di ritorno» |
 | La modalità Allenamento: scelta la palestra, l'app diventa un'app per allenarsi (Today, Workouts, Food) | `tasks/TASK-490.md`, ADR-0398, ADR-0357, ADR-0341, ADR-0392 |
 | Il Coach MuW: consigli dagli allenamenti fatti, regole e studi, la scheda che cambia con «Apply» | `tasks/TASK-491.md`, ADR-0399, ADR-0396, ADR-0398, ADR-0392 |
 | La mappa dei decolli: i siti di volo da OpenStreetMap, la scheda del decollo con lo storico dei voli | `tasks/TASK-493.md`, ADR-0400, ADR-0388, ADR-0375, `tasks/TASK-479.md` |

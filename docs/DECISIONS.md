@@ -606,11 +606,11 @@ lasciando le righe d'indice.
 - ADR-0397, precisazione 5 — «Nutrition» anche dal profilo e a fine attività, la pagina del giorno animata (anelli su una scala, macronutrienti senza obiettivo), l'obiettivo di calorie proposto da MuW solo come stima in secondo piano con protezioni, il controllo del peso, la lettura dell'energia attiva dopo una build successiva · 2026-11-24 · Attiva
 - ADR-0407 — «Longevity»: cinquanta storie animate dentro l'app, ognuna da una fonte pubblica ufficiale citata, senza revisione di un professionista e con scritto che MuW non è fatta da professionisti; video delle persone e compensi dopo · 2026-11-24 · Attiva
 - ADR-0408 — La modalità «Nutrition»: scelta come uno sport la barra diventa Today · Plan · Explore · Feed · Profile; la scheda «Food» dell'allenamento resta; dopo TASK-490 D ed E · 2026-11-24 · Attiva
-- ADR-NNNN — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
+- ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
 
 
 ## Voci nuove
-## ADR-NNNN — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; i due giri verso gli iscritti solo se nominati
+## ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; i due giri verso gli iscritti solo se nominati
 
 **Stato**: Proposta · 2026-11-24 · TASK-515 (parte 0; il codice è la parte
 A). Quali email accendere è una scelta **dell'utente** (2026-11-24,

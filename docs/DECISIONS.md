@@ -6835,7 +6835,7 @@ cambia barra quando cambia sport, come lo sciatore.
   su «Draw» con la barra. Prima `App.tsx` guardava la barra nuova invece
   di quella lasciata e la barra spariva, anche nella modalità sci. La
   copre `trainingmode/trainingModeShell.test.tsx`.
-- **L'icona di «Workouts»** è un manubrio nuovo
+- **L'icona di «Today»** è un manubrio nuovo
   (`assets/ui/tabs/dumbbell*.png`), con lo spessore delle linee Lucide.
 - **L'omino della settimana** (parte B) usa il **rosa dei muscoli**
   (`color.muscle`, come la guida degli esercizi di ADR-0376), **scelta
@@ -6851,6 +6851,34 @@ cambia barra quando cambia sport, come lo sciatore.
   palestra, le loro serie e quelle in attesa d'invio; senza account
   l'omino non c'è. Il Coach (ADR-0399) riusa `setsByMuscle` e
   `WeekBodyCard`.
+
+**Precisazione (2026-11-24, parti C e D in `main`, #1510 e #1553)**:
+- **La riga del Coach su «Today»** (deciso dall'agente su delega
+  dell'utente, schermate approvate il 2026-11-23): sotto l'omino, il
+  titolo del primo consiglio, o «Based on your last 4 weeks» se non ce
+  n'è; apre la pagina del Coach sopra «Today». Senza account non c'è.
+  Nessun testo nuovo.
+- **«Food»** sta dopo «Workouts» solo con `NUTRITION_ON`
+  (`trainingPagesOf`); monta la pagina «Nutrition» di TASK-489 com'è.
+  Icona: le posate di Lucide (`assets/ui/tabs/utensils*.png`). La modalità
+  Nutrition (TASK-514, ADR-0408) non cambia questa tab.
+
+**Precisazione (2026-11-24, parte E: U4 e U5 della prova del 23-11)** —
+**scelte dell'utente** con le domande della parte 0 di E:
+- **L'ordine della barra è lo stesso in ogni modalità**: la casetta del
+  Feed al primo posto e il Profilo all'ultimo, come nell'app di sempre; in
+  mezzo le pagine della modalità. Palestra: Feed · Today · Workouts ·
+  (Food) · Profile. Lo sci cambia allo stesso modo: Feed · Today · Days ·
+  Resorts · Profile. La modalità Nutrition (TASK-514) farà lo stesso.
+  «Messages» resta in alto; ogni modalità si apre ancora su «Today».
+- **Niente scritte sotto le icone**, come in tutta l'app: la barra
+  (`tabs/TabBar.tsx`) non cambia.
+- **«Today» è adesso, «Workouts» è tutto il resto**: «Today» ha l'omino,
+  il Coach e la scheda di oggi con «Start» e «Start without a plan»,
+  nient'altro; «Workouts» ha le schede con i giorni e «New plan», il mese
+  con gli allenamenti fatti, gli esercizi e «How it works» in fondo. Così
+  «New plan» e il calendario non si ripetono. L'icona di «Workouts»
+  diventa una lista al posto del calendario.
 
 ## ADR-0399 — Il Coach MuW: consigli da regole scritte con il loro studio, la scheda che cambia solo con «Apply»
 

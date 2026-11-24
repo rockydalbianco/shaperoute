@@ -52,11 +52,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `ed0bd4d7`), la privacy (#1469, `5d226b33`) e C, l'apertura da profilo,
   notifica o link (#1481, `2a5c7590`), in `main`; restano la copia del sito
   e l'OTA, col sì. File: — · `tasks/TASK-485.md`
-- **TASK-490 — La modalità Allenamento** · A (#1424) e B (#1433, l'omino
-  della settimana su «Today») in `main` il 2026-11-23, schermate e testi
-  approvati dall'utente; escono col prossimo OTA. Restano C (riga del
-  Coach, con TASK-491) e D (tab «Food», con `NUTRITION_ON` di TASK-489).
-  File: — · `tasks/TASK-490.md`
+- **TASK-490 — La modalità Allenamento** · A, B, C (#1510, riga del Coach)
+  e D (#1553, tab «Food» solo con `NUTRITION_ON`) in `main`; escono col
+  prossimo OTA. Parte E (U4, U5 della prova del 23-11): tre scelte
+  dell'utente il 2026-11-24 (Feed primo e Profilo ultimo in ogni modalità,
+  niente scritte, «Today» = adesso); prossima la E. File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
   ADR-0397; A1–D e la privacy in `main`, spente (`NUTRITION_ON`). In fila:
   D2 = #1547, G1, C2a, H (pagina animata), I (invito a fine attività);

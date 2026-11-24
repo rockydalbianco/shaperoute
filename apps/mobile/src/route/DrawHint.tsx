@@ -11,7 +11,10 @@ export type DrawMissing = "start" | "shape";
  * Null when both are there: the button is on, or what is missing is said
  * elsewhere (a distance being typed).
  */
-export function drawMissing(has: { start: boolean; shape: boolean }): DrawMissing | null {
+export function drawMissing(has: {
+  start: boolean;
+  shape: boolean;
+}): DrawMissing | null {
   if (!has.start) {
     return "start";
   }

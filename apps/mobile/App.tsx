@@ -214,6 +214,7 @@ import { color, statusBarStyle } from "./src/theme/tokens";
 import { TrainingTabIcon } from "./src/trainingmode/TrainingTabIcon";
 import { TrainingTodayPage } from "./src/trainingmode/TrainingTodayPage";
 import { TrainingWorkoutsPage } from "./src/trainingmode/TrainingWorkoutsPage";
+import { NutritionPage } from "./src/nutrition/NutritionPage";
 import {
   barPagesOf,
   modeOf,
@@ -256,7 +257,8 @@ type Screen =
   | "skiDays"
   | "skiResorts"
   // The page of the training mode (TASK-490, ADR-0398): «Workouts».
-  | "trainingWorkouts";
+  | "trainingWorkouts"
+  | "trainingFood";
 
 /** The screens that are pages of the tab bar, in the order of their tabs
  * (TASK-367, ADR-0311): «Feed», «Draw», «Messages», «Explore», «Profile».
@@ -2265,6 +2267,17 @@ function MuW() {
                   render: () => (
                     <TrainingWorkoutsPage onLogIn={() => showPage("profile")} />
                   ),
+                },
+                // «Food» (part D): the «Nutrition» page of TASK-489 as it
+                // is, only while NUTRITION_ON puts it in the bar.
+                trainingFood: {
+                  title: t("Food"),
+                  label: t("Food"),
+                  face: (selected) => (
+                    <TrainingTabIcon name="food" selected={selected} />
+                  ),
+                  lazy: true,
+                  render: () => <NutritionPage />,
                 },
               },
             },

@@ -1,7 +1,7 @@
 # TASK-384 — «MuW Style»: post con modelli AI in outfit sportivi e tag «Shop»
 
-**Stato**: Todo — proposta in `docs/STYLE.md` approvata dall'utente
-(2026-11-04, «Sì, approvo»); prima del codice restano i testi
+**Stato**: Fermo — in attesa · 2026-11-24 (scelta dell'utente del 2026-11-24 sui task aperti): idea approvata e mai partita, da rivalutare più avanti; si riprende col sì dell'utente.
+Prima del 2026-11-24: Todo — proposta in `docs/STYLE.md` approvata dall'utente (2026-11-04, «Sì, approvo»); prima del codice restano i testi
 **Fase**: 4 · **Branch**: `docs/TASK-384-muw-style` (proposta) · **ADR**:
 ADR-0326 · numero del task dal Coordinatore
 (2026-11-04)

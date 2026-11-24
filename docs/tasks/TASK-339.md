@@ -1,11 +1,6 @@
 # TASK-339 — L'interfaccia premium ed elegante: tipografia, neutri caldi, immagini, movimento, dettagli
 
-**Stato**: In lavorazione · parte A in `main` (#658, 2026-10-30) · parte B
-in `main` (#677, 2026-10-30) · parte C2 (divisioni e tocco) in `main`
-(#715, 2026-11-04) · parte D (Profile, Settings, i fogli) in `main` (#760,
-2026-11-04) · **parte C1 (pagine vuote) in PR dal 2026-11-23** (branch
-`feat/TASK-339-premium-look-c1`, testi approvati) · poi E; numeri e condizioni dal
-Coordinatore il 2026-10-30
+**Stato**: Done · 2026-11-24 · A (#658), B (#677), C2 (#715), D (#760) e C1, le pagine vuote (#1513), in `main` e in produzione (C1 con l'OTA 25). La parte E («Draw» e il risultato, poi le schermate dello Store da rifare col look nuovo) passa fra le idee «In attesa» di `STATUS.md`. Chiuso nel censimento dei task aperti (scelta dell'utente del 2026-11-24 sui task aperti).
 **Fase**: 4 · **Branch**: `feat/TASK-339-premium-look-a` (A, in `main`),
 `feat/TASK-339-premium-look-b` (B, in `main`),
 `feat/TASK-339-premium-look-c2` (C2, in `main`),

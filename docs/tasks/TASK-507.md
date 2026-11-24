@@ -1,9 +1,8 @@
 # TASK-507 — I dati del telefono restano di chi li ha fatti, anche quando cambia l'account
 
-**Stato**: In lavorazione · A + C in `main` (#1533, `edde967c`) · **D in PR
-dal 2026-11-24** (`fix/TASK-507-d-account-data`, #1545) · **B1 in PR dal
-2026-11-24** (`fix/TASK-507-b1-owner-in-progress`, #1546, provata al
-simulatore) · B2 nel turno su `App.tsx`
+**Stato**: In lavorazione · A + C in `main` (#1533, `edde967c`) · D in `main`
+(#1545) · B1 in `main` (#1546, provata al simulatore) · **B2 in PR dal
+2026-11-24** (`fix/TASK-507-b2-run-on-screen`, nel turno su `App.tsx`)
 **Fase**: 4 · **ADR**: ADR-0406 (dal Coordinatore, voce nella PR di
 documenti finale) · numero dal Coordinatore il 2026-11-23
 
@@ -189,6 +188,41 @@ apps/mobile/src/account/phoneOwners.ts
 docs/tasks/TASK-507.md
 ```
 
+## Parte B2 — la corsa sullo schermo quando cambia l'account
+
+- `account/currentOwner.ts`: `useCurrentOwner()`, l'account dentro per
+  una schermata, che si ridisegna quando cambia.
+- `App.tsx` (`MuW`): se sullo schermo c'è la fine di una corsa (con o senza
+  percorso) di un altro account, sparisce e si torna alla prima pagina. La
+  corsa resta sul telefono e B1 la mette da parte alla lettura successiva.
+  Quando entra un account con l'app aperta, se ha una corsa sua lasciata,
+  appare la sua fine, come all'apertura dell'app.
+- Una corsa in registrazione non si tocca: il suo file dice di chi è, e la
+  sua fine passa dallo stesso controllo.
+- Lo stato si aggiusta durante il render (confronto con l'account visto),
+  non in un effetto: la regola `react-hooks/set-state-in-effect` del
+  progetto.
+- Un caso da sapere: se la sessione scade durante una corsa, alla fine la
+  schermata non si vede finché non si rientra con quell'account. Poi la
+  corsa compare e si salva, invece di finire con «Done», che la cancellava.
+
+### Criteri di accettazione (B2)
+
+- [x] `__tests__/AppRunOwner.test.tsx` (nuovo): la corsa di A è nascosta
+      con nessuno dentro, appare quando entra A, sparisce quando entra B
+      (messa da parte) e torna con A.
+- [x] I test dell'app sulle corse e quelli dell'account verdi (176),
+      `tsc` ed `eslint`.
+
+### File toccati (B2)
+
+```
+apps/mobile/App.tsx
+apps/mobile/src/account/currentOwner.ts         (useCurrentOwner)
+apps/mobile/__tests__/AppRunOwner.test.tsx       (nuovo)
+docs/tasks/TASK-507.md
+```
+
 ## Sul server
 
 Niente da sistemare. Le tre sessioni sono finite solo nel database di prova
@@ -204,3 +238,4 @@ arrivate (`VERIFICA.md`, punto 1).
 - **2026-11-24** — Parte D in PR.
 - **2026-11-24** — Parte B1 scritta, in bozza fino alla prova al simulatore.
 - **2026-11-24** — Prova al simulatore di B1 riuscita, con una correzione (un file di un punto senza proprietario non tiene fuori la corsa che torna).
+- **2026-11-24** — D e B1 in `main`; B2 in PR nel turno su `App.tsx`.

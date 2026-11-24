@@ -1,8 +1,6 @@
 # TASK-373 — Sci alpino: proposta e misure
 
-**Stato**: Proposto · solo documenti e misure (questa PR). L'utente il
-2026-11-04 ha scelto l'opzione A (la giornata registrata, senza forma);
-nessun codice prima delle risposte alle domande 2–4
+**Stato**: Done · 2026-11-24 · superato: lo sci alpino scelto qui (opzione A, la giornata registrata senza forma, ADR-0317) l'hanno fatto TASK-375 (parti A–D, impianti e piste per nome, in produzione) e TASK-429 (la modalità sci, in produzione). Resta solo la prova sulla neve, che sta in TASK-375 E e TASK-429. Chiuso nel censimento dei task aperti (scelta dell'utente del 2026-11-24 sui task aperti).
 **Fase**: 5 · **Branch**: `docs/TASK-373-ski-proposal` (documenti); le
 parti, se si fanno, `feat/TASK-373-a-…` e così via
 **Dipende da**: nulla per lo studio. L'opzione A si appoggia alla

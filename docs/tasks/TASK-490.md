@@ -1,6 +1,6 @@
 # TASK-490 — La modalità Allenamento: scelta la palestra, MuW diventa un'app per allenarsi
 
-**Stato**: In corso (0, A e B in `main` il 2026-11-23; restano C e D)
+**Stato**: In corso (0, A, B, C e D in `main`; parte 0 di E chiusa il 2026-11-24; resta la E)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-490-training-mode-part-0`
 **Dipende da**: TASK-429 (la modalità sci, ADR-0357: il modello), TASK-411
@@ -62,6 +62,7 @@ lo vede nelle schermate della parte A e dice sì lì.
 | B | L'omino della settimana in cima a «Today» (riusa `MuscleMap`); il Coach lo riusa | app, solo file nuovi; schermate all'utente |
 | C | La riga «Coach · next time» su «Today» e l'apertura della pagina del Coach | app, quando il Coach ha numero e pagina |
 | D | La tab «Food» che monta la pagina di TASK-489 B | app, con `NUTRITION_ON` |
+| E | U4 e U5 della prova del 23-11: l'ordine della barra e cosa sta in «Today» e in «Workouts» | parte 0 (tre scelte), poi app; schermate all'utente |
 
 La B parte dopo la A in `main`.
 
@@ -117,6 +118,18 @@ apps/mobile/src/trainingmode/TrainingTodayPage.tsx + test (una riga: <WeekBody /
 apps/mobile/src/i18n/{de,es,fr,it}.ts  (5 chiavi nuove)
 ```
 
+Parte C (#1510): `trainingmode/TrainingCoachRow.tsx` + test (nuovi),
+`trainingmode/TrainingTodayPage.tsx` + test.
+
+Parte D (#1553): `trainingmode/trainingMode.ts` + test,
+`trainingmode/TrainingTabIcon.tsx` + `TrainingTabIcon.test.tsx` (nuovo),
+`assets/ui/tabs/utensils*.png` (6, nuovi), `App.tsx` (a turno dopo
+#1520), `trainingmode/trainingModeFoodShell.test.tsx` (nuovo).
+
+Chiusura C e D e parte 0 di E (soli documenti,
+`docs/TASK-490-cd-done-e-part-0`): `docs/tasks/TASK-490.md`,
+`docs/DECISIONS.md` (due precisazioni in ADR-0398), `docs/STATUS.md`.
+
 Chiusura A e B (soli documenti, `docs/TASK-490-ab-closing`):
 
 ```
@@ -153,6 +166,33 @@ docs/STATUS.md             (la voce del task)
 - **B** in `main` il 2026-11-23 (#1433, `d5d1cc33`): sul simulatore, con
   due allenamenti di prova, «52% of your body trained»; figure alte 140;
   rosa scelto dall'utente, schermate e testi approvati («Sì, approvo»).
+- **C** in `main` il 2026-11-24 (#1510, `f325962e`): la riga del Coach
+  su «Today» apre la pagina del Coach; schermate approvate dall'utente il
+  2026-11-23 («Sì, approvo»), nessun testo nuovo.
+- **D** in `main` il 2026-11-24 (#1553, `3193e51c`): la tab «Food» con la
+  pagina «Nutrition», solo con `NUTRITION_ON` (spento: in produzione non
+  cambia niente). Nessun testo nuovo. Le schermate quando TASK-489 accende
+  il flag.
 - Restano: l'OTA (lo pubblica il Coordinatore) e la prova sul telefono;
-  **C** (riga «Coach · next time», con TASK-491); **D** (tab «Food»: serve
-  da TASK-489 il nome e le props della pagina «Nutrition»).
+  la parte **E**.
+
+## Parte E — le scelte dell'utente (2026-11-24)
+
+Il Coordinatore ha aggiunto la parte E dalla prova al simulatore del
+23-11 (`out/prova-app-2026-11-23/PROPOSTE.md`, U4 e U5, schermate s17,
+s20, s28). Le tre domande della parte 0 e le risposte:
+
+1. **Ordine della barra** → «Feed primo, Profilo ultimo» in ogni
+   modalità: Palestra Feed · Today · Workouts · (Food) · Profile; Sci
+   Feed · Today · Days · Resorts · Profile; Nutrition (TASK-514) uguale.
+   «Messages» in alto; si apre su «Today».
+2. **Scritte sotto le icone** → no, come tutta l'app.
+3. **Le due pagine** → «Today» = adesso (omino, Coach, la scheda di oggi
+   con «Start» e «Start without a plan»); «Workouts» = le schede con i
+   giorni e «New plan», il mese con gli allenamenti fatti, gli esercizi,
+   «How it works» in fondo. Icona di «Workouts»: una lista.
+
+Nella PR della E vanno anche le righe di TASK-469 B2a passo 2
+(`useTabBarRoom` in «Today» e «Workouts»,
+`out/TASK-469/PASSO-2-RIGHE.md`). Elenco dei file al Coordinatore prima
+del codice.

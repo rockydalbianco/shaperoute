@@ -83,17 +83,20 @@ test("with the bar over it, a page ends that much later", async () => {
   expect(endOfPage()).toBe(space.xxl + 72);
 });
 
-// Every page of the tab bar asks for the room. Three more join when their
-// own tasks have landed: the profile and the two of the training mode.
+// Every page of the tab bar asks for the room: a new one joins this list.
 const PAGES = [
   "explore/ExploreScreen.tsx",
+  "nutrition/NutritionPage.tsx",
   "paddle/PaddleExplore.tsx",
   "screens/ChooseScreen.tsx",
   "screens/FeedScreen.tsx",
+  "screens/ProfileScreen.tsx",
   "skimode/SkiDaysPage.tsx",
   "skimode/SkiResortsPage.tsx",
   "skimode/SkiTodayPage.tsx",
   "tabs/MessagesPage.tsx",
+  "trainingmode/TrainingTodayPage.tsx",
+  "trainingmode/TrainingWorkoutsPage.tsx",
 ];
 
 test.each(PAGES)("%s leaves the tab bar its room", (file) => {

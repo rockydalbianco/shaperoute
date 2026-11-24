@@ -97,7 +97,9 @@ test("nothing is transferred to a watch without the app, nor without a watch (TA
   native.getIsPaired.mockImplementationOnce(() => Promise.resolve(false));
   link.transfer({ type: "settings", units: "km", at: 2 });
   await settle();
-  native.getIsPaired.mockImplementationOnce(() => Promise.reject(new Error("no session")));
+  native.getIsPaired.mockImplementationOnce(() =>
+    Promise.reject(new Error("no session")),
+  );
   link.transfer({ type: "settings", units: "km", at: 3 });
   await settle();
   expect(native.transferUserInfo).not.toHaveBeenCalled();

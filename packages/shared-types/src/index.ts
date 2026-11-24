@@ -1544,7 +1544,7 @@ export const COMMENT_REPLIES_SHOWN = 2;
 export interface Comment {
   id: string;
   /** Who wrote it: never the email. */
-  author: DrawingAuthor;
+  author: CommentAuthor;
   /** Plain text: shown as text, never as a link or HTML. */
   text: string;
   created_at: string;
@@ -1687,6 +1687,13 @@ export interface FeedAuthor extends DrawingAuthor {
    */
   photo?: string | null;
 }
+
+/**
+ * Who wrote a comment or a reply (TASK-497): `photo` as in the feed. Missing
+ * from an API of before, and then the picture is the profile's, from
+ * GET /users/{public_id}.
+ */
+export type CommentAuthor = FeedAuthor;
 
 /** The reactions of a post, as its card shows them. */
 export interface FeedReactions {

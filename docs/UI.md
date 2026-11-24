@@ -3865,8 +3865,10 @@ cui tiene i numeri.
 - **«Compass»** (TASK-422, ADR-0350; chiesta dall'utente il 2026-11-08):
   solo la mappa, grande. Sotto restano i pulsanti della corsa («Pocket»,
   «Pause», «Music»; in pausa «Stop» da tenere e «Resume»; all'arrivo
-  «Finish») e i tre nomi; niente numeri, barra del percorso, riga del gioco
-  né battito. Sopra la mappa il banner resta (la svolta, o la partenza).
+  «Finish») e i tre nomi; sopra i pulsanti **una riga sola, piccola**:
+  quanta strada e quanto tempo («2.34 km · 12:05», nelle unità della corsa;
+  TASK-518 A, scelta dell'utente del 2026-11-24, al posto di «niente
+  numeri»); niente passo, barra del percorso, riga del gioco né battito. Sopra la mappa il banner resta (la svolta, o la partenza).
   **La mappa gira dove punta il telefono**: la direzione verso cui si è
   rivolti sta in alto (heading-up). Da fermi comanda la bussola del
   telefono; correndo la bussola finché è calibrata (media o alta), e quando
@@ -3883,7 +3885,12 @@ cui tiene i numeri.
   sempre in alto, anche da fermi, e davanti apre **un cono azzurro** che
   sfuma in avanti: dove punta il telefono. Col nord in alto (un tocco) il
   cono si chiude e la freccia torna a seguire la traccia. La punta della
-  freccia del nord è rossa (`north`), la «N» chiara.
+  freccia del nord è rossa (`north`), la «N» chiara. Sotto la freccia del
+  nord, solo su questa pagina, **la direzione scritta**: «NE · 42°», il più
+  vicino degli otto punti nella lingua dell'app (le sigle della voce, «SO»,
+  «O» in italiano) e i gradi interi da nord, che cambiano con la mappa; col
+  nord in alto niente, la freccia dice già N (TASK-518 B, scelte
+  dell'utente del 2026-11-24, «1 e 2» e «Niente etichetta»).
 - **«Map»**: la mappa con sopra il banner (la svolta, o la partenza senza
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra

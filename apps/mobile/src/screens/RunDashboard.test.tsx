@@ -272,7 +272,7 @@ test("each page has its drawing over its name; the open one is blue with a blue 
   expect(color.you).not.toBe(color.accent);
 });
 
-test("Compass is the map alone: no number under it, only Pause and the three names (TASK-422)", async () => {
+test("Compass is the map with one line, how far and how long, Pause and the three names (TASK-422, TASK-518 A)", async () => {
   await render(<LiveRun fixes={north(300)} />);
   expect(screen.getByLabelText("Distance: 0.30 km")).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("tab", { name: "Compass" }));
@@ -280,6 +280,11 @@ test("Compass is the map alone: no number under it, only Pause and the three nam
   expect(screen.queryByLabelText("Distance: 0.30 km")).toBeNull();
   expect(screen.queryByLabelText(/Pace now/)).toBeNull();
   expect(screen.queryByText("Next turn")).toBeNull();
+  // One line: how far and how long, nothing else (TASK-518 A).
+  expect(screen.getByTestId("compass-line")).toHaveTextContent(/^0\.30 km·\d+:\d\d$/);
+  expect(
+    screen.getByLabelText(/^Distance: 0\.30 km, Time: \d+:\d\d$/),
+  ).toBeOnTheScreen();
   expect(screen.getByLabelText("Pause")).toBeOnTheScreen();
   expect(screen.getByLabelText("Pocket mode")).toBeOnTheScreen();
   expect(screen.getByRole("tab", { name: "Compass" }).props.accessibilityState).toEqual(
@@ -290,11 +295,13 @@ test("Compass is the map alone: no number under it, only Pause and the three nam
   // Paused there, the numbers of the pause stay away too; Stop and Resume are there.
   await fireEvent.press(screen.getByLabelText("Pause"));
   expect(screen.queryByLabelText("Distance: 0.30 km")).toBeNull();
+  expect(screen.getByTestId("compass-line")).toBeOnTheScreen();
   expect(screen.getByLabelText("Resume")).toBeOnTheScreen();
   expect(screen.getByLabelText("Stop")).toBeOnTheScreen();
-  // Back on «Map», the numbers again.
+  // Back on «Map», the numbers again, and no line of «Compass».
   await fireEvent.press(screen.getByRole("tab", { name: "Map" }));
   expect(screen.getByLabelText("Distance: 0.30 km")).toBeOnTheScreen();
+  expect(screen.queryByTestId("compass-line")).toBeNull();
 });
 
 test("from Data, Compass slides the page away and opens the map alone; the run over, Map is next", async () => {

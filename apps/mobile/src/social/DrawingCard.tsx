@@ -11,6 +11,7 @@ import { dayLabel } from "../activities/activityText";
 import { isOnSnow, isTrackless } from "../activities/snow";
 import { isGymPlanPosted } from "../api/planPosts";
 import { useWinnerDrawingId } from "../contest/contestKept";
+import { EnterOnPost } from "../contest/EnterOnPost";
 import { WinnerBadge } from "../contest/WinnerBadge";
 import { ExploreStart } from "../explore/ExploreStart";
 import { PlanPost } from "../feed/PlanPostTile";
@@ -100,7 +101,8 @@ export const PHOTO_HEIGHT = 160;
  * after them «Draw it near me», its shape or word in «Draw» (TASK-313),
  * and «Edit the drawing», its figure on the map (TASK-320, TASK-331).
  * The drawing that won the contest kept on the phone has the «Winner» band
- * on top (TASK-299). An activity added from a file of another app says
+ * on top (TASK-299); one's own post published during a challenge has
+ * «Enter “{theme}”» before the reactions (TASK-343 part B). An activity added from a file of another app says
  * «Imported» under its facts (TASK-312). A gym plan posted (TASK-485 part
  * C), opened from a profile, a notification, a link or a chat, shows its
  * tile as in the Feed, opened whole by a tap, with «Use this plan» on
@@ -243,6 +245,9 @@ export function DrawingCard({
           durationS={drawing.duration_s}
         />
       )}
+      {/* «Enter “{theme}”» on one's own post published during the
+          challenge (TASK-343 part B); nothing on any other. */}
+      <EnterOnPost drawing={drawing} />
       {/* The reactions and the actions, after a hairline. */}
       <Hairline />
       <DrawingReactions

@@ -1,7 +1,9 @@
 # TASK-343 — Le sfide del mese: un tema per concorso, l'iscrizione, la galleria, l'archivio
 
 **Stato**: In lavorazione — documenti in `main` (#648), parte A in `main`
-(#657, `5303a198`), parte B nella PR #667
+(#657, `5303a198`), parte B in `main` (#667), la 0039 sul server; il punto 2
+(`EnterOnPost` montato in `DrawingCard`) nella PR `feat/TASK-343-enter-on-post`
+del 2026-11-24, su parola del Coordinatore (fork 3); poi l'OTA e la chiusura
 **Fase**: 4 · **Branch**: `feat/TASK-343-a-themed-contest-api` (A),
 `feat/TASK-343-b-themed-contest-app` (B)
 **ADR**: ADR-0296 (estende ADR-0260) · **Migrazione**: una, in A; il
@@ -175,7 +177,7 @@ apps/mobile/src/contest/contestKept.ts
 apps/mobile/src/contest/useClock.ts               (nuovo)
 apps/mobile/src/screens/ProfileLayerContest.test.tsx (nuovo)
 apps/mobile/src/contest/EnterOnPost.tsx           (nuovo)
-apps/mobile/src/social/DrawingCard.tsx            (una riga, dopo TASK-339 B, su parola del Coordinatore: non in questa PR)
+apps/mobile/src/social/DrawingCard.tsx            (una riga, dopo TASK-339 B, su parola del Coordinatore: PR del 2026-11-24, con `social/DrawingCardContest.test.tsx` nuovo)
 docs/CONCORSI.md
 apps/mobile/src/screens/ProfileLayer.tsx          (monta ContestPage, ok del Coordinatore 2026-10-30)
 apps/mobile/src/notifications/usePushNotifications.ts
@@ -206,7 +208,8 @@ rispondono 404. I dettagli sono in `CONCORSI.md` §15.
    testi 667» nella chat del Coordinatore (riferito dal Coordinatore: copre i
    testi e il regolamento alla testa `2af16096`). Da allora i testi non sono
    cambiati; un cambio vuole un sì nuovo;
-2. la riga che monta `EnterOnPost` in `DrawingCard`: dopo TASK-339 B, su parola
+2. **fatto il 2026-11-24** (PR `feat/TASK-343-enter-on-post`, via del Coordinatore
+   fork 3: `DrawingCard.tsx` libero dopo la #1541): la riga che monta `EnterOnPost` in `DrawingCard`: dopo TASK-339 B, su parola
    del Coordinatore. Il componente ha i suoi test ma oggi nessuno lo mostra;
    sul post già pubblicato si iscrive e si ritira da «My activities»;
 3. il server con la migrazione 0039: lo decide l'utente, insieme a questa parte.

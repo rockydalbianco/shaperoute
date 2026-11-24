@@ -1592,6 +1592,11 @@ function MuW() {
               onPress={mapTurn.onArrow}
               northUp={mapTurn.compass ? mapTurn.northUp : undefined}
               upHint={mapTurn.compass ? t("Turns the map where you face") : undefined}
+              facing={
+                mapTurn.compass && !mapTurn.northUp
+                  ? (mapTurn.facing ?? undefined)
+                  : undefined
+              }
             />
           ) : undefined
         }

@@ -74,6 +74,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'utente fatte (solo email dell'account, segnalazioni e feedback).
   Poi A (i due giri a parte), Resend dell'utente, il passo sul server.
   File: — · `tasks/TASK-515.md`
+- **TASK-516 — Forme invernali e contorni** · ADR-0411; parte 0 il
+  2026-11-24 (la C di TASK-441, scelta dell'utente): 11 forme nuove
+  d'inverno, feste e sport e i 35 contorni di TASK-418. A sagome (file
+  nuovi), B strade, C registrazione (PR unita dall'utente, server e OTA
+  insieme), D catalogo. File: — · `tasks/TASK-516.md`
 - **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
   scelte dell'utente, ADR-0393); poi A server … G avviso, file al
   Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`

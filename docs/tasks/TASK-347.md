@@ -1,7 +1,11 @@
 # TASK-347 — Il disegno libero ancorato alle strade: map matching per tratto, confronto e punteggio, strumenti da professionista, guide
 
-**Stato**: In lavorazione · A, B (#1389), C1 (#1398), C2 (#1449), C3 (#1468), C3b (#1491) in `main` e in produzione (OTA 25); da scrivere qui gli esiti di C1–C3b; restano D, E, F, G.
-Prima del 2026-11-24: Proposta approvata · 2026-10-30 · le cinque scelte di prodotto fatte dall'utente lo stesso giorno (§«Scelte di prodotto»); i documenti in `main`; le parti partono una alla volta, ognuna nella sua sessione: **parte A fatta** (branch `feat/TASK-347-a-engine-anchored`, §«Esito»), **B in `main`** (#1389, 2026-11-22), C divisa in C1, C2 e C3 (testi approvati dall'utente il 2026-11-22)
+**Stato**: Proposta approvata · 2026-10-30 · le cinque scelte di prodotto
+fatte dall'utente lo stesso giorno (§«Scelte di prodotto»); i documenti
+in `main`; le parti partono una alla volta, ognuna nella sua sessione:
+**parte A fatta** (branch `feat/TASK-347-a-engine-anchored`, §«Esito»),
+**B in `main`** (#1389, 2026-11-22), C divisa in C1, C2 e C3 (testi
+approvati dall'utente il 2026-11-22)
 **Fase**: 5 · **Branch**: `docs/TASK-347-pro-freehand` (documenti); le
 parti `feat/TASK-347-a-engine-anchored` e così via
 **Dipende da**: TASK-331 (a mano solo sulla mappa, in `main`), TASK-214

@@ -1,7 +1,7 @@
 # TASK-494 — Le scadenze della vela: revisione, ripiegatura della riserva e i dati della vela
 
-**Stato**: In lavorazione · parte 0 in `main` (#1514); prossima A, poi B e C.
-Prima del 2026-11-24: Proposto · parte 0 (questa PR, soli documenti), scelte dell'utente fatte il 2026-11-23; prossima la parte A
+**Stato**: Proposto · parte 0 (questa PR, soli documenti), scelte
+dell'utente fatte il 2026-11-23; prossima la parte A
 **Fase**: 5 · **Branch**: `docs/TASK-493-494-takeoffs-glider-checks` (parte 0), poi
 `feat/TASK-494-<parte>-…` per ogni parte
 **ADR**: ADR-0401 · numeri dal Coordinatore (fork 3), 2026-11-23

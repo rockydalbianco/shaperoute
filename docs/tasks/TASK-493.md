@@ -1,7 +1,7 @@
 # TASK-493 — La mappa dei decolli: i siti di volo con lo storico di MuW
 
-**Stato**: In lavorazione · 0 (#1514) e A (#1518, migrazione 0086, sul server col passo 22) in `main`; prossima B, poi C e D (vento dopo TASK-479 H).
-Prima del 2026-11-24: Proposto · parte 0 (questa PR, soli documenti), scelte dell'utente fatte il 2026-11-23; prossima la parte A
+**Stato**: Proposto · parte 0 (questa PR, soli documenti), scelte
+dell'utente fatte il 2026-11-23; prossima la parte A
 **Fase**: 5 · **Branch**: `docs/TASK-493-494-takeoffs-glider-checks` (parte 0), poi
 `feat/TASK-493-<parte>-…` per ogni parte
 **ADR**: ADR-0400 · numeri dal Coordinatore (fork 3), 2026-11-23

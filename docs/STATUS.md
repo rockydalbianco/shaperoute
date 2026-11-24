@@ -73,8 +73,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   File: — · `tasks/TASK-515.md`
 - **TASK-486 — L'attrezzatura** (ADR-0393) · A–G e la privacy (#1480) in
   `main`, G1 sul server (passo 22), l'accensione `GEAR_ON` (#1558) in
-  `main` dopo l'OTA 25; restano l'OTA, la copia della privacy sul sito e
-  la prova sul telefono. File: — · `tasks/TASK-486.md`
+  `main` dopo l'OTA 25, privacy online; restano l'OTA e la prova sul
+  telefono. File: — · `tasks/TASK-486.md`
 - **TASK-214 — Il motore dei percorsi sul telefono** · A, B, C, A2, B2 in
   `main`; restano tempi e memoria su un iPhone vero e le zone dove il server
   dà 404. File: — · `tasks/TASK-214.md`
@@ -113,7 +113,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   produzione; C e D al prossimo taglio nativo, col testo del permesso di
   Salute insieme a 345 C, 397 C, 467 C. File: — · `tasks/TASK-374.md`
 - **TASK-385 — «Gym», la palestra** · A–G in `main` (G1 sul server col
-  passo 20, G2 con l'OTA 25); restano la copia della privacy di G3 (#1486),
+  passo 20, G2 con l'OTA 25); la privacy di G3 (#1486) è online; restano
   la prova sul telefono e H (nativa). File: — · `tasks/TASK-385.md`
 - **TASK-397 — Il VO₂ max nel profilo** · A e B in produzione; C al
   prossimo taglio nativo (con 374 C), D dopo 321 C. File: — ·

@@ -1,6 +1,6 @@
 # TASK-385 — «Gym» 🏋️: l'allenamento in palestra, senza percorso
 
-**Stato**: In lavorazione · A–F, G1 (#1440, server passo 20), G2 (#1459, OTA 25) e G3, la privacy (#1486), in `main`; restano la copia della privacy di G3 sul sito, la prova sul telefono (battito a fine allenamento) e H, nativa, al prossimo taglio.
+**Stato**: In lavorazione · A–F, G1 (#1440, server passo 20), G2 (#1459, OTA 25) e G3, la privacy (#1486), in `main`; la privacy di G3 è online (copia del sito da 8759e5d4); restano la prova sul telefono (battito a fine allenamento) e H, nativa, al prossimo taglio.
 Prima del 2026-11-24: In corso · proposta in `main` (#766, #796); parte A (API e database) in PR; ogni parte dopo la sua lista dei file al Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-385-gym-proposal` (documenti); il
 codice `feat/TASK-385-a-…`

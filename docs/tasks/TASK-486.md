@@ -1,7 +1,9 @@
 # TASK-486 — L'attrezzatura: scarpe, bici, sci e tutto il resto, coi km
 
-**Stato**: In lavorazione · A–G e la privacy (#1480) in `main`, G1 sul server (passo 22); l'accensione `GEAR_ON` (#1558) in `main` dopo l'OTA 25; restano l'OTA dell'accensione, la copia della privacy sul sito e la prova sul telefono.
-Prima del 2026-11-24: In lavorazione · parte 0 chiusa il 2026-11-21; A–G in `main` (2026-11-23, G2 con #1536), privacy in `main` (#1480), tutto dietro `GEAR_ON = false`; restano G1 sul server, l'accensione col sì dell'utente (la chiede il Coordinatore) e l'OTA
+**Stato**: In lavorazione · parte 0 chiusa il 2026-11-21; A–G in `main`
+(2026-11-23, G2 con #1536), privacy in `main` (#1480), tutto dietro
+`GEAR_ON = false`; restano G1 sul server, l'accensione col sì dell'utente
+(la chiede il Coordinatore) e l'OTA
 **Fase**: 5 · **Branch**: `docs/TASK-486-gear` (parte 0), poi
 `feat/TASK-486-<parte>-…` per ogni parte
 **ADR**: ADR-0393 · numeri dal Coordinatore (fork 2), 2026-11-21

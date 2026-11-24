@@ -1,7 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione · A, B1, B2 (anche le città estere) e B3 (#1471) in produzione: 2031 percorsi, sul server col passo 21, provati dall'utente («visto funziona», 2026-11-23); resta C (motore: spazi nelle frasi, cifre, forme a tema), che il file dice task e ADR a parte.
-Prima del 2026-11-24: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), server in `main` (#1317, `ee9f143c`, col sì dell'utente «Le otto forme», 2026-11-18), **sul server dal 2026-11-21** (passo 14, 06:43Z); app in `main` (#1248, `ab51d0fd`, 2026-11-21), **in produzione con l'OTA 18** (`593c6fbe`, 2026-11-21), provata dall'utente sul telefono («funziona»); le città estere in un secondo giro
+**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) **in produzione dal 2026-11-12** (#1184 sul server col passo 10, #1185 nell'OTA 12); **B2 (bici fino a 30 km) in lavorazione**: 148 uscite in bici in 29 città italiane nel seme (1694 in tutto), server in `main` (#1317, `ee9f143c`, col sì dell'utente «Le otto forme», 2026-11-18), **sul server dal 2026-11-21** (passo 14, 06:43Z); app in `main` (#1248, `ab51d0fd`, 2026-11-21), **in produzione con l'OTA 18** (`593c6fbe`, 2026-11-21), provata dall'utente sul telefono («funziona»); le città estere in un secondo giro
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419

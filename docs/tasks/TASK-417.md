@@ -1,9 +1,7 @@
 # TASK-417 — La mia immagine al posto dell'animale, e il video «Together» con le persone taggate
 
-**Stato**: In lavorazione · B e C in `main` (#1067, 2026-11-10); D1
-(server di «Together») in `main` (#1339, 2026-11-21), sul server col passo
-15; D2a (#1357) e D2b (#1375) in `main` il 2026-11-21; restano la frase
-della privacy (dopo 312 C2), l'OTA ed E
+**Stato**: In lavorazione · B, C, D1, D2a, D2b in `main` e in produzione (OTA 25), privacy «Together» (#1430) online; resta solo la prova sul telefono, nella prova generale del 2026-11-24 (`out/strategia-2026-11-24/PROVA-GENERALE.md`); poi si chiude (è la parte E: tempi di esportazione).
+Prima del 2026-11-24: In lavorazione · B e C in `main` (#1067, 2026-11-10); D1 (server di «Together») in `main` (#1339, 2026-11-21), sul server col passo 15; D2a (#1357) e D2b (#1375) in `main` il 2026-11-21; restano la frase della privacy (dopo 312 C2), l'OTA ed E
 **Fase**: 5 · **Branch**: `docs/TASK-417-my-image-video-proposal`
 (documenti); il codice `feat/TASK-417-b-…`
 **Dipende da**: TASK-408 (l'editor del video, ADR-0339): l'animale è l'op

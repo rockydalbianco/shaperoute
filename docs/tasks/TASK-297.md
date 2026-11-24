@@ -1,6 +1,7 @@
 # TASK-297 — Ricerche dall'archivio dei percorsi (A) e loghi con la penna alzata (C); il piazzamento imparato, misurato e scartato (B)
 
-**Stato**: In lavorazione · documenti in `main` (#538, `9391893c`) · parte A in `main` (#539, `0c4ada00`, su `preview` e0e4e126) · **C, motore: PR #547 aperta (2026-10-25)** · TASK-298 nella sua sessione · **A2: in `main` di `LPPL1316/MUW` con la #7 (`e789e9c`, 2026-10-29)** · poi C2
+**Stato**: In lavorazione · A, A2, C (#547) in `main` e in produzione; C2 (#1520) in `main` e sul server (passo 22), non ancora nell'app (dopo l'OTA 25); restano l'OTA di C2, i file derivati (`draw_examples`, `paddleExamples.json`, `catalogueShapes.json`) e la prova sul telefono.
+Prima del 2026-11-24: In lavorazione · documenti in `main` (#538, `9391893c`) · parte A in `main` (#539, `0c4ada00`, su `preview` e0e4e126) · **C, motore: PR #547 aperta (2026-10-25)** · TASK-298 nella sua sessione · **A2: in `main` di `LPPL1316/MUW` con la #7 (`e789e9c`, 2026-10-29)** · poi C2
 **Fase**: 4 · **Branch**: `docs/TASK-297-proposal` (documenti),
 `feat/TASK-297-a-route-archive` (A), `feat/TASK-297-a2-first-placement`
 (A2, dopo la #497), `feat/TASK-297-c-image-pieces` (C, motore),

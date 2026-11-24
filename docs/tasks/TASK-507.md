@@ -1,9 +1,7 @@
 # TASK-507 — I dati del telefono restano di chi li ha fatti, anche quando cambia l'account
 
-**Stato**: In lavorazione · A + C in `main` (#1533, `edde967c`) · **D in PR
-dal 2026-11-24** (`fix/TASK-507-d-account-data`, #1545) · **B1 in PR dal
-2026-11-24** (`fix/TASK-507-b1-owner-in-progress`, #1546, provata al
-simulatore) · B2 nel turno su `App.tsx`
+**Stato**: In lavorazione · A + C (#1533) in produzione; D (#1545) e B1 (#1546) in `main` dopo l'OTA 25; restano l'OTA di D e B1, B2 (turno su `App.tsx`) e i documenti finali (ADR-0406).
+Prima del 2026-11-24: In lavorazione · A + C in `main` (#1533, `edde967c`) · **D in PR dal 2026-11-24** (`fix/TASK-507-d-account-data`, #1545) · **B1 in PR dal 2026-11-24** (`fix/TASK-507-b1-owner-in-progress`, #1546, provata al simulatore) · B2 nel turno su `App.tsx`
 **Fase**: 4 · **ADR**: ADR-0406 (dal Coordinatore, voce nella PR di
 documenti finale) · numero dal Coordinatore il 2026-11-23
 

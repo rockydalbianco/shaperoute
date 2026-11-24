@@ -1,6 +1,7 @@
 # TASK-490 — La modalità Allenamento: scelta la palestra, MuW diventa un'app per allenarsi
 
-**Stato**: In corso (0, A e B in `main` il 2026-11-23; restano C e D)
+**Stato**: In corso · 0, A, B, C (#1510, in produzione con l'OTA 25) e D, la tab «Food» (#1553, in `main` dopo l'OTA 25); restano l'OTA di D e la prova sul telefono.
+Prima del 2026-11-24: In corso (0, A e B in `main` il 2026-11-23; restano C e D)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-490-training-mode-part-0`
 **Dipende da**: TASK-429 (la modalità sci, ADR-0357: il modello), TASK-411

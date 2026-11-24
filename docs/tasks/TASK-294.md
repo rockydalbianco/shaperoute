@@ -1,7 +1,7 @@
 # TASK-294 — MuW su Google Play
 
-**Stato**: In corso (parte A in `main` con la #543, `1dfc440e`; parte B in
-`main` con la #548, `049102c5`; parte C in PR)
+**Stato**: In corso · A, B, C in `main` (C #569, la pagina di cancellazione online); restano la prova su un Android vero, l'URL di cancellazione nella Play Console (utente) e l'uscita su Google Play (12 tester per 14 giorni).
+Prima del 2026-11-24: In corso (parte A in `main` con la #543, `1dfc440e`; parte B in `main` con la #548, `049102c5`; parte C in PR)
 **Fase**: 4 · **Branch**: `feat/TASK-294-a-android-background` (parte A,
 PR #543), `feat/TASK-294-b-play-build` (parte B, PR #548),
 `feat/TASK-294-c-account-deletion` (parte C)

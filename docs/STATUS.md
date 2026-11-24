@@ -66,6 +66,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-514 — La modalità «Nutrition»** · ADR-0408; parte 0 chiusa il
   2026-11-24; parte dopo TASK-490 D ed E, in una sessione sua. File: — ·
   `tasks/TASK-514.md`
+- **TASK-515 — Le email dell'account in produzione («Forgot password?»)** ·
+  ADR-0410; parte 0 il 2026-11-24: il server non ha mai avuto Resend; scelte
+  dell'utente fatte (solo email dell'account, segnalazioni e feedback).
+  Poi A (i due giri a parte), Resend dell'utente, il passo sul server.
+  File: — · `tasks/TASK-515.md`
 - **TASK-486 — L'attrezzatura** (ADR-0393) · A–G e la privacy (#1480) in
   `main`, G1 sul server (passo 22), l'accensione `GEAR_ON` (#1558) in
   `main` dopo l'OTA 25; restano l'OTA, la copia della privacy sul sito e

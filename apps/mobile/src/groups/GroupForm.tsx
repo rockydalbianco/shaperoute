@@ -26,7 +26,6 @@ import {
 } from "react-native-safe-area-context";
 
 import { sessionEnded } from "../account/messages";
-import { SAFETY } from "../groupRuns/GroupRunForm";
 import { t, tLater } from "../i18n";
 import { PlaceSearch } from "../places/PlaceSearch";
 import { type PickedPhoto, pickPhoto } from "../profile/pickPhoto";
@@ -45,6 +44,7 @@ import { changeGroup, createGroup, putGroupPhoto, removeGroupPhoto } from "./gro
 import {
   ACCESS_TEXTS,
   ALPINISM_SAFETY,
+  GROUP_SAFETY,
   groupPhotoUri,
   groupProblem,
   knownPoint,
@@ -402,7 +402,7 @@ function Form({
             );
           })}
         </View>
-        <Text style={styles.safety}>{t(SAFETY)}</Text>
+        <Text style={styles.safety}>{t(GROUP_SAFETY)}</Text>
         {alpinism && <Text style={styles.safety}>{t(ALPINISM_SAFETY)}</Text>}
         {problem !== null && (
           <Text style={styles.problem} accessibilityRole="alert">

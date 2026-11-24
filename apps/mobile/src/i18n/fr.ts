@@ -3555,6 +3555,8 @@ export const FR: Table = {
   "Go out together: make a group, or join one.":
     "Sors avec d'autres : crée un groupe ou rejoins-en un.",
   Invites: "Invitations",
+  "Meet in a public place, never at your home. MuW doesn't organise or check groups or their outings. Everyone on MuW is 16 or older.":
+    "Retrouvez-vous dans un lieu public, jamais chez toi. MuW n'organise ni ne contrôle les groupes et leurs sorties. Sur MuW, tout le monde a au moins 16 ans.",
   "Mountaineering is dangerous. MuW doesn't organise, guide or check groups, outings, routes or difficulty, and isn't a mountain guide. Everyone is responsible for their own experience, gear and safety.":
     "L'alpinisme est dangereux. MuW n'organise, n'encadre ni ne contrôle les groupes, les sorties, les itinéraires ou la difficulté, et n'est pas un guide de montagne. Chacun est responsable de sa propre expérience, de son équipement et de sa sécurité.",
   "Public@@group": "Public",

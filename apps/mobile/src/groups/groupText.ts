@@ -18,6 +18,12 @@ import { negativeComment } from "../social/commentText";
  * docs/GRUPPI.md): what the API said, the sports, the way in, the roles.
  */
 
+/** Above «Create», always (EVENTI.md §10, said of groups: the user's
+ * choice of 2026-11-24). */
+export const GROUP_SAFETY = tLater(
+  "Meet in a public place, never at your home. MuW doesn't organise or check groups or their outings. Everyone on MuW is 16 or older.",
+);
+
 /** Above «Create» when the group has alpinism (GRUPPI.md §9, approved by
  * the user 2026-11-23). */
 export const ALPINISM_SAFETY = tLater(

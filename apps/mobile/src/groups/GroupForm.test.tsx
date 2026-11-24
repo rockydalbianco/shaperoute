@@ -10,10 +10,9 @@ import type { GroupDetail, Session } from "@shaperoute/shared-types";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import type { AccountState } from "../account/useAccount";
-import { SAFETY } from "../groupRuns/GroupRunForm";
 import { FollowsContext } from "../social/followsDoor";
 import { GroupForm, type GroupFormMode, sportChoices } from "./GroupForm";
-import { ALPINISM_SAFETY } from "./groupText";
+import { ALPINISM_SAFETY, GROUP_SAFETY } from "./groupText";
 
 jest.mock("react-native-safe-area-context", () => {
   const actual = jest.requireActual("react-native-safe-area-context");
@@ -75,7 +74,7 @@ async function shown(
 test("«Create» sends the group with the phone's point, «Request to join» first", async () => {
   const fetchFn = fetchAnswering({ status: 201, body: detail });
   const onDone = await shown({ kind: "new" }, fetchFn);
-  expect(screen.getByText(SAFETY)).toBeTruthy();
+  expect(screen.getByText(GROUP_SAFETY)).toBeTruthy();
   expect(screen.queryByText(ALPINISM_SAFETY)).toBeNull();
   expect(screen.getByTestId("group-access-request").props.accessibilityState).toEqual(
     expect.objectContaining({ selected: true }),

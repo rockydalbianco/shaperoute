@@ -58,6 +58,7 @@ import type { Units } from "../units/units";
 import { VoiceSetting } from "../voice/VoiceSetting";
 import { useWatch } from "../watch/useWatch";
 import { WatchHeart } from "../watch/WatchHeart";
+import { CompassLine } from "./CompassLine";
 import { Countdown } from "./Countdown";
 import { HoldButton, ROUND_BUTTON } from "./HoldButton";
 import { confirmPocketMode, PocketScreen } from "./PocketScreen";
@@ -184,8 +185,9 @@ export function RunCard({
       }),
     [folded, foldable],
   );
-  // «Compass» (TASK-422): the map, and under it only the way to pause and
-  // to stop. No number is drawn, so the map takes the room.
+  // «Compass» (TASK-422): the map, and under it the way to pause and to
+  // stop, with one small line of how far and how long (TASK-518 A) so the
+  // map keeps the room.
   const compassPage = page === "compass";
 
   const buttons = (
@@ -226,6 +228,7 @@ export function RunCard({
           {!compassPage && <WatchHeart bpm={bpm} />}
           {!compassPage && shown && <RouteBar route={shown} numbers={numbers} />}
           {!compassPage && page !== "data" && share}
+          {compassPage && <CompassLine numbers={numbers} />}
           {buttons}
           <PageTabs page={page} onPage={setRunPage} />
         </>

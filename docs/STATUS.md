@@ -72,11 +72,17 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Coach, con TASK-491) e D (tab «Food», con `NUTRITION_ON` di TASK-489).
   File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
-  ADR-0397; A1, A2, B1, B2 in `main`, spente (`NUTRITION_ON`) fino alla
-  build nativa. Tutte le parti approvate dall'utente il 2026-11-23; PR in
-  fila: C1 = #1501, D, G1, C2a; privacy = #1496. Per la build nativa: G2,
-  C2b, accensione. File: `activities/ActivityRow.tsx`,
-  `profile/ProfileHome.tsx`, `about/content/*` · `tasks/TASK-489.md`
+  ADR-0397; A1–D e la privacy in `main`, spente (`NUTRITION_ON`). In fila:
+  D2 = #1547, G1, C2a, H (pagina animata), I (invito a fine attività);
+  decise e non scritte J (ingresso) e K (peso). Build nativa: G2, C2b,
+  accensione. File: `nutrition/*`, `activities/RunEnd.tsx`,
+  `gym/GymEnd.tsx` · `tasks/TASK-489.md`
+- **TASK-513 — «Longevity»: cinquanta storie animate** · ADR-0407; parte 0
+  chiusa il 2026-11-24, nessun codice; il codice in una sessione sua.
+  File: — · `tasks/TASK-513.md`
+- **TASK-514 — La modalità «Nutrition»** · ADR-0408; parte 0 chiusa il
+  2026-11-24; parte dopo TASK-490 D ed E, in una sessione sua. File: — ·
+  `tasks/TASK-514.md`
 - **TASK-487 — Il Feed senza attività finte** · 2026-11-22: niente
   esempi di ADR-0127; senza accesso l'invito ad accedere (scelta
   dell'utente). Codice in PR #1397; poi OTA (Coordinatore) e prova sul Mac.

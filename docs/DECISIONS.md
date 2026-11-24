@@ -603,9 +603,168 @@ lasciando le righe d'indice.
 - ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Attiva
 - ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella: rotte a parte (`/drawings/{id}/gear`, `/gear/{id}`), `gear_id` sul tag col `SET NULL`, il limite una riga sola nella campanella per attrezzo e limite, «From my gear» coi tipi della foto · 2026-11-23 · Attiva
 - ADR-0264, aggiunta (TASK-496) — Con l'app dietro i punti nuovi vanno in un diario accanto al file della corsa, il file intero ogni tanto; in tasca la mappa non riceve niente e l'orologio non scatta · 2026-11-23 · Attiva
+- ADR-0397, precisazione 5 — «Nutrition» anche dal profilo e a fine attività, la pagina del giorno animata (anelli su una scala, macronutrienti senza obiettivo), l'obiettivo di calorie proposto da MuW solo come stima in secondo piano con protezioni, il controllo del peso, la lettura dell'energia attiva dopo una build successiva · 2026-11-24 · Attiva
+- ADR-0407 — «Longevity»: cinquanta storie animate dentro l'app, ognuna da una fonte pubblica ufficiale citata, senza revisione di un professionista e con scritto che MuW non è fatta da professionisti; video delle persone e compensi dopo · 2026-11-24 · Attiva
+- ADR-0408 — La modalità «Nutrition»: scelta come uno sport la barra diventa Today · Plan · Explore · Feed · Profile; la scheda «Food» dell'allenamento resta; dopo TASK-490 D ed E · 2026-11-24 · Attiva
 
 
 ## Voci nuove
+## ADR-0407 — «Longevity»: cinquanta storie animate dentro l'app, da fonti pubbliche ufficiali citate, senza revisione di un professionista
+
+**Stato**: Attiva · 2026-11-24 · TASK-513 (parte 0; nessun codice).
+Le scelte sono **dell'utente** (2026-11-24, in `tasks/TASK-513.md`); le
+regole sulle fonti sono decise dall'agente su delega dell'utente. Cambia
+il paletto di ADR-0397 «MuW non dà consigli alimentari» nel solo senso
+scritto qui; MuW continua a non dare diete.
+
+**Contesto**: l'utente ha chiesto in «Explore» tips e video sulla
+longevità, cinquanta fatti da MuW, e più avanti quelli delle persone.
+ADR-0397 diceva che MuW non dà diete né consigli alimentari, e privacy e
+schede di «Nutrition» lo ripetono. Chiesto quanto cambiare la regola,
+l'utente ha scelto prima i consigli generali rivisti da un professionista
+con nome, poi: «No, non ho un medico dietista che può rivedere i consigli.
+Cerchiamo tutto da Internet, ma chiariamo che non siamo dei
+professionisti». Ha poi scelto che i cinquanta siano tutti animati, fatti
+dentro l'app, e che stiano nella «Explore» della modalità «Nutrition»
+(ADR-0408).
+
+**Decisione**:
+1. **Storie, non file video** (scelta dell'utente): ogni storia è un
+   copione di 4–6 scene (una frase e una figura che si muove), 30–40
+   secondi, suonato da un lettore nell'app. Sta nel repository, nelle
+   cinque lingue; nessun file video e nessuno spazio sul server.
+2. **Una fonte pubblica ufficiale per ogni storia** (deciso dall'agente):
+   OMS, enti sanitari nazionali, società scientifiche. La fonte si legge
+   al momento della stesura e si cita nella storia con nome, titolo, data
+   e collegamento. Mai a memoria, mai un blog o uno studio singolo. La
+   storia dice solo quello che la fonte dice. **Senza una fonte così
+   l'argomento non si scrive.**
+3. **Nessuna revisione di un professionista** (scelta dell'utente): al suo
+   posto ogni storia e la sezione dicono che MuW non è fatta da
+   professionisti della salute e che sono informazioni generali, non
+   consigli medici.
+4. **Mai** integratori, farmaci, dosi, diete, cure, promesse, né cosa deve
+   fare chi guarda.
+5. **Dalla storia ai numeri dell'utente**: un collegamento alla parte
+   dell'app che ne parla. Mostra i numeri, non li giudica.
+6. **Nessuna spinta**: niente serie da mantenere, punti, notifiche che
+   insistono.
+7. **I video delle persone** dopo, con moderazione (come ADR-0228), spazio
+   sul server, privacy e termini decisi. **I compensi a chi pubblica**
+   («il 30% delle commissioni generate dalle pubblicità», parole
+   dell'utente) sono un task nuovo, legato a TASK-153 e dopo di lui: la
+   pubblicità è spenta fino alla società (scelta del 2026-10-09). Niente
+   si promette nell'app o sul sito finché non c'è.
+
+**Conseguenze**: prima che una storia esca serve una PR di privacy e
+termini (oggi dicono che MuW non dà consigli), col sì dell'utente e la
+copia del sito; le note per gli store devono dire che sono informazioni
+generali con la loro fonte. Il rischio di un'informazione sbagliata su un
+tema di salute resta di MuW: per questo la regola 2 non ha eccezioni. Il
+nome, il volto o il marchio di una persona reale non si usano senza il suo
+accordo.
+
+**Alternative scartate**: una sezione di soli testi in attesa dei video
+(l'utente vuole le storie); file video ospitati (spazio, lingue, ogni
+correzione un file rifatto); consigli personali o numeri per la persona
+(sono una dieta: restano fuori).
+
+## ADR-0408 — La modalità «Nutrition»: scelta come uno sport, la barra dell'app diventa la sua
+
+**Stato**: Attiva · 2026-11-24 · TASK-514 (parte 0; nessun codice; parte
+dopo TASK-490 D ed E). Le scelte sono **dell'utente** (2026-11-24, in
+`tasks/TASK-514.md`). Cambia ADR-0397 dove dice che «Nutrition» non si
+sceglie come uno sport.
+
+**Contesto**: l'utente vuole per la nutrizione «un'altra schermata tipo lo
+sci». La modalità sci (ADR-0357) cambia la barra dell'app quando lo sport
+scelto è lo sci. Proposte due strade: le pagine di «Nutrition» sopra
+l'app, con lo sport scelto che resta, o una modalità vera. Detto che la
+seconda va dopo il lavoro in corso sulla barra dell'allenamento (TASK-490)
+e che per registrare una corsa si torna a scegliere lo sport, l'utente ha
+scelto: «Una modalità vera».
+
+**Decisione**:
+1. «Nutrition» si **sceglie** nel pannello degli sport; scelta, la barra è
+   **Today · Plan · Explore · Feed · Profile** (approvata dall'utente).
+2. «Today» è il diario del giorno, «Plan» il piano della settimana,
+   «Explore» la pagina delle storie (ADR-0407). «Balance» non ha una
+   pagina: resta la scheda «Calorie balance» nel profilo, in cima in
+   questa modalità. «Messages» dal tasto nell'intestazione, come nello
+   sci.
+3. La scheda **«Food» della modalità allenamento resta** e apre il diario
+   (confermato dall'utente).
+4. Finché la modalità non c'è, «Nutrition» si apre come dice ADR-0397
+   (pannello, profilo, fine di un'attività).
+
+**Conseguenze**: tocca le schede e il pannello degli sport, che oggi sono
+di altri task: la lista dei file passa dal Coordinatore, dopo quella di
+TASK-490 D/E. «Nutrition» non è uno sport del registro e non si registra:
+come entra nel meccanismo della modalità si decide nella parte A.
+
+**Alternative scartate**: le pagine sopra l'app (era la proposta
+dell'agente: lo sport scelto restava, e non toccava le schede); togliere
+la scheda «Food» dall'allenamento.
+
+## ADR-0397, precisazione 5 — «Nutrition» dal profilo e a fine attività, la pagina animata, l'obiettivo proposto come stima, il peso
+
+**Stato**: Attiva · 2026-11-24 · TASK-489 (parti D2, H, I scritte; J e K
+decise, non scritte). Le scelte di prodotto sono **dell'utente**
+(2026-11-24, in `tasks/TASK-489.md`); il come è deciso dall'agente su
+delega dell'utente. Cambia due paletti di ADR-0397, nei punti 4 e 5.
+
+**Decisione**:
+1. **Dal profilo** (D2): chi non ha letto l'avviso vede una riga
+   «Nutrition» che apre la pagina; chi la usa ha «Open Nutrition» in fondo
+   a «Calorie balance». La finestra della pagina è un file solo, usato dal
+   pannello degli sport e dal profilo.
+2. **La pagina del giorno animata** (H), senza dipendenze nuove: due
+   anelli su **una scala sola** (il più grande tra mangiato, consumato e
+   l'obiettivo dell'utente fa il giro intero), nei colori del testo e non
+   in verde e rosso; i numeri contano fino al valore; i cibi entrano in
+   cascata. Proteine, carboidrati e grassi: grammi e parte dell'energia
+   con 4, 4 e 9 kcal al grammo, **senza obiettivo**; un cibo senza i tre
+   numeri resta fuori intero e la scheda lo dice. La settimana sotto il
+   diario. Il giorno e la settimana leggono le stesse attività: **uno
+   solo chiede le pagine mancanti**. Con «Riduci movimento» niente si
+   muove.
+3. **A fine attività** (I): un invito per chi non l'ha mai aperta, al
+   massimo tre volte e mai più dopo «Not now»; per chi la usa «Add what
+   you ate». L'invito non promette una dieta. La riga «Counted in today's
+   balance» non c'è: quelle schermate vengono prima di «Save».
+4. **L'obiettivo di calorie può proporlo MuW** (J; scelta dell'utente:
+   «MuW», poi «la nostra è solamente una stima, solo una demo» e «è meglio
+   inserire le calorie manualmente»). Cambia «MuW non inventa nessun
+   numero». Come: prima il numero scritto dall'utente; la stima di MuW
+   sotto, chiusa finché non si apre, segnata come dimostrativa; una
+   formula pubblica e fissa, mai l'AI; quantità e soglie da una fonte
+   pubblica ufficiale citata in «How we calculate», e dove la fonte manca
+   **nessuna proposta**. Protezioni: un minimo sotto cui MuW non propone;
+   niente sotto i 18 anni; niente «perdere peso» a chi risulta sottopeso;
+   un avviso per gravidanza, malattie e disturbi alimentari; nessuna
+   notifica sul deficit. MuW continua a non dire cosa mangiare.
+5. **I consigli generali** entrano con le regole di ADR-0407.
+6. **Il peso** (K): una scheda chiede di pesarsi ogni 1, 2 o 4 settimane
+   (sceglie l'utente; si spegne); le pesate restano sul telefono; grafico
+   in chili, variazione e percentuale del peso di partenza; statistiche;
+   il bilancio dello stesso periodo accanto, senza giudizio. È un
+   controllo a regole, non AI. Le congratulazioni sono per la tappa
+   scritta dall'utente e per la costanza, mai per la velocità; nessuna
+   sotto la soglia di peso basso né sotto i 18 anni. **Pubblicare** una
+   pesata: solo col tasto, di partenza la vede solo l'utente e mostra la
+   variazione, non i chili; è un dato di salute che lascia il telefono per
+   scelta sua, e la privacy lo dice prima che esca.
+7. **Salute e l'energia attiva** (C2): la frase del permesso scelta
+   dall'utente per la build nativa parla di battito, sonno e allenamenti,
+   non dell'energia attiva, e C2 non la riscrive. La lettura dell'energia
+   attiva chiede una build successiva; se alla prima si accendono solo gli
+   allenamenti lo decide l'utente al taglio.
+8. **La modalità** (ADR-0408) cambia «Nutrition non è uno sport».
+
+**Conseguenze**: prima che J e i consigli escano serve una PR di privacy e
+termini col sì dell'utente; le note per gli store dicono che l'obiettivo è
+una stima con la sua fonte, non un consiglio medico.
+
 ## ADR-0264, aggiunta (TASK-496) — Con l'app dietro i punti nuovi vanno in un diario accanto al file della corsa; quello che nessuno vede non lavora
 
 **Stato**: Attiva · 2026-11-23 · TASK-496 (punti O1 e O2 della lettura del

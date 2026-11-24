@@ -2966,9 +2966,20 @@ Tipi in `shared-types` (`CommentRequest`, `Comment`, `CommentsPage`,
   again.» con `Retry-After` in secondi. Il limite è dell'account, non
   dell'indirizzo, e vale per processo come quello delle foto.
 - **Un commento** ha `id` (UUID casuale), `author` (`public_id` e
-  `username`, come l'autore di un disegno: mai l'email; la foto si chiede
-  a `GET /users/{public_id}`), `text`, `created_at` e `deletable`: vero
-  quando chi chiede lo può cancellare.
+  `username`, come l'autore di un disegno: mai l'email), `text`,
+  `created_at` e `deletable`: vero quando chi chiede lo può cancellare.
+- **La foto di chi ha scritto** (TASK-497, in più): `author.photo` è
+  l'indirizzo della foto piccola, `/users/{public_id}/photo?v=…`, lo stesso
+  dell'autore di un post del feed («Feed», `avatars.py`: JPEG di 128 px, col
+  token, `Cache-Control: private, max-age=86400`; una foto nuova ha un
+  indirizzo nuovo); `null` senza foto. Vale per commenti e risposte, nelle
+  pagine, nella risposta del `POST` e nel commento tenuto con un super like
+  (`PUT /drawings/{id}/reaction`); `mention` resta `public_id` e
+  `username`. Costa una `LEFT JOIN` su `profile_photos.updated_at` nella
+  query che c'era: nessuna query in più, e la foto non viene letta. Un'app
+  di prima non legge il campo e chiede la foto a `GET /users/{public_id}`,
+  come fa l'app di adesso con un'API che non lo manda. Tipo `CommentAuthor`
+  in `shared-types`; test in `test_comment_author_photos.py`.
 - **Le pagine**: `GET /drawings/{id}/comments?limit=20&cursor=…`, `limit`
   da 1 a 50, **dal più vecchio**; `next` (il cursore della pagina dopo,
   `null` sull'ultima) e `total` (quanti ne ha il disegno) come nelle
@@ -3023,7 +3034,8 @@ esempi in `fixtures/comment-reply-request.json`, `comment-reply.json`,
   blocco, nascosto): `404 http_error` «No comment with this id.».
 - **I campi in più di un commento**: `parent_id` (`null` per un commento),
   `mention`, `reply_count` (quante risposte legge chi chiede; 0 per una
-  risposta), `replies` e `reactions`.
+  risposta), `replies` e `reactions`. L'`author` di una risposta porta
+  `photo` come quello di un commento (sopra, «La foto di chi ha scritto»).
 - **Con `threads=true`** la pagina ha solo i commenti, dal più vecchio, e
   ognuno porta in `replies` le sue **due risposte più vecchie**
   (`REPLIES_SHOWN`); le altre si chiedono a `GET /comments/{id}/replies`

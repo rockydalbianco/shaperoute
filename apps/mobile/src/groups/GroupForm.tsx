@@ -337,7 +337,13 @@ function Form({
                 accessibilityState={{ checked: chosen, disabled: off }}
                 testID={`group-sport-${choice.activity}`}
               >
-                <Text style={[styles.chipText, chosen && styles.chosenText]}>
+                <Text
+                  style={[
+                    styles.chipText,
+                    chosen && styles.chosenText,
+                    off && styles.off,
+                  ]}
+                >
                   {choice.emoji} {t(choice.name)}
                 </Text>
               </Tap>
@@ -383,7 +389,11 @@ function Form({
                 testID={`group-access-${one}`}
               >
                 <Text
-                  style={[styles.choiceText, access === one && styles.chosenText]}
+                  style={[
+                    styles.choiceText,
+                    access === one && styles.chosenText,
+                    off && styles.off,
+                  ]}
                   numberOfLines={1}
                 >
                   {t(ACCESS_TEXTS[one])}
@@ -412,7 +422,7 @@ function Form({
           accessibilityState={{ disabled: !ready, busy }}
           testID="group-save"
         >
-          <Text style={[styles.buttonText, styles.primaryText]}>
+          <Text style={[styles.buttonText, styles.primaryText, !ready && styles.off]}>
             {mode.kind === "new" ? t("Create") : t("Save")}
           </Text>
         </Tap>
@@ -552,6 +562,8 @@ const styles = StyleSheet.create({
     borderColor: color.text,
     backgroundColor: color.text,
   },
+  // On the words as well as on the control: Tap lays its own opacity over
+  // the control's style.
   off: {
     opacity: 0.5,
   },

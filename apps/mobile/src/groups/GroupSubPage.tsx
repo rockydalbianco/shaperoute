@@ -139,7 +139,11 @@ export function LineButton({
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     >
-      <Text style={[styles.buttonText, danger && styles.danger]}>{label}</Text>
+      <Text
+        style={[styles.buttonText, danger && styles.danger, disabled && styles.off]}
+      >
+        {label}
+      </Text>
     </Tap>
   );
 }

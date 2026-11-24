@@ -543,6 +543,7 @@ function Button({
           styles.buttonText,
           primary && styles.primaryText,
           danger && styles.danger,
+          disabled && styles.off,
         ]}
         numberOfLines={1}
       >

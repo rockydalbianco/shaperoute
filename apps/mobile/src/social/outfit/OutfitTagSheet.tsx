@@ -8,7 +8,7 @@ import { countOutfitOpen, fetchOutfitShop } from "../../api/outfitTags";
 import { TagGear } from "../../gear/TagGear";
 import { color, font, MIN_TAP_SIZE, radius, space } from "../../theme/tokens";
 import { SheetModal } from "../../ui/SheetModal";
-import { useSheetFace } from "../../ui/sheetFace";
+import { useGlassSheet } from "../../ui/SheetGlass";
 import { Tap } from "../../ui/Tap";
 import { ReportMenu } from "../ReportMenu";
 import { isOwnersTag } from "./outfitTags";
@@ -50,7 +50,7 @@ export function OutfitTagSheet({
 }: Props) {
   const insets = useSafeAreaInsets();
   // The sheet in the glass look (TASK-469 A7a).
-  const glassSheet = useSheetFace();
+  const [glassSheet, glassBack] = useGlassSheet();
   const words = outfitWords();
   const mine = isOwnersTag(tag);
   const [busy, setBusy] = useState(false);
@@ -103,6 +103,7 @@ export function OutfitTagSheet({
         style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.sm }]}
         testID="outfit-sheet"
       >
+        {glassBack}
         <View style={styles.top}>
           <Text style={styles.item}>{words.items[tag.item]}</Text>
           {!mine && author !== null && (

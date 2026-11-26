@@ -213,7 +213,7 @@ Dal 27 novembre 2026 il seme ha **2161 percorsi**: entrano **130 disegni
 delle forme nuove**, tutti quelli che passano il filtro, nelle quattro città
 dove le forme sono state provate: Milano 60, Barcellona 36, Trento 32,
 Levico 2 (69 da 10 km, 61 da 5). Le altre città li avranno con un giro
-loro (TASK-516 D2).
+loro (TASK-521).
 
 ### Le città in evidenza
 

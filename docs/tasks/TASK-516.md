@@ -1,7 +1,7 @@
 # TASK-516 — Forme invernali e contorni: forme nuove per il motore e il catalogo
 
-**Stato**: In lavorazione — parte D (catalogo): D1 in PR, D2 dopo; parti 0,
-A, B e C fatte (C sul server col passo 25 e nell'OTA 27)
+**Stato**: In lavorazione — parte D (catalogo): D1 in PR, D2 passata a
+TASK-521; parti 0, A, B e C fatte (C sul server col passo 25 e nell'OTA 27)
 **Fase**: 5 · **Branch**: `docs/TASK-516-part-0` (parte 0); una PR per parte
 **ADR**: ADR-0411 · numeri dal Coordinatore (fork 3), 2026-11-24
 **Viene da**: TASK-441 (la sua parte C), TASK-418 (le forme candidate e
@@ -245,12 +245,13 @@ città della parte B**: Milano 60, Barcellona 36, Trento 32, Levico 2 (69 da
 - Dopo l'unione: il passo «catalogo» sul server (immagine nuova, nessuna
   migrazione), log «2161 recommended routes». Lo chiede il Coordinatore.
 
-### D2 — le altre 59 città (dopo)
+### D2 — le altre 59 città: passa a TASK-521
 
-Un giro delle 35 forme nelle altre città, dalle zone a piedi già in cache,
-senza download (per esempio 6 forme per città a turno, a 5 e 10 km, circa
-700 casi), con `catalog_seed.py --run --outlines` come la parte B. Poi una
-pagina, il sì dell'utente, le chiavi e i file delle città in una PR sua.
+Il giro delle 35 forme nelle altre città (proposta: 6 forme per città a
+turno, a 5 e 10 km, circa 700 casi, dalle zone a piedi in cache) passa a
+TASK-521 (revisione del catalogo e 3000 disegni), che lavora sugli stessi
+file (Coordinatore, 2026-11-27). Appunti per quella sessione:
+`out/TASK-516/D2-PASSAGGIO.md` della cartella principale.
 
 ## Scelte dell'utente
 
@@ -297,4 +298,4 @@ pagina, il sì dell'utente, le chiavi e i file delle città in una PR sua.
   quattro percorsi veri a Trento; OTA 27 uscita con le forme. Parte D: lista
   dei file approvata dal Coordinatore, D1 nel branch
   `feat/TASK-516-d-catalogue`. Prossimo: la PR verde, il passo «catalogo»
-  sul server, poi D2.
+  sul server, poi i documenti di chiusura. La D2 passa a TASK-521.

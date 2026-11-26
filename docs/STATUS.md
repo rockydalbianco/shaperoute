@@ -233,6 +233,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'OTA, E chat di gruppo. File: — · `tasks/TASK-495.md`
   2026-11-24: A in `main` (#1538, migrazione 0087, sul server col prossimo
   passo), A2 #1543 armata; poi B (l'app), file approvati dal Coordinatore.
+  2026-11-26: A e A2 sul server (passo 22); privacy online (#1561, sito
+  c33f3920); B in `main` (#1560), esce con l'OTA; A3 «Delete group» #1629
+  (merge col sì dell'utente). Poi C (uscite), D (Explore e push), E chat.
 - **TASK-449 — Anteprima dal vivo della sagoma in «Draw»** (ADR-0412) ·
   parte 0 il 2026-11-26: un pezzo di mappa vera attorno alla partenza, la
   sagoma sopra in grandezza reale che cresce coi km; scelte dell'utente

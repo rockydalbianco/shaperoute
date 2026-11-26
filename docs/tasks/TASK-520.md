@@ -37,15 +37,44 @@ sovrappone a E.
 
 ## Parte 0 — senza codice (una domanda per volta all'utente)
 
-- [ ] a) Mappa delle categorie e delle routine — bozza in
-      `out/stretching-nuovo/MAPPA.md`, chiesta all'utente il 2026-11-27.
+- [x] a) Mappa delle categorie e delle routine — **approvata dall'utente
+      il 2026-11-27 («Sì, approvo»)**; vedi «Mappa approvata» sotto.
 - [ ] b) Elenco degli esercizi nuovi (zona, categorie, lati, secondi,
-      respiro, due righe su come farlo), prima di disegnare le pose.
+      respiro, due righe su come farlo), prima di disegnare le pose —
+      bozza di 50 nuovi (65 in tutto) in `out/stretching-nuovo/ESERCIZI.md`,
+      chiesta all'utente il 2026-11-27.
 - [ ] c) Schizzo della home (artifact).
 - [ ] d) Testi in inglese, poi le quattro traduzioni.
 - [ ] Nome della categoria «intimità» e controllo della fascia d'età su
       App Store e Google Play.
 - [ ] Video MP4 condivisibile dell'esercizio: sì o no.
+
+## Mappa approvata (2026-11-27)
+
+- **Home**: «Today», poi «My routines» (TASK-466 E, così com'è), poi le
+  categorie a gruppi; ogni tessera con icona Lucide e la figura che si muove.
+- **Body** (12): Neck, Shoulders, Arms & wrists, Chest, Upper back, Lower
+  back, Hips & pelvis, Glutes, Legs, Calves, Ankles & feet, Full body.
+- **Moments** (7): Morning (resta legato a «Morning stretch»), Bedtime,
+  Desk break, After sitting, After travel, Posture, Relax & breathe.
+- **Sports** (14, una tessera con Before/After): Running, Cycling,
+  Swimming, Skiing, Snowboarding, Ski touring, Gym, Motorbike, Hiking,
+  Climbing, Paddling, Football, Racket sports, Golf. Before = mobilità in
+  movimento (3/5/10), After = tenute (3/5/10/15); «After run» e «After gym»
+  di oggi diventano gli After di corsa e palestra.
+- **Intimità**: Before e After, 5/10 min, testi sobri; nome ed età sugli
+  store da decidere a parte.
+- **More**: Beginners, Joint mobility, Back care (riga «non sostituisce un
+  medico»), Touch your toes, Splits.
+- **Varianti**: 3/5/10, più 15/20 dove indicato; Gentle/Intense;
+  Standing/Floor. Default 5 min, Gentle, Standing+Floor; l'ultima scelta
+  ricordata per categoria. Routine composte da regole deterministiche, non
+  scritte a mano.
+- **Today**: dopo uno sport in lista nelle ultime 3 ore → After {sport};
+  prima delle 10 → Morning; dopo le 21 → Bedtime; feriale 10–18 → Desk
+  break; altrimenti Full body 5 min.
+- Lunghezze per categoria: tabelle in `out/stretching-nuovo/MAPPA.md`
+  (checkout del worktree), da copiare qui con la parte 0 completa.
 
 ## Parti di codice (da confermare dopo la parte 0)
 
@@ -70,5 +99,5 @@ aggiungono qui dopo il sì del Coordinatore.
 
 ## Dove siamo
 
-2026-11-27: numeri dal Coordinatore (TASK-520 / ADR-0415); bozza della
-mappa all'utente, si aspetta la risposta.
+2026-11-27: numeri dal Coordinatore (TASK-520 / ADR-0415); mappa
+approvata; elenco esercizi all'utente, si aspetta la risposta.

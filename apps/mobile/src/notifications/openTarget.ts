@@ -25,6 +25,11 @@ export type Opens = {
   /** Shows the page of the group run `id` (TASK-309 part B): it starts
    * soon, its time or place changed, it was cancelled. */
   openGroupRun?: (id: string) => void;
+  /** Opens the item `id` of one's gear (TASK-486 part G): past its limit. */
+  openGear?: (id: string) => void;
+  /** Shows the page of the group `id` (TASK-495 part B): a request to
+   * join, a request accepted, an invite. */
+  openGroup?: (id: string) => void;
 };
 
 /**
@@ -44,6 +49,10 @@ export function openTarget(target: TapTarget, opens: Opens): void {
     opens.openContest?.(target.id);
   } else if (target.kind === "group_run") {
     opens.openGroupRun?.(target.id);
+  } else if (target.kind === "gear") {
+    opens.openGear?.(target.id);
+  } else if (target.kind === "group") {
+    opens.openGroup?.(target.id);
   } else if (target.kind === "live") {
     opens.openLive?.(target.shareId, target.plannedLiveId);
   } else {

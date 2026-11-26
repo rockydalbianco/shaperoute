@@ -10,16 +10,25 @@ import wave
 
 import pytest
 from vario_tones import (
+    ALERT_DIR,
+    ALERT_GAP_S,
+    ALERT_NOTE_S,
     CLIMB_LEVELS,
     OUT_DIR,
     RATE,
     SINK_LEVELS,
     SINK_SECONDS,
+    TASK_DIR,
+    TURNPOINT_GAP_S,
+    TURNPOINT_HZ,
+    TURNPOINT_NOTE_S,
+    alert_file,
     climb_beeps,
     climb_file,
     climb_hz,
     sink_file,
     sink_hz,
+    turnpoint_file,
 )
 
 # The lowest beep: a sink note is always under it.
@@ -84,3 +93,25 @@ def test_the_app_has_the_files_the_script_makes() -> None:
             assert kept.getframerate() == RATE
             assert kept.getnchannels() == 1
             assert kept.readframes(kept.getnframes()) == data
+
+
+def test_the_alert_is_two_notes_with_a_gap_and_the_app_has_it() -> None:
+    name, data = alert_file()
+    frames = frames_of(data)
+    assert len(frames) == 2 * (round(RATE * ALERT_NOTE_S) + round(RATE * ALERT_GAP_S))
+    assert frames[0] == 0
+    assert max(abs(f) for f in frames[-round(RATE * ALERT_GAP_S) :]) == 0
+    with wave.open(str(ALERT_DIR / name), "rb") as kept:
+        assert kept.readframes(kept.getnframes()) == data
+
+
+def test_the_turnpoint_is_three_rising_notes_and_the_app_has_it() -> None:
+    name, data = turnpoint_file()
+    frames = frames_of(data)
+    one = round(RATE * TURNPOINT_NOTE_S) + round(RATE * TURNPOINT_GAP_S)
+    assert len(frames) == len(TURNPOINT_HZ) * one
+    assert list(TURNPOINT_HZ) == sorted(TURNPOINT_HZ)
+    assert frames[0] == 0
+    assert max(abs(f) for f in frames[-round(RATE * TURNPOINT_GAP_S) :]) == 0
+    with wave.open(str(TASK_DIR / name), "rb") as kept:
+        assert kept.readframes(kept.getnframes()) == data

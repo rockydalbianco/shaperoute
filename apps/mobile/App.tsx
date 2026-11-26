@@ -3,7 +3,6 @@ import type {
   Direction,
   LatLon,
   LetterStyle,
-  OutlinePoint,
   PenUpShape,
   Shape,
   Stretch,
@@ -14,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { useCurrentOwner } from "./src/account/currentOwner";
 import { useActivitiesDoor } from "./src/activities/activitiesDoor";
 import { ActivityCard } from "./src/activities/ActivityCard";
 import { type Drawn, sameLine } from "./src/activities/recordedRun";
@@ -123,10 +123,12 @@ import {
   drawsAgain,
 } from "./src/route/drawAgain";
 import { ImageEditsContext } from "./src/route/imageEdits";
+import { type ImageAsked, imageAsked } from "./src/route/imagePieces";
 import type { ChoiceKind } from "./src/route/problems";
 import { withPenUp } from "./src/route/penUpHint";
 import { drawKindOf, figuresOf, shapeOfSport } from "./src/route/sportDraw";
 import { shapeAsked } from "./src/route/penUpShapes";
+import { DrawHint, drawMissing } from "./src/route/DrawHint";
 import { drawLabel, drawWhat } from "./src/route/drawLabel";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { averagePace } from "./src/route/runTime";
@@ -214,6 +216,7 @@ import { color, statusBarStyle } from "./src/theme/tokens";
 import { TrainingTabIcon } from "./src/trainingmode/TrainingTabIcon";
 import { TrainingTodayPage } from "./src/trainingmode/TrainingTodayPage";
 import { TrainingWorkoutsPage } from "./src/trainingmode/TrainingWorkoutsPage";
+import { NutritionPage } from "./src/nutrition/NutritionPage";
 import {
   barPagesOf,
   modeOf,
@@ -256,7 +259,8 @@ type Screen =
   | "skiDays"
   | "skiResorts"
   // The page of the training mode (TASK-490, ADR-0398): «Workouts».
-  | "trainingWorkouts";
+  | "trainingWorkouts"
+  | "trainingFood";
 
 /** The screens that are pages of the tab bar, in the order of their tabs
  * (TASK-367, ADR-0311): «Feed», «Draw», «Messages», «Explore», «Profile».
@@ -653,8 +657,9 @@ function MuW() {
 
   // One of them (ADR-0051): the kinds not chosen are not sent. An image
   // sends the outline the engine traced and the user has seen (ADR-0069),
-  // with the details drawn on it (TASK-079); a figure drawn by hand is
-  // asked from the map (TASK-331).
+  // with the details drawn on it (TASK-079), or with the pen up its pieces
+  // instead (TASK-297); a figure drawn by hand is asked from the map
+  // (TASK-331).
   // On the water only a shape of the catalogue is drawn (TASK-191): a word or
   // a picture chosen before «Paddle» waits for another sport. A swim draws a
   // shape or a drawing, a word chosen before it waits too (TASK-323). A
@@ -667,7 +672,7 @@ function MuW() {
     | { shape: Shape }
     | { shape: PenUpShape; pen_up: true }
     | { word: string; style: LetterStyle; pen_up?: true }
-    | { outline: OutlinePoint[]; strokes?: OutlinePoint[][] }
+    | ImageAsked
     | null =
     drawKind === "shape"
       ? sportShape !== null
@@ -684,11 +689,17 @@ function MuW() {
             }
           : null
         : image.state.status === "traced"
-          ? {
-              outline: image.state.outline.points,
-              strokes: image.state.outline.strokes,
-            }
+          ? imageAsked(image.state.outline, penUp)
           : null;
+  // Something written or picked, even if it cannot be drawn yet: its own
+  // field says why (a word the AI is reading, a letter no word has). Only
+  // nothing at all gets the line over «Draw route» (TASK-508).
+  const givenToDraw =
+    drawKind === "shape"
+      ? shapeText.trim() !== ""
+      : drawKind === "word"
+        ? wordText.trim() !== ""
+        : image.state.status !== "none";
   const request: AnyRouteRequest | null =
     start && drawn !== null && distanceM !== null
       ? { start: start.point, ...drawn, distance_m: distanceM, activity: sportActivity }
@@ -881,6 +892,47 @@ function MuW() {
   // (TASK-478 part b).
   const endSave = useRef<(() => void) | null>(null);
   const ended = finishing ? finished.run : freeFinishing ? freeFinished.run : null;
+  // Whose the run on screen is (TASK-507 part B2, the user's choice
+  // «Nascosta finché rientra»): the end of another account's run leaves the
+  // screen, and the run waits on the phone, set aside (trackStore), until
+  // that account signs in again; then its own end shows. A run being
+  // recorded is never touched: its file says whose it is, and its end comes
+  // through here too.
+  const owner = useCurrentOwner();
+  const [ownerSeen, setOwnerSeen] = useState(owner);
+  const othersRun = (run: SavedRun) => run.owner !== undefined && run.owner !== owner;
+  if (finished !== null && othersRun(finished.run)) {
+    setFinished(null);
+    if (screen === "finish") {
+      setScreen("choose");
+    }
+  } else if (freeFinished !== null && othersRun(freeFinished.run)) {
+    setFreeFinished(null);
+    if (screen === "runFinish") {
+      setScreen("choose");
+    }
+  } else if (ownerSeen !== owner) {
+    setOwnerSeen(owner);
+    // An account signed in with the app open: its own run left on the
+    // phone, if any, as the app would show it opening.
+    if (
+      owner !== null &&
+      finished === null &&
+      freeFinished === null &&
+      !running &&
+      !navigating
+    ) {
+      const own = leftRun();
+      const free = own === null ? leftFreeRun() : null;
+      if (own !== null) {
+        setFinished(own);
+        setScreen("finish");
+      } else if (free !== null) {
+        setFreeFinished(free);
+        setScreen("runFinish");
+      }
+    }
+  }
   // Where the runner is heading, with a route or without (TASK-164): the
   // arrow on the map.
   const runTrack = navigating ? trackOfNavigation(navigation) : freeTrack;
@@ -1540,6 +1592,11 @@ function MuW() {
               onPress={mapTurn.onArrow}
               northUp={mapTurn.compass ? mapTurn.northUp : undefined}
               upHint={mapTurn.compass ? t("Turns the map where you face") : undefined}
+              facing={
+                mapTurn.compass && !mapTurn.northUp
+                  ? (mapTurn.facing ?? undefined)
+                  : undefined
+              }
             />
           ) : undefined
         }
@@ -1666,6 +1723,7 @@ function MuW() {
             // «Draw on the map» (TASK-281): the figure, and the fingers.
             canvas={canvasOn ? mapDraw.canvas : null}
             onCanvas={mapDraw.onCanvas}
+            anchored={canvasOn ? mapDraw.anchored : null}
             // «Choose on the map» (TASK-292): the pin in the middle.
             picking={pickOn}
             onCentre={setPickedCentre}
@@ -1696,6 +1754,7 @@ function MuW() {
             onDraw={mapDraw.request === null ? null : onDrawCanvas}
             onTurn={mapDraw.turnTo}
             pieces={mapDraw.pieces}
+            anchoring={mapDraw.anchoring}
           />
         ) : reviewing && activity !== null ? (
           <ActivityCard
@@ -1993,6 +2052,8 @@ function MuW() {
                             snowNotice.ask(() => setScreen("run"));
                           else setScreen("run");
                         }}
+                        // «Log in» of the empty «All» (TASK-509).
+                        onLogIn={() => showPage("profile")}
                       />
                     </EditRunContext.Provider>
                   </DrawAgainContext.Provider>
@@ -2039,6 +2100,13 @@ function MuW() {
                     footer={
                       <>
                         <ZoneNotice bytes={firstMaps} />
+                        {/* Why the button is off (TASK-508). */}
+                        <DrawHint
+                          missing={drawMissing({
+                            start: start !== null,
+                            shape: drawn !== null || givenToDraw,
+                          })}
+                        />
                         <DrawButton
                           enabled={request !== null}
                           onDraw={onDraw}
@@ -2092,6 +2160,7 @@ function MuW() {
                         activity={sportActivity}
                         onFreehand={onOpenCanvas}
                         pace={pace}
+                        start={start?.point ?? null}
                       />
                     </ImageEditsContext.Provider>
                     {/* The shape game, right under the distance (the user's
@@ -2186,6 +2255,12 @@ function MuW() {
                         setRouteList("explore");
                         setScreen("map");
                       }}
+                      // «My position» of the page with no start (TASK-509):
+                      // asked as «Draw»'s own does.
+                      onMyPosition={() => {
+                        setStartMode("gps");
+                        refresh();
+                      }}
                     />
                   ),
               },
@@ -2265,6 +2340,17 @@ function MuW() {
                   render: () => (
                     <TrainingWorkoutsPage onLogIn={() => showPage("profile")} />
                   ),
+                },
+                // «Food» (part D): the «Nutrition» page of TASK-489 as it
+                // is, only while NUTRITION_ON puts it in the bar.
+                trainingFood: {
+                  title: t("Food"),
+                  label: t("Food"),
+                  face: (selected) => (
+                    <TrainingTabIcon name="food" selected={selected} />
+                  ),
+                  lazy: true,
+                  render: () => <NutritionPage />,
                 },
               },
             },

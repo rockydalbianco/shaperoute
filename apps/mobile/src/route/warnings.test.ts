@@ -209,3 +209,25 @@ test("the metres on foot to 10, at least 10, and in km from a thousand", () => {
   expect(roughMetres(996)).toBe("1.0 km");
   expect(roughMetres(2449)).toBe("2.4 km");
 });
+
+test("an anchored drawing longer or shorter on the roads says so, never rescaled", () => {
+  // anchored.distance_warning, word for word (TASK-347 part C3).
+  const longer =
+    "on the roads the drawing is 7.6 km, 53% longer than the 5 km drawn; anchored, it is not rescaled";
+  const shorter =
+    "on the roads the drawing is 4.2 km, 16% shorter than the 5 km drawn; anchored, it is not rescaled";
+  expect(toNote(longer)).toEqual({
+    tone: "info",
+    text: "On the roads your drawing is 53% longer: 7.6 km. It stays where you drew it, at the same size.",
+  });
+  expect(toNote(shorter).text).toBe(
+    "On the roads your drawing is 16% shorter: 4.2 km. It stays where you drew it, at the same size.",
+  );
+  saveLanguageChoice("it");
+  expect(toNote(longer).text).toBe(
+    "Sulle strade il tuo disegno è più lungo del 53%: 7,6 km. Resta dove l'hai disegnato, della stessa grandezza.",
+  );
+  expect(toNote(shorter).text).toBe(
+    "Sulle strade il tuo disegno è più corto del 16%: 4,2 km. Resta dove l'hai disegnato, della stessa grandezza.",
+  );
+});

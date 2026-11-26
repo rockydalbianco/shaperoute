@@ -2,7 +2,9 @@
 
 **Stato**: In corso · parte 0 chiusa (2026-11-21); B1 in produzione
 (OTA 20), B2 in `main` (#1368), C in produzione (OTA 22, 2026-11-22),
-A1 in `main` (#1434, 2026-11-23, OTA dal Coordinatore); prossima E
+A1 in `main` (#1434, 2026-11-23, OTA dal Coordinatore), E1 ed E2 in
+`main` (#1454, #1470, 2026-11-23), E3 in `main` (#1498, 2026-11-23);
+prossima D (D1 #1503)
 **Fase**: 5 · **Branch**: `docs/TASK-479-paragliding-pro` (parte 0), poi
 `feat/TASK-479-<parte>-<slug>`, una parte alla volta, ognuna da `main`
 **Dipende da**: TASK-305 parti R (in `main`: lo sport «Record only», i
@@ -482,6 +484,94 @@ l'ho provato sul telefono».
    quanto dentro), solo per il pilota, mai nel Feed.
 6. Testo fisso sotto ogni vista: «Dati caricati da te: verifica AIP e
    NOTAM prima di volare» (avviso 3).
+
+**E divisa in tre**, col sì del Coordinatore (2026-11-23): E1 il file,
+E2 gli spazi aerei in volo, E3 il registro dopo il volo e il grafico
+della quota. Il geoide su Android (E2b) aspetta la risposta dell'utente.
+
+**E1 fatta** (#1454, in `main` il 2026-11-23): il parser
+(`openair.ts`, i punti 1 e 6), il file sul telefono (`airspace.json`, un
+file alla volta, mai inviato) e le righe «Airspace» fra le opzioni della
+schermata di volo: «Load file» (da «File», con `expo-document-picker`
+facoltativo come per i layout), «Remove», quanti volumi, le righe non
+lette e l'avviso 3 col nome e la data. Senza file, l'avviso 4. Aprire un
+file in MuW da un'altra app chiederebbe i tipi di documento in
+`app.json`: non fatto.
+
+**E2 fatta** (#1470, in `main` il 2026-11-23). **Com'è fatta** (deciso
+dall'agente su delega dell'utente):
+- La vicinanza (`airspaceNear.ts`): dentro il contorno col ray casting;
+  distanza dal contorno su un piano locale; i volumi entro 20 km, il più
+  vicino per primo. I limiti come quote sul mare: dal terreno, sul
+  terreno (con la quota sul terreno di A1, «—» dove manca), sul mare, FL
+  (atmosfera standard dalla quota GPS, quindi «≈»), illimitato.
+- L'avviso: il volume più vicino entro le due soglie (orizzontale 500 m,
+  1 km, 2 km; verticale 50, 100, 200 m; di default 1 km e 100 m); un
+  volume di cui non si sa la quota avvisa sulla sola distanza
+  orizzontale. Una riga col bordo nel colore d'avviso sotto la barra in
+  alto (avviso 5, più l'avviso 7 se c'è un FL) e un suono, `alert.wav`
+  (due note che scendono, 880 e 660 Hz, fatto da `tools/vario_tones.py`):
+  all'entrata e poi al massimo una volta al minuto. Soglie e suono fra le
+  opzioni, in `airspace-alerts.json`.
+- Sulla mappa di A1: in 3D i volumi in piedi, in 2D l'area piatta, col
+  bordo; P, R e Q in `palette.error`, gli altri in `palette.warning`,
+  opacità 0,2. In 3D le quote si misurano dal terreno sotto il pilota:
+  giuste vicino a lui, solo indicative lontano.
+- Il widget 21 «Nearest airspace»: distanza, classe, nome, base e tetto;
+  nella lista dell'editor, in nessun preset.
+
+**Testi di E1 ed E2**: gli avvisi 3, 4, 5 e 7 approvati il 2026-11-21,
+gli altri dall'utente il 2026-11-23.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Airspace | Spazi aerei | Luftraum | Espaces aériens | Espacios aéreos |
+| Airspaces: {count} | Spazi aerei: {count} | Lufträume: {count} | Espaces aériens : {count} | Espacios aéreos: {count} |
+| Lines not read: {n} | Righe non lette: {n} | Nicht gelesene Zeilen: {n} | Lignes non lues : {n} | Líneas no leídas: {n} |
+| This file has no airspace MuW can read. | In questo file non ci sono spazi aerei che MuW sa leggere. | Diese Datei enthält keinen Luftraum, den MuW lesen kann. | Ce fichier ne contient aucun espace aérien que MuW sait lire. | Este archivo no tiene espacios aéreos que MuW pueda leer. |
+| Nearest airspace | Spazio aereo più vicino | Nächster Luftraum | Espace aérien le plus proche | Espacio aéreo más cercano |
+| inside | dentro | innen | dedans | dentro |
+| Warn within | Avvisa entro | Warnen innerhalb | Avertir à moins de | Avisar a menos de |
+| Warn above or below | Avvisa sopra o sotto | Warnen darüber oder darunter | Avertir au-dessus ou en dessous | Avisar por encima o por debajo |
+| Warning sound | Suono dell'avviso | Warnton | Son de l'avertissement | Sonido del aviso |
+
+Schermate approvate dall'utente il 2026-11-23: E1 (nessun file, «File»,
+file caricato) ed E2 (dentro, a 282 m, 3D, 2D, widget, opzioni), al
+simulatore con un volo finto sul Monte Baldo e un file inventato. Il
+suono dell'avviso è partito all'entrata e 60 s dopo (dai log del
+simulatore); da sentire alla prova sul telefono.
+
+**E3 fatta** (#1498, in `main` il 2026-11-23). **Com'è fatta** (deciso
+dall'agente su delega dell'utente):
+- Il registro (`airspaceLog.ts`): per ogni volume del file, i tratti
+  della traccia in volo passati dentro (contorno e quote), con inizio,
+  fine, distanza massima dal bordo e margine massimo da base o tetto. Un
+  buco nella traccia o un punto fuori chiude il tratto. I limiti dal
+  terreno contano come rispettati (dopo il volo la quota sul terreno sotto
+  ogni punto non c'è) e il tratto è segnato «≈», come i limiti FL.
+- Nella scheda di fine volo, una sola riga «Airspace · …›», così «Save» e
+  «Discard» restano a vista; apre un foglio con i tratti, la nota sugli
+  FL, «Solo sul tuo telefono: non va nel Feed.» e l'avviso 3 col nome e la
+  data del file. La riga c'è solo con un file caricato. Il registro non
+  va mai al server né nel Feed.
+- Il grafico della quota (widget 28) mostra dietro ogni colonna le fasce
+  dei volumi sopra quel punto (opacità 0,3, P, R e Q in `palette.error`,
+  gli altri in `palette.warning`); la scala si allarga per i limiti entro
+  300 m dalla quota volata.
+
+**Testi di E3**, approvati dall'utente il 2026-11-23:
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Inside your airspaces: {count} | Dentro i tuoi spazi aerei: {count} | In deinen Lufträumen: {count} | Dans vos espaces aériens : {count} | Dentro de tus espacios aéreos: {count} |
+| No fix inside the volumes of your file. | Nessun punto dentro i volumi del tuo file. | Kein Punkt in den Lufträumen deiner Datei. | Aucun point dans les volumes de votre fichier. | Ningún punto dentro de los volúmenes de tu archivo. |
+| {from}–{to} · {name} ({class}) · {min} min | uguale | uguale | uguale | uguale |
+| Deepest: {dist} from the edge, {height} from floor or ceiling | Più dentro: {dist} dal bordo, {height} da base o tetto | Am tiefsten: {dist} vom Rand, {height} von Unter- oder Obergrenze | Au plus profond : {dist} du bord, {height} du plancher ou du plafond | Lo más dentro: {dist} del borde, {height} de la base o el techo |
+| Only on your phone: not in the Feed. | Solo sul tuo telefono: non va nel Feed. | Nur auf deinem Telefon: nicht im Feed. | Uniquement sur votre téléphone : pas dans le Fil. | Solo en tu teléfono: no va al Feed. |
+
+Schermate approvate dall'utente il 2026-11-23 (il grafico con le fasce,
+la riga nella scheda di fine volo, il foglio del registro), al simulatore
+con un volo finto e un file inventato.
 
 ### Parte F — Dopo il volo
 

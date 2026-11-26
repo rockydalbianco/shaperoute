@@ -44,6 +44,12 @@ from shaperoute_api.away_email import (
 from shaperoute_api.cities import CitySearch
 from shaperoute_api.city_photos import PHOTOS_FOLDER, CityPhotos, install_city_photos
 from shaperoute_api.db import DATABASE_VARIABLE, Database, MigrationError
+from shaperoute_api.email_rounds import (
+    RoundsConfigError,
+    off_line,
+    only_named,
+    rounds_from_env,
+)
 from shaperoute_api.feedback import (
     FeedbackConfigError,
     FeedbackEmails,
@@ -215,12 +221,14 @@ def main(argv: Sequence[str] | None = None) -> None:
         notice_setup = NoticeSetup.from_env()
         report_setup = ReportSetup.from_env()
         feedback_setup = FeedbackSetup.from_env()
+        rounds = rounds_from_env()
         zones_mb = zones_mb_from_env()
     except (
         AccessConfigError,
         AwayConfigError,
         ReportConfigError,
         FeedbackConfigError,
+        RoundsConfigError,
         ZonesConfigError,
     ) as exc:
         raise SystemExit(str(exc)) from None
@@ -326,21 +334,26 @@ def main(argv: Sequence[str] | None = None) -> None:
     install_ski_season(app)
     install_resort_follows(app)
     # The email to who has not opened the app for two weeks (TASK-284): off
-    # without the database, Resend's key, the links' secret and the domain.
+    # without the database, Resend's key, the links' secret and the domain,
+    # and unless the rounds name it (TASK-515): the emails of the accounts,
+    # below, read the same setup and need no name.
+    away_round = only_named("away", rounds, away_setup)
     away = (
         None
-        if database is None or away_setup is None
-        else AwayEmails(database, away_setup)
+        if database is None or away_round is None
+        else AwayEmails(database, away_round)
     )
     install_away_email(app, away)
     if away is not None:
         DailyRound(away).start()
-    # The daily email of the notices (TASK-262 B): on with the away email;
-    # its round lives with the app.
+    # The daily email of the notices (TASK-262 B): with what the away email
+    # needs, when the rounds name it (TASK-515); its round lives with the
+    # app.
+    notice_round = only_named("notices", rounds, notice_setup)
     notices = (
         None
-        if database is None or notice_setup is None
-        else NoticeEmails(database, notice_setup)
+        if database is None or notice_round is None
+        else NoticeEmails(database, notice_round)
     )
     install_notice_email(app, notices)
     # Each new report emailed to whoever runs MuW, with a link that hides
@@ -408,14 +421,18 @@ def main(argv: Sequence[str] | None = None) -> None:
     else:
         done = ", ".join(migrated) if migrated else "none, schema up to date"
         print(f"Accounts in PostgreSQL ({DATABASE_VARIABLE}); migrations: {done}")
-    if away is None:
-        print(f"No email to who is away ({RESEND_KEY} and the rest not set)")
-    else:
+    if away is not None:
         at = away.setup.at.strftime("%H:%M")
         print(f"Email to who is away for 14 days: every day at {at} UTC")
+    elif database is not None and away_setup is not None:
+        print(off_line("away", "Email to who is away"))
+    else:
+        print(f"No email to who is away ({RESEND_KEY} and the rest not set)")
     if notices is not None:
         at = notices.setup.at.strftime("%H:%M")
         print(f"Email of the notices: every day at {at} UTC, to who has it on")
+    elif database is not None and notice_setup is not None:
+        print(off_line("notices", "Email of the notices"))
     if report_emails is None:
         print(f"Reports are not emailed ({REPORTS_TO} and the rest not set)")
     else:

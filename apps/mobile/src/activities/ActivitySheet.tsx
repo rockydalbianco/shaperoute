@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { color, radius, space } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 
 type Props = {
   visible: boolean;
@@ -41,6 +42,8 @@ export function ActivitySheet({ visible, onClose, testID, children }: Props) {
  * while it is open. */
 function Body({ onClose, testID, children }: Omit<Props, "visible">) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   const typing = useKeyboardShown();
   return (
     <KeyboardAvoidingView
@@ -58,6 +61,7 @@ function Body({ onClose, testID, children }: Omit<Props, "visible">) {
       <View
         style={[
           styles.sheet,
+          glassSheet,
           { paddingBottom: (typing ? 0 : insets.bottom) + space.sm },
         ]}
       >

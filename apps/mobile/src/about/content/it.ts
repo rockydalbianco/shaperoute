@@ -7,9 +7,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * as TASK-210 G names them: «Feed», «Disegna», «Esplora».
  */
 
-const UPDATED = "10 novembre 2026";
+const UPDATED = "26 novembre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "23 novembre 2026";
+const PRIVACY_UPDATED = "26 novembre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -69,7 +69,7 @@ const help: AboutDocument = {
     {
       heading: "Pubblicare e condividere",
       blocks: [
-        "Una corsa salvata è privata: la vedi solo tu. Gli altri iscritti vedono sul tuo profilo i totali di tutte le tue corse salvate, distanza e dislivello, e i tuoi record (il 5K, il 10K e le altre distanze più veloci, a piedi e in bici) con il tempo e la data. Una corsa privata resta chiusa anche quando contiene un record. Scegli «Tutti» o «Follower» sotto «Chi può vederla», a fine corsa o su una corsa di «Le mie attività», e la vedono come disegno sul tuo profilo, intera. La prossima corsa che finisci parte dall'ultima scelta che hai salvato: la vedi prima di «Salva» e puoi cambiarla. Un'attività aggiunta da un file in «Le mie attività» parte da «Solo io»; una aggiunta col «+» del Feed parte da «Tutti», e puoi cambiarlo prima di «Salva».",
+        "Una corsa salvata è privata: la vedi solo tu. Gli altri iscritti vedono sul tuo profilo i totali di tutte le tue corse salvate, distanza e dislivello, e i tuoi record (il 5K, il 10K e le altre distanze più veloci, a piedi e in bici) con il tempo e la data. Una corsa privata resta chiusa anche quando contiene un record. Scegli «Tutti» o «Follower» sotto «Chi può vederla», a fine corsa o su una corsa di «Le mie attività», e la vedono come disegno sul tuo profilo, intera. La prossima corsa che finisci parte dall'ultima scelta che hai salvato: la vedi prima di «Salva» e puoi cambiarla. Un'attività aggiunta da un file in «Le mie attività» parte da «Solo io»; una aggiunta da un file, o un allenamento in palestra scritto a mano, col «+» del Feed parte da «Tutti», e puoi cambiarlo prima di «Salva».",
         "Una corsa che pubblichi può avere fino a 9 foto e il disegno. Tienine premuta una e trascinala per cambiare l'ordine: la prima è quella che si vede nel Feed. Scegli un layout per mettere il disegno su una foto.",
         "Su una foto che pubblichi puoi segnare quello che indossi: cos'è, la marca e, se vuoi, il modello e il link al negozio. Gli altri toccano la foto per vedere i capi e aprire il negozio. Sotto il tuo post solo tu vedi quante volte sono stati aperti.",
         "«Condividi» crea un'immagine della tua corsa da mandare dove vuoi.",
@@ -210,6 +210,14 @@ const terms: AboutDocument = {
       ],
     },
     {
+      heading: "Alimentazione",
+      blocks: [
+        "«Alimentazione» è un diario e una calcolatrice, non un servizio sanitario. MuW non è fatta da medici, dietisti o altri professionisti della salute.",
+        "Le calorie dei cibi, l'energia che consumi e, se la chiedi, la stima di un obiettivo del giorno vengono da tabelle e formule pubbliche. Sono stime, solo a scopo informativo: non sono un consiglio medico né dietetico e non sostituiscono un professionista che ti conosce.",
+        "Se hai meno di 18 anni, sei in gravidanza o allatti, hai una malattia, o hai o hai avuto un disturbo alimentare, parla con il tuo medico prima di contare le calorie o di cambiare quello che mangi.",
+      ],
+    },
+    {
       heading: "Nessuna garanzia, e i limiti della nostra responsabilità",
       blocks: [
         "Lavoriamo perché MuW funzioni e i suoi percorsi siano buoni, ma l'app è offerta così com'è: non promettiamo che sia sempre disponibile o senza errori, che un percorso si possa completare, o che le sue misure siano esatte.",
@@ -338,19 +346,22 @@ const privacy: AboutDocument = {
       heading: "Le tue corse e le loro tracce GPS",
       blocks: [
         "Con un account, quando tocchi «Salva» a fine corsa la corsa intera va al nostro server: ogni posizione con il suo orario e la sua altezza, le pause, il percorso seguito, distanza, durata, un punteggio di quanto la traccia segue il percorso (calcolato dal nostro server e non mostrato nell'app) e il nome del luogo. Con «Discard» non parte niente.",
-        "Una corsa salvata è privata, se non scegli diversamente: la vede solo il tuo account. Fa eccezione un'attività aggiunta col «+» del Feed: parte da «Tutti», lo vedi prima di «Salva» e puoi cambiarlo. Gli altri iscritti vedono sul tuo profilo i totali di tutte le tue corse salvate, distanza e dislivello, e i tuoi record, a piedi e in bici, con il tempo e la data in cui li hai fatti: anche quelli di una corsa privata, che però non si apre. Resta finché non la elimini da «Le mie attività» o elimini l'account.",
+        "Una corsa salvata è privata, se non scegli diversamente: la vede solo il tuo account. Fa eccezione un'attività aggiunta da un file, o un allenamento in palestra scritto a mano, col «+» del Feed: parte da «Tutti», lo vedi prima di «Salva» e puoi cambiarlo. Gli altri iscritti vedono sul tuo profilo i totali di tutte le tue corse salvate, distanza e dislivello, e i tuoi record, a piedi e in bici, con il tempo e la data in cui li hai fatti: anche quelli di una corsa privata, che però non si apre. Resta finché non la elimini da «Le mie attività» o elimini l'account.",
         "Se scegli «Mostralo», gli altri iscritti vedono sul tuo profilo anche il tuo VO₂ max. Finché Apple Salute non arriva con un prossimo aggiornamento, è la nostra stima dai tuoi record di corsa degli ultimi 12 mesi, calcolata dal nostro server. Spegnilo in Impostazioni e sparisce dal tuo profilo.",
-        "Un allenamento in palestra si salva con i suoi esercizi, le serie e i pesi. Sul tuo profilo gli altri membri vedono i tuoi traguardi in palestra (la figura, l'esercizio e la tua serie migliore), contati da tutti i tuoi allenamenti, anche privati, ma mai l'allenamento. Se il post di un allenamento è per tutti e ne mostra gli esercizi, la tua serie migliore del mese di ogni esercizio può comparire, col tuo nome utente, nella classifica mensile di quell'esercizio, che gli altri membri vedono. Nascondi gli esercizi del post, o rendilo privato, e lascia la classifica.",
-        "Le tue schede in palestra (nome, giorni, esercizi e valori obiettivo) restano sul telefono e sul tuo account: le vedi solo tu e si cancellano con l'account. Anche il calendario dei tuoi allenamenti lo vedi solo tu.",
+        "Un allenamento in palestra si salva con i suoi esercizi, le serie e i pesi. Sul tuo profilo gli altri membri vedono i tuoi traguardi in palestra (la figura, l'esercizio e la tua serie migliore), contati dagli allenamenti che registri con MuW, anche privati, ma mai l'allenamento. Se il post di un allenamento è per tutti e ne mostra gli esercizi, la tua serie migliore del mese di ogni esercizio può comparire, col tuo nome utente, nella classifica mensile di quell'esercizio, che gli altri membri vedono. Nascondi gli esercizi del post, o rendilo privato, e lascia la classifica.",
+        "Le tue schede in palestra (nome, giorni, esercizi e valori obiettivo) restano sul telefono e sul tuo account, e si cancellano con l'account. Le vedi solo tu, a meno che tu non ne condivida una nel Feed: il post è una copia della scheda com'era quando l'hai pubblicata, con nome, obiettivo, giorni, settimane, esercizi e pesi. Chi vede il post può copiare la scheda tra le sue. Cambiare o cancellare la tua scheda non cambia il post; cancellare il post lo toglie dal Feed, mentre le copie già fatte restano a chi le ha fatte. Il calendario dei tuoi allenamenti lo vedi solo tu.",
         "Se aggiungi un'attività passata da un file, ne teniamo la traccia e gli orari come per una corsa registrata con MuW. Il file non lo teniamo.",
+        "Se aggiungi un allenamento in palestra scritto a mano, ne teniamo giorno, ora, durata, esercizi, serie e pesi come per un allenamento registrato con MuW.",
         "Un post «Solo foto» non ha traccia, luogo né orari. Le sue foto arrivano al nostro server ridotte, senza i dati che il telefono aggiunge, come dove e quando sono state scattate. Le vedono, con il titolo, la descrizione e le persone che tagghi, «Tutti» o i tuoi «Follower»: non c'è «Solo io». La scelta parte dal tuo ultimo post, o da «Tutti», e la vedi prima di «Pubblica». Il post resta finché non lo cancelli, o cancelli il tuo account.",
-        "Una corsa spesso parte e finisce davanti a casa. Per questo diventa visibile agli altri iscritti solo se, quando la salvi, sotto «Chi può vederla» è scelto «Tutti» o «Follower», e allora vedono la traccia intera, partenza e arrivo compresi, con il titolo che le hai dato, e senza orari, pause né il percorso pianificato, tranne in un video «Insieme» (sotto). La tua scelta resta su questo telefono per la corsa successiva: parte dall'ultima che hai salvato, la vedi prima di «Salva» e puoi cambiarla. Un'attività aggiunta da un file in «Le mie attività» parte da «Solo io»; una aggiunta col «+» del Feed parte da «Tutti», e puoi cambiarlo prima di «Salva».",
+        "Una corsa spesso parte e finisce davanti a casa. Per questo diventa visibile agli altri iscritti solo se, quando la salvi, sotto «Chi può vederla» è scelto «Tutti» o «Follower», e allora vedono la traccia intera, partenza e arrivo compresi, con il titolo che le hai dato, e senza orari, pause né il percorso pianificato, tranne in un video «Insieme» (sotto). La tua scelta resta su questo telefono per la corsa successiva: parte dall'ultima che hai salvato, la vedi prima di «Salva» e puoi cambiarla. Un'attività aggiunta da un file in «Le mie attività» parte da «Solo io»; una aggiunta da un file, o un allenamento in palestra scritto a mano, col «+» del Feed parte da «Tutti», e puoi cambiarlo prima di «Salva».",
         "Se qualcuno ti tagga nel post di una corsa e tu hai registrato la stessa corsa nello stesso momento, e la tua corsa è visibile a quella persona, può mettere la tua traccia in un video «Insieme». La tua linea si muove al tuo passo vero, con le tue pause, dalla prima partenza all'ultimo arrivo: chi vede il video vede quanto andavi veloce, ma non l'ora né la data. Metti la tua corsa su «Solo io» e non si può più usare; un video già fatto resta com'è.",
         "Chi può vedere una tua corsa può anche seguirla con «Parti» e salvarne la stessa traccia come file GPX, senza orari.",
         "Un post per «Tutti» si può aprire anche con un link. Tu, o qualunque iscritto che vede il post, potete condividerne il link, e chi ha il link vede su una pagina web il disegno sulla mappa, il tuo nome utente, il titolo, lo sport e la distanza, anche senza MuW: mai le tue foto, i commenti o i tuoi orari. Ai motori di ricerca è chiesto di non elencare queste pagine. Spegni «Link ai miei post» in Impostazioni e nessun link ai tuoi post funziona più. Un post per «Follower» o «Solo io» non ha mai un link.",
         "Una foto che pubblichi può avere dentro l'immagine il disegno della tua corsa. È lo stesso disegno che mostra il Feed.",
         "Per una giornata di sci, il nostro server confronta la traccia salvata con gli impianti e le piste di OpenStreetMap, che tiene da sé, per scrivere quali hai preso e quante volte. I nomi compaiono nel post, per chi può vederlo. Niente va a un altro servizio.",
         "Sulle foto che pubblichi puoi segnare i capi che indossi: cos'è ognuno, la marca e, se vuoi, il modello e il link a un negozio. Li vede chi vede la foto. Se la corsa torna «Solo io», lasciano il nostro server con le sue foto e restano su questo telefono.",
+        "Puoi aggiungere la tua attrezzatura: scarpe, una bici, sci, un casco, qualsiasi cosa usi. Per ogni attrezzo teniamo il tipo, la marca, il modello, il nome che gli dai, il mese in cui l'hai comprato, la tua nota e la sua foto. La foto è ridimensionata e senza i dati che il telefono aggiunge, come dove e quando è stata scattata. Le attività che scegli per un attrezzo aggiungono distanza e tempo ai suoi totali, che il nostro server conta dalle tue attività salvate. Gli altri iscritti vedono la tua attrezzatura sul tuo profilo, coi totali, le note e le foto, a meno che tu non accenda «Nascondi dal profilo» per un attrezzo. Gli sport che scegli per un attrezzo e il suo limite li vedi solo tu. La tua attrezzatura si cancella col tuo account.",
+        "Un volo in parapendio che salvi conta, senza il tuo nome, nello storico del decollo da cui sei partito, nella mappa dei decolli: quanti voli e quanti piloti diversi, mese per mese e oggi. Il nostro server lo ricava dal punto di decollo del volo salvato, anche quando il volo è privato, e mostra questi numeri solo quando i piloti diversi sono almeno tre. Il tuo nome e il tuo volo compaiono nei record del decollo (il volo più lungo, il più alto, il più lontano) solo se il post del volo è visibile a tutti. Mentre condividi un volo dal vivo, il decollo mostra che c'è qualcuno in volo, senza il tuo nome; il tuo link compare lì solo se condividi già con tutti nel Feed. I decolli e gli atterraggi vengono da OpenStreetMap.",
         "Per una giornata di sci, l'app manda al nostro server la tua posizione arrotondata a circa 1 km per trovare la stazione più vicina; il meteo lo chiede il server a MET Norway con la posizione della stazione, mai la tua. Stazione, neve e attrezzatura che aggiungi si vedono sul post, per chi può vederlo, e la neve conta anche, senza il tuo nome, nella neve del giorno della stazione.",
       ],
     },
@@ -379,13 +390,19 @@ const privacy: AboutDocument = {
     {
       heading: "Segnalazioni",
       blocks: [
-        "Quando segnali un disegno, un capo segnato, un commento, un profilo o una corsa di gruppo, teniamo chi ha segnalato cosa, il motivo e quando. Chi gestisce MuW la riceve per email e può nascondere agli altri iscritti ciò che è stato segnalato. Non si cancella niente, e il suo autore continua a vederlo. La tua segnalazione non è mai mostrata all'autore.",
+        "Quando segnali un disegno, un capo segnato, un attrezzo, un commento, un profilo, una corsa di gruppo o un gruppo, teniamo chi ha segnalato cosa, il motivo e quando. Chi gestisce MuW la riceve per email e può nascondere agli altri iscritti ciò che è stato segnalato. Non si cancella niente, e il suo autore continua a vederlo. La tua segnalazione non è mai mostrata all'autore.",
       ],
     },
     {
       heading: "Corse di gruppo",
       blocks: [
         "Se crei una corsa di gruppo o dici che ci vai, gli iscritti che la vedono vedono il tuo nome, la tua foto e che ci vai. Cancelliamo le tue corse di gruppo e le tue risposte quando cancelli l'account.",
+      ],
+    },
+    {
+      heading: "Gruppi",
+      blocks: [
+        "Se crei un gruppo o ne fai parte, i suoi membri vedono il tuo nome, la tua foto, il tuo ruolo nel gruppo e i tuoi post nei suoi sport che possono già vedere. Chi non è membro vede solo quanti sono i membri. Gli admin del gruppo vedono chi ha chiesto di entrare e chi è stato invitato. I tuoi gruppi sul profilo li vedi solo tu. Quando cancelli l'account cancelliamo i tuoi gruppi, le appartenenze, le richieste e gli inviti; un gruppo che gestisci passa prima a un altro membro.",
       ],
     },
     {
@@ -415,7 +432,7 @@ const privacy: AboutDocument = {
     {
       heading: "La tua posizione",
       blocks: [
-        "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server esatta come partenza di un percorso che chiedi, come partenza delle forme che l'app ti prepara qui vicino quando il telefono non riesce a disegnarle da solo, e dentro una corsa che salvi. Fuori dal percorso di una corsa, quando il telefono non trova da solo la strada per tornarci, va esatta al nostro server con il tratto di percorso davanti, per trovarla sulle vie: il server non le tiene. Va arrotondata a circa 1 km per trovare la mappa offline intorno a te, i percorsi consigliati, i paesi e i disegni vicini, e per mettere prima i luoghi vicini a te in una ricerca; così arrotondata non resta legata al tuo account. Quando condividi un'attività dal vivo, la tua posizione esatta va al nostro server e a chi ha il link, come spiegato in «Condivisione dal vivo».",
+        "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server esatta come partenza di un percorso che chiedi, come partenza delle forme che l'app ti prepara qui vicino quando il telefono non riesce a disegnarle da solo, e dentro una corsa che salvi. Fuori dal percorso di una corsa, quando il telefono non trova da solo la strada per tornarci, va esatta al nostro server con il tratto di percorso davanti, per trovarla sulle vie: il server non le tiene. Va arrotondata a circa 1 km per trovare la mappa offline intorno a te, gli atterraggi del parapendio vicini, il vento in quota per il volo, i percorsi consigliati, i paesi e i disegni vicini, e per mettere prima i luoghi vicini a te in una ricerca; così arrotondata non resta legata al tuo account. Il vento in quota lo scarica il nostro server da DWD ed ECMWF per zone intere, mai con la tua posizione. Quando condividi un'attività dal vivo, la tua posizione esatta va al nostro server e a chi ha il link, come spiegato in «Condivisione dal vivo».",
         "Su iPhone, durante una corsa che hai fatto partire, l'app continua a seguire la tua posizione anche a telefono bloccato o con un'altra app aperta, finché non fermi la corsa; l'iPhone lo mostra con un segno blu in cima allo schermo. MuW chiede la posizione solo mentre usi l'app, mai «Sempre».",
         "Come ogni servizio su internet, il nostro server vede l'indirizzo internet (IP) da cui arriva una richiesta mentre le risponde. Il log del server non scrive posizioni, e nel database non ci sono indirizzi IP.",
         "Un registro delle richieste di percorso, con la loro partenza, esiste per riprodurre un difetto. Sul nostro server è spento; acceso, tiene al massimo 10 MB, poi le righe più vecchie si perdono.",
@@ -449,9 +466,17 @@ const privacy: AboutDocument = {
       ],
     },
     {
+      heading: "Alimentazione",
+      blocks: [
+        "«Alimentazione» è un diario che tieni per te. I cibi che aggiungi, il tuo piano della settimana, quello che scrivi di aver mangiato ogni giorno, il tuo obiettivo del giorno, il motivo per cui hai detto di usarla e le calorie che correggi a mano restano solo sul tuo telefono: non arrivano al nostro server e nessun altro può vederli. Il «Bilancio delle calorie» nel tuo profilo è calcolato sul telefono e lo vedi solo tu.",
+        "Per stimare l'energia che consumi, MuW conta sul telefono le attività del tuo account e i dati del corpo che hai inserito in «Impostazioni». Se lo chiedi, MuW calcola anche, sul telefono, dagli stessi dati e con una formula pubblica, una stima di un obiettivo di calorie al giorno: solo dimostrativa, e mai mostrata a chi ha meno di 18 anni. Ogni numero è una stima: MuW non è fatta da professionisti della salute e non fornisce diete né consigli medici.",
+        "Questi dati non sono mai stati sul nostro server, quindi uscire dall'account o eliminarlo non li cancella: restano sul telefono finché non li togli lì o non disinstalli l'app.",
+      ],
+    },
+    {
       heading: "Apple Salute e Health Connect",
       blocks: [
-        "Quando accendi «Salva in Apple Salute» (iPhone) o «Salva in Health Connect» (Android), ogni attività che salvi viene scritta anche lì, sul telefono: lo sport, quando è iniziata e finita, la distanza, il percorso e, per una corsa, le calorie attive stimate. Se a fine nuotata in piscina tocchi «Aggiungi il battito da Salute», MuW legge il battito che il tuo orologio ha registrato durante quella nuotata, e nient'altro. Medio e massimo restano con la nuotata sul nostro server e si vedono nel suo post, a meno che tu spenga «Mostra il battito»; il tempo in ogni zona resta sul telefono. Niente dei tuoi dati di salute arriva a qualche pubblicità. Puoi fermarlo nell'app Salute o in Health Connect. Quello che c'è già resta finché non lo cancelli lì, anche quando cancelli la corsa o il tuo account.",
+        "Quando accendi «Salva in Apple Salute» (iPhone) o «Salva in Health Connect» (Android), ogni attività che salvi viene scritta anche lì, sul telefono: lo sport, quando è iniziata e finita, la distanza, il percorso e, per una corsa, le calorie attive stimate. Se a fine nuotata in piscina o a fine allenamento in palestra tocchi «Aggiungi il battito da Salute», MuW legge il battito che il tuo orologio ha registrato durante quell'attività, e nient'altro; dopo quel primo tocco lo legge alla fine di ogni nuotata e di ogni allenamento. Medio e massimo restano con l'attività sul nostro server e si vedono nel suo post, a meno che tu spenga «Mostra il battito»; il tempo in ogni zona resta sul telefono. Niente dei tuoi dati di salute arriva a qualche pubblicità. Puoi fermarlo nell'app Salute o in Health Connect. Quello che c'è già resta finché non lo cancelli lì, anche quando cancelli la corsa o il tuo account.",
       ],
     },
     {
@@ -473,6 +498,7 @@ const privacy: AboutDocument = {
             "Google Ireland Limited (Firebase Cloud Messaging), per consegnare le notifiche push ai telefoni Android. Quando accendi le push, l'app chiede a Firebase un token di registrazione per il tuo telefono; il servizio push di Expo passa ogni notifica (chi ha fatto cosa, e l'inizio di un commento) a Google, che la consegna al tuo telefono. Google vede il token e il contenuto di ogni notifica, non il tuo account né la tua posizione. Il token si toglie dal nostro server quando spegni le push, esci dall'account o lo elimini; quello sul telefono se ne va quando disinstalli l'app.",
             "Resend, negli Stati Uniti, manda le email di MuW: il tuo indirizzo email con la email stessa. Per una segnalazione porta a chi gestisce MuW ciò che è stato segnalato, il suo testo, il motivo e i nomi utente di chi l'ha segnalato e di chi l'ha scritto. Per «Mandaci un feedback» porta il tuo messaggio, il tuo nome utente e il tuo indirizzo email.",
             "Google, con il suo servizio Web Risk, riceve dal nostro server pezzi dell'impronta (hash) di alcuni link che gli iscritti mettono sui loro capi, per controllare che non portino a siti pericolosi: mai il link intero, né chi l'ha messo o chi lo apre.",
+            "Open Food Facts riceve il codice a barre che leggi o scrivi in «Alimentazione», per trovare il prodotto: vede il codice e, come ogni sito, il tuo indirizzo IP, mai il tuo account né il tuo diario. Il prodotto che rimanda resta sul tuo telefono.",
             "Strava, come detto sopra.",
           ],
         },
@@ -488,6 +514,7 @@ const privacy: AboutDocument = {
             "Quando elimini l'account, tutto quello che è tuo si cancella subito: profilo, foto, numero di telefono, corse, disegni, preferiti, commenti, reazioni, follow, dati del gioco e le novità in attesa della tua email. I percorsi disegnati dal nostro motore restano: non dicono niente di chi li ha chiesti.",
             "Una copia di sicurezza del database si fa ogni notte e si tiene 13 giorni: un account eliminato è fuori da ogni copia entro 14 giorni.",
             "Sul tuo telefono: la sessione, le tue scelte (lingua, sport, laghi o mare), le mappe offline, le corse che aspettano ancora di partire e, con un account, la zona da cui partono di solito le tue attività, per suggerirti laghi e mare vicini; si cancella quando esci dall'account.",
+            "Solo sul tuo telefono, anche dopo che esci dall'account: quello che scrivi in «Alimentazione».",
           ],
         },
         "Il collegamento fra l'app e il nostro server è cifrato (HTTPS).",

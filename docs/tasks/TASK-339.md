@@ -1,11 +1,6 @@
 # TASK-339 — L'interfaccia premium ed elegante: tipografia, neutri caldi, immagini, movimento, dettagli
 
-**Stato**: In lavorazione · parte A in `main` (#658, 2026-10-30) · parte B
-in `main` (#677, 2026-10-30) · parte C2 (divisioni e tocco) in `main`
-(#715, 2026-11-04) · **parte D (Profile, Settings, i fogli) in PR dal
-2026-11-04** (branch `feat/TASK-339-premium-look-d`) · parte C1 (pagine
-vuote) dopo il sì dell'utente sui testi; numeri e condizioni dal
-Coordinatore il 2026-10-30
+**Stato**: Done · 2026-11-24 · A (#658), B (#677), C2 (#715), D (#760) e C1, le pagine vuote (#1513), in `main` e in produzione (C1 con l'OTA 25). La parte E («Draw» e il risultato, poi le schermate dello Store da rifare col look nuovo) passa fra le idee «In attesa» di `STATUS.md`. Chiuso nel censimento dei task aperti (scelta dell'utente del 2026-11-24 sui task aperti).
 **Fase**: 4 · **Branch**: `feat/TASK-339-premium-look-a` (A, in `main`),
 `feat/TASK-339-premium-look-b` (B, in `main`),
 `feat/TASK-339-premium-look-c2` (C2, in `main`),
@@ -267,8 +262,25 @@ Parte D (Profile, Settings, i fogli, senza testi):
 - [x] Nessun testo nuovo, nessuna dipendenza, niente di nativo: impronta
       di `main` (`6f8bba4c`) invariata.
 
-Parte C1 (pagine vuote, coi testi) e parte E: i loro criteri si scrivono
-qui quando partono.
+Parte C1 (pagine vuote, coi testi; partita il 2026-11-23):
+
+- [x] I testi in cinque lingue approvati dall'utente il 2026-11-23 («Sì,
+      approvo»): i testi di prima divisi in titolo e frase; in «My
+      activities» «Save a run» diventa «an activity», perché gli sport sono
+      tanti.
+- [x] `EmptyState` (il cuore, il titolo, la frase, nessun pulsante) in
+      «Favorites», «My activities» e nei «Messages» in arrivo. Il «Feed» lo
+      aveva già (TASK-355).
+- [x] Restano righe brevi: le liste follower/seguiti/richieste (un riquadro
+      sotto i numeri del profilo, dove una figura di 160 punti spingerebbe
+      giù la lista) e «No message requests.».
+- [x] La frase di prima di «My activities» resta nelle tabelle: la usa
+      ancora `feed/PastActivityPost.tsx` (Feed «+»), che C1 non tocca.
+- [x] Test deterministico `src/ui/premiumLookC1.test.tsx`; i test dei
+      messaggi riallineati; i18n, `tsc` ed `eslint` sui file toccati; la
+      suite intera in CI. Niente di nativo, nessuna dipendenza.
+
+Parte E: i suoi criteri si scrivono qui quando parte.
 
 ## File toccati
 
@@ -330,6 +342,18 @@ apps/mobile/src/tour/GuideRow.tsx
 apps/mobile/src/voice/VoiceSetting.tsx
 docs/UI.md, docs/STATUS.md, docs/tasks/TASK-339.md
 docs/tasks/TASK-339/c2-*.jpg                                     (schermate, nuove)
+```
+
+Parte C1:
+
+```
+apps/mobile/src/favorites/FavoritesList.tsx
+apps/mobile/src/activities/ActivitiesList.tsx
+apps/mobile/src/messages/ConversationList.tsx, Messages.test.tsx
+apps/mobile/src/tabs/MessagesTab.test.tsx, TabLanding.test.tsx
+apps/mobile/src/i18n/it.ts, de.ts, es.ts, fr.ts
+apps/mobile/src/ui/premiumLookC1.test.tsx                        (nuovo)
+docs/UI.md, docs/tasks/TASK-339.md
 ```
 
 Parte D:

@@ -1,7 +1,7 @@
 # TASK-341 — I badge sul profilo: primo disegno, 10 disegni, 30 km
 
-**Stato**: Todo — documenti nella PR `docs/TASK-341-profile-badges`; il
-codice parte dopo il loro merge
+**Stato**: Fermo — in attesa · 2026-11-24 (scelta dell'utente del 2026-11-24 sui task aperti): idea approvata e mai partita, da rivalutare più avanti; si riprende col sì dell'utente.
+Prima del 2026-11-24: Todo — documenti nella PR `docs/TASK-341-profile-badges`; il codice parte dopo il loro merge
 **Fase**: 4 · **Branch**: `feat/TASK-341-profile-badges`
 **ADR**: ADR-0294 · **Migrazione**: nessuna · Numeri dati dal
 Coordinatore il 2026-10-29

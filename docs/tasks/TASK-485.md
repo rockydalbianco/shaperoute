@@ -1,10 +1,10 @@
 # TASK-485 — La scheda della palestra come post
 
-**Stato**: In lavorazione · parte 0 in `main` (#1365); A (server) in
-`main` (#1404), passo 18 sul server col sì dell'utente; B (app) in `main`
-(#1414, `f4737c66`, 2026-11-22), testi e traduzioni approvati il
-2026-11-23, esce con l'OTA col sì; senza la riga del foglio (dopo TASK-481
-A) e senza la privacy (a turno)
+**Stato**: Done · 2026-11-26 · parte 0 (#1365), A (#1404, sul server
+col passo 18), B (#1414), B2 (#1431), privacy (#1469, sul sito) e C
+(#1481) in `main` e in produzione con l'OTA 26 (2026-11-24); provata
+dall'utente sul telefono il 2026-11-26 nella prova generale («ok»)
+**Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-485-gym-plan-post` (parte 0, in
 `main`); `feat/TASK-485-a-plan-posts-api` (A); B col suo branch e la sua PR
 **Dipende da**: TASK-481 (il foglio «Add to Feed» e `addToFeedEntries.ts`,
@@ -296,14 +296,63 @@ Il 2026-11-23 l'utente ha approvato le quattro traduzioni e i tre testi
 («Sì, approvo»). Voce: ADR-0394 precisazione B. Esce con l'OTA, col sì
 dell'utente.
 
+**B2, la voce del «+» (2026-11-23, dopo TASK-481 A #1421).** Lista
+approvata dal Coordinatore (fork 3): `addToFeedEntries.ts` (+ test, voce
+`plan` ultima, sempre pronta perché il «+» c'è solo con un account),
+`AddToFeed.tsx` (+ test, «Workout plan» apre `PlanPostFlow` nello stesso
+foglio), `screens/FeedScreen.tsx` (la coda dei piani montata accanto a
+quella delle foto: un post rimasto sul telefono parte senza riaprire il
+flusso e il Feed rilegge; test nuovo `FeedScreenPlans.test.tsx`), la riga
+«Share one of your gym plans» nelle quattro lingue (traduzioni da far
+approvare con la schermata). Turno sui file condivisi dopo #1419 (467 E2):
+prima del «pronta» merge di `main`, tenendo le voci degli altri.
+Esito: in `main` il 2026-11-23 (#1431, `ed0bd4d7`). Provata nel simulatore
+contro un'API locale: «Workout plan» è l'ultima voce del «+», apre «Choose
+a plan» nello stesso foglio, «Post» fa `PUT /me/plan-posts/{key}` e il Feed
+rilegge col post in cima. L'utente ha approvato le schermate e le quattro
+traduzioni («Sì, approvo»). Due merge di `main` prima del verde: con #1441
+(«Sleep», TASK-467 E2: le liste di `addToFeedEntriesSleep.test.ts` hanno
+«plan» in fondo, file in più approvato dal Coordinatore) e con #1439
+(TASK-486 C: blocchi delle traduzioni tenuti tutti e due).
+
 A turno (privacy, punto 4; in coda dopo TASK-309 B1, 417 D2, 312 C2 e 481
-A, il Coordinatore dice quando tocca):
+A, il Coordinatore dice quando tocca). Il turno è arrivato il 2026-11-23,
+dopo #1444: lista di 11 file approvata dal Coordinatore, la data resta il
+23 novembre 2026 (già in `main`), quindi `AboutPage.test.tsx` e
+`site/tests/privacy.test.mjs` non cambiano. L'utente ha approvato le
+quattro traduzioni («Sì, approvo») e il merge («Sì, unisci»): in `main` il
+2026-11-23 (#1469, `5d226b33`). Testi in
+`out/TASK-485/PRIVACY-B.md` (checkout principale). I file erano:
 
 ```
 apps/mobile/src/about/content/{en,it,de,fr,es}.ts
 apps/mobile/src/about/documents.test.ts              (+ AboutPage.test.tsx, site/tests/privacy.test.mjs: la data)
 site/privacy/**/index.html                           (rigenerate con make_privacy.mjs)
 ```
+
+**C, un piano pubblicato aperto fuori dal Feed (2026-11-23, #1481).** Il
+profilo, la campanella, la notifica push, il link del post e il post in
+una chat aprono tutti per id con `drawings.open`, cioè sulla mappa con
+`social/DrawingCard.tsx`; `PostPage.tsx` resta del solo Feed, che il piano
+lo mostrava già. Il link non aspetta TASK-482 D (nativa): la strada JS è
+già in produzione, quindi tutta la C esce con l'OTA. Lista approvata dal
+Coordinatore (fork 3):
+
+```
+apps/mobile/src/social/DrawingCard.tsx       (il riquadro del Feed, «Use this plan» se non è tuo; niente km, invio, GPX, «Draw it near me», «Edit the drawing»)
+apps/mobile/src/social/DrawingsGrid.tsx      (la cella del piano nella griglia del profilo)
+apps/mobile/src/social/PlanGridTile.tsx      (nuovo: «Workout plan», il nome, la settimana a quadratini)
+apps/mobile/src/social/DrawingCardPlan.test.tsx, DrawingsGridPlan.test.tsx   (nuovi)
+```
+
+Nessun testo nuovo («Workout plan» c'era già), nessun cambio all'API. Un
+piano che non si legge tiene la cella di prima. Provata nel simulatore
+contro un'API locale: la griglia mostra la cella del piano; toccata apre
+la scheda sulla mappa col riquadro e «Usa questo piano»; il riquadro apre
+il piano intero coi kg e chiudendo si torna alla scheda. L'utente ha
+approvato le schermate («Sì, approvo»). In `main` il 2026-11-23
+(`2a5c7590`). Voce: ADR-0394 precisazione C. In produzione con l'OTA 26
+(`71fc76c4`, 2026-11-24, col sì dell'utente).
 
 ## Criteri di accettazione
 
@@ -314,20 +363,31 @@ site/privacy/**/index.html                           (rigenerate con make_privac
       pubblicata (test); reazioni, commenti, blocchi e nascosti valgono
       (test); chi parte da `runs` non la vede (test). CI verde; sul server
       col passo del Coordinatore.
-- [ ] **B**: la voce compare solo con un account; pubblica una scheda
+- [x] **B**: la voce compare solo con un account; pubblica una scheda
       anche senza rete; il riquadro e la scheda aperta coi kg; «Use this
       plan» fa una scheda nuova coi kg, senza ritmi e senza data; con 20
       schede il messaggio (test). Schermate e quattro traduzioni approvate
       dall'utente; privacy nelle cinque lingue e sul sito; `tsc` e jest dei
       file toccati verdi, CI verde.
+- [x] **C**: un piano pubblicato aperto da profilo, campanella, push, link
+      o chat mostra il riquadro e «Use this plan», niente di una corsa;
+      nella griglia del profilo la cella del piano (test). Schermate
+      approvate dall'utente; `tsc` e jest dei file toccati verdi, CI verde.
 
 ## Fuori scope
 
 - La routine di stretching pubblicata (TASK-466 E).
-- Foto nel post della scheda; ricerca, link pubblico e chat per una scheda
-  pubblicata (come per i post di sole foto, dopo, se l'utente li vuole).
+- Foto nel post della scheda; ricerca per una scheda pubblicata (come per
+  i post di sole foto, dopo, se l'utente la vuole). L'apertura dal link e
+  da una chat è entrata con la parte C.
 - «Update post» da una scheda cambiata (scartato, scelta 3).
 
 ## Esito
 
-_(a fine task)_
+Done il 2026-11-26. Una scheda della palestra si pubblica nel Feed dalla
+voce «Workout plan» del «+», anche senza rete; chi la vede apre il piano
+intero coi kg e con «Use this plan» ne fa una scheda sua. Si apre anche da
+un profilo, dalla campanella, da una push, dal link del post e da una
+chat. Privacy nelle cinque lingue e sul sito. Tutto in produzione con
+l'OTA 26 (2026-11-24). Provata dall'utente sul telefono il 2026-11-26,
+nella prova generale («ok»). ADR-0394 con le precisazioni B e C.

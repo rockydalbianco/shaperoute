@@ -1,7 +1,9 @@
 # TASK-484 — Allenamento in palestra scritto a mano, nel Feed
 
-**Stato**: In lavorazione · parte 0 fatta (#1366, 2026-11-21); parte A
-(server) nella PR #1371, poi il passo sul server col sì dell'utente
+**Stato**: Done · 2026-11-24 · parte 0 #1366; A #1371 e sul server
+(passo 17, 2026-11-22); B #1489 e privacy #1505 in `main` (2026-11-23),
+in produzione con l'OTA 25; provata dall'utente sul telefono («Sì
+funziona»)
 **Fase**: 5 · **Branch**: `docs/TASK-484-gym-by-hand` (parte 0)
 **Dipende da**: TASK-481 A (il foglio «Add to Feed» con la lista e
 `addToFeedEntries.ts`), TASK-385 (la palestra, ADR-0327), TASK-411 C (le
@@ -204,14 +206,60 @@ docs/tasks/TASK-484.md
 ```
 apps/mobile/src/gym/GymByHand.tsx                (nuovo: il flusso)
 apps/mobile/src/gym/GymByHand.test.tsx           (nuovo)
-apps/mobile/src/gym/gymByHand.ts                 (nuovo: righe → GymSessionRequest, giorno e ora)
-apps/mobile/src/gym/gymByHand.test.ts            (nuovo)
+apps/mobile/src/gym/byHand.ts                    (nuovo: righe → GymSessionRequest, giorno e ora)
+apps/mobile/src/gym/byHand.test.ts               (nuovo)
 apps/mobile/src/gym/useGymOutbox.ts              (salvare una richiesta già fatta)
 apps/mobile/src/feed/addToFeedEntries.ts         (la riga «Gym workout», dopo TASK-481 A)
 apps/mobile/src/feed/addToFeedEntries.test.ts
+apps/mobile/src/feed/addToFeedEntriesSleep.test.ts  (l'ordine delle voci; sì del Coordinatore 2026-11-23)
+apps/mobile/src/feed/AddToFeed.tsx               (apre GymByHand nel foglio; sì del Coordinatore 2026-11-23)
+apps/mobile/src/feed/AddToFeed.test.tsx          (sì del Coordinatore 2026-11-23)
 apps/mobile/src/i18n/{it,de,fr,es}.ts
 docs/tasks/TASK-484.md
 ```
+
+**Avanzamento della parte B (2026-11-22, deciso dall'agente su delega
+dell'utente).** Sul branch, prima di TASK-481 A, solo file nuovi e quelli
+della lista che nessuno tiene: il flusso (`GymByHand.tsx`), la sua logica,
+`saveRequest` in `useGymOutbox.ts`, i testi nelle quattro lingue (da far
+approvare con le schermate). Due scarti dalla lista:
+
+- la logica si chiama `byHand.ts`, non `gymByHand.ts`: su macOS (disco
+  senza maiuscole) `./GymByHand` trovava `gymByHand.ts` prima di
+  `GymByHand.tsx`, e il componente risultava `undefined`;
+- due testi in più, solo per VoiceOver sulle frecce del giorno: «Previous
+  day» e «Next day».
+
+Il giorno mostra «Today», «Yesterday» o la data intera già dell'app
+(«Thu 19 Nov 2026»), senza un testo nuovo «Yesterday, Fri 20 Nov». Resta:
+la riga in `addToFeedEntries.ts` (dopo TASK-481 A, con «‹» e «✕» del foglio;
+il titolo del flusso si sposta lì se il foglio lo mostra), poi la PR.
+
+**Schermate approvate (2026-11-22).** Otto schermate dal simulatore
+(iPhone 17e, harness non committato) in `out/TASK-484/b/` del checkout
+principale: modulo vuoto, «Da una scheda», giorni di una scheda, esercizio
+copiato, «Scegli un orario prima di adesso.», fondo con «Importata» e post,
+più due in inglese. L'utente: «Sì, approvo» — aspetto e testi nelle quattro
+lingue, «Previous day»/«Next day» compresi. Se la riga del foglio cambia
+l'aspetto (titolo spostato), una schermata in più prima della PR.
+
+**La voce nel «+» (2026-11-23).** TASK-481 A in `main`: «Gym workout» è la
+voce tra «Sleep» e «Workout plan», sempre pronta (il «+» c'è solo con un
+account), con la riga approvata in TASK-481 «A workout you already did,
+written by hand». Il foglio mostra già il titolo della voce: il flusso non
+ripete più «Gym workout». Le quattro traduzioni della riga («Un allenamento
+già fatto, scritto a mano», «Ein Training, das du schon gemacht hast, von
+Hand eingetragen», «Une séance déjà faite, écrite à la main», «Un
+entrenamiento que ya hiciste, escrito a mano»): approvate dall'utente il
+2026-11-23 («Sì, approvo»). Schermate del foglio (cinque, in
+`out/TASK-484/b2/` del checkout principale; «Da una scheda» ridisegnata
+come «Choose a plan» di «Workout plan», con «Cancel»/«Back» in basso)
+approvate dall'utente il 2026-11-23 («Sì, approvo»). Dopo l'unione di
+`main` con 481 F l'ordine è: Record now, Already recorded, Photos only,
+From a file, Sleep, Gym workout, Workout plan; «Previous day»/«Next day»
+sono già nelle tabelle per TASK-489 (stesse traduzioni), i doppioni tolti. La PR #1478 (481 F) tocca gli
+stessi due file del «+»: chi entra per secondo unisce `main` tenendo
+entrambe le righe.
 
 A turno (privacy, punto 4; in coda dopo 309 B1, 417 D2, 312 C2, 481 A e
 485, il Coordinatore dice quando tocca):
@@ -222,23 +270,33 @@ apps/mobile/src/about/documents.test.ts           (+ AboutPage.test.tsx, site/te
 site/privacy/**/index.html                        (rigenerate con make_privacy.mjs)
 ```
 
+**La privacy (2026-11-23, #1505).** Le quattro traduzioni delle tre frasi
+(la riga nuova dopo quella del file, i traguardi «contati dagli
+allenamenti che registri con MuW», l'eccezione del «+» nella privacy e due
+volte nell'aiuto): approvate dall'utente il 2026-11-23 («Sì, approvo»).
+La data della privacy resta il 23 novembre 2026, già messa lo stesso
+giorno da TASK-489 F (#1496). Il test del «+» di TASK-481 A in
+`documents.test.ts` chiede ora anche la frase a mano; un test nuovo
+controlla la riga e i traguardi nelle cinque lingue.
+
 ## Criteri di accettazione
 
 - [x] **0**: scelte dell'utente scritte qui e in ADR-0395; liste dei file approvate dal
       Coordinatore.
-- [ ] **A**: un `PUT /me/gym-sessions` con `source: "manual"` si salva e
+- [x] **A**: un `PUT /me/gym-sessions` con `source: "manual"` si salva e
       torna con `source`; serie `live: true`, pause, `plan` o fine dopo
       adesso danno 422; `PUT /me/activities` con `manual` dà 422 (test).
-- [ ] **A**: uno scritto a mano non alza i livelli, non ha `new_levels`,
+- [x] **A**: uno scritto a mano non alza i livelli, non ha `new_levels`,
       non entra in classifica, badge, concorso, gioco (test).
-- [ ] **A**: un allenamento senza `source` resta `muw`, come prima (test).
-- [ ] **A**: sul server col sì dell'utente.
-- [ ] **B**: la voce compare nel foglio con un account; il flusso salva e
+- [x] **A**: un allenamento senza `source` resta `muw`, come prima (test).
+- [x] **A**: sul server col sì dell'utente.
+- [x] **B**: la voce compare nel foglio con un account; il flusso salva e
       il post parte da «Everyone» con «Imported»; «Save» spento senza
       esercizi; «Pick a time before now.» (test).
-- [ ] **B**: schermate e quattro traduzioni approvate dall'utente;
-      privacy del punto 4 nelle cinque lingue e sul sito.
-- [ ] **B**: `tsc` e jest dei file toccati verdi, CI verde.
+- [x] **B**: schermate e quattro traduzioni approvate dall'utente
+      (2026-11-22 e 2026-11-23, anche il foglio del «+»);
+      privacy del punto 4 nelle cinque lingue e sul sito (#1505).
+- [x] **B**: `tsc` e jest dei file toccati verdi, CI verde.
 
 ## Fuori scope
 
@@ -250,4 +308,9 @@ site/privacy/**/index.html                        (rigenerate con make_privacy.m
 
 ## Esito
 
-*(si compila a fine task)*
+Done il 2026-11-24. Dal «+» del Feed, «Gym workout» scrive a mano un
+allenamento già fatto (a mano o «Da una scheda»), che si salva con
+`source: "manual"` e va nel Feed come «Imported», da «Everyone»; fuori da
+livelli, classifiche, badge e concorso. Parte 0 #1366, A #1371 (server,
+passo 17), B #1489, privacy #1505; OTA 25 di produzione; l'utente l'ha
+provato sul telefono: «Sì funziona».

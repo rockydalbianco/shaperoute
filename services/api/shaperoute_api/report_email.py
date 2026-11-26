@@ -21,7 +21,8 @@ comment out of comments.NOT_APART, a hidden group run out of
 group_runs.seen_sql (TASK-309), a hidden message out of messages.SEEN, a
 hidden item of a photo out of outfit_tags.tags_on_photos (TASK-394: only
 that item, never its post), a hidden item of gear out of gear._seen_sql
-(TASK-486), and a hidden member is kept apart from everyone as across a
+(TASK-486), a hidden group out of groups.seen_sql for all but its members
+(TASK-495), and a hidden member is kept apart from everyone as across a
 block (follows.apart_sql). Nothing is deleted. Of a private message
 (TASK-319) the email holds that message only, never the rest of its
 conversation. A message with a photo, a video or a drawing (TASK-333)
@@ -82,7 +83,14 @@ PAGE_HEADERS = {"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"}
 
 Action = Literal["hide", "show"]
 Kind = Literal[
-    "drawing", "comment", "user", "group_run", "message", "outfit_tag", "gear"
+    "drawing",
+    "comment",
+    "user",
+    "group_run",
+    "message",
+    "outfit_tag",
+    "gear",
+    "group",
 ]
 ACTIONS: tuple[Action, ...] = get_args(Action)
 KINDS: tuple[Kind, ...] = get_args(Kind)
@@ -95,6 +103,7 @@ NOUN: dict[Kind, str] = {
     "message": "message",
     "outfit_tag": "tagged item",
     "gear": "gear item",
+    "group": "group",
 }
 
 # The row of each kind, by the id a report keeps (a member: its public_id).
@@ -106,6 +115,7 @@ TABLE_OF: dict[Kind, tuple[str, str]] = {
     "message": ("messages", "id"),
     "outfit_tag": ("drawing_outfit_tags", "id"),
     "gear": ("gear", "id"),
+    "group": ("groups", "id"),
 }
 
 
@@ -362,6 +372,18 @@ def _group_run(conn: Connection[DictRow], target: UUID) -> DictRow | None:
     ).fetchone()
 
 
+def _group(conn: Connection[DictRow], target: UUID) -> DictRow | None:
+    """A group (TASK-495) and its admin, who it is reported of."""
+    return conn.execute(
+        "SELECT g.name, g.description, g.city, g.access, g.hidden_at,"
+        " ph.group_id IS NOT NULL AS has_photo, u.username, u.public_id"
+        " FROM groups g JOIN group_members gm ON gm.group_id = g.id"
+        " AND gm.role = 'admin' JOIN users u ON u.id = gm.user_id"
+        " LEFT JOIN group_photos ph ON ph.group_id = g.id WHERE g.id = %s",
+        (target,),
+    ).fetchone()
+
+
 def reported(conn: Connection[DictRow], report_id: UUID) -> Reported | None:
     """The report and its thing; None when either is gone already."""
     report = conn.execute(
@@ -399,6 +421,17 @@ def reported(conn: Connection[DictRow], report_id: UUID) -> Reported | None:
                 f"Where exactly: {row['meeting_note'] or '(none)'}",
                 f"Notes: {row['description'] or '(none)'}",
                 f"Starts: {starts_at.astimezone(UTC).strftime('%Y-%m-%d %H:%M UTC')}",
+            )
+    elif kind == "group":
+        row = _group(conn, target)
+        if row is not None:
+            lines = (
+                f"Name: {row['name']}",
+                f"Description: {row['description'] or '(none)'}",
+                f"City: {row['city']}",
+                f"Way in: {row['access']}",
+                f"Photo: {'yes' if row['has_photo'] else 'none'}",
+                "The admin is who it is reported of.",
             )
     elif kind == "outfit_tag":
         row = _outfit_tag(conn, target)

@@ -47,7 +47,17 @@ export type WidgetId =
   | "altitudeChart"
   // Part A1.
   | "aboveGround"
-  | "map";
+  | "map"
+  // Part E2.
+  | "nearestAirspace"
+  // Part D2.
+  | "nextTurnpoint"
+  | "glideToGoal"
+  | "startGate"
+  | "taskDistance"
+  // Part D3.
+  | "glideToTurnpoint"
+  | "nearestLanding";
 
 /** Each widget's name on screen, in the user's words of 2026-11-21. */
 export const WIDGET_NAME: Readonly<Record<WidgetId, string>> = {
@@ -70,6 +80,13 @@ export const WIDGET_NAME: Readonly<Record<WidgetId, string>> = {
   altitudeChart: tLater("Last 10 min"),
   aboveGround: tLater("Height above ground"),
   map: tLater("Map"),
+  nearestAirspace: tLater("Nearest airspace"),
+  nextTurnpoint: tLater("Next turnpoint"),
+  glideToGoal: tLater("Glide to goal"),
+  startGate: tLater("Start gate"),
+  taskDistance: tLater("Task distance"),
+  glideToTurnpoint: tLater("Glide to turnpoint"),
+  nearestLanding: tLater("Nearest landing"),
 };
 
 export const WIDGETS: readonly WidgetId[] = Object.keys(WIDGET_NAME) as WidgetId[];
@@ -86,6 +103,8 @@ export const WIDGET_UNIT_KIND: Readonly<Partial<Record<WidgetId, UnitKind>>> = {
   aboveGround: "altitude",
   thermalGain: "altitude",
   altitudeChart: "altitude",
+  glideToGoal: "altitude",
+  glideToTurnpoint: "altitude",
   vario: "vario",
   varioAvg: "vario",
   thermalAvg: "vario",
@@ -112,15 +131,17 @@ export type Cell = {
 
 export type Page = readonly Cell[];
 
-export type PresetId = "thermal" | "xc" | "minimal";
+export type PresetId = "thermal" | "xc" | "competition" | "minimal";
 
 export const PRESET_NAME: Readonly<Record<PresetId, string>> = {
   thermal: tLater("Thermal"),
   xc: tLater("XC"),
+  competition: tLater("Competition"),
   minimal: tLater("Minimal"),
 };
 
-export const PRESETS: readonly PresetId[] = ["thermal", "xc", "minimal"];
+/** «Competition» last: part D2 brought it, after the others. */
+export const PRESETS: readonly PresetId[] = ["thermal", "xc", "minimal", "competition"];
 
 const cell = (widget: WidgetId, col: number, row: number, w = 2, h = 1): Cell => ({
   widget,
@@ -161,7 +182,8 @@ export const PRESET_PAGES: Readonly<Record<PresetId, readonly Page[]>> = {
       cell("glide", 2, 2),
       cell("wind", 0, 3, 2, 2),
       cell("takeoff", 2, 3, 2, 2),
-      cell("track", 0, 5),
+      // Part D3: the nearest landing where «Track» stood.
+      cell("nearestLanding", 0, 5),
       cell("flightTime", 2, 5),
     ],
     [
@@ -179,6 +201,19 @@ export const PRESET_PAGES: Readonly<Record<PresetId, readonly Page[]>> = {
       cell("aboveGround", 0, 5),
       cell("groundSpeed", 2, 5),
     ],
+  ],
+  // Parts D2 and D3: the task and its glide.
+  competition: [
+    [
+      cell("nextTurnpoint", 0, 0, 4, 2),
+      cell("glideToTurnpoint", 0, 2),
+      cell("glideToGoal", 2, 2),
+      cell("taskDistance", 0, 3),
+      cell("startGate", 2, 3),
+      cell("varioAvg", 0, 4, 2, 2),
+      cell("altitude", 2, 4, 2, 2),
+    ],
+    [cell("map", 0, 0, 4, 5), cell("nearestAirspace", 0, 5, 4, 1)],
   ],
   minimal: [
     [
@@ -288,6 +323,9 @@ export type FlightPrefs = {
   current: number;
   look: FlightLook;
   units: FlightUnits;
+  /** «Competition» was put among the pilot's profiles (part D2), once:
+   * one they delete stays deleted. */
+  competitionAdded?: true;
 };
 
 export function defaultFlightPrefs(units: Units): FlightPrefs {
@@ -296,6 +334,23 @@ export function defaultFlightPrefs(units: Units): FlightPrefs {
     current: 0,
     look: "dark",
     units: defaultFlightUnits(units),
+    competitionAdded: true,
+  };
+}
+
+/** The pilot's profiles with «Competition» at the end, once, where there
+ * is room (part D2). */
+export function withCompetition(prefs: FlightPrefs): FlightPrefs {
+  if (prefs.competitionAdded === true) {
+    return prefs;
+  }
+  const has = prefs.profiles.some((profile) => profile.from === "competition");
+  const room = prefs.profiles.length < MAX_PROFILES;
+  return {
+    ...prefs,
+    profiles:
+      has || !room ? prefs.profiles : [...prefs.profiles, profileOf("competition")],
+    competitionAdded: true,
   };
 }
 
@@ -341,7 +396,7 @@ function isKeptB1(value: unknown): value is KeptB1 {
  * preset on screen; null when neither. */
 export function upgradeFlightPrefs(value: unknown): FlightPrefs | null {
   if (isFlightPrefs(value)) {
-    return value;
+    return withCompetition(value);
   }
   if (isKeptB1(value)) {
     return {
@@ -349,6 +404,7 @@ export function upgradeFlightPrefs(value: unknown): FlightPrefs | null {
       current: PRESETS.indexOf(value.preset),
       look: value.look,
       units: value.units,
+      competitionAdded: true,
     };
   }
   return null;

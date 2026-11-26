@@ -10,6 +10,10 @@ import { fontWeight, type Palette } from "../theme/tokens";
 import { courseOf, varioPieces } from "./flightMapData";
 import { buildFlightMapPage, parseFlightMapMessage } from "./flightMapPage";
 import { setFlightMapPrefs, useFlightMapPrefs } from "./flightMapPrefs";
+import { addManualWaypoint, useManualWaypoints } from "./manualWaypoints";
+import { MapPointSheet } from "./MapPointSheet";
+import { waypointFeatures } from "./waypointMapData";
+import { useWaypoints } from "./waypointStore";
 
 /**
  * The «Map» widget of the flight screen (TASK-479 part A1, ADR-0388): the
@@ -17,7 +21,8 @@ import { setFlightMapPrefs, useFlightMapPrefs } from "./flightMapPrefs";
  * second and the coloured track once every 5 s, so the phone does not
  * spend itself on the map. Two buttons on it, when it is tall enough:
  * «3D»/«2D» and the way it turns, heading up or north up; the choice is
- * kept and is every map widget's.
+ * kept and is every map widget's. The airspaces of the pilot's file near
+ * them go with the track (part E2).
  */
 
 /** The pilot's place goes to the page at most this often, ms. */
@@ -44,6 +49,11 @@ type Props = {
   circling: boolean;
   palette: Palette;
   height: number;
+  /** The pilot's airspaces near them, as the page draws them (part E2);
+   * null without a file. Sent with the track. */
+  airspace?: unknown;
+  /** The pilot's task, as the page draws it (part D2); null without one. */
+  task?: unknown;
 };
 
 function call(view: WebView | null, script: string): void {
@@ -58,6 +68,8 @@ export function FlightMap({
   circling,
   palette,
   height,
+  airspace = null,
+  task = null,
 }: Props) {
   const language = useLanguage();
   const page = useMemo(
@@ -116,8 +128,36 @@ export function FlightMap({
         view.current,
         `window.flight.setTrack(${JSON.stringify({ type: "FeatureCollection", features })});`,
       );
+      call(
+        view.current,
+        `window.flight.setAirspace(${JSON.stringify(
+          airspace ?? { type: "FeatureCollection", features: [] },
+        )});`,
+      );
+      call(
+        view.current,
+        `window.flight.setTask(${JSON.stringify(
+          task ?? { type: "FeatureCollection", features: [] },
+        )});`,
+      );
     }
-  }, [ready, last, track, takeoffMs, headingDeg, circling]);
+  }, [ready, last, track, takeoffMs, headingDeg, circling, airspace, task]);
+
+  // The pilot's waypoints (part D5): the file's and their own, drawn when
+  // either changes; a long press on the map offers to add one.
+  const fromFile = useWaypoints();
+  const manual = useManualWaypoints();
+  const [pressed, setPressed] = useState<LatLon | null>(null);
+  useEffect(() => {
+    if (ready) {
+      call(
+        view.current,
+        `window.flight.setWaypoints(${JSON.stringify(
+          waypointFeatures(fromFile?.waypoints ?? [], manual),
+        )});`,
+      );
+    }
+  }, [ready, fromFile, manual]);
 
   const buttons = height >= BUTTONS_MIN_HEIGHT;
   const button = [
@@ -125,7 +165,15 @@ export function FlightMap({
     { backgroundColor: palette.surfaceRaised, borderColor: palette.borderStrong },
   ];
   return (
-    <View style={[styles.box, { borderColor: palette.border }]} testID="flight-map">
+    <View
+      style={[styles.box, { borderColor: palette.border }]}
+      testID="flight-map"
+      // A long press on the map marks a place (part D5): the widget takes
+      // the touch, so the flight screen's own long press does not open its
+      // editor as well (seen on the simulator, 2026-11-26). The editor is
+      // still a long press on any other widget, or «Edit layout».
+      onStartShouldSetResponder={() => true}
+    >
       <WebView
         ref={view}
         style={[styles.page, { backgroundColor: palette.map.background }]}
@@ -146,8 +194,23 @@ export function FlightMap({
             setLoaded(true);
           } else if (message?.type === "fps") {
             lastFps = message.fps;
+          } else if (message?.type === "press") {
+            setPressed(message.point);
           }
         }}
+      />
+      <MapPointSheet
+        point={pressed}
+        palette={palette}
+        onWaypoint={(point) => {
+          addManualWaypoint(point, false);
+          setPressed(null);
+        }}
+        onLanding={(point) => {
+          addManualWaypoint(point, true);
+          setPressed(null);
+        }}
+        onClose={() => setPressed(null)}
       />
       {loaded ? null : (
         <View

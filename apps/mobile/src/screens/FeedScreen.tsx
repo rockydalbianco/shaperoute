@@ -23,6 +23,7 @@ import { useFeedAds } from "../ads/useFeedAds";
 import { FeedContest } from "../contest/FeedContest";
 import { useContest } from "../contest/useContest";
 import { AddToFeed } from "../feed/AddToFeed";
+import { onPlanPostsSent, usePlanPostOutbox } from "../feed/PlanPostFlow";
 import { FeedAd } from "../feed/FeedAd";
 import { FeedMapShooter } from "../feed/FeedMaps";
 import { drawingHeight, FeedPost } from "../feed/FeedPost";
@@ -59,6 +60,8 @@ import { color, font, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tok
 import { EmptyState } from "../ui/EmptyState";
 import { HEART } from "../ui/outlines";
 import { Tap } from "../ui/Tap";
+import { useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 
 type Props = {
@@ -69,6 +72,9 @@ type Props = {
   /** «Record now» of the «+» (TASK-481): a recording starts, as from
    * «Draw»; without it the «+» has no «Record now». */
   onRecord?: () => void;
+  /** «Log in» of the empty «All» without an account (TASK-509): the
+   * profile's page opens, where one logs in; without it, no button. */
+  onLogIn?: () => void;
   /** «Feed» is the page on the screen. Built behind «Draw» at the start, it
    * asks for no ad (and no consent), and no drawings, until it is
    * (TASK-235, TASK-118). */
@@ -127,10 +133,13 @@ export function FeedScreen({
   onOpen,
   onOpenMuw,
   onRecord,
+  onLogIn,
   active = true,
   ads = feedAds(),
 }: Props) {
   const insets = useSafeAreaInsets();
+  // The lists go on under the tab bar: its room at their end (TASK-469 B2a).
+  const barRoom = useTabBarRoom();
   const { width } = useWindowDimensions();
   const cardWidth = width - 2 * space.lg;
   const [chosen, setChosen] = useState(loadFeedTab);
@@ -163,14 +172,24 @@ export function FeedScreen({
   const withTabs = withFollowing || withStyle;
   // The «+» of the bar: an account. «Photos only» needs no file picker.
   const withAdd = signedIn;
-  // The posts of photos only left on the phone go from here, the page
-  // always built; once one reaches the API the tabs read again.
+  // The posts of photos only and the gym plans posted (TASK-485) left on
+  // the phone go from here, the page always built; once one reaches the
+  // API the tabs read again.
   usePhotoPostOutbox();
+  usePlanPostOutbox();
   const refreshAll = all.refresh;
   const refreshFollowing = following.refresh;
   useEffect(
     () =>
       onPhotoPostsSent(() => {
+        refreshAll();
+        refreshFollowing();
+      }),
+    [refreshAll, refreshFollowing],
+  );
+  useEffect(
+    () =>
+      onPlanPostsSent(() => {
         refreshAll();
         refreshFollowing();
       }),
@@ -210,7 +229,7 @@ export function FeedScreen({
     active,
     ads,
     cardWidth,
-    insetBottom: insets.bottom,
+    insetBottom: insets.bottom + barRoom,
     openPost: setPage,
     onOpen,
   };
@@ -236,6 +255,10 @@ export function FeedScreen({
               <AddToFeed
                 onRecord={onRecord}
                 onSleepPost={() => {
+                  refreshAll();
+                  refreshFollowing();
+                }}
+                onActivityPosted={() => {
                   refreshAll();
                   refreshFollowing();
                 }}
@@ -274,6 +297,7 @@ export function FeedScreen({
                 outline={HEART}
                 title={feedTabName("all")}
                 message={t("Log in from Profile to see the activities.")}
+                action={onLogIn && { label: t("Log in"), onPress: onLogIn }}
                 testID="feed-log-in"
               />
             ) : all.shown.kind === "ready" ? (
@@ -281,6 +305,8 @@ export function FeedScreen({
                 outline={HEART}
                 title={feedTabName("all")}
                 message={t("Nobody has published anything yet.")}
+                // The first thing to do about it (TASK-509): as the «+»'s.
+                action={onRecord && { label: t("Record now"), onPress: onRecord }}
                 testID="feed-no-posts-all"
               />
             ) : null
@@ -344,7 +370,7 @@ export function FeedScreen({
           <StyleLens
             visible={tab === "style"}
             cardWidth={cardWidth}
-            insetBottom={insets.bottom}
+            insetBottom={insets.bottom + barRoom}
           />
         )}
       </View>
@@ -442,10 +468,13 @@ function FeedList({
   );
   // Its tab touched again: back to the newest drawings (TASK-367).
   const scroll = useScrollToTopOnReselect<FlatList<Item>>(visible);
+  // The header turns to glass as the list scrolls (TASK-469 A5c-2).
+  const headerScroll = useHeaderScroll(visible);
   return (
     <View style={visible ? styles.list : styles.hidden}>
       <FlatList<Item>
         ref={scroll}
+        {...headerScroll}
         contentContainerStyle={[
           styles.content,
           { paddingBottom: insetBottom + space.xl },

@@ -3,7 +3,7 @@ import {
   COMMENT_MAX_LENGTH,
   type CommentReactionKind,
 } from "@shaperoute/shared-types";
-import { type RefObject, useEffect, useRef, useState } from "react";
+import { type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -22,7 +22,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { commentOf, commentTextProblem } from "../api/comments";
 import { t, tPlural } from "../i18n";
-import { Avatar } from "../profile/Avatar";
 import {
   color,
   fontSize,
@@ -33,9 +32,11 @@ import {
 } from "../theme/tokens";
 import { Cascade } from "../ui/Cascade";
 import { IslandLayer } from "../ui/IslandLayer";
+import { useGlassSheet } from "../ui/SheetGlass";
 import { SheetModal } from "../ui/SheetModal";
 import { useBlockedNow } from "./blockedNow";
 import { CommentActions } from "./CommentActions";
+import { CommentAvatar } from "./CommentAvatar";
 import { useCommentChoices } from "./commentChoices";
 import { useCommentsDoor } from "./commentsDoor";
 import { hasThreads, hiddenReplies, shownReplies } from "./commentThreads";
@@ -109,6 +110,8 @@ type SheetProps = {
  */
 export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const [glassSheet, glassBack] = useGlassSheet();
   const { height } = useWindowDimensions();
   const typing = useKeyboardShown();
   const [text, setText] = useState("");
@@ -219,12 +222,14 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
         <View
           style={[
             styles.sheet,
+            glassSheet,
             {
               height: Math.round(height * SHEET_SHARE),
               paddingBottom: (typing ? 0 : insets.bottom) + space.sm,
             },
           ]}
         >
+          {glassBack}
           <View style={styles.header}>
             <Text style={styles.title} accessibilityRole="header">
               {t("Comments")}
@@ -485,9 +490,17 @@ function CommentRow({
   const door = useCommentsDoor();
   const [photo, setPhoto] = useState<string | null>(null);
   const publicId = comment.author.public_id;
+  // Where the picture is read comes with the comment (TASK-497): an address
+  // the phone keeps, or null without a picture. Only an API from before
+  // leaves it out, and then the picture is the profile's, as it was.
+  const address = comment.author.photo;
+  const { photoOf, pictureAt } = door;
   useEffect(() => {
+    if (address !== undefined) {
+      return;
+    }
     let current = true;
-    void door.photoOf(publicId).then((uri) => {
+    void photoOf(publicId).then((uri) => {
       if (current) {
         setPhoto(uri);
       }
@@ -495,7 +508,11 @@ function CommentRow({
     return () => {
       current = false;
     };
-  }, [door, publicId]);
+  }, [address, photoOf, publicId]);
+  const source = useMemo(
+    () => (typeof address === "string" ? (pictureAt?.(address) ?? null) : null),
+    [address, pictureAt],
+  );
   const ago = agoLabel(comment.created_at);
   const actions = actionsOf(comment, me);
   // Blocked while the sheet is open, as its card in «Feed»: no way to them
@@ -503,7 +520,14 @@ function CommentRow({
   const blocked = useBlockedNow(publicId);
   const profileLabel = t("{name}'s profile", { name: comment.author.username });
   const side = reply ? REPLY_AVATAR_SIDE : AVATAR_SIDE;
-  const picture = <Avatar name={comment.author.username} size={side} photo={photo} />;
+  const picture = (
+    <CommentAvatar
+      name={comment.author.username}
+      size={side}
+      source={source}
+      photo={address === undefined ? photo : null}
+    />
+  );
   const mention =
     comment.mention === undefined || comment.mention === null
       ? ""

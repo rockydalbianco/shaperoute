@@ -1437,7 +1437,7 @@ TASK-467 E1).
   controllati da `gear.py` e non da un `CHECK`: uno sport nuovo non chiede
   una migrazione qui.
 - Il legame coi capi taggati (`drawing_outfit_tags.gear_id`) arriva con
-  la parte F, in una migrazione sua, insieme a `outfit_tags.py`.
+  la parte F, nella migrazione `0085_outfit_gear_link.sql` (sotto).
 - **`reports.kind`** con `gear`. Nessuna riga di prima cambia, nessun
   backfill. Test in `test_gear.py` e `test_moderation.py`.
 
@@ -1459,6 +1459,83 @@ una copia della scheda**:
   (`photo_posts.PHOTO_POST_SQL`). Una richiesta di copia dei dati
   comprende le schede pubblicate: sono righe di `drawings`. Nessuna riga di
   prima cambia, nessun backfill. Test in `test_plan_posts.py`.
+
+Migrazione `0085_outfit_gear_link.sql` (TASK-486 parte F, ADR-0393,
+`API.md` «Outfit tags»; numero del Coordinatore). Un capo taggato su una
+foto può essere un attrezzo del suo proprietario (la scelta 3
+dell'utente):
+
+- **`drawing_outfit_tags.gear_id`** (`uuid`, facoltativo) con la chiave
+  esterna su `gear` `ON DELETE SET NULL`: cancellato l'attrezzo, il capo
+  resta con le sue parole, senza il legame. Indice parziale su `gear_id`.
+  Nessuna riga di prima cambia, nessun backfill. Test in
+  `test_outfit_gear.py`.
+
+Migrazione `0086_flying_sites.sql` (TASK-493 parte A, ADR-0400, `API.md`
+«Flying sites»; numero del Coordinatore):
+
+- **`flying_sites`**: i decolli e gli atterraggi del volo libero da
+  OpenStreetMap (ODbL), una riga per oggetto OSM e tipo.
+  - **Identità:** `id` (generato, stabile da un'estrazione all'altra),
+    `osm_type` (`node` o `way`), `osm_id`, `kind` (`takeoff` o `landing`),
+    unici insieme: un oggetto decollo e atterraggio è due righe.
+  - **Dove:** `point` (`geography(Point)`, indice GIST per il riquadro e
+    per i vicini); una via è il centro dei suoi nodi.
+  - **Altro:** `name` (1–120), `ele_m` (il tag `ele` in metri, −500–9000),
+    `orientation` (i punti cardinali di `free_flying:site_orientation`,
+    vuoto se OSM non lo dice), `official`, `updated_at`.
+- **Chi la scrive:** solo l'estrazione (`flying_sites_extract.py`), che
+  rimpiazza ogni riga per oggetto e tipo. Con `--clean` toglie i siti non
+  riscritti in quel giro.
+- **Nessun dato degli utenti**: le stesse righe per tutti. Lo storico dei
+  voli è la parte B. Test in `test_flying_sites.py` e
+  `test_flying_sites_extract.py`.
+
+Migrazione `0087_groups.sql` (TASK-495 parte A, ADR-0402, `API.md`
+«Groups», `GRUPPI.md` §12; numero del Coordinatore, dopo la 0086 di
+TASK-493). **I gruppi per uscire insieme**:
+
+- **`groups`**: nome (1–40), descrizione (al più 500), `sports` (`text[]`
+  da 1 a 3 nomi di `runs.activity`, controllati da `groups.py`: uno sport
+  nuovo non vuole una migrazione), `city`, `area` (`geography(Point)`
+  arrotondato da `groups.py` a circa un chilometro, indice GIST per
+  Explore), `access` (`public`, `request`, `invite`), `hidden_at` dal link
+  di una segnalazione.
+- **`group_photos`**: la foto, come `profile_photos.square_jpeg` la fa.
+- **`group_members`**: chi è dentro, col ruolo (`admin`, `coadmin`,
+  `member`), «Mute» (`muted`), da quando è entrato (`joined_at`) e da
+  quando ha il ruolo (`role_since`: il co-admin più vecchio diventa
+  admin). **Un solo admin per gruppo**: un indice unico parziale
+  (`WHERE role = 'admin'`) tiene fuori il secondo; `groups.py` tiene
+  dentro il primo.
+- **`group_requests`** (chi ha chiesto) e **`group_invites`** (chi è
+  invitato e da chi).
+- Tutto va con l'account e col gruppo (`ON DELETE CASCADE`); prima della
+  cancellazione di un account il suo ruolo di admin passa
+  (`groups.before_account_delete`).
+- **`reports.kind`** con `group`. Nessuna riga di prima cambia, nessun
+  backfill. Test in `test_groups.py`.
+
+Migrazione `0088_run_previews.sql` (TASK-501 parte A, ADR-0249; numero
+del Coordinatore). **Le anteprime di una corsa**, come quella dei disegni
+della 0022:
+
+- **`runs.track_preview`** e **`runs.route_preview`**: colonne generate
+  (`GENERATED ALWAYS AS … STORED`, `geometry(LineString, 4326)`) dalla
+  funzione `drawing_preview` della 0022, la prima sulla traccia senza gli
+  orari (`ST_Force2D(track)`), la seconda sul percorso pianificato. Al più
+  64 punti scelti per indice come `recommended.preview`, primo e ultimo
+  compresi; `NULL` senza traccia (un allenamento in palestra) e senza
+  percorso. PostgreSQL le rifà a ogni scrittura della linea: nessun codice
+  le scrive.
+- **`GET /me/activities` e la risposta di un salvataggio leggono solo
+  quelle** (`activities.LISTED_COLUMNS`); la corsa aperta
+  (`GET /me/activities/{id}`) legge le linee intere come prima
+  (`DETAIL_COLUMNS`). Le anteprime in risposta sono le stesse di prima,
+  punto per punto (`test_activity_previews.py`).
+- **La migrazione riscrive `runs`** una volta, per le corse già salvate,
+  tenendo la tabella chiusa finché dura: i tempi misurati stanno in
+  `tasks/TASK-501.md`.
 
 ## Come si memorizza una traccia
 

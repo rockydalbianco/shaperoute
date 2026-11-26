@@ -57,6 +57,9 @@ export const IT: Table = {
   "Try again": "Riprova",
   "No activities yet. Save a run when you finish it, and it is kept here.":
     "Ancora nessuna attività. Salva una corsa quando la finisci e la ritrovi qui.",
+  "No activities yet": "Ancora nessuna attività",
+  "When you finish an activity and save it, you find it here.":
+    "Quando finisci un'attività e la salvi, la ritrovi qui.",
   "{when}, {where}, {facts}, public, open on the map":
     "{when}, {where}, {facts}, pubblica, apri sulla mappa",
   "{when}, {where}, {facts}, open on the map":
@@ -176,8 +179,9 @@ export const IT: Table = {
   "Remove {title} from favorites": "Togli {title} dai preferiti",
   "Loading your favorites…": "Carico i tuoi preferiti…",
   "Your favorites could not load.": "Non è stato possibile caricare i tuoi preferiti.",
-  "No favorites yet. Tap {heart} on a route on the map to keep it here.":
-    "Ancora nessun preferito. Tocca {heart} su un percorso sulla mappa per tenerlo qui.",
+  "No favorites yet": "Ancora nessun preferito",
+  "Tap {heart} on a route on the map to keep it here.":
+    "Tocca {heart} su un percorso sulla mappa per tenerlo qui.",
 
   // src/favorites/favoriteRoute.ts
   Route: "Percorso",
@@ -241,6 +245,38 @@ export const IT: Table = {
   Swan: "Cigno",
   Windmill: "Mulino a vento",
   "Wine glass": "Calice",
+  // TASK-516 (ADR-0411)
+  Football: "Pallone",
+  Bell: "Campana",
+  "Candy cane": "Bastoncino di zucchero",
+  Colosseum: "Colosseo",
+  Croissant: "Cornetto",
+  Dolphin: "Delfino",
+  Dome: "Cupola",
+  "Easter egg": "Uovo di Pasqua",
+  Flower: "Fiore",
+  "Fox head": "Testa di volpe",
+  Gift: "Regalo",
+  Infinity: "Infinito",
+  "Light bulb": "Lampadina",
+  Medal: "Medaglia",
+  Mountain: "Montagna",
+  Owl: "Gufo",
+  Padlock: "Lucchetto",
+  "Peace sign": "Simbolo della pace",
+  Penguin: "Pinguino",
+  "Pizza slice": "Fetta di pizza",
+  "Tennis racket": "Racchetta",
+  Reindeer: "Renna",
+  "Santa hat": "Cappello di Babbo Natale",
+  Scooter: "Scooter",
+  Snowflake: "Fiocco di neve",
+  Snowman: "Pupazzo di neve",
+  "Christmas stocking": "Calza di Natale",
+  Strawberry: "Fragola",
+  "Triumphal arch": "Arco di trionfo",
+  Turtle: "Tartaruga",
+  Umbrella: "Ombrello",
 
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "PAESI VICINI",
@@ -600,6 +636,8 @@ export const IT: Table = {
   "Long routes take longer: up to a few minutes.":
     "I percorsi lunghi richiedono più tempo: fino a qualche minuto.",
   "Draw route": "Disegna il percorso",
+  "Choose a start first": "Scegli prima la partenza",
+  "Choose what to draw first": "Scegli prima cosa disegnare",
   Start: "Parti",
   "Preparing GPX…": "Preparo il GPX…",
   "Export GPX": "Esporta GPX",
@@ -717,6 +755,9 @@ export const IT: Table = {
   "Hide the picture": "Nascondi la foto",
   "Show the picture": "Mostra la foto",
   "Edit the outline": "Modifica il contorno",
+  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
+  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
+    "Le linee gialle sono quello che il percorso disegnerà: ogni parte per conto suo, andando dall'una all'altra senza disegnare. Se non somigliano al soggetto, nemmeno il percorso gli somiglierà: prova un'altra foto.",
   "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
     "Funziona meglio un solo soggetto su uno sfondo uniforme: un disegno, un logo, un oggetto su un tavolo vuoto. Il percorso ne segue la linea esterna. Fino a 4 soggetti separati vengono uniti in una linea sola.",
   "Tracing the outline…": "Traccio il contorno…",
@@ -1390,8 +1431,18 @@ export const IT: Table = {
   Beginner: "Principiante",
   // src/gym/SportsDoor.tsx, bodyweight.ts, GymPlanWizard.tsx (TASK-461 A2, approved 2026-11-11)
   "What do you want to train?": "Cosa vuoi allenare?",
-  "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.":
-    "Scegline almeno due: un piano mescola sempre due sport. Poi ti guidiamo in 5 passi.",
+  "Choose one or more. Then we guide you in 5 steps.":
+    "Scegline uno o più. Poi ti guidiamo in 5 passi.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
+  Table: "Tabella",
+  "No exercises yet.": "Ancora nessun esercizio.",
+  "Change week {n}": "Cambia la settimana {n}",
+  "kg · touch a week to change it": "kg · tocca una settimana per cambiarla",
+  // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; approved by the user on 2026-11-23)
+  Tomorrow: "Domani",
+  "+ 1 more": "+ 1 altro",
+  "+ {n} more": "+ altri {n}",
+  "This week: {done} of {total} done": "Questa settimana: {done} di {total} fatti",
   "With weights and machines": "Con pesi e macchine",
   Bodyweight: "Corpo libero",
   "At home or in the park, no equipment": "A casa o al parco, senza attrezzi",
@@ -1640,6 +1691,14 @@ export const IT: Table = {
   Lisbon: "Lisbona",
   Prague: "Praga",
   Berlin: "Berlino",
+  // src/explore/presets.ts: the cities to tap in «Explore» (TASK-508)
+  "New York": "New York",
+  Tokyo: "Tokyo",
+  Milan: "Milano",
+  Torino: "Torino",
+  Dubai: "Dubai",
+  Sydney: "Sydney",
+  "San Francisco": "San Francisco",
   "Getting directions…": "Prendo le indicazioni…",
   CITY: "CITTÀ",
   "Type a city or a place": "Scrivi una città o un posto",
@@ -1755,6 +1814,8 @@ export const IT: Table = {
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
     "Le notifiche push ti avvisano subito di richieste di follow, reazioni, commenti e tag. Le Notifiche email mandano le stesse novità in una email al giorno al massimo. Email quando sono via: una email se non apri MuW per 2 settimane.",
+  "Push notifications are off. Tap to turn them on.":
+    "Le notifiche push sono spente. Tocca per accenderle.",
   "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.":
     "Le notifiche di MuW sono spente su questo telefono. Consentile nelle Impostazioni per attivarle.",
 
@@ -2370,8 +2431,9 @@ export const IT: Table = {
   "Messages, {count} waiting": "Messaggi, {count} in attesa",
   "Message requests": "Richieste di messaggio",
   "Message requests, {count} waiting": "Richieste di messaggio, {count} in attesa",
-  "No messages yet. Open someone's profile and tap Message to write to them.":
-    "Ancora nessun messaggio. Apri il profilo di qualcuno e tocca Messaggio per scrivergli.",
+  "No messages yet": "Ancora nessun messaggio",
+  "Open someone's profile and tap Message to write to them.":
+    "Apri il profilo di qualcuno e tocca Messaggio per scrivergli.",
   "No message requests.": "Nessuna richiesta di messaggio.",
   "You: {text}": "Tu: {text}",
   "{name}, new message: {text}": "{name}, nuovo messaggio: {text}",
@@ -2379,7 +2441,6 @@ export const IT: Table = {
   "Message {name}": "Scrivi a {name}",
 
   // src/messages/ConversationScreen.tsx, MessageSheet.tsx (TASK-319)
-  "No messages yet.": "Ancora nessun messaggio.",
   "Show earlier messages": "Mostra i messaggi precedenti",
   "Touch and hold to delete it": "Tieni premuto per eliminarlo",
   "Touch and hold to report it": "Tieni premuto per segnalarlo",
@@ -2389,6 +2450,20 @@ export const IT: Table = {
   "{name} gets this as a message request. You can send one message until they accept it.":
     "{name} la riceve come richiesta di messaggio. Finché non la accetta puoi mandare un solo messaggio.",
   "Write a message…": "Scrivi un messaggio…",
+  // src/screens/SignInScreen.tsx (TASK-458: the eye of the password; what VoiceOver says)
+  "Show password": "Mostra la password",
+  "Hide password": "Nascondi la password",
+  // src/messages/ConversationScreen.tsx (TASK-458: a conversation with nothing in it yet, the user's choice of 2026-11-23)
+  "Say hi to {name}.": "Saluta {name}.",
+  "Hi {name}!": "Ciao {name}!",
+  "I like your drawings": "Mi piacciono i tuoi disegni",
+  "Shall we run together?": "Corriamo insieme?",
+  "Writes it in the box. Nothing is sent yet.":
+    "Lo scrive nella casella. Non viene ancora inviato niente.",
+  "Photos, videos and drawings come after that.": "Foto, video e disegni vengono dopo.",
+  // src/tabs/MessagesPage.tsx, src/messages/NewMessage.tsx (TASK-458: «New message» from the list)
+  "New message": "Nuovo messaggio",
+  "Search someone by name to write to them.": "Cerca qualcuno per nome per scrivergli.",
   "Delete this message for both of you?": "Eliminare questo messaggio per tutti e due?",
   "Report this message": "Segnala questo messaggio",
   // src/explore/ExploredCard.tsx, social/DrawingCard.tsx, mapdraw/DrawOnMap.tsx,
@@ -2857,6 +2932,16 @@ export const IT: Table = {
   "Add to Feed": "Aggiungi al Feed",
   "Record now": "Registra ora",
   "Start an activity now": "Inizia un'attività adesso",
+  // src/feed/addToFeedEntries.ts and PastActivityPost.tsx (TASK-481 part F:
+  // «Already recorded», an activity of «My activities» posted from the «+»).
+  "Already recorded": "Già registrata",
+  "Post an activity from My activities": "Pubblica un'attività da Le mie attività",
+  "Your activities not in the Feed yet, the latest first.":
+    "Le tue attività non ancora nel Feed, dalla più recente.",
+  "All your activities are in the Feed already.":
+    "Tutte le tue attività sono già nel Feed.",
+  "Choose «Everyone» or «Followers» and it goes in the Feed.":
+    "Scegli «Tutti» o «Follower» e va nel Feed.",
   // src/imports/PhotoPostForm.tsx, AddPastActivity.tsx and
   // src/feed/PhotoPostSettings.tsx (TASK-312 part C: posts of photos only;
   // the first three approved by the user, 2026-11-21, the deletion's with
@@ -3034,8 +3119,6 @@ export const IT: Table = {
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Modifica schermata",
   "Page {n} of {count}": "Pagina {n} di {count}",
-  "Touch a widget to move it, size it or take it away.":
-    "Tocca un widget per spostarlo, ridimensionarlo o toglierlo.",
   Size: "Dimensione",
   Unit: "Unità",
   "Add page": "Aggiungi pagina",
@@ -3057,6 +3140,12 @@ export const IT: Table = {
     "Questa schermata viene da un MuW più nuovo: aggiorna l'app.",
   "MuW could not read this file.": "MuW non è riuscita a leggere questo file.",
   "MuW could not share the file.": "MuW non è riuscita a condividere il file.",
+  // src/mapdraw/ (TASK-347 part C: a drawing anchored to the roads; texts approved by the user on 2026-11-22)
+  "Snapping to roads…": "Aggancio alle strade…",
+  "Roads follow your drawing: {percent}%":
+    "Le strade seguono il tuo disegno: {percent}%",
+  "No roads here: this line stays as you drew it.":
+    "Qui non ci sono strade: la linea resta come l'hai disegnata.",
   // TASK-483 B: the history of an exercise at the gym.
   "Last time · {day}": "L'ultima volta · {day}",
   History: "Storico",
@@ -3156,6 +3245,25 @@ export const IT: Table = {
   "Links and special characters can't be used here.":
     "Qui non si possono usare link né caratteri speciali.",
 
+  // src/gym/GymByHand.tsx (TASK-484 B: a gym workout written by hand)
+  "Gym workout": "Allenamento in palestra",
+  Started: "Iniziato alle",
+  Duration: "Durata",
+  "Pick a time before now.": "Scegli un orario prima di adesso.",
+  "From a plan": "Da una scheda",
+  "A workout you already did, written by hand":
+    "Un allenamento già fatto, scritto a mano",
+  "Workouts written by hand don't count for Play, contests, levels or the leaderboard.":
+    "Gli allenamenti scritti a mano non contano per il gioco, i concorsi, i livelli e la classifica.",
+  // src/gear/GearPicker.tsx, ActivityGear.tsx (TASK-486 part C), approved by the user on 2026-11-23
+  "Up to {count} items on an activity.": "Fino a {count} attrezzi su un'attività.",
+  "This activity is still on its way. Try again in a moment.":
+    "Questa attività sta ancora arrivando. Riprova tra poco.",
+  // src/gear/GearTagChoice.tsx (TASK-486 part F), approved by the user on 2026-11-23
+  "From my gear": "Dalla mia attrezzatura",
+
+  // src/feed/addToFeedEntries.ts (TASK-485 B2, English approved 2026-11-21)
+  "Share one of your gym plans": "Condividi uno dei tuoi piani di palestra",
   // src/feed/PlanPostFlow.tsx, PlanPostTile.tsx, PlanPostDetail.tsx (TASK-485 B, English approved 2026-11-21)
   "Choose a plan": "Scegli un piano",
   "No plans yet: make one in Gym › Plans.":
@@ -3213,4 +3321,345 @@ export const IT: Table = {
   "Next week is the lighter one, to recover.":
     "La prossima è la settimana più leggera, per recuperare.",
   "How did the plan feel?": "Come ti è sembrata la scheda?",
+  // src/air/ (TASK-479 part E1: the pilot's airspace file; notices 3 and 4 approved by the user on 2026-11-21, the other texts on 2026-11-23)
+  "No airspace loaded. MuW does not include airspace data.":
+    "Nessuno spazio aereo caricato. MuW non include dati di spazi aerei.",
+  "Data loaded by you: check the AIP and NOTAMs before you fly. · {file} · loaded {date}":
+    "Dati caricati da te: verifica AIP e NOTAM prima di volare. · {file} · caricato il {date}",
+  Airspace: "Spazi aerei",
+  "Airspaces: {count}": "Spazi aerei: {count}",
+  "Lines not read: {n}": "Righe non lette: {n}",
+  "This file has no airspace MuW can read.":
+    "In questo file non ci sono spazi aerei che MuW sa leggere.",
+  // src/route/warnings.ts (TASK-347 part C3: an anchored drawing longer or shorter on the roads; texts to approve)
+  "On the roads your drawing is {share}% longer: {distance}. It stays where you drew it, at the same size.":
+    "Sulle strade il tuo disegno è più lungo del {share}%: {distance}. Resta dove l'hai disegnato, della stessa grandezza.",
+  "On the roads your drawing is {share}% shorter: {distance}. It stays where you drew it, at the same size.":
+    "Sulle strade il tuo disegno è più corto del {share}%: {distance}. Resta dove l'hai disegnato, della stessa grandezza.",
+  // TASK-491 Coach: coach/CoachPage.tsx, coach/TipCard.tsx, coach/tipText.ts, coach/nextTime.ts.
+  Coach: "Coach",
+  "Based on your last 4 weeks": "In base alle ultime 4 settimane",
+  "Apply to plan": "Applica alla scheda",
+  "Add to {day}": "Aggiungi a {day}",
+  "Create an account to get tips from your workouts":
+    "Crea un account per avere consigli dai tuoi allenamenti",
+  "Log a few workouts and your tips will show up here":
+    "Registra qualche allenamento e qui arriveranno i consigli",
+  "Go to your workouts": "Vai agli allenamenti",
+  "Tips are general, not medical advice. If something hurts, stop and ask a professional.":
+    "Sono consigli generali, non pareri medici. Se senti dolore, fermati e chiedi a un professionista.",
+  "{exercise}: {kg} kg": "{exercise}: {kg} kg",
+  "You did all your reps at {old} kg twice in a row. Add weight and start again from {min} reps.":
+    "Hai fatto tutte le ripetizioni con {old} kg due volte di fila. Aumenta il peso e riparti da {min} ripetizioni.",
+  "{exercise}: one more rep": "{exercise}: una ripetizione in più",
+  "You did all your reps twice in a row. Add one rep to each set.":
+    "Hai fatto tutte le ripetizioni due volte di fila. Aggiungi una ripetizione a ogni serie.",
+  "You stopped below {min} reps twice in a row. A little less weight helps you finish your sets.":
+    "Ti sei fermato sotto le {min} ripetizioni due volte di fila. Con un po' meno peso finisci le serie.",
+  "{exercise} has stalled": "{exercise} è fermo",
+  "Your estimated max hasn't moved in 3 workouts. Try {min2}–{max2} reps for the next weeks.":
+    "Il massimale stimato non si muove da 3 allenamenti. Prova {min2}–{max2} ripetizioni per le prossime settimane.",
+  "Add {n} sets for {muscle}": "Aggiungi {n} serie per {muscle}",
+  "{muscle} got {sets} sets this week. Around 10 a week builds muscle better.":
+    "{muscle}: {sets} serie questa settimana. Con circa 10 a settimana il muscolo cresce meglio.",
+  "A lot for {muscle}": "Tanto per {muscle}",
+  "{muscle} got {sets} sets this week. Above 20 adds tiredness more than muscle.":
+    "{muscle}: {sets} serie questa settimana. Oltre 20 aggiungono più stanchezza che muscolo.",
+  "Train {muscle} twice a week": "Allena {muscle} due volte a settimana",
+  "All your {muscle} sets are on {day}. Split them over two days for more growth.":
+    "Tutte le serie per {muscle} sono di {day}. Dividile su due giorni per crescere di più.",
+  "{muscle} is still recovering": "{muscle} si sta ancora riprendendo",
+  "You trained it hard {hours} hours ago. Today pick another muscle, or keep it light.":
+    "L'hai allenato forte {hours} ore fa. Oggi scegli un altro muscolo, o vai leggero.",
+  "Keep {km} km this week": "Tieni {km} km questa settimana",
+  "Last week you ran {pct}% more than your usual. Hold the distance before adding more.":
+    "La settimana scorsa hai corso il {pct}% più del solito. Tieni la distanza prima di aumentare.",
+  "Next run: slow and long": "Prossima corsa: lenta e lunga",
+  "Only {pct}% of your running was easy. Most of it should feel easy, around 80%.":
+    "Solo il {pct}% della tua corsa era facile. Quasi tutta dovrebbe esserlo, circa l'80%.",
+  "Maybe a lighter week": "Forse una settimana più leggera",
+  "This week's load is high compared with the last month.":
+    "Il carico di questa settimana è alto rispetto all'ultimo mese.",
+  "Time for an easy week": "È il momento di una settimana facile",
+  "{weeks} weeks of steady work. Do about half the sets this week, same weights.":
+    "{weeks} settimane di lavoro costante. Questa settimana fai circa metà delle serie, con gli stessi pesi.",
+  "Short night: go lighter": "Notte corta: vai più leggero",
+  "Your sleep score was {score}. Same workout today, one set less per exercise.":
+    "Il punteggio del sonno è {score}. Oggi lo stesso allenamento, con una serie in meno per esercizio.",
+  "Welcome back": "Bentornato",
+  "You've been away {days} days. Start this week at about 85% of your weights.":
+    "Sei stato fermo {days} giorni. Questa settimana riparti a circa l'85% dei tuoi pesi.",
+  "One more strength day": "Un giorno di forza in più",
+  "{count} strength day this week. Two a week keep muscles and bones strong.":
+    "{count} giorno di forza questa settimana. Due a settimana tengono forti muscoli e ossa.",
+  "{count} strength days this week. Two a week keep muscles and bones strong.":
+    "{count} giorni di forza questa settimana. Due a settimana tengono forti muscoli e ossa.",
+  "Why: {reason}": "Perché: {reason}",
+  "Double progression · ACSM 2009": "Doppia progressione · ACSM 2009",
+  "Load that fits the reps · ACSM 2009":
+    "Un carico adatto alle ripetizioni · ACSM 2009",
+  "Change the stimulus · ACSM 2009": "Cambia lo stimolo · ACSM 2009",
+  "Weekly volume · Schoenfeld 2017": "Volume settimanale · Schoenfeld 2017",
+  "Frequency · Schoenfeld 2016": "Frequenza · Schoenfeld 2016",
+  "48 hours to recover · ACSM 2009": "48 ore per recuperare · ACSM 2009",
+  "Safe increase · Nielsen 2014": "Aumento sicuro · Nielsen 2014",
+  "80/20 · Seiler 2010": "80/20 · Seiler 2010",
+  "Workload ratio · Gabbett 2016": "Rapporto di carico · Gabbett 2016",
+  "Deload · Bosquet 2007": "Scarico · Bosquet 2007",
+  "Sleep and performance · Fullagar 2015": "Sonno e prestazione · Fullagar 2015",
+  "Coming back · Mujika 2000": "Il rientro · Mujika 2000",
+  "WHO guidelines 2020": "Linee guida OMS 2020",
+  OK: "OK",
+  "Nothing to change for now: keep going.":
+    "Per ora niente da cambiare: continua così.",
+  "Next time: {exercise} {kg} kg": "La prossima volta: {exercise} {kg} kg",
+  // src/air/ (TASK-479 part E2: airspaces in flight; notices 5 and 7 approved by the user on 2026-11-21, the other texts on 2026-11-23)
+  "Nearest airspace": "Spazio aereo più vicino",
+  inside: "dentro",
+  "{name} ({class}) · {dist} · floor {floor}":
+    "{name} ({class}) · {dist} · base {floor}",
+  "FL limits from GPS altitude (≈).": "Limiti in FL dalla quota GPS (≈).",
+  "Warn within": "Avvisa entro",
+  "Warn above or below": "Avvisa sopra o sotto",
+  "Warning sound": "Suono dell'avviso",
+  // src/nutrition (TASK-489 part B1)
+  "Food@@nutrition": "Cibo",
+  Nutrition: "Alimentazione",
+  "Before you start": "Prima di iniziare",
+  "MuW does not provide diets, meal plans or medical advice. The plan here is the one you write: your own, or the one your dietitian gave you.":
+    "MuW non fornisce diete, piani alimentari né consigli medici. Il piano qui è quello che scrivi tu: il tuo, o quello che ti ha dato il tuo dietista.",
+  "Every number is an estimate, from food composition tables and from formulas for the energy you use.":
+    "Ogni numero è una stima, ricavata da tabelle di composizione degli alimenti e da formule per l'energia che consumi.",
+  "If you have a medical condition, are pregnant or have a history of eating disorders, talk to a doctor or a dietitian before counting calories.":
+    "Se hai una condizione medica, sei in gravidanza o hai avuto disturbi alimentari, parla con un medico o un dietista prima di contare le calorie.",
+  "Estimates only. MuW does not provide diets or medical advice.":
+    "Solo stime. MuW non fornisce diete né consigli medici.",
+  "Previous day": "Giorno prima",
+  "Next day": "Giorno dopo",
+  Eaten: "Mangiate",
+  "Used (est.)": "Consumate (stima)",
+  Balance: "Bilancio",
+  "Set my daily target": "Scrivi il mio obiettivo del giorno",
+  "My daily target": "Il mio obiettivo del giorno",
+  "(set by you)": "(scritto da te)",
+  Left: "Restano",
+  "kcal a day": "kcal al giorno",
+  "Your own number, or the one your dietitian gave you. MuW never suggests one.":
+    "Il tuo numero, o quello che ti ha dato il tuo dietista. MuW non ne propone mai uno.",
+  "Remove target": "Togli l'obiettivo",
+  Breakfast: "Colazione",
+  Lunch: "Pranzo",
+  Dinner: "Cena",
+  Snacks: "Spuntini",
+  "Add food": "Aggiungi cibo",
+  "Add to breakfast": "Aggiungi a colazione",
+  "Add to lunch": "Aggiungi a pranzo",
+  "Add to dinner": "Aggiungi a cena",
+  "Add to snacks": "Aggiungi agli spuntini",
+  "Search food": "Cerca un cibo",
+  "My food": "Cibo mio",
+  "No food found.": "Nessun cibo trovato.",
+  "Add my own food": "Aggiungi un cibo mio",
+  Grams: "Grammi",
+  Estimate: "Stima",
+  "My own food": "Un cibo mio",
+  "Calories in 100 g (kcal)": "Calorie in 100 g (kcal)",
+  "Copy the number from the label, or from your dietitian's sheet.":
+    "Copia il numero dall'etichetta, o dal foglio del tuo dietista.",
+  "Delete food": "Elimina il cibo",
+  // src/nutrition (TASK-489 part B2)
+  Diary: "Diario",
+  "My plan": "Il mio piano",
+  "Eaten as planned": "Mangiato come da piano",
+  "Copy this day to…": "Copia questo giorno su…",
+  "This is the plan you write. MuW never changes it.":
+    "Questo è il piano che scrivi tu. MuW non lo cambia mai.",
+  "How we calculate": "Come calcoliamo",
+  "Food@@numbers": "Cibo",
+  "Energy you use": "Energia che consumi",
+  Estimates: "Stime",
+  "Calories of the foods in the list come from USDA FoodData Central (SR Legacy, April 2018), a public-domain food composition table. Your own foods use the numbers you wrote.":
+    "Le calorie dei cibi dell'elenco vengono da USDA FoodData Central (SR Legacy, aprile 2018), una tabella di composizione degli alimenti di pubblico dominio. I cibi tuoi usano i numeri che hai scritto tu.",
+  "At rest: the Mifflin-St Jeor equation, from the body data in your profile. Activities: ACSM equations and the 2024 Compendium of Physical Activities. On days when Apple Health has your active energy, that number is used instead.":
+    "A riposo: l'equazione di Mifflin-St Jeor, dai dati del corpo nel tuo profilo. Attività: equazioni ACSM e il Compendium of Physical Activities 2024. Nei giorni in cui Salute di Apple ha la tua energia attiva, si usa quel numero.",
+  "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
+    "I valori reali cambiano con il prodotto, la ricetta e la persona. MuW non fornisce diete né consigli medici.",
+  // src/nutrition (TASK-489 part C1)
+  "Today the energy at rest is counted up to now.":
+    "Oggi l'energia a riposo è contata fino a adesso.",
+  Surplus: "Surplus",
+  Deficit: "Deficit",
+  "At rest": "A riposo",
+  Activities: "Attività",
+  "No activities on this day.": "Nessuna attività in questo giorno.",
+  edited: "modificato",
+  "Log in to count your activities.": "Accedi per contare le tue attività.",
+  "Your activities could not be loaded. Only the energy at rest is counted.":
+    "Non è stato possibile caricare le tue attività. È contata solo l'energia a riposo.",
+  "Energy at rest": "Energia a riposo",
+  "Your own number, for example the one your dietitian measured. It takes the place of MuW's estimate.":
+    "Il tuo numero, per esempio quello misurato dal tuo dietista. Prende il posto della stima di MuW.",
+  "MuW's estimate: {kcal} kcal": "Stima di MuW: {kcal} kcal",
+  "Back to the estimate": "Torna alla stima",
+  "Calories of this activity": "Calorie di questa attività",
+  "Your number stays on this phone. Your post and Apple Health keep theirs.":
+    "Il tuo numero resta su questo telefono. Il tuo post e Salute di Apple tengono i loro.",
+  // src/air/ (TASK-479 part E3: the airspace log after the flight; approved by the user on 2026-11-23)
+  "Inside your airspaces: {count}": "Dentro i tuoi spazi aerei: {count}",
+  "No fix inside the volumes of your file.":
+    "Nessun punto dentro i volumi del tuo file.",
+  "{from}–{to} · {name} ({class}) · {min} min":
+    "{from}–{to} · {name} ({class}) · {min} min",
+  "Deepest: {dist} from the edge, {height} from floor or ceiling":
+    "Più dentro: {dist} dal bordo, {height} da base o tetto",
+  "Only on your phone: not in the Feed.": "Solo sul tuo telefono: non va nel Feed.",
+  // src/air/ (TASK-479 part D1: the pilot's waypoints and task; approved by the user on 2026-11-23)
+  Waypoints: "Boe",
+  Task: "Task",
+  "Waypoints: {count} · Landings: {landings}": "Boe: {count} · Atterraggi: {landings}",
+  "Turnpoints: {count}": "Boe della task: {count}",
+  "First start: {time}": "Prima partenza: {time}",
+  "{file} · loaded {date}": "{file} · caricato il {date}",
+  "This file has no waypoint MuW can read.":
+    "In questo file non ci sono boe che MuW sa leggere.",
+  "This file is not a task MuW can read.":
+    "Questo file non è una task che MuW sa leggere.",
+  // src/air/ (TASK-479 part D2: the task in flight; approved by the user on 2026-11-23)
+  "Next turnpoint": "Prossima boa",
+  "Glide to goal": "Planata al goal",
+  "Start gate": "Gate di partenza",
+  "Task distance": "Distanza della task",
+  Competition: "Competizione",
+  "Gate open": "Gate aperto",
+  "Started {time}": "Partito alle {time}",
+  "Whole task: {distance}": "Task intera: {distance}",
+  "No task loaded": "Nessuna task caricata",
+  "Goal taken": "Goal preso",
+  "Turnpoint {name} taken. Next: {next}.": "Boa {name} presa. Prossima: {next}.",
+  "Goal {name} taken.": "Goal {name} preso.",
+  // src/air/ (TASK-479 part D3: the glide; approved by the user on 2026-11-23)
+  "Glide to turnpoint": "Planata alla boa",
+  "Nearest landing": "Atterraggio più vicino",
+  "Glide ratio used": "Efficienza usata",
+  "Wind used": "Vento usato",
+  Estimated: "Stimato",
+  "No wind": "Nessun vento",
+  "needs {height}": "servono {height}",
+  "No landings in your file": "Nessun atterraggio nel tuo file",
+  // src/nutrition (TASK-489 part D)
+  "Calorie balance": "Bilancio delle calorie",
+  Used: "Consumate",
+  "Previous week": "Settimana prima",
+  "Next week": "Settimana dopo",
+  "so far": "finora",
+  "Week total": "Totale della settimana",
+  "Today is not in the total until the day is over.":
+    "Oggi non entra nel totale finché il giorno non è finito.",
+  // src/nutrition (TASK-489 part D2: Nutrition from the profile; approved by the user on 2026-11-24)
+  "Write what you eat and see your calorie balance.":
+    "Scrivi quello che mangi e guarda il tuo bilancio delle calorie.",
+  "Open Nutrition": "Apri Alimentazione",
+  // src/nutrition (TASK-489 part G1)
+  "Type the code": "Scrivi il codice",
+  Barcode: "Codice a barre",
+  "Look up": "Cerca",
+  "Looking it up…": "Lo cerco…",
+  "Only the barcode goes to Open Food Facts, to find the product.":
+    "A Open Food Facts va solo il codice a barre, per trovare il prodotto.",
+  "from Open Food Facts": "da Open Food Facts",
+  "Check the numbers against the label: you can correct them.":
+    "Controlla i numeri sull'etichetta: puoi correggerli.",
+  "Use this food": "Usa questo cibo",
+  "This product is not on Open Food Facts.":
+    "Questo prodotto non è su Open Food Facts.",
+  "Open Food Facts has no calories for this product.":
+    "Open Food Facts non ha le calorie di questo prodotto.",
+  "The product could not be looked up. Check your connection and try again.":
+    "Non è stato possibile cercare il prodotto. Controlla la connessione e riprova.",
+  "Products found by barcode contain data from Open Food Facts, available under the Open Database License. They are kept apart from the USDA list.":
+    "I prodotti trovati col codice a barre contengono dati di Open Food Facts, disponibili con la Open Database License. Restano separati dall'elenco USDA.",
+  "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
+    "Questa pagina la vedi solo tu. Quello che scrivi qui resta sul tuo telefono; un codice a barre che cerchi va a Open Food Facts.",
+  // src/air/ (TASK-479 part D4: the task passed on; approved by the user on 2026-11-23)
+  "Share file": "Condividi file",
+  "Show QR": "Mostra QR",
+  "Task for XCTrack": "Task per XCTrack",
+  "This task is too long for a QR code.":
+    "Questa task è troppo lunga per un codice QR.",
+  // src/air/ (TASK-479 part B3: widgets dragged in the editor; approved by the user on 2026-11-26)
+  "Drag a widget to move it, or its corner to size it. Touch it for more.":
+    "Trascina un widget per spostarlo, o il suo angolo per ridimensionarlo. Toccalo per altre azioni.",
+  // src/groups (TASK-495 part B)
+  "Find your city": "Cerca la tua città",
+  "New group": "Nuovo gruppo",
+  "Choose photo": "Scegli una foto",
+  "Remove photo": "Togli la foto",
+  Description: "Descrizione",
+  "Sports (up to {count})": "Sport (fino a {count})",
+  City: "Città",
+  "Who can join": "Chi può entrare",
+  Invite: "Invita",
+  "Search by name": "Cerca per nome",
+  "Nobody found.": "Nessuno trovato.",
+  Invited: "Invitato",
+  "Make admin": "Rendi admin",
+  "Make {name} the admin? You become a member.":
+    "Rendere {name} admin? Tu diventi un membro.",
+  "Remove from group": "Togli dal gruppo",
+  "Remove {name} from the group?": "Togliere {name} dal gruppo?",
+  "Make co-admin": "Rendi co-admin",
+  "Remove co-admin": "Togli co-admin",
+  Members: "Membri",
+  "Leave group": "Esci dal gruppo",
+  "Delete group": "Elimina il gruppo",
+  "Delete {name}? Its members, requests and invites go with it. This can't be undone.":
+    "Eliminare {name}? Membri, richieste e inviti se ne vanno con lui. Non si può annullare.",
+  "Leave {name}?": "Uscire da {name}?",
+  Groups: "Gruppi",
+  "Withdraw the request": "Ritira la richiesta",
+  "Accept invite": "Accetta l'invito",
+  Unmute: "Riattiva",
+  Mute: "Silenzia",
+  "Mute only stops the news of new outings.":
+    "Silenzia ferma solo gli avvisi delle nuove uscite.",
+  "Requests ({count})": "Richieste ({count})",
+  "Next outings": "Prossime uscite",
+  "No outings yet.": "Ancora nessuna uscita.",
+  "All members ({count})": "Tutti i membri ({count})",
+  "Recent activity": "Attività recenti",
+  "No activity in the last 14 days.": "Nessuna attività negli ultimi 14 giorni.",
+  "Past outings": "Uscite passate",
+  "No requests to join.": "Nessuna richiesta di entrare.",
+  "Go out together: make a group, or join one.":
+    "Esci con altri: crea un gruppo, o entra in uno.",
+  Invites: "Inviti",
+  "Meet in a public place, never at your home. MuW doesn't organise or check groups or their outings. Everyone on MuW is 16 or older.":
+    "Trovatevi in un luogo pubblico, mai a casa. MuW non organizza né controlla i gruppi e le loro uscite. Su MuW tutti hanno almeno 16 anni.",
+  "Mountaineering is dangerous. MuW doesn't organise, guide or check groups, outings, routes or difficulty, and isn't a mountain guide. Everyone is responsible for their own experience, gear and safety.":
+    "L'alpinismo è pericoloso. MuW non organizza, non guida e non controlla gruppi, uscite, itinerari o difficoltà, e non è una guida alpina. Ognuno è responsabile della propria esperienza, attrezzatura e sicurezza.",
+  "Public@@group": "Pubblico",
+  "Request to join": "Su richiesta",
+  "Invite only": "Solo su invito",
+  Admin: "Admin",
+  "Co-admin": "Co-admin",
+  "This group isn't available.": "Questo gruppo non è disponibile.",
+  // src/nutrition (TASK-489 part C2)
+  "Use Apple Health": "Usa Salute di Apple",
+  "MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there.":
+    "MuW legge la tua energia attiva e gli allenamenti registrati da altre app, per contare l'energia che consumi. Sono letti sul telefono e restano lì.",
+  "Active energy": "Energia attiva",
+  "from Apple Health": "da Salute di Apple",
+  "Your activities are already inside Apple Health's active energy: they are not added again.":
+    "Le tue attività sono già dentro l'energia attiva di Salute di Apple: non si sommano di nuovo.",
+  "Apple Health has nothing for this day: your activities are counted.":
+    "Salute di Apple non ha niente per questo giorno: si contano le tue attività.",
+  "Stop using Apple Health": "Non usare più Salute di Apple",
+  // src/air/ (TASK-479 part D5: the pilot's own waypoints; approved by the user on 2026-11-26)
+  "Mark this place": "Segna questo punto",
+  "Waypoint here": "Boa qui",
+  "Landing here": "Atterraggio qui",
+  "My waypoints": "Le mie boe",
+  "Remove all": "Togli tutte",
+  "Press the flight map long to add one.":
+    "Tieni premuto sulla mappa di volo per aggiungerne una.",
 };

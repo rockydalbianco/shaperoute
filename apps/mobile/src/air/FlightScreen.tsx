@@ -17,7 +17,15 @@ import { t, tLater } from "../i18n";
 import type { Track } from "../navigation/trackRecorder";
 import { TICK_MS, useNow } from "../screens/RunPanel";
 import { BRIGHTNESS_STEPS } from "../theme/tone";
-import { fontWeight, type Palette, paletteOf } from "../theme/tokens";
+import {
+  fontWeight,
+  type GlassColors,
+  glassOf,
+  type Palette,
+  paletteOf,
+} from "../theme/tokens";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 import { useUnits } from "../units/useUnits";
 import {
   type FlightLook,
@@ -38,6 +46,12 @@ import {
   UNIT_LABEL,
   VARIO_UNITS,
 } from "./flightUnits";
+import { useAirspaceAlerts } from "./airspaceAlertPrefs";
+import { AirspaceAlertLine } from "./AirspaceAlertLine";
+import { airspaceFeatures, alertOf, nearAirspaces } from "./airspaceNear";
+import { placeSeries, type ProfileBand, profileBands } from "./airspaceProfile";
+import { AirspaceOptions } from "./AirspaceOptions";
+import { useAirspace } from "./airspaceStore";
 import { FlightEditor } from "./FlightEditor";
 import { FlightMap } from "./FlightMap";
 import { FlightWidget } from "./FlightWidget";
@@ -45,6 +59,14 @@ import { GroundProbe } from "./GroundProbe";
 import { useFlightScreenData } from "./useFlightScreenData";
 import { setVarioPrefs, useVarioPrefs } from "./varioPrefs";
 import { VarioSoundOptions } from "./VarioSoundOptions";
+import { WaypointOptions } from "./WaypointOptions";
+import { glideWith } from "./glide";
+import { GlideOptions } from "./GlideOptions";
+import { useGlidePrefs } from "./glidePrefs";
+import { nearestLanding } from "./nearestLanding";
+import { taskFeatures } from "./taskMapData";
+import { type TaskNow, taskNowOf } from "./taskProgress";
+import { useTask, useWaypoints } from "./waypointStore";
 
 /**
  * The flight screen (TASK-479 part B1, ADR-0388): pages of widgets on a
@@ -73,10 +95,19 @@ export const UNLOCK_HOLD_MS = 1500;
 export const GLOVE_TARGET = 64;
 const GAP = 6;
 
+/** The glass of each palette made here: the flight screen has a look of
+ * its own, which is not always the tone of the app (TASK-469 A7c-4). */
+const flightGlass = new WeakMap<Palette, GlassColors>();
+
 function paletteFor(look: FlightLook): Palette {
-  return look === "dark"
-    ? paletteOf({ tone: "dark", dark: 0, light: BRIGHTNESS_STEPS - 1 })
-    : paletteOf({ tone: "light", dark: 0, light: BRIGHTNESS_STEPS - 1 });
+  const choice = {
+    tone: look === "dark" ? "dark" : "light",
+    dark: 0,
+    light: BRIGHTNESS_STEPS - 1,
+  } as const;
+  const palette = paletteOf(choice);
+  flightGlass.set(palette, glassOf(choice));
+  return palette;
 }
 
 type Props = {
@@ -100,6 +131,9 @@ function Chip({
   onPress: () => void;
   palette: Palette;
 }) {
+  // Out of the glass as the other chips (TASK-469 A7c-4), in the look of
+  // the flight screen.
+  const chipRaise = glassRaise(useGlassMode(), flightGlass.get(palette));
   return (
     <Pressable
       accessibilityRole="button"
@@ -107,6 +141,7 @@ function Chip({
       onPress={onPress}
       style={[
         styles.chip,
+        chipRaise,
         {
           backgroundColor: on ? palette.accent : palette.surfaceRaised,
           borderColor: on ? palette.accent : palette.border,
@@ -232,6 +267,27 @@ function Options({
         row={row}
         palette={palette}
       />
+      <AirspaceOptions
+        altitudeUnit={prefs.units.altitude}
+        chip={(key, label, on, onPress) => (
+          <Chip key={key} label={label} on={on} onPress={onPress} palette={palette} />
+        )}
+        row={row}
+        palette={palette}
+      />
+      <WaypointOptions
+        chip={(key, label, on, onPress) => (
+          <Chip key={key} label={label} on={on} onPress={onPress} palette={palette} />
+        )}
+        row={row}
+        palette={palette}
+      />
+      <GlideOptions
+        chip={(key, label, on, onPress) => (
+          <Chip key={key} label={label} on={on} onPress={onPress} palette={palette} />
+        )}
+        row={row}
+      />
       <Pressable
         accessibilityRole="button"
         onPress={onDone}
@@ -308,11 +364,46 @@ export function FlightScreen({
   const data = useFlightScreenData(track, at, takeoffMs, sharingLive);
   const palette = useMemo(() => paletteFor(prefs.look), [prefs.look]);
   const pages = pagesOf(prefs);
-  // The ground's height is read only for a profile that shows it (A1).
-  const showsGround = pages.some((one) =>
-    one.some((cell) => cell.widget === "aboveGround"),
-  );
+  const airspace = useAirspace();
+  const alerts = useAirspaceAlerts();
+  // The ground is read for a profile that shows it (A1), and for the
+  // airspaces whose limits stand on it (E2).
+  const showsGround =
+    airspace !== null ||
+    pages.some((one) => one.some((cell) => cell.widget === "aboveGround"));
   const here = track.fixes[track.fixes.length - 1]?.point ?? null;
+  // The pilot against the airspaces of their file (E2), at every tick.
+  const altM = data.instrument.altM;
+  const groundM =
+    altM !== null && data.aboveGroundM !== null ? altM - data.aboveGroundM : null;
+  const near =
+    airspace === null || here === null
+      ? []
+      : nearAirspaces(airspace.airspaces, here, altM, groundM);
+  const alert = alertOf(near, alerts);
+  // The volumes under the altitude chart (E3), when a page has one.
+  const charted = pages.some((one) =>
+    one.some((cell) => cell.widget === "altitudeChart"),
+  );
+  const bands: ProfileBand[][] =
+    airspace === null || !charted
+      ? []
+      : profileBands(placeSeries(track, at), airspace.airspaces, groundM);
+  // The pilot's task at this tick (D2): where they are along it.
+  const loadedTask = useTask();
+  const taskNow: TaskNow | null =
+    loadedTask === null ? null : taskNowOf(loadedTask.task, track.fixes, takeoffMs);
+  const taskMap =
+    taskNow === null
+      ? null
+      : taskFeatures(taskNow.task, taskNow.progress, taskNow.here, taskNow.left);
+  // The glide the pilot chose (D3), and the nearest landing of their file.
+  const glide = glideWith(useGlidePrefs(), data.wind);
+  const loadedWaypoints = useWaypoints();
+  const landing =
+    loadedWaypoints === null || here === null
+      ? undefined
+      : nearestLanding(loadedWaypoints.waypoints, here, altM, glide);
   const change = (next: FlightPrefs) => {
     setPrefs(next);
     saveFlightPrefs(next);
@@ -425,6 +516,12 @@ export function FlightScreen({
             </Text>
           </Pressable>
         </View>
+        <AirspaceAlertLine
+          alert={alert}
+          units={appUnits}
+          altitudeUnit={prefs.units.altitude}
+          palette={palette}
+        />
         {locked && hint ? (
           <Text style={[styles.hint, { color: palette.text }]}>
             {t("Hold to unlock")}
@@ -463,10 +560,19 @@ export function FlightScreen({
                           circling={data.circling}
                           palette={palette}
                           height={h}
+                          airspace={
+                            airspace === null ? null : airspaceFeatures(near, groundM)
+                          }
+                          task={taskMap}
                         />
                       ) : (
                         <FlightWidget
                           widget={cell.widget}
+                          nearest={near[0] ?? null}
+                          bands={bands}
+                          task={taskNow}
+                          glide={glide}
+                          landing={landing}
                           data={data}
                           flight={unitsOf(cell)}
                           units={appUnits}

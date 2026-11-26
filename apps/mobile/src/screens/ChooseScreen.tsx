@@ -24,6 +24,7 @@ import type { Place } from "../places/photon";
 import type { StartMode } from "../location/startMode";
 import { isRecordOnly } from "../settings/sport";
 import { useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { useSport } from "../settings/useSport";
 import {
   color,
@@ -111,6 +112,8 @@ export function ChooseScreen({
   const insets = useSafeAreaInsets();
   // The header turns to glass once the page scrolls (TASK-469 A5b).
   const headerScroll = useHeaderScroll();
+  // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
+  const barRoom = useTabBarRoom();
   // A day on the snow has no shape to draw (TASK-375, ADR-0319): «Draw» is
   // its recording only; a workout at the gym, its start (TASK-385 part B).
   const sport = useSport();
@@ -149,7 +152,7 @@ export function ChooseScreen({
               paddingTop: insets.top + space.lg,
               // The button's height has the safe area in it; before it is
               // measured, the safe area alone.
-              paddingBottom: Math.max(footerHeight, insets.bottom) + space.xl,
+              paddingBottom: Math.max(footerHeight, insets.bottom + barRoom) + space.xl,
             },
           ]}
           keyboardShouldPersistTaps="handled"
@@ -273,7 +276,10 @@ export function ChooseScreen({
           >
             <TourPartView
               name={TOUR_PART.draw}
-              style={[styles.footer, { paddingBottom: insets.bottom + space.sm }]}
+              style={[
+                styles.footer,
+                { paddingBottom: insets.bottom + space.sm + barRoom },
+              ]}
             >
               {footer}
             </TourPartView>

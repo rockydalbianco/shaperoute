@@ -24,6 +24,9 @@ export type PostRun = {
   drawingId?: string;
   /** The title over the drawing; null shows none. */
   title: string | null;
+  /** When the run began, as the API writes a moment: the post writes its
+   * day under the title (TASK-450). Absent, no day. */
+  startedAt?: string;
   /** What was run, whole: the post draws all of it (ADR-0330). */
   track: LatLon[];
   distanceM: number;
@@ -46,12 +49,20 @@ function turned(route: { rotation_deg?: number | null }): { rotationDeg?: number
   return turn === undefined ? {} : { rotationDeg: turn };
 }
 
-/** A run of «My activities» as its post shows it: its title, or where it
- * was and what it drew; its sport, when the API says it (TASK-251). */
-export function postOfActivity(activity: ActivityDetail): PostRun {
+/** A run of «My activities» as its post shows it: the title of its post,
+ * the one written in «Edit post», when it has one (TASK-450); else what its
+ * route draws, or where it was and what it drew; its sport, when the API
+ * says it (TASK-251). */
+export function postOfActivity(
+  activity: ActivityDetail,
+  postTitle: string | null = null,
+): PostRun {
+  const written = postTitle === null || postTitle.trim() === "" ? null : postTitle;
   return {
     key: activity.id,
-    title: activity.title ?? whereAndWhat(activity, activity.points !== null),
+    title:
+      written ?? activity.title ?? whereAndWhat(activity, activity.points !== null),
+    startedAt: activity.started_at,
     track: activity.track,
     distanceM: activity.distance_m,
     durationMs: activity.duration_s * 1000,
@@ -77,9 +88,9 @@ export function postRequestOf(
   };
 }
 
-/** A run that just ended, before «Save»: no title yet. `activity` is its
- * route's, when it followed one, and `rotationDeg` how far the route's
- * shape is turned. */
+/** A run that just ended, before «Save»: no title yet, its day from its
+ * first fix. `activity` is its route's, when it followed one, and
+ * `rotationDeg` how far the route's shape is turned. */
 export function postOfTrack(
   track: Track,
   activity?: Activity,
@@ -88,6 +99,9 @@ export function postOfTrack(
   return {
     key: null,
     title: null,
+    ...(track.fixes.length === 0
+      ? {}
+      : { startedAt: new Date(track.fixes[0].timeMs).toISOString() }),
     track: track.fixes.map((fix) => fix.point),
     distanceM: track.distanceM,
     durationMs: durationMs(track),

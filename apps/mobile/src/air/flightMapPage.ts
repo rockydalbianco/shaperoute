@@ -6,7 +6,7 @@ import {
   MAPLIBRE_JS_SRI,
   MAPLIBRE_JS_URL,
 } from "../map/mapPage";
-import { mapStyleFor } from "../map/mapStyle";
+import { LABEL_FONT, mapStyleFor } from "../map/mapStyle";
 import { type Palette, vario } from "../theme/tokens";
 
 /**
@@ -18,7 +18,9 @@ import { type Palette, vario } from "../theme/tokens";
  *   scale from −3 to +3 m/s (`vario` of the tokens);
  * - the take-off, and the pilot as an arrow the way they go;
  * - the camera on the pilot, turned the way they fly («Heading up», the
- *   course of the last 5 s, held while circling) or north up.
+ *   course of the last 5 s, held while circling) or north up;
+ * - the airspaces of the pilot's file near them (part E2): see-through
+ *   volumes on the hills in 3D, outlines on the plain map.
  *
  * The map follows: it does not pan under a finger, it only zooms with two.
  * The phone calls `window.flight.*`; the page tells `ready`, `loaded`,
@@ -34,6 +36,14 @@ export const FOLLOW_MS = 900;
 export const FPS_EVERY_MS = 5_000;
 export const TRACK_WIDTH = 4;
 export const PILOT_PX = 34;
+/** How see-through the airspaces are. */
+export const AIRSPACE_OPACITY = 0.2;
+/** A press this long on the map marks a place (part D5). */
+export const PRESS_MS = 600;
+/** A finger moving farther than this is no press, points. */
+export const PRESS_SLOP_PX = 12;
+/** How see-through the next cylinder of the task is. */
+export const TASK_FILL_OPACITY = 0.15;
 
 /** The scale of the climb: m/s and its colour, from the tokens. */
 export const VARIO_STOPS: readonly [number, string][] = [
@@ -52,6 +62,19 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
   const style = withKinds(mapStyleFor(palette, language));
   const layers = kindLayers(style);
   const lineColor = ["interpolate", ["linear"], ["get", "v"], ...VARIO_STOPS.flat()];
+  // Prohibited, restricted and danger areas in the error colour, the others
+  // in the warning colour: the palette's, as everywhere.
+  const airspaceColor = ["case", ["get", "danger"], palette.error, palette.warning];
+  // The task (part D2): the next cylinder in the accent and thicker, the
+  // ones taken muted, the others in the text's colour.
+  const taskColor = [
+    "case",
+    ["get", "next"],
+    palette.accent,
+    ["get", "taken"],
+    palette.textMuted,
+    palette.text,
+  ];
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -105,6 +128,36 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
     map.setCenterClampedToGround(false);
     map.addControl(new maplibregl.AttributionControl({ compact: true }));
     map.on("error", function () {});
+    // A long press marks a place (part D5): the app asks what to put there.
+    var press = null;
+    function pressCancel() {
+      if (press !== null) {
+        clearTimeout(press.timer);
+        press = null;
+      }
+    }
+    map.on("touchstart", function (event) {
+      pressCancel();
+      var touches = event.originalEvent && event.originalEvent.touches;
+      if (touches && touches.length > 1) {
+        return;
+      }
+      var at = event.lngLat;
+      press = {
+        point: event.point,
+        timer: setTimeout(function () {
+          press = null;
+          post({ type: "press", lat: at.lat, lon: at.lng });
+        }, ${PRESS_MS}),
+      };
+    });
+    map.on("touchmove", function (event) {
+      if (press !== null && Math.hypot(event.point.x - press.point.x, event.point.y - press.point.y) > ${PRESS_SLOP_PX}) {
+        pressCancel();
+      }
+    });
+    map.on("touchend", pressCancel);
+    map.on("touchcancel", pressCancel);
     map.once("idle", function () {
       post({ type: "loaded" });
     });
@@ -117,6 +170,120 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
         layout: { "line-cap": "round", "line-join": "round" },
         paint: { "line-color": ${toScript(lineColor)}, "line-width": ${TRACK_WIDTH} },
       });
+      // The pilot's airspaces (part E2): under the track, see-through.
+      map.addSource("flight-airspace", { type: "geojson", data: NONE });
+      map.addLayer(
+        {
+          id: "flight-airspace-volume",
+          type: "fill-extrusion",
+          source: "flight-airspace",
+          filter: ["!", ["get", "flat"]],
+          paint: {
+            "fill-extrusion-color": ${toScript(airspaceColor)},
+            "fill-extrusion-base": ["*", ["get", "base"], TERRAIN.exaggeration],
+            "fill-extrusion-height": ["*", ["get", "top"], TERRAIN.exaggeration],
+            "fill-extrusion-opacity": ${AIRSPACE_OPACITY},
+          },
+        },
+        "flight-track",
+      );
+      map.addLayer(
+        {
+          id: "flight-airspace-area",
+          type: "fill",
+          source: "flight-airspace",
+          paint: { "fill-color": ${toScript(airspaceColor)}, "fill-opacity": ${AIRSPACE_OPACITY} },
+        },
+        "flight-track",
+      );
+      map.addLayer(
+        {
+          id: "flight-airspace-edge",
+          type: "line",
+          source: "flight-airspace",
+          paint: { "line-color": ${toScript(airspaceColor)}, "line-width": 2 },
+        },
+        "flight-track",
+      );
+      // The pilot's task (part D2): rings and the goal line on the ground,
+      // the way left dashed; under the track.
+      map.addSource("flight-task", { type: "geojson", data: NONE });
+      map.addLayer(
+        {
+          id: "flight-task-next",
+          type: "fill",
+          source: "flight-task",
+          filter: ["all", ["==", ["get", "part"], "cylinder"], ["get", "next"]],
+          paint: { "fill-color": ${toScript(palette.accent)}, "fill-opacity": ${TASK_FILL_OPACITY} },
+        },
+        "flight-track",
+      );
+      map.addLayer(
+        {
+          id: "flight-task-edge",
+          type: "line",
+          source: "flight-task",
+          filter: ["!=", ["get", "part"], "route"],
+          paint: {
+            "line-color": ${toScript(taskColor)},
+            "line-width": ["case", ["get", "next"], 4, 2],
+          },
+        },
+        "flight-track",
+      );
+      map.addLayer(
+        {
+          id: "flight-task-route",
+          type: "line",
+          source: "flight-task",
+          filter: ["==", ["get", "part"], "route"],
+          layout: { "line-cap": "round" },
+          paint: {
+            "line-color": ${toScript(palette.accent)},
+            "line-width": 2,
+            "line-dasharray": [2, 2],
+          },
+        },
+        "flight-track",
+      );
+      // The pilot's waypoints (part D5): a turnpoint a filled dot, a
+      // landing a ring, each with its name; under the track.
+      map.addSource("flight-waypoints", { type: "geojson", data: NONE });
+      map.addLayer(
+        {
+          id: "flight-waypoint-dot",
+          type: "circle",
+          source: "flight-waypoints",
+          paint: {
+            "circle-radius": 7,
+            "circle-color": ${toScript(palette.text)},
+            "circle-opacity": ["case", ["get", "landing"], 0, 1],
+            "circle-stroke-color": ${toScript(palette.text)},
+            "circle-stroke-width": 3,
+          },
+        },
+        "flight-track",
+      );
+      map.addLayer(
+        {
+          id: "flight-waypoint-name",
+          type: "symbol",
+          source: "flight-waypoints",
+          layout: {
+            "text-field": ["get", "name"],
+            "text-font": ${toScript(LABEL_FONT)},
+            "text-size": 13,
+            "text-offset": [0, 1.3],
+            "text-anchor": "top",
+          },
+          paint: {
+            "text-color": ${toScript(palette.text)},
+            "text-halo-color": ${toScript(palette.background)},
+            "text-halo-width": 1.5,
+          },
+        },
+        "flight-track",
+      );
       map.addSource("flight-takeoff", { type: "geojson", data: NONE });
       map.addLayer({
         id: "flight-takeoff",
@@ -153,6 +320,11 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
       }
     });
     map.setTerrain(threeD ? TERRAIN : null);
+    // The airspaces: standing up on the hills, lying flat on the plain map.
+    if (map.getLayer("flight-airspace-volume")) {
+      map.setLayoutProperty("flight-airspace-volume", "visibility", threeD ? "visible" : "none");
+      map.setLayoutProperty("flight-airspace-area", "visibility", threeD ? "none" : "visible");
+    }
   }
 
   function follow(duration) {
@@ -202,6 +374,27 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
     }
   }
 
+  function setAirspace(collection) {
+    var source = map.getSource("flight-airspace");
+    if (source) {
+      source.setData(collection);
+    }
+  }
+
+  function setWaypoints(collection) {
+    var source = map.getSource("flight-waypoints");
+    if (source) {
+      source.setData(collection);
+    }
+  }
+
+  function setTask(collection) {
+    var source = map.getSource("flight-task");
+    if (source) {
+      source.setData(collection);
+    }
+  }
+
   function setTakeoff(lat, lon) {
     var source = map.getSource("flight-takeoff");
     if (source) {
@@ -213,7 +406,15 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
     }
   }
 
-  window.flight = { setView: setView, setPilot: setPilot, setTrack: setTrack, setTakeoff: setTakeoff };
+  window.flight = {
+    setView: setView,
+    setPilot: setPilot,
+    setTrack: setTrack,
+    setTakeoff: setTakeoff,
+    setAirspace: setAirspace,
+    setTask: setTask,
+    setWaypoints: setWaypoints,
+  };
 
   // The frames the map drew a second, told every few seconds: what the
   // hills in 3D cost while the camera follows.
@@ -241,7 +442,8 @@ export type FlightMapMessage =
   | { type: "ready" }
   | { type: "loaded" }
   | { type: "error" }
-  | { type: "fps"; fps: number };
+  | { type: "fps"; fps: number }
+  | { type: "press"; point: [number, number] };
 
 export function parseFlightMapMessage(data: string): FlightMapMessage | null {
   try {
@@ -255,6 +457,15 @@ export function parseFlightMapMessage(data: string): FlightMapMessage | null {
     }
     if (one.type === "fps" && typeof one.fps === "number" && Number.isFinite(one.fps)) {
       return { type: "fps", fps: one.fps };
+    }
+    if (
+      one.type === "press" &&
+      typeof one.lat === "number" &&
+      typeof one.lon === "number" &&
+      Math.abs(one.lat) <= 90 &&
+      Math.abs(one.lon) <= 180
+    ) {
+      return { type: "press", point: [one.lat, one.lon] };
     }
     return null;
   } catch {

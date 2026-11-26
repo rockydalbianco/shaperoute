@@ -57,7 +57,7 @@ ciano di «Start here».
 | `energy` | `#FF6363` (scuro, fino a `#FFA3A3` al passo più chiaro); `#8F1216`–`#B71C1C` nel tono chiaro | le calorie, ovunque si vedano: riquadri della corsa e della neve, piscina, palestra, la riga del post e dell'attività, i riquadri e le righe della pagina del post (TASK-424 parte C3, scelta dell'utente del 2026-11-10: «segnate con colore rosso in tutte»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo. Sul giallo della palestra `energyOnAccent` `#8F1216` (6,3:1), sopra una foto `energyOnScrim` `#FF6363` (6,8:1 sul velo) |
 | `scrim`, `onScrim` | `#0B0A08`, `#FFFFFF` | il buio del tour (TASK-266) e il velo sotto le parole sulle foto (`Scrim`, TASK-339); il bordo della luce |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
-| `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il cono di «Compass»; il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
+| `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il suo cono su «Compass» e «Map» (TASK-519); il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
 | `north` | `#FF5B4F` | la punta della freccia del nord (TASK-431); nel tono chiaro `#C42F24` |
 | `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | nessuno dal TASK-218: «Connect with Strava» (TASK-187) ora è l'immagine ufficiale di Strava, con i suoi colori dentro (ADR-0181); da togliere quando `tokens.ts` è libero |
 | `map.*` | dal `#100F0C` al `#3F3B34` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
@@ -72,7 +72,11 @@ Quattro regole:
    produce e la barra che lo mostra mentre si disegna. Ciò che chiede attenzione usa `warning`, arancio: un avviso giallo
    renderebbe il colore muto. **Un'eccezione**, scelta dall'utente
    (TASK-220, ADR-0183): «Run without a route» in cima a «Draw» è giallo,
-   con il testo scuro. Per tutto il resto la regola vale.
+   con il testo scuro. **Un'altra**, scelta dall'utente il 2026-11-24
+   (TASK-508, ADR-0409): il pulsante in fondo a «Sign up» e «Log in»,
+   giallo con il testo scuro; grigio, l'unico comando della pagina si
+   leggeva come secondario. Le proprie bolle nei messaggi sono di
+   ADR-0403. Per tutto il resto la regola vale.
 2. **Sul giallo il testo è scuro** (`onAccent`, 13,5:1). Il bianco si ferma
    a 1,5:1, sotto il minimo, e in pieno sole, dove l'app si usa, non si
    legge.
@@ -182,7 +186,11 @@ e i tre nomi in alto (in `main` dal 2026-10-30); B Feed ed Explore (in `main` da
 foto su `Scrim` in `heading`, sotto i disegni in `cardTitle`, i nomi
 medium, `Tap` al posto dell'opacità, `Hairline` prima delle azioni, la
 distanza delle schede di «Explore» in `display`); C stati vuoti (C1, coi
-testi) e divisioni e tocco (C2, in PR dal 2026-10-30: nei file liberi
+testi approvati il 2026-11-23: «Favorites», «My activities» e i
+«Messages» in arrivo hanno `EmptyState` col cuore, un titolo e una frase,
+senza pulsante, come il «Feed»; le liste follower/seguiti/richieste e «No
+message requests.» restano righe brevi, perché stanno in un riquadro
+piccolo) e divisioni e tocco (C2, in PR dal 2026-10-30: nei file liberi
 `Hairline` al posto delle divisioni in `border`, i bordi di riga a un pixel
 di `hairline`, ogni comando con un aspetto alla pressione su `Tap`, che
 prende anche un `ref`); D Profile, Settings e i fogli; E «Draw» e il risultato.
@@ -227,9 +235,21 @@ disegno, 0,45 s fermo, 0,3 s di dissolvenza sull'app; il giallo si vede
 almeno 2,4 secondi. Il cuore finito resta sempre i suoi 0,45 s: se il
 telefono è lento e il disegno finisce tardi, la dissolvenza aspetta.
 L'app parte sotto e si carica intanto; l'animazione prende i tocchi finché
-c'è, non si salta, e si vede una volta a ogni apertura. Sta in
+c'è e si vede una volta a ogni apertura. Sta in
 `src/intro/`, sopra `App` (`index.ts`). Al lettore di schermo dice
 «MuW».
+
+**Intera una volta per versione, poi corta** (TASK-505, ADR-0405): i
+tempi qui sopra sono dell'animazione intera, che si vede alla prima
+apertura e alla prima dopo una versione nuova dello store (`version` di
+`app.json`, non gli OTA). Le altre volte lo stesso cuore dura 1,0 s: la
+penna parte subito, 0,6 s il disegno, 0,15 s fermo, 0,25 s di
+dissolvenza. **Un tocco la chiude**, intera o corta: sfuma in 0,25 s da
+dov'è, senza pulsanti né testi; vale anche il doppio tocco del lettore di
+schermo, e il tocco resta dell'animazione, non arriva all'app sotto. Il
+telefono ricorda la versione vista in `intro-seen.json`
+(`intro/introSeen.ts`), letto prima del primo fotogramma; senza file, o
+con un file che non si legge, l'intera.
 
 **Il cuore su giallo** (TASK-221, ADR-0184): lo stesso cuore, fermo e
 piccolo, come un logo. Un quadrato giallo `accent` con gli angoli
@@ -240,7 +260,10 @@ In cima a «Draw» stava a sinistra di «MuW», 32 punti, alto quanto il
 titolo; da TASK-392 sta così nell'header delle pagine della barra, e
 «Draw» non ha più il logo. È solo un'immagine: il lettore di schermo legge il nome accanto.
 Un componente solo, `src/intro/HeartBadge.tsx` (`size`), per ogni posto
-dove il cuore su giallo compare.
+dove il cuore su giallo compare. In «Explore» stava anche accanto al
+titolo (TASK-222): da quando l'header lo ha su ogni pagina erano due, uno
+sopra l'altro, e quello di «Explore» è tolto (TASK-508, scelta
+dell'utente del 2026-11-24).
 
 **Il tour della prima apertura** (TASK-266, ADR-0235): finita
 l'animazione, la prima volta, il resto dello schermo si scurisce
@@ -287,8 +310,9 @@ pagine»):
    bordo chiaro; ogni forma è il suo contorno vero a linea, nel colore del
    testo, non un'emoji: `ShapeGlyph`, TASK-444, dal catalogo del motore
    come la forma in scala, a penna alzata dove il catalogo l'ha — gli occhi
-   di una faccia senza la riga che li raggiunge), «Type another shape» per un'altra parola e la forma in
-   scala; **«3 DISTANCE»**, grande, fra − e + di mezzo km, col tempo
+   di una faccia senza la riga che li raggiunge), «Type another shape» per un'altra parola e la forma sulla
+   mappa vera attorno alla partenza (TASK-449; in scala senza
+   partenza); **«3 DISTANCE»**, grande, fra − e + di mezzo km, col tempo
    stimato sotto; subito sotto la
    distanza, mentre il server ha il gioco, la riga «PLAY» (TASK-327, sotto
    «“Play”: la collezione delle forme»); poi, con la corsa, «NEAR YOU»
@@ -403,7 +427,10 @@ pagine»):
    «City» mostra in alto le città recenti (↺, le ultime 5, salvate sul
    telefono) e una fila di città di tutto il mondo (New York, London,
    Paris, Tokyo, Rome, Milan, Torino, Barcelona, Dubai…): un tocco la
-   sceglie, il centro viene dall'API, mai scritto nell'app. Sotto, «Type a
+   sceglie, il centro viene dall'API, mai scritto nell'app. **I nomi della
+   fila sono nella lingua dell'app** (TASK-508, scelta dell'utente del
+   2026-11-24): «Londra», «Mailand», «Nueva York»; all'API si chiede
+   sempre il nome inglese, e con quello il telefono tiene la città. Sotto, «Type a
    city» suggerisce le città mentre si scrive (da 2 lettere, pausa 250 ms).
    **La prima voce della fila è «Near me»** (TASK-176, ADR-0144), con
    il segno della posizione, un anello col suo centro: è accesa finché non
@@ -623,8 +650,41 @@ questi, non dalla trasparenza, ed è il prezzo dei 4,5:1 sopra una foto
 bianca o nera. La capsula della scheda attiva è il testo al 12%; le icone
 spente sono `textMuted`. Con «Riduci trasparenza» la barra è `surface`
 opaca, con «Aumenta contrasto» opaca col bordo `borderStrong`. La fascia
-sotto la barra resta alta quanto prima: le pagine non ci passano sotto. Il
-vetro vero (`expo-glass-effect`) è la parte B, in una build dopo la 1.1.0.
+sotto la barra resta alta quanto prima: le pagine non ci passano sotto.
+
+**La barra in vetro vero** (TASK-469 B2, scelta dell'utente del
+2026-11-26; bozza #1562, arriva con la prossima build nativa): dove il
+telefono disegna il vetro vero (iOS 26 e seguenti, un'app costruita con
+`expo-glass-effect`) la capsula è il vetro di iOS e **la barra galleggia
+sopra le pagine**, che le passano sotto fino al bordo; la sfocatura tiene
+leggibili le icone sopra quello che passa dietro. Su ogni altro telefono
+la barra è quella descritta sopra: col vetro velato non galleggia, perché
+senza sfocatura il testo di un post si leggerebbe dietro le icone. Con
+«Riduci trasparenza» e «Aumenta contrasto» la barra galleggia opaca.
+
+**Cosa si disegna sul vetro vero** (misurato il 2026-11-26): il vetro di
+iOS si schiarisce e si scurisce con quello che ha dietro, e un colore
+fisso sopra non lo segue. Quindi il vetro vero è sempre velato col fondo
+del tono (`glass.realTint`, mai giallo) e quello che ci sta sopra è nel
+colore pieno del testo, mai nel secondario. Il testo fitto non ci va: sul
+foglio dei commenti non teneva 4,5:1, e i fogli restano opachi finché
+non si trova di meglio. Una superficie nuova in vetro vero si prova con
+una foto bianca dietro nel tono scuro e una nera nel chiaro, e si
+misura, prima di chiedere un sì.
+
+Due regole che valgono già oggi. **Una pagina nuova della barra delle
+schede** chiede la stanza con `useTabBarRoom()` (`src/tabs/tabBarRoom.ts`)
+e la aggiunge alla fine del suo scorrimento e sotto quello che tiene in
+basso; poi si mette nella lista di `src/tabs/TabBarRoom.test.tsx`. La
+stanza è 0 finché la barra non galleggia. **`expo-glass-effect` non si
+importa mai direttamente**: sempre attraverso `src/ui/NativeGlass.tsx`,
+che lo carica solo dove c'è e altrove disegna il vetro velato.
+
+Una terza, per quando il pacchetto sarà in `main`: **nei test il vetro
+vero c'è**, perché il finto modulo di jest-expo risponde di sì. Un test
+che monta lo shell delle schede senza dire altro vede la barra e l'header
+che galleggiano. Chi prova il vetro velato lo dichiara, sostituendo
+`requireOptionalNativeModule("ExpoGlassEffect")` di `expo` con `null`.
 
 **Il movimento della barra** (TASK-388, ADR-0329): dietro la scheda attiva
 una capsula morbida (`surfaceRaised`) che scivola alla nuova con la molla
@@ -660,8 +720,18 @@ hanno lo stesso aspetto, con la loro molla e il loro tick.
 città in Explore e quelli della ricerca (`FilterChip`) escono dalla pagina
 come la pillola dei segmenti: un filo di luce in cima e un'ombra corta. Non
 aggiunge colore: ognuno tiene il suo, il giallo del chip scelto compreso.
-Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Gli altri
-chip dell'app non lo hanno ancora.
+Con «Riduci trasparenza» e «Aumenta contrasto» restano piatti. Lo hanno
+anche (A7c-1) i chip di «Share your run», del post di sole foto e del
+composer, di «Tag people» e di chi può vedere, dei tag dell'outfit, di
+«Style», del sonno, del calendario e «Share live», e (A7c-2) quelli
+dell'obiettivo in palestra, dei posti della pagaia, della lunghezza della
+vasca e della giornata sulla neve, e (A7c-3) i chip condivisi della
+palestra (`gymStyles.chip`): il riposo, la scelta dell'esercizio, la
+guida e la storia dell'esercizio, «l'ultima volta», Coach e il post
+della scheda, e (A7c-4) i chip delle opzioni della schermata del volo.
+Lì il rilievo è nel vetro dell'aspetto del volo («Dark» o «Sunlight»),
+che può non essere il tono dell'app: una pagina con un aspetto suo passa
+il suo vetro a `glassRaise`, non usa quello dell'app.
 
 **Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
 raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro
@@ -690,18 +760,27 @@ sul contenuto, in 200 ms (subito con «Riduci movimento»), e la lascia
 quando la pagina torna in cima. Conta la pagina sullo schermo: cambiando
 scheda l'header segue quella nuova. Ogni pagina lo dice con
 `useHeaderScroll()` sul suo scroller principale (Disegna, Explore,
-Explore sull'acqua, Messaggi, Profilo, «Today» e «Days» dello sci, A5c);
+Explore sull'acqua, Messaggi, Profilo, «Today» e «Days» dello sci, A5c;
+«All» e «Following» del Feed, A5c-2, dove parla solo la scheda sullo
+schermo e una scheda nascosta rimette l'header a riposo);
 una pagina che non lo dice tiene l'header a riposo, e una che se ne va
 lontana dalla cima lo rimette a riposo. Con «Riduci trasparenza» la fascia è opaca
 con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
-contenuto non passa sotto l'header: per quello serve la parte B.
+contenuto non passa sotto l'header: per quello serve la parte B. L'header
+sta sopra le pagine delle schede con uno `zIndex`, e resta dentro lo
+shell: la radice di `TabShell` è tenuta con `collapsable={false}`, così
+non esce sopra le pagine aperte sopra l'app (una conversazione, «Message
+requests»).
 
 **I gruppi di Impostazioni** (TASK-469 A6, `src/settings/settingsGroup.ts`):
 ogni gruppo di righe di Impostazioni ha gli angoli a 24 (`radius.group`) e i
 bordi del vetro posato dei segmenti: il filo di luce intorno e quello in
 cima. La faccia resta `surface`, così le parole tengono il contrasto. Con
 «Riduci trasparenza» il bordo è la linea sottile di prima, con «Aumenta
-contrasto» il bordo forte. Ogni gruppo lo prende con `useSettingsGroup()`.
+contrasto» il bordo forte. Ogni gruppo lo prende con `useSettingsGroup()`;
+anche la scheda dell'account e la riga «Blocked people» (A6b). Il riquadro
+prima di «Delete account» prende solo gli angoli e tiene il bordo rosso:
+è un avviso, non vetro.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
@@ -711,6 +790,16 @@ restano un attimo, poi va via nello stesso modo. Non prende i tocchi. Con
 to {name}.» di «Send to a friend» e «Thanks for telling us. We will look at
 it.» dopo ogni segnalazione (post, profilo, messaggio, commento): il foglio
 si chiude e il grazie arriva nell'isola. Altri punti li decide l'utente.
+Sul vetro (TASK-469 A7b) l'isola ha il filo di luce del vetro scuro in
+ogni tono e un'ombra corta; con «Riduci trasparenza» e «Aumenta
+contrasto» resta come prima.
+
+**I fogli di vetro** (TASK-469 A7a, `src/ui/sheetFace.ts`): ogni foglio
+dal basso prende `useSheetFace()` dopo il suo stile: angoli in alto a 28,
+il filo di luce del vetro al posto della linea in cima e un'ombra
+morbida verso l'alto; la faccia resta `surface`. Con «Riduci
+trasparenza» la linea sottile di prima, con «Aumenta contrasto» il
+bordo forte.
 
 **Fogli e liste** (TASK-388 C): i fogli dal basso (il «+» dei messaggi, il
 foglio di un messaggio, i filtri della ricerca, il super like, «Tag
@@ -1069,7 +1158,11 @@ TASK-278 la prima pagina di «Profile» è **la quarta pagina**, dopo
 Le pagine che si aprono da lì («Settings», «Favorites», «My activities»,
 «Edit profile», «Guide», il profilo di un altro, un disegno) si aprono
 sopra l'app come prima, e «←» (o «Back to the profile») torna alla quarta
-pagina. **Anche le altre parti dell'app portano alla quarta pagina**
+pagina. Le pagine di «Profile» aperte sopra l'app scorrono fino in cima
+allo schermo: una fascia del colore della pagina, alta quanto la barra di
+stato, copre quello che ci passa sotto, così il testo non finisce sotto
+l'orologio (TASK-508, `src/ui/StatusBarCover.tsx`). Come scheda non c'è:
+lì c'è già l'header. **Anche le altre parti dell'app portano alla quarta pagina**
 (TASK-278 parte B, scelte dell'utente del 2026-10-13): «People» nella
 ricerca della lente di «Feed» senza account (da TASK-344), e il cuore sulla mappa e la riga sotto la fine della corsa
 senza account, ognuno con la sua riga sopra «Sign up». Dalla mappa e dalla
@@ -1095,14 +1188,20 @@ senza cambiare niente. È la stessa scelta della sezione «Sport» di
 
 **«Profile» senza account**: «Sign up» e «Log in», due pulsanti affiancati.
 «Sign up» chiede email, nome (da 3 a 20 fra lettere, cifre, `_` e `.`),
-password (almeno 8 caratteri) e la casella «I am at least 16» (ADR-0114);
+password (almeno 8 caratteri; nel campo, anche in «Log in», un occhio la
+mostra e la nasconde senza perdere il testo, VoiceOver «Show password» /
+«Hide password»; a iOS l'email è detta come nome dell'account e la
+password nuova con le sue regole: TASK-458) e la casella «I am at least
+16» (ADR-0114);
 sotto, piccola e grigia, «If you don't open MuW for 2 weeks, we email you
 once with what's new.» e la casella **non spuntata** «Don't send me these
 emails» (TASK-284, ADR-0244): spuntata, la richiesta manda `away_email:
 false`; con o senza, manda la lingua dell'app per le email. «Log in»
 email e password. I campi si controllano prima di partire, con le
 regole dell'API, e l'errore si dice in parole sotto il pulsante (sotto,
-«Quando non va»). Si apre su «Sign up»; dopo «Log out» o una sessione
+«Quando non va»). Il pulsante in fondo, «Sign up» o «Log in», è giallo
+`accent` con le parole `onAccent` (TASK-508, ADR-0409, scelta
+dell'utente). Si apre su «Sign up»; dopo «Log out» o una sessione
 finita, su «Log in».
 
 **«Forgot password?»** (TASK-300, ADR-0261): sotto «Log in», sottolineato,
@@ -1582,6 +1681,12 @@ quando il server ha Resend.
   them in Settings to turn this on.», con «Open Settings» (TASK-259).
   Spegnere, «Email notifications» ed «Email when I'm away» non chiedono
   niente al telefono.
+- **Finché «Push notifications» è spento**, fra il riquadro e la nota c'è
+  una riga da toccare, sottolineata come «Open Settings»: «Push
+  notifications are off. Tap to turn them on.» (TASK-508, testo scelto
+  dall'utente il 2026-11-24). Il tocco fa quello che fa l'interruttore.
+  Sparisce quando sono accese, e quando sotto c'è scritto perché non si
+  sono accese.
 - Spento l'interruttore, o usciti dall'account, il telefono riprende il
   suo token dall'API e non riceve più.
 - **Toccare una notifica** apre il disegno (una reazione, un commento, un
@@ -1774,7 +1879,10 @@ richiude. «Requests» ha un pallino rosso (`badge`) quando qualcuno
 aspetta, e in quel caso il suo elenco è **già aperto** quando «Profile»
 si apre (TASK-239). Ogni riga ha la foto (o l'iniziale) e il nome, che
 toccato apre il profilo di quella persona sopra l'app; «←» torna a
-«Profile».
+«Profile». Il nome sotto ogni numero è largo quanto il riquadro, centrato,
+su una riga: una parola più lunga in un'altra lingua si stringe (fino
+all'80%) invece di essere tagliata (TASK-508: «Follower» usciva
+«Follow…»).
 
 **Il numero rosso** (TASK-239, ADR-0203; chiesto dall'utente, testi
 **confermati** il 2026-10-05). Quando qualcuno chiede di seguirti, il pulsante di
@@ -1843,9 +1951,12 @@ l'app, come «Find friends»:
   someone's profile and tap Message to write to them.»; le richieste vuote:
   «No message requests.». Venti per volta, poi «Show more».
 - **La conversazione**: titolo con foto e nome e il «…» di «Report or
-  block» della persona; i messaggi dal basso, i propri a destra su
-  `surfaceRaised`, quelli dell'altro a sinistra su `surface` con il bordo
-  (il giallo resta del percorso), ognuno con il suo orario in basso a
+  block» della persona; i messaggi dal basso, i propri a destra **sul
+  giallo dell'app** (`accent`, parole e orario `onAccent`: scelta
+  dell'utente, TASK-458, ADR-0403; quello che portano — disegno, post,
+  live, foto — su una piastra `surfaceRaised` dentro il giallo), quelli
+  dell'altro a sinistra su `surface` con il bordo, ognuno con il suo
+  orario in basso a
   destra e sopra il primo di ogni giorno il titolo «Today», «Yesterday» o la
   data intera («Fri 2 Oct 2026»), sull'orologio del telefono (TASK-353). I
   vecchi arrivano scorrendo verso l'alto, con «Loading…»; «Show earlier
@@ -1857,9 +1968,30 @@ l'app, come «Find friends»:
   sent. You can write again when {name} accepts it.»; per una richiesta
   ricevuta, «{name} wants to send you a message.» e i tre tasti «Accept»,
   «Delete», «Block» (rosso; chiede prima, con il testo del blocco).
-  «Delete» chiude la conversazione. Si rilegge ogni 5 secondi mentre è
-  aperta, e quando l'app torna sullo schermo; l'altro che scrive la segna
-  letta (nessuna conferma all'altro).
+  «Delete» chiude la conversazione. Mentre è aperta chiede **solo i
+  messaggi nuovi** (TASK-498, scelta dell'utente del 2026-11-26): ogni 5
+  secondi finché ci si scrive; dopo un minuto senza messaggi ogni 15
+  secondi, dopo cinque minuti ogni 30; torna a 5 secondi quando arriva un
+  messaggio, quando se ne manda uno e quando l'app torna sullo schermo. La
+  pagina intera si rilegge all'apertura, al ritorno nell'app e una volta
+  al minuto: è lei a portare un messaggio cancellato dall'altro, il suo
+  nome e la sua foto, una scheda cambiata. Una risposta che non cambia
+  niente non ridisegna la schermata. Con l'app dietro non chiede; l'altro
+  che scrive la segna letta (nessuna conferma all'altro).
+- **Una conversazione senza messaggi** (TASK-458, scelta dell'utente): al
+  centro la foto e il nome, «Say hi to {name}.» e tre spunti a capsula —
+  «Hi {name}!», «I like your drawings», «Shall we run together?» — che
+  scrivono il testo nella casella senza inviarlo (VoiceOver: «Writes it in
+  the box. Nothing is sent yet.»). In una richiesta, sotto la riga «{name}
+  gets this as a message request…», la riga «Photos, videos and drawings
+  come after that.»: il «+» arriva quando l'altro accetta.
+- **«New message»** (TASK-458): un tasto neutro a capsula accanto al titolo
+  della scheda «Messages» apre una pagina sua, col titolo «New message»,
+  «Close» e la casella «Search people»: prima chi si sente già, poi chi si
+  segue, ognuno una volta; un nome scritto cerca fra tutti («Nobody has a
+  name like that.»). Senza nessuno: «Search someone by name to write to
+  them.». Un tocco chiude la pagina e apre la conversazione; da lì non
+  parte niente.
 - **Un tocco lungo su un messaggio** (VoiceOver: «Touch and hold to delete
   it» / «… to report it») apre il foglio: il proprio, «Delete this message
   for both of you?» e «Delete»; dell'altro, «Report this message», poi i
@@ -2488,7 +2620,10 @@ bianca, è tolta dal TASK-331; dal TASK-340 «Freehand» è la prima scelta e
 apre la mappa per disegnare a mano, sotto in «Disegnare sulla mappa»,
 senza che l'interruttore resti su di lei): il percorso disegna una forma
 del catalogo, una parola **oppure** il contorno di un'immagine, mai due
-insieme, e l'interruttore mostra quale. Di partenza «Shape».
+insieme, e l'interruttore mostra quale. Di partenza «Shape». Le sue
+voci stanno ognuna su una riga: quella che non entra si stringe (fino al
+70%) invece di andare a capo fra le altre (TASK-508, `Segmented` con
+`oneLine`; gli altri interruttori dell'app vanno a capo come prima).
 Passare dall'uno all'altro non cancella quanto scritto o scelto negli altri.
 
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
@@ -2507,9 +2642,25 @@ ADR-0307; prima una riga che scorreva di lato, TASK-088, ADR-0084): sette
 forme e l'ottava tessera «See all», che apre tutte e diciassette; «Show
 fewer» richiude. La forma scelta è sempre in vista: se non è fra le prime
 sette, prende il settimo posto. Toccare una tessera fa vibrare il telefono,
-dove l'app è costruita con `expo-haptics`. Sotto, la forma scelta **in
-scala** su un pezzo di mappa (`ShapePreview`): il contorno del catalogo,
-una barra di scala tonda e «≈ 1.9 × 2.1 km», che seguono forma e
+dove l'app è costruita con `expo-haptics`. Sotto il segno la tessera ha il
+nome con la maiuscola, «Cuore», come ogni etichetta della pagina
+(TASK-508); nel campo va la parola come la scrive una frase, «cuore». Sotto, la forma scelta **sulla
+mappa vera** attorno alla partenza (TASK-449, ADR-0412, `LivePreview`): un
+riquadro largo quanto la scheda e alto 190 punti con le strade del posto,
+e sopra il contorno del catalogo tratteggiato (la sagoma di TASK-442), in
+grandezza reale, col primo punto sulla partenza, che è un pallino giallo.
+A ogni − e + della distanza la sagoma cresce o si stringe; quando non
+entra più la mappa si allontana di uno scatto (√2 volte più larga), e
+finché arriva l'immagine nuova resta quella di prima, più piccola, sotto
+la sagoma. La mappa è un'immagine, non si tocca: arriva dalla rete un
+attimo dopo la sagoma, che intanto sta sul fondo scuro; in un angolo ha il
+credito della mappa. Sotto restano «≈ 1.9 × 2.1 km» e la barra di scala
+tonda. Con la penna alzata, dove la forma l'offre, la sagoma è nei suoi
+pezzi. È la forma ideale dove il motore la prova per prima, non un
+percorso: nessuna riga lo dice (scelta dell'utente, 2026-11-26). Senza
+partenza, sull'acqua e sulla neve resta la forma **in scala** di TASK-361
+(`ShapePreview`): un riquadro con due strade finte, la forma sempre
+grande uguale, e la barra di scala e «≈ L × A km» che seguono forma e
 distanza.
 
 **La distanza** (TASK-361): − e + di mezzo km (mezzo miglio con «Miles»),
@@ -2753,6 +2904,12 @@ sotto si vede. Un'immagine alta resta entro 320 punti d'altezza, così la
 distanza resta a vista. La linea è fatta di rettangoli sottili ruotati,
 senza SVG (`react-native-svg` non è una dipendenza dell'app).
 
+Sotto l'anteprima, con una partenza e una distanza, il contorno tracciato
+**sulla mappa vera** (TASK-449 B, ADR-0412): lo stesso riquadro delle
+forme, col contorno tratteggiato in grandezza reale dalla partenza, che
+segue i km. A penna alzata, dove la foto ha pezzi, è nei suoi pezzi.
+Non sull'acqua e sulla neve, né senza partenza.
+
 **Modificare il contorno** (TASK-079, ADR-0074). Sotto l'anteprima,
 **«Edit the outline»** apre una **lavagna a tutto schermo**: la foto
 attenuata con il contorno, e sotto **«Add a part»**, **«Add a detail»**,
@@ -2803,6 +2960,29 @@ per una forma, con la distanza del campo sotto, e manda il contorno
 dell'anteprima, con i dettagli disegnati (`POST /image-route-jobs`). «Choose another» sostituisce la
 foto; annullare il selettore lascia quella di prima. Sotto la distanza del
 risultato si legge «Picture · on roads · target 15 km».
+
+**Con la penna alzata** (TASK-297 C2, ADR-0258). Quando il contorno ha
+dei pezzi (`pieces` di `/image-outlines`: gli altri soggetti e i fori di un
+logo, `API.md`), sotto l'anteprima c'è l'interruttore **«Lift the pen
+between parts»**, lo stesso delle forme in pezzi e lo stesso stato di
+quello delle parole, acceso all'avvio: così è proposto acceso. Acceso,
+l'anteprima disegna i pezzi gialli come i tratti, senza i trattini che li
+collegano, e con i fori; la riga sotto dice *The yellow lines are what the
+route will draw: each part on its own, going from one to the next without
+drawing. If they do not look like the subject, the route will not either:
+try another picture.* (testo nuovo, **approvato dall'utente** nelle
+cinque lingue il 2026-10-27); «Edit the outline» non c'è, perché le
+modifiche sono della linea con la penna giù (confermato dall'utente il
+2026-10-27). La richiesta manda `pieces` e `pen_up: true` al
+posto degli `strokes`. Il percorso torna con i `walks` e si mostra come una
+forma in pezzi: i tratti a piedi tratteggiati sulla mappa, «6.0 km of
+drawing + 0.4 km walking between the parts», la registrazione in pausa sui
+tratti a piedi e la voce «the next part», come per le parole (TASK-198,
+TASK-223). Spento, tutto come prima, con «Edit the outline». Senza pezzi
+(un soggetto senza fori, una foto pronta di «Draw», un contorno modificato,
+un'API più vecchia) l'interruttore non c'è. Pezzi che l'app non sa
+disegnare (non uno per uno sopra la foto, fuori dalla cornice) si lasciano
+fuori, non il contorno.
 
 Se l'immagine è rifiutata, al posto dell'anteprima il motivo in parole
 semplici, con sotto il testo del motore:
@@ -3439,7 +3619,12 @@ not keep it.*
 
 ## Chiedere un percorso
 
-«Draw route» è spento finché non c'è una partenza. Toccato, la richiesta va
+«Draw route» è spento finché non c'è una partenza, e sopra di lui una riga
+piccola dice perché (TASK-508, testi scelti dall'utente il 2026-11-24):
+«Choose a start first»; con la partenza e niente da disegnare (campo
+della forma vuoto, nessuna parola, nessuna immagine), «Choose what to draw
+first». Una parola che l'AI sta leggendo o che non si può scrivere ha già
+la sua nota sotto il campo, e la riga non c'è. Toccato, la richiesta va
 all'API in due tempi (ADR-0032): l'API la accetta subito, poi l'app chiede
 a che punto è: ogni mezzo secondo nei primi 6 s, ogni secondo fino a 20 s,
 poi ogni 2 s (ADR-0136). La scheda dice cosa sta succedendo e offre «Cancel»;
@@ -3779,8 +3964,10 @@ cui tiene i numeri.
 - **«Compass»** (TASK-422, ADR-0350; chiesta dall'utente il 2026-11-08):
   solo la mappa, grande. Sotto restano i pulsanti della corsa («Pocket»,
   «Pause», «Music»; in pausa «Stop» da tenere e «Resume»; all'arrivo
-  «Finish») e i tre nomi; niente numeri, barra del percorso, riga del gioco
-  né battito. Sopra la mappa il banner resta (la svolta, o la partenza).
+  «Finish») e i tre nomi; sopra i pulsanti **una riga sola, piccola**:
+  quanta strada e quanto tempo («2.34 km · 12:05», nelle unità della corsa;
+  TASK-518 A, scelta dell'utente del 2026-11-24, al posto di «niente
+  numeri»); niente passo, barra del percorso, riga del gioco né battito. Sopra la mappa il banner resta (la svolta, o la partenza).
   **La mappa gira dove punta il telefono**: la direzione verso cui si è
   rivolti sta in alto (heading-up). Da fermi comanda la bussola del
   telefono; correndo la bussola finché è calibrata (media o alta), e quando
@@ -3797,7 +3984,12 @@ cui tiene i numeri.
   sempre in alto, anche da fermi, e davanti apre **un cono azzurro** che
   sfuma in avanti: dove punta il telefono. Col nord in alto (un tocco) il
   cono si chiude e la freccia torna a seguire la traccia. La punta della
-  freccia del nord è rossa (`north`), la «N» chiara.
+  freccia del nord è rossa (`north`), la «N» chiara. Sotto la freccia del
+  nord, solo su questa pagina, **la direzione scritta**: «NE · 42°», il più
+  vicino degli otto punti nella lingua dell'app (le sigle della voce, «SO»,
+  «O» in italiano) e i gradi interi da nord, che cambiano con la mappa; col
+  nord in alto niente, la freccia dice già N (TASK-518 B, scelte
+  dell'utente del 2026-11-24, «1 e 2» e «Niente etichetta»).
 - **«Map»**: la mappa con sopra il banner (la svolta, o la partenza senza
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra
@@ -4180,17 +4372,19 @@ più giù).
 variante «B» scelta dall'utente il 2026-11-10). Mentre si corre il
 segnaposto sulla mappa è una freccia chiara e grande (42 punti), con un
 bordo scuro per leggersi sul giallo, dentro un anello azzurro (`you`, pieno
-al 22 %), girata dove si sta andando; su «Compass» davanti ha anche il cono
-azzurro (sopra). Il riquadro della freccia lascia passare le dita: chi tocca
+al 22 %), girata dove si sta andando; su «Compass» e su «Map» (TASK-519) punta dove
+punta il telefono e davanti ha il cono azzurro (sopra). Il riquadro della freccia lascia passare le dita: chi tocca
 il cono sposta la mappa. La mappa resta col
 nord in alto, o **girata come il disegno** quando il percorso è inclinato
 (TASK-232, scelta dell'utente: chi corre vede la forma dritta come l'ha
 scelta). La freccia segna sempre dove si va davvero: è girata con la
 mappa. Il fatto e il da fare sono linee della mappa e girano con lei. La
 freccia del nord c'è anche qui, sotto il riquadro della svolta, con gli
-stessi due tocchi; la scelta vale fino alla fine della corsa. La direzione viene dalla traccia, dagli ultimi 10 m: serve
-qualche passo perché compaia (prima c'è il segnaposto di sempre), e da
-fermi resta quella di prima. A fine corsa torna il segnaposto.
+stessi due tocchi; la scelta vale fino alla fine della corsa. Su «Map» la direzione è quella della
+bussola, anche da fermi, mentre la mappa non gira (TASK-519, aggiunta ad
+ADR-0359); correndo con la bussola poco calibrata, o senza bussola, viene
+dalla traccia degli ultimi 10 m. Su «Data» e in tasca la bussola è spenta.
+A fine corsa torna il segnaposto.
 
 **Il fatto e il da fare** (TASK-224, ADR-0186; chiesto dall'utente il
 2026-10-03, stile approvato su un'anteprima). Mentre si corre un percorso,
@@ -4341,7 +4535,11 @@ screen goes dark but stays on, so directions go on. Do not lock the phone:
 if you press the side button, directions stop. To come back, hold the
 screen for 2 seconds.» La luminosità torna com'era all'uscita, all'arrivo
 (che toglie anche il pulsante), con «Stop» e quando l'app esce dal primo
-piano.
+piano. Sotto lo schermo nero la mappa non riceve niente della corsa e
+l'orologio dei numeri non scatta; uscendo la mappa riceve una volta i
+punti che mancano e la posizione, e l'orologio si legge subito (TASK-496).
+In vista, a ogni posizione vanno alla mappa solo i punti nuovi, e la mappa
+segue chi corre in 250 ms.
 
 **La traccia della corsa** (TASK-112, ADR-0091). Durante la navigazione
 l'app tiene la linea di quello che si è corso: ogni posizione del GPS,
@@ -4349,7 +4547,12 @@ tranne quelle con errore oltre 40 m e quelle a meno di 5 m dalla
 precedente, con distanza e durata. Anche in modalità tasca. La traccia sta
 in un file nei documenti dell'app (`current-run.json`), insieme al percorso
 pianificato: si scrive alla prima posizione, poi al più ogni 15 secondi, a
-«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Una corsa per volta:
+«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Con l'app dietro
+un'altra o il telefono bloccato ogni posizione tenuta si scrive subito
+(TASK-304), ma solo lei: una riga in coda al diario `current-run.journal`,
+accanto al file; il file intero si riscrive uscendo dal primo piano, a una
+pausa, alla fine e ogni 300 righe, e la corsa riaperta è il file con il
+diario dopo (TASK-496, aggiunta ad ADR-0264). Una corsa per volta:
 «Start» sullo stesso percorso entro 30 minuti continua la traccia, un altro
 percorso la sostituisce alla prima posizione. La traccia non esce dal
 telefono: la usano i numeri della corsa e la schermata di fine corsa
@@ -4758,6 +4961,12 @@ Acceso, la notte pubblicata da sola è un post come gli altri, senza corsa:
 scheda di una corsa in «My activities». Apre a tutto schermo «Share your
 run», con «Close» in alto a sinistra:
 
+- **L'ordine della pagina** (TASK-450, scelta dell'utente del 2026-11-23):
+  il post; subito sotto «Instagram» ed «Export video», con la riga «Pick
+  Instagram in the list…» e l'eventuale errore; poi «Style» (i fondi del
+  post), «Results», «Add emoji», «Edit video», «Music» e Strava. Le due
+  azioni si raggiungono senza scorrere; dove le voci qui sotto dicono
+  «sopra» o «accanto», vale quest'ordine.
 - **Il post**, in alto: 9:16, sul giallo di Sgrava. Il cuore del logo e
   «Sgrava», il titolo (quello della corsa, o luogo e forma; nessuno a
   fine corsa), il disegno della corsa in nero **senza i primi e gli ultimi
@@ -4765,6 +4974,27 @@ run», con «Close» in alto a sinistra:
   «Time», «Pace» (il passo manca sotto i 100 m). **Il punteggio non è fra i risultati**
   (TASK-241 parte C, chiesto dall'utente): non si può accendere, non è
   sul post e non va nel testo per Strava.
+- **Titolo e giorno sul post** (TASK-450, scelte dell'utente del
+  2026-11-23): da «My activities» il titolo è quello del **post**, scritto
+  in «Edit post», quando c'è; altrimenti quello del percorso o «luogo ·
+  forma», come prima. Dal Feed è già il titolo del post. Sotto il titolo,
+  piccolo, il giorno della corsa come lo scrive l'app («Sat 21 Nov 2026»),
+  sempre: da «My activities», dal Feed (il giorno della corsa, non quello
+  della pubblicazione) e a fine corsa, dove sta da solo perché il titolo
+  non c'è ancora. Titolo (due righe al più) e giorno finiscono sopra il disegno.
+- **«Style»**, sotto i due pulsanti (TASK-450, scelta dell'utente del
+  2026-11-23): tre tessere 9:16 col disegno della corsa, una accesa.
+  «Yellow», accesa all'apertura: il giallo del logo con tutto in nero,
+  com'era. «Night»: il fondo scuro dell'app al suo passo più scuro, la
+  linea nel giallo del percorso, le scritte chiare. «Day»: il fondo chiaro
+  dell'app al suo passo più chiaro, linea e scritte scure. Sono le palette
+  del video («Night», «Day»), qualunque tono abbia l'app; i colori vengono
+  solo dai token. Il quadrato giallo del logo resta giallo su tutti e tre.
+  La scelta vale per l'immagine di «Instagram» e non si salva col post,
+  come stile e musica del video. Le tessere di palestra e piscina restano
+  com'erano, senza «Style». Nella pagina il post ha attorno un filo
+  (`hairline`) che non entra nell'immagine: con «Night» ha lo stesso scuro
+  della pagina.
 - **«Results»**: una pastiglia per risultato, accesa all'inizio; spenta,
   il risultato sparisce dal post e dal testo per Strava.
 - **«Add emoji»**: 🔥 ❤️ 💪 🏃 🎉 😅 🥵 😎 ⚡ 🏆 ☀️ 🌧️. Un tocco mette l'emoji
@@ -5389,6 +5619,124 @@ salva come `alpinism`.
 - Nel modulo del post non è un giorno sulla neve: resta alpinismo. Sull'orologio non
   c'è, finché una sua build non lo conosce.
 
+## Il contacalorie: «Nutrition» (TASK-489 parti B, C1, D, G e C2, ADR-0397)
+
+**Spenta in ogni build di oggi** dalla costante `NUTRITION_ON`
+(`nutrition/nutritionOn.ts`): si accende con la build nativa che legge
+allenamenti ed energia attiva da Apple Salute. Quello che segue è com'è
+quando è accesa. Schermate e testi approvati dall'utente il 2026-11-23,
+nelle cinque lingue in `tasks/TASK-489.md`. Niente di quello che si scrive
+qui esce dal telefono.
+
+- **L'ingresso**: in fondo al pannello degli sport, una famiglia a sé,
+  «Food», con la tessera **«Nutrition»** 🥗 (`nutrition/NutritionTile.tsx`).
+  Non è uno sport: il tocco apre la pagina sopra il pannello e lo sport
+  scelto non cambia; la ✕ riporta al pannello. Nella modalità allenamento la
+  stessa pagina è la tab «Food» (TASK-490 D).
+- **L'avviso**, la prima volta su quel telefono: «Before you start» — «MuW
+  does not provide diets, meal plans or medical advice. The plan here is
+  the one you write: your own, or the one your dietitian gave you.»,
+  «Every number is an estimate, from food composition tables and from
+  formulas for the energy you use.», «If you have a medical condition, are
+  pregnant or have a history of eating disorders, talk to a doctor or a
+  dietitian before counting calories.», un solo pulsante «I understand».
+  Prima del tocco non si può scrivere niente; dopo non torna più.
+- **Due viste**, «Diary» | «My plan», e sotto sempre «Estimates only. MuW
+  does not provide diets or medical advice.» col collegamento **«How we
+  calculate»**.
+- **«Diary»** (`nutrition/DiaryView.tsx`): il giorno in cima, «Today»,
+  «Yesterday» o la data, con le frecce; dopo oggi non si va. Tre numeri:
+  «Eaten», «Used (est.)» e «Balance». «Used (est.)» è il riposo più le
+  attività della lista privata partite quel giorno; **oggi il riposo è
+  contato fino a adesso**, e sotto i numeri c'è «Today the energy at rest
+  is counted up to now.». «Balance» è mangiate meno consumate, col segno e
+  sotto «Surplus» o «Deficit» («−660», «Deficit»); senza niente di
+  mangiato scritto è «—». Sotto, **«My daily target»**: un numero
+  di kcal che scrive solo l'utente, e quante ne restano; MuW non ne propone
+  mai uno. Poi i quattro pasti, «Breakfast», «Lunch», «Dinner», «Snacks»,
+  ognuno coi suoi cibi (nome, grammi, kcal), il totale e «Add food». Un
+  pasto vuoto mostra «—», non zero.
+- **«Eaten as planned»**: copia nel giorno il piano di quel giorno della
+  settimana. C'è **solo finché il giorno è vuoto** e il piano ha quel
+  giorno: non scrive mai sopra quello che è stato segnato a mano (scelta
+  dell'utente, 2026-11-23).
+- **«Energy you use»** (`nutrition/EnergySheet.tsx`), toccando «Used
+  (est.)»: la riga «At rest» e, sotto «Activities», ogni attività del
+  giorno con sport, quantità, ora e calorie («Run · 4.01 km», «07:10»,
+  «280 kcal»), poi il totale. Senza attività: «No activities on this
+  day.». Senza account: «Log in to count your activities.». Se la lista
+  non arriva: «Your activities could not be loaded. Only the energy at
+  rest is counted.». Mentre arriva, «Used (est.)» è «—».
+- **Scrivere il proprio numero**: toccando «At rest» si apre «Energy at
+  rest» (kcal al giorno, per esempio quelle misurate dal dietista);
+  toccando un'attività «Calories of this activity», con «Your number
+  stays on this phone. Your post and Apple Health keep theirs.». Il campo
+  parte vuoto, «MuW's estimate: 1764 kcal» resta in vista, «Back to the
+  estimate» toglie il numero scritto. Un numero scritto a mano lo dice:
+  «(set by you)» sul riposo, «edited» sull'attività. La palestra è stimata
+  dal solo tempo e un'escursione senza la salita: la lista non dice di più.
+- **Nella lista privata** («My activities»): ogni attività chiude la riga
+  dei numeri con le calorie che il bilancio conta, «7.2 km · 38:12 · 412
+  kcal»; «250 kcal (edited)» se corrette a mano.
+- **«Calorie balance» nel proprio profilo** (`nutrition/OwnBalance.tsx`),
+  sotto il sonno, con «Only you see this»: la settimana da lunedì a
+  domenica, una riga al giorno con «Eaten», «Used» e «Balance» col segno;
+  le frecce portano alle settimane prima («16 Nov – 22 Nov»), mai oltre
+  «This week». Oggi è «Thu 26 · so far» e non entra in «Week total» finché
+  il giorno non è finito («Today is not in the total until the day is
+  over.»); un giorno senza diario è «—» e non entra nel totale. Sotto il
+  totale «Surplus» o «Deficit», nello stesso colore. Il riquadro compare
+  solo dopo l'avviso letto; sul profilo degli altri non esiste, e niente
+  va all'API.
+- **Aggiungere un cibo** (`nutrition/AddFoodSheet.tsx`): si cerca per nome
+  fra i cibi propri e i 314 della tabella (USDA FoodData Central, SR
+  Legacy), nella lingua dell'app; si scrivono i grammi e si vede la stima
+  prima di «Add». Toccando un cibo già segnato si cambiano i grammi o lo si
+  toglie con «Remove».
+- **«My own food»**, da «Add my own food» nella ricerca: nome e
+  «Calories in 100 g (kcal)», da copiare
+  dall'etichetta o dal foglio del dietista. Si corregge e si elimina con
+  «Edit» dal passo dei grammi; un cibo eliminato resta nei giorni già
+  segnati.
+- **«My plan»** (`nutrition/PlanView.tsx`): i sette giorni della settimana
+  («Mon» … «Sun»), aperto su quello di oggi; per ogni giorno gli stessi
+  quattro pasti e il totale. **«Copy this day to…»** scrive un giorno sopra
+  un altro. Sotto: «This is the plan you write. MuW never changes it.». Non
+  c'è nessun piano finché l'utente non lo scrive.
+- **«How we calculate»**: da dove vengono i numeri dei cibi (la tabella e
+  la sua edizione), come si stima l'energia usata (Mifflin-St Jeor per il
+  riposo, le attività), che sono stime, e «Only you see this page. What
+  you write here stays on your phone; a barcode you look up goes to Open
+  Food Facts.». Per i prodotti trovati col codice a barre nomina Open Food
+  Facts e la Open Database License, col collegamento a openfoodfacts.org.
+- **Un cibo dal codice a barre** (parte G, `nutrition/BarcodeStep.tsx`):
+  nella ricerca, sotto «Add my own food», «Type the code» apre il campo
+  «Barcode» con «Only the barcode goes to Open Food Facts, to find the
+  product.» e «Look up» (attivo solo con un codice di 8, 12, 13 o 14
+  cifre). Il prodotto trovato: nome, «from Open Food Facts», kcal per
+  100 g, il codice, «Check the numbers against the label: you can correct
+  them.», poi «Use this food», «Edit», «Cancel». Non trovato: «This
+  product is not on Open Food Facts.»; senza calorie: «Open Food Facts has
+  no calories for this product.»; in tutti e due i casi «Add my own food»
+  tiene il codice. Senza rete: «The product could not be looked up. Check
+  your connection and try again.» con «Try again». Il lettore con la
+  fotocamera («Scan a barcode») arriva con la build nativa.
+- **Con Salute di Apple** (parte C2, spenta fino alla build nativa): in
+  «Energy you use», prima del sì, il pulsante **«Use Apple Health»** e
+  sotto «MuW reads your active energy and the workouts other apps
+  recorded, to count the energy you use. They are read on your phone and
+  stay there.». Dopo il sì: in un giorno che ha l'energia attiva di Salute
+  la riga «Active energy» col segno «from Apple Health» conta da sola, le
+  attività restano in elenco in grigio e sotto c'è «Your activities are
+  already inside Apple Health's active energy: they are not added again.»;
+  in un giorno senza, «Apple Health has nothing for this day: your
+  activities are counted.» e gli allenamenti delle altre app stanno
+  nell'elenco con «from Apple Health». In fondo «Stop using Apple Health».
+  Mentre Salute risponde «Used (est.)» è «—». Gli allenamenti delle altre
+  app non entrano in «My activities».
+- I pulsanti sono quelli neutri dell'app, mai gialli; i numeri non hanno il
+  separatore delle migliaia.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di
@@ -5623,3 +5971,46 @@ pagina per liberare memoria, la WebView la ricarica da sola.
 - **Le notifiche** e le righe della campanella delle corse di gruppo aprono
   la pagina.
 
+## Il disegno a mano agganciato alle strade (TASK-347 parte C, ADR-0300)
+
+In «Draw on the map» un disegno a mano (la figura «drawing», da sola, senza
+altri pezzi) si aggancia alle strade mentre lo disegni, tratto per tratto,
+300 ms dopo che il dito si alza: prima sul telefono, poi sul server
+(`engine/matchOnPhone.ts`, parte B).
+
+- **Sulla mappa**: il disegno come l'ha fatto il dito resta come
+  **fantasma**, lo stesso giallo, sottile (2 pt) e semitrasparente (0,45).
+  Sopra c'è il **percorso agganciato** in giallo pieno, come un percorso.
+  Dove la strada passa a più di 40 m dal dito (`FAR_M`), quel tratto del
+  percorso prende il colore `warning`. Le linee agganciate arrivano alla
+  pagina con un messaggio a parte (`setAnchored`), così non cancellano mai
+  la linea che il dito sta disegnando.
+- **Sotto la mappa**, sopra la distanza: «Snapping to roads…» mentre un
+  tratto si aggancia, poi «Roads follow your drawing: 87%». Il numero è la
+  quota dei punti disegnati con una strada entro 40 m; dopo «Draw route»
+  sarà la somiglianza del motore (parte C3). Non va nei post. Il numero si
+  legge con VoiceOver (regione «polite»), quindi il colore non è l'unico
+  segnale.
+- **Fuori strada**: se un tratto è in campagna resta fantasma e la nota
+  dice «No roads here: this line stays as you drew it.» nel colore
+  `warning`.
+- **Senza risposta** (niente rete e niente zona, o un server vecchio): il
+  tratto resta fantasma senza avvisi e si riprova al tratto dopo.
+- **Undo e Redo**: le risposte restano in memoria (200), quindi un Undo e
+  poi un Redo ridisegnano subito l'aggancio di prima.
+- Forme, immagini, foto e pezzi non si agganciano: arrivano nelle parti D
+  ed E.
+- **«Draw route» ancorato** (parte C3): un disegno a mano si chiede con
+  `placement: "anchored"`, senza magnete (quello del motore). Il percorso
+  resta dove e come l'hai disegnato: non viene girato, spostato né
+  ingrandito, e sotto c'è il fantasma (`placed_outline`), nello stesso posto.
+  Si chiede così solo a un server che risponde alla sonda
+  (`GET /stroke-matches`); con un server vecchio, o senza risposta, il
+  disegno va libero come prima. Se sulle strade il disegno viene più lungo
+  o più corto di oltre il 10%, una nota lo dice: «On the roads your drawing
+  is 53% longer: 7.6 km. It stays where you drew it, at the same size.»
+- **Il punteggio dopo «Draw route»** (parte C3b): sotto il percorso di un
+  disegno ancorato torna «Roads follow your drawing: N%», con la
+  somiglianza del motore del percorso sullo schermo (stesso testo, già
+  tradotto). Solo con un percorso: con più percorsi le tessere A, B, C
+  dicono già ognuna la sua.

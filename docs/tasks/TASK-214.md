@@ -11,6 +11,9 @@ miglioramento, da misurare e proporre all'utente (parte nuova). Scelto
 dall'utente lo stesso giorno: la parte E, la zona più larga intorno al
 telefono, in `main` dalla #546 (`7da61107`, 2026-10-25). Restano i criteri
 ancora aperti qui sotto e le zone dove il server risponde `404`.
+2026-11-26: parte F, la pagina del motore che tiene troppa memoria si
+chiude dopo il percorso (aggiunta F ad ADR-0177), dalla prova generale.
+**Prova sul telefono** (il percorso in modalità aereo, con la zona già scaricata): provato dall'utente il 2026-11-26, «ok»; i secondi non sono stati annotati. Il task resta aperto per le zone dove il server dà 404.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 
@@ -331,12 +334,18 @@ l'utente, in inglese, poi tradotti con `t()`). Proposta:
       (test, parte A).
 - [ ] Le impronte di telefono, Mac e server sulle stesse richieste sono
       confrontate, e le differenze annotate qui.
-- [ ] Senza rete, con la zona salvata, l'app disegna un cuore da 5 km sul
-      telefono. Fatto nel simulatore con l'API spenta (parte B); manca
-      l'iPhone (parte D).
+- [x] Senza rete, con la zona salvata, l'app disegna un cuore da 5 km sul
+      telefono. Fatto nel simulatore con l'API spenta (parte B, e di nuovo
+      il 2026-11-26); sull'iPhone dall'utente il 2026-11-26, «ok».
 - [x] Senza zona, o con la WebView chiusa da iOS, la richiesta va al
       server, e chi usa l'app non vede errori (test della parte B).
-- [ ] Tempi e memoria misurati sull'iPhone, scritti qui.
+- [ ] Tempi e memoria misurati sull'iPhone, scritti qui (il 2026-11-26
+      misurati sul Mac e nel simulatore, sotto «Parte F»).
+- [x] Parte F: prova nel simulatore con una zona grande e poi una piccola
+      (2026-11-26, sotto «Parte F»).
+- [x] Parte F: CI verde, #1616 unita dal Coordinatore (`cfa8c35f`,
+      2026-11-26).
+- [ ] Parte F: OTA di produzione (Coordinatore, col sì dell'utente).
 - [x] In «Settings» lo spazio delle mappe del telefono, con «Delete», e
       sopra «Draw route» l'avviso del primo download, nelle cinque lingue
       (test e simulatore, parte C).
@@ -828,3 +837,42 @@ aspetta la lettura della zona.
 **Seguito fuori dal task**: una scadenza per le partenze vicine anche senza
 processi, in `route_engine`, in un task suo. Il telefono disegnerebbe
 percorsi più lunghi in meno tempo.
+
+**Parte F, la memoria del motore** (2026-11-26, aggiunta F ad ADR-0177;
+ramo `fix/TASK-214-f-engine-memory`, in `main` dalla #1616, `cfa8c35f`):
+
+- **La prova generale** (2026-11-26, `out/prova-generale-214/ESITO.md` e
+  `out/prova-generale-sim/ESITO.md` del Mac). Il motore dell'app
+  (`pyodide.zip` ed `engine.zip`) in Node senza rete, zero richieste:
+
+  | Percorso | Zona | Pyodide | CPython | Esito |
+  |---|---|---|---|---|
+  | Cuore 5 km, Trento centro | 2,7 MB | 13,9–17,6 s | 6,1 s | 3,87 km, 0,89 |
+  | Stella 5 km, Trento | 2,7 MB | 1,7–2,8 s | 1,4 s | 4,94 km, 0,99 |
+  | Cuore 5 km, Milano | 5,9 MB | 5,1 s | 3,2 s | 5,39 km, 0,97 |
+  | Cuore 5 km, Berlino | 31,8 MB | 3,6 s (+13,5 s di lettura) | — | 4,72 km, 0,94 |
+
+  Stesso percorso di CPython al decimale; il Mac era carico (load ~12).
+  Nell'app nel simulatore, con l'API a un indirizzo che non risponde: il
+  cuore di Trento 9,9 s di motore (16,4 s il primo, con l'avvio), la
+  stella 1,9 s, il cuore di Milano 5,5 s. Il cuore di Trento centro è
+  duro per il motore (30 tentativi, −23%, 373 m di scale), anche sul server.
+- **La memoria** non scende mai: 338 MB dopo Trento, 584 dopo Milano,
+  1,3–1,4 GB dopo Berlino, anche per i percorsi dopo; otto stelle di fila
+  si fermano a 338 MB (nessuna perdita).
+- **Il fix**: dopo un percorso, un «way back» o un tratto oltre
+  `MEMORY_RELEASE_MB` (700) e senza richieste in attesa, la pagina si
+  chiude (`reload()`); la richiesta dopo ne monta una nuova. Non dopo la
+  lettura anticipata; non conta come morte.
+- **Test**: `phoneEngineMemory.test.ts` (7: chiusura dopo un percorso,
+  sotto la soglia resta, con richieste in attesa resta e si chiude dopo
+  l'ultima, «way back» e tratto, lettura anticipata, nessuna morte,
+  nessuna richiesta persa); 3 falliscono senza il fix. I 40 test di
+  `phoneEngine*` verdi, `tsc`, eslint e prettier puliti.
+- **Prova nel simulatore** (2026-11-26, iPhone 17e, Expo Go 57, l'app
+  senza server, codice della #1616): cuore 5 km a Trento, pagina a 282 MB;
+  cuore 5 km a Tokyo (zona da 28 MB), 1043 MB, e la pagina si chiude;
+  di nuovo Trento su una pagina nuova (avvio 3,3 s), 282 MB invece di
+  restare sopra 1 GB; poi la stella sulla stessa pagina, 282 MB. Percorsi
+  uguali a prima. Schermata `out/prova-generale-sim/214f-grande-poi-piccola.png`
+  del Mac.

@@ -2,6 +2,7 @@
 
 **Stato**: In corso · proposta in `main` (#766, #796); parte A (API e
 database) in PR; ogni parte dopo la sua lista dei file al Coordinatore
+**Prova sul telefono** (G, il battito in palestra): fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-385-gym-proposal` (documenti); il
 codice `feat/TASK-385-a-…`
 **Dipende da**: la #758 (TASK-375 B2), TASK-376 B2 e B3 (il registro degli
@@ -430,3 +431,18 @@ I nomi degli esercizi e delle figure sono in `docs/sports/gym.md`.
 - 2026-11-06: parte F in `main` (#918, 7208c25e); impronta iOS 6f8bba4c
   misurata dal Coordinatore. Server, sito della privacy e OTA col sì
   dell'utente. Prossima: G.
+- 2026-11-23: parte G proposta (`out/TASK-385/PROPOSTA-G.md`, ADR-0327,
+  precisazione G). Scelta dell'utente: «Un sì per tutti», un solo consenso
+  a Salute per nuoto e palestra. Liste dei file approvate dal Coordinatore.
+- 2026-11-23: G1 in `main` (#1440, `d577db69`): `heart_avg_bpm`,
+  `heart_max_bpm` e `heart_shown` nell'allenamento, nelle colonne di `runs`
+  della 0061, senza migrazione. Server al **passo 20** (`c99dd46b`,
+  controllo «gym heart ok workouts 1 with heart 0»), fatto dal
+  Coordinatore col sì dell'utente.
+- 2026-11-23: G2 in `main` (#1459, `020cb5b8`): il battito a fine
+  allenamento con i pulsanti e le righe del nuoto, le kcal di Keytel col
+  battito e il corpo, «Show heart rate» nel modulo, la media nella tessera
+  e nella scheda del Feed. Niente testi nuovi, niente nativo. Restano G3
+  (la frase di Salute allargata alla palestra, `out/TASK-385/PRIVACY-G.md`,
+  al turno della privacy col sì dell'utente) e l'OTA del Coordinatore.
+  Prossima: H (video), con la build 1.0.2.

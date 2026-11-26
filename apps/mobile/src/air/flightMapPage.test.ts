@@ -24,7 +24,8 @@ function runPage() {
     { data: unknown; setData: (data: unknown) => void }
   >();
   const layers: Layer[] = [];
-  const handlers = new Map<string, () => void>();
+  const handlers = new Map<string, (event?: unknown) => void>();
+  let timer: (() => void) | null = null;
   const visibility = new Map<string, string>();
   const eases: Record<string, unknown>[] = [];
   let terrain: unknown = "unset";
@@ -41,7 +42,7 @@ function runPage() {
       return 2600;
     }
     addControl() {}
-    on(event: string, handler: () => void) {
+    on(event: string, handler: (event?: unknown) => void) {
       handlers.set(event, handler);
     }
     once(event: string, handler: () => void) {
@@ -105,6 +106,13 @@ function runPage() {
       interval = handler;
       return 0;
     },
+    setTimeout: (handler: () => void) => {
+      timer = handler;
+      return 1;
+    },
+    clearTimeout: () => {
+      timer = null;
+    },
     ReactNativeWebView: {
       postMessage: (text: string) =>
         posts.push(JSON.parse(text) as Record<string, unknown>),
@@ -139,6 +147,12 @@ function runPage() {
     load: () => handlers.get("load")!(),
     render: () => handlers.get("render")!(),
     tick: () => interval!(),
+    fire: (event: string, value: unknown) => handlers.get(event)!(value),
+    timeUp: () => {
+      const run = timer;
+      timer = null;
+      run?.();
+    },
     data: (id: string) => sources.get(id)?.data,
     flight,
   };
@@ -228,4 +242,113 @@ it("reads only its own messages", () => {
   });
   expect(parseFlightMapMessage('{"type":"fps","fps":"x"}')).toBeNull();
   expect(parseFlightMapMessage("{")).toBeNull();
+});
+
+it("draws the pilot's airspaces: volumes in 3D, areas on the plain map, under the track", () => {
+  const page = runPage();
+  page.load();
+  const ids = page.layers.map((layer) => layer.id);
+  expect(ids).toEqual(
+    expect.arrayContaining([
+      "flight-airspace-volume",
+      "flight-airspace-area",
+      "flight-airspace-edge",
+    ]),
+  );
+  const volume = page.layers.find((layer) => layer.id === "flight-airspace-volume")!;
+  expect(volume.paint?.["fill-extrusion-color"]).toEqual([
+    "case",
+    ["get", "danger"],
+    color.error,
+    color.warning,
+  ]);
+  expect(page.visibility.get("flight-airspace-volume")).toBe("visible");
+  expect(page.visibility.get("flight-airspace-area")).toBe("none");
+  page.flight.setView(false, true);
+  expect(page.visibility.get("flight-airspace-volume")).toBe("none");
+  expect(page.visibility.get("flight-airspace-area")).toBe("visible");
+  const areas = { type: "FeatureCollection", features: [] };
+  (page.flight as unknown as { setAirspace: (data: unknown) => void }).setAirspace(
+    areas,
+  );
+  expect(page.data("flight-airspace")).toBe(areas);
+});
+
+it("draws the pilot's task: the next cylinder filled, the edges, the way left dashed (D2)", () => {
+  const page = runPage();
+  page.load();
+  const ids = page.layers.map((layer) => layer.id);
+  expect(ids).toEqual(
+    expect.arrayContaining([
+      "flight-task-next",
+      "flight-task-edge",
+      "flight-task-route",
+    ]),
+  );
+  const edge = page.layers.find((layer) => layer.id === "flight-task-edge")!;
+  // Not by colour alone: the next one is thicker too.
+  expect(edge.paint?.["line-width"]).toEqual(["case", ["get", "next"], 4, 2]);
+  const route = page.layers.find((layer) => layer.id === "flight-task-route")!;
+  expect(route.paint?.["line-dasharray"]).toEqual([2, 2]);
+  const task = { type: "FeatureCollection", features: [] };
+  (page.flight as unknown as { setTask: (data: unknown) => void }).setTask(task);
+  expect(page.data("flight-task")).toBe(task);
+});
+
+describe("the pilot's waypoints (D5)", () => {
+  const touchAt = (x: number, fingers = 1) => ({
+    lngLat: { lat: 46.1, lng: 11.2 },
+    point: { x, y: 100 },
+    originalEvent: { touches: new Array(fingers).fill({}) },
+  });
+
+  it("tells the app where the map was pressed long", () => {
+    const page = runPage();
+    page.load();
+    page.fire("touchstart", touchAt(100));
+    page.timeUp();
+    expect(page.posts).toContainEqual({ type: "press", lat: 46.1, lon: 11.2 });
+  });
+
+  it("is no press when the finger moves or lifts, or with two fingers", () => {
+    const page = runPage();
+    page.load();
+    page.fire("touchstart", touchAt(100));
+    page.fire("touchmove", touchAt(130));
+    page.timeUp();
+    page.fire("touchstart", touchAt(100));
+    page.fire("touchend", touchAt(100));
+    page.timeUp();
+    page.fire("touchstart", touchAt(100, 2));
+    page.timeUp();
+    expect(page.posts.filter((one) => one.type === "press")).toEqual([]);
+  });
+
+  it("draws the waypoints, a landing as a ring, each with its name", () => {
+    const page = runPage();
+    page.load();
+    const dot = page.layers.find((layer) => layer.id === "flight-waypoint-dot")!;
+    expect(dot.paint?.["circle-opacity"]).toEqual(["case", ["get", "landing"], 0, 1]);
+    expect(page.layers.map((layer) => layer.id)).toContain("flight-waypoint-name");
+    const points = { type: "FeatureCollection", features: [] };
+    (page.flight as unknown as { setWaypoints: (data: unknown) => void }).setWaypoints(
+      points,
+    );
+    expect(page.data("flight-waypoints")).toBe(points);
+  });
+
+  it("reads a press back, on the earth only", () => {
+    expect(
+      parseFlightMapMessage(JSON.stringify({ type: "press", lat: 46, lon: 11 })),
+    ).toEqual({
+      type: "press",
+      point: [46, 11],
+    });
+    expect(
+      parseFlightMapMessage(JSON.stringify({ type: "press", lat: 95, lon: 11 })),
+    ).toBeNull();
+    expect(
+      parseFlightMapMessage(JSON.stringify({ type: "press", lat: "46" })),
+    ).toBeNull();
+  });
 });

@@ -18,6 +18,14 @@ from the repository's root:
 The files go to apps/mobile/assets/sounds/vario/, which the app bundles
 like its images. ``apps/mobile/src/air/varioTone.ts`` holds the same
 numbers: a level there is a file here.
+
+Since part E2, also ``alert.wav`` in apps/mobile/assets/sounds/airspace/:
+the airspace warning, two falling notes (880 Hz, then 660 Hz), played once
+when a volume of the pilot's file comes within the warning's distance.
+
+Since part D2, also ``turnpoint.wav`` in apps/mobile/assets/sounds/task/:
+a turnpoint of the pilot's task taken, three rising notes (660, 880,
+1100 Hz), the other way from the warning, before the voice says its name.
 """
 
 from __future__ import annotations
@@ -31,6 +39,8 @@ from pathlib import Path
 RATE = 22_050
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "apps" / "mobile" / "assets" / "sounds" / "vario"
+ALERT_DIR = ROOT / "apps" / "mobile" / "assets" / "sounds" / "airspace"
+TASK_DIR = ROOT / "apps" / "mobile" / "assets" / "sounds" / "task"
 
 CLIMB_STEP_MPS = 0.5
 CLIMB_LEVELS = 11
@@ -51,6 +61,14 @@ SINK_HIGH_HZ = 400.0
 SINK_LOW_HZ = 250.0
 SINK_SECONDS = 0.5
 SINK_PEAK = 0.55
+
+ALERT_HZ = (880.0, 660.0)
+ALERT_NOTE_S = 0.18
+ALERT_GAP_S = 0.06
+
+TURNPOINT_HZ = (660.0, 880.0, 1100.0)
+TURNPOINT_NOTE_S = 0.12
+TURNPOINT_GAP_S = 0.04
 
 
 def climb_mps(level: int) -> float:
@@ -125,6 +143,30 @@ def sink_file(level: int) -> tuple[str, bytes]:
     return f"sink-{level}.wav", samples(steady(sink_hz(level)), frames)
 
 
+def alert_file() -> tuple[str, bytes]:
+    """The name and the frames of the airspace warning: two notes, a gap
+    between them and after."""
+    note = round(RATE * ALERT_NOTE_S)
+    gap = round(RATE * ALERT_GAP_S)
+    data = b""
+    for hz in ALERT_HZ:
+        data += samples(beep(hz, ALERT_NOTE_S), note)
+        data += samples(lambda t: 0.0, gap)
+    return "alert.wav", data
+
+
+def turnpoint_file() -> tuple[str, bytes]:
+    """The name and the frames of a turnpoint taken: three rising notes,
+    a gap after each."""
+    note = round(RATE * TURNPOINT_NOTE_S)
+    gap = round(RATE * TURNPOINT_GAP_S)
+    data = b""
+    for hz in TURNPOINT_HZ:
+        data += samples(beep(hz, TURNPOINT_NOTE_S), note)
+        data += samples(lambda t: 0.0, gap)
+    return "turnpoint.wav", data
+
+
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     files = [climb_file(level) for level in range(CLIMB_LEVELS)]
@@ -132,6 +174,14 @@ def main() -> None:
     for name, data in files:
         write(OUT_DIR / name, data)
         print(f"{OUT_DIR / name}: {len(data) // 2} frames")
+    ALERT_DIR.mkdir(parents=True, exist_ok=True)
+    name, data = alert_file()
+    write(ALERT_DIR / name, data)
+    print(f"{ALERT_DIR / name}: {len(data) // 2} frames")
+    TASK_DIR.mkdir(parents=True, exist_ok=True)
+    name, data = turnpoint_file()
+    write(TASK_DIR / name, data)
+    print(f"{TASK_DIR / name}: {len(data) // 2} frames")
 
 
 if __name__ == "__main__":

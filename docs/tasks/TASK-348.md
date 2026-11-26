@@ -1,7 +1,8 @@
 # TASK-348 — Il compositore del post: foto e video in primo piano, il disegno GPS, un editor
 
-**Stato**: Proposta · 2026-10-30 · le scelte di prodotto fatte dall'utente
-il 2026-10-30; nulla di nativo prima del taglio della 1.0.2
+**Stato**: Fermo — in attesa · 2026-11-24 (scelta dell'utente del 2026-11-24 sui task aperti): A in `main` (la sua prova sul telefono è nella prova generale); B–D, idee approvate e mai partite, da rivalutare più avanti; si riprendono col sì dell'utente.
+Prima del 2026-11-24: Proposta · 2026-10-30 · le scelte di prodotto fatte dall'utente il 2026-10-30; nulla di nativo prima del taglio della 1.0.2
+**Prova sul telefono della parte A**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 4 · **Branch**: `docs/TASK-348-post-composer` (documenti), poi
 una PR per parte
 **ADR**: ADR-0301 (proposta), che estende ADR-0170 (le foto dei post),

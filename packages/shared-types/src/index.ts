@@ -56,13 +56,49 @@ export const SHAPES = [
   "swan",
   "windmill",
   "wine_glass",
+  "ball",
+  "bell",
+  "candy_cane",
+  "colosseum",
+  "croissant",
+  "dolphin",
+  "dome",
+  "easter_egg",
+  "eiffel_tower",
+  "flower",
+  "fox_head",
+  "gift",
+  "infinity",
+  "leaf",
+  "light_bulb",
+  "medal",
+  "mountain",
+  "owl",
+  "padlock",
+  "peace",
+  "penguin",
+  "pizza_slice",
+  "racket",
+  "reindeer",
+  "santa_hat",
+  "scooter",
+  "skis",
+  "snowflake",
+  "snowman",
+  "stocking",
+  "strawberry",
+  "triumphal_arch",
+  "trophy",
+  "turtle",
+  "umbrella",
 ] as const;
 export type Shape = (typeof SHAPES)[number];
 
 /** The shapes that may be drawn with the pen up (TASK-223, ADR-0185): the
  * outline, then each piece on its own, walking from one to the next. The
- * first five lift off their eyes; the others have pieces apart, the last four
- * the new shapes of TASK-418, which the app draws with the pen down. */
+ * first five lift off their eyes; the others have pieces apart, from anchor on
+ * the new shapes of TASK-418 and TASK-516, which the app draws with the pen
+ * down. */
 export const PEN_UP_SHAPES = [
   "cat",
   "fish",
@@ -77,6 +113,30 @@ export const PEN_UP_SHAPES = [
   "bear_head",
   "bicycle",
   "espresso_cup",
+  "ball",
+  "bell",
+  "colosseum",
+  "dolphin",
+  "dome",
+  "easter_egg",
+  "flower",
+  "fox_head",
+  "gift",
+  "infinity",
+  "leaf",
+  "light_bulb",
+  "medal",
+  "mountain",
+  "owl",
+  "padlock",
+  "peace",
+  "penguin",
+  "pizza_slice",
+  "racket",
+  "strawberry",
+  "triumphal_arch",
+  "trophy",
+  "turtle",
 ] as const satisfies readonly Shape[];
 export type PenUpShape = (typeof PEN_UP_SHAPES)[number];
 
@@ -552,7 +612,7 @@ export interface RouteJobWithFirst extends RouteJob {
 
 /** What the app sends to POST /gpx to get the route as a GPX file (ADR-0033). */
 export interface GpxRequest {
-  request: RouteRequest | ImageRouteRequest;
+  request: RouteRequest | ImageRouteRequest | ImagePenUpRouteRequest;
   result: RouteResult;
 }
 
@@ -683,7 +743,8 @@ export interface ImageRouteRequest {
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
-  /** No letters to draw with the pen up: true is refused (TASK-197). */
+  /** True only with the pieces of the outline: ImagePenUpRouteRequest
+   * (TASK-297); without them it is refused (TASK-197). */
   pen_up?: false;
   /** A swim of a drawing (TASK-323): as RouteRequest.laps. */
   laps?: number | null;
@@ -1543,7 +1604,7 @@ export const COMMENT_REPLIES_SHOWN = 2;
 export interface Comment {
   id: string;
   /** Who wrote it: never the email. */
-  author: DrawingAuthor;
+  author: CommentAuthor;
   /** Plain text: shown as text, never as a link or HTML. */
   text: string;
   created_at: string;
@@ -1686,6 +1747,13 @@ export interface FeedAuthor extends DrawingAuthor {
    */
   photo?: string | null;
 }
+
+/**
+ * Who wrote a comment or a reply (TASK-497): `photo` as in the feed. Missing
+ * from an API of before, and then the picture is the profile's, from
+ * GET /users/{public_id}.
+ */
+export type CommentAuthor = FeedAuthor;
 
 /** The reactions of a post, as its card shows them. */
 export interface FeedReactions {
@@ -1888,7 +1956,8 @@ export interface DrawingSearchPage extends FeedPage {
  * What a member reports with POST /reports (TASK-121, ADR-0228): a drawing
  * (a post of the feed), a comment, a member, a group run (TASK-309), a
  * private message (TASK-319: only the one it was sent to reports it), an
- * item tagged on a photo (TASK-394), or an item of gear (TASK-486).
+ * item tagged on a photo (TASK-394), an item of gear (TASK-486), or a
+ * group (TASK-495: reported of its admin).
  */
 export const REPORT_KINDS = [
   "drawing",
@@ -1898,6 +1967,7 @@ export const REPORT_KINDS = [
   "message",
   "outfit_tag",
   "gear",
+  "group",
 ] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
@@ -2758,6 +2828,30 @@ export interface MessagesPage {
    * conversation. Missing from an API before it: then no «+».
    */
   attachments?: AttachmentsAllowed | null;
+  /**
+   * The `after` of the next check (TASK-498): the place of the newest
+   * message, `0-000…0` in a conversation without one; null on a page of
+   * older ones. Missing from an API before it: then the app asks the page
+   * again, as it always did.
+   */
+  latest?: string | null;
+}
+
+/**
+ * GET /conversations/{public_id}/messages?after=<latest>: what came after a
+ * place, for a conversation on screen (TASK-498). Never the other's picture
+ * nor what may be attached: the page says them, and what this cannot say (a
+ * message deleted, a name changed). 404 and 422 as the page; 422 with
+ * `cursor` too. An API before it ignores `after` and answers a MessagesPage.
+ */
+export interface MessageNews {
+  state: ConversationState;
+  /** Those after `after`, the latest first; none when nothing came. */
+  messages: Message[];
+  /** More came than a page holds: the first page is read again. */
+  more: boolean;
+  /** The `after` of the next check. */
+  latest: string;
 }
 
 /** The most `unread_count` counts: beyond it the app says «9+» anyway. */
@@ -3093,6 +3187,8 @@ export type NotificationOpens =
   | { kind: string; group_run_id: string }
   | { kind: string; challenge_id: string }
   | { kind: string; drawing_id: string }
+  /** An item of gear past its limit (TASK-486 part G): it opens the item. */
+  | { kind: string; gear_id: string }
   | { kind: string; public_id: string; username: string };
 
 /** GET /notifications: the newest first, with how many are unread. */
@@ -3101,6 +3197,16 @@ export interface NotificationsPage {
   unread: number;
   /** Ask with ?before= for the next page; null at the end. */
   before: number | null;
+}
+
+/**
+ * GET /notifications/unread (TASK-499): the bell's number alone, the same as
+ * `NotificationsPage.unread`, for the header to ask every few minutes
+ * without a page of lines and pictures. A server of before answers 404: the
+ * app reads the number from the first page then.
+ */
+export interface NotificationsUnread {
+  unread: number;
 }
 
 /** POST /notifications/read: the newest line the app showed; 204. */
@@ -3153,6 +3259,37 @@ export interface StylePage {
 /** POST /style/tags/{id}/shop: what the app opens in the browser. */
 export interface StyleShop {
   url: string;
+}
+
+/**
+ * An image with the pen up (TASK-297 part C2, ADR-0258): the other subjects
+ * and the holes of a picture are pieces apart from its outline, each drawn
+ * on its own, and the route walks from one to the next without drawing, as
+ * between the letters of a word with the pen up (TASK-197). These two fields
+ * join ImageOutline above: TypeScript merges the two declarations.
+ */
+export interface ImageOutline {
+  /** Lines apart from the outline, in the frame of `points`, the largest
+   * first; a closed one repeats its first point. What an
+   * ImagePenUpRouteRequest sends back instead of the strokes. Empty when
+   * the picture has none, or more than a route has walks, and after an
+   * edit (TASK-079); missing from an API older than TASK-297. */
+  pieces?: OutlinePoint[][];
+  /** The same pieces over the image, like `image_points`. */
+  image_pieces?: OutlinePoint[][];
+}
+
+/**
+ * What the app sends to POST /image-route-jobs to draw an image with the pen
+ * up: its outline, then each of its pieces on its own. The result has
+ * `walks`, as a word with the pen up, and neither shape nor word; the
+ * distance is the drawing's, the walks on top. The API refuses `pen_up`
+ * without pieces, and pieces without `pen_up`.
+ */
+export interface ImagePenUpRouteRequest extends Omit<ImageRouteRequest, "pen_up"> {
+  /** The `pieces` of an ImageOutline, unchanged: at least one. */
+  pieces: OutlinePoint[][];
+  pen_up: true;
 }
 
 export * from "./gym.ts";
@@ -3223,6 +3360,12 @@ export interface OutfitTag {
   /** Times opened and «Shop» touched, in all: to the owner only, else null. */
   opens: number | null;
   shops: number | null;
+  /**
+   * The item of gear it is (TASK-486 part F): the dot opens it. Null, or
+   * absent from an API of before, when there is none or who asks does not
+   * see that item.
+   */
+  gear_id?: string | null;
 }
 
 /** One item of PUT /me/activities/{key}/drawing/photos/{n}/tags. */
@@ -3236,6 +3379,11 @@ export interface OutfitTagRequest {
   product_name?: string | null;
   /** A shop's https page; the API cleans it before keeping it. */
   url?: string | null;
+  /**
+   * One of its owner's gear (TASK-486 part F). Not sent, an item kept keeps
+   * the one it had; null takes it off.
+   */
+  gear_id?: string | null;
 }
 
 /**
@@ -3268,3 +3416,5 @@ export * from "./planPosts.ts";
 export * from "./together.ts";
 export * from "./gymHistory.ts";
 export * from "./gear.ts";
+export * from "./groups.ts";
+export * from "./flyingSites.ts";

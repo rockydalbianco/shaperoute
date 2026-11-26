@@ -182,3 +182,10 @@ test("«Find an exercise» opens the catalog", async () => {
   await fireEvent.press(screen.getByTestId("training-find-exercise"));
   expect(screen.getByPlaceholderText(/./)).toBeOnTheScreen();
 });
+
+test("«How it works» is at the end, with «How plans work» (part E)", async () => {
+  await shown(true, api([PUSH]));
+  expect(screen.getByRole("header", { name: "How it works" })).toBeOnTheScreen();
+  expect(screen.getByText("Pick an exercise from the grid")).toBeOnTheScreen();
+  expect(screen.getByTestId("training-how-plans")).toBeOnTheScreen();
+});

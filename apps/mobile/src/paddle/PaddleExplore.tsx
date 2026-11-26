@@ -55,10 +55,13 @@ import {
   type WaterSpot,
 } from "./waterSpots";
 import { useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 import { ExploreSearch } from "../explore/ExploreSearch";
 import { postRoute } from "../feed/feedRoute";
 import type { SamplePost } from "../feed/sampleFeed";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /** Where the examples come from: a spot chosen, or «Near me», from the
  * start of «Draw» as it was when «Near me» began (null: there was none).
@@ -153,6 +156,8 @@ export function PaddleExplore({
   const scroll = useScrollToTopOnReselect<ScrollView>();
   // The header turns to glass once the list scrolls (TASK-469 A5b).
   const headerScroll = useHeaderScroll();
+  // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
+  const barRoom = useTabBarRoom();
   const { width } = useWindowDimensions();
   const [chosen, setChosen] = useState<Chosen>(() => kept);
   const [started, setStarted] = useState<LatLon | null>(() => firstStart ?? near);
@@ -248,7 +253,7 @@ export function PaddleExplore({
         {...headerScroll}
         contentContainerStyle={[
           styles.list,
-          { paddingBottom: insets.bottom + space.lg },
+          { paddingBottom: insets.bottom + space.lg + barRoom },
         ]}
         keyboardShouldPersistTaps="handled"
       >
@@ -440,6 +445,8 @@ function WaterExamples({
               key={example.shape}
               width={card}
               line={null}
+              // What is coming, in grey, until its route is here (TASK-509).
+              outline={example.shape}
               title={name}
               detail={
                 example.status === "failed" ? t("Not drawn") : t(STATUS[example.status])
@@ -476,9 +483,11 @@ function PlaceChip({
   here?: boolean;
   onPress: () => void;
 }) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   return (
     <Tap
-      style={[styles.chip, on && styles.chipOn]}
+      style={[styles.chip, chipRaise, on && styles.chipOn]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: on }}

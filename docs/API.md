@@ -470,7 +470,9 @@ che non è un numero fra −180 e 180 si legge `0`.
 query di `/recommended-routes` e di `/catalog`. **Senza, le corse**, come
 prima che il catalogo avesse altro: un'app che non lo chiede riceve le
 stesse risposte di prima, byte per byte. Con `activity=cycling` le uscite
-disegnate per la bici (20–30 km) e solo quelle; un'attività che il catalogo
+disegnate per la bici e solo quelle (da 20 a 30 km; da TASK-441 B3 anche da
+40 e 50 km, che stanno solo nel catalogo: «Draw» in bici resta a 10–30 km,
+e l'API non controlla la distanza di un disegno del catalogo); un'attività che il catalogo
 non ha dà una lista vuota (`total` e `cities` a 0 in `/catalog`), mai un
 errore. Nella risposta, nell'elenco e nel percorso intero, il campo
 `activity` **c'è solo quando non è una corsa** (`"cycling"`): manca, non è
@@ -1433,6 +1435,19 @@ multipart, che vorrebbe `python-multipart`. La risposta, in meno di 2 s:
   il collegamento, dalla linea già disegnata al soggetto; il resto è il
   contorno del soggetto, che si chiude sul secondo punto. Vuoti con un
   soggetto solo. L'app li disegna e li rimanda senza cambiarli.
+- `pieces` e `image_pieces` (dal TASK-297 C2, ADR-0258): per la penna
+  alzata, gli altri soggetti e i fori che valgono almeno il 3 % del loro
+  soggetto, come linee staccate dal contorno, nei due sistemi di `points`
+  e `image_points`, dal più grande al più piccolo; una chiusa ripete il
+  primo punto. Sono gli stessi soggetti dei `strokes` senza i gambi, più i
+  fori, che con la penna giù non ci sono. L'API ricalca l'immagine con
+  `outline_data(…, pen_up=True)` (il doppio del tempo, sotto 1 s sulle
+  prove) e li dà solo se il contorno con la penna alzata è lo stesso di
+  `points` nella stessa cornice (così è sulle 16 foto di «Draw» e sugli 8
+  loghi di `tools/sample_logos.py`) e se sono al più 8 (`MAX_WALKS`: un
+  percorso ha al più 8 camminate, e una corsa salvata le tiene); altrimenti
+  vuoti, e la foto si disegna come prima. Vuoti anche dopo una modifica
+  (`/image-outline-edits`): le modifiche sono della linea con la penna giù.
 
 Un'immagine che non dà un contorno è rifiutata con `422`
 `image_not_usable` e il motivo del motore in `reason`: `format`,
@@ -1474,6 +1489,19 @@ un'immagine oltre il limite sono `invalid_request`.
   ritorno due, quindi circa 100 punti di dettagli senza anello; poi `parse_outline` con i
   dettagli (ognuno parte dalla linea o da un dettaglio prima; possono
   incrociarsi e incrociare il contorno). Il percorso segue ogni dettaglio e torna indietro.
+- `pen_up: true` con `pieces` (dal TASK-297 C2, ADR-0258): i `pieces` di
+  un `ImageOutline`, senza cambiarli, al posto degli `strokes`; il motore
+  disegna il contorno, poi ogni pezzo per conto suo, e cammina dall'uno
+  all'altro senza disegnare, come una parola con la penna alzata: la
+  distanza chiesta è quella del disegno, le camminate in più, `walks` nel
+  `RouteResult` (con `"word": null`). Si controllano come il contorno
+  (numeri finiti, dentro [-1, 1]), al più 8 pezzi e 150 punti in tutto
+  (`MAX_SUBJECT_POINTS`), poi `parse_outline` **senza incroci**: un pezzo
+  non tocca il contorno, i tratti né un altro pezzo. `pen_up` senza
+  `pieces` è `422` `invalid_request` («pen_up is for the letters of a
+  word, or the pieces of an image: …»); `pieces` senza `pen_up` anche
+  («pieces: only with pen_up true; …»). In `shared-types` è
+  `ImagePenUpRouteRequest`; vale anche dentro `/gpx`.
 
 ### Modificare il contorno (TASK-079)
 
@@ -2331,7 +2359,8 @@ sopra), una casella non spuntata all'iscrizione (`away_email` di `POST
   `Idempotency-Key` per assenza. La chiave e l'indirizzo non vanno mai nel
   log.
 - **Spenta** senza `RESEND_API_KEY`, `SHAPEROUTE_EMAIL_SECRET` (almeno 32
-  caratteri) e `SHAPEROUTE_DOMAIN`: niente giro e niente pagina, e l'API
+  caratteri) e `SHAPEROUTE_DOMAIN`, **e finché `SHAPEROUTE_EMAIL_ROUNDS`
+  non nomina `away`** (ADR-0410): niente giro e niente pagina, e l'API
   lo dice all'avvio (`docs/DEPLOY.md`, «Email di ritorno»). A mano:
   `python -m shaperoute_api.away_email` conta chi la riceverebbe adesso,
   `--send` fa un giro.
@@ -2381,8 +2410,10 @@ subito); la lingua come l'email di ritorno. Il codice in
 - **Il thread** del giro parte con l'app e si ferma, anche a metà giro fra
   due email, prima che la fine dell'app chiuda il pool del database
   (TASK-288 B).
-- **Spenta** quando è spenta l'email di ritorno (`RESEND_API_KEY`,
-  `SHAPEROUTE_EMAIL_SECRET`, `SHAPEROUTE_DOMAIN`). A mano: `python -m
+- **Spenta** senza le tre variabili dell'email di ritorno
+  (`RESEND_API_KEY`, `SHAPEROUTE_EMAIL_SECRET`, `SHAPEROUTE_DOMAIN`), **e
+  finché `SHAPEROUTE_EMAIL_ROUNDS` non nomina `notices`** (ADR-0410): i due
+  giri si accendono ciascuno per conto suo. A mano: `python -m
   shaperoute_api.notice_email` conta chi la riceverebbe adesso, `--send`
   fa un giro.
 
@@ -2395,6 +2426,7 @@ tenuto per leggerlo nell'app (`notification_list.py`, tabella
 | Endpoint | Cosa | Risposta |
 |---|---|---|
 | `GET /notifications?before=` | le righe dell'account, le più recenti prima, 30 alla volta; `before` è l'`id` dato dalla pagina prima | `200` `NotificationsPage` (`fixtures/notifications.json`); `401` senza token; `422` con `before` < 1 |
+| `GET /notifications/unread` | solo il numero delle non lette, lo stesso `unread` della lista: quello che chiede il bollino dell'header (TASK-499) | `200` `NotificationsUnread` (`fixtures/notifications-unread.json`); `401` senza token; `404` da un server di prima |
 | `POST /notifications/read` | `{"up_to": id}`: segna lette le righe fino a quella, la più recente che l'app ha mostrato; una arrivata dopo resta non letta | `204`; `422` senza `up_to` o con altri campi |
 
 - **Cosa si tiene**: ogni evento che `push.py` lascia passare (non il
@@ -2414,8 +2446,17 @@ tenuto per leggerlo nell'app (`notification_list.py`, tabella
 - **Quello che non è più vero resta fuori**, come nell'email delle
   notizie: una richiesta ritirata, un follow finito, una reazione tolta,
   un commento cancellato o nascosto, un tag tolto, un disegno che non si
-  vede più; niente attraverso un blocco o da un account nascosto per una
+  vede più, un attrezzo cancellato (`gear_limit`, TASK-486 parte G, solo
+  nella campanella come `comment_reaction`); niente attraverso un blocco o da un account nascosto per una
   segnalazione. Il commento e la reazione si leggono come sono adesso.
+- **Il numero da solo** (TASK-499, aggiunta ad ADR-0311): la campanella
+  dell'header chiede `GET /notifications/unread` all'avvio, ogni 5 minuti
+  con l'app in primo piano, al ritorno e alla chiusura della lista. È
+  **una query sola**, con le stesse regole della lista (un pezzo solo di
+  SQL, `rules_sql`: blocchi, 90 giorni, quello che non è più vero, i
+  disegni che l'app legge), senza la lingua, i testi e le foto. La lista
+  intera si chiede solo aprendo la campanella. Con un `404` (un server di
+  prima) l'app legge `unread` dalla prima pagina, come prima.
 - **Per quanto**: `KEPT_DAYS`, 90 giorni dall'evento (durata e frase della
   privacy approvate dall'utente il 2026-11-04: «Sì, approvo»); le righe più vecchie non si mostrano e vanno via
   alla prima riga scritta dopo.
@@ -2937,9 +2978,20 @@ Tipi in `shared-types` (`CommentRequest`, `Comment`, `CommentsPage`,
   again.» con `Retry-After` in secondi. Il limite è dell'account, non
   dell'indirizzo, e vale per processo come quello delle foto.
 - **Un commento** ha `id` (UUID casuale), `author` (`public_id` e
-  `username`, come l'autore di un disegno: mai l'email; la foto si chiede
-  a `GET /users/{public_id}`), `text`, `created_at` e `deletable`: vero
-  quando chi chiede lo può cancellare.
+  `username`, come l'autore di un disegno: mai l'email), `text`,
+  `created_at` e `deletable`: vero quando chi chiede lo può cancellare.
+- **La foto di chi ha scritto** (TASK-497, in più): `author.photo` è
+  l'indirizzo della foto piccola, `/users/{public_id}/photo?v=…`, lo stesso
+  dell'autore di un post del feed («Feed», `avatars.py`: JPEG di 128 px, col
+  token, `Cache-Control: private, max-age=86400`; una foto nuova ha un
+  indirizzo nuovo); `null` senza foto. Vale per commenti e risposte, nelle
+  pagine, nella risposta del `POST` e nel commento tenuto con un super like
+  (`PUT /drawings/{id}/reaction`); `mention` resta `public_id` e
+  `username`. Costa una `LEFT JOIN` su `profile_photos.updated_at` nella
+  query che c'era: nessuna query in più, e la foto non viene letta. Un'app
+  di prima non legge il campo e chiede la foto a `GET /users/{public_id}`,
+  come fa l'app di adesso con un'API che non lo manda. Tipo `CommentAuthor`
+  in `shared-types`; test in `test_comment_author_photos.py`.
 - **Le pagine**: `GET /drawings/{id}/comments?limit=20&cursor=…`, `limit`
   da 1 a 50, **dal più vecchio**; `next` (il cursore della pagina dopo,
   `null` sull'ultima) e `total` (quanti ne ha il disegno) come nelle
@@ -2994,7 +3046,8 @@ esempi in `fixtures/comment-reply-request.json`, `comment-reply.json`,
   blocco, nascosto): `404 http_error` «No comment with this id.».
 - **I campi in più di un commento**: `parent_id` (`null` per un commento),
   `mention`, `reply_count` (quante risposte legge chi chiede; 0 per una
-  risposta), `replies` e `reactions`.
+  risposta), `replies` e `reactions`. L'`author` di una risposta porta
+  `photo` come quello di un commento (sopra, «La foto di chi ha scritto»).
 - **Con `threads=true`** la pagina ha solo i commenti, dal più vecchio, e
   ognuno porta in `replies` le sue **due risposte più vecchie**
   (`REPLIES_SHOWN`); le altre si chiedono a `GET /comments/{id}/replies`
@@ -3270,6 +3323,14 @@ database, `503`. Tipi in `shared-types` (`OutfitTag`, `OutfitTagRequest`,
   suoi; uno senza `id` è nuovo. `[]` li toglie tutti. Un `id` che non è di
   questa foto, o due volte: `422 invalid_request`. Al più **5 per foto e
   10 per post**.
+- **Da un attrezzo** (TASK-486 parte F, ADR-0393): un capo può portare
+  `gear_id`, un attrezzo di chi tagga (se no `422 invalid_request`);
+  l'app ne prende tipo, marca e modello, e il pallino apre l'attrezzo. Un
+  capo mandato col suo `id` e senza il campo (un'app di prima) tiene il
+  `gear_id` che aveva; `null` lo toglie. Nelle foto `gear_id` arriva a chi
+  vedrebbe l'attrezzo (`gear.py`): agli altri mai uno «Hide from profile»
+  o nascosto dopo una segnalazione, e allora è `null`. Cancellato
+  l'attrezzo, il capo resta senza legame. Test in `test_outfit_gear.py`.
 - **Solo dove stanno le foto**: la corsa del proprietario, con il disegno
   visto da altri (`409` mentre è `only_me`, come per le foto), e una foto
   già mandata in quel posto (`404` «No photo in this place: send the photo
@@ -3699,6 +3760,7 @@ parte B (l'app), finché nessuna app lo chiama.
 | `GET /me/activities/{key}/gear` | gli attrezzi di un'attività mia | `200` `{gear}`, `404` |
 | `PUT /me/activities/{key}/gear` | tutta la lista, `{gear_ids}` | `200` `{gear}` |
 | `GET /users/{public_id}/gear` | l'attrezzatura di un profilo | `200` `{gear}`, `404` |
+| `GET /drawings/{id}/gear` | gli attrezzi dell'attività di un post, per chi vede il post | `200` `{gear}`, `404` |
 | `GET /gear/{id}` | un attrezzo | `200`, `404` |
 | `GET /gear/{id}/photo?v=` | la sua foto | `200` `image/jpeg`, `404` |
 
@@ -3731,11 +3793,26 @@ parte B (l'app), finché nessuna app lo chiama.
   (anche ritirati: un'attività di prima), se no `422`; un id due volte
   conta una. L'app manda i predefiniti dello sport a fine attività (parte
   C). Cancellare l'attività toglie i suoi agganci e i suoi metri.
+- **Il limite** (parte G, la scelta 5 dell'utente): quando la lista di
+  un'attività porta un attrezzo da sotto il suo `limit_m` a pari o sopra,
+  il proprietario ha una riga nella campanella, `gear_limit` («The red
+  ones reached the limit you set.», senza numero: il limite è nelle sue
+  unità), che apre l'attrezzo (`opens`: `{kind, gear_id}`). Solo nella
+  campanella, nessun telefono suona (`push.BELL_ONLY`). Una riga per
+  limite: la stessa lista di nuovo, o un'altra attività con l'attrezzo
+  già oltre, non ne aggiunge; un limite nuovo si dice di nuovo. Cancellato
+  l'attrezzo, la riga sparisce. Test in `test_gear_limit.py`.
 - **Chi lo vede**: chi vede il profilo, cioè ogni iscritto tranne uno che
   un blocco tiene lontano (`follows.apart_sql`, `404` come per nessuno),
   senza gli attrezzi `off_profile` e quelli nascosti dopo una
   segnalazione. Il proprietario sul suo profilo lo vede come gli altri
   (più i suoi nascosti dopo una segnalazione).
+- **Nel post** (parte E): `GET /drawings/{id}/gear` dà gli attrezzi
+  agganciati all'attività del post a chi vede il post
+  (`drawings.drawing_seen_sql`, se no `404`), con le stesse regole del
+  profilo; un post di sole foto ha la lista vuota. Una rotta a parte, come
+  `/stretch` e `/pool-swim`: il dettaglio del disegno non cambia. Test in
+  `test_gear_post.py`.
 - **La foto**: diritta, al più **1024 px** sul lato lungo, un JPEG nuovo
   senza l'EXIF del telefono; al più 10 al minuto per account (`429`).
 - **Segnalazioni**: `POST /reports` con `kind: "gear"`; dall'email
@@ -4188,6 +4265,51 @@ del 2026-11-10).
   in `packages/shared-types/src/skiDays.ts` (`SkiDayPart`,
   `SkiDayWithParts`) e `skiSeason.ts`.
 
+### Flying sites (TASK-493 parte A, ADR-0400)
+
+I decolli e gli atterraggi del volo libero, per la mappa dei decolli. Sono
+dati di OpenStreetMap (ODbL), uguali per tutti e senza dati degli utenti,
+quindi non serve il token; la chiave dell'API serve come su ogni percorso.
+
+**Le rotte**
+- **`GET /flying-sites?south=…&west=…&north=…&east=…`**: i siti di un
+  riquadro della mappa, per `id`.
+  - Il riquadro è al massimo 5° per lato.
+  - `kind` (`takeoff` o `landing`) li filtra.
+  - `limit` va da 1 a 1000, 1000 se manca; `more` è `true` quando il
+    riquadro ne ha altri, e l'app chiede un riquadro più piccolo.
+  - Il riquadro resta fuori dal registro degli accessi, come ogni query
+    string.
+- **`GET /flying-sites/{id}`**: un sito, con `near`: i siti dell'altro tipo
+  entro 15 km (gli atterraggi di un decollo, i decolli sopra un
+  atterraggio), dal più vicino, al massimo 5.
+
+**La forma**
+- Ogni sito è: `id`, `kind`, `lat`, `lon`, `name`, `ele_m` (il tag `ele`
+  in metri, o `null`), `orientation` (i punti cardinali verso cui guarda,
+  da `N` a `NNW`, vuoto se OSM non lo dice), `official` (`true`, `false` o
+  `null`), `osm_url` (l'oggetto su openstreetmap.org) e `away_m`.
+- `away_m` è `null` tranne nei siti di `near`.
+- Il riquadro risponde `{"sites": [...], "more": false, "attribution": "©
+  OpenStreetMap contributors"}`; un sito risponde `{"site": {...},
+  "near": [...], "attribution": "…"}`. L'app mostra sempre
+  l'attribuzione.
+
+**Gli errori**
+- **`422`:** un riquadro più largo di 5° («zoom in»), con il sud sopra il
+  nord o l'ovest a destra dell'est, un valore mancante o fuori dai limiti,
+  un `kind` che non c'è.
+- **`404`:** un id che non c'è.
+
+**Da dove vengono**
+- Da un estratto OSM, con `flying_sites_extract.py` (`MAPS.md`, «Decolli e
+  atterraggi da un estratto»). Lo storico dei voli di un decollo è la
+  parte B; i tipi dell'app la parte C.
+
+**Un formato stabile**: lo legge anche TASK-479 D6 (l'atterraggio più
+vicino, con `kind=landing`). I campi si possono solo aggiungere, mai
+togliere o cambiare di senso.
+
 ### Drawing search (TASK-344, ADR-0297)
 
 La ricerca dei disegni dalla lente del Feed: le stesse regole del feed su
@@ -4367,6 +4489,7 @@ endpoint vogliono il token: senza, `401 not_signed_in`; senza database,
 | `GET /me/conversations?box=inbox\|requests` | le conversazioni di «Messages» o le richieste, l'ultimo messaggio per primo | `200` `ConversationsPage` |
 | `GET /me/conversations/unread` | quante conversazioni hanno novità, quante richieste aspettano | `200` `ConversationsUnread` |
 | `GET /conversations/{public_id}/messages` | una pagina dei messaggi, l'ultimo per primo, e `state` | `200` `MessagesPage`, o `404` / `422` |
+| `GET /conversations/{public_id}/messages?after=<latest>` | solo i messaggi arrivati dopo un posto (TASK-498) | `200` `MessageNews`, o `404` / `422` |
 | `POST /conversations/{public_id}/messages` | un messaggio nuovo | `201` `Message`, o `404` / `409` / `422` / `429` |
 | `PUT /conversations/{public_id}/accept` | accetta la richiesta | `204`, o `404 http_error` |
 | `PUT /conversations/{public_id}/read` | la conversazione letta fino ad ora | `204` |
@@ -4410,6 +4533,29 @@ endpoint vogliono il token: senza, `401 not_signed_in`; senza database,
   `total`. Cursore `microsecondi-uuid`, come gli elenchi di «Follow». Prima
   del primo messaggio la pagina ha `messages: []` e `state`, così l'app
   apre una conversazione vuota dal profilo.
+- **Solo i messaggi nuovi** (TASK-498, aggiunta ad ADR-0279): la prima
+  pagina porta **`latest`**, il posto del suo messaggio più nuovo (stessa
+  forma di `next`; `0-000…0`, zero e trentadue zeri, in una conversazione
+  senza messaggi; `null` nelle pagine dei più vecchi). Con
+  **`?after=<latest>`** la stessa rotta risponde `MessageNews`
+  (`fixtures/message-news.json`): `state`, i `messages` dopo quel posto (il
+  più nuovo per primo, al più `limit`, con gli stessi allegati e le stesse
+  regole della pagina: `?with=attachments`, `X-MuW-Reads`), `more` (ne sono
+  arrivati più di `limit`: l'app rilegge la prima pagina) e il `latest` da
+  usare dopo, che resta quello chiesto se non è arrivato niente. **Niente
+  `person` e niente `attachments`**: la foto dell'altro non viaggia. È il
+  controllo che una conversazione aperta fa ogni pochi secondi: con niente
+  di nuovo sono un centinaio di byte e due query oltre a quella del token.
+  `state` è quello della pagina, sempre. `404` e `422` come la pagina
+  (nessuno, un blocco, se stessi); `after` scritto male, o insieme a
+  `cursor`, `422`. **Quello che questa risposta non dice** lo dice ancora
+  la pagina, che l'app rilegge ogni tanto: un messaggio cancellato da chi
+  l'ha scritto o nascosto da una segnalazione, il nome e la foto dell'altro,
+  la scheda di un post o di una live che cambia, un video scaduto, cosa si
+  può allegare; e un messaggio salvato un attimo dopo ma scritto un attimo
+  prima di quello a cui punta `latest`. **Un'API di prima** non manda
+  `latest` e ignora `after` (risponde la pagina): l'app senza `latest` non
+  chiede `?after=`, e una pagina in risposta la legge come pagina.
 - **«Delete»** (`DELETE /conversations/{public_id}`) toglie i messaggi
   fino ad ora dalla propria vista, e la conversazione dalla lista finché
   non ne arriva un altro; chi può scrivere liberamente non cambia. Per una
@@ -5016,6 +5162,122 @@ accounts_unavailable`. Tipi in `shared-types` (`GroupRunRequest`,
   risposte se ne vanno con l'account (`ON DELETE CASCADE`).
 - **Un'API precedente** non ha questi endpoint (`404 http_error`): l'app
   non mostra la fila né il bottone.
+
+### Groups (TASK-495, ADR-0402)
+
+I gruppi per uscire insieme: un nome, una foto, una descrizione, da 1 a 3
+sport, una città e un modo d'ingresso; un admin, fino a 3 co-admin, i
+membri. Le regole sono in `GRUPPI.md`; il codice in `groups.py`. Tutti gli
+endpoint vogliono il token: senza, `401 not_signed_in`; senza database,
+`503 accounts_unavailable`. Tipi in `shared-types` (`src/groups.ts`:
+`GroupRequest`, `Group`, `GroupDetail`, `GroupsFound`, `MyGroups`,
+`GroupMember`, `GroupMembersPage`, `GroupRoleRequest`, `GroupJoin`,
+`GroupPushKind`, `GroupPushData` e i limiti `GROUP_*`), esempi in
+`fixtures/group-request.json`, `group.json`, `groups.json`,
+`my-groups.json`, `group-members.json`, `group-push-data.json`. Le uscite
+del gruppo arrivano con la parte C.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /groups` | crea un gruppo; chi lo crea è l'admin | `201` `GroupDetail` |
+| `GET /groups?lat=…&lon=…&sport=…` | Explore: quelli entro 50 km, i più vicini prima | `200` `GroupsFound` |
+| `GET /groups?q=…&sport=…` | Explore: quelli il cui nome contiene `q`, ovunque, per nome | `200` `GroupsFound` |
+| `GET /me/groups` | i propri gruppi, per nome, e gli inviti | `200` `MyGroups` |
+| `GET /groups/{id}` | la pagina del gruppo | `200` `GroupDetail` |
+| `PUT /groups/{id}` | l'admin cambia il gruppo, tutto | `200` `GroupDetail` |
+| `DELETE /groups/{id}` | l'admin cancella il gruppo, con chi c'è dentro (parte A3) | `204` |
+| `PUT /groups/{id}/photo` | l'admin mette la foto (`{ "image": "…" }`, come `PUT /me/photo`) | `200` `GroupDetail` |
+| `DELETE /groups/{id}/photo` | l'admin la toglie | `204` |
+| `PUT /groups/{id}/membership` | «Join» | `200` `GroupJoin` |
+| `DELETE /groups/{id}/membership` | esce; ritira la richiesta; rifiuta l'invito | `204` |
+| `PUT /groups/{id}/mute`, `DELETE …/mute` | «Mute» del membro, e il contrario | `204` |
+| `GET /groups/{id}/members?limit=20&cursor=…` | i membri, solo per i membri | `200` `GroupMembersPage` |
+| `GET /groups/{id}/activity?limit=20&cursor=…` | «Recent activity», solo per i membri | `200` `FeedPage` |
+| `DELETE /groups/{id}/members/{public_id}` | admin o co-admin tolgono un membro | `204` |
+| `PUT /groups/{id}/members/{public_id}/role` | l'admin dà o toglie il co-admin, o passa il suo ruolo | `204` |
+| `GET /groups/{id}/requests?limit=20&cursor=…` | chi ha chiesto di entrare, il primo per primo | `200` `PeoplePage` |
+| `PUT /groups/{id}/requests/{public_id}` | accetta la richiesta | `204` |
+| `DELETE /groups/{id}/requests/{public_id}` | la rifiuta, senza avvisare | `204` |
+| `PUT /groups/{id}/invites/{public_id}` | invita | `204` |
+| `DELETE /groups/{id}/invites/{public_id}` | ritira l'invito | `204` |
+
+- **Il corpo di `POST` e `PUT`** è `GroupRequest`: `name` 1–40 caratteri su
+  una riga («A group's name is 1 to 40 characters, on one line.»),
+  `description` al più 500 con gli a capo, `sports` da 1 a 3 nomi diversi
+  di `runs.activity` («A group has 1 to 3 different sports.»), `city` 1–80
+  su una riga, `area` un punto della città `[lat, lon]`, tenuto
+  **arrotondato a due decimali** (circa un chilometro: mai un indirizzo),
+  `access` `public`, `request` o `invite`. Un gruppo con `alpinism` non è
+  mai `public` («A group with alpinism asks to join, or is by invite
+  only.»). Spazi in testa e in coda tolti, una descrizione vuota è `null`.
+  Nome, descrizione e città passano dal **filtro dei commenti negativi**
+  (`422 comment_rejected`). **Al più 5 gruppi di cui si è admin** («You can
+  be the admin of 5 groups at most.»).
+- **Chi vede un gruppo**: nessuno tenuto lontano dal suo admin
+  (`apart_sql`, un blocco nei due sensi, un admin nascosto), per cui
+  risponde `404 http_error` «No group with this id.» come un id che non
+  c'è; gli altri se ne sono membri, o se non è nascosto e non è `invite`, o
+  se sono stati invitati. **Nascosto** dal link di una segnalazione: lo
+  vedono solo i membri, non compare in Explore e non entra nessuno.
+- **`members`** conta chi è nel gruppo meno chi è lontano da chi chiede;
+  **`me`** dice dove sta chi chiede: `admin`, `coadmin`, `member`,
+  `requested`, `invited`, `none`. **L'elenco dei membri** lo leggono solo i
+  membri (`403 http_error` «Only the group's members can do this.»): prima
+  l'admin, poi i co-admin, poi i membri, ognuno da quando è entrato, mai
+  chi è lontano da chi chiede.
+- **«Recent activity»** (`GET …/activity`, parte A2), solo per i membri
+  (`403` per gli altri): i post dei membri pubblicati negli ultimi **14
+  giorni**, di una corsa di uno degli sport del gruppo (niente post di sole
+  foto, del sonno o di una scheda), il più recente prima; solo quelli che
+  chi chiede vede già nel Feed (`drawings.shown_sql`: mai attraverso un
+  blocco, mai nascosti, «Followers» solo a chi segue) e che l'app sa
+  leggere (`X-MuW-Reads`). Le schede del Feed (`FeedPage`), a pagine con
+  `cursor`. Chi esce dal gruppo porta via i suoi post.
+- **«Join»** (`PUT …/membership`): in un gruppo `public`, o con un invito,
+  si entra subito (`me: member`); in un gruppo `request` si lascia una
+  richiesta (`me: requested`) e admin e co-admin ricevono
+  `group_join_request`, una volta. Due volte è una. **Al più 300 membri**
+  («A group has 300 members at most.»).
+- **Uscire** (`DELETE …/membership`): un membro o un co-admin esce; una
+  richiesta si ritira; un invito si rifiuta. L'admin esce solo da ultimo
+  membro, e il gruppo se ne va; altrimenti `422` «Pass the admin role to
+  another member before you leave.».
+- **Richieste e inviti** sono di admin e co-admin (`403` «Only the group's
+  admin and co-admins can do this.»). Accettata una richiesta, chi l'ha
+  fatta riceve `group_join_accepted`; invitato, `group_invite`. Invitare
+  chi ha già chiesto lo fa entrare, come accettato; chi è lontano da chi
+  invita o dall'admin risponde `404 http_error` «No profile with this id.».
+  Rifiutare o ritirare non avvisa nessuno.
+- **Ruoli**: solo l'admin cambia il gruppo, la foto e i ruoli (`403` «Only
+  the group's admin can do this.»). `coadmin` fino a 3 («A group has 3
+  co-admins at most.»); `member` toglie il co-admin; `admin` passa il ruolo
+  (l'admin di prima diventa membro), a chi non è già admin di 5 gruppi
+  («They are the admin of 5 groups already.»). Un co-admin toglie i
+  membri, non i co-admin né l'admin. Chi è tolto può chiedere di nuovo.
+- **Explore** (`GET /groups`): mai un gruppo `invite` o nascosto; `sport`
+  filtra; con `q` (almeno 2 caratteri) cerca nel nome ovunque, per nome,
+  senza `q` vuole il punto (`lat` e `lon` insieme), altrimenti `422` «Give
+  a place, or part of a name.». Al più 20.
+- **Le push** portano `{ kind, group_id }` (`GroupPushData`) e aprono la
+  pagina del gruppo; finiscono anche nella campanella, non nell'email del
+  giorno. Valgono «Push notifications» e i blocchi.
+- **Segnalare**: `POST /reports` con `kind` `group` e l'id del gruppo; è
+  segnalato il suo admin. L'email lo chiama «group», con nome,
+  descrizione, città, ingresso e se ha la foto; il link nasconde
+  (`groups.hidden_at`).
+- **«Delete group»** (`DELETE /groups/{id}`, parte A3, scelta dell'utente
+  del 2026-11-24): solo l'admin (`403` «Only the group's admin can do
+  this.»); i membri ricevono `group_deleted` («{name} deleted the group
+  {title}.»), i cui dati sono solo `{ kind }`: il gruppo non c'è più e la
+  push non apre niente. Poi il gruppo se ne va con membri, richieste, inviti
+  e foto (`ON DELETE CASCADE`). Un'API di prima risponde `405`: l'app lo
+  dice e il gruppo resta.
+- **`DELETE /me`**: prima della cancellazione il ruolo di admin passa al
+  co-admin più vecchio nel ruolo, poi al membro più vecchio nel gruppo; un
+  gruppo senza nessun altro si cancella (`app.state.before_account_delete`).
+  Poi appartenenze, richieste e inviti se ne vanno con l'account.
+- **Un'API precedente** non ha questi endpoint (`404 http_error`): l'app
+  non mostra i gruppi.
 
 ### Feedback (TASK-308, ADR-0268)
 

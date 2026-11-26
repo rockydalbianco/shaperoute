@@ -1,9 +1,6 @@
 # TASK-417 — La mia immagine al posto dell'animale, e il video «Together» con le persone taggate
 
-**Stato**: In lavorazione · B e C in `main` (#1067, 2026-11-10); D1
-(server di «Together») in `main` (#1339, 2026-11-21), sul server col passo
-15; D2a (#1357) e D2b (#1375) in `main` il 2026-11-21; restano la frase
-della privacy (dopo 312 C2), l'OTA ed E
+**Stato**: Done · 2026-11-26 · B e C (#1067), D1 (#1339, server passo 15), D2a (#1357), D2b (#1375) in `main` e in produzione (OTA 25); la frase della privacy «Together» (#1430) online; E, la prova sul telefono, provato dall'utente sul telefono il 2026-11-26 (prova generale sull'OTA 25: «ok»); i tempi di esportazione non sono stati annotati. Chiuso dal Coordinatore 3.
 **Fase**: 5 · **Branch**: `docs/TASK-417-my-image-video-proposal`
 (documenti); il codice `feat/TASK-417-b-…`
 **Dipende da**: TASK-408 (l'editor del video, ADR-0339): l'animale è l'op
@@ -392,7 +389,7 @@ produzione.
 
 ## Esito
 
-*(a fine task)*
+Done · 2026-11-26 · B e C (#1067), D1 (#1339, server passo 15), D2a (#1357), D2b (#1375) in `main` e in produzione (OTA 25); la frase della privacy «Together» (#1430) online; E, la prova sul telefono, provato dall'utente sul telefono il 2026-11-26 (prova generale sull'OTA 25: «ok»); i tempi di esportazione non sono stati annotati. Chiuso dal Coordinatore 3.
 
 **D2a in `main`** con la #1357 (`5700063e`, 2026-11-21): il client di
 `GET /drawings/{id}/together` (`api/together.ts`) e l'orologio comune

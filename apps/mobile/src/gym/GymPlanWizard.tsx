@@ -363,8 +363,8 @@ export function GymPlanWizard({
     withDoor ? "door" : copied ? (copiedRuns ? "runner" : "ready") : startAt,
   );
   const [goal, setGoal] = useState<GymPlanGoal>(kept?.goal ?? "muscle");
-  // The sports of the plan: chosen at the door, at least two (the user's
-  // «Almeno due, sempre»), in the order chosen: the first with a distance
+  // The sports of the plan: chosen at the door, one or more (TASK-506 B;
+  // at least two before), in the order chosen: the first with a distance
   // leads to the target, the others keep fit (2026-11-12, «Più d'uno»); a
   // plan kept has those of its days.
   const keptSports: PlanSport[] = kept === null ? [] : sportsOf(kept.sessions);
@@ -955,7 +955,9 @@ export function GymPlanWizard({
           <Text style={styles.linkText}>{t("I'll write the plan myself")}</Text>
         </Pressable>
       )}
-      {step === "ready" && onDelete !== undefined && plan !== null && (
+      {/* In every step of a plan that is kept, not only the last one (the
+          user's choice of 2026-11-23, «In ogni passo»). */}
+      {onDelete !== undefined && plan !== null && (
         <Pressable
           style={({ pressed }) => [styles.link, pressed && styles.pressed]}
           onPress={() =>

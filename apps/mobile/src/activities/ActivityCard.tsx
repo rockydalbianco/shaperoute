@@ -4,6 +4,7 @@ import { Keyboard, StyleSheet, Text, View } from "react-native";
 import { activityFlightOf } from "../air/flightLegs";
 import { postSplitLine } from "../air/flightSplit";
 import { type ActivityDetail, isImported } from "../api/activities";
+import { ActivityGear } from "../gear/ActivityGear";
 import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
 import { drawingOfRun } from "../messages/messageDrawing";
@@ -121,6 +122,12 @@ export function ActivityCard({ activity, onDelete }: Props) {
             />
           )}
           {!imported && !gym && <StravaActivityRow activity={activity} />}
+          <ActivityGear
+            activityKey={activity.id}
+            onClosed={() => setMenu((was) => was + 1)}
+            style={menuChoice.button}
+            textStyle={menuChoice.text}
+          />
         </ActivityMenu>
       </View>
       <Text style={styles.facts}>
@@ -146,7 +153,8 @@ export function ActivityCard({ activity, onDelete }: Props) {
       )}
       <View style={styles.buttons}>
         <View style={styles.half}>
-          <SharePostButton makeRun={() => postOfActivity(activity)} />
+          {/* The poster has the post's title, as the card (TASK-450). */}
+          <SharePostButton makeRun={() => postOfActivity(activity, shown)} />
         </View>
         {editable && (
           // In a half of its own, as «Share»: the two are as wide.

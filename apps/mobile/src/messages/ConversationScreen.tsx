@@ -15,6 +15,7 @@ import {
   AppState,
   FlatList,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -29,6 +30,8 @@ import {
   fetchMessageDrawing,
   clearConversation,
   fetchMessages,
+  fetchNewMessages,
+  isPage,
   messageProblem,
   messageTextProblem,
   readConversation,
@@ -51,6 +54,15 @@ import {
 import { type AttachKind, AttachButton, type FileKind } from "./AttachButton";
 import { AttachmentPreview, type DraftStatus } from "./AttachmentPreview";
 import { attachmentLabel } from "./attachmentText";
+import {
+  afterNews,
+  afterPage,
+  type Held,
+  RHYTHM,
+  type Rhythm,
+  waitMs,
+  wantsPage,
+} from "./conversationReading";
 import { DrawingPicker } from "./DrawingPicker";
 import { favoriteOfMessage } from "./messageDrawing";
 import { MediaViewer } from "./MediaViewer";
@@ -63,8 +75,12 @@ import { type MessageFile, pickMessageFile } from "./pickMessageMedia";
 import { VideoPoster } from "./VideoPoster";
 import { LiveViewScreen } from "../liveShare/LiveViewScreen";
 
-/** How often an open conversation is read again: a reply within seconds. */
-export const CONVERSATION_EVERY_MS = 5_000;
+/** How often an open conversation is asked again while the two write: a
+ * reply within seconds. Slower after a while of silence (RHYTHM). */
+export const CONVERSATION_EVERY_MS = RHYTHM.fastMs;
+
+// Where the tests of before find it.
+export { merged } from "./conversationReading";
 
 /** How far from the top the older messages are asked for, in screens of the
  * list: they are there before the scroll gets to them. */
@@ -72,19 +88,8 @@ const OLDER_WITHIN_SCREENS = 0.5;
 
 /** The side of the other's picture in the title. */
 const PHOTO_SIDE = 36;
-
-/** What the screen has of the conversation, for one account and member. */
-type Held = {
-  asked: string;
-  person: Person;
-  state: ConversationState;
-  /** The latest first, as the API gives them. */
-  messages: Message[];
-  next: string | null;
-  /** What may be attached now (TASK-333): nothing in a request, nothing
-   * on a server before the attachments, no video while it is full. */
-  files: AttachKind[];
-};
+/** And in a conversation with nothing in it yet. */
+const EMPTY_PHOTO_SIDE = 64;
 
 /** A photo or a video chosen, until its message is sent. */
 type Draft = {
@@ -136,29 +141,16 @@ type Props = {
   /** Who the conversation is with: from the list, a profile, a notification. */
   person: Person;
   onBack: () => void;
-  /** The fake fetch of the tests, and their own time between two readings. */
+  /** The fake fetch of the tests, and their own time between two readings:
+   * `everyMs` while the two write, `rhythm` for the rest of it. */
   fetchFn?: typeof fetch;
   apiKey?: string | null;
   everyMs?: number;
+  rhythm?: Rhythm;
   /** The tests' own: the library, and the files sent. */
   pick?: typeof pickMessageFile;
   upload?: Upload;
 };
-
-/** The newer messages of `page` over the ones held, the latest first. */
-export function merged(held: Message[], page: Message[]): Message[] {
-  if (page.length === 0) {
-    return [];
-  }
-  const fresh = new Set(page.map((m) => m.id));
-  // As times: «…:00.5Z» is after «…:00Z», though it sorts before it.
-  const oldest = Date.parse(page[page.length - 1].created_at);
-  // What the page covers is as the page says: a message deleted is gone.
-  const older = held.filter(
-    (m) => !fresh.has(m.id) && Date.parse(m.created_at) < oldest,
-  );
-  return [...page, ...older];
-}
 
 /**
  * One conversation (TASK-319, ADR-0279): the messages from the bottom up,
@@ -168,8 +160,10 @@ export function merged(held: Message[], page: Message[]): Message[] {
  * other's request with «Accept», «Delete» or «Block» («request»). Each
  * message says its time, and a title opens each day (TASK-353). The older
  * pages come while scrolling up; «Show earlier messages» stays for when
- * that fails. Read again every few seconds while it is on screen, and
- * marked read when the other wrote. A message touched long is deleted
+ * that fails. Asked again every few seconds while it is on screen, only
+ * for what is new and slower when nobody writes (conversationReading.ts,
+ * TASK-498), and marked read when the other wrote. A message touched long
+ * is deleted
  * (one's own) or reported (the other's); the «…» of the title reports or
  * blocks the member.
  */
@@ -179,6 +173,7 @@ export function ConversationScreen({
   fetchFn,
   apiKey,
   everyMs = CONVERSATION_EVERY_MS,
+  rhythm = RHYTHM,
   pick = pickMessageFile,
   upload,
 }: Props) {
@@ -209,11 +204,14 @@ export function ConversationScreen({
   // Changes made here (a message sent, one deleted): a reading asked
   // before the last of them is older than the screen, and is left.
   const changed = useRef(0);
+  // A message sent: the questions go fast again, from now.
+  const wake = useRef(() => {});
   const options = { fetchFn, key: apiKey };
+  const { slowMs, slowestMs, slowAfterMs, slowestAfterMs, pageEveryMs } = rhythm;
 
   const markRead = useCallback(
-    (page: MessagesPage) => {
-      const theirs = page.messages.find((m) => !m.mine);
+    (read: Pick<MessagesPage, "messages">) => {
+      const theirs = read.messages.find((m) => !m.mine);
       if (
         theirs === undefined ||
         theirs.id === readUpTo.current ||
@@ -243,16 +241,63 @@ export function ConversationScreen({
     let onScreen = true;
     // One reading at a time: on a slow network they do not pile up.
     let reading = false;
-    const read = () => {
+    // A page asked while another answer was on its way: the next reading.
+    let owed = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const pace: Rhythm = {
+      fastMs: everyMs,
+      slowMs,
+      slowestMs,
+      slowAfterMs,
+      slowestAfterMs,
+      pageEveryMs,
+    };
+    // Where the news are asked from: the `latest` of the last answer; null
+    // before the first page, and with a server of before, which has none.
+    let latest: string | null = null;
+    let pageAt = 0;
+    // The last message seen and the state said, to tell when either moves.
+    let newest: string | null = null;
+    let said: string | null = null;
+    // When somebody last wrote: the rhythm is counted from here.
+    let spoke = Date.now();
+    const plan = () => {
+      if (timer !== null) {
+        clearTimeout(timer);
+      }
+      timer = setTimeout(
+        () => {
+          timer = null;
+          if (onScreen) {
+            read(false);
+          }
+          plan();
+        },
+        waitMs(Date.now() - spoke, pace),
+      );
+    };
+    const read = (whole: boolean) => {
       if (reading) {
+        owed = owed || whole;
         return;
       }
       reading = true;
       const since = changed.current;
-      void fetchMessages(apiUrl, token, person.public_id, null, {
-        fetchFn,
-        key: apiKey,
-      }).then((outcome) => {
+      const place = latest;
+      const page =
+        whole || owed || place === null || wantsPage(place, Date.now() - pageAt, pace);
+      owed = false;
+      const asking =
+        page || place === null
+          ? fetchMessages(apiUrl, token, person.public_id, null, {
+              fetchFn,
+              key: apiKey,
+            })
+          : fetchNewMessages(apiUrl, token, person.public_id, place, {
+              fetchFn,
+              key: apiKey,
+            });
+      void asking.then((outcome) => {
         reading = false;
         if (!live || changed.current !== since) {
           return;
@@ -271,47 +316,73 @@ export function ConversationScreen({
           }
           return;
         }
-        const page = outcome.value;
-        setShown((was) => ({
-          asked,
-          person: page.person,
-          state: page.state,
-          // A post is sent from «Share» under it, not from the «+».
-          files:
-            page.state === "open"
-              ? (page.attachments?.kinds ?? []).filter(
-                  (kind): kind is AttachKind => kind !== "post",
-                )
-              : [],
-          messages:
-            was !== null && "state" in was && was.asked === asked
-              ? merged(was.messages, page.messages)
-              : page.messages,
-          // The older pages read stay: where they end is the cursor.
-          next:
-            was !== null && "state" in was && was.asked === asked
-              ? was.next
-              : page.next,
-        }));
-        markRead(page);
+        const answer = outcome.value;
+        const first = answer.messages[0]?.id ?? null;
+        if (isPage(answer)) {
+          // The page: all of it, and where the news are asked from next.
+          latest = answer.latest ?? null;
+          pageAt = Date.now();
+          if (said !== null && first !== null && first !== newest) {
+            spoke = Date.now();
+            plan();
+          }
+          newest = first;
+          said = answer.state;
+          setShown((was) =>
+            afterPage(
+              was !== null && "state" in was && was.asked === asked ? was : null,
+              asked,
+              answer,
+            ),
+          );
+          markRead(answer);
+          return;
+        }
+        if (answer.more) {
+          // More than the answer holds: the page says where it stands.
+          read(true);
+          return;
+        }
+        latest = answer.latest;
+        if (first !== null) {
+          newest = first;
+          spoke = Date.now();
+          plan();
+        }
+        setShown((was) =>
+          was !== null && "state" in was && was.asked === asked
+            ? afterNews(was, answer)
+            : was,
+        );
+        markRead(answer);
+        if (answer.state !== said) {
+          // Accepted, or a request now: the page says what may be attached.
+          said = answer.state;
+          read(true);
+        }
       });
     };
-    read();
-    const timer = setInterval(() => {
-      if (onScreen) {
-        read();
-      }
-    }, everyMs);
+    wake.current = () => {
+      spoke = Date.now();
+      plan();
+    };
+    read(true);
+    plan();
     const subscription = AppState.addEventListener("change", (next) => {
       const was = onScreen;
       onScreen = next === "active";
       if (onScreen && !was) {
-        read();
+        spoke = Date.now();
+        read(true);
+        plan();
       }
     });
     return () => {
       live = false;
-      clearInterval(timer);
+      wake.current = () => {};
+      if (timer !== null) {
+        clearTimeout(timer);
+      }
       subscription.remove();
     };
   }, [
@@ -322,8 +393,13 @@ export function ConversationScreen({
     fetchFn,
     markRead,
     onSessionEnded,
+    pageEveryMs,
     person.public_id,
     reads,
+    slowAfterMs,
+    slowMs,
+    slowestAfterMs,
+    slowestMs,
     token,
   ]);
 
@@ -370,6 +446,7 @@ export function ConversationScreen({
       }
       setText("");
       changed.current += 1;
+      wake.current();
       const sent = outcome.value;
       update((was) => ({
         ...was,
@@ -403,6 +480,7 @@ export function ConversationScreen({
         }
         setText("");
         changed.current += 1;
+        wake.current();
         const sent = outcome.value;
         update((was) => ({
           ...was,
@@ -548,6 +626,7 @@ export function ConversationScreen({
     }
     cancelDraft();
     changed.current += 1;
+    wake.current();
     const sent = outcome.value;
     update((was) => ({
       ...was,
@@ -666,9 +745,8 @@ export function ConversationScreen({
           {shown.messages.length === 0 ? (
             // Outside the list: an inverted list shows its empty part upside down.
             <View style={styles.messages}>
-              {shown.state === "open" && (
-                <Text style={styles.note}>{t("No messages yet.")}</Text>
-              )}
+              {(shown.state === "open" || shown.state === "first") &&
+                draft === null && <Starters person={who} onPick={setText} />}
             </View>
           ) : (
             <FlatList
@@ -867,11 +945,68 @@ function Bubble({
         accessibilityActions={[{ name: "longpress" }]}
         onAccessibilityAction={onLongPress}
       >
-        {media}
-        {message.text !== "" && <Text style={styles.bubbleText}>{message.text}</Text>}
-        {time !== "" && <Text style={styles.time}>{time}</Text>}
+        {message.mine && media ? (
+          <View style={styles.mineMedia} testID="message-mine-media">
+            {media}
+          </View>
+        ) : (
+          media
+        )}
+        {message.text !== "" && (
+          <Text style={[styles.bubbleText, message.mine && styles.mineText]}>
+            {message.text}
+          </Text>
+        )}
+        {time !== "" && (
+          <Text style={[styles.time, message.mine && styles.mineText]}>{time}</Text>
+        )}
       </Pressable>
     </View>
+  );
+}
+
+/**
+ * A conversation with nothing in it yet (TASK-458, the user's choice): who
+ * it is with, a line, and three ways to begin. A touch writes the words in
+ * the box and sends nothing: they can be changed first. It scrolls, for
+ * when the keyboard leaves it little room.
+ */
+function Starters({
+  person,
+  onPick,
+}: {
+  person: Person;
+  onPick: (text: string) => void;
+}) {
+  const name = person.username;
+  const starters = [
+    t("Hi {name}!", { name }),
+    t("I like your drawings"),
+    t("Shall we run together?"),
+  ];
+  return (
+    <ScrollView
+      contentContainerStyle={styles.empty}
+      keyboardShouldPersistTaps="handled"
+      testID="conversation-empty"
+    >
+      <Avatar name={name} size={EMPTY_PHOTO_SIDE} photo={personPhotoUri(person)} />
+      <Text style={styles.emptyName} numberOfLines={1}>
+        {name}
+      </Text>
+      <Text style={styles.emptyLine}>{t("Say hi to {name}.", { name })}</Text>
+      {starters.map((starter) => (
+        <Pressable
+          key={starter}
+          style={({ pressed }) => [styles.starter, pressed && styles.pressed]}
+          onPress={() => onPick(starter)}
+          accessibilityRole="button"
+          accessibilityHint={t("Writes it in the box. Nothing is sent yet.")}
+        >
+          <Text style={styles.starterText}>{starter}</Text>
+        </Pressable>
+      ))}
+    </ScrollView>
   );
 }
 
@@ -937,6 +1072,12 @@ function Foot({
             "{name} gets this as a message request. You can send one message until they accept it.",
             { name },
           )}
+        </Text>
+      )}
+      {/* Why the «+» is not there yet (TASK-458): a request is text only. */}
+      {state === "first" && (
+        <Text style={styles.hint}>
+          {t("Photos, videos and drawings come after that.")}
         </Text>
       )}
       <View style={styles.box}>
@@ -1028,6 +1169,38 @@ const styles = StyleSheet.create({
   messages: {
     flex: 1,
   },
+  empty: {
+    flexGrow: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.sm,
+    paddingVertical: space.lg,
+  },
+  emptyName: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  emptyLine: {
+    color: color.textMuted,
+    fontSize: fontSize.body,
+    textAlign: "center",
+    paddingBottom: space.sm,
+  },
+  // Neutral, as «Send»: the yellow is one's own bubbles'.
+  starter: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    paddingHorizontal: space.lg,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  starterText: {
+    color: color.text,
+    fontSize: fontSize.body,
+  },
   messagesContent: {
     gap: space.sm,
     paddingVertical: space.sm,
@@ -1042,7 +1215,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.detail,
     fontWeight: fontWeight.semibold,
   },
-  // Neutral, both: the yellow belongs to the route.
+  // One's own in the app's yellow, the user's choice (TASK-458): the other's
+  // stay neutral.
   bubble: {
     maxWidth: "80%",
     gap: space.sm,
@@ -1052,6 +1226,18 @@ const styles = StyleSheet.create({
   },
   mine: {
     alignSelf: "flex-end",
+    backgroundColor: color.accent,
+  },
+  // On the yellow, in every tone: the words and the time.
+  mineText: {
+    color: color.onAccent,
+  },
+  // What one's own message carries sits on a neutral plate, as the bubble
+  // was: a drawing's line is yellow too, and the words of a card are the
+  // tone's.
+  mineMedia: {
+    padding: space.sm,
+    borderRadius: radius.md,
     backgroundColor: color.surfaceRaised,
   },
   theirs: {

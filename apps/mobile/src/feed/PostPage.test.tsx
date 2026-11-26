@@ -25,6 +25,8 @@ import { shownPost } from "./feedPosts";
 import { PostPage } from "./PostPage";
 
 jest.mock("expo-file-system");
+// The figures of the post only: its gear line (TASK-486) is gear/PostGear's.
+jest.mock("../gear/gearOn", () => ({ GEAR_ON: false }));
 jest.mock(
   "react-native-safe-area-context",
   () => jest.requireActual("react-native-safe-area-context/jest/mock").default,

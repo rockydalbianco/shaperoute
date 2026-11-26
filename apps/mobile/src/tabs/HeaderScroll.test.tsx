@@ -153,6 +153,15 @@ test("the band follows the page on screen: glass once it scrolls, at rest at its
   expect(bandOpacity()).toBe(0);
 });
 
+test("the header stands over the pages inside the shell, never over what opens over the app", async () => {
+  await render(<Shell />);
+  // The shell's own view is kept as a view: the header's `zIndex` sorts
+  // inside it. Flattened, the header came out over a conversation opened
+  // from «Messages».
+  const shell = screen.getByTestId("tab-maps-cover").parent;
+  expect(shell?.props.collapsable).toBe(false);
+});
+
 test("the band is never in the way of a touch, nor read", async () => {
   await render(<Shell />);
   const band = screen.getByTestId("header-band");

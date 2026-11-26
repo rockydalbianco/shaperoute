@@ -1,9 +1,9 @@
 # TASK-481 — Il «+» del Feed: tutte le voci
 
-**Stato**: In lavorazione · parte 0 (documenti) fatta il 2026-11-21; parte A
-in `main` il 2026-11-23 (#1421, `3f124ce7`; schermate e traduzioni approvate
-dall'utente il 2026-11-23, ADR-0390 precisazione A); restano la privacy e le
-righe di 467 E2, 484 B e 485 B, al via del Coordinatore
+**Stato**: Done · 2026-11-26 · parte 0 (#1362), A (#1421, `3f124ce7`),
+privacy del punto 7 (#1444, `9b946507`), F (#1478) in `main`; le voci di
+TASK-467 E2 (#1441), TASK-484 (#1489) e TASK-485 (#1431) nel foglio
+**Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-481-feed-plus-all-entries` (parte 0),
 `feat/TASK-481-a-feed-plus-list` (parte A)
 **Dipende da**: TASK-476 (il «+» e il foglio, ADR-0387), TASK-312 C2 (che
@@ -104,12 +104,13 @@ Una domanda per volta, ognuna con la proposta dell'agente.
 
 | Voce | Chi la costruisce | Stato oggi |
 |---|---|---|
-| «Record now» | **TASK-481 parte A** (questo task) | da fare: solo app, apre la registrazione che c'è già |
-| «Photos only» | **TASK-312 C2** (sessione `local_3444e01e-ccb0-4cb7-bd05-8c1c26f2cd0d`) | in corso; API in `main` (C1, #1347) |
+| «Record now» | **TASK-481 parte A** (questo task) | in `main` (#1421), in produzione |
+| «Already recorded» | **TASK-481 parte F** (questo task) | aggiunta il 2026-11-23: pubblica un'attività di «My activities» non ancora nel Feed; #1478 |
+| «Photos only» | **TASK-312 C2** (sessione `local_3444e01e-ccb0-4cb7-bd05-8c1c26f2cd0d`) | in `main` (C2, #1386), in produzione |
 | «From a file» | TASK-476 | c'è già |
-| «Sleep» | **TASK-467 parte E** (sessione `local_434d1949`) | da scrivere: oggi il sonno sta sul profilo e dentro il post dell'attività, non è un post da solo; che cosa mostra lo decide l'utente lì |
-| «Gym workout» | **TASK-484** «Allenamento in palestra scritto a mano, nel Feed» | da scrivere; la sessione parte quando l'utente la apre |
-| «Workout plan» | **TASK-485** «La scheda della palestra come post» (con «Use this plan»), parente di TASK-466 E | da scrivere; la sessione parte quando l'utente la apre |
+| «Sleep» | **TASK-467 parte E** (sessione `local_434d1949`) | nel foglio (#1441), dietro l'interruttore del sonno di TASK-467 |
+| «Gym workout» | **TASK-484** «Allenamento in palestra scritto a mano, nel Feed» | in `main` (#1489), TASK-484 chiuso |
+| «Workout plan» | **TASK-485** «La scheda della palestra come post» (con «Use this plan»), parente di TASK-466 E | in `main` (#1431) |
 
 **Non sono voci, e perché:**
 
@@ -236,18 +237,100 @@ in `X-MuW-Reads`. Da tenere vicino a TASK-466 E (la routine di stretching
 pubblicata), che ha la stessa forma; il Coordinatore ha scelto due task
 separati (2026-11-21). Server prima dell'app, riga di privacy, testi all'utente.
 
+### F — «Already recorded»: pubblicare un'attività già fatta (TASK-481, solo app, esce con un OTA)
+
+**Da dove viene.** Provando la build di prova il 2026-11-23 l'utente ha
+chiesto di aggiungere al «+» «un'attività già registrata». Al Coordinatore
+ha chiarito: **«Pubblicarne una già fatta»**, cioè mettere nel Feed
+un'attività che è in «My activities» ma non è ancora un post (per esempio
+la corsa di ieri non condivisa). Non è l'inserimento a mano di un'attività
+passata: «Add past activity» esiste già.
+
+**Come un'attività diventa post, oggi.** Quando la sua visibilità passa da
+«Only me» a «Everyone» o «Followers»: è quello che fa la scheda «Edit post»
+della card di «My activities» (`PublicRow`, `DrawingsDoor.choose`).
+`publicKeys` dice quali attività gli altri vedono già. **Nessuna API
+nuova**, niente server, niente impronta nativa.
+
+**Scelte dell'utente (2026-11-23):**
+
+1. **Il modulo.** Proposta, **accettata («Quello di «Edit post»»)**: scelta
+   l'attività, si apre il modulo di «Edit post» così com'è (titolo,
+   descrizione, foto, tag, attività, «Who can see it»). Parte da dov'è
+   l'attività («Only me»); un tocco su «Everyone» o «Followers» la mette nel
+   Feed, salvata subito o con la prossima rete. Scartato: un modulo nuovo
+   che parte da «Everyone» con un bottone «Post», senza foto.
+2. **I testi.** Inglese approvato dal Coordinatore, italiano **approvato
+   dall'utente («Approvo»)**; tedesco, francese e spagnolo dell'agente:
+
+   | Dove | Inglese | Italiano |
+   |---|---|---|
+   | La voce | «Already recorded» | «Già registrata» |
+   | Riga sotto | «Post an activity from My activities» | «Pubblica un'attività da Le mie attività» |
+   | Sopra la lista | «Your activities not in the Feed yet, the latest first.» | «Le tue attività non ancora nel Feed, dalla più recente.» |
+   | Lista vuota | «All your activities are in the Feed already.» | «Tutte le tue attività sono già nel Feed.» |
+   | Sopra il modulo | «Choose «Everyone» or «Followers» and it goes in the Feed.» | «Scegli «Tutti» o «Follower» e va nel Feed.» |
+
+3. **Le schermate** dal simulatore (il «+», la lista, il modulo con
+   «Everyone», il post nel Feed): **approvate dall'utente («Approvo»)**,
+   2026-11-23.
+
+**Com'è fatta (#1478, `b762a847`).**
+
+- `addToFeedEntries.ts`: la voce `done`, **seconda dopo «Record now»**
+  (le due voci delle attività vicine: adesso, già fatta), sempre pronta
+  (il «+» c'è solo con un account).
+- `PastActivityPost.tsx` (nuovo): le attività di `useActivitiesDoor().list`
+  senza quelle in `publicKeys`, dalla più recente, con «Show more»; ogni
+  riga come in «My activities» ma senza «…»; l'attività scelta apre
+  `PublicRow` con «Done». Alla lista chiede di nuovo le attività e quali
+  sono pubbliche, così tornando dal modulo quella appena pubblicata sparisce.
+- `AddToFeed.tsx`: il flusso nel foglio; «‹» dal modulo torna alla lista,
+  poi alle voci; `onActivityPosted` quando il foglio si chiude dopo che
+  un'attività è stata aperta. `FeedScreen.tsx`: `onActivityPosted` rilegge il
+  Feed, come `onSleepPost`.
+- Testi nelle quattro lingue; `addToFeedEntriesSleep.test.ts` (TASK-467 E)
+  adeguato alla voce nuova, file in più approvato dal Coordinatore.
+- Nessuna riga di privacy nuova: è la stessa scelta «Who can see it» di
+  «Edit post», e la frase del «+» parla solo di «from a file».
+
+*Deciso dall'agente su delega dell'utente*: la posizione dopo «Record
+now», il riuso di `PublicRow` senza ritocchi, `PastActivityPost.tsx` come
+file nuovo, la rilettura del Feed alla chiusura del foglio.
+
+**File toccati (approvati dal Coordinatore il 2026-11-23):**
+
+```
+apps/mobile/src/feed/addToFeedEntries.ts
+apps/mobile/src/feed/addToFeedEntries.test.ts
+apps/mobile/src/feed/AddToFeed.tsx
+apps/mobile/src/feed/AddToFeed.test.tsx
+apps/mobile/src/feed/PastActivityPost.tsx         (nuovo)
+apps/mobile/src/feed/PastActivityPost.test.tsx    (nuovo)
+apps/mobile/src/screens/FeedScreen.tsx            (una prop: onActivityPosted)
+apps/mobile/src/i18n/{it,de,fr,es}.ts
+apps/mobile/src/feed/addToFeedEntriesSleep.test.ts (in più, approvato il 2026-11-23)
+docs/tasks/TASK-481.md                            (questa PR docs, a parte)
+```
+
+**Fatto**: #1478 in `main` e in produzione; provato dall'utente sul telefono il 2026-11-26 (OTA 25).
+
 ## Criteri di accettazione
 
 - [x] **0**: scelte dell'utente scritte qui e in ADR-0390; mappa voce → task;
       lista dei file della parte A al Coordinatore.
-- [ ] **A**: il foglio apre la lista; «From a file» come prima (i test di
+- [x] **A**: il foglio apre la lista; «From a file» come prima (i test di
       `AddPastActivity.test.tsx` verdi senza ritocchi); «Record now» apre la
       registrazione; il «+» senza selettore ha «Record now»; nessuna voce
       non pronta (test).
-- [ ] **A**: schermate dal simulatore e quattro traduzioni approvate
+- [x] **A**: schermate dal simulatore e quattro traduzioni approvate
       dall'utente; privacy del punto 7 nelle cinque lingue e sul sito.
-- [ ] **A**: `tsc` e jest dei file toccati verdi, CI verde.
-- [ ] Ogni voce delle parti B–E nel foglio, col suo task chiuso.
+- [x] **A**: `tsc` e jest dei file toccati verdi, CI verde.
+- [x] Ogni voce delle parti B–E nel foglio, col suo task chiuso.
+- [x] **F**: «Already recorded» elenca le attività non ancora nel Feed e
+      apre il modulo di «Edit post»; testi e schermate approvati dall'utente
+      (2026-11-23); jest dei file toccati, `tsc`, CI verdi (#1478); merge e
+      OTA.
 
 ## Fuori scope
 
@@ -260,4 +343,13 @@ separati (2026-11-21). Server prima dell'app, riga di privacy, testi all'utente.
 
 ## Esito
 
-*(si compila a fine task)*
+Chiuso il 2026-11-26. Il «+» del Feed apre la lista delle voci pronte
+nell'ordine dell'utente: «Record now», «Already recorded», «Photos only»,
+«From a file», «Sleep» (solo col sonno acceso), «Gym workout», «Workout
+plan»; niente «Soon». «Record now» fa quello che fa l'avvio senza percorso
+di «Draw»; «From a file» apre subito «Files» (`fileAtOnce`); la privacy dice
+«from a file» per «Everyone» nelle cinque lingue e sul sito. In produzione
+con gli OTA fino al 25; provato dall'utente sul telefono il 2026-11-26
+(«ok»). Le voci degli altri task restano dei loro task (il sonno con
+TASK-467 C, la build nativa). Fuori scope come sopra: Apple Salute, «Open in
+MuW», un'attività qualsiasi scritta a mano.

@@ -1,4 +1,4 @@
-import type { FlyingSites } from "../api/flyingSites";
+import type { FlyingSite, FlyingSites } from "@shaperoute/shared-types";
 import type { KeptList } from "../storage/keptList";
 import {
   boxAround,
@@ -24,10 +24,22 @@ function memory(): KeptList<KeptLandings> & { items: KeptLandings[] } {
 }
 
 // Invented sites.
+const SITE: FlyingSite = {
+  id: 0,
+  kind: "landing",
+  lat: 0,
+  lon: 0,
+  name: null,
+  ele_m: null,
+  orientation: [],
+  official: null,
+  osm_url: "https://www.openstreetmap.org/node/1",
+  away_m: null,
+};
 const SITES: FlyingSites = {
   sites: [
-    { id: "n1", kind: "landing", lat: 45.7, lon: 10.8, name: "Test field", ele_m: 300 },
-    { id: "n2", kind: "landing", lat: 45.72, lon: 10.82, name: null, ele_m: null },
+    { ...SITE, id: 1, lat: 45.7, lon: 10.8, name: "Test field", ele_m: 300 },
+    { ...SITE, id: 2, lat: 45.72, lon: 10.82, name: null, ele_m: null },
   ],
   more: false,
   attribution: "© OpenStreetMap contributors",

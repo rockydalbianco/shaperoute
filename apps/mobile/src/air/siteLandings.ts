@@ -1,8 +1,8 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { FlyingSites, LatLon } from "@shaperoute/shared-types";
 import { useSyncExternalStore } from "react";
 
 import { apiUrl } from "../api/apiUrl";
-import { type Box, fetchLandings, type FlyingSites } from "../api/flyingSites";
+import { type Box, fetchLandings } from "../api/flyingSites";
 import { t, tLater } from "../i18n";
 import { type KeptList, keptList } from "../storage/keptList";
 import type { Waypoint } from "./waypoints";

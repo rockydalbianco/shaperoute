@@ -246,6 +246,38 @@ export const ES: Table = {
   Swan: "Cisne",
   Windmill: "Molino de viento",
   "Wine glass": "Copa de vino",
+  // TASK-516 (ADR-0411)
+  Football: "Balón",
+  Bell: "Campana",
+  "Candy cane": "Bastón de caramelo",
+  Colosseum: "Coliseo",
+  Croissant: "Cruasán",
+  Dolphin: "Delfín",
+  Dome: "Cúpula",
+  "Easter egg": "Huevo de Pascua",
+  Flower: "Flor",
+  "Fox head": "Cabeza de zorro",
+  Gift: "Regalo",
+  Infinity: "Infinito",
+  "Light bulb": "Bombilla",
+  Medal: "Medalla",
+  Mountain: "Montaña",
+  Owl: "Búho",
+  Padlock: "Candado",
+  "Peace sign": "Símbolo de la paz",
+  Penguin: "Pingüino",
+  "Pizza slice": "Porción de pizza",
+  "Tennis racket": "Raqueta",
+  Reindeer: "Reno",
+  "Santa hat": "Gorro de Papá Noel",
+  Scooter: "Escúter",
+  Snowflake: "Copo de nieve",
+  Snowman: "Muñeco de nieve",
+  "Christmas stocking": "Calcetín navideño",
+  Strawberry: "Fresa",
+  "Triumphal arch": "Arco de triunfo",
+  Turtle: "Tortuga",
+  Umbrella: "Paraguas",
 
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "LOCALIDADES CERCANAS",
@@ -2557,6 +2589,9 @@ export const ES: Table = {
   "Show fewer": "Mostrar menos",
   "See all": "Ver todas",
 
+  // src/route/SurprisePill.tsx (TASK-448: «Surprise me»)
+  "Surprise me": "Sorpréndeme",
+
   // src/route/DistanceDial.tsx (TASK-361: the distance by half a km)
   "Tap to type the distance": "Toca para escribir la distancia",
 
@@ -3107,8 +3142,6 @@ export const ES: Table = {
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Editar diseño",
   "Page {n} of {count}": "Página {n} de {count}",
-  "Touch a widget to move it, size it or take it away.":
-    "Toca un widget para moverlo, cambiar su tamaño o quitarlo.",
   Size: "Tamaño",
   Unit: "Unidad",
   "Add page": "Añadir página",
@@ -3332,6 +3365,7 @@ export const ES: Table = {
     "Crea una cuenta para recibir consejos de tus entrenamientos",
   "Log a few workouts and your tips will show up here":
     "Registra algunos entrenamientos y aquí aparecerán tus consejos",
+  "Go to your workouts": "Ir a tus entrenamientos",
   "Tips are general, not medical advice. If something hurts, stop and ask a professional.":
     "Son consejos generales, no consejo médico. Si algo te duele, para y consulta a un profesional.",
   "{exercise}: {kg} kg": "{exercise}: {kg} kg",
@@ -3566,4 +3600,111 @@ export const ES: Table = {
     "Los productos encontrados por código de barras contienen datos de Open Food Facts, disponibles bajo la Open Database License. Se mantienen separados de la lista del USDA.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Esta página solo la ves tú. Lo que escribes aquí se queda en tu teléfono; un código de barras que buscas va a Open Food Facts.",
+
+  // src/takeoffs (TASK-493 part C)
+  Takeoffs: "Despegues",
+  "Zoom in to see the takeoffs.": "Acerca el mapa para ver los despegues.",
+  "Zoom in to see all the takeoffs.": "Acerca el mapa para verlos todos.",
+  Landing: "Aterrizaje",
+  "Unnamed takeoff": "Despegue sin nombre",
+  "Unnamed landing": "Aterrizaje sin nombre",
+  "Official site": "Sitio oficial",
+  Faces: "Orientado al",
+  "Landings nearby": "Aterrizajes cercanos",
+  "{distance} away · {drop} lower": "a {distance} · {drop} más abajo",
+  "No landing within 15 km on OpenStreetMap.":
+    "Ningún aterrizaje a menos de 15 km en OpenStreetMap.",
+  "Takeoffs above": "Despegues encima",
+  "Flights from here": "Vuelos desde aquí",
+  "{flights} flights by {pilots} pilots": "{flights} vuelos de {pilots} pilotos",
+  "Today: {count}": "Hoy: {count}",
+  "Few flights from here yet.": "Aún pocos vuelos desde aquí.",
+  "In the air now: {count}": "En el aire ahora: {count}",
+  "Watch live": "Ver en directo",
+  Highest: "El más alto",
+  "Missing a takeoff? Add it on OpenStreetMap.":
+    "¿Falta un despegue? Añádelo en OpenStreetMap.",
+  "The takeoffs could not be loaded.": "No se pudieron cargar los despegues.",
+  // src/air/ (TASK-479 part D4: the task passed on; approved by the user on 2026-11-23)
+  "Share file": "Compartir archivo",
+  "Show QR": "Mostrar QR",
+  "Task for XCTrack": "Manga para XCTrack",
+  "This task is too long for a QR code.":
+    "Esta manga es demasiado larga para un código QR.",
+  // src/air/ (TASK-479 part B3: widgets dragged in the editor; approved by the user on 2026-11-26)
+  "Drag a widget to move it, or its corner to size it. Touch it for more.":
+    "Arrastra un widget para moverlo, o su esquina para cambiar su tamaño. Tócalo para más opciones.",
+  // src/groups (TASK-495 part B)
+  "Find your city": "Busca tu ciudad",
+  "New group": "Nuevo grupo",
+  "Choose photo": "Elegir foto",
+  "Remove photo": "Quitar foto",
+  Description: "Descripción",
+  "Sports (up to {count})": "Deportes (hasta {count})",
+  City: "Ciudad",
+  "Who can join": "Quién puede entrar",
+  Invite: "Invitar",
+  "Search by name": "Buscar por nombre",
+  "Nobody found.": "No se ha encontrado a nadie.",
+  Invited: "Invitado",
+  "Make admin": "Hacer admin",
+  "Make {name} the admin? You become a member.":
+    "¿Hacer admin a {name}? Tú pasas a ser miembro.",
+  "Remove from group": "Quitar del grupo",
+  "Remove {name} from the group?": "¿Quitar a {name} del grupo?",
+  "Make co-admin": "Hacer coadmin",
+  "Remove co-admin": "Quitar coadmin",
+  Members: "Miembros",
+  "Leave group": "Salir del grupo",
+  "Delete group": "Eliminar grupo",
+  "Delete {name}? Its members, requests and invites go with it. This can't be undone.":
+    "¿Eliminar {name}? Sus miembros, solicitudes e invitaciones se van con él. No se puede deshacer.",
+  "Leave {name}?": "¿Salir de {name}?",
+  Groups: "Grupos",
+  "Withdraw the request": "Retirar la solicitud",
+  "Accept invite": "Aceptar la invitación",
+  Unmute: "Reactivar",
+  Mute: "Silenciar",
+  "Mute only stops the news of new outings.":
+    "Silenciar solo detiene los avisos de nuevas salidas.",
+  "Requests ({count})": "Solicitudes ({count})",
+  "Next outings": "Próximas salidas",
+  "No outings yet.": "Aún no hay salidas.",
+  "All members ({count})": "Todos los miembros ({count})",
+  "Recent activity": "Actividad reciente",
+  "No activity in the last 14 days.": "Sin actividad en los últimos 14 días.",
+  "Past outings": "Salidas pasadas",
+  "No requests to join.": "No hay solicitudes para entrar.",
+  "Go out together: make a group, or join one.":
+    "Sal con otros: crea un grupo o únete a uno.",
+  Invites: "Invitaciones",
+  "Meet in a public place, never at your home. MuW doesn't organise or check groups or their outings. Everyone on MuW is 16 or older.":
+    "Quedad en un lugar público, nunca en tu casa. MuW no organiza ni controla los grupos ni sus salidas. En MuW todos tienen al menos 16 años.",
+  "Mountaineering is dangerous. MuW doesn't organise, guide or check groups, outings, routes or difficulty, and isn't a mountain guide. Everyone is responsible for their own experience, gear and safety.":
+    "El alpinismo es peligroso. MuW no organiza, no guía ni comprueba grupos, salidas, rutas ni dificultad, y no es un guía de montaña. Cada persona es responsable de su propia experiencia, equipo y seguridad.",
+  "Public@@group": "Público",
+  "Request to join": "Con solicitud",
+  "Invite only": "Solo con invitación",
+  Admin: "Admin",
+  "Co-admin": "Coadmin",
+  "This group isn't available.": "Este grupo no está disponible.",
+  // src/nutrition (TASK-489 part C2)
+  "Use Apple Health": "Usar Salud de Apple",
+  "MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there.":
+    "MuW lee tu energía activa y los entrenamientos que registraron otras apps, para contar la energía que gastas. Se leen en tu teléfono y se quedan ahí.",
+  "Active energy": "Energía activa",
+  "from Apple Health": "de Salud de Apple",
+  "Your activities are already inside Apple Health's active energy: they are not added again.":
+    "Tus actividades ya están dentro de la energía activa de Salud de Apple: no se suman otra vez.",
+  "Apple Health has nothing for this day: your activities are counted.":
+    "Salud de Apple no tiene nada para este día: se cuentan tus actividades.",
+  "Stop using Apple Health": "Dejar de usar Salud de Apple",
+  // src/air/ (TASK-479 part D5: the pilot's own waypoints; approved by the user on 2026-11-26)
+  "Mark this place": "Marcar este lugar",
+  "Waypoint here": "Baliza aquí",
+  "Landing here": "Aterrizaje aquí",
+  "My waypoints": "Mis balizas",
+  "Remove all": "Quitar todas",
+  "Press the flight map long to add one.":
+    "Mantén pulsado el mapa de vuelo para añadir una.",
 };

@@ -138,7 +138,7 @@ test("every word names its own shape, and no word is used twice in a language", 
 
 test("the suggestion lists every shape, as the runner reads it", () => {
   expect(shapeList()).toBe(
-    "circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut, sun, airplane, anchor, bear head, bicycle, cherries, espresso cup, four leaf clover, leaning tower, music note, pear, sailboat, swan, windmill or wine glass",
+    "circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut, sun, airplane, anchor, bear head, bicycle, cherries, espresso cup, four leaf clover, leaning tower, music note, pear, sailboat, swan, windmill, wine glass, ball, bell, candy cane, colosseum, croissant, dolphin, dome, easter egg, eiffel tower, flower, fox head, gift, infinity, leaf, light bulb, medal, mountain, owl, padlock, peace, penguin, pizza slice, racket, reindeer, santa hat, scooter, skis, snowflake, snowman, stocking, strawberry, triumphal arch, trophy, turtle or umbrella",
   );
 });
 

@@ -21,6 +21,7 @@ import { FirstStep, profileStage } from "./FirstStep";
 import { photoBusyText, PhotoChoices } from "./PhotoChoices";
 import { ProfileGallery } from "./ProfileGallery";
 import { ProfileGroupRuns } from "../groupRuns/ProfileGroupRuns";
+import { ProfileGroups } from "../groups/ProfileGroups";
 import { ProfileGear } from "../gear/ProfileGear";
 import { ProfileHeader } from "./ProfileHeader";
 import { OwnSleep } from "./OwnSleep";
@@ -188,6 +189,14 @@ export function ProfileHome({
           apiUrl={apiUrl}
           token={account.state.session.token}
           publicId={publicId}
+          onSessionEnded={account.sessionEnded}
+        />
+      )}
+      {/* One's groups, invites and «New group» (TASK-495 part B): only here. */}
+      {apiUrl !== null && account.state.status === "signedIn" && (
+        <ProfileGroups
+          apiUrl={apiUrl}
+          token={account.state.session.token}
           onSessionEnded={account.sessionEnded}
         />
       )}

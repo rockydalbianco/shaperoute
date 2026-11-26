@@ -137,7 +137,8 @@ def test_registered_shapes_of_the_repository() -> None:
     shapes = registered_shapes()
     assert set(cs.ALL_SHAPES) <= shapes
     assert "swan" in shapes  # registered by TASK-418 B
-    assert "penguin" not in shapes  # still a candidate outline
+    assert "penguin" in shapes  # registered by TASK-516 C
+    assert "giraffe" not in shapes  # still a candidate outline
 
 
 def test_spare_is_what_passes_is_not_kept_and_the_engine_has() -> None:

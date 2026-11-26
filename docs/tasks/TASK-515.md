@@ -1,7 +1,12 @@
 # TASK-515 — Le email dell'account in produzione («Password dimenticata?»)
 
-**Stato**: In lavorazione — parte 0 (domande e documenti) il 2026-11-24
-**Fase**: 5 · **Branch**: `docs/TASK-515-account-emails-part-0` (parte 0)
+**Stato**: Done — 2026-11-26: «Forgot password?» è in produzione, provato
+dall'utente sul telefono e nel log del server, come l'email di una
+segnalazione; conferma dell'indirizzo e feedback sono accesi, l'utente
+dice di averli ricevuti, nel log non ci sono; i due giri verso gli
+iscritti restano spenti
+**Fase**: 5 · **PR**: #1564 (parte 0), #1566 (parte A), chiusura in
+`docs/TASK-515-done`
 **ADR**: ADR-0410 · numeri dal Coordinatore (fork 3), 2026-11-24
 **Dipende da**: TASK-300 (ADR-0261), TASK-284 (ADR-0244), TASK-262 B
 (ADR-0226), TASK-291 (ADR-0251), TASK-308 (ADR-0268): tutti Done, tutti
@@ -118,9 +123,12 @@ cui il piano va riguardato: prima si conta quanti sono gli assenti.
    **Ireland (`eu-west-1`)**; non si cambia dopo senza rifare i record.
 3. Resend mostra i record da copiare. Su Porkbun, **DNS** di `getmuw.app`:
    si aggiungono così come Resend li scrive, mettendo nel campo «Host»
-   solo la parte prima del dominio (`send`, `resend._domainkey`): un `MX`
-   e un `TXT` su `send` (SPF) e un `TXT` su `resend._domainkey` (DKIM).
-   I record di oggi (sito, `api`) non si toccano.
+   solo la parte prima del dominio. Il 2026-11-26 erano **due `CNAME`**,
+   `send` e `rsend` (verso nomi di Resend; quello di `rsend` porta la
+   regione, `…-euw1…` per l'Irlanda), e un `TXT` su `resend._domainkey`
+   (DKIM). Non più un `MX` e un `TXT` su `send`, come scritto qui il 24
+   novembre: vale sempre quello che Resend mostra. I record di oggi
+   (sito, `api`) non si toccano.
 4. In Resend **Verify**: può volerci da qualche minuto a qualche ora.
 5. Facoltativo ma consigliato: un `TXT` su `_dmarc` con
    `v=DMARC1; p=none;`.
@@ -170,13 +178,56 @@ cui il piano va riguardato: prima si conta quanti sono gli assenti.
 Ordine: 0 → A e U insieme → S → P → chiusura. La privacy non ha una
 parte: resta com'è (scelta 5).
 
+## Com'è andata
+
+- **0** — #1564, in `main` il 2026-11-24.
+- **A** — #1566, in `main` il 2026-11-24 (`0321161d`): `email_rounds.py`,
+  `test_email_rounds.py`, le righe dell'avvio in `__main__.py`,
+  `.env.example`. Sul server col passo 23 (`bd61af6c`, 2026-11-26).
+- **U** — l'utente, il 2026-11-26: «ho fatto l'account Resend, il dominio è
+  verificato». Nel DNS pubblico, lo stesso giorno: `send` e `rsend` sono
+  `CNAME` verso Resend (`rsend-euw1`, la regione proposta), la chiave DKIM
+  è su `resend._domainkey`, `_dmarc` ha `v=DMARC1; p=none;`. La chiave API
+  l'ha creata e tenuta lui.
+- **S** — il 2026-11-26, passo 24 del Coordinatore
+  (`out/coordinatore/passo24.sh`), lanciato dall'utente dal Mac: chiave e
+  indirizzo scritti da lui senza mostrarli, segreto generato sul server,
+  `SHAPEROUTE_DOMAIN=api.getmuw.app`, `SHAPEROUTE_EMAIL_ROUNDS` vuota;
+  ricreato solo il contenitore `api`. Controllo del Coordinatore sul
+  server: l'avvio dice «Addresses confirmed and passwords reset by email
+  (Resend)», «Each new report is emailed», «Each message of «Send
+  feedback» is emailed» e i due giri «off (SHAPEROUTE_EMAIL_ROUNDS does
+  not name away / notices)»; `GET /account-email` risponde 200.
+- **P** — il 2026-11-26, sul telefono, senza OTA, in due tempi. Prima il
+  recupero con «Forgot password?»: l'utente, **«Sì, funziona»**. Poi, dopo
+  che il log mostrava solo quello, le altre tre (un'iscrizione nuova con
+  l'email di conferma, una segnalazione e un messaggio di «Send feedback»
+  di prova): **«Sono arrivate tutte e tre»**.
+- **Log e database del server** (Coordinatore, letti alle 12:21Z del
+  2026-11-26; l'API era ripartita alle 12:07Z col passo 24):
+  - **recupero, provato**: `POST /password-reset` 202, la pagina
+    `/password/reset` 200 in lettura e in invio, poi `POST /session` 200;
+  - **segnalazione, provata**: `POST /reports` 204, email partita;
+  - **iscrizione nuova, non c'è**: nessun `POST /accounts`, 0 account
+    creati nelle ultime 6 ore, nessuna apertura di `/email/confirm`;
+  - **feedback, non c'è**: nessun `POST /feedback`, 0 righe di feedback
+    nelle ultime 6 ore;
+  - nessun rifiuto e nessun errore di Resend, 0 `Traceback`.
+
+  Quindi la conferma dell'indirizzo e il feedback che l'utente ha visto
+  arrivare **non sono passati da questo server** in quelle ore: non si sa
+  ancora da dove (un'altra app, o email di prima). Chiesto all'utente il
+  2026-11-26 da quale app li ha fatti e a che ora sono arrivate le email;
+  la risposta va scritta qui.
+
 ## Fuori da questo task
 
 - **Accendere «quando sono via» e il riassunto**: ciascuna col suo sì
   dell'utente, dopo aver contato gli assenti
   (`python -m shaperoute_api.away_email`, che non manda niente) e
   riguardato il piano di Resend.
-- **Le risposte a `hello@getmuw.app`**: oggi il dominio non riceve posta,
+- **Le risposte a `hello@getmuw.app`** (ancora aperto il 2026-11-26, il
+  dominio non ha un `MX`): oggi il dominio non riceve posta,
   chi risponde a una email di MuW riceve un errore. Proposta, da decidere
   con l'utente: un inoltro di `hello@getmuw.app` alla sua casella dal
   gestore del dominio (lo fa lui), senza codice. Non blocca niente.
@@ -188,8 +239,23 @@ parte: resta com'è (scelta 5).
       parte di codice.
 - [x] Le sei risposte dell'utente registrate.
 - [x] ADR-0410 in `DECISIONS.md` e la sua riga nell'indice.
-- [ ] PR di soli documenti «pronta» al Coordinatore.
-- [ ] Parti successive e lista dei file mandate al Coordinatore.
+- [x] PR di soli documenti «pronta» al Coordinatore (#1564).
+- [x] Parti successive e lista dei file mandate al Coordinatore.
+
+## Criteri di accettazione (il task)
+
+- [x] Con le tre variabili partono le email dell'account e non i due giri
+      (parte A, `test_email_rounds.py`).
+- [x] In produzione `GET /account-email` risponde 200 e l'avvio dice i due
+      giri spenti (passo 24).
+- [x] L'utente recupera una password dal telefono, senza OTA (anche nel
+      log).
+- [x] Una segnalazione di prova arriva per email (anche nel log).
+- [ ] Email di conferma di un'iscrizione nuova e di un feedback di prova:
+      l'utente dice arrivate, nel log e nel database del server non ci
+      sono. Accese all'avvio, non provate da qui.
+- [x] `DEPLOY.md` e `API.md` dicono come si accende ogni email adesso;
+      ADR-0410 «Attiva».
 
 ## File toccati (parte 0)
 
@@ -198,10 +264,23 @@ parte: resta com'è (scelta 5).
 - `docs/STATUS.md` (la voce del task)
 - `docs/INDEX.md` (una riga)
 
-## Dove si è (2026-11-24)
+## File toccati (chiusura)
 
-Parte 0: domande fatte, risposte sopra; ADR-0410 scritto come «Proposta».
-La PR di soli documenti va al Coordinatore, con la lista dei file della
-parte A: la parte A parte col suo sì. L'utente può fare Resend quando
-vuole («Cosa fa l'utente su Resend»). Nessuna parte tocca
-`apps/mobile/`.
+- `docs/tasks/TASK-515.md`
+- `docs/DEPLOY.md` («Email di ritorno», «Email confermata e password
+  dimenticata»)
+- `docs/API.md` (le due righe «Spenta» dei giri)
+- `docs/DECISIONS.md` (ADR-0410 «Attiva», voce e indice)
+- `docs/STATUS.md` (la voce esce)
+- `docs/archive/COMPLETATI.md` (una riga)
+
+## Cosa resta (non blocca, non è di questo task)
+
+- Capire da dove sono partite la conferma e il feedback che l'utente ha
+  ricevuto, o rifare le due prove guardando il log subito dopo
+  (`POST /accounts`, `POST /feedback`).
+- Accendere «quando sono via» o il riassunto: `SHAPEROUTE_EMAIL_ROUNDS` sul
+  server, ciascuno col sì dell'utente («Fuori da questo task»).
+- L'inoltro di `hello@getmuw.app`, se l'utente lo vuole.
+- Il piano gratuito di Resend ha 100 email al giorno: da riguardare se un
+  giorno iscrizioni e recuperi ci si avvicinano.

@@ -76,8 +76,8 @@ Una per volta, ognuna con la sua proposta.
    *risposta il 2026-11-26*
 4. Cosa promette «viene bene» e cosa succede quando il risultato è scarso.
    — *risposta il 2026-11-26*
-5. Per quali sport. — *chiesta il 2026-11-26*
-6. I testi nelle cinque lingue.
+5. Per quali sport. — *risposta il 2026-11-26*
+6. I testi nelle cinque lingue. — *chiesta il 2026-11-26*
 
 Già deciso dai documenti, non chiesto: nessun account in più di quello che
 «Draw» già vuole; nessun dato nuovo che esce dal telefono (la richiesta dei
@@ -112,6 +112,12 @@ percorsi vicini è quella di «Explore»).
    forme che vengono quasi ovunque (cuore, cerchio, stella, luna, smiley,
    sole, farfalla), a 5 o 10 km. Scartate: «Another surprise» sotto un
    risultato scarso (testi nuovi), il ricalcolo da solo (doppia attesa).
+5. **Per quali sport: «A piedi e in bici»** (2026-11-26). «Run» e «Walk»
+   come sopra; «Bike» con le otto forme del suo catalogo (sole, luna,
+   farfalla, cuore, stella, cerchio, gatto, pesce) a 20, 25 o 30 km, e
+   fuori dalle città del catalogo una delle otto a 20 km. Negli altri
+   sport la pastiglia non c'è. Scartate: solo a piedi; ogni sport che
+   disegna forme (una scelta al buio dove non c'è catalogo).
 
 ## File toccati
 
@@ -140,3 +146,4 @@ Coordinatore prima del codice. Vicini: `RoutePanel.tsx` e una riga di
 - 2026-11-26 — risposta 2 («Riempie e aspetta»); chiesta la domanda 3.
 - 2026-11-26 — risposta 3 («Forma e 5 o 10 km»); chiesta la domanda 4.
 - 2026-11-26 — risposta 4 («Come sempre»); chiesta la domanda 5.
+- 2026-11-26 — risposta 5 («A piedi e in bici»); chiesta la domanda 6.

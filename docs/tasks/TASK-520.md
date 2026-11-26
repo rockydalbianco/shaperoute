@@ -39,10 +39,9 @@ sovrappone a E.
 
 - [x] a) Mappa delle categorie e delle routine — **approvata dall'utente
       il 2026-11-27 («Sì, approvo»)**; vedi «Mappa approvata» sotto.
-- [ ] b) Elenco degli esercizi nuovi (zona, categorie, lati, secondi,
-      respiro, due righe su come farlo), prima di disegnare le pose —
-      bozza di 50 nuovi (65 in tutto) in `out/stretching-nuovo/ESERCIZI.md`,
-      chiesta all'utente il 2026-11-27.
+- [x] b) Elenco degli esercizi nuovi — **approvato dall'utente il
+      2026-11-27 («Sì, approvo»)**: 50 nuovi, 65 in tutto, con la vista di
+      fronte per 8 esercizi; vedi «Esercizi approvati» sotto.
 - [ ] c) Schizzo della home (artifact).
 - [ ] d) Testi in inglese, poi le quattro traduzioni.
 - [ ] Nome della categoria «intimità» e controllo della fascia d'età su
@@ -76,6 +75,33 @@ sovrappone a E.
 - Lunghezze per categoria: tabelle in `out/stretching-nuovo/MAPPA.md`
   (checkout del worktree), da copiare qui con la parte 0 completa.
 
+## Esercizi approvati (2026-11-27)
+
+Tabella completa (zona, tipo, lati, posizione, livello, vista, secondi,
+categorie, «How to» in bozza) in `out/stretching-nuovo/ESERCIZI.md`; si
+copia qui con la parte 0 completa. In breve:
+
+- I 15 di oggi restano, con categorie in più.
+- 50 nuovi: collo 3 (neckSide, neckTurn, chinTuck), spalle 5
+  (armCircles, shoulderRolls, threadNeedle, sideReachChild, armOpeners),
+  braccia e polsi 4 (wristFlexor, wristExtensor, wristCircles, bicepsWall),
+  petto 2 (doorwayChest, handsClasped), schiena alta 3 (openBook, sideBend,
+  trunkTurns), schiena bassa 6 (catCow, sphinx, lyingTwist, pelvicTilt,
+  kneeSway, seatedTwist), anche 7 (butterfly, lizard, frog, hipCircles,
+  ninetyNinety, sideLunge, deepSquat), glutei 4 (figureFour, pigeon,
+  chairFigureFour, bridge), gambe 7 (legSwings, lungeReach, seatedFold,
+  lyingHamstring, sideQuad, halfSplit, wideFold), polpacci e piedi 5
+  (soleus, calfRaises, ankleCircles, toeStretch, shinStretch), tutto il
+  corpo e respiro 4 (downDog, inchworm, legsUpWall, restBreath).
+- 18 `Move` (loop tra due pose, a tempo) per i «Before» e la mobilità.
+- **Vista di fronte** della stessa figura (View girate, nessuna libreria)
+  per 8: neckSide, neckTurn, sideBend, lyingTwist, butterfly, frog,
+  sideLunge, wideFold. Parte di codice in più.
+- Niente mani: i polsi si vedono a grandi linee. Muro, porta, sedia non si
+  disegnano.
+- Intimità: prima Cat–cow, Pelvic tilt, Hip circles, Bridge, Butterfly;
+  dopo Lying twist, Figure four, Child's pose, Resting breath.
+
 ## Parti di codice (da confermare dopo la parte 0)
 
 Ognuna con la sua PR e la lista dei file al Coordinatore prima:
@@ -100,4 +126,4 @@ aggiungono qui dopo il sì del Coordinatore.
 ## Dove siamo
 
 2026-11-27: numeri dal Coordinatore (TASK-520 / ADR-0415); mappa
-approvata; elenco esercizi all'utente, si aspetta la risposta.
+approvata; elenco esercizi approvato; prossimo lo schizzo della home.

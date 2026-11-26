@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import math
 import random
+from collections.abc import Sequence
 from datetime import timedelta
 from typing import Any
 
@@ -72,14 +73,49 @@ def has_six_decimals(value: float) -> bool:
     return "e" not in text and len(text.partition(".")[2]) <= DECIMALS
 
 
+def _int32(value: int) -> int:
+    """JavaScript's ToInt32 of a whole number."""
+    value &= 0xFFFFFFFF
+    return value - 0x1_0000_0000 if value >= 0x8000_0000 else value
+
+
+def _imul(a: int, b: int) -> int:
+    """JavaScript's Math.imul."""
+    return _int32((a & 0xFFFFFFFF) * (b & 0xFFFFFFFF))
+
+
+def _math_round(value: float) -> int:
+    """JavaScript's Math.round: the nearest whole number, a half upwards."""
+    below = math.floor(value)
+    return below + 1 if value - below >= 0.5 else below
+
+
+def favorite_key(points: Sequence[Sequence[float]]) -> str:
+    """The app's favoriteKey (apps/mobile/src/favorites/favoriteKey.ts)
+    line by line, with JavaScript's numbers: what a phone names the line it
+    received. Written apart from best_routes.line_key on purpose."""
+    a, b = 0x811C9DC5, 0x01000193
+    for lat, lon in points:
+        for value in (_math_round(lat * 1e5), _math_round(lon * 1e5)):
+            for shift in range(0, 32, 8):
+                byte = (_int32(value) >> shift) & 0xFF
+                a = _imul(_int32(a) ^ byte, 0x01000193)
+                b = _imul(_int32(b) ^ byte, 0x85EBCA6B) + 0x9E3779B9
+    return f"{a & 0xFFFFFFFF:08x}{b & 0xFFFFFFFF:08x}"
+
+
 def assert_short_of(answered: list[list[float]], whole: list[Point]) -> None:
-    """`answered` is `whole` as the app is to receive it."""
+    """`answered`, a line as the app parses it from the answer, is `whole`
+    as the app is to receive it."""
     line = points_of(answered)
     assert len(line) == len(whole)
     for (lat, lon), (whole_lat, whole_lon) in zip(line, whole, strict=True):
         assert has_six_decimals(lat) and has_six_decimals(lon)
         assert abs(lat - whole_lat) < NEAR and abs(lon - whole_lon) < NEAR
     assert line_key(line) == line_key(whole)
+    # The name the phone gives the line it received is the name the API
+    # gives the line it keeps.
+    assert favorite_key(answered) == line_key(whole)
 
 
 def kept_line(database: Database, sql: str, *args: Any) -> list[Point]:  # noqa: F811
@@ -147,6 +183,28 @@ def test_a_line_keeps_its_name_which_the_plain_rounding_changes() -> None:
     assert renamed >= 38
     assert short_line([]) == []
     assert short_line(iter([(46.0671, 11.1214)])) == [(46.0671, 11.1214)]
+
+
+def test_the_app_names_a_short_line_as_the_api_names_the_whole() -> None:
+    """favoriteKey on the answer, as it travels, against line_key on the
+    line kept (ADR-0414)."""
+    # Written down in the app's favoriteKey.test.ts and in test_best_routes.
+    assert favorite_key([[46.067, 11.1215], [46.07, 11.123]]) == "680c391da0dfaa4f"
+    assert favorite_key([[-33.8688, 151.2093], [-33.87, 151.21]]) == "24850f1e49fd068a"
+    renamed = 0
+    for seed in range(60):
+        whole = jog(seed, 300, decimals=None if seed % 2 else 7)
+        if seed % 3 == 0:
+            # South and west of zero: a half goes upwards there too.
+            whole = [(-lat, -lon) for lat, lon in whole]
+        assert favorite_key(whole) == line_key(whole)
+        # As the app receives it: JSON, parsed.
+        answered = json.loads(json.dumps(short_line(whole)))
+        assert all(has_six_decimals(c) for point in answered for c in point)
+        assert favorite_key(answered) == line_key(whole)
+        plain = [[round(lat, DECIMALS), round(lon, DECIMALS)] for lat, lon in whole]
+        renamed += favorite_key(json.loads(json.dumps(plain))) != line_key(whole)
+    assert renamed >= 57
 
 
 # --- The answers ---

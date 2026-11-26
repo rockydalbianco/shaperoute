@@ -12,7 +12,7 @@ import {
   space,
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
-import { useSheetFace } from "../ui/sheetFace";
+import { useGlassSheet } from "../ui/SheetGlass";
 
 /** The three steps, with their lines (texts approved on 2026-11-10). */
 export const INTRO_STEPS: readonly { title: string; line: string }[] = [
@@ -56,7 +56,7 @@ export function GymIntroSheet({
 }) {
   const insets = useSafeAreaInsets();
   // The sheet in the glass look (TASK-469 A7a).
-  const glassSheet = useSheetFace();
+  const [glassSheet, glassBack] = useGlassSheet();
   return (
     <SheetModal
       visible={visible}
@@ -80,6 +80,7 @@ export function GymIntroSheet({
             { paddingBottom: insets.bottom + space.lg },
           ]}
         >
+          {glassBack}
           <View style={styles.handle} />
           <View style={styles.bars} accessibilityElementsHidden>
             {BARS.map((height, index) => (

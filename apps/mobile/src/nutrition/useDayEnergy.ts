@@ -1,9 +1,11 @@
+import Constants from "expo-constants";
 import { useEffect, useMemo } from "react";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { useBody } from "../body/useBody";
 import { type DayEnergy, dayEnergy, type HubState, listCovers } from "./activityEnergy";
 import type { LocalDay } from "./localDay";
+import { useHealthEnergy } from "./useHealthEnergy";
 import { useNutrition } from "./useNutrition";
 
 /**
@@ -12,15 +14,28 @@ import { useNutrition } from "./useNutrition";
  * the private list that began that day, and the numbers the user wrote over
  * either.
  *
+ * With the user's yes, what Apple Health has for each day is read too
+ * (part C2, useHealthEnergy.ts): its active energy counts alone on the days
+ * that have it, and the workouts of other apps count on the days that do
+ * not. A day still being read says nothing yet.
+ *
  * The list comes a page at a time, the latest first: for days older than
  * the pages held, the next ones are asked for until the earliest day is
  * covered, and nothing is said of the days meanwhile. A page that does not
  * come is not asked again by itself.
  */
-export function useDaysEnergy(days: readonly LocalDay[], now: Date): DayEnergy[] {
+export function useDaysEnergy(
+  days: readonly LocalDay[],
+  now: Date,
+  /** Whether this reader asks for the pages it misses. Two readers on one
+   * page (the diary's day and the week under it, part H) would ask for the
+   * same page twice: the one whose days reach further back asks. */
+  asks = true,
+): DayEnergy[] {
   const door = useActivitiesDoor();
   const body = useBody();
   const { edits } = useNutrition().settings;
+  const health = useHealthEnergy(days);
   const { status, list, more, loadingMore, problem, loadMore } = door;
 
   // Days are «YYYY-MM-DD»: the earliest is the first in the alphabet.
@@ -33,10 +48,10 @@ export function useDaysEnergy(days: readonly LocalDay[], now: Date): DayEnergy[]
     status === "ready" && (earliest === null || listCovers(list, more, earliest));
   const missing = status === "ready" && !covered;
   useEffect(() => {
-    if (missing && !loadingMore && problem === null) {
+    if (asks && missing && !loadingMore && problem === null) {
       loadMore();
     }
-  }, [missing, loadingMore, problem, loadMore]);
+  }, [asks, missing, loadingMore, problem, loadMore]);
 
   const hub: HubState =
     status === "off"
@@ -47,16 +62,27 @@ export function useDaysEnergy(days: readonly LocalDay[], now: Date): DayEnergy[]
           ? "ready"
           : "loading";
   const at = now.getTime();
+  const { state, days: read } = health;
   return useMemo(
     () =>
       (key === "" ? [] : key.split(",")).map((day) =>
-        dayEnergy({ day, now: new Date(at), hub, list, body, edits }),
+        dayEnergy({
+          day,
+          now: new Date(at),
+          hub,
+          list,
+          body,
+          edits,
+          health: state,
+          healthDay: read[day] ?? null,
+          ownBundleId: Constants.expoConfig?.ios?.bundleIdentifier ?? null,
+        }),
       ),
-    [key, at, hub, list, body, edits],
+    [key, at, hub, list, body, edits, state, read],
   );
 }
 
 /** The energy of one day: what «Diary» shows on top (part C1). */
-export function useDayEnergy(day: LocalDay, now: Date): DayEnergy {
-  return useDaysEnergy([day], now)[0];
+export function useDayEnergy(day: LocalDay, now: Date, asks = true): DayEnergy {
+  return useDaysEnergy([day], now, asks)[0];
 }

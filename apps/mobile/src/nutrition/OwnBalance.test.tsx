@@ -17,6 +17,10 @@ import { forgetNutrition, seeNotice, writeDay } from "./useNutrition";
 
 // «Calorie balance» on one's own profile (TASK-489 part D).
 
+// The page stands still, as with «Reduce Motion»: its numbers are there at
+// once. What moves is tried in CountUp.test.tsx and Ring.test.tsx.
+jest.mock("../ui/useReduceMotion", () => ({ useReduceMotion: () => true }));
+
 jest.mock("./nutritionOn", () => ({ NUTRITION_ON: true }));
 
 jest.mock(

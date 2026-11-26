@@ -21,7 +21,7 @@
         "UIBackgroundModes": ["audio"],
         "NSSupportsLiveActivities": true,
         "NSHealthUpdateUsageDescription": "MuW saves your finished activities to Apple Health, with their time, distance, route and, for runs, estimated calories, so they also appear in the Fitness app.",
-        "NSHealthShareUsageDescription": "MuW reads your heart rate from Apple Health during each activity, to show it with the activity and in your post. You can hide it before you publish."
+        "NSHealthShareUsageDescription": "MuW reads from Apple Health your heart rate during each activity, your sleep and your workouts from other apps with their routes, to show them with your activities and in your posts: you can hide them before you publish."
       },
       "entitlements": {
         "com.apple.developer.healthkit": true,

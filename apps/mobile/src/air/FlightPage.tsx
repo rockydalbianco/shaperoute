@@ -4,6 +4,7 @@ import { StyleSheet, View } from "react-native";
 import { ActivityCalendarSheet } from "../activities/ActivityCalendar";
 import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { space } from "../theme/tokens";
+import { TakeoffsButton } from "../takeoffs/TakeoffsButton";
 import { useUnits } from "../units/useUnits";
 import { FlightBests } from "./FlightBests";
 import { FlightsMonth } from "./FlightsMonth";
@@ -32,6 +33,7 @@ export function FlightPage({ fetchFn, watch }: Props) {
   return (
     <View style={styles.page} testID="flight-page">
       <ReadyToFly gps={gps} signedIn={data !== null} />
+      <TakeoffsButton fetchFn={fetchFn} />
       {data?.month && (
         <FlightsMonth calendar={data.month} onOpen={() => setOpen(true)} />
       )}

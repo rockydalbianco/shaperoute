@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "10. November 2026";
+const UPDATED = "26. November 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "24. November 2026";
+const PRIVACY_UPDATED = "26. November 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -212,6 +212,14 @@ const terms: AboutDocument = {
       ],
     },
     {
+      heading: "Ernährung",
+      blocks: [
+        "«Ernährung» ist ein Tagebuch und ein Rechner, kein Gesundheitsdienst. MuW wird nicht von Ärztinnen und Ärzten, Ernährungsberatungen oder anderen Gesundheitsfachleuten gemacht.",
+        "Die Kalorien der Lebensmittel, die Energie, die du verbrauchst, und, wenn du sie möchtest, die Schätzung eines Tagesziels stammen aus öffentlichen Tabellen und Formeln. Es sind Schätzungen, nur zur Information: Sie sind kein medizinischer oder ernährungsbezogener Rat und ersetzen keine Fachperson, die dich kennt.",
+        "Wenn du unter 18 bist, schwanger bist oder stillst, eine Krankheit hast oder eine Essstörung hast oder hattest, sprich mit deiner Ärztin oder deinem Arzt, bevor du Kalorien zählst oder deine Ernährung änderst.",
+      ],
+    },
+    {
       heading: "Keine Gewähr und die Grenzen unserer Haftung",
       blocks: [
         "Wir arbeiten daran, dass MuW läuft und seine Routen gut sind, aber die App wird so bereitgestellt, wie sie ist: Wir versprechen nicht, dass sie immer verfügbar oder fehlerfrei ist, dass sich eine Route zu Ende laufen lässt oder dass ihre Messungen genau sind.",
@@ -355,6 +363,7 @@ const privacy: AboutDocument = {
         "Bei einem Skitag vergleicht unser Server die gespeicherte Spur mit den Liften und Pisten von OpenStreetMap, die er selbst vorhält, um festzuhalten, welche du genommen hast und wie oft. Die Namen erscheinen im Beitrag, für alle, die ihn sehen können. Nichts geht an einen anderen Dienst.",
         "Auf den Fotos, die du veröffentlichst, kannst du die Teile markieren, die du trägst: was jedes ist, die Marke und, wenn du willst, das Modell und einen Link zu einem Shop. Wer das Foto sieht, sieht sie. Geht der Lauf zurück auf «Nur ich», verlassen sie mit seinen Fotos unseren Server und bleiben auf diesem Telefon.",
         "Du kannst deine Ausrüstung hinzufügen: Schuhe, ein Rad, Ski, einen Helm, alles, was du benutzt. Zu jedem Teil speichern wir Art, Marke, Modell, den Namen, den du ihm gibst, den Monat, in dem du es gekauft hast, deine Notiz und sein Foto. Das Foto speichern wir verkleinert, ohne die Daten, die dein Handy hinzufügt, etwa wo und wann es aufgenommen wurde. Die Aktivitäten, die du für ein Teil wählst, fügen seinen Summen ihre Distanz und Zeit hinzu; die Summen zählt unser Server aus deinen gespeicherten Aktivitäten. Andere Mitglieder sehen deine Ausrüstung auf deinem Profil, mit Summen, Notizen und Fotos, außer du schaltest für ein Teil «Im Profil ausblenden» ein. Die Sportarten, die du für ein Teil wählst, und sein Limit siehst nur du. Deine Ausrüstung wird mit deinem Konto gelöscht.",
+        "Ein Gleitschirmflug, den du speicherst, zählt ohne deinen Namen in der Chronik des Startplatzes, von dem du gestartet bist, auf der Karte der Startplätze: wie viele Flüge und wie viele verschiedene Piloten, Monat für Monat und heute. Unser Server ermittelt das aus dem Startpunkt des gespeicherten Flugs, auch wenn der Flug privat ist, und zeigt diese Zahlen nur, wenn es mindestens drei verschiedene Piloten sind. Dein Name und dein Flug erscheinen in den Rekorden des Startplatzes (der längste Flug, der höchste, der weiteste) nur, wenn der Beitrag des Flugs für alle sichtbar ist. Während du einen Flug live teilst, zeigt der Startplatz, dass jemand in der Luft ist, ohne deinen Namen; dein Link erscheint dort nur, wenn du schon mit allen im Feed teilst. Die Start- und Landeplätze stammen von OpenStreetMap.",
         "Bei einem Skitag sendet die App unserem Server deine Position, auf etwa 1 km gerundet, um das nächste Skigebiet zu finden; das Wetter fragt der Server bei MET Norway mit der Position des Skigebiets ab, nie mit deiner. Skigebiet, Schnee und Ausrüstung, die du hinzufügst, stehen auf dem Beitrag, für alle, die ihn sehen können, und der Schnee zählt außerdem, ohne deinen Namen, zum Schnee des Tages im Skigebiet.",
       ],
     },
@@ -425,7 +434,7 @@ const privacy: AboutDocument = {
     {
       heading: "Dein Standort",
       blocks: [
-        "Der Standort des Handys wird auf dem Handy genutzt, um eine Route dort zu beginnen, wo du bist, und um deinem Lauf zu folgen. Er geht genau an unseren Server als Start einer Route, die du anforderst, als Start der Formen, die die App dir in der Nähe vorbereitet, wenn das Handy sie nicht selbst zeichnen kann, und innerhalb eines Laufs, den du speicherst. Abseits der Route eines Laufs, wenn das Handy den Weg zurück nicht selbst findet, geht er genau an unseren Server, mit dem Stück der Route vor dir, um diesen Weg über die Straßen zu finden: Der Server behält beides nicht. Auf etwa 1 km gerundet geht er an den Server, um die Offline-Karte um dich herum, empfohlene Routen, Orte und Zeichnungen in der Nähe zu finden und bei einer Suche die Orte in deiner Nähe zuerst zu zeigen; so gerundet bleibt er nicht mit deinem Konto verbunden. Wenn du eine Aktivität live teilst, geht deine genaue Position an unseren Server und an alle, die den Link haben, wie unter «Live teilen» beschrieben.",
+        "Der Standort des Handys wird auf dem Handy genutzt, um eine Route dort zu beginnen, wo du bist, und um deinem Lauf zu folgen. Er geht genau an unseren Server als Start einer Route, die du anforderst, als Start der Formen, die die App dir in der Nähe vorbereitet, wenn das Handy sie nicht selbst zeichnen kann, und innerhalb eines Laufs, den du speicherst. Abseits der Route eines Laufs, wenn das Handy den Weg zurück nicht selbst findet, geht er genau an unseren Server, mit dem Stück der Route vor dir, um diesen Weg über die Straßen zu finden: Der Server behält beides nicht. Auf etwa 1 km gerundet geht er an den Server, um die Offline-Karte um dich herum, Gleitschirm-Landeplätze in der Nähe, den Höhenwind für einen Flug, empfohlene Routen, Orte und Zeichnungen in der Nähe zu finden und bei einer Suche die Orte in deiner Nähe zuerst zu zeigen; so gerundet bleibt er nicht mit deinem Konto verbunden. Den Höhenwind lädt unser Server bei DWD und ECMWF für ganze Gebiete, nie mit deiner Position. Wenn du eine Aktivität live teilst, geht deine genaue Position an unseren Server und an alle, die den Link haben, wie unter «Live teilen» beschrieben.",
         "Auf dem iPhone folgt die App während eines Laufs, den du gestartet hast, deinem Standort auch bei gesperrtem Handy oder wenn eine andere App offen ist, bis du den Lauf beendest; das iPhone zeigt das mit einer blauen Markierung oben auf dem Bildschirm. MuW fragt nur nach dem Standort, während du die App benutzt, nie «Immer».",
         "Wie jeder Internetdienst sieht unser Server die Internetadresse (IP), von der eine Anfrage kommt, während er sie beantwortet. Das Protokoll des Servers schreibt keine Positionen, und die Datenbank enthält keine IP-Adressen.",
         "Ein Register der Routenanfragen mit ihrem Start gibt es, um einen Fehler nachzustellen. Auf unserem Server ist es ausgeschaltet; eingeschaltet fasst es höchstens 10 MB, dann gehen die ältesten Zeilen verloren.",
@@ -461,8 +470,8 @@ const privacy: AboutDocument = {
     {
       heading: "Ernährung",
       blocks: [
-        "«Ernährung» ist ein Tagebuch, das du für dich führst. Die Lebensmittel, die du hinzufügst, dein Wochenplan, was du für jeden Tag als gegessen einträgst, dein Tagesziel und die Kalorien, die du von Hand korrigierst, bleiben nur auf deinem Handy: Sie erreichen unseren Server nicht, und niemand sonst kann sie sehen. Die «Kalorienbilanz» in deinem Profil wird auf deinem Handy berechnet und nur dir angezeigt.",
-        "Um die Energie zu schätzen, die du verbrauchst, zählt MuW auf deinem Handy die Aktivitäten deines Kontos und die Körperdaten, die du in den «Einstellungen» eingegeben hast. Jede Zahl ist eine Schätzung: MuW gibt keine Diäten oder medizinischen Ratschläge.",
+        "«Ernährung» ist ein Tagebuch, das du für dich führst. Die Lebensmittel, die du hinzufügst, dein Wochenplan, was du für jeden Tag als gegessen einträgst, dein Tagesziel, der Grund, den du für die Nutzung angegeben hast, und die Kalorien, die du von Hand korrigierst, bleiben nur auf deinem Handy: Sie erreichen unseren Server nicht, und niemand sonst kann sie sehen. Die «Kalorienbilanz» in deinem Profil wird auf deinem Handy berechnet und nur dir angezeigt.",
+        "Um die Energie zu schätzen, die du verbrauchst, zählt MuW auf deinem Handy die Aktivitäten deines Kontos und die Körperdaten, die du in den «Einstellungen» eingegeben hast. Wenn du es möchtest, berechnet MuW auf deinem Handy aus denselben Daten und nach einer öffentlichen Formel auch eine Schätzung für ein tägliches Kalorienziel: nur zur Veranschaulichung und nie für Personen unter 18 Jahren. Jede Zahl ist eine Schätzung: MuW wird nicht von Gesundheitsfachleuten gemacht und gibt keine Diäten oder medizinischen Ratschläge.",
         "Diese Daten waren nie auf unserem Server. Deshalb löscht weder das Abmelden noch das Löschen deines Kontos sie: Sie bleiben auf deinem Handy, bis du sie dort entfernst oder die App deinstallierst.",
       ],
     },
@@ -470,6 +479,7 @@ const privacy: AboutDocument = {
       heading: "Apple Health und Health Connect",
       blocks: [
         "Sobald du «In Apple Health speichern» (iPhone) oder «In Health Connect speichern» (Android) einschaltest, wird jede Aktivität, die du speicherst, auch dort geschrieben, auf deinem Telefon: die Sportart, wann sie begann und endete, die Distanz, die Route und, bei einem Lauf, die geschätzten aktiven Kalorien. Wenn du am Ende eines Schwimmens im Becken oder eines Trainings im Fitnessstudio auf «Herzfrequenz aus Apple Health hinzufügen» tippst, liest MuW die Herzfrequenz, die deine Uhr während dieser Aktivität aufgezeichnet hat, und nichts anderes; nach diesem ersten Tippen liest MuW sie am Ende jedes Schwimmens und jedes Trainings. Durchschnitt und Maximum bleiben mit der Aktivität auf unserem Server und erscheinen in ihrem Beitrag, außer du schaltest «Herzfrequenz zeigen» aus; die Zeit in jeder Zone bleibt auf deinem Telefon. Keine deiner Gesundheitsdaten erreicht irgendeine Werbung. Du kannst es in der Health-App oder in Health Connect beenden. Was schon dort ist, bleibt, bis du es dort löschst, auch wenn du den Lauf oder dein Konto löschst.",
+        "Sobald du auf «Meinen Schlaf aus Apple Health zeigen» tippst, liest MuW deinen Schlaf aus Apple Health (die Schlafzeit und die Schlafphasen) auf deinem Telefon und berechnet dort einen Schlafwert. Nichts davon erreicht unseren Server, bis du es veröffentlichst: mit «Teilen» in deinem Profil, mit «Veröffentlichen» als eigenen Beitrag oder mit «Schlaf letzte Nacht» im Beitrag einer Aktivität. Dann bleiben der Wert, die geschlafenen Stunden, die Phasen und der Tag auf unserem Server und sind für alle sichtbar, die dein Profil oder diesen Beitrag sehen können, bis du das Teilen beendest, den Beitrag entfernst oder dein Konto löschst. Nie die Uhrzeit, zu der du ins Bett gegangen oder aufgewacht bist.",
       ],
     },
     {

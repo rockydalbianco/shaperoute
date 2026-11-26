@@ -18,7 +18,7 @@ time or place changed, it was cancelled; two the private messages'
 each writer; three the monthly challenges' (TASK-343, contests.py and
 contest_clock.py): a new one opened, its last days, its results; three a
 group's (TASK-495, groups.py): a request to join, a request accepted, an
-invite. Each to one recipient, and only when:
+invite, the group deleted. Each to one recipient, and only when:
 
 - the recipient has «Push notifications» on (users.notify_push);
 - the recipient is not the one who acted, but for OWN_KINDS;
@@ -114,6 +114,7 @@ Kind = Literal[
     "group_join_request",
     "group_join_accepted",
     "group_invite",
+    "group_deleted",
 ]
 # The events of what one did oneself, or of nobody's doing: told to
 # oneself too (the shape game, TASK-296; the contest won, TASK-299; the
@@ -586,6 +587,15 @@ TEXTS: dict[str, dict[str, str]] = {
         "es": "{name} te ha invitado a unirte a {title}.",
         "fr": "{name} t'a invité à rejoindre {title}.",
     },
+    # A group deleted by its admin (TASK-495 part A3): to its members; it
+    # opens nothing, the group is gone. Approved by the user 2026-11-24.
+    "group_deleted": {
+        "en": "{name} deleted the group {title}.",
+        "de": "{name} hat die Gruppe {title} gelöscht.",
+        "it": "{name} ha eliminato il gruppo {title}.",
+        "es": "{name} ha eliminado el grupo {title}.",
+        "fr": "{name} a supprimé le groupe {title}.",
+    },
     "message_live_text": {
         language: "{name}" + (" : " if language == "fr" else ": ") + "🔴 {text}"
         for language in ("en", "de", "it", "es", "fr")
@@ -635,6 +645,9 @@ def data_of(event: PushEvent, actor_public_id: UUID, actor_name: str) -> dict[st
         return {"kind": event.kind, "group_run_id": str(event.group_run_id)}
     if event.group_id is not None:
         return {"kind": event.kind, "group_id": str(event.group_id)}
+    if event.kind == "group_deleted":
+        # The group is gone: nothing to open, not even who deleted it.
+        return {"kind": event.kind}
     if event.planned_live_id is not None:
         return {
             "kind": event.kind,

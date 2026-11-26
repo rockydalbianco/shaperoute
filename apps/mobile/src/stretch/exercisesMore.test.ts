@@ -34,9 +34,29 @@ const B2 = [
   "restBreath",
 ];
 
+/** The third block: the movements seen from the side. */
+const B3 = [
+  "chinTuck",
+  "armCircles",
+  "shoulderRolls",
+  "wristCircles",
+  "catCow",
+  "pelvicTilt",
+  "bridge",
+  "legSwings",
+  "lungeReach",
+  "calfRaises",
+  "ankleCircles",
+  "inchworm",
+];
+
 describe("the exercises TASK-520 adds", () => {
   it("are the ones approved, each under its key, block after block", () => {
-    expect(NEW_EXERCISES.map((exercise) => exercise.key)).toEqual([...B1, ...B2]);
+    expect(NEW_EXERCISES.map((exercise) => exercise.key)).toEqual([
+      ...B1,
+      ...B2,
+      ...B3,
+    ]);
   });
 
   it("take no key and no name of the fifteen of before", () => {
@@ -54,7 +74,7 @@ describe("the exercises TASK-520 adds", () => {
     );
   });
 
-  it("each have a name, two short lines on how, a pose, and a breath of a few degrees", () => {
+  it("each have a name, two short lines on how, a pose, and a breath of a few degrees when held", () => {
     for (const exercise of NEW_EXERCISES) {
       expect(exercise.name.length).toBeGreaterThan(2);
       expect(exercise.howTo.length).toBeGreaterThan(20);
@@ -65,7 +85,10 @@ describe("the exercises TASK-520 adds", () => {
       expect(exercise.breath).toBeDefined();
       for (const degrees of Object.values(exercise.breath ?? {})) {
         expect(Math.abs(degrees ?? 0)).toBeGreaterThan(0);
-        expect(Math.abs(degrees ?? 0)).toBeLessThanOrEqual(BREATH_MAX_DEGREES);
+        // A movement is as wide as it needs; a breath is a few degrees.
+        if (exercise.kind !== "move") {
+          expect(Math.abs(degrees ?? 0)).toBeLessThanOrEqual(BREATH_MAX_DEGREES);
+        }
       }
     }
   });
@@ -78,8 +101,15 @@ describe("the exercises TASK-520 adds", () => {
       );
       expect(["standing", "chair", "floor"]).toContain(exercise.position);
       expect(["gentle", "intense"]).toContain(exercise.level);
-      // The first two blocks are all held stretches seen from the side.
-      expect(exercise.kind).toBeUndefined();
+      // The first two blocks are held, the third moves; all seen from the side.
+      if (B3.includes(exercise.key)) {
+        expect(exercise.kind).toBe("move");
+        expect(exercise.tempoMs).toBeGreaterThan(0);
+        expect(exercise.seconds).toBe(30);
+      } else {
+        expect(exercise.kind).toBeUndefined();
+        expect(exercise.tempoMs).toBeUndefined();
+      }
       expect(exercise.front).toBeUndefined();
     }
   });
@@ -103,7 +133,25 @@ describe("the exercises TASK-520 adds", () => {
       "halfSplit",
       "toeStretch",
       "downDog",
+      "lungeReach",
+      "inchworm",
     ]);
+  });
+
+  it("moves in the third block: one side at a time for the leg, the lunge and the ankle", () => {
+    const third = NEW_EXERCISES.filter((exercise) => B3.includes(exercise.key));
+    expect(third).toHaveLength(B3.length);
+    expect(third.filter((exercise) => exercise.sides).map((e) => e.key)).toEqual([
+      "legSwings",
+      "lungeReach",
+      "ankleCircles",
+    ]);
+    expect(
+      third.filter((exercise) => exercise.position === "floor").map((e) => e.key),
+    ).toEqual(["catCow", "pelvicTilt", "bridge"]);
+    expect(third.find((exercise) => exercise.key === "ankleCircles")?.position).toBe(
+      "chair",
+    );
   });
 
   it("puts the second block on the floor, one side at a time only where there are two", () => {

@@ -1968,6 +1968,42 @@ export const DE: Table = {
   "Resting breath": "Ruheatmung",
   "Lie on your back, eyes closed. Breathe slowly into your belly.":
     "Auf den Rücken legen, Augen zu. Langsam in den Bauch atmen.",
+  "Chin tuck": "Kinn zurückziehen",
+  "Draw your chin straight back, then release. Eyes forward.":
+    "Das Kinn gerade nach hinten ziehen, dann lösen. Blick nach vorn.",
+  "Arm circles": "Armkreisen",
+  "Swing your arms in big, slow circles. Change direction halfway.":
+    "Die Arme in großen, langsamen Kreisen schwingen. Zur Halbzeit die Richtung wechseln.",
+  "Shoulder rolls": "Schulterkreisen",
+  "Roll your shoulders up, back and down. Slow and wide.":
+    "Die Schultern nach oben, hinten und unten rollen. Langsam und weit.",
+  "Wrist circles": "Handgelenke kreisen",
+  "Make slow circles with both wrists. Change direction halfway.":
+    "Mit beiden Handgelenken langsam kreisen. Zur Halbzeit die Richtung wechseln.",
+  "Cat–cow": "Katze–Kuh",
+  "On all fours, round your back, then let it dip. Move with your breath.":
+    "Im Vierfüßlerstand den Rücken runden, dann durchhängen lassen. Mit dem Atem bewegen.",
+  "Pelvic tilt": "Beckenkippen",
+  "Lie on your back, knees bent. Press your lower back down, then release.":
+    "Auf den Rücken legen, Knie gebeugt. Den unteren Rücken in den Boden drücken, dann lösen.",
+  Bridge: "Brücke",
+  "On your back, knees bent. Lift your hips, then lower slowly.":
+    "Auf dem Rücken, Knie gebeugt. Die Hüfte heben, dann langsam senken.",
+  "Leg swings": "Beinschwingen",
+  "Hold on to something. Swing one leg forward and back, relaxed.":
+    "An etwas festhalten. Ein Bein locker vor und zurück schwingen.",
+  "Lunge with reach": "Ausfallschritt mit Streckung",
+  "Step into a lunge and reach both arms up. Step back and switch.":
+    "In den Ausfallschritt gehen und beide Arme nach oben strecken. Zurück und wechseln.",
+  "Calf raises": "Wadenheben",
+  "Rise onto your toes, then lower slowly. Hold on if you need to.":
+    "Auf die Zehenspitzen steigen, dann langsam senken. Bei Bedarf festhalten.",
+  "Ankle circles": "Fußkreisen",
+  "Lift one foot and draw slow circles with your ankle.":
+    "Einen Fuß anheben und mit dem Knöchel langsam kreisen.",
+  Inchworm: "Raupe",
+  "Fold down, walk your hands out to a plank, then walk them back.":
+    "Nach unten beugen, mit den Händen bis in die Planke laufen, dann zurück.",
   // end of TASK-520 part B
   Morning: "Morgens",
   "After run": "Nach dem Laufen",

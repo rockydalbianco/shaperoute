@@ -1950,6 +1950,42 @@ export const IT: Table = {
   "Resting breath": "Respiro a riposo",
   "Lie on your back, eyes closed. Breathe slowly into your belly.":
     "Sdraiati sulla schiena, occhi chiusi. Respira piano nella pancia.",
+  "Chin tuck": "Mento indietro",
+  "Draw your chin straight back, then release. Eyes forward.":
+    "Porta il mento dritto indietro, poi rilascia. Sguardo avanti.",
+  "Arm circles": "Cerchi con le braccia",
+  "Swing your arms in big, slow circles. Change direction halfway.":
+    "Fai grandi cerchi lenti con le braccia. A metà cambia verso.",
+  "Shoulder rolls": "Rotazioni delle spalle",
+  "Roll your shoulders up, back and down. Slow and wide.":
+    "Ruota le spalle in su, indietro e in giù. Lento e ampio.",
+  "Wrist circles": "Cerchi con i polsi",
+  "Make slow circles with both wrists. Change direction halfway.":
+    "Fai cerchi lenti con tutti e due i polsi. A metà cambia verso.",
+  "Cat–cow": "Gatto e mucca",
+  "On all fours, round your back, then let it dip. Move with your breath.":
+    "A quattro zampe, arrotonda la schiena, poi lasciala scendere. Muoviti col respiro.",
+  "Pelvic tilt": "Basculamento del bacino",
+  "Lie on your back, knees bent. Press your lower back down, then release.":
+    "Sdraiati sulla schiena, ginocchia piegate. Premi la zona lombare a terra, poi rilascia.",
+  Bridge: "Ponte",
+  "On your back, knees bent. Lift your hips, then lower slowly.":
+    "Sulla schiena, ginocchia piegate. Solleva il bacino, poi scendi piano.",
+  "Leg swings": "Slanci della gamba",
+  "Hold on to something. Swing one leg forward and back, relaxed.":
+    "Tieniti a qualcosa. Fai oscillare una gamba avanti e indietro, rilassata.",
+  "Lunge with reach": "Affondo con braccia in alto",
+  "Step into a lunge and reach both arms up. Step back and switch.":
+    "Fai un affondo e porta le braccia in alto. Torna indietro e cambia.",
+  "Calf raises": "Sollevamenti sulle punte",
+  "Rise onto your toes, then lower slowly. Hold on if you need to.":
+    "Sali sulle punte, poi scendi piano. Tieniti se serve.",
+  "Ankle circles": "Cerchi con la caviglia",
+  "Lift one foot and draw slow circles with your ankle.":
+    "Solleva un piede e disegna cerchi lenti con la caviglia.",
+  Inchworm: "Bruco",
+  "Fold down, walk your hands out to a plank, then walk them back.":
+    "Piegati in giù, cammina con le mani fino alla plank, poi torna indietro.",
   // end of TASK-520 part B
   Morning: "Mattino",
   "After run": "Dopo la corsa",

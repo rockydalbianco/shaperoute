@@ -28,8 +28,8 @@ import {
   space,
 } from "../theme/tokens";
 import { tabName, tourPart } from "../tour/tourParts";
-import { Glass } from "../ui/Glass";
 import { fadeTo, springTo } from "../ui/motion";
+import { NativeGlass, nativeGlassAvailable } from "../ui/NativeGlass";
 import { Tap } from "../ui/Tap";
 import { useGlassMode } from "../ui/useGlassMode";
 import { useReduceMotion } from "../ui/useReduceMotion";
@@ -93,8 +93,8 @@ export function tabGlassLift(bottomInset: number): number {
 
 /**
  * How tall the band of the bar is, from the bottom edge of the screen: the
- * room a page leaves at its end, since the pages go on under the bar
- * (TASK-469 B2a). On a phone with a home indicator, as tall as the bar was.
+ * room a page leaves at its end where the bar floats over it (TASK-469
+ * B2). On a phone with a home indicator, as tall as the bar was.
  */
 export function tabBarBand(bottomInset: number): number {
   return Math.max(
@@ -102,6 +102,18 @@ export function tabBarBand(bottomInset: number): number {
     TAB_GLASS_HEIGHT + tabGlassLift(bottomInset) + space.xs,
   );
 }
+
+/**
+ * Whether the bar floats over the pages, which then go on under it: only
+ * where the phone draws the real glass (the user's choice, 2026-11-26).
+ * Its blur keeps the bar readable over what passes behind; under the
+ * veiled glass of part A a post's text showed through the icons, so there
+ * the bar keeps its own band at the foot of the app, as before.
+ */
+export function tabBarFloats(): boolean {
+  return nativeGlassAvailable();
+}
+
 /** How small an icon gets under the finger. */
 export const TAB_PRESS_SCALE = 0.9;
 /** How far the icon taking its tab rises, in points. */
@@ -154,6 +166,8 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
   const slot = (width - 2 * TAB_BAR_INSET) / Math.max(count, 1);
   const lift = tabGlassLift(insets.bottom);
   const band = tabBarBand(insets.bottom);
+  // Looked for once: a phone does not gain the glass while the app is open.
+  const [floats] = useState(tabBarFloats);
 
   // The capsule's tab, as a number: 2.5 is half way from the third to the fourth.
   const [at] = useState(() => new Animated.Value(page));
@@ -279,13 +293,17 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
 
   return (
     <View
-      style={[styles.bar, { height: band }]}
-      // Only the glass takes the finger: around it the page is under.
-      pointerEvents="box-none"
+      style={[floats ? styles.floating : styles.bar, { height: band }]}
+      // Floating, only the glass takes the finger: around it the page is under.
+      pointerEvents={floats ? "box-none" : undefined}
       accessibilityRole="tablist"
       testID="tab-bar"
     >
-      <Glass testID="tab-glass" mode={mode} style={[styles.glass, { bottom: lift }]}>
+      <NativeGlass
+        testID="tab-glass"
+        mode={mode}
+        style={[styles.glass, { bottom: lift }]}
+      >
         <View style={styles.capsules} pointerEvents="none">
           {moves.map((translateX, round) => (
             <Animated.View
@@ -338,7 +356,7 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
             </View>
           );
         })}
-      </Glass>
+      </NativeGlass>
     </View>
   );
 }
@@ -398,10 +416,14 @@ function Glyph({ tab, selected, on, still }: GlyphProps) {
 }
 
 const styles = StyleSheet.create({
-  // The band at the foot of the app: over the pages, which go on under
-  // it, with no face of its own; the glass floats in it (TASK-469 B2a,
-  // ADR-0383).
+  // The band at the foot of the app, the page's background; the glass
+  // floats in it (TASK-469, ADR-0383).
   bar: {
+    backgroundColor: color.background,
+  },
+  // Where the glass is the phone's own: the band over the pages, which go
+  // on under it, with no face of its own (TASK-469 B2).
+  floating: {
     position: "absolute",
     left: 0,
     right: 0,

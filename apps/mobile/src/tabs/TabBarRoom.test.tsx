@@ -11,9 +11,36 @@ import { TAB_BAR_HEIGHT, tabBarBand } from "./TabBar";
 import { TabBarRoomContext, useTabBarRoom } from "./tabBarRoom";
 import { type ShellPage, TabShell } from "./TabShell";
 
-// The pages of the tab bar go on under the bar (TASK-469 B2a, ADR-0383):
-// each leaves the bar's room after the last thing it shows. The shell gives
-// the room: the band of the bar, which floats over them.
+// Where the phone draws the real glass, the pages of the tab bar go on
+// under the bar (TASK-469 B2, ADR-0383): each leaves the bar's room after
+// the last thing it shows. The shell gives the room: the band of the bar,
+// which floats over them there, and nothing where the bar keeps its band.
+
+// The phone's own glass (ui/NativeGlass): what its native module says of
+// the phone, null where the app was built without it. The other native
+// modules are the real ones.
+let mockGlassModule: Record<string, boolean> | null = null;
+jest.mock("expo", () => {
+  const actual = jest.requireActual<typeof import("expo")>("expo");
+  return {
+    ...actual,
+    requireOptionalNativeModule: (name: string) =>
+      name === "ExpoGlassEffect"
+        ? mockGlassModule
+        : actual.requireOptionalNativeModule(name),
+  };
+});
+jest.mock("expo-glass-effect", () => {
+  const { View } = jest.requireActual<typeof import("react-native")>("react-native");
+  return {
+    GlassView: (props: Record<string, unknown>) => <View {...props} />,
+  };
+});
+const REAL_GLASS = { isGlassEffectAPIAvailable: true, isLiquidGlassAvailable: true };
+
+beforeEach(() => {
+  mockGlassModule = null;
+});
 
 function Room() {
   return <Text testID="room">{useTabBarRoom()}</Text>;
@@ -50,7 +77,13 @@ function Shell() {
   );
 }
 
-test("the shell gives its pages the band of the bar, the home indicator in it", async () => {
+test("under the veiled glass the bar has its own band: the shell gives its pages no room", async () => {
+  await render(<Shell />);
+  expect(screen.getByTestId("room")).toHaveTextContent("0");
+});
+
+test("where the bar floats, the shell gives its pages the band of the bar, the home indicator in it", async () => {
+  mockGlassModule = REAL_GLASS;
   await render(<Shell />);
   expect(screen.getByTestId("room")).toHaveTextContent(String(tabBarBand(34)));
   expect(tabBarBand(34)).toBe(TAB_BAR_HEIGHT + 34);

@@ -28,7 +28,7 @@ import { pageName, tourPart, useTourPager } from "../tour/tourParts";
 import { closeTopLayer, OnScreenContext } from "../ui/backLayers";
 import { AppHeader } from "./AppHeader";
 import { HeaderScrollContext, type HeaderScrollReport } from "./headerScroll";
-import { type BarTab, TabBar, tabBarBand } from "./TabBar";
+import { type BarTab, TabBar, tabBarBand, tabBarFloats } from "./TabBar";
 import { TabBarRoomContext } from "./tabBarRoom";
 import { TabReselect, TabReselectContext } from "./tabReselect";
 import {
@@ -171,10 +171,12 @@ export function TabShell({ pages, page, onPage, action }: Props) {
   // The header keeps the top edge and the bar the bottom one: the pages
   // lie between them.
   const between = useMemo(() => ({ ...insets, top: 0, bottom: 0 }), [insets]);
-  // The bar floats over the pages, which go on under it: each page leaves
-  // this room at its end (TASK-469 B2a). Apart from the safe area, which
-  // reaches the sheets a page opens too.
-  const barRoom = tabBarBand(insets.bottom);
+  // Where the bar floats over the pages, they go on under it: each page
+  // leaves this room at its end (TASK-469 B2). Apart from the safe area,
+  // which reaches the sheets a page opens too. Elsewhere the bar has its
+  // own band under the pages, and they end as before.
+  const [floats] = useState(tabBarFloats);
+  const barRoom = floats ? tabBarBand(insets.bottom) : 0;
   // One for each page, made the first time it is asked for.
   const [reselects] = useState(() => new Map<string, TabReselect>());
   // The pages scrolled away from their top: the header is in glass over them

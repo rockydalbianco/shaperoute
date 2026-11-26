@@ -11,6 +11,7 @@ import {
   TAB_GLASS_HEIGHT,
   TabBar,
   tabBarBand,
+  tabBarFloats,
   tabCapsuleX,
   tabGlassLift,
 } from "./TabBar";
@@ -24,6 +25,32 @@ jest.mock("../ui/useGlassMode", () => ({
   useGlassMode: jest.fn(),
 }));
 const glassMode = jest.mocked(useGlassMode);
+
+// The phone's own glass (ui/NativeGlass): what its native module says of
+// the phone, null where the app was built without it. The other native
+// modules are the real ones.
+let mockGlassModule: Record<string, boolean> | null = null;
+jest.mock("expo", () => {
+  const actual = jest.requireActual<typeof import("expo")>("expo");
+  return {
+    ...actual,
+    requireOptionalNativeModule: (name: string) =>
+      name === "ExpoGlassEffect"
+        ? mockGlassModule
+        : actual.requireOptionalNativeModule(name),
+  };
+});
+jest.mock("expo-glass-effect", () => {
+  const { View } = jest.requireActual<typeof import("react-native")>("react-native");
+  return {
+    GlassView: (props: Record<string, unknown>) => <View {...props} />,
+  };
+});
+const REAL_GLASS = { isGlassEffectAPIAvailable: true, isLiquidGlassAvailable: true };
+
+beforeEach(() => {
+  mockGlassModule = null;
+});
 
 const TABS: BarTab[] = [
   { title: "Feed", label: "Feed", icon: "house" },
@@ -67,16 +94,49 @@ test("with a home indicator the band is as tall as the bar was: the pages keep t
   expect(tabBarBand(34)).toBe(TAB_BAR_HEIGHT + 34);
 });
 
-test("the band floats over the pages, with no face of its own: they go on under it", async () => {
+test("under the veiled glass the bar keeps its own band, the page's background: no page goes under it", async () => {
   await bar("glass", 34);
+  const band = styleOf("tab-bar");
+  expect(band.position).toBeUndefined();
+  expect(band.backgroundColor).toBe(color.background);
+  expect(screen.getByTestId("tab-bar").props.pointerEvents).toBeUndefined();
+  expect(tabBarFloats()).toBe(false);
+});
+
+test("where the glass is the phone's own, the band floats over the pages with no face: they go on under it", async () => {
+  mockGlassModule = REAL_GLASS;
+  await bar("glass", 34);
+  expect(tabBarFloats()).toBe(true);
   const band = styleOf("tab-bar");
   expect(band.position).toBe("absolute");
   expect(band.bottom).toBe(0);
   expect(band.left).toBe(0);
   expect(band.right).toBe(0);
+  expect(band.height).toBe(tabBarBand(34));
   expect(band.backgroundColor).toBeUndefined();
   // Around the glass a touch goes to the page under it.
   expect(screen.getByTestId("tab-bar").props.pointerEvents).toBe("box-none");
+});
+
+test("there the bar is the real glass, regular and never tinted, where the veil was", async () => {
+  mockGlassModule = REAL_GLASS;
+  await bar("glass", 34);
+  const piece = screen.getByTestId("tab-glass");
+  expect(piece.props.glassEffectStyle).toBe("regular");
+  expect(piece.props.tintColor).toBeUndefined();
+  const face = styleOf("tab-glass");
+  expect(face.backgroundColor).toBeUndefined();
+  expect(face.left).toBe(TAB_BAR_INSET);
+  expect(face.height).toBe(TAB_GLASS_HEIGHT);
+  expect(face.bottom).toBe(tabGlassLift(34));
+});
+
+test("«Reduce Transparency» there too: the bar floats, opaque", async () => {
+  mockGlassModule = REAL_GLASS;
+  await bar("solid", 34);
+  expect(styleOf("tab-bar").position).toBe("absolute");
+  expect(screen.getByTestId("tab-glass").props.glassEffectStyle).toBeUndefined();
+  expect(styleOf("tab-glass").backgroundColor).toBe(color.surface);
 });
 
 test("without a home indicator the glass still floats clear of the edge", async () => {

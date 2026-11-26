@@ -13,6 +13,7 @@ import { startedLabel } from "../activities/activityText";
 import type { ActivitiesPage } from "../api/activities";
 import type { PickFile, Picked } from "../imports/pickActivityFile";
 import { AddToFeed } from "./AddToFeed";
+import { ADD_TO_FEED_ICONS } from "./addToFeedEntries";
 
 // The Feed's «+» (TASK-476, TASK-481): a sheet «Add to Feed» that opens on
 // the list of its ready entries, in the user's order; a chosen entry opens
@@ -102,6 +103,11 @@ test("the «+» opens «Add to Feed» on the list, in the user's order", async (
     "feed-add-gym",
     "feed-add-plan",
   ]);
+  // Each with its own sign beside the words (TASK-509).
+  for (const id of ["record", "done", "photos", "file", "gym", "plan"] as const) {
+    const icon = screen.getByTestId(`feed-add-icon-${id}`);
+    expect(icon.props.source).toBe(ADD_TO_FEED_ICONS[id]);
+  }
   // The list is the opener: no form, no «Back», nothing picked yet.
   expect(screen.queryByTestId("imported-form")).toBeNull();
   expect(screen.queryByRole("button", { name: "Back" })).toBeNull();

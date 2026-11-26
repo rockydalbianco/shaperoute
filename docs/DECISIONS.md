@@ -623,9 +623,80 @@ lasciando le righe d'indice.
 - ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Proposta
 - ADR-0177, aggiunta G (TASK-214) — Una zona che il server non ha intorno al telefono la prepara da solo, come un luogo tenuto (TASK-334): il telefono la trova all'apertura dopo; il log non scrive mai il nome della zona · 2026-11-26 · Attiva
 - ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi (`latest` nella pagina, `?after=` sulla stessa rotta), più piano nel silenzio (5 s, 15 s, 30 s: scelta dell'utente); la pagina intera una volta al minuto; una risposta uguale non ridisegna · 2026-11-26 · Attiva
+- ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza (10 km), chiesti al primo tocco; fuori dal catalogo le forme di riserva; le sorprese venute sotto il 90% ricordate sul telefono · 2026-11-26 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza
+
+**Stato**: Attiva · 2026-11-26 · TASK-448 (in `main`: #1613 la scelta,
+#1641 la pastiglia). Che cosa si vede e che cosa si promette è **scelta
+dell'utente** (2026-11-26, sei risposte: «Nel passo 2 di Draw»; «Riempie e
+aspetta»; «Forma e 5 o 10 km»; «Come sempre»; «A piedi e in bici»; «Sì,
+vanno bene» sui testi; «Sì, va bene» sulle schermate dal simulatore); il
+come è deciso dall'agente su delega dell'utente. Numero dal Coordinatore.
+
+**Contesto**: idea I1 della prova dell'11 novembre 2026: chi non sa cosa
+disegnare vuole una forma e una distanza «che vengono bene dove sono». Il
+motore dice quanto una forma è venuta bene solo **dopo** il calcolo
+(`similarity`); un punteggio prima sarebbe un lavoro del motore. Il
+catalogo di «Explore» (TASK-441) ha già, in 63 città, percorsi disegnati a
+0,90 o più e scelti a occhio: a piedi forme a 5, 10 e 21 km, in bici otto
+forme da 20 a 50 km. `GET /recommended-routes` li dà per posizione, con
+forma e distanza chiesta. Non c'è un limite di distanza per forma: il
+limite è dello sport.
+
+**Decisione**:
+- **L'app sceglie solo cosa chiedere**: una coppia forma–distanza, scritta
+  in «Draw» come la scriverebbe l'utente (`setShapeText`, la distanza con
+  `useDrawDistance().choose`). Il percorso lo decide il motore con «Draw
+  route», come sempre. Nessun cambio al motore, all'API o al contratto.
+- **«Vicino» sono 10 km** dalla partenza scelta in «Draw»
+  (`SURPRISE_RADIUS_M`): i percorsi di una città partono entro 1 km dal suo
+  centro, e la richiesta è quella di «Explore», con la posizione
+  arrotondata (TASK-363). In bici la stessa richiesta con
+  `activity=cycling`.
+- **La lista si chiede al primo tocco**, non all'apertura della pagina: chi
+  non tocca la pastiglia non fa una richiesta in più. Resta in memoria 10
+  minuti per partenza e sport; i tocchi dopo rispondono subito. Se non
+  arriva entro 2,5 s, o il server non risponde, la scelta viene dalle forme
+  di riserva e la lista si richiede al tocco dopo.
+- **La scelta** (`route/surprisePick.ts`, funzione pura): prima la forma,
+  alla pari fra le forme vicine, poi una delle sue distanze. A piedi 5 o
+  10 km, mai 21; in bici 20, 25 o 30 km e solo le otto forme del suo
+  catalogo. Mai la coppia del tocco prima, e finché ce n'è un'altra mai la
+  stessa forma: lo stesso cuore a un'altra distanza non è una sorpresa. Il
+  caso è iniettato (`random`): nei test un generatore con seme.
+- **Le forme di riserva**, senza percorsi vicini: a piedi le sette più
+  tenute nel catalogo (cuore, cerchio, stella, luna, smiley, sole,
+  farfalla) a 5 o 10 km; in bici una delle otto a 20 km.
+- **Quelle venute male non tornano**: una richiesta di forma a una distanza
+  da sorpresa che finisce con ogni percorso della risposta sotto 0,90, o
+  rifiutata dal motore (`shape_not_drawable`), è tenuta in `surprise.json`
+  sul telefono per quella partenza (al più 60, dimenticate oltre 1 km) e
+  non è più proposta da lì. Vale per ogni richiesta così, non solo per
+  quelle nate dalla pastiglia: l'app non tiene traccia di chi ha scelto la
+  forma. Una richiesta a penna alzata non insegna niente: il suo voto non
+  si confronta. Se ogni coppia è venuta male, la pastiglia risponde lo
+  stesso, con una forma di riserva.
+- **Gli sport** stanno in una tabella dentro `surprisePick.ts`: corsa e
+  camminata (che disegna sulla rete della corsa e vede i suoi percorsi) e
+  bici. Gli altri sport non hanno un catalogo e non hanno la pastiglia.
+- **Con «Miles»** la distanza proposta è il miglio intero più vicino, come
+  le altre distanze che l'app propone (`offeredDistanceM`).
+- **Per chi non vede** la pagina cambiare, il lettore di schermo dice la
+  scelta con parole che la pagina ha già («Heart, 5 km»).
+
+**Conseguenze**: nessuna promessa scritta (scelta dell'utente): la
+pastiglia dice solo «Surprise me». I percorsi del catalogo partono dalla
+piazza della città, non da casa dell'utente: che una forma venga bene in
+centro è un buon indizio, non una garanzia, e il risultato ha l'avviso
+sotto il 90% e «Try 8 km» come ogni altro. Fuori dalle città del catalogo
+la scelta è fra sette forme. Solo JS/TS, l'impronta iOS non cambia; un
+solo testo nuovo, nelle cinque lingue. Nel simulatore (Trento, API locale
+col catalogo) un tocco ha dato «Fantasmino, 10 km» e «Stella, 10 km» a
+piedi, «Sole, 30 km» in bici; su un telefono non è provato.
 
 ## ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi, più piano nel silenzio; la pagina intera una volta al minuto
 

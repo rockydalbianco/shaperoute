@@ -185,3 +185,8 @@ describe("the pilot's own waypoints (D5)", () => {
     expect(screen.queryByTestId("map-point-sheet")).toBeNull();
   });
 });
+
+it("keeps its touches, so a long press does not also open the screen's editor (D5)", async () => {
+  await show(upTo(5));
+  expect(screen.getByTestId("flight-map").props.onStartShouldSetResponder()).toBe(true);
+});

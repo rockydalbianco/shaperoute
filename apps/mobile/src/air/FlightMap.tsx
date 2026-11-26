@@ -165,7 +165,15 @@ export function FlightMap({
     { backgroundColor: palette.surfaceRaised, borderColor: palette.borderStrong },
   ];
   return (
-    <View style={[styles.box, { borderColor: palette.border }]} testID="flight-map">
+    <View
+      style={[styles.box, { borderColor: palette.border }]}
+      testID="flight-map"
+      // A long press on the map marks a place (part D5): the widget takes
+      // the touch, so the flight screen's own long press does not open its
+      // editor as well (seen on the simulator, 2026-11-26). The editor is
+      // still a long press on any other widget, or «Edit layout».
+      onStartShouldSetResponder={() => true}
+    >
       <WebView
         ref={view}
         style={[styles.page, { backgroundColor: palette.map.background }]}

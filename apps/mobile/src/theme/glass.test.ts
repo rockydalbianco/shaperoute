@@ -5,7 +5,14 @@
  * photo of the Feed, every colour of the map — in every tone, at every step.
  */
 import { BRIGHTNESS_STEPS, DEFAULT_TONE, type Tone, TONES } from "./tone";
-import { GLASS_VEIL, glass, glassOf, paletteOf, REAL_GLASS_TINT } from "./tokens";
+import {
+  GLASS_VEIL,
+  glass,
+  glassOf,
+  paletteOf,
+  REAL_GLASS_SHEET_EXTRA,
+  REAL_GLASS_TINT,
+} from "./tokens";
 
 function luminance(hex: string): number {
   const [r, g, b] = [1, 3, 5].map((i) => {
@@ -84,6 +91,20 @@ test.each(EVERY)(
     expect(share).toBeGreaterThanOrEqual(REAL_GLASS_TINT);
     // Still see-through: clearly under the veil of part A.
     expect(share).toBeLessThan(GLASS_VEIL - 0.1);
+  },
+);
+
+test.each(EVERY)(
+  "%s at step %d: a sheet of real glass takes a tenth more of the tone than the bar, still under the veil",
+  (_tone, _step, choice) => {
+    const share = (tint: string) => parseInt(tint.slice(7, 9), 16) / 255;
+    const { realTint, realSheetTint } = glassOf(choice);
+    expect(realSheetTint.slice(0, 7)).toBe(paletteOf(choice).background);
+    expect(share(realSheetTint)).toBeGreaterThan(share(realTint));
+    expect(share(realSheetTint)).toBeLessThanOrEqual(
+      share(realTint) + REAL_GLASS_SHEET_EXTRA + 0.005,
+    );
+    expect(share(realSheetTint)).toBeLessThan(GLASS_VEIL);
   },
 );
 

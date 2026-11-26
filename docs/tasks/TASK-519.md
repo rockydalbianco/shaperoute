@@ -54,8 +54,15 @@ Su «Compass» invece segue la bussola (TASK-431).
 ```
 apps/mobile/src/map/useHeadingUpMap.ts
 apps/mobile/src/map/useHeadingUpMap.test.tsx
+apps/mobile/src/navigation/useCompass.ts
+apps/mobile/src/navigation/useCompass.test.tsx
 docs/tasks/TASK-519.md                              (nuovo)
 ```
+
+`useCompass.ts` e il suo test aggiunti col sì del Coordinatore (fork 3,
+2026-11-26): 15 test `App*` mockano expo-location senza la bussola, che ora
+si accende su «Map», la prima pagina della corsa. Un errore sincrono della
+bussola dà null, come un telefono che rifiuta, invece di toccare 15 test.
 
 Nella PR di chiusura (soli documenti): voce «deciso…» che estende ADR-0359
 in `docs/DECISIONS.md`; in `docs/UI.md` la riga del token `you` («il cono
@@ -63,8 +70,9 @@ di «Compass»» → anche di «Map»); riga in `docs/archive/COMPLETATI.md`.
 
 ## Verifica
 
-Test del hook e di `MapViewPocket` (24 test), `tsc`, `eslint` e Prettier
-sui file toccati verdi in locale. Non provato nel simulatore (la bussola
+Test del hook, di `useCompass`, di `MapViewPocket`, dei test di «Compass»
+e delle 15 suite `App*` che la prima CI aveva rosse verdi in locale; `tsc`,
+`eslint` e Prettier sui file toccati verdi. Non provato nel simulatore (la bussola
 non c'è) né sul telefono.
 
 ## Fuori scope

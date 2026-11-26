@@ -134,16 +134,25 @@ type Props = Options & {
   typed: string;
   apiUrl: string | null;
   onPick: (resort: SkiResort) => void;
+  /** More room after the last row, for a list that goes on under the tab
+   * bar (TASK-469 B2a). */
+  roomBelow?: number;
 };
 
 /** The resorts found, a row each: the name, the region and how far it is. */
-export function ResortList({ typed, apiUrl, onPick, ...options }: Props) {
+export function ResortList({
+  typed,
+  apiUrl,
+  onPick,
+  roomBelow = 0,
+  ...options
+}: Props) {
   const { byName, shown } = useResortSearch(typed, apiUrl, options);
   // «Your resorts» first, while nothing is typed (part D3).
   const { followed } = useFollowedResorts();
   return (
     <ScrollView
-      contentContainerStyle={styles.list}
+      contentContainerStyle={[styles.list, { paddingBottom: space.xl + roomBelow }]}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       testID="ski-resorts"

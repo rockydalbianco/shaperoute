@@ -607,6 +607,8 @@ export const FR: Table = {
   "Long routes take longer: up to a few minutes.":
     "Les longs parcours prennent plus de temps : jusqu'à quelques minutes.",
   "Draw route": "Dessiner le parcours",
+  "Choose a start first": "Choisis d'abord un départ",
+  "Choose what to draw first": "Choisis d'abord quoi dessiner",
   Start: "Démarrer",
   "Preparing GPX…": "Préparation du GPX…",
   "Export GPX": "Exporter le GPX",
@@ -1665,6 +1667,14 @@ export const FR: Table = {
   Lisbon: "Lisbonne",
   Prague: "Prague",
   Berlin: "Berlin",
+  // src/explore/presets.ts: the cities to tap in «Explore» (TASK-508)
+  "New York": "New York",
+  Tokyo: "Tokyo",
+  Milan: "Milan",
+  Torino: "Turin",
+  Dubai: "Dubaï",
+  Sydney: "Sydney",
+  "San Francisco": "San Francisco",
   "Getting directions…": "Récupération de l'itinéraire…",
   CITY: "VILLE",
   "Type a city or a place": "Saisissez une ville ou un lieu",
@@ -1782,6 +1792,8 @@ export const FR: Table = {
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
     "Les notifications push te préviennent tout de suite des demandes de suivi, des réactions, des commentaires et des identifications. Les Notifications par e-mail envoient les mêmes nouvelles dans un e-mail par jour au plus. E-mail en cas d'absence : un e-mail si tu n'ouvres pas MuW pendant 2 semaines.",
+  "Push notifications are off. Tap to turn them on.":
+    "Les notifications push sont désactivées. Touche pour les activer.",
   "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.":
     "Les notifications de MuW sont désactivées sur ce téléphone. Autorise-les dans Réglages pour les activer.",
 
@@ -3461,8 +3473,6 @@ export const FR: Table = {
     "Au repos : l'équation de Mifflin-St Jeor, à partir des données corporelles de ton profil. Activités : équations de l'ACSM et le Compendium of Physical Activities 2024. Les jours où Santé d'Apple a ton énergie active, c'est ce chiffre qui est utilisé.",
   "Real values change with the product, the recipe and the person. MuW does not provide diets or medical advice.":
     "Les valeurs réelles varient selon le produit, la recette et la personne. MuW ne fournit ni régimes ni conseils médicaux.",
-  "Only you see this page. Nothing here leaves your phone.":
-    "Toi seul vois cette page. Rien de ce qui s'y trouve ne quitte ton téléphone.",
   // src/nutrition (TASK-489 part C1)
   "Today the energy at rest is counted up to now.":
     "Aujourd'hui, l'énergie au repos est comptée jusqu'à maintenant.",
@@ -3540,4 +3550,25 @@ export const FR: Table = {
   "Write what you eat and see your calorie balance.":
     "Note ce que tu manges et vois ton bilan calorique.",
   "Open Nutrition": "Ouvrir Nutrition",
+  // src/nutrition (TASK-489 part G1)
+  "Type the code": "Saisir le code",
+  Barcode: "Code-barres",
+  "Look up": "Rechercher",
+  "Looking it up…": "Recherche en cours…",
+  "Only the barcode goes to Open Food Facts, to find the product.":
+    "Seul le code-barres est envoyé à Open Food Facts, pour trouver le produit.",
+  "from Open Food Facts": "d'Open Food Facts",
+  "Check the numbers against the label: you can correct them.":
+    "Vérifie les chiffres sur l'étiquette : tu peux les corriger.",
+  "Use this food": "Utiliser cet aliment",
+  "This product is not on Open Food Facts.":
+    "Ce produit n'est pas sur Open Food Facts.",
+  "Open Food Facts has no calories for this product.":
+    "Open Food Facts n'a pas les calories de ce produit.",
+  "The product could not be looked up. Check your connection and try again.":
+    "Impossible de rechercher le produit. Vérifie ta connexion et réessaie.",
+  "Products found by barcode contain data from Open Food Facts, available under the Open Database License. They are kept apart from the USDA list.":
+    "Les produits trouvés par code-barres contiennent des données d'Open Food Facts, disponibles sous l'Open Database License. Ils restent séparés de la liste USDA.",
+  "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
+    "Toi seul vois cette page. Ce que tu écris ici reste sur ton téléphone ; un code-barres que tu recherches est envoyé à Open Food Facts.",
 };

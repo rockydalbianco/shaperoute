@@ -584,7 +584,7 @@ lasciando le righe d'indice.
 - ADR-0397 — «Alimentazione»: un contacalorie senza diete, cibi da USDA più quelli dell'utente, piano a settimana e diario solo sul telefono, bilancio = assunte − (riposo + attività) senza doppi conti, tabella solo per il proprietario, spenta fino alla build nativa che legge da Salute · 2026-11-22 · Proposta
 - ADR-0272, precisazione C2 — Il post di sole foto nell'app: «Photos only» da «Add past activity» e dal «+» del Feed, una coda sul telefono come le corse, la sua scheda e la sua pagina, niente «Share» · 2026-11-22 · Attiva
 - ADR-0375, precisazione R6e — Il post di una gara a due colori: `flight` anche in `GET /drawings/{id}`, solo se la linea del post ha i punti della corsa; lo schema openapi delle due risposte torna coi suoi campi · 2026-11-23 · Attiva
-- ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Proposta
+- ADR-0398 — La modalità Allenamento: scelta «Gym», la barra diventa «Today» · «Workouts» · «Food» · «Feed» · «Profile» come per lo sci; il Coach è una pagina, il Cibo è la pagina di TASK-489, quattro tab finché `NUTRITION_ON` è spento · 2026-11-23 · Attiva
 - ADR-0394, precisazione B — La scheda pubblicata nell'app: `plans` in `X-MuW-Reads`, una coda sul telefono che tiene l'id dei post mandati, la guida di «Use this plan» nello stesso foglio del piano, il limite di 20 guardato prima · 2026-11-23 · Attiva
 - ADR-0390, precisazione A — La lista del «+» nell'app: «Record now» come l'avvio senza percorso di «Draw», «Photos only» dritto al modulo di C2, «From a file» con «Files» aperto subito (`fileAtOnce`), il titolo della voce aperta · 2026-11-23 · Attiva
 - ADR-0399 — Il Coach MuW: regole scritte con il loro studio, sul telefono e senza AI, al massimo tre consigli, la scheda cambia solo con «Apply», solo con account, l'omino di TASK-490 B · 2026-11-23 · Attiva
@@ -606,9 +606,134 @@ lasciando le righe d'indice.
 - ADR-0397, precisazione 5 — «Nutrition» anche dal profilo e a fine attività, la pagina del giorno animata (anelli su una scala, macronutrienti senza obiettivo), l'obiettivo di calorie proposto da MuW solo come stima in secondo piano con protezioni, il controllo del peso, la lettura dell'energia attiva dopo una build successiva · 2026-11-24 · Attiva
 - ADR-0407 — «Longevity»: cinquanta storie animate dentro l'app, ognuna da una fonte pubblica ufficiale citata, senza revisione di un professionista e con scritto che MuW non è fatta da professionisti; video delle persone e compensi dopo · 2026-11-24 · Attiva
 - ADR-0408 — La modalità «Nutrition»: scelta come uno sport la barra diventa Today · Plan · Explore · Feed · Profile; la scheda «Food» dell'allenamento resta; dopo TASK-490 D ed E · 2026-11-24 · Attiva
+- ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
+- ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
 
 
 ## Voci nuove
+## ADR-0411 — Le forme nuove del motore: inverno, feste, sport e i 35 contorni di TASK-418, giudicate sulla carta, poi sulle strade, poi registrate tutte insieme
+
+**Stato**: Proposta · 2026-11-24 · TASK-516 (parte 0; la parte A sono i
+contorni). Il pezzo da cui partire è una scelta **dell'utente**
+(2026-11-24, «Forme invernali e contorni»); il come è deciso dall'agente
+su delega dell'utente, sulla strada di ADR-0346 e della sua precisazione B.
+
+**Contesto**: TASK-441 ha portato il catalogo di «Explore» a 2031 disegni
+senza toccare il motore. La sua parte C chiedeva forme nuove: a tema
+(inverno, feste, sport) e i 35 contorni candidati di TASK-418 mai
+registrati. Il motore ha 43 forme; registrare una forma cambia il motore,
+il contratto, l'API, l'AI, l'app e `engine.zip`, e l'impronta del motore.
+
+**Decisione**:
+
+1. **Undici forme nuove** come candidate: `snowman`, `snowflake`,
+   `reindeer`, `santa_hat`, `candy_cane`, `bell`, `stocking`, `comet`,
+   `ball`, `racket`, `skis`. Si disegnano come in ADR-0346 (primitive,
+   buchi e dettagli come pezzi, partenza in alto) con uno **strumento
+   nuovo**, `tools/draw_theme_shapes.py`, che riusa le primitive di
+   `draw_new_shapes.py` con un registro suo: i file e il test di TASK-418
+   restano come sono. I file vanno in `candidate_outlines/`, fuori dal
+   pacchetto (ADR-0346, punto 2).
+2. **Tre giudizi dell'utente, in ordine**: la sagoma sulla carta (parte A,
+   una per una), i disegni sulle strade (parte B, come TASK-419, per le
+   nuove e per le 35), quali forme entrano e in che categoria della
+   ricerca (parte C).
+3. **Una sola registrazione** per tutte le forme scelte (parte C), con la
+   lista dei file di TASK-418 B: una sola impronta nuova del motore, una
+   sola prova «stessi percorsi», un solo `engine.zip`, un solo passo sul
+   server con un OTA. `prefetch_zones.ZONE_SHAPES` resta sulle 17 forme di
+   prima (ADR-0346 B).
+4. **Il catalogo dopo il motore** (parte D): i disegni nuovi in fondo ai
+   file di città, così gli id di prima non cambiano.
+5. **La penna alzata** per le forme nuove con pezzi l'API la accetta (viene
+   dal motore, `PEN_UP_SHAPES`), l'app la offre solo dopo un giudizio
+   dell'utente (come ADR-0346 B, punto 3).
+
+**Scartate**: registrare ogni forma appena approvata (un'impronta e un
+OTA per volta: più passi sul server e più prove per lo stesso lavoro);
+aggiungere le forme nuove a `draw_new_shapes.py` (cambia un file e un test
+che contano 49 forme scelte dall'utente in TASK-418); frasi con lo spazio e
+cifre insieme alle forme (toccano la scrittura delle lettere, un'altra
+parte del motore: dopo, per scelta dell'utente).
+
+**Conseguenze**: fino alla parte C nulla cambia per l'app, il server o il
+catalogo. La parte C ha bisogno della prova `test_same_routes` con la
+fixture della nuova impronta e delle righe di `SAME_ROUTES_AS`, del
+controllo dell'impronta nativa iOS, e la PR la unisce l'utente; server e
+OTA escono insieme, ciascuno col suo sì.
+
+## ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; i due giri verso gli iscritti solo se nominati
+
+**Stato**: Proposta · 2026-11-24 · TASK-515 (parte 0; il codice è la parte
+A). Quali email accendere è una scelta **dell'utente** (2026-11-24,
+risposte in `tasks/TASK-515.md`); il come è deciso dall'agente su delega
+dell'utente. Precisa ADR-0244, ADR-0226 (parte B) e ADR-0261 in «si
+accende con le stesse tre variabili»; il resto di quegli ADR vale.
+
+**Contesto**: l'utente ha chiesto di poter recuperare la password persa.
+La funzione c'è da TASK-300, ma il server di produzione non ha mai avuto
+la chiave di Resend: il passo «server dopo Apple» di ottobre non è mai
+stato fatto, e il dominio `getmuw.app` non è verificato su Resend. Messe
+le tre variabili (`RESEND_API_KEY`, `SHAPEROUTE_EMAIL_SECRET`,
+`SHAPEROUTE_DOMAIN`), oggi partono insieme le email dell'account, il giro
+di «Email when I'm away» (a ogni iscritto assente da 14 giorni, acceso di
+default) e il giro del riassunto delle notifiche: non c'è modo di
+accendere le une senza gli altri.
+
+**Decisione**:
+1. **Adesso si accendono** (scelta dell'utente) le email dell'account
+   (conferma dell'indirizzo, avviso al vecchio, link per la nuova
+   password), le segnalazioni e il feedback, che arrivano solo a chi
+   gestisce MuW. «Quando sono via» e il riassunto restano spenti: ciascuno
+   si accende dopo, con un sì suo.
+2. **I due giri hanno una variabile loro**, `SHAPEROUTE_EMAIL_ROUNDS`:
+   i nomi dei giri accesi, separati da virgole, fra `away` e `notices`.
+   **Vuota, nessuno dei due parte**, anche con le tre variabili di Resend:
+   una email a tutti gli iscritti deve essere un gesto voluto sul server,
+   non l'effetto di una riga dimenticata. Un nome che non esiste ferma
+   l'avvio con un errore che lo dice.
+3. **Le email dell'account seguono le tre variabili, come prima**: non
+   hanno un interruttore, perché servono all'account e la privacy lo dice
+   («che nessun interruttore spegne»). Segnalazioni e feedback restano
+   legati al loro indirizzo (`SHAPEROUTE_REPORTS_TO`,
+   `SHAPEROUTE_FEEDBACK_TO`).
+4. **Un giro spento non lascia niente a metà**: il suo filo non parte e la
+   pagina del suo link non c'è, come oggi senza chiave. Il conto di chi la
+   riceverebbe (`python -m shaperoute_api.away_email`, senza `--send`)
+   funziona lo stesso: serve a decidere prima di accendere.
+5. **Gli account di prima restano non confermati** (scelta dell'utente,
+   la stessa del 2026-10-25 per i tre di allora, ora per tutti): nessuna
+   email parte da sola verso di loro; confermano da «Settings» o aprendo
+   un link di recupero.
+6. **Testi e privacy non cambiano** (scelte dell'utente): i testi di
+   TASK-300 nelle cinque lingue riletti e confermati; la privacy del 23
+   novembre 2026 nomina già Resend e queste email, nell'app e sul sito.
+7. **Resend col piano gratuito** (3.000 email al mese, 100 al giorno,
+   letto il 2026-11-24): basta per le email del punto 1. Il dominio
+   verificato è `getmuw.app` intero, perché il mittente è
+   `hello@getmuw.app`. Account, record DNS e chiave li fa l'utente; la
+   chiave la scrive lui sul server in un passo del Coordinatore.
+
+**Scartate**: accendere tutto insieme (proposto all'utente, non scelto:
+il primo giro di «quando sono via» scriverebbe a tutti gli assenti in un
+colpo, e col piano gratuito finirebbe la quota del giorno lasciando fuori
+i recuperi); una variabile che **spegne** i giri (`…_OFF=away,notices`):
+dimenticarla li accenderebbe; accendere solo il recupero senza la
+conferma dell'indirizzo (proposto, non scelto: sono lo stesso modulo e
+lascerebbe gli indirizzi mai verificati); mandare la conferma a tutti gli
+account esistenti (proposto, non scelto).
+
+**Conseguenze**: chi oggi su un server di prova ha le tre variabili e
+vuole i due giri deve aggiungere `SHAPEROUTE_EMAIL_ROUNDS=away,notices`;
+la produzione non li ha mai avuti, quindi lì niente cambia finché
+qualcuno non la scrive. `DEPLOY.md` («Email di ritorno», punti 3 e 5) va
+aggiornato con la parte A. L'app non cambia e non serve un OTA:
+«Forgot password?» compare quando `GET /account-email` risponde 200. Oltre
+100 email in un giorno Resend rifiuta le successive: da riguardare quando
+le iscrizioni crescono o quando si accende un giro. Le risposte scritte a
+`hello@getmuw.app` oggi tornano indietro (il dominio non riceve posta): è
+una scelta aperta, in `tasks/TASK-515.md`.
+
 ## ADR-0407 — «Longevity»: cinquanta storie animate dentro l'app, da fonti pubbliche ufficiali citate, senza revisione di un professionista
 
 **Stato**: Attiva · 2026-11-24 · TASK-513 (parte 0; nessun codice).
@@ -6716,7 +6841,8 @@ conta solo per quanto Salute ha misurato dal telefono.
 
 ## ADR-0398 — La modalità Allenamento: scelta «Gym», MuW diventa un'app per allenarsi come con lo sci
 
-**Stato**: Proposta · 2026-11-23 · TASK-490 (parte 0, soli documenti).
+**Stato**: Attiva · 2026-11-24 · TASK-490, parti A–E in `main` (#1424, #1433,
+#1510, #1553, #1571); escono col prossimo OTA. Prima: Proposta (parte 0).
 La barra, l'ingresso solo da «Gym» e il Cibo come pagina di TASK-489 sono
 **scelte dell'utente** (2026-11-22, task file); le quattro tab finché il
 Cibo è spento sono del Coordinatore, da far vedere all'utente nelle
@@ -6762,7 +6888,7 @@ cambia barra quando cambia sport, come lo sciatore.
   su «Draw» con la barra. Prima `App.tsx` guardava la barra nuova invece
   di quella lasciata e la barra spariva, anche nella modalità sci. La
   copre `trainingmode/trainingModeShell.test.tsx`.
-- **L'icona di «Workouts»** è un manubrio nuovo
+- **L'icona di «Today»** è un manubrio nuovo
   (`assets/ui/tabs/dumbbell*.png`), con lo spessore delle linee Lucide.
 - **L'omino della settimana** (parte B) usa il **rosa dei muscoli**
   (`color.muscle`, come la guida degli esercizi di ADR-0376), **scelta
@@ -6778,6 +6904,34 @@ cambia barra quando cambia sport, come lo sciatore.
   palestra, le loro serie e quelle in attesa d'invio; senza account
   l'omino non c'è. Il Coach (ADR-0399) riusa `setsByMuscle` e
   `WeekBodyCard`.
+
+**Precisazione (2026-11-24, parti C e D in `main`, #1510 e #1553)**:
+- **La riga del Coach su «Today»** (deciso dall'agente su delega
+  dell'utente, schermate approvate il 2026-11-23): sotto l'omino, il
+  titolo del primo consiglio, o «Based on your last 4 weeks» se non ce
+  n'è; apre la pagina del Coach sopra «Today». Senza account non c'è.
+  Nessun testo nuovo.
+- **«Food»** sta dopo «Workouts» solo con `NUTRITION_ON`
+  (`trainingPagesOf`); monta la pagina «Nutrition» di TASK-489 com'è.
+  Icona: le posate di Lucide (`assets/ui/tabs/utensils*.png`). La modalità
+  Nutrition (TASK-514, ADR-0408) non cambia questa tab.
+
+**Precisazione (2026-11-24, parte E: U4 e U5 della prova del 23-11)** —
+**scelte dell'utente** con le domande della parte 0 di E:
+- **L'ordine della barra è lo stesso in ogni modalità**: la casetta del
+  Feed al primo posto e il Profilo all'ultimo, come nell'app di sempre; in
+  mezzo le pagine della modalità. Palestra: Feed · Today · Workouts ·
+  (Food) · Profile. Lo sci cambia allo stesso modo: Feed · Today · Days ·
+  Resorts · Profile. La modalità Nutrition (TASK-514) farà lo stesso.
+  «Messages» resta in alto; ogni modalità si apre ancora su «Today».
+- **Niente scritte sotto le icone**, come in tutta l'app: la barra
+  (`tabs/TabBar.tsx`) non cambia.
+- **«Today» è adesso, «Workouts» è tutto il resto**: «Today» ha l'omino,
+  il Coach e la scheda di oggi con «Start» e «Start without a plan»,
+  nient'altro; «Workouts» ha le schede con i giorni e «New plan», il mese
+  con gli allenamenti fatti, gli esercizi e «How it works» in fondo. Così
+  «New plan» e il calendario non si ripetono. L'icona di «Workouts»
+  diventa una lista al posto del calendario.
 
 ## ADR-0399 — Il Coach MuW: consigli da regole scritte con il loro studio, la scheda che cambia solo con «Apply»
 

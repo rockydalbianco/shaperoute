@@ -35,14 +35,14 @@ test.each(DOG_HEAD)("in «%s» the field reads every shape's name back", (langua
 });
 
 test.each([
-  ["de", "Kreis, Herz, Stern, ", ", Schwan, Windmühle oder Weinglas"],
+  ["de", "Kreis, Herz, Stern, ", ", Pokal, Schildkröte oder Regenschirm"],
   [
     "it",
     "cerchio, cuore, stella, ",
-    ", sole, aereo, ancora, testa d'orso, bicicletta, ciliegie, tazzina di caffè, quadrifoglio, torre di Pisa, nota musicale, pera, barca a vela, cigno, mulino a vento o calice",
+    ", sole, aereo, ancora, testa d'orso, bicicletta, ciliegie, tazzina di caffè, quadrifoglio, torre di Pisa, nota musicale, pera, barca a vela, cigno, mulino a vento, calice, pallone, campana, bastoncino di zucchero, colosseo, cornetto, delfino, cupola, uovo di Pasqua, torre Eiffel, fiore, testa di volpe, regalo, infinito, foglia, lampadina, medaglia, montagna, gufo, lucchetto, simbolo della pace, pinguino, fetta di pizza, racchetta, renna, cappello di Babbo Natale, scooter, sci, fiocco di neve, pupazzo di neve, calza di Natale, fragola, arco di trionfo, coppa, tartaruga o ombrello",
   ],
-  ["es", "círculo, corazón, estrella, ", ", cisne, molino de viento o copa de vino"],
-  ["fr", "cercle, cœur, étoile, ", ", cygne, moulin à vent ou verre à vin"],
+  ["es", "círculo, corazón, estrella, ", ", trofeo, tortuga o paraguas"],
+  ["fr", "cercle, cœur, étoile, ", ", trophée, tortue ou parapluie"],
 ] as const)("in «%s» the shapes to suggest are in it", (language, first, last) => {
   saveLanguageChoice(language);
   expect(shapeList().startsWith(first)).toBe(true);

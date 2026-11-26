@@ -32,3 +32,7 @@ test("without openGroup nothing opens, and nothing breaks", () => {
   expect(() => openTarget({ kind: "group", id: "g" }, none)).not.toThrow();
   expect(none.openPlay).not.toHaveBeenCalled();
 });
+
+test("a deleted group's push opens nothing: the group is gone", () => {
+  expect(tapTarget({ kind: "group_deleted" })).toBeNull();
+});

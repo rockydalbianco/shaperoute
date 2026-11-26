@@ -1,0 +1,42 @@
+{
+  "sites": [
+    {
+      "id": 101,
+      "kind": "takeoff",
+      "lat": 46.0,
+      "lon": 11.0,
+      "name": "Monte Prova",
+      "ele_m": 1200,
+      "orientation": ["SE", "S", "SW"],
+      "official": true,
+      "osm_url": "https://www.openstreetmap.org/node/1",
+      "away_m": null
+    },
+    {
+      "id": 102,
+      "kind": "landing",
+      "lat": 46.02,
+      "lon": 11.02,
+      "name": "Campo Prova",
+      "ele_m": 400,
+      "orientation": [],
+      "official": null,
+      "osm_url": "https://www.openstreetmap.org/node/2",
+      "away_m": null
+    },
+    {
+      "id": 103,
+      "kind": "takeoff",
+      "lat": 45.91,
+      "lon": 10.91,
+      "name": null,
+      "ele_m": null,
+      "orientation": [],
+      "official": false,
+      "osm_url": "https://www.openstreetmap.org/way/100",
+      "away_m": null
+    }
+  ],
+  "more": false,
+  "attribution": "© OpenStreetMap contributors"
+}

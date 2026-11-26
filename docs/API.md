@@ -2359,7 +2359,8 @@ sopra), una casella non spuntata all'iscrizione (`away_email` di `POST
   `Idempotency-Key` per assenza. La chiave e l'indirizzo non vanno mai nel
   log.
 - **Spenta** senza `RESEND_API_KEY`, `SHAPEROUTE_EMAIL_SECRET` (almeno 32
-  caratteri) e `SHAPEROUTE_DOMAIN`: niente giro e niente pagina, e l'API
+  caratteri) e `SHAPEROUTE_DOMAIN`, **e finché `SHAPEROUTE_EMAIL_ROUNDS`
+  non nomina `away`** (ADR-0410): niente giro e niente pagina, e l'API
   lo dice all'avvio (`docs/DEPLOY.md`, «Email di ritorno»). A mano:
   `python -m shaperoute_api.away_email` conta chi la riceverebbe adesso,
   `--send` fa un giro.
@@ -2409,8 +2410,10 @@ subito); la lingua come l'email di ritorno. Il codice in
 - **Il thread** del giro parte con l'app e si ferma, anche a metà giro fra
   due email, prima che la fine dell'app chiuda il pool del database
   (TASK-288 B).
-- **Spenta** quando è spenta l'email di ritorno (`RESEND_API_KEY`,
-  `SHAPEROUTE_EMAIL_SECRET`, `SHAPEROUTE_DOMAIN`). A mano: `python -m
+- **Spenta** senza le tre variabili dell'email di ritorno
+  (`RESEND_API_KEY`, `SHAPEROUTE_EMAIL_SECRET`, `SHAPEROUTE_DOMAIN`), **e
+  finché `SHAPEROUTE_EMAIL_ROUNDS` non nomina `notices`** (ADR-0410): i due
+  giri si accendono ciascuno per conto suo. A mano: `python -m
   shaperoute_api.notice_email` conta chi la riceverebbe adesso, `--send`
   fa un giro.
 
@@ -5182,6 +5185,7 @@ del gruppo arrivano con la parte C.
 | `GET /me/groups` | i propri gruppi, per nome, e gli inviti | `200` `MyGroups` |
 | `GET /groups/{id}` | la pagina del gruppo | `200` `GroupDetail` |
 | `PUT /groups/{id}` | l'admin cambia il gruppo, tutto | `200` `GroupDetail` |
+| `DELETE /groups/{id}` | l'admin cancella il gruppo, con chi c'è dentro (parte A3) | `204` |
 | `PUT /groups/{id}/photo` | l'admin mette la foto (`{ "image": "…" }`, come `PUT /me/photo`) | `200` `GroupDetail` |
 | `DELETE /groups/{id}/photo` | l'admin la toglie | `204` |
 | `PUT /groups/{id}/membership` | «Join» | `200` `GroupJoin` |
@@ -5261,6 +5265,13 @@ del gruppo arrivano con la parte C.
   segnalato il suo admin. L'email lo chiama «group», con nome,
   descrizione, città, ingresso e se ha la foto; il link nasconde
   (`groups.hidden_at`).
+- **«Delete group»** (`DELETE /groups/{id}`, parte A3, scelta dell'utente
+  del 2026-11-24): solo l'admin (`403` «Only the group's admin can do
+  this.»); i membri ricevono `group_deleted` («{name} deleted the group
+  {title}.»), i cui dati sono solo `{ kind }`: il gruppo non c'è più e la
+  push non apre niente. Poi il gruppo se ne va con membri, richieste, inviti
+  e foto (`ON DELETE CASCADE`). Un'API di prima risponde `405`: l'app lo
+  dice e il gruppo resta.
 - **`DELETE /me`**: prima della cancellazione il ruolo di admin passa al
   co-admin più vecchio nel ruolo, poi al membro più vecchio nel gruppo; un
   gruppo senza nessun altro si cancella (`app.state.before_account_delete`).

@@ -46,9 +46,12 @@ sovrappone a E.
       («Sì, approvo»)**, seconda versione dopo «fallo più figo e moderno e
       professionale, usa anche più colori, animazioni»; vedi «Schizzo
       approvato» sotto.
-- [ ] d) Testi in inglese — bozza in `out/stretching-nuovo/TESTI.md`,
-      chiesta all'utente il 2026-11-27; le quattro traduzioni con ogni
-      parte di codice.
+- [x] d) Testi in inglese — **approvati dall'utente il 2026-11-27
+      («Sì, approvo»)**, tabella in `out/stretching-nuovo/TESTI.md`; gli
+      sport si scrivono «Running · Before» / «Running · After»; riga per
+      la schiena «This is not medical advice. If your back hurts, see a
+      doctor.»; le quattro traduzioni con ogni parte di codice, col sì
+      dell'utente.
 - [x] Nome della categoria «intimità» — **«Intimacy»**, approvato
       dall'utente il 2026-11-27 («Sì, «Intimacy»»): it «Intimità», de
       «Intimität», fr «Intimité», es «Intimidad»; routine «Before

@@ -1,7 +1,7 @@
 # TASK-499 — La campanella chiede solo il numero
 
 **Stato**: Done · 2026-11-26 · A (server) #1583, sul server col passo 23
-del 2026-11-26; B (app) #1584 in `main`. **Esito**: un controllo della
+del 2026-11-26; B (app) #1584 in `main` (`c5584201`). **Esito**: un controllo della
 campanella passa da 159 906 byte e 3 query a 13 byte e 1 query (database
 di prova); la riga dei «live» non chiede con l'app dietro. Resta l'OTA di
 produzione (Coordinatore, col sì dell'utente): fino ad allora i telefoni
@@ -140,8 +140,9 @@ rumore, per pesare come una foto vera: 4,8–5,2 KB in base64 a 128 px).
 - 2026-11-26: l'utente, alla domanda «Apro la PR B adesso, senza aspettare
   il passo sul server?»: «Sì, apri la B». B = #1584 (`870afb0c`). Lo
   stesso giorno il Coordinatore fa il passo 23 (`bd61af6c`): la A è sul
-  server (salute ok, la rotta nel codice che gira). B in `main`, unita dal
-  Coordinatore a CI verde. Documenti di chiusura: aggiunta ad ADR-0311,
+  server (salute ok, la rotta nel codice che gira). B in `main`
+  (`c5584201`), unita dal Coordinatore a CI verde. **Manca l'OTA di
+  produzione**: la porta il Coordinatore, col sì dell'utente. Documenti di chiusura: aggiunta ad ADR-0311,
   riga nei completati.
 
 ## Cosa resta dopo la chiusura

@@ -1,7 +1,7 @@
 import { type ReactNode, useState } from "react";
 import { StyleSheet, type ViewStyle } from "react-native";
 
-import { radius, tone } from "../theme/tokens";
+import { glass, radius, tone } from "../theme/tokens";
 import { nativeGlassView } from "./NativeGlass";
 import { useSheetFace } from "./sheetFace";
 import { useGlassMode } from "./useGlassMode";
@@ -20,8 +20,9 @@ import { useGlassMode } from "./useGlassMode";
  *
  * Where the phone draws the real glass, the box loses its opaque fill and
  * the glass fills it behind what the sheet holds: `regular`, never
- * `clear`, in the app's tone, never tinted, and never in the way of a
- * touch. Everywhere else — a build without the glass, Android, an iPhone
+ * `clear`, in the app's tone, tinted with the tone's own background as
+ * every piece of real glass (`glass.realTint`), and never in the way of
+ * a touch. Everywhere else — a build without the glass, Android, an iPhone
  * before iOS 26, «Reduce Transparency», «Increase Contrast» — the face of
  * part A and nothing behind: the sheet looks as it did.
  */
@@ -41,6 +42,7 @@ export function useGlassSheet(): readonly [face: ViewStyle, back: ReactNode] {
       pointerEvents="none"
       glassEffectStyle="regular"
       colorScheme={tone.tone}
+      tintColor={glass.realTint}
       style={styles.back}
     />,
   ];

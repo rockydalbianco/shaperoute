@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { render, screen } from "@testing-library/react-native";
 import { StyleSheet, Text, View, type ViewStyle } from "react-native";
 
-import { color, radius, tone } from "../theme/tokens";
+import { color, glass as glassColors, radius, tone } from "../theme/tokens";
 import { sheetFace } from "./sheetFace";
 import { useGlassSheet } from "./SheetGlass";
 import { type GlassMode, useGlassMode } from "./useGlassMode";
@@ -78,10 +78,12 @@ test("where the glass is the phone's own, it fills the sheet behind its content"
   jest.mocked(useGlassMode).mockReturnValue("glass");
   await render(<Sheet />);
   const glass = screen.getByTestId("sheet-glass");
-  // Regular, in the app's tone, never tinted, never in the way of a touch.
+  // Regular, in the app's tone, tinted with the tone's own background and
+  // never the yellow, never in the way of a touch.
   expect(glass.props.glassEffectStyle).toBe("regular");
   expect(glass.props.colorScheme).toBe(tone.tone);
-  expect(glass.props.tintColor).toBeUndefined();
+  expect(glass.props.tintColor).toBe(glassColors.realTint);
+  expect(glass.props.tintColor).not.toBe(color.accent);
   expect(glass.props.pointerEvents).toBe("none");
   const back = faceOf("sheet-glass");
   expect(back.position).toBe("absolute");

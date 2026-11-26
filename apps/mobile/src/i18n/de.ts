@@ -249,6 +249,38 @@ export const DE: Table = {
   Swan: "Schwan",
   Windmill: "Windmühle",
   "Wine glass": "Weinglas",
+  // TASK-516 (ADR-0411)
+  Football: "Fußball",
+  Bell: "Glocke",
+  "Candy cane": "Zuckerstange",
+  Colosseum: "Kolosseum",
+  Croissant: "Croissant",
+  Dolphin: "Delfin",
+  Dome: "Kuppel",
+  "Easter egg": "Osterei",
+  Flower: "Blume",
+  "Fox head": "Fuchskopf",
+  Gift: "Geschenk",
+  Infinity: "Unendlichkeit",
+  "Light bulb": "Glühbirne",
+  Medal: "Medaille",
+  Mountain: "Berg",
+  Owl: "Eule",
+  Padlock: "Vorhängeschloss",
+  "Peace sign": "Friedenszeichen",
+  Penguin: "Pinguin",
+  "Pizza slice": "Pizzastück",
+  "Tennis racket": "Tennisschläger",
+  Reindeer: "Rentier",
+  "Santa hat": "Weihnachtsmütze",
+  Scooter: "Motorroller",
+  Snowflake: "Schneeflocke",
+  Snowman: "Schneemann",
+  "Christmas stocking": "Weihnachtsstrumpf",
+  Strawberry: "Erdbeere",
+  "Triumphal arch": "Triumphbogen",
+  Turtle: "Schildkröte",
+  Umbrella: "Regenschirm",
 
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "ORTE IN DER NÄHE",
@@ -3121,8 +3153,6 @@ export const DE: Table = {
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Layout bearbeiten",
   "Page {n} of {count}": "Seite {n} von {count}",
-  "Touch a widget to move it, size it or take it away.":
-    "Tippe auf ein Widget, um es zu verschieben, seine Größe zu ändern oder es zu entfernen.",
   Size: "Größe",
   Unit: "Einheit",
   "Add page": "Seite hinzufügen",
@@ -3347,6 +3377,7 @@ export const DE: Table = {
     "Erstelle ein Konto, um Tipps aus deinen Trainings zu bekommen",
   "Log a few workouts and your tips will show up here":
     "Trag ein paar Trainings ein, dann erscheinen hier deine Tipps",
+  "Go to your workouts": "Zu deinen Trainings",
   "Tips are general, not medical advice. If something hurts, stop and ask a professional.":
     "Die Tipps sind allgemein und keine ärztliche Beratung. Wenn etwas wehtut, hör auf und frag eine Fachperson.",
   "{exercise}: {kg} kg": "{exercise}: {kg} kg",
@@ -3588,6 +3619,9 @@ export const DE: Table = {
   "Task for XCTrack": "Aufgabe für XCTrack",
   "This task is too long for a QR code.":
     "Diese Aufgabe ist zu lang für einen QR-Code.",
+  // src/air/ (TASK-479 part B3: widgets dragged in the editor; approved by the user on 2026-11-26)
+  "Drag a widget to move it, or its corner to size it. Touch it for more.":
+    "Zieh ein Widget, um es zu verschieben, oder seine Ecke, um die Größe zu ändern. Tippe es an für mehr.",
   // src/groups (TASK-495 part B)
   "Find your city": "Deine Stadt suchen",
   "New group": "Neue Gruppe",

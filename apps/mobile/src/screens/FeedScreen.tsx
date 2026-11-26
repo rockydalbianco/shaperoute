@@ -72,6 +72,9 @@ type Props = {
   /** «Record now» of the «+» (TASK-481): a recording starts, as from
    * «Draw»; without it the «+» has no «Record now». */
   onRecord?: () => void;
+  /** «Log in» of the empty «All» without an account (TASK-509): the
+   * profile's page opens, where one logs in; without it, no button. */
+  onLogIn?: () => void;
   /** «Feed» is the page on the screen. Built behind «Draw» at the start, it
    * asks for no ad (and no consent), and no drawings, until it is
    * (TASK-235, TASK-118). */
@@ -130,6 +133,7 @@ export function FeedScreen({
   onOpen,
   onOpenMuw,
   onRecord,
+  onLogIn,
   active = true,
   ads = feedAds(),
 }: Props) {
@@ -293,6 +297,7 @@ export function FeedScreen({
                 outline={HEART}
                 title={feedTabName("all")}
                 message={t("Log in from Profile to see the activities.")}
+                action={onLogIn && { label: t("Log in"), onPress: onLogIn }}
                 testID="feed-log-in"
               />
             ) : all.shown.kind === "ready" ? (
@@ -300,6 +305,8 @@ export function FeedScreen({
                 outline={HEART}
                 title={feedTabName("all")}
                 message={t("Nobody has published anything yet.")}
+                // The first thing to do about it (TASK-509): as the «+»'s.
+                action={onRecord && { label: t("Record now"), onPress: onRecord }}
                 testID="feed-no-posts-all"
               />
             ) : null

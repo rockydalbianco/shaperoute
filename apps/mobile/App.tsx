@@ -2052,6 +2052,8 @@ function MuW() {
                             snowNotice.ask(() => setScreen("run"));
                           else setScreen("run");
                         }}
+                        // «Log in» of the empty «All» (TASK-509).
+                        onLogIn={() => showPage("profile")}
                       />
                     </EditRunContext.Provider>
                   </DrawAgainContext.Provider>
@@ -2252,6 +2254,12 @@ function MuW() {
                         themed.show(idea);
                         setRouteList("explore");
                         setScreen("map");
+                      }}
+                      // «My position» of the page with no start (TASK-509):
+                      // asked as «Draw»'s own does.
+                      onMyPosition={() => {
+                        setStartMode("gps");
+                        refresh();
                       }}
                     />
                   ),

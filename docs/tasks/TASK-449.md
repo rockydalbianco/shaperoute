@@ -1,8 +1,14 @@
 # TASK-449 — Anteprima dal vivo della sagoma in «Draw»
 
-**Stato**: In lavorazione · parte 0 (scelte di prodotto) il 2026-11-26
+**Stato**: Done · 2026-11-26 · in «Draw» la forma scelta e il contorno di
+un'immagine tracciata stanno su un pezzo di mappa vera attorno alla
+partenza e crescono coi km; in `main` (#1598 parte 0, #1593 A, #1627 B),
+ciò che si vede approvato dall'utente sugli screenshot. Restano l'OTA di
+produzione (Coordinatore, col sì dell'utente), la prova con una foto vera
+sul canale preview e l'occhio sul telefono («Cosa resta», in fondo).
 **Fase**: 5 · **Branch**: parte 0 `docs/TASK-449-part-0`; parte A
-`feat/TASK-449-a-live-preview`; parte B `feat/TASK-449-b-picture-preview`
+`feat/TASK-449-a-live-preview`; parte B `feat/TASK-449-b-picture-preview`;
+chiusura `docs/TASK-449-done`
 **Dipende da**: TASK-361 (l'anteprima in scala di «Draw»), TASK-442 (la
 sagoma fantasma), TASK-162 (le immagini di mappa del Feed)
 **ADR**: ADR-0412 (dal Coordinatore, 2026-11-26) · numero del task dal
@@ -59,6 +65,11 @@ Una domanda alla volta, con la proposta dell'agente; le parole sono sue.
    Nella stessa domanda gli è stato detto del credito della mappa
    («OpenFreeMap © OpenMapTiles · Data from OpenStreetMap», la riga che c'è
    già sulle mappe del Feed): sta sull'immagine, non è un testo nuovo.
+6. Ciò che si vede, sui sei screenshot dal simulatore (cuore a 3, 5 e
+   10 km, cavallo, sole a penna alzata, il contorno di un'immagine): «Ti va
+   bene come si vede il pezzo di mappa con la sagoma: sì, va bene, o cambia
+   qualcosa?» → **«Sì, va bene»**, scritto dall'utente nella sessione del
+   task il 2026-11-26.
 
 ## Come funziona
 
@@ -70,23 +81,39 @@ Una domanda alla volta, con la proposta dell'agente; le parole sono sue.
   metri sul piano tangente alla partenza (`mapdraw/plane.ts`,
   `mapdraw/figure.ts`), mai in gradi.
 - **Il riquadro** guarda un pezzo di terreno a scatti: ogni scatto è largo
-  il doppio del precedente ed è centrato sul contorno alla distanza più
+  √2 volte il precedente (due scatti, il doppio; `FRAME_STEP` in
+  `previewFrame.ts`, da 250 m) ed è centrato sul contorno alla distanza più
   grande che contiene. Dentro uno scatto la mappa sta ferma e la sagoma
   cresce; passato il limite, la mappa si allontana. La partenza sta dentro
   il contorno più grande dello scatto, quindi la sagoma cresce da lì e non
-  esce mai dal riquadro.
+  esce mai dal riquadro. La parte 0 diceva «il doppio»: nel simulatore,
+  subito dopo uno scatto doppio, la sagoma restava piccola nel riquadro.
 - **La mappa** è un'immagine, non una mappa viva: la scatta la pagina
   nascosta che già fa le immagini del Feed (`feed/FeedMaps.tsx`,
   `useFeedMap`; la scheda delle pagine ha già il suo `FeedMapShooter`).
   Un'immagine per partenza, forma e scatto: i tocchi di − e + dentro uno
-  scatto non passano dal ponte della WebView. Finché l'immagine non c'è, la
-  sagoma è sul fondo scuro della mappa. Sull'immagine c'è il credito
-  della mappa (`creditLine()`), come su ogni sua immagine.
+  scatto non passano dal ponte della WebView. Finché la prima immagine non
+  c'è, la sagoma è sul fondo scuro della mappa. A uno scatto nuovo
+  l'immagine di prima resta sotto la sagoma, messa dove cade nel riquadro
+  nuovo (`placeIn`), finché arriva la sua: la mappa si allontana subito e
+  poi si fa nitida, invece di restare vuota 1–2 s. Solo per la stessa
+  partenza. Sull'immagine c'è il credito della mappa (`creditLine()`),
+  come su ogni sua immagine, su un fondo del colore della mappa: i nomi
+  dei luoghi non si leggono attraverso.
 - **La sagoma** è disegnata dall'app (segmenti tratteggiati, token
   `shapeGhost`; il pallino della partenza `route.color`), ridisegnata a
-  ogni cambio della distanza: al più 148 punti di contorno.
+  ogni cambio della distanza: al più 148 punti di contorno. Una forma
+  chiesta a penna alzata (`penUp && offersPenUp(shape)`) è disegnata nei
+  suoi pezzi, ed è più grande per gli stessi km: i tratti contano una
+  volta, non andata e ritorno.
+- **Le immagini tracciate** (parte B): sotto l'anteprima della foto, lo
+  stesso pezzo di mappa col contorno tracciato (`pictureLook.ts`,
+  `OutlineOnMap`), con partenza e distanza. A penna alzata, dove la foto
+  ha pezzi, la grandezza viene da contorno e pezzi insieme, come il
+  `pen_up.drawn_m` del motore.
 - **Quando non c'è**: senza partenza, sull'acqua e sulla neve, o per una
-  parola, resta quello che c'è oggi.
+  parola, resta quello che c'è oggi (per un'immagine: solo la sua
+  anteprima sulla foto).
 - Nessun testo nuovo, nessuna dipendenza, nessun cambio al motore, all'API
   o al contratto. Solo JS/TS: l'impronta iOS resta `5e1b5ce5`.
 
@@ -102,26 +129,33 @@ Una domanda alla volta, con la proposta dell'agente; le parole sono sue.
 
 ## Criteri di accettazione
 
-- [ ] Forma, distanza e partenza danno un contorno in WGS84 col primo punto
+- [x] Forma, distanza e partenza danno un contorno in WGS84 col primo punto
       sulla partenza, lungo quanto la distanza, a nord in alto; il conto è
-      in metri sul piano (`previewFrame.test.ts`).
-- [ ] Dentro uno scatto il riquadro non cambia e la sagoma cresce con la
-      distanza; oltre, il riquadro raddoppia; il contorno sta sempre dentro
-      il riquadro (`previewFrame.test.ts`).
-- [ ] Con una partenza e una forma del catalogo «Draw» mostra il pezzo di
+      in metri sul piano (`previewFrame.test.ts`). «Lungo quanto la
+      distanza» è la lunghezza che il motore dà alla forma
+      (`lookOf(...).length`), non quella della linea disegnata: il test
+      controlla l'unità, distanza diviso quella lunghezza.
+- [x] Dentro uno scatto il riquadro non cambia e la sagoma cresce con la
+      distanza; oltre, il riquadro si allarga di √2 (due scatti, il
+      doppio); il contorno sta sempre dentro il riquadro, per ogni forma
+      del catalogo (`previewFrame.test.ts`).
+- [x] Con una partenza e una forma del catalogo «Draw» mostra il pezzo di
       mappa con la sagoma tratteggiata e il pallino; cambiando i km la
       sagoma cambia grandezza senza chiedere un'altra immagine finché lo
       scatto è lo stesso (`LivePreview.test.tsx`).
-- [ ] Senza partenza, sull'acqua e sulla neve resta `ShapePreview`
-      (`LivePreview.test.tsx` o il test di `RoutePanel` toccato).
-- [ ] Parte B: un'immagine tracciata, con partenza e distanza, ha lo stesso
-      pezzo di mappa sotto il suo contorno.
-- [ ] Nessun testo nuovo; nessun colore scritto a mano.
-- [ ] `tsc` pulito, test dei file toccati verdi; nella PR come è stato
+- [x] Senza partenza, sull'acqua e sulla neve resta `ShapePreview`
+      (`LivePreview.test.tsx`).
+- [x] Parte B: un'immagine tracciata, con partenza e distanza, ha lo stesso
+      pezzo di mappa sotto il suo contorno (`ImageChoice.test.tsx`,
+      `pictureLook.test.ts`). Nel simulatore visto con un contorno messo a
+      mano; con una foto vera è ancora da provare («Cosa resta»).
+- [x] Nessun testo nuovo; nessun colore scritto a mano. La frase per chi
+      non vede («{name}, about {size} on the map») è quella della 361.
+- [x] `tsc` pulito, test dei file toccati verdi; nella PR come è stato
       misurato il ridisegno (immagini chieste per tocco, tempo del
       ridisegno della sagoma più lunga).
-- [ ] Sì dell'utente su ciò che si vede (screenshot dal simulatore, col
-      turno del Coordinatore) prima di «pronta».
+- [x] Sì dell'utente su ciò che si vede (screenshot dal simulatore, col
+      turno del Coordinatore) prima di «pronta»: scelta 6.
 
 ## File toccati
 
@@ -143,10 +177,14 @@ Parte A:
 
 Parte B:
 
-- `apps/mobile/src/route/ImageChoice.tsx`
+- `apps/mobile/src/route/ImageChoice.tsx` (le prop `start` e `distanceM`,
+  `OutlineOnMap` sotto l'anteprima della foto)
 - `apps/mobile/src/route/RoutePanel.tsx` (partenza e distanza a
-  `ImageChoice`)
-- il test di `ImageChoice` (nuovo o quello che c'è)
+  `ImageChoice`; niente partenza sull'acqua e sulla neve)
+- `apps/mobile/src/route/ImageChoice.test.tsx` (due test in più)
+- `apps/mobile/src/route/pictureLook.ts` e
+  `apps/mobile/src/route/pictureLook.test.ts` (nuovi, non nella prima
+  lista: approvati dal Coordinatore il 2026-11-26 prima della PR)
 
 Documenti (PR di soli documenti): `docs/tasks/TASK-449.md`,
 `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md`,
@@ -177,3 +215,34 @@ Documenti (PR di soli documenti): `docs/tasks/TASK-449.md`,
   al riepilogo (scelta 5). Mancano: il verde della CI, gli screenshot dal
   simulatore (in coda dal Coordinatore) e il sì dell'utente su ciò che si
   vede, poi «pronta»; poi la parte B.
+- 2026-11-26: la PR della parte 0 (#1595) è stata chiusa e raccolta com'era
+  nella #1598 del Coordinatore 3, in `main` (`a6c96894`).
+- 2026-11-26: turno del simulatore (iPhone 17e, Expo Go, partenza a
+  Trento). Visto e corretto nella #1593: scatti di √2 invece del doppio,
+  l'immagine di prima tenuta sotto la sagoma mentre arriva la nuova, il
+  fondo sotto il credito; in più la forma a penna alzata nei suoi pezzi.
+  Tenendo premuto − per 2,5 s da 21 km: 29 mezzi km con l'anteprima nuova,
+  31 con quella di prima. Solo simulatore e bundle di sviluppo: su un
+  telefono non è misurato. Sì dell'utente sugli screenshot (scelta 6).
+  **#1593 in `main`** (`cfd8f9d7`).
+- 2026-11-26: parte B, **#1627 in `main`** (`81d716b6`): test dei file
+  toccati 60 su 60, `tsc`, ESLint e Prettier puliti in locale. Nel
+  simulatore il contorno era messo a mano (la testa di coniglio del
+  catalogo): senza l'API in locale nessuna foto è stata tracciata. Il
+  Coordinatore non l'ha tenuta ferma per questo: la prova si fa sull'app di
+  prova. Dopo la B, `RoutePanel.tsx` passa a TASK-448 B.
+- 2026-11-26: chiusura, PR di soli documenti da `docs/TASK-449-done`.
+
+## Cosa resta
+
+- **OTA di produzione**: del Coordinatore, col sì dell'utente. Solo JS/TS,
+  l'impronta iOS resta `5e1b5ce5`.
+- **Foto vera: da provare sul preview.** Sull'app di prova, prima dell'OTA
+  di produzione: «Image», una foto dalla libreria, e sotto la sua anteprima
+  il pezzo di mappa col contorno tracciato; a penna alzata con una foto che
+  ha pezzi.
+- **L'occhio sul telefono** dopo l'OTA: «Draw» con una forma, − e + tenuti
+  premuti (la sagoma cresce, la mappa si allontana a scatti e non resta
+  vuota), una partenza cercata lontano, senza rete (la sagoma resta sul
+  fondo scuro).
+- TASK-509 C (la sagoma nelle tessere) aspettava la 449 in `main`: c'è.

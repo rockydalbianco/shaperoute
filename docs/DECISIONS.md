@@ -612,7 +612,7 @@ lasciando le righe d'indice.
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
 - ADR-0394, precisazione C — La scheda pubblicata aperta fuori dal Feed: profilo, campanella, push, link e chat la aprono per id sulla scheda della mappa, col riquadro del Feed; nella griglia del profilo una cella sua · 2026-11-23 · Attiva
 - ADR-0258, precisazione C2 — La foto a penna alzata nell'API e nell'app: i pezzi solo se il contorno a penna alzata è lo stesso, al più `MAX_WALKS`, `pen_up` e `pieces` insieme, nessun pezzo dopo una modifica, «Lift the pen between parts» acceso all'avvio · 2026-11-26 · Attiva
-- ADR-0412 — L'anteprima dal vivo di «Draw»: un'immagine di mappa del Feed a scatti di scala, la sagoma disegnata dall'app col primo punto del contorno sulla partenza · 2026-11-26 · Proposta
+- ADR-0412 — L'anteprima dal vivo di «Draw»: un'immagine di mappa del Feed a scatti di scala, la sagoma disegnata dall'app col primo punto del contorno sulla partenza · 2026-11-26 · Attiva
 - ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero (`GET /notifications/unread`, una query, niente foto), con il ripiego sulla lista per un server di prima; la riga dei «live» non chiede con l'app dietro · 2026-11-26 · Attiva
 - ADR-0175, aggiunta (TASK-497) — La foto di chi scrive un commento: il commento porta l'indirizzo della foto piccola (`author.photo`, quello del feed), l'app non chiede più il profilo intero; supera il punto 7 · 2026-11-24 · Attiva
 - ADR-0264, aggiunta C (TASK-496) — Il file intero della corsa si scrive accanto e poi si sposta sopra il vecchio: una chiusura a metà scrittura lascia l'ultimo file intero · 2026-11-26 · Attiva
@@ -715,9 +715,11 @@ all'utente.
 
 ## ADR-0412 — L'anteprima dal vivo di «Draw»: un'immagine di mappa a scatti di scala, la sagoma disegnata dall'app sulla partenza
 
-**Stato**: Proposta · 2026-11-26 · TASK-449 (parte 0). Che cosa si vede è
+**Stato**: Attiva · 2026-11-26 · TASK-449 (in `main`: #1593 le forme,
+#1627 le immagini). Che cosa si vede è
 **scelta dell'utente** (2026-11-26: «A, mappa vera»; «No, niente testo»;
-«Sì, anche immagini»; «Sì, resta com'è» per l'attesa di TASK-442); il come
+«Sì, anche immagini»; «Sì, resta com'è» per l'attesa di TASK-442; «Sì, va
+bene» sugli screenshot dal simulatore); il come
 è deciso dall'agente su delega dell'utente. Numero dal Coordinatore.
 
 **Contesto**: idea I2 della prova dell'11 novembre 2026: mentre cambiano i
@@ -737,15 +739,31 @@ tiene una montata (TASK-480).
   come una linea di due punti, gli angoli opposti del riquadro, che
   `lineCamera` inquadra per intero.
 - **Il riquadro va a scatti**: ogni scatto guarda un pezzo di terreno largo
-  il doppio del precedente, ed è centrato sul contorno alla distanza più
+  √2 volte il precedente (due scatti, il doppio; da 250 m, arrotondato al
+  metro), ed è centrato sul contorno alla distanza più
   grande che ci entra. Dentro uno scatto la mappa non cambia e solo la
   sagoma cresce: un tocco di − o + non chiede un'immagine e non passa dal
   ponte della WebView. Un'immagine per partenza, forma e scatto, tenuta
-  come quelle del Feed.
+  come quelle del Feed. La proposta diceva «il doppio»: nel simulatore,
+  appena dopo uno scatto doppio, la sagoma occupava meno di metà del
+  riquadro; con √2 ne occupa sempre più di metà, per il doppio delle
+  immagini lungo la stessa corsa della distanza.
+- **A uno scatto nuovo l'immagine di prima resta**, sotto la sagoma, messa
+  dove cade nel riquadro nuovo (`placeIn`), finché arriva la sua: la mappa
+  si allontana subito e si fa nitida dopo, invece di restare vuota 1–2 s.
+  Solo per la stessa partenza: un'altra partenza è un'altra mappa.
 - **La sagoma la disegna l'app**, sopra l'immagine: segmenti tratteggiati
   col token `shapeGhost` (la stessa sagoma del risultato di TASK-442), il
   pallino della partenza `route.color`. Si ricalcola a ogni cambio della
-  distanza: una funzione pura, al più 148 punti di contorno.
+  distanza: una funzione pura (`route/previewFrame.ts`), al più 148 punti
+  di contorno. Chiesta a penna alzata, dove la forma lo offre, è disegnata
+  nei suoi pezzi e la sua grandezza viene da quelli (`lookOf(…, apart)`).
+- **Le immagini tracciate** hanno lo stesso pezzo di mappa sotto il loro
+  contorno (`route/pictureLook.ts`), sotto l'anteprima della foto. A penna
+  alzata, dove la foto ha pezzi, la grandezza viene da contorno e pezzi
+  insieme, come il `pen_up.drawn_m` del motore.
+- **Il credito della mappa** (`creditLine()`, la riga che c'è già sulle
+  immagini del Feed) sta sull'immagine, su un fondo del colore della mappa.
 - **Dove sta**: il primo punto del contorno (`lookOf(...).start`) sulla
   partenza, nord in alto, lunga quanto la distanza chiesta. È il primo
   piazzamento che il motore prova (ROUTE_ENGINE.md §3), non quello che
@@ -759,12 +777,18 @@ tiene una montata (TASK-480).
 - L'attesa e la sagoma del risultato di TASK-442 non cambiano.
 
 **Conseguenze**: l'immagine arriva dalla rete, dopo la sagoma; finché non
-c'è la sagoma sta sul fondo della mappa, e senza rete resta così. Le
+c'è la prima la sagoma sta sul fondo della mappa, e senza rete resta così. Le
 immagini dell'anteprima fanno la coda con quelle del Feed, una alla volta.
 La sagoma può non coincidere con dove il motore metterà la forma: è il
 prezzo di non calcolare niente prima di «Draw», e l'app non promette
 altro che la grandezza. Nessun cambio al motore, all'API o al contratto;
-solo JS/TS, l'impronta iOS non cambia.
+solo JS/TS, l'impronta iOS non cambia. Misurato: in Node, sulle 31 forme
+del catalogo in un riquadro di 340 × 190 punti, al più 0,19 ms per tocco
+della distanza e 231 trattini; nel simulatore (bundle di sviluppo),
+tenendo premuto − per 2,5 s, 29 mezzi km contro i 31 dell'anteprima di
+prima. Su un telefono non è misurato. Una foto vera tracciata non è stata
+provata nel simulatore: si prova sul canale preview prima dell'OTA di
+produzione.
 
 ## ADR-0359, aggiunta (TASK-519) — Su «Map» la freccia punta dove punta il telefono, col cono; la mappa non gira
 

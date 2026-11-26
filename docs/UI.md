@@ -310,8 +310,9 @@ pagine»):
    bordo chiaro; ogni forma è il suo contorno vero a linea, nel colore del
    testo, non un'emoji: `ShapeGlyph`, TASK-444, dal catalogo del motore
    come la forma in scala, a penna alzata dove il catalogo l'ha — gli occhi
-   di una faccia senza la riga che li raggiunge), «Type another shape» per un'altra parola e la forma in
-   scala; **«3 DISTANCE»**, grande, fra − e + di mezzo km, col tempo
+   di una faccia senza la riga che li raggiunge), «Type another shape» per un'altra parola e la forma sulla
+   mappa vera attorno alla partenza (TASK-449; in scala senza
+   partenza); **«3 DISTANCE»**, grande, fra − e + di mezzo km, col tempo
    stimato sotto; subito sotto la
    distanza, mentre il server ha il gioco, la riga «PLAY» (TASK-327, sotto
    «“Play”: la collezione delle forme»); poi, con la corsa, «NEAR YOU»
@@ -2617,9 +2618,23 @@ fewer» richiude. La forma scelta è sempre in vista: se non è fra le prime
 sette, prende il settimo posto. Toccare una tessera fa vibrare il telefono,
 dove l'app è costruita con `expo-haptics`. Sotto il segno la tessera ha il
 nome con la maiuscola, «Cuore», come ogni etichetta della pagina
-(TASK-508); nel campo va la parola come la scrive una frase, «cuore». Sotto, la forma scelta **in
-scala** su un pezzo di mappa (`ShapePreview`): il contorno del catalogo,
-una barra di scala tonda e «≈ 1.9 × 2.1 km», che seguono forma e
+(TASK-508); nel campo va la parola come la scrive una frase, «cuore». Sotto, la forma scelta **sulla
+mappa vera** attorno alla partenza (TASK-449, ADR-0412, `LivePreview`): un
+riquadro largo quanto la scheda e alto 190 punti con le strade del posto,
+e sopra il contorno del catalogo tratteggiato (la sagoma di TASK-442), in
+grandezza reale, col primo punto sulla partenza, che è un pallino giallo.
+A ogni − e + della distanza la sagoma cresce o si stringe; quando non
+entra più la mappa si allontana di uno scatto (√2 volte più larga), e
+finché arriva l'immagine nuova resta quella di prima, più piccola, sotto
+la sagoma. La mappa è un'immagine, non si tocca: arriva dalla rete un
+attimo dopo la sagoma, che intanto sta sul fondo scuro; in un angolo ha il
+credito della mappa. Sotto restano «≈ 1.9 × 2.1 km» e la barra di scala
+tonda. Con la penna alzata, dove la forma l'offre, la sagoma è nei suoi
+pezzi. È la forma ideale dove il motore la prova per prima, non un
+percorso: nessuna riga lo dice (scelta dell'utente, 2026-11-26). Senza
+partenza, sull'acqua e sulla neve resta la forma **in scala** di TASK-361
+(`ShapePreview`): un riquadro con due strade finte, la forma sempre
+grande uguale, e la barra di scala e «≈ L × A km» che seguono forma e
 distanza.
 
 **La distanza** (TASK-361): − e + di mezzo km (mezzo miglio con «Miles»),
@@ -2862,6 +2877,12 @@ gatto di TASK-072 non si riconosceva già dal contorno, e senza la foto
 sotto si vede. Un'immagine alta resta entro 320 punti d'altezza, così la
 distanza resta a vista. La linea è fatta di rettangoli sottili ruotati,
 senza SVG (`react-native-svg` non è una dipendenza dell'app).
+
+Sotto l'anteprima, con una partenza e una distanza, il contorno tracciato
+**sulla mappa vera** (TASK-449 B, ADR-0412): lo stesso riquadro delle
+forme, col contorno tratteggiato in grandezza reale dalla partenza, che
+segue i km. A penna alzata, dove la foto ha pezzi, è nei suoi pezzi.
+Non sull'acqua e sulla neve, né senza partenza.
 
 **Modificare il contorno** (TASK-079, ADR-0074). Sotto l'anteprima,
 **«Edit the outline»** apre una **lavagna a tutto schermo**: la foto

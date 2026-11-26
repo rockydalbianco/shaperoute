@@ -12,7 +12,7 @@ import {
   space,
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
-import { useSheetFace } from "../ui/sheetFace";
+import { useGlassSheet } from "../ui/SheetGlass";
 import { CharacterRow } from "./CharacterRow";
 import { EndingRow } from "./EndingRow";
 import { LineColourRow } from "./LineColourRow";
@@ -80,7 +80,7 @@ function SheetBody({
 }: Omit<Props, "visible">) {
   const insets = useSafeAreaInsets();
   // The sheet in the glass look (TASK-469 A7a).
-  const glassSheet = useSheetFace();
+  const [glassSheet, glassBack] = useGlassSheet();
   const change = (part: Partial<VideoEdit>) => onChange({ ...edit, ...part });
   return (
     <View style={styles.layer}>
@@ -93,6 +93,7 @@ function SheetBody({
       <View
         style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.lg }]}
       >
+        {glassBack}
         <View style={styles.grip} />
         <View style={styles.header}>
           <Text style={styles.title} accessibilityRole="header">

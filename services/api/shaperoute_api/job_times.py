@@ -23,6 +23,10 @@ nearby starts):
   gave no answer in time; `none` when there were none. `chosen`: the start
   whose route was kept, 0 for the user's own.
 - `directions`: the directions of the route and of its alternatives.
+- `queued`: from the request accepted to a worker taking the job (TASK-501,
+  O13): what the job waited for one of `jobs.WORKERS` to be free. Not in
+  `total`, which starts when the wait ends. Last on the line, so whoever
+  read the line before reads it as before.
 
 Seconds and counts only: where the user is never goes in the log (TASK-091,
 ADR-0092).
@@ -50,6 +54,7 @@ class JobTimes:
     planner_s: float | None = None
     directions_s: float | None = None
     nearby: NearbyPlan | None = None
+    queued_s: float | None = None
 
     def loaded(self, seconds: float, downloaded: bool) -> None:
         if self.loads == 0:
@@ -121,6 +126,7 @@ def line(times: JobTimes, total_s: float) -> str:
         ("nearby", "-" if nearby is None else _each(nearby)),
         ("chosen", "-" if nearby is None else str(nearby.chosen)),
         ("directions", _seconds(times.directions_s)),
+        ("queued", _seconds(times.queued_s)),
     ]
     return " ".join(f"{key}={value}" for key, value in pairs)
 

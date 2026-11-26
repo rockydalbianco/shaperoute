@@ -24,6 +24,7 @@ import {
 import { sessionEnded } from "../account/messages";
 import type { Account } from "../account/useAccount";
 import type { AccountOutcome } from "../api/accounts";
+import { apiKey } from "../api/apiUrl";
 import {
   choiceOf as choiceOfDrawing,
   type DrawingChoice,
@@ -216,6 +217,102 @@ const NOTHING: DrawingsDoor = {
 
 /** Without «Profile» around it (a test of one screen): no drawings. */
 export const DrawingsContext = createContext<DrawingsDoor>(NOTHING);
+
+// ── The drawing of the post open, asked once (TASK-501, O11) ─────────────
+
+type DrawingAnswer = Promise<AccountOutcome<DrawingDetail>>;
+type Asking = { fetchFn?: typeof fetch; key?: string | null };
+
+/** GET /drawings/{id} of the post whose page is open, with how it was
+ * asked: only the same asking reads it. */
+type Shared = {
+  baseUrl: string;
+  token: string;
+  id: string;
+  fetchFn: typeof fetch | undefined;
+  key: string | null;
+  answer: DrawingAnswer;
+  holders: number;
+};
+
+let shared: Shared | null = null;
+
+function sameAsking(
+  one: Shared,
+  baseUrl: string,
+  token: string,
+  id: string,
+  { fetchFn, key }: Asking,
+): boolean {
+  return (
+    one.baseUrl === baseUrl &&
+    one.token === token &&
+    one.id === id &&
+    one.fetchFn === fetchFn &&
+    one.key === (key === undefined ? apiKey() : key)
+  );
+}
+
+/**
+ * The drawing `id` for the page of its post (TASK-501): the page's figures
+ * (feed/usePostStats) and the map it opens (`open`) read this one answer,
+ * asked once. Held while the page is open and let go when it closes; an
+ * answer that is not the drawing is let go at once, so the map asks again.
+ */
+export function holdDrawing(
+  baseUrl: string,
+  token: string,
+  id: string,
+  asking: Asking = {},
+): { answer: DrawingAnswer; release: () => void } {
+  if (shared === null || !sameAsking(shared, baseUrl, token, id, asking)) {
+    const key = asking.key === undefined ? apiKey() : asking.key;
+    const one: Shared = {
+      baseUrl,
+      token,
+      id,
+      fetchFn: asking.fetchFn,
+      key,
+      answer: fetchDrawing(baseUrl, token, id, { fetchFn: asking.fetchFn, key }),
+      holders: 0,
+    };
+    void one.answer.then((outcome) => {
+      if (outcome.kind !== "ok" && shared === one) {
+        shared = null;
+      }
+    });
+    shared = one;
+  }
+  const held = shared;
+  held.holders += 1;
+  let released = false;
+  return {
+    answer: held.answer,
+    release: () => {
+      if (released) {
+        return;
+      }
+      released = true;
+      held.holders -= 1;
+      if (held.holders <= 0 && shared === held) {
+        shared = null;
+      }
+    },
+  };
+}
+
+/** The answer a page holds for the drawing `id`, asked the same way; null
+ * when no page holds it. */
+function heldDrawing(
+  baseUrl: string,
+  token: string,
+  id: string,
+  asking: Asking,
+): DrawingAnswer | null {
+  return shared !== null && sameAsking(shared, baseUrl, token, id, asking)
+    ? shared.answer
+    : null;
+}
 
 export function useDrawingsDoor(): DrawingsDoor {
   return useContext(DrawingsContext);
@@ -683,27 +780,29 @@ export function useDrawingsOf(
       asked.current = drawing.id;
       setOpening(drawing.id);
       setOpenProblem(null);
-      void fetchDrawing(baseUrl, token, drawing.id, { fetchFn, key }).then(
-        (outcome) => {
-          if (asked.current !== drawing.id) {
-            return;
-          }
-          asked.current = null;
-          setOpening(null);
-          if (outcome.kind === "ok") {
-            setOpened({ token, drawing: outcome.value });
-            onOpened();
-            return;
-          }
-          ended(token, outcome);
-          setOpenProblem(
-            // Made private, or deleted, since the page came.
-            outcome.kind === "api_error" && outcome.code === "http_error"
-              ? t("This drawing is no longer public.")
-              : (drawingProblem(outcome) ?? ""),
-          );
-        },
-      );
+      // The page of its post may have it already (TASK-501).
+      const answer =
+        heldDrawing(baseUrl, token, drawing.id, { fetchFn, key }) ??
+        fetchDrawing(baseUrl, token, drawing.id, { fetchFn, key });
+      void answer.then((outcome) => {
+        if (asked.current !== drawing.id) {
+          return;
+        }
+        asked.current = null;
+        setOpening(null);
+        if (outcome.kind === "ok") {
+          setOpened({ token, drawing: outcome.value });
+          onOpened();
+          return;
+        }
+        ended(token, outcome);
+        setOpenProblem(
+          // Made private, or deleted, since the page came.
+          outcome.kind === "api_error" && outcome.code === "http_error"
+            ? t("This drawing is no longer public.")
+            : (drawingProblem(outcome) ?? ""),
+        );
+      });
     },
     [baseUrl, ended, fetchFn, key, onOpened, token],
   );

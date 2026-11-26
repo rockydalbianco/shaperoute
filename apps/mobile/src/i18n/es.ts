@@ -1272,6 +1272,10 @@ export const ES: Table = {
   Floors: "Pisos",
   "Log set": "Anotar serie",
   "Same again": "Otra igual",
+  // TASK-511: the clock waits for the first exercise; − and + by the boxes
+  "Starts with the first exercise": "Empieza con el primer ejercicio",
+  "Less {field}": "{field}: menos",
+  "More {field}": "{field}: más",
   Rest: "Descanso",
   Custom: "Personalizado",
   "Next: {exercise} · set {n}": "Siguiente: {exercise} · serie {n}",
@@ -2589,6 +2593,9 @@ export const ES: Table = {
   "Show fewer": "Mostrar menos",
   "See all": "Ver todas",
 
+  // src/route/SurprisePill.tsx (TASK-448: «Surprise me»)
+  "Surprise me": "Sorpréndeme",
+
   // src/route/DistanceDial.tsx (TASK-361: the distance by half a km)
   "Tap to type the distance": "Toca para escribir la distancia",
 
@@ -3597,6 +3604,31 @@ export const ES: Table = {
     "Los productos encontrados por código de barras contienen datos de Open Food Facts, disponibles bajo la Open Database License. Se mantienen separados de la lista del USDA.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Esta página solo la ves tú. Lo que escribes aquí se queda en tu teléfono; un código de barras que buscas va a Open Food Facts.",
+
+  // src/takeoffs (TASK-493 part C)
+  Takeoffs: "Despegues",
+  "Zoom in to see the takeoffs.": "Acerca el mapa para ver los despegues.",
+  "Zoom in to see all the takeoffs.": "Acerca el mapa para verlos todos.",
+  Landing: "Aterrizaje",
+  "Unnamed takeoff": "Despegue sin nombre",
+  "Unnamed landing": "Aterrizaje sin nombre",
+  "Official site": "Sitio oficial",
+  Faces: "Orientado al",
+  "Landings nearby": "Aterrizajes cercanos",
+  "{distance} away · {drop} lower": "a {distance} · {drop} más abajo",
+  "No landing within 15 km on OpenStreetMap.":
+    "Ningún aterrizaje a menos de 15 km en OpenStreetMap.",
+  "Takeoffs above": "Despegues encima",
+  "Flights from here": "Vuelos desde aquí",
+  "{flights} flights by {pilots} pilots": "{flights} vuelos de {pilots} pilotos",
+  "Today: {count}": "Hoy: {count}",
+  "Few flights from here yet.": "Aún pocos vuelos desde aquí.",
+  "In the air now: {count}": "En el aire ahora: {count}",
+  "Watch live": "Ver en directo",
+  Highest: "El más alto",
+  "Missing a takeoff? Add it on OpenStreetMap.":
+    "¿Falta un despegue? Añádelo en OpenStreetMap.",
+  "The takeoffs could not be loaded.": "No se pudieron cargar los despegues.",
   // src/air/ (TASK-479 part D4: the task passed on; approved by the user on 2026-11-23)
   "Share file": "Compartir archivo",
   "Show QR": "Mostrar QR",

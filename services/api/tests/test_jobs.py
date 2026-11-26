@@ -15,7 +15,7 @@ from route_engine.optimizer import GraphLoader, Plan, ShapeNotDrawableError
 from route_engine.validation import InvalidRouteError
 
 from shaperoute_api.graphs import MapDataUnavailableError
-from shaperoute_api.jobs import RouteJobs
+from shaperoute_api.jobs import Job, RouteJobs
 from shaperoute_api.schemas import ErrorDetail
 
 REQUEST = RouteRequest(start=(46.0671, 11.1214), shape="heart", distance_m=5000)
@@ -346,3 +346,58 @@ def test_a_route_kept_nearby_is_reached_without_the_engine(
     gate.open()
     wait_until(lambda: status(jobs, job.job_id) == "done")
     assert gate.calls == 1 and kept.routes == {"heart": RESULT}
+
+
+def test_a_job_keeps_how_long_it_waited_for_a_worker(made: list[RouteJobs]) -> None:
+    """TASK-501 (O13): nothing while the job waits, then the seconds from
+    the request accepted to a worker taking it; they stay on the job."""
+    first, second, third = Gate(), Gate(), Gate()
+    planners = iter([first, second, third])
+    clock = Clock()
+    jobs = RouteJobs(
+        Graphs(), lambda r, s: next(planners)(r, s), workers=1, clock=clock
+    )
+    made.append(jobs)
+
+    def read(job_id: str) -> Job:
+        job = jobs.get(job_id)
+        assert job is not None
+        return job
+
+    a = jobs.submit(REQUEST)
+    assert a.queued_s is None
+    wait_until(lambda: status(jobs, a.job_id) == "computing")
+    assert read(a.job_id).queued_s == 0.0
+
+    # Two jobs wait for the one worker, the second for longer.
+    clock.now += 2.0
+    b = jobs.submit(REQUEST)
+    clock.now += 1.0
+    c = jobs.submit(REQUEST)
+    clock.now += 4.0
+    assert read(b.job_id).status == "queued" and read(b.job_id).queued_s is None
+    assert read(c.job_id).queued_s is None
+
+    first.open()
+    wait_until(lambda: status(jobs, b.job_id) == "computing")
+    assert read(b.job_id).queued_s == 5.0
+    assert read(c.job_id).queued_s is None
+    clock.now += 3.0
+    second.open()
+    wait_until(lambda: status(jobs, c.job_id) == "computing")
+    assert read(c.job_id).queued_s == 7.0
+    third.open()
+    wait_until(lambda: status(jobs, c.job_id) == "done")
+    # Done: the wait is still there, the first job's too.
+    assert read(c.job_id).queued_s == 7.0
+    assert read(b.job_id).queued_s == 5.0
+    assert read(a.job_id).queued_s == 0.0
+
+
+def test_a_route_already_drawn_never_waited(made: list[RouteJobs]) -> None:
+    kept = Kept()
+    kept.routes["heart"] = RESULT
+    jobs = RouteJobs(Graphs(), Gate(), clock=Clock(), store=kept)
+    made.append(jobs)
+    again = jobs.submit(REQUEST)
+    assert again.status == "done" and again.queued_s is None

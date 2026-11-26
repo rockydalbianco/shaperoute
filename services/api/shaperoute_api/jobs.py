@@ -127,6 +127,11 @@ class Job:
     # None again once the job has its answer.
     first: RouteResult | None = None
     first_placed: list[list[list[LatLon]]] = field(default_factory=list)
+    # When the job was accepted, on the jobs' clock, and how long it then
+    # waited for a worker (TASK-501, O13): None while it waits, and for a
+    # job answered at once, with no worker.
+    queued_at: float | None = None
+    queued_s: float | None = None
 
 
 # Told how a job ended, cancelled ones too (neither result nor error when
@@ -156,7 +161,12 @@ class RouteJobs:
         self._pool = ThreadPoolExecutor(workers, thread_name_prefix="route-job")
 
     def submit(self, request: AnyRequest, body: dict[str, Any] | None = None) -> Job:
-        job = Job(job_id=uuid.uuid4().hex[:12], request=request, body=body)
+        job = Job(
+            job_id=uuid.uuid4().hex[:12],
+            request=request,
+            body=body,
+            queued_at=self._clock(),
+        )
         # A city's example someone already asked for (ADR-0136): done at
         # once, no worker and no engine. The app reads it from this answer.
         kept = None if self._store is None else self._store.get(request)
@@ -195,11 +205,14 @@ class RouteJobs:
         self._pool.shutdown(wait=False, cancel_futures=True)
 
     def _run(self, job: Job) -> None:
+        # Before the job shows as computing: whoever reads it computing
+        # reads its wait too.
+        waited = self._taken(job)
         if not self._set(job, status="computing"):
             return
         started = self._clock()
         activity = job.request.activity
-        times = JobTimes()
+        times = JobTimes(queued_s=waited)
 
         def report(status: JobStatus) -> bool:
             return self._set(job, status)
@@ -384,6 +397,15 @@ class RouteJobs:
                 # The answer takes the first route's place.
                 job.first, job.first_placed = None, []
             return True
+
+    def _taken(self, job: Job) -> float | None:
+        """A worker takes the job: the seconds it waited since it was
+        accepted (TASK-501), kept on the job too."""
+        if job.queued_at is None:
+            return None
+        with self._lock:
+            job.queued_s = max(0.0, self._clock() - job.queued_at)
+            return job.queued_s
 
     def _show_first(
         self, job: Job, result: RouteResult, placed: list[list[list[LatLon]]]

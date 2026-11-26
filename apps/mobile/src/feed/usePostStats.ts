@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { fetchDrawing } from "../api/drawings";
 import { type RunStats, statsOf } from "../api/runStats";
+import { holdDrawing } from "../social/drawingsDoor";
 import { useFollowsDoor } from "../social/followsDoor";
 
 type Options = { fetchFn?: typeof fetch };
@@ -11,7 +11,8 @@ type Options = { fetchFn?: typeof fetch };
  * cadence, calories, heart rate, read once from GET /drawings/{id} when the
  * page opens. GET /feed does not carry them. Null until they come, for a
  * post without any, and when the API cannot be reached: the page shows its
- * summary as before.
+ * summary as before. The answer is held while the page is open: the map
+ * the page opens reads it too, without asking again (TASK-501).
  */
 export function usePostStats(
   drawingId: string,
@@ -31,13 +32,15 @@ export function usePostStats(
       return;
     }
     let live = true;
-    void fetchDrawing(apiUrl, token, drawingId, { fetchFn }).then((outcome) => {
+    const held = holdDrawing(apiUrl, token, drawingId, { fetchFn });
+    void held.answer.then((outcome) => {
       if (live && outcome.kind === "ok") {
         setFound({ id: drawingId, stats: statsOf(outcome.value) });
       }
     });
     return () => {
       live = false;
+      held.release();
     };
   }, [apiUrl, token, drawingId, fetchFn]);
 

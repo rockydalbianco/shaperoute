@@ -65,6 +65,11 @@ stesso giorno: sono le regole qui sotto.
   membri si cancella.
 - **Rimuovere** un membro: non vede più quello che è dei soli membri; può
   chiedere di nuovo di entrare (l'admin può bloccarlo, come oggi).
+- **«Delete group»** (parte A3, scelta dell'utente del 2026-11-24): l'admin
+  cancella il gruppo anche con membri dentro, dopo una conferma («Delete
+  {name}? Its members, requests and invites go with it. This can't be
+  undone.»). I membri ricevono la push «{name} deleted the group {title}.»,
+  che non apre niente. Non si annulla.
 
 ## 5. La pagina del gruppo
 
@@ -134,6 +139,7 @@ dato personale (§11).
 | `group_join_request` | qualcuno chiede di entrare | admin e co-admin |
 | `group_join_accepted` | la richiesta è accettata | chi l'ha fatta |
 | `group_invite` | admin o co-admin invita | l'invitato |
+| `group_deleted` | l'admin cancella il gruppo (parte A3) | i membri; non apre niente |
 
 - Valgono l'interruttore «Push notifications» e i blocchi (TASK-262 A).
 - **«Mute»**, per ogni gruppo, zittisce solo `group_outing_new` di quel

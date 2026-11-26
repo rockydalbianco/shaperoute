@@ -2572,6 +2572,9 @@ export const DE: Table = {
   "Show fewer": "Weniger",
   "See all": "Alle ansehen",
 
+  // src/route/SurprisePill.tsx (TASK-448: «Surprise me»)
+  "Surprise me": "Überrasch mich",
+
   // src/route/DistanceDial.tsx (TASK-361: the distance by half a km)
   "Tap to type the distance": "Tippen, um die Distanz einzugeben",
 

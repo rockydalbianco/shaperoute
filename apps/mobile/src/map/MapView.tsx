@@ -32,6 +32,7 @@ import {
 import { fromLngLat, type LngLat } from "./coordinates";
 import { useMapCover } from "./mapCover";
 import { type MapKind, useMapKind } from "./mapKind";
+import { grownPieces, type Pieces } from "./grownPieces";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
   type CanvasMode,
@@ -44,6 +45,7 @@ import {
   clearStops,
   focus as focusMap,
   clearTrack,
+  extendPiece,
   extendTrack,
   face,
   follow,
@@ -308,6 +310,14 @@ export function MapView({
   // The track the page holds as one line, told with `showTrack` and its
   // new fixes after (TASK-496); null when it holds none, or another kind.
   const lineTold = useRef<LatLon[] | null>(null);
+  // The pieces of a day of skiing or of a race the page holds, told with
+  // `showLifts` or `showFlight` and their new points after (TASK-496 part
+  // D): which kind, its groups of lines, and the labels drawn on them.
+  const piecesTold = useRef<{
+    kind: "lifts" | "flight";
+    groups: Pieces;
+    labels: string;
+  } | null>(null);
   // Whether the page was told to stop blinking, under pocket mode's black
   // screen: nothing more of the progress until the screen is back.
   const stilled = useRef(false);
@@ -450,6 +460,7 @@ export function MapView({
     if (!ready) {
       // A page that loads again holds no line.
       lineTold.current = null;
+      piecesTold.current = null;
       return;
     }
     if (pocket) {
@@ -459,19 +470,49 @@ export function MapView({
       const frame = framesTrack;
       if (lifts !== null && lifts.length > 0) {
         const cut = splitAtLifts(track, lifts);
-        webView.current?.injectJavaScript(
-          pageScript(showLifts(cut.skied, cut.lifts, liftLabels, frame)),
-        );
+        const groups: Pieces = [cut.skied, cut.lifts];
+        const labels = JSON.stringify(liftLabels);
+        // As a day goes on, only its new points (TASK-496 part D); a lift
+        // found, or new numbers, and the day is told whole.
+        const told = piecesTold.current;
+        const grown =
+          frame || told === null || told.kind !== "lifts" || told.labels !== labels
+            ? "other"
+            : grownPieces(told.groups, groups);
+        if (typeof grown === "object") {
+          webView.current?.injectJavaScript(
+            pageScript(extendPiece(grown.group === 0 ? "track" : "lifts", grown.added)),
+          );
+        } else if (grown === "other") {
+          webView.current?.injectJavaScript(
+            pageScript(showLifts(cut.skied, cut.lifts, liftLabels, frame)),
+          );
+        }
+        piecesTold.current = frame ? null : { kind: "lifts", groups, labels };
         liftsShown.current = true;
         lineTold.current = null;
       } else if (flightAir !== null && flightAir.length > 0) {
         const cut = splitAtAir(track, flightAir);
-        webView.current?.injectJavaScript(
-          pageScript(showFlight(cut.foot, cut.air, frame)),
-        );
+        const groups: Pieces = [cut.foot, cut.air];
+        const told = piecesTold.current;
+        const grown =
+          frame || told === null || told.kind !== "flight"
+            ? "other"
+            : grownPieces(told.groups, groups);
+        if (typeof grown === "object") {
+          webView.current?.injectJavaScript(
+            pageScript(extendPiece(grown.group === 0 ? "track" : "air", grown.added)),
+          );
+        } else if (grown === "other") {
+          webView.current?.injectJavaScript(
+            pageScript(showFlight(cut.foot, cut.air, frame)),
+          );
+        }
+        piecesTold.current = frame ? null : { kind: "flight", groups, labels: "" };
         flightShown.current = true;
         lineTold.current = null;
       } else {
+        piecesTold.current = null;
         // A run as it is recorded: only its new fixes, after the line the
         // page holds (TASK-496). Anything else is told whole.
         const told = frame ? null : lineTold.current;
@@ -492,6 +533,7 @@ export function MapView({
       webView.current?.injectJavaScript(pageScript(clearTrack()));
       trackShown.current = false;
       lineTold.current = null;
+      piecesTold.current = null;
     }
     if ((!track || lifts === null || lifts.length === 0) && liftsShown.current) {
       webView.current?.injectJavaScript(pageScript(clearLifts()));

@@ -1,7 +1,8 @@
 # TASK-498 — La chat aperta chiede solo i messaggi nuovi
 
-**Stato**: In lavorazione · 2026-11-26 · A (server) scritta, in PR; il
-ritmo lento scelto dall'utente; B (app) dopo la A in `main`
+**Stato**: In lavorazione · 2026-11-26 · A (server) in PR (#1610); B
+(app) scritta, in PR dopo la A in `main`; il ritmo lento scelto
+dall'utente
 **Fase**: 5 · **Branch**: `feat/TASK-498-a-message-news` (A, server), poi
 `feat/TASK-498-b-chat-reads-news` (B, app)
 **Dipende da**: TASK-319 (i messaggi, ADR-0279), TASK-458 (in `main`,
@@ -80,7 +81,16 @@ HTTP ogni tanto.
   al ritorno nell'app. I numeri del ritmo lento li ha scelti l'utente
   (sotto): 15 s dopo un minuto di silenzio, 30 s dopo cinque.
 - **Niente ridisegno**: una risposta che non cambia niente lascia lo
-  stato di React com'è (lo stesso oggetto).
+  stato di React com'è (lo stesso oggetto), e ogni messaggio che non è
+  cambiato resta lo stesso oggetto. Misurato nel test con `Profiler`:
+  dodici risposte uguali di fila danno al più un passaggio di React (il
+  suo controllo dopo l'ultimo cambio vero, senza ridisegnare le righe),
+  poi nessuno; prima erano dodici ridisegni.
+- **Una pagina in risposta a `?after=`** (il server tornato a una
+  versione di prima) si legge come pagina.
+- **Dove sta**: il ritmo e le due funzioni che dicono cosa tenere dopo
+  una risposta sono in `messages/conversationReading.ts`, senza React; la
+  schermata tiene solo il timer.
 
 ### Cosa arriva con la risposta corta e cosa con la pagina intera
 
@@ -150,12 +160,12 @@ non arriva con `?after=`; lo porta la pagina intera, entro un minuto.
   nessuno e attraverso un blocco, `401` senza token, `422` per un `after`
   scritto male o insieme a `cursor`.
 - [x] A: esempio e tipo in `shared-types`; `docs/API.md`.
-- [ ] B: il posto avanza a ogni risposta; la pagina intera una volta al
+- [x] B: il posto avanza a ogni risposta; la pagina intera una volta al
   minuto, all'apertura e al ritorno nell'app.
-- [ ] B: il ritmo rallenta dopo il silenzio e torna a 5 s con un messaggio
+- [x] B: il ritmo rallenta dopo il silenzio e torna a 5 s con un messaggio
   nuovo, mandandone uno, al ritorno nell'app (timer finti).
-- [ ] B: una risposta uguale non ridisegna.
-- [ ] B: con un server di prima (niente `latest`) la pagina ogni volta,
+- [x] B: una risposta uguale non ridisegna.
+- [x] B: con un server di prima (niente `latest`) la pagina ogni volta,
   come oggi.
 - [ ] Impronta iOS invariata (`5e1b5ce5`), nessuna dipendenza nuova.
 
@@ -241,5 +251,12 @@ più nella pagina, che ignora. Tornare indietro è sicuro: l'app nuova senza
   aggiunta ad ADR-0279 senza numero nuovo. L'utente sul ritmo: «Sì, va
   bene» (5 s, 15 s dopo un minuto, 30 s dopo cinque). Parte A scritta e
   misurata; in locale `test_message_news.py` (11 test) verde, il resto
-  alla CI. Resta: «pronta» al Coordinatore a CI verde, il passo sul server
-  (suo, col sì dell'utente), poi la B.
+  alla CI. #1610 armata dal Coordinatore a `9fcb301b`; il passo sul
+  server è suo, col sì dell'utente.
+- 2026-11-26, sera: parte B scritta sul branch
+  `feat/TASK-498-b-chat-reads-news`. In locale: `tsc`, eslint, prettier,
+  jest di tutta la chat (20 file, 162 test: i nuovi
+  `conversationReading.test.ts` e `ConversationReading.test.tsx`, con i
+  timer finti, e gli altri che leggono l'esempio con `latest`). Resta: la
+  PR quando la A è in `main`, «pronta» a CI verde, l'OTA (Coordinatore),
+  la PR dei documenti di chiusura.

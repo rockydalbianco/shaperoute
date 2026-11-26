@@ -601,6 +601,50 @@ davanti all'utente):
 Approvata e **non usata**: «Counted in today's balance». Le schermate di
 fine attività vengono prima di «Save»: lì la frase sarebbe falsa.
 
+### Testi della parte L (approvati dall'utente il 2026-11-27, «Sì, approvo»)
+
+Le ricette: 31 testi nuovi. L'inglese è il testo dell'app. Prova mostrata
+in chat (`nutrition_recipes_mock_v3_apple_style`).
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| La terza vista | Recipes | Ricette | Rezepte | Recetas | Recettes |
+| Gruppo | Lunch and dinner | Pranzo e cena | Mittag- und Abendessen | Comida y cena | Déjeuner et dîner |
+| Riga, una porzione | 1 serving | 1 porzione | 1 Portion | 1 ración | 1 portion |
+| Riga, più porzioni | {count} servings | {count} porzioni | {count} Portionen | {count} raciones | {count} portions |
+| Riga, tempo | {minutes} min | {minutes} min | {minutes} Min. | {minutes} min | {minutes} min |
+| Scheda, tempo | Preparation: {minutes} min | Preparazione: {minutes} min | Vorbereitung: {minutes} Min. | Preparación: {minutes} min | Préparation : {minutes} min |
+| Scheda, tempo | Cooking: {minutes} min | Cottura: {minutes} min | Garzeit: {minutes} Min. | Cocción: {minutes} min | Cuisson : {minutes} min |
+| Riga, a destra | {kcal} kcal per serving (est.) | {kcal} kcal a porzione (stima) | {kcal} kcal pro Portion (gesch.) | {kcal} kcal por ración (est.) | {kcal} kcal par portion (est.) |
+| Scheda, sopra i numeri | Per serving (est.) | A porzione (stima) | Pro Portion (gesch.) | Por ración (est.) | Par portion (est.) |
+| Scheda, titolo | Ingredients | Ingredienti | Zutaten | Ingredientes | Ingrédients |
+| Scheda, titolo | How to make it | Come si fa | So geht's | Cómo se hace | Comment la préparer |
+| Scheda, sotto gli ingredienti | Salt, herbs and spices are in the steps: they are not counted. | Sale, erbe e spezie sono nei passi: non vengono contati. | Salz, Kräuter und Gewürze stehen in den Schritten: Sie werden nicht mitgezählt. | La sal, las hierbas y las especias están en los pasos: no se cuentan. | Le sel, les herbes et les épices sont dans les étapes : ils ne sont pas comptés. |
+| Scheda, allergie | Check the ingredients if you have an allergy or an intolerance. | Controlla gli ingredienti se hai un'allergia o un'intolleranza. | Prüfe die Zutaten, wenn du eine Allergie oder Unverträglichkeit hast. | Revisa los ingredientes si tienes una alergia o una intolerancia. | Vérifie les ingrédients si tu as une allergie ou une intolérance. |
+| Scheda, sopra gli ingredienti | Tap an ingredient to change its grams: the numbers follow. | Tocca un ingrediente per cambiare i grammi: i numeri si aggiornano. | Tippe auf eine Zutat, um die Gramm zu ändern: Die Zahlen passen sich an. | Toca un ingrediente para cambiar los gramos: los números se actualizan. | Touche un ingrédient pour changer les grammes : les chiffres se mettent à jour. |
+| Scheda, sotto gli ingredienti | Add an ingredient | Aggiungi un ingrediente | Zutat hinzufügen | Añadir un ingrediente | Ajouter un ingrédient |
+| Scheda, ricetta cambiata | Changed by you | Modificata da te | Von dir geändert | Modificada por ti | Modifiée par toi |
+| Scheda, ricetta cambiata | Back to MuW's recipe | Torna alla ricetta di MuW | Zurück zu MuWs Rezept | Volver a la receta de MuW | Revenir à la recette de MuW |
+| Scheda, le porzioni | Servings | Porzioni | Portionen | Raciones | Portions |
+| Tasto | Cook step by step | Cucina passo per passo | Schritt für Schritt kochen | Cocinar paso a paso | Cuisiner pas à pas |
+| Passo per passo, in alto | Step {step} of {steps} | Passo {step} di {steps} | Schritt {step} von {steps} | Paso {step} de {steps} | Étape {step} sur {steps} |
+| Tasto | Add to diary | Aggiungi al diario | Zum Tagebuch hinzufügen | Añadir al diario | Ajouter au journal |
+| Tasto | Add to my plan | Aggiungi al mio piano | Zu meinem Plan hinzufügen | Añadir a mi plan | Ajouter à mon plan |
+| Sotto i tasti | The ingredients for one serving are added to the meal: you can change the grams. | Gli ingredienti di una porzione vengono aggiunti al pasto: puoi cambiare i grammi. | Die Zutaten für eine Portion werden zur Mahlzeit hinzugefügt: Du kannst die Gramm ändern. | Los ingredientes de una ración se añaden a la comida: puedes cambiar los gramos. | Les ingrédients d'une portion sont ajoutés au repas : tu peux changer les grammes. |
+| Domanda | Which meal? | Quale pasto? | Welche Mahlzeit? | ¿Qué comida? | Quel repas ? |
+| Domanda | Which day? | Quale giorno? | Welcher Tag? | ¿Qué día? | Quel jour ? |
+| Dopo il tocco | Added | Aggiunta | Hinzugefügt | Añadida | Ajoutée |
+| In fondo all'elenco | Home recipes written by MuW, not by a chef. | Ricette di casa scritte da MuW, non da uno chef. | Hausrezepte, von MuW geschrieben, nicht von einem Koch. | Recetas caseras escritas por MuW, no por un chef. | Recettes maison écrites par MuW, pas par un chef. |
+| La frase per gli chef | Are you a chef? Write to us to work together. | Sei uno chef? Scrivici per collaborare. | Du kochst als Profi? Schreib uns für eine Zusammenarbeit. | ¿Eres chef? Escríbenos para colaborar. | Tu es chef ? Écris-nous pour collaborer. |
+| La frase per i negozi | Do you run a supermarket or an online grocery shop? We're looking for a partner: write to us. | Hai un supermercato o un negozio di spesa online? Cerchiamo una collaborazione: scrivici. | Du führst einen Supermarkt oder einen Online-Lebensmittelshop? Wir suchen eine Zusammenarbeit: Schreib uns. | ¿Tienes un supermercado o una tienda de alimentación online? Buscamos una colaboración: escríbenos. | Tu as un supermarché ou une épicerie en ligne ? Nous cherchons une collaboration : écris-nous. |
+| Tasto | Write to MuW | Scrivi a MuW | An MuW schreiben | Escribir a MuW | Écrire à MuW |
+| Oggetto della mail | Working with MuW | Collaborare con MuW | Zusammenarbeit mit MuW | Colaborar con MuW | Collaborer avec MuW |
+
+Restano quelli che l'app ha già: «Breakfast», «Lunch», «Dinner», «Snacks»,
+«Protein», «Carbs», «Fat», i nomi dei giorni, «Next», «Back», «Done»,
+«Grams», «Save», «Remove», «Cancel», i nomi dei cibi, «Estimates only. MuW
+does not provide diets or medical advice.».
+
 ## Le parti
 
 | Parte | Cosa | Dove va |
@@ -957,6 +1001,56 @@ precisazione 5, punto 6. Proposta in
 `out/TASK-489/PROPOSTA-PARTE-K-PESO.md`. Il Coordinatore valuta sessioni
 dedicate per J e K.
 
+### L — Le ricette (richiesta del 2026-11-27; parte 0 chiusa, non scritta)
+
+«Amplia la sezione cibo […] aggiungi le ricette di alcuni piatti così poi
+facciamo un catalogo di ricette e poi magari future collaborazioni […] una
+frasetta: se sei uno chef contattaci per collaborazioni». Poi, nello
+stesso giorno: «come su Giallo Zafferano […] come fare a farle», «la
+possibilità anche di cambiare la ricetta e calcolare le calorie in base al
+pomodoro inserito», «una frasetta anche per i supermercati», «più
+professionale, con animazioni, più colori […] stile Apple». Vedi ADR-0397,
+precisazione 7.
+
+Le scelte dell'utente (2026-11-27, una alla volta):
+
+1. «Sì, le scrive MuW»: le prime ricette sono di MuW, e le ha rilette lui.
+2. «Sì, questi dodici»: porridge con banana e noci; yogurt greco con
+   frutti di bosco e granola; uova strapazzate su pane integrale; pasta al
+   pomodoro; insalata di riso; pollo con riso e broccoli; salmone con
+   patate e fagiolini; zuppa di lenticchie; frittata di zucchine; cuscus
+   con ceci e verdure; caprese con pane; hummus con pane pita e carote.
+3. «Sì, hello@getmuw.app»: l'indirizzo che apre il tasto «Write to MuW».
+   Prima del merge manda una mail di prova (l'inoltro è stato fatto il
+   2026-11-27, non provato).
+4. «Sì, approvo»: schermate e testi (sopra).
+5. «Sì, vanno bene»: le dodici ricette lette in italiano.
+6. «Sì, stessi colori»: nel diario le barre di proteine, carboidrati e
+   grassi prendono i tre colori degli anelli delle ricette (cambia la
+   scelta della parte H, dove erano neutre).
+
+Cosa fa (L1): terza vista «Recipes»; elenco a schede colorate in tre
+gruppi; scheda con tre anelli (carboidrati, grassi, proteine), le kcal a
+porzione che contano, più e meno per porzioni e grammi, «Add an
+ingredient», i passi, «Cook step by step»; la ricetta cambiata resta sul
+telefono («Changed by you», «Back to MuW's recipe»); «Add to diary» e «Add
+to my plan» scrivono gli ingredienti di una porzione come cibi normali; in
+fondo all'elenco le due frasi per chef e per supermercati e negozi di
+spesa online, con un tasto che apre la posta.
+
+Ricette, altre lingue e conti sono pronti fuori dal repository
+(`out/TASK-489/work/ricette.json`, `ricette-lingue.json`,
+`conti_ricette.py`); il passaggio per chi scrive il codice è
+`out/TASK-489/AVVIO-L.md`. **Il codice va a una sessione dedicata, da
+`main` dopo la parte J.** `theme/tokens.ts`: sì del Coordinatore ai colori
+nuovi (solo aggiunte, un test di contrasto per ognuno), dopo #1562 e #1621
+di TASK-469.
+
+Dopo, non in L1: **L2**, condividere una ricetta nel Feed con le foto,
+anche dopo una corsa (richiesta dell'utente, solo registrata: compositore,
+Feed, server, privacy); le ricette dell'utente; le ricette di chef; la
+spesa online con un negozio (idea, niente di promesso nell'app).
+
 ### E — Il server
 
 Solo dopo l'uscita, se l'utente lo conferma: una tabella sua, la
@@ -1076,6 +1170,12 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 
 ## Registro
 
+- **2026-11-27**: richiesta nuova dell'utente, le ricette (parte L).
+  Parte 0 fatta con lui in sei risposte; schermate, 31 testi nelle cinque
+  lingue e dodici ricette approvati. Il Coordinatore: lettera «L», sì ai
+  colori nuovi in `theme/tokens.ts`, codice dopo J. Passaggio per una
+  sessione dedicata in `out/TASK-489/AVVIO-L.md`. Parte I = #1660, armata
+  col «si unisci» dell'utente.
 - **2026-11-26, sera**: #1563 (C2a) e #1619 (privacy e termini della
   parte J) in `main`. **Parte H = #1652**, armata dal Coordinatore col
   «Sì» dell'utente, ferma finché non escono il passo 25 e l'OTA 27.

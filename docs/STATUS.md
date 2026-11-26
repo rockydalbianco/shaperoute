@@ -50,9 +50,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   l'avviso; scelte dell'utente fatte. File: — · `tasks/TASK-494.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
   ADR-0397; A1–H e la privacy in `main`, spente (`NUTRITION_ON`). In fila:
-  I (invito a fine attività) = #1660, poi J (ingresso e stima). K1 (peso)
-  in una sessione sua, dopo J (`out/TASK-489/AVVIO-K1.md`). Build nativa
-  successiva: G2, C2b, accensione. File: `nutrition/*`,
+  I (invito a fine attività) = #1660, poi J (ingresso e stima). Dopo J, in
+  sessioni loro: K1 (peso) e L (ricette, parte 0 chiusa il 2026-11-27).
+  Build nativa successiva: G2, C2b, accensione. File: `nutrition/*`,
   `activities/RunEnd.tsx`, `gym/GymEnd.tsx` · `tasks/TASK-489.md`
 - **TASK-513 — «Longevity»: cinquanta storie animate** · ADR-0407; parte 0
   chiusa il 2026-11-24, nessun codice; il codice in una sessione sua.

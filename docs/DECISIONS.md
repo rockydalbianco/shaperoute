@@ -620,9 +620,65 @@ lasciando le righe d'indice.
 - ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
 - ADR-0264, aggiunta D (TASK-496) — In una giornata di sci o un volo registrati, alla mappa vanno solo i punti nuovi dell'ultimo tratto finché la divisione in tratti resta la stessa · 2026-11-26 · Attiva
 - ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
+- ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
 
 
 ## Voci nuove
+
+## ADR-0397, precisazione 7 — Le ricette in «Nutrition»
+
+**Stato**: Proposta · 2026-11-27 · TASK-489 parte L (parte 0 chiusa, codice
+non scritto). Le scelte di prodotto sono **dell'utente** (2026-11-27, sei
+risposte in `tasks/TASK-489.md`, sezione «L»); il come è **deciso
+dall'agente su delega dell'utente**.
+
+**Contesto**: l'utente vuole ampliare «Nutrition» con un catalogo di
+ricette, poterle cambiare vedendo le calorie seguire, uno stile più curato
+e a colori, e due frasi che cerchino collaborazioni (chef; supermercati e
+negozi di spesa online). ADR-0397 dice che MuW non dà diete né consigli e
+che l'AI non produce numeri.
+
+**Decisione**:
+1. **Un ricettario, non una dieta**: le ricette non sono consigliate a
+   nessuno e non portano parole come «light», «sano», «per dimagrire».
+   Resta sotto la riga «Estimates only. MuW does not provide diets or
+   medical advice.».
+2. **Una ricetta è un elenco di cibi della tabella con i grammi**
+   (chiave `usda-…`), più porzioni, tempi e passi. Calorie e
+   macronutrienti a porzione li calcola l'app coi conti del diario: nei
+   dati delle ricette non c'è nessun numero di calorie. Sale, erbe e
+   spezie stanno nei passi e non sono contati; i passi non nominano mai i
+   grammi.
+3. **Le prime dodici le scrive MuW** (scelta dell'utente, che le ha
+   rilette): preparazioni di casa, e l'app lo dice («Home recipes written
+   by MuW, not by a chef.»). **Niente copiato** da siti o libri, niente
+   foto di altri; il nome di uno chef vero solo con il suo accordo
+   scritto.
+4. **La ricetta si cambia** (grammi, porzioni, ingredienti aggiunti o
+   tolti) e i numeri seguono. La versione dell'utente resta **sul
+   telefono**, con le altre cose di «Nutrition», segnata «Changed by you».
+5. **Nel diario e nel piano entra come i suoi ingredienti**, una porzione,
+   uno per riga, come cibi normali: nessun tipo nuovo di voce, i conti e i
+   file restano quelli di oggi, e l'utente vede e corregge ogni grammo.
+6. **Le due frasi** aprono la posta del telefono verso
+   `hello@getmuw.app` (scelta dell'utente); non mandano niente da sole e
+   **non promettono niente**: la spesa dall'app oggi non c'è.
+7. **Colori**: tre colori nuovi per proteine, carboidrati e grassi (anche
+   nelle barre del diario, scelta dell'utente: cambia il punto 2 della
+   precisazione 5 dove erano «senza colore») e le tinte delle schede, in
+   `theme/tokens.ts`, con un test di contrasto per ognuno. Non sono il
+   giallo del percorso né il rosso e il verde di consumate e mangiate, e
+   non sono mai l'unico segno. I toni li sceglie chi scrive il codice.
+8. Niente di nuovo esce dal telefono: la privacy non cambia.
+
+**Alternative scartate**: una voce «ricetta» nel diario (cambia i file del
+diario e del piano, e nasconde i grammi); calorie scritte nella ricetta
+(numeri a mano, e sbagliati appena la si cambia); ricette prese da un sito
+(testi e foto sono di altri).
+
+**Conseguenze**: il codice in una sessione dedicata, da `main` dopo la
+parte J. Dopo: condividere una ricetta nel Feed con le foto (L2), che
+tocca server e privacy e avrà la sua decisione.
 
 ## ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde; la stima e i 18 anni
 

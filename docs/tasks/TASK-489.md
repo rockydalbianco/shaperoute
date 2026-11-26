@@ -870,10 +870,30 @@ finestre e due mezzi anelli che girano, con le molle di `ui/motion`.
 - `MealCard.tsx`: i cibi in cascata, la figura del pasto. Un tocco leggero
   del telefono quando si aggiunge un cibo.
 
-Da fare prima della «pronta»: la prova al simulatore degli anelli, anche
-con «Riduci movimento», con `NUTRITION_ON` acceso solo in locale (turno
-dal Coordinatore). I colori sono quelli del tema: un colore suo si decide
-davanti alle schermate.
+Prova al simulatore fatta il 2026-11-24 (iPhone 17, `NUTRITION_ON` acceso
+solo in locale): anelli, numeri, barre e settimana si vedono bene, anche
+con «Riduci movimento». Schermate in `out/TASK-489/shots/`.
+
+**I colori (scelta dell'utente del 2026-11-26, davanti alle schermate:
+«Voglio un colore», poi «A: rosso e verde» fra tre proposte)**: le
+consumate in rosso, il colore che le calorie hanno già in tutta l'app
+(`color.energy`); le mangiate in verde, un colore nuovo del tema,
+`color.food`. Gli stessi due colori negli anelli del giorno, nelle
+colonnine della settimana, negli anelli piccoli dell'invito (parte I) e
+nell'esempio dell'ingresso (parte J); le barre di proteine, carboidrati e
+grassi restano neutre. Il colore non è mai il solo segno: accanto a ogni
+anello restano etichetta e numero, con un pallino del suo colore.
+
+- `theme/tokens.ts`: `food`, solo aggiunte (file condiviso, concordato
+  col Coordinatore). I toni li ha scelti l'agente su delega: scuro
+  `#4FD08A` (fino a `#7BE3AA` al passo più chiaro), chiaro
+  `#095428`–`#0F6B35`.
+- `theme/foodContrast.test.ts` (nuovo): a ogni tono e a ogni passo, almeno
+  4,5:1 su `background`, `surface` e `surfaceRaised`, e almeno 3:1 sul
+  binario dell'anello (`border`), per il verde e per il rosso.
+- `theme/palettes.test.ts`: una riga, `food` nella tavolozza attesa.
+
+I colori veri non sono ancora stati visti nel simulatore.
 
 ### I — L'invito a fine attività (richiesta del 2026-11-24)
 
@@ -891,8 +911,34 @@ l'utente». Quattro passi la prima volta: anteprima, regole, domande (perché
 sei qui; hai già un numero; i dati del corpo), punto di partenza. Sul
 numero l'utente ha scelto «MuW», poi «solamente una stima, solo una demo»
 e «è meglio inserire le calorie manualmente»: vedi ADR-0397, precisazione
-5, punto 4. Proposta in `out/TASK-489/PROPOSTA-PARTE-J-INGRESSO.md`. I
-testi non sono ancora scritti. Lista dei file dopo la parte I.
+5, punto 4. Proposta in `out/TASK-489/PROPOSTA-PARTE-J-INGRESSO.md`.
+
+Scritta in locale il 2026-11-24 (ramo `feat/TASK-489-j-welcome`, sopra la
+parte I): schermate e testi nelle cinque lingue approvati dall'utente il
+2026-11-24 (`out/TASK-489/TESTI-PARTE-J.md`), fonti della stima lette e
+citate (`out/TASK-489/FONTI-PARTE-J.md`). La sua PR resta in bozza finché
+la PR di privacy e termini non è in `main`.
+
+**Privacy e termini della stima (testi approvati dall'utente il
+2026-11-26, «Sì, approvo»; `out/TASK-489/TESTI-PRIVACY-TERMINI-PARTE-J.md`)**,
+in una PR sua, nel turno privacy del Coordinatore:
+
+1. privacy, «Nutrition», primo capoverso: resta sul telefono anche il
+   motivo scelto in «What brings you here?»;
+2. privacy, «Nutrition», secondo capoverso: se l'utente la chiede, MuW
+   calcola sul telefono una stima dell'obiettivo di calorie, solo
+   dimostrativa, mai mostrata sotto i 18 anni; «MuW is not made by health
+   professionals»;
+3. termini: sezione nuova «Nutrition» dopo «Safety» (diario e
+   calcolatrice, non un servizio sanitario; stime solo informative; chi
+   deve sentire prima il medico).
+
+File: `apps/mobile/src/about/content/{en,it,de,es,fr}.ts`, i due test
+delle date in `src/about/`, le cinque pagine `site/privacy/**` rigenerate
+con `site/tools/make_privacy.mjs` (un test del sito le vuole uguali
+all'app) e `site/tests/privacy.test.mjs`. Termini e privacy datati 26
+novembre 2026. La copia del sito sul server resta un passo a parte, non
+prima dell'app che porta la stima.
 
 ### K — Il peso (richiesta del 2026-11-24; decisa, non scritta)
 
@@ -1026,6 +1072,16 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 
 ## Registro
 
+- **2026-11-26**: l'utente sceglie i colori degli anelli («rosso e
+  verde»): `color.food` in `theme/tokens.ts`, concordato col Coordinatore,
+  dentro la parte H. Il «Sì, unisci» per C2a (#1563) dato dall'utente al
+  Coordinatore; #1563 riallineata due volte a `main` (conflitto in coda
+  alle tabelle dei testi dopo #1560). Testi di privacy e termini per la
+  stima della parte J approvati dall'utente e aperti come #1619 (armata
+  dal Coordinatore col «Sì, unisci» dell'utente). H, I e J allineate a
+  `main` in locale, non spinte: H si apre quando #1563 è in `main`.
+  G1 è #1552, D2 #1547, la stanza per la barra #1565 (TASK-469), tutte in
+  `main`.
 - **2026-11-24, richieste nuove dell'utente**: D2 (dal profilo), H (la
   pagina animata), I (l'invito a fine attività), J (l'ingresso con le
   domande), K (il peso), le storie di «Longevity» (TASK-513) e la modalità

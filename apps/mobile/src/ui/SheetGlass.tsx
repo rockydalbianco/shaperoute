@@ -1,7 +1,11 @@
-import type { ReactNode } from "react";
-import type { ViewStyle } from "react-native";
+import { type ReactNode, useState } from "react";
+import { StyleSheet, type ViewStyle } from "react-native";
 
+import { glass, radius, tone } from "../theme/tokens";
+import { nativeGlassView } from "./NativeGlass";
 import { useSheetFace } from "./sheetFace";
+import { useGlassMode } from "./useGlassMode";
+import { useReduceMotion } from "./useReduceMotion";
 
 /**
  * A sheet from the bottom that can be made of the phone's real glass
@@ -15,9 +19,55 @@ import { useSheetFace } from "./sheetFace";
  *       {glassBack}
  *       …
  *
- * Until the real glass is here the face is the one of part A and there is
- * nothing behind: a sheet that takes this looks as it did.
+ * Where the phone draws the real glass, the box loses its opaque fill and
+ * the glass fills it behind what the sheet holds: `regular`, never
+ * `clear`, in the app's tone, tinted with the tone's own background as
+ * every piece of real glass, a little more than the bar since a sheet
+ * holds running text (`glass.realSheetTint`), and never in the way of a
+ * touch. Everywhere else — a build without the glass, Android, an iPhone
+ * before iOS 26, «Reduce Transparency», «Increase Contrast» — the face of
+ * part A and nothing behind: the sheet looks as it did.
+ *
+ * With «Reduce Motion» too: there a sheet comes in by fading its opacity
+ * (`SheetModal`), and under an opacity of 0 the phone never draws the
+ * glass — seen in the simulator, the sheet's words lay on the page behind
+ * with nothing under them. So that sheet is the opaque one of part A.
  */
 export function useGlassSheet(): readonly [face: ViewStyle, back: ReactNode] {
-  return [useSheetFace(), null];
+  const mode = useGlassMode();
+  const still = useReduceMotion();
+  const face = useSheetFace();
+  // Looked for once: a phone does not gain the glass while the app is open.
+  const [RealGlass] = useState(() => nativeGlassView());
+  if (RealGlass === null || mode !== "glass" || still) {
+    return [face, null];
+  }
+  return [
+    styles.clear,
+    <RealGlass
+      key="sheet-glass"
+      testID="sheet-glass"
+      pointerEvents="none"
+      glassEffectStyle="regular"
+      colorScheme={tone.tone}
+      tintColor={glass.realSheetTint}
+      style={styles.back}
+    />,
+  ];
 }
+
+const styles = StyleSheet.create({
+  // The sheet's own box under the phone's glass: the corners of part A, no
+  // fill, rim or shadow of ours.
+  clear: {
+    borderTopLeftRadius: radius.card,
+    borderTopRightRadius: radius.card,
+    borderTopWidth: 0,
+    backgroundColor: "transparent",
+  },
+  back: {
+    ...StyleSheet.absoluteFill,
+    borderTopLeftRadius: radius.card,
+    borderTopRightRadius: radius.card,
+  },
+});

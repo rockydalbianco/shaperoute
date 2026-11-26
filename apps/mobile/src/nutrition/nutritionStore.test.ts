@@ -117,6 +117,7 @@ test("the notice read, the target and the corrections are read back", () => {
     target: 1850,
     edits: withActivityKcal(withRest(NO_EDITS, 1540), "run-1", 520),
     invite: { seen: 2, off: true },
+    purpose: "lose" as const,
   };
   expect(saveSettings(settings)).toBe(true);
   expect(disk.files.has(uri(SETTINGS_FILE))).toBe(true);
@@ -187,4 +188,10 @@ test("an invitation's count that does not read is as new", () => {
   expect(settingsFrom({ invite: 7 }).invite).toEqual({ seen: 0, off: false });
   // Settings kept before the invitation existed.
   expect(settingsFrom({ noticeSeen: true }).invite).toEqual({ seen: 0, off: false });
+});
+
+test("a purpose that does not read is none", () => {
+  expect(settingsFrom({ purpose: "gain" }).purpose).toBe("gain");
+  expect(settingsFrom({ purpose: "win" }).purpose).toBeNull();
+  expect(settingsFrom({}).purpose).toBeNull();
 });

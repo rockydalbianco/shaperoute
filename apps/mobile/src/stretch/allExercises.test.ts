@@ -1,5 +1,6 @@
 import { ALL_EXERCISES, exerciseByKey, isMove } from "./allExercises";
 import { EXERCISES, MORE_EXERCISES } from "./exercises";
+import { NEW_EXERCISES } from "./exercisesMore";
 
 /**
  * The keys in use before TASK-520. A saved or published routine names its
@@ -29,6 +30,12 @@ describe("every stretching exercise in one list", () => {
     for (const exercise of MORE_EXERCISES) {
       expect(ALL_EXERCISES).toContain(exercise);
     }
+  });
+
+  it("puts the new exercises after them, so the old ones keep their place", () => {
+    const old = EXERCISES.length + MORE_EXERCISES.length;
+    expect(ALL_EXERCISES.slice(old)).toEqual(NEW_EXERCISES);
+    expect(ALL_EXERCISES).toHaveLength(old + NEW_EXERCISES.length);
   });
 
   it("keeps every key that a saved routine may name", () => {

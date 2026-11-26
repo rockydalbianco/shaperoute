@@ -26,8 +26,12 @@ import { FeedMapShooter } from "../feed/FeedMaps";
 import { color } from "../theme/tokens";
 import { pageName, tourPart, useTourPager } from "../tour/tourParts";
 import { closeTopLayer, OnScreenContext } from "../ui/backLayers";
-import { AppHeader } from "./AppHeader";
-import { HeaderScrollContext, type HeaderScrollReport } from "./headerScroll";
+import { AppHeader, appHeaderHeight, headerFloats } from "./AppHeader";
+import {
+  HeaderFloatsContext,
+  HeaderScrollContext,
+  type HeaderScrollReport,
+} from "./headerScroll";
 import { type BarTab, TabBar, tabBarBand, tabBarFloats } from "./TabBar";
 import { TabBarRoomContext } from "./tabBarRoom";
 import { TabReselect, TabReselectContext } from "./tabReselect";
@@ -177,6 +181,14 @@ export function TabShell({ pages, page, onPage, action }: Props) {
   // own band under the pages, and they end as before.
   const [floats] = useState(tabBarFloats);
   const barRoom = floats ? tabBarBand(insets.bottom) : 0;
+  // The header floats there too (TASK-469 B3). It takes nothing from a
+  // page: each one still starts under it, laid out as before, and only a
+  // scroller that asks (`useUnderHeader`) lets what scrolls up show behind
+  // the glass. So a page that does not ask, or a view a page opens over
+  // itself, is never under the header.
+  const [headerOver] = useState(headerFloats);
+  const [headerHeight, setHeaderHeight] = useState(() => appHeaderHeight(insets.top));
+  const pageTop = headerOver ? { top: headerHeight } : null;
   // One for each page, made the first time it is asked for.
   const [reselects] = useState(() => new Map<string, TabReselect>());
   // The pages scrolled away from their top: the header is in glass over them
@@ -361,6 +373,12 @@ export function TabShell({ pages, page, onPage, action }: Props) {
       <AppHeader
         action={action}
         scrolled={shown !== undefined && awayFromTop.has(shown)}
+        floating={headerOver}
+        onLayout={
+          headerOver
+            ? (event) => setHeaderHeight(event.nativeEvent.layout.height)
+            : undefined
+        }
       />
       <ScrollView
         ref={scroller}
@@ -405,6 +423,7 @@ export function TabShell({ pages, page, onPage, action }: Props) {
                   // as it was left.
                   style={[
                     styles.page,
+                    pageTop,
                     place === undefined
                       ? styles.hidden
                       : { left: place * width, width },
@@ -416,7 +435,9 @@ export function TabShell({ pages, page, onPage, action }: Props) {
                     <OnScreenContext.Provider value={onScreen}>
                       <TabReselectContext.Provider value={reselectOf(each.title)}>
                         <HeaderScrollContext.Provider value={reportOf(each.title)}>
-                          {each.render()}
+                          <HeaderFloatsContext.Provider value={headerOver}>
+                            {each.render()}
+                          </HeaderFloatsContext.Provider>
                         </HeaderScrollContext.Provider>
                       </TabReselectContext.Provider>
                     </OnScreenContext.Provider>

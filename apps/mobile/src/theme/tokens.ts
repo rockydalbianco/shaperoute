@@ -413,6 +413,15 @@ export const GLASS_VEIL = 0.88;
  */
 export const REAL_GLASS_TINT = 0.6;
 
+/**
+ * How much more of the tone's background a sheet of real glass takes than
+ * the tab bar (TASK-469 B4, the user's choice of 2026-11-27, «Sì,
+ * avanti»). A sheet holds running text and its secondary text: with the
+ * bar's tint the comments kept 10:1 over a white photo in the dark tone,
+ * but «Reply» and the time fell just short, at 4.3–4.4:1.
+ */
+export const REAL_GLASS_SHEET_EXTRA = 0.1;
+
 /** The colours of the glass in a tone (TASK-469, ADR-0383). */
 export type GlassColors = {
   /** The tint: the tone's background. */
@@ -432,6 +441,9 @@ export type GlassColors = {
   /** Over the phone's real glass: the tint at `REAL_GLASS_TINT`, as
    * `#RRGGBBAA`. Never yellow. */
   readonly realTint: string;
+  /** Over the real glass of a sheet: the tint `REAL_GLASS_SHEET_EXTRA`
+   * stronger, still under the veil. Never yellow. */
+  readonly realSheetTint: string;
 };
 
 /** `share` (0–1) as the two hex digits of an alpha. */
@@ -510,6 +522,9 @@ export function glassOf(choice: ToneChoice): GlassColors {
     shadow: `${FIXED.scrim}${alphaHex(dark ? 0.55 : 0.16)}`,
     selected: `${palette.text}${alphaHex(0.12)}`,
     realTint: `${palette.background}${alphaHex(realTintShare(palette))}`,
+    realSheetTint: `${palette.background}${alphaHex(
+      Math.min(realTintShare(palette) + REAL_GLASS_SHEET_EXTRA, GLASS_VEIL - 0.02),
+    )}`,
   };
 }
 

@@ -1887,6 +1887,44 @@ export const FR: Table = {
   "Knee hug": "Genou à la poitrine",
   "Stand on one leg. Hug the other knee to your chest.":
     "Tenez-vous sur une jambe. Ramenez l'autre genou contre la poitrine.",
+  // src/stretch, the new exercises (TASK-520 part B)
+  "Thread the needle": "Enfiler l'aiguille",
+  "On all fours, slide one arm under your body. Rest your shoulder down.":
+    "À quatre pattes, glissez un bras sous le corps. Posez l'épaule au sol.",
+  "Side child's pose": "Posture de l'enfant sur le côté",
+  "From child's pose, walk both hands to one side. Breathe into your ribs.":
+    "Depuis la posture de l'enfant, déplacez les mains d'un côté. Respirez dans les côtes.",
+  "Wrist stretch, palm up": "Étirement du poignet, paume vers le haut",
+  "Arm straight, palm up. Gently pull your fingers back with the other hand.":
+    "Bras tendu, paume vers le haut. Tirez doucement les doigts vers vous avec l'autre main.",
+  "Wrist stretch, palm down": "Étirement du poignet, paume vers le bas",
+  "Arm straight, palm down. Gently press the back of your hand toward you.":
+    "Bras tendu, paume vers le bas. Poussez doucement le dos de la main vers vous.",
+  "Biceps stretch": "Étirement du biceps",
+  "Palm on a wall behind you, arm straight. Turn your chest away.":
+    "Paume contre un mur derrière vous, bras tendu. Tournez la poitrine de l'autre côté.",
+  "Doorway chest stretch": "Étirement de la poitrine à la porte",
+  "Forearm on a door frame, elbow at shoulder height. Step through gently.":
+    "Avant-bras contre le cadre de la porte, coude à hauteur d'épaule. Avancez doucement d'un pas.",
+  Sphinx: "Sphinx",
+  "Lie on your belly, forearms down. Lift your chest gently.":
+    "Allongez-vous sur le ventre, avant-bras au sol. Soulevez doucement la poitrine.",
+  "Seated twist": "Torsion assise",
+  "Sit tall, one knee bent over the other leg. Turn toward the bent knee.":
+    "Asseyez-vous bien droit, un genou plié par-dessus l'autre jambe. Tournez vers le genou plié.",
+  "Lizard lunge": "Fente du lézard",
+  "From a low lunge, both hands inside your front foot. Sink your hips.":
+    "Depuis une fente basse, les deux mains à l'intérieur du pied avant. Laissez descendre les hanches.",
+  "Deep squat": "Squat profond",
+  "Feet wide, sink low, heels down. Elbows press your knees open.":
+    "Pieds écartés, descendez bas, talons au sol. Les coudes écartent les genoux.",
+  "Seated figure four": "Figure en quatre assise",
+  "Sit on a chair, ankle over the other knee. Lean forward, back long.":
+    "Assis sur une chaise, une cheville sur l'autre genou. Penchez-vous en avant, dos long.",
+  "Bent-knee calf stretch": "Mollet genou plié",
+  "Step back, bend both knees. Keep the back heel down.":
+    "Reculez d'un pas, pliez les deux genoux. Gardez le talon arrière au sol.",
+  // end of TASK-520 part B
   Morning: "Matin",
   "After run": "Après la course",
   "After gym": "Après la salle",
@@ -3471,8 +3509,6 @@ export const FR: Table = {
   "(set by you)": "(fixé par toi)",
   Left: "Restent",
   "kcal a day": "kcal par jour",
-  "Your own number, or the one your dietitian gave you. MuW never suggests one.":
-    "Ton propre chiffre, ou celui que ton diététicien t'a donné. MuW n'en propose jamais.",
   "Remove target": "Retirer l'objectif",
   Breakfast: "Petit-déjeuner",
   Lunch: "Déjeuner",
@@ -3734,4 +3770,50 @@ export const FR: Table = {
     "Écris ton propre plan alimentaire et ce que tu manges : MuW estime les calories que tu manges et celles que tu dépenses, cette activité comprise.",
   "This activity: {kcal} kcal (est.)": "Cette activité : {kcal} kcal (est.)",
   "Add what you ate": "Ajoute ce que tu as mangé",
+  // src/nutrition (TASK-489 part J: the door of Nutrition and MuW's estimate; approved by the user on 2026-11-24)
+  "Your food diary: what you eat, what you use, and the balance.":
+    "Ton journal alimentaire : ce que tu manges, ce que tu dépenses et le bilan.",
+  Example: "Exemple",
+  "Write your plan": "Écris ton plan",
+  "Your own diet, or your dietitian's, day by day.":
+    "Ton propre plan, ou celui de ton diététicien, jour après jour.",
+  "Log what you eat": "Note ce que tu manges",
+  "Foods and grams: MuW estimates the calories.":
+    "Aliments et grammes : MuW estime les calories.",
+  "See your balance": "Regarde ton bilan",
+  "Eaten less used, with all your activities.":
+    "Mangées moins dépensées, avec toutes tes activités.",
+  "Next@@step": "Suivant",
+  "What brings you here?": "Qu'est-ce qui t'amène ?",
+  "Keep track of what I eat": "Suivre ce que je mange",
+  "Lose weight": "Perdre du poids",
+  "Gain weight": "Prendre du poids",
+  "Follow my dietitian's plan": "Suivre le plan de mon diététicien",
+  "You can skip this: it only changes what the page shows first.":
+    "Tu peux passer : cela change seulement ce que la page montre en premier.",
+  "To estimate, MuW needs your weight, height, year of birth and sex. They stay on your phone.":
+    "Pour estimer, MuW a besoin de ton poids, de ta taille, de ton année de naissance et de ton sexe. Ils restent sur ton téléphone.",
+  "You use about {kcal} kcal a day (est.)":
+    "Tu dépenses environ {kcal} kcal par jour (est.)",
+  "Eating less than you use is a deficit; more is a surplus.":
+    "Manger moins que ce que tu dépenses est un déficit ; plus, un surplus.",
+  "Best: write your own number, or your dietitian's.":
+    "Le mieux : écris ton propre chiffre, ou celui de ton diététicien.",
+  "See MuW's estimate (demo)": "Voir l'estimation de MuW (démo)",
+  "MuW's estimate: {kcal} kcal a day": "Estimation de MuW : {kcal} kcal par jour",
+  "A rough estimate from a public formula, only a demonstration. MuW is not made by health professionals: this is not medical advice.":
+    "Une estimation approximative à partir d'une formule publique, à titre de démonstration seulement. MuW n'est pas faite par des professionnels de santé : ce n'est pas un avis médical.",
+  "If you are pregnant or breastfeeding, have an illness, or have or had an eating disorder, this number is not for you: ask your doctor.":
+    "Si tu es enceinte ou si tu allaites, si tu as une maladie, ou si tu as ou as eu un trouble alimentaire, ce chiffre n'est pas pour toi : demande à ton médecin.",
+  "Use this number": "Utiliser ce chiffre",
+  "I'll write my own": "J'écris le mien",
+  "MuW suggests no calorie number to people under 18.":
+    "MuW ne propose pas de chiffre de calories aux moins de 18 ans.",
+  "From your data MuW suggests no number for this. Talk to your doctor or a dietitian.":
+    "D'après tes données, MuW ne propose pas de chiffre pour cela. Parles-en à ton médecin ou à un diététicien.",
+  "Start@@nutrition": "Commencer",
+  "MuW's estimate of a daily target (demo)":
+    "L'estimation de MuW pour l'objectif du jour (démo)",
+  "A usual day is the average of what you used in your last seven days. To lose weight MuW takes 600 kcal a day off it, the amount the NHS gives, only for adults with a body mass index of 25 or more, and never below 1,400 kcal a day for women or 1,900 for men (NHS 12-week weight loss plan). To gain weight MuW suggests no number. Sources read on 24 November 2026. MuW is not made by health professionals: better to write your own number, or your dietitian's.":
+    "Une journée habituelle est la moyenne de ce que tu as dépensé ces sept derniers jours. Pour perdre du poids, MuW en retire 600 kcal par jour, la quantité indiquée par le NHS, uniquement pour les adultes dont l'indice de masse corporelle est de 25 ou plus, et jamais en dessous de 1 400 kcal par jour pour les femmes ou 1 900 pour les hommes (plan du NHS de 12 semaines pour perdre du poids). Pour prendre du poids, MuW ne propose aucun chiffre. Sources lues le 24 novembre 2026. MuW n'est pas faite par des professionnels de santé : mieux vaut écrire ton propre chiffre, ou celui de ton diététicien.",
 };

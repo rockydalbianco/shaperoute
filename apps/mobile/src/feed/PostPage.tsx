@@ -39,6 +39,7 @@ import { type PostSection, postSections } from "./postSections";
 import { PostSettings } from "./PostSettings";
 import { PostSheet } from "./PostSheet";
 import { PostSplits } from "./PostSplits";
+import { PostWeather } from "./PostWeather";
 import { RouteMap } from "./RouteMap";
 import { useDoubleTap } from "./useDoubleTap";
 import { usePostStats } from "./usePostStats";
@@ -235,8 +236,18 @@ function Page({ post, onClose, onMap }: Props) {
 }
 
 /** What a card holds under its title: rows, two to a line; the table of
- * the splits; the profile. */
+ * the splits; the profile; the weather. */
 function SectionBody({ section }: { section: PostSection }) {
+  if (section.kind === "weather") {
+    return (
+      <PostWeather
+        sign={section.sign}
+        temperature={section.temperature}
+        wind={section.wind}
+        label={section.label}
+      />
+    );
+  }
   if (section.kind === "splits") {
     return (
       <PostSplits unit={section.unit} rows={section.rows} fastest={section.fastest} />

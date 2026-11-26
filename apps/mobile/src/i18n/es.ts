@@ -3617,4 +3617,7 @@ export const ES: Table = {
   Admin: "Admin",
   "Co-admin": "Coadmin",
   "This group isn't available.": "Este grupo no está disponible.",
+  // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
+  Weather: "Tiempo",
+  "Weather: {temperature}, wind {speed}": "Tiempo: {temperature}, viento {speed}",
 };

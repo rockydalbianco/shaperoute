@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A7c-3 in produzione con l'OTA 25); B avviata il 2026-11-24, a fette: la barra galleggia solo col vetro vero (utente, 2026-11-26), B1 e B2 in bozza fino al taglio nativo
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva; A finita con A7c-4 il 2026-11-26 (A1–A7c-3 in produzione con l'OTA 25); B a fette, in bozza fino al taglio nativo: la barra galleggia solo col vetro vero, velata col fondo del tono perché tenga 4,5:1 (utente, 2026-11-26), l'header in bozza, i fogli fermi alla prova
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -3801,6 +3801,33 @@ dichiarati «Sufficient Contrast» e il tema scuro.
   OTA porta la barra che galleggia a una build che non ha il modulo. La
   scelta di quando galleggia è dell'utente; il resto è deciso
   dall'agente su delega dell'utente.
+- **Parte B, il contrasto sul vetro vero (2026-11-26)**: misurata nel
+  simulatore nei casi peggiori, la barra in vetro vero non teneva 4,5:1
+  (icone a 1,8:1 sopra una foto bianca nel tono scuro): il vetro di iOS
+  prende luce da quello che ha dietro e i segni dell'app tengono il loro
+  colore. L'utente ha scelto di provare una velatura («Prova la
+  velatura»). Il vetro vero prende quindi il fondo del tono
+  (`glass.realTint`): il 60 %, o la quota appena sopra a cui il testo
+  tiene 4,5:1 sulla sola velatura sopra una foto bianca e una nera, mai
+  vicino all'88 % del velo della parte A; e sul vetro vero i segni sono
+  nel colore pieno del testo, mai nel secondario. Il test dei token
+  controlla solo il pavimento (la velatura senza il vetro): la misura
+  vera resta quella sulle schermate, da rifare a questa quota. Il foglio
+  dei commenti in vetro vero non teneva 4,5:1 nemmeno lui (testo 3,6:1,
+  scritte secondarie 1,5:1): B4 è ferma alla prova su due fogli. Deciso
+  dall'agente su delega dell'utente; provare la velatura è una scelta
+  dell'utente.
+- **Parte B, l'header (2026-11-26)**: galleggia dove galleggia la barra.
+  Lo shell continua a lasciare a ogni pagina lo spazio dell'header: non
+  sposta le pagine sotto la fascia. Solo lo scroller principale che lo
+  chiede (`useUnderHeader()`) smette di tagliare quello che gli esce in
+  alto, e il contenuto si vede passare dietro il vetro. Scartato dare
+  allo scroller un margine interno in alto: ogni cosa che una pagina apre
+  sopra di sé, e ogni pagina con qualcosa di fisso in cima, sarebbe
+  finita sotto l'header finché qualcuno non se ne accorgeva. La fascia in
+  vetro si accende e si spegne col suo stesso interruttore
+  (`glassEffectStyle`), non con l'opacità, che a 0 ferma il vetro. Deciso
+  dall'agente su delega dell'utente.
 
 **Conseguenze**: la A arriva in fette piccole dopo l'aggiornamento
 completo, prima i token e `src/ui/Glass.tsx`; l'impronta iOS resta
@@ -3922,6 +3949,12 @@ righe: `collapsable={false}` sulla radice di `TabShell`, che chiude lo
 in `ProfileLayer` che conta anche «Messages», così sotto una
 conversazione l'app è nascosta al lettore di schermo come sotto ogni
 altra pagina. Deciso dall'agente su delega dell'utente.
+**A7c-4 (#1624)**: i chip delle opzioni di volo prendono il rilievo come
+gli altri, ma nel vetro dell'aspetto del volo e non del tono dell'app: la
+schermata del volo ha un suo «Dark» e «Sunlight», e un'app scura col volo
+in chiaro avrebbe messo l'ombra pesante del tono scuro sotto chip su
+pagina bianca. `paletteFor` ricorda il vetro di ogni palette che crea.
+Con questa la parte A è finita. Deciso dall'agente su delega dell'utente.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

@@ -69,9 +69,9 @@ motore, col giro di sempre. Nessuna coordinata nasce fuori dal motore.
 
 Una per volta, ognuna con la sua proposta.
 
-1. Dove sta l'ingresso. — *chiesta il 2026-11-26*
+1. Dove sta l'ingresso. — *risposta il 2026-11-26*
 2. Cosa fa il tocco: riempie forma e distanza e aspetta «Draw route», o
-   disegna subito.
+   disegna subito. — *chiesta il 2026-11-26*
 3. Cosa è a caso: solo la forma o anche la distanza, e fra quali km.
 4. Cosa promette «viene bene» e cosa succede quando il risultato è scarso.
 5. Per quali sport.
@@ -83,7 +83,12 @@ percorsi vicini è quella di «Explore»).
 
 ## Risposte dell'utente
 
-—
+1. **Dove sta l'ingresso: «Nel passo 2 di Draw»** (2026-11-26). Una
+   pastiglia «Surprise me» sulla riga del titolo «2 WHAT YOU DRAW», a
+   destra: dove uno non sa cosa scegliere, in vista senza scorrere.
+   Scartate: una tessera nella griglia delle forme (toglie una forma alla
+   griglia chiusa), una riga sotto la distanza (da cercare scorrendo), una
+   scheda anche in «Explore».
 
 ## File toccati
 
@@ -108,3 +113,4 @@ Coordinatore prima del codice. Vicini: `RoutePanel.tsx` e una riga di
 
 - 2026-11-26 — parte 0 avviata: letto il codice, scritta questa bozza,
   chiesta la domanda 1.
+- 2026-11-26 — risposta 1 («Nel passo 2 di Draw»); chiesta la domanda 2.

@@ -70,6 +70,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   d'inverno, feste e sport e i 35 contorni di TASK-418. A sagome (file
   nuovi), B strade, C registrazione (PR unita dall'utente, server e OTA
   insieme), D catalogo. File: — · `tasks/TASK-516.md`
+- **TASK-507 — I dati del telefono restano di chi li ha fatti** · ADR-0406;
+  A + C, D, B1 e B2 in `main` (#1533, #1545, #1546, #1573), il 2026-11-26
+  la PR di documenti. Resta la prova dell'utente con due account dopo
+  l'OTA (`PROVA-GENERALE.md`, sezione 2), poi la chiusura.
+  File: — · `tasks/TASK-507.md`
 - **TASK-214 — Il motore dei percorsi sul telefono** · A, B, C, A2, B2 in
   `main`; restano tempi e memoria su un iPhone vero e le zone dove il server
   dà 404. File: — · `tasks/TASK-214.md`

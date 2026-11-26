@@ -1931,9 +1931,16 @@ l'app, come «Find friends»:
   sent. You can write again when {name} accepts it.»; per una richiesta
   ricevuta, «{name} wants to send you a message.» e i tre tasti «Accept»,
   «Delete», «Block» (rosso; chiede prima, con il testo del blocco).
-  «Delete» chiude la conversazione. Si rilegge ogni 5 secondi mentre è
-  aperta, e quando l'app torna sullo schermo; l'altro che scrive la segna
-  letta (nessuna conferma all'altro).
+  «Delete» chiude la conversazione. Mentre è aperta chiede **solo i
+  messaggi nuovi** (TASK-498, scelta dell'utente del 2026-11-26): ogni 5
+  secondi finché ci si scrive; dopo un minuto senza messaggi ogni 15
+  secondi, dopo cinque minuti ogni 30; torna a 5 secondi quando arriva un
+  messaggio, quando se ne manda uno e quando l'app torna sullo schermo. La
+  pagina intera si rilegge all'apertura, al ritorno nell'app e una volta
+  al minuto: è lei a portare un messaggio cancellato dall'altro, il suo
+  nome e la sua foto, una scheda cambiata. Una risposta che non cambia
+  niente non ridisegna la schermata. Con l'app dietro non chiede; l'altro
+  che scrive la segna letta (nessuna conferma all'altro).
 - **Una conversazione senza messaggi** (TASK-458, scelta dell'utente): al
   centro la foto e il nome, «Say hi to {name}.» e tre spunti a capsula —
   «Hi {name}!», «I like your drawings», «Shall we run together?» — che

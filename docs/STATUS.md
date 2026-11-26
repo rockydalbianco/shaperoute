@@ -248,12 +248,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   TASK-449 in `main`); il codice parte al «via» del Coordinatore.
   File: quelli di A, B e C nel task file · `tasks/TASK-509.md`
 
-- **TASK-448 — «Surprise me»** · parte 0 chiusa il 2026-11-26 (sei scelte
-  dell'utente): una pastiglia nel passo 2 di «Draw» mette forma e distanza
-  fra quelle venute bene in città, dal catalogo di «Explore»; a piedi e in
-  bici, motore non toccato. Poi A (la scelta, file nuovi) e B (la
-  pastiglia, dopo TASK-449 A). File: — · `tasks/TASK-448.md`
-
 In attesa (Fermo — in attesa nel task file, nessun file occupato; si
 riprendono col sì dell'utente). Aspettano la società o servizi esterni:
 TASK-153 AdMob vero, 237 B il merch, 312 D ed E (le attività da Apple Salute e

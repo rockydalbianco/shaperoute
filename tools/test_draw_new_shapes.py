@@ -50,7 +50,7 @@ def test_the_user_chose_forty_nine_shapes_in_five_groups() -> None:
 
 
 def test_only_the_approved_shapes_are_in_the_catalogue() -> None:
-    assert len(APPROVED) == 14
+    assert len(APPROVED) == 14 + 25
     assert APPROVED <= set(NAMES)
     assert set(NAMES) & set(SHAPES) == APPROVED
 

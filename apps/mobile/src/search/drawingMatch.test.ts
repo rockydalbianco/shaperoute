@@ -59,7 +59,9 @@ test("capitals and accents do not count, as on the API", () => {
 test("the words name the shapes in the app's language, and the categories", () => {
   saveLanguageChoice("it");
   expect(namedShapes(["cuore"])).toEqual(["heart"]);
-  expect(namedShapes(["cane"])).toEqual(["dog_head"]);
+  // «cane» is also in «candy cane» (TASK-516): the search matches pieces of
+  // words, so the candy cane comes with the dog.
+  expect(namedShapes(["cane"])).toEqual(["dog_head", "candy_cane"]);
   // «Animali»: every animal of the catalogue.
   expect(namedShapes(["animali"])).toEqual(
     expect.arrayContaining(["horse", "cat", "fish", "dog_head"]),

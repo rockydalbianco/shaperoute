@@ -24,21 +24,29 @@ export function useCompass(on: boolean): CompassReading | null {
     }
     let live = true;
     let subscription: Location.LocationSubscription | null = null;
-    Location.watchHeadingAsync(({ trueHeading, magHeading, accuracy }) => {
-      if (!live) {
-        return;
-      }
-      const next: CompassReading = {
-        trueHeading,
-        magHeading,
-        accuracy,
-        atMs: Date.now(),
-      };
-      if (keepReading(kept.current, next)) {
-        kept.current = next;
-        setReading(next);
-      }
-    })
+    let watching: Promise<Location.LocationSubscription>;
+    try {
+      watching = Location.watchHeadingAsync(({ trueHeading, magHeading, accuracy }) => {
+        if (!live) {
+          return;
+        }
+        const next: CompassReading = {
+          trueHeading,
+          magHeading,
+          accuracy,
+          atMs: Date.now(),
+        };
+        if (keepReading(kept.current, next)) {
+          kept.current = next;
+          setReading(next);
+        }
+      });
+    } catch {
+      // An expo-location without a compass at all (TASK-519): null, as a
+      // phone that refuses.
+      return;
+    }
+    watching
       .then((made) => {
         if (live) {
           subscription = made;

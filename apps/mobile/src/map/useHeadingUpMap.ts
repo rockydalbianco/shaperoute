@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { mapHeading, shouldTurn, type Turned } from "../navigation/headingUp";
+import { usePocketOn } from "../navigation/pocketOn";
 import { useRunPage } from "../navigation/runPage";
 import { useCompass } from "../navigation/useCompass";
 import type { Turn, TurnedMap } from "./turnedMap";
@@ -22,8 +23,10 @@ export type HeadingUpMap = TurnedMap & {
   /** On «Compass», north was put up by a tap: the map is not turning. */
   northUp: boolean;
   /** On «Compass», the direction the map last turned to (TASK-431): the
-   * runner's arrow points there, up on the screen. Null off the page, with
-   * north up, and before the first direction. */
+   * runner's arrow points there, up on the screen. On «Map», where the
+   * phone points while the map keeps the drawing's turn (TASK-519). Null on
+   * «Data», under pocket mode, with north up, off the run, and before the
+   * first direction. */
   facing: number | null;
 };
 
@@ -34,14 +37,19 @@ export type HeadingUpMap = TurnedMap & {
  * a turn asked of the map; a tap on the north arrow puts north up and keeps
  * it, the next tap turns heading-up again. Off the page, or at the end of
  * the run, the map goes back to the drawing's bearing and the arrow is the
- * drawing's again.
+ * drawing's again. On «Map» (TASK-519) the compass stays on for the arrow
+ * alone: it points where the phone does, with its cone, and the map does
+ * not turn; under pocket mode, where nobody sees it, the compass rests.
  */
 export function useHeadingUpMap(turned: TurnedMap, run: RunHeading): HeadingUpMap {
   const page = useRunPage();
+  const pocket = usePocketOn();
   const on = run.on && page === "compass";
+  // «Map» (TASK-519): the arrow faces where the phone points, the map not.
+  const facingOnly = run.on && page === "map" && !pocket;
   // North up, asked by a tap: the compass is let go until the next one.
   const [northUp, setNorthUp] = useState(false);
-  const compass = useCompass(on && !northUp);
+  const compass = useCompass((on && !northUp) || facingOnly);
   // The turn asked of the map last, whoever asked it: the drawing's arrow
   // off this page, the compass on it. The drawing's is taken as it comes.
   const [latest, setLatest] = useState<Turn | null>(turned.turn);
@@ -53,28 +61,45 @@ export function useHeadingUpMap(turned: TurnedMap, run: RunHeading): HeadingUpMa
   const last = useRef<Turned | null>(null);
   // The direction of the last turn, for the arrow (TASK-431).
   const [facing, setFacing] = useState<number | null>(null);
-  // Since when the page is open: a reading of before does not count.
+  // Since when a page with the arrow's direction is open, «Compass» or
+  // «Map» one after the other: a reading of before does not count.
   const openedAt = useRef<number | null>(null);
+  const seen = on || facingOnly;
+  // Whether the map was turned heading-up: leaving «Compass» turns it back.
+  const turning = useRef(false);
 
-  // The page opened: heading-up starts afresh. Left, or the run over: the
-  // map as it was.
+  // Neither page open: the arrow is the line run's again.
   useEffect(() => {
-    if (on) {
-      openedAt.current = Date.now();
+    if (seen) {
+      openedAt.current ??= Date.now();
       return;
     }
     if (openedAt.current !== null) {
       openedAt.current = null;
       last.current = null;
       setFacing(null);
+    }
+  }, [seen]);
+
+  // «Compass» opened: heading-up starts afresh, the map turned at once.
+  // Left, or the run over: the map as it was.
+  useEffect(() => {
+    if (on) {
+      turning.current = true;
+      last.current = null;
+      return;
+    }
+    if (turning.current) {
+      turning.current = false;
+      last.current = null;
       setNorthUp(false);
       setLatest({ bearing: turned.bearing });
     }
   }, [on, turned.bearing]);
 
-  // Each reading, and each fix: maybe a turn.
+  // Each reading, and each fix: maybe a turn, or on «Map» the arrow alone.
   useEffect(() => {
-    if (!on || northUp) {
+    if (on ? northUp : !facingOnly) {
       return;
     }
     const nowMs = Date.now();
@@ -88,10 +113,12 @@ export function useHeadingUpMap(turned: TurnedMap, run: RunHeading): HeadingUpMa
     });
     if (chosen !== null && shouldTurn(last.current, chosen.deg, nowMs)) {
       last.current = { deg: chosen.deg, atMs: nowMs };
-      setLatest({ bearing: chosen.deg });
+      if (on) {
+        setLatest({ bearing: chosen.deg });
+      }
       setFacing(chosen.deg);
     }
-  }, [on, northUp, compass, run.trackDeg, run.lastFixMs]);
+  }, [on, facingOnly, northUp, compass, run.trackDeg, run.lastFixMs]);
 
   const onArrow = useCallback(() => {
     last.current = null;
@@ -106,7 +133,13 @@ export function useHeadingUpMap(turned: TurnedMap, run: RunHeading): HeadingUpMa
   }, [northUp]);
 
   if (!on) {
-    return { ...turned, turn: latest, compass: false, northUp: false, facing: null };
+    return {
+      ...turned,
+      turn: latest,
+      compass: false,
+      northUp: false,
+      facing: facingOnly ? facing : null,
+    };
   }
   return {
     bearing: turned.bearing,

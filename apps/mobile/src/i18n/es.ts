@@ -3332,6 +3332,7 @@ export const ES: Table = {
     "Crea una cuenta para recibir consejos de tus entrenamientos",
   "Log a few workouts and your tips will show up here":
     "Registra algunos entrenamientos y aquí aparecerán tus consejos",
+  "Go to your workouts": "Ir a tus entrenamientos",
   "Tips are general, not medical advice. If something hurts, stop and ask a professional.":
     "Son consejos generales, no consejo médico. Si algo te duele, para y consulta a un profesional.",
   "{exercise}: {kg} kg": "{exercise}: {kg} kg",

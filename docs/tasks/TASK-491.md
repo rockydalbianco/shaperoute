@@ -1,6 +1,7 @@
 # TASK-491 — Il Coach MuW: consigli dagli allenamenti fatti e la scheda che cambia con «Apply»
 
 **Stato**: Done (2026-11-23: parti 0, A, B e C in `main`)
+**Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-491-coach`
 **Dipende da**: TASK-488 (la scheda si adatta, ADR-0396: i passi `adapt`

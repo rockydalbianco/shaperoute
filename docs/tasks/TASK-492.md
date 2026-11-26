@@ -2,6 +2,7 @@
 
 **Stato**: Done · 2026-11-23 · #1487 in `main` (82405767); esce col prossimo OTA
 («Uscita e prova»)
+**Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `feat/TASK-492-delete-plan-in-edit`
 **Dipende da**: TASK-433 (schede guidate)
 **ADR**: nessuno (un ingresso in più a una cosa che c'è già) · numero dal

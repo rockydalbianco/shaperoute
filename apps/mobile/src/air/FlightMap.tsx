@@ -12,6 +12,7 @@ import { buildFlightMapPage, parseFlightMapMessage } from "./flightMapPage";
 import { setFlightMapPrefs, useFlightMapPrefs } from "./flightMapPrefs";
 import { addManualWaypoint, useManualWaypoints } from "./manualWaypoints";
 import { MapPointSheet } from "./MapPointSheet";
+import { useSiteLandings } from "./siteLandings";
 import { waypointFeatures } from "./waypointMapData";
 import { useWaypoints } from "./waypointStore";
 
@@ -147,17 +148,21 @@ export function FlightMap({
   // either changes; a long press on the map offers to add one.
   const fromFile = useWaypoints();
   const manual = useManualWaypoints();
+  const sites = useSiteLandings();
   const [pressed, setPressed] = useState<LatLon | null>(null);
   useEffect(() => {
     if (ready) {
       call(
         view.current,
         `window.flight.setWaypoints(${JSON.stringify(
-          waypointFeatures(fromFile?.waypoints ?? [], manual),
+          waypointFeatures(
+            [...(fromFile?.waypoints ?? []), ...(sites?.landings ?? [])],
+            manual,
+          ),
         )});`,
       );
     }
-  }, [ready, fromFile, manual]);
+  }, [ready, fromFile, manual, sites]);
 
   const buttons = height >= BUTTONS_MIN_HEIGHT;
   const button = [

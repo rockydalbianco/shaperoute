@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
@@ -16,6 +16,7 @@ import { FlightScreen, GLOVE_TARGET } from "./FlightScreen";
 import { markPhase, usePhaseMarks } from "./phaseMarks";
 import { useFlightScreen } from "./useFlightScreen";
 import { useAirspaceAlert } from "./useAirspaceAlert";
+import { refreshSiteLandings } from "./siteLandings";
 import { useTurnpointCall } from "./useTurnpointCall";
 import { useVarioSound } from "./useVarioSound";
 
@@ -73,6 +74,17 @@ export function FlightLive({ track, live }: { track: Track; live: boolean }) {
   useAirspaceAlert({ track, nowMs: now, sounding: live && !paused && phase === "air" });
   // The pilot's task (part D2): each turnpoint taken said aloud, the same way.
   useTurnpointCall({ track, takeoffMs, sounding: live && !paused && phase === "air" });
+  // The OSM landings around the take-off (part D6): asked once a flight,
+  // at its first fix, while there is still network on the hill.
+  const asked = useRef<number | null>(null);
+  const first = track.fixes[0] ?? null;
+  useEffect(() => {
+    if (!live || first === null || asked.current === first.timeMs) {
+      return;
+    }
+    asked.current = first.timeMs;
+    void refreshSiteLandings(first.point, Date.now());
+  }, [live, first]);
   const sharing = useLiveShare().kind === "sharing";
   const screen = live ? (
     <>

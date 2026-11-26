@@ -48,11 +48,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-494 — Le scadenze della vela** (ADR-0401) · parte 0 il
   2026-11-23: revisione, riserva e imbrago sull'attrezzatura di 486, con
   l'avviso; scelte dell'utente fatte. File: — · `tasks/TASK-494.md`
-- **TASK-485 — La scheda della palestra come post** (ADR-0394) · 0 e A in
-  `main`, A sul server (passo 18); B (#1414) e B2, la voce del «+» (#1431,
-  `ed0bd4d7`), la privacy (#1469, `5d226b33`) e C, l'apertura da profilo,
-  notifica o link (#1481, `2a5c7590`), in `main`; restano la copia del sito
-  e l'OTA, col sì. File: — · `tasks/TASK-485.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
   ADR-0397; A1–D e la privacy in `main`, spente (`NUTRITION_ON`). In fila:
   D2 = #1547, G1, C2a, H (pagina animata), I (invito a fine attività);
@@ -65,21 +60,16 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-514 — La modalità «Nutrition»** · ADR-0408; parte 0 chiusa il
   2026-11-24; parte dopo TASK-490 D ed E, in una sessione sua. File: — ·
   `tasks/TASK-514.md`
-- **TASK-515 — Le email dell'account in produzione («Forgot password?»)** ·
-  ADR-0410; parte 0 il 2026-11-24: il server non ha mai avuto Resend; scelte
-  dell'utente fatte (solo email dell'account, segnalazioni e feedback).
-  Poi A (i due giri a parte), Resend dell'utente, il passo sul server.
-  File: — · `tasks/TASK-515.md`
 - **TASK-516 — Forme invernali e contorni** · ADR-0411; parte 0 il
   2026-11-24 (la C di TASK-441, scelta dell'utente): 11 forme nuove
   d'inverno, feste e sport e i 35 contorni di TASK-418. A sagome (file
   nuovi), B strade, C registrazione (PR unita dall'utente, server e OTA
   insieme), D catalogo. File: — · `tasks/TASK-516.md`
-- **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
-  scelte dell'utente, ADR-0393); poi A server … G avviso, file al
-  Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`
-  2026-11-23: A–G e la privacy in `main` (G2 con #1536), spenta
-  (`GEAR_ON = false`); restano G1 sul server e l'accensione col sì dell'utente.
+- **TASK-507 — I dati del telefono restano di chi li ha fatti** · ADR-0406;
+  A + C, D, B1 e B2 in `main` (#1533, #1545, #1546, #1573), il 2026-11-26
+  la PR di documenti. Resta la prova dell'utente con due account dopo
+  l'OTA (`PROVA-GENERALE.md`, sezione 2), poi la chiusura.
+  File: — · `tasks/TASK-507.md`
 - **TASK-214 — Il motore dei percorsi sul telefono** · A, B, C, A2, B2 in
   `main`; restano tempi e memoria su un iPhone vero e le zone dove il server
   dà 404. File: — · `tasks/TASK-214.md`
@@ -87,9 +77,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   cancellazione online); restano la prova su un Android vero, l'URL nella
   Play Console e l'uscita su Play («Prossimo passo»). File: — ·
   `tasks/TASK-294.md`
-- **TASK-297 — Archivio dei percorsi e loghi a penna alzata** · A e A2 fatte;
-  C (motore) nella PR #547; poi C2. File: — · `tasks/TASK-297.md`
-  **2026-11-10**: C (motore) in `main` con la #547; resta C2 (API e app).
 - **TASK-309 — Le corse di gruppo** · documenti e A (API) in `main`;
   prossimo B (app), poi C. File: — · `tasks/TASK-309.md`
   **2026-11-22**: B1 (app) in `main` (#1369); prossima B2 dopo 312 C2.
@@ -239,12 +226,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   bozze ferme fino al taglio nativo. File: — ·
   `tasks/TASK-469.md`
 
-- **TASK-481 — Il «+» del Feed: tutte le voci** (ADR-0390) · A (la lista:
-  «Record now», «Photos only», «From a file») in `main` il 2026-11-23 (#1421),
-  privacy («from a file», cinque lingue e sito) in `main` (#1444); escono col
-  prossimo OTA, copia del sito col sì dell'utente; restano le righe di 467 E2,
-  484 B, 485 B, al via del Coordinatore. File: — · `tasks/TASK-481.md`
-
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 e A in
   produzione (OTA 21), provate dall'utente; C: i due file `.well-known`
   online. D (link verificati in `app.json`): bozza #1461, da unire solo al
@@ -258,6 +239,21 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'OTA, E chat di gruppo. File: — · `tasks/TASK-495.md`
   2026-11-24: A in `main` (#1538, migrazione 0087, sul server col prossimo
   passo), A2 #1543 armata; poi B (l'app), file approvati dal Coordinatore.
+- **TASK-449 — Anteprima dal vivo della sagoma in «Draw»** (ADR-0412) ·
+  parte 0 il 2026-11-26: un pezzo di mappa vera attorno alla partenza, la
+  sagoma sopra in grandezza reale che cresce coi km; scelte dell'utente
+  fatte. Poi A (forme) e B (immagini). File: — · `tasks/TASK-449.md`
+- **TASK-509 — Stati vuoti, icone di «Add to Feed», sagoma nelle tessere** ·
+  parte 0 chiusa il 2026-11-26 (cinque scelte dell'utente). Tre PR di sola
+  app: A stati vuoti (con due prop in `App.tsx`), B icone, C sagoma (dopo
+  TASK-449 in `main`); il codice parte al «via» del Coordinatore.
+  File: quelli di A, B e C nel task file · `tasks/TASK-509.md`
+
+- **TASK-448 — «Surprise me»** · parte 0 chiusa il 2026-11-26 (sei scelte
+  dell'utente): una pastiglia nel passo 2 di «Draw» mette forma e distanza
+  fra quelle venute bene in città, dal catalogo di «Explore»; a piedi e in
+  bici, motore non toccato. Poi A (la scelta, file nuovi) e B (la
+  pastiglia, dopo TASK-449 A). File: — · `tasks/TASK-448.md`
 
 In attesa (Fermo — in attesa nel task file, nessun file occupato; si
 riprendono col sì dell'utente). Aspettano la società o servizi esterni:

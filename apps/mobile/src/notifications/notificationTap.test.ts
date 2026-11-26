@@ -1,3 +1,4 @@
+import groupPushes from "@shaperoute/shared-types/fixtures/group-push-data.json";
 import examples from "@shaperoute/shared-types/fixtures/push-data.json";
 
 import { tapTarget } from "./notificationTap";
@@ -76,6 +77,14 @@ test("an item of gear past its limit opens the item (TASK-486 part G)", () => {
   });
   expect(tapTarget({ kind: "gear_limit", gear_id: "nope" })).toBeNull();
   expect(tapTarget({ kind: "gear_limit" })).toBeNull();
+});
+
+test("a group's three notifications open its page", () => {
+  for (const data of groupPushes) {
+    expect(tapTarget(data)).toEqual({ kind: "group", id: data.group_id });
+    expect(tapTarget({ ...data, group_id: "nope" })).toBeNull();
+    expect(tapTarget({ kind: data.kind })).toBeNull();
+  }
 });
 
 test("a group run's three notifications open its page", () => {

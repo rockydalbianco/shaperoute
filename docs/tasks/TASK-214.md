@@ -343,7 +343,9 @@ l'utente, in inglese, poi tradotti con `t()`). Proposta:
       misurati sul Mac e nel simulatore, sotto «Parte F»).
 - [x] Parte F: prova nel simulatore con una zona grande e poi una piccola
       (2026-11-26, sotto «Parte F»).
-- [ ] Parte F: CI verde e unione della #1616; OTA col sì dell'utente.
+- [x] Parte F: CI verde, #1616 unita dal Coordinatore (`cfa8c35f`,
+      2026-11-26).
+- [ ] Parte F: OTA di produzione (Coordinatore, col sì dell'utente).
 - [x] In «Settings» lo spazio delle mappe del telefono, con «Delete», e
       sopra «Draw route» l'avviso del primo download, nelle cinque lingue
       (test e simulatore, parte C).
@@ -837,7 +839,7 @@ processi, in `route_engine`, in un task suo. Il telefono disegnerebbe
 percorsi più lunghi in meno tempo.
 
 **Parte F, la memoria del motore** (2026-11-26, aggiunta F ad ADR-0177;
-ramo `fix/TASK-214-f-engine-memory`, PR #1616):
+ramo `fix/TASK-214-f-engine-memory`, in `main` dalla #1616, `cfa8c35f`):
 
 - **La prova generale** (2026-11-26, `out/prova-generale-214/ESITO.md` e
   `out/prova-generale-sim/ESITO.md` del Mac). Il motore dell'app

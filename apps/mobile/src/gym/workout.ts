@@ -290,7 +290,27 @@ export function resumeWorkout(workout: Workout, nowMs: number): Workout {
 
 /** «+ Exercise»: `entry` is what the next sets are of. */
 export function chooseExercise(workout: Workout, entry: Entry, nowMs: number): Workout {
+  if (waitingForFirst(workout)) {
+    // The clock starts with the first exercise (TASK-511, the user's «Al
+    // primo esercizio»): the time spent choosing it is not the workout's.
+    return {
+      ...workout,
+      startedMs: nowMs,
+      pauses: [],
+      current: entry,
+      lastActiveMs: nowMs,
+    };
+  }
   return { ...workout, current: entry, lastActiveMs: nowMs };
+}
+
+/** True while a free workout under way has no exercise yet: its clock
+ * stays at 0:00 until the first one is chosen (TASK-511). A plan begins
+ * with its first exercise, so it never waits. */
+export function waitingForFirst(workout: Workout): boolean {
+  return (
+    workout.endedMs === null && workout.current === null && workout.sets.length === 0
+  );
 }
 
 /** The sets of `entry`, in order. */

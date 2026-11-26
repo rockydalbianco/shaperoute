@@ -27,8 +27,9 @@ import {
  * What the Coach reads (TASK-491 part A, ADR-0399): the account's own
  * workouts with the addresses the app already has, no new one. The months
  * of the gym calendar for 8 weeks of load, the sets of the workouts of the
- * last 4 weeks one at a time, the plans, the runs of «My activities».
- * `buildCoachInput` is pure; `fetchCoachRaw` asks the API.
+ * last 4 weeks, the plans, the runs of «My activities». `buildCoachInput`
+ * is pure; `fetchCoachRaw` asks the API, a few requests at once
+ * (TASK-501).
  */
 
 const DAY_MS = 86_400_000;
@@ -39,6 +40,9 @@ export const SETS_DAYS = 28;
 export const MAX_SESSIONS = 20;
 /** At most this many pages of «My activities». */
 export const MAX_ACTIVITY_PAGES = 5;
+/** At most this many requests of the Coach at once (TASK-501): fewer
+ * waits than one after the other, without flooding the server. */
+export const MAX_AT_ONCE = 4;
 
 export type CoachRaw = {
   now: Date;
@@ -222,66 +226,115 @@ export function monthsBack(now: Date): string[] {
 
 export type CoachRawOutcome = { kind: "ok"; raw: CoachRaw } | { kind: "unreachable" };
 
+/** Runs what it is given with at most `cap` of them at once, the others
+ * waiting their turn in the order they came. */
+export function atMost(cap: number): <T>(ask: () => Promise<T>) => Promise<T> {
+  let running = 0;
+  const waiting: (() => void)[] = [];
+  return async <T>(ask: () => Promise<T>): Promise<T> => {
+    if (running < cap) {
+      running += 1;
+    } else {
+      // The one that ends hands its place over: nobody gets in between.
+      await new Promise<void>((go) => waiting.push(go));
+    }
+    try {
+      return await ask();
+    } finally {
+      const next = waiting.shift();
+      if (next === undefined) {
+        running -= 1;
+      } else {
+        next();
+      }
+    }
+  };
+}
+
 /**
  * Everything the Coach reads. A month, a workout or a page that fails is
  * left out; only when nothing at all came back is it «unreachable».
+ * The months, the workouts, the plans and the pages of runs are asked
+ * `MAX_AT_ONCE` at a time (TASK-501); each list keeps the order of one
+ * request after the other. The pages of runs follow one another: each
+ * asks from where the one before ended.
  */
 export async function fetchCoachRaw(
   fetchers: CoachFetchers,
   now: Date,
   sleepScore: number | null = null,
 ): Promise<CoachRawOutcome> {
-  let answered = false;
-  const calendar: GymCalendarWorkout[] = [];
-  for (const month of monthsBack(now)) {
-    const outcome = await fetchers.calendar(month);
-    if (outcome.kind === "ok") {
+  const ask = atMost(MAX_AT_ONCE);
+
+  const gym = (async () => {
+    const months = await Promise.all(
+      monthsBack(now).map((month) => ask(() => fetchers.calendar(month))),
+    );
+    const calendar = months.flatMap((outcome) =>
+      outcome.kind === "ok" ? outcome.value.days.flatMap((day) => day.workouts) : [],
+    );
+    const recent = calendar
+      .filter(
+        (one) =>
+          ageMs(now, one.started_at) >= 0 &&
+          ageMs(now, one.started_at) < SETS_DAYS * DAY_MS,
+      )
+      .sort((a, b) => b.started_at.localeCompare(a.started_at))
+      .slice(0, MAX_SESSIONS);
+    const read = await Promise.all(
+      recent.map((one) => ask(() => fetchers.session(one.id))),
+    );
+    return {
+      answered: months.some((outcome) => outcome.kind === "ok"),
+      calendar,
+      sessions: read.flatMap((outcome) =>
+        outcome.kind === "ok" ? [outcome.value] : [],
+      ),
+    };
+  })();
+
+  const planned = ask(() => fetchers.plans());
+
+  const runs = (async () => {
+    let answered = false;
+    const activities: Activity[] = [];
+    let cursor: string | null = null;
+    for (let page = 0; page < MAX_ACTIVITY_PAGES; page += 1) {
+      const from: string | null = cursor;
+      const outcome: AccountOutcome<ActivitiesPage> = await ask(() =>
+        fetchers.activities(from),
+      );
+      if (outcome.kind !== "ok") {
+        break;
+      }
       answered = true;
-      calendar.push(...outcome.value.days.flatMap((day) => day.workouts));
+      activities.push(...outcome.value.activities);
+      const oldest = outcome.value.activities[outcome.value.activities.length - 1];
+      cursor = outcome.value.next;
+      if (
+        cursor === null ||
+        oldest === undefined ||
+        ageMs(now, oldest.started_at) >= LOAD_DAYS * DAY_MS
+      ) {
+        break;
+      }
     }
-  }
-  const recent = calendar
-    .filter(
-      (one) =>
-        ageMs(now, one.started_at) >= 0 &&
-        ageMs(now, one.started_at) < SETS_DAYS * DAY_MS,
-    )
-    .sort((a, b) => b.started_at.localeCompare(a.started_at))
-    .slice(0, MAX_SESSIONS);
-  const sessions: GymSession[] = [];
-  for (const one of recent) {
-    const outcome = await fetchers.session(one.id);
-    if (outcome.kind === "ok") {
-      sessions.push(outcome.value);
-    }
-  }
-  const planned = await fetchers.plans();
-  const plans = planned.kind === "ok" ? planned.value.plans : [];
-  answered = answered || planned.kind === "ok";
-  const activities: Activity[] = [];
-  let cursor: string | null = null;
-  for (let page = 0; page < MAX_ACTIVITY_PAGES; page += 1) {
-    const outcome = await fetchers.activities(cursor);
-    if (outcome.kind !== "ok") {
-      break;
-    }
-    answered = true;
-    activities.push(...outcome.value.activities);
-    const oldest = outcome.value.activities[outcome.value.activities.length - 1];
-    cursor = outcome.value.next;
-    if (
-      cursor === null ||
-      oldest === undefined ||
-      ageMs(now, oldest.started_at) >= LOAD_DAYS * DAY_MS
-    ) {
-      break;
-    }
-  }
-  if (!answered) {
+    return { answered, activities };
+  })();
+
+  const [read, plansOutcome, ran] = await Promise.all([gym, planned, runs]);
+  if (!read.answered && plansOutcome.kind !== "ok" && !ran.answered) {
     return { kind: "unreachable" };
   }
   return {
     kind: "ok",
-    raw: { now, calendar, sessions, plans, activities, sleepScore },
+    raw: {
+      now,
+      calendar: read.calendar,
+      sessions: read.sessions,
+      plans: plansOutcome.kind === "ok" ? plansOutcome.value.plans : [],
+      activities: ran.activities,
+      sleepScore,
+    },
   };
 }

@@ -80,6 +80,7 @@ from shaperoute_api.accounts import (
     current_user,
     now_utc,
 )
+from shaperoute_api.answer_lines import short_line
 from shaperoute_api.best_routes import line_key
 from shaperoute_api.db import Database
 from shaperoute_api.flight_legs import ActivityFlightBody, flight_of
@@ -664,16 +665,27 @@ def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:
 
 # --- The runs in the database ---
 
-COLUMNS = (
+_FIELDS = (
     "id, key, started_at, place, shape, word, style, title, distance_m,"
     " duration_s, score, fidelity, route_similarity, walks, activity,"
-    " route_rotation_deg, source, climb_m,"
-    " ST_AsGeoJSON(route, 15) AS route,"
-    " ST_AsGeoJSON(ST_Force2D(track), 15) AS track"
+    " route_rotation_deg, source, climb_m"
 )
-# A run opened whole: its pauses and its post too, which the list does not
-# read.
-DETAIL_COLUMNS = COLUMNS + ", pauses, post"
+# A run in a list: as `route` and `track`, the previews PostgreSQL keeps of
+# them (migration 0088, TASK-501), the points `preview` would take of the
+# whole lines. A run of an hour has thousands of points, a page twenty runs.
+LISTED_COLUMNS = (
+    f"{_FIELDS},"
+    " ST_AsGeoJSON(route_preview, 15) AS route,"
+    " ST_AsGeoJSON(track_preview, 15) AS track"
+)
+# A run opened whole: both lines whole, and its pauses and its post too,
+# which the list does not read.
+DETAIL_COLUMNS = (
+    f"{_FIELDS},"
+    " ST_AsGeoJSON(route, 15) AS route,"
+    " ST_AsGeoJSON(ST_Force2D(track), 15) AS track,"
+    " pauses, post"
+)
 
 
 def _route_wkt(points: Sequence[LatLon]) -> str:
@@ -740,8 +752,9 @@ def _whole(row: DictRow) -> ActivityDetailBody:
     return ActivityDetailBody(
         **_fields(row),
         similarity=None if similarity is None else round(similarity, 4),
-        points=None if route is None else _line(route),
-        track=_line(row["track"]),
+        # Both lines whole, six decimals a coordinate (answer_lines).
+        points=None if route is None else short_line(_line(route)),
+        track=short_line(_line(row["track"])),
         walks=[(start, end) for start, end in row["walks"]],
         pauses=[_kept_pause(pause) for pause in row["pauses"]],
         post=_kept_post(row["post"]),
@@ -815,7 +828,7 @@ class Activities:
             values += _after(cursor)
         with self.database.connect() as conn:
             rows = conn.execute(
-                f"SELECT {COLUMNS} FROM runs WHERE {where}"
+                f"SELECT {LISTED_COLUMNS} FROM runs WHERE {where}"
                 " ORDER BY started_at DESC, id DESC LIMIT %s",
                 (*values, limit + 1),
             ).fetchall()
@@ -830,10 +843,10 @@ class Activities:
             total=count["n"],
         )
 
-    def _row(self, user_id: int, key: str, columns: str = COLUMNS) -> DictRow | None:
+    def _row(self, user_id: int, key: str) -> DictRow | None:
         with self.database.connect() as conn:
             return conn.execute(
-                f"SELECT {columns} FROM runs WHERE user_id = %s AND key = %s",
+                f"SELECT {LISTED_COLUMNS} FROM runs WHERE user_id = %s AND key = %s",
                 (user_id, key),
             ).fetchone()
 
@@ -887,7 +900,7 @@ class Activities:
                 "SELECT 1 FROM users WHERE id = %s FOR UPDATE", (user_id,)
             ).fetchone()
             saved = conn.execute(
-                f"SELECT {COLUMNS} FROM runs WHERE user_id = %s AND key = %s",
+                f"SELECT {LISTED_COLUMNS} FROM runs WHERE user_id = %s AND key = %s",
                 (user_id, key),
             ).fetchone()
             if saved is not None:
@@ -906,7 +919,7 @@ class Activities:
                 " VALUES (%s, %s, ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s,"
                 " ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
                 " %s, %s, %s, %s)"
-                f" RETURNING {COLUMNS}",
+                f" RETURNING {LISTED_COLUMNS}",
                 (
                     user_id,
                     key,

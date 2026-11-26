@@ -619,6 +619,7 @@ lasciando le righe d'indice.
 - ADR-0359, aggiunta (TASK-519) — Su «Map» la freccia punta dove punta il telefono, col cono; la mappa non gira; bussola spenta su «Data» e in tasca · 2026-11-26 · Attiva
 - ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
 - ADR-0264, aggiunta D (TASK-496) — In una giornata di sci o un volo registrati, alla mappa vanno solo i punti nuovi dell'ultimo tratto finché la divisione in tratti resta la stessa · 2026-11-26 · Attiva
+- ADR-0414 — Le coordinate delle linee intere che l'API risponde all'app a 6 decimali, ognuna dentro la sua cella da 5: il nome della linea (`line_key`, il `favoriteKey` dell'app) non cambia; l'SQL resta a 15 cifre · 2026-11-27 · Attiva
 - ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Proposta
 - ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza (10 km), chiesti al primo tocco; fuori dal catalogo le forme di riserva; le sorprese venute sotto il 90% ricordate sul telefono · 2026-11-26 · Attiva
 
@@ -694,6 +695,57 @@ la scelta è fra sette forme. Solo JS/TS, l'impronta iOS non cambia; un
 solo testo nuovo, nelle cinque lingue. Nel simulatore (Trento, API locale
 col catalogo) un tocco ha dato «Fantasmino, 10 km» e «Stella, 10 km» a
 piedi, «Sole, 30 km» in bici; su un telefono non è provato.
+
+## ADR-0414 — Le coordinate delle risposte a 6 decimali dentro la cella dei 5: la chiave delle linee non cambia
+
+**Stato**: Attiva · 2026-11-27 · TASK-501 parte B (#1650). Deciso
+dall'agente su delega dell'utente; numero dal Coordinatore (fork 3,
+2026-11-26).
+
+**Contesto**: voce O11 della lettura del codice del 23 novembre: le linee
+intere escono dal server con tutte le cifre di un double
+(`ST_AsGeoJSON(…, 15)`), mentre 6 decimali sono circa 10 cm e pesano quasi
+la metà. Il task file diceva di scrivere `ST_AsGeoJSON(…, 6)`. Una linea
+però ha un nome, `best_routes.line_key`, lo stesso del `favoriteKey`
+dell'app: due hash sui punti arrotondati a 5 decimali. Con questo nome un
+preferito si salva una volta sola, il cuore sa se un percorso è già tenuto,
+una corsa conta per il percorso di catalogo che ha seguito
+(`count_run`, `best_routes.uses`). Arrotondare a 6 e poi a 5 sposta circa
+una coordinata su venti nella cella accanto (46,0671249 → 46,067125 →
+46,06713 invece di 46,06712): simulato, cambiano nome 261 linee su 300 con
+20 punti e 300 su 300 con 200, sia con le coordinate a 7 decimali di
+OpenStreetMap sia con le tracce GPS. Il telefono darebbe a un percorso
+ricevuto un nome diverso da quello che il server tiene.
+
+**Decisione**:
+- **L'SQL resta a 15 cifre**; l'accorciamento si fa in Python, solo su
+  quello che si risponde all'app (`shaperoute_api/answer_lines.py`:
+  `short`, `short_point`, `short_line`).
+- **Ogni coordinata va a 6 decimali dentro la sua cella da 5**: se
+  l'arrotondamento semplice la porterebbe in un'altra cella, prende il
+  sesto decimale accanto, un milionesimo di grado (11 cm) più in là. Così
+  la linea che l'app riceve ha il nome della linea che il database tiene.
+  Su 2 milioni di coordinate: nessun nome cambiato, il 4,8% spostato di un
+  passo.
+- **Dove**: un'attività aperta (percorso e traccia), un disegno, la pagina
+  del link di un post, un preferito e un'uscita di gruppo aperti, e il
+  punto di partenza di questi ultimi due nelle loro liste.
+- **Dove no**: le anteprime delle liste, già a 5 decimali
+  (`recommended.preview`), quindi anche `messages.py`; `best_routes.py`
+  (legge a 9); le query che leggono una linea per riscriverla nel database
+  (`drawings.RUN_TO_DRAW`, `drawing_retrack.py`). I numeri e le distanze si
+  calcolano prima, sulle linee intere.
+
+**Conseguenze**: nessuna scrittura cambia e nessuna migrazione. Le risposte
+di una corsa da 3600 punti con un percorso da 2000 scendono, in locale, da
+218 781 a 122 238 byte (gzip da 83 629 a 31 861); accorciare costa circa
+1 µs a punto. Un percorso fatto di nodi OpenStreetMap ha già 7 decimali:
+lì si guadagna una cifra per coordinata. Un test rifà il `favoriteKey`
+dell'app riga per riga con i numeri di JavaScript
+(`tests/test_coordinate_decimals.py`) e lo confronta con `line_key`: chi
+cambia l'uno o l'altro lo vede. Le impronte del motore non cambiano
+(`route_store` legge solo `route_engine`). Non misurati: il server vero, il
+telefono.
 
 ## ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching in palestra e le routine pubblicate
 

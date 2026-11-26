@@ -75,8 +75,8 @@ Una per volta, ognuna con la sua proposta.
 3. Cosa è a caso: solo la forma o anche la distanza, e fra quali km. —
    *risposta il 2026-11-26*
 4. Cosa promette «viene bene» e cosa succede quando il risultato è scarso.
-   — *chiesta il 2026-11-26*
-5. Per quali sport.
+   — *risposta il 2026-11-26*
+5. Per quali sport. — *chiesta il 2026-11-26*
 6. I testi nelle cinque lingue.
 
 Già deciso dai documenti, non chiesto: nessun account in più di quello che
@@ -103,6 +103,15 @@ percorsi vicini è quella di «Explore»).
    sorpresa. Dopo il tocco la distanza si può cambiare, prima di «Draw
    route». Scartate: anche 21 km; solo la forma con la distanza
    dell'utente (meno sicura fuori da 5 e 10 km).
+4. **Se viene male: «Come sempre»** (2026-11-26). Nessuna promessa
+   scritta: la pastiglia dice solo «Surprise me», e nessun testo dice
+   «provata vicino a te». Il risultato è un percorso come gli altri, con
+   l'avviso sotto il 90% e «Try 8 km» che ci sono già. L'app ricorda sul
+   telefono le sorprese venute sotto il 90% da quel punto e non le
+   ripropone. Fuori dalle città del catalogo la scelta viene dalle sette
+   forme che vengono quasi ovunque (cuore, cerchio, stella, luna, smiley,
+   sole, farfalla), a 5 o 10 km. Scartate: «Another surprise» sotto un
+   risultato scarso (testi nuovi), il ricalcolo da solo (doppia attesa).
 
 ## File toccati
 
@@ -130,3 +139,4 @@ Coordinatore prima del codice. Vicini: `RoutePanel.tsx` e una riga di
 - 2026-11-26 — risposta 1 («Nel passo 2 di Draw»); chiesta la domanda 2.
 - 2026-11-26 — risposta 2 («Riempie e aspetta»); chiesta la domanda 3.
 - 2026-11-26 — risposta 3 («Forma e 5 o 10 km»); chiesta la domanda 4.
+- 2026-11-26 — risposta 4 («Come sempre»); chiesta la domanda 5.

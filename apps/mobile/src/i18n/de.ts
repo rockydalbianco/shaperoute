@@ -3121,8 +3121,6 @@ export const DE: Table = {
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Layout bearbeiten",
   "Page {n} of {count}": "Seite {n} von {count}",
-  "Touch a widget to move it, size it or take it away.":
-    "Tippe auf ein Widget, um es zu verschieben, seine Größe zu ändern oder es zu entfernen.",
   Size: "Größe",
   Unit: "Einheit",
   "Add page": "Seite hinzufügen",
@@ -3582,4 +3580,7 @@ export const DE: Table = {
     "Per Barcode gefundene Produkte enthalten Daten von Open Food Facts, verfügbar unter der Open Database License. Sie bleiben von der USDA-Liste getrennt.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Diese Seite siehst nur du. Was du hier einträgst, bleibt auf deinem Handy; ein Barcode, den du suchst, geht an Open Food Facts.",
+  // src/air/ (TASK-479 part B3: widgets dragged in the editor; waiting for the user's approval)
+  "Drag a widget to move it, or its corner to size it. Touch it for more.":
+    "Zieh ein Widget, um es zu verschieben, oder seine Ecke, um die Größe zu ändern. Tippe es an für mehr.",
 };

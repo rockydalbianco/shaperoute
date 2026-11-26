@@ -3585,7 +3585,7 @@ export const DE: Table = {
   Estimated: "Geschätzt",
   "No wind": "Kein Wind",
   "needs {height}": "braucht {height}",
-  "No landings in your file": "Keine Landeplätze in deiner Datei",
+  "No landings": "Keine Landeplätze",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Kalorienbilanz",
   Used: "Verbraucht",
@@ -3739,6 +3739,12 @@ export const DE: Table = {
     "Für diesen Tag gibt es kein Eiweiß, keine Kohlenhydrate und kein Fett zu zählen.",
   // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
   "Landings from OpenStreetMap: {count}": "Landeplätze aus OpenStreetMap: {count}",
+  // src/nutrition (TASK-489 part I: the invitation at the end of an activity; approved by the user on 2026-11-24)
+  "Count what you eat too": "Zähl auch, was du isst",
+  "Write your own diet and what you eat: MuW estimates the calories you eat and the ones you use, this activity included.":
+    "Schreib deinen eigenen Ernährungsplan auf und was du isst: MuW schätzt die Kalorien, die du isst und die du verbrauchst, diese Aktivität eingeschlossen.",
+  "This activity: {kcal} kcal (est.)": "Diese Aktivität: {kcal} kcal (gesch.)",
+  "Add what you ate": "Hinzufügen, was du gegessen hast",
   // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
   Weather: "Wetter",
   "Weather: {temperature}, wind {speed}": "Wetter: {temperature}, Wind {speed}",

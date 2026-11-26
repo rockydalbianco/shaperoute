@@ -76,9 +76,11 @@ export function watchInfoPlistFile(language: Language): string {
   return `targets/watch/${language}.lproj/InfoPlist.strings`;
 }
 
-/** What the watch asks of Apple Health, the same sentences as the iPhone;
- * and its location during a workout (part B3b), a sentence of its own: the
- * iPhone's speaks of a locked phone and the blue bar. */
+/** What the watch asks of Apple Health: to write, the same sentence as the
+ * iPhone; to read, a sentence of its own since the iPhone's also speaks of
+ * the sleep (TASK-467 part C), which the watch never reads; and its
+ * location during a workout (part B3b), also its own: the iPhone's speaks
+ * of a locked phone and the blue bar. */
 export const WATCH_INFO_PLIST_KEYS = [
   "NSHealthShareUsageDescription",
   "NSHealthUpdateUsageDescription",
@@ -92,6 +94,16 @@ const WATCH_LOCATION: Readonly<Record<Language, string>> = {
   de: "MuW nutzt deinen Standort während eines Trainings, um dich entlang deiner Route zu führen und sie aufzuzeichnen.",
   es: "MuW usa tu ubicación durante un entrenamiento para guiarte por la ruta y para registrarla.",
   fr: "MuW utilise votre position pendant une séance pour vous guider le long du parcours et pour l'enregistrer.",
+};
+
+/** The watch reads the heart rate only: the sentence the user approved for
+ * it (TASK-345 C), which was the iPhone's until the iPhone read the sleep. */
+const WATCH_HEALTH_READ: Readonly<Record<Language, string>> = {
+  en: "MuW reads your heart rate from Apple Health during each activity, to show it with the activity and in your post. You can hide it before you publish.",
+  it: "MuW legge il tuo battito da Apple Salute durante ogni attività, per mostrarlo con l'attività e nel tuo post. Puoi nasconderlo prima di pubblicare.",
+  de: "MuW liest deine Herzfrequenz aus Apple Health während jeder Aktivität, um sie mit der Aktivität und in deinem Beitrag zu zeigen. Du kannst sie vor dem Veröffentlichen ausblenden.",
+  es: "MuW lee tu frecuencia cardíaca de Apple Salud durante cada actividad, para mostrarla con la actividad y en tu publicación. Puedes ocultarla antes de publicar.",
+  fr: "MuW lit ta fréquence cardiaque dans Apple Santé pendant chaque activité, pour l'afficher avec l'activité et dans ta publication. Tu peux la masquer avant de publier.",
 };
 
 type HealthKey = Exclude<
@@ -111,14 +123,17 @@ const INFO_PLIST: Readonly<Record<Language, InfoPlistTexts>> = {
   fr: fr.ios,
 };
 
-/** The sentence of `key` in `language`: the iPhone's for Apple Health, the
- * watch's own for its location. */
+/** The sentence of `key` in `language`: the iPhone's for writing to Apple
+ * Health, the watch's own for reading it and for its location. */
 export function watchInfoPlistText(
   language: Language,
   key: (typeof WATCH_INFO_PLIST_KEYS)[number],
 ): string {
-  return key === "NSLocationWhenInUseUsageDescription"
-    ? WATCH_LOCATION[language]
+  if (key === "NSLocationWhenInUseUsageDescription") {
+    return WATCH_LOCATION[language];
+  }
+  return key === "NSHealthShareUsageDescription"
+    ? WATCH_HEALTH_READ[language]
     : INFO_PLIST[language][key];
 }
 

@@ -26,15 +26,15 @@ dell'utente, una pubblicazione alla volta, dal Coordinatore (`AGENTI.md`).
 
 **La prova generale sul telefono** fatta dall'utente il 2026-11-26
 sull'OTA 25: 18 controlli «ok», nessun «no»; chiusi 355, 417, 424, 431.
-Restano da provare 466 (saltato), 496 (una corsa vera in tasca), 214
-(modalità aereo) e, dopo l'OTA 26, 450, 506, 486, 490 D, 297 C2, 479 D3.
+Poi, lo stesso giorno, anche 466, 214 e 496 «ok». Restano da provare,
+dopo l'OTA 26: 450, 506, 486, 490 D, 297 C2, 479 D3.
 OTA di produzione e aggiornamenti del server in sospeso per task già Done:
 li tiene il Coordinatore (`AGENTI.md`, «L'albero»), col sì dell'utente.
 **TASK-294**: resta l'uscita su Google Play (test chiuso con 12 tester
 per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
-**TASK-496**: batteria in corsa (#1529, #1531), in produzione con l'OTA
-25. La batteria si vede solo sul telefono dell'utente: una corsa a
-schermo bloccato e in tasca (nella prova generale).
+**Le prove sul campo** (neve, volo, corsa vera): una riga per prova in
+`docs/PROVE-SUL-CAMPO.md` (406 E, 429, 375 E, 415, 305, 479), da
+fare quando capita; i task con solo quella prova sono chiusi.
 
 ## In lavorazione
 
@@ -75,6 +75,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   d'inverno, feste e sport e i 35 contorni di TASK-418. A sagome (file
   nuovi), B strade, C registrazione (PR unita dall'utente, server e OTA
   insieme), D catalogo. File: — · `tasks/TASK-516.md`
+- **TASK-507 — I dati del telefono restano di chi li ha fatti** · ADR-0406;
+  A + C, D, B1 e B2 in `main` (#1533, #1545, #1546, #1573), il 2026-11-26
+  la PR di documenti. Resta la prova dell'utente con due account dopo
+  l'OTA (`PROVA-GENERALE.md`, sezione 2), poi la chiusura.
+  File: — · `tasks/TASK-507.md`
 - **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
   scelte dell'utente, ADR-0393); poi A server … G avviso, file al
   Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`
@@ -115,23 +120,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-397 — Il VO₂ max nel profilo** · A e B in produzione; C al
   prossimo taglio nativo (con 374 C), D dopo 321 C. File: — ·
   `tasks/TASK-397.md`
-- **TASK-406 — Le stazioni sciistiche** · A–D online dal 2026-11-10: server
-  a `9cf5576b`, OTA di produzione dal gruppo `4eca1d42`. Resta la parte E,
-  la prova sulla neve, quando l'utente scia. File: — · `tasks/TASK-406.md`
 - **TASK-410 — La pagina del post** · B, F, C, D e la correzione #1078 in
   produzione; A è TASK-355 B; resta E, il meteo (testi e privacy da
   approvare). File: — · `tasks/TASK-410.md`
-- **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
-  `tasks/TASK-415.md`
-  **2026-11-11**: B in `main` (#1160) e nella preview; in produzione con
-  l'uscita completa (OTA col sì), poi la prova sul telefono; dopo B2, C, D.
-  **2026-11-12**: B3 (cambio pelli a mano) in `main` (#1202); B e B3 escono
-  con l'aggiornamento completo di oggi; prova sulla neve quest'inverno.
-- **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1, B2, C2 in
-  `main` (#1093, #1108, #1114, #1129, #1131); A e B1 fuori con gli OTA 5 e
-  6, C1 sul server dal passo 7 dell'11-11. B2 (i tratti a «Salva») e C2
-  (stagione e giornata salvata) in produzione con l'ottavo OTA dell'11-11.
-  Restano la prova sul telefono e la parte E (lista prima). File: — · `tasks/TASK-429.md`
 - **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
   1963 percorsi e ordine misto in «NEAR YOU». Le 702 parole nuove a riga
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
@@ -248,7 +239,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (#1509) e la correzione dell'header sopra le pagine (#1534, difetto di
   A5b) con l'OTA 25. Poi A7c-4 (chip del volo). Parte B avviata
   dall'utente il 2026-11-24: piano B0–B4 nel task file, la dipendenza
-  (B1) col suo sì e nel taglio nativo. File: — ·
+  (B1) col suo sì e nel taglio nativo. B1 (#1557) e B2 (#1562, la barra
+  galleggia solo col vetro vero: scelta dell'utente del 2026-11-26) sono
+  bozze ferme fino al taglio nativo. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-481 — Il «+» del Feed: tutte le voci** (ADR-0390) · A (la lista:
@@ -270,6 +263,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'OTA, E chat di gruppo. File: — · `tasks/TASK-495.md`
   2026-11-24: A in `main` (#1538, migrazione 0087, sul server col prossimo
   passo), A2 #1543 armata; poi B (l'app), file approvati dal Coordinatore.
+- **TASK-509 — Stati vuoti, icone di «Add to Feed», sagoma nelle tessere** ·
+  parte 0 chiusa il 2026-11-26 (cinque scelte dell'utente). Tre PR di sola
+  app: A stati vuoti (con due prop in `App.tsx`), B icone, C sagoma (dopo
+  TASK-449 in `main`); il codice parte al «via» del Coordinatore.
+  File: quelli di A, B e C nel task file · `tasks/TASK-509.md`
 
 In attesa (Fermo — in attesa nel task file, nessun file occupato; si
 riprendono col sì dell'utente). Aspettano la società o servizi esterni:
@@ -280,7 +278,9 @@ frasi a penna alzata, 282 il percorso dove sta la figura, 305 il
 pianificatore del parapendio, 311 C e D parole scritte meglio, 336 video
 nei post, 339 E «Draw» e il risultato col look nuovo, 341 badge sul
 profilo, 345 calorie e battito nel Feed, 348 B–D il compositore del post,
-384 «MuW Style», 427.
+384 «MuW Style», 427, 429 E la grafica nuova delle stazioni. Fino
+all'inverno: 415 B2, C, D lo scialpinismo (la prova sulla neve è in
+`docs/PROVE-SUL-CAMPO.md`).
 
 ## Bloccato
 

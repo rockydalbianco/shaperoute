@@ -1,3 +1,4 @@
+import { NUTRITION_ON } from "../nutrition/nutritionOn";
 import type { Sport } from "../settings/sport";
 import {
   APP_PAGES,
@@ -28,21 +29,25 @@ export function modeOf(sport: Sport): AppMode {
 }
 
 /** A page of the tab bar, as the app names its screens. */
-export type BarPage = SkiBarPage | "trainingWorkouts";
+export type BarPage = SkiBarPage | "trainingWorkouts" | "trainingFood";
 
 /**
- * The pages of the training mode: Today, Workouts, Feed, Profile. «Today»
- * is the page «choose» of the app, as in the ski mode: every way back to
+ * The pages of the training mode: Feed, Today, Workouts, Food, Profile. As
+ * in every mode, «Feed» stays first and «Profile» last, the mode's own
+ * pages in between (the user's choice of 2026-11-24, part E). «Today» is
+ * the page «choose» of the app, as in the ski mode: every way back to
  * «Draw» (the end of a workout, «Discard») lands on it. «Messages» has no
- * tab here: it opens from its button in the header. «Food» (TASK-489)
- * comes after «Workouts» with part D, once «Nutrition» is on.
+ * tab here: it opens from its button in the header. «Food» is the
+ * «Nutrition» page of TASK-489 (part D): only while «Nutrition» is on,
+ * else the bar has four tabs.
  */
-export const TRAINING_PAGES: readonly BarPage[] = [
-  "choose",
-  "trainingWorkouts",
-  "feed",
-  "profile",
-];
+export function trainingPagesOf(nutritionOn: boolean): readonly BarPage[] {
+  return nutritionOn
+    ? ["feed", "choose", "trainingWorkouts", "trainingFood", "profile"]
+    : ["feed", "choose", "trainingWorkouts", "profile"];
+}
+
+export const TRAINING_PAGES: readonly BarPage[] = trainingPagesOf(NUTRITION_ON);
 
 /** The pages of the tab bar in `mode`. */
 export function pagesOfMode(mode: AppMode): readonly BarPage[] {
@@ -65,13 +70,13 @@ export function barPagesOf(sport: Sport): readonly BarPage[] {
 const OWN_PAGES: Readonly<Record<AppMode, readonly string[]>> = {
   app: [],
   ski: ["skiDays", "skiResorts"],
-  training: ["trainingWorkouts"],
+  training: ["trainingWorkouts", "trainingFood"],
 };
 
 /**
  * Where the app goes when the mode changes under it: entering the ski or
  * the training mode opens «Today»; going back to the app as always, a page
- * it has no more («Days», «Resorts», «Workouts») goes to «Draw». Any other
+ * it has no more («Days», «Resorts», «Workouts», «Food») goes to «Draw». Any other
  * page stays where it is. Null: nothing to do.
  */
 export function pageAfterModeChange(
@@ -91,7 +96,8 @@ export function pageAfterModeChange(
 /** The pages each mode draws itself; «Feed» and «Profile» are the app's. */
 export type ModePages<P> = {
   ski: { choose: P; skiDays: P; skiResorts: P };
-  training: { choose: P; trainingWorkouts: P };
+  /** «Food» only where the bar has it (`NUTRITION_ON`). */
+  training: { choose: P; trainingWorkouts: P; trainingFood?: P };
 };
 
 /**

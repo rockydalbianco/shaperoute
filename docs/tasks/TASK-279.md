@@ -1,8 +1,7 @@
 # TASK-279 — Parole e frasi con la penna alzata in «Explore»
 
-**Stato**: parte A Done, in `main` con la #503 (`100aca2c`, 2026-10-13),
-su `preview` con il gruppo `9dbc73d0`; parte B (frasi) Todo e il punto 7
-(`draw_examples`) dopo l'approvazione di Apple
+**Stato**: Fermo — in attesa · 2026-11-24 (scelta dell'utente del 2026-11-24 sui task aperti): A in produzione e il punto 7 (`draw_examples`) fatto in TASK-316; B (le frasi) è un'idea approvata e mai partita, da rivalutare più avanti.
+Prima del 2026-11-24: parte A Done, in `main` con la #503 (`100aca2c`, 2026-10-13), su `preview` con il gruppo `9dbc73d0`; parte B (frasi) Todo e il punto 7 (`draw_examples`) dopo l'approvazione di Apple
 **Fase**: 4 · **Branch**: parte A `feat/TASK-279-a-explore-words`,
 parte B `feat/TASK-279-b-phrases`
 

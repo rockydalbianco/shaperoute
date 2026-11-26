@@ -610,9 +610,54 @@ lasciando le righe d'indice.
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
 - ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero (`GET /notifications/unread`, una query, niente foto), con il ripiego sulla lista per un server di prima; la riga dei «live» non chiede con l'app dietro · 2026-11-26 · Attiva
+- ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0177, aggiunta F (TASK-214) — La pagina del motore che tiene troppa memoria si chiude dopo il percorso
+
+**Stato**: Attiva · 2026-11-26 · TASK-214 parte F. **Deciso dall'agente su
+delega dell'utente** («intanto prepara il fix della memoria per 214»,
+2026-11-26), dalla prova generale dello stesso giorno; lista dei file e
+forma (un'aggiunta ad ADR-0177) dal Coordinatore. Solo app.
+
+**Contesto**: la memoria di Pyodide (la memoria WebAssembly della pagina)
+cresce e non scende mai. Misurato il 2026-11-26 col motore dell'app in Node
+e nel simulatore: un percorso sulla zona di Trento (2,7 MB) porta la pagina
+a 338 MB, su quella di Milano (5,9 MB) a 584 MB, su quella di Berlino
+(31,8 MB) a 1,3–1,4 GB, e lì resta anche per i percorsi dopo su zone
+piccole. Ripetere lo stesso percorso non la fa crescere (nessuna perdita).
+La zona da 3 km che ogni telefono riceve non ha un tetto di dimensione (il
+tetto di 12 MB vale per la zona larga della parte E). Se iOS chiude la
+WebView durante un percorso, quella morte conta verso `MAX_DEATHS`; in
+modalità aereo non c'è il server di riserva.
+
+**Decisione**:
+
+1. **`MEMORY_RELEASE_MB = 700`** (`phoneEngine.ts`): sopra i 584 MB di
+   Milano, sotto i 1,3 GB di Berlino.
+2. **Dopo il risultato di un percorso, di un «way back» o di un tratto**,
+   se la pagina riferisce più di 700 MB e nessuna richiesta aspetta, la
+   pagina si chiude con `reload()`, che c'era già: niente pagina finché la
+   richiesta dopo non ne monta una nuova.
+3. **Con richieste in attesa la pagina resta** e le prende in ordine; si
+   chiude dopo l'ultima. Nessuna richiesta si perde.
+4. **Dopo la lettura anticipata della zona** (`prepare`, parte E) la
+   pagina resta, per quanto grande: quella memoria serve al percorso dopo.
+5. **Una chiusura per memoria non è una morte**: non conta verso
+   `MAX_DEATHS`.
+
+**Alternative scartate**: riavviare subito la pagina (avvio e batteria
+spesi anche quando non arriva nessun percorso); non dare al motore le zone
+più grandi (in modalità aereo il telefono non disegnerebbe affatto lì);
+liberare la memoria dentro Python (WebAssembly non la restituisce).
+
+**Conseguenze**: dopo un percorso oltre i 700 MB il percorso dopo paga
+l'avvio di Python (circa 6 s sul Mac) e la rilettura della zona; una pagina
+nuova riparte da circa 80 MB. I percorsi sotto la soglia non cambiano.
+Nessun cambio nativo, nessuna dipendenza, `route_engine` e `engine.zip`
+invariati. La soglia è misurata sul Mac, non sull'iPhone.
 
 ## ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero; la riga dei «live» non chiede con l'app dietro
 

@@ -1,7 +1,8 @@
 # TASK-516 — Forme invernali e contorni: forme nuove per il motore e il catalogo
 
-**Stato**: In lavorazione — parte 0 in `main` (#1579); parte A approvata
-dall'utente il 2026-11-26
+**Stato**: Congelato dopo la parte A (cornice «Mossa 5», 2026-11-26) — parti
+0 e A in `main`, prova sulle strade (B) fatta e giudicata; C e D ferme finché
+il Coordinatore non dà il via
 **Fase**: 5 · **Branch**: `docs/TASK-516-part-0` (parte 0); una PR per parte
 **ADR**: ADR-0411 · numeri dal Coordinatore (fork 3), 2026-11-24
 **Viene da**: TASK-441 (la sua parte C), TASK-418 (le forme candidate e
@@ -129,6 +130,35 @@ pesante parte solo col via del Coordinatore (il Mac si blocca sotto
 carico: uno alla volta, `nice`, mai col simulatore acceso). La lista dei
 file prima del codice.
 
+### Esito (2026-11-26)
+
+Nessun file del repository: gli strumenti di TASK-419 così come sono
+(`tools/catalog_seed.py --run --outlines DIR`, poi una pagina per forma), in
+`out/TASK-516/b/` della cartella principale (non tracciata): `run.sh`, il
+registro `runs.jsonl` (copia di quello di TASK-419, così i casi già fatti
+si saltano), `outline-runs.jsonl`, `summary.txt`, `strade.html`,
+`scelte.json`.
+
+- 88 casi nuovi: le 11 sagome a Barcellona, Levico, Milano e Trento (le
+  città di TASK-418), a 10 e 5 km, zone già in cache, nessun download; tutti
+  disegnati. I 35 contorni erano già nel registro di TASK-419.
+- La pagina mostra per ogni forma il contorno e i 4 disegni migliori, col
+  filtro del catalogo (somiglianza ≥ 0,90, distanza ±10%, ripassi ≤ 10%,
+  niente `motorway`/`trunk`). Proposta: «entra» dove passano almeno 3
+  disegni.
+- **Entrano 35 forme** (scelta dell'utente, sotto), per categoria:
+  - animali (6): `dolphin`, `fox_head`, `owl`, `penguin`, `reindeer`, `turtle`;
+  - cibo (4): `candy_cane`, `croissant`, `pizza_slice`, `strawberry`;
+  - monumenti (4): `colosseum`, `dome`, `eiffel_tower`, `triumphal_arch`;
+  - oggetti (11): `ball`, `bell`, `light_bulb`, `padlock`, `racket`,
+    `santa_hat`, `scooter`, `skis`, `snowman`, `stocking`, `umbrella`;
+  - simboli (10): `easter_egg`, `flower`, `gift`, `infinity`, `leaf`,
+    `medal`, `mountain`, `peace`, `snowflake`, `trophy`.
+- **Restano fuori 11**: `comet` (2 disegni su 8), `dinosaur`, `elephant`,
+  `giraffe`, `gondola`, `guitar`, `key`, `moka`, `rocket`, `running_shoe`,
+  `whale` (meno di 3 disegni che passano). I loro file restano in
+  `candidate_outlines/`; la parte C registra solo le 35.
+
 ## Parte C — la registrazione
 
 La lista di partenza è quella di TASK-418 B (`tasks/TASK-418.md`,
@@ -158,6 +188,9 @@ passo «catalogo» sul server.
   della C di TASK-441); frasi con lo spazio e cifre dopo.
 - 2026-11-26: sulle 11 sagome della parte A, viste nella pagina
   d'anteprima: «Sì, vanno bene». Restano tutte e 11, come sono.
+- 2026-11-26: sulla pagina delle strade (46 candidate, 35 spuntate come
+  proposta, categorie dei file): «Vanno bene le 35». Entrano le 35 elencate
+  nell'esito della parte B, con la categoria del loro file.
 
 ## Fuori scope
 
@@ -175,3 +208,9 @@ passo «catalogo» sul server.
 - **2026-11-26**: l'utente approva le 11 sagome («Sì, vanno bene»); #1580
   pronta. Prossimo: la parte B (prova sulle strade), lista dei file prima al
   Coordinatore.
+- **2026-11-26**: #1580 in `main`. Il task è congelato dopo la parte A
+  (cornice «Mossa 5» approvata dall'utente) finché non si chiude uno dei
+  tre filoni; la parte B, già approvata e senza codice, finisce: 88 casi
+  disegnati, l'utente sceglie 35 forme («Vanno bene le 35»).
+- **Prossimo**: la parte C (registrazione delle 35, lista di TASK-418 B)
+  solo col via del Coordinatore; poi la D (catalogo).

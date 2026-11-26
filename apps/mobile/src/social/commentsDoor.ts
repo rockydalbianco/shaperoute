@@ -8,7 +8,8 @@ import { createContext, useCallback, useContext, useMemo, useRef } from "react";
 
 import { sessionEnded } from "../account/messages";
 import type { Account } from "../account/useAccount";
-import type { AccountOutcome } from "../api/accounts";
+import { authHeaders, type AccountOutcome } from "../api/accounts";
+import { keyHeaders } from "../api/apiUrl";
 import {
   deleteComment,
   deleteCommentReaction,
@@ -18,11 +19,17 @@ import {
   putCommentReaction,
 } from "../api/comments";
 import { fetchProfile, profilePhotoUri } from "../api/profiles";
+import type { CommentPicture } from "./CommentAvatar";
 
 /**
  * The comments under the drawings as the whole app reaches them (TASK-120):
  * a page of a drawing's comments, a comment written, one deleted, and the
  * picture of who wrote it. Every call is null with nobody signed in.
+ *
+ * The picture comes with the comment, as an address (`author.photo`,
+ * TASK-497): `pictureAt` says how an `Image` reads it. `photoOf`, the whole
+ * profile for its picture, is only for an API from before, whose comments
+ * do not say it.
  */
 export type CommentsDoor = {
   /** The comments, each with its first replies (TASK-454). */
@@ -37,8 +44,18 @@ export type CommentsDoor = {
     replyTo?: string,
   ) => Promise<AccountOutcome<Comment> | null>;
   remove: (commentId: string) => Promise<AccountOutcome<null> | null>;
-  /** The picture of a profile, asked once per account; null without one. */
+  /**
+   * The picture of a profile, asked once per account; null without one. Only
+   * for a comment whose author has no `photo` field: an API from before.
+   */
   photoOf: (publicId: string) => Promise<string | null>;
+  /**
+   * What an `Image` reads the picture at `path` with (`author.photo`, an
+   * address on the API): the token and the key, as every other call. Null
+   * with nobody signed in; a door without it (a test of one screen) shows
+   * the letter.
+   */
+  pictureAt?: (path: string) => CommentPicture | null;
   /**
    * What came with the replies (TASK-454 part C, ADR-0377). A door without
    * them (a test of one screen) offers neither «Reply» nor reactions.
@@ -198,8 +215,26 @@ export function useCommentsOf(
     [baseUrl, fetchFn, key, token],
   );
 
+  const pictureAt = useCallback(
+    (path: string): CommentPicture | null =>
+      token === null || baseUrl === null
+        ? null
+        : {
+            uri: `${baseUrl}${path}`,
+            headers: { ...keyHeaders(key), ...authHeaders(token) },
+          },
+    [baseUrl, key, token],
+  );
+
   return useMemo(
-    () => ({ pageOf, write, remove, photoOf, threads: { repliesOf, react } }),
-    [pageOf, write, remove, photoOf, repliesOf, react],
+    () => ({
+      pageOf,
+      write,
+      remove,
+      photoOf,
+      pictureAt,
+      threads: { repliesOf, react },
+    }),
+    [pageOf, write, remove, photoOf, pictureAt, repliesOf, react],
   );
 }

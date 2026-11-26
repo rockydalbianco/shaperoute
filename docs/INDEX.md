@@ -110,6 +110,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Overpass in errore: una richiesta per job, la pausa di OSMnx, il secondo servizio | `tasks/TASK-471.md`, ADR-0385, `MAPS.md` «Overpass: come si scarica» |
 | L'attrezzatura: scarpe, bici, sci, caschi… coi km, sul profilo, nel post, dai capi taggati | ADR-0393, `tasks/TASK-486.md` |
 | I gruppi per uscire insieme («Groups»): ingresso, ruoli, la pagina, le uscite del gruppo anche senza percorso, Explore, la chat di gruppo | `GRUPPI.md`, `tasks/TASK-495.md`, ADR-0402, `EVENTI.md` |
+| «Surprise me» in «Draw»: la pastiglia del passo 2, la scelta fra i percorsi del catalogo vicini, le forme di riserva, le sorprese venute male | `UI.md` (il passo 2 di «Draw»), ADR-0413, `tasks/TASK-448.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

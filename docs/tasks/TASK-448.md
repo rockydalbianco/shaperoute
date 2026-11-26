@@ -1,10 +1,15 @@
 # TASK-448 — «Surprise me»: forma e distanza scelte dall'app
 
-**Stato**: In corso · parte 0 chiusa il 2026-11-26 (sei scelte dell'utente); poi A e B, lista dei file al Coordinatore
-**Fase**: 5 · **Branch**: `docs/TASK-448-part-0` (documenti), poi `feat/TASK-448-…`
-**Dipende da**: TASK-449 parte A (#1593) in `main`, per le righe in
-`RoutePanel.tsx` e `App.tsx` (parte B)
-**ADR**: nessuno finora · numero dal Coordinatore l'11 novembre 2026 (idea
+**Stato**: Done · 2026-11-26 · nel passo 2 di «Draw» la pastiglia «Surprise
+me» scrive una forma e una distanza fra i percorsi del catalogo vicini alla
+partenza; in `main` (parte 0 nella PR unica #1598, #1613 A, #1641 B), ciò che si vede
+approvato dall'utente sulle schermate. Restano l'OTA di produzione
+(Coordinatore, col sì dell'utente) e l'occhio sul telefono («Cosa resta»,
+in fondo).
+**Fase**: 5 · **Branch**: `docs/TASK-448-part-0`, `feat/TASK-448-a-surprise-pick`,
+`feat/TASK-448-b-surprise-pill`, `docs/TASK-448-done`
+**Dipende da**: TASK-449 (in `main`)
+**ADR**: ADR-0413 · numero del task dal Coordinatore l'11 novembre 2026 (idea
 I1 di `out/prova-app-2026-11-11/PROPOSTE.md`); avviato dall'utente il
 2026-11-26 («Avvia la 448»)
 
@@ -76,12 +81,15 @@ motore, col giro di sempre. Nessuna coordinata nasce fuori dal motore.
 
 Scelte tecniche, dell'agente su delega dell'utente (vanno nell'ADR):
 
-- «Nella tua città» = i percorsi del catalogo che partono entro un raggio
-  dalla partenza scelta in «Draw» (da fissare nella parte A, proposta
-  10 km: i percorsi di una città partono entro 1 km dal suo centro).
-- La scelta è alla pari fra le coppie forma–distanza diverse, tolte quella
-  di prima e quelle da non riproporre; se non ne resta nessuna, le forme
-  di riserva (le sette a piedi, le otto in bici).
+- «Nella tua città» = i percorsi del catalogo che partono entro 10 km
+  dalla partenza scelta in «Draw» (i percorsi di una città partono entro
+  1 km dal suo centro). La lista si chiede al primo tocco, non all'apertura
+  della pagina, e resta 10 minuti; dopo 2,5 s senza risposta, una forma di
+  riserva.
+- La scelta è prima della forma, alla pari fra le forme vicine, poi di una
+  delle sue distanze; tolte la coppia di prima (e la sua forma, finché ce
+  n'è un'altra) e quelle da non riproporre; se non ne resta nessuna, le
+  forme di riserva (le sette a piedi, le otto in bici).
 - Il caso è iniettato (`random: () => number`): nei test un generatore con
   seme, nell'app `Math.random`.
 - Se era scelta una parola, un'immagine o un disegno a mano, il tocco
@@ -173,6 +181,7 @@ apps/mobile/src/route/SurprisePill.tsx, .test.tsx       (nuovi)
 apps/mobile/assets/ui/icons/dices.png, @2x, @3x         (nuovi, Lucide)
 apps/mobile/src/route/RoutePanel.tsx                    (la riga del titolo del passo 2, una prop)
 apps/mobile/App.tsx                                     (l'hook e la prop: poche righe)
+apps/mobile/__tests__/AppSurprise.test.tsx              (nuovo; ok del Coordinatore il 2026-11-26)
 apps/mobile/src/i18n/it.ts, de.ts, es.ts, fr.ts         (una chiave ciascuno)
 
 # Documenti di chiusura (PR di soli documenti)
@@ -216,3 +225,28 @@ turni di TASK-490.
 - 2026-11-26 — risposta 5 («A piedi e in bici»); chiesta la domanda 6.
 - 2026-11-26 — risposta 6 («Sì, vanno bene»): parte 0 chiusa. Lista dei
   file e richiesta del numero di ADR al Coordinatore.
+- 2026-11-26 — sì del Coordinatore alla lista, ADR-0413. Parte A: #1613
+  (`surprisePick`, `surpriseKept`, `useSurprise`, 55 test), in `main` lo
+  stesso giorno.
+- 2026-11-26 — «via alla B» del Coordinatore (449 A e B e 509 A in
+  `main`). Parte B: #1641 (pastiglia, dado, testo nelle cinque lingue, la
+  riga in `RoutePanel.tsx`, l'hook in `App.tsx`, `AppSurprise.test.tsx`).
+  In locale 208 test dei file toccati, `tsc` e Prettier verdi.
+- 2026-11-26 — turno del simulatore (iPhone 17e, partenza a Trento, API
+  locale col catalogo): la pastiglia sta sulla riga del titolo nelle cinque
+  lingue (il caso più stretto è il tedesco); un tocco ha dato «Fantasmino,
+  10 km» e «Stella, 10 km» a piedi, «Sole, 30 km» in bici; tema chiaro a
+  posto. Schermate all'utente: **«Sì, va bene»**. #1641 fuori dalla bozza,
+  «pronta» al Coordinatore.
+
+## Cosa resta
+
+- L'OTA di produzione: del Coordinatore, col sì dell'utente.
+- L'occhio sul telefono dopo l'OTA: la pastiglia nel passo 2, un tocco, un
+  secondo tocco, «Draw route».
+- Non visto nel simulatore: la pastiglia attenuata mentre chiede i
+  percorsi vicini (la risposta è arrivata subito); è coperta dai test.
+- Le icone del dado (`dices.png`, @2x, @3x) vengono dal segno «dices» di
+  Lucide, disegnate da `out/TASK-448/make_dices.py` nel checkout
+  principale (uno script, non nel repository): il Mac non ha uno strumento
+  che legga gli SVG.

@@ -3566,4 +3566,29 @@ export const ES: Table = {
     "Los productos encontrados por código de barras contienen datos de Open Food Facts, disponibles bajo la Open Database License. Se mantienen separados de la lista del USDA.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Esta página solo la ves tú. Lo que escribes aquí se queda en tu teléfono; un código de barras que buscas va a Open Food Facts.",
+
+  // src/takeoffs (TASK-493 part C)
+  Takeoffs: "Despegues",
+  "Zoom in to see the takeoffs.": "Acerca el mapa para ver los despegues.",
+  "Zoom in to see all the takeoffs.": "Acerca el mapa para verlos todos.",
+  Landing: "Aterrizaje",
+  "Unnamed takeoff": "Despegue sin nombre",
+  "Unnamed landing": "Aterrizaje sin nombre",
+  "Official site": "Sitio oficial",
+  Faces: "Orientado al",
+  "Landings nearby": "Aterrizajes cercanos",
+  "{distance} away · {drop} lower": "a {distance} · {drop} más abajo",
+  "No landing within 15 km on OpenStreetMap.":
+    "Ningún aterrizaje a menos de 15 km en OpenStreetMap.",
+  "Takeoffs above": "Despegues encima",
+  "Flights from here": "Vuelos desde aquí",
+  "{flights} flights by {pilots} pilots": "{flights} vuelos de {pilots} pilotos",
+  "Today: {count}": "Hoy: {count}",
+  "Few flights from here yet.": "Aún pocos vuelos desde aquí.",
+  "In the air now: {count}": "En el aire ahora: {count}",
+  "Watch live": "Ver en directo",
+  Highest: "El más alto",
+  "Missing a takeoff? Add it on OpenStreetMap.":
+    "¿Falta un despegue? Añádelo en OpenStreetMap.",
+  "The takeoffs could not be loaded.": "No se pudieron cargar los despegues.",
 };

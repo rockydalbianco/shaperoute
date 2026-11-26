@@ -49,6 +49,15 @@ export const MATCH_TIMEOUT_MS = 15_000;
 /** After this many deaths of the WebView, the phone stops trying until the
  * app opens again: the server draws every route. */
 export const MAX_DEATHS = 2;
+/**
+ * Python's memory never shrinks (TASK-214 part F): after a big zone the
+ * page keeps it all, 1.3–1.4 GB after Berlin's 32 MB zone, for every route
+ * after it too, and iOS may close it during one of them. Past this much,
+ * a page with nothing more to do is dropped, and the next request mounts a
+ * new one, a few seconds of boot. Routes on Trento's zone took 338 MB, on
+ * Milan's 584 MB (the general check of 2026-11-26).
+ */
+export const MEMORY_RELEASE_MB = 700;
 
 type Job = {
   id: number;
@@ -244,6 +253,15 @@ export class PhoneEngine {
           ms: message.ms,
           memoryMb: message.memoryMb,
         });
+        // A zone read ahead is for the next route: it stays, however big.
+        if (
+          job.call !== "warm" &&
+          message.memoryMb > MEMORY_RELEASE_MB &&
+          this.queue.length === 0
+        ) {
+          this.reload();
+          return;
+        }
       } else {
         job.resolve({ kind: "failed", why: message.error });
         if (message.fatal) {
@@ -335,8 +353,9 @@ export class PhoneEngine {
     this.changed();
   }
 
-  /** A new page for Python that can no longer run; the requests waiting
-   * stay, for the new one. */
+  /** A new page for Python that can no longer run, or that holds too much
+   * memory; the requests waiting stay, for the new one. With none, the new
+   * page waits for the next request. */
   private reload(): void {
     this.clearBoot();
     this.link = null;

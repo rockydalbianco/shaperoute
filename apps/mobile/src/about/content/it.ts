@@ -7,9 +7,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * as TASK-210 G names them: «Feed», «Disegna», «Esplora».
  */
 
-const UPDATED = "10 novembre 2026";
+const UPDATED = "26 novembre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "24 novembre 2026";
+const PRIVACY_UPDATED = "26 novembre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -207,6 +207,14 @@ const terms: AboutDocument = {
           ],
         },
         "Distanze, tempi e velocità vengono dal GPS del telefono e sono stime.",
+      ],
+    },
+    {
+      heading: "Alimentazione",
+      blocks: [
+        "«Alimentazione» è un diario e una calcolatrice, non un servizio sanitario. MuW non è fatta da medici, dietisti o altri professionisti della salute.",
+        "Le calorie dei cibi, l'energia che consumi e, se la chiedi, la stima di un obiettivo del giorno vengono da tabelle e formule pubbliche. Sono stime, solo a scopo informativo: non sono un consiglio medico né dietetico e non sostituiscono un professionista che ti conosce.",
+        "Se hai meno di 18 anni, sei in gravidanza o allatti, hai una malattia, o hai o hai avuto un disturbo alimentare, parla con il tuo medico prima di contare le calorie o di cambiare quello che mangi.",
       ],
     },
     {
@@ -423,7 +431,7 @@ const privacy: AboutDocument = {
     {
       heading: "La tua posizione",
       blocks: [
-        "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server esatta come partenza di un percorso che chiedi, come partenza delle forme che l'app ti prepara qui vicino quando il telefono non riesce a disegnarle da solo, e dentro una corsa che salvi. Fuori dal percorso di una corsa, quando il telefono non trova da solo la strada per tornarci, va esatta al nostro server con il tratto di percorso davanti, per trovarla sulle vie: il server non le tiene. Va arrotondata a circa 1 km per trovare la mappa offline intorno a te, i percorsi consigliati, i paesi e i disegni vicini, e per mettere prima i luoghi vicini a te in una ricerca; così arrotondata non resta legata al tuo account. Quando condividi un'attività dal vivo, la tua posizione esatta va al nostro server e a chi ha il link, come spiegato in «Condivisione dal vivo».",
+        "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server esatta come partenza di un percorso che chiedi, come partenza delle forme che l'app ti prepara qui vicino quando il telefono non riesce a disegnarle da solo, e dentro una corsa che salvi. Fuori dal percorso di una corsa, quando il telefono non trova da solo la strada per tornarci, va esatta al nostro server con il tratto di percorso davanti, per trovarla sulle vie: il server non le tiene. Va arrotondata a circa 1 km per trovare la mappa offline intorno a te, gli atterraggi del parapendio vicini, il vento in quota per il volo, i percorsi consigliati, i paesi e i disegni vicini, e per mettere prima i luoghi vicini a te in una ricerca; così arrotondata non resta legata al tuo account. Il vento in quota lo scarica il nostro server da DWD ed ECMWF per zone intere, mai con la tua posizione. Quando condividi un'attività dal vivo, la tua posizione esatta va al nostro server e a chi ha il link, come spiegato in «Condivisione dal vivo».",
         "Su iPhone, durante una corsa che hai fatto partire, l'app continua a seguire la tua posizione anche a telefono bloccato o con un'altra app aperta, finché non fermi la corsa; l'iPhone lo mostra con un segno blu in cima allo schermo. MuW chiede la posizione solo mentre usi l'app, mai «Sempre».",
         "Come ogni servizio su internet, il nostro server vede l'indirizzo internet (IP) da cui arriva una richiesta mentre le risponde. Il log del server non scrive posizioni, e nel database non ci sono indirizzi IP.",
         "Un registro delle richieste di percorso, con la loro partenza, esiste per riprodurre un difetto. Sul nostro server è spento; acceso, tiene al massimo 10 MB, poi le righe più vecchie si perdono.",
@@ -459,8 +467,8 @@ const privacy: AboutDocument = {
     {
       heading: "Alimentazione",
       blocks: [
-        "«Alimentazione» è un diario che tieni per te. I cibi che aggiungi, il tuo piano della settimana, quello che scrivi di aver mangiato ogni giorno, il tuo obiettivo del giorno e le calorie che correggi a mano restano solo sul tuo telefono: non arrivano al nostro server e nessun altro può vederli. Il «Bilancio delle calorie» nel tuo profilo è calcolato sul telefono e lo vedi solo tu.",
-        "Per stimare l'energia che consumi, MuW conta sul telefono le attività del tuo account e i dati del corpo che hai inserito in «Impostazioni». Ogni numero è una stima: MuW non fornisce diete né consigli medici.",
+        "«Alimentazione» è un diario che tieni per te. I cibi che aggiungi, il tuo piano della settimana, quello che scrivi di aver mangiato ogni giorno, il tuo obiettivo del giorno, il motivo per cui hai detto di usarla e le calorie che correggi a mano restano solo sul tuo telefono: non arrivano al nostro server e nessun altro può vederli. Il «Bilancio delle calorie» nel tuo profilo è calcolato sul telefono e lo vedi solo tu.",
+        "Per stimare l'energia che consumi, MuW conta sul telefono le attività del tuo account e i dati del corpo che hai inserito in «Impostazioni». Se lo chiedi, MuW calcola anche, sul telefono, dagli stessi dati e con una formula pubblica, una stima di un obiettivo di calorie al giorno: solo dimostrativa, e mai mostrata a chi ha meno di 18 anni. Ogni numero è una stima: MuW non è fatta da professionisti della salute e non fornisce diete né consigli medici.",
         "Questi dati non sono mai stati sul nostro server, quindi uscire dall'account o eliminarlo non li cancella: restano sul telefono finché non li togli lì o non disinstalli l'app.",
       ],
     },

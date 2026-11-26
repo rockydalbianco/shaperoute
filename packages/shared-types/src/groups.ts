@@ -132,6 +132,14 @@ export interface GroupJoin {
 export type GroupPushKind =
   "group_join_request" | "group_join_accepted" | "group_invite";
 
+/**
+ * The push to the members of a group its admin deleted («Delete group»,
+ * part A3): `{ kind }` only, it opens nothing.
+ */
+export interface GroupDeletedPushData {
+  kind: "group_deleted";
+}
+
 /** The `data` of a group's notification. */
 export interface GroupPushData {
   kind: GroupPushKind;

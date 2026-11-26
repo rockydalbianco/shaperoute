@@ -635,6 +635,90 @@ File: `App.tsx`, `src/feed/PostPage.tsx`, `src/feed/editRunDoor.ts`, i
 test `PostPageInset.test.tsx` e `__tests__/AppEditRun.test.tsx` (nuovi),
 più questo task file. Entra dopo la #1079.
 
+## Parte E — il meteo, parte 0 (2026-11-26)
+
+Brief del Coordinatore (fork 3) del 2026-11-26, su scelta esplicita
+dell'utente riferita da Strategia. La scelta 4 («Sì, MET entro 3 ore») era
+già chiusa il 2026-11-07; qui le domande che restavano, una alla volta.
+
+**Un fatto di MET Norway**: Locationforecast dà le ore dall'ora in corso in
+avanti, non quelle passate. Il meteo della corsa è quindi quello dell'ora in
+cui il server lo chiede, al più 3 ore dopo la fine: detto all'utente nella
+domanda 1.
+
+Scelte dell'utente (2026-11-26):
+
+- **E1. La card**: **«Temperatura, cielo, vento»** (proposta). Simbolo MET e
+  temperatura grandi (°F con le miglia), sotto il vento (km/h, mph con le
+  miglia). Simboli e formati del meteo dello sci (`ski/ResortWeather.tsx`:
+  `symbolSign`, `temperatureLabel`). Solo per gli sport all'aperto: mai
+  palestra e piscina.
+- **E2. Il credito MET**: **«Solo nella pagina "Informazioni"»** (non la
+  proposta, che era sotto la card). La card non ha credito; una riga nuova fra
+  i «Services of others» dei Termini.
+- **E3. Corse senza meteo** (importate da file, inserite a mano, arrivate al
+  server più di 3 ore dopo la fine): **«Nessuna card»** (proposta). Il meteo
+  non si chiede mai dopo e non si riprova.
+- **E4. I testi**: **«Sì, approvo»**. «Wind» esiste e si riusa.
+
+  | en | it | es | de | fr |
+  |---|---|---|---|---|
+  | Weather | Meteo | Tiempo | Wetter | Météo |
+  | Weather: {temperature}, wind {speed} *(VoiceOver)* | Meteo: {temperature}, vento {speed} | Tiempo: {temperature}, viento {speed} | Wetter: {temperature}, Wind {speed} | Météo : {temperature}, vent {speed} |
+  | *Termini, Services of others:* The weather of posts and ski resorts comes from MET Norway (CC BY 4.0). | Il meteo dei post e delle stazioni sciistiche viene da MET Norway (CC BY 4.0). | El tiempo de las publicaciones y de las estaciones de esquí viene de MET Norway (CC BY 4.0). | Das Wetter in Beiträgen und Skigebieten kommt von MET Norway (CC BY 4.0). | La météo des publications et des stations de ski vient de MET Norway (CC BY 4.0). |
+
+- **E5. La riga della privacy**: **«Sì, approvo»**, con la proposta di
+  **escludere gli sport sulla neve**: la riga dello sci promette che a MET va
+  la posizione della stazione, «mai la tua». Va nella Privacy dell'app
+  (`about/content`, sezione dei post, accanto alla riga dello sci) e del
+  sito, in una PR di privacy **prima del codice**, in fila dopo #1619, la
+  479 D6 e la 493. Il credito di E4 va nella stessa PR (solo nell'app: il
+  sito non ha i Termini).
+
+  - en: When you save an activity outdoors within 3 hours of its end, our
+    server sends MET Norway its starting point, rounded to about 1 km, to ask
+    for the weather of that hour; MET Norway does not get your name. The
+    weather (temperature, sky and wind) shows on the post, for whoever can
+    see it.
+  - it: Quando salvi un'attività all'aperto entro 3 ore dalla fine, il nostro
+    server manda a MET Norway il suo punto di partenza, arrotondato a circa
+    1 km, per chiedere il meteo di quell'ora; MET Norway non riceve il tuo
+    nome. Il meteo (temperatura, cielo e vento) si vede sul post, per chi può
+    vederlo.
+  - es: Cuando guardas una actividad al aire libre en las 3 horas siguientes
+    a su final, nuestro servidor envía a MET Norway su punto de salida,
+    redondeado a cerca de 1 km, para pedir el tiempo de esa hora; MET Norway
+    no recibe tu nombre. El tiempo (temperatura, cielo y viento) se ve en la
+    publicación, para quien pueda verla.
+  - de: Wenn du eine Aktivität im Freien innerhalb von 3 Stunden nach ihrem
+    Ende speicherst, schickt unser Server MET Norway ihren Startpunkt, auf
+    etwa 1 km gerundet, um das Wetter dieser Stunde abzufragen; MET Norway
+    erhält deinen Namen nicht. Das Wetter (Temperatur, Himmel und Wind) steht
+    auf dem Beitrag, für alle, die ihn sehen können.
+  - fr: Quand tu enregistres une activité en plein air dans les 3 heures
+    après sa fin, notre serveur envoie à MET Norway son point de départ,
+    arrondi à environ 1 km, pour demander la météo de cette heure ; MET
+    Norway ne reçoit pas ton nom. La météo (température, ciel et vent)
+    apparaît sur la publication, pour qui peut la voir.
+
+**Come si farà** (proposta per il Coordinatore, decisioni tecniche
+dell'agente su delega dell'utente, da confermare con la lista dei file):
+
+- Il server chiede il meteo quando arriva `PUT /me/activities/{key}/stats`
+  (lo manda il telefono una volta dopo il salvataggio, anche le app di oggi),
+  **dopo la risposta**, fuori dalla transazione: `activities.py` resta com'è,
+  come per i passi della parte C.
+- Condizioni: `source = muw`, una traccia, sport non sulla neve, non palestra
+  né piscina, ora del server ≤ 3 h dalla fine (ultimo punto della traccia),
+  `stats.weather` ancora vuoto. Punto: il primo della traccia a 2 decimali
+  (~1 km), senza altitudine. Ora: quella di MET più vicina alla fine.
+- Lo stesso `MetTransport` di `resort_weather.py` (User-Agent, contatto,
+  timeout 4 s); MET che non risponde = niente meteo, nessun nuovo tentativo.
+- `stats.weather` = `{temperature_c, symbol, wind_ms}`; un altro `PUT …/stats`
+  non lo cancella. Si vede come le altre stats (nessun filtro: non dice niente
+  del corpo).
+- Nessuna migrazione, nessuna variabile nuova (`SHAPEROUTE_MET_CONTACT` c'è).
+
 ## Esito
 
 *(a fine task)*

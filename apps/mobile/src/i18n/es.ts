@@ -3591,4 +3591,75 @@ export const ES: Table = {
   "Missing a takeoff? Add it on OpenStreetMap.":
     "¿Falta un despegue? Añádelo en OpenStreetMap.",
   "The takeoffs could not be loaded.": "No se pudieron cargar los despegues.",
+  // src/air/ (TASK-479 part D4: the task passed on; approved by the user on 2026-11-23)
+  "Share file": "Compartir archivo",
+  "Show QR": "Mostrar QR",
+  "Task for XCTrack": "Manga para XCTrack",
+  "This task is too long for a QR code.":
+    "Esta manga es demasiado larga para un código QR.",
+  // src/groups (TASK-495 part B)
+  "Find your city": "Busca tu ciudad",
+  "New group": "Nuevo grupo",
+  "Choose photo": "Elegir foto",
+  "Remove photo": "Quitar foto",
+  Description: "Descripción",
+  "Sports (up to {count})": "Deportes (hasta {count})",
+  City: "Ciudad",
+  "Who can join": "Quién puede entrar",
+  Invite: "Invitar",
+  "Search by name": "Buscar por nombre",
+  "Nobody found.": "No se ha encontrado a nadie.",
+  Invited: "Invitado",
+  "Make admin": "Hacer admin",
+  "Make {name} the admin? You become a member.":
+    "¿Hacer admin a {name}? Tú pasas a ser miembro.",
+  "Remove from group": "Quitar del grupo",
+  "Remove {name} from the group?": "¿Quitar a {name} del grupo?",
+  "Make co-admin": "Hacer coadmin",
+  "Remove co-admin": "Quitar coadmin",
+  Members: "Miembros",
+  "Leave group": "Salir del grupo",
+  "Delete group": "Eliminar grupo",
+  "Delete {name}? Its members, requests and invites go with it. This can't be undone.":
+    "¿Eliminar {name}? Sus miembros, solicitudes e invitaciones se van con él. No se puede deshacer.",
+  "Leave {name}?": "¿Salir de {name}?",
+  Groups: "Grupos",
+  "Withdraw the request": "Retirar la solicitud",
+  "Accept invite": "Aceptar la invitación",
+  Unmute: "Reactivar",
+  Mute: "Silenciar",
+  "Mute only stops the news of new outings.":
+    "Silenciar solo detiene los avisos de nuevas salidas.",
+  "Requests ({count})": "Solicitudes ({count})",
+  "Next outings": "Próximas salidas",
+  "No outings yet.": "Aún no hay salidas.",
+  "All members ({count})": "Todos los miembros ({count})",
+  "Recent activity": "Actividad reciente",
+  "No activity in the last 14 days.": "Sin actividad en los últimos 14 días.",
+  "Past outings": "Salidas pasadas",
+  "No requests to join.": "No hay solicitudes para entrar.",
+  "Go out together: make a group, or join one.":
+    "Sal con otros: crea un grupo o únete a uno.",
+  Invites: "Invitaciones",
+  "Meet in a public place, never at your home. MuW doesn't organise or check groups or their outings. Everyone on MuW is 16 or older.":
+    "Quedad en un lugar público, nunca en tu casa. MuW no organiza ni controla los grupos ni sus salidas. En MuW todos tienen al menos 16 años.",
+  "Mountaineering is dangerous. MuW doesn't organise, guide or check groups, outings, routes or difficulty, and isn't a mountain guide. Everyone is responsible for their own experience, gear and safety.":
+    "El alpinismo es peligroso. MuW no organiza, no guía ni comprueba grupos, salidas, rutas ni dificultad, y no es un guía de montaña. Cada persona es responsable de su propia experiencia, equipo y seguridad.",
+  "Public@@group": "Público",
+  "Request to join": "Con solicitud",
+  "Invite only": "Solo con invitación",
+  Admin: "Admin",
+  "Co-admin": "Coadmin",
+  "This group isn't available.": "Este grupo no está disponible.",
+  // src/nutrition (TASK-489 part C2)
+  "Use Apple Health": "Usar Salud de Apple",
+  "MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there.":
+    "MuW lee tu energía activa y los entrenamientos que registraron otras apps, para contar la energía que gastas. Se leen en tu teléfono y se quedan ahí.",
+  "Active energy": "Energía activa",
+  "from Apple Health": "de Salud de Apple",
+  "Your activities are already inside Apple Health's active energy: they are not added again.":
+    "Tus actividades ya están dentro de la energía activa de Salud de Apple: no se suman otra vez.",
+  "Apple Health has nothing for this day: your activities are counted.":
+    "Salud de Apple no tiene nada para este día: se cuentan tus actividades.",
+  "Stop using Apple Health": "Dejar de usar Salud de Apple",
 };

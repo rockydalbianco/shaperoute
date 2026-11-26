@@ -123,7 +123,9 @@ test("there the bar is the real glass, regular and never tinted, where the veil 
   await bar("glass", 34);
   const piece = screen.getByTestId("tab-glass");
   expect(piece.props.glassEffectStyle).toBe("regular");
-  expect(piece.props.tintColor).toBeUndefined();
+  // Tinted with the tone's own background, never the yellow.
+  expect(piece.props.tintColor).toBe(glass.realTint);
+  expect(piece.props.tintColor).not.toBe(color.accent);
   const face = styleOf("tab-glass");
   expect(face.backgroundColor).toBeUndefined();
   expect(face.left).toBe(TAB_BAR_INSET);
@@ -176,6 +178,28 @@ test("the icons not on screen are the secondary text, 4.5:1 on the glass", async
     tintColor?: string;
   };
   expect(off.tintColor).toBe(color.textMuted);
+});
+
+function offTint(): string | undefined {
+  return (
+    StyleSheet.flatten(screen.getByTestId("tab-icon-off-Feed").props.style) as {
+      tintColor?: string;
+    }
+  ).tintColor;
+}
+
+test("on the real glass every icon is the full text colour: the secondary one does not keep 4.5:1 there", async () => {
+  mockGlassModule = REAL_GLASS;
+  await bar("glass");
+  expect(offTint()).toBe(color.text);
+  // The tab on screen is still told apart: its capsule, and the bolder line.
+  expect(styleOf("tab-capsule").backgroundColor).toBe(glass.selected);
+});
+
+test("«Reduce Transparency» on a phone with the real glass: opaque, so the icons are as before", async () => {
+  mockGlassModule = REAL_GLASS;
+  await bar("solid");
+  expect(offTint()).toBe(color.textMuted);
 });
 
 test("the capsules stand under the tabs of the glass, not of the screen", () => {

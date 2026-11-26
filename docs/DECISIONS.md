@@ -609,9 +609,63 @@ lasciando le righe d'indice.
 - ADR-0409 — «Sign up» e «Log in» gialli: il pulsante in fondo al modulo è `accent` con parole `onAccent`, un'eccezione scelta dall'utente a «il giallo è del percorso» · 2026-11-24 · Attiva
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
+- ADR-0412 — L'anteprima dal vivo di «Draw»: un'immagine di mappa del Feed a scatti di scala, la sagoma disegnata dall'app col primo punto del contorno sulla partenza · 2026-11-26 · Proposta
 
 
 ## Voci nuove
+
+## ADR-0412 — L'anteprima dal vivo di «Draw»: un'immagine di mappa a scatti di scala, la sagoma disegnata dall'app sulla partenza
+
+**Stato**: Proposta · 2026-11-26 · TASK-449 (parte 0). Che cosa si vede è
+**scelta dell'utente** (2026-11-26: «A, mappa vera»; «No, niente testo»;
+«Sì, anche immagini»; «Sì, resta com'è» per l'attesa di TASK-442); il come
+è deciso dall'agente su delega dell'utente. Numero dal Coordinatore.
+
+**Contesto**: idea I2 della prova dell'11 novembre 2026: mentre cambiano i
+km la sagoma si allarga sulla mappa, prima di calcolare. «Draw» è un modulo
+a tutta pagina: la mappa grande (una WebView con MapLibre) aspetta nascosta
+sotto, e l'anteprima di TASK-361 disegna la forma sempre alla stessa
+grandezza in un riquadro con due strade finte; cambia solo la barra di
+scala. Una seconda mappa viva dentro il modulo costerebbe una seconda
+WebView sempre accesa; aprire il modulo sopra la mappa grande rifarebbe la
+pagina. Il Feed ha già una pagina di mappa nascosta che scatta immagini per
+una inquadratura data (TASK-162, ADR-0131), e la scheda delle pagine ne
+tiene una montata (TASK-480).
+
+**Decisione**:
+- **La mappa è un'immagine**, chiesta con `useFeedMap` com'è: nessuna
+  modifica a `feed/FeedMaps.tsx` né alla sua pagina. L'inquadratura si dà
+  come una linea di due punti, gli angoli opposti del riquadro, che
+  `lineCamera` inquadra per intero.
+- **Il riquadro va a scatti**: ogni scatto guarda un pezzo di terreno largo
+  il doppio del precedente, ed è centrato sul contorno alla distanza più
+  grande che ci entra. Dentro uno scatto la mappa non cambia e solo la
+  sagoma cresce: un tocco di − o + non chiede un'immagine e non passa dal
+  ponte della WebView. Un'immagine per partenza, forma e scatto, tenuta
+  come quelle del Feed.
+- **La sagoma la disegna l'app**, sopra l'immagine: segmenti tratteggiati
+  col token `shapeGhost` (la stessa sagoma del risultato di TASK-442), il
+  pallino della partenza `route.color`. Si ricalcola a ogni cambio della
+  distanza: una funzione pura, al più 148 punti di contorno.
+- **Dove sta**: il primo punto del contorno (`lookOf(...).start`) sulla
+  partenza, nord in alto, lunga quanto la distanza chiesta. È il primo
+  piazzamento che il motore prova (ROUTE_ENGINE.md §3), non quello che
+  sceglie: il motore può girarla, cambiare fase e correggere la scala.
+  L'app non lo dice a parole (scelta dell'utente: nessun testo nuovo);
+  resta «≈ L × A km». I conti sono in metri sul piano tangente alla
+  partenza (`mapdraw/plane.ts`), mai in gradi.
+- **Quando non c'è**: senza partenza, per una parola, e dove il server
+  mette la forma liberamente (acqua e neve, `isPlacedFree`) resta
+  l'anteprima di TASK-361.
+- L'attesa e la sagoma del risultato di TASK-442 non cambiano.
+
+**Conseguenze**: l'immagine arriva dalla rete, dopo la sagoma; finché non
+c'è la sagoma sta sul fondo della mappa, e senza rete resta così. Le
+immagini dell'anteprima fanno la coda con quelle del Feed, una alla volta.
+La sagoma può non coincidere con dove il motore metterà la forma: è il
+prezzo di non calcolare niente prima di «Draw», e l'app non promette
+altro che la grandezza. Nessun cambio al motore, all'API o al contratto;
+solo JS/TS, l'impronta iOS non cambia.
 
 ## ADR-0409 — «Sign up» e «Log in» gialli
 

@@ -5,8 +5,8 @@
 `feat/TASK-449-a-live-preview`; parte B `feat/TASK-449-b-picture-preview`
 **Dipende da**: TASK-361 (l'anteprima in scala di «Draw»), TASK-442 (la
 sagoma fantasma), TASK-162 (le immagini di mappa del Feed)
-**ADR**: da chiedere al Coordinatore · numero del task dal Coordinatore
-l'11 novembre 2026 (I2 di `out/prova-app-2026-11-11/PROPOSTE.md`); avviato
+**ADR**: ADR-0412 (dal Coordinatore, 2026-11-26) · numero del task dal
+Coordinatore l'11 novembre 2026 (I2 di `out/prova-app-2026-11-11/PROPOSTE.md`); avviato
 dall'utente il 2026-11-26 («Avvia la 449»)
 
 ## Obiettivo
@@ -116,7 +116,8 @@ dell'utente nel riepilogo:
 
 ## File toccati
 
-Proposti; diventano definitivi col sì del Coordinatore.
+Approvati dal Coordinatore il 2026-11-26. `App.tsx` è a turno: una riga
+sola, dentro la PR della parte A; se ne serve più di una ci si ferma.
 
 Parte A:
 
@@ -151,6 +152,10 @@ Documenti (PR di soli documenti): `docs/tasks/TASK-449.md`,
 ## Dove sono arrivato
 
 - 2026-11-26: letto il codice su `origin/main` (`aed5ca3f`); nessuna PR né
-  worktree sulla 449. Quattro risposte dell'utente (sopra). Lista dei file
-  mandata al Coordinatore, con la richiesta di un numero di ADR e del turno
-  di `App.tsx`; in attesa del suo sì e del sì dell'utente al riepilogo.
+  worktree sulla 449. Quattro risposte dell'utente (sopra). Sì del
+  Coordinatore alla lista dei file, ADR-0412, turno di `App.tsx` per una
+  riga; `RoutePanel.tsx` e `ImageChoice.tsx` liberi (la riga di AGENTI.md
+  su #1190 è vecchia). La PR di soli documenti della parte 0 la apre il
+  task e la unisce il Coordinatore. Il simulatore si chiede a lui, in coda
+  dopo 469 e un'altra sessione. In attesa: il sì dell'utente al riepilogo
+  (le due conseguenze).

@@ -72,3 +72,18 @@ it("goes back where it was when the drag is taken away", async () => {
   expect(handlers.onDrop).not.toHaveBeenCalled();
   expect(screen.queryByTestId("cell-landing")).toBeNull();
 });
+
+it("leaves a drag from the corner to the corner, not to the widget", async () => {
+  const handlers = await show(true);
+  const view = screen.getByTestId("cell-drag");
+  const handle = screen.getByTestId("cell-handle");
+  // The capture runs from the widget down to the handle.
+  await fireEvent(view, "startShouldSetResponderCapture", touch(190, 100));
+  await fireEvent(handle, "startShouldSetResponderCapture", touch(190, 100));
+  await fireEvent(handle, "responderGrant", touch(190, 100));
+  expect(view.props.onMoveShouldSetResponderCapture(touch(90, 100))).toBe(false);
+  await fireEvent(handle, "responderMove", touch(90, 100));
+  await fireEvent(handle, "responderRelease", touch(90, 100));
+  expect(handlers.onStretch).toHaveBeenCalledWith(1, 1);
+  expect(handlers.onDrop).not.toHaveBeenCalled();
+});

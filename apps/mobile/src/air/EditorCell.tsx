@@ -53,6 +53,9 @@ export function EditorCell({
   const [drag, setDrag] = useState<Drag | null>(null);
   // Where the touch began, to tell a drag from a tap.
   const start = useRef<{ x: number; y: number } | null>(null);
+  // A touch that began on the corner handle sizes: the widget around it
+  // must not take it to move (seen on the simulator, 2026-11-26).
+  const onHandle = useRef(false);
   const left = (col: number) => grid.gap + col * (grid.cellW + grid.gap);
   const top = (row: number) => grid.gap + row * (grid.cellH + grid.gap);
   const width = (w: number) => grid.cellW * w + grid.gap * (w - 1);
@@ -85,6 +88,7 @@ export function EditorCell({
     }
     setDrag(null);
     start.current = null;
+    onHandle.current = false;
   };
   const touchStart = (event: GestureResponderEvent) => {
     start.current = at(event);
@@ -128,9 +132,11 @@ export function EditorCell({
       <View
         onStartShouldSetResponderCapture={(event) => {
           touchStart(event);
+          // A new touch: the handle says so itself, after this.
+          onHandle.current = false;
           return false;
         }}
-        onMoveShouldSetResponderCapture={(event) => moved(event)}
+        onMoveShouldSetResponderCapture={(event) => !onHandle.current && moved(event)}
         onResponderGrant={(event) => grant("move", event)}
         onResponderMove={(event) => follow(event)}
         onResponderRelease={(event) => finish(event)}
@@ -166,9 +172,9 @@ export function EditorCell({
           <View
             onStartShouldSetResponderCapture={(event) => {
               touchStart(event);
+              onHandle.current = true;
               return true;
             }}
-            onMoveShouldSetResponderCapture={(event) => moved(event)}
             onResponderGrant={(event) => grant("size", event)}
             onResponderMove={(event) => follow(event)}
             onResponderRelease={(event) => finish(event)}
@@ -198,8 +204,9 @@ const styles = StyleSheet.create({
   },
   handle: {
     position: "absolute",
-    right: -HANDLE / 3,
-    bottom: -HANDLE / 3,
+    // Inside the corner: a widget on the screen's edge keeps it whole.
+    right: 2,
+    bottom: 2,
     width: HANDLE,
     height: HANDLE,
     borderRadius: HANDLE / 2,

@@ -5185,6 +5185,7 @@ del gruppo arrivano con la parte C.
 | `GET /me/groups` | i propri gruppi, per nome, e gli inviti | `200` `MyGroups` |
 | `GET /groups/{id}` | la pagina del gruppo | `200` `GroupDetail` |
 | `PUT /groups/{id}` | l'admin cambia il gruppo, tutto | `200` `GroupDetail` |
+| `DELETE /groups/{id}` | l'admin cancella il gruppo, con chi c'è dentro (parte A3) | `204` |
 | `PUT /groups/{id}/photo` | l'admin mette la foto (`{ "image": "…" }`, come `PUT /me/photo`) | `200` `GroupDetail` |
 | `DELETE /groups/{id}/photo` | l'admin la toglie | `204` |
 | `PUT /groups/{id}/membership` | «Join» | `200` `GroupJoin` |
@@ -5264,6 +5265,13 @@ del gruppo arrivano con la parte C.
   segnalato il suo admin. L'email lo chiama «group», con nome,
   descrizione, città, ingresso e se ha la foto; il link nasconde
   (`groups.hidden_at`).
+- **«Delete group»** (`DELETE /groups/{id}`, parte A3, scelta dell'utente
+  del 2026-11-24): solo l'admin (`403` «Only the group's admin can do
+  this.»); i membri ricevono `group_deleted` («{name} deleted the group
+  {title}.»), i cui dati sono solo `{ kind }`: il gruppo non c'è più e la
+  push non apre niente. Poi il gruppo se ne va con membri, richieste, inviti
+  e foto (`ON DELETE CASCADE`). Un'API di prima risponde `405`: l'app lo
+  dice e il gruppo resta.
 - **`DELETE /me`**: prima della cancellazione il ruolo di admin passa al
   co-admin più vecchio nel ruolo, poi al membro più vecchio nel gruppo; un
   gruppo senza nessun altro si cancella (`app.state.before_account_delete`).

@@ -3593,6 +3593,9 @@ export const FR: Table = {
   "Remove co-admin": "Retirer co-admin",
   Members: "Membres",
   "Leave group": "Quitter le groupe",
+  "Delete group": "Supprimer le groupe",
+  "Delete {name}? Its members, requests and invites go with it. This can't be undone.":
+    "Supprimer {name} ? Ses membres, demandes et invitations partent avec lui. C'est définitif.",
   "Leave {name}?": "Quitter {name} ?",
   Groups: "Groupes",
   "Withdraw the request": "Retirer la demande",

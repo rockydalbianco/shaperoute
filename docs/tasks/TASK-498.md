@@ -183,6 +183,38 @@ un minuto, poi 30 s dopo cinque) e la pagina intera una volta al minuto:
   costa il ridisegno della lista; le foto vere degli utenti; una pagina
   con foto, video, post o live nei messaggi (pesa di più di questa).
 
+## Controlli dopo il passo sul server (parte A)
+
+Nessuna migrazione, nessuna variabile nuova, niente da riavviare oltre
+all'API. Prima del passo, che lo SHA abbia la parte A:
+
+```
+git show $SHA:services/api/shaperoute_api/messages.py | grep -c 'def news'    # 1
+```
+
+Dopo, con la chiave dell'API (`$KEY`), il token di un account di prova
+(`$TOKEN`) e il `public_id` di un altro account (`$OTHER`) con cui ha, o
+non ha ancora, una conversazione:
+
+```
+H='-H "X-API-Key: $KEY" -H "Authorization: Bearer $TOKEN"'
+U=http://127.0.0.1:8000/conversations/$OTHER/messages
+# 1. La pagina di sempre: 200, con `person` e in più `latest` (una stringa).
+curl -s $H "$U?with=attachments" | python3 -c 'import json,sys; b=json.load(sys.stdin); print(sorted(b)); print(b["latest"])'
+#    attesi: ['attachments', 'latest', 'messages', 'next', 'person', 'state'] e un posto «numero-32 cifre esadecimali»
+# 2. Solo i nuovi dopo quel posto ($LATEST = il valore stampato sopra): 200, corta, senza `person`.
+curl -s $H "$U?with=attachments&after=$LATEST"
+#    attesa: {"state":"…","messages":[],"more":false,"latest":"$LATEST"}
+# 3. `after` insieme a `cursor`: 422.
+curl -s -o /dev/null -w "%{http_code}\n" $H "$U?after=$LATEST&cursor=$LATEST"
+# 4. Senza token: 401 come prima.
+curl -s -o /dev/null -w "%{http_code}\n" -H "X-API-Key: $KEY" "$U?after=$LATEST"
+```
+
+Un'app di oggi non chiede mai `?after=`: per lei cambia solo il campo in
+più nella pagina, che ignora. Tornare indietro è sicuro: l'app nuova senza
+`latest` legge la pagina come oggi.
+
 ## Cronologia
 
 - 2026-11-26: riverificato su `c33f3920`, misura del «prima», disegno,

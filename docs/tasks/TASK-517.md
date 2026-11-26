@@ -32,9 +32,51 @@ Solo JavaScript: arriva con un OTA, senza build nativa.
 - `apps/mobile/src/watch/watchLink.test.ts`
 - `docs/tasks/TASK-517.md` (nuovo)
 
+## Parte B — patch nativa della libreria (taglio nativo)
+
+Assegnata da fork 3 il 2026-11-27. La parte JavaScript non manda più
+trasferimenti senza l'app sull'orologio; resta il caso di un
+trasferimento che fallisce con l'app installata, che chiude l'app allo
+stesso modo.
+
+`apps/mobile/scripts/patch-watch-connectivity.js` scrive in
+`node_modules/react-native-watch-connectivity/ios/WatchConnectivity.mm`
+due controlli `?: @{}`: su `[userInfoTransfer userInfo]` (riga 489, il
+crash) e su `error.userInfo` dell'errore di un file ricevuto (riga 383,
+stesso tipo di crash). L'errore in sé non serve controllarlo: tutte e due
+le righe sono dentro `if (error)`, e `dictionaryFromError` (util.m) salta
+già un `userInfo` nil.
+
+Lo lancia il `postinstall` dello `package.json` della **radice**, non
+quello dell'app: `@expo/fingerprint` legge gli `scripts` dello
+`package.json` dell'app in tutte e due le impronte, mentre la libreria è
+collegata solo su iOS (`react-native.config.js`). Così cambia solo
+l'impronta iPhone, e l'Android tiene la sua. Niente patch-package
+(sarebbe una dipendenza nuova).
+
+Come si comporta lo script:
+- libreria non installata: lo dice ed esce 0;
+- versione diversa da 2.0.0, o righe né originali né già corrette: esce 1
+  con un messaggio, così un aggiornamento della libreria ferma l'install
+  invece di perdere la patch in silenzio;
+- seconda passata: non cambia nulla.
+
+Il test (`patch-watch-connectivity.test.ts`) gira con jest dell'app, cioè
+nel job `mobile` della CI (`npm test`), su copie temporanee del file, e
+controlla anche la libreria installata.
+
+Entra col taglio nativo (sì dell'utente il 2026-11-27): cambia l'impronta
+iOS, che si misura al taglio.
+
+### File toccati (parte B)
+
+- `apps/mobile/scripts/patch-watch-connectivity.js` (nuovo)
+- `apps/mobile/scripts/patch-watch-connectivity.test.ts` (nuovo)
+- `package.json` (radice: `postinstall`)
+- `docs/tasks/TASK-517.md`
+
 ## Resta
 
 - OTA (produzione e app di prova) col sì dell'utente; prova sul telefono.
-- Nella build nativa successiva valutare una patch della libreria
-  (userInfo nil), per un trasferimento che fallisce con l'app installata.
+- Parte B: entra nella build del taglio nativo; impronta iOS misurata lì.
 - Chiusura: riga in `docs/archive/COMPLETATI.md`.

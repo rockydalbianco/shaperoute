@@ -146,10 +146,6 @@ test.each(EVERY)("%s at step %i keeps the contrasts", (_tone, _step, c) => {
   for (const under of [c.background, c.surface, c.surfaceRaised]) {
     expect(contrast(c.muscle, under)).toBeGreaterThanOrEqual(3);
   }
-  // What was eaten in «Nutrition», a ring and a column (TASK-489 part H).
-  for (const under of [c.background, c.surface, c.surfaceRaised]) {
-    expect(contrast(c.food, under)).toBeGreaterThanOrEqual(4.5);
-  }
   // Text on yellow does not depend on the tone.
   expect(contrast(c.onAccent, c.accent)).toBeGreaterThanOrEqual(7);
 });

@@ -168,6 +168,7 @@ from shaperoute_api.track_scores import score_run
 from shaperoute_api.user_photos import install_user_photos
 from shaperoute_api.vo2max import install_vo2max
 from shaperoute_api.way_back_api import install_way_back
+from shaperoute_api.winds.api import install_winds
 
 log = logging.getLogger(__name__)
 
@@ -884,5 +885,7 @@ def create_app(
     install_gear(app)
     # The takeoffs and landings of OpenStreetMap (TASK-493, ADR-0400).
     install_flying_sites(app)
+    # The wind aloft for paragliding (TASK-479 part H): no run, no wind (503).
+    install_winds(app)
 
     return app

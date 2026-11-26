@@ -601,6 +601,7 @@ lasciando le righe d'indice.
 - ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
 - ADR-0403 — Le proprie bolle nei messaggi sul giallo dell'app: una faccia piena `accent` con parole `onAccent`, non vetro; quello che la bolla porta su una piastra neutra · 2026-11-23 · Attiva
 - ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Attiva
+- ADR-0406 — Il proprietario dei dati sul telefono è il `public_id` sul suo server, non l'id numerico; la corsa, gli allenamenti in corso e i dati del corpo sono di ogni account, nascosti finché rientra · 2026-11-26 · Attiva
 - ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella: rotte a parte (`/drawings/{id}/gear`, `/gear/{id}`), `gear_id` sul tag col `SET NULL`, il limite una riga sola nella campanella per attrezzo e limite, «From my gear» coi tipi della foto · 2026-11-23 · Attiva
 - ADR-0264, aggiunta (TASK-496) — Con l'app dietro i punti nuovi vanno in un diario accanto al file della corsa, il file intero ogni tanto; in tasca la mappa non riceve niente e l'orologio non scatta · 2026-11-23 · Attiva
 - ADR-0397, precisazione 5 — «Nutrition» anche dal profilo e a fine attività, la pagina del giorno animata (anelli su una scala, macronutrienti senza obiettivo), l'obiettivo di calorie proposto da MuW solo come stima in secondo piano con protezioni, il controllo del peso, la lettura dell'energia attiva dopo una build successiva · 2026-11-24 · Attiva
@@ -612,6 +613,65 @@ lasciando le righe d'indice.
 
 
 ## Voci nuove
+
+## ADR-0406 — Il proprietario dei dati sul telefono è il public_id sul suo server, non l'id numerico
+
+**Stato**: Attiva · 2026-11-26 · TASK-507. Le due regole su cosa vede un
+altro account sono **scelte dell'utente** (2026-11-23: «Nascosta finché
+rientra», «Di ogni account»); il modo è deciso dall'agente su delega
+dell'utente. Numero dal Coordinatore.
+
+**Contesto**: nella prova al simulatore del 23 novembre 2026 un account
+appena creato aveva «Le mie attività: 3». Erano tre sessioni di stretching
+di una prova del 21-11, rimaste nella coda del telefono e partite col
+nuovo account, perché il database nuovo gli aveva ridato lo stesso
+`User.id` (`out/TASK-507/VERIFICA.md`). Tutte le code del telefono
+riconoscevano il proprietario solo da quel numero; la corsa e gli
+allenamenti in corso non ne avevano nessuno, e su un telefono condiviso
+passavano a chi entrava dopo. In produzione i numeri non si ripetono e
+niente è arrivato al server.
+
+**Decisione**:
+- **Chi è il proprietario** (`account/phoneOwners.ts`): per ogni numero
+  visto il telefono ricorda il `public_id` (un UUID che il server non ridà
+  mai) e il server. A ogni ingresso, prima che una coda parta, se il numero
+  ora è di un'altra persona o di un altro server, ciò che aspettava sotto
+  di lui si lascia andare. Un account visto per la prima volta prende ciò
+  che aspetta col suo numero, come prima.
+- **La cancellazione dell'account** (`forgetPhoneDataOf`) svuota tutto
+  quello che il telefono tiene per lui: code, sonno, palestra, schede e
+  storico, piscina, stretching, foto, corpo e cuore, corse messe da parte,
+  allenamenti in corso e dell'orologio. Prima ne svuotava cinque.
+- **L'account dentro adesso** (`account/currentOwner.ts`): detto da
+  `useAccount` prima che l'app mostri qualcosa; `useCurrentOwner()` per le
+  schermate. Con nessuno dentro non si vede niente di nessun account.
+- **Corpo e cuore di ogni account**: `body.json` diventa `body.<id>.json`,
+  lo stesso `heart.json`; il file di prima va al primo account che entra.
+  Ricerche e città recenti si cancellano all'uscita. Lingua, unità, tono,
+  mappe e luoghi scaricati restano del telefono; la zona di casa si
+  cancellava già all'uscita.
+- **Le cose in corso hanno un proprietario**: `SavedRun.owner` nel file
+  intero della corsa (mai nelle righe del diario); la corsa di un altro
+  account va da parte con il suo diario (`current-run.<id>[-n].json`), non
+  si scrive mai sopra e torna quando l'account rientra e il posto è libero.
+  Palestra e nuotata in corso: un elemento per account. Allenamenti
+  dell'orologio: l'account dentro quando sono arrivati, 10 per account.
+  Una corsa senza proprietario (di prima, o senza account) è di chiunque.
+- **Lo schermo** (`App.tsx`): la fine di una corsa di un altro account
+  sparisce quando cambia l'account; quella dell'account che entra appare
+  come all'apertura. Lo stato si aggiusta durante il render, non in un
+  effetto (`react-hooks/set-state-in-effect`).
+
+**Conseguenze**: una coda o un file nuovo del telefono che tiene dati di un
+account deve avere il suo proprietario e la sua funzione di cancellazione
+chiamata da `forgetPhoneDataOf`; un file personale si nomina con
+`ownerFile`. Se la sessione scade durante una corsa, la sua fine non si
+vede finché non rientra quell'account: poi compare e si salva. Nessun
+testo nuovo, niente di nativo, niente sul server; la privacy resta vera.
+Controllato da `phoneOwners.test.ts`, `accountData.test.ts`,
+`trackStoreOwner.test.ts`, `workoutStoreOwner`, `poolStoreOwner`,
+`watchRunsOwner` e `AppRunOwner.test.tsx`, e dalla prova al simulatore di
+B1 (2026-11-24).
 
 ## ADR-0409 — «Sign up» e «Log in» gialli
 

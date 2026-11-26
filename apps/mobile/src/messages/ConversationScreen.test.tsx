@@ -8,7 +8,9 @@ import { ConversationScreen, merged } from "./ConversationScreen";
 import { MessagesContext, type MessagesDoor } from "./messagesDoor";
 
 // One conversation (TASK-319): read again while it is on screen, the new
-// messages over the ones held, a deleted one gone.
+// messages over the ones held, a deleted one gone. After the first page it
+// asks only what came after it (TASK-498; the rhythm and the rest are in
+// ConversationReading.test.tsx).
 
 const URL = "http://api";
 const signedIn: AccountState = { status: "signedIn", session: session as Session };
@@ -38,15 +40,25 @@ test("open, it is read again, and a new message shows", async () => {
     "2026-10-26T09:30:00Z",
     "Are you coming?",
   );
-  const answers = [page, { ...page, messages: [newer, theirs, mine] }];
+  const whole = `${URL}/conversations/${ada.public_id}/messages?with=attachments`;
+  const place = "1793007000000000-e3b1c0d2000040008000000000000001";
+  const asked: string[] = [];
   const fetchFn = jest.fn(async (input: string, init?: RequestInit) => {
     if (init?.method === "PUT") {
       return new Response(null, { status: 204 });
     }
-    expect(input).toBe(
-      `${URL}/conversations/${ada.public_id}/messages?with=attachments`,
-    );
-    return Response.json(answers.length > 1 ? answers.shift() : answers[0]);
+    asked.push(input);
+    if (input === whole) {
+      return Response.json(page);
+    }
+    // What came after the page's newest message: once, then nothing.
+    const first = input === `${whole}&after=${page.latest}`;
+    return Response.json({
+      state: "open",
+      messages: first ? [newer] : [],
+      more: false,
+      latest: place,
+    });
   });
   const recount = jest.fn();
   const door: MessagesDoor = {
@@ -74,6 +86,13 @@ test("open, it is read again, and a new message shows", async () => {
   expect(await screen.findByText(theirs.text)).toBeOnTheScreen();
   expect(await screen.findByText("Are you coming?")).toBeOnTheScreen();
   expect(screen.getByText(mine.text)).toBeOnTheScreen();
+  // The page once; then only what is new, from the place of the last answer.
+  await waitFor(() => expect(asked.length).toBeGreaterThan(2));
+  expect(asked.slice(0, 3)).toEqual([
+    whole,
+    `${whole}&after=${page.latest}`,
+    `${whole}&after=${place}`,
+  ]);
   // Each new message of the other is marked read once.
   const reads = fetchFn.mock.calls.filter(([, init]) => init?.method === "PUT");
   expect(reads.map(([url]) => url)).toEqual([

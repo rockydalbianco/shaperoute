@@ -57,7 +57,7 @@ ciano di «Start here».
 | `energy` | `#FF6363` (scuro, fino a `#FFA3A3` al passo più chiaro); `#8F1216`–`#B71C1C` nel tono chiaro | le calorie, ovunque si vedano: riquadri della corsa e della neve, piscina, palestra, la riga del post e dell'attività, i riquadri e le righe della pagina del post (TASK-424 parte C3, scelta dell'utente del 2026-11-10: «segnate con colore rosso in tutte»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo. Sul giallo della palestra `energyOnAccent` `#8F1216` (6,3:1), sopra una foto `energyOnScrim` `#FF6363` (6,8:1 sul velo) |
 | `scrim`, `onScrim` | `#0B0A08`, `#FFFFFF` | il buio del tour (TASK-266) e il velo sotto le parole sulle foto (`Scrim`, TASK-339); il bordo della luce |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
-| `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il cono di «Compass»; il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
+| `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il suo cono su «Compass» e «Map» (TASK-519); il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
 | `north` | `#FF5B4F` | la punta della freccia del nord (TASK-431); nel tono chiaro `#C42F24` |
 | `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | nessuno dal TASK-218: «Connect with Strava» (TASK-187) ora è l'immagine ufficiale di Strava, con i suoi colori dentro (ADR-0181); da togliere quando `tokens.ts` è libero |
 | `map.*` | dal `#100F0C` al `#3F3B34` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
@@ -649,8 +649,25 @@ questi, non dalla trasparenza, ed è il prezzo dei 4,5:1 sopra una foto
 bianca o nera. La capsula della scheda attiva è il testo al 12%; le icone
 spente sono `textMuted`. Con «Riduci trasparenza» la barra è `surface`
 opaca, con «Aumenta contrasto» opaca col bordo `borderStrong`. La fascia
-sotto la barra resta alta quanto prima: le pagine non ci passano sotto. Il
-vetro vero (`expo-glass-effect`) è la parte B, in una build dopo la 1.1.0.
+sotto la barra resta alta quanto prima: le pagine non ci passano sotto.
+
+**La barra in vetro vero** (TASK-469 B2, scelta dell'utente del
+2026-11-26; bozza #1562, arriva con la prossima build nativa): dove il
+telefono disegna il vetro vero (iOS 26 e seguenti, un'app costruita con
+`expo-glass-effect`) la capsula è il vetro di iOS e **la barra galleggia
+sopra le pagine**, che le passano sotto fino al bordo; la sfocatura tiene
+leggibili le icone sopra quello che passa dietro. Su ogni altro telefono
+la barra è quella descritta sopra: col vetro velato non galleggia, perché
+senza sfocatura il testo di un post si leggerebbe dietro le icone. Con
+«Riduci trasparenza» e «Aumenta contrasto» la barra galleggia opaca.
+
+Due regole che valgono già oggi. **Una pagina nuova della barra delle
+schede** chiede la stanza con `useTabBarRoom()` (`src/tabs/tabBarRoom.ts`)
+e la aggiunge alla fine del suo scorrimento e sotto quello che tiene in
+basso; poi si mette nella lista di `src/tabs/TabBarRoom.test.tsx`. La
+stanza è 0 finché la barra non galleggia. **`expo-glass-effect` non si
+importa mai direttamente**: sempre attraverso `src/ui/NativeGlass.tsx`,
+che lo carica solo dove c'è e altrove disegna il vetro velato.
 
 **Il movimento della barra** (TASK-388, ADR-0329): dietro la scheda attiva
 una capsula morbida (`surfaceRaised`) che scivola alla nuova con la molla
@@ -1931,9 +1948,16 @@ l'app, come «Find friends»:
   sent. You can write again when {name} accepts it.»; per una richiesta
   ricevuta, «{name} wants to send you a message.» e i tre tasti «Accept»,
   «Delete», «Block» (rosso; chiede prima, con il testo del blocco).
-  «Delete» chiude la conversazione. Si rilegge ogni 5 secondi mentre è
-  aperta, e quando l'app torna sullo schermo; l'altro che scrive la segna
-  letta (nessuna conferma all'altro).
+  «Delete» chiude la conversazione. Mentre è aperta chiede **solo i
+  messaggi nuovi** (TASK-498, scelta dell'utente del 2026-11-26): ogni 5
+  secondi finché ci si scrive; dopo un minuto senza messaggi ogni 15
+  secondi, dopo cinque minuti ogni 30; torna a 5 secondi quando arriva un
+  messaggio, quando se ne manda uno e quando l'app torna sullo schermo. La
+  pagina intera si rilegge all'apertura, al ritorno nell'app e una volta
+  al minuto: è lei a portare un messaggio cancellato dall'altro, il suo
+  nome e la sua foto, una scheda cambiata. Una risposta che non cambia
+  niente non ridisegna la schermata. Con l'app dietro non chiede; l'altro
+  che scrive la segna letta (nessuna conferma all'altro).
 - **Una conversazione senza messaggi** (TASK-458, scelta dell'utente): al
   centro la foto e il nome, «Say hi to {name}.» e tre spunti a capsula —
   «Hi {name}!», «I like your drawings», «Shall we run together?» — che
@@ -4308,17 +4332,19 @@ più giù).
 variante «B» scelta dall'utente il 2026-11-10). Mentre si corre il
 segnaposto sulla mappa è una freccia chiara e grande (42 punti), con un
 bordo scuro per leggersi sul giallo, dentro un anello azzurro (`you`, pieno
-al 22 %), girata dove si sta andando; su «Compass» davanti ha anche il cono
-azzurro (sopra). Il riquadro della freccia lascia passare le dita: chi tocca
+al 22 %), girata dove si sta andando; su «Compass» e su «Map» (TASK-519) punta dove
+punta il telefono e davanti ha il cono azzurro (sopra). Il riquadro della freccia lascia passare le dita: chi tocca
 il cono sposta la mappa. La mappa resta col
 nord in alto, o **girata come il disegno** quando il percorso è inclinato
 (TASK-232, scelta dell'utente: chi corre vede la forma dritta come l'ha
 scelta). La freccia segna sempre dove si va davvero: è girata con la
 mappa. Il fatto e il da fare sono linee della mappa e girano con lei. La
 freccia del nord c'è anche qui, sotto il riquadro della svolta, con gli
-stessi due tocchi; la scelta vale fino alla fine della corsa. La direzione viene dalla traccia, dagli ultimi 10 m: serve
-qualche passo perché compaia (prima c'è il segnaposto di sempre), e da
-fermi resta quella di prima. A fine corsa torna il segnaposto.
+stessi due tocchi; la scelta vale fino alla fine della corsa. Su «Map» la direzione è quella della
+bussola, anche da fermi, mentre la mappa non gira (TASK-519, aggiunta ad
+ADR-0359); correndo con la bussola poco calibrata, o senza bussola, viene
+dalla traccia degli ultimi 10 m. Su «Data» e in tasca la bussola è spenta.
+A fine corsa torna il segnaposto.
 
 **Il fatto e il da fare** (TASK-224, ADR-0186; chiesto dall'utente il
 2026-10-03, stile approvato su un'anteprima). Mentre si corre un percorso,

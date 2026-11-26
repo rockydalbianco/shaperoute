@@ -23,9 +23,10 @@ it, or when it is not hidden (from a report's email, TASK-291) and not
 the members see: who is outside sees how many they are (GRUPPI.md §5,
 §11). Two members kept apart do not see each other in the list.
 
-Three pushes (push.py): a request to join, to the admin and the
+Four pushes (push.py): a request to join, to the admin and the
 co-admins; the request accepted, to who asked; an invite, to who is
-invited. The outings of a group, and their push, come with part C.
+invited; the group deleted by its admin («Delete group», part A3), to its
+members, opening nothing. The outings of a group, and their push, come with part C.
 
 Deleting an account deletes its memberships, requests and invites (ON
 DELETE CASCADE), after the admin's role is passed (before_account_delete).
@@ -444,7 +445,8 @@ def _tell(pusher_of: PusherOf, told: Sequence[_Told]) -> None:
                     recipient,
                     text=one.name,
                     key=str(one.group_id),
-                    group_id=one.group_id,
+                    # A group deleted has no page to open (GRUPPI.md §4).
+                    group_id=None if one.kind == "group_deleted" else one.group_id,
                 )
             )
 
@@ -934,6 +936,30 @@ class Groups:
         _tell(self.pusher_of, told)
         return JoinBody(me="requested")
 
+    def delete(self, user_id: int, group_id: UUID) -> None:
+        """«Delete group», by the admin, with whoever is in it (the user's
+        choice of 2026-11-24): the members are told, then the group goes
+        with its members, requests, invites and photo (ON DELETE CASCADE)."""
+        told: list[_Told] = []
+        with self.database.connect() as conn:
+            row = self._admin(conn, user_id, group_id)
+            members = conn.execute(
+                "SELECT user_id FROM group_members WHERE group_id = %s"
+                " AND user_id <> %s ORDER BY joined_at, user_id",
+                (group_id, user_id),
+            ).fetchall()
+            conn.execute("DELETE FROM groups WHERE id = %s", (group_id,))
+            told.append(
+                _Told(
+                    "group_deleted",
+                    user_id,
+                    tuple(int(one["user_id"]) for one in members),
+                    group_id,
+                    row["name"],
+                )
+            )
+        _tell(self.pusher_of, told)
+
     def leave(self, user_id: int, group_id: UUID) -> None:
         """Out of the group; a request withdrawn, an invite refused. The
         admin, only as the last member: then the group is gone."""
@@ -1212,6 +1238,11 @@ def group_routes() -> APIRouter:
                 429, "too_many_requests", TOO_MANY_PHOTOS, math.ceil(wait)
             )
         return groups.put_photo(user.id, group_id, decode_image(body.image))
+
+    @router.delete("/groups/{group_id}", status_code=204, responses=NOT_FOUND)
+    def delete(group_id: UUID, groups: Them, user: User) -> Response:
+        groups.delete(user.id, group_id)
+        return Response(status_code=204)
 
     @router.delete("/groups/{group_id}/photo", status_code=204, responses=NOT_FOUND)
     def remove_photo(group_id: UUID, groups: Them, user: User) -> Response:

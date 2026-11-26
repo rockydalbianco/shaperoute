@@ -1,4 +1,5 @@
-import { useContext, useState } from "react";
+import type { LatLon } from "@shaperoute/shared-types";
+import { useContext, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -14,8 +15,10 @@ import { OpenSettings } from "../permissions/OpenSettings";
 import { ImageEditsContext } from "./imageEdits";
 import { drawnApart, linesOver } from "./imagePieces";
 import { ImagePreview } from "./ImagePreview";
+import { OutlineOnMap } from "./LivePreview";
 import { OutlineBoard } from "./OutlineBoard";
 import type { ImageSource } from "./pickImage";
+import { pictureLook } from "./pictureLook";
 import { imageProblemText } from "./problems";
 import type { ImageProblem, ImageState } from "./useImageOutline";
 
@@ -33,21 +36,36 @@ import type { ImageProblem, ImageState } from "./useImageOutline";
  * strokes: the other subjects without their stems, and the holes. Edits
  * are of the line drawn with the pen down: «Edit the outline» shows with
  * the pen down only.
+ *
+ * With a start and a distance (TASK-449 part B), under the outline a piece
+ * of the real map round the start with the outline on it, as large as the
+ * distance makes it: `OutlineOnMap`, as a shape of the catalogue.
  */
 export function ImageChoice({
   state,
   onChoose,
   penUp = false,
+  start = null,
+  distanceM = null,
 }: {
   state: ImageState;
   onChoose: (source: ImageSource) => void;
   penUp?: boolean;
+  /** Where the route starts and how long it is, once known: the outline
+   * is shown on the map from there. None of the two: no map. */
+  start?: LatLon | null;
+  distanceM?: number | null;
 }) {
   const [showPicture, setShowPicture] = useState(true);
   const [editing, setEditing] = useState(false);
   const edits = useContext(ImageEditsContext);
   const chosen = state.status !== "none" && state.picture !== null;
   const apart = state.status === "traced" && drawnApart(state.outline, penUp);
+  const traced = state.status === "traced" ? state.outline : null;
+  const look = useMemo(
+    () => (traced === null ? null : pictureLook(traced, penUp)),
+    [traced, penUp],
+  );
   return (
     <View style={styles.panel}>
       <View style={styles.row}>
@@ -106,6 +124,14 @@ export function ImageChoice({
                 edits={edits}
               />
             </>
+          )}
+          {look !== null && start !== null && distanceM !== null && (
+            <OutlineOnMap
+              look={look}
+              distanceM={distanceM}
+              start={start}
+              name={t("The outline traced from the picture")}
+            />
           )}
         </>
       )}

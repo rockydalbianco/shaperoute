@@ -3588,6 +3588,71 @@ export const DE: Table = {
   "Task for XCTrack": "Aufgabe für XCTrack",
   "This task is too long for a QR code.":
     "Diese Aufgabe ist zu lang für einen QR-Code.",
+  // src/groups (TASK-495 part B)
+  "Find your city": "Deine Stadt suchen",
+  "New group": "Neue Gruppe",
+  "Choose photo": "Foto wählen",
+  "Remove photo": "Foto entfernen",
+  Description: "Beschreibung",
+  "Sports (up to {count})": "Sportarten (bis zu {count})",
+  City: "Stadt",
+  "Who can join": "Wer beitreten kann",
+  Invite: "Einladen",
+  "Search by name": "Nach Namen suchen",
+  "Nobody found.": "Niemand gefunden.",
+  Invited: "Eingeladen",
+  "Make admin": "Zum Admin machen",
+  "Make {name} the admin? You become a member.":
+    "{name} zum Admin machen? Du wirst Mitglied.",
+  "Remove from group": "Aus der Gruppe entfernen",
+  "Remove {name} from the group?": "{name} aus der Gruppe entfernen?",
+  "Make co-admin": "Zum Co-Admin machen",
+  "Remove co-admin": "Co-Admin entziehen",
+  Members: "Mitglieder",
+  "Leave group": "Gruppe verlassen",
+  "Delete group": "Gruppe löschen",
+  "Delete {name}? Its members, requests and invites go with it. This can't be undone.":
+    "{name} löschen? Mitglieder, Anfragen und Einladungen werden mit gelöscht. Das lässt sich nicht rückgängig machen.",
+  "Leave {name}?": "{name} verlassen?",
+  Groups: "Gruppen",
+  "Withdraw the request": "Anfrage zurückziehen",
+  "Accept invite": "Einladung annehmen",
+  Unmute: "Wieder laut",
+  Mute: "Stummschalten",
+  "Mute only stops the news of new outings.":
+    "Stummschalten stoppt nur die Hinweise auf neue Ausflüge.",
+  "Requests ({count})": "Anfragen ({count})",
+  "Next outings": "Nächste Ausflüge",
+  "No outings yet.": "Noch keine Ausflüge.",
+  "All members ({count})": "Alle Mitglieder ({count})",
+  "Recent activity": "Letzte Aktivitäten",
+  "No activity in the last 14 days.": "Keine Aktivität in den letzten 14 Tagen.",
+  "Past outings": "Vergangene Ausflüge",
+  "No requests to join.": "Keine Beitrittsanfragen.",
+  "Go out together: make a group, or join one.":
+    "Gemeinsam raus: Gründe eine Gruppe oder tritt einer bei.",
+  Invites: "Einladungen",
+  "Meet in a public place, never at your home. MuW doesn't organise or check groups or their outings. Everyone on MuW is 16 or older.":
+    "Trefft euch an einem öffentlichen Ort, nie bei dir zu Hause. MuW organisiert und prüft keine Gruppen und ihre Ausflüge. Alle auf MuW sind mindestens 16 Jahre alt.",
+  "Mountaineering is dangerous. MuW doesn't organise, guide or check groups, outings, routes or difficulty, and isn't a mountain guide. Everyone is responsible for their own experience, gear and safety.":
+    "Bergsteigen ist gefährlich. MuW organisiert, führt und prüft keine Gruppen, Ausflüge, Routen oder Schwierigkeiten und ist kein Bergführer. Alle sind selbst für ihre Erfahrung, Ausrüstung und Sicherheit verantwortlich.",
+  "Public@@group": "Öffentlich",
+  "Request to join": "Auf Anfrage",
+  "Invite only": "Nur mit Einladung",
+  Admin: "Admin",
+  "Co-admin": "Co-Admin",
+  "This group isn't available.": "Diese Gruppe ist nicht verfügbar.",
+  // src/nutrition (TASK-489 part C2)
+  "Use Apple Health": "Apple Health verwenden",
+  "MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there.":
+    "MuW liest deine Aktivitätsenergie und die Trainings, die andere Apps aufgezeichnet haben, um die Energie zu zählen, die du verbrauchst. Sie werden auf deinem Handy gelesen und bleiben dort.",
+  "Active energy": "Aktivitätsenergie",
+  "from Apple Health": "von Apple Health",
+  "Your activities are already inside Apple Health's active energy: they are not added again.":
+    "Deine Aktivitäten stecken schon in der Aktivitätsenergie von Apple Health: Sie werden nicht noch einmal addiert.",
+  "Apple Health has nothing for this day: your activities are counted.":
+    "Apple Health hat nichts für diesen Tag: Deine Aktivitäten werden gezählt.",
+  "Stop using Apple Health": "Apple Health nicht mehr verwenden",
   // src/air/ (TASK-479 part D5: the pilot's own waypoints; approved by the user on 2026-11-26)
   "Mark this place": "Diesen Ort markieren",
   "Waypoint here": "Wegpunkt hier",

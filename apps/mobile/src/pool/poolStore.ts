@@ -1,3 +1,4 @@
+import { currentOwner } from "../account/currentOwner";
 import { keptList } from "../storage/keptList";
 import type { PoolSwim } from "./poolSwim";
 
@@ -36,14 +37,54 @@ export function isPoolSwim(value: unknown): value is PoolSwim {
   );
 }
 
-const kept = keptList(POOL_SWIM_FILE, isPoolSwim);
+/** A swim in the file, with the account it belongs to (TASK-507): absent
+ * for one begun with nobody signed in, and before TASK-507, anyone's. */
+type Kept = PoolSwim & { owner?: number };
+
+function isKept(value: unknown): value is Kept {
+  const owner = (value as { owner?: unknown } | null)?.owner;
+  return isPoolSwim(value) && (owner === undefined || typeof owner === "number");
+}
+
+const kept = keptList(POOL_SWIM_FILE, isKept);
+
+/** Whether `item` is the account's signed in now, or nobody's. */
+function isMine(item: Kept): boolean {
+  return item.owner === undefined || item.owner === currentOwner();
+}
+
+function withoutOwner(item: Kept): PoolSwim {
+  const { owner, ...swim } = item;
+  void owner;
+  return swim;
+}
 
 /** The swim left under way (or ended and not saved yet); null when none. */
 export function loadPoolSwim(): PoolSwim | null {
-  return kept.load()[0] ?? null;
+  // Another account's waits in the file, hidden, until it signs in again
+  // (TASK-507, the user's choice «Nascosta finché rientra»).
+  const mine = kept.load().find(isMine);
+  return mine === undefined ? null : withoutOwner(mine);
 }
 
 /** Keeps `swim`, or with null forgets it; false when the phone refuses. */
 export function savePoolSwim(swim: PoolSwim | null): boolean {
-  return kept.save(swim === null ? [] : [swim]);
+  const item = swim;
+  // Only this account's changes: another account's stays as it was.
+  const others = kept.load().filter((one) => !isMine(one));
+  if (item === null) {
+    return kept.save(others);
+  }
+  const owner = currentOwner();
+  return kept.save([...others, owner === null ? item : { ...item, owner }]);
+}
+
+/** Deletes the swim of `owner` left on the phone: the account is deleted,
+ * or its number is now somebody else's (account/phoneOwners.ts, TASK-507). */
+export function forgetPoolSwimOf(owner: number): void {
+  const list = kept.load();
+  const next = list.filter((one) => one.owner !== owner);
+  if (next.length !== list.length) {
+    kept.save(next);
+  }
 }

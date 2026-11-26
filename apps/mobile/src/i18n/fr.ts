@@ -607,6 +607,8 @@ export const FR: Table = {
   "Long routes take longer: up to a few minutes.":
     "Les longs parcours prennent plus de temps : jusqu'à quelques minutes.",
   "Draw route": "Dessiner le parcours",
+  "Choose a start first": "Choisis d'abord un départ",
+  "Choose what to draw first": "Choisis d'abord quoi dessiner",
   Start: "Démarrer",
   "Preparing GPX…": "Préparation du GPX…",
   "Export GPX": "Exporter le GPX",
@@ -724,6 +726,9 @@ export const FR: Table = {
   "Hide the picture": "Masquer la photo",
   "Show the picture": "Afficher la photo",
   "Edit the outline": "Modifier le contour",
+  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
+  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
+    "Les lignes jaunes sont ce que le parcours dessinera : chaque partie à part, en allant de l'une à l'autre sans dessiner. Si elles ne ressemblent pas au sujet, le parcours non plus : essaie une autre photo.",
   "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
     "Un seul sujet sur un fond uni marche le mieux : un dessin, un logo, un objet sur une table vide. Le parcours suit sa ligne extérieure. Jusqu'à 4 sujets séparés sont reliés en une seule ligne.",
   "Tracing the outline…": "Tracé du contour…",
@@ -1402,6 +1407,16 @@ export const FR: Table = {
   "What do you want to train?": "Que veux-tu entraîner ?",
   "Choose one or more. Then we guide you in 5 steps.":
     "Choisis-en un ou plusieurs. Ensuite, on te guide en 5 étapes.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
+  Table: "Tableau",
+  "No exercises yet.": "Pas encore d'exercice.",
+  "Change week {n}": "Change la semaine {n}",
+  "kg · touch a week to change it": "kg · touche une semaine pour la changer",
+  // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; approved by the user on 2026-11-23)
+  Tomorrow: "Demain",
+  "+ 1 more": "+ 1 autre",
+  "+ {n} more": "+ {n} autres",
+  "This week: {done} of {total} done": "Cette semaine : {done} sur {total} faits",
   "With weights and machines": "Avec poids et machines",
   Bodyweight: "Poids du corps",
   "At home or in the park, no equipment": "À la maison ou au parc, sans matériel",
@@ -1652,6 +1667,14 @@ export const FR: Table = {
   Lisbon: "Lisbonne",
   Prague: "Prague",
   Berlin: "Berlin",
+  // src/explore/presets.ts: the cities to tap in «Explore» (TASK-508)
+  "New York": "New York",
+  Tokyo: "Tokyo",
+  Milan: "Milan",
+  Torino: "Turin",
+  Dubai: "Dubaï",
+  Sydney: "Sydney",
+  "San Francisco": "San Francisco",
   "Getting directions…": "Récupération de l'itinéraire…",
   CITY: "VILLE",
   "Type a city or a place": "Saisissez une ville ou un lieu",
@@ -1769,6 +1792,8 @@ export const FR: Table = {
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
     "Les notifications push te préviennent tout de suite des demandes de suivi, des réactions, des commentaires et des identifications. Les Notifications par e-mail envoient les mêmes nouvelles dans un e-mail par jour au plus. E-mail en cas d'absence : un e-mail si tu n'ouvres pas MuW pendant 2 semaines.",
+  "Push notifications are off. Tap to turn them on.":
+    "Les notifications push sont désactivées. Touche pour les activer.",
   "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.":
     "Les notifications de MuW sont désactivées sur ce téléphone. Autorise-les dans Réglages pour les activer.",
 
@@ -3503,6 +3528,15 @@ export const FR: Table = {
   "Goal taken": "But atteint",
   "Turnpoint {name} taken. Next: {next}.": "Balise {name} validée. Suivante : {next}.",
   "Goal {name} taken.": "But {name} atteint.",
+  // src/air/ (TASK-479 part D3: the glide; approved by the user on 2026-11-23)
+  "Glide to turnpoint": "Plané jusqu'à la balise",
+  "Nearest landing": "Atterrissage le plus proche",
+  "Glide ratio used": "Finesse utilisée",
+  "Wind used": "Vent utilisé",
+  Estimated: "Estimé",
+  "No wind": "Pas de vent",
+  "needs {height}": "il faut {height}",
+  "No landings in your file": "Aucun atterrissage dans votre fichier",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Bilan calorique",
   Used: "Dépensées",

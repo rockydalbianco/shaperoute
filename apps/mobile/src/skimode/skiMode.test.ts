@@ -16,11 +16,12 @@ describe("the ski mode (TASK-429)", () => {
   });
 
   it("gives the ski tabs with «Ski» and the app's own with any other sport", () => {
+    // «Feed» first and «Profile» last, as in every mode (TASK-490 E).
     expect(barPagesOf("ski")).toEqual([
+      "feed",
       "choose",
       "skiDays",
       "skiResorts",
-      "feed",
       "profile",
     ]);
     expect(barPagesOf("run")).toEqual([
@@ -61,10 +62,10 @@ describe("the ski mode (TASK-429)", () => {
     const app = ["Feed", "Draw", "Messages", "Explore", "Profile"];
     const ski = { choose: "Today", skiDays: "Days", skiResorts: "Resorts" };
     expect(shellPagesOf("ski", app, ski)).toEqual([
+      "Feed",
       "Today",
       "Days",
       "Resorts",
-      "Feed",
       "Profile",
     ]);
     expect(shellPagesOf("run", app, ski)).toBe(app);

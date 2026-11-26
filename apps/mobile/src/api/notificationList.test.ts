@@ -1,9 +1,12 @@
 import example from "@shaperoute/shared-types/fixtures/notifications.json";
+import unreadExample from "@shaperoute/shared-types/fixtures/notifications-unread.json";
 
 import {
   fetchNotifications,
+  fetchUnread,
   isBellMissing,
   isNotificationsPage,
+  isNotificationsUnread,
   readNotifications,
 } from "./notificationList";
 
@@ -76,4 +79,26 @@ test("a server without the list answers 404, and only that is missing", async ()
   expect(
     isBellMissing(await fetchNotifications(URL, "tok", null, { fetchFn: down })),
   ).toBe(false);
+});
+
+test("the number alone: its path, its example, and a server of before", async () => {
+  expect(isNotificationsUnread(unreadExample)).toBe(true);
+  for (const bad of [{}, { unread: "3" }, { unread: -1 }, { unread: 1.5 }, null]) {
+    expect(isNotificationsUnread(bad)).toBe(false);
+  }
+  const count = answering(() => Response.json(unreadExample));
+  const outcome = await fetchUnread(URL, "tok", { fetchFn: count, key: null });
+  expect(outcome).toEqual({ kind: "ok", value: unreadExample });
+  const [url, init] = count.mock.calls[0];
+  expect(String(url)).toBe(`${URL}/notifications/unread`);
+  expect(init?.method).toBe("GET");
+  expect(init?.headers).toMatchObject({ Authorization: "Bearer tok" });
+
+  // A server with the list and without the number: 404, as FastAPI says it.
+  const bare = answering(() => Response.json({ detail: "Not Found" }, { status: 404 }));
+  expect(isBellMissing(await fetchUnread(URL, "tok", { fetchFn: bare }))).toBe(true);
+  const down = answering(() =>
+    Response.json({ error: { code: "internal", message: "x" } }, { status: 500 }),
+  );
+  expect(isBellMissing(await fetchUnread(URL, "tok", { fetchFn: down }))).toBe(false);
 });

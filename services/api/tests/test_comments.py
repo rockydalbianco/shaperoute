@@ -223,6 +223,8 @@ def test_a_member_comments_a_public_drawing(
     assert added["author"] == {
         "public_id": public_id(client, other),
         "username": "other_runner",
+        # Where its picture is read (TASK-497): none here.
+        "photo": None,
     }
     assert added["created_at"] == "2026-10-03T08:15:00Z"
     assert added["deletable"] is True

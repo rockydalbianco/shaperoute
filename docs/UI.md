@@ -72,7 +72,11 @@ Quattro regole:
    produce e la barra che lo mostra mentre si disegna. Ciò che chiede attenzione usa `warning`, arancio: un avviso giallo
    renderebbe il colore muto. **Un'eccezione**, scelta dall'utente
    (TASK-220, ADR-0183): «Run without a route» in cima a «Draw» è giallo,
-   con il testo scuro. Per tutto il resto la regola vale.
+   con il testo scuro. **Un'altra**, scelta dall'utente il 2026-11-24
+   (TASK-508, ADR-0409): il pulsante in fondo a «Sign up» e «Log in»,
+   giallo con il testo scuro; grigio, l'unico comando della pagina si
+   leggeva come secondario. Le proprie bolle nei messaggi sono di
+   ADR-0403. Per tutto il resto la regola vale.
 2. **Sul giallo il testo è scuro** (`onAccent`, 13,5:1). Il bianco si ferma
    a 1,5:1, sotto il minimo, e in pieno sole, dove l'app si usa, non si
    legge.
@@ -256,7 +260,10 @@ In cima a «Draw» stava a sinistra di «MuW», 32 punti, alto quanto il
 titolo; da TASK-392 sta così nell'header delle pagine della barra, e
 «Draw» non ha più il logo. È solo un'immagine: il lettore di schermo legge il nome accanto.
 Un componente solo, `src/intro/HeartBadge.tsx` (`size`), per ogni posto
-dove il cuore su giallo compare.
+dove il cuore su giallo compare. In «Explore» stava anche accanto al
+titolo (TASK-222): da quando l'header lo ha su ogni pagina erano due, uno
+sopra l'altro, e quello di «Explore» è tolto (TASK-508, scelta
+dell'utente del 2026-11-24).
 
 **Il tour della prima apertura** (TASK-266, ADR-0235): finita
 l'animazione, la prima volta, il resto dello schermo si scurisce
@@ -419,7 +426,10 @@ pagine»):
    «City» mostra in alto le città recenti (↺, le ultime 5, salvate sul
    telefono) e una fila di città di tutto il mondo (New York, London,
    Paris, Tokyo, Rome, Milan, Torino, Barcelona, Dubai…): un tocco la
-   sceglie, il centro viene dall'API, mai scritto nell'app. Sotto, «Type a
+   sceglie, il centro viene dall'API, mai scritto nell'app. **I nomi della
+   fila sono nella lingua dell'app** (TASK-508, scelta dell'utente del
+   2026-11-24): «Londra», «Mailand», «Nueva York»; all'API si chiede
+   sempre il nome inglese, e con quello il telefono tiene la città. Sotto, «Type a
    city» suggerisce le città mentre si scrive (da 2 lettere, pausa 250 ms).
    **La prima voce della fila è «Near me»** (TASK-176, ADR-0144), con
    il segno della posizione, un anello col suo centro: è accesa finché non
@@ -681,8 +691,10 @@ anche (A7c-1) i chip di «Share your run», del post di sole foto e del
 composer, di «Tag people» e di chi può vedere, dei tag dell'outfit, di
 «Style», del sonno, del calendario e «Share live», e (A7c-2) quelli
 dell'obiettivo in palestra, dei posti della pagaia, della lunghezza della
-vasca e della giornata sulla neve. Restano i chip condivisi della
-palestra (`gymStyles`), del volo e del pannello del percorso: A7c-3.
+vasca e della giornata sulla neve, e (A7c-3) i chip condivisi della
+palestra (`gymStyles.chip`): il riposo, la scelta dell'esercizio, la
+guida e la storia dell'esercizio, «l'ultima volta», Coach e il post
+della scheda. Restano i chip della schermata del volo: A7c-4.
 
 **Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
 raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro
@@ -717,7 +729,11 @@ schermo e una scheda nascosta rimette l'header a riposo);
 una pagina che non lo dice tiene l'header a riposo, e una che se ne va
 lontana dalla cima lo rimette a riposo. Con «Riduci trasparenza» la fascia è opaca
 con la linea sottile, con «Aumenta contrasto» opaca col bordo forte. Il
-contenuto non passa sotto l'header: per quello serve la parte B.
+contenuto non passa sotto l'header: per quello serve la parte B. L'header
+sta sopra le pagine delle schede con uno `zIndex`, e resta dentro lo
+shell: la radice di `TabShell` è tenuta con `collapsable={false}`, così
+non esce sopra le pagine aperte sopra l'app (una conversazione, «Message
+requests»).
 
 **I gruppi di Impostazioni** (TASK-469 A6, `src/settings/settingsGroup.ts`):
 ogni gruppo di righe di Impostazioni ha gli angoli a 24 (`radius.group`) e i
@@ -1105,7 +1121,11 @@ TASK-278 la prima pagina di «Profile» è **la quarta pagina**, dopo
 Le pagine che si aprono da lì («Settings», «Favorites», «My activities»,
 «Edit profile», «Guide», il profilo di un altro, un disegno) si aprono
 sopra l'app come prima, e «←» (o «Back to the profile») torna alla quarta
-pagina. **Anche le altre parti dell'app portano alla quarta pagina**
+pagina. Le pagine di «Profile» aperte sopra l'app scorrono fino in cima
+allo schermo: una fascia del colore della pagina, alta quanto la barra di
+stato, copre quello che ci passa sotto, così il testo non finisce sotto
+l'orologio (TASK-508, `src/ui/StatusBarCover.tsx`). Come scheda non c'è:
+lì c'è già l'header. **Anche le altre parti dell'app portano alla quarta pagina**
 (TASK-278 parte B, scelte dell'utente del 2026-10-13): «People» nella
 ricerca della lente di «Feed» senza account (da TASK-344), e il cuore sulla mappa e la riga sotto la fine della corsa
 senza account, ognuno con la sua riga sopra «Sign up». Dalla mappa e dalla
@@ -1142,7 +1162,9 @@ emails» (TASK-284, ADR-0244): spuntata, la richiesta manda `away_email:
 false`; con o senza, manda la lingua dell'app per le email. «Log in»
 email e password. I campi si controllano prima di partire, con le
 regole dell'API, e l'errore si dice in parole sotto il pulsante (sotto,
-«Quando non va»). Si apre su «Sign up»; dopo «Log out» o una sessione
+«Quando non va»). Il pulsante in fondo, «Sign up» o «Log in», è giallo
+`accent` con le parole `onAccent` (TASK-508, ADR-0409, scelta
+dell'utente). Si apre su «Sign up»; dopo «Log out» o una sessione
 finita, su «Log in».
 
 **«Forgot password?»** (TASK-300, ADR-0261): sotto «Log in», sottolineato,
@@ -1622,6 +1644,12 @@ quando il server ha Resend.
   them in Settings to turn this on.», con «Open Settings» (TASK-259).
   Spegnere, «Email notifications» ed «Email when I'm away» non chiedono
   niente al telefono.
+- **Finché «Push notifications» è spento**, fra il riquadro e la nota c'è
+  una riga da toccare, sottolineata come «Open Settings»: «Push
+  notifications are off. Tap to turn them on.» (TASK-508, testo scelto
+  dall'utente il 2026-11-24). Il tocco fa quello che fa l'interruttore.
+  Sparisce quando sono accese, e quando sotto c'è scritto perché non si
+  sono accese.
 - Spento l'interruttore, o usciti dall'account, il telefono riprende il
   suo token dall'API e non riceve più.
 - **Toccare una notifica** apre il disegno (una reazione, un commento, un
@@ -1814,7 +1842,10 @@ richiude. «Requests» ha un pallino rosso (`badge`) quando qualcuno
 aspetta, e in quel caso il suo elenco è **già aperto** quando «Profile»
 si apre (TASK-239). Ogni riga ha la foto (o l'iniziale) e il nome, che
 toccato apre il profilo di quella persona sopra l'app; «←» torna a
-«Profile».
+«Profile». Il nome sotto ogni numero è largo quanto il riquadro, centrato,
+su una riga: una parola più lunga in un'altra lingua si stringe (fino
+all'80%) invece di essere tagliata (TASK-508: «Follower» usciva
+«Follow…»).
 
 **Il numero rosso** (TASK-239, ADR-0203; chiesto dall'utente, testi
 **confermati** il 2026-10-05). Quando qualcuno chiede di seguirti, il pulsante di
@@ -2545,7 +2576,10 @@ bianca, è tolta dal TASK-331; dal TASK-340 «Freehand» è la prima scelta e
 apre la mappa per disegnare a mano, sotto in «Disegnare sulla mappa»,
 senza che l'interruttore resti su di lei): il percorso disegna una forma
 del catalogo, una parola **oppure** il contorno di un'immagine, mai due
-insieme, e l'interruttore mostra quale. Di partenza «Shape».
+insieme, e l'interruttore mostra quale. Di partenza «Shape». Le sue
+voci stanno ognuna su una riga: quella che non entra si stringe (fino al
+70%) invece di andare a capo fra le altre (TASK-508, `Segmented` con
+`oneLine`; gli altri interruttori dell'app vanno a capo come prima).
 Passare dall'uno all'altro non cancella quanto scritto o scelto negli altri.
 
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
@@ -2564,7 +2598,9 @@ ADR-0307; prima una riga che scorreva di lato, TASK-088, ADR-0084): sette
 forme e l'ottava tessera «See all», che apre tutte e diciassette; «Show
 fewer» richiude. La forma scelta è sempre in vista: se non è fra le prime
 sette, prende il settimo posto. Toccare una tessera fa vibrare il telefono,
-dove l'app è costruita con `expo-haptics`. Sotto, la forma scelta **in
+dove l'app è costruita con `expo-haptics`. Sotto il segno la tessera ha il
+nome con la maiuscola, «Cuore», come ogni etichetta della pagina
+(TASK-508); nel campo va la parola come la scrive una frase, «cuore». Sotto, la forma scelta **in
 scala** su un pezzo di mappa (`ShapePreview`): il contorno del catalogo,
 una barra di scala tonda e «≈ 1.9 × 2.1 km», che seguono forma e
 distanza.
@@ -2860,6 +2896,29 @@ per una forma, con la distanza del campo sotto, e manda il contorno
 dell'anteprima, con i dettagli disegnati (`POST /image-route-jobs`). «Choose another» sostituisce la
 foto; annullare il selettore lascia quella di prima. Sotto la distanza del
 risultato si legge «Picture · on roads · target 15 km».
+
+**Con la penna alzata** (TASK-297 C2, ADR-0258). Quando il contorno ha
+dei pezzi (`pieces` di `/image-outlines`: gli altri soggetti e i fori di un
+logo, `API.md`), sotto l'anteprima c'è l'interruttore **«Lift the pen
+between parts»**, lo stesso delle forme in pezzi e lo stesso stato di
+quello delle parole, acceso all'avvio: così è proposto acceso. Acceso,
+l'anteprima disegna i pezzi gialli come i tratti, senza i trattini che li
+collegano, e con i fori; la riga sotto dice *The yellow lines are what the
+route will draw: each part on its own, going from one to the next without
+drawing. If they do not look like the subject, the route will not either:
+try another picture.* (testo nuovo, **approvato dall'utente** nelle
+cinque lingue il 2026-10-27); «Edit the outline» non c'è, perché le
+modifiche sono della linea con la penna giù (confermato dall'utente il
+2026-10-27). La richiesta manda `pieces` e `pen_up: true` al
+posto degli `strokes`. Il percorso torna con i `walks` e si mostra come una
+forma in pezzi: i tratti a piedi tratteggiati sulla mappa, «6.0 km of
+drawing + 0.4 km walking between the parts», la registrazione in pausa sui
+tratti a piedi e la voce «the next part», come per le parole (TASK-198,
+TASK-223). Spento, tutto come prima, con «Edit the outline». Senza pezzi
+(un soggetto senza fori, una foto pronta di «Draw», un contorno modificato,
+un'API più vecchia) l'interruttore non c'è. Pezzi che l'app non sa
+disegnare (non uno per uno sopra la foto, fuori dalla cornice) si lasciano
+fuori, non il contorno.
 
 Se l'immagine è rifiutata, al posto dell'anteprima il motivo in parole
 semplici, con sotto il testo del motore:
@@ -3496,7 +3555,12 @@ not keep it.*
 
 ## Chiedere un percorso
 
-«Draw route» è spento finché non c'è una partenza. Toccato, la richiesta va
+«Draw route» è spento finché non c'è una partenza, e sopra di lui una riga
+piccola dice perché (TASK-508, testi scelti dall'utente il 2026-11-24):
+«Choose a start first»; con la partenza e niente da disegnare (campo
+della forma vuoto, nessuna parola, nessuna immagine), «Choose what to draw
+first». Una parola che l'AI sta leggendo o che non si può scrivere ha già
+la sua nota sotto il campo, e la riga non c'è. Toccato, la richiesta va
 all'API in due tempi (ADR-0032): l'API la accetta subito, poi l'app chiede
 a che punto è: ogni mezzo secondo nei primi 6 s, ogni secondo fino a 20 s,
 poi ogni 2 s (ADR-0136). La scheda dice cosa sta succedendo e offre «Cancel»;
@@ -3836,8 +3900,10 @@ cui tiene i numeri.
 - **«Compass»** (TASK-422, ADR-0350; chiesta dall'utente il 2026-11-08):
   solo la mappa, grande. Sotto restano i pulsanti della corsa («Pocket»,
   «Pause», «Music»; in pausa «Stop» da tenere e «Resume»; all'arrivo
-  «Finish») e i tre nomi; niente numeri, barra del percorso, riga del gioco
-  né battito. Sopra la mappa il banner resta (la svolta, o la partenza).
+  «Finish») e i tre nomi; sopra i pulsanti **una riga sola, piccola**:
+  quanta strada e quanto tempo («2.34 km · 12:05», nelle unità della corsa;
+  TASK-518 A, scelta dell'utente del 2026-11-24, al posto di «niente
+  numeri»); niente passo, barra del percorso, riga del gioco né battito. Sopra la mappa il banner resta (la svolta, o la partenza).
   **La mappa gira dove punta il telefono**: la direzione verso cui si è
   rivolti sta in alto (heading-up). Da fermi comanda la bussola del
   telefono; correndo la bussola finché è calibrata (media o alta), e quando
@@ -3854,7 +3920,12 @@ cui tiene i numeri.
   sempre in alto, anche da fermi, e davanti apre **un cono azzurro** che
   sfuma in avanti: dove punta il telefono. Col nord in alto (un tocco) il
   cono si chiude e la freccia torna a seguire la traccia. La punta della
-  freccia del nord è rossa (`north`), la «N» chiara.
+  freccia del nord è rossa (`north`), la «N» chiara. Sotto la freccia del
+  nord, solo su questa pagina, **la direzione scritta**: «NE · 42°», il più
+  vicino degli otto punti nella lingua dell'app (le sigle della voce, «SO»,
+  «O» in italiano) e i gradi interi da nord, che cambiano con la mappa; col
+  nord in alto niente, la freccia dice già N (TASK-518 B, scelte
+  dell'utente del 2026-11-24, «1 e 2» e «Niente etichetta»).
 - **«Map»**: la mappa con sopra il banner (la svolta, o la partenza senza
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra
@@ -4398,7 +4469,11 @@ screen goes dark but stays on, so directions go on. Do not lock the phone:
 if you press the side button, directions stop. To come back, hold the
 screen for 2 seconds.» La luminosità torna com'era all'uscita, all'arrivo
 (che toglie anche il pulsante), con «Stop» e quando l'app esce dal primo
-piano.
+piano. Sotto lo schermo nero la mappa non riceve niente della corsa e
+l'orologio dei numeri non scatta; uscendo la mappa riceve una volta i
+punti che mancano e la posizione, e l'orologio si legge subito (TASK-496).
+In vista, a ogni posizione vanno alla mappa solo i punti nuovi, e la mappa
+segue chi corre in 250 ms.
 
 **La traccia della corsa** (TASK-112, ADR-0091). Durante la navigazione
 l'app tiene la linea di quello che si è corso: ogni posizione del GPS,
@@ -4406,7 +4481,12 @@ tranne quelle con errore oltre 40 m e quelle a meno di 5 m dalla
 precedente, con distanza e durata. Anche in modalità tasca. La traccia sta
 in un file nei documenti dell'app (`current-run.json`), insieme al percorso
 pianificato: si scrive alla prima posizione, poi al più ogni 15 secondi, a
-«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Una corsa per volta:
+«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Con l'app dietro
+un'altra o il telefono bloccato ogni posizione tenuta si scrive subito
+(TASK-304), ma solo lei: una riga in coda al diario `current-run.journal`,
+accanto al file; il file intero si riscrive uscendo dal primo piano, a una
+pausa, alla fine e ogni 300 righe, e la corsa riaperta è il file con il
+diario dopo (TASK-496, aggiunta ad ADR-0264). Una corsa per volta:
 «Start» sullo stesso percorso entro 30 minuti continua la traccia, un altro
 percorso la sostituisce alla prima posizione. La traccia non esce dal
 telefono: la usano i numeri della corsa e la schermata di fine corsa
@@ -4815,6 +4895,12 @@ Acceso, la notte pubblicata da sola è un post come gli altri, senza corsa:
 scheda di una corsa in «My activities». Apre a tutto schermo «Share your
 run», con «Close» in alto a sinistra:
 
+- **L'ordine della pagina** (TASK-450, scelta dell'utente del 2026-11-23):
+  il post; subito sotto «Instagram» ed «Export video», con la riga «Pick
+  Instagram in the list…» e l'eventuale errore; poi «Style» (i fondi del
+  post), «Results», «Add emoji», «Edit video», «Music» e Strava. Le due
+  azioni si raggiungono senza scorrere; dove le voci qui sotto dicono
+  «sopra» o «accanto», vale quest'ordine.
 - **Il post**, in alto: 9:16, sul giallo di Sgrava. Il cuore del logo e
   «Sgrava», il titolo (quello della corsa, o luogo e forma; nessuno a
   fine corsa), il disegno della corsa in nero **senza i primi e gli ultimi
@@ -4822,6 +4908,27 @@ run», con «Close» in alto a sinistra:
   «Time», «Pace» (il passo manca sotto i 100 m). **Il punteggio non è fra i risultati**
   (TASK-241 parte C, chiesto dall'utente): non si può accendere, non è
   sul post e non va nel testo per Strava.
+- **Titolo e giorno sul post** (TASK-450, scelte dell'utente del
+  2026-11-23): da «My activities» il titolo è quello del **post**, scritto
+  in «Edit post», quando c'è; altrimenti quello del percorso o «luogo ·
+  forma», come prima. Dal Feed è già il titolo del post. Sotto il titolo,
+  piccolo, il giorno della corsa come lo scrive l'app («Sat 21 Nov 2026»),
+  sempre: da «My activities», dal Feed (il giorno della corsa, non quello
+  della pubblicazione) e a fine corsa, dove sta da solo perché il titolo
+  non c'è ancora. Titolo (due righe al più) e giorno finiscono sopra il disegno.
+- **«Style»**, sotto i due pulsanti (TASK-450, scelta dell'utente del
+  2026-11-23): tre tessere 9:16 col disegno della corsa, una accesa.
+  «Yellow», accesa all'apertura: il giallo del logo con tutto in nero,
+  com'era. «Night»: il fondo scuro dell'app al suo passo più scuro, la
+  linea nel giallo del percorso, le scritte chiare. «Day»: il fondo chiaro
+  dell'app al suo passo più chiaro, linea e scritte scure. Sono le palette
+  del video («Night», «Day»), qualunque tono abbia l'app; i colori vengono
+  solo dai token. Il quadrato giallo del logo resta giallo su tutti e tre.
+  La scelta vale per l'immagine di «Instagram» e non si salva col post,
+  come stile e musica del video. Le tessere di palestra e piscina restano
+  com'erano, senza «Style». Nella pagina il post ha attorno un filo
+  (`hairline`) che non entra nell'immagine: con «Night» ha lo stesso scuro
+  della pagina.
 - **«Results»**: una pastiglia per risultato, accesa all'inizio; spenta,
   il risultato sparisce dal post e dal testo per Strava.
 - **«Add emoji»**: 🔥 ❤️ 💪 🏃 🎉 😅 🥵 😎 ⚡ 🏆 ☀️ 🌧️. Un tocco mette l'emoji

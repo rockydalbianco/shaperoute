@@ -1,6 +1,7 @@
 # TASK-282 — Il percorso proprio dove la figura è stata messa sulla mappa
 
-**Stato**: Todo (aspetta l'approvazione di Apple della 1.0 e TASK-281)
+**Stato**: Fermo — in attesa · 2026-11-24 (scelta dell'utente del 2026-11-24 sui task aperti): idea approvata e mai partita, da rivalutare più avanti; si riprende col sì dell'utente.
+Prima del 2026-11-24: Todo (aspetta l'approvazione di Apple della 1.0 e TASK-281)
 **Fase**: 4 · **Branch**: parte A `feat/TASK-282-a-near-on-land`,
 parte B `feat/TASK-282-b-app-near`
 

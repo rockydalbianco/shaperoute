@@ -55,6 +55,7 @@ import {
   type WaterSpot,
 } from "./waterSpots";
 import { useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 import { ExploreSearch } from "../explore/ExploreSearch";
 import { postRoute } from "../feed/feedRoute";
@@ -155,6 +156,8 @@ export function PaddleExplore({
   const scroll = useScrollToTopOnReselect<ScrollView>();
   // The header turns to glass once the list scrolls (TASK-469 A5b).
   const headerScroll = useHeaderScroll();
+  // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
+  const barRoom = useTabBarRoom();
   const { width } = useWindowDimensions();
   const [chosen, setChosen] = useState<Chosen>(() => kept);
   const [started, setStarted] = useState<LatLon | null>(() => firstStart ?? near);
@@ -250,7 +253,7 @@ export function PaddleExplore({
         {...headerScroll}
         contentContainerStyle={[
           styles.list,
-          { paddingBottom: insets.bottom + space.lg },
+          { paddingBottom: insets.bottom + space.lg + barRoom },
         ]}
         keyboardShouldPersistTaps="handled"
       >

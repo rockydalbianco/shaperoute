@@ -557,6 +557,27 @@ describe("replies and reactions to a comment", () => {
     expect(screen.getByRole("button", { name: "View 1 more reply" })).toBeOnTheScreen();
   });
 
+  // TASK-497: the comment says where the picture of who wrote it is read.
+  test("a comment that says where its picture is asks no profile", async () => {
+    const pictureAt = jest.fn((path: string) => ({
+      uri: `http://api${path}`,
+      headers: { Authorization: "Bearer t" },
+    }));
+    const value = { ...threadsDoor(), pictureAt };
+    await opened(value, "4 comments");
+    expect(screen.getByText(FIRST.text)).toBeOnTheScreen();
+    // An address: the picture from there. Null: the letter. Neither asks.
+    expect(TOP.author.photo).toBeNull();
+    const addresses = [FIRST, SECOND].map((reply) => reply.author.photo);
+    expect(new Set(pictureAt.mock.calls.map(([path]) => path))).toEqual(
+      new Set(addresses),
+    );
+    expect(
+      screen.getAllByTestId("comment-author-photo").map((p) => p.props.source.uri),
+    ).toEqual(addresses.map((address) => `http://api${address}`));
+    expect(value.photoOf).not.toHaveBeenCalled();
+  });
+
   test("«View more replies» brings the others, and goes", async () => {
     const value = threadsDoor({
       replies: [

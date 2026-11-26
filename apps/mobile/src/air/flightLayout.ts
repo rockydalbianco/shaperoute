@@ -54,7 +54,10 @@ export type WidgetId =
   | "nextTurnpoint"
   | "glideToGoal"
   | "startGate"
-  | "taskDistance";
+  | "taskDistance"
+  // Part D3.
+  | "glideToTurnpoint"
+  | "nearestLanding";
 
 /** Each widget's name on screen, in the user's words of 2026-11-21. */
 export const WIDGET_NAME: Readonly<Record<WidgetId, string>> = {
@@ -82,6 +85,8 @@ export const WIDGET_NAME: Readonly<Record<WidgetId, string>> = {
   glideToGoal: tLater("Glide to goal"),
   startGate: tLater("Start gate"),
   taskDistance: tLater("Task distance"),
+  glideToTurnpoint: tLater("Glide to turnpoint"),
+  nearestLanding: tLater("Nearest landing"),
 };
 
 export const WIDGETS: readonly WidgetId[] = Object.keys(WIDGET_NAME) as WidgetId[];
@@ -99,6 +104,7 @@ export const WIDGET_UNIT_KIND: Readonly<Partial<Record<WidgetId, UnitKind>>> = {
   thermalGain: "altitude",
   altitudeChart: "altitude",
   glideToGoal: "altitude",
+  glideToTurnpoint: "altitude",
   vario: "vario",
   varioAvg: "vario",
   thermalAvg: "vario",
@@ -176,7 +182,8 @@ export const PRESET_PAGES: Readonly<Record<PresetId, readonly Page[]>> = {
       cell("glide", 2, 2),
       cell("wind", 0, 3, 2, 2),
       cell("takeoff", 2, 3, 2, 2),
-      cell("track", 0, 5),
+      // Part D3: the nearest landing where «Track» stood.
+      cell("nearestLanding", 0, 5),
       cell("flightTime", 2, 5),
     ],
     [
@@ -195,15 +202,16 @@ export const PRESET_PAGES: Readonly<Record<PresetId, readonly Page[]>> = {
       cell("groundSpeed", 2, 5),
     ],
   ],
-  // Part D2: the task. «Glide to turnpoint» comes with part D3.
+  // Parts D2 and D3: the task and its glide.
   competition: [
     [
       cell("nextTurnpoint", 0, 0, 4, 2),
-      cell("glideToGoal", 0, 2, 2, 2),
-      cell("taskDistance", 2, 2, 2, 2),
-      cell("startGate", 0, 4),
-      cell("varioAvg", 2, 4, 2, 2),
-      cell("altitude", 0, 5),
+      cell("glideToTurnpoint", 0, 2),
+      cell("glideToGoal", 2, 2),
+      cell("taskDistance", 0, 3),
+      cell("startGate", 2, 3),
+      cell("varioAvg", 0, 4, 2, 2),
+      cell("altitude", 2, 4, 2, 2),
     ],
     [cell("map", 0, 0, 4, 5), cell("nearestAirspace", 0, 5, 4, 1)],
   ],

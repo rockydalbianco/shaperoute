@@ -1,0 +1,40 @@
+{
+  "site_id": 101,
+  "few": false,
+  "flights": 14,
+  "pilots": 6,
+  "today": 2,
+  "months": [
+    { "month": "2025-12", "flights": 0, "pilots": 0 },
+    { "month": "2026-01", "flights": 0, "pilots": 0 },
+    { "month": "2026-02", "flights": 1, "pilots": 1 },
+    { "month": "2026-03", "flights": 2, "pilots": 2 },
+    { "month": "2026-04", "flights": 1, "pilots": 1 },
+    { "month": "2026-05", "flights": 3, "pilots": 3 },
+    { "month": "2026-06", "flights": 2, "pilots": 2 },
+    { "month": "2026-07", "flights": 1, "pilots": 1 },
+    { "month": "2026-08", "flights": 2, "pilots": 2 },
+    { "month": "2026-09", "flights": 0, "pilots": 0 },
+    { "month": "2026-10", "flights": 0, "pilots": 0 },
+    { "month": "2026-11", "flights": 2, "pilots": 2 }
+  ],
+  "in_air_now": {
+    "count": 2,
+    "shares": ["7b1f0c3e-2d4a-4c9b-8e51-0f6a3d2c9b11"]
+  },
+  "records": {
+    "longest_s": {
+      "value": 6210,
+      "drawing_id": "4e9d2b7a-1c3f-4a8e-9b60-2d5f7e1a3c48",
+      "username": "pilot_anna",
+      "started_at": "2026-05-14T09:12:00Z"
+    },
+    "highest_m": {
+      "value": 2410,
+      "drawing_id": "4e9d2b7a-1c3f-4a8e-9b60-2d5f7e1a3c48",
+      "username": "pilot_anna",
+      "started_at": "2026-05-14T09:12:00Z"
+    },
+    "farthest_m": null
+  }
+}

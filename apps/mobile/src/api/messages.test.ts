@@ -1,5 +1,6 @@
 import unreadExample from "@shaperoute/shared-types/fixtures/conversations-unread.json";
 import conversationsExample from "@shaperoute/shared-types/fixtures/conversations.json";
+import newsExample from "@shaperoute/shared-types/fixtures/message-news.json";
 import messageExample from "@shaperoute/shared-types/fixtures/message.json";
 import messagesExample from "@shaperoute/shared-types/fixtures/messages.json";
 import { MESSAGE_MAX_LENGTH } from "@shaperoute/shared-types";
@@ -11,10 +12,13 @@ import {
   deleteMessage,
   fetchConversations,
   fetchMessages,
+  fetchNewMessages,
   fetchUnread,
   isConversationsPage,
   isMessage,
+  isMessageNews,
   isMessagesPage,
+  isPage,
   isUnread,
   messageProblem,
   messageTextProblem,
@@ -86,6 +90,39 @@ test("each call asks its path and method, with the token", async () => {
   }
   // Without the spaces around, as the API keeps it.
   expect(JSON.parse(String(fetchFn.mock.calls[4][1]?.body))).toEqual({ text: "Hi!" });
+});
+
+test("what came after a place is asked with `after`, and a page is taken too", async () => {
+  expect(isMessageNews(newsExample)).toBe(true);
+  expect(isMessageNews({ ...newsExample, more: undefined })).toBe(false);
+  expect(isMessageNews({ ...newsExample, latest: null })).toBe(false);
+  // A page is not the news: it has no `more`.
+  expect(isMessageNews(messagesExample)).toBe(false);
+  // A server of before ignores `after` and answers the page.
+  const fetchFn = answers(
+    { status: 200, body: newsExample },
+    { status: 200, body: messagesExample },
+    { status: 200, body: { messages: [] } },
+  );
+  const options = { fetchFn: asFetch(fetchFn), key: null };
+  const after = messagesExample.latest;
+  const news = await fetchNewMessages(URL, TOKEN, ID, after, options);
+  expect(news).toEqual({ kind: "ok", value: newsExample });
+  expect(news.kind === "ok" && isPage(news.value)).toBe(false);
+  const page = await fetchNewMessages(URL, TOKEN, ID, after, options);
+  expect(page).toEqual({ kind: "ok", value: messagesExample });
+  expect(page.kind === "ok" && isPage(page.value)).toBe(true);
+  // Neither of the two: not an answer.
+  expect((await fetchNewMessages(URL, TOKEN, ID, after, options)).kind).not.toBe("ok");
+  const [url, init] = fetchFn.mock.calls[0];
+  expect(String(url)).toBe(
+    `${URL}/conversations/${ID}/messages?with=attachments&after=${after}`,
+  );
+  // With the token, as every call of the messages.
+  expect(init).toMatchObject({
+    method: "GET",
+    headers: { Authorization: `Bearer ${TOKEN}` },
+  });
 });
 
 test("a text that cannot go says why before asking", () => {

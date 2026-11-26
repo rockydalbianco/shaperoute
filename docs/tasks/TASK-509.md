@@ -44,9 +44,8 @@ Il contorno vero di ogni forma del catalogo c'è già: `route/ShapeGlyph.tsx`
    Nel Feed «All» vuoto: con l'account, il pulsante **«Record now»** /
    «Registra ora» (testo di TASK-481), che avvia una registrazione come la
    prima voce del «+»; senza account, il pulsante **«Log in»** / «Accedi»,
-   che apre la pagina di accesso. Le frasi restano. (Il pulsante «Log in»
-   era nella stessa domanda e non è stato nominato nella risposta: è nel
-   riepilogo finale per la conferma.)
+   che apre la pagina di accesso. Le frasi restano. Il pulsante «Log in»
+   è stato confermato a parte: «Sì, vanno bene».
 2. **Coach vuoto: «Sì, così».** Senza allenamenti nelle ultime 4 settimane
    spariscono la scheda del corpo e il sottotitolo; restano la figura, la
    frase di oggi e il pulsante **«Go to your workouts»** / «Vai agli
@@ -72,7 +71,8 @@ Il contorno vero di ogni forma del catalogo c'è già: `route/ShapeGlyph.tsx`
 
 Testo nuovo, uno solo: «Go to your workouts» — it «Vai agli allenamenti»,
 de «Zu deinen Trainings», fr «Voir tes séances», es «Ir a tus
-entrenamientos». Le tre traduzioni aspettano il sì dell'utente.
+entrenamientos». Traduzioni approvate dall'utente: «Sì, vanno bene»
+(2026-11-26).
 
 Dal Coordinatore (2026-11-26): tre PR A, B, C; la C solo dopo che TASK-449
 è in `main`; le icone sono l'insieme a cui si allineerà TASK-510; il cuore
@@ -163,4 +163,7 @@ di toccarlo. I documenti (`UI.md`, la precisazione ad ADR-0293, `STATUS.md`,
 
 - 2026-11-26 — avviata dall'utente («Avvia la 509»). Punti riverificati su
   `origin/main` c80aff30, cinque domande all'utente una alla volta, tutte
-  risposte. Elenco dei file al Coordinatore.
+  risposte; poi il sì a «Log in» e alle traduzioni. Elenco dei file
+  approvato dal Coordinatore: il codice si prepara in locale e parte al suo
+  «via al codice» (dopo TASK-449 parte A in `main`); le due prop di
+  `App.tsx` nella PR della parte A, al turno su quel file.

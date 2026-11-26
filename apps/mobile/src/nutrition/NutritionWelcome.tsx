@@ -63,7 +63,10 @@ export function NutritionWelcome({ onDone, now }: Props) {
   const [text, setText] = useState(
     settings.target === null ? "" : String(settings.target),
   );
-  const usedPerDay = useUsualUse(now ?? new Date());
+  // One moment for the whole visit: the usual day is not counted again at
+  // every key pressed.
+  const [moment] = useState(() => now ?? new Date());
+  const usedPerDay = useUsualUse(moment);
 
   if (step === "how") {
     return (
@@ -195,7 +198,7 @@ export function NutritionWelcome({ onDone, now }: Props) {
       <EstimateBox
         purpose={settings.purpose}
         usedPerDay={usedPerDay}
-        year={now?.getFullYear()}
+        year={moment.getFullYear()}
         onUse={(estimate) => setText(String(estimate))}
       />
       <Tap

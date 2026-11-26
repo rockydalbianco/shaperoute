@@ -28,7 +28,8 @@ type Props = {
  * professionals) and who it is not for, or says why there is none.
  *
  * Nothing is shown beside a dietitian's plan: that number is the
- * dietitian's.
+ * dietitian's. While the usual day is still being counted, with the body
+ * data there, the link waits: MuW does not ask for data it already has.
  */
 export function EstimateBox({ purpose, usedPerDay, year, onUse }: Props) {
   const body = useBody();
@@ -36,12 +37,20 @@ export function EstimateBox({ purpose, usedPerDay, year, onUse }: Props) {
   if (purpose === "plan") {
     return null;
   }
-  if (!open) {
+  // The activities are on their way: nothing to say yet.
+  const waiting =
+    usedPerDay === null &&
+    body.sex !== null &&
+    body.weightKg !== null &&
+    body.heightCm !== null &&
+    body.birthYear !== null;
+  if (!open || waiting) {
     return (
       <Tap
         style={styles.link}
         onPress={() => setOpen(true)}
         accessibilityRole="button"
+        accessibilityState={{ busy: open && waiting }}
         testID="estimate-open"
       >
         <Text style={styles.linkText}>{t("See MuW's estimate (demo)")}</Text>

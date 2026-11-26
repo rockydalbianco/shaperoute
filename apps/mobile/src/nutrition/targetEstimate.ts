@@ -18,7 +18,8 @@ import { ageIn, type BodyProfile, type Sex } from "../body/bodyProfile";
  *   men 1,900 (NHS 12-week weight loss plan);
  * - gaining weight: no source read, so no number;
  * - under 18: no number at all (the NHS plan is «not suitable for
- *   children»).
+ *   children»). MuW knows the year of birth only, so who turns 18 this
+ *   year may still be 17: no number for them either.
  *
  * A fixed formula: the AI never produces a number here.
  */
@@ -92,6 +93,10 @@ export function targetEstimate(
   }
   if (age < ADULT_AGE) {
     return { kind: "none", why: "under18" };
+  }
+  // Only the year of birth is known: who turns 18 this year may still be 17.
+  if (age === ADULT_AGE) {
+    return { kind: "none", why: "notForThis" };
   }
   if (purpose === "gain" || purpose === "plan") {
     return { kind: "none", why: "notForThis" };

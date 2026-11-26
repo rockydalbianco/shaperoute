@@ -39,7 +39,9 @@ export function TargetSheet({ visible, target, onTarget, onClose }: Props) {
 function Body({ target, onTarget, onClose }: Omit<Props, "visible">) {
   const [text, setText] = useState(target === null ? "" : String(target));
   const { purpose } = useNutrition().settings;
-  const usedPerDay = useUsualUse(new Date());
+  // One moment while the sheet is open: not counted again at every key.
+  const [moment] = useState(() => new Date());
+  const usedPerDay = useUsualUse(moment);
   const typed = readNumber(text);
   const kcal = typed === null ? null : targetOf(typed);
   return (

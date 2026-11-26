@@ -104,8 +104,19 @@ test("no number at all under 18, whatever the purpose", () => {
       why: "under18",
     });
   }
+});
+
+test("the year of birth alone does not say who is 18: no number in that year", () => {
+  // Born in December 18 years ago, one is 17 for most of this year.
+  const maybe = { ...MAN, birthYear: YEAR - 18 };
+  for (const purpose of ["track", "lose", "gain", "plan", null] as const) {
+    expect(targetEstimate(purpose, 2800, maybe, YEAR)).toEqual({
+      kind: "none",
+      why: "notForThis",
+    });
+  }
   expect(
-    targetEstimate("track", 2800, { ...MAN, birthYear: YEAR - 18 }, YEAR).kind,
+    targetEstimate("track", 2800, { ...MAN, birthYear: YEAR - 19 }, YEAR).kind,
   ).toBe("number");
 });
 

@@ -1895,6 +1895,44 @@ export const DE: Table = {
   "Knee hug": "Knie zur Brust",
   "Stand on one leg. Hug the other knee to your chest.":
     "Auf einem Bein stehen. Das andere Knie an die Brust ziehen.",
+  // src/stretch, the new exercises (TASK-520 part B)
+  "Thread the needle": "Nadelöhr",
+  "On all fours, slide one arm under your body. Rest your shoulder down.":
+    "Im Vierfüßlerstand einen Arm unter dem Körper durchschieben. Die Schulter ablegen.",
+  "Side child's pose": "Kindhaltung zur Seite",
+  "From child's pose, walk both hands to one side. Breathe into your ribs.":
+    "Aus der Kindhaltung beide Hände zu einer Seite wandern lassen. In die Rippen atmen.",
+  "Wrist stretch, palm up": "Handgelenk dehnen, Handfläche oben",
+  "Arm straight, palm up. Gently pull your fingers back with the other hand.":
+    "Arm gestreckt, Handfläche nach oben. Mit der anderen Hand die Finger sanft zurückziehen.",
+  "Wrist stretch, palm down": "Handgelenk dehnen, Handfläche unten",
+  "Arm straight, palm down. Gently press the back of your hand toward you.":
+    "Arm gestreckt, Handfläche nach unten. Den Handrücken sanft zu sich drücken.",
+  "Biceps stretch": "Bizeps dehnen",
+  "Palm on a wall behind you, arm straight. Turn your chest away.":
+    "Handfläche hinter sich an die Wand, Arm gestreckt. Die Brust wegdrehen.",
+  "Doorway chest stretch": "Brust dehnen am Türrahmen",
+  "Forearm on a door frame, elbow at shoulder height. Step through gently.":
+    "Unterarm an den Türrahmen, Ellbogen auf Schulterhöhe. Sanft einen Schritt hindurch machen.",
+  Sphinx: "Sphinx",
+  "Lie on your belly, forearms down. Lift your chest gently.":
+    "Auf den Bauch legen, Unterarme am Boden. Die Brust sanft anheben.",
+  "Seated twist": "Drehsitz",
+  "Sit tall, one knee bent over the other leg. Turn toward the bent knee.":
+    "Aufrecht sitzen, ein Knie über das andere Bein gestellt. Zum gebeugten Knie drehen.",
+  "Lizard lunge": "Eidechse",
+  "From a low lunge, both hands inside your front foot. Sink your hips.":
+    "Aus dem tiefen Ausfallschritt beide Hände innen neben den vorderen Fuß. Die Hüfte sinken lassen.",
+  "Deep squat": "Tiefe Hocke",
+  "Feet wide, sink low, heels down. Elbows press your knees open.":
+    "Füße weit, tief sinken, Fersen am Boden. Die Ellbogen drücken die Knie nach außen.",
+  "Seated figure four": "Vier im Sitzen",
+  "Sit on a chair, ankle over the other knee. Lean forward, back long.":
+    "Auf einem Stuhl sitzen, einen Knöchel über das andere Knie. Nach vorn lehnen, Rücken lang.",
+  "Bent-knee calf stretch": "Wade dehnen mit gebeugtem Knie",
+  "Step back, bend both knees. Keep the back heel down.":
+    "Einen Schritt zurück, beide Knie beugen. Die hintere Ferse am Boden lassen.",
+  // end of TASK-520 part B
   Morning: "Morgens",
   "After run": "Nach dem Laufen",
   "After gym": "Nach dem Fitnessstudio",

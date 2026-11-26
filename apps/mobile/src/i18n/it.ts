@@ -3603,4 +3603,15 @@ export const IT: Table = {
   Admin: "Admin",
   "Co-admin": "Co-admin",
   "This group isn't available.": "Questo gruppo non è disponibile.",
+  // src/nutrition (TASK-489 part C2)
+  "Use Apple Health": "Usa Salute di Apple",
+  "MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there.":
+    "MuW legge la tua energia attiva e gli allenamenti registrati da altre app, per contare l'energia che consumi. Sono letti sul telefono e restano lì.",
+  "Active energy": "Energia attiva",
+  "from Apple Health": "da Salute di Apple",
+  "Your activities are already inside Apple Health's active energy: they are not added again.":
+    "Le tue attività sono già dentro l'energia attiva di Salute di Apple: non si sommano di nuovo.",
+  "Apple Health has nothing for this day: your activities are counted.":
+    "Salute di Apple non ha niente per questo giorno: si contano le tue attività.",
+  "Stop using Apple Health": "Non usare più Salute di Apple",
 };

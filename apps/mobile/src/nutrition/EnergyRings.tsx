@@ -18,8 +18,10 @@ type Props = {
  * inside what was eaten, on one scale (`dayRings.ts`). The user's own
  * target, when there is one, is a notch across the ring of «Eaten».
  *
- * In the colours of the text, not in a green and a red: neither ring is
- * good or bad, and yellow stays the route's.
+ * What the body used is red, the calories' colour everywhere in the app
+ * (`energy`); what was eaten is green (`food`): the user's choice of
+ * 2026-11-26. Yellow stays the route's. Neither colour is the only sign:
+ * each ring has its label and number beside it, with a dot of its colour.
  */
 export function EnergyRings({ shares }: Props) {
   return (
@@ -28,7 +30,7 @@ export function EnergyRings({ shares }: Props) {
         size={RINGS_SIZE}
         stroke={STROKE}
         share={shares.used}
-        colour={color.textMuted}
+        colour={color.energy}
         track={color.border}
         testID="diary-ring-used"
       />
@@ -37,7 +39,7 @@ export function EnergyRings({ shares }: Props) {
           size={INNER_SIZE}
           stroke={STROKE}
           share={shares.eaten}
-          colour={color.text}
+          colour={color.food}
           track={color.border}
           testID="diary-ring-eaten"
         />

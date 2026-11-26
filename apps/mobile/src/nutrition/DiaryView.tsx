@@ -179,6 +179,7 @@ export function DiaryView({ today, now }: Props) {
               label={t("Eaten")}
               value={eaten === null ? "—" : String(eaten.kcal)}
               count={eaten?.kcal ?? null}
+              mark={color.food}
             />
             <Tap
               style={styles.number}
@@ -187,7 +188,10 @@ export function DiaryView({ today, now }: Props) {
               accessibilityLabel={`${t("Used (est.)")}, ${used}`}
               testID="diary-used"
             >
-              <Text style={styles.numberLabel}>{`${t("Used (est.)")} ›`}</Text>
+              <View style={styles.labelLine}>
+                <Dot colour={color.energy} testID="diary-dot-used" />
+                <Text style={styles.numberLabel}>{`${t("Used (est.)")} ›`}</Text>
+              </View>
               <CountUp style={styles.numberValue} value={usedKcal} />
             </Tap>
             <Figure
@@ -292,6 +296,7 @@ function Figure({
   count,
   format,
   note,
+  mark,
 }: {
   label: string;
   /** The number as it is said: screen readers hear this, not the count. */
@@ -301,6 +306,8 @@ function Figure({
   format?: (value: number) => string;
   /** A word beside the number: «Surplus», «Deficit». */
   note?: string;
+  /** The colour of this figure's ring, as a dot before its label. */
+  mark?: string;
 }) {
   return (
     <View
@@ -308,12 +315,28 @@ function Figure({
       accessible
       accessibilityLabel={[label, value, note].filter(Boolean).join(", ")}
     >
-      <Text style={styles.numberLabel}>{label}</Text>
+      <View style={styles.labelLine}>
+        {mark !== undefined && <Dot colour={mark} testID="diary-dot-eaten" />}
+        <Text style={styles.numberLabel}>{label}</Text>
+      </View>
       <View style={styles.valueLine}>
         <CountUp style={styles.numberValue} value={count} format={format} />
         {note !== undefined && <Text style={styles.numberLabel}>{note}</Text>}
       </View>
     </View>
+  );
+}
+
+/** Which ring a figure is: a dot of the ring's colour. The label says it
+ * already, so a screen reader passes over it. */
+function Dot({ colour, testID }: { colour: string; testID: string }) {
+  return (
+    <View
+      style={[styles.dot, { backgroundColor: colour }]}
+      importantForAccessibility="no"
+      accessibilityElementsHidden
+      testID={testID}
+    />
   );
 }
 
@@ -370,6 +393,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "baseline",
     gap: space.sm,
+  },
+  labelLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.xs,
+  },
+  dot: {
+    width: space.sm,
+    height: space.sm,
+    borderRadius: space.sm / 2,
   },
   numberLabel: {
     ...font.small,

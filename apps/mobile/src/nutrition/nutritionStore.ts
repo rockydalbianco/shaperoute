@@ -3,6 +3,7 @@ import { File, Paths } from "expo-file-system";
 import { type Diary, diaryFrom, diaryOfMonth } from "./diary";
 import { type EnergyEdits, energyEditsFrom, NO_EDITS } from "./energyEdits";
 import { type OwnFoods, ownFoodsFrom } from "./ownFoods";
+import { type OwnRecipes, ownRecipesFrom } from "./ownRecipes";
 import { targetOf } from "./ownTarget";
 import { isEmptyPlan, planFrom, type WeekPlan } from "./plan";
 import { type Purpose, purposeOf } from "./targetEstimate";
@@ -21,6 +22,8 @@ import { type Purpose, purposeOf } from "./targetEstimate";
 export const OWN_FOODS_FILE = "nutrition-foods.json";
 export const PLAN_FILE = "nutrition-plan.json";
 export const SETTINGS_FILE = "nutrition-settings.json";
+/** The recipes as the user changed them (part L). */
+export const RECIPES_FILE = "nutrition-recipes.json";
 
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 
@@ -160,4 +163,14 @@ export function saveDiaryMonth(month: string, diary: Diary): boolean {
   }
   const kept = diaryOfMonth(diaryFrom(diary), month);
   return write(diaryFile(month), Object.keys(kept).length === 0 ? null : kept);
+}
+
+export function loadOwnRecipes(): OwnRecipes {
+  return ownRecipesFrom(read(RECIPES_FILE));
+}
+
+/** No recipe changed removes the file. */
+export function saveOwnRecipes(own: OwnRecipes): boolean {
+  const kept = ownRecipesFrom(own);
+  return write(RECIPES_FILE, Object.keys(kept).length === 0 ? null : kept);
 }

@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A7c-3 in produzione con l'OTA 25); B avviata il 2026-11-24, a fette
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A7c-3 in produzione con l'OTA 25); B avviata il 2026-11-24, a fette: la barra galleggia solo col vetro vero (utente, 2026-11-26), B1 e B2 in bozza fino al taglio nativo
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -3370,6 +3370,24 @@ dichiarati «Sufficient Contrast» e il tema scuro.
   superficie si misura sulle schermate nei casi peggiori e resta velata
   se scende sotto 4,5:1. Deciso dall'agente su delega dell'utente; la
   scelta di installare è dell'utente.
+- **Parte B, la barra (2026-11-26)**: l'utente ha voluto che le pagine
+  passino sotto la barra («Sì sotto la barra», 2026-11-24) e che la
+  barra galleggi **solo dove il telefono disegna il vetro vero** («Solo
+  col vetro vero», 2026-11-26). Provata col vetro velato della parte A,
+  la barra che galleggia lasciava leggere il testo dei post dietro le
+  icone: il velo non sfoca. Quindi due pezzi. La stanza
+  (`useTabBarRoom()`, `src/tabs/tabBarRoom.ts`) è già in `main`: ogni
+  pagina della barra la chiede, e vale 0 finché la barra non galleggia.
+  La barra (bozza #1562 sopra la #1557) galleggia quando
+  `nativeGlassAvailable()` dice sì, con la capsula in `NativeGlass`;
+  altrove resta la fascia col fondo di pagina di oggi. Il galleggiare
+  dipende dal telefono e non dal modo di accessibilità: con «Riduci
+  trasparenza» e «Aumenta contrasto» la barra galleggia opaca, come fa
+  iOS, così la pagina non cambia lunghezza quando si tocca
+  l'impostazione. Le due bozze entrano insieme nel taglio nativo: nessun
+  OTA porta la barra che galleggia a una build che non ha il modulo. La
+  scelta di quando galleggia è dell'utente; il resto è deciso
+  dall'agente su delega dell'utente.
 
 **Conseguenze**: la A arriva in fette piccole dopo l'aggiornamento
 completo, prima i token e `src/ui/Glass.tsx`; l'impronta iOS resta

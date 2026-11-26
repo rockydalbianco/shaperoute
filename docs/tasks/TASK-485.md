@@ -8,6 +8,7 @@
 2026-11-23); C, l'apertura da profilo, notifica, link o chat, in `main`
 (#1481, `2a5c7590`, 2026-11-23); restano la copia della privacy sul sito
 e l'OTA, ciascuna col sì dell'utente chiesto dal Coordinatore
+**Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-485-gym-plan-post` (parte 0, in
 `main`); `feat/TASK-485-a-plan-posts-api` (A); B col suo branch e la sua PR
 **Dipende da**: TASK-481 (il foglio «Add to Feed» e `addToFeedEntries.ts`,

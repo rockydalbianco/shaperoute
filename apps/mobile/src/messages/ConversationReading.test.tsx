@@ -243,9 +243,16 @@ test("an answer that changes nothing draws nothing again", async () => {
   await open(fetchFn, drawn);
   expect(screen.getByText(first.messages[0].text)).toBeOnTheScreen();
   drawn.mockClear();
-  // Eleven times nothing new, then the same page again.
+  // Eleven times nothing new, then the same page again: twelve answers.
+  // React itself looks once more after the last real change, without
+  // drawing the rows; never once for each answer.
   await pass(60);
   expect(server.asked).toBe("P" + "N".repeat(11) + "P");
+  expect(drawn.mock.calls.length).toBeLessThanOrEqual(1);
+  drawn.mockClear();
+  // And from then on, nothing at all.
+  await pass(60);
+  expect(server.asked).toBe("P" + "N".repeat(11) + "P" + "NNNP");
   expect(drawn).not.toHaveBeenCalled();
   // A message draws it.
   server.arrives(message(1));

@@ -1,6 +1,8 @@
 # TASK-524 — Test instabile: due percorsi in due processi
 
-**Stato**: In lavorazione · **Coordinatore**: fork 3 · 2026-11-27
+**Stato**: Done · **Coordinatore**: fork 3 · 2026-11-27
+
+**Esito**: #1676 in `main` (`04fde9a6`): il test controlla che le finestre dei due worker si sovrappongano, non più il tempo totale.
 
 ## Il problema
 
@@ -41,4 +43,4 @@ controllo delle finestre.
 
 ## Resta
 
-- Chiusura: riga in `docs/archive/COMPLETATI.md`, task a `Done`.
+Niente: chiuso con la riga in `docs/archive/COMPLETATI.md`.

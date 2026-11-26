@@ -29,7 +29,7 @@ import { t } from "../i18n";
 import { useLanguage } from "../i18n/useLanguage";
 import { clockLabel } from "../navigation/freeRun";
 import { useFollowsDoor } from "../social/followsDoor";
-import { useHeaderScroll } from "../tabs/headerScroll";
+import { useHeaderScroll, useUnderHeader } from "../tabs/headerScroll";
 import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { color, font, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { Hairline } from "../ui/Hairline";
@@ -98,6 +98,8 @@ export function TrainingWorkoutsPage({ onLogIn, fetchFn }: Props) {
   const { owner, plans } = useGymPlans(fetchFn);
   const language = useLanguage();
   const headerScroll = useHeaderScroll();
+  // Under a floating header the page goes on showing behind it (TASK-469 B3).
+  const underHeader = useUnderHeader();
   const barRoom = useTabBarRoom();
   const token =
     account.state.status === "signedIn" ? account.state.session.token : null;
@@ -134,7 +136,7 @@ export function TrainingWorkoutsPage({ onLogIn, fetchFn }: Props) {
     <View style={styles.page}>
       <ScrollView
         {...headerScroll}
-        style={styles.page}
+        style={[styles.page, underHeader]}
         contentContainerStyle={[styles.content, { paddingBottom: space.xxl + barRoom }]}
         testID="training-workouts"
       >

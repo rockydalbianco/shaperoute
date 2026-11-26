@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import { Segmented } from "../screens/Segmented";
-import { useHeaderScroll } from "../tabs/headerScroll";
+import { useHeaderScroll, useUnderHeader } from "../tabs/headerScroll";
 import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { color, font, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
@@ -34,6 +34,8 @@ type Props = {
  */
 export function NutritionPage({ today }: Props) {
   const headerScroll = useHeaderScroll();
+  // Under a floating header the page goes on showing behind it (TASK-469 B3).
+  const underHeader = useUnderHeader();
   const barRoom = useTabBarRoom();
   const { settings } = useNutrition();
   const [view, setView] = useState<"diary" | "plan">("diary");
@@ -45,7 +47,7 @@ export function NutritionPage({ today }: Props) {
   return (
     <ScrollView
       {...headerScroll}
-      style={styles.page}
+      style={[styles.page, underHeader]}
       contentContainerStyle={[styles.content, { paddingBottom: space.xxl + barRoom }]}
       keyboardShouldPersistTaps="handled"
       testID="nutrition-page"

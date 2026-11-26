@@ -9,6 +9,7 @@
     "node": ">=24"
   },
   "scripts": {
+    "postinstall": "node apps/mobile/scripts/patch-watch-connectivity.js",
     "mobile": "npm run start --workspace @shaperoute/mobile",
     "lint": "npm run lint --workspaces --if-present",
     "format": "prettier --write apps packages",

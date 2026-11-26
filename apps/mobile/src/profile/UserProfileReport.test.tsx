@@ -9,6 +9,13 @@ import { forgetBlocked } from "../social/blockedNow";
 import { IslandLayer } from "../ui/IslandLayer";
 import { UserProfilePage } from "./UserProfilePage";
 
+// The night a member shares has its own tests (UserProfileSleep.test.tsx):
+// here it asks nothing, so the answers stay in their order.
+jest.mock("../health/sleepModules", () => ({
+  ...jest.requireActual("../health/sleepModules"),
+  sleepPostsOn: () => false,
+}));
+
 // The answers here are the profile's: its gear (TASK-486) is gear/ProfileGear's.
 jest.mock("../gear/gearOn", () => ({ GEAR_ON: false }));
 jest.mock(

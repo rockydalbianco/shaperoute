@@ -23,7 +23,7 @@ import type { LatLon } from "@shaperoute/shared-types";
 import type { Place } from "../places/photon";
 import type { StartMode } from "../location/startMode";
 import { isRecordOnly } from "../settings/sport";
-import { useHeaderScroll } from "../tabs/headerScroll";
+import { useHeaderScroll, useUnderHeader } from "../tabs/headerScroll";
 import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { useSport } from "../settings/useSport";
 import {
@@ -112,6 +112,8 @@ export function ChooseScreen({
   const insets = useSafeAreaInsets();
   // The header turns to glass once the page scrolls (TASK-469 A5b).
   const headerScroll = useHeaderScroll();
+  // Under a floating header the page goes on showing behind it (TASK-469 B3).
+  const underHeader = useUnderHeader();
   // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
   const barRoom = useTabBarRoom();
   // A day on the snow has no shape to draw (TASK-375, ADR-0319): «Draw» is
@@ -146,6 +148,7 @@ export function ChooseScreen({
         {/* The tour of the first opening scrolls it to its parts (TASK-266). */}
         <TourScrollView
           {...headerScroll}
+          style={underHeader}
           contentContainerStyle={[
             styles.content,
             {

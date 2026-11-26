@@ -49,8 +49,17 @@ function isKept(value: unknown): value is KeptLandings {
 
 const kept: KeptList<KeptLandings> = keptList(SITE_LANDINGS_FILE, isKept);
 
-/** The box around `here`: as wide east–west as north–south on the ground. */
-export function boxAround([lat, lon]: LatLon): Box {
+/** The place the box is drawn around: rounded to about a kilometre, as
+ * every place the app sends to find what is near (the privacy's «Your
+ * location»). */
+export const BOX_DECIMALS = 2;
+
+/** The box around `here`: as wide east–west as north–south on the ground,
+ * around `here` rounded to about a kilometre. */
+export function boxAround(here: LatLon): Box {
+  const round = (n: number) => Number(n.toFixed(BOX_DECIMALS));
+  const lat = round(here[0]);
+  const lon = round(here[1]);
   const across = AROUND_DEG / Math.max(0.2, Math.cos((lat * Math.PI) / 180));
   return {
     south: Math.max(-90, lat - AROUND_DEG),

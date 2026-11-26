@@ -96,3 +96,9 @@ it("keeps what it had when the server says nothing, with no table, or no network
   ).toBe("failed");
   expect(siteLandingsNow(list)?.landings).toEqual([]);
 });
+
+it("draws the box around the place rounded to about a kilometre", () => {
+  const box = boxAround([45.73456, 10.83789]);
+  expect((box.north + box.south) / 2).toBeCloseTo(45.73, 9);
+  expect((box.east + box.west) / 2).toBeCloseTo(10.84, 9);
+});

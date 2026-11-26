@@ -48,11 +48,12 @@ def _load(name: str) -> Any:
 
 
 # An app of before part C2: what this app reads, but `photos`; nor the gym
-# plans posted, which it says since TASK-485 part B.
+# plans posted, which it says since TASK-485 part B; nor the posts of a
+# night of sleep, which it says since TASK-467 part C.
 TODAY_APP = ",".join(
     kind
     for kind in _load("reads.json")["this_app"].split(",")
-    if kind not in ("photos", "plans")
+    if kind not in ("photos", "plans", "sleep")
 )
 # The app of part C2 says `photos` too.
 THIS_APP = f"{TODAY_APP},photos"

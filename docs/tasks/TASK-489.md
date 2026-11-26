@@ -948,7 +948,7 @@ con il tasto per entrare». `NutritionInvite.tsx`, una riga in
 `activities/RunEnd.tsx` e una in `gym/GymEnd.tsx`. Le impostazioni tengono
 quante volte l'invito è stato visto e il «Not now». A fine corsa le kcal
 non si mostrano (quella schermata non le calcola); a fine allenamento sì.
-PR #1660, aperta il 2026-11-26. Gli anelli piccoli dell'invito non sono
+**In `main` con la #1660 (2026-11-26).** Gli anelli piccoli dell'invito non sono
 stati visti nel simulatore coi colori (sono lo stesso `Ring` del giorno).
 
 ### J — L'ingresso (richiesta del 2026-11-24; decisa, non scritta)
@@ -964,8 +964,12 @@ e «è meglio inserire le calorie manualmente»: vedi ADR-0397, precisazione
 Scritta in locale il 2026-11-24 (ramo `feat/TASK-489-j-welcome`, sopra la
 parte I): schermate e testi nelle cinque lingue approvati dall'utente il
 2026-11-24 (`out/TASK-489/TESTI-PARTE-J.md`), fonti della stima lette e
-citate (`out/TASK-489/FONTI-PARTE-J.md`). La sua PR resta in bozza finché
-la PR di privacy e termini non è in `main`.
+citate (`out/TASK-489/FONTI-PARTE-J.md`). Privacy e termini della stima
+sono in `main` con la #1619. **PR #1673, aperta il 2026-11-26.** Nella
+rilettura prima della PR: nell'anno in cui si compiono 18 anni la stima
+non dà numeri (l'app conosce solo l'anno di nascita; ADR-0397,
+precisazione 6, punto 7), e il collegamento della stima aspetta mentre il
+giorno solito si sta ancora contando.
 
 **Privacy e termini della stima (testi approvati dall'utente il
 2026-11-26, «Sì, approvo»; `out/TASK-489/TESTI-PRIVACY-TERMINI-PARTE-J.md`)**,

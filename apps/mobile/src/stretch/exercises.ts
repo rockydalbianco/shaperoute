@@ -33,6 +33,7 @@ import {
   UPPER_BACK,
   UPPER_BACK_BREATH,
 } from "./poses";
+import type { FrontBreath, FrontPose } from "./posesFront";
 
 /**
  * The five stretches after a run (TASK-285 part B, ADR-0247): the runner's
@@ -54,6 +55,27 @@ export type Exercise = {
   pose: Pose;
   /** How the pose goes deeper on each breath while held; none, it stays still. */
   breath?: Breath;
+  /**
+   * A stretch held still, or a movement done again and again for its time
+   * (TASK-520, ADR-0415): leg swings, arm circles. A movement goes from
+   * `pose` to `pose` plus `breath` and back, as far as it needs, once every
+   * `tempoMs`. None, it is held.
+   */
+  kind?: "hold" | "move";
+  /** One go of a movement, there and back; none, a breath's time. */
+  tempoMs?: number;
+  /** Standing, on a chair or on the floor; none, standing. */
+  position?: "standing" | "chair" | "floor";
+  /** Only in a routine asked «Intense»; none, gentle: in every routine. */
+  level?: "gentle" | "intense";
+  /**
+   * Seen from the front instead of from the side, for what the side does
+   * not show: a tilt of the neck, a side bend. `pose` stays the figure
+   * standing, for whoever draws the side only.
+   */
+  front?: FrontPose;
+  /** How the front pose goes deeper, or how far it moves. */
+  frontBreath?: FrontBreath;
 };
 
 /** How long a side is held, in the user's proposal of 2026-10-13. */

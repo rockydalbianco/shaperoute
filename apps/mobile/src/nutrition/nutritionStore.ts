@@ -36,12 +36,34 @@ export type NutritionSettings = {
   target: number | null;
   /** The energy the user corrected by hand (energyEdits.ts). */
   edits: EnergyEdits;
+  /** The invitation at the end of an activity (part I). */
+  invite: Invite;
 };
+
+/** How often the invitation to «Nutrition» was shown, and whether the user
+ * said «Not now»: then it is not shown again. */
+export type Invite = { seen: number; off: boolean };
+
+export const NO_INVITE: Invite = { seen: 0, off: false };
+
+/** What of `data` is an invitation's count: anything else is as new. */
+function inviteFrom(data: unknown): Invite {
+  if (typeof data !== "object" || data === null) {
+    return NO_INVITE;
+  }
+  const raw = data as Record<string, unknown>;
+  const seen = raw.seen;
+  return {
+    seen: typeof seen === "number" && Number.isInteger(seen) && seen > 0 ? seen : 0,
+    off: raw.off === true,
+  };
+}
 
 export const NO_SETTINGS: NutritionSettings = {
   noticeSeen: false,
   target: null,
   edits: NO_EDITS,
+  invite: NO_INVITE,
 };
 
 /** What of `data` are the settings: a field that does not read is as new. */
@@ -54,6 +76,7 @@ export function settingsFrom(data: unknown): NutritionSettings {
     noticeSeen: raw.noticeSeen === true,
     target: targetOf(raw.target),
     edits: energyEditsFrom(raw.edits),
+    invite: inviteFrom(raw.invite),
   };
 }
 

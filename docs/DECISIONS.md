@@ -619,12 +619,20 @@ lasciando le righe d'indice.
 - ADR-0359, aggiunta (TASK-519) — Su «Map» la freccia punta dove punta il telefono, col cono; la mappa non gira; bussola spenta su «Data» e in tasca · 2026-11-26 · Attiva
 - ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
 - ADR-0264, aggiunta D (TASK-496) — In una giornata di sci o un volo registrati, alla mappa vanno solo i punti nuovi dell'ultimo tratto finché la divisione in tratti resta la stessa · 2026-11-26 · Attiva
+<<<<<<< HEAD
 - ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
 - ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
+=======
+- ADR-0414 — Le coordinate delle linee intere che l'API risponde all'app a 6 decimali, ognuna dentro la sua cella da 5: il nome della linea (`line_key`, il `favoriteKey` dell'app) non cambia; l'SQL resta a 15 cifre · 2026-11-27 · Attiva
+- ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Proposta
+- ADR-0177, aggiunta G (TASK-214) — Una zona che il server non ha intorno al telefono la prepara da solo, come un luogo tenuto (TASK-334): il telefono la trova all'apertura dopo; il log non scrive mai il nome della zona · 2026-11-26 · Attiva
+- ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi (`latest` nella pagina, `?after=` sulla stessa rotta), più piano nel silenzio (5 s, 15 s, 30 s: scelta dell'utente); la pagina intera una volta al minuto; una risposta uguale non ridisegna · 2026-11-26 · Attiva
+>>>>>>> 14aa415e766b17fba8d39a3e6508fdd75a48c1d9
 
 
 ## Voci nuove
 
+<<<<<<< HEAD
 ## ADR-0397, precisazione 7 — Le ricette in «Nutrition»
 
 **Stato**: Proposta · 2026-11-27 · TASK-489 parte L (parte 0 chiusa, codice
@@ -731,7 +739,157 @@ nessuno dei due è un colore dell'interfaccia, e l'app non ha un token
 **Conseguenze**: `docs/UI.md` ha la riga di `food` accanto a `energy`.
 Visti nel simulatore il 2026-11-26, tono scuro e chiaro
 (`out/TASK-489/shots/09`–`12`). Codice nella #1652 (parte H) e nella #1660
-(parte I); il punto 7 nella PR della parte J.
+(parte I); il punto 7 nella #1673 (parte J).
+=======
+## ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi, più piano nel silenzio; la pagina intera una volta al minuto
+
+**Stato**: Attiva · 2026-11-26 · TASK-498. **Deciso dall'agente su delega
+dell'utente** («Avvia la 498», 2026-11-26), tranne il ritmo, che è **scelta
+dell'utente** («Sì, va bene», 2026-11-26). Aggiunta senza numero nuovo e
+lista dei file dal Coordinatore. Codice nella #1610 (server) e nella #1634
+(app). **Niente WebSocket**, come in ADR-0279 e in ADR-0381 punto 6: resta
+una richiesta HTTP ogni tanto.
+
+**Contesto**: punto O8 della lettura del codice del 2026-11-23. Una
+conversazione aperta riscaricava ogni 5 secondi la sua ultima pagina
+intera, con la foto dell'altro, anche quando nessuno scriveva (sul database
+di prova: 9 283 byte e 8 query a controllo), e a ogni risposta la schermata
+si ridisegnava anche se era uguale.
+
+**Decisione**:
+
+1. **`latest` nella prima pagina** di
+   `GET /conversations/{public_id}/messages`: il posto del messaggio più
+   nuovo, nella forma di `next` (`microsecondi-uuid`); `0-000…0` in una
+   conversazione vuota, `null` nelle pagine dei più vecchi. Il posto lo
+   dice il server: l'app non lo calcola.
+2. **`?after=<latest>` sulla stessa rotta** risponde `MessageNews`:
+   `state`, i messaggi dopo quel posto, `more`, il `latest` nuovo. Niente
+   `person` (quindi niente foto), niente `attachments`; due query oltre a
+   quella del token. `after` insieme a `cursor`: `422`.
+3. **La stessa rotta, non una nuova**: un server di prima ignora `after` e
+   risponde la pagina, che l'app legge come pagina; un'app che non ha
+   ricevuto `latest` non manda mai `after`. Così la parte dell'app non
+   aspetta il passo sul server e tornare indietro è sicuro. Nessuna
+   migrazione, nessun indice nuovo, `schemas.py` non toccato.
+4. **Il ritmo** (dell'utente): ogni 5 s finché ci si scrive; ogni 15 s
+   dopo un minuto senza messaggi; ogni 30 s dopo cinque; di nuovo 5 s
+   quando arriva un messaggio, quando se ne manda uno, al ritorno
+   nell'app. Con l'app dietro non si chiede, come prima.
+5. **La pagina intera resta**: all'apertura, al ritorno nell'app, una
+   volta al minuto, e subito quando la risposta corta dice un altro
+   `state` o `more`. Lei sola porta un messaggio cancellato dall'altro o
+   nascosto da una segnalazione, nome e foto dell'altro, una scheda di post
+   o di live cambiata, un video scaduto, cosa si può allegare, e un
+   messaggio salvato un attimo dopo quello già letto ma scritto un attimo
+   prima (resta dietro `latest`).
+6. **Niente ridisegno**: `messages/conversationReading.ts` (senza React)
+   rende lo stesso oggetto quando la risposta non cambia niente, e ogni
+   messaggio non cambiato resta lo stesso oggetto.
+7. **Il pallino dei non letti non cambia**: `PUT …/read` quando arriva un
+   messaggio dell'altro, poi `recount`.
+
+**Alternative scartate**: una rotta nuova per i messaggi nuovi (un server
+di prima risponderebbe `404`, da distinguere da una conversazione
+sparita); il posto calcolato dall'app dalle date dei messaggi che tiene (la
+forma del posto resta una cosa del server); far dire alla risposta corta
+anche le cancellazioni e la foto (tornano le query che si volevano
+togliere: bastano entro un minuto con la pagina).
+
+**Conseguenze**: sul database di prova un controllo senza novità passa da
+9 283 byte (4 998 con gzip) e 8 query a 104 byte e 3 query; con un
+messaggio nuovo 266 byte e 3 query. Un'ora di conversazione aperta e ferma
+passa da 720 controlli (circa 3,6 MB e 5 760 query) a 138 (circa 0,31 MB e
+714 query). In una chat aperta e ferma un messaggio può comparire fino a
+15 s dopo (30 s dopo cinque minuti di silenzio); quello che porta solo la
+pagina, entro un minuto invece che entro 5 s. Dodici risposte uguali di
+fila danno al più un passaggio di React, senza ridisegnare le righe, poi
+nessuno. **Non misurati**: i tempi e il piano della query sul server vero, i
+byte e la batteria su un telefono. Nessun cambio nativo, nessuna
+dipendenza.
+
+## ADR-0414 — Le coordinate delle risposte a 6 decimali dentro la cella dei 5: la chiave delle linee non cambia
+
+**Stato**: Attiva · 2026-11-27 · TASK-501 parte B (#1650). Deciso
+dall'agente su delega dell'utente; numero dal Coordinatore (fork 3,
+2026-11-26).
+
+**Contesto**: voce O11 della lettura del codice del 23 novembre: le linee
+intere escono dal server con tutte le cifre di un double
+(`ST_AsGeoJSON(…, 15)`), mentre 6 decimali sono circa 10 cm e pesano quasi
+la metà. Il task file diceva di scrivere `ST_AsGeoJSON(…, 6)`. Una linea
+però ha un nome, `best_routes.line_key`, lo stesso del `favoriteKey`
+dell'app: due hash sui punti arrotondati a 5 decimali. Con questo nome un
+preferito si salva una volta sola, il cuore sa se un percorso è già tenuto,
+una corsa conta per il percorso di catalogo che ha seguito
+(`count_run`, `best_routes.uses`). Arrotondare a 6 e poi a 5 sposta circa
+una coordinata su venti nella cella accanto (46,0671249 → 46,067125 →
+46,06713 invece di 46,06712): simulato, cambiano nome 261 linee su 300 con
+20 punti e 300 su 300 con 200, sia con le coordinate a 7 decimali di
+OpenStreetMap sia con le tracce GPS. Il telefono darebbe a un percorso
+ricevuto un nome diverso da quello che il server tiene.
+
+**Decisione**:
+- **L'SQL resta a 15 cifre**; l'accorciamento si fa in Python, solo su
+  quello che si risponde all'app (`shaperoute_api/answer_lines.py`:
+  `short`, `short_point`, `short_line`).
+- **Ogni coordinata va a 6 decimali dentro la sua cella da 5**: se
+  l'arrotondamento semplice la porterebbe in un'altra cella, prende il
+  sesto decimale accanto, un milionesimo di grado (11 cm) più in là. Così
+  la linea che l'app riceve ha il nome della linea che il database tiene.
+  Su 2 milioni di coordinate: nessun nome cambiato, il 4,8% spostato di un
+  passo.
+- **Dove**: un'attività aperta (percorso e traccia), un disegno, la pagina
+  del link di un post, un preferito e un'uscita di gruppo aperti, e il
+  punto di partenza di questi ultimi due nelle loro liste.
+- **Dove no**: le anteprime delle liste, già a 5 decimali
+  (`recommended.preview`), quindi anche `messages.py`; `best_routes.py`
+  (legge a 9); le query che leggono una linea per riscriverla nel database
+  (`drawings.RUN_TO_DRAW`, `drawing_retrack.py`). I numeri e le distanze si
+  calcolano prima, sulle linee intere.
+
+**Conseguenze**: nessuna scrittura cambia e nessuna migrazione. Le risposte
+di una corsa da 3600 punti con un percorso da 2000 scendono, in locale, da
+218 781 a 122 238 byte (gzip da 83 629 a 31 861); accorciare costa circa
+1 µs a punto. Un percorso fatto di nodi OpenStreetMap ha già 7 decimali:
+lì si guadagna una cifra per coordinata. Un test rifà il `favoriteKey`
+dell'app riga per riga con i numeri di JavaScript
+(`tests/test_coordinate_decimals.py`) e lo confronta con `line_key`: chi
+cambia l'uno o l'altro lo vede. Le impronte del motore non cambiano
+(`route_store` legge solo `route_engine`). Non misurati: il server vero, il
+telefono.
+
+## ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching in palestra e le routine pubblicate
+
+**Stato**: Proposta · 2026-11-26 · TASK-466 parti C ed E, parte 0.
+**Scelte dell'utente** del 2026-11-26 (task file, «Parte 0 di C» e «Parte
+0 di E»); il modo **deciso dall'agente su delega**, file e forma dal
+Coordinatore.
+
+**Decisione**:
+
+1. **C — lo stretching dopo la palestra entra nell'allenamento**: alla
+   fine «Remember to stretch» / «Skip» / «Stretch», poi «After gym» da 3,
+   5 o 10 minuti; routine, minuti, durata ed esercizi vanno con la
+   sessione di palestra (`stretch` in `PUT /me/gym-sessions/{key}`,
+   tabella `gym_stretches`, migrazione 0089) e si vedono nel suo post con
+   gli esercizi. Un solo post, nessuna attività in più.
+2. **E — le routine proprie come le schede palestra** (ADR-0394): si
+   compongono in «Draw» › «Stretching» › «My routines» (nome, fino a 20
+   dei 15 esercizi in ordine, 20/30/45/60 s ciascuno, fino a 20 routine),
+   stanno sul telefono e nell'account, si pubblicano dal «My routines» e
+   dal «+» del Feed come fotografia; chi vede il post la fa («Do this
+   routine», salvata come sessione di TASK-475) o la copia («Save to my
+   routines»).
+3. **Privacy**: una frase per le sessioni di stretching (anche quelle di
+   TASK-475, mai nominate finora) e una per le routine e i loro post,
+   entrambe col sì dell'utente.
+
+**Conseguenze**: C1 e EA passano dal server (migrazioni, passi del
+Coordinatore col sì dell'utente); C2 ed EB escono con un OTA. La riga nel
+riepilogo di fine palestra (`GymEnd.tsx`) arriva dopo TASK-489 I e
+TASK-511 B. Diventa «Attiva» con il codice.
+>>>>>>> 14aa415e766b17fba8d39a3e6508fdd75a48c1d9
 
 ## ADR-0264, aggiunta D (TASK-496) — Sci e volo: alla mappa solo i punti nuovi dell'ultimo tratto
 
@@ -977,6 +1135,50 @@ invariata; arriva con un OTA. La bussola resta accesa durante la corsa su
 tasca. Restano fuori, come idee nel task file: un cono solo quando la
 direzione viene dalla bussola, e la bussola spenta in tasca anche su
 «Compass».
+
+## ADR-0177, aggiunta G (TASK-214) — Il server prepara la zona che manca intorno al telefono
+
+**Stato**: Attiva · 2026-11-26 · TASK-214 parte G. **Scelta dell'utente**
+del 2026-11-26, alla domanda «quando il telefono chiede la mappa della sua
+zona e il server non ce l'ha, cosa facciamo?»: **«Il server la prepara»**
+(le altre: più zone in anticipo; lasciare così). Il modo è **deciso
+dall'agente su delega dell'utente**; file e forma dal Coordinatore.
+
+**Contesto**: `GET /phone-zones/{network}` risponde `404` quando il server
+non ha una zona con 3 km intorno al punto: dal 10 al 25 ottobre più di metà
+delle richieste (85 su 155). Lì il telefono non ha mappa e senza rete non
+disegna. Il registro del server non scrive le posizioni (ADR-0096), quindi
+non si sa dove: la scelta è cosa fare a ogni `404`.
+
+**Decisione**:
+
+1. **Dopo un `404` senza `prefetch=1`** il server mette in coda la zona con
+   6 km intorno al punto (`PLACE_MARGIN_M`) con lo stesso `PlaceBuilds`
+   dei luoghi tenuti (TASK-334, ADR-0290): una zona alla volta, solo quando
+   non disegna percorsi (`RouteWork`) e senza `PAUSE_FILE`, con gli stessi
+   tetti del giorno (3 per telefono, 20 in tutto, condivisi coi luoghi).
+2. **La risposta resta `404`**: l'app non cambia; alla sua apertura dopo
+   chiede di nuovo e la trova.
+3. **Le zone chieste in anticipo** (`prefetch=1`, parti B2 e B2b) non
+   preparano niente.
+4. **Il log non scrive mai il nome della zona**: il nome è il suo riquadro,
+   centrato sulla posizione arrotondata del telefono. `phone_file`
+   scriveva «phone zone foot_46.01600_…» anche per i luoghi tenuti: ora
+   scrive solo la rete.
+
+**Privacy**: nessun dato nuovo lascia il telefono; il testo di oggi copre
+già la mappa offline intorno a te (posizione arrotondata a circa 1 km) e
+Overpass chiesto dal server per un'area che non ha (vede l'area, non chi).
+
+**Alternative scartate**: costruire in anticipo molte più zone (un passo
+lungo sul server e molto disco, e solo per le città); una risposta nuova
+`202` al telefono (l'app avrebbe dovuto cambiare, senza vantaggio: chiede
+già a ogni apertura).
+
+**Conseguenze**: dove i telefoni aprono l'app senza zona, il server la
+scarica da Overpass entro il tetto del giorno; carico su Overpass e disco
+come per i luoghi tenuti. Solo server; `engine.zip` non cambia. Va sul
+server con un passo del Coordinatore, col sì dell'utente.
 
 ## ADR-0406 — Il proprietario dei dati sul telefono è il public_id sul suo server, non l'id numerico
 

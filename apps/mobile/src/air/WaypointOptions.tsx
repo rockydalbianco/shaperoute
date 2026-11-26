@@ -7,6 +7,7 @@ import type { Palette } from "../theme/tokens";
 import { airspacePickerAvailable } from "./airspaceFile";
 import { loadedDay } from "./AirspaceOptions";
 import { removeManualWaypoints, useManualWaypoints } from "./manualWaypoints";
+import { useSiteLandings } from "./siteLandings";
 import { TaskShare } from "./TaskShare";
 import { pickTask, pickWaypoints } from "./waypointFile";
 import { setTask, setWaypoints, useTask, useWaypoints } from "./waypointStore";
@@ -26,6 +27,8 @@ export const FILE_LINE = tLater("{file} · loaded {date}");
 export const NO_WAYPOINTS = tLater("This file has no waypoint MuW can read.");
 export const NOT_A_TASK = tLater("This file is not a task MuW can read.");
 export const MY_WAYPOINTS = tLater("My waypoints");
+/** Part D6: the landings of OpenStreetMap kept for the flight. */
+export const OSM_LANDINGS = tLater("Landings from OpenStreetMap: {count}");
 export const REMOVE_ALL = tLater("Remove all");
 export const PRESS_THE_MAP = tLater("Press the flight map long to add one.");
 
@@ -67,6 +70,7 @@ export function WaypointOptions({
   const waypoints = useWaypoints();
   const task = useTask();
   const manual = useManualWaypoints();
+  const sites = useSiteLandings();
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // The day the options opened on: the gates are that day's.
@@ -160,6 +164,11 @@ export function WaypointOptions({
             })
           : t(PRESS_THE_MAP)}
       </Text>
+      {sites !== null && sites.landings.length > 0 ? (
+        <Text style={muted} testID="osm-landings">
+          {`${t(OSM_LANDINGS, { count: String(sites.landings.length) })} · ${sites.attribution}`}
+        </Text>
+      ) : null}
       {row(
         t("Task"),
         <>

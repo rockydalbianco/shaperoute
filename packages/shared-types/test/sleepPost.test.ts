@@ -52,8 +52,9 @@ test("`sleep` is a source of a drawing and a kind an app may read, after `photos
   const source: DrawingSource = SLEEP_SOURCE;
   assert.equal(source, "sleep");
   assert.equal(reads.kinds.indexOf(SLEEP_SOURCE), reads.kinds.indexOf("photos") + 1);
-  // The app says it with part E's app: today's does not read it yet.
-  assert.ok(!reads.this_app.split(",").includes(SLEEP_SOURCE));
+  // The app says it since the sleep is on (part C), after everything of
+  // before.
+  assert.equal(reads.this_app.split(",").at(-1), SLEEP_SOURCE);
 });
 
 test("in the Feed it is a drawing without a run that carries its night", () => {

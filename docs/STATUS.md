@@ -35,6 +35,8 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 **Le prove sul campo** (neve, volo, corsa vera): una riga per prova in
 `docs/PROVE-SUL-CAMPO.md` (406 E, 429, 375 E, 415, 305, 479), da
 fare quando capita; i task con solo quella prova sono chiusi.
+**TASK-501** (chiuso): dopo l'OTA con la parte C, la prova sul telefono
+di Coach e di un post aperto con la sua mappa.
 
 ## In lavorazione
 
@@ -49,9 +51,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   2026-11-23: revisione, riserva e imbrago sull'attrezzatura di 486, con
   l'avviso; scelte dell'utente fatte. File: — · `tasks/TASK-494.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
-  ADR-0397; A1–H e la privacy in `main`, spente (`NUTRITION_ON`). In fila:
-  I (invito a fine attività) = #1660, poi J (ingresso e stima). Dopo J, in
-  sessioni loro: K1 (peso) e L (ricette, parte 0 chiusa il 2026-11-27).
+  ADR-0397; A1–I e la privacy in `main`, spente (`NUTRITION_ON`). In fila:
+  J (ingresso e stima) = #1673. Dopo J, in sessioni loro: K1 (peso) e L
+  (ricette, parte 0 chiusa il 2026-11-27).
   Build nativa successiva: G2, C2b, accensione. File: `nutrition/*`,
   `activities/RunEnd.tsx`, `gym/GymEnd.tsx` · `tasks/TASK-489.md`
 - **TASK-513 — «Longevity»: cinquanta storie animate** · ADR-0407; parte 0
@@ -197,6 +199,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-23**: **C0 in `main`** (#1458, `cffb2c4d`): il sonno acceso solo
   sul canale di prova `preview`, spento negli store. Arriva sulla build di
   prova con la prossima pubblicazione su `preview`; poi la prova e la C.
+  **2026-11-27**: **C in `main`** (#1334, `7e2813ce`) nel taglio nativo:
+  sonno acceso con la build nuova; App Privacy e build dal Coordinatore. Poi D.
 
 - **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (OTA
   12); B (dieci esercizi, tre routine da 3, 5, 10 min, la gamba staccata

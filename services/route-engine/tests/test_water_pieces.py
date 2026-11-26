@@ -66,6 +66,45 @@ PIECES = {
     "bear_head": 3,
     "bicycle": 3,
     "espresso_cup": 2,
+    # The shapes in pieces of TASK-516 (ADR-0411): holes, eyes, stripes and
+    # the details drawn inside them.
+    "ball": 1,
+    "bell": 1,
+    "colosseum": 4,
+    "dolphin": 1,
+    "dome": 3,
+    "easter_egg": 1,
+    "flower": 1,
+    "fox_head": 2,
+    "gift": 3,
+    "infinity": 2,
+    "leaf": 1,
+    "light_bulb": 1,
+    "medal": 1,
+    "mountain": 1,
+    "owl": 3,
+    "padlock": 2,
+    "peace": 4,
+    "penguin": 3,
+    "pizza_slice": 3,
+    "racket": 1,
+    "strawberry": 5,
+    "triumphal_arch": 2,
+    "trophy": 2,
+    "turtle": 1,
+}
+
+# The shapes with an open line among their pieces.
+OPEN_PIECES = {
+    "smiley",
+    "sun",
+    "espresso_cup",
+    "easter_egg",
+    "gift",
+    "leaf",
+    "light_bulb",
+    "mountain",
+    "owl",
 }
 
 
@@ -183,8 +222,8 @@ def test_each_piece_is_drawn_on_its_own_and_paddled_to(where: str, shape: str) -
         piece = LineString(xy[a : b + 1])
         assert area.band.buffer(1e-6).contains(piece)
         # Open pieces: the mouth of the smiley, the rays of the sun, the steam
-        # of the cup.
-        assert piece.is_closed or shape in ("smiley", "sun", "espresso_cup")
+        # of the cup, and the lines drawn inside some shapes of TASK-516.
+        assert piece.is_closed or shape in OPEN_PIECES
     # The route's checks: closed, on water, within 1 km, the distance asked.
     measures = water_fit.measure(result.points, area)
     assert measures.closed and measures.on_land_m == 0.0

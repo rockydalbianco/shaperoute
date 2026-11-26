@@ -1,6 +1,6 @@
 # TASK-450 — «Share your run»: ordine dei pulsanti e poster
 
-**Stato**: In corso · PR #1541 pronta (schermate approvate dall'utente il 2026-11-23); merge del Coordinatore, poi documenti di chiusura
+**Stato**: Done · 2026-11-23 · PR #1541 in `main` (855cf73c), in produzione con l'OTA 26 del 2026-11-24
 **Fase**: 5 · **Branch**: `feat/TASK-450-share-order-poster`
 **Dipende da**: niente
 **ADR**: nessuno finora · numero dal Coordinatore l'11 novembre 2026 (idea
@@ -169,4 +169,22 @@ docs/tasks/TASK-450.md                          (nuovo)
 
 ## Esito
 
-*(a fine task)*
+In «Share your run» «Instagram» ed «Export video» stanno subito sotto il
+poster; il poster porta il titolo del post (da «My activities» prima
+diceva la forma), il giorno della corsa sotto, e ha tre stili, «Yellow»,
+«Night», «Day», con una cornice sottile nella pagina. Nessun testo nuovo,
+nessun ADR: le scelte sono le tre risposte dell'utente qui sopra, il resto
+è in «Come è fatto». #1541 unita dal Coordinatore il 2026-11-23 dopo il
+«Sì, vanno bene» dell'utente alle schermate; è nell'OTA 26 di produzione
+(`71fc76c4`, 2026-11-24).
+
+**Resta, non di questa sessione**: la prova sul telefono dopo l'OTA 26 (è
+nell'elenco di `STATUS.md`, «Prossimo passo», la segue il Coordinatore):
+aprire «Share» da una corsa col post titolato, cambiare stile, toccare
+«Instagram» e guardare che nel foglio di iOS l'immagine abbia lo stile
+scelto e non la cornice. Non provati nel simulatore: il poster a fine
+corsa e dal Feed (coperti dai test).
+
+**Rimandato, se l'utente lo vuole**: il giorno senza l'anno («Sab 21 nov»,
+com'era nell'anteprima della domanda 2) vuole un formato di data nuovo
+nelle quattro lingue; l'utente ha approvato le schermate con l'anno.

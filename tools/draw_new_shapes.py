@@ -62,6 +62,36 @@ APPROVED = frozenset(
         "windmill",
         "wine_glass",
     }
+) | frozenset(
+    # TASK-516 (ADR-0411): judged on real roads with the shapes of winter,
+    # the holidays and sport, «Vanno bene le 35» on 2026-11-26.
+    {
+        "colosseum",
+        "croissant",
+        "dolphin",
+        "dome",
+        "easter_egg",
+        "eiffel_tower",
+        "flower",
+        "fox_head",
+        "gift",
+        "infinity",
+        "leaf",
+        "light_bulb",
+        "medal",
+        "mountain",
+        "owl",
+        "padlock",
+        "peace",
+        "penguin",
+        "pizza_slice",
+        "scooter",
+        "strawberry",
+        "triumphal_arch",
+        "trophy",
+        "turtle",
+        "umbrella",
+    }
 )
 CATEGORIES = ("monuments", "food", "animals", "objects", "symbols")
 # Simplified this close to the drawing, as a share of the unit square.

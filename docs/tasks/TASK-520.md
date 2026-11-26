@@ -42,9 +42,10 @@ sovrappone a E.
 - [x] b) Elenco degli esercizi nuovi — **approvato dall'utente il
       2026-11-27 («Sì, approvo»)**: 50 nuovi, 65 in tutto, con la vista di
       fronte per 8 esercizi; vedi «Esercizi approvati» sotto.
-- [ ] c) Schizzo della home — canvas https://claude.ai/artifact/CaiBLTDaSRn7dRydoatwLL
-      (home, categoria «Running», pagina dell'esercizio; sorgenti in
-      `out/stretching-nuovo/canvas/`), chiesto all'utente il 2026-11-27.
+- [x] c) Schizzo della home — **approvato dall'utente il 2026-11-27
+      («Sì, approvo»)**, seconda versione dopo «fallo più figo e moderno e
+      professionale, usa anche più colori, animazioni»; vedi «Schizzo
+      approvato» sotto.
 - [ ] d) Testi in inglese, poi le quattro traduzioni.
 - [ ] Nome della categoria «intimità» e controllo della fascia d'età su
       App Store e Google Play.
@@ -104,6 +105,37 @@ copia qui con la parte 0 completa. In breve:
 - Intimità: prima Cat–cow, Pelvic tilt, Hip circles, Bridge, Butterfly;
   dopo Lying twist, Figure four, Child's pose, Resting breath.
 
+## Schizzo approvato (2026-11-27)
+
+Canvas: https://claude.ai/artifact/CaiBLTDaSRn7dRydoatwLL (privato
+dell'utente); sorgenti in `out/stretching-nuovo/canvas/` del checkout
+principale. Tre schermate, tinta scura:
+
+- **Home**: «Stretching»; striscia **«This week»** (sette giorni con la
+  spunta, «3 sessions · 24 min» — aggiunta approvata); scheda **Today**
+  (figura dentro anelli che pulsano, etichette minuti/esercizi/variante,
+  «Start» giallo, link «See the 8 exercises»); **My routines** (466 E) con
+  «New routine»; scorciatoie ai gruppi; **Body** griglia a 3 colonne (senza
+  icona: la figura fa da icona, Lucide non ha parti del corpo); **Moments**
+  fila che scorre di lato, con icona; **Sports** due colonne, figura +
+  icona + «Before · After»; intimità una scheda larga; **More** griglia a 3.
+  Le tessere entrano una dopo l'altra, alone che respira dietro la figura.
+- **Categoria** (es. Running): interruttore Before/After che scorre,
+  durate, Gentle/Intense, Standing only/Standing + floor, riepilogo con la
+  barra del peso di ogni esercizio, esercizi numerati lungo una linea,
+  «Start». Una riga apre la pagina dell'esercizio.
+- **Pagina dell'esercizio**: figura in loop dentro un anello di 48 puntini
+  che si spegne coi secondi, tempo grande, lato, «Breathe in / out»,
+  pausa; Hold / Sides / Position; «How to»; «Good for» con le categorie;
+  «Try it · 1 min» (aggiunta approvata).
+- **Cinque colori nuovi, uno per gruppo** (approvati): corallo Body, viola
+  Moments, azzurro Sports, rosa intimità, verde More — token dedicati allo
+  stretching in `src/theme/tokens.ts`, con i test di contrasto nelle
+  quattro tinte (valori dello schizzo, tinta scura: `#FF8A5C`, `#A99BFF`,
+  `#4DD2FF`, `#FF6FB5`, `#4FD08A`). Il giallo resta solo su «Start».
+- Tutto senza librerie nuove: forme, colori pieni, animazioni di scala e
+  rotazione (ADR-0147).
+
 ## Parti di codice (da confermare dopo la parte 0)
 
 Ognuna con la sua PR e la lista dei file al Coordinatore prima:
@@ -128,4 +160,5 @@ aggiungono qui dopo il sì del Coordinatore.
 ## Dove siamo
 
 2026-11-27: numeri dal Coordinatore (TASK-520 / ADR-0415); mappa
-approvata; elenco esercizi approvato; schizzo della home all'utente.
+approvata; elenco esercizi e schizzo della home approvati; prossimi il nome
+della categoria intimità, poi i testi.

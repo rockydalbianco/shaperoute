@@ -44,6 +44,7 @@ from shaperoute_api.accounts import (
     current_user,
 )
 from shaperoute_api.activities import turn_kept
+from shaperoute_api.answer_lines import short_line
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import LINKABLE_SQL, NO_DRAWING, _line
 from shaperoute_api.live_shares import SITE_ORIGIN
@@ -138,7 +139,8 @@ class PostLinks:
             distance_m=row["distance_m"],
             activity=row["activity"],
             rotation_deg=turn_kept(row["route_rotation_deg"]),
-            track=_line(row["track"]),
+            # Six decimals a coordinate (answer_lines).
+            track=short_line(_line(row["track"])),
         )
 
     def switch(self, user_id: int) -> PostLinksBody:

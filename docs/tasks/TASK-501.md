@@ -1,7 +1,8 @@
 # TASK-501 — Server più leggero: anteprime delle corse, coordinate a 6 decimali, attesa in coda misurata
 
-**Stato**: Parte 0 · 2026-11-26 · solo task file; niente codice finché il
-Coordinatore non lo dice («corsia piccola, un task alla volta», 26-11)
+**Stato**: Parte B · 2026-11-26 · A in main (#1638, migrazione 0088); il
+suo passo sul server («passo 25») è del Coordinatore, col sì dell'utente.
+B in lavorazione, poi C
 **Fase**: 5 · **ADR**: nessuno nuovo (le anteprime seguono ADR-0249) ·
 numero dal Coordinatore (fork 3, 2026-11-23 sera) · voci O10, O11 e O13
 di `out/prova-app-2026-11-23/PROPOSTE.md` (proposta «F»)
@@ -70,9 +71,9 @@ l'altra, mai insieme.
 
 ## Criteri di accettazione
 
-- [ ] `GET /me/activities` non legge più `track` e `route` interi: la lista
+- [x] `GET /me/activities` non legge più `track` e `route` interi: la lista
       dà le stesse anteprime di prima (test che confronta le due strade su
-      corse vere della fixture).
+      corse vere della fixture). — parte A, `test_activity_previews.py`.
 - [ ] Le risposte all'app hanno coordinate a 6 decimali; i test che
       leggono coordinate passano; nessuna scrittura nel database cambia.
 - [ ] `queued_s` compare nella riga di `job_times` e nei suoi test, anche
@@ -81,10 +82,60 @@ l'altra, mai insieme.
       fetcher finti, l'ordine controllato); al massimo 4 insieme.
 - [ ] Aprire un post e toccare la mappa fa una richiesta del disegno, non
       due (test).
-- [ ] `docs/DATABASE.md` dice le due colonne nuove; misura della migrazione
-      su una copia di produzione scritta nel task file prima del passo.
+- [x] `docs/DATABASE.md` dice le due colonne nuove; misura della migrazione
+      su una copia di produzione scritta nel task file prima del passo. —
+      niente copia dei dati veri (scelta del Coordinatore): tabella gonfiata
+      in locale e numeri di produzione in sola lettura, in «Misure».
 - [ ] Prova: tempi di `/me/activities` prima e dopo sul database di prova;
       la prova sul telefono dopo l'OTA della parte C.
+
+## Misure
+
+Script e risultati in `out/TASK-501/` (non nel repository):
+`measure_activities.py`, `time_migration.py`, i JSON.
+
+### Parte A — la lista delle corse (2026-11-26)
+
+Database di prova sul Mac (PostGIS 16-3.4, immagine x86_64 emulata), 60
+corse da 3600 punti, metà con un percorso da 2000; mediana di 15 richieste
+con il client in-process dei test. **Non sono numeri di produzione.**
+
+| | prima | dopo |
+|---|---|---|
+| `GET /me/activities`, 20 corse | 237 ms | 160 ms |
+| `GET /me/activities?limit=50` | 380 ms | 166 ms |
+| la sola query della lista, 20 corse | 44 ms | 2,0 ms |
+| la sola query della lista, 50 corse | 105 ms | 3,3 ms |
+| GeoJSON da PostgreSQL all'API, 20 corse | 3 808 227 caratteri | 80 533 |
+| GeoJSON da PostgreSQL all'API, 50 corse | 9 193 557 caratteri | 193 921 |
+| corpo della risposta, 20 corse | 44 001 byte (9 984 gzip) | gli stessi byte |
+
+Circa 155 ms di ogni richiesta non sono la lista (uguali prima e dopo in
+questo client: controllo dell'accesso, pydantic, il client stesso): non
+misurati a parte. Non misurati: i tempi sul server vero, il telefono.
+
+### Parte A — la migrazione 0088
+
+Riscrive `runs` e i suoi 5 indici una volta, tenendo il lock esclusivo
+sulla tabella. Su copie delle stesse corse, in locale:
+
+| righe | tabella prima | durata | a corsa | tabella dopo |
+|---|---|---|---|---|
+| 1 000 | 107,7 MB | 11,4 s | 11,4 ms | 110,6 MB (+2,7%) |
+| 4 000 | 430,4 MB | 46,7 s | 11,7 ms | 442,2 MB (+2,7%) |
+
+Lineare: circa 11,5 ms per una corsa da 4 600 punti fra traccia e
+percorso (circa 2,5 µs a punto), circa 107 s per GB.
+
+**Produzione** (letta dal Coordinatore in sola lettura, 2026-11-26): 13
+righe, 11 con traccia e 6 con percorso; 15 398 punti di traccia (media
+1 400, massimo 3 913) e 3 853 di percorso; 745 472 byte in tutto, 5
+indici; PostgreSQL 16.4, PostGIS 3.4.3. **Stima: circa 0,05 s** (19 251
+punti × 2,5 µs), comunque sotto il secondo: la colonna generata resta
+com'è (parola del Coordinatore). La misura sulla tabella gonfiata vale
+come stima futura: a 1 000 corse da un'ora la stessa migrazione terrebbe
+la tabella chiusa una decina di secondi. La durata vera sul server non è
+stata cronometrata.
 
 ## File toccati
 
@@ -121,8 +172,11 @@ apps/mobile/src/social/drawingsDoor.test.tsx
 docs/tasks/TASK-501.md                              (nuovo)
 ```
 
-`messages.py` (anche lui a 15 decimali, riga della `d.preview`) è di 498 A:
-resta fuori finché è occupato. Se `schemas.py` dovesse cambiare, è dentro
+`messages.py` (anche lui a 15 decimali, riga della `d.preview`) resta fuori
+dalla B (Coordinatore, 2026-11-26): è libero dopo 498 A, ma quella riga è
+un'anteprima che Python arrotonda già a 5 decimali, la risposta all'app non
+cambierebbe. Lo stesso vale per le anteprime delle altre liste: il guadagno
+della B è nelle linee intere. Se `schemas.py` dovesse cambiare, è dentro
 `engine.zip`: si dice prima al Coordinatore.
 
 ## Fuori scope
@@ -130,4 +184,4 @@ resta fuori finché è occupato. Se `schemas.py` dovesse cambiare, è dentro
 - Cambiare il numero dei lavoratori del motore (dopo i dati di `queued_s`).
 - Una chiamata unica per i bollini, le foto come indirizzo nelle liste
   (idee di TASK-499).
-- `messages.py` finché lo tiene 498 A.
+- `messages.py`: la sua riga è già un'anteprima a 5 decimali.

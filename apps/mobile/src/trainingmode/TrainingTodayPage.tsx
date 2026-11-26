@@ -5,7 +5,7 @@ import { GymDrawGuide } from "../gym/GymDrawGuide";
 import { t } from "../i18n";
 import { withoutRouteIcon } from "../screens/RunNoRouteButton";
 import { withoutRouteLabel } from "../settings/sport";
-import { useHeaderScroll } from "../tabs/headerScroll";
+import { useHeaderScroll, useUnderHeader } from "../tabs/headerScroll";
 import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { color, font, space } from "../theme/tokens";
 import { TrainingCoachRow } from "./TrainingCoachRow";
@@ -30,11 +30,13 @@ type Props = {
  */
 export function TrainingTodayPage({ onStart, guide }: Props) {
   const headerScroll = useHeaderScroll();
+  // Under a floating header the page goes on showing behind it (TASK-469 B3).
+  const underHeader = useUnderHeader();
   const barRoom = useTabBarRoom();
   return (
     <ScrollView
       {...headerScroll}
-      style={styles.page}
+      style={[styles.page, underHeader]}
       contentContainerStyle={[styles.content, { paddingBottom: space.xxl + barRoom }]}
       keyboardShouldPersistTaps="handled"
       testID="training-today"

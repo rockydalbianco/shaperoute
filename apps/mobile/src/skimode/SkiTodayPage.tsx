@@ -5,7 +5,7 @@ import { t } from "../i18n";
 import { withoutRouteIcon } from "../screens/RunNoRouteButton";
 import { withoutRouteLabel } from "../settings/sport";
 import { DayResort } from "../ski/DayResort";
-import { useHeaderScroll } from "../tabs/headerScroll";
+import { useHeaderScroll, useUnderHeader } from "../tabs/headerScroll";
 import { useTabBarRoom } from "../tabs/tabBarRoom";
 import {
   color,
@@ -33,12 +33,14 @@ type Props = {
  */
 export function SkiTodayPage({ onRecord, resort = <DayResort /> }: Props) {
   const headerScroll = useHeaderScroll();
+  // Under a floating header the page goes on showing behind it (TASK-469 B3).
+  const underHeader = useUnderHeader();
   // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
   const barRoom = useTabBarRoom();
   return (
     <ScrollView
       {...headerScroll}
-      style={styles.page}
+      style={[styles.page, underHeader]}
       contentContainerStyle={[styles.content, { paddingBottom: space.xxl + barRoom }]}
       keyboardShouldPersistTaps="handled"
     >

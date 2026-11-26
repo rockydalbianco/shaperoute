@@ -477,3 +477,18 @@ test("«Privacy» says what is kept of the gear and who sees it, in all five lan
     expect(all(content.help)).not.toMatch(gear[language][0]);
   }
 });
+
+test("«Privacy» says a saved flight counts, without a name, in the history of its takeoff, shown from three pilots (TASK-493 B)", () => {
+  const fromThree: Record<Language, RegExp> = {
+    en: /at least three different pilots/,
+    it: /almeno tre/,
+    de: /mindestens drei verschiedene Piloten/,
+    fr: /au moins trois pilotes différents/,
+    es: /al menos tres pilotos distintos/,
+  };
+  for (const [language, content] of CONTENTS) {
+    const text = all(content.privacy);
+    expect(text).toMatch(fromThree[language]);
+    expect(text).toMatch(/OpenStreetMap\./);
+  }
+});

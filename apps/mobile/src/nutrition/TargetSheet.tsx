@@ -7,7 +7,10 @@ import { t } from "../i18n";
 import { color, font, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
 import { NutritionSheet } from "./AddFoodSheet";
+import { EstimateBox } from "./EstimateBox";
 import { TARGET_KCAL, targetOf } from "./ownTarget";
+import { useNutrition } from "./useNutrition";
+import { useUsualUse } from "./useUsualUse";
 
 type Props = {
   visible: boolean;
@@ -21,8 +24,9 @@ type Props = {
 /**
  * «My daily target» (TASK-489 part B, ADR-0397, the user's choice of
  * 2026-11-23): the kilocalories a day the user writes, their own number or
- * the one their dietitian gave them. The field starts empty: MuW never
- * proposes a target and never works one out.
+ * the one their dietitian gave them. The field starts empty. Since part J
+ * MuW's estimate can be looked at under it (EstimateBox.tsx): closed until
+ * asked for, and never written unless the user says «Use this number».
  */
 export function TargetSheet({ visible, target, onTarget, onClose }: Props) {
   return (
@@ -34,6 +38,10 @@ export function TargetSheet({ visible, target, onTarget, onClose }: Props) {
 
 function Body({ target, onTarget, onClose }: Omit<Props, "visible">) {
   const [text, setText] = useState(target === null ? "" : String(target));
+  const { purpose } = useNutrition().settings;
+  // One moment while the sheet is open: not counted again at every key.
+  const [moment] = useState(() => new Date());
+  const usedPerDay = useUsualUse(moment);
   const typed = readNumber(text);
   const kcal = typed === null ? null : targetOf(typed);
   return (
@@ -56,10 +64,13 @@ function Body({ target, onTarget, onClose }: Omit<Props, "visible">) {
         testID="target-input"
       />
       <Text style={styles.hint}>
-        {t(
-          "Your own number, or the one your dietitian gave you. MuW never suggests one.",
-        )}
+        {t("Best: write your own number, or your dietitian's.")}
       </Text>
+      <EstimateBox
+        purpose={purpose}
+        usedPerDay={usedPerDay}
+        onUse={(estimate) => setText(String(estimate))}
+      />
       <View style={gymStyles.row}>
         <Tap style={gymStyles.button} onPress={onClose} accessibilityRole="button">
           <Text style={gymStyles.buttonText}>{t("Cancel")}</Text>

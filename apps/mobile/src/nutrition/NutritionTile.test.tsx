@@ -50,7 +50,8 @@ test("the tile opens the page and the sport stays the one chosen", async () => {
   expect(screen.queryByTestId("nutrition-page")).toBeNull();
   await fireEvent.press(screen.getByTestId("nutrition-tile"));
   expect(screen.getByTestId("nutrition-page")).toBeOnTheScreen();
-  expect(screen.getByRole("header", { name: "Before you start" })).toBeOnTheScreen();
+  // The first time the page opens on its door (part J).
+  expect(screen.getByTestId("welcome-how")).toBeOnTheScreen();
   expect(saveSport).not.toHaveBeenCalled();
   expect(screen.getByRole("radio", { name: "Run" })).toBeChecked();
 });

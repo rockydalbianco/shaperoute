@@ -82,9 +82,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   cancellazione online); restano la prova su un Android vero, l'URL nella
   Play Console e l'uscita su Play («Prossimo passo»). File: — ·
   `tasks/TASK-294.md`
-- **TASK-297 — Archivio dei percorsi e loghi a penna alzata** · A e A2 fatte;
-  C (motore) nella PR #547; poi C2. File: — · `tasks/TASK-297.md`
-  **2026-11-10**: C (motore) in `main` con la #547; resta C2 (API e app).
 - **TASK-309 — Le corse di gruppo** · documenti e A (API) in `main`;
   prossimo B (app), poi C. File: — · `tasks/TASK-309.md`
   **2026-11-22**: B1 (app) in `main` (#1369); prossima B2 dopo 312 C2.

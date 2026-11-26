@@ -5,7 +5,13 @@ on the server (the step that starts it is the Coordinatore's, with the
 user's yes). One source failing leaves the other's file and the last
 good run of its own: GET /winds gives a run only while it is fresh.
 
-    SHAPEROUTE_WINDS_DIR=/data/winds python tools/winds_job.py [icon-d2|ecmwf]
+    SHAPEROUTE_WINDS_DIR=/app/data/cache/winds \
+        python -m shaperoute_api.winds.job [icon-d2|ecmwf]
+
+In the package, not in tools/: the image copies services/ only. On the
+server, from the host: docker compose exec -T api python -m
+shaperoute_api.winds.job icon-d2 (about 6 min) and … ecmwf (about 6 min),
+every 6 hours.
 """
 
 from __future__ import annotations
@@ -25,7 +31,7 @@ from shaperoute_api.winds.sources import (
 )
 from shaperoute_api.winds.store import WindStore
 
-log = logging.getLogger("winds_job")
+log = logging.getLogger("winds.job")
 
 # ICON-D2 runs every 3 hours, whole about 2 hours after; ECMWF open data
 # every 12 hours to 240 h, whole about 8 hours after.

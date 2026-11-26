@@ -303,3 +303,26 @@ def test_install_reads_the_directory_of_the_environment(
     assert (
         TestClient(app).get("/winds", params={"lat": 46, "lon": 11}).status_code == 503
     )
+
+
+def test_the_job_says_so_without_a_directory(monkeypatch: pytest.MonkeyPatch):
+    from shaperoute_api.winds import job
+
+    monkeypatch.delenv("SHAPEROUTE_WINDS_DIR", raising=False)
+    assert job.run([ICON_D2]) == 2
+
+
+def test_the_job_keeps_one_source_when_the_other_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    from shaperoute_api.winds import job
+
+    monkeypatch.setenv("SHAPEROUTE_WINDS_DIR", str(tmp_path))
+    monkeypatch.setattr(job, "icon_d2", lambda run, transport: a_grid(run))
+
+    def broken(run, transport):
+        raise OSError("ECMWF did not answer")
+
+    monkeypatch.setattr(job, "ecmwf", broken)
+    assert job.run([ICON_D2, ECMWF], now=RUN + timedelta(hours=3)) == 0
+    assert [p.name for p in tmp_path.glob("*.npz")] == ["icon-d2-alps.npz"]

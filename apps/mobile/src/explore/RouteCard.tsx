@@ -1,4 +1,4 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { LatLon, Shape } from "@shaperoute/shared-types";
 import { useMemo, useState } from "react";
 import {
   Image,
@@ -17,6 +17,7 @@ import { useFeedMap } from "../feed/FeedMaps";
 import { MAP_CREDIT } from "../feed/FeedPost";
 import { turnedLine } from "../feed/turnedLine";
 import { bearingOf } from "../map/turnedMap";
+import { ShapeGlyph } from "../route/ShapeGlyph";
 import { segmentTrackFace } from "../screens/Segmented";
 import {
   color,
@@ -44,6 +45,17 @@ const DRAWING_PAD = space.md;
 
 /** The dots saying whether the drawing or the photo is shown. */
 const DOT_SIDE = 5;
+
+/**
+ * How much of the drawing's height a shape's outline takes while its route
+ * is not there (TASK-509): smaller than a route would be, a place kept.
+ */
+const OUTLINE_SHARE = 0.6;
+
+/** How wide the outline of a shape is on a card `width` wide. */
+export function cardOutlineSize(width: number): number {
+  return Math.round(cardDrawingHeight(width) * OUTLINE_SHARE);
+}
 
 /** No line: nothing to lay a map under. */
 const NO_LINE: LatLon[] = [];
@@ -144,6 +156,12 @@ type Props = {
   /** The points of `line` reached without drawing: no segment ends there
    * (a shape drawn in pieces on the water, TASK-226). */
   gaps?: readonly number[];
+  /**
+   * The shape the route will draw, shown while there is no line (TASK-509):
+   * its outline of the catalogue in grey, in the drawing's place. Without
+   * it, or with a photo, the place stays empty as before.
+   */
+  outline?: Shape;
   /** "Star · 5.1 km". */
   title: string;
   /** Under the title: where it is, or where its drawing has got to. */
@@ -186,12 +204,16 @@ type Props = {
  * `photo`, the drawing comes first and the photo a swipe after it, two dots
  * saying which is shown (TASK-350). The card has the large radius and no
  * border, its words under the drawing in the card's title style, and it
- * answers the finger through `Tap` (TASK-339, ADR-0293).
+ * answers the finger through `Tap` (TASK-339, ADR-0293). A card whose route
+ * is not there yet (being drawn, up next, not drawn) shows the `outline` of
+ * its shape in grey — never yellow, which is a route's — so the card says
+ * what is coming and is not a black box (TASK-509).
  */
 export function RouteCard({
   width,
   line,
   gaps,
+  outline,
   title,
   detail,
   match,
@@ -325,6 +347,14 @@ export function RouteCard({
           </>
         ) : photo !== undefined ? (
           photoPage
+        ) : line === null && outline !== undefined ? (
+          <View style={styles.outline} testID="route-card-outline">
+            <ShapeGlyph
+              shape={outline}
+              size={cardOutlineSize(width)}
+              tint={color.borderStrong}
+            />
+          </View>
         ) : (
           drawingPage
         )}
@@ -392,6 +422,16 @@ const styles = StyleSheet.create({
     height: LINE_WIDTH,
     borderRadius: LINE_WIDTH / 2,
     backgroundColor: routeLine.color,
+  },
+  // The shape to come, in the middle of the drawing's place (TASK-509).
+  outline: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
   },
   edge: {
     borderRadius: radius.card,

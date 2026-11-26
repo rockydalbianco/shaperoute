@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "10 novembre 2026";
+const UPDATED = "26 novembre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "24 novembre 2026";
+const PRIVACY_UPDATED = "26 novembre 2026";
 
 const help: AboutDocument = {
   title: "Comment fonctionne MuW",
@@ -209,6 +209,14 @@ const terms: AboutDocument = {
           ],
         },
         "Les distances, les temps et la vitesse viennent du GPS du téléphone et sont des estimations.",
+      ],
+    },
+    {
+      heading: "Nutrition",
+      blocks: [
+        "«Nutrition» est un journal et une calculatrice, pas un service de santé. MuW n'est pas faite par des médecins, des diététiciens ou d'autres professionnels de santé.",
+        "Les calories des aliments, l'énergie que tu dépenses et, si tu la demandes, l'estimation d'un objectif du jour viennent de tables et de formules publiques. Ce sont des estimations, à titre d'information seulement : elles ne sont pas un avis médical ou diététique et ne remplacent pas un professionnel qui te connaît.",
+        "Si tu as moins de 18 ans, si tu es enceinte ou si tu allaites, si tu as une maladie, ou si tu as ou as eu un trouble alimentaire, parle à ton médecin avant de compter les calories ou de changer ce que tu manges.",
       ],
     },
     {
@@ -425,7 +433,7 @@ const privacy: AboutDocument = {
     {
       heading: "Ta position",
       blocks: [
-        "La position du téléphone est utilisée sur le téléphone, pour commencer un parcours là où tu es et pour suivre ta course. Elle va vers notre serveur exacte comme départ d'un parcours que tu demandes, comme départ des formes que l'app te prépare à proximité quand le téléphone ne peut pas les dessiner lui-même, et dans une course que tu enregistres. Hors du parcours d'une course, quand le téléphone ne trouve pas lui-même le chemin pour y revenir, elle va exacte vers notre serveur avec le tronçon du parcours devant toi, pour trouver ce chemin par les rues : le serveur ne les garde pas. Elle y va arrondie à environ 1 km pour trouver la carte hors ligne autour de toi, les parcours recommandés, les villes et les dessins proches, et pour montrer d'abord les lieux près de toi dans une recherche ; ainsi arrondie, elle ne reste pas liée à ton compte. Quand tu partages une activité en direct, ta position exacte va à notre serveur et à qui a le lien, comme décrit dans «Partage en direct».",
+        "La position du téléphone est utilisée sur le téléphone, pour commencer un parcours là où tu es et pour suivre ta course. Elle va vers notre serveur exacte comme départ d'un parcours que tu demandes, comme départ des formes que l'app te prépare à proximité quand le téléphone ne peut pas les dessiner lui-même, et dans une course que tu enregistres. Hors du parcours d'une course, quand le téléphone ne trouve pas lui-même le chemin pour y revenir, elle va exacte vers notre serveur avec le tronçon du parcours devant toi, pour trouver ce chemin par les rues : le serveur ne les garde pas. Elle y va arrondie à environ 1 km pour trouver la carte hors ligne autour de toi, les atterrissages de parapente proches, le vent en altitude pour un vol, les parcours recommandés, les villes et les dessins proches, et pour montrer d'abord les lieux près de toi dans une recherche ; ainsi arrondie, elle ne reste pas liée à ton compte. Notre serveur télécharge le vent en altitude chez DWD et ECMWF pour des zones entières, jamais avec ta position. Quand tu partages une activité en direct, ta position exacte va à notre serveur et à qui a le lien, comme décrit dans «Partage en direct».",
         "Sur iPhone, pendant une course que tu as lancée, l'app continue de suivre ta position même téléphone verrouillé ou avec une autre app ouverte, jusqu'à ce que tu arrêtes la course ; l'iPhone l'indique par une marque bleue en haut de l'écran. MuW demande la position seulement pendant que tu utilises l'app, jamais « Toujours ».",
         "Comme tout service internet, notre serveur voit l'adresse internet (IP) d'où vient une requête pendant qu'il y répond. Le journal du serveur n'écrit pas de positions, et la base de données ne contient aucune adresse IP.",
         "Un registre des demandes de parcours, avec leur départ, existe pour reproduire un défaut. Il est éteint sur notre serveur ; allumé, il contient 10 Mo au plus, puis les lignes les plus anciennes sont perdues.",
@@ -461,8 +469,8 @@ const privacy: AboutDocument = {
     {
       heading: "Nutrition",
       blocks: [
-        "«Nutrition» est un journal que tu tiens pour toi. Les aliments que tu ajoutes, ton plan de la semaine, ce que tu notes avoir mangé chaque jour, ton objectif du jour et les calories que tu corriges à la main restent uniquement sur ton téléphone : ils n'arrivent pas sur notre serveur et personne d'autre ne peut les voir. Le «Bilan calorique» de ton profil est calculé sur ton téléphone et n'est affiché qu'à toi.",
-        "Pour estimer l'énergie que tu dépenses, MuW compte sur ton téléphone les activités de ton compte et les données corporelles que tu as saisies dans les «Réglages». Chaque chiffre est une estimation : MuW ne fournit ni régimes ni conseils médicaux.",
+        "«Nutrition» est un journal que tu tiens pour toi. Les aliments que tu ajoutes, ton plan de la semaine, ce que tu notes avoir mangé chaque jour, ton objectif du jour, la raison pour laquelle tu as dit l'utiliser et les calories que tu corriges à la main restent uniquement sur ton téléphone : ils n'arrivent pas sur notre serveur et personne d'autre ne peut les voir. Le «Bilan calorique» de ton profil est calculé sur ton téléphone et n'est affiché qu'à toi.",
+        "Pour estimer l'énergie que tu dépenses, MuW compte sur ton téléphone les activités de ton compte et les données corporelles que tu as saisies dans les «Réglages». Si tu le demandes, MuW calcule aussi sur ton téléphone, à partir des mêmes données et d'une formule publique, une estimation d'un objectif de calories par jour : à titre de démonstration seulement, et jamais montrée aux moins de 18 ans. Chaque chiffre est une estimation : MuW n'est pas faite par des professionnels de santé et ne fournit ni régimes ni conseils médicaux.",
         "Ces données n'ont jamais été sur notre serveur : te déconnecter ou supprimer ton compte ne les efface donc pas. Elles restent sur ton téléphone jusqu'à ce que tu les retires là ou que tu désinstalles l'app.",
       ],
     },

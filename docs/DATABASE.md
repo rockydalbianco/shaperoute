@@ -1516,6 +1516,27 @@ TASK-493). **I gruppi per uscire insieme**:
 - **`reports.kind`** con `group`. Nessuna riga di prima cambia, nessun
   backfill. Test in `test_groups.py`.
 
+Migrazione `0088_run_previews.sql` (TASK-501 parte A, ADR-0249; numero
+del Coordinatore). **Le anteprime di una corsa**, come quella dei disegni
+della 0022:
+
+- **`runs.track_preview`** e **`runs.route_preview`**: colonne generate
+  (`GENERATED ALWAYS AS … STORED`, `geometry(LineString, 4326)`) dalla
+  funzione `drawing_preview` della 0022, la prima sulla traccia senza gli
+  orari (`ST_Force2D(track)`), la seconda sul percorso pianificato. Al più
+  64 punti scelti per indice come `recommended.preview`, primo e ultimo
+  compresi; `NULL` senza traccia (un allenamento in palestra) e senza
+  percorso. PostgreSQL le rifà a ogni scrittura della linea: nessun codice
+  le scrive.
+- **`GET /me/activities` e la risposta di un salvataggio leggono solo
+  quelle** (`activities.LISTED_COLUMNS`); la corsa aperta
+  (`GET /me/activities/{id}`) legge le linee intere come prima
+  (`DETAIL_COLUMNS`). Le anteprime in risposta sono le stesse di prima,
+  punto per punto (`test_activity_previews.py`).
+- **La migrazione riscrive `runs`** una volta, per le corse già salvate,
+  tenendo la tabella chiusa finché dura: i tempi misurati stanno in
+  `tasks/TASK-501.md`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

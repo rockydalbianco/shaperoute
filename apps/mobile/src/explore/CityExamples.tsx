@@ -94,6 +94,8 @@ export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) 
               key={example.shape}
               width={card}
               line={null}
+              // What is coming, in grey, until its route is here (TASK-509).
+              outline={example.shape}
               title={name}
               detail={
                 example.status === "failed" ? t("Not drawn") : t(STATUS[example.status])

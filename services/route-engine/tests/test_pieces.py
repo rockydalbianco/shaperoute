@@ -256,10 +256,37 @@ def test_the_catalogue_gains_only_the_shapes_the_user_approved() -> None:
     approved = {"smiley", "ghost", "donut", "sun"}
     # The new shapes in pieces the user approved on real roads (TASK-418).
     new = {"anchor", "bear_head", "bicycle", "espresso_cup"}
+    # And those of TASK-516 (ADR-0411), judged on paper and on real roads.
+    task_516 = {
+        "ball",
+        "bell",
+        "colosseum",
+        "dolphin",
+        "dome",
+        "easter_egg",
+        "flower",
+        "fox_head",
+        "gift",
+        "infinity",
+        "leaf",
+        "light_bulb",
+        "medal",
+        "mountain",
+        "owl",
+        "padlock",
+        "peace",
+        "penguin",
+        "pizza_slice",
+        "racket",
+        "strawberry",
+        "triumphal_arch",
+        "trophy",
+        "turtle",
+    }
     eyes = {"cat", "fish", "dog_head", "rabbit_head", "pumpkin"}
-    assert in_pieces == eyes | approved | new
+    assert in_pieces == eyes | approved | new | task_516
     assert {n for n, s in SHAPES.items() if isinstance(s, Outline) and s.pieces} == (
-        approved | new
+        approved | new | task_516
     )
     almost = {"balloon", "ice_cream", "lightning", "cloud", "drop", "apple"}
     assert not almost & set(SHAPES)

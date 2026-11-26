@@ -32,8 +32,8 @@ import {
 } from "../theme/tokens";
 import { Cascade } from "../ui/Cascade";
 import { IslandLayer } from "../ui/IslandLayer";
+import { useGlassSheet } from "../ui/SheetGlass";
 import { SheetModal } from "../ui/SheetModal";
-import { useSheetFace } from "../ui/sheetFace";
 import { useBlockedNow } from "./blockedNow";
 import { CommentActions } from "./CommentActions";
 import { CommentAvatar } from "./CommentAvatar";
@@ -111,7 +111,7 @@ type SheetProps = {
 export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
   const insets = useSafeAreaInsets();
   // The sheet in the glass look (TASK-469 A7a).
-  const glassSheet = useSheetFace();
+  const [glassSheet, glassBack] = useGlassSheet();
   const { height } = useWindowDimensions();
   const typing = useKeyboardShown();
   const [text, setText] = useState("");
@@ -229,6 +229,7 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
             },
           ]}
         >
+          {glassBack}
           <View style={styles.header}>
             <Text style={styles.title} accessibilityRole="header">
               {t("Comments")}

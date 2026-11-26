@@ -5,7 +5,13 @@
  */
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { GymPlan, GymSession, Session } from "@shaperoute/shared-types";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 
 import { ActivitiesContext, type ActivitiesDoor } from "../activities/activitiesDoor";
 import { FollowsContext, type FollowsDoor } from "../social/followsDoor";
@@ -166,7 +172,11 @@ test("the body of the week on top, then the tips with their study", async () => 
   await shown(true, fetchersWith([workout("a", 1), workout("b", 4)]));
   expect(screen.getByTestId("week-body")).toBeOnTheScreen();
   expect(screen.getByText("Coach")).toBeOnTheScreen();
-  expect(screen.getByText("Based on your last 4 weeks")).toBeOnTheScreen();
+  // Above the tips it is about (TASK-509), once.
+  expect(screen.getByTestId("coach-weeks")).toHaveTextContent(
+    "Based on your last 4 weeks",
+  );
+  expect(screen.getAllByText("Based on your last 4 weeks")).toHaveLength(1);
   const card = screen.getByTestId("tip-P1:bench_press:");
   expect(card).toHaveTextContent(/Bench press: 62.5 kg/);
   expect(card).toHaveTextContent(/Why: Double progression · ACSM 2009/);
@@ -190,11 +200,27 @@ test("«Not now» leaves the plan as it is and puts the tip off", async () => {
   expect(screen.queryByTestId("tip-P1:bench_press:")).toBeNull();
 });
 
-test("nothing done in four weeks: how the tips come", async () => {
-  await shown(true, fetchersWith([]));
-  expect(screen.getByTestId("coach-empty")).toHaveTextContent(
-    "Log a few workouts and your tips will show up here",
+// TASK-509: no body at 0% and no «last 4 weeks» over a page with nothing
+// read; the one thing to do leaves the Coach, to where a workout starts.
+test("nothing done in four weeks: how the tips come, and the way to the workouts", async () => {
+  const onBack = jest.fn();
+  await shown(true, fetchersWith([]), onBack);
+  const empty = screen.getByTestId("coach-empty");
+  expect(empty).toHaveTextContent(/Log a few workouts and your tips will show up here/);
+  expect(screen.queryByTestId("week-body")).toBeNull();
+  expect(screen.queryByText("Based on your last 4 weeks")).toBeNull();
+  expect(screen.getByText(/not medical advice/)).toBeOnTheScreen();
+  await fireEvent.press(
+    within(empty).getByRole("button", { name: "Go to your workouts" }),
   );
+  expect(onBack).toHaveBeenCalledTimes(1);
+});
+
+test("without an account the page is as it was: the body and «last 4 weeks» under the title", async () => {
+  await shown(false, fetchersWith([]));
+  expect(screen.getByTestId("week-body")).toBeOnTheScreen();
+  expect(screen.getByText("Based on your last 4 weeks")).toBeOnTheScreen();
+  expect(screen.queryByTestId("coach-weeks")).toBeNull();
 });
 
 test("no network: says so", async () => {

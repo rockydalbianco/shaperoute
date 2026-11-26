@@ -6,6 +6,7 @@ dall'utente il 2026-11-23, ADR-0390 precisazione A); privacy (punto 7) in
 `main` il 2026-11-23 (#1444, `9b946507`, traduzioni approvate dall'utente),
 copia del sito col sì dell'utente; restano le righe di 467 E2, 484 B e
 485 B, al via del Coordinatore
+**Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-481-feed-plus-all-entries` (parte 0),
 `feat/TASK-481-a-feed-plus-list` (parte A)
 **Dipende da**: TASK-476 (il «+» e il foglio, ADR-0387), TASK-312 C2 (che

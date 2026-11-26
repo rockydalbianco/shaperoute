@@ -216,12 +216,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sul canale di prova `preview`, spento negli store. Arriva sulla build di
   prova con la prossima pubblicazione su `preview`; poi la prova e la C.
 
-- **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
-  (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
-  default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
-  scelto dal minimo disponibile dopo qualche giorno. File: — ·
-  `tasks/TASK-464.md`
-
 - **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (OTA
   12); B (dieci esercizi, tre routine da 3, 5, 10 min, la gamba staccata
   corretta, #1216) e D («Morning stretch» in Impostazioni, #1300) in

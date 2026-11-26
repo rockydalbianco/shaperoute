@@ -3139,8 +3139,6 @@ export const ES: Table = {
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Editar diseño",
   "Page {n} of {count}": "Página {n} de {count}",
-  "Touch a widget to move it, size it or take it away.":
-    "Toca un widget para moverlo, cambiar su tamaño o quitarlo.",
   Size: "Tamaño",
   Unit: "Unidad",
   "Add page": "Añadir página",
@@ -3605,6 +3603,9 @@ export const ES: Table = {
   "Task for XCTrack": "Manga para XCTrack",
   "This task is too long for a QR code.":
     "Esta manga es demasiado larga para un código QR.",
+  // src/air/ (TASK-479 part B3: widgets dragged in the editor; approved by the user on 2026-11-26)
+  "Drag a widget to move it, or its corner to size it. Touch it for more.":
+    "Arrastra un widget para moverlo, o su esquina para cambiar su tamaño. Tócalo para más opciones.",
   // src/groups (TASK-495 part B)
   "Find your city": "Busca tu ciudad",
   "New group": "Nuevo grupo",

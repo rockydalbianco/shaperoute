@@ -3119,8 +3119,6 @@ export const IT: Table = {
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Modifica schermata",
   "Page {n} of {count}": "Pagina {n} di {count}",
-  "Touch a widget to move it, size it or take it away.":
-    "Tocca un widget per spostarlo, ridimensionarlo o toglierlo.",
   Size: "Dimensione",
   Unit: "Unità",
   "Add page": "Aggiungi pagina",
@@ -3588,6 +3586,9 @@ export const IT: Table = {
   "Task for XCTrack": "Task per XCTrack",
   "This task is too long for a QR code.":
     "Questa task è troppo lunga per un codice QR.",
+  // src/air/ (TASK-479 part B3: widgets dragged in the editor; approved by the user on 2026-11-26)
+  "Drag a widget to move it, or its corner to size it. Touch it for more.":
+    "Trascina un widget per spostarlo, o il suo angolo per ridimensionarlo. Toccalo per altre azioni.",
   // src/groups (TASK-495 part B)
   "Find your city": "Cerca la tua città",
   "New group": "Nuovo gruppo",

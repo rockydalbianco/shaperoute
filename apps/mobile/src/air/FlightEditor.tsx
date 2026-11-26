@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { t } from "../i18n";
+import { t, tLater } from "../i18n";
 import { fontWeight, type Palette } from "../theme/tokens";
 import {
   type FlightPrefs,
@@ -32,6 +32,8 @@ import {
   withPage,
   withPages,
 } from "./layoutEdit";
+import { EditorCell } from "./EditorCell";
+import { dropWidget, stretchWidget } from "./layoutDrag";
 import { layoutPickerAvailable, pickLayout, shareLayout } from "./layoutFile";
 
 /**
@@ -44,6 +46,11 @@ import { layoutPickerAvailable, pickLayout, shareLayout } from "./layoutFile";
  */
 
 /** Targets for gloved fingers, points (as `FlightScreen`'s). */
+/** Part B3: the hint now says the widgets are dragged. */
+export const DRAG_HINT = tLater(
+  "Drag a widget to move it, or its corner to size it. Touch it for more.",
+);
+
 const TARGET = 64;
 const GAP = 6;
 
@@ -220,37 +227,45 @@ export function FlightEditor({
       >
         {grid.width > 0
           ? page.map((one, index) => (
-              <Pressable
+              // Part B3: dragged to move, by its corner to size.
+              <EditorCell
                 key={`${one.widget}-${one.col}-${one.row}`}
-                accessibilityRole="button"
-                accessibilityState={{ selected: index === selected }}
-                onPress={() => setSelected(index)}
+                cell={one}
+                grid={{ cellW, cellH, gap: GAP }}
+                selected={index === selected}
+                palette={palette}
+                onSelect={() => setSelected(index)}
+                onDrop={(col, row) =>
+                  changePage(dropWidget(page, index, col, row), t("No room there."))
+                }
+                onStretch={(w, h) =>
+                  changePage(stretchWidget(page, index, w, h), t("No room there."))
+                }
                 testID={`flight-editor-cell-${one.widget}`}
-                style={[
-                  styles.cell,
-                  {
-                    left: GAP + one.col * (cellW + GAP),
-                    top: GAP + one.row * (cellH + GAP),
-                    width: cellW * one.w + GAP * (one.w - 1),
-                    height: cellH * one.h + GAP * (one.h - 1),
-                    backgroundColor:
-                      index === selected ? palette.accent : palette.surface,
-                    borderColor:
-                      index === selected ? palette.accent : palette.borderStrong,
-                  },
-                ]}
               >
-                <Text
+                <View
                   style={[
-                    styles.cellText,
-                    { color: index === selected ? palette.onAccent : palette.text },
+                    styles.cell,
+                    {
+                      backgroundColor:
+                        index === selected ? palette.accent : palette.surface,
+                      borderColor:
+                        index === selected ? palette.accent : palette.borderStrong,
+                    },
                   ]}
-                  numberOfLines={2}
                 >
-                  {t(WIDGET_NAME[one.widget])}
-                  {one.unit !== undefined ? ` · ${UNIT_LABEL[one.unit]}` : ""}
-                </Text>
-              </Pressable>
+                  <Text
+                    style={[
+                      styles.cellText,
+                      { color: index === selected ? palette.onAccent : palette.text },
+                    ]}
+                    numberOfLines={2}
+                  >
+                    {t(WIDGET_NAME[one.widget])}
+                    {one.unit !== undefined ? ` · ${UNIT_LABEL[one.unit]}` : ""}
+                  </Text>
+                </View>
+              </EditorCell>
             ))
           : null}
       </View>
@@ -305,7 +320,7 @@ export function FlightEditor({
           </>
         ) : (
           <Text style={[styles.hintText, { color: palette.textMuted }]}>
-            {t("Touch a widget to move it, size it or take it away.")}
+            {t(DRAG_HINT)}
           </Text>
         )}
         <View style={styles.row}>
@@ -467,7 +482,7 @@ const styles = StyleSheet.create({
   pageText: { fontSize: 18, fontWeight: fontWeight.semibold },
   grid: { flex: 1 },
   cell: {
-    position: "absolute",
+    flex: 1,
     borderWidth: 2,
     borderRadius: 12,
     padding: 6,

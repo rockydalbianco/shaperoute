@@ -3,11 +3,13 @@ import type { Activity } from "../api/activities";
 import type { BodyProfile } from "../body/bodyProfile";
 import { activeKcal, DEFAULT_WEIGHT_KG, restKcalPerMin } from "../body/energy";
 import { gymKcal } from "../gym/gymKcal";
+import type { HealthWorkout } from "../health/energyReader";
 import { poolKcal } from "../pool/poolKcal";
 import { isPoolSwimRun } from "../pool/PoolTile";
 import { findProfile } from "../sports";
 import {
   type Balance,
+  countedActivities,
   type DayActivity,
   dayBalance,
   type Used,
@@ -21,6 +23,7 @@ import {
   restOf,
 } from "./energyEdits";
 import { dayFraction, type LocalDay, localDayOf, startOf } from "./localDay";
+import type { HealthDay, HealthState } from "./useHealthEnergy";
 
 /**
  * The activities of the private list in the day's balance (TASK-489 part
@@ -169,9 +172,57 @@ export type EnergyActivity = {
   counted: Counted;
 };
 
+/** The key of a workout of Apple Health among the activities of a day:
+ * never the key of an activity of MuW's. */
+export function healthKey(workout: HealthWorkout): string {
+  return `health-${workout.id}`;
+}
+
+/**
+ * A workout of Apple Health as the balance sees it. MuW wrote it itself
+ * when it comes from MuW's own bundle, or carries the key of an activity of
+ * the list (appleHealth.ts writes it as HKSyncIdentifier): the list has it
+ * already.
+ */
+export function healthDayActivity(
+  workout: HealthWorkout,
+  mine: readonly Activity[],
+  ownBundleId: string | null,
+): DayActivity {
+  const writtenByMuw =
+    (ownBundleId !== null && workout.sourceBundleId === ownBundleId) ||
+    (workout.syncId !== null &&
+      mine.some((activity) => activity.id === workout.syncId));
+  return {
+    key: healthKey(workout),
+    source: "health",
+    writtenByMuw,
+    startMs: workout.startMs,
+    endMs: workout.endMs,
+    kcal: Math.max(0, workout.kcal ?? 0),
+  };
+}
+
+/** A workout another app recorded, with what it counts for. */
+export type EnergyWorkout = {
+  workout: HealthWorkout;
+  /** What the app that wrote it saved; zero for none. */
+  estimate: number;
+  /** What the balance counts: the user's number, else the app's. */
+  counted: Counted;
+};
+
 export type DayEnergy = {
   day: LocalDay;
   hub: HubState;
+  /** Whether Apple Health is read for «Nutrition» (part C2). */
+  health: HealthState;
+  /** The active energy of the day in Apple Health; null when Health has
+   * none, is not read, or MuW may not read it. */
+  healthActive: number | null;
+  /** The workouts of other apps that day which are none of MuW's
+   * activities, the earliest first. */
+  others: EnergyWorkout[];
   /** A whole day at rest: the user's number, else the estimate. */
   rest: Counted;
   /** MuW's estimate of a whole day at rest. */
@@ -191,9 +242,14 @@ export type DayEnergyInput = {
   list: readonly Activity[];
   body: BodyProfile;
   edits: EnergyEdits;
-  /** The active energy of the day in Apple Health; none until the app
-   * reads it (part C2). */
-  healthActiveKcal?: number | null;
+  /** Whether Apple Health is read; "none" when not said. */
+  health?: HealthState;
+  /** What Apple Health has for the day; null while it is being read, and
+   * not looked at unless `health` is "on". */
+  healthDay?: HealthDay | null;
+  /** MuW's own bundle among the apps that write to Health; null when not
+   * known. */
+  ownBundleId?: string | null;
 };
 
 /** The energy of `day`: its rest, its activities and what they add up to. */
@@ -211,19 +267,50 @@ export function dayEnergy(input: DayEnergyInput): DayEnergy {
       counted: activityKcalOf(edits, activity.id, estimate),
     };
   });
-  const used =
-    hub === "loading"
-      ? null
-      : usedKcal({
-          restKcalPerDay: rest.kcal,
-          fraction,
-          activities: mine.flatMap((activity) => hubDayActivity(activity, body) ?? []),
-          healthActiveKcal: input.healthActiveKcal ?? null,
-          edits,
-        });
+  const health = input.health ?? "none";
+  const healthDay = health === "on" ? (input.healthDay ?? null) : null;
+  const read = healthDay?.workouts ?? [];
+  const all = [
+    ...mine.flatMap((activity) => hubDayActivity(activity, body) ?? []),
+    ...read.map((workout) =>
+      healthDayActivity(workout, mine, input.ownBundleId ?? null),
+    ),
+  ];
+  // Each outing once: MuW's own, then the others that are none of them.
+  const kept = new Set(
+    countedActivities(all)
+      .filter((activity) => activity.source === "health")
+      .map((activity) => activity.key),
+  );
+  const others = read
+    .filter((workout) => kept.has(healthKey(workout)))
+    .map((workout): EnergyWorkout => {
+      const estimate = Math.max(0, Math.round(workout.kcal ?? 0));
+      return {
+        workout,
+        estimate,
+        counted: activityKcalOf(edits, healthKey(workout), estimate),
+      };
+    });
+  // Nothing is said of a day while its activities, or what Health has for
+  // it, are on their way.
+  const waiting = hub === "loading" || (health === "on" && healthDay === null);
+  const used = waiting
+    ? null
+    : usedKcal({
+        restKcalPerDay: rest.kcal,
+        fraction,
+        activities: all,
+        healthActiveKcal: healthDay?.activeKcal ?? null,
+        edits,
+      });
   return {
     day,
     hub,
+    health,
+    healthActive:
+      used !== null && used.fromHealth ? (healthDay?.activeKcal ?? null) : null,
+    others,
     rest,
     restEstimate: restEstimatePerDay(body, year),
     soFar: fraction > 0 && fraction < 1,

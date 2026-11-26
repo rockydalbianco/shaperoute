@@ -1,7 +1,11 @@
 # TASK-518 — «Compass»: la riga dei numeri e la direzione scritta
 
-**Stato**: In lavorazione · 2026-11-24 · A #1577, B #1578; schermate e
-scelte approvate dall'utente
+**Stato**: Done · 2026-11-26 · A #1577 (`a6d59645`) e B #1578
+(`9b746fa8`) in `main`; documenti nella PR di soli documenti. Esito: su
+«Compass» una riga sola con quanta strada e quanto tempo sopra i pulsanti, e
+sotto la freccia del nord la direzione scritta («NE · 42°»), niente col nord
+in alto. Restano l'OTA di produzione (Coordinatore, col sì dell'utente) e la
+prova sul telefono
 **Fase**: 5 · **Branch**: `feat/TASK-518-a-compass-line` (A), poi un branch
 da `main` per la B
 **Dipende da**: TASK-422 (la pagina «Compass», ADR-0350), TASK-431 (la
@@ -86,7 +90,8 @@ Parte A:
       no; le miglia (`CompassLine.test.tsx`, `RunDashboard.test.tsx`).
 - [x] Schermata dal simulatore (una corsa simulata) approvata dall'utente
       (2026-11-24, «Approvo»).
-- [ ] CI verde; merge dal Coordinatore; OTA.
+- [x] CI verde e merge (#1577, `a6d59645`).
+- [ ] OTA.
 
 Parte B (#1578):
 - [x] «NE · 42°» coi gradi interi, l'italiano «SO», «O»
@@ -94,4 +99,19 @@ Parte B (#1578):
       col nord in alto né altrove (`NorthArrow.test.tsx`).
 - [x] Schermate approvate dall'utente, «Niente etichetta» col nord in alto
       (2026-11-24).
-- [ ] CI verde; merge dal Coordinatore; OTA.
+- [x] CI verde e merge (#1578, `9b746fa8`).
+- [ ] OTA.
+
+## Uscita e prova
+
+- Solo app, nessun testo nuovo, nessun server: esce col prossimo OTA di
+  produzione, pubblicato dal Coordinatore col sì dell'utente.
+- Dopo l'OTA, correndo, sulla pagina «Compass»: la riga «km · tempo» sopra
+  i pulsanti (anche in pausa), «NE · 42°» sotto la freccia del nord che
+  cambia girandosi, niente col nord in alto.
+- TASK-431 l'ha chiusa il Coordinatore 3 il 2026-11-26 con la prova sul
+  telefono; la sua prova di questo giro («Sì, funziona», 2026-11-24) è
+  sopra, scelta 1.
+- Per un giro dopo: il cono che si allarga quando la bussola è incerta, con
+  l'avviso «muovi il telefono a 8» (proposta 3 della tela): va provato sul
+  telefono vero.

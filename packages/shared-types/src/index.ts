@@ -2768,6 +2768,30 @@ export interface MessagesPage {
    * conversation. Missing from an API before it: then no «+».
    */
   attachments?: AttachmentsAllowed | null;
+  /**
+   * The `after` of the next check (TASK-498): the place of the newest
+   * message, `0-000…0` in a conversation without one; null on a page of
+   * older ones. Missing from an API before it: then the app asks the page
+   * again, as it always did.
+   */
+  latest?: string | null;
+}
+
+/**
+ * GET /conversations/{public_id}/messages?after=<latest>: what came after a
+ * place, for a conversation on screen (TASK-498). Never the other's picture
+ * nor what may be attached: the page says them, and what this cannot say (a
+ * message deleted, a name changed). 404 and 422 as the page; 422 with
+ * `cursor` too. An API before it ignores `after` and answers a MessagesPage.
+ */
+export interface MessageNews {
+  state: ConversationState;
+  /** Those after `after`, the latest first; none when nothing came. */
+  messages: Message[];
+  /** More came than a page holds: the first page is read again. */
+  more: boolean;
+  /** The `after` of the next check. */
+  latest: string;
 }
 
 /** The most `unread_count` counts: beyond it the app says «9+» anyway. */
@@ -3333,3 +3357,4 @@ export * from "./together.ts";
 export * from "./gymHistory.ts";
 export * from "./gear.ts";
 export * from "./groups.ts";
+export * from "./flyingSites.ts";

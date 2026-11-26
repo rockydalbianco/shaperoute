@@ -3,7 +3,7 @@
     "name": "MuW",
     "slug": "shaperoute",
     "scheme": "muw",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "runtimeVersion": "exposdk:57.0.0",
     "updates": {
       "url": "https://u.expo.dev/47bc672d-5824-4e77-84c4-b44132c6e87f"

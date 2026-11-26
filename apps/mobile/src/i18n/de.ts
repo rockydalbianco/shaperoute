@@ -3599,7 +3599,7 @@ export const DE: Table = {
   // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
   Landing: "Landeplatz",
   "Landings from OpenStreetMap: {count}": "Landeplätze aus OpenStreetMap: {count}",
-  // src/air/ (TASK-479 part H: the wind aloft; waiting for the user's approval)
+  // src/air/ (TASK-479 part H: the wind aloft; approved by the user on 2026-11-26)
   "Wind aloft": "Höhenwind",
   "Wind aloft not available": "Höhenwind nicht verfügbar",
   "{source} · run of {time}": "{source} · Modelllauf von {time}",

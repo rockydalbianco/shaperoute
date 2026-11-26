@@ -1,11 +1,8 @@
 # TASK-481 — Il «+» del Feed: tutte le voci
 
-**Stato**: In lavorazione · parte 0 (documenti) fatta il 2026-11-21; parte A
-in `main` il 2026-11-23 (#1421, `3f124ce7`; schermate e traduzioni approvate
-dall'utente il 2026-11-23, ADR-0390 precisazione A); privacy (punto 7) in
-`main` il 2026-11-23 (#1444, `9b946507`, traduzioni approvate dall'utente),
-copia del sito col sì dell'utente; restano le righe di 467 E2, 484 B e
-485 B, al via del Coordinatore
+**Stato**: Done · 2026-11-26 · parte 0 (#1362), A (#1421, `3f124ce7`),
+privacy del punto 7 (#1444, `9b946507`), F (#1478) in `main`; le voci di
+TASK-467 E2 (#1441), TASK-484 (#1489) e TASK-485 (#1431) nel foglio
 **Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-481-feed-plus-all-entries` (parte 0),
 `feat/TASK-481-a-feed-plus-list` (parte A)
@@ -107,13 +104,13 @@ Una domanda per volta, ognuna con la proposta dell'agente.
 
 | Voce | Chi la costruisce | Stato oggi |
 |---|---|---|
-| «Record now» | **TASK-481 parte A** (questo task) | da fare: solo app, apre la registrazione che c'è già |
+| «Record now» | **TASK-481 parte A** (questo task) | in `main` (#1421), in produzione |
 | «Already recorded» | **TASK-481 parte F** (questo task) | aggiunta il 2026-11-23: pubblica un'attività di «My activities» non ancora nel Feed; #1478 |
-| «Photos only» | **TASK-312 C2** (sessione `local_3444e01e-ccb0-4cb7-bd05-8c1c26f2cd0d`) | in corso; API in `main` (C1, #1347) |
+| «Photos only» | **TASK-312 C2** (sessione `local_3444e01e-ccb0-4cb7-bd05-8c1c26f2cd0d`) | in `main` (C2, #1386), in produzione |
 | «From a file» | TASK-476 | c'è già |
-| «Sleep» | **TASK-467 parte E** (sessione `local_434d1949`) | da scrivere: oggi il sonno sta sul profilo e dentro il post dell'attività, non è un post da solo; che cosa mostra lo decide l'utente lì |
-| «Gym workout» | **TASK-484** «Allenamento in palestra scritto a mano, nel Feed» | da scrivere; la sessione parte quando l'utente la apre |
-| «Workout plan» | **TASK-485** «La scheda della palestra come post» (con «Use this plan»), parente di TASK-466 E | da scrivere; la sessione parte quando l'utente la apre |
+| «Sleep» | **TASK-467 parte E** (sessione `local_434d1949`) | nel foglio (#1441), dietro l'interruttore del sonno di TASK-467 |
+| «Gym workout» | **TASK-484** «Allenamento in palestra scritto a mano, nel Feed» | in `main` (#1489), TASK-484 chiuso |
+| «Workout plan» | **TASK-485** «La scheda della palestra come post» (con «Use this plan»), parente di TASK-466 E | in `main` (#1431) |
 
 **Non sono voci, e perché:**
 
@@ -316,21 +313,21 @@ apps/mobile/src/feed/addToFeedEntriesSleep.test.ts (in più, approvato il 2026-1
 docs/tasks/TASK-481.md                            (questa PR docs, a parte)
 ```
 
-**Resta**: merge di #1478 e OTA (Coordinatore), prova sul telefono.
+**Fatto**: #1478 in `main` e in produzione; provato dall'utente sul telefono il 2026-11-26 (OTA 25).
 
 ## Criteri di accettazione
 
 - [x] **0**: scelte dell'utente scritte qui e in ADR-0390; mappa voce → task;
       lista dei file della parte A al Coordinatore.
-- [ ] **A**: il foglio apre la lista; «From a file» come prima (i test di
+- [x] **A**: il foglio apre la lista; «From a file» come prima (i test di
       `AddPastActivity.test.tsx` verdi senza ritocchi); «Record now» apre la
       registrazione; il «+» senza selettore ha «Record now»; nessuna voce
       non pronta (test).
-- [ ] **A**: schermate dal simulatore e quattro traduzioni approvate
+- [x] **A**: schermate dal simulatore e quattro traduzioni approvate
       dall'utente; privacy del punto 7 nelle cinque lingue e sul sito.
-- [ ] **A**: `tsc` e jest dei file toccati verdi, CI verde.
-- [ ] Ogni voce delle parti B–E nel foglio, col suo task chiuso.
-- [ ] **F**: «Already recorded» elenca le attività non ancora nel Feed e
+- [x] **A**: `tsc` e jest dei file toccati verdi, CI verde.
+- [x] Ogni voce delle parti B–E nel foglio, col suo task chiuso.
+- [x] **F**: «Already recorded» elenca le attività non ancora nel Feed e
       apre il modulo di «Edit post»; testi e schermate approvati dall'utente
       (2026-11-23); jest dei file toccati, `tsc`, CI verdi (#1478); merge e
       OTA.
@@ -346,4 +343,13 @@ docs/tasks/TASK-481.md                            (questa PR docs, a parte)
 
 ## Esito
 
-*(si compila a fine task)*
+Chiuso il 2026-11-26. Il «+» del Feed apre la lista delle voci pronte
+nell'ordine dell'utente: «Record now», «Already recorded», «Photos only»,
+«From a file», «Sleep» (solo col sonno acceso), «Gym workout», «Workout
+plan»; niente «Soon». «Record now» fa quello che fa l'avvio senza percorso
+di «Draw»; «From a file» apre subito «Files» (`fileAtOnce`); la privacy dice
+«from a file» per «Everyone» nelle cinque lingue e sul sito. In produzione
+con gli OTA fino al 25; provato dall'utente sul telefono il 2026-11-26
+(«ok»). Le voci degli altri task restano dei loro task (il sonno con
+TASK-467 C, la build nativa). Fuori scope come sopra: Apple Salute, «Open in
+MuW», un'attività qualsiasi scritta a mano.

@@ -3593,6 +3593,9 @@ export const FR: Table = {
   "Remove co-admin": "Retirer co-admin",
   Members: "Membres",
   "Leave group": "Quitter le groupe",
+  "Delete group": "Supprimer le groupe",
+  "Delete {name}? Its members, requests and invites go with it. This can't be undone.":
+    "Supprimer {name} ? Ses membres, demandes et invitations partent avec lui. C'est définitif.",
   "Leave {name}?": "Quitter {name} ?",
   Groups: "Groupes",
   "Withdraw the request": "Retirer la demande",
@@ -3622,6 +3625,17 @@ export const FR: Table = {
   Admin: "Admin",
   "Co-admin": "Co-admin",
   "This group isn't available.": "Ce groupe n'est pas disponible.",
+  // src/nutrition (TASK-489 part C2)
+  "Use Apple Health": "Utiliser Santé d'Apple",
+  "MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there.":
+    "MuW lit ton énergie active et les entraînements enregistrés par d'autres apps, pour compter l'énergie que tu dépenses. Ils sont lus sur ton téléphone et y restent.",
+  "Active energy": "Énergie active",
+  "from Apple Health": "de Santé d'Apple",
+  "Your activities are already inside Apple Health's active energy: they are not added again.":
+    "Tes activités sont déjà comprises dans l'énergie active de Santé d'Apple : elles ne sont pas ajoutées une seconde fois.",
+  "Apple Health has nothing for this day: your activities are counted.":
+    "Santé d'Apple n'a rien pour ce jour : tes activités sont comptées.",
+  "Stop using Apple Health": "Ne plus utiliser Santé d'Apple",
   // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
   Weather: "Météo",
   "Weather: {temperature}, wind {speed}": "Météo : {temperature}, vent {speed}",

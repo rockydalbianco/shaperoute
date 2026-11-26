@@ -1,8 +1,10 @@
 # TASK-519 — Su «Map» la freccia punta dove guarda il telefono, con il cono
 
-**Stato**: In lavorazione · 2026-11-26 · PR di codice aperta
-**Fase**: 5 · **ADR**: estende ADR-0359 (voce «deciso…» nella PR di
-chiusura) · numero dal Coordinatore (fork 3, 2026-11-26) · seguito di
+**Stato**: Done · 2026-11-26 · codice #1588 in `main` (`ec37ae69`),
+documenti nella PR di `docs/TASK-519-closing`. Esito: su «Map» la freccia
+col cono segue la bussola e la mappa non gira; restano l'OTA 27 (del
+Coordinatore, col sì dell'utente) e la prova sul telefono.
+**Fase**: 5 · **ADR**: aggiunta ad ADR-0359 (in `docs/DECISIONS.md`) · numero dal Coordinatore (fork 3, 2026-11-26) · seguito di
 TASK-431
 
 ## Obiettivo

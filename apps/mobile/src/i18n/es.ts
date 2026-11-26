@@ -3572,4 +3572,12 @@ export const ES: Table = {
   "Task for XCTrack": "Manga para XCTrack",
   "This task is too long for a QR code.":
     "Esta manga es demasiado larga para un código QR.",
+  // src/air/ (TASK-479 part D5: the pilot's own waypoints; waiting for the user's approval)
+  "Mark this place": "Marcar este lugar",
+  "Waypoint here": "Baliza aquí",
+  "Landing here": "Aterrizaje aquí",
+  "My waypoints": "Mis balizas",
+  "Remove all": "Quitar todas",
+  "Press the flight map long to add one.":
+    "Mantén pulsado el mapa de vuelo para añadir una.",
 };

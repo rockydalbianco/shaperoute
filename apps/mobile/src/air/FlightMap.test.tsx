@@ -10,6 +10,11 @@ import type { Track } from "../navigation/trackRecorder";
 import { color } from "../theme/tokens";
 import { FlightMap, flightMapFps } from "./FlightMap";
 import { loadFlightMapPrefs, resetFlightMapPrefs } from "./flightMapPrefs";
+import {
+  manualWaypointsNow,
+  removeManualWaypoints,
+  resetManualWaypoints,
+} from "./manualWaypoints";
 import { flightOf, T0 } from "./syntheticFlight";
 
 jest.mock("expo-file-system", () => {
@@ -39,6 +44,7 @@ jest.mock("expo-file-system", () => {
 });
 
 jest.mock("react-native-webview");
+
 const { injectJavaScript } =
   jest.requireMock<typeof import("../../__mocks__/react-native-webview")>(
     "react-native-webview",
@@ -142,4 +148,40 @@ it("turns 2D and north up with its buttons, and keeps it", async () => {
 it("has no buttons when small", async () => {
   await show(upTo(5), 120);
   expect(screen.queryByTestId("flight-map-kind")).toBeNull();
+});
+
+describe("the pilot's own waypoints (D5)", () => {
+  beforeEach(() => {
+    resetManualWaypoints();
+    removeManualWaypoints();
+  });
+
+  const message = (data: string) =>
+    fireEvent(screen.getByTestId("flight-map").children[0] as never, "message", {
+      nativeEvent: { data },
+    });
+
+  it("adds a waypoint or a landing where the map is pressed long, and draws it", async () => {
+    await show(upTo(5));
+    await message('{"type":"ready"}');
+    await message('{"type":"press","lat":46.1,"lon":11.2}');
+    await fireEvent.press(screen.getByTestId("map-point-waypoint"));
+    await message('{"type":"press","lat":46.2,"lon":11.3}');
+    await fireEvent.press(screen.getByTestId("map-point-landing"));
+    expect(manualWaypointsNow().map((one) => [one.name, one.landing])).toEqual([
+      ["W01", false],
+      ["L01", true],
+    ]);
+    const last = calls("setWaypoints").pop()!;
+    expect(last).toContain('"name":"W01"');
+    expect(last).toContain('"name":"L01","landing":true,"manual":true');
+  });
+
+  it("adds nothing when the pilot cancels", async () => {
+    await show(upTo(5));
+    await message('{"type":"press","lat":46.1,"lon":11.2}');
+    await fireEvent.press(screen.getByTestId("map-point-cancel"));
+    expect(manualWaypointsNow()).toEqual([]);
+    expect(screen.queryByTestId("map-point-sheet")).toBeNull();
+  });
 });

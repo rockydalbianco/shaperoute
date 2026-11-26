@@ -198,12 +198,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sul canale di prova `preview`, spento negli store. Arriva sulla build di
   prova con la prossima pubblicazione su `preview`; poi la prova e la C.
 
-- **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
-  (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
-  default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
-  scelto dal minimo disponibile dopo qualche giorno. File: — ·
-  `tasks/TASK-464.md`
-
 - **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (OTA
   12); B (dieci esercizi, tre routine da 3, 5, 10 min, la gamba staccata
   corretta, #1216) e D («Morning stretch» in Impostazioni, #1300) in
@@ -226,7 +220,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   bozze ferme fino al taglio nativo. A7c-4 (#1624) in `main` dal
   2026-11-26: la parte A è finita. B3 (#1614, #1617) e B4 (#1620, #1621)
   in bozza; nella prova la barra e i fogli non tengono 4,5:1: la barra
-  velata è da misurare, i fogli sono fermi. File: — ·
+  velata è da misurare, i fogli sono fermi. 2026-11-27: col vetro velato
+  barra, header e fogli tengono 4,5:1 nel simulatore; l'utente approva
+  la barra e dice avanti coi fogli, tutti o nessuno (#1620 in `main`,
+  gli altri quindici nella #1647). File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 e A in
@@ -242,6 +239,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'OTA, E chat di gruppo. File: — · `tasks/TASK-495.md`
   2026-11-24: A in `main` (#1538, migrazione 0087, sul server col prossimo
   passo), A2 #1543 armata; poi B (l'app), file approvati dal Coordinatore.
+  2026-11-26: A e A2 sul server (passo 22); privacy online (#1561, sito
+  c33f3920); B in `main` (#1560), esce con l'OTA; A3 «Delete group» #1629
+  (merge col sì dell'utente). Poi C (uscite), D (Explore e push), E chat.
 - **TASK-509 — Stati vuoti, icone di «Add to Feed», sagoma nelle tessere** ·
   parte 0 chiusa il 2026-11-26 (cinque scelte dell'utente). Tre PR di sola
   app: A stati vuoti (con due prop in `App.tsx`), B icone, C sagoma (dopo

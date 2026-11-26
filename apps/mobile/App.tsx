@@ -9,7 +9,7 @@ import type {
   Walk,
 } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -134,6 +134,8 @@ import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { averagePace } from "./src/route/runTime";
 import { WaitingShape } from "./src/route/ShapeGhost";
 import { shapeName, toShape } from "./src/route/shapeWords";
+import { announcePick } from "./src/route/SurprisePill";
+import type { SurprisePick } from "./src/route/surprisePick";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import { useImageOutline } from "./src/route/useImageOutline";
 import { drawingTrack, routeTrack, type TrackInPlace } from "./src/route/figureLines";
@@ -148,6 +150,7 @@ import {
   useRouteRequest,
 } from "./src/route/useRouteRequest";
 import { useShapeReading } from "./src/route/useShapeReading";
+import { useSurprise } from "./src/route/useSurprise";
 import { checkWord } from "./src/route/wordInput";
 import { ChooseScreen } from "./src/screens/ChooseScreen";
 import { FeedScreen } from "./src/screens/FeedScreen";
@@ -645,6 +648,25 @@ function MuW() {
     () => chooseStart(startMode, position, place),
     [startMode, position, place],
   );
+  // «Surprise me» (TASK-448): a tap writes a shape and a distance in
+  // «Draw», as a tile and a «Try» do; the route waits for «Draw route».
+  const { choose: chooseDistance } = distance;
+  const onSurprise = useCallback(
+    (pick: SurprisePick) => {
+      setKind("shape");
+      setShapeText(shapeName(pick.shape));
+      chooseDistance(pick.distanceM);
+      announcePick(pick);
+    },
+    [chooseDistance],
+  );
+  const surprise = useSurprise({
+    apiUrl: API_URL,
+    start: start?.point ?? null,
+    activity: sportActivity,
+    state,
+    onPick: onSurprise,
+  });
   // One of our ideas opened far from the start: «Make it near me» asks its
   // words from the start instead of «Start».
   const farIdea =
@@ -2161,6 +2183,7 @@ function MuW() {
                         onFreehand={onOpenCanvas}
                         pace={pace}
                         start={start?.point ?? null}
+                        surprise={surprise}
                       />
                     </ImageEditsContext.Provider>
                     {/* The shape game, right under the distance (the user's

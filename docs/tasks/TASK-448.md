@@ -1,9 +1,9 @@
 # TASK-448 — «Surprise me»: forma e distanza scelte dall'app
 
-**Stato**: In corso · parte 0 (domande di prodotto, nessun codice)
+**Stato**: In corso · parte 0 chiusa il 2026-11-26 (sei scelte dell'utente); poi A e B, lista dei file al Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-448-part-0` (documenti), poi `feat/TASK-448-…`
-**Dipende da**: TASK-449 parte A (#1593) per la riga in `RoutePanel.tsx`,
-se l'ingresso sta in «Draw»
+**Dipende da**: TASK-449 parte A (#1593) in `main`, per le righe in
+`RoutePanel.tsx` e `App.tsx` (parte B)
 **ADR**: nessuno finora · numero dal Coordinatore l'11 novembre 2026 (idea
 I1 di `out/prova-app-2026-11-11/PROPOSTE.md`); avviato dall'utente il
 2026-11-26 («Avvia la 448»)
@@ -55,15 +55,39 @@ motore, col giro di sempre. Nessuna coordinata nasce fuori dal motore.
   forme che vengono quasi ovunque (sopra) e le distanze di partenza dello
   sport.
 
-## Parti (bozza, da confermare dopo le risposte)
+## Parti
 
 - **0** — domande di prodotto, una per volta; questo file; PR di soli
-  documenti.
-- **A** — la scelta: un modulo puro (`surprisePick.ts`) che da forme dello
-  sport, limiti di distanza, percorsi vicini del catalogo, scelta di prima
-  e un generatore con seme dà forma e distanza. Test deterministici.
-- **B** — l'ingresso nell'app, i testi nelle cinque lingue, le schermate
-  per il sì dell'utente.
+  documenti. **Fatta il 2026-11-26.**
+- **A** — la scelta, solo file nuovi, niente che si veda:
+  - `surprisePick.ts`: funzione pura. Entrano lo sport, i percorsi del
+    catalogo vicini (forma, distanza chiesta), la scelta di prima, le
+    coppie da non riproporre e un generatore di numeri a caso; esce una
+    coppia forma–distanza, o niente per uno sport senza «Surprise me».
+  - `surpriseKept.ts`: le sorprese venute sotto il 90% (o rifiutate dal
+    motore) da un punto, in un file del telefono, come `near-you.json`.
+  - `useSurprise.ts`: mette insieme i due con i percorsi vicini (la lista
+    che «Explore» prepara già, `exploreAhead`; in bici la stessa richiesta
+    con `activity=cycling`) e con l'esito del percorso.
+- **B** — quello che si vede: la pastiglia (`SurprisePill.tsx`, l'icona del
+  dado), il testo nelle cinque lingue, le righe in `RoutePanel.tsx` e
+  `App.tsx`; schermate nelle cinque lingue per il sì dell'utente; poi i
+  documenti (`UI.md`, la voce in `DECISIONS.md`).
+
+Scelte tecniche, dell'agente su delega dell'utente (vanno nell'ADR):
+
+- «Nella tua città» = i percorsi del catalogo che partono entro un raggio
+  dalla partenza scelta in «Draw» (da fissare nella parte A, proposta
+  10 km: i percorsi di una città partono entro 1 km dal suo centro).
+- La scelta è alla pari fra le coppie forma–distanza diverse, tolte quella
+  di prima e quelle da non riproporre; se non ne resta nessuna, le forme
+  di riserva (le sette a piedi, le otto in bici).
+- Il caso è iniettato (`random: () => number`): nei test un generatore con
+  seme, nell'app `Math.random`.
+- Se era scelta una parola, un'immagine o un disegno a mano, il tocco
+  porta «WHAT YOU DRAW» su «Shape».
+- Nessuna richiesta nuova al server, nessun cambio al motore, all'API o al
+  contratto.
 
 ## Domande all'utente (parte 0)
 
@@ -77,7 +101,7 @@ Una per volta, ognuna con la sua proposta.
 4. Cosa promette «viene bene» e cosa succede quando il risultato è scarso.
    — *risposta il 2026-11-26*
 5. Per quali sport. — *risposta il 2026-11-26*
-6. I testi nelle cinque lingue. — *chiesta il 2026-11-26*
+6. I testi nelle cinque lingue. — *risposta il 2026-11-26*
 
 Già deciso dai documenti, non chiesto: nessun account in più di quello che
 «Draw» già vuole; nessun dato nuovo che esce dal telefono (la richiesta dei
@@ -118,22 +142,65 @@ percorsi vicini è quella di «Explore»).
    fuori dalle città del catalogo una delle otto a 20 km. Negli altri
    sport la pastiglia non c'è. Scartate: solo a piedi; ogni sport che
    disegna forme (una scelta al buio dove non c'è catalogo).
+6. **Il testo: «Sì, vanno bene»** (2026-11-26). Un solo testo nuovo, il
+   nome della pastiglia, col «tu» come «Remind me at 8»:
+
+   | en | it | de | es | fr |
+   |---|---|---|---|---|
+   | Surprise me | Sorprendimi | Überrasch mich | Sorpréndeme | Surprends-moi |
+
+   Scartato: «Pick for me» / «Scegli tu». VoiceOver, dopo il tocco, legge
+   la scelta con parole che ci sono già («Heart, 5 km»). L'icona (un dado
+   a linea di Lucide, come le altre icone) l'utente la giudica sulle
+   schermate, nelle cinque lingue, prima di «pronta».
 
 ## File toccati
 
-Parte 0: `docs/tasks/TASK-448.md` (nuovo). Le parti A e B: lista al
-Coordinatore prima del codice. Vicini: `RoutePanel.tsx` e una riga di
-`App.tsx` sono di TASK-449 (#1593) finché non è in `main`; le pagine di
-«Explore» di TASK-509.
+Lista mandata al Coordinatore il 2026-11-26, prima del codice.
 
-## Criteri di accettazione (bozza)
+```
+# Parte 0 (documenti)
+docs/tasks/TASK-448.md                                  (nuovo)
+docs/STATUS.md                                          (la voce del task)
+
+# Parte A (solo file nuovi)
+apps/mobile/src/route/surprisePick.ts, .test.ts         (nuovi)
+apps/mobile/src/route/surpriseKept.ts, .test.ts         (nuovi)
+apps/mobile/src/route/useSurprise.ts, .test.ts          (nuovi)
+
+# Parte B (dopo #1593 in main)
+apps/mobile/src/route/SurprisePill.tsx, .test.tsx       (nuovi)
+apps/mobile/assets/ui/icons/dices.png, @2x, @3x         (nuovi, Lucide)
+apps/mobile/src/route/RoutePanel.tsx                    (la riga del titolo del passo 2, una prop)
+apps/mobile/App.tsx                                     (l'hook e la prop: poche righe)
+apps/mobile/src/i18n/it.ts, de.ts, es.ts, fr.ts         (una chiave ciascuno)
+
+# Documenti di chiusura (PR di soli documenti)
+docs/UI.md, docs/DECISIONS.md, docs/INDEX.md, docs/STATUS.md,
+docs/archive/COMPLETATI.md, docs/tasks/TASK-448.md
+```
+
+Vicini: `RoutePanel.tsx` e una riga di `App.tsx` sono di TASK-449 (#1593)
+finché non è in `main`; le pagine di «Explore» di TASK-509; `App.tsx` ha i
+turni di TASK-490.
+
+## Criteri di accettazione
 
 - Con lo stesso seme e gli stessi dati la scelta è la stessa.
-- La distanza scelta sta nei limiti dello sport, nell'unità dell'app.
-- Mai una forma che lo sport non disegna.
+- A piedi la distanza è 5 o 10 km, mai 21; in bici 20, 25 o 30 km; sempre
+  nei limiti dello sport, e con «Miles» al miglio intero come le altre
+  distanze che l'app propone.
+- Mai una forma che lo sport non disegna; in bici solo le otto del suo
+  catalogo.
 - Un secondo tocco non ridà la scelta di prima.
-- Senza percorsi vicini, o senza posizione, la scelta viene dalle forme
-  semplici e dalle distanze di partenza dello sport.
+- Una sorpresa venuta sotto il 90% o rifiutata dal motore da un punto non
+  torna da quel punto.
+- Senza percorsi vicini, o senza risposta dal server, la scelta viene
+  dalle forme di riserva: a piedi le sette a 5 o 10 km, in bici una delle
+  otto a 20 km.
+- Il tocco non fa partire nessun calcolo: riempie forma e distanza, e
+  «Draw route» resta com'è.
+- La pastiglia c'è con «Run», «Walk» e «Bike», non con gli altri sport.
 - Impronta iOS ferma a `5e1b5ce5`; nessuna dipendenza nuova; nessun colore
   scritto a mano; testi nuovi nelle cinque lingue, al loro posto nelle
   tabelle.
@@ -147,3 +214,5 @@ Coordinatore prima del codice. Vicini: `RoutePanel.tsx` e una riga di
 - 2026-11-26 — risposta 3 («Forma e 5 o 10 km»); chiesta la domanda 4.
 - 2026-11-26 — risposta 4 («Come sempre»); chiesta la domanda 5.
 - 2026-11-26 — risposta 5 («A piedi e in bici»); chiesta la domanda 6.
+- 2026-11-26 — risposta 6 («Sì, vanno bene»): parte 0 chiusa. Lista dei
+  file e richiesta del numero di ADR al Coordinatore.

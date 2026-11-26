@@ -257,6 +257,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   2026-11-24: A in `main` (#1538, migrazione 0087, sul server col prossimo
   passo), A2 #1543 armata; poi B (l'app), file approvati dal Coordinatore.
 
+- **TASK-448 — «Surprise me»** · parte 0 chiusa il 2026-11-26 (sei scelte
+  dell'utente): una pastiglia nel passo 2 di «Draw» mette forma e distanza
+  fra quelle venute bene in città, dal catalogo di «Explore»; a piedi e in
+  bici, motore non toccato. Poi A (la scelta, file nuovi) e B (la
+  pastiglia, dopo TASK-449 A). File: — · `tasks/TASK-448.md`
+
 In attesa (Fermo — in attesa nel task file, nessun file occupato; si
 riprendono col sì dell'utente). Aspettano la società o servizi esterni:
 TASK-153 AdMob vero, 237 B il merch, 312 D ed E (le attività da Apple Salute e

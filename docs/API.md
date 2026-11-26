@@ -2423,6 +2423,7 @@ tenuto per leggerlo nell'app (`notification_list.py`, tabella
 | Endpoint | Cosa | Risposta |
 |---|---|---|
 | `GET /notifications?before=` | le righe dell'account, le più recenti prima, 30 alla volta; `before` è l'`id` dato dalla pagina prima | `200` `NotificationsPage` (`fixtures/notifications.json`); `401` senza token; `422` con `before` < 1 |
+| `GET /notifications/unread` | solo il numero delle non lette, lo stesso `unread` della lista: quello che chiede il bollino dell'header (TASK-499) | `200` `NotificationsUnread` (`fixtures/notifications-unread.json`); `401` senza token; `404` da un server di prima |
 | `POST /notifications/read` | `{"up_to": id}`: segna lette le righe fino a quella, la più recente che l'app ha mostrato; una arrivata dopo resta non letta | `204`; `422` senza `up_to` o con altri campi |
 
 - **Cosa si tiene**: ogni evento che `push.py` lascia passare (non il
@@ -2445,6 +2446,14 @@ tenuto per leggerlo nell'app (`notification_list.py`, tabella
   vede più, un attrezzo cancellato (`gear_limit`, TASK-486 parte G, solo
   nella campanella come `comment_reaction`); niente attraverso un blocco o da un account nascosto per una
   segnalazione. Il commento e la reazione si leggono come sono adesso.
+- **Il numero da solo** (TASK-499, aggiunta ad ADR-0311): la campanella
+  dell'header chiede `GET /notifications/unread` all'avvio, ogni 5 minuti
+  con l'app in primo piano, al ritorno e alla chiusura della lista. È
+  **una query sola**, con le stesse regole della lista (un pezzo solo di
+  SQL, `rules_sql`: blocchi, 90 giorni, quello che non è più vero, i
+  disegni che l'app legge), senza la lingua, i testi e le foto. La lista
+  intera si chiede solo aprendo la campanella. Con un `404` (un server di
+  prima) l'app legge `unread` dalla prima pagina, come prima.
 - **Per quanto**: `KEPT_DAYS`, 90 giorni dall'evento (durata e frase della
   privacy approvate dall'utente il 2026-11-04: «Sì, approvo»); le righe più vecchie non si mostrano e vanno via
   alla prima riga scritta dopo.

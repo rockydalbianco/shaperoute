@@ -3115,6 +3115,16 @@ export interface NotificationsPage {
   before: number | null;
 }
 
+/**
+ * GET /notifications/unread (TASK-499): the bell's number alone, the same as
+ * `NotificationsPage.unread`, for the header to ask every few minutes
+ * without a page of lines and pictures. A server of before answers 404: the
+ * app reads the number from the first page then.
+ */
+export interface NotificationsUnread {
+  unread: number;
+}
+
 /** POST /notifications/read: the newest line the app showed; 204. */
 export interface NotificationsReadRequest {
   up_to: number;

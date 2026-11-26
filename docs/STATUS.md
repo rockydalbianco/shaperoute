@@ -52,11 +52,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `ed0bd4d7`), la privacy (#1469, `5d226b33`) e C, l'apertura da profilo,
   notifica o link (#1481, `2a5c7590`), in `main`; restano la copia del sito
   e l'OTA, col sì. File: — · `tasks/TASK-485.md`
-- **TASK-490 — La modalità Allenamento** · A, B, C (#1510, riga del Coach)
-  e D (#1553, tab «Food» solo con `NUTRITION_ON`) in `main`; escono col
-  prossimo OTA. Parte E (U4, U5 della prova del 23-11): tre scelte
-  dell'utente il 2026-11-24 (Feed primo e Profilo ultimo in ogni modalità,
-  niente scritte, «Today» = adesso); prossima la E. File: — · `tasks/TASK-490.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
   ADR-0397; A1–D e la privacy in `main`, spente (`NUTRITION_ON`). In fila:
   D2 = #1547, G1, C2a, H (pagina animata), I (invito a fine attività);
@@ -74,6 +69,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'utente fatte (solo email dell'account, segnalazioni e feedback).
   Poi A (i due giri a parte), Resend dell'utente, il passo sul server.
   File: — · `tasks/TASK-515.md`
+- **TASK-516 — Forme invernali e contorni** · ADR-0411; parte 0 il
+  2026-11-24 (la C di TASK-441, scelta dell'utente): 11 forme nuove
+  d'inverno, feste e sport e i 35 contorni di TASK-418. A sagome (file
+  nuovi), B strade, C registrazione (PR unita dall'utente, server e OTA
+  insieme), D catalogo. File: — · `tasks/TASK-516.md`
 - **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
   scelte dell'utente, ADR-0393); poi A server … G avviso, file al
   Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`
@@ -99,10 +99,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sull'iPhone e C (Android) al taglio nativo. File: — · `tasks/TASK-321.md`
 - **TASK-322 — Entrare con Apple e Google** · A (API) in `main`; prossima B
   (app), C (chiavi sul server) col sì. File: — · `tasks/TASK-322.md`
-- **TASK-343 — Le sfide del mese** · documenti e A in `main`; B nella PR
-  #667; server con la 0039 col sì. File: — · `tasks/TASK-343.md`
-  **2026-11-10**: B in `main` (#667), la 0039 è sul server; non chiuso:
-  `EnterOnPost` non è ancora montato in `DrawingCard` (task file, punto 2).
 - **TASK-347 — Il disegno libero ancorato alle strade** · A fatta; prossima
   B (il telefono). File: — · `tasks/TASK-347.md`
   **2026-11-22**: B in `main` (#1389); C1 #1398, poi C2 (schermate) e C3.

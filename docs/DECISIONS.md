@@ -609,9 +609,46 @@ lasciando le righe d'indice.
 - ADR-0409 — «Sign up» e «Log in» gialli: il pulsante in fondo al modulo è `accent` con parole `onAccent`, un'eccezione scelta dall'utente a «il giallo è del percorso» · 2026-11-24 · Attiva
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
+- ADR-0394, precisazione C — La scheda pubblicata aperta fuori dal Feed: profilo, campanella, push, link e chat la aprono per id sulla scheda della mappa, col riquadro del Feed; nella griglia del profilo una cella sua · 2026-11-23 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0394, precisazione C — La scheda pubblicata aperta fuori dal Feed: profilo, campanella, push, link e chat la aprono per id sulla scheda della mappa, col riquadro del Feed; nella griglia del profilo una cella sua
+
+**Stato**: Attiva · 2026-11-23 · TASK-485 parte C (#1481, `2a5c7590`, in
+produzione con l'OTA 26). Le schermate le ha approvate l'utente («Sì,
+approvo»); il modo è **deciso dall'agente su delega dell'utente**, con la
+lista dei file approvata dal Coordinatore (fork 3).
+
+**Contesto**: dopo la parte B la scheda pubblicata si vedeva bene solo nel
+Feed. Da un profilo, dalla campanella, da una push, dal link del post o da
+una chat si apriva come un disegno vuoto: niente linea, «0 km», i pulsanti
+di una corsa.
+
+**Decisione**:
+
+1. **Una strada sola**: tutte e cinque le porte aprono il post per id con
+   `drawings.open`, cioè sulla mappa con `social/DrawingCard.tsx`. Lì, se
+   `source` è `plan` e la scheda si legge, la scheda mostra il riquadro del
+   Feed (`PlanPost`) con «Use this plan» quando non è tua, e nasconde
+   distanza, descrizione doppia, invio, GPX, «Draw it near me» ed «Edit the
+   drawing». `PostPage.tsx` non cambia: la apre solo il Feed, che il piano
+   lo mostrava già.
+2. **Nella griglia del profilo** la cella del piano (`PlanGridTile`) dice
+   «Workout plan», il nome e la settimana a quadratini (pieno la palestra,
+   bordato una corsa o un'uscita, tenue il riposo). Un piano che non si
+   legge tiene la cella di prima.
+3. **Niente parte nativa**: il link apre l'app con la strada JS che c'è
+   già, quindi non aspetta TASK-482 D; tutta la C esce con un OTA. Nessun
+   testo nuovo, nessun cambio all'API.
+
+**Alternative scartate**: aprire il piano con `PostPage` anche da profilo,
+notifica e link (cinque chiamanti da cambiare invece di una scheda); un
+foglio nuovo solo per il piano (un'altra strada da tenere uguale al Feed).
+
+**Conseguenze**: la prova sul telefono resta all'utente, nella prova
+generale.
 
 ## ADR-0409 — «Sign up» e «Log in» gialli
 

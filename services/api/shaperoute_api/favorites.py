@@ -43,6 +43,7 @@ from shaperoute_api.accounts import (
     now_utc,
 )
 from shaperoute_api.activity_graphs import check_supported
+from shaperoute_api.answer_lines import short_line, short_point
 from shaperoute_api.best_routes import line_key
 from shaperoute_api.db import Database
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
@@ -229,7 +230,9 @@ def _fields(row: DictRow) -> dict[str, Any]:
 
 def _listed(row: DictRow) -> FavoriteBody:
     points = _points(row)
-    return FavoriteBody(**_fields(row), start=points[0], preview=preview(points))
+    return FavoriteBody(
+        **_fields(row), start=short_point(points[0]), preview=preview(points)
+    )
 
 
 @dataclass
@@ -260,7 +263,9 @@ class Favorites:
             return None
         return FavoriteDetailBody(
             **_fields(row),
-            points=_points(row),
+            # Six decimals a coordinate, and the line's name with them
+            # (answer_lines): the favorite's key is still its points'.
+            points=short_line(_points(row)),
             walks=[(start, end) for start, end in row["walks"]],
             on_foot=[(start, end) for start, end in row["on_foot"]],
         )

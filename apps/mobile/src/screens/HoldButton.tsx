@@ -55,13 +55,22 @@ export function HoldButton({ onHeld }: { onHeld: () => void }) {
         />
         <View style={styles.square} />
       </Pressable>
-      <Text style={styles.label}>{tapped ? t("Hold to stop") : t("Stop")}</Text>
+      <Text style={styles.label} numberOfLines={2} adjustsFontSizeToFit>
+        {tapped ? t("Hold to stop") : t("Stop")}
+      </Text>
     </View>
   );
 }
 
+/** The words under «Stop»: as wide as the button and a little more, two
+ * lines kept for them, so «Hold to stop» moves nothing around it
+ * (TASK-511). */
+const LABEL_WIDTH = ROUND_BUTTON + 2 * space.lg;
+const LABEL_LINE = Math.round(fontSize.small * 1.3);
+
 const styles = StyleSheet.create({
   box: {
+    width: LABEL_WIDTH,
     alignItems: "center",
     gap: space.xs,
   },
@@ -91,8 +100,12 @@ const styles = StyleSheet.create({
     backgroundColor: color.text,
   },
   label: {
+    width: LABEL_WIDTH,
+    height: 2 * LABEL_LINE,
     color: color.textMuted,
     fontSize: fontSize.small,
+    lineHeight: LABEL_LINE,
     fontWeight: fontWeight.semibold,
+    textAlign: "center",
   },
 });

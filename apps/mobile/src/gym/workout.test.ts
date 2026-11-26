@@ -23,6 +23,7 @@ import {
   stillAsking,
   stillTraining,
   unanswered,
+  waitingForFirst,
   type Workout,
 } from "./workout";
 
@@ -43,8 +44,9 @@ function at(workout: Workout | null): Workout {
   return workout;
 }
 
+// The bench chosen at once: the clock starts with it (TASK-511).
 function benchStarted(): Workout {
-  return chooseExercise(newWorkout("key12345", T0), BENCH, T0 + 30 * S);
+  return chooseExercise(newWorkout("key12345", T0), BENCH, T0);
 }
 
 test("a set is logged with its time since the start, and its rest starts by itself", () => {
@@ -144,11 +146,50 @@ test("Still training? after 30 minutes with nothing, and it ends at its last set
   expect([closed.rest, closed.rests]).toEqual([null, 0]);
 });
 
-test("ended with no set, at the last thing done", () => {
+test("ended with no set, at the last thing done, a second after it began", () => {
+  // The bench chosen 5 minutes in is where the clock starts (TASK-511).
   const w = closeUnanswered(
     chooseExercise(newWorkout("key12345", T0), BENCH, T0 + 5 * MIN),
   );
-  expect(w.endedMs).toBe(T0 + 5 * MIN);
+  expect(w.startedMs).toBe(T0 + 5 * MIN);
+  expect(w.endedMs).toBe(T0 + 5 * MIN + S);
+});
+
+// TASK-511, the user's «Al primo esercizio»: the time spent choosing the
+// first exercise is not the workout's.
+test("a free workout waits at 0:00 for its first exercise, and starts with it", () => {
+  let w = newWorkout("key12345", T0);
+  expect(waitingForFirst(w)).toBe(true);
+  w = pauseWorkout(w, T0 + 10 * S);
+  w = chooseExercise(w, BENCH, T0 + 40 * S);
+  expect(waitingForFirst(w)).toBe(false);
+  expect([w.startedMs, w.lastActiveMs, w.pauses]).toEqual([
+    T0 + 40 * S,
+    T0 + 40 * S,
+    [],
+  ]);
+  expect(activeMs(w, T0 + 2 * MIN)).toBe(80 * S);
+  // The next exercise leaves the clock as it is.
+  w = at(logSet(w, { reps: 10, load_kg: 60 }, T0 + MIN));
+  w = chooseExercise(w, PULL_UP, T0 + 3 * MIN);
+  expect(w.startedMs).toBe(T0 + 40 * S);
+});
+
+test("a plan never waits: its first exercise is there from the start", () => {
+  const w = newWorkout("key12345", T0, {
+    key: "plan1",
+    name: "Push",
+    items: [{ exercise: "bench_press", kind: "load", sets: 3 }],
+  });
+  expect(waitingForFirst(w)).toBe(false);
+  expect(chooseExercise(w, PULL_UP, T0 + MIN).startedMs).toBe(T0);
+});
+
+test("an exercise added after the end leaves the start where it was", () => {
+  let w = newWorkout("key12345", T0);
+  w = finishWorkout(w, T0 + 5 * MIN);
+  expect(waitingForFirst(w)).toBe(false);
+  expect(chooseExercise(w, BENCH, T0 + 6 * MIN).startedMs).toBe(T0);
 });
 
 test("after the end a set can be corrected, taken away, or added not live", () => {

@@ -662,15 +662,22 @@ la barra è quella descritta sopra: col vetro velato non galleggia, perché
 senza sfocatura il testo di un post si leggerebbe dietro le icone. Con
 «Riduci trasparenza» e «Aumenta contrasto» la barra galleggia opaca.
 
-**Cosa si disegna sul vetro vero** (misurato il 2026-11-26): il vetro di
-iOS si schiarisce e si scurisce con quello che ha dietro, e un colore
-fisso sopra non lo segue. Quindi il vetro vero è sempre velato col fondo
-del tono (`glass.realTint`, mai giallo) e quello che ci sta sopra è nel
-colore pieno del testo, mai nel secondario. Il testo fitto non ci va: sul
-foglio dei commenti non teneva 4,5:1, e i fogli restano opachi finché
-non si trova di meglio. Una superficie nuova in vetro vero si prova con
-una foto bianca dietro nel tono scuro e una nera nel chiaro, e si
-misura, prima di chiedere un sì.
+**Cosa si disegna sul vetro vero** (misurato il 2026-11-26 e il 27): il
+vetro di iOS si schiarisce e si scurisce con quello che ha dietro, e un
+colore fisso sopra non lo segue. Quindi il vetro vero è sempre velato col
+fondo del tono, mai giallo. Su barra e header (`glass.realTint`, il 60 %
+o poco più) quello che ci sta sopra è nel colore pieno del testo, mai nel
+secondario. Un foglio prende un decimo in più (`glass.realSheetTint`) e
+lì tiene 4,5:1 anche il testo secondario. Una superficie nuova in vetro
+vero si prova con una foto bianca dietro nel tono scuro e una nera nel
+chiaro, e si misura, prima di chiedere un sì.
+
+**Il vetro vero e l'opacità**: sotto un genitore la cui opacità parte da
+0 il telefono non disegna mai il vetro, nemmeno quando l'opacità arriva a
+1. Una superficie che entra con una dissolvenza — ogni foglio con
+«Riduci movimento» — resta quindi opaca (`useGlassSheet()` lo fa da
+sé), oppure accende il vetro col suo interruttore, `glassEffectStyle`,
+come la fascia dell'header.
 
 Due regole che valgono già oggi. **Una pagina nuova della barra delle
 schede** chiede la stanza con `useTabBarRoom()` (`src/tabs/tabBarRoom.ts`)
@@ -5617,6 +5624,39 @@ TASK-305.md, «Testi di R6».
   («15.1 km/h», come la pagina del post) al posto del passo per km; senza
   luogo né disegno si chiama «Paragliding» (IT «Parapendio») invece di
   «Run». Gli altri sport restano come sono.
+
+### La mappa dei decolli (TASK-493 parte C, ADR-0400)
+
+Spenta finché `TAKEOFFS_ON` è `false` (`src/takeoffs/takeoffsOn.ts`): si
+accende quando i siti sono estratti sul server e lo storico (parte B) è
+acceso.
+
+- **Dove si apre:** il bottone «Takeoffs» sotto «Ready to fly», nella
+  pagina del volo (`TakeoffsButton.tsx`, una riga in `air/FlightPage.tsx`).
+  Apre la mappa a tutto schermo, con «✕» per chiudere.
+- **La mappa** (`takeoffsMapPage.ts`, una pagina MapLibre sua, come quella
+  del volo): parte dall'ultima posizione del telefono se l'app può già
+  leggerla, senza chiedere il permesso, altrimenti dalle Alpi. Si sposta
+  col dito; quando si ferma, l'app chiede al server i siti del riquadro.
+  Un decollo è un pallino pieno nel colore del testo, un atterraggio un
+  cerchio vuoto nel colore attenuato: mai il giallo, che è del percorso.
+  I nomi compaiono da vicino. L'attribuzione di OpenStreetMap è sempre
+  aperta.
+- **I riquadri:** più largo di 5° per lato, l'app non chiede niente e dice
+  «Zoom in to see the takeoffs.»; con più di 1000 siti, «Zoom in to see all
+  the takeoffs.». In basso, «Missing a takeoff? Add it on OpenStreetMap.»
+  apre openstreetmap.org.
+- **La scheda del sito** (`TakeoffSheet.tsx`), toccando un pallino: nome
+  (o «Unnamed takeoff»), tipo, quota e «Official site»; «Faces» coi punti
+  cardinali nelle lettere della lingua (O per ovest in italiano, francese
+  e spagnolo, O per est in tedesco); gli atterraggi vicini di un decollo
+  (i decolli sopra un atterraggio) con distanza e dislivello quando le due
+  quote ci sono.
+- **Lo storico di un decollo:** voli e piloti, oggi, gli ultimi 12 mesi
+  come barre; sotto i 3 piloti solo «Few flights from here yet.».
+  «In the air now» col numero, e «Watch live» per ogni volo condiviso con
+  tutti nel Feed. I record (volo più lungo, più alto, più lontano) aprono
+  il post. Nessun testo giudica le condizioni.
 
 ### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
 

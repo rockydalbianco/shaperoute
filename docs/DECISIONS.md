@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva; A finita con A7c-4 il 2026-11-26 (A1–A7c-3 in produzione con l'OTA 25); B a fette, in bozza fino al taglio nativo: la barra galleggia solo col vetro vero, velata col fondo del tono perché tenga 4,5:1 (utente, 2026-11-26), l'header in bozza, i fogli fermi alla prova
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva; A finita con A7c-4 il 2026-11-26 (A1–A7c-3 in produzione con l'OTA 25); B a fette, in bozza fino al taglio nativo: la barra galleggia solo col vetro vero, velata col fondo del tono: misurata, tiene 4,5:1 e l'utente l'ha approvata (2026-11-27); l'header in bozza; i fogli avanti, tutti o nessuno (utente, 2026-11-27)
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -3996,6 +3996,23 @@ dichiarati «Sufficient Contrast» e il tema scuro.
   scritte secondarie 1,5:1): B4 è ferma alla prova su due fogli. Deciso
   dall'agente su delega dell'utente; provare la velatura è una scelta
   dell'utente.
+- **Parte B, il vetro velato misurato (2026-11-27)**: a quella quota la
+  barra tiene 4,5:1 nei due casi peggiori (icone 7,4:1 e 5,5:1 nel tono
+  scuro sopra una foto bianca, 14,9:1 e 11,6:1 nel chiaro sopra una
+  scura) e lascia ancora vedere quello che ha dietro. L'utente l'ha
+  approvata («Sì, va bene»). I fogli, con la stessa velatura, erano a un
+  passo; l'utente ha scelto di andare avanti («Sì, avanti»), tutti o
+  nessuno: entrano in una build solo quando sono pronti tutti. Un foglio
+  prende un decimo in più del fondo del tono rispetto alla barra
+  (`glass.realSheetTint`), perché porta testo corrente e scritte
+  secondarie: misurato, testo 12,4:1 e secondarie 5,2:1 nel caso
+  peggiore. Con «Riduci movimento» un foglio resta opaco: lì entra
+  sfumando l'opacità, e sotto un'opacità che parte da 0 il telefono non
+  disegna mai il vetro. Si è scelto di ripiegare dentro `useGlassSheet()`
+  invece di cambiare `SheetModal`, che serve a ogni foglio e la cui
+  dissolvenza è proprio quello che «Riduci movimento» chiede. Le scelte
+  sulla barra e sui fogli sono dell'utente; il resto è deciso dall'agente
+  su delega dell'utente.
 - **Parte B, l'header (2026-11-26)**: galleggia dove galleggia la barra.
   Lo shell continua a lasciare a ogni pagina lo spazio dell'header: non
   sposta le pagine sotto la fascia. Solo lo scroller principale che lo

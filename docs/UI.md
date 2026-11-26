@@ -72,7 +72,11 @@ Quattro regole:
    produce e la barra che lo mostra mentre si disegna. Ciò che chiede attenzione usa `warning`, arancio: un avviso giallo
    renderebbe il colore muto. **Un'eccezione**, scelta dall'utente
    (TASK-220, ADR-0183): «Run without a route» in cima a «Draw» è giallo,
-   con il testo scuro. Per tutto il resto la regola vale.
+   con il testo scuro. **Un'altra**, scelta dall'utente il 2026-11-24
+   (TASK-508, ADR-0409): il pulsante in fondo a «Sign up» e «Log in»,
+   giallo con il testo scuro; grigio, l'unico comando della pagina si
+   leggeva come secondario. Le proprie bolle nei messaggi sono di
+   ADR-0403. Per tutto il resto la regola vale.
 2. **Sul giallo il testo è scuro** (`onAccent`, 13,5:1). Il bianco si ferma
    a 1,5:1, sotto il minimo, e in pieno sole, dove l'app si usa, non si
    legge.
@@ -256,7 +260,10 @@ In cima a «Draw» stava a sinistra di «MuW», 32 punti, alto quanto il
 titolo; da TASK-392 sta così nell'header delle pagine della barra, e
 «Draw» non ha più il logo. È solo un'immagine: il lettore di schermo legge il nome accanto.
 Un componente solo, `src/intro/HeartBadge.tsx` (`size`), per ogni posto
-dove il cuore su giallo compare.
+dove il cuore su giallo compare. In «Explore» stava anche accanto al
+titolo (TASK-222): da quando l'header lo ha su ogni pagina erano due, uno
+sopra l'altro, e quello di «Explore» è tolto (TASK-508, scelta
+dell'utente del 2026-11-24).
 
 **Il tour della prima apertura** (TASK-266, ADR-0235): finita
 l'animazione, la prima volta, il resto dello schermo si scurisce
@@ -419,7 +426,10 @@ pagine»):
    «City» mostra in alto le città recenti (↺, le ultime 5, salvate sul
    telefono) e una fila di città di tutto il mondo (New York, London,
    Paris, Tokyo, Rome, Milan, Torino, Barcelona, Dubai…): un tocco la
-   sceglie, il centro viene dall'API, mai scritto nell'app. Sotto, «Type a
+   sceglie, il centro viene dall'API, mai scritto nell'app. **I nomi della
+   fila sono nella lingua dell'app** (TASK-508, scelta dell'utente del
+   2026-11-24): «Londra», «Mailand», «Nueva York»; all'API si chiede
+   sempre il nome inglese, e con quello il telefono tiene la città. Sotto, «Type a
    city» suggerisce le città mentre si scrive (da 2 lettere, pausa 250 ms).
    **La prima voce della fila è «Near me»** (TASK-176, ADR-0144), con
    il segno della posizione, un anello col suo centro: è accesa finché non
@@ -1111,7 +1121,11 @@ TASK-278 la prima pagina di «Profile» è **la quarta pagina**, dopo
 Le pagine che si aprono da lì («Settings», «Favorites», «My activities»,
 «Edit profile», «Guide», il profilo di un altro, un disegno) si aprono
 sopra l'app come prima, e «←» (o «Back to the profile») torna alla quarta
-pagina. **Anche le altre parti dell'app portano alla quarta pagina**
+pagina. Le pagine di «Profile» aperte sopra l'app scorrono fino in cima
+allo schermo: una fascia del colore della pagina, alta quanto la barra di
+stato, copre quello che ci passa sotto, così il testo non finisce sotto
+l'orologio (TASK-508, `src/ui/StatusBarCover.tsx`). Come scheda non c'è:
+lì c'è già l'header. **Anche le altre parti dell'app portano alla quarta pagina**
 (TASK-278 parte B, scelte dell'utente del 2026-10-13): «People» nella
 ricerca della lente di «Feed» senza account (da TASK-344), e il cuore sulla mappa e la riga sotto la fine della corsa
 senza account, ognuno con la sua riga sopra «Sign up». Dalla mappa e dalla
@@ -1148,7 +1162,9 @@ emails» (TASK-284, ADR-0244): spuntata, la richiesta manda `away_email:
 false`; con o senza, manda la lingua dell'app per le email. «Log in»
 email e password. I campi si controllano prima di partire, con le
 regole dell'API, e l'errore si dice in parole sotto il pulsante (sotto,
-«Quando non va»). Si apre su «Sign up»; dopo «Log out» o una sessione
+«Quando non va»). Il pulsante in fondo, «Sign up» o «Log in», è giallo
+`accent` con le parole `onAccent` (TASK-508, ADR-0409, scelta
+dell'utente). Si apre su «Sign up»; dopo «Log out» o una sessione
 finita, su «Log in».
 
 **«Forgot password?»** (TASK-300, ADR-0261): sotto «Log in», sottolineato,
@@ -1628,6 +1644,12 @@ quando il server ha Resend.
   them in Settings to turn this on.», con «Open Settings» (TASK-259).
   Spegnere, «Email notifications» ed «Email when I'm away» non chiedono
   niente al telefono.
+- **Finché «Push notifications» è spento**, fra il riquadro e la nota c'è
+  una riga da toccare, sottolineata come «Open Settings»: «Push
+  notifications are off. Tap to turn them on.» (TASK-508, testo scelto
+  dall'utente il 2026-11-24). Il tocco fa quello che fa l'interruttore.
+  Sparisce quando sono accese, e quando sotto c'è scritto perché non si
+  sono accese.
 - Spento l'interruttore, o usciti dall'account, il telefono riprende il
   suo token dall'API e non riceve più.
 - **Toccare una notifica** apre il disegno (una reazione, un commento, un
@@ -1820,7 +1842,10 @@ richiude. «Requests» ha un pallino rosso (`badge`) quando qualcuno
 aspetta, e in quel caso il suo elenco è **già aperto** quando «Profile»
 si apre (TASK-239). Ogni riga ha la foto (o l'iniziale) e il nome, che
 toccato apre il profilo di quella persona sopra l'app; «←» torna a
-«Profile».
+«Profile». Il nome sotto ogni numero è largo quanto il riquadro, centrato,
+su una riga: una parola più lunga in un'altra lingua si stringe (fino
+all'80%) invece di essere tagliata (TASK-508: «Follower» usciva
+«Follow…»).
 
 **Il numero rosso** (TASK-239, ADR-0203; chiesto dall'utente, testi
 **confermati** il 2026-10-05). Quando qualcuno chiede di seguirti, il pulsante di
@@ -2551,7 +2576,10 @@ bianca, è tolta dal TASK-331; dal TASK-340 «Freehand» è la prima scelta e
 apre la mappa per disegnare a mano, sotto in «Disegnare sulla mappa»,
 senza che l'interruttore resti su di lei): il percorso disegna una forma
 del catalogo, una parola **oppure** il contorno di un'immagine, mai due
-insieme, e l'interruttore mostra quale. Di partenza «Shape».
+insieme, e l'interruttore mostra quale. Di partenza «Shape». Le sue
+voci stanno ognuna su una riga: quella che non entra si stringe (fino al
+70%) invece di andare a capo fra le altre (TASK-508, `Segmented` con
+`oneLine`; gli altri interruttori dell'app vanno a capo come prima).
 Passare dall'uno all'altro non cancella quanto scritto o scelto negli altri.
 
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
@@ -2570,7 +2598,9 @@ ADR-0307; prima una riga che scorreva di lato, TASK-088, ADR-0084): sette
 forme e l'ottava tessera «See all», che apre tutte e diciassette; «Show
 fewer» richiude. La forma scelta è sempre in vista: se non è fra le prime
 sette, prende il settimo posto. Toccare una tessera fa vibrare il telefono,
-dove l'app è costruita con `expo-haptics`. Sotto, la forma scelta **in
+dove l'app è costruita con `expo-haptics`. Sotto il segno la tessera ha il
+nome con la maiuscola, «Cuore», come ogni etichetta della pagina
+(TASK-508); nel campo va la parola come la scrive una frase, «cuore». Sotto, la forma scelta **in
 scala** su un pezzo di mappa (`ShapePreview`): il contorno del catalogo,
 una barra di scala tonda e «≈ 1.9 × 2.1 km», che seguono forma e
 distanza.
@@ -3525,7 +3555,12 @@ not keep it.*
 
 ## Chiedere un percorso
 
-«Draw route» è spento finché non c'è una partenza. Toccato, la richiesta va
+«Draw route» è spento finché non c'è una partenza, e sopra di lui una riga
+piccola dice perché (TASK-508, testi scelti dall'utente il 2026-11-24):
+«Choose a start first»; con la partenza e niente da disegnare (campo
+della forma vuoto, nessuna parola, nessuna immagine), «Choose what to draw
+first». Una parola che l'AI sta leggendo o che non si può scrivere ha già
+la sua nota sotto il campo, e la riga non c'è. Toccato, la richiesta va
 all'API in due tempi (ADR-0032): l'API la accetta subito, poi l'app chiede
 a che punto è: ogni mezzo secondo nei primi 6 s, ogni secondo fino a 20 s,
 poi ogni 2 s (ADR-0136). La scheda dice cosa sta succedendo e offre «Cancel»;

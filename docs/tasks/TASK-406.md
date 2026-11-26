@@ -1,7 +1,6 @@
 # TASK-406 — Le stazioni sciistiche: la ricerca «Ski», la neve, il meteo e la giornata
 
-**Stato**: In lavorazione · parti A–D online dal 2026-11-10 (server e OTA
-di produzione); resta la parte E, la prova sulla neve
+**Stato**: Done · 2026-11-26 · A–D online dal 2026-11-10 (server e OTA di produzione): le stazioni, il meteo, la ricerca «Ski», «Record your day» con stazione, neve e km. La parte E, la prova sulla neve, è in `docs/PROVE-SUL-CAMPO.md` con TASK-429 e TASK-375 E (scelta dell'utente del 2026-11-26 sulle prove sul campo).
 **Fase**: 5 · **Branch**: `docs/TASK-406-ski-resorts` (documenti); il
 codice `feat/TASK-406-a-…`
 **Dipende da**: TASK-375 (lo sci «Record only», impianti e piste per nome,

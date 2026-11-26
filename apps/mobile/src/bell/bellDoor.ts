@@ -11,7 +11,12 @@ import { AppState } from "react-native";
 
 import { sessionEnded } from "../account/messages";
 import type { Account } from "../account/useAccount";
-import { fetchNotifications, isBellMissing } from "../api/notificationList";
+import type { AccountOutcome } from "../api/accounts";
+import {
+  fetchNotifications,
+  fetchUnread,
+  isBellMissing,
+} from "../api/notificationList";
 
 /**
  * The bell of the header (TASK-367 part C, ADR-0311): how many lines of the
@@ -48,8 +53,9 @@ export function useBell(): BellDoor {
   return useContext(BellContext);
 }
 
-/** How often the app asks while it is open: a page carries the actors'
- * pictures, so less often than the messages' numbers. */
+/** How often the app asks while it is open (ADR-0311). The number alone is
+ * light (TASK-499), but a server of before answers with a page and the
+ * actors' pictures: the time between two questions stays. */
 export const BELL_EVERY_MS = 5 * 60_000;
 
 type Options = {
@@ -65,9 +71,12 @@ type Held = { token: string; unread: number };
 /**
  * The bell of the account, for «Profile» to hand to the header. The number
  * is asked when the account is known, every BELL_EVERY_MS while the app is
- * on screen, when it comes back to it, and when the list closes. Without an
- * answer the last number stays; a server without the list is asked once,
- * and the bell stays away: never an error for a number.
+ * on screen, when it comes back to it, and when the list closes: the number
+ * alone (TASK-499), never the list, which is read when the bell is opened.
+ * A server of before has no number alone: it is asked once, then the first
+ * page gives the number as it did. Without an answer the last number stays;
+ * a server without the list is asked once, and the bell stays away: never
+ * an error for a number.
  */
 export function useBellOf(
   baseUrl: string | null,
@@ -83,6 +92,9 @@ export function useBellOf(
   const { fetchFn, key, everyMs = BELL_EVERY_MS } = options;
   // A server without the list: asked once for this token, then never again.
   const off = useRef<string | null>(null);
+  // A server with the list and not its number alone (before TASK-499):
+  // asked once for this token, then the first page as before.
+  const noCount = useRef<string | null>(null);
 
   useEffect(() => {
     if (token === null || baseUrl === null || off.current === token) {
@@ -90,21 +102,44 @@ export function useBellOf(
     }
     let live = true;
     let onScreen = true;
-    const ask = () => {
+    /** The number is said, or the session is over; else the last stays. */
+    const said = (outcome: AccountOutcome<{ unread: number }>) => {
+      if (outcome.kind === "ok") {
+        setHeld({ token, unread: outcome.value.unread });
+      } else if (sessionEnded(outcome)) {
+        onSessionEnded(token);
+      }
+    };
+    const askList = () => {
       void fetchNotifications(baseUrl, token, null, { fetchFn, key }).then(
         (outcome) => {
           if (!live) {
             return;
           }
-          if (outcome.kind === "ok") {
-            setHeld({ token, unread: outcome.value.unread });
-          } else if (isBellMissing(outcome)) {
+          if (isBellMissing(outcome)) {
             off.current = token;
-          } else if (sessionEnded(outcome)) {
-            onSessionEnded(token);
+          } else {
+            said(outcome);
           }
         },
       );
+    };
+    const ask = () => {
+      if (noCount.current === token) {
+        askList();
+        return;
+      }
+      void fetchUnread(baseUrl, token, { fetchFn, key }).then((outcome) => {
+        if (!live) {
+          return;
+        }
+        if (isBellMissing(outcome)) {
+          noCount.current = token;
+          askList();
+        } else {
+          said(outcome);
+        }
+      });
     };
     ask();
     const timer = setInterval(() => {

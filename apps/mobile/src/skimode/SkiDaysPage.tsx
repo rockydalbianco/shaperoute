@@ -7,7 +7,7 @@ import { t } from "../i18n";
 import { durationText } from "../route/runTime";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { useFollowsDoor } from "../social/followsDoor";
-import { useHeaderScroll } from "../tabs/headerScroll";
+import { useHeaderScroll, useUnderHeader } from "../tabs/headerScroll";
 import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { color, font, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { distanceLabel } from "../units/format";
@@ -58,6 +58,8 @@ export function SkiDaysPage({ onLogIn }: Props) {
   };
   const units = useUnits();
   const headerScroll = useHeaderScroll();
+  // Under a floating header the page goes on showing behind it (TASK-469 B3).
+  const underHeader = useUnderHeader();
   // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
   const barRoom = useTabBarRoom();
   const owner =
@@ -135,7 +137,7 @@ export function SkiDaysPage({ onLogIn }: Props) {
     <View style={styles.page}>
       <ScrollView
         {...headerScroll}
-        style={styles.page}
+        style={[styles.page, underHeader]}
         contentContainerStyle={[styles.content, { paddingBottom: space.xxl + barRoom }]}
       >
         <Text style={styles.title} accessibilityRole="header">

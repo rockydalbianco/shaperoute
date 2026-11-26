@@ -194,7 +194,8 @@ export function CityPicker({
           {featured.map((name) => (
             <Chip
               key={name}
-              label={opening === name ? `${name} …` : name}
+              // Asked and kept in English, read in the app's language.
+              label={opening === name ? `${t(name)} …` : t(name)}
               on={city !== null && cityShort(city.label) === name}
               onPress={() => void open(name, "featured")}
             />

@@ -1,7 +1,6 @@
 # TASK-424 — I dati dal vivo per ogni sport e «Share live activity»
 
-**Stato**: In corso · parte 0 (#981), A1 (#983) e A2 (#1010) in `main`;
-prossima B1; il server e la copia del sito col sì dell'utente
+**Stato**: Done · 2026-11-26 · tutte le parti fino a C3 (#1123) in `main` e in produzione, server e `site/live` online; la condivisione dal vivo provato dall'utente sul telefono il 2026-11-26 (prova generale sull'OTA 25: «ok»). Chiuso dal Coordinatore 3.
 **Fase**: 5 · **Branch**: `docs/TASK-424-live-share` (parte 0) · **ADR**:
 ADR-0352 · numeri dal Coordinatore (2026-11-08)
 
@@ -699,4 +698,4 @@ Le liste delle parti A1, A2, B1, B2, C vanno al Coordinatore prima del codice.
 
 ## Esito
 
-*(a fine task)*
+Done · 2026-11-26 · tutte le parti fino a C3 (#1123) in `main` e in produzione, server e `site/live` online; la condivisione dal vivo provato dall'utente sul telefono il 2026-11-26 (prova generale sull'OTA 25: «ok»). Chiuso dal Coordinatore 3.

@@ -6,7 +6,7 @@ import type { MemorySecureStore } from "../account/testing";
 import { loadSport, saveSport } from "../settings/sport";
 
 // The ski mode in the app itself (TASK-429 part A, ADR-0357): with «Ski»
-// the tab bar is «Today · Days · Resorts · Feed · Profile» with «Messages»
+// the tab bar is «Feed · Today · Days · Resorts · Profile» with «Messages»
 // in the header; another sport brings the app back as always. The setup is
 // `../units/DrawDistanceApp.test.tsx`'s: no GPS, no account, nothing asked
 // of the API.
@@ -67,7 +67,7 @@ function tabs(): string[] {
 test("with «Ski» the app opens on «Today», with the ski mode's tabs", async () => {
   jest.mocked(loadSport).mockReturnValue("ski");
   await render(<App />);
-  expect(tabs()).toEqual(["Today", "Days", "Resorts", "Feed", "Profile"]);
+  expect(tabs()).toEqual(["Feed", "Today", "Days", "Resorts", "Profile"]);
   expect(screen.getByRole("header", { name: "Today" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Record your day" })).toBeOnTheScreen();
   // «Messages» has no tab here: it is in the header.
@@ -82,7 +82,7 @@ test("another sport brings the app back as always, and «Ski» again the ski mod
   expect(screen.queryByTestId("ski-messages")).toBeNull();
 
   await act(async () => saveSport("ski"));
-  expect(tabs()).toEqual(["Today", "Days", "Resorts", "Feed", "Profile"]);
+  expect(tabs()).toEqual(["Feed", "Today", "Days", "Resorts", "Profile"]);
   expect(screen.getByRole("header", { name: "Today" })).toBeOnTheScreen();
 
   await act(async () => saveSport("run"));

@@ -1,10 +1,7 @@
 # TASK-237 — Il sito web, con la sezione «Merch» per le magliette
 
-**Stato**: In corso — il sito è **online su https://getmuw.app** con
-la guida, la privacy (`/privacy/`) e l'assistenza (`/support/`), in
-cinque lingue (parti A, A2, A3, C, D, E fatte, 2026-10-05/09); il link
-per scaricare l'app porta all'App Store (parte F, 2026-10-28); resta il
-merch (parte B, messo da parte)
+**Stato**: Fermo — in attesa · 2026-11-24 (scelta dell'utente del 2026-11-24 sui task aperti): il sito è online (parti A–F); resta solo il merch (parte B), che aspetta la società.
+Prima del 2026-11-24: In corso — il sito è **online su https://getmuw.app** con la guida, la privacy (`/privacy/`) e l'assistenza (`/support/`), in cinque lingue (parti A, A2, A3, C, D, E fatte, 2026-10-05/09); il link per scaricare l'app porta all'App Store (parte F, 2026-10-28); resta il merch (parte B, messo da parte)
 **Fase**: 4 · **Branch**: `feat/TASK-237-website-merch`
 **ADR**: ADR-0201
 

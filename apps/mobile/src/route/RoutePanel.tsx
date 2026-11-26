@@ -212,6 +212,8 @@ export function RouteChoice({
         value={shownKind}
         onChange={(value) => (value === "freehand" ? freehand?.() : onKind(value))}
         style={styles.kinds}
+        // Up to four choices: «A mano libera» stays on one line (TASK-508).
+        oneLine
       />
       {shownKind === "shape" ? (
         <>

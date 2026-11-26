@@ -1,6 +1,6 @@
 # TASK-407 — La 1.0.2 solo per gli screenshot nuovi
 
-**Stato**: In corso
+**Stato**: Done · 2026-11-24 · superato dalla 1.1.0: la 1.0.2 (build 9, solo gli screenshot v4, stesso codice nativo della 1.0.1) è andata in verifica il 2026-11-06; la 1.1.0 (build 14) è sullo Store dal 2026-11-11 e gli OTA di produzione partono dal suo runtime. Chiuso nel censimento dei task aperti (scelta dell'utente del 2026-11-24 sui task aperti).
 **Fase**: 5 · **Branch**: `chore/TASK-407-version-1-0-2`; punto di build
 `release/1.0.2` (non si unisce a `main`)
 
@@ -64,4 +64,4 @@ docs/DECISIONS.md
 
 ## Esito
 
-*(a fine task)*
+Done · 2026-11-24 · superato dalla 1.1.0: la 1.0.2 (build 9, solo gli screenshot v4, stesso codice nativo della 1.0.1) è andata in verifica il 2026-11-06; la 1.1.0 (build 14) è sullo Store dal 2026-11-11 e gli OTA di produzione partono dal suo runtime. Chiuso nel censimento dei task aperti (scelta dell'utente del 2026-11-24 sui task aperti).

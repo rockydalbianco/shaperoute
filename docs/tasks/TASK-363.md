@@ -1,6 +1,6 @@
 # TASK-363 — Dove va la posizione del telefono: la verifica e il testo
 
-**Stato**: In corso — proposta approvata dall'utente il 2026-10-30 con «Sì, approvo tutto», codice nella PR
+**Stato**: Done · 2026-11-24 · #685 in `main` dal 2026-11-01 (`bead6c6f`), nell'app di produzione (OTA 25) e sul server (passo 22); il testo della privacy su dove va la posizione è online. Chiuso nel censimento dei task aperti del 2026-11-24, Coordinatore 3.
 **Fase**: 4 · **Branch**: `docs/TASK-363-position-audit` (documenti),
 `fix/TASK-363-position` (codice) · numero dal Coordinatore (2026-10-30),
 decisione in ADR-0306, punto 4
@@ -209,4 +209,4 @@ docs/STATUS.md, docs/tasks/TASK-356.md, docs/tasks/TASK-363.md
 
 ## Esito
 
-*(a fine task)*
+Done · 2026-11-24 · #685 in `main` dal 2026-11-01 (`bead6c6f`), nell'app di produzione (OTA 25) e sul server (passo 22); il testo della privacy su dove va la posizione è online. Chiuso nel censimento dei task aperti del 2026-11-24, Coordinatore 3.

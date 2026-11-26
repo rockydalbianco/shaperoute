@@ -11,7 +11,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "10 de noviembre de 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "23 de noviembre de 2026";
+const PRIVACY_UPDATED = "24 de noviembre de 2026";
 
 const help: AboutDocument = {
   title: "Cómo funciona MuW",
@@ -383,13 +383,19 @@ const privacy: AboutDocument = {
     {
       heading: "Denuncias",
       blocks: [
-        "Cuando denuncias un dibujo, una prenda etiquetada, un artículo de equipo, un comentario, un perfil o una carrera en grupo, guardamos quién denunció qué, el motivo y cuándo. Quien gestiona MuW la recibe por correo y puede ocultar lo denunciado a los demás miembros. No se borra nada, y su autor lo sigue viendo. Tu denuncia nunca se muestra al autor.",
+        "Cuando denuncias un dibujo, una prenda etiquetada, un artículo de equipo, un comentario, un perfil, una carrera en grupo o un grupo, guardamos quién denunció qué, el motivo y cuándo. Quien gestiona MuW la recibe por correo y puede ocultar lo denunciado a los demás miembros. No se borra nada, y su autor lo sigue viendo. Tu denuncia nunca se muestra al autor.",
       ],
     },
     {
       heading: "Carreras en grupo",
       blocks: [
         "Si creas una carrera en grupo o dices que vas, los miembros que pueden verla ven tu nombre, tu foto y que vas. Cuando eliminas tu cuenta, eliminamos tus carreras en grupo y tus respuestas.",
+      ],
+    },
+    {
+      heading: "Grupos",
+      blocks: [
+        "Si creas un grupo o te unes a uno, sus miembros ven tu nombre, tu foto, tu papel en el grupo y tus publicaciones de sus deportes que ya pueden ver. Quien no es miembro solo ve cuántos miembros tiene. Los administradores del grupo ven quién pidió unirse y a quién se invitó. Tus grupos en tu perfil solo los ves tú. Cuando eliminas tu cuenta, eliminamos tus grupos, tus membresías, tus solicitudes y tus invitaciones; un grupo que administras pasa antes a otro miembro.",
       ],
     },
     {

@@ -1272,6 +1272,10 @@ export const ES: Table = {
   Floors: "Pisos",
   "Log set": "Anotar serie",
   "Same again": "Otra igual",
+  // TASK-511: the clock waits for the first exercise; − and + by the boxes
+  "Starts with the first exercise": "Empieza con el primer ejercicio",
+  "Less {field}": "{field}: menos",
+  "More {field}": "{field}: más",
   Rest: "Descanso",
   Custom: "Personalizado",
   "Next: {exercise} · set {n}": "Siguiente: {exercise} · serie {n}",
@@ -3717,6 +3721,8 @@ export const ES: Table = {
     "Se cuentan solo para los alimentos que tienen estos números.",
   "No protein, carbs or fat to count for this day.":
     "No hay proteínas, carbohidratos ni grasas que contar para este día.",
+  // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
+  "Landings from OpenStreetMap: {count}": "Aterrizajes de OpenStreetMap: {count}",
   // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
   Weather: "Tiempo",
   "Weather: {temperature}, wind {speed}": "Tiempo: {temperature}, viento {speed}",

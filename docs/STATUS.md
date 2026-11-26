@@ -35,6 +35,8 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 **Le prove sul campo** (neve, volo, corsa vera): una riga per prova in
 `docs/PROVE-SUL-CAMPO.md` (406 E, 429, 375 E, 415, 305, 479), da
 fare quando capita; i task con solo quella prova sono chiusi.
+**TASK-501** (chiuso): dopo l'OTA con la parte C, la prova sul telefono
+di Coach e di un post aperto con la sua mappa.
 
 ## In lavorazione
 

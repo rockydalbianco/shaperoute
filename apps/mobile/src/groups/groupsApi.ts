@@ -206,6 +206,20 @@ export function joinGroup(
 }
 
 /** DELETE …/membership: leaves, withdraws the request, or declines the invite. */
+/**
+ * DELETE /groups/{id}, the admin only («Delete group», part A3): the group
+ * goes with whoever is in it. An API of before answers 405: a problem
+ * shown, and the group stays.
+ */
+export function deleteGroup(
+  baseUrl: string,
+  token: string,
+  id: string,
+  options: Options = {},
+): Promise<AccountOutcome<null>> {
+  return ask(baseUrl, path(id), { method: "DELETE", token }, nothing, options);
+}
+
 export function leaveGroup(
   baseUrl: string,
   token: string,

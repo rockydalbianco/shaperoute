@@ -17,7 +17,15 @@ import { t, tLater } from "../i18n";
 import type { Track } from "../navigation/trackRecorder";
 import { TICK_MS, useNow } from "../screens/RunPanel";
 import { BRIGHTNESS_STEPS } from "../theme/tone";
-import { fontWeight, type Palette, paletteOf } from "../theme/tokens";
+import {
+  fontWeight,
+  type GlassColors,
+  glassOf,
+  type Palette,
+  paletteOf,
+} from "../theme/tokens";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 import { useUnits } from "../units/useUnits";
 import {
   type FlightLook,
@@ -87,10 +95,19 @@ export const UNLOCK_HOLD_MS = 1500;
 export const GLOVE_TARGET = 64;
 const GAP = 6;
 
+/** The glass of each palette made here: the flight screen has a look of
+ * its own, which is not always the tone of the app (TASK-469 A7c-4). */
+const flightGlass = new WeakMap<Palette, GlassColors>();
+
 function paletteFor(look: FlightLook): Palette {
-  return look === "dark"
-    ? paletteOf({ tone: "dark", dark: 0, light: BRIGHTNESS_STEPS - 1 })
-    : paletteOf({ tone: "light", dark: 0, light: BRIGHTNESS_STEPS - 1 });
+  const choice = {
+    tone: look === "dark" ? "dark" : "light",
+    dark: 0,
+    light: BRIGHTNESS_STEPS - 1,
+  } as const;
+  const palette = paletteOf(choice);
+  flightGlass.set(palette, glassOf(choice));
+  return palette;
 }
 
 type Props = {
@@ -114,6 +131,9 @@ function Chip({
   onPress: () => void;
   palette: Palette;
 }) {
+  // Out of the glass as the other chips (TASK-469 A7c-4), in the look of
+  // the flight screen.
+  const chipRaise = glassRaise(useGlassMode(), flightGlass.get(palette));
   return (
     <Pressable
       accessibilityRole="button"
@@ -121,6 +141,7 @@ function Chip({
       onPress={onPress}
       style={[
         styles.chip,
+        chipRaise,
         {
           backgroundColor: on ? palette.accent : palette.surfaceRaised,
           borderColor: on ? palette.accent : palette.border,

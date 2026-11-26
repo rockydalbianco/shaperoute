@@ -778,3 +778,12 @@ export const vario = {
   /** +3 m/s and more. */
   climbStrong: "#FF4D2E",
 } as const;
+
+/**
+ * A QR code's modules (TASK-479 part D4, ADR-0388): dark on light in either
+ * tone of the app, as the readers want, with the most contrast there is.
+ */
+export const qrCode = {
+  dark: "#000000",
+  light: "#FFFFFF",
+} as const;

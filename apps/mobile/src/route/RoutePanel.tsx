@@ -263,7 +263,15 @@ export function RouteChoice({
         </>
       ) : shownKind === "image" ? (
         <>
-          <ImageChoice state={image} onChoose={onChooseImage} penUp={penUp} />
+          <ImageChoice
+            state={image}
+            onChoose={onChooseImage}
+            penUp={penUp}
+            // On the map from the start, as a shape (TASK-449 part B); not
+            // where the server places the drawing freely.
+            start={isPlacedFree(activity) ? null : start}
+            distanceM={distanceM}
+          />
           {/* A picture with pieces apart, its holes too (TASK-297). */}
           {onPenUp &&
             image.status === "traced" &&

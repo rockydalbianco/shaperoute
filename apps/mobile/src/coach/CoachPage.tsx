@@ -13,7 +13,9 @@ import { t } from "../i18n";
 import { useLanguage } from "../i18n/useLanguage";
 import { color, font, space } from "../theme/tokens";
 import { WeekBody } from "../trainingmode/WeekBodyCard";
+import { EmptyState } from "../ui/EmptyState";
 import { glassRaise } from "../ui/glassRaise";
+import { HEART } from "../ui/outlines";
 import { useGlassMode } from "../ui/useGlassMode";
 import type { CoachFetchers } from "./coachData";
 import type { Tip } from "./rules";
@@ -32,13 +34,21 @@ type Props = {
  * shows it (TASK-490 part B), then at most three tips from the last four
  * weeks, each with the study it comes from. The plan changes only with
  * «Apply to plan». Without an account, an invitation; «My plans» opens it
- * (part C).
+ * (part C). «Based on your last 4 weeks» stands above the tips it is about,
+ * not above the week's body; with nothing done in those weeks the page is
+ * an empty one (TASK-509): no body at 0%, the figure, how the tips come
+ * and «Go to your workouts», which leaves the Coach for the page it was
+ * opened from, where a workout starts.
  */
 export function CoachPage({ onBack, fetchersOf, fetchFn }: Props) {
   const language = useLanguage();
   const coach = useCoach(fetchersOf, fetchFn);
   // The chip stands out of the glass (TASK-469 A7c).
   const chipRaise = glassRaise(useGlassMode());
+  const { state } = coach;
+  const empty = state.kind === "ready" && state.empty;
+  // Read from the four weeks: above the tips. Nothing read: where it was.
+  const unread = state.kind === "signedOut" || state.kind === "unreachable";
   return (
     <ScrollView
       style={gymStyles.screen}
@@ -59,12 +69,20 @@ export function CoachPage({ onBack, fetchersOf, fetchFn }: Props) {
           <Text style={gymStyles.title} accessibilityRole="header">
             {t("Coach")}
           </Text>
-          <Text style={gymStyles.muted}>{t("Based on your last 4 weeks")}</Text>
+          {unread && (
+            <Text style={gymStyles.muted}>{t("Based on your last 4 weeks")}</Text>
+          )}
         </View>
       </View>
-      <WeekBody fetchFn={fetchFn} />
+      {!empty && <WeekBody fetchFn={fetchFn} />}
+      {state.kind === "ready" && !empty && (
+        <Text style={gymStyles.muted} testID="coach-weeks">
+          {t("Based on your last 4 weeks")}
+        </Text>
+      )}
       <Tips
-        state={coach.state}
+        state={state}
+        onWorkouts={onBack}
         render={(tip) => (
           <TipCard
             key={`${tip.rule}:${tip.exercise ?? ""}:${tip.muscle ?? ""}`}
@@ -86,9 +104,11 @@ export function CoachPage({ onBack, fetchersOf, fetchFn }: Props) {
 
 function Tips({
   state,
+  onWorkouts,
   render,
 }: {
   state: CoachState;
+  onWorkouts: () => void;
   render: (tip: Tip) => ReactElement;
 }) {
   switch (state.kind) {
@@ -109,9 +129,12 @@ function Tips({
     case "ready":
       if (state.empty) {
         return (
-          <Text style={gymStyles.text} testID="coach-empty">
-            {t("Log a few workouts and your tips will show up here")}
-          </Text>
+          <EmptyState
+            outline={HEART}
+            message={t("Log a few workouts and your tips will show up here")}
+            action={{ label: t("Go to your workouts"), onPress: onWorkouts }}
+            testID="coach-empty"
+          />
         );
       }
       if (state.tips.length === 0) {

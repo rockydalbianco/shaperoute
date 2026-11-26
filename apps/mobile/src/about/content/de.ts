@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "10. November 2026";
+const UPDATED = "26. November 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "24. November 2026";
+const PRIVACY_UPDATED = "26. November 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -209,6 +209,14 @@ const terms: AboutDocument = {
           ],
         },
         "Distanzen, Zeiten und Geschwindigkeit stammen vom GPS des Handys und sind Schätzungen.",
+      ],
+    },
+    {
+      heading: "Ernährung",
+      blocks: [
+        "«Ernährung» ist ein Tagebuch und ein Rechner, kein Gesundheitsdienst. MuW wird nicht von Ärztinnen und Ärzten, Ernährungsberatungen oder anderen Gesundheitsfachleuten gemacht.",
+        "Die Kalorien der Lebensmittel, die Energie, die du verbrauchst, und, wenn du sie möchtest, die Schätzung eines Tagesziels stammen aus öffentlichen Tabellen und Formeln. Es sind Schätzungen, nur zur Information: Sie sind kein medizinischer oder ernährungsbezogener Rat und ersetzen keine Fachperson, die dich kennt.",
+        "Wenn du unter 18 bist, schwanger bist oder stillst, eine Krankheit hast oder eine Essstörung hast oder hattest, sprich mit deiner Ärztin oder deinem Arzt, bevor du Kalorien zählst oder deine Ernährung änderst.",
       ],
     },
     {
@@ -426,7 +434,7 @@ const privacy: AboutDocument = {
     {
       heading: "Dein Standort",
       blocks: [
-        "Der Standort des Handys wird auf dem Handy genutzt, um eine Route dort zu beginnen, wo du bist, und um deinem Lauf zu folgen. Er geht genau an unseren Server als Start einer Route, die du anforderst, als Start der Formen, die die App dir in der Nähe vorbereitet, wenn das Handy sie nicht selbst zeichnen kann, und innerhalb eines Laufs, den du speicherst. Abseits der Route eines Laufs, wenn das Handy den Weg zurück nicht selbst findet, geht er genau an unseren Server, mit dem Stück der Route vor dir, um diesen Weg über die Straßen zu finden: Der Server behält beides nicht. Auf etwa 1 km gerundet geht er an den Server, um die Offline-Karte um dich herum, empfohlene Routen, Orte und Zeichnungen in der Nähe zu finden und bei einer Suche die Orte in deiner Nähe zuerst zu zeigen; so gerundet bleibt er nicht mit deinem Konto verbunden. Wenn du eine Aktivität live teilst, geht deine genaue Position an unseren Server und an alle, die den Link haben, wie unter «Live teilen» beschrieben.",
+        "Der Standort des Handys wird auf dem Handy genutzt, um eine Route dort zu beginnen, wo du bist, und um deinem Lauf zu folgen. Er geht genau an unseren Server als Start einer Route, die du anforderst, als Start der Formen, die die App dir in der Nähe vorbereitet, wenn das Handy sie nicht selbst zeichnen kann, und innerhalb eines Laufs, den du speicherst. Abseits der Route eines Laufs, wenn das Handy den Weg zurück nicht selbst findet, geht er genau an unseren Server, mit dem Stück der Route vor dir, um diesen Weg über die Straßen zu finden: Der Server behält beides nicht. Auf etwa 1 km gerundet geht er an den Server, um die Offline-Karte um dich herum, Gleitschirm-Landeplätze in der Nähe, den Höhenwind für einen Flug, empfohlene Routen, Orte und Zeichnungen in der Nähe zu finden und bei einer Suche die Orte in deiner Nähe zuerst zu zeigen; so gerundet bleibt er nicht mit deinem Konto verbunden. Den Höhenwind lädt unser Server bei DWD und ECMWF für ganze Gebiete, nie mit deiner Position. Wenn du eine Aktivität live teilst, geht deine genaue Position an unseren Server und an alle, die den Link haben, wie unter «Live teilen» beschrieben.",
         "Auf dem iPhone folgt die App während eines Laufs, den du gestartet hast, deinem Standort auch bei gesperrtem Handy oder wenn eine andere App offen ist, bis du den Lauf beendest; das iPhone zeigt das mit einer blauen Markierung oben auf dem Bildschirm. MuW fragt nur nach dem Standort, während du die App benutzt, nie «Immer».",
         "Wie jeder Internetdienst sieht unser Server die Internetadresse (IP), von der eine Anfrage kommt, während er sie beantwortet. Das Protokoll des Servers schreibt keine Positionen, und die Datenbank enthält keine IP-Adressen.",
         "Ein Register der Routenanfragen mit ihrem Start gibt es, um einen Fehler nachzustellen. Auf unserem Server ist es ausgeschaltet; eingeschaltet fasst es höchstens 10 MB, dann gehen die ältesten Zeilen verloren.",
@@ -462,8 +470,8 @@ const privacy: AboutDocument = {
     {
       heading: "Ernährung",
       blocks: [
-        "«Ernährung» ist ein Tagebuch, das du für dich führst. Die Lebensmittel, die du hinzufügst, dein Wochenplan, was du für jeden Tag als gegessen einträgst, dein Tagesziel und die Kalorien, die du von Hand korrigierst, bleiben nur auf deinem Handy: Sie erreichen unseren Server nicht, und niemand sonst kann sie sehen. Die «Kalorienbilanz» in deinem Profil wird auf deinem Handy berechnet und nur dir angezeigt.",
-        "Um die Energie zu schätzen, die du verbrauchst, zählt MuW auf deinem Handy die Aktivitäten deines Kontos und die Körperdaten, die du in den «Einstellungen» eingegeben hast. Jede Zahl ist eine Schätzung: MuW gibt keine Diäten oder medizinischen Ratschläge.",
+        "«Ernährung» ist ein Tagebuch, das du für dich führst. Die Lebensmittel, die du hinzufügst, dein Wochenplan, was du für jeden Tag als gegessen einträgst, dein Tagesziel, der Grund, den du für die Nutzung angegeben hast, und die Kalorien, die du von Hand korrigierst, bleiben nur auf deinem Handy: Sie erreichen unseren Server nicht, und niemand sonst kann sie sehen. Die «Kalorienbilanz» in deinem Profil wird auf deinem Handy berechnet und nur dir angezeigt.",
+        "Um die Energie zu schätzen, die du verbrauchst, zählt MuW auf deinem Handy die Aktivitäten deines Kontos und die Körperdaten, die du in den «Einstellungen» eingegeben hast. Wenn du es möchtest, berechnet MuW auf deinem Handy aus denselben Daten und nach einer öffentlichen Formel auch eine Schätzung für ein tägliches Kalorienziel: nur zur Veranschaulichung und nie für Personen unter 18 Jahren. Jede Zahl ist eine Schätzung: MuW wird nicht von Gesundheitsfachleuten gemacht und gibt keine Diäten oder medizinischen Ratschläge.",
         "Diese Daten waren nie auf unserem Server. Deshalb löscht weder das Abmelden noch das Löschen deines Kontos sie: Sie bleiben auf deinem Handy, bis du sie dort entfernst oder die App deinstallierst.",
       ],
     },

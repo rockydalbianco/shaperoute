@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -29,7 +30,11 @@ import {
 import { SheetModal } from "../ui/SheetModal";
 import { useSheetFace } from "../ui/sheetFace";
 import { Tap } from "../ui/Tap";
-import { type AddToFeedEntryId, addToFeedEntries } from "./addToFeedEntries";
+import {
+  ADD_TO_FEED_ICONS,
+  type AddToFeedEntryId,
+  addToFeedEntries,
+} from "./addToFeedEntries";
 import { PastActivityPost } from "./PastActivityPost";
 import { PlanPostFlow } from "./PlanPostFlow";
 import { SleepPostPage } from "./SleepPostPage";
@@ -190,8 +195,17 @@ export function AddToFeed({
                     accessibilityRole="button"
                     testID={`feed-add-${id}`}
                   >
-                    <Text style={styles.entryTitle}>{title}</Text>
-                    <Text style={styles.entryDetail}>{detail}</Text>
+                    {/* Its sign (TASK-509): the words beside it say it. */}
+                    <Image
+                      source={ADD_TO_FEED_ICONS[id]}
+                      style={styles.entryIcon}
+                      accessible={false}
+                      testID={`feed-add-icon-${id}`}
+                    />
+                    <View style={styles.entryWords}>
+                      <Text style={styles.entryTitle}>{title}</Text>
+                      <Text style={styles.entryDetail}>{detail}</Text>
+                    </View>
                   </Tap>
                 ))}
               </View>
@@ -259,6 +273,9 @@ export function AddToFeed({
     </>
   );
 }
+
+/** The side of an entry's sign, as the icons under a post. */
+const ENTRY_ICON_SIZE = 22;
 
 const styles = StyleSheet.create({
   plus: {
@@ -331,13 +348,24 @@ const styles = StyleSheet.create({
   // As the choices of «Add past activity», which the list took over.
   entry: {
     minHeight: MIN_TAP_SIZE,
-    justifyContent: "center",
-    gap: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
     padding: space.md,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: color.border,
     backgroundColor: color.surface,
+  },
+  // As the icons under a post (TASK-444): white, coloured by the token.
+  entryIcon: {
+    width: ENTRY_ICON_SIZE,
+    height: ENTRY_ICON_SIZE,
+    tintColor: color.text,
+  },
+  entryWords: {
+    flex: 1,
+    gap: 2,
   },
   entryTitle: {
     color: color.text,

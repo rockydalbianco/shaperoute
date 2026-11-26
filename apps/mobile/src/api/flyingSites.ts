@@ -173,3 +173,12 @@ export function fetchFlyingHistory(
     rest,
   );
 }
+
+/** The landings of a box: what TASK-479 D6 asks for the nearest landing. */
+export function fetchLandings(
+  baseUrl: string,
+  box: Box,
+  options: Options = {},
+): Promise<AccountOutcome<FlyingSites>> {
+  return flyingSitesIn(baseUrl, box, { ...options, kind: "landing" });
+}

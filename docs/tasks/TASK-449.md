@@ -47,12 +47,18 @@ Una domanda alla volta, con la proposta dell'agente; le parole sono sue.
 4. «Dopo "Disegna", l'attesa animata della 442: sì, resta com'è, o sagoma
    sulla mappa?» → **«Sì, resta com'è»**. L'anteprima vive solo in «Draw».
 
-Conseguenze della scelta 1, proposte dall'agente, in attesa del sì
-dell'utente nel riepilogo:
-
-- l'anteprima segue km, forma e partenza;
-- sull'acqua e sulla neve (`isPlacedFree`) resta lo schema di oggi: lì il
-  server mette la forma dove trova posto, non alla partenza.
+5. Il riepilogo, con due conseguenze della scelta 1 proposte dall'agente:
+   «Confermi il riepilogo delle scelte, con le due conseguenze (l'anteprima
+   segue km, forma e partenza; su acqua e neve e senza partenza resta lo
+   schema di oggi): sì, confermo, o cambia qualcosa?» → **«Sì, confermo»**.
+   La risposta l'utente l'ha data nella sessione che smista i task, che
+   l'ha riferita parola per parola a questa: non è scritta qui da lui.
+   - L'anteprima segue km, forma e partenza.
+   - Sull'acqua e sulla neve (`isPlacedFree`) resta lo schema di oggi: lì
+     il server mette la forma dove trova posto, non alla partenza.
+   Nella stessa domanda gli è stato detto del credito della mappa
+   («OpenFreeMap © OpenMapTiles · Data from OpenStreetMap», la riga che c'è
+   già sulle mappe del Feed): sta sull'immagine, non è un testo nuovo.
 
 ## Come funziona
 
@@ -66,13 +72,16 @@ dell'utente nel riepilogo:
 - **Il riquadro** guarda un pezzo di terreno a scatti: ogni scatto è largo
   il doppio del precedente ed è centrato sul contorno alla distanza più
   grande che contiene. Dentro uno scatto la mappa sta ferma e la sagoma
-  cresce; passato il limite, la mappa si allontana.
+  cresce; passato il limite, la mappa si allontana. La partenza sta dentro
+  il contorno più grande dello scatto, quindi la sagoma cresce da lì e non
+  esce mai dal riquadro.
 - **La mappa** è un'immagine, non una mappa viva: la scatta la pagina
   nascosta che già fa le immagini del Feed (`feed/FeedMaps.tsx`,
   `useFeedMap`; la scheda delle pagine ha già il suo `FeedMapShooter`).
   Un'immagine per partenza, forma e scatto: i tocchi di − e + dentro uno
   scatto non passano dal ponte della WebView. Finché l'immagine non c'è, la
-  sagoma è sul fondo scuro della mappa.
+  sagoma è sul fondo scuro della mappa. Sull'immagine c'è il credito
+  della mappa (`creditLine()`), come su ogni sua immagine.
 - **La sagoma** è disegnata dall'app (segmenti tratteggiati, token
   `shapeGhost`; il pallino della partenza `route.color`), ridisegnata a
   ogni cambio della distanza: al più 148 punti di contorno.
@@ -95,10 +104,10 @@ dell'utente nel riepilogo:
 
 - [ ] Forma, distanza e partenza danno un contorno in WGS84 col primo punto
       sulla partenza, lungo quanto la distanza, a nord in alto; il conto è
-      in metri sul piano (`livePreview.test.ts`).
+      in metri sul piano (`previewFrame.test.ts`).
 - [ ] Dentro uno scatto il riquadro non cambia e la sagoma cresce con la
       distanza; oltre, il riquadro raddoppia; il contorno sta sempre dentro
-      il riquadro (`livePreview.test.ts`).
+      il riquadro (`previewFrame.test.ts`).
 - [ ] Con una partenza e una forma del catalogo «Draw» mostra il pezzo di
       mappa con la sagoma tratteggiata e il pallino; cambiando i km la
       sagoma cambia grandezza senza chiedere un'altra immagine finché lo
@@ -121,8 +130,11 @@ sola, dentro la PR della parte A; se ne serve più di una ci si ferma.
 
 Parte A:
 
-- `apps/mobile/src/route/livePreview.ts` (nuovo)
-- `apps/mobile/src/route/livePreview.test.ts` (nuovo)
+- `apps/mobile/src/route/previewFrame.ts` (nuovo; nella lista approvata
+  era `livePreview.ts`: accanto a `LivePreview.tsx` i due nomi cambiano
+  solo per maiuscole, e su un disco che non le distingue l'import prende
+  il file sbagliato)
+- `apps/mobile/src/route/previewFrame.test.ts` (nuovo)
 - `apps/mobile/src/route/LivePreview.tsx` (nuovo)
 - `apps/mobile/src/route/LivePreview.test.tsx` (nuovo)
 - `apps/mobile/src/route/RoutePanel.tsx` (la prop `start` di `RouteChoice`
@@ -157,5 +169,11 @@ Documenti (PR di soli documenti): `docs/tasks/TASK-449.md`,
   riga; `RoutePanel.tsx` e `ImageChoice.tsx` liberi (la riga di AGENTI.md
   su #1190 è vecchia). La PR di soli documenti della parte 0 la apre il
   task e la unisce il Coordinatore. Il simulatore si chiede a lui, in coda
-  dopo 469 e un'altra sessione. In attesa: il sì dell'utente al riepilogo
-  (le due conseguenze).
+  dopo 469 e un'altra sessione.
+- 2026-11-26: parte A scritta, PR in bozza #1593 (`b2213f68`): test dei
+  file toccati 33 su 33, `tsc`, ESLint e Prettier puliti in locale.
+  Ridisegno misurato in Node sulle 31 forme: al più 0,19 ms a tocco e 231
+  trattini; un tocco dentro uno scatto non chiede immagini. Sì dell'utente
+  al riepilogo (scelta 5). Mancano: il verde della CI, gli screenshot dal
+  simulatore (in coda dal Coordinatore) e il sì dell'utente su ciò che si
+  vede, poi «pronta»; poi la parte B.

@@ -449,6 +449,8 @@ export function ExploreScreen({
                         key={example.shape}
                         width={card}
                         line={null}
+                        // What is coming, in grey (TASK-509).
+                        outline={example.shape}
                         title={capitalised(
                           routeTitle({ shape: example.shape, word: null }),
                         )}

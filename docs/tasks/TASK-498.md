@@ -141,15 +141,15 @@ non arriva con `?after=`; lo porta la pagina intera, entro un minuto.
 
 ## Criteri di accettazione
 
-- [ ] A: la chiamata di oggi risponde come prima, con `latest` in più.
-- [ ] A: `?after=` porta solo i messaggi dopo quel posto; niente di nuovo,
+- [x] A: la chiamata di oggi risponde come prima, con `latest` in più.
+- [x] A: `?after=` porta solo i messaggi dopo quel posto; niente di nuovo,
   `messages: []` e lo stesso `latest`; due query oltre a quella del token.
-- [ ] A: lo `state` della risposta corta è quello della pagina in ogni
+- [x] A: lo `state` della risposta corta è quello della pagina in ogni
   caso (`first`, `waiting`, `request`, `open`).
-- [ ] A: chi non è nella conversazione non ne legge i messaggi; `404` per
+- [x] A: chi non è nella conversazione non ne legge i messaggi; `404` per
   nessuno e attraverso un blocco, `401` senza token, `422` per un `after`
   scritto male o insieme a `cursor`.
-- [ ] A: esempio e tipo in `shared-types`; `docs/API.md`.
+- [x] A: esempio e tipo in `shared-types`; `docs/API.md`.
 - [ ] B: il posto avanza a ogni risposta; la pagina intera una volta al
   minuto, all'apertura e al ritorno nell'app.
 - [ ] B: il ritmo rallenta dopo il silenzio e torna a 5 s con un messaggio
@@ -169,11 +169,14 @@ con una foto del profilo **finta** (colori sfumati e rumore, per pesare
 come una vera: 5 104 caratteri in base64). L'app chiede come sul telefono
 (`?with=attachments`, `X-MuW-Reads` con `post` e `live`).
 
-| Un controllo della conversazione aperta | Prima (la pagina) | Dopo (`?after=`, niente di nuovo) |
-|---|---|---|
-| Risposta, com'è | 9 283 byte | da misurare con la A |
-| Risposta, con gzip | 4 998 byte | da misurare con la A |
-| Query della richiesta | 8 (1 del token + 7) | attese 3 (1 del token + 2) |
+| Un controllo della conversazione aperta | Prima (la pagina) | Dopo (`?after=`, niente di nuovo) | Dopo (`?after=`, un messaggio nuovo) |
+|---|---|---|---|
+| Risposta, com'è | 9 283 byte | 104 byte | 266 byte |
+| Risposta, con gzip | 4 998 byte | 104 byte (sotto il kilobyte non si comprime) | 266 byte |
+| Query della richiesta | 8 (1 del token + 7) | 3 (1 del token + 2) | 3 |
+
+La pagina intera, che resta una volta al minuto, pesa 61 byte in più per
+`latest` (9 344 byte, 5 027 con gzip) e fa le stesse 8 query.
 
 Le 8 query di oggi: il token; l'id dell'altro; il blocco; la riga
 dell'altro con la foto; tre volte `conversation_members` (due in `_state`,
@@ -183,12 +186,18 @@ in più per tipo.
 In un'ora di conversazione aperta e ferma, oggi: 720 controlli, circa
 3,6 MB con gzip e 5 760 query. Con il ritmo proposto (5 s, poi 15 s dopo
 un minuto, poi 30 s dopo cinque) e la pagina intera una volta al minuto:
-138 controlli, di cui 60 pagine intere — circa 0,3 MB e 700 query
-(stima, da rifare con i numeri veri della A).
+138 controlli, di cui 60 pagine intere — circa 0,31 MB e 714 query
+(60 × 5 027 byte e 8 query, 78 × 104 byte e 3 query): dodici volte meno
+byte, otto volte meno query. Mentre ci si scrive, ogni minuto: una pagina
+e undici controlli corti invece di dodici pagine.
 
-- **Non misurato**: i tempi sul server vero (qui ogni chiamata apre una
-  connessione nuova: mediana di 30 chiamate 200 ms, che non dice quanto
-  ci mette la produzione); i byte e la batteria sul telefono; quanto
+- **Non misurato**: i tempi sul server vero. Qui ogni chiamata apre una
+  connessione nuova e il Mac era carico: le mediane di 30 chiamate (185 ms
+  la pagina, 226 ms il controllo corto) sono rumore, non dicono quale è
+  più veloce né quanto ci mette la produzione. Nemmeno il piano della
+  query nuova su tabelle grandi (cerca per `users.public_id` e per la
+  coppia `conversation_members (user_id, other_id)`, tutte e due con un
+  indice unico); i byte e la batteria sul telefono; quanto
   costa il ridisegno della lista; le foto vere degli utenti; una pagina
   con foto, video, post o live nei messaggi (pesa di più di questa).
 
@@ -230,4 +239,7 @@ più nella pagina, che ignora. Tornare indietro è sicuro: l'app nuova senza
   lista dei file al Coordinatore (fork 3): sì ai file di A e B (compresi
   `shared-types/src/index.ts`, i due esempi e il test della schermata),
   aggiunta ad ADR-0279 senza numero nuovo. L'utente sul ritmo: «Sì, va
-  bene» (5 s, 15 s dopo un minuto, 30 s dopo cinque). Parte A scritta.
+  bene» (5 s, 15 s dopo un minuto, 30 s dopo cinque). Parte A scritta e
+  misurata; in locale `test_message_news.py` (11 test) verde, il resto
+  alla CI. Resta: «pronta» al Coordinatore a CI verde, il passo sul server
+  (suo, col sì dell'utente), poi la B.

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 import { loadSport, saveSport, SPORTS, type SportOption } from "./sport";
 import { SportButton } from "./SportButton";
@@ -54,7 +54,7 @@ test("a sport chosen is saved as in «Settings», closes the menu and shows on t
   await render(<SportButton sports={SOME} />);
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
   await fireEvent.press(screen.getByRole("radio", { name: "Bike" }));
-  expect(saveSport).toHaveBeenCalledWith("bike");
+  await waitFor(() => expect(saveSport).toHaveBeenCalledWith("bike"));
   expect(screen.queryByRole("radio")).toBeNull();
   expect(screen.getByRole("button", { name: "Sport, Bike" })).toBeOnTheScreen();
   expect(screen.getByText("🚴")).toBeOnTheScreen();
@@ -94,7 +94,7 @@ test("in the menu «Swim» is a choice like the others (TASK-323)", async () => 
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
   expect(screen.queryByLabelText("Swim, coming soon")).toBeNull();
   await fireEvent.press(screen.getByRole("radio", { name: "Swim" }));
-  expect(saveSport).toHaveBeenCalledWith("swim");
+  await waitFor(() => expect(saveSport).toHaveBeenCalledWith("swim"));
   expect(screen.getByRole("button", { name: "Sport, Swim" })).toBeOnTheScreen();
   expect(screen.getByText("🏊")).toBeOnTheScreen();
 });
@@ -111,7 +111,7 @@ test("the app's menu ends with «Paragliding», as «Settings» (TASK-305 R2)", 
   expect(screen.getAllByRole("radio")).toHaveLength(18);
   expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
   await fireEvent.press(screen.getByRole("radio", { name: "Paragliding" }));
-  expect(saveSport).toHaveBeenCalledWith("paragliding");
+  await waitFor(() => expect(saveSport).toHaveBeenCalledWith("paragliding"));
 });
 
 test("the sport on the phone, and one chosen in «Settings» later, show at once", async () => {
@@ -153,6 +153,19 @@ test("in the ski mode the menu says how to go back, and another sport leaves it"
   ).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Ski" })).toBeChecked();
   await fireEvent.press(screen.getByRole("radio", { name: "Run" }));
-  expect(saveSport).toHaveBeenCalledWith("run");
+  await waitFor(() => expect(saveSport).toHaveBeenCalledWith("run"));
   expect(screen.getByRole("button", { name: "Sport, Run" })).toBeOnTheScreen();
+});
+
+test("the sport is saved once the panel is gone, not while it fades (TASK-490 F)", async () => {
+  await render(<SportButton sports={SOME} />);
+  await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
+  await fireEvent.press(screen.getByRole("radio", { name: "Bike" }));
+  // A sport can open a sheet of its own as it comes: iOS shows none while
+  // the panel's Modal is still going away.
+  expect(saveSport).not.toHaveBeenCalled();
+  // The button says the sport chosen at once.
+  expect(screen.getByRole("button", { name: "Sport, Bike" })).toBeOnTheScreen();
+  await waitFor(() => expect(saveSport).toHaveBeenCalledWith("bike"));
+  expect(saveSport).toHaveBeenCalledTimes(1);
 });

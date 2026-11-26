@@ -1,6 +1,7 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -76,6 +77,12 @@ export function tileHeight(size: number): number {
  * (saveSport), so the two always agree and «Draw» follows at once; a sport
  * not ready says «Soon».
  */
+/**
+ * How long a sport chosen waits for the panel to be gone on iOS, at most:
+ * the panel's fade is about 300 ms; `onDismiss` comes first when iOS sends it.
+ */
+export const SAVE_AFTER_MS = 450;
+
 export function SportButton({ sports = SPORTS }: Props) {
   const sport = useSport();
   const [open, setOpen] = useState(false);
@@ -85,16 +92,59 @@ export function SportButton({ sports = SPORTS }: Props) {
   const button = useRef<View>(null);
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
-  const current = sports.find((option) => option.id === sport) ?? sports[0];
+  // The sport chosen shows on the button at once, saved or not yet.
+  const [picked, setPicked] = useState<Sport | null>(null);
+  const current = sports.find((option) => option.id === (picked ?? sport)) ?? sports[0];
+
+  // The sport chosen, saved once the panel is gone (TASK-490 part F): a sport
+  // can open a sheet of its own as it comes («Gym» the first time, its
+  // guide), and iOS shows no Modal while another one is still going away.
+  // That sheet stayed open unseen, and the panel could not come up again.
+  const chosen = useRef<Sport | null>(null);
+  const waiting = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function saveChosen() {
+    if (waiting.current !== null) {
+      clearTimeout(waiting.current);
+      waiting.current = null;
+    }
+    const sportChosen = chosen.current;
+    chosen.current = null;
+    if (sportChosen !== null) {
+      saveSport(sportChosen);
+      setPicked(null);
+    }
+  }
+
+  // Gone before the panel was (the screen left): the sport chosen is kept.
+  useEffect(
+    () => () => {
+      if (waiting.current !== null) {
+        clearTimeout(waiting.current);
+      }
+      if (chosen.current !== null) {
+        saveSport(chosen.current);
+      }
+    },
+    [],
+  );
 
   function openMenu() {
+    saveChosen();
     button.current?.measureInWindow((_x, y, _w, h) => setTop(y + h + space.xs));
     setOpen(true);
   }
 
-  function choose(chosen: Sport) {
-    saveSport(chosen);
+  function choose(option: Sport) {
     setOpen(false);
+    chosen.current = option;
+    setPicked(option);
+    if (Platform.OS !== "ios") {
+      saveChosen();
+      return;
+    }
+    // iOS: when the Modal is gone (`onDismiss`), or after its fade at most.
+    waiting.current = setTimeout(saveChosen, SAVE_AFTER_MS);
   }
 
   const mode = useGlassMode();
@@ -122,6 +172,7 @@ export function SportButton({ sports = SPORTS }: Props) {
         animationType="fade"
         statusBarTranslucent
         onRequestClose={() => setOpen(false)}
+        onDismiss={saveChosen}
       >
         {/* A tap anywhere else closes the panel and changes nothing; the
             screen reader closes it with the panel's own «Close». */}

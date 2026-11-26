@@ -56,6 +56,7 @@ test("with no choice the app is dark at its darkest (ADR-0046), warm (ADR-0293)"
     north: "#FF5B4F",
     runDay: "#4DD2FF",
     muscle: "#FF6FB5",
+    food: "#4FD08A",
     strava: "#FC5200",
     onStrava: "#FFFFFF",
     ski: { descent: "#FFD02B", lift: "#FF5A4E", onLine: "#0B0A08" },
@@ -144,6 +145,10 @@ test.each(EVERY)("%s at step %i keeps the contrasts", (_tone, _step, c) => {
   // A muscle lit on the body of an exercise, a graphic (TASK-465).
   for (const under of [c.background, c.surface, c.surfaceRaised]) {
     expect(contrast(c.muscle, under)).toBeGreaterThanOrEqual(3);
+  }
+  // What was eaten in «Nutrition», a ring and a column (TASK-489 part H).
+  for (const under of [c.background, c.surface, c.surfaceRaised]) {
+    expect(contrast(c.food, under)).toBeGreaterThanOrEqual(4.5);
   }
   // Text on yellow does not depend on the tone.
   expect(contrast(c.onAccent, c.accent)).toBeGreaterThanOrEqual(7);

@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react-n
 import { ActivitiesContext, type ActivitiesDoor } from "../activities/activitiesDoor";
 import type { Activity } from "../api/activities";
 import { saveLanguageChoice } from "../i18n/language";
+import { color } from "../theme/tokens";
 import { diaryDayLabel, DiaryView } from "./DiaryView";
 import type { Food } from "./foods";
 import { FOOD_TABLE } from "./foodTable";
@@ -549,6 +550,14 @@ test("the two numbers are also two rings, a picture beside them", async () => {
   ).toBeTruthy();
   // The numbers are still said in words.
   expect(screen.getByLabelText("Eaten, —")).toBeOnTheScreen();
+  // Which ring is which: a dot of its colour before each label, green for
+  // what was eaten and the calories' red for what was used.
+  expect(
+    screen.getByTestId("diary-dot-eaten", { includeHiddenElements: true }),
+  ).toHaveStyle({ backgroundColor: color.food });
+  expect(
+    screen.getByTestId("diary-dot-used", { includeHiddenElements: true }),
+  ).toHaveStyle({ backgroundColor: color.energy });
 });
 
 test("an empty day has no card of protein, carbs and fat", async () => {

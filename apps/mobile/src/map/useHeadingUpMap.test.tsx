@@ -6,6 +6,7 @@ import {
   MOVING_FIX_MS,
   TURN_EVERY_MS,
 } from "../navigation/headingUp";
+import { setPocketOn } from "../navigation/pocketOn";
 import { FIRST_PAGE, setRunPage } from "../navigation/runPage";
 import type { TurnedMap } from "./turnedMap";
 import { type RunHeading, useHeadingUpMap } from "./useHeadingUpMap";
@@ -48,11 +49,13 @@ beforeEach(() => {
   });
   jest.useFakeTimers({ now: NOW });
   setRunPage(FIRST_PAGE);
+  setPocketOn(false);
 });
 
 afterEach(() => {
   jest.useRealTimers();
   setRunPage(FIRST_PAGE);
+  setPocketOn(false);
 });
 
 async function flush(): Promise<void> {
@@ -73,7 +76,8 @@ async function read(trueHeading: number, accuracy = 3): Promise<void> {
   });
 }
 
-test("off «Compass» the map is the drawing's: its turn, its arrow, no compass", async () => {
+test("on «Data» the map is the drawing's: its turn, its arrow, no compass", async () => {
+  setRunPage("data");
   const turned = drawing();
   const { result, rerender } = await renderHook(
     ({ turned, run }: { turned: TurnedMap; run: RunHeading }) =>
@@ -84,6 +88,7 @@ test("off «Compass» the map is the drawing's: its turn, its arrow, no compass"
   expect(watchHeading).not.toHaveBeenCalled();
   expect(result.current.turn).toBeNull();
   expect(result.current.compass).toBe(false);
+  expect(result.current.facing).toBeNull();
   expect(result.current.onArrow).toBe(turned.onArrow);
   // A tap on the drawing's arrow goes through.
   const asked = { bearing: 0 };
@@ -156,7 +161,7 @@ test("a tap puts north up and keeps it; a second tap turns heading-up again", as
   expect(result.current.turn).toEqual({ bearing: 120 });
 });
 
-test("leaving «Compass» turns the map back as its drawing, and lets the compass go", async () => {
+test("leaving «Compass» turns the map back as its drawing, and north up with it", async () => {
   const { result } = await renderHook(() => useHeadingUpMap(drawing(), RUNNING));
   await act(async () => {
     setRunPage("compass");
@@ -186,7 +191,8 @@ test("leaving «Compass» turns the map back as its drawing, and lets the compas
   expect(result.current.turn).toEqual({ bearing: 45 });
 });
 
-test("the arrow faces where the map turned on «Compass», nowhere off it or north up (TASK-431)", async () => {
+test("the arrow faces where the map turned on «Compass», nowhere on «Data» or north up (TASK-431)", async () => {
+  setRunPage("data");
   const { result } = await renderHook(() => useHeadingUpMap(drawing(), RUNNING));
   expect(result.current.facing).toBeNull();
   await act(async () => {
@@ -210,9 +216,9 @@ test("the arrow faces where the map turned on «Compass», nowhere off it or nor
   // Heading-up again: the arrow is where the map turns.
   expect(result.current.facing).toBe(130);
   expect(result.current.turn).toEqual({ bearing: 130 });
-  // Off the page: none.
+  // On «Data», no map: none.
   await act(async () => {
-    setRunPage("map");
+    setRunPage("data");
   });
   expect(result.current.facing).toBeNull();
 });
@@ -261,4 +267,104 @@ test("running with a poor compass, the line run wins over the needle", async () 
   await flush();
   await read(200, 1);
   expect(result.current.turn).toEqual({ bearing: 90 });
+});
+
+test("on «Map» the arrow faces where the phone points, the map not turning (TASK-519)", async () => {
+  const turned = drawing();
+  const { result } = await renderHook(() => useHeadingUpMap(turned, RUNNING));
+  await flush();
+  expect(watchHeading).toHaveBeenCalledTimes(1);
+  // Not «Compass»: the drawing's arrow, the drawing's turn.
+  expect(result.current.compass).toBe(false);
+  expect(result.current.onArrow).toBe(turned.onArrow);
+  expect(result.current.turn).toBeNull();
+  // Before the first reading, the line run.
+  expect(result.current.facing).toBe(90);
+  await wait(TURN_EVERY_MS);
+  await read(200);
+  expect(result.current.facing).toBe(200);
+  expect(result.current.turn).toBeNull();
+  // 4° or more, not twice in 400 ms, as on «Compass».
+  await wait(COMPASS_EVERY_MS);
+  await read(202);
+  expect(result.current.facing).toBe(200);
+  await wait(COMPASS_EVERY_MS);
+  await read(240);
+  expect(result.current.facing).toBe(240);
+  expect(result.current.turn).toBeNull();
+});
+
+test("standing still on «Map», the compass turns the arrow all the same (TASK-519)", async () => {
+  const still: RunHeading = {
+    on: true,
+    trackDeg: 90,
+    lastFixMs: NOW - MOVING_FIX_MS - 1,
+  };
+  const { result } = await renderHook(() => useHeadingUpMap(drawing(), still));
+  await flush();
+  expect(result.current.facing).toBeNull();
+  await read(300);
+  expect(result.current.facing).toBe(300);
+  expect(result.current.turn).toBeNull();
+});
+
+test("under pocket mode on «Map» the compass rests and the arrow is the line run's (TASK-519)", async () => {
+  const { result } = await renderHook(() => useHeadingUpMap(drawing(), RUNNING));
+  await flush();
+  await wait(TURN_EVERY_MS);
+  await read(200);
+  expect(result.current.facing).toBe(200);
+
+  await act(async () => {
+    setPocketOn(true);
+  });
+  expect(remove).toHaveBeenCalledTimes(1);
+  expect(result.current.facing).toBeNull();
+
+  await wait(TURN_EVERY_MS);
+  await act(async () => {
+    setPocketOn(false);
+  });
+  await flush();
+  expect(watchHeading).toHaveBeenCalledTimes(2);
+  // A reading of before pocket mode does not count: the line run first.
+  expect(result.current.facing).toBe(90);
+  await wait(TURN_EVERY_MS);
+  await read(210);
+  expect(result.current.facing).toBe(210);
+});
+
+test("from «Map» to «Compass» the map turns at once where the arrow faces (TASK-519)", async () => {
+  const { result } = await renderHook(() => useHeadingUpMap(drawing(), RUNNING));
+  await flush();
+  await wait(TURN_EVERY_MS);
+  await read(200);
+  expect(result.current.turn).toBeNull();
+  // Same compass, kept on across the pages; the map turns without waiting
+  // for the needle to move 4°.
+  await act(async () => {
+    setRunPage("compass");
+  });
+  await flush();
+  expect(watchHeading).toHaveBeenCalledTimes(1);
+  expect(result.current.turn).toEqual({ bearing: 200 });
+  expect(result.current.facing).toBe(200);
+  // Back on «Map»: the drawing's turn again, the arrow still facing.
+  await act(async () => {
+    setRunPage("map");
+  });
+  expect(result.current.turn).toEqual({ bearing: -30 });
+  expect(result.current.facing).toBe(200);
+});
+
+test("the run over, the arrow on «Map» is the line run's and the compass rests (TASK-519)", async () => {
+  const { result, rerender } = await renderHook(
+    ({ run }: { run: RunHeading }) => useHeadingUpMap(drawing(), run),
+    { initialProps: { run: RUNNING } },
+  );
+  await flush();
+  await read(200);
+  await rerender({ run: { ...RUNNING, on: false } });
+  expect(result.current.facing).toBeNull();
+  expect(remove).toHaveBeenCalledTimes(1);
 });

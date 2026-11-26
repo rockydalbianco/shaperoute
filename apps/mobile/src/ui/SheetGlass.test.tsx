@@ -8,6 +8,7 @@ import { color, glass as glassColors, radius, tone } from "../theme/tokens";
 import { sheetFace } from "./sheetFace";
 import { useGlassSheet } from "./SheetGlass";
 import { type GlassMode, useGlassMode } from "./useGlassMode";
+import { useReduceMotion } from "./useReduceMotion";
 
 // A sheet from the bottom that can be the phone's real glass (TASK-469 B4,
 // ADR-0383): it takes its face and what goes behind its content. Where the
@@ -17,6 +18,7 @@ jest.mock("./useGlassMode", () => ({
   ...jest.requireActual("./useGlassMode"),
   useGlassMode: jest.fn(),
 }));
+jest.mock("./useReduceMotion", () => ({ useReduceMotion: jest.fn() }));
 
 // The phone's own glass (ui/NativeGlass): what its native module says of
 // the phone, null where the app was built without it. The other native
@@ -43,6 +45,7 @@ const REAL_GLASS = { isGlassEffectAPIAvailable: true, isLiquidGlassAvailable: tr
 
 beforeEach(() => {
   mockGlassModule = null;
+  jest.mocked(useReduceMotion).mockReturnValue(false);
 });
 
 function Sheet() {
@@ -122,6 +125,16 @@ test.each(["solid", "contrast"] as const)(
     expect(screen.queryByTestId("sheet-glass")).toBeNull();
   },
 );
+
+test("«Reduce Motion»: the sheet fades in by its opacity, under which the phone draws no glass — so the opaque face of part A", async () => {
+  mockGlassModule = REAL_GLASS;
+  jest.mocked(useGlassMode).mockReturnValue("glass");
+  jest.mocked(useReduceMotion).mockReturnValue(true);
+  await render(<Sheet />);
+  expect(faceOf("sheet")).toEqual({ padding: 8, ...sheetFace("glass") });
+  expect(faceOf("sheet").backgroundColor).toBe(color.surface);
+  expect(screen.queryByTestId("sheet-glass")).toBeNull();
+});
 
 // The sheets that take the glass: a new one joins this list. The others
 // still take `useSheetFace()` (SheetFace.test.tsx).

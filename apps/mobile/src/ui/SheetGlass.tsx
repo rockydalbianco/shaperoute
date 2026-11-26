@@ -5,6 +5,7 @@ import { glass, radius, tone } from "../theme/tokens";
 import { nativeGlassView } from "./NativeGlass";
 import { useSheetFace } from "./sheetFace";
 import { useGlassMode } from "./useGlassMode";
+import { useReduceMotion } from "./useReduceMotion";
 
 /**
  * A sheet from the bottom that can be made of the phone's real glass
@@ -26,13 +27,19 @@ import { useGlassMode } from "./useGlassMode";
  * touch. Everywhere else — a build without the glass, Android, an iPhone
  * before iOS 26, «Reduce Transparency», «Increase Contrast» — the face of
  * part A and nothing behind: the sheet looks as it did.
+ *
+ * With «Reduce Motion» too: there a sheet comes in by fading its opacity
+ * (`SheetModal`), and under an opacity of 0 the phone never draws the
+ * glass — seen in the simulator, the sheet's words lay on the page behind
+ * with nothing under them. So that sheet is the opaque one of part A.
  */
 export function useGlassSheet(): readonly [face: ViewStyle, back: ReactNode] {
   const mode = useGlassMode();
+  const still = useReduceMotion();
   const face = useSheetFace();
   // Looked for once: a phone does not gain the glass while the app is open.
   const [RealGlass] = useState(() => nativeGlassView());
-  if (RealGlass === null || mode !== "glass") {
+  if (RealGlass === null || mode !== "glass" || still) {
     return [face, null];
   }
   return [

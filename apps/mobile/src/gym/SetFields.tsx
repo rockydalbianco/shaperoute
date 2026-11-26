@@ -1,7 +1,9 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { readNumber } from "../body/bodyUnits";
 import { t } from "../i18n";
-import { color, font, space } from "../theme/tokens";
+import { clockLabel } from "../navigation/freeRun";
+import { color, font, fontWeight, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import type { Units } from "../units/units";
 import { gymStyles } from "./gymStyles";
 import {
@@ -9,6 +11,7 @@ import {
   fieldsOf,
   fieldText,
   fieldUnit,
+  readDuration,
   readField,
   type SetField,
   type SetValues,
@@ -68,6 +71,51 @@ export function valuesOfTexts(entry: Entry, texts: SetTexts, units: Units): SetV
   return values;
 }
 
+/**
+ * How far − and + move `field` (TASK-511, the user's «− e + accanto»), in
+ * what the box shows: a rep, 2.5 kg or 5 lb, 5 seconds of a timed set or a
+ * minute of cardio, a floor, a level. Null for a field typed only: a
+ * distance, a speed, an incline.
+ */
+export function stepOf(field: SetField, entry: Entry, units: Units): number | null {
+  switch (field) {
+    case "reps":
+    case "floors":
+    case "level":
+      return 1;
+    case "load_kg":
+      return units === "mi" ? 5 : 2.5;
+    case "duration_s":
+      return entry.kind === "cardio" ? 60 : 5;
+    default:
+      return null;
+  }
+}
+
+/** The text of `field` after a − (`sign` -1) or a + (1): never under 0;
+ * a − on an empty box leaves it empty, a + starts it at one step. */
+export function steppedText(
+  field: SetField,
+  entry: Entry,
+  text: string,
+  sign: 1 | -1,
+  units: Units,
+): string {
+  const step = stepOf(field, entry, units);
+  if (step === null || (text.trim() === "" && sign < 0)) {
+    return text;
+  }
+  if (field === "duration_s") {
+    const now = text.trim() === "" ? 0 : readDuration(text, entry.kind);
+    return now === null ? text : clockLabel(Math.max(0, now + sign * step) * 1000);
+  }
+  const now = text.trim() === "" ? 0 : readNumber(text);
+  if (now === null) {
+    return text;
+  }
+  return String(Math.max(0, Math.round((now + sign * step) * 10) / 10));
+}
+
 /** What a field shows before anything is typed: how a time is written. */
 function hintOf(field: SetField): string | undefined {
   return field === "duration_s" ? "0:00" : undefined;
@@ -94,13 +142,25 @@ export function SetFields({
       {fieldsOf(entry).map((field) => {
         const name = fieldName(field, entry);
         const unit = fieldUnit(field, units);
+        const stepped = stepOf(field, entry, units) !== null;
+        const text = texts[field] ?? "";
+        const step = (sign: 1 | -1) =>
+          onChange({ ...texts, [field]: steppedText(field, entry, text, sign, units) });
         return (
           <View key={field} style={styles.field}>
             <Text style={styles.name}>{name}</Text>
             <View style={styles.box}>
+              {stepped && (
+                <StepButton
+                  label="−"
+                  hint={t("Less {field}", { field: name })}
+                  onPress={() => step(-1)}
+                  testID={`set-${field}-less`}
+                />
+              )}
               <TextInput
-                style={[gymStyles.input, styles.input]}
-                value={texts[field] ?? ""}
+                style={[gymStyles.input, styles.input, stepped && styles.stepped]}
+                value={text}
                 onChangeText={(text) => onChange({ ...texts, [field]: text })}
                 placeholder={hintOf(field)}
                 placeholderTextColor={color.textFaint}
@@ -113,11 +173,45 @@ export function SetFields({
                 testID={`set-${field}`}
               />
               {unit !== null && <Text style={styles.unit}>{unit}</Text>}
+              {stepped && (
+                <StepButton
+                  label="+"
+                  hint={t("More {field}", { field: name })}
+                  onPress={() => step(1)}
+                  testID={`set-${field}-more`}
+                />
+              )}
             </View>
           </View>
         );
       })}
     </View>
+  );
+}
+
+/** A − or a + beside a box: as big as a thumb, neutral like the box. */
+function StepButton({
+  label,
+  hint,
+  onPress,
+  testID,
+}: {
+  label: string;
+  hint: string;
+  onPress: () => void;
+  testID: string;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.step, pressed && styles.stepPressed]}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={hint}
+      hitSlop={space.xs}
+      testID={testID}
+    >
+      <Text style={styles.stepText}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -129,7 +223,7 @@ const styles = StyleSheet.create({
   },
   field: {
     flexGrow: 1,
-    flexBasis: 120,
+    flexBasis: 150,
     gap: space.xs,
   },
   name: {
@@ -143,6 +237,30 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+  },
+  // With − and + on its sides the number sits in the middle, short.
+  stepped: {
+    minWidth: 0,
+    paddingHorizontal: space.xs,
+    textAlign: "center",
+  },
+  step: {
+    width: MIN_TAP_SIZE,
+    height: MIN_TAP_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  stepPressed: {
+    backgroundColor: color.surface,
+  },
+  stepText: {
+    ...font.body,
+    color: color.text,
+    fontWeight: fontWeight.bold,
   },
   unit: {
     ...font.body,

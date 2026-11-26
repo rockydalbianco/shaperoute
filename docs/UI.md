@@ -57,7 +57,7 @@ ciano di «Start here».
 | `energy` | `#FF6363` (scuro, fino a `#FFA3A3` al passo più chiaro); `#8F1216`–`#B71C1C` nel tono chiaro | le calorie, ovunque si vedano: riquadri della corsa e della neve, piscina, palestra, la riga del post e dell'attività, i riquadri e le righe della pagina del post (TASK-424 parte C3, scelta dell'utente del 2026-11-10: «segnate con colore rosso in tutte»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo. Sul giallo della palestra `energyOnAccent` `#8F1216` (6,3:1), sopra una foto `energyOnScrim` `#FF6363` (6,8:1 sul velo) |
 | `scrim`, `onScrim` | `#0B0A08`, `#FFFFFF` | il buio del tour (TASK-266) e il velo sotto le parole sulle foto (`Scrim`, TASK-339); il bordo della luce |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
-| `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il cono di «Compass»; il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
+| `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il suo cono su «Compass» e «Map» (TASK-519); il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
 | `north` | `#FF5B4F` | la punta della freccia del nord (TASK-431); nel tono chiaro `#C42F24` |
 | `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | nessuno dal TASK-218: «Connect with Strava» (TASK-187) ora è l'immagine ufficiale di Strava, con i suoi colori dentro (ADR-0181); da togliere quando `tokens.ts` è libero |
 | `map.*` | dal `#100F0C` al `#3F3B34` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
@@ -4325,17 +4325,19 @@ più giù).
 variante «B» scelta dall'utente il 2026-11-10). Mentre si corre il
 segnaposto sulla mappa è una freccia chiara e grande (42 punti), con un
 bordo scuro per leggersi sul giallo, dentro un anello azzurro (`you`, pieno
-al 22 %), girata dove si sta andando; su «Compass» davanti ha anche il cono
-azzurro (sopra). Il riquadro della freccia lascia passare le dita: chi tocca
+al 22 %), girata dove si sta andando; su «Compass» e su «Map» (TASK-519) punta dove
+punta il telefono e davanti ha il cono azzurro (sopra). Il riquadro della freccia lascia passare le dita: chi tocca
 il cono sposta la mappa. La mappa resta col
 nord in alto, o **girata come il disegno** quando il percorso è inclinato
 (TASK-232, scelta dell'utente: chi corre vede la forma dritta come l'ha
 scelta). La freccia segna sempre dove si va davvero: è girata con la
 mappa. Il fatto e il da fare sono linee della mappa e girano con lei. La
 freccia del nord c'è anche qui, sotto il riquadro della svolta, con gli
-stessi due tocchi; la scelta vale fino alla fine della corsa. La direzione viene dalla traccia, dagli ultimi 10 m: serve
-qualche passo perché compaia (prima c'è il segnaposto di sempre), e da
-fermi resta quella di prima. A fine corsa torna il segnaposto.
+stessi due tocchi; la scelta vale fino alla fine della corsa. Su «Map» la direzione è quella della
+bussola, anche da fermi, mentre la mappa non gira (TASK-519, aggiunta ad
+ADR-0359); correndo con la bussola poco calibrata, o senza bussola, viene
+dalla traccia degli ultimi 10 m. Su «Data» e in tasca la bussola è spenta.
+A fine corsa torna il segnaposto.
 
 **Il fatto e il da fare** (TASK-224, ADR-0186; chiesto dall'utente il
 2026-10-03, stile approvato su un'anteprima). Mentre si corre un percorso,

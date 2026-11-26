@@ -649,8 +649,25 @@ questi, non dalla trasparenza, ed è il prezzo dei 4,5:1 sopra una foto
 bianca o nera. La capsula della scheda attiva è il testo al 12%; le icone
 spente sono `textMuted`. Con «Riduci trasparenza» la barra è `surface`
 opaca, con «Aumenta contrasto» opaca col bordo `borderStrong`. La fascia
-sotto la barra resta alta quanto prima: le pagine non ci passano sotto. Il
-vetro vero (`expo-glass-effect`) è la parte B, in una build dopo la 1.1.0.
+sotto la barra resta alta quanto prima: le pagine non ci passano sotto.
+
+**La barra in vetro vero** (TASK-469 B2, scelta dell'utente del
+2026-11-26; bozza #1562, arriva con la prossima build nativa): dove il
+telefono disegna il vetro vero (iOS 26 e seguenti, un'app costruita con
+`expo-glass-effect`) la capsula è il vetro di iOS e **la barra galleggia
+sopra le pagine**, che le passano sotto fino al bordo; la sfocatura tiene
+leggibili le icone sopra quello che passa dietro. Su ogni altro telefono
+la barra è quella descritta sopra: col vetro velato non galleggia, perché
+senza sfocatura il testo di un post si leggerebbe dietro le icone. Con
+«Riduci trasparenza» e «Aumenta contrasto» la barra galleggia opaca.
+
+Due regole che valgono già oggi. **Una pagina nuova della barra delle
+schede** chiede la stanza con `useTabBarRoom()` (`src/tabs/tabBarRoom.ts`)
+e la aggiunge alla fine del suo scorrimento e sotto quello che tiene in
+basso; poi si mette nella lista di `src/tabs/TabBarRoom.test.tsx`. La
+stanza è 0 finché la barra non galleggia. **`expo-glass-effect` non si
+importa mai direttamente**: sempre attraverso `src/ui/NativeGlass.tsx`,
+che lo carica solo dove c'è e altrove disegna il vetro velato.
 
 **Il movimento della barra** (TASK-388, ADR-0329): dietro la scheda attiva
 una capsula morbida (`surfaceRaised`) che scivola alla nuova con la molla

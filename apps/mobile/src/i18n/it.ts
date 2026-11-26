@@ -1914,6 +1914,42 @@ export const IT: Table = {
   "Bent-knee calf stretch": "Polpaccio a ginocchio piegato",
   "Step back, bend both knees. Keep the back heel down.":
     "Un passo indietro, piega tutte e due le ginocchia. Tieni a terra il tallone dietro.",
+  "90/90 hips": "Anche 90/90",
+  "Sit with both knees bent at right angles, one in front, one to the side. Sit tall.":
+    "Siediti con le ginocchia piegate ad angolo retto, una davanti e una di lato. Schiena dritta.",
+  "Figure four": "Figura a quattro",
+  "On your back, ankle over the other knee. Pull that thigh toward you.":
+    "Sulla schiena, una caviglia sull'altro ginocchio. Tira quella coscia verso di te.",
+  Pigeon: "Piccione",
+  "Front shin across your mat, back leg long. Fold forward over it.":
+    "Lo stinco davanti di traverso sul tappetino, la gamba dietro lunga. Piegati in avanti sopra.",
+  "Seated forward fold": "Piegamento in avanti da seduto",
+  "Sit with legs straight. Fold forward from your hips, back long.":
+    "Siediti a gambe tese. Piegati in avanti dalle anche, schiena lunga.",
+  "Lying hamstring stretch": "Stretching del posteriore da sdraiato",
+  "On your back, raise one straight leg. Hold behind your thigh.":
+    "Sulla schiena, alza una gamba tesa. Tienila da dietro la coscia.",
+  "Side-lying quad": "Quadricipite sul fianco",
+  "Lie on your side. Pull your top heel toward your glutes.":
+    "Sdraiati su un fianco. Porta il tallone di sopra verso il gluteo.",
+  "Half split": "Mezza spaccata",
+  "Kneel, front leg straight, toes up. Fold over it with a long back.":
+    "In ginocchio, gamba davanti tesa, punta in su. Piegati sopra con la schiena lunga.",
+  "Toe stretch": "Stretching delle dita dei piedi",
+  "Kneel with your toes tucked under. Sit back gently on your heels.":
+    "In ginocchio con le dita dei piedi puntate a terra. Siediti piano sui talloni.",
+  "Shin stretch": "Stretching dello stinco",
+  "Kneel with the tops of your feet flat. Sit back on your heels.":
+    "In ginocchio con il dorso dei piedi a terra. Siediti sui talloni.",
+  "Downward dog": "Cane a testa in giù",
+  "Hands and feet down, hips high. Press your heels toward the floor.":
+    "Mani e piedi a terra, bacino in alto. Spingi i talloni verso terra.",
+  "Legs up the wall": "Gambe al muro",
+  "Lie down with your legs resting up a wall. Arms relaxed.":
+    "Sdraiati con le gambe appoggiate in alto a un muro. Braccia rilassate.",
+  "Resting breath": "Respiro a riposo",
+  "Lie on your back, eyes closed. Breathe slowly into your belly.":
+    "Sdraiati sulla schiena, occhi chiusi. Respira piano nella pancia.",
   // end of TASK-520 part B
   Morning: "Mattino",
   "After run": "Dopo la corsa",

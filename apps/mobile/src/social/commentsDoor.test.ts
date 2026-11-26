@@ -8,6 +8,7 @@ import { renderHook } from "@testing-library/react-native";
 
 import { answers, apiError } from "../account/testing";
 import type { Account } from "../account/useAccount";
+import { keyHeaders } from "../api/apiUrl";
 import { useCommentsOf } from "./commentsDoor";
 
 const URL = "http://api";
@@ -46,6 +47,7 @@ test("nobody signed in: no comments asked for", async () => {
   expect(await result.current.write("d", "Hi")).toBeNull();
   expect(await result.current.remove("c")).toBeNull();
   expect(await result.current.photoOf("p")).toBeNull();
+  expect(result.current.pictureAt?.("/users/p/photo?v=1")).toBeNull();
   expect(fetchFn).not.toHaveBeenCalled();
 });
 
@@ -81,6 +83,20 @@ test("the picture of who wrote is asked once per profile", async () => {
   expect(first).toBe(`data:image/jpeg;base64,${publicProfile.photo}`);
   expect(again).toBe(first);
   expect(fetchFn).toHaveBeenCalledTimes(1);
+});
+
+// TASK-497: the address a comment's author carries, for an `Image` to read.
+test("the picture at its address is read with the token and the key", async () => {
+  const fetchFn = answers();
+  const { result } = await renderHook(() =>
+    useCommentsOf(URL, account(), { ...options(fetchFn), key: "k1" }),
+  );
+  expect(result.current.pictureAt?.("/users/p/photo?v=1")).toEqual({
+    uri: "http://api/users/p/photo?v=1",
+    headers: { ...keyHeaders("k1"), Authorization: `Bearer ${signedIn.token}` },
+  });
+  // Saying where it is asks nothing: the `Image` reads it, and keeps it.
+  expect(fetchFn).not.toHaveBeenCalled();
 });
 
 // TASK-454 part C (ADR-0377): the replies and the reactions to a comment.

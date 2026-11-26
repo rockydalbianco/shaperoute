@@ -3,6 +3,7 @@
 **Stato**: Done · 2026-11-23 · #1529 (O1) e #1531 (O2) in `main`; resta
 l'OTA (Coordinatore, col sì dell'utente) e l'occhio dell'utente sulla
 batteria, sul telefono
+**Prova sul telefono**: provato dall'utente il 2026-11-26 con una corsa vera, telefono bloccato e in tasca: «ok», senza numeri della batteria.
 **Fase**: 5 · **Branch**: `feat/TASK-496-a-run-journal` (O1), poi
 `feat/TASK-496-b-unseen-map-clock` (O2)
 **Dipende da**: TASK-304 (ADR-0264), TASK-112 (ADR-0091), TASK-070 (tasca)

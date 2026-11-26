@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A7c-3 in produzione con l'OTA 25); B avviata il 2026-11-24, a fette
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A7c-3 in produzione con l'OTA 25); B avviata il 2026-11-24, a fette: la barra galleggia solo col vetro vero (utente, 2026-11-26), B1 e B2 in bozza fino al taglio nativo
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -609,9 +609,61 @@ lasciando le righe d'indice.
 - ADR-0409 — «Sign up» e «Log in» gialli: il pulsante in fondo al modulo è `accent` con parole `onAccent`, un'eccezione scelta dall'utente a «il giallo è del percorso» · 2026-11-24 · Attiva
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
+- ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero (`GET /notifications/unread`, una query, niente foto), con il ripiego sulla lista per un server di prima; la riga dei «live» non chiede con l'app dietro · 2026-11-26 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero; la riga dei «live» non chiede con l'app dietro
+
+**Stato**: Attiva · 2026-11-26 · TASK-499 (punto O9 della lettura del
+codice del 2026-11-23, che l'utente ha approvato con «Sì, tutte»). Il
+disegno (una rotta a parte, il ripiego, il controllo di `AppState`) è
+**deciso dall'agente su delega dell'utente**. Forma (un'aggiunta, non un
+ADR nuovo) dal Coordinatore. **Precisa come la campanella di ADR-0311 tiene
+il suo numero**; i periodi non cambiano (5 minuti qui, 60 s per la riga dei
+«live» di ADR-0381) e l'utente non vede differenze.
+
+**Contesto**: per il bollino dell'header l'app scaricava la prima pagina
+delle notifiche (30 righe, ognuna con la foto da 128 px di chi ha agito, in
+base64) all'avvio, ogni 5 minuti in primo piano e a ogni ritorno nell'app, e
+ne teneva solo `unread`. Il server faceva tre query (la lingua, la pagina,
+il conto), due delle quali con le foto. La riga dei «live» del Feed
+chiedeva ogni 60 s anche con l'app dietro, al contrario dei bollini dei
+messaggi e delle richieste di follow.
+
+**Decisione**:
+
+1. **`GET /notifications/unread`** → `{"unread": n}`
+   (`NotificationsUnread`): una query sola, senza la lingua, senza le foto
+   e senza i testi. Le regole (blocchi, account nascosti, 90 giorni, quello
+   che non è più vero, i disegni che l'app non legge) stanno in un pezzo
+   solo di SQL (`RULES_FROM` e `rules_sql`) usato dalla lista e dal conto:
+   i due numeri non possono divergere. `GET /notifications` resta com'è e
+   porta ancora `unread`.
+2. **Una rotta e non `?limit=0` sulla lista**: la risposta ha un tipo suo,
+   nel registro delle richieste si distingue dalla lista, e un server di
+   prima risponde `404`, che l'app sa già leggere.
+3. **Il ripiego nell'app** (`useBellOf`): il bollino chiede il numero da
+   solo; con un `404` chiede la prima pagina come prima, e per quel token
+   non richiede più il numero. La lista intera si scarica solo aprendo le
+   notifiche. Per questo l'app e il server possono uscire in qualsiasi
+   ordine.
+4. **La riga dei «live»** (`useLives`, ADR-0381): lo stesso controllo di
+   `AppState` degli altri bollini. Niente richiesta con l'app dietro o
+   sotto il centro di controllo, una al ritorno, poi di nuovo ogni 60 s.
+
+**Misurato** (database di prova sul Mac, 30 notifiche non lette di 30
+account con foto finte da circa 5 KB): un controllo della campanella passa
+da 159 906 byte (97 726 con gzip) e 3 query a 13 byte e 1 query. **Non
+misurato**: i tempi sul server vero, il piano della query su una tabella
+grande, i byte e la batteria sul telefono, le foto vere degli utenti.
+
+**Conseguenze**: nessuna migrazione, nessuna variabile, nessuna dipendenza
+nuova, impronta iOS invariata. Anche il conto dentro `GET /notifications`
+usa la query leggera. Restano fuori, come idee nel task file: una chiamata
+sola per i tre bollini, e le foto come indirizzo (`avatar_url`) nelle
+liste.
 
 ## ADR-0409 — «Sign up» e «Log in» gialli
 
@@ -3370,6 +3422,24 @@ dichiarati «Sufficient Contrast» e il tema scuro.
   superficie si misura sulle schermate nei casi peggiori e resta velata
   se scende sotto 4,5:1. Deciso dall'agente su delega dell'utente; la
   scelta di installare è dell'utente.
+- **Parte B, la barra (2026-11-26)**: l'utente ha voluto che le pagine
+  passino sotto la barra («Sì sotto la barra», 2026-11-24) e che la
+  barra galleggi **solo dove il telefono disegna il vetro vero** («Solo
+  col vetro vero», 2026-11-26). Provata col vetro velato della parte A,
+  la barra che galleggia lasciava leggere il testo dei post dietro le
+  icone: il velo non sfoca. Quindi due pezzi. La stanza
+  (`useTabBarRoom()`, `src/tabs/tabBarRoom.ts`) è già in `main`: ogni
+  pagina della barra la chiede, e vale 0 finché la barra non galleggia.
+  La barra (bozza #1562 sopra la #1557) galleggia quando
+  `nativeGlassAvailable()` dice sì, con la capsula in `NativeGlass`;
+  altrove resta la fascia col fondo di pagina di oggi. Il galleggiare
+  dipende dal telefono e non dal modo di accessibilità: con «Riduci
+  trasparenza» e «Aumenta contrasto» la barra galleggia opaca, come fa
+  iOS, così la pagina non cambia lunghezza quando si tocca
+  l'impostazione. Le due bozze entrano insieme nel taglio nativo: nessun
+  OTA porta la barra che galleggia a una build che non ha il modulo. La
+  scelta di quando galleggia è dell'utente; il resto è deciso
+  dall'agente su delega dell'utente.
 
 **Conseguenze**: la A arriva in fette piccole dopo l'aggiornamento
 completo, prima i token e `src/ui/Glass.tsx`; l'impronta iOS resta

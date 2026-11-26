@@ -1,4 +1,4 @@
-import { addToFeedEntries } from "./addToFeedEntries";
+import { ADD_TO_FEED_ICONS, addToFeedEntries } from "./addToFeedEntries";
 
 // The entries of the Feed's «+» (TASK-481, ADR-0390): the ready ones, in
 // the user's order, without «Soon».
@@ -67,4 +67,27 @@ test("«Sleep» comes after «From a file» when it is ready", () => {
     "gym",
     "plan",
   ]);
+});
+
+// TASK-509: no row of words alone. Every entry the sheet can list has its
+// own sign: a new entry without one fails here (and does not compile).
+test("every entry has its own icon, «Sleep» too", () => {
+  const entries = addToFeedEntries({ record: true, filePicker: true, sleep: true });
+  expect(entries.map((entry) => entry.id)).toEqual([
+    "record",
+    "done",
+    "photos",
+    "file",
+    "sleep",
+    "gym",
+    "plan",
+  ]);
+  for (const entry of entries) {
+    expect(ADD_TO_FEED_ICONS[entry.id]).toBeDefined();
+  }
+  const files = Object.values(ADD_TO_FEED_ICONS).map((icon) => JSON.stringify(icon));
+  expect(new Set(files).size).toBe(entries.length);
+  expect(Object.keys(ADD_TO_FEED_ICONS).sort()).toEqual(
+    entries.map((entry) => entry.id).sort(),
+  );
 });

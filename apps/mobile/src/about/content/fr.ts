@@ -9,7 +9,7 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "10 novembre 2026";
+const UPDATED = "26 novembre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
 const PRIVACY_UPDATED = "26 novembre 2026";
 
@@ -209,6 +209,14 @@ const terms: AboutDocument = {
           ],
         },
         "Les distances, les temps et la vitesse viennent du GPS du téléphone et sont des estimations.",
+      ],
+    },
+    {
+      heading: "Nutrition",
+      blocks: [
+        "«Nutrition» est un journal et une calculatrice, pas un service de santé. MuW n'est pas faite par des médecins, des diététiciens ou d'autres professionnels de santé.",
+        "Les calories des aliments, l'énergie que tu dépenses et, si tu la demandes, l'estimation d'un objectif du jour viennent de tables et de formules publiques. Ce sont des estimations, à titre d'information seulement : elles ne sont pas un avis médical ou diététique et ne remplacent pas un professionnel qui te connaît.",
+        "Si tu as moins de 18 ans, si tu es enceinte ou si tu allaites, si tu as une maladie, ou si tu as ou as eu un trouble alimentaire, parle à ton médecin avant de compter les calories ou de changer ce que tu manges.",
       ],
     },
     {
@@ -461,8 +469,8 @@ const privacy: AboutDocument = {
     {
       heading: "Nutrition",
       blocks: [
-        "«Nutrition» est un journal que tu tiens pour toi. Les aliments que tu ajoutes, ton plan de la semaine, ce que tu notes avoir mangé chaque jour, ton objectif du jour et les calories que tu corriges à la main restent uniquement sur ton téléphone : ils n'arrivent pas sur notre serveur et personne d'autre ne peut les voir. Le «Bilan calorique» de ton profil est calculé sur ton téléphone et n'est affiché qu'à toi.",
-        "Pour estimer l'énergie que tu dépenses, MuW compte sur ton téléphone les activités de ton compte et les données corporelles que tu as saisies dans les «Réglages». Chaque chiffre est une estimation : MuW ne fournit ni régimes ni conseils médicaux.",
+        "«Nutrition» est un journal que tu tiens pour toi. Les aliments que tu ajoutes, ton plan de la semaine, ce que tu notes avoir mangé chaque jour, ton objectif du jour, la raison pour laquelle tu as dit l'utiliser et les calories que tu corriges à la main restent uniquement sur ton téléphone : ils n'arrivent pas sur notre serveur et personne d'autre ne peut les voir. Le «Bilan calorique» de ton profil est calculé sur ton téléphone et n'est affiché qu'à toi.",
+        "Pour estimer l'énergie que tu dépenses, MuW compte sur ton téléphone les activités de ton compte et les données corporelles que tu as saisies dans les «Réglages». Si tu le demandes, MuW calcule aussi sur ton téléphone, à partir des mêmes données et d'une formule publique, une estimation d'un objectif de calories par jour : à titre de démonstration seulement, et jamais montrée aux moins de 18 ans. Chaque chiffre est une estimation : MuW n'est pas faite par des professionnels de santé et ne fournit ni régimes ni conseils médicaux.",
         "Ces données n'ont jamais été sur notre serveur : te déconnecter ou supprimer ton compte ne les efface donc pas. Elles restent sur ton téléphone jusqu'à ce que tu les retires là ou que tu désinstalles l'app.",
       ],
     },

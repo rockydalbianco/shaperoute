@@ -601,6 +601,7 @@ lasciando le righe d'indice.
 - ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
 - ADR-0403 — Le proprie bolle nei messaggi sul giallo dell'app: una faccia piena `accent` con parole `onAccent`, non vetro; quello che la bolla porta su una piastra neutra · 2026-11-23 · Attiva
 - ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Attiva
+- ADR-0406 — Il proprietario dei dati sul telefono è il `public_id` sul suo server, non l'id numerico; la corsa, gli allenamenti in corso e i dati del corpo sono di ogni account, nascosti finché rientra · 2026-11-26 · Attiva
 - ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella: rotte a parte (`/drawings/{id}/gear`, `/gear/{id}`), `gear_id` sul tag col `SET NULL`, il limite una riga sola nella campanella per attrezzo e limite, «From my gear» coi tipi della foto · 2026-11-23 · Attiva
 - ADR-0264, aggiunta (TASK-496) — Con l'app dietro i punti nuovi vanno in un diario accanto al file della corsa, il file intero ogni tanto; in tasca la mappa non riceve niente e l'orologio non scatta · 2026-11-23 · Attiva
 - ADR-0397, precisazione 5 — «Nutrition» anche dal profilo e a fine attività, la pagina del giorno animata (anelli su una scala, macronutrienti senza obiettivo), l'obiettivo di calorie proposto da MuW solo come stima in secondo piano con protezioni, il controllo del peso, la lettura dell'energia attiva dopo una build successiva · 2026-11-24 · Attiva
@@ -610,9 +611,69 @@ lasciando le righe d'indice.
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
 - ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero (`GET /notifications/unread`, una query, niente foto), con il ripiego sulla lista per un server di prima; la riga dei «live» non chiede con l'app dietro · 2026-11-26 · Attiva
+- ADR-0175, aggiunta (TASK-497) — La foto di chi scrive un commento: il commento porta l'indirizzo della foto piccola (`author.photo`, quello del feed), l'app non chiede più il profilo intero; supera il punto 7 · 2026-11-24 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0406 — Il proprietario dei dati sul telefono è il public_id sul suo server, non l'id numerico
+
+**Stato**: Attiva · 2026-11-26 · TASK-507. Le due regole su cosa vede un
+altro account sono **scelte dell'utente** (2026-11-23: «Nascosta finché
+rientra», «Di ogni account»); il modo è deciso dall'agente su delega
+dell'utente. Numero dal Coordinatore.
+
+**Contesto**: nella prova al simulatore del 23 novembre 2026 un account
+appena creato aveva «Le mie attività: 3». Erano tre sessioni di stretching
+di una prova del 21-11, rimaste nella coda del telefono e partite col
+nuovo account, perché il database nuovo gli aveva ridato lo stesso
+`User.id` (`out/TASK-507/VERIFICA.md`). Tutte le code del telefono
+riconoscevano il proprietario solo da quel numero; la corsa e gli
+allenamenti in corso non ne avevano nessuno, e su un telefono condiviso
+passavano a chi entrava dopo. In produzione i numeri non si ripetono e
+niente è arrivato al server.
+
+**Decisione**:
+- **Chi è il proprietario** (`account/phoneOwners.ts`): per ogni numero
+  visto il telefono ricorda il `public_id` (un UUID che il server non ridà
+  mai) e il server. A ogni ingresso, prima che una coda parta, se il numero
+  ora è di un'altra persona o di un altro server, ciò che aspettava sotto
+  di lui si lascia andare. Un account visto per la prima volta prende ciò
+  che aspetta col suo numero, come prima.
+- **La cancellazione dell'account** (`forgetPhoneDataOf`) svuota tutto
+  quello che il telefono tiene per lui: code, sonno, palestra, schede e
+  storico, piscina, stretching, foto, corpo e cuore, corse messe da parte,
+  allenamenti in corso e dell'orologio. Prima ne svuotava cinque.
+- **L'account dentro adesso** (`account/currentOwner.ts`): detto da
+  `useAccount` prima che l'app mostri qualcosa; `useCurrentOwner()` per le
+  schermate. Con nessuno dentro non si vede niente di nessun account.
+- **Corpo e cuore di ogni account**: `body.json` diventa `body.<id>.json`,
+  lo stesso `heart.json`; il file di prima va al primo account che entra.
+  Ricerche e città recenti si cancellano all'uscita. Lingua, unità, tono,
+  mappe e luoghi scaricati restano del telefono; la zona di casa si
+  cancellava già all'uscita.
+- **Le cose in corso hanno un proprietario**: `SavedRun.owner` nel file
+  intero della corsa (mai nelle righe del diario); la corsa di un altro
+  account va da parte con il suo diario (`current-run.<id>[-n].json`), non
+  si scrive mai sopra e torna quando l'account rientra e il posto è libero.
+  Palestra e nuotata in corso: un elemento per account. Allenamenti
+  dell'orologio: l'account dentro quando sono arrivati, 10 per account.
+  Una corsa senza proprietario (di prima, o senza account) è di chiunque.
+- **Lo schermo** (`App.tsx`): la fine di una corsa di un altro account
+  sparisce quando cambia l'account; quella dell'account che entra appare
+  come all'apertura. Lo stato si aggiusta durante il render, non in un
+  effetto (`react-hooks/set-state-in-effect`).
+
+**Conseguenze**: una coda o un file nuovo del telefono che tiene dati di un
+account deve avere il suo proprietario e la sua funzione di cancellazione
+chiamata da `forgetPhoneDataOf`; un file personale si nomina con
+`ownerFile`. Se la sessione scade durante una corsa, la sua fine non si
+vede finché non rientra quell'account: poi compare e si salva. Nessun
+testo nuovo, niente di nativo, niente sul server; la privacy resta vera.
+Controllato da `phoneOwners.test.ts`, `accountData.test.ts`,
+`trackStoreOwner.test.ts`, `workoutStoreOwner`, `poolStoreOwner`,
+`watchRunsOwner` e `AppRunOwner.test.tsx`, e dalla prova al simulatore di
+B1 (2026-11-24).
 
 ## ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero; la riga dei «live» non chiede con l'app dietro
 
@@ -664,6 +725,71 @@ nuova, impronta iOS invariata. Anche il conto dentro `GET /notifications`
 usa la query leggera. Restano fuori, come idee nel task file: una chiamata
 sola per i tre bollini, e le foto come indirizzo (`avatar_url`) nelle
 liste.
+
+## ADR-0175, aggiunta (TASK-497) — La foto di chi scrive un commento viaggia come indirizzo, non si chiede più al profilo
+
+**Stato**: Attiva · 2026-11-24 · TASK-497 (punto O7 della lettura del
+codice del 2026-11-23; l'utente: «Sì, tutte»). Niente che l'utente veda:
+tutto **deciso dall'agente su delega dell'utente**. Forma (un'aggiunta, non
+un ADR nuovo) dal Coordinatore il 2026-11-24. **Punto 9 di ADR-0175: supera
+il punto 7** («l'app la chiede a `GET /users/{public_id}`»), che resta solo
+come ripiego verso un'API di prima.
+
+**Contesto**: il punto 7 è del 2026-10-03, quando l'unico modo di avere la
+foto di un iscritto era il profilo. Da TASK-355 parte B la foto piccola ha
+un indirizzo suo (`/users/{public_id}/photo?v=…`, `avatars.py`) e il feed
+lo usa. Intanto il profilo è cresciuto: `GET /users/{public_id}` è una
+query con dodici sotto-query più quella dei premi, e porta la foto da
+256 px in base64. Il foglio dei commenti ne chiedeva uno per autore, a ogni
+apertura dell'app, per tenerne solo la foto.
+
+**Decisione**:
+
+9. **La foto di chi scrive viaggia nel commento come indirizzo.**
+   1. `author.photo` in commenti e risposte: lo stesso nome e lo stesso
+      indirizzo dell'autore di un post del feed (`FeedAuthorBody.photo`);
+      `null` senza foto. Nelle tre liste (`GET /drawings/{id}/comments` con
+      e senza `threads`, `GET /comments/{id}/replies`), nella risposta del
+      `POST` e nel commento tenuto con un super like. `mention` resta nome
+      e id: è solo «@nome».
+   2. **Nessuna query in più**: una `LEFT JOIN profile_photos` (una riga al
+      più, per chiave) nella query che c'era, e una sotto-query nel
+      `RETURNING` dei due `INSERT`. Si legge solo `updated_at`, mai il
+      JPEG.
+   3. **Un'aggiunta**: un'app di prima non legge il campo e fa come prima.
+      Un'app nuova con un'API di prima (campo assente) chiede il profilo,
+      come dice il punto 7: `photoOf` resta per questo.
+   4. **Nell'app** un indirizzo è un `Image` con token e chiave, tenuto
+      dalla cache HTTP del telefono (`Cache-Control: private,
+      max-age=86400`; una foto nuova ha un indirizzo nuovo); `null` è
+      l'iniziale, senza richieste. L'immagine sta **sopra l'iniziale**
+      (`CommentAvatar`): mentre carica, e se non arriva, si vede
+      l'iniziale, come mentre si aspettava il profilo.
+   5. **Chi non si deve vedere non cambia**: il commento di un iscritto
+      bloccato o nascosto non si legge già (`read_sql`), e l'indirizzo
+      risponde 404 attraverso un blocco con la stessa regola (`apart_sql`).
+
+**Alternative scartate**: la foto in base64 dentro il commento (venti foto
+per pagina: è il motivo del punto 7, e non resterebbe in cache); un
+endpoint che dà le foto di più profili insieme (una rotta nuova per quello
+che la cache HTTP fa già); alleggerire `GET /users/{public_id}` con un
+parametro (resta una richiesta per autore a ogni apertura dell'app, senza
+cache); il tipo `FeedAuthorBody` importato da `feed.py` in `comments.py`
+(`feed.py` importa già `comments.py`: un giro di import); togliere
+`photoOf` (un'app nuova può parlare con un'API di prima).
+
+**Conseguenze**: **misurato in locale**, contando le istruzioni SQL per
+richiesta HTTP (autenticazione compresa) su un post con 10 autori: la
+pagina dei commenti ne usa 6 prima e 6 dopo, e il numero non cresce con gli
+autori (test); le foto costavano 10 `GET /users/{id}` da 3 istruzioni l'una,
+una con 64 `SELECT` nel testo, e ora 10 `GET /users/{id}/photo` da 2
+istruzioni l'una, che il telefono tiene per un giorno. **Non misurato**: i
+tempi sul server e sul telefono, i byte risparmiati, quanto la cache HTTP
+di iOS e Android tenga davvero l'immagine. Nessuna migrazione, nessuna
+dipendenza, niente di nativo. `reactions.py` costruiva l'autore del
+commento del super like a mano: ora usa `comment_author` di `comments.py`.
+Le altre liste con la foto in base64 (persone, campanella, messaggi)
+restano come sono.
 
 ## ADR-0409 — «Sign up» e «Log in» gialli
 

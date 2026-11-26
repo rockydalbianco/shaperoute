@@ -1,5 +1,6 @@
 import {
   type Activity,
+  type LatLon,
   type LetterStyle,
   type RouteResult,
   type Shape,
@@ -46,6 +47,7 @@ import {
 import { DistanceDial } from "./DistanceDial";
 import { ImageChoice } from "./ImageChoice";
 import { piecesOf } from "./imagePieces";
+import { LivePreview } from "./LivePreview";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
 import { NoteRow } from "./NoteRow";
 import { penUpHint } from "./penUpHint";
@@ -138,6 +140,9 @@ type ChoiceProps = {
   /** The runner's pace (`runTime.ts`), for the time under the distance of
    * a run (TASK-361); none: no time. */
   pace?: Pace;
+  /** Where the route starts, once known: the shape is shown on a piece of
+   * the map round it (TASK-449). None: the shape to scale, without a map. */
+  start?: LatLon | null;
 };
 
 /**
@@ -169,6 +174,7 @@ export function RouteChoice({
   activity = "running",
   onFreehand,
   pace,
+  start = null,
 }: ChoiceProps) {
   // The distance is asked in the app's units, at once (TASK-182).
   const units = useUnits();
@@ -231,9 +237,22 @@ export function RouteChoice({
               <ShapeNote text={shapeText} shape={shape} reading={reading} />
             </OtherShapeField>
           )}
-          {shownShape !== null && distanceM !== null && (
-            <ShapePreview shape={shownShape} distanceM={distanceM} />
-          )}
+          {/* On a piece of the real map from the start (TASK-449); to
+              scale without a map with no start yet, and where the server
+              places the shape freely, not at the start. */}
+          {shownShape !== null &&
+            distanceM !== null &&
+            (start !== null && !isPlacedFree(activity) ? (
+              <LivePreview
+                shape={shownShape}
+                distanceM={distanceM}
+                start={start}
+                // As «Draw» will ask it: in pieces with the pen up.
+                apart={penUp && offersPenUp(shownShape)}
+              />
+            ) : (
+              <ShapePreview shape={shownShape} distanceM={distanceM} />
+            ))}
           {onPenUp && !isPlacedFree(activity) && offersPenUp(shownShape) && (
             <PenSwitch
               label={t("Lift the pen between parts")}

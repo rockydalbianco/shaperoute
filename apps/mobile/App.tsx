@@ -2158,6 +2158,7 @@ function MuW() {
                         activity={sportActivity}
                         onFreehand={onOpenCanvas}
                         pace={pace}
+                        start={start?.point ?? null}
                       />
                     </ImageEditsContext.Provider>
                     {/* The shape game, right under the distance (the user's

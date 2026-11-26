@@ -2359,7 +2359,8 @@ sopra), una casella non spuntata all'iscrizione (`away_email` di `POST
   `Idempotency-Key` per assenza. La chiave e l'indirizzo non vanno mai nel
   log.
 - **Spenta** senza `RESEND_API_KEY`, `SHAPEROUTE_EMAIL_SECRET` (almeno 32
-  caratteri) e `SHAPEROUTE_DOMAIN`: niente giro e niente pagina, e l'API
+  caratteri) e `SHAPEROUTE_DOMAIN`, **e finché `SHAPEROUTE_EMAIL_ROUNDS`
+  non nomina `away`** (ADR-0410): niente giro e niente pagina, e l'API
   lo dice all'avvio (`docs/DEPLOY.md`, «Email di ritorno»). A mano:
   `python -m shaperoute_api.away_email` conta chi la riceverebbe adesso,
   `--send` fa un giro.
@@ -2409,8 +2410,10 @@ subito); la lingua come l'email di ritorno. Il codice in
 - **Il thread** del giro parte con l'app e si ferma, anche a metà giro fra
   due email, prima che la fine dell'app chiuda il pool del database
   (TASK-288 B).
-- **Spenta** quando è spenta l'email di ritorno (`RESEND_API_KEY`,
-  `SHAPEROUTE_EMAIL_SECRET`, `SHAPEROUTE_DOMAIN`). A mano: `python -m
+- **Spenta** senza le tre variabili dell'email di ritorno
+  (`RESEND_API_KEY`, `SHAPEROUTE_EMAIL_SECRET`, `SHAPEROUTE_DOMAIN`), **e
+  finché `SHAPEROUTE_EMAIL_ROUNDS` non nomina `notices`** (ADR-0410): i due
+  giri si accendono ciascuno per conto suo. A mano: `python -m
   shaperoute_api.notice_email` conta chi la riceverebbe adesso, `--send`
   fa un giro.
 
@@ -4303,6 +4306,30 @@ quindi non serve il token; la chiave dell'API serve come su ogni percorso.
   atterraggi da un estratto»). Lo storico dei voli di un decollo è la
   parte B; i tipi dell'app la parte C.
 
+**Lo storico di un decollo (parte B)**
+- **`GET /flying-sites/{id}/history?utc_offset_min=…`**: i voli di MuW che
+  partono da un decollo. Un atterraggio, o un id che non c'è: `404`.
+- **Il volo di un decollo**: un volo in parapendio salvato il cui punto di
+  decollo è entro 300 m dal sito. Il punto è quello dove comincia il primo
+  tratto in aria (le parti di `run_stats`), altrimenti il primo punto della
+  traccia. La traccia non ha la quota: quella del sito non si confronta.
+- **I numeri** contano tutti i voli salvati, anche privati, senza nomi:
+  `flights` e `pilots` di sempre, `today` (dalla mezzanotte di chi chiede:
+  `utc_offset_min` da −840 a 840, 0 se manca) e `months`, gli ultimi 12
+  mesi in UTC dal più vecchio (`month` `YYYY-MM`, `flights`, `pilots`).
+  Con meno di 3 piloti diversi `few` è `true` e i numeri sono `null`
+  (scelta dell'utente).
+- **`in_air_now`**: `count`, le condivisioni dal vivo di un volo in corso
+  il cui primo punto è entro 300 m dal sito, e `shares`, gli id di quelle
+  condivise con tutti nel Feed, da aprire come nel Feed. Mai un nome.
+- **`records`**: `longest_s` (più secondi in aria), `highest_m` (la quota
+  più alta raggiunta, sul mare) e `farthest_m` (più metri in aria), solo
+  dai voli con un post per tutti, pubblicato, non nascosto, di un account
+  visibile: `value`, `drawing_id`, `username`, `started_at`, o `null`.
+- **Il calcolo** si fa alla lettura, senza tabelle: i voli di un sito
+  restano in memoria 10 minuti; i voli in aria e «oggi» si leggono a ogni
+  richiesta. Come i siti, non serve l'account.
+
 **Un formato stabile**: lo legge anche TASK-479 D6 (l'atterraggio più
 vicino, con `kind=landing`). I campi si possono solo aggiungere, mai
 togliere o cambiare di senso.
@@ -4486,6 +4513,7 @@ endpoint vogliono il token: senza, `401 not_signed_in`; senza database,
 | `GET /me/conversations?box=inbox\|requests` | le conversazioni di «Messages» o le richieste, l'ultimo messaggio per primo | `200` `ConversationsPage` |
 | `GET /me/conversations/unread` | quante conversazioni hanno novità, quante richieste aspettano | `200` `ConversationsUnread` |
 | `GET /conversations/{public_id}/messages` | una pagina dei messaggi, l'ultimo per primo, e `state` | `200` `MessagesPage`, o `404` / `422` |
+| `GET /conversations/{public_id}/messages?after=<latest>` | solo i messaggi arrivati dopo un posto (TASK-498) | `200` `MessageNews`, o `404` / `422` |
 | `POST /conversations/{public_id}/messages` | un messaggio nuovo | `201` `Message`, o `404` / `409` / `422` / `429` |
 | `PUT /conversations/{public_id}/accept` | accetta la richiesta | `204`, o `404 http_error` |
 | `PUT /conversations/{public_id}/read` | la conversazione letta fino ad ora | `204` |
@@ -4529,6 +4557,29 @@ endpoint vogliono il token: senza, `401 not_signed_in`; senza database,
   `total`. Cursore `microsecondi-uuid`, come gli elenchi di «Follow». Prima
   del primo messaggio la pagina ha `messages: []` e `state`, così l'app
   apre una conversazione vuota dal profilo.
+- **Solo i messaggi nuovi** (TASK-498, aggiunta ad ADR-0279): la prima
+  pagina porta **`latest`**, il posto del suo messaggio più nuovo (stessa
+  forma di `next`; `0-000…0`, zero e trentadue zeri, in una conversazione
+  senza messaggi; `null` nelle pagine dei più vecchi). Con
+  **`?after=<latest>`** la stessa rotta risponde `MessageNews`
+  (`fixtures/message-news.json`): `state`, i `messages` dopo quel posto (il
+  più nuovo per primo, al più `limit`, con gli stessi allegati e le stesse
+  regole della pagina: `?with=attachments`, `X-MuW-Reads`), `more` (ne sono
+  arrivati più di `limit`: l'app rilegge la prima pagina) e il `latest` da
+  usare dopo, che resta quello chiesto se non è arrivato niente. **Niente
+  `person` e niente `attachments`**: la foto dell'altro non viaggia. È il
+  controllo che una conversazione aperta fa ogni pochi secondi: con niente
+  di nuovo sono un centinaio di byte e due query oltre a quella del token.
+  `state` è quello della pagina, sempre. `404` e `422` come la pagina
+  (nessuno, un blocco, se stessi); `after` scritto male, o insieme a
+  `cursor`, `422`. **Quello che questa risposta non dice** lo dice ancora
+  la pagina, che l'app rilegge ogni tanto: un messaggio cancellato da chi
+  l'ha scritto o nascosto da una segnalazione, il nome e la foto dell'altro,
+  la scheda di un post o di una live che cambia, un video scaduto, cosa si
+  può allegare; e un messaggio salvato un attimo dopo ma scritto un attimo
+  prima di quello a cui punta `latest`. **Un'API di prima** non manda
+  `latest` e ignora `after` (risponde la pagina): l'app senza `latest` non
+  chiede `?after=`, e una pagina in risposta la legge come pagina.
 - **«Delete»** (`DELETE /conversations/{public_id}`) toglie i messaggi
   fino ad ora dalla propria vista, e la conversazione dalla lista finché
   non ne arriva un altro; chi può scrivere liberamente non cambia. Per una
@@ -5158,6 +5209,7 @@ del gruppo arrivano con la parte C.
 | `GET /me/groups` | i propri gruppi, per nome, e gli inviti | `200` `MyGroups` |
 | `GET /groups/{id}` | la pagina del gruppo | `200` `GroupDetail` |
 | `PUT /groups/{id}` | l'admin cambia il gruppo, tutto | `200` `GroupDetail` |
+| `DELETE /groups/{id}` | l'admin cancella il gruppo, con chi c'è dentro (parte A3) | `204` |
 | `PUT /groups/{id}/photo` | l'admin mette la foto (`{ "image": "…" }`, come `PUT /me/photo`) | `200` `GroupDetail` |
 | `DELETE /groups/{id}/photo` | l'admin la toglie | `204` |
 | `PUT /groups/{id}/membership` | «Join» | `200` `GroupJoin` |
@@ -5237,6 +5289,13 @@ del gruppo arrivano con la parte C.
   segnalato il suo admin. L'email lo chiama «group», con nome,
   descrizione, città, ingresso e se ha la foto; il link nasconde
   (`groups.hidden_at`).
+- **«Delete group»** (`DELETE /groups/{id}`, parte A3, scelta dell'utente
+  del 2026-11-24): solo l'admin (`403` «Only the group's admin can do
+  this.»); i membri ricevono `group_deleted` («{name} deleted the group
+  {title}.»), i cui dati sono solo `{ kind }`: il gruppo non c'è più e la
+  push non apre niente. Poi il gruppo se ne va con membri, richieste, inviti
+  e foto (`ON DELETE CASCADE`). Un'API di prima risponde `405`: l'app lo
+  dice e il gruppo resta.
 - **`DELETE /me`**: prima della cancellazione il ruolo di admin passa al
   co-admin più vecchio nel ruolo, poi al membro più vecchio nel gruppo; un
   gruppo senza nessun altro si cancella (`app.state.before_account_delete`).
@@ -5479,7 +5538,7 @@ codice è in `phone_zone_api.py` e `phone_zones.py`.
 
 | Endpoint | Cosa | Risposta |
 |---|---|---|
-| `GET /phone-zones/{network}?lat=&lon=` | la zona della rete `foot` o `bike` che contiene 3 km intorno al punto; con `&margin_m=` (3000–10 000) la più piccola che ne contiene tanti, se il suo file pesa al massimo 12 MB, se no quella di 3 km (parte E); con `&prefetch=1` è una zona scaricata in anticipo, contata nel tetto del giorno | `200` `application/gzip`, il file della zona; `304` quando l'`ETag` della zona scelta è in `If-None-Match` (anche fra altri, separati da virgole) o in `X-Zone-ETags`; `404 http_error` senza zona o con un'altra rete; `422 invalid_request` con `lat`, `lon` o `margin_m` fuori dai limiti; `429 too_many_requests` con `Retry-After`, solo con `prefetch=1`, oltre il tetto |
+| `GET /phone-zones/{network}?lat=&lon=` | la zona della rete `foot` o `bike` che contiene 3 km intorno al punto; con `&margin_m=` (3000–10 000) la più piccola che ne contiene tanti, se il suo file pesa al massimo 12 MB, se no quella di 3 km (parte E); con `&prefetch=1` è una zona scaricata in anticipo, contata nel tetto del giorno | `200` `application/gzip`, il file della zona; `304` quando l'`ETag` della zona scelta è in `If-None-Match` (anche fra altri, separati da virgole) o in `X-Zone-ETags`; `404 http_error` senza zona o con un'altra rete: senza zona, e senza `prefetch=1`, il server mette in coda la zona con 6 km intorno al punto come per `POST …/places` (stessi tetti del giorno, solo senza percorsi in corso) e il telefono la trova alla richiesta dopo (TASK-214 parte G); `422 invalid_request` con `lat`, `lon` o `margin_m` fuori dai limiti; `429 too_many_requests` con `Retry-After`, solo con `prefetch=1`, oltre il tetto |
 
 - **Il file** si chiama come la zona, `foot_<s>_<w>_<n>_<e>.zone.json.gz`
   (`Content-Disposition`). È JSON con gzip: `format` `"sgrava-zone"`,

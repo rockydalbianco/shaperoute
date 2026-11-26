@@ -73,10 +73,14 @@ test("under a floating header its content goes on showing behind it", async () =
 // joins this list. Not «Feed», «Explore», «Paddle» or «Resorts», which keep
 // something of their own over the scroller.
 const PAGES = [
+  "nutrition/NutritionPage.tsx",
   "screens/ChooseScreen.tsx",
+  "screens/ProfileScreen.tsx",
   "skimode/SkiDaysPage.tsx",
   "skimode/SkiTodayPage.tsx",
   "tabs/MessagesPage.tsx",
+  "trainingmode/TrainingTodayPage.tsx",
+  "trainingmode/TrainingWorkoutsPage.tsx",
 ];
 
 test.each(PAGES)("%s lets its content show under a floating header", (file) => {
@@ -84,6 +88,6 @@ test.each(PAGES)("%s lets its content show under a floating header", (file) => {
   expect(source).toMatch(/const underHeader = useUnderHeader\(\);/);
   // Asked for, and given to the scroller that tells the header.
   expect(source).toMatch(
-    /\{\.\.\.headerScroll\}\s+style=\{(?:underHeader|\[styles\.page, underHeader\])\}/,
+    /\{\.\.\.headerScroll\}\s+style=\{(?:underHeader|\[[^\]]*, underHeader\])\}/,
   );
 });

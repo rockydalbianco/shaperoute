@@ -90,3 +90,51 @@ test("a picture that could not be opened has no «Open Settings»", async () => 
   expect(screen.getByText(/The picture could not be opened/)).toBeOnTheScreen();
   expect(screen.queryByText("Open Settings")).toBeNull();
 });
+
+test("with a start and a distance, the outline on a piece of the map (TASK-449 B)", async () => {
+  await render(
+    <ImageChoice
+      state={TRACED}
+      onChoose={jest.fn()}
+      start={[46.0679, 11.1211]}
+      distanceM={6000}
+    />,
+  );
+  await fireEvent(screen.getByTestId("live-preview-room"), "layout", {
+    nativeEvent: { layout: { width: 340, height: 190 } },
+  });
+  expect(screen.getAllByTestId("live-preview-dash").length).toBeGreaterThan(20);
+  expect(screen.getByTestId("live-preview-start")).toBeOnTheScreen();
+  expect(
+    screen.getByLabelText(
+      /^The outline traced from the picture, about \d+\.\d × \d+\.\d km on the map$/,
+    ),
+  ).toBeOnTheScreen();
+  // The picture with its outline stays above it, to judge the tracing.
+  expect(screen.getByTestId("image-preview")).toBeOnTheScreen();
+});
+
+test("without a start or a distance, or before a picture is traced: no map", async () => {
+  const { rerender } = await render(
+    <ImageChoice state={TRACED} onChoose={jest.fn()} distanceM={6000} />,
+  );
+  expect(screen.queryByTestId("live-preview")).toBeNull();
+  await rerender(
+    <ImageChoice
+      state={TRACED}
+      onChoose={jest.fn()}
+      start={[46.0679, 11.1211]}
+      distanceM={null}
+    />,
+  );
+  expect(screen.queryByTestId("live-preview")).toBeNull();
+  await rerender(
+    <ImageChoice
+      state={{ status: "tracing", picture: PICTURE }}
+      onChoose={jest.fn()}
+      start={[46.0679, 11.1211]}
+      distanceM={6000}
+    />,
+  );
+  expect(screen.queryByTestId("live-preview")).toBeNull();
+});

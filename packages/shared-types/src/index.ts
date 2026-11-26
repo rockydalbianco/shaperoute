@@ -56,13 +56,49 @@ export const SHAPES = [
   "swan",
   "windmill",
   "wine_glass",
+  "ball",
+  "bell",
+  "candy_cane",
+  "colosseum",
+  "croissant",
+  "dolphin",
+  "dome",
+  "easter_egg",
+  "eiffel_tower",
+  "flower",
+  "fox_head",
+  "gift",
+  "infinity",
+  "leaf",
+  "light_bulb",
+  "medal",
+  "mountain",
+  "owl",
+  "padlock",
+  "peace",
+  "penguin",
+  "pizza_slice",
+  "racket",
+  "reindeer",
+  "santa_hat",
+  "scooter",
+  "skis",
+  "snowflake",
+  "snowman",
+  "stocking",
+  "strawberry",
+  "triumphal_arch",
+  "trophy",
+  "turtle",
+  "umbrella",
 ] as const;
 export type Shape = (typeof SHAPES)[number];
 
 /** The shapes that may be drawn with the pen up (TASK-223, ADR-0185): the
  * outline, then each piece on its own, walking from one to the next. The
- * first five lift off their eyes; the others have pieces apart, the last four
- * the new shapes of TASK-418, which the app draws with the pen down. */
+ * first five lift off their eyes; the others have pieces apart, from anchor on
+ * the new shapes of TASK-418 and TASK-516, which the app draws with the pen
+ * down. */
 export const PEN_UP_SHAPES = [
   "cat",
   "fish",
@@ -77,6 +113,30 @@ export const PEN_UP_SHAPES = [
   "bear_head",
   "bicycle",
   "espresso_cup",
+  "ball",
+  "bell",
+  "colosseum",
+  "dolphin",
+  "dome",
+  "easter_egg",
+  "flower",
+  "fox_head",
+  "gift",
+  "infinity",
+  "leaf",
+  "light_bulb",
+  "medal",
+  "mountain",
+  "owl",
+  "padlock",
+  "peace",
+  "penguin",
+  "pizza_slice",
+  "racket",
+  "strawberry",
+  "triumphal_arch",
+  "trophy",
+  "turtle",
 ] as const satisfies readonly Shape[];
 export type PenUpShape = (typeof PEN_UP_SHAPES)[number];
 
@@ -2768,6 +2828,30 @@ export interface MessagesPage {
    * conversation. Missing from an API before it: then no «+».
    */
   attachments?: AttachmentsAllowed | null;
+  /**
+   * The `after` of the next check (TASK-498): the place of the newest
+   * message, `0-000…0` in a conversation without one; null on a page of
+   * older ones. Missing from an API before it: then the app asks the page
+   * again, as it always did.
+   */
+  latest?: string | null;
+}
+
+/**
+ * GET /conversations/{public_id}/messages?after=<latest>: what came after a
+ * place, for a conversation on screen (TASK-498). Never the other's picture
+ * nor what may be attached: the page says them, and what this cannot say (a
+ * message deleted, a name changed). 404 and 422 as the page; 422 with
+ * `cursor` too. An API before it ignores `after` and answers a MessagesPage.
+ */
+export interface MessageNews {
+  state: ConversationState;
+  /** Those after `after`, the latest first; none when nothing came. */
+  messages: Message[];
+  /** More came than a page holds: the first page is read again. */
+  more: boolean;
+  /** The `after` of the next check. */
+  latest: string;
 }
 
 /** The most `unread_count` counts: beyond it the app says «9+» anyway. */
@@ -3333,3 +3417,4 @@ export * from "./together.ts";
 export * from "./gymHistory.ts";
 export * from "./gear.ts";
 export * from "./groups.ts";
+export * from "./flyingSites.ts";

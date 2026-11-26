@@ -136,9 +136,26 @@ test("«Reduce Motion»: the sheet fades in by its opacity, under which the phon
   expect(screen.queryByTestId("sheet-glass")).toBeNull();
 });
 
-// The sheets that take the glass: a new one joins this list. The others
-// still take `useSheetFace()` (SheetFace.test.tsx).
-const SHEETS = ["feed/PostShareSheet.tsx", "social/DrawingComments.tsx"];
+// Every sheet from the bottom takes the glass: a new one joins this list.
+const SHEETS = [
+  "activities/ActivitySheet.tsx",
+  "feed/AddToFeed.tsx",
+  "feed/PostShareSheet.tsx",
+  "feed/StyleProductSheet.tsx",
+  "gym/GymIntroSheet.tsx",
+  "liveShare/LiveShareButton.tsx",
+  "messages/AttachButton.tsx",
+  "messages/MessageSheet.tsx",
+  "search/FilterSheet.tsx",
+  "share/EditVideoSheet.tsx",
+  "ski/DayResort.tsx",
+  "social/DrawingComments.tsx",
+  "social/outfit/OutfitTagEditor.tsx",
+  "social/outfit/OutfitTagSheet.tsx",
+  "social/ReportMenu.tsx",
+  "social/SuperLikeSheet.tsx",
+  "social/TagPeople.tsx",
+];
 
 test.each(SHEETS)("%s takes the face, and the glass behind its content", (file) => {
   const source = readFileSync(join(__dirname, "..", file), "utf8");

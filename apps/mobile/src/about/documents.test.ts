@@ -109,7 +109,7 @@ describe("«Terms» is a draft", () => {
   test.each(CONTENTS)("in «%s», with its day", (_, content) => {
     expect(content.terms.draft).toBe(true);
     expect(content.terms.updated).toMatch(
-      /^10 (November|novembre) 2026$|^10\. November 2026$|^10 de noviembre de 2026$/,
+      /^27 (November|novembre) 2026$|^27\. November 2026$|^27 de noviembre de 2026$/,
     );
   });
 
@@ -126,9 +126,10 @@ describe("«Terms» is a draft", () => {
 describe("«Privacy» is final, approved by the user (TASK-237 D)", () => {
   test.each(CONTENTS)("in «%s», with the day of the approval", (_, content) => {
     expect(content.privacy.draft).toBe(false);
-    // Redated for the group runs among the reports (TASK-309 part B).
+    // Redated for the estimate of a daily target in «Nutrition» (TASK-489 part J).
+    // Redated for the paragliding landings nearby and the wind aloft (TASK-479 parts D6, H).
     expect(content.privacy.updated).toMatch(
-      /^24 November 2026$|^24 novembre 2026$|^24\. November 2026$|^24 de noviembre de 2026$/,
+      /^27 November 2026$|^27 novembre 2026$|^27\. November 2026$|^27 de noviembre de 2026$/,
     );
   });
 
@@ -474,5 +475,20 @@ test("«Privacy» says what is kept of the gear and who sees it, in all five lan
     }
     // The gear is off in the app (GEAR_ON): the help does not tell it yet.
     expect(all(content.help)).not.toMatch(gear[language][0]);
+  }
+});
+
+test("«Privacy» says a saved flight counts, without a name, in the history of its takeoff, shown from three pilots (TASK-493 B)", () => {
+  const fromThree: Record<Language, RegExp> = {
+    en: /at least three different pilots/,
+    it: /almeno tre/,
+    de: /mindestens drei verschiedene Piloten/,
+    fr: /au moins trois pilotes différents/,
+    es: /al menos tres pilotos distintos/,
+  };
+  for (const [language, content] of CONTENTS) {
+    const text = all(content.privacy);
+    expect(text).toMatch(fromThree[language]);
+    expect(text).toMatch(/OpenStreetMap\./);
   }
 });

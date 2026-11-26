@@ -11,6 +11,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Cascade } from "../ui/Cascade";
 import { Hairline } from "../ui/Hairline";
 import { Tap } from "../ui/Tap";
 import { foodNameIn } from "./foodNames";
@@ -24,6 +25,14 @@ const TITLES: { readonly [M in Meal]: string } = {
   lunch: tLater("Lunch"),
   dinner: tLater("Dinner"),
   snacks: tLater("Snacks"),
+};
+
+/** The little figure beside a meal's name (part H): a picture only. */
+const FIGURES: { readonly [M in Meal]: string } = {
+  breakfast: "☕",
+  lunch: "🍽️",
+  dinner: "🌙",
+  snacks: "🍎",
 };
 
 /** «Lunch», in the app's language. */
@@ -59,9 +68,18 @@ export function MealCard({ meal, portions, language, onAdd, onPortion }: Props) 
   return (
     <View style={styles.card} testID={`meal-${meal}`}>
       <View style={styles.head}>
-        <Text style={styles.title} accessibilityRole="header">
-          {title}
-        </Text>
+        <View style={styles.named}>
+          <Text
+            style={styles.figure}
+            importantForAccessibility="no"
+            accessibilityElementsHidden
+          >
+            {FIGURES[meal]}
+          </Text>
+          <Text style={styles.title} accessibilityRole="header">
+            {title}
+          </Text>
+        </View>
         <Text style={styles.total} testID={`meal-${meal}-kcal`}>
           {portions.length === 0 ? "—" : kcalLabel(portionsKcal(portions))}
         </Text>
@@ -70,20 +88,22 @@ export function MealCard({ meal, portions, language, onAdd, onPortion }: Props) 
         const name = foodNameIn(portion.food, language);
         const kcal = kcalLabel(kcalOf(portion.food, portion.grams));
         return (
-          <Tap
-            key={`${portion.food.key}-${index}`}
-            style={styles.portion}
-            onPress={() => onPortion(index)}
-            accessibilityRole="button"
-            accessibilityLabel={`${name}, ${portion.grams} g, ${kcal}`}
-            testID={`meal-${meal}-portion-${index}`}
-          >
-            <Text style={styles.name} numberOfLines={2}>
-              {name}
-              <Text style={styles.grams}>{` · ${portion.grams} g`}</Text>
-            </Text>
-            <Text style={styles.kcal}>{kcal}</Text>
-          </Tap>
+          // Each food comes in after the one above it (part H).
+          <Cascade key={`${portion.food.key}-${index}`} index={index}>
+            <Tap
+              style={styles.portion}
+              onPress={() => onPortion(index)}
+              accessibilityRole="button"
+              accessibilityLabel={`${name}, ${portion.grams} g, ${kcal}`}
+              testID={`meal-${meal}-portion-${index}`}
+            >
+              <Text style={styles.name} numberOfLines={2}>
+                {name}
+                <Text style={styles.grams}>{` · ${portion.grams} g`}</Text>
+              </Text>
+              <Text style={styles.kcal}>{kcal}</Text>
+            </Tap>
+          </Cascade>
         );
       })}
       <Hairline />
@@ -115,6 +135,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: space.sm,
     paddingBottom: space.sm,
+  },
+  named: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    flexShrink: 1,
+  },
+  figure: {
+    fontSize: fontSize.body,
   },
   title: {
     ...font.cardTitle,

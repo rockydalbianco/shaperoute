@@ -17,6 +17,11 @@ The heart rate a watch wrote in Apple Health while the workout lasted
 its average and maximum, both or neither, and «Show heart rate»; they go in
 the run's columns of migration 0061, as for a swim in a pool.
 
+The stretching done at its end (TASK-466 part C, ADR-0378) comes with it
+too, when there was some: the routine, the minutes, its seconds and how many
+exercises (`stretch`, table gym_stretches of migration 0089). It is part of
+the workout, not a run of its own, and shows in its post with the exercises.
+
 GET /me/gym-sessions/{key} gives the workout back to its owner, and PUT
 /me/gym-sessions/{key}/show-exercises says whether its post shows the
 exercises. GET /drawings/{id}/exercises gives them to whoever sees the
@@ -66,6 +71,14 @@ from shaperoute_api.gym_levels import GymLevelBody, new_levels
 from shaperoute_api.pool_swims import MAX_HEART_BPM, MIN_HEART_BPM
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.schemas import ErrorBody
+from shaperoute_api.stretch_sessions import (
+    MAX_EXERCISES as MAX_STRETCH_EXERCISES,
+)
+from shaperoute_api.stretch_sessions import (
+    MAX_MINUTES,
+    MAX_SESSION,
+    ROUTINE_PATTERN,
+)
 
 GYM = "gym"
 # A long day at the gym, with every set of it.
@@ -183,6 +196,24 @@ class GymPauseBody(BaseModel):
         return self
 
 
+class GymStretchBody(BaseModel):
+    """The stretching done at the end of the workout (TASK-466 part C,
+    ADR-0378): «Remember to stretch», then the routine «After gym», kept with
+    the workout as a stretching session keeps it (stretch_sessions.py):
+    packages/shared-types/fixtures/gym-session-stretch.json."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    routine: str = Field(pattern=ROUTINE_PATTERN)
+    """The routine's key on the phone: `afterGym` today."""
+    minutes: int = Field(ge=1, le=MAX_MINUTES)
+    """The length it was chosen in: 3, 5 or 10 today."""
+    duration_s: int = Field(ge=1, le=int(MAX_SESSION.total_seconds()))
+    """Its seconds, without its pauses."""
+    exercises: int = Field(ge=0, le=MAX_STRETCH_EXERCISES)
+    """How many of its exercises were done, «Skip» left out."""
+
+
 class GymSessionRequestBody(BaseModel):
     """PUT /me/gym-sessions/{key}: the workout as the phone recorded it:
     packages/shared-types/fixtures/gym-session.json."""
@@ -212,6 +243,9 @@ class GymSessionRequestBody(BaseModel):
     missing from an app before it."""
     heart_shown: bool = True
     """«Show heart rate»: whether others see it."""
+    stretch: GymStretchBody | None = None
+    """The stretching at its end (TASK-466 part C); missing without it, and
+    from an app before it. Only for a workout recorded with MuW."""
 
     @model_validator(mode="after")
     def within_the_workout(self) -> GymSessionRequestBody:
@@ -241,6 +275,8 @@ class GymSessionRequestBody(BaseModel):
             raise ValueError("a workout written by hand follows no plan")
         if self.heart_avg_bpm is not None:
             raise ValueError("a workout written by hand has no heart rate")
+        if self.stretch is not None:
+            raise ValueError("a workout written by hand has no stretching")
         return self
 
     @model_validator(mode="after")
@@ -288,6 +324,8 @@ class GymSessionBody(BaseModel):
     heart_max_bpm: int | None = None
     heart_shown: bool | None = None
     """The three only for a workout with its heart rate (part G)."""
+    stretch: GymStretchBody | None = None
+    """Only for a workout with stretching at its end (TASK-466 part C)."""
 
 
 class GymExercisesBody(BaseModel):
@@ -305,6 +343,9 @@ class GymExercisesBody(BaseModel):
     heart_max_bpm: int | None = None
     """Its heart rate (part G), when its owner shows it or reads it; left
     out otherwise."""
+    stretch: GymStretchBody | None = None
+    """The stretching at its end (TASK-466 part C), shown with the
+    exercises; left out without it."""
 
 
 class ShowExercisesRequestBody(BaseModel):
@@ -367,6 +408,16 @@ WORKOUT_SQL = (
 )
 
 
+def _stretch(conn: Any, run_id: int) -> GymStretchBody | None:
+    """The stretching at the end of the workout `run_id`, if any."""
+    row = conn.execute(
+        "SELECT routine, minutes, duration_s, exercises FROM gym_stretches"
+        " WHERE run_id = %s",
+        (run_id,),
+    ).fetchone()
+    return None if row is None else GymStretchBody.model_validate(dict(row))
+
+
 @dataclass
 class GymSessions:
     """The workouts at the gym, in the database of the accounts."""
@@ -389,6 +440,7 @@ class GymSessions:
             heart_avg_bpm=row["heart_avg_bpm"],
             heart_max_bpm=row["heart_max_bpm"],
             heart_shown=row["heart_shown"] if heart else None,
+            stretch=_stretch(conn, row["id"]),
         )
 
     def get(self, user_id: int, key: str) -> GymSessionBody | None:
@@ -451,6 +503,19 @@ class GymSessions:
                 " VALUES (%s, %s, %s, %s, %s)",
                 (run["id"], body.show_exercises, body.rests, body.rest_s, body.plan),
             )
+            if body.stretch is not None:
+                conn.execute(
+                    "INSERT INTO gym_stretches"
+                    " (run_id, routine, minutes, duration_s, exercises)"
+                    " VALUES (%s, %s, %s, %s, %s)",
+                    (
+                        run["id"],
+                        body.stretch.routine,
+                        body.stretch.minutes,
+                        body.stretch.duration_s,
+                        body.stretch.exercises,
+                    ),
+                )
             if body.sets:
                 with conn.cursor() as cursor:
                     cursor.executemany(
@@ -510,6 +575,7 @@ class GymSessions:
                 new_levels=new_levels(conn, row["id"]),
                 heart_avg_bpm=row["heart_avg_bpm"],
                 heart_max_bpm=row["heart_max_bpm"],
+                stretch=_stretch(conn, row["id"]),
             )
 
 

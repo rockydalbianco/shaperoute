@@ -1,7 +1,9 @@
 # TASK-509 — Stati vuoti, icone di «Add to Feed», sagoma nelle tessere
 
-**Stato**: In lavorazione · parte 0 (le scelte dell'utente) chiusa il
-26 novembre 2026; il codice parte al «via al codice» del Coordinatore
+**Stato**: Done · 26 novembre 2026 · esito: le tre parti sono in `main`
+(#1628 stati vuoti, #1612 icone, #1640 sagoma nelle tessere), le schermate
+approvate dall'utente; resta l'OTA del Coordinatore e uno sguardo sul
+telefono
 **Fase**: 5 · **Branch**: `docs/TASK-509-part-0` (questo file), poi
 `feat/TASK-509-a-empty-states`, `feat/TASK-509-b-add-icons`,
 `feat/TASK-509-c-tile-outline`
@@ -102,6 +104,7 @@ apps/mobile/src/coach/CoachPage.test.tsx
 apps/mobile/src/explore/ExploreScreen.tsx
 apps/mobile/src/explore/ExploreNoStart.test.tsx         (nuovo)
 apps/mobile/App.tsx                                     (due prop: «Log in» al Feed, «My position» a «Explore»)
+apps/mobile/__tests__/AppEmptyPages.test.tsx            (nuovo, aggiunto col sì del Coordinatore: i due pulsanti dentro l'app)
 apps/mobile/src/i18n/it.ts, de.ts, fr.ts, es.ts         (una chiave)
 ```
 
@@ -167,3 +170,22 @@ di toccarlo. I documenti (`UI.md`, la precisazione ad ADR-0293, `STATUS.md`,
   approvato dal Coordinatore: il codice si prepara in locale e parte al suo
   «via al codice» (dopo TASK-449 parte A in `main`); le due prop di
   `App.tsx` nella PR della parte A, al turno su quel file.
+- 2026-11-26 — parte B (#1612): sette icone di Lucide a tre densità in
+  `assets/ui/icons/`, bianche e colorate da `tintColor`, a sinistra delle
+  voci di «Add to Feed»; la mappa `ADD_TO_FEED_ICONS` sta accanto alle
+  voci e non dentro (un test di TASK-467 confronta le voci intere).
+  Schermata approvata dall'utente («Sì, va bene»).
+- 2026-11-26 — parte A (#1628): `EmptyState` disegna la figura una volta
+  (`EMPTY_DRAW_MS`) e la lascia intera, intera subito con «Riduci
+  movimento»; «Record now» e «Log in» nel Feed, «Go to your workouts» nel
+  Coach vuoto, «My position» in «Explore» senza partenza; le due prop in
+  `App.tsx` e un test in più, `__tests__/AppEmptyPages.test.tsx`.
+- 2026-11-26 — parte C (#1640): `RouteCard` ha la prop `outline`: senza
+  linea e senza foto disegna `ShapeGlyph` in `borderStrong`, al centro,
+  al 60 % dell'altezza del disegno; la passano gli esempi della città, la
+  forma in arrivo in «Explore», «NEAR YOU» e l'«Explore» della pagaia.
+  `ShapeGlyph.tsx` non toccato; «WORDS» com'era.
+- 2026-11-26 — schermate di A e C al simulatore (prima e dopo, in
+  `out/TASK-509/shots/`), approvate dall'utente («Sì, vanno bene»). Non
+  fotografati: «Not drawn» e l'«Explore» della pagaia, coperti dai test.
+  Documenti di chiusura: precisazione ad ADR-0293, `UI.md`.

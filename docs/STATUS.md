@@ -242,12 +242,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'OTA, E chat di gruppo. File: — · `tasks/TASK-495.md`
   2026-11-24: A in `main` (#1538, migrazione 0087, sul server col prossimo
   passo), A2 #1543 armata; poi B (l'app), file approvati dal Coordinatore.
-- **TASK-509 — Stati vuoti, icone di «Add to Feed», sagoma nelle tessere** ·
-  parte 0 chiusa il 2026-11-26 (cinque scelte dell'utente). Tre PR di sola
-  app: A stati vuoti (con due prop in `App.tsx`), B icone, C sagoma (dopo
-  TASK-449 in `main`); il codice parte al «via» del Coordinatore.
-  File: quelli di A, B e C nel task file · `tasks/TASK-509.md`
-
 - **TASK-448 — «Surprise me»** · parte 0 chiusa il 2026-11-26 (sei scelte
   dell'utente): una pastiglia nel passo 2 di «Draw» mette forma e distanza
   fra quelle venute bene in città, dal catalogo di «Explore»; a piedi e in

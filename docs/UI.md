@@ -173,11 +173,24 @@ https://claude.ai/artifact/XRMFiZ9BWbWnKkdJ9Udtjf. Sei regole, tutte in
 6. **I dettagli.** Le divisioni sono `Hairline`: un pixel fisico di
    `hairline`, il testo al 20 %; i comandi tengono il bordo a 1 pt
    `borderStrong`, per trovarsi al sole (TASK-086). Una pagina vuota è
-   `EmptyState`: una sagoma del catalogo in `border`, i primi tratti in
-   giallo come una corsa appena cominciata, un titolo `heading`, una
-   frase `body` in `textMuted` e al più un'azione; niente scatole né
-   punti esclamativi. Il cuore (per «Favorites») sta in
+   `EmptyState`: una sagoma del catalogo in `border` che la penna
+   ripassa in giallo una volta sola (1,4 s) e lascia intera — intera
+   subito con «Riduci movimento» — un titolo `heading` quando la pagina
+   non ha già il suo nome in alto, una frase `body` in `textMuted` e al
+   più un'azione; niente scatole né punti esclamativi (TASK-509,
+   precisazione ad ADR-0293: i pochi tratti gialli fermi di prima
+   sembravano un caricamento bloccato). Il cuore (per «Favorites») sta in
    `src/ui/outlines.ts`; le altre sagome vengono dal catalogo.
+   Le pagine vuote con un pulsante (TASK-509): il Feed «All» senza post
+   ha «Record now», senza account «Log in» (apre «Profile»); il Coach
+   senza allenamenti non mostra la scheda del corpo né «Based on your
+   last 4 weeks» e ha «Go to your workouts» (torna a «Today»); «Explore»
+   senza partenza ha «My position», che chiede la posizione come «Draw»,
+   e nasconde il sottotitolo finché la partenza non c'è.
+   Nel foglio «Add to Feed» ogni voce ha a sinistra un'icona a linea
+   bianca (TASK-509): `circle-dot` «Record now», `history` «Already
+   recorded», `images` «Photos only», `file-up` «From a file», `moon`
+   «Sleep», `dumbbell` «Gym workout», `clipboard-list` «Workout plan».
 
 Arriva in parti, una PR ciascuna (`tasks/TASK-339.md`): A le fondamenta
 e i tre nomi in alto (in `main` dal 2026-10-30); B Feed ed Explore (in `main` dal
@@ -462,8 +475,12 @@ pagine»):
    5 km, sotto «City» compare **«EXAMPLES IN VERCELLI»**: cuore, cerchio e
    stella da 5 km dal centro, chiesti da soli, uno alla volta, il cuore per
    primo. Sono schede come quelle di «Best near you», due per riga
-   (TASK-167): una scheda dice «Drawing…» o «Next» con il posto del
-   disegno vuoto, poi ha il disegno, i km e la somiglianza, il nome del
+   (TASK-167): una scheda dice «Drawing…» o «Next» e nel posto del
+   disegno ha la sagoma della forma in grigio (`borderStrong`, il
+   contorno del catalogo; TASK-509 — lo stesso per «Not drawn», per la
+   forma in arrivo fra le schede di una città, per «NEAR YOU» in «Draw» e
+   per l'«Explore» della pagaia; le parole restano col posto vuoto), poi
+   ha il disegno, i km e la somiglianza, il nome del
    paese sotto («Vercelli») e la mappa sotto la linea come in «Best near
    you» (TASK-174), con il credito della mappa una volta sotto le schede;
    un tocco apre il

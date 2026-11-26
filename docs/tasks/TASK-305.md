@@ -247,6 +247,43 @@ per quota e quota massima.
 | fr | Altitude | Vario | Alt. max |
 | es | Altitud | Variómetro | Alt. máx. |
 
+### R4 — Il volo sull'orologio, per il battito dal vivo
+
+Scelta dell'utente (2026-11-12): «si ok continua anche per il battito».
+Il battito dal vivo viene solo dall'orologio (TASK-424, ADR-0352), quindi
+il volo deve essere uno sport dell'orologio.
+
+1. `paragliding` esce da `NOT_ON_WATCH` (`src/watch/watchSports.ts`):
+   l'orologio lo offre col tipo Apple `.other` (3000), all'aperto col GPS,
+   senza percorso da seguire. `sports.json` si riscrive con
+   `scripts/watch-sports.sh`.
+2. `WatchWakeTests.swift`: il tipo 3000 sveglia il volo; per «nessuno
+   sport» il test usa un tipo che MuW non ha (1, football americano).
+3. Nel volo l'orologio chiede a Core Location le posizioni `.airborne`, che
+   non vengono tenute su strade e sentieri: `TrackRecorder.swift`, con una
+   riga in `WorkoutManager.swift` (sì del Coordinatore). La CI compila solo
+   WatchCore: l'App dell'orologio va compilata e provata su un orologio vero
+   prima del merge.
+4. **Cosa NON c'è al polso**: quota, quota massima e variometro restano sul
+   telefono. L'orologio mostra quello che mostra per gli altri sport senza
+   percorso: tempo, distanza, passo e battito. Il battito va al telefono e
+   da lì al link, come per la corsa.
+
+**Quando esce** (Coordinatore, 2026-11-12): la PR resta in bozza e fuori da
+`main` fino alla build dell'orologio dopo la 1.1.0. Via OTA il telefono
+sveglierebbe un orologio 1.1.0, che non conosce il volo: il volo non
+partirebbe al polso e chi vola aspetterebbe un battito che non arriva.
+Senza R4 il telefono non prova nemmeno a svegliarlo. Entra in `main`
+quando il Coordinatore prepara quella build, insieme alle altre cose
+dell'orologio rimaste indietro.
+
+File: `apps/mobile/src/watch/watchSports.ts` e `watchSports.test.ts`,
+`apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json`,
+`apps/mobile/targets/watch/Core/Tests/WatchCoreTests/WatchWakeTests.swift`,
+`apps/mobile/targets/watch/App/TrackRecorder.swift`,
+`apps/mobile/targets/watch/App/WorkoutManager.swift`,
+`docs/tasks/TASK-305.md`.
+
 ### R5 — Sotto «Record your flight»: i tuoi voli, i record, pronto al decollo
 
 **Scelte dell'utente (2026-11-12).** Fra quattro proposte ha scelto «I

@@ -1271,6 +1271,10 @@ export const FR: Table = {
   Floors: "Étages",
   "Log set": "Noter la série",
   "Same again": "Même chose",
+  // TASK-511: the clock waits for the first exercise; − and + by the boxes
+  "Starts with the first exercise": "Démarre avec le premier exercice",
+  "Less {field}": "{field} : moins",
+  "More {field}": "{field} : plus",
   Rest: "Récup",
   Custom: "Personnalisé",
   "Next: {exercise} · set {n}": "Ensuite : {exercise} · série {n}",
@@ -2591,6 +2595,9 @@ export const FR: Table = {
   "Show fewer": "Moins",
   "See all": "Tout voir",
 
+  // src/route/SurprisePill.tsx (TASK-448: «Surprise me»)
+  "Surprise me": "Surprends-moi",
+
   // src/route/DistanceDial.tsx (TASK-361: the distance by half a km)
   "Tap to type the distance": "Touchez pour saisir la distance",
 
@@ -3602,6 +3609,31 @@ export const FR: Table = {
     "Les produits trouvés par code-barres contiennent des données d'Open Food Facts, disponibles sous l'Open Database License. Ils restent séparés de la liste USDA.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Toi seul vois cette page. Ce que tu écris ici reste sur ton téléphone ; un code-barres que tu recherches est envoyé à Open Food Facts.",
+
+  // src/takeoffs (TASK-493 part C)
+  Takeoffs: "Décos",
+  "Zoom in to see the takeoffs.": "Zoome pour voir les décos.",
+  "Zoom in to see all the takeoffs.": "Zoome pour voir tous les décos.",
+  Landing: "Atterrissage",
+  "Unnamed takeoff": "Déco sans nom",
+  "Unnamed landing": "Atterrissage sans nom",
+  "Official site": "Site officiel",
+  Faces: "Orienté",
+  "Landings nearby": "Atterrissages proches",
+  "{distance} away · {drop} lower": "à {distance} · {drop} plus bas",
+  "No landing within 15 km on OpenStreetMap.":
+    "Aucun atterrissage à moins de 15 km sur OpenStreetMap.",
+  "Takeoffs above": "Décos au-dessus",
+  "Flights from here": "Vols d'ici",
+  "{flights} flights by {pilots} pilots": "{flights} vols de {pilots} pilotes",
+  "Today: {count}": "Aujourd'hui : {count}",
+  "Few flights from here yet.": "Encore peu de vols d'ici.",
+  "In the air now: {count}": "En l'air maintenant : {count}",
+  "Watch live": "Voir en direct",
+  Highest: "Le plus haut",
+  "Missing a takeoff? Add it on OpenStreetMap.":
+    "Il manque un déco ? Ajoute-le sur OpenStreetMap.",
+  "The takeoffs could not be loaded.": "Impossible de charger les décos.",
   // src/air/ (TASK-479 part D4: the task passed on; approved by the user on 2026-11-23)
   "Share file": "Partager le fichier",
   "Show QR": "Afficher le QR",
@@ -3684,7 +3716,16 @@ export const FR: Table = {
   "Remove all": "Tout retirer",
   "Press the flight map long to add one.":
     "Appuyez longuement sur la carte de vol pour en ajouter une.",
+  // src/nutrition (TASK-489 part H: the animated day; approved by the user on 2026-11-24)
+  "Protein, carbs and fat (est.)": "Protéines, glucides et lipides (est.)",
+  Protein: "Protéines",
+  Carbs: "Glucides",
+  Fat: "Lipides",
+  "{percent}% of the energy": "{percent}% de l'énergie",
+  "Counted only for the foods that have these numbers.":
+    "Comptés uniquement pour les aliments qui ont ces chiffres.",
+  "No protein, carbs or fat to count for this day.":
+    "Pas de protéines, de glucides ni de lipides à compter pour ce jour.",
   // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
-  Landing: "Atterrissage",
   "Landings from OpenStreetMap: {count}": "Atterrissages d'OpenStreetMap : {count}",
 };

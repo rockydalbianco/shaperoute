@@ -8,7 +8,9 @@ la correzione dell'header sopra le pagine con l'OTA 25; parte B avviata
 dall'utente il 2026-11-24: B1 e B2 sono bozze ferme fino al taglio
 nativo, la stanza per la barra è già in `main`; A7c-4 in `main` dal
 2026-11-26: **la parte A è finita**, esce col prossimo OTA; B3 e B4 in
-bozza, con la prova nel simulatore del 2026-11-26 qui sotto)
+bozza; col vetro velato del 2026-11-27 la barra, l'header e i fogli
+tengono 4,5:1 nel simulatore, e l'utente ha approvato la barra e detto
+di andare avanti coi fogli)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
@@ -229,9 +231,15 @@ l'SDK 57, niente installato):
   - **B4b** (bozza #1621, in cima alla pila): dove c'è il vetro vero il
     riquadro del foglio perde il fondo opaco e dietro il contenuto c'è il
     vetro di iOS.
-  - **Ferma**: nella prova il testo dei commenti sul vetro non tiene
-    4,5:1 (sotto). Gli altri fogli non si toccano finché l'utente non
-    decide.
+  - **B4c** (#1647, da `main`, nessun cambio visibile): gli altri
+    quindici fogli passano a `useGlassSheet()`, tre righe ciascuno.
+  - L'utente, viste le misure del 2026-11-27: «Sì, avanti». **Tutti o
+    nessuno**: i fogli entrano in una build solo quando sono pronti tutti
+    e diciassette; se no in quella build restano opachi.
+  - Un foglio in vetro vero prende un decimo in più del fondo del tono
+    rispetto alla barra (`glass.realSheetTint`): porta testo corrente e
+    scritte secondarie. Con «Riduci movimento» resta il foglio opaco
+    della parte A (sotto).
 
 **Vincoli in più per B**:
 
@@ -279,18 +287,38 @@ fondo):
   #1562 il vetro prende ora il fondo del tono dal 60 % in su
   (`glass.realTint`, `REAL_GLASS_TINT` in `tokens.ts`) e sul vetro vero
   le icone sono tutte nel colore pieno; la scheda sullo schermo la dicono
-  la capsula e il tratto più spesso. **Da misurare ancora nel simulatore
-  a questa quota**, nei due toni, prima che l'utente la riveda.
-- **Il foglio dei commenti non tiene 4,5:1**: B4 è ferma. Il foglio
+  la capsula e il tratto più spesso. Misurata il giorno dopo (sotto).
+- **Il foglio dei commenti non tiene 4,5:1** senza velatura. Il foglio
   «Share» invece va bene: le sue voci stanno su fondi opachi.
 - **L'header (B3) funziona** nel tono scuro: galleggia, e il contenuto di
   «Draw» gli passa dietro sfocato. Uno scroller con `overflow: "visible"`
   su iOS non taglia quello che gli esce in alto: la strada di B3a regge.
 
-**Non ancora visto**: l'header nel tono chiaro mentre la pagina scorre; le
-pagine dello sci e dell'allenamento; «Messages» con dei messaggi;
-«Aumenta contrasto»; i fogli con «Riduci movimento» (entrano sfumando
-l'opacità, che a 0 ferma il vetro); un telefono vero.
+**Le misure del 2026-11-27**, col vetro velato (stesso simulatore, stessi
+casi peggiori):
+
+| Superficie | Caso | Misura |
+|---|---|---|
+| Barra velata (60 %), icone nel colore pieno | tono scuro, foto bianca dietro | icone 7,4:1, attiva 5,5:1 |
+| Barra velata | tono scuro, sopra la mappa | 15:1, la linea del percorso si vede ancora attraverso |
+| Barra velata | tono chiaro, foto scura dietro | icone 14,9:1, attiva 11,6:1 |
+| Foglio dei commenti, velatura della barra | tono scuro, foto bianca | testo 10,4:1, scritte secondarie 4,3–4,4:1 |
+| Foglio dei commenti, velatura dei fogli (+10 %) | tono scuro, foto bianca | testo 12,4:1, scritte secondarie 5,2:1 |
+| Foglio dei commenti, velatura dei fogli | tono chiaro, foto scura | testo 17,6:1, scritte secondarie 6,4:1 |
+| Header velato, «Draw» che gli scorre dietro | tono scuro / chiaro | 15,3:1 / 19,8:1 |
+
+- **La barra velata tiene 4,5:1.** L'utente sulle schermate: «Sì, va
+  bene». La #1562 è a posto per il taglio nativo.
+- **I fogli tengono 4,5:1** con la loro velatura. L'utente: «Sì, avanti».
+- **Un difetto trovato e corretto**: con «Riduci movimento» un foglio
+  entra sfumando l'opacità (`SheetModal`), e sotto un'opacità che parte
+  da 0 il telefono non disegna mai il vetro: le parole dei commenti
+  stavano direttamente sopra il Feed, senza niente sotto. Ora con
+  «Riduci movimento» `useGlassSheet()` dà il foglio opaco della parte A.
+  `SheetModal.tsx` non è stato toccato.
+
+**Non ancora visto**: le pagine dello sci e dell'allenamento; «Messages»
+con dei messaggi; «Aumenta contrasto»; un telefono vero.
 
 **Per chi scrive un test**: il finto modulo di jest-expo risponde che il
 vetro vero c'è. Quando `expo-glass-effect` sarà in `main`, ogni test che
@@ -528,6 +556,25 @@ Spuntati per A1 e A2 (2026-11-12):
   `docs/tasks/TASK-469/TASK-469-A7c4-chip-volo.jpg` e
   `TASK-469-vetro-vero-prova-contrasti.jpg` (nuove), `docs/STATUS.md`,
   `docs/DECISIONS.md`, `docs/UI.md`.
+- B3b, la velatura dell'header (nella bozza #1617): `src/tabs/AppHeader.tsx`,
+  `src/tabs/HeaderFloats.test.tsx`.
+- B4b, la velatura dei fogli e «Riduci movimento» (nella bozza #1621):
+  `src/theme/tokens.ts` (solo aggiunte), `src/theme/glass.test.ts`,
+  `src/ui/SheetGlass.tsx`, `src/ui/SheetGlass.test.tsx`.
+- B4c (#1647): tre righe in `activities/ActivitySheet.tsx`,
+  `feed/AddToFeed.tsx`, `feed/StyleProductSheet.tsx`,
+  `gym/GymIntroSheet.tsx`, `liveShare/LiveShareButton.tsx`,
+  `messages/AttachButton.tsx`, `messages/MessageSheet.tsx`,
+  `search/FilterSheet.tsx`, `share/EditVideoSheet.tsx`,
+  `ski/DayResort.tsx`, `social/outfit/OutfitTagEditor.tsx`,
+  `social/outfit/OutfitTagSheet.tsx`, `social/ReportMenu.tsx`,
+  `social/SuperLikeSheet.tsx`, `social/TagPeople.tsx`, e
+  `src/ui/SheetGlass.test.tsx`.
+- La PR di documenti delle misure del vetro velato:
+  `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/TASK-469-barra-velata-contrasti.jpg` e
+  `TASK-469-fogli-header-velati.jpg` (nuove), `docs/STATUS.md`,
+  `docs/DECISIONS.md`, `docs/UI.md`.
 
 La lista di ogni fetta seguente va al Coordinatore prima del codice.
 
@@ -658,6 +705,14 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   L'utente sulla barra: «Prova la velatura»; sui chip del volo: «Sì,
   vai». #1624 in `main` (5fca0f9d): la parte A è finita. La velatura è
   nella #1562, da misurare.
+- **2026-11-27**: due turni corti di simulatore. La barra velata tiene
+  4,5:1 nei due toni; l'utente: «Sì, va bene». Con la stessa velatura i
+  fogli erano a un passo (scritte secondarie 4,3–4,4:1); l'utente: «Sì,
+  avanti», con la regola «tutti o nessuno». #1620 in `main`; gli altri
+  quindici fogli nella #1647; una velatura un decimo più forte per i
+  fogli, che misurata tiene 4,5:1. Trovato e corretto il foglio senza
+  vetro con «Riduci movimento». Visto anche l'header velato nei due
+  toni.
 - Imparato (il difetto di A5b): con la nuova architettura uno `zIndex`
   ordina dentro il più vicino antenato che resta una vista sua, non
   dentro il genitore. Una vista con solo posizione e colore di fondo
@@ -694,6 +749,13 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   va messo dietro la superficie e misurato prima di chiedere il sì, non
   dopo. Il vetro vero non è il velo con la sfocatura in più: prende luce
   da quello che ha dietro, e un colore fisso sopra non lo segue.
+- Imparato (B4, «Riduci movimento»): il vetro vero non sopporta un
+  genitore animato con l'opacità a partire da 0: non compare più, nemmeno
+  quando l'opacità arriva a 1. Ogni superficie in vetro vero va provata
+  con tutti i modi in cui entra in scena, anche quelli di «Riduci
+  movimento», che sono proprio dissolvenze. Dove l'entrata è una
+  dissolvenza, o si usa l'interruttore del vetro (`glassEffectStyle`,
+  come fa l'header) o quella superficie resta opaca.
 - Imparato (B3): per far passare il contenuto sotto una fascia che
   galleggia non serve spostare la pagina sotto la fascia. La pagina resta
   dov'era e il suo scroller smette di tagliare in alto
@@ -875,6 +937,19 @@ andato bene: l'header che galleggia con «Draw» che gli scorre dietro e il
 foglio «Share». Le misure sono nelle didascalie:
 
 ![La prova del vetro vero, coi contrasti](TASK-469/TASK-469-vetro-vero-prova-contrasti.jpg)
+
+**Il vetro velato** (2026-11-27) — la barra nei due casi peggiori, con
+accanto quella del giorno prima e quello che si vede ancora attraverso
+sopra la mappa; sotto, il foglio dei commenti con la velatura della
+barra:
+
+![La barra velata, coi contrasti](TASK-469/TASK-469-barra-velata-contrasti.jpg)
+
+Il foglio dei commenti con la velatura dei fogli, «Riduci movimento»
+prima della correzione (tono scuro) e dopo (tono chiaro), e l'header
+velato nei due toni:
+
+![I fogli e l'header velati](TASK-469/TASK-469-fogli-header-velati.jpg)
 
 ## Esito
 

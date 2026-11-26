@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { countStyleOpen, fetchStyleShop } from "../api/style";
 import { color, font, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
-import { useSheetFace } from "../ui/sheetFace";
+import { useGlassSheet } from "../ui/SheetGlass";
 import { Tap } from "../ui/Tap";
 import { STORE_NAMES, stylePriceLine, styleShopLabel, styleWords } from "./styleWords";
 
@@ -38,7 +38,7 @@ export function StyleProductSheet({
 }: Props) {
   const insets = useSafeAreaInsets();
   // The sheet in the glass look (TASK-469 A7a).
-  const glassSheet = useSheetFace();
+  const [glassSheet, glassBack] = useGlassSheet();
   const words = styleWords();
   const [busy, setBusy] = useState(false);
   // Down first, then gone (TASK-388 C3): the post hears of it once the
@@ -74,6 +74,7 @@ export function StyleProductSheet({
         style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.sm }]}
         testID="style-sheet"
       >
+        {glassBack}
         <Text style={styles.brand}>{tag.brand}</Text>
         <Text style={styles.name} accessibilityRole="header">
           {tag.product_name}

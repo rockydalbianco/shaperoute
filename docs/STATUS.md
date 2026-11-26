@@ -35,6 +35,8 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 **Le prove sul campo** (neve, volo, corsa vera): una riga per prova in
 `docs/PROVE-SUL-CAMPO.md` (406 E, 429, 375 E, 415, 305, 479), da
 fare quando capita; i task con solo quella prova sono chiusi.
+**TASK-501** (chiuso): dopo l'OTA con la parte C, la prova sul telefono
+di Coach e di un post aperto con la sua mappa.
 
 ## In lavorazione
 
@@ -220,7 +222,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   bozze ferme fino al taglio nativo. A7c-4 (#1624) in `main` dal
   2026-11-26: la parte A è finita. B3 (#1614, #1617) e B4 (#1620, #1621)
   in bozza; nella prova la barra e i fogli non tengono 4,5:1: la barra
-  velata è da misurare, i fogli sono fermi. File: — ·
+  velata è da misurare, i fogli sono fermi. 2026-11-27: col vetro velato
+  barra, header e fogli tengono 4,5:1 nel simulatore; l'utente approva
+  la barra e dice avanti coi fogli, tutti o nessuno (#1620 in `main`,
+  gli altri quindici nella #1647). File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 e A in

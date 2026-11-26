@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva; A finita con A7c-4 il 2026-11-26 (A1–A7c-3 in produzione con l'OTA 25); B a fette, in bozza fino al taglio nativo: la barra galleggia solo col vetro vero, velata col fondo del tono perché tenga 4,5:1 (utente, 2026-11-26), l'header in bozza, i fogli fermi alla prova
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva; A finita con A7c-4 il 2026-11-26 (A1–A7c-3 in produzione con l'OTA 25); B a fette, in bozza fino al taglio nativo: la barra galleggia solo col vetro vero, velata col fondo del tono: misurata, tiene 4,5:1 e l'utente l'ha approvata (2026-11-27); l'header in bozza; i fogli avanti, tutti o nessuno (utente, 2026-11-27)
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -619,9 +619,93 @@ lasciando le righe d'indice.
 - ADR-0359, aggiunta (TASK-519) — Su «Map» la freccia punta dove punta il telefono, col cono; la mappa non gira; bussola spenta su «Data» e in tasca · 2026-11-26 · Attiva
 - ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
 - ADR-0264, aggiunta D (TASK-496) — In una giornata di sci o un volo registrati, alla mappa vanno solo i punti nuovi dell'ultimo tratto finché la divisione in tratti resta la stessa · 2026-11-26 · Attiva
+- ADR-0414 — Le coordinate delle linee intere che l'API risponde all'app a 6 decimali, ognuna dentro la sua cella da 5: il nome della linea (`line_key`, il `favoriteKey` dell'app) non cambia; l'SQL resta a 15 cifre · 2026-11-27 · Attiva
+- ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Proposta
 
 
 ## Voci nuove
+
+## ADR-0414 — Le coordinate delle risposte a 6 decimali dentro la cella dei 5: la chiave delle linee non cambia
+
+**Stato**: Attiva · 2026-11-27 · TASK-501 parte B (#1650). Deciso
+dall'agente su delega dell'utente; numero dal Coordinatore (fork 3,
+2026-11-26).
+
+**Contesto**: voce O11 della lettura del codice del 23 novembre: le linee
+intere escono dal server con tutte le cifre di un double
+(`ST_AsGeoJSON(…, 15)`), mentre 6 decimali sono circa 10 cm e pesano quasi
+la metà. Il task file diceva di scrivere `ST_AsGeoJSON(…, 6)`. Una linea
+però ha un nome, `best_routes.line_key`, lo stesso del `favoriteKey`
+dell'app: due hash sui punti arrotondati a 5 decimali. Con questo nome un
+preferito si salva una volta sola, il cuore sa se un percorso è già tenuto,
+una corsa conta per il percorso di catalogo che ha seguito
+(`count_run`, `best_routes.uses`). Arrotondare a 6 e poi a 5 sposta circa
+una coordinata su venti nella cella accanto (46,0671249 → 46,067125 →
+46,06713 invece di 46,06712): simulato, cambiano nome 261 linee su 300 con
+20 punti e 300 su 300 con 200, sia con le coordinate a 7 decimali di
+OpenStreetMap sia con le tracce GPS. Il telefono darebbe a un percorso
+ricevuto un nome diverso da quello che il server tiene.
+
+**Decisione**:
+- **L'SQL resta a 15 cifre**; l'accorciamento si fa in Python, solo su
+  quello che si risponde all'app (`shaperoute_api/answer_lines.py`:
+  `short`, `short_point`, `short_line`).
+- **Ogni coordinata va a 6 decimali dentro la sua cella da 5**: se
+  l'arrotondamento semplice la porterebbe in un'altra cella, prende il
+  sesto decimale accanto, un milionesimo di grado (11 cm) più in là. Così
+  la linea che l'app riceve ha il nome della linea che il database tiene.
+  Su 2 milioni di coordinate: nessun nome cambiato, il 4,8% spostato di un
+  passo.
+- **Dove**: un'attività aperta (percorso e traccia), un disegno, la pagina
+  del link di un post, un preferito e un'uscita di gruppo aperti, e il
+  punto di partenza di questi ultimi due nelle loro liste.
+- **Dove no**: le anteprime delle liste, già a 5 decimali
+  (`recommended.preview`), quindi anche `messages.py`; `best_routes.py`
+  (legge a 9); le query che leggono una linea per riscriverla nel database
+  (`drawings.RUN_TO_DRAW`, `drawing_retrack.py`). I numeri e le distanze si
+  calcolano prima, sulle linee intere.
+
+**Conseguenze**: nessuna scrittura cambia e nessuna migrazione. Le risposte
+di una corsa da 3600 punti con un percorso da 2000 scendono, in locale, da
+218 781 a 122 238 byte (gzip da 83 629 a 31 861); accorciare costa circa
+1 µs a punto. Un percorso fatto di nodi OpenStreetMap ha già 7 decimali:
+lì si guadagna una cifra per coordinata. Un test rifà il `favoriteKey`
+dell'app riga per riga con i numeri di JavaScript
+(`tests/test_coordinate_decimals.py`) e lo confronta con `line_key`: chi
+cambia l'uno o l'altro lo vede. Le impronte del motore non cambiano
+(`route_store` legge solo `route_engine`). Non misurati: il server vero, il
+telefono.
+
+## ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching in palestra e le routine pubblicate
+
+**Stato**: Proposta · 2026-11-26 · TASK-466 parti C ed E, parte 0.
+**Scelte dell'utente** del 2026-11-26 (task file, «Parte 0 di C» e «Parte
+0 di E»); il modo **deciso dall'agente su delega**, file e forma dal
+Coordinatore.
+
+**Decisione**:
+
+1. **C — lo stretching dopo la palestra entra nell'allenamento**: alla
+   fine «Remember to stretch» / «Skip» / «Stretch», poi «After gym» da 3,
+   5 o 10 minuti; routine, minuti, durata ed esercizi vanno con la
+   sessione di palestra (`stretch` in `PUT /me/gym-sessions/{key}`,
+   tabella `gym_stretches`, migrazione 0089) e si vedono nel suo post con
+   gli esercizi. Un solo post, nessuna attività in più.
+2. **E — le routine proprie come le schede palestra** (ADR-0394): si
+   compongono in «Draw» › «Stretching» › «My routines» (nome, fino a 20
+   dei 15 esercizi in ordine, 20/30/45/60 s ciascuno, fino a 20 routine),
+   stanno sul telefono e nell'account, si pubblicano dal «My routines» e
+   dal «+» del Feed come fotografia; chi vede il post la fa («Do this
+   routine», salvata come sessione di TASK-475) o la copia («Save to my
+   routines»).
+3. **Privacy**: una frase per le sessioni di stretching (anche quelle di
+   TASK-475, mai nominate finora) e una per le routine e i loro post,
+   entrambe col sì dell'utente.
+
+**Conseguenze**: C1 e EA passano dal server (migrazioni, passi del
+Coordinatore col sì dell'utente); C2 ed EB escono con un OTA. La riga nel
+riepilogo di fine palestra (`GymEnd.tsx`) arriva dopo TASK-489 I e
+TASK-511 B. Diventa «Attiva» con il codice.
 
 ## ADR-0264, aggiunta D (TASK-496) — Sci e volo: alla mappa solo i punti nuovi dell'ultimo tratto
 
@@ -3924,6 +4008,23 @@ dichiarati «Sufficient Contrast» e il tema scuro.
   scritte secondarie 1,5:1): B4 è ferma alla prova su due fogli. Deciso
   dall'agente su delega dell'utente; provare la velatura è una scelta
   dell'utente.
+- **Parte B, il vetro velato misurato (2026-11-27)**: a quella quota la
+  barra tiene 4,5:1 nei due casi peggiori (icone 7,4:1 e 5,5:1 nel tono
+  scuro sopra una foto bianca, 14,9:1 e 11,6:1 nel chiaro sopra una
+  scura) e lascia ancora vedere quello che ha dietro. L'utente l'ha
+  approvata («Sì, va bene»). I fogli, con la stessa velatura, erano a un
+  passo; l'utente ha scelto di andare avanti («Sì, avanti»), tutti o
+  nessuno: entrano in una build solo quando sono pronti tutti. Un foglio
+  prende un decimo in più del fondo del tono rispetto alla barra
+  (`glass.realSheetTint`), perché porta testo corrente e scritte
+  secondarie: misurato, testo 12,4:1 e secondarie 5,2:1 nel caso
+  peggiore. Con «Riduci movimento» un foglio resta opaco: lì entra
+  sfumando l'opacità, e sotto un'opacità che parte da 0 il telefono non
+  disegna mai il vetro. Si è scelto di ripiegare dentro `useGlassSheet()`
+  invece di cambiare `SheetModal`, che serve a ogni foglio e la cui
+  dissolvenza è proprio quello che «Riduci movimento» chiede. Le scelte
+  sulla barra e sui fogli sono dell'utente; il resto è deciso dall'agente
+  su delega dell'utente.
 - **Parte B, l'header (2026-11-26)**: galleggia dove galleggia la barra.
   Lo shell continua a lasciare a ogni pagina lo spazio dell'header: non
   sposta le pagine sotto la fascia. Solo lo scroller principale che lo

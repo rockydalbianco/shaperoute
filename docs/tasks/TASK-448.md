@@ -73,8 +73,9 @@ Una per volta, ognuna con la sua proposta.
 2. Cosa fa il tocco: riempie forma e distanza e aspetta «Draw route», o
    disegna subito. — *risposta il 2026-11-26*
 3. Cosa è a caso: solo la forma o anche la distanza, e fra quali km. —
-   *chiesta il 2026-11-26*
+   *risposta il 2026-11-26*
 4. Cosa promette «viene bene» e cosa succede quando il risultato è scarso.
+   — *chiesta il 2026-11-26*
 5. Per quali sport.
 6. I testi nelle cinque lingue.
 
@@ -96,6 +97,12 @@ percorsi vicini è quella di «Explore»).
    un'altra; il calcolo parte solo con «Draw route». Scartate: disegnare
    subito (ogni cambio un calcolo intero, testi nuovi nel risultato), un
    foglio di conferma (un passaggio e testi in più).
+3. **Cosa è a caso: «Forma e 5 o 10 km»** (2026-11-26). A piedi l'app
+   sceglie una coppia forma–distanza già venuta bene nella città
+   dell'utente, a 5 o a 10 km, mai quella del tocco prima; 21 km mai a
+   sorpresa. Dopo il tocco la distanza si può cambiare, prima di «Draw
+   route». Scartate: anche 21 km; solo la forma con la distanza
+   dell'utente (meno sicura fuori da 5 e 10 km).
 
 ## File toccati
 
@@ -122,3 +129,4 @@ Coordinatore prima del codice. Vicini: `RoutePanel.tsx` e una riga di
   chiesta la domanda 1.
 - 2026-11-26 — risposta 1 («Nel passo 2 di Draw»); chiesta la domanda 2.
 - 2026-11-26 — risposta 2 («Riempie e aspetta»); chiesta la domanda 3.
+- 2026-11-26 — risposta 3 («Forma e 5 o 10 km»); chiesta la domanda 4.

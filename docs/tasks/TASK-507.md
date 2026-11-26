@@ -1,10 +1,10 @@
 # TASK-507 — I dati del telefono restano di chi li ha fatti, anche quando cambia l'account
 
-**Stato**: In lavorazione · A + C in `main` (#1533, `edde967c`) · D in `main`
-(#1545) · B1 in `main` (#1546, provata al simulatore) · **B2 in PR dal
-2026-11-24** (`fix/TASK-507-b2-run-on-screen`, nel turno su `App.tsx`)
-**Fase**: 4 · **ADR**: ADR-0406 (dal Coordinatore, voce nella PR di
-documenti finale) · numero dal Coordinatore il 2026-11-23
+**Stato**: In lavorazione · tutto il codice in `main`: A + C (#1533,
+`edde967c`), D (#1545), B1 (#1546, provata al simulatore), B2 (#1573,
+`71fc76c4`, 2026-11-24) · resta la prova dell'utente sul telefono
+**Fase**: 4 · **ADR**: ADR-0406 (voce in `DECISIONS.md` dal 2026-11-26) ·
+numero dal Coordinatore il 2026-11-23
 
 ## Obiettivo
 
@@ -223,6 +223,19 @@ apps/mobile/__tests__/AppRunOwner.test.tsx       (nuovo)
 docs/tasks/TASK-507.md
 ```
 
+## Cosa resta
+
+- **La prova dell'utente sul telefono**, dopo l'OTA di produzione che
+  porta B2 (`out/strategia-2026-11-24/PROVA-GENERALE.md`, sezione 2, riga
+  507): con A una corsa fermata senza salvare; entra B e non vede la corsa
+  né corpo e cuore di A, ricerche recenti vuote; rientra A e ritrova «La
+  tua corsa», la salva sotto A. Serve un secondo account di prova.
+- Poi la chiusura: riga in `docs/archive/COMPLETATI.md`, «Chiuso» in
+  `STATUS.md`, task a `Done`, «TASK-507 fatto» al Coordinatore.
+- Possibile, a parte: la lista «On your phone» della privacy non nomina
+  tutto quello che il telefono tiene; se serve la propone il Coordinatore
+  come PR di privacy sua.
+
 ## Sul server
 
 Niente da sistemare. Le tre sessioni sono finite solo nel database di prova
@@ -239,3 +252,6 @@ arrivate (`VERIFICA.md`, punto 1).
 - **2026-11-24** — Parte B1 scritta, in bozza fino alla prova al simulatore.
 - **2026-11-24** — Prova al simulatore di B1 riuscita, con una correzione (un file di un punto senza proprietario non tiene fuori la corsa che torna).
 - **2026-11-24** — D e B1 in `main`; B2 in PR nel turno su `App.tsx`.
+- **2026-11-24** — B2 in `main` (#1573).
+- **2026-11-26** — PR di documenti: ADR-0406 e la riga in `STATUS.md`.
+  Resta la prova sul telefono dopo l'OTA.

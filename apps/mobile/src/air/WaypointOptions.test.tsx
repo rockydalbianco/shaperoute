@@ -211,12 +211,16 @@ describe("the landings of OpenStreetMap (D6)", () => {
         value: {
           sites: [
             {
-              id: "n1",
+              id: 1,
               kind: "landing",
               lat: 45.7,
               lon: 10.8,
               name: "Test field",
               ele_m: 300,
+              orientation: [],
+              official: null,
+              osm_url: "https://www.openstreetmap.org/node/1",
+              away_m: null,
             },
           ],
           more: false,

@@ -134,6 +134,23 @@ test("another shape, another start: another outline and another picture", async 
   expect(moved).not.toBe(first);
 });
 
+test("with the pen up the shape is drawn in pieces, larger for the same distance", async () => {
+  const size = () =>
+    Number(
+      (screen.getByText(/^≈ /).props.children as string[])
+        .join("")
+        .match(/[\d.]+/)?.[0],
+    );
+  const { rerender } = await render(
+    <LivePreview shape="sun" distanceM={8000} start={START} />,
+  );
+  await layOut();
+  const down = size();
+  await rerender(<LivePreview shape="sun" distanceM={8000} start={START} apart />);
+  // The rays count once each, not there and back: more ground for the km.
+  expect(size()).toBeGreaterThan(down * 1.5);
+});
+
 /** «Draw» with a heart of 5 km chosen, from `start`, for `activity`. */
 function choice(start: LatLon | null | undefined, activity: Activity = "running") {
   const distanceM = toDistanceM("5", activity);

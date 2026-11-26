@@ -243,7 +243,13 @@ export function RouteChoice({
           {shownShape !== null &&
             distanceM !== null &&
             (start !== null && !isPlacedFree(activity) ? (
-              <LivePreview shape={shownShape} distanceM={distanceM} start={start} />
+              <LivePreview
+                shape={shownShape}
+                distanceM={distanceM}
+                start={start}
+                // As «Draw» will ask it: in pieces with the pen up.
+                apart={penUp && offersPenUp(shownShape)}
+              />
             ) : (
               <ShapePreview shape={shownShape} distanceM={distanceM} />
             ))}

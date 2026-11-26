@@ -39,12 +39,16 @@ export function LivePreview({
   shape,
   distanceM,
   start,
+  apart = false,
 }: {
   shape: Shape;
   distanceM: number;
   start: LatLon;
+  /** Asked with the pen up: drawn piece by piece, and sized by its pieces
+   * alone (`shapeAsked`). */
+  apart?: boolean;
 }) {
-  const look = useMemo(() => lookOf({ kind: "shape", shape }), [shape]);
+  const look = useMemo(() => lookOf({ kind: "shape", shape }, apart), [shape, apart]);
   return (
     <OutlineOnMap
       look={look}

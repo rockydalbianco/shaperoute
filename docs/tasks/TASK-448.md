@@ -71,8 +71,9 @@ Una per volta, ognuna con la sua proposta.
 
 1. Dove sta l'ingresso. — *risposta il 2026-11-26*
 2. Cosa fa il tocco: riempie forma e distanza e aspetta «Draw route», o
-   disegna subito. — *chiesta il 2026-11-26*
-3. Cosa è a caso: solo la forma o anche la distanza, e fra quali km.
+   disegna subito. — *risposta il 2026-11-26*
+3. Cosa è a caso: solo la forma o anche la distanza, e fra quali km. —
+   *chiesta il 2026-11-26*
 4. Cosa promette «viene bene» e cosa succede quando il risultato è scarso.
 5. Per quali sport.
 6. I testi nelle cinque lingue.
@@ -89,6 +90,12 @@ percorsi vicini è quella di «Explore»).
    Scartate: una tessera nella griglia delle forme (toglie una forma alla
    griglia chiusa), una riga sotto la distanza (da cercare scorrendo), una
    scheda anche in «Explore».
+2. **Cosa fa il tocco: «Riempie e aspetta»** (2026-11-26). Il tocco mette
+   forma e distanza nella pagina (la griglia segna la forma, la distanza si
+   sposta, il pulsante dice «Draw heart · 5 km»); un altro tocco ne dà
+   un'altra; il calcolo parte solo con «Draw route». Scartate: disegnare
+   subito (ogni cambio un calcolo intero, testi nuovi nel risultato), un
+   foglio di conferma (un passaggio e testi in più).
 
 ## File toccati
 
@@ -114,3 +121,4 @@ Coordinatore prima del codice. Vicini: `RoutePanel.tsx` e una riga di
 - 2026-11-26 — parte 0 avviata: letto il codice, scritta questa bozza,
   chiesta la domanda 1.
 - 2026-11-26 — risposta 1 («Nel passo 2 di Draw»); chiesta la domanda 2.
+- 2026-11-26 — risposta 2 («Riempie e aspetta»); chiesta la domanda 3.

@@ -138,6 +138,10 @@ const SHEETS = [
 
 test.each(SHEETS)("%s wears the sheet's face", (file) => {
   const source = readFileSync(join(__dirname, "..", file), "utf8");
-  expect(source).toMatch(/const glassSheet = useSheetFace\(\);/);
+  // Or `useGlassSheet()`, the same face with the phone's real glass behind
+  // it where there is one (TASK-469 B4, SheetGlass.test.tsx).
+  expect(source).toMatch(
+    /const glassSheet = useSheetFace\(\);|const \[glassSheet, glassBack\] = useGlassSheet\(\);/,
+  );
   expect(source).toMatch(/styles\.sheet,\s*glassSheet[,\]]/);
 });

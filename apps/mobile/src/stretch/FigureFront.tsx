@@ -14,6 +14,7 @@ import {
   frontDrift,
   frontGrounding,
   type FrontPose,
+  frontSway,
   type FrontSegment,
   HIP_HALF,
   mirrorFront,
@@ -33,7 +34,8 @@ import {
  * short way, standing up between two poses; a breath while held, or a
  * movement at its own pace (`breathMs`); still with «Reduce Motion» on.
  * The other side is the same pose mirrored, reached through standing: seen
- * from the front nobody turns round.
+ * from the front nobody turns round. A pose `planted` on its feet keeps
+ * them still as it moves: the hip goes across over them.
  */
 
 /** How long the breath takes to settle when the hold stops. */
@@ -296,8 +298,13 @@ export function FigureFront({
     t.interpolate(ground),
     b.interpolate({ inputRange: [0, 1], outputRange: [0, sink] }),
   );
-  // A pose that reaches far to a side slides back, to stay on the screen.
-  const slide = t.interpolate(keyframes(poses.map((p) => frontDrift(p) * height)));
+  // A pose that reaches far to a side slides back, to stay on the screen;
+  // one planted on its feet takes the hip across over them as it moves.
+  const sway = frontSway(at, deepenFront(at, swing)) * height;
+  const slide = Animated.add(
+    t.interpolate(keyframes(poses.map((p) => frontDrift(p) * height))),
+    b.interpolate({ inputRange: [0, 1], outputRange: [0, sway] }),
+  );
   const torso = FRONT_LENGTH.torso * height;
   const shoulders = torso * FRONT_SHOULDER_SHARE;
   const arm = (segment: "upperArmLeft" | "upperArmRight") => ({

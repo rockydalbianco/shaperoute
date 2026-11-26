@@ -1996,6 +1996,32 @@ export const FR: Table = {
   Inchworm: "Chenille",
   "Fold down, walk your hands out to a plank, then walk them back.":
     "Penchez-vous, avancez les mains jusqu'à la planche, puis revenez.",
+  "Neck side tilt": "Inclinaison latérale du cou",
+  "Tilt one ear toward your shoulder. Keep both shoulders low.":
+    "Inclinez une oreille vers l'épaule. Gardez les deux épaules basses.",
+  "Neck turn": "Rotation du cou",
+  "Turn your head to look over one shoulder. Chin level.":
+    "Tournez la tête pour regarder par-dessus une épaule. Menton droit.",
+  "Goalpost arms": "Bras en chandelier",
+  "Elbows at shoulder height, hands up. Draw your elbows back, chest open.":
+    "Coudes à hauteur d'épaules, mains vers le haut. Tirez les coudes en arrière, poitrine ouverte.",
+  "Standing side bend": "Flexion latérale debout",
+  "Reach one arm overhead and lean to the other side. Hips still.":
+    "Levez un bras au-dessus de la tête et penchez-vous de l'autre côté. Hanches immobiles.",
+  "Lying twist": "Torsion allongée",
+  "Lying down, drop both knees to one side. Shoulders stay on the floor.":
+    "Allongé, laissez tomber les deux genoux d'un côté. Les épaules restent au sol.",
+  "Sit with the soles of your feet together. Let your knees fall open.":
+    "Asseyez-vous, plantes des pieds jointes. Laissez les genoux s'ouvrir.",
+  Frog: "Grenouille",
+  "On all fours, knees wide. Push your hips gently back.":
+    "À quatre pattes, genoux écartés. Poussez doucement les hanches vers l'arrière.",
+  "Side lunge": "Fente latérale",
+  "Feet wide, shift your weight into one bent knee. Other leg straight.":
+    "Pieds écartés, portez le poids sur un genou plié. L'autre jambe tendue.",
+  "Wide-leg forward fold": "Flexion avant jambes écartées",
+  "Feet wide, fold forward from the hips. Hands to the floor.":
+    "Pieds écartés, penchez-vous en avant depuis les hanches. Mains au sol.",
   // end of TASK-520 part B
   Morning: "Matin",
   "After run": "Après la course",

@@ -1,6 +1,6 @@
 import { EXERCISES, MORE_EXERCISES } from "./exercises";
 import { NEW_EXERCISES } from "./exercisesMore";
-import { BREATH_MAX_DEGREES, SEGMENTS } from "./poses";
+import { BREATH_MAX_DEGREES, SEGMENTS, STAND } from "./poses";
 
 /** The first block of TASK-520 part B, in the order of the approved list. */
 const B1 = [
@@ -50,12 +50,26 @@ const B3 = [
   "inchworm",
 ];
 
+/** The fourth block: seen from the front, or from above lying down. */
+const B4 = [
+  "neckSide",
+  "neckTurn",
+  "goalpost",
+  "sideBend",
+  "lyingTwist",
+  "butterfly",
+  "frog",
+  "sideLunge",
+  "wideFold",
+];
+
 describe("the exercises TASK-520 adds", () => {
   it("are the ones approved, each under its key, block after block", () => {
     expect(NEW_EXERCISES.map((exercise) => exercise.key)).toEqual([
       ...B1,
       ...B2,
       ...B3,
+      ...B4,
     ]);
   });
 
@@ -82,8 +96,11 @@ describe("the exercises TASK-520 adds", () => {
       for (const segment of SEGMENTS) {
         expect(typeof exercise.pose[segment]).toBe("number");
       }
-      expect(exercise.breath).toBeDefined();
-      for (const degrees of Object.values(exercise.breath ?? {})) {
+      // Seen from the front, the pose and its breath are the front ones.
+      const breath =
+        exercise.front === undefined ? exercise.breath : exercise.frontBreath;
+      expect(breath).toBeDefined();
+      for (const degrees of Object.values(breath ?? {})) {
         expect(Math.abs(degrees ?? 0)).toBeGreaterThan(0);
         // A movement is as wide as it needs; a breath is a few degrees.
         if (exercise.kind !== "move") {
@@ -101,8 +118,8 @@ describe("the exercises TASK-520 adds", () => {
       );
       expect(["standing", "chair", "floor"]).toContain(exercise.position);
       expect(["gentle", "intense"]).toContain(exercise.level);
-      // The first two blocks are held, the third moves; all seen from the side.
-      if (B3.includes(exercise.key)) {
+      // The first two blocks are held, the third moves, and one of the fourth.
+      if (B3.includes(exercise.key) || exercise.key === "sideLunge") {
         expect(exercise.kind).toBe("move");
         expect(exercise.tempoMs).toBeGreaterThan(0);
         expect(exercise.seconds).toBe(30);
@@ -110,7 +127,16 @@ describe("the exercises TASK-520 adds", () => {
         expect(exercise.kind).toBeUndefined();
         expect(exercise.tempoMs).toBeUndefined();
       }
-      expect(exercise.front).toBeUndefined();
+      // Only the fourth block is seen from the front; there `pose` is the
+      // figure standing, for whoever draws the side only.
+      if (B4.includes(exercise.key)) {
+        expect(exercise.front).toBeDefined();
+        expect(exercise.pose).toBe(STAND);
+        expect(exercise.breath).toBeUndefined();
+      } else {
+        expect(exercise.front).toBeUndefined();
+        expect(exercise.frontBreath).toBeUndefined();
+      }
     }
   });
 
@@ -135,6 +161,9 @@ describe("the exercises TASK-520 adds", () => {
       "downDog",
       "lungeReach",
       "inchworm",
+      "frog",
+      "sideLunge",
+      "wideFold",
     ]);
   });
 
@@ -168,5 +197,26 @@ describe("the exercises TASK-520 adds", () => {
       "sideQuad",
       "halfSplit",
     ]);
+  });
+});
+
+describe("the fourth block, seen from the front", () => {
+  const fourth = NEW_EXERCISES.filter((exercise) => B4.includes(exercise.key));
+
+  it("does one side at a time where there are two, and lies down for the twist, the butterfly and the frog", () => {
+    expect(fourth).toHaveLength(B4.length);
+    expect(fourth.filter((exercise) => exercise.sides).map((e) => e.key)).toEqual([
+      "neckSide",
+      "neckTurn",
+      "sideBend",
+      "lyingTwist",
+      "sideLunge",
+    ]);
+    expect(
+      fourth.filter((exercise) => exercise.position === "floor").map((e) => e.key),
+    ).toEqual(["lyingTwist", "butterfly", "frog"]);
+    expect(
+      fourth.filter((exercise) => exercise.front?.above).map((e) => e.key),
+    ).toEqual(["lyingTwist", "frog"]);
   });
 });

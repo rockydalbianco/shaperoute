@@ -2004,6 +2004,32 @@ export const DE: Table = {
   Inchworm: "Raupe",
   "Fold down, walk your hands out to a plank, then walk them back.":
     "Nach unten beugen, mit den Händen bis in die Planke laufen, dann zurück.",
+  "Neck side tilt": "Nacken seitlich neigen",
+  "Tilt one ear toward your shoulder. Keep both shoulders low.":
+    "Ein Ohr zur Schulter neigen. Beide Schultern unten lassen.",
+  "Neck turn": "Kopf drehen",
+  "Turn your head to look over one shoulder. Chin level.":
+    "Den Kopf drehen und über eine Schulter schauen. Kinn gerade.",
+  "Goalpost arms": "Kaktusarme",
+  "Elbows at shoulder height, hands up. Draw your elbows back, chest open.":
+    "Ellbogen auf Schulterhöhe, Hände nach oben. Die Ellbogen nach hinten ziehen, Brust offen.",
+  "Standing side bend": "Seitbeuge im Stehen",
+  "Reach one arm overhead and lean to the other side. Hips still.":
+    "Einen Arm über den Kopf strecken und zur anderen Seite neigen. Hüfte ruhig.",
+  "Lying twist": "Drehung im Liegen",
+  "Lying down, drop both knees to one side. Shoulders stay on the floor.":
+    "Im Liegen beide Knie zu einer Seite sinken lassen. Die Schultern bleiben am Boden.",
+  "Sit with the soles of your feet together. Let your knees fall open.":
+    "Im Sitzen die Fußsohlen aneinanderlegen. Die Knie nach außen sinken lassen.",
+  Frog: "Frosch",
+  "On all fours, knees wide. Push your hips gently back.":
+    "Im Vierfüßlerstand, Knie weit. Die Hüfte sanft nach hinten schieben.",
+  "Side lunge": "Seitlicher Ausfallschritt",
+  "Feet wide, shift your weight into one bent knee. Other leg straight.":
+    "Füße weit, das Gewicht auf ein gebeugtes Knie verlagern. Das andere Bein gestreckt.",
+  "Wide-leg forward fold": "Vorbeuge in der Grätsche",
+  "Feet wide, fold forward from the hips. Hands to the floor.":
+    "Füße weit, aus der Hüfte nach vorn beugen. Hände zum Boden.",
   // end of TASK-520 part B
   Morning: "Morgens",
   "After run": "Nach dem Laufen",

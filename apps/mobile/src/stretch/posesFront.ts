@@ -36,6 +36,12 @@ export type FrontPose = Readonly<Record<FrontSegment, number>> & {
    * drawn in the middle of its box instead of standing on its lowest point.
    */
   readonly above?: boolean;
+  /**
+   * Standing on feet that stay where they are while the pose moves (a side
+   * lunge): the hip goes across over them, instead of the feet sliding
+   * under a hip that stays in place.
+   */
+  readonly planted?: boolean;
 };
 
 /** How a front pose goes deeper on a breath, or how far a movement goes. */
@@ -180,11 +186,31 @@ export function frontDrift(pose: FrontPose): number {
 
 /** `pose` at the far end of a breath or of a movement. */
 export function deepenFront(pose: FrontPose, breath: FrontBreath): FrontPose {
-  const out: Record<FrontSegment, number> & { above?: boolean } = { ...pose };
+  const out: Record<FrontSegment, number> & { above?: boolean; planted?: boolean } = {
+    ...pose,
+  };
   for (const segment of FRONT_SEGMENTS) {
     out[segment] = pose[segment] + (breath[segment] ?? 0);
   }
   return out;
+}
+
+/** The middle of the two feet, across the screen. */
+function betweenFeet(pose: FrontPose): number {
+  const { shinLeft, shinRight } = frontBones(pose);
+  return (shinLeft.to.x + shinRight.to.x) / 2;
+}
+
+/**
+ * How far the hip goes across the screen from `pose` to `deep` so that the
+ * feet stay where they are: positive, to the right. Nothing for a pose that
+ * is not `planted`.
+ */
+export function frontSway(pose: FrontPose, deep: FrontPose): number {
+  if (pose.planted !== true) {
+    return 0;
+  }
+  return betweenFeet(pose) - betweenFeet(deep);
 }
 
 const TWIN: Readonly<Record<FrontSegment, FrontSegment>> = {
@@ -208,7 +234,9 @@ function between(degrees: number): number {
 
 /** The other side: each limb takes its twin's direction, mirrored. */
 export function mirrorFront(pose: FrontPose): FrontPose {
-  const out: Record<FrontSegment, number> & { above?: boolean } = { ...pose };
+  const out: Record<FrontSegment, number> & { above?: boolean; planted?: boolean } = {
+    ...pose,
+  };
   for (const segment of FRONT_SEGMENTS) {
     out[segment] = between(-pose[TWIN[segment]]);
   }

@@ -620,6 +620,7 @@ lasciando le righe d'indice.
 - ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
 - ADR-0264, aggiunta D (TASK-496) — In una giornata di sci o un volo registrati, alla mappa vanno solo i punti nuovi dell'ultimo tratto finché la divisione in tratti resta la stessa · 2026-11-26 · Attiva
 - ADR-0414 — Le coordinate delle linee intere che l'API risponde all'app a 6 decimali, ognuna dentro la sua cella da 5: il nome della linea (`line_key`, il `favoriteKey` dell'app) non cambia; l'SQL resta a 15 cifre · 2026-11-27 · Attiva
+- ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Proposta
 
 
 ## Voci nuove
@@ -674,6 +675,37 @@ dell'app riga per riga con i numeri di JavaScript
 cambia l'uno o l'altro lo vede. Le impronte del motore non cambiano
 (`route_store` legge solo `route_engine`). Non misurati: il server vero, il
 telefono.
+
+## ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching in palestra e le routine pubblicate
+
+**Stato**: Proposta · 2026-11-26 · TASK-466 parti C ed E, parte 0.
+**Scelte dell'utente** del 2026-11-26 (task file, «Parte 0 di C» e «Parte
+0 di E»); il modo **deciso dall'agente su delega**, file e forma dal
+Coordinatore.
+
+**Decisione**:
+
+1. **C — lo stretching dopo la palestra entra nell'allenamento**: alla
+   fine «Remember to stretch» / «Skip» / «Stretch», poi «After gym» da 3,
+   5 o 10 minuti; routine, minuti, durata ed esercizi vanno con la
+   sessione di palestra (`stretch` in `PUT /me/gym-sessions/{key}`,
+   tabella `gym_stretches`, migrazione 0089) e si vedono nel suo post con
+   gli esercizi. Un solo post, nessuna attività in più.
+2. **E — le routine proprie come le schede palestra** (ADR-0394): si
+   compongono in «Draw» › «Stretching» › «My routines» (nome, fino a 20
+   dei 15 esercizi in ordine, 20/30/45/60 s ciascuno, fino a 20 routine),
+   stanno sul telefono e nell'account, si pubblicano dal «My routines» e
+   dal «+» del Feed come fotografia; chi vede il post la fa («Do this
+   routine», salvata come sessione di TASK-475) o la copia («Save to my
+   routines»).
+3. **Privacy**: una frase per le sessioni di stretching (anche quelle di
+   TASK-475, mai nominate finora) e una per le routine e i loro post,
+   entrambe col sì dell'utente.
+
+**Conseguenze**: C1 e EA passano dal server (migrazioni, passi del
+Coordinatore col sì dell'utente); C2 ed EB escono con un OTA. La riga nel
+riepilogo di fine palestra (`GymEnd.tsx`) arriva dopo TASK-489 I e
+TASK-511 B. Diventa «Attiva» con il codice.
 
 ## ADR-0264, aggiunta D (TASK-496) — Sci e volo: alla mappa solo i punti nuovi dell'ultimo tratto
 

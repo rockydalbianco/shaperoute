@@ -1,7 +1,7 @@
 # TASK-516 — Forme invernali e contorni: forme nuove per il motore e il catalogo
 
-**Stato**: In lavorazione — parte C (registrazione delle 35 forme), sgelata
-il 2026-11-26 su richiesta dell'utente al Coordinatore; parti 0, A e B fatte
+**Stato**: In lavorazione — parte D (catalogo): D1 in PR, D2 passata a
+TASK-521; parti 0, A, B e C fatte (C sul server col passo 25 e nell'OTA 27)
 **Fase**: 5 · **Branch**: `docs/TASK-516-part-0` (parte 0); una PR per parte
 **ADR**: ADR-0411 · numeri dal Coordinatore (fork 3), 2026-11-24
 **Viene da**: TASK-441 (la sua parte C), TASK-418 (le forme candidate e
@@ -222,6 +222,37 @@ I disegni delle forme nuove in fondo ai file di città (`tools/catalog_seed.py`,
 (`catalog/README.md`) e una pagina per l'utente prima della PR; poi il
 passo «catalogo» sul server.
 
+### D1 — i disegni già fatti (2026-11-27)
+
+Nessun giro nuovo. Dei disegni delle 35 forme nel registro di TASK-419 (con
+in coda gli 88 casi della parte B) ne passano il filtro **130, nelle quattro
+città della parte B**: Milano 60, Barcellona 36, Trento 32, Levico 2 (69 da
+10 km, 61 da 5 km, da 3 a 8 per forma). Pagina per l'utente:
+`out/TASK-516/d/disegni-130.html`. Entrano tutti: il seme passa da 2031 a
+**2161 percorsi**.
+
+- `catalog_seed._place` mette le forme di `LATER_SHAPES` (le 35) in fondo a
+  ogni file di città, dopo corse, parole, uscite e uscite lunghe: l'API
+  numera un percorso col suo posto nel file, quindi ogni id di prima resta.
+  Lo dice un test (`test_catalog_seed.py`), e un altro controlla che le 35
+  siano nel `SHAPES` del motore.
+- Prova: con le chiavi di prima, `catalog_bike.py --write` rifà i 63 file
+  identici byte per byte; con le 130 chiavi cambiano solo i quattro file, e
+  in ognuno i percorsi di prima sono gli stessi, nello stesso ordine.
+- `out/TASK-419/runs.jsonl` ha in coda gli 88 casi della parte B (copia di
+  prima: `runs.before-task516.jsonl`), così i comandi del README vanno
+  come prima.
+- Dopo l'unione: il passo «catalogo» sul server (immagine nuova, nessuna
+  migrazione), log «2161 recommended routes». Lo chiede il Coordinatore.
+
+### D2 — le altre 59 città: passa a TASK-521
+
+Il giro delle 35 forme nelle altre città (proposta: 6 forme per città a
+turno, a 5 e 10 km, circa 700 casi, dalle zone a piedi in cache) passa a
+TASK-521 (revisione del catalogo e 3000 disegni), che lavora sugli stessi
+file (Coordinatore, 2026-11-27). Appunti per quella sessione:
+`out/TASK-516/D2-PASSAGGIO.md` della cartella principale.
+
 ## Scelte dell'utente
 
 - 2026-11-24: il primo pezzo è «Forme invernali e contorni» (pezzi 1 e 2
@@ -233,6 +264,9 @@ passo «catalogo» sul server.
   nell'esito della parte B, con la categoria del loro file.
 - 2026-11-26: le 19 forme di cibo, monumenti e oggetti nella ricerca:
   «Sì, in Emoji» (nessuna chip nuova).
+- 2026-11-27: sulla parte D, «Sì, così»: subito i 130 disegni delle quattro
+  città (D1), il giro nelle altre 59 città dopo (D2).
+- 2026-11-27: sulla pagina dei 130 disegni: «Sì, vanno bene». Entrano tutti.
 
 ## Fuori scope
 
@@ -259,3 +293,9 @@ passo «catalogo» sul server.
 - **2026-11-26**: l'utente fa sgelare la parte C («falla partire poi
   grazie», al Coordinatore). Lista dei file approvata; codice nel branch
   `feat/TASK-516-c-register`.
+- **2026-11-26**: #1622 in `main` (1358de31): le 35 forme registrate.
+- **2026-11-27**: passo 25 sul server (847f237e): «66 shapes, 35 new ok» e
+  quattro percorsi veri a Trento; OTA 27 uscita con le forme. Parte D: lista
+  dei file approvata dal Coordinatore, D1 nel branch
+  `feat/TASK-516-d-catalogue`. Prossimo: la PR verde, il passo «catalogo»
+  sul server, poi i documenti di chiusura. La D2 passa a TASK-521.

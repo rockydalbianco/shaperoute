@@ -610,9 +610,55 @@ lasciando le righe d'indice.
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
 - ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero (`GET /notifications/unread`, una query, niente foto), con il ripiego sulla lista per un server di prima; la riga dei «live» non chiede con l'app dietro · 2026-11-26 · Attiva
+- ADR-0264, aggiunta C (TASK-496) — Il file intero della corsa si scrive accanto e poi si sposta sopra il vecchio: una chiusura a metà scrittura lascia l'ultimo file intero · 2026-11-26 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0264, aggiunta C (TASK-496) — Il file intero della corsa si scrive accanto e poi si sposta sopra il vecchio
+
+**Stato**: Attiva · 2026-11-26 · TASK-496 parte C. **Deciso dall'agente su
+delega dell'utente** («intanto prepara le modifiche per 496», 2026-11-26),
+dall'idea scritta in «Idee per dopo» del task file; lista dei file e forma
+(un'aggiunta ad ADR-0264, come O1 e O2) dal Coordinatore. Codice nella
+#1603. **Precisa il punto 2 dell'aggiunta del 2026-11-23** (il file
+intero); la promessa della TASK-304 non cambia.
+
+**Contesto**: `saveRun` scriveva `current-run.json` sul posto: iOS che
+chiude MuW a metà di quella scrittura lasciava mezzo file, e all'apertura
+`loadRun` non trovava nessuna corsa. Col diario succede molte meno volte,
+ma succede ancora a ogni file intero (uscendo dal primo piano, a una pausa,
+ogni 300 righe, alla fine). L'aggiunta del 2026-11-23 aveva scartato lo
+spostamento perché il comportamento di `move` su un file che esiste non era
+verificato: in `expo-file-system` 57 (`FileSystemPath.swift`) `move` con
+`overwrite` toglie il file di arrivo e poi sposta, in due passi.
+
+**Decisione**:
+
+1. **`saveRun` scrive `current-run.json.new`** e lo sposta su
+   `current-run.json` con `moveSync(…, { overwrite: true })`.
+2. **All'apertura, prima di tutto il resto di `takeRunSlot`**, un `.new`
+   rimasto accanto al file si sistema: se si legge come una corsa è più
+   nuovo del file (lo spostamento è stato interrotto tra i suoi due passi)
+   e ne prende il posto; se non si legge (interrotto mentre si scriveva) si
+   toglie, e resta il file di prima. Il diario si legge dopo come sempre:
+   una riga già dentro il file si salta.
+3. **`clearRun` toglie anche il `.new`.**
+4. **Dove i file non si spostano** (i finti dischi di molti test) si scrive
+   sul posto come prima: i loro test non cambiano.
+5. `takeRunSlot` e `moveRuns` di TASK-507 restano come sono.
+
+**Alternative scartate**: scrivere un secondo file intero e tenere il più
+nuovo che si legge (il doppio delle scritture del file intero, contro lo
+scopo della TASK-496); un `rename` senza togliere prima il file (su iOS
+fallisce se il file di arrivo esiste).
+
+**Conseguenze**: una chiusura a metà del file intero lascia l'ultimo file
+intero, o quello nuovo se era già scritto. Ogni file intero è una scrittura
+e uno spostamento; nessun campo nuovo nel file, nessun cambio nativo,
+nessuna dipendenza. Provato nei test (`trackStoreAtomic.test.ts`: scrittura
+interrotta, spostamento interrotto, `.new` più nuovo, `.new` a metà,
+cancellazione), non sul telefono.
 
 ## ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero; la riga dei «live» non chiede con l'app dietro
 

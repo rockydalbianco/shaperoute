@@ -2,10 +2,11 @@
 
 **Stato**: Done · 2026-11-23 · #1529 (O1) e #1531 (O2) in `main`; resta
 l'OTA (Coordinatore, col sì dell'utente) e l'occhio dell'utente sulla
-batteria, sul telefono
+batteria, sul telefono. 2026-11-26: parte C (il file intero scritto accanto
+e spostato) nella #1603
 **Prova sul telefono**: provato dall'utente il 2026-11-26 con una corsa vera, telefono bloccato e in tasca: «ok», senza numeri della batteria.
 **Fase**: 5 · **Branch**: `feat/TASK-496-a-run-journal` (O1), poi
-`feat/TASK-496-b-unseen-map-clock` (O2)
+`feat/TASK-496-b-unseen-map-clock` (O2), `feat/TASK-496-c-atomic-run-file` (C)
 **Dipende da**: TASK-304 (ADR-0264), TASK-112 (ADR-0091), TASK-070 (tasca)
 **ADR**: aggiunta ad ADR-0264 (lo ha detto il Coordinatore) · numero dal
 Coordinatore il 2026-11-23
@@ -119,6 +120,11 @@ invariata (`5e1b5ce5`).
 - [x] Documenti di chiusura (questa PR): aggiunta ad ADR-0264, `UI.md`,
       `INDEX.md`, `COMPLETATI.md`.
 - [ ] OTA di produzione: del Coordinatore, col sì dell'utente.
+- [x] Parte C (2026-11-26): sì del Coordinatore sulla lista dei file
+      (`trackStore.ts`, nuovo `trackStoreAtomic.test.ts`); test della
+      scrittura e dello spostamento interrotti; i test di TASK-507 passano
+      senza modifiche; aggiunta C ad ADR-0264 (questa PR).
+- [ ] Parte C: CI verde e unione della #1603 (Coordinatore), poi l'OTA.
 
 ## Cronologia
 
@@ -157,6 +163,21 @@ invariata (`5e1b5ce5`).
   Il resoconto è in `out/TASK-496/PROVA-SIMULATORE.md` del Mac.
 - 2026-11-23: impronta iOS invariata, «#1529 pronta (53d8568b)» e «#1531
   pronta (83a5696c)» al Coordinatore, che le ha unite.
+- 2026-11-26: **prova generale nel simulatore** (iPhone 17e, Expo Go 57,
+  app di prova temporanea, GPS simulato a 3,3 m/s, 60 s per fase): secondi
+  di processore di Expo Go e dei processi della mappa (WebKit), **non** la
+  batteria. In vista 5,06 s; in tasca 0,68 s (−87%); dietro un'altra app
+  0,45 s (la pagina della mappa non c'è); telefono bloccato 1,14 s. File e
+  diario scritti anche a telefono bloccato. Resoconto in
+  `out/prova-generale-sim/ESITO.md` del Mac.
+- 2026-11-26: **parte C**, l'idea «scrittura atomica» qui sotto, chiesta
+  dall'utente («intanto prepara le modifiche per 496»). Il file intero si
+  scrive in `current-run.json.new` e si sposta sopra `current-run.json`;
+  all'apertura un `.new` che si legge prende il posto del file, uno a metà
+  si toglie. Lista dei file approvata dal Coordinatore (nessuna PR aperta su
+  `trackStore.ts`, i rami di 507 già in `main`); `takeRunSlot` e
+  `moveRuns` invariati. In locale: 97 test della corsa e 22 di TASK-507
+  verdi, `tsc`, eslint e prettier puliti. PR #1603.
 
 ## Esito
 
@@ -166,11 +187,13 @@ della TASK-304 è la stessa, e la prova dell'uscita forzata l'ha tenuta.
 **Non misurato**: quanta batteria si risparmia; si vede solo sul telefono
 dell'utente, dopo l'OTA.
 
+Parte C (2026-11-26): una chiusura a metà del file intero lascia l'ultimo
+file intero invece di mezzo file (aggiunta C ad ADR-0264).
+
 ## Idee per dopo (non fatte)
 
-- Scrivere il file intero in modo atomico (file temporaneo e spostamento):
-  oggi una chiusura a metà di quella scrittura lascia un file monco, come
-  prima di questa task; col diario succede molte meno volte.
+- ~~Scrivere il file intero in modo atomico~~: fatto nella parte C
+  (2026-11-26, #1603).
 - Sci (`showLifts`) e volo (`showFlight`) mandano ancora la traccia intera
   a ogni punto; `FlightLive` e `SkiTourLive` hanno il loro orologio.
 - Nella pagina, MapLibre ridisegna tutta la linea a ogni punto.

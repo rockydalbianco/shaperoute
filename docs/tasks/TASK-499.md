@@ -1,6 +1,8 @@
 # TASK-499 — La campanella chiede solo il numero
 
-**Stato**: In lavorazione · 2026-11-24 · parte A (server) in scrittura
+**Stato**: In lavorazione · 2026-11-25 · A (server) in `main` con #1583
+(`bd61af6c`), non ancora sul server (passo del Coordinatore, col sì
+dell'utente); B (app) in PR
 **Fase**: 5 · **Branch**: `feat/TASK-499-a-bell-unread-count` (A, server),
 poi `feat/TASK-499-b-bell-count-app` (B, app)
 **Dipende da**: TASK-367 parte C (la campanella, ADR-0311), TASK-468 (la
@@ -77,11 +79,11 @@ ritorno).
 
 ## Criteri di accettazione
 
-- [ ] A: il numero di `GET /notifications/unread` è uguale a `unread` di
+- [x] A: il numero di `GET /notifications/unread` è uguale a `unread` di
   `GET /notifications` negli stessi casi (blocco, 90 giorni, quello che non
   è più vero, lette e non lette, più di una pagina).
-- [ ] A: una query sola per richiesta, e nessuna foto nella risposta.
-- [ ] A: `401` senza token; esempio e tipo in `shared-types`; `docs/API.md`.
+- [x] A: una query sola per richiesta, e nessuna foto nella risposta.
+- [x] A: `401` senza token; esempio e tipo in `shared-types`; `docs/API.md`.
 - [ ] B: per il bollino la campanella non chiama più la lista.
 - [ ] B: con un server di prima (`404`) ripiega sulla lista, come oggi.
 - [ ] B: la riga dei «live» non chiede con l'app dietro e riprende al
@@ -90,8 +92,29 @@ ritorno).
 
 ## Misure
 
-Da scrivere con la parte A: byte della risposta e numero di query, prima e
-dopo, su un database di prova. Quello che non è misurato va detto qui.
+Sul Mac, il 2026-11-25, API di prova (`TestClient`) su un PostgreSQL in
+un container, con `out/TASK-499/misura_499.py` del checkout principale
+(fuori da git): un account con 30 notifiche non lette, di 30 account
+diversi, ognuno con una foto del profilo **finta** (colori sfumati e
+rumore, per pesare come una foto vera: 4,8–5,2 KB in base64 a 128 px).
+
+| Un controllo della campanella | Prima (`GET /notifications`) | Dopo (`GET /notifications/unread`) |
+|---|---|---|
+| Risposta, com'è | 159 906 byte | 13 byte |
+| Risposta, con gzip | 97 726 byte | 13 byte |
+| Query della campanella | 3 (lingua, pagina, conto) | 1 (conto) |
+
+- La stima dal codice era 150–250 KB: confermata nella parte bassa, con
+  queste foto. Il base64 di un JPEG si comprime poco: gzip toglie il 39%.
+- Alle query della campanella si aggiungono, uguali prima e dopo, quelle
+  che riconoscono l'account dal token.
+- **Non misurato**: i tempi sul server vero (qui ogni chiamata apre una
+  connessione nuova e il Mac era carico: mediana di 20 chiamate 259 ms la
+  pagina, 169 ms il numero, che dice solo quale pesa di più); il piano
+  della query su una tabella grande; i byte e la batteria sul telefono; le
+  foto vere degli utenti.
+- Anche il conto dentro `GET /notifications` usa ora la query leggera: la
+  lista aperta fa sempre 3 query, ma il conto non tocca più le foto.
 
 ## Idee per dopo (fuori da questa task)
 
@@ -104,4 +127,9 @@ dopo, su un database di prova. Quello che non è misurato va detto qui.
 
 ## Cronologia
 
-- 2026-11-24: riverificato, lista dei file al Coordinatore (fork 3).
+- 2026-11-24: riverificato, lista dei file al Coordinatore (fork 3): sì
+  ai file di A e B, aggiunta ad ADR-0311 senza ADR nuovo.
+- 2026-11-25: A = #1583 in `main` (`bd61af6c`), unita dal Coordinatore a CI
+  verde dopo #1582 (TASK-497 A, stessi file condivisi). Misura fatta.
+  Resta: il passo sul server (Coordinatore, col sì dell'utente), la B, poi
+  l'OTA (Coordinatore) e la PR dei documenti di chiusura.

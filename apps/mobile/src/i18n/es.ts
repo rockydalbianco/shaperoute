@@ -3580,4 +3580,7 @@ export const ES: Table = {
   "Remove all": "Quitar todas",
   "Press the flight map long to add one.":
     "Mantén pulsado el mapa de vuelo para añadir una.",
+  // src/air/ (TASK-479 part D6: landings from OpenStreetMap; waiting for the user's approval)
+  Landing: "Aterrizaje",
+  "Landings from OpenStreetMap: {count}": "Aterrizajes de OpenStreetMap: {count}",
 };

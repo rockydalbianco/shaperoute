@@ -15,6 +15,7 @@ import {
   space,
 } from "../theme/tokens";
 import { useHeaderScroll } from "./headerScroll";
+import { useTabBarRoom } from "./tabBarRoom";
 import { useScrollToTopOnReselect } from "./tabReselect";
 
 type Props = {
@@ -39,6 +40,8 @@ export function MessagesPage({ active, fetchFn, apiKey }: Props) {
   const scroll = useScrollToTopOnReselect<ScrollView>();
   // The header turns to glass once the page scrolls (TASK-469 A5b).
   const headerScroll = useHeaderScroll();
+  // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
+  const barRoom = useTabBarRoom();
   const shown = active && screen === null;
   const [visit, setVisit] = useState(0);
   const [wasShown, setWasShown] = useState(shown);
@@ -56,7 +59,11 @@ export function MessagesPage({ active, fetchFn, apiKey }: Props) {
     }
   }, [recount, shown]);
   return (
-    <ScrollView ref={scroll} {...headerScroll} contentContainerStyle={styles.content}>
+    <ScrollView
+      ref={scroll}
+      {...headerScroll}
+      contentContainerStyle={[styles.content, { paddingBottom: space.xxl + barRoom }]}
+    >
       <View style={styles.titleRow}>
         <Text style={styles.title} accessibilityRole="header">
           {t("Messages")}

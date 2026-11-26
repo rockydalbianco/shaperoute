@@ -1,9 +1,6 @@
 # TASK-361 — «Draw» si capisce in 3 secondi: partenza, cosa disegni, quanto corri, «Draw»
 
-**Stato**: In lavorazione · **parte A in `main`**, #675 (i pezzi nuovi e
-`ChooseScreen`); **parte B in `main`**, #688; data della privacy al
-2 novembre con la PR `fix/TASK-361-privacy-date`; manca la pubblicazione
-(vedi «Esito»)
+**Stato**: Done · 2026-11-24 · A (#675) e B (#688) in `main` e in produzione (OTA 25); la data della privacy (#698) è online; la vibrazione c'è già nelle build della 1.0.1 e della 1.1.0 (`expo-haptics` non è più escluso dall'autolinking). Chiuso nel censimento dei task aperti del 2026-11-24, Coordinatore 3.
 **Fase**: 4 · **Branch**: parte A `feat/TASK-356-draw-redesign` (nome del
 numero di prima); parte B `feat/TASK-361-b-draw-wiring`, da `main` dopo la
 #675 · **ADR**: ADR-0307
@@ -281,6 +278,8 @@ griglia, il campo dietro il link, con gli aiuti di `src/route/testing.ts`):
 - Spostare «Play» in «Explore»: basta lo spazio in fondo.
 
 ## Esito
+
+**Chiuso il 2026-11-24** (censimento dei task aperti): tutto in produzione (OTA 25) e la privacy del 2 novembre online; la vibrazione è nelle build della 1.0.1 e della 1.1.0. Sotto, la cronaca del 2026-11-02.
 
 **2026-11-02, non ancora chiuso.** La parte A è in `main` con la #675
 (`d2dd7435`, 12:04 UTC, alla testa `99570990` con la CI verde, impronta iOS

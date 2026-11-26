@@ -11,6 +11,7 @@ miglioramento, da misurare e proporre all'utente (parte nuova). Scelto
 dall'utente lo stesso giorno: la parte E, la zona più larga intorno al
 telefono, in `main` dalla #546 (`7da61107`, 2026-10-25). Restano i criteri
 ancora aperti qui sotto e le zone dove il server risponde `404`.
+**Prova sul telefono** (il percorso in modalità aereo, con la zona già scaricata): provato dall'utente il 2026-11-26, «ok»; i secondi non sono stati annotati. Il task resta aperto per le zone dove il server dà 404.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 

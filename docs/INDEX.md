@@ -63,6 +63,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | «Alimentazione»: diario dei pasti, piano, bilancio delle calorie, tabella nel profilo | `tasks/TASK-489.md`, ADR-0397, ADR-0318, ADR-0281 |
 | «Longevity»: le storie animate nella «Explore» di «Nutrition» | `tasks/TASK-513.md`, ADR-0407, ADR-0397 (precisazione 5) |
 | La modalità «Nutrition»: la barra Today · Plan · Explore · Feed · Profile | `tasks/TASK-514.md`, ADR-0408, ADR-0357, ADR-0398 |
+| Le email del server in produzione: quali partono, Resend, «Forgot password?» | `tasks/TASK-515.md`, ADR-0410, ADR-0261, ADR-0244, `DEPLOY.md` «Email di ritorno» |
 | La modalità Allenamento: scelta la palestra, l'app diventa un'app per allenarsi (Today, Workouts, Food) | `tasks/TASK-490.md`, ADR-0398, ADR-0357, ADR-0341, ADR-0392 |
 | Il Coach MuW: consigli dagli allenamenti fatti, regole e studi, la scheda che cambia con «Apply» | `tasks/TASK-491.md`, ADR-0399, ADR-0396, ADR-0398, ADR-0392 |
 | La mappa dei decolli: i siti di volo da OpenStreetMap, la scheda del decollo con lo storico dei voli | `tasks/TASK-493.md`, ADR-0400, ADR-0388, ADR-0375, `tasks/TASK-479.md` |
@@ -77,6 +78,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Le parole del catalogo a penna alzata: `walks` nel seme, `gaps` nelle liste, la lista di quelle lette a occhio | `../catalog/README.md` («Le parole a penna alzata»), `tasks/TASK-441.md` (parte B1), ADR-0366 |
 | Le uscite in bici del catalogo: `activity` nel seme e nelle risposte, il parametro `activity`, le zone da un estratto, le otto forme | `../catalog/README.md` («Le uscite in bici»), `tasks/TASK-441.md` (parte B2), ADR-0366 precisazione, `API.md` «`GET /recommended-routes`», `MAPS.md` «Le zone della bici» |
 | Le forme candidate e quelle approvate: `candidate_outlines/`, `tools/draw_new_shapes.py` (`APPROVED`), `ZONE_SHAPES` | `tasks/TASK-418.md`, ADR-0346 e la precisazione B, ADR-0036 |
+| Le forme nuove d'inverno, delle feste e di sport, i 35 contorni candidati: `tools/draw_theme_shapes.py`, la prova sulle strade, la registrazione di tutte insieme | `tasks/TASK-516.md`, ADR-0411, ADR-0346 e la precisazione B, `tasks/TASK-418.md` |
 | Aggiungere uno sport, il banco `tools/sport_bench/` | `sports/README.md`, `sports/COME-AGGIUNGERE.md`, `sports/CONDIVISO.md`, ADR-0320 |
 | Uno sport in particolare (corsa, bici, canoa, hike, gravel, roller, gym, skimo, wheelchair, snowshoes) | `sports/<sport>.md` e il suo task file se aperto |
 | L'alpinismo registrato senza percorso; uno sport sul server prima del contratto (`SERVER_FIRST`) | `tasks/TASK-463.md`, ADR-0373, ADR-0319, `sports/COME-AGGIUNGERE.md` |

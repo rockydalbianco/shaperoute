@@ -510,22 +510,23 @@ const styles = StyleSheet.create({
     fontSize: fontSize.small,
   },
   // Not yellow: that is the route's (docs/UI.md, «Il tema»).
+  // Yellow with dark words, as «Draw route»: the page's one command, and
+  // grey it read as a secondary one (TASK-508, ADR-0409; the user's choice
+  // of 2026-11-24, an exception to «yellow is the route's» as ADR-0183).
   button: {
     minHeight: MIN_TAP_SIZE,
     borderRadius: radius.pill,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: color.surfaceRaised,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
+    backgroundColor: color.accent,
   },
   buttonBusy: {
     opacity: 0.6,
   },
   buttonText: {
-    color: color.text,
+    color: color.onAccent,
     fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
+    fontWeight: fontWeight.bold,
   },
   problem: {
     color: color.error,

@@ -24,9 +24,10 @@ dell'utente, una pubblicazione alla volta, dal Coordinatore (`AGENTI.md`).
 
 ## Prossimo passo
 
-**La prova generale sul telefono** (2026-11-24): una lista sola coi
-controlli che restano ai task (355, 417, 424, 431 e gli altri), da fare
-in una volta; poi i task che passano si chiudono.
+**La prova generale sul telefono** fatta dall'utente il 2026-11-26
+sull'OTA 25: 18 controlli «ok», nessun «no»; chiusi 355, 417, 424, 431.
+Restano da provare 466 (saltato), 496 (una corsa vera in tasca), 214
+(modalità aereo) e, dopo l'OTA 26, 450, 506, 486, 490 D, 297 C2, 479 D3.
 OTA di produzione e aggiornamenti del server in sospeso per task già Done:
 li tiene il Coordinatore (`AGENTI.md`, «L'albero»), col sì dell'utente.
 **TASK-294**: resta l'uscita su Google Play (test chiuso con 12 tester
@@ -102,9 +103,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-347 — Il disegno libero ancorato alle strade** · A fatta; prossima
   B (il telefono). File: — · `tasks/TASK-347.md`
   **2026-11-22**: B in `main` (#1389); C1 #1398, poi C2 (schermate) e C3.
-- **TASK-355 — Una scheda del Feed chiara** · A, B1 e B2 in produzione
-  (OTA 25, server passo 17); resta solo la prova sul telefono (prova
-  generale). File: — · `tasks/TASK-355.md`
 - **TASK-370 — L'app per Apple Watch** · A e B nella 1.1.0 (build 14,
   sullo Store dal 2026-11-11; #1116 in `main`); resta C, sport per sport,
   alla prossima build dell'orologio. File: — · `tasks/TASK-370.md`
@@ -129,24 +127,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   l'uscita completa (OTA col sì), poi la prova sul telefono; dopo B2, C, D.
   **2026-11-12**: B3 (cambio pelli a mano) in `main` (#1202); B e B3 escono
   con l'aggiornamento completo di oggi; prova sulla neve quest'inverno.
-- **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
-  B, C, D1, D2a, D2b in produzione (OTA 25), privacy «Together» online;
-  resta solo E, la prova sul telefono coi tempi (prova generale). File: —
-  · `tasks/TASK-417.md`
-- **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
-  tutte le parti fino a C3 (#1123) in produzione, server e `site/live`
-  online; resta solo la prova sul telefono (prova generale). File: — ·
-  `tasks/TASK-424.md`
 - **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1, B2, C2 in
   `main` (#1093, #1108, #1114, #1129, #1131); A e B1 fuori con gli OTA 5 e
   6, C1 sul server dal passo 7 dell'11-11. B2 (i tratti a «Salva») e C2
   (stagione e giornata salvata) in produzione con l'ottavo OTA dell'11-11.
   Restano la prova sul telefono e la parte E (lista prima). File: — · `tasks/TASK-429.md`
-- **TASK-431 — «Compass» più bella** (ADR-0359) · in `main` (#1081): la
-  freccia «B» con anello e cono azzurri che punta dove punta la mappa, le
-  tre schede coi disegni, la punta rossa del nord. Restano l'OTA di
-  produzione (col sì dell'utente) e la prova sul telefono. File: — ·
-  `tasks/TASK-431.md`
 - **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
   1963 percorsi e ordine misto in «NEAR YOU». Le 702 parole nuove a riga
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e

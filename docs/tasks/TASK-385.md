@@ -2,6 +2,7 @@
 
 **Stato**: In corso · proposta in `main` (#766, #796); parte A (API e
 database) in PR; ogni parte dopo la sua lista dei file al Coordinatore
+**Prova sul telefono** (G, il battito in palestra): fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-385-gym-proposal` (documenti); il
 codice `feat/TASK-385-a-…`
 **Dipende da**: la #758 (TASK-375 B2), TASK-376 B2 e B3 (il registro degli

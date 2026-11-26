@@ -2,6 +2,7 @@
 
 **Stato**: Done (2026-11-23) — parte 0 (#1526) e parte A (#1527) in
 `main`; restano l'OTA e la prova sul telefono, vedi «Cosa resta»
+**Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-505-intro-video-assets` (parte 0), poi
 `feat/TASK-505-a-short-intro`
 **ADR**: ADR-0405 · numeri dal Coordinatore (fork 3), 2026-11-23

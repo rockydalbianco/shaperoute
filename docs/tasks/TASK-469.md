@@ -5,7 +5,8 @@ A3 e A4a in produzione al più tardi con l'OTA 17; A4b e A4c in produzione
 con l'OTA 20; A5 e A5b con l'OTA 21; A5c e A6 in produzione con l'OTA 22;
 A6b con l'OTA 23; A7a, A7b, A5c-2 e A7c-1 con l'OTA 24; A7c-2, A7c-3 e
 la correzione dell'header sopra le pagine con l'OTA 25; parte B avviata
-dall'utente il 2026-11-24, per ora solo il piano)
+dall'utente il 2026-11-24: B1 e B2 sono bozze ferme fino al taglio
+nativo, la stanza per la barra è già in `main`)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
@@ -175,9 +176,27 @@ l'SDK 57, niente installato):
   cambia. Parte solo col **sì dell'utente sull'installazione**. Cambia
   l'impronta iOS (oggi `5e1b5ce5`), quindi resta una bozza «DO NOT MERGE»
   fino al taglio nativo, che ordina il Coordinatore insieme alle altre
-  fette native (467 C, 482 D, 489 G2).
-- **B2 — la barra delle schede** sul vetro vero: `src/ui/Glass.tsx`,
-  `src/tabs/TabBar.tsx`. Solo JS.
+  fette native (467 C, 482 D, 489 G2). **Fatta in bozza**: l'utente ha
+  detto «Si installa» il 2026-11-24, bozza #1557.
+- **B2 — la barra delle schede** sul vetro vero, con le pagine che le
+  passano sotto. In due tempi:
+  - **B2a, la stanza** (in `main`): ogni pagina della barra chiede con
+    `useTabBarRoom()` (`src/tabs/tabBarRoom.ts`) quanto spazio lasciare
+    in fondo, e lo aggiunge alla fine del suo scorrimento e sotto quello
+    che tiene in basso. Fuori dallo shell delle schede, e finché la barra
+    non galleggia, la stanza è 0: le pagine sono come prima. Dodici
+    pagine: otto con la #1559, le altre quattro nelle PR dei task che le
+    avevano in mano (#1565, #1569, #1571).
+  - **B2, la barra** (bozza #1562, appoggiata su #1557, ferma con lei
+    fino al taglio nativo): `src/tabs/TabBar.tsx`,
+    `src/tabs/TabShell.tsx`, `src/tabs/tabBarRoom.ts` e i loro due test.
+    **La barra galleggia solo dove il telefono disegna il vetro vero**
+    (scelta dell'utente, 2026-11-26: «Solo col vetro vero»): lì la
+    capsula è `NativeGlass`, la fascia sta sopra le pagine senza un
+    fondo suo e lo shell dà alle pagine la fascia come stanza. Su ogni
+    altro telefono, e su ogni build fatta prima del taglio, la barra è
+    quella di oggi. Con «Riduci trasparenza» e «Aumenta contrasto», dove
+    il vetro vero c'è, la barra galleggia lo stesso ma opaca.
 - **B3 — l'header**, col contenuto che gli passa sotto:
   `src/tabs/AppHeader.tsx`, `src/tabs/TabShell.tsx`,
   `src/tabs/headerScroll.tsx`. La fetta grossa.
@@ -203,6 +222,18 @@ l'SDK 57, niente installato):
 5. Android e iOS sotto il 26 restano come oggi.
 6. Il pacchetto si prova in Expo Go mettendolo solo nel `node_modules`
    del worktree della fetta, mai in quello del checkout principale.
+7. `expo-glass-effect` non si importa mai direttamente: sempre attraverso
+   `src/ui/NativeGlass.tsx` (`NativeGlass`, `nativeGlassAvailable()`,
+   `nativeGlassView()`), che lo carica solo dove c'è.
+8. Una pagina nuova della barra delle schede chiede la stanza con
+   `useTabBarRoom()` e si aggiunge alla lista di
+   `src/tabs/TabBarRoom.test.tsx`.
+
+**Da fare prima del taglio per B2** (non ancora fatto): misurare il
+contrasto delle icone sul vetro vero nei casi peggiori del vincolo 2
+(foto bianca sotto il tono scuro, nera sotto il chiaro); guardare nel
+simulatore le pagine dello sci e dell'allenamento, «Messages» con dei
+messaggi e «Aumenta contrasto»; provarla su un telefono vero.
 
 ## Inventario delle superfici
 
@@ -392,6 +423,23 @@ Spuntati per A1 e A2 (2026-11-12):
   `docs/DECISIONS.md`, `docs/UI.md`.
 - La PR di documenti di A1 e A2: `docs/tasks/TASK-469.md`, `docs/tasks/TASK-469/*.jpg`
   (nuove), `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md`.
+- B1 (bozza #1557): `apps/mobile/package.json`, `package-lock.json`,
+  `src/ui/NativeGlass.tsx`, `src/ui/NativeGlass.test.tsx` (nuovi).
+- B2a, la stanza (#1559): `src/tabs/tabBarRoom.ts`,
+  `src/tabs/TabBarRoom.test.tsx` (nuovi), `src/ski/ResortList.tsx`, e una
+  riga in `explore/ExploreScreen.tsx`, `paddle/PaddleExplore.tsx`,
+  `screens/ChooseScreen.tsx`, `screens/FeedScreen.tsx`,
+  `skimode/SkiDaysPage.tsx`, `skimode/SkiResortsPage.tsx`,
+  `skimode/SkiTodayPage.tsx`, `tabs/MessagesPage.tsx`. La stessa riga in
+  `nutrition/NutritionPage.tsx` (#1565), `screens/ProfileScreen.tsx`
+  (#1569), `trainingmode/TrainingTodayPage.tsx` e
+  `TrainingWorkoutsPage.tsx` (#1571), nelle PR dei loro task.
+- B2, la barra (bozza #1562): `src/tabs/TabBar.tsx`,
+  `src/tabs/TabShell.tsx`, `src/tabs/tabBarRoom.ts`,
+  `src/tabs/TabBarGlass.test.tsx`, `src/tabs/TabBarRoom.test.tsx`.
+- La PR di documenti di B1 e B2: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/TASK-469-B2-barra-vetro-vero.jpg` (nuova),
+  `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md`.
 
 La lista di ogni fetta seguente va al Coordinatore prima del codice.
 
@@ -494,6 +542,26 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   Coordinatore, che lo approva: si estende ADR-0383, B1 va nel taglio
   nativo. Chiesto all'utente il sì per installare la dipendenza; niente
   installato fino ad allora.
+- **2026-11-24**: l'utente: «Si installa». B1 in bozza (#1557, «DO NOT
+  MERGE» fino al taglio nativo): la dipendenza e `NativeGlass` col suo
+  ripiego, usato da nessuna schermata. Guardando la barra: oggi sotto di
+  lei non passa niente, quindi il vetro vero non avrebbe nulla da
+  mostrare. Chiesto all'utente se le pagine devono passarle sotto: «Sì
+  sotto la barra». B2a, la stanza: #1559 in `main` lo stesso giorno, le
+  quattro pagine degli altri task entro il 25.
+- **2026-11-25**: provata nel simulatore la barra che galleggia col vetro
+  velato della parte A (tema scuro). Funziona, ma senza sfocatura il
+  testo di un post si legge dietro le icone e spunta intorno alla
+  capsula; una sfumatura del colore di pagina sotto la barra migliora
+  poco. Chiesto all'utente quando deve galleggiare.
+- **2026-11-26**: l'utente: «Solo col vetro vero». La bozza #1562 cambia:
+  galleggia solo dove `nativeGlassAvailable()` dice sì, e lì la capsula è
+  `NativeGlass`; viene appoggiata su #1557 e resta ferma con lei fino al
+  taglio nativo (il Coordinatore è d'accordo). Provata in Expo Go nel
+  simulatore con iOS 27, che ha il modulo: la barra è il vetro di iOS e
+  galleggia, in scuro e in chiaro; quello che le passa dietro è sfocato e
+  piegato, le icone restano nitide; con «Riduci trasparenza» è opaca.
+  L'utente sulle schermate: «Sì, va bene».
 - Imparato (il difetto di A5b): con la nuova architettura uno `zIndex`
   ordina dentro il più vicino antenato che resta una vista sua, non
   dentro il genitore. Una vista con solo posizione e colore di fondo
@@ -516,6 +584,14 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
 - Imparato: «Today» dello sci nel simulatore non scorre (la pagina è più
   corta dello schermo), quindi lì lo provano solo i test. Un gruppo di una
   sola riga con gli angoli a 24 sembra quasi una capsula.
+- Imparato (B2): un vetro senza sfocatura regge finché sotto ha un fondo
+  suo; appena il contenuto gli passa dietro, il testo si legge attraverso.
+  Far passare le pagine sotto una superficie va deciso insieme alla
+  sfocatura vera, non prima. Per vedere il vetro vero non serve una
+  build: Expo Go lo disegna, basta una copia del pacchetto nel
+  `node_modules` del worktree. Nei test il modulo nativo si finge
+  sostituendo solo `requireOptionalNativeModule("ExpoGlassEffect")` di
+  `expo` e lasciando veri gli altri.
 
 ## Schermate prima/dopo
 
@@ -668,6 +744,15 @@ requests»; da un profilo era già a posto (la terza colonna, di
 controllo):
 
 ![L'header sopra le pagine, prima e dopo](TASK-469/TASK-469-fix-header-sopra-pagine.jpg)
+
+**B2, la barra in vetro vero** (bozza #1562, simulatore con iOS 27, Expo
+Go) — in alto il Feed in scuro e in chiaro, con la mappa di un post
+dietro la barra. Sotto, la barra da vicino coi numeri di un post dietro:
+a sinistra il vetro velato di oggi se galleggiasse (la strada scartata),
+a destra il vetro vero. In fondo il tono chiaro e «Riduci trasparenza»,
+dove la barra è opaca:
+
+![B2, la barra in vetro vero](TASK-469/TASK-469-B2-barra-vetro-vero.jpg)
 
 ## Esito
 

@@ -270,6 +270,7 @@ def test_the_endpoints_want_a_session(client: TestClient) -> None:
         ("GET", "/me/groups"),
         ("GET", f"/groups/{some}"),
         ("PUT", f"/groups/{some}"),
+        ("DELETE", f"/groups/{some}"),
         ("PUT", f"/groups/{some}/photo"),
         ("DELETE", f"/groups/{some}/photo"),
         ("PUT", f"/groups/{some}/membership"),
@@ -923,3 +924,61 @@ def test_recent_activity_is_the_last_fourteen_days(
     assert titles(recent(client, ada, group["id"])) == ["New run", "Old run"]
     ticking.later = timedelta(days=14, hours=1)
     assert titles(recent(client, ada, group["id"])) == ["New run"]
+
+
+# --- «Delete group» (GRUPPI.md §4, part A3) ---
+
+
+def test_only_the_admin_deletes_the_group(client: TestClient) -> None:
+    ada, bob, cleo = (signed_up(client, n) for n in ("ada", "bob", "cleo"))
+    group = made(client, ada, access="public")
+    joined(client, bob, group["id"])
+    joined(client, cleo, group["id"])
+    ok(role(client, ada, group["id"], bob, "coadmin"))
+    for who in (bob, cleo):
+        answer = client.delete(f"/groups/{group['id']}", headers=who)
+        assert error(answer, 403, "http_error") == ONLY_ADMIN
+    outsider = signed_up(client, "dan")
+    assert client.delete(f"/groups/{group['id']}", headers=outsider).status_code == 403
+    assert page(client, cleo, group["id"])["members"] == 3
+
+
+def test_deleting_a_group_with_members_tells_them_and_takes_everything(
+    client: TestClient, database: Database, expo: FakeExpo
+) -> None:
+    ada = signed_up(client, "ada", push=True)
+    bob, cleo = signed_up(client, "bob", push=True), signed_up(client, "cleo")
+    dan = signed_up(client, "dan")
+    group = made(client, ada, name="Saturday Hikers")
+    for who in (bob, cleo):
+        joined(client, who, group["id"])
+        ok(on(client, "PUT", ada, group["id"], f"requests/{public_id(client, who)}"))
+    joined(client, dan, group["id"])  # a request left waiting
+    expo.sent.clear()
+    ok(client.delete(f"/groups/{group['id']}", headers=ada))
+    assert pushes(expo) == [
+        (
+            phone("bob"),
+            "ada deleted the group Saturday Hikers.",
+            {"kind": "group_deleted"},
+        )
+    ]
+    for table in ("groups", "group_members", "group_requests", "group_invites"):
+        assert rows(database, f"SELECT * FROM {table}") == [], table
+    assert get(client, bob, group["id"]).status_code == 404
+    assert client.delete(f"/groups/{group['id']}", headers=ada).status_code == 404
+    # The bell keeps the line, and it opens nothing.
+    (line,) = client.get("/notifications", headers=cleo).json()["notifications"][:1]
+    assert line["kind"] == "group_deleted"
+    assert line["opens"] == {"kind": "group_deleted"}
+    assert line["text"] == "ada deleted the group Saturday Hikers."
+
+
+def test_the_push_of_a_deleted_group_names_it_in_every_language() -> None:
+    assert set(TEXTS["group_deleted"]) == {"en", "de", "it", "es", "fr"}
+    event = PushEvent("group_deleted", 1, 2, text="Saturday Hikers", key="g")
+    for language in TEXTS["group_deleted"]:
+        said = text_of(event, "ada", language)
+        assert "Saturday Hikers" in said and "ada" in said
+    assert data_of(event, uuid4(), "ada") == {"kind": "group_deleted"}
+    assert "group_deleted" not in OWN_KINDS and "group_deleted" not in EMAIL_KINDS

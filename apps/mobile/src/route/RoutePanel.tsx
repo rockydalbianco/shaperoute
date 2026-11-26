@@ -1,5 +1,6 @@
 import {
   type Activity,
+  type LatLon,
   type LetterStyle,
   type RouteResult,
   type Shape,
@@ -46,6 +47,7 @@ import {
 import { DistanceDial } from "./DistanceDial";
 import { ImageChoice } from "./ImageChoice";
 import { piecesOf } from "./imagePieces";
+import { LivePreview } from "./LivePreview";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
 import { NoteRow } from "./NoteRow";
 import { penUpHint } from "./penUpHint";
@@ -59,10 +61,12 @@ import { ShapeGrid } from "./ShapeGrid";
 import { ShapePreview } from "./ShapePreview";
 import { shapeList, shapeName } from "./shapeWords";
 import { drawsByHand, shapeOfSport } from "./sportDraw";
+import { SurprisePill } from "./SurprisePill";
 import type { ExportState } from "./useGpxExport";
 import type { ImageState } from "./useImageOutline";
 import type { AnyRouteRequest, RouteProblem, RouteState } from "./useRouteRequest";
 import type { ShapeReadingState } from "./useShapeReading";
+import type { Surprise } from "./useSurprise";
 import { penSplit } from "./walks";
 import { type Note, shownNotes, toNotes } from "./warnings";
 import { WhileRouting } from "./WhileRouting";
@@ -138,6 +142,12 @@ type ChoiceProps = {
   /** The runner's pace (`runTime.ts`), for the time under the distance of
    * a run (TASK-361); none: no time. */
   pace?: Pace;
+  /** Where the route starts, once known: the shape is shown on a piece of
+   * the map round it (TASK-449). None: the shape to scale, without a map. */
+  start?: LatLon | null;
+  /** «Surprise me» (TASK-448), for a sport that has it: the pill on the
+   * title row of step 2, and what a tap on it does (`useSurprise`). */
+  surprise?: Surprise | null;
 };
 
 /**
@@ -169,6 +179,8 @@ export function RouteChoice({
   activity = "running",
   onFreehand,
   pace,
+  start = null,
+  surprise = null,
 }: ChoiceProps) {
   // The distance is asked in the app's units, at once (TASK-182).
   const units = useUnits();
@@ -205,7 +217,16 @@ export function RouteChoice({
   return (
     <View style={styles.panel}>
       {/* The steps of «Draw» (TASK-361): «1 START» is the start's card. */}
-      <StepTitle number={2} label={t("WHAT YOU DRAW")} />
+      {surprise === null ? (
+        <StepTitle number={2} label={t("WHAT YOU DRAW")} />
+      ) : (
+        // «Surprise me» at the right of the title (TASK-448, the user's
+        // choice of 2026-11-26); under it where the two do not fit.
+        <View style={styles.titleRow}>
+          <StepTitle number={2} label={t("WHAT YOU DRAW")} />
+          <SurprisePill onPress={surprise.surprise} busy={surprise.busy} />
+        </View>
+      )}
       {drawNote !== undefined && <Text style={styles.note}>{t(drawNote)}</Text>}
       <Segmented<ChoiceKind | "freehand">
         options={translated(freehand ? [FREEHAND, ...kinds] : kinds)}
@@ -231,9 +252,22 @@ export function RouteChoice({
               <ShapeNote text={shapeText} shape={shape} reading={reading} />
             </OtherShapeField>
           )}
-          {shownShape !== null && distanceM !== null && (
-            <ShapePreview shape={shownShape} distanceM={distanceM} />
-          )}
+          {/* On a piece of the real map from the start (TASK-449); to
+              scale without a map with no start yet, and where the server
+              places the shape freely, not at the start. */}
+          {shownShape !== null &&
+            distanceM !== null &&
+            (start !== null && !isPlacedFree(activity) ? (
+              <LivePreview
+                shape={shownShape}
+                distanceM={distanceM}
+                start={start}
+                // As «Draw» will ask it: in pieces with the pen up.
+                apart={penUp && offersPenUp(shownShape)}
+              />
+            ) : (
+              <ShapePreview shape={shownShape} distanceM={distanceM} />
+            ))}
           {onPenUp && !isPlacedFree(activity) && offersPenUp(shownShape) && (
             <PenSwitch
               label={t("Lift the pen between parts")}
@@ -244,7 +278,15 @@ export function RouteChoice({
         </>
       ) : shownKind === "image" ? (
         <>
-          <ImageChoice state={image} onChoose={onChooseImage} penUp={penUp} />
+          <ImageChoice
+            state={image}
+            onChoose={onChooseImage}
+            penUp={penUp}
+            // On the map from the start, as a shape (TASK-449 part B); not
+            // where the server places the drawing freely.
+            start={isPlacedFree(activity) ? null : start}
+            distanceM={distanceM}
+          />
           {/* A picture with pieces apart, its holes too (TASK-297). */}
           {onPenUp &&
             image.status === "traced" &&
@@ -1109,6 +1151,13 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: space.lg,
+  },
+  titleRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: space.sm,
   },
   // On the screen's background the track needs a surface to show.
   kinds: {

@@ -6,6 +6,10 @@ import { NutritionPage } from "./NutritionPage";
 import { loadSettings } from "./nutritionStore";
 import { forgetNutrition } from "./useNutrition";
 
+// The page stands still, as with «Reduce Motion»: its numbers are there at
+// once. What moves is tried in CountUp.test.tsx and Ring.test.tsx.
+jest.mock("../ui/useReduceMotion", () => ({ useReduceMotion: () => true }));
+
 jest.mock(
   "react-native-safe-area-context",
   () => jest.requireActual("react-native-safe-area-context/jest/mock").default,

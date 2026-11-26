@@ -14,13 +14,18 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { selectionFeel } from "../haptics/haptics";
 import { Hairline } from "../ui/Hairline";
 import { Tap } from "../ui/Tap";
 import { balanceOf, signedKcal } from "./activityEnergy";
 import { AddFoodSheet } from "./AddFoodSheet";
+import { CountUp } from "./CountUp";
+import { ringShares } from "./dayRings";
+import { EnergyRings } from "./EnergyRings";
 import { EnergySheet } from "./EnergySheet";
-import { intakeOf, plannedIntake } from "./intake";
+import { intakeOf, macrosOf, plannedIntake } from "./intake";
 import { addDays, type LocalDay, startOf, weekdayOf } from "./localDay";
+import { MacroBars } from "./MacroBars";
 import { MealCard } from "./MealCard";
 import { leftKcal } from "./ownTarget";
 import {
@@ -34,6 +39,7 @@ import {
 import { TargetSheet } from "./TargetSheet";
 import { useDayEnergy } from "./useDayEnergy";
 import { useNutrition, writeDay, writeDayAsPlanned, writeTarget } from "./useNutrition";
+import { WeekStrip } from "./WeekStrip";
 
 /** «Today», «Yesterday», or the day as the activities write it
  * («Fri 2 Oct 2026»). */
@@ -74,6 +80,12 @@ type Open = { meal: Meal; index: number | null };
  * never takes away what the user wrote by hand.
  *
  * The days after today cannot be written: a diary says what was eaten.
+ *
+ * Since part H the page moves: the two numbers are also two rings on one
+ * scale, the numbers count up, the foods of a day come in one after the
+ * other, and under the meals are the day's protein, carbohydrates and fat
+ * and the week, a day to a pair of columns. The numbers are the same ones;
+ * with «Reduce Motion» nothing moves.
  */
 export function DiaryView({ today, now }: Props) {
   const language = useLanguage();
@@ -83,14 +95,17 @@ export function DiaryView({ today, now }: Props) {
   const [shown, setShown] = useState<Open>({ meal: "breakfast", index: null });
   const [targetOpen, setTargetOpen] = useState(false);
   const [energyOpen, setEnergyOpen] = useState(false);
-  const energy = useDayEnergy(day, now ?? new Date());
+  const at = now ?? new Date();
+  // The week under the diary asks for the pages: its days reach further back.
+  const energy = useDayEnergy(day, at, false);
 
   const meals = nutrition.mealsOn(day);
   const eaten = intakeOf(meals);
   const target = nutrition.settings.target;
   const left = leftKcal(target, eaten?.kcal ?? null);
   const balance = balanceOf(eaten?.kcal ?? null, energy);
-  const used = energy.used === null ? "—" : String(energy.used.used);
+  const usedKcal = energy.used?.used ?? null;
+  const used = usedKcal === null ? "—" : String(usedKcal);
   const last = day >= today;
   const asPlanned =
     eaten === null && plannedIntake(nutrition.plan, weekdayOf(day)) !== null;
@@ -114,6 +129,10 @@ export function DiaryView({ today, now }: Props) {
         ? withPortion(meals, open.meal, portion)
         : withGrams(meals, open.meal, open.index, portion.grams),
     );
+    if (open.index === null) {
+      // A food on the plate: a light touch of the phone.
+      selectionFeel();
+    }
     setOpen(null);
   }
 
@@ -153,32 +172,42 @@ export function DiaryView({ today, now }: Props) {
       </View>
 
       <View style={styles.card}>
-        <View style={styles.numbers}>
-          <Figure
-            label={t("Eaten")}
-            value={eaten === null ? "—" : String(eaten.kcal)}
-          />
-          <Tap
-            style={styles.number}
-            onPress={() => setEnergyOpen(true)}
-            accessibilityRole="button"
-            accessibilityLabel={`${t("Used (est.)")}, ${used}`}
-            testID="diary-used"
-          >
-            <Text style={styles.numberLabel}>{`${t("Used (est.)")} ›`}</Text>
-            <Text style={styles.numberValue}>{used}</Text>
-          </Tap>
-          <Figure
-            label={t("Balance")}
-            value={balance === null ? "—" : signedKcal(balance.balance)}
-            note={
-              balance === null || balance.kind === "even"
-                ? undefined
-                : balance.kind === "surplus"
-                  ? t("Surplus")
-                  : t("Deficit")
-            }
-          />
+        <View style={styles.top}>
+          <EnergyRings shares={ringShares(eaten?.kcal ?? null, usedKcal, target)} />
+          <View style={styles.numbers}>
+            <Figure
+              label={t("Eaten")}
+              value={eaten === null ? "—" : String(eaten.kcal)}
+              count={eaten?.kcal ?? null}
+              mark={color.food}
+            />
+            <Tap
+              style={styles.number}
+              onPress={() => setEnergyOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel={`${t("Used (est.)")}, ${used}`}
+              testID="diary-used"
+            >
+              <View style={styles.labelLine}>
+                <Dot colour={color.energy} testID="diary-dot-used" />
+                <Text style={styles.numberLabel}>{`${t("Used (est.)")} ›`}</Text>
+              </View>
+              <CountUp style={styles.numberValue} value={usedKcal} />
+            </Tap>
+            <Figure
+              label={t("Balance")}
+              value={balance === null ? "—" : signedKcal(balance.balance)}
+              count={balance?.balance ?? null}
+              format={signedKcal}
+              note={
+                balance === null || balance.kind === "even"
+                  ? undefined
+                  : balance.kind === "surplus"
+                    ? t("Surplus")
+                    : t("Deficit")
+              }
+            />
+          </View>
         </View>
         {energy.soFar && (
           <Text style={styles.soFar} testID="diary-so-far">
@@ -218,9 +247,10 @@ export function DiaryView({ today, now }: Props) {
         </Tap>
       )}
 
+      {/* Keyed by the day too: on another day the foods come in again. */}
       {MEALS.map((meal) => (
         <MealCard
-          key={meal}
+          key={`${day}-${meal}`}
           meal={meal}
           portions={meals[meal]}
           language={language}
@@ -228,6 +258,9 @@ export function DiaryView({ today, now }: Props) {
           onPortion={(index) => show({ meal, index })}
         />
       ))}
+
+      {eaten !== null && <MacroBars macros={macrosOf(meals)} />}
+      <WeekStrip day={day} today={today} now={at} onDay={setDay} />
 
       <AddFoodSheet
         visible={open !== null}
@@ -260,12 +293,21 @@ export function DiaryView({ today, now }: Props) {
 function Figure({
   label,
   value,
+  count,
+  format,
   note,
+  mark,
 }: {
   label: string;
+  /** The number as it is said: screen readers hear this, not the count. */
   value: string;
-  /** A word under the number: «Surplus», «Deficit». */
+  /** The number the figure counts up to; null for «—». */
+  count: number | null;
+  format?: (value: number) => string;
+  /** A word beside the number: «Surplus», «Deficit». */
   note?: string;
+  /** The colour of this figure's ring, as a dot before its label. */
+  mark?: string;
 }) {
   return (
     <View
@@ -273,10 +315,28 @@ function Figure({
       accessible
       accessibilityLabel={[label, value, note].filter(Boolean).join(", ")}
     >
-      <Text style={styles.numberLabel}>{label}</Text>
-      <Text style={styles.numberValue}>{value}</Text>
-      {note !== undefined && <Text style={styles.numberLabel}>{note}</Text>}
+      <View style={styles.labelLine}>
+        {mark !== undefined && <Dot colour={mark} testID="diary-dot-eaten" />}
+        <Text style={styles.numberLabel}>{label}</Text>
+      </View>
+      <View style={styles.valueLine}>
+        <CountUp style={styles.numberValue} value={count} format={format} />
+        {note !== undefined && <Text style={styles.numberLabel}>{note}</Text>}
+      </View>
     </View>
+  );
+}
+
+/** Which ring a figure is: a dot of the ring's colour. The label says it
+ * already, so a screen reader passes over it. */
+function Dot({ colour, testID }: { colour: string; testID: string }) {
+  return (
+    <View
+      style={[styles.dot, { backgroundColor: colour }]}
+      importantForAccessibility="no"
+      accessibilityElementsHidden
+      testID={testID}
+    />
   );
 }
 
@@ -315,14 +375,34 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     backgroundColor: color.surface,
   },
-  numbers: {
+  // The rings, and beside them the numbers they show.
+  top: {
     flexDirection: "row",
+    alignItems: "center",
+    gap: space.lg,
     paddingBottom: space.md,
   },
-  number: {
+  numbers: {
     flex: 1,
-    alignItems: "center",
+    gap: space.sm,
+  },
+  number: {
     gap: space.xs / 2,
+  },
+  valueLine: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: space.sm,
+  },
+  labelLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.xs,
+  },
+  dot: {
+    width: space.sm,
+    height: space.sm,
+    borderRadius: space.sm / 2,
   },
   numberLabel: {
     ...font.small,

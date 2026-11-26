@@ -623,9 +623,169 @@ lasciando le righe d'indice.
 - ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Proposta
 - ADR-0177, aggiunta G (TASK-214) — Una zona che il server non ha intorno al telefono la prepara da solo, come un luogo tenuto (TASK-334): il telefono la trova all'apertura dopo; il log non scrive mai il nome della zona · 2026-11-26 · Attiva
 - ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi (`latest` nella pagina, `?after=` sulla stessa rotta), più piano nel silenzio (5 s, 15 s, 30 s: scelta dell'utente); la pagina intera una volta al minuto; una risposta uguale non ridisegna · 2026-11-26 · Attiva
+- ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza (10 km), chiesti al primo tocco; fuori dal catalogo le forme di riserva; le sorprese venute sotto il 90% ricordate sul telefono · 2026-11-26 · Attiva
+- ADR-0415 — Lo stretching rifatto (TASK-520): una home a categorie con routine composte da un solo elenco di esercizi, i movimenti come respiro largo, la stessa figura vista anche di fronte, gli esercizi nuovi in file nuovi con chiavi stabili · 2026-11-27 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0415 — Lo stretching rifatto: categorie e routine composte, movimenti, la figura anche di fronte
+
+**Stato**: Attiva · 2026-11-27 · TASK-520. Numero dal Coordinatore (fork 3,
+2026-11-27). **Scelte dell'utente** (parte 0, una domanda per volta, tutte
+del 2026-11-27): la mappa delle 54 categorie, l'elenco dei 65 esercizi, lo
+schizzo della home con un colore per gruppo, il nome «Intimacy», i testi in
+inglese, le traduzioni dei 50 esercizi nuovi, il video MP4 della routine
+come ultima parte. **Decise dall'agente su delega dell'utente** le scelte
+tecniche qui sotto. Il dettaglio di prodotto sta in
+`docs/tasks/TASK-520.md` e non si ripete qui. Codice finora: A1 nella
+#1666, la parte B dalla #1672; i punti 1, 6, 7 e 8 valgono da ora ma il
+loro codice arriva con le parti A2 e C–F.
+
+**Contesto**: lo stretching di TASK-466 (ADR-0378) ha 15 esercizi, poche
+routine scritte a mano e una figura fatta di View girate, vista di lato
+(ADR-0147: nessuna libreria di disegno). L'utente lo vuole rifatto: una
+home a categorie (zona del corpo, momento, prima e dopo ogni sport,
+intimità, altro), varianti di durata e di intensità, circa 65 esercizi,
+una pagina per esercizio. La struttura prende spunto da un'app del
+settore; nomi, disegni, icone, testi e colori sono nostri.
+
+**Decisione**:
+1. **Le routine si compongono**, non si scrivono una per una: ogni
+   categoria ha un elenco ordinato di esercizi; durata (3, 5, 10, 15–20
+   minuti) e variante (dolce o intensa, in piedi o a terra) scelgono
+   quanti e con che tenuta, sempre allo stesso modo per gli stessi
+   ingressi. Per questo ogni esercizio dice dove si fa (`position`) e
+   quanto è forte (`level`). Circa 250 liste a mano non si terrebbero in
+   ordine.
+2. **Un movimento («Move») è il respiro, più largo e col suo passo**: la
+   figura va tra la posa e la sua fine e torna, in loop, mentre il tempo
+   scorre come per una tenuta. `Figure` prende solo la durata di un giro
+   (`breathMs`, dal `tempoMs` dell'esercizio); il limite di pochi gradi
+   (`BREATH_MAX_DEGREES`) resta per le tenute. Nessun motore nuovo e
+   nessuna libreria.
+3. **La vista di fronte è la stessa figura con altri segmenti**
+   (`posesFront.ts`, `FigureFront.tsx`): dieci invece di dodici, le due
+   braccia e le due gambe in vista, spalle e anche come due barre corte.
+   Gli angoli sono quelli dello schermo (0 giù, 90 a sinistra, 180 su) e
+   i lati sono quelli dello schermo, non della persona; l'altro lato è la
+   posa specchiata, raggiunta passando per la posizione in piedi.
+   `above: true` vuol dire sdraiato visto dall'alto: la figura sta a metà
+   del riquadro invece che sul pavimento. Un esercizio la usa se ha il
+   campo `front`; `pose` resta obbligatorio per chi legge l'elenco.
+4. **I campi nuovi dell'esercizio sono tutti facoltativi** (`kind`,
+   `tempoMs`, `position`, `level`, `front`, `frontBreath`): i 15 esercizi
+   di prima e le routine salvate non cambiano.
+5. **Gli esercizi nuovi stanno in file nuovi** (`posesMore.ts`,
+   `exercisesMore.ts`, poi `posesFrontMore.ts`) e **una sola lista li
+   raccoglie tutti** (`allExercises.ts`: `ALL_EXERCISES`, `exerciseByKey`,
+   `isMove`): prima i 15, poi i nuovi, blocco dopo blocco. **Una chiave
+   non cambia mai e non si riusa**: le routine salvate e pubblicate
+   (ADR-0378, aggiunta E) nominano gli esercizi per chiave. I file di
+   TASK-466 (`exercises.ts`, `poses.ts`, `routines.ts`) si toccano il meno
+   possibile.
+6. **I colori dei cinque gruppi sono token dedicati** (`stretch.*` in
+   `tokens.ts`), con il test di contrasto nelle quattro tinte: non si
+   riusano `runDay`, `muscle`, `food`, che vogliono dire altro.
+7. **L'anello del tempo è fatto di 48 View tonde**, non di un arco: un
+   arco vorrebbe una libreria di disegno.
+8. **Gli sport si scrivono «{sport} · Before» e «{sport} · After»**: il
+   nome dello sport è già tradotto, non servono frasi «After {sport}» per
+   ogni lingua. Il video della routine nasce nella pagina del video della
+   corsa (`src/share/videoPage.ts`), con una scena sua.
+9. **Ogni posa nuova ha i suoi test**: sta sul pavimento e mai sotto, in
+   fondo al respiro come a riposo; resta intera su un telefono stretto
+   (scivola quando si allunga molto, come `drift` già fa); le mani e i
+   piedi che devono toccarsi o toccare terra lo fanno; il respiro va nel
+   verso dell'esercizio (la coscia verso il petto, il tallone verso il
+   gluteo). `bones` appende le braccia in cima al busto mentre `Figure`
+   le disegna a 0,9: dove conta, il test ha quella tolleranza e lo dice.
+
+**Motivo**: tenere un solo modo di disegnare e di animare la figura, e un
+solo elenco di esercizi, fa crescere il catalogo senza che ogni routine
+diventi un pezzo a sé da mantenere; i file nuovi tengono separati due
+task che lavorano nella stessa cartella.
+
+**Conseguenze**: nessuna dipendenza nuova, nessuna migrazione, nessuna
+schermata cambiata finché non entra la parte D (la home). Gli esercizi
+nuovi sono nell'elenco ma nessuna routine li mostra prima della parte C.
+I testi nuovi entrano con le loro quattro traduzioni, approvate
+dall'utente. Il numero 14 dell'elenco approvato, «Hands clasped behind»,
+era lo stesso gesto di «Chest opener»: al suo posto `goalpost`, col sì
+dell'utente. Nessun consiglio medico: «Stop if it hurts» resta, e le
+categorie per la schiena dicono che non sostituiscono un medico. Per
+«Intimacy» vale la classificazione d'età sugli store scritta nel task file
+(16+ su App Store).
+
+## ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza
+
+**Stato**: Attiva · 2026-11-26 · TASK-448 (in `main`: #1613 la scelta,
+#1641 la pastiglia). Che cosa si vede e che cosa si promette è **scelta
+dell'utente** (2026-11-26, sei risposte: «Nel passo 2 di Draw»; «Riempie e
+aspetta»; «Forma e 5 o 10 km»; «Come sempre»; «A piedi e in bici»; «Sì,
+vanno bene» sui testi; «Sì, va bene» sulle schermate dal simulatore); il
+come è deciso dall'agente su delega dell'utente. Numero dal Coordinatore.
+
+**Contesto**: idea I1 della prova dell'11 novembre 2026: chi non sa cosa
+disegnare vuole una forma e una distanza «che vengono bene dove sono». Il
+motore dice quanto una forma è venuta bene solo **dopo** il calcolo
+(`similarity`); un punteggio prima sarebbe un lavoro del motore. Il
+catalogo di «Explore» (TASK-441) ha già, in 63 città, percorsi disegnati a
+0,90 o più e scelti a occhio: a piedi forme a 5, 10 e 21 km, in bici otto
+forme da 20 a 50 km. `GET /recommended-routes` li dà per posizione, con
+forma e distanza chiesta. Non c'è un limite di distanza per forma: il
+limite è dello sport.
+
+**Decisione**:
+- **L'app sceglie solo cosa chiedere**: una coppia forma–distanza, scritta
+  in «Draw» come la scriverebbe l'utente (`setShapeText`, la distanza con
+  `useDrawDistance().choose`). Il percorso lo decide il motore con «Draw
+  route», come sempre. Nessun cambio al motore, all'API o al contratto.
+- **«Vicino» sono 10 km** dalla partenza scelta in «Draw»
+  (`SURPRISE_RADIUS_M`): i percorsi di una città partono entro 1 km dal suo
+  centro, e la richiesta è quella di «Explore», con la posizione
+  arrotondata (TASK-363). In bici la stessa richiesta con
+  `activity=cycling`.
+- **La lista si chiede al primo tocco**, non all'apertura della pagina: chi
+  non tocca la pastiglia non fa una richiesta in più. Resta in memoria 10
+  minuti per partenza e sport; i tocchi dopo rispondono subito. Se non
+  arriva entro 2,5 s, o il server non risponde, la scelta viene dalle forme
+  di riserva e la lista si richiede al tocco dopo.
+- **La scelta** (`route/surprisePick.ts`, funzione pura): prima la forma,
+  alla pari fra le forme vicine, poi una delle sue distanze. A piedi 5 o
+  10 km, mai 21; in bici 20, 25 o 30 km e solo le otto forme del suo
+  catalogo. Mai la coppia del tocco prima, e finché ce n'è un'altra mai la
+  stessa forma: lo stesso cuore a un'altra distanza non è una sorpresa. Il
+  caso è iniettato (`random`): nei test un generatore con seme.
+- **Le forme di riserva**, senza percorsi vicini: a piedi le sette più
+  tenute nel catalogo (cuore, cerchio, stella, luna, smiley, sole,
+  farfalla) a 5 o 10 km; in bici una delle otto a 20 km.
+- **Quelle venute male non tornano**: una richiesta di forma a una distanza
+  da sorpresa che finisce con ogni percorso della risposta sotto 0,90, o
+  rifiutata dal motore (`shape_not_drawable`), è tenuta in `surprise.json`
+  sul telefono per quella partenza (al più 60, dimenticate oltre 1 km) e
+  non è più proposta da lì. Vale per ogni richiesta così, non solo per
+  quelle nate dalla pastiglia: l'app non tiene traccia di chi ha scelto la
+  forma. Una richiesta a penna alzata non insegna niente: il suo voto non
+  si confronta. Se ogni coppia è venuta male, la pastiglia risponde lo
+  stesso, con una forma di riserva.
+- **Gli sport** stanno in una tabella dentro `surprisePick.ts`: corsa e
+  camminata (che disegna sulla rete della corsa e vede i suoi percorsi) e
+  bici. Gli altri sport non hanno un catalogo e non hanno la pastiglia.
+- **Con «Miles»** la distanza proposta è il miglio intero più vicino, come
+  le altre distanze che l'app propone (`offeredDistanceM`).
+- **Per chi non vede** la pagina cambiare, il lettore di schermo dice la
+  scelta con parole che la pagina ha già («Heart, 5 km»).
+
+**Conseguenze**: nessuna promessa scritta (scelta dell'utente): la
+pastiglia dice solo «Surprise me». I percorsi del catalogo partono dalla
+piazza della città, non da casa dell'utente: che una forma venga bene in
+centro è un buon indizio, non una garanzia, e il risultato ha l'avviso
+sotto il 90% e «Try 8 km» come ogni altro. Fuori dalle città del catalogo
+la scelta è fra sette forme. Solo JS/TS, l'impronta iOS non cambia; un
+solo testo nuovo, nelle cinque lingue. Nel simulatore (Trento, API locale
+col catalogo) un tocco ha dato «Fantasmino, 10 km» e «Stella, 10 km» a
+piedi, «Sole, 30 km» in bici; su un telefono non è provato.
 
 ## ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi, più piano nel silenzio; la pagina intera una volta al minuto
 

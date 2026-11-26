@@ -132,6 +132,7 @@ test("the row opens the page, which stays open when its notice is read", async (
   await show();
   await fireEvent.press(screen.getByTestId(NUTRITION_ENTRY_TEST_ID));
   expect(screen.getByTestId("nutrition-page")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("welcome-next"));
   expect(screen.getByTestId("nutrition-notice")).toBeOnTheScreen();
   await fireEvent.press(screen.getByTestId("nutrition-understood"));
   // The profile under it now has the card, and the page is still there.

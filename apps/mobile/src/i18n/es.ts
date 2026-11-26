@@ -1886,6 +1886,44 @@ export const ES: Table = {
   "Knee hug": "Rodilla al pecho",
   "Stand on one leg. Hug the other knee to your chest.":
     "De pie sobre una pierna. Abraza la otra rodilla contra el pecho.",
+  // src/stretch, the new exercises (TASK-520 part B)
+  "Thread the needle": "Enhebrar la aguja",
+  "On all fours, slide one arm under your body. Rest your shoulder down.":
+    "A cuatro patas, desliza un brazo por debajo del cuerpo. Apoya el hombro en el suelo.",
+  "Side child's pose": "Postura del niño lateral",
+  "From child's pose, walk both hands to one side. Breathe into your ribs.":
+    "Desde la postura del niño, lleva las manos hacia un lado. Respira hacia las costillas.",
+  "Wrist stretch, palm up": "Estiramiento de muñeca, palma arriba",
+  "Arm straight, palm up. Gently pull your fingers back with the other hand.":
+    "Brazo estirado, palma hacia arriba. Con la otra mano tira suavemente de los dedos hacia ti.",
+  "Wrist stretch, palm down": "Estiramiento de muñeca, palma abajo",
+  "Arm straight, palm down. Gently press the back of your hand toward you.":
+    "Brazo estirado, palma hacia abajo. Empuja suavemente el dorso de la mano hacia ti.",
+  "Biceps stretch": "Estiramiento de bíceps",
+  "Palm on a wall behind you, arm straight. Turn your chest away.":
+    "Palma en una pared detrás de ti, brazo estirado. Gira el pecho hacia el otro lado.",
+  "Doorway chest stretch": "Estiramiento de pecho en la puerta",
+  "Forearm on a door frame, elbow at shoulder height. Step through gently.":
+    "Antebrazo en el marco de la puerta, codo a la altura del hombro. Da un paso adelante con suavidad.",
+  Sphinx: "Esfinge",
+  "Lie on your belly, forearms down. Lift your chest gently.":
+    "Túmbate boca abajo, antebrazos en el suelo. Levanta el pecho con suavidad.",
+  "Seated twist": "Torsión sentado",
+  "Sit tall, one knee bent over the other leg. Turn toward the bent knee.":
+    "Siéntate erguido, una rodilla doblada sobre la otra pierna. Gira hacia la rodilla doblada.",
+  "Lizard lunge": "Zancada del lagarto",
+  "From a low lunge, both hands inside your front foot. Sink your hips.":
+    "Desde una zancada baja, las dos manos por dentro del pie de delante. Deja bajar las caderas.",
+  "Deep squat": "Sentadilla profunda",
+  "Feet wide, sink low, heels down. Elbows press your knees open.":
+    "Pies separados, baja mucho, talones en el suelo. Los codos empujan las rodillas hacia fuera.",
+  "Seated figure four": "Figura de cuatro sentado",
+  "Sit on a chair, ankle over the other knee. Lean forward, back long.":
+    "Sentado en una silla, un tobillo sobre la otra rodilla. Inclínate hacia delante, espalda larga.",
+  "Bent-knee calf stretch": "Gemelo con rodilla doblada",
+  "Step back, bend both knees. Keep the back heel down.":
+    "Da un paso atrás, dobla las dos rodillas. Mantén el talón de atrás en el suelo.",
+  // end of TASK-520 part B
   Morning: "Mañana",
   "After run": "Después de correr",
   "After gym": "Después del gimnasio",
@@ -3467,8 +3505,6 @@ export const ES: Table = {
   "(set by you)": "(lo pones tú)",
   Left: "Quedan",
   "kcal a day": "kcal al día",
-  "Your own number, or the one your dietitian gave you. MuW never suggests one.":
-    "Tu propio número, o el que te dio tu dietista. MuW nunca propone uno.",
   "Remove target": "Quitar objetivo",
   Breakfast: "Desayuno",
   Lunch: "Comida",
@@ -3729,6 +3765,51 @@ export const ES: Table = {
     "Escribe tu propia dieta y lo que comes: MuW estima las calorías que comes y las que gastas, incluida esta actividad.",
   "This activity: {kcal} kcal (est.)": "Esta actividad: {kcal} kcal (est.)",
   "Add what you ate": "Añade lo que has comido",
+  // src/nutrition (TASK-489 part J: the door of Nutrition and MuW's estimate; approved by the user on 2026-11-24)
+  "Your food diary: what you eat, what you use, and the balance.":
+    "Tu diario de comidas: lo que comes, lo que gastas y el balance.",
+  Example: "Ejemplo",
+  "Write your plan": "Escribe tu plan",
+  "Your own diet, or your dietitian's, day by day.":
+    "Tu propia dieta, o la de tu dietista, día a día.",
+  "Log what you eat": "Apunta lo que comes",
+  "Foods and grams: MuW estimates the calories.":
+    "Alimentos y gramos: MuW estima las calorías.",
+  "See your balance": "Mira tu balance",
+  "Eaten less used, with all your activities.":
+    "Ingeridas menos gastadas, con todas tus actividades.",
+  "Next@@step": "Siguiente",
+  "What brings you here?": "¿Qué te trae por aquí?",
+  "Keep track of what I eat": "Llevar la cuenta de lo que como",
+  "Lose weight": "Perder peso",
+  "Gain weight": "Ganar peso",
+  "Follow my dietitian's plan": "Seguir el plan de mi dietista",
+  "You can skip this: it only changes what the page shows first.":
+    "Puedes saltarlo: solo cambia lo que la página muestra primero.",
+  "To estimate, MuW needs your weight, height, year of birth and sex. They stay on your phone.":
+    "Para estimar, MuW necesita tu peso, altura, año de nacimiento y sexo. Se quedan en tu teléfono.",
+  "You use about {kcal} kcal a day (est.)": "Gastas unas {kcal} kcal al día (est.)",
+  "Eating less than you use is a deficit; more is a surplus.":
+    "Comer menos de lo que gastas es un déficit; más, un superávit.",
+  "Best: write your own number, or your dietitian's.":
+    "Lo mejor: escribe tu propio número, o el de tu dietista.",
+  "See MuW's estimate (demo)": "Ver la estimación de MuW (demo)",
+  "MuW's estimate: {kcal} kcal a day": "Estimación de MuW: {kcal} kcal al día",
+  "A rough estimate from a public formula, only a demonstration. MuW is not made by health professionals: this is not medical advice.":
+    "Una estimación aproximada a partir de una fórmula pública, solo demostrativa. MuW no está hecha por profesionales de la salud: no es un consejo médico.",
+  "If you are pregnant or breastfeeding, have an illness, or have or had an eating disorder, this number is not for you: ask your doctor.":
+    "Si estás embarazada o das el pecho, tienes una enfermedad, o tienes o has tenido un trastorno alimentario, este número no es para ti: pregunta a tu médico.",
+  "Use this number": "Usar este número",
+  "I'll write my own": "Escribo el mío",
+  "MuW suggests no calorie number to people under 18.":
+    "MuW no propone un número de calorías a menores de 18 años.",
+  "From your data MuW suggests no number for this. Talk to your doctor or a dietitian.":
+    "Con tus datos MuW no propone un número para esto. Habla con tu médico o con un dietista.",
+  "Start@@nutrition": "Empezar",
+  "MuW's estimate of a daily target (demo)":
+    "La estimación de MuW para el objetivo diario (demo)",
+  "A usual day is the average of what you used in your last seven days. To lose weight MuW takes 600 kcal a day off it, the amount the NHS gives, only for adults with a body mass index of 25 or more, and never below 1,400 kcal a day for women or 1,900 for men (NHS 12-week weight loss plan). To gain weight MuW suggests no number. Sources read on 24 November 2026. MuW is not made by health professionals: better to write your own number, or your dietitian's.":
+    "Un día habitual es la media de lo que gastaste en tus últimos siete días. Para perder peso MuW le quita 600 kcal al día, la cantidad que indica el NHS, solo para adultos con un índice de masa corporal de 25 o más, y nunca por debajo de 1.400 kcal al día para mujeres o 1.900 para hombres (plan de 12 semanas del NHS para perder peso). Para ganar peso MuW no propone ningún número. Fuentes leídas el 24 de noviembre de 2026. MuW no está hecha por profesionales de la salud: mejor escribe tu propio número, o el de tu dietista.",
   // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
   Weather: "Tiempo",
   "Weather: {temperature}, wind {speed}": "Tiempo: {temperature}, viento {speed}",

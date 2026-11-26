@@ -22,6 +22,18 @@ import { type ShellPage, TabShell } from "./TabShell";
 // at its top is on screen.
 
 jest.mock("../ui/useReduceMotion", () => ({ useReduceMotion: jest.fn() }));
+// A phone without the real glass: the header keeps its place and the band
+// is part A's, which these tests are about. Where the glass is the phone's
+// own it floats (HeaderFloats.test.tsx). Said here because jest-expo's
+// stand-in for the module answers that the glass is there.
+jest.mock("expo", () => {
+  const actual = jest.requireActual<typeof import("expo")>("expo");
+  return {
+    ...actual,
+    requireOptionalNativeModule: (name: string) =>
+      name === "ExpoGlassEffect" ? null : actual.requireOptionalNativeModule(name),
+  };
+});
 jest.mock("../ui/useGlassMode", () => ({
   ...jest.requireActual("../ui/useGlassMode"),
   useGlassMode: jest.fn(),

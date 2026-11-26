@@ -11,6 +11,8 @@ miglioramento, da misurare e proporre all'utente (parte nuova). Scelto
 dall'utente lo stesso giorno: la parte E, la zona più larga intorno al
 telefono, in `main` dalla #546 (`7da61107`, 2026-10-25). Restano i criteri
 ancora aperti qui sotto e le zone dove il server risponde `404`.
+2026-11-26: parte G, il server prepara la zona che manca intorno al
+telefono (scelta dell'utente «Il server la prepara», aggiunta G ad ADR-0177).
 **Prova sul telefono** (il percorso in modalità aereo, con la zona già scaricata): provato dall'utente il 2026-11-26, «ok»; i secondi non sono stati annotati. Il task resta aperto per le zone dove il server dà 404.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
@@ -829,3 +831,26 @@ aspetta la lettura della zona.
 **Seguito fuori dal task**: una scadenza per le partenze vicine anche senza
 processi, in `route_engine`, in un task suo. Il telefono disegnerebbe
 percorsi più lunghi in meno tempo.
+
+**Parte G, le zone `404`** (2026-11-26, aggiunta G ad ADR-0177; ramo
+`feat/TASK-214-g-zone-404`):
+
+- **Scelta dell'utente** (2026-11-26): «Il server la prepara». Le altre
+  erano: più zone in anticipo; lasciare così.
+- **Il codice** (`phone_zone_api.py`): dopo un `404` senza `prefetch=1`,
+  `PlaceBuilds.ask` per la zona con 6 km intorno al punto, come un luogo
+  tenuto (TASK-334). La risposta resta `404`; il telefono la trova
+  all'apertura dopo. Con un percorso in corso o `PAUSE_FILE` non parte
+  niente.
+- **Privacy nel log**: `phone_file` scriveva il nome del file della zona,
+  cioè il suo riquadro intorno al telefono o al luogo tenuto: ora scrive
+  solo la rete. Il test controlla che nessuna riga del server dica dove.
+- **Test**: `test_phone_zone_404_builds.py` (8); in
+  `test_phone_zone_api.py` la fixture mette in coda senza scaricare, così
+  la CI non chiede mai Overpass. 90 test delle zone e di `on_phone` verdi,
+  ruff e black puliti.
+- **Da fare dopo, fuori da questa parte** (Coordinatore, 2026-11-26): due
+  `log.warning` di `route_engine/network.py` (un pickle che non si legge,
+  un pickle non scritto) scrivono il nome del file della zona, quindi il
+  suo riquadro. Sono rari e del motore: serve una PR a parte, con la prova
+  degli stessi percorsi.

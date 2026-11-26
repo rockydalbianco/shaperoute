@@ -612,9 +612,54 @@ lasciando le righe d'indice.
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
 - ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero (`GET /notifications/unread`, una query, niente foto), con il ripiego sulla lista per un server di prima; la riga dei «live» non chiede con l'app dietro · 2026-11-26 · Attiva
 - ADR-0175, aggiunta (TASK-497) — La foto di chi scrive un commento: il commento porta l'indirizzo della foto piccola (`author.photo`, quello del feed), l'app non chiede più il profilo intero; supera il punto 7 · 2026-11-24 · Attiva
+- ADR-0177, aggiunta G (TASK-214) — Una zona che il server non ha intorno al telefono la prepara da solo, come un luogo tenuto (TASK-334): il telefono la trova all'apertura dopo; il log non scrive mai il nome della zona · 2026-11-26 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0177, aggiunta G (TASK-214) — Il server prepara la zona che manca intorno al telefono
+
+**Stato**: Attiva · 2026-11-26 · TASK-214 parte G. **Scelta dell'utente**
+del 2026-11-26, alla domanda «quando il telefono chiede la mappa della sua
+zona e il server non ce l'ha, cosa facciamo?»: **«Il server la prepara»**
+(le altre: più zone in anticipo; lasciare così). Il modo è **deciso
+dall'agente su delega dell'utente**; file e forma dal Coordinatore.
+
+**Contesto**: `GET /phone-zones/{network}` risponde `404` quando il server
+non ha una zona con 3 km intorno al punto: dal 10 al 25 ottobre più di metà
+delle richieste (85 su 155). Lì il telefono non ha mappa e senza rete non
+disegna. Il registro del server non scrive le posizioni (ADR-0096), quindi
+non si sa dove: la scelta è cosa fare a ogni `404`.
+
+**Decisione**:
+
+1. **Dopo un `404` senza `prefetch=1`** il server mette in coda la zona con
+   6 km intorno al punto (`PLACE_MARGIN_M`) con lo stesso `PlaceBuilds`
+   dei luoghi tenuti (TASK-334, ADR-0290): una zona alla volta, solo quando
+   non disegna percorsi (`RouteWork`) e senza `PAUSE_FILE`, con gli stessi
+   tetti del giorno (3 per telefono, 20 in tutto, condivisi coi luoghi).
+2. **La risposta resta `404`**: l'app non cambia; alla sua apertura dopo
+   chiede di nuovo e la trova.
+3. **Le zone chieste in anticipo** (`prefetch=1`, parti B2 e B2b) non
+   preparano niente.
+4. **Il log non scrive mai il nome della zona**: il nome è il suo riquadro,
+   centrato sulla posizione arrotondata del telefono. `phone_file`
+   scriveva «phone zone foot_46.01600_…» anche per i luoghi tenuti: ora
+   scrive solo la rete.
+
+**Privacy**: nessun dato nuovo lascia il telefono; il testo di oggi copre
+già la mappa offline intorno a te (posizione arrotondata a circa 1 km) e
+Overpass chiesto dal server per un'area che non ha (vede l'area, non chi).
+
+**Alternative scartate**: costruire in anticipo molte più zone (un passo
+lungo sul server e molto disco, e solo per le città); una risposta nuova
+`202` al telefono (l'app avrebbe dovuto cambiare, senza vantaggio: chiede
+già a ogni apertura).
+
+**Conseguenze**: dove i telefoni aprono l'app senza zona, il server la
+scarica da Overpass entro il tetto del giorno; carico su Overpass e disco
+come per i luoghi tenuti. Solo server; `engine.zip` non cambia. Va sul
+server con un passo del Coordinatore, col sì dell'utente.
 
 ## ADR-0406 — Il proprietario dei dati sul telefono è il public_id sul suo server, non l'id numerico
 

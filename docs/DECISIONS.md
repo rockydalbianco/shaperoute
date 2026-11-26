@@ -609,9 +609,66 @@ lasciando le righe d'indice.
 - ADR-0409 — «Sign up» e «Log in» gialli: il pulsante in fondo al modulo è `accent` con parole `onAccent`, un'eccezione scelta dall'utente a «il giallo è del percorso» · 2026-11-24 · Attiva
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
+- ADR-0258, precisazione C2 — La foto a penna alzata nell'API e nell'app: i pezzi solo se il contorno a penna alzata è lo stesso, al più `MAX_WALKS`, `pen_up` e `pieces` insieme, nessun pezzo dopo una modifica, «Lift the pen between parts» acceso all'avvio · 2026-11-26 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0258, precisazione C2 — La foto a penna alzata nell'API e nell'app
+
+**Stato**: Attiva · 2026-11-26 · TASK-297 parte C2 (#1520) · deciso
+dall'agente su delega dell'utente. Il testo nuovo e «Edit the outline»
+nascosto a penna alzata sono stati approvati dall'utente il 2026-10-27
+(«ok vanno bene», «ok va bene»); il merge è avvenuto col suo «Sì, unisci»
+del 2026-11-24.
+
+**Contesto**: ADR-0258 (parte C) insegna al motore a dividere una foto in
+pezzi: gli altri soggetti e i buchi. C2 porta i pezzi fino all'app. Il
+branch, scritto il 2026-10-28, era rimasto senza PR. Il 2026-11-23 è stato
+allineato a un mese di `main`: richiesta con `placement`, `fit` e `laps`,
+camminata come corsa (`engine_activity`), disegno ancorato.
+
+**Decisione**:
+
+1. `POST /image-outlines` ricalca la foto anche con `pen_up=True`. Dà
+   `pieces` e `image_pieces`, nella cornice di `points`, solo se il
+   contorno a penna alzata è **lo stesso** di quello a penna giù. Così
+   l'app manda indietro gli stessi `points`, con i pezzi o con i tratti, e
+   nel contratto non c'è un secondo contorno. Costa un secondo
+   tracciamento: circa il doppio del tempo, sotto 1 s nelle prove.
+2. **Al più `MAX_WALKS` pezzi**: ogni pezzo è una camminata, e un
+   percorso, una corsa salvata e un preferito ne tengono al più tanti. Con
+   più pezzi non se ne manda nessuno e la foto si disegna a penna giù: un
+   logo a metà sarebbe un altro disegno.
+3. **`pen_up` e `pieces` vanno insieme**: l'uno senza l'altro è
+   `invalid_request`, con il motivo. I pezzi che tornano dal telefono si
+   controllano senza incroci, come li ha tracciati il motore. Il motivo di
+   prima («pen_up is for the letters of a word») resta dentro quello
+   nuovo.
+4. **Le modifiche** (TASK-079) valgono per la linea a penna giù. Un
+   contorno modificato non ha pezzi: `POST /image-outline-edits` risponde
+   con `pieces` vuoti. «Edit the outline» si vede solo a penna giù. Dopo
+   una modifica l'interruttore sparisce e il disegno si fa a penna giù.
+   Lo fissa `test_an_edited_outline_has_no_pieces_and_is_drawn_with_the_pen_down`.
+   Una modifica che tenga i pezzi sarebbe un task a parte.
+5. In `shared-types`, `ImagePenUpRouteRequest` è un tipo a sé, con
+   `pen_up: true` e `pieces` obbligatori. Così `ImageRouteRequest` resta
+   com'era. I due campi nuovi di `ImageOutline` sono in una seconda
+   dichiarazione, che TypeScript unisce alla prima.
+6. Nell'app, l'interruttore è lo stesso «Lift the pen between parts»
+   delle forme in pezzi e ha lo stato di quello delle parole: è acceso
+   all'avvio. Se l'app non sa disegnare i pezzi uno per uno sopra la foto,
+   lascia fuori i pezzi, mai il contorno.
+7. L'ordine di uscita è: prima il passo sul server (il 22, `080a4e83`),
+   poi l'OTA (la 26, `71fc76c4`). Un'app che manda `pen_up` lo fa solo
+   dopo aver ricevuto dei `pieces` dall'API. `images.py` e `schemas.py`
+   stanno anche nel motore del telefono, per questo `engine.zip` è stato
+   rifatto per ultimo.
+
+**Conseguenze**: le foto pronte di «Draw» vengono da
+`samplePictures.json` e non hanno pezzi, anche quando la foto li
+avrebbe: lì l'interruttore non compare. La prova sul telefono resta
+all'utente.
 
 ## ADR-0409 — «Sign up» e «Log in» gialli
 

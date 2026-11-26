@@ -10,9 +10,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * fill, and nothing here may be made up to fill them.
  */
 
-const UPDATED = "10 November 2026";
+const UPDATED = "26 November 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the replies and the reactions to a comment (TASK-454 C). Redated for the group runs among the reports (TASK-309 B). Redated for the posts of photos only (TASK-312 C2). «From a file» for the «+» of the Feed, which also records now (TASK-481 A). A gym plan shared in the Feed (TASK-485 B). Gear (TASK-486). The heart rate of a workout at the gym (TASK-385 G3). */
-const PRIVACY_UPDATED = "24 November 2026";
+const PRIVACY_UPDATED = "26 November 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -234,6 +234,7 @@ const terms: AboutDocument = {
             "The maps come from OpenFreeMap and from the data of OpenStreetMap (© OpenStreetMap contributors).",
             'The 3D animals in the video come from Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm and SahuAvdhesh on Sketchfab (CC BY 4.0), animated and adapted by MuW.',
             "Places are searched with Geoapify.",
+            "The weather of posts and ski resorts comes from MET Norway (CC BY 4.0).",
             "If you connect Strava, the runs you send there follow Strava's own terms and privacy settings.",
             "A picture you share leaves through the phone's share sheet: the app that receives it has its own terms.",
             "The link of a tagged item opens the shop's site in your browser: the shop has its own terms.",
@@ -357,6 +358,7 @@ const privacy: AboutDocument = {
         "On the photos you publish you can tag the items you are wearing: what each one is, its brand and, if you like, its model and a link to a shop. Whoever sees the photo sees them. If the run goes back to «Only me», they leave our server with its photos and stay on this phone.",
         "You can add your gear: shoes, a bike, skis, a helmet, anything you use. For each item we keep its kind, brand, model, the name you give it, the month you bought it, your note and its photo. The photo is kept resized, without the data your phone adds to it, such as where and when it was taken. The activities you choose for an item add their distance and time to its totals, which our server counts from your saved activities. Other members see your gear on your profile, with its totals, notes and photos, unless you turn on «Hide from profile» for an item. The sports you choose for an item and its limit are seen only by you. Your gear is deleted with your account.",
         "For a day of skiing, the app sends our server your position rounded to about 1 km to find the nearest resort; the server asks MET Norway for the weather with the resort's position, never yours. The resort, snow and gear you add show on the post, for whoever can see it, and the snow also counts, without your name, in the resort's snow of the day.",
+        "When you save an activity outdoors within 3 hours of its end, our server sends MET Norway its starting point, rounded to about 1 km, to ask for the weather of that hour; MET Norway does not get your name. The weather (temperature, sky and wind) shows on the post, for whoever can see it.",
       ],
     },
     {

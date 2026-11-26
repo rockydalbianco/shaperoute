@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "10. November 2026";
+const UPDATED = "26. November 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "24. November 2026";
+const PRIVACY_UPDATED = "26. November 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -233,6 +233,7 @@ const terms: AboutDocument = {
             "Die Karten stammen von OpenFreeMap und aus den Daten von OpenStreetMap (© OpenStreetMap-Mitwirkende).",
             "Die 3D-Tiere im Video stammen von Quaternius (CC0); der Elefant ist „Elephant Anim“ von Shivoahm und SahuAvdhesh auf Sketchfab (CC BY 4.0), von MuW animiert und angepasst.",
             "Orte werden mit Geoapify gesucht.",
+            "Das Wetter in Beiträgen und Skigebieten kommt von MET Norway (CC BY 4.0).",
             "Wenn du Strava verbindest, gelten für die Läufe, die du dorthin sendest, die Bedingungen und Datenschutzeinstellungen von Strava.",
             "Ein Bild, das du teilst, verlässt das Handy über das Teilen-Menü: Die App, die es empfängt, hat ihre eigenen Bedingungen.",
             "Der Link eines markierten Teils öffnet die Seite des Shops in deinem Browser: Der Shop hat seine eigenen Bedingungen.",
@@ -356,6 +357,7 @@ const privacy: AboutDocument = {
         "Auf den Fotos, die du veröffentlichst, kannst du die Teile markieren, die du trägst: was jedes ist, die Marke und, wenn du willst, das Modell und einen Link zu einem Shop. Wer das Foto sieht, sieht sie. Geht der Lauf zurück auf «Nur ich», verlassen sie mit seinen Fotos unseren Server und bleiben auf diesem Telefon.",
         "Du kannst deine Ausrüstung hinzufügen: Schuhe, ein Rad, Ski, einen Helm, alles, was du benutzt. Zu jedem Teil speichern wir Art, Marke, Modell, den Namen, den du ihm gibst, den Monat, in dem du es gekauft hast, deine Notiz und sein Foto. Das Foto speichern wir verkleinert, ohne die Daten, die dein Handy hinzufügt, etwa wo und wann es aufgenommen wurde. Die Aktivitäten, die du für ein Teil wählst, fügen seinen Summen ihre Distanz und Zeit hinzu; die Summen zählt unser Server aus deinen gespeicherten Aktivitäten. Andere Mitglieder sehen deine Ausrüstung auf deinem Profil, mit Summen, Notizen und Fotos, außer du schaltest für ein Teil «Im Profil ausblenden» ein. Die Sportarten, die du für ein Teil wählst, und sein Limit siehst nur du. Deine Ausrüstung wird mit deinem Konto gelöscht.",
         "Bei einem Skitag sendet die App unserem Server deine Position, auf etwa 1 km gerundet, um das nächste Skigebiet zu finden; das Wetter fragt der Server bei MET Norway mit der Position des Skigebiets ab, nie mit deiner. Skigebiet, Schnee und Ausrüstung, die du hinzufügst, stehen auf dem Beitrag, für alle, die ihn sehen können, und der Schnee zählt außerdem, ohne deinen Namen, zum Schnee des Tages im Skigebiet.",
+        "Wenn du eine Aktivität im Freien innerhalb von 3 Stunden nach ihrem Ende speicherst, schickt unser Server MET Norway ihren Startpunkt, auf etwa 1 km gerundet, um das Wetter dieser Stunde abzufragen; MET Norway erhält deinen Namen nicht. Das Wetter (Temperatur, Himmel und Wind) steht auf dem Beitrag, für alle, die ihn sehen können.",
       ],
     },
     {

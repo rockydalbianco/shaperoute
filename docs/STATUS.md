@@ -75,6 +75,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   d'inverno, feste e sport e i 35 contorni di TASK-418. A sagome (file
   nuovi), B strade, C registrazione (PR unita dall'utente, server e OTA
   insieme), D catalogo. File: — · `tasks/TASK-516.md`
+- **TASK-507 — I dati del telefono restano di chi li ha fatti** · ADR-0406;
+  A + C, D, B1 e B2 in `main` (#1533, #1545, #1546, #1573), il 2026-11-26
+  la PR di documenti. Resta la prova dell'utente con due account dopo
+  l'OTA (`PROVA-GENERALE.md`, sezione 2), poi la chiusura.
+  File: — · `tasks/TASK-507.md`
 - **TASK-486 — L'attrezzatura** · parte 0 chiusa il 2026-11-21 (sei
   scelte dell'utente, ADR-0393); poi A server … G avviso, file al
   Coordinatore prima di ogni parte. File: — · `tasks/TASK-486.md`
@@ -234,7 +239,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (#1509) e la correzione dell'header sopra le pagine (#1534, difetto di
   A5b) con l'OTA 25. Poi A7c-4 (chip del volo). Parte B avviata
   dall'utente il 2026-11-24: piano B0–B4 nel task file, la dipendenza
-  (B1) col suo sì e nel taglio nativo. File: — ·
+  (B1) col suo sì e nel taglio nativo. B1 (#1557) e B2 (#1562, la barra
+  galleggia solo col vetro vero: scelta dell'utente del 2026-11-26) sono
+  bozze ferme fino al taglio nativo. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-481 — Il «+» del Feed: tutte le voci** (ADR-0390) · A (la lista:
@@ -256,6 +263,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'OTA, E chat di gruppo. File: — · `tasks/TASK-495.md`
   2026-11-24: A in `main` (#1538, migrazione 0087, sul server col prossimo
   passo), A2 #1543 armata; poi B (l'app), file approvati dal Coordinatore.
+- **TASK-509 — Stati vuoti, icone di «Add to Feed», sagoma nelle tessere** ·
+  parte 0 chiusa il 2026-11-26 (cinque scelte dell'utente). Tre PR di sola
+  app: A stati vuoti (con due prop in `App.tsx`), B icone, C sagoma (dopo
+  TASK-449 in `main`); il codice parte al «via» del Coordinatore.
+  File: quelli di A, B e C nel task file · `tasks/TASK-509.md`
 
 In attesa (Fermo — in attesa nel task file, nessun file occupato; si
 riprendono col sì dell'utente). Aspettano la società o servizi esterni:

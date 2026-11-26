@@ -1,6 +1,6 @@
 # TASK-466 — Lo stretching nuovo: animazioni, routine, palestra, mattino, routine pubblicate
 
-**Stato**: In corso · A in produzione (#1181, OTA 12); B (#1216,
+**Stato**: In corso · 2026-11-26: parte 0 di C ed E fatta (scelte dell'utente qui sotto) · A in produzione (#1181, OTA 12); B (#1216,
 `05f5a725`) e D (#1300, `749a5cc7`) in `main` dal 2026-11-12, escono col
 primo OTA dopo; restano C ed E
 **Prova sul telefono** (B e D: «Child's pose», il promemoria «Morning» ad app chiusa): provato dall'utente il 2026-11-26, «ok». Il task resta aperto per C ed E.
@@ -173,6 +173,43 @@ docs/tasks/TASK-466.md
 «Stretching» nella pagina Palestra con le routine. Dopo TASK-461 A2 e
 TASK-465, col turno del Coordinatore su `src/gym`.
 
+### Parte 0 di C — la scelta dell'utente (2026-11-26)
+
+Ripresa da un'altra sessione su assegnazione del Coordinatore (scelta
+dell'utente riferita da Strategia: «Aprili quattro task e iniziale»).
+Domanda: «alla fine della palestra l'app chiede "Stretch" o "Skip" e apre
+"After gym" da 3, 5 o 10 minuti: lo stretching fatto lì dove va a
+finire?». **Risposta: «Dentro l'allenamento»**: i minuti si aggiungono
+all'allenamento in palestra (riga «Stretching · 5 min» nel suo post e nel
+suo riepilogo), un solo post. Le altre: attività a sé (come TASK-475); non
+si salva. La voce «Stretching» nella pagina Palestra non serve più: lo
+sport «Stretching» (TASK-475) le offre già in «Draw».
+
+**Il modo** (deciso dall'agente su delega, file approvati dal Coordinatore):
+
+- **C1, server**: `stretch` facoltativo in `PUT /me/gym-sessions/{key}`
+  (`routine`, `minutes`, `duration_s`, `exercises`), solo per un
+  allenamento registrato con MuW; tabella `gym_stretches` (migrazione
+  `0089_gym_stretch.sql`, una riga per allenamento, si cancella con lui);
+  restituito con l'allenamento e con i suoi esercizi (quindi nel post solo
+  quando l'autore li mostra). Una sessione senza `stretch` resta identica
+  byte per byte per le app di prima.
+- **C2, app**: in `GymWorkoutHost.tsx` fra la fine e `GymEnd`
+  `StretchReminder` («Remember to stretch», «Skip», «Stretch») e poi la
+  routine «After gym»; il risultato in `gym/gymStretch.ts` (non in
+  `workout.ts`, che è di TASK-511) fino a «Save»; la riga nel post in
+  `GymDetail.tsx`. Nessun testo nuovo.
+- **Seguito**: la riga nel riepilogo (`GymEnd.tsx`) dopo TASK-489 I e
+  TASK-511 B, nell'ordine del Coordinatore.
+- **Privacy**: sì dell'utente (2026-11-26, «Sì, va bene») alla frase
+  nel paragrafo delle attività salvate, che copre anche le sessioni di
+  TASK-475: «A stretching session is saved with its routine, its length
+  and how many exercises you did, on its own or inside the workout at the
+  gym it followed.» (it: «Una sessione di stretching si salva con la sua
+  routine, la sua durata e quanti esercizi hai fatto, da sola o dentro
+  l'allenamento in palestra che ha seguito.»). PR di privacy in fila sui
+  file `about/content` e `site/privacy` dopo TASK-493 (#1646) e TASK-410 E.
+
 ## Parte D — Al mattino
 
 Impostazione «Morning stretch»: orario della sveglia, giorni, durata;
@@ -287,6 +324,58 @@ Scegli esercizi, ordine e secondi; la salvi; la pubblichi nel Feed
 routine». Server prima dell'app: nuovo tipo di post, migrazione col primo
 numero libero al merge; segnalazione e blocco valgono anche lì; il testo
 della privacy se cambia cosa vedono gli altri (sì dell'utente).
+
+### Parte 0 di E — le scelte dell'utente (2026-11-26)
+
+1. **Il modello. Risposta: «Come le schede palestra»** (TASK-485,
+   ADR-0394): routine tue salvate sul telefono e nell'account,
+   pubblicabili nel Feed, chi le vede le fa o le copia. Le altre: solo
+   routine personali; non farla.
+2. **L'editor. Risposta: «Sì, così»**: in «Draw» con lo sport
+   «Stretching», sotto le tre routine pronte, una riga «My routines» con
+   le proprie e «New routine». Nome, esercizi toccati nell'ordine voluto
+   (i 15 di oggi, con la figura), spostati su e giù, 20, 30, 45 o 60 s per
+   esercizio (per lato se ha due lati), la durata totale in alto. Fino a
+   20 esercizi per routine e 20 routine.
+3. **Il post. Risposta: «Sì, così»**: si pubblica da «My routines»
+   («Post») e dal «+» del Feed (riga «Stretching routine»), da
+   «Everyone». Nel Feed un riquadro: «Stretching routine», il nome,
+   «10 min · 8 exercises», le figure dei primi esercizi. Aperto: l'elenco
+   («Quad stretch · 30 s each side»…), «Do this routine» (parte subito e
+   si salva come sessione di stretching, TASK-475) e «Save to my
+   routines» (la copia fra le proprie). Il post è una fotografia della
+   routine al momento di «Post», come per le schede.
+4. **Testi e privacy. Risposta: «Approvo»**, in inglese; italiano,
+   tedesco, francese e spagnolo con il codice, da approvare lì.
+
+   | Dove | Testi |
+   |---|---|
+   | Draw › Stretching | «My routines» · «New routine» |
+   | Editor | «New routine» / «Edit routine» · «Name» («My routine») · «Add exercises» · «20 s» «30 s» «45 s» «60 s» · «each side» · «{minutes} min · {count} exercises» · «Save routine» · «Delete routine» · «Up to 20 exercises.» · «You already have 20 routines: delete one to add this.» |
+   | Feed «+» | «Stretching routine» · «Share one of your routines» · «Choose a routine» · «No routines yet: make one in Draw › Stretching.» · «Say something about this routine (optional)» · «Who sees it: Everyone» · «Post» |
+   | Riquadro | «Stretching routine» · nome · «{minutes} min · {count} exercises» |
+   | Aperto | «Quad stretch · 30 s each side» … · «Do this routine» · «Save to my routines» |
+   | Dopo la copia | «Added to your routines» |
+
+   **Privacy** (accanto alle schede palestra): «Your stretching routines
+   (their names, exercises and seconds) are kept on your phone and on your
+   account, and they are deleted with your account. Only you see them,
+   unless you post one in the Feed: the post is a copy of the routine as
+   it was when you posted it. Whoever sees the post can do it or save a
+   copy in their own routines. Changing or deleting your routine does not
+   change the post; deleting the post takes it off the Feed, while copies
+   already made stay with whoever made them.»
+
+**Le parti** (come TASK-485; liste dei file al Coordinatore parte per
+parte, numero di migrazione da lui):
+
+- **EA, server**: le routine dell'account (`/me/stretch-routines`) e il
+  post «routine» (`drawings`, letture, segnalazioni e blocchi come per
+  le schede).
+- **EB, app**: «My routines» ed editor in `src/stretch`, la riga del «+»,
+  riquadro e dettaglio, «Do this routine», «Save to my routines».
+- **Privacy**: la frase qui sopra, nella stessa fila dei file della privacy.
+- **EC**: il post aperto da profilo, campanella, link e chat.
 
 ## Criteri di accettazione (parte A)
 

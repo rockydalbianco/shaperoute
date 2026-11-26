@@ -1,3 +1,4 @@
+import drawingDetails from "@shaperoute/shared-types/fixtures/drawing-details.json";
 import myDrawing from "@shaperoute/shared-types/fixtures/my-drawing.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { Session } from "@shaperoute/shared-types";
@@ -7,7 +8,7 @@ import { answers, apiError } from "../account/testing";
 import type { Account } from "../account/useAccount";
 import { type DrawingChoice, NOT_CHOSEN } from "../api/drawings";
 import { loadDrawingOutbox, sendWaitingDrawings } from "./drawingOutbox";
-import { useDrawingsOf } from "./drawingsDoor";
+import { holdDrawing, useDrawingsOf } from "./drawingsDoor";
 
 // The phone's documents folder, in memory.
 jest.mock("expo-file-system", () => {
@@ -197,4 +198,48 @@ test("the titles of the posts come with the runs others see, and follow what is 
   });
   expect(door.current.postTitles?.has("a")).toBe(false);
   expect([...door.current.publicKeys]).toEqual(["a"]);
+});
+
+// ── The drawing of the post open, asked once (TASK-501) ──────────────────
+
+test("two that hold a drawing share one answer, until the last lets it go", async () => {
+  const fetchFn = answers(
+    { status: 200, body: drawingDetails },
+    { status: 200, body: drawingDetails },
+  );
+  const page = holdDrawing(URL, signedIn.token, drawingDetails.id, options(fetchFn));
+  const map = holdDrawing(URL, signedIn.token, drawingDetails.id, options(fetchFn));
+  expect(map.answer).toBe(page.answer);
+  expect(await map.answer).toMatchObject({
+    kind: "ok",
+    value: { id: drawingDetails.id },
+  });
+  expect(fetchFn).toHaveBeenCalledTimes(1);
+
+  page.release();
+  page.release(); // twice is once
+  const still = holdDrawing(URL, signedIn.token, drawingDetails.id, options(fetchFn));
+  expect(still.answer).toBe(map.answer);
+  map.release();
+  still.release();
+
+  // Nobody holds it: the next asks again.
+  const again = holdDrawing(URL, signedIn.token, drawingDetails.id, options(fetchFn));
+  expect(again.answer).not.toBe(map.answer);
+  await again.answer;
+  expect(fetchFn).toHaveBeenCalledTimes(2);
+  again.release();
+});
+
+test("a drawing asked another way is not the one held", async () => {
+  const one = answers({ status: 200, body: drawingDetails });
+  const other = answers({ status: 200, body: drawingDetails });
+  const page = holdDrawing(URL, signedIn.token, drawingDetails.id, options(one));
+  const elsewhere = holdDrawing(URL, signedIn.token, drawingDetails.id, options(other));
+  expect(elsewhere.answer).not.toBe(page.answer);
+  await Promise.all([page.answer, elsewhere.answer]);
+  expect(one).toHaveBeenCalledTimes(1);
+  expect(other).toHaveBeenCalledTimes(1);
+  page.release();
+  elsewhere.release();
 });

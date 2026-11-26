@@ -134,7 +134,8 @@ def test_a_route_logs_each_phase_on_one_line(
     # the remaining 1.5 s the nearby starts.
     assert times == (
         "total=3.25 crop=0.25 loads=1 download=0.00 start=1.50 traces=24 "
-        "converged=yes far=no wait=1.50 nearby=1.25,- chosen=0 directions=0.00"
+        "converged=yes far=no wait=1.50 nearby=1.25,- chosen=0 directions=0.00 "
+        "queued=0.00"
     )
     # Where the user is stays out of the log (TASK-091).
     assert "46.06" not in everything and "11.12" not in everything
@@ -153,7 +154,7 @@ def test_a_failed_route_logs_what_it_knows(
     times, _ = run(made, caplog, Graphs(clock, 0.5), planner)
     assert times == (
         "total=2.50 crop=0.50 loads=1 download=0.00 start=- traces=- "
-        "converged=- far=- wait=- nearby=- chosen=- directions=-"
+        "converged=- far=- wait=- nearby=- chosen=- directions=- queued=0.00"
     )
 
 
@@ -191,7 +192,7 @@ def test_no_nearby_start_and_a_start_that_did_not_draw() -> None:
     times = JobTimes(planner_s=2.0, nearby=alone)
     assert line(times, 2.0) == (
         "total=2.00 crop=0.00 loads=0 download=0.00 start=2.00 traces=- "
-        "converged=- far=- wait=0.00 nearby=none chosen=0 directions=-"
+        "converged=- far=- wait=0.00 nearby=none chosen=0 directions=- queued=-"
     )
 
 
@@ -242,3 +243,57 @@ def test_two_jobs_at_once_keep_their_own_times(
     lines = {r.getMessage() for r in caplog.records}
     assert any(f"job {five.job_id}: times " in m and " traces=5 " in m for m in lines)
     assert any(f"job {ten.job_id}: times " in m and " traces=10 " in m for m in lines)
+
+
+def test_the_wait_for_a_worker_is_on_the_line_and_not_in_the_total(
+    made: list[RouteJobs], caplog: pytest.LogCaptureFixture
+) -> None:
+    """One worker and three jobs (TASK-501, O13): the first is taken at
+    once, the other two wait for it, the third for the second too. Each
+    line says its own wait; `total` starts when the wait ends."""
+    clock = Clock()
+    planning, release = threading.Event(), threading.Event()
+
+    def planner(request: RouteRequest, source: GraphLoader) -> Plan:
+        if request.distance_m == 5000:
+            planning.set()
+            release.wait(5)  # the worker is busy until the test says so
+        else:
+            clock.now += 2.0
+        return Plan(RESULT, None)
+
+    def asking(distance_m: int) -> RouteRequest:
+        return RouteRequest(start=START, shape="heart", distance_m=distance_m)
+
+    jobs = RouteJobs(Graphs(clock, 0.0), planner, workers=1, clock=clock)
+    made.append(jobs)
+    with caplog.at_level(logging.INFO, logger="shaperoute_api.jobs"):
+        first = jobs.submit(asking(5000))
+        assert planning.wait(5)
+        clock.now += 1.0
+        second = jobs.submit(asking(6000))
+        clock.now += 0.5
+        third = jobs.submit(asking(7000))
+        clock.now += 2.5  # the first job ends 4 s after it began
+        release.set()
+        wait_until(lambda: caplog.text.count(" times ") == 3)
+    lines = [r.getMessage() for r in caplog.records if " times " in r.getMessage()]
+
+    def of(job_id: str) -> str:
+        [found] = [m for m in lines if m.startswith(f"job {job_id}: times ")]
+        return found
+
+    assert " total=4.00 " in of(first.job_id)
+    assert of(first.job_id).endswith(" queued=0.00")
+    # Accepted 1 s in, taken at 4 s; then 2 s of its own.
+    assert " total=2.00 " in of(second.job_id)
+    assert of(second.job_id).endswith(" queued=3.00")
+    # Accepted 1.5 s in, taken when the second ended, at 6 s.
+    assert " total=2.00 " in of(third.job_id)
+    assert of(third.job_id).endswith(" queued=4.50")
+
+
+def test_a_line_without_a_wait_says_so() -> None:
+    assert line(JobTimes(), 1.0).endswith(" directions=- queued=-")
+    assert line(JobTimes(queued_s=0.004), 1.0).endswith(" queued=0.00")
+    assert line(JobTimes(queued_s=12.345), 1.0).endswith(" queued=12.35")

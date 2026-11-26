@@ -8,10 +8,12 @@ import type {
 
 import type { Activity, ActivitiesPage } from "../api/activities";
 import {
+  atMost,
   buildCoachInput,
   type CoachFetchers,
   type CoachRaw,
   fetchCoachRaw,
+  MAX_AT_ONCE,
   MAX_SESSIONS,
   monthsBack,
   planItemsOf,
@@ -293,5 +295,159 @@ describe("fetchCoachRaw", () => {
       NOW,
     );
     expect(none).toEqual({ kind: "unreachable" });
+  });
+});
+
+/** Lets a test hold every answer and give them back in the order it likes. */
+function held() {
+  let inFlight = 0;
+  let most = 0;
+  const waiting: { what: string; go: () => void }[] = [];
+  function later<T>(what: string, value: T): Promise<T> {
+    inFlight += 1;
+    most = Math.max(most, inFlight);
+    return new Promise<T>((resolve) => {
+      waiting.push({
+        what,
+        go: () => {
+          inFlight -= 1;
+          resolve(value);
+        },
+      });
+    });
+  }
+  /** Answers the newest waiting request first, until none waits. */
+  async function newestFirst(): Promise<string[]> {
+    const order: string[] = [];
+    for (let round = 0; round < 200; round += 1) {
+      await new Promise((tick) => setTimeout(tick, 0));
+      const last = waiting.pop();
+      if (last === undefined) {
+        break;
+      }
+      order.push(last.what);
+      last.go();
+    }
+    return order;
+  }
+  return { later, newestFirst, most: () => most, inFlight: () => inFlight };
+}
+
+describe("fetchCoachRaw, a few at once (TASK-501)", () => {
+  const many = Array.from({ length: 25 }, (_, i) => workout(`w${i}`, i % 27));
+  const months = monthsBack(NOW);
+
+  function slowFetchers(answers: ReturnType<typeof held>): CoachFetchers {
+    const quick = fetchers({
+      calendar: async (month) => ({
+        kind: "ok",
+        value: calendarOf(month === months[months.length - 1] ? many : []),
+      }),
+    });
+    return {
+      calendar: async (month) =>
+        answers.later(`calendar ${month}`, await quick.calendar(month)),
+      session: async (key) => answers.later(`session ${key}`, await quick.session(key)),
+      plans: async () => answers.later("plans", await quick.plans()),
+      activities: async (cursor) =>
+        answers.later(
+          `activities ${cursor ?? "first"}`,
+          await quick.activities(cursor),
+        ),
+    };
+  }
+
+  it("asks at most four at once and gets what one after the other got", async () => {
+    // One after the other, as before: every answer at once.
+    const before = await fetchCoachRaw(
+      fetchers({
+        calendar: async (month) => ({
+          kind: "ok",
+          value: calendarOf(month === months[months.length - 1] ? many : []),
+        }),
+      }),
+      NOW,
+      70,
+    );
+    const answers = held();
+    const asking = fetchCoachRaw(slowFetchers(answers), NOW, 70);
+    const order = await answers.newestFirst();
+    const after = await asking;
+
+    expect(answers.most()).toBe(MAX_AT_ONCE);
+    expect(answers.inFlight()).toBe(0);
+    // The answers came back in another order than they were asked...
+    expect(order.filter((one) => one.startsWith("session"))).not.toEqual(
+      [...order.filter((one) => one.startsWith("session"))].sort(),
+    );
+    // ...and the lists are those of one request after the other.
+    expect(after).toEqual(before);
+    expect(after.kind === "ok" && after.raw.sessions.map((one) => one.id)).toEqual(
+      before.kind === "ok" && before.raw.sessions.map((one) => one.id),
+    );
+    expect(after.kind === "ok" && after.raw.sessions).toHaveLength(MAX_SESSIONS);
+  });
+
+  it("asks each page of runs from where the one before ended", async () => {
+    const asked: string[] = [];
+    let open = 0;
+    const f = fetchers({
+      activities: async (cursor) => {
+        open += 1;
+        expect(open).toBe(1);
+        asked.push(cursor ?? "first");
+        await new Promise((tick) => setTimeout(tick, 0));
+        open -= 1;
+        return {
+          kind: "ok",
+          value: {
+            activities: [activity(`r${asked.length}`, asked.length, 5, "running")],
+            next: `c${asked.length + 1}`,
+            total: 9,
+          },
+        };
+      },
+    });
+    const outcome = await fetchCoachRaw(f, NOW);
+    expect(asked).toEqual(["first", "c2", "c3", "c4", "c5"]);
+    expect(
+      outcome.kind === "ok" && outcome.raw.activities.map((one) => one.id),
+    ).toEqual(["r1", "r2", "r3", "r4", "r5"]);
+  });
+});
+
+describe("atMost", () => {
+  it("never runs more than its cap, and runs everything in the order it came", async () => {
+    const ask = atMost(2);
+    let running = 0;
+    let most = 0;
+    const started: number[] = [];
+    const jobs = Array.from({ length: 7 }, (_, i) =>
+      ask(async () => {
+        running += 1;
+        most = Math.max(most, running);
+        started.push(i);
+        await new Promise((tick) => setTimeout(tick, (7 - i) % 3));
+        running -= 1;
+        return i * 10;
+      }),
+    );
+    // One that comes while the others wait does not get in front of them.
+    const late = ask(async () => {
+      started.push(99);
+      return -1;
+    });
+    expect(await Promise.all(jobs)).toEqual([0, 10, 20, 30, 40, 50, 60]);
+    expect(await late).toBe(-1);
+    expect(most).toBe(2);
+    expect(started).toEqual([0, 1, 2, 3, 4, 5, 6, 99]);
+  });
+
+  it("frees the place of one that throws", async () => {
+    const ask = atMost(1);
+    await expect(ask(async () => Promise.reject(new Error("no")))).rejects.toThrow(
+      "no",
+    );
+    expect(await ask(async () => "next")).toBe("next");
   });
 });

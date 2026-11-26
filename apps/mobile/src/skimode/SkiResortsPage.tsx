@@ -6,6 +6,7 @@ import { t } from "../i18n";
 import { SearchBar } from "../search/SearchBar";
 import { ResortList } from "../ski/ResortList";
 import { ResortPage } from "../ski/ResortPage";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { color, font, space } from "../theme/tokens";
 
 type Props = {
@@ -22,6 +23,8 @@ type Props = {
 export function SkiResortsPage({ apiUrl }: Props) {
   const [typed, setTyped] = useState("");
   const [resort, setResort] = useState<SkiResort | null>(null);
+  // The list goes on under the tab bar: its room at the end (TASK-469 B2a).
+  const barRoom = useTabBarRoom();
   return (
     <View style={styles.page}>
       <View style={styles.top}>
@@ -37,7 +40,12 @@ export function SkiResortsPage({ apiUrl }: Props) {
         />
       </View>
       <View style={styles.list}>
-        <ResortList typed={typed} apiUrl={apiUrl} onPick={setResort} />
+        <ResortList
+          typed={typed}
+          apiUrl={apiUrl}
+          onPick={setResort}
+          roomBelow={barRoom}
+        />
       </View>
       {resort !== null && (
         <ResortPage resort={resort} apiUrl={apiUrl} onBack={() => setResort(null)} />

@@ -1,7 +1,6 @@
 # TASK-401 — Le indicazioni a schermo bloccato: la notifica subito, la Live Activity nella 1.0.3
 
-**Stato**: Todo · proposta (parte 0) in PR; nessun codice prima delle scelte
-dell'utente e del via del Coordinatore sulla lista dei file
+**Stato**: Done · 2026-11-24 · A, la notifica subito (#851, `b7c1c8cb`), in produzione; B, la Live Activity, nella 1.1.0 (build 14, `release/1.1.0`, poi in `main` con la #1116), sullo Store dal 2026-11-11 e provata dall'utente («Tutto ok», 2026-11-11, registro di TASK-370). Chiuso nel censimento dei task aperti del 2026-11-24, Coordinatore 3.
 **Fase**: 5 · **Branch**: `docs/TASK-401-lock-screen-directions` (documenti);
 il codice `feat/TASK-401-a-…`, `feat/TASK-401-b-…`
 **ADR**: ADR-0335 (proposto) · numeri dal Coordinatore il 2026-11-05
@@ -299,4 +298,4 @@ target. `NavigateScreen.tsx` e `lockNotice.ts` non si toccano.
 
 ## Esito
 
-*(si compila a fine task)*
+**Chiuso il 2026-11-24** (censimento dei task aperti): A, la notifica subito (#851), in produzione; B, la Live Activity, nella 1.1.0 (build 14), sullo Store dal 2026-11-11, provata dall'utente («Tutto ok», 2026-11-11).

@@ -1,11 +1,13 @@
 import { forwardRef, useMemo, useRef } from "react";
 import { type GestureResponderEvent, StyleSheet, Text, View } from "react-native";
 
+import { dayLabel } from "../activities/activityText";
 import { fitLines, type Segment } from "../activities/fitLines";
 import { t } from "../i18n";
 import { HeartBadge } from "../intro/HeartBadge";
 import { bearingOf } from "../map/turnedMap";
-import { color, fontWeight } from "../theme/tokens";
+import { fontWeight } from "../theme/tokens";
+import { FIRST_LOOK, lookColours, type PostLook } from "./postLook";
 import {
   POST_RESULTS,
   postLine,
@@ -23,6 +25,10 @@ export const POST_RATIO = 16 / 9;
  * title and the numbers. */
 const DRAWING_TOP = 0.2;
 const DRAWING_BOTTOM = 0.7;
+/** Where the title and the day under it begin, as a share of the post's
+ * height: under the logo, and with two lines of title still over the
+ * drawing. */
+const HEADING_TOP = 0.085;
 /** Every size of the post is a share of its width: the picture made from it
  * looks the same on any phone. */
 const SIDE = 0.08;
@@ -30,6 +36,10 @@ const LINE = 0.02;
 const BADGE = 0.09;
 const NAME = 0.05;
 const TITLE = 0.065;
+const DAY = 0.035;
+/** A line of the title and of the day, as a multiple of its size: fixed, so
+ * two lines of title and the day end over the drawing on any phone. */
+const LINE_HEIGHT = 1.2;
 const LABEL = 0.035;
 const VALUE = 0.075;
 const EMOJI = 0.11;
@@ -39,6 +49,8 @@ type Props = {
   /** The results on, in any order: the post keeps its own. */
   shown: readonly PostResult[];
   stickers: readonly Sticker[];
+  /** Its ground and colours (TASK-450); the logo's yellow when not given. */
+  look?: PostLook;
   /** The post's width in points; its height follows (POST_RATIO). */
   width: number;
   onMoveSticker: (id: number, x: number, y: number) => void;
@@ -47,16 +59,22 @@ type Props = {
 
 /**
  * The post as it is shared (TASK-231): on the yellow of Sgrava, the logo,
- * the title, the drawing the run made in black, the results chosen and the
- * emoji where the runner dragged them. The whole track is drawn, start and
+ * the title, the day of the run under it (TASK-450), the drawing the run
+ * made in black, the results chosen and the emoji where the runner dragged
+ * them. On «Night» and «Day» the ground and the colours are the look's
+ * (postLook). The whole track is drawn, start and
  * end too (ADR-0330). A run along a turned route is drawn turned back, so the
  * drawing reads upright (TASK-232). The ref is the View the picture is
  * made of.
  */
 export const PostImage = forwardRef<View, Props>(function PostImage(
-  { run, shown, stickers, width, onMoveSticker, onRemoveSticker },
+  { run, shown, stickers, look = FIRST_LOOK, width, onMoveSticker, onRemoveSticker },
   ref,
 ) {
+  const colours = lookColours(look);
+  const ink = { color: colours.ink };
+  // "" for a run that does not know its day: no line then.
+  const day = run.startedAt === undefined ? "" : dayLabel(run.startedAt);
   const height = width * POST_RATIO;
   const boxWidth = width * (1 - 2 * SIDE);
   const boxHeight = height * (DRAWING_BOTTOM - DRAWING_TOP);
@@ -76,27 +94,48 @@ export const PostImage = forwardRef<View, Props>(function PostImage(
       // Android draws a View it can fold away into its parent: the picture
       // would come out empty.
       collapsable={false}
-      style={[styles.post, { width, height }]}
+      style={[styles.post, { width, height, backgroundColor: colours.ground }]}
       testID="post-image"
     >
       <View
         style={[styles.brand, { top: width * SIDE * 0.6, left: width * SIDE * 0.6 }]}
       >
         <HeartBadge size={width * BADGE} />
-        <Text style={[styles.name, { fontSize: width * NAME }]}>MuW</Text>
+        <Text style={[styles.name, ink, { fontSize: width * NAME }]}>MuW</Text>
       </View>
-      {run.title !== null && (
-        <Text
-          style={[
-            styles.title,
-            { top: height * 0.1, left: width * SIDE, right: width * SIDE },
-            { fontSize: width * TITLE },
-          ]}
-          numberOfLines={2}
-        >
-          {run.title}
-        </Text>
-      )}
+      <View
+        style={[
+          styles.heading,
+          { top: height * HEADING_TOP, left: width * SIDE, right: width * SIDE },
+        ]}
+        testID="post-heading"
+      >
+        {run.title !== null && (
+          <Text
+            style={[
+              styles.title,
+              ink,
+              { fontSize: width * TITLE, lineHeight: width * TITLE * LINE_HEIGHT },
+            ]}
+            numberOfLines={2}
+          >
+            {run.title}
+          </Text>
+        )}
+        {day !== "" && (
+          <Text
+            style={[
+              styles.day,
+              ink,
+              { fontSize: width * DAY, lineHeight: width * DAY * LINE_HEIGHT },
+            ]}
+            numberOfLines={1}
+            testID="post-day"
+          >
+            {day}
+          </Text>
+        )}
+      </View>
       <View
         style={[
           styles.drawing,
@@ -109,7 +148,11 @@ export const PostImage = forwardRef<View, Props>(function PostImage(
           <View
             key={i}
             testID="post-drawing"
-            style={[styles.line, placed(s, line), { borderRadius: line / 2 }]}
+            style={[
+              styles.line,
+              placed(s, line),
+              { borderRadius: line / 2, backgroundColor: colours.line },
+            ]}
           />
         ))}
       </View>
@@ -121,10 +164,10 @@ export const PostImage = forwardRef<View, Props>(function PostImage(
       >
         {results.map((result) => (
           <View key={result} style={styles.result}>
-            <Text style={[styles.label, { fontSize: width * LABEL }]}>
+            <Text style={[styles.label, ink, { fontSize: width * LABEL }]}>
               {resultName(result)}
             </Text>
-            <Text style={[styles.value, { fontSize: width * VALUE }]}>
+            <Text style={[styles.value, ink, { fontSize: width * VALUE }]}>
               {resultValue(run, result)}
             </Text>
           </View>
@@ -218,11 +261,11 @@ function StickerView({ sticker, width, height, onMove, onRemove }: StickerProps)
   );
 }
 
-// The post is a picture of Sgrava, the same in any theme: its yellow and
-// black are the logo's (ADR-0129).
+// The post is a picture of Sgrava, the same in any theme: its ground and
+// its colours are its look's (postLook), the logo's yellow and black first
+// (ADR-0129).
 const styles = StyleSheet.create({
   post: {
-    backgroundColor: color.accent,
     overflow: "hidden",
   },
   brand: {
@@ -232,13 +275,18 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   name: {
-    color: color.onAccent,
     fontWeight: fontWeight.bold,
   },
-  title: {
+  heading: {
     position: "absolute",
-    color: color.onAccent,
+    alignItems: "center",
+  },
+  title: {
     fontWeight: fontWeight.bold,
+    textAlign: "center",
+  },
+  day: {
+    fontWeight: fontWeight.medium,
     textAlign: "center",
   },
   drawing: {
@@ -246,7 +294,6 @@ const styles = StyleSheet.create({
   },
   line: {
     position: "absolute",
-    backgroundColor: color.onAccent,
   },
   results: {
     position: "absolute",
@@ -258,11 +305,9 @@ const styles = StyleSheet.create({
     width: "50%",
   },
   label: {
-    color: color.onAccent,
     fontWeight: fontWeight.medium,
   },
   value: {
-    color: color.onAccent,
     fontWeight: fontWeight.bold,
   },
   sticker: {

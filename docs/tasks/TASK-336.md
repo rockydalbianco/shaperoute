@@ -1,8 +1,7 @@
 # TASK-336 — Un video nei post: il video della corsa di MuW o uno proprio
 
-**Stato**: Proposta · 2026-10-29 · scelte 1 e 2 fatte dall'utente; 3 e 4
-accettate su delega dell'utente, da rivedere; tutto ciò che è nativo
-(`expo-video`, permessi, la build) aspetta l'utente
+**Stato**: Fermo — in attesa · 2026-11-24 (scelta dell'utente del 2026-11-24 sui task aperti): idea approvata e mai partita, da rivalutare più avanti; si riprende col sì dell'utente.
+Prima del 2026-11-24: Proposta · 2026-10-29 · scelte 1 e 2 fatte dall'utente; 3 e 4 accettate su delega dell'utente, da rivedere; tutto ciò che è nativo (`expo-video`, permessi, la build) aspetta l'utente
 **Fase**: 4 · **Branch**: `docs/TASK-336-video-in-posts` (documenti),
 poi una PR per parte
 **ADR**: ADR-0292 (proposta), che estende ADR-0289 (TASK-333), ADR-0170 e

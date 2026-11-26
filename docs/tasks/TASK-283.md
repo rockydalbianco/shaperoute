@@ -1,8 +1,6 @@
 # TASK-283 — Le foto dei paesi in «NEARBY TOWNS»
 
-**Stato**: In lavorazione · codice in `main` con la #499 (2026-10-11);
-**resta: server** (il Coordinatore, dopo l'approvazione di Apple e con l'ok
-dell'utente)
+**Stato**: Done · 2026-11-24 · #499 in `main` dal 2026-10-11, nell'app di produzione (OTA 25) e sul server (passo 22, `080a4e83`): le schede di «NEARBY TOWNS» hanno la foto col credito; nessuna migrazione, niente privacy da cambiare. Chiuso nel censimento dei task aperti del 2026-11-24, Coordinatore 3.
 **Fase**: 4 · **Branch**: `feat/TASK-283-city-photos`
 **Dipende da**: TASK-236 (in `main`) · **ADR**: ADR-0243
 

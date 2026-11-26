@@ -23,6 +23,23 @@ export const INTRO_SHOWN_MS = INTRO_MS.wait + INTRO_MS.draw + INTRO_MS.hold;
 /** From the first frame to the app alone on screen. */
 export const INTRO_TOTAL_MS = INTRO_SHOWN_MS + INTRO_MS.fade;
 
+/**
+ * The short animation (TASK-505, ADR-0405): the same heart, drawn at once
+ * and faster, at every opening but the first one and the first after a new
+ * version of the app.
+ */
+export const INTRO_SHORT_MS = { wait: 0, draw: 600, hold: 150, fade: 250 } as const;
+
+/** How long the short one is seen, before it fades. */
+export const INTRO_SHORT_SHOWN_MS =
+  INTRO_SHORT_MS.wait + INTRO_SHORT_MS.draw + INTRO_SHORT_MS.hold;
+
+/** The short one, from the first frame to the app alone on screen. */
+export const INTRO_SHORT_TOTAL_MS = INTRO_SHORT_SHOWN_MS + INTRO_SHORT_MS.fade;
+
+/** A touch closes either animation: how long it takes to fade from there. */
+export const INTRO_SKIP_FADE_MS = 250;
+
 const WAIT_SHARE = INTRO_MS.wait / (INTRO_MS.wait + INTRO_MS.draw);
 const drawEase = Easing.inOut(Easing.quad);
 
@@ -48,6 +65,8 @@ const LOGO_WINDOW = 0.26;
 const LOGO_GAP = 36;
 
 type Props = {
+  /** The short animation instead of the whole one (TASK-505). */
+  short?: boolean;
   /** The animation is over and the app is alone on screen. */
   onDone: () => void;
 };
@@ -55,9 +74,10 @@ type Props = {
 /**
  * What the app shows as it opens: on the brand yellow, the heart of the demo
  * video drawn as a pen would run it, with the logo under it. It lies over the
- * app, which starts underneath, and takes the touches until it is gone.
+ * app, which starts underneath, and takes the touches until it is gone: the
+ * first of them closes it (TASK-505, ADR-0405).
  */
-export function LaunchIntro({ onDone }: Props) {
+export function LaunchIntro({ short = false, onDone }: Props) {
   const { width } = useWindowDimensions();
   const [draw] = useState(() => new Animated.Value(0));
   const [shown] = useState(() => new Animated.Value(1));
@@ -66,23 +86,40 @@ export function LaunchIntro({ onDone }: Props) {
   useEffect(() => {
     done.current = onDone;
   }, [onDone]);
+  // What a touch does, set by the animation that is running.
+  const skip = useRef<() => void>(() => {});
 
   useEffect(() => {
+    const ms = short ? INTRO_SHORT_MS : INTRO_MS;
+    const shownMs = ms.wait + ms.draw + ms.hold;
     const startedAt = Date.now();
-    let leave: ReturnType<typeof setTimeout> | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let leaving: Animated.CompositeAnimation | null = null;
     // One animation from the first frame, its wait inside it: nothing has to
     // come back to JavaScript, busy starting the app, for the pen to start.
     const drawing = Animated.timing(draw, {
       toValue: 1,
-      duration: INTRO_MS.wait + INTRO_MS.draw,
-      easing: penProgress,
+      duration: ms.wait + ms.draw,
+      easing: short ? drawEase : penProgress,
       useNativeDriver: true,
     });
-    const leaving = Animated.timing(shown, {
-      toValue: 0,
-      duration: INTRO_MS.fade,
-      useNativeDriver: true,
-    });
+    // Once: a touch while it fades changes nothing.
+    const leave = (fade: number) => {
+      if (leaving !== null) {
+        return;
+      }
+      clearTimeout(timer);
+      leaving = Animated.timing(shown, {
+        toValue: 0,
+        duration: fade,
+        useNativeDriver: true,
+      });
+      leaving.start((end) => {
+        if (end.finished) {
+          done.current();
+        }
+      });
+    };
     drawing.start(({ finished }) => {
       if (!finished) {
         return;
@@ -90,21 +127,20 @@ export function LaunchIntro({ onDone }: Props) {
       // The finished heart stays its moment, however late the drawing ended.
       // And the whole is never shorter than its time: with the phone's
       // animations switched off the drawing is over at once.
-      const left = Math.max(INTRO_MS.hold, INTRO_SHOWN_MS - (Date.now() - startedAt));
-      leave = setTimeout(() => {
-        leaving.start((end) => {
-          if (end.finished) {
-            done.current();
-          }
-        });
-      }, left);
+      const left = Math.max(ms.hold, shownMs - (Date.now() - startedAt));
+      timer = setTimeout(() => leave(ms.fade), left);
     });
-    return () => {
-      clearTimeout(leave);
+    skip.current = () => {
       drawing.stop();
-      leaving.stop();
+      leave(INTRO_SKIP_FADE_MS);
     };
-  }, [draw, shown]);
+    return () => {
+      skip.current = () => {};
+      clearTimeout(timer);
+      drawing.stop();
+      leaving?.stop();
+    };
+  }, [draw, shown, short]);
 
   const heartWidth = Math.min(width * HEART_SHARE, HEART_WIDEST);
   const strokes = useMemo(() => heartStrokes(heartWidth), [heartWidth]);
@@ -132,6 +168,11 @@ export function LaunchIntro({ onDone }: Props) {
       accessibilityRole="image"
       accessibilityLabel="MuW"
       testID="launch-intro"
+      // The whole screen is the button: at the touch, not at its end, and
+      // the finger's way up stays on the cover, not on the app under it.
+      onStartShouldSetResponder={() => true}
+      onResponderGrant={() => skip.current()}
+      onAccessibilityTap={() => skip.current()}
     >
       <View style={{ width: heartWidth, height: heartHeight(heartWidth) }}>
         {strokes.map((s, i) => (

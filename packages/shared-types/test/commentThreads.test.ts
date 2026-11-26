@@ -67,3 +67,20 @@ test("a comment from before the replies has none of the new fields", () => {
   assert.equal(before.replies, undefined);
   assert.equal(before.reactions, undefined);
 });
+
+test("a comment and a reply say where the picture of who wrote them is", () => {
+  // The same address as an author of the feed (TASK-497); null without one.
+  const [top] = page.comments;
+  assert.ok(top);
+  for (const seen of [reply, top, ...(top.replies ?? [])]) {
+    const { photo, public_id: publicId } = seen.author;
+    assert.notEqual(photo, undefined);
+    assert.ok(photo === null || photo?.startsWith(`/users/${publicId}/photo?v=`));
+    // Who a reply answers is a name before its words: no picture.
+    assert.ok(!("photo" in (seen.mention ?? {})));
+  }
+  assert.equal(top.author.photo, null);
+  assert.equal(typeof reply.author.photo, "string");
+  // An API of before does not say it: the app asks the profile, as it did.
+  assert.equal(before.author.photo, undefined);
+});

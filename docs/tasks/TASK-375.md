@@ -1,7 +1,6 @@
 # TASK-375 — La categoria «Record only»: sport che si registrano senza forma
 
-**Stato**: Proposto · bozza; nessun codice prima delle risposte alle
-domande aperte e dei «File toccati» mandati al Coordinatore
+**Stato**: Done · 2026-11-24 · A–D in `main` e in produzione (C #778, C2 #783, D1–D3 #802, #813, #817, D4 sci acceso #823, fondo acceso #1249; server con le migrazioni 0044 e 0048): la categoria «Record only» c'è, e la usano anche il volo (TASK-305), le ciaspole (TASK-413) e l'alpinismo (TASK-463). Resta solo la parte E, la prova sul campo (6 ore di GPS in background, batteria al freddo), fra le prove sul campo con TASK-406 E e TASK-429. Chiuso nel censimento dei task aperti (scelta dell'utente del 2026-11-24 sui task aperti).
 **Fase**: 5 · **Branch**: `docs/TASK-375-record-only` (documenti); il
 codice `feat/TASK-375-a-…`
 **Dipende da**: nulla. Lo sci alpino (TASK-373, ADR-0317) è il primo sport

@@ -26,14 +26,12 @@ from psycopg_pool import PoolTimeout
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.image_outline import InvalidImageError
 from route_engine.models import (
-    PEN_UP_WITHOUT_WORD,
     InvalidRequestError,
     RouteResult,
 )
 from route_engine.optimizer import ShapeNotDrawableError
 from route_engine.outline_edits import InvalidEditError
 from route_engine.swim_turns import with_turns
-from route_engine.walking import engine_activity
 from shaperoute_ai.reading import (
     InvalidTextError,
     ModelUnavailableError,
@@ -74,6 +72,7 @@ from shaperoute_api.game import install_game
 from shaperoute_api.gear import install_gear
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.group_runs import install_group_runs
+from shaperoute_api.groups import install_groups
 from shaperoute_api.gym_calendar import install_gym_calendar
 from shaperoute_api.gym_history import install_gym_history
 from shaperoute_api.gym_leaderboard import install_gym_leaderboard
@@ -81,9 +80,8 @@ from shaperoute_api.gym_plans import install_gym_plans
 from shaperoute_api.gym_sessions import install_gym_sessions
 from shaperoute_api.images import (
     AnyRequest,
-    ImageRequest,
     decode_image,
-    outline_of,
+    image_request,
     placed_outlines,
     plan_request,
     route_request_of,
@@ -223,22 +221,12 @@ def validation_message(errors: Sequence[Any]) -> str:
 
 def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
     """The engine's RouteRequest checks the values, and ImageRequest those of
-    an image route: InvalidRequestError. An image has no letters to draw
-    with the pen up (TASK-197). The activity is one of the contract's: the
+    an image route: InvalidRequestError. An image has the pen up only with
+    its pieces (TASK-297 C2). The activity is one of the contract's: the
     engine may draw more (TASK-190); a walk is asked as a run (TASK-371)."""
     check_supported(body.activity)
     if isinstance(body, ImageRouteRequestBody):
-        if body.pen_up:
-            raise InvalidRequestError(PEN_UP_WITHOUT_WORD)
-        return ImageRequest(
-            start=body.start,
-            outline=outline_of(body.outline, body.strokes),
-            distance_m=body.distance_m,
-            activity=engine_activity(body.activity, body.distance_m),
-            laps=body.laps,
-            placement=body.placement,
-            fit=body.fit,
-        )
+        return image_request(body)
     return route_request_of(body)
 
 
@@ -481,6 +469,9 @@ def create_app(
     # Group runs on a route, «I'm going» and the reminder an hour before
     # (TASK-309); they need a token.
     install_group_runs(app)
+    # Groups to go out together: members, requests, invites, roles
+    # (TASK-495); they need a token.
+    install_groups(app)
     # A stroke drawn on the map, anchored to the roads as the finger lifts
     # (TASK-347 A), and the probe that says this server does it.
     install_stroke_matches(app, source)

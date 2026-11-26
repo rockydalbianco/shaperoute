@@ -1,4 +1,11 @@
-import { type Food, foodFrom, foodName, GRAMS_PER_100G, KCAL_PER_100G } from "./foods";
+import {
+  barcodeOf,
+  type Food,
+  foodFrom,
+  foodName,
+  GRAMS_PER_100G,
+  KCAL_PER_100G,
+} from "./foods";
 
 /**
  * The foods the user writes (TASK-489, ADR-0397): a name and the
@@ -14,6 +21,11 @@ export type OwnFoodFields = {
   proteinPer100g?: number | null;
   carbsPer100g?: number | null;
   fatPer100g?: number | null;
+  /** The barcode on its pack, when the food was found or written by it. */
+  barcode?: string | null;
+  /** Name and numbers are Open Food Facts' own: only with a barcode, and
+   * not for a food the user rewrote. */
+  fromOpenFoodFacts?: boolean;
 };
 
 export type OwnFoods = {
@@ -54,6 +66,7 @@ function ownFood(fields: OwnFoodFields, key: string): Food | null {
   ) {
     return null;
   }
+  const barcode = barcodeOf(fields.barcode ?? null);
   return {
     key,
     name,
@@ -62,7 +75,26 @@ function ownFood(fields: OwnFoodFields, key: string): Food | null {
     carbsPer100g: carbs,
     fatPer100g: fat,
     source: "own",
+    ...(barcode !== null ? { barcode } : {}),
+    ...(barcode !== null && fields.fromOpenFoodFacts === true
+      ? { fromOpenFoodFacts: true as const }
+      : {}),
   };
+}
+
+/** The food of the user's with the barcode `code`, the latest written
+ * first; null when the phone has none. */
+export function ownFoodByBarcode(foods: readonly Food[], code: string): Food | null {
+  const barcode = barcodeOf(code);
+  if (barcode === null) {
+    return null;
+  }
+  for (let index = foods.length - 1; index >= 0; index -= 1) {
+    if (foods[index].barcode === barcode) {
+      return foods[index];
+    }
+  }
+  return null;
 }
 
 /** `own` with a new food at its end, and the food; null when `fields` do

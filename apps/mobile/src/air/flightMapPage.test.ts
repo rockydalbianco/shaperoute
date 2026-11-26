@@ -259,3 +259,24 @@ it("draws the pilot's airspaces: volumes in 3D, areas on the plain map, under th
   );
   expect(page.data("flight-airspace")).toBe(areas);
 });
+
+it("draws the pilot's task: the next cylinder filled, the edges, the way left dashed (D2)", () => {
+  const page = runPage();
+  page.load();
+  const ids = page.layers.map((layer) => layer.id);
+  expect(ids).toEqual(
+    expect.arrayContaining([
+      "flight-task-next",
+      "flight-task-edge",
+      "flight-task-route",
+    ]),
+  );
+  const edge = page.layers.find((layer) => layer.id === "flight-task-edge")!;
+  // Not by colour alone: the next one is thicker too.
+  expect(edge.paint?.["line-width"]).toEqual(["case", ["get", "next"], 4, 2]);
+  const route = page.layers.find((layer) => layer.id === "flight-task-route")!;
+  expect(route.paint?.["line-dasharray"]).toEqual([2, 2]);
+  const task = { type: "FeatureCollection", features: [] };
+  (page.flight as unknown as { setTask: (data: unknown) => void }).setTask(task);
+  expect(page.data("flight-task")).toBe(task);
+});

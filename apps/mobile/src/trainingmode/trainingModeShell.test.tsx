@@ -6,7 +6,7 @@ import type { MemorySecureStore } from "../account/testing";
 import { loadSport, saveSport } from "../settings/sport";
 
 // The training mode in the app itself (TASK-490 part A, ADR-0398): with
-// «Gym» the tab bar is «Today · Workouts · Feed · Profile» with «Messages»
+// «Gym» the tab bar is «Feed · Today · Workouts · Profile» with «Messages»
 // in the header; another sport brings the app back as always, «Ski» the ski
 // mode. The setup is `../skimode/skiModeShell.test.tsx`'s: no GPS, no
 // account, nothing asked of the API.
@@ -64,7 +64,7 @@ function tabs(): string[] {
     .map((tab) => String(tab.props.accessibilityLabel ?? ""));
 }
 
-const TRAINING = ["Today", "Workouts", "Feed", "Profile"];
+const TRAINING = ["Feed", "Today", "Workouts", "Profile"];
 
 test("with «Gym» the app opens on «Today», with the training mode's tabs", async () => {
   jest.mocked(loadSport).mockReturnValue("gym");
@@ -95,7 +95,7 @@ test("another sport brings the app back, «Ski» the ski mode, «Gym» this one"
   expect(tabs()).toEqual(TRAINING);
 
   await act(async () => saveSport("ski"));
-  expect(tabs()).toEqual(["Today", "Days", "Resorts", "Feed", "Profile"]);
+  expect(tabs()).toEqual(["Feed", "Today", "Days", "Resorts", "Profile"]);
 
   await act(async () => saveSport("gym"));
   await fireEvent.press(screen.getByRole("tab", { name: "Workouts" }));

@@ -24,15 +24,12 @@ import { changeNotifications as notificationsRequest } from "../api/notification
 import { editProfile as editRequest } from "../api/profiles";
 import { forgetPushToken } from "../api/pushToken";
 import { forgetPushSent, loadPushSent } from "../notifications/pushSent";
-import { forgetOutboxOf } from "../activities/outbox";
 import { t } from "../i18n";
+import { saveRecentCities } from "../explore/recentCities";
 import { profileProblem } from "../profile/profileFields";
+import { saveRecent } from "../search/recentSearches";
 import { contactProblem } from "../settings/contactFields";
 import { notificationsProblem } from "../settings/notificationFields";
-import { forgetDrawingsOf } from "../social/drawingOutbox";
-import { forgetPhotoPostsOf } from "../social/photoPostOutbox";
-import { forgetVisibilityOf } from "../social/visibilityChoice";
-import { forgetStravaOf } from "../strava/stravaOutbox";
 import {
   type Checked,
   checkSignIn,
@@ -42,6 +39,8 @@ import {
 } from "./fields";
 import { accountProblem, NO_API, SESSION_ENDED, sessionEnded } from "./messages";
 import { type AccountEmail, useAccountEmail } from "./accountEmail";
+import { setCurrentOwner } from "./currentOwner";
+import { claimPhoneData, forgetPhoneDataOf } from "./phoneOwners";
 import { forgetSession, loadSession, saveSession } from "./sessionStore";
 
 /**
@@ -109,11 +108,16 @@ type Options = { fetchFn?: typeof fetch; key?: string | null };
 
 type Failed = Exclude<AccountOutcome<User>, { kind: "ok" }>;
 
-function keptState(): AccountState {
+function keptState(baseUrl: string | null): AccountState {
   const session = loadSession();
-  return session === null
-    ? { status: "signedOut", notice: null }
-    : { status: "signedIn", session };
+  if (session === null) {
+    setCurrentOwner(null);
+    return { status: "signedOut", notice: null };
+  }
+  // Before any outbox sends (TASK-507): what waits is of this account.
+  claimPhoneData(session.user, baseUrl);
+  setCurrentOwner(session.user.id);
+  return { status: "signedIn", session };
 }
 
 /**
@@ -122,13 +126,32 @@ function keptState(): AccountState {
  * the app changes.
  */
 export function useAccount(baseUrl: string | null, options: Options = {}): Account {
-  const [state, setState] = useState<AccountState>(keptState);
+  const [state, setState] = useState<AccountState>(() => keptState(baseUrl));
   const [busy, setBusy] = useState<Busy>(null);
   const [problem, setProblem] = useState<string | null>(null);
   // Read by the answers that arrive later: the state they were asked in
   // may be gone. Every change goes through `put`, which keeps it.
   const current = useRef(state);
+  // The server the account is on: whose the data waiting on the phone is
+  // depends on it too (account/phoneOwners.ts).
+  const server = useRef(baseUrl);
+  useEffect(() => {
+    server.current = baseUrl;
+  }, [baseUrl]);
   const put = useCallback((next: AccountState) => {
+    if (next.status === "signedIn") {
+      // Before it shows, and so before any outbox sends (TASK-507).
+      claimPhoneData(next.session.user, server.current);
+      setCurrentOwner(next.session.user.id);
+    } else {
+      // Out (TASK-507 part D, the user's choice): the body and the heart
+      // of the account are hidden, its recent searches and towns deleted.
+      setCurrentOwner(null);
+      if (current.current.status === "signedIn") {
+        saveRecent([]);
+        saveRecentCities([]);
+      }
+    }
     current.current = next;
     setState(next);
   }, []);
@@ -269,13 +292,9 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
     setBusy(null);
     if (outcome.kind === "ok") {
       // What waited on this phone for the account goes with it (TASK-252):
-      // its runs not sent yet, and what was to follow them to Strava and to
-      // «Public». Nobody will sign in to send them.
-      forgetOutboxOf(user.id);
-      forgetStravaOf(user.id);
-      forgetDrawingsOf(user.id);
-      forgetVisibilityOf(user.id);
-      forgetPhotoPostsOf(user.id);
+      // all of it, runs, nights, workouts, swims, sessions and what was to
+      // follow them (TASK-507). Nobody will sign in to send them.
+      forgetPhoneDataOf(user.id);
       // The API deleted its push tokens with it (TASK-262).
       await forgetPushSent();
       await forgetSession();

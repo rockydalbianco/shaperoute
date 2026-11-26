@@ -14,6 +14,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { EmptyState } from "../ui/EmptyState";
+import { HEART } from "../ui/outlines";
 import { Tap } from "../ui/Tap";
 import { runDistanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
@@ -147,9 +149,13 @@ export function ActivitiesList() {
           </Pressable>
         </>
       ) : (
-        <Text style={styles.message}>
-          {t("No activities yet. Save a run when you finish it, and it is kept here.")}
-        </Text>
+        // A page with nothing in it yet (TASK-339 part C1).
+        <EmptyState
+          outline={HEART}
+          title={t("No activities yet")}
+          message={t("When you finish an activity and save it, you find it here.")}
+          testID="activities-empty"
+        />
       )}
     </View>
   );

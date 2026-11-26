@@ -14,6 +14,8 @@ type Props = {
   food?: Food | null;
   /** The name to start from: what was typed in the search. */
   startName?: string;
+  /** The barcode a new food is written for (part G): kept with it. */
+  barcode?: string;
   /** Kept on the phone: the food as it is now. */
   onSaved: (food: Food) => void;
   /** «Delete food»: the food is out of the user's list. */
@@ -28,7 +30,14 @@ type Props = {
  * carbohydrate and fat are not asked yet, and a food rewritten keeps the
  * ones it had.
  */
-export function OwnFoodForm({ food, startName, onSaved, onDeleted, onCancel }: Props) {
+export function OwnFoodForm({
+  food,
+  startName,
+  barcode,
+  onSaved,
+  onDeleted,
+  onCancel,
+}: Props) {
   const [name, setName] = useState(food?.name ?? startName ?? "");
   const [kcal, setKcal] = useState(food ? String(food.kcalPer100g) : "");
   const number = readNumber(kcal);
@@ -48,6 +57,9 @@ export function OwnFoodForm({ food, startName, onSaved, onDeleted, onCancel }: P
       proteinPer100g: food?.proteinPer100g ?? null,
       carbsPer100g: food?.carbsPer100g ?? null,
       fatPer100g: food?.fatPer100g ?? null,
+      // The pack stays the same; the numbers are the user's from here on,
+      // so the food no longer says «from Open Food Facts».
+      barcode: food?.barcode ?? barcode ?? null,
     };
     const saved = food ? changeFood(food.key, fields) : addFood(fields);
     if (saved !== null) {

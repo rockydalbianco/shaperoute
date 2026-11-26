@@ -45,3 +45,16 @@ test("without an account, no body of the week over the gym", async () => {
   await render(<TrainingTodayPage onStart={jest.fn()} guide={<Text>Push</Text>} />);
   expect(screen.queryByTestId("week-body")).toBeNull();
 });
+
+test("without an account, no Coach line over the gym", async () => {
+  await render(<TrainingTodayPage onStart={jest.fn()} guide={<Text>Push</Text>} />);
+  expect(screen.queryByTestId("training-coach")).toBeNull();
+});
+
+test("only what is for now: no month, plans or help, which are in «Workouts» (part E)", async () => {
+  await render(<TrainingTodayPage onStart={jest.fn()} />);
+  expect(screen.getByTestId("run-no-route")).toBeOnTheScreen();
+  expect(screen.queryByTestId("gym-guide-month")).toBeNull();
+  expect(screen.queryByTestId("gym-guide-intro")).toBeNull();
+  expect(screen.queryByTestId("gym-guide-steps")).toBeNull();
+});

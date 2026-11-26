@@ -1,6 +1,7 @@
 # TASK-153 — AdMob dagli annunci di prova a quelli veri
 
-**Stato**: Todo
+**Stato**: Fermo — in attesa · 2026-11-24 (scelta dell'utente del 2026-11-24 sui task aperti): l'AdMob vero aspetta la società.
+Prima del 2026-11-24: Todo
 **Fase**: 4 · **Branch**: `feat/TASK-153-admob-live`
 **Dipende da**: TASK-150 (account AdMob e pagamenti), TASK-152 (app
 sull'App Store, sito dello sviluppatore)

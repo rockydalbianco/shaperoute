@@ -611,9 +611,49 @@ lasciando le righe d'indice.
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
 - ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero (`GET /notifications/unread`, una query, niente foto), con il ripiego sulla lista per un server di prima; la riga dei «live» non chiede con l'app dietro · 2026-11-26 · Attiva
 - ADR-0175, aggiunta (TASK-497) — La foto di chi scrive un commento: il commento porta l'indirizzo della foto piccola (`author.photo`, quello del feed), l'app non chiede più il profilo intero; supera il punto 7 · 2026-11-24 · Attiva
+- ADR-0359, aggiunta (TASK-519) — Su «Map» la freccia punta dove punta il telefono, col cono; la mappa non gira; bussola spenta su «Data» e in tasca · 2026-11-26 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0359, aggiunta (TASK-519) — Su «Map» la freccia punta dove punta il telefono, col cono; la mappa non gira
+
+**Stato**: Attiva · 2026-11-26 · TASK-519. Chiesto dall'utente il
+2026-11-26; la freccia **col cono** è scelta sua («Freccia + cono»). Il
+resto è **deciso dall'agente su delega dell'utente**. Forma (un'aggiunta,
+non un ADR nuovo) dal Coordinatore. **Estende ADR-0359 alla pagina «Map»**:
+su «Compass» non cambia niente.
+
+**Contesto**: su «Map» la bussola era spenta e la freccia seguiva solo la
+traccia degli ultimi 10 m: da fermi, o appena partiti, non diceva dove si
+guardava. Su «Compass» la seguiva già (TASK-431, messaggio `face`).
+
+**Decisione**:
+
+1. **Su «Map» la bussola resta accesa per la freccia sola**:
+   `useHeadingUpMap` espone `facing` anche lì, senza chiedere giri alla
+   mappa, che resta girata come il disegno. La pagina della mappa riceve
+   `face` come su «Compass» e apre il cono; `App.tsx` e `MapView` non
+   cambiano.
+2. **La stessa direzione di «Compass»** (`mapHeading`: la bussola da fermi;
+   correndo la bussola se calibrata, altrimenti la traccia) e gli stessi
+   limiti (4°, 400 ms).
+3. **Il nord in alto resta solo di «Compass»**: su «Map» il pulsante del
+   nord è quello del disegno.
+4. **Batteria**: su «Data» e sotto «Pocket» la bussola è spenta (nessuno
+   vede la freccia); uscendo dalla tasca una lettura di prima non conta.
+5. **Da «Map» a «Compass»** la bussola resta la stessa e la mappa gira
+   subito dove punta la freccia, senza aspettare 4° nuovi.
+6. **Una libreria senza bussola non fa danni**: `useCompass` prende anche
+   l'errore immediato di `watchHeadingAsync` e dà null, come un telefono
+   che rifiuta (15 test dell'app la simulavano senza bussola).
+
+**Conseguenze**: nessuna dipendenza nuova, niente di nativo, impronta iOS
+invariata; arriva con un OTA. La bussola resta accesa durante la corsa su
+«Map», la pagina con cui la corsa si apre: un sensore in più, spento in
+tasca. Restano fuori, come idee nel task file: un cono solo quando la
+direzione viene dalla bussola, e la bussola spenta in tasca anche su
+«Compass».
 
 ## ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero; la riga dei «live» non chiede con l'app dietro
 

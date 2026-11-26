@@ -153,7 +153,7 @@ export function FlightMap({
   const manual = useManualWaypoints();
   const sites = useSiteLandings();
   // The wind aloft (part H): the hour of the last fix, the level nearest
-  // the pilot's height.
+  // the pilot's height, drawn beside the pilot.
   const kept = useWinds();
   const units = useUnits();
   const wind = windOnMap(
@@ -161,6 +161,7 @@ export function FlightMap({
     last?.timeMs ?? 0,
     last?.altitudeM ?? null,
     LEVEL_HEIGHT_M,
+    last?.point ?? null,
   );
   const windKey =
     wind === null

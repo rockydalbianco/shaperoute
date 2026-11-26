@@ -13,6 +13,7 @@ import {
   parseFlightMapMessage,
   TRACK_WIDTH,
   VARIO_STOPS,
+  WIND_BESIDE_PX,
 } from "./flightMapPage";
 
 type Layer = {
@@ -362,7 +363,10 @@ it("draws the wind aloft as an arrow turned where it comes from, with its label 
   page.load();
   const arrow = page.layers.find((layer) => layer.id === "flight-wind-arrow")!;
   expect(arrow.layout?.["text-rotate"]).toEqual(["get", "from"]);
-  expect(page.layers.map((layer) => layer.id)).toContain("flight-wind-label");
+  const label = page.layers.find((layer) => layer.id === "flight-wind-label")!;
+  // Both beside the pilot, never over their arrow.
+  expect(arrow.paint?.["text-translate"]).toEqual([...WIND_BESIDE_PX]);
+  expect(label.paint?.["text-translate"]).toEqual([...WIND_BESIDE_PX]);
   const wind = { type: "FeatureCollection", features: [] };
   (page.flight as unknown as { setWind: (data: unknown) => void }).setWind(wind);
   expect(page.data("flight-wind")).toBe(wind);

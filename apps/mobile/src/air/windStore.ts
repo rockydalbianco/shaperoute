@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { apiUrl } from "../api/apiUrl";
 import { fetchWinds, isWinds, type Winds } from "../api/winds";
 import { type KeptList, keptList } from "../storage/keptList";
+import { distanceM } from "./taskRoute";
 
 /**
  * The wind aloft kept on the phone (TASK-479 part H): asked before the
@@ -108,16 +109,25 @@ export function resetWinds(): void {
   listeners.clear();
 }
 
+/** Beyond this the take-off's wind aloft is not the pilot's: not drawn. */
+export const WIND_NEAR_M = 20_000;
+
 /** The wind for the flight map (part H): the hour now, at the level
- * nearest `altM` (the standard atmosphere's heights), at the kept place;
- * null without a known wind there. */
+ * nearest `altM` (the standard atmosphere's heights). Drawn by the pilot
+ * (`here`), so it stays on the map as they fly away, but only within
+ * WIND_NEAR_M of the kept place; without `here`, at the kept place. Null
+ * without a known wind there. */
 export function windOnMap(
   winds: KeptWinds | null,
   nowMs: number,
   altM: number | null,
   levelHeights: Readonly<Record<number, number>>,
+  here: LatLon | null = null,
 ): { place: LatLon; hpa: number; fromDeg: number; speedMs: number } | null {
   if (winds === null) {
+    return null;
+  }
+  if (here !== null && distanceM(here, winds.place, "wgs84") > WIND_NEAR_M) {
     return null;
   }
   const hour = [...winds.winds.hours]
@@ -140,7 +150,7 @@ export function windOnMap(
       : best,
   );
   return {
-    place: winds.place,
+    place: here ?? winds.place,
     hpa: nearest.hpa,
     fromDeg: nearest.from_deg ?? 0,
     speedMs: nearest.speed_ms ?? 0,

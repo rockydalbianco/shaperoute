@@ -42,6 +42,10 @@ export const AIRSPACE_OPACITY = 0.2;
 export const PRESS_MS = 600;
 /** A finger moving farther than this is no press, points. */
 export const PRESS_SLOP_PX = 12;
+
+/** The wind aloft (part H) is drawn this far from the pilot, in screen
+ * pixels: left and below, clear of the pilot's arrow. */
+export const WIND_BESIDE_PX: readonly [number, number] = [-64, 44];
 /** How see-through the next cylinder of the task is. */
 export const TASK_FILL_OPACITY = 0.15;
 
@@ -303,6 +307,8 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
           "text-color": ${toScript(palette.text)},
           "text-halo-color": ${toScript(palette.background)},
           "text-halo-width": 2,
+          // Beside the pilot's arrow, not over it.
+          "text-translate": ${toScript(WIND_BESIDE_PX)},
         },
       });
       map.addLayer({
@@ -321,6 +327,7 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
           "text-color": ${toScript(palette.text)},
           "text-halo-color": ${toScript(palette.background)},
           "text-halo-width": 1.5,
+          "text-translate": ${toScript(WIND_BESIDE_PX)},
         },
       });
       map.addSource("flight-takeoff", { type: "geojson", data: NONE });

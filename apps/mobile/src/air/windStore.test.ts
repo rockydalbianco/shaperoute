@@ -6,6 +6,7 @@ import {
   refreshWinds,
   resetWinds,
   stillGood,
+  WIND_NEAR_M,
   windOnMap,
   windsNow,
 } from "./windStore";
@@ -102,6 +103,17 @@ describe("windOnMap", () => {
     expect(windOnMap(winds, Date.UTC(2026, 10, 26, 6, 10), 1400, HEIGHTS)?.hpa).toBe(
       700,
     );
+  });
+
+  it("is drawn by the pilot, and not at all far from the forecast's place", () => {
+    const winds = kept([{ time: at(7), winds: levels }]);
+    const nowMs = Date.UTC(2026, 10, 26, 7, 10);
+    // About 5.6 km north: still the take-off's wind, beside the pilot.
+    const near: [number, number] = [45.79, 10.84];
+    expect(windOnMap(winds, nowMs, 3000, HEIGHTS, near)?.place).toEqual(near);
+    // About 22 km north: another place's wind, not drawn.
+    expect(windOnMap(winds, nowMs, 3000, HEIGHTS, [45.94, 10.84])).toBeNull();
+    expect(WIND_NEAR_M).toBe(20_000);
   });
 
   it("has none without wind, or for hours long gone", () => {

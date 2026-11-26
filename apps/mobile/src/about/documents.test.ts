@@ -126,9 +126,9 @@ describe("«Terms» is a draft", () => {
 describe("«Privacy» is final, approved by the user (TASK-237 D)", () => {
   test.each(CONTENTS)("in «%s», with the day of the approval", (_, content) => {
     expect(content.privacy.draft).toBe(false);
-    // Redated for the group runs among the reports (TASK-309 part B).
+    // Redated for the paragliding landings nearby (TASK-479 part D6).
     expect(content.privacy.updated).toMatch(
-      /^24 November 2026$|^24 novembre 2026$|^24\. November 2026$|^24 de noviembre de 2026$/,
+      /^26 November 2026$|^26 novembre 2026$|^26\. November 2026$|^26 de noviembre de 2026$/,
     );
   });
 

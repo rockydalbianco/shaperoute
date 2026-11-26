@@ -4011,6 +4011,22 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
 - Backfill dei passi per le corse vecchie: `python -m
   shaperoute_api.run_stats`, solo col sì dell'utente. Test in
   `test_run_stats.py`.
+- **Il meteo** (TASK-410 parte E; `run_weather.py`, esempio in
+  `fixtures/run-stats-weather.json`, test in `test_run_weather.py`):
+  `weather` `{temperature_c, symbol, wind_ms}`, temperatura e vento (m/s)
+  al decimo, `symbol` il `symbol_code` di MET Norway. Il server lo chiede a
+  MET Norway (Locationforecast, lo stesso trasporto di `resort_weather.py`)
+  **dopo la risposta** a `PUT …/stats`, fuori dalla sua transazione, solo
+  per una corsa `source = muw` con una traccia, non sulla neve (`skiing`,
+  `xc_skiing`, `ski_touring`, `snowshoeing`), quando il `PUT` arriva entro
+  3 ore dalla fine (l'ultimo punto della traccia). Va a MET il primo punto
+  arrotondato a 2 decimali (~1 km), senza altitudine. L'ora tenuta è quella
+  che contiene la fine o, MET non dando le ore passate, la più vicina entro
+  3 ore. Si chiede **una volta**: senza risposta resta `weather: null` e non
+  si riprova; un altro `PUT …/stats` lo conserva. Lo vede chi vede il post
+  (non dice niente del corpo). Solo il server avviato da `__main__`
+  (`install_run_weather`) chiede: un'app di `create_app`, come nei test,
+  non va mai in rete.
 - **I tratti di una giornata di sci** (TASK-424 parte C2b, con TASK-429;
   tipi in `packages/shared-types/src/skiParts.ts`, esempi in
   `fixtures/ski-parts-request.json` e `fixtures/drawing-ski.json`, test in

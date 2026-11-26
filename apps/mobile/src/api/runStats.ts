@@ -69,6 +69,16 @@ export function isFlightSplit(value: unknown): value is FlightSplitStats {
   return isRecord(value) && isFlightSide(value.foot) && isFlightSide(value.air);
 }
 
+/** The weather of the hour of the end, from MET Norway (TASK-410 part E):
+ * packages/shared-types/fixtures/run-stats-weather.json. */
+export type RunWeather = {
+  temperature_c: number;
+  /** MET Norway's symbol_code ("clearsky_day"…); null when it gave none. */
+  symbol: string | null;
+  /** Metres a second; null when it gave none. */
+  wind_ms: number | null;
+};
+
 /** packages/shared-types/fixtures/run-stats.json: each field null when the
  * run has none, or when the one who asks may not see it. */
 export type RunStats = {
@@ -86,6 +96,9 @@ export type RunStats = {
   /** A flight's parts on foot and in the air added up (TASK-305 part R6a):
    * absent from an API before it. */
   flight_split?: FlightSplitStats | null;
+  /** The weather of the end (TASK-410 part E): absent from an API before
+   * it, null for a run without. */
+  weather?: RunWeather | null;
 };
 
 /** PUT /me/activities/{key}/stats: packages/shared-types/fixtures/
@@ -172,6 +185,19 @@ export function isSkiDescents(value: unknown): value is SkiDescents {
   return isRecord(value) && isNumber(value.metres) && isNumber(value.moving_s);
 }
 
+/** A weather the page can show; anything else is read as none, never as a
+ * body refused: the rest of the figures stay. */
+export function weatherOf(value: unknown): RunWeather | null {
+  if (!isRecord(value) || !isNumber(value.temperature_c)) {
+    return null;
+  }
+  return {
+    temperature_c: value.temperature_c,
+    symbol: typeof value.symbol === "string" ? value.symbol : null,
+    wind_ms: isNumber(value.wind_ms) ? value.wind_ms : null,
+  };
+}
+
 /** A body of the API's figures; a field missing counts as null, so an API
  * that adds one later is still read. */
 export function isRunStats(body: unknown): body is RunStats {
@@ -215,6 +241,7 @@ export function statsOf(detail: DrawingDetail): RunStats | null {
     ski_parts: stats.ski_parts ?? null,
     ski_descents: stats.ski_descents ?? null,
     flight_split: stats.flight_split ?? null,
+    weather: weatherOf(stats.weather),
   };
 }
 

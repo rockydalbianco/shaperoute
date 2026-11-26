@@ -719,6 +719,56 @@ dell'agente su delega dell'utente, da confermare con la lista dei file):
   del corpo).
 - Nessuna migrazione, nessuna variabile nuova (`SHAPEROUTE_MET_CONTACT` c'è).
 
+## Parte E — il codice (2026-11-26)
+
+Via del Coordinatore (fork 3) il 2026-11-26, con le due liste. Branch
+`feat/TASK-410-e-weather`, #1633, in bozza: **si unisce solo dopo che la
+PR di privacy della parte E è in `main` e online**, perché il passo sul
+server porta la posizione a MET. La privacy (riga E5 e credito E4) è una
+PR a parte, `docs/TASK-410-e-privacy`, in fila dopo #1619, la 479 D6 e la
+493.
+
+```
+services/api/shaperoute_api/run_weather.py      (nuovo)
+services/api/shaperoute_api/run_stats.py        (weather in RunStatsBody; il PUT lo conserva e lo chiede dopo la risposta)
+services/api/shaperoute_api/__main__.py         (install_run_weather: sì del Coordinatore)
+services/api/tests/test_run_weather.py          (nuovo)
+services/api/tests/test_run_stats.py            (una riga: l'esempio del meteo è a parte; sì del Coordinatore)
+packages/shared-types/fixtures/run-stats-weather.json (nuovo)
+docs/API.md                                     («Run stats»: il meteo)
+apps/mobile/src/api/runStats.ts + test           (RunWeather, weatherOf)
+apps/mobile/src/feed/postSections.ts + test      (weatherSection, sotto il riepilogo)
+apps/mobile/src/feed/PostWeather.tsx            (nuovo)
+apps/mobile/src/feed/PostPage.tsx + test
+apps/mobile/src/i18n/{it,es,de,fr}.ts           («Weather», la frase di VoiceOver, in coda)
+docs/tasks/TASK-410.md
+```
+
+Rispetto alla proposta: `postMetrics.ts` non cambia (lo sport lo filtra il
+server; l'app mostra il meteo quando c'è) e `PostWeather.test.tsx` non c'è
+(la card è provata in `PostPage.test.tsx`).
+
+Decisioni dell'agente su delega dell'utente:
+
+- Si accende solo nel server avviato da `__main__` (`install_run_weather`,
+  come il meteo dello sci): un'app di `create_app`, come nei test, non va
+  mai in rete. Una cache sua, non quella delle stazioni.
+- `runs.track` tiene la M in secondi **dal primo punto**: la fine è
+  `started_at` + (ultima M − prima M).
+- Chiesto una volta: senza risposta di MET la corsa tiene `weather: null` e
+  non si riprova, nemmeno a un altro `PUT …/stats`.
+- Un meteo che l'app non sa leggere vale nessuno (`weatherOf`), senza
+  rifiutare le altre stats.
+- Neve esclusa: `skiing`, `xc_skiing`, `ski_touring`, `snowshoeing`.
+
+Provata sul simulatore (Expo Go, harness temporaneo, 2026-11-26, turno del
+Coordinatore) in inglese (⛅ 14°, «Wind 12 km/h») e in italiano (☀️ −3°,
+«Vento 22 km/h»); schermate in `out/TASK-410-e/` della copia principale.
+**Risposta dell'utente alle foto: «Sì, va bene».**
+
+Restano: la PR di privacy al «tocca a te», poi il merge di #1633, il passo
+sul server (lo chiede il Coordinatore) e l'OTA, ognuno col sì dell'utente.
+
 ## Esito
 
 *(a fine task)*

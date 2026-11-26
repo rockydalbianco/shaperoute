@@ -1,8 +1,10 @@
 # TASK-515 — Le email dell'account in produzione («Password dimenticata?»)
 
 **Stato**: Done — 2026-11-26: «Forgot password?» è in produzione, provato
-dall'utente sul telefono («Sì, funziona»); i due giri verso gli iscritti
-restano spenti
+dall'utente sul telefono e nel log del server, come l'email di una
+segnalazione; conferma dell'indirizzo e feedback sono accesi, l'utente
+dice di averli ricevuti, nel log non ci sono; i due giri verso gli
+iscritti restano spenti
 **Fase**: 5 · **PR**: #1564 (parte 0), #1566 (parte A), chiusura in
 `docs/TASK-515-done`
 **ADR**: ADR-0410 · numeri dal Coordinatore (fork 3), 2026-11-24
@@ -196,11 +198,27 @@ parte: resta com'è (scelta 5).
   (Resend)», «Each new report is emailed», «Each message of «Send
   feedback» is emailed» e i due giri «off (SHAPEROUTE_EMAIL_ROUNDS does
   not name away / notices)»; `GET /account-email` risponde 200.
-- **P** — il 2026-11-26 l'utente, a cui erano stati chiesti il recupero
-  con «Forgot password?», un'iscrizione nuova, una segnalazione e un
-  feedback di prova: **«Sì, funziona»**. Nessun OTA.
-- **Log** — il controllo che Resend non abbia rifiutato nessuna email è
-  del Coordinatore, dopo la prova.
+- **P** — il 2026-11-26, sul telefono, senza OTA, in due tempi. Prima il
+  recupero con «Forgot password?»: l'utente, **«Sì, funziona»**. Poi, dopo
+  che il log mostrava solo quello, le altre tre (un'iscrizione nuova con
+  l'email di conferma, una segnalazione e un messaggio di «Send feedback»
+  di prova): **«Sono arrivate tutte e tre»**.
+- **Log e database del server** (Coordinatore, letti alle 12:21Z del
+  2026-11-26; l'API era ripartita alle 12:07Z col passo 24):
+  - **recupero, provato**: `POST /password-reset` 202, la pagina
+    `/password/reset` 200 in lettura e in invio, poi `POST /session` 200;
+  - **segnalazione, provata**: `POST /reports` 204, email partita;
+  - **iscrizione nuova, non c'è**: nessun `POST /accounts`, 0 account
+    creati nelle ultime 6 ore, nessuna apertura di `/email/confirm`;
+  - **feedback, non c'è**: nessun `POST /feedback`, 0 righe di feedback
+    nelle ultime 6 ore;
+  - nessun rifiuto e nessun errore di Resend, 0 `Traceback`.
+
+  Quindi la conferma dell'indirizzo e il feedback che l'utente ha visto
+  arrivare **non sono passati da questo server** in quelle ore: non si sa
+  ancora da dove (un'altra app, o email di prima). Chiesto all'utente il
+  2026-11-26 da quale app li ha fatti e a che ora sono arrivate le email;
+  la risposta va scritta qui.
 
 ## Fuori da questo task
 
@@ -230,7 +248,12 @@ parte: resta com'è (scelta 5).
       (parte A, `test_email_rounds.py`).
 - [x] In produzione `GET /account-email` risponde 200 e l'avvio dice i due
       giri spenti (passo 24).
-- [x] L'utente recupera una password dal telefono, senza OTA.
+- [x] L'utente recupera una password dal telefono, senza OTA (anche nel
+      log).
+- [x] Una segnalazione di prova arriva per email (anche nel log).
+- [ ] Email di conferma di un'iscrizione nuova e di un feedback di prova:
+      l'utente dice arrivate, nel log e nel database del server non ci
+      sono. Accese all'avvio, non provate da qui.
 - [x] `DEPLOY.md` e `API.md` dicono come si accende ogni email adesso;
       ADR-0410 «Attiva».
 
@@ -253,6 +276,9 @@ parte: resta com'è (scelta 5).
 
 ## Cosa resta (non blocca, non è di questo task)
 
+- Capire da dove sono partite la conferma e il feedback che l'utente ha
+  ricevuto, o rifare le due prove guardando il log subito dopo
+  (`POST /accounts`, `POST /feedback`).
 - Accendere «quando sono via» o il riassunto: `SHAPEROUTE_EMAIL_ROUNDS` sul
   server, ciascuno col sì dell'utente («Fuori da questo task»).
 - L'inoltro di `hello@getmuw.app`, se l'utente lo vuole.

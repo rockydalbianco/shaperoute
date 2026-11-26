@@ -374,6 +374,10 @@ parte, numero di migrazione da lui):
   le schede).
 - **EB, app**: «My routines» ed editor in `src/stretch`, la riga del «+»,
   riquadro e dettaglio, «Do this routine», «Save to my routines».
+  La riga «Stretching routine» del «+» ha la sua icona, come le altre
+  voci dopo TASK-509 B (`ADD_TO_FEED_ICONS` in `addToFeedEntries.ts` e
+  `AddToFeed.tsx`): un PNG di Lucide a tre densità, fatto con
+  `out/TASK-444/tools/icon.swift` del Mac; nella lista dei file di EB.
 - **Privacy**: la frase qui sopra, nella stessa fila dei file della privacy.
 - **EC**: il post aperto da profilo, campanella, link e chat.
 

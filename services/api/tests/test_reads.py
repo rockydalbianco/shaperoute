@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import replace
 from pathlib import Path
 from typing import Any, get_args
 
@@ -81,10 +80,9 @@ def test_the_app_of_today_reads_everything() -> None:
     reads = reads_from([_fixture()["this_app"]])
     # A workout at the gym and its post without a line too (TASK-385 B0),
     # a swim in a pool since TASK-400 B, a post of photos only since
-    # TASK-312 part C2, and a gym plan posted since TASK-485 part B. Not yet
-    # the posts of a night of sleep: it says `sleep` with TASK-467 part E's
-    # app.
-    assert reads == replace(EVERYTHING, sleep=False)
+    # TASK-312 part C2, a gym plan posted since TASK-485 part B, and the
+    # post of a night of sleep since TASK-467 part C.
+    assert reads == EVERYTHING
 
 
 def test_shows_asks_the_activity_and_the_track() -> None:

@@ -84,26 +84,38 @@ def install_phone_zones(
     """The zones of `cache_dir` for the phone; `cap` defaults to the user's
     300 MB a phone and 300 GB in all, a day. With them, the places the user
     keeps on the phone (TASK-334), prepared by `places` while `work` says
-    no route is being drawn."""
-    app.include_router(
-        phone_zone_routes(
-            cache_dir, cap if cap is not None else TrafficCap(), wide_max_bytes
-        )
-    )
+    no route is being drawn; `places` also prepares the zone around a phone
+    the server has none for (TASK-214 part G)."""
     work = work if work is not None else RouteWork()
     watch_route_work(app, work)
+    builds = (
+        places
+        if places is not None
+        else PlaceBuilds(cache_dir, phone_file, busy=work.busy)
+    )
     app.include_router(
-        place_routes(
-            places
-            if places is not None
-            else PlaceBuilds(cache_dir, phone_file, busy=work.busy)
+        phone_zone_routes(
+            cache_dir,
+            cap if cap is not None else TrafficCap(),
+            wide_max_bytes,
+            missing=builds,
         )
     )
+    app.include_router(place_routes(builds))
 
 
 def phone_zone_routes(
-    cache_dir: Path, cap: TrafficCap, wide_max_bytes: int = WIDE_MAX_BYTES
+    cache_dir: Path,
+    cap: TrafficCap,
+    wide_max_bytes: int = WIDE_MAX_BYTES,
+    missing: PlaceBuilds | None = None,
 ) -> APIRouter:
+    """GET /phone-zones/{network}. With `missing`, the zone around a phone
+    the server has none for is prepared as a kept place is (TASK-214 part
+    G): one at a time, while no route is drawn, within the same daily
+    counts, never with its box in the log. The answer is still 404; the
+    phone finds the zone when it asks again, at its next opening. A zone
+    asked ahead (`prefetch`) prepares nothing."""
     router = APIRouter()
 
     @router.get(
@@ -135,6 +147,8 @@ def phone_zone_routes(
         if path is None:
             zone = source.covering_path(area_around([(lat, lon)], ZONE_MARGIN_M))
             if zone is None:
+                if missing is not None and not prefetch:
+                    missing.ask(network, (lat, lon), phone_of(request))
                 raise HTTPException(404, NO_ZONE)
             path = phone_file(source, zone)
         stat = path.stat()
@@ -224,8 +238,12 @@ def phone_file(source: OsmnxSource, zone: Path) -> Path:
     write_zone(
         graph, source.named_roads(bbox, download=False), source.network_name, bbox, path
     )
+    # Never the file's name: it holds the zone's box, around a phone or a
+    # place someone keeps (TASK-214 part G, TASK-363).
     log.info(
-        "phone zone %s written in %.1f s", path.name, time.perf_counter() - started
+        "phone zone %s written in %.1f s",
+        source.network_name,
+        time.perf_counter() - started,
     )
     return path
 

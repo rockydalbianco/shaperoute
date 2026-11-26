@@ -360,9 +360,7 @@ describe("the nearest landing of all the pilot has (parts D3, D5, D6)", () => {
   it("says there is none without any landing", async () => {
     await showXc();
     expect(
-      within(screen.getByTestId("widget-nearestLanding")).getByText(
-        "No landings in your file",
-      ),
+      within(screen.getByTestId("widget-nearestLanding")).getByText("No landings"),
     ).toBeTruthy();
   });
 

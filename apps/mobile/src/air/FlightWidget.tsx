@@ -91,8 +91,8 @@ type Props = {
   /** The glide the heights are worked out with (part D3); L/D 8 and the
    * estimated wind when not given. */
   glide?: Glide;
-  /** The nearest landing of the pilot's waypoint file (part D3); null
-   * without one, undefined without a file. */
+  /** The nearest landing of all the pilot has (parts D3, D5, D6): their
+   * file's, their own and OpenStreetMap's; null or undefined without one. */
   landing?: NearLanding | null;
 };
 
@@ -102,7 +102,7 @@ export const GATE_OPEN = tLater("Gate open");
 export const STARTED_AT = tLater("Started {time}");
 export const WHOLE_TASK = tLater("Whole task: {distance}");
 export const NEEDS_HEIGHT = tLater("needs {height}");
-export const NO_LANDINGS = tLater("No landings in your file");
+export const NO_LANDINGS = tLater("No landings");
 
 /** The height over the next turnpoint at the end of the first leg,
  * metres, and the altitude that leg needs; null where not known. */

@@ -70,6 +70,7 @@ from shaperoute_api.activities import (
     RunSource,
     turn_kept,
 )
+from shaperoute_api.answer_lines import short_line
 from shaperoute_api.db import Database
 from shaperoute_api.flight_legs import ActivityFlightBody, flight_of
 from shaperoute_api.follows import apart_sql, follows_sql
@@ -990,7 +991,8 @@ class Drawings:
                     conn, row["run_id"], author=row["author_id"] == viewer_id
                 )
             )
-            track = _line(row["track"])
+            # Six decimals a coordinate (answer_lines): as many points.
+            track = short_line(_line(row["track"]))
             # A race's parts in the air on the line shown (TASK-305 R6e).
             flight = (
                 flight_of(conn, row["run_id"], len(track))

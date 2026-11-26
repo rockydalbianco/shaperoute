@@ -7,9 +7,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * as TASK-210 G names them: «Feed», «Disegna», «Esplora».
  */
 
-const UPDATED = "26 novembre 2026";
+const UPDATED = "27 novembre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "26 novembre 2026";
+const PRIVACY_UPDATED = "27 novembre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -210,6 +210,14 @@ const terms: AboutDocument = {
       ],
     },
     {
+      heading: "Alimentazione",
+      blocks: [
+        "«Alimentazione» è un diario e una calcolatrice, non un servizio sanitario. MuW non è fatta da medici, dietisti o altri professionisti della salute.",
+        "Le calorie dei cibi, l'energia che consumi e, se la chiedi, la stima di un obiettivo del giorno vengono da tabelle e formule pubbliche. Sono stime, solo a scopo informativo: non sono un consiglio medico né dietetico e non sostituiscono un professionista che ti conosce.",
+        "Se hai meno di 18 anni, sei in gravidanza o allatti, hai una malattia, o hai o hai avuto un disturbo alimentare, parla con il tuo medico prima di contare le calorie o di cambiare quello che mangi.",
+      ],
+    },
+    {
       heading: "Nessuna garanzia, e i limiti della nostra responsabilità",
       blocks: [
         "Lavoriamo perché MuW funzioni e i suoi percorsi siano buoni, ma l'app è offerta così com'è: non promettiamo che sia sempre disponibile o senza errori, che un percorso si possa completare, o che le sue misure siano esatte.",
@@ -354,6 +362,7 @@ const privacy: AboutDocument = {
         "Per una giornata di sci, il nostro server confronta la traccia salvata con gli impianti e le piste di OpenStreetMap, che tiene da sé, per scrivere quali hai preso e quante volte. I nomi compaiono nel post, per chi può vederlo. Niente va a un altro servizio.",
         "Sulle foto che pubblichi puoi segnare i capi che indossi: cos'è ognuno, la marca e, se vuoi, il modello e il link a un negozio. Li vede chi vede la foto. Se la corsa torna «Solo io», lasciano il nostro server con le sue foto e restano su questo telefono.",
         "Puoi aggiungere la tua attrezzatura: scarpe, una bici, sci, un casco, qualsiasi cosa usi. Per ogni attrezzo teniamo il tipo, la marca, il modello, il nome che gli dai, il mese in cui l'hai comprato, la tua nota e la sua foto. La foto è ridimensionata e senza i dati che il telefono aggiunge, come dove e quando è stata scattata. Le attività che scegli per un attrezzo aggiungono distanza e tempo ai suoi totali, che il nostro server conta dalle tue attività salvate. Gli altri iscritti vedono la tua attrezzatura sul tuo profilo, coi totali, le note e le foto, a meno che tu non accenda «Nascondi dal profilo» per un attrezzo. Gli sport che scegli per un attrezzo e il suo limite li vedi solo tu. La tua attrezzatura si cancella col tuo account.",
+        "Un volo in parapendio che salvi conta, senza il tuo nome, nello storico del decollo da cui sei partito, nella mappa dei decolli: quanti voli e quanti piloti diversi, mese per mese e oggi. Il nostro server lo ricava dal punto di decollo del volo salvato, anche quando il volo è privato, e mostra questi numeri solo quando i piloti diversi sono almeno tre. Il tuo nome e il tuo volo compaiono nei record del decollo (il volo più lungo, il più alto, il più lontano) solo se il post del volo è visibile a tutti. Mentre condividi un volo dal vivo, il decollo mostra che c'è qualcuno in volo, senza il tuo nome; il tuo link compare lì solo se condividi già con tutti nel Feed. I decolli e gli atterraggi vengono da OpenStreetMap.",
         "Per una giornata di sci, l'app manda al nostro server la tua posizione arrotondata a circa 1 km per trovare la stazione più vicina; il meteo lo chiede il server a MET Norway con la posizione della stazione, mai la tua. Stazione, neve e attrezzatura che aggiungi si vedono sul post, per chi può vederlo, e la neve conta anche, senza il tuo nome, nella neve del giorno della stazione.",
         "Quando salvi un'attività all'aperto entro 3 ore dalla fine, il nostro server manda a MET Norway il suo punto di partenza, arrotondato a circa 1 km, per chiedere il meteo di quell'ora; MET Norway non riceve il tuo nome. Il meteo (temperatura, cielo e vento) si vede sul post, per chi può vederlo.",
       ],
@@ -425,7 +434,7 @@ const privacy: AboutDocument = {
     {
       heading: "La tua posizione",
       blocks: [
-        "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server esatta come partenza di un percorso che chiedi, come partenza delle forme che l'app ti prepara qui vicino quando il telefono non riesce a disegnarle da solo, e dentro una corsa che salvi. Fuori dal percorso di una corsa, quando il telefono non trova da solo la strada per tornarci, va esatta al nostro server con il tratto di percorso davanti, per trovarla sulle vie: il server non le tiene. Va arrotondata a circa 1 km per trovare la mappa offline intorno a te, i percorsi consigliati, i paesi e i disegni vicini, e per mettere prima i luoghi vicini a te in una ricerca; così arrotondata non resta legata al tuo account. Quando condividi un'attività dal vivo, la tua posizione esatta va al nostro server e a chi ha il link, come spiegato in «Condivisione dal vivo».",
+        "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server esatta come partenza di un percorso che chiedi, come partenza delle forme che l'app ti prepara qui vicino quando il telefono non riesce a disegnarle da solo, e dentro una corsa che salvi. Fuori dal percorso di una corsa, quando il telefono non trova da solo la strada per tornarci, va esatta al nostro server con il tratto di percorso davanti, per trovarla sulle vie: il server non le tiene. Va arrotondata a circa 1 km per trovare la mappa offline intorno a te, gli atterraggi del parapendio vicini, il vento in quota per il volo, i percorsi consigliati, i paesi e i disegni vicini, e per mettere prima i luoghi vicini a te in una ricerca; così arrotondata non resta legata al tuo account. Il vento in quota lo scarica il nostro server da DWD ed ECMWF per zone intere, mai con la tua posizione. Quando condividi un'attività dal vivo, la tua posizione esatta va al nostro server e a chi ha il link, come spiegato in «Condivisione dal vivo».",
         "Su iPhone, durante una corsa che hai fatto partire, l'app continua a seguire la tua posizione anche a telefono bloccato o con un'altra app aperta, finché non fermi la corsa; l'iPhone lo mostra con un segno blu in cima allo schermo. MuW chiede la posizione solo mentre usi l'app, mai «Sempre».",
         "Come ogni servizio su internet, il nostro server vede l'indirizzo internet (IP) da cui arriva una richiesta mentre le risponde. Il log del server non scrive posizioni, e nel database non ci sono indirizzi IP.",
         "Un registro delle richieste di percorso, con la loro partenza, esiste per riprodurre un difetto. Sul nostro server è spento; acceso, tiene al massimo 10 MB, poi le righe più vecchie si perdono.",
@@ -461,8 +470,8 @@ const privacy: AboutDocument = {
     {
       heading: "Alimentazione",
       blocks: [
-        "«Alimentazione» è un diario che tieni per te. I cibi che aggiungi, il tuo piano della settimana, quello che scrivi di aver mangiato ogni giorno, il tuo obiettivo del giorno e le calorie che correggi a mano restano solo sul tuo telefono: non arrivano al nostro server e nessun altro può vederli. Il «Bilancio delle calorie» nel tuo profilo è calcolato sul telefono e lo vedi solo tu.",
-        "Per stimare l'energia che consumi, MuW conta sul telefono le attività del tuo account e i dati del corpo che hai inserito in «Impostazioni». Ogni numero è una stima: MuW non fornisce diete né consigli medici.",
+        "«Alimentazione» è un diario che tieni per te. I cibi che aggiungi, il tuo piano della settimana, quello che scrivi di aver mangiato ogni giorno, il tuo obiettivo del giorno, il motivo per cui hai detto di usarla e le calorie che correggi a mano restano solo sul tuo telefono: non arrivano al nostro server e nessun altro può vederli. Il «Bilancio delle calorie» nel tuo profilo è calcolato sul telefono e lo vedi solo tu.",
+        "Per stimare l'energia che consumi, MuW conta sul telefono le attività del tuo account e i dati del corpo che hai inserito in «Impostazioni». Se lo chiedi, MuW calcola anche, sul telefono, dagli stessi dati e con una formula pubblica, una stima di un obiettivo di calorie al giorno: solo dimostrativa, e mai mostrata a chi ha meno di 18 anni. Ogni numero è una stima: MuW non è fatta da professionisti della salute e non fornisce diete né consigli medici.",
         "Questi dati non sono mai stati sul nostro server, quindi uscire dall'account o eliminarlo non li cancella: restano sul telefono finché non li togli lì o non disinstalli l'app.",
       ],
     },

@@ -67,6 +67,9 @@ export type ToPage =
    * yellow in the air. */
   | { type: "showFlight"; foot: LngLat[][]; air: LngLat[][]; frame?: true }
   | { type: "clearFlight" }
+  /** New points at the end of the last line of one layer of a day of
+   * skiing or a race, the rest as the page holds it (TASK-496 part D). */
+  | { type: "extendPiece"; layer: PieceLayer; coordinates: LngLat[] }
   | { type: "follow"; lngLat: LngLat; heading: number | null }
   /** Where the phone points on «Compass» (TASK-431), or null off it. */
   | { type: "face"; heading: number | null }
@@ -279,6 +282,17 @@ export function showTrackFramed(points: LatLon[]): ToPage {
  * the whole run again. */
 export function extendTrack(points: LatLon[]): ToPage {
   return { type: "extendTrack", coordinates: points.map(toLngLat) };
+}
+
+/** The layers a day of skiing or a race is drawn on: the track (what was
+ * skied, or on foot), the lifts, the flights. */
+export type PieceLayer = "track" | "lifts" | "air";
+
+/** The new points of a day of skiing or a race recorded (TASK-496 part D):
+ * they go at the end of the last line of `layer`, which the page was told
+ * with `showLifts` or `showFlight`; the cut into pieces is the same. */
+export function extendPiece(layer: PieceLayer, points: LatLon[]): ToPage {
+  return { type: "extendPiece", layer, coordinates: points.map(toLngLat) };
 }
 
 export function clearTrack(): ToPage {

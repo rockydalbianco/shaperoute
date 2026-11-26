@@ -561,7 +561,9 @@ def test_a_long_run_is_listed_light_and_opened_whole(client: TestClient) -> None
     assert saved["track_preview"][0] == saved["route_preview"][0] == [46.0, 11.0]
     whole = client.get(f"/me/activities/{KEY}", headers=me).json()
     assert len(whole["track"]) == 1000
-    assert whole["points"] == points
+    # Every point, six decimals a coordinate (answer_lines, TASK-501): the
+    # sums above without what a double adds past them.
+    assert whole["points"] == [[round(lat, 6), round(lon, 6)] for lat, lon in points]
 
 
 def test_deleting_is_done_once_or_twice(client: TestClient) -> None:

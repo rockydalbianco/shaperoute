@@ -427,6 +427,52 @@ describe("the editor (part B2)", () => {
     });
   });
 
+  it("drags a widget onto another: the two change places (B3)", async () => {
+    await holdVario();
+    const view = screen.getByTestId("flight-editor-cell-varioAvg-drag");
+    const touch = (x: number) => ({ nativeEvent: { pageX: x, pageY: 300 } });
+    await fireEvent(view, "startShouldSetResponderCapture", touch(50));
+    await fireEvent(view, "responderGrant", touch(50));
+    // Two cells of 90 and their gaps to the right.
+    await fireEvent(view, "responderMove", touch(242));
+    await fireEvent(view, "responderRelease", touch(242));
+    const page = pagesOf(loadFlightPrefs("km"))[0];
+    expect(page.find((cell) => cell.widget === "varioAvg")).toMatchObject({
+      col: 2,
+      row: 4,
+    });
+    expect(page.find((cell) => cell.widget === "thermalGain")).toMatchObject({
+      col: 0,
+      row: 4,
+    });
+  });
+
+  it("sizes the selected widget by its corner (B3)", async () => {
+    await holdVario();
+    const handle = screen.getByTestId("flight-editor-cell-vario-handle");
+    const touch = (y: number) => ({ nativeEvent: { pageX: 380, pageY: y } });
+    await fireEvent(handle, "startShouldSetResponderCapture", touch(120));
+    await fireEvent(handle, "responderGrant", touch(120));
+    // One row of about 66 points up.
+    await fireEvent(handle, "responderMove", touch(54));
+    await fireEvent(handle, "responderRelease", touch(54));
+    expect(pagesOf(loadFlightPrefs("km"))[0][0]).toMatchObject({
+      widget: "vario",
+      w: 4,
+      h: 1,
+    });
+  });
+
+  it("says the widgets are dragged (B3)", async () => {
+    await holdVario();
+    await fireEvent.press(screen.getByTestId("flight-editor-cell-vario"));
+    expect(
+      screen.queryByText(
+        "Drag a widget to move it, or its corner to size it. Touch it for more.",
+      ),
+    ).toBeNull();
+  });
+
   it("gives a widget its own unit, shown on the flight screen", async () => {
     await holdVario();
     await fireEvent.press(screen.getByTestId("flight-editor-unit"));

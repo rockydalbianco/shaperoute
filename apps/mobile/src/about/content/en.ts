@@ -10,9 +10,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * fill, and nothing here may be made up to fill them.
  */
 
-const UPDATED = "10 November 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the replies and the reactions to a comment (TASK-454 C). Redated for the group runs among the reports (TASK-309 B). Redated for the posts of photos only (TASK-312 C2). «From a file» for the «+» of the Feed, which also records now (TASK-481 A). A gym plan shared in the Feed (TASK-485 B). Gear (TASK-486). The heart rate of a workout at the gym (TASK-385 G3). */
-const PRIVACY_UPDATED = "24 November 2026";
+const UPDATED = "26 November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the replies and the reactions to a comment (TASK-454 C). Redated for the group runs among the reports (TASK-309 B). Redated for the posts of photos only (TASK-312 C2). «From a file» for the «+» of the Feed, which also records now (TASK-481 A). A gym plan shared in the Feed (TASK-485 B). Gear (TASK-486). The heart rate of a workout at the gym (TASK-385 G3). The estimate of a daily target in «Nutrition» and the reason given for using it (TASK-489 J). */
+const PRIVACY_UPDATED = "26 November 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -210,6 +210,14 @@ const terms: AboutDocument = {
           ],
         },
         "Distances, times and speed come from the phone's GPS and are estimates.",
+      ],
+    },
+    {
+      heading: "Nutrition",
+      blocks: [
+        "«Nutrition» is a diary and a calculator, not a health service. MuW is not made by doctors, dietitians or other health professionals.",
+        "The calories of the foods, the energy you use and, if you ask for it, the estimate of a daily target come from public tables and formulas. They are estimates, for information only: they are not medical or dietary advice and do not replace a professional who knows you.",
+        "If you are under 18, pregnant or breastfeeding, have a medical condition, or have or had an eating disorder, talk to your doctor before counting calories or changing what you eat.",
       ],
     },
     {
@@ -462,8 +470,8 @@ const privacy: AboutDocument = {
     {
       heading: "Nutrition",
       blocks: [
-        "«Nutrition» is a diary you keep for yourself. The foods you add, your weekly plan, what you write that you ate each day, your daily target and the calories you correct by hand are kept on your phone only: they do not reach our server and nobody else can see them. The «Calorie balance» on your profile is worked out on your phone and shown only to you.",
-        "To estimate the energy you use, MuW counts on your phone the activities of your account and the body data you entered in «Settings». Every number is an estimate: MuW does not provide diets or medical advice.",
+        "«Nutrition» is a diary you keep for yourself. The foods you add, your weekly plan, what you write that you ate each day, your daily target, the reason you gave for using it and the calories you correct by hand are kept on your phone only: they do not reach our server and nobody else can see them. The «Calorie balance» on your profile is worked out on your phone and shown only to you.",
+        "To estimate the energy you use, MuW counts on your phone the activities of your account and the body data you entered in «Settings». If you ask for it, MuW also works out on your phone, from the same data and a public formula, an estimate of a daily calorie target: only a demonstration, never shown to people under 18. Every number is an estimate: MuW is not made by health professionals and does not provide diets or medical advice.",
         "This data was never on our server, so logging out or deleting your account does not delete it: it stays on your phone until you remove it there or uninstall the app.",
       ],
     },

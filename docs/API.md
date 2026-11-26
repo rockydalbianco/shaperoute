@@ -2359,7 +2359,8 @@ sopra), una casella non spuntata all'iscrizione (`away_email` di `POST
   `Idempotency-Key` per assenza. La chiave e l'indirizzo non vanno mai nel
   log.
 - **Spenta** senza `RESEND_API_KEY`, `SHAPEROUTE_EMAIL_SECRET` (almeno 32
-  caratteri) e `SHAPEROUTE_DOMAIN`: niente giro e niente pagina, e l'API
+  caratteri) e `SHAPEROUTE_DOMAIN`, **e finché `SHAPEROUTE_EMAIL_ROUNDS`
+  non nomina `away`** (ADR-0410): niente giro e niente pagina, e l'API
   lo dice all'avvio (`docs/DEPLOY.md`, «Email di ritorno»). A mano:
   `python -m shaperoute_api.away_email` conta chi la riceverebbe adesso,
   `--send` fa un giro.
@@ -2409,8 +2410,10 @@ subito); la lingua come l'email di ritorno. Il codice in
 - **Il thread** del giro parte con l'app e si ferma, anche a metà giro fra
   due email, prima che la fine dell'app chiuda il pool del database
   (TASK-288 B).
-- **Spenta** quando è spenta l'email di ritorno (`RESEND_API_KEY`,
-  `SHAPEROUTE_EMAIL_SECRET`, `SHAPEROUTE_DOMAIN`). A mano: `python -m
+- **Spenta** senza le tre variabili dell'email di ritorno
+  (`RESEND_API_KEY`, `SHAPEROUTE_EMAIL_SECRET`, `SHAPEROUTE_DOMAIN`), **e
+  finché `SHAPEROUTE_EMAIL_ROUNDS` non nomina `notices`** (ADR-0410): i due
+  giri si accendono ciascuno per conto suo. A mano: `python -m
   shaperoute_api.notice_email` conta chi la riceverebbe adesso, `--send`
   fa un giro.
 
@@ -4486,6 +4489,7 @@ endpoint vogliono il token: senza, `401 not_signed_in`; senza database,
 | `GET /me/conversations?box=inbox\|requests` | le conversazioni di «Messages» o le richieste, l'ultimo messaggio per primo | `200` `ConversationsPage` |
 | `GET /me/conversations/unread` | quante conversazioni hanno novità, quante richieste aspettano | `200` `ConversationsUnread` |
 | `GET /conversations/{public_id}/messages` | una pagina dei messaggi, l'ultimo per primo, e `state` | `200` `MessagesPage`, o `404` / `422` |
+| `GET /conversations/{public_id}/messages?after=<latest>` | solo i messaggi arrivati dopo un posto (TASK-498) | `200` `MessageNews`, o `404` / `422` |
 | `POST /conversations/{public_id}/messages` | un messaggio nuovo | `201` `Message`, o `404` / `409` / `422` / `429` |
 | `PUT /conversations/{public_id}/accept` | accetta la richiesta | `204`, o `404 http_error` |
 | `PUT /conversations/{public_id}/read` | la conversazione letta fino ad ora | `204` |
@@ -4529,6 +4533,29 @@ endpoint vogliono il token: senza, `401 not_signed_in`; senza database,
   `total`. Cursore `microsecondi-uuid`, come gli elenchi di «Follow». Prima
   del primo messaggio la pagina ha `messages: []` e `state`, così l'app
   apre una conversazione vuota dal profilo.
+- **Solo i messaggi nuovi** (TASK-498, aggiunta ad ADR-0279): la prima
+  pagina porta **`latest`**, il posto del suo messaggio più nuovo (stessa
+  forma di `next`; `0-000…0`, zero e trentadue zeri, in una conversazione
+  senza messaggi; `null` nelle pagine dei più vecchi). Con
+  **`?after=<latest>`** la stessa rotta risponde `MessageNews`
+  (`fixtures/message-news.json`): `state`, i `messages` dopo quel posto (il
+  più nuovo per primo, al più `limit`, con gli stessi allegati e le stesse
+  regole della pagina: `?with=attachments`, `X-MuW-Reads`), `more` (ne sono
+  arrivati più di `limit`: l'app rilegge la prima pagina) e il `latest` da
+  usare dopo, che resta quello chiesto se non è arrivato niente. **Niente
+  `person` e niente `attachments`**: la foto dell'altro non viaggia. È il
+  controllo che una conversazione aperta fa ogni pochi secondi: con niente
+  di nuovo sono un centinaio di byte e due query oltre a quella del token.
+  `state` è quello della pagina, sempre. `404` e `422` come la pagina
+  (nessuno, un blocco, se stessi); `after` scritto male, o insieme a
+  `cursor`, `422`. **Quello che questa risposta non dice** lo dice ancora
+  la pagina, che l'app rilegge ogni tanto: un messaggio cancellato da chi
+  l'ha scritto o nascosto da una segnalazione, il nome e la foto dell'altro,
+  la scheda di un post o di una live che cambia, un video scaduto, cosa si
+  può allegare; e un messaggio salvato un attimo dopo ma scritto un attimo
+  prima di quello a cui punta `latest`. **Un'API di prima** non manda
+  `latest` e ignora `after` (risponde la pagina): l'app senza `latest` non
+  chiede `?after=`, e una pagina in risposta la legge come pagina.
 - **«Delete»** (`DELETE /conversations/{public_id}`) toglie i messaggi
   fino ad ora dalla propria vista, e la conversazione dalla lista finché
   non ne arriva un altro; chi può scrivere liberamente non cambia. Per una

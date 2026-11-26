@@ -49,6 +49,7 @@ import { GroupMembers } from "./GroupMembers";
 import { GroupReport } from "./GroupReport";
 import { GroupRequests } from "./GroupRequests";
 import {
+  deleteGroup,
   fetchGroup,
   fetchGroupActivity,
   fetchGroupMembers,
@@ -223,6 +224,31 @@ export function GroupPage({ groupId, onBack, fetchFn, apiKey }: Props) {
       { text: t("Not now"), style: "cancel" },
       { text: t("Leave group"), style: "destructive", onPress: () => out(group) },
     ]);
+  }
+
+  /** «Delete group», the admin only, with whoever is in it (part A3). */
+  function remove(group: GroupDetail) {
+    Alert.alert(
+      t("Delete group"),
+      t(
+        "Delete {name}? Its members, requests and invites go with it. This can't be undone.",
+        {
+          name: group.name,
+        },
+      ),
+      [
+        { text: t("Not now"), style: "cancel" },
+        {
+          text: t("Delete group"),
+          style: "destructive",
+          onPress: () => {
+            if (apiUrl !== null && token !== null) {
+              void act(() => deleteGroup(apiUrl, token, groupId, options), onBack);
+            }
+          },
+        },
+      ],
+    );
   }
 
   function mute(next: boolean) {
@@ -402,6 +428,15 @@ export function GroupPage({ groupId, onBack, fetchFn, apiKey }: Props) {
                   onPress={() => setOver("invite")}
                   testID="group-open-invite"
                 />
+                {group.me === "admin" && (
+                  <Button
+                    label={t("Delete group")}
+                    onPress={() => remove(group)}
+                    disabled={busy}
+                    danger
+                    testID="group-delete"
+                  />
+                )}
               </View>
             )}
             {outings && (

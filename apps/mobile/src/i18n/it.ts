@@ -245,6 +245,38 @@ export const IT: Table = {
   Swan: "Cigno",
   Windmill: "Mulino a vento",
   "Wine glass": "Calice",
+  // TASK-516 (ADR-0411)
+  Football: "Pallone",
+  Bell: "Campana",
+  "Candy cane": "Bastoncino di zucchero",
+  Colosseum: "Colosseo",
+  Croissant: "Cornetto",
+  Dolphin: "Delfino",
+  Dome: "Cupola",
+  "Easter egg": "Uovo di Pasqua",
+  Flower: "Fiore",
+  "Fox head": "Testa di volpe",
+  Gift: "Regalo",
+  Infinity: "Infinito",
+  "Light bulb": "Lampadina",
+  Medal: "Medaglia",
+  Mountain: "Montagna",
+  Owl: "Gufo",
+  Padlock: "Lucchetto",
+  "Peace sign": "Simbolo della pace",
+  Penguin: "Pinguino",
+  "Pizza slice": "Fetta di pizza",
+  "Tennis racket": "Racchetta",
+  Reindeer: "Renna",
+  "Santa hat": "Cappello di Babbo Natale",
+  Scooter: "Scooter",
+  Snowflake: "Fiocco di neve",
+  Snowman: "Pupazzo di neve",
+  "Christmas stocking": "Calza di Natale",
+  Strawberry: "Fragola",
+  "Triumphal arch": "Arco di trionfo",
+  Turtle: "Tartaruga",
+  Umbrella: "Ombrello",
 
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "PAESI VICINI",
@@ -3315,6 +3347,7 @@ export const IT: Table = {
     "Crea un account per avere consigli dai tuoi allenamenti",
   "Log a few workouts and your tips will show up here":
     "Registra qualche allenamento e qui arriveranno i consigli",
+  "Go to your workouts": "Vai agli allenamenti",
   "Tips are general, not medical advice. If something hurts, stop and ask a professional.":
     "Sono consigli generali, non pareri medici. Se senti dolore, fermati e chiedi a un professionista.",
   "{exercise}: {kg} kg": "{exercise}: {kg} kg",
@@ -3549,6 +3582,12 @@ export const IT: Table = {
     "I prodotti trovati col codice a barre contengono dati di Open Food Facts, disponibili con la Open Database License. Restano separati dall'elenco USDA.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Questa pagina la vedi solo tu. Quello che scrivi qui resta sul tuo telefono; un codice a barre che cerchi va a Open Food Facts.",
+  // src/air/ (TASK-479 part D4: the task passed on; approved by the user on 2026-11-23)
+  "Share file": "Condividi file",
+  "Show QR": "Mostra QR",
+  "Task for XCTrack": "Task per XCTrack",
+  "This task is too long for a QR code.":
+    "Questa task è troppo lunga per un codice QR.",
   // src/groups (TASK-495 part B)
   "Find your city": "Cerca la tua città",
   "New group": "Nuovo gruppo",
@@ -3571,6 +3610,9 @@ export const IT: Table = {
   "Remove co-admin": "Togli co-admin",
   Members: "Membri",
   "Leave group": "Esci dal gruppo",
+  "Delete group": "Elimina il gruppo",
+  "Delete {name}? Its members, requests and invites go with it. This can't be undone.":
+    "Eliminare {name}? Membri, richieste e inviti se ne vanno con lui. Non si può annullare.",
   "Leave {name}?": "Uscire da {name}?",
   Groups: "Gruppi",
   "Withdraw the request": "Ritira la richiesta",
@@ -3600,4 +3642,15 @@ export const IT: Table = {
   Admin: "Admin",
   "Co-admin": "Co-admin",
   "This group isn't available.": "Questo gruppo non è disponibile.",
+  // src/nutrition (TASK-489 part C2)
+  "Use Apple Health": "Usa Salute di Apple",
+  "MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there.":
+    "MuW legge la tua energia attiva e gli allenamenti registrati da altre app, per contare l'energia che consumi. Sono letti sul telefono e restano lì.",
+  "Active energy": "Energia attiva",
+  "from Apple Health": "da Salute di Apple",
+  "Your activities are already inside Apple Health's active energy: they are not added again.":
+    "Le tue attività sono già dentro l'energia attiva di Salute di Apple: non si sommano di nuovo.",
+  "Apple Health has nothing for this day: your activities are counted.":
+    "Salute di Apple non ha niente per questo giorno: si contano le tue attività.",
+  "Stop using Apple Health": "Non usare più Salute di Apple",
 };

@@ -272,13 +272,23 @@ def test_the_bike_box_holds_a_30_km_route_from_the_centre() -> None:
             for start in starts_on_circle(VERCELLI, 1_400.0)
         )
 
-    # Every shape the box is made of; the pear and the Leaning Tower of
-    # TASK-418 up to 26 km only, the limit ADR-0346 accepted so that no zone
-    # kept on the server changes. Every other new shape fits at 30 km.
-    taller = {"pear", "leaning_tower"}
+    # Every shape the box is made of; the taller ones only up to their own
+    # distance, the limit ADR-0346 accepted so that no zone kept on the server
+    # changes: the pear and the Leaning Tower of TASK-418, the candy cane, the
+    # croissant, the Eiffel Tower and the umbrella of TASK-516 (ADR-0411).
+    # Every other shape fits at 30 km.
+    taller = {
+        "pear": 26_000,
+        "leaning_tower": 26_000,
+        "candy_cane": 27_000,
+        "croissant": 27_000,
+        "eiffel_tower": 27_000,
+        "umbrella": 25_000,
+    }
     for shape in SUPPORTED_SHAPES:
         if shape in taller:
-            assert held(shape, 26_000) and not held(shape, BIKE_DISTANCE_M), shape
+            fits = held(shape, taller[shape])
+            assert fits and not held(shape, BIKE_DISTANCE_M), shape
         else:
             assert held(shape, BIKE_DISTANCE_M), shape
     # Shorter routes from farther out, with the far search.

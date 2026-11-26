@@ -11,7 +11,8 @@ shape is a union of circles, ellipses, boxes and thick lines in the engine's
 frame (x to the right, y up); its exterior is the outline, its holes and the
 details listed with it are pieces. The files go to
 ``services/route-engine/candidate_outlines/``, outside the package, until the
-user has judged them on paper and on real roads (ADR-0411). The registry is
+user has judged them on paper and on real roads (ADR-0411); those are in
+``APPROVED``, their files in the engine's outlines. The registry is
 this file's own, so the 49 shapes of TASK-418 stay as the user chose them.
 
 Nothing here is a route: the engine plans the routes, on real roads, from
@@ -32,6 +33,7 @@ from draw_new_shapes import (
     CATEGORIES,
     MIN_GAP,
     MIN_HOLE_AREA,
+    OUTLINES,
     SIMPLIFY,
     _coords,
     _largest,
@@ -52,6 +54,23 @@ from shapely.geometry import LineString, Polygon
 from shapely.ops import unary_union
 
 TASK = "TASK-516"
+# The shapes the user approved on paper and on real roads (ADR-0411, «Vanno
+# bene le 35» on 2026-11-26): in the catalogue, their files among the
+# others. The comet stays a candidate.
+APPROVED = frozenset(
+    {
+        "ball",
+        "bell",
+        "candy_cane",
+        "racket",
+        "reindeer",
+        "santa_hat",
+        "skis",
+        "snowflake",
+        "snowman",
+        "stocking",
+    }
+)
 
 # ---- the shapes -----------------------------------------------------------
 S: dict[str, tuple[str, str, Callable[[], object], list]] = {}
@@ -272,6 +291,12 @@ def _skis() -> object:
 
 
 # ---- export ---------------------------------------------------------------
+def home(name: str) -> Path:
+    """Where the file of the shape called ``name`` lives: in the catalogue
+    once the user approved it, among the candidates before."""
+    return (OUTLINES if name in APPROVED else CANDIDATES) / f"{name}.json"
+
+
 def draw(name: str) -> tuple[dict, list[str]]:
     """The file of the shape called ``name``, and the details left out."""
     category, source, fn, extra = S[name]
@@ -317,8 +342,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     files = []
     for name in sorted(S, key=lambda n: (CATEGORIES.index(S[n][0]), n)):
         data, left_out = draw(name)
-        home = CANDIDATES if args.out is None else args.out
-        path = home / f"{name}.json"
+        path = home(name) if args.out is None else args.out / f"{name}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(as_text(data), encoding="utf-8")
         files.append(data)

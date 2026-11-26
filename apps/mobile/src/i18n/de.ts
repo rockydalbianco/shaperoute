@@ -249,6 +249,38 @@ export const DE: Table = {
   Swan: "Schwan",
   Windmill: "Windmühle",
   "Wine glass": "Weinglas",
+  // TASK-516 (ADR-0411)
+  Football: "Fußball",
+  Bell: "Glocke",
+  "Candy cane": "Zuckerstange",
+  Colosseum: "Kolosseum",
+  Croissant: "Croissant",
+  Dolphin: "Delfin",
+  Dome: "Kuppel",
+  "Easter egg": "Osterei",
+  Flower: "Blume",
+  "Fox head": "Fuchskopf",
+  Gift: "Geschenk",
+  Infinity: "Unendlichkeit",
+  "Light bulb": "Glühbirne",
+  Medal: "Medaille",
+  Mountain: "Berg",
+  Owl: "Eule",
+  Padlock: "Vorhängeschloss",
+  "Peace sign": "Friedenszeichen",
+  Penguin: "Pinguin",
+  "Pizza slice": "Pizzastück",
+  "Tennis racket": "Tennisschläger",
+  Reindeer: "Rentier",
+  "Santa hat": "Weihnachtsmütze",
+  Scooter: "Motorroller",
+  Snowflake: "Schneeflocke",
+  Snowman: "Schneemann",
+  "Christmas stocking": "Weihnachtsstrumpf",
+  Strawberry: "Erdbeere",
+  "Triumphal arch": "Triumphbogen",
+  Turtle: "Schildkröte",
+  Umbrella: "Regenschirm",
 
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "ORTE IN DER NÄHE",
@@ -3347,6 +3379,7 @@ export const DE: Table = {
     "Erstelle ein Konto, um Tipps aus deinen Trainings zu bekommen",
   "Log a few workouts and your tips will show up here":
     "Trag ein paar Trainings ein, dann erscheinen hier deine Tipps",
+  "Go to your workouts": "Zu deinen Trainings",
   "Tips are general, not medical advice. If something hurts, stop and ask a professional.":
     "Die Tipps sind allgemein und keine ärztliche Beratung. Wenn etwas wehtut, hör auf und frag eine Fachperson.",
   "{exercise}: {kg} kg": "{exercise}: {kg} kg",
@@ -3582,6 +3615,12 @@ export const DE: Table = {
     "Per Barcode gefundene Produkte enthalten Daten von Open Food Facts, verfügbar unter der Open Database License. Sie bleiben von der USDA-Liste getrennt.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Diese Seite siehst nur du. Was du hier einträgst, bleibt auf deinem Handy; ein Barcode, den du suchst, geht an Open Food Facts.",
+  // src/air/ (TASK-479 part D4: the task passed on; approved by the user on 2026-11-23)
+  "Share file": "Datei teilen",
+  "Show QR": "QR zeigen",
+  "Task for XCTrack": "Aufgabe für XCTrack",
+  "This task is too long for a QR code.":
+    "Diese Aufgabe ist zu lang für einen QR-Code.",
   // src/groups (TASK-495 part B)
   "Find your city": "Deine Stadt suchen",
   "New group": "Neue Gruppe",
@@ -3604,6 +3643,9 @@ export const DE: Table = {
   "Remove co-admin": "Co-Admin entziehen",
   Members: "Mitglieder",
   "Leave group": "Gruppe verlassen",
+  "Delete group": "Gruppe löschen",
+  "Delete {name}? Its members, requests and invites go with it. This can't be undone.":
+    "{name} löschen? Mitglieder, Anfragen und Einladungen werden mit gelöscht. Das lässt sich nicht rückgängig machen.",
   "Leave {name}?": "{name} verlassen?",
   Groups: "Gruppen",
   "Withdraw the request": "Anfrage zurückziehen",
@@ -3633,4 +3675,15 @@ export const DE: Table = {
   Admin: "Admin",
   "Co-admin": "Co-Admin",
   "This group isn't available.": "Diese Gruppe ist nicht verfügbar.",
+  // src/nutrition (TASK-489 part C2)
+  "Use Apple Health": "Apple Health verwenden",
+  "MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there.":
+    "MuW liest deine Aktivitätsenergie und die Trainings, die andere Apps aufgezeichnet haben, um die Energie zu zählen, die du verbrauchst. Sie werden auf deinem Handy gelesen und bleiben dort.",
+  "Active energy": "Aktivitätsenergie",
+  "from Apple Health": "von Apple Health",
+  "Your activities are already inside Apple Health's active energy: they are not added again.":
+    "Deine Aktivitäten stecken schon in der Aktivitätsenergie von Apple Health: Sie werden nicht noch einmal addiert.",
+  "Apple Health has nothing for this day: your activities are counted.":
+    "Apple Health hat nichts für diesen Tag: Deine Aktivitäten werden gezählt.",
+  "Stop using Apple Health": "Apple Health nicht mehr verwenden",
 };

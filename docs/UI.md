@@ -310,8 +310,9 @@ pagine»):
    bordo chiaro; ogni forma è il suo contorno vero a linea, nel colore del
    testo, non un'emoji: `ShapeGlyph`, TASK-444, dal catalogo del motore
    come la forma in scala, a penna alzata dove il catalogo l'ha — gli occhi
-   di una faccia senza la riga che li raggiunge), «Type another shape» per un'altra parola e la forma in
-   scala; **«3 DISTANCE»**, grande, fra − e + di mezzo km, col tempo
+   di una faccia senza la riga che li raggiunge), «Type another shape» per un'altra parola e la forma sulla
+   mappa vera attorno alla partenza (TASK-449; in scala senza
+   partenza); **«3 DISTANCE»**, grande, fra − e + di mezzo km, col tempo
    stimato sotto; subito sotto la
    distanza, mentre il server ha il gioco, la riga «PLAY» (TASK-327, sotto
    «“Play”: la collezione delle forme»); poi, con la corsa, «NEAR YOU»
@@ -661,6 +662,16 @@ la barra è quella descritta sopra: col vetro velato non galleggia, perché
 senza sfocatura il testo di un post si leggerebbe dietro le icone. Con
 «Riduci trasparenza» e «Aumenta contrasto» la barra galleggia opaca.
 
+**Cosa si disegna sul vetro vero** (misurato il 2026-11-26): il vetro di
+iOS si schiarisce e si scurisce con quello che ha dietro, e un colore
+fisso sopra non lo segue. Quindi il vetro vero è sempre velato col fondo
+del tono (`glass.realTint`, mai giallo) e quello che ci sta sopra è nel
+colore pieno del testo, mai nel secondario. Il testo fitto non ci va: sul
+foglio dei commenti non teneva 4,5:1, e i fogli restano opachi finché
+non si trova di meglio. Una superficie nuova in vetro vero si prova con
+una foto bianca dietro nel tono scuro e una nera nel chiaro, e si
+misura, prima di chiedere un sì.
+
 Due regole che valgono già oggi. **Una pagina nuova della barra delle
 schede** chiede la stanza con `useTabBarRoom()` (`src/tabs/tabBarRoom.ts`)
 e la aggiunge alla fine del suo scorrimento e sotto quello che tiene in
@@ -668,6 +679,12 @@ basso; poi si mette nella lista di `src/tabs/TabBarRoom.test.tsx`. La
 stanza è 0 finché la barra non galleggia. **`expo-glass-effect` non si
 importa mai direttamente**: sempre attraverso `src/ui/NativeGlass.tsx`,
 che lo carica solo dove c'è e altrove disegna il vetro velato.
+
+Una terza, per quando il pacchetto sarà in `main`: **nei test il vetro
+vero c'è**, perché il finto modulo di jest-expo risponde di sì. Un test
+che monta lo shell delle schede senza dire altro vede la barra e l'header
+che galleggiano. Chi prova il vetro velato lo dichiara, sostituendo
+`requireOptionalNativeModule("ExpoGlassEffect")` di `expo` con `null`.
 
 **Il movimento della barra** (TASK-388, ADR-0329): dietro la scheda attiva
 una capsula morbida (`surfaceRaised`) che scivola alla nuova con la molla
@@ -711,7 +728,10 @@ dell'obiettivo in palestra, dei posti della pagaia, della lunghezza della
 vasca e della giornata sulla neve, e (A7c-3) i chip condivisi della
 palestra (`gymStyles.chip`): il riposo, la scelta dell'esercizio, la
 guida e la storia dell'esercizio, «l'ultima volta», Coach e il post
-della scheda. Restano i chip della schermata del volo: A7c-4.
+della scheda, e (A7c-4) i chip delle opzioni della schermata del volo.
+Lì il rilievo è nel vetro dell'aspetto del volo («Dark» o «Sunlight»),
+che può non essere il tono dell'app: una pagina con un aspetto suo passa
+il suo vetro a `glassRaise`, non usa quello dell'app.
 
 **Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
 raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro
@@ -1948,9 +1968,16 @@ l'app, come «Find friends»:
   sent. You can write again when {name} accepts it.»; per una richiesta
   ricevuta, «{name} wants to send you a message.» e i tre tasti «Accept»,
   «Delete», «Block» (rosso; chiede prima, con il testo del blocco).
-  «Delete» chiude la conversazione. Si rilegge ogni 5 secondi mentre è
-  aperta, e quando l'app torna sullo schermo; l'altro che scrive la segna
-  letta (nessuna conferma all'altro).
+  «Delete» chiude la conversazione. Mentre è aperta chiede **solo i
+  messaggi nuovi** (TASK-498, scelta dell'utente del 2026-11-26): ogni 5
+  secondi finché ci si scrive; dopo un minuto senza messaggi ogni 15
+  secondi, dopo cinque minuti ogni 30; torna a 5 secondi quando arriva un
+  messaggio, quando se ne manda uno e quando l'app torna sullo schermo. La
+  pagina intera si rilegge all'apertura, al ritorno nell'app e una volta
+  al minuto: è lei a portare un messaggio cancellato dall'altro, il suo
+  nome e la sua foto, una scheda cambiata. Una risposta che non cambia
+  niente non ridisegna la schermata. Con l'app dietro non chiede; l'altro
+  che scrive la segna letta (nessuna conferma all'altro).
 - **Una conversazione senza messaggi** (TASK-458, scelta dell'utente): al
   centro la foto e il nome, «Say hi to {name}.» e tre spunti a capsula —
   «Hi {name}!», «I like your drawings», «Shall we run together?» — che
@@ -2617,9 +2644,23 @@ fewer» richiude. La forma scelta è sempre in vista: se non è fra le prime
 sette, prende il settimo posto. Toccare una tessera fa vibrare il telefono,
 dove l'app è costruita con `expo-haptics`. Sotto il segno la tessera ha il
 nome con la maiuscola, «Cuore», come ogni etichetta della pagina
-(TASK-508); nel campo va la parola come la scrive una frase, «cuore». Sotto, la forma scelta **in
-scala** su un pezzo di mappa (`ShapePreview`): il contorno del catalogo,
-una barra di scala tonda e «≈ 1.9 × 2.1 km», che seguono forma e
+(TASK-508); nel campo va la parola come la scrive una frase, «cuore». Sotto, la forma scelta **sulla
+mappa vera** attorno alla partenza (TASK-449, ADR-0412, `LivePreview`): un
+riquadro largo quanto la scheda e alto 190 punti con le strade del posto,
+e sopra il contorno del catalogo tratteggiato (la sagoma di TASK-442), in
+grandezza reale, col primo punto sulla partenza, che è un pallino giallo.
+A ogni − e + della distanza la sagoma cresce o si stringe; quando non
+entra più la mappa si allontana di uno scatto (√2 volte più larga), e
+finché arriva l'immagine nuova resta quella di prima, più piccola, sotto
+la sagoma. La mappa è un'immagine, non si tocca: arriva dalla rete un
+attimo dopo la sagoma, che intanto sta sul fondo scuro; in un angolo ha il
+credito della mappa. Sotto restano «≈ 1.9 × 2.1 km» e la barra di scala
+tonda. Con la penna alzata, dove la forma l'offre, la sagoma è nei suoi
+pezzi. È la forma ideale dove il motore la prova per prima, non un
+percorso: nessuna riga lo dice (scelta dell'utente, 2026-11-26). Senza
+partenza, sull'acqua e sulla neve resta la forma **in scala** di TASK-361
+(`ShapePreview`): un riquadro con due strade finte, la forma sempre
+grande uguale, e la barra di scala e «≈ L × A km» che seguono forma e
 distanza.
 
 **La distanza** (TASK-361): − e + di mezzo km (mezzo miglio con «Miles»),
@@ -2862,6 +2903,12 @@ gatto di TASK-072 non si riconosceva già dal contorno, e senza la foto
 sotto si vede. Un'immagine alta resta entro 320 punti d'altezza, così la
 distanza resta a vista. La linea è fatta di rettangoli sottili ruotati,
 senza SVG (`react-native-svg` non è una dipendenza dell'app).
+
+Sotto l'anteprima, con una partenza e una distanza, il contorno tracciato
+**sulla mappa vera** (TASK-449 B, ADR-0412): lo stesso riquadro delle
+forme, col contorno tratteggiato in grandezza reale dalla partenza, che
+segue i km. A penna alzata, dove la foto ha pezzi, è nei suoi pezzi.
+Non sull'acqua e sulla neve, né senza partenza.
 
 **Modificare il contorno** (TASK-079, ADR-0074). Sotto l'anteprima,
 **«Edit the outline»** apre una **lavagna a tutto schermo**: la foto

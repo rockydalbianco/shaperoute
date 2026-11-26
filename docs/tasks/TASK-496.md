@@ -6,7 +6,7 @@ batteria, sul telefono. 2026-11-26: parte C (il file intero scritto accanto
 e spostato) in `main` dalla #1603 (`2b0d64c0`)
 **Prova sul telefono**: provato dall'utente il 2026-11-26 con una corsa vera, telefono bloccato e in tasca: «ok», senza numeri della batteria.
 **Fase**: 5 · **Branch**: `feat/TASK-496-a-run-journal` (O1), poi
-`feat/TASK-496-b-unseen-map-clock` (O2), `feat/TASK-496-c-atomic-run-file` (C)
+`feat/TASK-496-b-unseen-map-clock` (O2), `feat/TASK-496-c-atomic-run-file` (C), `feat/TASK-496-d-ski-flight-pieces` (D)
 **Dipende da**: TASK-304 (ADR-0264), TASK-112 (ADR-0091), TASK-070 (tasca)
 **ADR**: aggiunta ad ADR-0264 (lo ha detto il Coordinatore) · numero dal
 Coordinatore il 2026-11-23
@@ -127,6 +127,12 @@ invariata (`5e1b5ce5`).
 - [x] Parte C: CI verde, #1603 unita dal Coordinatore (`2b0d64c0`,
       2026-11-26).
 - [ ] Parte C: OTA di produzione (Coordinatore, col sì dell'utente).
+- [x] Parte D (2026-11-26): sì del Coordinatore sui file (`map/MapView.tsx`,
+      `messages.ts`, `mapPage.ts` e quattro nuovi); tutti i test di
+      `src/map`, `activities`, `air` e dei file che passano dalla mappa
+      (1269) verdi; prova nel simulatore con una giornata di sci e un volo
+      finti; aggiunta D ad ADR-0264 (questa PR).
+- [ ] Parte D: CI verde e unione della #1642, poi l'OTA.
 
 ## Cronologia
 
@@ -181,6 +187,16 @@ invariata (`5e1b5ce5`).
   `moveRuns` invariati. In locale: 97 test della corsa e 22 di TASK-507
   verdi, `tsc`, eslint e prettier puliti. PR #1603.
 
+- 2026-11-26: **parte D**, l'altra idea qui sotto (l'utente: «intanto
+  prepara il fix per sci e volo»). In vista, finché la divisione in tratti
+  resta la stessa e cresce solo l'ultimo, alla pagina vanno solo i punti
+  nuovi (`extendPiece`); un impianto o un volo trovato, numeri nuovi, una
+  pagina ricaricata o la giornata inquadrata: tutto intero come prima.
+  Prova nel simulatore (giornata finta di 40 punti, un punto ogni 0,7 s,
+  log temporaneo non committato): sci 3 interi e 24 di soli punti, volo 2
+  interi e 28; dopo una ricarica il disegno è identico al pixel
+  (`out/prova-generale-sim/496d-*.png`, `volo-*.png` del Mac). PR #1642.
+
 ## Esito
 
 Fatto. A telefono bloccato una posizione scrive una riga di diario invece
@@ -196,6 +212,6 @@ file intero invece di mezzo file (aggiunta C ad ADR-0264).
 
 - ~~Scrivere il file intero in modo atomico~~: fatto nella parte C
   (2026-11-26, #1603).
-- Sci (`showLifts`) e volo (`showFlight`) mandano ancora la traccia intera
-  a ogni punto; `FlightLive` e `SkiTourLive` hanno il loro orologio.
+- ~~Sci (`showLifts`) e volo (`showFlight`) mandano ancora la traccia intera
+  a ogni punto~~: fatto nella parte D (2026-11-26, #1642); `FlightLive` e `SkiTourLive` hanno il loro orologio.
 - Nella pagina, MapLibre ridisegna tutta la linea a ogni punto.

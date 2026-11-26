@@ -51,6 +51,8 @@ export function NearYou({ cards, onOpen }: Props) {
                 key={key}
                 width={card}
                 line={null}
+                // What is coming, in grey, until its route is here (TASK-509).
+                outline={each.shape}
                 title={name}
                 detail={t("Drawing…")}
               />

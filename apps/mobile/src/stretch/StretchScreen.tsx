@@ -23,6 +23,7 @@ import {
 import { chime, tick } from "./chime";
 import { type Exercise, EXERCISES, READY_S, SWITCH_S } from "./exercises";
 import { Figure } from "./Figure";
+import { FigureFront } from "./FigureFront";
 import { RoutineChooser } from "./RoutineChooser";
 import { type Minutes, routineExercises, type RoutineKey } from "./routines";
 
@@ -342,14 +343,27 @@ function StretchRun({
         <Text style={styles.howTo}>{t(exercise.howTo)}</Text>
         {sideLabel !== null && <Text style={styles.side}>{sideLabel}</Text>}
       </View>
-      <Figure
-        pose={exercise.pose}
-        breath={exercise.breath}
-        breathing={holding && !paused}
-        height={figureHeight}
-        mirrored={step.side === 1}
-        testID="stretch-figure"
-      />
+      {exercise.front !== undefined ? (
+        <FigureFront
+          pose={exercise.front}
+          breath={exercise.frontBreath}
+          breathing={holding && !paused}
+          breathMs={exercise.tempoMs}
+          height={figureHeight}
+          mirrored={step.side === 1}
+          testID="stretch-figure"
+        />
+      ) : (
+        <Figure
+          pose={exercise.pose}
+          breath={exercise.breath}
+          breathing={holding && !paused}
+          breathMs={exercise.tempoMs}
+          height={figureHeight}
+          mirrored={step.side === 1}
+          testID="stretch-figure"
+        />
+      )}
       <View style={styles.bottom}>
         <Text style={styles.phase}>{phaseLabel ?? nextLabel ?? " "}</Text>
         <Text

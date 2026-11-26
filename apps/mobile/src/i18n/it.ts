@@ -3654,4 +3654,12 @@ export const IT: Table = {
   "Apple Health has nothing for this day: your activities are counted.":
     "Salute di Apple non ha niente per questo giorno: si contano le tue attività.",
   "Stop using Apple Health": "Non usare più Salute di Apple",
+  // src/air/ (TASK-479 part D5: the pilot's own waypoints; approved by the user on 2026-11-26)
+  "Mark this place": "Segna questo punto",
+  "Waypoint here": "Boa qui",
+  "Landing here": "Atterraggio qui",
+  "My waypoints": "Le mie boe",
+  "Remove all": "Togli tutte",
+  "Press the flight map long to add one.":
+    "Tieni premuto sulla mappa di volo per aggiungerne una.",
 };

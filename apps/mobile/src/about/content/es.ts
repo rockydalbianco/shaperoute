@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "26 de noviembre de 2026";
+const UPDATED = "27 de noviembre de 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "26 de noviembre de 2026";
+const PRIVACY_UPDATED = "27 de noviembre de 2026";
 
 const help: AboutDocument = {
   title: "Cómo funciona MuW",
@@ -241,6 +241,7 @@ const terms: AboutDocument = {
             "Los mapas vienen de OpenFreeMap y de los datos de OpenStreetMap (© colaboradores de OpenStreetMap).",
             "Los animales 3D del vídeo vienen de Quaternius (CC0); el elefante es «Elephant Anim» de Shivoahm y SahuAvdhesh en Sketchfab (CC BY 4.0), animado y adaptado por MuW.",
             "Los lugares se buscan con Geoapify.",
+            "El tiempo de las publicaciones y de las estaciones de esquí viene de MET Norway (CC BY 4.0).",
             "Si conectas Strava, las carreras que envíes allí siguen las condiciones y los ajustes de privacidad de Strava.",
             "Una imagen que compartes sale por el menú de compartir del teléfono: la app que la recibe tiene sus propias condiciones.",
             "El enlace de una prenda etiquetada abre la web de la tienda en tu navegador: la tienda tiene sus propias condiciones.",
@@ -365,6 +366,7 @@ const privacy: AboutDocument = {
         "Puedes añadir tu equipo: zapatillas, una bici, esquís, un casco, cualquier cosa que uses. De cada artículo guardamos su tipo, su marca, su modelo, el nombre que le das, el mes en que lo compraste, tu nota y su foto. La foto se guarda reducida, sin los datos que tu teléfono le añade, como dónde y cuándo se hizo. Las actividades que eliges para un artículo suman su distancia y su tiempo a sus totales, que nuestro servidor cuenta a partir de tus actividades guardadas. Los demás miembros ven tu equipo en tu perfil, con sus totales, notas y fotos, salvo que actives «Ocultar del perfil» en un artículo. Los deportes que eliges para un artículo y su límite solo los ves tú. Tu equipo se borra con tu cuenta.",
         "Un vuelo en parapente que guardas cuenta, sin tu nombre, en el historial del despegue desde el que saliste, en el mapa de despegues: cuántos vuelos y cuántos pilotos distintos, mes a mes y hoy. Nuestro servidor lo deduce del punto de despegue del vuelo guardado, aunque el vuelo sea privado, y solo muestra estas cifras cuando hay al menos tres pilotos distintos. Tu nombre y tu vuelo aparecen en los récords del despegue (el vuelo más largo, el más alto, el más lejano) solo si la publicación del vuelo es visible para todos. Mientras compartes un vuelo en directo, el despegue muestra que hay alguien en el aire, sin tu nombre; tu enlace aparece allí solo si ya compartes con todos en el Feed. Los despegues y los aterrizajes vienen de OpenStreetMap.",
         "En una jornada de esquí, la app envía a nuestro servidor tu posición redondeada a cerca de 1 km para encontrar la estación más cercana; el tiempo lo pide el servidor a MET Norway con la posición de la estación, nunca con la tuya. La estación, la nieve y el equipo que añades se ven en la publicación, para quien pueda verla, y la nieve también cuenta, sin tu nombre, en la nieve del día de la estación.",
+        "Cuando guardas una actividad al aire libre en las 3 horas siguientes a su final, nuestro servidor envía a MET Norway su punto de salida, redondeado a cerca de 1 km, para pedir el tiempo de esa hora; MET Norway no recibe tu nombre. El tiempo (temperatura, cielo y viento) se ve en la publicación, para quien pueda verla.",
       ],
     },
     {

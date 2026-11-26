@@ -1877,6 +1877,44 @@ export const IT: Table = {
   "Knee hug": "Ginocchio al petto",
   "Stand on one leg. Hug the other knee to your chest.":
     "In piedi su una gamba. Stringi l'altro ginocchio al petto.",
+  // src/stretch, the new exercises (TASK-520 part B)
+  "Thread the needle": "Infila l'ago",
+  "On all fours, slide one arm under your body. Rest your shoulder down.":
+    "A quattro zampe, fai scivolare un braccio sotto il corpo. Appoggia la spalla a terra.",
+  "Side child's pose": "Posizione del bambino di lato",
+  "From child's pose, walk both hands to one side. Breathe into your ribs.":
+    "Dalla posizione del bambino, sposta le mani da un lato. Respira nelle costole.",
+  "Wrist stretch, palm up": "Stretching del polso, palmo in su",
+  "Arm straight, palm up. Gently pull your fingers back with the other hand.":
+    "Braccio teso, palmo in su. Con l'altra mano tira piano le dita verso di te.",
+  "Wrist stretch, palm down": "Stretching del polso, palmo in giù",
+  "Arm straight, palm down. Gently press the back of your hand toward you.":
+    "Braccio teso, palmo in giù. Spingi piano il dorso della mano verso di te.",
+  "Biceps stretch": "Stretching del bicipite",
+  "Palm on a wall behind you, arm straight. Turn your chest away.":
+    "Palmo su un muro dietro di te, braccio teso. Gira il petto dall'altra parte.",
+  "Doorway chest stretch": "Stretching del petto alla porta",
+  "Forearm on a door frame, elbow at shoulder height. Step through gently.":
+    "Avambraccio sullo stipite, gomito all'altezza della spalla. Fai piano un passo avanti.",
+  Sphinx: "Sfinge",
+  "Lie on your belly, forearms down. Lift your chest gently.":
+    "Sdraiati a pancia in giù, avambracci a terra. Solleva piano il petto.",
+  "Seated twist": "Torsione da seduto",
+  "Sit tall, one knee bent over the other leg. Turn toward the bent knee.":
+    "Siediti dritto, un ginocchio piegato sopra l'altra gamba. Gira verso il ginocchio piegato.",
+  "Lizard lunge": "Affondo della lucertola",
+  "From a low lunge, both hands inside your front foot. Sink your hips.":
+    "Da un affondo basso, tutte e due le mani all'interno del piede davanti. Lascia scendere il bacino.",
+  "Deep squat": "Squat profondo",
+  "Feet wide, sink low, heels down. Elbows press your knees open.":
+    "Piedi larghi, scendi in basso, talloni a terra. I gomiti spingono le ginocchia in fuori.",
+  "Seated figure four": "Figura a quattro da seduto",
+  "Sit on a chair, ankle over the other knee. Lean forward, back long.":
+    "Seduto su una sedia, una caviglia sull'altro ginocchio. Piegati in avanti, schiena lunga.",
+  "Bent-knee calf stretch": "Polpaccio a ginocchio piegato",
+  "Step back, bend both knees. Keep the back heel down.":
+    "Un passo indietro, piega tutte e due le ginocchia. Tieni a terra il tallone dietro.",
+  // end of TASK-520 part B
   Morning: "Mattino",
   "After run": "Dopo la corsa",
   "After gym": "Dopo la palestra",
@@ -3552,7 +3590,7 @@ export const IT: Table = {
   Estimated: "Stimato",
   "No wind": "Nessun vento",
   "needs {height}": "servono {height}",
-  "No landings in your file": "Nessun atterraggio nel tuo file",
+  "No landings": "Nessun atterraggio",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Bilancio delle calorie",
   Used: "Consumate",
@@ -3706,4 +3744,10 @@ export const IT: Table = {
     "Niente proteine, carboidrati o grassi da contare per questo giorno.",
   // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
   "Landings from OpenStreetMap: {count}": "Atterraggi da OpenStreetMap: {count}",
+  // src/nutrition (TASK-489 part I: the invitation at the end of an activity; approved by the user on 2026-11-24)
+  "Count what you eat too": "Conta anche quello che mangi",
+  "Write your own diet and what you eat: MuW estimates the calories you eat and the ones you use, this activity included.":
+    "Scrivi la tua dieta e quello che mangi: MuW stima le calorie che mangi e quelle che consumi, compresa questa attività.",
+  "This activity: {kcal} kcal (est.)": "Questa attività: {kcal} kcal (stima)",
+  "Add what you ate": "Aggiungi cosa hai mangiato",
 };

@@ -1537,6 +1537,19 @@ della 0022:
   tenendo la tabella chiusa finché dura: i tempi misurati stanno in
   `tasks/TASK-501.md`.
 
+Migrazione `0089_gym_stretch.sql` (TASK-466 parte C1, «ADR-0378, aggiunta
+C ed E», `API.md` «Gym»; numero del Coordinatore). **Lo stretching fatto
+alla fine di un allenamento in palestra** resta dentro l'allenamento (la
+scelta dell'utente, «Dentro l'allenamento»), non è una corsa a sé:
+
+- **`gym_stretches`**: al più una riga per allenamento, chiave la sua
+  corsa (`run_id` su `gym_sessions`, `ON DELETE CASCADE`): `routine` (la
+  chiave sul telefono, `^[A-Za-z0-9_]{1,40}$`), `minutes` (da 1 a 60),
+  `duration_s` (da 1 a 14400, i secondi senza le pause) ed `exercises`
+  (da 0 a 100), come `stretch_sessions` della 0079 più la durata.
+- Un allenamento senza stretching non ha righe; nessuna riga di prima
+  cambia, nessun backfill. Test in `test_gym_stretch.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

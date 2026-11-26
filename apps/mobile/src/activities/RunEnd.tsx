@@ -27,6 +27,7 @@ import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
 import { showSavedLogo } from "../intro/SavedLogo";
 import { loadRun } from "../navigation/trackStore";
+import { NutritionInvite } from "../nutrition/NutritionInvite";
 import { runActivityOf } from "../settings/sport";
 import { useSport } from "../settings/useSport";
 import { phonePhotoUri } from "../social/drawingPhotos";
@@ -429,6 +430,7 @@ export function RunEnd({
             <HealthRunEnd store={health.store} health={healthState} />
           )}
           <SleepRunEnd night={night} shown={sleepShown} onShown={setSleepShown} />
+          <NutritionInvite />
         </View>
       </FormScroll>
       {startedSeen && isSeen(choice.visibility) && (

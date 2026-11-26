@@ -1,10 +1,11 @@
 # TASK-520 — Lo stretching rifatto: home a categorie, routine per zona, momento e sport
 
 **Stato**: In corso · parte 0 chiusa il 2026-11-27 (tutte le scelte
-approvate dall'utente); prossima la parte A, dopo il sì del Coordinatore
-alla lista dei file
+approvate dall'utente); A1 in `main` (#1666); parte B in corso a blocchi
+(B1 #1672, B2 pronto in locale)
 **Fase**: 4 · **Filone**: Allenamento (Coordinatore fork 3, 2026-11-27)
-**Branch**: `docs/TASK-520-part-0` (parte 0); poi una PR per parte
+**Branch**: una PR per parte (`feat/TASK-520-a1-figure-moves`,
+`feat/TASK-520-b1-side-holds`, …); i documenti in PR a sé
 **ADR**: ADR-0415
 **Dipende da**: TASK-466 (A, B, D in `main`; C ed E in corso nella
 sessione local_433adb76, che tiene `apps/mobile/src/stretch/**`),
@@ -110,7 +111,7 @@ categorie, «How to») nell'Allegato B. In breve:
 - 50 nuovi: collo 3 (neckSide, neckTurn, chinTuck), spalle 5
   (armCircles, shoulderRolls, threadNeedle, sideReachChild, armOpeners),
   braccia e polsi 4 (wristFlexor, wristExtensor, wristCircles, bicepsWall),
-  petto 2 (doorwayChest, handsClasped), schiena alta 3 (openBook, sideBend,
+  petto 2 (doorwayChest, goalpost), schiena alta 3 (openBook, sideBend,
   trunkTurns), schiena bassa 6 (catCow, sphinx, lyingTwist, pelvicTilt,
   kneeSway, seatedTwist), anche 7 (butterfly, lizard, frog, hipCircles,
   ninetyNinety, sideLunge, deepSquat), glutei 4 (figureFour, pigeon,
@@ -120,8 +121,12 @@ categorie, «How to») nell'Allegato B. In breve:
   corpo e respiro 4 (downDog, inchworm, legsUpWall, restBreath).
 - 18 `Move` (loop tra due pose, a tempo) per i «Before» e la mobilità.
 - **Vista di fronte** della stessa figura (View girate, nessuna libreria)
-  per 8: neckSide, neckTurn, sideBend, lyingTwist, butterfly, frog,
-  sideLunge, wideFold. Parte di codice in più.
+  per 9: neckSide, neckTurn, sideBend, lyingTwist, butterfly, frog,
+  sideLunge, wideFold e goalpost (vedi sotto). Parte di codice in più.
+- **Cambio approvato dall'utente il 2026-11-27**: il numero 14, «Hands
+  clasped behind», era lo stesso gesto di «Chest opener» (uno dei 15 di
+  oggi). Al suo posto c'è `goalpost`, «Goalpost arms», visto di fronte. I
+  conti non cambiano: 50 nuovi, 65 in tutto.
 - Niente mani: i polsi si vedono a grandi linee. Muro, porta, sedia non si
   disegnano.
 - Intimità: prima Cat–cow, Pelvic tilt, Hip circles, Bridge, Butterfly;
@@ -170,10 +175,13 @@ quelli di TASK-466 (`exercises.ts`, `poses.ts`, `routines.ts`,
   vista di fronte della figura; i campi nuovi dell'esercizio (tipo,
   posizione, livello, vista); i cinque token di colore con i test di
   contrasto nelle quattro tinte. Nessuna schermata cambia.
-- **B — Pose ed esercizi nuovi**, a blocchi di 10–15: B1 tenute in piedi e
-  su sedia, B2 tenute a terra (25 tra le due), B3 movimenti di lato (17, in
-  due PR se serve), B4 vista di fronte (8). Ogni posa col test «sta in
-  piedi / sta nel riquadro» come oggi.
+- **B — Pose ed esercizi nuovi**, a blocchi di 10–15: B1 e B2 le tenute
+  viste di lato (12 + 12: in piedi, su sedia e le prime a terra, poi
+  seduti, in ginocchio e sdraiati), B3 i movimenti di lato (17, in due PR
+  se serve), B4 la vista di fronte (9, con `goalpost`). Ogni posa col test
+  «sta in piedi / sta nel riquadro» come oggi. La parte A si è divisa: **A1**
+  (movimenti, vista di fronte, campi nuovi, lista unica) e **A2** (i cinque
+  token di colore, quando `tokens.ts` è libero: lo dice il Coordinatore).
 - **C — Categorie e routine**: il catalogo (54 voci), la composizione
   deterministica per durata e variante, la regola di «Today», i test (ogni
   categoria ha abbastanza esercizi; i minuti tornano).
@@ -213,15 +221,50 @@ quelli di TASK-466 (`exercises.ts`, `poses.ts`, `routines.ts`,
 ## File toccati
 
 Parte 0: `docs/tasks/TASK-520.md`. Le liste delle parti di codice si
-aggiungono qui dopo il sì del Coordinatore.
+aggiungono qui dopo il sì del Coordinatore. Tutti i percorsi sotto
+`apps/mobile/src/`.
+
+- **A1** (#1666, in `main` il 2026-11-27): modificati `stretch/exercises.ts`
+  (solo campi facoltativi nel tipo `Exercise`), `stretch/Figure.tsx` (la
+  prop `breathMs`), `stretch/StretchScreen.tsx` (sceglie la figura di
+  fronte); nuovi `stretch/posesFront.ts`, `stretch/FigureFront.tsx`,
+  `stretch/allExercises.ts` e i test `posesFront.test.ts`,
+  `FigureFront.test.tsx`, `allExercises.test.ts`, `FigureMove.test.tsx`,
+  `StretchScreenMove.test.tsx`. I tre file modificati sono di TASK-466:
+  ordine concordato con la sua sessione (520 passa per prima).
+- **B, tutti i blocchi**: nuovi `stretch/posesMore.ts`,
+  `stretch/exercisesMore.ts` (B1–B3), `stretch/posesFrontMore.ts` (B4) e i
+  loro test; modificati `stretch/allExercises.ts` e il suo test (di 520) e
+  le quattro tabelle `i18n/{it,de,fr,es}.ts` (un solo blocco segnato
+  «TASK-520 part B», che cresce a ogni blocco).
+- **A2**: `theme/tokens.ts` e `theme/palettes.test.ts`, dopo l'avviso del
+  Coordinatore (li tiene TASK-469).
 
 ## Dove siamo
 
 2026-11-27: numeri dal Coordinatore (TASK-520 / ADR-0415). Parte 0 chiusa:
 mappa, esercizi, schizzo, nome «Intimacy», testi in inglese, video MP4
-come ultima parte — tutti col sì dell'utente. Prossimo: accordo con la
-sessione di TASK-466 sui file di `src/stretch`, lista dei file della parte
-A al Coordinatore, poi il codice.
+come ultima parte — tutti col sì dell'utente.
+
+2026-11-27, codice: **A1 in `main`** (#1666). **Traduzioni dei 50 esercizi
+approvate** dall'utente in una volta («Sì, approvo»): nomi e «How to» in
+italiano, tedesco, francese, spagnolo (it ed es col «tu», fr col «vous»,
+de all'infinito); entrano nelle tabelle blocco per blocco, insieme agli
+esercizi. **B1** (12 tenute di lato) nella #1672. **B2** (12 tenute seduti,
+in ginocchio, sdraiati) scritto e provato in locale sul branch
+`feat/TASK-520-b2-floor-holds`, sopra B1: la PR si apre quando B1 è in
+`main`.
+
+Le pose si disegnano prima su un foglio, con un aiuto in Python che ripete
+la geometria di `poses.ts` (`out/stretching-nuovo/pose/` nel checkout
+principale, fuori dal repository), a riposo e in fondo al respiro; poi si
+scrivono nel codice coi loro test.
+
+Prossimo: turno del simulatore dal Coordinatore a fine B2 (le 24 tenute
+viste sul telefono, schermate all'utente), poi B3 e B4, poi A2 e la parte
+C. Tre pose di B2 si leggono peggio di lato (Figure four, 90/90 hips,
+Side-lying quad): detto all'utente il 2026-11-27, se non convincono si
+provano viste dall'alto.
 
 ---
 
@@ -422,7 +465,7 @@ tutto.
 | # | key | Nome | Tipo | Lati | Pos. | Liv. | Vista | Tempo | Categorie | How to |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 13 | doorwayChest | Doorway chest stretch | Hold | 2 | S | G | L | 30 | Chest Posture Sitting · a·Swim a·Gym a·Bike | Forearm on a door frame, elbow at shoulder height. Step through gently. |
-| 14 | handsClasped | Hands clasped behind | Hold | – | S | G | L | 20 | Chest Shoulders Posture Desk · a·Moto a·Bike | Clasp your hands behind you. Lift them a little, chest open. |
+| 14 | goalpost | Goalpost arms | Hold | – | S | G | F | 20 | Chest Shoulders Posture Desk · a·Moto a·Bike | Elbows at shoulder height, hands up. Draw your elbows back, chest open. |
 
 #### Schiena alta (3)
 
@@ -641,7 +684,7 @@ oggi restano dove sono già (il promemoria dopo la corsa e la palestra).
 | 11 | Wrist circles | Make slow circles with both wrists. Change direction halfway. |
 | 12 | Biceps stretch | Palm on a wall behind you, arm straight. Turn your chest away. |
 | 13 | Doorway chest stretch | Forearm on a door frame, elbow at shoulder height. Step through gently. |
-| 14 | Hands clasped behind | Clasp your hands behind you. Lift them a little, chest open. |
+| 14 | Goalpost arms | Elbows at shoulder height, hands up. Draw your elbows back, chest open. |
 | 15 | Open book | Lie on your side, knees bent. Open your top arm wide and follow it with your eyes. |
 | 16 | Standing side bend | Reach one arm overhead and lean to the other side. Hips still. |
 | 17 | Trunk turns | Feet wide, turn your upper body side to side. Let your arms swing. |

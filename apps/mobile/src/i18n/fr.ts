@@ -1887,6 +1887,44 @@ export const FR: Table = {
   "Knee hug": "Genou à la poitrine",
   "Stand on one leg. Hug the other knee to your chest.":
     "Tenez-vous sur une jambe. Ramenez l'autre genou contre la poitrine.",
+  // src/stretch, the new exercises (TASK-520 part B)
+  "Thread the needle": "Enfiler l'aiguille",
+  "On all fours, slide one arm under your body. Rest your shoulder down.":
+    "À quatre pattes, glissez un bras sous le corps. Posez l'épaule au sol.",
+  "Side child's pose": "Posture de l'enfant sur le côté",
+  "From child's pose, walk both hands to one side. Breathe into your ribs.":
+    "Depuis la posture de l'enfant, déplacez les mains d'un côté. Respirez dans les côtes.",
+  "Wrist stretch, palm up": "Étirement du poignet, paume vers le haut",
+  "Arm straight, palm up. Gently pull your fingers back with the other hand.":
+    "Bras tendu, paume vers le haut. Tirez doucement les doigts vers vous avec l'autre main.",
+  "Wrist stretch, palm down": "Étirement du poignet, paume vers le bas",
+  "Arm straight, palm down. Gently press the back of your hand toward you.":
+    "Bras tendu, paume vers le bas. Poussez doucement le dos de la main vers vous.",
+  "Biceps stretch": "Étirement du biceps",
+  "Palm on a wall behind you, arm straight. Turn your chest away.":
+    "Paume contre un mur derrière vous, bras tendu. Tournez la poitrine de l'autre côté.",
+  "Doorway chest stretch": "Étirement de la poitrine à la porte",
+  "Forearm on a door frame, elbow at shoulder height. Step through gently.":
+    "Avant-bras contre le cadre de la porte, coude à hauteur d'épaule. Avancez doucement d'un pas.",
+  Sphinx: "Sphinx",
+  "Lie on your belly, forearms down. Lift your chest gently.":
+    "Allongez-vous sur le ventre, avant-bras au sol. Soulevez doucement la poitrine.",
+  "Seated twist": "Torsion assise",
+  "Sit tall, one knee bent over the other leg. Turn toward the bent knee.":
+    "Asseyez-vous bien droit, un genou plié par-dessus l'autre jambe. Tournez vers le genou plié.",
+  "Lizard lunge": "Fente du lézard",
+  "From a low lunge, both hands inside your front foot. Sink your hips.":
+    "Depuis une fente basse, les deux mains à l'intérieur du pied avant. Laissez descendre les hanches.",
+  "Deep squat": "Squat profond",
+  "Feet wide, sink low, heels down. Elbows press your knees open.":
+    "Pieds écartés, descendez bas, talons au sol. Les coudes écartent les genoux.",
+  "Seated figure four": "Figure en quatre assise",
+  "Sit on a chair, ankle over the other knee. Lean forward, back long.":
+    "Assis sur une chaise, une cheville sur l'autre genou. Penchez-vous en avant, dos long.",
+  "Bent-knee calf stretch": "Mollet genou plié",
+  "Step back, bend both knees. Keep the back heel down.":
+    "Reculez d'un pas, pliez les deux genoux. Gardez le talon arrière au sol.",
+  // end of TASK-520 part B
   Morning: "Matin",
   "After run": "Après la course",
   "After gym": "Après la salle",
@@ -3574,7 +3612,7 @@ export const FR: Table = {
   Estimated: "Estimé",
   "No wind": "Pas de vent",
   "needs {height}": "il faut {height}",
-  "No landings in your file": "Aucun atterrissage dans votre fichier",
+  "No landings": "Aucun atterrissage",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Bilan calorique",
   Used: "Dépensées",
@@ -3728,4 +3766,10 @@ export const FR: Table = {
     "Pas de protéines, de glucides ni de lipides à compter pour ce jour.",
   // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
   "Landings from OpenStreetMap: {count}": "Atterrissages d'OpenStreetMap : {count}",
+  // src/nutrition (TASK-489 part I: the invitation at the end of an activity; approved by the user on 2026-11-24)
+  "Count what you eat too": "Compte aussi ce que tu manges",
+  "Write your own diet and what you eat: MuW estimates the calories you eat and the ones you use, this activity included.":
+    "Écris ton propre plan alimentaire et ce que tu manges : MuW estime les calories que tu manges et celles que tu dépenses, cette activité comprise.",
+  "This activity: {kcal} kcal (est.)": "Cette activité : {kcal} kcal (est.)",
+  "Add what you ate": "Ajoute ce que tu as mangé",
 };

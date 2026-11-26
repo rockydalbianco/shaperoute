@@ -1,4 +1,5 @@
 import { type Exercise, EXERCISES, MORE_EXERCISES } from "./exercises";
+import { NEW_EXERCISES } from "./exercisesMore";
 
 /**
  * Every stretching exercise the app knows, in one list (TASK-520,
@@ -8,7 +9,11 @@ import { type Exercise, EXERCISES, MORE_EXERCISES } from "./exercises";
  * never changed or given to another exercise: `allExercises.test.ts` keeps
  * the ones in use.
  */
-export const ALL_EXERCISES: readonly Exercise[] = [...EXERCISES, ...MORE_EXERCISES];
+export const ALL_EXERCISES: readonly Exercise[] = [
+  ...EXERCISES,
+  ...MORE_EXERCISES,
+  ...NEW_EXERCISES,
+];
 
 const BY_KEY: ReadonlyMap<string, Exercise> = new Map(
   ALL_EXERCISES.map((exercise) => [exercise.key, exercise]),

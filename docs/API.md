@@ -3474,6 +3474,20 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   battito non si vede (deciso dall'agente su delega dell'utente, come le kcal
   della scelta 17). Un'app di prima non li manda; un server di prima risponde
   `422` a un'app che li manda (`extra="forbid"`): prima il server.
+- **Lo stretching dopo l'allenamento** (TASK-466 C1, «ADR-0378, aggiunta C
+  ed E»; migrazione 0089): la richiesta può portare `stretch`, la routine
+  fatta alla fine («Remember to stretch», poi «After gym»): `routine` (la
+  chiave sul telefono, `^[A-Za-z0-9_]{1,40}$`), `minutes` 1–60,
+  `duration_s` (i secondi senza le pause, al più quattro ore) ed
+  `exercises` 0–100, i limiti di una sessione di stretching (TASK-475).
+  Mai su uno scritto a mano; un campo in più o fuori dai limiti è `422`.
+  Mandato di nuovo, l'allenamento resta com'era, stretching compreso.
+  `GymSession` e `GymExercises` lo rispondono solo se c'è: nel post si
+  vede con gli esercizi (nascosti loro, lo vede solo il proprietario).
+  Senza, la risposta è identica byte per byte a quella di prima. Si
+  cancella con l'allenamento. Tipo `GymStretch` in `shared-types/src/gym.ts`,
+  esempio `fixtures/gym-session-stretch.json`, test in `test_gym_stretch.py`.
+  Un server di prima risponde `422` a un'app che lo manda: prima il server.
 - **`GET /gym/leaderboard?exercise=&month=`** (parte F, ADR-0327
   precisazione F): la classifica mensile di un esercizio del catalogo con
   una scala (`404` `unknown_exercise` per gli altri), in un mese di

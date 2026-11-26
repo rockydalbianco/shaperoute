@@ -66,6 +66,7 @@ test("on glass, the light on top and the short shadow: never yellow", () => {
 // Every chip of these pages takes the raise right after its own style.
 const CHIPS = [
   "activities/ActivityCalendar.tsx",
+  "air/FlightScreen.tsx",
   "coach/CoachPage.tsx",
   "feed/PlanPostFlow.tsx",
   "feed/SleepPostPage.tsx",
@@ -92,7 +93,11 @@ const CHIPS = [
 
 test.each(CHIPS)("%s: each chip stands out of the glass", (file) => {
   const source = readFileSync(join(__dirname, "..", file), "utf8");
-  expect(source).toMatch(/const chipRaise = glassRaise\(useGlassMode\(\)\);/);
+  // In the glass of the app's tone, or of the page's own look (the flight
+  // screen, which can be light while the app is dark).
+  expect(source).toMatch(
+    /const chipRaise = glassRaise\(useGlassMode\(\)(?:, [\w.()]+)?\);/,
+  );
   // Its own `styles.chip` or the gym's shared `gymStyles.chip`.
   const uses = source.match(/\b(?:gymStyles|styles)\.chip(?=[,\]}\s])/g) ?? [];
   const raised = source.match(/\b(?:gymStyles|styles)\.chip,\s*chipRaise[,\]]/g) ?? [];

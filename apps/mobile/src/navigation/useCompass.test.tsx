@@ -119,3 +119,12 @@ test("a subscription that arrives after the compass is turned off is removed at 
   });
   expect(remove).toHaveBeenCalledTimes(1);
 });
+
+test("an expo-location without the compass gives nothing, and no error (TASK-519)", async () => {
+  watchHeading.mockImplementation(() => {
+    throw new TypeError("watchHeadingAsync is not a function");
+  });
+  const { result } = await renderHook(() => useCompass(true));
+  await flush();
+  expect(result.current).toBeNull();
+});

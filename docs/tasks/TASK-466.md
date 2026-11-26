@@ -194,6 +194,10 @@ sport «Stretching» (TASK-475) le offre già in «Draw».
   restituito con l'allenamento e con i suoi esercizi (quindi nel post solo
   quando l'autore li mostra). Una sessione senza `stretch` resta identica
   byte per byte per le app di prima.
+  **Fatta** (2026-11-27): PR #1670, in `main`; 15 test in
+  `test_gym_stretch.py`, il contratto in `shared-types` (`GymStretch`,
+  `fixtures/gym-session-stretch.json`). Resta il passo server con la
+  migrazione 0089 (Coordinatore, col sì dell'utente): C2 parte dopo.
 - **C2, app**: in `GymWorkoutHost.tsx` fra la fine e `GymEnd`
   `StretchReminder` («Remember to stretch», «Skip», «Stretch») e poi la
   routine «After gym»; il risultato in `gym/gymStretch.ts` (non in

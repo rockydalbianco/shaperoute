@@ -37,6 +37,7 @@ import {
   planWithFood,
   type WeekPlan,
 } from "./plan";
+import type { Purpose } from "./targetEstimate";
 
 /**
  * What «Nutrition» holds while the app is open (TASK-489 part B, ADR-0397):
@@ -155,6 +156,27 @@ function writeSettings(settings: NutritionSettings): boolean {
 /** «I understand»: the notice is not shown again. */
 export function seeNotice(): boolean {
   return writeSettings({ ...current().settings, noticeSeen: true });
+}
+
+/** The invitation at the end of an activity was shown once more (part I). */
+export function seeInvite(): boolean {
+  const { settings } = current();
+  return writeSettings({
+    ...settings,
+    invite: { ...settings.invite, seen: settings.invite.seen + 1 },
+  });
+}
+
+/** Why the user is here, as they said at the door (part J); null when
+ * they skipped. */
+export function writePurpose(purpose: Purpose | null): boolean {
+  return writeSettings({ ...current().settings, purpose });
+}
+
+/** «Not now» on the invitation: it is not shown again. */
+export function dismissInvite(): boolean {
+  const { settings } = current();
+  return writeSettings({ ...settings, invite: { ...settings.invite, off: true } });
 }
 
 /**

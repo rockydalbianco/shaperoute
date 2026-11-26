@@ -3556,8 +3556,6 @@ export const DE: Table = {
   "(set by you)": "(von dir festgelegt)",
   Left: "Übrig",
   "kcal a day": "kcal pro Tag",
-  "Your own number, or the one your dietitian gave you. MuW never suggests one.":
-    "Deine eigene Zahl oder die von deiner Ernährungsfachkraft. MuW schlägt nie eine vor.",
   "Remove target": "Ziel entfernen",
   Breakfast: "Frühstück",
   Lunch: "Mittagessen",
@@ -3659,7 +3657,7 @@ export const DE: Table = {
   Estimated: "Geschätzt",
   "No wind": "Kein Wind",
   "needs {height}": "braucht {height}",
-  "No landings in your file": "Keine Landeplätze in deiner Datei",
+  "No landings": "Keine Landeplätze",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Kalorienbilanz",
   Used: "Verbraucht",
@@ -3813,4 +3811,55 @@ export const DE: Table = {
     "Für diesen Tag gibt es kein Eiweiß, keine Kohlenhydrate und kein Fett zu zählen.",
   // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
   "Landings from OpenStreetMap: {count}": "Landeplätze aus OpenStreetMap: {count}",
+  // src/nutrition (TASK-489 part I: the invitation at the end of an activity; approved by the user on 2026-11-24)
+  "Count what you eat too": "Zähl auch, was du isst",
+  "Write your own diet and what you eat: MuW estimates the calories you eat and the ones you use, this activity included.":
+    "Schreib deinen eigenen Ernährungsplan auf und was du isst: MuW schätzt die Kalorien, die du isst und die du verbrauchst, diese Aktivität eingeschlossen.",
+  "This activity: {kcal} kcal (est.)": "Diese Aktivität: {kcal} kcal (gesch.)",
+  "Add what you ate": "Hinzufügen, was du gegessen hast",
+  // src/nutrition (TASK-489 part J: the door of Nutrition and MuW's estimate; approved by the user on 2026-11-24)
+  "Your food diary: what you eat, what you use, and the balance.":
+    "Dein Ernährungstagebuch: was du isst, was du verbrauchst und die Bilanz.",
+  Example: "Beispiel",
+  "Write your plan": "Schreib deinen Plan",
+  "Your own diet, or your dietitian's, day by day.":
+    "Dein eigener Ernährungsplan oder der deiner Ernährungsberatung, Tag für Tag.",
+  "Log what you eat": "Trag ein, was du isst",
+  "Foods and grams: MuW estimates the calories.":
+    "Lebensmittel und Gramm: MuW schätzt die Kalorien.",
+  "See your balance": "Sieh deine Bilanz",
+  "Eaten less used, with all your activities.":
+    "Gegessen minus verbraucht, mit all deinen Aktivitäten.",
+  "Next@@step": "Weiter",
+  "What brings you here?": "Was führt dich her?",
+  "Keep track of what I eat": "Im Blick behalten, was ich esse",
+  "Lose weight": "Abnehmen",
+  "Gain weight": "Zunehmen",
+  "Follow my dietitian's plan": "Dem Plan meiner Ernährungsberatung folgen",
+  "You can skip this: it only changes what the page shows first.":
+    "Du kannst das überspringen: Es ändert nur, was die Seite zuerst zeigt.",
+  "To estimate, MuW needs your weight, height, year of birth and sex. They stay on your phone.":
+    "Für die Schätzung braucht MuW Gewicht, Größe, Geburtsjahr und Geschlecht. Sie bleiben auf deinem Handy.",
+  "You use about {kcal} kcal a day (est.)":
+    "Du verbrauchst etwa {kcal} kcal am Tag (gesch.)",
+  "Eating less than you use is a deficit; more is a surplus.":
+    "Weniger essen, als du verbrauchst, ist ein Defizit; mehr ist ein Überschuss.",
+  "Best: write your own number, or your dietitian's.":
+    "Am besten: Schreib deine eigene Zahl oder die deiner Ernährungsberatung.",
+  "See MuW's estimate (demo)": "MuWs Schätzung ansehen (Demo)",
+  "MuW's estimate: {kcal} kcal a day": "MuWs Schätzung: {kcal} kcal am Tag",
+  "A rough estimate from a public formula, only a demonstration. MuW is not made by health professionals: this is not medical advice.":
+    "Eine grobe Schätzung nach einer öffentlichen Formel, nur zur Veranschaulichung. MuW wird nicht von Gesundheitsfachleuten gemacht: Das ist kein medizinischer Rat.",
+  "If you are pregnant or breastfeeding, have an illness, or have or had an eating disorder, this number is not for you: ask your doctor.":
+    "Wenn du schwanger bist oder stillst, eine Krankheit hast oder eine Essstörung hast oder hattest, ist diese Zahl nichts für dich: Frag deine Ärztin oder deinen Arzt.",
+  "Use this number": "Diese Zahl verwenden",
+  "I'll write my own": "Ich schreibe meine eigene",
+  "MuW suggests no calorie number to people under 18.":
+    "MuW schlägt Personen unter 18 Jahren keine Kalorienzahl vor.",
+  "From your data MuW suggests no number for this. Talk to your doctor or a dietitian.":
+    "Nach deinen Daten schlägt MuW hierfür keine Zahl vor. Sprich mit deiner Ärztin, deinem Arzt oder einer Ernährungsberatung.",
+  "Start@@nutrition": "Los geht's",
+  "MuW's estimate of a daily target (demo)": "MuWs Schätzung für das Tagesziel (Demo)",
+  "A usual day is the average of what you used in your last seven days. To lose weight MuW takes 600 kcal a day off it, the amount the NHS gives, only for adults with a body mass index of 25 or more, and never below 1,400 kcal a day for women or 1,900 for men (NHS 12-week weight loss plan). To gain weight MuW suggests no number. Sources read on 24 November 2026. MuW is not made by health professionals: better to write your own number, or your dietitian's.":
+    "Ein üblicher Tag ist der Durchschnitt dessen, was du in den letzten sieben Tagen verbraucht hast. Zum Abnehmen zieht MuW 600 kcal am Tag ab, die Menge, die der NHS nennt, nur für Erwachsene mit einem Body-Mass-Index ab 25 und nie unter 1.400 kcal am Tag für Frauen oder 1.900 für Männer (12-Wochen-Abnehmplan des NHS). Zum Zunehmen schlägt MuW keine Zahl vor. Quellen gelesen am 24. November 2026. MuW wird nicht von Gesundheitsfachleuten gemacht: Besser schreibst du deine eigene Zahl oder die deiner Ernährungsberatung.",
 };

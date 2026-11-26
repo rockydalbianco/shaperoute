@@ -51,6 +51,7 @@ import { feedWithMuw, type MuwItem } from "../feed/feedWithMuw";
 import { MuwPost } from "../feed/MuwPost";
 import { MUW_ROUTES_IN_FEED } from "../feed/muwInFeed";
 import { useMuwRoutes } from "../feed/useMuwRoutes";
+import { GroupRunsRow, useGroupRuns } from "../groupRuns/GroupRunsRow";
 import { t } from "../i18n";
 import { LivesRow } from "../liveShare/LivesRow";
 import { useDrawingsDoor } from "../social/drawingsDoor";
@@ -116,7 +117,9 @@ const NO_POSTS: readonly Post[] = [];
  * reactions and comments, as from a profile (TASK-117). The search that was its lens is at the top
  * of «Explore» since TASK-367 part B; above the drawings of «All»,
  * while the API has a contest, its card (TASK-299, docs/CONCORSI.md §7),
- * asked with the feed and with each pull. Between the drawings, one ad every
+ * asked with the feed and with each pull; under the «Live» row, with an
+ * account, the row «Group runs» (TASK-309 part B2, docs/EVENTI.md §5),
+ * only with one to show and asked again with each pull. Between the drawings, one ad every
  * 5 (TASK-235, ADR-0198). While the API has MuW Style posts (TASK-384,
  * ADR-0326), one row in 8 of «All» at most is one of them, unless «Settings»
  * turned them off, and a third tab, «Style», has them all; without an
@@ -203,6 +206,8 @@ export function FeedScreen({
   const { open, openProblem } = useDrawingsDoor();
   const { open: findPeople } = usePeopleDoor();
   const contest = useContest(active);
+  // The row «Group runs» (TASK-309 part B2): with an account only.
+  const groupRuns = useGroupRuns(active && signedIn);
   const onChoose = useCallback((next: FeedTab) => {
     setChosen(next);
     saveFeedTab(next);
@@ -216,7 +221,8 @@ export function FeedScreen({
   const onRefreshAll = useCallback(() => {
     all.refresh();
     contest.refresh();
-  }, [all, contest]);
+    groupRuns.refresh();
+  }, [all, contest, groupRuns]);
   const problem =
     openProblem !== null ? (
       <Text style={styles.problem} accessibilityRole="alert">
@@ -288,6 +294,8 @@ export function FeedScreen({
               {/* The «Live» row (TASK-468 part B2a): one's own and the
                   followed accounts' lives. */}
               {signedIn && <LivesRow active={active} />}
+              {/* Under «Live» (TASK-309 part B2, the user's choice 1). */}
+              {signedIn && <GroupRunsRow runs={groupRuns.runs} />}
               {problem}
             </View>
           }

@@ -162,6 +162,36 @@ Coordinatore prima.
    push che apre la pagina; i test dell'app intera che contano le
    richieste all'avvio del Feed.
 
+### Parte B2 — la fila nel Feed: le scelte dell'utente (2026-11-26)
+
+Parte 0 fatta il 2026-11-26 (il task era rimasto senza sessione dopo
+l'archivio di quella dei Gruppi; lo ha riaperto il Coordinatore su
+richiesta dell'utente). Quattro domande, tutte risposte sulla proposta:
+
+1. **Il posto**: «Sotto «Live»». In «All», con un account: la scheda del
+   concorso, la fila «Live», poi **«Group runs»**, poi i post. Non in
+   «Following».
+2. **La scheda**: «Solo la linea». La forma come linea gialla sul fondo
+   della mappa (`RouteThumb`, come le miniature di Explore), nessuna foto
+   delle strade; sotto, il titolo, «giorno · ora · km» nell'ora del
+   telefono, le prime tre facce e «{n} going». Una corsa senza percorso
+   (le uscite dei gruppi di TASK-495 C) ha solo le parole.
+3. **Le mie**: «Ci vai in giallo». Le proprie e quelle a cui si va hanno
+   il bordo giallo e, al posto di «{n} going», «You're going · {n}» in
+   giallo.
+4. **La posizione**: «Arrotondata + privacy». La fila manda la posizione
+   del telefono arrotondata a circa 1 km, solo se l'app ha già il
+   permesso (non lo chiede: `knownPoint()` dei Gruppi); senza, nessuna
+   posizione e l'API dà le altre da ovunque (§5). La privacy aggiunge le
+   corse di gruppo all'elenco della posizione arrotondata («towns,
+   drawings and group runs nearby»), nelle cinque lingue, in una **PR a
+   parte che entra prima del codice** (il Coordinatore, 2026-11-26: la
+   fila dei file della privacy è 493, 410 E, 466, poi questa).
+
+Nessun testo nuovo nell'app: «Group runs», «{count} going» e «You're
+going» ci sono già (B1). Il codice si unisce dopo che la privacy è in
+`main` e online.
+
 ## Parte C — I commenti sotto una corsa di gruppo
 
 Dopo B. Le regole dei commenti dei post (TASK-120, il filtro di TASK-213,
@@ -368,3 +398,15 @@ sopra `PeopleScreen` e `ProfileScreen`. Fuori lista, con l'OK del
 Coordinatore: `PeopleScreen.test.tsx`, perché il profilo ora chiede anche
 le sue corse di gruppo. Com'è fatta: `EVENTI.md` §14 e `UI.md`.
 **Prossimo**: B2 (la riga nel Feed) dopo 312 C2, poi C.
+
+**Parte B2** (branch `feat/TASK-309-b2-feed-row`, 2026-11-26): le scelte
+dell'utente sopra (parte B2). `GroupRunsRow.tsx` (la fila e
+`useGroupRuns`: chiesta una volta per account con il Feed sullo schermo e
+di nuovo a ogni pull; niente con 404, risposta strana o senza account),
+`fetchGroupRuns` in `groupRunsApi.ts` (il punto arrotondato come in
+`feed.ts`), una riga in `FeedScreen.tsx` sotto `LivesRow`. La fila scorre
+di lato come in `EVENTI.md` §5, come le file di Explore e le foto di un
+post, anche se la fila «Live» di TASK-468 ha scelto le schede una sotto
+l'altra. **Resta**: la PR della privacy (quando tocca a questa), le foto
+all'utente con il turno del simulatore, poi il merge dopo la privacy
+online, l'OTA e la prova dell'utente.

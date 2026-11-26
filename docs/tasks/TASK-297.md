@@ -1,6 +1,6 @@
 # TASK-297 — Ricerche dall'archivio dei percorsi (A) e loghi con la penna alzata (C); il piazzamento imparato, misurato e scartato (B)
 
-**Stato**: In lavorazione · documenti in `main` (#538, `9391893c`) · parte A in `main` (#539, `0c4ada00`, su `preview` e0e4e126) · **C, motore: PR #547 aperta (2026-10-25)** · TASK-298 nella sua sessione · **A2: in `main` di `LPPL1316/MUW` con la #7 (`e789e9c`, 2026-10-29)** · poi C2
+**Stato**: Done · 2026-11-26 · A (#539), A2, C (#547) e C2 (#1520) in `main`; B misurata e scartata (ADR-0257). **Esito**: una foto con soggetti staccati o buchi si disegna a penna alzata, una parte alla volta; C2 sul server dal passo 22 (`080a4e83`) e nell'app con l'OTA 26 (`71fc76c4`). Resta la prova dell'utente sul telefono (vedi «Prova sul telefono» in fondo).
 **Fase**: 4 · **Branch**: `docs/TASK-297-proposal` (documenti),
 `feat/TASK-297-a-route-archive` (A), `feat/TASK-297-a2-first-placement`
 (A2, dopo la #497), `feat/TASK-297-c-image-pieces` (C, motore),
@@ -532,3 +532,10 @@ Dopo «Edit the outline» (che si vede solo a penna giù) l'interruttore
 sparisce e il contorno modificato si disegna a penna giù. Lo fissa
 `test_an_edited_outline_has_no_pieces_and_is_drawn_with_the_pen_down`. Una
 modifica che tenga i pezzi sarebbe un task a parte.
+
+## Prova sul telefono (resta all'utente)
+
+Una foto con due soggetti staccati o con un buco (una ciambella): sotto la
+foto «Lift the pen between parts», acceso; i pezzi gialli sull'anteprima;
+il percorso coi tratti a piedi tratteggiati. Le foto pronte di «Draw» non
+hanno pezzi (`samplePictures.json`): lì l'interruttore non compare.

@@ -92,7 +92,7 @@ function AtTheEnd({ kcal }: { kcal: number | null }) {
               size={OUTER}
               stroke={STROKE}
               share={0.85}
-              colour={color.textMuted}
+              colour={color.energy}
               track={color.border}
             />
             <View style={styles.inner}>
@@ -100,7 +100,7 @@ function AtTheEnd({ kcal }: { kcal: number | null }) {
                 size={INNER}
                 stroke={STROKE}
                 share={0.6}
-                colour={color.text}
+                colour={color.food}
                 track={color.border}
               />
             </View>

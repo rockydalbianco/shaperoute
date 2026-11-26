@@ -93,8 +93,8 @@ export function WeekStrip({ day, today, now, onDay }: Props) {
               testID={`diary-week-${each.day}`}
             >
               <View style={styles.pair}>
-                <Column share={heights[index].eaten} colour={color.text} />
-                <Column share={heights[index].used} colour={color.textMuted} />
+                <Column share={heights[index].eaten} colour={color.food} />
+                <Column share={heights[index].used} colour={color.energy} />
               </View>
               <Text style={[styles.name, later && styles.later]}>
                 {weekdayName(weekdayOf(each.day))}

@@ -147,6 +147,15 @@ export type Shade = {
    * is filled, one that helps has an outline.
    */
   readonly muscle: string;
+  /**
+   * What was eaten, in «Nutrition» (TASK-489 part H, the user's choice of
+   * 2026-11-26: «rosso e verde»): its ring, its columns of the week and the
+   * dot beside its number, next to the red of what the body used
+   * (`energy`). A green; 4.5:1 at least on `background`, `surface` and
+   * `surfaceRaised`, and never the only sign: each has its label and its
+   * number.
+   */
+  readonly food: string;
 
   readonly map: {
     readonly background: string;
@@ -211,6 +220,7 @@ export const SHADES: Readonly<
       north: "#FF5B4F",
       runDay: "#4DD2FF",
       muscle: "#FF6FB5",
+      food: "#4FD08A",
       map: {
         background: "#100F0C",
         water: "#101F29",
@@ -243,6 +253,7 @@ export const SHADES: Readonly<
       north: "#FF7068",
       runDay: "#6EDBFF",
       muscle: "#FF8FC5",
+      food: "#7BE3AA",
       map: {
         background: "#2B2925",
         water: "#1F3A4B",
@@ -277,6 +288,7 @@ export const SHADES: Readonly<
       north: "#C42F24",
       runDay: "#006E94",
       muscle: "#A8185F",
+      food: "#095428",
       map: {
         background: "#DAD7CF",
         water: "#9CC2D8",
@@ -309,6 +321,7 @@ export const SHADES: Readonly<
       north: "#C8352A",
       runDay: "#007BA3",
       muscle: "#B81D6A",
+      food: "#0F6B35",
       map: {
         background: "#F5F4F0",
         water: "#B5D6E8",

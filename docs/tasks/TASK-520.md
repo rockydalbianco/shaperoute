@@ -42,7 +42,9 @@ sovrappone a E.
 - [x] b) Elenco degli esercizi nuovi — **approvato dall'utente il
       2026-11-27 («Sì, approvo»)**: 50 nuovi, 65 in tutto, con la vista di
       fronte per 8 esercizi; vedi «Esercizi approvati» sotto.
-- [ ] c) Schizzo della home (artifact).
+- [ ] c) Schizzo della home — canvas https://claude.ai/artifact/CaiBLTDaSRn7dRydoatwLL
+      (home, categoria «Running», pagina dell'esercizio; sorgenti in
+      `out/stretching-nuovo/canvas/`), chiesto all'utente il 2026-11-27.
 - [ ] d) Testi in inglese, poi le quattro traduzioni.
 - [ ] Nome della categoria «intimità» e controllo della fascia d'età su
       App Store e Google Play.
@@ -126,4 +128,4 @@ aggiungono qui dopo il sì del Coordinatore.
 ## Dove siamo
 
 2026-11-27: numeri dal Coordinatore (TASK-520 / ADR-0415); mappa
-approvata; elenco esercizi approvato; prossimo lo schizzo della home.
+approvata; elenco esercizi approvato; schizzo della home all'utente.

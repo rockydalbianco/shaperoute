@@ -3,6 +3,7 @@
 **Stato**: In corso — codice in `main` (#1167, 2026-11-12), CI verde.
 Sul server col passo 9 del Coordinatore, 2026-11-12 alle 08:38Z (server a
 `02214e9b`), col default `SHAPEROUTE_ZONES_MB` 500.
+**2026-11-26, non chiuso** (censimento, Coordinatore 3): le letture del server non ci sono ancora. In `out/TASK-464/` ci sono solo la guida `SERVER.md`, lo script `times_compare.py` e le righe di prima del passo 9 (`server-job-times-before-passo9.txt`). Mancano i punti 1–4 di `SERVER.md`: le righe `zone … warmed`, il conto `graph from disk/memory`, la memoria per processo col minimo di `available` e i «times» dopo il passo. Senza questi il tetto `SHAPEROUTE_ZONES_MB` resta al default di 500. Le letture sono `ssh` di sola lettura del Coordinatore.
 
 Letture a riposo, subito dopo il passo:
 - due processi di calcolo partiti, «0 zones warmed» (giusto al primo avvio:

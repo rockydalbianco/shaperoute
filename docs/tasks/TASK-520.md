@@ -47,8 +47,15 @@ sovrappone a E.
       professionale, usa anche più colori, animazioni»; vedi «Schizzo
       approvato» sotto.
 - [ ] d) Testi in inglese, poi le quattro traduzioni.
-- [ ] Nome della categoria «intimità» e controllo della fascia d'età su
-      App Store e Google Play.
+- [ ] Nome della categoria «intimità» — proposta «Intimacy» chiesta
+      all'utente il 2026-11-27. Fascia d'età controllata il 2026-11-27:
+      la pagina App Store di MuW mostra **16+** (questionario tutto «No»
+      tranne i contenuti degli utenti, età alzata a 16+ come i termini,
+      TASK-152); la categoria non cambia nessuna risposta (nessun contenuto
+      sessuale: esercizi di anche e schiena, respiro, la stessa figura).
+      Google Play: l'app non è ancora pubblica (TASK-294), il questionario
+      IARC lo compila l'utente e la risposta resta «nessun contenuto
+      sessuale».
 - [ ] Video MP4 condivisibile dell'esercizio: sì o no.
 
 ## Mappa approvata (2026-11-27)

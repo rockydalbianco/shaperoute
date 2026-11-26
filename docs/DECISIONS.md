@@ -674,8 +674,8 @@ nessuno dei due è un colore dell'interfaccia, e l'app non ha un token
 
 **Conseguenze**: `docs/UI.md` ha la riga di `food` accanto a `energy`.
 Visti nel simulatore il 2026-11-26, tono scuro e chiaro
-(`out/TASK-489/shots/09`–`12`). Codice nella #1652 (parte H) e nella PR
-della parte I.
+(`out/TASK-489/shots/09`–`12`). Codice nella #1652 (parte H) e nella #1660
+(parte I); il punto 7 nella PR della parte J.
 
 ## ADR-0264, aggiunta D (TASK-496) — Sci e volo: alla mappa solo i punti nuovi dell'ultimo tratto
 

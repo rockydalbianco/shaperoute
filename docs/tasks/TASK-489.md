@@ -893,7 +893,9 @@ anello restano etichetta e numero, con un pallino del suo colore.
   binario dell'anello (`border`), per il verde e per il rosso.
 - `theme/palettes.test.ts`: una riga, `food` nella tavolozza attesa.
 
-I colori veri non sono ancora stati visti nel simulatore.
+Visti nel simulatore il 2026-11-26 (iPhone 17), tono scuro e chiaro:
+anelli, pallini e colonnine della settimana; nessun difetto
+(`out/TASK-489/shots/09`–`12`). **In `main` con la #1652 (2026-11-26).**
 
 ### I — L'invito a fine attività (richiesta del 2026-11-24)
 
@@ -902,6 +904,8 @@ con il tasto per entrare». `NutritionInvite.tsx`, una riga in
 `activities/RunEnd.tsx` e una in `gym/GymEnd.tsx`. Le impostazioni tengono
 quante volte l'invito è stato visto e il «Not now». A fine corsa le kcal
 non si mostrano (quella schermata non le calcola); a fine allenamento sì.
+PR #1660, aperta il 2026-11-26. Gli anelli piccoli dell'invito non sono
+stati visti nel simulatore coi colori (sono lo stesso `Ring` del giorno).
 
 ### J — L'ingresso (richiesta del 2026-11-24; decisa, non scritta)
 

@@ -1923,6 +1923,42 @@ export const ES: Table = {
   "Bent-knee calf stretch": "Gemelo con rodilla doblada",
   "Step back, bend both knees. Keep the back heel down.":
     "Da un paso atrás, dobla las dos rodillas. Mantén el talón de atrás en el suelo.",
+  "90/90 hips": "Caderas 90/90",
+  "Sit with both knees bent at right angles, one in front, one to the side. Sit tall.":
+    "Siéntate con las dos rodillas dobladas en ángulo recto, una delante y otra al lado. Espalda erguida.",
+  "Figure four": "Figura de cuatro",
+  "On your back, ankle over the other knee. Pull that thigh toward you.":
+    "Boca arriba, un tobillo sobre la otra rodilla. Tira de ese muslo hacia ti.",
+  Pigeon: "Paloma",
+  "Front shin across your mat, back leg long. Fold forward over it.":
+    "La espinilla de delante cruzada sobre la esterilla, la pierna de atrás larga. Inclínate hacia delante sobre ella.",
+  "Seated forward fold": "Flexión hacia delante sentado",
+  "Sit with legs straight. Fold forward from your hips, back long.":
+    "Siéntate con las piernas estiradas. Inclínate desde las caderas, espalda larga.",
+  "Lying hamstring stretch": "Estiramiento de isquiotibiales tumbado",
+  "On your back, raise one straight leg. Hold behind your thigh.":
+    "Boca arriba, sube una pierna estirada. Sujétala por detrás del muslo.",
+  "Side-lying quad": "Cuádriceps tumbado de lado",
+  "Lie on your side. Pull your top heel toward your glutes.":
+    "Túmbate de lado. Lleva el talón de arriba hacia el glúteo.",
+  "Half split": "Medio spagat",
+  "Kneel, front leg straight, toes up. Fold over it with a long back.":
+    "De rodillas, pierna de delante estirada, dedos arriba. Inclínate sobre ella con la espalda larga.",
+  "Toe stretch": "Estiramiento de dedos del pie",
+  "Kneel with your toes tucked under. Sit back gently on your heels.":
+    "De rodillas con los dedos de los pies apoyados. Siéntate suavemente sobre los talones.",
+  "Shin stretch": "Estiramiento de espinilla",
+  "Kneel with the tops of your feet flat. Sit back on your heels.":
+    "De rodillas con los empeines apoyados. Siéntate sobre los talones.",
+  "Downward dog": "Perro boca abajo",
+  "Hands and feet down, hips high. Press your heels toward the floor.":
+    "Manos y pies en el suelo, caderas arriba. Empuja los talones hacia el suelo.",
+  "Legs up the wall": "Piernas en la pared",
+  "Lie down with your legs resting up a wall. Arms relaxed.":
+    "Túmbate con las piernas apoyadas en alto en una pared. Brazos relajados.",
+  "Resting breath": "Respiración en reposo",
+  "Lie on your back, eyes closed. Breathe slowly into your belly.":
+    "Túmbate boca arriba, ojos cerrados. Respira despacio hacia la barriga.",
   // end of TASK-520 part B
   Morning: "Mañana",
   "After run": "Después de correr",

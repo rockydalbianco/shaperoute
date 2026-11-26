@@ -18,9 +18,25 @@ const B1 = [
   "soleus",
 ];
 
+/** The second block: the stretches held sitting, kneeling or lying down. */
+const B2 = [
+  "ninetyNinety",
+  "figureFour",
+  "pigeon",
+  "seatedFold",
+  "lyingHamstring",
+  "sideQuad",
+  "halfSplit",
+  "toeStretch",
+  "shinStretch",
+  "downDog",
+  "legsUpWall",
+  "restBreath",
+];
+
 describe("the exercises TASK-520 adds", () => {
-  it("are the ones approved, each under its key, in their order", () => {
-    expect(NEW_EXERCISES.map((exercise) => exercise.key)).toEqual(B1);
+  it("are the ones approved, each under its key, block after block", () => {
+    expect(NEW_EXERCISES.map((exercise) => exercise.key)).toEqual([...B1, ...B2]);
   });
 
   it("take no key and no name of the fifteen of before", () => {
@@ -54,12 +70,15 @@ describe("the exercises TASK-520 adds", () => {
     }
   });
 
-  it("are held for 20 or 30 seconds, and say where and how hard they are", () => {
+  it("are held for 20 or 30 seconds, a minute to rest, and say where and how hard they are", () => {
+    const rest = ["legsUpWall", "restBreath"];
     for (const exercise of NEW_EXERCISES) {
-      expect([20, 30]).toContain(exercise.seconds);
+      expect(exercise.seconds).toBe(
+        rest.includes(exercise.key) ? 60 : exercise.seconds === 20 ? 20 : 30,
+      );
       expect(["standing", "chair", "floor"]).toContain(exercise.position);
       expect(["gentle", "intense"]).toContain(exercise.level);
-      // The first block is all held stretches seen from the side.
+      // The first two blocks are all held stretches seen from the side.
       expect(exercise.kind).toBeUndefined();
       expect(exercise.front).toBeUndefined();
     }
@@ -73,7 +92,33 @@ describe("the exercises TASK-520 adds", () => {
     expect(of("sphinx")?.sides).toBe(false);
     expect(of("deepSquat")?.sides).toBe(false);
     expect(
-      NEW_EXERCISES.filter((exercise) => exercise.level === "intense"),
-    ).toHaveLength(2);
+      NEW_EXERCISES.filter((exercise) => exercise.level === "intense").map(
+        (exercise) => exercise.key,
+      ),
+    ).toEqual([
+      "lizard",
+      "deepSquat",
+      "pigeon",
+      "seatedFold",
+      "halfSplit",
+      "toeStretch",
+      "downDog",
+    ]);
+  });
+
+  it("puts the second block on the floor, one side at a time only where there are two", () => {
+    const second = NEW_EXERCISES.filter((exercise) => B2.includes(exercise.key));
+    expect(second).toHaveLength(B2.length);
+    for (const exercise of second) {
+      expect(exercise.position).toBe("floor");
+    }
+    expect(second.filter((exercise) => exercise.sides).map((e) => e.key)).toEqual([
+      "ninetyNinety",
+      "figureFour",
+      "pigeon",
+      "lyingHamstring",
+      "sideQuad",
+      "halfSplit",
+    ]);
   });
 });

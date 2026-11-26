@@ -26,6 +26,8 @@ import { resetFlightNotice } from "./flightNotice";
 import { flightOf, T0 } from "./syntheticFlight";
 import { resetAirspace, setAirspace } from "./airspaceStore";
 import { glidePrefsNow, resetGlidePrefs } from "./glidePrefs";
+import { addManualWaypoint, resetManualWaypoints } from "./manualWaypoints";
+import { refreshSiteLandings, resetSiteLandings } from "./siteLandings";
 import { resetTaskProgress } from "./taskProgress";
 import { destination } from "./taskRoute";
 import { resetWaypointStore, setTask } from "./waypointStore";
@@ -338,6 +340,64 @@ describe("the pilot's task (part D2)", () => {
     expect(
       within(screen.getByTestId("widget-nextTurnpoint")).getByText("No task loaded"),
     ).toBeTruthy();
+  });
+});
+
+describe("the nearest landing of all the pilot has (parts D3, D5, D6)", () => {
+  beforeEach(() => {
+    resetWaypointStore();
+    resetManualWaypoints();
+    resetSiteLandings();
+  });
+
+  async function showXc() {
+    await showScreen();
+    await fireEvent.press(screen.getByTestId("flight-screen-layout"));
+    await fireEvent.press(screen.getByText("XC"));
+    await fireEvent.press(screen.getByTestId("flight-options-done"));
+  }
+
+  it("says there is none without any landing", async () => {
+    await showXc();
+    expect(
+      within(screen.getByTestId("widget-nearestLanding")).getByText(
+        "No landings in your file",
+      ),
+    ).toBeTruthy();
+  });
+
+  it("takes the pilot's own landing and OpenStreetMap's, without a file", async () => {
+    const here = TRACK.fixes[TRACK.fixes.length - 1].point;
+    // Invented: the pilot's own 3 km east, OpenStreetMap's 1 km north.
+    addManualWaypoint(destination(here, 90, 3000), true);
+    const [lat, lon] = destination(here, 0, 1000);
+    await refreshSiteLandings(here, Date.now(), () =>
+      Promise.resolve({
+        kind: "ok",
+        value: {
+          sites: [
+            {
+              id: 1,
+              kind: "landing",
+              lat,
+              lon,
+              name: "Test field",
+              ele_m: 300,
+              orientation: [],
+              official: null,
+              osm_url: "https://www.openstreetmap.org/node/1",
+              away_m: null,
+            },
+          ],
+          more: false,
+          attribution: "© OpenStreetMap contributors",
+        },
+      }),
+    );
+    await showXc();
+    const widget = within(screen.getByTestId("widget-nearestLanding"));
+    expect(widget.getByText("1000")).toBeTruthy();
+    expect(widget.getByText(/Test field$/)).toBeTruthy();
   });
 });
 

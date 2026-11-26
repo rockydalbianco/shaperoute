@@ -65,7 +65,7 @@ Il test (`patch-watch-connectivity.test.ts`) gira con jest dell'app, cioè
 nel job `mobile` della CI (`npm test`), su copie temporanee del file, e
 controlla anche la libreria installata.
 
-PR in bozza **DO NOT MERGE** fino al taglio nativo: cambia l'impronta
+Entra col taglio nativo (sì dell'utente il 2026-11-27): cambia l'impronta
 iOS, che si misura al taglio.
 
 ### File toccati (parte B)

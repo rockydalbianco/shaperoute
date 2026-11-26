@@ -7,6 +7,12 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { Pressable, Text, View } from "react-native";
 
 import { color } from "../theme/tokens";
+import {
+  addManualWaypoint,
+  manualWaypointsNow,
+  removeManualWaypoints,
+  resetManualWaypoints,
+} from "./manualWaypoints";
 import { pickTask, pickWaypoints } from "./waypointFile";
 import { gateTime, NO_WAYPOINTS, NOT_A_TASK, WaypointOptions } from "./WaypointOptions";
 import {
@@ -164,5 +170,30 @@ describe("gateTime", () => {
   it("reads a UTC gate, and nothing that is not one", () => {
     expect(gateTime("11:00:00Z", DAY)).not.toBeNull();
     expect(gateTime("noon", DAY)).toBeNull();
+  });
+});
+
+describe("the pilot's own waypoints (D5)", () => {
+  beforeEach(() => {
+    resetManualWaypoints();
+    removeManualWaypoints();
+  });
+
+  it("says how to add one when there is none", async () => {
+    await show();
+    expect(screen.getByText("My waypoints")).toBeTruthy();
+    expect(screen.getByText("Press the flight map long to add one.")).toBeTruthy();
+    expect(screen.queryByTestId("remove-manual")).toBeNull();
+  });
+
+  it("counts them and removes them all", async () => {
+    addManualWaypoint([45.7, 10.8], false);
+    addManualWaypoint([45.71, 10.81], true);
+    await show();
+    expect(screen.getByTestId("manual-waypoints").props.children).toBe(
+      "Waypoints: 2 · Landings: 1",
+    );
+    await fireEvent.press(screen.getByTestId("remove-manual"));
+    expect(manualWaypointsNow()).toEqual([]);
   });
 });

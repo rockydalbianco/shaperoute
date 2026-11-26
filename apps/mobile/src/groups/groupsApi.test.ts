@@ -11,6 +11,7 @@ import {
   answerGroupRequest,
   changeGroup,
   createGroup,
+  deleteGroup,
   fetchGroup,
   fetchGroupActivity,
   fetchGroupMembers,
@@ -106,6 +107,13 @@ test("«Join» says where one stands; leaving, «Mute» and «Unmute» answer 20
   fetchFn = answers({ status: 204 });
   await leaveGroup(URL, TOKEN, ID, options(fetchFn));
   expect(call(fetchFn)).toBe(`DELETE /groups/${ID}/membership`);
+
+  fetchFn = answers({ status: 204 });
+  expect(await deleteGroup(URL, TOKEN, ID, options(fetchFn))).toEqual({
+    kind: "ok",
+    value: null,
+  });
+  expect(call(fetchFn)).toBe(`DELETE /groups/${ID}`);
 
   fetchFn = answers({ status: 204 }, { status: 204 });
   await setGroupMuted(URL, TOKEN, ID, true, options(fetchFn));

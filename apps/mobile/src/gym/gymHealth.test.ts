@@ -22,7 +22,8 @@ const MIN = 60_000;
 
 function workout() {
   let going = newWorkout("gymkey12345", T0);
-  going = chooseExercise(going, { exercise: "bench_press", kind: "load" }, T0 + MIN);
+  // The clock starts with the first exercise (TASK-511): chosen at T0.
+  going = chooseExercise(going, { exercise: "bench_press", kind: "load" }, T0);
   going = logSet(going, { reps: 8, load_kg: 60 }, T0 + 2 * MIN)!;
   going = pauseWorkout(going, T0 + 30 * MIN);
   going = resumeWorkout(going, T0 + 40 * MIN);

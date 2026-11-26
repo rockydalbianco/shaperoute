@@ -9,7 +9,7 @@ import { t } from "../i18n";
 import { type PositionState, readPosition } from "../location/useCurrentPosition";
 import { color, font, fontWeight, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
-import { useSheetFace } from "../ui/sheetFace";
+import { useGlassSheet } from "../ui/SheetGlass";
 import { useUnits } from "../units/useUnits";
 import { ResortList } from "./ResortList";
 import { snowLabel, temperatureLabel } from "./ResortWeather";
@@ -180,7 +180,7 @@ function ResortPicker({
   // Without the app around it (a test of the card on the snow), no inset.
   const bottom = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
   // The sheet in the glass look (TASK-469 A7a).
-  const glassSheet = useSheetFace();
+  const [glassSheet, glassBack] = useGlassSheet();
   const [typed, setTyped] = useState("");
   return (
     <SheetModal
@@ -198,6 +198,7 @@ function ResortPicker({
         style={[styles.sheet, glassSheet, { paddingBottom: bottom + space.sm }]}
         testID="day-resort-picker"
       >
+        {glassBack}
         <Text style={styles.title} accessibilityRole="header">
           {t("Where are you skiing?")}
         </Text>

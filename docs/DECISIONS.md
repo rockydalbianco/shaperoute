@@ -619,128 +619,16 @@ lasciando le righe d'indice.
 - ADR-0359, aggiunta (TASK-519) — Su «Map» la freccia punta dove punta il telefono, col cono; la mappa non gira; bussola spenta su «Data» e in tasca · 2026-11-26 · Attiva
 - ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
 - ADR-0264, aggiunta D (TASK-496) — In una giornata di sci o un volo registrati, alla mappa vanno solo i punti nuovi dell'ultimo tratto finché la divisione in tratti resta la stessa · 2026-11-26 · Attiva
-<<<<<<< HEAD
-- ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
-- ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
-=======
 - ADR-0414 — Le coordinate delle linee intere che l'API risponde all'app a 6 decimali, ognuna dentro la sua cella da 5: il nome della linea (`line_key`, il `favoriteKey` dell'app) non cambia; l'SQL resta a 15 cifre · 2026-11-27 · Attiva
 - ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Proposta
 - ADR-0177, aggiunta G (TASK-214) — Una zona che il server non ha intorno al telefono la prepara da solo, come un luogo tenuto (TASK-334): il telefono la trova all'apertura dopo; il log non scrive mai il nome della zona · 2026-11-26 · Attiva
 - ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi (`latest` nella pagina, `?after=` sulla stessa rotta), più piano nel silenzio (5 s, 15 s, 30 s: scelta dell'utente); la pagina intera una volta al minuto; una risposta uguale non ridisegna · 2026-11-26 · Attiva
->>>>>>> 14aa415e766b17fba8d39a3e6508fdd75a48c1d9
+- ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
+- ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
 
 
 ## Voci nuove
 
-<<<<<<< HEAD
-## ADR-0397, precisazione 7 — Le ricette in «Nutrition»
-
-**Stato**: Proposta · 2026-11-27 · TASK-489 parte L (parte 0 chiusa, codice
-non scritto). Le scelte di prodotto sono **dell'utente** (2026-11-27, sei
-risposte in `tasks/TASK-489.md`, sezione «L»); il come è **deciso
-dall'agente su delega dell'utente**.
-
-**Contesto**: l'utente vuole ampliare «Nutrition» con un catalogo di
-ricette, poterle cambiare vedendo le calorie seguire, uno stile più curato
-e a colori, e due frasi che cerchino collaborazioni (chef; supermercati e
-negozi di spesa online). ADR-0397 dice che MuW non dà diete né consigli e
-che l'AI non produce numeri.
-
-**Decisione**:
-1. **Un ricettario, non una dieta**: le ricette non sono consigliate a
-   nessuno e non portano parole come «light», «sano», «per dimagrire».
-   Resta sotto la riga «Estimates only. MuW does not provide diets or
-   medical advice.».
-2. **Una ricetta è un elenco di cibi della tabella con i grammi**
-   (chiave `usda-…`), più porzioni, tempi e passi. Calorie e
-   macronutrienti a porzione li calcola l'app coi conti del diario: nei
-   dati delle ricette non c'è nessun numero di calorie. Sale, erbe e
-   spezie stanno nei passi e non sono contati; i passi non nominano mai i
-   grammi.
-3. **Le prime dodici le scrive MuW** (scelta dell'utente, che le ha
-   rilette): preparazioni di casa, e l'app lo dice («Home recipes written
-   by MuW, not by a chef.»). **Niente copiato** da siti o libri, niente
-   foto di altri; il nome di uno chef vero solo con il suo accordo
-   scritto.
-4. **La ricetta si cambia** (grammi, porzioni, ingredienti aggiunti o
-   tolti) e i numeri seguono. La versione dell'utente resta **sul
-   telefono**, con le altre cose di «Nutrition», segnata «Changed by you».
-5. **Nel diario e nel piano entra come i suoi ingredienti**, una porzione,
-   uno per riga, come cibi normali: nessun tipo nuovo di voce, i conti e i
-   file restano quelli di oggi, e l'utente vede e corregge ogni grammo.
-6. **Le due frasi** aprono la posta del telefono verso
-   `hello@getmuw.app` (scelta dell'utente); non mandano niente da sole e
-   **non promettono niente**: la spesa dall'app oggi non c'è.
-7. **Colori**: tre colori nuovi per proteine, carboidrati e grassi (anche
-   nelle barre del diario, scelta dell'utente: cambia il punto 2 della
-   precisazione 5 dove erano «senza colore») e le tinte delle schede, in
-   `theme/tokens.ts`, con un test di contrasto per ognuno. Non sono il
-   giallo del percorso né il rosso e il verde di consumate e mangiate, e
-   non sono mai l'unico segno. I toni li sceglie chi scrive il codice.
-8. Niente di nuovo esce dal telefono: la privacy non cambia.
-
-**Alternative scartate**: una voce «ricetta» nel diario (cambia i file del
-diario e del piano, e nasconde i grammi); calorie scritte nella ricetta
-(numeri a mano, e sbagliati appena la si cambia); ricette prese da un sito
-(testi e foto sono di altri).
-
-**Conseguenze**: il codice in una sessione dedicata, da `main` dopo la
-parte J. Dopo: condividere una ricetta nel Feed con le foto (L2), che
-tocca server e privacy e avrà la sua decisione.
-
-## ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde; la stima e i 18 anni
-
-**Stato**: Attiva · 2026-11-26 · TASK-489 parti H e I. Il colore è una
-scelta **dell'utente** («Voglio un colore», poi «A: rosso e verde» fra tre
-prove mostrate in chat, 2026-11-26); i toni, il nome del token e i
-controlli sono **decisi dall'agente su delega dell'utente**, con il sì del
-Coordinatore a toccare `theme/tokens.ts`. **Cambia il punto 2 della
-precisazione 5**, dove gli anelli erano «nei colori del testo e non in
-verde e rosso».
-
-**Decisione**:
-1. L'anello di fuori, quello che il corpo ha consumato, è `energy`: il
-   rosso che le calorie hanno già in tutta l'app (TASK-424 C3). L'anello
-   di dentro, quello che si è mangiato, è un token nuovo, **`food`**, un
-   verde: `#4FD08A` nel tono scuro (fino a `#7BE3AA` al passo più
-   chiaro), `#095428`–`#0F6B35` nel tono chiaro.
-2. Gli stessi due colori nelle colonne di «This week», nei due anelli
-   piccoli dell'invito a fine attività e nell'esempio della porta della
-   prima volta. Le barre di proteine, carboidrati e grassi restano nel
-   colore del testo.
-3. **Il colore dice quale numero è, non se va bene**: «Surplus» e
-   «Deficit» restano senza colore, come deciso nella parte D. Il verde non
-   è un premio e il rosso non è un avviso.
-4. **Mai l'unico segno**: ogni anello ha accanto la sua etichetta, il suo
-   numero e un puntino del suo colore (regola dell'App Store «non solo
-   colore», e chi non distingue rosso e verde legge le parole).
-5. Contrasto, a ogni tono e passo, in `theme/foodContrast.test.ts`: `food`
-   almeno 4,5:1 su `background`, `surface` e `surfaceRaised`; `food` ed
-   `energy` almeno 3:1 su `border`, che è la traccia dell'anello. `food`
-   non è `accent` (il giallo resta del percorso) né `energy`.
-6. Gli anelli sono disegnati con le viste e `Animated` di React Native:
-   l'app non ha `react-native-svg` e non si aggiunge una dipendenza per
-   questo. Passano con un aggiornamento normale.
-
-**Alternative scartate**: le altre due prove mostrate in chat, non scelte
-dall'utente; il giallo dell'app (è del percorso); un verde già in uso
-(`map.green` è il prato della mappa, `videoLine.green` la linea del video:
-nessuno dei due è un colore dell'interfaccia, e l'app non ha un token
-«success»).
-
-7. **La stima dell'obiettivo e i 18 anni** (parte J, a difesa del punto 4
-   della precisazione 5 e di quello che dice la privacy, «never shown to
-   people under 18»): l'app conosce solo l'anno di nascita, e chi compie
-   18 anni nell'anno in corso può averne ancora 17. In quell'anno MuW non
-   propone nessun numero («From your data MuW suggests no number for
-   this.»); sotto, come prima, «MuW suggests no calorie number to people
-   under 18.». Nessun testo nuovo.
-
-**Conseguenze**: `docs/UI.md` ha la riga di `food` accanto a `energy`.
-Visti nel simulatore il 2026-11-26, tono scuro e chiaro
-(`out/TASK-489/shots/09`–`12`). Codice nella #1652 (parte H) e nella #1660
-(parte I); il punto 7 nella #1673 (parte J).
-=======
 ## ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi, più piano nel silenzio; la pagina intera una volta al minuto
 
 **Stato**: Attiva · 2026-11-26 · TASK-498. **Deciso dall'agente su delega
@@ -889,7 +777,113 @@ Coordinatore.
 Coordinatore col sì dell'utente); C2 ed EB escono con un OTA. La riga nel
 riepilogo di fine palestra (`GymEnd.tsx`) arriva dopo TASK-489 I e
 TASK-511 B. Diventa «Attiva» con il codice.
->>>>>>> 14aa415e766b17fba8d39a3e6508fdd75a48c1d9
+## ADR-0397, precisazione 7 — Le ricette in «Nutrition»
+
+**Stato**: Proposta · 2026-11-27 · TASK-489 parte L (parte 0 chiusa, codice
+non scritto). Le scelte di prodotto sono **dell'utente** (2026-11-27, sei
+risposte in `tasks/TASK-489.md`, sezione «L»); il come è **deciso
+dall'agente su delega dell'utente**.
+
+**Contesto**: l'utente vuole ampliare «Nutrition» con un catalogo di
+ricette, poterle cambiare vedendo le calorie seguire, uno stile più curato
+e a colori, e due frasi che cerchino collaborazioni (chef; supermercati e
+negozi di spesa online). ADR-0397 dice che MuW non dà diete né consigli e
+che l'AI non produce numeri.
+
+**Decisione**:
+1. **Un ricettario, non una dieta**: le ricette non sono consigliate a
+   nessuno e non portano parole come «light», «sano», «per dimagrire».
+   Resta sotto la riga «Estimates only. MuW does not provide diets or
+   medical advice.».
+2. **Una ricetta è un elenco di cibi della tabella con i grammi**
+   (chiave `usda-…`), più porzioni, tempi e passi. Calorie e
+   macronutrienti a porzione li calcola l'app coi conti del diario: nei
+   dati delle ricette non c'è nessun numero di calorie. Sale, erbe e
+   spezie stanno nei passi e non sono contati; i passi non nominano mai i
+   grammi.
+3. **Le prime dodici le scrive MuW** (scelta dell'utente, che le ha
+   rilette): preparazioni di casa, e l'app lo dice («Home recipes written
+   by MuW, not by a chef.»). **Niente copiato** da siti o libri, niente
+   foto di altri; il nome di uno chef vero solo con il suo accordo
+   scritto.
+4. **La ricetta si cambia** (grammi, porzioni, ingredienti aggiunti o
+   tolti) e i numeri seguono. La versione dell'utente resta **sul
+   telefono**, con le altre cose di «Nutrition», segnata «Changed by you».
+5. **Nel diario e nel piano entra come i suoi ingredienti**, una porzione,
+   uno per riga, come cibi normali: nessun tipo nuovo di voce, i conti e i
+   file restano quelli di oggi, e l'utente vede e corregge ogni grammo.
+6. **Le due frasi** aprono la posta del telefono verso
+   `hello@getmuw.app` (scelta dell'utente); non mandano niente da sole e
+   **non promettono niente**: la spesa dall'app oggi non c'è.
+7. **Colori**: tre colori nuovi per proteine, carboidrati e grassi (anche
+   nelle barre del diario, scelta dell'utente: cambia il punto 2 della
+   precisazione 5 dove erano «senza colore») e le tinte delle schede, in
+   `theme/tokens.ts`, con un test di contrasto per ognuno. Non sono il
+   giallo del percorso né il rosso e il verde di consumate e mangiate, e
+   non sono mai l'unico segno. I toni li sceglie chi scrive il codice.
+8. Niente di nuovo esce dal telefono: la privacy non cambia.
+
+**Alternative scartate**: una voce «ricetta» nel diario (cambia i file del
+diario e del piano, e nasconde i grammi); calorie scritte nella ricetta
+(numeri a mano, e sbagliati appena la si cambia); ricette prese da un sito
+(testi e foto sono di altri).
+
+**Conseguenze**: il codice in una sessione dedicata, da `main` dopo la
+parte J. Dopo: condividere una ricetta nel Feed con le foto (L2), che
+tocca server e privacy e avrà la sua decisione.
+
+## ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde; la stima e i 18 anni
+
+**Stato**: Attiva · 2026-11-26 · TASK-489 parti H e I. Il colore è una
+scelta **dell'utente** («Voglio un colore», poi «A: rosso e verde» fra tre
+prove mostrate in chat, 2026-11-26); i toni, il nome del token e i
+controlli sono **decisi dall'agente su delega dell'utente**, con il sì del
+Coordinatore a toccare `theme/tokens.ts`. **Cambia il punto 2 della
+precisazione 5**, dove gli anelli erano «nei colori del testo e non in
+verde e rosso».
+
+**Decisione**:
+1. L'anello di fuori, quello che il corpo ha consumato, è `energy`: il
+   rosso che le calorie hanno già in tutta l'app (TASK-424 C3). L'anello
+   di dentro, quello che si è mangiato, è un token nuovo, **`food`**, un
+   verde: `#4FD08A` nel tono scuro (fino a `#7BE3AA` al passo più
+   chiaro), `#095428`–`#0F6B35` nel tono chiaro.
+2. Gli stessi due colori nelle colonne di «This week», nei due anelli
+   piccoli dell'invito a fine attività e nell'esempio della porta della
+   prima volta. Le barre di proteine, carboidrati e grassi restano nel
+   colore del testo.
+3. **Il colore dice quale numero è, non se va bene**: «Surplus» e
+   «Deficit» restano senza colore, come deciso nella parte D. Il verde non
+   è un premio e il rosso non è un avviso.
+4. **Mai l'unico segno**: ogni anello ha accanto la sua etichetta, il suo
+   numero e un puntino del suo colore (regola dell'App Store «non solo
+   colore», e chi non distingue rosso e verde legge le parole).
+5. Contrasto, a ogni tono e passo, in `theme/foodContrast.test.ts`: `food`
+   almeno 4,5:1 su `background`, `surface` e `surfaceRaised`; `food` ed
+   `energy` almeno 3:1 su `border`, che è la traccia dell'anello. `food`
+   non è `accent` (il giallo resta del percorso) né `energy`.
+6. Gli anelli sono disegnati con le viste e `Animated` di React Native:
+   l'app non ha `react-native-svg` e non si aggiunge una dipendenza per
+   questo. Passano con un aggiornamento normale.
+
+**Alternative scartate**: le altre due prove mostrate in chat, non scelte
+dall'utente; il giallo dell'app (è del percorso); un verde già in uso
+(`map.green` è il prato della mappa, `videoLine.green` la linea del video:
+nessuno dei due è un colore dell'interfaccia, e l'app non ha un token
+«success»).
+
+7. **La stima dell'obiettivo e i 18 anni** (parte J, a difesa del punto 4
+   della precisazione 5 e di quello che dice la privacy, «never shown to
+   people under 18»): l'app conosce solo l'anno di nascita, e chi compie
+   18 anni nell'anno in corso può averne ancora 17. In quell'anno MuW non
+   propone nessun numero («From your data MuW suggests no number for
+   this.»); sotto, come prima, «MuW suggests no calorie number to people
+   under 18.». Nessun testo nuovo.
+
+**Conseguenze**: `docs/UI.md` ha la riga di `food` accanto a `energy`.
+Visti nel simulatore il 2026-11-26, tono scuro e chiaro
+(`out/TASK-489/shots/09`–`12`). Codice nella #1652 (parte H) e nella #1660
+(parte I); il punto 7 nella #1673 (parte J).
 
 ## ADR-0264, aggiunta D (TASK-496) — Sci e volo: alla mappa solo i punti nuovi dell'ultimo tratto
 

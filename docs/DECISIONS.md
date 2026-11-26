@@ -617,9 +617,48 @@ lasciando le righe d'indice.
 - ADR-0175, aggiunta (TASK-497) — La foto di chi scrive un commento: il commento porta l'indirizzo della foto piccola (`author.photo`, quello del feed), l'app non chiede più il profilo intero; supera il punto 7 · 2026-11-24 · Attiva
 - ADR-0264, aggiunta C (TASK-496) — Il file intero della corsa si scrive accanto e poi si sposta sopra il vecchio: una chiusura a metà scrittura lascia l'ultimo file intero · 2026-11-26 · Attiva
 - ADR-0359, aggiunta (TASK-519) — Su «Map» la freccia punta dove punta il telefono, col cono; la mappa non gira; bussola spenta su «Data» e in tasca · 2026-11-26 · Attiva
+- ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
+- ADR-0264, aggiunta D (TASK-496) — In una giornata di sci o un volo registrati, alla mappa vanno solo i punti nuovi dell'ultimo tratto finché la divisione in tratti resta la stessa · 2026-11-26 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0264, aggiunta D (TASK-496) — Sci e volo: alla mappa solo i punti nuovi dell'ultimo tratto
+
+**Stato**: Attiva · 2026-11-26 · TASK-496 parte D. **Deciso dall'agente su
+delega dell'utente** («intanto prepara il fix per sci e volo», 2026-11-26),
+dall'idea scritta in «Idee per dopo» del task file; lista dei file e forma
+dal Coordinatore. Codice nella #1642. **Estende il punto 7 dell'aggiunta
+del 2026-11-23** (i punti nuovi di una corsa) a sci e volo.
+
+**Contesto**: con la mappa in vista, a ogni punto di una giornata di sci
+(`showLifts`) o di un volo (`showFlight`) `MapView` mandava alla pagina
+tutta la traccia tagliata in tratti (discese e impianti, a piedi e in
+aria). In tasca già niente (punto 6).
+
+**Decisione**:
+
+1. **`grownPieces`** (`map/grownPieces.ts`) confronta i tratti di adesso
+   con quelli già detti alla pagina: uguali; cresciuto solo l'ultimo tratto
+   di un gruppo, coi punti in più; oppure altro.
+2. **Il messaggio `extendPiece`** (`layer`: `track`, `lifts` o `air`)
+   aggiunge i punti all'ultima linea di quel livello nella pagina.
+3. **Tutto intero come prima** quando si trova un impianto o un volo,
+   cambiano i numeri delle discese, la pagina si ricarica o la giornata è
+   inquadrata alla fine.
+
+**Alternative scartate**: mandare sempre solo l'ultimo punto e lasciare
+alla pagina la divisione in tratti (la pagina dovrebbe rifare
+`splitAtLifts`/`splitAtAir`, che stanno nell'app); toccare la mappa di volo
+di `air/` (è di TASK-479, e non c'entra con la traccia di `MapView`).
+
+**Conseguenze**: misurato nel simulatore con una giornata finta di 40 punti
+(non sul telefono): sci 3 messaggi interi e 24 di soli punti (~75 byte
+l'uno), volo 2 interi e 28 di soli punti; dopo una ricarica della mappa il
+disegno è identico al pixel. Una giornata vera ha migliaia di punti: il
+messaggio intero cresceva con lei, quello nuovo no. MapLibre ridisegna
+ancora tutta la linea a ogni punto. Nessun cambio nativo, nessuna
+dipendenza.
 
 ## ADR-0394, precisazione C — La scheda pubblicata aperta fuori dal Feed: profilo, campanella, push, link e chat la aprono per id sulla scheda della mappa, col riquadro del Feed; nella griglia del profilo una cella sua
 
@@ -932,6 +971,50 @@ e uno spostamento; nessun campo nuovo nel file, nessun cambio nativo,
 nessuna dipendenza. Provato nei test (`trackStoreAtomic.test.ts`: scrittura
 interrotta, spostamento interrotto, `.new` più nuovo, `.new` a metà,
 cancellazione), non sul telefono.
+
+## ADR-0177, aggiunta F (TASK-214) — La pagina del motore che tiene troppa memoria si chiude dopo il percorso
+
+**Stato**: Attiva · 2026-11-26 · TASK-214 parte F. **Deciso dall'agente su
+delega dell'utente** («intanto prepara il fix della memoria per 214»,
+2026-11-26), dalla prova generale dello stesso giorno; lista dei file e
+forma (un'aggiunta ad ADR-0177) dal Coordinatore. Solo app.
+
+**Contesto**: la memoria di Pyodide (la memoria WebAssembly della pagina)
+cresce e non scende mai. Misurato il 2026-11-26 col motore dell'app in Node
+e nel simulatore: un percorso sulla zona di Trento (2,7 MB) porta la pagina
+a 338 MB, su quella di Milano (5,9 MB) a 584 MB, su quella di Berlino
+(31,8 MB) a 1,3–1,4 GB, e lì resta anche per i percorsi dopo su zone
+piccole. Ripetere lo stesso percorso non la fa crescere (nessuna perdita).
+La zona da 3 km che ogni telefono riceve non ha un tetto di dimensione (il
+tetto di 12 MB vale per la zona larga della parte E). Se iOS chiude la
+WebView durante un percorso, quella morte conta verso `MAX_DEATHS`; in
+modalità aereo non c'è il server di riserva.
+
+**Decisione**:
+
+1. **`MEMORY_RELEASE_MB = 700`** (`phoneEngine.ts`): sopra i 584 MB di
+   Milano, sotto i 1,3 GB di Berlino.
+2. **Dopo il risultato di un percorso, di un «way back» o di un tratto**,
+   se la pagina riferisce più di 700 MB e nessuna richiesta aspetta, la
+   pagina si chiude con `reload()`, che c'era già: niente pagina finché la
+   richiesta dopo non ne monta una nuova.
+3. **Con richieste in attesa la pagina resta** e le prende in ordine; si
+   chiude dopo l'ultima. Nessuna richiesta si perde.
+4. **Dopo la lettura anticipata della zona** (`prepare`, parte E) la
+   pagina resta, per quanto grande: quella memoria serve al percorso dopo.
+5. **Una chiusura per memoria non è una morte**: non conta verso
+   `MAX_DEATHS`.
+
+**Alternative scartate**: riavviare subito la pagina (avvio e batteria
+spesi anche quando non arriva nessun percorso); non dare al motore le zone
+più grandi (in modalità aereo il telefono non disegnerebbe affatto lì);
+liberare la memoria dentro Python (WebAssembly non la restituisce).
+
+**Conseguenze**: dopo un percorso oltre i 700 MB il percorso dopo paga
+l'avvio di Python (circa 6 s sul Mac) e la rilettura della zona; una pagina
+nuova riparte da circa 80 MB. I percorsi sotto la soglia non cambiano.
+Nessun cambio nativo, nessuna dipendenza, `route_engine` e `engine.zip`
+invariati. La soglia è misurata sul Mac, non sull'iPhone.
 
 ## ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero; la riga dei «live» non chiede con l'app dietro
 

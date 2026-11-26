@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, within } from "@testing-library/react-native";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 
 import { ALL_SPORTS, loadSport, saveSport, SPORTS, type SportOption } from "./sport";
@@ -116,7 +122,8 @@ test("a tile chosen saves the sport and closes the panel", async () => {
   await render(<SportButton sports={MIXED} />);
   await open();
   await fireEvent.press(screen.getByRole("radio", { name: "Bike" }));
-  expect(saveSport).toHaveBeenCalledWith("bike");
+  // Saved once the panel is gone (TASK-490 F).
+  await waitFor(() => expect(saveSport).toHaveBeenCalledWith("bike"));
   expect(screen.queryByTestId("sport-panel")).toBeNull();
 });
 

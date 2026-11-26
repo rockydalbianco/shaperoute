@@ -223,3 +223,33 @@ Task chiuso il 2026-11-24. Restano, scritti qui e non in `STATUS.md`:
   (un turno simulatore dal Coordinatore);
 - la modalità Nutrition (TASK-514, ADR-0408) userà lo stesso ordine della
   barra (Feed primo, Profile ultimo).
+
+## Parte F — il tondo dello sport in Palestra (2026-11-26)
+
+La sessione Compass (TASK-518) ha visto due volte nel simulatore che, in
+modalità allenamento, il tondo dello sport non apriva il pannello. Il
+Coordinatore l'ha data a questo task come parte F, senza ADR nuovo.
+
+**Causa (dalla lettura del codice):** su un telefono dove l'intro della
+palestra («Your plan, step by step», `gym/gymIntro.ts`) non è mai stata
+vista, scegliere «Gym» la apre subito, mentre il Modal del pannello sta
+ancora sfumando. In modalità allenamento «Today» si ricostruisce in quel
+momento e monta l'intro già visibile; iOS non presenta un Modal mentre un
+altro sparisce, quindi l'intro non si vede, ma resta aperta per
+React Native, e il pannello non si presenta più.
+
+**Correzione:** `settings/SportButton.tsx` salva lo sport scelto solo
+quando il pannello è sparito (`onDismiss` di iOS, al più tardi dopo
+450 ms; su Android subito). Il pulsante mostra subito lo sport scelto.
+
+File (elenco approvato dal Coordinatore il 2026-11-26):
+
+```
+apps/mobile/src/settings/SportButton.tsx + SportButton.test.tsx
+apps/mobile/src/settings/SportButtonDismiss.test.tsx   (nuovo)
+apps/mobile/src/settings/SportButtonGrid.test.tsx      (una riga in waitFor)
+docs/tasks/TASK-490.md
+```
+
+Prova nel simulatore con un Expo Go dove l'intro non è mai stata vista,
+al turno dato dal Coordinatore; poi «pronta».

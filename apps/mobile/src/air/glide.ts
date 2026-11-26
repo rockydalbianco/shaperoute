@@ -30,6 +30,15 @@ export function glideOf(wind: Wind | null, ld = DEFAULT_LD): Glide {
   return { ld, airspeedMps, wind };
 }
 
+/** The glide the pilot chose (part D3): their glide ratio, and the wind
+ * estimated in the air or none. */
+export function glideWith(
+  prefs: { ld: number; wind: "estimated" | "none" },
+  wind: Wind | null,
+): Glide {
+  return glideOf(prefs.wind === "estimated" ? wind : null, prefs.ld);
+}
+
 /** The glide ratio over the ground along `courseDeg`; null where the wind
  * holds the glider back (no way forward). */
 export function groundRatio(glide: Glide, courseDeg: number): number | null {

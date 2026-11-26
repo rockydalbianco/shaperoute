@@ -38,7 +38,7 @@ import logging
 import math
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Annotated, Any, Literal, get_args
 from uuid import UUID
 
@@ -59,10 +59,27 @@ from shaperoute_api.accounts import (
     current_user,
 )
 from shaperoute_api.activities import EPOCH, MICROSECOND, RunActivity
+from shaperoute_api.avatars import avatar_url
 from shaperoute_api.comment_filter import check_comment
 from shaperoute_api.comments import CommentRejected
 from shaperoute_api.db import Database
-from shaperoute_api.feed import HALF_A_POINT, NEAR_M
+from shaperoute_api.drawings import (
+    LISTED_COLUMNS,
+    WITH_RUN_SQL,
+    _details,
+    _line,
+    _seen,
+    shown_sql,
+)
+from shaperoute_api.feed import (
+    HALF_A_POINT,
+    NEAR_M,
+    NO_REACTIONS,
+    FeedAuthorBody,
+    FeedCardBody,
+    FeedPageBody,
+    _counts,
+)
 from shaperoute_api.follows import (
     MAX_PAGE_SIZE,
     NO_PROFILE,
@@ -86,6 +103,8 @@ from shaperoute_api.profile_photos import (
     square_jpeg,
 )
 from shaperoute_api.push import Kind, Pusher, PushEvent
+from shaperoute_api.reads import EVERYTHING, Reads, Shown
+from shaperoute_api.recommended import preview
 from shaperoute_api.schemas import ErrorBody
 
 log = logging.getLogger(__name__)
@@ -112,6 +131,10 @@ SPORTS: tuple[str, ...] = get_args(RunActivity)
 MEMBERS_CURSOR = r"^[012]-\d{1,17}-[0-9a-f]{32}$"
 # Where a page of requests ended: when it was asked, and who asked.
 REQUESTS_CURSOR = r"^\d{1,17}-[0-9a-f]{32}$"
+# «Recent activity» (GRUPPI.md §5): the posts of these last days.
+RECENT = timedelta(days=14)
+# Where a page of it ended: when the post was published, and its id.
+ACTIVITY_CURSOR = r"^\d{1,17}-[0-9a-f]{32}$"
 
 Access = Literal["public", "request", "invite"]
 Role = Literal["admin", "coadmin", "member"]
@@ -630,6 +653,84 @@ class Groups:
                 else None
             ),
             total=total["n"],
+        )
+
+    def activity(
+        self,
+        viewer_id: int,
+        group_id: UUID,
+        limit: int = PAGE_SIZE,
+        cursor: str | None = None,
+        reads: Reads = EVERYTHING,
+    ) -> FeedPageBody:
+        """«Recent activity» (GRUPPI.md §5), members only (403 for the
+        others): the posts of the members published in the last RECENT, of
+        a run of one of the group's sports, the latest first; only those
+        `viewer_id` sees in the Feed (drawings.shown_sql: never across a
+        block, never hidden, «Followers» only to a follower) and `reads`
+        shows. The cards of the Feed."""
+        values: dict[str, Any] = {
+            "group": group_id,
+            "viewer": viewer_id,
+            "since": self.now() - RECENT,
+            "limit": limit + 1,
+        }
+        after = "TRUE"
+        if cursor is not None:
+            micros, last = cursor.split("-")
+            values.update(at=EPOCH + int(micros) * MICROSECOND, last=UUID(last))
+            after = "(d.published_at, d.id) < (%(at)s, %(last)s)"
+        with self.database.connect() as conn:
+            row = self._seen(conn, viewer_id, group_id)
+            if row["role"] is None:
+                raise AccountError(403, "http_error", ONLY_MEMBERS)
+            rows = conn.execute(
+                f"SELECT {LISTED_COLUMNS}, u.public_id, u.username,"
+                " pp.updated_at AS photo_at"
+                f" FROM {WITH_RUN_SQL} JOIN users u ON u.id = d.user_id"
+                " LEFT JOIN profile_photos pp ON pp.user_id = u.id"
+                " JOIN groups g ON g.id = %(group)s"
+                " JOIN group_members gm ON gm.group_id = g.id"
+                " AND gm.user_id = d.user_id"
+                " WHERE d.visibility <> 'only_me' AND d.run_id IS NOT NULL"
+                " AND r.activity = ANY(g.sports)"
+                " AND d.published_at >= %(since)s"
+                f" AND {shown_sql('%(viewer)s')} AND {reads.drawings_sql()}"
+                f" AND {after}"
+                " ORDER BY d.published_at DESC, d.id DESC LIMIT %(limit)s",
+                values,
+            ).fetchall()
+            page, more = rows[:limit], len(rows) > limit
+            ids = [one["id"] for one in page]
+            details = _details(conn, ids, viewer_id)
+            counts = _counts(conn, ids, viewer_id)
+        posts = [
+            FeedCardBody(
+                **_seen(one, details),
+                track_preview=preview(_line(one["track"])),
+                author=FeedAuthorBody(
+                    public_id=one["public_id"],
+                    username=one["username"],
+                    photo=(
+                        None
+                        if one["photo_at"] is None
+                        else avatar_url(one["public_id"], one["photo_at"])
+                    ),
+                ),
+                reactions=counts.reactions.get(one["id"], NO_REACTIONS),
+                comments=counts.comments.get(one["id"], 0),
+            )
+            for one in page
+        ]
+        last_one = page[-1] if more else None
+        return FeedPageBody(
+            posts=posts,
+            next=(
+                None
+                if last_one is None
+                else f"{(last_one['published_at'] - EPOCH) // MICROSECOND}"
+                f"-{last_one['id'].hex}"
+            ),
         )
 
     # --- Who may ---
@@ -1169,6 +1270,17 @@ def group_routes() -> APIRouter:
     ) -> Response:
         groups.set_role(user.id, group_id, public_id, body.role)
         return Response(status_code=204)
+
+    @router.get("/groups/{group_id}/activity", responses=NOT_FOUND)
+    def activity(
+        group_id: UUID,
+        groups: Them,
+        user: User,
+        reads: Shown,
+        limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = PAGE_SIZE,
+        cursor: Annotated[str | None, Query(pattern=ACTIVITY_CURSOR)] = None,
+    ) -> FeedPageBody:
+        return groups.activity(user.id, group_id, limit, cursor, reads)
 
     @router.get("/groups/{group_id}/requests", responses=NOT_FOUND)
     def requests(

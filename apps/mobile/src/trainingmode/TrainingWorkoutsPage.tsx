@@ -18,7 +18,8 @@ import { historyKey } from "../gym/exerciseHistory";
 import { ExerciseHistory } from "../gym/ExerciseHistoryPage";
 import { ExercisePicker } from "../gym/ExercisePicker";
 import { GymCalendarSheet } from "../gym/GymCalendar";
-import { lastLine, monthLine, whenLabel } from "../gym/GymDrawGuide";
+import { GUIDE_STEPS, lastLine, monthLine, whenLabel } from "../gym/GymDrawGuide";
+import { showGymIntro } from "../gym/gymIntro";
 import { GymPlansSheet, planLine } from "../gym/GymPlans";
 import { gymStyles } from "../gym/gymStyles";
 import { useGymPlans } from "../gym/plans";
@@ -29,6 +30,7 @@ import { useLanguage } from "../i18n/useLanguage";
 import { clockLabel } from "../navigation/freeRun";
 import { useFollowsDoor } from "../social/followsDoor";
 import { useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { color, font, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { Hairline } from "../ui/Hairline";
 import { Tap } from "../ui/Tap";
@@ -87,6 +89,8 @@ type Props = {
  * gym calendar), the workouts done this month and the history of every
  * exercise of the plans, or of any other found in the catalog. All of it
  * is what the gym already had, in one page; nothing of it is kept here.
+ * At the end «How it works» (part E): the three steps and «How plans
+ * work», which «Today» no longer shows (the user's choice of 2026-11-24).
  */
 export function TrainingWorkoutsPage({ onLogIn, fetchFn }: Props) {
   const { apiUrl, account } = useFollowsDoor();
@@ -94,6 +98,7 @@ export function TrainingWorkoutsPage({ onLogIn, fetchFn }: Props) {
   const { owner, plans } = useGymPlans(fetchFn);
   const language = useLanguage();
   const headerScroll = useHeaderScroll();
+  const barRoom = useTabBarRoom();
   const token =
     account.state.status === "signedIn" ? account.state.session.token : null;
   const [calendar, setCalendar] = useState<GymCalendar | null>(null);
@@ -130,7 +135,7 @@ export function TrainingWorkoutsPage({ onLogIn, fetchFn }: Props) {
       <ScrollView
         {...headerScroll}
         style={styles.page}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: space.xxl + barRoom }]}
         testID="training-workouts"
       >
         <Text style={styles.title} accessibilityRole="header">
@@ -240,6 +245,30 @@ export function TrainingWorkoutsPage({ onLogIn, fetchFn }: Props) {
             </View>
           </>
         )}
+
+        <Text style={styles.label} accessibilityRole="header">
+          {t("How it works")}
+        </Text>
+        <View style={[styles.card, styles.steps]} testID="training-how">
+          {GUIDE_STEPS.map((step, index) => (
+            <View key={step} style={styles.step}>
+              <View style={styles.number}>
+                <Text style={styles.numberText} importantForAccessibility="no">
+                  {index + 1}
+                </Text>
+              </View>
+              <Text style={styles.stepText}>{t(step)}</Text>
+            </View>
+          ))}
+          <Tap
+            style={styles.link}
+            onPress={showGymIntro}
+            accessibilityRole="button"
+            testID="training-how-plans"
+          >
+            <Text style={[styles.small, styles.underline]}>{t("How plans work")}</Text>
+          </Tap>
+        </View>
       </ScrollView>
       <GymPlansSheet
         visible={plansOpen}
@@ -323,6 +352,9 @@ function HistoryLayer({
   );
 }
 
+/** The round number of a step, as in the guide of «Draw». */
+const NUMBER_SIZE = 24;
+
 const styles = StyleSheet.create({
   page: {
     flex: 1,
@@ -384,5 +416,39 @@ const styles = StyleSheet.create({
   buttonText: {
     ...font.body,
     color: color.text,
+  },
+  steps: {
+    gap: space.sm,
+    padding: space.md,
+  },
+  step: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+  },
+  number: {
+    width: NUMBER_SIZE,
+    height: NUMBER_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: NUMBER_SIZE / 2,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+  },
+  numberText: {
+    ...font.small,
+    color: color.text,
+  },
+  stepText: {
+    ...font.body,
+    flex: 1,
+    color: color.text,
+  },
+  link: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+  },
+  underline: {
+    textDecorationLine: "underline",
   },
 });

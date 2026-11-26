@@ -1,6 +1,7 @@
 # TASK-415 — Ski touring: lo scialpinismo «Record only»
 
-**Stato**: In corso — parte 0 in `main` (#932), parte A in `main` (#948) e sul server, parte B in `main` (#1160), parte B3 (cambio pelli a mano) in `main` (#1202).
+**Stato**: Fermo — in attesa fino all'inverno · 2026-11-26 (scelta dell'utente del 2026-11-26 sulle prove sul campo): 0, A, B e B3 in produzione; B2 (i numeri e le fasi nel post), C (la pendenza) e D (le vette) non sono iniziate; la prova sulla neve (E) è in `docs/PROVE-SUL-CAMPO.md`.
+Prima del 2026-11-24: In corso — parte 0 in `main` (#932), parte A in `main` (#948) e sul server, parte B in `main` (#1160), parte B3 (cambio pelli a mano) in `main` (#1202).
 **Fase**: 4 · **Branch**: `docs/TASK-415-0-skimo` (parte 0), poi
 `feat/TASK-415-a-ski-touring-api`, `feat/TASK-415-b-…` ·
 **ADR**: ADR-0344 · numeri dal Coordinatore · sessione dello sport,

@@ -622,7 +622,9 @@ test("run days in the guide: «And running?», the week, the run's editor (TASK-
     run: { kind: "easy", distance_m: 7500 },
   });
   expect(kept.program?.runner).toEqual({ pace_10k_s: 325, long_m: 14000 });
-  expect(screen.getByTestId("gym-plan-program")).toHaveTextContent(/RUN/);
+  expect(screen.getByTestId("gym-plan-program")).toHaveTextContent(
+    new RegExp(SPORT_BADGES.run),
+  );
 });
 
 test("in Draw on a run day: the run of the week, and «Go to the run» turns to Run", async () => {

@@ -45,6 +45,7 @@ import {
 } from "./distance";
 import { DistanceDial } from "./DistanceDial";
 import { ImageChoice } from "./ImageChoice";
+import { piecesOf } from "./imagePieces";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
 import { NoteRow } from "./NoteRow";
 import { penUpHint } from "./penUpHint";
@@ -115,8 +116,8 @@ type ChoiceProps = {
   letterStyle: LetterStyle;
   onLetterStyle: (style: LetterStyle) => void;
   /** The pen lifted between the letters of the word (TASK-198), and between
-   * the pieces of a shape that has them (TASK-223): the switch shows only
-   * with a way to change it. */
+   * the pieces of a shape or a picture that has them (TASK-223, TASK-297):
+   * the switch shows only with a way to change it. */
   penUp?: boolean;
   onPenUp?: (on: boolean) => void;
   /** The picture chosen and its outline (TASK-073), and how to choose one. */
@@ -211,6 +212,8 @@ export function RouteChoice({
         value={shownKind}
         onChange={(value) => (value === "freehand" ? freehand?.() : onKind(value))}
         style={styles.kinds}
+        // Up to four choices: «A mano libera» stays on one line (TASK-508).
+        oneLine
       />
       {shownKind === "shape" ? (
         <>
@@ -240,7 +243,19 @@ export function RouteChoice({
           )}
         </>
       ) : shownKind === "image" ? (
-        <ImageChoice state={image} onChoose={onChooseImage} />
+        <>
+          <ImageChoice state={image} onChoose={onChooseImage} penUp={penUp} />
+          {/* A picture with pieces apart, its holes too (TASK-297). */}
+          {onPenUp &&
+            image.status === "traced" &&
+            piecesOf(image.outline).length > 0 && (
+              <PenSwitch
+                label={t("Lift the pen between parts")}
+                on={penUp}
+                onChange={onPenUp}
+              />
+            )}
+        </>
       ) : (
         <>
           <TextInput

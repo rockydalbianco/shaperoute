@@ -102,6 +102,31 @@ describe("a post made of", () => {
     expect(post).not.toHaveProperty("score");
     expect(post.title).toBe("Trento · Heart");
     expect(postOfActivity({ ...activity, title: "Morning" }).title).toBe("Morning");
+    // Its day, for the line under the title (TASK-450).
+    expect(post.startedAt).toBe("2026-10-04T08:00:00Z");
+  });
+
+  it("a run of «My activities» with a titled post has the post's title (TASK-450)", () => {
+    const activity = {
+      id: "abc",
+      started_at: "2026-10-04T08:00:00Z",
+      place: "Trento",
+      shape: "heart",
+      word: null,
+      style: null,
+      title: "Morning",
+      distance_m: 5200,
+      duration_s: 1690,
+      points: north(5000),
+      track: north(5200),
+    } as ActivityDetail;
+    expect(postOfActivity(activity, "My first heart").title).toBe("My first heart");
+    // A post with no title, or one of spaces alone, leaves what it was.
+    expect(postOfActivity(activity, null).title).toBe("Morning");
+    expect(postOfActivity(activity, "  ").title).toBe("Morning");
+    expect(postOfActivity({ ...activity, title: null }, "").title).toBe(
+      "Trento · Heart",
+    );
   });
 
   it("a run that just ended has no key nor title, and its pauses left out", () => {
@@ -115,10 +140,14 @@ describe("a post made of", () => {
     expect(post).toEqual({
       key: null,
       title: null,
+      // Its day is its first fix's (TASK-450).
+      startedAt: "1970-01-01T00:00:00.000Z",
       track: points,
       distanceM: 400,
       durationMs: 90_000,
     });
+    // A run with no fix has no day to write.
+    expect("startedAt" in postOfTrack({ fixes: [], distanceM: 0 })).toBe(false);
   });
 });
 

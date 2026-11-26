@@ -1435,6 +1435,19 @@ multipart, che vorrebbe `python-multipart`. La risposta, in meno di 2 s:
   il collegamento, dalla linea già disegnata al soggetto; il resto è il
   contorno del soggetto, che si chiude sul secondo punto. Vuoti con un
   soggetto solo. L'app li disegna e li rimanda senza cambiarli.
+- `pieces` e `image_pieces` (dal TASK-297 C2, ADR-0258): per la penna
+  alzata, gli altri soggetti e i fori che valgono almeno il 3 % del loro
+  soggetto, come linee staccate dal contorno, nei due sistemi di `points`
+  e `image_points`, dal più grande al più piccolo; una chiusa ripete il
+  primo punto. Sono gli stessi soggetti dei `strokes` senza i gambi, più i
+  fori, che con la penna giù non ci sono. L'API ricalca l'immagine con
+  `outline_data(…, pen_up=True)` (il doppio del tempo, sotto 1 s sulle
+  prove) e li dà solo se il contorno con la penna alzata è lo stesso di
+  `points` nella stessa cornice (così è sulle 16 foto di «Draw» e sugli 8
+  loghi di `tools/sample_logos.py`) e se sono al più 8 (`MAX_WALKS`: un
+  percorso ha al più 8 camminate, e una corsa salvata le tiene); altrimenti
+  vuoti, e la foto si disegna come prima. Vuoti anche dopo una modifica
+  (`/image-outline-edits`): le modifiche sono della linea con la penna giù.
 
 Un'immagine che non dà un contorno è rifiutata con `422`
 `image_not_usable` e il motivo del motore in `reason`: `format`,
@@ -1476,6 +1489,19 @@ un'immagine oltre il limite sono `invalid_request`.
   ritorno due, quindi circa 100 punti di dettagli senza anello; poi `parse_outline` con i
   dettagli (ognuno parte dalla linea o da un dettaglio prima; possono
   incrociarsi e incrociare il contorno). Il percorso segue ogni dettaglio e torna indietro.
+- `pen_up: true` con `pieces` (dal TASK-297 C2, ADR-0258): i `pieces` di
+  un `ImageOutline`, senza cambiarli, al posto degli `strokes`; il motore
+  disegna il contorno, poi ogni pezzo per conto suo, e cammina dall'uno
+  all'altro senza disegnare, come una parola con la penna alzata: la
+  distanza chiesta è quella del disegno, le camminate in più, `walks` nel
+  `RouteResult` (con `"word": null`). Si controllano come il contorno
+  (numeri finiti, dentro [-1, 1]), al più 8 pezzi e 150 punti in tutto
+  (`MAX_SUBJECT_POINTS`), poi `parse_outline` **senza incroci**: un pezzo
+  non tocca il contorno, i tratti né un altro pezzo. `pen_up` senza
+  `pieces` è `422` `invalid_request` («pen_up is for the letters of a
+  word, or the pieces of an image: …»); `pieces` senza `pen_up` anche
+  («pieces: only with pen_up true; …»). In `shared-types` è
+  `ImagePenUpRouteRequest`; vale anche dentro `/gpx`.
 
 ### Modificare il contorno (TASK-079)
 
@@ -2397,6 +2423,7 @@ tenuto per leggerlo nell'app (`notification_list.py`, tabella
 | Endpoint | Cosa | Risposta |
 |---|---|---|
 | `GET /notifications?before=` | le righe dell'account, le più recenti prima, 30 alla volta; `before` è l'`id` dato dalla pagina prima | `200` `NotificationsPage` (`fixtures/notifications.json`); `401` senza token; `422` con `before` < 1 |
+| `GET /notifications/unread` | solo il numero delle non lette, lo stesso `unread` della lista: quello che chiede il bollino dell'header (TASK-499) | `200` `NotificationsUnread` (`fixtures/notifications-unread.json`); `401` senza token; `404` da un server di prima |
 | `POST /notifications/read` | `{"up_to": id}`: segna lette le righe fino a quella, la più recente che l'app ha mostrato; una arrivata dopo resta non letta | `204`; `422` senza `up_to` o con altri campi |
 
 - **Cosa si tiene**: ogni evento che `push.py` lascia passare (non il
@@ -2419,6 +2446,14 @@ tenuto per leggerlo nell'app (`notification_list.py`, tabella
   vede più, un attrezzo cancellato (`gear_limit`, TASK-486 parte G, solo
   nella campanella come `comment_reaction`); niente attraverso un blocco o da un account nascosto per una
   segnalazione. Il commento e la reazione si leggono come sono adesso.
+- **Il numero da solo** (TASK-499, aggiunta ad ADR-0311): la campanella
+  dell'header chiede `GET /notifications/unread` all'avvio, ogni 5 minuti
+  con l'app in primo piano, al ritorno e alla chiusura della lista. È
+  **una query sola**, con le stesse regole della lista (un pezzo solo di
+  SQL, `rules_sql`: blocchi, 90 giorni, quello che non è più vero, i
+  disegni che l'app legge), senza la lingua, i testi e le foto. La lista
+  intera si chiede solo aprendo la campanella. Con un `404` (un server di
+  prima) l'app legge `unread` dalla prima pagina, come prima.
 - **Per quanto**: `KEPT_DAYS`, 90 giorni dall'evento (durata e frase della
   privacy approvate dall'utente il 2026-11-04: «Sì, approvo»); le righe più vecchie non si mostrano e vanno via
   alla prima riga scritta dopo.
@@ -2940,9 +2975,20 @@ Tipi in `shared-types` (`CommentRequest`, `Comment`, `CommentsPage`,
   again.» con `Retry-After` in secondi. Il limite è dell'account, non
   dell'indirizzo, e vale per processo come quello delle foto.
 - **Un commento** ha `id` (UUID casuale), `author` (`public_id` e
-  `username`, come l'autore di un disegno: mai l'email; la foto si chiede
-  a `GET /users/{public_id}`), `text`, `created_at` e `deletable`: vero
-  quando chi chiede lo può cancellare.
+  `username`, come l'autore di un disegno: mai l'email), `text`,
+  `created_at` e `deletable`: vero quando chi chiede lo può cancellare.
+- **La foto di chi ha scritto** (TASK-497, in più): `author.photo` è
+  l'indirizzo della foto piccola, `/users/{public_id}/photo?v=…`, lo stesso
+  dell'autore di un post del feed («Feed», `avatars.py`: JPEG di 128 px, col
+  token, `Cache-Control: private, max-age=86400`; una foto nuova ha un
+  indirizzo nuovo); `null` senza foto. Vale per commenti e risposte, nelle
+  pagine, nella risposta del `POST` e nel commento tenuto con un super like
+  (`PUT /drawings/{id}/reaction`); `mention` resta `public_id` e
+  `username`. Costa una `LEFT JOIN` su `profile_photos.updated_at` nella
+  query che c'era: nessuna query in più, e la foto non viene letta. Un'app
+  di prima non legge il campo e chiede la foto a `GET /users/{public_id}`,
+  come fa l'app di adesso con un'API che non lo manda. Tipo `CommentAuthor`
+  in `shared-types`; test in `test_comment_author_photos.py`.
 - **Le pagine**: `GET /drawings/{id}/comments?limit=20&cursor=…`, `limit`
   da 1 a 50, **dal più vecchio**; `next` (il cursore della pagina dopo,
   `null` sull'ultima) e `total` (quanti ne ha il disegno) come nelle
@@ -2997,7 +3043,8 @@ esempi in `fixtures/comment-reply-request.json`, `comment-reply.json`,
   blocco, nascosto): `404 http_error` «No comment with this id.».
 - **I campi in più di un commento**: `parent_id` (`null` per un commento),
   `mention`, `reply_count` (quante risposte legge chi chiede; 0 per una
-  risposta), `replies` e `reactions`.
+  risposta), `replies` e `reactions`. L'`author` di una risposta porta
+  `photo` come quello di un commento (sopra, «La foto di chi ha scritto»).
 - **Con `threads=true`** la pagina ha solo i commenti, dal più vecchio, e
   ognuno porta in `replies` le sue **due risposte più vecchie**
   (`REPLIES_SHOWN`); le altre si chiedono a `GET /comments/{id}/replies`
@@ -5117,6 +5164,7 @@ del gruppo arrivano con la parte C.
 | `DELETE /groups/{id}/membership` | esce; ritira la richiesta; rifiuta l'invito | `204` |
 | `PUT /groups/{id}/mute`, `DELETE …/mute` | «Mute» del membro, e il contrario | `204` |
 | `GET /groups/{id}/members?limit=20&cursor=…` | i membri, solo per i membri | `200` `GroupMembersPage` |
+| `GET /groups/{id}/activity?limit=20&cursor=…` | «Recent activity», solo per i membri | `200` `FeedPage` |
 | `DELETE /groups/{id}/members/{public_id}` | admin o co-admin tolgono un membro | `204` |
 | `PUT /groups/{id}/members/{public_id}/role` | l'admin dà o toglie il co-admin, o passa il suo ruolo | `204` |
 | `GET /groups/{id}/requests?limit=20&cursor=…` | chi ha chiesto di entrare, il primo per primo | `200` `PeoplePage` |
@@ -5149,6 +5197,14 @@ del gruppo arrivano con la parte C.
   membri (`403 http_error` «Only the group's members can do this.»): prima
   l'admin, poi i co-admin, poi i membri, ognuno da quando è entrato, mai
   chi è lontano da chi chiede.
+- **«Recent activity»** (`GET …/activity`, parte A2), solo per i membri
+  (`403` per gli altri): i post dei membri pubblicati negli ultimi **14
+  giorni**, di una corsa di uno degli sport del gruppo (niente post di sole
+  foto, del sonno o di una scheda), il più recente prima; solo quelli che
+  chi chiede vede già nel Feed (`drawings.shown_sql`: mai attraverso un
+  blocco, mai nascosti, «Followers» solo a chi segue) e che l'app sa
+  leggere (`X-MuW-Reads`). Le schede del Feed (`FeedPage`), a pagine con
+  `cursor`. Chi esce dal gruppo porta via i suoi post.
 - **«Join»** (`PUT …/membership`): in un gruppo `public`, o con un invito,
   si entra subito (`me: member`); in un gruppo `request` si lascia una
   richiesta (`me: requested`) e admin e co-admin ricevono

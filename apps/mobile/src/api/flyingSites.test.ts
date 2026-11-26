@@ -6,6 +6,7 @@ import { answers } from "../account/testing";
 import {
   fetchFlyingHistory,
   fetchFlyingSite,
+  fetchLandings,
   flyingSitesIn,
   isFlyingHistory,
   isFlyingSiteDetail,
@@ -90,5 +91,16 @@ test("a site and a takeoff's history by id, «today» from the phone's offset", 
   expect(fetchFn.mock.calls[0][0]).toBe("http://api/flying-sites/101");
   expect(fetchFn.mock.calls[1][0]).toBe(
     "http://api/flying-sites/101/history?utc_offset_min=60",
+  );
+});
+
+test("the landings of a box, for the nearest landing in flight (TASK-479 D6)", async () => {
+  const fetchFn = answers({ status: 200, body: box });
+  expect(await fetchLandings(URL, BOX, options(fetchFn))).toEqual({
+    kind: "ok",
+    value: box,
+  });
+  expect(fetchFn.mock.calls[0][0]).toBe(
+    "http://api/flying-sites?south=45.9512&west=10.9500&north=46.0500&east=11.0500&kind=landing",
   );
 });

@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { ScrollView, StyleSheet, Text, type ViewStyle } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { color, tone } from "../theme/tokens";
+import { color, glass, tone } from "../theme/tokens";
 import { useGlassMode } from "../ui/useGlassMode";
 import { useReduceMotion } from "../ui/useReduceMotion";
 import { appHeaderHeight, BAND_FADE_MS, headerFloats } from "./AppHeader";
@@ -143,9 +143,11 @@ test("the band is the phone's glass, off at the top of a page and on once it scr
   // Never by opacity: at 0 the phone stops drawing the glass.
   expect(styleOf("header-band").opacity).toBeUndefined();
   expect(styleOf("header-band").backgroundColor).toBeUndefined();
-  // In the app's tone, never tinted, never in the way of a touch.
+  // In the app's tone, tinted with the tone's own background and never
+  // the yellow, never in the way of a touch.
   expect(band().props.colorScheme).toBe(tone.tone);
-  expect(band().props.tintColor).toBeUndefined();
+  expect(band().props.tintColor).toBe(glass.realTint);
+  expect(band().props.tintColor).not.toBe(color.accent);
   expect(band().props.pointerEvents).toBe("none");
   await fireEvent.scroll(screen.getByTestId("scroller"), scrollTo(200));
   expect(band().props.glassEffectStyle).toMatchObject({ style: "regular" });

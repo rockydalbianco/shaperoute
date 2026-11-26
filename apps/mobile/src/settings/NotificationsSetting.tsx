@@ -6,7 +6,14 @@ import type { Account } from "../account/useAccount";
 import { t, tLater } from "../i18n";
 import { askPushPermission } from "../notifications/pushDevice";
 import { OpenSettings } from "../permissions/OpenSettings";
-import { color, fontSize, radius, space } from "../theme/tokens";
+import {
+  color,
+  fontSize,
+  fontWeight,
+  MIN_TAP_SIZE,
+  radius,
+  space,
+} from "../theme/tokens";
 import { contactStyles } from "./ContactField";
 import { notificationsOf, PUSH_NOT_ALLOWED } from "./notificationFields";
 import { useSettingsGroup } from "./settingsGroup";
@@ -34,7 +41,8 @@ const SWITCHES: { which: Which; emoji: string; name: string }[] = [
  * switch stays off and says where to allow it. With the switch on the phone
  * gets push notifications (`../notifications/usePushNotifications`); the
  * emails come from the API, and the note under the rows says what each
- * sends. A switch shows
+ * sends. While «Push notifications» is off a line under the rows says so
+ * and turns it on at a tap (TASK-508). A switch shows
  * its new value at once and goes back if the phone or the API refuses, with
  * the reason under the rows; while one answer is on its way, a second tap
  * sends nothing.
@@ -111,6 +119,21 @@ export function NotificationsSetting({ user, account }: Props) {
           </View>
         ))}
       </View>
+      {/* Off, and nothing asked to turn them on (TASK-508; the text is the
+          user's choice of 2026-11-24): a line to tap, which does what the
+          switch does. Not after the phone refused: the reason is there. */}
+      {!shown.push && problem === null && (
+        <Pressable
+          style={({ pressed }) => [styles.invite, pressed && contactStyles.pressed]}
+          onPress={() => void turn("push", true)}
+          accessibilityRole="button"
+          testID="push-invite"
+        >
+          <Text style={styles.inviteText}>
+            {t("Push notifications are off. Tap to turn them on.")}
+          </Text>
+        </Pressable>
+      )}
       <Text style={styles.note}>
         {t(
           "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.",
@@ -155,6 +178,19 @@ const styles = StyleSheet.create({
   knobOn: {
     alignSelf: "flex-end",
     backgroundColor: color.background,
+  },
+  // A link in the text's colour, as «Open Settings»
+  // (`../permissions/OpenSettings`): yellow is the route's.
+  invite: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    paddingHorizontal: space.md,
+  },
+  inviteText: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.bold,
+    textDecorationLine: "underline",
   },
   note: {
     paddingHorizontal: space.md,

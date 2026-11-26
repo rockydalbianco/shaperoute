@@ -1,6 +1,6 @@
 # TASK-490 — La modalità Allenamento: scelta la palestra, MuW diventa un'app per allenarsi
 
-**Stato**: In corso (0, A, B, C e D in `main`; parte 0 di E chiusa il 2026-11-24; resta la E)
+**Stato**: Done (2026-11-24: 0, A, B, C, D ed E in `main`; restano l'OTA, la prova sul telefono e le schermate di «Food»)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-490-training-mode-part-0`
 **Dipende da**: TASK-429 (la modalità sci, ADR-0357: il modello), TASK-411
@@ -196,3 +196,30 @@ Nella PR della E vanno anche le righe di TASK-469 B2a passo 2
 (`useTabBarRoom` in «Today» e «Workouts»,
 `out/TASK-469/PASSO-2-RIGHE.md`). Elenco dei file al Coordinatore prima
 del codice.
+
+## Parte E — esito (2026-11-24)
+
+- **#1571** in `main` (`8e793730`): ordine Feed primo / Profile ultimo in
+  `trainingmode/trainingMode.ts` e `skimode/skiMode.ts`; `GymDrawGuide`
+  con la prop facoltativa `todayOnly` («Draw» invariato,
+  `gym/GymDrawGuideToday.test.tsx`); «How it works» in fondo a
+  «Workouts»; icona a lista (`assets/ui/tabs/list*.png`); righe
+  `useTabBarRoom` di TASK-469. Nessun testo nuovo. Schermate dal simulatore
+  approvate dall'utente il 2026-11-24 («Sì, approvo»).
+- **Il tondo dello sport** (segnalazione della sessione 518, 2026-11-24):
+  sul simulatore il pannello si apre al primo tocco da tutte le pagine
+  della Palestra e dello Sci; si perde solo un tocco dato mentre un altro
+  foglio sta ancora chiudendo (iOS non presenta un Modal durante la
+  chiusura di un altro), in tutta l'app. Non è un difetto di questo task;
+  detto al Coordinatore.
+
+## Chiusura
+
+Task chiuso il 2026-11-24. Restano, scritti qui e non in `STATUS.md`:
+
+- l'OTA di produzione con C, D (invisibile) ed E (lo pubblica il
+  Coordinatore) e la prova sul telefono;
+- le schermate della tab «Food» quando TASK-489 accende `NUTRITION_ON`
+  (un turno simulatore dal Coordinatore);
+- la modalità Nutrition (TASK-514, ADR-0408) userà lo stesso ordine della
+  barra (Feed primo, Profile ultimo).

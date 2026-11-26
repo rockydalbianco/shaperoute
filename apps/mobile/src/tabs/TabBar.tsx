@@ -346,6 +346,7 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
                   selected={selected}
                   on={lightOf(index)}
                   still={still}
+                  bright={floats && mode === "glass"}
                 />
                 {(tab.count ?? 0) > 0 && (
                   <View style={styles.count}>
@@ -367,6 +368,10 @@ type GlyphProps = {
   /** Its light, moved by the bar: 1 lit. */
   on: Animated.Value;
   still: boolean;
+  /** On the phone's real glass: the icon not on screen is in the full text
+   * colour too, since the secondary text does not keep 4.5:1 there. Its tab
+   * is then told by the capsule and by the bolder line alone. */
+  bright: boolean;
 };
 
 /**
@@ -374,7 +379,7 @@ type GlyphProps = {
  * gives way to the bolder line in a cross fade; with «Reduce Motion» only
  * the fade.
  */
-function Glyph({ tab, selected, on, still }: GlyphProps) {
+function Glyph({ tab, selected, on, still, bright }: GlyphProps) {
   const rise = on.interpolate({
     inputRange: [0, 1],
     outputRange: [0, still ? 0 : -TAB_ICON_RISE],
@@ -404,7 +409,10 @@ function Glyph({ tab, selected, on, still }: GlyphProps) {
       <Animated.Image
         testID={`tab-icon-off-${tab.title}`}
         source={TAB_ICONS[tab.icon].off}
-        style={[styles.layer, { tintColor: color.textMuted, opacity: unlit }]}
+        style={[
+          styles.layer,
+          { tintColor: bright ? color.text : color.textMuted, opacity: unlit },
+        ]}
       />
       <Animated.Image
         testID={`tab-icon-on-${tab.title}`}

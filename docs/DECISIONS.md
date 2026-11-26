@@ -607,7 +607,7 @@ lasciando le righe d'indice.
 - ADR-0407 — «Longevity»: cinquanta storie animate dentro l'app, ognuna da una fonte pubblica ufficiale citata, senza revisione di un professionista e con scritto che MuW non è fatta da professionisti; video delle persone e compensi dopo · 2026-11-24 · Attiva
 - ADR-0408 — La modalità «Nutrition»: scelta come uno sport la barra diventa Today · Plan · Explore · Feed · Profile; la scheda «Food» dell'allenamento resta; dopo TASK-490 D ed E · 2026-11-24 · Attiva
 - ADR-0409 — «Sign up» e «Log in» gialli: il pulsante in fondo al modulo è `accent` con parole `onAccent`, un'eccezione scelta dall'utente a «il giallo è del percorso» · 2026-11-24 · Attiva
-- ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
+- ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Attiva
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
 
 
@@ -703,8 +703,9 @@ OTA escono insieme, ciascuno col suo sì.
 
 ## ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; i due giri verso gli iscritti solo se nominati
 
-**Stato**: Proposta · 2026-11-24 · TASK-515 (parte 0; il codice è la parte
-A). Quali email accendere è una scelta **dell'utente** (2026-11-24,
+**Stato**: Attiva · 2026-11-24, in produzione dal 2026-11-26 · TASK-515
+(parte 0; il codice è la parte A, #1566; sul server col passo 24, i due
+giri spenti; recupero provato dall'utente sul telefono). Quali email accendere è una scelta **dell'utente** (2026-11-24,
 risposte in `tasks/TASK-515.md`); il come è deciso dall'agente su delega
 dell'utente. Precisa ADR-0244, ADR-0226 (parte B) e ADR-0261 in «si
 accende con le stesse tre variabili»; il resto di quegli ADR vale.

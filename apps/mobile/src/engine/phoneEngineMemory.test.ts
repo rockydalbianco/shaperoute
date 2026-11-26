@@ -133,3 +133,35 @@ test("dropping a page for memory is no death", async () => {
   }
   expect(engine.available).toBe(true);
 });
+
+test("no request is lost around a drop: one waiting, one asked just after", async () => {
+  const { engine, sent, attach, say } = withPage();
+  const big = engine.plan("big", [ZONE]);
+  attach();
+  say({ type: "ready", ms: 1 });
+  // A zone read ahead, then a route, asked while the big route runs.
+  engine.prepare([ZONE], "running", [46, 11]);
+  const waiting = engine.plan("waiting", [ZONE]);
+  say({ type: "result", id: 1, json: "{}", ms: 1, memoryMb: BIG });
+  await expect(big).resolves.toMatchObject({ kind: "done" });
+  // Requests wait: the page stays and takes them, in order.
+  expect(sent[2]).toContain("warm");
+  say({ type: "result", id: 2, json: "true", ms: 1, memoryMb: BIG });
+  expect(sent[3]).toContain('"body":"waiting"');
+  say({ type: "result", id: 3, json: "{}", ms: 1, memoryMb: BIG });
+  await expect(waiting).resolves.toMatchObject({ kind: "done" });
+  // Now the page goes; a route asked at once gets a new one, and an answer.
+  expect(engine.mountKey).toBe(-1);
+  const after = engine.plan("after", [ZONE]);
+  expect(engine.mountKey).toBeGreaterThan(0);
+  const fresh: string[] = [];
+  engine.attach({
+    send: (js) => fresh.push(js),
+    pyodide: "file:///p.zip",
+    engine: "file:///e.zip",
+  });
+  say({ type: "ready", ms: 1 });
+  expect(fresh[1]).toContain('"body":"after"');
+  say({ type: "result", id: 4, json: "{}", ms: 1, memoryMb: SMALL });
+  await expect(after).resolves.toMatchObject({ kind: "done" });
+});

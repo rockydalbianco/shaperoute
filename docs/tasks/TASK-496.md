@@ -3,7 +3,7 @@
 **Stato**: Done · 2026-11-23 · #1529 (O1) e #1531 (O2) in `main`; resta
 l'OTA (Coordinatore, col sì dell'utente) e l'occhio dell'utente sulla
 batteria, sul telefono. 2026-11-26: parte C (il file intero scritto accanto
-e spostato) nella #1603
+e spostato) in `main` dalla #1603 (`2b0d64c0`)
 **Prova sul telefono**: provato dall'utente il 2026-11-26 con una corsa vera, telefono bloccato e in tasca: «ok», senza numeri della batteria.
 **Fase**: 5 · **Branch**: `feat/TASK-496-a-run-journal` (O1), poi
 `feat/TASK-496-b-unseen-map-clock` (O2), `feat/TASK-496-c-atomic-run-file` (C)
@@ -124,7 +124,9 @@ invariata (`5e1b5ce5`).
       (`trackStore.ts`, nuovo `trackStoreAtomic.test.ts`); test della
       scrittura e dello spostamento interrotti; i test di TASK-507 passano
       senza modifiche; aggiunta C ad ADR-0264 (questa PR).
-- [ ] Parte C: CI verde e unione della #1603 (Coordinatore), poi l'OTA.
+- [x] Parte C: CI verde, #1603 unita dal Coordinatore (`2b0d64c0`,
+      2026-11-26).
+- [ ] Parte C: OTA di produzione (Coordinatore, col sì dell'utente).
 
 ## Cronologia
 

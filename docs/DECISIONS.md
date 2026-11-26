@@ -619,12 +619,12 @@ lasciando le righe d'indice.
 - ADR-0359, aggiunta (TASK-519) — Su «Map» la freccia punta dove punta il telefono, col cono; la mappa non gira; bussola spenta su «Data» e in tasca · 2026-11-26 · Attiva
 - ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
 - ADR-0264, aggiunta D (TASK-496) — In una giornata di sci o un volo registrati, alla mappa vanno solo i punti nuovi dell'ultimo tratto finché la divisione in tratti resta la stessa · 2026-11-26 · Attiva
-- ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove · 2026-11-26 · Attiva
+- ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
 
 
 ## Voci nuove
 
-## ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde
+## ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde; la stima e i 18 anni
 
 **Stato**: Attiva · 2026-11-26 · TASK-489 parti H e I. Il colore è una
 scelta **dell'utente** («Voglio un colore», poi «A: rosso e verde» fra tre
@@ -663,6 +663,14 @@ dall'utente; il giallo dell'app (è del percorso); un verde già in uso
 (`map.green` è il prato della mappa, `videoLine.green` la linea del video:
 nessuno dei due è un colore dell'interfaccia, e l'app non ha un token
 «success»).
+
+7. **La stima dell'obiettivo e i 18 anni** (parte J, a difesa del punto 4
+   della precisazione 5 e di quello che dice la privacy, «never shown to
+   people under 18»): l'app conosce solo l'anno di nascita, e chi compie
+   18 anni nell'anno in corso può averne ancora 17. In quell'anno MuW non
+   propone nessun numero («From your data MuW suggests no number for
+   this.»); sotto, come prima, «MuW suggests no calorie number to people
+   under 18.». Nessun testo nuovo.
 
 **Conseguenze**: `docs/UI.md` ha la riga di `food` accanto a `energy`.
 Visti nel simulatore il 2026-11-26, tono scuro e chiaro

@@ -5658,14 +5658,19 @@ qui esce dal telefono.
      only a demonstration. MuW is not made by health professionals: this is
      not medical advice.», l'avviso per gravidanza, allattamento, malattie
      e disturbi alimentari, «Use this number» e «I'll write my own». La
-     stima c'è solo per chi ha scelto «Lose weight», è adulto, ha i dati
-     del corpo e un indice di massa corporea di 25 o più: 600 kcal al
-     giorno sotto il consumo di un giorno solito (la media degli ultimi
-     sette), mai sotto 1400 kcal per le donne e 1900 per gli uomini (NHS,
-     fonti lette il 2026-11-24). Sotto i 18 anni «MuW suggests no calorie number to people
+     stima è il consumo di un giorno solito (la media degli ultimi sette
+     giorni interi) per chi tiene il conto o non ha risposto; per «Lose
+     weight» 600 kcal al giorno in meno, solo con un indice di massa
+     corporea di 25 o più e mai sotto 1400 kcal per le donne e 1900 per
+     gli uomini (NHS, fonti lette il 2026-11-24); per «Gain weight» nessun
+     numero, e accanto al piano del dietista il collegamento non c'è.
+     Servono i dati del corpo («To estimate, MuW needs your weight, height,
+     year of birth and sex. They stay on your phone.»). Sotto i 18 anni «MuW suggests no calorie number to people
      under 18.», negli altri casi in cui non propone «From your data MuW
-     suggests no number for this. Talk to your doctor or a dietitian.». Poi
-     «Start».
+     suggests no number for this. Talk to your doctor or a dietitian.»; MuW
+     conosce solo l'anno di nascita, quindi anche chi compie 18 anni
+     nell'anno in corso non riceve un numero. La stessa stima si apre dal
+     foglio di «My daily target». Poi «Start».
 
   In fondo alla pagina «How it works» riapre il primo passo.
 - **Due viste**, «Diary» | «My plan», e sotto sempre «Estimates only. MuW

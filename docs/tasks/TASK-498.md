@@ -1,12 +1,12 @@
 # TASK-498 — La chat aperta chiede solo i messaggi nuovi
 
-**Stato**: In lavorazione · 2026-11-26 · misura fatta, disegno scritto;
-lista dei file al Coordinatore, ritmo lento chiesto all'utente
+**Stato**: In lavorazione · 2026-11-26 · A (server) scritta, in PR; il
+ritmo lento scelto dall'utente; B (app) dopo la A in `main`
 **Fase**: 5 · **Branch**: `feat/TASK-498-a-message-news` (A, server), poi
 `feat/TASK-498-b-chat-reads-news` (B, app)
 **Dipende da**: TASK-319 (i messaggi, ADR-0279), TASK-458 (in `main`,
 #1519: ha toccato la stessa schermata)
-**ADR**: da chiedere al Coordinatore (proposta: aggiunta ad ADR-0279) ·
+**ADR**: aggiunta ad ADR-0279 (sì del Coordinatore, 2026-11-26) ·
 numero del task dal Coordinatore il 2026-11-23
 
 ## Obiettivo
@@ -77,8 +77,8 @@ HTTP ogni tanto.
   essere in `main` per fissare il contratto.
 - **Il ritmo**: 5 s finché ci si scrive; dopo un po' di silenzio più
   lento; torna a 5 s quando arriva un messaggio, quando se ne manda uno,
-  al ritorno nell'app. I numeri del ritmo lento sono la scelta chiesta
-  all'utente (sotto).
+  al ritorno nell'app. I numeri del ritmo lento li ha scelti l'utente
+  (sotto): 15 s dopo un minuto di silenzio, 30 s dopo cinque.
 - **Niente ridisegno**: una risposta che non cambia niente lascia lo
   stato di React com'è (lo stesso oggetto).
 
@@ -103,10 +103,13 @@ non arriva con `?after=`; lo porta la pagina intera, entro un minuto.
 
 ## Scelte
 
-- **Prodotto, dell'utente** (chiesta il 2026-11-26): il ritmo dopo il
-  silenzio. Proposta: 5 s; dopo 1 minuto senza messaggi 15 s; dopo 5
-  minuti 30 s. E che quello che la risposta corta non porta (tabella
-  sopra) arrivi entro un minuto invece che entro 5 s.
+- **Prodotto, dell'utente** (2026-11-26, «Sì, va bene»): il ritmo dopo
+  il silenzio è **5 s; dopo 1 minuto senza messaggi 15 s; dopo 5 minuti
+  30 s**; torna a 5 s quando arriva un messaggio, quando se ne manda uno,
+  al ritorno nell'app. Quello che la risposta corta non porta (tabella
+  sopra) arriva entro un minuto invece che entro 5 s. In una chat aperta
+  e ferma un messaggio può quindi comparire fino a 15 s dopo (30 s dopo
+  cinque minuti di silenzio); la push arriva come sempre.
 - **Tecniche, decise dall'agente su delega dell'utente**: `?after=` sulla
   stessa rotta e non una rotta nuova (un server di prima ignora il
   parametro e risponde la pagina: nessun `404` da distinguere da una
@@ -119,10 +122,16 @@ non arriva con `?after=`; lo porta la pagina intera, entro un minuto.
   `services/api/tests/test_message_news.py` (nuovo),
   `packages/shared-types/src/index.ts`,
   `packages/shared-types/fixtures/message-news.json` (nuovo),
+  `packages/shared-types/fixtures/messages.json` e
+  `packages/shared-types/fixtures/message-attachments.json` (il campo
+  `latest`: `test_messages.py` vuole negli esempi tutti i campi della
+  pagina),
   `packages/shared-types/test/message-news.test.ts` (nuovo),
   `docs/API.md`, `docs/tasks/TASK-498.md` (nuovo).
 - B: `apps/mobile/src/api/messages.ts` e il suo test
-  (`messages.test.ts`), `apps/mobile/src/messages/ConversationScreen.tsx`,
+  (`messages.test.ts`), `apps/mobile/src/messages/ConversationScreen.tsx`
+  e `ConversationScreen.test.tsx` (le attese sugli indirizzi, ora che
+  l'esempio ha `latest`),
   `apps/mobile/src/messages/conversationReading.ts` (nuovo) e
   `conversationReading.test.ts` (nuovo),
   `apps/mobile/src/messages/ConversationReading.test.tsx` (nuovo),
@@ -218,4 +227,7 @@ più nella pagina, che ignora. Tornare indietro è sicuro: l'app nuova senza
 ## Cronologia
 
 - 2026-11-26: riverificato su `c33f3920`, misura del «prima», disegno,
-  lista dei file al Coordinatore (fork 3), domanda sul ritmo all'utente.
+  lista dei file al Coordinatore (fork 3): sì ai file di A e B (compresi
+  `shared-types/src/index.ts`, i due esempi e il test della schermata),
+  aggiunta ad ADR-0279 senza numero nuovo. L'utente sul ritmo: «Sì, va
+  bene» (5 s, 15 s dopo un minuto, 30 s dopo cinque). Parte A scritta.

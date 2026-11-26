@@ -3602,5 +3602,5 @@ export const DE: Table = {
   // src/air/ (TASK-479 part H: the wind aloft; waiting for the user's approval)
   "Wind aloft": "Höhenwind",
   "Wind aloft not available": "Höhenwind nicht verfügbar",
-  "{source} · run of {time}": "{source} · Lauf von {time}",
+  "{source} · run of {time}": "{source} · Modelllauf von {time}",
 };

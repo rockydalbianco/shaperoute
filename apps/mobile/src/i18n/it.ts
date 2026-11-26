@@ -3706,4 +3706,10 @@ export const IT: Table = {
     "Niente proteine, carboidrati o grassi da contare per questo giorno.",
   // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
   "Landings from OpenStreetMap: {count}": "Atterraggi da OpenStreetMap: {count}",
+  // src/nutrition (TASK-489 part I: the invitation at the end of an activity; approved by the user on 2026-11-24)
+  "Count what you eat too": "Conta anche quello che mangi",
+  "Write your own diet and what you eat: MuW estimates the calories you eat and the ones you use, this activity included.":
+    "Scrivi la tua dieta e quello che mangi: MuW stima le calorie che mangi e quelle che consumi, compresa questa attività.",
+  "This activity: {kcal} kcal (est.)": "Questa attività: {kcal} kcal (stima)",
+  "Add what you ate": "Aggiungi cosa hai mangiato",
 };

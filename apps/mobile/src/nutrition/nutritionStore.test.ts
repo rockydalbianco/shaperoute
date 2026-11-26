@@ -116,6 +116,7 @@ test("the notice read, the target and the corrections are read back", () => {
     noticeSeen: true,
     target: 1850,
     edits: withActivityKcal(withRest(NO_EDITS, 1540), "run-1", 520),
+    invite: { seen: 2, off: true },
   };
   expect(saveSettings(settings)).toBe(true);
   expect(disk.files.has(uri(SETTINGS_FILE))).toBe(true);
@@ -175,4 +176,15 @@ test("nothing of «Nutrition» is kept outside its own files", () => {
     expect(name).toMatch(/^file:\/\/\/documents\/nutrition-/);
   }
   expect(disk.files.size).toBe(4);
+});
+
+test("an invitation's count that does not read is as new", () => {
+  expect(settingsFrom({ invite: { seen: -3, off: "yes" } }).invite).toEqual({
+    seen: 0,
+    off: false,
+  });
+  expect(settingsFrom({ invite: { seen: 1.5 } }).invite.seen).toBe(0);
+  expect(settingsFrom({ invite: 7 }).invite).toEqual({ seen: 0, off: false });
+  // Settings kept before the invitation existed.
+  expect(settingsFrom({ noticeSeen: true }).invite).toEqual({ seen: 0, off: false });
 });

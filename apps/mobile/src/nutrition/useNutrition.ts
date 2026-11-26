@@ -157,6 +157,21 @@ export function seeNotice(): boolean {
   return writeSettings({ ...current().settings, noticeSeen: true });
 }
 
+/** The invitation at the end of an activity was shown once more (part I). */
+export function seeInvite(): boolean {
+  const { settings } = current();
+  return writeSettings({
+    ...settings,
+    invite: { ...settings.invite, seen: settings.invite.seen + 1 },
+  });
+}
+
+/** «Not now» on the invitation: it is not shown again. */
+export function dismissInvite(): boolean {
+  const { settings } = current();
+  return writeSettings({ ...settings, invite: { ...settings.invite, off: true } });
+}
+
 /**
  * «My daily target» as the user wrote it, or none with null. False when
  * `kcal` is not a target (ownTarget.ts): nothing changes then.

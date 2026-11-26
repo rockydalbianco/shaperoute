@@ -46,9 +46,14 @@ sovrappone a E.
       («Sì, approvo»)**, seconda versione dopo «fallo più figo e moderno e
       professionale, usa anche più colori, animazioni»; vedi «Schizzo
       approvato» sotto.
-- [ ] d) Testi in inglese, poi le quattro traduzioni.
-- [ ] Nome della categoria «intimità» — proposta «Intimacy» chiesta
-      all'utente il 2026-11-27. Fascia d'età controllata il 2026-11-27:
+- [ ] d) Testi in inglese — bozza in `out/stretching-nuovo/TESTI.md`,
+      chiesta all'utente il 2026-11-27; le quattro traduzioni con ogni
+      parte di codice.
+- [x] Nome della categoria «intimità» — **«Intimacy»**, approvato
+      dall'utente il 2026-11-27 («Sì, «Intimacy»»): it «Intimità», de
+      «Intimität», fr «Intimité», es «Intimidad»; routine «Before
+      intimacy» e «After intimacy»; riga «Hips, pelvis, lower back and
+      breath». Fascia d'età controllata il 2026-11-27:
       la pagina App Store di MuW mostra **16+** (questionario tutto «No»
       tranne i contenuti degli utenti, età alzata a 16+ come i termini,
       TASK-152); la categoria non cambia nessuna risposta (nessun contenuto

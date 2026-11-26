@@ -197,6 +197,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-23**: **C0 in `main`** (#1458, `cffb2c4d`): il sonno acceso solo
   sul canale di prova `preview`, spento negli store. Arriva sulla build di
   prova con la prossima pubblicazione su `preview`; poi la prova e la C.
+  **2026-11-27**: **C in `main`** (#1334, `7e2813ce`) nel taglio nativo:
+  sonno acceso con la build nuova; App Privacy e build dal Coordinatore. Poi D.
 
 - **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (OTA
   12); B (dieci esercizi, tre routine da 3, 5, 10 min, la gamba staccata

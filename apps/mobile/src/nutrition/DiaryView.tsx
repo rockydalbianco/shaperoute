@@ -39,7 +39,11 @@ import {
 import { TargetSheet } from "./TargetSheet";
 import { useDayEnergy } from "./useDayEnergy";
 import { useNutrition, writeDay, writeDayAsPlanned, writeTarget } from "./useNutrition";
+import { Celebration } from "./Celebration";
 import { WeekStrip } from "./WeekStrip";
+import { WeighInCard } from "./WeighInCard";
+import { WeightPage } from "./WeightPage";
+import { WeightRow } from "./WeightRow";
 
 /** «Today», «Yesterday», or the day as the activities write it
  * («Fri 2 Oct 2026»). */
@@ -86,6 +90,10 @@ type Open = { meal: Meal; index: number | null };
  * other, and under the meals are the day's protein, carbohydrates and fat
  * and the week, a day to a pair of columns. The numbers are the same ones;
  * with «Reduce Motion» nothing moves.
+ *
+ * Since part K1 the weight is here too: on today, «Time to weigh in» when a
+ * weigh-in is due and the congratulations; under the week, «Weight», which
+ * opens the weight page.
  */
 export function DiaryView({ today, now }: Props) {
   const language = useLanguage();
@@ -95,6 +103,7 @@ export function DiaryView({ today, now }: Props) {
   const [shown, setShown] = useState<Open>({ meal: "breakfast", index: null });
   const [targetOpen, setTargetOpen] = useState(false);
   const [energyOpen, setEnergyOpen] = useState(false);
+  const [weightOpen, setWeightOpen] = useState(false);
   const at = now ?? new Date();
   // The week under the diary asks for the pages: its days reach further back.
   const energy = useDayEnergy(day, at, false);
@@ -170,6 +179,9 @@ export function DiaryView({ today, now }: Props) {
           <Text style={styles.arrowMark}>›</Text>
         </Tap>
       </View>
+
+      {day === today && <Celebration />}
+      {day === today && <WeighInCard today={today} />}
 
       <View style={styles.card}>
         <View style={styles.top}>
@@ -261,6 +273,7 @@ export function DiaryView({ today, now }: Props) {
 
       {eaten !== null && <MacroBars macros={macrosOf(meals)} />}
       <WeekStrip day={day} today={today} now={at} onDay={setDay} />
+      <WeightRow onOpen={() => setWeightOpen(true)} />
 
       <AddFoodSheet
         visible={open !== null}
@@ -285,6 +298,12 @@ export function DiaryView({ today, now }: Props) {
         visible={energyOpen}
         energy={energy}
         onClose={() => setEnergyOpen(false)}
+      />
+      <WeightPage
+        visible={weightOpen}
+        today={today}
+        now={at}
+        onClose={() => setWeightOpen(false)}
       />
     </View>
   );

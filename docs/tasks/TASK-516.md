@@ -198,7 +198,17 @@ Coordinatore, con `drawingMatch.test.ts` aggiunto dopo.
   parole della lampadina (in tedesco è la pera).
 - Categorie della ricerca, scelta dell'utente: animali → «Animals»,
   simboli → «Symbols», gli altri 19 (cibo, monumenti, oggetti) → «Emoji».
-- `prefetch_zones.ZONE_SHAPES` non cambia.
+- `prefetch_zones.ZONE_SHAPES` non cambia. Nella zona in bici di 30 km
+  quattro forme nuove stanno solo fino a 27 km (bastoncino, croissant, Torre
+  Eiffel) o 25 km (ombrello), come la pera e la Torre di Pisa
+  (`test_prefetch_zones.py`).
+- Stessi percorsi: le 9 rotte identiche sul Mac; `SAME_ROUTES_AS`
+  `030243086cea → 83b84d67c7f4`, `da3da1914fdf → 780424973b42` (nuoto),
+  `f01152178efe → 9b27551516c0` (pagaiata); `engine_fingerprint()` resta
+  `8ab61d8e87f9`. Impronta nativa iOS invariata, `5e1b5ce5`: basta un OTA.
+- Fuori lista, col sì del Coordinatore: `drawingMatch.test.ts` (sotto) e
+  `tools/test_catalog_words.py` (il pinguino non è più un esempio di
+  candidata: lo è la giraffa).
 
 **Per dopo**: in «Explore» la ricerca confronta pezzi di parola, così
 «cane» in italiano mostra anche il bastoncino di zucchero (`candy_cane`)

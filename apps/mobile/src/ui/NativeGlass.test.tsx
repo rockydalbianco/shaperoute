@@ -117,8 +117,10 @@ test("where the phone has it: the real glass, regular, in the app's tone, with t
   expect(native).toHaveBeenCalledWith("ExpoGlassEffect");
   expect(piece().props.glassEffectStyle).toBe("regular");
   expect(piece().props.colorScheme).toBe(tone.tone);
-  // Never a tint: the yellow is the route's.
-  expect(piece().props.tintColor).toBeUndefined();
+  // Tinted with the tone's own background, so what stands on it stays
+  // readable over anything; never the yellow, which is the route's.
+  expect(piece().props.tintColor).toBe(glass.realTint);
+  expect(piece().props.tintColor).not.toBe(color.accent);
   expect(face().borderRadius).toBe(20);
   // The glass is the phone's: no veil of ours under it.
   expect(face().backgroundColor).toBeUndefined();

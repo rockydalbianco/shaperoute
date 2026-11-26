@@ -140,7 +140,9 @@ export function AppHeader({
       {real ? (
         // Never faded by opacity: at 0 the phone stops drawing the glass.
         // Its own switch instead, `none` at the top of a page. `regular`,
-        // never `clear`, in the app's tone, never tinted.
+        // never `clear`, in the app's tone, tinted with the tone's own
+        // background as every piece of real glass (`glass.realTint`): the
+        // logo and the buttons keep their contrast over what passes behind.
         <RealGlass
           testID="header-band"
           pointerEvents="none"
@@ -150,6 +152,7 @@ export function AppHeader({
             animationDuration: BAND_FADE_MS / 1000,
           }}
           colorScheme={tone.tone}
+          tintColor={glass.realTint}
           style={StyleSheet.absoluteFill}
         />
       ) : (

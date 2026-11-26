@@ -619,9 +619,55 @@ lasciando le righe d'indice.
 - ADR-0359, aggiunta (TASK-519) — Su «Map» la freccia punta dove punta il telefono, col cono; la mappa non gira; bussola spenta su «Data» e in tasca · 2026-11-26 · Attiva
 - ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
 - ADR-0264, aggiunta D (TASK-496) — In una giornata di sci o un volo registrati, alla mappa vanno solo i punti nuovi dell'ultimo tratto finché la divisione in tratti resta la stessa · 2026-11-26 · Attiva
+- ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove · 2026-11-26 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde
+
+**Stato**: Attiva · 2026-11-26 · TASK-489 parti H e I. Il colore è una
+scelta **dell'utente** («Voglio un colore», poi «A: rosso e verde» fra tre
+prove mostrate in chat, 2026-11-26); i toni, il nome del token e i
+controlli sono **decisi dall'agente su delega dell'utente**, con il sì del
+Coordinatore a toccare `theme/tokens.ts`. **Cambia il punto 2 della
+precisazione 5**, dove gli anelli erano «nei colori del testo e non in
+verde e rosso».
+
+**Decisione**:
+1. L'anello di fuori, quello che il corpo ha consumato, è `energy`: il
+   rosso che le calorie hanno già in tutta l'app (TASK-424 C3). L'anello
+   di dentro, quello che si è mangiato, è un token nuovo, **`food`**, un
+   verde: `#4FD08A` nel tono scuro (fino a `#7BE3AA` al passo più
+   chiaro), `#095428`–`#0F6B35` nel tono chiaro.
+2. Gli stessi due colori nelle colonne di «This week», nei due anelli
+   piccoli dell'invito a fine attività e nell'esempio della porta della
+   prima volta. Le barre di proteine, carboidrati e grassi restano nel
+   colore del testo.
+3. **Il colore dice quale numero è, non se va bene**: «Surplus» e
+   «Deficit» restano senza colore, come deciso nella parte D. Il verde non
+   è un premio e il rosso non è un avviso.
+4. **Mai l'unico segno**: ogni anello ha accanto la sua etichetta, il suo
+   numero e un puntino del suo colore (regola dell'App Store «non solo
+   colore», e chi non distingue rosso e verde legge le parole).
+5. Contrasto, a ogni tono e passo, in `theme/foodContrast.test.ts`: `food`
+   almeno 4,5:1 su `background`, `surface` e `surfaceRaised`; `food` ed
+   `energy` almeno 3:1 su `border`, che è la traccia dell'anello. `food`
+   non è `accent` (il giallo resta del percorso) né `energy`.
+6. Gli anelli sono disegnati con le viste e `Animated` di React Native:
+   l'app non ha `react-native-svg` e non si aggiunge una dipendenza per
+   questo. Passano con un aggiornamento normale.
+
+**Alternative scartate**: le altre due prove mostrate in chat, non scelte
+dall'utente; il giallo dell'app (è del percorso); un verde già in uso
+(`map.green` è il prato della mappa, `videoLine.green` la linea del video:
+nessuno dei due è un colore dell'interfaccia, e l'app non ha un token
+«success»).
+
+**Conseguenze**: `docs/UI.md` ha la riga di `food` accanto a `energy`.
+Visti nel simulatore il 2026-11-26, tono scuro e chiaro
+(`out/TASK-489/shots/09`–`12`). Codice nella #1652 (parte H) e nella PR
+della parte I.
 
 ## ADR-0264, aggiunta D (TASK-496) — Sci e volo: alla mappa solo i punti nuovi dell'ultimo tratto
 

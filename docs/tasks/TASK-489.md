@@ -1072,6 +1072,15 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 
 ## Registro
 
+- **2026-11-26, sera**: #1563 (C2a) e #1619 (privacy e termini della
+  parte J) in `main`. **Parte H = #1652**, armata dal Coordinatore col
+  «Sì» dell'utente, ferma finché non escono il passo 25 e l'OTA 27.
+  Rosso e verde visti nel simulatore (iPhone 17), tono scuro e chiaro:
+  anelli, puntini e colonne della settimana, più «Calorie balance» nel
+  profilo; nessun difetto (`out/TASK-489/shots/09`–`13`). Non visto
+  l'invito a fine attività coi colori. La decisione sui colori è
+  ADR-0397, precisazione 6; `docs/UI.md` descrive D2, H, I e J. I e J
+  allineate in locale: la I si apre con H in `main`, poi la J.
 - **2026-11-26**: l'utente sceglie i colori degli anelli («rosso e
   verde»): `color.food` in `theme/tokens.ts`, concordato col Coordinatore,
   dentro la parte H. Il «Sì, unisci» per C2a (#1563) dato dall'utente al

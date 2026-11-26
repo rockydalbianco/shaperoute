@@ -624,9 +624,98 @@ lasciando le righe d'indice.
 - ADR-0177, aggiunta G (TASK-214) — Una zona che il server non ha intorno al telefono la prepara da solo, come un luogo tenuto (TASK-334): il telefono la trova all'apertura dopo; il log non scrive mai il nome della zona · 2026-11-26 · Attiva
 - ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi (`latest` nella pagina, `?after=` sulla stessa rotta), più piano nel silenzio (5 s, 15 s, 30 s: scelta dell'utente); la pagina intera una volta al minuto; una risposta uguale non ridisegna · 2026-11-26 · Attiva
 - ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza (10 km), chiesti al primo tocco; fuori dal catalogo le forme di riserva; le sorprese venute sotto il 90% ricordate sul telefono · 2026-11-26 · Attiva
+- ADR-0415 — Lo stretching rifatto (TASK-520): una home a categorie con routine composte da un solo elenco di esercizi, i movimenti come respiro largo, la stessa figura vista anche di fronte, gli esercizi nuovi in file nuovi con chiavi stabili · 2026-11-27 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0415 — Lo stretching rifatto: categorie e routine composte, movimenti, la figura anche di fronte
+
+**Stato**: Attiva · 2026-11-27 · TASK-520. Numero dal Coordinatore (fork 3,
+2026-11-27). **Scelte dell'utente** (parte 0, una domanda per volta, tutte
+del 2026-11-27): la mappa delle 54 categorie, l'elenco dei 65 esercizi, lo
+schizzo della home con un colore per gruppo, il nome «Intimacy», i testi in
+inglese, le traduzioni dei 50 esercizi nuovi, il video MP4 della routine
+come ultima parte. **Decise dall'agente su delega dell'utente** le scelte
+tecniche qui sotto. Il dettaglio di prodotto sta in
+`docs/tasks/TASK-520.md` e non si ripete qui. Codice finora: A1 nella
+#1666, la parte B dalla #1672; i punti 1, 6, 7 e 8 valgono da ora ma il
+loro codice arriva con le parti A2 e C–F.
+
+**Contesto**: lo stretching di TASK-466 (ADR-0378) ha 15 esercizi, poche
+routine scritte a mano e una figura fatta di View girate, vista di lato
+(ADR-0147: nessuna libreria di disegno). L'utente lo vuole rifatto: una
+home a categorie (zona del corpo, momento, prima e dopo ogni sport,
+intimità, altro), varianti di durata e di intensità, circa 65 esercizi,
+una pagina per esercizio. La struttura prende spunto da un'app del
+settore; nomi, disegni, icone, testi e colori sono nostri.
+
+**Decisione**:
+1. **Le routine si compongono**, non si scrivono una per una: ogni
+   categoria ha un elenco ordinato di esercizi; durata (3, 5, 10, 15–20
+   minuti) e variante (dolce o intensa, in piedi o a terra) scelgono
+   quanti e con che tenuta, sempre allo stesso modo per gli stessi
+   ingressi. Per questo ogni esercizio dice dove si fa (`position`) e
+   quanto è forte (`level`). Circa 250 liste a mano non si terrebbero in
+   ordine.
+2. **Un movimento («Move») è il respiro, più largo e col suo passo**: la
+   figura va tra la posa e la sua fine e torna, in loop, mentre il tempo
+   scorre come per una tenuta. `Figure` prende solo la durata di un giro
+   (`breathMs`, dal `tempoMs` dell'esercizio); il limite di pochi gradi
+   (`BREATH_MAX_DEGREES`) resta per le tenute. Nessun motore nuovo e
+   nessuna libreria.
+3. **La vista di fronte è la stessa figura con altri segmenti**
+   (`posesFront.ts`, `FigureFront.tsx`): dieci invece di dodici, le due
+   braccia e le due gambe in vista, spalle e anche come due barre corte.
+   Gli angoli sono quelli dello schermo (0 giù, 90 a sinistra, 180 su) e
+   i lati sono quelli dello schermo, non della persona; l'altro lato è la
+   posa specchiata, raggiunta passando per la posizione in piedi.
+   `above: true` vuol dire sdraiato visto dall'alto: la figura sta a metà
+   del riquadro invece che sul pavimento. Un esercizio la usa se ha il
+   campo `front`; `pose` resta obbligatorio per chi legge l'elenco.
+4. **I campi nuovi dell'esercizio sono tutti facoltativi** (`kind`,
+   `tempoMs`, `position`, `level`, `front`, `frontBreath`): i 15 esercizi
+   di prima e le routine salvate non cambiano.
+5. **Gli esercizi nuovi stanno in file nuovi** (`posesMore.ts`,
+   `exercisesMore.ts`, poi `posesFrontMore.ts`) e **una sola lista li
+   raccoglie tutti** (`allExercises.ts`: `ALL_EXERCISES`, `exerciseByKey`,
+   `isMove`): prima i 15, poi i nuovi, blocco dopo blocco. **Una chiave
+   non cambia mai e non si riusa**: le routine salvate e pubblicate
+   (ADR-0378, aggiunta E) nominano gli esercizi per chiave. I file di
+   TASK-466 (`exercises.ts`, `poses.ts`, `routines.ts`) si toccano il meno
+   possibile.
+6. **I colori dei cinque gruppi sono token dedicati** (`stretch.*` in
+   `tokens.ts`), con il test di contrasto nelle quattro tinte: non si
+   riusano `runDay`, `muscle`, `food`, che vogliono dire altro.
+7. **L'anello del tempo è fatto di 48 View tonde**, non di un arco: un
+   arco vorrebbe una libreria di disegno.
+8. **Gli sport si scrivono «{sport} · Before» e «{sport} · After»**: il
+   nome dello sport è già tradotto, non servono frasi «After {sport}» per
+   ogni lingua. Il video della routine nasce nella pagina del video della
+   corsa (`src/share/videoPage.ts`), con una scena sua.
+9. **Ogni posa nuova ha i suoi test**: sta sul pavimento e mai sotto, in
+   fondo al respiro come a riposo; resta intera su un telefono stretto
+   (scivola quando si allunga molto, come `drift` già fa); le mani e i
+   piedi che devono toccarsi o toccare terra lo fanno; il respiro va nel
+   verso dell'esercizio (la coscia verso il petto, il tallone verso il
+   gluteo). `bones` appende le braccia in cima al busto mentre `Figure`
+   le disegna a 0,9: dove conta, il test ha quella tolleranza e lo dice.
+
+**Motivo**: tenere un solo modo di disegnare e di animare la figura, e un
+solo elenco di esercizi, fa crescere il catalogo senza che ogni routine
+diventi un pezzo a sé da mantenere; i file nuovi tengono separati due
+task che lavorano nella stessa cartella.
+
+**Conseguenze**: nessuna dipendenza nuova, nessuna migrazione, nessuna
+schermata cambiata finché non entra la parte D (la home). Gli esercizi
+nuovi sono nell'elenco ma nessuna routine li mostra prima della parte C.
+I testi nuovi entrano con le loro quattro traduzioni, approvate
+dall'utente. Il numero 14 dell'elenco approvato, «Hands clasped behind»,
+era lo stesso gesto di «Chest opener»: al suo posto `goalpost`, col sì
+dell'utente. Nessun consiglio medico: «Stop if it hurts» resta, e le
+categorie per la schiena dicono che non sostituiscono un medico. Per
+«Intimacy» vale la classificazione d'età sugli store scritta nel task file
+(16+ su App Store).
 
 ## ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza
 

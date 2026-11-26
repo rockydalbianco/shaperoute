@@ -1,14 +1,23 @@
 # TASK-508 — Rifiniture dell'interfaccia (U1, U11–U14)
 
-**Stato**: In lavorazione · 2026-11-24 · due PR (scelta del Coordinatore):
-A tecnica (U1, U11 a capo e maiuscole, U13 orologio), B coi testi (U11
-pulsante spento, U12, U13 push, U14)
-**Fase**: 5 · **Branch**: `feat/TASK-508-a-ui-polish` (A), poi
-`feat/TASK-508-b-texts` (B)
-**ADR**: da chiedere al Coordinatore (il giallo di «Log in» / «Sign up»,
-seconda eccezione alla regola 1 di `UI.md` «Il tema») · numero di task dal
-«Coordinatore (fork 3)» il 23 novembre 2026 (gruppo L di
-`out/prova-app-2026-11-23/PROPOSTE.md`)
+**Stato**: Done · 2026-11-24 · #1569, #1572 e #1576 in `main` (merge
+`091f992a`, `3e740931`, `43e5e6aa`)
+**Esito**: i cinque punti della prova sono sistemati, uno è detto voluto
+(il pallino rosso del profilo). «Follower» intero; in «Draw» l'interruttore
+su una riga, le forme con la maiuscola, la riga che dice perché «Draw
+route» è spento; in «Explore» le città nella lingua dell'app e un solo
+cuore; in «Settings» niente testo sotto l'orologio e l'invito alle push;
+«Sign up» / «Log in» gialli. Schermate prima/dopo e traduzioni approvate
+dall'utente («Sì, vanno bene», «sì alla #1572»). Restano l'OTA di
+produzione, del Coordinatore col sì dell'utente, e la prova dell'utente
+sul telefono.
+**Fase**: 5 · **Branch**: `feat/TASK-508-a-ui-polish` (A, tecnica),
+`feat/TASK-508-b-texts` (B, i testi), `feat/TASK-508-c-draw-hint` (C,
+`App.tsx`), `docs/TASK-508-done`
+**ADR**: ADR-0409 (il giallo di «Sign up» / «Log in», un'eccezione alla
+regola 1 di `UI.md` «Il tema»), dato dal Coordinatore il 24 novembre 2026 ·
+numero di task dal «Coordinatore (fork 3)» il 23 novembre 2026 (gruppo L
+di `out/prova-app-2026-11-23/PROPOSTE.md`)
 
 ## Obiettivo
 
@@ -49,8 +58,13 @@ pulsante di accesso grigio. Alla fine ognuno è sistemato o detto voluto.
    on.» / «Le notifiche push sono spente. Tocca per accenderle.» Il tocco fa
    come l'interruttore.
 
-Le traduzioni in tedesco, francese e spagnolo dei testi nuovi vanno fatte
-vedere all'utente con le schermate.
+Le traduzioni in tedesco, francese e spagnolo dei testi nuovi sono state
+fatte vedere all'utente con le schermate: «Sì, vanno bene» (2026-11-24).
+
+6. La riga «Choose what to draw first» compare solo quando non c'è proprio
+   niente di scritto o scelto; una parola in lettura o non valida tiene la
+   nota sotto il suo campo. Scelta dell'agente, detta all'utente: «va bene
+   così» (2026-11-24).
 
 ## File toccati
 
@@ -70,7 +84,10 @@ Sì del Coordinatore il 24-11: nessuna PR aperta tocca questi file, salvo
 - `apps/mobile/src/ui/StatusBarCover.tsx` + test (nuovi)
 - `docs/tasks/TASK-508.md`
 
-**PR B, coi testi** (dopo la A):
+**PR B, coi testi** (#1572; in più, col sì del Coordinatore,
+`apps/mobile/src/profile/SettingsPage.test.tsx`, che conta i pulsanti di
+«Settings») **e PR C** (#1576: `apps/mobile/App.tsx` e
+`apps/mobile/__tests__/AppDrawHint.test.tsx`):
 
 - `apps/mobile/App.tsx` (il `footer` di «Draw»: quando il Coordinatore dà
   il turno), nuovo `apps/mobile/src/route/DrawHint.tsx` + test (scritti, in
@@ -89,17 +106,28 @@ Sì del Coordinatore il 24-11: nessuna PR aperta tocca questi file, salvo
 
 ## Criteri di accettazione
 
-- [ ] Ogni punto «vero» della tabella sistemato, con un test deterministico.
-- [ ] Le quattro tabelle i18n hanno ogni chiave nuova (`tables.test.ts`).
-- [ ] Nessun colore scritto a mano; impronta iOS `5e1b5ce5` invariata;
+- [x] Ogni punto «vero» della tabella sistemato, con un test deterministico.
+- [x] Le quattro tabelle i18n hanno ogni chiave nuova (`tables.test.ts`).
+- [x] Nessun colore scritto a mano; impronta iOS `5e1b5ce5` invariata;
       nessuna dipendenza nuova.
-- [ ] Schermate prima/dopo viste dall'utente, col suo sì.
-- [ ] «#NNN pronta» al Coordinatore a CI verde; documenti di chiusura dopo
+- [x] Schermate prima/dopo viste dall'utente, col suo sì.
+- [x] «#NNN pronta» al Coordinatore a CI verde; documenti di chiusura dopo
       il merge.
 
 ## Lasciato fuori
 
-(da riempire: i punti i cui file sono occupati, col nome di chi li tiene)
+Niente per file occupati: ogni file chiesto era libero o è arrivato a turno
+(`App.tsx` dopo TASK-507 B2).
+
+- **La sagoma nelle caselle degli esempi di «Explore»** (U12): è di
+  TASK-509.
+- **Il pallino rosso sul profilo** (U14): voluto, non toccato.
+- **Il commento di `accent` in `tokens.ts`** nomina due eccezioni al
+  giallo, non tre: `tokens.ts` non era nella lista. Va allineato alla
+  prima modifica di quel file (ADR-0409, «Conseguenze»).
+- **`PaddleExplore.tsx`** ha ancora il suo `HeartBadge` accanto al titolo:
+  l'utente ha deciso solo per «Explore». Da chiedere se si vuole uguale.
+- **OTA di produzione e prova sul telefono**: Coordinatore e utente.
 
 ## Cronologia
 
@@ -114,3 +142,10 @@ Sì del Coordinatore il 24-11: nessuna PR aperta tocca questi file, salvo
   `out/TASK-508/shots/` del checkout principale, accanto alle «prima» del
   23-11. Test dei file toccati della PR A verdi uno alla volta, `tsc`
   verde.
+- 2026-11-24 notte: #1569 «pronta» e unita (CI verde su `580ea9c8`).
+  #1572: il job `mobile` rosso per `SettingsPage.test.tsx` (14 pulsanti,
+  la riga delle push fa 15), corretto in `5fd5faae`; «pronta» col sì
+  dell'utente, unita. Turno su `App.tsx` dopo #1573: #1576 monta
+  `DrawHint`, unita subito dopo la #1572.
+- 2026-11-26: documenti di chiusura (ADR-0409, `UI.md`, `COMPLETATI.md`,
+  questo file).

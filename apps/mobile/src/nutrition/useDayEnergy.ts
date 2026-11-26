@@ -24,7 +24,14 @@ import { useNutrition } from "./useNutrition";
  * covered, and nothing is said of the days meanwhile. A page that does not
  * come is not asked again by itself.
  */
-export function useDaysEnergy(days: readonly LocalDay[], now: Date): DayEnergy[] {
+export function useDaysEnergy(
+  days: readonly LocalDay[],
+  now: Date,
+  /** Whether this reader asks for the pages it misses. Two readers on one
+   * page (the diary's day and the week under it, part H) would ask for the
+   * same page twice: the one whose days reach further back asks. */
+  asks = true,
+): DayEnergy[] {
   const door = useActivitiesDoor();
   const body = useBody();
   const { edits } = useNutrition().settings;
@@ -41,10 +48,10 @@ export function useDaysEnergy(days: readonly LocalDay[], now: Date): DayEnergy[]
     status === "ready" && (earliest === null || listCovers(list, more, earliest));
   const missing = status === "ready" && !covered;
   useEffect(() => {
-    if (missing && !loadingMore && problem === null) {
+    if (asks && missing && !loadingMore && problem === null) {
       loadMore();
     }
-  }, [missing, loadingMore, problem, loadMore]);
+  }, [asks, missing, loadingMore, problem, loadMore]);
 
   const hub: HubState =
     status === "off"
@@ -76,6 +83,6 @@ export function useDaysEnergy(days: readonly LocalDay[], now: Date): DayEnergy[]
 }
 
 /** The energy of one day: what «Diary» shows on top (part C1). */
-export function useDayEnergy(day: LocalDay, now: Date): DayEnergy {
-  return useDaysEnergy([day], now)[0];
+export function useDayEnergy(day: LocalDay, now: Date, asks = true): DayEnergy {
+  return useDaysEnergy([day], now, asks)[0];
 }

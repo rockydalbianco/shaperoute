@@ -2572,6 +2572,9 @@ export const IT: Table = {
   "Show fewer": "Mostra meno",
   "See all": "Vedi tutte",
 
+  // src/route/SurprisePill.tsx (TASK-448: «Surprise me»)
+  "Surprise me": "Sorprendimi",
+
   // src/route/DistanceDial.tsx (TASK-361: the distance by half a km)
   "Tap to type the distance": "Tocca per scrivere la distanza",
 
@@ -3580,6 +3583,31 @@ export const IT: Table = {
     "I prodotti trovati col codice a barre contengono dati di Open Food Facts, disponibili con la Open Database License. Restano separati dall'elenco USDA.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Questa pagina la vedi solo tu. Quello che scrivi qui resta sul tuo telefono; un codice a barre che cerchi va a Open Food Facts.",
+
+  // src/takeoffs (TASK-493 part C)
+  Takeoffs: "Decolli",
+  "Zoom in to see the takeoffs.": "Avvicina la mappa per vedere i decolli.",
+  "Zoom in to see all the takeoffs.": "Avvicina la mappa per vederli tutti.",
+  Landing: "Atterraggio",
+  "Unnamed takeoff": "Decollo senza nome",
+  "Unnamed landing": "Atterraggio senza nome",
+  "Official site": "Sito ufficiale",
+  Faces: "Esposto a",
+  "Landings nearby": "Atterraggi vicini",
+  "{distance} away · {drop} lower": "a {distance} · {drop} più in basso",
+  "No landing within 15 km on OpenStreetMap.":
+    "Nessun atterraggio entro 15 km su OpenStreetMap.",
+  "Takeoffs above": "Decolli sopra",
+  "Flights from here": "Voli da qui",
+  "{flights} flights by {pilots} pilots": "{flights} voli di {pilots} piloti",
+  "Today: {count}": "Oggi: {count}",
+  "Few flights from here yet.": "Ancora pochi voli da qui.",
+  "In the air now: {count}": "In volo adesso: {count}",
+  "Watch live": "Guarda dal vivo",
+  Highest: "Più alto",
+  "Missing a takeoff? Add it on OpenStreetMap.":
+    "Manca un decollo? Aggiungilo su OpenStreetMap.",
+  "The takeoffs could not be loaded.": "Non è stato possibile caricare i decolli.",
   // src/air/ (TASK-479 part D4: the task passed on; approved by the user on 2026-11-23)
   "Share file": "Condividi file",
   "Show QR": "Mostra QR",
@@ -3662,6 +3690,16 @@ export const IT: Table = {
   "Remove all": "Togli tutte",
   "Press the flight map long to add one.":
     "Tieni premuto sulla mappa di volo per aggiungerne una.",
+  // src/nutrition (TASK-489 part H: the animated day; approved by the user on 2026-11-24)
+  "Protein, carbs and fat (est.)": "Proteine, carboidrati e grassi (stima)",
+  Protein: "Proteine",
+  Carbs: "Carboidrati",
+  Fat: "Grassi",
+  "{percent}% of the energy": "{percent}% dell'energia",
+  "Counted only for the foods that have these numbers.":
+    "Contati solo per i cibi che hanno questi numeri.",
+  "No protein, carbs or fat to count for this day.":
+    "Niente proteine, carboidrati o grassi da contare per questo giorno.",
   // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
   Weather: "Meteo",
   "Weather: {temperature}, wind {speed}": "Meteo: {temperature}, vento {speed}",

@@ -10,6 +10,7 @@ import runActivities from "../fixtures/run-activities.json" with { type: "json" 
 import session from "../fixtures/gym-session.json" with { type: "json" };
 import byHand from "../fixtures/gym-session-manual.json" with { type: "json" };
 import withHeart from "../fixtures/gym-session-heart.json" with { type: "json" };
+import withStretch from "../fixtures/gym-session-stretch.json" with { type: "json" };
 import {
   GYM_LEVEL_MEASURES,
   GYM_SOURCES,
@@ -33,6 +34,9 @@ import {
   type GymSessionRequest,
   type GymSetKind,
   RUN_ACTIVITIES,
+  STRETCH_EXERCISES_MAX,
+  STRETCH_MINUTES_MAX,
+  STRETCH_SESSION_MAX_S,
   RUN_SOURCES,
   TRACKLESS_ACTIVITIES,
   type TracklessActivity,
@@ -85,6 +89,26 @@ test("a workout with its heart rate: both, in range, the average not above (part
   assert.deepEqual(rest, session);
   // The other examples say nothing of it, as an app before part G.
   assert.ok(!("heart_avg_bpm" in session) && !("heart_avg_bpm" in byHand));
+});
+
+test("a workout with its stretching at the end (TASK-466 part C)", () => {
+  const request: GymSessionRequest = {
+    ...withStretch,
+    sets: withStretch.sets.map((item) => ({ ...item, kind: item.kind as GymSetKind })),
+  };
+  const { stretch } = request;
+  assert.ok(stretch !== undefined);
+  assert.equal(stretch.routine, "afterGym");
+  assert.ok(stretch.minutes >= 1 && stretch.minutes <= STRETCH_MINUTES_MAX);
+  assert.ok(stretch.duration_s >= 1 && stretch.duration_s <= STRETCH_SESSION_MAX_S);
+  assert.ok(stretch.exercises >= 0 && stretch.exercises <= STRETCH_EXERCISES_MAX);
+  // The same workout as the example, with its stretching added.
+  const { stretch: _s, ...rest } = withStretch;
+  assert.deepEqual(rest, session);
+  // The other examples say nothing of it, as an app before part C.
+  assert.ok(
+    !("stretch" in session) && !("stretch" in byHand) && !("stretch" in withHeart),
+  );
 });
 
 test("a workout written by hand has sets none of them live, and no timer", () => {

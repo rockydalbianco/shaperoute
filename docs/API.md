@@ -4306,6 +4306,30 @@ quindi non serve il token; la chiave dell'API serve come su ogni percorso.
   atterraggi da un estratto»). Lo storico dei voli di un decollo è la
   parte B; i tipi dell'app la parte C.
 
+**Lo storico di un decollo (parte B)**
+- **`GET /flying-sites/{id}/history?utc_offset_min=…`**: i voli di MuW che
+  partono da un decollo. Un atterraggio, o un id che non c'è: `404`.
+- **Il volo di un decollo**: un volo in parapendio salvato il cui punto di
+  decollo è entro 300 m dal sito. Il punto è quello dove comincia il primo
+  tratto in aria (le parti di `run_stats`), altrimenti il primo punto della
+  traccia. La traccia non ha la quota: quella del sito non si confronta.
+- **I numeri** contano tutti i voli salvati, anche privati, senza nomi:
+  `flights` e `pilots` di sempre, `today` (dalla mezzanotte di chi chiede:
+  `utc_offset_min` da −840 a 840, 0 se manca) e `months`, gli ultimi 12
+  mesi in UTC dal più vecchio (`month` `YYYY-MM`, `flights`, `pilots`).
+  Con meno di 3 piloti diversi `few` è `true` e i numeri sono `null`
+  (scelta dell'utente).
+- **`in_air_now`**: `count`, le condivisioni dal vivo di un volo in corso
+  il cui primo punto è entro 300 m dal sito, e `shares`, gli id di quelle
+  condivise con tutti nel Feed, da aprire come nel Feed. Mai un nome.
+- **`records`**: `longest_s` (più secondi in aria), `highest_m` (la quota
+  più alta raggiunta, sul mare) e `farthest_m` (più metri in aria), solo
+  dai voli con un post per tutti, pubblicato, non nascosto, di un account
+  visibile: `value`, `drawing_id`, `username`, `started_at`, o `null`.
+- **Il calcolo** si fa alla lettura, senza tabelle: i voli di un sito
+  restano in memoria 10 minuti; i voli in aria e «oggi» si leggono a ogni
+  richiesta. Come i siti, non serve l'account.
+
 **Un formato stabile**: lo legge anche TASK-479 D6 (l'atterraggio più
 vicino, con `kind=landing`). I campi si possono solo aggiungere, mai
 togliere o cambiare di senso.

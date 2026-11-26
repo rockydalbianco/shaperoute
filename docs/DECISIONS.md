@@ -622,6 +622,7 @@ lasciando le righe d'indice.
 - ADR-0414 — Le coordinate delle linee intere che l'API risponde all'app a 6 decimali, ognuna dentro la sua cella da 5: il nome della linea (`line_key`, il `favoriteKey` dell'app) non cambia; l'SQL resta a 15 cifre · 2026-11-27 · Attiva
 - ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Proposta
 - ADR-0177, aggiunta G (TASK-214) — Una zona che il server non ha intorno al telefono la prepara da solo, come un luogo tenuto (TASK-334): il telefono la trova all'apertura dopo; il log non scrive mai il nome della zona · 2026-11-26 · Attiva
+- ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi (`latest` nella pagina, `?after=` sulla stessa rotta), più piano nel silenzio (5 s, 15 s, 30 s: scelta dell'utente); la pagina intera una volta al minuto; una risposta uguale non ridisegna · 2026-11-26 · Attiva
 - ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza (10 km), chiesti al primo tocco; fuori dal catalogo le forme di riserva; le sorprese venute sotto il 90% ricordate sul telefono · 2026-11-26 · Attiva
 
 
@@ -696,6 +697,73 @@ la scelta è fra sette forme. Solo JS/TS, l'impronta iOS non cambia; un
 solo testo nuovo, nelle cinque lingue. Nel simulatore (Trento, API locale
 col catalogo) un tocco ha dato «Fantasmino, 10 km» e «Stella, 10 km» a
 piedi, «Sole, 30 km» in bici; su un telefono non è provato.
+
+## ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi, più piano nel silenzio; la pagina intera una volta al minuto
+
+**Stato**: Attiva · 2026-11-26 · TASK-498. **Deciso dall'agente su delega
+dell'utente** («Avvia la 498», 2026-11-26), tranne il ritmo, che è **scelta
+dell'utente** («Sì, va bene», 2026-11-26). Aggiunta senza numero nuovo e
+lista dei file dal Coordinatore. Codice nella #1610 (server) e nella #1634
+(app). **Niente WebSocket**, come in ADR-0279 e in ADR-0381 punto 6: resta
+una richiesta HTTP ogni tanto.
+
+**Contesto**: punto O8 della lettura del codice del 2026-11-23. Una
+conversazione aperta riscaricava ogni 5 secondi la sua ultima pagina
+intera, con la foto dell'altro, anche quando nessuno scriveva (sul database
+di prova: 9 283 byte e 8 query a controllo), e a ogni risposta la schermata
+si ridisegnava anche se era uguale.
+
+**Decisione**:
+
+1. **`latest` nella prima pagina** di
+   `GET /conversations/{public_id}/messages`: il posto del messaggio più
+   nuovo, nella forma di `next` (`microsecondi-uuid`); `0-000…0` in una
+   conversazione vuota, `null` nelle pagine dei più vecchi. Il posto lo
+   dice il server: l'app non lo calcola.
+2. **`?after=<latest>` sulla stessa rotta** risponde `MessageNews`:
+   `state`, i messaggi dopo quel posto, `more`, il `latest` nuovo. Niente
+   `person` (quindi niente foto), niente `attachments`; due query oltre a
+   quella del token. `after` insieme a `cursor`: `422`.
+3. **La stessa rotta, non una nuova**: un server di prima ignora `after` e
+   risponde la pagina, che l'app legge come pagina; un'app che non ha
+   ricevuto `latest` non manda mai `after`. Così la parte dell'app non
+   aspetta il passo sul server e tornare indietro è sicuro. Nessuna
+   migrazione, nessun indice nuovo, `schemas.py` non toccato.
+4. **Il ritmo** (dell'utente): ogni 5 s finché ci si scrive; ogni 15 s
+   dopo un minuto senza messaggi; ogni 30 s dopo cinque; di nuovo 5 s
+   quando arriva un messaggio, quando se ne manda uno, al ritorno
+   nell'app. Con l'app dietro non si chiede, come prima.
+5. **La pagina intera resta**: all'apertura, al ritorno nell'app, una
+   volta al minuto, e subito quando la risposta corta dice un altro
+   `state` o `more`. Lei sola porta un messaggio cancellato dall'altro o
+   nascosto da una segnalazione, nome e foto dell'altro, una scheda di post
+   o di live cambiata, un video scaduto, cosa si può allegare, e un
+   messaggio salvato un attimo dopo quello già letto ma scritto un attimo
+   prima (resta dietro `latest`).
+6. **Niente ridisegno**: `messages/conversationReading.ts` (senza React)
+   rende lo stesso oggetto quando la risposta non cambia niente, e ogni
+   messaggio non cambiato resta lo stesso oggetto.
+7. **Il pallino dei non letti non cambia**: `PUT …/read` quando arriva un
+   messaggio dell'altro, poi `recount`.
+
+**Alternative scartate**: una rotta nuova per i messaggi nuovi (un server
+di prima risponderebbe `404`, da distinguere da una conversazione
+sparita); il posto calcolato dall'app dalle date dei messaggi che tiene (la
+forma del posto resta una cosa del server); far dire alla risposta corta
+anche le cancellazioni e la foto (tornano le query che si volevano
+togliere: bastano entro un minuto con la pagina).
+
+**Conseguenze**: sul database di prova un controllo senza novità passa da
+9 283 byte (4 998 con gzip) e 8 query a 104 byte e 3 query; con un
+messaggio nuovo 266 byte e 3 query. Un'ora di conversazione aperta e ferma
+passa da 720 controlli (circa 3,6 MB e 5 760 query) a 138 (circa 0,31 MB e
+714 query). In una chat aperta e ferma un messaggio può comparire fino a
+15 s dopo (30 s dopo cinque minuti di silenzio); quello che porta solo la
+pagina, entro un minuto invece che entro 5 s. Dodici risposte uguali di
+fila danno al più un passaggio di React, senza ridisegnare le righe, poi
+nessuno. **Non misurati**: i tempi e il piano della query sul server vero, i
+byte e la batteria su un telefono. Nessun cambio nativo, nessuna
+dipendenza.
 
 ## ADR-0414 — Le coordinate delle risposte a 6 decimali dentro la cella dei 5: la chiave delle linee non cambia
 

@@ -3574,7 +3574,7 @@ export const FR: Table = {
   Estimated: "Estimé",
   "No wind": "Pas de vent",
   "needs {height}": "il faut {height}",
-  "No landings in your file": "Aucun atterrissage dans votre fichier",
+  "No landings": "Aucun atterrissage",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Bilan calorique",
   Used: "Dépensées",
@@ -3728,4 +3728,10 @@ export const FR: Table = {
     "Pas de protéines, de glucides ni de lipides à compter pour ce jour.",
   // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
   "Landings from OpenStreetMap: {count}": "Atterrissages d'OpenStreetMap : {count}",
+  // src/nutrition (TASK-489 part I: the invitation at the end of an activity; approved by the user on 2026-11-24)
+  "Count what you eat too": "Compte aussi ce que tu manges",
+  "Write your own diet and what you eat: MuW estimates the calories you eat and the ones you use, this activity included.":
+    "Écris ton propre plan alimentaire et ce que tu manges : MuW estime les calories que tu manges et celles que tu dépenses, cette activité comprise.",
+  "This activity: {kcal} kcal (est.)": "Cette activité : {kcal} kcal (est.)",
+  "Add what you ate": "Ajoute ce que tu as mangé",
 };

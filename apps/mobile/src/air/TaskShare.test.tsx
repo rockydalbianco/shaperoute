@@ -7,7 +7,7 @@ import type { FlightTask, Turnpoint } from "./flightTask";
 import { readTask } from "./flightTask";
 import { shareTask, TaskShare, taskQr, xctskName } from "./TaskShare";
 
-const written = new Map<string, string>();
+const mockWritten = new Map<string, string>();
 
 jest.mock("expo-sharing", () => ({
   isAvailableAsync: jest.fn(() => Promise.resolve(true)),
@@ -22,7 +22,7 @@ jest.mock("expo-file-system", () => {
     }
     create(): void {}
     write(text: string): void {
-      written.set(this.uri, text);
+      mockWritten.set(this.uri, text);
     }
   }
   return { File, Paths: { cache: { uri: "file:///cache/" } } };
@@ -56,7 +56,7 @@ const TASK: FlightTask = {
 };
 
 beforeEach(() => {
-  written.clear();
+  mockWritten.clear();
   jest.mocked(Sharing.shareAsync).mockClear();
 });
 
@@ -68,7 +68,7 @@ it("names the file after the one loaded", () => {
 
 it("shares the task as an .xctsk file MuW reads back", async () => {
   expect(await shareTask(TASK, "test-task.xctsk")).toBe("shared");
-  const text = written.get("file:///cache/test-task.xctsk")!;
+  const text = mockWritten.get("file:///cache/test-task.xctsk")!;
   expect(readTask(text)).toEqual({ task: TASK });
   expect(jest.mocked(Sharing.shareAsync).mock.calls[0][1]).toMatchObject({
     mimeType: "application/xctsk",

@@ -101,6 +101,7 @@ afterEach(() => {
 test("the bell in the header opens the list, and a line its drawing", async () => {
   api({
     ...ACCOUNT,
+    "GET /notifications/unread": () => Response.json({ unread: PAGE.unread }),
     "GET /notifications": () => Response.json(PAGE),
     "POST /notifications/read": () => new Response(null, { status: 204 }),
     [`GET /drawings/${drawing.id}`]: () => Response.json(drawing),
@@ -109,6 +110,9 @@ test("the bell in the header opens the list, and a line its drawing", async () =
   const bell = await screen.findByRole("button", { name: "Notifications, 1 new" });
   await fireEvent.press(bell);
   expect(await screen.findByText(/commented on your post/)).toBeOnTheScreen();
+  // The number alone for the header; the list once, when the bell opened.
+  expect(calls("GET", "/notifications/unread")).toHaveLength(1);
+  expect(calls("GET", "/notifications")).toHaveLength(1);
   expect(calls("POST", "/notifications/read")).toHaveLength(1);
 
   await fireEvent.press(screen.getByTestId(`bell-line-${comment.id}`));

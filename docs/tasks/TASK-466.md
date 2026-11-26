@@ -3,6 +3,7 @@
 **Stato**: In corso · A in produzione (#1181, OTA 12); B (#1216,
 `05f5a725`) e D (#1300, `749a5cc7`) in `main` dal 2026-11-12, escono col
 primo OTA dopo; restano C ed E
+**Prova sul telefono** (B e D: «Child's pose», il promemoria «Morning» ad app chiusa): provato dall'utente il 2026-11-26, «ok». Il task resta aperto per C ed E.
 **Fase**: 4 · **Branch**: `feat/TASK-466-a-stretch-motion` (A); B, C, D, E
 ciascuna col suo branch e la sua PR
 **ADR**: ADR-0378 (una per tutte le parti; la voce va nella PR di soli

@@ -5932,6 +5932,16 @@ the map where you face»); solo JavaScript, l'impronta iOS non cambia. Da
 provare sul telefono: la rotazione in mano da fermi e correndo, e se il
 banner su «Compass» dà fastidio (toglierlo è una riga in `App.tsx`).
 
+**Aggiunta 2026-11-24** (TASK-518, scelte dell'utente sulla tela «Compass ·
+migliorie»: «1 e 2; la 3 dopo», poi «Niente etichetta»): «Compass» non è
+più senza numeri. Sopra i pulsanti della corsa c'è una riga sola, piccola,
+con quanta strada e quanto tempo («2.34 km · 12:05», gli stessi
+`RunNumbers` di «Map», anche in pausa); il passo, la barra del percorso, la
+riga del gioco e il battito restano fuori. Sotto la freccia del nord, solo
+con la mappa che gira dove si guarda, la direzione scritta («NE · 42°»: le
+sigle di `compassPoint`, già tradotte, e i gradi interi), che cambia con la
+mappa; col nord in alto niente. Il resto di questa decisione non cambia.
+
 ## ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes»
 
 **Stato**: Attiva · 2026-11-08 · TASK-370 parte B3a1, decisa dall'agente su

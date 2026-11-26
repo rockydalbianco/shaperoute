@@ -3572,7 +3572,7 @@ export const FR: Table = {
   Estimated: "Estimé",
   "No wind": "Pas de vent",
   "needs {height}": "il faut {height}",
-  "No landings in your file": "Aucun atterrissage dans votre fichier",
+  "No landings": "Aucun atterrissage",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Bilan calorique",
   Used: "Dépensées",

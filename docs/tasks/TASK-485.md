@@ -2,8 +2,9 @@
 
 **Stato**: Done · 2026-11-26 · parte 0 (#1365), A (#1404, sul server
 col passo 18), B (#1414), B2 (#1431), privacy (#1469, sul sito) e C
-(#1481) in `main` e in produzione con l'OTA 26 (2026-11-24); resta uno
-sguardo dell'utente sul telefono, nella prova generale
+(#1481) in `main` e in produzione con l'OTA 26 (2026-11-24); provata
+dall'utente sul telefono il 2026-11-26 nella prova generale («ok»)
+**Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-485-gym-plan-post` (parte 0, in
 `main`); `feat/TASK-485-a-plan-posts-api` (A); B col suo branch e la sua PR
 **Dipende da**: TASK-481 (il foglio «Add to Feed» e `addToFeedEntries.ts`,
@@ -388,5 +389,5 @@ voce «Workout plan» del «+», anche senza rete; chi la vede apre il piano
 intero coi kg e con «Use this plan» ne fa una scheda sua. Si apre anche da
 un profilo, dalla campanella, da una push, dal link del post e da una
 chat. Privacy nelle cinque lingue e sul sito. Tutto in produzione con
-l'OTA 26 (2026-11-24). Resta uno sguardo dell'utente sul telefono, nella
-prova generale. ADR-0394 con le precisazioni B e C.
+l'OTA 26 (2026-11-24). Provata dall'utente sul telefono il 2026-11-26,
+nella prova generale («ok»). ADR-0394 con le precisazioni B e C.

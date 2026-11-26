@@ -34,7 +34,10 @@ function checkSite(site: FlyingSite): void {
   }
   // Compass order, each once.
   const order = site.orientation.map((p) => COMPASS_POINTS.indexOf(p));
-  assert.deepEqual(order, [...new Set(order)].sort((a, b) => a - b));
+  assert.deepEqual(
+    order,
+    [...new Set(order)].sort((a, b) => a - b),
+  );
 }
 
 test("a box gives its sites with the attribution", () => {

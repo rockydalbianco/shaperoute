@@ -37,7 +37,9 @@ test("a body that is not sites is not read", () => {
   const site = box.sites[0];
   expect(isFlyingSites(null)).toBe(false);
   expect(isFlyingSites({ ...box, more: "no" })).toBe(false);
-  expect(isFlyingSites({ ...box, sites: [{ ...site, kind: "toplanding" }] })).toBe(false);
+  expect(isFlyingSites({ ...box, sites: [{ ...site, kind: "toplanding" }] })).toBe(
+    false,
+  );
   expect(isFlyingSites({ ...box, sites: [{ ...site, orientation: ["SOUTH"] }] })).toBe(
     false,
   );
@@ -74,7 +76,10 @@ test("a box may ask one kind and a limit", async () => {
 });
 
 test("a site and a takeoff's history by id, «today» from the phone's offset", async () => {
-  const fetchFn = answers({ status: 200, body: detail }, { status: 200, body: history });
+  const fetchFn = answers(
+    { status: 200, body: detail },
+    { status: 200, body: history },
+  );
   expect(await fetchFlyingSite(URL, 101, options(fetchFn))).toEqual({
     kind: "ok",
     value: detail,

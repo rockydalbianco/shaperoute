@@ -133,7 +133,13 @@ export function flyingSitesIn(
     ...(kind === undefined ? [] : [`kind=${kind}`]),
     ...(limit === undefined ? [] : [`limit=${limit}`]),
   ].join("&");
-  return ask(baseUrl, `/flying-sites?${params}`, { method: "GET" }, isFlyingSites, rest);
+  return ask(
+    baseUrl,
+    `/flying-sites?${params}`,
+    { method: "GET" },
+    isFlyingSites,
+    rest,
+  );
 }
 
 /** GET /flying-sites/{id}: one site with the other kind near it. */

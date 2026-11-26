@@ -20,6 +20,7 @@ import json
 import time
 import urllib.request
 from collections.abc import Iterable, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
@@ -31,6 +32,9 @@ from shaperoute_api.winds.grid import LEVELS, Area, Field, WindGrid, crop, quant
 USER_AGENT = "MuW/1.0 (https://getmuw.app)"
 TIMEOUT_S = 60.0
 TRIES = 3
+# Files asked at once: one at a time, a run of ICON-D2 took some 40 min
+# on the Mac (2026-11-26); the servers answer many in parallel.
+WORKERS = 8
 
 ICON_D2 = "icon-d2"
 ECMWF = "ecmwf"
@@ -175,16 +179,18 @@ def icon_d2(
     hours: Sequence[int] = ICON_D2_HOURS,
     area: Area = ALPS,
 ) -> WindGrid:
-    def hour_fields(hour: int) -> list[Field]:
-        fields: list[Field] = []
-        for level in LEVELS:
-            for var in ("u", "v"):
-                fields += fields_of(
-                    bz2.decompress(transport.get(icon_d2_url(run, var, level, hour)))
-                )
-        return fields
+    wanted = [(var, level) for level in LEVELS for var in ("u", "v")]
 
-    return grid_of(ICON_D2, area, run, hours, (hour_fields(h) for h in hours))
+    def one(hour: int, var: str, level: int) -> list[Field]:
+        packed = transport.get(icon_d2_url(run, var, level, hour))
+        return fields_of(bz2.decompress(packed))
+
+    def hour_fields(pool: ThreadPoolExecutor, hour: int) -> list[Field]:
+        parts = pool.map(lambda wanted_one: one(hour, *wanted_one), wanted)
+        return [field for part in parts for field in part]
+
+    with ThreadPoolExecutor(WORKERS) as pool:
+        return grid_of(ICON_D2, area, run, hours, (hour_fields(pool, h) for h in hours))
 
 
 def ecmwf_url(run: datetime, hour: int) -> str:
@@ -222,9 +228,12 @@ def ecmwf(
     for hour in hours:
         url = ecmwf_url(run, hour)
         index = transport.get(url.removesuffix(".grib2") + ".index").decode()
-        fields: list[Field] = []
-        for byte_range in ecmwf_ranges(index):
-            fields += fields_of(transport.get(url, byte_range))
+        with ThreadPoolExecutor(WORKERS) as pool:
+            parts = pool.map(
+                lambda byte_range, url=url: fields_of(transport.get(url, byte_range)),
+                ecmwf_ranges(index),
+            )
+            fields = [field for part in parts for field in part]
         for kept, area in zip(by_area, areas, strict=True):
             kept.append([crop(field, area) for field in fields])
     return [

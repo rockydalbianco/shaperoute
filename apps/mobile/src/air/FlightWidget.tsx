@@ -23,7 +23,8 @@ import type { ProfileBand } from "./airspaceProfile";
 import { acrossText, limitLabel } from "./airspaceText";
 import { WIDGET_NAME, type WidgetId } from "./flightLayout";
 import { bearingBetween } from "./airGeometry";
-import { glideOf, heightForM } from "./glide";
+import { type Glide, glideOf, heightForM } from "./glide";
+import type { NearLanding } from "./nearestLanding";
 import { edgeM, gatesOn, startGateAt, type TaskNow } from "./taskProgress";
 import { taskLengthM } from "./taskRoute";
 import type { FlightScreenData } from "./useFlightScreenData";
@@ -87,6 +88,12 @@ type Props = {
   bands?: readonly ProfileBand[][];
   /** The pilot's task at this tick (part D2), null without one. */
   task?: TaskNow | null;
+  /** The glide the heights are worked out with (part D3); L/D 8 and the
+   * estimated wind when not given. */
+  glide?: Glide;
+  /** The nearest landing of the pilot's waypoint file (part D3); null
+   * without one, undefined without a file. */
+  landing?: NearLanding | null;
 };
 
 export const NO_TASK = tLater("No task loaded");
@@ -94,6 +101,23 @@ export const GOAL_TAKEN_LINE = tLater("Goal taken");
 export const GATE_OPEN = tLater("Gate open");
 export const STARTED_AT = tLater("Started {time}");
 export const WHOLE_TASK = tLater("Whole task: {distance}");
+export const NEEDS_HEIGHT = tLater("needs {height}");
+export const NO_LANDINGS = tLater("No landings in your file");
+
+/** The height over the next turnpoint at the end of the first leg,
+ * metres, and the altitude that leg needs; null where not known. */
+export function nextTurnpointGlide(
+  now: TaskNow,
+  altM: number | null,
+  glide: Glide,
+): { overM: number | null; needsM: number | null } {
+  const turnpoint = now.task.turnpoints[now.progress.next];
+  const first = legsOf(now).slice(0, 1);
+  const need = first.length === 0 ? null : heightForM(first, glide);
+  const ground = turnpoint?.waypoint.altM ?? null;
+  const needsM = need === null || ground === null ? null : ground + need;
+  return { overM: altM === null || needsM === null ? null : altM - needsM, needsM };
+}
 
 /** The legs of the way left, each with its course. */
 export function legsOf(now: TaskNow): { distM: number; courseDeg: number }[] {
@@ -116,7 +140,7 @@ export function legsOf(now: TaskNow): { distM: number; courseDeg: number }[] {
 export function overGoalM(
   now: TaskNow,
   altM: number | null,
-  glide: ReturnType<typeof glideOf>,
+  glide: Glide,
 ): number | null {
   const goal = now.task.turnpoints[now.task.turnpoints.length - 1];
   const need = heightForM(legsOf(now), glide);
@@ -231,6 +255,8 @@ export function FlightWidget({
   nearest = null,
   bands = [],
   task = null,
+  glide = glideOf(data.wind),
+  landing,
 }: Props) {
   const name = t(WIDGET_NAME[widget]);
   const now = data.instrument;
@@ -279,7 +305,27 @@ export function FlightWidget({
         ink: nearest.inside ? palette.onAccent : undefined,
       });
     }
+    case "nearestLanding": {
+      if (landing === undefined || landing === null) {
+        return box(NO_VALUE, undefined, { under: t(NO_LANDINGS) });
+      }
+      const arrow = Math.min(height * 0.4, width * 0.3);
+      const onScreen = landing.bearingDeg - (now.trackDeg ?? 0);
+      return box(
+        distanceText(landing.distM, units),
+        distanceUnit(landing.distM, units),
+        {
+          side: <Arrow size={arrow} deg={onScreen} color={palette.text} />,
+          sideSize: arrow,
+          // The height first: a narrow cell cuts the name, not the number.
+          under: `${heightChangeText(landing.overM, flight.altitude)} ${
+            UNIT_LABEL[flight.altitude]
+          } · ${landing.landing.name}`,
+        },
+      );
+    }
     case "nextTurnpoint":
+    case "glideToTurnpoint":
     case "glideToGoal":
     case "startGate":
     case "taskDistance": {
@@ -319,8 +365,17 @@ export function FlightWidget({
           }),
         });
       }
+      if (widget === "glideToTurnpoint") {
+        const { overM } = nextTurnpointGlide(task, now.altM, glide);
+        return box(
+          heightChangeText(overM, flight.altitude),
+          UNIT_LABEL[flight.altitude],
+          {
+            under: `${task.task.turnpoints[progress.next].waypoint.name} · L/D ${glide.ld}`,
+          },
+        );
+      }
       if (widget === "glideToGoal") {
-        const glide = glideOf(data.wind);
         const overM = overGoalM(task, now.altM, glide);
         const leftM = task.left?.totalM ?? null;
         return box(
@@ -341,6 +396,7 @@ export function FlightWidget({
       const onScreen = bearing === null ? null : bearing - (now.trackDeg ?? 0);
       const arrow = Math.min(height * 0.4, width * 0.3);
       const speed = now.speedMps;
+      const needs = nextTurnpointGlide(task, now.altM, glide).needsM;
       const eta =
         edge !== null && speed !== null && speed >= 1
           ? durationText((edge / speed) * 1000)
@@ -351,7 +407,16 @@ export function FlightWidget({
             <Arrow size={arrow} deg={onScreen} color={palette.text} />
           ),
         sideSize: arrow,
-        under: [turnpoint.waypoint.name, bearingText(bearing), eta]
+        under: [
+          turnpoint.waypoint.name,
+          bearingText(bearing),
+          eta,
+          needs === null
+            ? null
+            : t(NEEDS_HEIGHT, {
+                height: `${altitudeText(needs, flight.altitude)} ${UNIT_LABEL[flight.altitude]}`,
+              }),
+        ]
           .filter((one) => one !== null)
           .join(" · "),
       });

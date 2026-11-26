@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { t } from "../i18n";
 import { Segmented } from "../screens/Segmented";
 import { useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { color, font, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
 import { DiaryView } from "./DiaryView";
@@ -33,6 +34,7 @@ type Props = {
  */
 export function NutritionPage({ today }: Props) {
   const headerScroll = useHeaderScroll();
+  const barRoom = useTabBarRoom();
   const { settings } = useNutrition();
   const [view, setView] = useState<"diary" | "plan">("diary");
   const [how, setHow] = useState(false);
@@ -44,7 +46,7 @@ export function NutritionPage({ today }: Props) {
     <ScrollView
       {...headerScroll}
       style={styles.page}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingBottom: space.xxl + barRoom }]}
       keyboardShouldPersistTaps="handled"
       testID="nutrition-page"
     >

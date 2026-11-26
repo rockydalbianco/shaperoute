@@ -220,8 +220,8 @@ scheda buona):
 
 In «My plans» una scheda con le settimane è un riquadro: «In progress»,
 «Week 2 of 4» con le tacche del ciclo, i giorni di questa settimana con la
-lettera dell'allenamento (oggi cerchiato), «Edit» (passo 3) e «Weeks» (passo
-4); le schede di prima sono righe «sempre uguale» e si aprono nella guida
+lettera dell'allenamento (oggi cerchiato), «Edit» (passo 3), «Weeks» (passo
+4) e «Table»; le schede di prima sono righe «sempre uguale» e si aprono nella guida
 allo stesso modo. Aperta una scheda che esiste, «Delete plan» (con la
 stessa domanda prima) è sotto il bottone principale in ogni passo della
 guida, non solo all'ultimo (TASK-492, scelta dell'utente del 2026-11-23,
@@ -231,6 +231,27 @@ l'allenamento parte col recupero dell'obiettivo per ogni esercizio. Il
 calendario segna saltati i giorni con un allenamento nella settimana del
 ciclo. Calcolo in `apps/mobile/src/gym/program.ts`, proposta in
 `proposal.ts`, la guida in `GymPlanWizard.tsx`.
+
+**La tabella del piano** (TASK-506 A, scelta dell'utente del 2026-11-23, «Da
+guardare + Settimane»): «Table» in «My plans» mostra tutto il piano su una
+pagina, una linguetta per allenamento («A · Mon», «Run · Tue»), una riga
+per esercizio, una colonna per settimana del ciclo in corso con serie ×
+ripetizioni e i kg (i valori di «Today», con le settimane scritte a mano e
+i passi delle risposte). La settimana di oggi è contornata di giallo, le
+passate e la più leggera sono spente; «—» dove un esercizio in quella
+settimana non c'è; una corsa o un giorno fuori è una riga sola. Si guarda
+soltanto: l'intestazione di una settimana apre il passo «Weeks» della
+guida. `tableOfPlan.ts`, `PlanTable.tsx`.
+
+**Il prossimo allenamento** (TASK-506 C, scelta dell'utente del
+2026-11-23): nel riquadro del piano, sotto i giorni, l'allenamento che
+viene: quello di oggi finché non è fatto, poi il primo giorno dopo («Today ·
+B», «Tomorrow · Run», «Fri · C»), il suo nome, i primi tre esercizi coi
+valori di quella settimana e «+ 2 more», l'omino coi muscoli che lavora; una
+corsa o un giorno fuori in una riga. Con un account, sotto i giorni del
+piano «This week: 1 of 3 done» dal calendario della palestra (un giorno
+passato è fatto se non è saltato, oggi con un allenamento in palestra
+oggi). `NextWorkout.tsx`, `weekDone.ts`.
 
 La prima volta che si tocca «Palestra» in «Draw» (mai all'avvio, mai con
 un altro sport) sale un riquadro «Your plan, step by step» con le barre

@@ -12,6 +12,7 @@ aggiunte in `main` (#1328, #1332, #1336; vedi il registro). **Resta** (vedi
 «Quello che resta»): l'OTA dopo il 19 per la #1336, col sì dell'utente
 dato al Coordinatore; la prova dell'utente sul telefono; la parte F, con
 una build nativa
+**Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: una PR per parte, tutte unite; l'ultimo
 `feat/TASK-455-e-share-link`
 **Dipende da**: —

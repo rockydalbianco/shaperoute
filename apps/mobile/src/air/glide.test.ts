@@ -2,6 +2,7 @@ import {
   DEFAULT_AIRSPEED_MPS,
   DEFAULT_LD,
   glideOf,
+  glideWith,
   groundRatio,
   heightForM,
 } from "./glide";
@@ -51,5 +52,15 @@ describe("glide", () => {
       { distM: 0, courseDeg: 90 },
     ];
     expect(heightForM(legs, glide)).toBeCloseTo(2000, 6);
+  });
+});
+
+describe("glideWith (part D3)", () => {
+  it("takes the pilot's glide ratio, and the wind only when they chose it", () => {
+    const blowing = wind(180, 4);
+    expect(glideWith({ ld: 10, wind: "estimated" }, blowing)).toEqual(
+      glideOf(blowing, 10),
+    );
+    expect(glideWith({ ld: 10, wind: "none" }, blowing)).toEqual(glideOf(null, 10));
   });
 });

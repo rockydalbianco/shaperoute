@@ -607,6 +607,8 @@ export const ES: Table = {
   "Long routes take longer: up to a few minutes.":
     "Las rutas largas tardan más: hasta unos minutos.",
   "Draw route": "Dibujar la ruta",
+  "Choose a start first": "Elige primero una salida",
+  "Choose what to draw first": "Elige primero qué dibujar",
   Start: "Empezar",
   "Preparing GPX…": "Preparando el GPX…",
   "Export GPX": "Exportar GPX",
@@ -725,6 +727,9 @@ export const ES: Table = {
   "Hide the picture": "Ocultar la foto",
   "Show the picture": "Mostrar la foto",
   "Edit the outline": "Editar el contorno",
+  // src/route/ImageChoice.tsx (TASK-297 C2: a picture with the pen up)
+  "The yellow lines are what the route will draw: each part on its own, going from one to the next without drawing. If they do not look like the subject, the route will not either: try another picture.":
+    "Las líneas amarillas son lo que dibujará la ruta: cada parte por separado, yendo de una a otra sin dibujar. Si no se parecen al sujeto, la ruta tampoco: prueba otra foto.",
   "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
     "Lo mejor es un solo sujeto sobre un fondo liso: un dibujo, un logo, un objeto en una mesa vacía. La ruta sigue su línea exterior. Hasta 4 sujetos separados se unen en una sola línea.",
   "Tracing the outline…": "Trazando el contorno…",
@@ -1401,6 +1406,16 @@ export const ES: Table = {
   "What do you want to train?": "¿Qué quieres entrenar?",
   "Choose one or more. Then we guide you in 5 steps.":
     "Elige uno o más. Luego te guiamos en 5 pasos.",
+  // src/gym/PlanTable.tsx (TASK-506 part A: the plan as a table; approved by the user on 2026-11-23)
+  Table: "Tabla",
+  "No exercises yet.": "Todavía no hay ejercicios.",
+  "Change week {n}": "Cambia la semana {n}",
+  "kg · touch a week to change it": "kg · toca una semana para cambiarla",
+  // src/gym/NextWorkout.tsx, GymPlans.tsx (TASK-506 part C: the next workout in «My plans»; approved by the user on 2026-11-23)
+  Tomorrow: "Mañana",
+  "+ 1 more": "+ 1 más",
+  "+ {n} more": "+ {n} más",
+  "This week: {done} of {total} done": "Esta semana: {done} de {total} hechos",
   "With weights and machines": "Con pesas y máquinas",
   Bodyweight: "Peso corporal",
   "At home or in the park, no equipment": "En casa o en el parque, sin material",
@@ -1649,6 +1664,14 @@ export const ES: Table = {
   Lisbon: "Lisboa",
   Prague: "Praga",
   Berlin: "Berlín",
+  // src/explore/presets.ts: the cities to tap in «Explore» (TASK-508)
+  "New York": "Nueva York",
+  Tokyo: "Tokio",
+  Milan: "Milán",
+  Torino: "Turín",
+  Dubai: "Dubái",
+  Sydney: "Sídney",
+  "San Francisco": "San Francisco",
   "Getting directions…": "Obteniendo indicaciones…",
   CITY: "CIUDAD",
   "Type a city or a place": "Escribe una ciudad o un lugar",
@@ -1768,6 +1791,8 @@ export const ES: Table = {
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
     "Las notificaciones push te avisan al momento de solicitudes para seguirte, reacciones, comentarios y etiquetas. Las Notificaciones por correo envían las mismas novedades en un correo al día como mucho. Correo cuando no estoy: un correo si no abres MuW durante 2 semanas.",
+  "Push notifications are off. Tap to turn them on.":
+    "Las notificaciones push están desactivadas. Toca para activarlas.",
   "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.":
     "Las notificaciones de MuW están desactivadas en este teléfono. Permítelas en Ajustes para activarlas.",
 
@@ -3496,6 +3521,15 @@ export const ES: Table = {
   "Goal taken": "Gol alcanzado",
   "Turnpoint {name} taken. Next: {next}.": "Baliza {name} tomada. Siguiente: {next}.",
   "Goal {name} taken.": "Gol {name} alcanzado.",
+  // src/air/ (TASK-479 part D3: the glide; approved by the user on 2026-11-23)
+  "Glide to turnpoint": "Planeo hasta la baliza",
+  "Nearest landing": "Aterrizaje más cercano",
+  "Glide ratio used": "Fineza usada",
+  "Wind used": "Viento usado",
+  Estimated: "Estimado",
+  "No wind": "Sin viento",
+  "needs {height}": "se necesitan {height}",
+  "No landings in your file": "Ningún aterrizaje en tu archivo",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Balance de calorías",
   Used: "Gastadas",

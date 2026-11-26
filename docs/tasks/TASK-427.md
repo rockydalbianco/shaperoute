@@ -1,8 +1,7 @@
 # TASK-427 — L'archivio risponde da qualsiasi punto dell'anello
 
-**Stato**: Fermo — **parte 0 fatta (2026-11-10): non vale la pena ora**
-(«Esito della parte 0», sotto). Nessun codice. Si riapre quando i
-numeri del §«Quando riaprirlo» cambiano, o se l'utente lo chiede.
+**Stato**: Fermo — in attesa · 2026-11-24 (scelta dell'utente del 2026-11-24 sui task aperti): idea approvata e mai partita, da rivalutare più avanti; si riprende col sì dell'utente.
+Prima del 2026-11-24: Fermo — **parte 0 fatta (2026-11-10): non vale la pena ora** («Esito della parte 0», sotto). Nessun codice. Si riapre quando i numeri del §«Quando riaprirlo» cambiano, o se l'utente lo chiede.
 **Fase**: 5 · **Branch**: `docs/TASK-427-loop-archive` (la proposta, #1031),
 `docs/TASK-427-part0-results` (l'esito della parte 0).
 **ADR**: ADR-0355, riservato dal Coordinatore; si scrive in

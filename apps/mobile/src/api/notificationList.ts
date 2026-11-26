@@ -1,4 +1,8 @@
-import type { NotificationLine, NotificationsPage } from "@shaperoute/shared-types";
+import type {
+  NotificationLine,
+  NotificationsPage,
+  NotificationsUnread,
+} from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask } from "./accounts";
 import { isPerson } from "./people";
@@ -25,6 +29,25 @@ export function fetchNotifications(
     `/notifications${query}`,
     { method: "GET", token },
     isNotificationsPage,
+    options,
+  );
+}
+
+/**
+ * GET /notifications/unread (TASK-499): the bell's number alone, without a
+ * page of lines and pictures. A server of before has the list and not this:
+ * it answers 404 (`isBellMissing`), and the first page has the number.
+ */
+export function fetchUnread(
+  baseUrl: string,
+  token: string,
+  options: Options = {},
+): Promise<AccountOutcome<NotificationsUnread>> {
+  return ask(
+    baseUrl,
+    "/notifications/unread",
+    { method: "GET", token },
+    isNotificationsUnread,
     options,
   );
 }
@@ -72,6 +95,15 @@ export function isNotificationLine(body: unknown): body is NotificationLine {
     isPerson(body.actor) &&
     isRecord(body.opens) &&
     Object.values(body.opens).every((value) => typeof value === "string")
+  );
+}
+
+export function isNotificationsUnread(body: unknown): body is NotificationsUnread {
+  return (
+    isRecord(body) &&
+    typeof body.unread === "number" &&
+    Number.isInteger(body.unread) &&
+    body.unread >= 0
   );
 }
 

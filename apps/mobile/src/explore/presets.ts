@@ -5,23 +5,25 @@ import { t, tLater } from "../i18n";
  * The quick choices of "Explore" (TASK-134): cities from around the world,
  * and the categories of "Ask for a route", the four of our ideas first (the
  * user's choice of 2026-10-29). A city is a name only: its centre comes
- * from the API when it is tapped, never written here.
+ * from the API when it is tapped, never written here. The names are in
+ * English, as the API is asked and the phone keeps them; the chip shows
+ * each in the app's language, «Londra» (TASK-508).
  */
 export const FEATURED_CITIES = [
-  "New York",
-  "London",
-  "Paris",
-  "Tokyo",
-  "Rome",
-  "Milan",
-  "Torino",
-  "Barcelona",
-  "Dubai",
-  "Amsterdam",
-  "Berlin",
-  "Lisbon",
-  "Sydney",
-  "San Francisco",
+  tLater("New York"),
+  tLater("London"),
+  tLater("Paris"),
+  tLater("Tokyo"),
+  tLater("Rome"),
+  tLater("Milan"),
+  tLater("Torino"),
+  tLater("Barcelona"),
+  tLater("Dubai"),
+  tLater("Amsterdam"),
+  tLater("Berlin"),
+  tLater("Lisbon"),
+  tLater("Sydney"),
+  tLater("San Francisco"),
 ] as const;
 
 /** Each category is a theme of the API, named in words its tables read. */

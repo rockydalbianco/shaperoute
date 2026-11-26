@@ -351,7 +351,8 @@ def test_an_app_from_before_reads_the_list_it_knew(client: TestClient) -> None:
     for comment in page["comments"]:
         assert BEFORE <= set(comment)
         assert isinstance(comment["id"], str)
-        assert set(comment["author"]) == {"public_id", "username"}
+        # Where the picture is read came after (TASK-497), beside the rest.
+        assert set(comment["author"]) == {"public_id", "username", "photo"}
         assert isinstance(comment["text"], str)
         assert isinstance(comment["created_at"], str)
         assert isinstance(comment["deletable"], bool)

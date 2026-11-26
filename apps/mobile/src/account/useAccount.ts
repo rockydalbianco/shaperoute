@@ -25,7 +25,9 @@ import { editProfile as editRequest } from "../api/profiles";
 import { forgetPushToken } from "../api/pushToken";
 import { forgetPushSent, loadPushSent } from "../notifications/pushSent";
 import { t } from "../i18n";
+import { saveRecentCities } from "../explore/recentCities";
 import { profileProblem } from "../profile/profileFields";
+import { saveRecent } from "../search/recentSearches";
 import { contactProblem } from "../settings/contactFields";
 import { notificationsProblem } from "../settings/notificationFields";
 import {
@@ -37,6 +39,7 @@ import {
 } from "./fields";
 import { accountProblem, NO_API, SESSION_ENDED, sessionEnded } from "./messages";
 import { type AccountEmail, useAccountEmail } from "./accountEmail";
+import { setCurrentOwner } from "./currentOwner";
 import { claimPhoneData, forgetPhoneDataOf } from "./phoneOwners";
 import { forgetSession, loadSession, saveSession } from "./sessionStore";
 
@@ -108,10 +111,12 @@ type Failed = Exclude<AccountOutcome<User>, { kind: "ok" }>;
 function keptState(baseUrl: string | null): AccountState {
   const session = loadSession();
   if (session === null) {
+    setCurrentOwner(null);
     return { status: "signedOut", notice: null };
   }
   // Before any outbox sends (TASK-507): what waits is of this account.
   claimPhoneData(session.user, baseUrl);
+  setCurrentOwner(session.user.id);
   return { status: "signedIn", session };
 }
 
@@ -137,6 +142,15 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
     if (next.status === "signedIn") {
       // Before it shows, and so before any outbox sends (TASK-507).
       claimPhoneData(next.session.user, server.current);
+      setCurrentOwner(next.session.user.id);
+    } else {
+      // Out (TASK-507 part D, the user's choice): the body and the heart
+      // of the account are hidden, its recent searches and towns deleted.
+      setCurrentOwner(null);
+      if (current.current.status === "signedIn") {
+        saveRecent([]);
+        saveRecentCities([]);
+      }
     }
     current.current = next;
     setState(next);

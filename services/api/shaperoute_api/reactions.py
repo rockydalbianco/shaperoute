@@ -49,9 +49,10 @@ from shaperoute_api.comments import (
     CommentBody,
     CommentRejected,
     checked_text,
+    comment_author,
 )
 from shaperoute_api.db import Database
-from shaperoute_api.drawings import NO_DRAWING, AuthorBody
+from shaperoute_api.drawings import NO_DRAWING
 from shaperoute_api.follows import apart_sql
 from shaperoute_api.push import notify_owner
 from shaperoute_api.schemas import ErrorBody
@@ -222,14 +223,17 @@ class Reactions:
                 if changed is not None and kept is not None:
                     row = conn.execute(
                         "INSERT INTO comments (drawing_id, user_id, text, created_at)"
-                        " VALUES (%s, %s, %s, %s) RETURNING id, created_at",
-                        (wanted, user.id, kept, now),
+                        # The writer's own picture, as comments.write.
+                        " VALUES (%s, %s, %s, %s) RETURNING id, created_at,"
+                        " (SELECT p.updated_at FROM profile_photos p"
+                        " WHERE p.user_id = %s) AS photo_at",
+                        (wanted, user.id, kept, now, user.id),
                     ).fetchone()
                     assert row is not None
                     added = CommentBody(
                         id=row["id"],
-                        author=AuthorBody(
-                            public_id=user.public_id, username=user.username
+                        author=comment_author(
+                            user.public_id, user.username, row["photo_at"]
                         ),
                         text=kept,
                         created_at=row["created_at"],

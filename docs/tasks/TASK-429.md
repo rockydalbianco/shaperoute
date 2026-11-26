@@ -1,6 +1,6 @@
 # TASK-429 — La modalità sci: scelto lo sci, MuW diventa un'app per lo sci
 
-**Stato**: In lavorazione · 0, A, B1, C1, B2 e C2 in `main` (#1093, #1108,
+**Stato**: Done · 2026-11-26 · 0, A, B1, C1, B2, C2 in `main` e in produzione (#1093, #1108, #1114, #1129, #1131; C1 sul server dal passo 7): con lo sci scelto MuW diventa un'app per lo sci. La prova sulla neve è in `docs/PROVE-SUL-CAMPO.md`; la parte E (la grafica nuova delle stazioni, «si elenca prima») passa fra le idee «In attesa» di `STATUS.md` (scelta dell'utente del 2026-11-26 sulle prove sul campo).
 #1114, #1129, #1131); C1 sul server dall'11-11; B2 e C2 in produzione con
 l'ottavo OTA dell'11-11; resta la prova sul telefono e la parte E
 **Fase**: 5 · **Branch**: `docs/TASK-429-…` (documenti); il codice

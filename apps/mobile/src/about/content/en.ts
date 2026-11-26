@@ -12,7 +12,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "10 November 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the replies and the reactions to a comment (TASK-454 C). Redated for the group runs among the reports (TASK-309 B). Redated for the posts of photos only (TASK-312 C2). «From a file» for the «+» of the Feed, which also records now (TASK-481 A). A gym plan shared in the Feed (TASK-485 B). Gear (TASK-486). The heart rate of a workout at the gym (TASK-385 G3). */
-const PRIVACY_UPDATED = "23 November 2026";
+const PRIVACY_UPDATED = "24 November 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -384,13 +384,19 @@ const privacy: AboutDocument = {
     {
       heading: "Reports",
       blocks: [
-        "When you report a drawing, a tagged item, an item of gear, a comment, a profile or a group run, we keep who reported what, the reason and when. The person who runs MuW receives it by email and may hide what was reported from the other members. Nothing is deleted, and its author still sees it. Your report is never shown to the author.",
+        "When you report a drawing, a tagged item, an item of gear, a comment, a profile, a group run or a group, we keep who reported what, the reason and when. The person who runs MuW receives it by email and may hide what was reported from the other members. Nothing is deleted, and its author still sees it. Your report is never shown to the author.",
       ],
     },
     {
       heading: "Group runs",
       blocks: [
         "If you create a group run or say you're going, members who can see it see your name, your photo and that you're going. We delete your group runs and your answers when you delete your account.",
+      ],
+    },
+    {
+      heading: "Groups",
+      blocks: [
+        "If you create or join a group, its members see your name, your photo, your role in the group and your posts in its sports that they can already see. Who is not a member sees only how many members it has. The group's admins see who asked to join and who was invited. Your groups appear on your profile only to you. We delete your groups, memberships, requests and invites when you delete your account; a group you run passes to another member first.",
       ],
     },
     {

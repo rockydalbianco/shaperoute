@@ -2,6 +2,7 @@ import { type Shape, SHAPES } from "@shaperoute/shared-types";
 import { useEffect, useRef } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { shapeName as shapeTitle } from "../i18n/shapeNames";
 import {
   color,
   fontSize,
@@ -69,7 +70,9 @@ export function ShapeTiles({ chosen, onPick }: Props) {
                 style={[styles.name, selected && styles.selectedName]}
                 numberOfLines={2}
               >
-                {shapeName(shape)}
+                {/* With its capital, as every label of the page (TASK-508);
+                    the field takes the word as a sentence writes it. */}
+                {shapeTitle(shape)}
               </Text>
             </Pressable>
           );

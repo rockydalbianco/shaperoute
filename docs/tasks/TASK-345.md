@@ -1,6 +1,7 @@
 # TASK-345 — Calorie e battito nei post del Feed
 
-**Stato**: Todo
+**Stato**: Fermo — in attesa · 2026-11-24 (scelta dell'utente del 2026-11-24 sui task aperti): idea approvata e mai partita, da rivalutare più avanti; si riprende col sì dell'utente.
+Prima del 2026-11-24: Todo
 **Fase**: 4 · **Branch**: `docs/TASK-345-heart-calories` (documenti),
 poi `feat/TASK-345-a-feed-calories`, `feat/TASK-345-b-heart-from-files`,
 `feat/TASK-345-c-heart-from-health` · numeri dati dal Coordinatore il

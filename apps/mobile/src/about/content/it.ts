@@ -9,7 +9,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "10 novembre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "23 novembre 2026";
+const PRIVACY_UPDATED = "24 novembre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -381,13 +381,19 @@ const privacy: AboutDocument = {
     {
       heading: "Segnalazioni",
       blocks: [
-        "Quando segnali un disegno, un capo segnato, un attrezzo, un commento, un profilo o una corsa di gruppo, teniamo chi ha segnalato cosa, il motivo e quando. Chi gestisce MuW la riceve per email e può nascondere agli altri iscritti ciò che è stato segnalato. Non si cancella niente, e il suo autore continua a vederlo. La tua segnalazione non è mai mostrata all'autore.",
+        "Quando segnali un disegno, un capo segnato, un attrezzo, un commento, un profilo, una corsa di gruppo o un gruppo, teniamo chi ha segnalato cosa, il motivo e quando. Chi gestisce MuW la riceve per email e può nascondere agli altri iscritti ciò che è stato segnalato. Non si cancella niente, e il suo autore continua a vederlo. La tua segnalazione non è mai mostrata all'autore.",
       ],
     },
     {
       heading: "Corse di gruppo",
       blocks: [
         "Se crei una corsa di gruppo o dici che ci vai, gli iscritti che la vedono vedono il tuo nome, la tua foto e che ci vai. Cancelliamo le tue corse di gruppo e le tue risposte quando cancelli l'account.",
+      ],
+    },
+    {
+      heading: "Gruppi",
+      blocks: [
+        "Se crei un gruppo o ne fai parte, i suoi membri vedono il tuo nome, la tua foto, il tuo ruolo nel gruppo e i tuoi post nei suoi sport che possono già vedere. Chi non è membro vede solo quanti sono i membri. Gli admin del gruppo vedono chi ha chiesto di entrare e chi è stato invitato. I tuoi gruppi sul profilo li vedi solo tu. Quando cancelli l'account cancelliamo i tuoi gruppi, le appartenenze, le richieste e gli inviti; un gruppo che gestisci passa prima a un altro membro.",
       ],
     },
     {

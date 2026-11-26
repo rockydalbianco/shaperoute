@@ -1236,6 +1236,10 @@ export const IT: Table = {
   Floors: "Piani",
   "Log set": "Segna la serie",
   "Same again": "Ancora uguale",
+  // TASK-511: the clock waits for the first exercise; − and + by the boxes
+  "Starts with the first exercise": "Parte col primo esercizio",
+  "Less {field}": "{field}: meno",
+  "More {field}": "{field}: più",
   Rest: "Recupero",
   Custom: "Personalizzato",
   "Next: {exercise} · set {n}": "Dopo: {exercise} · serie {n}",

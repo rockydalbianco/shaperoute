@@ -3701,6 +3701,5 @@ export const IT: Table = {
   "No protein, carbs or fat to count for this day.":
     "Niente proteine, carboidrati o grassi da contare per questo giorno.",
   // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
-  Landing: "Atterraggio",
   "Landings from OpenStreetMap: {count}": "Atterraggi da OpenStreetMap: {count}",
 };

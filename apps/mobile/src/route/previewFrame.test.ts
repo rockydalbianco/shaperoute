@@ -5,7 +5,14 @@ import catalogue from "../mapdraw/catalogueShapes.json";
 import { lookOf } from "../mapdraw/figure";
 import { lineLength } from "../mapdraw/geometry";
 import { toPlane } from "../mapdraw/plane";
-import { BASE_FRAME_M, dashesOf, FRAME_FILL, livePreview } from "./previewFrame";
+import {
+  BASE_FRAME_M,
+  dashesOf,
+  FRAME_FILL,
+  FRAME_STEP,
+  livePreview,
+  placeIn,
+} from "./previewFrame";
 
 // Piazza del Duomo, Trento.
 const START: LatLon = [46.0679, 11.1211];
@@ -106,18 +113,24 @@ test("within a step the frame stays and the outline grows from the start", () =>
   expect(span(large.points) / span(small.points)).toBeCloseTo(highest / lowest, 6);
 });
 
-test("past a step the frame is twice as wide", () => {
+test("past a step the frame is a step wider: two steps double it", () => {
   const widths = new Set<number>();
-  for (let metres = 1000; metres <= 50_000; metres += 500) {
+  for (let metres = 1000; metres <= 50_000; metres += 250) {
     widths.add(preview("heart", metres).frame.widthM);
   }
   const sorted = [...widths].sort((a, b) => a - b);
-  expect(sorted.length).toBeGreaterThan(3);
+  expect(sorted.length).toBeGreaterThan(6);
   for (let i = 1; i < sorted.length; i += 1) {
-    expect(sorted[i]).toBe(2 * sorted[i - 1]);
+    expect(sorted[i] / sorted[i - 1]).toBeCloseTo(FRAME_STEP, 2);
+  }
+  for (let i = 2; i < sorted.length; i += 1) {
+    expect(sorted[i] / sorted[i - 2]).toBeCloseTo(2, 2);
   }
   for (const width of sorted) {
-    expect(Number.isInteger(Math.log2(width / BASE_FRAME_M))).toBe(true);
+    // To the metre, so a frame has one name.
+    expect(Number.isInteger(width)).toBe(true);
+    const steps = Math.log(width / BASE_FRAME_M) / Math.log(FRAME_STEP);
+    expect(Math.abs(steps - Math.round(steps))).toBeLessThan(0.01);
   }
 });
 
@@ -135,10 +148,10 @@ test("every shape of the catalogue stays inside the box, at every distance", () 
       expect(Math.max(...xs)).toBeLessThanOrEqual(WIDTH);
       expect(Math.min(...ys)).toBeGreaterThanOrEqual(0);
       expect(Math.max(...ys)).toBeLessThanOrEqual(HEIGHT);
-      // And it is never a speck: at least a third of the room, one way.
+      // And it is never a speck: over half the room, one way.
       const across = (Math.max(...xs) - Math.min(...xs)) / WIDTH;
       const down = (Math.max(...ys) - Math.min(...ys)) / HEIGHT;
-      expect(Math.max(across, down)).toBeGreaterThan(FRAME_FILL / 2 - 1e-9);
+      expect(Math.max(across, down)).toBeGreaterThan(FRAME_FILL / FRAME_STEP - 0.01);
     }
   }
 });
@@ -235,4 +248,34 @@ test("the longest outline of the catalogue is a few hundred dashes", () => {
     }
   }
   expect(most).toBeLessThan(400);
+});
+
+test("the frame before, placed in the box of the frame after it", () => {
+  // The heart at the top of one step and just past it: the same start.
+  let metres = 5000;
+  while (preview("heart", metres + 50).key === preview("heart", 5000).key) {
+    metres += 50;
+  }
+  const old = preview("heart", metres);
+  const now = preview("heart", metres + 50);
+  const place = placeIn(now.frame, old.frame, WIDTH);
+  // A step narrower, with the box's proportions.
+  expect(place.width).toBeCloseTo(WIDTH / FRAME_STEP, 0);
+  expect(place.width / place.height).toBeCloseTo(WIDTH / HEIGHT, 6);
+  // The start is the same point of the ground: on the old picture, placed,
+  // it falls where the new frame has it.
+  const share = [old.dot[0] / WIDTH, old.dot[1] / HEIGHT];
+  expect(place.left + share[0] * place.width).toBeCloseTo(now.dot[0], 6);
+  expect(place.top + share[1] * place.height).toBeCloseTo(now.dot[1], 6);
+  // The other way, stepping back in: the wider picture is larger than the box.
+  const back = placeIn(old.frame, now.frame, WIDTH);
+  expect(back.width).toBeCloseTo(WIDTH * FRAME_STEP, 0);
+  expect(back.left + (now.dot[0] / WIDTH) * back.width).toBeCloseTo(old.dot[0], 6);
+  // The same frame fills the box.
+  expect(placeIn(now.frame, now.frame, WIDTH)).toEqual({
+    left: 0,
+    top: 0,
+    width: WIDTH,
+    height: HEIGHT,
+  });
 });

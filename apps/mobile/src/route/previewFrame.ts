@@ -38,8 +38,11 @@ export type LivePreview = {
 };
 
 /** A piece of ground a frame may look at, in metres across; the others are
- * twice as wide, step by step, or half. */
+ * `FRAME_STEP` times as wide, step by step, or as many times narrower. */
 export const BASE_FRAME_M = 250;
+/** How much wider a frame is than the one before: two steps double it. So
+ * an outline is never less than `FRAME_FILL / FRAME_STEP` of its frame. */
+export const FRAME_STEP = Math.SQRT2;
 /** The share of the frame the outline may fill at most: room at the edges
  * for the line and the dot. */
 export const FRAME_FILL = 0.8;
@@ -63,8 +66,8 @@ function boxFromStart(look: Look): Box {
 /**
  * The frame for an outline whose box from the start is `box` units, at
  * `unitM` metres a unit, in a box of proportions `aspect` (width over
- * height). Frames come in steps, each twice as wide as the one before; a
- * frame is centred on the outline at the largest size it holds. So while
+ * height). Frames come in steps, each `FRAME_STEP` times as wide as the one
+ * before, to the metre; a frame is centred on the outline at the largest size it holds. So while
  * the distance changes within a step the frame stays, and the outline
  * grows from the start, which is inside it: it never leaves the frame.
  */
@@ -73,8 +76,8 @@ export function frameOf(box: Box, unitM: number, aspect: number): Frame {
   const across =
     Math.max(box.maxX - box.minX, (box.maxY - box.minY) * aspect) / FRAME_FILL;
   const needM = across * unitM;
-  const step = Math.ceil(Math.log2(needM / BASE_FRAME_M) - 1e-9);
-  const widthM = BASE_FRAME_M * 2 ** step;
+  const step = Math.ceil(Math.log(needM / BASE_FRAME_M) / Math.log(FRAME_STEP) - 1e-9);
+  const widthM = Math.round(BASE_FRAME_M * FRAME_STEP ** step);
   // The metres of a unit of the largest outline this frame holds.
   const largestM = widthM / across;
   return {
@@ -177,4 +180,26 @@ export function dashesOf(
     phase = (phase + length) % period;
   }
   return dashes;
+}
+
+/** Where a piece of the box is, in points. */
+export type Place = { left: number; top: number; width: number; height: number };
+
+/**
+ * Where the frame `old` lies in a box `width` points wide that shows the
+ * frame `now`, both from the same start: the place of the picture of `old`
+ * while the picture of `now` is on its way. Larger than the box when `old`
+ * is the wider one.
+ */
+export function placeIn(now: Frame, old: Frame, width: number): Place {
+  const perMetre = width / now.widthM;
+  const height = now.heightM * perMetre;
+  const across = old.widthM * perMetre;
+  const down = old.heightM * perMetre;
+  return {
+    left: width / 2 + (old.centre[0] - now.centre[0]) * perMetre - across / 2,
+    top: height / 2 - (old.centre[1] - now.centre[1]) * perMetre - down / 2,
+    width: across,
+    height: down,
+  };
 }

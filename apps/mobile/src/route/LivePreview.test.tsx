@@ -111,9 +111,60 @@ test("far past it the map steps back: another picture", async () => {
   await rerender(<LivePreview shape="heart" distanceM={20_000} start={START} />);
   const second = asked.mock.calls[asked.mock.calls.length - 1][0];
   expect(second).not.toBe(first);
-  // Four times the distance, two steps: the frame is four times as wide.
+  // Four times the distance: the frame is four times as wide.
   const wide = (id: string) => Number(id.split(":")[2]);
-  expect(wide(second) / wide(first)).toBe(4);
+  expect(wide(second) / wide(first)).toBeCloseTo(4, 2);
+});
+
+test("while the new picture is on its way, the one before stays where it lies", async () => {
+  const pictures = new Map<string, string>();
+  asked.mockImplementation((id) => pictures.get(id) ?? null);
+  const { rerender } = await render(
+    <LivePreview shape="heart" distanceM={5000} start={START} />,
+  );
+  await layOut();
+  const first = asked.mock.calls[asked.mock.calls.length - 1][0];
+  pictures.set(first, "data:image/png;base64,FIRST");
+  await rerender(<LivePreview shape="heart" distanceM={5100} start={START} />);
+  expect(screen.getByTestId("live-preview-map").props.source.uri).toMatch(/FIRST$/);
+  expect(screen.queryByTestId("live-preview-map-before")).toBeNull();
+  // The map steps back: no picture of the new frame yet.
+  await rerender(<LivePreview shape="heart" distanceM={20_000} start={START} />);
+  expect(screen.queryByTestId("live-preview-map")).toBeNull();
+  const before = screen.getByTestId("live-preview-map-before");
+  expect(before.props.source.uri).toMatch(/FIRST$/);
+  const place = StyleSheet.flatten(before.props.style);
+  // A quarter as wide, somewhere inside the box; and still credited.
+  expect(place.width as number).toBeCloseTo(WIDTH / 4, 0);
+  expect(place.left as number).toBeGreaterThan(0);
+  expect((place.left as number) + (place.width as number)).toBeLessThan(WIDTH);
+  expect(screen.getByText(creditLine())).toBeOnTheScreen();
+  // The picture comes: it takes the place of the one before.
+  const second = asked.mock.calls[asked.mock.calls.length - 1][0];
+  pictures.set(second, "data:image/png;base64,SECOND");
+  await rerender(<LivePreview shape="heart" distanceM={20_100} start={START} />);
+  expect(screen.getByTestId("live-preview-map").props.source.uri).toMatch(/SECOND$/);
+  expect(screen.queryByTestId("live-preview-map-before")).toBeNull();
+});
+
+test("the picture of another start is not kept under a new one", async () => {
+  const pictures = new Map<string, string>();
+  asked.mockImplementation((id) => pictures.get(id) ?? null);
+  const { rerender } = await render(
+    <LivePreview shape="heart" distanceM={5000} start={START} />,
+  );
+  await layOut();
+  pictures.set(
+    asked.mock.calls[asked.mock.calls.length - 1][0],
+    "data:image/png;base64,A",
+  );
+  await rerender(<LivePreview shape="heart" distanceM={5100} start={START} />);
+  expect(screen.getByTestId("live-preview-map")).toBeOnTheScreen();
+  await rerender(
+    <LivePreview shape="heart" distanceM={5100} start={[45.4642, 9.19]} />,
+  );
+  expect(screen.queryByTestId("live-preview-map")).toBeNull();
+  expect(screen.queryByTestId("live-preview-map-before")).toBeNull();
 });
 
 test("another shape, another start: another outline and another picture", async () => {

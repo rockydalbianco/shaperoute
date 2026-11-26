@@ -3,6 +3,7 @@
 **Stato**: Done · 2026-11-23 · A #1415 e B #1420 in `main`, A sul server
 (passo 19); esce col prossimo OTA di produzione, poi la prova sul telefono
 («Uscita e prova»)
+**Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `feat/TASK-488-a-adapt-server`, `feat/TASK-488-b-adapt-app`
 **Dipende da**: TASK-433 (schede guidate), TASK-452 (corsa su misura), TASK-461 (pianificatore)
 **ADR**: ADR-0396 · numeri dal Coordinatore il 2026-11-22

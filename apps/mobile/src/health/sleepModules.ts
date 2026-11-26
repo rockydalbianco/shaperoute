@@ -11,28 +11,23 @@ type AppleLibrary = typeof import("@kingstinct/react-native-healthkit");
  * post, the «Sleep» card of the profile, the post of a night), and the
  * phone's reader of the sleep.
  *
- * **Off on the stores' build, and no reader there, until part C**: its iOS
- * permission text speaks of the heart rate only, so the sleep waits for the
- * native build with its own sentence, the privacy line, the App Privacy
- * card and the review notes, each after the user's yes. Until then, on the
- * stores' build nothing of this shows and nothing reads Apple Health: this
- * file loads no health library there and asks for no permission, and
- * `sleepModules.test.ts` holds it to that.
- *
- * **On on the testers' preview** (part C0, `isPreview`), so that the sleep
- * can be tried on a phone before the stores have it. Reading is asked only
- * at the user's tap: on «Show my sleep from Apple Health» of the profile
- * and on «Sleep» of the Feed's «+».
+ * **On from the native build of part C**, whose iOS permission text speaks
+ * of the sleep beside the heart rate (`app.json`,
+ * `NSHealthShareUsageDescription`). The stores' builds before it never get
+ * this code: the changed text moves the fingerprint, so no update from here
+ * reaches them. On the testers' preview it was on before that (part C0,
+ * `isPreview`). Reading is asked only at the user's tap: on «Show my sleep
+ * from Apple Health» of the profile and on «Sleep» of the Feed's «+».
  */
 
-/** Whether the stores' build shows and publishes the sleep: part C turns
- * it on. Typed as a boolean, not as the `false` it is, so that what it
- * hides still compiles and is tested. */
-export const SLEEP_POSTS_ON: boolean = false;
+/** Whether the stores' build shows and publishes the sleep: on with part
+ * C. Typed as a boolean, so that what it hides still compiles and is
+ * tested either way. */
+export const SLEEP_POSTS_ON: boolean = true;
 
 /** Whether this copy of the app shows and publishes the sleep: everywhere
- * once `SLEEP_POSTS_ON`, until then on the testers' preview only. A test
- * turns it on or off by replacing this. */
+ * with `SLEEP_POSTS_ON`, and on the testers' preview also without it. A
+ * test turns it on or off by replacing this. */
 export function sleepPostsOn(): boolean {
   return SLEEP_POSTS_ON || isPreview();
 }
@@ -58,8 +53,7 @@ function appleReader(): SleepReader | null {
 
 /** The phone's reader of the sleep, made the first time: Apple Health on
  * an iPhone whose build has its native code, where the sleep is on; null
- * elsewhere (the stores' build until part C, Expo Go, Android until Health
- * Connect, part D). */
+ * elsewhere (Expo Go, Android until Health Connect, part D). */
 export function sleepReader(): SleepReader | null {
   if (shared === undefined) {
     shared = sleepPostsOn() && Platform.OS === "ios" ? appleReader() : null;

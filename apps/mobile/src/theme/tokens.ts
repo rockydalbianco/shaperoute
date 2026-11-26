@@ -399,6 +399,20 @@ export const statusBarStyle: "light" | "dark" = tone.tone === "dark" ? "light" :
  */
 export const GLASS_VEIL = 0.88;
 
+/**
+ * How much of the tone's background is laid over the phone's real glass
+ * (TASK-469 part B, the user's choice of 2026-11-26, «Prova la velatura»).
+ * The real glass lightens and darkens with what is behind it, and what the
+ * app draws on it keeps its own colour: in the simulator the icons of the
+ * tab bar fell to 1.8:1 over a white photo in the dark tone. With this
+ * tint, and everything on the glass in the full text colour, they keep
+ * 4.5:1 there, and the glass still lets what is behind be seen.
+ *
+ * The least share: a tone whose background is lighter (the dark tone at
+ * its brighter steps) takes a little more, see `realTintShare`.
+ */
+export const REAL_GLASS_TINT = 0.6;
+
 /** The colours of the glass in a tone (TASK-469, ADR-0383). */
 export type GlassColors = {
   /** The tint: the tone's background. */
@@ -415,6 +429,9 @@ export type GlassColors = {
   readonly shadow: string;
   /** What marks the chosen thing on the glass: the text, faint. Never yellow. */
   readonly selected: string;
+  /** Over the phone's real glass: the tint at `REAL_GLASS_TINT`, as
+   * `#RRGGBBAA`. Never yellow. */
+  readonly realTint: string;
 };
 
 /** `share` (0–1) as the two hex digits of an alpha. */
@@ -423,6 +440,57 @@ function alphaHex(share: number): string {
     .toString(16)
     .padStart(2, "0")
     .toUpperCase();
+}
+
+/** The relative luminance of `#RRGGBB`, as WCAG counts it. */
+function luminanceOf(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((at) => {
+    const c = parseInt(hex.slice(at, at + 2), 16) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** The contrast of `text` on `tint` laid at `alpha` (0–1) over `under`. */
+function contrastOnTint(
+  text: string,
+  tint: string,
+  alpha: number,
+  under: string,
+): number {
+  const seen = [1, 3, 5]
+    .map((at) =>
+      Math.round(
+        parseInt(tint.slice(at, at + 2), 16) * alpha +
+          parseInt(under.slice(at, at + 2), 16) * (1 - alpha),
+      )
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("");
+  const [light, dark] = [luminanceOf(text), luminanceOf(`#${seen}`)].sort(
+    (a, b) => b - a,
+  );
+  return (light + 0.05) / (dark + 0.05);
+}
+
+/**
+ * How much of `palette`'s background goes over the phone's real glass:
+ * `REAL_GLASS_TINT`, or the least share above it at which the text keeps
+ * 4.5:1 on the tint alone over a white photo and over a black one. Never
+ * more than the veil of part A, where it always does.
+ */
+function realTintShare(palette: Palette): number {
+  for (let percent = REAL_GLASS_TINT * 100; percent < GLASS_VEIL * 100; percent += 2) {
+    const alpha = Math.round((percent / 100) * 255) / 255;
+    const holds = ["#FFFFFF", "#000000"].every(
+      (under) => contrastOnTint(palette.text, palette.background, alpha, under) >= 4.5,
+    );
+    if (holds) {
+      return percent / 100;
+    }
+  }
+  return GLASS_VEIL;
 }
 
 /**
@@ -441,6 +509,7 @@ export function glassOf(choice: ToneChoice): GlassColors {
     rim: dark ? `#FFFFFF${alphaHex(0.08)}` : `${palette.text}${alphaHex(0.08)}`,
     shadow: `${FIXED.scrim}${alphaHex(dark ? 0.55 : 0.16)}`,
     selected: `${palette.text}${alphaHex(0.12)}`,
+    realTint: `${palette.background}${alphaHex(realTintShare(palette))}`,
   };
 }
 

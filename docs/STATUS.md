@@ -35,6 +35,8 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 **Le prove sul campo** (neve, volo, corsa vera): una riga per prova in
 `docs/PROVE-SUL-CAMPO.md` (406 E, 429, 375 E, 415, 305, 479), da
 fare quando capita; i task con solo quella prova sono chiusi.
+**TASK-501** (chiuso): dopo l'OTA con la parte C, la prova sul telefono
+di Coach e di un post aperto con la sua mappa.
 
 ## In lavorazione
 
@@ -197,6 +199,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-23**: **C0 in `main`** (#1458, `cffb2c4d`): il sonno acceso solo
   sul canale di prova `preview`, spento negli store. Arriva sulla build di
   prova con la prossima pubblicazione su `preview`; poi la prova e la C.
+  **2026-11-27**: **C in `main`** (#1334, `7e2813ce`) nel taglio nativo:
+  sonno acceso con la build nuova; App Privacy e build dal Coordinatore. Poi D.
 
 - **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (OTA
   12); B (dieci esercizi, tre routine da 3, 5, 10 min, la gamba staccata

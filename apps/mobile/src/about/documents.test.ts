@@ -109,7 +109,7 @@ describe("«Terms» is a draft", () => {
   test.each(CONTENTS)("in «%s», with its day", (_, content) => {
     expect(content.terms.draft).toBe(true);
     expect(content.terms.updated).toMatch(
-      /^26 (November|novembre) 2026$|^26\. November 2026$|^26 de noviembre de 2026$/,
+      /^27 (November|novembre) 2026$|^27\. November 2026$|^27 de noviembre de 2026$/,
     );
   });
 
@@ -129,7 +129,7 @@ describe("«Privacy» is final, approved by the user (TASK-237 D)", () => {
     // Redated for the estimate of a daily target in «Nutrition» (TASK-489 part J).
     // Redated for the paragliding landings nearby and the wind aloft (TASK-479 parts D6, H).
     expect(content.privacy.updated).toMatch(
-      /^26 November 2026$|^26 novembre 2026$|^26\. November 2026$|^26 de noviembre de 2026$/,
+      /^27 November 2026$|^27 novembre 2026$|^27\. November 2026$|^27 de noviembre de 2026$/,
     );
   });
 

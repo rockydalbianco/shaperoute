@@ -6,7 +6,7 @@ import {
   useLayoutEffect,
   useRef,
 } from "react";
-import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
+import type { NativeScrollEvent, NativeSyntheticEvent, ViewStyle } from "react-native";
 
 /**
  * The header that turns to glass when the page scrolls (TASK-469 A5b,
@@ -91,4 +91,31 @@ export function useHeaderScroll(active = true): HeaderScrollProps {
     [active, report],
   );
   return { onScroll, scrollEventThrottle: 16 };
+}
+
+/**
+ * Whether the header floats over the pages (TASK-469 B3, ADR-0383): only
+ * where the phone draws the real glass, as the tab bar. Given by the tab
+ * shell; false outside it, and until the header floats.
+ *
+ * A floating header takes nothing from a page: the shell still leaves it
+ * the header's room, so every page is laid out as before. What changes is
+ * what its main scroller lets be seen, with `useUnderHeader()`.
+ */
+export const HeaderFloatsContext = createContext(false);
+
+/** A scroller that does not cut what scrolls past its top edge. */
+const UNDER_HEADER: ViewStyle = { overflow: "visible" };
+
+/**
+ * The style for the main scroller of a page of the tab bar that starts
+ * right under the header: under a floating header, what scrolls up goes on
+ * showing behind the glass instead of being cut at the scroller's edge.
+ * Nothing until the header floats, and nothing outside the tab shell.
+ *
+ * Not for a scroller under something the page keeps at its top (the tabs
+ * of «Feed», a search field): its content would show behind that too.
+ */
+export function useUnderHeader(): ViewStyle | undefined {
+  return useContext(HeaderFloatsContext) ? UNDER_HEADER : undefined;
 }

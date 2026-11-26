@@ -629,13 +629,58 @@ def city_files(
 LATER_RIDES_FROM_M = 40_000
 
 
-def _place(r: Run) -> tuple[bool, bool, float, str]:
-    """Where a route goes in its city file: best first, a ride after the runs
-    and a later ride after the rides. The API numbers a route by its place
-    (recommended.py), so what was in the file keeps its id."""
+# The shapes the engine learned in TASK-516 (ADR-0411): their drawings joined
+# the catalogue after every route of before, at the end of each city file.
+LATER_SHAPES: frozenset[str] = frozenset(
+    {
+        "ball",
+        "bell",
+        "candy_cane",
+        "colosseum",
+        "croissant",
+        "dolphin",
+        "dome",
+        "easter_egg",
+        "eiffel_tower",
+        "flower",
+        "fox_head",
+        "gift",
+        "infinity",
+        "leaf",
+        "light_bulb",
+        "medal",
+        "mountain",
+        "owl",
+        "padlock",
+        "peace",
+        "penguin",
+        "pizza_slice",
+        "racket",
+        "reindeer",
+        "santa_hat",
+        "scooter",
+        "skis",
+        "snowflake",
+        "snowman",
+        "stocking",
+        "strawberry",
+        "triumphal_arch",
+        "trophy",
+        "turtle",
+        "umbrella",
+    }
+)
+
+
+def _place(r: Run) -> tuple[bool, bool, bool, float, str]:
+    """Where a route goes in its city file: best first, a ride after the runs,
+    a later ride after the rides, and a shape of TASK-516 after them all. The
+    API numbers a route by its place (recommended.py), so what was in the file
+    keeps its id."""
+    later_shape = r.get("shape") in LATER_SHAPES
     ride = "activity" in r
     later = ride and r["distance_m"] >= LATER_RIDES_FROM_M
-    return (ride, later, -r["similarity"], r["key"])
+    return (later_shape, ride, later, -r["similarity"], r["key"])
 
 
 def _route_body(r: Run) -> dict[str, Any]:

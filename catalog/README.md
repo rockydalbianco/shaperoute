@@ -196,6 +196,25 @@ Nizza non ne hanno nessuna che passi; Amsterdam passa i 4 GB anche a 40 km,
 e Sydney, Valencia, Milano e Barcellona, più grandi, non sono state provate.
 Le altre città hanno uscite fino a 30 km, come prima.
 
+### Le forme nuove di TASK-516 (ADR-0411)
+
+Le 35 forme che il motore ha imparato in TASK-516 (25 contorni di TASK-418
+e dieci d'inverno, delle feste e dello sport) hanno i loro disegni nel
+registro di TASK-419: `out/TASK-419/runs.jsonl` ha in coda gli 88 casi
+della parte B di TASK-516 (le 11 sagome nuove a Barcellona, Levico, Milano
+e Trento, 5 e 10 km; prima c'è la copia `runs.before-task516.jsonl`). I
+comandi di sopra li leggono come prima.
+
+**In un file di città le forme di TASK-516 stanno in fondo, dopo ogni corsa,
+parola e uscita** (`catalog_seed._place`, `LATER_SHAPES`): ogni percorso di
+prima tiene il suo id.
+
+Dal 27 novembre 2026 il seme ha **2161 percorsi**: entrano **130 disegni
+delle forme nuove**, tutti quelli che passano il filtro, nelle quattro città
+dove le forme sono state provate: Milano 60, Barcellona 36, Trento 32,
+Levico 2 (69 da 10 km, 61 da 5). Le altre città li avranno con un giro
+loro (TASK-516 D2).
+
 ### Le città in evidenza
 
 Le città che «Explore» mostra per prime (`FEATURED_CITIES` nell'app) e che

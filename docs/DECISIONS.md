@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A7c-3 in produzione con l'OTA 25); B avviata il 2026-11-24, a fette
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1–A7c-3 in produzione con l'OTA 25); B avviata il 2026-11-24, a fette: la barra galleggia solo col vetro vero (utente, 2026-11-26), B1 e B2 in bozza fino al taglio nativo
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -610,6 +610,7 @@ lasciando le righe d'indice.
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
 - ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero (`GET /notifications/unread`, una query, niente foto), con il ripiego sulla lista per un server di prima; la riga dei «live» non chiede con l'app dietro · 2026-11-26 · Attiva
+- ADR-0175, aggiunta (TASK-497) — La foto di chi scrive un commento: il commento porta l'indirizzo della foto piccola (`author.photo`, quello del feed), l'app non chiede più il profilo intero; supera il punto 7 · 2026-11-24 · Attiva
 
 
 ## Voci nuove
@@ -664,6 +665,71 @@ nuova, impronta iOS invariata. Anche il conto dentro `GET /notifications`
 usa la query leggera. Restano fuori, come idee nel task file: una chiamata
 sola per i tre bollini, e le foto come indirizzo (`avatar_url`) nelle
 liste.
+
+## ADR-0175, aggiunta (TASK-497) — La foto di chi scrive un commento viaggia come indirizzo, non si chiede più al profilo
+
+**Stato**: Attiva · 2026-11-24 · TASK-497 (punto O7 della lettura del
+codice del 2026-11-23; l'utente: «Sì, tutte»). Niente che l'utente veda:
+tutto **deciso dall'agente su delega dell'utente**. Forma (un'aggiunta, non
+un ADR nuovo) dal Coordinatore il 2026-11-24. **Punto 9 di ADR-0175: supera
+il punto 7** («l'app la chiede a `GET /users/{public_id}`»), che resta solo
+come ripiego verso un'API di prima.
+
+**Contesto**: il punto 7 è del 2026-10-03, quando l'unico modo di avere la
+foto di un iscritto era il profilo. Da TASK-355 parte B la foto piccola ha
+un indirizzo suo (`/users/{public_id}/photo?v=…`, `avatars.py`) e il feed
+lo usa. Intanto il profilo è cresciuto: `GET /users/{public_id}` è una
+query con dodici sotto-query più quella dei premi, e porta la foto da
+256 px in base64. Il foglio dei commenti ne chiedeva uno per autore, a ogni
+apertura dell'app, per tenerne solo la foto.
+
+**Decisione**:
+
+9. **La foto di chi scrive viaggia nel commento come indirizzo.**
+   1. `author.photo` in commenti e risposte: lo stesso nome e lo stesso
+      indirizzo dell'autore di un post del feed (`FeedAuthorBody.photo`);
+      `null` senza foto. Nelle tre liste (`GET /drawings/{id}/comments` con
+      e senza `threads`, `GET /comments/{id}/replies`), nella risposta del
+      `POST` e nel commento tenuto con un super like. `mention` resta nome
+      e id: è solo «@nome».
+   2. **Nessuna query in più**: una `LEFT JOIN profile_photos` (una riga al
+      più, per chiave) nella query che c'era, e una sotto-query nel
+      `RETURNING` dei due `INSERT`. Si legge solo `updated_at`, mai il
+      JPEG.
+   3. **Un'aggiunta**: un'app di prima non legge il campo e fa come prima.
+      Un'app nuova con un'API di prima (campo assente) chiede il profilo,
+      come dice il punto 7: `photoOf` resta per questo.
+   4. **Nell'app** un indirizzo è un `Image` con token e chiave, tenuto
+      dalla cache HTTP del telefono (`Cache-Control: private,
+      max-age=86400`; una foto nuova ha un indirizzo nuovo); `null` è
+      l'iniziale, senza richieste. L'immagine sta **sopra l'iniziale**
+      (`CommentAvatar`): mentre carica, e se non arriva, si vede
+      l'iniziale, come mentre si aspettava il profilo.
+   5. **Chi non si deve vedere non cambia**: il commento di un iscritto
+      bloccato o nascosto non si legge già (`read_sql`), e l'indirizzo
+      risponde 404 attraverso un blocco con la stessa regola (`apart_sql`).
+
+**Alternative scartate**: la foto in base64 dentro il commento (venti foto
+per pagina: è il motivo del punto 7, e non resterebbe in cache); un
+endpoint che dà le foto di più profili insieme (una rotta nuova per quello
+che la cache HTTP fa già); alleggerire `GET /users/{public_id}` con un
+parametro (resta una richiesta per autore a ogni apertura dell'app, senza
+cache); il tipo `FeedAuthorBody` importato da `feed.py` in `comments.py`
+(`feed.py` importa già `comments.py`: un giro di import); togliere
+`photoOf` (un'app nuova può parlare con un'API di prima).
+
+**Conseguenze**: **misurato in locale**, contando le istruzioni SQL per
+richiesta HTTP (autenticazione compresa) su un post con 10 autori: la
+pagina dei commenti ne usa 6 prima e 6 dopo, e il numero non cresce con gli
+autori (test); le foto costavano 10 `GET /users/{id}` da 3 istruzioni l'una,
+una con 64 `SELECT` nel testo, e ora 10 `GET /users/{id}/photo` da 2
+istruzioni l'una, che il telefono tiene per un giorno. **Non misurato**: i
+tempi sul server e sul telefono, i byte risparmiati, quanto la cache HTTP
+di iOS e Android tenga davvero l'immagine. Nessuna migrazione, nessuna
+dipendenza, niente di nativo. `reactions.py` costruiva l'autore del
+commento del super like a mano: ora usa `comment_author` di `comments.py`.
+Le altre liste con la foto in base64 (persone, campanella, messaggi)
+restano come sono.
 
 ## ADR-0409 — «Sign up» e «Log in» gialli
 
@@ -3422,6 +3488,24 @@ dichiarati «Sufficient Contrast» e il tema scuro.
   superficie si misura sulle schermate nei casi peggiori e resta velata
   se scende sotto 4,5:1. Deciso dall'agente su delega dell'utente; la
   scelta di installare è dell'utente.
+- **Parte B, la barra (2026-11-26)**: l'utente ha voluto che le pagine
+  passino sotto la barra («Sì sotto la barra», 2026-11-24) e che la
+  barra galleggi **solo dove il telefono disegna il vetro vero** («Solo
+  col vetro vero», 2026-11-26). Provata col vetro velato della parte A,
+  la barra che galleggia lasciava leggere il testo dei post dietro le
+  icone: il velo non sfoca. Quindi due pezzi. La stanza
+  (`useTabBarRoom()`, `src/tabs/tabBarRoom.ts`) è già in `main`: ogni
+  pagina della barra la chiede, e vale 0 finché la barra non galleggia.
+  La barra (bozza #1562 sopra la #1557) galleggia quando
+  `nativeGlassAvailable()` dice sì, con la capsula in `NativeGlass`;
+  altrove resta la fascia col fondo di pagina di oggi. Il galleggiare
+  dipende dal telefono e non dal modo di accessibilità: con «Riduci
+  trasparenza» e «Aumenta contrasto» la barra galleggia opaca, come fa
+  iOS, così la pagina non cambia lunghezza quando si tocca
+  l'impostazione. Le due bozze entrano insieme nel taglio nativo: nessun
+  OTA porta la barra che galleggia a una build che non ha il modulo. La
+  scelta di quando galleggia è dell'utente; il resto è deciso
+  dall'agente su delega dell'utente.
 
 **Conseguenze**: la A arriva in fette piccole dopo l'aggiornamento
 completo, prima i token e `src/ui/Glass.tsx`; l'impronta iOS resta

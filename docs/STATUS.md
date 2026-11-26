@@ -229,7 +229,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (#1509) e la correzione dell'header sopra le pagine (#1534, difetto di
   A5b) con l'OTA 25. Poi A7c-4 (chip del volo). Parte B avviata
   dall'utente il 2026-11-24: piano B0–B4 nel task file, la dipendenza
-  (B1) col suo sì e nel taglio nativo. File: — ·
+  (B1) col suo sì e nel taglio nativo. B1 (#1557) e B2 (#1562, la barra
+  galleggia solo col vetro vero: scelta dell'utente del 2026-11-26) sono
+  bozze ferme fino al taglio nativo. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-481 — Il «+» del Feed: tutte le voci** (ADR-0390) · A (la lista:

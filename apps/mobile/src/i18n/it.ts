@@ -3547,7 +3547,7 @@ export const IT: Table = {
     "I prodotti trovati col codice a barre contengono dati di Open Food Facts, disponibili con la Open Database License. Restano separati dall'elenco USDA.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Questa pagina la vedi solo tu. Quello che scrivi qui resta sul tuo telefono; un codice a barre che cerchi va a Open Food Facts.",
-  // src/air/ (TASK-479 part B3: widgets dragged in the editor; waiting for the user's approval)
+  // src/air/ (TASK-479 part B3: widgets dragged in the editor; approved by the user on 2026-11-26)
   "Drag a widget to move it, or its corner to size it. Touch it for more.":
     "Trascina un widget per spostarlo, o il suo angolo per ridimensionarlo. Toccalo per altre azioni.",
 };

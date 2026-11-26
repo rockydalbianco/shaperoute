@@ -3569,7 +3569,7 @@ export const FR: Table = {
     "Les produits trouvés par code-barres contiennent des données d'Open Food Facts, disponibles sous l'Open Database License. Ils restent séparés de la liste USDA.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Toi seul vois cette page. Ce que tu écris ici reste sur ton téléphone ; un code-barres que tu recherches est envoyé à Open Food Facts.",
-  // src/air/ (TASK-479 part B3: widgets dragged in the editor; waiting for the user's approval)
+  // src/air/ (TASK-479 part B3: widgets dragged in the editor; approved by the user on 2026-11-26)
   "Drag a widget to move it, or its corner to size it. Touch it for more.":
     "Faites glisser un widget pour le déplacer, ou son coin pour le redimensionner. Touchez-le pour plus d'options.",
 };

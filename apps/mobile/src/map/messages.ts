@@ -51,6 +51,7 @@ export type ToPage =
   /** `frame`: the map is framed on the line (TASK-478), at the end of a
    * run without a route; never while following the runner. */
   | { type: "showTrack"; coordinates: LngLat[]; frame?: true }
+  | { type: "extendTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
   | {
       type: "showLifts";
@@ -66,6 +67,9 @@ export type ToPage =
    * yellow in the air. */
   | { type: "showFlight"; foot: LngLat[][]; air: LngLat[][]; frame?: true }
   | { type: "clearFlight" }
+  /** New points at the end of the last line of one layer of a day of
+   * skiing or a race, the rest as the page holds it (TASK-496 part D). */
+  | { type: "extendPiece"; layer: PieceLayer; coordinates: LngLat[] }
   | { type: "follow"; lngLat: LngLat; heading: number | null }
   /** Where the phone points on «Compass» (TASK-431), or null off it. */
   | { type: "face"; heading: number | null }
@@ -90,6 +94,11 @@ export type ToPage =
    * figure on it (`setCanvas`). */
   | ({ type: "setCanvas" } & CanvasOnPage)
   | { type: "clearCanvas" }
+  /** A drawing anchored to the roads (TASK-347 part C), apart from the
+   * figure so it never clears the ink of a line being drawn: the figure a
+   * ghost under the route of its strokes, and the stretches of it where the
+   * roads went far from the finger. */
+  | { type: "setAnchored"; ghost: boolean; snapped: LngLat[][]; far: LngLat[][] }
   /** Choosing the start on the map (TASK-292): with `on`, the start's pin
    * stays in the middle of the map, which moves under it, and the page
    * tells where the middle is (`centre`). */
@@ -266,6 +275,24 @@ export function showTrack(points: LatLon[]): ToPage {
  * that ended, or one opened again. */
 export function showTrackFramed(points: LatLon[]): ToPage {
   return { type: "showTrack", coordinates: points.map(toLngLat), frame: true };
+}
+
+/** The run's new fixes, after the line the page was told with `showTrack`
+ * (TASK-496): the page keeps the line, and a fix sends its own point, not
+ * the whole run again. */
+export function extendTrack(points: LatLon[]): ToPage {
+  return { type: "extendTrack", coordinates: points.map(toLngLat) };
+}
+
+/** The layers a day of skiing or a race is drawn on: the track (what was
+ * skied, or on foot), the lifts, the flights. */
+export type PieceLayer = "track" | "lifts" | "air";
+
+/** The new points of a day of skiing or a race recorded (TASK-496 part D):
+ * they go at the end of the last line of `layer`, which the page was told
+ * with `showLifts` or `showFlight`; the cut into pieces is the same. */
+export function extendPiece(layer: PieceLayer, points: LatLon[]): ToPage {
+  return { type: "extendPiece", layer, coordinates: points.map(toLngLat) };
 }
 
 export function clearTrack(): ToPage {
@@ -482,6 +509,20 @@ export function setCanvas(canvas: {
 /** The map is the map again: fingers move it, and no figure is on it. */
 export function clearCanvas(): ToPage {
   return { type: "clearCanvas" };
+}
+
+/** The drawing on the map anchored to the roads (TASK-347 part C). */
+export function setAnchored(anchored: {
+  ghost: boolean;
+  snapped: LatLon[][];
+  far: LatLon[][];
+}): ToPage {
+  return {
+    type: "setAnchored",
+    ghost: anchored.ghost,
+    snapped: anchored.snapped.map((line) => line.map(toLngLat)),
+    far: anchored.far.map((line) => line.map(toLngLat)),
+  };
 }
 
 /**

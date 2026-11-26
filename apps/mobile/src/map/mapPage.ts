@@ -68,6 +68,12 @@ export const PLACE_ZOOM = 16;
 
 /** Zoom while navigating: the next junction and the streets around it. */
 export const FOLLOW_ZOOM = 17;
+/** How long the map takes to come to the runner as the run starts. */
+export const FOLLOW_START_MS = 500;
+/** And to follow the runner to each fix after: shorter, as a fix comes
+ * every second or two and each move is drawn frame by frame (TASK-496; it
+ * was as long as the first). */
+export const FOLLOW_MS = 250;
 
 /** The route line: the brand yellow, the one thing on the map that has it. */
 export const ROUTE_COLOR = route.color;
@@ -175,6 +181,14 @@ export const FIRST_MARK_RADIUS = 9;
  * faint; and the box round the piece chosen, a thin line. */
 export const FAINT_OPACITY = 0.35;
 export const BOX_WIDTH = 1.5;
+
+/** A drawing anchored to the roads (TASK-347 part C, ADR-0300): the lines as
+ * the finger drew them stay as a ghost, the same yellow, thin and faint,
+ * under the route the roads draw; where the roads went far from the finger
+ * the route takes the colour of what the user should know (`warning`). */
+export const DRAWN_GHOST_WIDTH = 2;
+export const DRAWN_GHOST_OPACITY = 0.45;
+export const FAR_COLOR = color.warning;
 
 /** Where the route of the figure starts (TASK-426, ADR-0354): a dot in the
  * colour of a start, which a finger drags with «Move». */
@@ -440,6 +454,12 @@ export function buildMapPage(language: Language = appLanguage()): string {
     var faint = noRoute;
     var chosenBox = noRoute;
     var links = noRoute;
+    // The drawing anchored to the roads (TASK-347 part C): the route of its
+    // strokes, the stretches where the roads went far from the finger, and
+    // whether the figure is a ghost under them.
+    var snapped = noRoute;
+    var farAway = noRoute;
+    var ghostFigure = false;
     var marks = noRoute;
     var startDot = noRoute;
     var ink = [];
@@ -740,6 +760,34 @@ export function buildMapPage(language: Language = appLanguage()): string {
           "line-dasharray": ${toScript(WALK_DASH)},
         },
       });
+      map.addSource("canvas-snapped", { type: "geojson", data: snapped });
+      map.addLayer({
+        id: "canvas-snapped",
+        type: "line",
+        source: "canvas-snapped",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(ROUTE_COLOR)},
+          "line-width": ${ROUTE_WIDTH},
+          "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      map.addSource("canvas-far", { type: "geojson", data: farAway });
+      map.addLayer({
+        id: "canvas-far",
+        type: "line",
+        source: "canvas-far",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(FAR_COLOR)},
+          "line-width": ${ROUTE_WIDTH},
+          "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      // Drawn again after a reload of the style: the figure a ghost again.
+      if (ghostFigure) {
+        ghostLooks();
+      }
       map.addSource("ink", { type: "geojson", data: inkData() });
       map.addLayer({
         id: "ink",
@@ -1521,6 +1569,35 @@ export function buildMapPage(language: Language = appLanguage()): string {
       setSource("canvas-faint", faint);
       setSource("canvas-links", links);
     }
+    // The figure as a ghost under the route of its strokes, or as the route
+    // itself (TASK-347 part C).
+    function ghostLooks() {
+      if (!map.getLayer("canvas")) {
+        return;
+      }
+      map.setPaintProperty(
+        "canvas",
+        "line-width",
+        ghostFigure ? ${DRAWN_GHOST_WIDTH} : ${ROUTE_WIDTH},
+      );
+      map.setPaintProperty(
+        "canvas",
+        "line-opacity",
+        ghostFigure ? ${DRAWN_GHOST_OPACITY} : ${ROUTE_OPACITY},
+      );
+    }
+    // The route of the strokes anchored, and its stretches far from the
+    // finger (TASK-347 part C).
+    function drawAnchored(ghostOn, snappedLines, farLines) {
+      snapped = multiLine(snappedLines);
+      farAway = multiLine(farLines);
+      setSource("canvas-snapped", snapped);
+      setSource("canvas-far", farAway);
+      if (ghostOn !== ghostFigure) {
+        ghostFigure = ghostOn;
+        ghostLooks();
+      }
+    }
     // The box round the piece chosen.
     function drawBox(ring) {
       chosenBox = ring.length > 1
@@ -2199,6 +2276,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       inkLooks("draw");
       drawInk();
       drawFigure([]);
+      drawAnchored(false, [], []);
       drawBox([]);
       drawMarks([]);
       drawStart(null);
@@ -2323,12 +2401,13 @@ export function buildMapPage(language: Language = appLanguage()): string {
             showPin(message.lngLat);
           }
           // The map stays turned as the drawing while it is run.
+          var followed = following;
           following = true;
           map.easeTo({
             center: message.lngLat,
             zoom: ${FOLLOW_ZOOM},
             bearing: wanted,
-            duration: 500,
+            duration: followed ? ${FOLLOW_MS} : ${FOLLOW_START_MS},
           });
         } else if (message.type === "face") {
           // Where the phone points, on «Compass» (TASK-431): the arrow
@@ -2393,6 +2472,20 @@ export function buildMapPage(language: Language = appLanguage()): string {
                   geometry: { type: "MultiLineString", coordinates: message.lines },
                 },
           );
+        } else if (message.type === "extendTrack") {
+          // The new fixes of a run, after the line drawn (TASK-496). A
+          // line of one stretch only: a day of skiing and a flight are
+          // told whole.
+          if (track.geometry && track.geometry.type === "LineString") {
+            setTrack({
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "LineString",
+                coordinates: track.geometry.coordinates.concat(message.coordinates),
+              },
+            });
+          }
         } else if (message.type === "clearTrack") {
           setTrack(noRoute);
         } else if (message.type === "showLifts") {
@@ -2433,6 +2526,35 @@ export function buildMapPage(language: Language = appLanguage()): string {
           if (message.frame) {
             frameLines(message.foot.concat(message.air));
           }
+        } else if (message.type === "extendPiece") {
+          // The new points of a day of skiing or a race (TASK-496 part D),
+          // at the end of the last line of their layer; the cut is the same.
+          var heldLayer =
+            message.layer === "lifts" ? lifts : message.layer === "air" ? flightAir : track;
+          if (
+            heldLayer.geometry &&
+            heldLayer.geometry.type === "MultiLineString" &&
+            heldLayer.geometry.coordinates.length > 0
+          ) {
+            var lines = heldLayer.geometry.coordinates.slice(0, -1);
+            lines.push(
+              heldLayer.geometry.coordinates[heldLayer.geometry.coordinates.length - 1].concat(
+                message.coordinates,
+              ),
+            );
+            var longer = {
+              type: "Feature",
+              properties: {},
+              geometry: { type: "MultiLineString", coordinates: lines },
+            };
+            if (message.layer === "lifts") {
+              setLifts(longer);
+            } else if (message.layer === "air") {
+              setFlightAir(longer);
+            } else {
+              setTrack(longer);
+            }
+          }
         } else if (message.type === "clearFlight") {
           setFlightAir(noRoute);
         } else if (message.type === "clearLifts") {
@@ -2468,6 +2590,10 @@ export function buildMapPage(language: Language = appLanguage()): string {
           setKind(message.kind);
         } else if (message.type === "setCanvas") {
           setCanvas(message);
+        } else if (message.type === "setAnchored") {
+          if (canvas) {
+            drawAnchored(message.ghost, message.snapped, message.far);
+          }
         } else if (message.type === "clearCanvas") {
           clearCanvas();
         } else if (message.type === "setPick") {

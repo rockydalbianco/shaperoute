@@ -11,6 +11,8 @@ MAX_IN_POST in a post.
   photo. An item sent with its id stays, changed, with its counts; one not
   sent goes, with its counts. 404 without a photo in that place, 409 while
   only its owner sees the drawing, 422 outfit_tag_rejected with a reason.
+  An item can be one of its owner's gear (`gear_id`, TASK-486 part F):
+  422 when it is not; not sent, an item kept keeps the one it had.
 - POST /outfit-tags/{id}/open: an item opened, 204.
 - POST /outfit-tags/{id}/shop: «Shop» touched: the link, checked again, or
   null when it no longer opens («This link isn't available.»).
@@ -110,6 +112,7 @@ ITEM_TWICE = "Each item is sent once."
 NOT_ON_PHOTO = "No item with this id on this photo."
 NO_PHOTO = "No photo in this place: send the photo first."
 NO_TAG = "No item with this id."
+NOT_MY_GEAR = "Only an item of your own gear can be tagged from it."
 
 
 class OutfitTagRejected(Exception):
@@ -150,6 +153,13 @@ class OutfitTagRequestBody(BaseModel):
         max_length=MAX_URL_LENGTH,
         description="A shop's https page; cleaned before it is kept.",
     )
+    gear_id: UUID | None = Field(
+        default=None,
+        description=(
+            "One of its owner's gear (TASK-486 part F): the dot opens it."
+            " Not sent, an item kept keeps the one it had."
+        ),
+    )
 
 
 class OutfitTagsRequestBody(BaseModel):
@@ -183,6 +193,14 @@ class OutfitTagBody(BaseModel):
     shops: int | None = Field(
         description="Times «Shop» was touched, in all: to the owner only."
     )
+    gear_id: UUID | None = Field(
+        default=None,
+        description=(
+            "The item of gear it is (TASK-486 part F), when who asks sees that"
+            " item: never one «Hide from profile» or hidden after a report to"
+            " the others."
+        ),
+    )
 
 
 class OutfitTagsBody(BaseModel):
@@ -212,14 +230,19 @@ def tags_on_photos(
     for row in conn.execute(
         "SELECT t.id, t.drawing_id, t.n, t.x, t.y, t.item, t.brand,"
         " t.product_name, t.store, t.url, t.hidden_at,"
-        " coalesce(r.user_id = %(viewer)s, false) AS own, c.opens, c.shops"
+        " coalesce(d.user_id = %(viewer)s, false) AS own, c.opens, c.shops,"
+        # The item of gear, as gear.py lets the others see it: whoever sees
+        # the photo sees its owner, so no block keeps the two apart here.
+        " CASE WHEN %(viewer)s::bigint IS NOT NULL AND (g.user_id = %(viewer)s"
+        " OR (NOT g.off_profile AND g.hidden_at IS NULL)) THEN g.id END"
+        " AS gear_id"
         " FROM drawing_outfit_tags t JOIN drawings d ON d.id = t.drawing_id"
-        " JOIN runs r ON r.id = d.run_id"
+        " LEFT JOIN gear g ON g.id = t.gear_id"
         " LEFT JOIN LATERAL (SELECT sum(k.opens) AS opens, sum(k.shops) AS shops"
         " FROM outfit_tag_clicks k WHERE k.tag_id = t.id"
-        " AND r.user_id = %(viewer)s) c ON true"
+        " AND d.user_id = %(viewer)s) c ON true"
         " WHERE t.drawing_id = ANY(%(ids)s)"
-        " AND (t.hidden_at IS NULL OR r.user_id = %(viewer)s)"
+        " AND (t.hidden_at IS NULL OR d.user_id = %(viewer)s)"
         " ORDER BY t.drawing_id, t.n, t.position",
         {"ids": list(ids), "viewer": viewer_id},
     ):
@@ -237,6 +260,7 @@ def tags_on_photos(
                 hidden=row["hidden_at"] is not None,
                 opens=int(row["opens"] or 0) if own else None,
                 shops=int(row["shops"] or 0) if own else None,
+                gear_id=row["gear_id"],
             )
         )
     return found
@@ -278,6 +302,9 @@ class _Item:
     brand: str
     product_name: str | None
     link: CleanLink | None
+    gear_id: UUID | None
+    # An app of before sends no gear_id: an item kept keeps its own.
+    keeps_gear: bool
 
 
 def _item(body: OutfitTagRequestBody) -> _Item:
@@ -291,7 +318,15 @@ def _item(body: OutfitTagRequestBody) -> _Item:
         except OutfitLinkError as exc:
             raise OutfitTagRejected(exc.reason) from None
     return _Item(
-        body.id, body.x, body.y, body.item, brand, _text(body.product_name), link
+        body.id,
+        body.x,
+        body.y,
+        body.item,
+        brand,
+        _text(body.product_name),
+        link,
+        body.gear_id,
+        "gear_id" not in body.model_fields_set,
     )
 
 
@@ -346,6 +381,16 @@ class OutfitTags:
                 raise AccountError(422, "invalid_request", NOT_ON_PHOTO)
             if len(rows) - len(here) + len(items) > MAX_IN_POST:
                 raise OutfitTagRejected("too_many_in_post")
+            gear = list({item.gear_id for item in items if item.gear_id})
+            if gear:
+                owned = conn.execute(
+                    "SELECT count(*) AS n FROM gear WHERE user_id = %s"
+                    " AND id = ANY(%s)",
+                    (user_id, gear),
+                ).fetchone()
+                assert owned is not None
+                if owned["n"] != len(gear):
+                    raise AccountError(422, "invalid_request", NOT_MY_GEAR)
             gone = list(here - set(kept))
             if gone:
                 conn.execute(
@@ -379,21 +424,25 @@ class OutfitTags:
             "model": item.product_name,
             "url": None if item.link is None else item.link.url,
             "store": None if item.link is None else item.link.store,
+            "gear": item.gear_id,
+            "keep": item.keeps_gear,
             "now": now,
         }
         if item.id is None:
             conn.execute(
                 "INSERT INTO drawing_outfit_tags (drawing_id, n, position, x, y,"
-                " item, brand, product_name, url, store, created_at) VALUES"
-                " (%(drawing)s, %(n)s, %(position)s, %(x)s, %(y)s, %(item)s,"
-                " %(brand)s, %(model)s, %(url)s, %(store)s, %(now)s)",
+                " item, brand, product_name, url, store, gear_id, created_at)"
+                " VALUES (%(drawing)s, %(n)s, %(position)s, %(x)s, %(y)s,"
+                " %(item)s, %(brand)s, %(model)s, %(url)s, %(store)s, %(gear)s,"
+                " %(now)s)",
                 values,
             )
         else:
             conn.execute(
                 "UPDATE drawing_outfit_tags SET position = %(position)s,"
                 " x = %(x)s, y = %(y)s, item = %(item)s, brand = %(brand)s,"
-                " product_name = %(model)s, url = %(url)s, store = %(store)s"
+                " product_name = %(model)s, url = %(url)s, store = %(store)s,"
+                " gear_id = CASE WHEN %(keep)s THEN gear_id ELSE %(gear)s END"
                 " WHERE id = %(id)s",
                 values,
             )
@@ -405,9 +454,9 @@ class OutfitTags:
         from shaperoute_api.drawings import drawing_seen_sql
 
         row = conn.execute(
-            "SELECT t.url, r.user_id = %s AS own FROM drawing_outfit_tags t"
-            " JOIN drawings d ON d.id = t.drawing_id JOIN runs r ON r.id = d.run_id"
-            " WHERE t.id = %s AND (t.hidden_at IS NULL OR r.user_id = %s)"
+            "SELECT t.url, d.user_id = %s AS own FROM drawing_outfit_tags t"
+            " JOIN drawings d ON d.id = t.drawing_id"
+            " WHERE t.id = %s AND (t.hidden_at IS NULL OR d.user_id = %s)"
             f" AND {drawing_seen_sql('%s')}",
             (viewer_id, tag_id, viewer_id, viewer_id),
         ).fetchone()

@@ -1,6 +1,6 @@
 # TASK-355 — Una scheda del Feed che si capisce in un colpo d'occhio
 
-**Stato**: In lavorazione — parte A in main (#700, 2026-11-03), B dopo 344 B
+**Stato**: Done · 2026-11-26 · A (#700), B1 (#1356, server passo 17) e B2 (#1370) in `main` e in produzione (OTA 25); provato dall'utente sul telefono il 2026-11-26 (prova generale sull'OTA 25: «ok»). Chiuso dal Coordinatore 3.
 **Fase**: 4 · **Branch**: `docs/TASK-355-feed-clarity` (documenti),
 `feat/TASK-355-a-feed-card` (A), `feat/TASK-355-b-feed-counts` (B)
 · **ADR**: ADR-0306 · numeri dal Coordinatore (2026-10-30)
@@ -255,4 +255,19 @@ Prese dall'agente su delega dell'utente; non cambiano nessuna scelta sua.
   soddisfatti, CI verde, suite mobile completa verde, impronta iOS `83793e26`.
   Riallineata una volta dopo la #697 (TASK-362): in `App.tsx` il `FeedScreen`
   delle schede sta dentro `DrawAgainContext.Provider`.
-- **Parte B**: da fare, dopo 344 B.
+- **Parte B1** (server) in main con la #1356 (`a0cc9406`, 2026-11-21): la
+  pagina del Feed porta per ogni scheda `reactions` e `comments` e la foto
+  dell'autore (`GET /users/{public_id}/photo?v=`, 128 px, cache privata,
+  404 fra persone che si bloccano). Sul server col passo 17 (server a
+  `40789324`, 2026-11-22). Misura del Coordinatore, prima → dopo: pagina
+  da 13 857 a 14 762 byte (+6,5%), da 74,6 a 81,1 ms, `counts` vero,
+  senza le due richieste in più per scheda; `/users/…/photo` senza chiave
+  risponde 401, come ogni percorso dell'API pubblica.
+- **Parte B2** (app) in main con la #1370 (`e89510ab`, 2026-11-21), dopo
+  il sì dell'utente sulle schermate (2026-11-22): «Like · N» e «Comment ·
+  N» dalla pagina, senza chiederli per ogni scheda (i commenti si
+  chiedono solo quando si apre il foglio o si manda un super like); la
+  foto dell'autore, o l'iniziale; lo scheletro al primo caricamento al
+  posto della rotella. Al simulatore: una sola richiesta per il Feed,
+  nessuna per le schede.
+- **Resta**: l'OTA (Coordinatore) e uno sguardo sul telefono.

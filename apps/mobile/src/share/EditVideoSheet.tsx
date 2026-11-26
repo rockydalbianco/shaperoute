@@ -12,12 +12,14 @@ import {
   space,
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 import { CharacterRow } from "./CharacterRow";
 import { EndingRow } from "./EndingRow";
 import { LineColourRow } from "./LineColourRow";
 import type { PostRun } from "./postRun";
 import { ScenesRows } from "./ScenesRows";
 import { StyleRow } from "./StyleRow";
+import { TogetherRow, type TogetherState } from "./TogetherRow";
 import type { VideoEdit } from "./videoEdit";
 import { VideoEmojiRow } from "./VideoEmojiRow";
 import { VideoPreview } from "./VideoPreview";
@@ -32,6 +34,8 @@ type Props = {
   onClose: () => void;
   /** The video of the post with an edit, for the preview (part C2c). */
   sceneOf: (edit: VideoEdit) => VideoScene;
+  /** «Together» (TASK-417): what the API said of the post's runners. */
+  together?: TogetherState;
 };
 
 /**
@@ -50,6 +54,7 @@ export function EditVideoSheet({
   onChange,
   onClose,
   sceneOf,
+  together,
 }: Props) {
   return (
     <SheetModal visible={visible} onRequestClose={onClose} dim testID="edit-video">
@@ -59,13 +64,23 @@ export function EditVideoSheet({
         onChange={onChange}
         onClose={onClose}
         sceneOf={sceneOf}
+        together={together}
       />
     </SheetModal>
   );
 }
 
-function SheetBody({ run, edit, onChange, onClose, sceneOf }: Omit<Props, "visible">) {
+function SheetBody({
+  run,
+  edit,
+  onChange,
+  onClose,
+  sceneOf,
+  together = { kind: "none" },
+}: Omit<Props, "visible">) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   const change = (part: Partial<VideoEdit>) => onChange({ ...edit, ...part });
   return (
     <View style={styles.layer}>
@@ -75,7 +90,9 @@ function SheetBody({ run, edit, onChange, onClose, sceneOf }: Omit<Props, "visib
         accessibilityRole="button"
         accessibilityLabel={t("Close")}
       />
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + space.lg }]}>
+      <View
+        style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.lg }]}
+      >
         <View style={styles.grip} />
         <View style={styles.header}>
           <Text style={styles.title} accessibilityRole="header">
@@ -103,6 +120,11 @@ function SheetBody({ run, edit, onChange, onClose, sceneOf }: Omit<Props, "visib
             onChange={(character) => change({ character })}
           />
           <LineColourRow line={edit.line} onChange={(line) => change({ line })} />
+          <TogetherRow
+            state={together}
+            on={edit.together}
+            onChange={(on) => change({ together: on })}
+          />
           <Text style={styles.label}>{t("Emoji")}</Text>
           <VideoEmojiRow
             title={t("Along the way")}

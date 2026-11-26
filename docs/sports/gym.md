@@ -26,6 +26,24 @@ esercizi e le scale dei traguardi. Lo scrive la sessione di TASK-385.
   l'iscrizione, o com'era se la pagina viene lasciata. Lo stesso alla fine
   di una nuotata in piscina.
 
+## Scritto a mano, dal «+» del Feed (TASK-484, ADR-0395)
+
+Un allenamento già fatto, scritto dopo con «Gym workout» nel foglio «Add
+to Feed» (scelte dell'utente del 2026-11-21):
+
+- **Si scrive con l'editor delle schede**: una riga per esercizio, serie ×
+  ripetizioni o × tempo, un valore uguale per tutte le serie; «From a
+  plan» parte dagli esercizi di una propria scheda. Sopra giorno, ora
+  d'inizio e durata; sotto il post della palestra con «Imported», che
+  parte da «Everyone».
+- **Sul server** è un allenamento come gli altri con `source` `manual`
+  (`API.md` «Gym»): serie tutte non dal vivo, nessuna pausa né recupero,
+  nessuna scheda, finito prima di adesso.
+- **Conta** per il Feed, «My activities» e il calendario, con «Imported»;
+  le kcal si stimano dalla durata. **Non conta** per i livelli (niente
+  «New level»), la classifica, i badge, il gioco, il concorso, Apple
+  Salute e Health Connect, né segna fatto il giorno della scheda.
+
 ## Cosa non registra
 
 - Nessuna traccia, nessuna distanza della sessione (la distanza di un blocco
@@ -75,10 +93,11 @@ inventati, non a giudicare. Un «Custom» non ha scala né classifica.
 
 ## I traguardi sul profilo e nel post (parte E)
 
-- **Contano tutti gli allenamenti**, anche i privati (scelta dell'utente
-  del 2026-11-06, come i record personali): il profilo mostra figura,
-  esercizio e valore, mai l'allenamento. Contano anche le serie aggiunte
-  dopo «Stop»; «solo dal vivo» vale per la classifica.
+- **Contano tutti gli allenamenti registrati con MuW**, anche i privati
+  (scelta dell'utente del 2026-11-06, come i record personali): il profilo
+  mostra figura, esercizio e valore, mai l'allenamento. Contano anche le
+  serie aggiunte dopo «Stop»; «solo dal vivo» vale per la classifica. Uno
+  scritto a mano non conta (sotto).
 - **Sul profilo** il blocco «🏋️ Gym», dopo i record e il VO₂ max: ogni
   esercizio dal livello 1, prima il livello più alto, con la figura e la
   serie migliore. I primi cinque, gli altri sotto «Show more» (scelta
@@ -126,6 +145,28 @@ gruppo, i suoi esercizi in riquadri a due colonne, nell'ordine del catalogo;
 gruppi, per nome nella lingua dell'app o in inglese, e «Add “{name}”»
 aggiunge un esercizio col nome libero (`gym/ExerciseGrid.tsx`,
 `gym/ExercisePicker.tsx`).
+
+## Lo storico di un esercizio (TASK-483, ADR-0392)
+
+Durante l'allenamento, sotto un esercizio già fatto, il riquadro «Last
+time · {data}» mostra le serie dell'ultima seduta e una riga di
+suggerimento: tutte le serie arrivate alle ripetizioni → «Try {kg + 2,5}
+× {reps}» (5 lb in libbre), altrimenti «Try … again»; a corpo libero +1
+ripetizione, a tempo +5 s, il cardio senza. Le ripetizioni sono quelle
+della scheda seguita, altrimenti quelle della prima serie dell'ultima
+volta. La prima serie parte coi valori dell'ultima volta, solo nei campi
+che la scheda lascia vuoti (`gym/LastTime.tsx`, `gym/exerciseHistory.ts`).
+
+«History» (dall'allenamento e dalla guida «i», sotto «Watch out») ha il
+grafico del numero del tipo — `load` il massimale stimato (Epley, solo
+serie fino a 12 ripetizioni), `bodyweight` le ripetizioni, `timed` i
+secondi, `cardio` la distanza — su 1M, 3M, 1Y, All; quattro record; le
+sedute dalla più recente con la freccia sulla seduta prima e «PR»
+(`gym/ExerciseHistoryPage.tsx`, `gym/HistoryChart.tsx`). I dati vengono da
+`GET /me/gym-history` (solo le proprie serie), più gli allenamenti ancora
+in coda sul telefono; l'ultima risposta di 40 esercizi resta in
+`gym-history.json` per la palestra senza rete. I nomi liberi si uniscono
+dopo spazi tolti e minuscole. Un'API senza la rotta spegne tutto.
 
 ## Le schede (TASK-411 C)
 
@@ -179,14 +220,38 @@ scheda buona):
 
 In «My plans» una scheda con le settimane è un riquadro: «In progress»,
 «Week 2 of 4» con le tacche del ciclo, i giorni di questa settimana con la
-lettera dell'allenamento (oggi cerchiato), «Edit» (passo 3) e «Weeks» (passo
-4); le schede di prima sono righe «sempre uguale» e si aprono nella guida
-allo stesso modo. In «Draw» «Today» mostra l'allenamento del giorno della
+lettera dell'allenamento (oggi cerchiato), «Edit» (passo 3), «Weeks» (passo
+4) e «Table»; le schede di prima sono righe «sempre uguale» e si aprono nella guida
+allo stesso modo. Aperta una scheda che esiste, «Delete plan» (con la
+stessa domanda prima) è sotto il bottone principale in ogni passo della
+guida, non solo all'ultimo (TASK-492, scelta dell'utente del 2026-11-23,
+«In ogni passo»). In «Draw» «Today» mostra l'allenamento del giorno della
 settimana del ciclo, coi valori di quella settimana, e «Week 2 of 4»;
 l'allenamento parte col recupero dell'obiettivo per ogni esercizio. Il
 calendario segna saltati i giorni con un allenamento nella settimana del
 ciclo. Calcolo in `apps/mobile/src/gym/program.ts`, proposta in
 `proposal.ts`, la guida in `GymPlanWizard.tsx`.
+
+**La tabella del piano** (TASK-506 A, scelta dell'utente del 2026-11-23, «Da
+guardare + Settimane»): «Table» in «My plans» mostra tutto il piano su una
+pagina, una linguetta per allenamento («A · Mon», «Run · Tue»), una riga
+per esercizio, una colonna per settimana del ciclo in corso con serie ×
+ripetizioni e i kg (i valori di «Today», con le settimane scritte a mano e
+i passi delle risposte). La settimana di oggi è contornata di giallo, le
+passate e la più leggera sono spente; «—» dove un esercizio in quella
+settimana non c'è; una corsa o un giorno fuori è una riga sola. Si guarda
+soltanto: l'intestazione di una settimana apre il passo «Weeks» della
+guida. `tableOfPlan.ts`, `PlanTable.tsx`.
+
+**Il prossimo allenamento** (TASK-506 C, scelta dell'utente del
+2026-11-23): nel riquadro del piano, sotto i giorni, l'allenamento che
+viene: quello di oggi finché non è fatto, poi il primo giorno dopo («Today ·
+B», «Tomorrow · Run», «Fri · C»), il suo nome, i primi tre esercizi coi
+valori di quella settimana e «+ 2 more», l'omino coi muscoli che lavora; una
+corsa o un giorno fuori in una riga. Con un account, sotto i giorni del
+piano «This week: 1 of 3 done» dal calendario della palestra (un giorno
+passato è fatto se non è saltato, oggi con un allenamento in palestra
+oggi). `NextWorkout.tsx`, `weekDone.ts`.
 
 La prima volta che si tocca «Palestra» in «Draw» (mai all'avvio, mai con
 un altro sport) sale un riquadro «Your plan, step by step» con le barre
@@ -200,8 +265,9 @@ corsa, riposo). Un giorno di corsa è Lenta, Ripetute o Lungo, in km o
 minuti; con le settimane +10% circa (le ripetute +1), l'ultima settimana di
 un ciclo di 3 o più all'80% della prima. In «Draw» quel giorno «Today» dice
 la corsa e «Go to the run · 5.5 km» passa a «Run» coi km già scritti; una
-corsa fatta quel giorno conta come fatta nel calendario. La sigla «RUN» ha
-il suo colore (`runDay`). `runDay.ts`, `RunDayEditor.tsx`.
+corsa fatta quel giorno conta come fatta nel calendario. Il segno della
+corsa (la sigla «RUN» fino a TASK-506 D, ora quello del menu degli sport) ha
+il suo colore (`runDay`) nelle caselle dei giorni. `runDay.ts`, `RunDayEditor.tsx`.
 
 **La corsa su misura** (TASK-452): con almeno una corsa la guida chiede
 «How do you run today?»: il ritmo sui 10 km (o il livello) e il lungo di oggi
@@ -213,9 +279,23 @@ salvate delle ultime 4 settimane dicono un ritmo più veloce, «Your runs say
 5:20/km over 10 km: update the paces?» li cambia solo col sì.
 `runPace.ts`, `RunnerStep.tsx`.
 
+**La scheda si adatta** (TASK-488, ADR-0396): a fine allenamento di un giorno
+della scheda «How did it go?» con «Easy», «Right», «Hard», una volta per
+tutto il giorno; anche a fine corsa in un giorno di corsa della scheda. Facile
+è un passo in più del modo (es. +5 kg invece di +2,5, una ripetizione in più
+senza kg), Giusto come previsto, Duro la volta dopo uguale, due «Duro» di fila
+un passo indietro. Sotto le tre risposte ciò che cambia la volta dopo
+(«62,5 kg → 67,5 kg») con «Change» fino a «Save»; senza risposta niente
+cambia. I passi stanno in `program.adapt` per giorno della settimana e il
+telefono li somma a ogni settimana di quel giorno; i giorni verso una meta e
+le uscite seguono la loro scala. In «My plans» ↑ = ↓ sotto i giorni e
+l'interruttore «Adapts to how it went» (acceso per ogni scheda; spento, le
+risposte restano). La risposta parte verso l'API con la sincronizzazione
+seguente delle schede. `adapt.ts`, `AdaptQuestion.tsx`.
+
 **Il pianificatore completo** (TASK-461, ADR-0371): un piano nuovo mescola
-sempre almeno due sport (scelta dell'utente del 2026-11-11, «Almeno due,
-sempre»): palestra, corpo libero, corsa, camminata e hike, bici, nuoto e
+uno o più sport (fino al 2026-11-23 almeno due, «Almeno due, sempre» del
+2026-11-11; dal 2026-11-23 ne basta uno, TASK-506 B): palestra, corpo libero, corsa, camminata e hike, bici, nuoto e
 canoa, montagna. Un piano può portare a un obiettivo (`target`): una
 distanza di uno sport (corsa 5–42,2 km, bici 30–150 km, nuoto 1–5 km…) o la
 salita di una gita in montagna (500–2000 m), in una data o «Quando sono
@@ -229,11 +309,18 @@ oltre il massimo di Draw, il promemoria alle 8) è nel task file.
 
 **L'ingresso e il corpo libero** (TASK-461 A2). «New plan» apre prima
 «What do you want to train?» (in italiano «Cosa vuoi allenare?»): Palestra,
-Corpo libero e Corsa si scelgono, almeno due («Next · 2 chosen»; con uno
-solo il tasto resta spento); «Toward a distance» e «Mountains» dicono «Soon».
-All'apertura sono scelti corpo libero e corsa. Una scheda di sola palestra
-non si può più fare da nuova; le schede di prima si aprono come prima, senza
-ingresso. Poi i cinque passi:
+Corpo libero e Corsa si scelgono, uno o più («Next · 1 chosen»; senza
+nessuno il tasto resta spento); «Toward a distance» e «Mountains» dicono
+«Soon». All'apertura è scelta la Palestra, dove «New plan» sta: un piano di
+sola palestra è «Continue» fino in fondo (TASK-506 B, scelta dell'utente
+del 2026-11-23 sulla tela «Schede palestra · migliorie»; prima erano
+scelti corpo libero e corsa e servivano due sport). Le schede di prima si
+aprono come prima, senza ingresso. Ogni sport ha nel suo quadratino il
+segno del menu degli sport (lo stesso profilo dello sport: oggi l'emoji,
+🏃 🚶 🚴 🏊 ⛰️), non più una sigla in inglese, e lo stesso segno sta nelle
+caselle dei giorni e nelle linguette della guida; scelto, ogni sport ha il
+bordo giallo (prima gli sport di distanza erano azzurri) — TASK-506 D, punto
+U7 della prova del 2026-11-23. Poi i cinque passi:
 1. senza palestra gli obiettivi sono quelli del corpo libero: «More muscle»
    4 × 12 recupero 60 s, «More strength» 5 × 6 con gli esercizi più duri
    recupero 2 min, «Tone up» 3 × 15 recupero 30 s, «Get back in shape» 3 ×
@@ -282,6 +369,52 @@ libero · 45 km» per primo; un giorno di salita «Cerca almeno 600 m di
 salita». «Ricordamelo alle 8» all'ultimo passo: una notifica del telefono
 alle 8 nei giorni dei piani (`planReminder.ts`). `TargetSteps.tsx`,
 `outingDay.ts`, `PlanTodayCard.tsx`, `OutingDayEditor.tsx`.
+
+**«Mancano 12,4 km» mentre si registra** (TASK-461 B2c). In un giorno di un
+piano, registrando libero nello sport di quel giorno (anche una corsa del
+piano senza percorso), la schermata della corsa mostra la barra di un
+percorso con quanto manca alla distanza del giorno («mancano 12,4 km») o,
+in un giorno di salita, ai suoi metri («mancano 230 m di salita»). Raggiunta
+la meta la barra sparisce. Letto dai piani tenuti sul telefono, senza
+chiedere all'API (`gym/planToGo.ts`, `screens/RunDashboard.tsx`).
+
+## Il piano pubblicato nel Feed (TASK-485, ADR-0394)
+
+Un piano si pubblica nel Feed da «Workout plan» del «+» (la riga del
+foglio arriva con TASK-481 A): «Choose a plan» fra i propri, come «My
+plans»; poi una riga facoltativa («Say something about this plan
+(optional)»), «Who sees it: Everyone» (si cambia lì in «Followers») e
+«Post». Il post va prima in un file del telefono e poi all'API con la
+chiave del telefono, anche senza rete: parte appena può, quando qualcuno
+accede e quando l'app torna davanti (`api/planPosts.ts`,
+`feed/PlanPostFlow.tsx`). Una volta sull'API resta nel file con il suo id,
+così il suo autore lo cancella da quel telefono («Delete post»).
+
+Il post è una **fotografia** del piano a «Post»: nome, giorni, esercizi
+**coi kg**, settimane, modo, ciclo, settimane scritte a mano, corse e
+uscite. Non ci sono mai il primo giorno, i ritmi di corsa (`runner`) né la
+data della meta (`gym/planCopy.ts`, `postedPlan`). Cambiare o cancellare il
+piano non tocca il post.
+
+Nel Feed è un riquadro (`feed/PlanPostTile.tsx`): «WORKOUT PLAN», «{nome}
+· {obiettivo}», «4 days a week · 8 weeks», gli sport del piano e la
+settimana con la lettera di ogni allenamento (A, B…; l'iniziale dello
+sport per una corsa o un'uscita); sopra, la riga dell'autore. Toccato, si
+apre il piano intero (`feed/PlanPostDetail.tsx`): ogni giorno della prima
+settimana, «A · Mon» coi suoi esercizi («Bench press 4 × 10 · 60 kg»), le
+corse e le uscite per nome («Thu — Long run · 8 km»). Reazioni, commenti,
+«…» come ogni post; niente numeri, non è mai stato corso.
+
+**«Use this plan»**, nel riquadro e in fondo al piano aperto, mai sul
+proprio post: con 20 piani già fatti dice «You already have 20 plans:
+delete one to add this.»; se no apre la guida sulla copia
+(`planFromPosted`, `GymPlanWizard` con `copied`): «How do you run today?»
+se ha corse, poi l'ultimo passo (nome, primo giorno, che parte dal lunedì
+dopo) e «Save plan». Il piano nuovo ha una chiave nuova e i kg dell'autore,
+i ritmi di chi copia, la meta «quando sono pronto»; si salva come ogni
+piano (`PUT /me/gym-plans/{key}`) e sotto il riquadro compare «Added to
+your plans». L'app dice `plans` in `X-MuW-Reads`: solo così l'API le manda
+i piani pubblicati.
 
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 

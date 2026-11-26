@@ -398,16 +398,26 @@ e si riscrive la riga in `deploy/.env`: gli atleti collegati restano.
 
 Una email a chi non apre l'app da 14 giorni (`API.md`, «Email when I'm
 away»; ADR-0244), con **Resend**. Spenta finché `deploy/.env` non ha la
-chiave di Resend, il segreto dei link e `SHAPEROUTE_DOMAIN`. **Prima di
-accenderla**: le due parti del TASK-284 in `main` (la casella
-all'iscrizione e la privacy nuova sono nella parte B), l'app pubblicata, e
-l'ok del coordinatore per il server.
+chiave di Resend, il segreto dei link e `SHAPEROUTE_DOMAIN`, **e finché
+`SHAPEROUTE_EMAIL_ROUNDS` non nomina `away`** (TASK-515, ADR-0410: le tre
+variabili da sole accendono le email dell'account, non i giri verso gli
+iscritti). **Prima di accenderla**: le due parti del TASK-284 in `main`
+(la casella all'iscrizione e la privacy nuova sono nella parte B), l'app
+pubblicata, il sì dell'utente a questo giro e l'ok del coordinatore per
+il server.
+
+**In produzione dal 2026-11-26** (TASK-515, passo 24): Resend c'è, con
+`getmuw.app` verificato; partono le email dell'account, le segnalazioni e
+il feedback. `SHAPEROUTE_EMAIL_ROUNDS` è vuota: questa email e quella
+delle notifiche (punto 5) sono **spente**, e i punti 1 e 2 qui sotto sono
+già fatti.
 
 1. Su <https://resend.com> (lo fa l'utente) un account, poi **Domains ›
    Add domain** `getmuw.app`. Resend mostra i record DNS da aggiungere dal
-   gestore del dominio: **SPF** (un `TXT` e un `MX` su un sottodominio di
-   invio), **DKIM** (un `TXT` `resend._domainkey`) e, consigliato,
-   **DMARC** (un `TXT` `_dmarc` con `v=DMARC1; p=none;` per cominciare).
+   gestore del dominio, e si copiano come li scrive: il 2026-11-26 due
+   `CNAME` (`send` e `rsend`, verso nomi di Resend), **DKIM** (un `TXT`
+   `resend._domainkey`) e, consigliato, **DMARC** (un `TXT` `_dmarc` con
+   `v=DMARC1; p=none;` per cominciare).
    Quando Resend dice il dominio «Verified», **API Keys › Create API key**
    con permesso «Sending access» solo per `getmuw.app`: la chiave (`re_…`)
    si vede una volta sola.
@@ -426,6 +436,11 @@ l'ok del coordinatore per il server.
    (`https://<dominio>/away-email/stop?t=…`): `api.getmuw.app`. Il mittente
    è `MuW <hello@getmuw.app>` (`SHAPEROUTE_EMAIL_FROM` lo cambia); il giro
    è alle 17:00 UTC (`AWAY_EMAIL_AT` lo cambia).
+
+   Il giro parte solo se una riga lo nomina: `SHAPEROUTE_EMAIL_ROUNDS=away`
+   (o `away,notices` con l'email delle notifiche, punto 5). Senza la riga,
+   o vuota, nessun giro. Un nome che non è `away` o `notices` ferma
+   l'avvio dell'API con un errore che lo dice.
 3. L'API nuova, che al primo avvio applica la migrazione
    `0023_away_email.sql`, come ogni aggiornamento del server:
 
@@ -436,7 +451,9 @@ l'ok del coordinatore per il server.
    ```
 
    La riga «Email to who is away for 14 days: every day at 17:00 UTC» dice
-   che è accesa; «No email to who is away» che manca qualcosa.
+   che è accesa; «Email to who is away: off (SHAPEROUTE_EMAIL_ROUNDS does
+   not name away)» che c'è tutto tranne il nome del giro; «No email to who
+   is away» che manca qualcosa delle tre variabili.
 4. La prova, senza mandare niente: quanti la riceverebbero adesso.
 
    ```bash
@@ -445,11 +462,16 @@ l'ok del coordinatore per il server.
 
    `--send` fa un giro subito invece di aspettare le 17:00. Il log dice
    quanti erano via, quante email sono partite e quante Resend ne ha
-   rifiutate (mai gli indirizzi).
+   rifiutate (mai gli indirizzi). Il conto funziona anche col giro
+   spento: si fa **prima** di nominarlo, insieme a un'occhiata al piano di
+   Resend (quello gratuito ha 100 email al giorno).
 5. **Email delle notifiche** (TASK-262 parte B, `API.md`, «Notice
-   emails»): si accende **insieme** a questa, con le stesse tre righe, e
-   applica la migrazione `0028_email_notices.sql` (o il numero preso al
-   merge). Va solo a chi ha «Email notifications» acceso, una al giorno
+   emails»): le stesse tre righe, e si accende **a parte**, quando
+   `SHAPEROUTE_EMAIL_ROUNDS` nomina `notices`; col suo nome mancante
+   l'avvio dice «Email of the notices: off (SHAPEROUTE_EMAIL_ROUNDS does
+   not name notices)». Applica la migrazione `0028_email_notices.sql` (o
+   il numero preso al merge). Va solo a chi ha «Email notifications»
+   acceso, una al giorno
    alle 18:00 UTC (`NOTICE_EMAIL_AT` la sposta). Prima di accenderla, come
    per questa: la parte B di TASK-284 in `main` con la privacy che la
    nomina e la nota di «Settings» nuova. Il log dice «Email of the
@@ -459,8 +481,11 @@ l'ok del coordinatore per il server.
    docker compose exec api python -m shaperoute_api.notice_email
    ```
 
-Per spegnerla basta togliere `RESEND_API_KEY` da `deploy/.env` e
-`docker compose up -d`: anche la pagina del link sparisce. **Il segreto
+Per spegnerla basta togliere `away` da `SHAPEROUTE_EMAIL_ROUNDS` in
+`deploy/.env` e `docker compose up -d`: anche la pagina del link sparisce
+(lo stesso con `notices` per l'email delle notifiche). Togliere
+`RESEND_API_KEY` spegne **tutte** le email, anche quelle dell'account: in
+app «Forgot password?» sparisce. **Il segreto
 non si cambia** se non è finito dove non deve: i link delle email già
 mandate smetterebbero di funzionare (chi li apre trova la pagina «This
 link does not work» e può spegnerla in «Settings»). La chiave, come ogni
@@ -551,7 +576,9 @@ pubblicata, e l'ok del coordinatore per il server.
 La conferma dell'indirizzo e «Forgot password?» (ADR-0261; `API.md`,
 «Confirmed email and forgotten password») si accendono con **le stesse tre
 variabili dell'email di ritorno** (sopra), niente di nuovo in
-`deploy/.env`. All'avvio la riga
+`deploy/.env`, e **non** hanno bisogno di `SHAPEROUTE_EMAIL_ROUNDS`: quella
+nomina solo i due giri verso gli iscritti (TASK-515, ADR-0410). **In
+produzione dal 2026-11-26.** All'avvio la riga
 «Addresses confirmed and passwords reset by email (Resend)» dice che sono
 accese; «Addresses are not confirmed…» che manca qualcosa, e allora il
 cambio d'indirizzo in «Settings» vale subito come prima. Al primo avvio
@@ -1440,7 +1467,7 @@ utente `caddy` e non entra in `/root`.
    cd /root/shaperoute
    git fetch origin main
    rm -rf /srv/getmuw-site.new && mkdir -p /srv/getmuw-site.new
-   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets site/privacy site/support site/account-deletion site/live site/p | tar -x -C /srv/getmuw-site.new --strip-components=1
+   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets site/privacy site/support site/account-deletion site/live site/p site/.well-known | tar -x -C /srv/getmuw-site.new --strip-components=1
    chmod -R a+rX /srv/getmuw-site.new
    rm -rf /srv/getmuw-site.old
    if [ -d /srv/getmuw-site ]; then mv /srv/getmuw-site /srv/getmuw-site.old; fi
@@ -1460,6 +1487,7 @@ utente `caddy` e non entra in `/root`.
    getmuw.app {
    	root * /srv/getmuw-site
    	encode gzip
+   	header /.well-known/apple-app-site-association Content-Type application/json
    	file_server
    }
 
@@ -1483,6 +1511,38 @@ utente `caddy` e non entra in `/root`.
    sono moduli ES e il browser li vuole con questo tipo: Caddy lo dà da
    solo dall'estensione), `404`, e `301 https://getmuw.app/`. Poi la
    pagina in un browser: «Try it» disegna un percorso.
+4. **Il file che l'iPhone legge per i link** (TASK-482 parte C,
+   ADR-0391): `site/.well-known/apple-app-site-association` è nell'elenco
+   del punto 1, e non ha estensione, così Caddy da solo non direbbe che è
+   JSON: lo dice la riga `header` del blocco qui sopra (Apple lo chiede, e
+   non segue i redirect). Dopo la riga, `caddy validate` e `systemctl
+   reload caddy` come al punto 2. La prova, dal Mac:
+
+   ```bash
+   curl -s -o /dev/null -w '%{http_code} %{content_type} %{redirect_url}\n' https://getmuw.app/.well-known/apple-app-site-association
+   ```
+
+   risponde `200 application/json` senza redirect. Finché l'app non
+   dichiara il dominio (parte D, con una build nativa) il file non cambia
+   niente per nessuno.
+
+   **Il file che legge Android** sta nella stessa cartella:
+   `site/.well-known/assetlinks.json`. Finisce in `.json`, quindi Caddy
+   dice il tipo da solo: nessuna riga in più nel blocco, basta la copia
+   del punto 1. La prova, dal Mac:
+
+   ```bash
+   curl -s -o /dev/null -w '%{http_code} %{content_type} %{redirect_url}\n' https://getmuw.app/.well-known/assetlinks.json
+   ```
+
+   risponde `200 application/json` senza redirect (Google non li segue).
+   Dentro ci sono le impronte SHA-256 delle **chiavi di firma dell'app** di
+   Play (Play Console → Integrità dell'app → Firma dell'app → «Copia tutte
+   le fingerprint del certificato»): la chiave in uso, col suo certificato
+   classico e quello post-quantistico, e quella precedente. **Non** quella
+   della chiave di caricamento (un test la tiene fuori): un APK di prova
+   firmato da EAS non apre i link. Se Play cambia chiave, il file va
+   aggiornato o i link smettono di aprire l'app.
 
 **Strava resta su `sslip.io`.** `SHAPEROUTE_DOMAIN` in `deploy/.env` è
 solo l'indirizzo a cui Strava rimanda il browser dopo «Connect with

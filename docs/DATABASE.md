@@ -1361,6 +1361,182 @@ Migrazione `0079_stretching.sql` (TASK-475 parte A, ADR-0386, `API.md`
 - Nessuna posizione, nessuna riga di prima cambia, nessun backfill. Test in
   `test_stretching_api.py`.
 
+Migrazione `0080_photo_posts.sql` (TASK-312 parte C, ADR-0272, `API.md`
+«Photo posts», `IMPORTAZIONI.md` §4; numero del Coordinatore,
+dopo la 0079 di TASK-475 A). **Un post di sole foto è un disegno senza corsa**:
+
+- `drawings.user_id` (`bigint NOT NULL`, `ON DELETE CASCADE` su `users`,
+  indice `drawings_user_idx`): di chi è il disegno, riempito da `runs` per
+  le righe di prima. Da qui leggono l'autore `drawing_seen_sql`,
+  `shown_sql` e chi parte da un disegno (Feed, profilo, foto, commenti,
+  reazioni, segnalazioni, push, campanello, email): così blocchi, nascosti
+  e «Followers» valgono anche per un post senza corsa. Chi parte da `runs`
+  (concorso, gioco, badge, totali, sport) non lo vede mai.
+- `drawings.run_id` diventa facoltativo; `drawings.key` (stessa forma
+  della chiave di una corsa) c'è solo senza corsa
+  (`drawings_run_or_key_check`), unica per account
+  (`drawings_user_key_key`): un post rimandato senza rete resta uno.
+- `drawings_photo_post_check`: senza corsa mai `only_me`, mai traccia,
+  sempre `trackless`.
+- Il vincolo di 0014 fra `visibility` e `published_at` diventa
+  `drawings_published_check` e vale solo con una corsa: un post senza
+  corsa ha `published_at` vuoto finché non ha una foto (lo mette la prima,
+  lo toglie l'ultima cancellata), e `drawing_seen_sql`/`shown_sql` per gli
+  altri vogliono `published_at` pieno. Test in `test_photo_posts.py` e
+  `test_photo_posts_seen.py`.
+
+Migrazione `0081_gym_by_hand.sql` (TASK-484 parte A, ADR-0395, `API.md`
+«Gym»; numero del Coordinatore: la prima entrata prende il primo libero). **Un allenamento in palestra
+scritto a mano**: il vincolo `runs_source_check` di 0034 accetta anche
+`manual`, che scrive solo `PUT /me/gym-sessions/{key}`. Nessuna colonna
+nuova, nessuna riga di prima cambia, nessun backfill. I livelli
+(`gym_levels.py`) leggono solo `source = 'muw'`, come già classifica,
+badge, concorso e gioco. Test in `test_gym.py`, `test_gym_levels.py` e
+`test_imported_runs.py`.
+
+Migrazione `0082_sleep_posts.sql` (TASK-467 parte E, «ADR-0380,
+precisazione E», `API.md` «Sleep»; numero del Coordinatore, dopo la 0081
+di TASK-484 A). **Il post di una notte di sonno è un disegno
+senza corsa che porta la sua notte**:
+
+- `drawings.sleep_night_id` (`bigint`, `ON DELETE CASCADE` su
+  `sleep_nights`): la notte di cui è il post. Vincolo
+  `drawings_sleep_post_check`: solo un disegno senza corsa ne ha una sua
+  (la notte di una corsa sta sulla corsa, `0072`), ed è pubblicato appena
+  nasce (`published_at` pieno: non aspetta una foto). Indice unico
+  `drawings_of_sleep_night`: un post per notte.
+- La funzione `sleep_night_left` della `0072` è riscritta: una notte resta
+  finché è nel profilo, una corsa la porta **o un post è suo**. Un trigger
+  nuovo, `drawings_sleep_night_deleted`, la chiama quando il post viene
+  cancellato, da chiunque: la notte va via se niente altro la pubblica.
+- Una richiesta di copia dei dati comprende i post del sonno: sono righe
+  di `drawings` con `sleep_night_id`, e le loro notti sono in
+  `sleep_nights` (le query del sonno della `0072` le trovano già).
+
+Migrazione `0083_gear.sql` (TASK-486 parte A, ADR-0393, `API.md`
+«Gear»; numero del Coordinatore, dopo la 0081 di TASK-484 e la 0082 di
+TASK-467 E1).
+**L'attrezzatura di un iscritto**:
+
+- **`gear`**: un attrezzo. `id` (`uuid`), `user_id` verso `users(id)` con
+  `ON DELETE CASCADE`; `kind` dalla lista di `gear.GearKind` (il `CHECK`
+  ha gli stessi nomi, un test lo legge); `brand` (1–40), `model` (1–80),
+  `name` (1–40), `bought_on` (dal 1950), `note` (1–500), `limit_m`
+  (1000–100 000 000); `off_profile` («Hide from profile»), `retired_at`
+  («Retire»), `hidden_at` (nascosto dall'email di una segnalazione),
+  `created_at`. Indice `(user_id, created_at)`.
+- **`gear_photos`**: una foto per attrezzo, `jpeg` com'è uscito da
+  `gear.gear_jpeg`, `updated_at` (la versione nell'indirizzo); via con
+  l'attrezzo.
+- **`activity_gear`**: `(run_id, gear_id)`, chiave primaria la coppia;
+  via con l'attività o con l'attrezzo. Indice su `gear_id` per i totali,
+  che si contano a ogni lettura da `runs.distance_m` e `runs.duration_s`
+  (nessun totale salvato che possa sbagliare).
+- **`gear_defaults`**: `(gear_id, activity)`, gli sport che partono con
+  l'attrezzo già scelto. `activity` sono i nomi di `runs.activity`,
+  controllati da `gear.py` e non da un `CHECK`: uno sport nuovo non chiede
+  una migrazione qui.
+- Il legame coi capi taggati (`drawing_outfit_tags.gear_id`) arriva con
+  la parte F, nella migrazione `0085_outfit_gear_link.sql` (sotto).
+- **`reports.kind`** con `gear`. Nessuna riga di prima cambia, nessun
+  backfill. Test in `test_gear.py` e `test_moderation.py`.
+
+Migrazione `0084_plan_posts.sql` (TASK-485 parte A, ADR-0394, `API.md`
+«Plan posts»; numero del Coordinatore, dopo la 0083 di TASK-486).
+**Una scheda della palestra pubblicata è un disegno senza corsa che porta
+una copia della scheda**:
+
+- `drawings.plan` (`jsonb`): la scheda com'era a «Post», controllata da
+  `gym_plans.GymPlanPostedBody` (nome, giorni, esercizi coi kg, il
+  programma; mai `starts_on`, `runner` né la data della meta). Una copia,
+  non un riferimento a `gym_plans`: cambiare o cancellare la scheda non
+  tocca il post, e rimandato il post la tiene com'era.
+- Vincolo `drawings_plan_post_check`: solo un disegno senza corsa e senza
+  notte ne ha una, pubblicato appena nasce (`published_at` pieno), e
+  `plan` è un oggetto. Valgono anche i vincoli della `0080` (mai «Only
+  me», nessuna traccia).
+- Un disegno senza corsa è di sole foto solo senza notte e senza `plan`
+  (`photo_posts.PHOTO_POST_SQL`). Una richiesta di copia dei dati
+  comprende le schede pubblicate: sono righe di `drawings`. Nessuna riga di
+  prima cambia, nessun backfill. Test in `test_plan_posts.py`.
+
+Migrazione `0085_outfit_gear_link.sql` (TASK-486 parte F, ADR-0393,
+`API.md` «Outfit tags»; numero del Coordinatore). Un capo taggato su una
+foto può essere un attrezzo del suo proprietario (la scelta 3
+dell'utente):
+
+- **`drawing_outfit_tags.gear_id`** (`uuid`, facoltativo) con la chiave
+  esterna su `gear` `ON DELETE SET NULL`: cancellato l'attrezzo, il capo
+  resta con le sue parole, senza il legame. Indice parziale su `gear_id`.
+  Nessuna riga di prima cambia, nessun backfill. Test in
+  `test_outfit_gear.py`.
+
+Migrazione `0086_flying_sites.sql` (TASK-493 parte A, ADR-0400, `API.md`
+«Flying sites»; numero del Coordinatore):
+
+- **`flying_sites`**: i decolli e gli atterraggi del volo libero da
+  OpenStreetMap (ODbL), una riga per oggetto OSM e tipo.
+  - **Identità:** `id` (generato, stabile da un'estrazione all'altra),
+    `osm_type` (`node` o `way`), `osm_id`, `kind` (`takeoff` o `landing`),
+    unici insieme: un oggetto decollo e atterraggio è due righe.
+  - **Dove:** `point` (`geography(Point)`, indice GIST per il riquadro e
+    per i vicini); una via è il centro dei suoi nodi.
+  - **Altro:** `name` (1–120), `ele_m` (il tag `ele` in metri, −500–9000),
+    `orientation` (i punti cardinali di `free_flying:site_orientation`,
+    vuoto se OSM non lo dice), `official`, `updated_at`.
+- **Chi la scrive:** solo l'estrazione (`flying_sites_extract.py`), che
+  rimpiazza ogni riga per oggetto e tipo. Con `--clean` toglie i siti non
+  riscritti in quel giro.
+- **Nessun dato degli utenti**: le stesse righe per tutti. Lo storico dei
+  voli è la parte B. Test in `test_flying_sites.py` e
+  `test_flying_sites_extract.py`.
+
+Migrazione `0087_groups.sql` (TASK-495 parte A, ADR-0402, `API.md`
+«Groups», `GRUPPI.md` §12; numero del Coordinatore, dopo la 0086 di
+TASK-493). **I gruppi per uscire insieme**:
+
+- **`groups`**: nome (1–40), descrizione (al più 500), `sports` (`text[]`
+  da 1 a 3 nomi di `runs.activity`, controllati da `groups.py`: uno sport
+  nuovo non vuole una migrazione), `city`, `area` (`geography(Point)`
+  arrotondato da `groups.py` a circa un chilometro, indice GIST per
+  Explore), `access` (`public`, `request`, `invite`), `hidden_at` dal link
+  di una segnalazione.
+- **`group_photos`**: la foto, come `profile_photos.square_jpeg` la fa.
+- **`group_members`**: chi è dentro, col ruolo (`admin`, `coadmin`,
+  `member`), «Mute» (`muted`), da quando è entrato (`joined_at`) e da
+  quando ha il ruolo (`role_since`: il co-admin più vecchio diventa
+  admin). **Un solo admin per gruppo**: un indice unico parziale
+  (`WHERE role = 'admin'`) tiene fuori il secondo; `groups.py` tiene
+  dentro il primo.
+- **`group_requests`** (chi ha chiesto) e **`group_invites`** (chi è
+  invitato e da chi).
+- Tutto va con l'account e col gruppo (`ON DELETE CASCADE`); prima della
+  cancellazione di un account il suo ruolo di admin passa
+  (`groups.before_account_delete`).
+- **`reports.kind`** con `group`. Nessuna riga di prima cambia, nessun
+  backfill. Test in `test_groups.py`.
+
+Migrazione `0088_run_previews.sql` (TASK-501 parte A, ADR-0249; numero
+del Coordinatore). **Le anteprime di una corsa**, come quella dei disegni
+della 0022:
+
+- **`runs.track_preview`** e **`runs.route_preview`**: colonne generate
+  (`GENERATED ALWAYS AS … STORED`, `geometry(LineString, 4326)`) dalla
+  funzione `drawing_preview` della 0022, la prima sulla traccia senza gli
+  orari (`ST_Force2D(track)`), la seconda sul percorso pianificato. Al più
+  64 punti scelti per indice come `recommended.preview`, primo e ultimo
+  compresi; `NULL` senza traccia (un allenamento in palestra) e senza
+  percorso. PostgreSQL le rifà a ogni scrittura della linea: nessun codice
+  le scrive.
+- **`GET /me/activities` e la risposta di un salvataggio leggono solo
+  quelle** (`activities.LISTED_COLUMNS`); la corsa aperta
+  (`GET /me/activities/{id}`) legge le linee intere come prima
+  (`DETAIL_COLUMNS`). Le anteprime in risposta sono le stesse di prima,
+  punto per punto (`test_activity_previews.py`).
+- **La migrazione riscrive `runs`** una volta, per le corse già salvate,
+  tenendo la tabella chiusa finché dura: i tempi misurati stanno in
+  `tasks/TASK-501.md`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

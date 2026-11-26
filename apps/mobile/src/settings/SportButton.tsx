@@ -19,9 +19,14 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { NUTRITION_ON } from "../nutrition/nutritionOn";
+import { NutritionFamily } from "../nutrition/NutritionTile";
 import { isSkiMode } from "../skimode/skiMode";
+import { isTrainingMode } from "../trainingmode/trainingMode";
 import { Hairline } from "../ui/Hairline";
+import { headerGlass } from "../bell/BellButton";
 import { Tap } from "../ui/Tap";
+import { useGlassMode } from "../ui/useGlassMode";
 import { saveSport, type Sport, SPORTS, type SportOption } from "./sport";
 import { groupSports } from "./sportFamilies";
 import { useSport } from "./useSport";
@@ -92,6 +97,7 @@ export function SportButton({ sports = SPORTS }: Props) {
     setOpen(false);
   }
 
+  const mode = useGlassMode();
   // Until the button says where it is: where the header of the pages puts it.
   const hang = top ?? insets.top + space.sm + MIN_TAP_SIZE + space.xs;
   const maxHeight = panelMaxHeight(height, hang, insets.bottom);
@@ -101,7 +107,7 @@ export function SportButton({ sports = SPORTS }: Props) {
     <>
       <Pressable
         ref={button}
-        style={styles.button}
+        style={[styles.button, headerGlass(mode)]}
         onPress={openMenu}
         accessibilityRole="button"
         accessibilityLabel={t("Sport, {sport}", { sport: t(current.name) })}
@@ -149,10 +155,17 @@ export function SportButton({ sports = SPORTS }: Props) {
             contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
           >
-            {/* In the ski mode (TASK-429, ADR-0357), how to leave it. */}
-            {isSkiMode(sport) && (
-              <View style={styles.mode} accessible testID="sport-ski-mode">
-                <Text style={styles.familyTitle}>{t("Ski mode")}</Text>
+            {/* In the ski mode (TASK-429, ADR-0357) or the training mode
+                (TASK-490, ADR-0398), how to leave it. */}
+            {(isSkiMode(sport) || isTrainingMode(sport)) && (
+              <View
+                style={styles.mode}
+                accessible
+                testID={isSkiMode(sport) ? "sport-ski-mode" : "sport-training-mode"}
+              >
+                <Text style={styles.familyTitle}>
+                  {isSkiMode(sport) ? t("Ski mode") : t("Training mode")}
+                </Text>
                 <Text style={styles.modeLine}>
                   {t("Choose another sport to go back to MuW as always.")}
                 </Text>
@@ -181,6 +194,9 @@ export function SportButton({ sports = SPORTS }: Props) {
                 </View>
               </View>
             ))}
+            {/* «Nutrition» is not a sport: it opens its page (TASK-489,
+                ADR-0397). Off until the native build that reads Health. */}
+            {NUTRITION_ON && <NutritionFamily size={tile} />}
           </ScrollView>
         </View>
       </Modal>
@@ -216,7 +232,12 @@ function SportTile({ option, size, chosen, onChoose }: TileProps) {
       </View>
     );
   }
-  const skiMode = isSkiMode(option.id);
+  // Choosing it changes the app (TASK-429, TASK-490): the tile says so.
+  const modeLine = isSkiMode(option.id)
+    ? t("Turns MuW into your ski app")
+    : isTrainingMode(option.id)
+      ? t("Turns MuW into your training app")
+      : undefined;
   return (
     // It answers the finger through Tap, as the app's other controls.
     <Tap
@@ -226,7 +247,7 @@ function SportTile({ option, size, chosen, onChoose }: TileProps) {
       accessibilityRole="radio"
       // One name for the tile: the emoji is not read on its own.
       accessibilityLabel={t(option.name)}
-      accessibilityHint={skiMode ? t("Turns MuW into your ski app") : undefined}
+      accessibilityHint={modeLine}
       accessibilityState={{ checked: chosen }}
     >
       {chosen && <Text style={styles.check}>✓</Text>}
@@ -234,10 +255,9 @@ function SportTile({ option, size, chosen, onChoose }: TileProps) {
       <Text style={styles.tileName} numberOfLines={2}>
         {t(option.name)}
       </Text>
-      {/* Choosing it changes the app (TASK-429): the tile says so. */}
-      {skiMode && (
+      {modeLine !== undefined && (
         <Text style={styles.tileLine} numberOfLines={2}>
-          {t("Turns MuW into your ski app")}
+          {modeLine}
         </Text>
       )}
     </Tap>
@@ -253,10 +273,7 @@ const styles = StyleSheet.create({
     height: MIN_TAP_SIZE,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-    backgroundColor: color.surfaceRaised,
+    // Its face: a circle of glass, as the bell's (TASK-469 A5, `headerGlass`).
   },
   buttonEmoji: {
     fontSize: fontSize.input + space.xs,

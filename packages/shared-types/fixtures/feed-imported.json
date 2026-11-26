@@ -31,12 +31,16 @@
       ],
       "author": {
         "public_id": "4f0c8bfb-a590-4b16-8802-9225862ece3a",
-        "username": "ada"
+        "username": "ada",
+        "photo": null
       },
       "ski_descents": null,
       "flight_split": null,
+      "plan": null,
       "sleep": null,
-      "linkable": true
+      "linkable": true,
+      "reactions": { "total": 0, "mine": null },
+      "comments": 0
     }
   ],
   "next": null

@@ -20,6 +20,10 @@ account hidden from a report. Nor a row of a
 drawing of an activity the app does not read (reads.py, TASK-387): it
 would open a drawing that is not found.
 
+GET /notifications/unread gives that number alone (TASK-499): what the bell
+of the header asks every few minutes, by the same rules, in one query and
+with no picture. The list is read when the bell is opened.
+
 POST /notifications/read marks read every row up to the newest the app
 showed: one that came after stays unread. A row goes KEPT_DAYS after its
 event, with its account, with the account who acted, with the drawing or
@@ -84,6 +88,7 @@ def same_of(event: PushEvent) -> str:
         event.group_run_id,
         event.contest_id,
         event.number,
+        event.group_id,
     )
     return "|".join("" if part is None else str(part) for part in parts)
 
@@ -98,7 +103,7 @@ def extra_of(event: PushEvent) -> dict[str, Any]:
         extra["number"] = event.number
     if event.names is not None:
         extra["names"] = dict(event.names)
-    for name in ("challenge_id", "group_run_id", "contest_id"):
+    for name in ("challenge_id", "group_run_id", "contest_id", "gear_id", "group_id"):
         value = getattr(event, name)
         if value is not None:
             extra[name] = str(value)
@@ -121,25 +126,21 @@ RECORD_SQL = (
 )
 
 
-def shown_sql(reads: Reads) -> str:
-    """The events of %(reader)s since %(since)s that are still true, of a
-    drawing `reads` shows or of none, with who acted, for a reaction its
-    kind now, for a comment its text now."""
+# The rows the rules read: the event, who acted, for a reaction the one left
+# now, for a comment the comment now. Each join finds one row at most.
+RULES_FROM = (
+    " FROM notifications n JOIN users u ON u.id = n.actor_id"
+    " LEFT JOIN reactions re ON n.kind = 'reaction'"
+    " AND re.drawing_id = n.drawing_id AND re.user_id = n.actor_id"
+    " LEFT JOIN comments c ON c.id = n.comment_id"
+)
+
+
+def rules_sql(reads: Reads) -> str:
+    """Over RULES_FROM: the events of %(reader)s since %(since)s that are
+    still true, of a drawing `reads` shows or of none. The list and its
+    number read the same rules (TASK-499): they cannot tell two stories."""
     return (
-        "SELECT n.id, n.kind, n.drawing_id, n.extra, n.at, n.read_at,"
-        f" {PERSON_COLUMNS}, re.kind AS reaction,"
-        " COALESCE(c.text, heart.text) AS comment_text"
-        " FROM notifications n JOIN users u ON u.id = n.actor_id"
-        " LEFT JOIN profile_photos p ON p.user_id = u.id"
-        " LEFT JOIN reactions re ON n.kind = 'reaction'"
-        " AND re.drawing_id = n.drawing_id AND re.user_id = n.actor_id"
-        " LEFT JOIN comments c ON c.id = n.comment_id"
-        # A super like's words: the comment written with it (reactions.py).
-        " LEFT JOIN LATERAL (SELECT h.text FROM comments h"
-        " WHERE re.kind = 'super_like' AND h.drawing_id = re.drawing_id"
-        " AND h.user_id = re.user_id AND h.created_at = re.created_at"
-        " AND h.hidden_at IS NULL"
-        " LIMIT 1) heart ON true"
         " WHERE n.recipient_id = %(reader)s AND n.at > %(since)s"
         f" AND NOT {apart_sql('%(reader)s', 'n.actor_id')}"
         " AND CASE n.kind"
@@ -157,11 +158,32 @@ def shown_sql(reads: Reads) -> str:
         " WHERE cr.comment_id = n.comment_id AND cr.user_id = n.actor_id)"
         " WHEN 'tag' THEN EXISTS (SELECT 1 FROM drawing_tags t"
         " WHERE t.drawing_id = n.drawing_id AND t.user_id = n.recipient_id)"
+        # An item of gear past its limit (TASK-486 part G): while it is there.
+        " WHEN 'gear_limit' THEN EXISTS (SELECT 1 FROM gear g"
+        " WHERE g.id::text = n.extra->>'gear_id' AND g.user_id = n.recipient_id)"
         " ELSE true END"
         " AND (n.drawing_id IS NULL OR EXISTS (SELECT 1 FROM drawings d"
-        " JOIN runs r ON r.id = d.run_id WHERE d.id = n.drawing_id"
-        f" AND {drawing_seen_sql('%(reader)s')}"
-        f" AND {reads.sql('r.activity', 'r.track IS NOT NULL')}))"
+        " LEFT JOIN runs r ON r.id = d.run_id WHERE d.id = n.drawing_id"
+        f" AND {drawing_seen_sql('%(reader)s')} AND {reads.drawings_sql()}))"
+    )
+
+
+def shown_sql(reads: Reads) -> str:
+    """The events rules_sql keeps, with who acted and its picture, for a
+    reaction its kind now, for a comment its text now."""
+    return (
+        "SELECT n.id, n.kind, n.drawing_id, n.extra, n.at, n.read_at,"
+        f" {PERSON_COLUMNS}, re.kind AS reaction,"
+        " COALESCE(c.text, heart.text) AS comment_text"
+        f"{RULES_FROM}"
+        " LEFT JOIN profile_photos p ON p.user_id = u.id"
+        # A super like's words: the comment written with it (reactions.py).
+        " LEFT JOIN LATERAL (SELECT h.text FROM comments h"
+        " WHERE re.kind = 'super_like' AND h.drawing_id = re.drawing_id"
+        " AND h.user_id = re.user_id AND h.created_at = re.created_at"
+        " AND h.hidden_at IS NULL"
+        " LIMIT 1) heart ON true"
+        f"{rules_sql(reads)}"
     )
 
 
@@ -174,10 +196,9 @@ def page_sql(reads: Reads) -> str:
 
 
 def unread_sql(reads: Reads) -> str:
-    return (
-        f"SELECT count(*) AS n FROM ({shown_sql(reads)}) shown"
-        " WHERE shown.read_at IS NULL"
-    )
+    """How many of the events rules_sql keeps are unread: the rules alone,
+    without the pictures and the words a line of the list carries."""
+    return f"SELECT count(*) AS n{RULES_FROM}{rules_sql(reads)} AND n.read_at IS NULL"
 
 
 # --- The answers ---
@@ -213,6 +234,15 @@ class NotificationsBody(BaseModel):
     )
 
 
+class UnreadBody(BaseModel):
+    """GET /notifications/unread: the bell's number alone;
+    packages/shared-types/fixtures/notifications-unread.json."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    unread: int = Field(ge=0, description="As GET /notifications' `unread`.")
+
+
 class ReadRequestBody(BaseModel):
     """POST /notifications/read: the newest line the app showed."""
 
@@ -246,6 +276,8 @@ def notification_of(row: Mapping[str, Any], language: Language) -> NotificationB
         names=extra.get("names"),
         group_run_id=_uuid(extra.get("group_run_id")),
         contest_id=_uuid(extra.get("contest_id")),
+        gear_id=_uuid(extra.get("gear_id")),
+        group_id=_uuid(extra.get("group_id")),
     )
     actor = _person(row)  # type: ignore[arg-type]
     return NotificationBody(
@@ -320,6 +352,16 @@ class NotificationList:
             before=shown[-1]["id"] if len(rows) > PAGE_SIZE else None,
         )
 
+    def unread(self, reader_id: int, reads: Reads = EVERYTHING) -> int:
+        """The number `page` gives as `unread`, in one query."""
+        params = {
+            "reader": reader_id,
+            "since": self.now() - timedelta(days=KEPT_DAYS),
+        }
+        with self.database.connect() as conn:
+            row = conn.execute(unread_sql(reads), params).fetchone()
+        return 0 if row is None else int(row["n"])
+
     def read(self, reader_id: int, up_to: int) -> None:
         with self.database.connect() as conn:
             conn.execute(
@@ -354,6 +396,10 @@ def notification_list_routes() -> APIRouter:
         before: Annotated[int | None, Query(ge=1)] = None,
     ) -> NotificationsBody:
         return bell.page(user.id, before, reads)
+
+    @router.get("/notifications/unread")
+    def unread_notifications(bell: Bell, user: Me, reads: Shown) -> UnreadBody:
+        return UnreadBody(unread=bell.unread(user.id, reads))
 
     @router.post("/notifications/read", status_code=204)
     def read_notifications(body: ReadRequestBody, bell: Bell, user: Me) -> Response:

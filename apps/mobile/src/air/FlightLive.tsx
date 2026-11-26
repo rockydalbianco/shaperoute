@@ -1,17 +1,23 @@
 import { useMemo } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
+import { useLiveShare } from "../liveShare/liveShareStore";
 import { climbM } from "../navigation/runMetrics";
 import { openPause, type Track } from "../navigation/trackRecorder";
 import { NO_NUMBER, Tile, TICK_MS, useNow } from "../screens/RunPanel";
-import { color, radius, space } from "../theme/tokens";
+import { color, font, radius, space } from "../theme/tokens";
 import { paceLabel, runDistanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { flightNow } from "./flight";
 import { flightParts, type PhaseKind, phaseNow } from "./flightParts";
 import { FlightPhaseSwitch } from "./FlightPhaseSwitch";
+import { FlightScreen, GLOVE_TARGET } from "./FlightScreen";
 import { markPhase, usePhaseMarks } from "./phaseMarks";
+import { useFlightScreen } from "./useFlightScreen";
+import { useAirspaceAlert } from "./useAirspaceAlert";
+import { useTurnpointCall } from "./useTurnpointCall";
+import { useVarioSound } from "./useVarioSound";
 
 /**
  * A flight as it goes (TASK-305 part R2, ADR-0375), over the numbers of the
@@ -24,6 +30,10 @@ import { markPhase, usePhaseMarks } from "./phaseMarks";
  * A race on foot and in the air (TASK-305 part R6b): over them «On foot |
  * In the air», what the app sees now, and a touch corrects it. On foot the
  * part's distance, its metres climbed, the altitude and the pace.
+ *
+ * The flight screen (TASK-479 part B1, ADR-0388): it opens by itself at the
+ * take-off, over everything; «Flight screen» here opens it again. Its
+ * take-off is the start of the last part in the air.
  */
 
 /** "+1.2", "-0.8", "0.0". */
@@ -52,10 +62,41 @@ export function FlightLive({ track, live }: { track: Track; live: boolean }) {
   const flightMs = track.fixes[0]?.timeMs ?? null;
   const marks = usePhaseMarks(flightMs);
   const phase = phaseNow(track, marks);
-  const part = useMemo(() => {
-    const parts = flightParts(track, marks);
-    return parts[parts.length - 1] ?? null;
-  }, [track, marks]);
+  const parts = useMemo(() => flightParts(track, marks), [track, marks]);
+  const part = parts[parts.length - 1] ?? null;
+  const takeoffMs =
+    [...parts].reverse().find((one) => one.kind === "air")?.startMs ?? null;
+  const flightScreen = useFlightScreen(phase, live);
+  // The vario's sound (TASK-479 part C), with the flight screen closed too.
+  useVarioSound({ track, nowMs: now, sounding: live && !paused && phase === "air" });
+  // The airspace warning's sound (TASK-479 part E2), the same way.
+  useAirspaceAlert({ track, nowMs: now, sounding: live && !paused && phase === "air" });
+  // The pilot's task (part D2): each turnpoint taken said aloud, the same way.
+  useTurnpointCall({ track, takeoffMs, sounding: live && !paused && phase === "air" });
+  const sharing = useLiveShare().kind === "sharing";
+  const screen = live ? (
+    <>
+      <Pressable
+        accessibilityRole="button"
+        onPress={flightScreen.show}
+        style={styles.open}
+        testID="flight-screen-open"
+      >
+        <Text style={styles.openText}>{t("Flight screen")}</Text>
+      </Pressable>
+      {/* Mounted only while open: nothing worked out behind the map. */}
+      {flightScreen.open ? (
+        <FlightScreen
+          visible
+          onClose={flightScreen.hide}
+          track={track}
+          live={live}
+          takeoffMs={takeoffMs}
+          sharingLive={sharing}
+        />
+      ) : null}
+    </>
+  ) : null;
   const correct = (kind: PhaseKind) => {
     if (flightMs !== null) {
       markPhase(flightMs, Date.now(), kind);
@@ -69,6 +110,7 @@ export function FlightLive({ track, live }: { track: Track; live: boolean }) {
     return (
       <View style={styles.box} testID="flight-live">
         {switcher}
+        {screen}
         <View style={styles.row}>
           <Tile label={t("Distance")} value={runDistanceLabel(part.metres, units)} />
           <Tile label={t("Elev. gain")} value={metresText(part.climbM)} unit="m" />
@@ -86,6 +128,7 @@ export function FlightLive({ track, live }: { track: Track; live: boolean }) {
   return (
     <View style={styles.box} testID="flight-live">
       {switcher}
+      {screen}
       <View style={styles.row}>
         <Tile label={t("Altitude")} value={metresText(flight.altM)} unit="m" />
         <Tile label={t("Vario")} value={varioText(flight.varioMps)} unit="m/s" />
@@ -110,5 +153,16 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     gap: space.sm,
+  },
+  open: {
+    minHeight: GLOVE_TARGET,
+    borderRadius: radius.md,
+    backgroundColor: color.accent,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  openText: {
+    ...font.cardTitle,
+    color: color.onAccent,
   },
 });

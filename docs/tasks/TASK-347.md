@@ -4,7 +4,9 @@
 fatte dall'utente lo stesso giorno (§«Scelte di prodotto»); i documenti
 in `main`; le parti partono una alla volta, ognuna nella sua sessione:
 **parte A fatta** (branch `feat/TASK-347-a-engine-anchored`, §«Esito»),
-la B è la prossima
+**B in `main`** (#1389, 2026-11-22), C divisa in C1, C2 e C3 (testi
+approvati dall'utente il 2026-11-22)
+**Prova sul telefono** (il disegno a mano agganciato alle strade, C1–C3b): fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-347-pro-freehand` (documenti); le
 parti `feat/TASK-347-a-engine-anchored` e così via
 **Dipende da**: TASK-331 (a mano solo sulla mappa, in `main`), TASK-214
@@ -385,3 +387,45 @@ Trento (46.0702, 11.1265), magnete 0,5, dalla CLI: 7,6 km sulle strade
 
 **Non in questa parte**: il server (si aggiorna col sì dell'utente, insieme
 alla parte C), le parti B–G.
+
+### Parte B — l'aggancio sul telefono, poi sul server (2026-11-22)
+
+In `main` con la #1389 (`af5e6fa7`), mergiata dal Coordinatore. Solo JS:
+niente server (la parte A c'è già: `GET /stroke-matches` risponde 204,
+controllato dal Coordinatore il 2026-11-22), niente `engine.zip`
+(`on_phone.match_json` c'era già), niente impronta.
+
+- `engine/page.ts` e `phoneEngine.ts`: la chiamata `match`, con
+  `MATCH_TIMEOUT_MS` di 15 s; una morte della WebView durante un aggancio
+  conta come durante un percorso.
+- `api/strokeMatches.ts`: la sonda `GET /stroke-matches` (204 o 404,
+  tenuta per server finché l'app è aperta; se non si capisce, si richiede
+  la volta dopo), `POST /stroke-matches` e il controllo della risposta.
+- `engine/matchOnPhone.ts`, `matchStroke`:
+  - prima il telefono, per un tratto fino a 3 km con una zona salvata
+    attorno a `from` (o al primo punto);
+  - prima il server per un tratto più lungo, o dopo un tratto che sul
+    telefono ha messo più di 1,5 s con la zona già letta (il primo tratto
+    su una zona la legge e non conta);
+  - per un disegno lontano, senza zona: il server, e intanto si scarica la
+    zona del posto come zona in anticipo, una per volta per rete
+    (`prefetch=1`: conta nel tetto del giorno e, dopo un 429, niente fino
+    a `Retry-After`);
+  - un verdetto (`shape_not_drawable`, `invalid_request`) torna senza
+    chiedere all'altra parte;
+  - senza risposta (`none`) il tratto resta fantasma.
+
+**Parte C**, divisa (proposta e testi in `out/TASK-347/PROPOSTA-C.md`,
+approvati dall'utente il 2026-11-22):
+
+- **C1** (#1398): la logica, senza niente di visibile.
+  - `strokes.ts`: ricampionamento a 10 m, Chaikin, Douglas-Peucker all'1%
+    fra 2 e 30 m, spezzatura a 500 punti e 9,9 km.
+  - `matching.ts` e `useMapMatching.ts`: i tratti mandati uno dopo l'altro
+    300 ms dopo l'ultimo cambio, ognuno da `from`; le risposte tenute
+    (200) per Undo e Redo.
+  - `fidelity.ts`: il punteggio mentre si disegna e i tratti oltre 40 m.
+- **C2**: fantasma, percorso agganciato, terzo colore (`warning`),
+  «Snapping to roads…», punteggio e avviso fuori strada. Schermate da
+  mostrare all'utente prima della PR.
+- **C3**: «Draw route» ancorato. Non serve un passo sul server.

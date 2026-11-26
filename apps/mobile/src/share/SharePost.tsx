@@ -30,9 +30,13 @@ import {
   space,
 } from "../theme/tokens";
 import { EditVideoSheet } from "./EditVideoSheet";
+import { togetherTracks } from "./togetherClock";
+import { useTogether } from "./useTogether";
 import { MusicRow } from "./MusicRow";
 import { PostButton } from "./PostButton";
 import { POST_RATIO, PostImage } from "./PostImage";
+import { FIRST_LOOK, type PostLook } from "./postLook";
+import { PostLookRow } from "./PostLookRow";
 import {
   type PostResult,
   type PostRun,
@@ -61,6 +65,8 @@ import { type VideoOutcome, videoProblem } from "./videoFile";
 import { hearMusic, type Music } from "./videoMusic";
 import { type VideoScene, videoScene } from "./videoScene";
 import { styleName } from "./videoStyle";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /** The share of the screen's height the post takes: the choices fit under it. */
 const POST_HEIGHT_SHARE = 0.5;
@@ -72,8 +78,9 @@ type Props = {
 
 /**
  * The post of a run, to make and share (TASK-231, ADR-0194): the picture
- * on top, then which results it shows, the emoji to lay on it, «Instagram»
- * (the share sheet, where Instagram has Story, Feed and Messages) and
+ * on top; right under it (TASK-450) «Instagram» (the share sheet, where
+ * Instagram has Story, Feed and Messages) and «Export video»; then the
+ * picture's look, which results it shows, the emoji to lay on it, and
  * Strava, where the emoji and the results go as the activity's text. Once
  * shared, the post goes to the API with its saved run (TASK-258), and
  * opens as it was the next time. «Export video» shares the same post as a
@@ -102,6 +109,8 @@ export function SharePost({ run, onClose }: Props) {
 }
 
 function SharePage({ run, onClose }: Props) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const insets = useSafeAreaInsets();
   const window = useWindowDimensions();
   const postWidth = Math.min(
@@ -122,6 +131,9 @@ function SharePage({ run, onClose }: Props) {
   const [stickers, setStickers] = useState<Sticker[]>(() =>
     kept === null ? [] : stickersOf(kept.emoji),
   );
+  // The picture's look, «Yellow» when the post opens (TASK-450): not kept
+  // with the post, as the video's style.
+  const [look, setLook] = useState<PostLook>(FIRST_LOOK);
   const [sharing, setSharing] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   // The video's music, none when the post opens (TASK-301).
@@ -130,6 +142,18 @@ function SharePage({ run, onClose }: Props) {
   // line, no emoji of its own when the post opens (TASK-351, TASK-408).
   const [edit, setEdit] = useState<VideoEdit>(FIRST_EDIT);
   const [editing, setEditing] = useState(false);
+  // «Together» (TASK-417 part D2b): the people tagged who ran with the
+  // author, for a post of the Feed only; asked once, as the post opens.
+  const together = useTogether(run.drawingId ?? null);
+  const page = together.page;
+  /** The scene's options of an edit: the runners when «Together» is on. */
+  const optionsOf = useCallback(
+    (next: VideoEdit) => ({
+      ...next,
+      runners: next.together && page !== null ? togetherTracks(page, next.line) : null,
+    }),
+    [page],
+  );
   // The video being made, with its music, and how much of it is (TASK-295);
   // the map under it, and the post on yellow for when the map does not
   // come (TASK-351).
@@ -181,8 +205,8 @@ function SharePage({ run, onClose }: Props) {
     hearMusic(null);
     setMade(0);
     setVideo({
-      scene: videoScene(run, shown, stickers, edit.style, edit),
-      fallback: videoScene(run, shown, stickers, "paper", edit),
+      scene: videoScene(run, shown, stickers, edit.style, optionsOf(edit)),
+      fallback: videoScene(run, shown, stickers, "paper", optionsOf(edit)),
       music,
     });
   }
@@ -198,8 +222,8 @@ function SharePage({ run, onClose }: Props) {
   const busy = sharing || video !== null;
   // The video with an edit, for the preview in «Edit video» (part C2c).
   const sceneOf = useCallback(
-    (next: VideoEdit) => videoScene(run, shown, stickers, next.style, next),
-    [run, shown, stickers],
+    (next: VideoEdit) => videoScene(run, shown, stickers, next.style, optionsOf(next)),
+    [optionsOf, run, shown, stickers],
   );
 
   return (
@@ -248,17 +272,22 @@ function SharePage({ run, onClose }: Props) {
               height={postWidth * POST_RATIO}
             />
           ) : (
-            <PostImage
-              ref={post}
-              run={run}
-              shown={shown}
-              stickers={stickers}
-              width={postWidth}
-              onMoveSticker={(id, x, y) =>
-                setStickers((now) => moveSticker(now, id, x, y))
-              }
-              onRemoveSticker={(id) => setStickers((now) => removeSticker(now, id))}
-            />
+            // A thin edge around the picture, not in it: «Night» has the
+            // page's own dark, and its edges would not show (TASK-450).
+            <View style={styles.frame} testID="post-frame">
+              <PostImage
+                ref={post}
+                run={run}
+                shown={shown}
+                stickers={stickers}
+                look={look}
+                width={postWidth}
+                onMoveSticker={(id, x, y) =>
+                  setStickers((now) => moveSticker(now, id, x, y))
+                }
+                onRemoveSticker={(id) => setStickers((now) => removeSticker(now, id))}
+              />
+            </View>
           )}
         </View>
         {stickers.length > 0 && (
@@ -266,6 +295,42 @@ function SharePage({ run, onClose }: Props) {
             {t("Drag the emoji to move them. Tap one to take it off.")}
           </Text>
         )}
+
+        {/* The two things the post is for, right under it (TASK-450, the
+            user's choice): what dresses it comes after. */}
+        <View style={styles.actions} testID="post-actions">
+          <View style={styles.buttons}>
+            <PostButton
+              text={sharing ? t("Making the picture…") : "Instagram"}
+              onPress={() => void share()}
+              busy={busy}
+              main
+            />
+            {!gym && (
+              <PostButton
+                text={
+                  video === null
+                    ? t("Export video")
+                    : t("Making the video… {percent}%", {
+                        percent: Math.round(made * 100),
+                      })
+                }
+                onPress={() => void exportVideo()}
+                busy={busy}
+              />
+            )}
+          </View>
+          <Text style={styles.hint}>
+            {t("Pick Instagram in the list: Story, Feed or Messages.")}
+          </Text>
+          {problem !== null && (
+            <Text style={styles.problem} accessibilityRole="alert">
+              {problem}
+            </Text>
+          )}
+        </View>
+
+        {!gym && <PostLookRow run={run} look={look} onChange={setLook} />}
 
         {!gym && results.length > 0 && (
           <>
@@ -276,7 +341,7 @@ function SharePage({ run, onClose }: Props) {
                 return (
                   <Pressable
                     key={result}
-                    style={[styles.chip, on && styles.chipOn]}
+                    style={[styles.chip, chipRaise, on && styles.chipOn]}
                     onPress={() => toggle(result)}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: on }}
@@ -334,38 +399,7 @@ function SharePage({ run, onClose }: Props) {
           </>
         )}
 
-        <View style={styles.actions}>
-          <View style={styles.buttons}>
-            <PostButton
-              text={sharing ? t("Making the picture…") : "Instagram"}
-              onPress={() => void share()}
-              busy={busy}
-              main
-            />
-            {!gym && (
-              <PostButton
-                text={
-                  video === null
-                    ? t("Export video")
-                    : t("Making the video… {percent}%", {
-                        percent: Math.round(made * 100),
-                      })
-                }
-                onPress={() => void exportVideo()}
-                busy={busy}
-              />
-            )}
-          </View>
-          <Text style={styles.hint}>
-            {t("Pick Instagram in the list: Story, Feed or Messages.")}
-          </Text>
-          {problem !== null && (
-            <Text style={styles.problem} accessibilityRole="alert">
-              {problem}
-            </Text>
-          )}
-          {!gym && <StravaPostRow runKey={run.key} caption={caption} onSent={keep} />}
-        </View>
+        {!gym && <StravaPostRow runKey={run.key} caption={caption} onSent={keep} />}
       </ScrollView>
       {!gym && (
         <EditVideoSheet
@@ -375,6 +409,7 @@ function SharePage({ run, onClose }: Props) {
           onChange={setEdit}
           onClose={() => setEditing(false)}
           sceneOf={sceneOf}
+          together={together.state}
         />
       )}
     </View>
@@ -457,6 +492,10 @@ const styles = StyleSheet.create({
   center: {
     alignItems: "center",
   },
+  frame: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: color.hairline,
+  },
   label: {
     color: color.textMuted,
     fontSize: fontSize.small,
@@ -537,7 +576,6 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: space.sm,
-    paddingTop: space.sm,
   },
   buttons: {
     flexDirection: "row",

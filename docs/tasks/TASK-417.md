@@ -1,7 +1,6 @@
 # TASK-417 — La mia immagine al posto dell'animale, e il video «Together» con le persone taggate
 
-**Stato**: In lavorazione · B e C in `main` (#1067, 2026-11-10); D ed E
-da fare, ognuna con la sua lista dei file approvata dal Coordinatore
+**Stato**: Done · 2026-11-26 · B e C (#1067), D1 (#1339, server passo 15), D2a (#1357), D2b (#1375) in `main` e in produzione (OTA 25); la frase della privacy «Together» (#1430) online; E, la prova sul telefono, provato dall'utente sul telefono il 2026-11-26 (prova generale sull'OTA 25: «ok»); i tempi di esportazione non sono stati annotati. Chiuso dal Coordinatore 3.
 **Fase**: 5 · **Branch**: `docs/TASK-417-my-image-video-proposal`
 (documenti); il codice `feat/TASK-417-b-…`
 **Dipende da**: TASK-408 (l'editor del video, ADR-0339): l'animale è l'op
@@ -296,7 +295,7 @@ Parti B–E: si elencano prima di ciascuna.
   dipendenza nuova.
 - [ ] L'immagine non va al server: un test prova che l'esportazione non
   chiama la rete con l'immagine.
-- [ ] «Together»: il server dà le tracce con i tempi solo all'autore del
+- [x] «Together»: il server dà le tracce con i tempi solo all'autore del
   post, solo delle persone taggate con l'attività visibile a lui, solo in
   secondi dalla prima partenza; test sul server per ognuno di questi casi.
 - [ ] L'orologio unico usa solo punti registrati: un test prova che ogni
@@ -355,6 +354,69 @@ microfono e privacy si scrivono insieme quando si decide la registrazione
 di video nell'app, che è un task a parte. È un cambio nativo, quindi
 richiede una build nuova.
 
+## Parte D1 — fatta (2026-11-21)
+
+Il server di «Together»: PR #1339, in `main` a 11f354f1, lista dei file
+approvata dal Coordinatore lo stesso giorno. Solo server, nessuna
+migrazione, niente `schemas.py` né `engine.zip`.
+
+- **L'indirizzo** `GET /drawings/{id}/together` (`together.py`), solo per
+  l'autore del post: a chiunque altro, e per un id che non c'è, lo stesso
+  `404` di `GET /drawings/{id}`. Risponde con l'autore per primo e poi al
+  più 3 persone taggate, nell'ordine dei tag.
+- **La stessa corsa**: almeno metà del tempo trascorso della più corta in
+  comune, e partenze a meno di 2 km. Fra più corse della stessa persona,
+  quella con più tempo in comune. Una corsa senza disegno non entra; quelle
+  con un disegno che l'autore non può vedere (`drawing_seen_sql`) nemmeno.
+- **L'orologio**: per ogni punto i secondi dalla prima partenza del gruppo,
+  al decimo, e le pause sullo stesso orologio; mai l'ora né la data.
+- **Al più 600 punti** a traccia, presi fra quelli registrati: il primo,
+  l'ultimo, l'ultimo prima e il primo dopo ogni pausa, e gli altri più
+  vicini a secondi equidistanti. Nessun punto spostato.
+- **Test**: 17 in `tests/test_together.py`, con un PostgreSQL vero; uno per
+  ognuno dei casi del criterio «Together» qui sotto. L'esempio del contratto
+  è `packages/shared-types/fixtures/together.json`; la sezione in
+  `docs/API.md`.
+- **Il server**: controlli di sola lettura con i numeri attesi in
+  `out/TASK-417/SERVER-D1.md` (checkout principale); il passo 15 lo compone
+  il Coordinatore col sì dell'utente.
+
+**Prossima, D2 (l'app)**: la riga «Together» nel foglio «Edit video», più
+personaggi nella pagina del video, l'orologio unico, i ⚡ dove ci si
+incrocia, con la sua lista al Coordinatore. La frase nuova della privacy
+(testi approvati l'8-11, scelta 5) passa ancora dall'utente prima della
+produzione.
+
 ## Esito
 
-*(a fine task)*
+Done · 2026-11-26 · B e C (#1067), D1 (#1339, server passo 15), D2a (#1357), D2b (#1375) in `main` e in produzione (OTA 25); la frase della privacy «Together» (#1430) online; E, la prova sul telefono, provato dall'utente sul telefono il 2026-11-26 (prova generale sull'OTA 25: «ok»); i tempi di esportazione non sono stati annotati. Chiuso dal Coordinatore 3.
+
+**D2a in `main`** con la #1357 (`5700063e`, 2026-11-21): il client di
+`GET /drawings/{id}/together` (`api/together.ts`) e l'orologio comune
+delle tracce (`share/togetherClock.ts`: tempo vero e tempo del video,
+posizioni, distanza fra due persone, incontri entro 25 m per 10 s), con
+i tipi in `shared-types`. Niente di visibile.
+
+**D2b in `main`** con la #1375 (`7ae88b9c`, 2026-11-21), dopo il sì
+dell'utente sulle schermate (2026-11-22): in «Edit video» la riga
+«Together» (i quattro testi approvati il 2026-11-08), spenta con «No one
+tagged ran at the same time.» quando nessuno ha corso insieme. Accesa,
+nel video corrono fino a 4 persone sullo stesso orologio, ognuna col suo
+colore e il suo nome, con la mappa inquadrata su tutte (`videoScene.ts`:
+l'op `runner`, `layoutOf` con le altre linee; `videoPage.ts`). Al
+simulatore: tre linee (gialla, azzurra, rosa) con i nomi. **Restano**: la
+frase della privacy (testi approvati il 2026-11-08, scelta 5), in un PR a
+parte quando tocca a lei, dopo 312 C2; l'OTA e uno sguardo sul
+telefono; poi E.
+
+**La frase della privacy in `main`** con la #1430 (`177214fa`, 2026-11-23),
+col «Sì, unisci» dell'utente: in «Your runs and their GPS tracks» la
+promessa «senza orari, pause né il percorso pianificato» prende «tranne in
+un video «Insieme» (sotto)», e un paragrafo nuovo dice chi può mettere la
+tua traccia in un video «Together», cosa mostra (passo vero e pause, mai
+ora né data) e che «Only me» lo ferma. Testo della scelta 5, con due
+aggiustamenti detti all'utente: i nomi «Together» e «Only me» come li
+mostra l'app in ogni lingua (Insieme, Solo io…), e l'eccezione tradotta
+dall'agente (nel task c'era solo l'inglese). Data della privacy 23 novembre
+2026. **Restano**: la copia sul sito (Coordinatore, col sì dell'utente),
+l'OTA e uno sguardo sul telefono; poi E.

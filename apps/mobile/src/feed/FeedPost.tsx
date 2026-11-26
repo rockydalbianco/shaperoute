@@ -9,11 +9,14 @@ import {
   Text,
   View,
 } from "react-native";
-import type { GymSet } from "@shaperoute/shared-types";
+import { type GymExercises, PLAN_SOURCE } from "@shaperoute/shared-types";
 
 import { sportPaceLabel } from "../activities/activityText";
 import { isOnSnow, isTrackless } from "../activities/snow";
+import { authHeaders } from "../api/accounts";
+import { keyHeaders } from "../api/apiUrl";
 import { drawingPhotoSource } from "../api/drawings";
+import { isGymPlanPosted } from "../api/planPosts";
 import { cityName } from "../explore/recommendedRoutes";
 import { RouteThumb } from "../explore/RouteThumb";
 import { GymTile } from "../gym/GymTile";
@@ -28,6 +31,7 @@ import { shapeName } from "../i18n/shapeNames";
 import { useLanguage } from "../i18n/useLanguage";
 import { bearingOf } from "../map/turnedMap";
 import { durationLabel } from "../screens/FinishScreen";
+import { segmentTrackFace } from "../screens/Segmented";
 import { useBlockedNow } from "../social/blockedNow";
 import { itemsOf } from "../social/composer/postOrder";
 import { useFollowsDoor } from "../social/followsDoor";
@@ -45,14 +49,15 @@ import {
 } from "../theme/tokens";
 import { DEFAULT_ACTIVITY, findProfile } from "../sports";
 import { Hairline } from "../ui/Hairline";
-import { Scrim } from "../ui/Scrim";
 import { Tap } from "../ui/Tap";
+import { useGlassMode } from "../ui/useGlassMode";
 import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { useEditRunDoor } from "./editRunDoor";
 import { postSplit, postSplitLine } from "../air/flightSplit";
 import { isImportedPost, isShown } from "./feedPosts";
 import { PhotoViewer } from "./PhotoViewer";
+import { PlanPost } from "./PlanPostTile";
 import { PostActions } from "./PostActions";
 import type { PostReactionsHandle } from "./PostReactions";
 import { gymPostEnergy, postEnergy } from "./postEnergy";
@@ -70,8 +75,6 @@ export { drawingHeight, MAP_CREDIT } from "./RouteMap";
 const TAP_SLOP = 12;
 /** The side of a dot under the photos. */
 const DOT = 6;
-/** How far up a photo the dark under its words reaches (TASK-339). */
-export const SCRIM_HEIGHT = 150;
 /** The side of the figure in the corner of a photo (TASK-355). */
 const THUMB = 56;
 
@@ -104,9 +107,10 @@ function sameWords(a: string, b: string): boolean {
  * added from a file of another app says so before all, "Imported · 4.9 km ·
  * 27 min" (TASK-312). A run ends with its energy, "· 355 kcal" (TASK-345).
  * What the title of the card already says is not said twice (TASK-355).
- * A workout at the gym counts its energy from its `sets` (TASK-385 C).
+ * A workout at the gym counts its energy from its `exercises`: its sets
+ * (TASK-385 C) and its heart rate (part G).
  */
-export function postFacts(post: SamplePost, sets?: readonly GymSet[] | null): string {
+export function postFacts(post: SamplePost, exercises?: GymExercises | null): string {
   const named = post.what === undefined ? shapeLabel(post.shape) : post.what;
   const what = named !== null && sameWords(named, post.title) ? null : named;
   // A member's drawing has the seconds; an example only its minutes.
@@ -118,7 +122,7 @@ export function postFacts(post: SamplePost, sets?: readonly GymSet[] | null): st
     gym ? null : distanceLabel(post.route_m),
     durationLabel(post.minutes * 60_000),
     gym ? null : sportPaceLabel(post.activity, post.route_m, ms),
-    gym ? gymPostEnergy(post, sets) : postEnergy(post),
+    gym ? gymPostEnergy(post, exercises) : postEnergy(post),
   ]
     .filter((fact): fact is string => fact !== null)
     .join(" · ");
@@ -164,6 +168,7 @@ export function postFacts(post: SamplePost, sets?: readonly GymSet[] | null): st
  * «Save» keeps it on the phone; a tap on the drawing opens its route.
  */
 export function FeedPost({ post, width, onOpen }: Props) {
+  const mode = useGlassMode();
   // The line of facts is written again when «Settings» changes the units
   // (TASK-182).
   const units = useUnits();
@@ -314,7 +319,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
   // A race on foot and in the air (TASK-305 part R6b): its two times.
   const split = postSplit(post);
   const splitText = split === null ? null : postSplitLine(split);
-  const facts = postFacts(post, exercises?.sets);
+  const facts = postFacts(post, exercises);
   const withSplit = splitText === null ? facts : `${facts} · ${splitText}`;
   const heard = ago === "" ? withSplit : `${ago} · ${withSplit}`;
   // A member's run may have no place found (TASK-118): then none is read.
@@ -345,7 +350,8 @@ export function FeedPost({ post, width, onOpen }: Props) {
       height={drawingHeight(width)}
       durationS={isShown(post) ? post.drawing.duration_s : post.minutes * 60}
       exercises={exercises === null ? [] : mainExercises(exercises.sets, language)}
-      kcal={gymPostEnergy(post, exercises?.sets)}
+      kcal={gymPostEnergy(post, exercises)}
+      heartBpm={exercises?.heart_avg_bpm ?? null}
     />
   ) : (
     <RouteMap
@@ -372,20 +378,20 @@ export function FeedPost({ post, width, onOpen }: Props) {
       {!shown && (
         <FactsText
           style={styles.facts}
-          facts={postFacts(post, exercises?.sets)}
-          kcal={factsEnergy(post, exercises?.sets)}
+          facts={postFacts(post, exercises)}
+          kcal={factsEnergy(post, exercises)}
         />
       )}
       {/* The figures this workout reached first (TASK-385 E). */}
       {gym && <NewLevels exercises={exercises} />}
     </View>
   );
-  // Over a photo, light on the dark that rises from its foot. The same
-  // words as under the drawing: a screen reader hears the card as one
-  // thing, so these are hidden from it.
+  // Over a photo, on a capsule of glass laid inside it, 8 pt from its edges
+  // (TASK-469 A4c, ADR-0383, «Capsula»; before, light words on `Scrim`).
+  // The same words as under the drawing: a screen reader hears the card as
+  // one thing, so these are hidden from it.
   const wordsOnPhoto = (
     <>
-      <Scrim height={SCRIM_HEIGHT} />
       {/* No figure in the corner of a workout at the gym: it has none. */}
       {!gym && !pool && (
         <View
@@ -399,7 +405,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
         </View>
       )}
       <View
-        style={styles.wordsOnPhoto}
+        style={[styles.wordsOnPhoto, segmentTrackFace(mode)]}
         pointerEvents="none"
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
@@ -410,18 +416,35 @@ export function FeedPost({ post, width, onOpen }: Props) {
         {!shown && (
           <FactsText
             style={styles.factsOnPhoto}
-            facts={postFacts(post, exercises?.sets)}
-            kcal={factsEnergy(post, exercises?.sets)}
-            energyColor={color.energyOnScrim}
+            facts={postFacts(post, exercises)}
+            kcal={factsEnergy(post, exercises)}
           />
         )}
       </View>
     </>
   );
+  // The author's picture at its own address on the API (TASK-355 part B),
+  // read with the token and the key as the photos are; the initial without.
+  const face =
+    author?.photo != null && apiUrl !== null && state.status === "signedIn"
+      ? {
+          uri: `${apiUrl}${author.photo}`,
+          headers: { ...keyHeaders(), ...authHeaders(state.session.token) },
+        }
+      : null;
   const whoBody = (
     <>
       <View style={styles.avatar}>
-        <Text style={styles.initial}>{post.user.charAt(0).toUpperCase()}</Text>
+        {face === null ? (
+          <Text style={styles.initial}>{post.user.charAt(0).toUpperCase()}</Text>
+        ) : (
+          <Image
+            source={face}
+            style={styles.face}
+            accessibilityIgnoresInvertColors
+            testID="feed-author-photo"
+          />
+        )}
       </View>
       <View style={styles.names}>
         <Text style={styles.user}>{post.user}</Text>
@@ -532,7 +555,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
             {/* Which page of how many, over the page's top left corner: the
                 figure is in the other. */}
             <View
-              style={styles.counter}
+              style={[styles.counter, segmentTrackFace(mode)]}
               pointerEvents="none"
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"
@@ -594,6 +617,32 @@ export function FeedPost({ post, width, onOpen }: Props) {
   const mine =
     state.status === "signedIn" &&
     state.session.user.public_id === post.drawing.author.public_id;
+  // A gym plan posted (TASK-485 part B): its tile in place of the drawing,
+  // opened whole by a tap; no numbers, it was never run.
+  // The shared type of a post's `source` names only a run's.
+  const source: string | undefined = post.drawing.source;
+  const plan = source === PLAN_SOURCE ? post.drawing.plan : null;
+  if (isGymPlanPosted(plan)) {
+    return (
+      <View style={styles.card} testID="feed-plan-post">
+        {who}
+        <PlanPost
+          plan={plan}
+          description={post.drawing.description ?? null}
+          mine={mine}
+          drawingId={post.drawing.id}
+          width={width}
+        />
+        {menu !== null && <View style={styles.menu}>{menu}</View>}
+        {onOpen !== undefined && (
+          <>
+            <Hairline />
+            <PostActions post={post} mine={mine} reactionsHandle={reactions} />
+          </>
+        )}
+      </View>
+    );
+  }
   // «Edit & run» where there is a line to run: not on the snow, at the gym
   // nor in a pool.
   const onEditRun =
@@ -602,7 +651,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
     <View style={styles.card}>
       {who}
       {card}
-      <SummaryBoxes rows={summaryRows(post, units, exercises?.sets)} />
+      <SummaryBoxes rows={summaryRows(post, units, exercises)} />
       <SleepLine drawingId={post.drawing.id} sleep={post.drawing.sleep} />
       {menu !== null && <View style={styles.menu}>{menu}</View>}
       {onOpen !== undefined && (
@@ -622,9 +671,10 @@ export function FeedPost({ post, width, onOpen }: Props) {
 }
 
 const styles = StyleSheet.create({
-  // A drawing or a photo at its face: the large radius, no border (TASK-339).
+  // A drawing or a photo at its face, no border (TASK-339); the radius of
+  // the glass look's cards (TASK-469 A4c).
   card: {
-    borderRadius: radius.xl,
+    borderRadius: radius.card,
     backgroundColor: color.surface,
     overflow: "hidden",
   },
@@ -653,6 +703,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: radius.pill,
     backgroundColor: color.surfaceRaised,
+  },
+  face: {
+    width: MIN_TAP_SIZE - space.sm,
+    height: MIN_TAP_SIZE - space.sm,
+    borderRadius: radius.pill,
   },
   // Names are medium, not bold: the weight is the yellow controls' (ADR-0293).
   initial: {
@@ -686,6 +741,7 @@ const styles = StyleSheet.create({
   photo: {
     backgroundColor: color.surfaceRaised,
   },
+  // A capsule of glass laid on the photo (TASK-469 A4c): `segmentTrackFace`.
   counter: {
     position: "absolute",
     top: space.md,
@@ -693,12 +749,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.sm,
     paddingVertical: 2,
     borderRadius: radius.pill,
-    backgroundColor: color.scrim,
-    opacity: 0.75,
   },
   counterText: {
     ...font.small,
-    color: color.onScrim,
+    color: color.text,
     fontWeight: fontWeight.semibold,
   },
   dots: {
@@ -733,21 +787,26 @@ const styles = StyleSheet.create({
     top: space.md,
     right: space.md,
   },
-  // On `Scrim`: light in both tones, since the dark under them is.
+  // A capsule of glass inside the photo, 8 pt from its edges, its short
+  // sides fully round as the tab bar's (the user's choice, 2026-11-21); the
+  // words in the text's colours, which keep 4.5:1 on the glass over any
+  // photo (theme/glass.test.ts). The round ends want more room on the sides.
   wordsOnPhoto: {
     position: "absolute",
-    left: space.lg,
-    right: space.lg,
-    bottom: space.lg,
+    left: space.sm,
+    right: space.sm,
+    bottom: space.sm,
     gap: space.xs,
+    paddingHorizontal: space.xl,
+    paddingVertical: space.md,
+    borderRadius: radius.pill,
   },
   titleOnPhoto: {
     ...font.heading,
-    color: color.onScrim,
+    color: color.text,
   },
   factsOnPhoto: {
     ...font.small,
-    color: color.onScrim,
-    opacity: 0.85,
+    color: color.textMuted,
   },
 });

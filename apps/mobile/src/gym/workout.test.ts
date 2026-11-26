@@ -192,6 +192,19 @@ test("the request: times in seconds since the start, within the workout", () => 
   });
 });
 
+test("with its heart rate (TASK-385 part G), the request carries it", () => {
+  const w = finishWorkout(
+    at(logSet(benchStarted(), { reps: 10, load_kg: 60 }, T0 + MIN)),
+    T0 + 40 * MIN,
+  );
+  const plain = sessionRequest(w);
+  expect(plain).not.toHaveProperty("heart_avg_bpm");
+  expect(
+    sessionRequest({ ...w, heart: { avgBpm: 118, maxBpm: 164, shown: false } }),
+  ).toEqual({ ...plain, heart_avg_bpm: 118, heart_max_bpm: 164, heart_shown: false });
+  expect(sessionRequest({ ...w, heart: null })).toEqual(plain);
+});
+
 test("a workout not ended, or of less than a second, has nothing to save", () => {
   const w = benchStarted();
   expect(sessionRequest(w)).toBeNull();

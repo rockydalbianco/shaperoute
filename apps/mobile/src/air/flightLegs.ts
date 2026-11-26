@@ -1,5 +1,7 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
+import type { ActivityDetail } from "../api/activities";
+import { type FlightSplitStats, isFlightSplit } from "../api/runStats";
 import type { FreeRun } from "../navigation/freeRun";
 import { loadSport, runActivityOf, type Sport } from "../settings/sport";
 import { isFlight } from "./flight";
@@ -90,4 +92,41 @@ export function splitAtAir(
   }
   const drawn = (line: LatLon[]) => line.length > 1;
   return { foot: foot.filter(drawn), air: flown.filter(drawn) };
+}
+
+/** A race opened again from «My activities» (TASK-305 part R6d), or its
+ * post opened from the Feed or a profile (part R6e, a `DrawingDetail`): its
+ * parts in the air on its track, and the two kinds added up, as the API
+ * gives them; null for any other run, for an API before R6d (R6e for a
+ * post), and for anything that does not fit the track. */
+export function activityFlightOf(
+  detail: Pick<ActivityDetail, "track"> & { flight?: unknown },
+): { air: AirLeg[]; split: FlightSplitStats } | null {
+  const flight: unknown = detail.flight;
+  if (typeof flight !== "object" || flight === null) {
+    return null;
+  }
+  const { air, split } = flight as { air?: unknown; split?: unknown };
+  if (!Array.isArray(air) || air.length === 0 || !isFlightSplit(split)) {
+    return null;
+  }
+  const last = detail.track.length - 1;
+  const legs: AirLeg[] = [];
+  for (const leg of air) {
+    if (
+      !Array.isArray(leg) ||
+      leg.length !== 2 ||
+      !Number.isInteger(leg[0]) ||
+      !Number.isInteger(leg[1])
+    ) {
+      return null;
+    }
+    const [from, to] = leg as [number, number];
+    const after = legs[legs.length - 1]?.to ?? 0;
+    if (from < after || to <= from || to > last) {
+      return null;
+    }
+    legs.push({ from, to });
+  }
+  return { air: legs, split };
 }

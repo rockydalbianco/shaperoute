@@ -18,7 +18,10 @@
     "gym",
     "stretching",
     "trackless",
-    "pool"
+    "pool",
+    "photos",
+    "sleep",
+    "plans"
   ],
-  "this_app": "swimming,hiking,mountain_biking,inline_skating,snowshoeing,wheelchair,walking,gravel_biking,skiing,xc_skiing,ski_touring,paragliding,alpinism,gym,stretching,trackless,pool"
+  "this_app": "swimming,hiking,mountain_biking,inline_skating,snowshoeing,wheelchair,walking,gravel_biking,skiing,xc_skiing,ski_touring,paragliding,alpinism,gym,stretching,trackless,pool,photos,plans"
 }

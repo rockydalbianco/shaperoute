@@ -17,7 +17,8 @@ import {
 import type { GymLevel } from "./gym.ts";
 import type { FlightSplit } from "./flightParts.ts";
 import type { SkiDescents } from "./skiParts.ts";
-import type { SleepSummary } from "./sleep.ts";
+import type { SLEEP_SOURCE, SleepSummary } from "./sleep.ts";
+import type { GymPlanPosted, PLAN_SOURCE } from "./planPosts.ts";
 
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
@@ -55,13 +56,49 @@ export const SHAPES = [
   "swan",
   "windmill",
   "wine_glass",
+  "ball",
+  "bell",
+  "candy_cane",
+  "colosseum",
+  "croissant",
+  "dolphin",
+  "dome",
+  "easter_egg",
+  "eiffel_tower",
+  "flower",
+  "fox_head",
+  "gift",
+  "infinity",
+  "leaf",
+  "light_bulb",
+  "medal",
+  "mountain",
+  "owl",
+  "padlock",
+  "peace",
+  "penguin",
+  "pizza_slice",
+  "racket",
+  "reindeer",
+  "santa_hat",
+  "scooter",
+  "skis",
+  "snowflake",
+  "snowman",
+  "stocking",
+  "strawberry",
+  "triumphal_arch",
+  "trophy",
+  "turtle",
+  "umbrella",
 ] as const;
 export type Shape = (typeof SHAPES)[number];
 
 /** The shapes that may be drawn with the pen up (TASK-223, ADR-0185): the
  * outline, then each piece on its own, walking from one to the next. The
- * first five lift off their eyes; the others have pieces apart, the last four
- * the new shapes of TASK-418, which the app draws with the pen down. */
+ * first five lift off their eyes; the others have pieces apart, from anchor on
+ * the new shapes of TASK-418 and TASK-516, which the app draws with the pen
+ * down. */
 export const PEN_UP_SHAPES = [
   "cat",
   "fish",
@@ -76,6 +113,30 @@ export const PEN_UP_SHAPES = [
   "bear_head",
   "bicycle",
   "espresso_cup",
+  "ball",
+  "bell",
+  "colosseum",
+  "dolphin",
+  "dome",
+  "easter_egg",
+  "flower",
+  "fox_head",
+  "gift",
+  "infinity",
+  "leaf",
+  "light_bulb",
+  "medal",
+  "mountain",
+  "owl",
+  "padlock",
+  "peace",
+  "penguin",
+  "pizza_slice",
+  "racket",
+  "strawberry",
+  "triumphal_arch",
+  "trophy",
+  "turtle",
 ] as const satisfies readonly Shape[];
 export type PenUpShape = (typeof PEN_UP_SHAPES)[number];
 
@@ -124,9 +185,12 @@ export type RunActivity = (typeof RUN_ACTIVITIES)[number];
 
 /** Where a saved run comes from (TASK-312, ADR-0272): "muw", recorded by
  * the app; "file", a GPX, TCX or FIT file of another app, read on the phone
- * and saved with the same PUT /me/activities/{key}. Only "muw" counts for
- * the shape game and the contest; the app shows «Imported» for the others. */
-export const RUN_SOURCES = ["muw", "file"] as const;
+ * and saved with the same PUT /me/activities/{key}; "manual", a workout at
+ * the gym written by hand afterwards, saved by PUT /me/gym-sessions/{key}
+ * (TASK-484, ADR-0395). Only "muw" counts for the shape game, the contest
+ * and the gym's levels and leaderboard; the app shows «Imported» for the
+ * others. */
+export const RUN_SOURCES = ["muw", "file", "manual"] as const;
 export type RunSource = (typeof RUN_SOURCES)[number];
 
 /** Plausible target distances for running, in metres. */
@@ -548,7 +612,7 @@ export interface RouteJobWithFirst extends RouteJob {
 
 /** What the app sends to POST /gpx to get the route as a GPX file (ADR-0033). */
 export interface GpxRequest {
-  request: RouteRequest | ImageRouteRequest;
+  request: RouteRequest | ImageRouteRequest | ImagePenUpRouteRequest;
   result: RouteResult;
 }
 
@@ -679,7 +743,8 @@ export interface ImageRouteRequest {
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
-  /** No letters to draw with the pen up: true is refused (TASK-197). */
+  /** True only with the pieces of the outline: ImagePenUpRouteRequest
+   * (TASK-297); without them it is refused (TASK-197). */
   pen_up?: false;
   /** A swim of a drawing (TASK-323): as RouteRequest.laps. */
   laps?: number | null;
@@ -1414,6 +1479,12 @@ interface DrawingFields {
    */
   sleep?: SleepSummary | null;
   /**
+   * A gym plan posted (TASK-485, planPosts.ts, `source` `plan`): the plan as
+   * it was posted, with its exercises and kg. Null for any other post;
+   * missing from an API before it.
+   */
+  plan?: GymPlanPosted | null;
+  /**
    * The drawing can be opened by its link on the site, without an account
    * (TASK-455 part C, PostLink): it is for everyone, it has a line, and its
    * owner leaves «Links to my posts» on. The app shows «Share link» only
@@ -1533,7 +1604,7 @@ export const COMMENT_REPLIES_SHOWN = 2;
 export interface Comment {
   id: string;
   /** Who wrote it: never the email. */
-  author: DrawingAuthor;
+  author: CommentAuthor;
   /** Plain text: shown as text, never as a link or HTML. */
   text: string;
   created_at: string;
@@ -1653,7 +1724,42 @@ export const FEED_NEAR_M = 50_000;
  * who published it. Opened whole with GET /drawings/{id}.
  */
 export interface FeedPost extends Drawing {
-  author: DrawingAuthor;
+  author: FeedAuthor;
+  /**
+   * How many reactions the post has and the reader's own, as
+   * GET /drawings/{id}/reactions counts them (TASK-355 part B). Missing from
+   * an API of before, and from the search, the contests and the resorts.
+   */
+  reactions?: FeedReactions;
+  /**
+   * The comments and replies the reader reads, as `total` of
+   * GET /drawings/{id}/comments. Missing as `reactions` is.
+   */
+  comments?: number;
+}
+
+/** Who published a post of the feed. */
+export interface FeedAuthor extends DrawingAuthor {
+  /**
+   * Where its picture is read, `/users/{public_id}/photo?v=…`, a square JPEG
+   * of 128 px with the token; a new picture has a new address. Null without
+   * one; missing from an API of before (TASK-355 part B).
+   */
+  photo?: string | null;
+}
+
+/**
+ * Who wrote a comment or a reply (TASK-497): `photo` as in the feed. Missing
+ * from an API of before, and then the picture is the profile's, from
+ * GET /users/{public_id}.
+ */
+export type CommentAuthor = FeedAuthor;
+
+/** The reactions of a post, as its card shows them. */
+export interface FeedReactions {
+  total: number;
+  /** The reader's own; null when it left none. */
+  mine: ReactionKind | null;
 }
 
 /**
@@ -1688,6 +1794,125 @@ export interface FilteredFeedPage extends FeedPage {
  * nobody from one whose people have published nothing. */
 export interface FollowingFeedPage extends FilteredFeedPage {
   follows_anyone: boolean;
+}
+
+// --- Posts of photos only (TASK-312 part C, ADR-0272) ---
+//
+// A drawing without a run: photos taken elsewhere, from Instagram too,
+// with a title, a description and the members tagged. Only an app that
+// says `photos` in X-MuW-Reads receives one (reads.json), in GET /feed,
+// GET /users/{id}/drawings, GET /users/{id}/photos and GET /drawings/{id}:
+// the types of the posts of runs above stay as they were, and the app
+// tells the two apart with isPhotoPost where it reads them.
+
+/** `source` of a post of photos only, and the value said in X-MuW-Reads. */
+export const PHOTOS_SOURCE = "photos" as const;
+/** Where a drawing comes from: its run, photos only, a night of sleep
+ * (TASK-467 part E, sleep.ts) or a gym plan posted (TASK-485,
+ * planPosts.ts). */
+export type DrawingSource =
+  RunSource | typeof PHOTOS_SOURCE | typeof SLEEP_SOURCE | typeof PLAN_SOURCE;
+/** Never «Only me»: its photos are on the server only while others see it. */
+export const PHOTO_POST_VISIBILITIES = ["everyone", "followers"] as const;
+export type PhotoPostVisibility = (typeof PHOTO_POST_VISIBILITIES)[number];
+/** Its places, 1 to 10: there is no map among them. */
+export const PHOTO_POST_MAX_PHOTOS = 10;
+
+/** PUT /me/photo-posts/{key}: the post as it should be now, the key made
+ * by the phone as a run's; sent again, it changes nothing. */
+export interface PhotoPostRequest {
+  title?: string | null;
+  description?: string | null;
+  visibility: PhotoPostVisibility;
+  /** The public_id of the members tagged, in order; [] or missing: none. */
+  tags?: string[];
+}
+
+/** PUT /me/photo-posts/{key}/order: the photos by place, `photo:2`, each
+ * once; no `drawing`. The photos themselves go to
+ * PUT /me/photo-posts/{key}/photos/{n} as DrawingPhotoRequest. */
+export interface PhotoPostOrderRequest {
+  order: string[];
+}
+
+/** A post of photos only as its owner has it: GET, PUT /me/photo-posts/{key}
+ * and its photos and order. */
+export interface MyPhotoPost {
+  key: string;
+  /** What the others open it with: GET /drawings/{id}. */
+  id: string;
+  title: string | null;
+  description: string | null;
+  visibility: PhotoPostVisibility;
+  /** Set by its first photo; null while it has none, and nobody but its
+   * owner finds it. */
+  published_at: string | null;
+  tags: DrawingTag[];
+  photos: DrawingPhoto[];
+  order: string[] | null;
+}
+
+/** GET /me/photo-posts: every post of photos only of the account, the last
+ * published first (those waiting for a photo by when they were last kept).
+ * The app finds there the key of a post it opened by its id (part C1b). */
+export interface MyPhotoPosts {
+  photo_posts: MyPhotoPost[];
+}
+
+/** What a post of photos only has instead of a run's numbers. */
+interface WithoutRun {
+  id: string;
+  title: string | null;
+  /** When it was published. */
+  started_at: string;
+  published_at: string | null;
+  place: null;
+  shape: null;
+  word: null;
+  style: null;
+  route_title: null;
+  distance_m: 0;
+  duration_s: 0;
+  score: null;
+  fidelity: null;
+  visibility: PhotoPostVisibility;
+  description: string | null;
+  activity: null;
+  source: typeof PHOTOS_SOURCE;
+  tags: DrawingTag[];
+  photos: DrawingPhoto[];
+  order: string[] | null;
+  rotation_deg: null;
+  ski_descents: null;
+  flight_split: null;
+  sleep: null;
+  /** Not a gym plan posted (TASK-485). */
+  plan: null;
+  /** Never: a link shows a line, and it has none. */
+  linkable: false;
+}
+
+/** A post of photos only in GET /users/{id}/drawings. */
+export interface PhotoDrawing extends WithoutRun {
+  track_preview: [];
+}
+
+/** A post of photos only in GET /feed. */
+export interface PhotoFeedPost extends PhotoDrawing {
+  author: DrawingAuthor;
+}
+
+/** A post of photos only in GET /drawings/{id}. */
+export interface PhotoDrawingDetail extends WithoutRun {
+  author: DrawingAuthor;
+  public: boolean;
+  track: [];
+  stats: null;
+}
+
+/** Whether a drawing an API answered is a post of photos only. */
+export function isPhotoPost(post: { source?: string | null }): boolean {
+  return post.source === PHOTOS_SOURCE;
 }
 
 /** The orders of GET /search/drawings (TASK-344, ADR-0297): the last
@@ -1730,8 +1955,9 @@ export interface DrawingSearchPage extends FeedPage {
 /**
  * What a member reports with POST /reports (TASK-121, ADR-0228): a drawing
  * (a post of the feed), a comment, a member, a group run (TASK-309), a
- * private message (TASK-319: only the one it was sent to reports it), or an
- * item tagged on a photo (TASK-394).
+ * private message (TASK-319: only the one it was sent to reports it), an
+ * item tagged on a photo (TASK-394), an item of gear (TASK-486), or a
+ * group (TASK-495: reported of its admin).
  */
 export const REPORT_KINDS = [
   "drawing",
@@ -1740,6 +1966,8 @@ export const REPORT_KINDS = [
   "group_run",
   "message",
   "outfit_tag",
+  "gear",
+  "group",
 ] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
@@ -2600,6 +2828,30 @@ export interface MessagesPage {
    * conversation. Missing from an API before it: then no «+».
    */
   attachments?: AttachmentsAllowed | null;
+  /**
+   * The `after` of the next check (TASK-498): the place of the newest
+   * message, `0-000…0` in a conversation without one; null on a page of
+   * older ones. Missing from an API before it: then the app asks the page
+   * again, as it always did.
+   */
+  latest?: string | null;
+}
+
+/**
+ * GET /conversations/{public_id}/messages?after=<latest>: what came after a
+ * place, for a conversation on screen (TASK-498). Never the other's picture
+ * nor what may be attached: the page says them, and what this cannot say (a
+ * message deleted, a name changed). 404 and 422 as the page; 422 with
+ * `cursor` too. An API before it ignores `after` and answers a MessagesPage.
+ */
+export interface MessageNews {
+  state: ConversationState;
+  /** Those after `after`, the latest first; none when nothing came. */
+  messages: Message[];
+  /** More came than a page holds: the first page is read again. */
+  more: boolean;
+  /** The `after` of the next check. */
+  latest: string;
 }
 
 /** The most `unread_count` counts: beyond it the app says «9+» anyway. */
@@ -2935,6 +3187,8 @@ export type NotificationOpens =
   | { kind: string; group_run_id: string }
   | { kind: string; challenge_id: string }
   | { kind: string; drawing_id: string }
+  /** An item of gear past its limit (TASK-486 part G): it opens the item. */
+  | { kind: string; gear_id: string }
   | { kind: string; public_id: string; username: string };
 
 /** GET /notifications: the newest first, with how many are unread. */
@@ -2943,6 +3197,16 @@ export interface NotificationsPage {
   unread: number;
   /** Ask with ?before= for the next page; null at the end. */
   before: number | null;
+}
+
+/**
+ * GET /notifications/unread (TASK-499): the bell's number alone, the same as
+ * `NotificationsPage.unread`, for the header to ask every few minutes
+ * without a page of lines and pictures. A server of before answers 404: the
+ * app reads the number from the first page then.
+ */
+export interface NotificationsUnread {
+  unread: number;
 }
 
 /** POST /notifications/read: the newest line the app showed; 204. */
@@ -2995,6 +3259,37 @@ export interface StylePage {
 /** POST /style/tags/{id}/shop: what the app opens in the browser. */
 export interface StyleShop {
   url: string;
+}
+
+/**
+ * An image with the pen up (TASK-297 part C2, ADR-0258): the other subjects
+ * and the holes of a picture are pieces apart from its outline, each drawn
+ * on its own, and the route walks from one to the next without drawing, as
+ * between the letters of a word with the pen up (TASK-197). These two fields
+ * join ImageOutline above: TypeScript merges the two declarations.
+ */
+export interface ImageOutline {
+  /** Lines apart from the outline, in the frame of `points`, the largest
+   * first; a closed one repeats its first point. What an
+   * ImagePenUpRouteRequest sends back instead of the strokes. Empty when
+   * the picture has none, or more than a route has walks, and after an
+   * edit (TASK-079); missing from an API older than TASK-297. */
+  pieces?: OutlinePoint[][];
+  /** The same pieces over the image, like `image_points`. */
+  image_pieces?: OutlinePoint[][];
+}
+
+/**
+ * What the app sends to POST /image-route-jobs to draw an image with the pen
+ * up: its outline, then each of its pieces on its own. The result has
+ * `walks`, as a word with the pen up, and neither shape nor word; the
+ * distance is the drawing's, the walks on top. The API refuses `pen_up`
+ * without pieces, and pieces without `pen_up`.
+ */
+export interface ImagePenUpRouteRequest extends Omit<ImageRouteRequest, "pen_up"> {
+  /** The `pieces` of an ImageOutline, unchanged: at least one. */
+  pieces: OutlinePoint[][];
+  pen_up: true;
 }
 
 export * from "./gym.ts";
@@ -3065,6 +3360,12 @@ export interface OutfitTag {
   /** Times opened and «Shop» touched, in all: to the owner only, else null. */
   opens: number | null;
   shops: number | null;
+  /**
+   * The item of gear it is (TASK-486 part F): the dot opens it. Null, or
+   * absent from an API of before, when there is none or who asks does not
+   * see that item.
+   */
+  gear_id?: string | null;
 }
 
 /** One item of PUT /me/activities/{key}/drawing/photos/{n}/tags. */
@@ -3078,6 +3379,11 @@ export interface OutfitTagRequest {
   product_name?: string | null;
   /** A shop's https page; the API cleans it before keeping it. */
   url?: string | null;
+  /**
+   * One of its owner's gear (TASK-486 part F). Not sent, an item kept keeps
+   * the one it had; null takes it off.
+   */
+  gear_id?: string | null;
 }
 
 /**
@@ -3106,3 +3412,9 @@ export * from "./resortFollows.ts";
 export * from "./skiParts.ts";
 export * from "./flightParts.ts";
 export * from "./sleep.ts";
+export * from "./planPosts.ts";
+export * from "./together.ts";
+export * from "./gymHistory.ts";
+export * from "./gear.ts";
+export * from "./groups.ts";
+export * from "./flyingSites.ts";

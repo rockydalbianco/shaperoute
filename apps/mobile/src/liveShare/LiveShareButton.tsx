@@ -17,6 +17,7 @@ import {
   space,
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
+import { useSheetFace } from "../ui/sheetFace";
 import { Tap } from "../ui/Tap";
 import {
   liveInFeed,
@@ -27,6 +28,8 @@ import {
   useLiveShare,
 } from "./liveShareStore";
 import { SendLiveSheet } from "./SendLiveSheet";
+import { glassRaise } from "../ui/glassRaise";
+import { useGlassMode } from "../ui/useGlassMode";
 
 /**
  * «Share live» on the recording screen (TASK-424 part B1, ADR-0352;
@@ -117,6 +120,8 @@ export function confirmStopSharing(): void {
 }
 
 export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props) {
+  // The chip stands out of the glass (TASK-469 A7c).
+  const chipRaise = glassRaise(useGlassMode());
   const { apiUrl, account } = useFollowsDoor();
   const status = useLiveShare();
   const sport = runActivityOf(useSport());
@@ -180,7 +185,7 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
   if (status.kind === "sharing") {
     control = (
       <Tap
-        style={[styles.chip, styles.live]}
+        style={[styles.chip, chipRaise, styles.live]}
         onPress={() => sharingMenu(() => setChoosing(true))}
         accessibilityRole="button"
         accessibilityLabel={t("Sharing live")}
@@ -199,7 +204,7 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
   } else {
     control = (
       <Tap
-        style={styles.chip}
+        style={[styles.chip, chipRaise]}
         onPress={() => {
           setProblem(null);
           setOpen(true);
@@ -271,6 +276,8 @@ function ConsentSheet({
   onCancel: () => void;
 }) {
   const insets = useSafeAreaInsets();
+  // The sheet in the glass look (TASK-469 A7a).
+  const glassSheet = useSheetFace();
   return (
     <View style={styles.fill}>
       <Tap
@@ -280,7 +287,9 @@ function ConsentSheet({
         importantForAccessibility="no"
         pressScale={1}
       />
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + space.md }]}>
+      <View
+        style={[styles.sheet, glassSheet, { paddingBottom: insets.bottom + space.md }]}
+      >
         <Text style={styles.title} accessibilityRole="header">
           {t("Share this activity live")}
         </Text>

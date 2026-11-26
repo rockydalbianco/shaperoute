@@ -139,6 +139,7 @@ services/api/.venv/bin/python -m shaperoute_api.insights import-history
 services/api/.venv/bin/python -m shaperoute_api.insights compare --split 2026-10-01
 services/api/.venv/bin/python -m shaperoute_api.insights trend
 services/api/.venv/bin/python -m shaperoute_api.insights why levic
+services/api/.venv/bin/python -m shaperoute_api.insights --since 2026-11-01 --until 2026-12-01 outlines --out disegni.html
 ```
 
 `--since` / `--until AAAA-MM-GG` tengono solo gli eventi di quei giorni,
@@ -148,6 +149,10 @@ per ogni comando.
 `--json` dà l'uscita per un programma (`report`, `impact`, `propose`).
 `import-history` porta il registro delle richieste (TASK-090) negli eventi,
 in un file a parte rigenerato ogni volta, senza le partenze.
+`outlines --out F` scrive una pagina HTML con le forme dei disegni a mano e
+dei contorni delle foto (TASK-311 parte D): prima quelle venute, poi quelle
+che non sono venute, ognuna con data, sport, distanza e somiglianza o
+codice d'errore. È un file sul server, mai servito.
 
 ## Le metriche
 
@@ -178,6 +183,14 @@ tutte. `route_success_rate` conta solo i percorsi finiti: un annullato non
   `/places` non si registra (indirizzi digitati), né `/city-suggestions`
   (le lettere mentre si scrive): conta la città scelta (`city_chosen`), un
   nome pubblico con la sua cella, mai le lettere né la partenza.
+- **La forma di un disegno** (TASK-311 parte D, ADR-0271): per un disegno
+  a mano o il contorno di una foto l'evento `route` tiene `outline`, le
+  linee portate in un quadrato da 0 a 1 (senza posto né grandezza), al
+  massimo 200 punti per linea, tre decimali. Mai la foto, il percorso o la
+  partenza: del posto resta solo la cella. È spento finché il server non
+  ha `SHAPEROUTE_INSIGHTS_OUTLINES=1`, da accendere solo quando la frase
+  della privacy (approvata dall'utente il 2026-11-23) è nell'app e sul
+  sito. Ogni evento `route` dice anche `activity`, `pen_up` e `style`.
 - I segnali sono validati campo per campo (`signals.py`): un campo in più
   è un 422. Oltre 60 al minuto, tutti i client insieme, non si registrano:
   un client che ne manda tanti non riempie il disco né conta più degli altri.

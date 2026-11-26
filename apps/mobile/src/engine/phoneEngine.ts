@@ -41,15 +41,29 @@ export const PLAN_TIMEOUT_MS = 120_000;
 /** The way back to a route (TASK-314): a crop of the zone and a search of a
  * few km, a few seconds at most; past this the server is asked. */
 export const WAY_BACK_TIMEOUT_MS = 20_000;
+/** A stroke drawn on the map, anchored to the roads (TASK-347 part B): a
+ * crop of the zone and one tracing, under half a second in Pyodide on the
+ * Mac once the zone is read (up to 5 s the first time); past this the
+ * server is asked. */
+export const MATCH_TIMEOUT_MS = 15_000;
 /** After this many deaths of the WebView, the phone stops trying until the
  * app opens again: the server draws every route. */
 export const MAX_DEATHS = 2;
+/**
+ * Python's memory never shrinks (TASK-214 part F): after a big zone the
+ * page keeps it all, 1.3–1.4 GB after Berlin's 32 MB zone, for every route
+ * after it too, and iOS may close it during one of them. Past this much,
+ * a page with nothing more to do is dropped, and the next request mounts a
+ * new one, a few seconds of boot. Routes on Trento's zone took 338 MB, on
+ * Milan's 584 MB (the general check of 2026-11-26).
+ */
+export const MEMORY_RELEASE_MB = 700;
 
 type Job = {
   id: number;
-  /** A route, the zone read ahead of the routes (`prepare`), or the way
-   * back to a route (`wayBack`). */
-  call: "plan" | "warm" | "wayBack";
+  /** A route, the zone read ahead of the routes (`prepare`), the way back
+   * to a route (`wayBack`), or a stroke anchored to the roads (`match`). */
+  call: "plan" | "warm" | "wayBack" | "match";
   body: string;
   zones: PageZone[];
   /** For "warm": the activity and the point of the routes to come. */
@@ -118,8 +132,20 @@ export class PhoneEngine {
     return this.ask("wayBack", body, zones, timeoutMs, signal);
   }
 
+  /** The JSON of POST /stroke-matches for its JSON (TASK-347 part B,
+   * ADR-0300): a stroke drawn on the map, anchored to the roads, behind the
+   * requests already asked. */
+  match(
+    body: string,
+    zones: PageZone[],
+    timeoutMs: number = MATCH_TIMEOUT_MS,
+    signal?: AbortSignal,
+  ): Promise<PlanAnswer> {
+    return this.ask("match", body, zones, timeoutMs, signal);
+  }
+
   private ask(
-    call: "plan" | "wayBack",
+    call: "plan" | "wayBack" | "match",
     body: string,
     zones: PageZone[],
     timeoutMs: number,
@@ -227,6 +253,15 @@ export class PhoneEngine {
           ms: message.ms,
           memoryMb: message.memoryMb,
         });
+        // A zone read ahead is for the next route: it stays, however big.
+        if (
+          job.call !== "warm" &&
+          message.memoryMb > MEMORY_RELEASE_MB &&
+          this.queue.length === 0
+        ) {
+          this.reload();
+          return;
+        }
       } else {
         job.resolve({ kind: "failed", why: message.error });
         if (message.fatal) {
@@ -239,12 +274,12 @@ export class PhoneEngine {
   }
 
   /** iOS closed the WebView's process, most likely for memory. Only a death
-   * during a route or a way back counts: an idle WebView is fair game for
+   * during a route, a way back or a stroke counts: an idle WebView is fair game for
    * iOS, and so is one reading a zone ahead (`prepare`), which the next
    * route reads again. */
   died(): void {
     const call = this.running?.job.call;
-    if (call === "plan" || call === "wayBack") {
+    if (call === "plan" || call === "wayBack" || call === "match") {
       this.deaths += 1;
     }
     this.restart("the engine was closed");
@@ -289,7 +324,7 @@ export class PhoneEngine {
     this.running = { job, timer };
     this.link.send(
       job.warm === undefined
-        ? pageCall(job.call === "wayBack" ? "wayBack" : "plan", {
+        ? pageCall(job.call === "warm" ? "plan" : job.call, {
             id: job.id,
             body: job.body,
             zones: job.zones,
@@ -318,8 +353,9 @@ export class PhoneEngine {
     this.changed();
   }
 
-  /** A new page for Python that can no longer run; the requests waiting
-   * stay, for the new one. */
+  /** A new page for Python that can no longer run, or that holds too much
+   * memory; the requests waiting stay, for the new one. With none, the new
+   * page waits for the next request. */
   private reload(): void {
     this.clearBoot();
     this.link = null;

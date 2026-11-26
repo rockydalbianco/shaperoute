@@ -18,6 +18,8 @@ const ROWS = [
   // filters of the lens «Style» (TASK-384).
   "feed/FeedPost.tsx",
   "contest/ContestGallery.tsx",
+  // And the photos of a post of photos only (TASK-312 part C2).
+  "feed/PhotoFeedPost.tsx",
   "feed/StyleLens.tsx",
   // In «Draw»: «NEAR YOU».
   "route/NearYou.tsx",
@@ -48,9 +50,15 @@ const ROWS = [
   // In the gym's guide, over the whole screen: the tabs of a week of more
   // than four workouts (TASK-433 C).
   "gym/GymPlanWizard.tsx",
+  // In «My plans», over the whole screen: the tabs of a plan's workouts and
+  // its weeks beyond four in the table (TASK-506 A).
+  "gym/PlanTable.tsx",
   // In the activity calendar, over the whole screen: the chips of the
   // sports (TASK-462 B).
   "activities/ActivityCalendar.tsx",
+  // The flight screen, over the whole screen in its own Modal: its pages of
+  // widgets (TASK-479 B1).
+  "air/FlightScreen.tsx",
 ];
 
 /** The one that hands the finger on: the drawing, then the photo, of a card

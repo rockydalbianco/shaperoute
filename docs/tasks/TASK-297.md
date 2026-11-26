@@ -1,6 +1,6 @@
 # TASK-297 — Ricerche dall'archivio dei percorsi (A) e loghi con la penna alzata (C); il piazzamento imparato, misurato e scartato (B)
 
-**Stato**: In lavorazione · documenti in `main` (#538, `9391893c`) · parte A in `main` (#539, `0c4ada00`, su `preview` e0e4e126) · **C, motore: PR #547 aperta (2026-10-25)** · TASK-298 nella sua sessione · **A2: in `main` di `LPPL1316/MUW` con la #7 (`e789e9c`, 2026-10-29)** · poi C2
+**Stato**: Done · 2026-11-26 · A (#539), A2, C (#547) e C2 (#1520) in `main`; B misurata e scartata (ADR-0257). **Esito**: una foto con soggetti staccati o buchi si disegna a penna alzata, una parte alla volta; C2 sul server dal passo 22 (`080a4e83`) e nell'app con l'OTA 26 (`71fc76c4`). Resta la prova dell'utente sul telefono (vedi «Prova sul telefono» in fondo).
 **Fase**: 4 · **Branch**: `docs/TASK-297-proposal` (documenti),
 `feat/TASK-297-a-route-archive` (A), `feat/TASK-297-a2-first-placement`
 (A2, dopo la #497), `feat/TASK-297-c-image-pieces` (C, motore),
@@ -321,11 +321,17 @@ Parte C (motore):
       rifare (condizione 4).
 
 Parte C2 (API e app):
-- [ ] `POST /image-outlines` e `POST /image-route-jobs` con i pezzi
-      (test); `pen_up` senza pezzi rifiutato con il motivo.
-- [ ] L'interruttore sulla foto, i pezzi disegnati, i tratti a piedi
-      sulla mappa (test jest); impronta iOS invariata; lint, typecheck,
-      test e format:check verdi.
+- [x] `POST /image-outlines` e `POST /image-route-jobs` con i pezzi
+      (test); `pen_up` senza pezzi rifiutato con il motivo:
+      `tests/test_images.py` (il foro di un disco fino al job, le fixture
+      nuove, `pen_up` e `pieces` l'uno senza l'altro, un pezzo che tocca,
+      troppi pezzi o punti, nessun pezzo quando il secondo tracciamento non
+      va, i `walks` nel risultato).
+- [x] L'interruttore sulla foto, i pezzi disegnati, i tratti a piedi
+      sulla mappa (test jest): `__tests__/AppImagePenUp.test.tsx`,
+      `src/route/imagePieces.test.tsx`; la pausa sui tratti a piedi è
+      quella delle forme in pezzi (`word` null: `penUp.ts`). Impronta iOS
+      invariata (`83793e26`); lint, typecheck, test e format:check verdi.
 
 ## File toccati
 
@@ -396,6 +402,21 @@ services/api/tests/test_images.py
 packages/shared-types/src/index.ts                        (in coda)
 apps/mobile/src/… (la schermata della foto, il contorno sulla foto, i18n in coda)
 docs/API.md, docs/UI.md, docs/STATUS.md, docs/tasks/TASK-297.md
+```
+
+Parte C2 come fatta (fuori dall'elenco sopra, segnalati nella PR):
+```
+services/api/shaperoute_api/app.py                        (to_request: l'immagine passa da images.image_request)
+services/api/tests/test_contract.py                       (le fixture di prima, senza pezzi)
+packages/shared-types/src/index.ts                        (anche in mezzo: il commento di ImageRouteRequest.pen_up, GpxRequest)
+packages/shared-types/test/contract.test.ts               (le fixture di prima; un cast via unknown)
+packages/shared-types/fixtures/image-outline-edited.json  (`pieces` e `image_pieces` vuoti)
+packages/shared-types/fixtures/image-outline-pieces.json, image-route-request-pen-up.json   (nuovi)
+packages/shared-types/test/imagePieces.test.ts            (nuovo)
+apps/mobile/App.tsx                                       (la richiesta della foto: imageAsked)
+apps/mobile/__tests__/AppImagePenUp.test.tsx              (nuovo)
+apps/mobile/assets/engine/engine.zip                      (rifatto: images.py e schemas.py vanno sul telefono)
+docs/DECISIONS.md                                         (aggiunta ad ADR-0258)
 ```
 
 ## Fuori scope
@@ -485,3 +506,36 @@ uguale non si rinfrescava; le indicazioni del motore si leggevano sul
 grafo dell'archivio quando questo non rispondeva. Rimandato: le città vere
 e gli esempi tenuti (zone del Mac, `--cache-dir`), il server dopo Apple,
 `draw_examples`, `paddleExamples.json`, `catalogueShapes.json`.
+
+**Parte C2, API e app** (2026-10-26, branch
+`feat/TASK-297-c2-image-pieces-api-app`): `POST /image-outlines` dà anche
+`pieces` e `image_pieces`, dal secondo tracciamento con la penna alzata,
+solo quando il suo contorno è lo stesso di `points` e i pezzi sono al più
+8; `POST /image-route-jobs` prende `pen_up: true` con `pieces` (l'uno senza
+l'altro `invalid_request`, i pezzi senza incroci) e il risultato ha i
+`walks`. Nell'app l'interruttore «Lift the pen between parts» sotto la foto
+con pezzi, acceso all'avvio; i pezzi gialli sull'anteprima al posto dei
+tratti, senza «Edit the outline»; la richiesta con `pieces` e `pen_up`; il
+percorso come una forma in pezzi (tratteggio, km a parte, pausa). Un testo
+nuovo, approvato dall'utente il 2026-10-27 nelle cinque lingue con «Edit
+the outline» nascosto a penna alzata. Impronta iOS invariata, `engine.zip` rifatto. Emerso:
+le foto pronte di «Draw» non hanno pezzi (vengono da
+`samplePictures.json`), anche se auto, chitarra e coppa ne avrebbero (2, 1,
+2). Rimandato: il server dopo Apple con l'ok dell'utente.
+Il 2026-11-23 il branch, rimasto senza PR, è stato allineato a `main` (un
+mese di lavoro: `placement`, `laps`, la camminata, il disegno ancorato) e
+messo in PR su richiesta dell'utente; `engine.zip` rifatto dopo il merge.
+**Limite voluto**: i pezzi vengono solo dal tracciamento della foto fatto
+dal motore, mai da una linea disegnata a mano. Per questo
+`POST /image-outline-edits` risponde con `pieces` e `image_pieces` vuoti.
+Dopo «Edit the outline» (che si vede solo a penna giù) l'interruttore
+sparisce e il contorno modificato si disegna a penna giù. Lo fissa
+`test_an_edited_outline_has_no_pieces_and_is_drawn_with_the_pen_down`. Una
+modifica che tenga i pezzi sarebbe un task a parte.
+
+## Prova sul telefono (resta all'utente)
+
+Una foto con due soggetti staccati o con un buco (una ciambella): sotto la
+foto «Lift the pen between parts», acceso; i pezzi gialli sull'anteprima;
+il percorso coi tratti a piedi tratteggiati. Le foto pronte di «Draw» non
+hanno pezzi (`samplePictures.json`): lì l'interruttore non compare.

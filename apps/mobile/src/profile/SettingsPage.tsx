@@ -7,6 +7,7 @@ import type { AboutId } from "../about/documents";
 import type { Account } from "../account/useAccount";
 import { apiUrl } from "../api/apiUrl";
 import { OfflineMapsSetting } from "../engine/OfflineMapsSetting";
+import { GearSetting } from "../gear/GearSetting";
 import { t } from "../i18n";
 import { BodySetting } from "../settings/BodySetting";
 import { EmailSetting } from "../settings/EmailSetting";
@@ -20,6 +21,7 @@ import { StyleSetting } from "../settings/StyleSetting";
 import { ToneSetting } from "../settings/ToneSetting";
 import { UnitsSetting } from "../settings/UnitsSetting";
 import { Vo2MaxSetting } from "../settings/Vo2MaxSetting";
+import { useSettingsGroup } from "../settings/settingsGroup";
 import { useFeedbackService } from "../settings/useFeedbackService";
 import { BlockedPeople } from "../social/BlockedPeople";
 import { StravaSetting } from "../strava/StravaSetting";
@@ -73,6 +75,8 @@ export function SettingsPage({
   feedbackApi = { baseUrl: apiUrl() },
 }: Props) {
   const [confirming, setConfirming] = useState(false);
+  // The account card wears the glass of the groups (TASK-469 A6b).
+  const group = useSettingsGroup();
   const { baseUrl: feedbackUrl, fetchFn, key } = feedbackApi;
   // Only on a server that takes it: an older one answers 404 (TASK-308).
   const takesFeedback = useFeedbackService(feedbackUrl, { fetchFn, key });
@@ -80,7 +84,7 @@ export function SettingsPage({
   return (
     <View style={styles.page}>
       <Section label={t("ACCOUNT")}>
-        <View style={styles.card}>
+        <View style={[styles.card, group]}>
           <Text style={styles.username}>{user.username}</Text>
           <Text style={styles.email}>{user.email}</Text>
         </View>
@@ -92,6 +96,8 @@ export function SettingsPage({
         <BlockedPeople />
       </Section>
       <SportSetting />
+      {/* Shoes, bikes, skis and the rest, with their kilometres (TASK-486). */}
+      <GearSetting account={account} />
       <StravaSetting />
       <Section label={t("PREFERENCES")}>
         <LanguageSetting />
@@ -192,7 +198,8 @@ const styles = StyleSheet.create({
     ...font.label,
     color: color.textMuted,
   },
-  // The account as a quiet card: no border, the name as a heading (TASK-339 D).
+  // The account as a quiet card, the name as a heading (TASK-339 D); its
+  // edges are those of the groups (TASK-469 A6b, `group`).
   card: {
     gap: space.xs,
     padding: space.md,
@@ -227,10 +234,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignSelf: "flex-start",
   },
+  // A warning, not glass: the corners of the groups, the edge in red.
   confirm: {
     gap: space.md,
     padding: space.md,
-    borderRadius: radius.lg,
+    borderRadius: radius.group,
     borderWidth: 1,
     borderColor: color.error,
     backgroundColor: color.surface,

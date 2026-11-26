@@ -1,8 +1,7 @@
 # TASK-464 — Zone già in memoria nei processi di calcolo
 
-**Stato**: In corso — codice in `main` (#1167, 2026-11-12), CI verde.
-Sul server col passo 9 del Coordinatore, 2026-11-12 alle 08:38Z (server a
-`02214e9b`), col default `SHAPEROUTE_ZONES_MB` 500.
+**Stato**: Done · 2026-11-26 · #1167 in `main` (ADR-0374), sul server dal passo 9 (2026-11-12). Le letture di `out/TASK-464/SERVER.md` le ha fatte il Coordinatore (fork 3) il 2026-11-26, sul «Leggi e chiudi» dell'utente: le zone lette dal disco passano da 8 su 16 a 1 su 14, il crop mediano da 0,46 s a 0,18 s; il tetto di 500 MB tiene con 5,0–5,5 GB disponibili. Il tetto resta 500 MB (`SHAPEROUTE_ZONES_MB` vuota) e il server non cambia. Dettagli in `out/TASK-464/letture-2026-11-26.txt`.
+Prima del 2026-11-26: In corso — codice in `main` (#1167, 2026-11-12), CI verde. Sul server col passo 9 del Coordinatore, 2026-11-12 alle 08:38Z (server a `02214e9b`), col default `SHAPEROUTE_ZONES_MB` 500. **2026-11-26, non chiuso** (censimento, Coordinatore 3): le letture del server non ci sono ancora. In `out/TASK-464/` ci sono solo la guida `SERVER.md`, lo script `times_compare.py` e le righe di prima del passo 9 (`server-job-times-before-passo9.txt`). Mancano i punti 1–4 di `SERVER.md`: le righe `zone … warmed`, il conto `graph from disk/memory`, la memoria per processo col minimo di `available` e i «times» dopo il passo. Senza questi il tetto `SHAPEROUTE_ZONES_MB` resta al default di 500. Le letture sono `ssh` di sola lettura del Coordinatore.
 
 Letture a riposo, subito dopo il passo:
 - due processi di calcolo partiti, «0 zones warmed» (giusto al primo avvio:
@@ -171,4 +170,13 @@ in background, solo zone a piedi) e la riga di STATUS.
 
 ## Esito
 
-*(a fine task)*
+**Chiuso il 2026-11-26.** Il riscaldamento delle zone fa quello che deve:
+- zone dal disco 8 su 16 prima, 1 su 14 dopo;
+- «graph from disk» 10 su 24 prima, 4 su 33 dopo;
+- `crop` mediano da 0,46 s a 0,18 s.
+
+Il tetto di 500 MB tiene con margine: 5 zone per processo (497 MB), `available` fra 5,0 e 5,5 GB (sopra i 3,5 GB della regola), processi di calcolo fra 460 e 760 MB. Il tetto resta quindi a 500 MB e il server non cambia.
+
+I tempi totali (mediana da 7,6 s a 10,2 s) non si possono confrontare: le richieste sono poche (16 e 14), con forme e città diverse, e lo `start` non dipende dal riscaldamento.
+
+Le letture sono del Coordinatore (fork 3), in `out/TASK-464/letture-2026-11-26.txt`.

@@ -174,9 +174,10 @@ TRACKLESS_ACTIVITIES: tuple[RunActivity, ...] = tuple(
     cast(RunActivity, sport.activity) for sport in API_SPORTS if sport.trackless
 )
 # Where a run comes from (TASK-312, ADR-0272): recorded by the app, or a file
-# of another app read on the phone. Only `muw` counts for the shape game and
-# the contest.
-RunSource = Literal["muw", "file"]
+# of another app read on the phone; `manual`, a workout at the gym written by
+# hand (TASK-484, ADR-0395), saved only by gym_sessions.py. Only `muw` counts
+# for the shape game and the contest.
+RunSource = Literal["muw", "file", "manual"]
 MUW: RunSource = "muw"
 
 
@@ -292,6 +293,8 @@ class ActivityRequestBody(BaseModel):
             raise ValueError("rotation_deg is the route's: there is none")
         if self.source != MUW and self.points is not None:
             raise ValueError("a run from another app followed no route of MuW")
+        if self.source == "manual":
+            raise ValueError("a workout written by hand is saved by /me/gym-sessions")
         if self.activity in TRACKLESS_ACTIVITIES:
             raise ValueError("a workout at the gym is saved by /me/gym-sessions")
         # As POST /track-scores checks them (schemas.py).
@@ -327,6 +330,11 @@ class ActivityBody(BaseModel):
     source: RunSource = MUW
     """Where it comes from (TASK-312): the app writes «Imported» for `file`.
     Always answered; the default is for the examples written before."""
+    climb_m: int | None = None
+    """The metres climbed (TASK-324), for «Quanta salita fai oggi?» of the
+    gym's plans (TASK-461 D1, ADR-0371): null for a run whose fixes had no
+    heights and for every run saved before TASK-324. Always answered; the
+    default is for the examples written before."""
     route_preview: list[LatLon] | None
     track_preview: list[LatLon]
 
@@ -444,7 +452,9 @@ class ActivityDetailBody(BaseModel):
     any other run, and for a flight without parts on foot."""
 
     @model_serializer(mode="wrap")
-    def _without_flight(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+    def _without_flight(self, handler: SerializerFunctionWrapHandler):
+        # No return type, so the answer's schema stays the run's own fields:
+        # with one it would be any object.
         answer: dict[str, Any] = handler(self)
         if answer.get("flight") is None:
             answer.pop("flight", None)
@@ -654,16 +664,27 @@ def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:
 
 # --- The runs in the database ---
 
-COLUMNS = (
+_FIELDS = (
     "id, key, started_at, place, shape, word, style, title, distance_m,"
     " duration_s, score, fidelity, route_similarity, walks, activity,"
-    " route_rotation_deg, source,"
-    " ST_AsGeoJSON(route, 15) AS route,"
-    " ST_AsGeoJSON(ST_Force2D(track), 15) AS track"
+    " route_rotation_deg, source, climb_m"
 )
-# A run opened whole: its pauses and its post too, which the list does not
-# read.
-DETAIL_COLUMNS = COLUMNS + ", pauses, post"
+# A run in a list: as `route` and `track`, the previews PostgreSQL keeps of
+# them (migration 0088, TASK-501), the points `preview` would take of the
+# whole lines. A run of an hour has thousands of points, a page twenty runs.
+LISTED_COLUMNS = (
+    f"{_FIELDS},"
+    " ST_AsGeoJSON(route_preview, 15) AS route,"
+    " ST_AsGeoJSON(track_preview, 15) AS track"
+)
+# A run opened whole: both lines whole, and its pauses and its post too,
+# which the list does not read.
+DETAIL_COLUMNS = (
+    f"{_FIELDS},"
+    " ST_AsGeoJSON(route, 15) AS route,"
+    " ST_AsGeoJSON(ST_Force2D(track), 15) AS track,"
+    " pauses, post"
+)
 
 
 def _route_wkt(points: Sequence[LatLon]) -> str:
@@ -719,6 +740,7 @@ def _listed(row: DictRow) -> ActivityBody:
     route = row["route"]
     return ActivityBody(
         **_fields(row),
+        climb_m=row["climb_m"],
         route_preview=None if route is None else preview(_line(route)),
         track_preview=preview(_line(row["track"])),
     )
@@ -804,7 +826,7 @@ class Activities:
             values += _after(cursor)
         with self.database.connect() as conn:
             rows = conn.execute(
-                f"SELECT {COLUMNS} FROM runs WHERE {where}"
+                f"SELECT {LISTED_COLUMNS} FROM runs WHERE {where}"
                 " ORDER BY started_at DESC, id DESC LIMIT %s",
                 (*values, limit + 1),
             ).fetchall()
@@ -819,10 +841,10 @@ class Activities:
             total=count["n"],
         )
 
-    def _row(self, user_id: int, key: str, columns: str = COLUMNS) -> DictRow | None:
+    def _row(self, user_id: int, key: str) -> DictRow | None:
         with self.database.connect() as conn:
             return conn.execute(
-                f"SELECT {columns} FROM runs WHERE user_id = %s AND key = %s",
+                f"SELECT {LISTED_COLUMNS} FROM runs WHERE user_id = %s AND key = %s",
                 (user_id, key),
             ).fetchone()
 
@@ -876,7 +898,7 @@ class Activities:
                 "SELECT 1 FROM users WHERE id = %s FOR UPDATE", (user_id,)
             ).fetchone()
             saved = conn.execute(
-                f"SELECT {COLUMNS} FROM runs WHERE user_id = %s AND key = %s",
+                f"SELECT {LISTED_COLUMNS} FROM runs WHERE user_id = %s AND key = %s",
                 (user_id, key),
             ).fetchone()
             if saved is not None:
@@ -895,7 +917,7 @@ class Activities:
                 " VALUES (%s, %s, ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s,"
                 " ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
                 " %s, %s, %s, %s)"
-                f" RETURNING {COLUMNS}",
+                f" RETURNING {LISTED_COLUMNS}",
                 (
                     user_id,
                     key,

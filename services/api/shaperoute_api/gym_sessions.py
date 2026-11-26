@@ -8,13 +8,22 @@ seconds itself, the time between start and end without the pauses; the
 rests are inside it. Sent twice, it is saved once, as a run is (201, then
 200). The run is in «My activities» for an app that reads what has no track
 (reads.py) and is published as any other (drawings.py), without a line.
+A workout written by hand afterwards (TASK-484, ADR-0395) comes the same way
+with `source` `manual`: sets none of them live, no pauses, rests or plan,
+ended before now; it stays out of the levels and of all that reads `muw`.
+
+The heart rate a watch wrote in Apple Health while the workout lasted
+(TASK-385 part G, ADR-0327 punto 7) comes with it when the phone read it:
+its average and maximum, both or neither, and «Show heart rate»; they go in
+the run's columns of migration 0061, as for a swim in a pool.
 
 GET /me/gym-sessions/{key} gives the workout back to its owner, and PUT
 /me/gym-sessions/{key}/show-exercises says whether its post shows the
 exercises. GET /drawings/{id}/exercises gives them to whoever sees the
 drawing (drawings.drawing_seen_sql), from an app that reads a workout at the
 gym, when its owner shows them; otherwise 404, as for a drawing that is not
-there. Deleting the run, or the account, deletes its sets.
+there. Their heart rate comes with them when its owner shows it, and always
+to the owner. Deleting the run, or the account, deletes its sets.
 """
 
 from __future__ import annotations
@@ -22,7 +31,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Response
@@ -46,12 +55,15 @@ from shaperoute_api.activities import (
     KEY_PATTERN,
     MAX_ACTIVITIES,
     MAX_PAUSES,
+    MUW,
     Key,
+    RunSource,
 )
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import drawing_seen_sql
 from shaperoute_api.gym_catalog import EXERCISES_BY_KEY, CardioField, SetKind
 from shaperoute_api.gym_levels import GymLevelBody, new_levels
+from shaperoute_api.pool_swims import MAX_HEART_BPM, MIN_HEART_BPM
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.schemas import ErrorBody
 
@@ -66,6 +78,13 @@ EXERCISE_PATTERN = r"^[a-z0-9_]{1,40}$"
 UNKNOWN_WORKOUT = "No workout at the gym with this key."
 NO_EXERCISES = "No exercises to show for this drawing."
 NOT_A_WORKOUT = "This key is of a run, not of a workout at the gym."
+
+# Where a workout comes from (TASK-484, ADR-0395): recorded by the app, or
+# written by hand afterwards from the «+» of the Feed. Only `muw` counts for
+# the levels, the leaderboard, the badges, the contest and the game.
+GymSource = Literal["muw", "manual"]
+MANUAL: GymSource = "manual"
+ENDS_LATER = "A workout written by hand ends before now."
 
 # What a set of each kind has, besides its time and whether it was live:
 # the fields it needs, and those it may have.
@@ -183,6 +202,16 @@ class GymSessionRequestBody(BaseModel):
     plan: str | None = Field(default=None, pattern=KEY_PATTERN)
     """The key of the plan it followed (TASK-411 C, gym_plans.py); null for
     a workout without one. The plan may reach the API later."""
+    source: GymSource = MUW
+    """`manual` for a workout written by hand afterwards (TASK-484,
+    ADR-0395); missing from an older app, which only recorded. Like the
+    rest of the body, it counts only the first time."""
+    heart_avg_bpm: int | None = Field(None, ge=MIN_HEART_BPM, le=MAX_HEART_BPM)
+    heart_max_bpm: int | None = Field(None, ge=MIN_HEART_BPM, le=MAX_HEART_BPM)
+    """The workout's heart rate from the watch (part G), both or neither;
+    missing from an app before it."""
+    heart_shown: bool = True
+    """«Show heart rate»: whether others see it."""
 
     @model_validator(mode="after")
     def within_the_workout(self) -> GymSessionRequestBody:
@@ -194,6 +223,36 @@ class GymSessionRequestBody(BaseModel):
             raise ValueError("a pause is inside the workout")
         if any(item.at_s > length_s for item in self.sets):
             raise ValueError("a set is logged inside the workout")
+        return self
+
+    @model_validator(mode="after")
+    def as_written_by_hand(self) -> GymSessionRequestBody:
+        """A workout written by hand has what its form asks and no more:
+        sets, none of them live, and no timer behind it."""
+        if self.source != MANUAL:
+            return self
+        if not self.sets:
+            raise ValueError("a workout written by hand has its sets")
+        if any(item.live for item in self.sets):
+            raise ValueError("a workout written by hand has no live sets")
+        if self.pauses or self.rests or self.rest_s:
+            raise ValueError("a workout written by hand has no pauses or rests")
+        if self.plan is not None:
+            raise ValueError("a workout written by hand follows no plan")
+        if self.heart_avg_bpm is not None:
+            raise ValueError("a workout written by hand has no heart rate")
+        return self
+
+    @model_validator(mode="after")
+    def one_heart_rate(self) -> GymSessionRequestBody:
+        if (self.heart_avg_bpm is None) != (self.heart_max_bpm is None):
+            raise ValueError("the average and the maximum heart rate go together")
+        if (
+            self.heart_avg_bpm is not None
+            and self.heart_max_bpm is not None
+            and self.heart_avg_bpm > self.heart_max_bpm
+        ):
+            raise ValueError("the average heart rate is not above the maximum")
         return self
 
     def duration_s(self) -> int:
@@ -223,6 +282,12 @@ class GymSessionBody(BaseModel):
     sets: list[GymSetBody]
     plan: str | None = None
     """The key of the plan it followed; left out without one."""
+    source: RunSource = MUW
+    """`manual` for one written by hand (TASK-484); always answered."""
+    heart_avg_bpm: int | None = None
+    heart_max_bpm: int | None = None
+    heart_shown: bool | None = None
+    """The three only for a workout with its heart rate (part G)."""
 
 
 class GymExercisesBody(BaseModel):
@@ -236,6 +301,10 @@ class GymExercisesBody(BaseModel):
         default_factory=list,
         description="The levels it reached first, the highest first; [] without.",
     )
+    heart_avg_bpm: int | None = None
+    heart_max_bpm: int | None = None
+    """Its heart rate (part G), when its owner shows it or reads it; left
+    out otherwise."""
 
 
 class ShowExercisesRequestBody(BaseModel):
@@ -291,7 +360,8 @@ def _kept_pauses(pauses: Sequence[GymPauseBody]) -> list[dict[str, Any]]:
 
 WORKOUT_SQL = (
     "SELECT r.id, r.key, r.started_at, r.duration_s, g.rests, g.rest_s,"
-    " g.show_exercises, g.plan_key FROM runs r"
+    " g.show_exercises, g.plan_key, r.source,"
+    " r.heart_avg_bpm, r.heart_max_bpm, r.heart_shown FROM runs r"
     " JOIN gym_sessions g ON g.run_id = r.id"
     " WHERE r.user_id = %s AND r.key = %s"
 )
@@ -305,6 +375,7 @@ class GymSessions:
     now: Callable[[], datetime]
 
     def _body(self, conn: Any, row: DictRow) -> GymSessionBody:
+        heart = row["heart_avg_bpm"] is not None
         return GymSessionBody(
             id=row["key"],
             started_at=row["started_at"],
@@ -314,6 +385,10 @@ class GymSessions:
             show_exercises=row["show_exercises"],
             sets=_sets(conn, row["id"]),
             plan=row["plan_key"],
+            source=row["source"],
+            heart_avg_bpm=row["heart_avg_bpm"],
+            heart_max_bpm=row["heart_max_bpm"],
+            heart_shown=row["heart_shown"] if heart else None,
         )
 
     def get(self, user_id: int, key: str) -> GymSessionBody | None:
@@ -329,6 +404,8 @@ class GymSessions:
         now = self.now()
         if not EARLIEST_RUN <= body.started_at <= now + CLOCK_AHEAD:
             raise AccountError(422, "invalid_request", BAD_CLOCK)
+        if body.source == MANUAL and body.ended_at > now + CLOCK_AHEAD:
+            raise AccountError(422, "invalid_request", ENDS_LATER)
         with self.database.connect() as conn:
             # One account's runs change one at a time, as activities.py
             # saves them: the count below is the count when the row goes in.
@@ -349,8 +426,10 @@ class GymSessions:
                 raise AccountError(422, "invalid_request", ACTIVITIES_FULL)
             run = conn.execute(
                 "INSERT INTO runs (user_id, key, track, pauses, started_at,"
-                " distance_m, duration_s, created_at, activity)"
-                " VALUES (%s, %s, NULL, %s, %s, 0, %s, %s, %s) RETURNING id",
+                " distance_m, duration_s, created_at, activity, source,"
+                " heart_avg_bpm, heart_max_bpm, heart_shown)"
+                " VALUES (%s, %s, NULL, %s, %s, 0, %s, %s, %s, %s, %s, %s, %s)"
+                " RETURNING id",
                 (
                     user_id,
                     key,
@@ -359,6 +438,10 @@ class GymSessions:
                     body.duration_s(),
                     now,
                     GYM,
+                    body.source,
+                    body.heart_avg_bpm,
+                    body.heart_max_bpm,
+                    body.heart_shown,
                 ),
             ).fetchone()
             assert run is not None
@@ -405,13 +488,18 @@ class GymSessions:
             return None
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT r.id, g.rests, g.rest_s FROM drawings d"
+                "SELECT r.id, g.rests, g.rest_s,"
+                " CASE WHEN r.heart_shown OR r.user_id = %s"
+                " THEN r.heart_avg_bpm END AS heart_avg_bpm,"
+                " CASE WHEN r.heart_shown OR r.user_id = %s"
+                " THEN r.heart_max_bpm END AS heart_max_bpm"
+                " FROM drawings d"
                 " JOIN runs r ON r.id = d.run_id"
                 " JOIN gym_sessions g ON g.run_id = r.id"
                 f" WHERE d.id = %s AND {drawing_seen_sql('%s')}"
                 f" AND {reads.sql('r.activity', 'r.track IS NOT NULL')}"
                 " AND (g.show_exercises OR r.user_id = %s)",
-                (wanted, viewer_id, viewer_id),
+                (viewer_id, viewer_id, wanted, viewer_id, viewer_id),
             ).fetchone()
             if row is None:
                 return None
@@ -420,6 +508,8 @@ class GymSessions:
                 rest_s=row["rest_s"],
                 sets=_sets(conn, row["id"]),
                 new_levels=new_levels(conn, row["id"]),
+                heart_avg_bpm=row["heart_avg_bpm"],
+                heart_max_bpm=row["heart_max_bpm"],
             )
 
 

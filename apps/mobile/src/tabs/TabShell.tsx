@@ -22,11 +22,12 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
+import { FeedMapShooter } from "../feed/FeedMaps";
 import { color } from "../theme/tokens";
 import { pageName, tourPart, useTourPager } from "../tour/tourParts";
 import { closeTopLayer, OnScreenContext } from "../ui/backLayers";
-import { Hairline } from "../ui/Hairline";
 import { AppHeader } from "./AppHeader";
+import { HeaderScrollContext, type HeaderScrollReport } from "./headerScroll";
 import { type BarTab, TabBar } from "./TabBar";
 import { TabReselect, TabReselectContext } from "./tabReselect";
 import {
@@ -116,7 +117,7 @@ function useScreenReader(): boolean {
  */
 export function TabShell({ pages, page, onPage, action }: Props) {
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const count = pages.length;
   // VoiceOver goes by the tabs: a three-finger swipe would say «page 1001
   // of 2000», the strip's.
@@ -171,6 +172,30 @@ export function TabShell({ pages, page, onPage, action }: Props) {
   const between = useMemo(() => ({ ...insets, top: 0, bottom: 0 }), [insets]);
   // One for each page, made the first time it is asked for.
   const [reselects] = useState(() => new Map<string, TabReselect>());
+  // The pages scrolled away from their top: the header is in glass over them
+  // (TASK-469 A5b). Each page tells through its own, made once.
+  const [awayFromTop, setAwayFromTop] = useState<ReadonlySet<string>>(() => new Set());
+  const [reports] = useState(() => new Map<string, HeaderScrollReport>());
+  function reportOf(title: string): HeaderScrollReport {
+    let report = reports.get(title);
+    if (report === undefined) {
+      report = (away: boolean) =>
+        setAwayFromTop((before) => {
+          if (before.has(title) === away) {
+            return before;
+          }
+          const after = new Set(before);
+          if (away) {
+            after.add(title);
+          } else {
+            after.delete(title);
+          }
+          return after;
+        });
+      reports.set(title, report);
+    }
+    return report;
+  }
   function reselectOf(title: string): TabReselect {
     let reselect = reselects.get(title);
     if (reselect === undefined) {
@@ -312,9 +337,24 @@ export function TabShell({ pages, page, onPage, action }: Props) {
   }
 
   return (
-    <View style={[StyleSheet.absoluteFill, styles.shell]}>
-      <AppHeader action={action} />
-      <Hairline />
+    // Never flattened: the header stands over the pages by a `zIndex`, which
+    // sorts inside the nearest view that is kept. Flattened, that is a view
+    // above the shell, and the header came out over the pages opened over
+    // the app, a conversation's own title row among them (TASK-469).
+    <View style={[StyleSheet.absoluteFill, styles.shell]} collapsable={false}>
+      {/* The maps under the drawings of every page (TASK-480): taken here,
+          before the pages and so before a page's own shooter. A page a tab
+          away is not laid out, and a map page inside it draws nothing. */}
+      <FeedMapShooter width={width} height={height} />
+      <View
+        testID="tab-maps-cover"
+        style={[StyleSheet.absoluteFill, styles.shell]}
+        pointerEvents="none"
+      />
+      <AppHeader
+        action={action}
+        scrolled={shown !== undefined && awayFromTop.has(shown)}
+      />
       <ScrollView
         ref={scroller}
         testID="tab-pages"
@@ -365,7 +405,9 @@ export function TabShell({ pages, page, onPage, action }: Props) {
                 {isBuilt && (
                   <OnScreenContext.Provider value={onScreen}>
                     <TabReselectContext.Provider value={reselectOf(each.title)}>
-                      {each.render()}
+                      <HeaderScrollContext.Provider value={reportOf(each.title)}>
+                        {each.render()}
+                      </HeaderScrollContext.Provider>
                     </TabReselectContext.Provider>
                   </OnScreenContext.Provider>
                 )}

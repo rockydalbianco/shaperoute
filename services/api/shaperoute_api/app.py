@@ -26,14 +26,12 @@ from psycopg_pool import PoolTimeout
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.image_outline import InvalidImageError
 from route_engine.models import (
-    PEN_UP_WITHOUT_WORD,
     InvalidRequestError,
     RouteResult,
 )
 from route_engine.optimizer import ShapeNotDrawableError
 from route_engine.outline_edits import InvalidEditError
 from route_engine.swim_turns import with_turns
-from route_engine.walking import engine_activity
 from shaperoute_ai.reading import (
     InvalidTextError,
     ModelUnavailableError,
@@ -52,6 +50,7 @@ from shaperoute_api.activity_graphs import (
     ground_for,
     source_for,
 )
+from shaperoute_api.avatars import install_avatars
 from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.comment_reactions import install_comment_reactions
@@ -66,19 +65,22 @@ from shaperoute_api.errors import error_of
 from shaperoute_api.favorites import install_favorites
 from shaperoute_api.feed import install_feed
 from shaperoute_api.feedback import install_feedback
+from shaperoute_api.flying_sites import install_flying_sites
 from shaperoute_api.follows import install_follows
 from shaperoute_api.game import install_game
+from shaperoute_api.gear import install_gear
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.group_runs import install_group_runs
+from shaperoute_api.groups import install_groups
 from shaperoute_api.gym_calendar import install_gym_calendar
+from shaperoute_api.gym_history import install_gym_history
 from shaperoute_api.gym_leaderboard import install_gym_leaderboard
 from shaperoute_api.gym_plans import install_gym_plans
 from shaperoute_api.gym_sessions import install_gym_sessions
 from shaperoute_api.images import (
     AnyRequest,
-    ImageRequest,
     decode_image,
-    outline_of,
+    image_request,
     placed_outlines,
     plan_request,
     route_request_of,
@@ -100,6 +102,7 @@ from shaperoute_api.notification_list import install_notification_list
 from shaperoute_api.notifications import install_notifications
 from shaperoute_api.outfit_tags import install_outfit_tags
 from shaperoute_api.outline_edits import edit_outline
+from shaperoute_api.photo_posts import install_photo_posts
 from shaperoute_api.places import (
     MAX_QUERY_LENGTH,
     MIN_QUERY_LENGTH,
@@ -107,6 +110,7 @@ from shaperoute_api.places import (
     PlaceSearch,
     PlacesUnavailableError,
 )
+from shaperoute_api.plan_posts import install_plan_posts
 from shaperoute_api.pool_swims import install_pool_swims
 from shaperoute_api.post_links import install_post_links
 from shaperoute_api.profile_photos import install_profile_photos
@@ -152,12 +156,14 @@ from shaperoute_api.sign_in_providers import (
 )
 from shaperoute_api.signals import SignalBody, SignalGate, event_of
 from shaperoute_api.sleep import install_sleep
+from shaperoute_api.sleep_posts import install_sleep_posts
 from shaperoute_api.strava import install_strava
 from shaperoute_api.strava_client import Strava
 from shaperoute_api.stretch_sessions import install_stretch_sessions
 from shaperoute_api.stroke_matches_api import install_stroke_matches
 from shaperoute_api.style_posts import install_style_posts
 from shaperoute_api.themed import ThemedJobBody, ThemedJobs, ThemedRequestBody
+from shaperoute_api.together import install_together
 from shaperoute_api.track_scores import score_run
 from shaperoute_api.user_photos import install_user_photos
 from shaperoute_api.vo2max import install_vo2max
@@ -214,22 +220,12 @@ def validation_message(errors: Sequence[Any]) -> str:
 
 def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
     """The engine's RouteRequest checks the values, and ImageRequest those of
-    an image route: InvalidRequestError. An image has no letters to draw
-    with the pen up (TASK-197). The activity is one of the contract's: the
+    an image route: InvalidRequestError. An image has the pen up only with
+    its pieces (TASK-297 C2). The activity is one of the contract's: the
     engine may draw more (TASK-190); a walk is asked as a run (TASK-371)."""
     check_supported(body.activity)
     if isinstance(body, ImageRouteRequestBody):
-        if body.pen_up:
-            raise InvalidRequestError(PEN_UP_WITHOUT_WORD)
-        return ImageRequest(
-            start=body.start,
-            outline=outline_of(body.outline, body.strokes),
-            distance_m=body.distance_m,
-            activity=engine_activity(body.activity, body.distance_m),
-            laps=body.laps,
-            placement=body.placement,
-            fit=body.fit,
-        )
+        return image_request(body)
     return route_request_of(body)
 
 
@@ -401,6 +397,7 @@ def create_app(
     install_gym_sessions(app)
     # The monthly leaderboards at the gym (TASK-385 F); they need a token.
     install_gym_leaderboard(app)
+    install_gym_history(app)
     # The calendar of one's own workouts at the gym (TASK-411 B); it needs
     # a token.
     install_gym_calendar(app)
@@ -418,6 +415,7 @@ def create_app(
     # The nights of sleep a person publishes, on the profile and in the
     # post of an activity (TASK-467 B1); they need a token.
     install_sleep(app)
+    install_sleep_posts(app)
     # The figures of a run for the page of its post: splits, elevation,
     # cadence, calories (TASK-410 C); they need a token.
     install_run_stats(app)
@@ -427,6 +425,13 @@ def create_app(
     # Up to three photos of a drawing, besides its map (TASK-208); they need
     # a token.
     install_drawing_photos(app)
+    # Posts of photos only, drawings without a run (TASK-312 part C); they
+    # need a token.
+    install_photo_posts(app)
+    # Gym plans posted, drawings without a run that carry the plan
+    # (TASK-485); they need a token.
+    install_plan_posts(app)
+    install_together(app)
     # The photos of a profile's drawings, a page at a time (TASK-324); they
     # need a token.
     install_user_photos(app)
@@ -443,6 +448,7 @@ def create_app(
     # The drawings the members publish, read by whoever is signed in
     # (TASK-118); it needs a token.
     install_feed(app)
+    install_avatars(app)
     # The search of the drawings from the lens of «Feed» (TASK-344); it
     # needs a token.
     install_drawing_search(app)
@@ -462,6 +468,9 @@ def create_app(
     # Group runs on a route, «I'm going» and the reminder an hour before
     # (TASK-309); they need a token.
     install_group_runs(app)
+    # Groups to go out together: members, requests, invites, roles
+    # (TASK-495); they need a token.
+    install_groups(app)
     # A stroke drawn on the map, anchored to the roads as the finger lifts
     # (TASK-347 A), and the probe that says this server does it.
     install_stroke_matches(app, source)
@@ -871,5 +880,9 @@ def create_app(
     # Items tagged on the photos of members' posts (TASK-394, ADR-0333): their
     # links checked with Web Risk, the key from the environment.
     install_outfit_tags(app)
+    # A member's gear and its totals (TASK-486, ADR-0393).
+    install_gear(app)
+    # The takeoffs and landings of OpenStreetMap (TASK-493, ADR-0400).
+    install_flying_sites(app)
 
     return app

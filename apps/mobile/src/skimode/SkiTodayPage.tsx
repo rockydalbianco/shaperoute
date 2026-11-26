@@ -5,6 +5,8 @@ import { t } from "../i18n";
 import { withoutRouteIcon } from "../screens/RunNoRouteButton";
 import { withoutRouteLabel } from "../settings/sport";
 import { DayResort } from "../ski/DayResort";
+import { useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import {
   color,
   font,
@@ -30,10 +32,14 @@ type Props = {
  * and the friends come with parts B and C.
  */
 export function SkiTodayPage({ onRecord, resort = <DayResort /> }: Props) {
+  const headerScroll = useHeaderScroll();
+  // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
+  const barRoom = useTabBarRoom();
   return (
     <ScrollView
+      {...headerScroll}
       style={styles.page}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingBottom: space.xxl + barRoom }]}
       keyboardShouldPersistTaps="handled"
     >
       <Text style={styles.title} accessibilityRole="header">

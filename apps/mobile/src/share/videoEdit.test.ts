@@ -22,6 +22,8 @@ describe("the choices of «Edit video» (TASK-408 C1)", () => {
       cut: "fade",
       camera: "around",
       ending: "drawing",
+      // «Together» off until turned on (TASK-417 D2b).
+      together: false,
     });
   });
 

@@ -127,6 +127,7 @@ def test_the_example_is_the_body() -> None:
         "sleep",
         "flight_split",
         "linkable",
+        "plan",
     }
     assert set(post["author"]) == set(AuthorBody.model_fields)
     assert post["author"] == _load("drawing-details.json")["author"]
@@ -176,6 +177,8 @@ def test_own_first_then_followed_then_the_others_each_newest_first(
     assert mine["author"] == {
         "public_id": public_id(client, me),
         "username": _load("sign-up-request.json")["username"],
+        # Without a picture (TASK-355 part B, test_feed_counts.py).
+        "photo": None,
     }
     assert mine["visibility"] == "everyone"
     assert mine["published_at"] is not None

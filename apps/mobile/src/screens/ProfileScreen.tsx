@@ -1,5 +1,5 @@
 import type { Session } from "@shaperoute/shared-types";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -16,6 +16,8 @@ import { EditProfile } from "../profile/EditProfile";
 import { ProfileHome } from "../profile/ProfileHome";
 import { SettingsPage } from "../profile/SettingsPage";
 import { SightScrollView } from "../social/scrollSight";
+import { HeaderScrollContext, useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import {
   color,
   fontSize,
@@ -29,6 +31,7 @@ import { tourTexts } from "../tour/tourTexts";
 import { askTour } from "../tour/useTour";
 import { useBackCloses } from "../ui/backLayers";
 import { EdgeKeyboardAvoidingView, useEdgeBack } from "../ui/EdgeBack";
+import { StatusBarCover } from "../ui/StatusBarCover";
 import { SignInScreen } from "./SignInScreen";
 
 type Notice = { text: string; tone: "warning" | "muted" };
@@ -105,6 +108,15 @@ export function ProfileScreen({
   onExplore,
 }: Props) {
   const insets = useSafeAreaInsets();
+  // As the tab «Profile», its scroll turns the header to glass (TASK-469
+  // A5c); over the app, outside the tab shell, it tells nobody.
+  const headerScroll = useHeaderScroll();
+  // Over the app nothing stands on the status bar: the page's own colour
+  // goes there, or its text scrolls under the clock (TASK-508). As a tab
+  // the header is there already.
+  const overApp = useContext(HeaderScrollContext) === null;
+  // The room of the tab bar, after the last thing shown (TASK-469 part B).
+  const barRoom = useTabBarRoom();
   const { state } = account;
   const signedOut = state.status !== "signedIn";
   // Where «Help» was opened: its row in «Settings», or «Guide» on the first
@@ -148,12 +160,13 @@ export function ProfileScreen({
     >
       {edge.shade}
       <SightScrollView
+        {...headerScroll}
         style={about !== null && styles.hidden}
         contentContainerStyle={[
           styles.content,
           {
             paddingTop: insets.top + space.lg,
-            paddingBottom: insets.bottom + space.xl,
+            paddingBottom: insets.bottom + space.xl + barRoom,
           },
         ]}
         keyboardShouldPersistTaps="handled"
@@ -252,6 +265,7 @@ export function ProfileScreen({
           }
         />
       )}
+      {overApp && <StatusBarCover />}
     </EdgeKeyboardAvoidingView>
   );
 }

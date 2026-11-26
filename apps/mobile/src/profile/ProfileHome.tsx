@@ -20,9 +20,13 @@ import { BadgesSection } from "./BadgesSection";
 import { FirstStep, profileStage } from "./FirstStep";
 import { photoBusyText, PhotoChoices } from "./PhotoChoices";
 import { ProfileGallery } from "./ProfileGallery";
+import { ProfileGroupRuns } from "../groupRuns/ProfileGroupRuns";
+import { ProfileGroups } from "../groups/ProfileGroups";
+import { ProfileGear } from "../gear/ProfileGear";
 import { ProfileHeader } from "./ProfileHeader";
 import { OwnSleep } from "./OwnSleep";
 import { OwnVo2Max } from "./OwnVo2Max";
+import { OwnBalance } from "../nutrition/OwnBalance";
 import { GymLevels } from "../gym/GymLevels";
 import { WeekStrip } from "../activities/WeekStrip";
 import { PersonalBests } from "./PersonalBests";
@@ -154,6 +158,9 @@ export function ProfileHome({
         {own?.vo2max !== undefined && <OwnVo2Max />}
         {/* Last night's sleep (TASK-467 B3): nothing until part C turns it on. */}
         <OwnSleep />
+        {/* The week's calorie balance (TASK-489 D): nothing while «Nutrition»
+            is off; kept on the phone, never on another's profile. */}
+        <OwnBalance />
         {/* The levels at the gym (TASK-385 E): none from an older API. */}
         {own?.gym_levels && <GymLevels levels={own.gym_levels} own />}
       </View>
@@ -176,6 +183,33 @@ export function ProfileHome({
       </View>
       {/* The badges of the drawings, with how each is earned (TASK-457). */}
       <BadgesSection badges={own?.badges ?? null} />
+      {/* Its group runs, coming and past (TASK-309 part B): none, nothing. */}
+      {apiUrl !== null && account.state.status === "signedIn" && publicId !== null && (
+        <ProfileGroupRuns
+          apiUrl={apiUrl}
+          token={account.state.session.token}
+          publicId={publicId}
+          onSessionEnded={account.sessionEnded}
+        />
+      )}
+      {/* One's groups, invites and «New group» (TASK-495 part B): only here. */}
+      {apiUrl !== null && account.state.status === "signedIn" && (
+        <ProfileGroups
+          apiUrl={apiUrl}
+          token={account.state.session.token}
+          onSessionEnded={account.sessionEnded}
+        />
+      )}
+      {/* Its gear, in use then retired (TASK-486 part D): none, nothing. */}
+      {apiUrl !== null && account.state.status === "signedIn" && publicId !== null && (
+        <ProfileGear
+          apiUrl={apiUrl}
+          token={account.state.session.token}
+          publicId={publicId}
+          owner={null}
+          onSessionEnded={account.sessionEnded}
+        />
+      )}
       {/* What it made. */}
       <ProfileGallery
         publicId={publicId}

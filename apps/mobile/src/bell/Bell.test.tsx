@@ -19,7 +19,8 @@ jest.mock(
 );
 
 // The bell of the header (TASK-367 part C, ADR-0311): its number, the list
-// over the app, what a line opens, and a server without the list.
+// over the app, what a line opens, and a server without the list. The
+// number is asked alone (TASK-499): the list only when the bell is opened.
 
 const URL = "http://api";
 const signedIn: AccountState = { status: "signedIn", session: session as Session };
@@ -29,7 +30,7 @@ const account = { state: signedIn, sessionEnded: jest.fn() };
 const outAccount = { state: signedOut, sessionEnded: jest.fn() };
 const page = example as NotificationsPage;
 const [comment, request] = page.notifications;
-// A group run's line: its push opens nothing, nor does the line.
+// A group run's line: its page, as its push (TASK-309 part B).
 const groupRun: NotificationLine = {
   ...request,
   id: 40,
@@ -44,8 +45,15 @@ const groupRun: NotificationLine = {
 
 type Answer = (body: unknown) => Response;
 
-/** A fake API by method and path; what it was asked, with the bodies. */
-function api(answers: Record<string, Answer>) {
+const COUNT = "GET /notifications/unread";
+
+/** A fake API by method and path; what it was asked, with the bodies. The
+ * number alone is the example page's, unless the test says its own. */
+function api(given: Record<string, Answer>) {
+  const answers: Record<string, Answer> = {
+    [COUNT]: () => Response.json({ unread: page.unread }),
+    ...given,
+  };
   const asked: { call: string; body: unknown }[] = [];
   const fetchFn = jest.fn(async (input: string, init?: RequestInit) => {
     const call = `${init?.method ?? "GET"} ${input.replace(URL, "")}`;
@@ -76,6 +84,7 @@ function opensSpy(): jest.Mocked<Opens> {
     openChallenge: jest.fn(),
     openConversation: jest.fn(),
     openContest: jest.fn(),
+    openGroupRun: jest.fn(),
   };
 }
 
@@ -124,11 +133,8 @@ test("the bell shows the unread lines, and opening the list reads them", async (
     body: { up_to: 42 },
   });
   expect(screen.queryByTestId("bell-count")).toBeNull();
-  expect(calls()).toEqual([
-    "GET /notifications",
-    "GET /notifications",
-    "POST /notifications/read",
-  ]);
+  // The number alone for the bell; the list once, when it was opened.
+  expect(calls()).toEqual([COUNT, "GET /notifications", "POST /notifications/read"]);
 });
 
 test("a line opens what its push opens, and the list closes", async () => {
@@ -143,11 +149,14 @@ test("a line opens what its push opens, and the list closes", async () => {
   await render(<Harness fetchFn={fetchFn} opens={opens} />);
   await fireEvent.press(await screen.findByTestId("bell"));
 
-  // A group run's line opens nothing, as its push.
-  const run = await screen.findByTestId("bell-line-40");
-  expect(run).toBeDisabled();
+  // A group run's line opens its page, as its push (TASK-309 part B).
+  await fireEvent.press(await screen.findByTestId("bell-line-40"));
+  expect(opens.openGroupRun).toHaveBeenCalledWith(
+    "5b0c6a1e-3d2f-4e8a-9b7c-1d2e3f4a5b6c",
+  );
 
-  await fireEvent.press(screen.getByTestId("bell-line-42"));
+  await fireEvent.press(screen.getByTestId("bell"));
+  await fireEvent.press(await screen.findByTestId("bell-line-42"));
   expect(opens.openDrawing).toHaveBeenCalledWith(
     "1c9d3b2a-5e4f-4a6b-8c7d-9e0f1a2b3c4d",
   );
@@ -180,6 +189,7 @@ test("the next page comes with «Show more»", async () => {
 
 test("an empty list says what will come, and «←» closes it", async () => {
   const { fetchFn } = api({
+    [COUNT]: json({ unread: 0 }),
     "GET /notifications": json({ notifications: [], unread: 0, before: null }),
   });
   await render(<Harness fetchFn={fetchFn} opens={opensSpy()} />);
@@ -195,14 +205,17 @@ test("an empty list says what will come, and «←» closes it", async () => {
 test("a server without the list: no bell, no error, asked once", async () => {
   jest.useFakeTimers();
   try {
-    const { fetchFn, calls } = api({ "GET /notifications": notFound });
+    const { fetchFn, calls } = api({
+      [COUNT]: notFound,
+      "GET /notifications": notFound,
+    });
     await render(<Harness fetchFn={fetchFn} opens={opensSpy()} everyMs={1_000} />);
     await act(async () => {
       jest.advanceTimersByTime(5_000);
     });
     expect(screen.queryByTestId("bell")).toBeNull();
     expect(screen.queryByText(/wrong|connection/i)).toBeNull();
-    expect(calls()).toEqual(["GET /notifications"]);
+    expect(calls()).toEqual([COUNT, "GET /notifications"]);
   } finally {
     jest.useRealTimers();
   }
@@ -218,8 +231,9 @@ test("without an account there is no bell and nothing is asked", async () => {
 test("the number is asked again on time, and kept when an answer fails", async () => {
   jest.useFakeTimers();
   try {
-    let answer = json(page);
-    const { fetchFn, calls } = api({ "GET /notifications": () => answer() });
+    let answer = json({ unread: 1 });
+    // No list in this API: the number never asks for it.
+    const { fetchFn, calls } = api({ [COUNT]: () => answer() });
     await render(<Harness fetchFn={fetchFn} opens={opensSpy()} everyMs={1_000} />);
     await act(async () => {});
     expect(screen.getByTestId("bell-count")).toHaveTextContent("1");
@@ -229,11 +243,41 @@ test("the number is asked again on time, and kept when an answer fails", async (
     });
     expect(calls()).toHaveLength(2);
     expect(screen.getByTestId("bell-count")).toHaveTextContent("1");
-    answer = json({ ...page, unread: 3 });
+    answer = json({ unread: 3 });
     await act(async () => {
       jest.advanceTimersByTime(1_000);
     });
     expect(screen.getByTestId("bell-count")).toHaveTextContent("3");
+    expect(calls()).toEqual([COUNT, COUNT, COUNT]);
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
+test("a server of before: the number alone asked once, then the first page", async () => {
+  jest.useFakeTimers();
+  try {
+    let answer = json(page);
+    const { fetchFn, calls } = api({
+      [COUNT]: notFound,
+      "GET /notifications": () => answer(),
+    });
+    await render(<Harness fetchFn={fetchFn} opens={opensSpy()} everyMs={1_000} />);
+    await act(async () => {});
+    // The bell is there at once, with the page's number.
+    expect(screen.getByTestId("bell-count")).toHaveTextContent("1");
+    expect(calls()).toEqual([COUNT, "GET /notifications"]);
+    answer = json({ ...page, unread: 4 });
+    await act(async () => {
+      jest.advanceTimersByTime(2_000);
+    });
+    expect(screen.getByTestId("bell-count")).toHaveTextContent("4");
+    expect(calls()).toEqual([
+      COUNT,
+      "GET /notifications",
+      "GET /notifications",
+      "GET /notifications",
+    ]);
   } finally {
     jest.useRealTimers();
   }

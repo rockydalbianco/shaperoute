@@ -1,8 +1,10 @@
 # TASK-463 — Alpinismo: uno sport registrato senza percorso
 
-**Stato**: In corso — parte A (server) in `main` (#1242, `f8d91aba`,
-2026-11-12); manca il passo sul server (il 12 del Coordinatore, col sì
-dell'utente). Parte app dopo TASK-414 B e TASK-413 B.
+**Stato**: Done (2026-11-23, provato dall'utente sul telefono: «Sì,
+funziona») — A sul server
+dal passo 12 (2026-11-12, `eee85a69`); B (#1278, 2026-11-12) e C,
+l'accensione (#1350, `ed1f1db7`, 2026-11-21 15:33Z), in `main`. C esce per
+la prima volta con l'OTA 20 (2026-11-21, da `ed9925a7`).
 **Fase**: 4 · **ADR**: ADR-0373 · numeri dal Coordinatore · migrazione
 `0076` (la `0075` è di TASK-468 A2a, #1245)
 
@@ -114,6 +116,20 @@ la proposta (anche in `out/TASK-463/APP-B-TEXTS.md`).
 
 L'emoji è 🧗: `⛰️` è dell'escursionismo, `🏔️` dello scialpinismo.
 
+Dopo le schermate nel simulatore (2026-11-12) l'utente ha approvato menu,
+avviso e registrazione, e ha scelto la frase sotto «Record your day» al posto
+di quella della neve («No shapes on the slopes»):
+
+| Lingua | Frase sotto «Record your day» |
+|---|---|
+| EN | No shapes up a mountain: MuW records your day. |
+| IT | Niente forme in montagna: MuW registra la tua giornata. |
+| DE | Keine Formen am Berg: MuW zeichnet deinen Tag auf. |
+| FR | Pas de formes en montagne : MuW enregistre ta journée. |
+| ES | Sin formas en la montaña: MuW registra tu jornada. |
+
+Le schermate sono in `out/TASK-463/` (b1–b4).
+
 Prima della prima registrazione, una volta sola, un avviso come «Before you
 fly» del parapendio (`mountain/climbNotice.ts`). Si chiude con «Got it».
 
@@ -138,15 +154,15 @@ fly» del parapendio (`mountain/climbNotice.ts`). Si chiude con «Got it».
 
 ### Criteri di accettazione (parte B)
 
-- [ ] Contratto e profilo insieme; `SERVER_FIRST` tolta dai test dell'API.
-- [ ] La riga in «Settings» c'è, «Soon», nella famiglia «On snow» dopo
+- [x] Contratto e profilo insieme; `SERVER_FIRST` tolta dai test dell'API.
+- [x] La riga in «Settings» c'è, «Soon», nella famiglia «On snow» dopo
       «Ski touring»; nelle build dello store non si vede.
-- [ ] Nome ed emoji nelle cinque lingue, anche sull'orologio
+- [x] Nome ed emoji nelle cinque lingue, anche sull'orologio
       (`Localizable.strings`), dove però lo sport resta spento.
-- [ ] L'avviso compare una volta sola, coi testi approvati.
-- [ ] Una giornata di alpinismo non è un giorno sulla neve nel modulo del
+- [x] L'avviso compare una volta sola, coi testi approvati.
+- [x] Una giornata di alpinismo non è un giorno sulla neve nel modulo del
       post (`PublicParts.tsx`).
-- [ ] Test toccati e `tsc` verdi; la CI verde.
+- [x] Test toccati e `tsc` verdi; la CI verde.
 
 ### File toccati (parte B)
 
@@ -163,6 +179,7 @@ fly» del parapendio (`mountain/climbNotice.ts`). Si chiude con «Got it».
 - `apps/mobile/src`: `sports/alpinism.ts` (nuovo), `sports/index.ts`,
   `settings/sport.ts`, `settings/sportFamilies.ts`,
   `screens/RunNoRouteButton.tsx`, `screens/FreeRunScreen.tsx` (una riga),
+  `screens/ChooseScreen.tsx` (la frase, una riga), `mountain/MountainDraw.test.tsx`,
   `social/PublicParts.tsx`, `watch/watchSports.ts`,
   `mountain/climbNotice.ts` e `climbNotice.test.ts` (nuovi),
   `i18n/{de,es,fr,it}.ts`, più i test dei conteggi di sport e impostazioni
@@ -170,6 +187,16 @@ fly» del parapendio (`mountain/climbNotice.ts`). Si chiude con «Got it».
   `Localizable.strings`, una riga ciascuno
 - `docs/UI.md` (la sezione «L'alpinismo»), `docs/API.md` (un paragrafo
   accanto al parapendio), questo file
+
+## Parte C — l'accensione (2026-11-12)
+
+Dopo il passo 12 (server a `eee85a69`, letture di `SERVER-A.md` come
+attese) e il sì dell'utente alle schermate del simulatore, «Mountaineering»
+ha `ready: true` in «Settings»: si sceglie anche nelle build per lo store, ed
+esce con l'OTA del Coordinatore. Sotto «Record your day» compare la sua
+frase, «No shapes up a mountain: MuW records your day.», al posto di quella
+della neve. In «Settings» e nel menu degli sport il solo «Soon» rimasto è
+«Snowshoes».
 
 ## Il server
 
@@ -187,3 +214,27 @@ checkout principale.
   PostGIS; la CI era verde. Lo script di `out/TASK-463/SERVER-A.md` provato
   su un PostGIS locale dà le righe attese. ADR-0373 è nella PR di
   documenti `docs/TASK-463-a-done`.
+- **2026-11-12** — Parte A sul server col passo 12 del Coordinatore (server
+  `eee85a69`, col sì dell'utente): le letture di `SERVER-A.md` come
+  attese. Parte B in `main` (#1278, `4a0db754`), con lo sport ancora
+  «Soon». Schermate nel simulatore approvate dall'utente: menu, avviso,
+  registrazione e la frase sotto «Record your day».
+- **2026-11-21** — Parte C in `main` (#1350, `ed1f1db7`):
+  «Mountaineering» si sceglie anche nelle build per lo store.
+- **2026-11-23** — In produzione dall'OTA 20 (2026-11-21, da `ed9925a7`),
+  e in ogni OTA dopo. Nessuna prova dell'utente sul telefono scritta qui:
+  il task resta aperto finché non la fa.
+
+## Esito
+
+Fatto in produzione: l'alpinismo è uno sport registrato senza percorso.
+Lo si sceglie in «Settings», si registra la giornata e la si salva come
+attività. Il server è dal passo 12, l'app dall'OTA 20.
+
+Provato dall'utente sul telefono il 2026-11-23: «Sì, funziona». Task
+chiuso.
+
+**Fuori, per dopo**:
+
+- L'orologio non offre ancora lo sport (`NOT_ON_WATCH`): serve una build
+  nuova dell'orologio.

@@ -19,6 +19,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { EmptyState } from "../ui/EmptyState";
+import { HEART } from "../ui/outlines";
 import { distanceLabel, nearDistanceLabel, wholeDistanceLabel } from "../units/format";
 import { type Units, appUnits } from "../units/units";
 import { useUnits } from "../units/useUnits";
@@ -30,7 +32,6 @@ import {
   type RecommendedRoute,
   routeTitle,
 } from "./recommendedRoutes";
-import { HeartBadge } from "../intro/HeartBadge";
 import type { Place } from "../places/photon";
 import { AskForRoute } from "./AskForRoute";
 import type { ThemedIdea } from "./themedIdeas";
@@ -55,6 +56,8 @@ import { RecommendedRow } from "./RecommendedRow";
 import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
 import type { ThemedRequest } from "./themedRoutes";
 import { stillDrawing, useWaited, WhileDrawing } from "./WhileDrawing";
+import { useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 import { postRoute } from "../feed/feedRoute";
 import type { SamplePost } from "../feed/sampleFeed";
@@ -91,6 +94,9 @@ type Props = {
   /** The sport's activity (TASK-441): a ride's drawings for the bike, a
    * run's for every other and when left out. */
   activity?: Activity;
+  /** «My position» of the page with no start (TASK-509): the phone's
+   * position is asked, as «Draw» asks it; without it, no button. */
+  onMyPosition?: () => void;
 };
 
 const NO_ROUTES: RecommendedRoute[] = [];
@@ -137,12 +143,17 @@ export function ExploreScreen({
   onIdea,
   onOpenExample,
   activity = "running",
+  onMyPosition,
 }: Props) {
   // A city searched for takes the place of the start (TASK-129).
   const near = city?.point ?? start;
   const insets = useSafeAreaInsets();
   // Its tab touched again: back to the top (TASK-367).
   const scroll = useScrollToTopOnReselect<FlatList<FarRow>>();
+  // The header turns to glass once the list scrolls (TASK-469 A5b).
+  const headerScroll = useHeaderScroll();
+  // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
+  const barRoom = useTabBarRoom();
   // The cards are written again when «Settings» changes the units (TASK-182).
   const units = useUnits();
   // What the page has between its side margins: two cards side by side.
@@ -320,26 +331,27 @@ export function ExploreScreen({
           <Text style={styles.title} testID="explore-title">
             {t("Explore")}
           </Text>
-          <Text style={styles.subtitle}>
-            {catalog.total !== null && catalog.cities !== null
-              ? t("{count} drawings in {cities} cities · the nearest first", {
-                  count: catalog.total,
-                  cities: catalog.cities,
-                })
-              : catalog.total !== null
-                ? t("{count} drawings · the nearest first", { count: catalog.total })
-                : t("Starting within {distance} of {place}", {
-                    distance: kmOrMiles(NEAR_RADIUS_M, units),
-                    place: city?.label ?? t("your start"),
-                  })}
-          </Text>
+          {/* With no start there is nothing to be near (TASK-509). */}
+          {(near !== null || catalog.total !== null) && (
+            <Text style={styles.subtitle} testID="explore-subtitle">
+              {catalog.total !== null && catalog.cities !== null
+                ? t("{count} drawings in {cities} cities · the nearest first", {
+                    count: catalog.total,
+                    cities: catalog.cities,
+                  })
+                : catalog.total !== null
+                  ? t("{count} drawings · the nearest first", { count: catalog.total })
+                  : t("Starting within {distance} of {place}", {
+                      distance: kmOrMiles(NEAR_RADIUS_M, units),
+                      place: city?.label ?? t("your start"),
+                    })}
+            </Text>
+          )}
         </View>
-        {/* The sign of Sgrava, under the button of «Profile» and as wide
-            (TASK-222, ADR-0184): a picture, not a button. */}
-        <HeartBadge size={MIN_TAP_SIZE} />
       </View>
       <FlatList
         ref={scroll}
+        {...headerScroll}
         data={farRowsOfPage}
         keyExtractor={(row) => row.key}
         renderItem={({ item }) => (
@@ -353,7 +365,7 @@ export function ExploreScreen({
         windowSize={5}
         contentContainerStyle={[
           styles.list,
-          { paddingBottom: insets.bottom + space.lg },
+          { paddingBottom: insets.bottom + space.lg + barRoom },
         ]}
         keyboardShouldPersistTaps="handled"
         testID="explore-list"
@@ -396,11 +408,21 @@ export function ExploreScreen({
             {list.status === "loading" && (
               <Text style={styles.note}>{t("Loading routes…")}</Text>
             )}
-            {list.status === "failed" && (
+            {/* No start yet (TASK-509): an empty page says so and offers
+            the phone's position; the cities above are the other way. */}
+            {list.status === "failed" && near === null && (
+              <EmptyState
+                outline={HEART}
+                message={t("Choose a start first: the routes are the ones near it.")}
+                action={
+                  onMyPosition && { label: t("My position"), onPress: onMyPosition }
+                }
+                testID="explore-no-start"
+              />
+            )}
+            {list.status === "failed" && near !== null && (
               <Text style={styles.note}>
-                {near === null
-                  ? t("Choose a start first: the routes are the ones near it.")
-                  : t("The routes could not load. Check the connection and try again.")}
+                {t("The routes could not load. Check the connection and try again.")}
               </Text>
             )}
             {list.status === "done" && routes.length === 0 && examplesCity === null && (
@@ -446,6 +468,8 @@ export function ExploreScreen({
                         key={example.shape}
                         width={card}
                         line={null}
+                        // What is coming, in grey (TASK-509).
+                        outline={example.shape}
                         title={capitalised(
                           routeTitle({ shape: example.shape, word: null }),
                         )}

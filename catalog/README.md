@@ -144,7 +144,57 @@ tengono solo le otto, per scelta dell'utente (2026-11-18).
 
 Dal 18 novembre 2026 il seme ha **1694 percorsi**: le 1546 corse di prima e
 **148 uscite in bici in 29 città italiane** (54 da 20 km, 49 da 25, 45 da
-30). Le città estere vogliono un estratto per paese: un secondo giro.
+30).
+
+Dal secondo giro (2026-11-22) il seme ha **1866 percorsi**: si aggiungono
+**172 uscite in bici in 25 città estere** (in tutto 320 in 54 città: 116 da
+20 km, 105 da 25, 99 da 30). Le zone vengono dall'estratto di Geofabrik del
+paese o della regione, uno per città (`out/TASK-441/b2/run-estere.sh`; per
+Amburgo, Londra, New York e Amsterdam più pezzi uniti con `osmium merge`).
+Sette città restavano fuori: con la loro zona il pianificatore passa i 4 GB
+sul Mac.
+
+Per quelle sette il limite è salito a 5 GB (deciso dal Coordinatore,
+2026-11-22; `out/TASK-441/b2/run-sette.sh`, a Mac vuoto): entrano **36
+uscite a Berlino, Dublino, New York, Amburgo e Vienna**, e il seme ha
+**1902 percorsi** (356 uscite in bici in 59 città: 131 da 20 km, 115 da 25,
+110 da 30). **Parigi e Tokyo non hanno uscite in bici**: passano anche i
+5 GB.
+
+### Le uscite lunghe in bici, 40 e 50 km (TASK-441 B3)
+
+```
+zsh out/TASK-441/b3/run-b3.sh 1                # 50 e 40 km, una città alla volta
+zsh out/TASK-441/b3/run-b3.sh 2                # solo 40 km
+python tools/catalog_bike.py --page out/TASK-441/b3/disegni-bici-lunghi.html --every --distances 50000 40000
+python tools/catalog_bike.py --propose         # le chiavi da tenere
+python tools/catalog_bike.py --write           # catalog/seed dai quattro registri
+```
+
+Le uscite da 40 e 50 km stanno **solo nel catalogo** (scelta dell'utente,
+2026-11-23): «Draw» in bici resta a 10–30 km e il limite del motore
+(`activities/cycling.py`) non cambia. `catalog_bike.py --distances 50000
+40000` alza il limite solo nel proprio processo (`ride_limit`) e disegna le
+stesse otto forme, cinque a una distanza e tre all'altra, a turno per città.
+Stesso registro (`out/TASK-441/bike.jsonl`), stesso filtro, zone ritagliate
+dagli estratti già sul disco (nessun download; Overpass chiuso: un candidato
+che esce dalla zona ritagliata fallisce, quasi sempre cuore o cerchio alla
+distanza più lunga).
+
+**In un file di città le uscite lunghe stanno dopo le uscite che c'erano**
+(`catalog_seed._place`, `LATER_RIDES_FROM_M`): l'API numera un percorso col
+suo posto nel file (`recommended.py`), quindi corse e uscite da 20–30 km
+tengono il loro id.
+
+Dal 23 novembre 2026 il seme ha **2031 percorsi**: entrano **129 uscite
+lunghe in 32 città** (42 da 50 km, 87 da 40), tutte quelle che passano il
+filtro delle 213 disegnate in 34 città (limite del pianificatore 4 GB). In
+tutto 485 uscite in bici in 60 città (Levico è nuova: aveva solo corse).
+Otto città hanno solo i 40 km (Brescia, Torino, Lubiana, Padova, Porto,
+Edimburgo, Firenze, Zagabria: a 50 km la zona non sta nei 4 GB); Genova e
+Nizza non ne hanno nessuna che passi; Amsterdam passa i 4 GB anche a 40 km,
+e Sydney, Valencia, Milano e Barcellona, più grandi, non sono state provate.
+Le altre città hanno uscite fino a 30 km, come prima.
 
 ### Le città in evidenza
 

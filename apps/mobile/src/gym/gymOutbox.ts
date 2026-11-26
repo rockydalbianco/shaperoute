@@ -97,3 +97,14 @@ export function gymToSend(owner: number): GymWaiting[] {
     .load()
     .filter((item) => item.owner === owner && item.refused === undefined);
 }
+
+/** Takes every workout of `owner` out of the file: they are not of the
+ * account signed in (account/phoneOwners.ts, TASK-507), or the account is
+ * deleted. Those of the other accounts stay. */
+export function forgetGymOf(owner: number): void {
+  const list = kept.load();
+  const next = list.filter((item) => item.owner !== owner);
+  if (next.length !== list.length) {
+    kept.save(next);
+  }
+}

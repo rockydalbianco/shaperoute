@@ -1,13 +1,24 @@
 import type { GymPlan, GymProgram } from "@shaperoute/shared-types";
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
 import {
   initialWindowMetrics,
   SafeAreaProvider,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
+import { CoachPage } from "../coach/CoachPage";
 import { t } from "../i18n";
+import type { Language } from "../i18n/languages";
+import { useLanguage } from "../i18n/useLanguage";
 import {
   color,
   font,
@@ -20,9 +31,14 @@ import {
 import { WEEK_DAYS } from "./planLimits";
 import { GymPlanWizard, type WizardStep } from "./GymPlanWizard";
 import { gymStyles } from "./gymStyles";
+import { NextWorkout, nextWorkout } from "./NextWorkout";
+import { adapts, markOf, withAdapt } from "./adapt";
 import { isoDay, useGymPlans } from "./plans";
+import { PlanTable } from "./PlanTable";
 import { cycleWeekOf, sessionsOfWeek } from "./program";
 import { gymIndex, isRunDay, sessionLetter } from "./proposal";
+import { SPORT_BADGES } from "./SportsDoor";
+import { doneOfWeek, useWeekDone, type WeekDone } from "./weekDone";
 
 /** At most this many plans an account keeps (gym_plans.py). */
 export const MAX_PLANS = 20;
@@ -88,16 +104,50 @@ function PlansPage({
 }) {
   const insets = useSafeAreaInsets();
   const { plans, keep, drop } = useGymPlans(fetchFn);
+  // This week of the gym calendar, for «This week: 1 of 3 done» and the
+  // next workout (TASK-506 C); null without an account.
+  const done = useWeekDone(fetchFn);
+  const language = useLanguage();
   // The plan in the guide: «new», a plan's key, or none (the list); and
   // the step it opens on.
   const [editing, setEditing] = useState<{ key: string; at: WizardStep } | null>(
     startNew ? { key: "new", at: "goal" } : null,
   );
+  // «Coach» (TASK-491 part C): its page over the list, «‹» back to it.
+  const [coaching, setCoaching] = useState(false);
+  // «Table» (TASK-506 A): the key of the plan shown as a table.
+  const [tableOf, setTableOf] = useState<string | null>(null);
   const page = {
     paddingTop: insets.top + space.lg,
     paddingBottom: insets.bottom + space.lg,
   };
   const today = new Date();
+
+  if (coaching) {
+    return (
+      <View style={[styles.coach, page]} testID="gym-coach">
+        <CoachPage onBack={() => setCoaching(false)} fetchFn={fetchFn} />
+      </View>
+    );
+  }
+
+  const tabled = plans.find((one) => one.key === tableOf);
+  if (tabled?.program != null) {
+    return (
+      <View style={[styles.screen, page]} testID="gym-plan-table">
+        <PlanTable
+          name={tabled.name}
+          program={tabled.program}
+          today={today}
+          onBack={() => setTableOf(null)}
+          onWeeks={() => {
+            setTableOf(null);
+            setEditing({ key: tabled.key, at: "weeks" });
+          }}
+        />
+      </View>
+    );
+  }
 
   if (editing !== null) {
     const plan = plans.find((one) => one.key === editing.key) ?? null;
@@ -143,6 +193,18 @@ function PlansPage({
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.list}>
+        <Pressable
+          style={({ pressed }) => [styles.plan, pressed && styles.pressed]}
+          onPress={() => setCoaching(true)}
+          accessibilityRole="button"
+          testID="gym-plans-coach"
+        >
+          <View style={styles.planText}>
+            <Text style={styles.name}>{t("Coach")}</Text>
+            <Text style={gymStyles.muted}>{t("Based on your last 4 weeks")}</Text>
+          </View>
+          <Text style={styles.chevron}>›</Text>
+        </Pressable>
         {plans.map((plan) =>
           plan.program != null ? (
             <ProgramCard
@@ -150,7 +212,18 @@ function PlansPage({
               plan={plan}
               program={plan.program}
               today={today}
+              done={done}
+              language={language}
               onEdit={(at) => setEditing({ key: plan.key, at })}
+              onTable={() => setTableOf(plan.key)}
+              onAdapt={(on) =>
+                keep(plan.key, {
+                  name: plan.name,
+                  days: plan.days,
+                  items: plan.items,
+                  program: withAdapt(plan.program!, on),
+                })
+              }
             />
           ) : (
             <Pressable
@@ -191,29 +264,46 @@ function PlansPage({
 }
 
 /** A plan with weeks: its name, the week it is in and the cycle as
- * dashes, this week's workouts on their days (today ringed), «Edit» and
- * «Weeks». */
+ * dashes, this week's workouts on their days (today ringed), «Edit»,
+ * «Weeks» and «Table». */
 function ProgramCard({
   plan,
   program,
   today,
+  done,
+  language,
   onEdit,
+  onTable,
+  onAdapt,
 }: {
   plan: GymPlan;
   program: GymProgram;
   today: Date;
+  /** This week of the gym calendar; null without an account (TASK-506 C). */
+  done: WeekDone | null;
+  language: Language;
   onEdit: (at: WizardStep) => void;
+  /** «Table»: the whole plan on one page (TASK-506 A). */
+  onTable: () => void;
+  /** «Adapts to how it went» turned on or off (TASK-488). */
+  onAdapt: (on: boolean) => void;
 }) {
   const where = cycleWeekOf(program, today);
   const week = where?.week ?? 1;
   const sessions = sessionsOfWeek(program, week, where?.cycle ?? 0);
   const todayDay = isoDay(today);
-  // A, B, C… for the gym's days, «RUN» for a run day (TASK-433 C).
+  // The next workout, and how many of this week's are done (TASK-506 C).
+  const coming = nextWorkout(program, today, done?.worked.has(todayDay) ?? false);
+  const thisWeek = done === null ? null : doneOfWeek(program, plan.name, done, today);
+  // ↑ = ↓ under the days the answers moved (TASK-488, the mockup H3).
+  const marked = sessions.some((one) => markOf(program, one.day) !== null);
+  // A, B, C… for the gym's days, the run's mark for a run day (TASK-433 C;
+  // the sports' menu mark since TASK-506 D, «RUN» before).
   const letters = new Map(
     program.sessions.map((session) => [
       session.day,
       isRunDay(session)
-        ? "RUN"
+        ? SPORT_BADGES.run
         : sessionLetter(gymIndex(program.sessions, session.day)),
     ]),
   );
@@ -241,6 +331,14 @@ function ProgramCard({
         <Text style={gymStyles.muted}>
           {planLine({ days: plan.days, items: [] }, false)}
         </Text>
+        {thisWeek !== null && thisWeek.total > 0 && (
+          <Text style={gymStyles.muted} testID="gym-plan-done">
+            {t("This week: {done} of {total} done", {
+              done: String(thisWeek.done),
+              total: String(thisWeek.total),
+            })}
+          </Text>
+        )}
       </View>
       {program.weeks > 1 && (
         <View style={styles.dashes} accessibilityElementsHidden>
@@ -289,9 +387,46 @@ function ProgramCard({
               ) : (
                 <View style={styles.dayEmpty} />
               )}
+              {marked && (
+                <Text
+                  style={styles.dayMark}
+                  testID={`gym-plan-mark-${number}`}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                >
+                  {session === undefined ? " " : (markOf(program, number) ?? " ")}
+                </Text>
+              )}
             </View>
           );
         })}
+      </View>
+      {marked && (
+        <Text style={gymStyles.muted}>
+          {t("↑ one step more · = the same · ↓ one step back")}
+        </Text>
+      )}
+      {coming !== null && (
+        <NextWorkout
+          program={program}
+          coming={coming}
+          now={today}
+          language={language}
+        />
+      )}
+      <View style={styles.adapt}>
+        <View style={styles.planText}>
+          <Text style={styles.adaptTitle}>{t("Adapts to how it went")}</Text>
+          <Text style={gymStyles.muted}>
+            {t("Off: no question at the end, the weeks grow as planned.")}
+          </Text>
+        </View>
+        <Switch
+          value={adapts(program)}
+          onValueChange={onAdapt}
+          accessibilityLabel={t("Adapts to how it went")}
+          testID="gym-plan-adapt"
+        />
       </View>
       <View style={gymStyles.row}>
         <Pressable
@@ -309,6 +444,14 @@ function ProgramCard({
           testID="gym-plan-weeks"
         >
           <Text style={styles.ghostText}>{t("Weeks")}</Text>
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.ghost, pressed && styles.pressed]}
+          onPress={onTable}
+          accessibilityRole="button"
+          testID="gym-plan-table-open"
+        >
+          <Text style={styles.ghostText}>{t("Table")}</Text>
         </Pressable>
       </View>
     </View>
@@ -328,6 +471,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  // The Coach's page keeps its own side margins.
+  coach: {
+    flex: 1,
+    backgroundColor: color.background,
   },
   title: {
     color: color.text,
@@ -467,6 +615,21 @@ const styles = StyleSheet.create({
   },
   dayLetterPast: {
     color: color.onAccent,
+  },
+  dayMark: {
+    color: color.text,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.bold,
+  },
+  adapt: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+  },
+  adaptTitle: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
   },
   ghost: {
     flex: 1,

@@ -18,6 +18,7 @@ import { dayLabel } from "../activities/activityText";
 import { isOnSnow, isTrackless } from "../activities/snow";
 import type { DrawingChoice } from "../api/drawings";
 import { cityName } from "../explore/recommendedRoutes";
+import { PostGear } from "../gear/PostGear";
 import { SleepCard } from "../health/SleepCard";
 import { t } from "../i18n";
 import { isPoolLine } from "../pool/PoolTile";
@@ -208,6 +209,8 @@ function Page({ post, onClose, onMap }: Props) {
           {description != null && description !== "" && (
             <Text style={styles.description}>{description}</Text>
           )}
+          {/* The gear of its activity, a small line (TASK-486 part E). */}
+          <PostGear drawingId={drawing.id} author={drawing.author} />
         </View>
         {sections.map((section) => (
           <View key={section.kind} style={styles.card} testID={`post-${section.kind}`}>

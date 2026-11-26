@@ -247,7 +247,9 @@ def test_the_comments_reactions_are_the_drawings_without_the_heart() -> None:
 
 def test_the_two_new_events_have_their_words_and_one_rings_no_phone() -> None:
     assert {"comment_reply", "comment_reaction"} <= BELL_KINDS
-    assert BELL_ONLY == {"comment_reaction"}
+    # A reply rings, a reaction does not (BELL_ONLY has others too, as the
+    # gear past its limit, TASK-486 part G).
+    assert "comment_reaction" in BELL_ONLY and "comment_reply" not in BELL_ONLY
     for kind in ("comment_reply", "comment_reaction"):
         assert set(TEXTS[kind]) == {"en", "de", "it", "es", "fr"}
     # The user's words (2026-11-11).
@@ -349,7 +351,8 @@ def test_an_app_from_before_reads_the_list_it_knew(client: TestClient) -> None:
     for comment in page["comments"]:
         assert BEFORE <= set(comment)
         assert isinstance(comment["id"], str)
-        assert set(comment["author"]) == {"public_id", "username"}
+        # Where the picture is read came after (TASK-497), beside the rest.
+        assert set(comment["author"]) == {"public_id", "username", "photo"}
         assert isinstance(comment["text"], str)
         assert isinstance(comment["created_at"], str)
         assert isinstance(comment["deletable"], bool)

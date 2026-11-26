@@ -182,6 +182,8 @@ const SCRIPT = String.raw`
   // box, in pixels, that the still picture is zoomed about.
   var live = null;
   var lineAtRest = null;
+  // «Together» on «3D» (TASK-417): every runner's line laid at rest.
+  var togetherAtRest = null;
   var boxMiddle = null;
   // «Camera behind» (TASK-408, part C2b): the camera on the whole drawing,
   // which the scene's cameras behind the animal are reached from, and the
@@ -280,6 +282,19 @@ const SCRIPT = String.raw`
       walked += step;
     }
     return [path[path.length - 2], path[path.length - 1]];
+  }
+
+  // «Together» (TASK-417): every runner's line as the map lays it now; null
+  // for a video of one.
+  function layAll(map, spec) {
+    if (!spec.together) {
+      return null;
+    }
+    var out = [];
+    for (var i = 0; i < spec.together.length; i += 1) {
+      out.push(projectLine(map, { line: spec.together[i], pixelRatio: spec.pixelRatio }));
+    }
+    return out;
   }
 
   // The run's line as the map lays it now, in pixels of the video.
@@ -458,6 +473,7 @@ const SCRIPT = String.raw`
       mapTimes.snapshot = Math.round(now() - t);
       if (relief) {
         lineAtRest = projectLine(map, spec);
+        togetherAtRest = layAll(map, spec);
       }
     }
     function finish(ok, why) {
@@ -1296,6 +1312,7 @@ const SCRIPT = String.raw`
     }
     // The run's line as the map lays it for this picture, on «3D».
     var laid = lineAtRest;
+    var laidTogether = togetherAtRest;
     for (var i = 0; i < ops.length; i += 1) {
       var op = ops[i];
       if (op.alpha <= 0) {
@@ -1314,11 +1331,13 @@ const SCRIPT = String.raw`
           live.map.redraw();
           g.drawImage(live.map.getCanvas(), 0, 0, scene.width, scene.height);
           laid = projectLine(live.map, live.spec);
+          laidTogether = layAll(live.map, live.spec);
         } else if (live !== null && mode === "orbit") {
           live.map.jumpTo({ bearing: live.spec.camera.bearing + (op.turn || 0) });
           live.map.redraw();
           g.drawImage(live.map.getCanvas(), 0, 0, scene.width, scene.height);
           laid = projectLine(live.map, live.spec);
+          laidTogether = layAll(live.map, live.spec);
         } else if (background !== null) {
           var zoom = typeof op.zoom === "number" ? op.zoom : 1;
           if (zoom !== 1 && boxMiddle !== null) {
@@ -1330,6 +1349,13 @@ const SCRIPT = String.raw`
             g.restore();
             if (laid !== null) {
               laid = zoomedLine(laid, zoom, boxMiddle);
+            }
+            if (laidTogether !== null) {
+              var zoomed = [];
+              for (var z = 0; z < laidTogether.length; z += 1) {
+                zoomed.push(zoomedLine(laidTogether[z], zoom, boxMiddle));
+              }
+              laidTogether = zoomed;
             }
           } else {
             g.drawImage(background, 0, 0, scene.width, scene.height);
@@ -1394,7 +1420,12 @@ const SCRIPT = String.raw`
       } else if (op.k === "emoji") {
         var ex = op.x;
         var ey = op.y;
-        if (typeof op.share === "number" && laid !== null && laid.length >= 4) {
+        var byGeo = typeof op.geo === "number" && laidTogether !== null ? laidTogether[op.geo] : null;
+        if (typeof op.share === "number" && byGeo && byGeo.length >= 4) {
+          var met = pointAlong(byGeo, shareLength(byGeo, op.share));
+          ex = met[0];
+          ey = met[1];
+        } else if (typeof op.share === "number" && laid !== null && laid.length >= 4) {
           var on = pointAlong(laid, shareLength(laid, op.share));
           ex = on[0];
           ey = on[1];
@@ -1403,6 +1434,29 @@ const SCRIPT = String.raw`
         g.textAlign = "center";
         g.textBaseline = "middle";
         g.fillText(op.text, ex, ey);
+      } else if (op.k === "runner") {
+        // Another runner of «Together» (TASK-417): its line in its colour,
+        // a dot at its tip, its name under it.
+        var laidRun = typeof op.share === "number" && laidTogether !== null ? laidTogether[op.geo] : null;
+        var runPath = laidRun ? laidRun : scene.paths[op.path];
+        if (runPath && runPath.length >= 4) {
+          var ran = laidRun ? shareLength(runPath, op.share) : op.upTo;
+          g.strokeStyle = op.color;
+          g.lineWidth = op.width;
+          stroke(g, runPath, ran);
+          var tipAt = pointAlong(runPath, ran);
+          g.beginPath();
+          g.arc(tipAt[0], tipAt[1], op.width * 1.4, 0, 2 * Math.PI);
+          g.fillStyle = op.color;
+          g.fill();
+          g.lineWidth = Math.max(2, op.width * 0.5);
+          g.strokeStyle = colorOf(scene, "onAccent");
+          g.stroke();
+          g.font = "600 " + op.size + "px " + FONT;
+          g.fillStyle = colorOf(scene, "ink");
+          g.textBaseline = "top";
+          write(g, op.name, tipAt[0], tipAt[1] + op.width * 1.8, "center", 0);
+        }
       } else if (op.k === "character" && actor !== null) {
         var onTheHills = typeof op.share === "number" && laid !== null;
         var track = onTheHills ? laid : scene.paths[op.path];

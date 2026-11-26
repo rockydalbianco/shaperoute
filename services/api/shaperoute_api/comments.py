@@ -66,6 +66,7 @@ from shaperoute_api.accounts import (
     current_user,
 )
 from shaperoute_api.activities import EPOCH, MICROSECOND
+from shaperoute_api.avatars import avatar_url
 from shaperoute_api.comment_filter import check_comment
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import (
@@ -178,6 +179,17 @@ def no_reactions() -> CommentReactionsBody:
     )
 
 
+class CommentAuthorBody(AuthorBody):
+    """Who wrote a comment or a reply, with where its picture is read
+    (TASK-497), as the author of a post of the feed (feed.FeedAuthorBody):
+    the app asked the whole profile of each one for it. New beside what was
+    there: an app from before does not read it."""
+
+    photo: str | None = None
+    """`/users/{public_id}/photo?v=…` (avatars.py), a new address for a new
+    picture; null without one."""
+
+
 class CommentBody(BaseModel):
     """One comment, as who asks sees it:
     packages/shared-types/fixtures/comment.json; a reply,
@@ -185,7 +197,7 @@ class CommentBody(BaseModel):
     what was there: an app from before reads the rest as it did."""
 
     id: UUID
-    author: AuthorBody
+    author: CommentAuthorBody
     text: str
     created_at: datetime
     deletable: bool
@@ -245,23 +257,27 @@ READ = (
     " (SELECT 1 FROM comments above WHERE above.id = c.parent_id"
     f" AND {read_sql('above', VIEWER)}))"
 )
-# A comment as its body needs it: who wrote it, who it answers when
-# `viewer` sees that member, how many replies `viewer` reads under it.
+# A comment as its body needs it: who wrote it and when its picture was
+# put (TASK-497), who it answers when `viewer` sees that member, how many
+# replies `viewer` reads under it.
 COLUMNS = (
     "c.id, c.text, c.created_at, c.user_id, c.parent_id, u.public_id,"
-    " u.username, m.public_id AS mention_public_id,"
+    " u.username, p.updated_at AS photo_at,"
+    " m.public_id AS mention_public_id,"
     " m.username AS mention_username, (SELECT count(*) FROM comments below"
     f" WHERE below.parent_id = c.id AND {read_sql('below', VIEWER)})"
     " AS reply_count"
 )
 JOINED = (
     " FROM comments c JOIN users u ON u.id = c.user_id"
+    # One row at most, by its key: the picture itself stays where it is.
+    " LEFT JOIN profile_photos p ON p.user_id = u.id"
     " LEFT JOIN users m ON m.id = c.mention_user_id"
     f" AND NOT {apart_sql(VIEWER, 'm.id')}"
 )
 # The drawing %(drawing)s, when `viewer` may see it: its owner.
 OWNER_SQL = (
-    "SELECT r.user_id AS owner FROM drawings d JOIN runs r ON r.id = d.run_id"
+    "SELECT d.user_id AS owner FROM drawings d"
     f" WHERE d.id = %(drawing)s AND {drawing_seen_sql(VIEWER)}"
 )
 
@@ -323,6 +339,17 @@ def reaction_summaries(
     return found
 
 
+def comment_author(
+    public_id: UUID, username: str, photo_at: datetime | None
+) -> CommentAuthorBody:
+    """Who wrote it; `photo_at` is when its picture was put, None without."""
+    return CommentAuthorBody(
+        public_id=public_id,
+        username=username,
+        photo=None if photo_at is None else avatar_url(public_id, photo_at),
+    )
+
+
 def _body(
     row: DictRow,
     viewer_id: int,
@@ -337,7 +364,7 @@ def _body(
         )
     return CommentBody(
         id=row["id"],
-        author=AuthorBody(public_id=row["public_id"], username=row["username"]),
+        author=comment_author(row["public_id"], row["username"], row["photo_at"]),
         text=row["text"],
         created_at=row["created_at"],
         deletable=viewer_id in (row["user_id"], owner_id),
@@ -455,9 +482,8 @@ class Comments:
         }
         with self.database.connect() as conn:
             drawing = conn.execute(
-                "SELECT r.user_id AS owner FROM comments c"
+                "SELECT d.user_id AS owner FROM comments c"
                 " JOIN drawings d ON d.id = c.drawing_id"
-                " JOIN runs r ON r.id = d.run_id"
                 " WHERE c.id = %(above)s AND c.parent_id IS NULL"
                 f" AND {drawing_seen_sql(VIEWER)} AND {read_sql('c', VIEWER)}",
                 params,
@@ -549,7 +575,10 @@ class Comments:
                     "INSERT INTO comments (drawing_id, user_id, text, created_at,"
                     " parent_id, mention_user_id) VALUES (%(drawing)s, %(viewer)s,"
                     " %(text)s, %(at)s, %(above)s, %(mention)s)"
-                    " RETURNING id, created_at",
+                    # The writer's own picture, in the same statement.
+                    " RETURNING id, created_at, (SELECT p.updated_at"
+                    " FROM profile_photos p WHERE p.user_id = %(viewer)s)"
+                    " AS photo_at",
                     params,
                 ).fetchone()
         except pg_errors.ForeignKeyViolation:
@@ -558,7 +587,7 @@ class Comments:
         assert row is not None
         comment = CommentBody(
             id=row["id"],
-            author=AuthorBody(public_id=user.public_id, username=user.username),
+            author=comment_author(user.public_id, user.username, row["photo_at"]),
             text=kept,
             created_at=row["created_at"],
             deletable=True,
@@ -581,10 +610,10 @@ class Comments:
             return None
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT c.user_id AS author, r.user_id AS owner,"
+                "SELECT c.user_id AS author, d.user_id AS owner,"
                 f" {drawing_seen_sql('%s')} AS seen"
                 " FROM comments c JOIN drawings d ON d.id = c.drawing_id"
-                " JOIN runs r ON r.id = d.run_id WHERE c.id = %s",
+                " WHERE c.id = %s",
                 (viewer_id, wanted),
             ).fetchone()
             if row is None:

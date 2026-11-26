@@ -22,8 +22,19 @@ import {
 } from "../contest/contestDoor";
 import { askContestOnce } from "../contest/contestKept";
 import { ContestPageHost } from "../contest/ContestPage";
+import {
+  closeGroupRunPage,
+  openGroupRunPage,
+  useAskedGroupRun,
+} from "../groupRuns/groupRunDoor";
+import { GroupRunPageHost } from "../groupRuns/GroupRunPage";
+import { closeGroupPage, openGroupPage, useAskedGroup } from "../groups/groupDoor";
+import { GroupFormHost, GroupPageHost } from "../groups/GroupPage";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
+import { openGearItem } from "../gear/gearDoor";
+import { GearFromBellHost } from "../gear/GearFromBell";
 import { t, tPlural } from "../i18n";
+import { LOG_IN_TO_SEE, useIncomingPostLink } from "../links/useIncomingPostLink";
 import { MessagesContext, useMessagesOf } from "../messages/messagesDoor";
 import { useTabReselect } from "../tabs/tabReselect";
 import { MessagesOverlay } from "../messages/MessagesOverlay";
@@ -178,6 +189,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
       setHint(null);
       setPage(null);
       closeContestPage();
+      closeGroupRunPage();
+      closeGroupPage();
       setAsked((last) => ({ n: last.n + 1, hint: why }));
     },
     [setPeople],
@@ -269,6 +282,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
         setHint(null);
         setPeople(null);
         closeContestPage();
+        closeGroupRunPage();
+        closeGroupPage();
       },
     }),
     [setPeople],
@@ -395,6 +410,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // Push notifications (TASK-262): this phone's token on the API while the
   // switch is on; a notification touched opens its drawing or a profile,
   // as a tagged name does, or the conversation of a message.
+  // `openGroup` is read by openTarget once it knows a group's target.
   const opens: Opens = {
     openDrawing: (id) => drawings.open({ id }),
     openProfile: followsDoor.openProfile,
@@ -405,10 +421,20 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     openConversation: messages.openConversation,
     // A monthly challenge's notification (TASK-343): its page.
     openContest: openContestPage,
+    // A group run's notification (TASK-309 part B): its page.
+    openGroupRun: openGroupRunPage,
+    // A group's notification (TASK-495 part B): its page.
+    openGroup: openGroupPage,
     // A planned live that started (TASK-468 part B2b1): its live view.
     openLive: openLiveView,
+    // An item of one's gear past its limit (TASK-486 part G): the item.
+    openGear: openGearItem,
   };
   usePushNotifications(apiUrl, account, opens);
+  // The link of a post opened in the app (TASK-482 part A): its drawing, as
+  // the one of a notification touched; without an account, the fourth page
+  // first, saying why.
+  useIncomingPostLink(account, opens.openDrawing, () => showOwnPage(t(LOG_IN_TO_SEE)));
   // The bell of the header (TASK-367 part C): its lines open what the
   // pushes open.
   const bell = useBellOf(apiUrl, account);
@@ -424,6 +450,10 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // The page of a monthly challenge over the app (TASK-343): out of the way
   // while a drawing opened from it is on the map.
   const contestOver = useAskedContest() !== null && drawings.opened === null;
+  // The page of a group run over the app (TASK-309 part B), as a challenge's.
+  const groupRunOver = useAskedGroupRun() !== null;
+  // The page of a group over the app (TASK-495 part B), as a group run's.
+  const groupOver = useAskedGroup() !== null;
   const door = useMemo(
     () => ({
       open: () => {
@@ -443,7 +473,16 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   const overInModal = overAppState.modalPages > 0;
   // The app is under a page over it: out of the screen reader's sight. Not
   // while «Play» covers those pages, which are kept out of sight then.
-  const appUnder = (shown || contestOver || bell.shown) && !overAppState.covered;
+  // «Messages» over the app counts too, a conversation opened from its tab
+  // as well (TASK-469).
+  const appUnder =
+    (shown ||
+      contestOver ||
+      groupRunOver ||
+      groupOver ||
+      bell.shown ||
+      messages.screen !== null) &&
+    !overAppState.covered;
   const overPages = (
     <OverAppPages covered={overAppState.covered}>
       <CommentsContext.Provider value={outerComments}>
@@ -491,6 +530,15 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                   />
                 </FollowsContext.Provider>
               )}
+              {/* Over the profiles: a group run opened from a member's
+      list comes over it, and back goes to it (TASK-309 part B). */}
+              <FollowsContext.Provider value={followsDoor}>
+                {/* A group's page (TASK-495 part B), under its outings. */}
+                <GroupPageHost />
+                <GroupFormHost />
+                <GroupRunPageHost />
+                <GearFromBellHost />
+              </FollowsContext.Provider>
               {/* Over everything: opened from a profile, «Profile» or a
       notification, and closed back to it (TASK-319). */}
               <MessagesOverlay />
@@ -541,6 +589,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                                       shown:
                                         shown ||
                                         contestOver ||
+                                        groupRunOver ||
+                                        groupOver ||
                                         bell.shown ||
                                         messages.screen !== null,
                                     }}

@@ -1,6 +1,6 @@
 # TASK-475 — Lo stretching come sport
 
-**Stato**: In corso · parte 0 in `main` (#1283); parte A in PR (`feat/TASK-475-a-stretching`, 2026-11-21); B dopo A
+**Stato**: Done · 2026-11-22 · parte 0 (#1283), A (#1340, server al passo 15, `0079`), B (#1348) e C (#1376, `f5bccf82`) in `main`; esce col prossimo OTA
 **Fase**: 5 · **Branch**: `docs/TASK-475-stretching-sport` (parte 0); A, B
 ciascuna col suo branch e la sua PR
 **ADR**: ADR-0386
@@ -74,14 +74,14 @@ codice della parte B.
 - [x] A: il server accetta e rilegge una sessione `stretching` senza
       traccia (durata, routine), come la palestra; test dell'API e dei
       tipi condivisi verdi.
-- [ ] B: «Stretching» 🧘 nella famiglia «Other» del pannello, `ready:
+- [x] B: «Stretching» 🧘 nella famiglia «Other» del pannello, `ready:
       false` («Soon»); `FAMILY_OF` lo copre (test di TASK-473 verdi).
-- [ ] B: con lo sport scelto «Draw» mostra le routine di TASK-466 B e una
+- [x] B: con lo sport scelto «Draw» mostra le routine di TASK-466 B e una
       routine finita si salva come attività, in «My activities» e nel
       calendario.
-- [ ] Nessun file di `src/stretch` cambiato senza l'accordo della
+- [x] Nessun file di `src/stretch` cambiato senza l'accordo della
       sessione di TASK-466 e del Coordinatore.
-- [ ] C: acceso (`ready: true`) col sì dell'utente sulle schermate.
+- [x] C: acceso (`ready: true`) col sì dell'utente sulle schermate.
 
 ## Parte A — com'è fatta (2026-11-21)
 
@@ -146,6 +146,88 @@ docs/DATABASE.md
 docs/tasks/TASK-475.md
 ```
 
+## Parte B — l'app (2026-11-21)
+
+Testi approvati dall'utente il 2026-11-21 («Sì, approvati»):
+
+| Inglese | Italiano | Francese | Tedesco | Spagnolo |
+|---|---|---|---|---|
+| Start stretching | Inizia lo stretching | Commencer les étirements | Dehnen starten | Empezar a estirar |
+| No route for stretching: choose a routine and MuW guides you. | Niente percorso per lo stretching: scegli una routine e MuW ti guida. | Pas de parcours pour les étirements : choisis une routine, MuW te guide. | Keine Route beim Dehnen: Wähle eine Routine, MuW führt dich. | Sin ruta para estirar: elige una rutina y MuW te guía. |
+
+Com'è fatta (decisa dall'agente su delega dell'utente; lista dei file
+approvata dal Coordinatore (fork 2) il 2026-11-21):
+
+- **Lo sport `stretch`** in `settings/sport.ts` (`ACTIVITY` →
+  `stretching`, `fromProfile("stretch", false)` dopo il parapendio,
+  «Start stretching»), famiglia «Other» del pannello, 🧘 sul tasto.
+- **«Draw»** (`ChooseScreen`): come la palestra, nessuna partenza né
+  forma; le tre routine di TASK-466 B in schede (una spuntata, «Morning» la
+  prima volta; `stretchSport/StretchRoutines.tsx`) e sotto «Start
+  stretching» con la sua riga.
+- **La sessione** (`stretchSport/StretchSessionHost.tsx`, montato in
+  `App.tsx` accanto a quello della palestra): apre la schermata dello
+  stretching di TASK-466 con la routine spuntata, che chiede quanto durare.
+  Alla fine la sessione si tiene sul telefono (`stretchOutbox.ts`) e va
+  all'API quando c'è rete (`useStretchOutbox.ts`, come la palestra), col
+  logo «Saved to My activities». Una sessione senza un esercizio tenuto
+  fino in fondo non si tiene. La chiave è quella della palestra (`gymKey`).
+- **`stretch/StretchScreen.tsx`** (di TASK-466, sessione archiviata, sì del
+  Coordinatore): solo la prop facoltativa `onDone`, che dice routine,
+  minuti, inizio, fine, pause ed esercizi tenuti fino in fondo. Senza
+  `onDone` la schermata fa quello che faceva.
+- Resta `ready: false`: si accende con le schermate approvate dall'utente
+  (parte C).
+- **Schermate** dal simulatore (iPhone 17e, Expo Go, sport acceso solo in
+  locale, API su una porta spenta): pannello, «Draw», durata, sessione,
+  logo di salvataggio, in `out/TASK-475/b-1…5`. Approvate dall'utente il
+  2026-11-21: «Sì, approvo». Fuori da B: la routine nel post (`GET /drawings/{id}/stretch`)
+  e Apple Salute.
+
+## File toccati (parte B)
+
+```
+apps/mobile/App.tsx
+apps/mobile/src/settings/sport.ts
+apps/mobile/src/settings/sportFamilies.ts
+apps/mobile/src/settings/{sport,sportRows,snowSport}.test.ts
+apps/mobile/src/settings/{SportButton,SportSetting,SportVoiceItalian,SportButtonGrid}.test.tsx
+apps/mobile/src/screens/ChooseScreen.tsx
+apps/mobile/src/screens/RunNoRouteButton.tsx
+apps/mobile/src/stretch/StretchScreen.tsx
+apps/mobile/src/stretch/StretchScreenDone.test.tsx            (nuovo)
+apps/mobile/src/api/stretchSessions.ts                        (nuovo)
+apps/mobile/src/api/stretchSessions.test.ts                   (nuovo)
+apps/mobile/src/stretchSport/stretchChoice.ts                 (nuovo)
+apps/mobile/src/stretchSport/stretchOutbox.ts                 (nuovo)
+apps/mobile/src/stretchSport/stretchOutbox.test.ts            (nuovo)
+apps/mobile/src/stretchSport/useStretchOutbox.ts              (nuovo)
+apps/mobile/src/stretchSport/StretchRoutines.tsx              (nuovo)
+apps/mobile/src/stretchSport/StretchRoutines.test.tsx         (nuovo)
+apps/mobile/src/stretchSport/StretchSessionHost.tsx           (nuovo)
+apps/mobile/src/stretchSport/StretchSessionHost.test.tsx      (nuovo)
+apps/mobile/src/i18n/{it,fr,de,es}.ts
+docs/tasks/TASK-475.md
+```
+
+## Parte C — acceso (2026-11-22)
+
+B in `main` (#1348, `e132e7a6`), server con la `0079` dal passo 15. Sì
+dell'utente alle schermate («Sì, approvo», 2026-11-21) e sì del
+Coordinatore alla PR di accensione; esce col prossimo OTA, col sì
+dell'utente chiesto dal Coordinatore. Solo `fromProfile("stretch", true)`
+e i conteggi dei test: 18 sport, nessun «Soon».
+
+## File toccati (parte C)
+
+```
+apps/mobile/src/settings/sport.ts
+apps/mobile/src/settings/{sport,sportRows}.test.ts
+apps/mobile/src/settings/{SportButton,SportSetting,SportStoreBuild}.test.tsx
+apps/mobile/src/profile/SettingsPage.test.tsx
+docs/tasks/TASK-475.md
+```
+
 ## File toccati (parte 0)
 
 ```
@@ -155,4 +237,20 @@ docs/DECISIONS.md        (ADR-0386, voce e riga d'indice)
 
 ## Esito
 
-*(a fine task)*
+Done il 2026-11-22. «Stretching» 🧘 è uno sport del pannello (famiglia
+«Other»): «Draw» propone le routine di TASK-466, «Start stretching» apre
+la sessione guidata e una sessione finita si salva come attività senza
+percorso (`PUT /me/stretch-sessions/{key}`, coda sul telefono come la
+palestra). L'unico file di `src/stretch` toccato (`StretchScreen.tsx`,
+un `onDone` facoltativo) col sì del Coordinatore. Esce col prossimo OTA,
+col sì dell'utente chiesto dal Coordinatore; poi l'occhiata sul telefono.
+
+Restano fuori, per dopo (un task nuovo ciascuno, se l'utente li vuole):
+
+- la riga della routine nel post (`GET /drawings/{id}/stretch` c'è già);
+- la sessione mandata a Salute / Health Connect (tipi 62 e 71 già nel
+  profilo);
+- il modulo di pubblicazione che tiene lo sport: `drawings.py`
+  (`NOT_TRACKLESS`) non distingue le attività senza percorso, e una
+  sessione di stretching si può pubblicare come palestra.
+

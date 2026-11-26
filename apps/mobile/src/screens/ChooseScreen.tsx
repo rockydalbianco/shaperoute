@@ -23,6 +23,8 @@ import type { LatLon } from "@shaperoute/shared-types";
 import type { Place } from "../places/photon";
 import type { StartMode } from "../location/startMode";
 import { isRecordOnly } from "../settings/sport";
+import { useHeaderScroll } from "../tabs/headerScroll";
+import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { useSport } from "../settings/useSport";
 import {
   color,
@@ -38,6 +40,7 @@ import { TOUR_PART } from "../tour/tourSteps";
 import { RunNoRouteButton } from "./RunNoRouteButton";
 import { Segmented } from "./Segmented";
 import { StepTitle } from "./StepTitle";
+import { StretchRoutines } from "../stretchSport/StretchRoutines";
 
 /** "My position" also asks the GPS again, as the old button did, so it works
  * after the permission is given in Settings. Translated where shown, with
@@ -107,11 +110,17 @@ export function ChooseScreen({
   runIcon,
 }: Props) {
   const insets = useSafeAreaInsets();
+  // The header turns to glass once the page scrolls (TASK-469 A5b).
+  const headerScroll = useHeaderScroll();
+  // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
+  const barRoom = useTabBarRoom();
   // A day on the snow has no shape to draw (TASK-375, ADR-0319): «Draw» is
   // its recording only; a workout at the gym, its start (TASK-385 part B).
   const sport = useSport();
   const gym = sport === "gym";
-  const recordOnly = (isRecordOnly(sport) || gym) && onRun !== undefined;
+  // A stretching session (TASK-475 part B): its routines and their start.
+  const stretch = sport === "stretch";
+  const recordOnly = (isRecordOnly(sport) || gym || stretch) && onRun !== undefined;
   // A swim in open water or in a pool (TASK-400 part B, ADR-0334): in a
   // pool no start, no shape, no route, the pool and «Start swim».
   const { place } = usePoolChoice();
@@ -136,13 +145,14 @@ export function ChooseScreen({
       <View style={styles.page}>
         {/* The tour of the first opening scrolls it to its parts (TASK-266). */}
         <TourScrollView
+          {...headerScroll}
           contentContainerStyle={[
             styles.content,
             {
               paddingTop: insets.top + space.lg,
               // The button's height has the safe area in it; before it is
               // measured, the safe area alone.
-              paddingBottom: Math.max(footerHeight, insets.bottom) + space.xl,
+              paddingBottom: Math.max(footerHeight, insets.bottom + barRoom) + space.xl,
             },
           ]}
           keyboardShouldPersistTaps="handled"
@@ -160,7 +170,9 @@ export function ChooseScreen({
             </View>
           </View>
           {swim && <SwimPlaceChoice place={place} />}
-          {!gym && onRun && <PlanTodayCard sport={sport} onRecord={onRun} />}
+          {!gym && !stretch && onRun && (
+            <PlanTodayCard sport={sport} onRecord={onRun} />
+          )}
           {pool ? (
             <PoolDraw />
           ) : recordOnly && gym ? (
@@ -172,17 +184,33 @@ export function ChooseScreen({
               startIcon={runIcon}
               hint={t("No route in the gym: MuW times your workout.")}
             />
+          ) : recordOnly && stretch ? (
+            // The routines of TASK-466, one ticked, and «Start stretching».
+            <>
+              <StretchRoutines />
+              <RecordDay
+                label={runLabel}
+                icon={runIcon}
+                onPress={onRun}
+                hint={t(
+                  "No route for stretching: choose a routine and MuW guides you.",
+                )}
+              />
+            </>
           ) : recordOnly ? (
             <>
               <RecordDay
                 label={runLabel}
                 icon={runIcon}
                 onPress={onRun}
-                // A flight is not a day on the slopes (TASK-305 part R2).
+                // A flight is not a day on the slopes (TASK-305 part R2), nor
+                // is a day of mountaineering (TASK-463 part B).
                 hint={
                   sport === "paragliding"
                     ? t("No shapes in the air yet: MuW records your flight.")
-                    : undefined
+                    : sport === "alpinism"
+                      ? t("No shapes up a mountain: MuW records your day.")
+                      : undefined
                 }
               />
               {/* Under it, ready to fly, the month and the bests (part R5b). */}
@@ -248,7 +276,10 @@ export function ChooseScreen({
           >
             <TourPartView
               name={TOUR_PART.draw}
-              style={[styles.footer, { paddingBottom: insets.bottom + space.sm }]}
+              style={[
+                styles.footer,
+                { paddingBottom: insets.bottom + space.sm + barRoom },
+              ]}
             >
               {footer}
             </TourPartView>

@@ -90,3 +90,35 @@ export interface SleepShownRequest {
 export interface ActivitySleep extends SleepSummary {
   shown: boolean;
 }
+
+// --- A night as a post of its own (TASK-467 part E, sleep_posts.py) ---
+//
+// Published from the Feed's «+» without an activity: a drawing without a
+// run that carries its night, one a night. Only an app that says `sleep`
+// in X-MuW-Reads receives one (reads.json), in GET /feed, GET
+// /users/{id}/drawings and GET /drawings/{id}: `source` is `sleep`, the
+// night is in `sleep`, and it has no activity, no line and no photos.
+// fixtures/feed-sleep.json is its row in GET /feed.
+
+/** `source` of the post of a night, and the value said in X-MuW-Reads. */
+export const SLEEP_SOURCE = "sleep" as const;
+/** Never «Only me»: only what is published reaches the server. */
+export const SLEEP_POST_VISIBILITIES = ["everyone", "followers"] as const;
+export type SleepPostVisibility = (typeof SLEEP_POST_VISIBILITIES)[number];
+
+/** PUT /me/sleep-posts/{night}: the post of the night of that day (the day
+ * the person woke up, YYYY-MM-DD), made and published the first time; sent
+ * again it is the same post with these figures and this visibility.
+ * fixtures/sleep-post-request.json. */
+export interface SleepPostRequest extends SleepFigures {
+  visibility: SleepPostVisibility;
+}
+
+/** The post of a night as its owner reads it: GET and PUT
+ * /me/sleep-posts/{night}; 404 without one. fixtures/sleep-post.json. */
+export interface MySleepPost extends SleepSummary {
+  /** The drawing's id, as in the Feed. */
+  id: string;
+  visibility: SleepPostVisibility;
+  published_at: string;
+}

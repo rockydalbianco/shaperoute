@@ -21,8 +21,9 @@ const FIXED = {
   /**
    * The brand yellow. In the app it means one thing only: the route, and the
    * control that produces it. Anything else that needs attention uses
-   * `warning` — a second meaning would make the colour say nothing. One
-   * exception, the user's choice: «Run without a route» (ADR-0183).
+   * `warning` — a second meaning would make the colour say nothing. Two
+   * exceptions, each the user's choice: «Run without a route» (ADR-0183),
+   * and one's own bubbles in a conversation (TASK-458, ADR-0403).
    */
   accent: "#FFD02B",
   /**
@@ -451,6 +452,10 @@ export const radius = {
   xl: 20,
   /** Sheets that rise from the bottom edge. */
   sheet: 26,
+  /** A card of the glass look «Capsula» (TASK-469, ADR-0383). */
+  card: 28,
+  /** A group of rows of the glass look, as in «Settings» (TASK-469 A6). */
+  group: 24,
   pill: 999,
 } as const;
 
@@ -739,4 +744,33 @@ export const gamePrize = {
   },
   silver: "#C7CDD6",
   gold: "#E8B23A",
+} as const;
+
+/**
+ * The climb's colours on a flight's track (TASK-479 part A1, ADR-0388): a
+ * fixed scale from −3 to +3 m/s, the same on every flight. Sinking blue,
+ * level a warm grey, climbing the brand yellow up to red; each reads on
+ * the dark and the light map. The numbers say the climb: the colour only
+ * shows where it was.
+ */
+export const vario = {
+  /** −3 m/s and less. */
+  sinkStrong: "#3D6BFF",
+  /** −1 m/s. */
+  sink: "#7DB8FF",
+  /** 0 m/s. */
+  level: "#A8A196",
+  /** +1 m/s. */
+  climb: "#FFD02B",
+  /** +3 m/s and more. */
+  climbStrong: "#FF4D2E",
+} as const;
+
+/**
+ * A QR code's modules (TASK-479 part D4, ADR-0388): dark on light in either
+ * tone of the app, as the readers want, with the most contrast there is.
+ */
+export const qrCode = {
+  dark: "#000000",
+  light: "#FFFFFF",
 } as const;

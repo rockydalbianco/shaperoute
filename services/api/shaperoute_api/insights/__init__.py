@@ -17,6 +17,7 @@ from typing import Any
 from route_engine.shapes import SUPPORTED_SHAPES
 
 from shaperoute_api.insights.events import Event, EventLog, cell, language, redact
+from shaperoute_api.insights.outlines import outlines_on, shape_of
 from shaperoute_api.insights.vocabulary import Problem, Vocabulary
 from shaperoute_api.themes import THEMES, read_request
 
@@ -100,7 +101,9 @@ def route_fields(
     offered: int | None = None,
 ) -> dict[str, Any]:
     """The fields of a "route" event from a request body and how it ended;
-    `offered` routes to choose from (TASK-142: A, B, C)."""
+    `offered` routes to choose from (TASK-142: A, B, C). The sport, the pen
+    up and the style; for a drawing or a photo, its shape without place
+    nor size once the server is told so (outlines.py, TASK-311 part D)."""
     body = body or {}
     kind = "image" if "outline" in body else ("word" if body.get("word") else "shape")
     start = body.get("start")
@@ -120,6 +123,12 @@ def route_fields(
         "quality": None if similarity is None else round(float(similarity), 3),
         "distance_m": int(distance) if isinstance(distance, int | float) else None,
         "n": offered,
+        "activity": (
+            body.get("activity") if isinstance(body.get("activity"), str) else None
+        ),
+        "pen_up": body["pen_up"] if isinstance(body.get("pen_up"), bool) else None,
+        "style": body.get("style") if isinstance(body.get("style"), str) else None,
+        "outline": shape_of(body) if kind == "image" and outlines_on() else None,
     }
 
 

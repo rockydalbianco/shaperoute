@@ -305,6 +305,46 @@ class GymPlanRunnerBody(BaseModel):
         return self
 
 
+Feel = Literal["easy", "right", "hard"]
+"""How a workout of the plan went, asked at its end (TASK-488, ADR-0396)."""
+
+MAX_ADAPT_STEPS = 24
+
+
+class GymPlanAdaptDayBody(BaseModel):
+    """A day of the week the plan adapted to its answers: packages/
+    shared-types src/gym.ts, `GymPlanAdaptDay`. The phone adds `steps` to
+    the steps of every week it works out for that day."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    day: int = Field(ge=1, le=7)
+    steps: int = Field(ge=-MAX_ADAPT_STEPS, le=MAX_ADAPT_STEPS)
+    """Steps more (or fewer) than the mode's, from the answers so far."""
+    hard: int = Field(default=0, ge=0, le=2)
+    """«Hard» answers in a row, up to 2: the second steps back."""
+    last: Feel
+    """The last answer, for the mark beside the day."""
+
+
+class GymPlanAdaptBody(BaseModel):
+    """The plan that adapts to how its workouts went (TASK-488, ADR-0396):
+    `GymPlanAdapt`. Absent: on, nothing answered yet."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    off: bool = False
+    """Its owner turned it off: no question, the weeks as the mode says."""
+    days: list[GymPlanAdaptDayBody] = Field(default_factory=list, max_length=7)
+
+    @model_validator(mode="after")
+    def a_day_once(self) -> GymPlanAdaptBody:
+        numbers = [one.day for one in self.days]
+        if len(set(numbers)) != len(numbers):
+            raise ValueError("a day adapts once")
+        return self
+
+
 class GymProgramBody(BaseModel):
     """The weeks of a plan made with the guide: `GymProgram`."""
 
@@ -328,6 +368,9 @@ class GymProgramBody(BaseModel):
     target: GymPlanTargetBody | None = None
     """What it leads to (TASK-461 B and C); absent from a cycle that
     repeats."""
+    adapt: GymPlanAdaptBody | None = None
+    """How its days adapted to the answers (TASK-488); absent from a plan
+    nobody answered for, and from an app older than it."""
 
     @model_validator(mode="after")
     def weeks_of_the_cycle(self) -> GymProgramBody:
@@ -346,6 +389,11 @@ class GymProgramBody(BaseModel):
         )
         if count > MAX_PROGRAM_ITEMS:
             raise ValueError(f"a program has at most {MAX_PROGRAM_ITEMS} exercises")
+        if self.adapt is not None:
+            # A day taken out of the plan (by an app that copies `adapt` as
+            # it is) loses its answers, rather than the plan being refused.
+            planned = self.days()
+            self.adapt.days = [one for one in self.adapt.days if one.day in planned]
         return self
 
     def days(self) -> list[int]:
@@ -419,6 +467,54 @@ class GymPlansBody(BaseModel):
     """GET /me/gym-plans: packages/shared-types/fixtures/gym-plans.json."""
 
     plans: list[GymPlanBody] = Field(description="In their order, then by key.")
+
+
+# --- A plan as a post (TASK-485, ADR-0394, plan_posts.py) ---
+#
+# What a post shows of a plan, and what «Use this plan» copies: its name,
+# days, exercises with their kg and its weeks. Never what is its owner's
+# own, which the privacy does not name: the first day (`starts_on`), the
+# paces (`runner`), the date of the target. Each is refused if sent.
+
+
+class GymPlanTargetPostedBody(GymPlanTargetBody):
+    """The target of a plan posted: a distance or a climb, without a date
+    (whoever copies it starts when ready). `GymPlanPostedTarget`."""
+
+    on: None = None
+    """Never sent: the date is its owner's."""
+
+
+class GymProgramPostedBody(GymProgramBody):
+    """The weeks of a plan posted: `GymPlanPostedProgram`."""
+
+    starts_on: None = None
+    """Never sent: whoever copies the plan chooses the first day."""
+    runner: None = None
+    """Never sent: the paces are worked out from how each one runs."""
+    target: GymPlanTargetPostedBody | None = None
+
+
+class GymPlanPostedBody(BaseModel):
+    """A plan as a post shows it, kept as it was posted:
+    packages/shared-types src/gym.ts, `GymPlanPosted`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=MAX_NAME_LENGTH)
+    days: list[int] = Field(default_factory=list, max_length=7)
+    """The days of the week it is for, 1 Monday to 7 Sunday."""
+    items: list[GymPlanItemBody] = Field(default_factory=list, max_length=MAX_ITEMS)
+    program: GymProgramPostedBody | None = None
+    """Its weeks, when made with the guide."""
+
+    @model_validator(mode="after")
+    def days_of_the_week(self) -> GymPlanPostedBody:
+        if any(not 1 <= day <= 7 for day in self.days):
+            raise ValueError("a day of the week is 1 (Monday) to 7 (Sunday)")
+        if len(set(self.days)) != len(self.days):
+            raise ValueError("a day is given once")
+        return self
 
 
 def days_mask(days: list[int]) -> int:

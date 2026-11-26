@@ -1,9 +1,11 @@
 # TASK-461 — Il pianificatore completo: corpo libero, piani verso una distanza, gite in montagna
 
-**Stato**: In corso · 2026-11-12 · parte 0 chiusa; A1 e B1 in `main` e
-sul server (passo 9, 2026-11-12); B2a in `main` (#1196); A2 (app del corpo
-libero) in `main` (#1208, `da3d86f1`), esce col prossimo OTA col sì
-dell'utente; poi B2b/C2 (lista dei file al Coordinatore prima del codice)
+**Stato**: Done · 2026-11-21 · tutte le parti in `main`: A1 #1163 e B1
+#1175 (server, passo 9), B2a #1196, A2 #1208, B2b/C2 #1294 (in produzione),
+D1 #1341 (`climb_m` nell'elenco, server: passo 16 col sì dell'utente), B2c
+#1338 («mancano» mentre si registra: esce col prossimo OTA col sì
+dell'utente). Esito: il pianificatore completo, con le scelte 1–22
+dell'utente.
 **Fase**: 5 · **Branch**: `feat/TASK-461-a1-bodyweight-catalog` (A1),
 `feat/TASK-461-b1-distance-mountain-server` (B1),
 `feat/TASK-461-b2a-target-plans` (B2a), `feat/TASK-461-a2-bodyweight-app` (A2)
@@ -98,6 +100,10 @@ Sulla tela «Schede palestra guidate»
     passo col promemoria acceso, la gita da 1000 m, e «Oggi» oltre il
     massimo di «Draw» e per un giorno di salita (`out/TASK-461/shots-b2b`,
     fuori da git).
+22. **Schermate di B2c al simulatore (2026-11-21)**: «Approvo» — registrando
+    libero nel giorno del piano, la barra con «mancano 12,4 km» (e il tempo
+    stimato) in bici e «mancano 230 m di salita» in montagna
+    (`out/TASK-461/shots-b2c`, fuori da git).
 
 ### I testi approvati della parte A (italiano; le altre lingue con lo stesso senso)
 
@@ -225,6 +231,17 @@ Sulla tela «Schede palestra guidate»
   la scheda «Oggi» dei giorni fuori, il promemoria alle 8, i testi;
   `sessionsOfWeek` passa i giorni dello sport dell'obiettivo da
   `targetDayInWeek`. I ritmi e il lungo della corsa vengono da TASK-452.
+
+- **B2c — «Mancano» mentre si registra** (branch `feat/TASK-461-b2c-to-go`,
+  lista col sì del Coordinatore il 2026-11-21, dopo D1): `gym/planToGo.ts`
+  (la meta del giorno dello sport registrato, dai piani tenuti sul
+  telefono), `screens/RunPanel.tsx` (`RouteProgress.climb` e il testo
+  «{m} m of climb to go», approvato nella riga G: «Mancano 230 m di
+  salita»), `screens/RunDashboard.tsx` (la barra del percorso anche per il
+  giorno del piano, file in più rispetto alla lista).
+- **D1 — `climb_m` nell'elenco delle attività** (server, branch
+  `feat/TASK-461-d1-climb-in-list`): «Già scritto dai tuoi hike» si scrive da
+  solo dopo il passo sul server; controllo in `out/TASK-461/SERVER-D1.md`.
 
 ## Il disegno tecnico (ADR-0371, deciso dall'agente su delega dell'utente)
 

@@ -7,10 +7,12 @@ migrazione `0078`), D (#1308) ed E (#1309, `449c997d`) in `main`.
 rimando (mai una copia) e, per un post «Everyone», ne dà il link
 `getmuw.app/p/#<id>`, che apre una pagina con mappa, linea, titolo, nome,
 sport e distanza anche senza MuW; «Links to my posts» in «Settings» spegne
-tutti i link ai propri post. **Resta** (vedi «Quello che resta»): l'OTA
-della parte E e la copia del sito, col sì dell'utente dato al
-Coordinatore; la prova dell'utente sul telefono; la parte F, con una build
-nativa
+tutti i link ai propri post. Dopo la chiusura, il 2026-11-21, cinque
+aggiunte in `main` (#1328, #1332, #1336; vedi il registro). **Resta** (vedi
+«Quello che resta»): l'OTA dopo il 19 per la #1336, col sì dell'utente
+dato al Coordinatore; la prova dell'utente sul telefono; la parte F, con
+una build nativa
+**Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: una PR per parte, tutte unite; l'ultimo
 `feat/TASK-455-e-share-link`
 **Dipende da**: —
@@ -129,7 +131,7 @@ senza mostrarlo a chi non potrebbe vederlo.
 | In chat, la scheda | «by {user}» · «This post is no longer available.» |
 | Lista delle conversazioni e push | «🗺️ Post» |
 | App di prima | «[Post]» |
-| Impostazioni, interruttore (acceso all'inizio) | «Links to my posts» · «People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.» |
+| Impostazioni, interruttore (acceso all'inizio) | «Links to my posts» · «People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username, the title, the sport and the distance, even without MuW. Turn this off and the links stop working.» (titolo e sport aggiunti col sì dell'utente il 2026-11-21, «Sì, cambiala»; prima: «…your username and the distance…») |
 | Pagina web | «{user} drew this on MuW» · «Get MuW» · «This drawing is no longer available.» |
 | Pagina web, se l'API non risponde (approvati il 2026-11-21, «Sì, con questi testi») | «We couldn't load this drawing.» · «Try again» |
 | Anteprima del link nelle app di chat (approvati il 2026-11-21, «Approvo così») | «A drawing on MuW» · «Open the link to see the line on the map.» |
@@ -418,15 +420,11 @@ Parte E (in `main`, #1309):
 
 ## Quello che resta (2026-11-21)
 
-- **L'OTA della parte E**: la chiede il Coordinatore all'utente. La pagina
-  `/p/` è **online dal 2026-11-18** (la copia del sito della parte D è
-  stata fatta allora, non era da fare come diceva questa voce), quindi un
-  link condiviso apre già la pagina.
-- **Un'altra copia del sito**, una sola, per le tre aggiunte del 2026-11-21
-  alla pagina `/p/` (la mappa girata come il disegno, #1328; l'anteprima
-  nelle app di chat e «Try again», #1332) e per le pagine della privacy
-  rigenerate con la parte E, se non sono già andate: la chiede il
-  Coordinatore all'utente.
+- Fatto: **la parte E è in produzione con l'OTA 19** (2026-11-21, dal
+  commit `22d3b0cc`, che contiene la #1309), e **il sito è stato copiato**
+  il 2026-11-21 da `main` `11f354f1` col sì dell'utente: la pagina `/p/`
+  ha online la mappa girata come il disegno (#1328), l'anteprima nelle app
+  di chat e «Try again» (#1332).
 - **La prova dell'utente sul telefono**: mandare il post di un altro a un
   amico e aprirlo dalla chat (parte B, in produzione dall'OTA 15); dopo
   l'OTA della parte E, «Share link» e l'interruttore.
@@ -436,9 +434,11 @@ Parte E (in `main`, #1309):
 - **Parte F**, con una build nativa: il link che apre il post dentro
   l'app e un «Copy link» vero. È un task nuovo, col
   numero del Coordinatore, quando si decide la build.
-- Detto all'utente e lasciato com'è: la spiegazione sotto l'interruttore
-  non nomina titolo e sport (la privacy sì); riacceso l'interruttore,
-  «Share link» torna sui propri post alla rilettura del Feed.
+- **L'OTA dopo il 19** per le due aggiunte all'app del 2026-11-21 (#1336,
+  in `main` a `15f1a208`: «Share link» che torna subito quando si
+  riaccende l'interruttore, e titolo e sport nella spiegazione sotto
+  l'interruttore). L'OTA 19 è uscito prima che la #1336 fosse unita e non
+  le contiene: le chiede il Coordinatore all'utente col prossimo.
 
 ## Registro
 
@@ -653,3 +653,36 @@ Parte E (in `main`, #1309):
 - 2026-11-21: **schermata di «Try again» approvata dall'utente** («Sì, va
   bene», alla domanda «Va bene la schermata con la frase e «Try again»?»).
   La #1332 esce dalla bozza e passa al Coordinatore come «pronta».
+- 2026-11-21: **le due aggiunte alla pagina del link sono in `main`**
+  (#1332, `d8b7a699`).
+- 2026-11-21: **due aggiunte all'app, PR #1336** (branch
+  `fix/TASK-455-share-link-back-at-once`), le ultime due voci della lista
+  proposta; niente server, niente nativo, escono con l'OTA 19. (1)
+  **«Share link» torna subito** sui propri post quando «Links to my posts»
+  viene riacceso con l'app aperta (l'utente: «Sì, fallo»). Un post letto
+  mentre l'interruttore era spento dice `linkable: false`; ora
+  `usePostLink` (`feed/postLink.ts`) ricorda che l'interruttore è stato
+  spento e riacceso in questa sessione e, solo per i propri post, guarda
+  da sé quello che l'API chiede oltre all'interruttore (`LINKABLE_SQL`):
+  per «Everyone» e con una linea. Sui post altrui e in ogni altro caso
+  vale `linkable`, come prima. Scelta tecnica dell'agente su delega
+  dell'utente; un solo caso in cui app e API possono non coincidere fino
+  alla rilettura della lista: un disegno o un autore nascosti dalla
+  moderazione nel frattempo (il link apre allora «This drawing is no
+  longer available.»). (2) **La spiegazione sotto l'interruttore nomina
+  titolo e sport**, che la pagina del link mostra: frase nuova in «I
+  testi approvati», approvata dall'utente («Sì, cambiala», alla domanda
+  «Cambio la spiegazione sotto l'interruttore aggiungendo titolo e
+  sport?»), nelle cinque lingue. Non viste nel simulatore, d'accordo col
+  Coordinatore: nessuna riga nuova a schermo.
+- 2026-11-21: **le due aggiunte all'app sono in `main`** (#1336,
+  `15f1a208`). **Non escono con l'OTA 19**, come diceva la riga qui sopra:
+  l'OTA 19 era già uscito da `22d3b0cc` (porta la parte E, #1309, e non la
+  #1336); vanno nel prossimo, col sì dell'utente al Coordinatore.
+- 2026-11-21: **copia del sito fatta** dal Coordinatore col sì dell'utente,
+  da `main` `11f354f1`; sono cambiati solo i file di `/p/`. Controllato
+  online: `post.js` e `view.js` uguali a quelli di `main` (mappa girata,
+  «Try again»), `og:title` «A drawing on MuW», `link-card.png` servita
+  come `image/png`, `noindex` invariato, `site/tools` non online. Non
+  provato un link vero dentro un'app di chat. Con questo la lista dei
+  miglioramenti proposti il 2026-11-21 è chiusa.

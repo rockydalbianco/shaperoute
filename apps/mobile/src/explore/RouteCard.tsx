@@ -1,4 +1,4 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { LatLon, Shape } from "@shaperoute/shared-types";
 import { useMemo, useState } from "react";
 import {
   Image,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type ViewStyle,
 } from "react-native";
 import { t } from "../i18n";
 
@@ -16,16 +17,22 @@ import { useFeedMap } from "../feed/FeedMaps";
 import { MAP_CREDIT } from "../feed/FeedPost";
 import { turnedLine } from "../feed/turnedLine";
 import { bearingOf } from "../map/turnedMap";
+import { ShapeGlyph } from "../route/ShapeGlyph";
+import { segmentTrackFace } from "../screens/Segmented";
 import {
   color,
   font,
   fontSize,
   fontWeight,
+  glass,
+  type GlassColors,
+  type Palette,
   radius,
   route as routeLine,
   space,
 } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
+import { type GlassMode, useGlassMode } from "../ui/useGlassMode";
 import { thumbSegments } from "./RouteThumb";
 import { useTapNotSwipe } from "./useTapNotSwipe";
 
@@ -39,8 +46,52 @@ const DRAWING_PAD = space.md;
 /** The dots saying whether the drawing or the photo is shown. */
 const DOT_SIDE = 5;
 
+/**
+ * How much of the drawing's height a shape's outline takes while its route
+ * is not there (TASK-509): smaller than a route would be, a place kept.
+ */
+const OUTLINE_SHARE = 0.6;
+
+/** How wide the outline of a shape is on a card `width` wide. */
+export function cardOutlineSize(width: number): number {
+  return Math.round(cardDrawingHeight(width) * OUTLINE_SHARE);
+}
+
 /** No line: nothing to lay a map under. */
 const NO_LINE: LatLon[] = [];
+
+/**
+ * The edge of a card in `mode` (TASK-469 A4b, ADR-0383, «Capsula»), drawn
+ * over the card so the drawing and the photo do not hide it: on the glass a
+ * thin rim and a line of light on top; with «Increase Contrast» the strong
+ * edge of the controls; with «Reduce Transparency» none, as before.
+ */
+export function cardEdge(
+  mode: GlassMode,
+  colors: GlassColors = glass,
+  palette: Palette = color,
+): ViewStyle {
+  const edge = (of: string) => ({
+    inset: true,
+    offsetX: 0,
+    offsetY: 0,
+    blurRadius: 0,
+    spreadDistance: 1,
+    color: of,
+  });
+  if (mode === "glass") {
+    return {
+      boxShadow: [
+        edge(colors.rim),
+        { inset: true, offsetX: 0, offsetY: 1, blurRadius: 0, color: colors.rimTop },
+      ],
+    };
+  }
+  if (mode === "contrast") {
+    return { boxShadow: [edge(palette.borderStrong)] };
+  }
+  return {};
+}
 
 /** How wide a card is when two stand side by side in `width`, `gap` apart. */
 export function cardWidth(width: number, gap: number = space.md): number {
@@ -105,6 +156,12 @@ type Props = {
   /** The points of `line` reached without drawing: no segment ends there
    * (a shape drawn in pieces on the water, TASK-226). */
   gaps?: readonly number[];
+  /**
+   * The shape the route will draw, shown while there is no line (TASK-509):
+   * its outline of the catalogue in grey, in the drawing's place. Without
+   * it, or with a photo, the place stays empty as before.
+   */
+  outline?: Shape;
   /** "Star · 5.1 km". */
   title: string;
   /** Under the title: where it is, or where its drawing has got to. */
@@ -147,12 +204,16 @@ type Props = {
  * `photo`, the drawing comes first and the photo a swipe after it, two dots
  * saying which is shown (TASK-350). The card has the large radius and no
  * border, its words under the drawing in the card's title style, and it
- * answers the finger through `Tap` (TASK-339, ADR-0293).
+ * answers the finger through `Tap` (TASK-339, ADR-0293). A card whose route
+ * is not there yet (being drawn, up next, not drawn) shows the `outline` of
+ * its shape in grey — never yellow, which is a route's — so the card says
+ * what is coming and is not a black box (TASK-509).
  */
 export function RouteCard({
   width,
   line,
   gaps,
+  outline,
   title,
   detail,
   match,
@@ -163,6 +224,7 @@ export function RouteCard({
   accessibilityLabel,
 }: Props) {
   const height = cardDrawingHeight(width);
+  const mode = useGlassMode();
   const bearing = bearingOf(rotationDeg);
   const mapped = map && line !== null ? line : NO_LINE;
   const framing = useMemo(
@@ -285,11 +347,22 @@ export function RouteCard({
           </>
         ) : photo !== undefined ? (
           photoPage
+        ) : line === null && outline !== undefined ? (
+          <View style={styles.outline} testID="route-card-outline">
+            <ShapeGlyph
+              shape={outline}
+              size={cardOutlineSize(width)}
+              tint={color.borderStrong}
+            />
+          </View>
         ) : (
           drawingPage
         )}
         {match !== undefined && (
-          <View style={styles.match}>
+          <View
+            style={[styles.match, segmentTrackFace(mode)]}
+            testID="route-card-match"
+          >
             <Text style={styles.matchText}>{`${Math.round(match * 100)}%`}</Text>
           </View>
         )}
@@ -304,6 +377,11 @@ export function RouteCard({
           </Text>
         )}
       </View>
+      <View
+        style={[StyleSheet.absoluteFill, styles.edge, cardEdge(mode)]}
+        pointerEvents="none"
+        testID="route-card-edge"
+      />
     </>
   );
   if (onPress === undefined) {
@@ -328,9 +406,10 @@ export function RouteCard({
 }
 
 const styles = StyleSheet.create({
-  // A drawing or a photo at its face: the large radius, no border (TASK-339).
+  // A drawing or a photo at its face, no border (TASK-339); the radius of
+  // the glass look's cards and its edge drawn over it (TASK-469 A4b).
   card: {
-    borderRadius: radius.xl,
+    borderRadius: radius.card,
     backgroundColor: color.surface,
     overflow: "hidden",
   },
@@ -344,7 +423,21 @@ const styles = StyleSheet.create({
     borderRadius: LINE_WIDTH / 2,
     backgroundColor: routeLine.color,
   },
-  // Not yellow: that is the line's (docs/UI.md, «Il tema»).
+  // The shape to come, in the middle of the drawing's place (TASK-509).
+  outline: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  edge: {
+    borderRadius: radius.card,
+  },
+  // Not yellow: that is the line's (docs/UI.md, «Il tema»). A capsule of
+  // glass laid on the drawing (TASK-469 A4b): `segmentTrackFace`.
   match: {
     position: "absolute",
     top: space.sm,
@@ -352,9 +445,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.sm,
     paddingVertical: space.xs / 2,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: color.border,
-    backgroundColor: color.background,
   },
   matchText: {
     color: color.text,

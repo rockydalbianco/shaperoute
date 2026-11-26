@@ -1,8 +1,6 @@
 # TASK-431 — La pagina «Compass» più bella: la freccia che punta dove guardi, le tre schede con i disegni
 
-**Stato**: Codice in `main` · 2026-11-10 · #1081 (`5747259d`); documenti
-nella PR di `docs/TASK-431-docs`. Restano l'OTA di produzione (col sì
-dell'utente) e la prova sul telefono, l'ultimo criterio.
+**Stato**: Done · 2026-11-26 · #1081 (`5747259d`) in `main` e in produzione (OTA 25): la freccia «B» con anello e cono azzurri, le tre schede coi disegni, la punta rossa del nord; provato dall'utente sul telefono il 2026-11-26 (prova generale sull'OTA 25: «ok»), l'ultimo criterio. Chiuso dal Coordinatore 3.
 **Fase**: 5 · **ADR**: ADR-0359 · numeri dal Coordinatore («Coordinatore
 (fork)», 2026-11-10) · seguito di TASK-422
 

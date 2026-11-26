@@ -9,6 +9,7 @@ import { isPaddle, PADDLE_PACE_M, per500S } from "../navigation/paddle";
 import { distanceLabel } from "../navigation/phrases";
 import { isRide, speedNumber } from "../navigation/ride";
 import { useRunControl } from "../navigation/runControl";
+import { useRunSeen } from "../navigation/runSeen";
 import { skiedDay, trackEffort } from "../activities/trackEffort";
 import { activeKcal } from "../body/energy";
 import { useBody } from "../body/useBody";
@@ -76,8 +77,10 @@ export function useNow(on: boolean, everyMs: number): number {
   return now;
 }
 
-/** Along a route: the metres left, and the share of it done, 0 to 1. */
-export type RouteProgress = { remainingM: number; done: number };
+/** Along a route: the metres left, and the share of it done, 0 to 1. A
+ * plan's day recorded freely (TASK-461 B2c) is one too, its metres of climb
+ * for a hike to a climb (`climb`). */
+export type RouteProgress = { remainingM: number; done: number; climb?: boolean };
 
 export type RunNumbers = {
   /** "2.34": the kilometres, without their unit; with miles, the miles. */
@@ -120,7 +123,10 @@ export type RunNumbers = {
  * a pause, and a run that is over stops it at its last fix. Along a route
  * of `activity` "cycling" the paces are speeds (TASK-216), and of
  * "paddling" speeds and a pace of 500 m (TASK-251). In the app's units, and
- * again when «Settings» changes them (TASK-182).
+ * again when «Settings» changes them (TASK-182). With nobody to see them,
+ * the app behind another or pocket mode on, the clock does not tick
+ * (TASK-496): the numbers are those of the last fix, for the live link
+ * that reads them, and the clock is read again as the screen is back.
  */
 export function useRunNumbers(
   track: Track,
@@ -138,9 +144,15 @@ export function useRunNumbers(
   const pause = openPause(track);
   const ticking =
     live && pause === null && phase !== "countdown" && track.fixes.length > 0;
-  const now = useNow(ticking, TICK_MS);
+  const seen = useRunSeen(ticking);
+  const now = useNow(ticking && seen, TICK_MS);
   const last = track.fixes[track.fixes.length - 1];
-  const at = pause !== null ? pause.fromMs : ticking ? now : (last?.timeMs ?? 0);
+  const lastMs = last?.timeMs ?? 0;
+  // Unseen, the time of the last fix. Seen, the clock, and never before
+  // that fix: the clock read before the screen went is older than the run,
+  // until its next tick.
+  const at =
+    pause !== null ? pause.fromMs : ticking && seen ? Math.max(now, lastMs) : lastMs;
   const ms = activeMs(track, at);
   const average = averagePaceS(track, ms);
   // A swimmer is slower than a walker and still swimming (TASK-323 D).
@@ -158,7 +170,7 @@ export function useRunNumbers(
   const energyOf: RunActivity = sport ?? activity ?? DEFAULT_ACTIVITY;
   // The descents of a day of skiing: once per fix, not once per second.
   const day = useMemo(() => skiedDay(energyOf, track), [energyOf, track]);
-  const eta = route ? etaMs(route.remainingM, track, ms) : null;
+  const eta = route && route.climb !== true ? etaMs(route.remainingM, track, ms) : null;
   // The seconds of a kilometre or of a mile, as a pace or as a speed.
   const said = (seconds: number | null) =>
     seconds === null
@@ -197,7 +209,9 @@ export function useRunNumbers(
             ),
           ),
     toGo: route
-      ? t("{distance} to go", { distance: distanceLabel(route.remainingM, units) })
+      ? route.climb === true
+        ? t("{m} m of climb to go", { m: String(Math.round(route.remainingM)) })
+        : t("{distance} to go", { distance: distanceLabel(route.remainingM, units) })
       : null,
     eta: eta === null ? null : aboutMinutes(eta),
   };

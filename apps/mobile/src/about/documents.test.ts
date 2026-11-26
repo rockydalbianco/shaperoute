@@ -109,7 +109,7 @@ describe("«Terms» is a draft", () => {
   test.each(CONTENTS)("in «%s», with its day", (_, content) => {
     expect(content.terms.draft).toBe(true);
     expect(content.terms.updated).toMatch(
-      /^10 (November|novembre) 2026$|^10\. November 2026$|^10 de noviembre de 2026$/,
+      /^26 (November|novembre) 2026$|^26\. November 2026$|^26 de noviembre de 2026$/,
     );
   });
 
@@ -126,9 +126,10 @@ describe("«Terms» is a draft", () => {
 describe("«Privacy» is final, approved by the user (TASK-237 D)", () => {
   test.each(CONTENTS)("in «%s», with the day of the approval", (_, content) => {
     expect(content.privacy.draft).toBe(false);
-    // Redated for the prizes of the game on the profile (TASK-423 E2b).
+    // Redated for the estimate of a daily target in «Nutrition» (TASK-489 part J).
+    // Redated for the paragliding landings nearby and the wind aloft (TASK-479 parts D6, H).
     expect(content.privacy.updated).toMatch(
-      /^12 November 2026$|^12 novembre 2026$|^12\. November 2026$|^12 de noviembre de 2026$/,
+      /^26 November 2026$|^26 novembre 2026$|^26\. November 2026$|^26 de noviembre de 2026$/,
     );
   });
 
@@ -326,4 +327,168 @@ test("each language reads its own texts (TASK-210 F)", () => {
 test("the three texts are told from the other pages of «Profile»", () => {
   expect(ABOUT_IDS.every(isAboutId)).toBe(true);
   expect(isAboutId("settings")).toBe(false);
+});
+
+test("«Help» and «Privacy» say «Everyone» is for an activity added from a file, or a gym workout written by hand, with the Feed's «+», not one recorded from it (TASK-481 A, TASK-484 B)", () => {
+  const fromFile: Record<Language, RegExp> = {
+    en: /from a file/,
+    it: /da un file/,
+    de: /aus einer Datei/,
+    fr: /depuis un fichier/,
+    es: /desde un archivo/,
+  };
+  const byHand: Record<Language, RegExp> = {
+    en: /gym workout (?:you write|written) by hand/,
+    it: /allenamento in palestra scritto a mano/,
+    de: /(?:Training im Fitnessstudio, das du von Hand einträgst|von Hand eingetragenes Training im Fitnessstudio)/,
+    fr: /séance en salle écrite à la main/,
+    es: /entrenamiento de gimnasio (?:que escribes|escrito) a mano/,
+  };
+  for (const [language, content] of CONTENTS) {
+    for (const text of [all(content.help), all(content.privacy)]) {
+      const plus = text
+        .split(/(?<=\.)\s/)
+        .filter((sentence) => sentence.includes("«+»"));
+      expect(plus.length).toBeGreaterThan(0);
+      for (const sentence of plus) {
+        expect(sentence).toMatch(fromFile[language]);
+        expect(sentence).toMatch(byHand[language]);
+      }
+    }
+  }
+});
+
+test("«Privacy» says what a gym workout written by hand keeps, and that the gym milestones count only what MuW records (TASK-484 B)", () => {
+  const kept: Record<Language, RegExp> = {
+    en: /gym workout written by hand, we keep its day, time, duration, exercises, sets and weights/,
+    it: /allenamento in palestra scritto a mano, ne teniamo giorno, ora, durata, esercizi, serie e pesi/,
+    de: /von Hand einträgst, speichern wir Tag, Uhrzeit, Dauer, Übungen, Sätze und Gewichte/,
+    fr: /écrite à la main, nous gardons son jour, son heure, sa durée, ses exercices, ses séries et ses poids/,
+    es: /escrito a mano, guardamos su día, hora, duración, ejercicios, series y pesos/,
+  };
+  const milestones: Record<Language, RegExp> = {
+    en: /counted from the workouts you record with MuW/,
+    it: /contati dagli allenamenti che registri con MuW/,
+    de: /gezählt aus den Trainings, die du mit MuW aufzeichnest/,
+    fr: /comptés sur les séances que tu enregistres avec MuW/,
+    es: /contados de los entrenamientos que registras con MuW/,
+  };
+  for (const [language, content] of CONTENTS) {
+    expect(all(content.privacy)).toMatch(kept[language]);
+    expect(all(content.privacy)).toMatch(milestones[language]);
+  }
+});
+
+test("«Privacy» says a gym plan shared in the Feed is a copy that others can copy, in all five languages (TASK-485 B)", () => {
+  const shared: Record<Language, RegExp[]> = {
+    en: [
+      /unless you share one in the Feed/,
+      /copy the plan into their own plans/,
+      /copies already made stay with whoever made them/,
+    ],
+    it: [
+      /a meno che tu non ne condivida una nel Feed/,
+      /può copiare la scheda tra le sue/,
+      /le copie già fatte restano a chi le ha fatte/,
+    ],
+    de: [
+      /außer du teilst einen im Feed/,
+      /den Plan in seine eigenen Pläne kopieren/,
+      /schon gemachte Kopien bleiben/,
+    ],
+    fr: [
+      /sauf si tu en partages un dans le Feed/,
+      /copier le programme dans ses propres programmes/,
+      /les copies déjà faites restent/,
+    ],
+    es: [
+      /salvo que compartas una en el Feed/,
+      /copiar la rutina entre sus propias rutinas/,
+      /las copias ya hechas se quedan/,
+    ],
+  };
+  for (const [language, content] of CONTENTS) {
+    const privacy = all(content.privacy);
+    for (const sentence of shared[language]) {
+      expect(privacy).toMatch(sentence);
+    }
+    // The help does not promise it: only «Privacy» tells what a shared plan carries.
+    expect(all(content.help)).not.toMatch(shared[language][0]);
+  }
+});
+
+test("«Privacy» says the heart rate is read at the end of a gym workout too, by itself after the first tap (TASK-385 G3)", () => {
+  const gym: Record<Language, RegExp[]> = {
+    en: [
+      /or a workout at the gym you tap «Add heart rate from Apple Health»/,
+      /at the end of each swim and workout/,
+    ],
+    it: [
+      /o a fine allenamento in palestra tocchi «Aggiungi il battito da Salute»/,
+      /alla fine di ogni nuotata e di ogni allenamento/,
+    ],
+    de: [
+      /oder eines Trainings im Fitnessstudio auf «Herzfrequenz aus Apple Health hinzufügen»/,
+      /am Ende jedes Schwimmens und jedes Trainings/,
+    ],
+    es: [
+      /o de un entrenamiento en el gimnasio tocas «Añadir la frecuencia cardiaca desde Salud»/,
+      /al final de cada sesión de natación y de cada entrenamiento/,
+    ],
+    fr: [
+      /ou d'une séance en salle de sport, tu touches «Ajouter la fréquence cardiaque depuis Santé»/,
+      /à la fin de chaque nage et de chaque séance/,
+    ],
+  };
+  for (const [language, content] of CONTENTS) {
+    const privacy = all(content.privacy);
+    for (const sentence of gym[language]) {
+      expect(privacy).toMatch(sentence);
+    }
+  }
+});
+
+test("«Privacy» says what is kept of the gear and who sees it, in all five languages (TASK-486)", () => {
+  const gear: Record<Language, RegExp[]> = {
+    en: [/You can add your gear/, /«Hide from profile»/, /an item of gear/],
+    it: [
+      /Puoi aggiungere la tua attrezzatura/,
+      /«Nascondi dal profilo»/,
+      /un attrezzo, un commento/,
+    ],
+    de: [
+      /Du kannst deine Ausrüstung hinzufügen/,
+      /«Im Profil ausblenden»/,
+      /ein Teil deiner Ausrüstung/,
+    ],
+    fr: [
+      /Tu peux ajouter ton matériel/,
+      /«Masquer du profil»/,
+      /un article de matériel/,
+    ],
+    es: [/Puedes añadir tu equipo/, /«Ocultar del perfil»/, /un artículo de equipo/],
+  };
+  for (const [language, content] of CONTENTS) {
+    const privacy = all(content.privacy);
+    for (const sentence of gear[language]) {
+      expect(privacy).toMatch(sentence);
+    }
+    // The gear is off in the app (GEAR_ON): the help does not tell it yet.
+    expect(all(content.help)).not.toMatch(gear[language][0]);
+  }
+});
+
+test("«Privacy» says a saved flight counts, without a name, in the history of its takeoff, shown from three pilots (TASK-493 B)", () => {
+  const fromThree: Record<Language, RegExp> = {
+    en: /at least three different pilots/,
+    it: /almeno tre/,
+    de: /mindestens drei verschiedene Piloten/,
+    fr: /au moins trois pilotes différents/,
+    es: /al menos tres pilotos distintos/,
+  };
+  for (const [language, content] of CONTENTS) {
+    const text = all(content.privacy);
+    expect(text).toMatch(fromThree[language]);
+    expect(text).toMatch(/OpenStreetMap\./);
+  }
 });

@@ -21,9 +21,10 @@ scelte, fra il 27 e il 28 ottobre 2026:
 | Che cosa | Da dove | Parte |
 |---|---|---|
 | Un'attività con la sua traccia | un file GPX, TCX o FIT esportato da un'altra app (Strava dal sito, Garmin Connect, Komoot, Polar Flow, Suunto, Coros, Wahoo…) e salvato in «File» | A (API), B (app) |
-| Un post di sole foto | da 1 a 3 foto dal rullino, anche quelle già messe su Instagram | C |
+| Un post di sole foto | da 1 a 10 foto dal rullino, anche quelle già messe su Instagram | C |
 | Gli allenamenti già sul telefono | Apple Salute (iOS), Health Connect (Android) | D, prima uno studio (§7) |
 | Le attività di un account esterno | un collegamento diretto a Garmin, Polar, Suunto, Coros, Wahoo, Strava… | E, prima uno studio (§8) |
+| Un allenamento in palestra già fatto | scritto a mano dal «+» del Feed («Gym workout»: esercizi, serie, pesi, giorno, ora, durata) | TASK-484, ADR-0395 (`sports/gym.md`) |
 
 **Instagram non si collega.** La sua API legge solo gli account Business o
 Creator, e solo dopo la revisione di Meta. Un post di Instagram, poi, è
@@ -36,8 +37,15 @@ In «My activities» (Profile) c'è un pulsante «Add past activity». Apre due
 scelte: «From a file» e «Photos only». *Proposta, da confermare con i
 testi della parte B.*
 
-Anche dal Feed (TASK-476, ADR-0387): il «+» a destra delle schede apre
-il foglio «Add activity», oggi con solo «From a file».
+Anche dal Feed (TASK-476, ADR-0387; TASK-481, ADR-0390): il «+» a destra
+delle schede apre il foglio «Add to Feed» sulla lista delle voci pronte,
+nell'ordine «Record now», «Photos only», «From a file» (poi «Sleep», «Gym
+workout», «Workout plan» quando arrivano). «Record now» chiude il foglio e
+fa partire la registrazione dello sport scelto; «Photos only» apre il modulo
+del post di sole foto; «From a file» apre subito «Files». Una voce si apre
+nello stesso foglio, con «‹» per tornare alla lista. Il «+» c'è con
+l'account anche senza il selettore di file (TASK-312 C2): allora manca
+solo «From a file».
 
 Senza account il pulsante non c'è, come «My activities». Senza il modulo
 nativo del selettore di file (la 1.0 da App Store, finché non arriva la
@@ -80,11 +88,15 @@ Il file non si tiene: resta solo la corsa, come la tiene l'API.
 
 ## 4. Un post di sole foto
 
-1. **Lo stesso modulo senza la mappa e senza i risultati**: da 1 a 3 foto
-   (almeno una), titolo, descrizione, persone taggate. Chi lo vede:
-   «Everyone» o «Followers». «Only me» non c'è, perché le foto vanno sul
+1. **Lo stesso modulo senza la mappa e senza i risultati**: da 1 a 10 foto
+   (almeno una; scelta dell'utente del 2026-11-21, «Fino a 10 foto»),
+   titolo, descrizione, persone taggate. Chi lo vede: «Everyone» o
+   «Followers», all'inizio l'ultima scelta salvata (la prima volta, o dopo
+   un «Only me», «Everyone»). «Only me» non c'è, perché le foto vanno sul
    server solo quando altri vedono il post (ADR-0170): un post solo foto
-   «Only me» sul server sarebbe vuoto.
+   «Only me» sul server sarebbe vuoto. Sul server è un disegno senza corsa
+   (`API.md` «Photo posts», `DATABASE.md` migrazione `0080`), pubblicato
+   con la prima foto.
 2. **Nel Feed** la scheda mostra le foto al posto del disegno, da scorrere
    come in ADR-0275, con «Imported». La data è quella della
    pubblicazione.
@@ -94,6 +106,16 @@ Il file non si tiene: resta solo la corsa, come la tiene l'API.
    post (TASK-119–121, TASK-213, TASK-291). Titolo e descrizione non
    passano dal filtro dei testi negativi, come quelli di un post
    (TASK-208).
+5. **Solo le app che lo sanno mostrare lo ricevono** (`photos` in
+   `X-MuW-Reads`): le app di prima non lo vedono mai. Per ora non si
+   trova con la ricerca dei disegni, non ha link pubblico e non si manda
+   in chat: partono tutti da una corsa.
+6. **Si cambia e si cancella dalla sua pagina** (TASK-312 C2): chi l'ha
+   scritto apre il post e, dalle impostazioni, cambia titolo, descrizione
+   e chi lo vede, o lo cancella («Delete this post? It cannot be
+   undone.»). Niente «Share» e niente numeri della corsa. Senza rete il
+   post e le sue foto aspettano sul telefono e partono dopo, una foto alla
+   volta.
 
 ## 5. Cosa non conta
 
@@ -103,6 +125,11 @@ Il file non si tiene: resta solo la corsa, come la tiene l'API.
 - **Il concorso** (TASK-299): la classifica prende solo i disegni di corse
   con `source = 'muw'`. Un post solo foto non ha corsa, quindi resta fuori
   da sé.
+- **La palestra scritta a mano** (TASK-484, ADR-0395, `source = 'manual'`):
+  fuori anche dai livelli e dalla classifica della palestra, dai badge,
+  da Apple Salute e dal giorno della scheda. Sotto «Imported» la sua
+  frase: «Workouts written by hand don't count for Play, contests, levels
+  or the leaderboard.»
 - **«Imported» si vede** nella scheda del Feed, nel post aperto e nella
   scheda di «My activities». Sotto il titolo del modulo: «Imported
   activities don't count for Play or contests.» *(testo da approvare)*.
@@ -119,6 +146,15 @@ Il file non si tiene: resta solo la corsa, come la tiene l'API.
 - Una riga nuova nella privacy, da approvare dall'utente nella parte B:
   «If you add a past activity from a file, we keep its track and times
   like a run recorded with MuW. We do not keep the file.»
+- La riga dei post di sole foto, approvata dall'utente il 2026-11-21
+  (traduzioni il 2026-11-22), nella privacy dal 22 novembre 2026: «A post
+  with «Photos only» has no track, no place and no times. Its photos go to
+  our server resized, without the data your phone adds, such as where and
+  when they were taken. They are seen, with the title, the description
+  and the people you tag, by «Everyone» or by your «Followers»: there is
+  no «Only me». The choice starts from your last post, or on «Everyone»,
+  and you see it before «Post». The post stays until you delete it or
+  your account.»
 
 ## 7. Apple Salute e Health Connect (studio, parte D)
 

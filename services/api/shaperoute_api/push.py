@@ -16,8 +16,9 @@ a group run's, to who goes (TASK-309, group_runs.py): it starts soon, its
 time or place changed, it was cancelled; two the private messages'
 (TASK-319, messages.py): a message, and a message request once a day for
 each writer; three the monthly challenges' (TASK-343, contests.py and
-contest_clock.py): a new one opened, its last days, its results. Each to
-one recipient, and only when:
+contest_clock.py): a new one opened, its last days, its results; three a
+group's (TASK-495, groups.py): a request to join, a request accepted, an
+invite, the group deleted. Each to one recipient, and only when:
 
 - the recipient has «Push notifications» on (users.notify_push);
 - the recipient is not the one who acted, but for OWN_KINDS;
@@ -109,6 +110,11 @@ Kind = Literal[
     "message",
     "message_request",
     "planned_live_started",
+    "gear_limit",
+    "group_join_request",
+    "group_join_accepted",
+    "group_invite",
+    "group_deleted",
 ]
 # The events of what one did oneself, or of nobody's doing: told to
 # oneself too (the shape game, TASK-296; the contest won, TASK-299; the
@@ -126,12 +132,15 @@ OWN_KINDS: frozenset[str] = frozenset(
         "contest_last_days",
         "contest_results",
         "group_run_soon",
+        "gear_limit",
     }
 )
 
 # The events the listeners hear of and no phone is sent: a reaction to a
-# comment is read in the bell only (TASK-454, the user's choice).
-BELL_ONLY: frozenset[str] = frozenset({"comment_reaction"})
+# comment is read in the bell only (TASK-454, the user's choice); so is an
+# item of gear past its limit (TASK-486 part G: no push in the first
+# version, the user's choice 5).
+BELL_ONLY: frozenset[str] = frozenset({"comment_reaction", "gear_limit"})
 
 # An Expo push token: "ExponentPushToken[…]", or "ExpoPushToken[…]".
 TOKEN_PATTERN = r"^Expo(nent)?PushToken\[[A-Za-z0-9_\-]{1,180}\]$"
@@ -241,6 +250,12 @@ class PushEvent:
     # "drawing", "post" (TASK-455) or "live" (TASK-468); its text, if any,
     # is `text`.
     attachment: str | None = None
+    # An item of gear past its limit (TASK-486 part G): the app opens it;
+    # its name is `text`, `key` its id and its limit.
+    gear_id: UUID | None = None
+    # A group (TASK-495, groups.py): the app opens its page; its name is
+    # `text`, `key` its id.
+    group_id: UUID | None = None
 
     def same(self) -> tuple[str, int, int, str, str]:
         return (
@@ -538,6 +553,49 @@ TEXTS: dict[str, dict[str, str]] = {
         "es": "{name} comparte contigo una actividad en directo",
         "fr": "{name} partage une activité en direct avec toi",
     },
+    # An item of gear past the limit its owner set (TASK-486 part G): to the
+    # owner only, in the bell. No number: the limit is in the owner's units.
+    # The five texts approved by the user on 2026-11-23.
+    "gear_limit": {
+        "en": "{title} reached the limit you set.",
+        "de": "{title} hat das Limit erreicht, das du festgelegt hast.",
+        "it": "{title} ha raggiunto il limite che hai scelto.",
+        "es": "{title} ha llegado al límite que pusiste.",
+        "fr": "{title} a atteint la limite que tu as fixée.",
+    },
+    # Groups (TASK-495, GRUPPI.md §8): {title} is the group's name, {name}
+    # who asked, accepted or invited. The five texts of each approved by the
+    # user on 2026-11-23.
+    "group_join_request": {
+        "en": "{name} asked to join {title}.",
+        "de": "{name} möchte {title} beitreten.",
+        "it": "{name} ha chiesto di entrare in {title}.",
+        "es": "{name} ha pedido unirse a {title}.",
+        "fr": "{name} a demandé à rejoindre {title}.",
+    },
+    "group_join_accepted": {
+        "en": "You're in {title}!",
+        "de": "Du bist jetzt in {title}!",
+        "it": "Sei dentro {title}!",
+        "es": "¡Ya estás en {title}!",
+        "fr": "Tu fais partie de {title} !",
+    },
+    "group_invite": {
+        "en": "{name} invited you to join {title}.",
+        "de": "{name} hat dich eingeladen, {title} beizutreten.",
+        "it": "{name} ti ha invitato a entrare in {title}.",
+        "es": "{name} te ha invitado a unirte a {title}.",
+        "fr": "{name} t'a invité à rejoindre {title}.",
+    },
+    # A group deleted by its admin (TASK-495 part A3): to its members; it
+    # opens nothing, the group is gone. Approved by the user 2026-11-24.
+    "group_deleted": {
+        "en": "{name} deleted the group {title}.",
+        "de": "{name} hat die Gruppe {title} gelöscht.",
+        "it": "{name} ha eliminato il gruppo {title}.",
+        "es": "{name} ha eliminado el grupo {title}.",
+        "fr": "{name} a supprimé le groupe {title}.",
+    },
     "message_live_text": {
         language: "{name}" + (" : " if language == "fr" else ": ") + "🔴 {text}"
         for language in ("en", "de", "it", "es", "fr")
@@ -581,8 +639,15 @@ def data_of(event: PushEvent, actor_public_id: UUID, actor_name: str) -> dict[st
     the profile of who acted."""
     if event.contest_id is not None:
         return {"kind": event.kind, "contest_id": str(event.contest_id)}
+    if event.gear_id is not None:
+        return {"kind": event.kind, "gear_id": str(event.gear_id)}
     if event.group_run_id is not None:
         return {"kind": event.kind, "group_run_id": str(event.group_run_id)}
+    if event.group_id is not None:
+        return {"kind": event.kind, "group_id": str(event.group_id)}
+    if event.kind == "group_deleted":
+        # The group is gone: nothing to open, not even who deleted it.
+        return {"kind": event.kind}
     if event.planned_live_id is not None:
         return {
             "kind": event.kind,
@@ -802,8 +867,7 @@ def _sees(conn: Connection[DictRow], viewer_id: int, drawing_id: UUID) -> bool:
     from shaperoute_api.drawings import drawing_seen_sql
 
     row = conn.execute(
-        "SELECT 1 FROM drawings d JOIN runs r ON r.id = d.run_id"
-        f" WHERE d.id = %s AND {drawing_seen_sql('%s')}",
+        f"SELECT 1 FROM drawings d WHERE d.id = %s AND {drawing_seen_sql('%s')}",
         (drawing_id, viewer_id),
     ).fetchone()
     return row is not None
@@ -867,8 +931,7 @@ def notify_owner(
         return
     owner = _one(
         pusher,
-        "SELECT r.user_id AS id FROM drawings d JOIN runs r ON r.id = d.run_id"
-        " WHERE d.id = %s",
+        "SELECT user_id AS id FROM drawings WHERE id = %s",
         (wanted,),
     )
     if owner is not None:

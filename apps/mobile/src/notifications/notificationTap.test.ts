@@ -1,3 +1,4 @@
+import groupPushes from "@shaperoute/shared-types/fixtures/group-push-data.json";
 import examples from "@shaperoute/shared-types/fixtures/push-data.json";
 
 import { tapTarget } from "./notificationTap";
@@ -65,5 +66,35 @@ test("anything else opens nothing", () => {
     { public_id: "5f0c2b8e-1d4a-4e6b-8c9f-3a2b1c0d9e8f", username: "" },
   ]) {
     expect(tapTarget(data)).toBeNull();
+  }
+});
+
+test("an item of gear past its limit opens the item (TASK-486 part G)", () => {
+  const gear = "6f1c2a7e-3b4d-4e8f-9a01-2b3c4d5e6f70";
+  expect(tapTarget({ kind: "gear_limit", gear_id: gear })).toEqual({
+    kind: "gear",
+    id: gear,
+  });
+  expect(tapTarget({ kind: "gear_limit", gear_id: "nope" })).toBeNull();
+  expect(tapTarget({ kind: "gear_limit" })).toBeNull();
+});
+
+test("a group's three notifications open its page", () => {
+  for (const data of groupPushes) {
+    expect(tapTarget(data)).toEqual({ kind: "group", id: data.group_id });
+    expect(tapTarget({ ...data, group_id: "nope" })).toBeNull();
+    expect(tapTarget({ kind: data.kind })).toBeNull();
+  }
+});
+
+test("a group run's three notifications open its page", () => {
+  const run = "5b0c6a1e-3d2f-4e8a-9b7c-1d2e3f4a5b6c";
+  for (const kind of ["group_run_soon", "group_run_changed", "group_run_cancelled"]) {
+    expect(tapTarget({ kind, group_run_id: run })).toEqual({
+      kind: "group_run",
+      id: run,
+    });
+    expect(tapTarget({ kind, group_run_id: "nope" })).toBeNull();
+    expect(tapTarget({ kind })).toBeNull();
   }
 });

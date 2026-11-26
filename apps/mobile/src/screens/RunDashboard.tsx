@@ -28,7 +28,7 @@ import {
 } from "../navigation/runControl";
 import { PADDLE_PACE_M, PADDLE_PACE_UNIT } from "../navigation/paddle";
 import { speedChange, speedNumber } from "../navigation/ride";
-import { changeLabel, type Split, splits } from "../navigation/runMetrics";
+import { changeLabel, climbM, type Split, splits } from "../navigation/runMetrics";
 import {
   FIRST_PAGE,
   runPage,
@@ -51,12 +51,14 @@ import {
   space,
 } from "../theme/tokens";
 import { runActivityOf } from "../settings/sport";
+import { usePlanToGo } from "../gym/planToGo";
 import { useSport } from "../settings/useSport";
 import { metresPer } from "../units/format";
 import type { Units } from "../units/units";
 import { VoiceSetting } from "../voice/VoiceSetting";
 import { useWatch } from "../watch/useWatch";
 import { WatchHeart } from "../watch/WatchHeart";
+import { CompassLine } from "./CompassLine";
 import { Countdown } from "./Countdown";
 import { HoldButton, ROUND_BUTTON } from "./HoldButton";
 import { confirmPocketMode, PocketScreen } from "./PocketScreen";
@@ -131,8 +133,14 @@ export function RunCard({
 }: Props) {
   // The sport «Save» takes, the one of «Settings»: its calories (TASK-424
   // part C2), and the watch's activity.
-  const sport = runActivityOf(useSport());
-  const numbers = useRunNumbers(track, live && !arrived, route, activity, sport);
+  const chosen = useSport();
+  const sport = runActivityOf(chosen);
+  // Recorded freely on a day of a plan (TASK-461 B2c): what is left of it,
+  // as of a route.
+  const climbed = useMemo(() => climbM(track), [track]);
+  const planDay = usePlanToGo(chosen, track.distanceM, climbed);
+  const shown = route ?? planDay ?? undefined;
+  const numbers = useRunNumbers(track, live && !arrived, shown, activity, sport);
   const control = useRunControl();
   const pocket = usePocketMode(live && !arrived);
   // The screen on for the whole run, pocket mode or not (TASK-255).
@@ -177,8 +185,9 @@ export function RunCard({
       }),
     [folded, foldable],
   );
-  // «Compass» (TASK-422): the map, and under it only the way to pause and
-  // to stop. No number is drawn, so the map takes the room.
+  // «Compass» (TASK-422): the map, and under it the way to pause and to
+  // stop, with one small line of how far and how long (TASK-518 A) so the
+  // map keeps the room.
   const compassPage = page === "compass";
 
   const buttons = (
@@ -217,8 +226,9 @@ export function RunCard({
             ))}
           {!compassPage && <RunGameLine text={game} />}
           {!compassPage && <WatchHeart bpm={bpm} />}
-          {!compassPage && route && <RouteBar route={route} numbers={numbers} />}
+          {!compassPage && shown && <RouteBar route={shown} numbers={numbers} />}
           {!compassPage && page !== "data" && share}
+          {compassPage && <CompassLine numbers={numbers} />}
           {buttons}
           <PageTabs page={page} onPage={setRunPage} />
         </>
@@ -232,7 +242,7 @@ export function RunCard({
         numbers={numbers}
         bpm={bpm}
         game={game}
-        route={route}
+        route={shown}
         heading={heading}
         share={share}
         buttons={buttons}

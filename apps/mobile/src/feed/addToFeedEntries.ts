@@ -1,3 +1,5 @@
+import type { ImageSourcePropType } from "react-native";
+
 import { t } from "../i18n";
 
 /**
@@ -10,10 +12,27 @@ import { t } from "../i18n";
  * workout» and «Workout plan» are always ready: the «+» is there only with
  * an account; with no plans the second says how to make one. «Already
  * recorded» is always ready too: with no activity left to post, its flow
- * says so.
+ * says so. Each has its line sign (TASK-509, `ADD_TO_FEED_ICONS`), left
+ * of its words: an entry added here without one does not compile.
  */
 export type AddToFeedEntryId =
   "record" | "done" | "photos" | "file" | "sleep" | "gym" | "plan";
+
+/**
+ * The entries' signs: Lucide's icons (ISC, `assets/ui/icons/`), white and
+ * coloured by `tintColor`, as the ones under a post (TASK-444). The
+ * dumbbell is the gym's of the tab bar, at the size of these. Beside the
+ * entries and not in them: an entry stays its id and its words.
+ */
+export const ADD_TO_FEED_ICONS = {
+  record: require("../../assets/ui/icons/circle-dot.png"),
+  done: require("../../assets/ui/icons/history.png"),
+  photos: require("../../assets/ui/icons/images.png"),
+  file: require("../../assets/ui/icons/file-up.png"),
+  sleep: require("../../assets/ui/icons/moon.png"),
+  gym: require("../../assets/ui/icons/dumbbell.png"),
+  plan: require("../../assets/ui/icons/clipboard-list.png"),
+} satisfies Record<AddToFeedEntryId, ImageSourcePropType>;
 
 export type AddToFeedEntry = {
   id: AddToFeedEntryId;

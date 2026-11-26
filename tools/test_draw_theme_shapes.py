@@ -13,7 +13,16 @@ pytest.importorskip("route_engine")
 pytest.importorskip("shapely")
 
 import draw_new_shapes  # noqa: E402
-from draw_theme_shapes import CANDIDATES, CATEGORIES, S, draw, preview  # noqa: E402
+from draw_theme_shapes import (  # noqa: E402
+    APPROVED,
+    CANDIDATES,
+    CATEGORIES,
+    OUTLINES,
+    S,
+    draw,
+    home,
+    preview,
+)
 from route_engine.shapes import SHAPES  # noqa: E402
 from route_engine.shapes.outline import read_outline  # noqa: E402
 from shapely.geometry import LineString  # noqa: E402
@@ -26,7 +35,7 @@ SAME_DRAWING = 0.02
 
 
 def _path(name: str):
-    return CANDIDATES / f"{name}.json"
+    return home(name)
 
 
 def _file(name: str) -> dict:
@@ -50,9 +59,23 @@ def test_eleven_shapes_for_winter_the_holidays_and_sport() -> None:
     assert {S[n][0] for n in NAMES} <= set(CATEGORIES)
 
 
-def test_no_name_is_taken() -> None:
-    assert not set(NAMES) & set(SHAPES)
+def test_no_name_is_taken_but_by_the_approved_shapes() -> None:
+    # The shapes the user approved are in the engine's catalogue (ADR-0411),
+    # the others are not; none is among the candidates of TASK-418.
+    assert set(NAMES) & set(SHAPES) == APPROVED
     assert not set(NAMES) & set(draw_new_shapes.S)
+
+
+def test_ten_approved_the_comet_stays_a_candidate() -> None:
+    assert len(APPROVED) == 10
+    assert set(NAMES) - APPROVED == {"comet"}
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_each_file_lives_in_one_place(name: str) -> None:
+    in_catalogue = (OUTLINES / f"{name}.json").exists()
+    candidate = (CANDIDATES / f"{name}.json").exists()
+    assert (in_catalogue, candidate) == (name in APPROVED, name not in APPROVED)
 
 
 def test_the_registries_stay_apart() -> None:

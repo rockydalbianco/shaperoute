@@ -1,13 +1,9 @@
 # TASK-485 — La scheda della palestra come post
 
-**Stato**: In lavorazione · parte 0 in `main` (#1365); A (server) in
-`main` (#1404), passo 18 sul server col sì dell'utente; B (app) in `main`
-(#1414, `f4737c66`, 2026-11-22), testi e traduzioni approvati il
-2026-11-23; B2, la voce «Workout plan» del «+», in `main` (#1431,
-`ed0bd4d7`, 2026-11-23); privacy in `main` (#1469, `5d226b33`,
-2026-11-23); C, l'apertura da profilo, notifica, link o chat, in `main`
-(#1481, `2a5c7590`, 2026-11-23); restano la copia della privacy sul sito
-e l'OTA, ciascuna col sì dell'utente chiesto dal Coordinatore
+**Stato**: Done · 2026-11-26 · parte 0 (#1365), A (#1404, sul server
+col passo 18), B (#1414), B2 (#1431), privacy (#1469, sul sito) e C
+(#1481) in `main` e in produzione con l'OTA 26 (2026-11-24); provata
+dall'utente sul telefono il 2026-11-26 nella prova generale («ok»)
 **Prova sul telefono**: fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-485-gym-plan-post` (parte 0, in
 `main`); `feat/TASK-485-a-plan-posts-api` (A); B col suo branch e la sua PR
@@ -355,7 +351,8 @@ contro un'API locale: la griglia mostra la cella del piano; toccata apre
 la scheda sulla mappa col riquadro e «Usa questo piano»; il riquadro apre
 il piano intero coi kg e chiudendo si torna alla scheda. L'utente ha
 approvato le schermate («Sì, approvo»). In `main` il 2026-11-23
-(`2a5c7590`). Esce con l'OTA, col sì dell'utente.
+(`2a5c7590`). Voce: ADR-0394 precisazione C. In produzione con l'OTA 26
+(`71fc76c4`, 2026-11-24, col sì dell'utente).
 
 ## Criteri di accettazione
 
@@ -366,12 +363,16 @@ approvato le schermate («Sì, approvo»). In `main` il 2026-11-23
       pubblicata (test); reazioni, commenti, blocchi e nascosti valgono
       (test); chi parte da `runs` non la vede (test). CI verde; sul server
       col passo del Coordinatore.
-- [ ] **B**: la voce compare solo con un account; pubblica una scheda
+- [x] **B**: la voce compare solo con un account; pubblica una scheda
       anche senza rete; il riquadro e la scheda aperta coi kg; «Use this
       plan» fa una scheda nuova coi kg, senza ritmi e senza data; con 20
       schede il messaggio (test). Schermate e quattro traduzioni approvate
       dall'utente; privacy nelle cinque lingue e sul sito; `tsc` e jest dei
       file toccati verdi, CI verde.
+- [x] **C**: un piano pubblicato aperto da profilo, campanella, push, link
+      o chat mostra il riquadro e «Use this plan», niente di una corsa;
+      nella griglia del profilo la cella del piano (test). Schermate
+      approvate dall'utente; `tsc` e jest dei file toccati verdi, CI verde.
 
 ## Fuori scope
 
@@ -383,4 +384,10 @@ approvato le schermate («Sì, approvo»). In `main` il 2026-11-23
 
 ## Esito
 
-_(a fine task)_
+Done il 2026-11-26. Una scheda della palestra si pubblica nel Feed dalla
+voce «Workout plan» del «+», anche senza rete; chi la vede apre il piano
+intero coi kg e con «Use this plan» ne fa una scheda sua. Si apre anche da
+un profilo, dalla campanella, da una push, dal link del post e da una
+chat. Privacy nelle cinque lingue e sul sito. Tutto in produzione con
+l'OTA 26 (2026-11-24). Provata dall'utente sul telefono il 2026-11-26,
+nella prova generale («ok»). ADR-0394 con le precisazioni B e C.

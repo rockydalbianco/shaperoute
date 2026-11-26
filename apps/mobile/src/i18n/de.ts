@@ -3588,7 +3588,7 @@ export const DE: Table = {
   "Task for XCTrack": "Aufgabe für XCTrack",
   "This task is too long for a QR code.":
     "Diese Aufgabe ist zu lang für einen QR-Code.",
-  // src/air/ (TASK-479 part D5: the pilot's own waypoints; waiting for the user's approval)
+  // src/air/ (TASK-479 part D5: the pilot's own waypoints; approved by the user on 2026-11-26)
   "Mark this place": "Diesen Ort markieren",
   "Waypoint here": "Wegpunkt hier",
   "Landing here": "Landeplatz hier",

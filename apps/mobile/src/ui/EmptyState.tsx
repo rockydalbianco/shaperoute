@@ -1,33 +1,52 @@
-import { useState } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 
 import { ShapeOutline } from "../game/ShapeOutline";
 import { color, font, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { Tap } from "./Tap";
+import { useReduceMotion } from "./useReduceMotion";
 
 type Props = {
   /** The figure drawn faintly behind the words: an outline from 0 to 1, y
    * downwards, as the catalog's (`./outlines`). */
   outline: readonly (readonly [number, number])[];
-  title: string;
+  /** The page's name, when nothing above the figure says it already. */
+  title?: string;
   message: string;
   /** The one quiet thing to do about it, when there is one. */
   action?: { label: string; onPress: () => void };
   testID?: string;
 };
 
-/** How much of the figure the pen has drawn, in yellow: a start, not a route. */
-const DRAWN_SHARE = 0.16;
+/** How long the pen takes to go round the figure, once. */
+export const EMPTY_DRAW_MS = 1400;
 const FIGURE_SIZE = 160;
 
 /**
  * A page with nothing in it yet (TASK-339, ADR-0293): a figure of the
- * catalog in a faint line, its first strokes in the route's yellow as if a
- * run had just begun it, a short title, a gentle line that says what will
+ * catalog in a faint line, a short title, a gentle line that says what will
  * fill the page, and at most one thing to do. No box, no exclamation mark.
+ * The pen goes round the figure once in the route's yellow and leaves it
+ * whole (TASK-509): a few strokes left standing read as a spinner that had
+ * stopped. When the phone asks for less motion the figure is whole at once.
  */
 export function EmptyState({ outline, title, message, action, testID }: Props) {
-  const [drawn] = useState(() => new Animated.Value(DRAWN_SHARE));
+  const reduced = useReduceMotion();
+  const [drawn] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    if (reduced) {
+      drawn.setValue(1);
+      return undefined;
+    }
+    const drawing = Animated.timing(drawn, {
+      toValue: 1,
+      duration: EMPTY_DRAW_MS,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    });
+    drawing.start();
+    return () => drawing.stop();
+  }, [drawn, reduced]);
   return (
     <View style={styles.empty} testID={testID}>
       <View
@@ -48,13 +67,16 @@ export function EmptyState({ outline, title, message, action, testID }: Props) {
             color={color.accent}
             thickness={3}
             draw={drawn}
+            testID="empty-state-pen"
           />
         </View>
       </View>
       <View style={styles.words}>
-        <Text style={styles.title} accessibilityRole="header">
-          {title}
-        </Text>
+        {title !== undefined && (
+          <Text style={styles.title} accessibilityRole="header">
+            {title}
+          </Text>
+        )}
         <Text style={styles.message}>{message}</Text>
       </View>
       {action && (

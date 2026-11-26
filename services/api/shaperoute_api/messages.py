@@ -49,6 +49,13 @@ it. Sending it lets the other see it in the app (live_share_recipients);
 the card says how it goes, asked at every reading, and is null once the
 share is gone or the reader may not see it: «Live ended». Only an app that
 says READS_LIVE in X-MuW-Reads receives it; the others read «[Live]».
+
+An open conversation is asked again every few seconds (TASK-498): the first
+page says `latest`, the place of its newest message, and `?after=<latest>`
+answers only what came after it (MessageNewsBody), without the other's
+picture and in two queries when nothing did. What that answer cannot say (a
+message deleted or hidden, the other's name and picture, a card that
+changed) is still said by the page, which the app reads now and then.
 """
 
 from __future__ import annotations
@@ -165,6 +172,7 @@ NEGATIVE_MESSAGE = "You can't send negative messages in this app."
 ATTACHMENT_IN_REQUEST = (
     "Photos, videos and drawings can be sent once they accept your message."
 )
+AFTER_OR_CURSOR = "Ask for the messages after a place or before one, not both."
 NO_UPLOAD = "No photo or video with this id to send: upload it again."
 NO_DRAWING = "No drawing in a message with this id."
 
@@ -360,6 +368,27 @@ class MessagesBody(BaseModel):
     attachments: AttachmentsAllowedBody | None
     """Null outside an `open` conversation: a request is text only. An API
     before TASK-333 has no field, and the app shows no «+»."""
+    latest: str | None = None
+    """The `after` of the next check (TASK-498): the place of the newest
+    message, NOTHING_YET in a conversation without one. Null on a page of
+    older ones. An API before has no field, and the app asks the page."""
+
+
+class MessageNewsBody(BaseModel):
+    """GET /conversations/{public_id}/messages?after=: what came after a
+    place, for a conversation on screen (TASK-498):
+    packages/shared-types/fixtures/message-news.json. Never the other's
+    picture, nor what may be attached: the page says them."""
+
+    state: State
+    messages: list[MessageBody]
+    """Those after `after`, the latest first; none when nothing came."""
+    more: bool
+    """More came than a page holds, and the oldest of them are not here:
+    the app reads the first page again."""
+    latest: str
+    """The `after` of the next check: the place of the newest message
+    here, or the `after` asked when there is none."""
 
 
 class ConversationBody(BaseModel):
@@ -461,6 +490,26 @@ def _cursor(at: datetime, key: UUID) -> str:
 def _after_cursor(cursor: str) -> tuple[datetime, UUID]:
     micros, key = cursor.split("-")
     return EPOCH + int(micros) * MICROSECOND, UUID(key)
+
+
+# The `latest` of a conversation without messages: every message is after it.
+NOTHING_YET = _cursor(EPOCH, UUID(int=0))
+# Who the conversation is with and where the two stand, in one query, for
+# the check of every few seconds (Messages.news). Placeholders: who asks,
+# three times, then the other's public_id. `open` is the common case of
+# _state, answered without asking again: the other accepted, and who asks
+# has no request waiting for its own answer.
+NEWS_OF = (
+    f"SELECT u.id, {apart_sql('%s', 'u.id')} AS apart, mine.conversation_id,"
+    " (mine.user_id IS NULL OR mine.accepted_at IS NOT NULL)"
+    " AND theirs.accepted_at IS NOT NULL AS open"
+    " FROM users u"
+    " LEFT JOIN conversation_members mine"
+    " ON mine.user_id = %s AND mine.other_id = u.id"
+    " LEFT JOIN conversation_members theirs"
+    " ON theirs.user_id = u.id AND theirs.other_id = %s"
+    " WHERE u.public_id = %s"
+)
 
 
 def _uuid(value: str) -> UUID | None:
@@ -971,6 +1020,7 @@ class Messages:
                     messages=[],
                     next=None,
                     attachments=self.allowed(state, with_posts),
+                    latest=NOTHING_YET,
                 )
             where = f"m.conversation_id = %s AND {SEEN}"
             values: list[Any] = [user_id, mine["conversation_id"]]
@@ -996,6 +1046,69 @@ class Messages:
             ],
             next=_cursor(page[-1]["created_at"], page[-1]["id"]) if more else None,
             attachments=self.allowed(state, with_posts),
+            # Of the first page only: a page of older ones has no news.
+            latest=(
+                None
+                if cursor is not None
+                else (
+                    _cursor(page[0]["created_at"], page[0]["id"])
+                    if page
+                    else NOTHING_YET
+                )
+            ),
+        )
+
+    def news(
+        self,
+        user_id: int,
+        public_id: str,
+        after: str,
+        limit: int = PAGE_SIZE,
+        with_attachments: bool = True,
+        reads: Reads = EVERYTHING,
+        with_posts: bool = True,
+        with_lives: bool = True,
+    ) -> MessageNewsBody:
+        """The messages with `public_id` after the place `after`, the latest
+        first, as the page would show them; and the state, which is the
+        page's. Two queries when nothing came and the conversation is open
+        both ways. 404 and 422 as the page."""
+        try:
+            wanted = UUID(public_id)
+        except ValueError:
+            raise AccountError(404, "http_error", NO_PROFILE) from None
+        now = self.now()
+        with self.database.connect() as conn:
+            who = conn.execute(NEWS_OF, (user_id, user_id, user_id, wanted)).fetchone()
+            if who is None:
+                raise AccountError(404, "http_error", NO_PROFILE)
+            if who["id"] == user_id:
+                raise AccountError(422, "invalid_request", NOT_YOURSELF)
+            if who["apart"]:
+                raise AccountError(404, "http_error", NO_PROFILE)
+            state: State = "open" if who["open"] else _state(conn, user_id, who["id"])
+            rows: list[DictRow] = []
+            if who["conversation_id"] is not None:
+                rows = conn.execute(
+                    f"SELECT {MESSAGE_COLUMNS} FROM messages m {WITH_MEDIA}"
+                    " JOIN conversation_members cm"
+                    " ON cm.conversation_id = m.conversation_id AND cm.user_id = %s"
+                    f" WHERE m.conversation_id = %s AND {SEEN}"
+                    " AND (m.created_at, m.id) > (%s, %s)"
+                    " ORDER BY m.created_at DESC, m.id DESC LIMIT %s",
+                    (user_id, who["conversation_id"], *_after_cursor(after), limit + 1),
+                ).fetchall()
+            page, more = rows[:limit], len(rows) > limit
+            posts = _post_cards(conn, user_id, page, reads) if with_posts else None
+            lives = _live_cards(conn, user_id, page, now) if with_lives else None
+        return MessageNewsBody(
+            state=state,
+            messages=[
+                _message(row, user_id, now, with_attachments, reads, posts, lives)
+                for row in page
+            ],
+            more=more,
+            latest=_cursor(page[0]["created_at"], page[0]["id"]) if page else after,
         )
 
     def send(
@@ -1300,8 +1413,24 @@ def message_routes() -> APIRouter:
         with_lives: WithLives,
         limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = PAGE_SIZE,
         cursor: Annotated[str | None, Query(pattern=CURSOR_PATTERN)] = None,
+        after: Annotated[str | None, Query(pattern=CURSOR_PATTERN)] = None,
         with_: With = None,
-    ) -> MessagesBody:
+    ) -> MessagesBody | MessageNewsBody:
+        # ?after=: only what came after a place (TASK-498). An API before
+        # ignores it and answers the page, which the app reads as well.
+        if after is not None:
+            if cursor is not None:
+                raise AccountError(422, "invalid_request", AFTER_OR_CURSOR)
+            return messages.news(
+                user.id,
+                public_id,
+                after,
+                limit,
+                with_ is not None,
+                reads,
+                with_posts,
+                with_lives,
+            )
         return messages.page(
             user.id,
             public_id,

@@ -30,7 +30,14 @@ type Props<T extends string> = {
   onChange: (value: T) => void;
   /** The track: on the screen's background it wants a surface to show. */
   style?: StyleProp<ViewStyle>;
+  /** Every label on one line, smaller when it does not fit (TASK-508): for
+   * a track of many choices, where one label on two lines among the others
+   * on one reads as a mistake. Left out, a long label takes two lines. */
+  oneLine?: boolean;
 };
+
+/** How small a label on one line may get before it is cut. */
+export const ONE_LINE_MIN_SCALE = 0.7;
 
 /** Where the choice `index` of `count` begins in a track `width` wide. */
 export function segmentX(index: number, count: number, width: number): number {
@@ -129,6 +136,7 @@ export function Segmented<T extends string>({
   value,
   onChange,
   style,
+  oneLine = false,
 }: Props<T>) {
   const still = useReduceMotion();
   const mode = useGlassMode();
@@ -208,7 +216,14 @@ export function Segmented<T extends string>({
             accessibilityRole="button"
             accessibilityState={{ selected }}
           >
-            <Text style={[styles.modeText, selected && styles.modeTextSelected]}>
+            <Text
+              style={[
+                styles.modeText,
+                selected && styles.modeTextSelected,
+                oneLine && styles.modeTextOneLine,
+              ]}
+              {...(oneLine && ONE_LINE)}
+            >
               {option.label}
             </Text>
           </Pressable>
@@ -217,6 +232,13 @@ export function Segmented<T extends string>({
     </View>
   );
 }
+
+/** One line, as wide as its choice, smaller when the words do not fit. */
+const ONE_LINE = {
+  numberOfLines: 1,
+  adjustsFontSizeToFit: true,
+  minimumFontScale: ONE_LINE_MIN_SCALE,
+} as const;
 
 const styles = StyleSheet.create({
   modes: {
@@ -241,7 +263,8 @@ const styles = StyleSheet.create({
     left: 0,
     borderRadius: radius.pill,
   },
-  // On two lines when a label does not fit (TASK-340: «A mano libera»).
+  // On two lines when a label does not fit (TASK-340), unless the track
+  // asks for one line (TASK-508: «A mano libera» among four).
   // The choices not taken in the text's colour, lighter (TASK-361: in
   // `textMuted` they read as switched off); the one taken is told by its
   // surface, its border and a bolder weight.
@@ -252,5 +275,11 @@ const styles = StyleSheet.create({
   },
   modeTextSelected: {
     fontWeight: fontWeight.bold,
+  },
+  // As wide as its choice, so the words get smaller against that width
+  // and never touch the pill's edge.
+  modeTextOneLine: {
+    alignSelf: "stretch",
+    paddingHorizontal: space.xs,
   },
 });

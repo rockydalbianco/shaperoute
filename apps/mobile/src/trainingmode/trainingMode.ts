@@ -32,17 +32,19 @@ export function modeOf(sport: Sport): AppMode {
 export type BarPage = SkiBarPage | "trainingWorkouts" | "trainingFood";
 
 /**
- * The pages of the training mode: Today, Workouts, Food, Feed, Profile.
- * «Today» is the page «choose» of the app, as in the ski mode: every way
- * back to «Draw» (the end of a workout, «Discard») lands on it. «Messages»
- * has no tab here: it opens from its button in the header. «Food» is the
+ * The pages of the training mode: Feed, Today, Workouts, Food, Profile. As
+ * in every mode, «Feed» stays first and «Profile» last, the mode's own
+ * pages in between (the user's choice of 2026-11-24, part E). «Today» is
+ * the page «choose» of the app, as in the ski mode: every way back to
+ * «Draw» (the end of a workout, «Discard») lands on it. «Messages» has no
+ * tab here: it opens from its button in the header. «Food» is the
  * «Nutrition» page of TASK-489 (part D): only while «Nutrition» is on,
  * else the bar has four tabs.
  */
 export function trainingPagesOf(nutritionOn: boolean): readonly BarPage[] {
   return nutritionOn
-    ? ["choose", "trainingWorkouts", "trainingFood", "feed", "profile"]
-    : ["choose", "trainingWorkouts", "feed", "profile"];
+    ? ["feed", "choose", "trainingWorkouts", "trainingFood", "profile"]
+    : ["feed", "choose", "trainingWorkouts", "profile"];
 }
 
 export const TRAINING_PAGES: readonly BarPage[] = trainingPagesOf(NUTRITION_ON);

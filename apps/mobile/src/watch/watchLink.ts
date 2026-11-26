@@ -116,17 +116,34 @@ export function linkOn(native: WatchNative, emitter: WatchEmitter): WatchLink {
       onMessage(result.message);
     }
   };
+  const ready = async (): Promise<boolean> => {
+    try {
+      return (await native.getIsPaired()) && (await native.getIsWatchAppInstalled());
+    } catch {
+      return false;
+    }
+  };
   return {
     send(message) {
       // Not there, or not answering: the watch hears the next one.
       native.sendMessage(encodeWatchMessage(message)).catch(() => {});
     },
     transfer(message) {
-      try {
-        native.transferUserInfo(encodeWatchMessage(message));
-      } catch {
-        // No session (no watch paired): nothing to keep.
-      }
+      // Only to a paired watch that has the app (TASK-517): a transfer that
+      // fails makes react-native-watch-connectivity 2.0.0 build its error
+      // event with a nil user info, an exception that closes the app; with
+      // no app on the watch every transfer fails, at each activity start.
+      const encoded = encodeWatchMessage(message);
+      void ready().then((ok) => {
+        if (!ok) {
+          return;
+        }
+        try {
+          native.transferUserInfo(encoded);
+        } catch {
+          // No session (no watch paired): nothing to keep.
+        }
+      });
     },
     listen(onMessage) {
       let open = true;
@@ -164,13 +181,7 @@ export function linkOn(native: WatchNative, emitter: WatchEmitter): WatchLink {
         }
       };
     },
-    async ready() {
-      try {
-        return (await native.getIsPaired()) && (await native.getIsWatchAppInstalled());
-      } catch {
-        return false;
-      }
-    },
+    ready,
   };
 }
 

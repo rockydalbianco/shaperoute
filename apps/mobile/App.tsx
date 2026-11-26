@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { useCurrentOwner } from "./src/account/currentOwner";
 import { useActivitiesDoor } from "./src/activities/activitiesDoor";
 import { ActivityCard } from "./src/activities/ActivityCard";
 import { type Drawn, sameLine } from "./src/activities/recordedRun";
@@ -127,6 +128,7 @@ import type { ChoiceKind } from "./src/route/problems";
 import { withPenUp } from "./src/route/penUpHint";
 import { drawKindOf, figuresOf, shapeOfSport } from "./src/route/sportDraw";
 import { shapeAsked } from "./src/route/penUpShapes";
+import { DrawHint, drawMissing } from "./src/route/DrawHint";
 import { drawLabel, drawWhat } from "./src/route/drawLabel";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { averagePace } from "./src/route/runTime";
@@ -689,6 +691,15 @@ function MuW() {
         : image.state.status === "traced"
           ? imageAsked(image.state.outline, penUp)
           : null;
+  // Something written or picked, even if it cannot be drawn yet: its own
+  // field says why (a word the AI is reading, a letter no word has). Only
+  // nothing at all gets the line over «Draw route» (TASK-508).
+  const givenToDraw =
+    drawKind === "shape"
+      ? shapeText.trim() !== ""
+      : drawKind === "word"
+        ? wordText.trim() !== ""
+        : image.state.status !== "none";
   const request: AnyRouteRequest | null =
     start && drawn !== null && distanceM !== null
       ? { start: start.point, ...drawn, distance_m: distanceM, activity: sportActivity }
@@ -881,6 +892,47 @@ function MuW() {
   // (TASK-478 part b).
   const endSave = useRef<(() => void) | null>(null);
   const ended = finishing ? finished.run : freeFinishing ? freeFinished.run : null;
+  // Whose the run on screen is (TASK-507 part B2, the user's choice
+  // «Nascosta finché rientra»): the end of another account's run leaves the
+  // screen, and the run waits on the phone, set aside (trackStore), until
+  // that account signs in again; then its own end shows. A run being
+  // recorded is never touched: its file says whose it is, and its end comes
+  // through here too.
+  const owner = useCurrentOwner();
+  const [ownerSeen, setOwnerSeen] = useState(owner);
+  const othersRun = (run: SavedRun) => run.owner !== undefined && run.owner !== owner;
+  if (finished !== null && othersRun(finished.run)) {
+    setFinished(null);
+    if (screen === "finish") {
+      setScreen("choose");
+    }
+  } else if (freeFinished !== null && othersRun(freeFinished.run)) {
+    setFreeFinished(null);
+    if (screen === "runFinish") {
+      setScreen("choose");
+    }
+  } else if (ownerSeen !== owner) {
+    setOwnerSeen(owner);
+    // An account signed in with the app open: its own run left on the
+    // phone, if any, as the app would show it opening.
+    if (
+      owner !== null &&
+      finished === null &&
+      freeFinished === null &&
+      !running &&
+      !navigating
+    ) {
+      const own = leftRun();
+      const free = own === null ? leftFreeRun() : null;
+      if (own !== null) {
+        setFinished(own);
+        setScreen("finish");
+      } else if (free !== null) {
+        setFreeFinished(free);
+        setScreen("runFinish");
+      }
+    }
+  }
   // Where the runner is heading, with a route or without (TASK-164): the
   // arrow on the map.
   const runTrack = navigating ? trackOfNavigation(navigation) : freeTrack;
@@ -1540,6 +1592,11 @@ function MuW() {
               onPress={mapTurn.onArrow}
               northUp={mapTurn.compass ? mapTurn.northUp : undefined}
               upHint={mapTurn.compass ? t("Turns the map where you face") : undefined}
+              facing={
+                mapTurn.compass && !mapTurn.northUp
+                  ? (mapTurn.facing ?? undefined)
+                  : undefined
+              }
             />
           ) : undefined
         }
@@ -2041,6 +2098,13 @@ function MuW() {
                     footer={
                       <>
                         <ZoneNotice bytes={firstMaps} />
+                        {/* Why the button is off (TASK-508). */}
+                        <DrawHint
+                          missing={drawMissing({
+                            start: start !== null,
+                            shape: drawn !== null || givenToDraw,
+                          })}
+                        />
                         <DrawButton
                           enabled={request !== null}
                           onDraw={onDraw}

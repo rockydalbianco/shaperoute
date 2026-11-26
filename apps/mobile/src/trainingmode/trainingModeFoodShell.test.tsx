@@ -7,7 +7,7 @@ import { loadSport, saveSport } from "../settings/sport";
 
 // «Food» in the training mode's bar (TASK-490 part D, ADR-0398): with
 // «Nutrition» on (TASK-489's NUTRITION_ON, off in the code until it ships)
-// the bar of «Gym» is «Today · Workouts · Food · Feed · Profile», and
+// the bar of «Gym» is «Feed · Today · Workouts · Food · Profile», and
 // «Food» is the «Nutrition» page as it is. The setup is
 // `./trainingModeShell.test.tsx`'s: no GPS, no account, nothing asked of
 // the API.
@@ -69,7 +69,7 @@ function tabs(): string[] {
 test("with «Nutrition» on, «Gym» has «Food» after «Workouts», and it opens «Nutrition»", async () => {
   jest.mocked(loadSport).mockReturnValue("gym");
   await render(<App />);
-  expect(tabs()).toEqual(["Today", "Workouts", "Food", "Feed", "Profile"]);
+  expect(tabs()).toEqual(["Feed", "Today", "Workouts", "Food", "Profile"]);
   await fireEvent.press(screen.getByRole("tab", { name: "Food" }));
   expect(await screen.findByTestId("nutrition-page")).toBeOnTheScreen();
   expect(screen.getByRole("header", { name: "Nutrition" })).toBeOnTheScreen();

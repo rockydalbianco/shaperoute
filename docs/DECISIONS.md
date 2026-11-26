@@ -606,11 +606,50 @@ lasciando le righe d'indice.
 - ADR-0397, precisazione 5 — «Nutrition» anche dal profilo e a fine attività, la pagina del giorno animata (anelli su una scala, macronutrienti senza obiettivo), l'obiettivo di calorie proposto da MuW solo come stima in secondo piano con protezioni, il controllo del peso, la lettura dell'energia attiva dopo una build successiva · 2026-11-24 · Attiva
 - ADR-0407 — «Longevity»: cinquanta storie animate dentro l'app, ognuna da una fonte pubblica ufficiale citata, senza revisione di un professionista e con scritto che MuW non è fatta da professionisti; video delle persone e compensi dopo · 2026-11-24 · Attiva
 - ADR-0408 — La modalità «Nutrition»: scelta come uno sport la barra diventa Today · Plan · Explore · Feed · Profile; la scheda «Food» dell'allenamento resta; dopo TASK-490 D ed E · 2026-11-24 · Attiva
+- ADR-0409 — «Sign up» e «Log in» gialli: il pulsante in fondo al modulo è `accent` con parole `onAccent`, un'eccezione scelta dall'utente a «il giallo è del percorso» · 2026-11-24 · Attiva
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
 
 
 ## Voci nuove
+
+## ADR-0409 — «Sign up» e «Log in» gialli
+
+**Stato**: Attiva · 2026-11-24 · TASK-508. Il colore è **scelta
+dell'utente** («Giallo», confermata sulle schermate prima/dopo: «Sì, vanno
+bene»); il modo è deciso dall'agente su delega dell'utente. Numero dal
+Coordinatore.
+
+**Contesto**: nella prova nel simulatore del 23 novembre 2026 (U14) il
+pulsante in fondo al modulo di accesso era `surfaceRaised` col bordo, come
+un pulsante secondario: sulla pagina è l'unico comando, e non si
+distingueva dalla riga «Guide» sotto. `docs/UI.md` («Il tema», regola 1)
+tiene il giallo per il percorso, con un'eccezione già scelta dall'utente
+(«Run without a route», ADR-0183) e le proprie bolle nei messaggi
+(ADR-0403). All'utente sono state proposte tre strade: chiaro pieno (la
+proposta dell'agente, per non toccare la regola), giallo, com'era. Ha
+scelto il giallo.
+
+**Decisione**:
+- Il pulsante `account-submit` di `SignInScreen.tsx`, «Sign up» e «Log
+  in», ha il fondo `color.accent` e le parole `color.onAccent` in
+  grassetto, senza bordo: gli stessi due colori di «Draw route», in ogni
+  tono. Nessun token nuovo e nessun valore cambiato.
+- Mentre la richiesta è in viaggio resta dello stesso giallo, al 60%, e
+  non si tocca.
+- La forma non cambia (a pillola, alto `MIN_TAP_SIZE`): è il pulsante di
+  prima con un altro colore, non un secondo «Draw route».
+- L'interruttore «Sign up | Log in» sopra il modulo, «Forgot password?» e
+  «Guide» restano neutri.
+
+**Conseguenze**: il giallo ha un terzo posto fuori dal percorso, dopo
+«Run without a route» e le proprie bolle: «entra nell'app». La regola 1
+di `UI.md` lo nomina; per tutto il resto vale com'era, e un altro pulsante
+giallo resta una scelta dell'utente, non dell'agente. Il commento di
+`accent` in `tokens.ts` nomina ancora due eccezioni: va allineato alla
+prima modifica di quel file. Solo app, niente di nativo. Controllato da
+`SignInYellow.test.tsx` (fondo, parole, lo stato in attesa).
+
 ## ADR-0411 — Le forme nuove del motore: inverno, feste, sport e i 35 contorni di TASK-418, giudicate sulla carta, poi sulle strade, poi registrate tutte insieme
 
 **Stato**: Proposta · 2026-11-24 · TASK-516 (parte 0; la parte A sono i

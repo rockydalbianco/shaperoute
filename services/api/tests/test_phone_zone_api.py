@@ -15,8 +15,14 @@ from route_engine.network import FileSource
 
 from shaperoute_api import __main__ as entry
 from shaperoute_api.app import create_app
-from shaperoute_api.phone_zone_api import install_phone_zones, main, write_all
+from shaperoute_api.phone_zone_api import (
+    install_phone_zones,
+    main,
+    phone_file,
+    write_all,
+)
 from shaperoute_api.phone_zone_cap import TrafficCap
+from shaperoute_api.phone_zone_places import PlaceBuilds
 from shaperoute_api.phone_zones import SUFFIX, read_zone, zone_name
 
 REPO = Path(__file__).resolve().parents[3]
@@ -37,7 +43,9 @@ def cache(tmp_path: Path) -> Path:
 @pytest.fixture
 def client(cache: Path) -> TestClient:
     app = create_app(FileSource(LEVICO_GRAPH))
-    install_phone_zones(app, cache)
+    # A zone the server has not is queued, never downloaded (TASK-214 G).
+    places = PlaceBuilds(cache, phone_file, background=False)
+    install_phone_zones(app, cache, places=places)
     return TestClient(app)
 
 

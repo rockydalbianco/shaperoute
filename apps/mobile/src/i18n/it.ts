@@ -3547,6 +3547,12 @@ export const IT: Table = {
     "I prodotti trovati col codice a barre contengono dati di Open Food Facts, disponibili con la Open Database License. Restano separati dall'elenco USDA.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Questa pagina la vedi solo tu. Quello che scrivi qui resta sul tuo telefono; un codice a barre che cerchi va a Open Food Facts.",
+  // src/air/ (TASK-479 part D4: the task passed on; approved by the user on 2026-11-23)
+  "Share file": "Condividi file",
+  "Show QR": "Mostra QR",
+  "Task for XCTrack": "Task per XCTrack",
+  "This task is too long for a QR code.":
+    "Questa task è troppo lunga per un codice QR.",
   // src/air/ (TASK-479 part B3: widgets dragged in the editor; approved by the user on 2026-11-26)
   "Drag a widget to move it, or its corner to size it. Touch it for more.":
     "Trascina un widget per spostarlo, o il suo angolo per ridimensionarlo. Toccalo per altre azioni.",
@@ -3572,6 +3578,9 @@ export const IT: Table = {
   "Remove co-admin": "Togli co-admin",
   Members: "Membri",
   "Leave group": "Esci dal gruppo",
+  "Delete group": "Elimina il gruppo",
+  "Delete {name}? Its members, requests and invites go with it. This can't be undone.":
+    "Eliminare {name}? Membri, richieste e inviti se ne vanno con lui. Non si può annullare.",
   "Leave {name}?": "Uscire da {name}?",
   Groups: "Gruppi",
   "Withdraw the request": "Ritira la richiesta",
@@ -3601,4 +3610,15 @@ export const IT: Table = {
   Admin: "Admin",
   "Co-admin": "Co-admin",
   "This group isn't available.": "Questo gruppo non è disponibile.",
+  // src/nutrition (TASK-489 part C2)
+  "Use Apple Health": "Usa Salute di Apple",
+  "MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there.":
+    "MuW legge la tua energia attiva e gli allenamenti registrati da altre app, per contare l'energia che consumi. Sono letti sul telefono e restano lì.",
+  "Active energy": "Energia attiva",
+  "from Apple Health": "da Salute di Apple",
+  "Your activities are already inside Apple Health's active energy: they are not added again.":
+    "Le tue attività sono già dentro l'energia attiva di Salute di Apple: non si sommano di nuovo.",
+  "Apple Health has nothing for this day: your activities are counted.":
+    "Salute di Apple non ha niente per questo giorno: si contano le tue attività.",
+  "Stop using Apple Health": "Non usare più Salute di Apple",
 };

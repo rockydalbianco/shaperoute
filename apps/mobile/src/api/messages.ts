@@ -11,6 +11,7 @@ import {
   type Message,
   type MessageAttachmentRequest,
   type MessageDrawing,
+  type MessageNews,
   type MessageRequest,
   type MessagesPage,
 } from "@shaperoute/shared-types";
@@ -132,6 +133,33 @@ export function fetchMessages(
     isMessagesPage,
     readingPosts(options),
   );
+}
+
+/**
+ * GET /conversations/{public_id}/messages?after=: only the messages after
+ * the place `after`, the `latest` of the answer before (TASK-498): what an
+ * open conversation asks every few seconds. A server of before ignores
+ * `after` and answers the page: either is taken, and `isPage` says which.
+ */
+export function fetchNewMessages(
+  baseUrl: string,
+  token: string,
+  publicId: string,
+  after: string,
+  options: Options = {},
+): Promise<AccountOutcome<MessageNews | MessagesPage>> {
+  return ask(
+    baseUrl,
+    `${conversationPath(publicId)}/messages?${WITH}&after=${encodeURIComponent(after)}`,
+    { method: "GET", token },
+    isNewsOrPage,
+    readingPosts(options),
+  );
+}
+
+/** The page, with who the other is, and not the messages after a place. */
+export function isPage(answer: MessageNews | MessagesPage): answer is MessagesPage {
+  return "person" in answer;
 }
 
 /**
@@ -318,6 +346,22 @@ export function isMessagesPage(body: unknown): body is MessagesPage {
     body.messages.every(isMessage) &&
     (body.next === null || typeof body.next === "string")
   );
+}
+
+export function isMessageNews(body: unknown): body is MessageNews {
+  return (
+    isRecord(body) &&
+    typeof body.state === "string" &&
+    (CONVERSATION_STATES as readonly string[]).includes(body.state) &&
+    Array.isArray(body.messages) &&
+    body.messages.every(isMessage) &&
+    typeof body.more === "boolean" &&
+    typeof body.latest === "string"
+  );
+}
+
+function isNewsOrPage(body: unknown): body is MessageNews | MessagesPage {
+  return isMessagesPage(body) || isMessageNews(body);
 }
 
 export function isConversation(body: unknown): body is Conversation {

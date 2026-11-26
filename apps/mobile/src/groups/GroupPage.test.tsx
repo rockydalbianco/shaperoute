@@ -229,3 +229,57 @@ test("a group nobody may see is not available", async () => {
   await shown(fetchFn);
   expect(await screen.findByText("This group isn't available.")).toBeTruthy();
 });
+
+test("the admin deletes the group after a question, and the page goes", async () => {
+  const { fetchFn, calls } = api([ADMIN], INSIDE);
+  const alert = jest.spyOn(Alert, "alert");
+  const onBack = jest.fn();
+  await shown(fetchFn, { onBack });
+  await fireEvent.press(await screen.findByTestId("group-delete"));
+  expect(alert.mock.calls[0][1]).toBe(
+    `Delete ${ADMIN.name}? Its members, requests and invites go with it. This can't be undone.`,
+  );
+  await act(async () => {
+    await alert.mock.calls[0][2]![1]!.onPress!();
+  });
+  expect(calls.some((c) => c.method === "DELETE" && c.path === `/groups/${ID}`)).toBe(
+    true,
+  );
+  expect(onBack).toHaveBeenCalled();
+  alert.mockRestore();
+});
+
+test("only the admin sees «Delete group»", async () => {
+  const coadmin: GroupDetail = { ...ADMIN, me: "coadmin" };
+  const { fetchFn } = api([coadmin], INSIDE);
+  await shown(fetchFn);
+  expect(await screen.findByTestId("group-open-invite")).toBeTruthy();
+  expect(screen.queryByTestId("group-delete")).toBeNull();
+});
+
+test("an API without «Delete group» keeps the group and says so", async () => {
+  const { fetchFn } = api([ADMIN], {
+    ...INSIDE,
+    [`DELETE /groups/${ID}`]: {
+      status: 405,
+      body: {
+        error: {
+          code: "http_error",
+          message: "Method Not Allowed",
+          suggested_distance_m: null,
+          reason: null,
+        },
+      },
+    },
+  });
+  const alert = jest.spyOn(Alert, "alert");
+  const onBack = jest.fn();
+  await shown(fetchFn, { onBack });
+  await fireEvent.press(await screen.findByTestId("group-delete"));
+  await act(async () => {
+    await alert.mock.calls[0][2]![1]!.onPress!();
+  });
+  expect(await screen.findByText("Something went wrong.")).toBeTruthy();
+  expect(onBack).not.toHaveBeenCalled();
+  alert.mockRestore();
+});

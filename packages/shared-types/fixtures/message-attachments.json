@@ -93,5 +93,6 @@
     "video_max_s": 60,
     "video_max_bytes": 40000000,
     "photo_max_bytes": 10000000
-  }
+  },
+  "latest": "1793297050000000-e41b0a7c9d264f53a8e16c3f2b95d017"
 }

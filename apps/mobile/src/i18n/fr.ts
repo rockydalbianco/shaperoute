@@ -3588,4 +3588,8 @@ export const FR: Table = {
   // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
   Landing: "Atterrissage",
   "Landings from OpenStreetMap: {count}": "Atterrissages d'OpenStreetMap : {count}",
+  // src/air/ (TASK-479 part H: the wind aloft; waiting for the user's approval)
+  "Wind aloft": "Vent en altitude",
+  "Wind aloft not available": "Vent en altitude indisponible",
+  "{source} · run of {time}": "{source} · run de {time}",
 };

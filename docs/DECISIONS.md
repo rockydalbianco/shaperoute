@@ -609,10 +609,62 @@ lasciando le righe d'indice.
 - ADR-0409 — «Sign up» e «Log in» gialli: il pulsante in fondo al modulo è `accent` con parole `onAccent`, un'eccezione scelta dall'utente a «il giallo è del percorso» · 2026-11-24 · Attiva
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Proposta
 - ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
+- ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero (`GET /notifications/unread`, una query, niente foto), con il ripiego sulla lista per un server di prima; la riga dei «live» non chiede con l'app dietro · 2026-11-26 · Attiva
 - ADR-0175, aggiunta (TASK-497) — La foto di chi scrive un commento: il commento porta l'indirizzo della foto piccola (`author.photo`, quello del feed), l'app non chiede più il profilo intero; supera il punto 7 · 2026-11-24 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0311, aggiunta (TASK-499) — Il bollino della campanella chiede solo il numero; la riga dei «live» non chiede con l'app dietro
+
+**Stato**: Attiva · 2026-11-26 · TASK-499 (punto O9 della lettura del
+codice del 2026-11-23, che l'utente ha approvato con «Sì, tutte»). Il
+disegno (una rotta a parte, il ripiego, il controllo di `AppState`) è
+**deciso dall'agente su delega dell'utente**. Forma (un'aggiunta, non un
+ADR nuovo) dal Coordinatore. **Precisa come la campanella di ADR-0311 tiene
+il suo numero**; i periodi non cambiano (5 minuti qui, 60 s per la riga dei
+«live» di ADR-0381) e l'utente non vede differenze.
+
+**Contesto**: per il bollino dell'header l'app scaricava la prima pagina
+delle notifiche (30 righe, ognuna con la foto da 128 px di chi ha agito, in
+base64) all'avvio, ogni 5 minuti in primo piano e a ogni ritorno nell'app, e
+ne teneva solo `unread`. Il server faceva tre query (la lingua, la pagina,
+il conto), due delle quali con le foto. La riga dei «live» del Feed
+chiedeva ogni 60 s anche con l'app dietro, al contrario dei bollini dei
+messaggi e delle richieste di follow.
+
+**Decisione**:
+
+1. **`GET /notifications/unread`** → `{"unread": n}`
+   (`NotificationsUnread`): una query sola, senza la lingua, senza le foto
+   e senza i testi. Le regole (blocchi, account nascosti, 90 giorni, quello
+   che non è più vero, i disegni che l'app non legge) stanno in un pezzo
+   solo di SQL (`RULES_FROM` e `rules_sql`) usato dalla lista e dal conto:
+   i due numeri non possono divergere. `GET /notifications` resta com'è e
+   porta ancora `unread`.
+2. **Una rotta e non `?limit=0` sulla lista**: la risposta ha un tipo suo,
+   nel registro delle richieste si distingue dalla lista, e un server di
+   prima risponde `404`, che l'app sa già leggere.
+3. **Il ripiego nell'app** (`useBellOf`): il bollino chiede il numero da
+   solo; con un `404` chiede la prima pagina come prima, e per quel token
+   non richiede più il numero. La lista intera si scarica solo aprendo le
+   notifiche. Per questo l'app e il server possono uscire in qualsiasi
+   ordine.
+4. **La riga dei «live»** (`useLives`, ADR-0381): lo stesso controllo di
+   `AppState` degli altri bollini. Niente richiesta con l'app dietro o
+   sotto il centro di controllo, una al ritorno, poi di nuovo ogni 60 s.
+
+**Misurato** (database di prova sul Mac, 30 notifiche non lette di 30
+account con foto finte da circa 5 KB): un controllo della campanella passa
+da 159 906 byte (97 726 con gzip) e 3 query a 13 byte e 1 query. **Non
+misurato**: i tempi sul server vero, il piano della query su una tabella
+grande, i byte e la batteria sul telefono, le foto vere degli utenti.
+
+**Conseguenze**: nessuna migrazione, nessuna variabile, nessuna dipendenza
+nuova, impronta iOS invariata. Anche il conto dentro `GET /notifications`
+usa la query leggera. Restano fuori, come idee nel task file: una chiamata
+sola per i tre bollini, e le foto come indirizzo (`avatar_url`) nelle
+liste.
 
 ## ADR-0175, aggiunta (TASK-497) — La foto di chi scrive un commento viaggia come indirizzo, non si chiede più al profilo
 

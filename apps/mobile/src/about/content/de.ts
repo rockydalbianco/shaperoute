@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "26. November 2026";
+const UPDATED = "27. November 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "26. November 2026";
+const PRIVACY_UPDATED = "27. November 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -241,6 +241,7 @@ const terms: AboutDocument = {
             "Die Karten stammen von OpenFreeMap und aus den Daten von OpenStreetMap (© OpenStreetMap-Mitwirkende).",
             "Die 3D-Tiere im Video stammen von Quaternius (CC0); der Elefant ist „Elephant Anim“ von Shivoahm und SahuAvdhesh auf Sketchfab (CC BY 4.0), von MuW animiert und angepasst.",
             "Orte werden mit Geoapify gesucht.",
+            "Das Wetter in Beiträgen und Skigebieten kommt von MET Norway (CC BY 4.0).",
             "Wenn du Strava verbindest, gelten für die Läufe, die du dorthin sendest, die Bedingungen und Datenschutzeinstellungen von Strava.",
             "Ein Bild, das du teilst, verlässt das Handy über das Teilen-Menü: Die App, die es empfängt, hat ihre eigenen Bedingungen.",
             "Der Link eines markierten Teils öffnet die Seite des Shops in deinem Browser: Der Shop hat seine eigenen Bedingungen.",
@@ -365,6 +366,7 @@ const privacy: AboutDocument = {
         "Du kannst deine Ausrüstung hinzufügen: Schuhe, ein Rad, Ski, einen Helm, alles, was du benutzt. Zu jedem Teil speichern wir Art, Marke, Modell, den Namen, den du ihm gibst, den Monat, in dem du es gekauft hast, deine Notiz und sein Foto. Das Foto speichern wir verkleinert, ohne die Daten, die dein Handy hinzufügt, etwa wo und wann es aufgenommen wurde. Die Aktivitäten, die du für ein Teil wählst, fügen seinen Summen ihre Distanz und Zeit hinzu; die Summen zählt unser Server aus deinen gespeicherten Aktivitäten. Andere Mitglieder sehen deine Ausrüstung auf deinem Profil, mit Summen, Notizen und Fotos, außer du schaltest für ein Teil «Im Profil ausblenden» ein. Die Sportarten, die du für ein Teil wählst, und sein Limit siehst nur du. Deine Ausrüstung wird mit deinem Konto gelöscht.",
         "Ein Gleitschirmflug, den du speicherst, zählt ohne deinen Namen in der Chronik des Startplatzes, von dem du gestartet bist, auf der Karte der Startplätze: wie viele Flüge und wie viele verschiedene Piloten, Monat für Monat und heute. Unser Server ermittelt das aus dem Startpunkt des gespeicherten Flugs, auch wenn der Flug privat ist, und zeigt diese Zahlen nur, wenn es mindestens drei verschiedene Piloten sind. Dein Name und dein Flug erscheinen in den Rekorden des Startplatzes (der längste Flug, der höchste, der weiteste) nur, wenn der Beitrag des Flugs für alle sichtbar ist. Während du einen Flug live teilst, zeigt der Startplatz, dass jemand in der Luft ist, ohne deinen Namen; dein Link erscheint dort nur, wenn du schon mit allen im Feed teilst. Die Start- und Landeplätze stammen von OpenStreetMap.",
         "Bei einem Skitag sendet die App unserem Server deine Position, auf etwa 1 km gerundet, um das nächste Skigebiet zu finden; das Wetter fragt der Server bei MET Norway mit der Position des Skigebiets ab, nie mit deiner. Skigebiet, Schnee und Ausrüstung, die du hinzufügst, stehen auf dem Beitrag, für alle, die ihn sehen können, und der Schnee zählt außerdem, ohne deinen Namen, zum Schnee des Tages im Skigebiet.",
+        "Wenn du eine Aktivität im Freien innerhalb von 3 Stunden nach ihrem Ende speicherst, schickt unser Server MET Norway ihren Startpunkt, auf etwa 1 km gerundet, um das Wetter dieser Stunde abzufragen; MET Norway erhält deinen Namen nicht. Das Wetter (Temperatur, Himmel und Wind) steht auf dem Beitrag, für alle, die ihn sehen können.",
       ],
     },
     {

@@ -13,6 +13,7 @@ import {
   removeManualWaypoints,
   resetManualWaypoints,
 } from "./manualWaypoints";
+import { refreshSiteLandings, resetSiteLandings } from "./siteLandings";
 import { pickTask, pickWaypoints } from "./waypointFile";
 import { gateTime, NO_WAYPOINTS, NOT_A_TASK, WaypointOptions } from "./WaypointOptions";
 import {
@@ -195,5 +196,41 @@ describe("the pilot's own waypoints (D5)", () => {
     );
     await fireEvent.press(screen.getByTestId("remove-manual"));
     expect(manualWaypointsNow()).toEqual([]);
+  });
+});
+
+describe("the landings of OpenStreetMap (D6)", () => {
+  beforeEach(() => resetSiteLandings());
+
+  it("says how many are kept, with OSM's credit, and nothing without any", async () => {
+    await show();
+    expect(screen.queryByTestId("osm-landings")).toBeNull();
+    await refreshSiteLandings([45.7, 10.8], DAY, () =>
+      Promise.resolve({
+        kind: "ok",
+        value: {
+          sites: [
+            {
+              id: 1,
+              kind: "landing",
+              lat: 45.7,
+              lon: 10.8,
+              name: "Test field",
+              ele_m: 300,
+              orientation: [],
+              official: null,
+              osm_url: "https://www.openstreetmap.org/node/1",
+              away_m: null,
+            },
+          ],
+          more: false,
+          attribution: "© OpenStreetMap contributors",
+        },
+      }),
+    );
+    await show();
+    expect(screen.getByTestId("osm-landings").props.children).toBe(
+      "Landings from OpenStreetMap: 1 · © OpenStreetMap contributors",
+    );
   });
 });

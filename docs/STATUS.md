@@ -223,7 +223,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dall'utente il 2026-11-24: piano B0–B4 nel task file, la dipendenza
   (B1) col suo sì e nel taglio nativo. B1 (#1557) e B2 (#1562, la barra
   galleggia solo col vetro vero: scelta dell'utente del 2026-11-26) sono
-  bozze ferme fino al taglio nativo. File: — ·
+  bozze ferme fino al taglio nativo. A7c-4 (#1624) in `main` dal
+  2026-11-26: la parte A è finita. B3 (#1614, #1617) e B4 (#1620, #1621)
+  in bozza; nella prova la barra e i fogli non tengono 4,5:1: la barra
+  velata è da misurare, i fogli sono fermi. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 e A in

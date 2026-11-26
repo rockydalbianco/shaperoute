@@ -6,7 +6,9 @@ con l'OTA 20; A5 e A5b con l'OTA 21; A5c e A6 in produzione con l'OTA 22;
 A6b con l'OTA 23; A7a, A7b, A5c-2 e A7c-1 con l'OTA 24; A7c-2, A7c-3 e
 la correzione dell'header sopra le pagine con l'OTA 25; parte B avviata
 dall'utente il 2026-11-24: B1 e B2 sono bozze ferme fino al taglio
-nativo, la stanza per la barra è già in `main`)
+nativo, la stanza per la barra è già in `main`; A7c-4 in `main` dal
+2026-11-26: **la parte A è finita**, esce col prossimo OTA; B3 e B4 in
+bozza, con la prova nel simulatore del 2026-11-26 qui sotto)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
@@ -134,7 +136,11 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
     «Message requests» dalla scheda «Messages», il logo, la campanella e
     lo sport coprivano la «←» e la riga del titolo; in produzione
     dall'OTA 21;
-  - A7c-4: i chip della schermata del volo, quando è libera.
+  - **A7c-4** (#1624, in `main` 5fca0f9d): i chip delle opzioni della
+    schermata del volo (unità, suono del vario, spazi aerei, waypoint,
+    planata). Il rilievo è nei colori dell'aspetto scelto dal pilota
+    («Dark» o «Sunlight»), che può non essere il tono dell'app. L'ultima
+    fetta della parte A.
 - **B — Liquid Glass nativo** con `expo-glass-effect` (UIGlassEffect su
   iOS 26; `expo-blur` o opaco prima e su Android). Dipendenza nuova e
   impronta iOS che cambia: solo in una build **dopo l'uscita della 1.1.0**,
@@ -197,11 +203,35 @@ l'SDK 57, niente installato):
     altro telefono, e su ogni build fatta prima del taglio, la barra è
     quella di oggi. Con «Riduci trasparenza» e «Aumenta contrasto», dove
     il vetro vero c'è, la barra galleggia lo stesso ma opaca.
-- **B3 — l'header**, col contenuto che gli passa sotto:
-  `src/tabs/AppHeader.tsx`, `src/tabs/TabShell.tsx`,
-  `src/tabs/headerScroll.tsx`. La fetta grossa.
-- **B4 — i fogli dal basso**: `src/ui/sheetFace.ts`,
-  `src/ui/SheetModal.tsx`.
+- **B3 — l'header**, col contenuto che gli passa sotto. Come la barra,
+  galleggia solo dove c'è il vetro vero. In due tempi:
+  - **B3a** (bozza #1614, da `main`, nessun cambio visibile): lo scroller
+    principale di una pagina chiede `useUnderHeader()`
+    (`src/tabs/headerScroll.tsx`) e ne mette lo stile su di sé. Per ora
+    «Messages», «Draw», «Today» e «Days» dello sci; il profilo, le due
+    pagine dell'allenamento e «Food» dopo, nelle PR dei loro task. Non
+    «Feed», «Explore», «Paddle» e «Resorts», che tengono qualcosa di
+    fisso sopra lo scroller.
+  - **B3b** (bozza #1617, sopra la #1562): `src/tabs/AppHeader.tsx` e
+    `src/tabs/TabShell.tsx`. L'header sta sopra le pagine; in cima a una
+    pagina non ha fondo, quando la pagina scorre la fascia è il vetro di
+    iOS. Lo shell lascia a ogni pagina lo spazio dell'header come oggi:
+    solo lo scroller che l'ha chiesto lascia vedere il contenuto mentre
+    sale dietro il vetro, così niente di quello che una pagina apre sopra
+    di sé finisce nascosto.
+- **B4 — i fogli dal basso**. Il vetro vero è una vista e non uno stile,
+  quindi ogni foglio deve metterlo: una prova su due fogli prima di
+  toccare gli altri quindici.
+  - **B4a** (bozza #1620, da `main`, nessun cambio visibile):
+    `src/ui/SheetGlass.tsx`, `const [glassSheet, glassBack] =
+    useGlassSheet();`, in `feed/PostShareSheet.tsx` e
+    `social/DrawingComments.tsx`.
+  - **B4b** (bozza #1621, in cima alla pila): dove c'è il vetro vero il
+    riquadro del foglio perde il fondo opaco e dietro il contenuto c'è il
+    vetro di iOS.
+  - **Ferma**: nella prova il testo dei commenti sul vetro non tiene
+    4,5:1 (sotto). Gli altri fogli non si toccano finché l'utente non
+    decide.
 
 **Vincoli in più per B**:
 
@@ -229,11 +259,46 @@ l'SDK 57, niente installato):
    `useTabBarRoom()` e si aggiunge alla lista di
    `src/tabs/TabBarRoom.test.tsx`.
 
-**Da fare prima del taglio per B2** (non ancora fatto): misurare il
-contrasto delle icone sul vetro vero nei casi peggiori del vincolo 2
-(foto bianca sotto il tono scuro, nera sotto il chiaro); guardare nel
-simulatore le pagine dello sci e dell'allenamento, «Messages» con dei
-messaggi e «Aumenta contrasto»; provarla su un telefono vero.
+**La prova del 2026-11-26** (simulatore con iOS 27, Expo Go; il vincolo
+2 misurato sulle schermate, col contrasto WCAG tra il segno e il suo
+fondo):
+
+| Superficie | Caso | Misura |
+|---|---|---|
+| Barra (B2, prima bozza) | tono scuro, foto bianca dietro | icone spente 1,8:1, attiva 1,8:1 |
+| Barra (B2, prima bozza) | tono chiaro, foto scura dietro | spente 2,3:1, attiva 5,1:1 |
+| Barra, velatura del fondo al 45 % | tono scuro, foto bianca | spente 2,1:1, attiva 4,0:1 |
+| Barra, velatura al 100 % | tono scuro, foto bianca | si legge, ma non si vede più niente attraverso |
+| Foglio dei commenti (B4) | tono scuro, foto bianca | testo 3,6–3,8:1, scritte secondarie 1,5:1 |
+| Foglio dei commenti (B4) | tono chiaro, foto scura | scritte secondarie 2,5:1 |
+
+- **La barra non tiene 4,5:1** così com'era nella bozza: il vetro di iOS
+  si schiarisce e si scurisce con quello che ha dietro, e quello che
+  l'app ci disegna sopra tiene il suo colore (iOS adatta i suoi segni,
+  noi non possiamo). Scelta dell'utente: «Prova la velatura». Nella
+  #1562 il vetro prende ora il fondo del tono dal 60 % in su
+  (`glass.realTint`, `REAL_GLASS_TINT` in `tokens.ts`) e sul vetro vero
+  le icone sono tutte nel colore pieno; la scheda sullo schermo la dicono
+  la capsula e il tratto più spesso. **Da misurare ancora nel simulatore
+  a questa quota**, nei due toni, prima che l'utente la riveda.
+- **Il foglio dei commenti non tiene 4,5:1**: B4 è ferma. Il foglio
+  «Share» invece va bene: le sue voci stanno su fondi opachi.
+- **L'header (B3) funziona** nel tono scuro: galleggia, e il contenuto di
+  «Draw» gli passa dietro sfocato. Uno scroller con `overflow: "visible"`
+  su iOS non taglia quello che gli esce in alto: la strada di B3a regge.
+
+**Non ancora visto**: l'header nel tono chiaro mentre la pagina scorre; le
+pagine dello sci e dell'allenamento; «Messages» con dei messaggi;
+«Aumenta contrasto»; i fogli con «Riduci movimento» (entrano sfumando
+l'opacità, che a 0 ferma il vetro); un telefono vero.
+
+**Per chi scrive un test**: il finto modulo di jest-expo risponde che il
+vetro vero c'è. Quando `expo-glass-effect` sarà in `main`, ogni test che
+monta lo shell delle schede senza dire altro gira con la barra e l'header
+che galleggiano (la stanza della barra è maggiore di 0 in fondo alle
+pagine). Un test sul vetro velato dichiara un telefono senza vetro vero:
+sostituisce `requireOptionalNativeModule("ExpoGlassEffect")` di `expo`
+con `null`, come fa `src/tabs/HeaderScroll.test.tsx` nella #1617.
 
 ## Inventario delle superfici
 
@@ -440,6 +505,29 @@ Spuntati per A1 e A2 (2026-11-12):
 - La PR di documenti di B1 e B2: `docs/tasks/TASK-469.md`,
   `docs/tasks/TASK-469/TASK-469-B2-barra-vetro-vero.jpg` (nuova),
   `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md`.
+- A7c-4 (#1624): `apps/mobile/src/air/FlightScreen.tsx`,
+  `src/ui/ChipGlass.test.tsx`.
+- B2, la velatura (nella bozza #1562): `src/theme/tokens.ts` (solo
+  aggiunte), `src/theme/glass.test.ts`, `src/ui/NativeGlass.tsx`,
+  `src/ui/NativeGlass.test.tsx`, `src/tabs/TabBar.tsx`,
+  `src/tabs/TabBarGlass.test.tsx`.
+- B3a (bozza #1614): `src/tabs/headerScroll.tsx`,
+  `src/tabs/UnderHeader.test.tsx` (nuovo), e due righe in
+  `tabs/MessagesPage.tsx`, `screens/ChooseScreen.tsx`,
+  `skimode/SkiTodayPage.tsx`, `skimode/SkiDaysPage.tsx`.
+- B3b (bozza #1617): `src/tabs/AppHeader.tsx`, `src/tabs/TabShell.tsx`,
+  `src/tabs/HeaderFloats.test.tsx` (nuovo),
+  `src/tabs/HeaderScroll.test.tsx`.
+- B4a (bozza #1620): `src/ui/SheetGlass.tsx`,
+  `src/ui/SheetGlass.test.tsx` (nuovi), `src/ui/SheetFace.test.tsx`, e
+  tre righe in `feed/PostShareSheet.tsx` e `social/DrawingComments.tsx`.
+- B4b (bozza #1621): `src/ui/SheetGlass.tsx`,
+  `src/ui/SheetGlass.test.tsx`.
+- La PR di documenti di A7c-4 e della prova del vetro:
+  `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/TASK-469-A7c4-chip-volo.jpg` e
+  `TASK-469-vetro-vero-prova-contrasti.jpg` (nuove), `docs/STATUS.md`,
+  `docs/DECISIONS.md`, `docs/UI.md`.
 
 La lista di ogni fetta seguente va al Coordinatore prima del codice.
 
@@ -562,6 +650,14 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   galleggia, in scuro e in chiaro; quello che le passa dietro è sfocato e
   piegato, le icone restano nitide; con «Riduci trasparenza» è opaca.
   L'utente sulle schermate: «Sì, va bene».
+- **2026-11-26**, lo stesso giorno: l'utente avvia B3, B4 e A7c-4.
+  Scritte B3 (#1614, #1617) e B4 (#1620, #1621) in bozza, e A7c-4
+  (#1624). Un solo turno di simulatore per tutte, con i contrasti che
+  mancavano alla barra: l'header e i chip del volo vanno bene, la barra
+  e il foglio dei commenti non tengono 4,5:1 (la tabella sopra).
+  L'utente sulla barra: «Prova la velatura»; sui chip del volo: «Sì,
+  vai». #1624 in `main` (5fca0f9d): la parte A è finita. La velatura è
+  nella #1562, da misurare.
 - Imparato (il difetto di A5b): con la nuova architettura uno `zIndex`
   ordina dentro il più vicino antenato che resta una vista sua, non
   dentro il genitore. Una vista con solo posizione e colore di fondo
@@ -592,6 +688,18 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   `node_modules` del worktree. Nei test il modulo nativo si finge
   sostituendo solo `requireOptionalNativeModule("ExpoGlassEffect")` di
   `expo` e lasciando veri gli altri.
+- Imparato (la prova del contrasto): un sì dell'utente sulle schermate
+  non misura il contrasto. La barra in vetro vero era piaciuta sopra una
+  mappa scura; sopra una foto bianca le icone sparivano. Il caso peggiore
+  va messo dietro la superficie e misurato prima di chiedere il sì, non
+  dopo. Il vetro vero non è il velo con la sfocatura in più: prende luce
+  da quello che ha dietro, e un colore fisso sopra non lo segue.
+- Imparato (B3): per far passare il contenuto sotto una fascia che
+  galleggia non serve spostare la pagina sotto la fascia. La pagina resta
+  dov'era e il suo scroller smette di tagliare in alto
+  (`overflow: "visible"`): niente margini da ricalcolare, «torna in cima»
+  e l'header che si accende restano come sono, e quello che non ha
+  chiesto niente resta com'era.
 
 ## Schermate prima/dopo
 
@@ -753,6 +861,20 @@ a destra il vetro vero. In fondo il tono chiaro e «Riduci trasparenza»,
 dove la barra è opaca:
 
 ![B2, la barra in vetro vero](TASK-469/TASK-469-B2-barra-vetro-vero.jpg)
+
+**A7c-4, i chip della schermata del volo** — nell'aspetto «Dark» e in
+«Sunlight» (con l'app nel tono scuro: il rilievo è quello dell'aspetto
+del volo, non del tono dell'app), e con «Riduci trasparenza», dove sono
+piatti come prima:
+
+![A7c-4, i chip della schermata del volo](TASK-469/TASK-469-A7c4-chip-volo.jpg)
+
+**La prova del vetro vero** (2026-11-26) — la barra nei due casi
+peggiori, la prova della velatura, il foglio dei commenti, e quello che è
+andato bene: l'header che galleggia con «Draw» che gli scorre dietro e il
+foglio «Share». Le misure sono nelle didascalie:
+
+![La prova del vetro vero, coi contrasti](TASK-469/TASK-469-vetro-vero-prova-contrasti.jpg)
 
 ## Esito
 

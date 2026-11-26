@@ -661,6 +661,16 @@ la barra è quella descritta sopra: col vetro velato non galleggia, perché
 senza sfocatura il testo di un post si leggerebbe dietro le icone. Con
 «Riduci trasparenza» e «Aumenta contrasto» la barra galleggia opaca.
 
+**Cosa si disegna sul vetro vero** (misurato il 2026-11-26): il vetro di
+iOS si schiarisce e si scurisce con quello che ha dietro, e un colore
+fisso sopra non lo segue. Quindi il vetro vero è sempre velato col fondo
+del tono (`glass.realTint`, mai giallo) e quello che ci sta sopra è nel
+colore pieno del testo, mai nel secondario. Il testo fitto non ci va: sul
+foglio dei commenti non teneva 4,5:1, e i fogli restano opachi finché
+non si trova di meglio. Una superficie nuova in vetro vero si prova con
+una foto bianca dietro nel tono scuro e una nera nel chiaro, e si
+misura, prima di chiedere un sì.
+
 Due regole che valgono già oggi. **Una pagina nuova della barra delle
 schede** chiede la stanza con `useTabBarRoom()` (`src/tabs/tabBarRoom.ts`)
 e la aggiunge alla fine del suo scorrimento e sotto quello che tiene in
@@ -668,6 +678,12 @@ basso; poi si mette nella lista di `src/tabs/TabBarRoom.test.tsx`. La
 stanza è 0 finché la barra non galleggia. **`expo-glass-effect` non si
 importa mai direttamente**: sempre attraverso `src/ui/NativeGlass.tsx`,
 che lo carica solo dove c'è e altrove disegna il vetro velato.
+
+Una terza, per quando il pacchetto sarà in `main`: **nei test il vetro
+vero c'è**, perché il finto modulo di jest-expo risponde di sì. Un test
+che monta lo shell delle schede senza dire altro vede la barra e l'header
+che galleggiano. Chi prova il vetro velato lo dichiara, sostituendo
+`requireOptionalNativeModule("ExpoGlassEffect")` di `expo` con `null`.
 
 **Il movimento della barra** (TASK-388, ADR-0329): dietro la scheda attiva
 una capsula morbida (`surfaceRaised`) che scivola alla nuova con la molla
@@ -711,7 +727,10 @@ dell'obiettivo in palestra, dei posti della pagaia, della lunghezza della
 vasca e della giornata sulla neve, e (A7c-3) i chip condivisi della
 palestra (`gymStyles.chip`): il riposo, la scelta dell'esercizio, la
 guida e la storia dell'esercizio, «l'ultima volta», Coach e il post
-della scheda. Restano i chip della schermata del volo: A7c-4.
+della scheda, e (A7c-4) i chip delle opzioni della schermata del volo.
+Lì il rilievo è nel vetro dell'aspetto del volo («Dark» o «Sunlight»),
+che può non essere il tono dell'app: una pagina con un aspetto suo passa
+il suo vetro a `glassRaise`, non usa quello dell'app.
 
 **Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
 raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro

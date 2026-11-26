@@ -3335,6 +3335,7 @@ export const FR: Table = {
     "Crée un compte pour recevoir des conseils tirés de tes séances",
   "Log a few workouts and your tips will show up here":
     "Enregistre quelques séances et tes conseils apparaîtront ici",
+  "Go to your workouts": "Voir tes séances",
   "Tips are general, not medical advice. If something hurts, stop and ask a professional.":
     "Ces conseils sont généraux, pas un avis médical. Si tu as mal, arrête-toi et demande à un professionnel.",
   "{exercise}: {kg} kg": "{exercise} : {kg} kg",

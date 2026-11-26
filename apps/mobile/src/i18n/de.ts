@@ -3585,7 +3585,7 @@ export const DE: Table = {
   Estimated: "Geschätzt",
   "No wind": "Kein Wind",
   "needs {height}": "braucht {height}",
-  "No landings in your file": "Keine Landeplätze in deiner Datei",
+  "No landings": "Keine Landeplätze",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Kalorienbilanz",
   Used: "Verbraucht",

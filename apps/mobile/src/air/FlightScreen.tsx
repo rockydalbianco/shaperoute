@@ -63,7 +63,9 @@ import { WaypointOptions } from "./WaypointOptions";
 import { glideWith } from "./glide";
 import { GlideOptions } from "./GlideOptions";
 import { useGlidePrefs } from "./glidePrefs";
+import { useManualWaypoints } from "./manualWaypoints";
 import { nearestLanding } from "./nearestLanding";
+import { useSiteLandings } from "./siteLandings";
 import { taskFeatures } from "./taskMapData";
 import { type TaskNow, taskNowOf } from "./taskProgress";
 import { useTask, useWaypoints } from "./waypointStore";
@@ -397,13 +399,21 @@ export function FlightScreen({
     taskNow === null
       ? null
       : taskFeatures(taskNow.task, taskNow.progress, taskNow.here, taskNow.left);
-  // The glide the pilot chose (D3), and the nearest landing of their file.
+  // The glide the pilot chose (D3), and the nearest landing of all they
+  // have: their file's, their own (D5) and OpenStreetMap's (D6).
   const glide = glideWith(useGlidePrefs(), data.wind);
   const loadedWaypoints = useWaypoints();
+  const manualWaypoints = useManualWaypoints();
+  const siteLandings = useSiteLandings();
+  const allWaypoints = [
+    ...(loadedWaypoints?.waypoints ?? []),
+    ...manualWaypoints,
+    ...(siteLandings?.landings ?? []),
+  ];
   const landing =
-    loadedWaypoints === null || here === null
+    allWaypoints.length === 0 || here === null
       ? undefined
-      : nearestLanding(loadedWaypoints.waypoints, here, altM, glide);
+      : nearestLanding(allWaypoints, here, altM, glide);
   const change = (next: FlightPrefs) => {
     setPrefs(next);
     saveFlightPrefs(next);

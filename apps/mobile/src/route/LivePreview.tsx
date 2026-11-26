@@ -15,7 +15,13 @@ import {
   space,
 } from "../theme/tokens";
 import { useUnits } from "../units/useUnits";
-import { dashesOf, livePreview, type LivePreview as Preview } from "./previewFrame";
+import {
+  dashesOf,
+  type Frame,
+  livePreview,
+  type LivePreview as Preview,
+  placeIn,
+} from "./previewFrame";
 import { barLabel, sizeLabel } from "./ShapePreview";
 import { scaleBar } from "./shapeScale";
 import { shapeName } from "./shapeWords";
@@ -103,7 +109,9 @@ export function OutlineOnMap({
         onLayout={(event) => setRoom(event.nativeEvent.layout.width)}
         testID="live-preview-room"
       >
-        {made !== null && <PieceOfMap made={made} width={width} />}
+        {made !== null && (
+          <PieceOfMap made={made} width={width} from={`${lat},${lon}`} />
+        )}
       </View>
       {size !== null && bar !== null && (
         <View style={styles.facts}>
@@ -120,8 +128,25 @@ export function OutlineOnMap({
   );
 }
 
-/** The picture of the frame, the outline dashed over it, the start's dot. */
-function PieceOfMap({ made, width }: { made: Preview; width: number }) {
+/** A picture of the map shown, the frame it is of, and the start it was
+ * framed from. */
+type Shown = { from: string; frame: Frame; uri: string };
+
+/**
+ * The picture of the frame, the outline dashed over it, the start's dot.
+ * `from` names the start. While the picture of a new frame is on its way,
+ * the one shown before stays where it lies in the new frame: the map steps
+ * back at once, and sharpens when the picture comes.
+ */
+function PieceOfMap({
+  made,
+  width,
+  from,
+}: {
+  made: Preview;
+  width: number;
+  from: string;
+}) {
   // The same frame, the same line to fit: the picture is asked for once.
   const corners = useMemo(
     () => made.corners,
@@ -129,6 +154,15 @@ function PieceOfMap({ made, width }: { made: Preview; width: number }) {
     [made.key],
   );
   const map = useFeedMap(`preview:${made.key}`, corners, width, LIVE_PREVIEW_HEIGHT, 0);
+  // The picture on screen last, kept as it comes: state set while rendering,
+  // as a value worked out from what came in (no effect to wait for).
+  const [shown, setShown] = useState<Shown | null>(null);
+  const { frame } = made;
+  if (map !== null && (shown === null || shown.uri !== map || shown.from !== from)) {
+    setShown({ from, frame, uri: map });
+  }
+  // Only of the ground round this start: another start is another map.
+  const before = map === null && shown !== null && shown.from === from ? shown : null;
   const dashes = useMemo(
     () => made.points.flatMap((line) => dashesOf(line, DASH, GAP, LINE)),
     [made.points],
@@ -136,6 +170,14 @@ function PieceOfMap({ made, width }: { made: Preview; width: number }) {
   const [x, y] = made.dot;
   return (
     <>
+      {before !== null && (
+        <Image
+          source={{ uri: before.uri }}
+          style={[styles.before, placeIn(frame, before.frame, width)]}
+          resizeMode="stretch"
+          testID="live-preview-map-before"
+        />
+      )}
       {map !== null && (
         <Image
           source={{ uri: map }}
@@ -168,7 +210,7 @@ function PieceOfMap({ made, width }: { made: Preview; width: number }) {
           { left: x - shapeGhost.pen / 2, top: y - shapeGhost.pen / 2 },
         ]}
       />
-      {map !== null && (
+      {(map !== null || before !== null) && (
         <Text style={styles.credit} numberOfLines={1}>
           {creditLine()}
         </Text>
@@ -196,6 +238,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
   },
+  before: {
+    position: "absolute",
+  },
   dash: {
     position: "absolute",
     height: LINE,
@@ -209,15 +254,20 @@ const styles = StyleSheet.create({
     borderRadius: shapeGhost.pen / 2,
     backgroundColor: routeLine.color,
   },
+  // On the map's own ground: a name of the map under it does not show
+  // through the words.
   credit: {
     position: "absolute",
-    left: space.sm,
     right: space.sm,
     bottom: space.xs,
+    maxWidth: "100%",
+    paddingHorizontal: space.xs,
+    borderRadius: radius.sm,
+    overflow: "hidden",
+    backgroundColor: color.map.background,
     color: color.textFaint,
     fontSize: CREDIT_SIZE,
     lineHeight: CREDIT_LINE,
-    textAlign: "right",
   },
   facts: {
     flexDirection: "row",

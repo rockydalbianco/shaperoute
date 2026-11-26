@@ -41,9 +41,15 @@ import {
  * With the app behind another the file is not written whole at each fix
  * (TASK-496, an addition to ADR-0264): the new fixes go to a journal beside
  * it (`runJournal`), and the run is the file with the journal after it.
+ *
+ * The whole file is written beside it first and then moved over it (TASK-496
+ * part C): iOS closing MuW in the middle of a write leaves the last whole
+ * file, not half of one.
  */
 
 export const RUN_FILE = "current-run.json";
+/** Where the whole run is written before it takes the file's place. */
+export const NEW_RUN_FILE = `${RUN_FILE}.new`;
 /** The file is written at most this often with the app in front, and when
  * the run ends. Behind another app each fix is written at once (TASK-304),
  * to the journal (TASK-496). */
@@ -109,6 +115,56 @@ function runFile(): File {
 
 function journalFile(): File {
   return new File(Paths.document, JOURNAL_FILE);
+}
+
+function newRunFile(): File {
+  return new File(Paths.document, NEW_RUN_FILE);
+}
+
+/** Whether this phone's files can be moved: a file system without it (some
+ * stand-ins in the tests) writes the run file in place, as before part C. */
+function moves(file: File): boolean {
+  return typeof file.moveSync === "function";
+}
+
+/** Writes `text` as the run file: beside it, then moved over it, so a write
+ * cut short never leaves half a file. Throws when the phone refuses. */
+function writeRunFile(text: string): void {
+  const file = runFile();
+  const next = newRunFile();
+  if (!moves(next)) {
+    file.create({ overwrite: true });
+    file.write(text);
+    return;
+  }
+  next.create({ overwrite: true });
+  next.write(text);
+  next.moveSync(file, { overwrite: true });
+}
+
+/** A whole run left beside the file, by a move iOS cut short: it is newer
+ * than the file, so it takes its place. One whose write was cut short does
+ * not read as a run, and goes. */
+function settleNewRun(): void {
+  try {
+    const next = newRunFile();
+    if (!next.exists) {
+      return;
+    }
+    let whole = false;
+    try {
+      whole = isSavedRun(JSON.parse(next.textSync()));
+    } catch {
+      whole = false;
+    }
+    if (whole && moves(next)) {
+      next.moveSync(runFile(), { overwrite: true });
+    } else {
+      next.delete();
+    }
+  } catch {
+    // The phone refuses: the run file is read as it is.
+  }
 }
 
 /** Moves the text of `from` to `to`, `to` written first: a move cut short
@@ -192,6 +248,7 @@ function asideFiles(owner: number, n: number): { run: File; journal: File } {
  * (before TASK-507, or begun signed out) stays for anyone.
  */
 function takeRunSlot(): void {
+  settleNewRun();
   try {
     moveRuns();
   } catch {
@@ -266,9 +323,7 @@ function addToJournal(line: string, first: boolean): boolean {
  * The journal starts again: what it held is in the file now. */
 export function saveRun(run: SavedRun): boolean {
   try {
-    const file = runFile();
-    file.create({ overwrite: true });
-    file.write(JSON.stringify(run));
+    writeRunFile(JSON.stringify(run));
   } catch {
     return false;
   }
@@ -315,9 +370,10 @@ export function loadRun(): SavedRun | null {
 
 export function clearRun(): void {
   try {
-    const file = runFile();
-    if (file.exists) {
-      file.delete();
+    for (const file of [newRunFile(), runFile()]) {
+      if (file.exists) {
+        file.delete();
+      }
     }
   } catch {
     // Nothing to clear is as good as cleared.

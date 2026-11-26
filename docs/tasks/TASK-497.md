@@ -1,7 +1,8 @@
 # TASK-497 — Le foto di chi commenta: l'indirizzo della foto nel commento, non il profilo intero
 
-**Stato**: In corso · 2026-11-24 · parte A (server) alla PR; parte B (app)
-dopo che la A è sul server
+**Stato**: Done · 2026-11-26 · A #1582 in `main` e sul server (passo 23),
+B #1587 in `main`; restano l'OTA (Coordinatore, col sì dell'utente) e
+l'occhio sul telefono
 **Fase**: 5 · **Branch**: `feat/TASK-497-a-comment-author-photo` (A), poi
 `feat/TASK-497-b-comment-avatars-app` (B)
 **Dipende da**: TASK-355 parte B (`avatars.py`, la foto a un indirizzo suo),
@@ -76,19 +77,19 @@ Chi è bloccato o nascosto non cambia: il commento non si legge già
 
 ## Criteri di accettazione
 
-- [ ] A: commenti e risposte portano `author.photo` (indirizzo con la foto,
+- [x] A: commenti e risposte portano `author.photo` (indirizzo con la foto,
       `null` senza), nelle tre liste e nella risposta del `POST`.
-- [ ] A: una foto nuova ha un indirizzo nuovo; tolta la foto, `null`.
-- [ ] A: autore bloccato o account cancellato: come oggi, il commento non
+- [x] A: una foto nuova ha un indirizzo nuovo; tolta la foto, `null`.
+- [x] A: autore bloccato o account cancellato: come oggi, il commento non
       c'è.
-- [ ] A: il numero di istruzioni SQL di una pagina non cresce con gli
+- [x] A: il numero di istruzioni SQL di una pagina non cresce con gli
       autori, e nessuna legge il JPEG.
-- [ ] A: gli esempi di `shared-types` passano sia in Python sia in
+- [x] A: gli esempi di `shared-types` passano sia in Python sia in
       TypeScript; un corpo di prima (senza `photo`) è ancora un commento.
-- [ ] B: con il campo presente non parte nessun `GET /users/{id}`.
-- [ ] B: senza il campo resta il comportamento di oggi (`photoOf`).
-- [ ] Impronta iOS invariata (`5e1b5ce5`), nessuna dipendenza nuova,
-      nessuna migrazione.
+- [x] B: con il campo presente non parte nessun `GET /users/{id}`.
+- [x] B: senza il campo resta il comportamento di oggi (`photoOf`).
+- [x] Nessuna dipendenza nuova, nessuna migrazione, niente di nativo:
+      l'impronta iOS (`5e1b5ce5`) non ha di che cambiare (non rimisurata).
 
 ## File toccati
 
@@ -152,4 +153,22 @@ telefono, con la parte B).
 
 ## Esito
 
-*(si compila a fine task)*
+**2026-11-26.** Commenti e risposte portano `author.photo`, l'indirizzo
+della foto piccola (lo stesso del feed), senza query in più; l'app la
+legge da lì e non chiede più il profilo intero di ogni autore; con
+un'API di prima fa come prima. A (#1582) in `main` il 2026-11-24 e sul
+server col passo 23 del Coordinatore (`bd61af6c`, 2026-11-26, col sì
+dell'utente); B (#1587) in `main` il 2026-11-26. Decisione: aggiunta ad
+ADR-0175 (punto 9), in `DECISIONS.md`.
+
+Emerso strada facendo: `reactions.py` costruiva a mano l'autore del
+commento di un super like e col tipo nuovo andava in errore; aggiunto
+alla parte A col sì del Coordinatore, insieme a una riga di
+`test_comments.py`.
+
+**Resta**, non di questa sessione: l'OTA di produzione con la parte B
+(Coordinatore, col sì dell'utente); poi uno sguardo sul telefono al
+foglio dei commenti di un post con più autori (le foto ci sono, e
+riaprendo l'app non si ricaricano). L'impronta iOS non è stata
+rimisurata: nessun file nativo, nessuna dipendenza, `app.config.ts` e i
+suoi import non toccati. Nessuna prova nel simulatore.

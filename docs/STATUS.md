@@ -221,7 +221,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (#1509) e la correzione dell'header sopra le pagine (#1534, difetto di
   A5b) con l'OTA 25. Poi A7c-4 (chip del volo). Parte B avviata
   dall'utente il 2026-11-24: piano B0–B4 nel task file, la dipendenza
-  (B1) col suo sì e nel taglio nativo. File: — ·
+  (B1) col suo sì e nel taglio nativo. B1 (#1557) e B2 (#1562, la barra
+  galleggia solo col vetro vero: scelta dell'utente del 2026-11-26) sono
+  bozze ferme fino al taglio nativo. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 e A in
@@ -241,6 +243,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   parte 0 il 2026-11-26: un pezzo di mappa vera attorno alla partenza, la
   sagoma sopra in grandezza reale che cresce coi km; scelte dell'utente
   fatte. Poi A (forme) e B (immagini). File: — · `tasks/TASK-449.md`
+- **TASK-509 — Stati vuoti, icone di «Add to Feed», sagoma nelle tessere** ·
+  parte 0 chiusa il 2026-11-26 (cinque scelte dell'utente). Tre PR di sola
+  app: A stati vuoti (con due prop in `App.tsx`), B icone, C sagoma (dopo
+  TASK-449 in `main`); il codice parte al «via» del Coordinatore.
+  File: quelli di A, B e C nel task file · `tasks/TASK-509.md`
 
 In attesa (Fermo — in attesa nel task file, nessun file occupato; si
 riprendono col sì dell'utente). Aspettano la società o servizi esterni:

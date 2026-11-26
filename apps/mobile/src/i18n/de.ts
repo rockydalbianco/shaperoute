@@ -3737,4 +3737,6 @@ export const DE: Table = {
     "Nur für Lebensmittel gezählt, die diese Zahlen haben.",
   "No protein, carbs or fat to count for this day.":
     "Für diesen Tag gibt es kein Eiweiß, keine Kohlenhydrate und kein Fett zu zählen.",
+  // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
+  "Landings from OpenStreetMap: {count}": "Landeplätze aus OpenStreetMap: {count}",
 };

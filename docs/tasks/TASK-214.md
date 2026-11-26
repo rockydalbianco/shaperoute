@@ -341,9 +341,9 @@ l'utente, in inglese, poi tradotti con `t()`). Proposta:
       server, e chi usa l'app non vede errori (test della parte B).
 - [ ] Tempi e memoria misurati sull'iPhone, scritti qui (il 2026-11-26
       misurati sul Mac e nel simulatore, sotto «Parte F»).
-- [ ] Parte F: prova nel simulatore con una zona grande e poi una piccola
-      (chiesta dal Coordinatore prima di «pronta»); CI verde e unione;
-      OTA col sì dell'utente.
+- [x] Parte F: prova nel simulatore con una zona grande e poi una piccola
+      (2026-11-26, sotto «Parte F»).
+- [ ] Parte F: CI verde e unione della #1616; OTA col sì dell'utente.
 - [x] In «Settings» lo spazio delle mappe del telefono, con «Delete», e
       sopra «Draw route» l'avviso del primo download, nelle cinque lingue
       (test e simulatore, parte C).
@@ -837,7 +837,7 @@ processi, in `route_engine`, in un task suo. Il telefono disegnerebbe
 percorsi più lunghi in meno tempo.
 
 **Parte F, la memoria del motore** (2026-11-26, aggiunta F ad ADR-0177;
-ramo `fix/TASK-214-f-engine-memory`, dopo la #1603):
+ramo `fix/TASK-214-f-engine-memory`, PR #1616):
 
 - **La prova generale** (2026-11-26, `out/prova-generale-214/ESITO.md` e
   `out/prova-generale-sim/ESITO.md` del Mac). Il motore dell'app
@@ -867,3 +867,10 @@ ramo `fix/TASK-214-f-engine-memory`, dopo la #1603):
   l'ultima, «way back» e tratto, lettura anticipata, nessuna morte,
   nessuna richiesta persa); 3 falliscono senza il fix. I 40 test di
   `phoneEngine*` verdi, `tsc`, eslint e prettier puliti.
+- **Prova nel simulatore** (2026-11-26, iPhone 17e, Expo Go 57, l'app
+  senza server, codice della #1616): cuore 5 km a Trento, pagina a 282 MB;
+  cuore 5 km a Tokyo (zona da 28 MB), 1043 MB, e la pagina si chiude;
+  di nuovo Trento su una pagina nuova (avvio 3,3 s), 282 MB invece di
+  restare sopra 1 GB; poi la stella sulla stessa pagina, 282 MB. Percorsi
+  uguali a prima. Schermata `out/prova-generale-sim/214f-grande-poi-piccola.png`
+  del Mac.

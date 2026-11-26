@@ -224,12 +224,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (B1) col suo sì e nel taglio nativo. File: — ·
   `tasks/TASK-469.md`
 
-- **TASK-481 — Il «+» del Feed: tutte le voci** (ADR-0390) · A (la lista:
-  «Record now», «Photos only», «From a file») in `main` il 2026-11-23 (#1421),
-  privacy («from a file», cinque lingue e sito) in `main` (#1444); escono col
-  prossimo OTA, copia del sito col sì dell'utente; restano le righe di 467 E2,
-  484 B, 485 B, al via del Coordinatore. File: — · `tasks/TASK-481.md`
-
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 e A in
   produzione (OTA 21), provate dall'utente; C: i due file `.well-known`
   online. D (link verificati in `app.json`): bozza #1461, da unire solo al

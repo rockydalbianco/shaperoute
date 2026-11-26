@@ -92,7 +92,7 @@ Da confermare col Coordinatore prima di qualsiasi codice.
 
 ```
 # Parte A
-services/api/migrations/0088_run_previews.sql       (nuovo; numero dal Coordinatore)
+services/api/migrations/0088_run_previews.sql       (nuovo; 0088 riservata dal Coordinatore, 26-11)
 services/api/shaperoute_api/activities.py
 services/api/tests/test_activities.py
 services/api/tests/test_activity_previews.py        (nuovo)

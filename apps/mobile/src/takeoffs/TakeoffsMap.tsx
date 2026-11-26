@@ -1,7 +1,15 @@
 import { FLYING_SITES_MAX_BOX_DEG, type FlyingSite } from "@shaperoute/shared-types";
 import * as Location from "expo-location";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Linking, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Linking,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import {
   initialWindowMetrics,
   SafeAreaProvider,
@@ -38,6 +46,8 @@ import {
  * place; it never asks for it.
  */
 
+/** The card of a site takes at most this share of the screen. */
+export const SHEET_SHARE = 0.6;
 /** Where to add a missing takeoff. */
 export const OSM_EDIT_URL = "https://www.openstreetmap.org/";
 
@@ -106,6 +116,7 @@ function TakeoffsPage({
   fetchFn?: typeof fetch;
 }) {
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
   const language = useLanguage();
   const { apiUrl } = useFollowsDoor();
   const page = useMemo(() => buildTakeoffsMapPage(color, language, null), [language]);
@@ -210,7 +221,13 @@ function TakeoffsPage({
         </View>
       )}
       {chosen !== null && apiUrl !== null ? (
-        <View style={[styles.bottom, { paddingBottom: insets.bottom }]}>
+        <View
+          style={[
+            styles.bottom,
+            { paddingBottom: insets.bottom, maxHeight: height * SHEET_SHARE },
+          ]}
+          testID="takeoffs-card"
+        >
           <TakeoffSheet
             siteId={chosen}
             baseUrl={apiUrl}
@@ -218,6 +235,7 @@ function TakeoffsPage({
               setChosen(null);
               onClose();
             }}
+            onDismiss={() => setChosen(null)}
             fetchFn={fetchFn}
           />
         </View>
@@ -291,6 +309,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    backgroundColor: color.surface,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
   },
   missing: {
     position: "absolute",

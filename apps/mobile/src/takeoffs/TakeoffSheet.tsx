@@ -16,14 +16,7 @@ import { openLiveView } from "../liveShare/liveViewDoor";
 import { durationText } from "../route/runTime";
 import { altitudeLabel } from "../ski/ResortWeather";
 import { useDrawingsDoor } from "../social/drawingsDoor";
-import {
-  color,
-  fontSize,
-  fontWeight,
-  MIN_TAP_SIZE,
-  radius,
-  space,
-} from "../theme/tokens";
+import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { nearDistanceLabel } from "../units/format";
 import type { Units } from "../units/units";
 import { useUnits } from "../units/useUnits";
@@ -41,7 +34,10 @@ import { useUnits } from "../units/useUnits";
 type Props = {
   siteId: number;
   baseUrl: string;
+  /** Leaves the map: a record or a live flight opened from the card. */
   onClose: () => void;
+  /** Closes the card only, back to the map. */
+  onDismiss?: () => void;
   fetchFn?: typeof fetch;
 };
 
@@ -88,7 +84,7 @@ export function barShares(months: readonly { flights: number }[]): number[] {
   return months.map((m) => (most === 0 ? 0 : m.flights / most));
 }
 
-export function TakeoffSheet({ siteId, baseUrl, onClose, fetchFn }: Props) {
+export function TakeoffSheet({ siteId, baseUrl, onClose, onDismiss, fetchFn }: Props) {
   const language = useLanguage();
   const units = useUnits();
   const drawings = useDrawingsDoor();
@@ -166,9 +162,22 @@ export function TakeoffSheet({ siteId, baseUrl, onClose, fetchFn }: Props) {
       contentContainerStyle={styles.body}
       testID="takeoff-sheet"
     >
-      <Text style={styles.title} accessibilityRole="header">
-        {siteName(site)}
-      </Text>
+      <View style={styles.header}>
+        <Text style={styles.title} accessibilityRole="header">
+          {siteName(site)}
+        </Text>
+        {onDismiss && (
+          <Pressable
+            style={styles.dismiss}
+            onPress={onDismiss}
+            accessibilityRole="button"
+            accessibilityLabel={t("Close")}
+            testID="takeoff-dismiss"
+          >
+            <Text style={styles.value}>✕</Text>
+          </Pressable>
+        )}
+      </View>
       <Text style={styles.muted}>
         {[
           site.kind === "takeoff" ? t("Takeoff") : t("Landing"),
@@ -279,10 +288,19 @@ export function TakeoffSheet({ siteId, baseUrl, onClose, fetchFn }: Props) {
 
 const styles = StyleSheet.create({
   sheet: {
-    backgroundColor: color.surface,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
-    maxHeight: "60%",
+    flexGrow: 0,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: space.md,
+  },
+  dismiss: {
+    width: MIN_TAP_SIZE,
+    height: MIN_TAP_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
   },
   body: {
     gap: space.sm,

@@ -2,7 +2,7 @@ import { requireOptionalNativeModule } from "expo";
 import { type ComponentType, type ReactNode, useState } from "react";
 import { Platform, type StyleProp, type ViewProps, type ViewStyle } from "react-native";
 
-import { radius, tone } from "../theme/tokens";
+import { glass, radius, tone } from "../theme/tokens";
 import { Glass } from "./Glass";
 import { type GlassMode, useGlassMode } from "./useGlassMode";
 
@@ -81,7 +81,11 @@ type Props = Omit<ViewProps, "style"> & {
  * «Increase Contrast» it is the opaque face of part A, as before: the
  * phone's own glass would still be drawn there, so the mode decides.
  * `regular`, never `clear`: what it holds must stay readable. The glass
- * follows the tone chosen in the app, not the phone's. Never yellow.
+ * follows the tone chosen in the app, not the phone's, and is tinted with
+ * that tone's own background (`glass.realTint`): the phone's glass
+ * lightens and darkens with what is behind it, and what stands on it
+ * keeps its colour. Never yellow. What stands on it is in the full text
+ * colour: the secondary text does not keep 4.5:1 there.
  */
 export function NativeGlass({
   corner = radius.pill,
@@ -108,6 +112,7 @@ export function NativeGlass({
       {...rest}
       glassEffectStyle="regular"
       colorScheme={tone.tone}
+      tintColor={glass.realTint}
       style={[{ borderRadius: corner }, style]}
     >
       {children}

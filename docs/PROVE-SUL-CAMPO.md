@@ -46,8 +46,8 @@ strategia dei task aperti (mossa 6).
   prima di dire «fatto» al parapendio completo (il task resta aperto, ha
   ancora parti da scrivere).
 
-## Di corsa
+## Fatte
 
 - **TASK-496 — la batteria durante la corsa.** Una corsa vera, col telefono
-  bloccato e in tasca: annotare la batteria all'inizio e alla fine e la
-  durata, da confrontare con una corsa di prima. Quando: la prossima corsa.
+  bloccato e in tasca. Fatta dall'utente il 2026-11-26: «ok», senza numeri
+  della batteria.

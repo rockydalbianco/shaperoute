@@ -3690,4 +3690,14 @@ export const IT: Table = {
   "Remove all": "Togli tutte",
   "Press the flight map long to add one.":
     "Tieni premuto sulla mappa di volo per aggiungerne una.",
+  // src/nutrition (TASK-489 part H: the animated day; approved by the user on 2026-11-24)
+  "Protein, carbs and fat (est.)": "Proteine, carboidrati e grassi (stima)",
+  Protein: "Proteine",
+  Carbs: "Carboidrati",
+  Fat: "Grassi",
+  "{percent}% of the energy": "{percent}% dell'energia",
+  "Counted only for the foods that have these numbers.":
+    "Contati solo per i cibi che hanno questi numeri.",
+  "No protein, carbs or fat to count for this day.":
+    "Niente proteine, carboidrati o grassi da contare per questo giorno.",
 };

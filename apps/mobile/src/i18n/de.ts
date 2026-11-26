@@ -3723,4 +3723,14 @@ export const DE: Table = {
   "Remove all": "Alle entfernen",
   "Press the flight map long to add one.":
     "Halte die Flugkarte gedrückt, um einen hinzuzufügen.",
+  // src/nutrition (TASK-489 part H: the animated day; approved by the user on 2026-11-24)
+  "Protein, carbs and fat (est.)": "Eiweiß, Kohlenhydrate und Fett (gesch.)",
+  Protein: "Eiweiß",
+  Carbs: "Kohlenhydrate",
+  Fat: "Fett",
+  "{percent}% of the energy": "{percent}% der Energie",
+  "Counted only for the foods that have these numbers.":
+    "Nur für Lebensmittel gezählt, die diese Zahlen haben.",
+  "No protein, carbs or fat to count for this day.":
+    "Für diesen Tag gibt es kein Eiweiß, keine Kohlenhydrate und kein Fett zu zählen.",
 };

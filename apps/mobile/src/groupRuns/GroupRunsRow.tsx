@@ -2,10 +2,11 @@ import type { GroupRun, LatLon } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { startedLabel } from "../activities/activityText";
+import { personPhotoUri } from "../api/people";
 import { RouteThumb } from "../explore/RouteThumb";
 import { knownPoint } from "../groups/groupText";
 import { t, tPlural } from "../i18n";
+import { appLanguage } from "../i18n/language";
 import { Avatar } from "../profile/Avatar";
 import { useFollowsDoor } from "../social/followsDoor";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
@@ -118,6 +119,22 @@ export function GroupRunsRow({ runs }: { runs: readonly GroupRun[] }) {
   );
 }
 
+/** «Fri 27 Nov · 14:00» in the phone's time and the app's language: no
+ * year, which a group run within 60 days does not need, for a small card. */
+export function whenLabel(startsAt: string, locale: string = appLanguage()): string {
+  const when = new Date(startsAt);
+  if (Number.isNaN(when.getTime())) {
+    return "";
+  }
+  const day = when.toLocaleDateString(locale, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+  const two = (n: number) => String(n).padStart(2, "0");
+  return `${day} · ${two(when.getHours())}:${two(when.getMinutes())}`;
+}
+
 /** «You're going · 3» on one's own and those one goes to; «3 going» else. */
 export function goingLine(run: GroupRun): string {
   const count = tPlural(run.going, "1 going", "{count} going");
@@ -125,7 +142,8 @@ export function goingLine(run: GroupRun): string {
 }
 
 function GroupRunTile({ run }: { run: GroupRun }) {
-  const facts = `${startedLabel(run.starts_at)} · ${distanceLabel(run.route_m)}`;
+  const when = whenLabel(run.starts_at);
+  const km = distanceLabel(run.distance_m);
   const going = goingLine(run);
   const inner = GROUP_RUN_CARD_WIDTH - 2 * space.md;
   return (
@@ -133,18 +151,21 @@ function GroupRunTile({ run }: { run: GroupRun }) {
       style={[styles.card, run.i_am_going && styles.mine]}
       onPress={() => openGroupRunPage(run.id)}
       accessibilityRole="button"
-      accessibilityLabel={`${run.title}, ${facts}, ${going}`}
+      accessibilityLabel={`${run.title}, ${when}, ${km}, ${going}`}
       testID={`group-runs-card-${run.id}`}
     >
       {/* An outing with no route has no line: its words are enough. */}
       {run.preview.length >= 2 && (
         <RouteThumb line={run.preview} width={inner} height={THUMB_HEIGHT} />
       )}
-      <Text style={styles.title} numberOfLines={1}>
+      <Text style={styles.title} numberOfLines={2}>
         {run.title}
       </Text>
       <Text style={styles.facts} numberOfLines={1}>
-        {facts}
+        {when}
+      </Text>
+      <Text style={styles.facts} numberOfLines={1}>
+        {km}
       </Text>
       <View style={styles.going}>
         <View style={styles.faces}>
@@ -153,7 +174,11 @@ function GroupRunTile({ run }: { run: GroupRun }) {
               key={person.public_id}
               style={[styles.face, i > 0 && styles.faceOver]}
             >
-              <Avatar name={person.username} photo={person.photo} size={FACE} />
+              <Avatar
+                name={person.username}
+                photo={personPhotoUri(person)}
+                size={FACE}
+              />
             </View>
           ))}
         </View>
@@ -208,6 +233,8 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
   },
   going: {
+    // At the foot of the card, whatever the title's lines.
+    marginTop: "auto",
     flexDirection: "row",
     alignItems: "center",
     gap: space.xs,

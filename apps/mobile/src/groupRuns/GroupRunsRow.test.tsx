@@ -11,11 +11,10 @@ import session from "@shaperoute/shared-types/fixtures/session.json";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { startedLabel } from "../activities/activityText";
 import { FollowsContext, type FollowsDoor } from "../social/followsDoor";
 import { color } from "../theme/tokens";
 import { askedGroupRun, closeGroupRunPage } from "./groupRunDoor";
-import { GroupRunsRow, useGroupRuns } from "./GroupRunsRow";
+import { GroupRunsRow, useGroupRuns, whenLabel } from "./GroupRunsRow";
 
 const RUNS = row.group_runs as GroupRun[];
 const [FIRST, SECOND] = RUNS as [GroupRun, GroupRun];
@@ -93,10 +92,9 @@ test("each card: the line, the title, day and time · km, who goes; a touch open
   expect(fetchFn.mock.calls[0][0]).toBe("http://api/group-runs?lat=46.07&lon=11.12");
   const card = screen.getByTestId(`group-runs-card-${FIRST.id}`);
   expect(card).toHaveTextContent(FIRST.title, { exact: false });
-  // Day and time in the phone's time, as the profile's cards.
-  expect(card).toHaveTextContent(`${startedLabel(FIRST.starts_at)} · 5.1 km`, {
-    exact: false,
-  });
+  // Day and time in the phone's time, without the year; the km below.
+  expect(card).toHaveTextContent(whenLabel(FIRST.starts_at), { exact: false });
+  expect(card).toHaveTextContent("5.0 km", { exact: false });
   expect(screen.getByTestId(`group-runs-going-${FIRST.id}`)).toHaveTextContent(
     "2 going",
   );
@@ -158,4 +156,22 @@ test("not asked off the screen nor without an account; the pull asks again", asy
   await fireEvent.press(screen.getByRole("button", { name: "Pull" }));
   await act(async () => {});
   expect(fetchFn).toHaveBeenCalledTimes(2);
+});
+
+test("the day and the time in the phone's time, no year", () => {
+  const at = new Date(2026, 10, 27, 14, 5);
+  expect(whenLabel(at.toISOString(), "en")).toBe(
+    `${at.toLocaleDateString("en", { weekday: "short", day: "numeric", month: "short" })} · 14:05`,
+  );
+  expect(whenLabel(at.toISOString(), "en")).not.toContain("2026");
+  expect(whenLabel("tomorrow")).toBe("");
+});
+
+test("the faces show the members' pictures", async () => {
+  const [ada] = FIRST.faces;
+  const pictured = { ...FIRST, faces: [{ ...ada!, photo: "/9j/abc" }] };
+  await shown(answering(200, { group_runs: [pictured] }));
+  expect(screen.getByTestId("avatar-photo").props.source).toEqual({
+    uri: "data:image/jpeg;base64,/9j/abc",
+  });
 });

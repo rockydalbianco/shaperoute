@@ -1,6 +1,7 @@
 # TASK-516 — Forme invernali e contorni: forme nuove per il motore e il catalogo
 
-**Stato**: In lavorazione — parte 0 (documenti) il 2026-11-24
+**Stato**: In lavorazione — parte 0 in `main` (#1579); parte A approvata
+dall'utente il 2026-11-26
 **Fase**: 5 · **Branch**: `docs/TASK-516-part-0` (parte 0); una PR per parte
 **ADR**: ADR-0411 · numeri dal Coordinatore (fork 3), 2026-11-24
 **Viene da**: TASK-441 (la sua parte C), TASK-418 (le forme candidate e
@@ -112,12 +113,12 @@ docs/tasks/TASK-516.md
 
 ### Criteri di accettazione (parte A)
 
-- [ ] 11 file nuovi in `candidate_outlines/`; nessun file esistente toccato.
-- [ ] `read_outline` li legge tutti come un contorno chiuso coi suoi pezzi;
+- [x] 11 file nuovi in `candidate_outlines/`; nessun file esistente toccato.
+- [x] `read_outline` li legge tutti come un contorno chiuso coi suoi pezzi;
       `tools/test_draw_theme_shapes.py` verde (i file sono quelli che lo
       script scrive; nessun nome già in `SHAPES` né fra le 49 di TASK-418).
-- [ ] `tools/test_draw_new_shapes.py` resta verde senza modifiche.
-- [ ] L'utente ha visto la pagina d'anteprima e approvato (o fatto
+- [x] `tools/test_draw_new_shapes.py` resta verde senza modifiche.
+- [x] L'utente ha visto la pagina d'anteprima e approvato (o fatto
       ridisegnare) ogni sagoma; le sue parole qui sotto.
 
 ## Parte B — la prova sulle strade
@@ -155,6 +156,8 @@ passo «catalogo» sul server.
 
 - 2026-11-24: il primo pezzo è «Forme invernali e contorni» (pezzi 1 e 2
   della C di TASK-441); frasi con lo spazio e cifre dopo.
+- 2026-11-26: sulle 11 sagome della parte A, viste nella pagina
+  d'anteprima: «Sì, vanno bene». Restano tutte e 11, come sono.
 
 ## Fuori scope
 
@@ -167,3 +170,8 @@ passo «catalogo» sul server.
 
 - **2026-11-24**: parte 0 aperta (questo file, ADR-0411, STATUS, INDEX).
   Lista dei file della parte A mandata al Coordinatore.
+- **2026-11-24**: parte 0 in `main` (#1579). Parte A in bozza (#1580): lo
+  strumento `tools/draw_theme_shapes.py`, il suo test e gli 11 contorni.
+- **2026-11-26**: l'utente approva le 11 sagome («Sì, vanno bene»); #1580
+  pronta. Prossimo: la parte B (prova sulle strade), lista dei file prima al
+  Coordinatore.

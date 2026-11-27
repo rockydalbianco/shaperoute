@@ -3907,4 +3907,7 @@ export const IT: Table = {
     "La stima di MuW per l'obiettivo del giorno (demo)",
   "A usual day is the average of what you used in your last seven days. To lose weight MuW takes 600 kcal a day off it, the amount the NHS gives, only for adults with a body mass index of 25 or more, and never below 1,400 kcal a day for women or 1,900 for men (NHS 12-week weight loss plan). To gain weight MuW suggests no number. Sources read on 24 November 2026. MuW is not made by health professionals: better to write your own number, or your dietitian's.":
     "Una giornata tipo è la media di quello che hai consumato negli ultimi sette giorni. Per perdere peso MuW toglie 600 kcal al giorno, la quantità indicata dall'NHS, solo per adulti con indice di massa corporea da 25 in su, e mai sotto 1.400 kcal al giorno per le donne o 1.900 per gli uomini (piano dell'NHS di 12 settimane per perdere peso). Per prendere peso MuW non propone un numero. Fonti lette il 24 novembre 2026. MuW non è fatta da professionisti della salute: meglio scrivere il tuo numero, o quello del tuo dietista.",
+  // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
+  Weather: "Meteo",
+  "Weather: {temperature}, wind {speed}": "Meteo: {temperature}, vento {speed}",
 };

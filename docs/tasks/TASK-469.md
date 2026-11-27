@@ -10,7 +10,10 @@ nativo, la stanza per la barra è già in `main`; A7c-4 in `main` dal
 2026-11-26: **la parte A è finita**, esce col prossimo OTA; B3 e B4 in
 bozza; col vetro velato del 2026-11-27 la barra, l'header e i fogli
 tengono 4,5:1 nel simulatore, e l'utente ha approvato la barra e detto
-di andare avanti coi fogli)
+di andare avanti coi fogli. **La parte B è in `main` dal 2026-11-27**
+ed entra nella build nativa: #1557, #1562, #1614, #1617, #1621, con
+#1620 e #1647 prima; restano la prova su un telefono vero e le date di
+build e OTA)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
 #1225, `feat/TASK-469-a3-glass-segments` #1276,
@@ -318,7 +321,37 @@ casi peggiori):
   `SheetModal.tsx` non è stato toccato.
 
 **Non ancora visto**: le pagine dello sci e dell'allenamento; «Messages»
-con dei messaggi; «Aumenta contrasto»; un telefono vero.
+con dei messaggi; «Aumenta contrasto»; un telefono vero. Da guardare
+sulla build nativa, prima di chiudere il task.
+
+**Il taglio nativo** (2026-11-27). L'utente al Coordinatore: «Sì, parti»
+(il pacchetto e la barra), poi «Sì, anche loro» (l'header e i fogli).
+Entrati in `main` in quest'ordine, ognuno riallineato su `main` e
+riprovato prima di togliergli «DO NOT MERGE»:
+
+| PR | Cosa | Commit in `main` |
+|---|---|---|
+| #1557 | B1, `expo-glass-effect` e `NativeGlass` | c61a42e8 |
+| #1562 | B2, la barra velata | 22c0f304 |
+| #1614 | B3a, otto pagine che scorrono sotto l'header | 02875cb3 |
+| #1617 | B3b, l'header in vetro vero | b3782963 |
+| #1621 | B4b, i fogli in vetro vero, velati, opachi con «Riduci movimento» | ab3860d2 |
+
+Prima, senza cambi visibili: #1620 (B4a) e #1647 (B4c, gli altri quindici
+fogli). Da `main` in poi i test girano con il vetro vero simulato (il
+finto modulo di jest-expo dice che c'è): `HeaderScroll.test.tsx` e
+`SheetFace.test.tsx` dichiarano un telefono senza vetro vero. In locale
+un test dell'app, `__tests__/AppFavorites.test.tsx` («Kept 1 Oct 2026»),
+fallisce su ogni ramo, anche prima del taglio, mentre in CI passa: è
+del Mac, non del vetro.
+
+**Le icone colorate della barra** sono di TASK-523 (parte T), dopo il
+taglio: la capsula della scheda aperta nel colore della sua sezione, con
+l'icona scura sopra; le altre icone restano come sono (scelta
+dell'utente, «Sì, la capsula»). Un colore di sezione come tratto
+dell'icona non teneva 4,5:1 sul vetro vero. I vincoli che 523 segue sono
+quelli di `docs/UI.md`; il cambio di colore mentre la capsula scivola va
+fatto con strati d'opacità, non interpolando il colore.
 
 **Per chi scrive un test**: il finto modulo di jest-expo risponde che il
 vetro vero c'è. Quando `expo-glass-effect` sarà in `main`, ogni test che
@@ -575,6 +608,14 @@ Spuntati per A1 e A2 (2026-11-12):
   `docs/tasks/TASK-469/TASK-469-barra-velata-contrasti.jpg` e
   `TASK-469-fogli-header-velati.jpg` (nuove), `docs/STATUS.md`,
   `docs/DECISIONS.md`, `docs/UI.md`.
+- B3a, le ultime quattro pagine (nella #1614): una riga in
+  `screens/ProfileScreen.tsx`, `trainingmode/TrainingTodayPage.tsx`,
+  `trainingmode/TrainingWorkoutsPage.tsx`, `nutrition/NutritionPage.tsx`,
+  e `src/tabs/UnderHeader.test.tsx`.
+- Il taglio (#1621): in più `src/ui/SheetFace.test.tsx`, che dichiara un
+  telefono senza vetro vero.
+- La PR di documenti del taglio: `docs/tasks/TASK-469.md`,
+  `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md`.
 
 La lista di ogni fetta seguente va al Coordinatore prima del codice.
 
@@ -713,6 +754,10 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   fogli, che misurata tiene 4,5:1. Trovato e corretto il foglio senza
   vetro con «Riduci movimento». Visto anche l'header velato nei due
   toni.
+- **2026-11-27**, sera: il taglio nativo. L'utente al Coordinatore:
+  «Sì, parti», poi «Sì, anche loro». #1557, #1562, #1614, #1617 e #1621
+  in `main` in quest'ordine (la tabella sopra). Lo stesso giorno l'utente
+  ha scelto per TASK-523 la capsula colorata della scheda aperta.
 - Imparato (il difetto di A5b): con la nuova architettura uno `zIndex`
   ordina dentro il più vicino antenato che resta una vista sua, non
   dentro il genitore. Una vista con solo posizione e colore di fondo

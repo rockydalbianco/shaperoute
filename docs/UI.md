@@ -653,7 +653,8 @@ opaca, con «Aumenta contrasto» opaca col bordo `borderStrong`. La fascia
 sotto la barra resta alta quanto prima: le pagine non ci passano sotto.
 
 **La barra in vetro vero** (TASK-469 B2, scelta dell'utente del
-2026-11-26; bozza #1562, arriva con la prossima build nativa): dove il
+2026-11-26; in `main` dal 2026-11-27 con #1562, arriva con la build
+nativa di quel taglio): dove il
 telefono disegna il vetro vero (iOS 26 e seguenti, un'app costruita con
 `expo-glass-effect`) la capsula è il vetro di iOS e **la barra galleggia
 sopra le pagine**, che le passano sotto fino al bordo; la sfocatura tiene

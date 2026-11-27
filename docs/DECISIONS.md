@@ -631,11 +631,51 @@ lasciando le righe d'indice.
 - ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
 - ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte tiene i piedi fermi mentre il bacino si sposta e sfuma quando il busto si capovolge; un braccio verso chi guarda si piega; sette viste cambiate dall'utente; le routine composte con una tenuta sola, più lunga prima di un secondo giro; chiavi delle categorie senza punto, come le vuole il server; «Today» con la notte fino alle 4 · 2026-11-27 · Attiva
 - ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione una volta al mese nelle Alpi, un volo è di un decollo solo per i 300 m (le tracce non hanno quota), lo storico in una rotta a sé con la cache di 10 minuti, record più lungo, più alto e più lontano dai post per tutti, niente «Fly from here»; il vento (D) in un task nuovo dopo TASK-479 H · 2026-11-27 · Attiva
+- ADR-0388, aggiunta E2b (TASK-479) — La quota sul mare su Android: in volo si toglie il geoide EGM96 da una tabella a 1° nel codice (griglia 15' di NGA, pubblico dominio, copia di PROJ), interpolata bilineare; nelle Alpi al massimo 2,4 m dalla griglia piena; iOS e gli altri sport invariati · 2026-11-27 · Attiva
 - ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; una pagina vuota ha il suo pulsante quando c'è una cosa da fare; una tessera senza percorso mostra la sagoma della forma in grigio · 2026-11-26 · Attiva
 - ADR-0417 — Lo stile delle pagine in tutta l'app (TASK-523): il vetro di 469 a barre, tab e fogli e lo stile nuovo al contenuto; un colore per sezione come token suoi (`section`), stesso valore dove la tinta c'è già; un kit di soli file nuovi in `ui/` col velo tinto opaco al 12%; nella barra delle schede il colore sta nella capsula della scheda aperta, non nel tratto delle icone · 2026-11-27 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0388, aggiunta E2b (TASK-479) — La quota sul mare su Android: il geoide EGM96 da una tabella a 1° nel codice
+
+**Stato**: Attiva · 2026-11-27 · TASK-479 parte E2b (#1711), col sì
+dell'utente del 2026-11-27 («ok vai avanti con la E2b»). Il come è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: Android dà la quota GPS sull'ellissoide WGS84, iOS sul mare.
+Nelle Alpi la differenza (l'altezza del geoide N) è di 47–51 m: su Android
+i numeri del volo, i limiti MSL e FL degli spazi aerei (E2, E3) e il GPX
+erano alti di tanto. ADR-0388 aveva già scelto la fonte: EGM96 a griglia
+grossa di NGA, pubblico dominio, tabella nel codice.
+
+**Decisione**:
+- Durante un volo, solo su Android, alla quota del punto si toglie N
+  (MSL = quota sull'ellissoide − N) dove i punti entrano nella traccia
+  (`useFreeRun.ts`); tutto quello che legge la traccia ha la quota sul
+  mare. iOS e gli altri sport restano come prima; una quota che manca
+  resta mancante.
+- N da una tabella a 1° (181 × 360 nodi, centimetri in int16, base64,
+  174 KB di sorgente) in `apps/mobile/src/air/egm96Grid.ts`, interpolata
+  bilineare in `air/geoid.ts`. La genera `tools/egm96_grid.py` (solo
+  libreria standard) dalla griglia 15' di NGA com'è pubblicata da PROJ
+  (`us_nga_egm96_15.tif`, sha256 nello script), tenendo i nodi interi
+  senza medie; con `--check` misura soltanto.
+- Precisione contro la griglia 15': nelle Alpi al massimo 2,4 m (rms
+  0,65 m); nel mondo p99 1,9 m, al massimo 14 m sui fronti più ripidi.
+  Meno dell'errore della quota GPS di un telefono.
+
+**Alternative scartate**: tabella a 2° (44 KB, fino a 8,6 m nelle Alpi);
+a 0,5° o la griglia piena (da 700 KB a 2 MB nel pacchetto); i coefficienti
+armonici calcolati sul telefono (lenti, e nessun guadagno a questa
+precisione); `getMslAltitudeMeters` di Android 14 (non in `expo-location`,
+sarebbe nativo); il sito di NGA come fonte diretta (non risponde dal Mac:
+la copia di PROJ è la stessa griglia, con lo stesso pubblico dominio).
+
+**Conseguenze**: nessun testo nuovo, nessuna dipendenza, entra con un OTA.
+Resta la prova su un Android nelle Alpi. La quota di corsa e sci su
+Android resta sull'ellissoide (fuori da questa parte).
 
 ## ADR-0417 — Lo stile delle pagine in tutta l'app: un colore per sezione, un kit condiviso, il vetro alle barre
 

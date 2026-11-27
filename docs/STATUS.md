@@ -146,8 +146,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   vero; R4 in bozza (#1218).
 - **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
   B1, B2, B3, C, A1, E1–E3, D1–D6, D6b e H1 in `main`; H2 #1701 armata
-  (2026-11-27); passo server dei venti col sì dell'utente. Prossime F e G.
-  File: — · `tasks/TASK-479.md`
+  (2026-11-27); passo server dei venti col sì dell'utente; E2b (geoide
+  su Android) #1711 «pronta». Prossime F e G. File: — · `tasks/TASK-479.md`
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`

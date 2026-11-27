@@ -599,6 +599,7 @@ lasciando le righe d'indice.
 - ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
 - ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo di ADR-0269 con `group_id`, anche senza percorso; Public, Request, Invite only; un solo admin e fino a 3 co-admin; l'elenco dei membri solo ai membri; la chat di gruppo come parte E · 2026-11-23 · Proposta
 - ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
+- ADR-0402, precisazione C — Le uscite di un gruppo nell'API: corse di gruppo con `group_id`, `group` o `everyone`, anche senza percorso con «Destination»; `group_runs_activity_check` allargato col suo nome; le liste danno le uscite nuove solo con `outings=true` · 2026-11-27 · Attiva
 - ADR-0403 — Le proprie bolle nei messaggi sul giallo dell'app: una faccia piena `accent` con parole `onAccent`, non vetro; quello che la bolla porta su una piastra neutra · 2026-11-23 · Attiva
 - ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Attiva
 - ADR-0406 — Il proprietario dei dati sul telefono è il `public_id` sul suo server, non l'id numerico; la corsa, gli allenamenti in corso e i dati del corpo sono di ogni account, nascosti finché rientra · 2026-11-26 · Attiva
@@ -8524,3 +8525,40 @@ il gruppo diventa Public, cosa entra in «Recent activity».
 `drawings.py` invariati. Chiudere un gruppo con membri dentro non c'è:
 l'admin passa il ruolo o resta; se serve, lo decide l'utente con le
 schermate della parte B.
+
+## ADR-0402, precisazione C — Le uscite di un gruppo nell'API: corse di gruppo con `group_id`, anche senza percorso
+
+**Stato**: Attiva · 2026-11-27 · TASK-495 parte C1.
+**Deciso dall'agente su delega dell'utente**; le regole di `GRUPPI.md`
+§6–§8 restano le scelte dell'utente.
+
+**Contesto**: le uscite sono le corse di gruppo di ADR-0269 con il gruppo
+accanto, anche senza percorso (l'alpinismo). Lo schema della 0032 voleva
+sempre una linea e un'attività di `POST /routes`, e l'app di oggi rifiuta
+una corsa di gruppo che non sa leggere.
+
+**Decisione** (`GRUPPI.md` §12, «Scelte della parte C1»; `API.md`, «Le
+uscite di un gruppo»):
+- una migrazione (`0090_group_outings.sql`): `group_id`, `destination`,
+  linea e misure facoltative con `group_runs_route_check`, `visibility`
+  con `group`; `group_runs_activity_check` riletto e allargato col suo
+  nome agli sport registrati all'aperto, come 0055/0068/0071, perché la
+  migrazione del prossimo sport lo allarghi allo stesso modo;
+- lo stesso `POST /group-runs` prende il corpo di sempre (più `group_id`)
+  o quello senza percorso (`GroupOutingRequestBody`, `meeting_point`,
+  `destination`); la città è quella del gruppo;
+- `group_runs.py` non importa `groups.py` (che importa lui): le due
+  condizioni SQL di appartenenza e di admin sono riscritte lì;
+  `GET /groups/{id}/outings` sta in `groups.py`, che controlla il gruppo e
+  chiede le uscite a `group_runs.py`;
+- la push `group_outing_new` nasce con l'uscita, in `POST /group-runs`
+  (parte C1, non D);
+- la fila e il profilo danno le uscite senza percorso e quelle dei soli
+  membri solo con `outings=true`: un'app di prima rifiuterebbe tutta la
+  lista.
+
+**Conseguenze**: il server può avere la C1 prima dell'app: finché l'app
+non le crea non ci sono uscite, e un'app di prima vede le liste di prima.
+I tipi di `shared-types` sono solo aggiunte (`GroupOuting…`): l'app passa
+a loro nella parte C2.
+

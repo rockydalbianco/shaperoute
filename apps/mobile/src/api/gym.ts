@@ -3,11 +3,16 @@ import {
   GYM_SET_KINDS,
   HEART_BPM_MAX,
   HEART_BPM_MIN,
+  STRETCH_EXERCISES_MAX,
+  STRETCH_MINUTES_MAX,
+  STRETCH_ROUTINE_PATTERN,
+  STRETCH_SESSION_MAX_S,
   type GymExercises,
   type GymLevel,
   type GymSession,
   type GymSessionRequest,
   type GymSet,
+  type GymStretch,
 } from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask } from "./accounts";
@@ -63,11 +68,39 @@ function isBpm(value: unknown): boolean {
   );
 }
 
+function isWhole(value: unknown, min: number, max: number): boolean {
+  return (
+    typeof value === "number" && Number.isInteger(value) && value >= min && value <= max
+  );
+}
+
+/** The stretching at the end of a workout (TASK-466 part C, «ADR-0378,
+ * aggiunta C ed E»), in the API's limits (gym_sessions.GymStretchBody). */
+export function isGymStretch(value: unknown): value is GymStretch {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const item = value as Record<string, unknown>;
+  return (
+    typeof item.routine === "string" &&
+    STRETCH_ROUTINE_PATTERN.test(item.routine) &&
+    isWhole(item.minutes, 1, STRETCH_MINUTES_MAX) &&
+    isWhole(item.duration_s, 1, STRETCH_SESSION_MAX_S) &&
+    isWhole(item.exercises, 0, STRETCH_EXERCISES_MAX)
+  );
+}
+
+/** Absent, as from a workout without it or an API before TASK-466 C, or
+ * one the app can read. */
+function isStretchOrNone(value: unknown): boolean {
+  return value === undefined || isGymStretch(value);
+}
+
 export function isGymExercises(body: unknown): body is GymExercises {
   if (typeof body !== "object" || body === null) {
     return false;
   }
-  const { rests, rest_s, sets, heart_avg_bpm, heart_max_bpm } = body as Record<
+  const { rests, rest_s, sets, heart_avg_bpm, heart_max_bpm, stretch } = body as Record<
     string,
     unknown
   >;
@@ -77,7 +110,8 @@ export function isGymExercises(body: unknown): body is GymExercises {
     Array.isArray(sets) &&
     sets.every(isGymSet) &&
     isBpm(heart_avg_bpm) &&
-    isBpm(heart_max_bpm)
+    isBpm(heart_max_bpm) &&
+    isStretchOrNone(stretch)
   );
 }
 
@@ -127,7 +161,7 @@ export function isGymSession(body: unknown): body is GymSession {
   if (typeof body !== "object" || body === null) {
     return false;
   }
-  const { id, started_at, duration_s, rests, rest_s, show_exercises, sets } =
+  const { id, started_at, duration_s, rests, rest_s, show_exercises, sets, stretch } =
     body as Record<string, unknown>;
   return (
     typeof id === "string" &&
@@ -137,7 +171,8 @@ export function isGymSession(body: unknown): body is GymSession {
     isCount(rest_s) &&
     typeof show_exercises === "boolean" &&
     Array.isArray(sets) &&
-    sets.every(isGymSet)
+    sets.every(isGymSet) &&
+    isStretchOrNone(stretch)
   );
 }
 

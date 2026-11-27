@@ -4,6 +4,7 @@ import { forgetOutboxOf } from "../activities/outbox";
 import { forgetAllSleepOf } from "../activities/sleepOut";
 import { BODY_FILE } from "../body/bodyProfile";
 import { HEART_FILE } from "../body/heartZones";
+import { WEIGH_INS_FILE } from "../body/weighIns";
 import { forgetGymOf } from "../gym/gymOutbox";
 import { forgetHistoriesOf } from "../gym/gymHistoryCache";
 import { forgetPlansOf } from "../gym/plans";
@@ -62,7 +63,8 @@ export function serverOf(baseUrl: string): string {
  * Lets go of everything waiting on the phone for the account `owner`: its
  * runs, nights, workouts, swims and stretching sessions not sent, what was
  * to follow them (Strava, drawings, photos, order, outfits, «Public»), its
- * gym plans and the gym history kept, its body and its heart, and what it
+ * gym plans and the gym history kept, its body, its heart and its
+ * weigh-ins, and what it
  * left under way (a run, a workout, a swim, the watch's). For an
  * account deleted, and for a number that now is somebody else's.
  */
@@ -79,9 +81,11 @@ export function forgetPhoneDataOf(owner: number): void {
   forgetPlansOf(owner);
   forgetPoolOf(owner);
   forgetStretchOf(owner);
-  // Its body and its heart (part D): each account has its own.
+  // Its body and its heart (part D), and its weigh-ins (TASK-489 K1): each
+  // account has its own.
   forgetOwnedFile(BODY_FILE, owner);
   forgetOwnedFile(HEART_FILE, owner);
+  forgetOwnedFile(WEIGH_INS_FILE, owner);
   // What it left under way (part B): its runs, its workout, its swim and
   // the workouts of its watch, set aside or not.
   forgetRunsOf(owner);

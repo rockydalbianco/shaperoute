@@ -120,6 +120,7 @@ test("the notice read, the target and the corrections are read back", () => {
   const settings = {
     noticeSeen: true,
     target: 1850,
+    targetFromEstimate: true,
     edits: withActivityKcal(withRest(NO_EDITS, 1540), "run-1", 520),
     invite: { seen: 2, off: true },
     purpose: "lose" as const,
@@ -193,6 +194,17 @@ test("an invitation's count that does not read is as new", () => {
   expect(settingsFrom({ invite: 7 }).invite).toEqual({ seen: 0, off: false });
   // Settings kept before the invitation existed.
   expect(settingsFrom({ noticeSeen: true }).invite).toEqual({ seen: 0, off: false });
+});
+
+test("a target from before K1 reads as the user's own number", () => {
+  expect(settingsFrom({ noticeSeen: true, target: 1850 }).targetFromEstimate).toBe(
+    false,
+  );
+  expect(
+    settingsFrom({ target: 1850, targetFromEstimate: "yes" }).targetFromEstimate,
+  ).toBe(false);
+  // No target, nothing taken from the estimate.
+  expect(settingsFrom({ targetFromEstimate: true }).targetFromEstimate).toBe(false);
 });
 
 test("a purpose that does not read is none", () => {

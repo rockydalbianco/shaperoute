@@ -2106,6 +2106,9 @@ export const DE: Table = {
   "{seconds} s each side": "{seconds} s pro Seite",
   "This is not medical advice. If your back hurts, see a doctor.":
     "Das ist kein medizinischer Rat. Bei Rückenschmerzen zum Arzt gehen.",
+  "{count} sessions · {minutes} min": "{count} Einheiten · {minutes} Min.",
+  "1 session · {minutes} min": "1 Einheit · {minutes} Min.",
+  "After your activity today": "Nach deiner Aktivität heute",
   // end of TASK-520 part D
   // src/stretch, the exercise's page (TASK-520 part E)
   "Breathe in": "Einatmen",
@@ -4014,6 +4017,74 @@ export const DE: Table = {
   "MuW's estimate of a daily target (demo)": "MuWs Schätzung für das Tagesziel (Demo)",
   "A usual day is the average of what you used in your last seven days. To lose weight MuW takes 600 kcal a day off it, the amount the NHS gives, only for adults with a body mass index of 25 or more, and never below 1,400 kcal a day for women or 1,900 for men (NHS 12-week weight loss plan). To gain weight MuW suggests no number. Sources read on 24 November 2026. MuW is not made by health professionals: better to write your own number, or your dietitian's.":
     "Ein üblicher Tag ist der Durchschnitt dessen, was du in den letzten sieben Tagen verbraucht hast. Zum Abnehmen zieht MuW 600 kcal am Tag ab, die Menge, die der NHS nennt, nur für Erwachsene mit einem Body-Mass-Index ab 25 und nie unter 1.400 kcal am Tag für Frauen oder 1.900 für Männer (12-Wochen-Abnehmplan des NHS). Zum Zunehmen schlägt MuW keine Zahl vor. Quellen gelesen am 24. November 2026. MuW wird nicht von Gesundheitsfachleuten gemacht: Besser schreibst du deine eigene Zahl oder die deiner Ernährungsberatung.",
+
+  // src/nutrition and src/body (TASK-489 part K1: the weight; approved by the user on 2026-11-27)
+  "Time to weigh in": "Zeit zum Wiegen",
+  "Last time: {date}, {weight}": "Letztes Mal: {date}, {weight}",
+  "Your first weigh-in starts the chart.": "Dein erstes Wiegen startet die Kurve.",
+  "Your weight": "Dein Gewicht",
+  "Write a weight between {min} and {max}.":
+    "Gib ein Gewicht zwischen {min} und {max} ein.",
+  "Saved. Your weight in Settings is now {weight}.":
+    "Gespeichert. Dein Gewicht in den Einstellungen ist jetzt {weight}.",
+  "Recalculate MuW's estimate": "MuWs Schätzung neu berechnen",
+  "{change} in {count} weeks": "{change} in {count} Wochen",
+  "Since your first weigh-in, {date}": "Seit deinem ersten Wiegen, {date}",
+  "Of your starting weight, in {count} weeks":
+    "Deines Startgewichts, in {count} Wochen",
+  Months: "Monate",
+  "All@@weight": "Alles",
+  "Start@@weight": "Start",
+  "Highest@@weight": "Höchstes",
+  Lowest: "Niedrigstes",
+  "Per week": "Pro Woche",
+  "Weigh-ins": "Wiegen",
+  "{count} since {date}": "{count} seit {date}",
+  "Same {count} weeks": "Dieselben {count} Wochen",
+  "Balance {kcal} kcal (est.) · Weight {change}":
+    "Bilanz {kcal} kcal (gesch.) · Gewicht {change}",
+  "One weigh-in so far: the line starts with the next.":
+    "Bisher einmal gewogen: Die Linie beginnt mit dem nächsten Mal.",
+  "No weigh-ins yet": "Noch nicht gewogen",
+  "Add a weigh-in": "Wiegen eintragen",
+  "All weigh-ins": "Alle Wiegungen",
+  "Delete this weigh-in?": "Dieses Wiegen löschen?",
+  "Your weight in Settings stays {weight}.":
+    "Dein Gewicht in den Einstellungen bleibt {weight}.",
+  "My goal weight": "Mein Zielgewicht",
+  "Set my goal weight": "Mein Zielgewicht festlegen",
+  "{done} of {total} so far": "{done} von {total} bisher",
+  "My milestones": "Meine Etappen",
+  "Add a milestone": "Etappe hinzufügen",
+  Reached: "Erreicht",
+  "A milestone goes between your starting weight and your goal.":
+    "Eine Etappe liegt zwischen deinem Startgewicht und deinem Ziel.",
+  "To set a goal weight, add your height and year of birth in Settings.":
+    "Um ein Zielgewicht festzulegen, trag Größe und Geburtsjahr in den Einstellungen ein.",
+  "MuW has no weight goals for people under 18.":
+    "MuW hat keine Gewichtsziele für Personen unter 18 Jahren.",
+  "Lowest goal for your height: {weight}": "Niedrigstes Ziel für deine Größe: {weight}",
+  "Below {weight} your weight would be low for your height (body mass index under 18.5). MuW doesn't set goals there.":
+    "Unter {weight} wäre dein Gewicht für deine Größe niedrig (Body-Mass-Index unter 18,5). Dort setzt MuW keine Ziele.",
+  "Remove goal": "Ziel entfernen",
+  "Ask me to weigh in": "Erinnere mich ans Wiegen",
+  "Every 2 weeks": "Alle 2 Wochen",
+  "Every 4 weeks": "Alle 4 Wochen",
+  Never: "Nie",
+  "The card shows in your diary on the day. You can always add a weigh-in yourself.":
+    "Die Karte erscheint an dem Tag in deinem Tagebuch. Du kannst jederzeit selbst ein Wiegen eintragen.",
+  "You reached {weight}": "Du hast {weight} erreicht",
+  "A milestone you set yourself.": "Eine Etappe, die du selbst gewählt hast.",
+  "You reached your goal": "Du hast dein Ziel erreicht",
+  "{weight}, the goal you set yourself.":
+    "{weight}, das Ziel, das du selbst gewählt hast.",
+  "{count} weigh-ins": "{count}-mal gewogen",
+  "{count} days in your diary": "{count} Tage in deinem Tagebuch",
+  "You kept at it.": "Du bist drangeblieben.",
+  "Weight and your goal": "Gewicht und dein Ziel",
+  "The latest weigh-in becomes your weight in Settings: from that day on MuW uses it for your energy at rest and your activities. The percent is the change divided by your starting weight. A goal weight can't be below a body mass index of 18.5, the threshold for underweight in adults used by the World Health Organization and the US CDC (pages read on 27 November 2026), and there are no weight goals under 18. MuW is not made by health professionals: this is not medical advice.":
+    "Dein letztes Wiegen wird dein Gewicht in den Einstellungen: Ab diesem Tag nutzt MuW es für deine Energie in Ruhe und deine Aktivitäten. Der Prozentwert ist die Veränderung geteilt durch dein Startgewicht. Ein Zielgewicht kann nicht unter einem Body-Mass-Index von 18,5 liegen, der Grenze für Untergewicht bei Erwachsenen, die die Weltgesundheitsorganisation und die US-Behörde CDC verwenden (Seiten gelesen am 27. November 2026), und unter 18 Jahren gibt es keine Gewichtsziele. MuW wird nicht von Gesundheitsfachleuten gemacht: Das ist kein medizinischer Rat.",
+
   // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
   Weather: "Wetter",
   "Weather: {temperature}, wind {speed}": "Wetter: {temperature}, Wind {speed}",

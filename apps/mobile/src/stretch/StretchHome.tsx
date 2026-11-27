@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Animated, Easing, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
@@ -20,8 +20,10 @@ import { CategoryTile, facesOf } from "./CategoryTile";
 import { category, compose } from "./compose";
 import type { Exercise } from "./exercises";
 import { choiceFor, useChoices } from "./stretchChoices";
+import { StretchWeek } from "./StretchWeek";
 import { todayCategory } from "./today";
 import { TodayCard } from "./TodayCard";
+import { useStretchWeek } from "./useStretchWeek";
 
 /** How long each part of the home takes to come in, and how far apart. */
 export const ENTER_MS = 320;
@@ -30,6 +32,8 @@ export const ENTER_GAP_MS = 70;
 type Props = {
   /** The moment «Today» is asked for; now, unless a test says. */
   now?: Date;
+  /** For the tests: the API asked with this instead of `fetch`. */
+  fetchFn?: typeof fetch;
 };
 
 /** A group's title in its colour, with what it holds beside it. */
@@ -54,19 +58,24 @@ function GroupTitle({ group }: { group: (typeof GROUPS)[number] }) {
  * areas, the moments of the day, the sports with their before and after,
  * intimacy, and the rest. Each group has a colour of its own
  * (`color.stretch`); the figure in a typical pose is a category's icon. A
- * tile opens the category's page. The parts come in one after the other;
+ * tile opens the category's page. Over «Today», for whoever is signed in,
+ * the week: the days with a session and their minutes. The parts come in one after the other;
  * with «Reduce Motion» on they are there at once.
  *
  * The routines someone made (TASK-466 part E, «My routines») go between
  * «Today» and the groups: that part mounts them there.
  */
-export function StretchHome({ now }: Props) {
+export function StretchHome({ now, fetchFn }: Props) {
   const choices = useChoices();
   const reduced = useReduceMotion();
   const [open, setOpen] = useState<string | null>(null);
   // The proposal of the moment the home was opened: it does not change
-  // under the finger at ten o'clock sharp.
-  const [today] = useState(() => category(todayCategory(now ?? new Date())));
+  // under the finger at ten o'clock sharp. It does once the week is read,
+  // when a sport was done in the last hours (part D2).
+  const [opened] = useState(() => now ?? new Date());
+  const week = useStretchWeek(opened, fetchFn);
+  const last = week?.last ?? null;
+  const today = useMemo(() => category(todayCategory(opened, last)), [opened, last]);
   const routine = compose(today, choiceFor(today, choices));
 
   const [entered] = useState(() => GROUPS.map(() => new Animated.Value(0)));
@@ -136,6 +145,13 @@ export function StretchHome({ now }: Props) {
 
   return (
     <View style={styles.home} testID="stretch-home">
+      {week !== null && (
+        <StretchWeek
+          week={week}
+          today={(opened.getDay() + 6) % 7}
+          tint={color.stretch.more}
+        />
+      )}
       <Animated.View style={coming(first)}>
         <TodayCard
           of={today}

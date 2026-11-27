@@ -138,6 +138,17 @@ test("the target is the user's number, or none", () => {
   expect(loadSettings().target).toBeNull();
 });
 
+test("the target remembers whether it is MuW's estimate as taken", () => {
+  expect(writeTarget(1900, true)).toBe(true);
+  expect(loadSettings()).toMatchObject({ target: 1900, targetFromEstimate: true });
+  // A number the user wrote is theirs again.
+  writeTarget(2000);
+  expect(loadSettings().targetFromEstimate).toBe(false);
+  writeTarget(1900, true);
+  writeTarget(null, true);
+  expect(loadSettings()).toMatchObject({ target: null, targetFromEstimate: false });
+});
+
 test("a food of the user's is added, rewritten and removed", () => {
   const granola = addFood({ name: "Granola", kcalPer100g: 450 });
   expect(granola).toMatchObject({ key: "own-1", source: "own" });

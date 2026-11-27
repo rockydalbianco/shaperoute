@@ -31,7 +31,8 @@ import {
  * - to do the other side it turns round while standing, narrowing to its
  *   edge and opening the other way, instead of flipping at once;
  * - while a pose is held it breathes: slowly a little deeper and back
- *   (`Breath`), every `BREATH_MS`;
+ *   (`Breath`), every `BREATH_MS`; a movement is the same loop, as wide
+ *   and as quick as the exercise says (`breathMs`);
  * - with «Reduce Motion» on, it takes each pose at once and stays still.
  */
 
@@ -69,6 +70,11 @@ type Props = {
   breath?: Breath;
   /** Whether it breathes now: the pose is held and the time runs. */
   breathing?: boolean;
+  /**
+   * One breath's time. A movement (TASK-520, ADR-0415) is a breath that
+   * goes as far as it needs at its own pace: leg swings, arm circles.
+   */
+  breathMs?: number;
   testID?: string;
 };
 
@@ -231,6 +237,7 @@ export function Figure({
   mirrored = false,
   breath = {},
   breathing = false,
+  breathMs = BREATH_MS,
   testID,
 }: Props) {
   const reduced = useReduceMotion();
@@ -285,7 +292,7 @@ export function Figure({
       return () => settling.stop();
     }
     const half = {
-      duration: BREATH_MS / 2,
+      duration: breathMs / 2,
       easing: Easing.inOut(Easing.sin),
       useNativeDriver: true,
     };
@@ -297,7 +304,7 @@ export function Figure({
     );
     breathe.start();
     return () => breathe.stop();
-  }, [breathing, reduced, b]);
+  }, [breathing, breathMs, reduced, b]);
 
   const line = LINE_SHARE * height;
   const frame: Frame = { t, b, move, breath, height, line };

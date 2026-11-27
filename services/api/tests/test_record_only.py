@@ -146,14 +146,14 @@ def _runs_check(db: Database) -> str:
     return str(row["check"])
 
 
-def _other_checks(db: Database) -> list[str]:
+def _other_checks(db: Database) -> dict[str, str]:
     with db.connect() as conn:
         rows = conn.execute(
-            "SELECT pg_get_constraintdef(oid) AS check FROM pg_constraint"
+            "SELECT conname, pg_get_constraintdef(oid) AS check FROM pg_constraint"
             " WHERE conname IN ('favorites_activity_check',"
             " 'group_runs_activity_check')"
         ).fetchall()
-    return [str(row["check"]) for row in rows]
+    return {str(row["conname"]): str(row["check"]) for row in rows}
 
 
 def test_the_migration_lets_every_activity_of_a_run_in(database_url: str) -> None:
@@ -161,10 +161,13 @@ def test_the_migration_lets_every_activity_of_a_run_in(database_url: str) -> Non
     migrated.migrate()
     check = _runs_check(migrated)
     assert all(f"'{activity}'" in check for activity in get_args(RunActivity))
-    # Favorites and group runs keep a route to do again: no day on the snow.
+    # Favorites keep a route to do again: no day on the snow. Group runs
+    # take it since 0090, for the outings of a group without a route
+    # (TASK-495 part C1); a route's activity stays the API's to check.
     others = _other_checks(migrated)
-    assert len(others) == 2
-    assert not any("skiing" in other for other in others)
+    assert set(others) == {"favorites_activity_check", "group_runs_activity_check"}
+    assert "skiing" not in others["favorites_activity_check"]
+    assert "'skiing'" in others["group_runs_activity_check"]
 
 
 def test_the_migration_keeps_the_walk_of_0043(

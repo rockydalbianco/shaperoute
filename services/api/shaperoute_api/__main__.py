@@ -94,6 +94,7 @@ from shaperoute_api.resort_follows import install_resort_follows
 from shaperoute_api.route_archive import RouteArchive
 from shaperoute_api.route_processes import WORKERS, RouteProcesses
 from shaperoute_api.route_store import STORE_FOLDER, RouteStore
+from shaperoute_api.run_weather import install_run_weather
 from shaperoute_api.ski_days import install_ski_days
 from shaperoute_api.ski_names_api import install_ski_names
 from shaperoute_api.ski_resorts_api import install_ski_resorts
@@ -330,6 +331,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     install_ski_names(app, args.cache_dir)
     # The ski resorts of the world, by name and near a place (TASK-406).
     install_ski_resorts(app)
+    # The weather of a run, asked of MET Norway after its figures (TASK-410 E).
+    install_run_weather(app)
     install_ski_days(app)
     install_ski_season(app)
     install_resort_follows(app)

@@ -56,6 +56,32 @@ test("with no choice the app is dark at its darkest (ADR-0046), warm (ADR-0293)"
     north: "#FF5B4F",
     runDay: "#4DD2FF",
     muscle: "#FF6FB5",
+    food: "#4FD08A",
+    protein: "#6FA8FF",
+    carbs: "#B892FF",
+    fat: "#FF8AC4",
+    dish: {
+      amber: "#5A3D0C",
+      tomato: "#5E2218",
+      leaf: "#21401F",
+      sea: "#143A4A",
+      plum: "#40214F",
+      sand: "#4A3F2C",
+    },
+    stretch: {
+      body: "#FF8A5C",
+      moments: "#A99BFF",
+      sports: "#4DD2FF",
+      intimacy: "#FF6FB5",
+      more: "#4FD08A",
+    },
+    section: {
+      draw: "#F5A066",
+      profile: "#A99BFF",
+      explore: "#4DD2FF",
+      feed: "#E3C596",
+      messages: "#4FD08A",
+    },
     strava: "#FC5200",
     onStrava: "#FFFFFF",
     ski: { descent: "#FFD02B", lift: "#FF5A4E", onLine: "#0B0A08" },
@@ -145,8 +171,30 @@ test.each(EVERY)("%s at step %i keeps the contrasts", (_tone, _step, c) => {
   for (const under of [c.background, c.surface, c.surfaceRaised]) {
     expect(contrast(c.muscle, under)).toBeGreaterThanOrEqual(3);
   }
+  // The five groups of the stretching home (TASK-520): a group's name and
+  // its icon are in its colour, so each keeps the 4.5:1 of text.
+  for (const group of Object.values(c.stretch)) {
+    for (const under of [c.background, c.surface, c.surfaceRaised]) {
+      expect(contrast(group, under)).toBeGreaterThanOrEqual(4.5);
+    }
+  }
   // Text on yellow does not depend on the tone.
   expect(contrast(c.onAccent, c.accent)).toBeGreaterThanOrEqual(7);
+});
+
+test("the stretching groups have five colours, none of them the yellow", () => {
+  for (const [, , palette] of EVERY) {
+    const groups = Object.values(palette.stretch);
+    expect(Object.keys(palette.stretch)).toEqual([
+      "body",
+      "moments",
+      "sports",
+      "intimacy",
+      "more",
+    ]);
+    expect(new Set(groups).size).toBe(5);
+    expect(groups).not.toContain(palette.accent);
+  }
 });
 
 test("the dark tone's yellow line reads on its map without a border", () => {

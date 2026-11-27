@@ -13,11 +13,16 @@ import { AccessibilityInfo } from "react-native";
 import { ActivitiesContext, type ActivitiesDoor } from "../activities/activitiesDoor";
 import { answers } from "../account/testing";
 import { FollowsContext, type FollowsDoor } from "../social/followsDoor";
+import { category, compose } from "../stretch/compose";
 import { routineExercises } from "../stretch/routines";
 import { READY_S, SWITCH_S, TICK_MS } from "../stretch/StretchScreen";
 import { chooseRoutine, FIRST_ROUTINE } from "./stretchChoice";
 import { loadStretchOutbox, STRETCH_OUTBOX_FILE, stretchToSend } from "./stretchOutbox";
-import { StretchSessionHost, startStretchSession } from "./StretchSessionHost";
+import {
+  startCategorySession,
+  startStretchSession,
+  StretchSessionHost,
+} from "./StretchSessionHost";
 
 jest.mock("expo-keep-awake", () => ({
   activateKeepAwakeAsync: jest.fn(() => Promise.resolve()),
@@ -202,4 +207,35 @@ test("a session left before any exercise ends keeps nothing", async () => {
   expect(showSavedLogo).not.toHaveBeenCalled();
   expect(loadStretchOutbox()).toEqual([]);
   expect(fetchFn).not.toHaveBeenCalled();
+});
+
+test("a routine composed from a category starts at once and is kept under the category's key", async () => {
+  // «Start» on the stretching home (TASK-520): no length to ask.
+  const neck = compose(category("neck"), { minutes: 3, level: "gentle", where: "any" });
+  const fetchFn = answers({ status: 201, body: {} });
+  await show(fetchFn);
+  await act(async () =>
+    startCategorySession("neck", neck.choice.minutes, neck.exercises),
+  );
+  expect(screen.queryByTestId("stretch-chooser")).toBeNull();
+  expect(screen.getByTestId("stretch-screen")).toBeOnTheScreen();
+  expect(screen.getByText(neck.exercises[0].name)).toBeOnTheScreen();
+  await wait(neck.seconds * TICK_MS);
+  expect(screen.queryByTestId("stretch-screen")).toBeNull();
+  expect(showSavedLogo).toHaveBeenCalledTimes(1);
+  const [, init] = fetchFn.mock.calls[0];
+  expect(JSON.parse(init?.body as string)).toMatchObject({
+    routine: "neck",
+    minutes: 3,
+    exercises: neck.exercises.length,
+  });
+});
+
+test("a session on is not replaced by another «Start»", async () => {
+  const neck = compose(category("neck"), { minutes: 3, level: "gentle", where: "any" });
+  await show(answers());
+  await act(async () => startCategorySession("neck", 3, neck.exercises));
+  await act(async () => startStretchSession("morning"));
+  expect(screen.queryByTestId("stretch-chooser")).toBeNull();
+  expect(screen.getByText(neck.exercises[0].name)).toBeOnTheScreen();
 });

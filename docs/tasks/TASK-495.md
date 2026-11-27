@@ -1,6 +1,6 @@
 # TASK-495 — I gruppi per uscire insieme («Groups»)
 
-**Stato**: In corso (0 #1515, A #1538 in `main`, A2 #1543; poi B)
+**Stato**: In corso (0, A, A2, B e privacy in `main`; A3 #1629; poi C, D, E)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-495-groups`
 **Dipende da**: TASK-309 (le corse di gruppo, `EVENTI.md`, ADR-0269),
@@ -160,8 +160,29 @@ Parte B (lista approvata dal Coordinatore il 2026-11-24): `apps/mobile/src/group
 e il suo test, `src/i18n/{de,es,fr,it}.ts`; `src/profile/ProfileHome.tsx`
 una riga sola, dopo #1517 di TASK-489 e col via del Coordinatore.
 
-Parti C–E e la privacy: si scrivono qui, una per volta, dopo il sì del
-Coordinatore sulla lista.
+Parte C1 (API delle uscite; lista approvata dal Coordinatore il
+2026-11-27, migrazione 0090 assegnata da lui; i documenti in una PR a
+parte):
+```
+services/api/migrations/0090_group_outings.sql       (nuovo)
+services/api/shaperoute_api/group_runs.py            (le uscite: corpo, chi vede, fila, push, annullare)
+services/api/shaperoute_api/groups.py                (GET /groups/{id}/outings; uscire e rimuovere annullano le uscite)
+services/api/shaperoute_api/push.py                  (group_outing_new e i suoi testi)
+services/api/tests/test_group_outings.py             (nuovo)
+services/api/tests/test_record_only.py               (TASK-375, chiuso: group_runs prende gli sport all'aperto; aggiunto dal Coordinatore)
+packages/shared-types/src/index.ts                   (i tipi GroupOuting…, aggiunte sole)
+packages/shared-types/fixtures/group-outing*.json    (nuove), group-run.json, group-runs.json, group-runs-of-profile.json (tre campi null)
+packages/shared-types/test/groupOutings.test.ts      (nuovo)
+docs/API.md, docs/DATABASE.md, docs/GRUPPI.md, docs/EVENTI.md, docs/DECISIONS.md, questo file   (PR di soli documenti)
+```
+I test sono in un file nuovo (`test_group_outings.py`), non in
+`test_group_runs.py` né in `test_groups.py`: nessuno dei due cambia. Cambia
+solo `test_record_only.py`, che voleva `group_runs_activity_check` senza
+«skiing».
+
+Parte C2 (l'app, dopo TASK-309 B2 in `main`) e parte D (Explore): elenchi
+proposti in `out/TASK-495/PARTE-0-C-D.md` del checkout principale; si
+scrivono qui col sì del Coordinatore. Parte E e la privacy: dopo.
 
 ## Fuori scope
 
@@ -184,8 +205,59 @@ restano come in `EVENTI.md`.
 - 2026-11-24 · parte A2 (#1543): `GET /groups/{id}/activity`, i post dei
   membri degli ultimi 14 giorni negli sport del gruppo; armata dal
   Coordinatore, merge al verde.
-- **Prossimo**: parte B (l'app), con le schermate e i testi all'utente
-  prima della PR; poi la privacy, prima dell'OTA di B.
-- **Da chiedere all'utente con le schermate di B**: un admin oggi chiude
-  il gruppo solo uscendo da ultimo membro; se serve «Delete group» per un
-  gruppo con membri, è una scelta di prodotto.
+- 2026-11-24 · parte A e A2 sul server (passo 22 del Coordinatore,
+  `080a4e83`): `check_a.sql` torna come atteso.
+- 2026-11-24 · parte B scritta; al simulatore (iPhone 17, API e DB usa e
+  getta) nove schermate in `out/TASK-495/b/` del checkout principale,
+  **approvate dall'utente con i testi** («Sì, approvo»). Trovato e
+  corretto lì: un bottone spento non sembrava spento, perché `Tap` mette
+  la sua opacità sopra lo stile; ora si spengono anche le parole. Scelta
+  dell'utente lo stesso giorno: l'avviso di sicurezza del modulo parla di
+  gruppi («MuW doesn't organise or check groups or their outings»).
+- 2026-11-24 · privacy: la sezione «Groups» nelle cinque lingue (en e it
+  approvati il 23–24, de/es/fr e «o un gruppo» in «Reports» il 24); #1561
+  in `main` (`93da3378`), sito copiato dall'utente a `c33f3920`.
+- 2026-11-24 · **«Delete group»**: l'utente vuole che l'admin cancelli il
+  gruppo anche con membri dentro; testi approvati (bottone, conferma,
+  push «{name} deleted the group {title}.» che non apre niente) → parte
+  A3, lista dei file approvata dal Coordinatore. La privacy non cambia.
+- 2026-11-26 · parte B in `main` (#1560, `7224177b`), col «Sì, unisci»
+  dell'utente; esce con il prossimo OTA (la privacy è già online).
+- 2026-11-26 · parte A3 (#1629, `98785b9a`): API + app in una PR, nessuna
+  migrazione; con un server di prima l'app dice «Something went wrong.» e
+  il gruppo resta, quindi l'OTA può partire prima del passo server
+  (`out/TASK-495/SERVER-A3.md`). Merge col «Sì, unisci» dell'utente.
+- **Prossimo**: OTA della B (Coordinatore) e prova dell'utente sul
+  telefono; A3 in `main` e sul server; poi C (uscite di gruppo, anche
+  senza percorso: tocca i file di TASK-309, lista al Coordinatore), D
+  (Explore e `group_outing_new`), E (chat di gruppo).
+- **TASK-309 B2** (la fila del Feed) va alla stessa sessione dopo la
+  chiusura di B, con il contesto pulito: brief in
+  `out/TASK-309/AVVIO-B2.md` del checkout principale.
+- 2026-11-27 · parte 0 di C e D (`out/TASK-495/PARTE-0-C-D.md`): ordine
+  309 B2 → C1 (API, subito) → C2 (app, dopo B2) → D (solo la sezione di
+  Explore: `GET /groups` c'è dalla parte A) → E. Il Coordinatore approva
+  C1 e assegna la `0090`. La push `group_outing_new` passa da D a C1.
+- 2026-11-27 · **privacy**: la pagina online non dice che i membri del
+  gruppo vedono ritrovo e «Destination» di un'uscita. Serve una frase
+  nuova nelle cinque lingue, col sì dell'utente, **prima dell'OTA di C2**;
+  la PR della privacy al turno del Coordinatore.
+- 2026-11-27 · parte C1 scritta (API, migrazione `0090`, 20 test in
+  `test_group_outings.py`), PR **#1704**; il testo della push
+  `group_outing_new` aspetta il sì dell'utente. Dopo l'unione, il passo
+  server del Coordinatore.
+- 2026-11-27 · **scelta dell'utente Q1** («Sì, così»): un'uscita si crea
+  dalla pagina del gruppo con «New outing» («With a route» dai Preferiti,
+  «Without a route» col ritrovo sulla mappa) e anche dal modulo «Create
+  group run» sotto il cuore, con una riga «Group».
+- 2026-11-27 · **scelta dell'utente Q2** («Sì, così»): il ritrovo di
+  un'uscita senza percorso si sceglie su una mappa che parte dalla zona del
+  gruppo, con un tocco lungo che mette il segnaposto, poi trascinabile;
+  sotto, «Where exactly» come oggi.
+- 2026-11-27 · **scelta dell'utente Q3** («Sì, così»): la scheda di
+  un'uscita senza percorso ha l'icona dello sport al posto della linea e la
+  «Destination» sotto il titolo; il resto come la scheda di TASK-309 B2.
+- 2026-11-27 · **testi della push `group_outing_new` approvati
+  dall'utente** («Sì, approvo»), come sono in #1704: en «{name} planned a
+  new outing in {group}: {title}», it «{name} ha organizzato una nuova
+  uscita in {group}: {title}», più de, es, fr. CI di #1704 verde.

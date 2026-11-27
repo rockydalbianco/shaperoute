@@ -7,22 +7,29 @@ import { t } from "../i18n";
 import { color, font, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
 import { NutritionSheet } from "./AddFoodSheet";
+import { EstimateBox } from "./EstimateBox";
 import { TARGET_KCAL, targetOf } from "./ownTarget";
+import { useNutrition } from "./useNutrition";
+import { useUsualUse } from "./useUsualUse";
 
 type Props = {
   visible: boolean;
   /** The target as it is now; null with none. */
   target: number | null;
-  /** The number the user wrote, or null for «Remove target». */
-  onTarget: (kcal: number | null) => void;
+  /** The number the user saved, or null for «Remove target»;
+   * `fromEstimate` when it is MuW's estimate as «Use this number» put it. */
+  onTarget: (kcal: number | null, fromEstimate: boolean) => void;
   onClose: () => void;
 };
 
 /**
  * «My daily target» (TASK-489 part B, ADR-0397, the user's choice of
  * 2026-11-23): the kilocalories a day the user writes, their own number or
- * the one their dietitian gave them. The field starts empty: MuW never
- * proposes a target and never works one out.
+ * the one their dietitian gave them. The field starts empty. Since part J
+ * MuW's estimate can be looked at under it (EstimateBox.tsx): closed until
+ * asked for, and never written unless the user says «Use this number».
+ * Since part K1 the sheet tells whether the number saved is that estimate,
+ * untouched: then a new weigh-in offers to work it out again.
  */
 export function TargetSheet({ visible, target, onTarget, onClose }: Props) {
   return (
@@ -34,8 +41,15 @@ export function TargetSheet({ visible, target, onTarget, onClose }: Props) {
 
 function Body({ target, onTarget, onClose }: Omit<Props, "visible">) {
   const [text, setText] = useState(target === null ? "" : String(target));
+  // The estimate «Use this number» wrote in the field; null with none.
+  const [taken, setTaken] = useState<number | null>(null);
+  const { purpose } = useNutrition().settings;
+  // One moment while the sheet is open: not counted again at every key.
+  const [moment] = useState(() => new Date());
+  const usedPerDay = useUsualUse(moment);
   const typed = readNumber(text);
   const kcal = typed === null ? null : targetOf(typed);
+  const fromEstimate = kcal !== null && kcal === taken;
   return (
     <View style={styles.body}>
       <Text style={styles.title} accessibilityRole="header">
@@ -56,17 +70,23 @@ function Body({ target, onTarget, onClose }: Omit<Props, "visible">) {
         testID="target-input"
       />
       <Text style={styles.hint}>
-        {t(
-          "Your own number, or the one your dietitian gave you. MuW never suggests one.",
-        )}
+        {t("Best: write your own number, or your dietitian's.")}
       </Text>
+      <EstimateBox
+        purpose={purpose}
+        usedPerDay={usedPerDay}
+        onUse={(estimate) => {
+          setText(String(estimate));
+          setTaken(estimate);
+        }}
+      />
       <View style={gymStyles.row}>
         <Tap style={gymStyles.button} onPress={onClose} accessibilityRole="button">
           <Text style={gymStyles.buttonText}>{t("Cancel")}</Text>
         </Tap>
         <Tap
           style={[gymStyles.button, kcal === null && gymStyles.disabled]}
-          onPress={() => kcal !== null && onTarget(kcal)}
+          onPress={() => kcal !== null && onTarget(kcal, fromEstimate)}
           disabled={kcal === null}
           accessibilityRole="button"
           accessibilityState={{ disabled: kcal === null }}
@@ -78,7 +98,7 @@ function Body({ target, onTarget, onClose }: Omit<Props, "visible">) {
       {target !== null && (
         <Tap
           style={styles.remove}
-          onPress={() => onTarget(null)}
+          onPress={() => onTarget(null, false)}
           accessibilityRole="button"
           testID="target-remove"
         >

@@ -3474,6 +3474,20 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   battito non si vede (deciso dall'agente su delega dell'utente, come le kcal
   della scelta 17). Un'app di prima non li manda; un server di prima risponde
   `422` a un'app che li manda (`extra="forbid"`): prima il server.
+- **Lo stretching dopo l'allenamento** (TASK-466 C1, «ADR-0378, aggiunta C
+  ed E»; migrazione 0089): la richiesta può portare `stretch`, la routine
+  fatta alla fine («Remember to stretch», poi «After gym»): `routine` (la
+  chiave sul telefono, `^[A-Za-z0-9_]{1,40}$`), `minutes` 1–60,
+  `duration_s` (i secondi senza le pause, al più quattro ore) ed
+  `exercises` 0–100, i limiti di una sessione di stretching (TASK-475).
+  Mai su uno scritto a mano; un campo in più o fuori dai limiti è `422`.
+  Mandato di nuovo, l'allenamento resta com'era, stretching compreso.
+  `GymSession` e `GymExercises` lo rispondono solo se c'è: nel post si
+  vede con gli esercizi (nascosti loro, lo vede solo il proprietario).
+  Senza, la risposta è identica byte per byte a quella di prima. Si
+  cancella con l'allenamento. Tipo `GymStretch` in `shared-types/src/gym.ts`,
+  esempio `fixtures/gym-session-stretch.json`, test in `test_gym_stretch.py`.
+  Un server di prima risponde `422` a un'app che lo manda: prima il server.
 - **`GET /gym/leaderboard?exercise=&month=`** (parte F, ADR-0327
   precisazione F): la classifica mensile di un esercizio del catalogo con
   una scala (`404` `unknown_exercise` per gli altri), in un mese di
@@ -3997,6 +4011,22 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
 - Backfill dei passi per le corse vecchie: `python -m
   shaperoute_api.run_stats`, solo col sì dell'utente. Test in
   `test_run_stats.py`.
+- **Il meteo** (TASK-410 parte E; `run_weather.py`, esempio in
+  `fixtures/run-stats-weather.json`, test in `test_run_weather.py`):
+  `weather` `{temperature_c, symbol, wind_ms}`, temperatura e vento (m/s)
+  al decimo, `symbol` il `symbol_code` di MET Norway. Il server lo chiede a
+  MET Norway (Locationforecast, lo stesso trasporto di `resort_weather.py`)
+  **dopo la risposta** a `PUT …/stats`, fuori dalla sua transazione, solo
+  per una corsa `source = muw` con una traccia, non sulla neve (`skiing`,
+  `xc_skiing`, `ski_touring`, `snowshoeing`), quando il `PUT` arriva entro
+  3 ore dalla fine (l'ultimo punto della traccia). Va a MET il primo punto
+  arrotondato a 2 decimali (~1 km), senza altitudine. L'ora tenuta è quella
+  che contiene la fine o, MET non dando le ore passate, la più vicina entro
+  3 ore. Si chiede **una volta**: senza risposta resta `weather: null` e non
+  si riprova; un altro `PUT …/stats` lo conserva. Lo vede chi vede il post
+  (non dice niente del corpo). Solo il server avviato da `__main__`
+  (`install_run_weather`) chiede: un'app di `create_app`, come nei test,
+  non va mai in rete.
 - **I tratti di una giornata di sci** (TASK-424 parte C2b, con TASK-429;
   tipi in `packages/shared-types/src/skiParts.ts`, esempi in
   `fixtures/ski-parts-request.json` e `fixtures/drawing-ski.json`, test in
@@ -4305,6 +4335,30 @@ quindi non serve il token; la chiave dell'API serve come su ogni percorso.
 - Da un estratto OSM, con `flying_sites_extract.py` (`MAPS.md`, «Decolli e
   atterraggi da un estratto»). Lo storico dei voli di un decollo è la
   parte B; i tipi dell'app la parte C.
+
+**Lo storico di un decollo (parte B)**
+- **`GET /flying-sites/{id}/history?utc_offset_min=…`**: i voli di MuW che
+  partono da un decollo. Un atterraggio, o un id che non c'è: `404`.
+- **Il volo di un decollo**: un volo in parapendio salvato il cui punto di
+  decollo è entro 300 m dal sito. Il punto è quello dove comincia il primo
+  tratto in aria (le parti di `run_stats`), altrimenti il primo punto della
+  traccia. La traccia non ha la quota: quella del sito non si confronta.
+- **I numeri** contano tutti i voli salvati, anche privati, senza nomi:
+  `flights` e `pilots` di sempre, `today` (dalla mezzanotte di chi chiede:
+  `utc_offset_min` da −840 a 840, 0 se manca) e `months`, gli ultimi 12
+  mesi in UTC dal più vecchio (`month` `YYYY-MM`, `flights`, `pilots`).
+  Con meno di 3 piloti diversi `few` è `true` e i numeri sono `null`
+  (scelta dell'utente).
+- **`in_air_now`**: `count`, le condivisioni dal vivo di un volo in corso
+  il cui primo punto è entro 300 m dal sito, e `shares`, gli id di quelle
+  condivise con tutti nel Feed, da aprire come nel Feed. Mai un nome.
+- **`records`**: `longest_s` (più secondi in aria), `highest_m` (la quota
+  più alta raggiunta, sul mare) e `farthest_m` (più metri in aria), solo
+  dai voli con un post per tutti, pubblicato, non nascosto, di un account
+  visibile: `value`, `drawing_id`, `username`, `started_at`, o `null`.
+- **Il calcolo** si fa alla lettura, senza tabelle: i voli di un sito
+  restano in memoria 10 minuti; i voli in aria e «oggi» si leggono a ogni
+  richiesta. Come i siti, non serve l'account.
 
 **Un formato stabile**: lo legge anche TASK-479 D6 (l'atterraggio più
 vicino, con `kind=landing`). I campi si possono solo aggiungere, mai
@@ -5163,6 +5217,64 @@ accounts_unavailable`. Tipi in `shared-types` (`GroupRunRequest`,
 - **Un'API precedente** non ha questi endpoint (`404 http_error`): l'app
   non mostra la fila né il bottone.
 
+#### Le uscite di un gruppo (TASK-495 parte C1, ADR-0402 precisazione C)
+
+Un'uscita è una corsa di gruppo con il gruppo accanto (`GRUPPI.md` §6).
+Tipi in `shared-types` (`GroupOutingRequest`, `GroupOuting`,
+`GroupOutingDetail`, `GroupOutingsPage`, `GroupOutings`,
+`GroupOutingVisibility`, `GROUP_OUTING_DESTINATION_MAX`), esempi in
+`fixtures/group-outing-request.json`, `group-outing.json`,
+`group-outings.json`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /group-runs` con `group_id` | un'uscita con un percorso: il corpo di sempre più `group_id` | `201` `GroupOutingDetail` |
+| `POST /group-runs` (`GroupOutingRequest`) | un'uscita senza percorso | `201` `GroupOutingDetail` |
+| `GET /groups/{id}/outings` | «Next outings» e «Past outings» della pagina del gruppo | `200` `GroupOutings` |
+| `GET /group-runs?outings=true`, `GET /users/{public_id}/group-runs?outings=true` | la fila e il profilo con le uscite | `200` |
+
+- **Le crea un membro**: chi non è nel gruppo, o è lontano dal suo admin
+  (blocco, nascosto), riceve `404` «No group with this id.», come per un
+  gruppo che non c'è.
+- **Per chi**: `visibility` `group` (solo i membri) o, in un gruppo
+  Public, `everyone`. `group` senza gruppo: `422` «Only an outing of a
+  group is for its members.»; `followers` con un gruppo, o `everyone` in
+  un gruppo che non è Public: `422` «An outing of a group is for its
+  members, or for everyone in a public group.».
+- **Senza percorso** (`GroupOutingRequest`): `group_id`, `activity` (uno
+  sport registrato all'aperto, non `gym` né `stretching`: altrimenti `422`
+  «An outing without a route is of one of the app's sports, done
+  outdoors.»), `meeting_point` `(lat, lon)` scelto sulla mappa,
+  `destination` (una riga di al più 80, filtrata come i testi: `422` ««Destination»
+  is one line of 80 characters at most.» o `comment_rejected`), e i campi
+  di sempre (`title`, `starts_at`, `meeting_note`, `description`). La
+  città è quella del gruppo; nella risposta `points` e `preview` sono
+  vuoti, `distance_m`, `route_m` e `similarity` `null`, `start` il ritrovo.
+- **Nella risposta**, per ogni corsa di gruppo: `group_id`, `group_name`
+  e `destination` (`null` senza gruppo, o con un percorso).
+- **Chi la vede**: l'organizzatore; gli altri se non è nascosta, nessun
+  blocco sta fra loro e l'organizzatore né l'admin del gruppo, e sono nel
+  gruppo, o è `everyone` e il gruppo è Public e non nascosto. Un gruppo
+  che smette di essere Public riporta le sue uscite `everyone` ai soli
+  membri. Chi non la vede: `404` come sempre, anche per «I'm going».
+- **La push `group_outing_new`** ai membri, non a chi la crea né a chi ha
+  messo «Mute» sul gruppo; `data` `{ kind, group_run_id }`, testo
+  «{name} planned a new outing in {group}: {title}» (da approvare
+  dall'utente). Non entra nell'email del giorno.
+- **Annullare**: l'organizzatore, oppure l'admin o un co-admin del gruppo;
+  chi va riceve `group_run_cancelled`, e anche l'organizzatore quando
+  l'ha annullata un altro. Cambiare resta dell'organizzatore.
+  `destination` in `PUT /group-runs/{id}` serve per un'uscita senza
+  percorso e non è ammessa per le altre (`422`).
+- **Chi esce dal gruppo o è rimosso**: le sue uscite in arrivo lì si
+  annullano, con `group_run_cancelled` a chi va. Un gruppo cancellato
+  porta via le sue uscite.
+- **La fila del Feed** prende anche le uscite in arrivo dei miei gruppi,
+  ovunque siano.
+- **Un'app di prima** (senza `outings=true`) non legge un'uscita senza
+  percorso né una dei soli membri: la fila e il profilo le lasciano fuori.
+  `GET /group-runs/{id}` le risponde comunque.
+
 ### Groups (TASK-495, ADR-0402)
 
 I gruppi per uscire insieme: un nome, una foto, una descrizione, da 1 a 3
@@ -5514,7 +5626,7 @@ codice è in `phone_zone_api.py` e `phone_zones.py`.
 
 | Endpoint | Cosa | Risposta |
 |---|---|---|
-| `GET /phone-zones/{network}?lat=&lon=` | la zona della rete `foot` o `bike` che contiene 3 km intorno al punto; con `&margin_m=` (3000–10 000) la più piccola che ne contiene tanti, se il suo file pesa al massimo 12 MB, se no quella di 3 km (parte E); con `&prefetch=1` è una zona scaricata in anticipo, contata nel tetto del giorno | `200` `application/gzip`, il file della zona; `304` quando l'`ETag` della zona scelta è in `If-None-Match` (anche fra altri, separati da virgole) o in `X-Zone-ETags`; `404 http_error` senza zona o con un'altra rete; `422 invalid_request` con `lat`, `lon` o `margin_m` fuori dai limiti; `429 too_many_requests` con `Retry-After`, solo con `prefetch=1`, oltre il tetto |
+| `GET /phone-zones/{network}?lat=&lon=` | la zona della rete `foot` o `bike` che contiene 3 km intorno al punto; con `&margin_m=` (3000–10 000) la più piccola che ne contiene tanti, se il suo file pesa al massimo 12 MB, se no quella di 3 km (parte E); con `&prefetch=1` è una zona scaricata in anticipo, contata nel tetto del giorno | `200` `application/gzip`, il file della zona; `304` quando l'`ETag` della zona scelta è in `If-None-Match` (anche fra altri, separati da virgole) o in `X-Zone-ETags`; `404 http_error` senza zona o con un'altra rete: senza zona, e senza `prefetch=1`, il server mette in coda la zona con 6 km intorno al punto come per `POST …/places` (stessi tetti del giorno, solo senza percorsi in corso) e il telefono la trova alla richiesta dopo (TASK-214 parte G); `422 invalid_request` con `lat`, `lon` o `margin_m` fuori dai limiti; `429 too_many_requests` con `Retry-After`, solo con `prefetch=1`, oltre il tetto |
 
 - **Il file** si chiama come la zona, `foot_<s>_<w>_<n>_<e>.zone.json.gz`
   (`Content-Disposition`). È JSON con gzip: `format` `"sgrava-zone"`,

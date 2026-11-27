@@ -1,8 +1,13 @@
 # TASK-498 — La chat aperta chiede solo i messaggi nuovi
 
-**Stato**: In lavorazione · 2026-11-26 · A (server) in PR (#1610); B
-(app) scritta, in PR dopo la A in `main`; il ritmo lento scelto
-dall'utente
+**Stato**: Done · 2026-11-27 · A (server) #1610 in `main` (`ab9ccd47`),
+sul server col passo 25 del Coordinatore (`847f237e`); B (app) #1634 in
+`main` (`6f168e37`), nell'OTA 27 (parola del Coordinatore). **Esito**: un
+controllo della conversazione aperta senza novità passa da 9 283 byte e 8
+query a 104 byte e 3 query (database di prova); il ritmo rallenta nel
+silenzio come ha scelto l'utente; una risposta uguale non ridisegna.
+Non provata su telefono né simulatore; tempi sul server vero, byte e
+batteria sul telefono non misurati
 **Fase**: 5 · **Branch**: `feat/TASK-498-a-message-news` (A, server), poi
 `feat/TASK-498-b-chat-reads-news` (B, app)
 **Dipende da**: TASK-319 (i messaggi, ADR-0279), TASK-458 (in `main`,
@@ -167,7 +172,11 @@ non arriva con `?after=`; lo porta la pagina intera, entro un minuto.
 - [x] B: una risposta uguale non ridisegna.
 - [x] B: con un server di prima (niente `latest`) la pagina ogni volta,
   come oggi.
-- [ ] Impronta iOS invariata (`5e1b5ce5`), nessuna dipendenza nuova.
+- [x] Nessuna dipendenza nuova, nessun file nativo, `app.config.ts` non
+  toccato (dal diff delle due PR).
+- [ ] Impronta iOS (`5e1b5ce5`) ricalcolata: **non fatto** (vuole
+  `npm ci` su una copia pulita, col turno del Coordinatore); la B è
+  uscita con l'OTA 27 sul runtime di prima.
 
 ## Misure
 
@@ -260,3 +269,21 @@ più nella pagina, che ignora. Tornare indietro è sicuro: l'app nuova senza
   timer finti, e gli altri che leggono l'esempio con `latest`). Resta: la
   PR quando la A è in `main`, «pronta» a CI verde, l'OTA (Coordinatore),
   la PR dei documenti di chiusura.
+- 2026-11-26: la A (#1610) in `main` (`ab9ccd47`). `main` unito nel branch
+  della B senza conflitti, `tsc` e i quattro file di test toccati verdi
+  (25 test); #1634 aperta a `e6f6b711`, in `main` con `6f168e37`.
+- 2026-11-27: il Coordinatore: la A «sul server» (passo 25, `847f237e`,
+  che contiene `ab9ccd47`) e la B nell'OTA 27. I controlli del passo sono
+  suoi; da questa sessione il server non è stato toccato né letto.
+  Documenti di chiusura: aggiunta ad ADR-0279 in `docs/DECISIONS.md`, riga
+  in `docs/archive/COMPLETATI.md`, questo file a `Done`. `docs/STATUS.md`
+  non toccato: il task non vi aveva una voce.
+
+## Dopo la chiusura
+
+Niente aspetta l'utente. Chi vuole guardare: con l'OTA 27, in una chat
+aperta un messaggio dell'altro arriva entro 5 s mentre ci si scrive, entro
+15 s dopo un minuto di silenzio, entro 30 s dopo cinque; un messaggio
+cancellato dall'altro sparisce entro un minuto. Restano non misurati i
+tempi e il piano della query sul server vero, i byte e la batteria su un
+telefono.

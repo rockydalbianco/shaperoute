@@ -17,6 +17,9 @@ dependencies = [
     # Accounts (TASK-114, ADR-0115): PostgreSQL and Argon2id password hashes.
     # The pool keeps the requests' connections open (TASK-288 B, ADR-0249).
     "psycopg[binary,pool]>=3.2,<4",
+    # The wind aloft from DWD and ECMWF GRIB files (TASK-479 H, ADR-0388):
+    # wheels with the library for linux aarch64 (the server) and macOS.
+    "eccodes>=2.50,<3",
     "argon2-cffi>=23.1,<26",
     # Sign in with Apple and Google (TASK-322, ADR-0282): their id_tokens
     # read with their public keys, and Apple's client secret signed (ES256).

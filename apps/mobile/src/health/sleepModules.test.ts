@@ -5,10 +5,9 @@ import { join, relative } from "path";
 
 import appJson from "../../app.json";
 
-// TASK-467 part C0: the sleep is on on the testers' preview only. On the
-// stores' build it stays off, with no reader and no health library loaded,
-// until the native build of part C, whose permission text speaks of the
-// sleep. Reading Apple Health stays in two files, and asking for the
+// TASK-467 part C: the sleep is on everywhere, in the build whose
+// permission text speaks of it; on the testers' preview it was on before
+// (part C0). Reading Apple Health stays in two files, and asking for the
 // permission in two places, each at the user's tap.
 
 /** The channel `expo-updates` reports to this copy of the app. */
@@ -78,64 +77,49 @@ afterEach(() => {
   mockChannel = "mock";
 });
 
-describe("on the stores' build", () => {
-  test.each(["production", null, "mock", "preview-sleep"])(
-    "the sleep is off on the channel %p",
-    (channel) => {
-      const { constant, on } = copyOf({ channel });
-      expect(constant).toBe(false);
-      expect(on).toBe(false);
-    },
-  );
+test.each(["production", "preview", null, "mock"])(
+  "the sleep is on, on the channel %p",
+  (channel) => {
+    const { constant, on } = copyOf({ channel });
+    expect(constant).toBe(true);
+    expect(on).toBe(true);
+  },
+);
 
-  test("there is no reader, and the health library is never looked for", () => {
-    // Also where the build has Apple Health's native code, as the stores'
-    // has for the heart rate.
-    const { store, asked, loads } = copyOf({ channel: "production", native: true });
-    expect(store).toBeNull();
-    expect(asked).toEqual([]);
-    expect(loads).toBe(0);
-  });
-
-  test("it turns on only with a permission text that speaks of the sleep", () => {
-    const { constant } = copyOf({ channel: "production" });
-    const text = appJson.expo.ios.infoPlist.NSHealthShareUsageDescription;
-    expect(constant && !/sleep/.test(text)).toBe(false);
-  });
+test("the build that turns it on says in its permission text that it reads the sleep", () => {
+  const { constant } = copyOf({ channel: "production" });
+  const text = appJson.expo.ios.infoPlist.NSHealthShareUsageDescription;
+  expect(constant && !/sleep/.test(text)).toBe(false);
+  expect(text).toMatch(/sleep/);
 });
 
-describe("on the testers' preview", () => {
-  test("the sleep is on, the stores' switch still off", () => {
-    const { constant, on } = copyOf({ channel: "preview" });
-    expect(constant).toBe(false);
-    expect(on).toBe(true);
-  });
-
-  test("the reader is Apple Health's, where the build has its native code", () => {
-    const { store, asked, loads } = copyOf({ channel: "preview", native: true });
+test.each(["production", "preview"])(
+  "on %p the reader is Apple Health's, where the build has its native code",
+  (channel) => {
+    const { store, asked, loads } = copyOf({ channel, native: true });
     expect(store).toBe("apple");
     expect(asked).toEqual(["NitroModules"]);
     expect(loads).toBe(1);
-  });
+  },
+);
 
-  test("without that native code there is no reader, and nothing is loaded", () => {
-    // Expo Go, a simulator build without Nitro.
-    const { store, asked, loads } = copyOf({ channel: "preview" });
-    expect(store).toBeNull();
-    expect(asked).toEqual(["NitroModules"]);
-    expect(loads).toBe(0);
-  });
+test("without that native code there is no reader, and nothing is loaded", () => {
+  // Expo Go, a simulator build without Nitro.
+  const { store, asked, loads } = copyOf({ channel: "production" });
+  expect(store).toBeNull();
+  expect(asked).toEqual(["NitroModules"]);
+  expect(loads).toBe(0);
+});
 
-  test("on Android there is no reader yet", () => {
-    const { on, store, asked } = copyOf({
-      channel: "preview",
-      native: true,
-      os: "android",
-    });
-    expect(on).toBe(true);
-    expect(store).toBeNull();
-    expect(asked).toEqual([]);
+test("on Android there is no reader yet", () => {
+  const { on, store, asked } = copyOf({
+    channel: "production",
+    native: true,
+    os: "android",
   });
+  expect(on).toBe(true);
+  expect(store).toBeNull();
+  expect(asked).toEqual([]);
 });
 
 const SRC = join(__dirname, "..");
@@ -161,7 +145,7 @@ const named = (paths: string[]) => paths.map((path) => relative(SRC, path)).sort
 
 test("only the reader and the switch load the health library or query it", () => {
   const files = sourceFiles(SRC).filter((path) => /sleep|lastNight/i.test(path));
-  // The files of parts A, B2, B3, C0 and E, at the least.
+  // The files of parts A, B2, B3, C and E, at the least.
   expect(files.length).toBeGreaterThanOrEqual(15);
   const loading = files.filter((path) =>
     /react-native-healthkit|NitroModules|require\(/.test(codeOf(path)),

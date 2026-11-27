@@ -32,7 +32,7 @@ import { useRestAlert } from "./restAlert";
 import { RestPanel } from "./RestPanel";
 import { restOver } from "./restTimer";
 import { SetFields, type SetTexts, textsOf, valuesOfTexts } from "./SetFields";
-import { type Entry, sameEntry, type SetValues, setOf } from "./setKinds";
+import { type Entry, fieldsOf, sameEntry, type SetValues, setOf } from "./setKinds";
 import { StillTraining } from "./StillTraining";
 import { useExerciseHistory } from "./useExerciseHistory";
 import { changeWorkout } from "./useWorkout";
@@ -55,6 +55,7 @@ import {
   skipRest,
   stillAsking,
   stillTraining,
+  waitingForFirst,
   type Workout,
 } from "./workout";
 
@@ -124,9 +125,11 @@ export function WorkoutScreen({
       last !== null && going.current !== null && sameEntry(going.current, entry)
         ? lastValues(last)
         : null;
-    return target === null && before === null
-      ? {}
-      : textsOf(entry, { ...before, ...target }, units);
+    if (target === null && before === null) {
+      // Nothing to start from: 10 reps, the weight left to choose (TASK-511).
+      return fieldsOf(entry).includes("reps") ? { reps: String(FIRST_REPS) } : {};
+    }
+    return textsOf(entry, { ...before, ...target }, units);
   }
   // What is typed; null until something is, and the boxes hold startTexts
   // (so last time fills them when the history comes after the exercise).
@@ -229,16 +232,20 @@ export function WorkoutScreen({
   const done = workout.sets.length > 0;
   const progress = planProgress(workout);
   const step = planStep(workout);
-  // Its energy so far (part C, the user's «Stima MET sempre»).
-  const timeMs = activeMs(workout, nowMs);
-  const kcal = gymKcalLabel(
-    gymKcal(
-      workout.sets,
-      timeMs / 1000,
-      body,
-      new Date(workout.startedMs).getFullYear(),
-    ),
-  );
+  // Its energy so far (part C, the user's «Stima MET sempre»). A free
+  // workout stays at 0:00 until its first exercise (TASK-511).
+  const waiting = waitingForFirst(workout);
+  const timeMs = waiting ? 0 : activeMs(workout, nowMs);
+  const kcal = waiting
+    ? null
+    : gymKcalLabel(
+        gymKcal(
+          workout.sets,
+          timeMs / 1000,
+          body,
+          new Date(workout.startedMs).getFullYear(),
+        ),
+      );
   return (
     <View style={gymStyles.screen} testID="gym-workout">
       <ScrollView
@@ -256,6 +263,11 @@ export function WorkoutScreen({
           {kcal !== null && (
             <Text style={[gymStyles.muted, styles.energy]} testID="gym-kcal">
               {kcal}
+            </Text>
+          )}
+          {waiting && (
+            <Text style={gymStyles.muted} testID="gym-waiting">
+              {t("Starts with the first exercise")}
             </Text>
           )}
           {progress !== null && (
@@ -450,6 +462,9 @@ export function WorkoutScreen({
   );
 }
 
+/** The reps in the boxes of an exercise done for the first time, with no
+ * plan (TASK-511): a usual set, moved with − and +. */
+const FIRST_REPS = 10;
 /** The side of the figure beside the exercise under way. */
 const NAME_FIGURE = 48;
 /** The dots of the plan's sets and the bar of its progress (part F). */

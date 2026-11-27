@@ -43,7 +43,10 @@
         [46.067, 11.1215]
       ],
       "rotation_deg": null,
-      "created_at": "2026-10-27T18:00:00Z"
+      "created_at": "2026-10-27T18:00:00Z",
+      "group_id": null,
+      "group_name": null,
+      "destination": null
     },
     {
       "id": "a41c7e02-9d5b-4f6a-b3c8-2e1d0f9a8b7c",
@@ -82,7 +85,10 @@
         [46.074, 11.115]
       ],
       "rotation_deg": 12.5,
-      "created_at": "2026-10-27T19:10:00Z"
+      "created_at": "2026-10-27T19:10:00Z",
+      "group_id": null,
+      "group_name": null,
+      "destination": null
     }
   ]
 }

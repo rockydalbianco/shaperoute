@@ -191,7 +191,8 @@ dell'OTA:
 ## 12. I dati
 
 Le tabelle dei gruppi sono della migrazione `0087_groups.sql` (parte A,
-`DATABASE.md`); le colonne nuove di `group_runs` arrivano con la parte C.
+`DATABASE.md`); le colonne nuove di `group_runs` sono della
+`0090_group_outings.sql` (parte C1).
 
 ```
 groups
@@ -245,6 +246,22 @@ precisazione A):
   del gruppo: non i post di sole foto, del sonno o di una scheda;
 - la push di una nuova uscita (`group_outing_new`) arriva con le uscite,
   nella parte C.
+
+**Scelte della parte C1** (dell'agente, su delega dell'utente; ADR-0402,
+precisazione C):
+
+- un'uscita senza percorso è uno sport registrato all'aperto (non la
+  palestra né lo stretching), con la città del gruppo e la
+  «Destination» obbligatoria; con un percorso non ha «Destination»;
+- un'uscita «Everyone» si vede da fuori finché il gruppo è Public e non
+  nascosto: se il gruppo cambia ingresso, torna ai soli membri;
+- l'organizzatore riceve `group_run_cancelled` quando la sua uscita la
+  annulla l'admin o un co-admin;
+- la fila del Feed e il profilo danno le uscite senza percorso e quelle
+  dei soli membri solo all'app che lo chiede (`outings=true`): un'app di
+  prima non le saprebbe leggere;
+- `GET /groups/{id}/outings` dà «Next outings» e «Past outings» come il
+  profilo: in arrivo dalla più vicina, le ultime 20 finite.
 
 ## 13. Fuori da questa versione
 

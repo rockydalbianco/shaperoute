@@ -2642,7 +2642,10 @@ export interface GroupRunRequest {
   /** «Where exactly», one line. */
   meeting_note?: string | null;
   description?: string | null;
-  visibility: GroupRunVisibility;
+  /** `group` only with `group_id` (TASK-495 part C). */
+  visibility: GroupRunVisibility | GroupOutingVisibility;
+  /** An outing of this group, by one of its members (TASK-495 part C). */
+  group_id?: string | null;
 }
 
 /**
@@ -2656,6 +2659,9 @@ export interface GroupRunChange {
   starts_at: string;
   meeting_note?: string | null;
   description?: string | null;
+  /** Needed for an outing without a route, refused for the others
+   * (TASK-495 part C). */
+  destination?: string | null;
 }
 
 /** A group run on a card: the Feed's row, a profile. */
@@ -2726,12 +2732,94 @@ export interface ProfileGroupRuns {
  * the app opens the group run. Nobody is told of a new «I'm going».
  */
 export type GroupRunPushKind =
-  "group_run_soon" | "group_run_changed" | "group_run_cancelled";
+  | "group_run_soon"
+  | "group_run_changed"
+  | "group_run_cancelled"
+  /** A new outing of one of my groups (TASK-495 part C), to the members
+   * but who created it and who muted the group. */
+  | "group_outing_new";
 
 /** The `data` of a group run's notification. */
 export interface GroupRunPushData {
   kind: GroupRunPushKind;
   group_run_id: string;
+}
+
+// --- The outings of a group (TASK-495 part C, ADR-0402; docs/GRUPPI.md §6) ---
+
+/** An outing of a group: for its members only, or for everyone in a
+ * public group. Never `followers`. */
+export type GroupOutingVisibility = "group" | "everyone";
+
+/** «Destination» of an outing without a route, one line. */
+export const GROUP_OUTING_DESTINATION_MAX = 80;
+
+/**
+ * POST /group-runs (201 `GroupOutingDetail`), an outing of a group without
+ * a route: alpinism and the sports recorded without one (not the gym nor
+ * the stretching). The meeting point is picked on the map; the city is the
+ * group's. Only a member creates it: 404 as for a group that is not there
+ * for the others; `everyone` only in a public group (422). It tells the
+ * members (`group_outing_new`). An outing with a route is a
+ * `GroupRunRequest` with `group_id`.
+ */
+export interface GroupOutingRequest {
+  group_id: string;
+  activity: string;
+  meeting_point: LatLon;
+  destination: string;
+  title: string;
+  starts_at: string;
+  meeting_note?: string | null;
+  description?: string | null;
+  visibility: GroupOutingVisibility;
+}
+
+/**
+ * A group run or an outing as the API answers since TASK-495 part C: what
+ * a route measures is null without a route, and the group is beside it.
+ * The lists hold outings without a route, or for the members only, only
+ * when the app asks with `outings=true`; without it they are `GroupRun`s.
+ */
+export interface GroupOuting extends Omit<
+  GroupRun,
+  "visibility" | "distance_m" | "route_m" | "similarity"
+> {
+  visibility: GroupRunVisibility | GroupOutingVisibility;
+  distance_m: number | null;
+  route_m: number | null;
+  similarity: number | null;
+  /** The meeting point: the route's first point, or the one picked on the
+   * map; `preview` is empty without a route. */
+  group_id: string | null;
+  group_name: string | null;
+  destination: string | null;
+}
+
+/** GET /group-runs/{id} of an outing; `points`, `walks` and `on_foot` are
+ * empty without a route. */
+export interface GroupOutingDetail extends GroupOuting {
+  description: string | null;
+  points: LatLon[];
+  walks: Walk[];
+  on_foot: Stretch[];
+  people: Person[];
+  next: string | null;
+}
+
+/** GET /group-runs?outings=true: the Feed's row, with the outings of my
+ * groups wherever they are. */
+export interface GroupOutingsPage {
+  group_runs: GroupOuting[];
+}
+
+/** GET /groups/{id}/outings: «Next outings» and «Past outings» of a
+ * group's page, those not over the nearest first, the last 20 over the
+ * latest first; never the cancelled. 404 as for the group itself. Also GET
+ * /users/{public_id}/group-runs?outings=true. */
+export interface GroupOutings {
+  upcoming: GroupOuting[];
+  past: GroupOuting[];
 }
 
 /**

@@ -23,7 +23,7 @@ import type { LatLon } from "@shaperoute/shared-types";
 import type { Place } from "../places/photon";
 import type { StartMode } from "../location/startMode";
 import { isRecordOnly } from "../settings/sport";
-import { useHeaderScroll } from "../tabs/headerScroll";
+import { useHeaderScroll, useUnderHeader } from "../tabs/headerScroll";
 import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { useSport } from "../settings/useSport";
 import {
@@ -40,7 +40,7 @@ import { TOUR_PART } from "../tour/tourSteps";
 import { RunNoRouteButton } from "./RunNoRouteButton";
 import { Segmented } from "./Segmented";
 import { StepTitle } from "./StepTitle";
-import { StretchRoutines } from "../stretchSport/StretchRoutines";
+import { StretchHome } from "../stretch/StretchHome";
 
 /** "My position" also asks the GPS again, as the old button did, so it works
  * after the permission is given in Settings. Translated where shown, with
@@ -112,6 +112,8 @@ export function ChooseScreen({
   const insets = useSafeAreaInsets();
   // The header turns to glass once the page scrolls (TASK-469 A5b).
   const headerScroll = useHeaderScroll();
+  // Under a floating header the page goes on showing behind it (TASK-469 B3).
+  const underHeader = useUnderHeader();
   // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
   const barRoom = useTabBarRoom();
   // A day on the snow has no shape to draw (TASK-375, ADR-0319): «Draw» is
@@ -146,6 +148,7 @@ export function ChooseScreen({
         {/* The tour of the first opening scrolls it to its parts (TASK-266). */}
         <TourScrollView
           {...headerScroll}
+          style={underHeader}
           contentContainerStyle={[
             styles.content,
             {
@@ -185,18 +188,8 @@ export function ChooseScreen({
               hint={t("No route in the gym: MuW times your workout.")}
             />
           ) : recordOnly && stretch ? (
-            // The routines of TASK-466, one ticked, and «Start stretching».
-            <>
-              <StretchRoutines />
-              <RecordDay
-                label={runLabel}
-                icon={runIcon}
-                onPress={onRun}
-                hint={t(
-                  "No route for stretching: choose a routine and MuW guides you.",
-                )}
-              />
-            </>
+            // The stretching home: «Today» and every category (TASK-520).
+            <StretchHome />
           ) : recordOnly ? (
             <>
               <RecordDay

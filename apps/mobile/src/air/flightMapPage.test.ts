@@ -13,9 +13,14 @@ import {
   parseFlightMapMessage,
   TRACK_WIDTH,
   VARIO_STOPS,
+  WIND_BESIDE_PX,
 } from "./flightMapPage";
 
-type Layer = { id: string; paint?: Record<string, unknown> };
+type Layer = {
+  id: string;
+  paint?: Record<string, unknown>;
+  layout?: Record<string, unknown>;
+};
 
 function runPage() {
   const posts: Record<string, unknown>[] = [];
@@ -351,4 +356,18 @@ describe("the pilot's waypoints (D5)", () => {
       parseFlightMapMessage(JSON.stringify({ type: "press", lat: "46" })),
     ).toBeNull();
   });
+});
+
+it("draws the wind aloft as an arrow turned where it comes from, with its label (H)", () => {
+  const page = runPage();
+  page.load();
+  const arrow = page.layers.find((layer) => layer.id === "flight-wind-arrow")!;
+  expect(arrow.layout?.["text-rotate"]).toEqual(["get", "from"]);
+  const label = page.layers.find((layer) => layer.id === "flight-wind-label")!;
+  // Both beside the pilot, never over their arrow.
+  expect(arrow.paint?.["text-translate"]).toEqual([...WIND_BESIDE_PX]);
+  expect(label.paint?.["text-translate"]).toEqual([...WIND_BESIDE_PX]);
+  const wind = { type: "FeatureCollection", features: [] };
+  (page.flight as unknown as { setWind: (data: unknown) => void }).setWind(wind);
+  expect(page.data("flight-wind")).toBe(wind);
 });

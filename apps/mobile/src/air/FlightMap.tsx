@@ -12,6 +12,10 @@ import { buildFlightMapPage, parseFlightMapMessage } from "./flightMapPage";
 import { setFlightMapPrefs, useFlightMapPrefs } from "./flightMapPrefs";
 import { addManualWaypoint, useManualWaypoints } from "./manualWaypoints";
 import { MapPointSheet } from "./MapPointSheet";
+import { useSiteLandings } from "./siteLandings";
+import { LEVEL_HEIGHT_M, windSpeedText } from "./WindCard";
+import { useWinds, windOnMap } from "./windStore";
+import { useUnits } from "../units/useUnits";
 import { waypointFeatures } from "./waypointMapData";
 import { useWaypoints } from "./waypointStore";
 
@@ -147,17 +151,62 @@ export function FlightMap({
   // either changes; a long press on the map offers to add one.
   const fromFile = useWaypoints();
   const manual = useManualWaypoints();
+  const sites = useSiteLandings();
+  // The wind aloft (part H): the hour of the last fix, the level nearest
+  // the pilot's height, drawn beside the pilot.
+  const kept = useWinds();
+  const units = useUnits();
+  const wind = windOnMap(
+    kept,
+    last?.timeMs ?? 0,
+    last?.altitudeM ?? null,
+    LEVEL_HEIGHT_M,
+    last?.point ?? null,
+  );
+  const windKey =
+    wind === null
+      ? ""
+      : `${wind.hpa}|${wind.fromDeg}|${wind.speedMs}|${wind.place.join()}`;
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    const features =
+      wind === null
+        ? []
+        : [
+            {
+              type: "Feature",
+              properties: {
+                from: wind.fromDeg,
+                label: `${wind.hpa} hPa · ${windSpeedText(wind.speedMs, units)} ${
+                  units === "mi" ? "mph" : "km/h"
+                }`,
+              },
+              geometry: { type: "Point", coordinates: [wind.place[1], wind.place[0]] },
+            },
+          ];
+    call(
+      view.current,
+      `window.flight.setWind(${JSON.stringify({ type: "FeatureCollection", features })});`,
+    );
+    // Sent again only when what it shows changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, windKey, units]);
   const [pressed, setPressed] = useState<LatLon | null>(null);
   useEffect(() => {
     if (ready) {
       call(
         view.current,
         `window.flight.setWaypoints(${JSON.stringify(
-          waypointFeatures(fromFile?.waypoints ?? [], manual),
+          waypointFeatures(
+            [...(fromFile?.waypoints ?? []), ...(sites?.landings ?? [])],
+            manual,
+          ),
         )});`,
       );
     }
-  }, [ready, fromFile, manual]);
+  }, [ready, fromFile, manual, sites]);
 
   const buttons = height >= BUTTONS_MIN_HEIGHT;
   const button = [

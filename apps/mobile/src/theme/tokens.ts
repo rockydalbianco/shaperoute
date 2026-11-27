@@ -147,6 +147,78 @@ export type Shade = {
    * is filled, one that helps has an outline.
    */
   readonly muscle: string;
+  /**
+   * What was eaten, in «Nutrition» (TASK-489 part H, the user's choice of
+   * 2026-11-26: «rosso e verde»): its ring, its columns of the week and the
+   * dot beside its number, next to the red of what the body used
+   * (`energy`). A green; 4.5:1 at least on `background`, `surface` and
+   * `surfaceRaised`, and never the only sign: each has its label and its
+   * number.
+   */
+  readonly food: string;
+
+  /**
+   * Protein, carbohydrates and fat, in «Nutrition» (TASK-489 part L,
+   * ADR-0397): the three rings of a recipe and the three bars of the diary
+   * (the user's choice of 2026-11-27, «Sì, stessi colori»). A blue, a violet
+   * and a pink, so none reads as the route (yellow), the calories (red) or
+   * what was eaten (green); 4.5:1 at least on `background`, `surface` and
+   * `surfaceRaised`, 3:1 on `border` (a ring's track), and never the only
+   * sign: each has its label and its number (`macroContrast.test.ts`).
+   */
+  readonly protein: string;
+  readonly carbs: string;
+  readonly fat: string;
+  /**
+   * The covers of the recipes' cards (TASK-489 part L): each recipe has one
+   * of these tints, behind its dish and its calories. The text keeps 4.5:1
+   * on every one, in every tone at every step.
+   */
+  readonly dish: {
+    readonly amber: string;
+    readonly tomato: string;
+    readonly leaf: string;
+    readonly sea: string;
+    readonly plum: string;
+    readonly sand: string;
+  };
+  /**
+   * The groups of the stretching home (TASK-520, ADR-0415; the user's sketch
+   * of 2026-11-27): a coral for the body, a violet for the moments of the
+   * day, a light blue for the sports, a pink for intimacy and a green for
+   * the rest. They are the same hues as `warning`, `carbs`, `runDay`,
+   * `muscle` and `food`, kept as tokens of their own so that each of those
+   * keeps its one meaning. A group's name, its icon and the halo behind its
+   * figure: 4.5:1 at least on `background`, `surface` and `surfaceRaised`,
+   * and never the only sign, each group has its name. The yellow stays on
+   * «Start» alone.
+   */
+  readonly stretch: {
+    readonly body: string;
+    readonly moments: string;
+    readonly sports: string;
+    readonly intimacy: string;
+    readonly more: string;
+  };
+  /**
+   * The sections of the app (TASK-523, ADR-0417; the user's sketch of
+   * 2026-11-27, «uno per sezione»): an apricot for «Draw», a violet for the
+   * profile, a light blue for «Explore» and the account, a sand for the Feed
+   * and the notifications, a green for the messages and the feedback. Where
+   * a hue is one the app has already (`stretch.moments`, `runDay`, `food`)
+   * the value is the same, kept as a token of its own so that each keeps its
+   * one meaning. On a page's hero, its rings and the icons of its cards,
+   * never on a long list: 4.5:1 at least on `background`, `surface` and
+   * `surfaceRaised`, 3:1 on `border` (a ring's track), and never the only
+   * sign (`sectionContrast.test.ts`). The yellow stays the route's.
+   */
+  readonly section: {
+    readonly draw: string;
+    readonly profile: string;
+    readonly explore: string;
+    readonly feed: string;
+    readonly messages: string;
+  };
 
   readonly map: {
     readonly background: string;
@@ -211,6 +283,32 @@ export const SHADES: Readonly<
       north: "#FF5B4F",
       runDay: "#4DD2FF",
       muscle: "#FF6FB5",
+      food: "#4FD08A",
+      protein: "#6FA8FF",
+      carbs: "#B892FF",
+      fat: "#FF8AC4",
+      dish: {
+        amber: "#5A3D0C",
+        tomato: "#5E2218",
+        leaf: "#21401F",
+        sea: "#143A4A",
+        plum: "#40214F",
+        sand: "#4A3F2C",
+      },
+      stretch: {
+        body: "#FF8A5C",
+        moments: "#A99BFF",
+        sports: "#4DD2FF",
+        intimacy: "#FF6FB5",
+        more: "#4FD08A",
+      },
+      section: {
+        draw: "#F5A066",
+        profile: "#A99BFF",
+        explore: "#4DD2FF",
+        feed: "#E3C596",
+        messages: "#4FD08A",
+      },
       map: {
         background: "#100F0C",
         water: "#101F29",
@@ -243,6 +341,32 @@ export const SHADES: Readonly<
       north: "#FF7068",
       runDay: "#6EDBFF",
       muscle: "#FF8FC5",
+      food: "#7BE3AA",
+      protein: "#9CC4FF",
+      carbs: "#CDB2FF",
+      fat: "#FFB0D6",
+      dish: {
+        amber: "#6A4A16",
+        tomato: "#6E2E23",
+        leaf: "#2C4E2A",
+        sea: "#1F4859",
+        plum: "#4D2D5D",
+        sand: "#584C38",
+      },
+      stretch: {
+        body: "#FFA382",
+        moments: "#C4BAFF",
+        sports: "#6EDBFF",
+        intimacy: "#FF9CCC",
+        more: "#7BE3AA",
+      },
+      section: {
+        draw: "#FFBC8F",
+        profile: "#C4BAFF",
+        explore: "#6EDBFF",
+        feed: "#EED9B5",
+        messages: "#7BE3AA",
+      },
       map: {
         background: "#2B2925",
         water: "#1F3A4B",
@@ -277,6 +401,32 @@ export const SHADES: Readonly<
       north: "#C42F24",
       runDay: "#006E94",
       muscle: "#A8185F",
+      food: "#095428",
+      protein: "#0F3F8F",
+      carbs: "#4B2696",
+      fat: "#86174F",
+      dish: {
+        amber: "#F2D79B",
+        tomato: "#F1BFAF",
+        leaf: "#C3DDB0",
+        sea: "#B3D6E4",
+        plum: "#D8C0E6",
+        sand: "#E3D5BB",
+      },
+      stretch: {
+        body: "#8A2E0A",
+        moments: "#3F2FA3",
+        sports: "#005370",
+        intimacy: "#8F1552",
+        more: "#095428",
+      },
+      section: {
+        draw: "#7A3A08",
+        profile: "#3F2FA3",
+        explore: "#005370",
+        feed: "#5E4712",
+        messages: "#095428",
+      },
       map: {
         background: "#DAD7CF",
         water: "#9CC2D8",
@@ -309,6 +459,32 @@ export const SHADES: Readonly<
       north: "#C8352A",
       runDay: "#007BA3",
       muscle: "#B81D6A",
+      food: "#0F6B35",
+      protein: "#1A4FA8",
+      carbs: "#5A2FB0",
+      fat: "#9E1C5E",
+      dish: {
+        amber: "#FBE6B8",
+        tomato: "#FAD3C6",
+        leaf: "#D8EDC8",
+        sea: "#CDE7F1",
+        plum: "#E8D6F2",
+        sand: "#F0E6D2",
+      },
+      stretch: {
+        body: "#A8380C",
+        moments: "#4B39BF",
+        sports: "#006A8F",
+        intimacy: "#A51A60",
+        more: "#0F6B35",
+      },
+      section: {
+        draw: "#8F4510",
+        profile: "#4B39BF",
+        explore: "#006A8F",
+        feed: "#6B5118",
+        messages: "#0F6B35",
+      },
       map: {
         background: "#F5F4F0",
         water: "#B5D6E8",
@@ -386,6 +562,29 @@ export const statusBarStyle: "light" | "dark" = tone.tone === "dark" ? "light" :
  */
 export const GLASS_VEIL = 0.88;
 
+/**
+ * How much of the tone's background is laid over the phone's real glass
+ * (TASK-469 part B, the user's choice of 2026-11-26, «Prova la velatura»).
+ * The real glass lightens and darkens with what is behind it, and what the
+ * app draws on it keeps its own colour: in the simulator the icons of the
+ * tab bar fell to 1.8:1 over a white photo in the dark tone. With this
+ * tint, and everything on the glass in the full text colour, they keep
+ * 4.5:1 there, and the glass still lets what is behind be seen.
+ *
+ * The least share: a tone whose background is lighter (the dark tone at
+ * its brighter steps) takes a little more, see `realTintShare`.
+ */
+export const REAL_GLASS_TINT = 0.6;
+
+/**
+ * How much more of the tone's background a sheet of real glass takes than
+ * the tab bar (TASK-469 B4, the user's choice of 2026-11-27, «Sì,
+ * avanti»). A sheet holds running text and its secondary text: with the
+ * bar's tint the comments kept 10:1 over a white photo in the dark tone,
+ * but «Reply» and the time fell just short, at 4.3–4.4:1.
+ */
+export const REAL_GLASS_SHEET_EXTRA = 0.1;
+
 /** The colours of the glass in a tone (TASK-469, ADR-0383). */
 export type GlassColors = {
   /** The tint: the tone's background. */
@@ -402,6 +601,12 @@ export type GlassColors = {
   readonly shadow: string;
   /** What marks the chosen thing on the glass: the text, faint. Never yellow. */
   readonly selected: string;
+  /** Over the phone's real glass: the tint at `REAL_GLASS_TINT`, as
+   * `#RRGGBBAA`. Never yellow. */
+  readonly realTint: string;
+  /** Over the real glass of a sheet: the tint `REAL_GLASS_SHEET_EXTRA`
+   * stronger, still under the veil. Never yellow. */
+  readonly realSheetTint: string;
 };
 
 /** `share` (0–1) as the two hex digits of an alpha. */
@@ -410,6 +615,57 @@ function alphaHex(share: number): string {
     .toString(16)
     .padStart(2, "0")
     .toUpperCase();
+}
+
+/** The relative luminance of `#RRGGBB`, as WCAG counts it. */
+function luminanceOf(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((at) => {
+    const c = parseInt(hex.slice(at, at + 2), 16) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** The contrast of `text` on `tint` laid at `alpha` (0–1) over `under`. */
+function contrastOnTint(
+  text: string,
+  tint: string,
+  alpha: number,
+  under: string,
+): number {
+  const seen = [1, 3, 5]
+    .map((at) =>
+      Math.round(
+        parseInt(tint.slice(at, at + 2), 16) * alpha +
+          parseInt(under.slice(at, at + 2), 16) * (1 - alpha),
+      )
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("");
+  const [light, dark] = [luminanceOf(text), luminanceOf(`#${seen}`)].sort(
+    (a, b) => b - a,
+  );
+  return (light + 0.05) / (dark + 0.05);
+}
+
+/**
+ * How much of `palette`'s background goes over the phone's real glass:
+ * `REAL_GLASS_TINT`, or the least share above it at which the text keeps
+ * 4.5:1 on the tint alone over a white photo and over a black one. Never
+ * more than the veil of part A, where it always does.
+ */
+function realTintShare(palette: Palette): number {
+  for (let percent = REAL_GLASS_TINT * 100; percent < GLASS_VEIL * 100; percent += 2) {
+    const alpha = Math.round((percent / 100) * 255) / 255;
+    const holds = ["#FFFFFF", "#000000"].every(
+      (under) => contrastOnTint(palette.text, palette.background, alpha, under) >= 4.5,
+    );
+    if (holds) {
+      return percent / 100;
+    }
+  }
+  return GLASS_VEIL;
 }
 
 /**
@@ -428,6 +684,10 @@ export function glassOf(choice: ToneChoice): GlassColors {
     rim: dark ? `#FFFFFF${alphaHex(0.08)}` : `${palette.text}${alphaHex(0.08)}`,
     shadow: `${FIXED.scrim}${alphaHex(dark ? 0.55 : 0.16)}`,
     selected: `${palette.text}${alphaHex(0.12)}`,
+    realTint: `${palette.background}${alphaHex(realTintShare(palette))}`,
+    realSheetTint: `${palette.background}${alphaHex(
+      Math.min(realTintShare(palette) + REAL_GLASS_SHEET_EXTRA, GLASS_VEIL - 0.02),
+    )}`,
   };
 }
 

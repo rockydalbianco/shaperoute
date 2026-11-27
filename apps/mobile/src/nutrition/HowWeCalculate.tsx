@@ -6,6 +6,36 @@ import { Tap } from "../ui/Tap";
 import { NutritionSheet } from "./AddFoodSheet";
 import { OPEN_FOOD_FACTS_SITE } from "./openFoodFacts";
 
+/** Where the amounts of MuW's estimate come from (part J): the pages read
+ * on 2026-11-24, named as they name themselves. */
+export const ESTIMATE_SOURCES = [
+  {
+    name: "NHS · Calories and weight loss",
+    url: "https://www.nhs.uk/better-health/lose-weight/calorie-counting/",
+    testID: "how-nhs-calories",
+  },
+  {
+    name: "NHS · Losing weight: getting started, week 1",
+    url: "https://assets.nhs.uk/tools/download-panels/data/weight-loss/pdf/wlp1.pdf",
+    testID: "how-nhs-plan",
+  },
+] as const;
+
+/** Where the lowest goal weight comes from (part K1): the pages read on
+ * 2026-11-27, named as they name themselves. */
+export const WEIGHT_SOURCES = [
+  {
+    name: "WHO · Underweight among adults, BMI < 18.5",
+    url: "https://www.who.int/data/gho/indicator-metadata-registry/imr-details/4804",
+    testID: "how-who-underweight",
+  },
+  {
+    name: "CDC · Adult BMI Categories",
+    url: "https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html",
+    testID: "how-cdc-bmi",
+  },
+] as const;
+
 type Props = {
   visible: boolean;
   onClose: () => void;
@@ -19,7 +49,9 @@ type Props = {
  * from published equations, or Apple Health's when it has the day. It says
  * again that MuW gives no diets, and that what is written here stays on the
  * phone: only a barcode the user looks up goes out, to Open Food Facts
- * (part G; the sentence changed with the user's yes on 2026-11-23).
+ * (part G; the sentence changed with the user's yes on 2026-11-23). Since
+ * part K1 it says what the weigh-ins change and where the lowest goal
+ * weight comes from.
  */
 export function HowWeCalculate({ visible, onClose }: Props) {
   return (
@@ -69,6 +101,44 @@ export function HowWeCalculate({ visible, onClose }: Props) {
             "At rest: the Mifflin-St Jeor equation, from the body data in your profile. Activities: ACSM equations and the 2024 Compendium of Physical Activities. On days when Apple Health has your active energy, that number is used instead.",
           )}
         </Text>
+        <Text style={styles.heading} accessibilityRole="header">
+          {t("MuW's estimate of a daily target (demo)")}
+        </Text>
+        <Text style={styles.text}>
+          {t(
+            "A usual day is the average of what you used in your last seven days. To lose weight MuW takes 600 kcal a day off it, the amount the NHS gives, only for adults with a body mass index of 25 or more, and never below 1,400 kcal a day for women or 1,900 for men (NHS 12-week weight loss plan). To gain weight MuW suggests no number. Sources read on 24 November 2026. MuW is not made by health professionals: better to write your own number, or your dietitian's.",
+          )}
+        </Text>
+        {ESTIMATE_SOURCES.map((source) => (
+          <Tap
+            key={source.url}
+            style={styles.link}
+            onPress={() => void Linking.openURL(source.url)}
+            accessibilityRole="link"
+            testID={source.testID}
+          >
+            <Text style={styles.linkText}>{source.name}</Text>
+          </Tap>
+        ))}
+        <Text style={styles.heading} accessibilityRole="header">
+          {t("Weight and your goal")}
+        </Text>
+        <Text style={styles.text}>
+          {t(
+            "The latest weigh-in becomes your weight in Settings: from that day on MuW uses it for your energy at rest and your activities. The percent is the change divided by your starting weight. A goal weight can't be below a body mass index of 18.5, the threshold for underweight in adults used by the World Health Organization and the US CDC (pages read on 27 November 2026), and there are no weight goals under 18. MuW is not made by health professionals: this is not medical advice.",
+          )}
+        </Text>
+        {WEIGHT_SOURCES.map((source) => (
+          <Tap
+            key={source.url}
+            style={styles.link}
+            onPress={() => void Linking.openURL(source.url)}
+            accessibilityRole="link"
+            testID={source.testID}
+          >
+            <Text style={styles.linkText}>{source.name}</Text>
+          </Tap>
+        ))}
         <Text style={styles.heading} accessibilityRole="header">
           {t("Estimates")}
         </Text>

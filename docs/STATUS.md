@@ -241,6 +241,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   «Save & redo» salva e riapre «Draw» con stessa forma, km e partenza;
   motore non toccato. Poi A (la scelta, file nuovi) e B (il pulsante, dopo
   523 T in `main`). File: `route/redoBetter*` · `tasks/TASK-451.md`
+- **TASK-512 — Il menu degli sport più fitto** (ADR-0420) · parte 0 chiusa
+  il 2026-11-27 (tre scelte dell'utente): pannello a tre caselle per riga
+  con le famiglie, niente «ultimi usati», in «Settings» una riga che apre
+  lo stesso pannello. Codice #1729; merge dopo il sì sulle schermate.
+  File: `settings/Sport{Menu,Button,Setting}*` · `tasks/TASK-512.md`
 
 In attesa (Fermo — in attesa nel task file, nessun file occupato; si
 riprendono col sì dell'utente). Aspettano la società o servizi esterni:

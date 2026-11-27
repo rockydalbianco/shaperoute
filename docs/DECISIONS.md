@@ -638,9 +638,44 @@ lasciando le righe d'indice.
 - ADR-0417 — Lo stile delle pagine in tutta l'app (TASK-523): il vetro di 469 a barre, tab e fogli e lo stile nuovo al contenuto; un colore per sezione come token suoi (`section`), stesso valore dove la tinta c'è già; un kit di soli file nuovi in `ui/` col velo tinto opaco al 12%; nella barra delle schede il colore sta nella capsula della scheda aperta, non nel tratto delle icone · 2026-11-27 · Attiva
 - ADR-0416 — Il catalogo di «Explore» guardato a occhio: oltre al filtro, le strade fatte due volte entro 8 punti sopra la mediana della forma, poi un voto a occhio da 0 a 3 su ogni disegno; 499 tolti, 3120 nuovi, la classifica per voto e misura; gli id dei percorsi cambiano · 2026-11-27 · Accettata
 - ADR-0419 — «Rifai meglio» (TASK-451): a fine corsa, se almeno 200 m del percorso prima del punto dove ci si è fermati sono rimasti a più di 40 m dalla traccia, «Save & redo» salva la corsa e riapre «Draw» con la stessa forma o parola, gli stessi km e la stessa partenza; il motore ripianifica come sempre; solo sport su strade e sentieri · 2026-11-27 · Attiva
+- ADR-0420 — Il pannello degli sport più fitto (TASK-512): caselle piccole tre per riga con le famiglie, la riga del modo solo per VoiceOver, nessun «ultimi usati»; in «Settings» una riga «Sport» che apre lo stesso pannello (`settings/SportMenu.tsx`) · 2026-11-27 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0420 — Il pannello degli sport più fitto, e una riga sola in «Settings»
+
+**Stato**: Attiva · 2026-11-27 · TASK-512. Scelte di prodotto dell'utente
+(parte 0, 2026-11-27); il resto deciso dall'agente su delega dell'utente;
+numero dal Coordinatore (fork 3).
+
+**Contesto**: punto U10 della prova nel simulatore del 2026-11-23. Il
+pannello degli sport (TASK-205, ADR-0165) mostra 18 sport in caselle grandi
+due per riga: nove righe, «Palestra» dopo due scorrimenti. La sezione
+«Sport» di «Settings» (TASK-189, ADR-0152) ripete la lista, una riga per
+sport, e spinge il resto di «Settings» giù di una schermata e mezza.
+
+**Decisione**:
+- **Tre caselle per riga, famiglie tenute** (scelta dell'utente): emoji e
+  nome, larghezza da `tileWidth`/`rowTileWidth`, altezza 0,8 della
+  larghezza (~105×84 pt su 390 pt). Sette righe: su 390×844 stanno nel
+  pannello. La riga «Turns MuW into your ski/training app» non è scritta
+  nella casella; resta l'`accessibilityHint`.
+- **Niente «ultimi usati»** (scelta dell'utente): nessuna cronologia
+  salvata.
+- **«Settings»: una riga** «Sport · <sport> ›» (scelta dell'utente) con la
+  faccia dei gruppi; un tocco apre lo stesso pannello, appeso dove lo
+  appende l'intestazione.
+- **Un pannello solo** (deciso dall'agente): `settings/SportMenu.tsx`,
+  usato da `SportButton` e `SportSetting`; chi lo apre salva e lo chiude. I
+  `testID` delle caselle restano. Le misure dello spazio sicuro si leggono
+  dal contesto con zero come riserva, così «Settings» si disegna anche
+  senza provider (i suoi test).
+
+**Conseguenze**: un file nuovo, nessun testo nuovo, nessuna dipendenza.
+La casella «Nutrition» di TASK-489 (spenta) riceve la larghezza nuova dal
+suo `size`; il suo aspetto interno è di 489. Se un giorno servisse «ultimi
+usati», sarà una scelta nuova dell'utente.
 
 ## ADR-0419 — «Rifai meglio»: la stessa forma, gli stessi km e la stessa partenza dopo una corsa uscita di strada
 

@@ -121,6 +121,7 @@ export const EXERCISES: readonly Exercise[] = [
     seconds: SIDE_SECONDS,
     pose: HIP_FLEXOR,
     breath: HIP_FLEXOR_BREATH,
+    position: "floor",
   },
   {
     key: "glute",
@@ -213,6 +214,7 @@ export const MORE_EXERCISES: readonly Exercise[] = [
     seconds: SIDE_SECONDS,
     pose: CAT,
     breath: CAT_BREATH,
+    position: "floor",
   },
   {
     key: "child",
@@ -222,6 +224,7 @@ export const MORE_EXERCISES: readonly Exercise[] = [
     seconds: SIDE_SECONDS,
     pose: CHILD,
     breath: CHILD_BREATH,
+    position: "floor",
   },
   {
     key: "kneeHug",

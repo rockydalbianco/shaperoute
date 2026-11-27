@@ -227,7 +227,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   velata è da misurare, i fogli sono fermi. 2026-11-27: col vetro velato
   barra, header e fogli tengono 4,5:1 nel simulatore; l'utente approva
   la barra e dice avanti coi fogli, tutti o nessuno (#1620 in `main`,
-  gli altri quindici nella #1647). File: — ·
+  gli altri quindici nella #1647). Sera del 2026-11-27: tutta la parte B
+  in `main` per il taglio nativo (#1557, #1562, #1614, #1617, #1621);
+  restano il telefono vero e le date di build e OTA. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 e A in

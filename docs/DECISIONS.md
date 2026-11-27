@@ -541,7 +541,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva; A finita con A7c-4 il 2026-11-26 (A1–A7c-3 in produzione con l'OTA 25); B a fette, in bozza fino al taglio nativo: la barra galleggia solo col vetro vero, velata col fondo del tono: misurata, tiene 4,5:1 e l'utente l'ha approvata (2026-11-27); l'header in bozza; i fogli avanti, tutti o nessuno (utente, 2026-11-27)
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva; A finita con A7c-4 il 2026-11-26 (A1–A7c-3 in produzione con l'OTA 25); B in `main` per il taglio nativo dal 2026-11-27: barra, header e fogli in vetro vero velato col fondo del tono, misurati a 4,5:1, approvati dall'utente
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
@@ -625,9 +625,71 @@ lasciando le righe d'indice.
 - ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi (`latest` nella pagina, `?after=` sulla stessa rotta), più piano nel silenzio (5 s, 15 s, 30 s: scelta dell'utente); la pagina intera una volta al minuto; una risposta uguale non ridisegna · 2026-11-26 · Attiva
 - ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza (10 km), chiesti al primo tocco; fuori dal catalogo le forme di riserva; le sorprese venute sotto il 90% ricordate sul telefono · 2026-11-26 · Attiva
 - ADR-0415 — Lo stretching rifatto (TASK-520): una home a categorie con routine composte da un solo elenco di esercizi, i movimenti come respiro largo, la stessa figura vista anche di fronte, gli esercizi nuovi in file nuovi con chiavi stabili · 2026-11-27 · Attiva
-
+- ADR-0397, precisazione 8 — Il controllo del peso (TASK-489 K1): pesate, obiettivo e tappe dell'account e non del telefono, l'ultima pesata diventa il peso del corpo da quel giorno, obiettivo mai sotto un BMI di 18,5 né prima dei 18 anni, congratulazioni per le tappe dell'utente e la costanza, mai per la velocità · 2026-11-27 · Proposta
 
 ## Voci nuove
+
+## ADR-0397, precisazione 8 — Il controllo del peso: le pesate dell'account, il peso del corpo aggiornato, l'obiettivo dentro una soglia citata
+
+**Stato**: Proposta · 2026-11-27 · TASK-489 parte K1 (parte 0 chiusa,
+codice dopo la parte J in `main`). Numero dal Coordinatore (fork 3). Le
+scelte di prodotto sono **dell'utente** (2026-11-27, in
+`tasks/TASK-489.md`, sezione «K1»); il come è **deciso dall'agente su
+delega dell'utente**. Precisa il punto 6 della precisazione 5.
+
+**Contesto**: il punto 6 della precisazione 5 dice che le pesate restano sul
+telefono e che le congratulazioni non ci sono sotto la soglia di peso basso
+né sotto i 18 anni, ma non dice di chi è il file, se una pesata cambia il
+peso con cui MuW conta, né quale soglia. Da TASK-507 D (ADR-0406) il corpo
+(`body.json`) è di ogni account; il resto di «Nutrition» è del telefono
+(precisazione 3).
+
+**Decisione**:
+1. **Le pesate sono dell'account**: le pesate, il peso obiettivo, le tappe,
+   ogni quanto chiedere e il «Not now» stanno in un file per account
+   (`ownedFile("weigh-ins.json")`, `body/weighIns.ts`), come il corpo. Un
+   altro account sullo stesso telefono non li vede. Restano sul telefono e
+   non arrivano al server.
+2. **L'ultima pesata diventa il peso del corpo** (`saveBody`), da quel giorno
+   in poi: riposo e calorie delle attività lo usano da lì; le calorie già
+   salvate nei post non cambiano. Un peso cambiato a mano in «Settings» è
+   una correzione e non entra nel grafico. Togliere l'ultima pesata non
+   cambia il peso del corpo. «Recalculate» si offre solo a chi usa la stima
+   di MuW per l'obiettivo di calorie (parte J).
+3. **La soglia**: un BMI di 18,5, il sottopeso negli adulti per l'OMS
+   (indicatore «Underweight among adults, BMI < 18.5») e per i CDC («Adult
+   BMI Categories»), pagine lette il 2026-11-27 e citate in «How we
+   calculate». Il peso obiettivo non si scrive sotto 18,5 × altezza² e la
+   scheda mostra il minimo.
+4. **Chi può avere un obiettivo**: chi ha altezza e anno di nascita, e 18
+   anni o più. L'app conosce solo l'anno: chi compie 18 anni nell'anno
+   conta ancora come minorenne, come la stima della parte J. Senza quei
+   dati, o sotto i 18 anni, niente obiettivo né congratulazioni sul peso.
+5. **Le congratulazioni**: per la tappa e l'obiettivo che l'utente ha
+   scritto (mai proposti da MuW), non quando il peso di oggi è sotto la
+   soglia; per la costanza a 5, 10, 25 e 50 pesate e a 30, 100 e 365
+   giorni di diario, per tutti; mai per la velocità. Uguale per chi vuole
+   perdere, prendere o mantenere il peso.
+6. **Ogni quanto**: 1, 2 (di partenza) o 4 settimane, oppure mai; la scheda
+   compare solo aprendo «Nutrition». La notifica è una parte dopo K1,
+   spenta di partenza.
+7. **Il grafico** è fatto con le viste e `Animated`, come gli anelli della
+   parte H: nessuna dipendenza nuova. Il peso ha un colore suo, il token
+   `weight` (un viola), aggiunto in `theme/tokens.ts` nel turno del
+   Coordinatore e riusato da TASK-523 per il Profilo; con «Riduci
+   movimento» niente si muove. Il colore non è mai l'unico segno.
+
+**Alternative scartate**: le pesate nel file delle impostazioni di
+«Nutrition» (le vedrebbe un altro account: il difetto chiuso da TASK-507);
+la pesata a parte dal peso del corpo (due pesi diversi, e i conti su quello
+vecchio finché l'utente non lo riscrive); una soglia scritta a memoria o
+proposta all'utente senza fonte; le tappe proposte da MuW.
+
+**Conseguenze**: prima che K1 esca serve la PR di privacy e termini
+approvata dall'utente (le pesate nell'elenco di quello che resta sul
+telefono, il file per account, il limite dell'obiettivo detto giusto). Per
+Apple (linea guida 1.4.1), al taglio nativo le note per la revisione
+dicono che la soglia viene da una fonte citata.
 
 ## ADR-0415 — Lo stretching rifatto: categorie e routine composte, movimenti, la figura anche di fronte
 

@@ -1932,6 +1932,42 @@ export const DE: Table = {
   "Bent-knee calf stretch": "Wade dehnen mit gebeugtem Knie",
   "Step back, bend both knees. Keep the back heel down.":
     "Einen Schritt zurück, beide Knie beugen. Die hintere Ferse am Boden lassen.",
+  "90/90 hips": "90/90-Hüftsitz",
+  "Sit with both knees bent at right angles, one in front, one to the side. Sit tall.":
+    "Mit beiden Knien im rechten Winkel sitzen, eines vorn, eines seitlich. Aufrecht sitzen.",
+  "Figure four": "Liegende Vier",
+  "On your back, ankle over the other knee. Pull that thigh toward you.":
+    "Auf dem Rücken, einen Knöchel über das andere Knie. Diesen Oberschenkel zu sich ziehen.",
+  Pigeon: "Taube",
+  "Front shin across your mat, back leg long. Fold forward over it.":
+    "Das vordere Schienbein quer auf die Matte, das hintere Bein lang. Darüber nach vorn beugen.",
+  "Seated forward fold": "Vorbeuge im Sitzen",
+  "Sit with legs straight. Fold forward from your hips, back long.":
+    "Mit gestreckten Beinen sitzen. Aus der Hüfte nach vorn beugen, Rücken lang.",
+  "Lying hamstring stretch": "Hintere Oberschenkel dehnen im Liegen",
+  "On your back, raise one straight leg. Hold behind your thigh.":
+    "Auf dem Rücken ein gestrecktes Bein heben. Hinter dem Oberschenkel halten.",
+  "Side-lying quad": "Quadrizeps dehnen in Seitenlage",
+  "Lie on your side. Pull your top heel toward your glutes.":
+    "Auf die Seite legen. Die obere Ferse zum Gesäß ziehen.",
+  "Half split": "Halber Spagat",
+  "Kneel, front leg straight, toes up. Fold over it with a long back.":
+    "Knien, vorderes Bein gestreckt, Zehen hoch. Mit langem Rücken darüber beugen.",
+  "Toe stretch": "Zehen dehnen",
+  "Kneel with your toes tucked under. Sit back gently on your heels.":
+    "Knien, die Zehen aufgestellt. Sanft auf die Fersen zurücksetzen.",
+  "Shin stretch": "Schienbein dehnen",
+  "Kneel with the tops of your feet flat. Sit back on your heels.":
+    "Knien, die Fußrücken flach am Boden. Auf die Fersen zurücksetzen.",
+  "Downward dog": "Herabschauender Hund",
+  "Hands and feet down, hips high. Press your heels toward the floor.":
+    "Hände und Füße am Boden, Hüfte hoch. Die Fersen zum Boden drücken.",
+  "Legs up the wall": "Beine an die Wand",
+  "Lie down with your legs resting up a wall. Arms relaxed.":
+    "Hinlegen, die Beine an einer Wand hochgelegt. Arme entspannt.",
+  "Resting breath": "Ruheatmung",
+  "Lie on your back, eyes closed. Breathe slowly into your belly.":
+    "Auf den Rücken legen, Augen zu. Langsam in den Bauch atmen.",
   // end of TASK-520 part B
   Morning: "Morgens",
   "After run": "Nach dem Laufen",
@@ -3893,4 +3929,8 @@ export const DE: Table = {
   "Weight and your goal": "Gewicht und dein Ziel",
   "The latest weigh-in becomes your weight in Settings: from that day on MuW uses it for your energy at rest and your activities. The percent is the change divided by your starting weight. A goal weight can't be below a body mass index of 18.5, the threshold for underweight in adults used by the World Health Organization and the US CDC (pages read on 27 November 2026), and there are no weight goals under 18. MuW is not made by health professionals: this is not medical advice.":
     "Dein letztes Wiegen wird dein Gewicht in den Einstellungen: Ab diesem Tag nutzt MuW es für deine Energie in Ruhe und deine Aktivitäten. Der Prozentwert ist die Veränderung geteilt durch dein Startgewicht. Ein Zielgewicht kann nicht unter einem Body-Mass-Index von 18,5 liegen, der Grenze für Untergewicht bei Erwachsenen, die die Weltgesundheitsorganisation und die US-Behörde CDC verwenden (Seiten gelesen am 27. November 2026), und unter 18 Jahren gibt es keine Gewichtsziele. MuW wird nicht von Gesundheitsfachleuten gemacht: Das ist kein medizinischer Rat.",
+
+  // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
+  Weather: "Wetter",
+  "Weather: {temperature}, wind {speed}": "Wetter: {temperature}, Wind {speed}",
 };

@@ -5,24 +5,32 @@ import {
   diaryFile,
   loadDiaryMonth,
   loadOwnFoods,
+  loadOwnRecipes,
   loadPlan,
   loadSettings,
   savePlan,
 } from "./nutritionStore";
+import { muwVersion, NO_OWN_RECIPES } from "./ownRecipes";
 import { NO_MEALS, NO_PLAN, planWithDay, withPortion } from "./plan";
+import { oneServing } from "./recipeMath";
+import { recipeOf } from "./recipes";
 import {
   addFood,
+  addRecipeToDay,
+  addRecipeToPlan,
   changeFood,
   copyPlanDay,
   forgetNutrition,
   mealsOn,
   removeFood,
+  resetRecipe,
   seeNotice,
   useNutrition,
   writeActivityKcal,
   writeDay,
   writeDayAsPlanned,
   writePlanDay,
+  writeRecipe,
   writeRest,
   writeTarget,
 } from "./useNutrition";
@@ -238,4 +246,56 @@ test("the calories written for an activity are kept by its key", () => {
   writeTarget(2200);
   writeRest(1800);
   expect(loadSettings()).toMatchObject({ noticeSeen: true, target: 2200 });
+});
+
+const PASTA = recipeOf("pasta-tomato")!;
+
+/** MuW's pasta with 40 g less of its first ingredient. */
+function lessPasta() {
+  const muw = muwVersion(PASTA);
+  return {
+    ...muw,
+    ingredients: muw.ingredients.map((portion, at) =>
+      at === 0 ? { ...portion, grams: portion.grams - 40 } : portion,
+    ),
+  };
+}
+
+test("a changed recipe stays on the phone, and «Back to MuW's recipe» forgets it", async () => {
+  const { result } = await renderHook(() => useNutrition());
+  expect(result.current.ownRecipes).toEqual(NO_OWN_RECIPES);
+  await act(async () => {
+    expect(writeRecipe(PASTA.id, lessPasta())).toBe(true);
+  });
+  expect(result.current.ownRecipes[PASTA.id]).toEqual(lessPasta());
+  expect(loadOwnRecipes()[PASTA.id]).toEqual(lessPasta());
+  await act(async () => {
+    forgetNutrition();
+  });
+  expect(result.current.ownRecipes[PASTA.id]).toEqual(lessPasta());
+  await act(async () => {
+    expect(resetRecipe(PASTA.id)).toBe(true);
+  });
+  expect(result.current.ownRecipes).toEqual(NO_OWN_RECIPES);
+  expect(loadOwnRecipes()).toEqual(NO_OWN_RECIPES);
+});
+
+test("«Add to diary» writes one serving's ingredients after what the meal has", () => {
+  writeDay("2026-11-27", BREAKFAST);
+  const version = lessPasta();
+  expect(addRecipeToDay("2026-11-27", "breakfast", version)).toBe(true);
+  const one = oneServing(version.ingredients, version.servings);
+  expect(mealsOn("2026-11-27").breakfast).toEqual([...BREAKFAST.breakfast, ...one]);
+  expect(loadDiaryMonth("2026-11")["2026-11-27"].breakfast).toHaveLength(
+    1 + one.length,
+  );
+  expect(mealsOn("2026-11-27").lunch).toEqual([]);
+});
+
+test("«Add to my plan» writes one serving's ingredients into the day's meal", () => {
+  const version = muwVersion(PASTA);
+  expect(addRecipeToPlan("wed", "dinner", version)).toBe(true);
+  const one = oneServing(version.ingredients, version.servings);
+  expect(loadPlan().wed.dinner).toEqual(one);
+  expect(loadPlan().tue).toEqual(NO_MEALS);
 });

@@ -1923,6 +1923,42 @@ export const ES: Table = {
   "Bent-knee calf stretch": "Gemelo con rodilla doblada",
   "Step back, bend both knees. Keep the back heel down.":
     "Da un paso atrás, dobla las dos rodillas. Mantén el talón de atrás en el suelo.",
+  "90/90 hips": "Caderas 90/90",
+  "Sit with both knees bent at right angles, one in front, one to the side. Sit tall.":
+    "Siéntate con las dos rodillas dobladas en ángulo recto, una delante y otra al lado. Espalda erguida.",
+  "Figure four": "Figura de cuatro",
+  "On your back, ankle over the other knee. Pull that thigh toward you.":
+    "Boca arriba, un tobillo sobre la otra rodilla. Tira de ese muslo hacia ti.",
+  Pigeon: "Paloma",
+  "Front shin across your mat, back leg long. Fold forward over it.":
+    "La espinilla de delante cruzada sobre la esterilla, la pierna de atrás larga. Inclínate hacia delante sobre ella.",
+  "Seated forward fold": "Flexión hacia delante sentado",
+  "Sit with legs straight. Fold forward from your hips, back long.":
+    "Siéntate con las piernas estiradas. Inclínate desde las caderas, espalda larga.",
+  "Lying hamstring stretch": "Estiramiento de isquiotibiales tumbado",
+  "On your back, raise one straight leg. Hold behind your thigh.":
+    "Boca arriba, sube una pierna estirada. Sujétala por detrás del muslo.",
+  "Side-lying quad": "Cuádriceps tumbado de lado",
+  "Lie on your side. Pull your top heel toward your glutes.":
+    "Túmbate de lado. Lleva el talón de arriba hacia el glúteo.",
+  "Half split": "Medio spagat",
+  "Kneel, front leg straight, toes up. Fold over it with a long back.":
+    "De rodillas, pierna de delante estirada, dedos arriba. Inclínate sobre ella con la espalda larga.",
+  "Toe stretch": "Estiramiento de dedos del pie",
+  "Kneel with your toes tucked under. Sit back gently on your heels.":
+    "De rodillas con los dedos de los pies apoyados. Siéntate suavemente sobre los talones.",
+  "Shin stretch": "Estiramiento de espinilla",
+  "Kneel with the tops of your feet flat. Sit back on your heels.":
+    "De rodillas con los empeines apoyados. Siéntate sobre los talones.",
+  "Downward dog": "Perro boca abajo",
+  "Hands and feet down, hips high. Press your heels toward the floor.":
+    "Manos y pies en el suelo, caderas arriba. Empuja los talones hacia el suelo.",
+  "Legs up the wall": "Piernas en la pared",
+  "Lie down with your legs resting up a wall. Arms relaxed.":
+    "Túmbate con las piernas apoyadas en alto en una pared. Brazos relajados.",
+  "Resting breath": "Respiración en reposo",
+  "Lie on your back, eyes closed. Breathe slowly into your belly.":
+    "Túmbate boca arriba, ojos cerrados. Respira despacio hacia la barriga.",
   // end of TASK-520 part B
   Morning: "Mañana",
   "After run": "Después de correr",
@@ -3874,4 +3910,8 @@ export const ES: Table = {
   "Weight and your goal": "El peso y tu objetivo",
   "The latest weigh-in becomes your weight in Settings: from that day on MuW uses it for your energy at rest and your activities. The percent is the change divided by your starting weight. A goal weight can't be below a body mass index of 18.5, the threshold for underweight in adults used by the World Health Organization and the US CDC (pages read on 27 November 2026), and there are no weight goals under 18. MuW is not made by health professionals: this is not medical advice.":
     "Tu última pesada pasa a ser tu peso en Ajustes: desde ese día MuW lo usa para tu energía en reposo y tus actividades. El porcentaje es el cambio dividido por tu peso inicial. Un peso objetivo no puede estar por debajo de un índice de masa corporal de 18,5, el umbral de bajo peso en adultos que usan la Organización Mundial de la Salud y los CDC de Estados Unidos (páginas leídas el 27 de noviembre de 2026), y no hay objetivos de peso para menores de 18 años. MuW no está hecha por profesionales de la salud: no es un consejo médico.",
+
+  // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
+  Weather: "Tiempo",
+  "Weather: {temperature}, wind {speed}": "Tiempo: {temperature}, viento {speed}",
 };

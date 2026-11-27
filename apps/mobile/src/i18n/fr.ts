@@ -1924,6 +1924,42 @@ export const FR: Table = {
   "Bent-knee calf stretch": "Mollet genou plié",
   "Step back, bend both knees. Keep the back heel down.":
     "Reculez d'un pas, pliez les deux genoux. Gardez le talon arrière au sol.",
+  "90/90 hips": "Hanches 90/90",
+  "Sit with both knees bent at right angles, one in front, one to the side. Sit tall.":
+    "Asseyez-vous, les deux genoux pliés à angle droit, l'un devant, l'autre sur le côté. Dos droit.",
+  "Figure four": "Figure en quatre",
+  "On your back, ankle over the other knee. Pull that thigh toward you.":
+    "Sur le dos, une cheville sur l'autre genou. Tirez cette cuisse vers vous.",
+  Pigeon: "Pigeon",
+  "Front shin across your mat, back leg long. Fold forward over it.":
+    "Tibia avant en travers du tapis, jambe arrière allongée. Penchez-vous en avant par-dessus.",
+  "Seated forward fold": "Flexion avant assise",
+  "Sit with legs straight. Fold forward from your hips, back long.":
+    "Asseyez-vous jambes tendues. Penchez-vous en avant depuis les hanches, dos long.",
+  "Lying hamstring stretch": "Étirement des ischio-jambiers allongé",
+  "On your back, raise one straight leg. Hold behind your thigh.":
+    "Sur le dos, levez une jambe tendue. Tenez-la derrière la cuisse.",
+  "Side-lying quad": "Quadriceps allongé sur le côté",
+  "Lie on your side. Pull your top heel toward your glutes.":
+    "Allongez-vous sur le côté. Ramenez le talon du dessus vers la fesse.",
+  "Half split": "Demi-grand écart",
+  "Kneel, front leg straight, toes up. Fold over it with a long back.":
+    "À genoux, jambe avant tendue, orteils vers le haut. Penchez-vous dessus, dos long.",
+  "Toe stretch": "Étirement des orteils",
+  "Kneel with your toes tucked under. Sit back gently on your heels.":
+    "À genoux, orteils retournés au sol. Asseyez-vous doucement sur les talons.",
+  "Shin stretch": "Étirement du tibia",
+  "Kneel with the tops of your feet flat. Sit back on your heels.":
+    "À genoux, dessus des pieds à plat. Asseyez-vous sur les talons.",
+  "Downward dog": "Chien tête en bas",
+  "Hands and feet down, hips high. Press your heels toward the floor.":
+    "Mains et pieds au sol, hanches hautes. Poussez les talons vers le sol.",
+  "Legs up the wall": "Jambes au mur",
+  "Lie down with your legs resting up a wall. Arms relaxed.":
+    "Allongez-vous, jambes posées en haut contre un mur. Bras détendus.",
+  "Resting breath": "Respiration au repos",
+  "Lie on your back, eyes closed. Breathe slowly into your belly.":
+    "Allongez-vous sur le dos, yeux fermés. Respirez lentement par le ventre.",
   // end of TASK-520 part B
   Morning: "Matin",
   "After run": "Après la course",
@@ -3883,4 +3919,8 @@ export const FR: Table = {
   "Weight and your goal": "Le poids et ton objectif",
   "The latest weigh-in becomes your weight in Settings: from that day on MuW uses it for your energy at rest and your activities. The percent is the change divided by your starting weight. A goal weight can't be below a body mass index of 18.5, the threshold for underweight in adults used by the World Health Organization and the US CDC (pages read on 27 November 2026), and there are no weight goals under 18. MuW is not made by health professionals: this is not medical advice.":
     "Ta dernière pesée devient ton poids dans Réglages : à partir de ce jour, MuW l'utilise pour ton énergie au repos et tes activités. Le pourcentage est la variation divisée par ton poids de départ. Un poids objectif ne peut pas être sous un indice de masse corporelle de 18,5, le seuil d'insuffisance pondérale chez l'adulte utilisé par l'Organisation mondiale de la santé et les CDC américains (pages lues le 27 novembre 2026), et il n'y a pas d'objectif de poids avant 18 ans. MuW n'est pas faite par des professionnels de santé : ce n'est pas un avis médical.",
+
+  // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
+  Weather: "Météo",
+  "Weather: {temperature}, wind {speed}": "Météo : {temperature}, vent {speed}",
 };

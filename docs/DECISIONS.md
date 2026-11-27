@@ -634,12 +634,55 @@ lasciando le righe d'indice.
 - ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione una volta al mese nelle Alpi, un volo è di un decollo solo per i 300 m (le tracce non hanno quota), lo storico in una rotta a sé con la cache di 10 minuti, record più lungo, più alto e più lontano dai post per tutti, niente «Fly from here»; il vento (D) in un task nuovo dopo TASK-479 H · 2026-11-27 · Attiva
 - ADR-0388, aggiunta E2b (TASK-479) — La quota sul mare su Android: in volo si toglie il geoide EGM96 da una tabella a 1° nel codice (griglia 15' di NGA, pubblico dominio, copia di PROJ), interpolata bilineare; nelle Alpi al massimo 2,4 m dalla griglia piena; iOS e gli altri sport invariati · 2026-11-27 · Attiva
 - ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; una pagina vuota ha il suo pulsante quando c'è una cosa da fare; una tessera senza percorso mostra la sagoma della forma in grigio · 2026-11-26 · Attiva
+- ADR-0418 — Le lettere dicono cosa disegnano a penna alzata (`pen`, TASK-522): la A tonda con la punta, la Q tonda con l'anello; la parola chiusa resta la stessa; le parole a penna alzata con A o Q tenute a parte con «+L2» sull'impronta, le altre restano (SAME_ROUTES_AS) · 2026-11-27 · Attiva
 - ADR-0417 — Lo stile delle pagine in tutta l'app (TASK-523): il vetro di 469 a barre, tab e fogli e lo stile nuovo al contenuto; un colore per sezione come token suoi (`section`), stesso valore dove la tinta c'è già; un kit di soli file nuovi in `ui/` col velo tinto opaco al 12%; nella barra delle schede il colore sta nella capsula della scheda aperta, non nel tratto delle icone · 2026-11-27 · Attiva
 - ADR-0416 — Il catalogo di «Explore» guardato a occhio: oltre al filtro, le strade fatte due volte entro 8 punti sopra la mediana della forma, poi un voto a occhio da 0 a 3 su ogni disegno; 499 tolti, 3120 nuovi, la classifica per voto e misura; gli id dei percorsi cambiano · 2026-11-27 · Accettata
 
 
 ## Voci nuove
 
+## ADR-0418 — Le lettere dicono cosa disegnano a penna alzata: la A con la punta, la Q con l'anello
+
+**Stato**: Attiva · 2026-11-27 · TASK-522 (#1696). Deciso dall'agente su
+delega dell'utente; strada e lettere scelte dal Coordinatore (fork 3),
+numero dal Coordinatore.
+
+**Contesto**: TASK-521 ha visto che nelle parole a penna alzata (TASK-197,
+ADR-0157) la A si legge «n»: «VAI» → «VnI», in circa 140 parole del
+catalogo. `letters.json` descrive ogni lettera per la parola chiusa, `out`
+più `back`, e la A tonda tiene la punta solo in `back`; `words._pen_up`
+usava il solo `out`. Con la stessa causa la Q tonda restava una coda, e
+perdono un tratto corto R, B, D tonde e A, B, D, O, Q, R squadrate.
+
+**Decisione**:
+- **Una chiave facoltativa `pen`** per lettera, in entrambi gli alfabeti: la
+  linea aperta disegnata a penna alzata, dallo stesso ingresso alla stessa
+  uscita di `out`, dentro la lettera (`parse_letters` lo controlla). Senza
+  `pen` vale `out`. `out` e `back` non si toccano, così la parola chiusa
+  resta la stessa punto per punto. Cambiare `out` della A avrebbe cambiato
+  tutte le parole chiuse con la A.
+- **Solo la A e la Q tonde**, per scelta del Coordinatore. La A disegna
+  gamba, punta, gamba fino alla stanghetta, stanghetta andata e ritorno,
+  gamba (con quattro nodi dispari un tratto si ripassa, il più corto); la Q
+  l'anello e poi la coda. Le altre lettere sono elencate in
+  `PEN_UP_SHORT` (`test_words.py`): il test fallisce sia se una di loro
+  smette di perdere un tratto sia se un'altra comincia.
+- **I percorsi tenuti**: l'impronta del motore cambia, e le route fisse di
+  `test_same_routes` (nessuna parola) vengono uguali, quindi
+  `SAME_ROUTES_AS` prende le tre righe. Le parole a penna alzata con la A o
+  la Q invece cambiano davvero: `route_store.kept_engine(request, engine)`
+  le tiene sotto `engine + "+L2"`. Una regola sola per i file di
+  `route_store` e per le righe di `route_archive`, dove non c'è una colonna
+  per un segno nel salvataggio. 15 caratteri nella colonna `engine` da 16.
+
+**Conseguenze**: dopo il deploy, un file vecchio di una di queste parole non
+si trova più e la parola si ridisegna alla richiesta; una riga vecchia di
+`drawn_routes` diventa stale e `nearby` la ridisegna dalla sua posizione.
+Nessun lavoro lo fa in background. Gli esempi delle città toccati sono CIAO
+e AMORE. Le parole chiuse, lo stile squadrato e le forme a pezzi non
+prendono «+L2». Il catalogo ha i punti salvati nei semi: le parole con la A
+le toglie TASK-521. Una prossima `pen` per un'altra lettera deve cambiare
+il suffisso (per esempio «+L3»), così si ridisegnano anche quelle parole.
 ## ADR-0388, aggiunta E2b (TASK-479) — La quota sul mare su Android: il geoide EGM96 da una tabella a 1° nel codice
 
 **Stato**: Attiva · 2026-11-27 · TASK-479 parte E2b (#1711), col sì

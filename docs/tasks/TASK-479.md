@@ -7,7 +7,8 @@ A1 in `main` (#1434, 2026-11-23, OTA dal Coordinatore), E1 ed E2 in
 D1–D4 in `main` (#1503, #1532, #1540, #1605), B3, D5, D6 e D6b in `main`
 (#1611, #1644, #1651, #1671, 2026-11-26), privacy di D6 e H (#1636, online
 su getmuw.app il 2026-11-27); H1 in `main` (#1692, 2026-11-27), H2 #1701
-armata; passo server dei venti col sì dell'utente. Prossime F e G
+armata; passo server dei venti col sì dell'utente; E2b (geoide su
+Android) #1711 «pronta» (2026-11-27). Prossime F e G
 **Fase**: 5 · **Branch**: `docs/TASK-479-paragliding-pro` (parte 0), poi
 `feat/TASK-479-<parte>-<slug>`, una parte alla volta, ognuna da `main`
 **Dipende da**: TASK-305 parti R (in `main`: lo sport «Record only», i
@@ -543,7 +544,8 @@ dopo la 1.1, scelta 4) e la prova di una task vera in volo.
 
 **E divisa in tre**, col sì del Coordinatore (2026-11-23): E1 il file,
 E2 gli spazi aerei in volo, E3 il registro dopo il volo e il grafico
-della quota. Il geoide su Android (E2b) aspetta la risposta dell'utente.
+della quota. Il geoide su Android (E2b) col sì dell'utente del
+2026-11-27 («ok vai avanti con la E2b»).
 
 **E1 fatta** (#1454, in `main` il 2026-11-23): il parser
 (`openair.ts`, i punti 1 e 6), il file sul telefono (`airspace.json`, un
@@ -628,6 +630,31 @@ dall'agente su delega dell'utente):
 Schermate approvate dall'utente il 2026-11-23 (il grafico con le fasce,
 la riga nella scheda di fine volo, il foglio del registro), al simulatore
 con un volo finto e un file inventato.
+
+**E2b fatta** (#1711, 2026-11-27, «pronta» al Coordinatore). **Com'è
+fatta** (deciso dall'agente su delega dell'utente):
+- Su Android la quota GPS è sull'ellissoide WGS84; durante un volo, solo
+  su Android, alla quota del punto si toglie l'altezza del geoide EGM96
+  (MSL = quota sull'ellissoide − N), nel solo posto dove i punti del volo
+  entrano nella traccia (`useFreeRun.ts`): così numeri del volo, quota
+  massima, limiti MSL e FL degli spazi aerei, grafico e GPX hanno la quota
+  sul mare. iOS e gli altri sport restano come prima. Una quota che non
+  c'è resta «non c'è».
+- La tabella (`air/egm96Grid.ts`, generata): un nodo ogni 1° (181 × 360),
+  in centimetri, int16 in base64, 174 KB di sorgente; interpolata
+  bilineare (`air/geoid.ts`). La fa `tools/egm96_grid.py`, solo libreria
+  standard, dalla griglia EGM96 15' di NGA (pubblico dominio) com'è
+  pubblicata senza modifiche da PROJ (`cdn.proj.org/us_nga_egm96_15.tif`,
+  2,7 MB, sha256 nello script): il sito di NGA non risponde dal Mac. Lo
+  scarico ha avuto il sì dell'utente.
+- **Precisione** contro tutti i nodi 15' di NGA: nelle Alpi al massimo
+  2,4 m (rms 0,65 m); nel mondo 1,9 m in 99 punti su 100, al massimo 14 m
+  sui fronti più ripidi delle grandi catene. Ai sei punti di controllo
+  pubblicati da NGA lo script legge la griglia entro 5 cm, la tabella a 1°
+  entro 0,44 m. Una tabella a 2° (44 KB) dava fino a 8,6 m nelle Alpi:
+  scartata.
+- Resta: la prova su un Android nelle Alpi (quota vicina a quella della
+  carta). Corsa e sci su Android restano sull'ellissoide: fuori da E2b.
 
 ### Parte F — Dopo il volo
 

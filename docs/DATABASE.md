@@ -1550,6 +1550,30 @@ scelta dell'utente, «Dentro l'allenamento»), non è una corsa a sé:
 - Un allenamento senza stretching non ha righe; nessuna riga di prima
   cambia, nessun backfill. Test in `test_gym_stretch.py`.
 
+Migrazione `0090_group_outings.sql` (TASK-495 parte C1, ADR-0402
+precisazione C, `GRUPPI.md` §6 e §12; numero del Coordinatore). **Le
+uscite di un gruppo** sono righe di `group_runs`:
+
+- **`group_id`** (facoltativo, `ON DELETE CASCADE` su `groups`: un gruppo
+  cancellato porta via le sue uscite) e **`destination`** (1–80 o `NULL`,
+  la meta scritta di un'uscita senza percorso). Indice su
+  `(group_id, starts_at)` per la pagina del gruppo.
+- **`visibility`** prende `group` (solo i membri): senza gruppo resta
+  `everyone` o `followers`, con un gruppo è `group` o `everyone`
+  (`group_runs_visibility_check` rifatto).
+- **Un'uscita senza percorso**: `line`, `distance_m`, `route_m` e
+  `similarity` diventano facoltativi; `group_runs_route_check` vuole o un
+  percorso con le sue misure e senza `destination`, o nessuna linea, un
+  gruppo e una `destination`. `start` resta: il primo punto della linea
+  o il ritrovo scelto sulla mappa.
+- **`group_runs_activity_check`** è riletto e allargato come fanno 0055,
+  0068 e 0071, col suo nome, agli sport registrati all'aperto (tutti i
+  `runs.activity` tranne palestra e stretching): la migrazione del
+  prossimo sport lo allarga allo stesso modo. Le attività di un percorso
+  le controlla l'API, come per un Preferito.
+- Nessuna riga di prima cambia, nessun backfill. Test in
+  `test_group_outings.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

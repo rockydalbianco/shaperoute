@@ -274,3 +274,9 @@ L'organizzatore non ha una riga in `group_run_going`: va sempre (§6.2).
   profilo, da una notifica o da una riga della campanella. «Start» mette il
   percorso sulla mappa come un Preferito aperto, e «←» della scheda torna
   alla pagina.
+
+**Le uscite di un gruppo** (TASK-495 parte C, `GRUPPI.md` §6) sono corse
+di gruppo con `group_id`: per i soli membri o per tutti in un gruppo
+Public, anche senza percorso (ritrovo sulla mappa e «Destination»). Le
+regole di qui valgono anche per loro, tranne quello che dice `GRUPPI.md`;
+una corsa di gruppo senza gruppo resta com'è scritta qui.

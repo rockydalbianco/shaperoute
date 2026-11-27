@@ -6162,3 +6162,42 @@ altri pezzi) si aggancia alle strade mentre lo disegni, tratto per tratto,
   somiglianza del motore del percorso sullo schermo (stesso testo, già
   tradotto). Solo con un percorso: con più percorsi le tessere A, B, C
   dicono già ognuna la sua.
+
+## Il kit delle pagine (TASK-523, ADR-0417)
+
+I pezzi con cui si rifanno le pagine perché abbiano l'aspetto di
+«Nutrition» e del nuovo stretching. Stanno in `apps/mobile/src/ui/`; il
+vetro di barre, tab e fogli resta quello di «Capsula» (TASK-469), questo è
+per il contenuto.
+
+**I colori di sezione** (`color.section`): `draw` albicocca, `profile`
+viola, `explore` ciano (anche l'account), `feed` sabbia (anche le
+notifiche), `messages` verde (anche il feedback). Si usano sul riquadro in
+alto, sugli anelli e sulle icone delle card; le liste lunghe restano
+neutre. Ognuno tiene 4,5:1 su fondo e card e 3:1 su `border`, in chiaro e
+in scuro. Il giallo resta del percorso, del logo e dell'Accesso.
+
+| Pezzo | Che cosa fa |
+|---|---|
+| `tintOver` (`tint.ts`) | il «velo»: il colore di sezione steso su una card, reso come colore pieno. Al 12% (`TINT_SHARE`) testo, testo secondario e il colore stesso si leggono sul velo. |
+| `SectionHeader` | l'etichetta sopra un gruppo («ACCOUNT»), intestazione per i lettori di schermo; nel colore della sezione se il gruppo ne ha una. |
+| `SectionCard` | la card: angoli `radius.card`, titolo facoltativo, velo facoltativo. Sempre opaca. |
+| `IconSquare` | il quadrato col velo dietro un'icona (36 punti); è un disegno, i lettori di schermo lo saltano. |
+| `HeroCard` | il riquadro grande in cima alla pagina: il velo e un alone più forte nell'angolo, a colori pieni. Titolo e anello possono passarci sopra; il testo secondario sta sul velo. |
+| `Tile` | la card piccola da toccare delle griglie a due colonne, alta almeno 88 punti. Quella scelta ha velo, bordo e nome più marcato, e lo dice ai lettori di schermo: mai il solo colore. |
+| `RingStat` | un anello che si riempie col numero che conta in mezzo (l'anello e il contatore di «Nutrition»); ai lettori di schermo dice una frase sola. |
+
+Regole per chi rifà una pagina:
+- nessun colore scritto a mano: token e `tintOver`;
+- le righe entrano con `ui/Cascade`; con «Riduci movimento» tutto è fermo
+  e già al suo posto;
+- niente di proprio nella fascia della barra o dell'header; in fondo
+  `useTabBarRoom()`, sotto l'header `useUnderHeader()` (vedi «La barra in
+  vetro vero»);
+- sul vetro di un foglio solo `color.text` e `color.textMuted`: le card
+  del kit non si posano sul vetro;
+- mai un genitore con l'opacità che parte da 0 sopra del vetro vero (vedi
+  «Il vetro vero e l'opacità»).
+
+Nella barra delle schede il colore di sezione non colora le icone: va
+nella capsula della scheda aperta (parte T di TASK-523, ancora da fare).

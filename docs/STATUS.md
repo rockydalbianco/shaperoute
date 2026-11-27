@@ -54,6 +54,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sessioni loro: K1 (peso) e L (ricette, #1678 e #1686 in `main`). Build
   nativa successiva: G2, C2b, accensione. File: `nutrition/*`,
   `activities/RunEnd.tsx`, `gym/GymEnd.tsx` · `tasks/TASK-489.md`
+- **TASK-521 — «Explore»: revisione a occhio e 3000 disegni nuovi** ·
+  ADR-0416; 499 tolti e 3120 nuovi tenuti a occhio (4782 percorsi) in #1685,
+  verde, **da unire solo con la 1.2.0 sui telefoni** (gli id cambiano; #1664
+  in `main`). File: `catalog/seed/**`, `tools/catalog_kept.json`,
+  `catalog/README.md` · `tasks/TASK-521.md`
 - **TASK-513 — «Longevity»: cinquanta storie animate** · ADR-0407; parte 0
   chiusa il 2026-11-24, nessun codice; il codice in una sessione sua.
   File: — · `tasks/TASK-513.md`
@@ -146,8 +151,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   vero; R4 in bozza (#1218).
 - **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
   B1, B2, B3, C, A1, E1–E3, D1–D6, D6b e H1 in `main`; H2 #1701 armata
-  (2026-11-27); passo server dei venti col sì dell'utente. Prossime F e G.
-  File: — · `tasks/TASK-479.md`
+  (2026-11-27); passo server dei venti col sì dell'utente; E2b (geoide
+  su Android) #1711 «pronta». Prossime F e G. File: — · `tasks/TASK-479.md`
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`

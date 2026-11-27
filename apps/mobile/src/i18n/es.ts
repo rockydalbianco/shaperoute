@@ -1959,6 +1959,42 @@ export const ES: Table = {
   "Resting breath": "Respiración en reposo",
   "Lie on your back, eyes closed. Breathe slowly into your belly.":
     "Túmbate boca arriba, ojos cerrados. Respira despacio hacia la barriga.",
+  "Chin tuck": "Mentón atrás",
+  "Draw your chin straight back, then release. Eyes forward.":
+    "Lleva el mentón recto hacia atrás y suelta. Mirada al frente.",
+  "Arm circles": "Círculos de brazos",
+  "Swing your arms in big, slow circles. Change direction halfway.":
+    "Haz círculos grandes y lentos con los brazos. Cambia de sentido a la mitad.",
+  "Shoulder rolls": "Rotación de hombros",
+  "Roll your shoulders up, back and down. Slow and wide.":
+    "Lleva los hombros arriba, atrás y abajo. Lento y amplio.",
+  "Wrist circles": "Círculos de muñecas",
+  "Make slow circles with both wrists. Change direction halfway.":
+    "Haz círculos lentos con las dos muñecas. Cambia de sentido a la mitad.",
+  "Cat–cow": "Gato-vaca",
+  "On all fours, round your back, then let it dip. Move with your breath.":
+    "A cuatro patas, redondea la espalda y luego déjala bajar. Muévete con la respiración.",
+  "Pelvic tilt": "Basculación de pelvis",
+  "Lie on your back, knees bent. Press your lower back down, then release.":
+    "Túmbate boca arriba, rodillas dobladas. Presiona la zona lumbar contra el suelo y suelta.",
+  Bridge: "Puente",
+  "On your back, knees bent. Lift your hips, then lower slowly.":
+    "Boca arriba, rodillas dobladas. Sube las caderas y baja despacio.",
+  "Leg swings": "Balanceos de pierna",
+  "Hold on to something. Swing one leg forward and back, relaxed.":
+    "Agárrate a algo. Balancea una pierna adelante y atrás, relajada.",
+  "Lunge with reach": "Zancada con brazos arriba",
+  "Step into a lunge and reach both arms up. Step back and switch.":
+    "Da un paso en zancada y sube los dos brazos. Vuelve y cambia.",
+  "Calf raises": "Elevaciones de talones",
+  "Rise onto your toes, then lower slowly. Hold on if you need to.":
+    "Sube a las puntas de los pies y baja despacio. Agárrate si lo necesitas.",
+  "Ankle circles": "Círculos de tobillo",
+  "Lift one foot and draw slow circles with your ankle.":
+    "Levanta un pie y dibuja círculos lentos con el tobillo.",
+  Inchworm: "Gusano",
+  "Fold down, walk your hands out to a plank, then walk them back.":
+    "Inclínate, camina con las manos hasta la plancha y vuelve.",
   // end of TASK-520 part B
   Morning: "Mañana",
   "After run": "Después de correr",

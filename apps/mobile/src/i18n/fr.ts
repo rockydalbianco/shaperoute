@@ -1960,6 +1960,42 @@ export const FR: Table = {
   "Resting breath": "Respiration au repos",
   "Lie on your back, eyes closed. Breathe slowly into your belly.":
     "Allongez-vous sur le dos, yeux fermés. Respirez lentement par le ventre.",
+  "Chin tuck": "Rétraction du menton",
+  "Draw your chin straight back, then release. Eyes forward.":
+    "Reculez le menton bien droit, puis relâchez. Regard devant.",
+  "Arm circles": "Cercles de bras",
+  "Swing your arms in big, slow circles. Change direction halfway.":
+    "Faites de grands cercles lents avec les bras. Changez de sens à mi-parcours.",
+  "Shoulder rolls": "Roulements d'épaules",
+  "Roll your shoulders up, back and down. Slow and wide.":
+    "Roulez les épaules vers le haut, l'arrière et le bas. Lentement, en grand.",
+  "Wrist circles": "Cercles de poignets",
+  "Make slow circles with both wrists. Change direction halfway.":
+    "Faites des cercles lents avec les deux poignets. Changez de sens à mi-parcours.",
+  "Cat–cow": "Chat-vache",
+  "On all fours, round your back, then let it dip. Move with your breath.":
+    "À quatre pattes, arrondissez le dos, puis laissez-le se creuser. Bougez avec la respiration.",
+  "Pelvic tilt": "Bascule du bassin",
+  "Lie on your back, knees bent. Press your lower back down, then release.":
+    "Allongez-vous sur le dos, genoux pliés. Plaquez le bas du dos au sol, puis relâchez.",
+  Bridge: "Pont",
+  "On your back, knees bent. Lift your hips, then lower slowly.":
+    "Sur le dos, genoux pliés. Soulevez les hanches, puis redescendez lentement.",
+  "Leg swings": "Balancements de jambe",
+  "Hold on to something. Swing one leg forward and back, relaxed.":
+    "Tenez-vous à quelque chose. Balancez une jambe d'avant en arrière, détendue.",
+  "Lunge with reach": "Fente bras levés",
+  "Step into a lunge and reach both arms up. Step back and switch.":
+    "Avancez en fente et levez les deux bras. Revenez et changez.",
+  "Calf raises": "Montées sur pointes",
+  "Rise onto your toes, then lower slowly. Hold on if you need to.":
+    "Montez sur la pointe des pieds, puis redescendez lentement. Tenez-vous si besoin.",
+  "Ankle circles": "Cercles de cheville",
+  "Lift one foot and draw slow circles with your ankle.":
+    "Soulevez un pied et dessinez des cercles lents avec la cheville.",
+  Inchworm: "Chenille",
+  "Fold down, walk your hands out to a plank, then walk them back.":
+    "Penchez-vous, avancez les mains jusqu'à la planche, puis revenez.",
   // end of TASK-520 part B
   Morning: "Matin",
   "After run": "Après la course",

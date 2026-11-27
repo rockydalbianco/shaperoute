@@ -215,8 +215,8 @@ const terms: AboutDocument = {
       heading: "Nutrition",
       blocks: [
         "«Nutrition» est un journal et une calculatrice, pas un service de santé. MuW n'est pas faite par des médecins, des diététiciens ou d'autres professionnels de santé.",
-        "Les calories des aliments, l'énergie que tu dépenses et, si tu la demandes, l'estimation d'un objectif du jour viennent de tables et de formules publiques. Ce sont des estimations, à titre d'information seulement : elles ne sont pas un avis médical ou diététique et ne remplacent pas un professionnel qui te connaît.",
-        "Si tu as moins de 18 ans, si tu es enceinte ou si tu allaites, si tu as une maladie, ou si tu as ou as eu un trouble alimentaire, parle à ton médecin avant de compter les calories ou de changer ce que tu manges.",
+        "Les calories des aliments, l'énergie que tu dépenses et, si tu la demandes, l'estimation d'un objectif du jour viennent de tables et de formules publiques. Ce sont des estimations, à titre d'information seulement : elles ne sont pas un avis médical ou diététique et ne remplacent pas un professionnel qui te connaît. MuW ne te laisse pas fixer un poids objectif sous un indice de masse corporelle de 18,5, ni avant tes 18 ans : cette limite vient de seuils publics et ne dit pas si un objectif te convient.",
+        "Si tu as moins de 18 ans, si tu es enceinte ou si tu allaites, si tu as une maladie, ou si tu as ou as eu un trouble alimentaire, parle à ton médecin avant de compter les calories, de te fixer un objectif de poids ou de changer ce que tu manges.",
       ],
     },
     {
@@ -472,9 +472,9 @@ const privacy: AboutDocument = {
     {
       heading: "Nutrition",
       blocks: [
-        "«Nutrition» est un journal que tu tiens pour toi. Les aliments que tu ajoutes, ton plan de la semaine, ce que tu notes avoir mangé chaque jour, ton objectif du jour, la raison pour laquelle tu as dit l'utiliser et les calories que tu corriges à la main restent uniquement sur ton téléphone : ils n'arrivent pas sur notre serveur et personne d'autre ne peut les voir. Le «Bilan calorique» de ton profil est calculé sur ton téléphone et n'est affiché qu'à toi.",
-        "Pour estimer l'énergie que tu dépenses, MuW compte sur ton téléphone les activités de ton compte et les données corporelles que tu as saisies dans les «Réglages». Si tu le demandes, MuW calcule aussi sur ton téléphone, à partir des mêmes données et d'une formule publique, une estimation d'un objectif de calories par jour : à titre de démonstration seulement, et jamais montrée aux moins de 18 ans. Chaque chiffre est une estimation : MuW n'est pas faite par des professionnels de santé et ne fournit ni régimes ni conseils médicaux.",
-        "Ces données n'ont jamais été sur notre serveur : te déconnecter ou supprimer ton compte ne les efface donc pas. Elles restent sur ton téléphone jusqu'à ce que tu les retires là ou que tu désinstalles l'app.",
+        "«Nutrition» est un journal que tu tiens pour toi. Les aliments que tu ajoutes, ton plan de la semaine, ce que tu notes avoir mangé chaque jour, ton objectif du jour, la raison pour laquelle tu as dit l'utiliser, les calories que tu corriges à la main, tes pesées, ton poids objectif et tes étapes restent uniquement sur ton téléphone : ils n'arrivent pas sur notre serveur et personne d'autre ne peut les voir. Le «Bilan calorique» de ton profil est calculé sur ton téléphone et n'est affiché qu'à toi.",
+        "Pour estimer l'énergie que tu dépenses, MuW compte sur ton téléphone les activités de ton compte et les données corporelles que tu as saisies dans les «Réglages». Si tu le demandes, MuW calcule aussi sur ton téléphone, à partir des mêmes données et d'une formule publique, une estimation d'un objectif de calories par jour : à titre de démonstration seulement, et jamais montrée aux moins de 18 ans. Chaque chiffre est une estimation : MuW n'est pas faite par des professionnels de santé et ne fournit ni régimes ni conseils médicaux. Ta dernière pesée devient aussi ton poids dans les «Réglages». Tes pesées, ton poids objectif et tes étapes appartiennent au compte connecté sur le téléphone : un autre compte sur le même téléphone ne les voit pas, et ils sont effacés de ce téléphone quand tu supprimes le compte dans l'app. Les objectifs de poids ne sont jamais proposés aux moins de 18 ans.",
+        "Ces données n'ont jamais été sur notre serveur : te déconnecter ou supprimer ton compte ne les efface donc pas, sauf tes pesées, ton poids objectif et tes étapes, qui sont effacés quand tu supprimes le compte. Le reste demeure sur ton téléphone jusqu'à ce que tu le retires là ou que tu désinstalles l'app.",
       ],
     },
     {

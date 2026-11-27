@@ -296,6 +296,12 @@ pausa la registrazione (TASK-198). `compose(..., pen_up=True)`:
   una volta: niente `back`, niente linea di base che la unisce alla
   successiva, niente ritorno alla partenza. La linea è **aperta**: parte
   dall'ingresso della prima lettera e finisce all'uscita dell'ultima;
+- una lettera che tiene un tratto solo nel suo `back` dice cosa disegna a
+  penna alzata con `pen` (`Letter.pen_line`, TASK-522, ADR-0418), dallo
+  stesso ingresso alla stessa uscita: la A tonda con la punta e la
+  stanghetta (la stanghetta due volte), la Q tonda con l'anello e poi la
+  coda. Senza `pen` resta `out`. Perdono ancora un tratto corto R, B, D
+  tonde e A, B, D, O, Q, R squadrate (`PEN_UP_SHORT` in `test_words.py`);
 - le lettere stanno dove le mette la parola chiusa senza unioni in cima,
   con lo spazio dello stile (0,6 dell'altezza, 0,3 le squadrate) fra
   l'uscita di una e l'ingresso dell'altra. Niente unioni in cima: la linea

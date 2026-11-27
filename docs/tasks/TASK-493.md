@@ -202,7 +202,7 @@ PR, tutte in `main`:
   da TASK-479 D6;
 - C2, la mappa e la scheda: #1645; privacy: #1646 (entrambe in
   `e15af889`), pagine del sito copiate dall'utente (`e7b2d90f`);
-- accensione: #1695 (`TAKEOFFS_ON = true`, sì dell'utente «sì
+- accensione: #1695 (`0226f8c5`, `TAKEOFFS_ON = true`, sì dell'utente «sì
   accendili» il 2026-11-27, riferito dal Coordinatore).
 
 Sul server: deploy della parte A col passo 22, storico col passo 26

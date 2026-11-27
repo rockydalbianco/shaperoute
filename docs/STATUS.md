@@ -238,12 +238,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   2026-11-26: A e A2 sul server (passo 22); privacy online (#1561, sito
   c33f3920); B in `main` (#1560), esce con l'OTA; A3 «Delete group» #1629
   (merge col sì dell'utente). Poi C (uscite), D (Explore e push), E chat.
-- **TASK-509 — Stati vuoti, icone di «Add to Feed», sagoma nelle tessere** ·
-  parte 0 chiusa il 2026-11-26 (cinque scelte dell'utente). Tre PR di sola
-  app: A stati vuoti (con due prop in `App.tsx`), B icone, C sagoma (dopo
-  TASK-449 in `main`); il codice parte al «via» del Coordinatore.
-  File: quelli di A, B e C nel task file · `tasks/TASK-509.md`
-
 - **TASK-448 — «Surprise me»** · parte 0 chiusa il 2026-11-26 (sei scelte
   dell'utente): una pastiglia nel passo 2 di «Draw» mette forma e distanza
   fra quelle venute bene in città, dal catalogo di «Explore»; a piedi e in

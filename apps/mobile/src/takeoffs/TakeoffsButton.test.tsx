@@ -13,7 +13,7 @@ jest.mock("expo-location", () => ({
 jest.mock("react-native-webview");
 
 test("off, nothing shows", async () => {
-  await render(<TakeoffsButton />);
+  await render(<TakeoffsButton on={false} />);
   expect(screen.queryByTestId("takeoffs-button")).toBeNull();
 });
 

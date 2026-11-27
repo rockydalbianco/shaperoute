@@ -631,6 +631,7 @@ lasciando le righe d'indice.
 - ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
 - ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte tiene i piedi fermi mentre il bacino si sposta e sfuma quando il busto si capovolge; un braccio verso chi guarda si piega; sette viste cambiate dall'utente; le routine composte con una tenuta sola, più lunga prima di un secondo giro; chiavi delle categorie senza punto, come le vuole il server; «Today» con la notte fino alle 4 · 2026-11-27 · Attiva
 - ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione una volta al mese nelle Alpi, un volo è di un decollo solo per i 300 m (le tracce non hanno quota), lo storico in una rotta a sé con la cache di 10 minuti, record più lungo, più alto e più lontano dai post per tutti, niente «Fly from here»; il vento (D) in un task nuovo dopo TASK-479 H · 2026-11-27 · Attiva
+- ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; una pagina vuota ha il suo pulsante quando c'è una cosa da fare; una tessera senza percorso mostra la sagoma della forma in grigio · 2026-11-26 · Attiva
 
 ## Voci nuove
 
@@ -8566,3 +8567,41 @@ il gruppo diventa Public, cosa entra in «Recent activity».
 `drawings.py` invariati. Chiudere un gruppo con membri dentro non c'è:
 l'admin passa il ruolo o resta; se serve, lo decide l'utente con le
 schermate della parte B.
+
+## ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; il pulsante quando c'è una cosa da fare; la sagoma grigia nelle tessere senza percorso
+
+**Stato**: Attiva · 2026-11-26 · TASK-509 parti A (#1628), B (#1612) e C
+(#1640). **Le scelte sono dell'utente** (cinque risposte del 2026-11-26,
+`tasks/TASK-509.md`); il come è **deciso dall'agente su delega
+dell'utente**.
+
+**Contesto**: ADR-0293 voleva nella pagina vuota una sagoma in `border`
+con «i primi tratti in giallo, come una corsa appena cominciata», ferma.
+Nella prova del 2026-11-23 quei pochi tratti si leggevano come un
+caricamento che si era bloccato (U3). Le pagine vuote non dicevano che
+cosa fare; le voci di «Add to Feed» erano solo testo (U15); una tessera il
+cui percorso non c'era ancora era un riquadro nero (U12).
+
+**Decisione**:
+- `EmptyState` disegna la figura **una volta**, in giallo, in
+  `EMPTY_DRAW_MS` (1,4 s), e la lascia intera; con «Riduci movimento» è
+  intera subito. Vale per tutte le pagine che lo usano. Il titolo è
+  facoltativo: una pagina che ha già il suo nome in alto non lo ripete.
+- Una pagina vuota ha **un pulsante** quando c'è una cosa sola da fare:
+  «Record now» e «Log in» nel Feed «All», «Go to your workouts» nel Coach
+  (che lì non mostra la scheda del corpo né il sottotitolo), «My position»
+  in «Explore» senza partenza. Resta «al più un'azione».
+- Le voci di «Add to Feed» hanno un'icona a linea di Lucide (PNG bianchi a
+  tre densità, colorati da `tintColor`, come sotto un post: TASK-444). La
+  mappa delle icone sta accanto alle voci, tipizzata sugli id: una voce
+  nuova senza icona non compila.
+- Una tessera di `RouteCard` senza linea e senza foto mostra la **sagoma
+  della forma** (`ShapeGlyph`, il contorno del catalogo) in `borderStrong`,
+  al centro, più piccola di un percorso. Mai gialla: il giallo è del
+  percorso, e la sagoma se ne va quando la linea arriva. Le tessere delle
+  parole restano vuote: le lettere non sono sul telefono.
+
+**Conseguenze**: nessuna dipendenza, nessun file nativo, un solo testo
+nuovo («Go to your workouts», nelle cinque lingue). Supera, per la sola
+figura, «i primi tratti in giallo» di ADR-0293; il resto di ADR-0293 vale.
+L'icona accanto a «Explore» nella pagaia non è di questo task.

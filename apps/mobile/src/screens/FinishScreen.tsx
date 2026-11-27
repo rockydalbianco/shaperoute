@@ -130,8 +130,11 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.small,
   },
+  // Share, Keep running and Save & redo do not fit one line on a phone
+  // (TASK-451): the row wraps, from the right.
   buttons: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "flex-end",
     gap: space.sm,
   },

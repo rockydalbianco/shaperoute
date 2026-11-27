@@ -117,27 +117,54 @@ function walkerAlong(route: LatLon[], along: number[]): (atM: number) => LatLon 
   };
 }
 
-/** No run gets farther along its route than this much of what it ran, and
- * this many metres: a GPS track is as long as its route or longer, and a
- * cut corner shortens it. */
-const FARTHEST_SHARE = 1.25;
-const FARTHEST_EXTRA_M = 2 * REDO_AWAY_M;
+/** A pass of the route counts as reached when the track ran most of the
+ * route this many metres before it. */
+const REACHED_M = 100;
+
+/** The point `atM` metres along the route. */
+function pointAlong(route: LatLon[], along: number[], atM: number): LatLon {
+  return walkerAlong(route, along)(atM);
+}
 
 /**
  * Where the run stopped along the route, in metres: the last fix placed on
  * the route. A shape passes the same street twice, and a closed route ends
- * where it starts: of the passes near the last fix the farthest along that
- * the run could have reached wins, so a run that went all the way round
- * stopped at the end, and a run stopped a few metres after the start
- * stopped there. A last fix off the route is placed at its nearest point.
+ * where it starts: of the passes near the last fix, the farthest along
+ * whose last REACHED_M the track ran wins. A run that came all the way
+ * round, or cut across and came home along the last street, stopped at the
+ * end; a run stopped a few metres after the start stopped there. A last
+ * fix off the route is placed at its nearest point.
  */
-function stoppedAtM(route: LatLon[], along: number[], track: LatLon[]): number {
-  const last = track[track.length - 1];
-  const reach = FARTHEST_SHARE * cumulative(track)[track.length - 1] + FARTHEST_EXTRA_M;
-  const passes = passesNear(route, along, last).filter((pass) => pass.alongM <= reach);
-  return passes.length > 0
-    ? Math.max(...passes.map((pass) => pass.alongM))
-    : nearest(route, along, last, -Infinity, reach).alongM;
+function stoppedAtM(
+  route: LatLon[],
+  along: number[],
+  last: LatLon,
+  plane: Plane,
+  near: NearTrack,
+): number {
+  const passes = passesNear(route, along, last)
+    .map((pass) => pass.alongM)
+    .sort((a, b) => b - a);
+  if (passes.length === 0) {
+    return nearest(route, along, last).alongM;
+  }
+  const reached = passes.find((atM) => {
+    let run = 0;
+    let looked = 0;
+    for (
+      let backM = REDO_STEP_M;
+      backM <= REACHED_M && backM <= atM;
+      backM += REDO_STEP_M
+    ) {
+      looked += 1;
+      const [x, y] = plane(pointAlong(route, along, atM - backM));
+      if (near.near(x, y)) {
+        run += 1;
+      }
+    }
+    return looked > 0 && run * 2 > looked;
+  });
+  return reached ?? passes[passes.length - 1];
 }
 
 /**
@@ -160,10 +187,10 @@ export function missedRouteM(
   if (total <= 0) {
     return 0;
   }
-  const stopM = stoppedAtM(route, along, track);
-  const walked = walks.map(([from, to]) => [along[from] ?? 0, along[to] ?? total]);
   const plane = planeAt(route[0]);
   const near = new NearTrack(track.map(plane));
+  const stopM = stoppedAtM(route, along, track[track.length - 1], plane, near);
+  const walked = walks.map(([from, to]) => [along[from] ?? 0, along[to] ?? total]);
   const pointAt = walkerAlong(route, along);
   let missed = 0;
   for (let atM = 0; atM < stopM; atM += REDO_STEP_M) {

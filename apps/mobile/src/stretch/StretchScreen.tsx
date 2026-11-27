@@ -57,9 +57,10 @@ export const SAID_EVERY_S = 10;
 /** What a session was, told to `onDone` as it ends (TASK-475 part B,
  * ADR-0386): enough for the API to keep it as a stretching session. */
 export type StretchDone = {
-  routine: RoutineKey;
-  /** The length chosen; null when the exercises were given. */
-  minutes: Minutes | null;
+  /** The routine's key, or the key of the category it was made from. */
+  routine: string;
+  /** The length chosen; null when the exercises were given without one. */
+  minutes: number | null;
   /** When the first exercise began and the session ended, in ms. */
   startedAt: number;
   endedAt: number;
@@ -80,6 +81,13 @@ type Props = {
   exercises?: readonly Exercise[];
   /** The routine whose length is asked first, when no exercises are given. */
   routine?: RoutineKey;
+  /**
+   * What the exercises given are, for whoever keeps the session (TASK-520):
+   * the key of the category they were composed from and their minutes. With
+   * it a session of given exercises is told to `onDone` as one of a routine
+   * is; without it, as before, it has no length and is not kept.
+   */
+  session?: { routine: string; minutes: number };
   /** Told what the session was, just before `onLeave`, once its first
    * exercise has begun (TASK-475, the sport «Stretching»); never when the
    * length was not chosen. */
@@ -120,6 +128,7 @@ export function StretchScreen({
   onLeave,
   exercises,
   routine = "afterRun",
+  session,
   onDone,
 }: Props) {
   const [chosen, setChosen] = useState<readonly Exercise[] | undefined>(exercises);
@@ -135,10 +144,14 @@ export function StretchScreen({
     const done = summary.current?.() ?? null;
     if (done !== null && onDone !== undefined && !told.current) {
       told.current = true;
-      onDone({ routine, minutes, ...done });
+      onDone({
+        routine: session?.routine ?? routine,
+        minutes: session?.minutes ?? minutes,
+        ...done,
+      });
     }
     onLeave();
-  }, [minutes, onDone, onLeave, routine]);
+  }, [minutes, onDone, onLeave, routine, session]);
   return (
     <Modal
       visible

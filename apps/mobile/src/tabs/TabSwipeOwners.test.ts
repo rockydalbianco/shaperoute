@@ -23,6 +23,9 @@ const ROWS = [
   "feed/StyleLens.tsx",
   // In «Draw»: «NEAR YOU».
   "route/NearYou.tsx",
+  // And, for the sport «Stretching», the moments of the day on the
+  // stretching home (TASK-520 part D1).
+  "stretch/StretchHome.tsx",
   // In «Explore», on land and on the water, and its search.
   "explore/CityWords.tsx",
   "explore/ExploreTools.tsx",

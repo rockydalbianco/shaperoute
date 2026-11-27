@@ -40,7 +40,7 @@ import { TOUR_PART } from "../tour/tourSteps";
 import { RunNoRouteButton } from "./RunNoRouteButton";
 import { Segmented } from "./Segmented";
 import { StepTitle } from "./StepTitle";
-import { StretchRoutines } from "../stretchSport/StretchRoutines";
+import { StretchHome } from "../stretch/StretchHome";
 
 /** "My position" also asks the GPS again, as the old button did, so it works
  * after the permission is given in Settings. Translated where shown, with
@@ -188,18 +188,8 @@ export function ChooseScreen({
               hint={t("No route in the gym: MuW times your workout.")}
             />
           ) : recordOnly && stretch ? (
-            // The routines of TASK-466, one ticked, and «Start stretching».
-            <>
-              <StretchRoutines />
-              <RecordDay
-                label={runLabel}
-                icon={runIcon}
-                onPress={onRun}
-                hint={t(
-                  "No route for stretching: choose a routine and MuW guides you.",
-                )}
-              />
-            </>
+            // The stretching home: «Today» and every category (TASK-520).
+            <StretchHome />
           ) : recordOnly ? (
             <>
               <RecordDay

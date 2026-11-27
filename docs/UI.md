@@ -654,7 +654,8 @@ opaca, con «Aumenta contrasto» opaca col bordo `borderStrong`. La fascia
 sotto la barra resta alta quanto prima: le pagine non ci passano sotto.
 
 **La barra in vetro vero** (TASK-469 B2, scelta dell'utente del
-2026-11-26; bozza #1562, arriva con la prossima build nativa): dove il
+2026-11-26; in `main` dal 2026-11-27 con #1562, arriva con la build
+nativa di quel taglio): dove il
 telefono disegna il vetro vero (iOS 26 e seguenti, un'app costruita con
 `expo-glass-effect`) la capsula è il vetro di iOS e **la barra galleggia
 sopra le pagine**, che le passano sotto fino al bordo; la sfocatura tiene
@@ -2633,6 +2634,26 @@ voci stanno ognuna su una riga: quella che non entra si stringe (fino al
 70%) invece di andare a capo fra le altre (TASK-508, `Segmented` con
 `oneLine`; gli altri interruttori dell'app vanno a capo come prima).
 Passare dall'uno all'altro non cancella quanto scritto o scelto negli altri.
+
+Sulla riga del titolo «2 WHAT YOU DRAW», a destra, c'è la pastiglia
+**«Surprise me»** (TASK-448, ADR-0413, `SurprisePill`; scelte dell'utente
+del 2026-11-26), per chi non sa cosa disegnare: un dado a linea e il nome,
+alta 32 punti con tutta la misura del tocco attorno, in rilievo come le
+pastiglie dell'app e mai gialla. Un tocco scrive nella pagina una forma e
+una distanza fra quelle già venute bene vicino alla partenza (i percorsi
+del catalogo di «Explore» entro 10 km; fuori dalle sue città cuore,
+cerchio, stella, luna, smiley, sole o farfalla): la tessera della forma si
+accende, la distanza si sposta, il pulsante giallo dice «Draw a 10.0 km
+star», e se era scelta «Word» o «Image» l'interruttore torna su «Shape».
+Un altro tocco dà un'altra forma; niente si calcola finché non si tocca
+«Draw route», e prima la distanza si può cambiare. A piedi la distanza è 5
+o 10 km, in bici 20, 25 o 30 km con le otto forme del suo catalogo. Mentre
+chiede i percorsi vicini (solo al primo tocco) la pastiglia è attenuata.
+Nessun testo promette che la forma verrà bene: il risultato è un percorso
+come gli altri, e quello che da una partenza viene sotto il 90% non è più
+proposto da lì. C'è con «Run», «Walk» e «Bike»; negli altri sport no. Dove
+titolo e pastiglia non stanno sulla stessa riga, la pastiglia va a capo
+sotto il titolo.
 
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
 scrivendo nel campo, che dal TASK-361 sta dietro «Type another shape»
@@ -5740,7 +5761,10 @@ qui esce dal telefono.
 - **«Protein, carbs and fat (est.)»** (parte H, `nutrition/MacroBars.tsx`),
   sotto i pasti: tre barre, «Protein», «Carbs», «Fat», coi grammi e
   «{percent}% of the energy» (4, 4 e 9 kcal al grammo). Nessun obiettivo e
-  nessun giudizio, barre nel colore del testo. Se un cibo del giorno non ha
+  nessun giudizio. Le barre hanno i tre colori di `protein`, `carbs` e
+  `fat` (parte L, #1686: gli stessi degli anelli delle ricette, scelta
+  dell'utente del 2026-11-27; nella parte H erano nel colore del testo),
+  mai come unico segno: ogni barra ha etichetta e numero. Se un cibo del giorno non ha
   questi numeri: «Counted only for the foods that have these numbers.»; se
   nessuno li ha: «No protein, carbs or fat to count for this day.».
 - **«This week»** (parte H, `nutrition/WeekStrip.tsx`), in fondo: sette

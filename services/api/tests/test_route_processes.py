@@ -14,8 +14,10 @@ from typing import Any
 import pytest
 import route_process_helpers as helpers
 from route_engine.models import RouteRequest
+from route_engine.optimizer import Plan
 
-from shaperoute_api.images import plan_request
+from shaperoute_api.activity_graphs import Ground
+from shaperoute_api.images import AnyRequest, plan_request
 from shaperoute_api.jobs import Job, RouteJobs
 from shaperoute_api.route_processes import RouteProcesses, RouteTimedOut, WorkerDied
 
@@ -101,24 +103,49 @@ def test_post_routes_gets_the_plan_without_directions_as_before(made: Any) -> No
     assert len(plain.alternatives) == len(job.result.alternatives)
 
 
-def test_two_routes_are_drawn_at_once_in_two_processes(made: Any) -> None:
-    processes = made(helpers.nothing, workers=2, planner=helpers.where)
-    request = RouteRequest(start=(46.0, 11.0), shape="circle", distance_m=1000)
-    pids: list[float] = []
+def drawn_when(request: AnyRequest, ground: Ground) -> Plan:
+    """helpers.where (half a second, its pid as the distance), with when it
+    began and ended in the worker: time.monotonic is one clock for every
+    process of the machine. At the top of the module, as the worker imports
+    its planner by name (TASK-524)."""
+    began = time.monotonic()
+    plan = helpers.where(request, ground)
+    return replace(plan, checks={"began": began, "ended": time.monotonic()})
 
-    def draw() -> None:
-        pids.append(processes(request, object()).result.distance_m)  # type: ignore[arg-type]
+
+def test_two_routes_are_drawn_at_once_in_two_processes(made: Any) -> None:
+    """The two routes are drawn side by side, not in turn: each worker's
+    half second overlaps the other's. Measured in the workers, not as the
+    whole time here, which a loaded CI stretched past any fixed limit
+    (TASK-524)."""
+    processes = made(helpers.nothing, workers=2, planner=drawn_when)
+    request = RouteRequest(start=(46.0, 11.0), shape="circle", distance_m=1000)
+
+    def draw_two() -> list[Plan]:
+        plans: list[Plan] = []
+
+        def draw() -> None:
+            plans.append(processes(request, object()))  # type: ignore[arg-type]
+
+        threads = [threading.Thread(target=draw) for _ in range(2)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(WAIT_S)
+        assert len(plans) == 2
+        return plans
 
     processes.start()
-    threads = [threading.Thread(target=draw) for _ in range(2)]
-    began = time.monotonic()
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join(WAIT_S)
-    assert len(set(pids)) == 2
+    # start() does not wait for the workers' imports: a first round, so that
+    # one worker still importing does not start after the other has ended.
+    draw_two()
+    plans = draw_two()
+    pids = {plan.result.distance_m for plan in plans}
+    assert len(pids) == 2
     assert float(os.getpid()) not in pids
-    assert time.monotonic() - began < 0.5 * 2 + 0.4  # side by side, not in turn
+    last_began = max(plan.checks["began"] for plan in plans)
+    first_ended = min(plan.checks["ended"] for plan in plans)
+    assert last_began < first_ended  # side by side, not in turn
 
 
 def test_a_zone_to_download_shows_downloading_map(made: Any) -> None:

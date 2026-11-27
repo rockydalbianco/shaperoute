@@ -1877,6 +1877,116 @@ export const IT: Table = {
   "Knee hug": "Ginocchio al petto",
   "Stand on one leg. Hug the other knee to your chest.":
     "In piedi su una gamba. Stringi l'altro ginocchio al petto.",
+  // src/stretch, the new exercises (TASK-520 part B)
+  "Thread the needle": "Infila l'ago",
+  "On all fours, slide one arm under your body. Rest your shoulder down.":
+    "A quattro zampe, fai scivolare un braccio sotto il corpo. Appoggia la spalla a terra.",
+  "Side child's pose": "Posizione del bambino di lato",
+  "From child's pose, walk both hands to one side. Breathe into your ribs.":
+    "Dalla posizione del bambino, sposta le mani da un lato. Respira nelle costole.",
+  "Wrist stretch, palm up": "Stretching del polso, palmo in su",
+  "Arm straight, palm up. Gently pull your fingers back with the other hand.":
+    "Braccio teso, palmo in su. Con l'altra mano tira piano le dita verso di te.",
+  "Wrist stretch, palm down": "Stretching del polso, palmo in giù",
+  "Arm straight, palm down. Gently press the back of your hand toward you.":
+    "Braccio teso, palmo in giù. Spingi piano il dorso della mano verso di te.",
+  "Biceps stretch": "Stretching del bicipite",
+  "Palm on a wall behind you, arm straight. Turn your chest away.":
+    "Palmo su un muro dietro di te, braccio teso. Gira il petto dall'altra parte.",
+  "Doorway chest stretch": "Stretching del petto alla porta",
+  "Forearm on a door frame, elbow at shoulder height. Step through gently.":
+    "Avambraccio sullo stipite, gomito all'altezza della spalla. Fai piano un passo avanti.",
+  Sphinx: "Sfinge",
+  "Lie on your belly, forearms down. Lift your chest gently.":
+    "Sdraiati a pancia in giù, avambracci a terra. Solleva piano il petto.",
+  "Seated twist": "Torsione da seduto",
+  "Sit tall, one knee bent over the other leg. Turn toward the bent knee.":
+    "Siediti dritto, un ginocchio piegato sopra l'altra gamba. Gira verso il ginocchio piegato.",
+  "Lizard lunge": "Affondo della lucertola",
+  "From a low lunge, both hands inside your front foot. Sink your hips.":
+    "Da un affondo basso, tutte e due le mani all'interno del piede davanti. Lascia scendere il bacino.",
+  "Deep squat": "Squat profondo",
+  "Feet wide, sink low, heels down. Elbows press your knees open.":
+    "Piedi larghi, scendi in basso, talloni a terra. I gomiti spingono le ginocchia in fuori.",
+  "Seated figure four": "Figura a quattro da seduto",
+  "Sit on a chair, ankle over the other knee. Lean forward, back long.":
+    "Seduto su una sedia, una caviglia sull'altro ginocchio. Piegati in avanti, schiena lunga.",
+  "Bent-knee calf stretch": "Polpaccio a ginocchio piegato",
+  "Step back, bend both knees. Keep the back heel down.":
+    "Un passo indietro, piega tutte e due le ginocchia. Tieni a terra il tallone dietro.",
+  "90/90 hips": "Anche 90/90",
+  "Sit with both knees bent at right angles, one in front, one to the side. Sit tall.":
+    "Siediti con le ginocchia piegate ad angolo retto, una davanti e una di lato. Schiena dritta.",
+  "Figure four": "Figura a quattro",
+  "On your back, ankle over the other knee. Pull that thigh toward you.":
+    "Sulla schiena, una caviglia sull'altro ginocchio. Tira quella coscia verso di te.",
+  Pigeon: "Piccione",
+  "Front shin across your mat, back leg long. Fold forward over it.":
+    "Lo stinco davanti di traverso sul tappetino, la gamba dietro lunga. Piegati in avanti sopra.",
+  "Seated forward fold": "Piegamento in avanti da seduto",
+  "Sit with legs straight. Fold forward from your hips, back long.":
+    "Siediti a gambe tese. Piegati in avanti dalle anche, schiena lunga.",
+  "Lying hamstring stretch": "Stretching del posteriore da sdraiato",
+  "On your back, raise one straight leg. Hold behind your thigh.":
+    "Sulla schiena, alza una gamba tesa. Tienila da dietro la coscia.",
+  "Side-lying quad": "Quadricipite sul fianco",
+  "Lie on your side. Pull your top heel toward your glutes.":
+    "Sdraiati su un fianco. Porta il tallone di sopra verso il gluteo.",
+  "Half split": "Mezza spaccata",
+  "Kneel, front leg straight, toes up. Fold over it with a long back.":
+    "In ginocchio, gamba davanti tesa, punta in su. Piegati sopra con la schiena lunga.",
+  "Toe stretch": "Stretching delle dita dei piedi",
+  "Kneel with your toes tucked under. Sit back gently on your heels.":
+    "In ginocchio con le dita dei piedi puntate a terra. Siediti piano sui talloni.",
+  "Shin stretch": "Stretching dello stinco",
+  "Kneel with the tops of your feet flat. Sit back on your heels.":
+    "In ginocchio con il dorso dei piedi a terra. Siediti sui talloni.",
+  "Downward dog": "Cane a testa in giù",
+  "Hands and feet down, hips high. Press your heels toward the floor.":
+    "Mani e piedi a terra, bacino in alto. Spingi i talloni verso terra.",
+  "Legs up the wall": "Gambe al muro",
+  "Lie down with your legs resting up a wall. Arms relaxed.":
+    "Sdraiati con le gambe appoggiate in alto a un muro. Braccia rilassate.",
+  "Resting breath": "Respiro a riposo",
+  "Lie on your back, eyes closed. Breathe slowly into your belly.":
+    "Sdraiati sulla schiena, occhi chiusi. Respira piano nella pancia.",
+  "Chin tuck": "Mento indietro",
+  "Draw your chin straight back, then release. Eyes forward.":
+    "Porta il mento dritto indietro, poi rilascia. Sguardo avanti.",
+  "Arm circles": "Cerchi con le braccia",
+  "Swing your arms in big, slow circles. Change direction halfway.":
+    "Fai grandi cerchi lenti con le braccia. A metà cambia verso.",
+  "Shoulder rolls": "Rotazioni delle spalle",
+  "Roll your shoulders up, back and down. Slow and wide.":
+    "Ruota le spalle in su, indietro e in giù. Lento e ampio.",
+  "Wrist circles": "Cerchi con i polsi",
+  "Make slow circles with both wrists. Change direction halfway.":
+    "Fai cerchi lenti con tutti e due i polsi. A metà cambia verso.",
+  "Cat–cow": "Gatto e mucca",
+  "On all fours, round your back, then let it dip. Move with your breath.":
+    "A quattro zampe, arrotonda la schiena, poi lasciala scendere. Muoviti col respiro.",
+  "Pelvic tilt": "Basculamento del bacino",
+  "Lie on your back, knees bent. Press your lower back down, then release.":
+    "Sdraiati sulla schiena, ginocchia piegate. Premi la zona lombare a terra, poi rilascia.",
+  Bridge: "Ponte",
+  "On your back, knees bent. Lift your hips, then lower slowly.":
+    "Sulla schiena, ginocchia piegate. Solleva il bacino, poi scendi piano.",
+  "Leg swings": "Slanci della gamba",
+  "Hold on to something. Swing one leg forward and back, relaxed.":
+    "Tieniti a qualcosa. Fai oscillare una gamba avanti e indietro, rilassata.",
+  "Lunge with reach": "Affondo con braccia in alto",
+  "Step into a lunge and reach both arms up. Step back and switch.":
+    "Fai un affondo e porta le braccia in alto. Torna indietro e cambia.",
+  "Calf raises": "Sollevamenti sulle punte",
+  "Rise onto your toes, then lower slowly. Hold on if you need to.":
+    "Sali sulle punte, poi scendi piano. Tieniti se serve.",
+  "Ankle circles": "Cerchi con la caviglia",
+  "Lift one foot and draw slow circles with your ankle.":
+    "Solleva un piede e disegna cerchi lenti con la caviglia.",
+  Inchworm: "Bruco",
+  "Fold down, walk your hands out to a plank, then walk them back.":
+    "Piegati in giù, cammina con le mani fino alla plank, poi torna indietro.",
+  // end of TASK-520 part B
   Morning: "Mattino",
   "After run": "Dopo la corsa",
   "After gym": "Dopo la palestra",
@@ -3451,8 +3561,6 @@ export const IT: Table = {
   "(set by you)": "(scritto da te)",
   Left: "Restano",
   "kcal a day": "kcal al giorno",
-  "Your own number, or the one your dietitian gave you. MuW never suggests one.":
-    "Il tuo numero, o quello che ti ha dato il tuo dietista. MuW non ne propone mai uno.",
   "Remove target": "Togli l'obiettivo",
   Breakfast: "Colazione",
   Lunch: "Pranzo",
@@ -3712,4 +3820,53 @@ export const IT: Table = {
     "Scrivi la tua dieta e quello che mangi: MuW stima le calorie che mangi e quelle che consumi, compresa questa attività.",
   "This activity: {kcal} kcal (est.)": "Questa attività: {kcal} kcal (stima)",
   "Add what you ate": "Aggiungi cosa hai mangiato",
+  // src/nutrition (TASK-489 part J: the door of Nutrition and MuW's estimate; approved by the user on 2026-11-24)
+  "Your food diary: what you eat, what you use, and the balance.":
+    "Il tuo diario del cibo: quello che mangi, quello che consumi e il bilancio.",
+  Example: "Esempio",
+  "Write your plan": "Scrivi il tuo piano",
+  "Your own diet, or your dietitian's, day by day.":
+    "La tua dieta, o quella del tuo dietista, giorno per giorno.",
+  "Log what you eat": "Segna quello che mangi",
+  "Foods and grams: MuW estimates the calories.":
+    "Cibi e grammi: MuW stima le calorie.",
+  "See your balance": "Guarda il bilancio",
+  "Eaten less used, with all your activities.":
+    "Mangiate meno consumate, con tutte le tue attività.",
+  "Next@@step": "Avanti",
+  "What brings you here?": "Perché sei qui?",
+  "Keep track of what I eat": "Tenere il conto di quello che mangio",
+  "Lose weight": "Perdere peso",
+  "Gain weight": "Prendere peso",
+  "Follow my dietitian's plan": "Seguire il piano del mio dietista",
+  "You can skip this: it only changes what the page shows first.":
+    "Puoi saltare: cambia solo cosa la pagina mostra per prima.",
+  "To estimate, MuW needs your weight, height, year of birth and sex. They stay on your phone.":
+    "Per stimare, a MuW servono peso, altezza, anno di nascita e sesso. Restano sul tuo telefono.",
+  "You use about {kcal} kcal a day (est.)":
+    "Consumi circa {kcal} kcal al giorno (stima)",
+  "Eating less than you use is a deficit; more is a surplus.":
+    "Mangiare meno di quanto consumi è un deficit; di più, un surplus.",
+  "Best: write your own number, or your dietitian's.":
+    "Meglio: scrivi il tuo numero, o quello del tuo dietista.",
+  "See MuW's estimate (demo)": "Guarda la stima di MuW (demo)",
+  "MuW's estimate: {kcal} kcal a day": "Stima di MuW: {kcal} kcal al giorno",
+  "A rough estimate from a public formula, only a demonstration. MuW is not made by health professionals: this is not medical advice.":
+    "Una stima approssimativa da una formula pubblica, solo dimostrativa. MuW non è fatta da professionisti della salute: non è un consiglio medico.",
+  "If you are pregnant or breastfeeding, have an illness, or have or had an eating disorder, this number is not for you: ask your doctor.":
+    "Se sei in gravidanza o allatti, hai una malattia, o hai o hai avuto un disturbo alimentare, questo numero non fa per te: chiedi al tuo medico.",
+  "Use this number": "Usa questo numero",
+  "I'll write my own": "Scrivo il mio",
+  "MuW suggests no calorie number to people under 18.":
+    "MuW non propone un numero di calorie a chi ha meno di 18 anni.",
+  "From your data MuW suggests no number for this. Talk to your doctor or a dietitian.":
+    "Dai tuoi dati MuW non propone un numero per questo. Parlane con il tuo medico o con un dietista.",
+  "Start@@nutrition": "Inizia",
+  "MuW's estimate of a daily target (demo)":
+    "La stima di MuW per l'obiettivo del giorno (demo)",
+  "A usual day is the average of what you used in your last seven days. To lose weight MuW takes 600 kcal a day off it, the amount the NHS gives, only for adults with a body mass index of 25 or more, and never below 1,400 kcal a day for women or 1,900 for men (NHS 12-week weight loss plan). To gain weight MuW suggests no number. Sources read on 24 November 2026. MuW is not made by health professionals: better to write your own number, or your dietitian's.":
+    "Una giornata tipo è la media di quello che hai consumato negli ultimi sette giorni. Per perdere peso MuW toglie 600 kcal al giorno, la quantità indicata dall'NHS, solo per adulti con indice di massa corporea da 25 in su, e mai sotto 1.400 kcal al giorno per le donne o 1.900 per gli uomini (piano dell'NHS di 12 settimane per perdere peso). Per prendere peso MuW non propone un numero. Fonti lette il 24 novembre 2026. MuW non è fatta da professionisti della salute: meglio scrivere il tuo numero, o quello del tuo dietista.",
+  // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
+  Weather: "Meteo",
+  "Weather: {temperature}, wind {speed}": "Meteo: {temperature}, vento {speed}",
 };

@@ -1,8 +1,9 @@
 /**
  * «My daily target» (TASK-489, ADR-0397, the user's choice of 2026-11-23):
- * a number of kilocalories a day that only the user writes, their own or
- * the one their dietitian gave them. MuW never proposes one and never
- * works one out: nothing here takes a body, a weight or an activity.
+ * a number of kilocalories a day that the user writes, their own or the
+ * one their dietitian gave them. Nothing here takes a body, a weight or an
+ * activity; since part J MuW's estimate (targetEstimate.ts) can be looked
+ * at beside the field and is written only if the user takes it.
  */
 
 /** The values the field takes: whole kilocalories. */

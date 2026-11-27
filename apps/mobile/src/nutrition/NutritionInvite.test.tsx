@@ -100,6 +100,7 @@ test("«Open Nutrition» opens the page with its notice", async () => {
   expect(screen.queryByTestId("nutrition-page")).toBeNull();
   await fireEvent.press(screen.getByTestId("nutrition-invite-open"));
   expect(screen.getByTestId("nutrition-page")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("welcome-next"));
   expect(screen.getByTestId("nutrition-notice")).toBeOnTheScreen();
   // The notice read: under the page the invitation is the way to the diary.
   await fireEvent.press(screen.getByTestId("nutrition-understood"));

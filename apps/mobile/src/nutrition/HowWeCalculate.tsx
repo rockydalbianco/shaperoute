@@ -6,6 +6,21 @@ import { Tap } from "../ui/Tap";
 import { NutritionSheet } from "./AddFoodSheet";
 import { OPEN_FOOD_FACTS_SITE } from "./openFoodFacts";
 
+/** Where the amounts of MuW's estimate come from (part J): the pages read
+ * on 2026-11-24, named as they name themselves. */
+export const ESTIMATE_SOURCES = [
+  {
+    name: "NHS · Calories and weight loss",
+    url: "https://www.nhs.uk/better-health/lose-weight/calorie-counting/",
+    testID: "how-nhs-calories",
+  },
+  {
+    name: "NHS · Losing weight: getting started, week 1",
+    url: "https://assets.nhs.uk/tools/download-panels/data/weight-loss/pdf/wlp1.pdf",
+    testID: "how-nhs-plan",
+  },
+] as const;
+
 type Props = {
   visible: boolean;
   onClose: () => void;
@@ -69,6 +84,25 @@ export function HowWeCalculate({ visible, onClose }: Props) {
             "At rest: the Mifflin-St Jeor equation, from the body data in your profile. Activities: ACSM equations and the 2024 Compendium of Physical Activities. On days when Apple Health has your active energy, that number is used instead.",
           )}
         </Text>
+        <Text style={styles.heading} accessibilityRole="header">
+          {t("MuW's estimate of a daily target (demo)")}
+        </Text>
+        <Text style={styles.text}>
+          {t(
+            "A usual day is the average of what you used in your last seven days. To lose weight MuW takes 600 kcal a day off it, the amount the NHS gives, only for adults with a body mass index of 25 or more, and never below 1,400 kcal a day for women or 1,900 for men (NHS 12-week weight loss plan). To gain weight MuW suggests no number. Sources read on 24 November 2026. MuW is not made by health professionals: better to write your own number, or your dietitian's.",
+          )}
+        </Text>
+        {ESTIMATE_SOURCES.map((source) => (
+          <Tap
+            key={source.url}
+            style={styles.link}
+            onPress={() => void Linking.openURL(source.url)}
+            accessibilityRole="link"
+            testID={source.testID}
+          >
+            <Text style={styles.linkText}>{source.name}</Text>
+          </Tap>
+        ))}
         <Text style={styles.heading} accessibilityRole="header">
           {t("Estimates")}
         </Text>

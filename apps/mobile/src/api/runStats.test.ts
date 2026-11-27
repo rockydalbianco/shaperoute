@@ -1,11 +1,18 @@
 import drawingDetails from "@shaperoute/shared-types/fixtures/drawing-details.json";
 import runStatsRequest from "@shaperoute/shared-types/fixtures/run-stats-request.json";
+import runStatsWeather from "@shaperoute/shared-types/fixtures/run-stats-weather.json";
 import runStats from "@shaperoute/shared-types/fixtures/run-stats.json";
 import skiPartsRequest from "@shaperoute/shared-types/fixtures/ski-parts-request.json";
 import type { DrawingDetail } from "@shaperoute/shared-types";
 
 import { answers } from "../account/testing";
-import { isRunStats, type RunStatsRequest, saveRunStats, statsOf } from "./runStats";
+import {
+  isRunStats,
+  type RunStatsRequest,
+  saveRunStats,
+  statsOf,
+  weatherOf,
+} from "./runStats";
 
 // The figures of a run for the page of its post (TASK-410 part C): the same
 // JSON as the API's test_run_stats.py.
@@ -32,6 +39,7 @@ test("a post reads its figures; one without them has none", () => {
     ski_parts: null,
     ski_descents: null,
     flight_split: null,
+    weather: null,
   });
   // Hidden by its author: the API sent the rest only.
   const hidden = { ...runStats, kcal: null, heart: null };
@@ -48,6 +56,7 @@ test("a post reads its figures; one without them has none", () => {
     ski_parts: null,
     ski_descents: null,
     flight_split: null,
+    weather: null,
   });
 });
 
@@ -106,4 +115,25 @@ test("a race reads its two kinds; a body that is not one is refused (TASK-305 pa
       stats: { ...runStats, flight_split: { foot: split.foot } },
     } as DrawingDetail),
   ).toBeNull();
+});
+
+test("the weather of the end; one that cannot be read is none, the rest stays (TASK-410 part E)", () => {
+  const stats = { ...runStats, ...runStatsWeather };
+  expect(isRunStats(stats)).toBe(true);
+  expect(statsOf({ ...DETAIL, stats } as DrawingDetail)?.weather).toEqual(
+    runStatsWeather.weather,
+  );
+  expect(weatherOf({ temperature_c: 4 })).toEqual({
+    temperature_c: 4,
+    symbol: null,
+    wind_ms: null,
+  });
+  for (const strange of [null, "sunny", { symbol: "fog" }, { temperature_c: "4" }]) {
+    expect(weatherOf(strange)).toBeNull();
+  }
+  const odd = { ...runStats, weather: { temperature_c: "warm" } };
+  expect(isRunStats(odd)).toBe(true);
+  const read = statsOf({ ...DETAIL, stats: odd } as DrawingDetail);
+  expect(read?.weather).toBeNull();
+  expect(read?.kcal).toBe(runStats.kcal);
 });

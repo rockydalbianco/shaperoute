@@ -3,8 +3,10 @@ import { File, Paths } from "expo-file-system";
 import { type Diary, diaryFrom, diaryOfMonth } from "./diary";
 import { type EnergyEdits, energyEditsFrom, NO_EDITS } from "./energyEdits";
 import { type OwnFoods, ownFoodsFrom } from "./ownFoods";
+import { type OwnRecipes, ownRecipesFrom } from "./ownRecipes";
 import { targetOf } from "./ownTarget";
 import { isEmptyPlan, planFrom, type WeekPlan } from "./plan";
+import { type Purpose, purposeOf } from "./targetEstimate";
 
 /**
  * Where «Nutrition» is kept (TASK-489, ADR-0397): only on this phone (the
@@ -20,6 +22,8 @@ import { isEmptyPlan, planFrom, type WeekPlan } from "./plan";
 export const OWN_FOODS_FILE = "nutrition-foods.json";
 export const PLAN_FILE = "nutrition-plan.json";
 export const SETTINGS_FILE = "nutrition-settings.json";
+/** The recipes as the user changed them (part L). */
+export const RECIPES_FILE = "nutrition-recipes.json";
 
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 
@@ -38,6 +42,9 @@ export type NutritionSettings = {
   edits: EnergyEdits;
   /** The invitation at the end of an activity (part I). */
   invite: Invite;
+  /** Why the user is here, as they said at the door (part J); null when
+   * they skipped the question. */
+  purpose: Purpose | null;
 };
 
 /** How often the invitation to «Nutrition» was shown, and whether the user
@@ -64,6 +71,7 @@ export const NO_SETTINGS: NutritionSettings = {
   target: null,
   edits: NO_EDITS,
   invite: NO_INVITE,
+  purpose: null,
 };
 
 /** What of `data` are the settings: a field that does not read is as new. */
@@ -77,6 +85,7 @@ export function settingsFrom(data: unknown): NutritionSettings {
     target: targetOf(raw.target),
     edits: energyEditsFrom(raw.edits),
     invite: inviteFrom(raw.invite),
+    purpose: purposeOf(raw.purpose),
   };
 }
 
@@ -154,4 +163,14 @@ export function saveDiaryMonth(month: string, diary: Diary): boolean {
   }
   const kept = diaryOfMonth(diaryFrom(diary), month);
   return write(diaryFile(month), Object.keys(kept).length === 0 ? null : kept);
+}
+
+export function loadOwnRecipes(): OwnRecipes {
+  return ownRecipesFrom(read(RECIPES_FILE));
+}
+
+/** No recipe changed removes the file. */
+export function saveOwnRecipes(own: OwnRecipes): boolean {
+  const kept = ownRecipesFrom(own);
+  return write(RECIPES_FILE, Object.keys(kept).length === 0 ? null : kept);
 }

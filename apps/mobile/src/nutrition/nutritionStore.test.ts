@@ -6,20 +6,25 @@ import {
   diaryFile,
   loadDiaryMonth,
   loadOwnFoods,
+  loadOwnRecipes,
   loadPlan,
   loadSettings,
   NO_SETTINGS,
   OWN_FOODS_FILE,
   PLAN_FILE,
+  RECIPES_FILE,
   saveDiaryMonth,
   saveOwnFoods,
+  saveOwnRecipes,
   savePlan,
   saveSettings,
   SETTINGS_FILE,
   settingsFrom,
 } from "./nutritionStore";
 import { addOwnFood, NO_OWN_FOODS, removeOwnFood } from "./ownFoods";
+import { muwVersion, NO_OWN_RECIPES, withOwnRecipe } from "./ownRecipes";
 import { NO_MEALS, NO_PLAN, planWithDay, withPortion } from "./plan";
+import { recipeOf } from "./recipes";
 
 // The phone's documents folder, in memory, as in body/bodyProfile.test.ts.
 
@@ -117,6 +122,7 @@ test("the notice read, the target and the corrections are read back", () => {
     target: 1850,
     edits: withActivityKcal(withRest(NO_EDITS, 1540), "run-1", 520),
     invite: { seen: 2, off: true },
+    purpose: "lose" as const,
   };
   expect(saveSettings(settings)).toBe(true);
   expect(disk.files.has(uri(SETTINGS_FILE))).toBe(true);
@@ -187,4 +193,28 @@ test("an invitation's count that does not read is as new", () => {
   expect(settingsFrom({ invite: 7 }).invite).toEqual({ seen: 0, off: false });
   // Settings kept before the invitation existed.
   expect(settingsFrom({ noticeSeen: true }).invite).toEqual({ seen: 0, off: false });
+});
+
+test("a purpose that does not read is none", () => {
+  expect(settingsFrom({ purpose: "gain" }).purpose).toBe("gain");
+  expect(settingsFrom({ purpose: "win" }).purpose).toBeNull();
+  expect(settingsFrom({}).purpose).toBeNull();
+});
+
+test("a recipe the user changed is read back, and none changed removes the file", () => {
+  expect(loadOwnRecipes()).toEqual(NO_OWN_RECIPES);
+  const pasta = recipeOf("pasta-tomato")!;
+  const muw = muwVersion(pasta);
+  const own = withOwnRecipe(NO_OWN_RECIPES, pasta.id, { ...muw, servings: 3 });
+  expect(saveOwnRecipes(own)).toBe(true);
+  expect(disk.files.has(uri(RECIPES_FILE))).toBe(true);
+  expect(RECIPES_FILE).toMatch(/^nutrition-/);
+  expect(loadOwnRecipes()).toEqual(own);
+  saveOwnRecipes(NO_OWN_RECIPES);
+  expect(disk.files.has(uri(RECIPES_FILE))).toBe(false);
+});
+
+test("recipes that do not read are none", () => {
+  disk.files.set(uri(RECIPES_FILE), "{not json");
+  expect(loadOwnRecipes()).toEqual(NO_OWN_RECIPES);
 });

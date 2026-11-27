@@ -169,7 +169,8 @@ def test_the_examples_are_the_bodies() -> None:
     )
     assert request.kcal == 355
     example = _load("run-stats.json")
-    assert set(example) == set(RunStatsBody.model_fields) - SKI_FIELDS
+    # The weather has an example of its own, run-stats-weather.json.
+    assert set(example) == set(RunStatsBody.model_fields) - SKI_FIELDS - {"weather"}
     assert RunStatsBody.model_validate(example).model_dump(exclude_none=True) == example
 
 

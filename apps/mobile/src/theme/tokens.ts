@@ -157,6 +157,32 @@ export type Shade = {
    */
   readonly food: string;
 
+  /**
+   * Protein, carbohydrates and fat, in «Nutrition» (TASK-489 part L,
+   * ADR-0397): the three rings of a recipe and the three bars of the diary
+   * (the user's choice of 2026-11-27, «Sì, stessi colori»). A blue, a violet
+   * and a pink, so none reads as the route (yellow), the calories (red) or
+   * what was eaten (green); 4.5:1 at least on `background`, `surface` and
+   * `surfaceRaised`, 3:1 on `border` (a ring's track), and never the only
+   * sign: each has its label and its number (`macroContrast.test.ts`).
+   */
+  readonly protein: string;
+  readonly carbs: string;
+  readonly fat: string;
+  /**
+   * The covers of the recipes' cards (TASK-489 part L): each recipe has one
+   * of these tints, behind its dish and its calories. The text keeps 4.5:1
+   * on every one, in every tone at every step.
+   */
+  readonly dish: {
+    readonly amber: string;
+    readonly tomato: string;
+    readonly leaf: string;
+    readonly sea: string;
+    readonly plum: string;
+    readonly sand: string;
+  };
+
   readonly map: {
     readonly background: string;
     readonly water: string;
@@ -221,6 +247,17 @@ export const SHADES: Readonly<
       runDay: "#4DD2FF",
       muscle: "#FF6FB5",
       food: "#4FD08A",
+      protein: "#6FA8FF",
+      carbs: "#B892FF",
+      fat: "#FF8AC4",
+      dish: {
+        amber: "#5A3D0C",
+        tomato: "#5E2218",
+        leaf: "#21401F",
+        sea: "#143A4A",
+        plum: "#40214F",
+        sand: "#4A3F2C",
+      },
       map: {
         background: "#100F0C",
         water: "#101F29",
@@ -254,6 +291,17 @@ export const SHADES: Readonly<
       runDay: "#6EDBFF",
       muscle: "#FF8FC5",
       food: "#7BE3AA",
+      protein: "#9CC4FF",
+      carbs: "#CDB2FF",
+      fat: "#FFB0D6",
+      dish: {
+        amber: "#6A4A16",
+        tomato: "#6E2E23",
+        leaf: "#2C4E2A",
+        sea: "#1F4859",
+        plum: "#4D2D5D",
+        sand: "#584C38",
+      },
       map: {
         background: "#2B2925",
         water: "#1F3A4B",
@@ -289,6 +337,17 @@ export const SHADES: Readonly<
       runDay: "#006E94",
       muscle: "#A8185F",
       food: "#095428",
+      protein: "#0F3F8F",
+      carbs: "#4B2696",
+      fat: "#86174F",
+      dish: {
+        amber: "#F2D79B",
+        tomato: "#F1BFAF",
+        leaf: "#C3DDB0",
+        sea: "#B3D6E4",
+        plum: "#D8C0E6",
+        sand: "#E3D5BB",
+      },
       map: {
         background: "#DAD7CF",
         water: "#9CC2D8",
@@ -322,6 +381,17 @@ export const SHADES: Readonly<
       runDay: "#007BA3",
       muscle: "#B81D6A",
       food: "#0F6B35",
+      protein: "#1A4FA8",
+      carbs: "#5A2FB0",
+      fat: "#9E1C5E",
+      dish: {
+        amber: "#FBE6B8",
+        tomato: "#FAD3C6",
+        leaf: "#D8EDC8",
+        sea: "#CDE7F1",
+        plum: "#E8D6F2",
+        sand: "#F0E6D2",
+      },
       map: {
         background: "#F5F4F0",
         water: "#B5D6E8",
@@ -413,6 +483,15 @@ export const GLASS_VEIL = 0.88;
  */
 export const REAL_GLASS_TINT = 0.6;
 
+/**
+ * How much more of the tone's background a sheet of real glass takes than
+ * the tab bar (TASK-469 B4, the user's choice of 2026-11-27, «Sì,
+ * avanti»). A sheet holds running text and its secondary text: with the
+ * bar's tint the comments kept 10:1 over a white photo in the dark tone,
+ * but «Reply» and the time fell just short, at 4.3–4.4:1.
+ */
+export const REAL_GLASS_SHEET_EXTRA = 0.1;
+
 /** The colours of the glass in a tone (TASK-469, ADR-0383). */
 export type GlassColors = {
   /** The tint: the tone's background. */
@@ -432,6 +511,9 @@ export type GlassColors = {
   /** Over the phone's real glass: the tint at `REAL_GLASS_TINT`, as
    * `#RRGGBBAA`. Never yellow. */
   readonly realTint: string;
+  /** Over the real glass of a sheet: the tint `REAL_GLASS_SHEET_EXTRA`
+   * stronger, still under the veil. Never yellow. */
+  readonly realSheetTint: string;
 };
 
 /** `share` (0–1) as the two hex digits of an alpha. */
@@ -510,6 +592,9 @@ export function glassOf(choice: ToneChoice): GlassColors {
     shadow: `${FIXED.scrim}${alphaHex(dark ? 0.55 : 0.16)}`,
     selected: `${palette.text}${alphaHex(0.12)}`,
     realTint: `${palette.background}${alphaHex(realTintShare(palette))}`,
+    realSheetTint: `${palette.background}${alphaHex(
+      Math.min(realTintShare(palette) + REAL_GLASS_SHEET_EXTRA, GLASS_VEIL - 0.02),
+    )}`,
   };
 }
 

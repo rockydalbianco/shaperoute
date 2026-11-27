@@ -16,7 +16,7 @@ import { color } from "../theme/tokens";
 import { askedGroupRun, closeGroupRunPage } from "./groupRunDoor";
 import { GroupRunsRow, useGroupRuns, whenLabel } from "./GroupRunsRow";
 
-const RUNS = row.group_runs as GroupRun[];
+const RUNS = row.group_runs as unknown as GroupRun[];
 const [FIRST, SECOND] = RUNS as [GroupRun, GroupRun];
 
 function answering(status: number, body: unknown) {

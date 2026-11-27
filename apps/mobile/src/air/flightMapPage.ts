@@ -42,6 +42,10 @@ export const AIRSPACE_OPACITY = 0.2;
 export const PRESS_MS = 600;
 /** A finger moving farther than this is no press, points. */
 export const PRESS_SLOP_PX = 12;
+
+/** The wind aloft (part H) is drawn this far from the pilot, in screen
+ * pixels: left and below, clear of the pilot's arrow. */
+export const WIND_BESIDE_PX: readonly [number, number] = [-64, 44];
 /** How see-through the next cylinder of the task is. */
 export const TASK_FILL_OPACITY = 0.15;
 
@@ -284,6 +288,48 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
         },
         "flight-track",
       );
+      // The wind aloft (part H): an arrow where it goes, with its level and
+      // speed, at the place it was asked for; over the track, numbers only.
+      map.addSource("flight-wind", { type: "geojson", data: NONE });
+      map.addLayer({
+        id: "flight-wind-arrow",
+        type: "symbol",
+        source: "flight-wind",
+        layout: {
+          "text-field": "↓",
+          "text-font": ${toScript(LABEL_FONT)},
+          "text-size": 34,
+          "text-rotate": ["get", "from"],
+          "text-rotation-alignment": "map",
+          "text-allow-overlap": true,
+        },
+        paint: {
+          "text-color": ${toScript(palette.text)},
+          "text-halo-color": ${toScript(palette.background)},
+          "text-halo-width": 2,
+          // Beside the pilot's arrow, not over it.
+          "text-translate": ${toScript(WIND_BESIDE_PX)},
+        },
+      });
+      map.addLayer({
+        id: "flight-wind-label",
+        type: "symbol",
+        source: "flight-wind",
+        layout: {
+          "text-field": ["get", "label"],
+          "text-font": ${toScript(LABEL_FONT)},
+          "text-size": 13,
+          "text-offset": [0, 1.8],
+          "text-anchor": "top",
+          "text-allow-overlap": true,
+        },
+        paint: {
+          "text-color": ${toScript(palette.text)},
+          "text-halo-color": ${toScript(palette.background)},
+          "text-halo-width": 1.5,
+          "text-translate": ${toScript(WIND_BESIDE_PX)},
+        },
+      });
       map.addSource("flight-takeoff", { type: "geojson", data: NONE });
       map.addLayer({
         id: "flight-takeoff",
@@ -381,6 +427,13 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
     }
   }
 
+  function setWind(collection) {
+    var source = map.getSource("flight-wind");
+    if (source) {
+      source.setData(collection);
+    }
+  }
+
   function setWaypoints(collection) {
     var source = map.getSource("flight-waypoints");
     if (source) {
@@ -414,6 +467,7 @@ export function buildFlightMapPage(palette: Palette, language: Language): string
     setAirspace: setAirspace,
     setTask: setTask,
     setWaypoints: setWaypoints,
+    setWind: setWind,
   };
 
   // The frames the map drew a second, told every few seconds: what the

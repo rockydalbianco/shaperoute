@@ -22,6 +22,7 @@ import {
   type When,
 } from "./categoryText";
 import { category, type Choice, compose, settle } from "./compose";
+import { useRoutineVideo } from "./RoutineVideoButton";
 import { choiceFor, rememberChoice, useChoices } from "./stretchChoices";
 
 type Props = {
@@ -93,7 +94,8 @@ function Choices<T extends string | number>({
  * have «Before» and «After» at the top. A choice the category does not have
  * for the others made is shown off: nothing is asked that there is not
  * (`compose.ts`). «Start» keeps the choice for the next time and opens the
- * stretching screen on that routine.
+ * stretching screen on that routine. «Export video», at the top, makes a
+ * video of the routine as it is chosen now, to share (part F).
  */
 export function CategoryPage({ categoryKey, onClose }: Props) {
   const choices = useChoices();
@@ -136,10 +138,19 @@ export function CategoryPage({ categoryKey, onClose }: Props) {
     (sum, exercise) => sum + exercise.seconds * (exercise.sides ? 2 : 1),
     0,
   );
+  const video = useRoutineVideo({
+    title: categoryName(key),
+    minutes: routine.choice.minutes,
+    exercises: routine.exercises,
+    tint,
+  });
   return (
     <Modal visible animationType="slide" onRequestClose={onClose}>
       <View style={styles.page} testID="stretch-category">
+        {/* Under the page's content, at its top corner (RunVideo). */}
+        {video.layer}
         <View style={styles.bar}>
+          {video.pill}
           <Tap
             style={styles.close}
             onPress={onClose}
@@ -299,7 +310,9 @@ const styles = StyleSheet.create({
   bar: {
     paddingTop: space.xxl * 1.5,
     paddingHorizontal: space.lg,
-    alignItems: "flex-end",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: space.md,
   },
   close: {
     width: MIN_TAP_SIZE,

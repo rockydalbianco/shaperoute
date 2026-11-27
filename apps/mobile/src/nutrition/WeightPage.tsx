@@ -132,18 +132,21 @@ function Body({ today, now }: { today: LocalDay; now: Date }) {
                   : since}
           </Text>
           {shown.length >= 2 ? (
-            <WeightChart
-              key={`${mode}-${range}`}
-              points={chartPoints(
-                shown.map((entry) => ({
-                  at: daysBetween(stats.start.day, entry.day),
-                  value: valueIn(mode, entry.kg, stats.start.kg),
-                })),
-              )}
-              height={120}
-              dots
-              testID="weight-chart"
-            />
+            // Room under the words: the line's highest dot would touch them.
+            <View style={styles.chart}>
+              <WeightChart
+                key={`${mode}-${range}`}
+                points={chartPoints(
+                  shown.map((entry) => ({
+                    at: daysBetween(stats.start.day, entry.day),
+                    value: valueIn(mode, entry.kg, stats.start.kg),
+                  })),
+                )}
+                height={120}
+                dots
+                testID="weight-chart"
+              />
+            </View>
           ) : (
             <Text style={styles.muted} testID="weight-one">
               {t("One weigh-in so far: the line starts with the next.")}
@@ -453,6 +456,9 @@ const styles = StyleSheet.create({
   section: {
     ...font.cardTitle,
     color: color.text,
+    marginTop: space.md,
+  },
+  chart: {
     marginTop: space.md,
   },
   hero: {

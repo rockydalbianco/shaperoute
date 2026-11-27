@@ -626,8 +626,59 @@ lasciando le righe d'indice.
 - ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza (10 km), chiesti al primo tocco; fuori dal catalogo le forme di riserva; le sorprese venute sotto il 90% ricordate sul telefono · 2026-11-26 · Attiva
 - ADR-0415 — Lo stretching rifatto (TASK-520): una home a categorie con routine composte da un solo elenco di esercizi, i movimenti come respiro largo, la stessa figura vista anche di fronte, gli esercizi nuovi in file nuovi con chiavi stabili · 2026-11-27 · Attiva
 - ADR-0397, precisazione 8 — Il controllo del peso (TASK-489 K1): pesate, obiettivo e tappe dell'account e non del telefono, l'ultima pesata diventa il peso del corpo da quel giorno, obiettivo mai sotto un BMI di 18,5 né prima dei 18 anni, congratulazioni per le tappe dell'utente e la costanza, mai per la velocità · 2026-11-27 · Proposta
+- ADR-0340, precisazione E — Il meteo del post: MET Norway chiesto dal server al salvataggio, entro 3 ore dalla fine, col punto di partenza a ~1 km; neve esclusa; chiesto una volta · 2026-11-27 · Attiva
 
 ## Voci nuove
+
+## ADR-0340, precisazione E — Il meteo del post: MET Norway chiesto dal server al salvataggio, entro 3 ore dalla fine, col punto di partenza a ~1 km; neve esclusa; chiesto una volta
+
+**Stato**: Attiva · 2026-11-27 · TASK-410 parte E (privacy #1663, codice
+#1633, sul server col passo 26). Le scelte di prodotto sono **dell'utente**
+(2026-11-07, scelta 4 «Sì, MET entro 3 ore»; 2026-11-26, E1–E5 in
+`tasks/TASK-410.md`); il come è **deciso dall'agente su delega
+dell'utente**, con la lista dei file approvata dal Coordinatore (fork 3).
+
+**Contesto**: ADR-0340 prevedeva il meteo dell'attività nella pagina del
+post. MET Norway (Locationforecast, CC BY 4.0, già usato per lo sci) non ha
+un archivio: dà le ore dall'ora in corso in avanti. Un archivio storico
+(Open-Meteo) sarebbe un fornitore nuovo, gratuito solo per uso non
+commerciale.
+
+**Decisione**:
+
+1. **Quando**: dopo la risposta a `PUT /me/activities/{key}/stats` (il
+   telefono lo manda una volta dopo il salvataggio), in un compito di
+   FastAPI fuori dalla transazione: un MET lento non trattiene il telefono,
+   `activities.py` non cambia. Solo se l'ora del server è entro 3 ore dalla
+   fine della corsa; l'ora di MET che contiene la fine o, senza ore passate,
+   la più vicina entro 3 ore.
+2. **Quali corse**: registrate con MuW (`source = muw`), con una traccia,
+   non sulla neve (`skiing`, `xc_skiing`, `ski_touring`, `snowshoeing`: per
+   la neve la Privacy promette a MET la posizione della stazione, mai
+   quella dell'utente). Importate, scritte a mano o arrivate tardi: nessun
+   meteo, nessuna card (E3).
+3. **Cosa va a MET**: il primo punto della traccia arrotondato a 2 decimali
+   (~1 km), senza altitudine né nome; lo stesso trasporto dello sci
+   (`MetTransport`: User-Agent, contatto, timeout), una cache sua.
+4. **Chiesto una volta**: il risultato va in `run_stats.stats.weather`
+   (`temperature_c`, `symbol`, `wind_ms`, al decimo); senza risposta o
+   senza una temperatura leggibile resta `weather: null` e non si riprova,
+   nemmeno a un altro `PUT …/stats`, che conserva il valore.
+5. **Chi lo vede**: chi vede il disegno, come le altre stats (non dice
+   niente del corpo). Si accende solo nel server avviato da `__main__`
+   (`install_run_weather`): un'app di `create_app`, come nei test, non va
+   mai in rete.
+6. **L'app**: la card «Weather» sotto il riepilogo (simbolo e temperatura
+   grandi, il vento sotto; °F e mph con le miglia, come lo sci), senza
+   credito (E2: il credito MET sta nei Termini, «Services of others»). Un
+   meteo che l'app non sa leggere vale nessuno, senza rifiutare le altre
+   stats.
+
+**Conseguenze**: il meteo esiste solo per le corse salvate da quando il
+passo 26 è sul server, e per nessuna corsa vecchia; è l'ora in cui il
+server chiede, al più 3 ore dopo la fine, non sempre quella della corsa;
+nessuna migrazione e nessuna variabile nuova (`SHAPEROUTE_MET_CONTACT`
+c'era); la card arriva sui telefoni con un OTA.
 
 ## ADR-0397, precisazione 8 — Il controllo del peso: le pesate dell'account, il peso del corpo aggiornato, l'obiettivo dentro una soglia citata
 

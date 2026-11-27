@@ -1,6 +1,6 @@
 # TASK-410 — La pagina del post: più dati e più ordine
 
-**Stato**: In lavorazione — B, F, C e D (#1043) in `main` (2026-11-10); D esce con l'OTA 3; A è TASK-355 B; poi E
+**Stato**: Done — B, F, C, D (2026-11-10) ed E (2026-11-27) in `main` e sul server; A è TASK-355 B
 **Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
 per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
 
@@ -769,6 +769,32 @@ Coordinatore) in inglese (⛅ 14°, «Wind 12 km/h») e in italiano (☀️ −3
 Restano: la PR di privacy al «tocca a te», poi il merge di #1633, il passo
 sul server (lo chiede il Coordinatore) e l'OTA, ognuno col sì dell'utente.
 
+**Chiusura della parte E (2026-11-27).** Privacy #1663 in `main` e online
+(copia del sito a `a8cadc45`, il 2026-11-27); codice #1633 in `main`
+(`1dfe50bb`) e sul server col passo 26 (`0c40a3dc`, parola del
+Coordinatore): da allora il server chiede il meteo a MET al salvataggio di
+una corsa. La card arriva sui telefoni col prossimo OTA di produzione (lo
+tiene il Coordinatore, col sì dell'utente). Decisioni in «ADR-0340,
+precisazione E».
+
+Restano, fuori da questa sessione:
+
+- **La prima corsa vera col meteo**: contare sul server le corse con
+  `stats ? 'weather'` e con `stats->>'weather'` non nullo dopo il passo 26.
+  Una lettura del database di produzione dalla sessione del task è stata
+  negata dal classificatore (2026-11-27): la fa l'utente, o chi lui
+  incarica, con una query in sola lettura (`out/TASK-410-e/prima-corsa.sh`
+  della copia principale). Il log dell'API scrive solo quando MET non
+  risponde («MET Norway: …; the run has no weather»), non quando il meteo
+  si salva.
+- **La prova sul telefono** dopo l'OTA: una corsa all'aperto salvata subito
+  ha la card «Weather» sotto il riepilogo; una giornata di sci no.
+
 ## Esito
 
-*(a fine task)*
+Done il 2026-11-27. La pagina del post (B), la card del Feed come la pagina
+(F), `run_stats` sul server (C), le sezioni (D) e il meteo di MET al
+salvataggio (E) sono in `main` e sul server; B, F, C e D in produzione, la
+card del meteo col prossimo OTA. La foto dell'autore (A) è TASK-355 B.
+Restano solo la verifica della prima corsa col meteo sul server e la prova
+sul telefono (sopra).

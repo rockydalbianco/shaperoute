@@ -75,6 +75,13 @@ test("with no choice the app is dark at its darkest (ADR-0046), warm (ADR-0293)"
       intimacy: "#FF6FB5",
       more: "#4FD08A",
     },
+    section: {
+      draw: "#F5A066",
+      profile: "#A99BFF",
+      explore: "#4DD2FF",
+      feed: "#E3C596",
+      messages: "#4FD08A",
+    },
     strava: "#FC5200",
     onStrava: "#FFFFFF",
     ski: { descent: "#FFD02B", lift: "#FF5A4E", onLine: "#0B0A08" },

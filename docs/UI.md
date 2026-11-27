@@ -6253,5 +6253,6 @@ Regole per chi rifà una pagina:
 - mai un genitore con l'opacità che parte da 0 sopra del vetro vero (vedi
   «Il vetro vero e l'opacità»).
 
-Nella barra delle schede il colore di sezione non colora le icone: va
-nella capsula della scheda aperta (parte T di TASK-523, ancora da fare).
+La barra delle schede non prende il colore di sezione: resta il vetro di
+«Capsula» con la sua capsula trasparente (scelta dell'utente del
+2026-11-27, ADR-0417 precisazione).

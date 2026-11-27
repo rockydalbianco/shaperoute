@@ -2102,6 +2102,22 @@ export const FR: Table = {
   "1 session · {minutes} min": "1 séance · {minutes} min",
   "After your activity today": "Après votre activité du jour",
   // end of TASK-520 part D
+  // src/stretch, the exercise's page (TASK-520 part E)
+  "Breathe in": "Inspirez",
+  "Breathe out": "Expirez",
+  Hold: "Maintien",
+  Sides: "Côtés",
+  Position: "Position",
+  Both: "Les deux",
+  One: "Un seul",
+  Standing: "Debout",
+  Chair: "Chaise",
+  Floor: "Sol",
+  "How to": "Comment faire",
+  "Good for": "Bon pour",
+  "Try it · {minutes} min": "Essayez · {minutes} min",
+  "Play@@timer": "Reprendre",
+  // end of TASK-520 part E
   Morning: "Matin",
   "After run": "Après la course",
   "After gym": "Après la salle",

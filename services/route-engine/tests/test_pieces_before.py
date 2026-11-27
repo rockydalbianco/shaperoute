@@ -20,9 +20,10 @@ TRENTO = (46.0671, 11.1214)
 # 100 m: `_digest` of the result, its points and walks. Shapes at 6 km
 # (cat, fish, the heads and the pumpkin have `lift` now: asked without the
 # pen up, as the app asks for every shape), words at 3 km a letter, 6 at
-# least, with the pen down and up.
+# least, with the pen down and up. Since TASK-522 the A of the CIAO with the
+# pen up has its apex (ADR-0418): another route, the others the same.
 ROUTES = {
-    "penup:ciao": ("e54d4d83296c6a06", 157, [[50, 60], [84, 92], [109, 121]]),
+    "penup:ciao": ("4738f558c0a7d066", 151, [[44, 53], [73, 79], [111, 122]]),
     "penup:io": ("7bddc7e90a0e2be7", 71, [[24, 34]]),
     "shape:butterfly": ("2b51efb8988b2518", 63, []),
     "shape:cat": ("c4bd50e6d09184c5", 63, []),

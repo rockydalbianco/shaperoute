@@ -5,6 +5,7 @@ import { t } from "../i18n";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
 import { setLiveAtStart, useLiveAtStart } from "./liveAtStart";
 import { GPS_READY_M, type GpsState, gpsLine } from "./useGpsAccuracy";
+import { WindCard } from "./WindCard";
 
 type Props = {
   gps: GpsState;
@@ -41,6 +42,8 @@ export function ReadyToFly({ gps, signedIn }: Props) {
           </Text>
         </View>
       )}
+      {/* Part H: the wind aloft, where the phone is. */}
+      {gps.kind === "fix" ? <WindCard /> : null}
       {signedIn && (
         <>
           <SwitchRow

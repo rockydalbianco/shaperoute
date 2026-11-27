@@ -122,11 +122,13 @@ class _Source:
 # route and gains an alternative, 0.71, from a nearby start that had 0.65;
 # the CIAO with the pen up has the same route and alternatives, found
 # otherwise from the nearby starts.
+# Since TASK-522 the A of the CIAO with the pen up has its apex (ADR-0418):
+# another route, the others the same.
 BEFORE: dict[str, str | tuple[str, ...]] = {
     "grid heart 5000": "3df8155c69e599f7",
     "levico heart 2000": ("60333137c30f1143", "b9ea27acaea65287"),  # CI, Mac
     "town CIAO 12000": "996dd61ff0eeaf94",
-    "town CIAO pen up 12000": "7e88ef490a83b5e3",
+    "town CIAO pen up 12000": "22195c9b1b48dc11",
     "town circle 10000": "96eb22388f95078e",
     "town heart 8000": "119e273752d00e31",
     "town star 5000": "7f04b4996a3ec2d2",

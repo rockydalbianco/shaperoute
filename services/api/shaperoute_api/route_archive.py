@@ -95,7 +95,12 @@ from shaperoute_api.best_routes import line_key
 from shaperoute_api.db import Database
 from shaperoute_api.job_times import noted
 from shaperoute_api.jobs import with_choices
-from shaperoute_api.route_store import KEEP_S, engine_fingerprint, result_from
+from shaperoute_api.route_store import (
+    KEEP_S,
+    engine_fingerprint,
+    kept_engine,
+    result_from,
+)
 
 log = logging.getLogger(__name__)
 
@@ -433,7 +438,7 @@ class RouteArchive:
     def _key(self, request: RouteRequest) -> dict[str, Any]:
         """What makes two requests the same one (route_store._same)."""
         return {
-            "engine": self._engine,
+            "engine": kept_engine(request, self._engine),
             "shape": request.shape,
             "word": request.word,
             "style": request.style,

@@ -181,7 +181,17 @@ export function DiaryView({ today, now }: Props) {
       </View>
 
       {day === today && <Celebration />}
-      {day === today && <WeighInCard today={today} />}
+      {day === today && (
+        <WeighInCard
+          today={today}
+          // Only for who took MuW's estimate: a number the user wrote stays theirs.
+          onRecalculate={
+            nutrition.settings.targetFromEstimate
+              ? () => setTargetOpen(true)
+              : undefined
+          }
+        />
+      )}
 
       <View style={styles.card}>
         <View style={styles.top}>
@@ -288,8 +298,8 @@ export function DiaryView({ today, now }: Props) {
       <TargetSheet
         visible={targetOpen}
         target={target}
-        onTarget={(kcal) => {
-          writeTarget(kcal);
+        onTarget={(kcal, fromEstimate) => {
+          writeTarget(kcal, fromEstimate);
           setTargetOpen(false);
         }}
         onClose={() => setTargetOpen(false)}

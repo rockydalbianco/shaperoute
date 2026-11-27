@@ -3,6 +3,8 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react-n
 
 import { ActivitiesContext, type ActivitiesDoor } from "../activities/activitiesDoor";
 import type { Activity } from "../api/activities";
+import { appBody, saveBody } from "../body/bodyProfile";
+import { NO_WEIGH_INS, saveWeighIns } from "../body/weighIns";
 import { saveLanguageChoice } from "../i18n/language";
 import { color } from "../theme/tokens";
 import { diaryDayLabel, DiaryView } from "./DiaryView";
@@ -217,6 +219,38 @@ test("the target is the number the user writes, with what is left of it", async 
   await addFood("lunch", "pasta cooked", PASTA, "180");
   await fireEvent.press(screen.getByTestId("add-food-confirm"));
   expect(screen.getByTestId("diary-left")).toHaveTextContent("Left 1716");
+});
+
+test("after a weigh-in only MuW's estimate offers to be worked out again", async () => {
+  const body = appBody();
+  await act(async () => {
+    writeTarget(1900, true);
+  });
+  await render(<DiaryView today={TODAY} />);
+  await fireEvent.changeText(screen.getByTestId("weigh-in-input"), "80");
+  await fireEvent.press(screen.getByTestId("weigh-in-save"));
+  await fireEvent.press(screen.getByTestId("weigh-in-recalculate"));
+  expect(screen.getByTestId("target-input")).toHaveDisplayValue("1900");
+  await act(async () => {
+    saveWeighIns(NO_WEIGH_INS);
+    saveBody(body);
+  });
+});
+
+test("after a weigh-in a target the user wrote stays theirs", async () => {
+  const body = appBody();
+  await act(async () => {
+    writeTarget(1900);
+  });
+  await render(<DiaryView today={TODAY} />);
+  await fireEvent.changeText(screen.getByTestId("weigh-in-input"), "80");
+  await fireEvent.press(screen.getByTestId("weigh-in-save"));
+  expect(screen.getByTestId("weigh-in-saved")).toBeOnTheScreen();
+  expect(screen.queryByTestId("weigh-in-recalculate")).toBeNull();
+  await act(async () => {
+    saveWeighIns(NO_WEIGH_INS);
+    saveBody(body);
+  });
 });
 
 test("the target can be taken away", async () => {

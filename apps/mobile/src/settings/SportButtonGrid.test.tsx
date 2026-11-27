@@ -2,13 +2,15 @@ import { fireEvent, render, screen, within } from "@testing-library/react-native
 import { StyleSheet } from "react-native";
 
 import { ALL_SPORTS, loadSport, saveSport, SPORTS, type SportOption } from "./sport";
+import { SportButton } from "./SportButton";
 import {
-  pairWidth,
+  headerHang,
+  PER_ROW,
   panelMaxHeight,
-  SportButton,
+  rowTileWidth,
   tileHeight,
   tileWidth,
-} from "./SportButton";
+} from "./SportMenu";
 import { FAMILY_OF, groupSports, SPORT_FAMILIES } from "./sportFamilies";
 
 jest.mock(
@@ -74,12 +76,13 @@ test("a family with no sport has no title", async () => {
   expect(screen.queryByTestId("sport-family-water")).toBeNull();
 });
 
-test("the tiles are large, two to a row, and the one chosen stands out", async () => {
+test("the tiles are small, three to a row, and the one chosen stands out", async () => {
   await render(<SportButton sports={MIXED} />);
   await open();
-  // The test window is 750 wide: two tiles and their gap fill the panel.
+  // The test window is 750 wide: three tiles and their gaps fill the panel.
+  expect(PER_ROW).toBe(3);
   const width = tileWidth(750);
-  expect(width).toBeGreaterThan(300);
+  expect(width).toBeGreaterThan(200);
   expect(boxOf("run").width).toBe(width);
   expect(boxOf("walk").width).toBe(width);
   expect(boxOf("paddle").width).toBe(width);
@@ -90,26 +93,29 @@ test("the tiles are large, two to a row, and the one chosen stands out", async (
 });
 
 test.each([320, 375, 390, 393, 402, 428, 430, 440])(
-  "on a phone %i wide two tiles fit in a row, the panel's edge counted",
+  "on a phone %i wide three tiles fit in a row, the panel's edge counted",
   (window) => {
     const width = tileWidth(window);
-    // The panel 16 from each side, its edge 1, 12 inside, 8 between the two.
-    expect(width * 2 + 8 + 12 * 2 + 1 * 2 + 16 * 2).toBeLessThan(window);
-    expect(width).toBeGreaterThanOrEqual(window === 320 ? 120 : 150);
+    // The panel 16 from each side, its edge 1, 12 inside, 8 between two.
+    expect(width * 3 + 8 * 2 + 12 * 2 + 1 * 2 + 16 * 2).toBeLessThan(window);
+    // Wide enough for «Scialpinismo» or «Cross-country ski» on two lines,
+    // and taller than a finger (TASK-512).
+    expect(width).toBeGreaterThanOrEqual(window === 320 ? 80 : 95);
+    expect(tileHeight(width)).toBeGreaterThanOrEqual(window === 320 ? 64 : 76);
   },
 );
 
 test("the tiles follow the panel's inside as laid out", async () => {
   await render(<SportButton sports={MIXED} />);
   await open();
-  // The panel is laid out 356 wide inside: two tiles, the gap and the padding.
+  // The panel is laid out 356 wide inside: three tiles, the gaps, the padding.
   await fireEvent(screen.getByTestId("sport-scroll"), "layout", {
     nativeEvent: { layout: { x: 0, y: 0, width: 356, height: 500 } },
   });
   const width = boxOf("run").width ?? 0;
-  expect(width).toBe(pairWidth(356));
-  expect(width * 2 + 8 + 12 * 2).toBeLessThanOrEqual(356);
-  expect(width).toBeGreaterThanOrEqual(160);
+  expect(width).toBe(rowTileWidth(356));
+  expect(width * 3 + 8 * 2 + 12 * 2).toBeLessThanOrEqual(356);
+  expect(width).toBeGreaterThanOrEqual(100);
 });
 
 test("a tile chosen saves the sport and closes the panel", async () => {
@@ -179,15 +185,18 @@ test("VoiceOver reads each tile's name and state, never the emoji alone", async 
   expect(screen.getAllByRole("header").length).toBeGreaterThanOrEqual(4);
 });
 
-test("on a small phone the panel scrolls: its tiles are taller than it", async () => {
-  // iPhone SE: 375 × 667, the panel under a header at 20 + 8 + 44 + 4.
-  const max = panelMaxHeight(667, 76, 0);
+test("on a common phone the sports' rows fit the panel; what does not, scrolls", async () => {
+  // TASK-512 (the 11-23 try-out: «Gym» two scrolls down). iPhone 13–16:
+  // 390 × 844, the header's button 47 from the top, a bottom inset of 34.
+  const max = panelMaxHeight(844, headerHang(47), 34);
   const rows = groupSports(SPORTS).reduce(
-    (sum, g) => sum + Math.ceil(g.sports.length / 2),
+    (sum, g) => sum + Math.ceil(g.sports.length / PER_ROW),
     0,
   );
-  const tiles = rows * tileHeight(tileWidth(375));
-  expect(tiles).toBeGreaterThan(max);
+  // Seven rows of three in place of nine of two.
+  expect(rows).toBe(7);
+  const tiles = rows * tileHeight(tileWidth(390));
+  expect(tiles).toBeLessThan(max);
   await render(<SportButton />);
   await open();
   const panel = StyleSheet.flatten(

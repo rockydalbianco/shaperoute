@@ -131,10 +131,11 @@ const WITH_SKI: SportOption[] = [
   { id: "ski", emoji: "⛷️", name: "Ski", ready: true, recordOnly: true },
 ];
 
-test("the row of «Ski» says it turns MuW into a ski app", async () => {
+test("the tile of «Ski» tells the screen reader it turns MuW into a ski app", async () => {
   await render(<SportButton sports={WITH_SKI} />);
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
-  expect(screen.getByText("Turns MuW into your ski app")).toBeOnTheScreen();
+  // Not written on the small tile since TASK-512: only its hint says it.
+  expect(screen.queryByText("Turns MuW into your ski app")).toBeNull();
   expect(screen.getByRole("radio", { name: "Ski" })).toHaveProp(
     "accessibilityHint",
     "Turns MuW into your ski app",

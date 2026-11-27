@@ -492,3 +492,16 @@ test("«Privacy» says a saved flight counts, without a name, in the history of 
     expect(text).toMatch(/OpenStreetMap\./);
   }
 });
+
+test("«Privacy» says the group runs and the groups nearby are found with the position rounded to about 1 km (TASK-309 B2, TASK-495 D)", () => {
+  const nearby: Record<Language, RegExp> = {
+    en: /rounded to about 1 km to find [^.]*towns, drawings, group runs and groups nearby/,
+    it: /arrotondata a circa 1 km per trovare [^.]*i paesi, i disegni, le corse di gruppo e i gruppi vicini/,
+    de: /Auf etwa 1 km gerundet [^.]*Orte, Zeichnungen, Gruppenläufe und Gruppen in der Nähe/,
+    fr: /arrondie à environ 1 km pour trouver [^.]*les villes, les dessins, les courses en groupe et les groupes proches/,
+    es: /redondeada a cerca de 1 km para encontrar [^.]*los pueblos, los dibujos, las carreras en grupo y los grupos cercanos/,
+  };
+  for (const [language, content] of CONTENTS) {
+    expect(all(content.privacy)).toMatch(nearby[language]);
+  }
+});

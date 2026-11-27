@@ -26,7 +26,10 @@ the members see: who is outside sees how many they are (GRUPPI.md §5,
 Four pushes (push.py): a request to join, to the admin and the
 co-admins; the request accepted, to who asked; an invite, to who is
 invited; the group deleted by its admin («Delete group», part A3), to its
-members, opening nothing. The outings of a group, and their push, come with part C.
+members, opening nothing. The outings of a group and their push are group
+runs (group_runs.py, part C): this module lists them on the group's page
+(GET /groups/{id}/outings) and cancels the upcoming ones of who leaves or
+is taken out.
 
 Deleting an account deletes its memberships, requests and invites (ON
 DELETE CASCADE), after the admin's role is passed (before_account_delete).
@@ -96,7 +99,7 @@ from shaperoute_api.follows import (
     checked_query,
     like_itself,
 )
-from shaperoute_api.group_runs import _text
+from shaperoute_api.group_runs import GroupRuns, ProfileGroupRunsBody, _text
 from shaperoute_api.images import decode_image
 from shaperoute_api.profile_photos import (
     MAX_UPLOADS_PER_MINUTE,
@@ -657,6 +660,19 @@ class Groups:
             total=total["n"],
         )
 
+    def _runs(self) -> GroupRuns:
+        return GroupRuns(self.database, self.now, self.pusher_of)
+
+    def outings(
+        self, viewer_id: int, group_id: UUID, reads: Reads = EVERYTHING
+    ) -> ProfileGroupRunsBody:
+        """«Next outings» and «Past outings» (GRUPPI.md §5): 404 as for the
+        group itself; then the outings `viewer_id` sees, the members' only
+        to the members (group_runs.seen_sql)."""
+        with self.database.connect() as conn:
+            self._seen(conn, viewer_id, group_id)
+            return self._runs().of_group(conn, viewer_id, group_id, reads)
+
     def activity(
         self,
         viewer_id: int,
@@ -961,8 +977,10 @@ class Groups:
         _tell(self.pusher_of, told)
 
     def leave(self, user_id: int, group_id: UUID) -> None:
-        """Out of the group; a request withdrawn, an invite refused. The
-        admin, only as the last member: then the group is gone."""
+        """Out of the group, its upcoming outings there cancelled (GRUPPI.md
+        §6); a request withdrawn, an invite refused. The admin, only as the
+        last member: then the group is gone, with its outings."""
+        runs = self._runs()
         with self.database.connect() as conn:
             row = self._seen(conn, user_id, group_id, lock=True)
             if row["role"] == "admin":
@@ -970,11 +988,13 @@ class Groups:
                     raise AccountError(422, "invalid_request", PASS_FIRST)
                 conn.execute("DELETE FROM groups WHERE id = %s", (group_id,))
                 return
+            told = runs.cancel_outings_of(conn, user_id, group_id)
             conn.execute(
                 "DELETE FROM group_members WHERE group_id = %s AND user_id = %s",
                 (group_id, user_id),
             )
             self._forget(conn, group_id, user_id)
+        runs.tell_cancelled(told)
 
     def accept(self, user_id: int, group_id: UUID, public_id: str) -> None:
         """A request accepted by the admin or a co-admin, and who asked is
@@ -1064,7 +1084,9 @@ class Groups:
 
     def remove(self, user_id: int, group_id: UUID, public_id: str) -> None:
         """A member taken out by the admin, or a member (not a co-admin) by
-        a co-admin. It may ask again (GRUPPI.md §4)."""
+        a co-admin. It may ask again (GRUPPI.md §4). Its upcoming outings
+        there are cancelled (§6)."""
+        runs = self._runs()
         with self.database.connect() as conn:
             row = self._admin_or_co(conn, user_id, group_id, lock=True)
             other = _account(conn, public_id)
@@ -1075,10 +1097,12 @@ class Groups:
                 raise AccountError(403, "http_error", NOT_THE_ADMIN)
             if role == "coadmin" and row["role"] != "admin":
                 raise AccountError(403, "http_error", ONLY_ADMIN)
+            told = runs.cancel_outings_of(conn, other, group_id)
             conn.execute(
                 "DELETE FROM group_members WHERE group_id = %s AND user_id = %s",
                 (group_id, other),
             )
+        runs.tell_cancelled(told)
 
     def set_role(
         self, user_id: int, group_id: UUID, public_id: str, role: Role
@@ -1301,6 +1325,12 @@ def group_routes() -> APIRouter:
     ) -> Response:
         groups.set_role(user.id, group_id, public_id, body.role)
         return Response(status_code=204)
+
+    @router.get("/groups/{group_id}/outings", responses=NOT_FOUND)
+    def outings(
+        group_id: UUID, groups: Them, user: User, reads: Shown
+    ) -> ProfileGroupRunsBody:
+        return groups.outings(user.id, group_id, reads)
 
     @router.get("/groups/{group_id}/activity", responses=NOT_FOUND)
     def activity(

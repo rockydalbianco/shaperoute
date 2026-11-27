@@ -1,9 +1,12 @@
 # TASK-493 — La mappa dei decolli: i siti di volo con lo storico di MuW
 
-**Stato**: Proposto · parte 0 (questa PR, soli documenti), scelte
-dell'utente fatte il 2026-11-23; prossima la parte A
-**Fase**: 5 · **Branch**: `docs/TASK-493-494-takeoffs-glider-checks` (parte 0), poi
-`feat/TASK-493-<parte>-…` per ogni parte
+**Stato**: Done · 2026-11-27 · parti 0, A, B, C e l'accensione in main;
+la parte D (il vento) non è fatta e passa a un task nuovo dopo TASK-479 H
+(vedi «Esito»)
+**Fase**: 5 · **Branch**: `docs/TASK-493-494-takeoffs-glider-checks` (parte 0),
+`feat/TASK-493-a-flying-sites`, `feat/TASK-493-b-flying-history`,
+`feat/TASK-493-c1-flying-sites-client`, `feat/TASK-493-c-takeoff-map`,
+`feat/TASK-493-privacy`, `feat/TASK-493-turn-on`, `docs/TASK-493-done`
 **ADR**: ADR-0400 · numeri dal Coordinatore (fork 3), 2026-11-23
 
 ## Obiettivo
@@ -125,15 +128,15 @@ delle parti (A → B → C → D) è **deciso dall'agente su delega dell'utente*
 
 ## Criteri di accettazione (per tutto il task)
 
-- [ ] La mappa mostra i decolli e gli atterraggi di OSM con
+- [x] La mappa mostra i decolli e gli atterraggi di OSM con
       l'attribuzione, anche senza account.
-- [ ] La scheda di un decollo mostra quota, dislivello, orientamento se
+- [x] La scheda di un decollo mostra quota, dislivello, orientamento se
       OSM lo dice, e lo storico contato dal server.
-- [ ] Sotto la soglia dei piloti i numeri non si vedono.
-- [ ] Un volo privato non dà mai un nome né una traccia a chi non è il
+- [x] Sotto la soglia dei piloti i numeri non si vedono.
+- [x] Un volo privato non dà mai un nome né una traccia a chi non è il
       suo pilota.
-- [ ] Nessun testo giudica le condizioni («volabile», «sicuro»).
-- [ ] La privacy lo dice nelle cinque lingue e sul sito prima dell'uscita;
+- [x] Nessun testo giudica le condizioni («volabile», «sicuro»).
+- [x] La privacy lo dice nelle cinque lingue e sul sito prima dell'uscita;
       server e OTA col sì dell'utente.
 
 ## File toccati
@@ -148,7 +151,30 @@ docs/STATUS.md
 docs/INDEX.md
 ```
 
-Le liste delle parti si scrivono qui prima di ogni parte, dopo il via del
+Parti A–C e accensione (liste approvate dal Coordinatore prima di ogni
+parte; le due righe in `src/air/FlightPage.tsx` col via della sessione di
+TASK-479):
+
+```
+services/api/migrations/0086_flying_sites.sql                         (A)
+services/api/shaperoute_api/flying_sites.py, flying_sites_extract.py  (A)
+services/api/shaperoute_api/flying_history.py                         (B)
+services/api/shaperoute_api/app.py                                    (A, B: una riga)
+services/api/tests/test_flying_sites*.py, test_flying_history.py,
+  fixtures/flying_sites.osm.xml                                       (A, B)
+packages/shared-types/src/flyingSites.ts, index.ts, fixtures/flying-*.json (C1)
+apps/mobile/src/api/flyingSites.ts                                    (C1)
+apps/mobile/src/takeoffs/*                                            (C2, accensione)
+apps/mobile/src/air/FlightPage.tsx                                    (C2: due righe)
+apps/mobile/src/i18n/{it,de,fr,es}.ts                                 (C2)
+apps/mobile/src/about/content/*.ts, about/documents.test.ts,
+  site/privacy/*/index.html                                           (privacy)
+docs/API.md, docs/DATABASE.md, docs/MAPS.md, docs/UI.md
+docs/tasks/TASK-493.md, docs/STATUS.md, docs/DECISIONS.md,
+  docs/archive/COMPLETATI.md                                          (chiusura)
+```
+
+Le liste delle parti si scrivevano qui prima di ogni parte, dopo il via del
 Coordinatore; nessun file di `src/air/` senza il via della sessione di
 TASK-479.
 
@@ -161,4 +187,47 @@ TASK-479.
 
 ## Esito
 
-*(a fine task)*
+**Done il 2026-11-27** con le parti 0, A, B, C, la privacy e l'accensione.
+L'OTA sulla 1.2.0 e la prova sul telefono restano **dopo la chiusura**
+(parola del Coordinatore, 2026-11-27): il task non resta aperto per loro.
+
+PR, tutte in `main`:
+
+- parte 0: #1514 (task, ADR-0400, ADR-0401 di TASK-494);
+- A, i siti sul server: #1518 (`453e7ec4`), migrazione `0086_flying_sites`,
+  `GET /flying-sites` e `GET /flying-sites/{id}`, l'estrattore
+  `shaperoute_api.flying_sites_extract`;
+- B, lo storico: #1589 (`b2d429ac`), `GET /flying-sites/{id}/history`;
+- C1, i tipi e il client: #1635 (`35937653`), `fetchLandings` usato anche
+  da TASK-479 D6;
+- C2, la mappa e la scheda: #1645; privacy: #1646 (entrambe in
+  `e15af889`), pagine del sito copiate dall'utente (`e7b2d90f`);
+- accensione: #1695 (`TAKEOFFS_ON = true`, sì dell'utente «sì
+  accendili» il 2026-11-27, riferito dal Coordinatore).
+
+Sul server: deploy della parte A col passo 22, storico col passo 26
+(`0c40a3dc`), siti col passo 26b: **1740 siti, 1096 decolli e 644
+atterraggi** (Italia, Austria, Svizzera, Liechtenstein, Francia alpina,
+Baviera, Slovenia); lo storico risponde in 0,03 s con «pochi voli».
+
+Cosa è cambiato rispetto al piano (precisazione di ADR-0400):
+
+- **Estrazione una volta al mese**, non a settimana: i siti cambiano poco
+  (approvato dal Coordinatore); lo script col cron lo scrive lui col sì
+  dell'utente. Righe in `out/TASK-493/SERVER-A.md` e `SERVER-26.md` sul Mac.
+- **Solo i 300 m dal decollo, niente controllo dei 150 m di quota**: le
+  tracce salvate (`runs.track`) sono senza quota, quindi il punto di
+  decollo di un volo è l'inizio del primo tratto in volo (`air_legs`, R6),
+  altrimenti il primo punto.
+- **Lo storico è una rotta a sé** (`/history`, col fuso del telefono per
+  «oggi»), con una cache di 10 minuti per sito; la scheda
+  `GET /flying-sites/{id}` dà sito e siti vicini (≤ 15 km, ≤ 5).
+- **I record** sono volo più lungo, più alto e più lontano, dai soli post
+  visibili a tutti.
+- **«Fly from here»** verso «Pronto al decollo» non c'è: la scheda resta
+  di soli fatti; si può proporre dopo.
+
+Non fatto: la **parte D** (il vento previsto in quota sulla scheda) aspetta
+TASK-479 H; quando H è in `main` diventa un task nuovo, numero dal
+Coordinatore. Restano fuori anche i decolli «trovati dai voli» (scelta 4,
+«dopo, se serve»).

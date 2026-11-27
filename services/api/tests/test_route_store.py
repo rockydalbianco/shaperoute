@@ -149,6 +149,22 @@ def test_a_word_with_a_pen_letter_is_kept_apart(
     assert len(engine_fingerprint() + PEN_LETTERS) <= 16
 
 
+def test_a_closed_word_never_takes_the_pen_letters_mark() -> None:
+    # The closed word draws `out` and `back` as before (TASK-522): its routes
+    # kept stay, whatever its letters and style; a shape in pieces with the
+    # pen up has no letters at all.
+    for word in ("CIAO", "AMORE", "QUA", "VAI"):
+        for style in ("round", "block"):
+            closed = RouteRequest(
+                start=ROVERETO, word=word, distance_m=15000, style=style
+            )
+            assert kept_engine(closed, "engine-a") == "engine-a"
+    pieces = RouteRequest(
+        start=ROVERETO, shape="dog_head", distance_m=5000, pen_up=True
+    )
+    assert kept_engine(pieces, "engine-a") == "engine-a"
+
+
 def test_a_pen_up_a_kept_before_is_drawn_again(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

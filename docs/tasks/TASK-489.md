@@ -1,6 +1,6 @@
 # TASK-489 — «Alimentazione»: il diario di quello che mangio e il bilancio delle calorie
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-22; **A1, A2, B1, B2, C1, D e la privacy F in `main`** (#1437, #1460, #1473, #1490, #1501, #1517, #1496), tutte spente (`NUTRITION_ON`); in fila, una PR dopo l'altra: **D2 = #1547**, G1, C2a, H, I (scritte in locale); decise il 2026-11-24 e non scritte: J (l'ingresso) e K (il peso); per la build nativa G2, C2b e l'accensione; la modalità è TASK-514, le storie TASK-513)
+**Stato**: In corso (parte 0 chiusa il 2026-11-22; **A1, A2, B1, B2, C1, D e la privacy F in `main`** (#1437, #1460, #1473, #1490, #1501, #1517, #1496), tutte spente (`NUTRITION_ON`); poi, una PR dopo l'altra, **D2, G1, C2a, H, I e J in `main`** (#1547, #1552, #1563, #1652, #1660, #1673); in sessioni dedicate **K1** (il peso, parte 0 chiusa) e **L** (le ricette: dati #1678 e colori #1686 in `main`); per la build nativa G2, C2b e l'accensione; la modalità è TASK-514, le storie TASK-513)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-489-nutrition-part-0`
 **Dipende da**: TASK-374 (il mio corpo, `body/energy.ts`), TASK-321 (Apple
@@ -601,6 +601,50 @@ davanti all'utente):
 Approvata e **non usata**: «Counted in today's balance». Le schermate di
 fine attività vengono prima di «Save»: lì la frase sarebbe falsa.
 
+### Testi della parte L (approvati dall'utente il 2026-11-27, «Sì, approvo»)
+
+Le ricette: 31 testi nuovi. L'inglese è il testo dell'app. Prova mostrata
+in chat (`nutrition_recipes_mock_v3_apple_style`).
+
+| Dove | English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|---|
+| La terza vista | Recipes | Ricette | Rezepte | Recetas | Recettes |
+| Gruppo | Lunch and dinner | Pranzo e cena | Mittag- und Abendessen | Comida y cena | Déjeuner et dîner |
+| Riga, una porzione | 1 serving | 1 porzione | 1 Portion | 1 ración | 1 portion |
+| Riga, più porzioni | {count} servings | {count} porzioni | {count} Portionen | {count} raciones | {count} portions |
+| Riga, tempo | {minutes} min | {minutes} min | {minutes} Min. | {minutes} min | {minutes} min |
+| Scheda, tempo | Preparation: {minutes} min | Preparazione: {minutes} min | Vorbereitung: {minutes} Min. | Preparación: {minutes} min | Préparation : {minutes} min |
+| Scheda, tempo | Cooking: {minutes} min | Cottura: {minutes} min | Garzeit: {minutes} Min. | Cocción: {minutes} min | Cuisson : {minutes} min |
+| Riga, a destra | {kcal} kcal per serving (est.) | {kcal} kcal a porzione (stima) | {kcal} kcal pro Portion (gesch.) | {kcal} kcal por ración (est.) | {kcal} kcal par portion (est.) |
+| Scheda, sopra i numeri | Per serving (est.) | A porzione (stima) | Pro Portion (gesch.) | Por ración (est.) | Par portion (est.) |
+| Scheda, titolo | Ingredients | Ingredienti | Zutaten | Ingredientes | Ingrédients |
+| Scheda, titolo | How to make it | Come si fa | So geht's | Cómo se hace | Comment la préparer |
+| Scheda, sotto gli ingredienti | Salt, herbs and spices are in the steps: they are not counted. | Sale, erbe e spezie sono nei passi: non vengono contati. | Salz, Kräuter und Gewürze stehen in den Schritten: Sie werden nicht mitgezählt. | La sal, las hierbas y las especias están en los pasos: no se cuentan. | Le sel, les herbes et les épices sont dans les étapes : ils ne sont pas comptés. |
+| Scheda, allergie | Check the ingredients if you have an allergy or an intolerance. | Controlla gli ingredienti se hai un'allergia o un'intolleranza. | Prüfe die Zutaten, wenn du eine Allergie oder Unverträglichkeit hast. | Revisa los ingredientes si tienes una alergia o una intolerancia. | Vérifie les ingrédients si tu as une allergie ou une intolérance. |
+| Scheda, sopra gli ingredienti | Tap an ingredient to change its grams: the numbers follow. | Tocca un ingrediente per cambiare i grammi: i numeri si aggiornano. | Tippe auf eine Zutat, um die Gramm zu ändern: Die Zahlen passen sich an. | Toca un ingrediente para cambiar los gramos: los números se actualizan. | Touche un ingrédient pour changer les grammes : les chiffres se mettent à jour. |
+| Scheda, sotto gli ingredienti | Add an ingredient | Aggiungi un ingrediente | Zutat hinzufügen | Añadir un ingrediente | Ajouter un ingrédient |
+| Scheda, ricetta cambiata | Changed by you | Modificata da te | Von dir geändert | Modificada por ti | Modifiée par toi |
+| Scheda, ricetta cambiata | Back to MuW's recipe | Torna alla ricetta di MuW | Zurück zu MuWs Rezept | Volver a la receta de MuW | Revenir à la recette de MuW |
+| Scheda, le porzioni | Servings | Porzioni | Portionen | Raciones | Portions |
+| Tasto | Cook step by step | Cucina passo per passo | Schritt für Schritt kochen | Cocinar paso a paso | Cuisiner pas à pas |
+| Passo per passo, in alto | Step {step} of {steps} | Passo {step} di {steps} | Schritt {step} von {steps} | Paso {step} de {steps} | Étape {step} sur {steps} |
+| Tasto | Add to diary | Aggiungi al diario | Zum Tagebuch hinzufügen | Añadir al diario | Ajouter au journal |
+| Tasto | Add to my plan | Aggiungi al mio piano | Zu meinem Plan hinzufügen | Añadir a mi plan | Ajouter à mon plan |
+| Sotto i tasti | The ingredients for one serving are added to the meal: you can change the grams. | Gli ingredienti di una porzione vengono aggiunti al pasto: puoi cambiare i grammi. | Die Zutaten für eine Portion werden zur Mahlzeit hinzugefügt: Du kannst die Gramm ändern. | Los ingredientes de una ración se añaden a la comida: puedes cambiar los gramos. | Les ingrédients d'une portion sont ajoutés au repas : tu peux changer les grammes. |
+| Domanda | Which meal? | Quale pasto? | Welche Mahlzeit? | ¿Qué comida? | Quel repas ? |
+| Domanda | Which day? | Quale giorno? | Welcher Tag? | ¿Qué día? | Quel jour ? |
+| Dopo il tocco | Added | Aggiunta | Hinzugefügt | Añadida | Ajoutée |
+| In fondo all'elenco | Home recipes written by MuW, not by a chef. | Ricette di casa scritte da MuW, non da uno chef. | Hausrezepte, von MuW geschrieben, nicht von einem Koch. | Recetas caseras escritas por MuW, no por un chef. | Recettes maison écrites par MuW, pas par un chef. |
+| La frase per gli chef | Are you a chef? Write to us to work together. | Sei uno chef? Scrivici per collaborare. | Du kochst als Profi? Schreib uns für eine Zusammenarbeit. | ¿Eres chef? Escríbenos para colaborar. | Tu es chef ? Écris-nous pour collaborer. |
+| La frase per i negozi | Do you run a supermarket or an online grocery shop? We're looking for a partner: write to us. | Hai un supermercato o un negozio di spesa online? Cerchiamo una collaborazione: scrivici. | Du führst einen Supermarkt oder einen Online-Lebensmittelshop? Wir suchen eine Zusammenarbeit: Schreib uns. | ¿Tienes un supermercado o una tienda de alimentación online? Buscamos una colaboración: escríbenos. | Tu as un supermarché ou une épicerie en ligne ? Nous cherchons une collaboration : écris-nous. |
+| Tasto | Write to MuW | Scrivi a MuW | An MuW schreiben | Escribir a MuW | Écrire à MuW |
+| Oggetto della mail | Working with MuW | Collaborare con MuW | Zusammenarbeit mit MuW | Colaborar con MuW | Collaborer avec MuW |
+
+Restano quelli che l'app ha già: «Breakfast», «Lunch», «Dinner», «Snacks»,
+«Protein», «Carbs», «Fat», i nomi dei giorni, «Next», «Back», «Done»,
+«Grams», «Save», «Remove», «Cancel», i nomi dei cibi, «Estimates only. MuW
+does not provide diets or medical advice.».
+
 ## Le parti
 
 | Parte | Cosa | Dove va |
@@ -870,10 +914,32 @@ finestre e due mezzi anelli che girano, con le molle di `ui/motion`.
 - `MealCard.tsx`: i cibi in cascata, la figura del pasto. Un tocco leggero
   del telefono quando si aggiunge un cibo.
 
-Da fare prima della «pronta»: la prova al simulatore degli anelli, anche
-con «Riduci movimento», con `NUTRITION_ON` acceso solo in locale (turno
-dal Coordinatore). I colori sono quelli del tema: un colore suo si decide
-davanti alle schermate.
+Prova al simulatore fatta il 2026-11-24 (iPhone 17, `NUTRITION_ON` acceso
+solo in locale): anelli, numeri, barre e settimana si vedono bene, anche
+con «Riduci movimento». Schermate in `out/TASK-489/shots/`.
+
+**I colori (scelta dell'utente del 2026-11-26, davanti alle schermate:
+«Voglio un colore», poi «A: rosso e verde» fra tre proposte)**: le
+consumate in rosso, il colore che le calorie hanno già in tutta l'app
+(`color.energy`); le mangiate in verde, un colore nuovo del tema,
+`color.food`. Gli stessi due colori negli anelli del giorno, nelle
+colonnine della settimana, negli anelli piccoli dell'invito (parte I) e
+nell'esempio dell'ingresso (parte J); le barre di proteine, carboidrati e
+grassi restano neutre. Il colore non è mai il solo segno: accanto a ogni
+anello restano etichetta e numero, con un pallino del suo colore.
+
+- `theme/tokens.ts`: `food`, solo aggiunte (file condiviso, concordato
+  col Coordinatore). I toni li ha scelti l'agente su delega: scuro
+  `#4FD08A` (fino a `#7BE3AA` al passo più chiaro), chiaro
+  `#095428`–`#0F6B35`.
+- `theme/foodContrast.test.ts` (nuovo): a ogni tono e a ogni passo, almeno
+  4,5:1 su `background`, `surface` e `surfaceRaised`, e almeno 3:1 sul
+  binario dell'anello (`border`), per il verde e per il rosso.
+- `theme/palettes.test.ts`: una riga, `food` nella tavolozza attesa.
+
+Visti nel simulatore il 2026-11-26 (iPhone 17), tono scuro e chiaro:
+anelli, pallini e colonnine della settimana; nessun difetto
+(`out/TASK-489/shots/09`–`12`). **In `main` con la #1652 (2026-11-26).**
 
 ### I — L'invito a fine attività (richiesta del 2026-11-24)
 
@@ -882,6 +948,8 @@ con il tasto per entrare». `NutritionInvite.tsx`, una riga in
 `activities/RunEnd.tsx` e una in `gym/GymEnd.tsx`. Le impostazioni tengono
 quante volte l'invito è stato visto e il «Not now». A fine corsa le kcal
 non si mostrano (quella schermata non le calcola); a fine allenamento sì.
+**In `main` con la #1660 (2026-11-26).** Gli anelli piccoli dell'invito non sono
+stati visti nel simulatore coi colori (sono lo stesso `Ring` del giorno).
 
 ### J — L'ingresso (richiesta del 2026-11-24; decisa, non scritta)
 
@@ -891,8 +959,38 @@ l'utente». Quattro passi la prima volta: anteprima, regole, domande (perché
 sei qui; hai già un numero; i dati del corpo), punto di partenza. Sul
 numero l'utente ha scelto «MuW», poi «solamente una stima, solo una demo»
 e «è meglio inserire le calorie manualmente»: vedi ADR-0397, precisazione
-5, punto 4. Proposta in `out/TASK-489/PROPOSTA-PARTE-J-INGRESSO.md`. I
-testi non sono ancora scritti. Lista dei file dopo la parte I.
+5, punto 4. Proposta in `out/TASK-489/PROPOSTA-PARTE-J-INGRESSO.md`.
+
+Scritta in locale il 2026-11-24 (ramo `feat/TASK-489-j-welcome`, sopra la
+parte I): schermate e testi nelle cinque lingue approvati dall'utente il
+2026-11-24 (`out/TASK-489/TESTI-PARTE-J.md`), fonti della stima lette e
+citate (`out/TASK-489/FONTI-PARTE-J.md`). Privacy e termini della stima
+sono in `main` con la #1619. **PR #1673, in `main` il 2026-11-26 (37fad30d).** Nella
+rilettura prima della PR: nell'anno in cui si compiono 18 anni la stima
+non dà numeri (l'app conosce solo l'anno di nascita; ADR-0397,
+precisazione 6, punto 7), e il collegamento della stima aspetta mentre il
+giorno solito si sta ancora contando.
+
+**Privacy e termini della stima (testi approvati dall'utente il
+2026-11-26, «Sì, approvo»; `out/TASK-489/TESTI-PRIVACY-TERMINI-PARTE-J.md`)**,
+in una PR sua, nel turno privacy del Coordinatore:
+
+1. privacy, «Nutrition», primo capoverso: resta sul telefono anche il
+   motivo scelto in «What brings you here?»;
+2. privacy, «Nutrition», secondo capoverso: se l'utente la chiede, MuW
+   calcola sul telefono una stima dell'obiettivo di calorie, solo
+   dimostrativa, mai mostrata sotto i 18 anni; «MuW is not made by health
+   professionals»;
+3. termini: sezione nuova «Nutrition» dopo «Safety» (diario e
+   calcolatrice, non un servizio sanitario; stime solo informative; chi
+   deve sentire prima il medico).
+
+File: `apps/mobile/src/about/content/{en,it,de,es,fr}.ts`, i due test
+delle date in `src/about/`, le cinque pagine `site/privacy/**` rigenerate
+con `site/tools/make_privacy.mjs` (un test del sito le vuole uguali
+all'app) e `site/tests/privacy.test.mjs`. Termini e privacy datati 26
+novembre 2026. La copia del sito sul server resta un passo a parte, non
+prima dell'app che porta la stima.
 
 ### K — Il peso (richiesta del 2026-11-24; decisa, non scritta)
 
@@ -1015,6 +1113,56 @@ Le altre quattro lingue entrano nelle tabelle dell'app con il codice.
 
 Il resto della sezione resta: «This data was never on our server…» è
 ancora vero, e le pesate sono dentro «what you write in «Nutrition»».
+
+### L — Le ricette (richiesta del 2026-11-27; parte 0 chiusa, codice in una sessione dedicata)
+
+«Amplia la sezione cibo […] aggiungi le ricette di alcuni piatti così poi
+facciamo un catalogo di ricette e poi magari future collaborazioni […] una
+frasetta: se sei uno chef contattaci per collaborazioni». Poi, nello
+stesso giorno: «come su Giallo Zafferano […] come fare a farle», «la
+possibilità anche di cambiare la ricetta e calcolare le calorie in base al
+pomodoro inserito», «una frasetta anche per i supermercati», «più
+professionale, con animazioni, più colori […] stile Apple». Vedi ADR-0397,
+precisazione 7.
+
+Le scelte dell'utente (2026-11-27, una alla volta):
+
+1. «Sì, le scrive MuW»: le prime ricette sono di MuW, e le ha rilette lui.
+2. «Sì, questi dodici»: porridge con banana e noci; yogurt greco con
+   frutti di bosco e granola; uova strapazzate su pane integrale; pasta al
+   pomodoro; insalata di riso; pollo con riso e broccoli; salmone con
+   patate e fagiolini; zuppa di lenticchie; frittata di zucchine; cuscus
+   con ceci e verdure; caprese con pane; hummus con pane pita e carote.
+3. «Sì, hello@getmuw.app»: l'indirizzo che apre il tasto «Write to MuW».
+   Prima del merge manda una mail di prova (l'inoltro è stato fatto il
+   2026-11-27, non provato).
+4. «Sì, approvo»: schermate e testi (sopra).
+5. «Sì, vanno bene»: le dodici ricette lette in italiano.
+6. «Sì, stessi colori»: nel diario le barre di proteine, carboidrati e
+   grassi prendono i tre colori degli anelli delle ricette (cambia la
+   scelta della parte H, dove erano neutre).
+
+Cosa fa (L1): terza vista «Recipes»; elenco a schede colorate in tre
+gruppi; scheda con tre anelli (carboidrati, grassi, proteine), le kcal a
+porzione che contano, più e meno per porzioni e grammi, «Add an
+ingredient», i passi, «Cook step by step»; la ricetta cambiata resta sul
+telefono («Changed by you», «Back to MuW's recipe»); «Add to diary» e «Add
+to my plan» scrivono gli ingredienti di una porzione come cibi normali; in
+fondo all'elenco le due frasi per chef e per supermercati e negozi di
+spesa online, con un tasto che apre la posta.
+
+Ricette, altre lingue e conti sono pronti fuori dal repository
+(`out/TASK-489/work/ricette.json`, `ricette-lingue.json`,
+`conti_ricette.py`); il passaggio per chi scrive il codice è
+`out/TASK-489/AVVIO-L.md`. **Il codice va a una sessione dedicata, da
+`main` dopo la parte J.** `theme/tokens.ts`: sì del Coordinatore ai colori
+nuovi (solo aggiunte, un test di contrasto per ognuno), dopo #1562 e #1621
+di TASK-469.
+
+Dopo, non in L1: **L2**, condividere una ricetta nel Feed con le foto,
+anche dopo una corsa (richiesta dell'utente, solo registrata: compositore,
+Feed, server, privacy); le ricette dell'utente; le ricette di chef; la
+spesa online con un negozio (idea, niente di promesso nell'app).
 
 ### E — Il server
 
@@ -1149,11 +1297,45 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 
 ## Registro
 
+- **2026-11-27, chiusura di H, I e J**: **parte J = #1673 in `main`**
+  (37fad30d, 2026-11-26), armata dal Coordinatore; avvisate le sessioni
+  di K1 e di L. Della parte L sono già in `main` i dati delle ricette
+  (#1678) e i tre colori di proteine, carboidrati e grassi (#1686), che
+  colorano anche le barre del diario. Documenti di chiusura di H–J e
+  parte 0 di L in una PR sola (`docs/UI.md`, ADR-0397 precisazioni 6 e
+  7). Restano: K1 e L nelle loro sessioni, la mail di prova a
+  `hello@getmuw.app` prima della frase per chef e supermercati, L2, la
+  build nativa (G2, C2b) e l'accensione.
 - **2026-11-27, parte K1, parte 0**: sessione dedicata aperta dal
   Coordinatore. Sei scelte dell'utente, una alla volta (sezione «K1»);
   fonti della soglia lette lo stesso giorno; lista dei file approvata dal
   Coordinatore; ADR-0397, precisazione 8. Codice dopo J in `main`.
 
+- **2026-11-27**: richiesta nuova dell'utente, le ricette (parte L).
+  Parte 0 fatta con lui in sei risposte; schermate, 31 testi nelle cinque
+  lingue e dodici ricette approvati. Il Coordinatore: lettera «L», sì ai
+  colori nuovi in `theme/tokens.ts`, codice dopo J. Passaggio per una
+  sessione dedicata in `out/TASK-489/AVVIO-L.md`. Parte I = #1660, armata
+  col «si unisci» dell'utente.
+- **2026-11-26, sera**: #1563 (C2a) e #1619 (privacy e termini della
+  parte J) in `main`. **Parte H = #1652**, armata dal Coordinatore col
+  «Sì» dell'utente, ferma finché non escono il passo 25 e l'OTA 27.
+  Rosso e verde visti nel simulatore (iPhone 17), tono scuro e chiaro:
+  anelli, puntini e colonne della settimana, più «Calorie balance» nel
+  profilo; nessun difetto (`out/TASK-489/shots/09`–`13`). Non visto
+  l'invito a fine attività coi colori. La decisione sui colori è
+  ADR-0397, precisazione 6; `docs/UI.md` descrive D2, H, I e J. I e J
+  allineate in locale: la I si apre con H in `main`, poi la J.
+- **2026-11-26**: l'utente sceglie i colori degli anelli («rosso e
+  verde»): `color.food` in `theme/tokens.ts`, concordato col Coordinatore,
+  dentro la parte H. Il «Sì, unisci» per C2a (#1563) dato dall'utente al
+  Coordinatore; #1563 riallineata due volte a `main` (conflitto in coda
+  alle tabelle dei testi dopo #1560). Testi di privacy e termini per la
+  stima della parte J approvati dall'utente e aperti come #1619 (armata
+  dal Coordinatore col «Sì, unisci» dell'utente). H, I e J allineate a
+  `main` in locale, non spinte: H si apre quando #1563 è in `main`.
+  G1 è #1552, D2 #1547, la stanza per la barra #1565 (TASK-469), tutte in
+  `main`.
 - **2026-11-24, richieste nuove dell'utente**: D2 (dal profilo), H (la
   pagina animata), I (l'invito a fine attività), J (l'ingresso con le
   domande), K (il peso), le storie di «Longevity» (TASK-513) e la modalità

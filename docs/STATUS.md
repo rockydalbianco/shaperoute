@@ -37,6 +37,9 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 fare quando capita; i task con solo quella prova sono chiusi.
 **TASK-501** (chiuso): dopo l'OTA con la parte C, la prova sul telefono
 di Coach e di un post aperto con la sua mappa.
+**TASK-410** (chiuso): la prima corsa vera col meteo sul server (una
+query in sola lettura dell'utente, `tasks/TASK-410.md`) e, dopo l'OTA,
+la card «Weather» sul telefono.
 
 ## In lavorazione
 
@@ -51,22 +54,16 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   2026-11-23: revisione, riserva e imbrago sull'attrezzatura di 486, con
   l'avviso; scelte dell'utente fatte. File: — · `tasks/TASK-494.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
-  ADR-0397; A1–D e la privacy in `main`, spente (`NUTRITION_ON`). In fila:
-  D2 = #1547, G1, C2a, H (pagina animata), I (invito a fine attività);
-  decise e non scritte J (ingresso) e K (peso). Build nativa: G2, C2b,
-  accensione. File: `nutrition/*`, `activities/RunEnd.tsx`,
-  `gym/GymEnd.tsx` · `tasks/TASK-489.md`
+  ADR-0397; A1–J e la privacy in `main`, spente (`NUTRITION_ON`). In
+  sessioni loro: K1 (peso) e L (ricette, #1678 e #1686 in `main`). Build
+  nativa successiva: G2, C2b, accensione. File: `nutrition/*`,
+  `activities/RunEnd.tsx`, `gym/GymEnd.tsx` · `tasks/TASK-489.md`
 - **TASK-513 — «Longevity»: cinquanta storie animate** · ADR-0407; parte 0
   chiusa il 2026-11-24, nessun codice; il codice in una sessione sua.
   File: — · `tasks/TASK-513.md`
 - **TASK-514 — La modalità «Nutrition»** · ADR-0408; parte 0 chiusa il
   2026-11-24; parte dopo TASK-490 D ed E, in una sessione sua. File: — ·
   `tasks/TASK-514.md`
-- **TASK-516 — Forme invernali e contorni** · ADR-0411; parte 0 il
-  2026-11-24 (la C di TASK-441, scelta dell'utente): 11 forme nuove
-  d'inverno, feste e sport e i 35 contorni di TASK-418. A sagome (file
-  nuovi), B strade, C registrazione (PR unita dall'utente, server e OTA
-  insieme), D catalogo. File: — · `tasks/TASK-516.md`
 - **TASK-507 — I dati del telefono restano di chi li ha fatti** · ADR-0406;
   A + C, D, B1 e B2 in `main` (#1533, #1545, #1546, #1573), il 2026-11-26
   la PR di documenti. Resta la prova dell'utente con due account dopo
@@ -104,9 +101,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-397 — Il VO₂ max nel profilo** · A e B in produzione; C al
   prossimo taglio nativo (con 374 C), D dopo 321 C. File: — ·
   `tasks/TASK-397.md`
-- **TASK-410 — La pagina del post** · B, F, C, D e la correzione #1078 in
-  produzione; A è TASK-355 B; resta E, il meteo (testi e privacy da
-  approvare). File: — · `tasks/TASK-410.md`
 - **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
   1963 percorsi e ordine misto in «NEAR YOU». Le 702 parole nuove a riga
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e

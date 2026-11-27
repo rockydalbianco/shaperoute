@@ -55,6 +55,7 @@ ciano di «Start here».
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
 | `energy` | `#FF6363` (scuro, fino a `#FFA3A3` al passo più chiaro); `#8F1216`–`#B71C1C` nel tono chiaro | le calorie, ovunque si vedano: riquadri della corsa e della neve, piscina, palestra, la riga del post e dell'attività, i riquadri e le righe della pagina del post (TASK-424 parte C3, scelta dell'utente del 2026-11-10: «segnate con colore rosso in tutte»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo. Sul giallo della palestra `energyOnAccent` `#8F1216` (6,3:1), sopra una foto `energyOnScrim` `#FF6363` (6,8:1 sul velo) |
+| `food` | `#4FD08A` (scuro, fino a `#7BE3AA` al passo più chiaro); `#095428`–`#0F6B35` nel tono chiaro | quello che si è mangiato, in «Nutrition»: il suo anello, le sue colonne della settimana e il puntino accanto al suo numero, vicino al rosso di `energy` per quello che si è consumato (TASK-489 parte H, scelta dell'utente del 2026-11-26: «rosso e verde»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo e 3:1 su `border`, la traccia dell'anello (`theme/foodContrast.test.ts`). Mai l'unico segno: ogni anello ha la sua etichetta e il suo numero |
 | `scrim`, `onScrim` | `#0B0A08`, `#FFFFFF` | il buio del tour (TASK-266) e il velo sotto le parole sulle foto (`Scrim`, TASK-339); il bordo della luce |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
 | `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il suo cono su «Compass» e «Map» (TASK-519); il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
@@ -5680,7 +5681,7 @@ salva come `alpinism`.
 - Nel modulo del post non è un giorno sulla neve: resta alpinismo. Sull'orologio non
   c'è, finché una sua build non lo conosce.
 
-## Il contacalorie: «Nutrition» (TASK-489 parti B, C1, D, G e C2, ADR-0397)
+## Il contacalorie: «Nutrition» (TASK-489 parti B, C1, D, D2, G, C2, H, I e J, ADR-0397)
 
 **Spenta in ogni build di oggi** dalla costante `NUTRITION_ON`
 (`nutrition/nutritionOn.ts`): si accende con la build nativa che legge
@@ -5694,29 +5695,82 @@ qui esce dal telefono.
   Non è uno sport: il tocco apre la pagina sopra il pannello e lo sport
   scelto non cambia; la ✕ riporta al pannello. Nella modalità allenamento la
   stessa pagina è la tab «Food» (TASK-490 D).
-- **L'avviso**, la prima volta su quel telefono: «Before you start» — «MuW
-  does not provide diets, meal plans or medical advice. The plan here is
-  the one you write: your own, or the one your dietitian gave you.»,
-  «Every number is an estimate, from food composition tables and from
-  formulas for the energy you use.», «If you have a medical condition, are
-  pregnant or have a history of eating disorders, talk to a doctor or a
-  dietitian before counting calories.», un solo pulsante «I understand».
-  Prima del tocco non si può scrivere niente; dopo non torna più.
+- **La porta della prima volta** su quel telefono (parte J,
+  `nutrition/NutritionWelcome.tsx`), quattro passi; prima della fine non
+  si può scrivere niente, dopo non torna più da sola:
+  1. cosa fa: «Your food diary: what you eat, what you use, and the
+     balance.», i due anelli con numeri finti e la scritta «Example», tre
+     righe («Write your plan», «Log what you eat», «See your balance») e
+     «Next»;
+  2. **l'avviso** «Before you start» — «MuW does not provide diets, meal
+     plans or medical advice. The plan here is the one you write: your
+     own, or the one your dietitian gave you.», «Every number is an
+     estimate, from food composition tables and from formulas for the
+     energy you use.», «If you have a medical condition, are pregnant or
+     have a history of eating disorders, talk to a doctor or a dietitian
+     before counting calories.», un solo pulsante «I understand»;
+  3. «What brings you here?» con quattro scelte («Keep track of what I
+     eat», «Lose weight», «Gain weight», «Follow my dietitian's plan») e
+     «Skip»: la risposta resta sul telefono;
+  4. il punto di partenza: «You use about {kcal} kcal a day (est.)», il
+     campo di «My daily target» sotto «Best: write your own number, or your
+     dietitian's.», e chiuso, in secondo piano, **«See MuW's estimate
+     (demo)»**. Aperto: il numero, «A rough estimate from a public formula,
+     only a demonstration. MuW is not made by health professionals: this is
+     not medical advice.», l'avviso per gravidanza, allattamento, malattie
+     e disturbi alimentari, «Use this number» e «I'll write my own». La
+     stima è il consumo di un giorno solito (la media degli ultimi sette
+     giorni interi) per chi tiene il conto o non ha risposto; per «Lose
+     weight» 600 kcal al giorno in meno, solo con un indice di massa
+     corporea di 25 o più e mai sotto 1400 kcal per le donne e 1900 per
+     gli uomini (NHS, fonti lette il 2026-11-24); per «Gain weight» nessun
+     numero, e accanto al piano del dietista il collegamento non c'è.
+     Servono i dati del corpo («To estimate, MuW needs your weight, height,
+     year of birth and sex. They stay on your phone.»). Sotto i 18 anni «MuW suggests no calorie number to people
+     under 18.», negli altri casi in cui non propone «From your data MuW
+     suggests no number for this. Talk to your doctor or a dietitian.»; MuW
+     conosce solo l'anno di nascita, quindi anche chi compie 18 anni
+     nell'anno in corso non riceve un numero. La stessa stima si apre dal
+     foglio di «My daily target». Poi «Start».
+
+  In fondo alla pagina «How it works» riapre il primo passo.
 - **Due viste**, «Diary» | «My plan», e sotto sempre «Estimates only. MuW
   does not provide diets or medical advice.» col collegamento **«How we
   calculate»**.
 - **«Diary»** (`nutrition/DiaryView.tsx`): il giorno in cima, «Today»,
-  «Yesterday» o la data, con le frecce; dopo oggi non si va. Tre numeri:
-  «Eaten», «Used (est.)» e «Balance». «Used (est.)» è il riposo più le
+  «Yesterday» o la data, con le frecce; dopo oggi non si va. **Due anelli**
+  (parte H, `nutrition/EnergyRings.tsx`) e accanto tre numeri che contano
+  fino al valore: «Eaten», «Used (est.)» e «Balance». Fuori l'anello di
+  «Used (est.)», nel rosso delle calorie (`energy`); dentro quello di
+  «Eaten», in verde (`food`); lo stesso colore è nel puntino davanti
+  all'etichetta, così il colore non è mai l'unico segno (scelta
+  dell'utente del 2026-11-26, «rosso e verde»). Una scala sola: il più
+  grande tra mangiato, consumato e l'obiettivo dell'utente fa il giro
+  intero, e l'obiettivo è una tacca sull'anello di dentro. Con «Riduci
+  movimento» tutto è al suo posto subito. «Used (est.)» è il riposo più le
   attività della lista privata partite quel giorno; **oggi il riposo è
   contato fino a adesso**, e sotto i numeri c'è «Today the energy at rest
   is counted up to now.». «Balance» è mangiate meno consumate, col segno e
   sotto «Surplus» o «Deficit» («−660», «Deficit»); senza niente di
   mangiato scritto è «—». Sotto, **«My daily target»**: un numero
-  di kcal che scrive solo l'utente, e quante ne restano; MuW non ne propone
-  mai uno. Poi i quattro pasti, «Breakfast», «Lunch», «Dinner», «Snacks»,
-  ognuno coi suoi cibi (nome, grammi, kcal), il totale e «Add food». Un
-  pasto vuoto mostra «—», non zero.
+  di kcal che scrive l'utente, e quante ne restano; MuW ne propone uno solo
+  come stima «demo», a chi la chiede (la porta della prima volta, passo 4).
+  Poi i quattro pasti, «Breakfast», «Lunch», «Dinner», «Snacks»,
+  ognuno coi suoi cibi (nome, grammi, kcal), il totale e «Add food»; i cibi
+  entrano in cascata. Un pasto vuoto mostra «—», non zero.
+- **«Protein, carbs and fat (est.)»** (parte H, `nutrition/MacroBars.tsx`),
+  sotto i pasti: tre barre, «Protein», «Carbs», «Fat», coi grammi e
+  «{percent}% of the energy» (4, 4 e 9 kcal al grammo). Nessun obiettivo e
+  nessun giudizio. Le barre hanno i tre colori di `protein`, `carbs` e
+  `fat` (parte L, #1686: gli stessi degli anelli delle ricette, scelta
+  dell'utente del 2026-11-27; nella parte H erano nel colore del testo),
+  mai come unico segno: ogni barra ha etichetta e numero. Se un cibo del giorno non ha
+  questi numeri: «Counted only for the foods that have these numbers.»; se
+  nessuno li ha: «No protein, carbs or fat to count for this day.».
+- **«This week»** (parte H, `nutrition/WeekStrip.tsx`), in fondo: sette
+  coppie di colonne da lunedì a domenica, verde il mangiato e rosso il
+  consumato, sulla stessa scala; il giorno aperto ha il bordo, i giorni
+  dopo oggi sono spenti. Un tocco porta la pagina a quel giorno.
 - **«Eaten as planned»**: copia nel giorno il piano di quel giorno della
   settimana. C'è **solo finché il giorno è vuoto** e il piano ha quel
   giorno: non scrive mai sopra quello che è stato segnato a mano (scelta
@@ -5748,7 +5802,19 @@ qui esce dal telefono.
   over.»); un giorno senza diario è «—» e non entra nel totale. Sotto il
   totale «Surplus» o «Deficit», nello stesso colore. Il riquadro compare
   solo dopo l'avviso letto; sul profilo degli altri non esiste, e niente
-  va all'API.
+  va all'API. In fondo «Open Nutrition» apre la pagina. Chi non ha ancora
+  letto l'avviso vede al suo posto una riga «Nutrition» con «Write what
+  you eat and see your calorie balance.», che apre la stessa pagina
+  (parte D2).
+- **Alla fine di un'attività** (parte I, `nutrition/NutritionInvite.tsx`),
+  in fondo a «Your run» e alla fine di un allenamento in palestra, mai
+  durante. Chi non ha mai aperto «Nutrition» vede l'invito: due anelli
+  piccoli, «Count what you eat too», «Write your own diet and what you
+  eat: MuW estimates the calories you eat and the ones you use, this
+  activity included.», «Open Nutrition» e «Not now». «Not now» lo toglie
+  per sempre; senza, si vede tre volte al massimo. Chi la usa vede «This
+  activity: {kcal} kcal (est.)», quando la schermata le conosce, e «Add
+  what you ate», che apre il diario di oggi.
 - **Aggiungere un cibo** (`nutrition/AddFoodSheet.tsx`): si cerca per nome
   fra i cibi propri e i 314 della tabella (USDA FoodData Central, SR
   Legacy), nella lingua dell'app; si scrivono i grammi e si vede la stima
@@ -5770,6 +5836,10 @@ qui esce dal telefono.
   you write here stays on your phone; a barcode you look up goes to Open
   Food Facts.». Per i prodotti trovati col codice a barre nomina Open Food
   Facts e la Open Database License, col collegamento a openfoodfacts.org.
+  Con la parte J un capoverso in più, «MuW's estimate of a daily target
+  (demo)»: da dove viene la stima, le soglie, «To gain weight MuW suggests
+  no number.», la data in cui le fonti sono state lette e i collegamenti
+  alle due pagine dell'NHS.
 - **Un cibo dal codice a barre** (parte G, `nutrition/BarcodeStep.tsx`):
   nella ricerca, sotto «Add my own food», «Type the code» apre il campo
   «Barcode» con «Only the barcode goes to Open Food Facts, to find the

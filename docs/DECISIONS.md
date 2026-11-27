@@ -609,7 +609,7 @@ lasciando le righe d'indice.
 - ADR-0408 — La modalità «Nutrition»: scelta come uno sport la barra diventa Today · Plan · Explore · Feed · Profile; la scheda «Food» dell'allenamento resta; dopo TASK-490 D ed E · 2026-11-24 · Attiva
 - ADR-0409 — «Sign up» e «Log in» gialli: il pulsante in fondo al modulo è `accent` con parole `onAccent`, un'eccezione scelta dall'utente a «il giallo è del percorso» · 2026-11-24 · Attiva
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Attiva
-- ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
+- ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-27 · Accettata
 - ADR-0394, precisazione C — La scheda pubblicata aperta fuori dal Feed: profilo, campanella, push, link e chat la aprono per id sulla scheda della mappa, col riquadro del Feed; nella griglia del profilo una cella sua · 2026-11-23 · Attiva
 - ADR-0258, precisazione C2 — La foto a penna alzata nell'API e nell'app: i pezzi solo se il contorno a penna alzata è lo stesso, al più `MAX_WALKS`, `pen_up` e `pieces` insieme, nessun pezzo dopo una modifica, «Lift the pen between parts» acceso all'avvio · 2026-11-26 · Attiva
 - ADR-0412 — L'anteprima dal vivo di «Draw»: un'immagine di mappa del Feed a scatti di scala, la sagoma disegnata dall'app col primo punto del contorno sulla partenza · 2026-11-26 · Attiva
@@ -629,8 +629,82 @@ lasciando le righe d'indice.
 - ADR-0340, precisazione E — Il meteo del post: MET Norway chiesto dal server al salvataggio, entro 3 ore dalla fine, col punto di partenza a ~1 km; neve esclusa; chiesto una volta · 2026-11-27 · Attiva
 - ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
 - ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
+- ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte tiene i piedi fermi mentre il bacino si sposta e sfuma quando il busto si capovolge; un braccio verso chi guarda si piega; sette viste cambiate dall'utente; le routine composte con una tenuta sola, più lunga prima di un secondo giro; chiavi delle categorie senza punto, come le vuole il server; «Today» con la notte fino alle 4 · 2026-11-27 · Attiva
 
 ## Voci nuove
+
+## ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte coi piedi fermi e la sfumatura; le routine composte; «Today» con la notte
+
+**Stato**: Attiva · 2026-11-27 · TASK-520. Aggiunta ad ADR-0415, che resta
+com'è. **Scelte dell'utente** (2026-11-27): cinque movimenti dell'elenco
+si disegnano di fronte o dall'alto invece che di lato («Di fronte»);
+«90/90 hips» e «Side-lying quad» dall'alto («Sì, dall'alto»); «Today»
+propone «Bedtime» dalle 21 alle 4 («Sì, fino alle 4»). **Decise
+dall'agente su delega dell'utente** le scelte tecniche qui sotto. Codice:
+parte B nelle #1672, #1681, #1684, #1687; A2 nella #1691; parte C nella
+#1693.
+
+**Contesto**: scrivendo i 50 esercizi e provandoli al simulatore sono
+venuti fuori casi che ADR-0415 non aveva: gesti che vanno verso chi
+guarda, piedi che devono restare fermi, un busto che si capovolge. La
+parte C ha poi dovuto dire come si compone una routine e con che nome si
+salva.
+
+**Decisione**:
+
+1. **Piedi fermi** (`planted` su una posa di fronte, `frontSway`): in un
+   affondo laterale e nei cerchi del bacino è il bacino che si sposta sopra
+   i piedi, non i piedi che scivolano sotto un bacino fermo. Una posa
+   `planted` si disegna coi piedi al centro (`frontDrift`).
+2. **La sfumatura** (`frontFlips`): quando tra due pose il busto si
+   capovolge (in piedi → piegato in avanti a gambe larghe) la figura di
+   fronte sfuma da una all'altra invece di girare. Visto di fronte quel
+   gesto non è una rotazione: disegnato come tale, il busto ruotava di lato
+   come una lancetta. Trovato al simulatore.
+3. **Un braccio che viene verso chi guarda si piega**: braccio e
+   avambraccio girano in versi opposti, la mano va dritta di traverso
+   (Arm openers, Open book). I segmenti non si accorciano, quindi è il solo
+   modo di far vedere uno scorcio. Dove nemmeno questo basta resta un
+   limite scritto nei test (a metà dei Knee sways le gambe sono dritte).
+4. **Due viste per lo stesso esercizio**: `front` si aggiunge a `pose`
+   senza toglierla (90/90, Side-lying quad); la schermata disegna `front`
+   quando c'è.
+5. **Il catalogo delle categorie è generato** dall'elenco approvato
+   (Allegato B del task file): in una categoria vengono prima gli esercizi
+   che la nominano per prima. Lo script sta fuori dal repository
+   (`out/stretching-nuovo/c/`); i test controllano il risultato.
+6. **La composizione** (`compose.ts`): una tenuta sola per tutta la
+   routine, vicina a quella che durata e livello chiedono (i riposi il
+   doppio); una lista corta si tiene più a lungo prima di fare un secondo
+   giro, e al massimo un terzo; una scelta che non riempie i suoi minuti
+   (entro 20 secondi, 3 secondi al minuto sulle lunghe) non si offre.
+   «Intense» solo dove c'è almeno un esercizio profondo, «solo in piedi»
+   solo con almeno tre esercizi non a terra. In ogni giro prima in piedi,
+   poi a terra, i riposi alla fine.
+7. **Le chiavi delle categorie sono lettere, cifre e trattino basso**
+   (`running_after`, `intimacy_before`): è la forma che il server accetta
+   come nome di una routine (`ROUTINE_PATTERN` in `stretch_sessions.py`, e
+   il CHECK delle tabelle), così una sessione fatta da una categoria si
+   salva senza toccare il server.
+8. **I 15 esercizi di prima dicono dove si fanno** solo dove serve:
+   `position: "floor"` su `hipFlexor`, `cat` e `child`, i tre che non sono
+   in piedi.
+9. **I cinque colori dei gruppi** tengono 4,5:1 su `background`, `surface`
+   e `surfaceRaised` nei due toni a ogni passo: il nome di un gruppo e la
+   sua icona sono scritti in quel colore.
+
+**Motivo**: le prime quattro tengono vero il disegno senza librerie e
+senza un secondo modo di animare; le altre tengono le routine prevedibili
+(la stessa scelta dà sempre la stessa routine) e salvabili col server
+com'è.
+
+**Conseguenze**: nessuna dipendenza nuova, nessuna migrazione, nessun
+passo sul server, nessuna schermata cambiata. Le tre routine di TASK-466
+(`routines.ts`) restano com'erano e sono ancora quelle che i promemoria
+aprono: dove subentrano le nuove lo decide la parte D. «After run» da 5
+minuti composta ha gli stessi cinque esercizi di oggi, col flessore
+dell'anca per ultimo perché è in ginocchio. «Splits» esiste solo
+«Intense» (due soli esercizi dolci).
 
 ## ADR-0340, precisazione E — Il meteo del post: MET Norway chiesto dal server al salvataggio, entro 3 ore dalla fine, col punto di partenza a ~1 km; neve esclusa; chiesto una volta
 
@@ -1750,8 +1824,8 @@ prima modifica di quel file. Solo app, niente di nativo. Controllato da
 
 ## ADR-0411 — Le forme nuove del motore: inverno, feste, sport e i 35 contorni di TASK-418, giudicate sulla carta, poi sulle strade, poi registrate tutte insieme
 
-**Stato**: Proposta · 2026-11-24 · TASK-516 (parte 0; la parte A sono i
-contorni). Il pezzo da cui partire è una scelta **dell'utente**
+**Stato**: Accettata · 2026-11-27 · TASK-516 (#1579, #1580, #1622, #1661;
+proposta il 2026-11-24, parte 0; la parte A sono i contorni). Il pezzo da cui partire è una scelta **dell'utente**
 (2026-11-24, «Forme invernali e contorni»); il come è deciso dall'agente
 su delega dell'utente, sulla strada di ADR-0346 e della sua precisazione B.
 

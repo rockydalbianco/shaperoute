@@ -180,6 +180,11 @@ SAME_ROUTES_AS: dict[str, str] = {
     "83b84d67c7f4": "e0834d054b6e",  # every route but a swim
     "780424973b42": "1063cc95fea3",  # the swims
     "9b27551516c0": "4c549677eefb",  # the app's paddling examples
+    # TASK-516: 35 new shapes in the catalogue (ADR-0411); every route of
+    # before drawn the same.
+    "030243086cea": "83b84d67c7f4",  # every route but a swim
+    "da3da1914fdf": "780424973b42",  # the swims
+    "f01152178efe": "9b27551516c0",  # the app's paddling examples
 }
 
 

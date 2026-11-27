@@ -63,6 +63,7 @@ from shaperoute_api.accounts import (
     current_user,
 )
 from shaperoute_api.activities import EPOCH, MICROSECOND
+from shaperoute_api.answer_lines import short_line, short_point
 from shaperoute_api.comment_filter import check_comment
 from shaperoute_api.comments import CommentRejected
 from shaperoute_api.db import Database
@@ -455,7 +456,7 @@ class GroupRuns:
             "route_m": row["route_m"],
             # `real` columns: rounded as favorites.py does.
             "similarity": round(row["similarity"], 4),
-            "start": points[0],
+            "start": short_point(points[0]),
             "preview": preview(points),
             "rotation_deg": None if rotation is None else round(rotation, 2),
             "created_at": row["created_at"],
@@ -533,7 +534,8 @@ class GroupRuns:
         return GroupRunDetailBody(
             **self._fields(row, faces, self.now()),
             description=row["description"],
-            points=_points(row),
+            # Six decimals a coordinate (answer_lines).
+            points=short_line(_points(row)),
             walks=[(start, end) for start, end in row["walks"]],
             on_foot=[(start, end) for start, end in row["on_foot"]],
             people=people.people,

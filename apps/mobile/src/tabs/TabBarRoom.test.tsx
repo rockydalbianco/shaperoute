@@ -3,14 +3,44 @@ import { join } from "node:path";
 
 import { render, screen } from "@testing-library/react-native";
 import { type StyleProp, StyleSheet, Text, type ViewStyle } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { SkiTodayPage } from "../skimode/SkiTodayPage";
 import { space } from "../theme/tokens";
+import { TAB_BAR_HEIGHT, tabBarBand } from "./TabBar";
 import { TabBarRoomContext, useTabBarRoom } from "./tabBarRoom";
+import { type ShellPage, TabShell } from "./TabShell";
 
-// The pages of the tab bar go on under the bar (TASK-469 B2a, ADR-0383):
-// each leaves the bar's room after the last thing it shows. The shell gives
-// the room; until the bar floats it is zero, and the pages look as before.
+// Where the phone draws the real glass, the pages of the tab bar go on
+// under the bar (TASK-469 B2, ADR-0383): each leaves the bar's room after
+// the last thing it shows. The shell gives the room: the band of the bar,
+// which floats over them there, and nothing where the bar keeps its band.
+
+// The phone's own glass (ui/NativeGlass): what its native module says of
+// the phone, null where the app was built without it. The other native
+// modules are the real ones.
+let mockGlassModule: Record<string, boolean> | null = null;
+jest.mock("expo", () => {
+  const actual = jest.requireActual<typeof import("expo")>("expo");
+  return {
+    ...actual,
+    requireOptionalNativeModule: (name: string) =>
+      name === "ExpoGlassEffect"
+        ? mockGlassModule
+        : actual.requireOptionalNativeModule(name),
+  };
+});
+jest.mock("expo-glass-effect", () => {
+  const { View } = jest.requireActual<typeof import("react-native")>("react-native");
+  return {
+    GlassView: (props: Record<string, unknown>) => <View {...props} />,
+  };
+});
+const REAL_GLASS = { isGlassEffectAPIAvailable: true, isLiquidGlassAvailable: true };
+
+beforeEach(() => {
+  mockGlassModule = null;
+});
 
 function Room() {
   return <Text testID="room">{useTabBarRoom()}</Text>;
@@ -28,6 +58,35 @@ test("inside it, the room the shell gives", async () => {
     </TabBarRoomContext.Provider>,
   );
   expect(screen.getByTestId("room")).toHaveTextContent("72");
+});
+
+function Shell() {
+  const pages: ShellPage[] = [
+    { title: "Feed", label: "Feed", icon: "house", render: () => <Room /> },
+    { title: "Draw", label: "Draw", icon: "pencil", render: () => <Text>Draw</Text> },
+  ];
+  return (
+    <SafeAreaProvider
+      initialMetrics={{
+        frame: { x: 0, y: 0, width: 390, height: 844 },
+        insets: { top: 47, left: 0, right: 0, bottom: 34 },
+      }}
+    >
+      <TabShell pages={pages} page={0} onPage={() => {}} />
+    </SafeAreaProvider>
+  );
+}
+
+test("under the veiled glass the bar has its own band: the shell gives its pages no room", async () => {
+  await render(<Shell />);
+  expect(screen.getByTestId("room")).toHaveTextContent("0");
+});
+
+test("where the bar floats, the shell gives its pages the band of the bar, the home indicator in it", async () => {
+  mockGlassModule = REAL_GLASS;
+  await render(<Shell />);
+  expect(screen.getByTestId("room")).toHaveTextContent(String(tabBarBand(34)));
+  expect(tabBarBand(34)).toBe(TAB_BAR_HEIGHT + 34);
 });
 
 /** The end of the page's scroller: the padding under its last thing. */
@@ -57,17 +116,20 @@ test("with the bar over it, a page ends that much later", async () => {
   expect(endOfPage()).toBe(space.xxl + 72);
 });
 
-// Every page of the tab bar asks for the room. Three more join when their
-// own tasks have landed: the profile and the two of the training mode.
+// Every page of the tab bar asks for the room: a new one joins this list.
 const PAGES = [
   "explore/ExploreScreen.tsx",
+  "nutrition/NutritionPage.tsx",
   "paddle/PaddleExplore.tsx",
   "screens/ChooseScreen.tsx",
   "screens/FeedScreen.tsx",
+  "screens/ProfileScreen.tsx",
   "skimode/SkiDaysPage.tsx",
   "skimode/SkiResortsPage.tsx",
   "skimode/SkiTodayPage.tsx",
   "tabs/MessagesPage.tsx",
+  "trainingmode/TrainingTodayPage.tsx",
+  "trainingmode/TrainingWorkoutsPage.tsx",
 ];
 
 test.each(PAGES)("%s leaves the tab bar its room", (file) => {

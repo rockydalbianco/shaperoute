@@ -7,6 +7,13 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { Pressable, Text, View } from "react-native";
 
 import { color } from "../theme/tokens";
+import {
+  addManualWaypoint,
+  manualWaypointsNow,
+  removeManualWaypoints,
+  resetManualWaypoints,
+} from "./manualWaypoints";
+import { refreshSiteLandings, resetSiteLandings } from "./siteLandings";
 import { pickTask, pickWaypoints } from "./waypointFile";
 import { gateTime, NO_WAYPOINTS, NOT_A_TASK, WaypointOptions } from "./WaypointOptions";
 import {
@@ -164,5 +171,66 @@ describe("gateTime", () => {
   it("reads a UTC gate, and nothing that is not one", () => {
     expect(gateTime("11:00:00Z", DAY)).not.toBeNull();
     expect(gateTime("noon", DAY)).toBeNull();
+  });
+});
+
+describe("the pilot's own waypoints (D5)", () => {
+  beforeEach(() => {
+    resetManualWaypoints();
+    removeManualWaypoints();
+  });
+
+  it("says how to add one when there is none", async () => {
+    await show();
+    expect(screen.getByText("My waypoints")).toBeTruthy();
+    expect(screen.getByText("Press the flight map long to add one.")).toBeTruthy();
+    expect(screen.queryByTestId("remove-manual")).toBeNull();
+  });
+
+  it("counts them and removes them all", async () => {
+    addManualWaypoint([45.7, 10.8], false);
+    addManualWaypoint([45.71, 10.81], true);
+    await show();
+    expect(screen.getByTestId("manual-waypoints").props.children).toBe(
+      "Waypoints: 2 · Landings: 1",
+    );
+    await fireEvent.press(screen.getByTestId("remove-manual"));
+    expect(manualWaypointsNow()).toEqual([]);
+  });
+});
+
+describe("the landings of OpenStreetMap (D6)", () => {
+  beforeEach(() => resetSiteLandings());
+
+  it("says how many are kept, with OSM's credit, and nothing without any", async () => {
+    await show();
+    expect(screen.queryByTestId("osm-landings")).toBeNull();
+    await refreshSiteLandings([45.7, 10.8], DAY, () =>
+      Promise.resolve({
+        kind: "ok",
+        value: {
+          sites: [
+            {
+              id: 1,
+              kind: "landing",
+              lat: 45.7,
+              lon: 10.8,
+              name: "Test field",
+              ele_m: 300,
+              orientation: [],
+              official: null,
+              osm_url: "https://www.openstreetmap.org/node/1",
+              away_m: null,
+            },
+          ],
+          more: false,
+          attribution: "© OpenStreetMap contributors",
+        },
+      }),
+    );
+    await show();
+    expect(screen.getByTestId("osm-landings").props.children).toBe(
+      "Landings from OpenStreetMap: 1 · © OpenStreetMap contributors",
+    );
   });
 });

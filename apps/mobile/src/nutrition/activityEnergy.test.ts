@@ -8,6 +8,8 @@ import { poolKcal } from "../pool/poolKcal";
 import {
   balanceOf,
   dayEnergy,
+  healthDayActivity,
+  healthKey,
   hubActivitiesOn,
   hubActivityKcal,
   hubDayActivity,
@@ -214,16 +216,6 @@ describe("the energy of a day", () => {
     expect(balanceOf(500, energy)).toBeNull();
   });
 
-  test("the active energy of Apple Health, when the app reads it, counts alone", () => {
-    const energy = dayEnergy({ ...base, healthActiveKcal: 600 });
-    expect(energy.used).toEqual({
-      rest: REST,
-      active: 600,
-      used: REST + 600,
-      fromHealth: true,
-    });
-  });
-
   test("the balance is eaten less used; none with nothing eaten written", () => {
     const energy = dayEnergy(base);
     expect(balanceOf(null, energy)).toBeNull();
@@ -240,4 +232,89 @@ test("the balance is written with its sign", () => {
   expect(signedKcal(-660)).toBe("−660");
   expect(signedKcal(0)).toBe("0");
   expect(signedKcal(-0.4)).toBe("0");
+});
+
+describe("the energy of a day with Apple Health (part C2)", () => {
+  const base = {
+    day: DAY,
+    now: AFTER,
+    hub: "ready" as const,
+    list: [MORNING_RUN],
+    body: NO_BODY,
+    edits: NO_EDITS,
+    health: "on" as const,
+  };
+  const ride = {
+    id: "ride",
+    activityType: 13,
+    startMs: new Date(2026, 10, 23, 17, 30).getTime(),
+    endMs: new Date(2026, 10, 23, 18, 20).getTime(),
+    kcal: 530.4,
+    metres: 21400,
+    sourceName: "Garmin Connect",
+    sourceBundleId: "com.garmin",
+    syncId: null,
+  };
+
+  test("nothing is said of a day while Health is being read", () => {
+    const energy = dayEnergy({ ...base, healthDay: null });
+    expect(energy.used).toBeNull();
+    expect(energy.health).toBe("on");
+  });
+
+  test("Health's active energy counts alone, and says it is Health's", () => {
+    const energy = dayEnergy({
+      ...base,
+      healthDay: { activeKcal: 684, workouts: [ride] },
+    });
+    expect(energy.healthActive).toBe(684);
+    expect(energy.used).toEqual({
+      rest: REST,
+      active: 684,
+      used: REST + 684,
+      fromHealth: true,
+    });
+    // Still listed, for the user to see what the day was made of.
+    expect(energy.activities).toHaveLength(1);
+    expect(energy.others.map((one) => one.workout.id)).toEqual(["ride"]);
+  });
+
+  test("without Health's energy the workouts of other apps count beside MuW's", () => {
+    const energy = dayEnergy({
+      ...base,
+      healthDay: { activeKcal: null, workouts: [ride] },
+    });
+    expect(energy.healthActive).toBeNull();
+    expect(energy.others).toEqual([
+      { workout: ride, estimate: 530, counted: { kcal: 530, edited: false } },
+    ]);
+    expect(energy.used?.active).toBe(RUN + 530);
+    expect(energy.used?.fromHealth).toBe(false);
+  });
+
+  test("a workout from MuW's own bundle, or with the key of an activity, is MuW's", () => {
+    const mine = healthDayActivity({ ...ride, syncId: "run" }, [MORNING_RUN], null);
+    expect(mine).toMatchObject({ key: "health-ride", writtenByMuw: true });
+    const bundled = healthDayActivity(
+      { ...ride, sourceBundleId: "app.muw" },
+      [],
+      "app.muw",
+    );
+    expect(bundled.writtenByMuw).toBe(true);
+    expect(healthDayActivity(ride, [MORNING_RUN], "app.muw").writtenByMuw).toBe(false);
+    expect(healthKey(ride)).toBe("health-ride");
+  });
+
+  test("unless the user said yes, what Health has is not looked at", () => {
+    for (const health of ["none", "off"] as const) {
+      const energy = dayEnergy({
+        ...base,
+        health,
+        healthDay: { activeKcal: 684, workouts: [ride] },
+      });
+      expect(energy.healthActive).toBeNull();
+      expect(energy.others).toEqual([]);
+      expect(energy.used?.active).toBe(RUN);
+    }
+  });
 });

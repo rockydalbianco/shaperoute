@@ -6,6 +6,7 @@ in `main`; le parti partono una alla volta, ognuna nella sua sessione:
 **parte A fatta** (branch `feat/TASK-347-a-engine-anchored`, §«Esito»),
 **B in `main`** (#1389, 2026-11-22), C divisa in C1, C2 e C3 (testi
 approvati dall'utente il 2026-11-22)
+**Prova sul telefono** (il disegno a mano agganciato alle strade, C1–C3b): fatta dall'utente il 2026-11-26, prova generale sull'OTA 25: «ok».
 **Fase**: 5 · **Branch**: `docs/TASK-347-pro-freehand` (documenti); le
 parti `feat/TASK-347-a-engine-anchored` e così via
 **Dipende da**: TASK-331 (a mano solo sulla mappa, in `main`), TASK-214

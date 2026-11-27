@@ -1,8 +1,7 @@
 # TASK-516 — Forme invernali e contorni: forme nuove per il motore e il catalogo
 
-**Stato**: Congelato dopo la parte A (cornice «Mossa 5», 2026-11-26) — parti
-0 e A in `main`, prova sulle strade (B) fatta e giudicata; C e D ferme finché
-il Coordinatore non dà il via
+**Stato**: In lavorazione — parte D (catalogo): D1 in PR, D2 passata a
+TASK-521; parti 0, A, B e C fatte (C sul server col passo 25 e nell'OTA 27)
 **Fase**: 5 · **Branch**: `docs/TASK-516-part-0` (parte 0); una PR per parte
 **ADR**: ADR-0411 · numeri dal Coordinatore (fork 3), 2026-11-24
 **Viene da**: TASK-441 (la sua parte C), TASK-418 (le forme candidate e
@@ -175,12 +174,84 @@ forme di prima (ADR-0346 B). La PR la **unisce l'utente**; server
 (checkout e `draw_examples` per l'impronta nuova) e OTA escono insieme,
 ciascuno col sì dell'utente raccolto dal Coordinatore.
 
+### Come è fatta (2026-11-26)
+
+Branch `feat/TASK-516-c-register`; la lista dei file l'ha approvata il
+Coordinatore, con `drawingMatch.test.ts` aggiunto dopo.
+
+- I 35 contorni passano da `candidate_outlines/` a
+  `route_engine/shapes/outlines/`: 25 di TASK-418 (`APPROVED` di
+  `draw_new_shapes.py`) e 10 di TASK-516 (un `APPROVED` nuovo in
+  `draw_theme_shapes.py`, con `home()` come l'altro strumento). Restano
+  candidate le 11 non scelte. `SHAPES` passa da 31 a 66 forme.
+- 24 delle 35 hanno pezzi: entrano in `PEN_UP_SHAPES` (l'API le accetta a
+  penna alzata), ma l'app le disegna a penna giù (`OFFERED` di
+  `penUpShapes.ts` non cambia, ADR-0411 punto 5). `test_pieces.py` e
+  `test_water_pieces.py` le contano; le linee aperte fra i pezzi (uovo,
+  regalo, foglia, lampadina, montagna, gufo) sono in `OPEN_PIECES`.
+- Le descrizioni per l'AI vengono dalle parole dei file delle forme.
+- Nomi e parole della ricerca nelle cinque lingue. Quattro nomi c'erano
+  già nelle tabelle («Eiffel Tower», «Leaf», «Skis», «Trophy»): riusati.
+- **Due parole tolte** (deciso dall'agente, il Coordinatore d'accordo):
+  «croissant» da solo non è più una parola francese della luna (resta
+  «croissant de lune»: oggi «croissant» è la forma); «Birne» non è fra le
+  parole della lampadina (in tedesco è la pera).
+- Categorie della ricerca, scelta dell'utente: animali → «Animals»,
+  simboli → «Symbols», gli altri 19 (cibo, monumenti, oggetti) → «Emoji».
+- `prefetch_zones.ZONE_SHAPES` non cambia. Nella zona in bici di 30 km
+  quattro forme nuove stanno solo fino a 27 km (bastoncino, croissant, Torre
+  Eiffel) o 25 km (ombrello), come la pera e la Torre di Pisa
+  (`test_prefetch_zones.py`).
+- Stessi percorsi: le 9 rotte identiche sul Mac; `SAME_ROUTES_AS`
+  `030243086cea → 83b84d67c7f4`, `da3da1914fdf → 780424973b42` (nuoto),
+  `f01152178efe → 9b27551516c0` (pagaiata); `engine_fingerprint()` resta
+  `8ab61d8e87f9`. Impronta nativa iOS invariata, `5e1b5ce5`: basta un OTA.
+- Fuori lista, col sì del Coordinatore: `drawingMatch.test.ts` (sotto) e
+  `tools/test_catalog_words.py` (il pinguino non è più un esempio di
+  candidata: lo è la giraffa).
+
+**Per dopo**: in «Explore» la ricerca confronta pezzi di parola, così
+«cane» in italiano mostra anche il bastoncino di zucchero (`candy_cane`)
+oltre alla testa di cane (`drawingMatch.test.ts` lo dice). Cambiarlo tocca
+`drawingMatch.ts`: fuori da questo task.
+
 ## Parte D — il catalogo
 
 I disegni delle forme nuove in fondo ai file di città (`tools/catalog_seed.py`,
 `_place`: gli id di prima restano), col filtro del catalogo
 (`catalog/README.md`) e una pagina per l'utente prima della PR; poi il
 passo «catalogo» sul server.
+
+### D1 — i disegni già fatti (2026-11-27)
+
+Nessun giro nuovo. Dei disegni delle 35 forme nel registro di TASK-419 (con
+in coda gli 88 casi della parte B) ne passano il filtro **130, nelle quattro
+città della parte B**: Milano 60, Barcellona 36, Trento 32, Levico 2 (69 da
+10 km, 61 da 5 km, da 3 a 8 per forma). Pagina per l'utente:
+`out/TASK-516/d/disegni-130.html`. Entrano tutti: il seme passa da 2031 a
+**2161 percorsi**.
+
+- `catalog_seed._place` mette le forme di `LATER_SHAPES` (le 35) in fondo a
+  ogni file di città, dopo corse, parole, uscite e uscite lunghe: l'API
+  numera un percorso col suo posto nel file, quindi ogni id di prima resta.
+  Lo dice un test (`test_catalog_seed.py`), e un altro controlla che le 35
+  siano nel `SHAPES` del motore.
+- Prova: con le chiavi di prima, `catalog_bike.py --write` rifà i 63 file
+  identici byte per byte; con le 130 chiavi cambiano solo i quattro file, e
+  in ognuno i percorsi di prima sono gli stessi, nello stesso ordine.
+- `out/TASK-419/runs.jsonl` ha in coda gli 88 casi della parte B (copia di
+  prima: `runs.before-task516.jsonl`), così i comandi del README vanno
+  come prima.
+- Dopo l'unione: il passo «catalogo» sul server (immagine nuova, nessuna
+  migrazione), log «2161 recommended routes». Lo chiede il Coordinatore.
+
+### D2 — le altre 59 città: passa a TASK-521
+
+Il giro delle 35 forme nelle altre città (proposta: 6 forme per città a
+turno, a 5 e 10 km, circa 700 casi, dalle zone a piedi in cache) passa a
+TASK-521 (revisione del catalogo e 3000 disegni), che lavora sugli stessi
+file (Coordinatore, 2026-11-27). Appunti per quella sessione:
+`out/TASK-516/D2-PASSAGGIO.md` della cartella principale.
 
 ## Scelte dell'utente
 
@@ -191,6 +262,11 @@ passo «catalogo» sul server.
 - 2026-11-26: sulla pagina delle strade (46 candidate, 35 spuntate come
   proposta, categorie dei file): «Vanno bene le 35». Entrano le 35 elencate
   nell'esito della parte B, con la categoria del loro file.
+- 2026-11-26: le 19 forme di cibo, monumenti e oggetti nella ricerca:
+  «Sì, in Emoji» (nessuna chip nuova).
+- 2026-11-27: sulla parte D, «Sì, così»: subito i 130 disegni delle quattro
+  città (D1), il giro nelle altre 59 città dopo (D2).
+- 2026-11-27: sulla pagina dei 130 disegni: «Sì, vanno bene». Entrano tutti.
 
 ## Fuori scope
 
@@ -214,3 +290,12 @@ passo «catalogo» sul server.
   disegnati, l'utente sceglie 35 forme («Vanno bene le 35»).
 - **Prossimo**: la parte C (registrazione delle 35, lista di TASK-418 B)
   solo col via del Coordinatore; poi la D (catalogo).
+- **2026-11-26**: l'utente fa sgelare la parte C («falla partire poi
+  grazie», al Coordinatore). Lista dei file approvata; codice nel branch
+  `feat/TASK-516-c-register`.
+- **2026-11-26**: #1622 in `main` (1358de31): le 35 forme registrate.
+- **2026-11-27**: passo 25 sul server (847f237e): «66 shapes, 35 new ok» e
+  quattro percorsi veri a Trento; OTA 27 uscita con le forme. Parte D: lista
+  dei file approvata dal Coordinatore, D1 nel branch
+  `feat/TASK-516-d-catalogue`. Prossimo: la PR verde, il passo «catalogo»
+  sul server, poi i documenti di chiusura. La D2 passa a TASK-521.

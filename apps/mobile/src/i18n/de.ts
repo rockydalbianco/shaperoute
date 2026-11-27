@@ -249,6 +249,38 @@ export const DE: Table = {
   Swan: "Schwan",
   Windmill: "Windmühle",
   "Wine glass": "Weinglas",
+  // TASK-516 (ADR-0411)
+  Football: "Fußball",
+  Bell: "Glocke",
+  "Candy cane": "Zuckerstange",
+  Colosseum: "Kolosseum",
+  Croissant: "Croissant",
+  Dolphin: "Delfin",
+  Dome: "Kuppel",
+  "Easter egg": "Osterei",
+  Flower: "Blume",
+  "Fox head": "Fuchskopf",
+  Gift: "Geschenk",
+  Infinity: "Unendlichkeit",
+  "Light bulb": "Glühbirne",
+  Medal: "Medaille",
+  Mountain: "Berg",
+  Owl: "Eule",
+  Padlock: "Vorhängeschloss",
+  "Peace sign": "Friedenszeichen",
+  Penguin: "Pinguin",
+  "Pizza slice": "Pizzastück",
+  "Tennis racket": "Tennisschläger",
+  Reindeer: "Rentier",
+  "Santa hat": "Weihnachtsmütze",
+  Scooter: "Motorroller",
+  Snowflake: "Schneeflocke",
+  Snowman: "Schneemann",
+  "Christmas stocking": "Weihnachtsstrumpf",
+  Strawberry: "Erdbeere",
+  "Triumphal arch": "Triumphbogen",
+  Turtle: "Schildkröte",
+  Umbrella: "Regenschirm",
 
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "ORTE IN DER NÄHE",
@@ -1249,6 +1281,10 @@ export const DE: Table = {
   Floors: "Stockwerke",
   "Log set": "Satz eintragen",
   "Same again": "Nochmal gleich",
+  // TASK-511: the clock waits for the first exercise; − and + by the boxes
+  "Starts with the first exercise": "Startet mit der ersten Übung",
+  "Less {field}": "{field}: weniger",
+  "More {field}": "{field}: mehr",
   Rest: "Satzpause",
   Custom: "Eigene",
   "Next: {exercise} · set {n}": "Als Nächstes: {exercise} · Satz {n}",
@@ -1859,6 +1895,157 @@ export const DE: Table = {
   "Knee hug": "Knie zur Brust",
   "Stand on one leg. Hug the other knee to your chest.":
     "Auf einem Bein stehen. Das andere Knie an die Brust ziehen.",
+  // src/stretch, the new exercises (TASK-520 part B)
+  "Thread the needle": "Nadelöhr",
+  "On all fours, slide one arm under your body. Rest your shoulder down.":
+    "Im Vierfüßlerstand einen Arm unter dem Körper durchschieben. Die Schulter ablegen.",
+  "Side child's pose": "Kindhaltung zur Seite",
+  "From child's pose, walk both hands to one side. Breathe into your ribs.":
+    "Aus der Kindhaltung beide Hände zu einer Seite wandern lassen. In die Rippen atmen.",
+  "Wrist stretch, palm up": "Handgelenk dehnen, Handfläche oben",
+  "Arm straight, palm up. Gently pull your fingers back with the other hand.":
+    "Arm gestreckt, Handfläche nach oben. Mit der anderen Hand die Finger sanft zurückziehen.",
+  "Wrist stretch, palm down": "Handgelenk dehnen, Handfläche unten",
+  "Arm straight, palm down. Gently press the back of your hand toward you.":
+    "Arm gestreckt, Handfläche nach unten. Den Handrücken sanft zu sich drücken.",
+  "Biceps stretch": "Bizeps dehnen",
+  "Palm on a wall behind you, arm straight. Turn your chest away.":
+    "Handfläche hinter sich an die Wand, Arm gestreckt. Die Brust wegdrehen.",
+  "Doorway chest stretch": "Brust dehnen am Türrahmen",
+  "Forearm on a door frame, elbow at shoulder height. Step through gently.":
+    "Unterarm an den Türrahmen, Ellbogen auf Schulterhöhe. Sanft einen Schritt hindurch machen.",
+  Sphinx: "Sphinx",
+  "Lie on your belly, forearms down. Lift your chest gently.":
+    "Auf den Bauch legen, Unterarme am Boden. Die Brust sanft anheben.",
+  "Seated twist": "Drehsitz",
+  "Sit tall, one knee bent over the other leg. Turn toward the bent knee.":
+    "Aufrecht sitzen, ein Knie über das andere Bein gestellt. Zum gebeugten Knie drehen.",
+  "Lizard lunge": "Eidechse",
+  "From a low lunge, both hands inside your front foot. Sink your hips.":
+    "Aus dem tiefen Ausfallschritt beide Hände innen neben den vorderen Fuß. Die Hüfte sinken lassen.",
+  "Deep squat": "Tiefe Hocke",
+  "Feet wide, sink low, heels down. Elbows press your knees open.":
+    "Füße weit, tief sinken, Fersen am Boden. Die Ellbogen drücken die Knie nach außen.",
+  "Seated figure four": "Vier im Sitzen",
+  "Sit on a chair, ankle over the other knee. Lean forward, back long.":
+    "Auf einem Stuhl sitzen, einen Knöchel über das andere Knie. Nach vorn lehnen, Rücken lang.",
+  "Bent-knee calf stretch": "Wade dehnen mit gebeugtem Knie",
+  "Step back, bend both knees. Keep the back heel down.":
+    "Einen Schritt zurück, beide Knie beugen. Die hintere Ferse am Boden lassen.",
+  "90/90 hips": "90/90-Hüftsitz",
+  "Sit with both knees bent at right angles, one in front, one to the side. Sit tall.":
+    "Mit beiden Knien im rechten Winkel sitzen, eines vorn, eines seitlich. Aufrecht sitzen.",
+  "Figure four": "Liegende Vier",
+  "On your back, ankle over the other knee. Pull that thigh toward you.":
+    "Auf dem Rücken, einen Knöchel über das andere Knie. Diesen Oberschenkel zu sich ziehen.",
+  Pigeon: "Taube",
+  "Front shin across your mat, back leg long. Fold forward over it.":
+    "Das vordere Schienbein quer auf die Matte, das hintere Bein lang. Darüber nach vorn beugen.",
+  "Seated forward fold": "Vorbeuge im Sitzen",
+  "Sit with legs straight. Fold forward from your hips, back long.":
+    "Mit gestreckten Beinen sitzen. Aus der Hüfte nach vorn beugen, Rücken lang.",
+  "Lying hamstring stretch": "Hintere Oberschenkel dehnen im Liegen",
+  "On your back, raise one straight leg. Hold behind your thigh.":
+    "Auf dem Rücken ein gestrecktes Bein heben. Hinter dem Oberschenkel halten.",
+  "Side-lying quad": "Quadrizeps dehnen in Seitenlage",
+  "Lie on your side. Pull your top heel toward your glutes.":
+    "Auf die Seite legen. Die obere Ferse zum Gesäß ziehen.",
+  "Half split": "Halber Spagat",
+  "Kneel, front leg straight, toes up. Fold over it with a long back.":
+    "Knien, vorderes Bein gestreckt, Zehen hoch. Mit langem Rücken darüber beugen.",
+  "Toe stretch": "Zehen dehnen",
+  "Kneel with your toes tucked under. Sit back gently on your heels.":
+    "Knien, die Zehen aufgestellt. Sanft auf die Fersen zurücksetzen.",
+  "Shin stretch": "Schienbein dehnen",
+  "Kneel with the tops of your feet flat. Sit back on your heels.":
+    "Knien, die Fußrücken flach am Boden. Auf die Fersen zurücksetzen.",
+  "Downward dog": "Herabschauender Hund",
+  "Hands and feet down, hips high. Press your heels toward the floor.":
+    "Hände und Füße am Boden, Hüfte hoch. Die Fersen zum Boden drücken.",
+  "Legs up the wall": "Beine an die Wand",
+  "Lie down with your legs resting up a wall. Arms relaxed.":
+    "Hinlegen, die Beine an einer Wand hochgelegt. Arme entspannt.",
+  "Resting breath": "Ruheatmung",
+  "Lie on your back, eyes closed. Breathe slowly into your belly.":
+    "Auf den Rücken legen, Augen zu. Langsam in den Bauch atmen.",
+  "Chin tuck": "Kinn zurückziehen",
+  "Draw your chin straight back, then release. Eyes forward.":
+    "Das Kinn gerade nach hinten ziehen, dann lösen. Blick nach vorn.",
+  "Arm circles": "Armkreisen",
+  "Swing your arms in big, slow circles. Change direction halfway.":
+    "Die Arme in großen, langsamen Kreisen schwingen. Zur Halbzeit die Richtung wechseln.",
+  "Shoulder rolls": "Schulterkreisen",
+  "Roll your shoulders up, back and down. Slow and wide.":
+    "Die Schultern nach oben, hinten und unten rollen. Langsam und weit.",
+  "Wrist circles": "Handgelenke kreisen",
+  "Make slow circles with both wrists. Change direction halfway.":
+    "Mit beiden Handgelenken langsam kreisen. Zur Halbzeit die Richtung wechseln.",
+  "Cat–cow": "Katze–Kuh",
+  "On all fours, round your back, then let it dip. Move with your breath.":
+    "Im Vierfüßlerstand den Rücken runden, dann durchhängen lassen. Mit dem Atem bewegen.",
+  "Pelvic tilt": "Beckenkippen",
+  "Lie on your back, knees bent. Press your lower back down, then release.":
+    "Auf den Rücken legen, Knie gebeugt. Den unteren Rücken in den Boden drücken, dann lösen.",
+  Bridge: "Brücke",
+  "On your back, knees bent. Lift your hips, then lower slowly.":
+    "Auf dem Rücken, Knie gebeugt. Die Hüfte heben, dann langsam senken.",
+  "Leg swings": "Beinschwingen",
+  "Hold on to something. Swing one leg forward and back, relaxed.":
+    "An etwas festhalten. Ein Bein locker vor und zurück schwingen.",
+  "Lunge with reach": "Ausfallschritt mit Streckung",
+  "Step into a lunge and reach both arms up. Step back and switch.":
+    "In den Ausfallschritt gehen und beide Arme nach oben strecken. Zurück und wechseln.",
+  "Calf raises": "Wadenheben",
+  "Rise onto your toes, then lower slowly. Hold on if you need to.":
+    "Auf die Zehenspitzen steigen, dann langsam senken. Bei Bedarf festhalten.",
+  "Ankle circles": "Fußkreisen",
+  "Lift one foot and draw slow circles with your ankle.":
+    "Einen Fuß anheben und mit dem Knöchel langsam kreisen.",
+  Inchworm: "Raupe",
+  "Fold down, walk your hands out to a plank, then walk them back.":
+    "Nach unten beugen, mit den Händen bis in die Planke laufen, dann zurück.",
+  "Neck side tilt": "Nacken seitlich neigen",
+  "Tilt one ear toward your shoulder. Keep both shoulders low.":
+    "Ein Ohr zur Schulter neigen. Beide Schultern unten lassen.",
+  "Neck turn": "Kopf drehen",
+  "Turn your head to look over one shoulder. Chin level.":
+    "Den Kopf drehen und über eine Schulter schauen. Kinn gerade.",
+  "Goalpost arms": "Kaktusarme",
+  "Elbows at shoulder height, hands up. Draw your elbows back, chest open.":
+    "Ellbogen auf Schulterhöhe, Hände nach oben. Die Ellbogen nach hinten ziehen, Brust offen.",
+  "Standing side bend": "Seitbeuge im Stehen",
+  "Reach one arm overhead and lean to the other side. Hips still.":
+    "Einen Arm über den Kopf strecken und zur anderen Seite neigen. Hüfte ruhig.",
+  "Lying twist": "Drehung im Liegen",
+  "Lying down, drop both knees to one side. Shoulders stay on the floor.":
+    "Im Liegen beide Knie zu einer Seite sinken lassen. Die Schultern bleiben am Boden.",
+  "Sit with the soles of your feet together. Let your knees fall open.":
+    "Im Sitzen die Fußsohlen aneinanderlegen. Die Knie nach außen sinken lassen.",
+  Frog: "Frosch",
+  "On all fours, knees wide. Push your hips gently back.":
+    "Im Vierfüßlerstand, Knie weit. Die Hüfte sanft nach hinten schieben.",
+  "Side lunge": "Seitlicher Ausfallschritt",
+  "Feet wide, shift your weight into one bent knee. Other leg straight.":
+    "Füße weit, das Gewicht auf ein gebeugtes Knie verlagern. Das andere Bein gestreckt.",
+  "Wide-leg forward fold": "Vorbeuge in der Grätsche",
+  "Feet wide, fold forward from the hips. Hands to the floor.":
+    "Füße weit, aus der Hüfte nach vorn beugen. Hände zum Boden.",
+  "Arm openers": "Arme öffnen",
+  "Hug yourself, then open your arms wide. Squeeze your shoulder blades.":
+    "Sich selbst umarmen, dann die Arme weit öffnen. Die Schulterblätter zusammenziehen.",
+  "Open book": "Offenes Buch",
+  "Lie on your side, knees bent. Open your top arm wide and follow it with your eyes.":
+    "Auf die Seite legen, Knie gebeugt. Den oberen Arm weit öffnen und ihm mit dem Blick folgen.",
+  "Trunk turns": "Rumpfdrehen",
+  "Feet wide, turn your upper body side to side. Let your arms swing.":
+    "Füße weit, den Oberkörper von Seite zu Seite drehen. Die Arme mitschwingen lassen.",
+  "Knee sways": "Knie pendeln",
+  "Lying, knees bent and feet wide. Let your knees sway side to side.":
+    "Im Liegen, Knie gebeugt, Füße weit. Die Knie von Seite zu Seite pendeln lassen.",
+  "Hip circles": "Hüftkreisen",
+  "Hands on hips, draw big slow circles. Change direction halfway.":
+    "Hände an die Hüften, große, langsame Kreise ziehen. Zur Halbzeit die Richtung wechseln.",
+  // end of TASK-520 part B
   Morning: "Morgens",
   "After run": "Nach dem Laufen",
   "After gym": "Nach dem Fitnessstudio",
@@ -2572,6 +2759,9 @@ export const DE: Table = {
   "Show fewer": "Weniger",
   "See all": "Alle ansehen",
 
+  // src/route/SurprisePill.tsx (TASK-448: «Surprise me»)
+  "Surprise me": "Überrasch mich",
+
   // src/route/DistanceDial.tsx (TASK-361: the distance by half a km)
   "Tap to type the distance": "Tippen, um die Distanz einzugeben",
 
@@ -3121,8 +3311,6 @@ export const DE: Table = {
   // src/air/ (TASK-479 part B2: the flight screen's editor; texts approved by the user on 2026-11-21)
   "Edit layout": "Layout bearbeiten",
   "Page {n} of {count}": "Seite {n} von {count}",
-  "Touch a widget to move it, size it or take it away.":
-    "Tippe auf ein Widget, um es zu verschieben, seine Größe zu ändern oder es zu entfernen.",
   Size: "Größe",
   Unit: "Einheit",
   "Add page": "Seite hinzufügen",
@@ -3347,6 +3535,7 @@ export const DE: Table = {
     "Erstelle ein Konto, um Tipps aus deinen Trainings zu bekommen",
   "Log a few workouts and your tips will show up here":
     "Trag ein paar Trainings ein, dann erscheinen hier deine Tipps",
+  "Go to your workouts": "Zu deinen Trainings",
   "Tips are general, not medical advice. If something hurts, stop and ask a professional.":
     "Die Tipps sind allgemein und keine ärztliche Beratung. Wenn etwas wehtut, hör auf und frag eine Fachperson.",
   "{exercise}: {kg} kg": "{exercise}: {kg} kg",
@@ -3444,8 +3633,6 @@ export const DE: Table = {
   "(set by you)": "(von dir festgelegt)",
   Left: "Übrig",
   "kcal a day": "kcal pro Tag",
-  "Your own number, or the one your dietitian gave you. MuW never suggests one.":
-    "Deine eigene Zahl oder die von deiner Ernährungsfachkraft. MuW schlägt nie eine vor.",
   "Remove target": "Ziel entfernen",
   Breakfast: "Frühstück",
   Lunch: "Mittagessen",
@@ -3547,7 +3734,7 @@ export const DE: Table = {
   Estimated: "Geschätzt",
   "No wind": "Kein Wind",
   "needs {height}": "braucht {height}",
-  "No landings in your file": "Keine Landeplätze in deiner Datei",
+  "No landings": "Keine Landeplätze",
   // src/nutrition (TASK-489 part D)
   "Calorie balance": "Kalorienbilanz",
   Used: "Verbraucht",
@@ -3582,4 +3769,177 @@ export const DE: Table = {
     "Per Barcode gefundene Produkte enthalten Daten von Open Food Facts, verfügbar unter der Open Database License. Sie bleiben von der USDA-Liste getrennt.",
   "Only you see this page. What you write here stays on your phone; a barcode you look up goes to Open Food Facts.":
     "Diese Seite siehst nur du. Was du hier einträgst, bleibt auf deinem Handy; ein Barcode, den du suchst, geht an Open Food Facts.",
+
+  // src/takeoffs (TASK-493 part C)
+  Takeoffs: "Startplätze",
+  "Zoom in to see the takeoffs.": "Zoome hinein, um die Startplätze zu sehen.",
+  "Zoom in to see all the takeoffs.": "Zoome hinein, um alle Startplätze zu sehen.",
+  Landing: "Landeplatz",
+  "Unnamed takeoff": "Startplatz ohne Namen",
+  "Unnamed landing": "Landeplatz ohne Namen",
+  "Official site": "Offizieller Platz",
+  Faces: "Ausrichtung",
+  "Landings nearby": "Landeplätze in der Nähe",
+  "{distance} away · {drop} lower": "{distance} entfernt · {drop} tiefer",
+  "No landing within 15 km on OpenStreetMap.":
+    "Kein Landeplatz im Umkreis von 15 km auf OpenStreetMap.",
+  "Takeoffs above": "Startplätze darüber",
+  "Flights from here": "Flüge von hier",
+  "{flights} flights by {pilots} pilots": "{flights} Flüge von {pilots} Piloten",
+  "Today: {count}": "Heute: {count}",
+  "Few flights from here yet.": "Noch wenige Flüge von hier.",
+  "In the air now: {count}": "Jetzt in der Luft: {count}",
+  "Watch live": "Live ansehen",
+  Highest: "Am höchsten",
+  "Missing a takeoff? Add it on OpenStreetMap.":
+    "Fehlt ein Startplatz? Füge ihn auf OpenStreetMap hinzu.",
+  "The takeoffs could not be loaded.": "Die Startplätze konnten nicht geladen werden.",
+  // src/air/ (TASK-479 part D4: the task passed on; approved by the user on 2026-11-23)
+  "Share file": "Datei teilen",
+  "Show QR": "QR zeigen",
+  "Task for XCTrack": "Aufgabe für XCTrack",
+  "This task is too long for a QR code.":
+    "Diese Aufgabe ist zu lang für einen QR-Code.",
+  // src/air/ (TASK-479 part B3: widgets dragged in the editor; approved by the user on 2026-11-26)
+  "Drag a widget to move it, or its corner to size it. Touch it for more.":
+    "Zieh ein Widget, um es zu verschieben, oder seine Ecke, um die Größe zu ändern. Tippe es an für mehr.",
+  // src/groups (TASK-495 part B)
+  "Find your city": "Deine Stadt suchen",
+  "New group": "Neue Gruppe",
+  "Choose photo": "Foto wählen",
+  "Remove photo": "Foto entfernen",
+  Description: "Beschreibung",
+  "Sports (up to {count})": "Sportarten (bis zu {count})",
+  City: "Stadt",
+  "Who can join": "Wer beitreten kann",
+  Invite: "Einladen",
+  "Search by name": "Nach Namen suchen",
+  "Nobody found.": "Niemand gefunden.",
+  Invited: "Eingeladen",
+  "Make admin": "Zum Admin machen",
+  "Make {name} the admin? You become a member.":
+    "{name} zum Admin machen? Du wirst Mitglied.",
+  "Remove from group": "Aus der Gruppe entfernen",
+  "Remove {name} from the group?": "{name} aus der Gruppe entfernen?",
+  "Make co-admin": "Zum Co-Admin machen",
+  "Remove co-admin": "Co-Admin entziehen",
+  Members: "Mitglieder",
+  "Leave group": "Gruppe verlassen",
+  "Delete group": "Gruppe löschen",
+  "Delete {name}? Its members, requests and invites go with it. This can't be undone.":
+    "{name} löschen? Mitglieder, Anfragen und Einladungen werden mit gelöscht. Das lässt sich nicht rückgängig machen.",
+  "Leave {name}?": "{name} verlassen?",
+  Groups: "Gruppen",
+  "Withdraw the request": "Anfrage zurückziehen",
+  "Accept invite": "Einladung annehmen",
+  Unmute: "Wieder laut",
+  Mute: "Stummschalten",
+  "Mute only stops the news of new outings.":
+    "Stummschalten stoppt nur die Hinweise auf neue Ausflüge.",
+  "Requests ({count})": "Anfragen ({count})",
+  "Next outings": "Nächste Ausflüge",
+  "No outings yet.": "Noch keine Ausflüge.",
+  "All members ({count})": "Alle Mitglieder ({count})",
+  "Recent activity": "Letzte Aktivitäten",
+  "No activity in the last 14 days.": "Keine Aktivität in den letzten 14 Tagen.",
+  "Past outings": "Vergangene Ausflüge",
+  "No requests to join.": "Keine Beitrittsanfragen.",
+  "Go out together: make a group, or join one.":
+    "Gemeinsam raus: Gründe eine Gruppe oder tritt einer bei.",
+  Invites: "Einladungen",
+  "Meet in a public place, never at your home. MuW doesn't organise or check groups or their outings. Everyone on MuW is 16 or older.":
+    "Trefft euch an einem öffentlichen Ort, nie bei dir zu Hause. MuW organisiert und prüft keine Gruppen und ihre Ausflüge. Alle auf MuW sind mindestens 16 Jahre alt.",
+  "Mountaineering is dangerous. MuW doesn't organise, guide or check groups, outings, routes or difficulty, and isn't a mountain guide. Everyone is responsible for their own experience, gear and safety.":
+    "Bergsteigen ist gefährlich. MuW organisiert, führt und prüft keine Gruppen, Ausflüge, Routen oder Schwierigkeiten und ist kein Bergführer. Alle sind selbst für ihre Erfahrung, Ausrüstung und Sicherheit verantwortlich.",
+  "Public@@group": "Öffentlich",
+  "Request to join": "Auf Anfrage",
+  "Invite only": "Nur mit Einladung",
+  Admin: "Admin",
+  "Co-admin": "Co-Admin",
+  "This group isn't available.": "Diese Gruppe ist nicht verfügbar.",
+  // src/nutrition (TASK-489 part C2)
+  "Use Apple Health": "Apple Health verwenden",
+  "MuW reads your active energy and the workouts other apps recorded, to count the energy you use. They are read on your phone and stay there.":
+    "MuW liest deine Aktivitätsenergie und die Trainings, die andere Apps aufgezeichnet haben, um die Energie zu zählen, die du verbrauchst. Sie werden auf deinem Handy gelesen und bleiben dort.",
+  "Active energy": "Aktivitätsenergie",
+  "from Apple Health": "von Apple Health",
+  "Your activities are already inside Apple Health's active energy: they are not added again.":
+    "Deine Aktivitäten stecken schon in der Aktivitätsenergie von Apple Health: Sie werden nicht noch einmal addiert.",
+  "Apple Health has nothing for this day: your activities are counted.":
+    "Apple Health hat nichts für diesen Tag: Deine Aktivitäten werden gezählt.",
+  "Stop using Apple Health": "Apple Health nicht mehr verwenden",
+  // src/air/ (TASK-479 part D5: the pilot's own waypoints; approved by the user on 2026-11-26)
+  "Mark this place": "Diesen Ort markieren",
+  "Waypoint here": "Wegpunkt hier",
+  "Landing here": "Landeplatz hier",
+  "My waypoints": "Meine Wegpunkte",
+  "Remove all": "Alle entfernen",
+  "Press the flight map long to add one.":
+    "Halte die Flugkarte gedrückt, um einen hinzuzufügen.",
+  // src/nutrition (TASK-489 part H: the animated day; approved by the user on 2026-11-24)
+  "Protein, carbs and fat (est.)": "Eiweiß, Kohlenhydrate und Fett (gesch.)",
+  Protein: "Eiweiß",
+  Carbs: "Kohlenhydrate",
+  Fat: "Fett",
+  "{percent}% of the energy": "{percent}% der Energie",
+  "Counted only for the foods that have these numbers.":
+    "Nur für Lebensmittel gezählt, die diese Zahlen haben.",
+  "No protein, carbs or fat to count for this day.":
+    "Für diesen Tag gibt es kein Eiweiß, keine Kohlenhydrate und kein Fett zu zählen.",
+  // src/air/ (TASK-479 part D6: landings from OpenStreetMap; approved by the user on 2026-11-26)
+  "Landings from OpenStreetMap: {count}": "Landeplätze aus OpenStreetMap: {count}",
+  // src/nutrition (TASK-489 part I: the invitation at the end of an activity; approved by the user on 2026-11-24)
+  "Count what you eat too": "Zähl auch, was du isst",
+  "Write your own diet and what you eat: MuW estimates the calories you eat and the ones you use, this activity included.":
+    "Schreib deinen eigenen Ernährungsplan auf und was du isst: MuW schätzt die Kalorien, die du isst und die du verbrauchst, diese Aktivität eingeschlossen.",
+  "This activity: {kcal} kcal (est.)": "Diese Aktivität: {kcal} kcal (gesch.)",
+  "Add what you ate": "Hinzufügen, was du gegessen hast",
+  // src/nutrition (TASK-489 part J: the door of Nutrition and MuW's estimate; approved by the user on 2026-11-24)
+  "Your food diary: what you eat, what you use, and the balance.":
+    "Dein Ernährungstagebuch: was du isst, was du verbrauchst und die Bilanz.",
+  Example: "Beispiel",
+  "Write your plan": "Schreib deinen Plan",
+  "Your own diet, or your dietitian's, day by day.":
+    "Dein eigener Ernährungsplan oder der deiner Ernährungsberatung, Tag für Tag.",
+  "Log what you eat": "Trag ein, was du isst",
+  "Foods and grams: MuW estimates the calories.":
+    "Lebensmittel und Gramm: MuW schätzt die Kalorien.",
+  "See your balance": "Sieh deine Bilanz",
+  "Eaten less used, with all your activities.":
+    "Gegessen minus verbraucht, mit all deinen Aktivitäten.",
+  "Next@@step": "Weiter",
+  "What brings you here?": "Was führt dich her?",
+  "Keep track of what I eat": "Im Blick behalten, was ich esse",
+  "Lose weight": "Abnehmen",
+  "Gain weight": "Zunehmen",
+  "Follow my dietitian's plan": "Dem Plan meiner Ernährungsberatung folgen",
+  "You can skip this: it only changes what the page shows first.":
+    "Du kannst das überspringen: Es ändert nur, was die Seite zuerst zeigt.",
+  "To estimate, MuW needs your weight, height, year of birth and sex. They stay on your phone.":
+    "Für die Schätzung braucht MuW Gewicht, Größe, Geburtsjahr und Geschlecht. Sie bleiben auf deinem Handy.",
+  "You use about {kcal} kcal a day (est.)":
+    "Du verbrauchst etwa {kcal} kcal am Tag (gesch.)",
+  "Eating less than you use is a deficit; more is a surplus.":
+    "Weniger essen, als du verbrauchst, ist ein Defizit; mehr ist ein Überschuss.",
+  "Best: write your own number, or your dietitian's.":
+    "Am besten: Schreib deine eigene Zahl oder die deiner Ernährungsberatung.",
+  "See MuW's estimate (demo)": "MuWs Schätzung ansehen (Demo)",
+  "MuW's estimate: {kcal} kcal a day": "MuWs Schätzung: {kcal} kcal am Tag",
+  "A rough estimate from a public formula, only a demonstration. MuW is not made by health professionals: this is not medical advice.":
+    "Eine grobe Schätzung nach einer öffentlichen Formel, nur zur Veranschaulichung. MuW wird nicht von Gesundheitsfachleuten gemacht: Das ist kein medizinischer Rat.",
+  "If you are pregnant or breastfeeding, have an illness, or have or had an eating disorder, this number is not for you: ask your doctor.":
+    "Wenn du schwanger bist oder stillst, eine Krankheit hast oder eine Essstörung hast oder hattest, ist diese Zahl nichts für dich: Frag deine Ärztin oder deinen Arzt.",
+  "Use this number": "Diese Zahl verwenden",
+  "I'll write my own": "Ich schreibe meine eigene",
+  "MuW suggests no calorie number to people under 18.":
+    "MuW schlägt Personen unter 18 Jahren keine Kalorienzahl vor.",
+  "From your data MuW suggests no number for this. Talk to your doctor or a dietitian.":
+    "Nach deinen Daten schlägt MuW hierfür keine Zahl vor. Sprich mit deiner Ärztin, deinem Arzt oder einer Ernährungsberatung.",
+  "Start@@nutrition": "Los geht's",
+  "MuW's estimate of a daily target (demo)": "MuWs Schätzung für das Tagesziel (Demo)",
+  "A usual day is the average of what you used in your last seven days. To lose weight MuW takes 600 kcal a day off it, the amount the NHS gives, only for adults with a body mass index of 25 or more, and never below 1,400 kcal a day for women or 1,900 for men (NHS 12-week weight loss plan). To gain weight MuW suggests no number. Sources read on 24 November 2026. MuW is not made by health professionals: better to write your own number, or your dietitian's.":
+    "Ein üblicher Tag ist der Durchschnitt dessen, was du in den letzten sieben Tagen verbraucht hast. Zum Abnehmen zieht MuW 600 kcal am Tag ab, die Menge, die der NHS nennt, nur für Erwachsene mit einem Body-Mass-Index ab 25 und nie unter 1.400 kcal am Tag für Frauen oder 1.900 für Männer (12-Wochen-Abnehmplan des NHS). Zum Zunehmen schlägt MuW keine Zahl vor. Quellen gelesen am 24. November 2026. MuW wird nicht von Gesundheitsfachleuten gemacht: Besser schreibst du deine eigene Zahl oder die deiner Ernährungsberatung.",
+  // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
+  Weather: "Wetter",
+  "Weather: {temperature}, wind {speed}": "Wetter: {temperature}, Wind {speed}",
 };

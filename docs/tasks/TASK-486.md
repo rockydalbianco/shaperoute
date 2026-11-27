@@ -1,9 +1,7 @@
 # TASK-486 — L'attrezzatura: scarpe, bici, sci e tutto il resto, coi km
 
-**Stato**: In lavorazione · parte 0 chiusa il 2026-11-21; A–G in `main`
-(2026-11-23, G2 con #1536), privacy in `main` (#1480), tutto dietro
-`GEAR_ON = false`; restano G1 sul server, l'accensione col sì dell'utente
-(la chiede il Coordinatore) e l'OTA
+**Stato**: Done · 2026-11-26 · A–G sul server e in `main`, accesa con
+#1558; esce con l'OTA dopo la 26 (vedi «Esito»)
 **Fase**: 5 · **Branch**: `docs/TASK-486-gear` (parte 0), poi
 `feat/TASK-486-<parte>-…` per ogni parte
 **ADR**: ADR-0393 · numeri dal Coordinatore (fork 2), 2026-11-21
@@ -331,8 +329,8 @@ packages/shared-types/src/index.ts             (opens con gear_id)
 docs/API.md
 ```
 
-Parte G2, app (PR #1536; nessun testo e nessuna schermata nuova: apre
-l'editor della parte B):
+Parte G2, app (PR #1536, in `main` il 2026-11-23, `70c15c0f`; nessun
+testo e nessuna schermata nuova: apre l'editor della parte B):
 
 ```
 apps/mobile/src/gear/gearDoor.ts               (nuovo)
@@ -344,8 +342,24 @@ apps/mobile/src/notifications/openTarget.ts
 apps/mobile/src/screens/ProfileLayer.tsx       (tre righe)
 ```
 
-PR docs di E–G (questa): `docs/tasks/TASK-486.md`, `docs/STATUS.md`,
+PR docs di E–G (#1537): `docs/tasks/TASK-486.md`, `docs/STATUS.md`,
 `docs/DECISIONS.md` (ADR-0393, precisazione E–G).
+
+Accensione (PR #1558, in `main` il 2026-11-24, `faf37daf`; sì
+dell'utente al Coordinatore, «Sì procedi»). Con l'attrezzatura accesa,
+quattro test che contano le richieste in ordine la tengono spenta per sé
+(una riga di mock ciascuno, ok del Coordinatore):
+
+```
+apps/mobile/src/gear/gearOn.ts                 (GEAR_ON = true)
+apps/mobile/src/feed/PostPage.test.tsx
+apps/mobile/src/profile/UserProfileFollow.test.tsx
+apps/mobile/src/profile/UserProfileReport.test.tsx
+apps/mobile/src/screens/PeopleScreen.test.tsx
+```
+
+PR docs finale (questa): `docs/tasks/TASK-486.md`, `docs/STATUS.md`,
+`docs/archive/COMPLETATI.md`.
 
 ## Per chi costruisce sopra l'attrezzatura
 
@@ -372,4 +386,10 @@ TASK-494 (le scadenze della vela, ADR-0401) e chi verrà dopo:
 
 ## Esito
 
-*(a fine task)*
+Done il 2026-11-26. L'attrezzatura è tutta sul server (passi 17, 21 e
+22) e accesa nell'app dal 2026-11-24 (#1558): la lista con foto e nota,
+gli attrezzi a fine attività e in «My activities», la sezione sul profilo,
+la riga nella pagina del post, «From my gear» nei capi taggati e il limite
+nella campanella che apre l'attrezzo. Privacy online (#1480). Arriva sui
+telefoni con l'OTA dopo la 26, che pubblica il Coordinatore; la Guida
+dell'app non ne parla ancora (un task a parte, se l'utente lo vuole).

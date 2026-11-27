@@ -10,9 +10,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * fill, and nothing here may be made up to fill them.
  */
 
-const UPDATED = "10 November 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the replies and the reactions to a comment (TASK-454 C). Redated for the group runs among the reports (TASK-309 B). Redated for the posts of photos only (TASK-312 C2). «From a file» for the «+» of the Feed, which also records now (TASK-481 A). A gym plan shared in the Feed (TASK-485 B). Gear (TASK-486). The heart rate of a workout at the gym (TASK-385 G3). */
-const PRIVACY_UPDATED = "24 November 2026";
+const UPDATED = "27 November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the replies and the reactions to a comment (TASK-454 C). Redated for the group runs among the reports (TASK-309 B). Redated for the posts of photos only (TASK-312 C2). «From a file» for the «+» of the Feed, which also records now (TASK-481 A). A gym plan shared in the Feed (TASK-485 B). Gear (TASK-486). The heart rate of a workout at the gym (TASK-385 G3). The estimate of a daily target in «Nutrition» and the reason given for using it (TASK-489 J). The paragliding landings nearby and the wind aloft for a flight (TASK-479 D6, H). The weather of a post, from MET Norway (TASK-410 E). */
+const PRIVACY_UPDATED = "27 November 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -213,6 +213,14 @@ const terms: AboutDocument = {
       ],
     },
     {
+      heading: "Nutrition",
+      blocks: [
+        "«Nutrition» is a diary and a calculator, not a health service. MuW is not made by doctors, dietitians or other health professionals.",
+        "The calories of the foods, the energy you use and, if you ask for it, the estimate of a daily target come from public tables and formulas. They are estimates, for information only: they are not medical or dietary advice and do not replace a professional who knows you.",
+        "If you are under 18, pregnant or breastfeeding, have a medical condition, or have or had an eating disorder, talk to your doctor before counting calories or changing what you eat.",
+      ],
+    },
+    {
       heading: "No warranty, and the limits of our liability",
       blocks: [
         "We work to keep MuW running and its routes good, but the app is provided as it is: we do not promise that it is always available or free of errors, that a route can be completed, or that its measures are exact.",
@@ -234,6 +242,7 @@ const terms: AboutDocument = {
             "The maps come from OpenFreeMap and from the data of OpenStreetMap (© OpenStreetMap contributors).",
             'The 3D animals in the video come from Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm and SahuAvdhesh on Sketchfab (CC BY 4.0), animated and adapted by MuW.',
             "Places are searched with Geoapify.",
+            "The weather of posts and ski resorts comes from MET Norway (CC BY 4.0).",
             "If you connect Strava, the runs you send there follow Strava's own terms and privacy settings.",
             "A picture you share leaves through the phone's share sheet: the app that receives it has its own terms.",
             "The link of a tagged item opens the shop's site in your browser: the shop has its own terms.",
@@ -356,7 +365,9 @@ const privacy: AboutDocument = {
         "For a day of skiing, our server compares the saved track with the lifts and pistes of OpenStreetMap, which it keeps itself, to write which ones you took and how many times. The names show on the post, for whoever can see it. Nothing goes to another service.",
         "On the photos you publish you can tag the items you are wearing: what each one is, its brand and, if you like, its model and a link to a shop. Whoever sees the photo sees them. If the run goes back to «Only me», they leave our server with its photos and stay on this phone.",
         "You can add your gear: shoes, a bike, skis, a helmet, anything you use. For each item we keep its kind, brand, model, the name you give it, the month you bought it, your note and its photo. The photo is kept resized, without the data your phone adds to it, such as where and when it was taken. The activities you choose for an item add their distance and time to its totals, which our server counts from your saved activities. Other members see your gear on your profile, with its totals, notes and photos, unless you turn on «Hide from profile» for an item. The sports you choose for an item and its limit are seen only by you. Your gear is deleted with your account.",
+        "A paragliding flight you save counts, without your name, in the history of the takeoff you left from, on the map of takeoffs: how many flights and how many different pilots, month by month and today. Our server works this out from the takeoff point of the saved flight, even when the flight is private, and shows these numbers only when there are at least three different pilots. Your name and your flight appear in the takeoff's records (the longest flight, the highest, the farthest) only if the flight's post is visible to everyone. While you share a flight live, the takeoff shows that someone is in the air, without your name; your link appears there only if you already share with everyone in the Feed. The takeoffs and landings come from OpenStreetMap.",
         "For a day of skiing, the app sends our server your position rounded to about 1 km to find the nearest resort; the server asks MET Norway for the weather with the resort's position, never yours. The resort, snow and gear you add show on the post, for whoever can see it, and the snow also counts, without your name, in the resort's snow of the day.",
+        "When you save an activity outdoors within 3 hours of its end, our server sends MET Norway its starting point, rounded to about 1 km, to ask for the weather of that hour; MET Norway does not get your name. The weather (temperature, sky and wind) shows on the post, for whoever can see it.",
       ],
     },
     {
@@ -426,7 +437,7 @@ const privacy: AboutDocument = {
     {
       heading: "Your position",
       blocks: [
-        "The phone's position is used on the phone, to start a route where you are and to follow your run. It goes to our server exactly as it is as the start of a route you ask for, as the start of the shapes the app prepares for you nearby when the phone cannot draw them itself, and inside a run you save. Off the route of a run, when the phone cannot find the way back to it by itself, it goes there exactly as it is with the stretch of the route ahead, to find that way on the streets: the server does not keep them. It goes rounded to about 1 km to find the offline map around you, recommended routes, towns and drawings nearby, and to put the places near you first in a search; rounded like this it is not kept with your account. When you share an activity live, your exact position goes to our server and to whoever has the link, as described under «Sharing live».",
+        "The phone's position is used on the phone, to start a route where you are and to follow your run. It goes to our server exactly as it is as the start of a route you ask for, as the start of the shapes the app prepares for you nearby when the phone cannot draw them itself, and inside a run you save. Off the route of a run, when the phone cannot find the way back to it by itself, it goes there exactly as it is with the stretch of the route ahead, to find that way on the streets: the server does not keep them. It goes rounded to about 1 km to find the offline map around you, paragliding landings nearby, the wind aloft for a flight, recommended routes, towns and drawings nearby, and to put the places near you first in a search; rounded like this it is not kept with your account. Our server downloads the wind aloft from DWD and ECMWF for whole areas, never with your location. When you share an activity live, your exact position goes to our server and to whoever has the link, as described under «Sharing live».",
         "On iPhone, during a run you started, the app keeps following your position also with the phone locked or another app open, until you stop the run; the iPhone shows it with a blue mark at the top of the screen. MuW asks for the position only while you use the app, never «Always».",
         "Like any internet service, our server sees the internet (IP) address a request comes from while it answers it. The server's log does not write positions, and the database holds no IP addresses.",
         "A register of the route requests, with their start, exists to reproduce a defect. It is off on our server; switched on, it holds at most 10 MB, then the oldest lines are lost.",
@@ -462,8 +473,8 @@ const privacy: AboutDocument = {
     {
       heading: "Nutrition",
       blocks: [
-        "«Nutrition» is a diary you keep for yourself. The foods you add, your weekly plan, what you write that you ate each day, your daily target and the calories you correct by hand are kept on your phone only: they do not reach our server and nobody else can see them. The «Calorie balance» on your profile is worked out on your phone and shown only to you.",
-        "To estimate the energy you use, MuW counts on your phone the activities of your account and the body data you entered in «Settings». Every number is an estimate: MuW does not provide diets or medical advice.",
+        "«Nutrition» is a diary you keep for yourself. The foods you add, your weekly plan, what you write that you ate each day, your daily target, the reason you gave for using it and the calories you correct by hand are kept on your phone only: they do not reach our server and nobody else can see them. The «Calorie balance» on your profile is worked out on your phone and shown only to you.",
+        "To estimate the energy you use, MuW counts on your phone the activities of your account and the body data you entered in «Settings». If you ask for it, MuW also works out on your phone, from the same data and a public formula, an estimate of a daily calorie target: only a demonstration, never shown to people under 18. Every number is an estimate: MuW is not made by health professionals and does not provide diets or medical advice.",
         "This data was never on our server, so logging out or deleting your account does not delete it: it stays on your phone until you remove it there or uninstall the app.",
       ],
     },
@@ -471,6 +482,7 @@ const privacy: AboutDocument = {
       heading: "Apple Health and Health Connect",
       blocks: [
         "Once you turn on «Save to Apple Health» (iPhone) or «Save to Health Connect» (Android), every activity you save is also written there, on your phone: the sport, when it started and ended, the distance, the route and, for a run, the estimated active calories. If at the end of a swim in a pool or a workout at the gym you tap «Add heart rate from Apple Health», MuW reads the heart rate your watch recorded during that activity, and nothing else; after that first tap it reads it at the end of each swim and workout. Its average and maximum stay with the activity on our server and show in its post, unless you turn off «Show heart rate»; the time in each zone stays on your phone. None of your health data reaches any advertising. You can stop it in the Health app or in Health Connect. What is already there stays until you delete it there, also when you delete the run or your account.",
+        "Once you tap «Show my sleep from Apple Health», MuW reads your sleep from Apple Health (the time asleep and the sleep stages) on your phone and works out a sleep score there. Nothing of it reaches our server until you publish it: with «Share» on your profile, with «Publish» as a post of its own, or with «Sleep last night» in the post of an activity. Then the score, the hours slept, the stages and the day are kept on our server and seen by whoever can see your profile or that post, until you stop sharing, remove the post or delete your account. Never the hour you went to bed or woke up.",
       ],
     },
     {

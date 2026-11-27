@@ -26,6 +26,8 @@ import { resetFlightNotice } from "./flightNotice";
 import { flightOf, T0 } from "./syntheticFlight";
 import { resetAirspace, setAirspace } from "./airspaceStore";
 import { glidePrefsNow, resetGlidePrefs } from "./glidePrefs";
+import { addManualWaypoint, resetManualWaypoints } from "./manualWaypoints";
+import { refreshSiteLandings, resetSiteLandings } from "./siteLandings";
 import { resetTaskProgress } from "./taskProgress";
 import { destination } from "./taskRoute";
 import { resetWaypointStore, setTask } from "./waypointStore";
@@ -341,6 +343,62 @@ describe("the pilot's task (part D2)", () => {
   });
 });
 
+describe("the nearest landing of all the pilot has (parts D3, D5, D6)", () => {
+  beforeEach(() => {
+    resetWaypointStore();
+    resetManualWaypoints();
+    resetSiteLandings();
+  });
+
+  async function showXc() {
+    await showScreen();
+    await fireEvent.press(screen.getByTestId("flight-screen-layout"));
+    await fireEvent.press(screen.getByText("XC"));
+    await fireEvent.press(screen.getByTestId("flight-options-done"));
+  }
+
+  it("says there is none without any landing", async () => {
+    await showXc();
+    expect(
+      within(screen.getByTestId("widget-nearestLanding")).getByText("No landings"),
+    ).toBeTruthy();
+  });
+
+  it("takes the pilot's own landing and OpenStreetMap's, without a file", async () => {
+    const here = TRACK.fixes[TRACK.fixes.length - 1].point;
+    // Invented: the pilot's own 3 km east, OpenStreetMap's 1 km north.
+    addManualWaypoint(destination(here, 90, 3000), true);
+    const [lat, lon] = destination(here, 0, 1000);
+    await refreshSiteLandings(here, Date.now(), () =>
+      Promise.resolve({
+        kind: "ok",
+        value: {
+          sites: [
+            {
+              id: 1,
+              kind: "landing",
+              lat,
+              lon,
+              name: "Test field",
+              ele_m: 300,
+              orientation: [],
+              official: null,
+              osm_url: "https://www.openstreetmap.org/node/1",
+              away_m: null,
+            },
+          ],
+          more: false,
+          attribution: "© OpenStreetMap contributors",
+        },
+      }),
+    );
+    await showXc();
+    const widget = within(screen.getByTestId("widget-nearestLanding"));
+    expect(widget.getByText("1000")).toBeTruthy();
+    expect(widget.getByText(/Test field$/)).toBeTruthy();
+  });
+});
+
 describe("the vario's sound (part C)", () => {
   beforeEach(() => {
     resetVarioPrefs();
@@ -425,6 +483,52 @@ describe("the editor (part B2)", () => {
       col: 0,
       row: 0,
     });
+  });
+
+  it("drags a widget onto another: the two change places (B3)", async () => {
+    await holdVario();
+    const view = screen.getByTestId("flight-editor-cell-varioAvg-drag");
+    const touch = (x: number) => ({ nativeEvent: { pageX: x, pageY: 300 } });
+    await fireEvent(view, "startShouldSetResponderCapture", touch(50));
+    await fireEvent(view, "responderGrant", touch(50));
+    // Two cells of 90 and their gaps to the right.
+    await fireEvent(view, "responderMove", touch(242));
+    await fireEvent(view, "responderRelease", touch(242));
+    const page = pagesOf(loadFlightPrefs("km"))[0];
+    expect(page.find((cell) => cell.widget === "varioAvg")).toMatchObject({
+      col: 2,
+      row: 4,
+    });
+    expect(page.find((cell) => cell.widget === "thermalGain")).toMatchObject({
+      col: 0,
+      row: 4,
+    });
+  });
+
+  it("sizes the selected widget by its corner (B3)", async () => {
+    await holdVario();
+    const handle = screen.getByTestId("flight-editor-cell-vario-handle");
+    const touch = (y: number) => ({ nativeEvent: { pageX: 380, pageY: y } });
+    await fireEvent(handle, "startShouldSetResponderCapture", touch(120));
+    await fireEvent(handle, "responderGrant", touch(120));
+    // One row of about 66 points up.
+    await fireEvent(handle, "responderMove", touch(54));
+    await fireEvent(handle, "responderRelease", touch(54));
+    expect(pagesOf(loadFlightPrefs("km"))[0][0]).toMatchObject({
+      widget: "vario",
+      w: 4,
+      h: 1,
+    });
+  });
+
+  it("says the widgets are dragged (B3)", async () => {
+    await holdVario();
+    await fireEvent.press(screen.getByTestId("flight-editor-cell-vario"));
+    expect(
+      screen.queryByText(
+        "Drag a widget to move it, or its corner to size it. Touch it for more.",
+      ),
+    ).toBeNull();
   });
 
   it("gives a widget its own unit, shown on the flight screen", async () => {

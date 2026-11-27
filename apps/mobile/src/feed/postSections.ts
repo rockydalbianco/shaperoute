@@ -5,6 +5,7 @@ import type { ElevationPoint, RunSplit, RunStats } from "../api/runStats";
 import { t } from "../i18n";
 import { CLIMB_STEP_M } from "../navigation/runMetrics";
 import { findProfile } from "../sports";
+import { symbolSign, temperatureLabel } from "../ski/ResortWeather";
 import { postMetrics } from "../sports/postMetrics";
 import {
   METRES_PER_FOOT,
@@ -65,7 +66,19 @@ export type PostSection =
       /** What VoiceOver says of the chart. */
       label: string;
     }
-  | { kind: "heart"; title: string; rows: PostRow[] };
+  | { kind: "heart"; title: string; rows: PostRow[] }
+  | {
+      kind: "weather";
+      title: string;
+      /** MET Norway's symbol as a sign ("⛅"); "" for one it has no sign for. */
+      sign: string;
+      /** "14°", in Fahrenheit with miles. */
+      temperature: string;
+      /** "Wind 12 km/h"; null when MET Norway gave none. */
+      wind: string | null;
+      /** What VoiceOver says of the card. */
+      label: string;
+    };
 
 /** The lowest column still shows: a flat profile is not an empty card. */
 export const MIN_COLUMN = 0.06;
@@ -320,9 +333,38 @@ export function heartSection(stats: RunStats | null): PostSection | null {
   };
 }
 
+/** The weather of the hour of the end (TASK-410 part E, from MET Norway):
+ * the sky, the temperature, the wind. Null without one: a run saved late,
+ * imported, on the snow, or before part E. */
+export function weatherSection(
+  stats: RunStats | null,
+  units: Units = appUnits(),
+): PostSection | null {
+  const weather = stats?.weather ?? null;
+  if (weather === null) {
+    return null;
+  }
+  const temperature = temperatureLabel(weather.temperature_c, units);
+  const speed =
+    weather.wind_ms === null
+      ? null
+      : `${Math.round(speedIn(weather.wind_ms, 1000, units))} ${speedUnit(units)}`;
+  return {
+    kind: "weather",
+    title: t("Weather"),
+    sign: symbolSign(weather.symbol),
+    temperature,
+    wind: speed === null ? null : `${t("Wind")} ${speed}`,
+    label:
+      speed === null
+        ? `${t("Weather")}: ${temperature}`
+        : t("Weather: {temperature}, wind {speed}", { temperature, speed }),
+  };
+}
+
 /**
- * The cards of the page of `post`, in order: summary, splits, elevation,
- * heart rate. A card with nothing to show is not in the list: an old post,
+ * The cards of the page of `post`, in order: summary, weather, splits,
+ * elevation, heart rate. A card with nothing to show is not in the list: an old post,
  * without `stats`, has its summary only.
  */
 export function postSections(
@@ -338,6 +380,7 @@ export function postSections(
   };
   const sections = [
     summary.rows.length > 0 ? summary : null,
+    weatherSection(stats, units),
     splitsSection(post, stats, units),
     elevationSection(post, stats, units),
     heartSection(stats),

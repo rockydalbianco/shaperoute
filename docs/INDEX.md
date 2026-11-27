@@ -91,7 +91,8 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Dati dal vivo in registrazione, «Share live activity» (link web a token) | `tasks/TASK-424.md`, ADR-0352, `API.md` «Live shares», `SITO.md` «La pagina dal vivo», `UI.md` «La corsa» («Share live») e «Calories» (le formule di ogni attività), ADR-0352 precisazione C |
 | La corsa in registrazione: le tre pagine «Compass», «Map», «Data», la mappa che gira dove punta il telefono | `UI.md` «La navigazione», ADR-0350, ADR-0137, `tasks/TASK-422.md` |
 | Il file della corsa e il suo diario (`current-run.journal`), la mappa e l'orologio quando nessuno li vede (tasca, app dietro) | `tasks/TASK-496.md`, ADR-0264 e la sua aggiunta, `UI.md` «La traccia della corsa» |
-| La freccia di chi corre (anello e cono azzurri, punta dove punta la mappa su «Compass»), i disegni delle tre schede, i token `you` e `north` | `UI.md` «La freccia di direzione» e «La corsa: tre pagine», ADR-0359, `tasks/TASK-431.md` |
+| La freccia di chi corre (anello e cono azzurri, punta dove punta la mappa su «Compass» e dove punta il telefono su «Map», TASK-519), i disegni delle tre schede, i token `you` e `north` | `UI.md` «La freccia di direzione» e «La corsa: tre pagine», ADR-0359, `tasks/TASK-431.md`, `tasks/TASK-519.md` |
+| «Compass»: la riga con quanta strada e quanto tempo, la direzione scritta sotto la freccia del nord («NE · 42°») | `UI.md` «La corsa: tre pagine», ADR-0350 (aggiunta 2026-11-24), `tasks/TASK-518.md` |
 | Le schede della palestra guidate: la guida in 5 passi, le settimane che cambiano, «My plans», l'app di prima che le legge | `sports/gym.md` «Le schede guidate», ADR-0360, ADR-0341, `API.md` «Gym», `tasks/TASK-433.md` |
 | I giorni di corsa nella scheda della palestra, «Come funzionano le schede» al primo tocco di Palestra | `sports/gym.md` «Le schede guidate», ADR-0363, `tasks/TASK-433.md` (parti B e C) |
 | Lo storico di un esercizio in palestra: «Last time», i campi già compilati, il suggerimento, «History» col massimale stimato | `tasks/TASK-483.md`, ADR-0392, `sports/gym.md`, ADR-0327 |
@@ -109,6 +110,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Overpass in errore: una richiesta per job, la pausa di OSMnx, il secondo servizio | `tasks/TASK-471.md`, ADR-0385, `MAPS.md` «Overpass: come si scarica» |
 | L'attrezzatura: scarpe, bici, sci, caschi… coi km, sul profilo, nel post, dai capi taggati | ADR-0393, `tasks/TASK-486.md` |
 | I gruppi per uscire insieme («Groups»): ingresso, ruoli, la pagina, le uscite del gruppo anche senza percorso, Explore, la chat di gruppo | `GRUPPI.md`, `tasks/TASK-495.md`, ADR-0402, `EVENTI.md` |
+| «Surprise me» in «Draw»: la pastiglia del passo 2, la scelta fra i percorsi del catalogo vicini, le forme di riserva, le sorprese venute male | `UI.md` (il passo 2 di «Draw»), ADR-0413, `tasks/TASK-448.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

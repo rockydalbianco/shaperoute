@@ -42,6 +42,21 @@ export interface GymPause {
   to_s: number;
 }
 
+/** The stretching at the end of a workout (TASK-466 part C, ADR-0378,
+ * fixtures/gym-session-stretch.json): kept with the workout as a stretching
+ * session keeps it (stretch-session.json). */
+export interface GymStretch {
+  /** The routine's key on the phone: "afterGym" today. */
+  routine: string;
+  /** The length it was chosen in, 1–STRETCH_MINUTES_MAX: 3, 5 or 10 today. */
+  minutes: number;
+  /** Its seconds without its pauses, 1–STRETCH_SESSION_MAX_S. */
+  duration_s: number;
+  /** How many of its exercises were done, «Skip» left out,
+   * 0–STRETCH_EXERCISES_MAX. */
+  exercises: number;
+}
+
 /** PUT /me/gym-sessions/{key}: fixtures/gym-session.json. */
 export interface GymSessionRequest {
   started_at: string;
@@ -69,6 +84,10 @@ export interface GymSessionRequest {
   heart_max_bpm?: number;
   /** «Show heart rate»: whether others see it; true when left out. */
   heart_shown?: boolean;
+  /** The stretching at its end (TASK-466 part C); never on a workout
+   * written by hand. Only to an API with part C: an older one answers
+   * 422. */
+  stretch?: GymStretch;
 }
 
 /** Where a workout comes from (TASK-484): recorded, or written by hand. */
@@ -93,6 +112,8 @@ export interface GymSession {
   heart_avg_bpm?: number;
   heart_max_bpm?: number;
   heart_shown?: boolean;
+  /** Only for a workout sent with its stretching (TASK-466 part C). */
+  stretch?: GymStretch;
 }
 
 /** GET /drawings/{id}/exercises: what the post of a workout shows; 404
@@ -109,6 +130,8 @@ export interface GymExercises {
    * owner; missing otherwise. */
   heart_avg_bpm?: number;
   heart_max_bpm?: number;
+  /** The stretching at its end (TASK-466 part C); missing without it. */
+  stretch?: GymStretch;
 }
 
 /** What a milestone reads (docs/sports/gym.md «I tipi di serie»): the kg of

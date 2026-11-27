@@ -1,6 +1,6 @@
 # TASK-410 — La pagina del post: più dati e più ordine
 
-**Stato**: In lavorazione — B, F, C e D (#1043) in `main` (2026-11-10); D esce con l'OTA 3; A è TASK-355 B; poi E
+**Stato**: Done — B, F, C, D (2026-11-10) ed E (2026-11-27) in `main` e sul server; A è TASK-355 B
 **Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
 per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
 
@@ -635,6 +635,166 @@ File: `App.tsx`, `src/feed/PostPage.tsx`, `src/feed/editRunDoor.ts`, i
 test `PostPageInset.test.tsx` e `__tests__/AppEditRun.test.tsx` (nuovi),
 più questo task file. Entra dopo la #1079.
 
+## Parte E — il meteo, parte 0 (2026-11-26)
+
+Brief del Coordinatore (fork 3) del 2026-11-26, su scelta esplicita
+dell'utente riferita da Strategia. La scelta 4 («Sì, MET entro 3 ore») era
+già chiusa il 2026-11-07; qui le domande che restavano, una alla volta.
+
+**Un fatto di MET Norway**: Locationforecast dà le ore dall'ora in corso in
+avanti, non quelle passate. Il meteo della corsa è quindi quello dell'ora in
+cui il server lo chiede, al più 3 ore dopo la fine: detto all'utente nella
+domanda 1.
+
+Scelte dell'utente (2026-11-26):
+
+- **E1. La card**: **«Temperatura, cielo, vento»** (proposta). Simbolo MET e
+  temperatura grandi (°F con le miglia), sotto il vento (km/h, mph con le
+  miglia). Simboli e formati del meteo dello sci (`ski/ResortWeather.tsx`:
+  `symbolSign`, `temperatureLabel`). Solo per gli sport all'aperto: mai
+  palestra e piscina.
+- **E2. Il credito MET**: **«Solo nella pagina "Informazioni"»** (non la
+  proposta, che era sotto la card). La card non ha credito; una riga nuova fra
+  i «Services of others» dei Termini.
+- **E3. Corse senza meteo** (importate da file, inserite a mano, arrivate al
+  server più di 3 ore dopo la fine): **«Nessuna card»** (proposta). Il meteo
+  non si chiede mai dopo e non si riprova.
+- **E4. I testi**: **«Sì, approvo»**. «Wind» esiste e si riusa.
+
+  | en | it | es | de | fr |
+  |---|---|---|---|---|
+  | Weather | Meteo | Tiempo | Wetter | Météo |
+  | Weather: {temperature}, wind {speed} *(VoiceOver)* | Meteo: {temperature}, vento {speed} | Tiempo: {temperature}, viento {speed} | Wetter: {temperature}, Wind {speed} | Météo : {temperature}, vent {speed} |
+  | *Termini, Services of others:* The weather of posts and ski resorts comes from MET Norway (CC BY 4.0). | Il meteo dei post e delle stazioni sciistiche viene da MET Norway (CC BY 4.0). | El tiempo de las publicaciones y de las estaciones de esquí viene de MET Norway (CC BY 4.0). | Das Wetter in Beiträgen und Skigebieten kommt von MET Norway (CC BY 4.0). | La météo des publications et des stations de ski vient de MET Norway (CC BY 4.0). |
+
+- **E5. La riga della privacy**: **«Sì, approvo»**, con la proposta di
+  **escludere gli sport sulla neve**: la riga dello sci promette che a MET va
+  la posizione della stazione, «mai la tua». Va nella Privacy dell'app
+  (`about/content`, sezione dei post, accanto alla riga dello sci) e del
+  sito, in una PR di privacy **prima del codice**, in fila dopo #1619, la
+  479 D6 e la 493. Il credito di E4 va nella stessa PR (solo nell'app: il
+  sito non ha i Termini).
+
+  - en: When you save an activity outdoors within 3 hours of its end, our
+    server sends MET Norway its starting point, rounded to about 1 km, to ask
+    for the weather of that hour; MET Norway does not get your name. The
+    weather (temperature, sky and wind) shows on the post, for whoever can
+    see it.
+  - it: Quando salvi un'attività all'aperto entro 3 ore dalla fine, il nostro
+    server manda a MET Norway il suo punto di partenza, arrotondato a circa
+    1 km, per chiedere il meteo di quell'ora; MET Norway non riceve il tuo
+    nome. Il meteo (temperatura, cielo e vento) si vede sul post, per chi può
+    vederlo.
+  - es: Cuando guardas una actividad al aire libre en las 3 horas siguientes
+    a su final, nuestro servidor envía a MET Norway su punto de salida,
+    redondeado a cerca de 1 km, para pedir el tiempo de esa hora; MET Norway
+    no recibe tu nombre. El tiempo (temperatura, cielo y viento) se ve en la
+    publicación, para quien pueda verla.
+  - de: Wenn du eine Aktivität im Freien innerhalb von 3 Stunden nach ihrem
+    Ende speicherst, schickt unser Server MET Norway ihren Startpunkt, auf
+    etwa 1 km gerundet, um das Wetter dieser Stunde abzufragen; MET Norway
+    erhält deinen Namen nicht. Das Wetter (Temperatur, Himmel und Wind) steht
+    auf dem Beitrag, für alle, die ihn sehen können.
+  - fr: Quand tu enregistres une activité en plein air dans les 3 heures
+    après sa fin, notre serveur envoie à MET Norway son point de départ,
+    arrondi à environ 1 km, pour demander la météo de cette heure ; MET
+    Norway ne reçoit pas ton nom. La météo (température, ciel et vent)
+    apparaît sur la publication, pour qui peut la voir.
+
+**Come si farà** (proposta per il Coordinatore, decisioni tecniche
+dell'agente su delega dell'utente, da confermare con la lista dei file):
+
+- Il server chiede il meteo quando arriva `PUT /me/activities/{key}/stats`
+  (lo manda il telefono una volta dopo il salvataggio, anche le app di oggi),
+  **dopo la risposta**, fuori dalla transazione: `activities.py` resta com'è,
+  come per i passi della parte C.
+- Condizioni: `source = muw`, una traccia, sport non sulla neve, non palestra
+  né piscina, ora del server ≤ 3 h dalla fine (ultimo punto della traccia),
+  `stats.weather` ancora vuoto. Punto: il primo della traccia a 2 decimali
+  (~1 km), senza altitudine. Ora: quella di MET più vicina alla fine.
+- Lo stesso `MetTransport` di `resort_weather.py` (User-Agent, contatto,
+  timeout 4 s); MET che non risponde = niente meteo, nessun nuovo tentativo.
+- `stats.weather` = `{temperature_c, symbol, wind_ms}`; un altro `PUT …/stats`
+  non lo cancella. Si vede come le altre stats (nessun filtro: non dice niente
+  del corpo).
+- Nessuna migrazione, nessuna variabile nuova (`SHAPEROUTE_MET_CONTACT` c'è).
+
+## Parte E — il codice (2026-11-26)
+
+Via del Coordinatore (fork 3) il 2026-11-26, con le due liste. Branch
+`feat/TASK-410-e-weather`, #1633, in bozza: **si unisce solo dopo che la
+PR di privacy della parte E è in `main` e online**, perché il passo sul
+server porta la posizione a MET. La privacy (riga E5 e credito E4) è una
+PR a parte, `docs/TASK-410-e-privacy`, in fila dopo #1619, la 479 D6 e la
+493.
+
+```
+services/api/shaperoute_api/run_weather.py      (nuovo)
+services/api/shaperoute_api/run_stats.py        (weather in RunStatsBody; il PUT lo conserva e lo chiede dopo la risposta)
+services/api/shaperoute_api/__main__.py         (install_run_weather: sì del Coordinatore)
+services/api/tests/test_run_weather.py          (nuovo)
+services/api/tests/test_run_stats.py            (una riga: l'esempio del meteo è a parte; sì del Coordinatore)
+packages/shared-types/fixtures/run-stats-weather.json (nuovo)
+docs/API.md                                     («Run stats»: il meteo)
+apps/mobile/src/api/runStats.ts + test           (RunWeather, weatherOf)
+apps/mobile/src/feed/postSections.ts + test      (weatherSection, sotto il riepilogo)
+apps/mobile/src/feed/PostWeather.tsx            (nuovo)
+apps/mobile/src/feed/PostPage.tsx + test
+apps/mobile/src/i18n/{it,es,de,fr}.ts           («Weather», la frase di VoiceOver, in coda)
+docs/tasks/TASK-410.md
+```
+
+Rispetto alla proposta: `postMetrics.ts` non cambia (lo sport lo filtra il
+server; l'app mostra il meteo quando c'è) e `PostWeather.test.tsx` non c'è
+(la card è provata in `PostPage.test.tsx`).
+
+Decisioni dell'agente su delega dell'utente:
+
+- Si accende solo nel server avviato da `__main__` (`install_run_weather`,
+  come il meteo dello sci): un'app di `create_app`, come nei test, non va
+  mai in rete. Una cache sua, non quella delle stazioni.
+- `runs.track` tiene la M in secondi **dal primo punto**: la fine è
+  `started_at` + (ultima M − prima M).
+- Chiesto una volta: senza risposta di MET la corsa tiene `weather: null` e
+  non si riprova, nemmeno a un altro `PUT …/stats`.
+- Un meteo che l'app non sa leggere vale nessuno (`weatherOf`), senza
+  rifiutare le altre stats.
+- Neve esclusa: `skiing`, `xc_skiing`, `ski_touring`, `snowshoeing`.
+
+Provata sul simulatore (Expo Go, harness temporaneo, 2026-11-26, turno del
+Coordinatore) in inglese (⛅ 14°, «Wind 12 km/h») e in italiano (☀️ −3°,
+«Vento 22 km/h»); schermate in `out/TASK-410-e/` della copia principale.
+**Risposta dell'utente alle foto: «Sì, va bene».**
+
+Restano: la PR di privacy al «tocca a te», poi il merge di #1633, il passo
+sul server (lo chiede il Coordinatore) e l'OTA, ognuno col sì dell'utente.
+
+**Chiusura della parte E (2026-11-27).** Privacy #1663 in `main` e online
+(copia del sito a `a8cadc45`, il 2026-11-27); codice #1633 in `main`
+(`1dfe50bb`) e sul server col passo 26 (`0c40a3dc`, parola del
+Coordinatore): da allora il server chiede il meteo a MET al salvataggio di
+una corsa. La card arriva sui telefoni col prossimo OTA di produzione (lo
+tiene il Coordinatore, col sì dell'utente). Decisioni in «ADR-0340,
+precisazione E».
+
+Restano, fuori da questa sessione:
+
+- **La prima corsa vera col meteo**: contare sul server le corse con
+  `stats ? 'weather'` e con `stats->>'weather'` non nullo dopo il passo 26.
+  Una lettura del database di produzione dalla sessione del task è stata
+  negata dal classificatore (2026-11-27): la fa l'utente, o chi lui
+  incarica, con una query in sola lettura (`out/TASK-410-e/prima-corsa.sh`
+  della copia principale). Il log dell'API scrive solo quando MET non
+  risponde («MET Norway: …; the run has no weather»), non quando il meteo
+  si salva.
+- **La prova sul telefono** dopo l'OTA: una corsa all'aperto salvata subito
+  ha la card «Weather» sotto il riepilogo; una giornata di sci no.
+
 ## Esito
 
-*(a fine task)*
+Done il 2026-11-27. La pagina del post (B), la card del Feed come la pagina
+(F), `run_stats` sul server (C), le sezioni (D) e il meteo di MET al
+salvataggio (E) sono in `main` e sul server; B, F, C e D in produzione, la
+card del meteo col prossimo OTA. La foto dell'autore (A) è TASK-355 B.
+Restano solo la verifica della prima corsa col meteo sul server e la prova
+sul telefono (sopra).

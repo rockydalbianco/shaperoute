@@ -33,7 +33,7 @@ import {
   space,
 } from "../../theme/tokens";
 import { SheetModal } from "../../ui/SheetModal";
-import { useSheetFace } from "../../ui/sheetFace";
+import { useGlassSheet } from "../../ui/SheetGlass";
 import { useOutfitTagging } from "./OutfitTagging";
 import {
   brandReady,
@@ -128,7 +128,7 @@ export function OutfitTagEditor({
   const chipRaise = glassRaise(useGlassMode());
   const insets = useSafeAreaInsets();
   // The sheet in the glass look (TASK-469 A7a).
-  const glassSheet = useSheetFace();
+  const [glassSheet, glassBack] = useGlassSheet();
   const { width: screen } = useWindowDimensions();
   const words = outfitWords();
   const [tags, setTags] = useState<OutfitDraft[]>(() => [...kept]);
@@ -259,6 +259,7 @@ export function OutfitTagEditor({
           ]}
           testID="outfit-editor"
         >
+          {glassBack}
           <View style={styles.header}>
             <Text style={styles.title} accessibilityRole="header">
               {words.tagButton}

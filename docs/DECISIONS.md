@@ -632,9 +632,101 @@ lasciando le righe d'indice.
 - ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte tiene i piedi fermi mentre il bacino si sposta e sfuma quando il busto si capovolge; un braccio verso chi guarda si piega; sette viste cambiate dall'utente; le routine composte con una tenuta sola, più lunga prima di un secondo giro; chiavi delle categorie senza punto, come le vuole il server; «Today» con la notte fino alle 4 · 2026-11-27 · Attiva
 - ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione una volta al mese nelle Alpi, un volo è di un decollo solo per i 300 m (le tracce non hanno quota), lo storico in una rotta a sé con la cache di 10 minuti, record più lungo, più alto e più lontano dai post per tutti, niente «Fly from here»; il vento (D) in un task nuovo dopo TASK-479 H · 2026-11-27 · Attiva
 - ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; una pagina vuota ha il suo pulsante quando c'è una cosa da fare; una tessera senza percorso mostra la sagoma della forma in grigio · 2026-11-26 · Attiva
+- ADR-0417 — Lo stile delle pagine in tutta l'app (TASK-523): il vetro di 469 a barre, tab e fogli e lo stile nuovo al contenuto; un colore per sezione come token suoi (`section`), stesso valore dove la tinta c'è già; un kit di soli file nuovi in `ui/` col velo tinto opaco al 12%; nella barra delle schede il colore sta nella capsula della scheda aperta, non nel tratto delle icone · 2026-11-27 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0417 — Lo stile delle pagine in tutta l'app: un colore per sezione, un kit condiviso, il vetro alle barre
+
+**Stato**: Attiva · 2026-11-27 · TASK-523 parti 0, A1 (#1700) e A2 (#1707).
+Le scelte segnate «utente» sono dell'utente; le altre sono decise
+dall'agente su delega dell'utente. Numero dal Coordinatore (fork 3,
+2026-11-27).
+
+**Contesto**: «Nutrition» (TASK-489 parte H) e lo schizzo del nuovo
+stretching (TASK-520) hanno un aspetto che il resto dell'app non ha: un
+riquadro grande in alto, card con angoli morbidi, anelli che si riempiono,
+numeri che contano, righe a cascata, un colore per gruppo. L'utente ha
+chiesto di portarlo ovunque, «dalla registrazione alle impostazioni alla
+sezione disegno». Nello stesso periodo TASK-469 mette il vetro «Capsula» su
+barre, tab e fogli, e 489 e 520 aggiungono colori loro in `tokens.ts`:
+serviva dire chi decide dove, e come si aggiunge colore senza che ogni
+pagina se ne inventi uno.
+
+**Decisione**:
+- **Vetro e contenuto** (utente): il vetro di 469 è di barre, tab e fogli;
+  lo stile di questo task è del contenuto delle pagine. Dove si toccano
+  decide 469. Le card del kit sono opache: passano sotto il vetro delle
+  barre come ogni contenuto e non si disegnano sul vetro di un foglio.
+- **Un colore per sezione** (utente, «Sì, uno per sezione»): solo dove dà
+  carattere (riquadro in alto, anelli, icone delle card); le liste lunghe
+  restano neutre. Token `section` in `Shade`: `draw` (albicocca), `profile`
+  (viola), `explore` (ciano, anche l'account), `feed` (sabbia, anche le
+  notifiche), `messages` (verde, anche il feedback). I valori veri sono
+  stati mostrati all'utente su una tavola, in chiaro e in scuro: «Sì, vanno
+  bene».
+- **Stesso valore, token suo**: dove la tinta c'è già (viola =
+  `stretch.moments`, ciano = `stretch.sports`, verde = `food`) il valore è
+  quello, così l'app ha un solo viola, un solo ciano e un solo verde; il
+  token è della sezione, così ognuno tiene un significato
+  (`sectionContrast.test.ts` lega i valori). Nuove: albicocca e sabbia.
+- **Contrasto**: ogni colore di sezione tiene 4,5:1 su `background`,
+  `surface` e `surfaceRaised` e 3:1 su `border`, in ogni tono a ogni
+  gradino. Nessuno è il giallo, l'avviso, l'errore o il rosso delle
+  calorie.
+- **Il giallo** resta del percorso, del logo e dell'Accesso. Il giallo
+  «appena più scuro» dell'Accesso non è un token di questa voce: si decide
+  nella parte B sulle foto del simulatore.
+- **Il velo tinto è un colore pieno**: `ui/tint.ts`, `tintOver(colore,
+  sotto, quota)` mescola due token e restituisce `#RRGGBB`. Al 12% il
+  testo, il testo secondario e il colore stesso tengono 4,5:1 sul velo
+  (`tint.test.ts`); più forte il testo secondario non regge. Opaco, quindi
+  misurabile, e nessun colore scritto a mano nelle pagine.
+- **Kit di soli file nuovi** in `ui/` (`SectionHeader`, `SectionCard`,
+  `IconSquare`, `HeroCard`, `Tile`, `RingStat`): nessun file di un altro
+  task spostato o riscritto. `RingStat` importa `nutrition/Ring` e
+  `nutrition/CountUp` di 489 come sono.
+- **Animazioni** con `Animated` e le molle di `ui/motion.ts`, come oggi:
+  nessuna dipendenza nuova, nessuna sfumatura (l'app non ha una libreria di
+  disegno: l'alone del riquadro in alto è un cerchio di colore pieno). Con
+  «Riduci movimento» tutto è fermo e completo.
+- **La barra delle schede** (utente, «Sì, la capsula»): il colore di
+  sezione non va nel tratto delle icone. Sul vetro vero il fondo è la tinta
+  del tono (60–68%) sopra la foto: per tenere 4,5:1 un'icona dovrebbe
+  essere quasi bianca in scuro (L ≥ 0,893) e quasi nera in chiaro
+  (L ≤ 0,012), e lo stesso testo passa di poco. Il colore va nella capsula
+  della scheda aperta, piena, con l'icona scura sopra; le altre icone
+  restano come oggi; la scheda aperta resta detta anche da capsula e
+  tratto. D'accordo la sessione di 469. È la parte T.
+- **Il peso** (489 K1) non ha un colore suo: resta nel colore del testo
+  (scelta dell'utente, il viola era troppo vicino ai carboidrati).
+- **Una schermata per PR**, ognuna con le foto prima/dopo in chiaro e in
+  scuro e il sì dell'utente prima del merge.
+
+**Alternative scartate**:
+- *Un solo accento per tutta l'app*: proposto all'utente, che ha scelto un
+  colore per sezione.
+- *Riusare i token che ci sono* (`stretch.moments` per il Profilo, `food`
+  per i Messaggi): un token avrebbe due significati, e cambiarne uno
+  sposterebbe l'altro senza che nessuno lo veda.
+- *Un velo con la trasparenza* (`#RRGGBBAA`): su un foglio di vetro
+  lascerebbe passare quello che c'è dietro e il contrasto non si potrebbe
+  misurare dai token.
+- *Spostare `Ring` e `CountUp` in `ui/`*: sono di 489, con PR aperte che
+  li leggono; si può fare dopo, d'accordo con quel task.
+- *Icone colorate nella barra*, *colore pieno solo sull'icona aperta*, *un
+  punto colorato sotto l'icona*: nessuno tiene il contrasto sul vetro vero
+  (il punto è un segno grafico: 3:1, in scuro su foto bianca ci arriva solo
+  la sabbia).
+
+**Conseguenze**: le pagine rifatte prendono colori e pezzi dal kit; una
+sezione nuova aggiunge il suo token in `section` e passa da
+`sectionContrast.test.ts`. Le parti B–G e T rifanno una schermata alla
+volta; diverse appartengono a task in corso (489, 466, 520, 495, 479) e si
+concordano col Coordinatore. Da decidere con l'utente nelle parti che li
+toccano: il giallo dell'Accesso, la riga di benvenuto (testo nuovo, cinque
+lingue), il tono chiaro di ogni schermata.
 
 ## ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione mensile, solo i 300 m, lo storico in una rotta a sé
 

@@ -1,9 +1,11 @@
 # TASK-523 — Lo stile di Alimentazione e Stretching in tutta l'app
 
-**Stato**: In lavorazione · parte 0 chiusa il 2026-11-27 (approccio, colori
-e schizzo di tre schermate approvati dall'utente). Nessun codice. La parte
-A aspetta il suo turno su `tokens.ts` (vedi «Ordine»).
-**Fase**: 5 · **Branch**: parte 0 `docs/TASK-523-part-0`
+**Stato**: In lavorazione · parte 0 chiusa il 2026-11-27; parte A: A1 (i
+colori di sezione, #1700) in `main`, A2 (il kit, #1707) aperta. Nessuna
+schermata è ancora cambiata. Prossime: B (Accesso), poi T quando il
+Coordinatore dà il via su `tabs/TabBar.tsx`.
+**Fase**: 5 · **Branch**: uno per parte (`feat/TASK-523-a1-section-colours`,
+`feat/TASK-523-a2-kit`, …)
 **Dipende da**: TASK-489 parte H (la pagina animata di Alimentazione, in
 `main`), TASK-520 (lo schizzo v2 dello Stretching, approvato, non ancora
 codice), TASK-469 (il vetro «Capsula» di barre, tab e fogli)
@@ -50,6 +52,13 @@ Una domanda alla volta, con la proposta dell'agente; le parole sono sue.
    - «Cambio ancora»: «nella prima tieni solo il cuore e stile sempre
      giallo un po ma poco più scuro»;
    - sulla quarta versione: **«Sì, approvo»**.
+4. La barra delle schede (dopo le misure, vedi «La barra delle schede»):
+   «Va bene la capsula colorata sulla scheda aperta?» → **«Sì, la
+   capsula»**.
+5. I valori veri dei cinque colori, su una tavola in chiaro e in scuro col
+   viola accanto a quello dei carboidrati e l'albicocca accanto al corallo
+   degli avvisi: «Vanno bene i cinque colori, in chiaro e in scuro?» →
+   **«Sì, vanno bene»**.
 
 Lo schizzo approvato: https://claude.ai/artifact/Lv6FnzHFoF3RkAswzwE2Cn
 (sorgenti nel checkout principale, `out/stile-app/canvas/project/`).
@@ -67,10 +76,12 @@ Lo schizzo approvato: https://claude.ai/artifact/Lv6FnzHFoF3RkAswzwE2Cn
 - **Disegno**: riquadro in alto col segno dell'utente e poi il percorso
   giallo sulle strade, l'anello «Roads follow your drawing»; «WHAT YOU
   DRAW» in quattro card a due colonne; la distanza con − e +; «Draw route».
-- **L'isola in basso**: resta la capsula di vetro di 469 con le icone
-  grandi di oggi (casa, lente, matita, aeroplanino, foto del profilo), ma
-  ognuna col colore della sua sezione; quella della pagina aperta ha il
-  tratto più spesso, come oggi.
+- **La barra delle schede** (nelle parole dell'utente «l'isola»; nell'app
+  l'isola è la capsula della corsa in registrazione): resta la capsula di
+  vetro di 469 con le icone grandi di oggi (casa, lente, matita,
+  aeroplanino, foto del profilo). Lo schizzo approvato le mostrava ognuna
+  col colore della sua sezione: le misure hanno detto di no, vedi «La barra
+  delle schede».
 - **In tutte**: righe a cascata, numeri che contano, anelli che si
   riempiono; con «Riduci movimento» tutto è fermo e già al suo posto.
 
@@ -85,10 +96,63 @@ Lo schizzo approvato: https://claude.ai/artifact/Lv6FnzHFoF3RkAswzwE2Cn
 | Feed, Notifiche | sabbia | `#E3C596` |
 | Messaggi, Feedback | verde | `#4FD08A` |
 
-Niente rosa e niente sfumature tra due colori diversi. I valori sono dello
-schizzo in tono scuro: quelli veri si fissano nella parte A, coi test di
-contrasto in chiaro e in scuro. Il rosa del gruppo «Intimacy» dello
-Stretching (520) è un'altra decisione e qui non si tocca.
+Niente rosa e niente sfumature tra due colori diversi. Il rosa del gruppo
+«Intimacy» dello Stretching (520) è un'altra decisione e qui non si tocca.
+
+I valori veri (parte A1, `color.section`), dal più scuro al più chiaro
+gradino di ogni tono; approvati dall'utente sulla tavola:
+
+| Token | Tono scuro | Tono chiaro | Tinta |
+|---|---|---|---|
+| `draw` | `#F5A066` → `#FFBC8F` | `#7A3A08` → `#8F4510` | albicocca, nuova |
+| `profile` | `#A99BFF` → `#C4BAFF` | `#3F2FA3` → `#4B39BF` | viola di `stretch.moments` |
+| `explore` | `#4DD2FF` → `#6EDBFF` | `#005370` → `#006A8F` | ciano di `stretch.sports` |
+| `feed` | `#E3C596` → `#EED9B5` | `#5E4712` → `#6B5118` | sabbia, nuova |
+| `messages` | `#4FD08A` → `#7BE3AA` | `#095428` → `#0F6B35` | verde di `food` |
+
+Il peso (489 K1) non ha un colore: l'utente ha scelto il colore del testo,
+perché il viola era troppo vicino a quello dei carboidrati (`carbs`).
+
+## La barra delle schede (parte T): la capsula, non le icone
+
+Misure fatte con la matematica di `theme/glass.test.ts` (nessun codice):
+sul vetro vero il fondo è la tinta del tono (60–68%) sopra la foto. Tono
+scuro con foto bianca: per 4,5:1 serve un colore con L ≥ 0,893; tono chiaro
+con foto nera: L ≤ 0,012. Lo stesso `color.text` passa di poco. I colori
+dello schizzo in scuro su foto bianca: sabbia 3,03, ciano 2,86, verde
+2,56, albicocca 2,41, viola 2,10. Quindi né le icone colorate né «colore
+pieno solo sull'icona aperta» reggono.
+
+Scelta dell'utente, d'accordo la sessione di 469: **la capsula della scheda
+aperta si riempie del colore della sezione, opaca, con l'icona scura
+sopra** (tra 8:1 e 12:1 con qualsiasi foto dietro); le altre icone restano
+come oggi; a scheda chiusa la foto del profilo non ha bordo colorato.
+
+Per chi scrive la parte T (da 469):
+- la capsula è un pezzo pieno sopra il vetro, non una tinta del vetro; il
+  suo posto è quello di `glass.selected` (`styles.capsule`);
+- le capsule sono tre (`moves`, i giri -1/0/1 dello swipe dal profilo al
+  Feed) e scivolano sul driver nativo, dove un colore non si interpola:
+  cinque strati, uno per colore, ognuno con l'opacità presa da `at`
+  attorno al suo indice;
+- un «colore sopra» per sezione e per tono, misurato in un test;
+- le icone spente restano `color.text` sul vetro vero e `textMuted` sul
+  velo; la barra ha anche le icone di sci e allenamento;
+- con «Riduci trasparenza» la barra è opaca: misurare anche lì;
+- prima delle foto per l'utente, misurare nel simulatore
+  (`out/TASK-469/tools/contrast.py`): i conti sono solo il pavimento.
+
+## Le pagine e il vetro (da 469, per le parti B–G)
+
+- Niente di proprio nella fascia della barra o dell'header: la velatura è
+  del vetro. In fondo `useTabBarRoom()`, sotto l'header `useUnderHeader()`.
+- I colori del contenuto possono passare sotto il vetro.
+- Fogli: `useGlassSheet()`, `{glassBack}` primo figlio, nessun
+  `backgroundColor` dopo `glassSheet`; sul vetro solo `color.text` e
+  `color.textMuted`.
+- Mai un genitore con l'opacità che parte da 0 sopra del vetro vero (le
+  entrate a cascata).
+- `expo-glass-effect` solo via `ui/NativeGlass.tsx`. Tutto in `docs/UI.md`.
 
 ## Che cosa non è deciso (si chiede all'utente nella parte che lo tocca)
 
@@ -109,18 +173,23 @@ Stretching (520) è un'altra decisione e qui non si tocca.
 Ogni parte: lista dei file al Coordinatore **prima** del codice; foto del
 simulatore prima/dopo, chiaro e scuro, e il sì dell'utente prima del merge.
 
-- **A — il kit condiviso.** Solo file nuovi in `apps/mobile/src/ui/`
-  (card, intestazione di sezione, icona quadrata, riquadro in alto, anello
-  e numero che conta per tutte le pagine) coi loro test, più i token nuovi
-  dei colori di sezione in `theme/tokens.ts` (solo aggiunte, nessun valore
-  esistente cambia) e i test di contrasto. `nutrition/Ring.tsx` e
-  `CountUp.tsx` restano di 489: il kit non li sposta.
+- **A — il kit condiviso**, in due PR.
+  - **A1, i colori** (#1700, in `main`): `theme/tokens.ts` (solo aggiunte:
+    il gruppo `section`), `theme/palettes.test.ts`,
+    `theme/sectionContrast.test.ts` (nuovo).
+  - **A2, i pezzi** (#1707): solo file nuovi in `apps/mobile/src/ui/`,
+    ognuno col suo test: `tint.ts`, `SectionHeader.tsx`, `SectionCard.tsx`,
+    `IconSquare.tsx`, `HeroCard.tsx`, `Tile.tsx`, `RingStat.tsx`.
+    `nutrition/Ring.tsx` e `CountUp.tsx` restano di 489: `RingStat` li
+    importa, non li sposta.
 - **B — Accesso**: `screens/SignInScreen.tsx` e il suo test.
 - **C — Impostazioni**: `profile/SettingsPage.tsx`, le righe in
   `settings/*`.
 - **D — Disegno**: `route/RoutePanel.tsx` e i pezzi del modulo «Draw».
-- **T — le icone colorate dell'isola**: `tabs/TabBar.tsx` è di 469: la
-  parte si fa d'accordo con quella sessione, o la fa lei.
+- **T — la capsula colorata della barra delle schede**: `tabs/TabBar.tsx`
+  è di 469; la parte la fa questo task, d'accordo con quella sessione,
+  quando il Coordinatore dà il via (dopo la correzione di 469 alle icone
+  spente). Vedi «La barra delle schede».
 - **E — Profilo** · **F — Feed, Explore, Messaggi** · **G — fine attività
   e pagine degli sport**: liste dei file all'avvio di ciascuna; diverse
   schermate appartengono a task in corso (489, 466, 520, 495, 479).
@@ -137,7 +206,8 @@ Decise dall'agente su delega dell'utente, salvo dove è scritto «utente».
 
 1. **Vetro e contenuto** (utente, d'accordo il Coordinatore): il vetro di
    469 è di barre, tab e fogli; lo stile di questo task è del contenuto
-   delle pagine. Dove si toccano (intestazioni, fogli, isola) decide 469.
+   delle pagine. Dove si toccano (intestazioni, fogli, barra delle schede)
+   decide 469.
 2. **Un colore per sezione** (utente): token nuovi in `tokens.ts`, in
    chiaro e in scuro, ognuno col suo test di contrasto (testo 4,5:1 sul
    velo tinto; icone e anelli 3:1). Nessun colore scritto a mano.
@@ -152,8 +222,9 @@ Decise dall'agente su delega dell'utente, salvo dove è scritto «utente».
 
 ## Criteri di accettazione
 
-- [ ] Parte A: il kit in `ui/` coi test; i token nuovi coi test di
-      contrasto in chiaro e in scuro; nessun valore esistente cambiato.
+- [ ] Parte A: il kit in `ui/` coi test (A2, #1707, aperta); i token nuovi
+      coi test di contrasto in chiaro e in scuro, nessun valore esistente
+      cambiato (A1, #1700, fatto).
 - [ ] Ogni schermata rifatta usa solo il kit e i token (nessun colore a
       mano) e passa i suoi test.
 - [ ] «Riduci movimento»: nessuna animazione, contenuto completo.
@@ -163,10 +234,17 @@ Decise dall'agente su delega dell'utente, salvo dove è scritto «utente».
 
 ## File toccati
 
-Parte 0: `docs/tasks/TASK-523.md`. Le parti di codice: vedi «Parti»; la
-lista esatta va al Coordinatore prima di ogni parte.
+Parte 0: `docs/tasks/TASK-523.md`. Parte A: vedi «Parti» (A1 tre file in
+`theme/`, A2 quattordici file nuovi in `ui/`); documenti:
+`docs/tasks/TASK-523.md`, `docs/DECISIONS.md`, `docs/UI.md`. Le altre
+parti: la lista esatta va al Coordinatore prima di ognuna.
 
 ## Registro
 
 - 2026-11-27 — parte 0: tre domande, quattro giri di schizzo, «Sì,
   approvo». Numeri TASK-523 / ADR-0417 dal Coordinatore. Nessun codice.
+- 2026-11-27 — barra delle schede: misure sul vetro, risposta di 469,
+  schizzo aggiornato, «Sì, la capsula».
+- 2026-11-27 — parte A: elenco dei file approvato dal Coordinatore; tavola
+  dei colori, «Sì, vanno bene»; A1 #1700 in `main`; A2 #1707 aperta;
+  ADR-0417 scritto.

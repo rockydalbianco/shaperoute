@@ -119,6 +119,8 @@ test("the energy goes up while the workout goes, and stays at its end", async ()
   });
   expect(screen.getByTestId("gym-kcal")).toHaveTextContent("31 kcal");
   await fireEvent(screen.getByLabelText("Stop"), "longPress");
+  // «Remember to stretch» first (TASK-466 part C2).
+  await fireEvent.press(screen.getByText("Skip"));
   expect(screen.getByTestId("gym-end-kcal")).toHaveTextContent("31 kcal");
 });
 

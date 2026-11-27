@@ -257,3 +257,7 @@ restano come in `EVENTI.md`.
 - 2026-11-27 · **scelta dell'utente Q3** («Sì, così»): la scheda di
   un'uscita senza percorso ha l'icona dello sport al posto della linea e la
   «Destination» sotto il titolo; il resto come la scheda di TASK-309 B2.
+- 2026-11-27 · **testi della push `group_outing_new` approvati
+  dall'utente** («Sì, approvo»), come sono in #1704: en «{name} planned a
+  new outing in {group}: {title}», it «{name} ha organizzato una nuova
+  uscita in {group}: {title}», più de, es, fr. CI di #1704 verde.

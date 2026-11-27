@@ -337,6 +337,12 @@ riprovato prima di togliergli «DO NOT MERGE»:
 | #1617 | B3b, l'header in vetro vero | b3782963 |
 | #1621 | B4b, i fogli in vetro vero, velati, opachi con «Riduci movimento» | ab3860d2 |
 
+La build nativa 1.2.0 parte da `main` 1fc55bfe. Android 1.2.0 (7) è
+finita su EAS il 2026-11-26 alle 22:15Z (runtime 3e94d1b9) e la carica
+l'utente sulla traccia Alpha. iOS non è ancora fatta (il profilo App
+Store va rifatto con i domini associati). Nessuna OTA ancora per la
+1.2.0. Data della build iOS e di TestFlight: *da scrivere*.
+
 Prima, senza cambi visibili: #1620 (B4a) e #1647 (B4c, gli altri quindici
 fogli). Da `main` in poi i test girano con il vetro vero simulato (il
 finto modulo di jest-expo dice che c'è): `HeaderScroll.test.tsx` e
@@ -757,7 +763,11 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
 - **2026-11-27**, sera: il taglio nativo. L'utente al Coordinatore:
   «Sì, parti», poi «Sì, anche loro». #1557, #1562, #1614, #1617 e #1621
   in `main` in quest'ordine (la tabella sopra). Lo stesso giorno l'utente
-  ha scelto per TASK-523 la capsula colorata della scheda aperta.
+  ha scelto per TASK-523 la capsula colorata della scheda aperta. Docs
+  del taglio #1682 in `main` a13e9c86. Build nativa 1.2.0 da `main`
+  1fc55bfe: Android 1.2.0 (7) su EAS il 2026-11-26 alle 22:15Z (runtime
+  3e94d1b9), traccia Alpha a cura dell'utente; iOS in attesa del profilo
+  App Store.
 - Imparato (il difetto di A5b): con la nuova architettura uno `zIndex`
   ordina dentro il più vicino antenato che resta una vista sua, non
   dentro il genitore. Una vista con solo posizione e colore di fondo

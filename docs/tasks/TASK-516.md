@@ -1,7 +1,8 @@
 # TASK-516 — Forme invernali e contorni: forme nuove per il motore e il catalogo
 
-**Stato**: In lavorazione — parte D (catalogo): D1 in PR, D2 passata a
-TASK-521; parti 0, A, B e C fatte (C sul server col passo 25 e nell'OTA 27)
+**Stato**: Done (2026-11-27) — 35 forme nuove nel motore (66 in tutto), sul
+server col passo 25 e nell'OTA 27; 130 disegni nel catalogo (2161 percorsi),
+sul server col passo 26; le altre 59 città passano a TASK-521
 **Fase**: 5 · **Branch**: `docs/TASK-516-part-0` (parte 0); una PR per parte
 **ADR**: ADR-0411 · numeri dal Coordinatore (fork 3), 2026-11-24
 **Viene da**: TASK-441 (la sua parte C), TASK-418 (le forme candidate e
@@ -242,8 +243,9 @@ città della parte B**: Milano 60, Barcellona 36, Trento 32, Levico 2 (69 da
 - `out/TASK-419/runs.jsonl` ha in coda gli 88 casi della parte B (copia di
   prima: `runs.before-task516.jsonl`), così i comandi del README vanno
   come prima.
-- Dopo l'unione: il passo «catalogo» sul server (immagine nuova, nessuna
-  migrazione), log «2161 recommended routes». Lo chiede il Coordinatore.
+- #1661 in `main` (`c6a59b44`). Sul server col passo 26 (`0c40a3dc`):
+  «2161 recommended routes from catalog/seed», nessun Traceback, impronte
+  del motore uguali a prima (parola del Coordinatore, 2026-11-27).
 
 ### D2 — le altre 59 città: passa a TASK-521
 
@@ -299,3 +301,8 @@ file (Coordinatore, 2026-11-27). Appunti per quella sessione:
   dei file approvata dal Coordinatore, D1 nel branch
   `feat/TASK-516-d-catalogue`. Prossimo: la PR verde, il passo «catalogo»
   sul server, poi i documenti di chiusura. La D2 passa a TASK-521.
+- **2026-11-27**: #1661 in `main` (`c6a59b44`), CI verde, unita da sola.
+  Passo 26 sul server (`0c40a3dc`): 2161 percorsi nel catalogo.
+- **Esito**: Done. Forme e catalogo in produzione; ADR-0411 accettata. Resta
+  fuori, in altri task: le 35 nelle altre 59 città (TASK-521) e la A a
+  penna alzata che si legge «n» (TASK-522).

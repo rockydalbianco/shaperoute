@@ -1986,6 +1986,47 @@ export const IT: Table = {
   Inchworm: "Bruco",
   "Fold down, walk your hands out to a plank, then walk them back.":
     "Piegati in giù, cammina con le mani fino alla plank, poi torna indietro.",
+  "Neck side tilt": "Inclinazione laterale del collo",
+  "Tilt one ear toward your shoulder. Keep both shoulders low.":
+    "Inclina un orecchio verso la spalla. Tieni basse tutte e due le spalle.",
+  "Neck turn": "Rotazione del collo",
+  "Turn your head to look over one shoulder. Chin level.":
+    "Gira la testa per guardare oltre una spalla. Mento dritto.",
+  "Goalpost arms": "Braccia a candelabro",
+  "Elbows at shoulder height, hands up. Draw your elbows back, chest open.":
+    "Gomiti all'altezza delle spalle, mani in su. Porta indietro i gomiti, petto aperto.",
+  "Standing side bend": "Piegamento laterale in piedi",
+  "Reach one arm overhead and lean to the other side. Hips still.":
+    "Porta un braccio sopra la testa e piegati dall'altro lato. Bacino fermo.",
+  "Lying twist": "Torsione da sdraiato",
+  "Lying down, drop both knees to one side. Shoulders stay on the floor.":
+    "Da sdraiato, lascia cadere le ginocchia da un lato. Le spalle restano a terra.",
+  "Sit with the soles of your feet together. Let your knees fall open.":
+    "Siediti con le piante dei piedi unite. Lascia aprire le ginocchia.",
+  Frog: "Rana",
+  "On all fours, knees wide. Push your hips gently back.":
+    "A quattro zampe, ginocchia larghe. Spingi piano il bacino indietro.",
+  "Side lunge": "Affondo laterale",
+  "Feet wide, shift your weight into one bent knee. Other leg straight.":
+    "Piedi larghi, sposta il peso su un ginocchio piegato. L'altra gamba tesa.",
+  "Wide-leg forward fold": "Piegamento a gambe larghe",
+  "Feet wide, fold forward from the hips. Hands to the floor.":
+    "Piedi larghi, piegati in avanti dalle anche. Mani a terra.",
+  "Arm openers": "Aperture delle braccia",
+  "Hug yourself, then open your arms wide. Squeeze your shoulder blades.":
+    "Abbracciati, poi apri bene le braccia. Stringi le scapole.",
+  "Open book": "Libro aperto",
+  "Lie on your side, knees bent. Open your top arm wide and follow it with your eyes.":
+    "Sdraiati su un fianco, ginocchia piegate. Apri bene il braccio di sopra e seguilo con lo sguardo.",
+  "Trunk turns": "Torsioni del busto",
+  "Feet wide, turn your upper body side to side. Let your arms swing.":
+    "Piedi larghi, gira il busto da un lato all'altro. Lascia oscillare le braccia.",
+  "Knee sways": "Ginocchia a pendolo",
+  "Lying, knees bent and feet wide. Let your knees sway side to side.":
+    "Da sdraiato, ginocchia piegate e piedi larghi. Lascia oscillare le ginocchia da un lato all'altro.",
+  "Hip circles": "Cerchi con il bacino",
+  "Hands on hips, draw big slow circles. Change direction halfway.":
+    "Mani sui fianchi, disegna grandi cerchi lenti. A metà cambia verso.",
   // end of TASK-520 part B
   Morning: "Mattino",
   "After run": "Dopo la corsa",

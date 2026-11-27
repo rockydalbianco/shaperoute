@@ -1995,6 +1995,47 @@ export const ES: Table = {
   Inchworm: "Gusano",
   "Fold down, walk your hands out to a plank, then walk them back.":
     "Inclínate, camina con las manos hasta la plancha y vuelve.",
+  "Neck side tilt": "Inclinación lateral del cuello",
+  "Tilt one ear toward your shoulder. Keep both shoulders low.":
+    "Inclina una oreja hacia el hombro. Mantén los dos hombros bajos.",
+  "Neck turn": "Giro de cuello",
+  "Turn your head to look over one shoulder. Chin level.":
+    "Gira la cabeza para mirar por encima de un hombro. Barbilla recta.",
+  "Goalpost arms": "Brazos en cactus",
+  "Elbows at shoulder height, hands up. Draw your elbows back, chest open.":
+    "Codos a la altura de los hombros, manos arriba. Lleva los codos hacia atrás, pecho abierto.",
+  "Standing side bend": "Flexión lateral de pie",
+  "Reach one arm overhead and lean to the other side. Hips still.":
+    "Lleva un brazo por encima de la cabeza e inclínate hacia el otro lado. Caderas quietas.",
+  "Lying twist": "Torsión tumbado",
+  "Lying down, drop both knees to one side. Shoulders stay on the floor.":
+    "Tumbado, deja caer las dos rodillas hacia un lado. Los hombros siguen en el suelo.",
+  "Sit with the soles of your feet together. Let your knees fall open.":
+    "Siéntate con las plantas de los pies juntas. Deja que las rodillas se abran.",
+  Frog: "Rana",
+  "On all fours, knees wide. Push your hips gently back.":
+    "A cuatro patas, rodillas separadas. Empuja las caderas suavemente hacia atrás.",
+  "Side lunge": "Zancada lateral",
+  "Feet wide, shift your weight into one bent knee. Other leg straight.":
+    "Pies separados, lleva el peso a una rodilla doblada. La otra pierna estirada.",
+  "Wide-leg forward fold": "Flexión con piernas abiertas",
+  "Feet wide, fold forward from the hips. Hands to the floor.":
+    "Pies separados, inclínate hacia delante desde las caderas. Manos al suelo.",
+  "Arm openers": "Aperturas de brazos",
+  "Hug yourself, then open your arms wide. Squeeze your shoulder blades.":
+    "Abrázate y luego abre bien los brazos. Junta los omóplatos.",
+  "Open book": "Libro abierto",
+  "Lie on your side, knees bent. Open your top arm wide and follow it with your eyes.":
+    "Túmbate de lado, rodillas dobladas. Abre bien el brazo de arriba y síguelo con la mirada.",
+  "Trunk turns": "Giros de tronco",
+  "Feet wide, turn your upper body side to side. Let your arms swing.":
+    "Pies separados, gira el torso de un lado a otro. Deja que los brazos se balanceen.",
+  "Knee sways": "Balanceo de rodillas",
+  "Lying, knees bent and feet wide. Let your knees sway side to side.":
+    "Tumbado, rodillas dobladas y pies separados. Deja que las rodillas se balanceen de un lado a otro.",
+  "Hip circles": "Círculos de cadera",
+  "Hands on hips, draw big slow circles. Change direction halfway.":
+    "Manos en las caderas, dibuja círculos grandes y lentos. Cambia de sentido a la mitad.",
   // end of TASK-520 part B
   Morning: "Mañana",
   "After run": "Después de correr",

@@ -437,7 +437,10 @@ describe("the new poses sitting and kneeling on the floor, second block", () => 
 });
 
 describe("the movements, from their start to their far end", () => {
-  const moves = NEW_EXERCISES.filter(isMove);
+  // Those seen from the side: the others are in `posesFrontMore.test.ts`.
+  const moves = NEW_EXERCISES.filter(
+    (exercise) => isMove(exercise) && exercise.front === undefined,
+  );
 
   it("go somewhere, in two to six seconds there and back", () => {
     expect(moves.length).toBeGreaterThan(0);

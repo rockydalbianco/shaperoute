@@ -609,7 +609,7 @@ lasciando le righe d'indice.
 - ADR-0408 — La modalità «Nutrition»: scelta come uno sport la barra diventa Today · Plan · Explore · Feed · Profile; la scheda «Food» dell'allenamento resta; dopo TASK-490 D ed E · 2026-11-24 · Attiva
 - ADR-0409 — «Sign up» e «Log in» gialli: il pulsante in fondo al modulo è `accent` con parole `onAccent`, un'eccezione scelta dall'utente a «il giallo è del percorso» · 2026-11-24 · Attiva
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Attiva
-- ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
+- ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-27 · Accettata
 - ADR-0394, precisazione C — La scheda pubblicata aperta fuori dal Feed: profilo, campanella, push, link e chat la aprono per id sulla scheda della mappa, col riquadro del Feed; nella griglia del profilo una cella sua · 2026-11-23 · Attiva
 - ADR-0258, precisazione C2 — La foto a penna alzata nell'API e nell'app: i pezzi solo se il contorno a penna alzata è lo stesso, al più `MAX_WALKS`, `pen_up` e `pieces` insieme, nessun pezzo dopo una modifica, «Lift the pen between parts» acceso all'avvio · 2026-11-26 · Attiva
 - ADR-0412 — L'anteprima dal vivo di «Draw»: un'immagine di mappa del Feed a scatti di scala, la sagoma disegnata dall'app col primo punto del contorno sulla partenza · 2026-11-26 · Attiva
@@ -627,8 +627,84 @@ lasciando le righe d'indice.
 - ADR-0415 — Lo stretching rifatto (TASK-520): una home a categorie con routine composte da un solo elenco di esercizi, i movimenti come respiro largo, la stessa figura vista anche di fronte, gli esercizi nuovi in file nuovi con chiavi stabili · 2026-11-27 · Attiva
 - ADR-0397, precisazione 8 — Il controllo del peso (TASK-489 K1): pesate, obiettivo e tappe dell'account e non del telefono, l'ultima pesata diventa il peso del corpo da quel giorno, obiettivo mai sotto un BMI di 18,5 né prima dei 18 anni, congratulazioni per le tappe dell'utente e la costanza, mai per la velocità · 2026-11-27 · Proposta
 - ADR-0340, precisazione E — Il meteo del post: MET Norway chiesto dal server al salvataggio, entro 3 ore dalla fine, col punto di partenza a ~1 km; neve esclusa; chiesto una volta · 2026-11-27 · Attiva
+- ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
+- ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
+- ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte tiene i piedi fermi mentre il bacino si sposta e sfuma quando il busto si capovolge; un braccio verso chi guarda si piega; sette viste cambiate dall'utente; le routine composte con una tenuta sola, più lunga prima di un secondo giro; chiavi delle categorie senza punto, come le vuole il server; «Today» con la notte fino alle 4 · 2026-11-27 · Attiva
 
 ## Voci nuove
+
+## ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte coi piedi fermi e la sfumatura; le routine composte; «Today» con la notte
+
+**Stato**: Attiva · 2026-11-27 · TASK-520. Aggiunta ad ADR-0415, che resta
+com'è. **Scelte dell'utente** (2026-11-27): cinque movimenti dell'elenco
+si disegnano di fronte o dall'alto invece che di lato («Di fronte»);
+«90/90 hips» e «Side-lying quad» dall'alto («Sì, dall'alto»); «Today»
+propone «Bedtime» dalle 21 alle 4 («Sì, fino alle 4»). **Decise
+dall'agente su delega dell'utente** le scelte tecniche qui sotto. Codice:
+parte B nelle #1672, #1681, #1684, #1687; A2 nella #1691; parte C nella
+#1693.
+
+**Contesto**: scrivendo i 50 esercizi e provandoli al simulatore sono
+venuti fuori casi che ADR-0415 non aveva: gesti che vanno verso chi
+guarda, piedi che devono restare fermi, un busto che si capovolge. La
+parte C ha poi dovuto dire come si compone una routine e con che nome si
+salva.
+
+**Decisione**:
+
+1. **Piedi fermi** (`planted` su una posa di fronte, `frontSway`): in un
+   affondo laterale e nei cerchi del bacino è il bacino che si sposta sopra
+   i piedi, non i piedi che scivolano sotto un bacino fermo. Una posa
+   `planted` si disegna coi piedi al centro (`frontDrift`).
+2. **La sfumatura** (`frontFlips`): quando tra due pose il busto si
+   capovolge (in piedi → piegato in avanti a gambe larghe) la figura di
+   fronte sfuma da una all'altra invece di girare. Visto di fronte quel
+   gesto non è una rotazione: disegnato come tale, il busto ruotava di lato
+   come una lancetta. Trovato al simulatore.
+3. **Un braccio che viene verso chi guarda si piega**: braccio e
+   avambraccio girano in versi opposti, la mano va dritta di traverso
+   (Arm openers, Open book). I segmenti non si accorciano, quindi è il solo
+   modo di far vedere uno scorcio. Dove nemmeno questo basta resta un
+   limite scritto nei test (a metà dei Knee sways le gambe sono dritte).
+4. **Due viste per lo stesso esercizio**: `front` si aggiunge a `pose`
+   senza toglierla (90/90, Side-lying quad); la schermata disegna `front`
+   quando c'è.
+5. **Il catalogo delle categorie è generato** dall'elenco approvato
+   (Allegato B del task file): in una categoria vengono prima gli esercizi
+   che la nominano per prima. Lo script sta fuori dal repository
+   (`out/stretching-nuovo/c/`); i test controllano il risultato.
+6. **La composizione** (`compose.ts`): una tenuta sola per tutta la
+   routine, vicina a quella che durata e livello chiedono (i riposi il
+   doppio); una lista corta si tiene più a lungo prima di fare un secondo
+   giro, e al massimo un terzo; una scelta che non riempie i suoi minuti
+   (entro 20 secondi, 3 secondi al minuto sulle lunghe) non si offre.
+   «Intense» solo dove c'è almeno un esercizio profondo, «solo in piedi»
+   solo con almeno tre esercizi non a terra. In ogni giro prima in piedi,
+   poi a terra, i riposi alla fine.
+7. **Le chiavi delle categorie sono lettere, cifre e trattino basso**
+   (`running_after`, `intimacy_before`): è la forma che il server accetta
+   come nome di una routine (`ROUTINE_PATTERN` in `stretch_sessions.py`, e
+   il CHECK delle tabelle), così una sessione fatta da una categoria si
+   salva senza toccare il server.
+8. **I 15 esercizi di prima dicono dove si fanno** solo dove serve:
+   `position: "floor"` su `hipFlexor`, `cat` e `child`, i tre che non sono
+   in piedi.
+9. **I cinque colori dei gruppi** tengono 4,5:1 su `background`, `surface`
+   e `surfaceRaised` nei due toni a ogni passo: il nome di un gruppo e la
+   sua icona sono scritti in quel colore.
+
+**Motivo**: le prime quattro tengono vero il disegno senza librerie e
+senza un secondo modo di animare; le altre tengono le routine prevedibili
+(la stessa scelta dà sempre la stessa routine) e salvabili col server
+com'è.
+
+**Conseguenze**: nessuna dipendenza nuova, nessuna migrazione, nessun
+passo sul server, nessuna schermata cambiata. Le tre routine di TASK-466
+(`routines.ts`) restano com'erano e sono ancora quelle che i promemoria
+aprono: dove subentrano le nuove lo decide la parte D. «After run» da 5
+minuti composta ha gli stessi cinque esercizi di oggi, col flessore
+dell'anca per ultimo perché è in ginocchio. «Splits» esiste solo
+«Intense» (due soli esercizi dolci).
 
 ## ADR-0340, precisazione E — Il meteo del post: MET Norway chiesto dal server al salvataggio, entro 3 ore dalla fine, col punto di partenza a ~1 km; neve esclusa; chiesto una volta
 
@@ -1048,6 +1124,113 @@ Coordinatore.
 Coordinatore col sì dell'utente); C2 ed EB escono con un OTA. La riga nel
 riepilogo di fine palestra (`GymEnd.tsx`) arriva dopo TASK-489 I e
 TASK-511 B. Diventa «Attiva» con il codice.
+## ADR-0397, precisazione 7 — Le ricette in «Nutrition»
+
+**Stato**: Proposta · 2026-11-27 · TASK-489 parte L (parte 0 chiusa; codice in
+una sessione dedicata: dati #1678 e colori #1686 in `main`). Le scelte di prodotto sono **dell'utente** (2026-11-27, sei
+risposte in `tasks/TASK-489.md`, sezione «L»); il come è **deciso
+dall'agente su delega dell'utente**.
+
+**Contesto**: l'utente vuole ampliare «Nutrition» con un catalogo di
+ricette, poterle cambiare vedendo le calorie seguire, uno stile più curato
+e a colori, e due frasi che cerchino collaborazioni (chef; supermercati e
+negozi di spesa online). ADR-0397 dice che MuW non dà diete né consigli e
+che l'AI non produce numeri.
+
+**Decisione**:
+1. **Un ricettario, non una dieta**: le ricette non sono consigliate a
+   nessuno e non portano parole come «light», «sano», «per dimagrire».
+   Resta sotto la riga «Estimates only. MuW does not provide diets or
+   medical advice.».
+2. **Una ricetta è un elenco di cibi della tabella con i grammi**
+   (chiave `usda-…`), più porzioni, tempi e passi. Calorie e
+   macronutrienti a porzione li calcola l'app coi conti del diario: nei
+   dati delle ricette non c'è nessun numero di calorie. Sale, erbe e
+   spezie stanno nei passi e non sono contati; i passi non nominano mai i
+   grammi.
+3. **Le prime dodici le scrive MuW** (scelta dell'utente, che le ha
+   rilette): preparazioni di casa, e l'app lo dice («Home recipes written
+   by MuW, not by a chef.»). **Niente copiato** da siti o libri, niente
+   foto di altri; il nome di uno chef vero solo con il suo accordo
+   scritto.
+4. **La ricetta si cambia** (grammi, porzioni, ingredienti aggiunti o
+   tolti) e i numeri seguono. La versione dell'utente resta **sul
+   telefono**, con le altre cose di «Nutrition», segnata «Changed by you».
+5. **Nel diario e nel piano entra come i suoi ingredienti**, una porzione,
+   uno per riga, come cibi normali: nessun tipo nuovo di voce, i conti e i
+   file restano quelli di oggi, e l'utente vede e corregge ogni grammo.
+6. **Le due frasi** aprono la posta del telefono verso
+   `hello@getmuw.app` (scelta dell'utente); non mandano niente da sole e
+   **non promettono niente**: la spesa dall'app oggi non c'è.
+7. **Colori**: tre colori nuovi per proteine, carboidrati e grassi (anche
+   nelle barre del diario, scelta dell'utente: cambia il punto 2 della
+   precisazione 5 dove erano «senza colore») e le tinte delle schede, in
+   `theme/tokens.ts`, con un test di contrasto per ognuno. Non sono il
+   giallo del percorso né il rosso e il verde di consumate e mangiate, e
+   non sono mai l'unico segno. I toni li sceglie chi scrive il codice.
+8. Niente di nuovo esce dal telefono: la privacy non cambia.
+
+**Alternative scartate**: una voce «ricetta» nel diario (cambia i file del
+diario e del piano, e nasconde i grammi); calorie scritte nella ricetta
+(numeri a mano, e sbagliati appena la si cambia); ricette prese da un sito
+(testi e foto sono di altri).
+
+**Conseguenze**: il codice in una sessione dedicata, da `main` dopo la
+parte J. Dopo: condividere una ricetta nel Feed con le foto (L2), che
+tocca server e privacy e avrà la sua decisione.
+
+## ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde; la stima e i 18 anni
+
+**Stato**: Attiva · 2026-11-26 · TASK-489 parti H e I. Il colore è una
+scelta **dell'utente** («Voglio un colore», poi «A: rosso e verde» fra tre
+prove mostrate in chat, 2026-11-26); i toni, il nome del token e i
+controlli sono **decisi dall'agente su delega dell'utente**, con il sì del
+Coordinatore a toccare `theme/tokens.ts`. **Cambia il punto 2 della
+precisazione 5**, dove gli anelli erano «nei colori del testo e non in
+verde e rosso».
+
+**Decisione**:
+1. L'anello di fuori, quello che il corpo ha consumato, è `energy`: il
+   rosso che le calorie hanno già in tutta l'app (TASK-424 C3). L'anello
+   di dentro, quello che si è mangiato, è un token nuovo, **`food`**, un
+   verde: `#4FD08A` nel tono scuro (fino a `#7BE3AA` al passo più
+   chiaro), `#095428`–`#0F6B35` nel tono chiaro.
+2. Gli stessi due colori nelle colonne di «This week», nei due anelli
+   piccoli dell'invito a fine attività e nell'esempio della porta della
+   prima volta. Le barre di proteine, carboidrati e grassi restano nel
+   colore del testo.
+3. **Il colore dice quale numero è, non se va bene**: «Surplus» e
+   «Deficit» restano senza colore, come deciso nella parte D. Il verde non
+   è un premio e il rosso non è un avviso.
+4. **Mai l'unico segno**: ogni anello ha accanto la sua etichetta, il suo
+   numero e un puntino del suo colore (regola dell'App Store «non solo
+   colore», e chi non distingue rosso e verde legge le parole).
+5. Contrasto, a ogni tono e passo, in `theme/foodContrast.test.ts`: `food`
+   almeno 4,5:1 su `background`, `surface` e `surfaceRaised`; `food` ed
+   `energy` almeno 3:1 su `border`, che è la traccia dell'anello. `food`
+   non è `accent` (il giallo resta del percorso) né `energy`.
+6. Gli anelli sono disegnati con le viste e `Animated` di React Native:
+   l'app non ha `react-native-svg` e non si aggiunge una dipendenza per
+   questo. Passano con un aggiornamento normale.
+
+**Alternative scartate**: le altre due prove mostrate in chat, non scelte
+dall'utente; il giallo dell'app (è del percorso); un verde già in uso
+(`map.green` è il prato della mappa, `videoLine.green` la linea del video:
+nessuno dei due è un colore dell'interfaccia, e l'app non ha un token
+«success»).
+
+7. **La stima dell'obiettivo e i 18 anni** (parte J, a difesa del punto 4
+   della precisazione 5 e di quello che dice la privacy, «never shown to
+   people under 18»): l'app conosce solo l'anno di nascita, e chi compie
+   18 anni nell'anno in corso può averne ancora 17. In quell'anno MuW non
+   propone nessun numero («From your data MuW suggests no number for
+   this.»); sotto, come prima, «MuW suggests no calorie number to people
+   under 18.». Nessun testo nuovo.
+
+**Conseguenze**: `docs/UI.md` ha la riga di `food` accanto a `energy`.
+Visti nel simulatore il 2026-11-26, tono scuro e chiaro
+(`out/TASK-489/shots/09`–`12`). Codice nella #1652 (parte H) e nella #1660
+(parte I); il punto 7 nella #1673 (parte J).
 
 ## ADR-0264, aggiunta D (TASK-496) — Sci e volo: alla mappa solo i punti nuovi dell'ultimo tratto
 
@@ -1641,8 +1824,8 @@ prima modifica di quel file. Solo app, niente di nativo. Controllato da
 
 ## ADR-0411 — Le forme nuove del motore: inverno, feste, sport e i 35 contorni di TASK-418, giudicate sulla carta, poi sulle strade, poi registrate tutte insieme
 
-**Stato**: Proposta · 2026-11-24 · TASK-516 (parte 0; la parte A sono i
-contorni). Il pezzo da cui partire è una scelta **dell'utente**
+**Stato**: Accettata · 2026-11-27 · TASK-516 (#1579, #1580, #1622, #1661;
+proposta il 2026-11-24, parte 0; la parte A sono i contorni). Il pezzo da cui partire è una scelta **dell'utente**
 (2026-11-24, «Forme invernali e contorni»); il come è deciso dall'agente
 su delega dell'utente, sulla strada di ADR-0346 e della sua precisazione B.
 

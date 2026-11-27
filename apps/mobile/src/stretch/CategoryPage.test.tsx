@@ -138,6 +138,25 @@ describe("a stretching category's page", () => {
     ).toBeOnTheScreen();
   });
 
+  it("opens an exercise's page from its row, with the time it has in this routine", async () => {
+    await open("neck");
+    const routine = compose(category("neck"), {
+      minutes: 5,
+      level: "gentle",
+      where: "any",
+    });
+    expect(screen.queryByTestId("stretch-exercise")).toBeNull();
+    await press("stretch-row-0");
+    expect(screen.getByTestId("stretch-exercise")).toBeOnTheScreen();
+    expect(screen.getByLabelText(`Hold: ${routine.hold} s`)).toBeOnTheScreen();
+    expect(screen.getByTestId("stretch-good-for")).toHaveTextContent(/Neck/);
+    await press("stretch-exercise-close");
+    expect(screen.queryByTestId("stretch-exercise")).toBeNull();
+    // The category's page is still there, and nothing started.
+    expect(screen.getByTestId("stretch-category")).toBeOnTheScreen();
+    expect(startCategorySession).not.toHaveBeenCalled();
+  });
+
   it("has no standing version of what is all on the floor, and closes on «Close»", async () => {
     await open("relax");
     expect(radio("stretch-where-standing").disabled).toBe(true);

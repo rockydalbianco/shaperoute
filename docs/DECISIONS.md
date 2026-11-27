@@ -633,6 +633,7 @@ lasciando le righe d'indice.
 - ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione una volta al mese nelle Alpi, un volo è di un decollo solo per i 300 m (le tracce non hanno quota), lo storico in una rotta a sé con la cache di 10 minuti, record più lungo, più alto e più lontano dai post per tutti, niente «Fly from here»; il vento (D) in un task nuovo dopo TASK-479 H · 2026-11-27 · Attiva
 - ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; una pagina vuota ha il suo pulsante quando c'è una cosa da fare; una tessera senza percorso mostra la sagoma della forma in grigio · 2026-11-26 · Attiva
 - ADR-0417 — Lo stile delle pagine in tutta l'app (TASK-523): il vetro di 469 a barre, tab e fogli e lo stile nuovo al contenuto; un colore per sezione come token suoi (`section`), stesso valore dove la tinta c'è già; un kit di soli file nuovi in `ui/` col velo tinto opaco al 12%; nella barra delle schede il colore sta nella capsula della scheda aperta, non nel tratto delle icone · 2026-11-27 · Attiva
+- ADR-0416 — Il catalogo di «Explore» guardato a occhio: oltre al filtro, le strade fatte due volte entro 8 punti sopra la mediana della forma, poi un voto a occhio da 0 a 3 su ogni disegno; 499 tolti, 3120 nuovi, la classifica per voto e misura; gli id dei percorsi cambiano · 2026-11-27 · Accettata
 
 
 ## Voci nuove
@@ -767,6 +768,47 @@ decollo» entro 300 m e 150 m di quota. Le tracce salvate dei voli
 **Conseguenze**: nessuna migrazione oltre la `0086`; lo script mensile col
 cron lo scrive il Coordinatore col sì dell'utente; la parte D (il vento in
 quota) diventa un task nuovo dopo TASK-479 H.
+
+## ADR-0416 — Il catalogo di «Explore» guardato a occhio: la regola delle strade in più, il voto da 0 a 3, la classifica
+
+**Stato**: Accettata · 2026-11-27 · TASK-521. Precisa ADR-0347 (il catalogo
+grande) e ADR-0366 (parole a penna alzata e bici): il filtro di quelle resta,
+si aggiungono una regola e l'occhio.
+
+**Contesto.** Il filtro del catalogo (somiglianza ≥ 0,90, distanza ±10%,
+strade fatte due volte ≤ 10%, niente autostrade e superstrade) lasciava
+entrare disegni che non si leggono. Guardati tutti i 2031 su fogli da 45, una
+buona parte era un groviglio, una scatola o una forma che non si riconosce.
+La somiglianza alta non basta: misura il contorno, non quello che vede chi
+guarda.
+
+**Decisione.**
+1. **Una regola misurata in più.** La parte di strada fatta due volte non
+   supera di più di 8 punti la mediana della stessa forma nel catalogo; per
+   le forme di TASK-516 vale la mediana dei 130 disegni della D1. Le parole
+   a penna alzata hanno il loro filtro (`catalog_words.pen_up_reasons`).
+   Deciso dall'agente su delega dell'utente.
+2. **L'occhio decide.** Ogni disegno che passa il filtro si guarda dritto,
+   su fogli da 45, con un voto: 0 esce, 1 si legge con qualche difetto, 2
+   buono, 3 bellissimo. Nel dubbio, fuori. Entrano i voti da 1 a 3
+   (l'utente: «Sì, tienili tutti»).
+3. **I tolti.** I disegni del catalogo che non si leggono, o si leggono a
+   fatica, escono. Sono 499 (l'utente: «Sì, tutti i 499»).
+4. **La classifica.** In ogni categoria (forme a piedi, forme nuove, parole,
+   bici) prima il voto, poi la somiglianza meno le strade in più sopra la
+   mediana. Per ora è una pagina per l'utente e un file
+   (`out/TASK-521/tenuti.tsv`); l'ordine nell'app non cambia.
+5. **Gli id.** L'API numera un percorso del catalogo per il suo posto nel
+   file della città: togliere 499 percorsi sposta quelli dopo. Nessun dato
+   salvato usa quel numero (preferiti e migliori tempi usano la linea); il
+   feed di esempio è cambiato in #1664. Per questo il seme nuovo va sul
+   server solo con la 1.2.0 sui telefoni.
+
+**Conseguenze.** Il seme passa da 2161 a 4782 percorsi e da 42 a 99 MB.
+L'API, che lo carica tutto in memoria, sale a un picco di circa 650 MB al
+caricamento (+350 MB): al passo sul server si guarda la memoria libera.
+Le forme che sulle strade non si leggono (pupazzo di neve, pallone,
+racchetta) restano nell'app ma non hanno disegni nuovi nel catalogo.
 
 ## ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte coi piedi fermi e la sfumatura; le routine composte; «Today» con la notte
 

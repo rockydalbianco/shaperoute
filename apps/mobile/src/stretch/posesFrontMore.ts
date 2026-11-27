@@ -212,3 +212,133 @@ export const SIDE_LUNGE_MOVE: FrontBreath = {
   thighRight: -18.7,
   shinRight: -18.7,
 };
+
+/** Standing, hugging: the arms crossed over the chest, each hand on the other
+ * shoulder. */
+export const ARM_OPENERS: FrontPose = {
+  torso: 180,
+  head: 180,
+  upperArmLeft: -12,
+  forearmLeft: -132,
+  upperArmRight: 12,
+  forearmRight: 132,
+  thighLeft: 0,
+  shinLeft: 0,
+  thighRight: 0,
+  shinRight: 0,
+};
+
+/** The arms open wide, the hands going straight across at shoulder height.
+ * The elbows drop on the way: an arm that comes toward whoever looks gets
+ * shorter, and a bar can only bend. */
+export const ARM_OPENERS_MOVE: FrontBreath = {
+  upperArmLeft: 104,
+  forearmLeft: -130,
+  upperArmRight: -104,
+  forearmRight: 130,
+};
+
+/** Lying on a side, seen from above: the knees bent and both arms out to the
+ * side the body faces. */
+export const OPEN_BOOK: FrontPose = {
+  torso: 180,
+  head: 172,
+  upperArmLeft: 90,
+  forearmLeft: 92,
+  upperArmRight: 84,
+  forearmRight: 90,
+  thighLeft: 80,
+  shinLeft: -6,
+  thighRight: 74,
+  shinRight: -10,
+  above: true,
+};
+
+/** The top arm opens to the other side, the hand straight across the chest,
+ * and the head follows it. */
+export const OPEN_BOOK_MOVE: FrontBreath = {
+  upperArmRight: -176,
+  forearmRight: 174,
+  head: 14,
+};
+
+/** Standing with the feet wide, the upper body turned to one side: both arms
+ * swung that way, the head with them. A turn does not show from the front;
+ * the swinging arms do. */
+export const TRUNK_TURNS: FrontPose = {
+  torso: 180,
+  head: 186,
+  upperArmLeft: -22,
+  forearmLeft: -72,
+  upperArmRight: -52,
+  forearmRight: -84,
+  thighLeft: 14,
+  shinLeft: 14,
+  thighRight: -14,
+  shinRight: -14,
+};
+
+/** The arms swing across to the other side, the head with them. */
+export const TRUNK_TURNS_MOVE: FrontBreath = {
+  head: -12,
+  upperArmLeft: 74,
+  forearmLeft: 156,
+  upperArmRight: 74,
+  forearmRight: 156,
+};
+
+/** Lying on the back, seen from above: the knees bent, the feet wide and both
+ * knees fallen to one side. */
+export const KNEE_SWAY: FrontPose = {
+  torso: 180,
+  head: 180,
+  upperArmLeft: 38,
+  forearmLeft: 30,
+  upperArmRight: -38,
+  forearmRight: -30,
+  thighLeft: -7.1,
+  shinLeft: 53.5,
+  thighRight: -52.1,
+  shinRight: 8.6,
+  above: true,
+};
+
+/** Both knees go over to the other side; the feet end where they began. */
+export const KNEE_SWAY_MOVE: FrontBreath = {
+  thighLeft: 59.2,
+  shinLeft: -62.1,
+  thighRight: 59.2,
+  shinRight: -62.1,
+};
+
+/** Standing with the feet apart and the hands on the hips, the hips pushed to
+ * one side and the body leaning back over the feet. From the front a circle
+ * of the hips is a sway from side to side. */
+export const HIP_CIRCLES: FrontPose = {
+  torso: 172,
+  head: 177,
+  upperArmLeft: 26.2,
+  forearmLeft: -51.5,
+  upperArmRight: -38.3,
+  forearmRight: 28.2,
+  thighLeft: 20.6,
+  shinLeft: 20.6,
+  thighRight: -26.8,
+  shinRight: 10.8,
+  planted: true,
+};
+
+/** The hips go across to the other side, the hands still on them; both feet
+ * stay where they are. */
+export const HIP_CIRCLES_MOVE: FrontBreath = {
+  torso: 16,
+  head: 6,
+  upperArmLeft: 12.1,
+  forearmLeft: 23.3,
+  upperArmRight: 12.1,
+  forearmRight: 23.3,
+  thighLeft: 6.2,
+  shinLeft: -31.4,
+  thighRight: 6.2,
+  shinRight: -31.4,
+};

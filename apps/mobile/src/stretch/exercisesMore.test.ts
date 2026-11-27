@@ -61,6 +61,23 @@ const B4 = [
   "frog",
   "sideLunge",
   "wideFold",
+  // Five movements the list had from the side: they go toward whoever
+  // looks, so they are drawn from the front (the user's «Di fronte»).
+  "armOpeners",
+  "openBook",
+  "trunkTurns",
+  "kneeSway",
+  "hipCircles",
+];
+
+/** The ones of the fourth block that move. */
+const B4_MOVES = [
+  "sideLunge",
+  "armOpeners",
+  "openBook",
+  "trunkTurns",
+  "kneeSway",
+  "hipCircles",
 ];
 
 describe("the exercises TASK-520 adds", () => {
@@ -118,8 +135,8 @@ describe("the exercises TASK-520 adds", () => {
       );
       expect(["standing", "chair", "floor"]).toContain(exercise.position);
       expect(["gentle", "intense"]).toContain(exercise.level);
-      // The first two blocks are held, the third moves, and one of the fourth.
-      if (B3.includes(exercise.key) || exercise.key === "sideLunge") {
+      // The first two blocks are held, the third moves, and six of the fourth.
+      if (B3.includes(exercise.key) || B4_MOVES.includes(exercise.key)) {
         expect(exercise.kind).toBe("move");
         expect(exercise.tempoMs).toBeGreaterThan(0);
         expect(exercise.seconds).toBe(30);
@@ -203,7 +220,7 @@ describe("the exercises TASK-520 adds", () => {
 describe("the fourth block, seen from the front", () => {
   const fourth = NEW_EXERCISES.filter((exercise) => B4.includes(exercise.key));
 
-  it("does one side at a time where there are two, and lies down for the twist, the butterfly and the frog", () => {
+  it("does one side at a time where there are two, and says which are on the floor and seen from above", () => {
     expect(fourth).toHaveLength(B4.length);
     expect(fourth.filter((exercise) => exercise.sides).map((e) => e.key)).toEqual([
       "neckSide",
@@ -211,12 +228,20 @@ describe("the fourth block, seen from the front", () => {
       "sideBend",
       "lyingTwist",
       "sideLunge",
+      "openBook",
     ]);
     expect(
       fourth.filter((exercise) => exercise.position === "floor").map((e) => e.key),
-    ).toEqual(["lyingTwist", "butterfly", "frog"]);
+    ).toEqual(["lyingTwist", "butterfly", "frog", "openBook", "kneeSway"]);
     expect(
       fourth.filter((exercise) => exercise.front?.above).map((e) => e.key),
-    ).toEqual(["lyingTwist", "frog"]);
+    ).toEqual(["lyingTwist", "frog", "openBook", "kneeSway"]);
+    // The feet stay where they are while the hip goes across.
+    expect(
+      fourth.filter((exercise) => exercise.front?.planted).map((e) => e.key),
+    ).toEqual(["sideLunge", "hipCircles"]);
+    expect(
+      fourth.filter((exercise) => exercise.kind === "move").map((e) => e.key),
+    ).toEqual(B4_MOVES);
   });
 });

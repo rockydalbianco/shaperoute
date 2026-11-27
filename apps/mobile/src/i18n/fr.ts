@@ -2022,6 +2022,21 @@ export const FR: Table = {
   "Wide-leg forward fold": "Flexion avant jambes écartées",
   "Feet wide, fold forward from the hips. Hands to the floor.":
     "Pieds écartés, penchez-vous en avant depuis les hanches. Mains au sol.",
+  "Arm openers": "Ouvertures de bras",
+  "Hug yourself, then open your arms wide. Squeeze your shoulder blades.":
+    "Enlacez-vous, puis ouvrez grand les bras. Serrez les omoplates.",
+  "Open book": "Livre ouvert",
+  "Lie on your side, knees bent. Open your top arm wide and follow it with your eyes.":
+    "Allongez-vous sur le côté, genoux pliés. Ouvrez grand le bras du dessus et suivez-le du regard.",
+  "Trunk turns": "Rotations du buste",
+  "Feet wide, turn your upper body side to side. Let your arms swing.":
+    "Pieds écartés, tournez le buste d'un côté à l'autre. Laissez les bras se balancer.",
+  "Knee sways": "Balancement des genoux",
+  "Lying, knees bent and feet wide. Let your knees sway side to side.":
+    "Allongé, genoux pliés et pieds écartés. Laissez les genoux se balancer d'un côté à l'autre.",
+  "Hip circles": "Cercles de hanches",
+  "Hands on hips, draw big slow circles. Change direction halfway.":
+    "Mains sur les hanches, dessinez de grands cercles lents. Changez de sens à mi-parcours.",
   // end of TASK-520 part B
   Morning: "Matin",
   "After run": "Après la course",

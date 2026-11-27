@@ -2012,6 +2012,21 @@ export const IT: Table = {
   "Wide-leg forward fold": "Piegamento a gambe larghe",
   "Feet wide, fold forward from the hips. Hands to the floor.":
     "Piedi larghi, piegati in avanti dalle anche. Mani a terra.",
+  "Arm openers": "Aperture delle braccia",
+  "Hug yourself, then open your arms wide. Squeeze your shoulder blades.":
+    "Abbracciati, poi apri bene le braccia. Stringi le scapole.",
+  "Open book": "Libro aperto",
+  "Lie on your side, knees bent. Open your top arm wide and follow it with your eyes.":
+    "Sdraiati su un fianco, ginocchia piegate. Apri bene il braccio di sopra e seguilo con lo sguardo.",
+  "Trunk turns": "Torsioni del busto",
+  "Feet wide, turn your upper body side to side. Let your arms swing.":
+    "Piedi larghi, gira il busto da un lato all'altro. Lascia oscillare le braccia.",
+  "Knee sways": "Ginocchia a pendolo",
+  "Lying, knees bent and feet wide. Let your knees sway side to side.":
+    "Da sdraiato, ginocchia piegate e piedi larghi. Lascia oscillare le ginocchia da un lato all'altro.",
+  "Hip circles": "Cerchi con il bacino",
+  "Hands on hips, draw big slow circles. Change direction halfway.":
+    "Mani sui fianchi, disegna grandi cerchi lenti. A metà cambia verso.",
   // end of TASK-520 part B
   Morning: "Mattino",
   "After run": "Dopo la corsa",

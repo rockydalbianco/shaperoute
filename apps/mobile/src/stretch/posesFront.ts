@@ -178,10 +178,25 @@ export function frontGrounding(pose: FrontPose): number {
 /** How far a pose may reach to a side and still be whole on a narrow phone. */
 export const FRONT_REACH = 0.46;
 
-/** How far the figure slides to stay on the screen: positive, to the right. */
+/** The middle of the two feet, across the screen. */
+function betweenFeet(pose: FrontPose): number {
+  const { shinLeft, shinRight } = frontBones(pose);
+  return (shinLeft.to.x + shinRight.to.x) / 2;
+}
+
+/**
+ * How far the figure slides to stay on the screen: positive, to the right.
+ * A `planted` pose is drawn with its feet in the middle, the hip to the
+ * side they left it on (hip circles begin with the hip already across).
+ */
 export function frontDrift(pose: FrontPose): number {
   const { left, right } = frontBox(pose);
-  return Math.max(0, -left - FRONT_REACH) - Math.max(0, right - FRONT_REACH);
+  const across = pose.planted === true ? -betweenFeet(pose) : 0;
+  return (
+    across +
+    Math.max(0, -(left + across) - FRONT_REACH) -
+    Math.max(0, right + across - FRONT_REACH)
+  );
 }
 
 /** `pose` at the far end of a breath or of a movement. */
@@ -193,12 +208,6 @@ export function deepenFront(pose: FrontPose, breath: FrontBreath): FrontPose {
     out[segment] = pose[segment] + (breath[segment] ?? 0);
   }
   return out;
-}
-
-/** The middle of the two feet, across the screen. */
-function betweenFeet(pose: FrontPose): number {
-  const { shinLeft, shinRight } = frontBones(pose);
-  return (shinLeft.to.x + shinRight.to.x) / 2;
 }
 
 /**

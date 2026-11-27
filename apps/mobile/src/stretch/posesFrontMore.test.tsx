@@ -22,19 +22,29 @@ import {
   mirrorFrontBreath,
 } from "./posesFront";
 import {
+  ARM_OPENERS,
+  ARM_OPENERS_MOVE,
   BUTTERFLY,
   BUTTERFLY_BREATH,
   FROG,
   FROG_BREATH,
   GOALPOST,
+  HIP_CIRCLES,
+  HIP_CIRCLES_MOVE,
+  KNEE_SWAY,
+  KNEE_SWAY_MOVE,
   LYING_TWIST,
   LYING_TWIST_BREATH,
   NECK_SIDE,
   NECK_TURN,
+  OPEN_BOOK,
+  OPEN_BOOK_MOVE,
   SIDE_BEND,
   SIDE_BEND_BREATH,
   SIDE_LUNGE,
   SIDE_LUNGE_MOVE,
+  TRUNK_TURNS,
+  TRUNK_TURNS_MOVE,
   WIDE_FOLD,
 } from "./posesFrontMore";
 
@@ -58,8 +68,8 @@ const QUARTERS = [0, 0.25, 0.5, 0.75, 1];
 const fronts = NEW_EXERCISES.filter((exercise) => exercise.front !== undefined);
 
 describe("the new poses seen from the front, on either side", () => {
-  it("are nine, each with a breath or a movement of its own", () => {
-    expect(fronts).toHaveLength(9);
+  it("are fourteen, each with a breath or a movement of its own", () => {
+    expect(fronts).toHaveLength(14);
     for (const exercise of fronts) {
       const turns = Object.values(exercise.frontBreath ?? {});
       expect(turns.length).toBeGreaterThan(0);
@@ -300,6 +310,191 @@ describe("the side lunge, a movement with both feet planted", () => {
       );
       await act(() => jest.advanceTimersByTimeAsync(POSE_MS * 3));
       expect(screen.getByTestId("lunge", { includeHiddenElements: true })).toBeTruthy();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+describe("the five movements that go toward whoever looks", () => {
+  /** The same pose, give or take a rounding of the directions. */
+  function expectSame(a: FrontPose, b: FrontPose): void {
+    for (const segment of FRONT_SEGMENTS) {
+      const turn = (((a[segment] - b[segment]) % 360) + 540) % 360;
+      expect(Math.abs(turn - 180)).toBeLessThan(0.2);
+    }
+  }
+
+  it("opens the arms from a hug, the hands going straight across at shoulder height", () => {
+    const hug = frontBones(ARM_OPENERS);
+    // Each hand by the other shoulder.
+    expect(hug.forearmLeft.to.x).toBeGreaterThan(0.04);
+    expect(hug.forearmRight.to.x).toBeLessThan(-0.04);
+    expect(
+      Math.hypot(
+        hug.forearmLeft.to.x - hug.upperArmRight.from.x,
+        hug.forearmLeft.to.y - hug.upperArmRight.from.y,
+      ),
+    ).toBeLessThan(0.07);
+    const open = frontBones(deepenFront(ARM_OPENERS, ARM_OPENERS_MOVE));
+    expect(open.forearmLeft.to.x).toBeLessThan(-0.35);
+    expect(open.forearmRight.to.x).toBeGreaterThan(0.35);
+    let last = hug.forearmLeft.to.x;
+    for (const share of QUARTERS) {
+      const b = frontBones(along(ARM_OPENERS, ARM_OPENERS_MOVE, share));
+      // Never lower than the chest, never above the head; always outward.
+      expect(Math.abs(b.forearmLeft.to.y - b.upperArmLeft.from.y)).toBeLessThan(0.1);
+      expect(b.forearmLeft.to.x).toBeLessThanOrEqual(last);
+      last = b.forearmLeft.to.x;
+      // The same on both sides, and nothing else moves.
+      expect(b.forearmRight.to.x).toBeCloseTo(-b.forearmLeft.to.x, 6);
+      expect(b.shinLeft.to.y).toBeCloseTo(LEG, 6);
+    }
+  });
+
+  it("opens the top arm like a book, seen from above: the knees and the other arm stay", () => {
+    expect(OPEN_BOOK.above).toBe(true);
+    const shut = frontBones(OPEN_BOOK);
+    const open = frontBones(deepenFront(OPEN_BOOK, OPEN_BOOK_MOVE));
+    // Both knees and both hands to the left of the screen, then one hand across.
+    expect(shut.thighLeft.to.x).toBeLessThan(-0.2);
+    expect(shut.thighRight.to.x).toBeLessThan(-0.15);
+    expect(shut.forearmLeft.to.x).toBeLessThan(-0.3);
+    expect(shut.forearmRight.to.x).toBeLessThan(-0.2);
+    expect(open.forearmRight.to.x).toBeGreaterThan(0.35);
+    expect(Object.keys(OPEN_BOOK_MOVE).sort()).toEqual([
+      "forearmRight",
+      "head",
+      "upperArmRight",
+    ]);
+    // The head follows the hand.
+    expect(open.head.to.x).toBeGreaterThan(shut.head.to.x);
+    let last = shut.forearmRight.to.x;
+    for (const share of QUARTERS) {
+      const b = frontBones(along(OPEN_BOOK, OPEN_BOOK_MOVE, share));
+      expect(Math.abs(b.forearmRight.to.y - b.upperArmRight.from.y)).toBeLessThan(0.05);
+      expect(b.forearmRight.to.x).toBeGreaterThanOrEqual(last);
+      last = b.forearmRight.to.x;
+    }
+  });
+
+  it("swings the arms from one side to the other for the trunk turns, the feet wide and still", () => {
+    const end = deepenFront(TRUNK_TURNS, TRUNK_TURNS_MOVE);
+    expectSame(end, mirrorFront(TRUNK_TURNS));
+    const b = frontBones(TRUNK_TURNS);
+    expect(TRUNK_TURNS.torso).toBe(FRONT_STAND.torso);
+    expect(b.shinRight.to.x - b.shinLeft.to.x).toBeGreaterThan(0.25);
+    // Both hands to the right of the screen, then both to the left.
+    expect(b.forearmLeft.to.x).toBeGreaterThan(0.05);
+    expect(b.forearmRight.to.x).toBeGreaterThan(0.3);
+    expect(frontBones(end).forearmRight.to.x).toBeLessThan(-0.05);
+    for (const segment of [
+      "thighLeft",
+      "shinLeft",
+      "thighRight",
+      "shinRight",
+    ] as const) {
+      expect(TRUNK_TURNS_MOVE[segment]).toBeUndefined();
+    }
+  });
+
+  it("sways both knees from one side to the other, seen from above, the feet ending where they began", () => {
+    expect(KNEE_SWAY.above).toBe(true);
+    const end = deepenFront(KNEE_SWAY, KNEE_SWAY_MOVE);
+    expectSame(end, mirrorFront(KNEE_SWAY));
+    const before = frontBones(KNEE_SWAY);
+    const after = frontBones(end);
+    for (const shin of ["shinLeft", "shinRight"] as const) {
+      expect(after[shin].to.x).toBeCloseTo(before[shin].to.x, 2);
+      expect(after[shin].to.y).toBeCloseTo(before[shin].to.y, 2);
+    }
+    expect(before.shinRight.to.x - before.shinLeft.to.x).toBeGreaterThan(0.3);
+    // Each knee is to the right of the line from its hip to its foot, then
+    // to the left of it.
+    const off = (b: typeof before, thigh: "thighLeft" | "thighRight") => {
+      const shin = thigh === "thighLeft" ? "shinLeft" : "shinRight";
+      const { from, to: knee } = b[thigh];
+      const foot = b[shin].to;
+      const share = (knee.y - from.y) / (foot.y - from.y);
+      return knee.x - (from.x + (foot.x - from.x) * share);
+    };
+    for (const thigh of ["thighLeft", "thighRight"] as const) {
+      expect(off(before, thigh)).toBeGreaterThan(0.08);
+      expect(off(after, thigh)).toBeLessThan(-0.08);
+    }
+    // The bars cannot shorten as a knee comes up: half way the legs are
+    // straight and the feet a little further, never by much.
+    for (const share of QUARTERS) {
+      const b = frontBones(along(KNEE_SWAY, KNEE_SWAY_MOVE, share));
+      expect(
+        Math.hypot(
+          b.shinLeft.to.x - before.shinLeft.to.x,
+          b.shinLeft.to.y - before.shinLeft.to.y,
+        ),
+      ).toBeLessThan(0.07);
+    }
+  });
+
+  it("takes the hips from one side to the other over feet that stay in the middle, the hands on them", () => {
+    expect(HIP_CIRCLES.planted).toBe(true);
+    const end = deepenFront(HIP_CIRCLES, HIP_CIRCLES_MOVE);
+    expectSame(end, mirrorFront(HIP_CIRCLES));
+    const middle = (pose: FrontPose) =>
+      (frontBones(pose).shinLeft.to.x + frontBones(pose).shinRight.to.x) / 2;
+    // It begins with the hip to the right of the feet, and is drawn there.
+    expect(middle(HIP_CIRCLES)).toBeCloseTo(-0.05, 2);
+    expect(frontDrift(HIP_CIRCLES)).toBeCloseTo(0.05, 2);
+    const sway = frontSway(HIP_CIRCLES, end);
+    expect(sway).toBeCloseTo(-0.1, 2);
+    const floor = frontGrounding(HIP_CIRCLES);
+    expect(frontGrounding(end)).toBeCloseTo(floor, 2);
+    for (const share of QUARTERS) {
+      const pose = along(HIP_CIRCLES, HIP_CIRCLES_MOVE, share);
+      const b = frontBones(pose);
+      const across = frontDrift(HIP_CIRCLES) + sway * share;
+      // The feet: in the middle of the screen, apart, on the floor.
+      expect(Math.abs(middle(pose) + across)).toBeLessThan(0.005);
+      expect(b.shinRight.to.x - b.shinLeft.to.x).toBeCloseTo(0.32, 1);
+      expect(Math.abs(b.shinLeft.to.y - floor)).toBeLessThan(ON);
+      expect(Math.abs(b.shinRight.to.y - floor)).toBeLessThan(ON);
+      // The hands: on the hips.
+      expect(
+        Math.hypot(b.forearmLeft.to.x + HIP_HALF, b.forearmLeft.to.y),
+      ).toBeLessThan(0.05);
+      expect(
+        Math.hypot(b.forearmRight.to.x - HIP_HALF, b.forearmRight.to.y),
+      ).toBeLessThan(0.05);
+    }
+    // The body leans back over the feet: the head stays near the middle.
+    expect(
+      Math.abs(frontBones(HIP_CIRCLES).head.to.x + frontDrift(HIP_CIRCLES)),
+    ).toBeLessThan(0.03);
+  });
+
+  it("are drawn moving", async () => {
+    jest.useFakeTimers();
+    try {
+      for (const [pose, move] of [
+        [HIP_CIRCLES, HIP_CIRCLES_MOVE],
+        [KNEE_SWAY, KNEE_SWAY_MOVE],
+        [ARM_OPENERS, ARM_OPENERS_MOVE],
+      ] as const) {
+        const { unmount } = await render(
+          <FigureFront
+            pose={pose}
+            breath={move}
+            breathing
+            breathMs={3000}
+            height={300}
+            testID="moving"
+          />,
+        );
+        await act(() => jest.advanceTimersByTimeAsync(4000));
+        expect(
+          screen.getByTestId("moving", { includeHiddenElements: true }),
+        ).toBeTruthy();
+        await unmount();
+      }
     } finally {
       jest.useRealTimers();
     }

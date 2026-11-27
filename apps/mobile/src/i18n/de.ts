@@ -2030,6 +2030,21 @@ export const DE: Table = {
   "Wide-leg forward fold": "Vorbeuge in der Grätsche",
   "Feet wide, fold forward from the hips. Hands to the floor.":
     "Füße weit, aus der Hüfte nach vorn beugen. Hände zum Boden.",
+  "Arm openers": "Arme öffnen",
+  "Hug yourself, then open your arms wide. Squeeze your shoulder blades.":
+    "Sich selbst umarmen, dann die Arme weit öffnen. Die Schulterblätter zusammenziehen.",
+  "Open book": "Offenes Buch",
+  "Lie on your side, knees bent. Open your top arm wide and follow it with your eyes.":
+    "Auf die Seite legen, Knie gebeugt. Den oberen Arm weit öffnen und ihm mit dem Blick folgen.",
+  "Trunk turns": "Rumpfdrehen",
+  "Feet wide, turn your upper body side to side. Let your arms swing.":
+    "Füße weit, den Oberkörper von Seite zu Seite drehen. Die Arme mitschwingen lassen.",
+  "Knee sways": "Knie pendeln",
+  "Lying, knees bent and feet wide. Let your knees sway side to side.":
+    "Im Liegen, Knie gebeugt, Füße weit. Die Knie von Seite zu Seite pendeln lassen.",
+  "Hip circles": "Hüftkreisen",
+  "Hands on hips, draw big slow circles. Change direction halfway.":
+    "Hände an die Hüften, große, langsame Kreise ziehen. Zur Halbzeit die Richtung wechseln.",
   // end of TASK-520 part B
   Morning: "Morgens",
   "After run": "Nach dem Laufen",

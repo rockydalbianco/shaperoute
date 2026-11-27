@@ -37,6 +37,9 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 fare quando capita; i task con solo quella prova sono chiusi.
 **TASK-501** (chiuso): dopo l'OTA con la parte C, la prova sul telefono
 di Coach e di un post aperto con la sua mappa.
+**TASK-410** (chiuso): la prima corsa vera col meteo sul server (una
+query in sola lettura dell'utente, `tasks/TASK-410.md`) e, dopo l'OTA,
+la card «Weather» sul telefono.
 
 ## In lavorazione
 
@@ -104,9 +107,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-397 — Il VO₂ max nel profilo** · A e B in produzione; C al
   prossimo taglio nativo (con 374 C), D dopo 321 C. File: — ·
   `tasks/TASK-397.md`
-- **TASK-410 — La pagina del post** · B, F, C, D e la correzione #1078 in
-  produzione; A è TASK-355 B; resta E, il meteo (testi e privacy da
-  approvare). File: — · `tasks/TASK-410.md`
 - **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
   1963 percorsi e ordine misto in «NEAR YOU». Le 702 parole nuove a riga
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e

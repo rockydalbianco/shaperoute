@@ -13,7 +13,8 @@ reaction, a comment, a tag. A sixth, a shape of the game unlocked (TASK-296,
 ADR-0255), is told to the runner who unlocked it; three more are the game's
 teams' (part C): a piece finished, a challenge complete, a day left; three
 a group run's, to who goes (TASK-309, group_runs.py): it starts soon, its
-time or place changed, it was cancelled; two the private messages'
+time or place changed, it was cancelled; a new outing of a group, to its
+members (TASK-495 part C, group_runs.py); two the private messages'
 (TASK-319, messages.py): a message, and a message request once a day for
 each writer; three the monthly challenges' (TASK-343, contests.py and
 contest_clock.py): a new one opened, its last days, its results; three a
@@ -107,6 +108,7 @@ Kind = Literal[
     "group_run_soon",
     "group_run_changed",
     "group_run_cancelled",
+    "group_outing_new",
     "message",
     "message_request",
     "planned_live_started",
@@ -472,6 +474,17 @@ TEXTS: dict[str, dict[str, str]] = {
         "es": "{name} ha cambiado la hora o el lugar de {title}.",
         "fr": "{name} a changé l'heure ou le lieu de {title}.",
     },
+    # A new outing of a group, to its members but who muted it (TASK-495
+    # part C, GRUPPI.md §8): {title} is the outing's, {group} the group's
+    # name, {name} who created it. TO BE APPROVED BY THE USER before the PR
+    # is ready.
+    "group_outing_new": {
+        "en": "{name} planned a new outing in {group}: {title}",
+        "de": "{name} hat einen neuen Ausflug in {group} geplant: {title}",
+        "it": "{name} ha organizzato una nuova uscita in {group}: {title}",
+        "es": "{name} ha organizado una nueva salida en {group}: {title}",
+        "fr": "{name} a prévu une nouvelle sortie dans {group} : {title}",
+    },
     "group_run_cancelled": {
         "en": "{name} cancelled {title}.",
         "de": "{name} hat {title} abgesagt.",
@@ -629,6 +642,7 @@ def text_of(event: PushEvent, name: str, language: str | None) -> str:
         title=quoted(event.text),
         shape=named,
         theme=named,
+        group=named,
         n="" if event.number is None else event.number,
     )
 

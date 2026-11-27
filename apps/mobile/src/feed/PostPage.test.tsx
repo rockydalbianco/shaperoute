@@ -1,6 +1,7 @@
 import drawingDetails from "@shaperoute/shared-types/fixtures/drawing-details.json";
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
 import reactions from "@shaperoute/shared-types/fixtures/reactions.json";
+import runStatsWeather from "@shaperoute/shared-types/fixtures/run-stats-weather.json";
 import runStats from "@shaperoute/shared-types/fixtures/run-stats.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type {
@@ -190,6 +191,18 @@ test("with the figures of the post: splits, elevation, heart rate", async () => 
   const summary = within(screen.getByTestId("post-summary"));
   expect(summary.getByText("Fastest km")).toBeOnTheScreen();
   expect(summary.getByText("355 kcal")).toBeOnTheScreen();
+});
+
+test("the weather of the end, without its credit (TASK-410 part E)", async () => {
+  detailWith({ ...runStats, ...runStatsWeather });
+  await show(OTHERS);
+  const weather = within(await screen.findByTestId("post-weather"));
+  expect(weather.getByText("⛅")).toBeOnTheScreen();
+  expect(weather.getByText("14°")).toBeOnTheScreen();
+  expect(weather.getByText("Wind 12 km/h")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Weather: 14°, wind 12 km/h")).toBeOnTheScreen();
+  // The credit to MET Norway is in «About» (the user's choice E2).
+  expect(screen.queryByText(/MET Norway/)).toBeNull();
 });
 
 test("a post without figures, or an API that cannot be reached: the summary only", async () => {

@@ -3,6 +3,7 @@ import type { FeedPost } from "@shaperoute/shared-types";
 import { loadSession } from "../account/sessionStore";
 import { postMetrics } from "../sports/postMetrics";
 import { shownPost } from "./feedPosts";
+import runStatsWeather from "@shaperoute/shared-types/fixtures/run-stats-weather.json";
 import runStats from "@shaperoute/shared-types/fixtures/run-stats.json";
 
 import type { RunStats } from "../api/runStats";
@@ -17,6 +18,7 @@ import {
   speedLabel,
   splitsSection,
   summaryRows,
+  weatherSection,
 } from "./postSections";
 
 jest.mock("expo-file-system");
@@ -238,4 +240,40 @@ test("every card in order; each sport only its own", () => {
   // A card with nothing in it is not there.
   const bare = { ...STATS, splits_km: [], elevation: null, heart: null };
   expect(kinds(POST, bare)).toEqual(["summary"]);
+});
+
+// --- The weather (TASK-410 part E) ---
+
+test("the weather: the sky, the temperature, the wind; none without", () => {
+  const stats = { ...STATS, ...runStatsWeather } as RunStats;
+  expect(weatherSection(stats, "km")).toEqual({
+    kind: "weather",
+    title: "Weather",
+    sign: "⛅",
+    temperature: "14°",
+    wind: "Wind 12 km/h",
+    label: "Weather: 14°, wind 12 km/h",
+  });
+  // With miles, Fahrenheit and miles an hour.
+  const miles = weatherSection(stats, "mi");
+  expect(miles?.kind === "weather" && [miles.temperature, miles.wind]).toEqual([
+    "58°",
+    "Wind 8 mph",
+  ]);
+  // No wind, a symbol without a sign: the temperature alone.
+  const bare = {
+    ...STATS,
+    weather: { temperature_c: -2.6, symbol: "new", wind_ms: null },
+  };
+  expect(weatherSection(bare, "km")).toMatchObject({
+    sign: "",
+    temperature: "−3°",
+    wind: null,
+    label: "Weather: −3°",
+  });
+  expect(weatherSection(STATS, "km")).toBeNull();
+  expect(weatherSection(null, "km")).toBeNull();
+  // Right under the summary.
+  const kinds = postSections(POST, "km", null, stats).map((section) => section.kind);
+  expect(kinds).toEqual(["summary", "weather", "splits", "elevation", "heart"]);
 });

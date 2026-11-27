@@ -28,8 +28,8 @@ import {
   space,
 } from "../theme/tokens";
 import { tabName, tourPart } from "../tour/tourParts";
-import { Glass } from "../ui/Glass";
 import { fadeTo, springTo } from "../ui/motion";
+import { NativeGlass, nativeGlassAvailable } from "../ui/NativeGlass";
 import { Tap } from "../ui/Tap";
 import { useGlassMode } from "../ui/useGlassMode";
 import { useReduceMotion } from "../ui/useReduceMotion";
@@ -90,6 +90,30 @@ export function tabCapsuleX(index: number, width: number, count: number): number
 export function tabGlassLift(bottomInset: number): number {
   return Math.max(bottomInset - TAB_GLASS_SINK, space.sm);
 }
+
+/**
+ * How tall the band of the bar is, from the bottom edge of the screen: the
+ * room a page leaves at its end where the bar floats over it (TASK-469
+ * B2). On a phone with a home indicator, as tall as the bar was.
+ */
+export function tabBarBand(bottomInset: number): number {
+  return Math.max(
+    TAB_BAR_HEIGHT + bottomInset,
+    TAB_GLASS_HEIGHT + tabGlassLift(bottomInset) + space.xs,
+  );
+}
+
+/**
+ * Whether the bar floats over the pages, which then go on under it: only
+ * where the phone draws the real glass (the user's choice, 2026-11-26).
+ * Its blur keeps the bar readable over what passes behind; under the
+ * veiled glass of part A a post's text showed through the icons, so there
+ * the bar keeps its own band at the foot of the app, as before.
+ */
+export function tabBarFloats(): boolean {
+  return nativeGlassAvailable();
+}
+
 /** How small an icon gets under the finger. */
 export const TAB_PRESS_SCALE = 0.9;
 /** How far the icon taking its tab rises, in points. */
@@ -141,10 +165,9 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
   const count = tabs.length;
   const slot = (width - 2 * TAB_BAR_INSET) / Math.max(count, 1);
   const lift = tabGlassLift(insets.bottom);
-  const band = Math.max(
-    TAB_BAR_HEIGHT + insets.bottom,
-    TAB_GLASS_HEIGHT + lift + space.xs,
-  );
+  const band = tabBarBand(insets.bottom);
+  // Looked for once: a phone does not gain the glass while the app is open.
+  const [floats] = useState(tabBarFloats);
 
   // The capsule's tab, as a number: 2.5 is half way from the third to the fourth.
   const [at] = useState(() => new Animated.Value(page));
@@ -270,11 +293,17 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
 
   return (
     <View
-      style={[styles.bar, { height: band }]}
+      style={[floats ? styles.floating : styles.bar, { height: band }]}
+      // Floating, only the glass takes the finger: around it the page is under.
+      pointerEvents={floats ? "box-none" : undefined}
       accessibilityRole="tablist"
       testID="tab-bar"
     >
-      <Glass testID="tab-glass" mode={mode} style={[styles.glass, { bottom: lift }]}>
+      <NativeGlass
+        testID="tab-glass"
+        mode={mode}
+        style={[styles.glass, { bottom: lift }]}
+      >
         <View style={styles.capsules} pointerEvents="none">
           {moves.map((translateX, round) => (
             <Animated.View
@@ -317,6 +346,7 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
                   selected={selected}
                   on={lightOf(index)}
                   still={still}
+                  bright={floats && mode === "glass"}
                 />
                 {(tab.count ?? 0) > 0 && (
                   <View style={styles.count}>
@@ -327,7 +357,7 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
             </View>
           );
         })}
-      </Glass>
+      </NativeGlass>
     </View>
   );
 }
@@ -338,6 +368,10 @@ type GlyphProps = {
   /** Its light, moved by the bar: 1 lit. */
   on: Animated.Value;
   still: boolean;
+  /** On the phone's real glass: the icon not on screen is in the full text
+   * colour too, since the secondary text does not keep 4.5:1 there. Its tab
+   * is then told by the capsule and by the bolder line alone. */
+  bright: boolean;
 };
 
 /**
@@ -345,7 +379,7 @@ type GlyphProps = {
  * gives way to the bolder line in a cross fade; with «Reduce Motion» only
  * the fade.
  */
-function Glyph({ tab, selected, on, still }: GlyphProps) {
+function Glyph({ tab, selected, on, still, bright }: GlyphProps) {
   const rise = on.interpolate({
     inputRange: [0, 1],
     outputRange: [0, still ? 0 : -TAB_ICON_RISE],
@@ -375,7 +409,10 @@ function Glyph({ tab, selected, on, still }: GlyphProps) {
       <Animated.Image
         testID={`tab-icon-off-${tab.title}`}
         source={TAB_ICONS[tab.icon].off}
-        style={[styles.layer, { tintColor: color.textMuted, opacity: unlit }]}
+        style={[
+          styles.layer,
+          { tintColor: bright ? color.text : color.textMuted, opacity: unlit },
+        ]}
       />
       <Animated.Image
         testID={`tab-icon-on-${tab.title}`}
@@ -391,6 +428,14 @@ const styles = StyleSheet.create({
   // floats in it (TASK-469, ADR-0383).
   bar: {
     backgroundColor: color.background,
+  },
+  // Where the glass is the phone's own: the band over the pages, which go
+  // on under it, with no face of its own (TASK-469 B2).
+  floating: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   glass: {
     position: "absolute",

@@ -12,6 +12,7 @@ from catalog_seed import (
     BY_NAME,
     CITIES,
     CORE_SHAPES,
+    LATER_SHAPES,
     LICENSE,
     MAX_WORD_LETTERS,
     NEW_SHAPES,
@@ -408,6 +409,58 @@ def test_city_files_follow_the_format_of_the_readme() -> None:
 def test_city_files_refuse_a_kept_key_without_a_run() -> None:
     with pytest.raises(KeyError, match="roma/heart/5000"):
         city_files([run()], ["roma/heart/5000"])
+
+
+def test_a_shape_of_task_516_goes_last_and_every_route_keeps_its_id() -> None:
+    # The API numbers a route by its place in the city file (recommended.py):
+    # the drawings of the new shapes, even more alike ones, come after every
+    # run, word, ride and long ride already there (TASK-516 D).
+    before = [
+        run("trento/heart/5000", similarity=0.91),
+        run("trento/CIAO:round/15000", similarity=0.93, distance_m=15000),
+        run(
+            "trento/star@cycling/30000",
+            similarity=0.95,
+            distance_m=30000,
+            shape="star",
+            activity="cycling",
+        ),
+        run(
+            "trento/sun@cycling/50000",
+            similarity=0.92,
+            distance_m=50000,
+            shape="sun",
+            activity="cycling",
+        ),
+    ]
+    new = [
+        run("trento/penguin/5000", similarity=0.99),
+        run("trento/snowflake/10000", similarity=0.94, distance_m=10000),
+    ]
+    old_text = city_files(before, [r["key"] for r in before])["trento.json"]
+    runs = [*new, *before]
+    text = city_files(runs, [r["key"] for r in runs])["trento.json"]
+    routes = json.loads(text)["routes"]
+    assert [r.get("shape") or r.get("word") for r in routes] == [
+        "CIAO",
+        "heart",
+        "star",
+        "sun",
+        "penguin",
+        "snowflake",
+    ]
+    # The text of before is the beginning of the text of after.
+    assert text.startswith(old_text.rstrip("\n")[: -len("]}")])
+
+
+def test_the_shapes_of_task_516_are_registered_in_the_engine() -> None:
+    source = (
+        Path(__file__).resolve().parents[1]
+        / "services/route-engine/route_engine/shapes/__init__.py"
+    ).read_text(encoding="utf-8")
+    for name in LATER_SHAPES:
+        assert f'"{name}": read_outline(' in source, name
+    assert len(LATER_SHAPES) == 35
 
 
 def test_kept_file_round_trip(tmp_path: Path) -> None:

@@ -20,6 +20,18 @@ jest.mock("./useGlassMode", () => ({
   ...jest.requireActual("./useGlassMode"),
   useGlassMode: jest.fn(),
 }));
+// A phone without the real glass: the sheets wear the face of part A,
+// which these tests are about. Where the glass is the phone's own they
+// are glass (SheetGlass.test.tsx). Said here because jest-expo's stand-in
+// for the module answers that the glass is there.
+jest.mock("expo", () => {
+  const actual = jest.requireActual<typeof import("expo")>("expo");
+  return {
+    ...actual,
+    requireOptionalNativeModule: (name: string) =>
+      name === "ExpoGlassEffect" ? null : actual.requireOptionalNativeModule(name),
+  };
+});
 
 type Shadow = { inset?: boolean; offsetY?: number; color?: string };
 type Face = ViewStyle & { boxShadow?: Shadow[] };
@@ -138,6 +150,10 @@ const SHEETS = [
 
 test.each(SHEETS)("%s wears the sheet's face", (file) => {
   const source = readFileSync(join(__dirname, "..", file), "utf8");
-  expect(source).toMatch(/const glassSheet = useSheetFace\(\);/);
+  // Or `useGlassSheet()`, the same face with the phone's real glass behind
+  // it where there is one (TASK-469 B4, SheetGlass.test.tsx).
+  expect(source).toMatch(
+    /const glassSheet = useSheetFace\(\);|const \[glassSheet, glassBack\] = useGlassSheet\(\);/,
+  );
   expect(source).toMatch(/styles\.sheet,\s*glassSheet[,\]]/);
 });

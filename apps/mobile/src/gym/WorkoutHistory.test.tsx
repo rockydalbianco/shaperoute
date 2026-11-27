@@ -104,11 +104,13 @@ test("a set of this workout fills the boxes before last time", async () => {
   expect(screen.getByTestId("set-load_kg").props.value).toBe("70");
 });
 
-test("an API without the history: no box, the boxes as before", async () => {
+test("an API without the history: no box, the boxes of a first time", async () => {
   await show(
     benchPress(),
     answers({ status: 404, body: apiError("http_error", "Not Found") }),
   );
   expect(screen.queryByTestId("last-time")).toBeNull();
-  expect(screen.getByTestId("set-reps").props.value).toBe("");
+  // 10 reps and the weight left to choose (TASK-511).
+  expect(screen.getByTestId("set-reps").props.value).toBe("10");
+  expect(screen.getByTestId("set-load_kg").props.value).toBe("");
 });

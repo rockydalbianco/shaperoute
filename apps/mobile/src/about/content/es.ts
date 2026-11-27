@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "26 de noviembre de 2026";
+const UPDATED = "27 de noviembre de 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "26 de noviembre de 2026";
+const PRIVACY_UPDATED = "27 de noviembre de 2026";
 
 const help: AboutDocument = {
   title: "Cómo funciona MuW",
@@ -241,6 +241,7 @@ const terms: AboutDocument = {
             "Los mapas vienen de OpenFreeMap y de los datos de OpenStreetMap (© colaboradores de OpenStreetMap).",
             "Los animales 3D del vídeo vienen de Quaternius (CC0); el elefante es «Elephant Anim» de Shivoahm y SahuAvdhesh en Sketchfab (CC BY 4.0), animado y adaptado por MuW.",
             "Los lugares se buscan con Geoapify.",
+            "El tiempo de las publicaciones y de las estaciones de esquí viene de MET Norway (CC BY 4.0).",
             "Si conectas Strava, las carreras que envíes allí siguen las condiciones y los ajustes de privacidad de Strava.",
             "Una imagen que compartes sale por el menú de compartir del teléfono: la app que la recibe tiene sus propias condiciones.",
             "El enlace de una prenda etiquetada abre la web de la tienda en tu navegador: la tienda tiene sus propias condiciones.",
@@ -363,7 +364,9 @@ const privacy: AboutDocument = {
         "En una jornada de esquí, nuestro servidor compara la traza guardada con los remontes y pistas de OpenStreetMap, que guarda él mismo, para anotar cuáles tomaste y cuántas veces. Los nombres aparecen en la publicación, para quien pueda verla. Nada va a otro servicio.",
         "En las fotos que publiques puedes etiquetar las prendas que llevas: qué es cada una, su marca y, si quieres, su modelo y un enlace a una tienda. Las ve quien ve la foto. Si la carrera vuelve a «Solo yo», salen de nuestro servidor con sus fotos y se quedan en este teléfono.",
         "Puedes añadir tu equipo: zapatillas, una bici, esquís, un casco, cualquier cosa que uses. De cada artículo guardamos su tipo, su marca, su modelo, el nombre que le das, el mes en que lo compraste, tu nota y su foto. La foto se guarda reducida, sin los datos que tu teléfono le añade, como dónde y cuándo se hizo. Las actividades que eliges para un artículo suman su distancia y su tiempo a sus totales, que nuestro servidor cuenta a partir de tus actividades guardadas. Los demás miembros ven tu equipo en tu perfil, con sus totales, notas y fotos, salvo que actives «Ocultar del perfil» en un artículo. Los deportes que eliges para un artículo y su límite solo los ves tú. Tu equipo se borra con tu cuenta.",
+        "Un vuelo en parapente que guardas cuenta, sin tu nombre, en el historial del despegue desde el que saliste, en el mapa de despegues: cuántos vuelos y cuántos pilotos distintos, mes a mes y hoy. Nuestro servidor lo deduce del punto de despegue del vuelo guardado, aunque el vuelo sea privado, y solo muestra estas cifras cuando hay al menos tres pilotos distintos. Tu nombre y tu vuelo aparecen en los récords del despegue (el vuelo más largo, el más alto, el más lejano) solo si la publicación del vuelo es visible para todos. Mientras compartes un vuelo en directo, el despegue muestra que hay alguien en el aire, sin tu nombre; tu enlace aparece allí solo si ya compartes con todos en el Feed. Los despegues y los aterrizajes vienen de OpenStreetMap.",
         "En una jornada de esquí, la app envía a nuestro servidor tu posición redondeada a cerca de 1 km para encontrar la estación más cercana; el tiempo lo pide el servidor a MET Norway con la posición de la estación, nunca con la tuya. La estación, la nieve y el equipo que añades se ven en la publicación, para quien pueda verla, y la nieve también cuenta, sin tu nombre, en la nieve del día de la estación.",
+        "Cuando guardas una actividad al aire libre en las 3 horas siguientes a su final, nuestro servidor envía a MET Norway su punto de salida, redondeado a cerca de 1 km, para pedir el tiempo de esa hora; MET Norway no recibe tu nombre. El tiempo (temperatura, cielo y viento) se ve en la publicación, para quien pueda verla.",
       ],
     },
     {
@@ -433,7 +436,7 @@ const privacy: AboutDocument = {
     {
       heading: "Tu posición",
       blocks: [
-        "La posición del teléfono se usa en el teléfono, para empezar una ruta donde estás y para seguir tu carrera. Va a nuestro servidor exacta como inicio de una ruta que pides, como inicio de las formas que la app te prepara cerca cuando el teléfono no puede dibujarlas por sí mismo, y dentro de una carrera que guardas. Fuera de la ruta de una carrera, cuando el teléfono no encuentra por sí mismo el camino para volver a ella, va exacta a nuestro servidor con el tramo de la ruta que tienes delante, para encontrar ese camino por las calles: el servidor no los guarda. Va redondeada a cerca de 1 km para encontrar el mapa sin conexión a tu alrededor, las rutas recomendadas, los pueblos y los dibujos cercanos, y para poner primero los lugares cercanos en una búsqueda; así redondeada no queda ligada a tu cuenta. Cuando compartes una actividad en directo, tu posición exacta va a nuestro servidor y a quien tenga el enlace, como se explica en «Compartir en directo».",
+        "La posición del teléfono se usa en el teléfono, para empezar una ruta donde estás y para seguir tu carrera. Va a nuestro servidor exacta como inicio de una ruta que pides, como inicio de las formas que la app te prepara cerca cuando el teléfono no puede dibujarlas por sí mismo, y dentro de una carrera que guardas. Fuera de la ruta de una carrera, cuando el teléfono no encuentra por sí mismo el camino para volver a ella, va exacta a nuestro servidor con el tramo de la ruta que tienes delante, para encontrar ese camino por las calles: el servidor no los guarda. Va redondeada a cerca de 1 km para encontrar el mapa sin conexión a tu alrededor, los aterrizajes de parapente cercanos, el viento en altura para un vuelo, las rutas recomendadas, los pueblos y los dibujos cercanos, y para poner primero los lugares cercanos en una búsqueda; así redondeada no queda ligada a tu cuenta. Nuestro servidor descarga el viento en altura de DWD y ECMWF para zonas enteras, nunca con tu ubicación. Cuando compartes una actividad en directo, tu posición exacta va a nuestro servidor y a quien tenga el enlace, como se explica en «Compartir en directo».",
         "En iPhone, durante una carrera que has empezado, la app sigue tu posición también con el teléfono bloqueado o con otra app abierta, hasta que detienes la carrera; el iPhone lo muestra con una marca azul en la parte de arriba de la pantalla. MuW pide la posición solo mientras usas la app, nunca «Siempre».",
         "Como cualquier servicio de internet, nuestro servidor ve la dirección de internet (IP) de la que viene una petición mientras la responde. El registro del servidor no escribe posiciones, y la base de datos no guarda direcciones IP.",
         "Existe un registro de las peticiones de rutas, con su inicio, para reproducir un fallo. Está apagado en nuestro servidor; encendido, guarda como máximo 10 MB, y después se pierden las líneas más antiguas.",
@@ -478,6 +481,7 @@ const privacy: AboutDocument = {
       heading: "Apple Salud y Health Connect",
       blocks: [
         "Cuando activas «Guardar en Apple Salud» (iPhone) o «Guardar en Health Connect» (Android), cada actividad que guardas se escribe también allí, en tu teléfono: el deporte, cuándo empezó y terminó, la distancia, la ruta y, en una carrera, las calorías activas estimadas. Si al final de una sesión de natación en piscina o de un entrenamiento en el gimnasio tocas «Añadir la frecuencia cardiaca desde Salud», MuW lee la frecuencia cardiaca que tu reloj registró durante esa actividad, y nada más; después de ese primer toque la lee al final de cada sesión de natación y de cada entrenamiento. La media y el máximo se quedan con la actividad en nuestro servidor y se ven en su publicación, salvo que desactives «Mostrar la frecuencia cardiaca»; el tiempo en cada zona se queda en tu teléfono. Ninguno de tus datos de salud llega a ninguna publicidad. Puedes detenerlo en la app Salud o en Health Connect. Lo que ya está allí se queda hasta que lo borres allí, también cuando borras la carrera o tu cuenta.",
+        "Cuando tocas «Mostrar mi sueño de Apple Salud», MuW lee tu sueño de Apple Salud (el tiempo dormido y las fases del sueño) en tu teléfono y calcula allí una puntuación del sueño. Nada de ello llega a nuestro servidor hasta que lo publicas: con «Compartir» en tu perfil, con «Publicar» como publicación propia, o con «Sueño de anoche» en la publicación de una actividad. Entonces la puntuación, las horas dormidas, las fases y el día se guardan en nuestro servidor y los ve quien pueda ver tu perfil o esa publicación, hasta que dejes de compartir, quites la publicación o elimines tu cuenta. Nunca la hora a la que te acostaste o te despertaste.",
       ],
     },
     {

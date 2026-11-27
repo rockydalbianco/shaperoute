@@ -278,11 +278,22 @@ def test_a_turned_route_is_kept_with_its_turn(client: TestClient) -> None:
         assert answer.status_code == 422, turn
 
 
-def test_the_line_comes_back_digit_for_digit(client: TestClient) -> None:
+def test_the_line_is_kept_digit_for_digit_and_opens_with_six_decimals(
+    client: TestClient, database: Database
+) -> None:
     me = signed_up(client)
     points = [[46.06712345678, 11.12198765432], [46.070000001, 11.1230000009]]
     client.put(f"/me/favorites/{KEY}", json=request(points=points), headers=me)
-    assert client.get(f"/me/favorites/{KEY}", headers=me).json()["points"] == points
+    with database.connect() as conn:
+        row = conn.execute(
+            "SELECT ST_AsGeoJSON(line, 15) AS line FROM favorites"
+        ).fetchone()
+    assert row is not None
+    kept = json.loads(row["line"])["coordinates"]
+    assert [[lat, lon] for lon, lat in kept] == points
+    # The app is answered six decimals of them (answer_lines, TASK-501).
+    opened = client.get(f"/me/favorites/{KEY}", headers=me).json()["points"]
+    assert opened == [[46.067123, 11.121988], [46.07, 11.123]]
 
 
 def test_keeping_twice_keeps_once(client: TestClient, wall: WallClock) -> None:

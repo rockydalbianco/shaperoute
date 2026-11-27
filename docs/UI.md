@@ -55,6 +55,7 @@ ciano di «Start here».
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
 | `energy` | `#FF6363` (scuro, fino a `#FFA3A3` al passo più chiaro); `#8F1216`–`#B71C1C` nel tono chiaro | le calorie, ovunque si vedano: riquadri della corsa e della neve, piscina, palestra, la riga del post e dell'attività, i riquadri e le righe della pagina del post (TASK-424 parte C3, scelta dell'utente del 2026-11-10: «segnate con colore rosso in tutte»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo. Sul giallo della palestra `energyOnAccent` `#8F1216` (6,3:1), sopra una foto `energyOnScrim` `#FF6363` (6,8:1 sul velo) |
+| `food` | `#4FD08A` (scuro, fino a `#7BE3AA` al passo più chiaro); `#095428`–`#0F6B35` nel tono chiaro | quello che si è mangiato, in «Nutrition»: il suo anello, le sue colonne della settimana e il puntino accanto al suo numero, vicino al rosso di `energy` per quello che si è consumato (TASK-489 parte H, scelta dell'utente del 2026-11-26: «rosso e verde»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo e 3:1 su `border`, la traccia dell'anello (`theme/foodContrast.test.ts`). Mai l'unico segno: ogni anello ha la sua etichetta e il suo numero |
 | `scrim`, `onScrim` | `#0B0A08`, `#FFFFFF` | il buio del tour (TASK-266) e il velo sotto le parole sulle foto (`Scrim`, TASK-339); il bordo della luce |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
 | `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il suo cono su «Compass» e «Map» (TASK-519); il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
@@ -310,8 +311,9 @@ pagine»):
    bordo chiaro; ogni forma è il suo contorno vero a linea, nel colore del
    testo, non un'emoji: `ShapeGlyph`, TASK-444, dal catalogo del motore
    come la forma in scala, a penna alzata dove il catalogo l'ha — gli occhi
-   di una faccia senza la riga che li raggiunge), «Type another shape» per un'altra parola e la forma in
-   scala; **«3 DISTANCE»**, grande, fra − e + di mezzo km, col tempo
+   di una faccia senza la riga che li raggiunge), «Type another shape» per un'altra parola e la forma sulla
+   mappa vera attorno alla partenza (TASK-449; in scala senza
+   partenza); **«3 DISTANCE»**, grande, fra − e + di mezzo km, col tempo
    stimato sotto; subito sotto la
    distanza, mentre il server ha il gioco, la riga «PLAY» (TASK-327, sotto
    «“Play”: la collezione delle forme»); poi, con la corsa, «NEAR YOU»
@@ -652,7 +654,8 @@ opaca, con «Aumenta contrasto» opaca col bordo `borderStrong`. La fascia
 sotto la barra resta alta quanto prima: le pagine non ci passano sotto.
 
 **La barra in vetro vero** (TASK-469 B2, scelta dell'utente del
-2026-11-26; bozza #1562, arriva con la prossima build nativa): dove il
+2026-11-26; in `main` dal 2026-11-27 con #1562, arriva con la build
+nativa di quel taglio): dove il
 telefono disegna il vetro vero (iOS 26 e seguenti, un'app costruita con
 `expo-glass-effect`) la capsula è il vetro di iOS e **la barra galleggia
 sopra le pagine**, che le passano sotto fino al bordo; la sfocatura tiene
@@ -661,6 +664,23 @@ la barra è quella descritta sopra: col vetro velato non galleggia, perché
 senza sfocatura il testo di un post si leggerebbe dietro le icone. Con
 «Riduci trasparenza» e «Aumenta contrasto» la barra galleggia opaca.
 
+**Cosa si disegna sul vetro vero** (misurato il 2026-11-26 e il 27): il
+vetro di iOS si schiarisce e si scurisce con quello che ha dietro, e un
+colore fisso sopra non lo segue. Quindi il vetro vero è sempre velato col
+fondo del tono, mai giallo. Su barra e header (`glass.realTint`, il 60 %
+o poco più) quello che ci sta sopra è nel colore pieno del testo, mai nel
+secondario. Un foglio prende un decimo in più (`glass.realSheetTint`) e
+lì tiene 4,5:1 anche il testo secondario. Una superficie nuova in vetro
+vero si prova con una foto bianca dietro nel tono scuro e una nera nel
+chiaro, e si misura, prima di chiedere un sì.
+
+**Il vetro vero e l'opacità**: sotto un genitore la cui opacità parte da
+0 il telefono non disegna mai il vetro, nemmeno quando l'opacità arriva a
+1. Una superficie che entra con una dissolvenza — ogni foglio con
+«Riduci movimento» — resta quindi opaca (`useGlassSheet()` lo fa da
+sé), oppure accende il vetro col suo interruttore, `glassEffectStyle`,
+come la fascia dell'header.
+
 Due regole che valgono già oggi. **Una pagina nuova della barra delle
 schede** chiede la stanza con `useTabBarRoom()` (`src/tabs/tabBarRoom.ts`)
 e la aggiunge alla fine del suo scorrimento e sotto quello che tiene in
@@ -668,6 +688,12 @@ basso; poi si mette nella lista di `src/tabs/TabBarRoom.test.tsx`. La
 stanza è 0 finché la barra non galleggia. **`expo-glass-effect` non si
 importa mai direttamente**: sempre attraverso `src/ui/NativeGlass.tsx`,
 che lo carica solo dove c'è e altrove disegna il vetro velato.
+
+Una terza, per quando il pacchetto sarà in `main`: **nei test il vetro
+vero c'è**, perché il finto modulo di jest-expo risponde di sì. Un test
+che monta lo shell delle schede senza dire altro vede la barra e l'header
+che galleggiano. Chi prova il vetro velato lo dichiara, sostituendo
+`requireOptionalNativeModule("ExpoGlassEffect")` di `expo` con `null`.
 
 **Il movimento della barra** (TASK-388, ADR-0329): dietro la scheda attiva
 una capsula morbida (`surfaceRaised`) che scivola alla nuova con la molla
@@ -711,7 +737,10 @@ dell'obiettivo in palestra, dei posti della pagaia, della lunghezza della
 vasca e della giornata sulla neve, e (A7c-3) i chip condivisi della
 palestra (`gymStyles.chip`): il riposo, la scelta dell'esercizio, la
 guida e la storia dell'esercizio, «l'ultima volta», Coach e il post
-della scheda. Restano i chip della schermata del volo: A7c-4.
+della scheda, e (A7c-4) i chip delle opzioni della schermata del volo.
+Lì il rilievo è nel vetro dell'aspetto del volo («Dark» o «Sunlight»),
+che può non essere il tono dell'app: una pagina con un aspetto suo passa
+il suo vetro a `glassRaise`, non usa quello dell'app.
 
 **Le card di Explore** (TASK-469 A4b, `src/explore/RouteCard.tsx`): il
 raggio delle card del vetro, 28 (`radius.card`), e un bordo di vetro
@@ -2606,6 +2635,26 @@ voci stanno ognuna su una riga: quella che non entra si stringe (fino al
 `oneLine`; gli altri interruttori dell'app vanno a capo come prima).
 Passare dall'uno all'altro non cancella quanto scritto o scelto negli altri.
 
+Sulla riga del titolo «2 WHAT YOU DRAW», a destra, c'è la pastiglia
+**«Surprise me»** (TASK-448, ADR-0413, `SurprisePill`; scelte dell'utente
+del 2026-11-26), per chi non sa cosa disegnare: un dado a linea e il nome,
+alta 32 punti con tutta la misura del tocco attorno, in rilievo come le
+pastiglie dell'app e mai gialla. Un tocco scrive nella pagina una forma e
+una distanza fra quelle già venute bene vicino alla partenza (i percorsi
+del catalogo di «Explore» entro 10 km; fuori dalle sue città cuore,
+cerchio, stella, luna, smiley, sole o farfalla): la tessera della forma si
+accende, la distanza si sposta, il pulsante giallo dice «Draw a 10.0 km
+star», e se era scelta «Word» o «Image» l'interruttore torna su «Shape».
+Un altro tocco dà un'altra forma; niente si calcola finché non si tocca
+«Draw route», e prima la distanza si può cambiare. A piedi la distanza è 5
+o 10 km, in bici 20, 25 o 30 km con le otto forme del suo catalogo. Mentre
+chiede i percorsi vicini (solo al primo tocco) la pastiglia è attenuata.
+Nessun testo promette che la forma verrà bene: il risultato è un percorso
+come gli altri, e quello che da una partenza viene sotto il 90% non è più
+proposto da lì. C'è con «Run», «Walk» e «Bike»; negli altri sport no. Dove
+titolo e pastiglia non stanno sulla stessa riga, la pastiglia va a capo
+sotto il titolo.
+
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
 scrivendo nel campo, che dal TASK-361 sta dietro «Type another shape»
 (scelta dell'utente del 2026-10-30): si apre con un tocco, vuoto, o da solo
@@ -2624,9 +2673,23 @@ fewer» richiude. La forma scelta è sempre in vista: se non è fra le prime
 sette, prende il settimo posto. Toccare una tessera fa vibrare il telefono,
 dove l'app è costruita con `expo-haptics`. Sotto il segno la tessera ha il
 nome con la maiuscola, «Cuore», come ogni etichetta della pagina
-(TASK-508); nel campo va la parola come la scrive una frase, «cuore». Sotto, la forma scelta **in
-scala** su un pezzo di mappa (`ShapePreview`): il contorno del catalogo,
-una barra di scala tonda e «≈ 1.9 × 2.1 km», che seguono forma e
+(TASK-508); nel campo va la parola come la scrive una frase, «cuore». Sotto, la forma scelta **sulla
+mappa vera** attorno alla partenza (TASK-449, ADR-0412, `LivePreview`): un
+riquadro largo quanto la scheda e alto 190 punti con le strade del posto,
+e sopra il contorno del catalogo tratteggiato (la sagoma di TASK-442), in
+grandezza reale, col primo punto sulla partenza, che è un pallino giallo.
+A ogni − e + della distanza la sagoma cresce o si stringe; quando non
+entra più la mappa si allontana di uno scatto (√2 volte più larga), e
+finché arriva l'immagine nuova resta quella di prima, più piccola, sotto
+la sagoma. La mappa è un'immagine, non si tocca: arriva dalla rete un
+attimo dopo la sagoma, che intanto sta sul fondo scuro; in un angolo ha il
+credito della mappa. Sotto restano «≈ 1.9 × 2.1 km» e la barra di scala
+tonda. Con la penna alzata, dove la forma l'offre, la sagoma è nei suoi
+pezzi. È la forma ideale dove il motore la prova per prima, non un
+percorso: nessuna riga lo dice (scelta dell'utente, 2026-11-26). Senza
+partenza, sull'acqua e sulla neve resta la forma **in scala** di TASK-361
+(`ShapePreview`): un riquadro con due strade finte, la forma sempre
+grande uguale, e la barra di scala e «≈ L × A km» che seguono forma e
 distanza.
 
 **La distanza** (TASK-361): − e + di mezzo km (mezzo miglio con «Miles»),
@@ -2869,6 +2932,12 @@ gatto di TASK-072 non si riconosceva già dal contorno, e senza la foto
 sotto si vede. Un'immagine alta resta entro 320 punti d'altezza, così la
 distanza resta a vista. La linea è fatta di rettangoli sottili ruotati,
 senza SVG (`react-native-svg` non è una dipendenza dell'app).
+
+Sotto l'anteprima, con una partenza e una distanza, il contorno tracciato
+**sulla mappa vera** (TASK-449 B, ADR-0412): lo stesso riquadro delle
+forme, col contorno tratteggiato in grandezza reale dalla partenza, che
+segue i km. A penna alzata, dove la foto ha pezzi, è nei suoi pezzi.
+Non sull'acqua e sulla neve, né senza partenza.
 
 **Modificare il contorno** (TASK-079, ADR-0074). Sotto l'anteprima,
 **«Edit the outline»** apre una **lavagna a tutto schermo**: la foto
@@ -5558,6 +5627,39 @@ TASK-305.md, «Testi di R6».
   luogo né disegno si chiama «Paragliding» (IT «Parapendio») invece di
   «Run». Gli altri sport restano come sono.
 
+### La mappa dei decolli (TASK-493 parte C, ADR-0400)
+
+Spenta finché `TAKEOFFS_ON` è `false` (`src/takeoffs/takeoffsOn.ts`): si
+accende quando i siti sono estratti sul server e lo storico (parte B) è
+acceso.
+
+- **Dove si apre:** il bottone «Takeoffs» sotto «Ready to fly», nella
+  pagina del volo (`TakeoffsButton.tsx`, una riga in `air/FlightPage.tsx`).
+  Apre la mappa a tutto schermo, con «✕» per chiudere.
+- **La mappa** (`takeoffsMapPage.ts`, una pagina MapLibre sua, come quella
+  del volo): parte dall'ultima posizione del telefono se l'app può già
+  leggerla, senza chiedere il permesso, altrimenti dalle Alpi. Si sposta
+  col dito; quando si ferma, l'app chiede al server i siti del riquadro.
+  Un decollo è un pallino pieno nel colore del testo, un atterraggio un
+  cerchio vuoto nel colore attenuato: mai il giallo, che è del percorso.
+  I nomi compaiono da vicino. L'attribuzione di OpenStreetMap è sempre
+  aperta.
+- **I riquadri:** più largo di 5° per lato, l'app non chiede niente e dice
+  «Zoom in to see the takeoffs.»; con più di 1000 siti, «Zoom in to see all
+  the takeoffs.». In basso, «Missing a takeoff? Add it on OpenStreetMap.»
+  apre openstreetmap.org.
+- **La scheda del sito** (`TakeoffSheet.tsx`), toccando un pallino: nome
+  (o «Unnamed takeoff»), tipo, quota e «Official site»; «Faces» coi punti
+  cardinali nelle lettere della lingua (O per ovest in italiano, francese
+  e spagnolo, O per est in tedesco); gli atterraggi vicini di un decollo
+  (i decolli sopra un atterraggio) con distanza e dislivello quando le due
+  quote ci sono.
+- **Lo storico di un decollo:** voli e piloti, oggi, gli ultimi 12 mesi
+  come barre; sotto i 3 piloti solo «Few flights from here yet.».
+  «In the air now» col numero, e «Watch live» per ogni volo condiviso con
+  tutti nel Feed. I record (volo più lungo, più alto, più lontano) aprono
+  il post. Nessun testo giudica le condizioni.
+
 ### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
 
 «Mountaineering» 🧗 (IT «Alpinismo») sta in «Settings» e nel menu degli
@@ -5579,7 +5681,7 @@ salva come `alpinism`.
 - Nel modulo del post non è un giorno sulla neve: resta alpinismo. Sull'orologio non
   c'è, finché una sua build non lo conosce.
 
-## Il contacalorie: «Nutrition» (TASK-489 parti B, C1, D, G e C2, ADR-0397)
+## Il contacalorie: «Nutrition» (TASK-489 parti B, C1, D, D2, G, C2, H, I e J, ADR-0397)
 
 **Spenta in ogni build di oggi** dalla costante `NUTRITION_ON`
 (`nutrition/nutritionOn.ts`): si accende con la build nativa che legge
@@ -5593,29 +5695,82 @@ qui esce dal telefono.
   Non è uno sport: il tocco apre la pagina sopra il pannello e lo sport
   scelto non cambia; la ✕ riporta al pannello. Nella modalità allenamento la
   stessa pagina è la tab «Food» (TASK-490 D).
-- **L'avviso**, la prima volta su quel telefono: «Before you start» — «MuW
-  does not provide diets, meal plans or medical advice. The plan here is
-  the one you write: your own, or the one your dietitian gave you.»,
-  «Every number is an estimate, from food composition tables and from
-  formulas for the energy you use.», «If you have a medical condition, are
-  pregnant or have a history of eating disorders, talk to a doctor or a
-  dietitian before counting calories.», un solo pulsante «I understand».
-  Prima del tocco non si può scrivere niente; dopo non torna più.
+- **La porta della prima volta** su quel telefono (parte J,
+  `nutrition/NutritionWelcome.tsx`), quattro passi; prima della fine non
+  si può scrivere niente, dopo non torna più da sola:
+  1. cosa fa: «Your food diary: what you eat, what you use, and the
+     balance.», i due anelli con numeri finti e la scritta «Example», tre
+     righe («Write your plan», «Log what you eat», «See your balance») e
+     «Next»;
+  2. **l'avviso** «Before you start» — «MuW does not provide diets, meal
+     plans or medical advice. The plan here is the one you write: your
+     own, or the one your dietitian gave you.», «Every number is an
+     estimate, from food composition tables and from formulas for the
+     energy you use.», «If you have a medical condition, are pregnant or
+     have a history of eating disorders, talk to a doctor or a dietitian
+     before counting calories.», un solo pulsante «I understand»;
+  3. «What brings you here?» con quattro scelte («Keep track of what I
+     eat», «Lose weight», «Gain weight», «Follow my dietitian's plan») e
+     «Skip»: la risposta resta sul telefono;
+  4. il punto di partenza: «You use about {kcal} kcal a day (est.)», il
+     campo di «My daily target» sotto «Best: write your own number, or your
+     dietitian's.», e chiuso, in secondo piano, **«See MuW's estimate
+     (demo)»**. Aperto: il numero, «A rough estimate from a public formula,
+     only a demonstration. MuW is not made by health professionals: this is
+     not medical advice.», l'avviso per gravidanza, allattamento, malattie
+     e disturbi alimentari, «Use this number» e «I'll write my own». La
+     stima è il consumo di un giorno solito (la media degli ultimi sette
+     giorni interi) per chi tiene il conto o non ha risposto; per «Lose
+     weight» 600 kcal al giorno in meno, solo con un indice di massa
+     corporea di 25 o più e mai sotto 1400 kcal per le donne e 1900 per
+     gli uomini (NHS, fonti lette il 2026-11-24); per «Gain weight» nessun
+     numero, e accanto al piano del dietista il collegamento non c'è.
+     Servono i dati del corpo («To estimate, MuW needs your weight, height,
+     year of birth and sex. They stay on your phone.»). Sotto i 18 anni «MuW suggests no calorie number to people
+     under 18.», negli altri casi in cui non propone «From your data MuW
+     suggests no number for this. Talk to your doctor or a dietitian.»; MuW
+     conosce solo l'anno di nascita, quindi anche chi compie 18 anni
+     nell'anno in corso non riceve un numero. La stessa stima si apre dal
+     foglio di «My daily target». Poi «Start».
+
+  In fondo alla pagina «How it works» riapre il primo passo.
 - **Due viste**, «Diary» | «My plan», e sotto sempre «Estimates only. MuW
   does not provide diets or medical advice.» col collegamento **«How we
   calculate»**.
 - **«Diary»** (`nutrition/DiaryView.tsx`): il giorno in cima, «Today»,
-  «Yesterday» o la data, con le frecce; dopo oggi non si va. Tre numeri:
-  «Eaten», «Used (est.)» e «Balance». «Used (est.)» è il riposo più le
+  «Yesterday» o la data, con le frecce; dopo oggi non si va. **Due anelli**
+  (parte H, `nutrition/EnergyRings.tsx`) e accanto tre numeri che contano
+  fino al valore: «Eaten», «Used (est.)» e «Balance». Fuori l'anello di
+  «Used (est.)», nel rosso delle calorie (`energy`); dentro quello di
+  «Eaten», in verde (`food`); lo stesso colore è nel puntino davanti
+  all'etichetta, così il colore non è mai l'unico segno (scelta
+  dell'utente del 2026-11-26, «rosso e verde»). Una scala sola: il più
+  grande tra mangiato, consumato e l'obiettivo dell'utente fa il giro
+  intero, e l'obiettivo è una tacca sull'anello di dentro. Con «Riduci
+  movimento» tutto è al suo posto subito. «Used (est.)» è il riposo più le
   attività della lista privata partite quel giorno; **oggi il riposo è
   contato fino a adesso**, e sotto i numeri c'è «Today the energy at rest
   is counted up to now.». «Balance» è mangiate meno consumate, col segno e
   sotto «Surplus» o «Deficit» («−660», «Deficit»); senza niente di
   mangiato scritto è «—». Sotto, **«My daily target»**: un numero
-  di kcal che scrive solo l'utente, e quante ne restano; MuW non ne propone
-  mai uno. Poi i quattro pasti, «Breakfast», «Lunch», «Dinner», «Snacks»,
-  ognuno coi suoi cibi (nome, grammi, kcal), il totale e «Add food». Un
-  pasto vuoto mostra «—», non zero.
+  di kcal che scrive l'utente, e quante ne restano; MuW ne propone uno solo
+  come stima «demo», a chi la chiede (la porta della prima volta, passo 4).
+  Poi i quattro pasti, «Breakfast», «Lunch», «Dinner», «Snacks»,
+  ognuno coi suoi cibi (nome, grammi, kcal), il totale e «Add food»; i cibi
+  entrano in cascata. Un pasto vuoto mostra «—», non zero.
+- **«Protein, carbs and fat (est.)»** (parte H, `nutrition/MacroBars.tsx`),
+  sotto i pasti: tre barre, «Protein», «Carbs», «Fat», coi grammi e
+  «{percent}% of the energy» (4, 4 e 9 kcal al grammo). Nessun obiettivo e
+  nessun giudizio. Le barre hanno i tre colori di `protein`, `carbs` e
+  `fat` (parte L, #1686: gli stessi degli anelli delle ricette, scelta
+  dell'utente del 2026-11-27; nella parte H erano nel colore del testo),
+  mai come unico segno: ogni barra ha etichetta e numero. Se un cibo del giorno non ha
+  questi numeri: «Counted only for the foods that have these numbers.»; se
+  nessuno li ha: «No protein, carbs or fat to count for this day.».
+- **«This week»** (parte H, `nutrition/WeekStrip.tsx`), in fondo: sette
+  coppie di colonne da lunedì a domenica, verde il mangiato e rosso il
+  consumato, sulla stessa scala; il giorno aperto ha il bordo, i giorni
+  dopo oggi sono spenti. Un tocco porta la pagina a quel giorno.
 - **«Eaten as planned»**: copia nel giorno il piano di quel giorno della
   settimana. C'è **solo finché il giorno è vuoto** e il piano ha quel
   giorno: non scrive mai sopra quello che è stato segnato a mano (scelta
@@ -5647,7 +5802,19 @@ qui esce dal telefono.
   over.»); un giorno senza diario è «—» e non entra nel totale. Sotto il
   totale «Surplus» o «Deficit», nello stesso colore. Il riquadro compare
   solo dopo l'avviso letto; sul profilo degli altri non esiste, e niente
-  va all'API.
+  va all'API. In fondo «Open Nutrition» apre la pagina. Chi non ha ancora
+  letto l'avviso vede al suo posto una riga «Nutrition» con «Write what
+  you eat and see your calorie balance.», che apre la stessa pagina
+  (parte D2).
+- **Alla fine di un'attività** (parte I, `nutrition/NutritionInvite.tsx`),
+  in fondo a «Your run» e alla fine di un allenamento in palestra, mai
+  durante. Chi non ha mai aperto «Nutrition» vede l'invito: due anelli
+  piccoli, «Count what you eat too», «Write your own diet and what you
+  eat: MuW estimates the calories you eat and the ones you use, this
+  activity included.», «Open Nutrition» e «Not now». «Not now» lo toglie
+  per sempre; senza, si vede tre volte al massimo. Chi la usa vede «This
+  activity: {kcal} kcal (est.)», quando la schermata le conosce, e «Add
+  what you ate», che apre il diario di oggi.
 - **Aggiungere un cibo** (`nutrition/AddFoodSheet.tsx`): si cerca per nome
   fra i cibi propri e i 314 della tabella (USDA FoodData Central, SR
   Legacy), nella lingua dell'app; si scrivono i grammi e si vede la stima
@@ -5669,6 +5836,10 @@ qui esce dal telefono.
   you write here stays on your phone; a barcode you look up goes to Open
   Food Facts.». Per i prodotti trovati col codice a barre nomina Open Food
   Facts e la Open Database License, col collegamento a openfoodfacts.org.
+  Con la parte J un capoverso in più, «MuW's estimate of a daily target
+  (demo)»: da dove viene la stima, le soglie, «To gain weight MuW suggests
+  no number.», la data in cui le fonti sono state lette e i collegamenti
+  alle due pagine dell'NHS.
 - **Un cibo dal codice a barre** (parte G, `nutrition/BarcodeStep.tsx`):
   nella ricerca, sotto «Add my own food», «Type the code» apre il campo
   «Barcode» con «Only the barcode goes to Open Food Facts, to find the

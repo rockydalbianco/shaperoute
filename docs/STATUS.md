@@ -35,6 +35,11 @@ per 14 giorni, poi la produzione), coi sì dell'utente nella Play Console.
 **Le prove sul campo** (neve, volo, corsa vera): una riga per prova in
 `docs/PROVE-SUL-CAMPO.md` (406 E, 429, 375 E, 415, 305, 479), da
 fare quando capita; i task con solo quella prova sono chiusi.
+**TASK-501** (chiuso): dopo l'OTA con la parte C, la prova sul telefono
+di Coach e di un post aperto con la sua mappa.
+**TASK-410** (chiuso): la prima corsa vera col meteo sul server (una
+query in sola lettura dell'utente, `tasks/TASK-410.md`) e, dopo l'OTA,
+la card «Weather» sul telefono.
 
 ## In lavorazione
 
@@ -49,22 +54,16 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   2026-11-23: revisione, riserva e imbrago sull'attrezzatura di 486, con
   l'avviso; scelte dell'utente fatte. File: — · `tasks/TASK-494.md`
 - **TASK-489 — «Alimentazione»: diario dei pasti e bilancio delle calorie** ·
-  ADR-0397; A1–D e la privacy in `main`, spente (`NUTRITION_ON`). In fila:
-  D2 = #1547, G1, C2a, H (pagina animata), I (invito a fine attività);
-  decise e non scritte J (ingresso) e K (peso). Build nativa: G2, C2b,
-  accensione. File: `nutrition/*`, `activities/RunEnd.tsx`,
-  `gym/GymEnd.tsx` · `tasks/TASK-489.md`
+  ADR-0397; A1–J e la privacy in `main`, spente (`NUTRITION_ON`). In
+  sessioni loro: K1 (peso) e L (ricette, #1678 e #1686 in `main`). Build
+  nativa successiva: G2, C2b, accensione. File: `nutrition/*`,
+  `activities/RunEnd.tsx`, `gym/GymEnd.tsx` · `tasks/TASK-489.md`
 - **TASK-513 — «Longevity»: cinquanta storie animate** · ADR-0407; parte 0
   chiusa il 2026-11-24, nessun codice; il codice in una sessione sua.
   File: — · `tasks/TASK-513.md`
 - **TASK-514 — La modalità «Nutrition»** · ADR-0408; parte 0 chiusa il
   2026-11-24; parte dopo TASK-490 D ed E, in una sessione sua. File: — ·
   `tasks/TASK-514.md`
-- **TASK-516 — Forme invernali e contorni** · ADR-0411; parte 0 il
-  2026-11-24 (la C di TASK-441, scelta dell'utente): 11 forme nuove
-  d'inverno, feste e sport e i 35 contorni di TASK-418. A sagome (file
-  nuovi), B strade, C registrazione (PR unita dall'utente, server e OTA
-  insieme), D catalogo. File: — · `tasks/TASK-516.md`
 - **TASK-507 — I dati del telefono restano di chi li ha fatti** · ADR-0406;
   A + C, D, B1 e B2 in `main` (#1533, #1545, #1546, #1573), il 2026-11-26
   la PR di documenti. Resta la prova dell'utente con due account dopo
@@ -102,9 +101,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-397 — Il VO₂ max nel profilo** · A e B in produzione; C al
   prossimo taglio nativo (con 374 C), D dopo 321 C. File: — ·
   `tasks/TASK-397.md`
-- **TASK-410 — La pagina del post** · B, F, C, D e la correzione #1078 in
-  produzione; A è TASK-355 B; resta E, il meteo (testi e privacy da
-  approvare). File: — · `tasks/TASK-410.md`
 - **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
   1963 percorsi e ordine misto in «NEAR YOU». Le 702 parole nuove a riga
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
@@ -197,12 +193,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-23**: **C0 in `main`** (#1458, `cffb2c4d`): il sonno acceso solo
   sul canale di prova `preview`, spento negli store. Arriva sulla build di
   prova con la prossima pubblicazione su `preview`; poi la prova e la C.
-
-- **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
-  (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
-  default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
-  scelto dal minimo disponibile dopo qualche giorno. File: — ·
-  `tasks/TASK-464.md`
+  **2026-11-27**: **C in `main`** (#1334, `7e2813ce`) nel taglio nativo:
+  sonno acceso con la build nuova; App Privacy e build dal Coordinatore. Poi D.
 
 - **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (OTA
   12); B (dieci esercizi, tre routine da 3, 5, 10 min, la gamba staccata
@@ -223,7 +215,15 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dall'utente il 2026-11-24: piano B0–B4 nel task file, la dipendenza
   (B1) col suo sì e nel taglio nativo. B1 (#1557) e B2 (#1562, la barra
   galleggia solo col vetro vero: scelta dell'utente del 2026-11-26) sono
-  bozze ferme fino al taglio nativo. File: — ·
+  bozze ferme fino al taglio nativo. A7c-4 (#1624) in `main` dal
+  2026-11-26: la parte A è finita. B3 (#1614, #1617) e B4 (#1620, #1621)
+  in bozza; nella prova la barra e i fogli non tengono 4,5:1: la barra
+  velata è da misurare, i fogli sono fermi. 2026-11-27: col vetro velato
+  barra, header e fogli tengono 4,5:1 nel simulatore; l'utente approva
+  la barra e dice avanti coi fogli, tutti o nessuno (#1620 in `main`,
+  gli altri quindici nella #1647). Sera del 2026-11-27: tutta la parte B
+  in `main` per il taglio nativo (#1557, #1562, #1614, #1617, #1621);
+  restano il telefono vero e le date di build e OTA. File: — ·
   `tasks/TASK-469.md`
 
 - **TASK-482 — Il link di un post apre l'app** (ADR-0391) · B2 e A in
@@ -239,10 +239,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'OTA, E chat di gruppo. File: — · `tasks/TASK-495.md`
   2026-11-24: A in `main` (#1538, migrazione 0087, sul server col prossimo
   passo), A2 #1543 armata; poi B (l'app), file approvati dal Coordinatore.
-- **TASK-449 — Anteprima dal vivo della sagoma in «Draw»** (ADR-0412) ·
-  parte 0 il 2026-11-26: un pezzo di mappa vera attorno alla partenza, la
-  sagoma sopra in grandezza reale che cresce coi km; scelte dell'utente
-  fatte. Poi A (forme) e B (immagini). File: — · `tasks/TASK-449.md`
+  2026-11-26: A e A2 sul server (passo 22); privacy online (#1561, sito
+  c33f3920); B in `main` (#1560), esce con l'OTA; A3 «Delete group» #1629
+  (merge col sì dell'utente). Poi C (uscite), D (Explore e push), E chat.
 - **TASK-509 — Stati vuoti, icone di «Add to Feed», sagoma nelle tessere** ·
   parte 0 chiusa il 2026-11-26 (cinque scelte dell'utente). Tre PR di sola
   app: A stati vuoti (con due prop in `App.tsx`), B icone, C sagoma (dopo

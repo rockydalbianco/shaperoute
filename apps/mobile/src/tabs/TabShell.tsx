@@ -26,9 +26,14 @@ import { FeedMapShooter } from "../feed/FeedMaps";
 import { color } from "../theme/tokens";
 import { pageName, tourPart, useTourPager } from "../tour/tourParts";
 import { closeTopLayer, OnScreenContext } from "../ui/backLayers";
-import { AppHeader } from "./AppHeader";
-import { HeaderScrollContext, type HeaderScrollReport } from "./headerScroll";
-import { type BarTab, TabBar } from "./TabBar";
+import { AppHeader, appHeaderHeight, headerFloats } from "./AppHeader";
+import {
+  HeaderFloatsContext,
+  HeaderScrollContext,
+  type HeaderScrollReport,
+} from "./headerScroll";
+import { type BarTab, TabBar, tabBarBand, tabBarFloats } from "./TabBar";
+import { TabBarRoomContext } from "./tabBarRoom";
 import { TabReselect, TabReselectContext } from "./tabReselect";
 import {
   pagesAround,
@@ -170,6 +175,20 @@ export function TabShell({ pages, page, onPage, action }: Props) {
   // The header keeps the top edge and the bar the bottom one: the pages
   // lie between them.
   const between = useMemo(() => ({ ...insets, top: 0, bottom: 0 }), [insets]);
+  // Where the bar floats over the pages, they go on under it: each page
+  // leaves this room at its end (TASK-469 B2). Apart from the safe area,
+  // which reaches the sheets a page opens too. Elsewhere the bar has its
+  // own band under the pages, and they end as before.
+  const [floats] = useState(tabBarFloats);
+  const barRoom = floats ? tabBarBand(insets.bottom) : 0;
+  // The header floats there too (TASK-469 B3). It takes nothing from a
+  // page: each one still starts under it, laid out as before, and only a
+  // scroller that asks (`useUnderHeader`) lets what scrolls up show behind
+  // the glass. So a page that does not ask, or a view a page opens over
+  // itself, is never under the header.
+  const [headerOver] = useState(headerFloats);
+  const [headerHeight, setHeaderHeight] = useState(() => appHeaderHeight(insets.top));
+  const pageTop = headerOver ? { top: headerHeight } : null;
   // One for each page, made the first time it is asked for.
   const [reselects] = useState(() => new Map<string, TabReselect>());
   // The pages scrolled away from their top: the header is in glass over them
@@ -354,6 +373,12 @@ export function TabShell({ pages, page, onPage, action }: Props) {
       <AppHeader
         action={action}
         scrolled={shown !== undefined && awayFromTop.has(shown)}
+        floating={headerOver}
+        onLayout={
+          headerOver
+            ? (event) => setHeaderHeight(event.nativeEvent.layout.height)
+            : undefined
+        }
       />
       <ScrollView
         ref={scroller}
@@ -380,40 +405,47 @@ export function TabShell({ pages, page, onPage, action }: Props) {
         onScrollEndDrag={onDragEnd}
       >
         <SafeAreaInsetsContext.Provider value={between}>
-          {pages.map((each, index) => {
-            const place = around.get(index);
-            const isBuilt = built.includes(each.title);
-            if (!isBuilt && place === undefined) {
-              return null;
-            }
-            const onScreen = index === now.page;
-            return (
-              <View
-                key={each.title}
-                ref={tourPart(pageName(each.title))}
-                collapsable={false}
-                testID={`tab-page-${each.title}`}
-                // Out of sight and a swipe away, still built: its state stays
-                // as it was left.
-                style={[
-                  styles.page,
-                  place === undefined ? styles.hidden : { left: place * width, width },
-                ]}
-                accessibilityElementsHidden={!onScreen}
-                importantForAccessibility={onScreen ? "auto" : "no-hide-descendants"}
-              >
-                {isBuilt && (
-                  <OnScreenContext.Provider value={onScreen}>
-                    <TabReselectContext.Provider value={reselectOf(each.title)}>
-                      <HeaderScrollContext.Provider value={reportOf(each.title)}>
-                        {each.render()}
-                      </HeaderScrollContext.Provider>
-                    </TabReselectContext.Provider>
-                  </OnScreenContext.Provider>
-                )}
-              </View>
-            );
-          })}
+          <TabBarRoomContext.Provider value={barRoom}>
+            {pages.map((each, index) => {
+              const place = around.get(index);
+              const isBuilt = built.includes(each.title);
+              if (!isBuilt && place === undefined) {
+                return null;
+              }
+              const onScreen = index === now.page;
+              return (
+                <View
+                  key={each.title}
+                  ref={tourPart(pageName(each.title))}
+                  collapsable={false}
+                  testID={`tab-page-${each.title}`}
+                  // Out of sight and a swipe away, still built: its state stays
+                  // as it was left.
+                  style={[
+                    styles.page,
+                    pageTop,
+                    place === undefined
+                      ? styles.hidden
+                      : { left: place * width, width },
+                  ]}
+                  accessibilityElementsHidden={!onScreen}
+                  importantForAccessibility={onScreen ? "auto" : "no-hide-descendants"}
+                >
+                  {isBuilt && (
+                    <OnScreenContext.Provider value={onScreen}>
+                      <TabReselectContext.Provider value={reselectOf(each.title)}>
+                        <HeaderScrollContext.Provider value={reportOf(each.title)}>
+                          <HeaderFloatsContext.Provider value={headerOver}>
+                            {each.render()}
+                          </HeaderFloatsContext.Provider>
+                        </HeaderScrollContext.Provider>
+                      </TabReselectContext.Provider>
+                    </OnScreenContext.Provider>
+                  )}
+                </View>
+              );
+            })}
+          </TabBarRoomContext.Provider>
         </SafeAreaInsetsContext.Provider>
       </ScrollView>
       <TabBar tabs={pages} page={page} onTab={onTab} drag={drag} />

@@ -56,13 +56,49 @@ export const SHAPES = [
   "swan",
   "windmill",
   "wine_glass",
+  "ball",
+  "bell",
+  "candy_cane",
+  "colosseum",
+  "croissant",
+  "dolphin",
+  "dome",
+  "easter_egg",
+  "eiffel_tower",
+  "flower",
+  "fox_head",
+  "gift",
+  "infinity",
+  "leaf",
+  "light_bulb",
+  "medal",
+  "mountain",
+  "owl",
+  "padlock",
+  "peace",
+  "penguin",
+  "pizza_slice",
+  "racket",
+  "reindeer",
+  "santa_hat",
+  "scooter",
+  "skis",
+  "snowflake",
+  "snowman",
+  "stocking",
+  "strawberry",
+  "triumphal_arch",
+  "trophy",
+  "turtle",
+  "umbrella",
 ] as const;
 export type Shape = (typeof SHAPES)[number];
 
 /** The shapes that may be drawn with the pen up (TASK-223, ADR-0185): the
  * outline, then each piece on its own, walking from one to the next. The
- * first five lift off their eyes; the others have pieces apart, the last four
- * the new shapes of TASK-418, which the app draws with the pen down. */
+ * first five lift off their eyes; the others have pieces apart, from anchor on
+ * the new shapes of TASK-418 and TASK-516, which the app draws with the pen
+ * down. */
 export const PEN_UP_SHAPES = [
   "cat",
   "fish",
@@ -77,6 +113,30 @@ export const PEN_UP_SHAPES = [
   "bear_head",
   "bicycle",
   "espresso_cup",
+  "ball",
+  "bell",
+  "colosseum",
+  "dolphin",
+  "dome",
+  "easter_egg",
+  "flower",
+  "fox_head",
+  "gift",
+  "infinity",
+  "leaf",
+  "light_bulb",
+  "medal",
+  "mountain",
+  "owl",
+  "padlock",
+  "peace",
+  "penguin",
+  "pizza_slice",
+  "racket",
+  "strawberry",
+  "triumphal_arch",
+  "trophy",
+  "turtle",
 ] as const satisfies readonly Shape[];
 export type PenUpShape = (typeof PEN_UP_SHAPES)[number];
 

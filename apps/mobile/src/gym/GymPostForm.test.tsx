@@ -196,6 +196,8 @@ async function ended(fetchFn: jest.Mock) {
     jest.advanceTimersByTime(2 * 60_000);
   });
   await fireEvent(screen.getByLabelText("Stop"), "longPress");
+  // «Remember to stretch» first (TASK-466 part C2).
+  await fireEvent.press(screen.getByText("Skip"));
   expect(screen.getByTestId("gym-end")).toBeOnTheScreen();
 }
 

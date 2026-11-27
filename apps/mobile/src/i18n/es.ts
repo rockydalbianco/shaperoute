@@ -2097,6 +2097,9 @@ export const ES: Table = {
   "{seconds} s each side": "{seconds} s por lado",
   "This is not medical advice. If your back hurts, see a doctor.":
     "Esto no es un consejo médico. Si te duele la espalda, ve al médico.",
+  "{count} sessions · {minutes} min": "{count} sesiones · {minutes} min",
+  "1 session · {minutes} min": "1 sesión · {minutes} min",
+  "After your activity today": "Después de tu actividad de hoy",
   // end of TASK-520 part D
   Morning: "Mañana",
   "After run": "Después de correr",

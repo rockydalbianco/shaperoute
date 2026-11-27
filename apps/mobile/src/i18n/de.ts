@@ -2106,6 +2106,9 @@ export const DE: Table = {
   "{seconds} s each side": "{seconds} s pro Seite",
   "This is not medical advice. If your back hurts, see a doctor.":
     "Das ist kein medizinischer Rat. Bei Rückenschmerzen zum Arzt gehen.",
+  "{count} sessions · {minutes} min": "{count} Einheiten · {minutes} Min.",
+  "1 session · {minutes} min": "1 Einheit · {minutes} Min.",
+  "After your activity today": "Nach deiner Aktivität heute",
   // end of TASK-520 part D
   Morning: "Morgens",
   "After run": "Nach dem Laufen",

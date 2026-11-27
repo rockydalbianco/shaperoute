@@ -64,9 +64,10 @@ describe("«Today» on the stretching home", () => {
     expect(start).not.toHaveBeenCalled();
   });
 
-  it("has no line for a proposal with none, and names a sport with its when", async () => {
+  it("names a sport with its when, and says it is for the activity just done", async () => {
     await show("running_after");
     expect(screen.getByRole("header", { name: "Running · After" })).toBeOnTheScreen();
+    expect(screen.getByText("After your activity today")).toBeOnTheScreen();
     expect(screen.queryByText("A good start to the day")).toBeNull();
   });
 

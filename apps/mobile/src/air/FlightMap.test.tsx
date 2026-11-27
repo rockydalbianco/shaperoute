@@ -10,6 +10,7 @@ import type { Track } from "../navigation/trackRecorder";
 import { color } from "../theme/tokens";
 import { FlightMap, flightMapFps } from "./FlightMap";
 import { loadFlightMapPrefs, resetFlightMapPrefs } from "./flightMapPrefs";
+import { refreshWinds, resetWinds } from "./windStore";
 import {
   manualWaypointsNow,
   removeManualWaypoints,
@@ -189,4 +190,47 @@ describe("the pilot's own waypoints (D5)", () => {
 it("keeps its touches, so a long press does not also open the screen's editor (D5)", async () => {
   await show(upTo(5));
   expect(screen.getByTestId("flight-map").props.onStartShouldSetResponder()).toBe(true);
+});
+
+describe("the wind aloft (H)", () => {
+  beforeEach(() => resetWinds());
+
+  it("sends the wind of the hour at the pilot's level, numbers only", async () => {
+    const track = upTo(5);
+    const at = new Date(track.fixes[5].timeMs);
+    at.setUTCMinutes(0, 0, 0);
+    await act(async () => {
+      await refreshWinds([45.74, 10.84], Date.now(), () =>
+        Promise.resolve({
+          kind: "ok",
+          value: {
+            source: "icon-d2",
+            run: at.toISOString(),
+            attribution: "DWD ICON-D2, CC BY 4.0",
+            lat: 45.74,
+            lon: 10.84,
+            levels: [850, 700, 600, 500],
+            hours: [
+              {
+                time: at.toISOString(),
+                winds: [
+                  { hpa: 850, speed_ms: 4, from_deg: 200 },
+                  { hpa: 700, speed_ms: 5, from_deg: 217 },
+                  { hpa: 600, speed_ms: 8, from_deg: 230 },
+                  { hpa: 500, speed_ms: 12, from_deg: 250 },
+                ],
+              },
+            ],
+          },
+        }),
+      );
+    });
+    await show(track);
+    await fireEvent(screen.getByTestId("flight-map").children[0] as never, "message", {
+      nativeEvent: { data: '{"type":"ready"}' },
+    });
+    const last = calls("setWind").pop()!;
+    expect(last).toContain('"from":');
+    expect(last).toMatch(/"label":"\d{3} hPa · \d+ km\/h"/);
+  });
 });

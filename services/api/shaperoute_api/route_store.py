@@ -54,6 +54,7 @@ from route_engine.models import (
     RouteResult,
     SwimTurn,
 )
+from route_engine.words import STYLES
 
 log = logging.getLogger(__name__)
 
@@ -185,7 +186,35 @@ SAME_ROUTES_AS: dict[str, str] = {
     "030243086cea": "83b84d67c7f4",  # every route but a swim
     "da3da1914fdf": "780424973b42",  # the swims
     "f01152178efe": "9b27551516c0",  # the app's paddling examples
+    # TASK-522: the A and the Q say what they draw with the pen up (ADR-0418);
+    # every route of the proof drawn the same. The words with the pen up and
+    # one of them are drawn otherwise: they are kept apart (`kept_engine`).
+    "71c18b07221b": "030243086cea",  # every route but a swim
+    "be0cdba04cc4": "da3da1914fdf",  # the swims
+    "6dffc96ddaf5": "f01152178efe",  # the app's paddling examples
 }
+# The letters that say what they draw with the pen up (TASK-522, ADR-0418):
+# the A and the Q drew only their `out` before, the A without its apex. Those
+# routes are the only ones the engine draws otherwise, so they are kept
+# apart (`kept_engine`) and those kept before are drawn again, while every
+# other route keeps its fingerprint (SAME_ROUTES_AS).
+PEN_LETTERS = "+L2"
+
+
+def kept_engine(request: object, engine: str) -> str:
+    """The fingerprint a route of `request` is kept by, with `engine` the
+    one of every other route: a word written with the pen up with a letter
+    that has its `pen` (TASK-522) adds PEN_LETTERS, so a route of it kept
+    before is not found and is drawn again (the files here, the rows of
+    route_archive)."""
+    if not isinstance(request, RouteRequest) or not request.pen_up:
+        return engine
+    if request.word is None:
+        return engine  # a shape in pieces: no letters
+    alphabet = STYLES[request.style][0]
+    if any(alphabet[c].pen for c in request.word if c in alphabet):
+        return engine + PEN_LETTERS
+    return engine
 
 
 def same_routes_as(fingerprint: str, aliases: dict[str, str] | None = None) -> str:
@@ -448,8 +477,12 @@ class RouteStore:
 
     def _engine_of(self, request: RouteRequest) -> str:
         """The fingerprint a route of `request` is kept by: a swim's has
-        the files of the swims (SWIM_ONLY), the others leave them out."""
-        return self._swim_engine if request.activity == SWIMMING else self._engine
+        the files of the swims (SWIM_ONLY), the others leave them out; a
+        word with the pen up and a letter with its `pen` is apart
+        (`kept_engine`)."""
+        if request.activity == SWIMMING:
+            return self._swim_engine
+        return kept_engine(request, self._engine)
 
     def _path(self, request: object) -> Path | None:
         if not isinstance(request, RouteRequest):

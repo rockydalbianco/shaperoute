@@ -251,6 +251,20 @@ def test_the_letters_are_spelled_by_their_runs(chars: str, spelled: str) -> None
             "'back' is for",
         ),
         ({"I": {"out": [[0, 0]]}}, "at least 2 distinct points"),
+        (
+            {"I": {"out": [[0, 0], [0, 1], [0, 0]], "pen": [[0, 0], [0, 1]]}},
+            "'pen' must lead",
+        ),
+        (
+            {
+                "V": {
+                    "out": [[0, 0], [0.3, 1], [0.6, 0]],
+                    "back": [[0.6, 0], [0.3, 1], [0, 0]],
+                    "pen": [[0, 0], [0.9, 1], [0.6, 0]],
+                }
+            },
+            "'pen' must stay inside",
+        ),
     ],
 )
 def test_a_broken_alphabet_is_refused(letters: dict[str, object], message: str) -> None:
@@ -626,3 +640,68 @@ def test_plan_route_joins_the_letters_along_the_top_unless_told(
     assert composed[-1].tops == (True,)
     plan_route(request, _Grid(), optimize=False, top_joins=False)
     assert composed[-1].tops == (False,)
+
+
+# With the pen up the letters that still lose a stroke of their `back`
+# (TASK-522 mended the A and the Q only; the others are a follow-up).
+PEN_UP_SHORT = {"round": set("BDR"), "block": set("ABDOQR")}
+
+
+def _on(point: np.ndarray, line: tuple[tuple[float, float], ...]) -> bool:
+    """Whether `point` lies on a side of `line`."""
+    for a, b in pairwise(np.array(line)):
+        ab, ap = b - a, point - a
+        t = np.clip(ap @ ab / (ab @ ab), 0.0, 1.0)
+        if np.hypot(*(ap - t * ab)) < 1e-9:
+            return True
+    return False
+
+
+def _missing(
+    line: tuple[tuple[float, float], ...], by: tuple[tuple[float, float], ...]
+) -> float:
+    """How much of `line` the sides of `by` do not draw, in letter heights."""
+    lost = 0.0
+    for a, b in pairwise(np.array(line)):
+        shares = np.linspace(0.0, 1.0, 21)
+        off = [not _on(a + t * (b - a), by) for t in shares]
+        lost += np.hypot(*(b - a)) * sum(off) / len(off)
+    return lost
+
+
+@pytest.mark.parametrize("style", sorted(STYLES))
+def test_with_the_pen_up_a_letter_draws_every_stroke_of_its_own(style: Style) -> None:
+    # The A is not an «n» nor the Q a tail (TASK-522): what the pen-up line
+    # leaves out of the closed letter, `out` and `back`, is nothing, but
+    # for the letters still listed.
+    for char, letter in STYLES[style][0].items():
+        whole = (*letter.out, *letter.back[1:])
+        lost = _missing(whole, letter.pen_line)
+        assert (lost > 0.1) == (char in PEN_UP_SHORT[style]), char
+        # And it draws no stroke the letter has not.
+        assert _missing(letter.pen_line, whole) == 0.0, char
+
+
+def test_the_a_and_the_q_say_what_they_draw_with_the_pen_up() -> None:
+    a, q = ALPHABET["A"], ALPHABET["Q"]
+    assert max(y for _, y in a.out) == 0.4
+    assert max(y for _, y in a.pen_line) == 1.0
+    assert _missing(a.pen_line, a.out) > 1.0  # the apex
+    assert q.pen_line[0] == q.out[0] and q.pen_line[-1] == q.out[-1]
+    assert max(y for _, y in q.pen_line) == 1.0
+    # The others draw their `out`, as before.
+    assert {c for c, letter in ALPHABET.items() if letter.pen} == {"A", "Q"}
+    for style in STYLES:
+        for letter in STYLES[style][0].values():
+            if not letter.pen:
+                assert letter.pen_line == letter.out
+
+
+@pytest.mark.parametrize("style", sorted(STYLES))
+def test_the_closed_word_does_not_draw_the_pen(style: Style) -> None:
+    alphabet = STYLES[style][0]
+    without = {c: replace(letter, pen=()) for c, letter in alphabet.items()}
+    for text in ("ciao", "quasi", "vai"):
+        word = compose(text, style=style)
+        before = compose(text, alphabet=without, style=style)
+        assert word.units == before.units and word.places == before.places

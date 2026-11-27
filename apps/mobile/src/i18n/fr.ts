@@ -3991,4 +3991,8 @@ export const FR: Table = {
   // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
   Weather: "Météo",
   "Weather: {temperature}, wind {speed}": "Météo : {temperature}, vent {speed}",
+  // src/air/ (TASK-479 part H: the wind aloft; approved by the user on 2026-11-26)
+  "Wind aloft": "Vent en altitude",
+  "Wind aloft not available": "Vent en altitude indisponible",
+  "{source} · run of {time}": "{source} · run de {time}",
 };

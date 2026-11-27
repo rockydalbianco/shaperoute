@@ -4,6 +4,7 @@ import { AccessibilityInfo } from "react-native";
 import { category, compose, defaultChoice } from "./compose";
 import { resetChoicesForTests } from "./stretchChoices";
 import { ENTER_GAP_MS, ENTER_MS, StretchHome } from "./StretchHome";
+import { facesOf } from "./CategoryTile";
 
 jest.mock("../stretchSport/StretchSessionHost", () => ({
   startCategorySession: jest.fn(),
@@ -81,7 +82,36 @@ describe("the stretching home", () => {
     );
     expect(screen.queryByTestId("stretch-tile-running_before")).toBeNull();
     expect(screen.getByTestId("stretch-tile-splits")).toHaveTextContent(/Splits/);
+    expect(screen.getByTestId("stretch-tile-intimacy_before")).toHaveTextContent(
+      /Intimacy.*Before · After · 5 · 10 min/,
+    );
     expect(screen.getByText("Stop if it hurts.")).toBeOnTheScreen();
+  });
+
+  it("shows each sport with a figure of its own, though most begin with the same stretch", () => {
+    const sports = [
+      "running",
+      "cycling",
+      "skiing",
+      "snowboarding",
+      "skiTouring",
+      "gym",
+      "hiking",
+      "football",
+    ].map((sport) => category(`${sport}_after`));
+    // After all of these the first stretch is the thigh's.
+    expect(new Set(sports.map((of) => of.exercises[0])).size).toBe(1);
+    const faces = facesOf(sports).map((exercise) => exercise.key);
+    expect(new Set(faces).size).toBe(sports.length);
+    expect(faces[0]).toBe("quad");
+    faces.forEach((key, n) => {
+      expect(sports[n].exercises).toContain(key);
+    });
+    // One with nothing left of its own shows its first.
+    const neck = category("neck");
+    expect(facesOf([neck, neck, neck, neck, neck, neck, neck]).pop()?.key).toBe(
+      neck.exercises[0],
+    );
   });
 
   it("gives the moments and the sports a sign in the corner, the body's areas none", async () => {

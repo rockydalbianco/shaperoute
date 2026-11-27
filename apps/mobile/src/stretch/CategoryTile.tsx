@@ -57,12 +57,33 @@ export function faceOf(of: Category): Exercise {
   return exercise;
 }
 
+/**
+ * The exercises a row of categories show themselves with, each one a
+ * different one: a category's first that no category before it took (after
+ * most sports the first stretch is the same one, the thigh's). One whose
+ * exercises are all taken shows its first.
+ */
+export function facesOf(categories: readonly Category[]): Exercise[] {
+  const taken = new Set<string>();
+  return categories.map((of) => {
+    const key = of.exercises.find((k) => !taken.has(k)) ?? of.exercises[0];
+    taken.add(key);
+    const exercise = exerciseByKey(key);
+    if (exercise === undefined) {
+      throw new Error(`no stretch ${key}`);
+    }
+    return exercise;
+  });
+}
+
 /** How tall the figure of a tile is, in points. */
 export const TILE_FIGURE = 56;
 
 type Props = {
   /** The category whose first exercise the figure does. */
   of: Category;
+  /** Another exercise for the figure to do, when the first is on a tile already. */
+  face?: Exercise;
   title: string;
   /** The line under the name: its lengths, or «Before · After». */
   detail: string;
@@ -84,6 +105,7 @@ type Props = {
  */
 export function CategoryTile({
   of,
+  face,
   title,
   detail,
   tint,
@@ -102,7 +124,7 @@ export function CategoryTile({
     >
       <View style={styles.stage}>
         <View style={[styles.halo, { backgroundColor: tint }]} />
-        <PoseFigure exercise={faceOf(of)} height={TILE_FIGURE} />
+        <PoseFigure exercise={face ?? faceOf(of)} height={TILE_FIGURE} />
       </View>
       {icon !== undefined && (
         <Image

@@ -66,6 +66,9 @@ describe("the words of the stretching categories", () => {
     expect(lengthsLine(category("neck"))).toBe("3 · 5 · 10 min");
     expect(lengthsLine(category("toes"))).toBe("10 min");
     expect(lengthsLine(category("intimacy_before"))).toBe("5 · 10 min");
+    // More than three do not fit a tile: from the shortest to the longest.
+    expect(lengthsLine(category("hips"))).toBe("3–20 min");
+    expect(lengthsLine(category("legs"))).toBe("3–15 min");
   });
 
   it("have a line for each thing «Today» proposes by the hour", () => {

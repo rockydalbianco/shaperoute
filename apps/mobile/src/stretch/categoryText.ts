@@ -116,9 +116,14 @@ export function categoriesOf(group: CategoryGroup): Category[] {
   return CATEGORIES.filter((category) => category.group === group);
 }
 
-/** The lengths a category comes in: «3 · 5 · 10 min». */
+/** The lengths a category comes in: «3 · 5 · 10 min»; from the shortest to
+ * the longest, «3–20 min», when they are more than fit a tile. */
 export function lengthsLine(of: Category): string {
-  return t("{minutes} min", { minutes: of.minutes.join(" · ") });
+  const minutes =
+    of.minutes.length > 3
+      ? `${of.minutes[0]}–${of.minutes[of.minutes.length - 1]}`
+      : of.minutes.join(" · ");
+  return t("{minutes} min", { minutes });
 }
 
 /** What «Today» says under its proposal, by the category proposed. */

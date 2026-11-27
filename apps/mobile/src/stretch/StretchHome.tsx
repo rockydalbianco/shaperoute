@@ -16,8 +16,9 @@ import {
   pairOf,
   SPORT_NAMES,
 } from "./categoryText";
-import { CategoryTile } from "./CategoryTile";
+import { CategoryTile, facesOf } from "./CategoryTile";
 import { category, compose } from "./compose";
+import type { Exercise } from "./exercises";
 import { choiceFor, useChoices } from "./stretchChoices";
 import { todayCategory } from "./today";
 import { TodayCard } from "./TodayCard";
@@ -102,10 +103,17 @@ export function StretchHome({ now }: Props) {
     ],
   });
 
-  const tile = (of: Category, title: string, detail: string, wide = false) => (
+  const tile = (
+    of: Category,
+    title: string,
+    detail: string,
+    wide = false,
+    face?: Exercise,
+  ) => (
     <CategoryTile
       key={of.key}
       of={of}
+      face={face}
       title={title}
       detail={detail}
       tint={color.stretch[of.group]}
@@ -122,6 +130,9 @@ export function StretchHome({ now }: Props) {
       </View>
     ));
   const whens = `${t("Before")} · ${t("After")}`;
+  // One tile for each sport, on its «After», each with a figure of its own.
+  const sports = Object.keys(SPORT_NAMES).map((sport) => category(`${sport}_after`));
+  const sportFaces = facesOf(sports);
 
   return (
     <View style={styles.home} testID="stretch-home">
@@ -156,9 +167,15 @@ export function StretchHome({ now }: Props) {
           ) : group.key === "sports" ? (
             // One tile for each sport: its «Before» and «After» are inside.
             <View style={styles.grid}>
-              {Object.keys(SPORT_NAMES).map((sport) => (
-                <View key={sport} style={styles.half}>
-                  {tile(category(`${sport}_after`), t(SPORT_NAMES[sport]), whens)}
+              {sports.map((of, n) => (
+                <View key={of.key} style={styles.half}>
+                  {tile(
+                    of,
+                    t(SPORT_NAMES[pairOf(of.key)?.of ?? ""]),
+                    whens,
+                    false,
+                    sportFaces[n],
+                  )}
                 </View>
               ))}
             </View>
@@ -166,8 +183,8 @@ export function StretchHome({ now }: Props) {
             // One wide card for the two: «Before» and «After» are inside.
             tile(
               category("intimacy_before"),
-              whens,
-              lengthsLine(category("intimacy_before")),
+              t("Intimacy"),
+              `${whens} · ${lengthsLine(category("intimacy_before"))}`,
               true,
             )
           ) : (

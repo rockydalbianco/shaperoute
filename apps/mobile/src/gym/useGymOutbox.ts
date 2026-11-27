@@ -1,4 +1,4 @@
-import type { GymSessionRequest } from "@shaperoute/shared-types";
+import type { GymSessionRequest, GymStretch } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useRef } from "react";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
@@ -33,7 +33,8 @@ export type GymSaved = GymKept | "signed_out" | "nothing";
  * order, through the drawings' own file. `fetchFn` is for the tests.
  */
 export function useGymOutbox(fetchFn?: typeof fetch): {
-  save: (workout: Workout, post?: GymPost) => GymSaved;
+  /** With the stretching done at its end, if any (TASK-466 part C2). */
+  save: (workout: Workout, post?: GymPost, stretch?: GymStretch | null) => GymSaved;
   /** «Save» of a request made already: a workout written by hand
    * (TASK-484 part B), the same way as a recorded one. */
   saveRequest: (key: string, request: GymSessionRequest, post?: GymPost) => GymSaved;
@@ -152,7 +153,7 @@ export function useGymOutbox(fetchFn?: typeof fetch): {
   );
 
   const save = useCallback(
-    (workout: Workout, post?: GymPost): GymSaved => {
+    (workout: Workout, post?: GymPost, stretch?: GymStretch | null): GymSaved => {
       if (latest.current.owner === null) {
         return "signed_out";
       }
@@ -160,7 +161,12 @@ export function useGymOutbox(fetchFn?: typeof fetch): {
       if (request === null) {
         return "nothing";
       }
-      return saveRequest(workout.key, request, post);
+      // Without it the request is the same as before (TASK-466 C2).
+      return saveRequest(
+        workout.key,
+        stretch == null ? request : { ...request, stretch },
+        post,
+      );
     },
     [saveRequest],
   );

@@ -251,3 +251,6 @@ restano come in `EVENTI.md`.
   un'uscita senza percorso si sceglie su una mappa che parte dalla zona del
   gruppo, con un tocco lungo che mette il segnaposto, poi trascinabile;
   sotto, «Where exactly» come oggi.
+- 2026-11-27 · **scelta dell'utente Q3** («Sì, così»): la scheda di
+  un'uscita senza percorso ha l'icona dello sport al posto della linea e la
+  «Destination» sotto il titolo; il resto come la scheda di TASK-309 B2.

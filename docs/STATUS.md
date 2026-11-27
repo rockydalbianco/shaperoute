@@ -236,6 +236,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   fra quelle venute bene in città, dal catalogo di «Explore»; a piedi e in
   bici, motore non toccato. Poi A (la scelta, file nuovi) e B (la
   pastiglia, dopo TASK-449 A). File: — · `tasks/TASK-448.md`
+- **TASK-451 — «Rifai meglio»** (ADR-0419) · parte 0 chiusa il 2026-11-27
+  (sei scelte dell'utente): a fine corsa, se si è lasciato il percorso,
+  «Save & redo» salva e riapre «Draw» con stessa forma, km e partenza;
+  motore non toccato. Poi A (la scelta, file nuovi) e B (il pulsante, dopo
+  523 T in `main`). File: `route/redoBetter*` · `tasks/TASK-451.md`
 
 In attesa (Fermo — in attesa nel task file, nessun file occupato; si
 riprendono col sì dell'utente). Aspettano la società o servizi esterni:

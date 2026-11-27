@@ -182,6 +182,24 @@ export type Shade = {
     readonly plum: string;
     readonly sand: string;
   };
+  /**
+   * The groups of the stretching home (TASK-520, ADR-0415; the user's sketch
+   * of 2026-11-27): a coral for the body, a violet for the moments of the
+   * day, a light blue for the sports, a pink for intimacy and a green for
+   * the rest. They are the same hues as `warning`, `carbs`, `runDay`,
+   * `muscle` and `food`, kept as tokens of their own so that each of those
+   * keeps its one meaning. A group's name, its icon and the halo behind its
+   * figure: 4.5:1 at least on `background`, `surface` and `surfaceRaised`,
+   * and never the only sign, each group has its name. The yellow stays on
+   * «Start» alone.
+   */
+  readonly stretch: {
+    readonly body: string;
+    readonly moments: string;
+    readonly sports: string;
+    readonly intimacy: string;
+    readonly more: string;
+  };
 
   readonly map: {
     readonly background: string;
@@ -258,6 +276,13 @@ export const SHADES: Readonly<
         plum: "#40214F",
         sand: "#4A3F2C",
       },
+      stretch: {
+        body: "#FF8A5C",
+        moments: "#A99BFF",
+        sports: "#4DD2FF",
+        intimacy: "#FF6FB5",
+        more: "#4FD08A",
+      },
       map: {
         background: "#100F0C",
         water: "#101F29",
@@ -301,6 +326,13 @@ export const SHADES: Readonly<
         sea: "#1F4859",
         plum: "#4D2D5D",
         sand: "#584C38",
+      },
+      stretch: {
+        body: "#FFA382",
+        moments: "#C4BAFF",
+        sports: "#6EDBFF",
+        intimacy: "#FF9CCC",
+        more: "#7BE3AA",
       },
       map: {
         background: "#2B2925",
@@ -348,6 +380,13 @@ export const SHADES: Readonly<
         plum: "#D8C0E6",
         sand: "#E3D5BB",
       },
+      stretch: {
+        body: "#8A2E0A",
+        moments: "#3F2FA3",
+        sports: "#005370",
+        intimacy: "#8F1552",
+        more: "#095428",
+      },
       map: {
         background: "#DAD7CF",
         water: "#9CC2D8",
@@ -391,6 +430,13 @@ export const SHADES: Readonly<
         sea: "#CDE7F1",
         plum: "#E8D6F2",
         sand: "#F0E6D2",
+      },
+      stretch: {
+        body: "#A8380C",
+        moments: "#4B39BF",
+        sports: "#006A8F",
+        intimacy: "#A51A60",
+        more: "#0F6B35",
       },
       map: {
         background: "#F5F4F0",

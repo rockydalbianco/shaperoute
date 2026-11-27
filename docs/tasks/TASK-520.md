@@ -232,13 +232,22 @@ aggiungono qui dopo il sì del Coordinatore. Tutti i percorsi sotto
   `FigureFront.test.tsx`, `allExercises.test.ts`, `FigureMove.test.tsx`,
   `StretchScreenMove.test.tsx`. I tre file modificati sono di TASK-466:
   ordine concordato con la sua sessione (520 passa per prima).
-- **B, tutti i blocchi**: nuovi `stretch/posesMore.ts`,
-  `stretch/exercisesMore.ts` (B1–B3), `stretch/posesFrontMore.ts` (B4) e i
-  loro test; modificati `stretch/allExercises.ts` e il suo test (di 520) e
-  le quattro tabelle `i18n/{it,de,fr,es}.ts` (un solo blocco segnato
-  «TASK-520 part B», che cresce a ogni blocco).
-- **A2**: `theme/tokens.ts` e `theme/palettes.test.ts`, dopo l'avviso del
-  Coordinatore (li tiene TASK-469).
+- **B, tutti i blocchi** (#1672, #1681, #1684, #1687, in `main` il
+  2026-11-27): nuovi `stretch/posesMore.ts`, `stretch/exercisesMore.ts`,
+  `stretch/posesFrontMore.ts` (B4) e i loro test (`posesMore.test.ts`,
+  `exercisesMore.test.ts`, `posesFrontMore.test.tsx`); modificati
+  `stretch/allExercises.ts` e il suo test (di 520) e le quattro tabelle
+  `i18n/{it,de,fr,es}.ts` (un solo blocco segnato «TASK-520 part B»). Il
+  blocco 4 ha toccato anche quattro file della A1, col sì del Coordinatore:
+  `stretch/posesFront.ts`, `stretch/posesFront.test.ts`,
+  `stretch/FigureFront.tsx`, `stretch/FigureFront.test.tsx` (i piedi che
+  restano fermi, la sfumatura quando il busto si capovolge).
+- **A2** (#1691): `theme/tokens.ts` e `theme/palettes.test.ts`, col turno
+  dato dal Coordinatore dopo la #1686 di TASK-489.
+- **C** (#1693): nuovi `stretch/categories.ts`, `stretch/compose.ts`,
+  `stretch/today.ts` e i loro tre test; modificato `stretch/exercises.ts`
+  (di TASK-466, d'accordo con la sua sessione): tre righe,
+  `position: "floor"` su `hipFlexor`, `cat` e `child`.
 
 ## Dove siamo
 
@@ -249,22 +258,53 @@ come ultima parte — tutti col sì dell'utente.
 2026-11-27, codice: **A1 in `main`** (#1666). **Traduzioni dei 50 esercizi
 approvate** dall'utente in una volta («Sì, approvo»): nomi e «How to» in
 italiano, tedesco, francese, spagnolo (it ed es col «tu», fr col «vous»,
-de all'infinito); entrano nelle tabelle blocco per blocco, insieme agli
-esercizi. **B1** (12 tenute di lato) nella #1672. **B2** (12 tenute seduti,
-in ginocchio, sdraiati) scritto e provato in locale sul branch
-`feat/TASK-520-b2-floor-holds`, sopra B1: la PR si apre quando B1 è in
-`main`.
+de all'infinito).
 
-Le pose si disegnano prima su un foglio, con un aiuto in Python che ripete
-la geometria di `poses.ts` (`out/stretching-nuovo/pose/` nel checkout
-principale, fuori dal repository), a riposo e in fondo al respiro; poi si
-scrivono nel codice coi loro test.
+2026-11-27, **parte B chiusa: i 50 esercizi nuovi sono in `main`**, in
+quattro blocchi: B1 12 tenute di lato (#1672), B2 12 tenute seduti, in
+ginocchio e sdraiati (#1681), B3 12 movimenti di lato (#1684), B4 14
+esercizi visti di fronte o dall'alto (#1687). Nessuna schermata li mostra
+ancora: la home nuova è la parte D. Le pose si disegnano prima su un
+foglio, con un aiuto in Python che ripete la geometria della figura
+(`out/stretching-nuovo/pose/` nel checkout principale, fuori dal
+repository), poi si scrivono nel codice coi loro test.
 
-Prossimo: turno del simulatore dal Coordinatore a fine B2 (le 24 tenute
-viste sul telefono, schermate all'utente), poi B3 e B4, poi A2 e la parte
-C. Tre pose di B2 si leggono peggio di lato (Figure four, 90/90 hips,
-Side-lying quad): detto all'utente il 2026-11-27, se non convincono si
-provano viste dall'alto.
+Scelte dell'utente durante la parte B (2026-11-27), scritte negli allegati:
+
+- **«Di fronte»**: cinque movimenti che l'elenco aveva di lato (Arm
+  openers, Open book, Trunk turns, Knee sways, Hip circles) si disegnano di
+  fronte, i due da sdraiati dall'alto: il gesto va verso chi guarda e di
+  lato non si capiva.
+- **«Sì, dall'alto»**: «90/90 hips» e «Side-lying quad» si disegnano
+  dall'alto; le pose di lato restano nel codice. «Figure four» resta di
+  lato.
+
+**Simulatore** (iPhone 17e, Expo Go, turno del Coordinatore, 2026-11-27):
+visti tutti i 50 in una galleria e quattro nella schermata vera; fogli in
+`out/TASK-520/b/` del checkout principale. Due correzioni nate dalla prova,
+dentro la #1687: l'ingresso del «Wide-leg forward fold» sfuma invece di far
+ruotare il busto di lato, e «Chin tuck» è più ampio. Le due pose dall'alto
+aggiunte per ultime non sono state viste al simulatore.
+
+Limiti noti, detti all'utente: «Neck turn» si inclina appena (una testa
+senza faccia non gira); «Pelvic tilt» e «Chin tuck» sono gesti piccoli; a
+metà dei «Knee sways» le gambe passano per dritte (i segmenti non si
+accorciano); «Figure four» di lato si legge poco; il «90/90» dall'alto ha
+il busto lungo come da sdraiati.
+
+2026-11-27, **A2** nella #1691 (i cinque colori dei gruppi) e **parte C**
+nella #1693 (catalogo delle 54 categorie, composizione, regola di
+«Today»), tutte e due «pronta» al Coordinatore. Sul telefono vero non è
+stato ancora provato niente.
+
+Prossimo: la **parte D** (home nuova e pagina della categoria), con
+l'elenco dei file al Coordinatore prima del codice. Lì arrivano i nomi
+delle categorie e gli altri testi con le quattro traduzioni (sì
+dell'utente), le icone Lucide, il turno al simulatore. Una sessione fatta
+da una categoria si salva con la chiave della categoria come `routine`: il
+server accetta solo lettere, cifre e trattino basso (`ROUTINE_PATTERN`),
+per questo le chiavi sono `running_after`, `intimacy_before` e non hanno
+il punto.
 
 ---
 
@@ -369,10 +409,17 @@ In ordine, la prima che vale:
 
 1. Hai finito un'attività di uno sport in lista nelle ultime 3 ore →
    «After {sport}».
-2. Prima delle 10 → «Morning».
-3. Dopo le 21 → «Bedtime».
+2. Dalle 21 alle 4 di notte → «Bedtime».
+3. Dalle 4 alle 10 → «Morning».
 4. Giorno feriale tra le 10 e le 18 → «Desk break».
 5. Altrimenti → «Full body» 5 min.
+
+La notte fino alle 4 è una scelta dell'utente dello stesso giorno («Sì,
+fino alle 4»): la prima versione diceva «prima delle 10 → Morning» e
+all'una di notte avrebbe proposto il risveglio. Gli sport dell'app che
+hanno una tessera: corsa, bici (anche gravel e mountain bike), nuoto, sci,
+scialpinismo, palestra, trekking, canoa e paddle (`STRETCH_SPORT` in
+`stretch/today.ts`); dopo gli altri decide l'ora.
 
 («Before {sport}» per un'attività pianificata: solo se l'app sa cosa farai,
 oggi lo sa per gli allenamenti in calendario di Training — da vedere.)
@@ -547,6 +594,20 @@ tutto.
 
 Nessun esercizio nuovo solo per questa categoria: sono esercizi comuni di
 anche e schiena; testi sobri.
+
+### Viste cambiate dopo l'approvazione (2026-11-27)
+
+La colonna «Vista» delle tabelle qui sopra è quella approvata all'inizio.
+Durante la parte B l'utente ne ha cambiate sette:
+
+- **di fronte** invece che di lato: Arm openers (8), Trunk turns (17), Hip
+  circles (27);
+- **dall'alto** invece che di lato: Open book (15), Knee sways (22),
+  90/90 hips (28), Side-lying quad (39). Delle ultime due resta nel codice
+  anche la posa di lato.
+
+In tutto 16 esercizi hanno una vista di fronte o dall'alto (erano 9).
+Nomi, «How to» e categorie non cambiano.
 
 ### Note tecniche (da sapere prima di dire sì)
 

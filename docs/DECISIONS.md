@@ -595,7 +595,7 @@ lasciando le righe d'indice.
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
 - ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB · 2026-11-23 · Attiva
 - ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi · 2026-11-23 · Attiva
-- ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap estratti dal server, la scheda del decollo con lo storico dei voli di MuW contato dal server, mai giudizi sulle condizioni · 2026-11-23 · Proposta
+- ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap estratti dal server, la scheda del decollo con lo storico dei voli di MuW contato dal server, mai giudizi sulle condizioni · 2026-11-23 · Attiva
 - ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
 - ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo di ADR-0269 con `group_id`, anche senza percorso; Public, Request, Invite only; un solo admin e fino a 3 co-admin; l'elenco dei membri solo ai membri; la chat di gruppo come parte E · 2026-11-23 · Proposta
 - ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
@@ -629,8 +629,125 @@ lasciando le righe d'indice.
 - ADR-0340, precisazione E — Il meteo del post: MET Norway chiesto dal server al salvataggio, entro 3 ore dalla fine, col punto di partenza a ~1 km; neve esclusa; chiesto una volta · 2026-11-27 · Attiva
 - ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
 - ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
+- ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte tiene i piedi fermi mentre il bacino si sposta e sfuma quando il busto si capovolge; un braccio verso chi guarda si piega; sette viste cambiate dall'utente; le routine composte con una tenuta sola, più lunga prima di un secondo giro; chiavi delle categorie senza punto, come le vuole il server; «Today» con la notte fino alle 4 · 2026-11-27 · Attiva
+- ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione una volta al mese nelle Alpi, un volo è di un decollo solo per i 300 m (le tracce non hanno quota), lo storico in una rotta a sé con la cache di 10 minuti, record più lungo, più alto e più lontano dai post per tutti, niente «Fly from here»; il vento (D) in un task nuovo dopo TASK-479 H · 2026-11-27 · Attiva
+- ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; una pagina vuota ha il suo pulsante quando c'è una cosa da fare; una tessera senza percorso mostra la sagoma della forma in grigio · 2026-11-26 · Attiva
+
 
 ## Voci nuove
+
+## ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione mensile, solo i 300 m, lo storico in una rotta a sé
+
+**Stato**: Attiva · 2026-11-27 · TASK-493 parti A (#1518), B (#1589), C
+(#1635, #1645), privacy (#1646), accensione (#1695). Precisazione di
+ADR-0400, che resta com'è. Le scelte di prodotto sono **dell'utente**
+(2026-11-23, «Sì, tutte»; testi, privacy e schermate approvati il
+2026-11-26; accensione «sì accendili» il 2026-11-27); il resto è **deciso
+dall'agente su delega dell'utente**, con le liste dei file approvate dal
+Coordinatore (fork 3).
+
+**Contesto**: ADR-0400 prevedeva un job settimanale e un volo «di un
+decollo» entro 300 m e 150 m di quota. Le tracce salvate dei voli
+(`runs.track`, LineStringM) hanno tempo ma non quota.
+
+**Decisione**:
+- **Estrazione una volta al mese**, non a settimana: i siti di volo in OSM
+  cambiano poco. `python -m shaperoute_api.flying_sites_extract --osm
+  <tutti gli XML> --clean` in un'unica transazione; con `--clean` vanno
+  passati tutti gli estratti insieme. Prima zona: Italia, Austria,
+  Svizzera, Liechtenstein, Francia alpina, Baviera, Slovenia (1740 siti
+  il 2026-11-27).
+- **Solo i 300 m**: il punto di decollo di un volo è l'inizio del primo
+  tratto in volo (`air_legs` di TASK-305 R6), altrimenti il primo punto;
+  conta se è entro 300 m da un decollo OSM. Il controllo dei 150 m di
+  quota cade.
+- **Lo storico è una rotta a sé**, `GET /flying-sites/{id}/history`, con
+  `utc_offset_min` del telefono per «oggi» e una cache in memoria di 10
+  minuti per sito; numeri solo da 3 piloti diversi in su (`few`). La
+  scheda `GET /flying-sites/{id}` dà il sito e i siti dell'altro tipo
+  entro 15 km (al massimo 5).
+- **Record**: volo più lungo, più alto, più lontano, dai soli post
+  visibili a tutti, col nome.
+- **Niente «Fly from here»** sulla scheda in questa versione: solo fatti.
+- La mappa resta dietro `TAKEOFFS_ON` finché i siti non sono sul server;
+  accesa con #1695.
+
+**Conseguenze**: nessuna migrazione oltre la `0086`; lo script mensile col
+cron lo scrive il Coordinatore col sì dell'utente; la parte D (il vento in
+quota) diventa un task nuovo dopo TASK-479 H.
+
+## ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte coi piedi fermi e la sfumatura; le routine composte; «Today» con la notte
+
+**Stato**: Attiva · 2026-11-27 · TASK-520. Aggiunta ad ADR-0415, che resta
+com'è. **Scelte dell'utente** (2026-11-27): cinque movimenti dell'elenco
+si disegnano di fronte o dall'alto invece che di lato («Di fronte»);
+«90/90 hips» e «Side-lying quad» dall'alto («Sì, dall'alto»); «Today»
+propone «Bedtime» dalle 21 alle 4 («Sì, fino alle 4»). **Decise
+dall'agente su delega dell'utente** le scelte tecniche qui sotto. Codice:
+parte B nelle #1672, #1681, #1684, #1687; A2 nella #1691; parte C nella
+#1693.
+
+**Contesto**: scrivendo i 50 esercizi e provandoli al simulatore sono
+venuti fuori casi che ADR-0415 non aveva: gesti che vanno verso chi
+guarda, piedi che devono restare fermi, un busto che si capovolge. La
+parte C ha poi dovuto dire come si compone una routine e con che nome si
+salva.
+
+**Decisione**:
+
+1. **Piedi fermi** (`planted` su una posa di fronte, `frontSway`): in un
+   affondo laterale e nei cerchi del bacino è il bacino che si sposta sopra
+   i piedi, non i piedi che scivolano sotto un bacino fermo. Una posa
+   `planted` si disegna coi piedi al centro (`frontDrift`).
+2. **La sfumatura** (`frontFlips`): quando tra due pose il busto si
+   capovolge (in piedi → piegato in avanti a gambe larghe) la figura di
+   fronte sfuma da una all'altra invece di girare. Visto di fronte quel
+   gesto non è una rotazione: disegnato come tale, il busto ruotava di lato
+   come una lancetta. Trovato al simulatore.
+3. **Un braccio che viene verso chi guarda si piega**: braccio e
+   avambraccio girano in versi opposti, la mano va dritta di traverso
+   (Arm openers, Open book). I segmenti non si accorciano, quindi è il solo
+   modo di far vedere uno scorcio. Dove nemmeno questo basta resta un
+   limite scritto nei test (a metà dei Knee sways le gambe sono dritte).
+4. **Due viste per lo stesso esercizio**: `front` si aggiunge a `pose`
+   senza toglierla (90/90, Side-lying quad); la schermata disegna `front`
+   quando c'è.
+5. **Il catalogo delle categorie è generato** dall'elenco approvato
+   (Allegato B del task file): in una categoria vengono prima gli esercizi
+   che la nominano per prima. Lo script sta fuori dal repository
+   (`out/stretching-nuovo/c/`); i test controllano il risultato.
+6. **La composizione** (`compose.ts`): una tenuta sola per tutta la
+   routine, vicina a quella che durata e livello chiedono (i riposi il
+   doppio); una lista corta si tiene più a lungo prima di fare un secondo
+   giro, e al massimo un terzo; una scelta che non riempie i suoi minuti
+   (entro 20 secondi, 3 secondi al minuto sulle lunghe) non si offre.
+   «Intense» solo dove c'è almeno un esercizio profondo, «solo in piedi»
+   solo con almeno tre esercizi non a terra. In ogni giro prima in piedi,
+   poi a terra, i riposi alla fine.
+7. **Le chiavi delle categorie sono lettere, cifre e trattino basso**
+   (`running_after`, `intimacy_before`): è la forma che il server accetta
+   come nome di una routine (`ROUTINE_PATTERN` in `stretch_sessions.py`, e
+   il CHECK delle tabelle), così una sessione fatta da una categoria si
+   salva senza toccare il server.
+8. **I 15 esercizi di prima dicono dove si fanno** solo dove serve:
+   `position: "floor"` su `hipFlexor`, `cat` e `child`, i tre che non sono
+   in piedi.
+9. **I cinque colori dei gruppi** tengono 4,5:1 su `background`, `surface`
+   e `surfaceRaised` nei due toni a ogni passo: il nome di un gruppo e la
+   sua icona sono scritti in quel colore.
+
+**Motivo**: le prime quattro tengono vero il disegno senza librerie e
+senza un secondo modo di animare; le altre tengono le routine prevedibili
+(la stessa scelta dà sempre la stessa routine) e salvabili col server
+com'è.
+
+**Conseguenze**: nessuna dipendenza nuova, nessuna migrazione, nessun
+passo sul server, nessuna schermata cambiata. Le tre routine di TASK-466
+(`routines.ts`) restano com'erano e sono ancora quelle che i promemoria
+aprono: dove subentrano le nuove lo decide la parte D. «After run» da 5
+minuti composta ha gli stessi cinque esercizi di oggi, col flessore
+dell'anca per ultimo perché è in ginocchio. «Splits» esiste solo
+«Intense» (due soli esercizi dolci).
 
 ## ADR-0340, precisazione E — Il meteo del post: MET Norway chiesto dal server al salvataggio, entro 3 ore dalla fine, col punto di partenza a ~1 km; neve esclusa; chiesto una volta
 
@@ -2255,7 +2372,8 @@ faccia opaca senza ombra né bordo, la piastra).
 
 ## ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap, la scheda del decollo con lo storico di MuW
 
-**Stato**: Proposta · 2026-11-23 · TASK-493 (parte 0, soli documenti).
+**Stato**: Attiva · 2026-11-27 · TASK-493 (parte 0 il 2026-11-23; A–C in
+`main`, vedi «ADR-0400, precisazione»).
 La richiesta e la scelta di farne un task a sé sono **dell'utente**
 (2026-11-23); le cinque scelte della parte 0 sono **dell'utente** («Sì, tutte»,
 2026-11-23: il bottone «Takeoffs» nel parapendio, tutti i voli salvati
@@ -3088,6 +3206,20 @@ telefono e resta lì, mai al server né nel Feed. Dopo il volo i limiti dal
 terreno contano come rispettati e il tratto è segnato «≈»: la quota sul
 terreno sotto ogni punto non c'è. Nel grafico della quota le fasce dei
 volumi usano i colori `error` e `warning` della tavolozza.
+
+**Aggiunta del 2026-11-27 (parti B3, D1–D6, H, deciso dall'agente su
+delega dell'utente)**: lo start di una task è preso a ogni passaggio del
+suo bordo dopo l'apertura, in qualunque verso, come nella specifica di
+XCTrack (D2). Il QR della task `XCTSK:` lo fa un codificatore nostro in
+TypeScript, senza librerie (D4). Gli atterraggi di OpenStreetMap non hanno
+un estratto di questo task: vengono dai siti di TASK-493 (ADR-0400) e
+«Nearest landing» li conta con quelli del file e quelli a mano (D6, D6b).
+Il vento in quota lo scarica il nostro server da DWD ICON-D2 ed ECMWF
+open data per zone intere, letti con `eccodes` (dipendenza approvata
+dall'utente), e il telefono lo chiede per un punto arrotondato a ~1 km;
+sulla mappa di volo la freccia sta accanto al pilota e solo entro 20 km
+dal posto del vento (H). L'editor della schermata di volo sposta i widget
+trascinandoli (B3).
 
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
@@ -8450,3 +8582,41 @@ il gruppo diventa Public, cosa entra in «Recent activity».
 `drawings.py` invariati. Chiudere un gruppo con membri dentro non c'è:
 l'admin passa il ruolo o resta; se serve, lo decide l'utente con le
 schermate della parte B.
+
+## ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; il pulsante quando c'è una cosa da fare; la sagoma grigia nelle tessere senza percorso
+
+**Stato**: Attiva · 2026-11-26 · TASK-509 parti A (#1628), B (#1612) e C
+(#1640). **Le scelte sono dell'utente** (cinque risposte del 2026-11-26,
+`tasks/TASK-509.md`); il come è **deciso dall'agente su delega
+dell'utente**.
+
+**Contesto**: ADR-0293 voleva nella pagina vuota una sagoma in `border`
+con «i primi tratti in giallo, come una corsa appena cominciata», ferma.
+Nella prova del 2026-11-23 quei pochi tratti si leggevano come un
+caricamento che si era bloccato (U3). Le pagine vuote non dicevano che
+cosa fare; le voci di «Add to Feed» erano solo testo (U15); una tessera il
+cui percorso non c'era ancora era un riquadro nero (U12).
+
+**Decisione**:
+- `EmptyState` disegna la figura **una volta**, in giallo, in
+  `EMPTY_DRAW_MS` (1,4 s), e la lascia intera; con «Riduci movimento» è
+  intera subito. Vale per tutte le pagine che lo usano. Il titolo è
+  facoltativo: una pagina che ha già il suo nome in alto non lo ripete.
+- Una pagina vuota ha **un pulsante** quando c'è una cosa sola da fare:
+  «Record now» e «Log in» nel Feed «All», «Go to your workouts» nel Coach
+  (che lì non mostra la scheda del corpo né il sottotitolo), «My position»
+  in «Explore» senza partenza. Resta «al più un'azione».
+- Le voci di «Add to Feed» hanno un'icona a linea di Lucide (PNG bianchi a
+  tre densità, colorati da `tintColor`, come sotto un post: TASK-444). La
+  mappa delle icone sta accanto alle voci, tipizzata sugli id: una voce
+  nuova senza icona non compila.
+- Una tessera di `RouteCard` senza linea e senza foto mostra la **sagoma
+  della forma** (`ShapeGlyph`, il contorno del catalogo) in `borderStrong`,
+  al centro, più piccola di un percorso. Mai gialla: il giallo è del
+  percorso, e la sagoma se ne va quando la linea arriva. Le tessere delle
+  parole restano vuote: le lettere non sono sul telefono.
+
+**Conseguenze**: nessuna dipendenza, nessun file nativo, un solo testo
+nuovo («Go to your workouts», nelle cinque lingue). Supera, per la sola
+figura, «i primi tratti in giallo» di ADR-0293; il resto di ADR-0293 vale.
+L'icona accanto a «Explore» nella pagaia non è di questo task.

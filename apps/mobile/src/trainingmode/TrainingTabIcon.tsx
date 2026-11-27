@@ -1,6 +1,6 @@
 import { Image, type ImageSourcePropType, StyleSheet } from "react-native";
 
-import { TAB_ICON_SIZE } from "../tabs/TabBar";
+import { TAB_ICON_SIZE, useTabIconBright } from "../tabs/TabBar";
 import { color } from "../theme/tokens";
 
 /**
@@ -28,7 +28,8 @@ export const TRAINING_TAB_ICONS = {
 
 export type TrainingTabIconName = keyof typeof TRAINING_TAB_ICONS;
 
-/** The icon of a training tab, for the bar's `face`, as the ski mode's. */
+/** The icon of a training tab, for the bar's `face`, as the ski mode's
+ * (full on the phone's real glass too, TASK-469). */
 export function TrainingTabIcon({
   name,
   selected,
@@ -37,11 +38,15 @@ export function TrainingTabIcon({
   selected: boolean;
 }) {
   const icon = TRAINING_TAB_ICONS[name];
+  const bright = useTabIconBright();
   return (
     <Image
       testID={`training-tab-${name}-${selected ? "on" : "off"}`}
       source={selected ? icon.on : icon.off}
-      style={[styles.icon, { tintColor: selected ? color.text : color.textFaint }]}
+      style={[
+        styles.icon,
+        { tintColor: selected || bright ? color.text : color.textFaint },
+      ]}
     />
   );
 }

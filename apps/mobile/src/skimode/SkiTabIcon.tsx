@@ -1,6 +1,6 @@
 import { Image, type ImageSourcePropType, StyleSheet } from "react-native";
 
-import { TAB_ICON_SIZE } from "../tabs/TabBar";
+import { TAB_ICON_SIZE, useTabIconBright } from "../tabs/TabBar";
 import { color } from "../theme/tokens";
 
 /**
@@ -29,7 +29,8 @@ export type SkiTabIconName = keyof typeof SKI_TAB_ICONS;
 /**
  * The icon of a ski tab, for the bar's `face`: the bar draws its own
  * icons only from its four, and a face keeps it as it is. As the bar's:
- * faint and thin, or full and bold on the tab on screen.
+ * faint and thin, or full and bold on the tab on screen. On the phone's
+ * real glass thin but full (TASK-469): faint does not keep 4.5:1 there.
  */
 export function SkiTabIcon({
   name,
@@ -39,11 +40,15 @@ export function SkiTabIcon({
   selected: boolean;
 }) {
   const icon = SKI_TAB_ICONS[name];
+  const bright = useTabIconBright();
   return (
     <Image
       testID={`ski-tab-${name}-${selected ? "on" : "off"}`}
       source={selected ? icon.on : icon.off}
-      style={[styles.icon, { tintColor: selected ? color.text : color.textFaint }]}
+      style={[
+        styles.icon,
+        { tintColor: selected || bright ? color.text : color.textFaint },
+      ]}
     />
   );
 }

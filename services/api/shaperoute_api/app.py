@@ -169,6 +169,7 @@ from shaperoute_api.track_scores import score_run
 from shaperoute_api.user_photos import install_user_photos
 from shaperoute_api.vo2max import install_vo2max
 from shaperoute_api.way_back_api import install_way_back
+from shaperoute_api.winds.api import install_winds
 
 log = logging.getLogger(__name__)
 
@@ -887,5 +888,7 @@ def create_app(
     install_flying_sites(app)
     # How many fly from a takeoff, and its records (TASK-493 part B).
     install_flying_history(app)
+    # The wind aloft for paragliding (TASK-479 part H): no run, no wind (503).
+    install_winds(app)
 
     return app

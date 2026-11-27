@@ -200,6 +200,25 @@ export type Shade = {
     readonly intimacy: string;
     readonly more: string;
   };
+  /**
+   * The sections of the app (TASK-523, ADR-0417; the user's sketch of
+   * 2026-11-27, «uno per sezione»): an apricot for «Draw», a violet for the
+   * profile, a light blue for «Explore» and the account, a sand for the Feed
+   * and the notifications, a green for the messages and the feedback. Where
+   * a hue is one the app has already (`stretch.moments`, `runDay`, `food`)
+   * the value is the same, kept as a token of its own so that each keeps its
+   * one meaning. On a page's hero, its rings and the icons of its cards,
+   * never on a long list: 4.5:1 at least on `background`, `surface` and
+   * `surfaceRaised`, 3:1 on `border` (a ring's track), and never the only
+   * sign (`sectionContrast.test.ts`). The yellow stays the route's.
+   */
+  readonly section: {
+    readonly draw: string;
+    readonly profile: string;
+    readonly explore: string;
+    readonly feed: string;
+    readonly messages: string;
+  };
 
   readonly map: {
     readonly background: string;
@@ -283,6 +302,13 @@ export const SHADES: Readonly<
         intimacy: "#FF6FB5",
         more: "#4FD08A",
       },
+      section: {
+        draw: "#F5A066",
+        profile: "#A99BFF",
+        explore: "#4DD2FF",
+        feed: "#E3C596",
+        messages: "#4FD08A",
+      },
       map: {
         background: "#100F0C",
         water: "#101F29",
@@ -333,6 +359,13 @@ export const SHADES: Readonly<
         sports: "#6EDBFF",
         intimacy: "#FF9CCC",
         more: "#7BE3AA",
+      },
+      section: {
+        draw: "#FFBC8F",
+        profile: "#C4BAFF",
+        explore: "#6EDBFF",
+        feed: "#EED9B5",
+        messages: "#7BE3AA",
       },
       map: {
         background: "#2B2925",
@@ -387,6 +420,13 @@ export const SHADES: Readonly<
         intimacy: "#8F1552",
         more: "#095428",
       },
+      section: {
+        draw: "#7A3A08",
+        profile: "#3F2FA3",
+        explore: "#005370",
+        feed: "#5E4712",
+        messages: "#095428",
+      },
       map: {
         background: "#DAD7CF",
         water: "#9CC2D8",
@@ -437,6 +477,13 @@ export const SHADES: Readonly<
         sports: "#006A8F",
         intimacy: "#A51A60",
         more: "#0F6B35",
+      },
+      section: {
+        draw: "#8F4510",
+        profile: "#4B39BF",
+        explore: "#006A8F",
+        feed: "#6B5118",
+        messages: "#0F6B35",
       },
       map: {
         background: "#F5F4F0",

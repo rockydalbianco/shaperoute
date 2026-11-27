@@ -46,6 +46,9 @@ TASK-409 B (migration 0061: runs.heart_avg_bpm, heart_max_bpm, heart_shown).
   (`flight_split`) when the flight has both: every list of posts gives it
   (drawings.py), for «On foot {time} · In the air {time}». Only for a
   flight; ignored for any other sport.
+- The weather (TASK-410 part E): asked of MET Norway after the answer to
+  the PUT, when the run may have it (run_weather.py), and kept as
+  `weather`; a PUT again keeps it.
 
     python -m shaperoute_api.run_stats
 
@@ -55,13 +58,14 @@ the server only with the user's yes, after the deploy of part C.
 
 from __future__ import annotations
 
+import logging
 import sys
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, FastAPI, HTTPException
 from psycopg import Connection
 from psycopg.rows import DictRow
 from psycopg.types.json import Jsonb
@@ -85,7 +89,11 @@ from shaperoute_api.activities import (
 )
 from shaperoute_api.db import Database
 from shaperoute_api.personal_bests_backfill import KeptPause, kept_track
+from shaperoute_api.resort_weather import ResortWeather
+from shaperoute_api.run_weather import WeatherBody, add_weather, weather_of_app
 from shaperoute_api.schemas import ErrorBody
+
+log = logging.getLogger(__name__)
 
 KM_M = 1_000.0
 MILE_M = 1_609.344
@@ -284,6 +292,9 @@ class RunStatsBody(BaseModel):
     flight_parts: list[FlightPartBody] | None = None
     """A flight's parts on foot and in the air (TASK-305 part R6a)."""
     flight_split: FlightSplitBody | None = None
+    weather: WeatherBody | None = None
+    """The weather of the hour of the end, from MET Norway (TASK-410 part
+    E); none for a run saved late, imported or on the snow."""
 
     def empty(self) -> bool:
         return all(value is None for value in self.model_dump().values())
@@ -619,6 +630,14 @@ class RunStats:
                 kept.update(kept_flight(body))
                 kept.update(kept_flight_parts(body.flight_parts, first_s))
             kept.update(kept_ski(body.ski_parts, first_s))
+            # The weather is asked once (run_weather.py): a PUT again keeps it.
+            before = conn.execute(
+                "SELECT stats ? 'weather' AS asked, stats->'weather' AS weather"
+                " FROM run_stats WHERE run_id = %s",
+                (run["id"],),
+            ).fetchone()
+            if before is not None and before["asked"]:
+                kept["weather"] = before["weather"]
             _keep(conn, int(run["id"]), kept, self.now())
             return seen_stats(conn, int(run["id"]), author=True) or RunStatsBody()
 
@@ -647,6 +666,21 @@ def run_stats_of(accounts: Annotated[Accounts, Depends(accounts_of)]) -> RunStat
 
 Stats = Annotated[RunStats, Depends(run_stats_of)]
 Me = Annotated[UserBody, Depends(current_user)]
+Met = Annotated[ResortWeather | None, Depends(weather_of_app)]
+
+
+def _add_weather(
+    database: Database,
+    now: Callable[[], datetime],
+    met: ResortWeather,
+    user_id: int,
+    key: str,
+) -> None:
+    """In the background: a failure leaves the run without weather."""
+    try:
+        add_weather(database, now, met, user_id, key)
+    except Exception:  # noqa: BLE001 - the run is saved; the weather is extra.
+        log.exception("the weather of a run")
 
 
 def run_stats_routes() -> APIRouter:
@@ -654,11 +688,21 @@ def run_stats_routes() -> APIRouter:
 
     @router.put("/me/activities/{key}/stats", responses={404: {"model": ErrorBody}})
     def save_run_stats(
-        key: Key, body: RunStatsRequestBody, stats: Stats, user: Me
+        key: Key,
+        body: RunStatsRequestBody,
+        stats: Stats,
+        user: Me,
+        met: Met,
+        background: BackgroundTasks,
     ) -> RunStatsBody:
         saved = stats.save(user.id, key, body)
         if saved is None:
             raise HTTPException(404, UNKNOWN_ACTIVITY)
+        # After the answer, out of its transaction (TASK-410 part E).
+        if met is not None and saved.weather is None:
+            background.add_task(
+                _add_weather, stats.database, stats.now, met, user.id, key
+            )
         return saved
 
     @router.get("/me/flight-bests")

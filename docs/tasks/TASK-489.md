@@ -907,6 +907,115 @@ precisazione 5, punto 6. Proposta in
 `out/TASK-489/PROPOSTA-PARTE-K-PESO.md`. Il Coordinatore valuta sessioni
 dedicate per J e K.
 
+### K1 — Il peso: la pesata, il grafico, l'obiettivo (parte 0 chiusa il 2026-11-27)
+
+Sessione dedicata, aperta dal Coordinatore. Le scelte sono **dell'utente**
+(2026-11-27, una alla volta, ognuna con la proposta); il come è deciso
+dall'agente su delega. Vedi ADR-0397, precisazione 8. Fonti della soglia
+lette il 2026-11-27: OMS (indicatore «Underweight among adults, BMI <
+18.5») e CDC («Adult BMI Categories»); il calcolatore dell'NHS vale dai 18
+anni.
+
+1. **Schermate** nello stile del restyle (TASK-523, schizzo v4), dopo
+   «Cambio qualcosa» e «prendi lo stesso stile dell'app che stiamo
+   utilizzando nell'altra task»: **«Sì, vanno bene»**. Nel diario la scheda
+   «Time to weigh in» il giorno della pesata e sempre una riga «Weight»
+   sotto la settimana; la pagina del peso (grafico in chili, differenza e
+   percentuale del peso di partenza; settimane, mesi, tutto; sei
+   statistiche; il bilancio delle stesse settimane accanto, senza
+   giudizio); «My goal weight» con l'anello, le tappe e ogni quanto
+   chiedere (1, 2 di partenza, 4 settimane, mai); la scheda delle
+   congratulazioni. Il peso ha un colore suo, viola (token `weight`, che
+   riusa anche TASK-523 per il Profilo); fino al suo turno su `tokens.ts`,
+   il colore del testo.
+2. **L'ultima pesata diventa il peso di «Settings»**, da quel giorno in
+   poi: le calorie già salvate nei post non cambiano; «Recalculate» solo a
+   chi usa la stima di MuW; un peso cambiato a mano in «Settings» è una
+   correzione, non una pesata: **«Sì, così»**.
+3. **Obiettivo e congratulazioni**: obiettivo e tappe solo dai 18 anni (chi
+   li compie nell'anno conta ancora come minorenne) e con altezza e anno di
+   nascita; mai sotto un BMI di 18,5, col minimo mostrato; nessuna
+   congratulazione sul peso sotto la soglia né sotto i 18 anni; le tappe le
+   scrive solo l'utente, tra partenza e obiettivo, uguale per perdere,
+   prendere o mantenere; la costanza a 5, 10, 25, 50 pesate e a 30, 100,
+   365 giorni di diario, per tutti: **«Sì, vanno bene»**.
+4. **La notifica «It's weigh-in day»** in una parte dopo K1, spenta di
+   partenza: **«Sì, dopo»**.
+5. **Testi** (52, nelle cinque lingue, sotto in inglese): **«Sì,
+   approvo»**.
+6. **Privacy e termini** (sotto): **«Sì, approvo»**. PR a parte nel turno
+   privacy del Coordinatore, in `main` prima che K1 esca.
+
+Le pesate, l'obiettivo, le tappe, ogni quanto chiedere e il «Not now» sono
+**dell'account** (`ownedFile`, come il corpo da TASK-507 D), non del
+telefono come il resto di «Nutrition». Il grafico è fatto con le viste e
+`Animated`, senza dipendenze nuove. Leggere e scrivere il peso in Salute
+di Apple resta per una build nativa, fuori da K1. K2 (pubblicare la pesata)
+è un'altra parte.
+
+#### Testi della parte K1 (approvati dall'utente il 2026-11-27, «Sì, approvo»)
+
+`{weight}` è il peso con l'unità dell'app (kg o lb). Restano quelli che
+l'app ha già: «Save», «Not now», «Today», «Weight», «Change», «Delete»,
+«Edit», «Remove», «Done», «Settings», «How we calculate».
+
+- Diario: «Time to weigh in» · «Last time: {date}, {weight}» · «Your first
+  weigh-in starts the chart.» · «Your weight» · «Write a weight between
+  {min} and {max}.» · «Saved. Your weight in Settings is now {weight}.» ·
+  «Recalculate MuW's estimate».
+- Pagina del peso: «{change} in {count} weeks» · «Since your first
+  weigh-in, {date}» · «Of your starting weight, in {count} weeks» ·
+  «Weeks» · «Months» · «All» · «Start» · «Highest» · «Lowest» · «Per week»
+  · «Weigh-ins» · «{count} since {date}» · «Same {count} weeks» · «Balance
+  {kcal} kcal (est.) · Weight {change}» · «One weigh-in so far: the line
+  starts with the next.» · «No weigh-ins yet» · «Add a weigh-in» · «All
+  weigh-ins» · «Delete this weigh-in?» · «Your weight in Settings stays
+  {weight}.»
+- Obiettivo: «My goal weight» · «Set my goal weight» · «{done} of {total}
+  so far» · «My milestones» · «Add a milestone» · «Reached» · «A milestone
+  goes between your starting weight and your goal.» · «To set a goal
+  weight, add your height and year of birth in Settings.» · «MuW has no
+  weight goals for people under 18.» · «Lowest goal for your height:
+  {weight}» · «Below {weight} your weight would be low for your height
+  (body mass index under 18.5). MuW doesn't set goals there.» · «Remove
+  goal» · «Ask me to weigh in» · «Every week» · «Every 2 weeks» · «Every 4
+  weeks» · «Never» · «The card shows in your diary on the day. You can
+  always add a weigh-in yourself.»
+- Congratulazioni: «You reached {weight}» · «A milestone you set
+  yourself.» · «You reached your goal» · «{weight}, the goal you set
+  yourself.» · «{count} weigh-ins» · «{count} days in your diary» · «You
+  kept at it.»
+- «How we calculate», titolo «Weight and your goal»: «The latest weigh-in
+  becomes your weight in Settings: from that day on MuW uses it for your
+  energy at rest and your activities. The percent is the change divided by
+  your starting weight. A goal weight can't be below a body mass index of
+  18.5, the threshold for underweight in adults used by the World Health
+  Organization and the US CDC (pages read on 27 November 2026), and there
+  are no weight goals under 18. MuW is not made by health professionals:
+  this is not medical advice.»
+
+Le altre quattro lingue entrano nelle tabelle dell'app con il codice.
+
+#### Privacy e termini della parte K1 (approvati dall'utente il 2026-11-27)
+
+- Privacy, «Nutrition», primo capoverso: nell'elenco di quello che resta
+  solo sul telefono, dopo le calorie corrette a mano, «your weigh-ins, your
+  goal weight and your milestones».
+- Privacy, «Nutrition», in fondo al secondo capoverso: «Your latest
+  weigh-in also becomes your weight in «Settings». Your weigh-ins, goal
+  weight and milestones belong to the account signed in on the phone:
+  another account on the same phone does not see them. Weight goals are
+  never offered to people under 18.»
+- Termini, «Nutrition», in fondo al secondo capoverso: «MuW does not let
+  you set a goal weight below a body mass index of 18.5, or before you are
+  18: this limit comes from public thresholds and does not tell whether a
+  goal is right for you.»
+- Termini, «Nutrition», terzo capoverso: «… talk to your doctor before
+  counting calories, setting a weight goal or changing what you eat.»
+
+Il resto della sezione resta: «This data was never on our server…» è
+ancora vero, e le pesate sono dentro «what you write in «Nutrition»».
+
 ### E — Il server
 
 Solo dopo l'uscita, se l'utente lo conferma: una tabella sua, la
@@ -987,6 +1096,20 @@ test: `health/energyReader.ts`, `health/energyModules.ts`,
 Esistenti: `nutrition/activityEnergy.ts`, `useDayEnergy.ts`,
 `EnergySheet.tsx`, `i18n/{de,es,fr,it}.ts` (7 chiavi).
 
+Parte K1 (lista approvata dal Coordinatore il 2026-11-27; codice da
+`main` dopo J, L prima sui file in comune). Nuovi coi test:
+`body/weighIns.ts`, `body/weightGoal.ts`, `body/useWeighIns.ts`,
+`nutrition/WeighInCard.tsx`, `WeightRow.tsx`, `WeightPage.tsx`,
+`WeightChart.tsx`, `WeightGoalSheet.tsx`, `Celebration.tsx`,
+`weightPeriod.ts`, `diaryDays.ts`. Esistenti: `nutrition/DiaryView.tsx`,
+`HowWeCalculate.tsx`, forse `TargetSheet.tsx` (da confermare al
+Coordinatore prima della PR), `i18n/{de,es,fr,it}.ts`; `theme/tokens.ts`
+e `theme/palettes.test.ts` solo per il token `weight`, nel turno dato dal
+Coordinatore (dopo L e TASK-520 A2, prima di TASK-523 A).
+`body/bodyProfile.ts` non cambia (`saveBody` c'è già). Privacy e termini:
+PR a parte su `about/content/**` e `site/privacy/**`, in fila dopo
+TASK-466 e TASK-309 B2.
+
 Le parti dopo toccano anche file esistenti, da chiedere al Coordinatore
 prima di ognuna: B `settings/SportButton.tsx` (montare la tessera),
 `App.tsx` o la pagina che ospita «Nutrition» (a turno), `i18n/{de,es,fr,it}.ts`,
@@ -1025,6 +1148,11 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
 - [ ] ADR scritto, task file `Done`, «TASK-489 fatto» al Coordinatore.
 
 ## Registro
+
+- **2026-11-27, parte K1, parte 0**: sessione dedicata aperta dal
+  Coordinatore. Sei scelte dell'utente, una alla volta (sezione «K1»);
+  fonti della soglia lette lo stesso giorno; lista dei file approvata dal
+  Coordinatore; ADR-0397, precisazione 8. Codice dopo J in `main`.
 
 - **2026-11-24, richieste nuove dell'utente**: D2 (dal profilo), H (la
   pagina animata), I (l'invito a fine attività), J (l'ingresso con le

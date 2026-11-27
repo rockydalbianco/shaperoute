@@ -13,11 +13,13 @@ import { type LocalDay, monthOf, type Weekday } from "./localDay";
 import {
   loadDiaryMonth,
   loadOwnFoods,
+  loadOwnRecipes,
   loadPlan,
   loadSettings,
   type NutritionSettings,
   saveDiaryMonth,
   saveOwnFoods,
+  saveOwnRecipes,
   savePlan,
   saveSettings,
 } from "./nutritionStore";
@@ -28,15 +30,23 @@ import {
   type OwnFoods,
   removeOwnFood,
 } from "./ownFoods";
+import {
+  type OwnRecipes,
+  type RecipeVersion,
+  withOwnRecipe,
+  withoutOwnRecipe,
+} from "./ownRecipes";
 import { targetOf } from "./ownTarget";
 import {
   copyDay,
   type DayMeals,
+  type Meal,
   NO_MEALS,
   planWithDay,
   planWithFood,
   type WeekPlan,
 } from "./plan";
+import { oneServing } from "./recipeMath";
 import type { Purpose } from "./targetEstimate";
 
 /**
@@ -54,6 +64,8 @@ type State = {
   readonly settings: NutritionSettings;
   readonly ownFoods: OwnFoods;
   readonly plan: WeekPlan;
+  /** The recipes as the user changed them (part L). */
+  readonly ownRecipes: OwnRecipes;
 };
 
 let state: State | null = null;
@@ -66,6 +78,7 @@ function current(): State {
     settings: loadSettings(),
     ownFoods: loadOwnFoods(),
     plan: loadPlan(),
+    ownRecipes: loadOwnRecipes(),
   };
   return state;
 }
@@ -263,6 +276,49 @@ export function removeFood(key: string): void {
   saveOwnFoods(ownFoods);
 }
 
+function writeOwnRecipes(ownRecipes: OwnRecipes): boolean {
+  change({ ...current(), ownRecipes });
+  return saveOwnRecipes(ownRecipes);
+}
+
+/** `version` becomes the user's recipe `id` («Changed by you»); MuW's own
+ * version again forgets it. */
+export function writeRecipe(id: string, version: RecipeVersion): boolean {
+  return writeOwnRecipes(withOwnRecipe(current().ownRecipes, id, version));
+}
+
+/** «Back to MuW's recipe»: the user's version of `id` is forgotten. */
+export function resetRecipe(id: string): boolean {
+  return writeOwnRecipes(withoutOwnRecipe(current().ownRecipes, id));
+}
+
+/** `meals` with the ingredients of one serving of `version` at the end of
+ * `meal`, one portion each, as foods like any other. */
+function withServing(meals: DayMeals, meal: Meal, version: RecipeVersion): DayMeals {
+  return {
+    ...meals,
+    [meal]: [...meals[meal], ...oneServing(version.ingredients, version.servings)],
+  };
+}
+
+/** «Add to diary»: one serving of `version` into `meal` of `day`. */
+export function addRecipeToDay(
+  day: LocalDay,
+  meal: Meal,
+  version: RecipeVersion,
+): boolean {
+  return writeDay(day, withServing(mealsOn(day), meal, version));
+}
+
+/** «Add to my plan»: one serving of `version` into `meal` of `weekday`. */
+export function addRecipeToPlan(
+  weekday: Weekday,
+  meal: Meal,
+  version: RecipeVersion,
+): boolean {
+  return writePlanDay(weekday, withServing(current().plan[weekday], meal, version));
+}
+
 /** Forgets what was read, so that the next look reads the phone again: for
  * the tests, which each start from their own files. */
 export function forgetNutrition(): void {
@@ -277,6 +333,7 @@ export type Nutrition = {
   settings: NutritionSettings;
   ownFoods: OwnFoods;
   plan: WeekPlan;
+  ownRecipes: OwnRecipes;
   /** What was written on a day, as it is now. */
   mealsOn: (day: LocalDay) => DayMeals;
 };
@@ -288,6 +345,7 @@ export function useNutrition(): Nutrition {
     settings: now.settings,
     ownFoods: now.ownFoods,
     plan: now.plan,
+    ownRecipes: now.ownRecipes,
     mealsOn,
   };
 }

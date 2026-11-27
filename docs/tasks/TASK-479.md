@@ -4,7 +4,11 @@
 (OTA 20), B2 in `main` (#1368), C in produzione (OTA 22, 2026-11-22),
 A1 in `main` (#1434, 2026-11-23, OTA dal Coordinatore), E1 ed E2 in
 `main` (#1454, #1470, 2026-11-23), E3 in `main` (#1498, 2026-11-23);
-prossima D (D1 #1503)
+D1–D4 in `main` (#1503, #1532, #1540, #1605), B3, D5, D6 e D6b in `main`
+(#1611, #1644, #1651, #1671, 2026-11-26), privacy di D6 e H (#1636, online
+su getmuw.app il 2026-11-27); H1 in `main` (#1692, 2026-11-27), H2 #1701
+armata; passo server dei venti col sì dell'utente; E2b (geoide su
+Android) #1711 «pronta» (2026-11-27). Prossime F e G
 **Fase**: 5 · **Branch**: `docs/TASK-479-paragliding-pro` (parte 0), poi
 `feat/TASK-479-<parte>-<slug>`, una parte alla volta, ognuna da `main`
 **Dipende da**: TASK-305 parti R (in `main`: lo sport «Record only», i
@@ -377,6 +381,14 @@ come scelta del volo; nel codice metri, m/s, gradi):
 | Map | Map a tutto schermo con Vario, GPS altitude e Ground speed in alto | — |
 | Minimal | Vario, GPS altitude, Flight time | — |
 
+**B3 fatta** (#1611, in `main` il 2026-11-26; chiesta dall'utente dopo la
+prova dell'OTA 25: «Sì, fallo»). **Com'è fatta** (deciso dall'agente su
+delega dell'utente): nell'editor un widget si trascina sopra un altro e i
+due si scambiano; la maniglia nell'angolo lo allarga o lo stringe sulla
+griglia (`layoutDrag.ts`, `EditorCell.tsx`). La scritta d'aiuto nuova
+sostituisce «Touch a widget…», approvata in 5 lingue il 2026-11-26 con le
+schermate. In una cella 1×1 la maniglia copre un pezzo del nome.
+
 ### Parte C — Vario sonoro
 
 1. Bip che sale di tono con la salita (es. 600 Hz a 0 m/s → 1600 Hz a
@@ -464,6 +476,51 @@ l'ho provato sul telefono».
    la zona del decollo e tenuto per l'uso offline, con «© OpenStreetMap
    contributors». Il server esce prima dell'app, col sì dell'utente.
 
+**D divisa in sei** (col sì del Coordinatore, 2026-11-23): D1 i file, D2
+la task in volo, D3 la planata, D4 l'export, D5 le boe a mano, D6 gli
+atterraggi di OpenStreetMap; più D6b, la riga che unisce tutti gli
+atterraggi. Testi e schermate di ogni parte approvati dall'utente in
+5 lingue prima della PR (i testi sono nelle tabelle i18n). **Com'è fatta**
+(deciso dall'agente su delega dell'utente):
+
+- **D1** (#1503, 2026-11-23): `.cup`, `.wpt` (CompeGPS, OziExplorer, GEO)
+  e `.xctsk` dal file o dallo share sheet; restano sul telefono.
+- **D2** (#1532, 2026-11-23): percorso più corto sui cilindri (Andoyer su
+  WGS84 o sfera FAI come nel file, sezione aurea fino a < 1 m); lo start
+  è preso a **ogni passaggio del suo bordo dopo l'apertura, in qualunque
+  verso**, come dice la specifica di XCTrack (correzione del 2026-11-23,
+  prima contava il verso); ripartenza; goal a linea o cilindro. Alla boa
+  presa un suono nostro (`turnpoint.wav`, tre note in salita) e la voce
+  (`expo-speech`) con il nome della presa e della successiva. Quattro
+  widget (15, 17, 18, 19) e il preset Competition, aggiunto una volta ai
+  profili già salvati: chi ha già un profilo vede i widget nuovi dopo
+  «Torna al preset».
+- **D3** (#1540, 2026-11-23): L/D (8 di default) e vento scelti dal
+  pilota (il vento di B1 o zero); planata alla boa e atterraggio più
+  vicino (widget 14), sempre come numero («+340 m» / «−120 m»).
+- **D4** (#1605, 2026-11-26): export `.xctsk` e QR `XCTSK:` versione 2 con
+  un codificatore QR nostro in TypeScript, nessuna libreria; i test lo
+  confrontano con tre QR di riferimento fatti da Apple (CIQRCodeGenerator)
+  e la Scansione codici dell'iPhone dell'utente ha letto il QR della task
+  (2026-11-23). Colori del QR nel gruppo `qrCode` di `tokens.ts`.
+- **D5** (#1644, 2026-11-26): pressione lunga sulla mappa di volo (600 ms,
+  12 px di tolleranza, un dito) → foglio «boa qui / atterraggio qui»; boe
+  a mano sul telefono (W01…, L01…, al massimo 50), elencate in «My
+  waypoints» nelle opzioni.
+- **D6** (#1651, 2026-11-26): **nessun estratto nostro**: legge i siti di
+  TASK-493 (`GET /flying-sites`, `kind=landing`, docs/API.md «Flying
+  sites») nel riquadro del primo fix, centro arrotondato a 2 decimali
+  (~1 km), tenuti per l'offline; in volo gli atterraggi sulla mappa e
+  nelle opzioni «Landings from OpenStreetMap: N» con «© OpenStreetMap
+  contributors». La privacy lo dice (#1636). I dati veri ci sono dal passo
+  26b del 2026-11-27: 1740 siti delle Alpi (1096 decolli, 644 atterraggi).
+- **D6b** (#1671, 2026-11-26): «Nearest landing» conta gli atterraggi del
+  file, quelli a mano e quelli di OpenStreetMap; senza nessuno dice «No
+  landings» («Nessun atterraggio»).
+
+Resta di D: la lettura del QR di XCTrack con la fotocamera (modulo nativo,
+dopo la 1.1, scelta 4) e la prova di una task vera in volo.
+
 ### Parte E — Spazi aerei dal file del pilota
 
 1. Parser OpenAir puro (`src/air/openair.ts`): `AC`, `AN`, `AL`, `AH`,
@@ -487,7 +544,8 @@ l'ho provato sul telefono».
 
 **E divisa in tre**, col sì del Coordinatore (2026-11-23): E1 il file,
 E2 gli spazi aerei in volo, E3 il registro dopo il volo e il grafico
-della quota. Il geoide su Android (E2b) aspetta la risposta dell'utente.
+della quota. Il geoide su Android (E2b) col sì dell'utente del
+2026-11-27 («ok vai avanti con la E2b»).
 
 **E1 fatta** (#1454, in `main` il 2026-11-23): il parser
 (`openair.ts`, i punti 1 e 6), il file sul telefono (`airspace.json`, un
@@ -573,6 +631,31 @@ Schermate approvate dall'utente il 2026-11-23 (il grafico con le fasce,
 la riga nella scheda di fine volo, il foglio del registro), al simulatore
 con un volo finto e un file inventato.
 
+**E2b fatta** (#1711, 2026-11-27, «pronta» al Coordinatore). **Com'è
+fatta** (deciso dall'agente su delega dell'utente):
+- Su Android la quota GPS è sull'ellissoide WGS84; durante un volo, solo
+  su Android, alla quota del punto si toglie l'altezza del geoide EGM96
+  (MSL = quota sull'ellissoide − N), nel solo posto dove i punti del volo
+  entrano nella traccia (`useFreeRun.ts`): così numeri del volo, quota
+  massima, limiti MSL e FL degli spazi aerei, grafico e GPX hanno la quota
+  sul mare. iOS e gli altri sport restano come prima. Una quota che non
+  c'è resta «non c'è».
+- La tabella (`air/egm96Grid.ts`, generata): un nodo ogni 1° (181 × 360),
+  in centimetri, int16 in base64, 174 KB di sorgente; interpolata
+  bilineare (`air/geoid.ts`). La fa `tools/egm96_grid.py`, solo libreria
+  standard, dalla griglia EGM96 15' di NGA (pubblico dominio) com'è
+  pubblicata senza modifiche da PROJ (`cdn.proj.org/us_nga_egm96_15.tif`,
+  2,7 MB, sha256 nello script): il sito di NGA non risponde dal Mac. Lo
+  scarico ha avuto il sì dell'utente.
+- **Precisione** contro tutti i nodi 15' di NGA: nelle Alpi al massimo
+  2,4 m (rms 0,65 m); nel mondo 1,9 m in 99 punti su 100, al massimo 14 m
+  sui fronti più ripidi delle grandi catene. Ai sei punti di controllo
+  pubblicati da NGA lo script legge la griglia entro 5 cm, la tabella a 1°
+  entro 0,44 m. Una tabella a 2° (44 KB) dava fino a 8,6 m nelle Alpi:
+  scartata.
+- Resta: la prova su un Android nelle Alpi (quota vicina a quella della
+  carta). Corsa e sci su Android restano sull'ellissoide: fuori da E2b.
+
 ### Parte F — Dopo il volo
 
 1. Export IGC (record H con `HFFTYFRTYPE:MuW` e il commento «not signed»,
@@ -619,6 +702,44 @@ dell'app e della pagina**, ognuno col sì dell'utente.
 5. Il meteo, come ogni servizio esterno nuovo, va nella privacy (app e
    sito) e passa dall'utente prima della produzione (Coordinatore,
    2026-11-21).
+
+**Misure prima del codice** (sul Mac, corsa del 2026-11-26 00 UTC):
+ICON-D2 sono ~380 MB scaricati per corsa (392 file bz2, griglia
+1215 × 746, 9999 dove il livello è sotto il terreno); ECMWF 0,25° sono
+4,8 MB a passo con le richieste a intervalli di byte guidate dal `.index`
+(~200 MB per corsa fino a 120 h). La lettura con eccodes 2.50 costa
+centesimi di secondo a file. Il server Hetzner aveva 49 GB liberi su 75.
+
+**H1 fatta** (#1692, in `main` il 2026-11-27). **Com'è fatta** (deciso
+dall'agente su delega dell'utente):
+- Un job nel pacchetto dell'API (`python -m shaperoute_api.winds.job
+  icon-d2|ecmwf`): ICON-D2 ritagliato sulle Alpi (43,5–48,5 N,
+  4,5–17,5 E, 0,02°, ore 0–48), ECMWF su Europa e USA (0,25°, ogni 3 h
+  fino a 120 h); u/v a 850, 700, 600, 500 hPa. Otto download alla volta:
+  ~6 minuti per modello. Si tiene solo la griglia compressa (~18 MB ICON
+  + ~4 MB ECMWF per corsa), i file grezzi no.
+- `GET /winds` risponde per un punto arrotondato a ~1 km con il modello
+  più fine e fresco che lo copre, solo numeri dall'ora in corso; senza
+  corsa, 503.
+- Dipendenza nuova `eccodes` (wheel con la libreria, linux aarch64 e
+  macOS, nessun apt-get), approvata dall'utente il 2026-11-26.
+- Sul server (Coordinatore, col sì dell'utente del 2026-11-27):
+  `SHAPEROUTE_WINDS_DIR=/app/data/cache/winds` e un cron ogni 6 ore di
+  `docker compose exec -T api python -m shaperoute_api.winds.job icon-d2`
+  e `… ecmwf`.
+
+**H2** (#1701, armata il 2026-11-27 col «Sì, unisci» dell'utente):
+- La scheda «Wind aloft» in «Pronto al decollo» con il fix GPS: 6 ore per
+  4 livelli, km/h o mph, una freccia girata da dove viene il vento,
+  «{source} · run of {time}»; senza corsa «Wind aloft not available». Il
+  vento si tiene in `winds.json` e si richiede oltre 5 km o 3 ore.
+- Sulla mappa di volo la freccia e la velocità del livello più vicino
+  alla quota, **accanto al pilota** (64 px a sinistra, 44 sotto) e solo
+  entro 20 km dal posto del vento: al decollo stava fuori dalla mappa.
+- Testi in 5 lingue e schermate approvati dall'utente il 2026-11-26; la
+  frase della privacy sul vento è in `main` (#1636) e online.
+
+Resta di H: il passo server, l'OTA e la prova del vento sul telefono.
 
 ## Gli avvisi (approvati dall'utente il 2026-11-21)
 

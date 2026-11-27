@@ -1,5 +1,7 @@
 import {
+  createContext,
   type ReactNode,
+  useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -119,6 +121,17 @@ export const TAB_PRESS_SCALE = 0.9;
 /** How far the icon taking its tab rises, in points. */
 export const TAB_ICON_RISE = 1.5;
 
+/** True while the bar stands on the phone's real glass: a tab's icon not
+ * on screen is then in the full text colour, as the bar's own (TASK-469
+ * B2), since the secondary colours do not keep 4.5:1 there. */
+const TabIconBright = createContext(false);
+
+/** For a tab's `face` that draws its own icon (the ski and training modes):
+ * whether its icon not on screen is in the full text colour. */
+export function useTabIconBright(): boolean {
+  return useContext(TabIconBright);
+}
+
 export type BarTab = {
   /** The page's name: the tour finds the tab by it. */
   title: string;
@@ -168,6 +181,7 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
   const band = tabBarBand(insets.bottom);
   // Looked for once: a phone does not gain the glass while the app is open.
   const [floats] = useState(tabBarFloats);
+  const bright = floats && mode === "glass";
 
   // The capsule's tab, as a number: 2.5 is half way from the third to the fourth.
   const [at] = useState(() => new Animated.Value(page));
@@ -317,46 +331,48 @@ export function TabBar({ tabs, page, onTab, drag }: Props) {
             />
           ))}
         </View>
-        {tabs.map((tab, index) => {
-          const selected = index === page;
-          return (
-            // The tour shows the tab: a plain view, which it can measure.
-            <View
-              key={tab.title}
-              ref={tourPart(tabName(tab.title))}
-              collapsable={false}
-              style={styles.slot}
-            >
-              <Tap
-                style={styles.tab}
-                pressScale={TAB_PRESS_SCALE}
-                settle="glide"
-                onPress={() => {
-                  if (index !== page) {
-                    touched(index);
-                  }
-                  onTab(index);
-                }}
-                accessibilityRole="tab"
-                accessibilityState={{ selected }}
-                accessibilityLabel={tab.label}
+        <TabIconBright.Provider value={bright}>
+          {tabs.map((tab, index) => {
+            const selected = index === page;
+            return (
+              // The tour shows the tab: a plain view, which it can measure.
+              <View
+                key={tab.title}
+                ref={tourPart(tabName(tab.title))}
+                collapsable={false}
+                style={styles.slot}
               >
-                <Glyph
-                  tab={tab}
-                  selected={selected}
-                  on={lightOf(index)}
-                  still={still}
-                  bright={floats && mode === "glass"}
-                />
-                {(tab.count ?? 0) > 0 && (
-                  <View style={styles.count}>
-                    <Text style={styles.countText}>{countLabel(tab.count ?? 0)}</Text>
-                  </View>
-                )}
-              </Tap>
-            </View>
-          );
-        })}
+                <Tap
+                  style={styles.tab}
+                  pressScale={TAB_PRESS_SCALE}
+                  settle="glide"
+                  onPress={() => {
+                    if (index !== page) {
+                      touched(index);
+                    }
+                    onTab(index);
+                  }}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={tab.label}
+                >
+                  <Glyph
+                    tab={tab}
+                    selected={selected}
+                    on={lightOf(index)}
+                    still={still}
+                    bright={bright}
+                  />
+                  {(tab.count ?? 0) > 0 && (
+                    <View style={styles.count}>
+                      <Text style={styles.countText}>{countLabel(tab.count ?? 0)}</Text>
+                    </View>
+                  )}
+                </Tap>
+              </View>
+            );
+          })}
+        </TabIconBright.Provider>
       </NativeGlass>
     </View>
   );

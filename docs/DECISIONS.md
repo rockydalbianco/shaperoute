@@ -595,7 +595,7 @@ lasciando le righe d'indice.
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
 - ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB · 2026-11-23 · Attiva
 - ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi · 2026-11-23 · Attiva
-- ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap estratti dal server, la scheda del decollo con lo storico dei voli di MuW contato dal server, mai giudizi sulle condizioni · 2026-11-23 · Proposta
+- ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap estratti dal server, la scheda del decollo con lo storico dei voli di MuW contato dal server, mai giudizi sulle condizioni · 2026-11-23 · Attiva
 - ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
 - ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo di ADR-0269 con `group_id`, anche senza percorso; Public, Request, Invite only; un solo admin e fino a 3 co-admin; l'elenco dei membri solo ai membri; la chat di gruppo come parte E · 2026-11-23 · Proposta
 - ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
@@ -631,8 +631,225 @@ lasciando le righe d'indice.
 - ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
 - ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
 - ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte tiene i piedi fermi mentre il bacino si sposta e sfuma quando il busto si capovolge; un braccio verso chi guarda si piega; sette viste cambiate dall'utente; le routine composte con una tenuta sola, più lunga prima di un secondo giro; chiavi delle categorie senza punto, come le vuole il server; «Today» con la notte fino alle 4 · 2026-11-27 · Attiva
+- ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione una volta al mese nelle Alpi, un volo è di un decollo solo per i 300 m (le tracce non hanno quota), lo storico in una rotta a sé con la cache di 10 minuti, record più lungo, più alto e più lontano dai post per tutti, niente «Fly from here»; il vento (D) in un task nuovo dopo TASK-479 H · 2026-11-27 · Attiva
+- ADR-0388, aggiunta E2b (TASK-479) — La quota sul mare su Android: in volo si toglie il geoide EGM96 da una tabella a 1° nel codice (griglia 15' di NGA, pubblico dominio, copia di PROJ), interpolata bilineare; nelle Alpi al massimo 2,4 m dalla griglia piena; iOS e gli altri sport invariati · 2026-11-27 · Attiva
+- ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; una pagina vuota ha il suo pulsante quando c'è una cosa da fare; una tessera senza percorso mostra la sagoma della forma in grigio · 2026-11-26 · Attiva
+- ADR-0417 — Lo stile delle pagine in tutta l'app (TASK-523): il vetro di 469 a barre, tab e fogli e lo stile nuovo al contenuto; un colore per sezione come token suoi (`section`), stesso valore dove la tinta c'è già; un kit di soli file nuovi in `ui/` col velo tinto opaco al 12%; nella barra delle schede il colore sta nella capsula della scheda aperta, non nel tratto delle icone · 2026-11-27 · Attiva
+- ADR-0416 — Il catalogo di «Explore» guardato a occhio: oltre al filtro, le strade fatte due volte entro 8 punti sopra la mediana della forma, poi un voto a occhio da 0 a 3 su ogni disegno; 499 tolti, 3120 nuovi, la classifica per voto e misura; gli id dei percorsi cambiano · 2026-11-27 · Accettata
+
 
 ## Voci nuove
+
+## ADR-0388, aggiunta E2b (TASK-479) — La quota sul mare su Android: il geoide EGM96 da una tabella a 1° nel codice
+
+**Stato**: Attiva · 2026-11-27 · TASK-479 parte E2b (#1711), col sì
+dell'utente del 2026-11-27 («ok vai avanti con la E2b»). Il come è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: Android dà la quota GPS sull'ellissoide WGS84, iOS sul mare.
+Nelle Alpi la differenza (l'altezza del geoide N) è di 47–51 m: su Android
+i numeri del volo, i limiti MSL e FL degli spazi aerei (E2, E3) e il GPX
+erano alti di tanto. ADR-0388 aveva già scelto la fonte: EGM96 a griglia
+grossa di NGA, pubblico dominio, tabella nel codice.
+
+**Decisione**:
+- Durante un volo, solo su Android, alla quota del punto si toglie N
+  (MSL = quota sull'ellissoide − N) dove i punti entrano nella traccia
+  (`useFreeRun.ts`); tutto quello che legge la traccia ha la quota sul
+  mare. iOS e gli altri sport restano come prima; una quota che manca
+  resta mancante.
+- N da una tabella a 1° (181 × 360 nodi, centimetri in int16, base64,
+  174 KB di sorgente) in `apps/mobile/src/air/egm96Grid.ts`, interpolata
+  bilineare in `air/geoid.ts`. La genera `tools/egm96_grid.py` (solo
+  libreria standard) dalla griglia 15' di NGA com'è pubblicata da PROJ
+  (`us_nga_egm96_15.tif`, sha256 nello script), tenendo i nodi interi
+  senza medie; con `--check` misura soltanto.
+- Precisione contro la griglia 15': nelle Alpi al massimo 2,4 m (rms
+  0,65 m); nel mondo p99 1,9 m, al massimo 14 m sui fronti più ripidi.
+  Meno dell'errore della quota GPS di un telefono.
+
+**Alternative scartate**: tabella a 2° (44 KB, fino a 8,6 m nelle Alpi);
+a 0,5° o la griglia piena (da 700 KB a 2 MB nel pacchetto); i coefficienti
+armonici calcolati sul telefono (lenti, e nessun guadagno a questa
+precisione); `getMslAltitudeMeters` di Android 14 (non in `expo-location`,
+sarebbe nativo); il sito di NGA come fonte diretta (non risponde dal Mac:
+la copia di PROJ è la stessa griglia, con lo stesso pubblico dominio).
+
+**Conseguenze**: nessun testo nuovo, nessuna dipendenza, entra con un OTA.
+Resta la prova su un Android nelle Alpi. La quota di corsa e sci su
+Android resta sull'ellissoide (fuori da questa parte).
+
+## ADR-0417 — Lo stile delle pagine in tutta l'app: un colore per sezione, un kit condiviso, il vetro alle barre
+
+**Stato**: Attiva · 2026-11-27 · TASK-523 parti 0, A1 (#1700) e A2 (#1707).
+Le scelte segnate «utente» sono dell'utente; le altre sono decise
+dall'agente su delega dell'utente. Numero dal Coordinatore (fork 3,
+2026-11-27).
+
+**Contesto**: «Nutrition» (TASK-489 parte H) e lo schizzo del nuovo
+stretching (TASK-520) hanno un aspetto che il resto dell'app non ha: un
+riquadro grande in alto, card con angoli morbidi, anelli che si riempiono,
+numeri che contano, righe a cascata, un colore per gruppo. L'utente ha
+chiesto di portarlo ovunque, «dalla registrazione alle impostazioni alla
+sezione disegno». Nello stesso periodo TASK-469 mette il vetro «Capsula» su
+barre, tab e fogli, e 489 e 520 aggiungono colori loro in `tokens.ts`:
+serviva dire chi decide dove, e come si aggiunge colore senza che ogni
+pagina se ne inventi uno.
+
+**Decisione**:
+- **Vetro e contenuto** (utente): il vetro di 469 è di barre, tab e fogli;
+  lo stile di questo task è del contenuto delle pagine. Dove si toccano
+  decide 469. Le card del kit sono opache: passano sotto il vetro delle
+  barre come ogni contenuto e non si disegnano sul vetro di un foglio.
+- **Un colore per sezione** (utente, «Sì, uno per sezione»): solo dove dà
+  carattere (riquadro in alto, anelli, icone delle card); le liste lunghe
+  restano neutre. Token `section` in `Shade`: `draw` (albicocca), `profile`
+  (viola), `explore` (ciano, anche l'account), `feed` (sabbia, anche le
+  notifiche), `messages` (verde, anche il feedback). I valori veri sono
+  stati mostrati all'utente su una tavola, in chiaro e in scuro: «Sì, vanno
+  bene».
+- **Stesso valore, token suo**: dove la tinta c'è già (viola =
+  `stretch.moments`, ciano = `stretch.sports`, verde = `food`) il valore è
+  quello, così l'app ha un solo viola, un solo ciano e un solo verde; il
+  token è della sezione, così ognuno tiene un significato
+  (`sectionContrast.test.ts` lega i valori). Nuove: albicocca e sabbia.
+- **Contrasto**: ogni colore di sezione tiene 4,5:1 su `background`,
+  `surface` e `surfaceRaised` e 3:1 su `border`, in ogni tono a ogni
+  gradino. Nessuno è il giallo, l'avviso, l'errore o il rosso delle
+  calorie.
+- **Il giallo** resta del percorso, del logo e dell'Accesso. Il giallo
+  «appena più scuro» dell'Accesso non è un token di questa voce: si decide
+  nella parte B sulle foto del simulatore.
+- **Il velo tinto è un colore pieno**: `ui/tint.ts`, `tintOver(colore,
+  sotto, quota)` mescola due token e restituisce `#RRGGBB`. Al 12% il
+  testo, il testo secondario e il colore stesso tengono 4,5:1 sul velo
+  (`tint.test.ts`); più forte il testo secondario non regge. Opaco, quindi
+  misurabile, e nessun colore scritto a mano nelle pagine.
+- **Kit di soli file nuovi** in `ui/` (`SectionHeader`, `SectionCard`,
+  `IconSquare`, `HeroCard`, `Tile`, `RingStat`): nessun file di un altro
+  task spostato o riscritto. `RingStat` importa `nutrition/Ring` e
+  `nutrition/CountUp` di 489 come sono.
+- **Animazioni** con `Animated` e le molle di `ui/motion.ts`, come oggi:
+  nessuna dipendenza nuova, nessuna sfumatura (l'app non ha una libreria di
+  disegno: l'alone del riquadro in alto è un cerchio di colore pieno). Con
+  «Riduci movimento» tutto è fermo e completo.
+- **La barra delle schede** (utente, «Sì, la capsula»): il colore di
+  sezione non va nel tratto delle icone. Sul vetro vero il fondo è la tinta
+  del tono (60–68%) sopra la foto: per tenere 4,5:1 un'icona dovrebbe
+  essere quasi bianca in scuro (L ≥ 0,893) e quasi nera in chiaro
+  (L ≤ 0,012), e lo stesso testo passa di poco. Il colore va nella capsula
+  della scheda aperta, piena, con l'icona scura sopra; le altre icone
+  restano come oggi; la scheda aperta resta detta anche da capsula e
+  tratto. D'accordo la sessione di 469. È la parte T.
+- **Il peso** (489 K1) non ha un colore suo: resta nel colore del testo
+  (scelta dell'utente, il viola era troppo vicino ai carboidrati).
+- **Una schermata per PR**, ognuna con le foto prima/dopo in chiaro e in
+  scuro e il sì dell'utente prima del merge.
+
+**Alternative scartate**:
+- *Un solo accento per tutta l'app*: proposto all'utente, che ha scelto un
+  colore per sezione.
+- *Riusare i token che ci sono* (`stretch.moments` per il Profilo, `food`
+  per i Messaggi): un token avrebbe due significati, e cambiarne uno
+  sposterebbe l'altro senza che nessuno lo veda.
+- *Un velo con la trasparenza* (`#RRGGBBAA`): su un foglio di vetro
+  lascerebbe passare quello che c'è dietro e il contrasto non si potrebbe
+  misurare dai token.
+- *Spostare `Ring` e `CountUp` in `ui/`*: sono di 489, con PR aperte che
+  li leggono; si può fare dopo, d'accordo con quel task.
+- *Icone colorate nella barra*, *colore pieno solo sull'icona aperta*, *un
+  punto colorato sotto l'icona*: nessuno tiene il contrasto sul vetro vero
+  (il punto è un segno grafico: 3:1, in scuro su foto bianca ci arriva solo
+  la sabbia).
+
+**Conseguenze**: le pagine rifatte prendono colori e pezzi dal kit; una
+sezione nuova aggiunge il suo token in `section` e passa da
+`sectionContrast.test.ts`. Le parti B–G e T rifanno una schermata alla
+volta; diverse appartengono a task in corso (489, 466, 520, 495, 479) e si
+concordano col Coordinatore. Da decidere con l'utente nelle parti che li
+toccano: il giallo dell'Accesso, la riga di benvenuto (testo nuovo, cinque
+lingue), il tono chiaro di ogni schermata.
+
+## ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione mensile, solo i 300 m, lo storico in una rotta a sé
+
+**Stato**: Attiva · 2026-11-27 · TASK-493 parti A (#1518), B (#1589), C
+(#1635, #1645), privacy (#1646), accensione (#1695). Precisazione di
+ADR-0400, che resta com'è. Le scelte di prodotto sono **dell'utente**
+(2026-11-23, «Sì, tutte»; testi, privacy e schermate approvati il
+2026-11-26; accensione «sì accendili» il 2026-11-27); il resto è **deciso
+dall'agente su delega dell'utente**, con le liste dei file approvate dal
+Coordinatore (fork 3).
+
+**Contesto**: ADR-0400 prevedeva un job settimanale e un volo «di un
+decollo» entro 300 m e 150 m di quota. Le tracce salvate dei voli
+(`runs.track`, LineStringM) hanno tempo ma non quota.
+
+**Decisione**:
+- **Estrazione una volta al mese**, non a settimana: i siti di volo in OSM
+  cambiano poco. `python -m shaperoute_api.flying_sites_extract --osm
+  <tutti gli XML> --clean` in un'unica transazione; con `--clean` vanno
+  passati tutti gli estratti insieme. Prima zona: Italia, Austria,
+  Svizzera, Liechtenstein, Francia alpina, Baviera, Slovenia (1740 siti
+  il 2026-11-27).
+- **Solo i 300 m**: il punto di decollo di un volo è l'inizio del primo
+  tratto in volo (`air_legs` di TASK-305 R6), altrimenti il primo punto;
+  conta se è entro 300 m da un decollo OSM. Il controllo dei 150 m di
+  quota cade.
+- **Lo storico è una rotta a sé**, `GET /flying-sites/{id}/history`, con
+  `utc_offset_min` del telefono per «oggi» e una cache in memoria di 10
+  minuti per sito; numeri solo da 3 piloti diversi in su (`few`). La
+  scheda `GET /flying-sites/{id}` dà il sito e i siti dell'altro tipo
+  entro 15 km (al massimo 5).
+- **Record**: volo più lungo, più alto, più lontano, dai soli post
+  visibili a tutti, col nome.
+- **Niente «Fly from here»** sulla scheda in questa versione: solo fatti.
+- La mappa resta dietro `TAKEOFFS_ON` finché i siti non sono sul server;
+  accesa con #1695.
+
+**Conseguenze**: nessuna migrazione oltre la `0086`; lo script mensile col
+cron lo scrive il Coordinatore col sì dell'utente; la parte D (il vento in
+quota) diventa un task nuovo dopo TASK-479 H.
+
+## ADR-0416 — Il catalogo di «Explore» guardato a occhio: la regola delle strade in più, il voto da 0 a 3, la classifica
+
+**Stato**: Accettata · 2026-11-27 · TASK-521. Precisa ADR-0347 (il catalogo
+grande) e ADR-0366 (parole a penna alzata e bici): il filtro di quelle resta,
+si aggiungono una regola e l'occhio.
+
+**Contesto.** Il filtro del catalogo (somiglianza ≥ 0,90, distanza ±10%,
+strade fatte due volte ≤ 10%, niente autostrade e superstrade) lasciava
+entrare disegni che non si leggono. Guardati tutti i 2031 su fogli da 45, una
+buona parte era un groviglio, una scatola o una forma che non si riconosce.
+La somiglianza alta non basta: misura il contorno, non quello che vede chi
+guarda.
+
+**Decisione.**
+1. **Una regola misurata in più.** La parte di strada fatta due volte non
+   supera di più di 8 punti la mediana della stessa forma nel catalogo; per
+   le forme di TASK-516 vale la mediana dei 130 disegni della D1. Le parole
+   a penna alzata hanno il loro filtro (`catalog_words.pen_up_reasons`).
+   Deciso dall'agente su delega dell'utente.
+2. **L'occhio decide.** Ogni disegno che passa il filtro si guarda dritto,
+   su fogli da 45, con un voto: 0 esce, 1 si legge con qualche difetto, 2
+   buono, 3 bellissimo. Nel dubbio, fuori. Entrano i voti da 1 a 3
+   (l'utente: «Sì, tienili tutti»).
+3. **I tolti.** I disegni del catalogo che non si leggono, o si leggono a
+   fatica, escono. Sono 499 (l'utente: «Sì, tutti i 499»).
+4. **La classifica.** In ogni categoria (forme a piedi, forme nuove, parole,
+   bici) prima il voto, poi la somiglianza meno le strade in più sopra la
+   mediana. Per ora è una pagina per l'utente e un file
+   (`out/TASK-521/tenuti.tsv`); l'ordine nell'app non cambia.
+5. **Gli id.** L'API numera un percorso del catalogo per il suo posto nel
+   file della città: togliere 499 percorsi sposta quelli dopo. Nessun dato
+   salvato usa quel numero (preferiti e migliori tempi usano la linea); il
+   feed di esempio è cambiato in #1664. Per questo il seme nuovo va sul
+   server solo con la 1.2.0 sui telefoni.
+
+**Conseguenze.** Il seme passa da 2161 a 4782 percorsi e da 42 a 99 MB.
+L'API, che lo carica tutto in memoria, sale a un picco di circa 650 MB al
+caricamento (+350 MB): al passo sul server si guarda la memoria libera.
+Le forme che sulle strade non si leggono (pupazzo di neve, pallone,
+racchetta) restano nell'app ma non hanno disegni nuovi nel catalogo.
 
 ## ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte coi piedi fermi e la sfumatura; le routine composte; «Today» con la notte
 
@@ -2330,7 +2547,8 @@ faccia opaca senza ombra né bordo, la piastra).
 
 ## ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap, la scheda del decollo con lo storico di MuW
 
-**Stato**: Proposta · 2026-11-23 · TASK-493 (parte 0, soli documenti).
+**Stato**: Attiva · 2026-11-27 · TASK-493 (parte 0 il 2026-11-23; A–C in
+`main`, vedi «ADR-0400, precisazione»).
 La richiesta e la scelta di farne un task a sé sono **dell'utente**
 (2026-11-23); le cinque scelte della parte 0 sono **dell'utente** («Sì, tutte»,
 2026-11-23: il bottone «Takeoffs» nel parapendio, tutti i voli salvati
@@ -3163,6 +3381,20 @@ telefono e resta lì, mai al server né nel Feed. Dopo il volo i limiti dal
 terreno contano come rispettati e il tratto è segnato «≈»: la quota sul
 terreno sotto ogni punto non c'è. Nel grafico della quota le fasce dei
 volumi usano i colori `error` e `warning` della tavolozza.
+
+**Aggiunta del 2026-11-27 (parti B3, D1–D6, H, deciso dall'agente su
+delega dell'utente)**: lo start di una task è preso a ogni passaggio del
+suo bordo dopo l'apertura, in qualunque verso, come nella specifica di
+XCTrack (D2). Il QR della task `XCTSK:` lo fa un codificatore nostro in
+TypeScript, senza librerie (D4). Gli atterraggi di OpenStreetMap non hanno
+un estratto di questo task: vengono dai siti di TASK-493 (ADR-0400) e
+«Nearest landing» li conta con quelli del file e quelli a mano (D6, D6b).
+Il vento in quota lo scarica il nostro server da DWD ICON-D2 ed ECMWF
+open data per zone intere, letti con `eccodes` (dipendenza approvata
+dall'utente), e il telefono lo chiede per un punto arrotondato a ~1 km;
+sulla mappa di volo la freccia sta accanto al pilota e solo entro 20 km
+dal posto del vento (H). L'editor della schermata di volo sposta i widget
+trascinandoli (B3).
 
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
@@ -8526,6 +8758,44 @@ il gruppo diventa Public, cosa entra in «Recent activity».
 l'admin passa il ruolo o resta; se serve, lo decide l'utente con le
 schermate della parte B.
 
+## ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; il pulsante quando c'è una cosa da fare; la sagoma grigia nelle tessere senza percorso
+
+**Stato**: Attiva · 2026-11-26 · TASK-509 parti A (#1628), B (#1612) e C
+(#1640). **Le scelte sono dell'utente** (cinque risposte del 2026-11-26,
+`tasks/TASK-509.md`); il come è **deciso dall'agente su delega
+dell'utente**.
+
+**Contesto**: ADR-0293 voleva nella pagina vuota una sagoma in `border`
+con «i primi tratti in giallo, come una corsa appena cominciata», ferma.
+Nella prova del 2026-11-23 quei pochi tratti si leggevano come un
+caricamento che si era bloccato (U3). Le pagine vuote non dicevano che
+cosa fare; le voci di «Add to Feed» erano solo testo (U15); una tessera il
+cui percorso non c'era ancora era un riquadro nero (U12).
+
+**Decisione**:
+- `EmptyState` disegna la figura **una volta**, in giallo, in
+  `EMPTY_DRAW_MS` (1,4 s), e la lascia intera; con «Riduci movimento» è
+  intera subito. Vale per tutte le pagine che lo usano. Il titolo è
+  facoltativo: una pagina che ha già il suo nome in alto non lo ripete.
+- Una pagina vuota ha **un pulsante** quando c'è una cosa sola da fare:
+  «Record now» e «Log in» nel Feed «All», «Go to your workouts» nel Coach
+  (che lì non mostra la scheda del corpo né il sottotitolo), «My position»
+  in «Explore» senza partenza. Resta «al più un'azione».
+- Le voci di «Add to Feed» hanno un'icona a linea di Lucide (PNG bianchi a
+  tre densità, colorati da `tintColor`, come sotto un post: TASK-444). La
+  mappa delle icone sta accanto alle voci, tipizzata sugli id: una voce
+  nuova senza icona non compila.
+- Una tessera di `RouteCard` senza linea e senza foto mostra la **sagoma
+  della forma** (`ShapeGlyph`, il contorno del catalogo) in `borderStrong`,
+  al centro, più piccola di un percorso. Mai gialla: il giallo è del
+  percorso, e la sagoma se ne va quando la linea arriva. Le tessere delle
+  parole restano vuote: le lettere non sono sul telefono.
+
+**Conseguenze**: nessuna dipendenza, nessun file nativo, un solo testo
+nuovo («Go to your workouts», nelle cinque lingue). Supera, per la sola
+figura, «i primi tratti in giallo» di ADR-0293; il resto di ADR-0293 vale.
+L'icona accanto a «Explore» nella pagaia non è di questo task.
+
 ## ADR-0402, precisazione C — Le uscite di un gruppo nell'API: corse di gruppo con `group_id`, anche senza percorso
 
 **Stato**: Attiva · 2026-11-27 · TASK-495 parte C1.
@@ -8561,4 +8831,3 @@ uscite di un gruppo»):
 non le crea non ci sono uscite, e un'app di prima vede le liste di prima.
 I tipi di `shared-types` sono solo aggiunte (`GroupOuting…`): l'app passa
 a loro nella parte C2.
-

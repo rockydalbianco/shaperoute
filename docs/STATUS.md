@@ -46,10 +46,6 @@ la card «Weather» sul telefono.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
-- **TASK-493 — La mappa dei decolli** (ADR-0400) · parte 0 il 2026-11-23:
-  decolli e atterraggi da OSM, la scheda del decollo con lo storico dei
-  voli contato dal server; scelte dell'utente fatte. Vento dopo 479 H.
-  File: — · `tasks/TASK-493.md`
 - **TASK-494 — Le scadenze della vela** (ADR-0401) · parte 0 il
   2026-11-23: revisione, riserva e imbrago sull'attrezzatura di 486, con
   l'avviso; scelte dell'utente fatte. File: — · `tasks/TASK-494.md`
@@ -58,6 +54,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sessioni loro: K1 (peso) e L (ricette, #1678 e #1686 in `main`). Build
   nativa successiva: G2, C2b, accensione. File: `nutrition/*`,
   `activities/RunEnd.tsx`, `gym/GymEnd.tsx` · `tasks/TASK-489.md`
+- **TASK-521 — «Explore»: revisione a occhio e 3000 disegni nuovi** ·
+  ADR-0416; 499 tolti e 3120 nuovi tenuti a occhio (4782 percorsi) in #1685,
+  verde, **da unire solo con la 1.2.0 sui telefoni** (gli id cambiano; #1664
+  in `main`). File: `catalog/seed/**`, `tools/catalog_kept.json`,
+  `catalog/README.md` · `tasks/TASK-521.md`
 - **TASK-513 — «Longevity»: cinquanta storie animate** · ADR-0407; parte 0
   chiusa il 2026-11-24, nessun codice; il codice in una sessione sua.
   File: — · `tasks/TASK-513.md`
@@ -149,21 +150,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   visto il post di una gara sul telefono («funziona tutto»). Resta: un volo
   vero; R4 in bozza (#1218).
 - **TASK-479 — Il parapendio completo, strumento di volo** (ADR-0388) ·
-  scelta dell'utente del 2026-11-21, senza accordi con terzi: schermata di
-  widget, vario sonoro, mappa 3D, spazi aerei dal file del pilota, gare,
-  dopo il volo, live, meteo DWD/ECMWF. Parte 0 (documenti) in PR; poi
-  B1 → C → A1 → E → D → B2 → F → G → H. File: — · `tasks/TASK-479.md`
-  **2026-11-21 sera**: B1 «pronta» (#1349); ordine cambiato dall'utente:
-  B2 (editor) subito dopo B1.
-  **2026-11-22**: B1 in produzione (OTA 20), B2 in `main` (#1368), C (vario
-  sonoro, acceso di default) in produzione (OTA 22, #1394), provata
-  dall'utente sul telefono; prossima A1.
-  **2026-11-23**: A1 (mappa di volo 3D/2D, quota sul terreno) in `main`
-  (#1434); OTA dal Coordinatore; prossima E.
-  **2026-11-23 sera**: E1 (file OpenAir del pilota, #1454) ed E2 (spazi
-  aerei in volo: avviso, suono, mappa, widget, #1470) in `main`; prossima E3.
-  **2026-11-23**: E3 (registro dopo il volo, fasce nel grafico, #1498) in
-  `main`; prossima D (D1 #1503).
+  B1, B2, B3, C, A1, E1–E3, D1–D6, D6b e H1 in `main`; H2 #1701 armata
+  (2026-11-27); passo server dei venti col sì dell'utente; E2b (geoide
+  su Android) #1711 «pronta». Prossime F e G. File: — · `tasks/TASK-479.md`
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
@@ -242,12 +231,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   2026-11-26: A e A2 sul server (passo 22); privacy online (#1561, sito
   c33f3920); B in `main` (#1560), esce con l'OTA; A3 «Delete group» #1629
   (merge col sì dell'utente). Poi C (uscite), D (Explore e push), E chat.
-- **TASK-509 — Stati vuoti, icone di «Add to Feed», sagoma nelle tessere** ·
-  parte 0 chiusa il 2026-11-26 (cinque scelte dell'utente). Tre PR di sola
-  app: A stati vuoti (con due prop in `App.tsx`), B icone, C sagoma (dopo
-  TASK-449 in `main`); il codice parte al «via» del Coordinatore.
-  File: quelli di A, B e C nel task file · `tasks/TASK-509.md`
-
 - **TASK-448 — «Surprise me»** · parte 0 chiusa il 2026-11-26 (sei scelte
   dell'utente): una pastiglia nel passo 2 di «Draw» mette forma e distanza
   fra quelle venute bene in città, dal catalogo di «Explore»; a piedi e in

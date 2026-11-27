@@ -2,8 +2,10 @@ import type { LatLon } from "@shaperoute/shared-types";
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useState } from "react";
+import { Platform } from "react-native";
 
 import { isFlight } from "../air/flight";
+import { seaLevelAltitudeM } from "../air/geoid";
 import { loadSport, runActivityOf } from "../settings/sport";
 import { appUnits } from "../units/units";
 import { endRunAudio, startRunAudio } from "../voice/runAudio";
@@ -82,6 +84,9 @@ export function useFreeRun(active: boolean): FreeRunState {
         // A swim says nothing: with the head in the water nobody hears it
         // (TASK-323 D); standing still waits longer before the pause.
         const swim = isSwim(activity);
+        // In the air no auto-pause unless the pilot wants it (TASK-305), and
+        // the altitude above the sea on Android too (TASK-479 E2b).
+        const air = isFlight(runActivityOf(loadSport()));
         const session = controlRun(recorder, {
           // «Pause» and «Resume» change the track between two fixes.
           onChange: () => {
@@ -95,8 +100,7 @@ export function useFreeRun(active: boolean): FreeRunState {
             }
           },
           ...(swim ? { stillMs: SWIM_AUTO_PAUSE_AFTER_MS } : {}),
-          // In the air no auto-pause unless the pilot wants it (TASK-305).
-          air: isFlight(runActivityOf(loadSport())),
+          air,
         });
         run = session;
         setState({ status: "running", track: recorder.track(), position });
@@ -118,7 +122,9 @@ export function useFreeRun(active: boolean): FreeRunState {
                 point: fix,
                 timeMs: timestamp,
                 accuracyM: coords.accuracy,
-                altitudeM: coords.altitude,
+                altitudeM: air
+                  ? seaLevelAltitudeM(coords, Platform.OS)
+                  : coords.altitude,
               },
               false,
             );

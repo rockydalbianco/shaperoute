@@ -174,11 +174,24 @@ https://claude.ai/artifact/XRMFiZ9BWbWnKkdJ9Udtjf. Sei regole, tutte in
 6. **I dettagli.** Le divisioni sono `Hairline`: un pixel fisico di
    `hairline`, il testo al 20 %; i comandi tengono il bordo a 1 pt
    `borderStrong`, per trovarsi al sole (TASK-086). Una pagina vuota è
-   `EmptyState`: una sagoma del catalogo in `border`, i primi tratti in
-   giallo come una corsa appena cominciata, un titolo `heading`, una
-   frase `body` in `textMuted` e al più un'azione; niente scatole né
-   punti esclamativi. Il cuore (per «Favorites») sta in
+   `EmptyState`: una sagoma del catalogo in `border` che la penna
+   ripassa in giallo una volta sola (1,4 s) e lascia intera — intera
+   subito con «Riduci movimento» — un titolo `heading` quando la pagina
+   non ha già il suo nome in alto, una frase `body` in `textMuted` e al
+   più un'azione; niente scatole né punti esclamativi (TASK-509,
+   precisazione ad ADR-0293: i pochi tratti gialli fermi di prima
+   sembravano un caricamento bloccato). Il cuore (per «Favorites») sta in
    `src/ui/outlines.ts`; le altre sagome vengono dal catalogo.
+   Le pagine vuote con un pulsante (TASK-509): il Feed «All» senza post
+   ha «Record now», senza account «Log in» (apre «Profile»); il Coach
+   senza allenamenti non mostra la scheda del corpo né «Based on your
+   last 4 weeks» e ha «Go to your workouts» (torna a «Today»); «Explore»
+   senza partenza ha «My position», che chiede la posizione come «Draw»,
+   e nasconde il sottotitolo finché la partenza non c'è.
+   Nel foglio «Add to Feed» ogni voce ha a sinistra un'icona a linea
+   bianca (TASK-509): `circle-dot` «Record now», `history` «Already
+   recorded», `images` «Photos only», `file-up` «From a file», `moon`
+   «Sleep», `dumbbell` «Gym workout», `clipboard-list` «Workout plan».
 
 Arriva in parti, una PR ciascuna (`tasks/TASK-339.md`): A le fondamenta
 e i tre nomi in alto (in `main` dal 2026-10-30); B Feed ed Explore (in `main` dal
@@ -463,8 +476,12 @@ pagine»):
    5 km, sotto «City» compare **«EXAMPLES IN VERCELLI»**: cuore, cerchio e
    stella da 5 km dal centro, chiesti da soli, uno alla volta, il cuore per
    primo. Sono schede come quelle di «Best near you», due per riga
-   (TASK-167): una scheda dice «Drawing…» o «Next» con il posto del
-   disegno vuoto, poi ha il disegno, i km e la somiglianza, il nome del
+   (TASK-167): una scheda dice «Drawing…» o «Next» e nel posto del
+   disegno ha la sagoma della forma in grigio (`borderStrong`, il
+   contorno del catalogo; TASK-509 — lo stesso per «Not drawn», per la
+   forma in arrivo fra le schede di una città, per «NEAR YOU» in «Draw» e
+   per l'«Explore» della pagaia; le parole restano col posto vuoto), poi
+   ha il disegno, i km e la somiglianza, il nome del
    paese sotto («Vercelli») e la mappa sotto la linea come in «Best near
    you» (TASK-174), con il credito della mappa una volta sotto le schede;
    un tocco apre il
@@ -6145,3 +6162,42 @@ altri pezzi) si aggancia alle strade mentre lo disegni, tratto per tratto,
   somiglianza del motore del percorso sullo schermo (stesso testo, già
   tradotto). Solo con un percorso: con più percorsi le tessere A, B, C
   dicono già ognuna la sua.
+
+## Il kit delle pagine (TASK-523, ADR-0417)
+
+I pezzi con cui si rifanno le pagine perché abbiano l'aspetto di
+«Nutrition» e del nuovo stretching. Stanno in `apps/mobile/src/ui/`; il
+vetro di barre, tab e fogli resta quello di «Capsula» (TASK-469), questo è
+per il contenuto.
+
+**I colori di sezione** (`color.section`): `draw` albicocca, `profile`
+viola, `explore` ciano (anche l'account), `feed` sabbia (anche le
+notifiche), `messages` verde (anche il feedback). Si usano sul riquadro in
+alto, sugli anelli e sulle icone delle card; le liste lunghe restano
+neutre. Ognuno tiene 4,5:1 su fondo e card e 3:1 su `border`, in chiaro e
+in scuro. Il giallo resta del percorso, del logo e dell'Accesso.
+
+| Pezzo | Che cosa fa |
+|---|---|
+| `tintOver` (`tint.ts`) | il «velo»: il colore di sezione steso su una card, reso come colore pieno. Al 12% (`TINT_SHARE`) testo, testo secondario e il colore stesso si leggono sul velo. |
+| `SectionHeader` | l'etichetta sopra un gruppo («ACCOUNT»), intestazione per i lettori di schermo; nel colore della sezione se il gruppo ne ha una. |
+| `SectionCard` | la card: angoli `radius.card`, titolo facoltativo, velo facoltativo. Sempre opaca. |
+| `IconSquare` | il quadrato col velo dietro un'icona (36 punti); è un disegno, i lettori di schermo lo saltano. |
+| `HeroCard` | il riquadro grande in cima alla pagina: il velo e un alone più forte nell'angolo, a colori pieni. Titolo e anello possono passarci sopra; il testo secondario sta sul velo. |
+| `Tile` | la card piccola da toccare delle griglie a due colonne, alta almeno 88 punti. Quella scelta ha velo, bordo e nome più marcato, e lo dice ai lettori di schermo: mai il solo colore. |
+| `RingStat` | un anello che si riempie col numero che conta in mezzo (l'anello e il contatore di «Nutrition»); ai lettori di schermo dice una frase sola. |
+
+Regole per chi rifà una pagina:
+- nessun colore scritto a mano: token e `tintOver`;
+- le righe entrano con `ui/Cascade`; con «Riduci movimento» tutto è fermo
+  e già al suo posto;
+- niente di proprio nella fascia della barra o dell'header; in fondo
+  `useTabBarRoom()`, sotto l'header `useUnderHeader()` (vedi «La barra in
+  vetro vero»);
+- sul vetro di un foglio solo `color.text` e `color.textMuted`: le card
+  del kit non si posano sul vetro;
+- mai un genitore con l'opacità che parte da 0 sopra del vetro vero (vedi
+  «Il vetro vero e l'opacità»).
+
+Nella barra delle schede il colore di sezione non colora le icone: va
+nella capsula della scheda aperta (parte T di TASK-523, ancora da fare).

@@ -60,7 +60,10 @@ keeps the shortest word. On by default (TOP_JOINS), the user's choice.
 
 A word may also be written with the pen up (TASK-197): each letter is only
 its `out`, from its entry to its exit on the base line, once; no `back`, no
-line along the base joining it to the next, no way home. The runner walks
+line along the base joining it to the next, no way home. A letter whose
+`out` leaves a stroke to its `back` says what it draws instead, `pen`, from
+the same entry to the same exit (TASK-522): the A of `out` alone has no
+apex and reads as an «n», the Q is only its tail. The runner walks
 from the exit of one letter to the entry of the next without drawing, and
 the app pauses the recording meanwhile. The line starts at the entry of the
 first letter and ends at the exit of the last: it is open. The letters keep
@@ -130,6 +133,14 @@ class Letter:
     # (TASK-067); None where the letter is joined along the base only.
     top_in: Point | None = None
     top_out: Point | None = None
+    # The open line drawn with the pen up, from the entry to the exit
+    # (TASK-522); empty where that is `out`.
+    pen: tuple[Point, ...] = ()
+
+    @property
+    def pen_line(self) -> tuple[Point, ...]:
+        """What the letter draws with the pen up: `pen`, else `out`."""
+        return self.pen or self.out
 
     @property
     def left(self) -> float:
@@ -321,8 +332,27 @@ def parse_letters(data: object) -> dict[str, Letter]:
                 f"{char}: 'back' must lead from the end of 'out' to its start"
             )
         top_in, top_out = _top(char, raw.get("top"), [*out, *back])
-        letters[char] = Letter(char, tuple(out), tuple(back), top_in, top_out)
+        pen = _pen(char, raw.get("pen"), out, back)
+        letters[char] = Letter(
+            char, tuple(out), tuple(back), top_in, top_out, tuple(pen)
+        )
     return letters
+
+
+def _pen(char: str, raw: object, out: list[Point], back: list[Point]) -> list[Point]:
+    """The letter's `pen`, if it has one (TASK-522): an open line from the
+    entry of `out` to its exit, as high and as wide as the letter."""
+    if raw is None:
+        return []
+    pen = _line(raw, f"{char}: 'pen'")
+    if pen[0] != out[0] or pen[-1] != out[-1]:
+        raise InvalidWordError(
+            f"{char}: 'pen' must lead from the start of 'out' to its end"
+        )
+    xs = [x for x, _ in (*out, *back)]
+    if any(not 0.0 <= y <= 1.0 or not min(xs) <= x <= max(xs) for x, y in pen):
+        raise InvalidWordError(f"{char}: 'pen' must stay inside the letter")
+    return pen
 
 
 def _top(
@@ -578,7 +608,7 @@ def _pen_up(
     chars: str, letters: tuple[Letter, ...], gap: float, step: float, style: Style
 ) -> Word:
     """The open line of a word written with the pen up (TASK-197): each
-    letter's `out` from its entry to its exit, then the gap to the next
+    letter's `pen_line` from its entry to its exit, then the gap to the next
     letter along the base line, cut like the closed word's. It starts at the
     entry of the first letter, the only place the route may start."""
     line: list[tuple[Point, Place]] = []
@@ -586,7 +616,7 @@ def _pen_up(
     exit_: Point | None = None
     for k, letter in enumerate(letters):
         dx = x - letter.left
-        out = [(px + dx, py) for px, py in letter.out]
+        out = [(px + dx, py) for px, py in letter.pen_line]
         if exit_ is not None:  # the gap from the letter before, as `compose` cuts it
             half = _cuts(math.dist(exit_, out[0]) / 2, step)
             shares = [f / 2 for f in half] + [0.5 + f / 2 for f in half]

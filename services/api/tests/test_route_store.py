@@ -7,17 +7,21 @@ import os
 from dataclasses import replace
 from pathlib import Path
 
+import pytest
 from route_engine.directions import Direction
 from route_engine.models import Landmark, RouteRequest, RouteResult, SwimTurn
 
+from shaperoute_api import route_store
 from shaperoute_api.images import ImageRequest
 from shaperoute_api.route_store import (
     CENTRES_FILE,
     KEEP_S,
+    PEN_LETTERS,
     WATER_FOLDER,
     RouteStore,
     cell,
     engine_fingerprint,
+    kept_engine,
 )
 
 ROVERETO = (45.8906, 11.0401)
@@ -117,6 +121,50 @@ def test_another_request_is_another_route(tmp_path: Path) -> None:
     found = kept.get(word)
     assert found is not None and found.word == "CIAO"
     assert len(kept) == 2
+
+
+@pytest.mark.parametrize(
+    ("word", "pen_up", "style", "apart"),
+    [
+        ("CIAO", True, "round", True),  # the A
+        ("QUI", True, "round", True),  # the Q
+        ("CIAO", False, "round", False),  # the closed word draws as before
+        ("CIAO", True, "block", False),  # no block letter has its `pen`
+        ("SOLE", True, "round", False),
+    ],
+)
+def test_a_word_with_a_pen_letter_is_kept_apart(
+    word: str, pen_up: bool, style: str, apart: bool
+) -> None:
+    # TASK-522 (ADR-0418): with the pen up the A has its apex, the Q its
+    # ring; their routes are the only ones drawn otherwise.
+    request = RouteRequest(
+        start=ROVERETO, word=word, distance_m=15000, pen_up=pen_up, style=style
+    )
+    assert kept_engine(request, "engine-a") == (
+        "engine-a" + PEN_LETTERS if apart else "engine-a"
+    )
+    assert kept_engine(HEART, "engine-a") == "engine-a"
+    # The rows of route_archive hold at most 16 letters (0026_drawn_routes).
+    assert len(engine_fingerprint() + PEN_LETTERS) <= 16
+
+
+def test_a_pen_up_a_kept_before_is_drawn_again(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    vai = RouteRequest(start=ROVERETO, word="VAI", distance_m=15000, pen_up=True)
+    sole = replace(vai, word="SOLE")
+    drawn = replace(RESULT, shape=None, word="VAI", alternatives=[], walks=[(1, 2)])
+    with monkeypatch.context() as before:  # as the store kept them until now
+        before.setattr(route_store, "kept_engine", lambda _request, engine: engine)
+        kept = store(tmp_path)
+        kept.learn([ROVERETO])
+        assert kept.put(vai, drawn) and kept.put(sole, replace(drawn, word="SOLE"))
+        assert kept.get(vai) is not None
+    kept = store(tmp_path)
+    assert kept.get(vai) is None  # without its apex: drawn again
+    assert kept.get(sole) is not None  # no A, no Q: the same route
+    assert kept.put(vai, drawn) and kept.get(vai) == drawn
 
 
 def test_a_bike_route_is_kept_apart_from_the_run(tmp_path: Path) -> None:

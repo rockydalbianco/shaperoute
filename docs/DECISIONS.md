@@ -3163,6 +3163,20 @@ terreno contano come rispettati e il tratto è segnato «≈»: la quota sul
 terreno sotto ogni punto non c'è. Nel grafico della quota le fasce dei
 volumi usano i colori `error` e `warning` della tavolozza.
 
+**Aggiunta del 2026-11-27 (parti B3, D1–D6, H, deciso dall'agente su
+delega dell'utente)**: lo start di una task è preso a ogni passaggio del
+suo bordo dopo l'apertura, in qualunque verso, come nella specifica di
+XCTrack (D2). Il QR della task `XCTSK:` lo fa un codificatore nostro in
+TypeScript, senza librerie (D4). Gli atterraggi di OpenStreetMap non hanno
+un estratto di questo task: vengono dai siti di TASK-493 (ADR-0400) e
+«Nearest landing» li conta con quelli del file e quelli a mano (D6, D6b).
+Il vento in quota lo scarica il nostro server da DWD ICON-D2 ed ECMWF
+open data per zone intere, letti con `eccodes` (dipendenza approvata
+dall'utente), e il telefono lo chiede per un punto arrotondato a ~1 km;
+sulla mappa di volo la freccia sta accanto al pilota e solo entro 20 km
+dal posto del vento (H). L'editor della schermata di volo sposta i widget
+trascinandoli (B3).
+
 ## ADR-0394 — La scheda della palestra come post: un disegno senza corsa con la fotografia della scheda, solo alle app che dicono `plans`
 
 **Stato**: Attiva (A e B in `main`, A sul server, 2026-11-23) · 2026-11-21 · TASK-485 parte 0 (numero dal

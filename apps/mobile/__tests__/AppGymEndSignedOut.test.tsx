@@ -114,6 +114,8 @@ async function endWorkout() {
   await fireEvent.changeText(screen.getByTestId("set-load_kg"), "60");
   await fireEvent.press(screen.getByTestId("log-set"));
   await fireEvent(screen.getByLabelText("Stop"), "longPress");
+  // «Remember to stretch» first (TASK-466 part C2).
+  await fireEvent.press(screen.getByText("Skip"));
   expect(screen.getByTestId("gym-end")).toBeOnTheScreen();
 }
 

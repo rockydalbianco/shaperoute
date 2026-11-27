@@ -24,7 +24,9 @@ type Props = {
  * they come, when its owner hides them (404) or when the API does not give
  * them. An exercise's name opens its monthly leaderboard (part F, the
  * user's choice of 2026-11-06). Its average heart rate over them when its
- * owner shows it (part G), as a swim's figures have it (PoolFigures).
+ * owner shows it (part G), as a swim's figures have it (PoolFigures). The
+ * stretching done at its end, «Stretching · 5 min» (TASK-466 part C2), with
+ * the exercises: hidden with them.
  */
 export function GymDetail({ drawingId, fetchFn }: Props) {
   const exercises = useGymExercises(drawingId, { fetchFn });
@@ -37,6 +39,11 @@ export function GymDetail({ drawingId, fetchFn }: Props) {
       {exercises.heart_avg_bpm !== undefined && (
         <Text style={gymStyles.text} testID="gym-detail-heart">
           {`${t("Avg heart rate")}: ${exercises.heart_avg_bpm} bpm`}
+        </Text>
+      )}
+      {exercises.stretch !== undefined && (
+        <Text style={gymStyles.text} testID="gym-detail-stretch">
+          {`${t("Stretching")} · ${t("{minutes} min", { minutes: exercises.stretch.minutes })}`}
         </Text>
       )}
       <NewLevels exercises={exercises} />

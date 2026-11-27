@@ -218,6 +218,8 @@ test("Stop held, a set corrected, Save: it goes to the API and the screen leaves
   await fireEvent.press(screen.getByTestId("rest-skip"));
   await wait(19 * 60_000);
   await fireEvent(screen.getByLabelText("Stop"), "longPress");
+  // «Remember to stretch» first (TASK-466 part C2).
+  await fireEvent.press(screen.getByText("Skip"));
   expect(screen.getByTestId("gym-end")).toBeOnTheScreen();
   expect(screen.getByTestId("gym-end-time")).toHaveTextContent("20:00");
 
@@ -262,6 +264,8 @@ test("without a network the workout waits on the phone", async () => {
   await fireEvent.press(screen.getByTestId("log-set"));
   await wait(2 * 60_000);
   await fireEvent(screen.getByLabelText("Stop"), "longPress");
+  // «Remember to stretch» first (TASK-466 part C2).
+  await fireEvent.press(screen.getByText("Skip"));
   await fireEvent.press(screen.getByTestId("gym-save"));
   await act(async () => {});
   expect(screen.queryByTestId("gym-end")).toBeNull();
@@ -275,6 +279,8 @@ test("Discard asks once more, then forgets the workout", async () => {
   await fireEvent.press(screen.getByTestId("exercise-plank"));
   await wait(60_000);
   await fireEvent(screen.getByLabelText("Stop"), "longPress");
+  // «Remember to stretch» first (TASK-466 part C2).
+  await fireEvent.press(screen.getByText("Skip"));
   await fireEvent.press(screen.getByTestId("gym-discard"));
   expect(screen.getByText("Keep it")).toBeOnTheScreen();
   await fireEvent.press(screen.getByTestId("gym-discard-sure"));
@@ -289,6 +295,8 @@ test("signed out, it says to sign in instead of Save", async () => {
   await fireEvent.press(screen.getByTestId("exercise-plank"));
   await wait(60_000);
   await fireEvent(screen.getByLabelText("Stop"), "longPress");
+  // «Remember to stretch» first (TASK-466 part C2).
+  await fireEvent.press(screen.getByText("Skip"));
   expect(screen.queryByTestId("gym-save")).toBeNull();
   expect(
     screen.getByText("Sign up or log in to keep your runs and share them as drawings."),

@@ -204,13 +204,18 @@ export type Shade = {
    * The sections of the app (TASK-523, ADR-0417; the user's sketch of
    * 2026-11-27, «uno per sezione»): an apricot for «Draw», a violet for the
    * profile, a light blue for «Explore» and the account, a sand for the Feed
-   * and the notifications, a green for the messages and the feedback. Where
-   * a hue is one the app has already (`stretch.moments`, `runDay`, `food`)
-   * the value is the same, kept as a token of its own so that each keeps its
-   * one meaning. On a page's hero, its rings and the icons of its cards,
-   * never on a long list: 4.5:1 at least on `background`, `surface` and
-   * `surfaceRaised`, 3:1 on `border` (a ring's track), and never the only
-   * sign (`sectionContrast.test.ts`). The yellow stays the route's.
+   * and the notifications, a green for the messages and the feedback. In
+   * the dark tone, where a hue is one the app has already
+   * (`stretch.moments`, `runDay`, `food`) the value is the same, kept as a
+   * token of its own so that each keeps its one meaning. On a page's hero,
+   * its rings and the icons of its cards, never on a long list: 3:1 at
+   * least on `background`, `surface`, `surfaceRaised` and `border` (a
+   * ring's track) in every tone, as a shape needs, and never the only sign.
+   * In the dark tone they keep the 4.5:1 of words too. The light tone at its
+   * brightest has them livelier (the user's choice of 2026-11-27, «Sì, più
+   * vivi»), which words do not stand: there a group's name is written in
+   * the text's colour (`../ui/tint`, `inkOn`; `sectionContrast.test.ts`).
+   * The yellow stays the route's.
    */
   readonly section: {
     readonly draw: string;
@@ -479,11 +484,11 @@ export const SHADES: Readonly<
         more: "#0F6B35",
       },
       section: {
-        draw: "#8F4510",
-        profile: "#4B39BF",
-        explore: "#006A8F",
-        feed: "#6B5118",
-        messages: "#0F6B35",
+        draw: "#BA5B16",
+        profile: "#7563E6",
+        explore: "#007DAB",
+        feed: "#9A6F21",
+        messages: "#168649",
       },
       map: {
         background: "#F5F4F0",

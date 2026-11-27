@@ -46,12 +46,37 @@ test("the app has five sections, in the order of its pages", () => {
   }
 });
 
-test.each(EVERY)("%s at step %i: a section reads on the cards", (_tone, _step, c) => {
-  // A section's name and its icon are in its colour: the 4.5:1 of text.
-  for (const section of sections(c)) {
-    for (const under of [c.background, c.surface, c.surfaceRaised]) {
-      expect(contrast(section, under)).toBeGreaterThanOrEqual(4.5);
+test.each(EVERY)(
+  "%s at step %i: a section's shapes read on the page and on the cards",
+  (_tone, _step, c) => {
+    // An icon, a ring, a square: a graphic needs 3:1.
+    for (const section of sections(c)) {
+      for (const under of [c.background, c.surface, c.surfaceRaised]) {
+        expect(contrast(section, under)).toBeGreaterThanOrEqual(3);
+      }
     }
+  },
+);
+
+test.each(EVERY.filter(([tone]) => tone === "dark"))(
+  "%s at step %i: a section's name reads in its colour",
+  (_tone, _step, c) => {
+    // In the dark tone a group's name is written in its colour: the 4.5:1
+    // of words. The light tone writes it in the text's colour (`ui/tint`).
+    for (const section of sections(c)) {
+      for (const under of [c.background, c.surface, c.surfaceRaised]) {
+        expect(contrast(section, under)).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  },
+);
+
+test("the light tone at its brightest is livelier than the words' 4.5:1 allows", () => {
+  // The user's choice of 2026-11-27, «Sì, più vivi»: were these to pass as
+  // words on a card again, the light tone would be back to its dull colours.
+  const c = at("light", BRIGHTNESS_STEPS - 1);
+  for (const section of sections(c)) {
+    expect(contrast(section, c.surface)).toBeLessThan(4.5);
   }
 });
 
@@ -77,11 +102,12 @@ test.each(EVERY)(
   },
 );
 
-test.each(EVERY)(
+test.each(EVERY.filter(([tone]) => tone === "dark"))(
   "%s at step %i: a section that shares a hue has that hue's value",
   (_tone, _step, c) => {
-    // One violet, one light blue and one green in the app, each under the
-    // name of what it means where it is used.
+    // One violet, one light blue and one green in the dark tone, each under
+    // the name of what it means where it is used. In the light tone the
+    // sections are livelier than the colours written as words can be.
     expect(c.section.profile).toBe(c.stretch.moments);
     expect(c.section.explore).toBe(c.stretch.sports);
     expect(c.section.messages).toBe(c.food);

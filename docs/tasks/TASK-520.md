@@ -356,17 +356,21 @@ comunque «Hold»: è il testo approvato, detto all'utente.
 Questa parte l'ha scritta una sola sessione, dalla parte 0 alla E. Chi
 continua parte da qui e dal task file, non dalla sua conversazione.
 
-1. **Parte F — video MP4 della routine**, l'ultima. Non c'è ancora niente:
-   né scelte né codice. Prima una **parte 0 con l'utente**, una domanda
-   per volta con la proposta pronta: da dove si apre (fine di una sessione?
-   pagina della categoria?), cosa mostra (la figura che fa gli esercizi
-   della routine, nomi, tempi, il colore del gruppo?), quanto dura, cosa
-   se ne fa (salvare, condividere, post nel Feed?). Decisione tecnica già
-   scritta in ADR-0415: nasce nella pagina del video della corsa
-   (`src/share/videoPage.ts`), con una scena sua. La figura oggi è fatta
-   di View di React Native: nella pagina del video va ridisegnata con gli
-   stessi numeri (`poses.ts`, `posesFront.ts` dicono dove sta ogni
-   segmento). Poi l'elenco dei file al Coordinatore, prima del codice.
+1. **Parte F — video MP4 della routine**, l'ultima. Non c'è ancora
+   codice. Cosa mostra è già approvato nella parte 0 (sopra, «Video MP4»):
+   un video verticale della routine, la figura che fa ogni esercizio per
+   qualche secondo col nome e il tempo, titolo e minuti in apertura, logo
+   MuW in chiusura; fatto sul telefono con la pagina nascosta del video
+   della corsa (`src/share/videoPage.ts`, WebCodecs), condiviso dal foglio
+   del telefono, **non** pubblicato nel Feed; niente video del singolo
+   esercizio; la privacy si ricontrolla lì. Restano da chiedere
+   all'utente, una domanda per volta con la proposta pronta: **da dove si
+   apre** (la pagina della categoria? la fine di una sessione?) e i
+   **testi nuovi** con le quattro traduzioni. Nella pagina del video la
+   figura non può essere fatta di View di React Native: va ridisegnata lì
+   con gli stessi numeri (`poses.ts` e `posesFront.ts` dicono dove sta
+   ogni segmento, `compose.ts` dà la routine). Poi l'elenco dei file al
+   Coordinatore, prima del codice.
 2. **Le scorciatoie ai gruppi** in cima alla home (Body · Moments ·
    Sports · Intimacy · More), che lo schizzo ha e il codice no: la home
    sta dentro lo scorrimento di «Draw», quindi serve che `ChooseScreen`

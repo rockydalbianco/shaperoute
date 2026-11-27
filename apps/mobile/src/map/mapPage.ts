@@ -2526,6 +2526,35 @@ export function buildMapPage(language: Language = appLanguage()): string {
           if (message.frame) {
             frameLines(message.foot.concat(message.air));
           }
+        } else if (message.type === "extendPiece") {
+          // The new points of a day of skiing or a race (TASK-496 part D),
+          // at the end of the last line of their layer; the cut is the same.
+          var heldLayer =
+            message.layer === "lifts" ? lifts : message.layer === "air" ? flightAir : track;
+          if (
+            heldLayer.geometry &&
+            heldLayer.geometry.type === "MultiLineString" &&
+            heldLayer.geometry.coordinates.length > 0
+          ) {
+            var lines = heldLayer.geometry.coordinates.slice(0, -1);
+            lines.push(
+              heldLayer.geometry.coordinates[heldLayer.geometry.coordinates.length - 1].concat(
+                message.coordinates,
+              ),
+            );
+            var longer = {
+              type: "Feature",
+              properties: {},
+              geometry: { type: "MultiLineString", coordinates: lines },
+            };
+            if (message.layer === "lifts") {
+              setLifts(longer);
+            } else if (message.layer === "air") {
+              setFlightAir(longer);
+            } else {
+              setTrack(longer);
+            }
+          }
         } else if (message.type === "clearFlight") {
           setFlightAir(noRoute);
         } else if (message.type === "clearLifts") {

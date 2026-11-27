@@ -14,7 +14,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { useHeaderScroll } from "./headerScroll";
+import { useHeaderScroll, useUnderHeader } from "./headerScroll";
 import { useTabBarRoom } from "./tabBarRoom";
 import { useScrollToTopOnReselect } from "./tabReselect";
 
@@ -40,6 +40,8 @@ export function MessagesPage({ active, fetchFn, apiKey }: Props) {
   const scroll = useScrollToTopOnReselect<ScrollView>();
   // The header turns to glass once the page scrolls (TASK-469 A5b).
   const headerScroll = useHeaderScroll();
+  // Under a floating header the page goes on showing behind it (TASK-469 B3).
+  const underHeader = useUnderHeader();
   // The page goes on under the tab bar: its room at the end (TASK-469 B2a).
   const barRoom = useTabBarRoom();
   const shown = active && screen === null;
@@ -62,6 +64,7 @@ export function MessagesPage({ active, fetchFn, apiKey }: Props) {
     <ScrollView
       ref={scroll}
       {...headerScroll}
+      style={underHeader}
       contentContainerStyle={[styles.content, { paddingBottom: space.xxl + barRoom }]}
     >
       <View style={styles.titleRow}>

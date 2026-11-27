@@ -10,6 +10,11 @@ import { fontWeight, type Palette } from "../theme/tokens";
 import { courseOf, varioPieces } from "./flightMapData";
 import { buildFlightMapPage, parseFlightMapMessage } from "./flightMapPage";
 import { setFlightMapPrefs, useFlightMapPrefs } from "./flightMapPrefs";
+import { addManualWaypoint, useManualWaypoints } from "./manualWaypoints";
+import { MapPointSheet } from "./MapPointSheet";
+import { useSiteLandings } from "./siteLandings";
+import { waypointFeatures } from "./waypointMapData";
+import { useWaypoints } from "./waypointStore";
 
 /**
  * The «Map» widget of the flight screen (TASK-479 part A1, ADR-0388): the
@@ -139,13 +144,41 @@ export function FlightMap({
     }
   }, [ready, last, track, takeoffMs, headingDeg, circling, airspace, task]);
 
+  // The pilot's waypoints (part D5): the file's and their own, drawn when
+  // either changes; a long press on the map offers to add one.
+  const fromFile = useWaypoints();
+  const manual = useManualWaypoints();
+  const sites = useSiteLandings();
+  const [pressed, setPressed] = useState<LatLon | null>(null);
+  useEffect(() => {
+    if (ready) {
+      call(
+        view.current,
+        `window.flight.setWaypoints(${JSON.stringify(
+          waypointFeatures(
+            [...(fromFile?.waypoints ?? []), ...(sites?.landings ?? [])],
+            manual,
+          ),
+        )});`,
+      );
+    }
+  }, [ready, fromFile, manual, sites]);
+
   const buttons = height >= BUTTONS_MIN_HEIGHT;
   const button = [
     styles.button,
     { backgroundColor: palette.surfaceRaised, borderColor: palette.borderStrong },
   ];
   return (
-    <View style={[styles.box, { borderColor: palette.border }]} testID="flight-map">
+    <View
+      style={[styles.box, { borderColor: palette.border }]}
+      testID="flight-map"
+      // A long press on the map marks a place (part D5): the widget takes
+      // the touch, so the flight screen's own long press does not open its
+      // editor as well (seen on the simulator, 2026-11-26). The editor is
+      // still a long press on any other widget, or «Edit layout».
+      onStartShouldSetResponder={() => true}
+    >
       <WebView
         ref={view}
         style={[styles.page, { backgroundColor: palette.map.background }]}
@@ -166,8 +199,23 @@ export function FlightMap({
             setLoaded(true);
           } else if (message?.type === "fps") {
             lastFps = message.fps;
+          } else if (message?.type === "press") {
+            setPressed(message.point);
           }
         }}
+      />
+      <MapPointSheet
+        point={pressed}
+        palette={palette}
+        onWaypoint={(point) => {
+          addManualWaypoint(point, false);
+          setPressed(null);
+        }}
+        onLanding={(point) => {
+          addManualWaypoint(point, true);
+          setPressed(null);
+        }}
+        onClose={() => setPressed(null)}
       />
       {loaded ? null : (
         <View

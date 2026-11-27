@@ -4,6 +4,10 @@ import { saveSport } from "../settings/sport";
 import { SportButton } from "../settings/SportButton";
 import { forgetNutrition } from "./useNutrition";
 
+// The page stands still, as with «Reduce Motion»: its numbers are there at
+// once. What moves is tried in CountUp.test.tsx and Ring.test.tsx.
+jest.mock("../ui/useReduceMotion", () => ({ useReduceMotion: () => true }));
+
 jest.mock(
   "react-native-safe-area-context",
   () => jest.requireActual("react-native-safe-area-context/jest/mock").default,
@@ -46,7 +50,8 @@ test("the tile opens the page and the sport stays the one chosen", async () => {
   expect(screen.queryByTestId("nutrition-page")).toBeNull();
   await fireEvent.press(screen.getByTestId("nutrition-tile"));
   expect(screen.getByTestId("nutrition-page")).toBeOnTheScreen();
-  expect(screen.getByRole("header", { name: "Before you start" })).toBeOnTheScreen();
+  // The first time the page opens on its door (part J).
+  expect(screen.getByTestId("welcome-how")).toBeOnTheScreen();
   expect(saveSport).not.toHaveBeenCalled();
   expect(screen.getByRole("radio", { name: "Run" })).toBeChecked();
 });

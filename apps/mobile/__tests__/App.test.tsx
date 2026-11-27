@@ -519,7 +519,7 @@ test("an unknown word turns Draw route off until the AI has read it", async () =
   await typeShape("");
   expect(
     screen.getByText(
-      "Unknown shape. Try: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut, sun, airplane, anchor, bear head, bicycle, cherries, espresso cup, four leaf clover, leaning tower, music note, pear, sailboat, swan, windmill or wine glass.",
+      "Unknown shape. Try: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut, sun, airplane, anchor, bear head, bicycle, cherries, espresso cup, four leaf clover, leaning tower, music note, pear, sailboat, swan, windmill, wine glass, ball, bell, candy cane, colosseum, croissant, dolphin, dome, easter egg, eiffel tower, flower, fox head, gift, infinity, leaf, light bulb, medal, mountain, owl, padlock, peace, penguin, pizza slice, racket, reindeer, santa hat, scooter, skis, snowflake, snowman, stocking, strawberry, triumphal arch, trophy, turtle or umbrella.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByTestId("draw-route")).toBeDisabled();
@@ -599,7 +599,7 @@ test("when the AI is off the app says so, and asks again next time", async () =>
   await fireEvent(field, "endEditing");
   expect(
     await screen.findByText(
-      "This word cannot be read right now. Try one of these: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut, sun, airplane, anchor, bear head, bicycle, cherries, espresso cup, four leaf clover, leaning tower, music note, pear, sailboat, swan, windmill or wine glass.",
+      "This word cannot be read right now. Try one of these: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut, sun, airplane, anchor, bear head, bicycle, cherries, espresso cup, four leaf clover, leaning tower, music note, pear, sailboat, swan, windmill, wine glass, ball, bell, candy cane, colosseum, croissant, dolphin, dome, easter egg, eiffel tower, flower, fox head, gift, infinity, leaf, light bulb, medal, mountain, owl, padlock, peace, penguin, pizza slice, racket, reindeer, santa hat, scooter, skis, snowflake, snowman, stocking, strawberry, triumphal arch, trophy, turtle or umbrella.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByTestId("draw-route")).toBeDisabled();

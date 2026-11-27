@@ -17,6 +17,10 @@ import { forgetNutrition, seeNotice, writeDay } from "./useNutrition";
 
 // «Calorie balance» on one's own profile (TASK-489 part D).
 
+// The page stands still, as with «Reduce Motion»: its numbers are there at
+// once. What moves is tried in CountUp.test.tsx and Ring.test.tsx.
+jest.mock("../ui/useReduceMotion", () => ({ useReduceMotion: () => true }));
+
 jest.mock("./nutritionOn", () => ({ NUTRITION_ON: true }));
 
 jest.mock(
@@ -128,6 +132,7 @@ test("the row opens the page, which stays open when its notice is read", async (
   await show();
   await fireEvent.press(screen.getByTestId(NUTRITION_ENTRY_TEST_ID));
   expect(screen.getByTestId("nutrition-page")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("welcome-next"));
   expect(screen.getByTestId("nutrition-notice")).toBeOnTheScreen();
   await fireEvent.press(screen.getByTestId("nutrition-understood"));
   // The profile under it now has the card, and the page is still there.

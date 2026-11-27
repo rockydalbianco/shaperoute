@@ -24,6 +24,7 @@ import { useHealth } from "../health/useHealth";
 import { t } from "../i18n";
 import { appLanguage } from "../i18n/language";
 import { clockLabel } from "../navigation/freeRun";
+import { NutritionInvite } from "../nutrition/NutritionInvite";
 import { PoolHeartLines } from "../pool/PoolHeartLines";
 import { color, fontSize, fontWeight, space } from "../theme/tokens";
 import { useUnits } from "../units/useUnits";
@@ -223,10 +224,10 @@ export function GymEnd({
       : setOf(editing.entry, valuesOfTexts(editing.entry, texts, units), 0, true);
   const timeMs = activeMs(workout, workout.endedMs ?? workout.startedMs);
   const year = new Date(workout.startedMs).getFullYear();
-  const kcal = gymKcalLabel(
+  const energy =
     (heart === null ? null : heartKcal(heart.avgBpm, timeMs / 1000, body, year)) ??
-      gymKcal(workout.sets, timeMs / 1000, body, year),
-  );
+    gymKcal(workout.sets, timeMs / 1000, body, year);
+  const kcal = gymKcalLabel(energy);
 
   return (
     <View style={gymStyles.screen} testID="gym-end">
@@ -358,6 +359,7 @@ export function GymEnd({
               <HealthRunEnd store={phone.store} health={healthState} />
             )}
             <SleepRunEnd night={night} shown={sleepShown} onShown={setSleepShown} />
+            <NutritionInvite kcal={energy} />
           </>
         )}
         {problem && (

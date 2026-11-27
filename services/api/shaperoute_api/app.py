@@ -65,6 +65,7 @@ from shaperoute_api.errors import error_of
 from shaperoute_api.favorites import install_favorites
 from shaperoute_api.feed import install_feed
 from shaperoute_api.feedback import install_feedback
+from shaperoute_api.flying_history import install_flying_history
 from shaperoute_api.flying_sites import install_flying_sites
 from shaperoute_api.follows import install_follows
 from shaperoute_api.game import install_game
@@ -168,6 +169,7 @@ from shaperoute_api.track_scores import score_run
 from shaperoute_api.user_photos import install_user_photos
 from shaperoute_api.vo2max import install_vo2max
 from shaperoute_api.way_back_api import install_way_back
+from shaperoute_api.winds.api import install_winds
 
 log = logging.getLogger(__name__)
 
@@ -884,5 +886,9 @@ def create_app(
     install_gear(app)
     # The takeoffs and landings of OpenStreetMap (TASK-493, ADR-0400).
     install_flying_sites(app)
+    # How many fly from a takeoff, and its records (TASK-493 part B).
+    install_flying_history(app)
+    # The wind aloft for paragliding (TASK-479 part H): no run, no wind (503).
+    install_winds(app)
 
     return app

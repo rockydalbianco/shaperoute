@@ -27,12 +27,14 @@ final class TrackRecorder: NSObject {
     }
 
     /// A workout of a sport with the GPS about to start: the location asked
-    /// for now, during the countdown.
-    func prepare(store: HKHealthStore, ride: Bool) {
+    /// for now, during the countdown. In the air (TASK-305 part R4) the
+    /// positions are a flight's: Apple's `.airborne` does not hold them to
+    /// roads and paths.
+    func prepare(store: HKHealthStore, ride: Bool, air: Bool = false) {
         log = TrackLog()
         routeBuilder = HKHealthStore.isHealthDataAvailable()
             ? HKWorkoutRouteBuilder(healthStore: store, device: nil) : nil
-        location.activityType = ride ? .otherNavigation : .fitness
+        location.activityType = air ? .airborne : ride ? .otherNavigation : .fitness
         location.requestWhenInUseAuthorization()
     }
 

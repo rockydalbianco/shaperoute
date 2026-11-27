@@ -80,6 +80,7 @@ from shaperoute_api.accounts import (
     current_user,
     now_utc,
 )
+from shaperoute_api.answer_lines import short_line
 from shaperoute_api.best_routes import line_key
 from shaperoute_api.db import Database
 from shaperoute_api.flight_legs import ActivityFlightBody, flight_of
@@ -751,8 +752,9 @@ def _whole(row: DictRow) -> ActivityDetailBody:
     return ActivityDetailBody(
         **_fields(row),
         similarity=None if similarity is None else round(similarity, 4),
-        points=None if route is None else _line(route),
-        track=_line(row["track"]),
+        # Both lines whole, six decimals a coordinate (answer_lines).
+        points=None if route is None else short_line(_line(route)),
+        track=short_line(_line(row["track"])),
         walks=[(start, end) for start, end in row["walks"]],
         pauses=[_kept_pause(pause) for pause in row["pauses"]],
         post=_kept_post(row["post"]),

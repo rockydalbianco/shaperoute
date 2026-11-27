@@ -3,16 +3,16 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import { Segmented } from "../screens/Segmented";
-import { useHeaderScroll } from "../tabs/headerScroll";
+import { useHeaderScroll, useUnderHeader } from "../tabs/headerScroll";
 import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { color, font, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
 import { DiaryView } from "./DiaryView";
 import { HowWeCalculate } from "./HowWeCalculate";
 import { type LocalDay, localDayOf } from "./localDay";
-import { NutritionNotice } from "./NutritionNotice";
+import { NutritionWelcome } from "./NutritionWelcome";
 import { PlanView } from "./PlanView";
-import { seeNotice, useNutrition } from "./useNutrition";
+import { useNutrition } from "./useNutrition";
 
 type Props = {
   /** The phone's day, now; a test gives its own. */
@@ -21,8 +21,9 @@ type Props = {
 
 /**
  * «Nutrition» (TASK-489 part B, ADR-0397): the page where the user writes
- * what they eat and sees its calories. The first time it shows «Before you
- * start» and nothing else; after «I understand», two views: «Diary», what
+ * what they eat and sees its calories. The first time it shows its door
+ * (NutritionWelcome.tsx, part J), with «Before you start» as its second
+ * step, and nothing else; after it, two views: «Diary», what
  * was eaten on a day, and «My plan», the week the user wrote. One line
  * stays at the bottom: every number is an estimate, and MuW gives no diets;
  * «How we calculate» says where the numbers come from.
@@ -33,15 +34,20 @@ type Props = {
  */
 export function NutritionPage({ today }: Props) {
   const headerScroll = useHeaderScroll();
+  // Under a floating header the page goes on showing behind it (TASK-469 B3).
+  const underHeader = useUnderHeader();
   const barRoom = useTabBarRoom();
   const { settings } = useNutrition();
   const [view, setView] = useState<"diary" | "plan">("diary");
   const [how, setHow] = useState(false);
+  // The door (part J): the first time, and again from «How it works». It
+  // stays until its last step, though the rules are read on the way.
+  const [door, setDoor] = useState(!settings.noticeSeen);
   const day = today ?? localDayOf(new Date());
   return (
     <ScrollView
       {...headerScroll}
-      style={styles.page}
+      style={[styles.page, underHeader]}
       contentContainerStyle={[styles.content, { paddingBottom: space.xxl + barRoom }]}
       keyboardShouldPersistTaps="handled"
       testID="nutrition-page"
@@ -49,7 +55,9 @@ export function NutritionPage({ today }: Props) {
       <Text style={styles.title} accessibilityRole="header">
         {t("Nutrition")}
       </Text>
-      {settings.noticeSeen ? (
+      {door ? (
+        <NutritionWelcome onDone={() => setDoor(false)} />
+      ) : (
         <>
           <Segmented
             options={[
@@ -72,11 +80,17 @@ export function NutritionPage({ today }: Props) {
             >
               <Text style={styles.linkText}>{t("How we calculate")}</Text>
             </Tap>
+            <Tap
+              style={styles.link}
+              onPress={() => setDoor(true)}
+              accessibilityRole="button"
+              testID="nutrition-how-it-works"
+            >
+              <Text style={styles.linkText}>{t("How it works")}</Text>
+            </Tap>
           </View>
           <HowWeCalculate visible={how} onClose={() => setHow(false)} />
         </>
-      ) : (
-        <NutritionNotice onUnderstood={seeNotice} />
       )}
     </ScrollView>
   );

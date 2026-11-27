@@ -16,7 +16,11 @@ import { EditProfile } from "../profile/EditProfile";
 import { ProfileHome } from "../profile/ProfileHome";
 import { SettingsPage } from "../profile/SettingsPage";
 import { SightScrollView } from "../social/scrollSight";
-import { HeaderScrollContext, useHeaderScroll } from "../tabs/headerScroll";
+import {
+  HeaderScrollContext,
+  useHeaderScroll,
+  useUnderHeader,
+} from "../tabs/headerScroll";
 import { useTabBarRoom } from "../tabs/tabBarRoom";
 import {
   color,
@@ -111,6 +115,8 @@ export function ProfileScreen({
   // As the tab «Profile», its scroll turns the header to glass (TASK-469
   // A5c); over the app, outside the tab shell, it tells nobody.
   const headerScroll = useHeaderScroll();
+  // Under a floating header the page goes on showing behind it (TASK-469 B3).
+  const underHeader = useUnderHeader();
   // Over the app nothing stands on the status bar: the page's own colour
   // goes there, or its text scrolls under the clock (TASK-508). As a tab
   // the header is there already.
@@ -161,7 +167,7 @@ export function ProfileScreen({
       {edge.shade}
       <SightScrollView
         {...headerScroll}
-        style={about !== null && styles.hidden}
+        style={[about !== null && styles.hidden, underHeader]}
         contentContainerStyle={[
           styles.content,
           {

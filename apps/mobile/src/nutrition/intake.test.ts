@@ -1,5 +1,5 @@
 import type { Food } from "./foods";
-import { intakeOf, plannedIntake, portionsKcal } from "./intake";
+import { intakeOf, macroShares, macrosOf, plannedIntake, portionsKcal } from "./intake";
 import { NO_MEALS, NO_PLAN, planWithDay, withPortion } from "./plan";
 
 function food(key: string, kcalPer100g: number): Food {
@@ -77,4 +77,72 @@ test("the plan of a day of the week adds up the same way", () => {
   const plan = planWithDay(NO_PLAN, "mon", monday);
   expect(plannedIntake(plan, "mon")?.kcal).toBe(371);
   expect(plannedIntake(plan, "tue")).toBeNull();
+});
+
+// Protein, carbohydrates and fat (part H).
+
+function whole(key: string, protein: number, carbs: number, fat: number): Food {
+  return {
+    ...food(key, 0),
+    proteinPer100g: protein,
+    carbsPer100g: carbs,
+    fatPer100g: fat,
+  };
+}
+
+const CHICKEN = whole("chicken", 31, 0, 3.6);
+const RICE = whole("rice", 2.7, 28.2, 0.3);
+
+test("the three are added up over the day and rounded once", () => {
+  const meals = withPortion(
+    withPortion(NO_MEALS, "lunch", { food: CHICKEN, grams: 180 }),
+    "dinner",
+    { food: RICE, grams: 250 },
+  );
+  // 55.8 + 6.75, 0 + 70.5, 6.48 + 0.75
+  expect(macrosOf(meals)).toEqual({
+    proteinG: 63,
+    carbsG: 71,
+    fatG: 7,
+    complete: true,
+  });
+});
+
+test("a food with its calories alone is left out, and the day says so", () => {
+  const meals = withPortion(
+    withPortion(NO_MEALS, "lunch", { food: CHICKEN, grams: 100 }),
+    "lunch",
+    { food: PASTA, grams: 80 },
+  );
+  expect(macrosOf(meals)).toEqual({
+    proteinG: 31,
+    carbsG: 0,
+    fatG: 4,
+    complete: false,
+  });
+  // One of the three missing: left out whole.
+  const half: Food = { ...CHICKEN, key: "half", fatPer100g: null };
+  expect(
+    macrosOf(withPortion(NO_MEALS, "lunch", { food: half, grams: 100 })),
+  ).toBeNull();
+});
+
+test("a day with nothing to count has no three numbers", () => {
+  expect(macrosOf(null)).toBeNull();
+  expect(macrosOf(NO_MEALS)).toBeNull();
+  expect(
+    macrosOf(withPortion(NO_MEALS, "lunch", { food: PASTA, grams: 80 })),
+  ).toBeNull();
+});
+
+test("the share of the energy uses 4, 4 and 9 kilocalories a gram", () => {
+  // 400, 400 and 900 of 1700.
+  expect(
+    macroShares({ proteinG: 100, carbsG: 100, fatG: 100, complete: true }),
+  ).toEqual({ protein: 24, carbs: 24, fat: 53 });
+  expect(macroShares({ proteinG: 0, carbsG: 0, fatG: 0, complete: true })).toEqual({
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+  });
 });

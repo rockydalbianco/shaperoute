@@ -106,8 +106,8 @@ def test_a_word_with_the_pen_up_is_each_letter_once_left_to_right(
     assert word.pen_up and not compose("ciao", style=style).pen_up
     assert word.starts == (0,) and word.phases == (0.0,)
     assert not any(word.tops)
-    # Each letter is its `out`, once, where the closed word puts it: the
-    # gap of the style between two letters.
+    # Each letter is its `pen_line`, once, where the closed word puts it:
+    # the gap of the style between two letters.
     alphabet, gap = STYLES[style]
     x = 0.0
     for k, letter in enumerate(word.letters):
@@ -118,9 +118,9 @@ def test_a_word_with_the_pen_up_is_each_letter_once_left_to_right(
             if place == Place(k)
         ]
         dx = x - letter.left
-        assert drawn[0] == pytest.approx((letter.out[0][0] + dx, 0.0))
-        assert drawn[-1] == pytest.approx((letter.out[-1][0] + dx, 0.0))
-        assert _length(drawn) == pytest.approx(_length(letter.out))
+        assert drawn[0] == pytest.approx((letter.pen_line[0][0] + dx, 0.0))
+        assert drawn[-1] == pytest.approx((letter.pen_line[-1][0] + dx, 0.0))
+        assert _length(drawn) == pytest.approx(_length(letter.pen_line))
         x += letter.right - letter.left + gap
     # Open: from the entry of the first letter to the exit of the last,
     # the gaps along the base line in between.
@@ -128,8 +128,21 @@ def test_a_word_with_the_pen_up_is_each_letter_once_left_to_right(
     for unit, place in zip(word.units, word.places, strict=True):
         if place.along is not None:
             assert unit[1] == 0.0
-    letters = sum(_length(letter.out) for letter in word.letters)
+    letters = sum(_length(letter.pen_line) for letter in word.letters)
     assert word.drawn_length / word.height == pytest.approx(letters)
+
+
+@pytest.mark.parametrize("text", ["VAI", "QUA"])
+def test_with_the_pen_up_every_round_letter_reaches_the_top(text: str) -> None:
+    # «VAI» read «VnI» (TASK-522): the A drew only its `out`, 0.4 high.
+    word = compose(text, pen_up=True)
+    for k, letter in enumerate(word.letters):
+        ys = [
+            y
+            for (_, y), place in zip(word.units, word.places, strict=True)
+            if place == Place(k)
+        ]
+        assert min(ys) == 0.0 and max(ys) == pytest.approx(1.0), letter.char
 
 
 def test_the_first_letter_holds_the_start_and_the_others_move() -> None:

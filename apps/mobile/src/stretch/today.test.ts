@@ -50,13 +50,18 @@ describe("what «Today» proposes", () => {
     }
   });
 
-  it("is «Morning» before 10, «Bedtime» from 9 in the evening", () => {
-    expect(todayCategory(at(27, 6))).toBe("morning");
-    expect(todayCategory(at(27, 9, 59))).toBe("morning");
-    expect(todayCategory(at(27, 0, 30))).toBe("morning");
+  it("is «Bedtime» from 9 in the evening to 4 at night, «Morning» from 4 to 10", () => {
     expect(todayCategory(at(27, 21))).toBe("bedtime");
     expect(todayCategory(at(27, 23, 59))).toBe("bedtime");
+    // Past midnight it is still the night before, not a morning.
+    expect(todayCategory(at(27, 0, 30))).toBe("bedtime");
+    expect(todayCategory(at(27, 3, 59))).toBe("bedtime");
+    expect(todayCategory(at(27, 4))).toBe("morning");
+    expect(todayCategory(at(27, 6))).toBe("morning");
+    expect(todayCategory(at(27, 9, 59))).toBe("morning");
+    expect(todayCategory(at(27, 20, 59))).not.toBe("bedtime");
     // On a Sunday as on a Friday.
+    expect(todayCategory(at(29, 2))).toBe("bedtime");
     expect(todayCategory(at(29, 8))).toBe("morning");
     expect(todayCategory(at(29, 22))).toBe("bedtime");
   });

@@ -4,8 +4,9 @@
  *
  * 1. an activity of a sport that has stretches ended in the last three
  *    hours: that sport's «After»;
- * 2. before 10 in the morning: «Morning»;
- * 3. from 9 in the evening: «Bedtime»;
+ * 2. from 9 in the evening to 4 at night: «Bedtime» (the night was added
+ *    the same day, «Sì, fino alle 4»: at one o'clock nobody is waking up);
+ * 3. from 4 to 10 in the morning: «Morning»;
  * 4. a working day between 10 and 18: «Desk break»;
  * 5. otherwise «Full body».
  *
@@ -13,6 +14,12 @@
  * are that category's first choice. Pure: the time and the last activity
  * are given, so that the same moment always proposes the same thing.
  */
+
+/** The hours of the phone's clock the rule turns on. */
+export const NIGHT_ENDS = 4;
+export const MORNING_ENDS = 10;
+export const DESK_ENDS = 18;
+export const BEDTIME_BEGINS = 21;
 
 /** How long after an activity its «After» is still what to do. */
 export const AFTER_SPORT_MS = 3 * 60 * 60 * 1000;
@@ -49,14 +56,14 @@ export function todayCategory(now: Date, last?: LastActivity | null): string {
     }
   }
   const hour = now.getHours();
-  if (hour < 10) {
-    return "morning";
-  }
-  if (hour >= 21) {
+  if (hour >= BEDTIME_BEGINS || hour < NIGHT_ENDS) {
     return "bedtime";
   }
+  if (hour < MORNING_ENDS) {
+    return "morning";
+  }
   const day = now.getDay();
-  if (day >= 1 && day <= 5 && hour < 18) {
+  if (day >= 1 && day <= 5 && hour < DESK_ENDS) {
     return "desk";
   }
   return "fullBody";

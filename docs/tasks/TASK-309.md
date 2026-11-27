@@ -410,3 +410,11 @@ post, anche se la fila «Live» di TASK-468 ha scelto le schede una sotto
 l'altra. **Resta**: la PR della privacy (quando tocca a questa), le foto
 all'utente con il turno del simulatore, poi il merge dopo la privacy
 online, l'OTA e la prova dell'utente.
+
+2026-11-27 · le foto del simulatore approvate dall'utente («Sì, vanno
+bene»). La PR della privacy è la **#1725**: in «Your position»,
+nell'elenco di quello che parte arrotondato a circa 1 km, entrano «group
+runs and groups nearby» (copre anche TASK-495 D). Le **cinque frasi sono
+approvate dall'utente** («Sì, approvo»). La #1725 va dopo la #1722 di
+TASK-466, quando il Coordinatore dice «tocca a te». L'OTA di questa parte
+parte solo con la #1725 online.

@@ -538,3 +538,314 @@ export const REST_BREATH_BREATH: Breath = {
   upperArmNear: -6,
   upperArmFar: -6,
 };
+
+/*
+ * The movements (TASK-520 part B, block 3). A movement is a pose and how far
+ * each segment turns to reach its far end: the figure goes there and back in
+ * a loop, like a breath but as wide and as quick as the exercise says.
+ */
+
+/** Standing, the head poked a little forward. */
+export const CHIN_TUCK: Pose = {
+  torso: 180,
+  head: 164,
+  upperArmFar: 0,
+  forearmFar: 0,
+  upperArmNear: 0,
+  forearmNear: 0,
+  thighFar: 0,
+  shinFar: 0,
+  footFar: 90,
+  thighNear: 0,
+  shinNear: 0,
+  footNear: 90,
+};
+
+/** The head drawn straight back, over the shoulders. */
+export const CHIN_TUCK_MOVE: Breath = {
+  head: 18,
+};
+
+/** Standing, the arms by the sides. */
+export const ARM_CIRCLES: Pose = {
+  torso: 180,
+  head: 180,
+  upperArmFar: 0,
+  forearmFar: 0,
+  upperArmNear: 0,
+  forearmNear: 0,
+  thighFar: 0,
+  shinFar: 0,
+  footFar: 90,
+  thighNear: 0,
+  shinNear: 0,
+  footNear: 90,
+};
+
+/** A whole turn of both arms, forward and up and round: the way back is the
+ * same circle the other way. */
+export const ARM_CIRCLES_MOVE: Breath = {
+  upperArmNear: 360,
+  forearmNear: 360,
+  upperArmFar: 360,
+  forearmFar: 360,
+};
+
+/** Standing, the elbows a little back and bent. The figure has no shoulder
+ * joint: the arms carry the roll. */
+export const SHOULDER_ROLLS: Pose = {
+  torso: 180,
+  head: 180,
+  upperArmFar: -24,
+  forearmFar: 24,
+  upperArmNear: -28,
+  forearmNear: 20,
+  thighFar: 0,
+  shinFar: 0,
+  footFar: 90,
+  thighNear: 0,
+  shinNear: 0,
+  footNear: 90,
+};
+
+/** The arms come forward and down, as the shoulders roll. */
+export const SHOULDER_ROLLS_MOVE: Breath = {
+  upperArmNear: 44,
+  forearmNear: 16,
+  upperArmFar: 44,
+  forearmFar: 16,
+};
+
+/** Standing, the elbows bent and the forearms forward, a little low. The
+ * figure has no hands: the forearms tell the circles. */
+export const WRIST_CIRCLES: Pose = {
+  torso: 180,
+  head: 180,
+  upperArmFar: 4,
+  forearmFar: 70,
+  upperArmNear: 8,
+  forearmNear: 74,
+  thighFar: 0,
+  shinFar: 0,
+  footFar: 90,
+  thighNear: 0,
+  shinNear: 0,
+  footNear: 90,
+};
+
+/** The forearms lift, as far above level as they were below. */
+export const WRIST_CIRCLES_MOVE: Breath = {
+  forearmNear: 34,
+  forearmFar: 34,
+};
+
+/** On hands and knees, the back up and the head dropped between the arms. */
+export const CAT_COW: Pose = {
+  torso: 105,
+  head: 50,
+  upperArmFar: 0,
+  forearmFar: 0,
+  upperArmNear: 0,
+  forearmNear: 0,
+  thighFar: 0,
+  shinFar: -90,
+  footFar: -90,
+  thighNear: 0,
+  shinNear: -90,
+  footNear: -90,
+};
+
+/** The head lifts and the chest dips: the elbows give a little, the hands stay. */
+export const CAT_COW_MOVE: Breath = {
+  torso: -5,
+  head: 85,
+  upperArmFar: -12,
+  forearmFar: 10,
+  upperArmNear: -12,
+  forearmNear: 10,
+};
+
+/** Lying on the back with the knees bent and the feet flat, the arms on the
+ * floor by the sides. */
+export const PELVIC_TILT: Pose = {
+  torso: -90,
+  head: -90,
+  upperArmFar: 90,
+  forearmFar: 90,
+  upperArmNear: 90,
+  forearmNear: 90,
+  thighFar: 135,
+  shinFar: 42.5,
+  footFar: 90,
+  thighNear: 135,
+  shinNear: 42.5,
+  footNear: 90,
+};
+
+/** The pelvis rolls up a little: the shoulders and the feet stay where they are. */
+export const PELVIC_TILT_MOVE: Breath = {
+  torso: 6.7,
+  thighFar: -6.8,
+  shinFar: -5.4,
+  thighNear: -6.8,
+  shinNear: -5.4,
+};
+
+/** Lying on the back with the knees bent and the feet flat, as for the pelvic
+ * tilt. */
+export const BRIDGE: Pose = {
+  torso: -90,
+  head: -90,
+  upperArmFar: 90,
+  forearmFar: 90,
+  upperArmNear: 90,
+  forearmNear: 90,
+  thighFar: 135,
+  shinFar: 42.5,
+  footFar: 90,
+  thighNear: 135,
+  shinNear: 42.5,
+  footNear: 90,
+};
+
+/** The hips lift until thighs and back make one line; the shoulders and the
+ * feet stay on the floor. */
+export const BRIDGE_MOVE: Breath = {
+  torso: 32.2,
+  thighFar: -38.4,
+  shinFar: -7.2,
+  thighNear: -38.4,
+  shinNear: -7.2,
+};
+
+/** Standing on the far leg, the far hand forward on something; the near leg
+ * swung back. */
+export const LEG_SWINGS: Pose = {
+  torso: 180,
+  head: 180,
+  upperArmFar: 35,
+  forearmFar: 80,
+  upperArmNear: 8,
+  forearmNear: 20,
+  thighFar: 0,
+  shinFar: 0,
+  footFar: 90,
+  thighNear: -28,
+  shinNear: -45,
+  footNear: 60,
+};
+
+/** The near leg swings through and forward. */
+export const LEG_SWINGS_MOVE: Breath = {
+  thighNear: 66,
+  shinNear: 75,
+  footNear: 65,
+};
+
+/** Standing, the arms by the sides. */
+export const LUNGE_REACH: Pose = {
+  torso: 180,
+  head: 180,
+  upperArmFar: 0,
+  forearmFar: 0,
+  upperArmNear: 0,
+  forearmNear: 0,
+  thighFar: 0,
+  shinFar: 0,
+  footFar: 90,
+  thighNear: 0,
+  shinNear: 0,
+  footNear: 90,
+};
+
+/** Into a lunge, the near foot flat in front and the far one on its toes
+ * behind; both arms up. */
+export const LUNGE_REACH_MOVE: Breath = {
+  upperArmFar: 170,
+  forearmFar: 176,
+  upperArmNear: 176,
+  forearmNear: 180,
+  thighFar: -35,
+  shinFar: -58,
+  footFar: -9.5,
+  thighNear: 65,
+  shinNear: 6.4,
+};
+
+/** Standing, the hands a little forward as if on a wall. */
+export const CALF_RAISES: Pose = {
+  torso: 180,
+  head: 180,
+  upperArmFar: 6,
+  forearmFar: 26,
+  upperArmNear: 10,
+  forearmNear: 30,
+  thighFar: 0,
+  shinFar: 0,
+  footFar: 90,
+  thighNear: 0,
+  shinNear: 0,
+  footNear: 90,
+};
+
+/** Up on the toes: the heels lift, the toes stay on the floor. */
+export const CALF_RAISES_MOVE: Breath = {
+  footNear: -48,
+  footFar: -48,
+};
+
+/** Sitting on a chair, the far foot on the floor; the near foot off it, toes
+ * pulled up. */
+export const ANKLE_CIRCLES: Pose = {
+  torso: 176,
+  head: 178,
+  upperArmFar: 14,
+  forearmFar: 64,
+  upperArmNear: 18,
+  forearmNear: 66,
+  thighFar: 90,
+  shinFar: 0,
+  footFar: 90,
+  thighNear: 104,
+  shinNear: 26,
+  footNear: 158,
+};
+
+/** The toes point down and away. */
+export const ANKLE_CIRCLES_MOVE: Breath = {
+  footNear: -84,
+};
+
+/** Folded forward on straight legs, the hands on the floor in front of the
+ * feet. */
+export const INCHWORM: Pose = {
+  torso: 20,
+  head: 12,
+  upperArmFar: 52.6,
+  forearmFar: 52.6,
+  upperArmNear: 52.6,
+  forearmNear: 52.6,
+  thighFar: 0,
+  shinFar: 0,
+  footFar: 90,
+  thighNear: 0,
+  shinNear: 0,
+  footNear: 90,
+};
+
+/** Walked out to a plank: one line from the heels to the head, the arms
+ * straight under the shoulders, on the toes. */
+export const INCHWORM_MOVE: Breath = {
+  torso: 89.8,
+  head: 91.8,
+  upperArmFar: -52.6,
+  forearmFar: -52.6,
+  upperArmNear: -52.6,
+  forearmNear: -52.6,
+  thighFar: -70.2,
+  shinFar: -70.2,
+  footFar: -45,
+  thighNear: -70.2,
+  shinNear: -70.2,
+  footNear: -45,
+};

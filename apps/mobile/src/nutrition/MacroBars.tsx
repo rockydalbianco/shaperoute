@@ -26,8 +26,11 @@ type Props = {
  * Protein, carbohydrates and fat of a day (TASK-489 part H): the grams of
  * each, and a bar as long as its share of the energy the three give. No
  * target and no colour of judgement: MuW does not say how much of each one
- * should eat. Foods written with their calories alone have none of the
- * three, and the card says when one was left out.
+ * should eat. Each bar has the colour of its kind, the same as the rings of
+ * a recipe (TASK-489 part L, «Sì, stessi colori»); the name and the number
+ * stay beside it, so the colour is never the only sign. Foods written with
+ * their calories alone have none of the three, and the card says when one
+ * was left out.
  */
 export function MacroBars({ macros }: Props) {
   const shares = macros === null ? null : macroShares(macros);
@@ -62,7 +65,11 @@ export function MacroBars({ macros }: Props) {
                   <Text style={styles.name}>{t(NAMES[kind])}</Text>
                   <Text style={styles.amount}>{amount}</Text>
                 </View>
-                <Bar share={shares[kind] / 100} />
+                <Bar
+                  share={shares[kind] / 100}
+                  fill={color[kind]}
+                  testID={`diary-macro-${kind}-bar`}
+                />
               </View>
             );
           })}
@@ -77,8 +84,8 @@ export function MacroBars({ macros }: Props) {
   );
 }
 
-/** A bar that grows from the left to `share` of its track. */
-function Bar({ share }: { share: number }) {
+/** A bar in `fill` that grows from the left to `share` of its track. */
+function Bar({ share, fill, testID }: { share: number; fill: string; testID: string }) {
   const still = useReduceMotion();
   const [at] = useState(() => new Animated.Value(0));
   useEffect(() => {
@@ -96,7 +103,10 @@ function Bar({ share }: { share: number }) {
       importantForAccessibility="no-hide-descendants"
       accessibilityElementsHidden
     >
-      <Animated.View style={[styles.fill, { transform: [{ scaleX: at }] }]} />
+      <Animated.View
+        testID={testID}
+        style={[styles.fill, { backgroundColor: fill, transform: [{ scaleX: at }] }]}
+      />
     </View>
   );
 }
@@ -140,11 +150,10 @@ const styles = StyleSheet.create({
     backgroundColor: color.border,
     overflow: "hidden",
   },
-  // The same colour for the three: none is the good one.
+  // Its colour is its kind's: none is the good one.
   fill: {
     height: BAR,
     borderRadius: BAR / 2,
-    backgroundColor: color.text,
     transformOrigin: "left center",
   },
   note: {

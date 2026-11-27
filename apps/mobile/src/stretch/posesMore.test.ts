@@ -1,5 +1,7 @@
+import { isMove } from "./allExercises";
 import { NEW_EXERCISES } from "./exercisesMore";
 import {
+  type Breath,
   bones,
   deepen,
   drift,
@@ -10,20 +12,38 @@ import {
   STAND,
 } from "./poses";
 import {
+  ANKLE_CIRCLES,
+  ANKLE_CIRCLES_MOVE,
+  ARM_CIRCLES_MOVE,
   BICEPS_WALL,
+  BRIDGE,
+  BRIDGE_MOVE,
+  CALF_RAISES,
+  CALF_RAISES_MOVE,
+  CAT_COW,
+  CAT_COW_MOVE,
   CHAIR_FIGURE_FOUR,
+  CHIN_TUCK_MOVE,
   DEEP_SQUAT,
   DOORWAY_CHEST,
   DOWN_DOG,
   FIGURE_FOUR,
   FIGURE_FOUR_BREATH,
   HALF_SPLIT,
+  INCHWORM,
+  INCHWORM_MOVE,
+  LEG_SWINGS,
+  LEG_SWINGS_MOVE,
   LEGS_UP_WALL,
   LEGS_UP_WALL_BREATH,
   LIZARD,
+  LUNGE_REACH,
+  LUNGE_REACH_MOVE,
   LYING_HAMSTRING,
   LYING_HAMSTRING_BREATH,
   NINETY_NINETY,
+  PELVIC_TILT,
+  PELVIC_TILT_MOVE,
   PIGEON,
   PIGEON_BREATH,
   REST_BREATH,
@@ -31,6 +51,7 @@ import {
   SEATED_FOLD,
   SEATED_TWIST,
   SHIN_STRETCH,
+  SHOULDER_ROLLS_MOVE,
   SIDE_QUAD,
   SIDE_QUAD_BREATH,
   SIDE_REACH_CHILD,
@@ -38,6 +59,7 @@ import {
   SPHINX,
   THREAD_NEEDLE,
   TOE_STRETCH,
+  WRIST_CIRCLES_MOVE,
   WRIST_EXTENSOR,
   WRIST_FLEXOR,
 } from "./posesMore";
@@ -51,6 +73,18 @@ function above(pose: Pose, y: number): number {
   return grounding(pose) - y;
 }
 
+/** `pose` a share of the way along a breath or a movement. */
+function along(pose: Pose, turn: Breath, share: number): Pose {
+  const part: Partial<Record<keyof Pose, number>> = {};
+  for (const [segment, degrees] of Object.entries(turn)) {
+    part[segment as keyof Pose] = (degrees ?? 0) * share;
+  }
+  return deepen(pose, part);
+}
+
+/** A movement from its start to its far end, in quarters. */
+const QUARTERS = [0, 0.25, 0.5, 0.75, 1];
+
 describe("the new poses, at rest and at the bottom of a breath", () => {
   it("stand on the floor, never below it, and fit the box", () => {
     for (const exercise of NEW_EXERCISES) {
@@ -58,19 +92,26 @@ describe("the new poses, at rest and at the bottom of a breath", () => {
       for (const pose of [exercise.pose, deep]) {
         const { back, front } = span(pose);
         expect(front - back).toBeLessThan(1.1);
-        expect(grounding(pose)).toBeLessThanOrEqual(LEG + 0.001);
+        // Up on the toes the hip is a foot higher than standing, no more.
+        expect(grounding(pose)).toBeLessThanOrEqual(
+          LEG + (isMove(exercise) ? LENGTH.footFar : 0) + 0.001,
+        );
       }
-      expect(Math.abs(grounding(deep) - grounding(exercise.pose))).toBeLessThan(0.1);
+      if (!isMove(exercise)) {
+        // A breath leaves the hip about where it is; a movement may not.
+        expect(Math.abs(grounding(deep) - grounding(exercise.pose))).toBeLessThan(0.1);
+      }
     }
   });
 
   it("stay whole on a narrow phone, sliding back when they reach far", () => {
     for (const exercise of NEW_EXERCISES) {
       const slid = drift(exercise.pose);
-      for (const pose of [
-        exercise.pose,
-        deepen(exercise.pose, exercise.breath ?? {}),
-      ]) {
+      // A movement is checked all the way: its middle may reach further.
+      const shares = isMove(exercise) ? QUARTERS : [0, 1];
+      for (const pose of shares.map((share) =>
+        along(exercise.pose, exercise.breath ?? {}, share),
+      )) {
         const { back, front } = span(pose);
         // Half a narrow phone is about half the figure's height.
         expect({ key: exercise.key, ok: front - slid < 0.48 }).toEqual({
@@ -392,5 +433,158 @@ describe("the new poses sitting and kneeling on the floor, second block", () => 
     expect(all.forearmNear.to.x).toBeGreaterThan(0.35);
     expect(all.footNear.from.x).toBeLessThan(-0.2);
     expect(DOWN_DOG.shinNear).toBe(DOWN_DOG.thighNear);
+  });
+});
+
+describe("the movements, from their start to their far end", () => {
+  const moves = NEW_EXERCISES.filter(isMove);
+
+  it("go somewhere, in two to six seconds there and back", () => {
+    expect(moves.length).toBeGreaterThan(0);
+    for (const exercise of moves) {
+      const turns = Object.values(exercise.breath ?? {});
+      expect(turns.some((degrees) => Math.abs(degrees ?? 0) >= 4)).toBe(true);
+      expect(exercise.tempoMs).toBeGreaterThanOrEqual(2000);
+      expect(exercise.tempoMs).toBeLessThanOrEqual(6000);
+    }
+  });
+
+  it("stay close to the floor the engine gives them: a straight line between the two ends", () => {
+    for (const exercise of moves) {
+      const from = grounding(exercise.pose);
+      const to = grounding(deepen(exercise.pose, exercise.breath ?? {}));
+      for (const share of QUARTERS) {
+        const real = grounding(along(exercise.pose, exercise.breath ?? {}, share));
+        // `Figure` lifts the hip evenly from one end to the other; in the
+        // middle of a big movement the feet are this far off, at most.
+        expect({
+          key: exercise.key,
+          ok: Math.abs(real - (from + (to - from) * share)) < 0.08,
+        }).toEqual({ key: exercise.key, ok: true });
+      }
+    }
+  });
+
+  it("turn only what the exercise is about, for the small ones", () => {
+    expect(Object.keys(CHIN_TUCK_MOVE)).toEqual(["head"]);
+    expect(Object.keys(WRIST_CIRCLES_MOVE).sort()).toEqual([
+      "forearmFar",
+      "forearmNear",
+    ]);
+    expect(Object.keys(CALF_RAISES_MOVE).sort()).toEqual(["footFar", "footNear"]);
+    expect(Object.keys(ANKLE_CIRCLES_MOVE)).toEqual(["footNear"]);
+    for (const segment of Object.keys(SHOULDER_ROLLS_MOVE)) {
+      expect(segment).toMatch(/Arm|arm/);
+    }
+  });
+
+  it("take both arms a whole turn for the circles, back where they began", () => {
+    expect(ARM_CIRCLES_MOVE).toEqual({
+      upperArmNear: 360,
+      forearmNear: 360,
+      upperArmFar: 360,
+      forearmFar: 360,
+    });
+  });
+
+  it("keep hands and knees down for the cat and the cow, the head from low to high", () => {
+    const cow = deepen(CAT_COW, CAT_COW_MOVE);
+    for (const pose of [CAT_COW, cow]) {
+      const { forearmFar, forearmNear, thighNear } = bones(pose);
+      expect(above(pose, thighNear.to.y)).toBeLessThan(ON);
+      expect(above(pose, forearmNear.to.y)).toBeLessThan(ON);
+      expect(above(pose, forearmFar.to.y)).toBeLessThan(ON);
+    }
+    expect(bones(CAT_COW).head.to.y).toBeGreaterThan(bones(CAT_COW).torso.to.y);
+    expect(bones(cow).head.to.y).toBeLessThan(bones(cow).torso.to.y);
+  });
+
+  it("lift the hips off the floor for the bridge, a little for the pelvic tilt, shoulders and feet where they were", () => {
+    for (const [pose, move, low, high] of [
+      [PELVIC_TILT, PELVIC_TILT_MOVE, 0.02, 0.06],
+      [BRIDGE, BRIDGE_MOVE, 0.12, 0.2],
+    ] as const) {
+      expect(grounding(pose)).toBeLessThan(ON);
+      const up = deepen(pose, move);
+      expect(grounding(up)).toBeGreaterThan(low);
+      expect(grounding(up)).toBeLessThan(high);
+      const before = bones(pose);
+      const after = bones(up);
+      for (const point of [after.torso.to, after.footNear.from, after.footNear.to]) {
+        expect(above(up, point.y)).toBeLessThan(ON);
+      }
+      // From the shoulders to the heels is as far as before: nothing slid.
+      expect(after.footNear.from.x - after.torso.to.x).toBeCloseTo(
+        before.footNear.from.x - before.torso.to.x,
+        2,
+      );
+    }
+  });
+
+  it("swing the near leg from behind to in front, the standing foot still and nothing under the floor", () => {
+    expect(
+      Object.keys(LEG_SWINGS_MOVE).some((segment) => segment.endsWith("Far")),
+    ).toBe(false);
+    const { footFar } = bones(LEG_SWINGS);
+    expect(above(LEG_SWINGS, footFar.from.y)).toBeLessThan(ON);
+    expect(bones(LEG_SWINGS).shinNear.to.x).toBeLessThan(-0.15);
+    expect(bones(deepen(LEG_SWINGS, LEG_SWINGS_MOVE)).shinNear.to.x).toBeGreaterThan(
+      0.15,
+    );
+    for (const share of QUARTERS) {
+      expect(grounding(along(LEG_SWINGS, LEG_SWINGS_MOVE, share))).toBeLessThanOrEqual(
+        LEG + 0.001,
+      );
+    }
+  });
+
+  it("step into a lunge with both arms up: a foot flat in front, the toes behind", () => {
+    expect(LUNGE_REACH).toEqual(STAND);
+    const lunge = deepen(LUNGE_REACH, LUNGE_REACH_MOVE);
+    const { footFar, footNear, forearmNear, head, thighNear } = bones(lunge);
+    expect(grounding(lunge)).toBeLessThan(LEG - 0.1);
+    expect(above(lunge, footNear.from.y)).toBeLessThan(ON);
+    expect(above(lunge, footNear.to.y)).toBeLessThan(ON);
+    expect(above(lunge, footFar.to.y)).toBeLessThan(ON);
+    expect(thighNear.to.x).toBeGreaterThan(0.15);
+    expect(footFar.to.x).toBeLessThan(-0.2);
+    expect(forearmNear.to.y).toBeLessThan(head.to.y);
+  });
+
+  it("rise on the toes for the calves: the toes down, the heels up", () => {
+    const up = deepen(CALF_RAISES, CALF_RAISES_MOVE);
+    const { footFar, footNear } = bones(up);
+    for (const foot of [footFar, footNear]) {
+      expect(above(up, foot.to.y)).toBeLessThan(ON);
+      expect(above(up, foot.from.y)).toBeGreaterThan(0.04);
+    }
+    expect(grounding(up)).toBeGreaterThan(grounding(CALF_RAISES) + 0.03);
+  });
+
+  it("sit on the chair for the ankle, one foot off the floor", () => {
+    for (const pose of [ANKLE_CIRCLES, deepen(ANKLE_CIRCLES, ANKLE_CIRCLES_MOVE)]) {
+      const { footFar, footNear } = bones(pose);
+      expect(grounding(pose)).toBeCloseTo(LENGTH.shinFar, 6);
+      expect(above(pose, footFar.from.y)).toBeLessThan(ON);
+      expect(above(pose, footNear.from.y)).toBeGreaterThan(0.05);
+      expect(above(pose, footNear.to.y)).toBeGreaterThan(0.02);
+    }
+  });
+
+  it("walk the hands out from a fold to a plank: one line from heels to head, hands and toes down", () => {
+    const fold = bones(INCHWORM);
+    expect(above(INCHWORM, fold.forearmNear.to.y)).toBeLessThan(ON);
+    expect(above(INCHWORM, fold.footNear.to.y)).toBeLessThan(ON);
+    expect(INCHWORM.thighNear).toBe(0);
+    const plank = deepen(INCHWORM, INCHWORM_MOVE);
+    const { footNear, forearmFar, forearmNear } = bones(plank);
+    expect(above(plank, forearmNear.to.y)).toBeLessThan(ON);
+    expect(above(plank, forearmFar.to.y)).toBeLessThan(ON);
+    expect(above(plank, footNear.to.y)).toBeLessThan(ON);
+    // The legs and the back in one line, the arms straight down.
+    expect(plank.shinNear).toBeCloseTo(plank.thighNear, 6);
+    expect(plank.torso - plank.thighNear).toBeCloseTo(180, 6);
+    expect(plank.upperArmNear).toBeCloseTo(0, 6);
+    expect(plank.forearmNear).toBeCloseTo(0, 6);
   });
 });

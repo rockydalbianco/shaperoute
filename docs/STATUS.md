@@ -58,6 +58,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sessioni loro: K1 (peso) e L (ricette, #1678 e #1686 in `main`). Build
   nativa successiva: G2, C2b, accensione. File: `nutrition/*`,
   `activities/RunEnd.tsx`, `gym/GymEnd.tsx` · `tasks/TASK-489.md`
+- **TASK-521 — «Explore»: revisione a occhio e 3000 disegni nuovi** ·
+  ADR-0416; 499 tolti e 3120 nuovi tenuti a occhio (4782 percorsi) in #1685,
+  verde, **da unire solo con la 1.2.0 sui telefoni** (gli id cambiano; #1664
+  in `main`). File: `catalog/seed/**`, `tools/catalog_kept.json`,
+  `catalog/README.md` · `tasks/TASK-521.md`
 - **TASK-513 — «Longevity»: cinquanta storie animate** · ADR-0407; parte 0
   chiusa il 2026-11-24, nessun codice; il codice in una sessione sua.
   File: — · `tasks/TASK-513.md`

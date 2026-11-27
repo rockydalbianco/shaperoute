@@ -45,7 +45,7 @@ export function todayCategory(now: Date, last?: LastActivity | null): string {
     const sport = STRETCH_SPORT[last.sport];
     const since = now.getTime() - last.endedAt;
     if (sport !== undefined && since >= 0 && since <= AFTER_SPORT_MS) {
-      return `${sport}.after`;
+      return `${sport}_after`;
     }
   }
   const hour = now.getHours();

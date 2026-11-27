@@ -8,7 +8,9 @@
  * by hand; `categories.test.ts` checks it against the exercises.
  *
  * A key is never changed: the last choice of a category is remembered by
- * it, and a session done says which one it was.
+ * it, and a session done is saved under it. So a key is letters, digits
+ * and underscores, forty at most: what the server takes as a routine's
+ * name (`ROUTINE_PATTERN` in stretch_sessions.py).
  */
 
 export type CategoryGroup = "body" | "moments" | "sports" | "intimacy" | "more";
@@ -315,7 +317,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "running.before",
+    key: "running_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: [
@@ -328,7 +330,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "running.after",
+    key: "running_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -353,7 +355,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "cycling.before",
+    key: "cycling_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: [
@@ -366,7 +368,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "cycling.after",
+    key: "cycling_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -390,13 +392,13 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "swimming.before",
+    key: "swimming_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: ["overheadReach", "neckTurn", "armCircles", "armOpeners", "shinStretch"],
   },
   {
-    key: "swimming.after",
+    key: "swimming_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -411,7 +413,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "skiing.before",
+    key: "skiing_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: [
@@ -425,7 +427,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "skiing.after",
+    key: "skiing_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -440,13 +442,13 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "snowboarding.before",
+    key: "snowboarding_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: ["trunkTurns", "hipCircles", "sideLunge", "deepSquat", "ankleCircles"],
   },
   {
-    key: "snowboarding.after",
+    key: "snowboarding_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -461,7 +463,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "skiTouring.before",
+    key: "skiTouring_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: [
@@ -474,13 +476,13 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "skiTouring.after",
+    key: "skiTouring_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: ["quad", "calf", "lizard", "pigeon", "soleus", "toeStretch"],
   },
   {
-    key: "gym.before",
+    key: "gym_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: [
@@ -493,7 +495,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "gym.after",
+    key: "gym_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -508,7 +510,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "motorbike.before",
+    key: "motorbike_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: [
@@ -520,7 +522,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "motorbike.after",
+    key: "motorbike_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -535,13 +537,13 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "hiking.before",
+    key: "hiking_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: ["hipCircles", "legSwings", "lungeReach", "calfRaises", "ankleCircles"],
   },
   {
-    key: "hiking.after",
+    key: "hiking_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -557,7 +559,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "climbing.before",
+    key: "climbing_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: [
@@ -569,7 +571,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "climbing.after",
+    key: "climbing_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -587,7 +589,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "paddling.before",
+    key: "paddling_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: [
@@ -601,7 +603,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "paddling.after",
+    key: "paddling_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -615,7 +617,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "football.before",
+    key: "football_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: [
@@ -629,13 +631,13 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "football.after",
+    key: "football_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: ["quad", "hamstring", "hipFlexor", "lizard", "halfSplit", "wideFold"],
   },
   {
-    key: "racket.before",
+    key: "racket_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: [
@@ -652,7 +654,7 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "racket.after",
+    key: "racket_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -665,13 +667,13 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "golf.before",
+    key: "golf_before",
     group: "sports",
     minutes: [3, 5, 10],
     exercises: ["armCircles", "wristCircles", "openBook", "sideBend", "trunkTurns"],
   },
   {
-    key: "golf.after",
+    key: "golf_after",
     group: "sports",
     minutes: [3, 5, 10, 15],
     exercises: [
@@ -685,13 +687,13 @@ export const CATEGORIES: readonly Category[] = [
     ],
   },
   {
-    key: "intimacy.before",
+    key: "intimacy_before",
     group: "intimacy",
     minutes: [5, 10],
     exercises: ["catCow", "pelvicTilt", "hipCircles", "bridge", "butterfly"],
   },
   {
-    key: "intimacy.after",
+    key: "intimacy_after",
     group: "intimacy",
     minutes: [5, 10],
     exercises: ["lyingTwist", "figureFour", "child", "restBreath"],

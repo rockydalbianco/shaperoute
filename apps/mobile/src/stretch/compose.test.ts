@@ -198,7 +198,7 @@ describe("what a category offers", () => {
     expect(can("neck", "gentle", "standing")).toBe(true);
     // All on the floor: no standing version.
     expect(can("relax", "gentle", "standing")).toBe(false);
-    expect(can("intimacy.after", "gentle", "standing")).toBe(false);
+    expect(can("intimacy_after", "gentle", "standing")).toBe(false);
     expect(can("glutes", "gentle", "standing")).toBe(false);
   });
 
@@ -253,14 +253,14 @@ describe("what a category offers", () => {
 
 describe("some routines, as they come out", () => {
   it("keeps the five classics after a run in five minutes, and adds the floor in ten", () => {
-    expect(keys("running.after")).toEqual([
+    expect(keys("running_after")).toEqual([
       "quad",
       "hamstring",
       "calf",
       "glute",
       "hipFlexor",
     ]);
-    const ten = keys("running.after", { minutes: 10 });
+    const ten = keys("running_after", { minutes: 10 });
     expect(ten.slice(0, 4)).toEqual(["quad", "hamstring", "calf", "glute"]);
     expect(ten).toContain("lyingTwist");
     expect(ten.length).toBeGreaterThan(5);
@@ -268,7 +268,7 @@ describe("some routines, as they come out", () => {
   });
 
   it("warms up before a run with movements, twice round in ten minutes", () => {
-    const five = keys("running.before");
+    const five = keys("running_before");
     expect(five).toEqual([
       "hipCircles",
       "legSwings",
@@ -276,7 +276,7 @@ describe("some routines, as they come out", () => {
       "ankleCircles",
       "bridge",
     ]);
-    expect(keys("running.before", { minutes: 10 })).toEqual([...five, ...five]);
+    expect(keys("running_before", { minutes: 10 })).toEqual([...five, ...five]);
   });
 
   it("adds the deep stretches when asked «Intense»", () => {

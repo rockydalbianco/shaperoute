@@ -48,9 +48,9 @@ describe("the stretching categories", () => {
       "afterTravel",
       "posture",
       "relax",
-      ...SPORTS.flatMap((sport) => [`${sport}.before`, `${sport}.after`]),
-      "intimacy.before",
-      "intimacy.after",
+      ...SPORTS.flatMap((sport) => [`${sport}_before`, `${sport}_after`]),
+      "intimacy_before",
+      "intimacy_after",
       "beginners",
       "joints",
       "backCare",
@@ -63,6 +63,15 @@ describe("the stretching categories", () => {
     expect(count("sports")).toBe(28);
     expect(count("intimacy")).toBe(2);
     expect(count("more")).toBe(5);
+  });
+
+  it("have keys the server takes as a routine's name: letters, digits, underscores", () => {
+    // ROUTINE_PATTERN in services/api/shaperoute_api/stretch_sessions.py,
+    // and the CHECK of the tables that keep a session's routine.
+    for (const c of CATEGORIES) {
+      expect(c.key).toMatch(/^[A-Za-z0-9_]{1,40}$/);
+    }
+    expect(new Set(CATEGORIES.map((c) => c.key)).size).toBe(CATEGORIES.length);
   });
 
   it("name only exercises there are, none twice, and leave none of the 65 out", () => {
@@ -95,10 +104,10 @@ describe("the stretching categories", () => {
       bedtime: 13,
       desk: 16,
       relax: 6,
-      "running.after": 18,
-      "racket.before": 10,
-      "intimacy.before": 5,
-      "intimacy.after": 4,
+      running_after: 18,
+      racket_before: 10,
+      intimacy_before: 5,
+      intimacy_after: 4,
       beginners: 9,
       joints: 11,
       backCare: 11,
@@ -109,11 +118,11 @@ describe("the stretching categories", () => {
       if (c.group === "body" || c.group === "moments") {
         expect(c.exercises.length).toBeGreaterThanOrEqual(6);
       }
-      if (c.key.endsWith(".before") && c.group === "sports") {
+      if (c.key.endsWith("_before") && c.group === "sports") {
         expect(c.exercises.length).toBeGreaterThanOrEqual(5);
         expect(c.exercises.length).toBeLessThanOrEqual(10);
       }
-      if (c.key.endsWith(".after") && c.group === "sports") {
+      if (c.key.endsWith("_after") && c.group === "sports") {
         expect(c.exercises.length).toBeGreaterThanOrEqual(6);
         expect(c.exercises.length).toBeLessThanOrEqual(18);
       }
@@ -124,8 +133,8 @@ describe("the stretching categories", () => {
     const moves = (key: string) =>
       of(key).exercises.filter((k) => isMove(exerciseByKey(k)!)).length;
     for (const sport of SPORTS) {
-      const before = of(`${sport}.before`);
-      const after = of(`${sport}.after`);
+      const before = of(`${sport}_before`);
+      const after = of(`${sport}_after`);
       // Most of a warm-up moves; before a swim two of the five do, with the
       // holds that open the shoulders and the ankles.
       expect(moves(before.key)).toBeGreaterThanOrEqual(2);
@@ -141,7 +150,7 @@ describe("the stretching categories", () => {
 
   it("begin with what each is for: the exercises that name it first", () => {
     expect(of("neck").exercises.slice(0, 2)).toEqual(["neck", "upperBack"]);
-    expect(of("running.after").exercises.slice(0, 6)).toEqual([
+    expect(of("running_after").exercises.slice(0, 6)).toEqual([
       "quad",
       "hamstring",
       "calf",
@@ -149,7 +158,7 @@ describe("the stretching categories", () => {
       "glute",
       "forwardFold",
     ]);
-    expect(of("gym.after").exercises.slice(0, 4)).toEqual([
+    expect(of("gym_after").exercises.slice(0, 4)).toEqual([
       "quad",
       "shoulder",
       "chest",
@@ -158,14 +167,14 @@ describe("the stretching categories", () => {
     expect(of("morning").exercises[0]).toBe("overheadReach");
     expect(of("relax").exercises.slice(0, 2)).toEqual(["legsUpWall", "restBreath"]);
     // The two of «Intimacy», as the approved list wrote them.
-    expect(of("intimacy.before").exercises).toEqual([
+    expect(of("intimacy_before").exercises).toEqual([
       "catCow",
       "pelvicTilt",
       "hipCircles",
       "bridge",
       "butterfly",
     ]);
-    expect(of("intimacy.after").exercises).toEqual([
+    expect(of("intimacy_after").exercises).toEqual([
       "lyingTwist",
       "figureFour",
       "child",
@@ -188,8 +197,8 @@ describe("the stretching categories", () => {
       afterTravel: [5, 10],
       posture: [5, 10, 15],
       relax: [3, 5, 10, 15, 20],
-      "intimacy.before": [5, 10],
-      "intimacy.after": [5, 10],
+      intimacy_before: [5, 10],
+      intimacy_after: [5, 10],
       beginners: [3, 5, 10],
       toes: [10],
       splits: [15, 20],

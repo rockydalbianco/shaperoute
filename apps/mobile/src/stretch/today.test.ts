@@ -10,24 +10,24 @@ describe("what «Today» proposes", () => {
   it("is the «After» of a sport done in the last three hours, whatever the hour", () => {
     const now = at(27, 7, 30);
     const ended = (ago: number) => ({ sport: "running", endedAt: now.getTime() - ago });
-    expect(todayCategory(now, ended(10 * 60 * 1000))).toBe("running.after");
-    expect(todayCategory(now, ended(AFTER_SPORT_MS))).toBe("running.after");
+    expect(todayCategory(now, ended(10 * 60 * 1000))).toBe("running_after");
+    expect(todayCategory(now, ended(AFTER_SPORT_MS))).toBe("running_after");
     // Longer ago, the hour decides; so it does for a time still to come.
     expect(todayCategory(now, ended(AFTER_SPORT_MS + 1))).toBe("morning");
     expect(todayCategory(now, ended(-60 * 1000))).toBe("morning");
     expect(
       todayCategory(at(27, 22), { sport: "gym", endedAt: at(27, 20).getTime() }),
-    ).toBe("gym.after");
+    ).toBe("gym_after");
   });
 
   it("knows the app's sports by their names: a gravel ride is cycling, a tour is ski touring", () => {
     const now = at(27, 15);
     const after = (sport: string) =>
       todayCategory(now, { sport, endedAt: now.getTime() - 1000 });
-    expect(after("gravel_biking")).toBe("cycling.after");
-    expect(after("mountain_biking")).toBe("cycling.after");
-    expect(after("ski_touring")).toBe("skiTouring.after");
-    expect(after("swimming")).toBe("swimming.after");
+    expect(after("gravel_biking")).toBe("cycling_after");
+    expect(after("mountain_biking")).toBe("cycling_after");
+    expect(after("ski_touring")).toBe("skiTouring_after");
+    expect(after("swimming")).toBe("swimming_after");
     // A sport with no stretches of its own: the hour decides.
     expect(after("paragliding")).toBe("desk");
     expect(after("walking")).toBe("desk");
@@ -37,7 +37,7 @@ describe("what «Today» proposes", () => {
   it("names only categories there are", () => {
     const keys = new Set(CATEGORIES.map((c) => c.key));
     for (const sport of Object.values(STRETCH_SPORT)) {
-      expect(keys.has(`${sport}.after`)).toBe(true);
+      expect(keys.has(`${sport}_after`)).toBe(true);
     }
     for (const key of ["morning", "bedtime", "desk", "fullBody"]) {
       expect(keys.has(key)).toBe(true);

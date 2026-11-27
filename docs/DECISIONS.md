@@ -609,7 +609,7 @@ lasciando le righe d'indice.
 - ADR-0408 — La modalità «Nutrition»: scelta come uno sport la barra diventa Today · Plan · Explore · Feed · Profile; la scheda «Food» dell'allenamento resta; dopo TASK-490 D ed E · 2026-11-24 · Attiva
 - ADR-0409 — «Sign up» e «Log in» gialli: il pulsante in fondo al modulo è `accent` con parole `onAccent`, un'eccezione scelta dall'utente a «il giallo è del percorso» · 2026-11-24 · Attiva
 - ADR-0410 — Le email in produzione: con Resend partono quelle dell'account, le segnalazioni e il feedback; «quando sono via» e il riassunto solo se `SHAPEROUTE_EMAIL_ROUNDS` li nomina · 2026-11-24 · Attiva
-- ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-24 · Proposta
+- ADR-0411 — Le forme nuove del motore (inverno, feste, sport e i 35 contorni di TASK-418): sagome sulla carta, disegni sulle strade, poi una sola registrazione e il catalogo · 2026-11-27 · Accettata
 - ADR-0394, precisazione C — La scheda pubblicata aperta fuori dal Feed: profilo, campanella, push, link e chat la aprono per id sulla scheda della mappa, col riquadro del Feed; nella griglia del profilo una cella sua · 2026-11-23 · Attiva
 - ADR-0258, precisazione C2 — La foto a penna alzata nell'API e nell'app: i pezzi solo se il contorno a penna alzata è lo stesso, al più `MAX_WALKS`, `pen_up` e `pieces` insieme, nessun pezzo dopo una modifica, «Lift the pen between parts» acceso all'avvio · 2026-11-26 · Attiva
 - ADR-0412 — L'anteprima dal vivo di «Draw»: un'immagine di mappa del Feed a scatti di scala, la sagoma disegnata dall'app col primo punto del contorno sulla partenza · 2026-11-26 · Attiva
@@ -1590,8 +1590,8 @@ prima modifica di quel file. Solo app, niente di nativo. Controllato da
 
 ## ADR-0411 — Le forme nuove del motore: inverno, feste, sport e i 35 contorni di TASK-418, giudicate sulla carta, poi sulle strade, poi registrate tutte insieme
 
-**Stato**: Proposta · 2026-11-24 · TASK-516 (parte 0; la parte A sono i
-contorni). Il pezzo da cui partire è una scelta **dell'utente**
+**Stato**: Accettata · 2026-11-27 · TASK-516 (#1579, #1580, #1622, #1661;
+proposta il 2026-11-24, parte 0; la parte A sono i contorni). Il pezzo da cui partire è una scelta **dell'utente**
 (2026-11-24, «Forme invernali e contorni»); il come è deciso dall'agente
 su delega dell'utente, sulla strada di ADR-0346 e della sua precisazione B.
 

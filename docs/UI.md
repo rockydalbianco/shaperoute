@@ -4831,6 +4831,24 @@ mostra le lettere unite da linee dritte sulla base.
   la prossima volta, chiude la pagina e apre la schermata dello stretching
   su quella routine; la sessione finita va in «My activities» come le
   altre, col nome della categoria.
+- **La pagina di un esercizio** (TASK-520 parte E;
+  `src/stretch/ExercisePage.tsx`): si apre toccando un esercizio nella
+  lista di una categoria, a tutto schermo, con ✕ in alto a destra. Il
+  nome; la figura che ripete l'esercizio dentro un **anello di 48
+  puntini** del colore del gruppo, che si spengono coi secondi (l'ultimo
+  acceso è più grande); il tempo in grande con il tasto pausa («Pause» /
+  «Play» al lettore di schermo); sotto, il lato («Right side», «Left
+  side») e **«Breathe in» / «Breathe out»**, quattro secondi l'uno. Un
+  movimento ha il suo ritmo e non ha la riga del respiro. A fine tempo
+  ricomincia, sull'altro lato se ne ha due. Poi tre riquadri — **Hold**
+  (i secondi che ha nella routine da cui è stato aperto), **Sides**
+  («Both» o «One»), **Position** («Standing», «Chair», «Floor») —,
+  **«How to»** e **«Good for»**, con tutte le categorie che hanno
+  quell'esercizio. In fondo il pulsante giallo **«Try it · 1 min»**: apre
+  la schermata dello stretching su quel solo esercizio per un minuto
+  (mezzo minuto per lato se ne ha due) e non salva nessuna sessione.
+  L'anello è una decorazione: il tempo è scritto accanto e il lettore di
+  schermo non trova i puntini.
 - **Senza rete o senza API** la schermata è la stessa: non chiede niente
   a nessuno.
 - **«Keep running»**, dopo uno «Stop» e con il percorso ancora sullo

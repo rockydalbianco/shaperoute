@@ -263,6 +263,10 @@ aggiungono qui dopo il sì del Coordinatore. Tutti i percorsi sotto
   `stretch/StretchWeek.tsx` e i loro test; modificati
   `stretch/StretchHome.tsx`, `stretch/categoryText.ts`, i loro test e
   `stretch/TodayCard.test.tsx`, `i18n/{it,de,fr,es}.ts`.
+- **E** (#1721): nuovi `stretch/ExercisePage.tsx`, `stretch/DotRing.tsx`,
+  `stretch/goodFor.ts` e i loro test; modificati `stretch/CategoryPage.tsx`
+  e il suo test, `stretch/CategoryTile.tsx` (la prop facoltativa `mirrored`
+  di `PoseFigure`), `i18n/{it,de,fr,es}.ts`.
 
 ## Dove siamo
 
@@ -338,9 +342,56 @@ Da provare sul telefono dopo l'OTA che porta D1 e D2: una tessera apre la
 sua pagina, «Start» avvia la routine, la sessione finita compare in «My
 activities» e la settimana dopo in «This week»; le tinte chiare.
 
-Prossimo: la **parte E** (pagina dell'esercizio), elenco dei file
-approvato dal Coordinatore; aspetta il sì dell'utente sui suoi 14 testi
-(`out/stretching-nuovo/TESTI-E.md`). Poi la parte F (video MP4).
+2026-11-27, **parte D2 in `main`** (#1714) e documenti di D1 e D2 (#1715).
+
+2026-11-27, **parte E** nella #1721 (pagina dell'esercizio): 14 testi con
+le quattro traduzioni («Sì, approvo») e schermate dal simulatore («Sì,
+approvo»), aperta direttamente con tre esercizi; fogli in
+`out/TASK-520/e/` del checkout principale. «Play» esiste già come «Gioca»:
+qui ha il segno `Play@@timer`. Per i movimenti il primo riquadro dice
+comunque «Hold»: è il testo approvato, detto all'utente.
+
+### Cosa resta (consegna per chi continua)
+
+Questa parte l'ha scritta una sola sessione, dalla parte 0 alla E. Chi
+continua parte da qui e dal task file, non dalla sua conversazione.
+
+1. **Parte F — video MP4 della routine**, l'ultima. Non c'è ancora niente:
+   né scelte né codice. Prima una **parte 0 con l'utente**, una domanda
+   per volta con la proposta pronta: da dove si apre (fine di una sessione?
+   pagina della categoria?), cosa mostra (la figura che fa gli esercizi
+   della routine, nomi, tempi, il colore del gruppo?), quanto dura, cosa
+   se ne fa (salvare, condividere, post nel Feed?). Decisione tecnica già
+   scritta in ADR-0415: nasce nella pagina del video della corsa
+   (`src/share/videoPage.ts`), con una scena sua. La figura oggi è fatta
+   di View di React Native: nella pagina del video va ridisegnata con gli
+   stessi numeri (`poses.ts`, `posesFront.ts` dicono dove sta ogni
+   segmento). Poi l'elenco dei file al Coordinatore, prima del codice.
+2. **Le scorciatoie ai gruppi** in cima alla home (Body · Moments ·
+   Sports · Intimacy · More), che lo schizzo ha e il codice no: la home
+   sta dentro lo scorrimento di «Draw», quindi serve che `ChooseScreen`
+   la lasci scorrere fino a un gruppo. Piccola, a parte.
+3. **Prova sul telefono** dopo l'OTA che porta D1, D2 ed E (lo decide il
+   Coordinatore): una tessera apre la sua pagina; «Start» avvia la routine
+   e la sessione finita compare in «My activities» e in «This week»;
+   «Today» propone l'«After» dopo uno sport; una riga apre la pagina
+   dell'esercizio, pausa e «Try it» funzionano; le tinte chiare. Nel
+   simulatore tutto questo è stato visto senza tocchi.
+4. **Da sapere**: i promemoria («Morning stretch», dopo la corsa, dopo la
+   palestra) aprono ancora le tre routine di TASK-466 (`routines.ts`);
+   `stretchSport/StretchRoutines.tsx` non è più montato e resta nel
+   codice; «My routines» di TASK-466 parte E si monta in
+   `StretchHome.tsx`, tra «Today» e i gruppi.
+5. **Chiusura del task** quando F è in `main`: stato `Done` qui con una
+   riga di esito, la riga in `docs/archive/COMPLETATI.md` e la voce di
+   `STATUS.md` (le tiene il Coordinatore 3), «TASK-520 fatto» al
+   Coordinatore.
+
+Strumenti fuori dal repository, nel checkout principale: fogli delle pose
+e generatori in `out/stretching-nuovo/pose/` e `out/stretching-nuovo/c/`;
+tabelle dei testi `out/stretching-nuovo/testi-{d,e}.psv`; schermate e
+attrezzi del simulatore in `out/TASK-520/{b,d,e}/` (l'app di prova
+`Harness520*.tsx.txt`, `rec.sh`, gli script Swift dei fotogrammi).
 
 ---
 

@@ -4,6 +4,7 @@ table that is in the repository. No network, no need of the NGA file."""
 
 from __future__ import annotations
 
+import hashlib
 import re
 import struct
 import zlib
@@ -155,6 +156,11 @@ def test_the_table_in_the_app_is_whole_and_keeps_nga_nodes() -> None:
     }
     assert numbers == {"EGM96_STEP_DEG": 1, "EGM96_ROWS": 181, "EGM96_COLS": 360}
     (encoded,) = re.findall(r'"([A-Za-z0-9+/=]+)"', text)
+    # The script is deterministic: NGA's file gives always this table.
+    assert hashlib.sha256(encoded.encode("ascii")).hexdigest() == eg.TABLE_SHA256
+    assert eg.TABLE_SHA256 == (
+        "e30cb62a94f4d8acb3a97da3b7de92887dd5764eb26d7574b458b02c3fbfa563"
+    )
     grid = eg.decode(encoded, 181, 360, 1.0)
     # NGA's 15' nodes, which the table keeps to the centimetre.
     assert grid.height(46, 11) == pytest.approx(49.28, abs=0.005)

@@ -85,7 +85,7 @@ export function useFreeRun(active: boolean): FreeRunState {
         // (TASK-323 D); standing still waits longer before the pause.
         const swim = isSwim(activity);
         // In the air no auto-pause unless the pilot wants it (TASK-305), and
-        // the altitude above the sea, also on Android (TASK-479 E2b).
+        // the altitude above the sea on Android too (TASK-479 E2b).
         const air = isFlight(runActivityOf(loadSport()));
         const session = controlRun(recorder, {
           // «Pause» and «Resume» change the track between two fixes.
@@ -123,12 +123,7 @@ export function useFreeRun(active: boolean): FreeRunState {
                 timeMs: timestamp,
                 accuracyM: coords.accuracy,
                 altitudeM: air
-                  ? seaLevelAltitudeM(
-                      coords.altitude,
-                      coords.latitude,
-                      coords.longitude,
-                      Platform.OS,
-                    )
+                  ? seaLevelAltitudeM(coords, Platform.OS)
                   : coords.altitude,
               },
               false,

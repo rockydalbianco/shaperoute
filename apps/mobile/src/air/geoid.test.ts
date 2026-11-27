@@ -66,26 +66,38 @@ describe("geoidHeightM", () => {
 });
 
 describe("seaLevelAltitudeM", () => {
+  const baldo = (altitude: number | null) => ({
+    latitude: 45.75,
+    longitude: 10.84,
+    altitude,
+  });
+
   it("takes the geoid off the ellipsoid height on Android", () => {
     // Monte Baldo's top, about 2218 m on the map: about 2266 m on the
-    // ellipsoid, as an Android phone says it.
-    expect(seaLevelAltitudeM(2266, 45.75, 10.84, "android")).toBeCloseTo(
-      2266 - geoidHeightM(45.75, 10.84),
-      2,
-    );
-    expect(seaLevelAltitudeM(2266, 45.75, 10.84, "android")).toBeGreaterThan(2215);
-    expect(seaLevelAltitudeM(2266, 45.75, 10.84, "android")).toBeLessThan(2221);
+    // ellipsoid, as an Android phone says it; N there is 47.0 m (NGA's 15'
+    // grid: 48.15 m).
+    const sea = seaLevelAltitudeM(baldo(2266), "android");
+    expect(sea).toBeCloseTo(2266 - geoidHeightM(45.75, 10.84), 2);
+    expect(sea).toBeGreaterThan(2215);
+    expect(sea).toBeLessThan(2221);
+    // Chamonix, the valley at 1035 m: N 51.2 m.
+    const chamonix = { latitude: 45.9237, longitude: 6.8694, altitude: 1086.2 };
+    expect(seaLevelAltitudeM(chamonix, "android")).toBeCloseTo(1035, 0);
   });
 
   it("leaves iOS as it is: it already gives the sea", () => {
-    expect(seaLevelAltitudeM(2218, 45.75, 10.84, "ios")).toBe(2218);
-    expect(seaLevelAltitudeM(2218, 45.75, 10.84, "web")).toBe(2218);
+    expect(seaLevelAltitudeM(baldo(2218), "ios")).toBe(2218);
+    expect(seaLevelAltitudeM(baldo(2218), "web")).toBe(2218);
   });
 
   it("never makes up a height", () => {
-    expect(seaLevelAltitudeM(null, 45.75, 10.84, "android")).toBeNull();
-    expect(seaLevelAltitudeM(undefined, 45.75, 10.84, "android")).toBeUndefined();
-    expect(seaLevelAltitudeM(Number.NaN, 45.75, 10.84, "android")).toBeNaN();
-    expect(seaLevelAltitudeM(500, Number.NaN, 10.84, "android")).toBe(500);
+    expect(seaLevelAltitudeM(baldo(null), "android")).toBeNull();
+    expect(seaLevelAltitudeM(baldo(Number.NaN), "android")).toBeNaN();
+    expect(
+      seaLevelAltitudeM(
+        { latitude: Number.NaN, longitude: 10.84, altitude: 500 },
+        "android",
+      ),
+    ).toBe(500);
   });
 });

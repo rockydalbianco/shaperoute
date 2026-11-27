@@ -42,6 +42,9 @@ from pathlib import Path
 
 SOURCE_SHA256 = "db493027562c9b004d7220fa881f5603adada4e1c5029b933fa7de4547b0e78d"
 SOURCE_URL = "https://cdn.proj.org/us_nga_egm96_15.tif"
+#: The sha256 of the table's base64 made from that file: the script is
+#: deterministic, so the same file always gives this.
+TABLE_SHA256 = "e30cb62a94f4d8acb3a97da3b7de92887dd5764eb26d7574b458b02c3fbfa563"
 
 #: The app's table: one node every STEP_DEG degrees.
 STEP_DEG = 1
@@ -243,7 +246,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"{args.step}° vs 15', {name}: {m['nodes']} nodes, max {m['max']:.2f} m,"
             f" p99 {m['p99']:.2f} m, p95 {m['p95']:.2f} m, rms {m['rms']:.2f} m"
         )
-    print(f"base64: {len(text)} characters")
+    digest = hashlib.sha256(text.encode("ascii")).hexdigest()
+    print(f"base64: {len(text)} characters, sha256 {digest}")
+    if args.step == STEP_DEG and digest != TABLE_SHA256:
+        print("warning: not the table in the repository", file=sys.stderr)
     for name, lat, lon in CHECK_POINTS:
         print(
             f"{name}: ({lat}, {lon}) 15' {fine.height(lat, lon):.2f} m,"

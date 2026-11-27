@@ -75,26 +75,28 @@ export function geoidHeightM(lat: number, lon: number): number {
   return top * (1 - fy) + bottom * fy;
 }
 
+/** What the phone gives with a fix, as `expo-location`'s `coords`. */
+export type PhoneCoords = {
+  latitude: number;
+  longitude: number;
+  altitude: number | null;
+};
+
 /**
  * The fix's altitude above mean sea level: on Android the ellipsoid height
- * less the geoid, elsewhere as the phone gives it. Null (or a number that is
- * not one) stays as it is: no height is never made up.
+ * less the geoid, elsewhere as the phone gives it. A missing height (or a
+ * number that is not one) stays as it is: a height is never made up.
  */
-export function seaLevelAltitudeM(
-  altitudeM: number | null | undefined,
-  lat: number,
-  lon: number,
-  os: string,
-): number | null | undefined {
+export function seaLevelAltitudeM(coords: PhoneCoords, os: string): number | null {
+  const { latitude, longitude, altitude } = coords;
   if (
     os !== "android" ||
-    altitudeM === null ||
-    altitudeM === undefined ||
-    !Number.isFinite(altitudeM) ||
-    !Number.isFinite(lat) ||
-    !Number.isFinite(lon)
+    altitude === null ||
+    !Number.isFinite(altitude) ||
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude)
   ) {
-    return altitudeM;
+    return altitude;
   }
-  return Math.round((altitudeM - geoidHeightM(lat, lon)) * 100) / 100;
+  return Math.round((altitude - geoidHeightM(latitude, longitude)) * 100) / 100;
 }

@@ -2004,6 +2004,47 @@ export const DE: Table = {
   Inchworm: "Raupe",
   "Fold down, walk your hands out to a plank, then walk them back.":
     "Nach unten beugen, mit den Händen bis in die Planke laufen, dann zurück.",
+  "Neck side tilt": "Nacken seitlich neigen",
+  "Tilt one ear toward your shoulder. Keep both shoulders low.":
+    "Ein Ohr zur Schulter neigen. Beide Schultern unten lassen.",
+  "Neck turn": "Kopf drehen",
+  "Turn your head to look over one shoulder. Chin level.":
+    "Den Kopf drehen und über eine Schulter schauen. Kinn gerade.",
+  "Goalpost arms": "Kaktusarme",
+  "Elbows at shoulder height, hands up. Draw your elbows back, chest open.":
+    "Ellbogen auf Schulterhöhe, Hände nach oben. Die Ellbogen nach hinten ziehen, Brust offen.",
+  "Standing side bend": "Seitbeuge im Stehen",
+  "Reach one arm overhead and lean to the other side. Hips still.":
+    "Einen Arm über den Kopf strecken und zur anderen Seite neigen. Hüfte ruhig.",
+  "Lying twist": "Drehung im Liegen",
+  "Lying down, drop both knees to one side. Shoulders stay on the floor.":
+    "Im Liegen beide Knie zu einer Seite sinken lassen. Die Schultern bleiben am Boden.",
+  "Sit with the soles of your feet together. Let your knees fall open.":
+    "Im Sitzen die Fußsohlen aneinanderlegen. Die Knie nach außen sinken lassen.",
+  Frog: "Frosch",
+  "On all fours, knees wide. Push your hips gently back.":
+    "Im Vierfüßlerstand, Knie weit. Die Hüfte sanft nach hinten schieben.",
+  "Side lunge": "Seitlicher Ausfallschritt",
+  "Feet wide, shift your weight into one bent knee. Other leg straight.":
+    "Füße weit, das Gewicht auf ein gebeugtes Knie verlagern. Das andere Bein gestreckt.",
+  "Wide-leg forward fold": "Vorbeuge in der Grätsche",
+  "Feet wide, fold forward from the hips. Hands to the floor.":
+    "Füße weit, aus der Hüfte nach vorn beugen. Hände zum Boden.",
+  "Arm openers": "Arme öffnen",
+  "Hug yourself, then open your arms wide. Squeeze your shoulder blades.":
+    "Sich selbst umarmen, dann die Arme weit öffnen. Die Schulterblätter zusammenziehen.",
+  "Open book": "Offenes Buch",
+  "Lie on your side, knees bent. Open your top arm wide and follow it with your eyes.":
+    "Auf die Seite legen, Knie gebeugt. Den oberen Arm weit öffnen und ihm mit dem Blick folgen.",
+  "Trunk turns": "Rumpfdrehen",
+  "Feet wide, turn your upper body side to side. Let your arms swing.":
+    "Füße weit, den Oberkörper von Seite zu Seite drehen. Die Arme mitschwingen lassen.",
+  "Knee sways": "Knie pendeln",
+  "Lying, knees bent and feet wide. Let your knees sway side to side.":
+    "Im Liegen, Knie gebeugt, Füße weit. Die Knie von Seite zu Seite pendeln lassen.",
+  "Hip circles": "Hüftkreisen",
+  "Hands on hips, draw big slow circles. Change direction halfway.":
+    "Hände an die Hüften, große, langsame Kreise ziehen. Zur Halbzeit die Richtung wechseln.",
   // end of TASK-520 part B
   Morning: "Morgens",
   "After run": "Nach dem Laufen",

@@ -2,7 +2,7 @@ import { act, render, screen } from "@testing-library/react-native";
 import { AccessibilityInfo, Animated, StyleSheet } from "react-native";
 
 import { BREATH_MS, POSE_MS } from "./Figure";
-import { FigureFront, frontPath, frontTurns } from "./FigureFront";
+import { FigureFront, frontFlips, frontPath, frontTurns } from "./FigureFront";
 import { FRONT_SEGMENTS, FRONT_STAND, type FrontPose, mirrorFront } from "./posesFront";
 
 /** A side bend to the left of the screen, the right arm over the head. */
@@ -12,6 +12,16 @@ const BEND: FrontPose = {
   head: 150,
   upperArmRight: 150,
   forearmRight: 140,
+};
+/** Folded forward between wide legs: the body turned over, the head down. */
+const FOLD: FrontPose = {
+  ...FRONT_STAND,
+  torso: 0,
+  head: 0,
+  thighLeft: 26,
+  shinLeft: 26,
+  thighRight: -26,
+  shinRight: -26,
 };
 /** A tilt of the head. */
 const TILT: FrontPose = { ...FRONT_STAND, head: 150 };
@@ -52,6 +62,41 @@ describe("the front figure's moves", () => {
     // A limb's turn is counted from the one it hangs from.
     expect(frontTurns("head", [BEND])).toEqual([-10]);
     expect(frontTurns("torso", [BEND])).toEqual([160]);
+  });
+});
+
+describe("a pose with the body turned over", () => {
+  it("is told from one that only leans", () => {
+    expect(frontFlips(frontPath(FRONT_STAND, FOLD))).toBe(true);
+    expect(frontFlips(frontPath(FOLD, FRONT_STAND))).toBe(true);
+    // Through standing, on the way to another pose.
+    expect(frontFlips(frontPath(FOLD, BEND))).toBe(true);
+    expect(frontFlips(frontPath(FRONT_STAND, BEND))).toBe(false);
+    expect(frontFlips(frontPath(BEND, mirrorFront(BEND)))).toBe(false);
+    expect(frontFlips([FOLD])).toBe(false);
+  });
+
+  it("fades out and back in instead of swinging the body round to a side", async () => {
+    const timing = jest.spyOn(Animated, "timing");
+    await render(<FigureFront pose={FOLD} height={300} testID="f" />);
+    const durations = () => timing.mock.calls.map(([, config]) => config.duration);
+    // Two halves of a pose's time, and no turn through the poses.
+    expect(durations().filter((duration) => duration === POSE_MS / 2)).toHaveLength(2);
+    expect(durations()).not.toContain(POSE_MS);
+    // Out, then back in.
+    expect(
+      timing.mock.calls
+        .filter(([, config]) => config.duration === POSE_MS / 2)
+        .map(([, config]) => config.toValue),
+    ).toEqual([0, 1]);
+    await act(() => jest.advanceTimersByTimeAsync(POSE_MS * 2));
+    expect(screen.getByTestId("f", { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it("turns as before into a pose that only leans", async () => {
+    const timing = jest.spyOn(Animated, "timing");
+    await render(<FigureFront pose={BEND} height={300} testID="f" />);
+    expect(timing.mock.calls.map(([, config]) => config.duration)).toContain(POSE_MS);
   });
 });
 

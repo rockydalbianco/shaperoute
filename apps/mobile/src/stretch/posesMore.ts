@@ -545,10 +545,11 @@ export const REST_BREATH_BREATH: Breath = {
  * a loop, like a breath but as wide and as quick as the exercise says.
  */
 
-/** Standing, the head poked a little forward. */
+/** Standing, the head poked forward: more than a real neck does, so that the
+ * small way back shows on a figure this size. */
 export const CHIN_TUCK: Pose = {
   torso: 180,
-  head: 164,
+  head: 150,
   upperArmFar: 0,
   forearmFar: 0,
   upperArmNear: 0,
@@ -563,7 +564,7 @@ export const CHIN_TUCK: Pose = {
 
 /** The head drawn straight back, over the shoulders. */
 export const CHIN_TUCK_MOVE: Breath = {
-  head: 18,
+  head: 32,
 };
 
 /** Standing, the arms by the sides. */

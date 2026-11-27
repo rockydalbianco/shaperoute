@@ -124,6 +124,23 @@ describe("the figure seen from the front", () => {
     expect(frontDrift(wide)).toBeCloseTo(-left - FRONT_REACH);
     expect(frontDrift(FRONT_STAND)).toBeCloseTo(0);
   });
+
+  it("draws a planted pose with its feet in the middle, wherever the hip is", () => {
+    // The hip to the right of two feet that are apart.
+    const across: FrontPose = {
+      ...FRONT_STAND,
+      thighLeft: 30,
+      shinLeft: 30,
+      thighRight: -5,
+      shinRight: -5,
+    };
+    const b = frontBones(across);
+    const feet = (b.shinLeft.to.x + b.shinRight.to.x) / 2;
+    expect(feet).toBeLessThan(-0.05);
+    expect(frontDrift(across)).toBeCloseTo(0);
+    expect(frontDrift({ ...across, planted: true })).toBeCloseTo(-feet);
+    expect(frontDrift({ ...FRONT_STAND, planted: true })).toBeCloseTo(0);
+  });
 });
 
 describe("the other side, seen from the front", () => {

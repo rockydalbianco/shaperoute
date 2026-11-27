@@ -14,6 +14,7 @@ import {
   frontDrift,
   frontGrounding,
   type FrontPose,
+  frontSway,
   type FrontSegment,
   HIP_HALF,
   mirrorFront,
@@ -33,7 +34,8 @@ import {
  * short way, standing up between two poses; a breath while held, or a
  * movement at its own pace (`breathMs`); still with «Reduce Motion» on.
  * The other side is the same pose mirrored, reached through standing: seen
- * from the front nobody turns round.
+ * from the front nobody turns round. A pose `planted` on its feet keeps
+ * them still as it moves: the hip goes across over them.
  */
 
 /** How long the breath takes to settle when the hold stops. */
@@ -72,6 +74,19 @@ export function frontPath(from: FrontPose, to: FrontPose): readonly FrontPose[] 
     return [from, FRONT_STAND, to];
   }
   return [from, to];
+}
+
+/**
+ * Whether the body turns over somewhere along `poses`: standing to folded
+ * forward, the head down between the legs. Seen from the front that is no
+ * turn at all, the body comes toward whoever looks; drawn as one it would
+ * swing out to a side like the hand of a clock. So the figure fades from
+ * one pose to the other instead. Pure, for the tests.
+ */
+export function frontFlips(poses: readonly FrontPose[]): boolean {
+  return poses.some(
+    (pose, i) => i > 0 && Math.abs(nearest(0, pose.torso - poses[i - 1].torso)) > 90,
+  );
 }
 
 /** The angle of `segment` in its parent's frame. */
@@ -231,6 +246,7 @@ export function FigureFront({
   );
   const [t] = useState(() => new Animated.Value(0));
   const [b] = useState(() => new Animated.Value(0));
+  const [shown] = useState(() => new Animated.Value(1));
   // The figure comes in standing and goes into its first pose.
   const [poses, setPoses] = useState<readonly FrontPose[]>(() =>
     frontPath(FRONT_STAND, target),
@@ -244,9 +260,27 @@ export function FigureFront({
     const end = poses.length - 1;
     if (end === 0 || reduced) {
       t.setValue(Math.max(end, 1));
+      shown.setValue(1);
       return;
     }
     t.setValue(0);
+    if (frontFlips(poses)) {
+      // Out in the pose it was in, back in the new one.
+      const half = { duration: POSE_MS / 2, useNativeDriver: true };
+      const out = Animated.timing(shown, { ...half, toValue: 0 });
+      const back = Animated.timing(shown, { ...half, toValue: 1 });
+      out.start(({ finished }) => {
+        if (finished) {
+          t.setValue(end);
+          back.start();
+        }
+      });
+      return () => {
+        out.stop();
+        back.stop();
+        shown.setValue(1);
+      };
+    }
     const moving = Animated.timing(t, {
       toValue: end,
       duration: POSE_MS * end,
@@ -255,7 +289,7 @@ export function FigureFront({
     });
     moving.start();
     return () => moving.stop();
-  }, [poses, t, reduced]);
+  }, [poses, t, shown, reduced]);
 
   useEffect(() => {
     if (!breathing || reduced) {
@@ -296,8 +330,13 @@ export function FigureFront({
     t.interpolate(ground),
     b.interpolate({ inputRange: [0, 1], outputRange: [0, sink] }),
   );
-  // A pose that reaches far to a side slides back, to stay on the screen.
-  const slide = t.interpolate(keyframes(poses.map((p) => frontDrift(p) * height)));
+  // A pose that reaches far to a side slides back, to stay on the screen;
+  // one planted on its feet takes the hip across over them as it moves.
+  const sway = frontSway(at, deepenFront(at, swing)) * height;
+  const slide = Animated.add(
+    t.interpolate(keyframes(poses.map((p) => frontDrift(p) * height))),
+    b.interpolate({ inputRange: [0, 1], outputRange: [0, sway] }),
+  );
   const torso = FRONT_LENGTH.torso * height;
   const shoulders = torso * FRONT_SHOULDER_SHARE;
   const arm = (segment: "upperArmLeft" | "upperArmRight") => ({
@@ -321,7 +360,7 @@ export function FigureFront({
       <Animated.View
         style={[
           styles.hip,
-          { transform: [{ translateX: slide }, { translateY: lift }] },
+          { opacity: shown, transform: [{ translateX: slide }, { translateY: lift }] },
         ]}
       >
         <Bar half={HIP_HALF * height} top={0} line={line} />

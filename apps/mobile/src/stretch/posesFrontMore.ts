@@ -342,3 +342,54 @@ export const HIP_CIRCLES_MOVE: FrontBreath = {
   thighRight: 6.2,
   shinRight: -31.4,
 };
+
+/** The 90/90 seen from above: the front thigh forward and its shin across, the
+ * other thigh out to the side and its shin back, the hands on the floor by
+ * the hips. A bar cannot shorten, so the body is drawn as long as lying
+ * down, though it sits tall. */
+export const NINETY_NINETY_ABOVE: FrontPose = {
+  torso: 180,
+  head: 180,
+  upperArmLeft: 30,
+  forearmLeft: 12,
+  upperArmRight: -30,
+  forearmRight: -12,
+  thighLeft: 8,
+  shinLeft: -82,
+  thighRight: -86,
+  shinRight: -176,
+  above: true,
+};
+
+/** The chest a little toward the front knee. */
+export const NINETY_NINETY_ABOVE_BREATH: FrontBreath = {
+  torso: -4,
+  head: -6,
+  upperArmLeft: -5,
+  upperArmRight: -5,
+};
+
+/** The side-lying quad seen from above: on a side, the lower leg long, the top
+ * knee bent with the heel by the glutes and the hand on that foot, the head
+ * on the lower arm. */
+export const SIDE_QUAD_ABOVE: FrontPose = {
+  torso: 180,
+  head: 176,
+  upperArmLeft: 158,
+  forearmLeft: -104,
+  upperArmRight: -42.7,
+  forearmRight: 0.3,
+  thighLeft: 3,
+  shinLeft: 3,
+  thighRight: -22,
+  shinRight: -168,
+  above: true,
+};
+
+/** The heel a little closer, the hand with it. */
+export const SIDE_QUAD_ABOVE_BREATH: FrontBreath = {
+  thighRight: -4,
+  shinRight: -9,
+  upperArmRight: -4.3,
+  forearmRight: 11.2,
+};

@@ -37,12 +37,16 @@ import {
   LYING_TWIST_BREATH,
   NECK_SIDE,
   NECK_TURN,
+  NINETY_NINETY_ABOVE,
+  NINETY_NINETY_ABOVE_BREATH,
   OPEN_BOOK,
   OPEN_BOOK_MOVE,
   SIDE_BEND,
   SIDE_BEND_BREATH,
   SIDE_LUNGE,
   SIDE_LUNGE_MOVE,
+  SIDE_QUAD_ABOVE,
+  SIDE_QUAD_ABOVE_BREATH,
   TRUNK_TURNS,
   TRUNK_TURNS_MOVE,
   WIDE_FOLD,
@@ -68,8 +72,9 @@ const QUARTERS = [0, 0.25, 0.5, 0.75, 1];
 const fronts = NEW_EXERCISES.filter((exercise) => exercise.front !== undefined);
 
 describe("the new poses seen from the front, on either side", () => {
-  it("are fourteen, each with a breath or a movement of its own", () => {
-    expect(fronts).toHaveLength(14);
+  it("are sixteen, each with a breath or a movement of its own", () => {
+    // Fourteen of the fourth block, and two holds of the second seen from above.
+    expect(fronts).toHaveLength(16);
     for (const exercise of fronts) {
       const turns = Object.values(exercise.frontBreath ?? {});
       expect(turns.length).toBeGreaterThan(0);
@@ -498,5 +503,59 @@ describe("the five movements that go toward whoever looks", () => {
     } finally {
       jest.useRealTimers();
     }
+  });
+});
+
+describe("two holds of the second block, seen from above", () => {
+  it("bends both knees at right angles for the 90/90, one thigh forward and one to the side", () => {
+    expect(NINETY_NINETY_ABOVE.above).toBe(true);
+    const turn = (a: number, b: number) =>
+      Math.abs(((((a - b) % 360) + 540) % 360) - 180);
+    // Each knee, and the two thighs with each other.
+    expect(
+      turn(NINETY_NINETY_ABOVE.thighLeft, NINETY_NINETY_ABOVE.shinLeft),
+    ).toBeCloseTo(90, 0);
+    expect(
+      turn(NINETY_NINETY_ABOVE.thighRight, NINETY_NINETY_ABOVE.shinRight),
+    ).toBeCloseTo(90, 0);
+    expect(
+      turn(NINETY_NINETY_ABOVE.thighLeft, NINETY_NINETY_ABOVE.thighRight),
+    ).toBeGreaterThan(85);
+    const { shinLeft, shinRight, thighLeft, thighRight, torso } =
+      frontBones(NINETY_NINETY_ABOVE);
+    // The front knee is forward of the hip (down the screen), its shin across.
+    expect(thighLeft.to.y).toBeGreaterThan(0.2);
+    expect(shinLeft.to.x).toBeGreaterThan(thighLeft.to.x + 0.2);
+    // The other knee is out to the side, its foot back by the body.
+    expect(thighRight.to.x).toBeGreaterThan(0.25);
+    expect(shinRight.to.y).toBeLessThan(-0.15);
+    // On a breath the chest goes a little toward the front knee.
+    const deep = frontBones(
+      deepenFront(NINETY_NINETY_ABOVE, NINETY_NINETY_ABOVE_BREATH),
+    );
+    expect(deep.torso.to.x).toBeLessThan(torso.to.x);
+    expect(deep.shinLeft.to.x).toBeCloseTo(shinLeft.to.x, 6);
+  });
+
+  it("holds the top foot by the glutes for the side-lying quad, the lower leg long", () => {
+    expect(SIDE_QUAD_ABOVE.above).toBe(true);
+    const deep = deepenFront(SIDE_QUAD_ABOVE, SIDE_QUAD_ABOVE_BREATH);
+    const far = (pose: FrontPose) =>
+      Math.hypot(...Object.values(frontBones(pose).shinRight.to));
+    for (const pose of [SIDE_QUAD_ABOVE, deep]) {
+      const { forearmLeft, forearmRight, head, shinLeft, shinRight } = frontBones(pose);
+      // The hand is on the foot, and the foot back up by the hip.
+      expect(
+        Math.hypot(
+          forearmRight.to.x - shinRight.to.x,
+          forearmRight.to.y - shinRight.to.y,
+        ),
+      ).toBeLessThan(ON);
+      expect(far(pose)).toBeLessThan(0.2);
+      // The lower leg is straight, the head on the lower arm.
+      expect(shinLeft.to.y).toBeGreaterThan(LEG - 0.01);
+      expect(Math.abs(forearmLeft.to.y - head.to.y)).toBeLessThan(0.03);
+    }
+    expect(far(deep)).toBeLessThan(far(SIDE_QUAD_ABOVE));
   });
 });

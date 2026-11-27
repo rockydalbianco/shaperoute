@@ -70,6 +70,13 @@ const B4 = [
   "hipCircles",
 ];
 
+/**
+ * Two holds of the second block that read badly from the side: the screen
+ * draws them from above, and the side pose stays for whoever draws only
+ * that (the user's «Sì, dall'alto»).
+ */
+const ALSO_ABOVE = ["ninetyNinety", "sideQuad"];
+
 /** The ones of the fourth block that move. */
 const B4_MOVES = [
   "sideLunge",
@@ -150,6 +157,11 @@ describe("the exercises TASK-520 adds", () => {
         expect(exercise.front).toBeDefined();
         expect(exercise.pose).toBe(STAND);
         expect(exercise.breath).toBeUndefined();
+      } else if (ALSO_ABOVE.includes(exercise.key)) {
+        expect(exercise.front?.above).toBe(true);
+        expect(exercise.frontBreath).toBeDefined();
+        expect(exercise.pose).not.toBe(STAND);
+        expect(exercise.breath).toBeDefined();
       } else {
         expect(exercise.front).toBeUndefined();
         expect(exercise.frontBreath).toBeUndefined();

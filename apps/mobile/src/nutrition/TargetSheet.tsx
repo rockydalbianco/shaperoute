@@ -16,8 +16,9 @@ type Props = {
   visible: boolean;
   /** The target as it is now; null with none. */
   target: number | null;
-  /** The number the user wrote, or null for «Remove target». */
-  onTarget: (kcal: number | null) => void;
+  /** The number the user saved, or null for «Remove target»;
+   * `fromEstimate` when it is MuW's estimate as «Use this number» put it. */
+  onTarget: (kcal: number | null, fromEstimate: boolean) => void;
   onClose: () => void;
 };
 
@@ -27,6 +28,8 @@ type Props = {
  * the one their dietitian gave them. The field starts empty. Since part J
  * MuW's estimate can be looked at under it (EstimateBox.tsx): closed until
  * asked for, and never written unless the user says «Use this number».
+ * Since part K1 the sheet tells whether the number saved is that estimate,
+ * untouched: then a new weigh-in offers to work it out again.
  */
 export function TargetSheet({ visible, target, onTarget, onClose }: Props) {
   return (
@@ -38,12 +41,15 @@ export function TargetSheet({ visible, target, onTarget, onClose }: Props) {
 
 function Body({ target, onTarget, onClose }: Omit<Props, "visible">) {
   const [text, setText] = useState(target === null ? "" : String(target));
+  // The estimate «Use this number» wrote in the field; null with none.
+  const [taken, setTaken] = useState<number | null>(null);
   const { purpose } = useNutrition().settings;
   // One moment while the sheet is open: not counted again at every key.
   const [moment] = useState(() => new Date());
   const usedPerDay = useUsualUse(moment);
   const typed = readNumber(text);
   const kcal = typed === null ? null : targetOf(typed);
+  const fromEstimate = kcal !== null && kcal === taken;
   return (
     <View style={styles.body}>
       <Text style={styles.title} accessibilityRole="header">
@@ -69,7 +75,10 @@ function Body({ target, onTarget, onClose }: Omit<Props, "visible">) {
       <EstimateBox
         purpose={purpose}
         usedPerDay={usedPerDay}
-        onUse={(estimate) => setText(String(estimate))}
+        onUse={(estimate) => {
+          setText(String(estimate));
+          setTaken(estimate);
+        }}
       />
       <View style={gymStyles.row}>
         <Tap style={gymStyles.button} onPress={onClose} accessibilityRole="button">
@@ -77,7 +86,7 @@ function Body({ target, onTarget, onClose }: Omit<Props, "visible">) {
         </Tap>
         <Tap
           style={[gymStyles.button, kcal === null && gymStyles.disabled]}
-          onPress={() => kcal !== null && onTarget(kcal)}
+          onPress={() => kcal !== null && onTarget(kcal, fromEstimate)}
           disabled={kcal === null}
           accessibilityRole="button"
           accessibilityState={{ disabled: kcal === null }}
@@ -89,7 +98,7 @@ function Body({ target, onTarget, onClose }: Omit<Props, "visible">) {
       {target !== null && (
         <Tap
           style={styles.remove}
-          onPress={() => onTarget(null)}
+          onPress={() => onTarget(null, false)}
           accessibilityRole="button"
           testID="target-remove"
         >

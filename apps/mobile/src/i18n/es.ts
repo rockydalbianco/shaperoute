@@ -3982,6 +3982,71 @@ export const ES: Table = {
     "La estimación de MuW para el objetivo diario (demo)",
   "A usual day is the average of what you used in your last seven days. To lose weight MuW takes 600 kcal a day off it, the amount the NHS gives, only for adults with a body mass index of 25 or more, and never below 1,400 kcal a day for women or 1,900 for men (NHS 12-week weight loss plan). To gain weight MuW suggests no number. Sources read on 24 November 2026. MuW is not made by health professionals: better to write your own number, or your dietitian's.":
     "Un día habitual es la media de lo que gastaste en tus últimos siete días. Para perder peso MuW le quita 600 kcal al día, la cantidad que indica el NHS, solo para adultos con un índice de masa corporal de 25 o más, y nunca por debajo de 1.400 kcal al día para mujeres o 1.900 para hombres (plan de 12 semanas del NHS para perder peso). Para ganar peso MuW no propone ningún número. Fuentes leídas el 24 de noviembre de 2026. MuW no está hecha por profesionales de la salud: mejor escribe tu propio número, o el de tu dietista.",
+
+  // src/nutrition and src/body (TASK-489 part K1: the weight; approved by the user on 2026-11-27)
+  "Time to weigh in": "Es hora de pesarte",
+  "Last time: {date}, {weight}": "La última vez: {date}, {weight}",
+  "Your first weigh-in starts the chart.": "Tu primera pesada inicia el gráfico.",
+  "Your weight": "Tu peso",
+  "Write a weight between {min} and {max}.": "Escribe un peso entre {min} y {max}.",
+  "Saved. Your weight in Settings is now {weight}.":
+    "Guardado. Tu peso en Ajustes ahora es {weight}.",
+  "Recalculate MuW's estimate": "Recalcular la estimación de MuW",
+  "{change} in {count} weeks": "{change} en {count} semanas",
+  "Since your first weigh-in, {date}": "Desde tu primera pesada, {date}",
+  "Of your starting weight, in {count} weeks": "De tu peso inicial, en {count} semanas",
+  Months: "Meses",
+  "All@@weight": "Todo",
+  "Start@@weight": "Inicio",
+  "Highest@@weight": "Más alto",
+  Lowest: "Más bajo",
+  "Per week": "Por semana",
+  "Weigh-ins": "Pesadas",
+  "{count} since {date}": "{count} desde el {date}",
+  "Same {count} weeks": "Las mismas {count} semanas",
+  "Balance {kcal} kcal (est.) · Weight {change}":
+    "Balance {kcal} kcal (est.) · Peso {change}",
+  "One weigh-in so far: the line starts with the next.":
+    "Por ahora una pesada: la línea empieza con la siguiente.",
+  "No weigh-ins yet": "Aún no hay pesadas",
+  "Add a weigh-in": "Añadir una pesada",
+  "All weigh-ins": "Todas las pesadas",
+  "Delete this weigh-in?": "¿Eliminar esta pesada?",
+  "Your weight in Settings stays {weight}.":
+    "Tu peso en Ajustes sigue siendo {weight}.",
+  "My goal weight": "Mi peso objetivo",
+  "Set my goal weight": "Fijar mi peso objetivo",
+  "{done} of {total} so far": "{done} de {total} por ahora",
+  "My milestones": "Mis etapas",
+  "Add a milestone": "Añadir una etapa",
+  Reached: "Alcanzada",
+  "A milestone goes between your starting weight and your goal.":
+    "Una etapa va entre tu peso inicial y tu objetivo.",
+  "To set a goal weight, add your height and year of birth in Settings.":
+    "Para fijar un peso objetivo, añade tu altura y año de nacimiento en Ajustes.",
+  "MuW has no weight goals for people under 18.":
+    "MuW no tiene objetivos de peso para menores de 18 años.",
+  "Lowest goal for your height: {weight}": "Objetivo más bajo para tu altura: {weight}",
+  "Below {weight} your weight would be low for your height (body mass index under 18.5). MuW doesn't set goals there.":
+    "Por debajo de {weight} tu peso sería bajo para tu altura (índice de masa corporal por debajo de 18,5). MuW no fija objetivos ahí.",
+  "Remove goal": "Quitar el objetivo",
+  "Ask me to weigh in": "Pídeme que me pese",
+  "Every 2 weeks": "Cada 2 semanas",
+  "Every 4 weeks": "Cada 4 semanas",
+  Never: "Nunca",
+  "The card shows in your diary on the day. You can always add a weigh-in yourself.":
+    "La tarjeta aparece en tu diario ese día. Siempre puedes añadir una pesada tú mismo.",
+  "You reached {weight}": "Has llegado a {weight}",
+  "A milestone you set yourself.": "Una etapa que elegiste tú.",
+  "You reached your goal": "Has alcanzado tu objetivo",
+  "{weight}, the goal you set yourself.": "{weight}, el objetivo que elegiste tú.",
+  "{count} weigh-ins": "{count} pesadas",
+  "{count} days in your diary": "{count} días en tu diario",
+  "You kept at it.": "Has sido constante.",
+  "Weight and your goal": "El peso y tu objetivo",
+  "The latest weigh-in becomes your weight in Settings: from that day on MuW uses it for your energy at rest and your activities. The percent is the change divided by your starting weight. A goal weight can't be below a body mass index of 18.5, the threshold for underweight in adults used by the World Health Organization and the US CDC (pages read on 27 November 2026), and there are no weight goals under 18. MuW is not made by health professionals: this is not medical advice.":
+    "Tu última pesada pasa a ser tu peso en Ajustes: desde ese día MuW lo usa para tu energía en reposo y tus actividades. El porcentaje es el cambio dividido por tu peso inicial. Un peso objetivo no puede estar por debajo de un índice de masa corporal de 18,5, el umbral de bajo peso en adultos que usan la Organización Mundial de la Salud y los CDC de Estados Unidos (páginas leídas el 27 de noviembre de 2026), y no hay objetivos de peso para menores de 18 años. MuW no está hecha por profesionales de la salud: no es un consejo médico.",
+
   // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
   Weather: "Tiempo",
   "Weather: {temperature}, wind {speed}": "Tiempo: {temperature}, viento {speed}",

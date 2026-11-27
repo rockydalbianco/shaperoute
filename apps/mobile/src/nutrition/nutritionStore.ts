@@ -38,6 +38,10 @@ export type NutritionSettings = {
   noticeSeen: boolean;
   /** «My daily target», written by the user; null with none (ownTarget.ts). */
   target: number | null;
+  /** The target is MuW's estimate as the user took it with «Use this
+   * number», not a number they wrote (part K1): only then a new weigh-in
+   * offers to work it out again. False in a file from before K1. */
+  targetFromEstimate: boolean;
   /** The energy the user corrected by hand (energyEdits.ts). */
   edits: EnergyEdits;
   /** The invitation at the end of an activity (part I). */
@@ -69,6 +73,7 @@ function inviteFrom(data: unknown): Invite {
 export const NO_SETTINGS: NutritionSettings = {
   noticeSeen: false,
   target: null,
+  targetFromEstimate: false,
   edits: NO_EDITS,
   invite: NO_INVITE,
   purpose: null,
@@ -80,9 +85,11 @@ export function settingsFrom(data: unknown): NutritionSettings {
     return NO_SETTINGS;
   }
   const raw = data as Record<string, unknown>;
+  const target = targetOf(raw.target);
   return {
     noticeSeen: raw.noticeSeen === true,
-    target: targetOf(raw.target),
+    target,
+    targetFromEstimate: target !== null && raw.targetFromEstimate === true,
     edits: energyEditsFrom(raw.edits),
     invite: inviteFrom(raw.invite),
     purpose: purposeOf(raw.purpose),

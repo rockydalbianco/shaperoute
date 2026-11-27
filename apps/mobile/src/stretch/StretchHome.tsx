@@ -7,11 +7,13 @@ import { color, fontSize, fontWeight, space, tracking } from "../theme/tokens";
 import { useReduceMotion } from "../ui/useReduceMotion";
 import type { Category, CategoryGroup } from "./categories";
 import { CategoryPage } from "./CategoryPage";
+import { MOMENT_ICONS, SPORT_ICONS } from "./categoryIcons";
 import {
   categoriesOf,
   categoryName,
   GROUPS,
   lengthsLine,
+  pairOf,
   SPORT_NAMES,
 } from "./categoryText";
 import { CategoryTile } from "./CategoryTile";
@@ -107,6 +109,7 @@ export function StretchHome({ now }: Props) {
       title={title}
       detail={detail}
       tint={color.stretch[of.group]}
+      icon={MOMENT_ICONS[of.key] ?? SPORT_ICONS[pairOf(of.key)?.of ?? ""]}
       onPress={() => setOpen(of.key)}
       wide={wide}
       testID={`stretch-tile-${of.key}`}

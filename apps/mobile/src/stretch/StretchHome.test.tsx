@@ -71,7 +71,9 @@ describe("the stretching home", () => {
       expect(screen.getByText(hint)).toBeOnTheScreen();
     }
     // 12 areas, 7 moments, 14 sports, intimacy, 5 more.
-    expect(screen.getAllByTestId(/^stretch-tile-/)).toHaveLength(12 + 7 + 14 + 1 + 5);
+    expect(screen.getAllByTestId(/^stretch-tile-[A-Za-z_]+$/)).toHaveLength(
+      12 + 7 + 14 + 1 + 5,
+    );
     expect(screen.getByTestId("stretch-tile-neck")).toHaveTextContent(/Neck/);
     expect(screen.getByTestId("stretch-tile-neck")).toHaveTextContent(/3 · 5 · 10 min/);
     expect(screen.getByTestId("stretch-tile-running_after")).toHaveTextContent(
@@ -80,6 +82,19 @@ describe("the stretching home", () => {
     expect(screen.queryByTestId("stretch-tile-running_before")).toBeNull();
     expect(screen.getByTestId("stretch-tile-splits")).toHaveTextContent(/Splits/);
     expect(screen.getByText("Stop if it hurts.")).toBeOnTheScreen();
+  });
+
+  it("gives the moments and the sports a sign in the corner, the body's areas none", async () => {
+    await show(at(7));
+    const icons = screen.getAllByTestId(/^stretch-tile-.*-icon$/);
+    // Seven moments, and thirteen of the fourteen sports: no racket in Lucide.
+    expect(icons).toHaveLength(7 + 13);
+    expect(screen.getByTestId("stretch-tile-bedtime-icon")).toBeOnTheScreen();
+    expect(screen.getByTestId("stretch-tile-running_after-icon")).toBeOnTheScreen();
+    expect(screen.queryByTestId("stretch-tile-racket_after-icon")).toBeNull();
+    expect(screen.queryByTestId("stretch-tile-neck-icon")).toBeNull();
+    expect(screen.queryByTestId("stretch-tile-intimacy_before-icon")).toBeNull();
+    expect(screen.queryByTestId("stretch-tile-splits-icon")).toBeNull();
   });
 
   it("opens a category's page from its tile, and «Today»'s from the line under «Start»", async () => {

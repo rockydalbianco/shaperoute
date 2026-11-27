@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Image, type ImageSourcePropType, StyleSheet, Text, View } from "react-native";
 
 import {
   color,
@@ -68,6 +68,8 @@ type Props = {
   detail: string;
   /** The group's colour, behind the figure. */
   tint: string;
+  /** A sign beside the figure, in the group's colour: a moment's, a sport's. */
+  icon?: ImageSourcePropType;
   onPress: () => void;
   /** Wide, the figure beside the words: the one card of a group of two. */
   wide?: boolean;
@@ -77,13 +79,15 @@ type Props = {
 /**
  * A category on the stretching home (TASK-520): the figure in a typical
  * pose over a halo of its group's colour, the name and one line. The figure
- * is the icon. The whole tile is one button, named by its words.
+ * is the icon; a moment and a sport have a small sign too, in the corner.
+ * The whole tile is one button, named by its words.
  */
 export function CategoryTile({
   of,
   title,
   detail,
   tint,
+  icon,
   onPress,
   wide = false,
   testID,
@@ -100,6 +104,14 @@ export function CategoryTile({
         <View style={[styles.halo, { backgroundColor: tint }]} />
         <PoseFigure exercise={faceOf(of)} height={TILE_FIGURE} />
       </View>
+      {icon !== undefined && (
+        <Image
+          source={icon}
+          style={[styles.icon, { tintColor: tint }]}
+          accessible={false}
+          testID={testID === undefined ? undefined : `${testID}-icon`}
+        />
+      )}
       <View style={wide ? styles.wideWords : styles.words}>
         <Text style={styles.title} numberOfLines={2}>
           {title}
@@ -113,6 +125,8 @@ export function CategoryTile({
 }
 
 const STAGE = TILE_FIGURE + space.md;
+/** The side the icons are drawn at (`assets/ui/icons/`). */
+const ICON = 22;
 
 const styles = StyleSheet.create({
   tile: {
@@ -145,6 +159,14 @@ const styles = StyleSheet.create({
     height: STAGE,
     borderRadius: radius.pill,
     opacity: 0.18,
+  },
+  // In the tile's corner, clear of the figure.
+  icon: {
+    position: "absolute",
+    top: space.sm,
+    right: space.sm,
+    width: ICON,
+    height: ICON,
   },
   words: {
     gap: space.xs / 2,

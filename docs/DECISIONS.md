@@ -595,7 +595,7 @@ lasciando le righe d'indice.
 - ADR-0396 — La scheda si adatta a com'è andata: un campo `adapt` facoltativo nel programma, una domanda per allenamento, i passi applicati dal telefono, la risposta tenuta con «Save» · 2026-11-23 · Attiva
 - ADR-0366, precisazione B3 — Le uscite lunghe in bici (40 e 50 km) solo nel catalogo: il limite dei 30 km tolto solo nello strumento, le uscite lunghe dopo quelle che c'erano nel file di città, limite del pianificatore a 4 GB · 2026-11-23 · Attiva
 - ADR-0327, precisazione G — Il battito in palestra: il consenso e i pulsanti del nuoto, le kcal di Keytel col battito, media e massimo sul server, mostrati solo con gli esercizi · 2026-11-23 · Attiva
-- ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap estratti dal server, la scheda del decollo con lo storico dei voli di MuW contato dal server, mai giudizi sulle condizioni · 2026-11-23 · Proposta
+- ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap estratti dal server, la scheda del decollo con lo storico dei voli di MuW contato dal server, mai giudizi sulle condizioni · 2026-11-23 · Attiva
 - ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
 - ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo di ADR-0269 con `group_id`, anche senza percorso; Public, Request, Invite only; un solo admin e fino a 3 co-admin; l'elenco dei membri solo ai membri; la chat di gruppo come parte E · 2026-11-23 · Proposta
 - ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
@@ -630,10 +630,51 @@ lasciando le righe d'indice.
 - ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
 - ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
 - ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte tiene i piedi fermi mentre il bacino si sposta e sfuma quando il busto si capovolge; un braccio verso chi guarda si piega; sette viste cambiate dall'utente; le routine composte con una tenuta sola, più lunga prima di un secondo giro; chiavi delle categorie senza punto, come le vuole il server; «Today» con la notte fino alle 4 · 2026-11-27 · Attiva
+- ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione una volta al mese nelle Alpi, un volo è di un decollo solo per i 300 m (le tracce non hanno quota), lo storico in una rotta a sé con la cache di 10 minuti, record più lungo, più alto e più lontano dai post per tutti, niente «Fly from here»; il vento (D) in un task nuovo dopo TASK-479 H · 2026-11-27 · Attiva
 - ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; una pagina vuota ha il suo pulsante quando c'è una cosa da fare; una tessera senza percorso mostra la sagoma della forma in grigio · 2026-11-26 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione mensile, solo i 300 m, lo storico in una rotta a sé
+
+**Stato**: Attiva · 2026-11-27 · TASK-493 parti A (#1518), B (#1589), C
+(#1635, #1645), privacy (#1646), accensione (#1695). Precisazione di
+ADR-0400, che resta com'è. Le scelte di prodotto sono **dell'utente**
+(2026-11-23, «Sì, tutte»; testi, privacy e schermate approvati il
+2026-11-26; accensione «sì accendili» il 2026-11-27); il resto è **deciso
+dall'agente su delega dell'utente**, con le liste dei file approvate dal
+Coordinatore (fork 3).
+
+**Contesto**: ADR-0400 prevedeva un job settimanale e un volo «di un
+decollo» entro 300 m e 150 m di quota. Le tracce salvate dei voli
+(`runs.track`, LineStringM) hanno tempo ma non quota.
+
+**Decisione**:
+- **Estrazione una volta al mese**, non a settimana: i siti di volo in OSM
+  cambiano poco. `python -m shaperoute_api.flying_sites_extract --osm
+  <tutti gli XML> --clean` in un'unica transazione; con `--clean` vanno
+  passati tutti gli estratti insieme. Prima zona: Italia, Austria,
+  Svizzera, Liechtenstein, Francia alpina, Baviera, Slovenia (1740 siti
+  il 2026-11-27).
+- **Solo i 300 m**: il punto di decollo di un volo è l'inizio del primo
+  tratto in volo (`air_legs` di TASK-305 R6), altrimenti il primo punto;
+  conta se è entro 300 m da un decollo OSM. Il controllo dei 150 m di
+  quota cade.
+- **Lo storico è una rotta a sé**, `GET /flying-sites/{id}/history`, con
+  `utc_offset_min` del telefono per «oggi» e una cache in memoria di 10
+  minuti per sito; numeri solo da 3 piloti diversi in su (`few`). La
+  scheda `GET /flying-sites/{id}` dà il sito e i siti dell'altro tipo
+  entro 15 km (al massimo 5).
+- **Record**: volo più lungo, più alto, più lontano, dai soli post
+  visibili a tutti, col nome.
+- **Niente «Fly from here»** sulla scheda in questa versione: solo fatti.
+- La mappa resta dietro `TAKEOFFS_ON` finché i siti non sono sul server;
+  accesa con #1695.
+
+**Conseguenze**: nessuna migrazione oltre la `0086`; lo script mensile col
+cron lo scrive il Coordinatore col sì dell'utente; la parte D (il vento in
+quota) diventa un task nuovo dopo TASK-479 H.
 
 ## ADR-0415, aggiunta B e C (TASK-520) — La figura di fronte coi piedi fermi e la sfumatura; le routine composte; «Today» con la notte
 
@@ -2331,7 +2372,8 @@ faccia opaca senza ombra né bordo, la piastra).
 
 ## ADR-0400 — La mappa dei decolli: i siti da OpenStreetMap, la scheda del decollo con lo storico di MuW
 
-**Stato**: Proposta · 2026-11-23 · TASK-493 (parte 0, soli documenti).
+**Stato**: Attiva · 2026-11-27 · TASK-493 (parte 0 il 2026-11-23; A–C in
+`main`, vedi «ADR-0400, precisazione»).
 La richiesta e la scelta di farne un task a sé sono **dell'utente**
 (2026-11-23); le cinque scelte della parte 0 sono **dell'utente** («Sì, tutte»,
 2026-11-23: il bottone «Takeoffs» nel parapendio, tutti i voli salvati

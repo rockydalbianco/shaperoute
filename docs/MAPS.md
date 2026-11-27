@@ -481,6 +481,11 @@ le relazioni. `--osm` legge file OSM XML al posto degli estratti. L'API
 risponde con l'attribuzione «© OpenStreetMap contributors». Sul server di
 produzione i comandi li lancia l'utente.
 
+In produzione dal 2026-11-27 (passo 26b): 1740 siti, 1096 decolli e 644
+atterraggi. Il giro si ripete **una volta al mese** (download, filtro,
+scrittura con `--clean`), non a settimana: i siti cambiano poco
+(ADR-0400, precisazione).
+
 ### Le stazioni sciistiche da OpenSkiData (TASK-406 parte A, ADR-0338)
 
 Le stazioni della ricerca «Ski» vengono da un solo file di OpenSkiData

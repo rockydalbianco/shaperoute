@@ -1002,8 +1002,8 @@ riepilogo di fine palestra (`GymEnd.tsx`) arriva dopo TASK-489 I e
 TASK-511 B. Diventa «Attiva» con il codice.
 ## ADR-0397, precisazione 7 — Le ricette in «Nutrition»
 
-**Stato**: Proposta · 2026-11-27 · TASK-489 parte L (parte 0 chiusa, codice
-non scritto). Le scelte di prodotto sono **dell'utente** (2026-11-27, sei
+**Stato**: Proposta · 2026-11-27 · TASK-489 parte L (parte 0 chiusa; codice in
+una sessione dedicata: dati #1678 e colori #1686 in `main`). Le scelte di prodotto sono **dell'utente** (2026-11-27, sei
 risposte in `tasks/TASK-489.md`, sezione «L»); il come è **deciso
 dall'agente su delega dell'utente**.
 

@@ -215,6 +215,38 @@ dove le forme sono state provate: Milano 60, Barcellona 36, Trento 32,
 Levico 2 (69 da 10 km, 61 da 5). Le altre città li avranno con un giro
 loro (TASK-521).
 
+### La revisione e i 3000 disegni nuovi (TASK-521, ADR-0416)
+
+Dal 27 novembre 2026 il seme ha **4782 percorsi**: 2161 − 499 + 3120.
+
+- **499 tolti**: ogni disegno del catalogo guardato a occhio; quelli che
+  non si leggono, o si leggono a fatica, escono (l'utente: «Sì, tutti i
+  499»). Le chiavi e i motivi sono in `out/TASK-521/da-togliere.json`.
+- **3120 nuovi**, tutti guardati a occhio dopo il filtro (l'utente: «Sì,
+  tienili tutti»):
+  - 1359 forme a piedi: le otto che si leggono, da 5 a 21 km, nelle città
+    tranne le cinque peggiori;
+  - 421 delle forme di TASK-516 che sulle strade si leggono, da 5 e 10 km,
+    nelle 36 città migliori (pupazzo di neve, pallone e racchetta no:
+    sulle strade non si leggono);
+  - 596 parole a penna alzata senza la A (TASK-522), 3 km a lettera;
+  - 744 uscite in bici, otto forme da 20 a 50 km (180 da 20, 189 da 25,
+    165 da 30, 108 da 40, 102 da 50).
+- **Il filtro** è quello di sempre più una regola: le strade fatte due
+  volte non superano di più di 8 punti la mediana della stessa forma nel
+  catalogo. Poi l'occhio, con un voto da 0 a 3: 0 esce, 1 si legge con
+  qualche difetto, 2 buono, 3 bellissimo. La classifica dal più bello al
+  più brutto in ogni categoria (voto, poi somiglianza meno le strade in
+  più) è in `out/TASK-521/tenuti.tsv`.
+- **Gli id cambiano**: togliere 499 percorsi sposta il posto di quelli
+  dopo nel file, e l'API numera un percorso per il suo posto. Nessun dato
+  salvato usa quel numero: i preferiti e i migliori tempi usano la linea.
+- I registri dei disegni nuovi sono `out/TASK-521/runs.jsonl` (piedi e
+  forme nuove), `pen-up.jsonl` (parole) e `bike.jsonl` (bici); il seme si
+  riscrive con `out/TASK-521/scrivi_catalogo.py`. Lo script prova prima
+  che i registri di sempre e le chiavi di main ridanno il seme di prima
+  identico, byte per byte.
+
 ### Le città in evidenza
 
 Le città che «Explore» mostra per prime (`FEATURED_CITIES` nell'app) e che

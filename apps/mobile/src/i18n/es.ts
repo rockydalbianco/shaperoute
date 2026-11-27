@@ -2098,6 +2098,22 @@ export const ES: Table = {
   "This is not medical advice. If your back hurts, see a doctor.":
     "Esto no es un consejo médico. Si te duele la espalda, ve al médico.",
   // end of TASK-520 part D
+  // src/stretch, the exercise's page (TASK-520 part E)
+  "Breathe in": "Inhala",
+  "Breathe out": "Exhala",
+  Hold: "Mantener",
+  Sides: "Lados",
+  Position: "Posición",
+  Both: "Ambos",
+  One: "Uno",
+  Standing: "De pie",
+  Chair: "Silla",
+  Floor: "Suelo",
+  "How to": "Cómo se hace",
+  "Good for": "Bueno para",
+  "Try it · {minutes} min": "Pruébalo · {minutes} min",
+  "Play@@timer": "Reanudar",
+  // end of TASK-520 part E
   Morning: "Mañana",
   "After run": "Después de correr",
   "After gym": "Después del gimnasio",

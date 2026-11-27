@@ -24,10 +24,13 @@ export function PoseFigure({
   exercise,
   height,
   breathing = false,
+  mirrored = false,
 }: {
   exercise: Exercise;
   height: number;
   breathing?: boolean;
+  /** Its other side. */
+  mirrored?: boolean;
 }) {
   return exercise.front !== undefined ? (
     <FigureFront
@@ -36,6 +39,7 @@ export function PoseFigure({
       breathing={breathing}
       breathMs={exercise.tempoMs}
       height={height}
+      mirrored={mirrored}
     />
   ) : (
     <Figure
@@ -44,6 +48,7 @@ export function PoseFigure({
       breathing={breathing}
       breathMs={exercise.tempoMs}
       height={height}
+      mirrored={mirrored}
     />
   );
 }

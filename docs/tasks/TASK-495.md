@@ -169,13 +169,16 @@ services/api/shaperoute_api/group_runs.py            (le uscite: corpo, chi vede
 services/api/shaperoute_api/groups.py                (GET /groups/{id}/outings; uscire e rimuovere annullano le uscite)
 services/api/shaperoute_api/push.py                  (group_outing_new e i suoi testi)
 services/api/tests/test_group_outings.py             (nuovo)
+services/api/tests/test_record_only.py               (TASK-375, chiuso: group_runs prende gli sport all'aperto; aggiunto dal Coordinatore)
 packages/shared-types/src/index.ts                   (i tipi GroupOuting…, aggiunte sole)
 packages/shared-types/fixtures/group-outing*.json    (nuove), group-run.json, group-runs.json, group-runs-of-profile.json (tre campi null)
 packages/shared-types/test/groupOutings.test.ts      (nuovo)
 docs/API.md, docs/DATABASE.md, docs/GRUPPI.md, docs/EVENTI.md, docs/DECISIONS.md, questo file   (PR di soli documenti)
 ```
 I test sono in un file nuovo (`test_group_outings.py`), non in
-`test_group_runs.py` né in `test_groups.py`: nessuno dei due cambia.
+`test_group_runs.py` né in `test_groups.py`: nessuno dei due cambia. Cambia
+solo `test_record_only.py`, che voleva `group_runs_activity_check` senza
+«skiing».
 
 Parte C2 (l'app, dopo TASK-309 B2 in `main`) e parte D (Explore): elenchi
 proposti in `out/TASK-495/PARTE-0-C-D.md` del checkout principale; si

@@ -134,8 +134,12 @@ const TODAY_LINES: Readonly<Record<string, string>> = {
   fullBody: tLater("A little of everything"),
 };
 
-/** The line under «Today»'s proposal; none for a category it has no line for. */
+/** The line under «Today»'s proposal: by the hour, or the one of a sport
+ * just done; none for a category it has no line for. */
 export function todayLine(key: string): string | null {
+  if (sportOf(key)?.when === "after") {
+    return t("After your activity today");
+  }
   const line = TODAY_LINES[key];
   return line === undefined ? null : t(line);
 }

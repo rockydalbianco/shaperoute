@@ -193,15 +193,20 @@ export function dismissInvite(): boolean {
 }
 
 /**
- * «My daily target» as the user wrote it, or none with null. False when
- * `kcal` is not a target (ownTarget.ts): nothing changes then.
+ * «My daily target» as the user wrote it, or none with null; `fromEstimate`
+ * when it is MuW's estimate taken with «Use this number» (part K1). False
+ * when `kcal` is not a target (ownTarget.ts): nothing changes then.
  */
-export function writeTarget(kcal: number | null): boolean {
+export function writeTarget(kcal: number | null, fromEstimate = false): boolean {
   const target = kcal === null ? null : targetOf(kcal);
   if (kcal !== null && target === null) {
     return false;
   }
-  writeSettings({ ...current().settings, target });
+  writeSettings({
+    ...current().settings,
+    target,
+    targetFromEstimate: target !== null && fromEstimate,
+  });
   return true;
 }
 

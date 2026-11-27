@@ -76,7 +76,11 @@ describe("the words of the stretching categories", () => {
     expect(todayLine("bedtime")).toBe("Wind down before sleep");
     expect(todayLine("desk")).toBe("A break from sitting");
     expect(todayLine("fullBody")).toBe("A little of everything");
-    expect(todayLine("running_after")).toBeNull();
+    // After a sport just done; a warm-up has no line.
+    expect(todayLine("running_after")).toBe("After your activity today");
+    expect(todayLine("gym_after")).toBe("After your activity today");
+    expect(todayLine("running_before")).toBeNull();
+    expect(todayLine("neck")).toBeNull();
   });
 
   it("know the two categories for the back", () => {

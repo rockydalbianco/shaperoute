@@ -637,9 +637,48 @@ lasciando le righe d'indice.
 - ADR-0418 — Le lettere dicono cosa disegnano a penna alzata (`pen`, TASK-522): la A tonda con la punta, la Q tonda con l'anello; la parola chiusa resta la stessa; le parole a penna alzata con A o Q tenute a parte con «+L2» sull'impronta, le altre restano (SAME_ROUTES_AS) · 2026-11-27 · Attiva
 - ADR-0417 — Lo stile delle pagine in tutta l'app (TASK-523): il vetro di 469 a barre, tab e fogli e lo stile nuovo al contenuto; un colore per sezione come token suoi (`section`), stesso valore dove la tinta c'è già; un kit di soli file nuovi in `ui/` col velo tinto opaco al 12%; nella barra delle schede il colore sta nella capsula della scheda aperta, non nel tratto delle icone · 2026-11-27 · Attiva
 - ADR-0416 — Il catalogo di «Explore» guardato a occhio: oltre al filtro, le strade fatte due volte entro 8 punti sopra la mediana della forma, poi un voto a occhio da 0 a 3 su ogni disegno; 499 tolti, 3120 nuovi, la classifica per voto e misura; gli id dei percorsi cambiano · 2026-11-27 · Accettata
+- ADR-0419 — «Rifai meglio» (TASK-451): a fine corsa, se almeno 200 m del percorso prima del punto dove ci si è fermati sono rimasti a più di 40 m dalla traccia, «Save & redo» salva la corsa e riapre «Draw» con la stessa forma o parola, gli stessi km e la stessa partenza; il motore ripianifica come sempre; solo sport su strade e sentieri · 2026-11-27 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0419 — «Rifai meglio»: la stessa forma, gli stessi km e la stessa partenza dopo una corsa uscita di strada
+
+**Stato**: Attiva · 2026-11-27 · TASK-451. Scelte di prodotto e testi
+dell'utente (parte 0, 2026-11-27); il resto deciso dall'agente su delega
+dell'utente; numero dal Coordinatore (fork 3).
+
+**Contesto**: idea I6 della prova del 2026-11-11: dopo una corsa in cui si è
+sbagliato strada, ridare la stessa forma perché la prossima volta il
+disegno venga bene. L'app non mostra punteggi (TASK-241), nessuno misura
+dove la traccia ha lasciato il percorso, e il motore non ha un input per
+evitare strade. La corsa salvata non tiene distanza chiesta né partenza.
+
+**Decisione**:
+- **Rifare uguale, non evitare**: il pulsante riapre «Draw» con la stessa
+  forma o parola, gli stessi km e la stessa partenza (un posto scelto, come
+  dalla mappa); «Draw route» chiede il percorso al motore come sempre. Un
+  «evita i tratti sbagliati» sarebbe un input nuovo del motore, con la sua
+  prova: non ora.
+- **Solo a fine corsa**, nella scheda distanza · tempo: lì l'app ha ancora
+  la richiesta aperta. Niente server, niente corse passate.
+- **Solo se si è usciti dal percorso**: il percorso campionato ogni 10 m su
+  piano in metri; mancati i campioni a più di 40 m dalla traccia (la stessa
+  soglia di `OFF_ROUTE_M` durante la corsa), contati solo fino all'ultimo
+  campione raggiunto: smettere prima non conta. Il pulsante appare da
+  200 m mancati. Funzione pura sul telefono (`route/redoBetter.ts`).
+- **Sport su strade e sentieri**; canoa e nuoto no (niente svolte
+  sbagliate, GPS in acqua impreciso). Forme del catalogo e parole sì; foto
+  e disegni a mano no, «Draw» non li riapre da una richiesta (TASK-313).
+- **Salva e rifai**: con un account il tocco fa ciò che fa «Save» (modulo e
+  visibilità come sono), poi apre «Draw»; se il salvataggio fallisce, la
+  corsa resta e «Draw» non si apre. Senza account la corsa lascia il
+  telefono come con «Done». Nomi «Save & redo» e «Redo», testi in
+  `tasks/TASK-451.md`.
+
+**Conseguenze**: 200 m e 40 m sono costanti da ritoccare dopo la prova sul
+telefono. Se servirà evitare i tratti sbagliati, sarà un task del motore a
+parte, con la prova dei percorsi uguali.
 
 ## ADR-0418 — Le lettere dicono cosa disegnano a penna alzata: la A con la punta, la Q con l'anello
 

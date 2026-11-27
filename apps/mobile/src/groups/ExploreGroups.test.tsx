@@ -12,6 +12,8 @@ import { askedGroup, closeGroupPage } from "./groupDoor";
 import { fakeApi, SignedIn } from "./testing";
 
 const NEAR = "GET /groups?lat=46.07&lon=11.12";
+// The start, exact on the phone; the API gets it rounded to about 1 km.
+const START: [number, number] = [46.0679, 11.1211];
 const path = (call: string) => call.slice("GET ".length);
 const signedIn = (): string | null => "the-token";
 
@@ -19,7 +21,7 @@ afterEach(() => closeGroupPage());
 
 async function row(
   answers: Parameters<typeof fakeApi>[0],
-  { near = [46.07, 11.12] as [number, number] | null, readToken = signedIn } = {},
+  { near = START as [number, number] | null, readToken = signedIn } = {},
 ) {
   const api = fakeApi(answers);
   const onSeeAll = jest.fn();
@@ -76,7 +78,7 @@ test("an API of before: nothing at all", async () => {
 
 async function search(
   answers: Parameters<typeof fakeApi>[0],
-  near: [number, number] | null = [46.07, 11.12],
+  near: [number, number] | null = START,
 ) {
   const api = fakeApi(answers);
   const onBack = jest.fn();

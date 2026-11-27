@@ -20,6 +20,7 @@ import { type AccountOutcome, ask } from "../api/accounts";
 import { isFeedPage } from "../api/feed";
 import { isPeoplePage } from "../api/follows";
 import { isPerson } from "../api/people";
+import { nearParams } from "../places/photon";
 
 /**
  * The groups of the API (TASK-495 part A, docs/API.md «Groups»), read
@@ -374,7 +375,7 @@ export type GroupsWanted =
 
 /**
  * GET /groups (TASK-495 part D, GRUPPI.md §7): the groups within 50 km of
- * `near`, the nearest first, or those whose name holds `q`, anywhere, by
+ * `near` (rounded to about 1 km), the nearest first, or those whose name holds `q`, anywhere, by
  * name; of `sport` when given. Never one by invite only. At most 20.
  */
 export function findGroups(
@@ -384,8 +385,10 @@ export function findGroups(
   options: Options = {},
 ): Promise<AccountOutcome<GroupsFound>> {
   const where =
+    // The start leaves the phone rounded to about a kilometre, as the
+    // other lists of Explore (Privacy, «Your position»).
     "near" in wanted
-      ? `lat=${wanted.near[0]}&lon=${wanted.near[1]}`
+      ? nearParams(wanted.near)
       : `q=${encodeURIComponent(wanted.q.trim())}`;
   const sport =
     wanted.sport === undefined || wanted.sport === null

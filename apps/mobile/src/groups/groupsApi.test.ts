@@ -186,7 +186,7 @@ test("Explore finds groups near a point or by name, of a sport", async () => {
   expect(isGroupsFound({ groups: [{ ...detail, access: "secret" }] })).toBe(false);
   let fetchFn = answers({ status: 200, body: found });
   expect(
-    await findGroups(URL, TOKEN, { near: [46.07, 11.12] }, options(fetchFn)),
+    await findGroups(URL, TOKEN, { near: [46.0679, 11.1211] }, options(fetchFn)),
   ).toEqual({ kind: "ok", value: found });
   expect(call(fetchFn)).toBe("GET /groups?lat=46.07&lon=11.12");
 
@@ -201,7 +201,7 @@ test("Explore finds groups near a point or by name, of a sport", async () => {
 
   fetchFn = answers({ status: 200, body: found });
   await findGroups(URL, TOKEN, { near: [46, 11], sport: null }, options(fetchFn));
-  expect(call(fetchFn)).toBe("GET /groups?lat=46&lon=11");
+  expect(call(fetchFn)).toBe("GET /groups?lat=46.00&lon=11.00");
 
   fetchFn = answers({ status: 200, body: { groups: "none" } });
   expect(await findGroups(URL, TOKEN, { near: [46, 11] }, options(fetchFn))).toEqual({

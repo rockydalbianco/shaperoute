@@ -65,6 +65,7 @@ import { ExploreSearch } from "./ExploreSearch";
 import { AskLine } from "./AskLine";
 import { type FarRow, farRows, groupByCity, useCatalog } from "./catalogList";
 import { FarFooter, FarHeader, FarRowView } from "./FartherAway";
+import { ExploreGroups, GroupSearch } from "../groups/ExploreGroups";
 
 type ListState =
   | { status: "loading" }
@@ -162,6 +163,8 @@ export function ExploreScreen({
   const card = cardWidth(contentWidth);
   // «Ask for a route» opens under its line (TASK-420).
   const [asking, setAsking] = useState(false);
+  // «See all» of the groups opens their search over the page (TASK-495 D).
+  const [groupSearch, setGroupSearch] = useState(false);
   // The answer for one start: another start shows "loading" until its own.
   const [answer, setAnswer] = useState<{ key: string; list: ListState } | null>(null);
   const lat = near?.[0];
@@ -370,11 +373,21 @@ export function ExploreScreen({
         keyboardShouldPersistTaps="handled"
         testID="explore-list"
         ListFooterComponent={
-          <FarFooter
-            status={farStatus}
-            more={farRowsOfPage.length > 0 && catalog.more}
-            onRetry={catalog.loadMore}
-          />
+          <>
+            <FarFooter
+              status={farStatus}
+              more={farRowsOfPage.length > 0 && catalog.more}
+              onRetry={catalog.loadMore}
+            />
+            {/* The groups near the start, at the very end of the page
+            (TASK-495 part D, the user's choice of 2026-11-27). */}
+            <ExploreGroups
+              apiUrl={apiUrl}
+              near={start}
+              width={contentWidth}
+              onSeeAll={() => setGroupSearch(true)}
+            />
+          </>
         }
         ListHeaderComponent={
           <View style={styles.header_}>
@@ -525,6 +538,13 @@ export function ExploreScreen({
           </View>
         }
       />
+      {groupSearch && (
+        <GroupSearch
+          apiUrl={apiUrl}
+          near={start}
+          onBack={() => setGroupSearch(false)}
+        />
+      )}
     </View>
   );
 }

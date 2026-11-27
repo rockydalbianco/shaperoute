@@ -17,10 +17,12 @@ import {
   fetchGroupMembers,
   fetchGroupRequests,
   fetchMyGroups,
+  findGroups,
   isGroup,
   isGroupDetail,
   isGroupJoin,
   isGroupMembersPage,
+  isGroupsFound,
   isMyGroups,
   joinGroup,
   leaveGroup,
@@ -177,6 +179,35 @@ test("one's groups and invites; the activity as a page of «Feed»", async () =>
     kind: "ok",
   });
   expect(call(fetchFn)).toBe(`GET /groups/${ID}/activity`);
+});
+
+test("Explore finds groups near a point or by name, of a sport", async () => {
+  expect(isGroupsFound(found)).toBe(true);
+  expect(isGroupsFound({ groups: [{ ...detail, access: "secret" }] })).toBe(false);
+  let fetchFn = answers({ status: 200, body: found });
+  expect(
+    await findGroups(URL, TOKEN, { near: [46.07, 11.12] }, options(fetchFn)),
+  ).toEqual({ kind: "ok", value: found });
+  expect(call(fetchFn)).toBe("GET /groups?lat=46.07&lon=11.12");
+
+  fetchFn = answers({ status: 200, body: found });
+  await findGroups(
+    URL,
+    TOKEN,
+    { q: " Trail & co ", sport: "hiking" },
+    options(fetchFn),
+  );
+  expect(call(fetchFn)).toBe("GET /groups?q=Trail%20%26%20co&sport=hiking");
+
+  fetchFn = answers({ status: 200, body: found });
+  await findGroups(URL, TOKEN, { near: [46, 11], sport: null }, options(fetchFn));
+  expect(call(fetchFn)).toBe("GET /groups?lat=46&lon=11");
+
+  fetchFn = answers({ status: 200, body: { groups: "none" } });
+  expect(await findGroups(URL, TOKEN, { near: [46, 11] }, options(fetchFn))).toEqual({
+    kind: "bad_answer",
+    status: 200,
+  });
 });
 
 test("an API of before says 404", async () => {

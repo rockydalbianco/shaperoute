@@ -3989,4 +3989,13 @@ export const ES: Table = {
   "Wind aloft": "Viento en altura",
   "Wind aloft not available": "Viento en altura no disponible",
   "{source} · run of {time}": "{source} · pasada de las {time}",
+  // src/groups/ExploreGroups.tsx (TASK-495 part D: the groups at the end of Explore)
+  "GROUPS NEAR YOU": "GRUPOS CERCA DE TI",
+  "See all@@groups": "Ver todos",
+  "No groups near you yet.": "Todavía no hay grupos cerca de ti.",
+  "No group found.": "No se ha encontrado ningún grupo.",
+  "Write at least {count} letters of a group's name.":
+    "Escribe al menos {count} letras del nombre de un grupo.",
+  "The groups could not load. Check the connection and try again.":
+    "No se han podido cargar los grupos. Comprueba la conexión e inténtalo de nuevo.",
 };

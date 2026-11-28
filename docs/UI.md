@@ -1218,7 +1218,12 @@ scritta nella casella e resta solo per VoiceOver. Nessuna riga «ultimi
 usati». Il pannello è uno solo (`settings/SportMenu.tsx`) e lo apre anche
 la riga «Sport» di «Settings».
 
-**«Profile» senza account**: «Sign up» e «Log in», due pulsanti affiancati.
+**«Profile» senza account**: in cima un riquadro giallo pieno col cuore
+del logo, scuro, che si disegna da solo una volta (TASK-523 parte B,
+ADR-0417; fermo e intero con «Riduci movimento»; è un disegno, i lettori
+di schermo lo saltano); sotto «Sign up» e «Log in», due pulsanti
+affiancati, e i campi su una card. Riquadro, pulsanti, card e comando
+entrano uno dopo l'altro.
 «Sign up» chiede email, nome (da 3 a 20 fra lettere, cifre, `_` e `.`),
 password (almeno 8 caratteri; nel campo, anche in «Log in», un occhio la
 mostra e la nasconde senza perdere il testo, VoiceOver «Show password» /

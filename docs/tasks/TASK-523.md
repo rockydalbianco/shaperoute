@@ -2,8 +2,10 @@
 
 **Stato**: In lavorazione · parte 0 chiusa il 2026-11-27; parte A: A1 (i
 colori di sezione, #1700), A2 (il kit, #1707) e A3 (i colori più vivi nel
-tono chiaro, #1728) in `main`. Nessuna schermata è ancora cambiata. La parte T è stata tolta dall'utente: la barra delle
-schede resta com'è. Prossima: B (Accesso).
+tono chiaro, #1728) in `main`; parte B (Accesso, #1734) approvata
+dall'utente sulle foto, la unisce il Coordinatore: è la prima schermata che
+cambia. La parte T è stata tolta dall'utente: la barra delle schede resta
+com'è. Prossima: C (Impostazioni).
 **Fase**: 5 · **Branch**: uno per parte (`feat/TASK-523-a1-section-colours`,
 `feat/TASK-523-a2-kit`, …)
 **Dipende da**: TASK-489 parte H (la pagina animata di Alimentazione, in
@@ -73,6 +75,10 @@ Una domanda alla volta, con la proposta dell'agente; le parole sono sue.
    quelli esatti scendevano sotto 3:1 sulla traccia dell'anello (2,34),
    sul velo (2,97) e sull'alone (2,57). Detto all'utente, con le tre
    colonne a confronto, e tavola aggiornata.
+8. L'Accesso rifatto (parte B), sulle foto prima/dopo del simulatore, in
+   chiaro e in scuro, «Sign up» e «Log in» (2026-11-28): «Va bene il nuovo
+   Accesso com'è nelle foto?» → **«Sì, va bene»**. Del giallo più scuro gli
+   è stato detto che si può fare a parte: non l'ha chiesto.
 
 Lo schizzo approvato: https://claude.ai/artifact/Lv6FnzHFoF3RkAswzwE2Cn
 (sorgenti nel checkout principale, `out/stile-app/canvas/project/`).
@@ -173,10 +179,11 @@ Il colore di sezione resta nel contenuto delle pagine.
 
 ## Che cosa non è deciso (si chiede all'utente nella parte che lo tocca)
 
-- Il giallo «appena più scuro» dell'Accesso: token nuovo o `accent` com'è.
-  Si decide con le foto del simulatore della parte B.
-- La riga di benvenuto sotto il logo: è un testo nuovo (cinque lingue). Lo
-  schizzo ha un segnaposto; senza un sì la riga non c'è.
+- Il giallo «appena più scuro» dell'Accesso: la parte B usa `accent` com'è,
+  e così l'utente l'ha approvata. Se lo chiede, è un token nuovo in una PR
+  sua, con le sue foto.
+- La riga di benvenuto sotto il logo: è un testo nuovo (cinque lingue).
+  Nella parte B non c'è; senza un sì non si aggiunge.
 - «Profile 78% complete» nella card delle Impostazioni: nello schizzo è
   solo un esempio. Sarebbe una funzione nuova: non è promessa e non si fa
   senza una scelta dell'utente.
@@ -199,7 +206,15 @@ simulatore prima/dopo, chiaro e scuro, e il sì dell'utente prima del merge.
     `IconSquare.tsx`, `HeroCard.tsx`, `Tile.tsx`, `RingStat.tsx`.
     `nutrition/Ring.tsx` e `CountUp.tsx` restano di 489: `RingStat` li
     importa, non li sposta.
-- **B — Accesso**: `screens/SignInScreen.tsx` e il suo test.
+- **B — Accesso** (#1734): `screens/SignInHero.tsx` col suo test (nuovi:
+  il riquadro giallo pieno col cuore del logo che si disegna una volta,
+  scuro sul giallo, uguale in ogni tono) e `screens/SignInScreen.tsx` (il
+  riquadro in cima, i campi su una `SectionCard`, quattro pezzi a cascata).
+  Testi, campi, comportamento, selettore e pulsante giallo come prima;
+  nessun testo nuovo, nessun token. L'Accesso sta dentro la scheda Profilo
+  sotto l'intestazione, che ha già il logo MuW: nel riquadro c'è solo il
+  cuore. Il riquadro è basso (104 punti) perché con «Sign up» il pulsante
+  resti sullo schermo sopra la barra delle schede.
 - **C — Impostazioni**: `profile/SettingsPage.tsx`, le righe in
   `settings/*`.
 - **D — Disegno**: `route/RoutePanel.tsx` e i pezzi del modulo «Draw».
@@ -270,4 +285,8 @@ parti: la lista esatta va al Coordinatore prima di ognuna.
 - 2026-11-27 — parte A3 (#1728): colori di sezione più vivi nel tono
   chiaro, «Sì, più vivi»; `inkOn` nel kit; file: `theme/tokens.ts`,
   `theme/sectionContrast.test.ts`, `ui/tint.ts`, `ui/SectionHeader.tsx`,
-  `ui/SectionCard.tsx` coi loro test.
+  `ui/SectionCard.tsx` coi loro test. Documenti in #1731.
+- 2026-11-28 — parte B (#1734): Accesso rifatto; foto prima/dopo nel
+  simulatore in chiaro e in scuro; «Sì, va bene». Provato su un solo
+  modello di iPhone; il cuore che si disegna e la cascata verificati solo
+  nei test.

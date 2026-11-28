@@ -675,6 +675,95 @@ fatta** (deciso dall'agente su delega dell'utente):
    quota massima, salita migliore); la miniatura 3D solo se la misura di
    A2 dice che si cattura in meno di 2 s.
 
+**Parte 0 di F** (2026-11-27/28; il Coordinatore ha aperto F col «ok vai
+avanti con la F» dell'utente: «niente codice prima del mio via; le PR che
+cambiano schermate possono entrare in `main` prima dell'uscita della 1.2.0
+ed escono con le OTA sulla 1.2.0; G resta ferma»).
+
+Cosa c'è oggi (letto nel codice): un volo salvato torna dal server **senza
+orari né quote** (`ActivityDetail.track` è `LatLon[]`; il server usa
+`altitude_m` dei fix solo per la salita); sul telefono resta solo il volo
+in corso (`current-run.json`). Il post del Feed accetta al massimo tre
+risultati tra `distance`, `time`, `pace` (`PostResult`); la linea la
+disegna il telefono di chi guarda sulla mappa di `feed/feedMapPage.ts`,
+che già ne scatta una foto (2D).
+
+**Scelte dell'utente** (tutte «Sì, così», la proposta):
+1. **Dove e per quali voli**: il telefono tiene una copia completa di ogni
+   volo (orari, posizioni, quote), **solo sul telefono, mai spedita**; una
+   pagina nuova «Analisi del volo» si apre dalla scheda di fine volo e da un
+   volo in «Le mie attività». I voli salvati prima di questa versione hanno
+   solo il punteggio XC, calcolato dalle posizioni, con la riga «Analisi
+   completa per i voli registrati da questa versione o importati da IGC».
+2. **Import IGC**: in «Aggiungi un'attività passata», accanto a GPX, FIT e
+   TCX (TASK-312): il file diventa un volo di parapendio in «Le mie
+   attività», con la copia completa e l'analisi. Il nome del pilota e
+   della vela nel file non si leggono e non si pubblicano. «Apri con MuW»
+   da un'altra app chiede un tocco nativo: alla prossima build nativa.
+   **Supera la parte E di TASK-305** (il punteggio sulla forma non c'è: un
+   volo non ha forma).
+3. **Feed**: la traccia colorata per vario (gli stessi colori `vario` della
+   mappa di volo) e sotto tre numeri: punteggio XC (punti e tipo), quota
+   massima, salita migliore. **Prima il server** (un campo nuovo e
+   facoltativo nel post, col sì dell'utente per il passo server), poi
+   l'app; un'app vecchia vede il post come oggi.
+4. **Punteggio XC**: «XC score» / «Punteggio XC», sempre con la riga
+   «Calcolato sul telefono · non è un punteggio ufficiale». Distanza libera
+   fino a 3 boe ×1,0, triangolo piatto ×1,2, triangolo FAI (lato minimo
+   ≥ 28 %) ×1,4; un triangolo vale se il buco di chiusura è ≤ 20 % del
+   perimetro e il buco si toglie dalla distanza; sotto il 5 % è «chiuso».
+   Si mostra solo il tipo migliore, disegnato sulla mappa (le boe numerate,
+   il buco di chiusura tratteggiato). I coefficienti esatti (anche quello
+   del triangolo chiuso) si controllano sulle regole pubbliche prima del
+   codice e si scrivono qui; il nome della classifica online non compare.
+5. **La pagina «Analisi del volo»**, dall'alto: mappa col replay 3D (A2:
+   cursore del tempo, ×1/×10/×60, pausa) e le termiche segnate con la
+   salita media; grafici quota, vario e velocità col cursore in comune con
+   la mappa; il punteggio XC; «Termiche» (salita media, quota d'ingresso e
+   d'uscita, durata; % del tempo in termica) e «Planate» (efficienza,
+   velocità, distanza); «Stesso decollo» (voli partiti entro 500 m: questo
+   volo, la media e il migliore degli altri per durata, quota massima,
+   salita media, punteggio XC; con meno di 2 altri voli la sezione non
+   c'è); «Esporta IGC · Esporta GPX» (l'IGC con l'avviso 8, già
+   approvato). La «tenda» sotto la traccia **resta per dopo**.
+
+**Testi di F**, approvati dall'utente il 2026-11-28 (en/it «Sì, approvo»,
+poi de/fr/es «Sì, approvo»):
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Flight analysis | Analisi del volo | Fluganalyse | Analyse du vol | Análisis del vuelo |
+| XC score | Punteggio XC | XC-Wertung | Score XC | Puntuación XC |
+| Calculated on your phone · not an official score | Calcolato sul telefono · non è un punteggio ufficiale | Auf dem Telefon berechnet · keine offizielle Wertung | Calculé sur le téléphone · pas un score officiel | Calculada en el teléfono · no es una puntuación oficial |
+| Free distance | Distanza libera | Freie Strecke | Distance libre | Distancia libre |
+| Flat triangle | Triangolo piatto | Flaches Dreieck | Triangle plat | Triángulo plano |
+| FAI triangle | Triangolo FAI | FAI-Dreieck | Triangle FAI | Triángulo FAI |
+| closed | chiuso | geschlossen | fermé | cerrado |
+| {points} pt | {points} pt | {points} P. | {points} pts | {points} pts |
+| Replay | Replay | Wiedergabe | Rejouer | Reproducir |
+| Altitude · Vario · Speed | Quota · Vario · Velocità | Höhe · Vario · Tempo | Altitude · Vario · Vitesse | Altitud · Vario · Velocidad |
+| Thermals | Termiche | Thermik | Thermiques | Térmicas |
+| {percent} of the time in thermals | {percent} del tempo in termica | {percent} der Zeit in Thermik | {percent} du temps en thermique | {percent} del tiempo en térmica |
+| Average climb | Salita media | Mittleres Steigen | Montée moyenne | Ascenso medio |
+| In · Out | Ingresso · Uscita | Ein · Aus | Entrée · Sortie | Entrada · Salida |
+| Glides | Planate | Gleitflüge | Transitions | Planeos |
+| Glide ratio | Efficienza | Gleitzahl | Finesse | Planeo |
+| Same takeoff | Stesso decollo | Gleicher Startplatz | Même décollage | Mismo despegue |
+| This flight · Average · Best | Questo volo · Media · Migliore | Dieser Flug · Schnitt · Bester | Ce vol · Moyenne · Meilleur | Este vuelo · Media · Mejor |
+| Max altitude | Quota massima | Maximale Höhe | Altitude max | Altitud máxima |
+| Best climb | Salita migliore | Bestes Steigen | Meilleure montée | Mejor ascenso |
+| Export IGC · Export GPX | Esporta IGC · Esporta GPX | IGC exportieren · GPX exportieren | Exporter IGC · Exporter GPX | Exportar IGC · Exportar GPX |
+| Full analysis for flights recorded from this version or imported from IGC | Analisi completa per i voli registrati da questa versione o importati da IGC | Volle Analyse für Flüge ab dieser Version oder aus IGC importiert | Analyse complète pour les vols enregistrés depuis cette version ou importés d'un IGC | Análisis completo para los vuelos grabados desde esta versión o importados de IGC |
+| This IGC file has no track points. | Questo file IGC non ha punti della traccia. | Diese IGC-Datei hat keine Trackpunkte. | Ce fichier IGC n'a aucun point de trace. | Este archivo IGC no tiene puntos de traza. |
+
+**La misura di A2** (miniatura 3D in meno di 2 s): *(in corso, turno di
+simulatore chiesto al Coordinatore)*.
+
+**Le PR di F** (lista dei file al Coordinatore; codice solo dopo il suo
+via): F1 copia dei voli, export IGC/GPX e import IGC; F2 punteggio XC e
+disegno; F3 pagina «Analisi del volo» con replay e grafici (A2); F4 Feed,
+prima il server e poi l'app.
+
 ### Parte G — Live
 
 Task e boe sulla pagina `site/live/` e sulla mappa di chi segue nell'app;

@@ -45,6 +45,7 @@ import {
 import { PlayOverlay } from "./src/game/PlayOverlay";
 import { PlayRow } from "./src/game/PlayRow";
 import { onOpenPlay } from "./src/game/unlocks";
+import { useRecordAsked } from "./src/groupRuns/recordDoor";
 import { GymWorkoutHost } from "./src/gym/GymWorkoutHost";
 import { PoolSwimHost } from "./src/pool/PoolSwimHost";
 import { startGymWorkout } from "./src/gym/useWorkout";
@@ -826,6 +827,11 @@ function MuW() {
   const swimNotice = useSwimNotice();
   // Snowshoes have the avalanche notice, read once on this phone (TASK-413 B).
   const snowNotice = useSnowNotice();
+  // «Start» of a group outing without a route (TASK-495 part C2): the
+  // sport is already chosen by the door, its recording opens.
+  useRecordAsked((sport) =>
+    sport === "snowshoe" ? snowNotice.ask(() => setScreen("run")) : setScreen("run"),
+  );
   /** The notice before «Start» of a route of `activity`, the first time: on
    * the water (paddle or swim) and on the snow; none on the networks. */
   function noticeOf(activity: Activity | undefined) {

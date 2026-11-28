@@ -1,4 +1,4 @@
-import type { GroupRun, ProfileGroupRuns as Runs } from "@shaperoute/shared-types";
+import type { GroupOuting, GroupOutings as Runs } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -87,8 +87,9 @@ export function ProfileGroupRuns({
   );
 }
 
-/** A group run in a list: its title, when, how many go. */
-export function GroupRunCard({ run }: { run: GroupRun }) {
+/** A group run in a list: its title, when, how many go; an outing without
+ * a route its «Destination» too (TASK-495 part C2). */
+export function GroupRunCard({ run }: { run: GroupOuting }) {
   return (
     <Tap
       style={styles.card}
@@ -99,6 +100,11 @@ export function GroupRunCard({ run }: { run: GroupRun }) {
       <Text style={styles.title} numberOfLines={1}>
         {run.title}
       </Text>
+      {typeof run.destination === "string" && (
+        <Text style={styles.facts} numberOfLines={1}>
+          {run.destination}
+        </Text>
+      )}
       <Text style={styles.facts} numberOfLines={1}>
         {startedLabel(run.starts_at)} · {tPlural(run.going, "1 going", "{count} going")}
       </Text>

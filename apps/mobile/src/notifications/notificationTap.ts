@@ -55,6 +55,8 @@ const GROUP_RUN_KINDS: readonly GroupRunPushKind[] = [
   "group_run_soon",
   "group_run_changed",
   "group_run_cancelled",
+  // A new outing of one of my groups (TASK-495 part C): its page.
+  "group_outing_new",
 ];
 
 /** The kinds of a group's notifications (TASK-495). */

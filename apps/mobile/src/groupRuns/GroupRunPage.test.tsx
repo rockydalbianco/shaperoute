@@ -4,8 +4,13 @@
  * and «Over», «Start» putting the route on the map as a favorite.
  */
 import detail from "@shaperoute/shared-types/fixtures/group-run.json";
+import group from "@shaperoute/shared-types/fixtures/group.json";
+import outing from "@shaperoute/shared-types/fixtures/group-outing.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
-import type { GroupRunDetail, Session } from "@shaperoute/shared-types";
+import type {
+  GroupOutingDetail as GroupRunDetail,
+  Session,
+} from "@shaperoute/shared-types";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { Alert } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -13,8 +18,16 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { AccountState } from "../account/useAccount";
 import { FavoritesContext, type FavoritesDoor } from "../favorites/favoritesDoor";
 import { FollowsContext } from "../social/followsDoor";
+import { askedGroup, closeGroupPage } from "../groups/groupDoor";
+import { saveSport } from "../settings/sport";
 import { askedGroupRun, closeGroupRunPage, openGroupRunPage } from "./groupRunDoor";
 import { favoriteOfGroupRun, GroupRunPage } from "./GroupRunPage";
+import { askedRecord } from "./recordDoor";
+
+jest.mock("../settings/sport", () => ({
+  ...jest.requireActual("../settings/sport"),
+  saveSport: jest.fn(),
+}));
 
 const RUN = detail as unknown as GroupRunDetail;
 // Somebody else's group run, which the signed-in member does not go to.
@@ -53,6 +66,17 @@ function api(...runs: GroupRunDetail[]) {
     return new Response(null, { status: 204 });
   });
   return { fetchFn: fetchFn as unknown as typeof fetch, calls };
+}
+
+/** An outing of a group: the outing for its address, the group for the
+ * group's, where the signed-in member is `me`. */
+function outingApi(run: GroupRunDetail, me: string) {
+  const fetchFn = jest.fn(async (url: string) =>
+    url.includes("/groups/")
+      ? Response.json({ ...group, id: run.group_id, me }, { status: 200 })
+      : Response.json(run, { status: 200 }),
+  );
+  return fetchFn as unknown as typeof fetch;
 }
 
 async function shown(fetchFn: typeof fetch, show = jest.fn()) {
@@ -191,4 +215,48 @@ test("a name closes the page and opens the member's profile over the app", async
   );
   expect(onBack).toHaveBeenCalled();
   expect(openProfile).toHaveBeenCalledWith(OTHERS.organiser);
+});
+
+// Somebody else's outing without a route (TASK-495 part C2).
+const OUTING: GroupRunDetail = {
+  ...(outing as unknown as GroupRunDetail),
+  organiser: OTHERS.organiser,
+  faces: [OTHERS.organiser],
+  people: [OTHERS.organiser],
+  i_am_going: false,
+};
+
+test("an outing without a route: its group, «Destination», no km", async () => {
+  await shown(outingApi(OUTING, "member"));
+  expect(await screen.findByTestId("group-run-destination")).toHaveTextContent(
+    "Cima Tosa, normal route",
+  );
+  expect(screen.getByTestId("group-run-page")).not.toHaveTextContent(" km", {
+    exact: false,
+  });
+  await fireEvent.press(screen.getByTestId("group-run-group"));
+  expect(askedGroup()).toEqual({ id: OUTING.group_id });
+  closeGroupPage();
+});
+
+test("«Start» of an outing without a route records its sport", async () => {
+  openGroupRunPage(OUTING.id);
+  const show = await shown(outingApi(OUTING, "member"));
+  await fireEvent.press(await screen.findByTestId("group-run-start"));
+  expect(show).not.toHaveBeenCalled();
+  expect(saveSport).toHaveBeenCalledWith("alpinism");
+  expect(askedRecord()).toEqual({ sport: "alpinism" });
+  expect(askedGroupRun()).toBeNull();
+});
+
+test("the group's admin and co-admins may cancel an outing, not edit it", async () => {
+  await shown(outingApi(OUTING, "coadmin"));
+  expect(await screen.findByTestId("group-run-cancel")).toBeTruthy();
+  expect(screen.queryByTestId("group-run-edit")).toBeNull();
+});
+
+test("a member who doesn't lead the group cannot cancel it", async () => {
+  await shown(outingApi(OUTING, "member"));
+  await screen.findByTestId("group-run-destination");
+  expect(screen.queryByTestId("group-run-cancel")).toBeNull();
 });

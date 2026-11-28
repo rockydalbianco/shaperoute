@@ -33,10 +33,11 @@ const signedIn: AccountState = { status: "signedIn", session: session as Session
 const profile = { ...publicProfile, public_id: ID, follow: "none" } as PublicProfile;
 
 /** The page's own requests go to `fetchFn`, in order; its group runs
- * (TASK-309 part B) get the 404 of an API of before, apart. */
+ * (TASK-309 part B; with `?outings=true` since TASK-495 part C2) get the
+ * 404 of an API of before, apart. */
 function apart(fetchFn: jest.Mock): typeof fetch {
   return (async (url: string, init?: RequestInit) =>
-    String(url).endsWith("/group-runs")
+    String(url).includes("/group-runs")
       ? Response.json(
           {
             error: {

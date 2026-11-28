@@ -2,6 +2,7 @@ import type {
   FeedPost as ApiPost,
   GroupDetail,
   GroupMember,
+  GroupOutings as Outings,
   Person,
 } from "@shaperoute/shared-types";
 import { type ReactNode, useEffect, useState } from "react";
@@ -21,6 +22,7 @@ import { sessionEnded } from "../account/messages";
 import type { AccountOutcome } from "../api/accounts";
 import { FeedPost } from "../feed/FeedPost";
 import { shownPost } from "../feed/feedPosts";
+import { fetchGroupOutings } from "../groupRuns/groupRunsApi";
 import { t, tPlural } from "../i18n";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { useFollowsDoor } from "../social/followsDoor";
@@ -46,6 +48,7 @@ import {
 import { GroupForm } from "./GroupForm";
 import { GroupInvite } from "./GroupInvite";
 import { GroupMembers } from "./GroupMembers";
+import { GroupOutingsGrid, NewOutingButton } from "./GroupOutings";
 import { GroupReport } from "./GroupReport";
 import { GroupRequests } from "./GroupRequests";
 import {
@@ -102,7 +105,8 @@ function isMember(group: GroupDetail): boolean {
  * co-admins «Requests» and «Invite»). Then «Next outings», «Members»,
  * «Recent activity» and «Past outings»; the members and the activity only
  * for the members, and of a group one asks to join only the top for the
- * others. Anybody but the admin may report it.
+ * others. Anybody but the admin may report it. The outings are those of
+ * part C2: their cards, and «New outing» for the members.
  */
 export function GroupPage({ groupId, onBack, fetchFn, apiKey }: Props) {
   const insets = useSafeAreaInsets();
@@ -113,6 +117,8 @@ export function GroupPage({ groupId, onBack, fetchFn, apiKey }: Props) {
   const token = state.status === "signedIn" ? state.session.token : null;
   const [loaded, setLoaded] = useState<Loaded>({ kind: "loading" });
   const [inside, setInside] = useState<Inside | null>(null);
+  // «Next outings» and «Past outings» (TASK-495 part C2); null while asked.
+  const [outingsOf, setOutingsOf] = useState<Outings | null>(null);
   const [asked, setAsked] = useState(0);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -151,6 +157,16 @@ export function GroupPage({ groupId, onBack, fetchFn, apiKey }: Props) {
       }
       const group = outcome.value;
       setLoaded({ kind: "ready", group });
+      if (isMember(group) || group.access === "public") {
+        void fetchGroupOutings(apiUrl, token, groupId, options).then((outings) => {
+          if (live) {
+            // An API without the outings yet says 404: none to show.
+            setOutingsOf(
+              outings.kind === "ok" ? outings.value : { upcoming: [], past: [] },
+            );
+          }
+        });
+      }
       if (!isMember(group)) {
         setInside(null);
         return;
@@ -441,7 +457,19 @@ export function GroupPage({ groupId, onBack, fetchFn, apiKey }: Props) {
             )}
             {outings && (
               <Section title={t("Next outings")}>
-                <Text style={styles.empty}>{t("No outings yet.")}</Text>
+                {member && (
+                  <NewOutingButton
+                    group={group}
+                    onPublished={reload}
+                    fetchFn={fetchFn}
+                    apiKey={apiKey}
+                  />
+                )}
+                {outingsOf === null ? (
+                  <ActivityIndicator color={color.textMuted} />
+                ) : (
+                  <GroupOutingsGrid runs={outingsOf.upcoming} width={cardWidth} />
+                )}
               </Section>
             )}
             {member && (
@@ -482,9 +510,9 @@ export function GroupPage({ groupId, onBack, fetchFn, apiKey }: Props) {
                 ))}
               </Section>
             )}
-            {outings && (
+            {outings && outingsOf !== null && (
               <Section title={t("Past outings")}>
-                <Text style={styles.empty}>{t("No outings yet.")}</Text>
+                <GroupOutingsGrid runs={outingsOf.past} width={cardWidth} />
               </Section>
             )}
           </>

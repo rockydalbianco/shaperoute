@@ -46,6 +46,11 @@ la card «Weather» sul telefono.
 Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
 PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
+- **TASK-500 — L'app si apre prima** · ADR-0404; parte 0 (misura) chiusa
+  il 2026-11-28: `inlineRequires` anticipa il primo disegno di ~0,4 s, fuori
+  dall'impronta (OTA); il motore non pesa sull'avvio e resta dov'è. Prossima
+  la parte A (`metro.config.js`), lista dei file al Coordinatore. File: — ·
+  `tasks/TASK-500.md`
 - **TASK-494 — Le scadenze della vela** (ADR-0401) · parte 0 il
   2026-11-23: revisione, riserva e imbrago sull'attrezzatura di 486, con
   l'avviso; scelte dell'utente fatte. File: — · `tasks/TASK-494.md`

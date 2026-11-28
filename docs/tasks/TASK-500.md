@@ -1,8 +1,8 @@
-# TASK-500 — L'app si apre prima: meno codice all'avvio, il motore dopo il primo schermo
+# TASK-500 — L'app si apre prima: meno codice eseguito all'avvio
 
-**Stato**: In lavorazione — parte 0 (misura) in corso
-**Fase**: 5 · **Branch**: `docs/TASK-500-part-0` (parte 0), poi
-`feat/TASK-500-...`
+**Stato**: In lavorazione — parte 0 (misura) chiusa il 2026-11-28; prossima la parte A
+**Fase**: 5 · **Branch**: `docs/TASK-500-part-0` (#1745), `docs/TASK-500-part-0-numbers`,
+poi `feat/TASK-500-a-inline-requires`
 **ADR**: ADR-0404 · numeri dal Coordinatore (fork 3), 2026-11-23
 
 ## Obiettivo
@@ -45,32 +45,55 @@ taglio nativo.
   posizione, senza aspettare `markFirstPage()`. `bootMs` si misura ma non
   si mostra né si scrive da nessuna parte.
 - `@expo/fingerprint` 0.20.13 non legge `metro.config.js` (conta i file che
-  carica `app.config.ts`): un `metro.config.js` **dovrebbe** lasciare
-  l'impronta iOS a `5e1b5ce5`. Da misurare su copia pulita.
+  carica `app.config.ts`). **Misurato** su copia pulita: `8abaeb92` (runtime
+  1.2.0) con e senza un `metro.config.js` con `inlineRequires`.
 
 Dettagli e metodo: `out/TASK-500/PARTE-0.md` nel checkout principale.
 
+## Numeri della parte 0 (2026-11-28)
+
+iPhone 17e simulato, Expo Go 57 con `--no-dev --minify`, una patch di sola
+misura mai committata (`out/TASK-500/misura.patch`), 5 aperture a freddo
+per condizione (3 per «inline, intera»). Mediane in ms dall'inizio del
+nostro JavaScript; il carico del Mac è a fianco.
+
+| Condizione | carico | primo disegno | thread JS libero | fine animazione | motore pronto · `bootMs` |
+|---|---|---|---|---|---|
+| `main`, corta | 6 | 585 | ~1350 | 1756 | — |
+| `main`, intera | 15 | 670 | ~1450 | 3479 | — |
+| `main` + motore subito, corta | 21 | 660 | ~1460 | 1879 | 8098 · 6123 |
+| `main` + motore subito, intera | 7 | 682 | ~1470 | 3467 | 4892 · 3023 |
+| `inlineRequires`, corta | 9 | 166 | ~1030 | 1375 | — |
+| `inlineRequires`, intera | 6 | 187 | ~1040 | 2968 | — |
+
+- Su `main` ~0,5 s se ne vanno a eseguire i moduli e ~0,75 s in lavoro di
+  `App` dopo il primo disegno.
+- Il motore non allunga i blocchi del thread JS. Nei video ci sono fermi di
+  ~0,23 s all'inizio del cuore **con e senza** motore; il blocco di ~1 s
+  della TASK-505 era a carico 100.
+- I numeri assoluti sono del simulatore, non di un iPhone; i confronti
+  valgono.
+
 ## Parti
 
-- **0 — Misura** (solo documenti). Statico fatto (sopra). Da fare, col
-  turno del simulatore del Coordinatore: i tempi con una patch di sola
-  misura mai committata (avvio nativo, fine dei moduli, primo disegno, fine
-  dell'animazione, motore pronto + `bootMs`, buchi del thread JS, video del
-  cuore), animazione intera e corta, con e senza zona salvata, 5 aperture
-  per condizione. Più l'impronta con e senza `metro.config.js`.
-- **A — Meno codice all'avvio (O4)**: da definire coi numeri della parte 0
-  (`inlineRequires`, lingue e dati caricati su richiesta). Lista dei file
-  al Coordinatore prima del codice.
-- **B — Il motore dopo il primo schermo (O5)**: solo se la misura mostra
-  che il suo avvio pesa sull'animazione. Sposta il primo percorso al
-  massimo di 1,0 s (2,7 s alla prima apertura): è una scelta di prodotto,
-  si chiede all'utente coi numeri.
+- **0 — Misura** (solo documenti; #1745 e la PR dei numeri). Fatta.
+- **A — `inlineRequires` (O4)**: `apps/mobile/metro.config.js` (nuovo) e
+  il suo test; prima, l'elenco dei moduli che devono girare all'avvio per
+  effetto (task in background, gestori delle notifiche). Esce con un OTA.
+  Poi si rimisura con lo stesso metodo.
+- **B — Caricamento su richiesta**: lingue, testi legali, dati di
+  Explore/Feed, solo se la misura dopo A li mostra ancora pesanti.
+- **O5 (il motore dopo il primo schermo)**: non si fa (ADR-0404 punto 2);
+  si riapre se la prova su iPhone mostra il cuore fermo.
 
 ## File toccati
 
-- Parte 0: `docs/tasks/TASK-500.md`.
-- Parti A e B: da chiedere al Coordinatore (`App.tsx`, `i18n/`, `engine/`,
-  `FeedScreen.tsx` sono condivisi).
+- Parte 0: `docs/tasks/TASK-500.md`; con i numeri anche la voce in
+  `docs/STATUS.md` e ADR-0404 in `docs/DECISIONS.md`.
+- Parte A: `apps/mobile/metro.config.js` (nuovo), un test nuovo; altri file
+  solo col via del Coordinatore.
+- Parte B: da chiedere al Coordinatore (`i18n/`, `about/`, `explore/`,
+  `feed/` sono condivisi).
 
 ## Criteri di accettazione
 

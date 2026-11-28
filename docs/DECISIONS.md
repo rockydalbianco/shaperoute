@@ -639,12 +639,61 @@ lasciando le righe d'indice.
 - ADR-0416 — Il catalogo di «Explore» guardato a occhio: oltre al filtro, le strade fatte due volte entro 8 punti sopra la mediana della forma, poi un voto a occhio da 0 a 3 su ogni disegno; 499 tolti, 3120 nuovi, la classifica per voto e misura; gli id dei percorsi cambiano · 2026-11-27 · Accettata
 - ADR-0419 — «Rifai meglio» (TASK-451): a fine corsa, se almeno 200 m del percorso prima del punto dove ci si è fermati sono rimasti a più di 40 m dalla traccia, «Save & redo» salva la corsa e riapre «Draw» con la stessa forma o parola, gli stessi km e la stessa partenza; il motore ripianifica come sempre; solo sport su strade e sentieri · 2026-11-27 · Attiva
 - ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione: l'utente ha tolto la capsula colorata dopo averla vista nel simulatore; il colore di sezione sta solo nel contenuto delle pagine · 2026-11-27 · Attiva
+- ADR-0388, aggiunta F (TASK-479) — Dopo il volo: una copia completa di ogni volo resta solo sul telefono (il server non ha orari né quote); «Analisi del volo» con punteggio XC «non ufficiale», termiche, planate, stesso decollo, export IGC/GPX; import IGC con gli altri file (supera TASK-305 E); il Feed col vario e tre numeri dopo un campo nuovo sul server; la miniatura 3D no (1,3–4,2 s a freddo), il Feed resta 2D · 2026-11-28 · Attiva
 - ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro: 3:1 come forme in ogni tono, 4,5:1 come scritte solo nel tono scuro; dove non reggono come scritte il nome del gruppo è nel colore del testo (`inkOn`, tutte le sezioni insieme) · 2026-11-27 · Attiva
 - ADR-0370 — «Segui subito» (TASK-459): un interruttore dell'account, «Approve followers»; spento si segue subito, acceso la richiesta come oggi; parte spento, acceso per gli account di oggi con almeno un post «Followers»; spegnerlo accetta le richieste in attesa; notifica nuova `new_follower` · 2026-11-28 · Accettata
 - ADR-0415, aggiunta F (TASK-520) — Il video di una routine di stretching è una scena fatta coi disegni che la pagina del video della corsa sa già fare (linee, punti, riquadri, parole): la pagina non si tocca; ogni esercizio una volta sola, 3 secondi che scendono fino a 1,5; si apre dalla pagina della categoria, senza testi nuovi; niente esce dal telefono · 2026-11-28 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0388, aggiunta F (TASK-479) — Dopo il volo: la copia del volo sul telefono, l'analisi, il punteggio XC e il Feed
+
+**Stato**: Attiva · 2026-11-28 · TASK-479 parte 0 di F. Scelte di
+prodotto dell'utente (sei domande, tutte «Sì, così», e i testi in 5
+lingue); la miniatura 3D decisa dall'agente su delega dell'utente, dalla
+regola della parte F; la lista dei file approvata dal Coordinatore.
+
+**Contesto**: la parte F di ADR-0388 promette export e import IGC, un
+punteggio XC sul telefono, l'analisi delle termiche e il confronto coi
+voli dallo stesso decollo. Ma un volo salvato torna dal server come sole
+posizioni (`ActivityDetail.track`): il server usa le quote dei fix solo
+per la salita e non tiene gli orari punto per punto. Il post del Feed
+accetta solo `distance`, `time`, `pace`.
+
+**Decisione**:
+- **Una copia completa di ogni volo** (orari, posizioni, quote) resta
+  **solo sul telefono**, mai spedita; la pagina «Analisi del volo» si apre
+  dalla fine del volo e da «Le mie attività». I voli di prima hanno solo
+  il punteggio XC dalle posizioni.
+- **Import IGC** in «Aggiungi un'attività passata» (TASK-312), accanto a
+  GPX, FIT e TCX; nome del pilota e della vela non letti. Supera la parte E
+  di TASK-305. «Apri con MuW» alla prossima build nativa.
+- **Punteggio XC** «Calcolato sul telefono · non è un punteggio
+  ufficiale»: distanza libera ≤ 3 boe ×1,0, triangolo piatto ×1,2, FAI
+  (lato ≥ 28 %) ×1,4, chiusura ≤ 20 % del perimetro sottratta, «chiuso»
+  sotto il 5 %; coefficienti verificati sulle regole pubbliche prima del
+  codice; il nome della classifica online non compare.
+- **Feed**: traccia colorata per vario e punteggio XC, quota massima,
+  salita migliore. Prima un campo facoltativo nel post sul server, poi
+  l'app; un'eventuale frase della privacy in una PR a sé prima dell'app.
+- **La miniatura 3D nel Feed no**: misurata sulla pagina nascosta del
+  Feed col terreno, 80–330 ms con le tile in cache ma 1,3–4,2 s in posti
+  mai visti (2D: 0,13–0,43 s). Nel Feed i voli sono quasi sempre di altri
+  e altrove: il Feed resta 2D, il 3D sta nell'analisi.
+
+**Alternative scartate**:
+- *Orari e quote sul server*: analisi su ogni telefono, ma un passo
+  server, più dati personali sul server e una frase della privacy in più;
+  l'utente ha scelto il telefono.
+- *Analisi solo sulla scheda di fine volo*: niente voli passati né
+  confronto.
+- *La miniatura 3D lo stesso*: sopra i 2 s a freddo, la regola di F la
+  esclude.
+
+**Conseguenze**: un volo registrato su un altro telefono, o prima di
+questa versione, non ha l'analisi completa; il Feed col vario aspetta il
+passo server (F4a) e la privacy online.
 
 ## ADR-0415, aggiunta F (TASK-520) — Il video di una routine: una scena fatta coi disegni che la pagina del video sa già fare
 

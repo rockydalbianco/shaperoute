@@ -237,6 +237,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   fra quelle venute bene in città, dal catalogo di «Explore»; a piedi e in
   bici, motore non toccato. Poi A (la scelta, file nuovi) e B (la
   pastiglia, dopo TASK-449 A). File: — · `tasks/TASK-448.md`
+- **TASK-510 — Emoji al posto delle icone, secondo giro** · parte 0
+  chiusa il 2026-11-28 (cinque scelte dell'utente, foglio di 78 segni
+  approvato): sport, palestra, profilo, lucchetto, meteo, gruppi,
+  attrezzatura e righe di «Settings» a linea; i premi restano a colori.
+  Cinque PR, una per zona. File: — · `tasks/TASK-510.md`
 
 In attesa (Fermo — in attesa nel task file, nessun file occupato; si
 riprendono col sì dell'utente). Aspettano la società o servizi esterni:

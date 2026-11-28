@@ -1,7 +1,9 @@
+import type { RunActivity } from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text } from "react-native";
 
 import { t } from "../i18n";
-import type { Sport } from "../settings/sport";
+import { runActivityOf, type Sport } from "../settings/sport";
+import { SportIcon } from "../sportSigns/SportIcon";
 import {
   color,
   fontSize,
@@ -11,60 +13,29 @@ import {
   space,
 } from "../theme/tokens";
 
-/** The sport's sign beside «… without a route» (TASK-361). */
-export function withoutRouteIcon(sport: Sport): string {
-  switch (sport) {
-    case "bike":
-      return "🚴";
-    case "paddle":
-      return "🛶";
-    case "walk":
-      return "🚶";
-    case "hike":
-      return "⛰️";
-    case "gravel":
-      return "🚲";
-    case "mtb":
-      return "🚵";
-    case "roller":
-      return "🛼";
-    case "wheelchair":
-      return "♿";
-    case "ski":
-      return "⛷️";
-    case "xc_ski":
-      return "🎿";
-    case "skimo":
-      return "🏔️";
-    case "snowshoe":
-      return "❄️";
-    case "alpinism":
-      return "🧗";
-    case "gym":
-      return "🏋️";
-    case "paragliding":
-      return "🪂";
-    case "stretch":
-      return "🧘";
-    default:
-      return "🏃";
-  }
+/**
+ * The sport's sign beside «… without a route» (TASK-361): its activity, for
+ * `SportIcon` to draw as a line sign (TASK-510; an emoji until then). A
+ * string still, so the screens that pass it on keep their props.
+ */
+export function withoutRouteIcon(sport: Sport): RunActivity {
+  return runActivityOf(sport);
 }
 
 /**
- * «🏃 Run without a route» in the header of «Draw» (TASK-361): outlined, no
+ * «Run without a route» in the header of «Draw» (TASK-361): outlined, no
  * more yellow (ADR-0183 set aside), so the only yellow on the screen is the
  * route's button at its foot. The runner and the words are one button:
  * the runner alone did not say what it does.
  */
 export function RunNoRouteButton({
   label,
-  icon = "🏃",
+  icon = "running",
   onPress,
 }: {
   /** «Run without a route», or the sport's own words (`withoutRouteLabel`). */
   label: string;
-  /** The sport's sign: a bike rides. */
+  /** The sport's activity, drawn as its sign: a bike rides. */
   icon?: string;
   onPress: () => void;
 }) {
@@ -77,15 +48,16 @@ export function RunNoRouteButton({
       accessibilityHint={t("Records the run without drawing a route first")}
       testID="run-no-route"
     >
-      <Text style={styles.icon} importantForAccessibility="no">
-        {icon}
-      </Text>
+      <SportIcon activity={icon} size={ICON_SIZE} />
       <Text style={styles.text} numberOfLines={1}>
         {label}
       </Text>
     </Pressable>
   );
 }
+
+/** The sign's side: as the body text beside it, a little taller. */
+const ICON_SIZE = 18;
 
 const styles = StyleSheet.create({
   button: {
@@ -101,9 +73,6 @@ const styles = StyleSheet.create({
   },
   pressed: {
     backgroundColor: color.surfaceRaised,
-  },
-  icon: {
-    fontSize: fontSize.body,
   },
   text: {
     color: color.text,

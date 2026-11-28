@@ -10,6 +10,7 @@ import { useLiveShareNumbers } from "../liveShare/useLiveShareNumbers";
 import { clockLabel } from "../navigation/freeRun";
 import { useRunAwake } from "../navigation/useRunAwake";
 import { HoldButton } from "../screens/HoldButton";
+import { SportLine } from "../sportSigns/SportIcon";
 import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { useUnits } from "../units/useUnits";
 import { exerciseName, gymExercise } from "./catalog";
@@ -256,7 +257,14 @@ export function WorkoutScreen({
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.head}>
-          <Text style={gymStyles.muted}>{`🏋️ ${t("Gym")}`}</Text>
+          <SportLine
+            activity="gym"
+            size={fontSize.small}
+            tint={color.textMuted}
+            textStyle={gymStyles.muted}
+          >
+            {t("Gym")}
+          </SportLine>
           <Text style={styles.clock} accessibilityRole="timer" testID="gym-clock">
             {clockLabel(timeMs)}
           </Text>

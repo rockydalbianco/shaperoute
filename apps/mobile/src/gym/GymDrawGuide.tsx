@@ -14,6 +14,7 @@ import type { Language } from "../i18n/languages";
 import { useLanguage } from "../i18n/useLanguage";
 import { clockLabel } from "../navigation/freeRun";
 import { useFollowsDoor } from "../social/followsDoor";
+import { SportIcon } from "../sportSigns/SportIcon";
 import {
   color,
   font,
@@ -128,6 +129,7 @@ export function GymDrawGuide({
   /** «Start workout» of Draw: today's plan when there is one. */
   onStart?: () => void;
   startLabel?: string;
+  /** The sport's activity, drawn as its line sign (TASK-510). */
   startIcon?: string;
   /** The line under the title without a plan. */
   hint?: string;
@@ -202,9 +204,7 @@ export function GymDrawGuide({
         testID={testID}
       >
         {startIcon !== undefined && (
-          <Text style={styles.startText} importantForAccessibility="no">
-            {startIcon}
-          </Text>
+          <SportIcon activity={startIcon} size={START_ICON} tint={color.onAccent} />
         )}
         <Text style={styles.startText}>{label}</Text>
       </Pressable>
@@ -471,6 +471,9 @@ export function GymDrawGuide({
 }
 
 const NUMBER_SIZE = 24;
+
+/** The sign beside «Start workout»: as the words, a little taller. */
+const START_ICON = 18;
 
 const styles = StyleSheet.create({
   page: {

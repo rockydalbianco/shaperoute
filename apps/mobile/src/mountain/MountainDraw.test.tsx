@@ -44,7 +44,9 @@ test("a day of mountaineering is recorded from «Record your day», with its own
   expect(
     screen.queryByText("No shapes on the slopes: MuW records your day."),
   ).toBeNull();
-  expect(screen.getByText("🧗")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-alpinism", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
   expect(screen.queryByText("Shapes")).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Record your day" }));
   expect(onRun).toHaveBeenCalledTimes(1);

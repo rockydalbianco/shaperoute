@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { gymLevelsOf } from "../api/gym";
 import { t } from "../i18n";
 import { useLanguage } from "../i18n/useLanguage";
+import { SportLine } from "../sportSigns/SportIcon";
 import {
   color,
   font,
@@ -54,9 +55,15 @@ export function GymLevels({ levels, own = false }: Props) {
   const shown = all ? known : known.slice(0, LEVELS_SHOWN);
   return (
     <View style={styles.box} testID="gym-levels">
-      <Text style={styles.title} accessibilityRole="header">
-        {`🏋️ ${t("Gym")}`}
-      </Text>
+      <SportLine
+        activity="gym"
+        size={fontSize.heading}
+        tint={color.text}
+        textStyle={styles.title}
+        accessibilityRole="header"
+      >
+        {t("Gym")}
+      </SportLine>
       {shown.map((level) => {
         const figure = figureOf(level.level);
         const name = exerciseName({ exercise: level.exercise }, language);

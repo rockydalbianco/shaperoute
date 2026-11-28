@@ -44,8 +44,8 @@ test("«Gravel» 🚲 and «MTB» 🚵 come after «Bike», on since part C", ()
   expect(runActivityOf("mtb")).toBe("mountain_biking");
   expect(withoutRouteLabel("gravel")).toBe("Ride without a route");
   expect(withoutRouteLabel("mtb")).toBe("Ride without a route");
-  expect(withoutRouteIcon("gravel")).toBe("🚲");
-  expect(withoutRouteIcon("mtb")).toBe("🚵");
+  expect(withoutRouteIcon("gravel")).toBe("gravel_biking");
+  expect(withoutRouteIcon("mtb")).toBe("mountain_biking");
 });
 
 test("a gravel or an MTB ride is offered to search and publish while ready", () => {

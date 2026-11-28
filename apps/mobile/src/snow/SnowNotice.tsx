@@ -2,6 +2,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t, tLater } from "../i18n";
+import { SportIcon } from "../sportSigns/SportIcon";
 
 import {
   color,
@@ -68,9 +69,7 @@ export function SnowNotice({
         ]}
       >
         <View style={styles.words}>
-          <Text style={styles.emoji} accessibilityElementsHidden>
-            ❄️
-          </Text>
+          <SportIcon activity="snowshoeing" size={NOTICE_ICON} />
           <Text style={styles.title} accessibilityRole="header">
             {t(SNOW_NOTICE_TITLE)}
           </Text>
@@ -104,6 +103,9 @@ export function SnowNotice({
   );
 }
 
+/** The sport's sign over the title, as large as the emoji it replaced. */
+const NOTICE_ICON = fontSize.title * 2;
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -113,9 +115,6 @@ const styles = StyleSheet.create({
   },
   words: {
     gap: space.md,
-  },
-  emoji: {
-    fontSize: fontSize.title * 2,
   },
   title: {
     color: color.text,

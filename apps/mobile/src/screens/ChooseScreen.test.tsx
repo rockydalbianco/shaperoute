@@ -57,14 +57,18 @@ test("«Run without a route» is outlined, not yellow: the yellow is the route's
   expect(button).toHaveStyle({ borderColor: color.borderStrong });
   expect(screen.getByText("Run without a route")).toHaveStyle({ color: color.text });
   // The runner and the words are one button (TASK-361).
-  expect(screen.getByText("🏃")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-running", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
 });
 
 test("«Ride without a route», with «Bike», is outlined too, with a bike", async () => {
-  await choose("Ride without a route", { runIcon: "🚴" });
+  await choose("Ride without a route", { runIcon: "cycling" });
   const button = screen.getByRole("button", { name: "Ride without a route" });
   expect(button).not.toHaveStyle({ backgroundColor: color.accent });
-  expect(screen.getByText("🚴")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-cycling", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
 });
 
 // A map that could not load (TASK-259): the map's own words, not the reason

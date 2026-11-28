@@ -41,7 +41,7 @@ test("«Wheelchair & stroller» ♿ comes after «Roller», on since the server 
   expect(activityOf("wheelchair")).toBe("wheelchair");
   expect(runActivityOf("wheelchair")).toBe("wheelchair");
   expect(withoutRouteLabel("wheelchair")).toBe("Go without a route");
-  expect(withoutRouteIcon("wheelchair")).toBe("♿");
+  expect(withoutRouteIcon("wheelchair")).toBe("wheelchair");
 });
 
 test("a wheelchair route is offered to search and publish while ready", () => {

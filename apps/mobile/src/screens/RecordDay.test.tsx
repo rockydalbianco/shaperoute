@@ -46,10 +46,12 @@ afterEach(() => {
 
 test("on the snow «Draw» is «Record your day» alone, yellow, and it records", async () => {
   const onRun = jest.fn();
-  await draw(onRun, "Record your day", "⛷️");
+  await draw(onRun, "Record your day", "skiing");
   const button = screen.getByRole("button", { name: "Record your day" });
   expect(button).toHaveStyle({ backgroundColor: color.accent });
-  expect(screen.getByText("⛷️")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-skiing", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
   expect(
     screen.getByText("No shapes on the slopes: MuW records your day."),
   ).toBeOnTheScreen();
@@ -66,9 +68,11 @@ test("on the snow «Draw» is «Record your day» alone, yellow, and it records"
 
 test("cross-country is the same page, with its own sign", async () => {
   mockSport = "xc_ski";
-  await draw(jest.fn(), "Record your day", "🎿");
+  await draw(jest.fn(), "Record your day", "xc_skiing");
   expect(screen.getByRole("button", { name: "Record your day" })).toBeOnTheScreen();
-  expect(screen.getByText("🎿")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-xc_skiing", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
 });
 
 test("the words the user approved, in each language", () => {
@@ -107,7 +111,7 @@ test("the words the user approved, in each language", () => {
 
 test("any other sport keeps its page with the route", async () => {
   mockSport = "run";
-  await draw(jest.fn(), "Run without a route", "🏃");
+  await draw(jest.fn(), "Run without a route", "running");
   expect(screen.getByText("Shapes")).toBeOnTheScreen();
   expect(screen.getByTestId("draw-footer")).toBeOnTheScreen();
   expect(screen.queryByTestId("record-day")).toBeNull();

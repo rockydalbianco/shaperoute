@@ -168,13 +168,13 @@ test("«Changeover» marks one by hand, «Resume» ends it, and the end of the t
   const now = jest.spyOn(Date, "now").mockReturnValue(1_820_000);
   await render(<SkiTourLive track={climbing} live />);
   expect(screen.getByLabelText("Phase: Climb")).toBeOnTheScreen();
-  await fireEvent.press(screen.getByText("🎿 Changeover"));
+  await fireEvent.press(screen.getByText("Changeover"));
   expect(loadSkinChanges(0)).toEqual([{ fromMs: 1_820_000, toMs: null }]);
   expect(screen.getByLabelText(/^Phase: Changeover /)).toBeOnTheScreen();
   now.mockReturnValue(2_000_000);
   await fireEvent.press(screen.getByText("Resume"));
   expect(loadSkinChanges(0)).toEqual([{ fromMs: 1_820_000, toMs: 2_000_000 }]);
-  expect(screen.getByText("🎿 Changeover")).toBeOnTheScreen();
+  expect(screen.getByText("Changeover")).toBeOnTheScreen();
   // Then down: the end of the tour has the skins off when they were marked.
   const tour = tourOf([
     [1800, 10, 1440, 300],
@@ -198,7 +198,7 @@ test("a changeover marked by hand ends by itself once the tour moves on", async 
   ]);
   jest.spyOn(Date, "now").mockReturnValue(1_810_000);
   const { rerender } = await render(<SkiTourLive track={stood} live />);
-  await fireEvent.press(screen.getByText("🎿 Changeover"));
+  await fireEvent.press(screen.getByText("Changeover"));
   expect(screen.getByText("Resume")).toBeOnTheScreen();
   const moved = tourOf([
     [1800, 10, 1440, 300],
@@ -208,7 +208,7 @@ test("a changeover marked by hand ends by itself once the tour moves on", async 
   await rerender(<SkiTourLive track={moved} live />);
   const [change] = loadSkinChanges(0);
   expect(change.toMs).not.toBeNull();
-  expect(screen.getByText("🎿 Changeover")).toBeOnTheScreen();
+  expect(screen.getByText("Changeover")).toBeOnTheScreen();
 });
 
 test("a tour that is over has no «Changeover» to tap", async () => {

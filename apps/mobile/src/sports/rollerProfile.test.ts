@@ -41,7 +41,7 @@ test("«Roller» 🛼 comes after «MTB», on since the server has part A", () =
   expect(activityOf("roller")).toBe("inline_skating");
   expect(runActivityOf("roller")).toBe("inline_skating");
   expect(withoutRouteLabel("roller")).toBe("Skate without a route");
-  expect(withoutRouteIcon("roller")).toBe("🛼");
+  expect(withoutRouteIcon("roller")).toBe("inline_skating");
 });
 
 test("a skate is offered to search and publish while ready", () => {

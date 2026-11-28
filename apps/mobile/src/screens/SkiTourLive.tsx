@@ -18,6 +18,7 @@ import { t } from "../i18n";
 import { metresBetween } from "../map/coordinates";
 import { clockLabel } from "../navigation/freeRun";
 import { openPause, type Track } from "../navigation/trackRecorder";
+import { SportLine } from "../sportSigns/SportIcon";
 import {
   color,
   fontSize,
@@ -140,9 +141,20 @@ export function SkiTourLive({ track, live }: { track: Track; live: boolean }) {
           accessibilityRole="button"
           testID="skin-change"
         >
-          <Text style={[styles.buttonText, open !== null && styles.buttonTextOpen]}>
-            {open === null ? `🎿 ${t("Changeover")}` : t("Resume")}
-          </Text>
+          {open === null ? (
+            <SportLine
+              activity="ski_touring"
+              size={fontSize.body}
+              tint={color.text}
+              textStyle={styles.buttonText}
+            >
+              {t("Changeover")}
+            </SportLine>
+          ) : (
+            <Text style={[styles.buttonText, styles.buttonTextOpen]}>
+              {t("Resume")}
+            </Text>
+          )}
         </Pressable>
       )}
     </View>

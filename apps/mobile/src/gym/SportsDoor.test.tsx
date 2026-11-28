@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, within } from "@testing-library/react-native";
 
 import { profileOf } from "../sports";
 import { color } from "../theme/tokens";
@@ -115,7 +115,10 @@ test("one colour for every sport chosen: the yellow (TASK-506 D)", async () => {
   for (const sport of ["door-gym", "door-run"]) {
     expect(screen.getByTestId(sport)).toHaveStyle({ borderColor: color.accent });
   }
-  expect(screen.getByTestId("door-run")).toHaveTextContent(
-    new RegExp(SPORT_BADGES.run),
-  );
+  // Its square draws the run's line sign (TASK-510), not the emoji.
+  expect(
+    within(screen.getByTestId("door-run")).getByTestId("sport-icon-running", {
+      includeHiddenElements: true,
+    }),
+  ).toBeOnTheScreen();
 });

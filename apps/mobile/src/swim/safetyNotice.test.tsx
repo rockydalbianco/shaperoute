@@ -135,7 +135,9 @@ test("the notice says the four things the user approved, with «I understand» a
   expect(SWIM_NOTICE_TITLE).toBe("Before you swim");
   expect(screen.getByText(SWIM_NOTICE_TITLE)).toBeOnTheScreen();
   // The emoji is for the eyes only.
-  expect(screen.getByText("🏊", { includeHiddenElements: true })).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-swimming", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
   expect(SWIM_NOTICE_LINES).toEqual([
     "Never swim alone. Tow a bright swim buoy and wear a bright cap.",
     "Check the water, the weather, the flags and the local rules: swimming areas, boat lanes, harbours. MuW does not know them.",

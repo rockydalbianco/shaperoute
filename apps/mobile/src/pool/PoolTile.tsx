@@ -4,6 +4,8 @@ import { StyleSheet, Text, View } from "react-native";
 import type { Activity } from "../api/activities";
 import { t } from "../i18n";
 import { clockLabel } from "../navigation/freeRun";
+import { SportIcon } from "../sportSigns/SportIcon";
+import { POOL_ICON } from "../sportSigns/sportIcons";
 import { color, font, fontSize, fontWeight, space } from "../theme/tokens";
 import { metresLabel } from "./PoolDraw";
 import { pacePer100S } from "./poolSwim";
@@ -53,7 +55,7 @@ type Props = {
 
 /**
  * What a swim in a pool shows in place of the line (TASK-400 parts B and
- * C), as the gym's tile (GymTile): the MuW yellow with 🏊; full size, «Pool
+ * C), as the gym's tile (GymTile): the MuW yellow with the pool's ladder (TASK-510); full size, «Pool
  * swim», the lengths and the pool, the metres and the time, and the pace
  * /100 m. In «My activities» a thumbnail; in the Feed, the card, the grids,
  * the search and the picture shared, full size. A screen reader hears the
@@ -72,7 +74,11 @@ export function PoolTile({ width, height, durationS, metres, figures = null }: P
       importantForAccessibility="no-hide-descendants"
       testID="pool-tile"
     >
-      <Text style={small ? styles.emojiSmall : styles.emoji}>🏊</Text>
+      <SportIcon
+        source={POOL_ICON}
+        size={small ? fontSize.title : fontSize.display}
+        tint={color.onAccent}
+      />
       {!small && (
         <>
           <Text style={styles.name}>{t("Pool swim")}</Text>
@@ -109,12 +115,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: space.xs,
     backgroundColor: color.accent,
-  },
-  emoji: {
-    fontSize: fontSize.display,
-  },
-  emojiSmall: {
-    fontSize: fontSize.title,
   },
   name: {
     ...font.label,

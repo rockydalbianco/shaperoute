@@ -25,6 +25,8 @@ import { useHealth } from "../health/useHealth";
 import { t } from "../i18n";
 import { clockLabel } from "../navigation/freeRun";
 import type { PickPhoto } from "../social/PublicParts";
+import { SportLine } from "../sportSigns/SportIcon";
+import { POOL_ICON } from "../sportSigns/sportIcons";
 import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { averagePace } from "./poolChoice";
 import { PoolHeartLines } from "./PoolHeartLines";
@@ -173,9 +175,14 @@ export function PoolSwimEnd({
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.head}>
-          <Text style={gymStyles.muted}>
-            {`🏊 ${t("Pool swim")} · ${metresLabel(swim.poolLengthM)}`}
-          </Text>
+          <SportLine
+            source={POOL_ICON}
+            size={fontSize.small}
+            tint={color.textMuted}
+            textStyle={gymStyles.muted}
+          >
+            {`${t("Pool swim")} · ${metresLabel(swim.poolLengthM)}`}
+          </SportLine>
           <Text style={gymStyles.title} accessibilityRole="header">
             {t("How many lengths?")}
           </Text>

@@ -53,7 +53,7 @@ afterEach(() => {
 
 test("«Draw» offers «Record your day» ❄️ beside the shapes", () => {
   expect(withoutRouteLabel("snowshoe")).toBe("Record your day");
-  expect(withoutRouteIcon("snowshoe")).toBe("❄️");
+  expect(withoutRouteIcon("snowshoe")).toBe("snowshoeing");
   // The shapes stay: not a sport recorded only.
   expect(isRecordOnly("snowshoe")).toBe(false);
 });

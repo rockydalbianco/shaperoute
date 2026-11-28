@@ -601,6 +601,7 @@ lasciando le righe d'indice.
 - ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
 - ADR-0402, precisazione C — Le uscite di un gruppo nell'API: corse di gruppo con `group_id`, `group` o `everyone`, anche senza percorso con «Destination»; `group_runs_activity_check` allargato col suo nome; le liste danno le uscite nuove solo con `outings=true` · 2026-11-27 · Attiva
 - ADR-0403 — Le proprie bolle nei messaggi sul giallo dell'app: una faccia piena `accent` con parole `onAccent`, non vetro; quello che la bolla porta su una piastra neutra · 2026-11-23 · Attiva
+- ADR-0404 — L'avvio dell'app: Metro con `inlineRequires` (un `metro.config.js` nuovo, fuori dall'impronta iOS, esce con un OTA); il motore sul telefono resta acceso quando la zona è pronta · 2026-11-28 · Attiva
 - ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Attiva
 - ADR-0406 — Il proprietario dei dati sul telefono è il `public_id` sul suo server, non l'id numerico; la corsa, gli allenamenti in corso e i dati del corpo sono di ogni account, nascosti finché rientra · 2026-11-26 · Attiva
 - ADR-0393, precisazione E–G — L'attrezzatura nel post, nei capi taggati e nella campanella: rotte a parte (`/drawings/{id}/gear`, `/gear/{id}`), `gear_id` sul tag col `SET NULL`, il limite una riga sola nella campanella per attrezzo e limite, «From my gear» coi tipi della foto · 2026-11-23 · Attiva
@@ -9214,3 +9215,49 @@ uscite di un gruppo»):
 non le crea non ci sono uscite, e un'app di prima vede le liste di prima.
 I tipi di `shared-types` sono solo aggiunte (`GroupOuting…`): l'app passa
 a loro nella parte C2.
+
+## ADR-0404 — L'avvio dell'app: Metro con `inlineRequires`, il motore resta dov'è
+
+**Stato**: Attiva · 2026-11-28 · TASK-500 (parte 0 misurata, parte A da
+fare). Deciso dall'agente su delega dell'utente: è una scelta tecnica, non
+cambia niente di ciò che l'utente vede se non il tempo di apertura.
+
+**Contesto**: la lettura del codice del 2026-11-23 (O4, O5): non c'è un
+`metro.config.js`, quindi con il default di Expo 57 (`inlineRequires:
+false`) tutti i 2371 file del bundle (8,2 MB di bytecode Hermes) vengono
+eseguiti prima del primo disegno; e Pyodide parte mentre gira l'animazione.
+ADR-0177 aveva scartato un `metro.config.js` per i tipi di asset, e ADR-0339
+prec. B lo dava come «dentro l'impronta iOS», senza misura.
+
+**Misure** (dettagli in `tasks/TASK-500.md`):
+- l'impronta iOS è `8abaeb92` (runtime 1.2.0) **con e senza** un
+  `metro.config.js` che accende `inlineRequires`: `@expo/fingerprint`
+  0.20.13 non legge la configurazione di Metro;
+- sul simulatore (Expo Go, JavaScript di produzione, 5 aperture a freddo
+  per condizione) con `inlineRequires` il primo disegno arriva a ~0,17 s
+  invece di ~0,59 s, la fine dell'animazione corta a 1,38 s invece di
+  1,76 s, l'intera a 2,97 s invece di 3,48 s;
+- Pyodide gira nel processo della WebView: acceso subito non allunga i
+  blocchi del thread JS, e i piccoli fermi del cuore (~0,23 s) ci sono anche
+  senza motore. `bootMs` 3–6 s a seconda del carico del Mac.
+
+**Decisione**:
+1. **Un `apps/mobile/metro.config.js`** che prende `getDefaultConfig` di
+   Expo e accende solo `inlineRequires: true`, con un test che lo legge.
+   Esce con un OTA sulla 1.2.0. Prima del merge, controllare i moduli che
+   devono girare all'avvio per effetto (definizioni dei task in background,
+   gestori delle notifiche): con `inlineRequires` un modulo importato per un
+   nome si esegue solo quando quel nome si usa.
+2. **Il motore resta dov'è** (ADR-0248 punto 4): nessuna prova che
+   spostarlo dopo il primo schermo serva, e spostarlo ritarderebbe il primo
+   percorso. Si riapre se la prova su iPhone mostra il cuore fermo.
+3. Lingue, testi legali e dati di Explore/Feed caricati su richiesta solo
+   se, dopo il punto 1, la nuova misura li mostra ancora pesanti.
+
+**Scartato**: spostare `warmUp` dopo `markFirstPage()` (nessun guadagno
+misurato); `React.lazy` sulle pagine (con `inlineRequires` il grosso del
+guadagno arriva senza toccare `App.tsx`, file a turno).
+
+**Conseguenze**: l'impronta non cambia, quindi niente taglio nativo. Il
+metodo di misura (patch mai committata, `out/TASK-500/`) si riusa per
+confrontare prima e dopo la parte A.

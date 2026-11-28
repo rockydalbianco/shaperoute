@@ -216,6 +216,18 @@ describe("a file that does not become a run", () => {
   });
 });
 
+describe("GPX, TCX and FIT as before IGC came (TASK-479 part F1)", () => {
+  it.each(["strava-run.gpx", "garmin-ride.tcx", "garmin-run.fit"])(
+    "%s sends no heights and keeps no flight",
+    (name) => {
+      const run = ok(importedRun(fileOf(name)));
+      expect(run.flight).toBeNull();
+      expect(run.request.track.some((fix) => "altitude_m" in fix)).toBe(false);
+      expect(run.sport).not.toBe("paragliding");
+    },
+  );
+});
+
 describe("an IGC file (TASK-479 part F1)", () => {
   // An invented flight; the pilot's name is never read.
   const igc = (records: string[]) =>

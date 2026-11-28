@@ -5,7 +5,8 @@
  * own; nothing without any, from an API of before or without an account;
  * the point rounded, and none without the permission.
  */
-import type { GroupRun, LatLon, Session } from "@shaperoute/shared-types";
+import type { GroupOuting, LatLon, Session } from "@shaperoute/shared-types";
+import outing from "@shaperoute/shared-types/fixtures/group-outing.json";
 import row from "@shaperoute/shared-types/fixtures/group-runs.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
@@ -16,8 +17,8 @@ import { color } from "../theme/tokens";
 import { askedGroupRun, closeGroupRunPage } from "./groupRunDoor";
 import { GroupRunsRow, useGroupRuns, whenLabel } from "./GroupRunsRow";
 
-const RUNS = row.group_runs as unknown as GroupRun[];
-const [FIRST, SECOND] = RUNS as [GroupRun, GroupRun];
+const RUNS = row.group_runs as unknown as GroupOuting[];
+const [FIRST, SECOND] = RUNS as [GroupOuting, GroupOuting];
 
 function answering(status: number, body: unknown) {
   return jest.fn(async () => Response.json(body, { status })) as jest.Mock;
@@ -89,7 +90,9 @@ test("each card: the line, the title, day and time · km, who goes; a touch open
   await shown(fetchFn);
   expect(screen.getByText("Group runs")).toBeOnTheScreen();
   // The point goes rounded to about a kilometre (the user's choice 4).
-  expect(fetchFn.mock.calls[0][0]).toBe("http://api/group-runs?lat=46.07&lon=11.12");
+  expect(fetchFn.mock.calls[0][0]).toBe(
+    "http://api/group-runs?lat=46.07&lon=11.12&outings=true",
+  );
   const card = screen.getByTestId(`group-runs-card-${FIRST.id}`);
   expect(card).toHaveTextContent(FIRST.title, { exact: false });
   // Day and time in the phone's time, without the year; the km below.
@@ -124,6 +127,27 @@ test("an outing with no route: the card without the line", async () => {
   );
 });
 
+test("an outing of a group without a route: its sport and «Destination», no km (TASK-495 C2)", async () => {
+  const {
+    description: _d,
+    points: _p,
+    walks: _w,
+    on_foot: _o,
+    people: _pe,
+    next: _n,
+    ...card
+  } = outing;
+  await shown(answering(200, { group_runs: [card] }));
+  const tile = screen.getByTestId(`group-runs-card-${card.id}`);
+  expect(screen.getByTestId("group-run-sport-icon")).toHaveTextContent("🧗", {
+    exact: false,
+  });
+  expect(screen.getByTestId(`group-runs-destination-${card.id}`)).toHaveTextContent(
+    "Cima Tosa, normal route",
+  );
+  expect(tile).not.toHaveTextContent("km", { exact: false });
+});
+
 test("none, an API of before or a strange answer: no row", async () => {
   await shown(answering(200, { group_runs: [] }));
   expect(screen.queryByTestId("group-runs-row")).toBeNull();
@@ -136,7 +160,7 @@ test("none, an API of before or a strange answer: no row", async () => {
 test("without the permission, no point: the API gives them from everywhere", async () => {
   const fetchFn = answering(200, row);
   await shown(fetchFn, { point: async () => null });
-  expect(fetchFn.mock.calls[0][0]).toBe("http://api/group-runs");
+  expect(fetchFn.mock.calls[0][0]).toBe("http://api/group-runs?outings=true");
   expect(screen.getByTestId("group-runs-row")).toBeOnTheScreen();
 });
 

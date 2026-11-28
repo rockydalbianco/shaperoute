@@ -4096,4 +4096,21 @@ export const FR: Table = {
     "Écris au moins {count} lettres du nom d'un groupe.",
   "The groups could not load. Check the connection and try again.":
     "Impossible de charger les groupes. Vérifie la connexion et réessaie.",
+  // src/groupRuns/GroupRunForm.tsx (TASK-495 part C2: the outings of a group)
+  Group: "Groupe",
+  "New outing": "Nouvelle sortie",
+  "Members only": "Membres uniquement",
+  Destination: "Destination",
+  "e.g. Cima Tosa, normal route": "ex. Cima Tosa, voie normale",
+  "Meeting point": "Point de rendez-vous",
+  "Move the pin": "Déplacer l'épingle",
+  // src/groupRuns/MeetingPointMap.tsx
+  "Move the map to put the pin on the meeting point.":
+    "Déplace la carte pour mettre l'épingle sur le point de rendez-vous.",
+  // src/groupRuns/GroupRunPage.tsx
+  "Finish the activity under way first.": "Termine d'abord l'activité en cours.",
+  // src/groups/GroupOutings.tsx
+  "With a route": "Avec un parcours",
+  "Without a route": "Sans parcours",
+  "Choose a favorite": "Choisis un favori",
 };

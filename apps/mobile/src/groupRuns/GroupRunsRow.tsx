@@ -1,4 +1,4 @@
-import type { GroupRun, LatLon } from "@shaperoute/shared-types";
+import type { GroupOuting, LatLon } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -9,11 +9,13 @@ import { t, tPlural } from "../i18n";
 import { appLanguage } from "../i18n/language";
 import { Avatar } from "../profile/Avatar";
 import { useFollowsDoor } from "../social/followsDoor";
+import { findProfile } from "../sports";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
+import { GROUP_RUN_GLYPH } from "./CreateGroupRunButton";
 import { distanceLabel } from "../units/format";
 import { openGroupRunPage } from "./groupRunDoor";
-import { fetchGroupRuns } from "./groupRunsApi";
+import { fetchGroupRuns, withoutRoute } from "./groupRunsApi";
 
 /** The width of a card of the row: two and a bit on a phone's screen. */
 export const GROUP_RUN_CARD_WIDTH = 168;
@@ -29,12 +31,12 @@ type Options = {
 
 export type GroupRunsShown = {
   /** Those to show; empty: no row. */
-  runs: GroupRun[];
+  runs: GroupOuting[];
   /** Asks the API again: with the pull of «Feed». */
   refresh: () => void;
 };
 
-const NONE: GroupRun[] = [];
+const NONE: GroupOuting[] = [];
 
 /**
  * The group runs of the Feed's row (TASK-309 part B2, docs/EVENTI.md §5):
@@ -50,7 +52,7 @@ export function useGroupRuns(active: boolean, options: Options = {}): GroupRunsS
     account.state.status === "signedIn" ? account.state.session.token : null;
   const { fetchFn, key, point = knownPoint } = options;
   // The row of one token: another account does not see it.
-  const [answer, setAnswer] = useState<{ token: string; runs: GroupRun[] } | null>(
+  const [answer, setAnswer] = useState<{ token: string; runs: GroupOuting[] } | null>(
     null,
   );
   const asked = useRef<string | null>(null);
@@ -97,7 +99,7 @@ export function useGroupRuns(active: boolean, options: Options = {}): GroupRunsS
  * one's own and those one goes to have the yellow edge and «You're going»
  * (choice 3). A touch opens the group run's page. Nothing without one.
  */
-export function GroupRunsRow({ runs }: { runs: readonly GroupRun[] }) {
+export function GroupRunsRow({ runs }: { runs: readonly GroupOuting[] }) {
   if (runs.length === 0) {
     return null;
   }
@@ -136,37 +138,62 @@ export function whenLabel(startsAt: string, locale: string = appLanguage()): str
 }
 
 /** «You're going · 3» on one's own and those one goes to; «3 going» else. */
-export function goingLine(run: GroupRun): string {
+export function goingLine(run: Pick<GroupOuting, "going" | "i_am_going">): string {
   const count = tPlural(run.going, "1 going", "{count} going");
   return run.i_am_going ? `${t("You're going")} · ${run.going}` : count;
 }
 
-function GroupRunTile({ run }: { run: GroupRun }) {
+/** One card of the row; the page of a group lays them out two by two
+ * (TASK-495 part C2), at `width`. */
+export function GroupRunTile({
+  run,
+  width = GROUP_RUN_CARD_WIDTH,
+}: {
+  run: GroupOuting;
+  width?: number;
+}) {
   const when = whenLabel(run.starts_at);
-  const km = distanceLabel(run.distance_m);
+  // An outing without a route (TASK-495 part C2, the user's choice Q3 of
+  // 2026-11-27): its sport's icon in place of the line, its «Destination»
+  // in place of the km.
+  const free = withoutRoute(run);
+  const km = free || run.distance_m === null ? "" : distanceLabel(run.distance_m);
+  const where = free ? (run.destination ?? "") : km;
   const going = goingLine(run);
-  const inner = GROUP_RUN_CARD_WIDTH - 2 * space.md;
+  const inner = width - 2 * space.md;
   return (
     <Tap
-      style={[styles.card, run.i_am_going && styles.mine]}
+      style={[styles.card, { width }, run.i_am_going && styles.mine]}
       onPress={() => openGroupRunPage(run.id)}
       accessibilityRole="button"
-      accessibilityLabel={`${run.title}, ${when}, ${km}, ${going}`}
+      accessibilityLabel={`${run.title}, ${when}, ${where}, ${going}`}
       testID={`group-runs-card-${run.id}`}
     >
-      {/* An outing with no route has no line: its words are enough. */}
-      {run.preview.length >= 2 && (
+      {run.preview.length >= 2 ? (
         <RouteThumb line={run.preview} width={inner} height={THUMB_HEIGHT} />
+      ) : (
+        <SportIcon activity={run.activity} />
       )}
       <Text style={styles.title} numberOfLines={2}>
         {run.title}
       </Text>
+      {free && (
+        <Text
+          style={styles.facts}
+          numberOfLines={1}
+          testID={`group-runs-destination-${run.id}`}
+        >
+          {run.destination}
+        </Text>
+      )}
       <Text style={styles.facts} numberOfLines={1}>
         {when}
       </Text>
-      <Text style={styles.facts} numberOfLines={1}>
-        {km}
-      </Text>
+      {!free && km !== "" && (
+        <Text style={styles.facts} numberOfLines={1}>
+          {km}
+        </Text>
+      )}
       <View style={styles.going}>
         <View style={styles.faces}>
           {run.faces.slice(0, 3).map((person, i) => (
@@ -194,7 +221,28 @@ function GroupRunTile({ run }: { run: GroupRun }) {
   );
 }
 
+/** The sport of an outing without a route, where the line would be: as
+ * tall as the line, the emoji of its profile (the app has no icons). */
+export function SportIcon({ activity }: { activity: string }) {
+  const profile = findProfile(activity);
+  return (
+    <View style={styles.icon} testID="group-run-sport-icon">
+      <Text style={styles.iconText} accessibilityElementsHidden>
+        {profile?.emoji ?? GROUP_RUN_GLYPH}
+      </Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  icon: {
+    height: THUMB_HEIGHT,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconText: {
+    fontSize: THUMB_HEIGHT / 2,
+  },
   section: {
     gap: space.sm,
   },
@@ -207,7 +255,6 @@ const styles = StyleSheet.create({
     gap: space.sm,
   },
   card: {
-    width: GROUP_RUN_CARD_WIDTH,
     gap: space.xs,
     padding: space.md,
     borderRadius: radius.lg,

@@ -7,6 +7,7 @@
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
 import detail from "@shaperoute/shared-types/fixtures/group.json";
 import members from "@shaperoute/shared-types/fixtures/group-members.json";
+import outings from "@shaperoute/shared-types/fixtures/group-outings.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { GroupDetail, Session } from "@shaperoute/shared-types";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
@@ -151,6 +152,43 @@ test("a public group shows its outings to who is not in it", async () => {
   await shown(fetchFn);
   expect(await screen.findByText("Next outings")).toBeTruthy();
   expect(screen.queryByText("Members")).toBeNull();
+});
+
+test("the outings fill «Next outings» and «Past outings»; a member adds one (TASK-495 C2)", async () => {
+  const { fetchFn } = api([{ ...ADMIN, me: "member" }], {
+    ...INSIDE,
+    [`GET /groups/${ID}/outings`]: { status: 200, body: outings },
+  });
+  const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+  await shown(fetchFn);
+  const [next] = outings.upcoming;
+  expect(await screen.findByTestId(`group-runs-card-${next!.id}`)).toBeTruthy();
+  for (const run of [...outings.upcoming, ...outings.past]) {
+    expect(screen.getByTestId(`group-runs-card-${run.id}`)).toBeTruthy();
+  }
+  await fireEvent.press(screen.getByTestId("group-new-outing"));
+  const buttons = alert.mock.calls[0]![2]!;
+  expect(buttons.map((button) => button.text)).toEqual([
+    "With a route",
+    "Without a route",
+    "Not now",
+  ]);
+  // «Without a route»: the form of an outing of this group.
+  await act(async () => buttons[1]!.onPress!());
+  expect(screen.getByTestId("group-run-destination")).toBeTruthy();
+  expect(screen.getByTestId("group-run-sport-hiking")).toBeTruthy();
+  alert.mockRestore();
+});
+
+test("who is not a member sees the outings of a public group, without «New outing»", async () => {
+  const { fetchFn } = api([{ ...OUTSIDE, access: "public" }], {
+    [`GET /groups/${ID}/outings`]: { status: 200, body: outings },
+  });
+  await shown(fetchFn);
+  expect(
+    await screen.findByTestId(`group-runs-card-${outings.upcoming[0]!.id}`),
+  ).toBeTruthy();
+  expect(screen.queryByTestId("group-new-outing")).toBeNull();
 });
 
 test("an invite is accepted or declined; declined by invite only, the page goes", async () => {

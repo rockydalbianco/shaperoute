@@ -1,4 +1,4 @@
-import type { GroupRunDetail, Person } from "@shaperoute/shared-types";
+import type { GroupOutingDetail, Person } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -15,6 +15,8 @@ import { sessionEnded } from "../account/messages";
 import { startedLabel } from "../activities/activityText";
 import type { FavoriteDetail } from "../api/favorites";
 import { useFavoritesDoor } from "../favorites/favoritesDoor";
+import { closeGroupPage, openGroupPage } from "../groups/groupDoor";
+import { fetchGroup } from "../groups/groupsApi";
 import { t, tPlural } from "../i18n";
 import { ReportMenu } from "../social/ReportMenu";
 import { useFollowsDoor } from "../social/followsDoor";
@@ -32,10 +34,11 @@ import { Tap } from "../ui/Tap";
 import { distanceLabel } from "../units/format";
 import { GroupRunForm, groupRunProblem } from "./GroupRunForm";
 import { closeGroupRunPage, openGroupRunPage, useAskedGroupRun } from "./groupRunDoor";
-import { cancelGroupRun, fetchGroupRun, setGoing } from "./groupRunsApi";
+import { cancelGroupRun, fetchGroupRun, setGoing, withoutRoute } from "./groupRunsApi";
+import { askRecord } from "./recordDoor";
 
 /** The group run as the map shows it, as a favorite: «Start» runs it. */
-export function favoriteOfGroupRun(run: GroupRunDetail): FavoriteDetail {
+export function favoriteOfGroupRun(run: GroupOutingDetail): FavoriteDetail {
   return {
     id: `group-run-${run.id}`,
     city: run.city,
@@ -43,9 +46,9 @@ export function favoriteOfGroupRun(run: GroupRunDetail): FavoriteDetail {
     word: run.word,
     style: run.style === "round" || run.style === "block" ? run.style : null,
     title: run.title,
-    distance_m: run.distance_m,
-    route_m: run.route_m,
-    similarity: run.similarity,
+    distance_m: run.distance_m ?? 0,
+    route_m: run.route_m ?? 0,
+    similarity: run.similarity ?? 0,
     created_at: run.created_at,
     points: run.points,
     walks: run.walks,
@@ -56,14 +59,14 @@ export function favoriteOfGroupRun(run: GroupRunDetail): FavoriteDetail {
 }
 
 /** Whether who goes may still say «I'm going» or «Not going». */
-function open(run: GroupRunDetail): boolean {
+function open(run: GroupOutingDetail): boolean {
   return run.status === "upcoming" || run.status === "started";
 }
 
 type Loaded =
   | { kind: "loading" }
   | { kind: "failed"; problem: string }
-  | { kind: "ready"; run: GroupRunDetail };
+  | { kind: "ready"; run: GroupOutingDetail };
 
 type Props = {
   groupRunId: string;
@@ -80,6 +83,11 @@ type Props = {
  * goes. «I'm going» and «Not going» until it is over; «Start» puts the route
  * on the map, as a favorite opened. The organiser changes it or cancels it
  * before it starts; anybody else may report it.
+ *
+ * An outing of a group (TASK-495 part C2, docs/GRUPPI.md §6) says its group,
+ * which opens the group's page; without a route it has its «Destination» in
+ * place of the km, and «Start» records its sport without a route. The
+ * group's admin and co-admins may cancel it too.
  */
 export function GroupRunPage({ groupRunId, onBack, fetchFn, apiKey }: Props) {
   const insets = useSafeAreaInsets();
@@ -100,6 +108,9 @@ export function GroupRunPage({ groupRunId, onBack, fetchFn, apiKey }: Props) {
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [changing, setChanging] = useState(false);
+  // Of an outing of a group: whether who looks leads the group, and so may
+  // cancel it.
+  const [leads, setLeads] = useState(false);
   useBackCloses(true, onBack);
   const edge = useEdgeBack(onBack, true);
   const options = { fetchFn, key: apiKey };
@@ -116,6 +127,16 @@ export function GroupRunPage({ groupRunId, onBack, fetchFn, apiKey }: Props) {
         }
         if (outcome.kind === "ok") {
           setLoaded({ kind: "ready", run: outcome.value });
+          const groupId = outcome.value.group_id;
+          if (typeof groupId === "string") {
+            void fetchGroup(apiUrl, token, groupId, { fetchFn, key: apiKey }).then(
+              (group) => {
+                if (live && group.kind === "ok") {
+                  setLeads(group.value.me === "admin" || group.value.me === "coadmin");
+                }
+              },
+            );
+          }
           return;
         }
         if (sessionEnded(outcome)) {
@@ -176,8 +197,22 @@ export function GroupRunPage({ groupRunId, onBack, fetchFn, apiKey }: Props) {
     );
   }
 
-  function start(run: GroupRunDetail) {
-    favorites.show(favoriteOfGroupRun(run), () => openGroupRunPage(run.id));
+  function start(run: GroupOutingDetail) {
+    if (withoutRoute(run)) {
+      // Its sport's recording, without a route; never over a run going on.
+      if (!askRecord(run.activity)) {
+        setProblem(t("Finish the activity under way first."));
+        return;
+      }
+    } else {
+      favorites.show(favoriteOfGroupRun(run), () => openGroupRunPage(run.id));
+    }
+    closeGroupRunPage();
+    closeGroupPage();
+  }
+
+  function openGroup(groupId: string) {
+    openGroupPage(groupId);
     closeGroupRunPage();
   }
 
@@ -185,6 +220,7 @@ export function GroupRunPage({ groupRunId, onBack, fetchFn, apiKey }: Props) {
   const paddingBottom = insets.bottom + space.xl;
   const run = loaded.kind === "ready" ? loaded.run : null;
   const mine = run !== null && me !== null && run.organiser.public_id === me;
+  const free = run !== null && withoutRoute(run);
 
   return (
     <Animated.View
@@ -250,10 +286,30 @@ export function GroupRunPage({ groupRunId, onBack, fetchFn, apiKey }: Props) {
             )}
             {run.status === "over" && <Text style={styles.status}>{t("Over")}</Text>}
             <Text style={styles.facts}>{startedLabel(run.starts_at)}</Text>
+            {typeof run.group_id === "string" && typeof run.group_name === "string" && (
+              <Tap
+                style={styles.person}
+                onPress={() => openGroup(run.group_id as string)}
+                accessibilityRole="button"
+                testID="group-run-group"
+              >
+                <Text style={styles.personName}>{run.group_name}</Text>
+              </Tap>
+            )}
+            {free && (
+              <>
+                <Text style={styles.label}>{t("Destination")}</Text>
+                <Text style={styles.facts} testID="group-run-destination">
+                  {run.destination}
+                </Text>
+              </>
+            )}
             {run.meeting_note !== null && (
               <Text style={styles.facts}>{run.meeting_note}</Text>
             )}
-            <Text style={styles.facts}>{distanceLabel(run.distance_m)}</Text>
+            {!free && run.distance_m !== null && (
+              <Text style={styles.facts}>{distanceLabel(run.distance_m)}</Text>
+            )}
             {run.description !== null && (
               <Text style={styles.notes}>{run.description}</Text>
             )}
@@ -316,16 +372,18 @@ export function GroupRunPage({ groupRunId, onBack, fetchFn, apiKey }: Props) {
             {!mine && run.i_am_going && open(run) && (
               <Text style={styles.going}>{t("You're going")}</Text>
             )}
-            {mine && run.status === "upcoming" && (
+            {(mine || leads) && run.status === "upcoming" && (
               <View style={styles.buttons}>
-                <Tap
-                  style={styles.button}
-                  onPress={() => setChanging(true)}
-                  accessibilityRole="button"
-                  testID="group-run-edit"
-                >
-                  <Text style={styles.buttonText}>{t("Edit")}</Text>
-                </Tap>
+                {mine && (
+                  <Tap
+                    style={styles.button}
+                    onPress={() => setChanging(true)}
+                    accessibilityRole="button"
+                    testID="group-run-edit"
+                  >
+                    <Text style={styles.buttonText}>{t("Edit")}</Text>
+                  </Tap>
+                )}
                 <Tap
                   style={styles.button}
                   onPress={cancel}

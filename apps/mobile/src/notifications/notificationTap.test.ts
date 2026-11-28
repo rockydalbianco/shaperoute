@@ -87,9 +87,14 @@ test("a group's three notifications open its page", () => {
   }
 });
 
-test("a group run's three notifications open its page", () => {
+test("a group run's notifications, and a new outing's, open its page", () => {
   const run = "5b0c6a1e-3d2f-4e8a-9b7c-1d2e3f4a5b6c";
-  for (const kind of ["group_run_soon", "group_run_changed", "group_run_cancelled"]) {
+  for (const kind of [
+    "group_run_soon",
+    "group_run_changed",
+    "group_run_cancelled",
+    "group_outing_new",
+  ]) {
     expect(tapTarget({ kind, group_run_id: run })).toEqual({
       kind: "group_run",
       id: run,

@@ -1,3 +1,6 @@
+import outingRequest from "@shaperoute/shared-types/fixtures/group-outing-request.json";
+import outing from "@shaperoute/shared-types/fixtures/group-outing.json";
+import outings from "@shaperoute/shared-types/fixtures/group-outings.json";
 import change from "@shaperoute/shared-types/fixtures/group-run-change.json";
 import request from "@shaperoute/shared-types/fixtures/group-run-request.json";
 import detail from "@shaperoute/shared-types/fixtures/group-run.json";
@@ -8,7 +11,9 @@ import { answers, apiError } from "../account/testing";
 import {
   cancelGroupRun,
   changeGroupRun,
+  createGroupOuting,
   createGroupRun,
+  fetchGroupOutings,
   fetchGroupRun,
   fetchGroupRuns,
   fetchProfileGroupRuns,
@@ -17,6 +22,7 @@ import {
   isGroupRunsPage,
   isProfileGroupRuns,
   setGoing,
+  withoutRoute,
 } from "./groupRunsApi";
 
 const URL = "http://api";
@@ -90,7 +96,9 @@ test("a profile's group runs; an API of before says 404", async () => {
   let fetchFn = answers({ status: 200, body: ofProfile });
   const outcome = await fetchProfileGroupRuns(URL, TOKEN, person, options(fetchFn));
   expect(outcome).toEqual({ kind: "ok", value: ofProfile });
-  expect(fetchFn.mock.calls[0][0]).toBe(`${URL}/users/${person}/group-runs`);
+  expect(fetchFn.mock.calls[0][0]).toBe(
+    `${URL}/users/${person}/group-runs?outings=true`,
+  );
 
   fetchFn = answers({ status: 404, body: apiError("http_error", "Not Found") });
   const before = await fetchProfileGroupRuns(URL, TOKEN, person, options(fetchFn));
@@ -107,7 +115,7 @@ test("the Feed's row: the point rounded to about a kilometre, or none", async ()
   );
   expect(outcome).toEqual({ kind: "ok", value: row });
   const [url, init] = fetchFn.mock.calls[0];
-  expect(url).toBe(`${URL}/group-runs?lat=46.07&lon=11.12`);
+  expect(url).toBe(`${URL}/group-runs?lat=46.07&lon=11.12&outings=true`);
   expect(init).toMatchObject({
     method: "GET",
     headers: { Authorization: `Bearer ${TOKEN}` },
@@ -115,9 +123,50 @@ test("the Feed's row: the point rounded to about a kilometre, or none", async ()
 
   fetchFn = answers({ status: 200, body: row });
   await fetchGroupRuns(URL, TOKEN, null, options(fetchFn));
-  expect(fetchFn.mock.calls[0][0]).toBe(`${URL}/group-runs`);
+  expect(fetchFn.mock.calls[0][0]).toBe(`${URL}/group-runs?outings=true`);
 
   fetchFn = answers({ status: 404, body: apiError("http_error", "Not Found") });
   const before = await fetchGroupRuns(URL, TOKEN, null, options(fetchFn));
   expect(before).toMatchObject({ kind: "api_error", code: "http_error" });
+});
+
+test("the outings of a group are read, with a route or without one (TASK-495 C2)", () => {
+  expect(isGroupRunDetail(outing)).toBe(true);
+  expect(withoutRoute(outing)).toBe(true);
+  expect(withoutRoute(detail as unknown as typeof outing)).toBe(false);
+  expect(isProfileGroupRuns(outings)).toBe(true);
+  expect(outings.upcoming.every(isGroupRun)).toBe(true);
+  // Only the members see it: the visibility of part C.
+  expect(isGroupRun({ ...outing, visibility: "group" })).toBe(true);
+  expect(isGroupRun({ ...outing, visibility: "friends" })).toBe(false);
+  // Without a route it has its «Destination», or it is no outing.
+  expect(isGroupRunDetail({ ...outing, destination: null })).toBe(false);
+  expect(isGroupRun({ ...outing, distance_m: "far" })).toBe(false);
+  // An API of before C1 has no group beside it.
+  const {
+    group_id: _g,
+    group_name: _n,
+    destination: _d,
+    ...before
+  } = detail as Record<string, unknown>;
+  expect(isGroupRunDetail(before)).toBe(true);
+});
+
+test("an outing without a route is posted; a group's outings are read", async () => {
+  let fetchFn = answers({ status: 201, body: outing });
+  const created = await createGroupOuting(
+    URL,
+    TOKEN,
+    outingRequest as Parameters<typeof createGroupOuting>[2],
+    options(fetchFn),
+  );
+  expect(created).toEqual({ kind: "ok", value: outing });
+  expect(fetchFn.mock.calls[0][0]).toBe(`${URL}/group-runs`);
+  expect(fetchFn.mock.calls[0][1]).toMatchObject({ method: "POST" });
+  expect(JSON.parse(String(fetchFn.mock.calls[0][1]?.body))).toEqual(outingRequest);
+
+  fetchFn = answers({ status: 200, body: outings });
+  const read = await fetchGroupOutings(URL, TOKEN, outing.group_id, options(fetchFn));
+  expect(read).toEqual({ kind: "ok", value: outings });
+  expect(fetchFn.mock.calls[0][0]).toBe(`${URL}/groups/${outing.group_id}/outings`);
 });

@@ -1,7 +1,9 @@
 # TASK-512 — Il menu degli sport più fitto, una riga sola in «Settings»
 
-**Stato**: In lavorazione · 27 novembre 2026 · parte 0 chiusa (tre scelte
-dell'utente); codice in #1729
+**Stato**: Done · 2026-11-28 · #1729 (A) (documenti: #1730) · esito: il
+pannello degli sport ha tre caselle per riga con le famiglie e «Settings»
+una riga sola che lo apre; schermate dal simulatore approvate dall'utente.
+Restano l'OTA sulla 1.2.0 e lo sguardo sul telefono.
 **Fase**: 5 · **Branch**: `docs/TASK-512-part-0` (questo file), poi
 `feat/TASK-512-sport-menu`
 **ADR**: ADR-0420 · numero di task e di ADR dal «Coordinatore (fork 3)»
@@ -32,8 +34,8 @@ Palestra, non questo menu: non si tocca.
 1. **Il pannello: «3 per riga, famiglie».** Caselle piccole (emoji e nome,
    ~105×84 pt su 390 pt), tre per riga, i titoli delle famiglie restano. La
    riga «Turns MuW into your ski/training app» esce dalla casella e resta
-   solo per VoiceOver. Sette righe al posto di nove: su un telefono comune
-   gli sport ci stanno tutti. Proposte anche: quattro per riga senza
+   solo per VoiceOver. Sette righe al posto di nove (nel simulatore se ne
+   vedono 15 su 18, «Gym» con uno scorrimento corto). Proposte anche: quattro per riga senza
    famiglie, una lista compatta.
 2. **Ultimi usati: «No, niente recenti».** Nessuna riga in più, nessuna
    cronologia salvata. Proposta era: tre, lo sport attuale escluso.
@@ -62,17 +64,24 @@ Nessun testo nuovo: la riga usa «Sport, {sport}», «Changes the sport» e
 
 ## Criteri di accettazione
 
-- [ ] Il pannello ha tre caselle per riga, le famiglie coi titoli; su un
-      telefono da 390×844 le sette righe stanno nel pannello.
-- [ ] Sci e Palestra non scrivono la riga del modo nella casella; VoiceOver
+- [x] Il pannello ha tre caselle per riga, le famiglie coi titoli: sette
+      righe al posto di nove. Coi titoli non stanno tutte in una schermata:
+      nel simulatore (iPhone 17, 402×874) 15 sport su 18, il resto con uno
+      scorrimento corto (prima: 7, e «Gym» dopo due scorrimenti).
+- [x] Sci e Palestra non scrivono la riga del modo nella casella; VoiceOver
       la sente come hint.
-- [ ] «Settings» ha una riga «Sport» con lo sport scelto; toccata apre lo
+- [x] «Settings» ha una riga «Sport» con lo sport scelto; toccata apre lo
       stesso pannello; scegliere salva, chiude e aggiorna la riga.
-- [ ] Nessuna riga «ultimi usati».
-- [ ] Test dei file toccati verdi, CI verde.
-- [ ] Schermate dal simulatore (turno del Coordinatore) approvate
-      dall'utente prima del merge.
+- [x] Nessuna riga «ultimi usati».
+- [x] Test dei file toccati verdi, CI verde.
+- [x] Schermate dal simulatore (turno del Coordinatore, 2026-11-28)
+      approvate dall'utente prima del merge («Sì, vanno bene»).
 
 ## Dopo
 
-OTA del Coordinatore col sì dell'utente; uno sguardo sul telefono.
+- **OTA sulla 1.2.0**: del Coordinatore, col sì dell'utente.
+- **Uno sguardo sul telefono**: il pannello dall'intestazione e la riga di
+  «Settings».
+- Da segnalare a TASK-489: la casella «Nutrition» (spenta) prende la
+  larghezza nuova, ma emoji e scritte interne restano più grandi delle
+  altre caselle; il suo aspetto è di 489.

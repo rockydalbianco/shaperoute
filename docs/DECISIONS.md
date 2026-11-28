@@ -663,8 +663,9 @@ sport, e spinge il resto di «Settings» giù di una schermata e mezza.
 **Decisione**:
 - **Tre caselle per riga, famiglie tenute** (scelta dell'utente): emoji e
   nome, larghezza da `tileWidth`/`rowTileWidth`, altezza 0,8 della
-  larghezza (~105×84 pt su 390 pt). Sette righe: su 390×844 stanno nel
-  pannello. La riga «Turns MuW into your ski/training app» non è scritta
+  larghezza (~105×84 pt su 390 pt). Sette righe al posto di nove; coi
+  titoli delle famiglie non stanno tutte insieme: nel simulatore (iPhone
+  17) se ne vedono 15 su 18 e «Gym» arriva con uno scorrimento corto. La riga «Turns MuW into your ski/training app» non è scritta
   nella casella; resta l'`accessibilityHint`.
 - **Niente «ultimi usati»** (scelta dell'utente): nessuna cronologia
   salvata.

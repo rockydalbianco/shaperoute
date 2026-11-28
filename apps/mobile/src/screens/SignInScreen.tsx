@@ -421,9 +421,10 @@ const styles = StyleSheet.create({
   modes: {
     backgroundColor: color.surface,
   },
-  // The fields on their card, as far apart as the pieces of the form.
+  // The fields on their card, a little closer than the pieces of the form:
+  // «Sign up» keeps its button on the screen.
   fields: {
-    gap: space.lg,
+    gap: space.md,
   },
   field: {
     gap: space.xs,

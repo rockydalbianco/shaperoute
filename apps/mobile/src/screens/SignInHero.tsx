@@ -10,8 +10,8 @@ import { useReduceMotion } from "../ui/useReduceMotion";
 /** How long the pen takes to go round the heart, once. */
 export const SIGN_IN_DRAW_MS = 1600;
 /** The side of the heart and how tall the card is, in points. */
-export const SIGN_IN_HEART = 104;
-const HERO_HEIGHT = 168;
+export const SIGN_IN_HEART = 64;
+const HERO_HEIGHT = 104;
 /** How much darker than the card its halo is. */
 const HALO_SHARE = 0.08;
 
@@ -26,7 +26,8 @@ type Props = {
  * the app's own here as on the logo and on the form's button (ADR-0409),
  * not a section's. A flat halo behind the heart, a little darker; no
  * gradient, the app has no drawing library. With «Reduce Motion» the heart
- * is whole at once.
+ * is whole at once. Low, so that with it «Sign up» keeps its button on the
+ * screen of a phone (seen in the simulator).
  *
  * A picture only: the header over it has the app's name, and screen readers
  * pass it by.
@@ -63,7 +64,7 @@ export function SignInHero({ testID }: Props) {
         outline={HEART}
         size={SIGN_IN_HEART}
         color={color.onAccent}
-        thickness={4}
+        thickness={3}
         draw={drawn}
         testID={testID === undefined ? undefined : `${testID}-heart`}
       />

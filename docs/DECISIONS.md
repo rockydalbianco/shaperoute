@@ -639,9 +639,62 @@ lasciando le righe d'indice.
 - ADR-0416 — Il catalogo di «Explore» guardato a occhio: oltre al filtro, le strade fatte due volte entro 8 punti sopra la mediana della forma, poi un voto a occhio da 0 a 3 su ogni disegno; 499 tolti, 3120 nuovi, la classifica per voto e misura; gli id dei percorsi cambiano · 2026-11-27 · Accettata
 - ADR-0419 — «Rifai meglio» (TASK-451): a fine corsa, se almeno 200 m del percorso prima del punto dove ci si è fermati sono rimasti a più di 40 m dalla traccia, «Save & redo» salva la corsa e riapre «Draw» con la stessa forma o parola, gli stessi km e la stessa partenza; il motore ripianifica come sempre; solo sport su strade e sentieri · 2026-11-27 · Attiva
 - ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione: l'utente ha tolto la capsula colorata dopo averla vista nel simulatore; il colore di sezione sta solo nel contenuto delle pagine · 2026-11-27 · Attiva
+- ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro: 3:1 come forme in ogni tono, 4,5:1 come scritte solo nel tono scuro; dove non reggono come scritte il nome del gruppo è nel colore del testo (`inkOn`, tutte le sezioni insieme) · 2026-11-27 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro; il nome del gruppo nel colore del testo dove il colore non regge come scritta
+
+**Stato**: Attiva · 2026-11-27 · TASK-523 parte A3 (#1728). La scelta dei
+colori è dell'utente; il resto è deciso dall'agente su delega dell'utente.
+Cambia due punti di ADR-0417: «Contrasto» e «Stesso valore, token suo».
+
+**Contesto**: ADR-0417 chiedeva a ogni colore di sezione il 4,5:1 delle
+scritte su fondo e card, perché il nome di un gruppo era scritto nel suo
+colore. Nel tono chiaro questo li rendeva scuri e spenti (un marrone per
+l'albicocca, un oliva per la sabbia). L'utente, vista la barra e le
+tavole, ha chiesto colori più vivi nel tono chiaro: «Sì, più vivi».
+
+**Decisione**:
+- **Nel tono chiaro al gradino più luminoso** i cinque colori sono più
+  accesi: `draw` `#BA5B16`, `profile` `#7563E6`, `explore` `#007DAB`,
+  `feed` `#9A6F21`, `messages` `#168649`. Il gradino più scuro del tono
+  chiaro e il tono scuro non cambiano.
+- **La regola del contrasto**: 3:1 su `background`, `surface`,
+  `surfaceRaised` e `border` in ogni tono a ogni gradino (una forma: icona,
+  anello, quadrato); il 4,5:1 delle scritte solo nel tono scuro
+  (`sectionContrast.test.ts`, che fissa anche che il chiaro più luminoso
+  resti sotto 4,5:1 sulle card, perché non torni spento per sbaglio).
+- **Il nome del gruppo** e il titolo di una card sono nel colore della
+  sezione solo dove tutte le sezioni del tono reggono come scritte su
+  fondo, card e velo; altrimenti nel colore del testo (`inkOn` in
+  `ui/tint.ts`). Tutte o nessuna: una pagina non mescola nomi colorati e
+  nomi neri.
+- **Stesso valore di un token che c'è già** (`stretch.moments`,
+  `stretch.sports`, `food`): vale nel tono scuro. Nel chiaro le sezioni
+  hanno valori loro, più vivi di quanto quei token, scritti come parole,
+  possano essere.
+- **I valori sono il 4–11% più scuri di quelli della tavola approvata**:
+  quelli esatti scendevano sotto 3:1 sulla traccia dell'anello (2,34), sul
+  velo (2,97) e sull'alone del riquadro in alto (2,57). Ognuno è stato
+  scurito del minimo che porta tutti e tre a 3:1; l'utente è stato
+  avvisato e la tavola aggiornata.
+
+**Alternative scartate**:
+- *Tenere i valori della tavola e schiarire la traccia dell'anello*
+  (`surfaceRaised` al posto di `border`): l'icona sul velo e sull'alone
+  sarebbe rimasta sotto 3:1.
+- *Decidere colore per colore* se il nome è colorato: sul bianco quattro
+  sezioni su cinque passavano 4,5:1 e il viola no; la pagina avrebbe avuto
+  nomi di gruppo di due tipi.
+- *Un secondo token per le scritte* (`sectionText`): dieci valori in più
+  da tenere allineati, per dire quello che il colore del testo dice già.
+
+**Conseguenze**: nel tono chiaro il colore di sezione si vede su forme,
+anelli, icone e sul velo delle card, non nelle scritte. Una sezione nuova
+deve tenere 3:1 ovunque e, nel tono scuro, 4,5:1; se non lo fa, in quel
+tono i nomi di tutti i gruppi tornano nel colore del testo.
 
 ## ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione
 

@@ -70,6 +70,8 @@ afterEach(async () => {
 test("«Sport» in «Settings» speaks Italian", async () => {
   await render(<SportSetting />);
   expect(screen.getByText("SPORT")).toBeOnTheScreen();
+  // One row since TASK-512, read in Italian; its panel holds the sports.
+  await fireEvent.press(screen.getByRole("button", { name: "Sport, Corsa" }));
   expect(screen.getByRole("radio", { name: "Corsa" })).toBeChecked();
   expect(screen.getByRole("radio", { name: "Bici" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Pagaia" })).not.toBeChecked();
@@ -80,6 +82,7 @@ test("«Sport» in «Settings» speaks Italian", async () => {
 
 test("a sport not ready says «Soon» in Italian", async () => {
   await render(<SportSetting sports={RUN_ONLY} />);
+  await fireEvent.press(screen.getByRole("button", { name: "Sport, Corsa" }));
   expect(screen.getByLabelText("Bici, in arrivo")).toBeOnTheScreen();
   // Bici, Pagaia, Nuoto (TASK-323 C, TASK-400), Camminata (TASK-371),
   // Escursione (TASK-377), Gravel e MTB (TASK-378), Roller (TASK-380), Sci e

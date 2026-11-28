@@ -93,10 +93,10 @@ test("every row works: only the sports to come say «Soon»", async () => {
   // language (TASK-210), «Add a place» (TASK-334), the units (TASK-182),
   // the body (TASK-374), the morning stretch (TASK-466 part D), the tone
   // (TASK-263), the line that turns the push notifications on while they
-  // are off (TASK-508), the three texts of «ABOUT» (TASK-184) and the ways
-  // out are buttons. «Send feedback» waits for a server that takes it
+  // are off (TASK-508), the three texts of «ABOUT» (TASK-184), the row of
+  // «Sport» (TASK-512) and the ways out are buttons. «Send feedback» waits for a server that takes it
   // (TASK-308, below).
-  expect(screen.getAllByRole("button")).toHaveLength(15);
+  expect(screen.getAllByRole("button")).toHaveLength(16);
   expect(
     screen.getByRole("button", {
       name: "Push notifications are off. Tap to turn them on.",
@@ -137,7 +137,7 @@ test("on the server of today, which answers 404, there is no «FEEDBACK» to wri
   expect(fetchFn).toHaveBeenCalledTimes(1);
   expect(screen.queryByText("FEEDBACK")).toBeNull();
   expect(screen.queryByRole("button", { name: "Send feedback" })).toBeNull();
-  expect(screen.getAllByRole("button")).toHaveLength(15);
+  expect(screen.getAllByRole("button")).toHaveLength(16);
 });
 
 test("without a network nothing is shown either (TASK-308)", async () => {
@@ -213,6 +213,9 @@ test("«Change email» and «Phone number» ask the account (TASK-183)", async (
 test("«Sport» has «Run» chosen, «Bike» and «Paddle» to choose", async () => {
   await show();
   expect(screen.getByText("SPORT")).toBeOnTheScreen();
+  // One row since TASK-512 (ADR-0420): a tap opens the sport panel.
+  expect(screen.queryByRole("radio", { name: "Bike" })).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
   expect(screen.getByRole("radio", { name: "Run" })).toBeChecked();
   expect(screen.getByRole("radio", { name: "Bike" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Paddle" })).not.toBeChecked();

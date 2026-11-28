@@ -1,8 +1,9 @@
 # TASK-520 — Lo stretching rifatto: home a categorie, routine per zona, momento e sport
 
-**Stato**: In corso · parte 0 chiusa il 2026-11-27 (tutte le scelte
-approvate dall'utente); A1 in `main` (#1666); parte B in corso a blocchi
-(B1 #1672, B2 pronto in locale)
+**Stato**: Done · 2026-11-28 · tutte le parti in `main` (0, A1, A2, B, C,
+D1, D2, E, F): 65 esercizi, 54 categorie con le routine composte, la home
+nuova, la pagina della categoria e dell'esercizio, il video della routine.
+Restano l'OTA sulla 1.2.0 e la prova sul telefono («Cosa resta»)
 **Fase**: 4 · **Filone**: Allenamento (Coordinatore fork 3, 2026-11-27)
 **Branch**: una PR per parte (`feat/TASK-520-a1-figure-moves`,
 `feat/TASK-520-b1-side-holds`, …); i documenti in PR a sé
@@ -212,11 +213,12 @@ quelli di TASK-466 (`exercises.ts`, `poses.ts`, `routines.ts`,
 ## Criteri di accettazione
 
 - [x] Parte 0 approvata dall'utente e scritta qui (2026-11-27).
-- [ ] Ogni parte di codice con test deterministici (`docs/TESTING.md`).
-- [ ] Testi nuovi in cinque lingue, col sì dell'utente.
-- [ ] Niente consigli medici: «Stop if it hurts» resta; nelle categorie
+- [x] Ogni parte di codice con test deterministici (`docs/TESTING.md`).
+- [x] Testi nuovi in cinque lingue, col sì dell'utente (parti B, D ed E;
+      la F non ne ha).
+- [x] Niente consigli medici: «Stop if it hurts» resta; nelle categorie
       per la schiena una riga che non sostituisce un medico.
-- [ ] Nessuna dipendenza nuova.
+- [x] Nessuna dipendenza nuova.
 
 ## File toccati
 
@@ -267,6 +269,12 @@ aggiungono qui dopo il sì del Coordinatore. Tutti i percorsi sotto
   `stretch/goodFor.ts` e i loro test; modificati `stretch/CategoryPage.tsx`
   e il suo test, `stretch/CategoryTile.tsx` (la prop facoltativa `mirrored`
   di `PoseFigure`), `i18n/{it,de,fr,es}.ts`.
+- **F** (#1732, in `main` il 2026-11-28): nuovi `stretch/routineVideo.ts`,
+  `stretch/RoutineVideoButton.tsx` e i loro test, più
+  `stretch/CategoryPageVideo.test.tsx`; modificati
+  `stretch/CategoryPage.tsx` (la barra in alto) e `share/RunVideo.tsx` (la
+  prop facoltativa `fileName`; file libero, sì del Coordinatore). Nessun
+  testo, nessun token, nessuna icona.
 
 ## Dove siamo
 
@@ -353,43 +361,72 @@ comunque «Hold»: è il testo approvato, detto all'utente.
 
 ### Cosa resta (consegna per chi continua)
 
-Questa parte l'ha scritta una sola sessione, dalla parte 0 alla E. Chi
-continua parte da qui e dal task file, non dalla sua conversazione.
+Il task è chiuso il 2026-11-28: tutto il codice è in `main` (l'ultima, la
+parte F, con la #1732). Le parti dalla 0 alla E le ha scritte una sola
+sessione, la F una sessione sua. Quello che resta non è codice di questo
+task; chi lo riprende parte da qui, non da una conversazione.
 
-1. **Parte F — video MP4 della routine**, l'ultima. Non c'è ancora
-   codice. Cosa mostra è già approvato nella parte 0 (sopra, «Video MP4»):
-   un video verticale della routine, la figura che fa ogni esercizio per
-   qualche secondo col nome e il tempo, titolo e minuti in apertura, logo
-   MuW in chiusura; fatto sul telefono con la pagina nascosta del video
-   della corsa (`src/share/videoPage.ts`, WebCodecs), condiviso dal foglio
-   del telefono, **non** pubblicato nel Feed; niente video del singolo
-   esercizio; la privacy si ricontrolla lì. Restano da chiedere
-   all'utente, una domanda per volta con la proposta pronta: **da dove si
-   apre** (la pagina della categoria? la fine di una sessione?) e i
-   **testi nuovi** con le quattro traduzioni. Nella pagina del video la
-   figura non può essere fatta di View di React Native: va ridisegnata lì
-   con gli stessi numeri (`poses.ts` e `posesFront.ts` dicono dove sta
-   ogni segmento, `compose.ts` dà la routine). Poi l'elenco dei file al
-   Coordinatore, prima del codice.
+1. **OTA**: tutto lo stretching nuovo esce col primo OTA sulla 1.2.0, che
+   decide e pubblica il Coordinatore col sì dell'utente. Non serve nessun
+   passo sul server né una build nativa.
 2. **Le scorciatoie ai gruppi** in cima alla home (Body · Moments ·
    Sports · Intimacy · More), che lo schizzo ha e il codice no: la home
    sta dentro lo scorrimento di «Draw», quindi serve che `ChooseScreen`
    la lasci scorrere fino a un gruppo. Piccola, a parte.
-3. **Prova sul telefono** dopo l'OTA che porta D1, D2 ed E (lo decide il
-   Coordinatore): una tessera apre la sua pagina; «Start» avvia la routine
-   e la sessione finita compare in «My activities» e in «This week»;
-   «Today» propone l'«After» dopo uno sport; una riga apre la pagina
-   dell'esercizio, pausa e «Try it» funzionano; le tinte chiare. Nel
-   simulatore tutto questo è stato visto senza tocchi.
+3. **Prova sul telefono** dopo quell'OTA: una tessera apre la sua pagina;
+   «Start» avvia la routine e la sessione finita compare in «My
+   activities» e in «This week»; «Today» propone l'«After» dopo uno sport;
+   una riga apre la pagina dell'esercizio, pausa e «Try it» funzionano;
+   «Export video» nella pagina di una categoria fa il video e apre il
+   foglio di condivisione, e il video salvato in Foto si vede intero (anche
+   di una routine lunga); le tinte chiare. Nel simulatore home, pagine ed
+   esercizi sono stati visti senza tocchi; il video coi tocchi, su una
+   routine sola e nella tinta scura.
 4. **Da sapere**: i promemoria («Morning stretch», dopo la corsa, dopo la
    palestra) aprono ancora le tre routine di TASK-466 (`routines.ts`);
    `stretchSport/StretchRoutines.tsx` non è più montato e resta nel
    codice; «My routines» di TASK-466 parte E si monta in
    `StretchHome.tsx`, tra «Today» e i gruppi.
-5. **Chiusura del task** quando F è in `main`: stato `Done` qui con una
-   riga di esito, la riga in `docs/archive/COMPLETATI.md` e la voce di
-   `STATUS.md` (le tiene il Coordinatore 3), «TASK-520 fatto» al
-   Coordinatore.
+5. **Chiusura** fatta il 2026-11-28: stato `Done` qui, una riga in
+   `docs/archive/COMPLETATI.md`. In `STATUS.md` il task non aveva una voce
+   da togliere.
+
+### Parte F — il video della routine (2026-11-27 e 28)
+
+Fatta in una sessione sua. **Scelte dell'utente**: il video si apre dalla
+pagina della categoria, con una pastiglia «Export video» in alto accanto
+alla ✕ («Pagina categoria», 2026-11-27); nessun testo nuovo, si riusano
+quelli del video della corsa e dello stretching («Sì, nessun testo
+nuovo», 2026-11-27); i fotogrammi e tre video interi («Sì, approvo»,
+2026-11-28). Le scelte tecniche sono in ADR-0415, aggiunta F: la pagina
+del video non si tocca, il video è una scena fatta coi suoi disegni; ogni
+esercizio una volta sola, tre secondi che scendono fino a 1,5.
+
+Rispetto alla parte 0: di un esercizio «each side» si vede un lato solo;
+fra un esercizio e l'altro la figura sfuma e torna, non si alza in piedi;
+una routine che fa due giri mostra ogni esercizio una volta. Detto
+all'utente coi fotogrammi.
+
+**Privacy ricontrollata**: il video si fa sul telefono, non passa dal
+server, non entra nel Feed e non mostra dati della persona; nessuna riga
+nuova nell'informativa.
+
+**Come è stato visto**: gli script veri della pagina del video fatti
+girare in Chrome sul Mac hanno prodotto tre MP4 interi (Running · Before,
+Neck, Hips & pelvis), che si aprono e si leggono fotogramma per
+fotogramma; fogli, video e attrezzi in `out/TASK-520/f/` del checkout
+principale (`tools/README.txt` dice come rifarlo).
+
+**Simulatore** (iPhone 17e, Expo Go, turno del Coordinatore, 2026-11-28):
+nella pagina vera di «Running · Before» la pastiglia «Export video» passa
+a «Making the video… 0%» fino a 100%, poi si apre il foglio di
+condivisione con «MuW-stretching · Video · 2,6 MB»; chiuso il foglio la
+pastiglia torna com'era, senza righe d'errore. Il WebView del simulatore
+ha codificato il video in circa 12 secondi: 19,2 secondi, 1080 × 1920,
+H.264, tirato fuori dalla cache dell'app e guardato fotogramma per
+fotogramma, uguale a quello fatto in Chrome. Schermate e video in
+`out/TASK-520/f/` (`sim-*`). Non visti: le tinte chiare, una routine
+lunga (16 esercizi), il video salvato in Foto su un telefono vero.
 
 Strumenti fuori dal repository, nel checkout principale: fogli delle pose
 e generatori in `out/stretching-nuovo/pose/` e `out/stretching-nuovo/c/`;

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, within } from "@testing-library/react-native";
 
 import { loadSport, saveSport, SPORTS, type SportOption } from "./sport";
 import { SportSetting } from "./SportSetting";
@@ -14,95 +14,90 @@ const RUN_ONLY: SportOption[] = SPORTS.map((option) =>
   option.id === "run" ? option : { ...option, ready: false },
 );
 
+const row = (sport: string) => screen.getByRole("button", { name: `Sport, ${sport}` });
+
 beforeEach(() => {
   jest.mocked(loadSport).mockReturnValue("run");
   jest.mocked(saveSport).mockClear();
 });
 
-test("«Run» is chosen, «Bike» (TASK-190), «Paddle» (TASK-191), «Swim» (TASK-323) and «Ski» (TASK-375) can be", async () => {
+// TASK-512 (ADR-0420): one row, not a row per sport.
+
+test("«Sport» is one row with the sport chosen, and no list until it is touched", async () => {
   await render(<SportSetting />);
   expect(screen.getByText("SPORT")).toBeOnTheScreen();
-  expect(screen.getByRole("radio", { name: "Run" })).toBeChecked();
-  expect(screen.getByRole("radio", { name: "Bike" })).not.toBeChecked();
-  expect(screen.getByRole("radio", { name: "Paddle" })).not.toBeChecked();
-  expect(screen.getByRole("radio", { name: "Swim" })).not.toBeChecked();
-  expect(screen.getByRole("radio", { name: "Ski" })).not.toBeChecked();
-  // And «Gym» (TASK-385 B), on in Expo Go and preview, «Hike» (TASK-377),
-  // «Gravel» and «MTB» (TASK-378), «Walk» (TASK-371), «Ski touring»
-  // (TASK-415 B).
-  // And «Paragliding» (TASK-305 R2), «Cross-country ski» (TASK-375) and
-  // «Wheelchair & stroller» (TASK-414 B).
-  // And «Snowshoes» (TASK-413), «Mountaineering» (TASK-463 C) and
-  // «Stretching» (TASK-475 C).
-  expect(screen.getAllByRole("radio")).toHaveLength(18);
-  expect(screen.getByRole("radio", { name: "Walk" })).not.toBeChecked();
-  expect(screen.getByRole("radio", { name: "Hike" })).not.toBeChecked();
-  expect(screen.getByRole("radio", { name: "Gravel" })).not.toBeChecked();
-  expect(screen.getByRole("radio", { name: "MTB" })).not.toBeChecked();
-  // And «Roller» (TASK-380).
-  expect(screen.getByRole("radio", { name: "Roller" })).not.toBeChecked();
-  // «Cross-country ski» (TASK-375), «Wheelchair & stroller» (TASK-414 B),
-  // «Snowshoes» (TASK-413), «Mountaineering» (TASK-463 C) and «Stretching»
-  // (TASK-475 C) are on too: no sport says «Soon».
-  expect(screen.queryByText("Soon")).toBeNull();
-  expect(screen.getByRole("radio", { name: "Stretching" })).not.toBeChecked();
-  expect(screen.getByRole("radio", { name: "Snowshoes" })).not.toBeChecked();
-  expect(screen.getByRole("radio", { name: "Mountaineering" })).not.toBeChecked();
-  expect(
-    screen.getByRole("radio", { name: "Wheelchair & stroller" }),
-  ).not.toBeChecked();
-  expect(screen.getByRole("radio", { name: "Cross-country ski" })).not.toBeChecked();
-  expect(screen.queryByLabelText("Ski, coming soon")).toBeNull();
+  expect(row("Run")).toBeOnTheScreen();
+  expect(row("Run")).toHaveProp("accessibilityHint", "Changes the sport");
+  expect(screen.getByText("Run")).toBeOnTheScreen();
+  expect(screen.getByText("›")).toBeOnTheScreen();
+  expect(screen.queryByRole("radio")).toBeNull();
+  expect(screen.queryByTestId("sport-panel")).toBeNull();
 });
 
-test("«Swim» 🏊 is chosen with a tap, and kept (TASK-323)", async () => {
+test("touched, it opens the sport panel: every sport by family, «Run» chosen", async () => {
   await render(<SportSetting />);
-  expect(screen.getByText("🏊")).toBeOnTheScreen();
-  expect(screen.queryByLabelText("Swim, coming soon")).toBeNull();
+  await fireEvent.press(row("Run"));
+  expect(screen.getByTestId("sport-panel")).toBeOnTheScreen();
+  // Walk (TASK-371), run, the hike (TASK-377), bike, gravel and MTB
+  // (TASK-378), the skate (TASK-380), paddle, the swim (TASK-323), the
+  // alpine and the cross-country ski (TASK-375), ski touring (TASK-415 B),
+  // the gym (TASK-385 B), the flight (TASK-305 R2), the wheelchair
+  // (TASK-414 B), the snowshoes (TASK-413), mountaineering (TASK-463 C) and
+  // stretching (TASK-475 C): none says «Soon».
+  expect(screen.getAllByRole("radio")).toHaveLength(18);
+  expect(screen.queryByText("Soon")).toBeNull();
+  expect(screen.getByRole("radio", { name: "Run" })).toBeChecked();
+  expect(screen.getByRole("radio", { name: "Bike" })).not.toBeChecked();
+  expect(
+    within(screen.getByTestId("sport-family-other")).getByRole("radio", {
+      name: "Paragliding",
+    }),
+  ).not.toBeChecked();
+});
+
+test("a sport chosen in the panel is saved, closes it, and shows on the row", async () => {
+  await render(<SportSetting />);
+  await fireEvent.press(row("Run"));
   await fireEvent.press(screen.getByRole("radio", { name: "Swim" }));
   expect(saveSport).toHaveBeenCalledWith("swim");
+  expect(screen.queryByTestId("sport-panel")).toBeNull();
+  expect(row("Swim")).toBeOnTheScreen();
+  expect(screen.getByText("🏊")).toBeOnTheScreen();
+
+  await fireEvent.press(row("Swim"));
   expect(screen.getByRole("radio", { name: "Swim" })).toBeChecked();
   expect(screen.getByRole("radio", { name: "Run" })).not.toBeChecked();
 });
 
-test("«Paragliding» 🪂 is the last row, chosen with a tap (TASK-305 R2)", async () => {
+test("«Close» and the dark around the panel change nothing", async () => {
   await render(<SportSetting />);
-  expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
-  expect(screen.getByText("🪂")).toBeOnTheScreen();
-  await fireEvent.press(screen.getByRole("radio", { name: "Paragliding" }));
-  expect(screen.getByRole("radio", { name: "Paragliding" })).toBeChecked();
+  await fireEvent.press(row("Run"));
+  await fireEvent.press(screen.getByRole("button", { name: "Close" }));
+  expect(screen.queryByTestId("sport-panel")).toBeNull();
+  await fireEvent.press(row("Run"));
+  await fireEvent.press(screen.getByTestId("sport-backdrop"));
+  expect(screen.queryByTestId("sport-panel")).toBeNull();
+  expect(saveSport).not.toHaveBeenCalled();
+  expect(row("Run")).toBeOnTheScreen();
 });
 
-test("a sport not ready says «Soon» and takes no tap", async () => {
+test("a sport not ready says «Soon» in the panel and takes no tap", async () => {
   await render(<SportSetting sports={RUN_ONLY} />);
+  await fireEvent.press(row("Run"));
   expect(screen.getAllByRole("radio")).toHaveLength(1);
   expect(screen.getByLabelText("Bike, coming soon")).toBeOnTheScreen();
-  // Bike, Paddle, Swim (TASK-323), Walk (TASK-371), Hike
-  // (TASK-377), Gravel and MTB (TASK-378), Roller (TASK-380), Ski and
-  // Cross-country ski (TASK-375), Ski touring (TASK-415 B), Gym (TASK-385 B)
-  // Paragliding (TASK-305 R2), Wheelchair & stroller (TASK-414 B) and
-  // Snowshoes (TASK-413 B), Mountaineering (TASK-463 B), Stretching
-  // (TASK-475 B).
   expect(screen.getAllByText("Soon")).toHaveLength(17);
+  await fireEvent.press(screen.getByLabelText("Bike, coming soon"));
+  expect(saveSport).not.toHaveBeenCalled();
+  expect(screen.getByTestId("sport-panel")).toBeOnTheScreen();
 });
 
-test("a sport that is ready is chosen with a tap, and kept", async () => {
-  await render(<SportSetting />);
-  expect(screen.getByRole("radio", { name: "Bike" })).not.toBeChecked();
-  await fireEvent.press(screen.getByRole("radio", { name: "Bike" }));
-  expect(screen.getByRole("radio", { name: "Bike" })).toBeChecked();
-  expect(screen.getByRole("radio", { name: "Run" })).not.toBeChecked();
-  expect(saveSport).toHaveBeenCalledWith("bike");
-  await fireEvent.press(screen.getByRole("radio", { name: "Paddle" }));
-  expect(screen.getByRole("radio", { name: "Paddle" })).toBeChecked();
-  expect(screen.getByRole("radio", { name: "Bike" })).not.toBeChecked();
-  expect(saveSport).toHaveBeenLastCalledWith("paddle");
-});
-
-test("the sport kept on the phone is the one chosen at the next opening", async () => {
+test("the sport kept on the phone is the one on the row at the next opening", async () => {
   jest.mocked(loadSport).mockReturnValue("bike");
   await render(<SportSetting />);
   expect(loadSport).toHaveBeenCalledWith(SPORTS);
+  expect(row("Bike")).toBeOnTheScreen();
+  await fireEvent.press(row("Bike"));
   expect(screen.getByRole("radio", { name: "Bike" })).toBeChecked();
   expect(screen.getByRole("radio", { name: "Run" })).not.toBeChecked();
 });

@@ -639,10 +639,173 @@ lasciando le righe d'indice.
 - ADR-0416 — Il catalogo di «Explore» guardato a occhio: oltre al filtro, le strade fatte due volte entro 8 punti sopra la mediana della forma, poi un voto a occhio da 0 a 3 su ogni disegno; 499 tolti, 3120 nuovi, la classifica per voto e misura; gli id dei percorsi cambiano · 2026-11-27 · Accettata
 - ADR-0419 — «Rifai meglio» (TASK-451): a fine corsa, se almeno 200 m del percorso prima del punto dove ci si è fermati sono rimasti a più di 40 m dalla traccia, «Save & redo» salva la corsa e riapre «Draw» con la stessa forma o parola, gli stessi km e la stessa partenza; il motore ripianifica come sempre; solo sport su strade e sentieri · 2026-11-27 · Attiva
 - ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione: l'utente ha tolto la capsula colorata dopo averla vista nel simulatore; il colore di sezione sta solo nel contenuto delle pagine · 2026-11-27 · Attiva
+- ADR-0388, aggiunta F (TASK-479) — Dopo il volo: una copia completa di ogni volo resta solo sul telefono (il server non ha orari né quote); «Analisi del volo» con punteggio XC «non ufficiale», termiche, planate, stesso decollo, export IGC/GPX; import IGC con gli altri file (supera TASK-305 E); il Feed col vario e tre numeri dopo un campo nuovo sul server; la miniatura 3D no (1,3–4,2 s a freddo), il Feed resta 2D · 2026-11-28 · Attiva
 - ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro: 3:1 come forme in ogni tono, 4,5:1 come scritte solo nel tono scuro; dove non reggono come scritte il nome del gruppo è nel colore del testo (`inkOn`, tutte le sezioni insieme) · 2026-11-27 · Attiva
+- ADR-0370 — «Segui subito» (TASK-459): un interruttore dell'account, «Approve followers»; spento si segue subito, acceso la richiesta come oggi; parte spento, acceso per gli account di oggi con almeno un post «Followers»; spegnerlo accetta le richieste in attesa; notifica nuova `new_follower` · 2026-11-28 · Accettata
+- ADR-0415, aggiunta F (TASK-520) — Il video di una routine di stretching è una scena fatta coi disegni che la pagina del video della corsa sa già fare (linee, punti, riquadri, parole): la pagina non si tocca; ogni esercizio una volta sola, 3 secondi che scendono fino a 1,5; si apre dalla pagina della categoria, senza testi nuovi; niente esce dal telefono · 2026-11-28 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0388, aggiunta F (TASK-479) — Dopo il volo: la copia del volo sul telefono, l'analisi, il punteggio XC e il Feed
+
+**Stato**: Attiva · 2026-11-28 · TASK-479 parte 0 di F. Scelte di
+prodotto dell'utente (sei domande, tutte «Sì, così», e i testi in 5
+lingue); la miniatura 3D decisa dall'agente su delega dell'utente, dalla
+regola della parte F; la lista dei file approvata dal Coordinatore.
+
+**Contesto**: la parte F di ADR-0388 promette export e import IGC, un
+punteggio XC sul telefono, l'analisi delle termiche e il confronto coi
+voli dallo stesso decollo. Ma un volo salvato torna dal server come sole
+posizioni (`ActivityDetail.track`): il server usa le quote dei fix solo
+per la salita e non tiene gli orari punto per punto. Il post del Feed
+accetta solo `distance`, `time`, `pace`.
+
+**Decisione**:
+- **Una copia completa di ogni volo** (orari, posizioni, quote) resta
+  **solo sul telefono**, mai spedita; la pagina «Analisi del volo» si apre
+  dalla fine del volo e da «Le mie attività». I voli di prima hanno solo
+  il punteggio XC dalle posizioni.
+- **Import IGC** in «Aggiungi un'attività passata» (TASK-312), accanto a
+  GPX, FIT e TCX; nome del pilota e della vela non letti. Supera la parte E
+  di TASK-305. «Apri con MuW» alla prossima build nativa.
+- **Punteggio XC** «Calcolato sul telefono · non è un punteggio
+  ufficiale»: distanza libera ≤ 3 boe ×1,0, triangolo piatto ×1,2, FAI
+  (lato ≥ 28 %) ×1,4, chiusura ≤ 20 % del perimetro sottratta, «chiuso»
+  sotto il 5 %; coefficienti verificati sulle regole pubbliche prima del
+  codice; il nome della classifica online non compare.
+- **Feed**: traccia colorata per vario e punteggio XC, quota massima,
+  salita migliore. Prima un campo facoltativo nel post sul server, poi
+  l'app; un'eventuale frase della privacy in una PR a sé prima dell'app.
+- **La miniatura 3D nel Feed no**: misurata sulla pagina nascosta del
+  Feed col terreno, 80–330 ms con le tile in cache ma 1,3–4,2 s in posti
+  mai visti (2D: 0,13–0,43 s). Nel Feed i voli sono quasi sempre di altri
+  e altrove: il Feed resta 2D, il 3D sta nell'analisi.
+
+**Alternative scartate**:
+- *Orari e quote sul server*: analisi su ogni telefono, ma un passo
+  server, più dati personali sul server e una frase della privacy in più;
+  l'utente ha scelto il telefono.
+- *Analisi solo sulla scheda di fine volo*: niente voli passati né
+  confronto.
+- *La miniatura 3D lo stesso*: sopra i 2 s a freddo, la regola di F la
+  esclude.
+
+**Conseguenze**: un volo registrato su un altro telefono, o prima di
+questa versione, non ha l'analisi completa; il Feed col vario aspetta il
+passo server (F4a) e la privacy online.
+
+## ADR-0415, aggiunta F (TASK-520) — Il video di una routine: una scena fatta coi disegni che la pagina del video sa già fare
+
+**Stato**: Attiva · 2026-11-28 · TASK-520 parte F. Aggiunta ad ADR-0415,
+che resta com'è (punto 7: «il video nasce nella pagina del video della
+corsa, con una scena sua»). **Scelte dell'utente**: il video si apre dalla
+pagina della categoria («Pagina categoria», 2026-11-27); nessun testo
+nuovo, si riusano quelli del video della corsa e dello stretching («Sì,
+nessun testo nuovo», 2026-11-27); i fotogrammi e tre video interi («Sì,
+approvo», 2026-11-28). **Decise dall'agente su delega dell'utente** le
+scelte tecniche qui sotto. Codice: #1732.
+
+**Contesto**: la figura dello stretching è fatta di View girate
+(ADR-0147), e la pagina nascosta che fa i video (`share/videoPage.ts`,
+ADR-0254) non ha View: disegna su un canvas un elenco di cose per ogni
+fotogramma. Quella pagina è lunga, provata sui telefoni e usata dal video
+della corsa.
+
+**Decisione**:
+
+1. **La pagina non si tocca.** Il video della routine è una `VideoScene`
+   come quella di una corsa, senza mappa, senza animale e senza musica,
+   fatta solo di quello che la pagina disegna già: `line`, `dot`, `rect`,
+   `text` (`stretch/routineVideo.ts`). `RunVideo` la monta com'è; ha in più
+   una sola prop facoltativa, il nome del file («MuW-stretching.mp4»).
+2. **La figura si ridisegna dagli stessi numeri** dell'app (`poses.ts`,
+   `posesFront.ts`): un arto è una linea sola che passa per le sue
+   giunture, tonda in punta e dove si piega; la testa è un punto; gli arti
+   lontani al 40%. Quanto il bacino sta sopra il pavimento e di quanto una
+   posa lunga scivola per restare intera si calcolano come li calcola
+   `Figure`. Le linee uguali fra un fotogramma e l'altro si scrivono una
+   volta.
+3. **Ogni esercizio una volta sola**, nell'ordine in cui compare, anche
+   quando la routine fa due giri: il video dice di cosa è fatta la
+   routine. Tre secondi l'uno; quando sono tanti il tempo scende, così che
+   tutti insieme stiano in 24 secondi, mai sotto 1,5 (il massimo oggi è 16
+   esercizi diversi). Con l'apertura (2 s) e il logo (2,2 s) un video dura
+   da 16 a 28 secondi.
+4. **Il respiro o il movimento torna sempre alla posa**: nel suo tempo
+   l'esercizio va e torna un numero intero di volte, al ritmo più vicino
+   al suo. Di un esercizio «each side» si vede un lato. Fra un esercizio e
+   il successivo la figura sfuma via e torna: nel video non si alza in
+   piedi fra due pose come fa nell'app.
+5. **I colori sono quelli dell'app in quel momento**, dai token: fondo,
+   testo, il giallo solo sul logo, il colore del gruppo per la barra, il
+   tempo e il cerchio tenue dietro la figura.
+6. **Privacy ricontrollata**: il video si fa sul telefono, non passa dal
+   server e non entra nel Feed; esce solo se la persona lo condivide dal
+   foglio del telefono. Non mostra nomi, luoghi né dati della persona:
+   solo la routine. Nessuna riga nuova nell'informativa.
+
+**Motivo**: una scena in più non mette a rischio il video della corsa e
+si prova tutta coi test, senza telefono; una pagina cambiata no. Mostrare
+ogni esercizio una volta tiene il video corto abbastanza da condividerlo.
+
+**Conseguenze**: nessuna dipendenza, nessuna build nativa, nessun passo
+sul server, nessun testo nuovo. La scena pesa circa 1 MB e passa alla
+pagina in una chiamata sola. La pagina del video carica comunque MapLibre
+all'avvio anche se qui non serve: senza rete il video si fa lo stesso.
+Senza telefono si guarda facendo girare gli script della pagina in Chrome
+(`out/TASK-520/f/tools/` nel checkout principale).
+
+## ADR-0370 — «Segui subito»: un interruttore dell'account, «Approve followers», spento per chi non ha post «Followers»
+
+**Stato**: Accettata · 2026-11-28 · TASK-459 (parte 0). Scelte
+dell'utente, una domanda alla volta; il resto deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: dal TASK-211 (ADR-0173) ogni «Follow» è una richiesta che
+l'altro accetta o rifiuta; conta solo quella accettata, anche per chi vede
+i post «Followers». Nella prova del 2026-11-11 (S14) l'utente ha scelto
+«Segui subito»: su un profilo aperto «Follow» segue subito. Un «profilo
+pubblico» in MuW non esisteva: la visibilità è post per post (`everyone`,
+`followers`, `only_me`). Con «Segui subito» chi tocca «Follow» vede anche
+i post «Followers».
+
+**Decisione**:
+
+1. Un interruttore dell'account in «Settings», «Approve followers» (it
+   «Approva chi ti segue»), tenuto dall'API in `users.approve_followers`
+   (migrazione `0091`). Spento: `POST /users/{id}/follow` scrive subito
+   `accepted` e risponde `following`. Acceso: la richiesta come oggi.
+   (Utente: «Interruttore».)
+2. Parte spento per i nuovi iscritti e per gli account di oggi, tranne chi
+   ha almeno un post «Followers»: per loro parte acceso, perché quei post
+   non si aprano a chi segue senza una loro scelta. (Utente: «Spento,
+   tranne Follower».)
+3. Quando l'interruttore è spento, alla partenza o perché il proprietario
+   lo spegne, le richieste in attesa diventano follower e chi aveva
+   chiesto riceve la notifica di oggi, `follow_accepted`. Le richieste
+   rifiutate prima restano cancellate. (Utente: «Accettate tutte».) Una
+   migrazione non manda notifiche: quelle della partenza le manda un
+   comando una tantum dopo il passo del server (deciso dall'agente).
+4. Un follow subito avvisa il seguito con un tipo nuovo, `new_follower`:
+   «{name} started following you.» (it «{name} ha iniziato a
+   seguirti.»), in push, campanella ed email delle novità. Il pulsante
+   resta «Follow» → «Following», senza testi nuovi. La nota della riga e
+   la frase della Privacy sono in `docs/tasks/TASK-459.md`. (Utente: «Sì,
+   vanno bene».)
+5. Restano come in ADR-0173 il blocco (404 attraverso un blocco), il
+   ritiro e lo «Stop following», le liste e i numeri: contano le righe
+   `accepted`, comunque ci siano arrivate.
+
+**Perché**: una regola scelta dal proprietario si spiega in una riga e non
+cambia da sola quando cambia la visibilità di un post; partire acceso per
+chi già usa «Followers» tiene la promessa fatta a quei post.
+
+**Conseguenze**: tre parti, A (API, migrazione `0091`, il comando una
+tantum), B (app: la riga in «Settings», solo con un'API che la conosce) e
+C (la frase della Privacy, nella coda dopo #1725 e #1713, online insieme
+al server di A). Un'app di prima riceve già `following` da `POST
+…/follow`: il suo pulsante va a «Following» senza aggiornarla.
 
 ## ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro; il nome del gruppo nel colore del testo dove il colore non regge come scritta
 
@@ -761,6 +924,15 @@ evitare strade. La corsa salvata non tiene distanza chiesta né partenza.
 **Conseguenze**: 200 m e 40 m sono costanti da ritoccare dopo la prova sul
 telefono. Se servirà evitare i tratti sbagliati, sarà un task del motore a
 parte, con la prova dei percorsi uguali.
+
+**Precisazione (2026-11-28, #1726, deciso dall'agente su delega
+dell'utente)**: «dove ci si è fermati» non è il punto del percorso più
+vicino all'ultima posizione: su un giro chiuso partenza e arrivo
+coincidono, e chi taglia a metà e torna a casa sembrerebbe arrivato in
+fondo (o, al contrario, fermo all'inizio). Fra i passaggi del percorso
+vicini all'ultima posizione si prende il più avanti i cui **100 m prima**
+sono stati corsi per più di metà (campioni entro 40 m dalla traccia); se
+nessuno lo è, il primo. Lo ha trovato la prova nel simulatore.
 
 ## ADR-0418 — Le lettere dicono cosa disegnano a penna alzata: la A con la punta, la Q con l'anello
 

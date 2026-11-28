@@ -1,8 +1,8 @@
 # TASK-520 — Lo stretching rifatto: home a categorie, routine per zona, momento e sport
 
-**Stato**: In corso · parte 0 chiusa il 2026-11-27 (tutte le scelte
-approvate dall'utente); A1 in `main` (#1666); parte B in corso a blocchi
-(B1 #1672, B2 pronto in locale)
+**Stato**: In corso · parti 0, A, B, C, D ed E in `main`; parte F (il
+video della routine) nella #1732, col sì dell'utente sui fotogrammi del
+2026-11-28
 **Fase**: 4 · **Filone**: Allenamento (Coordinatore fork 3, 2026-11-27)
 **Branch**: una PR per parte (`feat/TASK-520-a1-figure-moves`,
 `feat/TASK-520-b1-side-holds`, …); i documenti in PR a sé
@@ -267,6 +267,12 @@ aggiungono qui dopo il sì del Coordinatore. Tutti i percorsi sotto
   `stretch/goodFor.ts` e i loro test; modificati `stretch/CategoryPage.tsx`
   e il suo test, `stretch/CategoryTile.tsx` (la prop facoltativa `mirrored`
   di `PoseFigure`), `i18n/{it,de,fr,es}.ts`.
+- **F** (#1732): nuovi `stretch/routineVideo.ts`,
+  `stretch/RoutineVideoButton.tsx` e i loro test, più
+  `stretch/CategoryPageVideo.test.tsx`; modificati
+  `stretch/CategoryPage.tsx` (la barra in alto) e `share/RunVideo.tsx` (la
+  prop facoltativa `fileName`; file libero, sì del Coordinatore). Nessun
+  testo, nessun token, nessuna icona.
 
 ## Dove siamo
 
@@ -356,21 +362,10 @@ comunque «Hold»: è il testo approvato, detto all'utente.
 Questa parte l'ha scritta una sola sessione, dalla parte 0 alla E. Chi
 continua parte da qui e dal task file, non dalla sua conversazione.
 
-1. **Parte F — video MP4 della routine**, l'ultima. Non c'è ancora
-   codice. Cosa mostra è già approvato nella parte 0 (sopra, «Video MP4»):
-   un video verticale della routine, la figura che fa ogni esercizio per
-   qualche secondo col nome e il tempo, titolo e minuti in apertura, logo
-   MuW in chiusura; fatto sul telefono con la pagina nascosta del video
-   della corsa (`src/share/videoPage.ts`, WebCodecs), condiviso dal foglio
-   del telefono, **non** pubblicato nel Feed; niente video del singolo
-   esercizio; la privacy si ricontrolla lì. Restano da chiedere
-   all'utente, una domanda per volta con la proposta pronta: **da dove si
-   apre** (la pagina della categoria? la fine di una sessione?) e i
-   **testi nuovi** con le quattro traduzioni. Nella pagina del video la
-   figura non può essere fatta di View di React Native: va ridisegnata lì
-   con gli stessi numeri (`poses.ts` e `posesFront.ts` dicono dove sta
-   ogni segmento, `compose.ts` dà la routine). Poi l'elenco dei file al
-   Coordinatore, prima del codice.
+1. **Parte F — video MP4 della routine**: scritta, nella #1732 (vedi
+   «Parte F» qui sotto). Resta da provare sul telefono dopo il suo OTA:
+   «Export video» nella pagina di una categoria fa il video e apre il
+   foglio di condivisione; il video salvato in Foto si vede intero.
 2. **Le scorciatoie ai gruppi** in cima alla home (Body · Moments ·
    Sports · Intimacy · More), che lo schizzo ha e il codice no: la home
    sta dentro lo scorrimento di «Draw», quindi serve che `ChooseScreen`
@@ -390,6 +385,43 @@ continua parte da qui e dal task file, non dalla sua conversazione.
    riga di esito, la riga in `docs/archive/COMPLETATI.md` e la voce di
    `STATUS.md` (le tiene il Coordinatore 3), «TASK-520 fatto» al
    Coordinatore.
+
+### Parte F — il video della routine (2026-11-27 e 28)
+
+Fatta in una sessione sua. **Scelte dell'utente**: il video si apre dalla
+pagina della categoria, con una pastiglia «Export video» in alto accanto
+alla ✕ («Pagina categoria», 2026-11-27); nessun testo nuovo, si riusano
+quelli del video della corsa e dello stretching («Sì, nessun testo
+nuovo», 2026-11-27); i fotogrammi e tre video interi («Sì, approvo»,
+2026-11-28). Le scelte tecniche sono in ADR-0415, aggiunta F: la pagina
+del video non si tocca, il video è una scena fatta coi suoi disegni; ogni
+esercizio una volta sola, tre secondi che scendono fino a 1,5.
+
+Rispetto alla parte 0: di un esercizio «each side» si vede un lato solo;
+fra un esercizio e l'altro la figura sfuma e torna, non si alza in piedi;
+una routine che fa due giri mostra ogni esercizio una volta. Detto
+all'utente coi fotogrammi.
+
+**Privacy ricontrollata**: il video si fa sul telefono, non passa dal
+server, non entra nel Feed e non mostra dati della persona; nessuna riga
+nuova nell'informativa.
+
+**Come è stato visto**: gli script veri della pagina del video fatti
+girare in Chrome sul Mac hanno prodotto tre MP4 interi (Running · Before,
+Neck, Hips & pelvis), che si aprono e si leggono fotogramma per
+fotogramma; fogli, video e attrezzi in `out/TASK-520/f/` del checkout
+principale (`tools/README.txt` dice come rifarlo).
+
+**Simulatore** (iPhone 17e, Expo Go, turno del Coordinatore, 2026-11-28):
+nella pagina vera di «Running · Before» la pastiglia «Export video» passa
+a «Making the video… 0%» fino a 100%, poi si apre il foglio di
+condivisione con «MuW-stretching · Video · 2,6 MB»; chiuso il foglio la
+pastiglia torna com'era, senza righe d'errore. Il WebView del simulatore
+ha codificato il video in circa 12 secondi: 19,2 secondi, 1080 × 1920,
+H.264, tirato fuori dalla cache dell'app e guardato fotogramma per
+fotogramma, uguale a quello fatto in Chrome. Schermate e video in
+`out/TASK-520/f/` (`sim-*`). Non visti: le tinte chiare, una routine
+lunga (16 esercizi), il video salvato in Foto su un telefono vero.
 
 Strumenti fuori dal repository, nel checkout principale: fogli delle pose
 e generatori in `out/stretching-nuovo/pose/` e `out/stretching-nuovo/c/`;

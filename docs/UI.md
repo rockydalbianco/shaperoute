@@ -4828,7 +4828,8 @@ mostra le lettere unite da linee dritte sulla base.
   gli anelli stanno fermi. Tra «Today» e i gruppi c'è lo spazio per «My
   routines» di TASK-466 parte E.
 - **La pagina di una categoria** (TASK-520 parte D1;
-  `src/stretch/CategoryPage.tsx`): a tutto schermo, con ✕ in alto a destra.
+  `src/stretch/CategoryPage.tsx`): a tutto schermo, con ✕ in alto a destra
+  e, in alto a sinistra, la pastiglia **«Export video»** (parte F, sotto).
   Il nome; per uno sport e per «Intimacy» l'interruttore **«Before» /
   «After»**; **«Length»** con le durate della categoria; **«Gentle» /
   «Intense»**; **«Standing only» / «Standing + floor»**. Una scelta che la
@@ -4859,6 +4860,25 @@ mostra le lettere unite da linee dritte sulla base.
   (mezzo minuto per lato se ne ha due) e non salva nessuna sessione.
   L'anello è una decorazione: il tempo è scritto accanto e il lettore di
   schermo non trova i puntini.
+- **Il video di una routine** (TASK-520 parte F, ADR-0415 aggiunta F;
+  `src/stretch/routineVideo.ts`, `src/stretch/RoutineVideoButton.tsx`):
+  nella pagina di una categoria la pastiglia **«Export video»** fa un
+  video verticale (1080 × 1920, 16–28 secondi, senza musica) della routine
+  com'è scelta in quel momento e apre il foglio di condivisione del
+  telefono. Mentre lo fa la pastiglia dice «Making the video… 42%» e non
+  si può premere di nuovo; se non riesce, sotto compare la riga del video
+  della corsa («The video could not be made. Try again.», «This phone
+  cannot make the video.», «This phone cannot open the share sheet.»).
+  Il video: in apertura la figura in piedi vista di fronte, «Stretching ·
+  5 min · 6 exercises» nel colore del gruppo e il nome della categoria;
+  poi ogni esercizio una volta, tre secondi l'uno (meno quando sono
+  tanti), con la figura che lo fa dentro un cerchio tenue del colore del
+  gruppo, il suo tempo («35 s», «35 s each side») e il suo nome; in alto
+  il logo MuW e una barra che si riempie, tagliata a ogni esercizio; in
+  chiusura il logo MuW grande. Il quinto in basso resta vuoto, per i
+  comandi di chi lo pubblica. Il video non entra nel Feed e non passa dal
+  server. Nessun testo nuovo: sono quelli del video della corsa e dello
+  stretching.
 - **Senza rete o senza API** la schermata è la stessa: non chiede niente
   a nessuno.
 - **«Keep running»**, dopo uno «Stop» e con il percorso ancora sullo

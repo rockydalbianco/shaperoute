@@ -1,5 +1,8 @@
 import { registerRootComponent } from "expo";
 
+// What must run when the app opens, for its effect (TASK-500).
+import "./src/startupModules";
+
 import { Root } from "./src/intro/Root";
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => Root);

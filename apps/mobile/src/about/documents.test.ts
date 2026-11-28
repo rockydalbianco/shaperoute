@@ -128,8 +128,9 @@ describe("«Privacy» is final, approved by the user (TASK-237 D)", () => {
     expect(content.privacy.draft).toBe(false);
     // Redated for the estimate of a daily target in «Nutrition» (TASK-489 part J).
     // Redated for the paragliding landings nearby and the wind aloft (TASK-479 parts D6, H).
+    // Redated for following at once with «Approve followers» off (TASK-459 part C).
     expect(content.privacy.updated).toMatch(
-      /^27 November 2026$|^27 novembre 2026$|^27\. November 2026$|^27 de noviembre de 2026$/,
+      /^28 November 2026$|^28 novembre 2026$|^28\. November 2026$|^28 de noviembre de 2026$/,
     );
   });
 
@@ -272,10 +273,10 @@ test("«Help» and «Privacy» say what push and the emails send (ADR-0206, ADR-
   expect(all(IT.privacy)).toMatch(/Le email che servono al tuo account/);
   expect(all(IT.privacy)).toMatch(/al massimo una email al giorno/);
   expect(all(EN.help)).toMatch(
-    /follow requests, accepted requests, reactions, comments and tags/,
+    /follow requests, accepted requests, new followers, reactions, comments and tags/,
   );
   expect(all(IT.help)).toMatch(
-    /richieste di follow, richieste accettate, reazioni, commenti e tag/,
+    /richieste di follow, richieste accettate, nuovi follower, reazioni, commenti e tag/,
   );
   // Who gets the token, and when it goes.
   expect(all(EN.privacy)).toMatch(

@@ -8,8 +8,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "27 novembre 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "27 novembre 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). Redated for following at once with «Approve followers» off (TASK-459 C). */
+const PRIVACY_UPDATED = "28 novembre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -115,7 +115,7 @@ const help: AboutDocument = {
             "Lingua: English, Deutsch, Italiano, Español o Français. La voce la segue.",
             "Mappe offline: il telefono tiene le mappe intorno a te e disegna i percorsi da solo; «Elimina» libera lo spazio.",
             "Unità di misura: quelle del telefono, chilometri o miglia. Con le miglia cambiano le distanze, il passo e la voce: un annuncio a ogni miglio, le svolte in piedi.",
-            "Notifiche: tre interruttori. «Notifiche email» e «Notifiche push» sono spenti finché non li accendi; «Email quando sono via» è acceso finché non lo spegni. Con le push accese, e quando il telefono le consente, MuW ti avvisa subito di richieste di follow, richieste accettate, reazioni, commenti e tag; toccandone una si apre il post o il profilo. Con le email accese, le stesse novità arrivano in una email al giorno al massimo. «Email quando sono via»: se non apri MuW per 2 settimane, una email con le novità.",
+            "Notifiche: tre interruttori. «Notifiche email» e «Notifiche push» sono spenti finché non li accendi; «Email quando sono via» è acceso finché non lo spegni. Con le push accese, e quando il telefono le consente, MuW ti avvisa subito di richieste di follow, richieste accettate, nuovi follower, reazioni, commenti e tag; toccandone una si apre il post o il profilo. Con le email accese, le stesse novità arrivano in una email al giorno al massimo. «Email quando sono via»: se non apri MuW per 2 settimane, una email con le novità.",
           ],
         },
       ],
@@ -312,7 +312,7 @@ const privacy: AboutDocument = {
       blocks: [
         {
           bullets: [
-            "Con «Notifiche email» accese, al massimo una email al giorno, solo nei giorni con novità: le richieste di follow, le richieste accettate, le reazioni, i commenti e i tag del giorno, come li dicono le notifiche push. Finché non parte, il nostro server tiene chi ha fatto cosa e su quale post, per al massimo 7 giorni; quello che non è più vero quando la email si scrive resta fuori.",
+            "Con «Notifiche email» accese, al massimo una email al giorno, solo nei giorni con novità: le richieste di follow, le richieste accettate, i nuovi follower, le reazioni, i commenti e i tag del giorno, come li dicono le notifiche push. Finché non parte, il nostro server tiene chi ha fatto cosa e su quale post, per al massimo 7 giorni; quello che non è più vero quando la email si scrive resta fuori.",
             "«Email quando sono via»: se non apri MuW per 2 settimane, una email con quanti disegni nuovi ci sono delle persone che segui, con fino a tre dei loro nomi utente, oppure nel Feed. Una per assenza: la successiva solo dopo che sei tornato e poi di nuovo via. È accesa per ogni iscritto, anche per chi si è iscritto prima di questo testo; puoi dire di no all'iscrizione, in «Impostazioni» o con il link nella email.",
             "Ogni email ha il link «Non mandarmi più queste email», che spegne quella email. Le mandiamo attraverso Resend, da un indirizzo di getmuw.app.",
             "Le email che servono al tuo account, che nessun interruttore spegne: una per confermare il tuo indirizzo quando ti iscrivi o lo cambi, un avviso al vecchio indirizzo quando lo cambi, e un link per una nuova password quando lo chiedi.",
@@ -376,6 +376,7 @@ const privacy: AboutDocument = {
             "Un percorso che tieni fra i «Preferiti» è conservato intero, con la sua linea, che spesso parte vicino a casa tua. Lo vede solo il tuo account, finché non lo togli o elimini l'account.",
             "I tuoi commenti, le tue risposte e le tue reazioni sotto un disegno li vedono gli iscritti che vedono quel disegno. Una reazione a un commento agli altri compare solo come numero; chi ha scritto quel commento legge, nella campanella, che la reazione è tua. Puoi eliminare i tuoi commenti e le tue risposte, e togliere una reazione.",
             "Chi segui, chi ti segue e le richieste di follow sono conservati con il tuo account.",
+            "Con «Approva chi ti segue» spento, qualunque iscritto può seguirti subito, senza richiesta, e da quel momento vede i tuoi post per i Follower. Accendilo in Impostazioni e ogni nuova richiesta aspetta il tuo sì.",
           ],
         },
       ],

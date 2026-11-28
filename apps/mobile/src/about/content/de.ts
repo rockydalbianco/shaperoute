@@ -10,8 +10,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "27. November 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "27. November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). Redated for following at once with «Approve followers» off (TASK-459 C). */
+const PRIVACY_UPDATED = "28. November 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -117,7 +117,7 @@ const help: AboutDocument = {
             "Sprache: English, Deutsch, Italiano, Español oder Français. Die Stimme folgt ihr.",
             "Offline-Karten: Das Handy behält die Karten um dich herum und zeichnet Routen selbst; «Löschen» gibt den Speicher frei.",
             "Einheiten: die deines Handys, Kilometer oder Meilen. Mit Meilen folgen die Distanzen, das Tempo und die Stimme: eine Ansage bei jeder Meile, die Abbiegungen in Fuß.",
-            "Benachrichtigungen: drei Schalter. «E-Mail-Benachrichtigungen» und «Push-Benachrichtigungen» sind aus, bis du sie einschaltest; «E-Mail, wenn ich weg bin» ist an, bis du ihn ausschaltest. Mit Push an, und sobald dein Telefon es erlaubt, meldet dir MuW sofort Folgeanfragen, angenommene Anfragen, Reaktionen, Kommentare und Markierungen; ein Tippen darauf öffnet den Beitrag oder das Profil. Mit E-Mail an kommen dieselben Neuigkeiten in höchstens einer E-Mail am Tag. «E-Mail, wenn ich weg bin»: Wenn du MuW 2 Wochen lang nicht öffnest, eine E-Mail mit den Neuigkeiten.",
+            "Benachrichtigungen: drei Schalter. «E-Mail-Benachrichtigungen» und «Push-Benachrichtigungen» sind aus, bis du sie einschaltest; «E-Mail, wenn ich weg bin» ist an, bis du ihn ausschaltest. Mit Push an, und sobald dein Telefon es erlaubt, meldet dir MuW sofort Folgeanfragen, angenommene Anfragen, neue Follower, Reaktionen, Kommentare und Markierungen; ein Tippen darauf öffnet den Beitrag oder das Profil. Mit E-Mail an kommen dieselben Neuigkeiten in höchstens einer E-Mail am Tag. «E-Mail, wenn ich weg bin»: Wenn du MuW 2 Wochen lang nicht öffnest, eine E-Mail mit den Neuigkeiten.",
           ],
         },
       ],
@@ -314,7 +314,7 @@ const privacy: AboutDocument = {
       blocks: [
         {
           bullets: [
-            "Mit «E-Mail-Benachrichtigungen» an höchstens eine E-Mail am Tag, nur an Tagen mit Neuigkeiten: die Folgeanfragen, angenommenen Anfragen, Reaktionen, Kommentare und Markierungen des Tages, so wie die Push-Benachrichtigungen sie sagen. Bis sie verschickt ist, behält unser Server, wer was bei welchem Beitrag getan hat, höchstens 7 Tage lang; was beim Schreiben nicht mehr stimmt, bleibt draußen.",
+            "Mit «E-Mail-Benachrichtigungen» an höchstens eine E-Mail am Tag, nur an Tagen mit Neuigkeiten: die Folgeanfragen, angenommenen Anfragen, neuen Follower, Reaktionen, Kommentare und Markierungen des Tages, so wie die Push-Benachrichtigungen sie sagen. Bis sie verschickt ist, behält unser Server, wer was bei welchem Beitrag getan hat, höchstens 7 Tage lang; was beim Schreiben nicht mehr stimmt, bleibt draußen.",
             "«E-Mail, wenn ich weg bin»: Wenn du MuW 2 Wochen lang nicht öffnest, eine E-Mail damit, wie viele neue Zeichnungen es von den Leuten gibt, denen du folgst, mit bis zu drei ihrer Benutzernamen, oder sonst im Feed. Eine pro Abwesenheit: die nächste erst, wenn du zurück und wieder weg bist. Sie ist für jedes Mitglied an, auch für alle, die sich vor diesem Text angemeldet haben; du kannst bei der Anmeldung, in «Einstellungen» oder mit dem Link in der E-Mail Nein sagen.",
             "Jede E-Mail hat den Link «Schickt mir diese E-Mails nicht mehr», der diese E-Mail ausschaltet. Wir verschicken sie über Resend, von einer Adresse von getmuw.app.",
             "E-Mails, die dein Konto braucht und die kein Schalter ausschaltet: eine, um deine Adresse zu bestätigen, wenn du dich anmeldest oder sie änderst, ein Hinweis an deine alte Adresse, wenn du sie änderst, und ein Link für ein neues Passwort, wenn du danach fragst.",
@@ -378,6 +378,7 @@ const privacy: AboutDocument = {
             "Eine Route, die du in «Favoriten» behältst, wird ganz gespeichert, mit ihrer Linie, die oft nahe bei dir zu Hause beginnt. Nur dein Konto sieht sie, bis du sie entfernst oder das Konto löschst.",
             "Deine Kommentare, Antworten und Reaktionen unter einer Zeichnung sehen die Mitglieder, die diese Zeichnung sehen. Eine Reaktion auf einen Kommentar sehen sie nur als Zahl; das Mitglied, das diesen Kommentar geschrieben hat, liest in der Glocke, dass du es warst. Du kannst deine eigenen Kommentare und Antworten löschen und eine Reaktion zurücknehmen.",
             "Wem du folgst, wer dir folgt und die Anfragen zum Folgen werden mit deinem Konto gespeichert.",
+            "Mit «Follower bestätigen» aus kann dir jedes Mitglied sofort folgen, ohne Anfrage, und sieht ab dann deine Beiträge für «Follower». Schalte es in «Einstellungen» ein, und jede neue Anfrage wartet auf dein Ja.",
           ],
         },
       ],

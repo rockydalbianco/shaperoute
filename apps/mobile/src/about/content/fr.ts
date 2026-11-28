@@ -10,8 +10,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "27 novembre 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "27 novembre 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). Redated for following at once with «Approve followers» off (TASK-459 C). */
+const PRIVACY_UPDATED = "28 novembre 2026";
 
 const help: AboutDocument = {
   title: "Comment fonctionne MuW",
@@ -117,7 +117,7 @@ const help: AboutDocument = {
             "Langue : English, Deutsch, Italiano, Español ou Français. La voix la suit.",
             "Cartes hors ligne : le téléphone garde les cartes autour de toi et dessine les parcours tout seul ; «Supprimer» libère l'espace.",
             "Unités : celles de ton téléphone, kilomètres ou miles. Avec les miles, les distances, l'allure et la voix suivent : une annonce à chaque mile, les virages en pieds.",
-            "Notifications : trois interrupteurs. «Notifications par e-mail» et «Notifications push» sont éteints jusqu'à ce que tu les allumes ; «E-mail en cas d'absence» est allumé jusqu'à ce que tu l'éteignes. Avec le push allumé, et dès que ton téléphone l'autorise, MuW te prévient tout de suite des demandes de suivi, des demandes acceptées, des réactions, des commentaires et des identifications ; en touchant une notification, tu ouvres la publication ou le profil. Avec l'e-mail allumé, les mêmes nouvelles arrivent dans un e-mail par jour au plus. «E-mail en cas d'absence» : si tu n'ouvres pas MuW pendant 2 semaines, un e-mail avec les nouveautés.",
+            "Notifications : trois interrupteurs. «Notifications par e-mail» et «Notifications push» sont éteints jusqu'à ce que tu les allumes ; «E-mail en cas d'absence» est allumé jusqu'à ce que tu l'éteignes. Avec le push allumé, et dès que ton téléphone l'autorise, MuW te prévient tout de suite des demandes de suivi, des demandes acceptées, des nouveaux abonnés, des réactions, des commentaires et des identifications ; en touchant une notification, tu ouvres la publication ou le profil. Avec l'e-mail allumé, les mêmes nouvelles arrivent dans un e-mail par jour au plus. «E-mail en cas d'absence» : si tu n'ouvres pas MuW pendant 2 semaines, un e-mail avec les nouveautés.",
           ],
         },
       ],
@@ -314,7 +314,7 @@ const privacy: AboutDocument = {
       blocks: [
         {
           bullets: [
-            "Avec «Notifications par e-mail» allumé, un e-mail par jour au plus, seulement les jours où il y a du nouveau : les demandes de suivi, les demandes acceptées, les réactions, les commentaires et les identifications du jour, comme les disent les notifications push. Jusqu'à son envoi, notre serveur garde qui a fait quoi et sur quelle publication, 7 jours au plus ; ce qui n'est plus vrai au moment de l'écrire reste dehors.",
+            "Avec «Notifications par e-mail» allumé, un e-mail par jour au plus, seulement les jours où il y a du nouveau : les demandes de suivi, les demandes acceptées, les nouveaux abonnés, les réactions, les commentaires et les identifications du jour, comme les disent les notifications push. Jusqu'à son envoi, notre serveur garde qui a fait quoi et sur quelle publication, 7 jours au plus ; ce qui n'est plus vrai au moment de l'écrire reste dehors.",
             "«E-mail en cas d'absence» : si tu n'ouvres pas MuW pendant 2 semaines, un e-mail avec le nombre de nouveaux dessins des personnes que tu suis, avec jusqu'à trois de leurs noms d'utilisateur, ou sinon dans le Feed. Un par absence : le suivant seulement après ton retour puis une nouvelle absence. Il est allumé pour chaque membre, y compris ceux qui se sont inscrits avant ce texte ; tu peux dire non à l'inscription, dans «Réglages» ou avec le lien de l'e-mail.",
             "Chaque e-mail a le lien «Ne plus m'envoyer ces e-mails», qui éteint cet e-mail. Nous les envoyons via Resend, depuis une adresse de getmuw.app.",
             "Les e-mails dont ton compte a besoin, qu'aucun interrupteur n'éteint : un pour confirmer ton adresse quand tu t'inscris ou la changes, un avis à ton ancienne adresse quand tu la changes, et un lien pour un nouveau mot de passe quand tu le demandes.",
@@ -378,6 +378,7 @@ const privacy: AboutDocument = {
             "Un parcours que tu gardes dans «Favoris» est enregistré en entier, avec sa ligne, qui commence souvent près de chez toi. Seul ton compte le voit, jusqu'à ce que tu le retires ou que tu supprimes le compte.",
             "Tes commentaires, tes réponses et tes réactions sous un dessin sont vus par les membres qui voient ce dessin. Une réaction à un commentaire ne leur apparaît que comme un nombre ; le membre qui a écrit ce commentaire lit, dans la cloche, que c'était toi. Tu peux supprimer tes propres commentaires et réponses, et retirer une réaction.",
             "Les personnes que tu suis, celles qui te suivent et les demandes d'abonnement sont gardées avec ton compte.",
+            "Avec «Approuver les abonnés» éteint, n'importe quel membre peut te suivre tout de suite, sans demande, et voit dès lors tes publications pour tes «Abonnés». Allume-le dans «Réglages» et chaque nouvelle demande attend ton accord.",
           ],
         },
       ],

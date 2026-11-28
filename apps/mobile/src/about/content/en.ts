@@ -11,8 +11,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "27 November 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the replies and the reactions to a comment (TASK-454 C). Redated for the group runs among the reports (TASK-309 B). Redated for the posts of photos only (TASK-312 C2). «From a file» for the «+» of the Feed, which also records now (TASK-481 A). A gym plan shared in the Feed (TASK-485 B). Gear (TASK-486). The heart rate of a workout at the gym (TASK-385 G3). The estimate of a daily target in «Nutrition» and the reason given for using it (TASK-489 J). The paragliding landings nearby and the wind aloft for a flight (TASK-479 D6, H). The weather of a post, from MET Norway (TASK-410 E). The group runs and the groups nearby (TASK-309 B2, TASK-495 D). */
-const PRIVACY_UPDATED = "27 November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the replies and the reactions to a comment (TASK-454 C). Redated for the group runs among the reports (TASK-309 B). Redated for the posts of photos only (TASK-312 C2). «From a file» for the «+» of the Feed, which also records now (TASK-481 A). A gym plan shared in the Feed (TASK-485 B). Gear (TASK-486). The heart rate of a workout at the gym (TASK-385 G3). The estimate of a daily target in «Nutrition» and the reason given for using it (TASK-489 J). The paragliding landings nearby and the wind aloft for a flight (TASK-479 D6, H). The weather of a post, from MET Norway (TASK-410 E). The group runs and the groups nearby (TASK-309 B2, TASK-495 D). Following at once with «Approve followers» off (TASK-459 C). */
+const PRIVACY_UPDATED = "28 November 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -118,7 +118,7 @@ const help: AboutDocument = {
             "Language: English, Deutsch, Italiano, Español or Français. The voice follows it.",
             "Offline maps: the phone keeps the maps around you and draws routes by itself; «Delete» frees the space.",
             "Units: your phone's own, kilometres or miles. With miles the distances, the pace and the voice follow: a call at every mile, the turns in feet.",
-            "Notifications: three switches. «Email notifications» and «Push notifications» are off until you turn them on; «Email when I'm away» is on until you turn it off. With push on, and once your phone allows it, MuW tells you at once of follow requests, accepted requests, reactions, comments and tags; touching one opens the post or the profile. With email on, the same news comes in one email a day at most. «Email when I'm away»: if you do not open MuW for 2 weeks, one email with what is new.",
+            "Notifications: three switches. «Email notifications» and «Push notifications» are off until you turn them on; «Email when I'm away» is on until you turn it off. With push on, and once your phone allows it, MuW tells you at once of follow requests, accepted requests, new followers, reactions, comments and tags; touching one opens the post or the profile. With email on, the same news comes in one email a day at most. «Email when I'm away»: if you do not open MuW for 2 weeks, one email with what is new.",
           ],
         },
       ],
@@ -315,7 +315,7 @@ const privacy: AboutDocument = {
       blocks: [
         {
           bullets: [
-            "With «Email notifications» on, one email a day at most, only on days with news: the follow requests, accepted requests, reactions, comments and tags of the day, as the push notifications say them. Until it is sent our server keeps who did what and on which post, for at most 7 days; what is no longer true when it is written is left out.",
+            "With «Email notifications» on, one email a day at most, only on days with news: the follow requests, accepted requests, new followers, reactions, comments and tags of the day, as the push notifications say them. Until it is sent our server keeps who did what and on which post, for at most 7 days; what is no longer true when it is written is left out.",
             "«Email when I'm away»: if you do not open MuW for 2 weeks, one email with how many new drawings there are from the people you follow, with up to three of their usernames, or else in the Feed. One per absence: the next only after you are back and away again. It is on for every member, those who signed up before this text too; you can say no at sign-up, in «Settings» or with the link in the email.",
             "Each email has the link «Don't send me these emails», which turns that email off. We send them through Resend, from an address of getmuw.app.",
             "Emails your account needs, which no switch turns off: one to confirm your address when you sign up or change it, a notice to your old address when you change it, and a link to set a new password when you ask for one.",
@@ -379,6 +379,7 @@ const privacy: AboutDocument = {
             "A route you keep in «Favorites» is stored whole, with its line, which often starts near your home. Only your account sees it, until you remove it or delete the account.",
             "Your comments, replies and reactions under a drawing are seen by the members who see that drawing. A reaction to a comment is shown to them only as a number; the member who wrote that comment reads, in the bell, that it was you. You can delete your own comments and replies, and take back a reaction.",
             "Who you follow, who follows you and the requests to follow are kept with your account.",
+            "With «Approve followers» off, any member can follow you at once, without a request, and from then on sees your «Followers» posts. Turn it on in «Settings» and every new request waits for your yes.",
           ],
         },
       ],

@@ -10,8 +10,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "27 de noviembre de 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). */
-const PRIVACY_UPDATED = "27 de noviembre de 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the posts of photos only (TASK-312 C2). Redated for following at once with «Approve followers» off (TASK-459 C). */
+const PRIVACY_UPDATED = "28 de noviembre de 2026";
 
 const help: AboutDocument = {
   title: "Cómo funciona MuW",
@@ -117,7 +117,7 @@ const help: AboutDocument = {
             "Idioma: English, Deutsch, Italiano, Español o Français. La voz lo sigue.",
             "Mapas sin conexión: el teléfono guarda los mapas de tu alrededor y dibuja las rutas por sí mismo; «Eliminar» libera el espacio.",
             "Unidades: las de tu teléfono, kilómetros o millas. Con millas cambian las distancias, el ritmo y la voz: un aviso en cada milla, los giros en pies.",
-            "Notificaciones: tres interruptores. «Notificaciones por correo» y «Notificaciones push» están apagados hasta que los enciendas; «Correo cuando no estoy» está encendido hasta que lo apagues. Con push encendido, y en cuanto tu teléfono lo permita, MuW te avisa al momento de solicitudes para seguirte, solicitudes aceptadas, reacciones, comentarios y etiquetas; al tocar una se abre la publicación o el perfil. Con el correo encendido, las mismas novedades llegan en un correo al día como mucho. «Correo cuando no estoy»: si no abres MuW durante 2 semanas, un correo con las novedades.",
+            "Notificaciones: tres interruptores. «Notificaciones por correo» y «Notificaciones push» están apagados hasta que los enciendas; «Correo cuando no estoy» está encendido hasta que lo apagues. Con push encendido, y en cuanto tu teléfono lo permita, MuW te avisa al momento de solicitudes para seguirte, solicitudes aceptadas, nuevos seguidores, reacciones, comentarios y etiquetas; al tocar una se abre la publicación o el perfil. Con el correo encendido, las mismas novedades llegan en un correo al día como mucho. «Correo cuando no estoy»: si no abres MuW durante 2 semanas, un correo con las novedades.",
           ],
         },
       ],
@@ -314,7 +314,7 @@ const privacy: AboutDocument = {
       blocks: [
         {
           bullets: [
-            "Con «Notificaciones por correo» encendidas, como mucho un correo al día, solo los días con novedades: las solicitudes para seguirte, las solicitudes aceptadas, las reacciones, los comentarios y las etiquetas del día, como las dicen las notificaciones push. Hasta que se envía, nuestro servidor guarda quién hizo qué y en qué publicación, como mucho 7 días; lo que ya no es verdad cuando se escribe queda fuera.",
+            "Con «Notificaciones por correo» encendidas, como mucho un correo al día, solo los días con novedades: las solicitudes para seguirte, las solicitudes aceptadas, los nuevos seguidores, las reacciones, los comentarios y las etiquetas del día, como las dicen las notificaciones push. Hasta que se envía, nuestro servidor guarda quién hizo qué y en qué publicación, como mucho 7 días; lo que ya no es verdad cuando se escribe queda fuera.",
             "«Correo cuando no estoy»: si no abres MuW durante 2 semanas, un correo con cuántos dibujos nuevos hay de las personas que sigues, con hasta tres de sus nombres de usuario, o si no en el Feed. Uno por ausencia: el siguiente solo después de que vuelvas y te vayas otra vez. Está encendido para cada miembro, también para quienes se registraron antes de este texto; puedes decir que no al registrarte, en «Ajustes» o con el enlace del correo.",
             "Cada correo tiene el enlace «No me envíes más estos correos», que apaga ese correo. Los enviamos a través de Resend, desde una dirección de getmuw.app.",
             "Los correos que tu cuenta necesita, que ningún interruptor apaga: uno para confirmar tu dirección cuando te registras o la cambias, un aviso a tu dirección antigua cuando la cambias, y un enlace para una contraseña nueva cuando lo pides.",
@@ -378,6 +378,7 @@ const privacy: AboutDocument = {
             "Una ruta que guardas en «Favoritos» se almacena entera, con su línea, que a menudo empieza cerca de tu casa. Solo la ve tu cuenta, hasta que la quitas o eliminas la cuenta.",
             "Tus comentarios, respuestas y reacciones bajo un dibujo los ven los miembros que ven ese dibujo. Una reacción a un comentario se les muestra solo como un número; el miembro que escribió ese comentario lee, en la campana, que fuiste tú. Puedes eliminar tus propios comentarios y respuestas, y quitar una reacción.",
             "A quién sigues, quién te sigue y las solicitudes para seguir se guardan con tu cuenta.",
+            "Con «Aprobar seguidores» apagado, cualquier miembro puede seguirte al momento, sin solicitud, y desde entonces ve tus publicaciones para «Seguidores». Enciéndelo en «Ajustes» y cada nueva solicitud espera tu sí.",
           ],
         },
       ],

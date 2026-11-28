@@ -30,6 +30,7 @@ import { t } from "../i18n";
 import { PersonalBests } from "../profile/PersonalBests";
 import { DrawingsContext, useDrawingsDoor } from "../social/drawingsDoor";
 import { useFollowsDoor } from "../social/followsDoor";
+import { SportIcon } from "../sportSigns/SportIcon";
 import {
   color,
   fontSize,
@@ -372,7 +373,7 @@ function CalendarPage({
               accessibilityRole={opens ? "button" : "text"}
               testID="calendar-activity"
             >
-              <Text style={styles.activityIcon}>{sportEmoji(activity.activity)}</Text>
+              <SportIcon activity={activity.activity} size={fontSize.heading} />
               <View style={styles.activityWords}>
                 <Text style={styles.text} numberOfLines={1}>
                   {activityTitle(activity)}
@@ -622,9 +623,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.border,
     backgroundColor: color.surface,
-  },
-  activityIcon: {
-    fontSize: fontSize.heading,
   },
   activityWords: {
     flex: 1,

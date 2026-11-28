@@ -9,6 +9,8 @@ import { LiveShareButton } from "../liveShare/LiveShareButton";
 import { useLiveShareNumbers } from "../liveShare/useLiveShareNumbers";
 import { clockLabel } from "../navigation/freeRun";
 import { HoldButton } from "../screens/HoldButton";
+import { SportLine } from "../sportSigns/SportIcon";
+import { POOL_ICON } from "../sportSigns/sportIcons";
 import { color, fontSize, fontWeight, space } from "../theme/tokens";
 import { averagePace } from "./poolChoice";
 import { metresLabel } from "./PoolDraw";
@@ -59,9 +61,14 @@ export function PoolSwimScreen({
   return (
     <View style={gymStyles.screen} testID="pool-swim">
       <View style={[styles.head, { paddingTop: insets.top + space.xl }]}>
-        <Text style={gymStyles.muted}>
-          {`🏊 ${t("Pool swim")} · ${metresLabel(swim.poolLengthM)}`}
-        </Text>
+        <SportLine
+          source={POOL_ICON}
+          size={fontSize.small}
+          tint={color.textMuted}
+          textStyle={gymStyles.muted}
+        >
+          {`${t("Pool swim")} · ${metresLabel(swim.poolLengthM)}`}
+        </SportLine>
         <Text style={styles.clock} accessibilityRole="timer" testID="pool-clock">
           {clockLabel(activeMs(swim, nowMs))}
         </Text>

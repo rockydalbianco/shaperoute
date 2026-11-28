@@ -92,12 +92,12 @@ test("a day on the snow is saved as its own activity, the others as their route"
 test("«Draw» says «Record your day», with the sport's sign", () => {
   expect(withoutRouteLabel("ski")).toBe("Record your day");
   expect(withoutRouteLabel("xc_ski")).toBe("Record your day");
-  expect(withoutRouteIcon("ski")).toBe("⛷️");
-  expect(withoutRouteIcon("xc_ski")).toBe("🎿");
+  expect(withoutRouteIcon("ski")).toBe("skiing");
+  expect(withoutRouteIcon("xc_ski")).toBe("xc_skiing");
   expect(withoutRouteLabel("skimo")).toBe("Record your day");
-  expect(withoutRouteIcon("skimo")).toBe("🏔️");
+  expect(withoutRouteIcon("skimo")).toBe("ski_touring");
   expect(withoutRouteLabel("alpinism")).toBe("Record your day");
-  expect(withoutRouteIcon("alpinism")).toBe("🧗");
+  expect(withoutRouteIcon("alpinism")).toBe("alpinism");
 });
 
 test("until part C, downhill shows a ride's speeds and across country a pace", () => {

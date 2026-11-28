@@ -136,7 +136,7 @@ test("the calendar marks the days with a workout; a day lists them, a post opens
   expect(screen.queryByTestId("calendar-workout")).toBeNull();
   await fireEvent.press(screen.getByTestId("calendar-day-2"));
   const quiet = screen.getByTestId("calendar-workout");
-  expect(within(quiet).getByText(/^🏋️ \d\d:\d\d · 55:00$/)).toBeOnTheScreen();
+  expect(within(quiet).getByText(/^\d\d:\d\d · 55:00$/)).toBeOnTheScreen();
   await fireEvent.press(quiet);
   expect(open).not.toHaveBeenCalled();
   await fireEvent.press(screen.getByTestId("calendar-day-5"));

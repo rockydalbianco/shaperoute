@@ -44,7 +44,7 @@ test("«Hike» ⛰️ comes after «Run», on foot, on since the server hikes", 
   expect(activityOf("hike")).toBe("hiking");
   expect(runActivityOf("hike")).toBe("hiking");
   expect(withoutRouteLabel("hike")).toBe("Hike without a route");
-  expect(withoutRouteIcon("hike")).toBe("⛰️");
+  expect(withoutRouteIcon("hike")).toBe("hiking");
 });
 
 test("a hike is offered to search and publish while «Hike» is ready", () => {

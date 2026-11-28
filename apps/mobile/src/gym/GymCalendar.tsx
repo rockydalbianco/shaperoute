@@ -14,6 +14,7 @@ import { t, tLater } from "../i18n";
 import { clockLabel } from "../navigation/freeRun";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { useFollowsDoor } from "../social/followsDoor";
+import { SportLine } from "../sportSigns/SportIcon";
 import {
   color,
   fontSize,
@@ -297,9 +298,15 @@ function CalendarPage({
             accessibilityRole={workout.drawing_id === null ? "text" : "button"}
             testID="calendar-workout"
           >
-            <Text style={gymStyles.text}>
-              {`🏋️ ${workoutLine(workout)}${workout.plan == null ? "" : ` · ${workout.plan}`}`}
-            </Text>
+            <SportLine
+              activity="gym"
+              size={fontSize.body}
+              tint={color.text}
+              textStyle={gymStyles.text}
+              style={styles.workoutLine}
+            >
+              {`${workoutLine(workout)}${workout.plan == null ? "" : ` · ${workout.plan}`}`}
+            </SportLine>
             {workout.drawing_id !== null && <Text style={styles.chevron}>›</Text>}
           </Pressable>
         ))}
@@ -406,6 +413,10 @@ const styles = StyleSheet.create({
   },
   planned: {
     backgroundColor: color.textFaint,
+  },
+  /** The workout's words take the row, the arrow stays at its end. */
+  workoutLine: {
+    flex: 1,
   },
   workout: {
     flexDirection: "row",

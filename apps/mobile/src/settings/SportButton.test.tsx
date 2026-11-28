@@ -35,7 +35,9 @@ beforeEach(() => {
 test("the button shows the sport chosen, and no menu until it is touched", async () => {
   await render(<SportButton sports={SOME} />);
   expect(screen.getByRole("button", { name: "Sport, Run" })).toBeOnTheScreen();
-  expect(screen.getByText("🏃‍♂️")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-running", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
   expect(screen.queryByRole("radio")).toBeNull();
 });
 
@@ -57,7 +59,9 @@ test("a sport chosen is saved as in «Settings», closes the menu and shows on t
   expect(saveSport).toHaveBeenCalledWith("bike");
   expect(screen.queryByRole("radio")).toBeNull();
   expect(screen.getByRole("button", { name: "Sport, Bike" })).toBeOnTheScreen();
-  expect(screen.getByText("🚴")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-cycling", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
 
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Bike" }));
   expect(screen.getByRole("radio", { name: "Bike" })).toBeChecked();
@@ -96,7 +100,9 @@ test("in the menu «Swim» is a choice like the others (TASK-323)", async () => 
   await fireEvent.press(screen.getByRole("radio", { name: "Swim" }));
   expect(saveSport).toHaveBeenCalledWith("swim");
   expect(screen.getByRole("button", { name: "Sport, Swim" })).toBeOnTheScreen();
-  expect(screen.getByText("🏊")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-swimming", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
 });
 
 test("the app's menu ends with «Paragliding», as «Settings» (TASK-305 R2)", async () => {

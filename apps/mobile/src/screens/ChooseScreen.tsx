@@ -26,6 +26,7 @@ import { isRecordOnly } from "../settings/sport";
 import { useHeaderScroll, useUnderHeader } from "../tabs/headerScroll";
 import { useTabBarRoom } from "../tabs/tabBarRoom";
 import { useSport } from "../settings/useSport";
+import { SportIcon } from "../sportSigns/SportIcon";
 import {
   color,
   fontSize,
@@ -82,7 +83,8 @@ type Props = {
   onRun?: () => void;
   /** Its button's words: «Bike» has its own (TASK-190). */
   runLabel?: string;
-  /** Its button's sign beside the words (TASK-361): a bike rides. */
+  /** Its button's sign beside the words (TASK-361): the sport's activity,
+   * drawn as its line sign (TASK-510). */
   runIcon?: string;
 };
 
@@ -296,6 +298,7 @@ export function RecordDay({
   hint,
 }: {
   label: string;
+  /** The sport's activity, drawn as its line sign (TASK-510). */
   icon?: string;
   onPress: () => void;
   /** The line under it; absent, the slopes'. */
@@ -311,9 +314,7 @@ export function RecordDay({
         testID="run-no-route"
       >
         {icon !== undefined && (
-          <Text style={styles.recordText} importantForAccessibility="no">
-            {icon}
-          </Text>
+          <SportIcon activity={icon} size={RECORD_ICON} tint={color.onAccent} />
         )}
         <Text style={styles.recordText}>{label}</Text>
       </Pressable>
@@ -348,6 +349,9 @@ export function MapError({ onRetry }: { reason?: string; onRetry?: () => void })
     </View>
   );
 }
+
+/** The sign beside «Record your day»: as the words, a little taller. */
+const RECORD_ICON = 18;
 
 const styles = StyleSheet.create({
   screen: {

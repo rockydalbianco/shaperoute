@@ -14,6 +14,7 @@ import { t } from "../i18n";
 import { NUTRITION_ON } from "../nutrition/nutritionOn";
 import { NutritionFamily } from "../nutrition/NutritionTile";
 import { isSkiMode } from "../skimode/skiMode";
+import { SportIcon } from "../sportSigns/SportIcon";
 import {
   color,
   fontSize,
@@ -25,7 +26,7 @@ import {
 import { isTrainingMode } from "../trainingmode/trainingMode";
 import { Hairline } from "../ui/Hairline";
 import { Tap } from "../ui/Tap";
-import type { Sport, SportOption } from "./sport";
+import { runActivityOf, type Sport, type SportOption } from "./sport";
 import { groupSports } from "./sportFamilies";
 
 /** The panel's gap from the window's sides, and the gap between its tiles. */
@@ -198,7 +199,7 @@ type TileProps = {
   onChoose: () => void;
 };
 
-/** One sport of the panel: its emoji, its name under it; the one chosen
+/** One sport of the panel: its line sign (TASK-510), its name under it; the one chosen
  * with a stronger edge and a ✓, one not ready with «Soon». */
 function SportTile({ option, size, chosen, onChoose }: TileProps) {
   const box = { width: size, minHeight: tileHeight(size) };
@@ -210,7 +211,11 @@ function SportTile({ option, size, chosen, onChoose }: TileProps) {
         accessible
         accessibilityLabel={t("{sport}, coming soon", { sport: t(option.name) })}
       >
-        <Text style={styles.tileEmoji}>{option.emoji}</Text>
+        <SportIcon
+          activity={runActivityOf(option.id)}
+          size={TILE_ICON}
+          tint={color.textMuted}
+        />
         <Text style={styles.tileName} numberOfLines={2}>
           {t(option.name)}
         </Text>
@@ -232,19 +237,22 @@ function SportTile({ option, size, chosen, onChoose }: TileProps) {
       style={[styles.tile, box, chosen && styles.tileChosen]}
       onPress={onChoose}
       accessibilityRole="radio"
-      // One name for the tile: the emoji is not read on its own.
+      // One name for the tile: the sign is not read on its own.
       accessibilityLabel={t(option.name)}
       accessibilityHint={modeLine}
       accessibilityState={{ checked: chosen }}
     >
       {chosen && <Text style={styles.check}>✓</Text>}
-      <Text style={styles.tileEmoji}>{option.emoji}</Text>
+      <SportIcon activity={runActivityOf(option.id)} size={TILE_ICON} />
       <Text style={styles.tileName} numberOfLines={2}>
         {t(option.name)}
       </Text>
     </Tap>
   );
 }
+
+/** The side of a tile's sign, as the emoji it took the place of. */
+const TILE_ICON = 28;
 
 // The panel as a card of «Settings», its tiles neutral: the yellow belongs
 // to the route (docs/UI.md, «Il tema»).
@@ -324,9 +332,6 @@ const styles = StyleSheet.create({
   },
   tileSoon: {
     backgroundColor: color.surface,
-  },
-  tileEmoji: {
-    fontSize: fontSize.title,
   },
   tileName: {
     color: color.text,

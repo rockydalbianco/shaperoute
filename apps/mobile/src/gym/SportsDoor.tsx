@@ -7,6 +7,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { t, tLater } from "../i18n";
 import { profileOf } from "../sports";
+import { SportIcon } from "../sportSigns/SportIcon";
 import {
   color,
   font,
@@ -193,9 +194,10 @@ const MARK_OF: Readonly<Record<PlanSport, RunActivity>> = {
   mountain: "hiking",
 };
 
-/** The mark of each sport of the door, in its square, and of a day of it in
- * the guide (TASK-506 D, in place of «RUN», «BIKE»… in English): taken
- * from the sport profiles, as the sports' menu, so it changes with them. */
+/** The mark of a day of each sport in the guide and the plan's table
+ * (TASK-506 D, in place of «RUN», «BIKE»… in English): taken from the sport
+ * profiles, so it changes with them. Plain text, so an emoji; the door's
+ * squares draw the line sign of `MARK_OF` instead (TASK-510). */
 export const SPORT_BADGES: Readonly<Record<PlanSport, string>> = Object.fromEntries(
   PLAN_SPORTS.map((sport) => [sport, profileOf(MARK_OF[sport]).emoji]),
 ) as Record<PlanSport, string>;
@@ -239,7 +241,7 @@ export function SportsDoor({
           >
             <View style={styles.icon}>
               {!strength ? (
-                <Text style={styles.mark}>{SPORT_BADGES[one.sport]}</Text>
+                <SportIcon activity={MARK_OF[one.sport]} size={fontSize.heading} />
               ) : (
                 <ExerciseFigure
                   move={one.sport === "gym" ? MOVES.bench : MOVES.push_up}
@@ -305,10 +307,6 @@ const styles = StyleSheet.create({
     backgroundColor: color.surfaceRaised,
     alignItems: "center",
     justifyContent: "center",
-  },
-  mark: {
-    color: color.text,
-    fontSize: fontSize.heading,
   },
   optionText: {
     flex: 1,

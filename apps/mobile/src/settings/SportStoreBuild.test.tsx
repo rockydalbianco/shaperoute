@@ -143,7 +143,9 @@ test("«Settings» of a store build has no «Soon» row", async () => {
   // Swimming is a sport of the store builds since the server swims
   // (TASK-323), a row like the others.
   expect(screen.getByRole("radio", { name: "Swim" })).toBeOnTheScreen();
-  expect(screen.getByText("🏊")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-swimming", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
 });
 
 test("the sport menu of «Draw» in a store build has no «Soon» row", async () => {

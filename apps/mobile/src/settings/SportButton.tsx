@@ -1,11 +1,19 @@
 import { useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import { headerGlass } from "../bell/BellButton";
 import { t } from "../i18n";
-import { fontSize, MIN_TAP_SIZE, space } from "../theme/tokens";
+import { SportIcon } from "../sportSigns/SportIcon";
+import { TAB_ICON_SIZE } from "../tabs/TabBar";
+import { MIN_TAP_SIZE, space } from "../theme/tokens";
 import { useGlassMode } from "../ui/useGlassMode";
-import { saveSport, type Sport, SPORTS, type SportOption } from "./sport";
+import {
+  runActivityOf,
+  saveSport,
+  type Sport,
+  SPORTS,
+  type SportOption,
+} from "./sport";
 import { SportMenu } from "./SportMenu";
 import { useSport } from "./useSport";
 
@@ -51,7 +59,7 @@ export function SportButton({ sports = SPORTS }: Props) {
         accessibilityHint={t("Changes the sport")}
         accessibilityState={{ expanded: open }}
       >
-        <Text style={styles.buttonEmoji}>{current.emoji}</Text>
+        <SportIcon activity={runActivityOf(current.id)} size={TAB_ICON_SIZE} />
       </Pressable>
       <SportMenu
         open={open}
@@ -73,8 +81,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     // Its face: a circle of glass, as the bell's (TASK-469 A5, `headerGlass`).
-  },
-  buttonEmoji: {
-    fontSize: fontSize.input + space.xs,
   },
 });

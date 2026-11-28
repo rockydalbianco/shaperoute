@@ -50,7 +50,9 @@ test("in «Draw» the gym is «Start workout» alone, with its line", async () =
   );
   const button = screen.getByRole("button", { name: "Start workout" });
   expect(button).toHaveStyle({ backgroundColor: color.accent });
-  expect(screen.getByText("🏋️")).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-gym", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
   expect(
     screen.getByText("No route in the gym: MuW times your workout."),
   ).toBeOnTheScreen();

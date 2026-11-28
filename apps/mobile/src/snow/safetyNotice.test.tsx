@@ -140,7 +140,9 @@ test("the notice says the four things the user approved, with «I understand» a
   expect(SNOW_NOTICE_TITLE).toBe("Before you head out on snowshoes");
   expect(screen.getByText(SNOW_NOTICE_TITLE)).toBeOnTheScreen();
   // The emoji is for the eyes only.
-  expect(screen.getByText("❄️", { includeHiddenElements: true })).toBeOnTheScreen();
+  expect(
+    screen.getByTestId("sport-icon-snowshoeing", { includeHiddenElements: true }),
+  ).toBeOnTheScreen();
   expect(SNOW_NOTICE_LINES).toEqual([
     "Check the avalanche bulletin and the weather before you go. MuW does not know them.",
     "The route avoids slopes over 25°, woods, pistes and rock. That does not make it safe: an avalanche can come from above.",

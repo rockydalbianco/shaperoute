@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { t } from "../i18n";
 import { durationLabel } from "../screens/FinishScreen";
 import { GYM } from "../sports/gym";
+import { SportIcon } from "../sportSigns/SportIcon";
 import { color, font, fontSize, fontWeight, space } from "../theme/tokens";
 
 type Props = {
@@ -24,7 +25,7 @@ type Props = {
 
 /**
  * What a workout at the gym shows in place of the line (TASK-385 B0,
- * ADR-0327): the MuW yellow made by the app, with 🏋️, «Gym» and its time.
+ * ADR-0327): the MuW yellow made by the app, with its dumbbell (a line sign, TASK-510), «Gym» and its time.
  * The yellow is the user's choice for this tile («Prima foto, se no
  * riquadro», 2026-11-04), the text on it `onAccent`. Part D adds the main
  * exercises, and it is the picture of the post shared too; part C the
@@ -47,7 +48,11 @@ export function GymTile({
       importantForAccessibility="no-hide-descendants"
       testID="gym-tile"
     >
-      <Text style={small ? styles.emojiSmall : styles.emoji}>{GYM.emoji}</Text>
+      <SportIcon
+        activity={GYM.activity}
+        size={small ? fontSize.title : fontSize.display}
+        tint={color.onAccent}
+      />
       {!small && (
         <>
           <Text style={styles.name}>{t(GYM.name)}</Text>
@@ -83,12 +88,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: space.xs,
     backgroundColor: color.accent,
-  },
-  emoji: {
-    fontSize: fontSize.display,
-  },
-  emojiSmall: {
-    fontSize: fontSize.title,
   },
   name: {
     ...font.label,

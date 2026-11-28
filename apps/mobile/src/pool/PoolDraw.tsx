@@ -4,6 +4,8 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { t, tLater } from "../i18n";
 import { Segmented } from "../screens/Segmented";
 import { StepTitle } from "../screens/StepTitle";
+import { SportLine } from "../sportSigns/SportIcon";
+import { POOL_ICON } from "../sportSigns/sportIcons";
 import {
   color,
   fontSize,
@@ -141,7 +143,14 @@ export function PoolDraw() {
         accessibilityState={{ disabled: chosen === null }}
         testID="start-pool-swim"
       >
-        <Text style={styles.startText}>{`🏊 ${t("Start swim")}`}</Text>
+        <SportLine
+          source={POOL_ICON}
+          size={fontSize.body}
+          tint={color.onAccent}
+          textStyle={styles.startText}
+        >
+          {t("Start swim")}
+        </SportLine>
       </Pressable>
     </View>
   );

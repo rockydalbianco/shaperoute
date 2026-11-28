@@ -50,7 +50,7 @@ test("the best set reads as a set does on the post, in kg or lb", () => {
 test("the profile shows each level with its figure and its best set", async () => {
   await render(<GymLevels levels={EXAMPLE} />);
   const box = screen.getByTestId("gym-levels");
-  expect(within(box).getByRole("header", { name: "🏋️ Gym" })).toBeOnTheScreen();
+  expect(within(box).getByRole("header", { name: "Gym" })).toBeOnTheScreen();
   const rows = within(box).getAllByTestId("gym-level");
   expect(rows.map((row) => row.props.accessibilityLabel)).toEqual([
     "Bench press, Bear, 100 kg",
@@ -91,7 +91,7 @@ test("nothing without a level, nor from an API older than part E", async () => {
 test("in the app's language", async () => {
   await act(async () => saveLanguageChoice("it"));
   await render(<GymLevels levels={EXAMPLE} />);
-  expect(screen.getByRole("header", { name: "🏋️ Palestra" })).toBeOnTheScreen();
+  expect(screen.getByRole("header", { name: "Palestra" })).toBeOnTheScreen();
   expect(screen.getByText("Panca piana")).toBeOnTheScreen();
   expect(screen.getByText("Orso")).toBeOnTheScreen();
 });

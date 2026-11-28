@@ -132,7 +132,7 @@ test("nothing shows without a swim", async () => {
 test("the clock runs, «Pause» holds it, and an app opened again finds it", async () => {
   await show();
   await act(async () => startPoolSwim(25));
-  expect(screen.getByText("🏊 Pool swim · 25 m")).toBeOnTheScreen();
+  expect(screen.getByText("Pool swim · 25 m")).toBeOnTheScreen();
   await wait(10 * MIN);
   expect(screen.getByTestId("pool-clock")).toHaveTextContent("10:00");
   await fireEvent.press(screen.getByTestId("pool-pause"));

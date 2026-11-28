@@ -5,6 +5,7 @@ import { t } from "../i18n";
 import { withoutRouteIcon } from "../screens/RunNoRouteButton";
 import { withoutRouteLabel } from "../settings/sport";
 import { DayResort } from "../ski/DayResort";
+import { SportIcon } from "../sportSigns/SportIcon";
 import { useHeaderScroll, useUnderHeader } from "../tabs/headerScroll";
 import { useTabBarRoom } from "../tabs/tabBarRoom";
 import {
@@ -55,7 +56,11 @@ export function SkiTodayPage({ onRecord, resort = <DayResort /> }: Props) {
         accessibilityLabel={withoutRouteLabel("ski")}
         testID="ski-record"
       >
-        <Text style={styles.recordIcon}>{withoutRouteIcon("ski")}</Text>
+        <SportIcon
+          activity={withoutRouteIcon("ski")}
+          size={fontSize.heading}
+          tint={color.onAccent}
+        />
         <Text style={styles.recordText}>{withoutRouteLabel("ski")}</Text>
       </Tap>
     </ScrollView>
@@ -93,9 +98,6 @@ const styles = StyleSheet.create({
     gap: space.sm,
     borderRadius: radius.pill,
     backgroundColor: color.accent,
-  },
-  recordIcon: {
-    fontSize: fontSize.heading,
   },
   recordText: {
     color: color.onAccent,

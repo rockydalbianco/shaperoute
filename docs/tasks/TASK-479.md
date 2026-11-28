@@ -756,13 +756,37 @@ poi de/fr/es «Sì, approvo»):
 | Full analysis for flights recorded from this version or imported from IGC | Analisi completa per i voli registrati da questa versione o importati da IGC | Volle Analyse für Flüge ab dieser Version oder aus IGC importiert | Analyse complète pour les vols enregistrés depuis cette version ou importés d'un IGC | Análisis completo para los vuelos grabados desde esta versión o importados de IGC |
 | This IGC file has no track points. | Questo file IGC non ha punti della traccia. | Diese IGC-Datei hat keine Trackpunkte. | Ce fichier IGC n'a aucun point de trace. | Este archivo IGC no tiene puntos de traza. |
 
-**La misura di A2** (miniatura 3D in meno di 2 s): *(in corso, turno di
-simulatore chiesto al Coordinatore)*.
+**La misura di A2** (miniatura 3D in meno di 2 s; simulatore iPhone 17e,
+Expo Go, rete del Mac, 2026-11-28): la pagina nascosta del Feed
+(`feed/feedMapPage.ts`) col terreno dell'app (×1,3, inclinazione 55°),
+360 × 270, una traccia di 6 km; il tempo va dalla richiesta alla foto
+pronta. Con le tile già in cache il 3D si scatta in **80–330 ms**. In
+posti mai visti ci vuole **1,3–4,2 s** (5 decolli alpini: 3,0 · 4,1 ·
+1,3 · 4,2 · 1,4 s; il primissimo 7,6 s), contro 0,13–0,43 s del 2D negli
+stessi casi: il di più sono le tile del terreno, che il 3D inclinato
+chiede anche lontano. Nel Feed i voli sono quasi sempre di altri e in
+posti mai visti, e un telefono in rete mobile è più lento del Mac:
+**la miniatura 3D non sta sotto i 2 s, quindi il Feed resta 2D** con la
+traccia colorata per vario (deciso dall'agente su delega dell'utente,
+dalla regola della parte F). Il 3D resta nella pagina «Analisi del volo»,
+sul volo del pilota. Dati: `out/TASK-479/a2-misura.txt` del worktree
+della parte 0.
 
-**Le PR di F** (lista dei file al Coordinatore; codice solo dopo il suo
-via): F1 copia dei voli, export IGC/GPX e import IGC; F2 punteggio XC e
-disegno; F3 pagina «Analisi del volo» con replay e grafici (A2); F4 Feed,
-prima il server e poi l'app.
+**Le PR di F** (lista dei file approvata dal Coordinatore il 2026-11-28,
+una PR alla volta, ognuna «#NNNN pronta <sha>»; schermate e testi con le
+foto all'utente prima):
+- **F1**: copia dei voli sul telefono, export IGC/GPX, import IGC
+  (`air/FlightFinishCard.tsx`, `imports/{fileTrack,importFile,
+  pickActivityFile}.ts`, i18n, `docs/IMPORTAZIONI.md`, `docs/GPX.md`;
+  il resto file nuovi in `src/air/` e `src/imports/igc.ts`);
+- **F2**: punteggio XC e disegno (solo file nuovi);
+- **F3**: pagina «Analisi del volo» con replay 3D e grafici (A2), dalla
+  scheda di fine volo e da `activities/ActivityCard.tsx`;
+- **F4a**: il server (campo facoltativo del post, `activities.py`;
+  `shared-types` a turno dal Coordinatore); la frase della privacy, se
+  serve (quote e vario nel post pubblico), è una PR a sé in coda;
+- **F4b**: il Feed nell'app, solo dopo F4a sul server (passo del
+  Coordinatore, sì dell'utente) e la privacy online.
 
 ### Parte G — Live
 

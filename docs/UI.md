@@ -4873,6 +4873,22 @@ mostra le lettere unite da linee dritte sulla base.
   a nessuno.
 - **«Keep running»**, dopo uno «Stop» e con il percorso ancora sullo
   schermo: torna alla navigazione, e la traccia continua (ADR-0091).
+- **«Save & redo»** (TASK-451, ADR-0419; scelte e testi dell'utente del
+  2026-11-27): nella stessa riga di «Share» e «Keep running» (la riga va a
+  capo se non ci stanno), solo se la corsa ha lasciato il percorso:
+  almeno **200 m** del percorso, prima del punto dove ci si è fermati,
+  rimasti a più di **40 m** dalla traccia. Smettere prima della fine non
+  conta. Solo per un percorso fatto da una forma del catalogo o da una
+  parola (da «Draw», da «Explore», da un preferito), mai foto e disegni a
+  mano, e solo negli sport su strade e sentieri (non canoa e nuoto). Con un
+  account il tocco fa ciò che fa «Save» (modulo e visibilità come sono) e
+  poi apre «Draw» con la stessa forma o parola, gli stessi km e la stessa
+  partenza come posto scelto sulla mappa; se la corsa non si tiene, si
+  resta qui. Senza account il pulsante si chiama **«Redo»** e la corsa
+  lascia il telefono come con «Done». Al lettore di schermo: «Save the run
+  and draw the same shape again» (senza account «Draw the same shape
+  again»). Non è giallo. «Draw route» chiede il percorso al motore come
+  sempre.
 - **«Done»**: torna al risultato, o alla prima schermata se il percorso
   non c'è più, e la traccia si cancella dal file della corsa. «Done» c'è
   solo senza account.

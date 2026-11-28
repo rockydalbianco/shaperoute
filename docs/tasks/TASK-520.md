@@ -412,6 +412,17 @@ Neck, Hips & pelvis), che si aprono e si leggono fotogramma per
 fotogramma; fogli, video e attrezzi in `out/TASK-520/f/` del checkout
 principale (`tools/README.txt` dice come rifarlo).
 
+**Simulatore** (iPhone 17e, Expo Go, turno del Coordinatore, 2026-11-28):
+nella pagina vera di «Running · Before» la pastiglia «Export video» passa
+a «Making the video… 0%» fino a 100%, poi si apre il foglio di
+condivisione con «MuW-stretching · Video · 2,6 MB»; chiuso il foglio la
+pastiglia torna com'era, senza righe d'errore. Il WebView del simulatore
+ha codificato il video in circa 12 secondi: 19,2 secondi, 1080 × 1920,
+H.264, tirato fuori dalla cache dell'app e guardato fotogramma per
+fotogramma, uguale a quello fatto in Chrome. Schermate e video in
+`out/TASK-520/f/` (`sim-*`). Non visti: le tinte chiare, una routine
+lunga (16 esercizi), il video salvato in Foto su un telefono vero.
+
 Strumenti fuori dal repository, nel checkout principale: fogli delle pose
 e generatori in `out/stretching-nuovo/pose/` e `out/stretching-nuovo/c/`;
 tabelle dei testi `out/stretching-nuovo/testi-{d,e}.psv`; schermate e

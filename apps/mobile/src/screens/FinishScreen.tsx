@@ -50,9 +50,13 @@ type Props = {
   onDone?: () => void;
   /** Goes back to the run, when it was stopped and its route is still here. */
   onResume?: () => void;
+  /** «Redo better» (TASK-451, ADR-0419), when the run left its route: the
+   * same shape, distance and start in «Draw». `saves` with an account: the
+   * run is saved first, as «Save» saves it. */
+  redo?: { saves: boolean; onPress: () => void };
 };
 
-export function FinishCard({ run, onDone, onResume }: Props) {
+export function FinishCard({ run, onDone, onResume, redo }: Props) {
   // How far in the app's units (TASK-182): "4.0 km" or "2.5 mi".
   const units = useUnits();
   const facts = `${distanceLabel(run.track.distanceM, units)} · ${durationLabel(durationMs(run.track))}`;
@@ -71,6 +75,22 @@ export function FinishCard({ run, onDone, onResume }: Props) {
             accessibilityRole="button"
           >
             <Text style={styles.buttonText}>{t("Keep running")}</Text>
+          </Pressable>
+        )}
+        {redo && (
+          <Pressable
+            style={styles.button}
+            onPress={redo.onPress}
+            accessibilityRole="button"
+            accessibilityLabel={t(
+              redo.saves
+                ? "Save the run and draw the same shape again"
+                : "Draw the same shape again",
+            )}
+          >
+            <Text style={styles.buttonText}>
+              {t(redo.saves ? "Save & redo" : "Redo@@run")}
+            </Text>
           </Pressable>
         )}
         {onDone && (
@@ -110,8 +130,11 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.small,
   },
+  // Share, Keep running and Save & redo do not fit one line on a phone
+  // (TASK-451): the row wraps, from the right.
   buttons: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "flex-end",
     gap: space.sm,
   },

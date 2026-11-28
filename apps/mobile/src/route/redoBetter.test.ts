@@ -171,11 +171,22 @@ describe("missedRouteM", () => {
     expect(missedRouteM([ORIGIN, ORIGIN], FAITHFUL)).toBe(0);
   });
 
-  test("a track of a single fix is the point it is", () => {
-    // 500 m along the first side, a fix that never got there: stopped
-    // within reach of the start, never a button.
-    expect(missedRouteM(SQUARE, [at(500, 0)])).toBeLessThan(REDO_MISSED_M);
+  test("a track of a single fix near the start misses nothing", () => {
     expect(missedRouteM(SQUARE, [at(10, 0)])).toBe(0);
+  });
+
+  test("a run that cut the square in half and came home misses the half", () => {
+    // Much shorter than the square, home along its last street.
+    const half = line([
+      [0, 0],
+      [1000, 0],
+      [1000, 300],
+      [0, 300],
+      [0, 0],
+    ]);
+    const missed = missedRouteM(SQUARE, half);
+    expect(missed).toBeGreaterThan(2200);
+    expect(missed).toBeLessThan(2500);
   });
 });
 

@@ -134,7 +134,11 @@ export function flightFixesOf(track: Track): FlightFix[] {
 
 /** As a file: [time, lat, lon, height] for each fix, a metre's tenth at
  * most, positions to some 10 cm. */
-type Stored = { version: 1; source: FlightSource; fixes: [number, number, number, number | null][] };
+type Stored = {
+  version: 1;
+  source: FlightSource;
+  fixes: [number, number, number, number | null][];
+};
 
 const round = (value: number, places: number) => {
   const scale = 10 ** places;
@@ -228,7 +232,10 @@ export function keptFlights(shelf: FlightShelf = phoneShelf): KeptFlightEntry[] 
 }
 
 /** A flight kept whole, by its key; null when it is not on this phone. */
-export function keptFlight(key: string, shelf: FlightShelf = phoneShelf): FlightFix[] | null {
+export function keptFlight(
+  key: string,
+  shelf: FlightShelf = phoneShelf,
+): FlightFix[] | null {
   if (!shelf.list.load().some((one) => one.key === key)) {
     return null;
   }

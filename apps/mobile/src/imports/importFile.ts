@@ -1,12 +1,14 @@
-import type { Activity, LatLon } from "@shaperoute/shared-types";
+import type { LatLon, RunActivity } from "@shaperoute/shared-types";
 
 import { activityKey } from "../activities/activityKey";
+import type { FlightFix } from "../air/flightArchive";
 import type { RecordedRun } from "../activities/recordedRun";
 import type { ActivityPause } from "../api/activities";
 import { t, tLater } from "../i18n";
 import { type FileTrack } from "./fileTrack";
 import { isFit, readFit } from "./fit";
 import { isGpx, readGpx } from "./gpx";
+import { isIgc, readIgc } from "./igc";
 import { isTcx, readTcx } from "./tcx";
 
 /**
@@ -44,7 +46,9 @@ export type ImportProblem =
   | "no_positions"
   | "too_big"
   | "too_old"
-  | "already_saved";
+  | "already_saved"
+  /** An IGC file without one B record with a position (TASK-479 F1). */
+  | "igc_no_points";
 
 /** What the app says of each, in the app's language (TASK-210). */
 const PROBLEMS: Record<ImportProblem, string> = {
@@ -54,6 +58,7 @@ const PROBLEMS: Record<ImportProblem, string> = {
   too_big: tLater("This file is too big (over 25 MB)."),
   too_old: tLater("Activities before 2020 cannot be added."),
   already_saved: tLater("Already in My activities."),
+  igc_no_points: tLater("This IGC file has no track points."),
 };
 
 export function importProblemText(problem: ImportProblem): string {
@@ -63,7 +68,10 @@ export function importProblemText(problem: ImportProblem): string {
 /** A file made into a run, ready for «Save». */
 export type ImportedRun = RecordedRun & {
   /** What the file says it was; null: the sport of «Settings». */
-  sport: Activity | null;
+  sport: RunActivity | null;
+  /** An IGC file's flight whole, every fix with its height, to keep on the
+   * phone with «Save» (TASK-479 part F1); null for the other files. */
+  flight: FlightFix[] | null;
   /** The kept track, lighter (PREVIEW_POINTS), for the drawing over the
    * form. */
   line: LatLon[];
@@ -83,7 +91,7 @@ function textOf(bytes: Uint8Array): string {
   return parts.join("");
 }
 
-/** The file read by its content, not its name: GPX, TCX or FIT. */
+/** The file read by its content, not its name: GPX, TCX, FIT or IGC. */
 export function readActivityFile(bytes: Uint8Array): FileTrack | null {
   if (isFit(bytes)) {
     return readFit(bytes);
@@ -95,10 +103,13 @@ export function readActivityFile(bytes: Uint8Array): FileTrack | null {
   if (isTcx(text)) {
     return readTcx(text);
   }
+  if (isIgc(text)) {
+    return readIgc(text);
+  }
   return null;
 }
 
-type Kept = { point: LatLon; timeMs: number };
+type Kept = { point: LatLon; timeMs: number; altitudeM: number | null };
 
 /** At most `most` of `points`, evenly, the first and the last always. */
 function evenly<T>(points: T[], most: number): T[] {
@@ -131,7 +142,7 @@ function pausesOf(points: Kept[]): ActivityPause[] {
 
 /**
  * The file in `bytes` as a run to save, or why not (§3): not one of the
- * three formats; no point with a position; positions without times (a
+ * four formats; no point with a position; positions without times (a
  * route); a start before 2020. Points out of order in time, or at the same
  * time as the one before, are left out.
  */
@@ -145,16 +156,18 @@ export function importedRun(bytes: Uint8Array): ImportOutcome {
   }
   const placed = track.points.filter((p) => p.point !== null);
   if (placed.length === 0) {
-    return { kind: "problem", problem: "no_positions" };
+    return { kind: "problem", problem: track.igc ? "igc_no_points" : "no_positions" };
   }
   const kept: Kept[] = [];
-  for (const { point, timeMs } of placed) {
+  for (const { point, timeMs, altitudeM } of placed) {
     if (point === null || timeMs === null) {
       continue;
     }
     const last = kept[kept.length - 1];
     if (last === undefined || timeMs > last.timeMs) {
-      kept.push({ point, timeMs });
+      const height =
+        typeof altitudeM === "number" && Number.isFinite(altitudeM) ? altitudeM : null;
+      kept.push({ point, timeMs, altitudeM: height });
     }
   }
   if (kept.length === 0) {
@@ -173,10 +186,12 @@ export function importedRun(bytes: Uint8Array): ImportOutcome {
     imported: {
       id: activityKey(points[0]),
       request: {
-        track: points.map(({ point, timeMs }) => ({
+        track: points.map(({ point, timeMs, altitudeM }) => ({
           point,
           time_ms: timeMs,
           accuracy_m: null,
+          // The height only when the file gave one: an IGC's (TASK-479 F1).
+          ...(altitudeM === null ? {} : { altitude_m: altitudeM }),
         })),
         pauses,
         points: null,
@@ -188,6 +203,13 @@ export function importedRun(bytes: Uint8Array): ImportOutcome {
         source: "file",
       },
       sport: track.sport,
+      flight: track.igc
+        ? kept.map(({ point, timeMs, altitudeM }) => ({
+            timeMs,
+            point,
+            altM: altitudeM,
+          }))
+        : null,
       line: evenly(points, PREVIEW_POINTS).map(({ point }) => point),
     },
   };

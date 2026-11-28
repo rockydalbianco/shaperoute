@@ -4073,4 +4073,9 @@ export const IT: Table = {
     "Scrivi almeno {count} lettere del nome di un gruppo.",
   "The groups could not load. Check the connection and try again.":
     "Non è stato possibile caricare i gruppi. Controlla la connessione e riprova.",
+  // src/air/FlightExport.tsx, src/imports/ (TASK-479 part F1: approved by the user on 2026-11-21 and 2026-11-28)
+  "Export IGC": "Esporta IGC",
+  "Not signed: competitions and online contests may not accept it.":
+    "Non firmato: gare e classifiche online potrebbero non accettarlo.",
+  "This IGC file has no track points.": "Questo file IGC non ha punti della traccia.",
 };

@@ -1,7 +1,7 @@
 import {
-  type Activity,
   type GymPlanFeel,
   type LatLon,
+  type RunActivity,
   SLEEP_SHOWN_DEFAULT,
   type Visibility,
 } from "@shaperoute/shared-types";
@@ -26,6 +26,7 @@ import { RUN_NAMES } from "../gym/proposal";
 import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
 import { showSavedLogo } from "../intro/SavedLogo";
+import { flightFixesOf, keepFlight } from "../air/flightArchive";
 import { loadRun } from "../navigation/trackStore";
 import { NutritionInvite } from "../nutrition/NutritionInvite";
 import { runActivityOf } from "../settings/sport";
@@ -82,7 +83,7 @@ type Props = {
    * on «Only me», or on `visibility` when given: «Everyone» from the Feed's
    * «+» (TASK-476, the user's choice), seen over «Save» and changeable.
    */
-  imported?: { sport: Activity | null; visibility?: Visibility };
+  imported?: { sport: RunActivity | null; visibility?: Visibility };
   /**
    * The card folded at the end (TASK-478 part b): this form's «Save», for
    * the strip's, so that it does all that this one does, the choices of
@@ -264,6 +265,10 @@ export function RunEnd({
     // The run as the phone keeps it, read before «Save» lets the file go:
     // only after the user's yes to the phone's health data.
     const run = health !== null && loadHealthOn() ? loadRun() : null;
+    // A flight is kept whole on the phone too, for its analysis and its
+    // IGC file (TASK-479 part F1): the API keeps only its line.
+    const flown =
+      imported === undefined && choice.activity === "paragliding" ? loadRun() : null;
     const kept = onSave();
     setFailed(!kept);
     if (kept) {
@@ -279,6 +284,9 @@ export function RunEnd({
           items: plan.items,
           program: answered(program, session, feel),
         });
+      }
+      if (flown !== null) {
+        keepFlight("muw", flightFixesOf(flown.track));
       }
       // The Sgrava logo, over the app, says the run is kept (TASK-212).
       showSavedLogo();

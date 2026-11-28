@@ -65,6 +65,7 @@ describe("a file of another app made into a run", () => {
     expect(run.request.word).toBeNull();
     expect(run.request.title).toBeNull();
     expect(run.sport).toBe("running");
+    expect(run.flight).toBeNull();
     expect(run.line).toEqual(track.map((fix) => fix.point));
     const long = ok(importedRun(gpx(1000, MAY_2025)));
     expect(long.line).toHaveLength(PREVIEW_POINTS);
@@ -209,5 +210,51 @@ describe("a file that does not become a run", () => {
       "Activities before 2020 cannot be added.",
     );
     expect(importProblemText("already_saved")).toBe("Already in My activities.");
+    expect(importProblemText("igc_no_points")).toBe(
+      "This IGC file has no track points.",
+    );
+  });
+});
+
+describe("an IGC file (TASK-479 part F1)", () => {
+  // An invented flight; the pilot's name is never read.
+  const igc = (records: string[]) =>
+    bytesOf(
+      [
+        "AXXXabc Test Vario",
+        "HFDTEDATE:140726,01",
+        "HFPLTPILOTINCHARGE:Test Pilot",
+        ...records,
+      ].join("\r\n"),
+    );
+
+  it("is a flight, with its heights sent and kept whole for «Save»", () => {
+    const run = ok(
+      importedRun(
+        igc([
+          "B1000004543200N01050400EA0000001700",
+          "B1000014543300N01050400EV0000000000",
+          "B1000024543400N01050400EA0000001710",
+        ]),
+      ),
+    );
+    expect(run.sport).toBe("paragliding");
+    expect(run.request.source).toBe("file");
+    expect(run.request.track.map((fix) => fix.altitude_m)).toEqual([
+      1700,
+      undefined,
+      1710,
+    ]);
+    expect("altitude_m" in run.request.track[1]).toBe(false);
+    expect(run.flight?.map((fix) => fix.altM)).toEqual([1700, null, 1710]);
+    expect(run.flight?.[0].timeMs).toBe(Date.UTC(2026, 6, 14, 10, 0, 0));
+    expect(JSON.stringify(run)).not.toContain("Test Pilot");
+  });
+
+  it("says when it has no track points", () => {
+    expect(importedRun(igc(["LXXX only a comment"]))).toEqual({
+      kind: "problem",
+      problem: "igc_no_points",
+    });
   });
 });

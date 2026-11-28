@@ -5,6 +5,7 @@ import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { startedLabel } from "../activities/activityText";
 import { RunDrawing } from "../activities/RunDrawing";
 import { RunEnd } from "../activities/RunEnd";
+import { keepFlight } from "../air/flightArchive";
 import { t } from "../i18n";
 import type { PickPhoto } from "../social/PublicParts";
 import {
@@ -169,6 +170,10 @@ export function AddPastActivity({
           onSave={() => {
             const kept = recordImported(imported);
             if (kept) {
+              // An IGC's flight whole, for its analysis (TASK-479 part F1).
+              if (imported.flight !== null) {
+                keepFlight("igc", imported.flight);
+              }
               finish();
             }
             return kept;

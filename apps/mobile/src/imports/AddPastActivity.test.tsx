@@ -21,6 +21,16 @@ jest.mock(
   () => jest.requireActual("react-native-safe-area-context/jest/mock").default,
 );
 jest.mock("../settings/useSport", () => ({ useSport: () => "run" }));
+jest.mock("../air/flightArchive", () => ({
+  ...jest.requireActual("../air/flightArchive"),
+  keepFlight: jest.fn(() => true),
+}));
+
+const { keepFlight } = jest.requireMock<{ keepFlight: jest.Mock }>(
+  "../air/flightArchive",
+);
+
+beforeEach(() => keepFlight.mockClear());
 
 const FOLDER = join(__dirname, "../../__tests__/fixtures/imports");
 
@@ -123,6 +133,38 @@ test("a Strava GPX becomes the form, «Imported», and «Save» keeps it", async
   // Kept: back to the button.
   expect(screen.queryByTestId("imported-form")).toBeNull();
   expect(screen.getByRole("button", { name: "Add past activity" })).toBeTruthy();
+});
+
+test("an IGC is a flight, kept whole on the phone with «Save» (TASK-479 F1)", async () => {
+  const door = spies();
+  const igc = [
+    "AXXXabc Test Vario",
+    "HFDTEDATE:140726,01",
+    "HFPLTPILOTINCHARGE:Test Pilot",
+    "B1000004543200N01050400EA0000001700",
+    "B1000014543300N01050400EA0000001705",
+  ].join("\r\n");
+  await show(door, { kind: "picked", bytes: new Uint8Array(Buffer.from(igc, "utf8")) });
+  await fromFile();
+  expect(await screen.findByTestId("imported-form")).toBeTruthy();
+  expect(
+    screen.getByRole("radio", { name: "Paragliding", checked: true }),
+  ).toBeTruthy();
+  expect(screen.queryByText(/Test Pilot/)).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
+  expect(door.recordImported).toHaveBeenCalledTimes(1);
+  expect(keepFlight).toHaveBeenCalledTimes(1);
+  const [source, fixes] = keepFlight.mock.calls[0] as [string, { altM: number }[]];
+  expect(source).toBe("igc");
+  expect(fixes.map((fix) => fix.altM)).toEqual([1700, 1705]);
+});
+
+test("a GPX keeps no flight on the phone", async () => {
+  await show(spies(), file("strava-run.gpx"));
+  await fromFile();
+  await screen.findByTestId("imported-form");
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
+  expect(keepFlight).not.toHaveBeenCalled();
 });
 
 test("a Garmin TCX starts as a ride, the sport the file says", async () => {

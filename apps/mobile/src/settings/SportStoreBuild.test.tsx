@@ -117,6 +117,8 @@ test("in a store build `SPORTS` has «Paragliding» since TASK-305 R2", () => {
 
 test("«Settings» of a store build has no «Soon» row", async () => {
   await render(<SportSetting sports={STORE} />);
+  // One row since TASK-512: its panel holds the sports.
+  await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
   // Walk (TASK-371), run, the hike (TASK-377), bike, gravel and MTB
   // (TASK-378), the skate (TASK-380), paddle, the swim (TASK-323), the
   // alpine and the cross-country ski (TASK-375), ski touring (TASK-415 B),

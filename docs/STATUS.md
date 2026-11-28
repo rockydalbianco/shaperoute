@@ -185,11 +185,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-27**: **C in `main`** (#1334, `7e2813ce`) nel taglio nativo:
   sonno acceso con la build nuova; App Privacy e build dal Coordinatore. Poi D.
 
-- **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (OTA
-  12); B (dieci esercizi, tre routine da 3, 5, 10 min, la gamba staccata
-  corretta, #1216) e D («Morning stretch» in Impostazioni, #1300) in
-  `main`, col primo OTA dopo; poi la prova sul telefono (la notifica
-  vera). Restano C (palestra) ed E. File: — · `tasks/TASK-466.md`
+- **TASK-466 — Lo stretching nuovo** (ADR-0378) · A, B, D in produzione
+  o col primo OTA; C (stretching dentro la palestra) in `main`: C1 #1670
+  sul server (passo 26), C2 #1697. Restano: prova sul telefono, riga nel
+  riepilogo dopo 511 B, frase di privacy, E. File: — ·
+  `tasks/TASK-466.md`
 
 - **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
@@ -236,6 +236,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   fra quelle venute bene in città, dal catalogo di «Explore»; a piedi e in
   bici, motore non toccato. Poi A (la scelta, file nuovi) e B (la
   pastiglia, dopo TASK-449 A). File: — · `tasks/TASK-448.md`
+- **TASK-451 — «Rifai meglio»** (ADR-0419) · parte 0 chiusa il 2026-11-27
+  (sei scelte dell'utente): a fine corsa, se si è lasciato il percorso,
+  «Save & redo» salva e riapre «Draw» con stessa forma, km e partenza;
+  motore non toccato. Poi A (la scelta, file nuovi) e B (il pulsante, dopo
+  523 T in `main`). File: `route/redoBetter*` · `tasks/TASK-451.md`
 
 In attesa (Fermo — in attesa nel task file, nessun file occupato; si
 riprendono col sì dell'utente). Aspettano la società o servizi esterni:

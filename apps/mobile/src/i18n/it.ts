@@ -2028,6 +2028,86 @@ export const IT: Table = {
   "Hands on hips, draw big slow circles. Change direction halfway.":
     "Mani sui fianchi, disegna grandi cerchi lenti. A metà cambia verso.",
   // end of TASK-520 part B
+  // src/stretch, the home and the category page (TASK-520 part D)
+  "A good start to the day": "Un buon inizio di giornata",
+  "Wind down before sleep": "Rallenta prima di dormire",
+  "A break from sitting": "Una pausa dalla sedia",
+  "A little of everything": "Un po' di tutto",
+  Gentle: "Dolce",
+  Intense: "Intenso",
+  "See the {count} exercises": "Vedi i {count} esercizi",
+  Moments: "Momenti",
+  Sports: "Sport",
+  Intimacy: "Intimità",
+  "12 areas": "12 zone",
+  "7 moments": "7 momenti",
+  "Before and after": "Prima e dopo",
+  "Goals and gentle starts": "Obiettivi e inizi dolci",
+  Before: "Prima",
+  After: "Dopo",
+  Neck: "Collo",
+  Shoulders: "Spalle",
+  "Arms & wrists": "Braccia e polsi",
+  Chest: "Petto",
+  "Upper back": "Schiena alta",
+  "Lower back": "Schiena bassa",
+  "Hips & pelvis": "Anche e bacino",
+  Glutes: "Glutei",
+  Legs: "Gambe",
+  Calves: "Polpacci",
+  "Ankles & feet": "Caviglie e piedi",
+  "Full body": "Tutto il corpo",
+  Bedtime: "Prima di dormire",
+  "Desk break": "Pausa alla scrivania",
+  "After sitting": "Dopo tante ore seduto",
+  "After travel": "Dopo un viaggio",
+  Posture: "Postura",
+  "Relax & breathe": "Rilassati e respira",
+  Skiing: "Sci",
+  Snowboarding: "Snowboard",
+  Motorbike: "Moto",
+  Hiking: "Escursionismo",
+  Climbing: "Arrampicata",
+  "Racket sports": "Sport di racchetta",
+  Golf: "Golf",
+  "Football@@sport": "Calcio",
+  "Before intimacy": "Prima dell'intimità",
+  "After intimacy": "Dopo l'intimità",
+  "Hips, pelvis, lower back and breath": "Anche, bacino, schiena bassa e respiro",
+  Beginners: "Principianti",
+  "Joint mobility": "Mobilità articolare",
+  "Back care": "Cura della schiena",
+  "Touch your toes": "Tocca le punte dei piedi",
+  "Splits@@stretch": "Spaccata",
+  "Standing only": "Solo in piedi",
+  "Standing + floor": "In piedi + a terra",
+  "{minutes} min · {count} exercises": "{minutes} min · {count} esercizi",
+  "Held stretches": "Allungamenti tenuti",
+  "Moving warm-up": "Riscaldamento in movimento",
+  "{seconds} s": "{seconds} s",
+  "{seconds} s each side": "{seconds} s per lato",
+  "This is not medical advice. If your back hurts, see a doctor.":
+    "Non è un consiglio medico. Se la schiena ti fa male, vai da un medico.",
+  "{count} sessions · {minutes} min": "{count} sessioni · {minutes} min",
+  "1 session · {minutes} min": "1 sessione · {minutes} min",
+  "After your activity today": "Dopo l'attività di oggi",
+  // end of TASK-520 part D
+  // src/stretch, the exercise's page (TASK-520 part E)
+  "Breathe in": "Inspira",
+  "Breathe out": "Espira",
+  Hold: "Tenuta",
+  Sides: "Lati",
+  Position: "Posizione",
+  Both: "Entrambi",
+  One: "Uno",
+  Standing: "In piedi",
+  Chair: "Sedia",
+  Floor: "A terra",
+  "How to": "Come si fa",
+  "Good for": "Utile per",
+  "Try it · {minutes} min": "Provalo · {minutes} min",
+  "Play@@timer": "Riprendi",
+  // end of TASK-520 part E
   Morning: "Mattino",
   "After run": "Dopo la corsa",
   "After gym": "Dopo la palestra",
@@ -3181,8 +3261,6 @@ export const IT: Table = {
   // «Draw» with the sport «Stretching» (TASK-475 part B), approved by the
   // user on 2026-11-21.
   "Start stretching": "Inizia lo stretching",
-  "No route for stretching: choose a routine and MuW guides you.":
-    "Niente percorso per lo stretching: scegli una routine e MuW ti guida.",
   "Before you climb": "Prima di salire",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW registra la tua salita e la condivide: non ti guida. Vai con la tua attrezzatura, la tua esperienza e il tuo giudizio, e controlla le condizioni prima di partire.",
@@ -3907,6 +3985,73 @@ export const IT: Table = {
     "La stima di MuW per l'obiettivo del giorno (demo)",
   "A usual day is the average of what you used in your last seven days. To lose weight MuW takes 600 kcal a day off it, the amount the NHS gives, only for adults with a body mass index of 25 or more, and never below 1,400 kcal a day for women or 1,900 for men (NHS 12-week weight loss plan). To gain weight MuW suggests no number. Sources read on 24 November 2026. MuW is not made by health professionals: better to write your own number, or your dietitian's.":
     "Una giornata tipo è la media di quello che hai consumato negli ultimi sette giorni. Per perdere peso MuW toglie 600 kcal al giorno, la quantità indicata dall'NHS, solo per adulti con indice di massa corporea da 25 in su, e mai sotto 1.400 kcal al giorno per le donne o 1.900 per gli uomini (piano dell'NHS di 12 settimane per perdere peso). Per prendere peso MuW non propone un numero. Fonti lette il 24 novembre 2026. MuW non è fatta da professionisti della salute: meglio scrivere il tuo numero, o quello del tuo dietista.",
+
+  // src/nutrition and src/body (TASK-489 part K1: the weight; approved by the user on 2026-11-27)
+  "Time to weigh in": "È ora di pesarti",
+  "Last time: {date}, {weight}": "L'ultima volta: {date}, {weight}",
+  "Your first weigh-in starts the chart.": "La prima pesata fa partire il grafico.",
+  "Your weight": "Il tuo peso",
+  "Write a weight between {min} and {max}.": "Scrivi un peso tra {min} e {max}.",
+  "Saved. Your weight in Settings is now {weight}.":
+    "Salvato. Il tuo peso in Impostazioni ora è {weight}.",
+  "Recalculate MuW's estimate": "Ricalcola la stima di MuW",
+  "{change} in {count} weeks": "{change} in {count} settimane",
+  "Since your first weigh-in, {date}": "Dalla prima pesata, {date}",
+  "Of your starting weight, in {count} weeks":
+    "Del peso di partenza, in {count} settimane",
+  Months: "Mesi",
+  "All@@weight": "Tutto",
+  "Start@@weight": "Partenza",
+  "Highest@@weight": "Più alto",
+  Lowest: "Più basso",
+  "Per week": "A settimana",
+  "Weigh-ins": "Pesate",
+  "{count} since {date}": "{count} dal {date}",
+  "Same {count} weeks": "Stesse {count} settimane",
+  "Balance {kcal} kcal (est.) · Weight {change}":
+    "Bilancio {kcal} kcal (stima) · Peso {change}",
+  "One weigh-in so far: the line starts with the next.":
+    "Per ora una pesata: la linea parte con la prossima.",
+  "No weigh-ins yet": "Ancora nessuna pesata",
+  "Add a weigh-in": "Aggiungi una pesata",
+  "All weigh-ins": "Tutte le pesate",
+  "Delete this weigh-in?": "Eliminare questa pesata?",
+  "Your weight in Settings stays {weight}.":
+    "Il tuo peso in Impostazioni resta {weight}.",
+  "My goal weight": "Il mio peso obiettivo",
+  "Set my goal weight": "Scrivi il mio peso obiettivo",
+  "{done} of {total} so far": "{done} su {total} finora",
+  "My milestones": "Le mie tappe",
+  "Add a milestone": "Aggiungi una tappa",
+  Reached: "Raggiunta",
+  "A milestone goes between your starting weight and your goal.":
+    "Una tappa sta tra il peso di partenza e l'obiettivo.",
+  "To set a goal weight, add your height and year of birth in Settings.":
+    "Per scrivere un peso obiettivo, aggiungi altezza e anno di nascita in Impostazioni.",
+  "MuW has no weight goals for people under 18.":
+    "MuW non ha obiettivi di peso per chi ha meno di 18 anni.",
+  "Lowest goal for your height: {weight}":
+    "Obiettivo più basso per la tua altezza: {weight}",
+  "Below {weight} your weight would be low for your height (body mass index under 18.5). MuW doesn't set goals there.":
+    "Sotto {weight} il tuo peso sarebbe basso per la tua altezza (indice di massa corporea sotto 18,5). MuW lì non mette obiettivi.",
+  "Remove goal": "Togli l'obiettivo",
+  "Ask me to weigh in": "Chiedimi di pesarmi",
+  "Every 2 weeks": "Ogni 2 settimane",
+  "Every 4 weeks": "Ogni 4 settimane",
+  Never: "Mai",
+  "The card shows in your diary on the day. You can always add a weigh-in yourself.":
+    "La scheda compare nel diario quel giorno. Puoi sempre aggiungere una pesata da te.",
+  "You reached {weight}": "Hai raggiunto {weight}",
+  "A milestone you set yourself.": "Una tappa che hai scelto tu.",
+  "You reached your goal": "Hai raggiunto il tuo obiettivo",
+  "{weight}, the goal you set yourself.": "{weight}, l'obiettivo che hai scelto tu.",
+  "{count} weigh-ins": "{count} pesate",
+  "{count} days in your diary": "{count} giorni nel diario",
+  "You kept at it.": "Hai tenuto il passo.",
+  "Weight and your goal": "Il peso e il tuo obiettivo",
+  "The latest weigh-in becomes your weight in Settings: from that day on MuW uses it for your energy at rest and your activities. The percent is the change divided by your starting weight. A goal weight can't be below a body mass index of 18.5, the threshold for underweight in adults used by the World Health Organization and the US CDC (pages read on 27 November 2026), and there are no weight goals under 18. MuW is not made by health professionals: this is not medical advice.":
+    "L'ultima pesata diventa il tuo peso in Impostazioni: da quel giorno MuW lo usa per l'energia a riposo e per le tue attività. La percentuale è la variazione divisa per il peso di partenza. Un peso obiettivo non può stare sotto un indice di massa corporea di 18,5, la soglia del sottopeso negli adulti usata dall'Organizzazione mondiale della sanità e dai CDC degli Stati Uniti (pagine lette il 27 novembre 2026), e sotto i 18 anni non ci sono obiettivi di peso. MuW non è fatta da professionisti della salute: non è un consiglio medico.",
+
   // src/feed/postSections.ts (TASK-410 part E: the weather of a post)
   Weather: "Meteo",
   "Weather: {temperature}, wind {speed}": "Meteo: {temperature}, vento {speed}",
@@ -3914,4 +4059,13 @@ export const IT: Table = {
   "Wind aloft": "Vento in quota",
   "Wind aloft not available": "Vento in quota non disponibile",
   "{source} · run of {time}": "{source} · corsa delle {time}",
+  // src/groups/ExploreGroups.tsx (TASK-495 part D: the groups at the end of Explore)
+  "GROUPS NEAR YOU": "GRUPPI VICINO A TE",
+  "See all@@groups": "Vedi tutti",
+  "No groups near you yet.": "Ancora nessun gruppo vicino a te.",
+  "No group found.": "Nessun gruppo trovato.",
+  "Write at least {count} letters of a group's name.":
+    "Scrivi almeno {count} lettere del nome di un gruppo.",
+  "The groups could not load. Check the connection and try again.":
+    "Non è stato possibile caricare i gruppi. Controlla la connessione e riprova.",
 };

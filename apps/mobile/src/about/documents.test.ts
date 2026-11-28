@@ -537,3 +537,16 @@ test("«Terms» say the goal weight's limit comes from public thresholds (TASK-4
     expect(all(content.terms)).toMatch(limit[language]);
   }
 });
+
+test("«Privacy» says what is kept of a stretching session, on its own or inside a workout at the gym (TASK-466 C)", () => {
+  const stretching: Record<Language, RegExp> = {
+    en: /A stretching session is saved with its routine, its length and how many exercises you did/,
+    it: /Una sessione di stretching si salva con la sua routine/,
+    de: /Eine Stretching-Einheit wird mit ihrer Routine/,
+    fr: /Une séance d'étirements est enregistrée avec sa routine/,
+    es: /Una sesión de estiramientos se guarda con su rutina/,
+  };
+  for (const [language, content] of CONTENTS) {
+    expect(all(content.privacy)).toMatch(stretching[language]);
+  }
+});

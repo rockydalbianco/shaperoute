@@ -599,6 +599,7 @@ lasciando le righe d'indice.
 - ADR-0401 — Le scadenze della vela: revisione, ripiegatura della riserva e controllo dell'imbrago sull'attrezzatura di TASK-486, in tabelle nuove, intervalli scelti dal pilota, l'avviso nella campanella · 2026-11-23 · Proposta
 - ADR-0402 — I gruppi per uscire insieme: le uscite sono le corse di gruppo di ADR-0269 con `group_id`, anche senza percorso; Public, Request, Invite only; un solo admin e fino a 3 co-admin; l'elenco dei membri solo ai membri; la chat di gruppo come parte E · 2026-11-23 · Proposta
 - ADR-0402, precisazione A — L'API dei gruppi: la foto quadrata del profilo, l'admin di prima diventa membro, un invito a chi ha chiesto lo fa entrare, «Recent activity» solo dai post di una corsa degli sport del gruppo · 2026-11-24 · Attiva
+- ADR-0402, precisazione C — Le uscite di un gruppo nell'API: corse di gruppo con `group_id`, `group` o `everyone`, anche senza percorso con «Destination»; `group_runs_activity_check` allargato col suo nome; le liste danno le uscite nuove solo con `outings=true` · 2026-11-27 · Attiva
 - ADR-0403 — Le proprie bolle nei messaggi sul giallo dell'app: una faccia piena `accent` con parole `onAccent`, non vetro; quello che la bolla porta su una piastra neutra · 2026-11-23 · Attiva
 - ADR-0405 — L'animazione iniziale intera solo la prima volta e dopo una versione nuova, corta (1 s) e saltabile con un tocco le altre; animali e musiche del video restano dentro l'app · 2026-11-23 · Attiva
 - ADR-0406 — Il proprietario dei dati sul telefono è il `public_id` sul suo server, non l'id numerico; la corsa, gli allenamenti in corso e i dati del corpo sono di ogni account, nascosti finché rientra · 2026-11-26 · Attiva
@@ -620,12 +621,12 @@ lasciando le righe d'indice.
 - ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
 - ADR-0264, aggiunta D (TASK-496) — In una giornata di sci o un volo registrati, alla mappa vanno solo i punti nuovi dell'ultimo tratto finché la divisione in tratti resta la stessa · 2026-11-26 · Attiva
 - ADR-0414 — Le coordinate delle linee intere che l'API risponde all'app a 6 decimali, ognuna dentro la sua cella da 5: il nome della linea (`line_key`, il `favoriteKey` dell'app) non cambia; l'SQL resta a 15 cifre · 2026-11-27 · Attiva
-- ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Proposta
+- ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Attiva per C, Proposta per E
 - ADR-0177, aggiunta G (TASK-214) — Una zona che il server non ha intorno al telefono la prepara da solo, come un luogo tenuto (TASK-334): il telefono la trova all'apertura dopo; il log non scrive mai il nome della zona · 2026-11-26 · Attiva
 - ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi (`latest` nella pagina, `?after=` sulla stessa rotta), più piano nel silenzio (5 s, 15 s, 30 s: scelta dell'utente); la pagina intera una volta al minuto; una risposta uguale non ridisegna · 2026-11-26 · Attiva
 - ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza (10 km), chiesti al primo tocco; fuori dal catalogo le forme di riserva; le sorprese venute sotto il 90% ricordate sul telefono · 2026-11-26 · Attiva
 - ADR-0415 — Lo stretching rifatto (TASK-520): una home a categorie con routine composte da un solo elenco di esercizi, i movimenti come respiro largo, la stessa figura vista anche di fronte, gli esercizi nuovi in file nuovi con chiavi stabili · 2026-11-27 · Attiva
-- ADR-0397, precisazione 8 — Il controllo del peso (TASK-489 K1): pesate, obiettivo e tappe dell'account e non del telefono, l'ultima pesata diventa il peso del corpo da quel giorno, obiettivo mai sotto un BMI di 18,5 né prima dei 18 anni, congratulazioni per le tappe dell'utente e la costanza, mai per la velocità · 2026-11-27 · Proposta
+- ADR-0397, precisazione 8 — Il controllo del peso (TASK-489 K1): pesate, obiettivo e tappe dell'account e non del telefono, l'ultima pesata diventa il peso del corpo da quel giorno, obiettivo mai sotto un BMI di 18,5 né prima dei 18 anni, congratulazioni per le tappe dell'utente e la costanza, mai per la velocità · 2026-11-27 · Attiva
 - ADR-0340, precisazione E — Il meteo del post: MET Norway chiesto dal server al salvataggio, entro 3 ore dalla fine, col punto di partenza a ~1 km; neve esclusa; chiesto una volta · 2026-11-27 · Attiva
 - ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
 - ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
@@ -633,12 +634,123 @@ lasciando le righe d'indice.
 - ADR-0400, precisazione (TASK-493) — La mappa dei decolli com'è uscita: estrazione una volta al mese nelle Alpi, un volo è di un decollo solo per i 300 m (le tracce non hanno quota), lo storico in una rotta a sé con la cache di 10 minuti, record più lungo, più alto e più lontano dai post per tutti, niente «Fly from here»; il vento (D) in un task nuovo dopo TASK-479 H · 2026-11-27 · Attiva
 - ADR-0388, aggiunta E2b (TASK-479) — La quota sul mare su Android: in volo si toglie il geoide EGM96 da una tabella a 1° nel codice (griglia 15' di NGA, pubblico dominio, copia di PROJ), interpolata bilineare; nelle Alpi al massimo 2,4 m dalla griglia piena; iOS e gli altri sport invariati · 2026-11-27 · Attiva
 - ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; una pagina vuota ha il suo pulsante quando c'è una cosa da fare; una tessera senza percorso mostra la sagoma della forma in grigio · 2026-11-26 · Attiva
-- ADR-0417 — Lo stile delle pagine in tutta l'app (TASK-523): il vetro di 469 a barre, tab e fogli e lo stile nuovo al contenuto; un colore per sezione come token suoi (`section`), stesso valore dove la tinta c'è già; un kit di soli file nuovi in `ui/` col velo tinto opaco al 12%; nella barra delle schede il colore sta nella capsula della scheda aperta, non nel tratto delle icone · 2026-11-27 · Attiva
+- ADR-0418 — Le lettere dicono cosa disegnano a penna alzata (`pen`, TASK-522): la A tonda con la punta, la Q tonda con l'anello; la parola chiusa resta la stessa; le parole a penna alzata con A o Q tenute a parte con «+L2» sull'impronta, le altre restano (SAME_ROUTES_AS) · 2026-11-27 · Attiva
+- ADR-0417 — Lo stile delle pagine in tutta l'app (TASK-523): il vetro di 469 a barre, tab e fogli e lo stile nuovo al contenuto; un colore per sezione come token suoi (`section`), stesso valore dove la tinta c'è già; un kit di soli file nuovi in `ui/` col velo tinto opaco al 12%; la barra delle schede: vedi la precisazione · 2026-11-27 · Attiva
 - ADR-0416 — Il catalogo di «Explore» guardato a occhio: oltre al filtro, le strade fatte due volte entro 8 punti sopra la mediana della forma, poi un voto a occhio da 0 a 3 su ogni disegno; 499 tolti, 3120 nuovi, la classifica per voto e misura; gli id dei percorsi cambiano · 2026-11-27 · Accettata
+- ADR-0419 — «Rifai meglio» (TASK-451): a fine corsa, se almeno 200 m del percorso prima del punto dove ci si è fermati sono rimasti a più di 40 m dalla traccia, «Save & redo» salva la corsa e riapre «Draw» con la stessa forma o parola, gli stessi km e la stessa partenza; il motore ripianifica come sempre; solo sport su strade e sentieri · 2026-11-27 · Attiva
+- ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione: l'utente ha tolto la capsula colorata dopo averla vista nel simulatore; il colore di sezione sta solo nel contenuto delle pagine · 2026-11-27 · Attiva
 
 
 ## Voci nuove
 
+## ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione
+
+**Stato**: Attiva · 2026-11-27 · TASK-523 (parte T, tolta). Scelta
+dell'utente. Sostituisce il punto «La barra delle schede» di ADR-0417.
+
+**Contesto**: ADR-0417 metteva il colore di sezione nella capsula della
+scheda aperta, piena, con l'icona sopra («Sì, la capsula»), perché nel
+tratto delle icone un colore non tiene il contrasto sul vetro. La capsula
+è stata scritta e fotografata nel simulatore, in chiaro e in scuro. Le
+misure passavano: icona sulla capsula 9,5–12:1 in scuro e 6,1–7,5:1 in
+chiaro, uguali con «Aumenta contrasto».
+
+**Decisione** (utente, sulle foto): «manca il liquid glass della versione precedente forse meglio tenere senza i colori le icone del feed disegna ma teniamo solamente il liquid glass con le animazioni trasparenti».
+La barra delle schede resta com'è: il vetro di 469, la capsula trasparente
+della scheda aperta (`glass.selected`) e le sue animazioni, nessun colore
+di sezione. `tabs/TabBar.tsx` non cambia, il token `onSection` non entra,
+`App.tsx` non dà un colore alle schede. Il colore di sezione resta nel
+contenuto delle pagine (riquadro in alto, anelli, icone delle card).
+
+**Alternative scartate**: la capsula piena (copre proprio il vetro della
+scheda aperta, e all'utente è mancato il Liquid Glass); le icone colorate,
+il colore solo sull'icona aperta e il punto sotto l'icona (non tengono il
+contrasto sul vetro vero, vedi ADR-0417).
+
+**Conseguenze**: il codice della capsula non è stato pubblicato. Chi
+volesse riprovare un colore nella barra parte da qui: sul vetro un colore
+si legge solo su un pezzo pieno, e un pezzo pieno toglie il vetro.
+
+## ADR-0419 — «Rifai meglio»: la stessa forma, gli stessi km e la stessa partenza dopo una corsa uscita di strada
+
+**Stato**: Attiva · 2026-11-27 · TASK-451. Scelte di prodotto e testi
+dell'utente (parte 0, 2026-11-27); il resto deciso dall'agente su delega
+dell'utente; numero dal Coordinatore (fork 3).
+
+**Contesto**: idea I6 della prova del 2026-11-11: dopo una corsa in cui si è
+sbagliato strada, ridare la stessa forma perché la prossima volta il
+disegno venga bene. L'app non mostra punteggi (TASK-241), nessuno misura
+dove la traccia ha lasciato il percorso, e il motore non ha un input per
+evitare strade. La corsa salvata non tiene distanza chiesta né partenza.
+
+**Decisione**:
+- **Rifare uguale, non evitare**: il pulsante riapre «Draw» con la stessa
+  forma o parola, gli stessi km e la stessa partenza (un posto scelto, come
+  dalla mappa); «Draw route» chiede il percorso al motore come sempre. Un
+  «evita i tratti sbagliati» sarebbe un input nuovo del motore, con la sua
+  prova: non ora.
+- **Solo a fine corsa**, nella scheda distanza · tempo: lì l'app ha ancora
+  la richiesta aperta. Niente server, niente corse passate.
+- **Solo se si è usciti dal percorso**: il percorso campionato ogni 10 m su
+  piano in metri; mancati i campioni a più di 40 m dalla traccia (la stessa
+  soglia di `OFF_ROUTE_M` durante la corsa), contati solo fino all'ultimo
+  campione raggiunto: smettere prima non conta. Il pulsante appare da
+  200 m mancati. Funzione pura sul telefono (`route/redoBetter.ts`).
+- **Sport su strade e sentieri**; canoa e nuoto no (niente svolte
+  sbagliate, GPS in acqua impreciso). Forme del catalogo e parole sì; foto
+  e disegni a mano no, «Draw» non li riapre da una richiesta (TASK-313).
+- **Salva e rifai**: con un account il tocco fa ciò che fa «Save» (modulo e
+  visibilità come sono), poi apre «Draw»; se il salvataggio fallisce, la
+  corsa resta e «Draw» non si apre. Senza account la corsa lascia il
+  telefono come con «Done». Nomi «Save & redo» e «Redo», testi in
+  `tasks/TASK-451.md`.
+
+**Conseguenze**: 200 m e 40 m sono costanti da ritoccare dopo la prova sul
+telefono. Se servirà evitare i tratti sbagliati, sarà un task del motore a
+parte, con la prova dei percorsi uguali.
+
+## ADR-0418 — Le lettere dicono cosa disegnano a penna alzata: la A con la punta, la Q con l'anello
+
+**Stato**: Attiva · 2026-11-27 · TASK-522 (#1696). Deciso dall'agente su
+delega dell'utente; strada e lettere scelte dal Coordinatore (fork 3),
+numero dal Coordinatore.
+
+**Contesto**: TASK-521 ha visto che nelle parole a penna alzata (TASK-197,
+ADR-0157) la A si legge «n»: «VAI» → «VnI», in circa 140 parole del
+catalogo. `letters.json` descrive ogni lettera per la parola chiusa, `out`
+più `back`, e la A tonda tiene la punta solo in `back`; `words._pen_up`
+usava il solo `out`. Con la stessa causa la Q tonda restava una coda, e
+perdono un tratto corto R, B, D tonde e A, B, D, O, Q, R squadrate.
+
+**Decisione**:
+- **Una chiave facoltativa `pen`** per lettera, in entrambi gli alfabeti: la
+  linea aperta disegnata a penna alzata, dallo stesso ingresso alla stessa
+  uscita di `out`, dentro la lettera (`parse_letters` lo controlla). Senza
+  `pen` vale `out`. `out` e `back` non si toccano, così la parola chiusa
+  resta la stessa punto per punto. Cambiare `out` della A avrebbe cambiato
+  tutte le parole chiuse con la A.
+- **Solo la A e la Q tonde**, per scelta del Coordinatore. La A disegna
+  gamba, punta, gamba fino alla stanghetta, stanghetta andata e ritorno,
+  gamba (con quattro nodi dispari un tratto si ripassa, il più corto); la Q
+  l'anello e poi la coda. Le altre lettere sono elencate in
+  `PEN_UP_SHORT` (`test_words.py`): il test fallisce sia se una di loro
+  smette di perdere un tratto sia se un'altra comincia.
+- **I percorsi tenuti**: l'impronta del motore cambia, e le route fisse di
+  `test_same_routes` (nessuna parola) vengono uguali, quindi
+  `SAME_ROUTES_AS` prende le tre righe. Le parole a penna alzata con la A o
+  la Q invece cambiano davvero: `route_store.kept_engine(request, engine)`
+  le tiene sotto `engine + "+L2"`. Una regola sola per i file di
+  `route_store` e per le righe di `route_archive`, dove non c'è una colonna
+  per un segno nel salvataggio. 15 caratteri nella colonna `engine` da 16.
+
+**Conseguenze**: dopo il deploy, un file vecchio di una di queste parole non
+si trova più e la parola si ridisegna alla richiesta; una riga vecchia di
+`drawn_routes` diventa stale e `nearby` la ridisegna dalla sua posizione.
+Nessun lavoro lo fa in background. Gli esempi delle città toccati sono CIAO
+e AMORE. Le parole chiuse, lo stile squadrato e le forme a pezzi non
+prendono «+L2». Il catalogo ha i punti salvati nei semi: le parole con la A
+le toglie TASK-521. Una prossima `pen` per un'altra lettera deve cambiare
+il suffisso (per esempio «+L3»), così si ridisegnano anche quelle parole.
 ## ADR-0388, aggiunta E2b (TASK-479) — La quota sul mare su Android: il geoide EGM96 da una tabella a 1° nel codice
 
 **Stato**: Attiva · 2026-11-27 · TASK-479 parte E2b (#1711), col sì
@@ -732,7 +844,9 @@ pagina se ne inventi uno.
   nessuna dipendenza nuova, nessuna sfumatura (l'app non ha una libreria di
   disegno: l'alone del riquadro in alto è un cerchio di colore pieno). Con
   «Riduci movimento» tutto è fermo e completo.
-- **La barra delle schede** (utente, «Sì, la capsula»): il colore di
+- **La barra delle schede** — **sostituita lo stesso giorno dalla
+  precisazione di ADR-0417 qui sopra: la barra resta senza colore.** Com'era
+  scritta (utente, «Sì, la capsula»): il colore di
   sezione non va nel tratto delle icone. Sul vetro vero il fondo è la tinta
   del tono (60–68%) sopra la foto: per tenere 4,5:1 un'icona dovrebbe
   essere quasi bianca in scuro (L ≥ 0,893) e quasi nera in chiaro
@@ -763,7 +877,7 @@ pagina se ne inventi uno.
 
 **Conseguenze**: le pagine rifatte prendono colori e pezzi dal kit; una
 sezione nuova aggiunge il suo token in `section` e passa da
-`sectionContrast.test.ts`. Le parti B–G e T rifanno una schermata alla
+`sectionContrast.test.ts`. Le parti B–G rifanno una schermata alla
 volta; diverse appartengono a task in corso (489, 466, 520, 495, 479) e si
 concordano col Coordinatore. Da decidere con l'utente nelle parti che li
 toccano: il giallo dell'Accesso, la riga di benvenuto (testo nuovo, cinque
@@ -975,8 +1089,9 @@ c'era); la card arriva sui telefoni con un OTA.
 
 ## ADR-0397, precisazione 8 — Il controllo del peso: le pesate dell'account, il peso del corpo aggiornato, l'obiettivo dentro una soglia citata
 
-**Stato**: Proposta · 2026-11-27 · TASK-489 parte K1 (parte 0 chiusa,
-codice dopo la parte J in `main`). Numero dal Coordinatore (fork 3). Le
+**Stato**: Attiva · 2026-11-27 · TASK-489 parte K1 (codice #1679 in
+`main` a 6ab1a99d, spento con `NUTRITION_ON`; privacy e termini #1713
+in fila). Numero dal Coordinatore (fork 3). Le
 scelte di prodotto sono **dell'utente** (2026-11-27, in
 `tasks/TASK-489.md`, sezione «K1»); il come è **deciso dall'agente su
 delega dell'utente**. Precisa il punto 6 della precisazione 5.
@@ -993,13 +1108,19 @@ peso con cui MuW conta, né quale soglia. Da TASK-507 D (ADR-0406) il corpo
    ogni quanto chiedere e il «Not now» stanno in un file per account
    (`ownedFile("weigh-ins.json")`, `body/weighIns.ts`), come il corpo. Un
    altro account sullo stesso telefono non li vede. Restano sul telefono e
-   non arrivano al server.
+   non arrivano al server; si cancellano dal telefono quando l'account
+   viene eliminato nell'app (`forgetOwnedFile` in `account/phoneOwners.ts`,
+   scelta dell'utente del 2026-11-27, «Sì, aggiungila»), a differenza del
+   resto di «Nutrition».
 2. **L'ultima pesata diventa il peso del corpo** (`saveBody`), da quel giorno
    in poi: riposo e calorie delle attività lo usano da lì; le calorie già
    salvate nei post non cambiano. Un peso cambiato a mano in «Settings» è
    una correzione e non entra nel grafico. Togliere l'ultima pesata non
    cambia il peso del corpo. «Recalculate» si offre solo a chi usa la stima
-   di MuW per l'obiettivo di calorie (parte J).
+   di MuW per l'obiettivo di calorie (parte J): il segno
+   `targetFromEstimate` delle impostazioni è vero solo se l'obiettivo è la
+   stima presa con «Use this number» e non cambiata; un file di prima di
+   K1 legge falso.
 3. **La soglia**: un BMI di 18,5, il sottopeso negli adulti per l'OMS
    (indicatore «Underweight among adults, BMI < 18.5») e per i CDC («Adult
    BMI Categories»), pagine lette il 2026-11-27 e citate in «How we
@@ -1018,10 +1139,11 @@ peso con cui MuW conta, né quale soglia. Da TASK-507 D (ADR-0406) il corpo
    compare solo aprendo «Nutrition». La notifica è una parte dopo K1,
    spenta di partenza.
 7. **Il grafico** è fatto con le viste e `Animated`, come gli anelli della
-   parte H: nessuna dipendenza nuova. Il peso ha un colore suo, il token
-   `weight` (un viola), aggiunto in `theme/tokens.ts` nel turno del
-   Coordinatore e riusato da TASK-523 per il Profilo; con «Riduci
-   movimento» niente si muove. Il colore non è mai l'unico segno.
+   parte H: nessuna dipendenza nuova. Il peso usa il colore del testo,
+   senza un token suo: il viola pensato all'inizio era troppo vicino a
+   quello dei carboidrati della parte L2 (`#B892FF`), che nel diario sta
+   subito sopra (scelta dell'utente del 2026-11-27, «Colore del testo»).
+   Con «Riduci movimento» niente si muove.
 
 **Alternative scartate**: le pesate nel file delle impostazioni di
 «Nutrition» (le vedrebbe un altro account: il difetto chiuso da TASK-507);
@@ -1030,8 +1152,9 @@ vecchio finché l'utente non lo riscrive); una soglia scritta a memoria o
 proposta all'utente senza fonte; le tappe proposte da MuW.
 
 **Conseguenze**: prima che K1 esca serve la PR di privacy e termini
-approvata dall'utente (le pesate nell'elenco di quello che resta sul
-telefono, il file per account, il limite dell'obiettivo detto giusto). Per
+approvata dall'utente (#1713: le pesate nell'elenco di quello che resta
+sul telefono, il file per account, la cancellazione con l'account, il
+limite dell'obiettivo detto giusto). Per
 Apple (linea guida 1.4.1), al taglio nativo le note per la revisione
 dicono che la soglia viene da una fonte citata.
 
@@ -1313,7 +1436,7 @@ telefono.
 
 ## ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching in palestra e le routine pubblicate
 
-**Stato**: Proposta · 2026-11-26 · TASK-466 parti C ed E, parte 0.
+**Stato**: Attiva per C (C1 #1670, C2 #1697, 2026-11-27), Proposta per E · 2026-11-26 · TASK-466 parti C ed E, parte 0.
 **Scelte dell'utente** del 2026-11-26 (task file, «Parte 0 di C» e «Parte
 0 di E»); il modo **deciso dall'agente su delega**, file e forma dal
 Coordinatore.
@@ -8794,3 +8917,39 @@ cui percorso non c'era ancora era un riquadro nero (U12).
 nuovo («Go to your workouts», nelle cinque lingue). Supera, per la sola
 figura, «i primi tratti in giallo» di ADR-0293; il resto di ADR-0293 vale.
 L'icona accanto a «Explore» nella pagaia non è di questo task.
+
+## ADR-0402, precisazione C — Le uscite di un gruppo nell'API: corse di gruppo con `group_id`, anche senza percorso
+
+**Stato**: Attiva · 2026-11-27 · TASK-495 parte C1.
+**Deciso dall'agente su delega dell'utente**; le regole di `GRUPPI.md`
+§6–§8 restano le scelte dell'utente.
+
+**Contesto**: le uscite sono le corse di gruppo di ADR-0269 con il gruppo
+accanto, anche senza percorso (l'alpinismo). Lo schema della 0032 voleva
+sempre una linea e un'attività di `POST /routes`, e l'app di oggi rifiuta
+una corsa di gruppo che non sa leggere.
+
+**Decisione** (`GRUPPI.md` §12, «Scelte della parte C1»; `API.md`, «Le
+uscite di un gruppo»):
+- una migrazione (`0090_group_outings.sql`): `group_id`, `destination`,
+  linea e misure facoltative con `group_runs_route_check`, `visibility`
+  con `group`; `group_runs_activity_check` riletto e allargato col suo
+  nome agli sport registrati all'aperto, come 0055/0068/0071, perché la
+  migrazione del prossimo sport lo allarghi allo stesso modo;
+- lo stesso `POST /group-runs` prende il corpo di sempre (più `group_id`)
+  o quello senza percorso (`GroupOutingRequestBody`, `meeting_point`,
+  `destination`); la città è quella del gruppo;
+- `group_runs.py` non importa `groups.py` (che importa lui): le due
+  condizioni SQL di appartenenza e di admin sono riscritte lì;
+  `GET /groups/{id}/outings` sta in `groups.py`, che controlla il gruppo e
+  chiede le uscite a `group_runs.py`;
+- la push `group_outing_new` nasce con l'uscita, in `POST /group-runs`
+  (parte C1, non D);
+- la fila e il profilo danno le uscite senza percorso e quelle dei soli
+  membri solo con `outings=true`: un'app di prima rifiuterebbe tutta la
+  lista.
+
+**Conseguenze**: il server può avere la C1 prima dell'app: finché l'app
+non le crea non ci sono uscite, e un'app di prima vede le liste di prima.
+I tipi di `shared-types` sono solo aggiunte (`GroupOuting…`): l'app passa
+a loro nella parte C2.

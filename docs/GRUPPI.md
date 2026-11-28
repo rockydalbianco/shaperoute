@@ -123,7 +123,11 @@ dato personale (§11).
   cui zona è **entro 50 km** dal telefono (`FEED_NEAR_M`, la regola del
   Feed), filtro per sport e ricerca per nome (la ricerca per nome vale
   ovunque). Senza la posizione del telefono, solo la ricerca. Gli Invite
-  only non compaiono mai.
+  only non compaiono mai. **Dove** (parte D, scelta dell'utente del
+  2026-11-27): una fila «GROUPS NEAR YOU» **in fondo a Explore**, dopo
+  tutto il catalogo, coi gruppi vicini al punto di partenza, il più vicino
+  per primo; «See all» apre la pagina «Groups» con la ricerca per nome
+  (almeno 2 lettere) e un chip per sport. Senza account la fila non c'è.
 - **Feed**: le uscite in arrivo dei miei gruppi entrano nella fila «Group
   runs» (`EVENTI.md` §5) quando la fila c'è (TASK-309 B2). Niente gruppi
   suggeriti nel Feed.
@@ -191,7 +195,8 @@ dell'OTA:
 ## 12. I dati
 
 Le tabelle dei gruppi sono della migrazione `0087_groups.sql` (parte A,
-`DATABASE.md`); le colonne nuove di `group_runs` arrivano con la parte C.
+`DATABASE.md`); le colonne nuove di `group_runs` sono della
+`0090_group_outings.sql` (parte C1).
 
 ```
 groups
@@ -245,6 +250,22 @@ precisazione A):
   del gruppo: non i post di sole foto, del sonno o di una scheda;
 - la push di una nuova uscita (`group_outing_new`) arriva con le uscite,
   nella parte C.
+
+**Scelte della parte C1** (dell'agente, su delega dell'utente; ADR-0402,
+precisazione C):
+
+- un'uscita senza percorso è uno sport registrato all'aperto (non la
+  palestra né lo stretching), con la città del gruppo e la
+  «Destination» obbligatoria; con un percorso non ha «Destination»;
+- un'uscita «Everyone» si vede da fuori finché il gruppo è Public e non
+  nascosto: se il gruppo cambia ingresso, torna ai soli membri;
+- l'organizzatore riceve `group_run_cancelled` quando la sua uscita la
+  annulla l'admin o un co-admin;
+- la fila del Feed e il profilo danno le uscite senza percorso e quelle
+  dei soli membri solo all'app che lo chiede (`outings=true`): un'app di
+  prima non le saprebbe leggere;
+- `GET /groups/{id}/outings` dà «Next outings» e «Past outings» come il
+  profilo: in arrivo dalla più vicina, le ultime 20 finite.
 
 ## 13. Fuori da questa versione
 

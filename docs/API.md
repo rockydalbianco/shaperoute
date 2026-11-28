@@ -5217,6 +5217,64 @@ accounts_unavailable`. Tipi in `shared-types` (`GroupRunRequest`,
 - **Un'API precedente** non ha questi endpoint (`404 http_error`): l'app
   non mostra la fila né il bottone.
 
+#### Le uscite di un gruppo (TASK-495 parte C1, ADR-0402 precisazione C)
+
+Un'uscita è una corsa di gruppo con il gruppo accanto (`GRUPPI.md` §6).
+Tipi in `shared-types` (`GroupOutingRequest`, `GroupOuting`,
+`GroupOutingDetail`, `GroupOutingsPage`, `GroupOutings`,
+`GroupOutingVisibility`, `GROUP_OUTING_DESTINATION_MAX`), esempi in
+`fixtures/group-outing-request.json`, `group-outing.json`,
+`group-outings.json`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /group-runs` con `group_id` | un'uscita con un percorso: il corpo di sempre più `group_id` | `201` `GroupOutingDetail` |
+| `POST /group-runs` (`GroupOutingRequest`) | un'uscita senza percorso | `201` `GroupOutingDetail` |
+| `GET /groups/{id}/outings` | «Next outings» e «Past outings» della pagina del gruppo | `200` `GroupOutings` |
+| `GET /group-runs?outings=true`, `GET /users/{public_id}/group-runs?outings=true` | la fila e il profilo con le uscite | `200` |
+
+- **Le crea un membro**: chi non è nel gruppo, o è lontano dal suo admin
+  (blocco, nascosto), riceve `404` «No group with this id.», come per un
+  gruppo che non c'è.
+- **Per chi**: `visibility` `group` (solo i membri) o, in un gruppo
+  Public, `everyone`. `group` senza gruppo: `422` «Only an outing of a
+  group is for its members.»; `followers` con un gruppo, o `everyone` in
+  un gruppo che non è Public: `422` «An outing of a group is for its
+  members, or for everyone in a public group.».
+- **Senza percorso** (`GroupOutingRequest`): `group_id`, `activity` (uno
+  sport registrato all'aperto, non `gym` né `stretching`: altrimenti `422`
+  «An outing without a route is of one of the app's sports, done
+  outdoors.»), `meeting_point` `(lat, lon)` scelto sulla mappa,
+  `destination` (una riga di al più 80, filtrata come i testi: `422` ««Destination»
+  is one line of 80 characters at most.» o `comment_rejected`), e i campi
+  di sempre (`title`, `starts_at`, `meeting_note`, `description`). La
+  città è quella del gruppo; nella risposta `points` e `preview` sono
+  vuoti, `distance_m`, `route_m` e `similarity` `null`, `start` il ritrovo.
+- **Nella risposta**, per ogni corsa di gruppo: `group_id`, `group_name`
+  e `destination` (`null` senza gruppo, o con un percorso).
+- **Chi la vede**: l'organizzatore; gli altri se non è nascosta, nessun
+  blocco sta fra loro e l'organizzatore né l'admin del gruppo, e sono nel
+  gruppo, o è `everyone` e il gruppo è Public e non nascosto. Un gruppo
+  che smette di essere Public riporta le sue uscite `everyone` ai soli
+  membri. Chi non la vede: `404` come sempre, anche per «I'm going».
+- **La push `group_outing_new`** ai membri, non a chi la crea né a chi ha
+  messo «Mute» sul gruppo; `data` `{ kind, group_run_id }`, testo
+  «{name} planned a new outing in {group}: {title}» (da approvare
+  dall'utente). Non entra nell'email del giorno.
+- **Annullare**: l'organizzatore, oppure l'admin o un co-admin del gruppo;
+  chi va riceve `group_run_cancelled`, e anche l'organizzatore quando
+  l'ha annullata un altro. Cambiare resta dell'organizzatore.
+  `destination` in `PUT /group-runs/{id}` serve per un'uscita senza
+  percorso e non è ammessa per le altre (`422`).
+- **Chi esce dal gruppo o è rimosso**: le sue uscite in arrivo lì si
+  annullano, con `group_run_cancelled` a chi va. Un gruppo cancellato
+  porta via le sue uscite.
+- **La fila del Feed** prende anche le uscite in arrivo dei miei gruppi,
+  ovunque siano.
+- **Un'app di prima** (senza `outings=true`) non legge un'uscita senza
+  percorso né una dei soli membri: la fila e il profilo le lasciano fuori.
+  `GET /group-runs/{id}` le risponde comunque.
+
 ### Groups (TASK-495, ADR-0402)
 
 I gruppi per uscire insieme: un nome, una foto, una descrizione, da 1 a 3

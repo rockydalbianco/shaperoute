@@ -21,6 +21,21 @@ export const ESTIMATE_SOURCES = [
   },
 ] as const;
 
+/** Where the lowest goal weight comes from (part K1): the pages read on
+ * 2026-11-27, named as they name themselves. */
+export const WEIGHT_SOURCES = [
+  {
+    name: "WHO · Underweight among adults, BMI < 18.5",
+    url: "https://www.who.int/data/gho/indicator-metadata-registry/imr-details/4804",
+    testID: "how-who-underweight",
+  },
+  {
+    name: "CDC · Adult BMI Categories",
+    url: "https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html",
+    testID: "how-cdc-bmi",
+  },
+] as const;
+
 type Props = {
   visible: boolean;
   onClose: () => void;
@@ -34,7 +49,9 @@ type Props = {
  * from published equations, or Apple Health's when it has the day. It says
  * again that MuW gives no diets, and that what is written here stays on the
  * phone: only a barcode the user looks up goes out, to Open Food Facts
- * (part G; the sentence changed with the user's yes on 2026-11-23).
+ * (part G; the sentence changed with the user's yes on 2026-11-23). Since
+ * part K1 it says what the weigh-ins change and where the lowest goal
+ * weight comes from.
  */
 export function HowWeCalculate({ visible, onClose }: Props) {
   return (
@@ -93,6 +110,25 @@ export function HowWeCalculate({ visible, onClose }: Props) {
           )}
         </Text>
         {ESTIMATE_SOURCES.map((source) => (
+          <Tap
+            key={source.url}
+            style={styles.link}
+            onPress={() => void Linking.openURL(source.url)}
+            accessibilityRole="link"
+            testID={source.testID}
+          >
+            <Text style={styles.linkText}>{source.name}</Text>
+          </Tap>
+        ))}
+        <Text style={styles.heading} accessibilityRole="header">
+          {t("Weight and your goal")}
+        </Text>
+        <Text style={styles.text}>
+          {t(
+            "The latest weigh-in becomes your weight in Settings: from that day on MuW uses it for your energy at rest and your activities. The percent is the change divided by your starting weight. A goal weight can't be below a body mass index of 18.5, the threshold for underweight in adults used by the World Health Organization and the US CDC (pages read on 27 November 2026), and there are no weight goals under 18. MuW is not made by health professionals: this is not medical advice.",
+          )}
+        </Text>
+        {WEIGHT_SOURCES.map((source) => (
           <Tap
             key={source.url}
             style={styles.link}

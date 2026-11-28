@@ -248,6 +248,25 @@ aggiungono qui dopo il sì del Coordinatore. Tutti i percorsi sotto
   `stretch/today.ts` e i loro tre test; modificato `stretch/exercises.ts`
   (di TASK-466, d'accordo con la sua sessione): tre righe,
   `position: "floor"` su `hipFlexor`, `cat` e `child`.
+- **D1** (#1710, in `main` il 2026-11-27): nuovi `stretch/categoryText.ts`,
+  `stretch/stretchChoices.ts`, `stretch/categoryIcons.ts`,
+  `stretch/CategoryTile.tsx`, `stretch/TodayCard.tsx`,
+  `stretch/CategoryPage.tsx`, `stretch/StretchHome.tsx` e i loro test; 54
+  PNG nuovi in `apps/mobile/assets/ui/icons/` (18 icone Lucide, licenza ISC
+  già lì). Modificati: `screens/ChooseScreen.tsx` (solo il blocco dello
+  sport «Stretching»), `stretchSport/StretchSessionHost.tsx` e il suo test
+  (di TASK-475, chiuso), `stretch/StretchScreen.tsx` (di TASK-466: la prop
+  facoltativa `session`), `i18n/{it,de,fr,es}.ts`,
+  `tabs/TabSwipeOwners.test.ts` (il registro delle file che scorrono di
+  lato: una riga).
+- **D2** (#1714): nuovi `stretch/useStretchWeek.ts`,
+  `stretch/StretchWeek.tsx` e i loro test; modificati
+  `stretch/StretchHome.tsx`, `stretch/categoryText.ts`, i loro test e
+  `stretch/TodayCard.test.tsx`, `i18n/{it,de,fr,es}.ts`.
+- **E** (#1721): nuovi `stretch/ExercisePage.tsx`, `stretch/DotRing.tsx`,
+  `stretch/goodFor.ts` e i loro test; modificati `stretch/CategoryPage.tsx`
+  e il suo test, `stretch/CategoryTile.tsx` (la prop facoltativa `mirrored`
+  di `PoseFigure`), `i18n/{it,de,fr,es}.ts`.
 
 ## Dove siamo
 
@@ -297,14 +316,86 @@ nella #1693 (catalogo delle 54 categorie, composizione, regola di
 «Today»), tutte e due «pronta» al Coordinatore. Sul telefono vero non è
 stato ancora provato niente.
 
-Prossimo: la **parte D** (home nuova e pagina della categoria), con
-l'elenco dei file al Coordinatore prima del codice. Lì arrivano i nomi
-delle categorie e gli altri testi con le quattro traduzioni (sì
-dell'utente), le icone Lucide, il turno al simulatore. Una sessione fatta
-da una categoria si salva con la chiave della categoria come `routine`: il
-server accetta solo lettere, cifre e trattino basso (`ROUTINE_PATTERN`),
-per questo le chiavi sono `running_after`, `intimacy_before` e non hanno
-il punto.
+2026-11-27, **A2 e parte C in `main`** (#1691, #1693).
+
+2026-11-27, **parte D1 in `main`** (#1710): la home nuova dello stretching
+e la pagina della categoria, in «Draw» al posto delle tre routine. Sì
+dell'utente, tutti del 2026-11-27: i 61 testi con le quattro traduzioni
+(«Sì, approvo»), il download delle icone Lucide («Sì, scaricale»), le
+schermate dal simulatore («Sì, approvo»), l'unione («sì unisci entrambe»,
+detto al Coordinatore). Viste al simulatore (iPhone 17e, Expo Go) aprendo
+ogni schermata direttamente; fogli in `out/TASK-520/d/` del checkout
+principale. **Parte D2** nella #1714 («This week» e «Today» dopo uno
+sport), col sì dell'utente all'unione; la striscia non è stata vista al
+simulatore, perché vuole un account con attività.
+
+Rispetto allo schizzo restano fuori, detti all'utente: la fila di
+scorciatoie ai gruppi in cima alla home; il tocco su un esercizio della
+lista (apre la pagina dell'esercizio: parte E). I promemoria («Morning
+stretch», dopo la corsa, dopo la palestra) aprono ancora le tre routine di
+TASK-466; `stretchSport/StretchRoutines.tsx` resta nel codice, non più
+montato. Il pulsante «Start stretching» in fondo a «Draw» e la sua riga
+«No route for stretching: choose a routine and MuW guides you.» non ci
+sono più: si parte da «Today» o da una categoria.
+
+Da provare sul telefono dopo l'OTA che porta D1 e D2: una tessera apre la
+sua pagina, «Start» avvia la routine, la sessione finita compare in «My
+activities» e la settimana dopo in «This week»; le tinte chiare.
+
+2026-11-27, **parte D2 in `main`** (#1714) e documenti di D1 e D2 (#1715).
+
+2026-11-27, **parte E** nella #1721 (pagina dell'esercizio): 14 testi con
+le quattro traduzioni («Sì, approvo») e schermate dal simulatore («Sì,
+approvo»), aperta direttamente con tre esercizi; fogli in
+`out/TASK-520/e/` del checkout principale. «Play» esiste già come «Gioca»:
+qui ha il segno `Play@@timer`. Per i movimenti il primo riquadro dice
+comunque «Hold»: è il testo approvato, detto all'utente.
+
+### Cosa resta (consegna per chi continua)
+
+Questa parte l'ha scritta una sola sessione, dalla parte 0 alla E. Chi
+continua parte da qui e dal task file, non dalla sua conversazione.
+
+1. **Parte F — video MP4 della routine**, l'ultima. Non c'è ancora
+   codice. Cosa mostra è già approvato nella parte 0 (sopra, «Video MP4»):
+   un video verticale della routine, la figura che fa ogni esercizio per
+   qualche secondo col nome e il tempo, titolo e minuti in apertura, logo
+   MuW in chiusura; fatto sul telefono con la pagina nascosta del video
+   della corsa (`src/share/videoPage.ts`, WebCodecs), condiviso dal foglio
+   del telefono, **non** pubblicato nel Feed; niente video del singolo
+   esercizio; la privacy si ricontrolla lì. Restano da chiedere
+   all'utente, una domanda per volta con la proposta pronta: **da dove si
+   apre** (la pagina della categoria? la fine di una sessione?) e i
+   **testi nuovi** con le quattro traduzioni. Nella pagina del video la
+   figura non può essere fatta di View di React Native: va ridisegnata lì
+   con gli stessi numeri (`poses.ts` e `posesFront.ts` dicono dove sta
+   ogni segmento, `compose.ts` dà la routine). Poi l'elenco dei file al
+   Coordinatore, prima del codice.
+2. **Le scorciatoie ai gruppi** in cima alla home (Body · Moments ·
+   Sports · Intimacy · More), che lo schizzo ha e il codice no: la home
+   sta dentro lo scorrimento di «Draw», quindi serve che `ChooseScreen`
+   la lasci scorrere fino a un gruppo. Piccola, a parte.
+3. **Prova sul telefono** dopo l'OTA che porta D1, D2 ed E (lo decide il
+   Coordinatore): una tessera apre la sua pagina; «Start» avvia la routine
+   e la sessione finita compare in «My activities» e in «This week»;
+   «Today» propone l'«After» dopo uno sport; una riga apre la pagina
+   dell'esercizio, pausa e «Try it» funzionano; le tinte chiare. Nel
+   simulatore tutto questo è stato visto senza tocchi.
+4. **Da sapere**: i promemoria («Morning stretch», dopo la corsa, dopo la
+   palestra) aprono ancora le tre routine di TASK-466 (`routines.ts`);
+   `stretchSport/StretchRoutines.tsx` non è più montato e resta nel
+   codice; «My routines» di TASK-466 parte E si monta in
+   `StretchHome.tsx`, tra «Today» e i gruppi.
+5. **Chiusura del task** quando F è in `main`: stato `Done` qui con una
+   riga di esito, la riga in `docs/archive/COMPLETATI.md` e la voce di
+   `STATUS.md` (le tiene il Coordinatore 3), «TASK-520 fatto» al
+   Coordinatore.
+
+Strumenti fuori dal repository, nel checkout principale: fogli delle pose
+e generatori in `out/stretching-nuovo/pose/` e `out/stretching-nuovo/c/`;
+tabelle dei testi `out/stretching-nuovo/testi-{d,e}.psv`; schermate e
+attrezzi del simulatore in `out/TASK-520/{b,d,e}/` (l'app di prova
+`Harness520*.tsx.txt`, `rec.sh`, gli script Swift dei fotogrammi).
 
 ---
 
@@ -657,7 +748,7 @@ quella parte aggiunge, col sì dell'utente su ognuna.
 |---|---|---|
 | Stretching | titolo | c'è già |
 | This week | striscia in cima | c'è già |
-| {count} sessions · {minutes} min | striscia in cima | singolare «1 session» |
+| {count} sessions · {minutes} min | striscia in cima | singolare «1 session · {minutes} min» |
 | Today | scheda del giorno | c'è già |
 | After your activity today | Today, dopo uno sport | nuovo |
 | A good start to the day | Today, mattino | nuovo |

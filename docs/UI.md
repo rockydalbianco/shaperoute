@@ -4818,7 +4818,8 @@ mostra le lettere unite da linee dritte sulla base.
   gli anelli stanno fermi. Tra «Today» e i gruppi c'è lo spazio per «My
   routines» di TASK-466 parte E.
 - **La pagina di una categoria** (TASK-520 parte D1;
-  `src/stretch/CategoryPage.tsx`): a tutto schermo, con ✕ in alto a destra.
+  `src/stretch/CategoryPage.tsx`): a tutto schermo, con ✕ in alto a destra
+  e, in alto a sinistra, la pastiglia **«Export video»** (parte F, sotto).
   Il nome; per uno sport e per «Intimacy» l'interruttore **«Before» /
   «After»**; **«Length»** con le durate della categoria; **«Gentle» /
   «Intense»**; **«Standing only» / «Standing + floor»**. Una scelta che la
@@ -4849,10 +4850,45 @@ mostra le lettere unite da linee dritte sulla base.
   (mezzo minuto per lato se ne ha due) e non salva nessuna sessione.
   L'anello è una decorazione: il tempo è scritto accanto e il lettore di
   schermo non trova i puntini.
+- **Il video di una routine** (TASK-520 parte F, ADR-0415 aggiunta F;
+  `src/stretch/routineVideo.ts`, `src/stretch/RoutineVideoButton.tsx`):
+  nella pagina di una categoria la pastiglia **«Export video»** fa un
+  video verticale (1080 × 1920, 16–28 secondi, senza musica) della routine
+  com'è scelta in quel momento e apre il foglio di condivisione del
+  telefono. Mentre lo fa la pastiglia dice «Making the video… 42%» e non
+  si può premere di nuovo; se non riesce, sotto compare la riga del video
+  della corsa («The video could not be made. Try again.», «This phone
+  cannot make the video.», «This phone cannot open the share sheet.»).
+  Il video: in apertura la figura in piedi vista di fronte, «Stretching ·
+  5 min · 6 exercises» nel colore del gruppo e il nome della categoria;
+  poi ogni esercizio una volta, tre secondi l'uno (meno quando sono
+  tanti), con la figura che lo fa dentro un cerchio tenue del colore del
+  gruppo, il suo tempo («35 s», «35 s each side») e il suo nome; in alto
+  il logo MuW e una barra che si riempie, tagliata a ogni esercizio; in
+  chiusura il logo MuW grande. Il quinto in basso resta vuoto, per i
+  comandi di chi lo pubblica. Il video non entra nel Feed e non passa dal
+  server. Nessun testo nuovo: sono quelli del video della corsa e dello
+  stretching.
 - **Senza rete o senza API** la schermata è la stessa: non chiede niente
   a nessuno.
 - **«Keep running»**, dopo uno «Stop» e con il percorso ancora sullo
   schermo: torna alla navigazione, e la traccia continua (ADR-0091).
+- **«Save & redo»** (TASK-451, ADR-0419; scelte e testi dell'utente del
+  2026-11-27): nella stessa riga di «Share» e «Keep running» (la riga va a
+  capo se non ci stanno), solo se la corsa ha lasciato il percorso:
+  almeno **200 m** del percorso, prima del punto dove ci si è fermati,
+  rimasti a più di **40 m** dalla traccia. Smettere prima della fine non
+  conta. Solo per un percorso fatto da una forma del catalogo o da una
+  parola (da «Draw», da «Explore», da un preferito), mai foto e disegni a
+  mano, e solo negli sport su strade e sentieri (non canoa e nuoto). Con un
+  account il tocco fa ciò che fa «Save» (modulo e visibilità come sono) e
+  poi apre «Draw» con la stessa forma o parola, gli stessi km e la stessa
+  partenza come posto scelto sulla mappa; se la corsa non si tiene, si
+  resta qui. Senza account il pulsante si chiama **«Redo»** e la corsa
+  lascia il telefono come con «Done». Al lettore di schermo: «Save the run
+  and draw the same shape again» (senza account «Draw the same shape
+  again»). Non è giallo. «Draw route» chiede il percorso al motore come
+  sempre.
 - **«Done»**: torna al risultato, o alla prima schermata se il percorso
   non c'è più, e la traccia si cancella dal file della corsa. «Done» c'è
   solo senza account.
@@ -6236,14 +6272,18 @@ per il contenuto.
 viola, `explore` ciano (anche l'account), `feed` sabbia (anche le
 notifiche), `messages` verde (anche il feedback). Si usano sul riquadro in
 alto, sugli anelli e sulle icone delle card; le liste lunghe restano
-neutre. Ognuno tiene 4,5:1 su fondo e card e 3:1 su `border`, in chiaro e
-in scuro. Il giallo resta del percorso, del logo e dell'Accesso.
+neutre. Ognuno tiene 3:1 su fondo, card e `border`, in chiaro e in scuro:
+quanto serve a una forma. Nel tono scuro tengono anche il 4,5:1 delle
+scritte, e il nome di un gruppo è nel suo colore; nel tono chiaro sono più
+vivi (scelta dell'utente del 2026-11-27) e il nome del gruppo è nel colore
+del testo (`inkOn` in `ui/tint.ts`: tutte le sezioni insieme, mai una sì e
+una no). Il giallo resta del percorso, del logo e dell'Accesso.
 
 | Pezzo | Che cosa fa |
 |---|---|
 | `tintOver` (`tint.ts`) | il «velo»: il colore di sezione steso su una card, reso come colore pieno. Al 12% (`TINT_SHARE`) testo, testo secondario e il colore stesso si leggono sul velo. |
-| `SectionHeader` | l'etichetta sopra un gruppo («ACCOUNT»), intestazione per i lettori di schermo; nel colore della sezione se il gruppo ne ha una. |
-| `SectionCard` | la card: angoli `radius.card`, titolo facoltativo, velo facoltativo. Sempre opaca. |
+| `SectionHeader` | l'etichetta sopra un gruppo («ACCOUNT»), intestazione per i lettori di schermo; nel colore della sezione se il gruppo ne ha una e il tono lo regge come scritta (tono scuro), altrimenti nel grigio delle etichette. |
+| `SectionCard` | la card: angoli `radius.card`, titolo facoltativo, velo facoltativo. Il titolo è nel colore della sezione nel tono scuro, nel colore del testo nel chiaro. Sempre opaca. |
 | `IconSquare` | il quadrato col velo dietro un'icona (36 punti); è un disegno, i lettori di schermo lo saltano. |
 | `HeroCard` | il riquadro grande in cima alla pagina: il velo e un alone più forte nell'angolo, a colori pieni. Titolo e anello possono passarci sopra; il testo secondario sta sul velo. |
 | `Tile` | la card piccola da toccare delle griglie a due colonne, alta almeno 88 punti. Quella scelta ha velo, bordo e nome più marcato, e lo dice ai lettori di schermo: mai il solo colore. |

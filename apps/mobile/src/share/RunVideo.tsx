@@ -43,6 +43,9 @@ type Props = {
   /** How long the page's steps took, in milliseconds, once the pictures are
    * all made: the map, its picture, the encoding (TASK-351's measures). */
   onTimes?: (ms: PageTimes) => void;
+  /** The file's name in the cache folder: the run's own unless told
+   * (a stretching routine's video has its own, TASK-520). */
+  fileName?: string;
 };
 
 /**
@@ -72,6 +75,7 @@ export function RunVideo({
   onProgress,
   onEnd,
   onTimes,
+  fileName = VIDEO_FILE,
 }: Props) {
   const webView = useRef<WebView>(null);
   const avcC = useRef<Uint8Array | null>(null);
@@ -155,7 +159,7 @@ export function RunVideo({
         sound,
       );
       samples.current = [];
-      const file = new File(Paths.cache, VIDEO_FILE);
+      const file = new File(Paths.cache, fileName);
       file.create({ overwrite: true });
       file.write(bytes);
       await Sharing.shareAsync(file.uri, {

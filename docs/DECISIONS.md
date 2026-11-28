@@ -639,9 +639,114 @@ lasciando le righe d'indice.
 - ADR-0416 — Il catalogo di «Explore» guardato a occhio: oltre al filtro, le strade fatte due volte entro 8 punti sopra la mediana della forma, poi un voto a occhio da 0 a 3 su ogni disegno; 499 tolti, 3120 nuovi, la classifica per voto e misura; gli id dei percorsi cambiano · 2026-11-27 · Accettata
 - ADR-0419 — «Rifai meglio» (TASK-451): a fine corsa, se almeno 200 m del percorso prima del punto dove ci si è fermati sono rimasti a più di 40 m dalla traccia, «Save & redo» salva la corsa e riapre «Draw» con la stessa forma o parola, gli stessi km e la stessa partenza; il motore ripianifica come sempre; solo sport su strade e sentieri · 2026-11-27 · Attiva
 - ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione: l'utente ha tolto la capsula colorata dopo averla vista nel simulatore; il colore di sezione sta solo nel contenuto delle pagine · 2026-11-27 · Attiva
+- ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro: 3:1 come forme in ogni tono, 4,5:1 come scritte solo nel tono scuro; dove non reggono come scritte il nome del gruppo è nel colore del testo (`inkOn`, tutte le sezioni insieme) · 2026-11-27 · Attiva
+- ADR-0370 — «Segui subito» (TASK-459): un interruttore dell'account, «Approve followers»; spento si segue subito, acceso la richiesta come oggi; parte spento, acceso per gli account di oggi con almeno un post «Followers»; spegnerlo accetta le richieste in attesa; notifica nuova `new_follower` · 2026-11-28 · Accettata
 
 
 ## Voci nuove
+
+## ADR-0370 — «Segui subito»: un interruttore dell'account, «Approve followers», spento per chi non ha post «Followers»
+
+**Stato**: Accettata · 2026-11-28 · TASK-459 (parte 0). Scelte
+dell'utente, una domanda alla volta; il resto deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: dal TASK-211 (ADR-0173) ogni «Follow» è una richiesta che
+l'altro accetta o rifiuta; conta solo quella accettata, anche per chi vede
+i post «Followers». Nella prova del 2026-11-11 (S14) l'utente ha scelto
+«Segui subito»: su un profilo aperto «Follow» segue subito. Un «profilo
+pubblico» in MuW non esisteva: la visibilità è post per post (`everyone`,
+`followers`, `only_me`). Con «Segui subito» chi tocca «Follow» vede anche
+i post «Followers».
+
+**Decisione**:
+
+1. Un interruttore dell'account in «Settings», «Approve followers» (it
+   «Approva chi ti segue»), tenuto dall'API in `users.approve_followers`
+   (migrazione `0091`). Spento: `POST /users/{id}/follow` scrive subito
+   `accepted` e risponde `following`. Acceso: la richiesta come oggi.
+   (Utente: «Interruttore».)
+2. Parte spento per i nuovi iscritti e per gli account di oggi, tranne chi
+   ha almeno un post «Followers»: per loro parte acceso, perché quei post
+   non si aprano a chi segue senza una loro scelta. (Utente: «Spento,
+   tranne Follower».)
+3. Quando l'interruttore è spento, alla partenza o perché il proprietario
+   lo spegne, le richieste in attesa diventano follower e chi aveva
+   chiesto riceve la notifica di oggi, `follow_accepted`. Le richieste
+   rifiutate prima restano cancellate. (Utente: «Accettate tutte».) Una
+   migrazione non manda notifiche: quelle della partenza le manda un
+   comando una tantum dopo il passo del server (deciso dall'agente).
+4. Un follow subito avvisa il seguito con un tipo nuovo, `new_follower`:
+   «{name} started following you.» (it «{name} ha iniziato a
+   seguirti.»), in push, campanella ed email delle novità. Il pulsante
+   resta «Follow» → «Following», senza testi nuovi. La nota della riga e
+   la frase della Privacy sono in `docs/tasks/TASK-459.md`. (Utente: «Sì,
+   vanno bene».)
+5. Restano come in ADR-0173 il blocco (404 attraverso un blocco), il
+   ritiro e lo «Stop following», le liste e i numeri: contano le righe
+   `accepted`, comunque ci siano arrivate.
+
+**Perché**: una regola scelta dal proprietario si spiega in una riga e non
+cambia da sola quando cambia la visibilità di un post; partire acceso per
+chi già usa «Followers» tiene la promessa fatta a quei post.
+
+**Conseguenze**: tre parti, A (API, migrazione `0091`, il comando una
+tantum), B (app: la riga in «Settings», solo con un'API che la conosce) e
+C (la frase della Privacy, nella coda dopo #1725 e #1713, online insieme
+al server di A). Un'app di prima riceve già `following` da `POST
+…/follow`: il suo pulsante va a «Following» senza aggiornarla.
+
+## ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro; il nome del gruppo nel colore del testo dove il colore non regge come scritta
+
+**Stato**: Attiva · 2026-11-27 · TASK-523 parte A3 (#1728). La scelta dei
+colori è dell'utente; il resto è deciso dall'agente su delega dell'utente.
+Cambia due punti di ADR-0417: «Contrasto» e «Stesso valore, token suo».
+
+**Contesto**: ADR-0417 chiedeva a ogni colore di sezione il 4,5:1 delle
+scritte su fondo e card, perché il nome di un gruppo era scritto nel suo
+colore. Nel tono chiaro questo li rendeva scuri e spenti (un marrone per
+l'albicocca, un oliva per la sabbia). L'utente, vista la barra e le
+tavole, ha chiesto colori più vivi nel tono chiaro: «Sì, più vivi».
+
+**Decisione**:
+- **Nel tono chiaro al gradino più luminoso** i cinque colori sono più
+  accesi: `draw` `#BA5B16`, `profile` `#7563E6`, `explore` `#007DAB`,
+  `feed` `#9A6F21`, `messages` `#168649`. Il gradino più scuro del tono
+  chiaro e il tono scuro non cambiano.
+- **La regola del contrasto**: 3:1 su `background`, `surface`,
+  `surfaceRaised` e `border` in ogni tono a ogni gradino (una forma: icona,
+  anello, quadrato); il 4,5:1 delle scritte solo nel tono scuro
+  (`sectionContrast.test.ts`, che fissa anche che il chiaro più luminoso
+  resti sotto 4,5:1 sulle card, perché non torni spento per sbaglio).
+- **Il nome del gruppo** e il titolo di una card sono nel colore della
+  sezione solo dove tutte le sezioni del tono reggono come scritte su
+  fondo, card e velo; altrimenti nel colore del testo (`inkOn` in
+  `ui/tint.ts`). Tutte o nessuna: una pagina non mescola nomi colorati e
+  nomi neri.
+- **Stesso valore di un token che c'è già** (`stretch.moments`,
+  `stretch.sports`, `food`): vale nel tono scuro. Nel chiaro le sezioni
+  hanno valori loro, più vivi di quanto quei token, scritti come parole,
+  possano essere.
+- **I valori sono il 4–11% più scuri di quelli della tavola approvata**:
+  quelli esatti scendevano sotto 3:1 sulla traccia dell'anello (2,34), sul
+  velo (2,97) e sull'alone del riquadro in alto (2,57). Ognuno è stato
+  scurito del minimo che porta tutti e tre a 3:1; l'utente è stato
+  avvisato e la tavola aggiornata.
+
+**Alternative scartate**:
+- *Tenere i valori della tavola e schiarire la traccia dell'anello*
+  (`surfaceRaised` al posto di `border`): l'icona sul velo e sull'alone
+  sarebbe rimasta sotto 3:1.
+- *Decidere colore per colore* se il nome è colorato: sul bianco quattro
+  sezioni su cinque passavano 4,5:1 e il viola no; la pagina avrebbe avuto
+  nomi di gruppo di due tipi.
+- *Un secondo token per le scritte* (`sectionText`): dieci valori in più
+  da tenere allineati, per dire quello che il colore del testo dice già.
+
+**Conseguenze**: nel tono chiaro il colore di sezione si vede su forme,
+anelli, icone e sul velo delle card, non nelle scritte. Una sezione nuova
+deve tenere 3:1 ovunque e, nel tono scuro, 4,5:1; se non lo fa, in quel
+tono i nomi di tutti i gruppi tornano nel colore del testo.
 
 ## ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione
 
@@ -708,6 +813,15 @@ evitare strade. La corsa salvata non tiene distanza chiesta né partenza.
 **Conseguenze**: 200 m e 40 m sono costanti da ritoccare dopo la prova sul
 telefono. Se servirà evitare i tratti sbagliati, sarà un task del motore a
 parte, con la prova dei percorsi uguali.
+
+**Precisazione (2026-11-28, #1726, deciso dall'agente su delega
+dell'utente)**: «dove ci si è fermati» non è il punto del percorso più
+vicino all'ultima posizione: su un giro chiuso partenza e arrivo
+coincidono, e chi taglia a metà e torna a casa sembrerebbe arrivato in
+fondo (o, al contrario, fermo all'inizio). Fra i passaggi del percorso
+vicini all'ultima posizione si prende il più avanti i cui **100 m prima**
+sono stati corsi per più di metà (campioni entro 40 m dalla traccia); se
+nessuno lo è, il primo. Lo ha trovato la prova nel simulatore.
 
 ## ADR-0418 — Le lettere dicono cosa disegnano a penna alzata: la A con la punta, la Q con l'anello
 

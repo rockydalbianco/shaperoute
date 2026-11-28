@@ -1,8 +1,8 @@
 # TASK-523 — Lo stile di Alimentazione e Stretching in tutta l'app
 
 **Stato**: In lavorazione · parte 0 chiusa il 2026-11-27; parte A: A1 (i
-colori di sezione, #1700) e A2 (il kit, #1707) in `main`. Nessuna schermata
-è ancora cambiata. La parte T è stata tolta dall'utente: la barra delle
+colori di sezione, #1700), A2 (il kit, #1707) e A3 (i colori più vivi nel
+tono chiaro, #1728) in `main`. Nessuna schermata è ancora cambiata. La parte T è stata tolta dall'utente: la barra delle
 schede resta com'è. Prossima: B (Accesso).
 **Fase**: 5 · **Branch**: uno per parte (`feat/TASK-523-a1-section-colours`,
 `feat/TASK-523-a2-kit`, …)
@@ -65,7 +65,14 @@ Una domanda alla volta, con la proposta dell'agente; le parole sono sue.
    **«manca il liquid glass della versione precedente forse meglio tenere senza i colori le icone del feed disegna ma teniamo solamente il liquid glass con le animazioni trasparenti»**. Quindi la barra resta quella di 469,
    il vetro con la sua capsula trasparente e le sue animazioni, **senza
    colore di sezione**. Ha anche chiesto di rivedere i colori nel tono
-   chiaro: la proposta è in attesa della sua risposta.
+   chiaro: vedi la scelta 7.
+7. I colori nel tono chiaro, su una tavola con quelli di allora accanto a
+   una proposta più accesa (nomi dei gruppi in nero, colore solo su forme,
+   anelli e icone): «Va bene la proposta più viva?» → **«Sì, più vivi»**.
+   I valori entrati (A3) sono il 4–11% più scuri di quelli della tavola:
+   quelli esatti scendevano sotto 3:1 sulla traccia dell'anello (2,34),
+   sul velo (2,97) e sull'alone (2,57). Detto all'utente, con le tre
+   colonne a confronto, e tavola aggiornata.
 
 Lo schizzo approvato: https://claude.ai/artifact/Lv6FnzHFoF3RkAswzwE2Cn
 (sorgenti nel checkout principale, `out/stile-app/canvas/project/`).
@@ -106,16 +113,24 @@ Lo schizzo approvato: https://claude.ai/artifact/Lv6FnzHFoF3RkAswzwE2Cn
 Niente rosa e niente sfumature tra due colori diversi. Il rosa del gruppo
 «Intimacy» dello Stretching (520) è un'altra decisione e qui non si tocca.
 
-I valori veri (parte A1, `color.section`), dal più scuro al più chiaro
-gradino di ogni tono; approvati dall'utente sulla tavola:
+I valori veri (`color.section`: parte A1, e A3 per il tono chiaro al
+gradino più luminoso), dal più scuro al più chiaro gradino di ogni tono;
+approvati dall'utente sulle tavole:
 
 | Token | Tono scuro | Tono chiaro | Tinta |
 |---|---|---|---|
-| `draw` | `#F5A066` → `#FFBC8F` | `#7A3A08` → `#8F4510` | albicocca, nuova |
-| `profile` | `#A99BFF` → `#C4BAFF` | `#3F2FA3` → `#4B39BF` | viola di `stretch.moments` |
-| `explore` | `#4DD2FF` → `#6EDBFF` | `#005370` → `#006A8F` | ciano di `stretch.sports` |
-| `feed` | `#E3C596` → `#EED9B5` | `#5E4712` → `#6B5118` | sabbia, nuova |
-| `messages` | `#4FD08A` → `#7BE3AA` | `#095428` → `#0F6B35` | verde di `food` |
+| `draw` | `#F5A066` → `#FFBC8F` | `#7A3A08` → `#BA5B16` | albicocca, nuova |
+| `profile` | `#A99BFF` → `#C4BAFF` | `#3F2FA3` → `#7563E6` | viola (in scuro quello di `stretch.moments`) |
+| `explore` | `#4DD2FF` → `#6EDBFF` | `#005370` → `#007DAB` | ciano (in scuro quello di `stretch.sports`) |
+| `feed` | `#E3C596` → `#EED9B5` | `#5E4712` → `#9A6F21` | sabbia, nuova |
+| `messages` | `#4FD08A` → `#7BE3AA` | `#095428` → `#168649` | verde (in scuro quello di `food`) |
+
+Nel tono scuro i colori tengono il 4,5:1 delle scritte: il nome di un
+gruppo è nel suo colore. Nel tono chiaro al gradino più luminoso sono più
+vivi e tengono il 3:1 delle forme (fondo, card, `border`, velo, alone) ma
+non il 4,5:1 sulle card: lì il nome del gruppo e il titolo della card sono
+nel colore del testo. Lo decide `inkOn` in `ui/tint.ts`, per tutte le
+sezioni insieme: una pagina non ha mai un nome colorato e uno no.
 
 Il peso (489 K1) non ha un colore: l'utente ha scelto il colore del testo,
 perché il viola era troppo vicino a quello dei carboidrati (`carbs`).
@@ -251,3 +266,8 @@ parti: la lista esatta va al Coordinatore prima di ognuna.
 - 2026-11-27 — parte T: capsula colorata scritta in locale e fotografata
   nel simulatore (chiaro, scuro, «Aumenta contrasto»); sulle foto l'utente
   l'ha tolta: la barra resta il vetro di 469. Nessuna PR di codice.
+  Documenti corretti in #1724.
+- 2026-11-27 — parte A3 (#1728): colori di sezione più vivi nel tono
+  chiaro, «Sì, più vivi»; `inkOn` nel kit; file: `theme/tokens.ts`,
+  `theme/sectionContrast.test.ts`, `ui/tint.ts`, `ui/SectionHeader.tsx`,
+  `ui/SectionCard.tsx` coi loro test.

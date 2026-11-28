@@ -6236,14 +6236,18 @@ per il contenuto.
 viola, `explore` ciano (anche l'account), `feed` sabbia (anche le
 notifiche), `messages` verde (anche il feedback). Si usano sul riquadro in
 alto, sugli anelli e sulle icone delle card; le liste lunghe restano
-neutre. Ognuno tiene 4,5:1 su fondo e card e 3:1 su `border`, in chiaro e
-in scuro. Il giallo resta del percorso, del logo e dell'Accesso.
+neutre. Ognuno tiene 3:1 su fondo, card e `border`, in chiaro e in scuro:
+quanto serve a una forma. Nel tono scuro tengono anche il 4,5:1 delle
+scritte, e il nome di un gruppo è nel suo colore; nel tono chiaro sono più
+vivi (scelta dell'utente del 2026-11-27) e il nome del gruppo è nel colore
+del testo (`inkOn` in `ui/tint.ts`: tutte le sezioni insieme, mai una sì e
+una no). Il giallo resta del percorso, del logo e dell'Accesso.
 
 | Pezzo | Che cosa fa |
 |---|---|
 | `tintOver` (`tint.ts`) | il «velo»: il colore di sezione steso su una card, reso come colore pieno. Al 12% (`TINT_SHARE`) testo, testo secondario e il colore stesso si leggono sul velo. |
-| `SectionHeader` | l'etichetta sopra un gruppo («ACCOUNT»), intestazione per i lettori di schermo; nel colore della sezione se il gruppo ne ha una. |
-| `SectionCard` | la card: angoli `radius.card`, titolo facoltativo, velo facoltativo. Sempre opaca. |
+| `SectionHeader` | l'etichetta sopra un gruppo («ACCOUNT»), intestazione per i lettori di schermo; nel colore della sezione se il gruppo ne ha una e il tono lo regge come scritta (tono scuro), altrimenti nel grigio delle etichette. |
+| `SectionCard` | la card: angoli `radius.card`, titolo facoltativo, velo facoltativo. Il titolo è nel colore della sezione nel tono scuro, nel colore del testo nel chiaro. Sempre opaca. |
 | `IconSquare` | il quadrato col velo dietro un'icona (36 punti); è un disegno, i lettori di schermo lo saltano. |
 | `HeroCard` | il riquadro grande in cima alla pagina: il velo e un alone più forte nell'angolo, a colori pieni. Titolo e anello possono passarci sopra; il testo secondario sta sul velo. |
 | `Tile` | la card piccola da toccare delle griglie a due colonne, alta almeno 88 punti. Quella scelta ha velo, bordo e nome più marcato, e lo dice ai lettori di schermo: mai il solo colore. |

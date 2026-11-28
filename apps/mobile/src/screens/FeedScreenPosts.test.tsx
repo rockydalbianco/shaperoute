@@ -38,14 +38,16 @@ function asked(): string[] {
   return (
     fetchSpy.mock.calls
       .map(([url]) => String(url).replace(API, ""))
-      // The contest's card, MuW Style (TASK-384) and the «Live» row
-      // (TASK-468) are read beside the feed.
+      // The contest's card, MuW Style (TASK-384), the «Live» row
+      // (TASK-468) and the «Group runs» row (TASK-309 B2) are read beside
+      // the feed.
       .filter(
         (path) =>
           path !== "/contests/current" &&
           !path.startsWith("/style") &&
           !path.startsWith("/muw-routes") &&
-          !path.startsWith("/lives"),
+          !path.startsWith("/lives") &&
+          !path.startsWith("/group-runs"),
       )
   );
 }

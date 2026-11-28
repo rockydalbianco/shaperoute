@@ -3,7 +3,9 @@ import type {
   GroupRunChange,
   GroupRunDetail,
   GroupRunRequest,
+  GroupRunsPage,
   GroupRunStatus,
+  LatLon,
   PeoplePage,
   ProfileGroupRuns,
 } from "@shaperoute/shared-types";
@@ -86,6 +88,14 @@ export function isProfileGroupRuns(body: unknown): body is ProfileGroupRuns {
     body.upcoming.every(isGroupRun) &&
     Array.isArray(body.past) &&
     body.past.every(isGroupRun)
+  );
+}
+
+export function isGroupRunsPage(body: unknown): body is GroupRunsPage {
+  return (
+    isRecord(body) &&
+    Array.isArray(body.group_runs) &&
+    body.group_runs.every(isGroupRun)
   );
 }
 
@@ -196,6 +206,32 @@ export function fetchProfileGroupRuns(
     `/users/${encodeURIComponent(publicId)}/group-runs`,
     { method: "GET", token },
     isProfileGroupRuns,
+    options,
+  );
+}
+
+/** Two decimals, about a kilometre, as the Feed's «nearby» (feed.ts): the
+ * 50 km of the row ask for no more, and the privacy text says so. */
+function rounded(degrees: number): string {
+  return String(Math.round(degrees * 100) / 100);
+}
+
+/** GET /group-runs?lat=…&lon=…: the Feed's row (TASK-309 part B2,
+ * docs/EVENTI.md §5), at most 20, the nearest in time first. Without the
+ * phone's point, no `lat` and `lon`: the API then gives the others' from
+ * everywhere. */
+export function fetchGroupRuns(
+  baseUrl: string,
+  token: string,
+  near: LatLon | null,
+  options: Options = {},
+): Promise<AccountOutcome<GroupRunsPage>> {
+  const query = near === null ? "" : `?lat=${rounded(near[0])}&lon=${rounded(near[1])}`;
+  return ask(
+    baseUrl,
+    `/group-runs${query}`,
+    { method: "GET", token },
+    isGroupRunsPage,
     options,
   );
 }

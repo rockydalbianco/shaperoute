@@ -4,6 +4,7 @@
  * The drawings themselves are in FeedScreenPosts.test.tsx.
  */
 import page from "@shaperoute/shared-types/fixtures/feed.json";
+import groupRuns from "@shaperoute/shared-types/fixtures/group-runs.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { FeedPost, Session } from "@shaperoute/shared-types";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
@@ -231,4 +232,29 @@ test("without an ad (Expo Go, no consent, no network) the drawings are all there
   await withDrawings(<FeedScreen onOpen={noOpen} />);
   expect(rows()).toEqual(posts(DRAWINGS));
   expect(screen.queryByTestId("feed-ad")).toBeNull();
+});
+
+test("with an account, the row «Group runs» over the drawings; with a 404, none (TASK-309 B2)", async () => {
+  const shown = await withDrawings(<FeedScreen onOpen={noOpen} />);
+  // The API of before answers 404 to anything but the feed: as today.
+  expect(screen.queryByTestId("group-runs-row")).toBeNull();
+  await shown.unmount();
+
+  forgetFeed();
+  fetchSpy.mockImplementation(async (input) => {
+    const url = String(input);
+    if (url.startsWith(`${API}/feed`)) {
+      return Response.json({ posts: POSTS, next: null, filter: "all" });
+    }
+    if (url.startsWith(`${API}/group-runs`)) {
+      return Response.json(groupRuns);
+    }
+    return Response.json(
+      { error: { code: "http_error", message: url } },
+      { status: 404 },
+    );
+  });
+  await withDrawings(<FeedScreen onOpen={noOpen} />);
+  expect(await screen.findByTestId("group-runs-row")).toBeOnTheScreen();
+  expect(screen.getByText(groupRuns.group_runs[0]!.title)).toBeOnTheScreen();
 });

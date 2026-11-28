@@ -10,9 +10,11 @@ import {
   changeGroupRun,
   createGroupRun,
   fetchGroupRun,
+  fetchGroupRuns,
   fetchProfileGroupRuns,
   isGroupRun,
   isGroupRunDetail,
+  isGroupRunsPage,
   isProfileGroupRuns,
   setGoing,
 } from "./groupRunsApi";
@@ -31,6 +33,9 @@ test("the examples of the API are what the app reads", () => {
   expect(isGroupRun({ ...detail, start: [46] })).toBe(false);
   expect(isGroupRunDetail({ ...detail, points: [[46, 11]] })).toBe(false);
   expect(isProfileGroupRuns({ upcoming: [{}], past: [] })).toBe(false);
+  expect(isGroupRunsPage(row)).toBe(true);
+  expect(isGroupRunsPage({ group_runs: [{}] })).toBe(false);
+  expect(isGroupRunsPage({})).toBe(false);
 });
 
 test("a group run is created from the route, with the token", async () => {
@@ -89,5 +94,30 @@ test("a profile's group runs; an API of before says 404", async () => {
 
   fetchFn = answers({ status: 404, body: apiError("http_error", "Not Found") });
   const before = await fetchProfileGroupRuns(URL, TOKEN, person, options(fetchFn));
+  expect(before).toMatchObject({ kind: "api_error", code: "http_error" });
+});
+
+test("the Feed's row: the point rounded to about a kilometre, or none", async () => {
+  let fetchFn = answers({ status: 200, body: row });
+  const outcome = await fetchGroupRuns(
+    URL,
+    TOKEN,
+    [46.06789, 11.12345],
+    options(fetchFn),
+  );
+  expect(outcome).toEqual({ kind: "ok", value: row });
+  const [url, init] = fetchFn.mock.calls[0];
+  expect(url).toBe(`${URL}/group-runs?lat=46.07&lon=11.12`);
+  expect(init).toMatchObject({
+    method: "GET",
+    headers: { Authorization: `Bearer ${TOKEN}` },
+  });
+
+  fetchFn = answers({ status: 200, body: row });
+  await fetchGroupRuns(URL, TOKEN, null, options(fetchFn));
+  expect(fetchFn.mock.calls[0][0]).toBe(`${URL}/group-runs`);
+
+  fetchFn = answers({ status: 404, body: apiError("http_error", "Not Found") });
+  const before = await fetchGroupRuns(URL, TOKEN, null, options(fetchFn));
   expect(before).toMatchObject({ kind: "api_error", code: "http_error" });
 });

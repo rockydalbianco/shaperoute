@@ -21,6 +21,8 @@ const ROWS = [
   // And the photos of a post of photos only (TASK-312 part C2).
   "feed/PhotoFeedPost.tsx",
   "feed/StyleLens.tsx",
+  // And the row «Group runs» under «Live» (TASK-309 part B2).
+  "groupRuns/GroupRunsRow.tsx",
   // In «Draw»: «NEAR YOU».
   "route/NearYou.tsx",
   // And, for the sport «Stretching», the moments of the day on the

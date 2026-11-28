@@ -1148,6 +1148,11 @@ export const ES: Table = {
   "Distance: {distance}": "Distancia: {distance}",
   "Distance: {distance} {units}": "Distancia: {distance} {units}",
   "Keep running": "Seguir corriendo",
+  "Save & redo": "Guardar y repetir",
+  "Redo@@run": "Repetir",
+  "Save the run and draw the same shape again":
+    "Guarda la carrera y dibuja otra vez la misma forma",
+  "Draw the same shape again": "Dibuja otra vez la misma forma",
   "Remember to stretch": "Recuerda estirar",
   Stretch: "Estirar",
   Skip: "Omitir",

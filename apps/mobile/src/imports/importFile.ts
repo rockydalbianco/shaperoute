@@ -52,7 +52,7 @@ export type ImportProblem =
 
 /** What the app says of each, in the app's language (TASK-210). */
 const PROBLEMS: Record<ImportProblem, string> = {
-  not_activity_file: tLater("This file is not GPX, TCX or FIT."),
+  not_activity_file: tLater("This file is not GPX, TCX, FIT or IGC."),
   no_times: tLater("This file has no times: it is a route, not an activity."),
   no_positions: tLater("This file has no positions."),
   too_big: tLater("This file is too big (over 25 MB)."),

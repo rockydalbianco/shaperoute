@@ -94,7 +94,7 @@ test("the button opens «From a file», with what to pick and how", async () => 
   expect(screen.queryByText("From a file")).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Add past activity" }));
   expect(screen.getByText("From a file")).toBeTruthy();
-  expect(screen.getByText("GPX, TCX or FIT from Strava, Garmin, Komoot…")).toBeTruthy();
+  expect(screen.getByText("GPX, TCX, FIT or IGC from Strava, Garmin, Komoot…")).toBeTruthy();
   expect(
     screen.getByText(
       "Export the activity as a file from the other app or its website, save it in Files, then pick it here.",
@@ -221,7 +221,7 @@ test("a file of another kind, too big, or unreadable says so", async () => {
   await show(spies(), async () => answers.shift()!);
   await fromFile();
   expect(await screen.findByRole("alert")).toHaveTextContent(
-    "This file is not GPX, TCX or FIT.",
+    "This file is not GPX, TCX, FIT or IGC.",
   );
   await fireEvent.press(screen.getByText("From a file"));
   await waitFor(() =>

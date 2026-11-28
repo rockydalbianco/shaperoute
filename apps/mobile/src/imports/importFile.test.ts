@@ -162,7 +162,7 @@ describe("a file that does not become a run", () => {
     });
   });
 
-  it("is refused when it is not GPX, TCX or FIT", () => {
+  it("is refused when it is not GPX, TCX, FIT or IGC", () => {
     for (const text of ["", "hello", '{"type":"FeatureCollection"}', "<kml></kml>"]) {
       expect(importedRun(bytesOf(text))).toEqual({
         kind: "problem",
@@ -203,7 +203,7 @@ describe("a file that does not become a run", () => {
     );
     expect(importProblemText("no_positions")).toBe("This file has no positions.");
     expect(importProblemText("not_activity_file")).toBe(
-      "This file is not GPX, TCX or FIT.",
+      "This file is not GPX, TCX, FIT or IGC.",
     );
     expect(importProblemText("too_big")).toBe("This file is too big (over 25 MB).");
     expect(importProblemText("too_old")).toBe(

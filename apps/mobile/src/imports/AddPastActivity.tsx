@@ -61,8 +61,8 @@ type Props = {
 
 /**
  * «Add past activity» at the top of «My activities» (TASK-312, ADR-0272;
- * docs/IMPORTAZIONI.md §2–3): «From a file» opens «Files» for a GPX, TCX or
- * FIT of another app. The file is read on the phone; a file that is not an
+ * docs/IMPORTAZIONI.md §2–3): «From a file» opens «Files» for a GPX, TCX, FIT or
+ * IGC of another app. The file is read on the phone; a file that is not an
  * activity says why, and one already kept says so. Then the form of the end
  * of a run, under the drawing of its track, marked «Imported»: nothing
  * leaves the phone before «Save», and the file never. «Photos only»
@@ -220,7 +220,7 @@ export function AddPastActivity({
                   {reading ? t("Loading…") : t("From a file")}
                 </Text>
                 <Text style={styles.choiceDetail}>
-                  {t("GPX, TCX or FIT from Strava, Garmin, Komoot…")}
+                  {t("GPX, TCX, FIT or IGC from Strava, Garmin, Komoot…")}
                 </Text>
               </Tap>
               <Text style={styles.help}>

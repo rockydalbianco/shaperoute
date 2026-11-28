@@ -2718,14 +2718,14 @@ export const IT: Table = {
   // «Add past activity» from a GPX, TCX or FIT file, «Imported»)
   "Add past activity": "Aggiungi un'attività passata",
   "From a file": "Da un file",
-  "GPX, TCX or FIT from Strava, Garmin, Komoot…":
-    "GPX, TCX o FIT da Strava, Garmin, Komoot…",
+  "GPX, TCX, FIT or IGC from Strava, Garmin, Komoot…":
+    "GPX, TCX, FIT o IGC da Strava, Garmin, Komoot…",
   "Export the activity as a file from the other app or its website, save it in Files, then pick it here.":
     "Esporta l'attività come file dall'altra app o dal suo sito, salvala in File, poi sceglila qui.",
   Imported: "Importata",
   "Imported activities don't count for Play or contests.":
     "Le attività importate non contano per il gioco né per i concorsi.",
-  "This file is not GPX, TCX or FIT.": "Questo file non è GPX, TCX o FIT.",
+  "This file is not GPX, TCX, FIT or IGC.": "Questo file non è GPX, TCX, FIT o IGC.",
   "This file has no times: it is a route, not an activity.":
     "Questo file non ha orari: è un percorso, non un'attività.",
   "This file has no positions.": "Questo file non ha posizioni.",

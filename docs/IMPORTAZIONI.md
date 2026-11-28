@@ -7,7 +7,7 @@ L'utente, il 2026-10-27: «Possibilità di caricare anche attività che hanno
 già fatto in precedenza con altre app o instagram sul nostro feed». Le sue
 scelte, fra il 27 e il 28 ottobre 2026:
 
-- prima un **file** (GPX, TCX, FIT), poi **Apple Salute** in una parte
+- prima un **file** (GPX, TCX, FIT, IGC), poi **Apple Salute** in una parte
   dopo, e anche **Strava, Garmin e le app più famose**;
 - nel Feed anche **post di sole foto**, senza traccia;
 - la dipendenza nuova `expo-document-picker`, **come i contatti**
@@ -20,7 +20,7 @@ scelte, fra il 27 e il 28 ottobre 2026:
 
 | Che cosa | Da dove | Parte |
 |---|---|---|
-| Un'attività con la sua traccia | un file GPX, TCX o FIT esportato da un'altra app (Strava dal sito, Garmin Connect, Komoot, Polar Flow, Suunto, Coros, Wahoo…) e salvato in «File» | A (API), B (app) |
+| Un'attività con la sua traccia | un file GPX, TCX, FIT o IGC esportato da un'altra app (Strava dal sito, Garmin Connect, Komoot, Polar Flow, Suunto, Coros, Wahoo…) e salvato in «File» | A (API), B (app) |
 | Un post di sole foto | da 1 a 10 foto dal rullino, anche quelle già messe su Instagram | C |
 | Gli allenamenti già sul telefono | Apple Salute (iOS), Health Connect (Android) | D, prima uno studio (§7) |
 | Le attività di un account esterno | un collegamento diretto a Garmin, Polar, Suunto, Coros, Wahoo, Strava… | E, prima uno studio (§8) |

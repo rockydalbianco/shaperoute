@@ -24,7 +24,7 @@ test("all ready: «Record now», «Already recorded», «Photos only», «From a
   expect(entries[0].detail).toBe("Start an activity now");
   expect(entries[1].detail).toBe("Post an activity from My activities");
   expect(entries[2].detail).toBe("Up to 10 photos, also from Instagram");
-  expect(entries[3].detail).toBe("GPX, TCX or FIT from Strava, Garmin, Komoot…");
+  expect(entries[3].detail).toBe("GPX, TCX, FIT or IGC from Strava, Garmin, Komoot…");
   expect(entries[4].detail).toBe("A workout you already did, written by hand");
   expect(entries[5].detail).toBe("Share one of your gym plans");
 });

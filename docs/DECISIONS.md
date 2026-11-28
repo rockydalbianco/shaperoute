@@ -641,6 +641,7 @@ lasciando le righe d'indice.
 - ADR-0420 — Il pannello degli sport più fitto (TASK-512): caselle piccole tre per riga con le famiglie, la riga del modo solo per VoiceOver, nessun «ultimi usati»; in «Settings» una riga «Sport» che apre lo stesso pannello (`settings/SportMenu.tsx`) · 2026-11-27 · Attiva
 - ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione: l'utente ha tolto la capsula colorata dopo averla vista nel simulatore; il colore di sezione sta solo nel contenuto delle pagine · 2026-11-27 · Attiva
 - ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro: 3:1 come forme in ogni tono, 4,5:1 come scritte solo nel tono scuro; dove non reggono come scritte il nome del gruppo è nel colore del testo (`inkOn`, tutte le sezioni insieme) · 2026-11-27 · Attiva
+- ADR-0370 — «Segui subito» (TASK-459): un interruttore dell'account, «Approve followers»; spento si segue subito, acceso la richiesta come oggi; parte spento, acceso per gli account di oggi con almeno un post «Followers»; spegnerlo accetta le richieste in attesa; notifica nuova `new_follower` · 2026-11-28 · Accettata
 
 
 ## Voci nuove
@@ -678,6 +679,57 @@ sport, e spinge il resto di «Settings» giù di una schermata e mezza.
 La casella «Nutrition» di TASK-489 (spenta) riceve la larghezza nuova dal
 suo `size`; il suo aspetto interno è di 489. Se un giorno servisse «ultimi
 usati», sarà una scelta nuova dell'utente.
+
+## ADR-0370 — «Segui subito»: un interruttore dell'account, «Approve followers», spento per chi non ha post «Followers»
+
+**Stato**: Accettata · 2026-11-28 · TASK-459 (parte 0). Scelte
+dell'utente, una domanda alla volta; il resto deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: dal TASK-211 (ADR-0173) ogni «Follow» è una richiesta che
+l'altro accetta o rifiuta; conta solo quella accettata, anche per chi vede
+i post «Followers». Nella prova del 2026-11-11 (S14) l'utente ha scelto
+«Segui subito»: su un profilo aperto «Follow» segue subito. Un «profilo
+pubblico» in MuW non esisteva: la visibilità è post per post (`everyone`,
+`followers`, `only_me`). Con «Segui subito» chi tocca «Follow» vede anche
+i post «Followers».
+
+**Decisione**:
+
+1. Un interruttore dell'account in «Settings», «Approve followers» (it
+   «Approva chi ti segue»), tenuto dall'API in `users.approve_followers`
+   (migrazione `0091`). Spento: `POST /users/{id}/follow` scrive subito
+   `accepted` e risponde `following`. Acceso: la richiesta come oggi.
+   (Utente: «Interruttore».)
+2. Parte spento per i nuovi iscritti e per gli account di oggi, tranne chi
+   ha almeno un post «Followers»: per loro parte acceso, perché quei post
+   non si aprano a chi segue senza una loro scelta. (Utente: «Spento,
+   tranne Follower».)
+3. Quando l'interruttore è spento, alla partenza o perché il proprietario
+   lo spegne, le richieste in attesa diventano follower e chi aveva
+   chiesto riceve la notifica di oggi, `follow_accepted`. Le richieste
+   rifiutate prima restano cancellate. (Utente: «Accettate tutte».) Una
+   migrazione non manda notifiche: quelle della partenza le manda un
+   comando una tantum dopo il passo del server (deciso dall'agente).
+4. Un follow subito avvisa il seguito con un tipo nuovo, `new_follower`:
+   «{name} started following you.» (it «{name} ha iniziato a
+   seguirti.»), in push, campanella ed email delle novità. Il pulsante
+   resta «Follow» → «Following», senza testi nuovi. La nota della riga e
+   la frase della Privacy sono in `docs/tasks/TASK-459.md`. (Utente: «Sì,
+   vanno bene».)
+5. Restano come in ADR-0173 il blocco (404 attraverso un blocco), il
+   ritiro e lo «Stop following», le liste e i numeri: contano le righe
+   `accepted`, comunque ci siano arrivate.
+
+**Perché**: una regola scelta dal proprietario si spiega in una riga e non
+cambia da sola quando cambia la visibilità di un post; partire acceso per
+chi già usa «Followers» tiene la promessa fatta a quei post.
+
+**Conseguenze**: tre parti, A (API, migrazione `0091`, il comando una
+tantum), B (app: la riga in «Settings», solo con un'API che la conosce) e
+C (la frase della Privacy, nella coda dopo #1725 e #1713, online insieme
+al server di A). Un'app di prima riceve già `following` da `POST
+…/follow`: il suo pulsante va a «Following» senza aggiornarla.
 
 ## ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro; il nome del gruppo nel colore del testo dove il colore non regge come scritta
 
@@ -796,6 +848,15 @@ evitare strade. La corsa salvata non tiene distanza chiesta né partenza.
 **Conseguenze**: 200 m e 40 m sono costanti da ritoccare dopo la prova sul
 telefono. Se servirà evitare i tratti sbagliati, sarà un task del motore a
 parte, con la prova dei percorsi uguali.
+
+**Precisazione (2026-11-28, #1726, deciso dall'agente su delega
+dell'utente)**: «dove ci si è fermati» non è il punto del percorso più
+vicino all'ultima posizione: su un giro chiuso partenza e arrivo
+coincidono, e chi taglia a metà e torna a casa sembrerebbe arrivato in
+fondo (o, al contrario, fermo all'inizio). Fra i passaggi del percorso
+vicini all'ultima posizione si prende il più avanti i cui **100 m prima**
+sono stati corsi per più di metà (campioni entro 40 m dalla traccia); se
+nessuno lo è, il primo. Lo ha trovato la prova nel simulatore.
 
 ## ADR-0418 — Le lettere dicono cosa disegnano a penna alzata: la A con la punta, la Q con l'anello
 

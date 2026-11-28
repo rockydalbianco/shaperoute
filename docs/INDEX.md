@@ -113,6 +113,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | I gruppi per uscire insieme («Groups»): ingresso, ruoli, la pagina, le uscite del gruppo anche senza percorso, Explore, la chat di gruppo | `GRUPPI.md`, `tasks/TASK-495.md`, ADR-0402, `EVENTI.md` |
 | «Surprise me» in «Draw»: la pastiglia del passo 2, la scelta fra i percorsi del catalogo vicini, le forme di riserva, le sorprese venute male | `UI.md` (il passo 2 di «Draw»), ADR-0413, `tasks/TASK-448.md` |
 | Il pannello degli sport (tre caselle per riga, famiglie) e la riga «Sport» di «Settings» che lo apre | `UI.md` «Lo sport» e «Settings», ADR-0420, ADR-0165, `tasks/TASK-512.md` |
+| «Save & redo» a fine corsa: i metri di percorso mancati, dove ci si è fermati su un giro chiuso, «Draw» riaperto con forma, km e partenza | `UI.md` «La fine della corsa», ADR-0419 e la precisazione, `tasks/TASK-451.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

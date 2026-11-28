@@ -1212,7 +1212,12 @@ senza cambiare niente. È la stessa scelta della sezione «Sport» di
 «Settings» (sotto): cambiata in un posto, cambia anche nell'altro, e
 «Draw» la segue subito. Dove non c'è il profilo non c'è nemmeno lo sport.
 
-**«Profile» senza account**: «Sign up» e «Log in», due pulsanti affiancati.
+**«Profile» senza account**: in cima un riquadro giallo pieno col cuore
+del logo, scuro, che si disegna da solo una volta (TASK-523 parte B,
+ADR-0417; fermo e intero con «Riduci movimento»; è un disegno, i lettori
+di schermo lo saltano); sotto «Sign up» e «Log in», due pulsanti
+affiancati, e i campi su una card. Riquadro, pulsanti, card e comando
+entrano uno dopo l'altro.
 «Sign up» chiede email, nome (da 3 a 20 fra lettere, cifre, `_` e `.`),
 password (almeno 8 caratteri; nel campo, anche in «Log in», un occhio la
 mostra e la nasconde senza perdere il testo, VoiceOver «Show password» /

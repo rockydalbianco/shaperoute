@@ -216,8 +216,8 @@ const terms: AboutDocument = {
       heading: "Nutrition",
       blocks: [
         "«Nutrition» is a diary and a calculator, not a health service. MuW is not made by doctors, dietitians or other health professionals.",
-        "The calories of the foods, the energy you use and, if you ask for it, the estimate of a daily target come from public tables and formulas. They are estimates, for information only: they are not medical or dietary advice and do not replace a professional who knows you.",
-        "If you are under 18, pregnant or breastfeeding, have a medical condition, or have or had an eating disorder, talk to your doctor before counting calories or changing what you eat.",
+        "The calories of the foods, the energy you use and, if you ask for it, the estimate of a daily target come from public tables and formulas. They are estimates, for information only: they are not medical or dietary advice and do not replace a professional who knows you. MuW does not let you set a goal weight below a body mass index of 18.5, or before you are 18: this limit comes from public thresholds and does not tell whether a goal is right for you.",
+        "If you are under 18, pregnant or breastfeeding, have a medical condition, or have or had an eating disorder, talk to your doctor before counting calories, setting a weight goal or changing what you eat.",
       ],
     },
     {
@@ -474,9 +474,9 @@ const privacy: AboutDocument = {
     {
       heading: "Nutrition",
       blocks: [
-        "«Nutrition» is a diary you keep for yourself. The foods you add, your weekly plan, what you write that you ate each day, your daily target, the reason you gave for using it and the calories you correct by hand are kept on your phone only: they do not reach our server and nobody else can see them. The «Calorie balance» on your profile is worked out on your phone and shown only to you.",
-        "To estimate the energy you use, MuW counts on your phone the activities of your account and the body data you entered in «Settings». If you ask for it, MuW also works out on your phone, from the same data and a public formula, an estimate of a daily calorie target: only a demonstration, never shown to people under 18. Every number is an estimate: MuW is not made by health professionals and does not provide diets or medical advice.",
-        "This data was never on our server, so logging out or deleting your account does not delete it: it stays on your phone until you remove it there or uninstall the app.",
+        "«Nutrition» is a diary you keep for yourself. The foods you add, your weekly plan, what you write that you ate each day, your daily target, the reason you gave for using it, the calories you correct by hand, your weigh-ins, your goal weight and your milestones are kept on your phone only: they do not reach our server and nobody else can see them. The «Calorie balance» on your profile is worked out on your phone and shown only to you.",
+        "To estimate the energy you use, MuW counts on your phone the activities of your account and the body data you entered in «Settings». If you ask for it, MuW also works out on your phone, from the same data and a public formula, an estimate of a daily calorie target: only a demonstration, never shown to people under 18. Every number is an estimate: MuW is not made by health professionals and does not provide diets or medical advice. Your latest weigh-in also becomes your weight in «Settings». Your weigh-ins, goal weight and milestones belong to the account signed in on the phone: another account on the same phone does not see them, and they are deleted from this phone when you delete the account in the app. Weight goals are never offered to people under 18.",
+        "This data was never on our server, so logging out or deleting your account does not delete it, except your weigh-ins, goal weight and milestones, which are deleted when you delete the account: the rest stays on your phone until you remove it there or uninstall the app.",
       ],
     },
     {

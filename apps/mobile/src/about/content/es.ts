@@ -215,8 +215,8 @@ const terms: AboutDocument = {
       heading: "Nutrición",
       blocks: [
         "«Nutrición» es un diario y una calculadora, no un servicio de salud. MuW no está hecha por médicos, dietistas ni otros profesionales de la salud.",
-        "Las calorías de los alimentos, la energía que gastas y, si la pides, la estimación de un objetivo del día vienen de tablas y fórmulas públicas. Son estimaciones, solo informativas: no son un consejo médico ni dietético y no sustituyen a un profesional que te conozca.",
-        "Si tienes menos de 18 años, estás embarazada o das el pecho, tienes una enfermedad, o tienes o has tenido un trastorno alimentario, habla con tu médico antes de contar calorías o de cambiar lo que comes.",
+        "Las calorías de los alimentos, la energía que gastas y, si la pides, la estimación de un objetivo del día vienen de tablas y fórmulas públicas. Son estimaciones, solo informativas: no son un consejo médico ni dietético y no sustituyen a un profesional que te conozca. MuW no te deja fijar un peso objetivo por debajo de un índice de masa corporal de 18,5, ni antes de los 18 años: este límite viene de umbrales públicos y no dice si un objetivo es adecuado para ti.",
+        "Si tienes menos de 18 años, estás embarazada o das el pecho, tienes una enfermedad, o tienes o has tenido un trastorno alimentario, habla con tu médico antes de contar calorías, de fijarte un objetivo de peso o de cambiar lo que comes.",
       ],
     },
     {
@@ -473,9 +473,9 @@ const privacy: AboutDocument = {
     {
       heading: "Nutrición",
       blocks: [
-        "«Nutrición» es un diario que llevas para ti. Los alimentos que añades, tu plan de la semana, lo que escribes que comiste cada día, tu objetivo diario, el motivo por el que has dicho que la usas y las calorías que corriges a mano se guardan solo en tu teléfono: no llegan a nuestro servidor y nadie más puede verlos. El «Balance de calorías» de tu perfil se calcula en tu teléfono y solo lo ves tú.",
-        "Para estimar la energía que gastas, MuW cuenta en tu teléfono las actividades de tu cuenta y los datos del cuerpo que introdujiste en «Ajustes». Si lo pides, MuW calcula también en tu teléfono, con los mismos datos y una fórmula pública, una estimación de un objetivo de calorías al día: solo demostrativa, y nunca mostrada a menores de 18 años. Cada número es una estimación: MuW no está hecha por profesionales de la salud y no ofrece dietas ni consejos médicos.",
-        "Estos datos nunca estuvieron en nuestro servidor, así que cerrar sesión o eliminar tu cuenta no los borra: se quedan en tu teléfono hasta que los quites allí o desinstales la app.",
+        "«Nutrición» es un diario que llevas para ti. Los alimentos que añades, tu plan de la semana, lo que escribes que comiste cada día, tu objetivo diario, el motivo por el que has dicho que la usas, las calorías que corriges a mano, tus pesadas, tu peso objetivo y tus etapas se guardan solo en tu teléfono: no llegan a nuestro servidor y nadie más puede verlos. El «Balance de calorías» de tu perfil se calcula en tu teléfono y solo lo ves tú.",
+        "Para estimar la energía que gastas, MuW cuenta en tu teléfono las actividades de tu cuenta y los datos del cuerpo que introdujiste en «Ajustes». Si lo pides, MuW calcula también en tu teléfono, con los mismos datos y una fórmula pública, una estimación de un objetivo de calorías al día: solo demostrativa, y nunca mostrada a menores de 18 años. Cada número es una estimación: MuW no está hecha por profesionales de la salud y no ofrece dietas ni consejos médicos. Tu última pesada pasa a ser también tu peso en «Ajustes». Tus pesadas, tu peso objetivo y tus etapas son de la cuenta con la que has entrado en el teléfono: otra cuenta en el mismo teléfono no los ve, y se borran de este teléfono cuando eliminas la cuenta en la app. Los objetivos de peso nunca se ofrecen a menores de 18 años.",
+        "Estos datos nunca estuvieron en nuestro servidor, así que cerrar sesión o eliminar tu cuenta no los borra, salvo tus pesadas, tu peso objetivo y tus etapas, que se borran cuando eliminas la cuenta: el resto se queda en tu teléfono hasta que lo quites allí o desinstales la app.",
       ],
     },
     {

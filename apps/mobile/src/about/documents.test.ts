@@ -493,6 +493,51 @@ test("«Privacy» says a saved flight counts, without a name, in the history of 
   }
 });
 
+test("«Privacy» says the weigh-ins stay on the phone, with the account signed in, and go when it is deleted (TASK-489 K1)", () => {
+  const weighIns: Record<Language, [RegExp, RegExp]> = {
+    en: [
+      /your weigh-ins, your goal weight and your milestones are kept on your phone only/,
+      /deleted from this phone when you delete the account/,
+    ],
+    it: [
+      /le tue pesate, il tuo peso obiettivo e le tue tappe restano solo sul tuo telefono/,
+      /si cancellano da questo telefono quando elimini l'account/,
+    ],
+    de: [
+      /deine Wiegungen, dein Zielgewicht und deine Etappen bleiben nur auf deinem Handy/,
+      /von diesem Handy gelöscht, wenn du das Konto in der App löschst/,
+    ],
+    fr: [
+      /tes pesées, ton poids objectif et tes étapes restent uniquement sur ton téléphone/,
+      /effacés de ce téléphone quand tu supprimes le compte/,
+    ],
+    es: [
+      /tus pesadas, tu peso objetivo y tus etapas se guardan solo en tu teléfono/,
+      /se borran de este teléfono cuando eliminas la cuenta/,
+    ],
+  };
+  for (const [language, content] of CONTENTS) {
+    const text = all(content.privacy);
+    for (const line of weighIns[language]) {
+      expect(text).toMatch(line);
+    }
+    expect(text).toMatch(/18/);
+  }
+});
+
+test("«Terms» say the goal weight's limit comes from public thresholds (TASK-489 K1)", () => {
+  const limit: Record<Language, RegExp> = {
+    en: /below a body mass index of 18\.5, or before you are 18/,
+    it: /sotto un indice di massa corporea di 18,5, né prima dei 18 anni/,
+    de: /unter einem Body-Mass-Index von 18,5 festlegen, und keines, bevor du 18 bist/,
+    fr: /sous un indice de masse corporelle de 18,5, ni avant tes 18 ans/,
+    es: /por debajo de un índice de masa corporal de 18,5, ni antes de los 18 años/,
+  };
+  for (const [language, content] of CONTENTS) {
+    expect(all(content.terms)).toMatch(limit[language]);
+  }
+});
+
 test("«Privacy» says what is kept of a stretching session, on its own or inside a workout at the gym (TASK-466 C)", () => {
   const stretching: Record<Language, RegExp> = {
     en: /A stretching session is saved with its routine, its length and how many exercises you did/,

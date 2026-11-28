@@ -213,8 +213,8 @@ const terms: AboutDocument = {
       heading: "Alimentazione",
       blocks: [
         "«Alimentazione» è un diario e una calcolatrice, non un servizio sanitario. MuW non è fatta da medici, dietisti o altri professionisti della salute.",
-        "Le calorie dei cibi, l'energia che consumi e, se la chiedi, la stima di un obiettivo del giorno vengono da tabelle e formule pubbliche. Sono stime, solo a scopo informativo: non sono un consiglio medico né dietetico e non sostituiscono un professionista che ti conosce.",
-        "Se hai meno di 18 anni, sei in gravidanza o allatti, hai una malattia, o hai o hai avuto un disturbo alimentare, parla con il tuo medico prima di contare le calorie o di cambiare quello che mangi.",
+        "Le calorie dei cibi, l'energia che consumi e, se la chiedi, la stima di un obiettivo del giorno vengono da tabelle e formule pubbliche. Sono stime, solo a scopo informativo: non sono un consiglio medico né dietetico e non sostituiscono un professionista che ti conosce. MuW non ti lascia scrivere un peso obiettivo sotto un indice di massa corporea di 18,5, né prima dei 18 anni: questo limite viene da soglie pubbliche e non dice se un obiettivo è giusto per te.",
+        "Se hai meno di 18 anni, sei in gravidanza o allatti, hai una malattia, o hai o hai avuto un disturbo alimentare, parla con il tuo medico prima di contare le calorie, di scegliere un obiettivo di peso o di cambiare quello che mangi.",
       ],
     },
     {
@@ -471,9 +471,9 @@ const privacy: AboutDocument = {
     {
       heading: "Alimentazione",
       blocks: [
-        "«Alimentazione» è un diario che tieni per te. I cibi che aggiungi, il tuo piano della settimana, quello che scrivi di aver mangiato ogni giorno, il tuo obiettivo del giorno, il motivo per cui hai detto di usarla e le calorie che correggi a mano restano solo sul tuo telefono: non arrivano al nostro server e nessun altro può vederli. Il «Bilancio delle calorie» nel tuo profilo è calcolato sul telefono e lo vedi solo tu.",
-        "Per stimare l'energia che consumi, MuW conta sul telefono le attività del tuo account e i dati del corpo che hai inserito in «Impostazioni». Se lo chiedi, MuW calcola anche, sul telefono, dagli stessi dati e con una formula pubblica, una stima di un obiettivo di calorie al giorno: solo dimostrativa, e mai mostrata a chi ha meno di 18 anni. Ogni numero è una stima: MuW non è fatta da professionisti della salute e non fornisce diete né consigli medici.",
-        "Questi dati non sono mai stati sul nostro server, quindi uscire dall'account o eliminarlo non li cancella: restano sul telefono finché non li togli lì o non disinstalli l'app.",
+        "«Alimentazione» è un diario che tieni per te. I cibi che aggiungi, il tuo piano della settimana, quello che scrivi di aver mangiato ogni giorno, il tuo obiettivo del giorno, il motivo per cui hai detto di usarla, le calorie che correggi a mano, le tue pesate, il tuo peso obiettivo e le tue tappe restano solo sul tuo telefono: non arrivano al nostro server e nessun altro può vederli. Il «Bilancio delle calorie» nel tuo profilo è calcolato sul telefono e lo vedi solo tu.",
+        "Per stimare l'energia che consumi, MuW conta sul telefono le attività del tuo account e i dati del corpo che hai inserito in «Impostazioni». Se lo chiedi, MuW calcola anche, sul telefono, dagli stessi dati e con una formula pubblica, una stima di un obiettivo di calorie al giorno: solo dimostrativa, e mai mostrata a chi ha meno di 18 anni. Ogni numero è una stima: MuW non è fatta da professionisti della salute e non fornisce diete né consigli medici. L'ultima pesata diventa anche il tuo peso in «Impostazioni». Le pesate, il peso obiettivo e le tappe sono dell'account con cui sei entrato sul telefono: un altro account sullo stesso telefono non li vede, e si cancellano da questo telefono quando elimini l'account nell'app. Gli obiettivi di peso non sono mai proposti a chi ha meno di 18 anni.",
+        "Questi dati non sono mai stati sul nostro server, quindi uscire dall'account o eliminarlo non li cancella, tranne le pesate, il peso obiettivo e le tappe, che si cancellano quando elimini l'account: il resto rimane sul telefono finché non lo togli lì o non disinstalli l'app.",
       ],
     },
     {

@@ -4841,6 +4841,24 @@ mostra le lettere unite da linee dritte sulla base.
   la prossima volta, chiude la pagina e apre la schermata dello stretching
   su quella routine; la sessione finita va in «My activities» come le
   altre, col nome della categoria.
+- **La pagina di un esercizio** (TASK-520 parte E;
+  `src/stretch/ExercisePage.tsx`): si apre toccando un esercizio nella
+  lista di una categoria, a tutto schermo, con ✕ in alto a destra. Il
+  nome; la figura che ripete l'esercizio dentro un **anello di 48
+  puntini** del colore del gruppo, che si spengono coi secondi (l'ultimo
+  acceso è più grande); il tempo in grande con il tasto pausa («Pause» /
+  «Play» al lettore di schermo); sotto, il lato («Right side», «Left
+  side») e **«Breathe in» / «Breathe out»**, quattro secondi l'uno. Un
+  movimento ha il suo ritmo e non ha la riga del respiro. A fine tempo
+  ricomincia, sull'altro lato se ne ha due. Poi tre riquadri — **Hold**
+  (i secondi che ha nella routine da cui è stato aperto), **Sides**
+  («Both» o «One»), **Position** («Standing», «Chair», «Floor») —,
+  **«How to»** e **«Good for»**, con tutte le categorie che hanno
+  quell'esercizio. In fondo il pulsante giallo **«Try it · 1 min»**: apre
+  la schermata dello stretching su quel solo esercizio per un minuto
+  (mezzo minuto per lato se ne ha due) e non salva nessuna sessione.
+  L'anello è una decorazione: il tempo è scritto accanto e il lettore di
+  schermo non trova i puntini.
 - **Senza rete o senza API** la schermata è la stessa: non chiede niente
   a nessuno.
 - **«Keep running»**, dopo uno «Stop» e con il percorso ancora sullo
@@ -6228,14 +6246,18 @@ per il contenuto.
 viola, `explore` ciano (anche l'account), `feed` sabbia (anche le
 notifiche), `messages` verde (anche il feedback). Si usano sul riquadro in
 alto, sugli anelli e sulle icone delle card; le liste lunghe restano
-neutre. Ognuno tiene 4,5:1 su fondo e card e 3:1 su `border`, in chiaro e
-in scuro. Il giallo resta del percorso, del logo e dell'Accesso.
+neutre. Ognuno tiene 3:1 su fondo, card e `border`, in chiaro e in scuro:
+quanto serve a una forma. Nel tono scuro tengono anche il 4,5:1 delle
+scritte, e il nome di un gruppo è nel suo colore; nel tono chiaro sono più
+vivi (scelta dell'utente del 2026-11-27) e il nome del gruppo è nel colore
+del testo (`inkOn` in `ui/tint.ts`: tutte le sezioni insieme, mai una sì e
+una no). Il giallo resta del percorso, del logo e dell'Accesso.
 
 | Pezzo | Che cosa fa |
 |---|---|
 | `tintOver` (`tint.ts`) | il «velo»: il colore di sezione steso su una card, reso come colore pieno. Al 12% (`TINT_SHARE`) testo, testo secondario e il colore stesso si leggono sul velo. |
-| `SectionHeader` | l'etichetta sopra un gruppo («ACCOUNT»), intestazione per i lettori di schermo; nel colore della sezione se il gruppo ne ha una. |
-| `SectionCard` | la card: angoli `radius.card`, titolo facoltativo, velo facoltativo. Sempre opaca. |
+| `SectionHeader` | l'etichetta sopra un gruppo («ACCOUNT»), intestazione per i lettori di schermo; nel colore della sezione se il gruppo ne ha una e il tono lo regge come scritta (tono scuro), altrimenti nel grigio delle etichette. |
+| `SectionCard` | la card: angoli `radius.card`, titolo facoltativo, velo facoltativo. Il titolo è nel colore della sezione nel tono scuro, nel colore del testo nel chiaro. Sempre opaca. |
 | `IconSquare` | il quadrato col velo dietro un'icona (36 punti); è un disegno, i lettori di schermo lo saltano. |
 | `HeroCard` | il riquadro grande in cima alla pagina: il velo e un alone più forte nell'angolo, a colori pieni. Titolo e anello possono passarci sopra; il testo secondario sta sul velo. |
 | `Tile` | la card piccola da toccare delle griglie a due colonne, alta almeno 88 punti. Quella scelta ha velo, bordo e nome più marcato, e lo dice ai lettori di schermo: mai il solo colore. |

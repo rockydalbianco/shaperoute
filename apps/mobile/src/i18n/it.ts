@@ -1143,6 +1143,11 @@ export const IT: Table = {
   "Distance: {distance}": "Distanza: {distance}",
   "Distance: {distance} {units}": "Distanza: {distance} {units}",
   "Keep running": "Continua a correre",
+  "Save & redo": "Salva e rifai",
+  "Redo@@run": "Rifai",
+  "Save the run and draw the same shape again":
+    "Salva la corsa e disegna di nuovo la stessa forma",
+  "Draw the same shape again": "Disegna di nuovo la stessa forma",
   "Remember to stretch": "Ricordati di fare stretching",
   Stretch: "Stretching",
   Skip: "Salta",
@@ -4059,4 +4064,13 @@ export const IT: Table = {
   "Wind aloft": "Vento in quota",
   "Wind aloft not available": "Vento in quota non disponibile",
   "{source} · run of {time}": "{source} · corsa delle {time}",
+  // src/groups/ExploreGroups.tsx (TASK-495 part D: the groups at the end of Explore)
+  "GROUPS NEAR YOU": "GRUPPI VICINO A TE",
+  "See all@@groups": "Vedi tutti",
+  "No groups near you yet.": "Ancora nessun gruppo vicino a te.",
+  "No group found.": "Nessun gruppo trovato.",
+  "Write at least {count} letters of a group's name.":
+    "Scrivi almeno {count} lettere del nome di un gruppo.",
+  "The groups could not load. Check the connection and try again.":
+    "Non è stato possibile caricare i gruppi. Controlla la connessione e riprova.",
 };

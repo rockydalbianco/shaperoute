@@ -125,6 +125,7 @@ import {
 import { ImageEditsContext } from "./src/route/imageEdits";
 import { type ImageAsked, imageAsked } from "./src/route/imagePieces";
 import type { ChoiceKind } from "./src/route/problems";
+import { type Redo, redoOf } from "./src/route/redoBetter";
 import { withPenUp } from "./src/route/penUpHint";
 import { drawKindOf, figuresOf, shapeOfSport } from "./src/route/sportDraw";
 import { shapeAsked } from "./src/route/penUpShapes";
@@ -913,6 +914,8 @@ function MuW() {
   // The «Save» of the form under the end card, for the folded card's strip
   // (TASK-478 part b).
   const endSave = useRef<(() => void) | null>(null);
+  // «Save & redo» (TASK-451): what «Draw» opens with once «Save» kept the run.
+  const redoAfterSave = useRef<Redo | null>(null);
   const ended = finishing ? finished.run : freeFinishing ? freeFinished.run : null;
   // Whose the run on screen is (TASK-507 part B2, the user's choice
   // «Nascosta finché rientra»): the end of another account's run leaves the
@@ -1044,6 +1047,27 @@ function MuW() {
       drawnRequest && chosen ? drawnKeepable(drawnRequest, chosen, startPlace) : null,
     [drawnRequest, chosen, startPlace],
   );
+  // «Redo better» (TASK-451, ADR-0419): the request of the route the run
+  // ended on, while the app still has it, and what «Draw» opens with.
+  const redo = useMemo(() => {
+    if (screen !== "finish" || finished === null) {
+      return null;
+    }
+    const { route, track, activity, walks } = finished.run;
+    const request =
+      drawnRequest !== null && chosen !== null && sameLine(chosen.points, route)
+        ? drawnRequest
+        : explored?.status === "done" && sameLine(explored.result.points, route)
+          ? explored.request
+          : null;
+    return redoOf({
+      request,
+      activity: activity ?? "running",
+      route,
+      walks,
+      track: track.fixes.map((fix) => fix.point),
+    });
+  }, [screen, finished, drawnRequest, chosen, explored]);
   const exploredFavorite = useMemo(
     () =>
       exploredRoute?.status === "done"
@@ -1168,8 +1192,34 @@ function MuW() {
         queueSkiDay(freeFinished.run);
       }
       onDiscardRun();
+      if (redoAfterSave.current !== null) {
+        openRedo(redoAfterSave.current);
+      }
     }
     return kept;
+  }
+
+  /** «Save & redo» (TASK-451, ADR-0419): the run saved as «Save» saves it,
+   * then «Draw» with the same figure, distance and start; a run the phone
+   * could not keep stays where it is. With nobody signed in, the run leaves
+   * the phone as «Done» lets it. */
+  function onRedo(again: Redo) {
+    if (!signedIn) {
+      onFinishDone();
+      openRedo(again);
+      return;
+    }
+    redoAfterSave.current = again;
+    endSave.current?.();
+    redoAfterSave.current = null;
+  }
+
+  /** «Draw» with the figure and the distance of «Draw it near me», and the
+   * start of the run as a place chosen on the map. */
+  function openRedo({ again, start: from }: Redo) {
+    onDrawAgain(again);
+    setPlace({ point: from, label: null });
+    setStartMode("place");
   }
 
   /** «Discard», or what follows «Save»: the run leaves the file of the run
@@ -1898,6 +1948,7 @@ function MuW() {
                   }
                 : undefined
             }
+            redo={redo ? { saves: signedIn, onPress: () => onRedo(redo) } : undefined}
           />
         ) : navigating ? (
           <NavigationCard

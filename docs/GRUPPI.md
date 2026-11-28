@@ -123,7 +123,11 @@ dato personale (§11).
   cui zona è **entro 50 km** dal telefono (`FEED_NEAR_M`, la regola del
   Feed), filtro per sport e ricerca per nome (la ricerca per nome vale
   ovunque). Senza la posizione del telefono, solo la ricerca. Gli Invite
-  only non compaiono mai.
+  only non compaiono mai. **Dove** (parte D, scelta dell'utente del
+  2026-11-27): una fila «GROUPS NEAR YOU» **in fondo a Explore**, dopo
+  tutto il catalogo, coi gruppi vicini al punto di partenza, il più vicino
+  per primo; «See all» apre la pagina «Groups» con la ricerca per nome
+  (almeno 2 lettere) e un chip per sport. Senza account la fila non c'è.
 - **Feed**: le uscite in arrivo dei miei gruppi entrano nella fila «Group
   runs» (`EVENTI.md` §5) quando la fila c'è (TASK-309 B2). Niente gruppi
   suggeriti nel Feed.

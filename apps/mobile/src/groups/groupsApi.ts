@@ -9,14 +9,18 @@ import type {
   GroupMembersPage,
   GroupRequest,
   GroupRole,
+  GroupsFound,
+  LatLon,
   MyGroups,
   PeoplePage,
+  RunActivity,
 } from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask } from "../api/accounts";
 import { isFeedPage } from "../api/feed";
 import { isPeoplePage } from "../api/follows";
 import { isPerson } from "../api/people";
+import { nearParams } from "../places/photon";
 
 /**
  * The groups of the API (TASK-495 part A, docs/API.md «Groups»), read
@@ -81,6 +85,10 @@ export function isMyGroups(body: unknown): body is MyGroups {
     Array.isArray(body.invites) &&
     body.invites.every(isGroup)
   );
+}
+
+export function isGroupsFound(body: unknown): body is GroupsFound {
+  return isRecord(body) && Array.isArray(body.groups) && body.groups.every(isGroup);
 }
 
 export function isGroupMember(body: unknown): body is GroupMember {
@@ -353,6 +361,44 @@ export function setGroupInvite(
     personPath(id, "invites", publicId),
     { method: invited ? "PUT" : "DELETE", token },
     nothing,
+    options,
+  );
+}
+
+/** The fewest letters of a name the search of groups looks for. */
+export const GROUP_QUERY_MIN = 2;
+
+/** What Explore looks for: near a point, or a part of a name; a sport. */
+export type GroupsWanted =
+  | { near: LatLon; sport?: RunActivity | null }
+  | { q: string; sport?: RunActivity | null };
+
+/**
+ * GET /groups (TASK-495 part D, GRUPPI.md §7): the groups within 50 km of
+ * `near` (rounded to about 1 km), the nearest first, or those whose name holds `q`, anywhere, by
+ * name; of `sport` when given. Never one by invite only. At most 20.
+ */
+export function findGroups(
+  baseUrl: string,
+  token: string,
+  wanted: GroupsWanted,
+  options: Options = {},
+): Promise<AccountOutcome<GroupsFound>> {
+  const where =
+    // The start leaves the phone rounded to about a kilometre, as the
+    // other lists of Explore (Privacy, «Your position»).
+    "near" in wanted
+      ? nearParams(wanted.near)
+      : `q=${encodeURIComponent(wanted.q.trim())}`;
+  const sport =
+    wanted.sport === undefined || wanted.sport === null
+      ? ""
+      : `&sport=${encodeURIComponent(wanted.sport)}`;
+  return ask(
+    baseUrl,
+    `/groups?${where}${sport}`,
+    { method: "GET", token },
+    isGroupsFound,
     options,
   );
 }

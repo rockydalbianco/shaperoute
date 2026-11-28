@@ -1,6 +1,6 @@
 # TASK-489 — «Alimentazione»: il diario di quello che mangio e il bilancio delle calorie
 
-**Stato**: In corso (parte 0 chiusa il 2026-11-22; **A1, A2, B1, B2, C1, D e la privacy F in `main`** (#1437, #1460, #1473, #1490, #1501, #1517, #1496), tutte spente (`NUTRITION_ON`); poi, una PR dopo l'altra, **D2, G1, C2a, H, I e J in `main`** (#1547, #1552, #1563, #1652, #1660, #1673); in sessioni dedicate **K1** (il peso, parte 0 chiusa) e **L** (le ricette: dati #1678 e colori #1686 in `main`); per la build nativa G2, C2b e l'accensione; la modalità è TASK-514, le storie TASK-513)
+**Stato**: In corso (parte 0 chiusa il 2026-11-22; **A1, A2, B1, B2, C1, D e la privacy F in `main`** (#1437, #1460, #1473, #1490, #1501, #1517, #1496), tutte spente (`NUTRITION_ON`); poi, una PR dopo l'altra, **D2, G1, C2a, H, I e J in `main`** (#1547, #1552, #1563, #1652, #1660, #1673); **K1** (il peso) in `main` (#1679), privacy e termini #1713 in fila; in sessione dedicata **L** (le ricette: dati #1678 e colori #1686 in `main`); per la build nativa G2, C2b e l'accensione; la modalità è TASK-514, le storie TASK-513)
 **Fase**: 5 · **Branch**: una PR per parte; la parte 0 è
 `docs/TASK-489-nutrition-part-0`
 **Dipende da**: TASK-374 (il mio corpo, `body/energy.ts`), TASK-321 (Apple
@@ -1005,7 +1005,7 @@ precisazione 5, punto 6. Proposta in
 `out/TASK-489/PROPOSTA-PARTE-K-PESO.md`. Il Coordinatore valuta sessioni
 dedicate per J e K.
 
-### K1 — Il peso: la pesata, il grafico, l'obiettivo (parte 0 chiusa il 2026-11-27)
+### K1 — Il peso: la pesata, il grafico, l'obiettivo (codice in `main` il 2026-11-27)
 
 Sessione dedicata, aperta dal Coordinatore. Le scelte sono **dell'utente**
 (2026-11-27, una alla volta, ognuna con la proposta); il come è deciso
@@ -1023,9 +1023,10 @@ anni.
    statistiche; il bilancio delle stesse settimane accanto, senza
    giudizio); «My goal weight» con l'anello, le tappe e ogni quanto
    chiedere (1, 2 di partenza, 4 settimane, mai); la scheda delle
-   congratulazioni. Il peso ha un colore suo, viola (token `weight`, che
-   riusa anche TASK-523 per il Profilo); fino al suo turno su `tokens.ts`,
-   il colore del testo.
+   congratulazioni. Il peso usa il colore del testo: il viola pensato
+   all'inizio era troppo vicino a quello dei carboidrati della parte L2
+   (scelta dell'utente del 2026-11-27, «Colore del testo»; nessun token
+   `weight`).
 2. **L'ultima pesata diventa il peso di «Settings»**, da quel giorno in
    poi: le calorie già salvate nei post non cambiano; «Recalculate» solo a
    chi usa la stima di MuW; un peso cambiato a mano in «Settings» è una
@@ -1102,8 +1103,10 @@ Le altre quattro lingue entrano nelle tabelle dell'app con il codice.
 - Privacy, «Nutrition», in fondo al secondo capoverso: «Your latest
   weigh-in also becomes your weight in «Settings». Your weigh-ins, goal
   weight and milestones belong to the account signed in on the phone:
-  another account on the same phone does not see them. Weight goals are
-  never offered to people under 18.»
+  another account on the same phone does not see them, and they are
+  deleted from this phone when you delete the account in the app. Weight
+  goals are never offered to people under 18.» (la cancellazione aggiunta
+  con «Sì, aggiungila»).
 - Termini, «Nutrition», in fondo al secondo capoverso: «MuW does not let
   you set a goal weight below a body mass index of 18.5, or before you are
   18: this limit comes from public thresholds and does not tell whether a
@@ -1111,8 +1114,24 @@ Le altre quattro lingue entrano nelle tabelle dell'app con il codice.
 - Termini, «Nutrition», terzo capoverso: «… talk to your doctor before
   counting calories, setting a weight goal or changing what you eat.»
 
-Il resto della sezione resta: «This data was never on our server…» è
-ancora vero, e le pesate sono dentro «what you write in «Nutrition»».
+- Privacy, «Nutrition», terzo capoverso, corretto con «Sì, correggila
+  così»: «This data was never on our server, so logging out or deleting
+  your account does not delete it, except your weigh-ins, goal weight and
+  milestones, which are deleted when you delete the account: the rest
+  stays on your phone until you remove it there or uninstall the app.»
+
+Tutto nelle cinque lingue nella PR #1713, in fila nel turno privacy del
+Coordinatore (dopo TASK-466 e TASK-309 B2).
+
+#### Seguiti di K1 (li propone il Coordinatore all'utente)
+
+- `nutrition/NutritionWelcome.tsx`: chi prende la stima di MuW già
+  all'ingresso la salva come numero suo (`targetFromEstimate` falso), e
+  dopo una pesata non vede «Recalculate». Due righe, come in
+  `TargetSheet.tsx`.
+- `nutrition/EstimateBox.tsx`: «Recalculate» apre il foglio dell'obiettivo
+  con la stima chiusa; con una prop di apertura si aprirebbe già sulla
+  stima, un tocco in meno.
 
 ### L — Le ricette (richiesta del 2026-11-27; parte 0 chiusa, codice in una sessione dedicata)
 
@@ -1249,11 +1268,13 @@ Parte K1 (lista approvata dal Coordinatore il 2026-11-27; codice da
 `body/weighIns.ts`, `body/weightGoal.ts`, `body/useWeighIns.ts`,
 `nutrition/WeighInCard.tsx`, `WeightRow.tsx`, `WeightPage.tsx`,
 `WeightChart.tsx`, `WeightGoalSheet.tsx`, `Celebration.tsx`,
-`weightPeriod.ts`, `diaryDays.ts`. Esistenti: `nutrition/DiaryView.tsx`,
-`HowWeCalculate.tsx`, forse `TargetSheet.tsx` (da confermare al
-Coordinatore prima della PR), `i18n/{de,es,fr,it}.ts`; `theme/tokens.ts`
-e `theme/palettes.test.ts` solo per il token `weight`, nel turno dato dal
-Coordinatore (dopo L e TASK-520 A2, prima di TASK-523 A).
+`weightPeriod.ts`, `diaryDays.ts`, più `weightText.ts` e
+`TargetSheet.test.tsx` (detti al Coordinatore). Esistenti:
+`nutrition/DiaryView.tsx`, `HowWeCalculate.tsx`, `TargetSheet.tsx`,
+`nutritionStore.ts`, `useNutrition.ts` (il segno `targetFromEstimate`,
+dopo L in `main`), `account/phoneOwners.ts` (una riga: le pesate dimenticate
+con l'account), `i18n/{de,es,fr,it}.ts`. `theme/tokens.ts` non cambia: il
+peso usa il colore del testo.
 `body/bodyProfile.ts` non cambia (`saveBody` c'è già). Privacy e termini:
 PR a parte su `about/content/**` e `site/privacy/**`, in fila dopo
 TASK-466 e TASK-309 B2.
@@ -1306,6 +1327,20 @@ D `profile/ProfileHome.tsx` (una riga); F `about/content/**`,
   7). Restano: K1 e L nelle loro sessioni, la mail di prova a
   `hello@getmuw.app` prima della frase per chef e supermercati, L2, la
   build nativa (G2, C2b) e l'accensione.
+- **2026-11-27, parte K1, codice**: #1679 in `main` (6ab1a99d), unita
+  dal Coordinatore col «sì unisci 1679» dell'utente; spenta con
+  `NUTRITION_ON`. Scelte dell'utente in corsa: il peso nel colore del
+  testo (il viola era troppo vicino a quello dei carboidrati di L2); le
+  pesate si cancellano con l'account (riga in `account/phoneOwners.ts`,
+  sì del Coordinatore) e la privacy lo dice (#1713, terzo capoverso
+  corretto). «Recalculate» solo per chi ha preso la stima di MuW (segno
+  `targetFromEstimate`, dopo L in `main`). Prova al simulatore nel turno
+  del Coordinatore (iPhone 17, Expo Go): pesata, complimento, riga «Weight»,
+  pagina del peso in kg e %, obiettivo vuoto, troppo basso e salvato; un
+  difetto corretto (spazio sopra il grafico), schermate in
+  `out/TASK-489/shots-k1/`, «Sì, vanno bene» dell'utente. Restano: la
+  privacy #1713 al suo turno, i due seguiti sopra, la notifica in una parte
+  dopo, la prova sul telefono all'accensione.
 - **2026-11-27, parte K1, parte 0**: sessione dedicata aperta dal
   Coordinatore. Sei scelte dell'utente, una alla volta (sezione «K1»);
   fonti della soglia lette lo stesso giorno; lista dei file approvata dal

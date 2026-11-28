@@ -5,7 +5,7 @@
  */
 import { type Palette, paletteOf } from "../theme/tokens";
 import { BRIGHTNESS_STEPS, DEFAULT_TONE, type Tone, TONES } from "../theme/tone";
-import { TINT_SHARE, tintOver } from "./tint";
+import { contrastOf, INK_CONTRAST, inkOn, TINT_SHARE, tintOver } from "./tint";
 
 function luminance(hex: string): number {
   const [r, g, b] = [1, 3, 5].map((i) => {
@@ -57,11 +57,11 @@ test.each(EVERY)(
     for (const section of Object.values(c.section)) {
       const veil = tintOver(section, c.surface);
       expect(veil).toMatch(/^#[0-9A-F]{6}$/);
-      // The words on the card, and the section's own colour for its name
-      // and its icon.
+      // The words on the card, and the section's own colour for its icon:
+      // a graphic. Whether its name is in the colour too is `inkOn`'s.
       expect(contrast(c.text, veil)).toBeGreaterThanOrEqual(4.5);
       expect(contrast(c.textMuted, veil)).toBeGreaterThanOrEqual(4.5);
-      expect(contrast(section, veil)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(section, veil)).toBeGreaterThanOrEqual(3);
     }
   },
 );
@@ -74,3 +74,54 @@ test.each(EVERY)(
     }
   },
 );
+
+test("the contrast of two colours is the one the tokens' tests measure", () => {
+  expect(contrastOf("#FFFFFF", "#000000")).toBeCloseTo(21, 5);
+  expect(contrastOf("#000000", "#FFFFFF")).toBeCloseTo(21, 5);
+  expect(contrastOf("#777777", "#777777")).toBe(1);
+  expect(contrastOf("#F5A066", "#161411")).toBeCloseTo(
+    contrast("#F5A066", "#161411"),
+    10,
+  );
+  expect(() => contrastOf("#FFF", "#000000")).toThrow("#RRGGBB");
+  expect(INK_CONTRAST).toBe(4.5);
+});
+
+test.each(EVERY)(
+  "%s at step %i: the sections' names are all in their colour or none is",
+  (_tone, _step, c) => {
+    const inks = Object.values(c.section).map((section) => inkOn(section, c.text, c));
+    const coloured = inks.filter((ink) => ink !== c.text);
+    expect([0, inks.length]).toContain(coloured.length);
+    // Where a name is in its colour, it reads as words wherever it is written.
+    for (const ink of coloured) {
+      for (const under of [c.background, c.surface, tintOver(ink, c.surface)]) {
+        expect(contrast(ink, under)).toBeGreaterThanOrEqual(INK_CONTRAST);
+      }
+    }
+  },
+);
+
+test.each(EVERY.filter(([tone]) => tone === "dark"))(
+  "%s at step %i: a section's name is in its colour",
+  (_tone, _step, c) => {
+    for (const section of Object.values(c.section)) {
+      expect(inkOn(section, c.text, c)).toBe(section);
+    }
+  },
+);
+
+test("in the light tone at its brightest a section's name is in the text's colour", () => {
+  const c = at("light", BRIGHTNESS_STEPS - 1);
+  for (const section of Object.values(c.section)) {
+    expect(inkOn(section, c.text, c)).toBe(c.text);
+    expect(inkOn(section, c.textMuted, c)).toBe(c.textMuted);
+  }
+});
+
+test("a colour that is not a section's is asked to read as words itself", () => {
+  const c = at("dark", 0);
+  // The sections read; this grey does not, on a card.
+  expect(inkOn("#555555", c.text, c)).toBe(c.text);
+  expect(inkOn("#FFFFFF", c.text, c)).toBe("#FFFFFF");
+});

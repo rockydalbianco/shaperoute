@@ -493,6 +493,19 @@ test("«Privacy» says a saved flight counts, without a name, in the history of 
   }
 });
 
+test("«Privacy» says what is kept of a stretching session, on its own or inside a workout at the gym (TASK-466 C)", () => {
+  const stretching: Record<Language, RegExp> = {
+    en: /A stretching session is saved with its routine, its length and how many exercises you did/,
+    it: /Una sessione di stretching si salva con la sua routine/,
+    de: /Eine Stretching-Einheit wird mit ihrer Routine/,
+    fr: /Une séance d'étirements est enregistrée avec sa routine/,
+    es: /Una sesión de estiramientos se guarda con su rutina/,
+  };
+  for (const [language, content] of CONTENTS) {
+    expect(all(content.privacy)).toMatch(stretching[language]);
+  }
+});
+
 test("«Privacy» says the group runs and the groups nearby are found with the position rounded to about 1 km (TASK-309 B2, TASK-495 D)", () => {
   const nearby: Record<Language, RegExp> = {
     en: /rounded to about 1 km to find [^.]*towns, drawings, group runs and groups nearby/,

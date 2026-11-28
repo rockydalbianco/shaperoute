@@ -34,6 +34,8 @@ const ROWS = [
   "explore/RecommendedRow.tsx",
   "explore/RideItYourself.tsx",
   "paddle/PaddleExplore.tsx",
+  // And, at the very end of «Explore», the groups near you (TASK-495 D).
+  "groups/ExploreGroups.tsx",
   "search/SearchScreen.tsx",
   "search/StartState.tsx",
   // Out of the pages: on the map («Draw on the map», a card over the map,

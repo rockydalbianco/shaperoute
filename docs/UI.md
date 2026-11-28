@@ -1211,6 +1211,12 @@ Un tocco su uno sport lo sceglie e chiude il menu; un tocco fuori lo chiude
 senza cambiare niente. È la stessa scelta della sezione «Sport» di
 «Settings» (sotto): cambiata in un posto, cambia anche nell'altro, e
 «Draw» la segue subito. Dove non c'è il profilo non c'è nemmeno lo sport.
+**Dal TASK-512** (ADR-0420, scelte dell'utente): il pannello ha caselle
+piccole, **tre per riga** (emoji e nome), divise per famiglia come prima;
+la riga «Turns MuW into your ski/training app» di Sci e Palestra non è più
+scritta nella casella e resta solo per VoiceOver. Nessuna riga «ultimi
+usati». Il pannello è uno solo (`settings/SportMenu.tsx`) e lo apre anche
+la riga «Sport» di «Settings».
 
 **«Profile» senza account**: in cima un riquadro giallo pieno col cuore
 del logo, scuro, che si disegna da solo una volta (TASK-523 parte B,
@@ -1555,7 +1561,11 @@ grande compare alla sua misura, senza crescere, qui e sul disegno aperto.
 
 - **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,
   sotto); poi **«Change email»** e **«Phone number»** (TASK-183, sotto).
-- **«Sport»** (TASK-189, ADR-0152): per cosa sono i percorsi. Tre righe:
+- **«Sport»** (TASK-189, ADR-0152): per cosa sono i percorsi. **Dal
+  TASK-512** (ADR-0420) è una riga sola, «🏃‍♂️ Sport · Run ›», con lo
+  sport scelto in fondo: toccata apre lo stesso pannello del pulsante
+  accanto al profilo (sopra), e il resto di «Settings» non scende più di
+  una schermata e mezza. Prima, una riga per sport. Tre righe all'inizio:
   «Run» (🏃‍♂️), scelto all'inizio, con un «✓» bianco; «Bike» (🚴), che
   si sceglie dal TASK-190; «Paddle» (🛶: canoa, kayak, SUP, nome scelto
   dall'utente), che si sceglie dal TASK-191 (sotto, «Sull'acqua»). Uno

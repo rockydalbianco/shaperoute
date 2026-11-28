@@ -1,8 +1,10 @@
 # TASK-459 — «Segui subito» sui profili aperti
 
-**Stato**: In corso · parte 0 (domande e documenti, nessun codice)
-**Fase**: 5 · **Branch**: `docs/TASK-459-part-0` (questo file), poi le
-parti A e seguenti col via del Coordinatore
+**Stato**: In corso · parte 0 in `main` (#1736); A in `main` (#1740);
+C in #1742; B aspetta (vedi «Dove siamo»)
+**Fase**: 5 · **Branch**: `docs/TASK-459-part-0` (#1736),
+`feat/TASK-459-a-approve-followers` (#1740), `docs/TASK-459-c-privacy`
+(#1742), poi `feat/TASK-459-b-…` per l'app
 **ADR**: ADR-0370 · numero di task e di ADR dal Coordinatore il 2026-11-11
 (punto S14 della seconda prova, lato social); aperto dal «Coordinatore
 (fork 3)» il 2026-11-28 col sì dell'utente («Sì, apri la 459»)
@@ -142,11 +144,43 @@ site/tools/make_privacy.mjs
 site/privacy/index.html, site/privacy/{it,de,fr,es}/index.html
 ```
 
+## Dove siamo (2026-11-28)
+
+- **Parte 0**: in `main` (#1736, `55eef518`).
+- **Parte A** (API, migrazione `0091_approve_followers.sql`): in `main`
+  (#1740, `fb71ea1e`), unita dal Coordinatore col sì dell'utente («Sì,
+  unisci 1740»). Testi della notifica `new_follower` in DE, FR, ES
+  approvati dall'utente («Sì, vanno bene»). Rispetto all'elenco
+  approvato, in più solo dei test (sette file di test che volevano una
+  richiesta in attesa ora accendono l'interruttore). La migrazione dura
+  0,13 s con 1000 account e 3,9 s con 100 000 (dati finti,
+  `out/TASK-459/time_migration.py` nella cartella principale).
+  **Non è ancora sul server.**
+- **Parte C** (Privacy): #1742 (`c05e5119`), la frase nelle cinque
+  lingue (approvate dall'utente) e «nuovi follower» negli elenchi di push
+  ed email («Sì, aggiungi»); Privacy datata 28 novembre 2026. Il merge
+  col sì dell'utente lo chiede il Coordinatore; poi la copia sul sito.
+- **Passo 29 del server** (del Coordinatore, col sì dell'utente, solo con
+  C online): conti in sola lettura prima
+  (`out/TASK-459/counts-before-0091.sql`), deploy con la migrazione, poi
+  `python -m shaperoute_api.accepted_after_0091 --count` e la corsa vera,
+  che avvisa chi aveva chiesto (`follow_accepted`). Rifatta non trova
+  niente.
+- **Parte B** (app): aspetta A sul server e il «tocca a te» del
+  Coordinatore su `profile/SettingsPage.tsx` (prima viene 523 C1, il
+  nuovo stile di «Settings»). I nomi della riga sono già decisi: «Approve
+  followers», it «Approva chi ti segue», de «Follower bestätigen», fr
+  «Approuver les abonnés», es «Aprobar seguidores»; la nota inglese e
+  italiana è in «Scelte dell'utente», punto 4; la nota in DE, FR, ES va
+  mostrata all'utente nella PR di B. Un'API senza
+  `/me/approve-followers` risponde 404: la riga non c'è, come «Links to
+  my posts».
+
 ## Criteri di accettazione della parte 0
 
 - [x] Le quattro domande hanno una risposta dell'utente, scritta qui.
 - [x] ADR-0370 dice la regola e il perché.
-- [ ] L'elenco dei file delle parti A e seguenti è mandato al Coordinatore.
+- [x] L'elenco dei file delle parti A e seguenti è mandato al Coordinatore.
 
 ## File toccati (parte 0)
 

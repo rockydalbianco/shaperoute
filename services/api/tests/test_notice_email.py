@@ -173,6 +173,8 @@ def test_without_listeners_push_is_as_before(
     assert test.put(
         "/me/notifications", json={"push": True}, headers=ada
     ).status_code in (200, 204)
+    # A request waits for a yes only with «Approve followers» on (TASK-459).
+    test.put("/me/approve-followers", json={"approve_followers": True}, headers=ada)
     test.post(f"/users/{public_id(test, ada)}/follow", headers=bob)
     assert [m["body"] for m in expo.sent] == ["other_runner asked to follow you."]
 
@@ -228,6 +230,8 @@ def test_the_five_events_are_one_email_the_next_round(
     me, bob, cleo = signed_up(client), other(client), third(client)
     email_on(client, me)
     mine = posted(client, me)
+    # A request waits for a yes only with «Approve followers» on (TASK-459).
+    client.put("/me/approve-followers", json={"approve_followers": True}, headers=me)
     # bob asks to follow me; cleo accepts my request.
     client.post(f"/users/{public_id(client, me)}/follow", headers=bob)
     follows(client, me, cleo)
@@ -474,6 +478,8 @@ def test_the_language_is_the_accounts(
 ) -> None:
     me, bob = signed_up(client, language="it"), other(client)
     email_on(client, me)
+    # A request waits for a yes only with «Approve followers» on (TASK-459).
+    client.put("/me/approve-followers", json={"approve_followers": True}, headers=me)
     client.post(f"/users/{public_id(client, me)}/follow", headers=bob)
     notices.round()
     (email,) = outbox.to(EMAIL)

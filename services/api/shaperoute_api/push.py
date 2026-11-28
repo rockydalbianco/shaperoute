@@ -39,6 +39,9 @@ memory: a restart forgets it, and the receipts not read yet.
 
 The texts are in the language the app said with the token, else English.
 
+A follow at once (TASK-459, ADR-0370) is told as a new follower, to the
+account followed, on the same channels as the five above.
+
 An event let through (not one's own, the first of the day) also goes to
 the listeners, before the push: the email of the notices keeps the five
 events of the people for its daily email (notice_email.py, TASK-262 B).
@@ -90,6 +93,7 @@ Language = Literal["en", "de", "it", "es", "fr"]
 Kind = Literal[
     "follow_request",
     "follow_accepted",
+    "new_follower",
     "reaction",
     "comment",
     "comment_reply",
@@ -293,6 +297,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "it": "{name} ha accettato la tua richiesta di follow.",
         "es": "{name} ha aceptado tu solicitud para seguirle.",
         "fr": "{name} a accepté ta demande de suivi.",
+    },
+    # A follow at once, to an account with «Approve followers» off
+    # (TASK-459, ADR-0370): English and Italian approved by the user on
+    # 2026-11-28.
+    "new_follower": {
+        "en": "{name} started following you.",
+        "de": "{name} folgt dir jetzt.",
+        "it": "{name} ha iniziato a seguirti.",
+        "es": "{name} ha empezado a seguirte.",
+        "fr": "{name} a commencé à te suivre.",
     },
     "reaction": {
         "en": "{name} reacted {emoji} to your post.",

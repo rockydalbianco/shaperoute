@@ -1574,6 +1574,26 @@ uscite di un gruppo** sono righe di `group_runs`:
 - Nessuna riga di prima cambia, nessun backfill. Test in
   `test_group_outings.py`.
 
+Migrazione `0091_approve_followers.sql` (TASK-459 parte A, ADR-0370,
+`API.md` «Follow»; numero del Coordinatore):
+
+- `users.approve_followers` (`boolean NOT NULL DEFAULT false`): «Approve
+  followers». Falso: chi chiede di seguire segue subito (`follows`
+  scritta `accepted`); vero: la richiesta aspetta il sì, come da TASK-211.
+  Spento all'inizio, ma la migrazione lo **accende per gli account che
+  hanno almeno un disegno `followers`** (scelta dell'utente del
+  2026-11-28): quei disegni non si aprono a chi chiede senza una scelta
+  del proprietario.
+- Le richieste in attesa verso un account lasciato aperto **non le tocca
+  la migrazione**: le accetta `python -m shaperoute_api.accepted_after_0091`
+  subito dopo, nel passo del server, che avvisa chi aveva chiesto
+  (`follow_accepted`, push e campanella). `--count` le conta soltanto.
+  Rifatto, non trova più niente.
+- `email_notices` prende il tipo `new_follower`:
+  `email_notices_kind_check` ed `email_notices_check` (senza disegno per i
+  tre tipi dei follow) rifatti coi loro nomi. Test in
+  `test_approve_followers.py` e `test_follows.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

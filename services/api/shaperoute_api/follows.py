@@ -1,8 +1,11 @@
-"""Following, with a request the other accepts (TASK-211, ADR-0173,
-docs/API.md, «Follow»).
+"""Following, at once or with a request the other accepts (TASK-211,
+ADR-0173; TASK-459, ADR-0370; docs/API.md, «Follow»).
 
-A member finds another by name (GET /users?q=) and asks to follow; the
-other accepts or declines. Only an accepted request counts: in the numbers
+A member finds another by name (GET /users?q=) and asks to follow. When
+the other leaves «Approve followers» off (users.approve_followers,
+approve_followers.py) it follows at once, and the other is told it has a
+new follower. With the switch on the other accepts or declines, as before
+TASK-459. Only an accepted request counts: in the numbers
 of a profile (profiles.py), in the lists, and for who may see a drawing
 meant for the followers (follows_sql, TASK-208). Declining deletes the
 request: the one who asked sees what it saw before asking, and nothing
@@ -193,6 +196,15 @@ class FollowBody(BaseModel):
     follow: Literal["requested", "following"]
 
 
+@dataclass(frozen=True)
+class Asked:
+    """What asking to follow did: the answer, and whether the other got a
+    new follower now (ADR-0370), to be told so."""
+
+    body: FollowBody
+    new_follower: bool
+
+
 # --- Without the database ---
 
 
@@ -344,8 +356,12 @@ class Follows:
             ).fetchall()
         return PeopleBody(people=[_person(row) for row in rows])
 
-    def ask(self, user_id: int, public_id: str) -> FollowBody:
-        """Asks to follow; an account asked already or followed stays so."""
+    def ask(self, user_id: int, public_id: str) -> Asked:
+        """Asks to follow: at once when the other leaves «Approve
+        followers» off (ADR-0370), else a request. An account asked
+        already or followed stays so, but a request still waiting for an
+        account now open follows at once."""
+        now = self.now()
         try:
             with self.database.connect() as conn:
                 other = _account(conn, public_id)
@@ -355,20 +371,52 @@ class Follows:
                     # Across a block the other is not there (TASK-121).
                     raise AccountError(404, "http_error", NO_PROFILE)
                 row = conn.execute(
-                    "INSERT INTO follows (follower_id, followed_id, status, asked_at)"
-                    " VALUES (%s, %s, 'pending', %s)"
-                    # Asked again: the row stays as it is, date and all.
-                    " ON CONFLICT (follower_id, followed_id)"
-                    " DO UPDATE SET status = follows.status RETURNING status",
-                    (user_id, other, self.now()),
+                    # The row of before, read before the write.
+                    "WITH before AS (SELECT status FROM follows"
+                    " WHERE follower_id = %(me)s AND followed_id = %(other)s)"
+                    " INSERT INTO follows"
+                    " (follower_id, followed_id, status, asked_at, accepted_at)"
+                    " SELECT %(me)s, u.id,"
+                    " CASE WHEN u.approve_followers THEN 'pending' ELSE 'accepted' END,"
+                    " %(now)s, CASE WHEN u.approve_followers THEN NULL"
+                    " ELSE %(now)s::timestamptz END"
+                    " FROM users u WHERE u.id = %(other)s"
+                    # Asked again: the row stays as it is, date and all;
+                    # only a request waiting becomes a follow, when the
+                    # other is open now.
+                    " ON CONFLICT (follower_id, followed_id) DO UPDATE SET"
+                    " status = CASE WHEN follows.status = 'pending'"
+                    " THEN EXCLUDED.status ELSE follows.status END,"
+                    " accepted_at = CASE WHEN follows.status = 'pending'"
+                    " THEN EXCLUDED.accepted_at ELSE follows.accepted_at END"
+                    " RETURNING status, (SELECT status FROM before) AS was",
+                    {"me": user_id, "other": other, "now": now},
                 ).fetchone()
         except pg_errors.ForeignKeyViolation:
             # The other account was deleted between finding it and asking.
             raise AccountError(404, "http_error", NO_PROFILE) from None
-        assert row is not None
-        return FollowBody(
-            follow="following" if row["status"] == "accepted" else "requested"
+        if row is None:
+            # Deleted between finding it and asking, before the write.
+            raise AccountError(404, "http_error", NO_PROFILE)
+        following = row["status"] == "accepted"
+        return Asked(
+            FollowBody(follow="following" if following else "requested"),
+            new_follower=following and row["was"] != "accepted",
         )
+
+    def accept_waiting(self, user_id: int) -> list[int]:
+        """Every request still waiting for `user_id` accepted, as when it
+        turns «Approve followers» off (ADR-0370, point 3): the accounts
+        that asked, to be told. A request declined before is gone, and
+        stays so."""
+        with self.database.connect() as conn:
+            rows = conn.execute(
+                "UPDATE follows SET status = 'accepted', accepted_at = %s"
+                " WHERE followed_id = %s AND status = 'pending'"
+                " RETURNING follower_id",
+                (self.now(), user_id),
+            ).fetchall()
+        return sorted(int(row["follower_id"]) for row in rows)
 
     def stop(self, user_id: int, public_id: str) -> None:
         """Withdraws the request, or stops following."""
@@ -495,8 +543,8 @@ def follow_routes() -> APIRouter:
     @router.post("/users/{public_id}/follow", responses=NOT_FOUND)
     def ask(public_id: str, follows: Them, user: Me, request: Request) -> FollowBody:
         asked = follows.ask(user.id, public_id)
-        pushed_follow_request(request, user, public_id, asked)
-        return asked
+        pushed_follow(request, user, public_id, asked)
+        return asked.body
 
     # Withdraws a request or stops following: the same for the one who asks.
     @router.delete("/users/{public_id}/follow", status_code=204, responses=NOT_FOUND)
@@ -554,12 +602,15 @@ def install_follows(app: FastAPI) -> None:
 # --- Push notifications (TASK-262, ADR-0226) ---
 
 
-def pushed_follow_request(
-    request: Request, user: UserBody, public_id: str, asked: FollowBody
+def pushed_follow(
+    request: Request, user: UserBody, public_id: str, asked: Asked
 ) -> None:
-    """After a request is kept: the one asked is told (push.py), not when
-    the answer is «following» already."""
-    if asked.follow == "requested":
+    """After a follow or a request is kept: the one asked is told (push.py)
+    of a request, or of a new follower (ADR-0370); not when the answer is
+    the one of before."""
+    if asked.new_follower:
+        notify_account(request, "new_follower", user.id, public_id)
+    elif asked.body.follow == "requested":
         notify_account(request, "follow_request", user.id, public_id)
 
 

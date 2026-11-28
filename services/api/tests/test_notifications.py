@@ -296,6 +296,8 @@ def test_the_others_never_see_the_switches(client: TestClient) -> None:
         put(client, headers, {"email": True, "push": True})
     my_id = me(client, mine)["public_id"]
     their_id = me(client, theirs)["public_id"]
+    # A request waits for a yes only with «Approve followers» on (TASK-459).
+    client.put("/me/approve-followers", json={"approve_followers": True}, headers=mine)
     # They ask to follow, and are let in: every list has one of the two.
     assert client.post(f"/users/{my_id}/follow", headers=theirs).status_code == 200
     asked = client.get("/me/follow-requests", headers=mine)

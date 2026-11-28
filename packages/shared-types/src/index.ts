@@ -1244,6 +1244,16 @@ export interface Follow {
   follow: Exclude<FollowState, "none">;
 }
 
+/**
+ * GET and PUT /me/approve-followers: «Approve followers» (TASK-459,
+ * ADR-0370). Off, whoever asks to follow follows at once and `Follow` is
+ * `following`; on, a request waits for the account's yes. Off from the
+ * start. Turning it off accepts the requests waiting.
+ */
+export interface ApproveFollowersSwitch {
+  approve_followers: boolean;
+}
+
 /** The fewest characters GET /users?q= looks for, spaces at the ends left out. */
 export const PEOPLE_QUERY_MIN_LENGTH = 2;
 /** The most members GET /users?q= gives. */
@@ -2017,15 +2027,23 @@ export interface PushTokenRequest {
 
 /**
  * What a push notification tells of (TASK-262). `contest_won` (TASK-299)
- * goes to the winner of a contest and opens its post.
+ * goes to the winner of a contest and opens its post. `new_follower`
+ * (TASK-459) goes to an account followed at once and opens the profile of
+ * who follows.
  */
 export type PushKind =
-  "follow_request" | "follow_accepted" | "reaction" | "comment" | "tag" | "contest_won";
+  | "follow_request"
+  | "follow_accepted"
+  | "new_follower"
+  | "reaction"
+  | "comment"
+  | "tag"
+  | "contest_won";
 
 /**
  * The `data` of a push notification (TASK-262): what the app opens when it
  * is touched. A drawing for a reaction, a comment or a tag; the profile of
- * who acted for a follow request or a request accepted.
+ * who acted for a follow request, a request accepted or a new follower.
  */
 export type PushData =
   | { kind: PushKind; drawing_id: string }

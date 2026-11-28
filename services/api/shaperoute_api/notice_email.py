@@ -89,7 +89,7 @@ from shaperoute_api.resend_email import Email, Resend
 log = logging.getLogger(__name__)
 
 EMAIL_KINDS = frozenset(
-    {"follow_request", "follow_accepted", "reaction", "comment", "tag"}
+    {"follow_request", "follow_accepted", "new_follower", "reaction", "comment", "tag"}
 )
 STOP_PATH = "/notice-email/stop"
 PURPOSE = b"notice-email-stop"
@@ -169,6 +169,10 @@ LINES_SQL = (
     " AND f.status = 'pending')"
     " WHEN 'follow_accepted' THEN EXISTS (SELECT 1 FROM follows f"
     " WHERE f.follower_id = n.recipient_id AND f.followed_id = n.actor_id"
+    " AND f.status = 'accepted')"
+    # A new follower (TASK-459, ADR-0370): while it follows.
+    " WHEN 'new_follower' THEN EXISTS (SELECT 1 FROM follows f"
+    " WHERE f.follower_id = n.actor_id AND f.followed_id = n.recipient_id"
     " AND f.status = 'accepted')"
     " WHEN 'reaction' THEN re.user_id IS NOT NULL"
     " WHEN 'comment' THEN c.id IS NOT NULL AND c.hidden_at IS NULL"

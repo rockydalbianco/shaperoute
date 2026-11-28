@@ -97,6 +97,8 @@ def test_a_follow_request_and_its_acceptance_are_told_once(
     client: TestClient, expo: FakeExpo
 ) -> None:
     ada, bob = people(client)
+    # A request waits for a yes only with «Approve followers» on (TASK-459).
+    client.put("/me/approve-followers", json={"approve_followers": True}, headers=ada)
     assert client.post(
         f"/users/{public_id(client, ada)}/follow", headers=bob
     ).is_success
@@ -188,6 +190,8 @@ def test_a_notification_never_changes_the_answer(
         database, Expo(send=down), run=lambda task: task(), later=lambda *_: None
     )
     ada, bob = people(client)
+    # A request waits for a yes only with «Approve followers» on (TASK-459).
+    client.put("/me/approve-followers", json={"approve_followers": True}, headers=ada)
     asked = client.post(f"/users/{public_id(client, ada)}/follow", headers=bob)
     assert asked.status_code == 200
     assert asked.json() == {"follow": "requested"}

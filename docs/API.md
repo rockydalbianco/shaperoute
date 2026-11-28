@@ -2246,6 +2246,7 @@ servizio push di Expo. Tutti e due gli endpoint vogliono il token: senza,
   |---|---|---|---|
   | `follow_request` | qualcuno chiede di seguire | chi è chiesto | il profilo di chi chiede |
   | `follow_accepted` | una richiesta è accettata | chi aveva chiesto | il profilo di chi accetta |
+  | `new_follower` | qualcuno segue subito (TASK-459) | chi è seguito | il profilo di chi segue |
   | `reaction` | una reazione a un disegno (il super like con l'inizio del suo commento) | il proprietario | il disegno |
   | `comment` | un commento a un disegno, con il suo inizio | il proprietario | il disegno |
   | `tag` | un tag in un disegno | chi è taggato | il disegno |
@@ -2836,17 +2837,20 @@ tipi in `shared-types` (`PlanPostRequest`, `MyPlanPost`, `GymPlanPosted`,
   link pubblico e chat; non è in «My activities». Le rotte
   `/me/photo-posts` non la vedono.
 
-### Follow (TASK-211, ADR-0173)
+### Follow (TASK-211, ADR-0173; TASK-459, ADR-0370)
 
-Un iscritto ne cerca un altro per nome e gli chiede di seguirlo; l'altro
-accetta o rifiuta. **Conta solo una richiesta accettata**: nei numeri del
+Un iscritto ne cerca un altro per nome e gli chiede di seguirlo. Se
+l'altro tiene spento «Approve followers» (TASK-459) lo **segue subito**;
+acceso, l'altro accetta o rifiuta. **Conta solo una richiesta accettata**
+(o un follow subito): nei numeri del
 profilo, negli elenchi e per chi vedrà i disegni «Followers» (TASK-208).
 Tutti gli endpoint vogliono il token: senza, `401 not_signed_in`; senza
 database, `503 accounts_unavailable`. Tipi in `shared-types` (`Person`,
 `PeopleFound`, `PeoplePage`, `Follow`, `FollowState`,
 `PEOPLE_QUERY_MIN_LENGTH`, `PEOPLE_FOUND_MAX`, `PERSON_PHOTO_SIDE`), esempi
 in `fixtures/people.json`, `people-page.json`, `follow.json`; il codice in
-`follows.py`.
+`follows.py`. L'interruttore: `ApproveFollowersSwitch`,
+`fixtures/approve-followers.json`, `approve_followers.py`.
 
 | Endpoint | Cosa | Risposta |
 |---|---|---|
@@ -2859,6 +2863,8 @@ in `fixtures/people.json`, `people-page.json`, `follow.json`; il codice in
 | `GET /me/followers` | chi mi segue | `200` `PeoplePage` |
 | `DELETE /me/followers/{public_id}` | togliere qualcuno da chi mi segue | `204` |
 | `GET /me/following` | chi seguo | `200` `PeoplePage` |
+| `GET /me/approve-followers` | «Approve followers» | `200` `{ "approve_followers": bool }` |
+| `PUT /me/approve-followers` | accenderlo o spegnerlo | `200` `{ "approve_followers": bool }` |
 
 - **`Person`** è solo `public_id`, `username` e `photo`: la foto del
   profilo a **128 px** di lato (`PERSON_PHOTO_SIDE`, metà di quella di
@@ -2895,6 +2901,19 @@ in `fixtures/people.json`, `people-page.json`, `follow.json`; il codice in
   il `public_id` dell'ultimo della pagina.
 - **Cancellare un account** (`DELETE /me`) lo toglie da ogni elenco e da
   ogni numero, nei due versi.
+- **«Approve followers»** (`users.approve_followers`, TASK-459, ADR-0370):
+  **spento all'inizio**; la migrazione 0091 lo accende per gli account
+  che avevano già un disegno «Followers». Spento, `POST
+  /users/{public_id}/follow` scrive subito il follow e risponde
+  `following`, e chi è seguito riceve `new_follower` (push, campanella,
+  email delle novità: «ada started following you.»); acceso, `requested`
+  e `follow_request`, come prima. Una richiesta rimasta in attesa verso
+  un account ora aperto diventa un follow quando chi l'aveva fatta chiede
+  di nuovo. Il corpo del `PUT` è solo `{ "approve_followers": bool }`
+  (altro: `422`). **Spegnerlo accetta le richieste in attesa**, e
+  ciascuno che aveva chiesto riceve `follow_accepted` come dopo un sì a
+  mano; le rifiutate prima non tornano. Accenderlo non toglie nessun
+  follow. Un'API precedente risponde `404` a `/me/approve-followers`.
 - **Un'API precedente** non ha questi endpoint (`404 http_error`; `GET
   /users` senza id è `404` anche lui) e il suo `PublicProfile` non ha
   `followers`, `following` né `follow`.

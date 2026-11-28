@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import approveFollowers from "../fixtures/approve-followers.json" with { type: "json" };
 import follow from "../fixtures/follow.json" with { type: "json" };
 import peoplePage from "../fixtures/people-page.json" with { type: "json" };
 import people from "../fixtures/people.json" with { type: "json" };
 import publicProfile from "../fixtures/public-profile.json" with { type: "json" };
 import {
+  type ApproveFollowersSwitch,
   FOLLOW_STATES,
   type Follow,
   type FollowState,
@@ -50,4 +52,10 @@ test("a profile says how many follow it and where the viewer stands", () => {
   assert.ok(state !== undefined && FOLLOW_STATES.includes(state));
   assert.equal(typeof seen.followers, "number");
   assert.equal(typeof seen.following, "number");
+});
+
+test("«Approve followers» is one switch and nothing else (TASK-459)", () => {
+  const kept: ApproveFollowersSwitch = approveFollowers;
+  assert.deepEqual(Object.keys(kept), ["approve_followers"]);
+  assert.equal(typeof kept.approve_followers, "boolean");
 });

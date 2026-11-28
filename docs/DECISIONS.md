@@ -641,9 +641,71 @@ lasciando le righe d'indice.
 - ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione: l'utente ha tolto la capsula colorata dopo averla vista nel simulatore; il colore di sezione sta solo nel contenuto delle pagine · 2026-11-27 · Attiva
 - ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro: 3:1 come forme in ogni tono, 4,5:1 come scritte solo nel tono scuro; dove non reggono come scritte il nome del gruppo è nel colore del testo (`inkOn`, tutte le sezioni insieme) · 2026-11-27 · Attiva
 - ADR-0370 — «Segui subito» (TASK-459): un interruttore dell'account, «Approve followers»; spento si segue subito, acceso la richiesta come oggi; parte spento, acceso per gli account di oggi con almeno un post «Followers»; spegnerlo accetta le richieste in attesa; notifica nuova `new_follower` · 2026-11-28 · Accettata
+- ADR-0415, aggiunta F (TASK-520) — Il video di una routine di stretching è una scena fatta coi disegni che la pagina del video della corsa sa già fare (linee, punti, riquadri, parole): la pagina non si tocca; ogni esercizio una volta sola, 3 secondi che scendono fino a 1,5; si apre dalla pagina della categoria, senza testi nuovi; niente esce dal telefono · 2026-11-28 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0415, aggiunta F (TASK-520) — Il video di una routine: una scena fatta coi disegni che la pagina del video sa già fare
+
+**Stato**: Attiva · 2026-11-28 · TASK-520 parte F. Aggiunta ad ADR-0415,
+che resta com'è (punto 7: «il video nasce nella pagina del video della
+corsa, con una scena sua»). **Scelte dell'utente**: il video si apre dalla
+pagina della categoria («Pagina categoria», 2026-11-27); nessun testo
+nuovo, si riusano quelli del video della corsa e dello stretching («Sì,
+nessun testo nuovo», 2026-11-27); i fotogrammi e tre video interi («Sì,
+approvo», 2026-11-28). **Decise dall'agente su delega dell'utente** le
+scelte tecniche qui sotto. Codice: #1732.
+
+**Contesto**: la figura dello stretching è fatta di View girate
+(ADR-0147), e la pagina nascosta che fa i video (`share/videoPage.ts`,
+ADR-0254) non ha View: disegna su un canvas un elenco di cose per ogni
+fotogramma. Quella pagina è lunga, provata sui telefoni e usata dal video
+della corsa.
+
+**Decisione**:
+
+1. **La pagina non si tocca.** Il video della routine è una `VideoScene`
+   come quella di una corsa, senza mappa, senza animale e senza musica,
+   fatta solo di quello che la pagina disegna già: `line`, `dot`, `rect`,
+   `text` (`stretch/routineVideo.ts`). `RunVideo` la monta com'è; ha in più
+   una sola prop facoltativa, il nome del file («MuW-stretching.mp4»).
+2. **La figura si ridisegna dagli stessi numeri** dell'app (`poses.ts`,
+   `posesFront.ts`): un arto è una linea sola che passa per le sue
+   giunture, tonda in punta e dove si piega; la testa è un punto; gli arti
+   lontani al 40%. Quanto il bacino sta sopra il pavimento e di quanto una
+   posa lunga scivola per restare intera si calcolano come li calcola
+   `Figure`. Le linee uguali fra un fotogramma e l'altro si scrivono una
+   volta.
+3. **Ogni esercizio una volta sola**, nell'ordine in cui compare, anche
+   quando la routine fa due giri: il video dice di cosa è fatta la
+   routine. Tre secondi l'uno; quando sono tanti il tempo scende, così che
+   tutti insieme stiano in 24 secondi, mai sotto 1,5 (il massimo oggi è 16
+   esercizi diversi). Con l'apertura (2 s) e il logo (2,2 s) un video dura
+   da 16 a 28 secondi.
+4. **Il respiro o il movimento torna sempre alla posa**: nel suo tempo
+   l'esercizio va e torna un numero intero di volte, al ritmo più vicino
+   al suo. Di un esercizio «each side» si vede un lato. Fra un esercizio e
+   il successivo la figura sfuma via e torna: nel video non si alza in
+   piedi fra due pose come fa nell'app.
+5. **I colori sono quelli dell'app in quel momento**, dai token: fondo,
+   testo, il giallo solo sul logo, il colore del gruppo per la barra, il
+   tempo e il cerchio tenue dietro la figura.
+6. **Privacy ricontrollata**: il video si fa sul telefono, non passa dal
+   server e non entra nel Feed; esce solo se la persona lo condivide dal
+   foglio del telefono. Non mostra nomi, luoghi né dati della persona:
+   solo la routine. Nessuna riga nuova nell'informativa.
+
+**Motivo**: una scena in più non mette a rischio il video della corsa e
+si prova tutta coi test, senza telefono; una pagina cambiata no. Mostrare
+ogni esercizio una volta tiene il video corto abbastanza da condividerlo.
+
+**Conseguenze**: nessuna dipendenza, nessuna build nativa, nessun passo
+sul server, nessun testo nuovo. La scena pesa circa 1 MB e passa alla
+pagina in una chiamata sola. La pagina del video carica comunque MapLibre
+all'avvio anche se qui non serve: senza rete il video si fa lo stesso.
+Senza telefono si guarda facendo girare gli script della pagina in Chrome
+(`out/TASK-520/f/tools/` nel checkout principale).
 
 ## ADR-0370 — «Segui subito»: un interruttore dell'account, «Approve followers», spento per chi non ha post «Followers»
 

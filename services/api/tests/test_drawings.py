@@ -227,7 +227,10 @@ def follows(
     accepted: bool = True,
 ) -> None:
     """`follower` asks to follow `followed`, which accepts unless told not
-    to (TASK-211)."""
+    to (TASK-211). `followed` keeps «Approve followers» on (TASK-459): the
+    follow is a request, as before the switch."""
+    on = {"approve_followers": True}
+    assert client.put("/me/approve-followers", json=on, headers=followed).is_success
     wanted = public_id(client, followed)
     asked = client.post(f"/users/{wanted}/follow", headers=follower)
     assert asked.status_code == 200, asked.text

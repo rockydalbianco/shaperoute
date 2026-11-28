@@ -50,6 +50,7 @@ from shaperoute_api.activity_graphs import (
     ground_for,
     source_for,
 )
+from shaperoute_api.approve_followers import install_approve_followers
 from shaperoute_api.avatars import install_avatars
 from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
@@ -440,6 +441,9 @@ def create_app(
     # Members found by name, and following with a request (TASK-211); they
     # need a token.
     install_follows(app)
+    # «Approve followers», the switch of follow at once (TASK-459); it
+    # needs a token.
+    install_approve_followers(app)
     # What the members write under a drawing (TASK-120); they need a token.
     install_comments(app)
     # What the members leave under a drawing with one tap, the super like

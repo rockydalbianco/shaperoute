@@ -494,6 +494,8 @@ def test_for_the_followers_only_with_the_request_accepted(client: TestClient) ->
     assert error(client.get(path, headers=bob), 404, "http_error") == NO_GROUP_RUN
     assert go(client, bob, run["id"]).status_code == 404
     # A request not accepted yet is not a follow.
+    # A request waits for a yes only with «Approve followers» on (TASK-459).
+    client.put("/me/approve-followers", json={"approve_followers": True}, headers=ada)
     asked_only = client.post(f"/users/{public_id(client, ada)}/follow", headers=bob)
     assert asked_only.json() == {"follow": "requested"}
     assert client.get(path, headers=bob).status_code == 404

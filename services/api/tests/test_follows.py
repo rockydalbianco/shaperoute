@@ -1,7 +1,9 @@
 """Following with a request, in a real PostgreSQL (TASK-211, ADR-0173):
 asking, accepting, declining, withdrawing, unfollowing and removing; the
 numbers of a profile; the search by name; never the email; a deleted
-account gone from everywhere."""
+account gone from everywhere. Ada and Bea keep «Approve followers» on
+(TASK-459, ADR-0370), so a follow is a request; following at once, with
+the switch off, is at the end and in test_approve_followers.py."""
 
 from __future__ import annotations
 
@@ -144,14 +146,23 @@ def old_member(database: Database, wall: WallClock, username: str) -> Member:
     return member
 
 
+def approving(client: TestClient, member: Member, on: bool = True) -> Member:
+    """`member` with «Approve followers» turned on, or off (TASK-459)."""
+    answer = client.put(
+        "/me/approve-followers", json={"approve_followers": on}, headers=member.headers
+    )
+    assert answer.json() == {"approve_followers": on}
+    return member
+
+
 @pytest.fixture
 def ada(client: TestClient) -> Member:
-    return Member(client, "Ada_runs")
+    return approving(client, Member(client, "Ada_runs"))
 
 
 @pytest.fixture
 def bea(client: TestClient) -> Member:
-    return Member(client, "bea.trento")
+    return approving(client, Member(client, "bea.trento"))
 
 
 def code(answer: Any) -> str:
@@ -695,6 +706,7 @@ def test_accounts_made_before_the_follows_can_follow(
     new = api(database, wall)
     seen = profile(new, ada, bea)
     assert (seen["followers"], seen["following"], seen["follow"]) == (0, 0, "none")
-    assert ask(new, ada, bea).json() == {"follow": "requested"}
-    assert accept(new, bea, ada).status_code == 204
+    # Without a drawing for its followers an account of before is open
+    # (migration 0091, TASK-459): it is followed at once.
+    assert ask(new, ada, bea).json() == {"follow": "following"}
     assert profile(new, ada, bea)["followers"] == 1

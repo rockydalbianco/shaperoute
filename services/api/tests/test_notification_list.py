@@ -106,6 +106,8 @@ def test_the_events_of_the_people_are_the_list_newest_first(
 ) -> None:
     me, bob, cleo = signed_up(client), other(client), third(client)
     mine = posted(client, me)
+    # A request waits for a yes only with «Approve followers» on (TASK-459).
+    client.put("/me/approve-followers", json={"approve_followers": True}, headers=me)
     # Push is off for everyone: the list is kept all the same.
     client.post(f"/users/{public_id(client, me)}/follow", headers=bob)
     wall.t += timedelta(minutes=1)
@@ -141,6 +143,8 @@ def test_the_text_is_in_the_language_of_the_account(
 ) -> None:
     me = signed_up(client, language="it")
     bob = other(client)
+    # A request waits for a yes only with «Approve followers» on (TASK-459).
+    client.put("/me/approve-followers", json={"approve_followers": True}, headers=me)
     client.post(f"/users/{public_id(client, me)}/follow", headers=bob)
     assert texts(client, me) == ["other_runner ha chiesto di seguirti."]
 

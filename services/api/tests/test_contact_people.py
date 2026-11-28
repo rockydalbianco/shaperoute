@@ -182,6 +182,8 @@ def test_every_account_with_the_number_is_found(client: TestClient) -> None:
 def test_where_the_one_who_asks_stands_comes_with_each(client: TestClient) -> None:
     me = signed_up(client, 1)
     ada = signed_up(client, 2, phone=ADA_PHONE)
+    # A request waits for a yes only with «Approve followers» on (TASK-459).
+    client.put("/me/approve-followers", json={"approve_followers": True}, headers=ada)
     asked = client.post(f"/users/{public_id(client, ada)}/follow", headers=me)
     assert asked.status_code == 200
     (found,) = look(client, me, sha(ADA_PHONE)).json()["people"]

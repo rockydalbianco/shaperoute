@@ -13,8 +13,8 @@ a time, with how many are unread. Each has the push's text in the account's
 language (the sign-up's, then the phone's, then English), who acted, and
 what the app opens when it is touched: push.py's data_of, the same as the
 push's. What is no longer true is left out, as in the email of the notices:
-a request withdrawn, a follow ended, a reaction taken back, a comment
-or a reply deleted or hidden, a reaction to a comment taken back, a tag
+a request withdrawn, a follow ended (a new follower too), a reaction taken
+back, a comment or a reply deleted or hidden, a reaction to a comment taken back, a tag
 removed, a drawing no longer seen, and anything across a block or from an
 account hidden from a report. Nor a row of a
 drawing of an activity the app does not read (reads.py, TASK-387): it
@@ -149,6 +149,10 @@ def rules_sql(reads: Reads) -> str:
         " AND f.status = 'pending')"
         " WHEN 'follow_accepted' THEN EXISTS (SELECT 1 FROM follows f"
         " WHERE f.follower_id = n.recipient_id AND f.followed_id = n.actor_id"
+        " AND f.status = 'accepted')"
+        # A new follower (TASK-459): while it follows.
+        " WHEN 'new_follower' THEN EXISTS (SELECT 1 FROM follows f"
+        " WHERE f.follower_id = n.actor_id AND f.followed_id = n.recipient_id"
         " AND f.status = 'accepted')"
         " WHEN 'reaction' THEN re.user_id IS NOT NULL"
         " WHEN 'comment' THEN c.id IS NOT NULL AND c.hidden_at IS NULL"

@@ -577,6 +577,25 @@ esercizio dal nome libero (sotto).
   dopo l'allenamento, anche senza rete.
 - **Condividere**: il riquadro, senza risultati, emoji, video né Strava.
 
+## Lo stretching alla fine (TASK-466 parte C)
+
+Scelta dell'utente del 2026-11-26, «Dentro l'allenamento» («ADR-0378,
+aggiunta C ed E»).
+
+- **«Remember to stretch»** alla fine dell'allenamento, come dopo la corsa
+  (TASK-285): tenuto «Stop», prima della fine con il modulo del post c'è il
+  promemoria con «Skip» e «Stretch». «Skip» va alla fine com'era;
+  «Stretch» apre «After gym» da 3, 5 o 10 minuti. Non si chiede per un
+  allenamento finito da solo («Still training?» senza risposta) né per uno
+  riaperto già finito.
+- **Va con l'allenamento**, non è un'attività a sé: la routine, i minuti,
+  i secondi senza pause e gli esercizi fatti partono con «Save»
+  (`stretch` di `PUT /me/gym-sessions/{key}`, `API.md`). Lasciato prima di
+  scegliere quanto, o senza un esercizio finito, non parte niente.
+- **Nel post** la riga «Stretching · 5 min» sopra gli esercizi, nascosta
+  con loro («Show exercises»). La riga nel riepilogo di fine allenamento
+  viene dopo TASK-511 B.
+
 ## La classifica (parte F)
 
 Scelte dell'utente: la scelta 9 («Sì, così») e del 2026-11-06 «Profilo +

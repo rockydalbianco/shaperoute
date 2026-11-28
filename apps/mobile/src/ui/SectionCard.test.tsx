@@ -3,9 +3,23 @@ import { StyleSheet, Text } from "react-native";
 
 import { color, font, radius } from "../theme/tokens";
 import { SectionCard } from "./SectionCard";
-import { tintOver } from "./tint";
+import { inkOn, tintOver } from "./tint";
 
 // A card of a page (TASK-523 part A2).
+
+// `inkOn` decides by the tone the app was opened in: here it is the real one
+// unless a test stands in for it.
+jest.mock("./tint", () => {
+  const actual = jest.requireActual<typeof import("./tint")>("./tint");
+  return { ...actual, inkOn: jest.fn(actual.inkOn) };
+});
+const ink = jest.mocked(inkOn);
+const realInkOn = jest.requireActual<typeof import("./tint")>("./tint").inkOn;
+
+beforeEach(() => {
+  ink.mockReset();
+  ink.mockImplementation(realInkOn);
+});
 
 const face = (testID: string) =>
   StyleSheet.flatten(screen.getByTestId(testID).props.style);
@@ -58,4 +72,16 @@ test("with no title there is no heading", async () => {
 test("the caller's style comes last", async () => {
   await render(<SectionCard style={{ padding: 0 }} testID="card" />);
   expect(face("card").padding).toBe(0);
+});
+
+test("where the tone's sections do not read as words, the title is the text's colour", async () => {
+  ink.mockImplementation((_colour, fallback) => fallback);
+  await render(<SectionCard title="Draw" colour={color.section.draw} testID="card" />);
+  // The veil stays: only the words change.
+  expect(face("card").backgroundColor).toBe(
+    tintOver(color.section.draw, color.surface),
+  );
+  const title = screen.getByRole("header", { name: "Draw" });
+  expect(StyleSheet.flatten(title.props.style).color).toBe(color.text);
+  expect(ink).toHaveBeenCalledWith(color.section.draw, color.text);
 });

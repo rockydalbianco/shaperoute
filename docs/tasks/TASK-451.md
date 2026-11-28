@@ -150,6 +150,14 @@ docs/UI.md                                              («La fine della corsa»
 - Nessuna dipendenza nuova, nessun file nativo: fingerprint iOS
   `5e1b5ce5` invariato.
 
+## Cosa resta
+
+- **L'OTA sulla 1.2.0**, dopo l'approvazione di App Review: la chiede il
+  Coordinatore all'utente.
+- **La prova dell'utente sul telefono**: una corsa uscita di strada di
+  almeno 200 m su una forma o una parola, poi «Save & redo»; le soglie
+  (200 m, 40 m) si ritoccano dopo, se serve.
+
 ## Criteri di accettazione
 
 - [x] `missedRouteM` e `redoOf` coperti da test deterministici: corsa

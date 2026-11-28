@@ -94,7 +94,9 @@ test("the button opens «From a file», with what to pick and how", async () => 
   expect(screen.queryByText("From a file")).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Add past activity" }));
   expect(screen.getByText("From a file")).toBeTruthy();
-  expect(screen.getByText("GPX, TCX, FIT or IGC from Strava, Garmin, Komoot…")).toBeTruthy();
+  expect(
+    screen.getByText("GPX, TCX, FIT or IGC from Strava, Garmin, Komoot…"),
+  ).toBeTruthy();
   expect(
     screen.getByText(
       "Export the activity as a file from the other app or its website, save it in Files, then pick it here.",

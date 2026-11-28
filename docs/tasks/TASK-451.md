@@ -1,9 +1,12 @@
 # TASK-451 — «Rifai meglio»: la stessa forma dopo una corsa uscita di strada
 
-**Stato**: In lavorazione · 2026-11-27 · parte 0 chiusa (sei scelte
-dell'utente), lista dei file approvata dal Coordinatore (fork 3), ADR-0419.
+**Stato**: Done · 2026-11-28 · #1716 (parte 0), #1717 (A), #1726 (B),
+documenti di chiusura (questa). Esito: «Save & redo» a fine corsa, provato
+nel simulatore; restano l'OTA sulla 1.2.0 (la chiede il Coordinatore
+all'utente) e la prova sul telefono.
 **Fase**: 5 · **Branch**: `docs/TASK-451-part-0`,
-`feat/TASK-451-a-redo-pick`, `feat/TASK-451-b-redo-button`
+`feat/TASK-451-a-redo-pick`, `feat/TASK-451-b-redo-button`,
+`docs/TASK-451-closing`
 **Dipende da**: TASK-313 («Draw it near me», in `main`); la parte B tocca
 `App.tsx` dopo TASK-523 T in `main` (il Coordinatore lo dice)
 **ADR**: ADR-0419 · numero del task dal Coordinatore l'11
@@ -114,20 +117,51 @@ apps/mobile/src/screens/FinishScreen.tsx
 apps/mobile/src/screens/FinishRedo.test.tsx             (nuovo)
 apps/mobile/App.tsx                                     (il collegamento)
 apps/mobile/src/i18n/it.ts, de.ts, es.ts, fr.ts         (le chiavi nuove)
+
+# Chiusura (documenti)
+docs/tasks/TASK-451.md, docs/STATUS.md (la voce esce)
+docs/archive/COMPLETATI.md                              (una riga)
+docs/DECISIONS.md                                       (precisazione di ADR-0419)
+docs/INDEX.md                                           (una riga)
+docs/UI.md                                              («La fine della corsa»)
 ```
+
+## Com'è andata (2026-11-28)
+
+- **Parte A** (#1717): `route/redoBetter.ts` con `missedRouteM` e
+  `redoOf`, 16 test su un quadrato di 1 km.
+- **Parte B** (#1726): il pulsante in `FinishCard`, il collegamento in
+  `App.tsx`, le quattro chiavi nelle quattro tabelle (`Redo@@run` resta
+  separata dal «Redo» dei tratti), `FinishRedo.test.tsx`.
+- **La richiesta della corsa**: quella di «Draw» quando il percorso
+  corso è quello scelto lì; altrimenti quella di «Explore» (i preferiti
+  passano da lì) quando il suo risultato è il percorso corso.
+- **Prova nel simulatore** (2026-11-27, API locale usa e getta): cuore di
+  5 km a Trento, corsa simulata che taglia circa 1100 m → la scheda mostra
+  «Save & redo»; il tocco salva (`PUT /me/activities` 201) e riapre
+  «Draw» col cuore, 5,0 km e la partenza della corsa; «Draw route» ridà
+  lo stesso cuore. Un taglio di 110 m non mostra il pulsante.
+- **Trovati nella prova e corretti in #1726**: la riga «Share» · «Keep
+  running» · «Save & redo» non ci stava e tagliava «Share» → la riga va a
+  capo; su un giro chiuso «dove ci si è fermati» prendeva il passaggio
+  sbagliato vicino a partenza e arrivo → si prende il passaggio più avanti
+  i cui 100 m prima sono stati corsi per più di metà (precisazione di
+  ADR-0419).
+- Nessuna dipendenza nuova, nessun file nativo: fingerprint iOS
+  `5e1b5ce5` invariato.
 
 ## Criteri di accettazione
 
-- [ ] `missedRouteM` e `redoOf` coperti da test deterministici: corsa
+- [x] `missedRouteM` e `redoOf` coperti da test deterministici: corsa
       fedele → nessun pulsante; deviazione di 200 m o più → pulsante;
       corsa interrotta prima della fine senza deviazioni → nessun pulsante;
       canoa e nuoto → mai; foto/disegno a mano → mai; forma e parola →
       stessa forma/parola, distanza e partenza.
-- [ ] Il pulsante appare a fine corsa solo con le condizioni sopra, col nome
+- [x] Il pulsante appare a fine corsa solo con le condizioni sopra, col nome
       con o senza account e il testo di VoiceOver approvati.
-- [ ] Il tocco con account salva come «Save»; se il salvataggio fallisce la
+- [x] Il tocco con account salva come «Save»; se il salvataggio fallisce la
       corsa resta dov'è e «Draw» non si apre.
-- [ ] «Draw» si apre con forma o parola, km e partenza della corsa; «Draw
+- [x] «Draw» si apre con forma o parola, km e partenza della corsa; «Draw
       route» chiede al motore il percorso di sempre.
-- [ ] Nessun colore a mano, chiavi nelle quattro lingue, fingerprint iOS
+- [x] Nessun colore a mano, chiavi nelle quattro lingue, fingerprint iOS
       invariato (`5e1b5ce5`), `tsc` e test toccati verdi.

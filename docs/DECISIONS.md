@@ -762,6 +762,15 @@ evitare strade. La corsa salvata non tiene distanza chiesta né partenza.
 telefono. Se servirà evitare i tratti sbagliati, sarà un task del motore a
 parte, con la prova dei percorsi uguali.
 
+**Precisazione (2026-11-28, #1726, deciso dall'agente su delega
+dell'utente)**: «dove ci si è fermati» non è il punto del percorso più
+vicino all'ultima posizione: su un giro chiuso partenza e arrivo
+coincidono, e chi taglia a metà e torna a casa sembrerebbe arrivato in
+fondo (o, al contrario, fermo all'inizio). Fra i passaggi del percorso
+vicini all'ultima posizione si prende il più avanti i cui **100 m prima**
+sono stati corsi per più di metà (campioni entro 40 m dalla traccia); se
+nessuno lo è, il primo. Lo ha trovato la prova nel simulatore.
+
 ## ADR-0418 — Le lettere dicono cosa disegnano a penna alzata: la A con la punta, la Q con l'anello
 
 **Stato**: Attiva · 2026-11-27 · TASK-522 (#1696). Deciso dall'agente su

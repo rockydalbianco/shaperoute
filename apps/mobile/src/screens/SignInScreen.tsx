@@ -22,8 +22,11 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Cascade } from "../ui/Cascade";
+import { SectionCard } from "../ui/SectionCard";
 import { ForgotPassword } from "./ForgotPassword";
 import { Segmented } from "./Segmented";
+import { SignInHero } from "./SignInHero";
 
 export type SignInMode = "signUp" | "logIn";
 
@@ -128,6 +131,11 @@ type Props = {
  * the account, so the strong password iOS offers is one the server takes.
  * The eye in the password's box shows what is being typed, and hides it
  * again: the text stays as it is.
+ *
+ * Its look is the pages' (TASK-523 part B, ADR-0417): the yellow card with
+ * the heart on top, the fields on a card of the kit, and the four pieces
+ * coming one after the other (`../ui/Cascade`). The words, the fields and
+ * what they do are as before.
  */
 export function SignInScreen({
   initialMode,
@@ -184,136 +192,154 @@ export function SignInScreen({
 
   return (
     <View style={styles.form}>
+      <Cascade index={0}>
+        <SignInHero testID="sign-in-hero" />
+      </Cascade>
       {notice && (
         <Text style={[styles.notice, notice.tone === "warning" && styles.warning]}>
           {notice.text}
         </Text>
       )}
-      <Segmented
-        options={MODES.map((each) => ({ value: each.value, label: t(each.label) }))}
-        value={mode}
-        onChange={(next) => {
-          if (next !== mode) {
-            setMode(next);
-            onMode();
-          }
-        }}
-        style={styles.modes}
-      />
-      <Field
-        label={t("EMAIL")}
-        value={email}
-        onChangeText={setEmail}
-        placeholder={t("name@example.com")}
-        keyboardType="email-address"
-        autoComplete="email"
-        // The name of the account for iOS, in both forms: it is what
-        // «Log in» asks for later.
-        textContentType="username"
-        returnKeyType="next"
-        submitBehavior="submit"
-        onSubmitEditing={() =>
-          (signingUp ? usernameField : passwordField).current?.focus()
-        }
-      />
-      {signingUp && (
-        <Field
-          ref={usernameField}
-          label={t("USERNAME")}
-          value={username}
-          onChangeText={setUsername}
-          placeholder={t("3 to 20 letters, digits, _ or .")}
-          autoComplete="username-new"
-          // Not the name of the account: iOS keeps the email with the
-          // password.
-          textContentType="none"
-          returnKeyType="next"
-          submitBehavior="submit"
-          onSubmitEditing={() => passwordField.current?.focus()}
+      <Cascade index={1}>
+        <Segmented
+          options={MODES.map((each) => ({ value: each.value, label: t(each.label) }))}
+          value={mode}
+          onChange={(next) => {
+            if (next !== mode) {
+              setMode(next);
+              onMode();
+            }
+          }}
+          style={styles.modes}
         />
-      )}
-      <Field
-        ref={passwordField}
-        label={t("PASSWORD")}
-        value={password}
-        onChangeText={(next) => {
-          const after = afterKey(eye.current, next, Date.now());
-          eye.current = after.memory;
-          setPassword(after.password);
-        }}
-        placeholder={signingUp ? t("At least 8 characters") : undefined}
-        secureTextEntry={!passwordShown}
-        autoComplete={signingUp ? "new-password" : "current-password"}
-        textContentType={signingUp ? "newPassword" : "password"}
-        passwordRules={signingUp ? PASSWORD_RULES : undefined}
-        returnKeyType={signingUp ? "next" : "go"}
-        onSubmitEditing={signingUp ? undefined : submit}
-        end={
-          <Pressable
-            style={({ pressed }) => [styles.eyeButton, pressed && styles.eyePressed]}
-            onPress={() => {
-              eye.current =
-                passwordShown && Platform.OS === "ios"
-                  ? { held: password, emptied: null }
-                  : NO_MEMORY;
-              setPasswordShown(!passwordShown);
+      </Cascade>
+      <Cascade index={2}>
+        <SectionCard style={styles.fields} testID="sign-in-fields">
+          <Field
+            label={t("EMAIL")}
+            value={email}
+            onChangeText={setEmail}
+            placeholder={t("name@example.com")}
+            keyboardType="email-address"
+            autoComplete="email"
+            // The name of the account for iOS, in both forms: it is what
+            // «Log in» asks for later.
+            textContentType="username"
+            returnKeyType="next"
+            submitBehavior="submit"
+            onSubmitEditing={() =>
+              (signingUp ? usernameField : passwordField).current?.focus()
+            }
+          />
+          {signingUp && (
+            <Field
+              ref={usernameField}
+              label={t("USERNAME")}
+              value={username}
+              onChangeText={setUsername}
+              placeholder={t("3 to 20 letters, digits, _ or .")}
+              autoComplete="username-new"
+              // Not the name of the account: iOS keeps the email with the
+              // password.
+              textContentType="none"
+              returnKeyType="next"
+              submitBehavior="submit"
+              onSubmitEditing={() => passwordField.current?.focus()}
+            />
+          )}
+          <Field
+            ref={passwordField}
+            label={t("PASSWORD")}
+            value={password}
+            onChangeText={(next) => {
+              const after = afterKey(eye.current, next, Date.now());
+              eye.current = after.memory;
+              setPassword(after.password);
             }}
-            accessibilityRole="button"
-            accessibilityLabel={passwordShown ? t("Hide password") : t("Show password")}
-            hitSlop={space.xs}
-          >
-            <EyeGlyph crossed={passwordShown} />
-          </Pressable>
-        }
-      />
-      {signingUp && (
-        <Pressable
-          style={styles.check}
-          onPress={() => setAtLeast16(!atLeast16)}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: atLeast16 }}
-          // The tick is drawn, not read: the label says what it is.
-          accessibilityLabel={t("I am at least 16")}
-        >
-          <View style={[styles.box, atLeast16 && styles.boxChecked]}>
-            {atLeast16 && <Text style={styles.tick}>✓</Text>}
-          </View>
-          <Text style={styles.checkText}>{t("I am at least 16")}</Text>
-        </Pressable>
-      )}
-      {signingUp && (
-        <View style={styles.away}>
-          <Text style={styles.awayText}>
-            {t("If you don't open MuW for 2 weeks, we email you once with what's new.")}
-          </Text>
-          <Pressable
-            style={styles.check}
-            onPress={() => setNoAwayEmail(!noAwayEmail)}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: noAwayEmail }}
-            accessibilityLabel={t("Don't send me these emails")}
-          >
-            <View style={[styles.box, noAwayEmail && styles.boxChecked]}>
-              {noAwayEmail && <Text style={styles.tick}>✓</Text>}
+            placeholder={signingUp ? t("At least 8 characters") : undefined}
+            secureTextEntry={!passwordShown}
+            autoComplete={signingUp ? "new-password" : "current-password"}
+            textContentType={signingUp ? "newPassword" : "password"}
+            passwordRules={signingUp ? PASSWORD_RULES : undefined}
+            returnKeyType={signingUp ? "next" : "go"}
+            onSubmitEditing={signingUp ? undefined : submit}
+            end={
+              <Pressable
+                style={({ pressed }) => [
+                  styles.eyeButton,
+                  pressed && styles.eyePressed,
+                ]}
+                onPress={() => {
+                  eye.current =
+                    passwordShown && Platform.OS === "ios"
+                      ? { held: password, emptied: null }
+                      : NO_MEMORY;
+                  setPasswordShown(!passwordShown);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  passwordShown ? t("Hide password") : t("Show password")
+                }
+                hitSlop={space.xs}
+              >
+                <EyeGlyph crossed={passwordShown} />
+              </Pressable>
+            }
+          />
+          {signingUp && (
+            <Pressable
+              style={styles.check}
+              onPress={() => setAtLeast16(!atLeast16)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: atLeast16 }}
+              // The tick is drawn, not read: the label says what it is.
+              accessibilityLabel={t("I am at least 16")}
+            >
+              <View style={[styles.box, atLeast16 && styles.boxChecked]}>
+                {atLeast16 && <Text style={styles.tick}>✓</Text>}
+              </View>
+              <Text style={styles.checkText}>{t("I am at least 16")}</Text>
+            </Pressable>
+          )}
+          {signingUp && (
+            <View style={styles.away}>
+              <Text style={styles.awayText}>
+                {t(
+                  "If you don't open MuW for 2 weeks, we email you once with what's new.",
+                )}
+              </Text>
+              <Pressable
+                style={styles.check}
+                onPress={() => setNoAwayEmail(!noAwayEmail)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: noAwayEmail }}
+                accessibilityLabel={t("Don't send me these emails")}
+              >
+                <View style={[styles.box, noAwayEmail && styles.boxChecked]}>
+                  {noAwayEmail && <Text style={styles.tick}>✓</Text>}
+                </View>
+                <Text style={styles.checkText}>{t("Don't send me these emails")}</Text>
+              </Pressable>
             </View>
-            <Text style={styles.checkText}>{t("Don't send me these emails")}</Text>
-          </Pressable>
-        </View>
-      )}
-      <Pressable
-        style={[styles.button, busy && styles.buttonBusy]}
-        onPress={submit}
-        disabled={busy}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: busy, busy }}
-        testID="account-submit"
-      >
-        <Text style={styles.buttonText}>
-          {signingUp
-            ? t(busy ? "Signing up…" : "Sign up")
-            : t(busy ? "Logging in…" : "Log in")}
-        </Text>
-      </Pressable>
+          )}
+        </SectionCard>
+      </Cascade>
+      <Cascade index={3}>
+        <Pressable
+          style={[styles.button, busy && styles.buttonBusy]}
+          onPress={submit}
+          disabled={busy}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: busy, busy }}
+          testID="account-submit"
+        >
+          <Text style={styles.buttonText}>
+            {signingUp
+              ? t(busy ? "Signing up…" : "Sign up")
+              : t(busy ? "Logging in…" : "Log in")}
+          </Text>
+        </Pressable>
+      </Cascade>
       {problem && <Text style={styles.problem}>{problem}</Text>}
       {!signingUp && askReset !== undefined && (
         <Pressable
@@ -395,6 +421,11 @@ const styles = StyleSheet.create({
   modes: {
     backgroundColor: color.surface,
   },
+  // The fields on their card, a little closer than the pieces of the form:
+  // «Sign up» keeps its button on the screen.
+  fields: {
+    gap: space.md,
+  },
   field: {
     gap: space.xs,
   },
@@ -413,7 +444,8 @@ const styles = StyleSheet.create({
     paddingVertical: space.sm,
     fontSize: fontSize.input,
     color: color.text,
-    backgroundColor: color.surface,
+    // On the card, a field is the page's colour: a well in it.
+    backgroundColor: color.background,
   },
   // Room for the eye: the text never runs under it.
   inputWithEnd: {

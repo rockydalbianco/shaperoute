@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { color, font, space } from "../theme/tokens";
+import { inkOn } from "./tint";
 
 type Props = {
   /** The group's name, written as it is shown («ACCOUNT»). */
@@ -16,14 +17,18 @@ type Props = {
 /**
  * The name over a group of cards or rows (TASK-523, ADR-0417): the app's
  * label, a heading for screen readers. In the section's colour where the
- * group has one, which keeps 4.5:1 on the page and on a card
- * (`sectionContrast.test.ts`); never the only sign, the name is there.
+ * group has one and the tone's sections read as words (`./tint`, `inkOn`):
+ * the dark tone. In the light tone, where they are livelier, it is the
+ * quiet grey as any group's. Never the only sign, the name is there.
  */
 export function SectionHeader({ title, colour, trailing, testID }: Props) {
   return (
     <View style={styles.line} testID={testID}>
       <Text
-        style={[styles.title, colour !== undefined && { color: colour }]}
+        style={[
+          styles.title,
+          colour !== undefined && { color: inkOn(colour, color.textMuted) },
+        ]}
         accessibilityRole="header"
       >
         {title}

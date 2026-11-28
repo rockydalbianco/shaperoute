@@ -198,11 +198,26 @@ sport «Stretching» (TASK-475) le offre già in «Draw».
   `test_gym_stretch.py`, il contratto in `shared-types` (`GymStretch`,
   `fixtures/gym-session-stretch.json`). Resta il passo server con la
   migrazione 0089 (Coordinatore, col sì dell'utente): C2 parte dopo.
+  Sul server col passo 26 (0c40a3dc): tabella `gym_stretches` presente.
 - **C2, app**: in `GymWorkoutHost.tsx` fra la fine e `GymEnd`
   `StretchReminder` («Remember to stretch», «Skip», «Stretch») e poi la
   routine «After gym»; il risultato in `gym/gymStretch.ts` (non in
   `workout.ts`, che è di TASK-511) fino a «Save»; la riga nel post in
   `GymDetail.tsx`. Nessun testo nuovo.
+  **Fatta** (2026-11-27): PR #1697. Il promemoria compare solo quando
+  la fine è di adesso (entro un minuto, «Stop»): non dopo un «Still
+  training?» senza risposta, né per un allenamento riaperto già finito
+  (deciso dall'agente su delega, approvato dal Coordinatore). Lo stato sta
+  in un file suo (`gym-stretch.json`): un'app chiusa sul promemoria lo
+  richiede, una chiusa dopo lo stretching lo salva lo stesso. 30 test
+  nuovi; quattro test di prima premono «Skip» dopo «Stop» (file in più
+  approvati dal Coordinatore: `GymWorkoutHost.test.tsx`,
+  `GymPostForm.test.tsx`, `GymKcalShown.test.tsx`,
+  `__tests__/AppGymEndSignedOut.test.tsx`). Provata al simulatore
+  (iPhone 17e, Expo Go): «Stop» → promemoria → «After gym» 3 min → un
+  esercizio → «End» → fine dell'allenamento → «Save» manda `stretch`; il
+  post mostra «Stretching · 5 min». Resta la prova sul telefono dopo
+  l'OTA.
 - **Seguito**: la riga nel riepilogo (`GymEnd.tsx`) dopo TASK-489 I e
   TASK-511 B, nell'ordine del Coordinatore.
 - **Privacy**: sì dell'utente (2026-11-26, «Sì, va bene») alla frase

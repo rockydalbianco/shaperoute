@@ -1143,6 +1143,11 @@ export const IT: Table = {
   "Distance: {distance}": "Distanza: {distance}",
   "Distance: {distance} {units}": "Distanza: {distance} {units}",
   "Keep running": "Continua a correre",
+  "Save & redo": "Salva e rifai",
+  "Redo@@run": "Rifai",
+  "Save the run and draw the same shape again":
+    "Salva la corsa e disegna di nuovo la stessa forma",
+  "Draw the same shape again": "Disegna di nuovo la stessa forma",
   "Remember to stretch": "Ricordati di fare stretching",
   Stretch: "Stretching",
   Skip: "Salta",
@@ -2092,6 +2097,22 @@ export const IT: Table = {
   "1 session · {minutes} min": "1 sessione · {minutes} min",
   "After your activity today": "Dopo l'attività di oggi",
   // end of TASK-520 part D
+  // src/stretch, the exercise's page (TASK-520 part E)
+  "Breathe in": "Inspira",
+  "Breathe out": "Espira",
+  Hold: "Tenuta",
+  Sides: "Lati",
+  Position: "Posizione",
+  Both: "Entrambi",
+  One: "Uno",
+  Standing: "In piedi",
+  Chair: "Sedia",
+  Floor: "A terra",
+  "How to": "Come si fa",
+  "Good for": "Utile per",
+  "Try it · {minutes} min": "Provalo · {minutes} min",
+  "Play@@timer": "Riprendi",
+  // end of TASK-520 part E
   Morning: "Mattino",
   "After run": "Dopo la corsa",
   "After gym": "Dopo la palestra",
@@ -4043,4 +4064,13 @@ export const IT: Table = {
   "Wind aloft": "Vento in quota",
   "Wind aloft not available": "Vento in quota non disponibile",
   "{source} · run of {time}": "{source} · corsa delle {time}",
+  // src/groups/ExploreGroups.tsx (TASK-495 part D: the groups at the end of Explore)
+  "GROUPS NEAR YOU": "GRUPPI VICINO A TE",
+  "See all@@groups": "Vedi tutti",
+  "No groups near you yet.": "Ancora nessun gruppo vicino a te.",
+  "No group found.": "Nessun gruppo trovato.",
+  "Write at least {count} letters of a group's name.":
+    "Scrivi almeno {count} lettere del nome di un gruppo.",
+  "The groups could not load. Check the connection and try again.":
+    "Non è stato possibile caricare i gruppi. Controlla la connessione e riprova.",
 };

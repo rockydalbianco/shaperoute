@@ -1147,6 +1147,11 @@ export const FR: Table = {
   "Distance: {distance}": "Distance : {distance}",
   "Distance: {distance} {units}": "Distance : {distance} {units}",
   "Keep running": "Continuer à courir",
+  "Save & redo": "Enregistrer et refaire",
+  "Redo@@run": "Refaire",
+  "Save the run and draw the same shape again":
+    "Enregistre la course et redessine la même forme",
+  "Draw the same shape again": "Redessine la même forme",
   "Remember to stretch": "Pensez à vous étirer",
   Stretch: "S'étirer",
   Skip: "Passer",
@@ -2102,6 +2107,22 @@ export const FR: Table = {
   "1 session · {minutes} min": "1 séance · {minutes} min",
   "After your activity today": "Après votre activité du jour",
   // end of TASK-520 part D
+  // src/stretch, the exercise's page (TASK-520 part E)
+  "Breathe in": "Inspirez",
+  "Breathe out": "Expirez",
+  Hold: "Maintien",
+  Sides: "Côtés",
+  Position: "Position",
+  Both: "Les deux",
+  One: "Un seul",
+  Standing: "Debout",
+  Chair: "Chaise",
+  Floor: "Sol",
+  "How to": "Comment faire",
+  "Good for": "Bon pour",
+  "Try it · {minutes} min": "Essayez · {minutes} min",
+  "Play@@timer": "Reprendre",
+  // end of TASK-520 part E
   Morning: "Matin",
   "After run": "Après la course",
   "After gym": "Après la salle",
@@ -4066,4 +4087,13 @@ export const FR: Table = {
   "Wind aloft": "Vent en altitude",
   "Wind aloft not available": "Vent en altitude indisponible",
   "{source} · run of {time}": "{source} · run de {time}",
+  // src/groups/ExploreGroups.tsx (TASK-495 part D: the groups at the end of Explore)
+  "GROUPS NEAR YOU": "GROUPES PRÈS DE TOI",
+  "See all@@groups": "Tout voir",
+  "No groups near you yet.": "Pas encore de groupe près de toi.",
+  "No group found.": "Aucun groupe trouvé.",
+  "Write at least {count} letters of a group's name.":
+    "Écris au moins {count} lettres du nom d'un groupe.",
+  "The groups could not load. Check the connection and try again.":
+    "Impossible de charger les groupes. Vérifie la connexion et réessaie.",
 };

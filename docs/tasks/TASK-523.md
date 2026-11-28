@@ -1,9 +1,9 @@
 # TASK-523 — Lo stile di Alimentazione e Stretching in tutta l'app
 
 **Stato**: In lavorazione · parte 0 chiusa il 2026-11-27; parte A: A1 (i
-colori di sezione, #1700) in `main`, A2 (il kit, #1707) aperta. Nessuna
-schermata è ancora cambiata. Prossime: B (Accesso), poi T quando il
-Coordinatore dà il via su `tabs/TabBar.tsx`.
+colori di sezione, #1700), A2 (il kit, #1707) e A3 (i colori più vivi nel
+tono chiaro, #1728) in `main`. Nessuna schermata è ancora cambiata. La parte T è stata tolta dall'utente: la barra delle
+schede resta com'è. Prossima: B (Accesso).
 **Fase**: 5 · **Branch**: uno per parte (`feat/TASK-523-a1-section-colours`,
 `feat/TASK-523-a2-kit`, …)
 **Dipende da**: TASK-489 parte H (la pagina animata di Alimentazione, in
@@ -53,12 +53,26 @@ Una domanda alla volta, con la proposta dell'agente; le parole sono sue.
      giallo un po ma poco più scuro»;
    - sulla quarta versione: **«Sì, approvo»**.
 4. La barra delle schede (dopo le misure, vedi «La barra delle schede»):
-   «Va bene la capsula colorata sulla scheda aperta?» → **«Sì, la
-   capsula»**.
+   «Va bene la capsula colorata sulla scheda aperta?» → «Sì, la capsula».
+   **Cambiata lo stesso giorno, viste le foto del simulatore**: vedi la
+   scelta 6.
 5. I valori veri dei cinque colori, su una tavola in chiaro e in scuro col
    viola accanto a quello dei carboidrati e l'albicocca accanto al corallo
    degli avvisi: «Vanno bene i cinque colori, in chiaro e in scuro?» →
    **«Sì, vanno bene»**.
+6. La barra delle schede, sulle foto del simulatore in chiaro e in scuro:
+   «Va bene la barra delle schede com'è nelle foto?» → «Cambio qualcosa»:
+   **«manca il liquid glass della versione precedente forse meglio tenere senza i colori le icone del feed disegna ma teniamo solamente il liquid glass con le animazioni trasparenti»**. Quindi la barra resta quella di 469,
+   il vetro con la sua capsula trasparente e le sue animazioni, **senza
+   colore di sezione**. Ha anche chiesto di rivedere i colori nel tono
+   chiaro: vedi la scelta 7.
+7. I colori nel tono chiaro, su una tavola con quelli di allora accanto a
+   una proposta più accesa (nomi dei gruppi in nero, colore solo su forme,
+   anelli e icone): «Va bene la proposta più viva?» → **«Sì, più vivi»**.
+   I valori entrati (A3) sono il 4–11% più scuri di quelli della tavola:
+   quelli esatti scendevano sotto 3:1 sulla traccia dell'anello (2,34),
+   sul velo (2,97) e sull'alone (2,57). Detto all'utente, con le tre
+   colonne a confronto, e tavola aggiornata.
 
 Lo schizzo approvato: https://claude.ai/artifact/Lv6FnzHFoF3RkAswzwE2Cn
 (sorgenti nel checkout principale, `out/stile-app/canvas/project/`).
@@ -99,48 +113,51 @@ Lo schizzo approvato: https://claude.ai/artifact/Lv6FnzHFoF3RkAswzwE2Cn
 Niente rosa e niente sfumature tra due colori diversi. Il rosa del gruppo
 «Intimacy» dello Stretching (520) è un'altra decisione e qui non si tocca.
 
-I valori veri (parte A1, `color.section`), dal più scuro al più chiaro
-gradino di ogni tono; approvati dall'utente sulla tavola:
+I valori veri (`color.section`: parte A1, e A3 per il tono chiaro al
+gradino più luminoso), dal più scuro al più chiaro gradino di ogni tono;
+approvati dall'utente sulle tavole:
 
 | Token | Tono scuro | Tono chiaro | Tinta |
 |---|---|---|---|
-| `draw` | `#F5A066` → `#FFBC8F` | `#7A3A08` → `#8F4510` | albicocca, nuova |
-| `profile` | `#A99BFF` → `#C4BAFF` | `#3F2FA3` → `#4B39BF` | viola di `stretch.moments` |
-| `explore` | `#4DD2FF` → `#6EDBFF` | `#005370` → `#006A8F` | ciano di `stretch.sports` |
-| `feed` | `#E3C596` → `#EED9B5` | `#5E4712` → `#6B5118` | sabbia, nuova |
-| `messages` | `#4FD08A` → `#7BE3AA` | `#095428` → `#0F6B35` | verde di `food` |
+| `draw` | `#F5A066` → `#FFBC8F` | `#7A3A08` → `#BA5B16` | albicocca, nuova |
+| `profile` | `#A99BFF` → `#C4BAFF` | `#3F2FA3` → `#7563E6` | viola (in scuro quello di `stretch.moments`) |
+| `explore` | `#4DD2FF` → `#6EDBFF` | `#005370` → `#007DAB` | ciano (in scuro quello di `stretch.sports`) |
+| `feed` | `#E3C596` → `#EED9B5` | `#5E4712` → `#9A6F21` | sabbia, nuova |
+| `messages` | `#4FD08A` → `#7BE3AA` | `#095428` → `#168649` | verde (in scuro quello di `food`) |
+
+Nel tono scuro i colori tengono il 4,5:1 delle scritte: il nome di un
+gruppo è nel suo colore. Nel tono chiaro al gradino più luminoso sono più
+vivi e tengono il 3:1 delle forme (fondo, card, `border`, velo, alone) ma
+non il 4,5:1 sulle card: lì il nome del gruppo e il titolo della card sono
+nel colore del testo. Lo decide `inkOn` in `ui/tint.ts`, per tutte le
+sezioni insieme: una pagina non ha mai un nome colorato e uno no.
 
 Il peso (489 K1) non ha un colore: l'utente ha scelto il colore del testo,
 perché il viola era troppo vicino a quello dei carboidrati (`carbs`).
 
-## La barra delle schede (parte T): la capsula, non le icone
+## La barra delle schede: resta il vetro, senza colore (parte T tolta)
 
-Misure fatte con la matematica di `theme/glass.test.ts` (nessun codice):
-sul vetro vero il fondo è la tinta del tono (60–68%) sopra la foto. Tono
-scuro con foto bianca: per 4,5:1 serve un colore con L ≥ 0,893; tono chiaro
-con foto nera: L ≤ 0,012. Lo stesso `color.text` passa di poco. I colori
-dello schizzo in scuro su foto bianca: sabbia 3,03, ciano 2,86, verde
-2,56, albicocca 2,41, viola 2,10. Quindi né le icone colorate né «colore
-pieno solo sull'icona aperta» reggono.
+Scelta dell'utente del 2026-11-27, sulle foto del simulatore (scelta 6):
+la barra delle schede non prende il colore di sezione. Resta com'è in
+`main`: il vetro di 469, la capsula trasparente (`glass.selected`) e le
+sue animazioni. `tabs/TabBar.tsx`, `App.tsx` e `theme/tokens.ts` non
+vengono toccati per questo; il token `onSection` non esiste.
 
-Scelta dell'utente, d'accordo la sessione di 469: **la capsula della scheda
-aperta si riempie del colore della sezione, opaca, con l'icona scura
-sopra** (tra 8:1 e 12:1 con qualsiasi foto dietro); le altre icone restano
-come oggi; a scheda chiusa la foto del profilo non ha bordo colorato.
+Come ci si è arrivati, perché non si rifaccia la strada:
+- **Icone colorate** (lo schizzo approvato): non reggono. Coi conti di
+  `theme/glass.test.ts`, sul vetro vero il fondo è la tinta del tono
+  (60–68%) sopra la foto; in tono scuro con foto bianca serve un colore
+  con L ≥ 0,893, in chiaro con foto nera L ≤ 0,012. I colori dello schizzo
+  in scuro su foto bianca: sabbia 3,03, ciano 2,86, verde 2,56, albicocca
+  2,41, viola 2,10.
+- **Capsula piena del colore, icona sopra** (scelta 4, d'accordo la
+  sessione di 469): scritta e provata nel simulatore, non pubblicata. Le
+  misure passavano (icona sulla capsula 9,5–12:1 in scuro, 6,1–7,5:1 in
+  chiaro, uguali con «Aumenta contrasto»), ma la capsula piena copre
+  proprio il vetro della scheda aperta: all'utente è mancato il Liquid
+  Glass, e l'ha tolta.
 
-Per chi scrive la parte T (da 469):
-- la capsula è un pezzo pieno sopra il vetro, non una tinta del vetro; il
-  suo posto è quello di `glass.selected` (`styles.capsule`);
-- le capsule sono tre (`moves`, i giri -1/0/1 dello swipe dal profilo al
-  Feed) e scivolano sul driver nativo, dove un colore non si interpola:
-  cinque strati, uno per colore, ognuno con l'opacità presa da `at`
-  attorno al suo indice;
-- un «colore sopra» per sezione e per tono, misurato in un test;
-- le icone spente restano `color.text` sul vetro vero e `textMuted` sul
-  velo; la barra ha anche le icone di sci e allenamento;
-- con «Riduci trasparenza» la barra è opaca: misurare anche lì;
-- prima delle foto per l'utente, misurare nel simulatore
-  (`out/TASK-469/tools/contrast.py`): i conti sono solo il pavimento.
+Il colore di sezione resta nel contenuto delle pagine.
 
 ## Le pagine e il vetro (da 469, per le parti B–G)
 
@@ -186,10 +203,8 @@ simulatore prima/dopo, chiaro e scuro, e il sì dell'utente prima del merge.
 - **C — Impostazioni**: `profile/SettingsPage.tsx`, le righe in
   `settings/*`.
 - **D — Disegno**: `route/RoutePanel.tsx` e i pezzi del modulo «Draw».
-- **T — la capsula colorata della barra delle schede**: `tabs/TabBar.tsx`
-  è di 469; la parte la fa questo task, d'accordo con quella sessione,
-  quando il Coordinatore dà il via (dopo la correzione di 469 alle icone
-  spente). Vedi «La barra delle schede».
+- **T — la barra delle schede**: tolta dall'utente il 2026-11-27. La
+  barra resta di 469, senza colore. Vedi «La barra delle schede».
 - **E — Profilo** · **F — Feed, Explore, Messaggi** · **G — fine attività
   e pagine degli sport**: liste dei file all'avvio di ciascuna; diverse
   schermate appartengono a task in corso (489, 466, 520, 495, 479).
@@ -222,7 +237,7 @@ Decise dall'agente su delega dell'utente, salvo dove è scritto «utente».
 
 ## Criteri di accettazione
 
-- [ ] Parte A: il kit in `ui/` coi test (A2, #1707, aperta); i token nuovi
+- [ ] Parte A: il kit in `ui/` coi test (A2, #1707, fatto); i token nuovi
       coi test di contrasto in chiaro e in scuro, nessun valore esistente
       cambiato (A1, #1700, fatto).
 - [ ] Ogni schermata rifatta usa solo il kit e i token (nessun colore a
@@ -246,5 +261,13 @@ parti: la lista esatta va al Coordinatore prima di ognuna.
 - 2026-11-27 — barra delle schede: misure sul vetro, risposta di 469,
   schizzo aggiornato, «Sì, la capsula».
 - 2026-11-27 — parte A: elenco dei file approvato dal Coordinatore; tavola
-  dei colori, «Sì, vanno bene»; A1 #1700 in `main`; A2 #1707 aperta;
-  ADR-0417 scritto.
+  dei colori, «Sì, vanno bene»; A1 #1700 e A2 #1707 in `main`; ADR-0417
+  scritto (#1708).
+- 2026-11-27 — parte T: capsula colorata scritta in locale e fotografata
+  nel simulatore (chiaro, scuro, «Aumenta contrasto»); sulle foto l'utente
+  l'ha tolta: la barra resta il vetro di 469. Nessuna PR di codice.
+  Documenti corretti in #1724.
+- 2026-11-27 — parte A3 (#1728): colori di sezione più vivi nel tono
+  chiaro, «Sì, più vivi»; `inkOn` nel kit; file: `theme/tokens.ts`,
+  `theme/sectionContrast.test.ts`, `ui/tint.ts`, `ui/SectionHeader.tsx`,
+  `ui/SectionCard.tsx` coi loro test.

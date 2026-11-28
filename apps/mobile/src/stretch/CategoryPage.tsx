@@ -22,6 +22,9 @@ import {
   type When,
 } from "./categoryText";
 import { category, type Choice, compose, settle } from "./compose";
+import { ExercisePage } from "./ExercisePage";
+import type { Exercise } from "./exercises";
+import { useRoutineVideo } from "./RoutineVideoButton";
 import { choiceFor, rememberChoice, useChoices } from "./stretchChoices";
 
 type Props = {
@@ -93,13 +96,17 @@ function Choices<T extends string | number>({
  * have «Before» and «After» at the top. A choice the category does not have
  * for the others made is shown off: nothing is asked that there is not
  * (`compose.ts`). «Start» keeps the choice for the next time and opens the
- * stretching screen on that routine.
+ * stretching screen on that routine. A row opens that exercise's page
+ * (part E). «Export video», at the top, makes a video of the routine as it
+ * is chosen now, to share (part F).
  */
 export function CategoryPage({ categoryKey, onClose }: Props) {
   const choices = useChoices();
   const [key, setKey] = useState(categoryKey);
   const of = category(key);
   const [asked, setAsked] = useState<Choice | null>(null);
+  // The exercise whose page is open, with its time in this routine.
+  const [shown, setShown] = useState<Exercise | null>(null);
   const choice = asked === null ? choiceFor(of, choices) : settle(of, asked);
   const routine = compose(of, choice);
   const tint = color.stretch[of.group];
@@ -136,10 +143,19 @@ export function CategoryPage({ categoryKey, onClose }: Props) {
     (sum, exercise) => sum + exercise.seconds * (exercise.sides ? 2 : 1),
     0,
   );
+  const video = useRoutineVideo({
+    title: categoryName(key),
+    minutes: routine.choice.minutes,
+    exercises: routine.exercises,
+    tint,
+  });
   return (
     <Modal visible animationType="slide" onRequestClose={onClose}>
       <View style={styles.page} testID="stretch-category">
+        {/* Under the page's content, at its top corner (RunVideo). */}
+        {video.layer}
         <View style={styles.bar}>
+          {video.pill}
           <Tap
             style={styles.close}
             onPress={onClose}
@@ -249,9 +265,12 @@ export function CategoryPage({ categoryKey, onClose }: Props) {
 
           <View style={styles.list}>
             {routine.exercises.map((exercise, i) => (
-              <View
+              <Tap
                 key={`${exercise.key}-${i}`}
                 style={styles.row}
+                onPress={() => setShown(exercise)}
+                accessibilityRole="button"
+                accessibilityLabel={`${i + 1}. ${t(exercise.name)}`}
                 testID={`stretch-row-${i}`}
               >
                 <View style={styles.rail}>
@@ -268,7 +287,7 @@ export function CategoryPage({ categoryKey, onClose }: Props) {
                       : t("{seconds} s", { seconds: exercise.seconds })}
                   </Text>
                 </View>
-              </View>
+              </Tap>
             ))}
           </View>
           <Text style={styles.stop}>{t("Stop if it hurts.")}</Text>
@@ -284,6 +303,9 @@ export function CategoryPage({ categoryKey, onClose }: Props) {
             <Text style={styles.startText}>{t("Start")}</Text>
           </Tap>
         </View>
+        {shown !== null && (
+          <ExercisePage exercise={shown} tint={tint} onClose={() => setShown(null)} />
+        )}
       </View>
     </Modal>
   );
@@ -299,7 +321,9 @@ const styles = StyleSheet.create({
   bar: {
     paddingTop: space.xxl * 1.5,
     paddingHorizontal: space.lg,
-    alignItems: "flex-end",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: space.md,
   },
   close: {
     width: MIN_TAP_SIZE,

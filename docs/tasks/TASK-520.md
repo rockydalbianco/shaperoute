@@ -1,8 +1,8 @@
 # TASK-520 — Lo stretching rifatto: home a categorie, routine per zona, momento e sport
 
-**Stato**: In corso · parte 0 chiusa il 2026-11-27 (tutte le scelte
-approvate dall'utente); A1 in `main` (#1666); parte B in corso a blocchi
-(B1 #1672, B2 pronto in locale)
+**Stato**: In corso · parti 0, A, B, C, D ed E in `main`; parte F (il
+video della routine) nella #1732, col sì dell'utente sui fotogrammi del
+2026-11-28
 **Fase**: 4 · **Filone**: Allenamento (Coordinatore fork 3, 2026-11-27)
 **Branch**: una PR per parte (`feat/TASK-520-a1-figure-moves`,
 `feat/TASK-520-b1-side-holds`, …); i documenti in PR a sé
@@ -263,6 +263,16 @@ aggiungono qui dopo il sì del Coordinatore. Tutti i percorsi sotto
   `stretch/StretchWeek.tsx` e i loro test; modificati
   `stretch/StretchHome.tsx`, `stretch/categoryText.ts`, i loro test e
   `stretch/TodayCard.test.tsx`, `i18n/{it,de,fr,es}.ts`.
+- **E** (#1721): nuovi `stretch/ExercisePage.tsx`, `stretch/DotRing.tsx`,
+  `stretch/goodFor.ts` e i loro test; modificati `stretch/CategoryPage.tsx`
+  e il suo test, `stretch/CategoryTile.tsx` (la prop facoltativa `mirrored`
+  di `PoseFigure`), `i18n/{it,de,fr,es}.ts`.
+- **F** (#1732): nuovi `stretch/routineVideo.ts`,
+  `stretch/RoutineVideoButton.tsx` e i loro test, più
+  `stretch/CategoryPageVideo.test.tsx`; modificati
+  `stretch/CategoryPage.tsx` (la barra in alto) e `share/RunVideo.tsx` (la
+  prop facoltativa `fileName`; file libero, sì del Coordinatore). Nessun
+  testo, nessun token, nessuna icona.
 
 ## Dove siamo
 
@@ -338,9 +348,86 @@ Da provare sul telefono dopo l'OTA che porta D1 e D2: una tessera apre la
 sua pagina, «Start» avvia la routine, la sessione finita compare in «My
 activities» e la settimana dopo in «This week»; le tinte chiare.
 
-Prossimo: la **parte E** (pagina dell'esercizio), elenco dei file
-approvato dal Coordinatore; aspetta il sì dell'utente sui suoi 14 testi
-(`out/stretching-nuovo/TESTI-E.md`). Poi la parte F (video MP4).
+2026-11-27, **parte D2 in `main`** (#1714) e documenti di D1 e D2 (#1715).
+
+2026-11-27, **parte E** nella #1721 (pagina dell'esercizio): 14 testi con
+le quattro traduzioni («Sì, approvo») e schermate dal simulatore («Sì,
+approvo»), aperta direttamente con tre esercizi; fogli in
+`out/TASK-520/e/` del checkout principale. «Play» esiste già come «Gioca»:
+qui ha il segno `Play@@timer`. Per i movimenti il primo riquadro dice
+comunque «Hold»: è il testo approvato, detto all'utente.
+
+### Cosa resta (consegna per chi continua)
+
+Questa parte l'ha scritta una sola sessione, dalla parte 0 alla E. Chi
+continua parte da qui e dal task file, non dalla sua conversazione.
+
+1. **Parte F — video MP4 della routine**: scritta, nella #1732 (vedi
+   «Parte F» qui sotto). Resta da provare sul telefono dopo il suo OTA:
+   «Export video» nella pagina di una categoria fa il video e apre il
+   foglio di condivisione; il video salvato in Foto si vede intero.
+2. **Le scorciatoie ai gruppi** in cima alla home (Body · Moments ·
+   Sports · Intimacy · More), che lo schizzo ha e il codice no: la home
+   sta dentro lo scorrimento di «Draw», quindi serve che `ChooseScreen`
+   la lasci scorrere fino a un gruppo. Piccola, a parte.
+3. **Prova sul telefono** dopo l'OTA che porta D1, D2 ed E (lo decide il
+   Coordinatore): una tessera apre la sua pagina; «Start» avvia la routine
+   e la sessione finita compare in «My activities» e in «This week»;
+   «Today» propone l'«After» dopo uno sport; una riga apre la pagina
+   dell'esercizio, pausa e «Try it» funzionano; le tinte chiare. Nel
+   simulatore tutto questo è stato visto senza tocchi.
+4. **Da sapere**: i promemoria («Morning stretch», dopo la corsa, dopo la
+   palestra) aprono ancora le tre routine di TASK-466 (`routines.ts`);
+   `stretchSport/StretchRoutines.tsx` non è più montato e resta nel
+   codice; «My routines» di TASK-466 parte E si monta in
+   `StretchHome.tsx`, tra «Today» e i gruppi.
+5. **Chiusura del task** quando F è in `main`: stato `Done` qui con una
+   riga di esito, la riga in `docs/archive/COMPLETATI.md` e la voce di
+   `STATUS.md` (le tiene il Coordinatore 3), «TASK-520 fatto» al
+   Coordinatore.
+
+### Parte F — il video della routine (2026-11-27 e 28)
+
+Fatta in una sessione sua. **Scelte dell'utente**: il video si apre dalla
+pagina della categoria, con una pastiglia «Export video» in alto accanto
+alla ✕ («Pagina categoria», 2026-11-27); nessun testo nuovo, si riusano
+quelli del video della corsa e dello stretching («Sì, nessun testo
+nuovo», 2026-11-27); i fotogrammi e tre video interi («Sì, approvo»,
+2026-11-28). Le scelte tecniche sono in ADR-0415, aggiunta F: la pagina
+del video non si tocca, il video è una scena fatta coi suoi disegni; ogni
+esercizio una volta sola, tre secondi che scendono fino a 1,5.
+
+Rispetto alla parte 0: di un esercizio «each side» si vede un lato solo;
+fra un esercizio e l'altro la figura sfuma e torna, non si alza in piedi;
+una routine che fa due giri mostra ogni esercizio una volta. Detto
+all'utente coi fotogrammi.
+
+**Privacy ricontrollata**: il video si fa sul telefono, non passa dal
+server, non entra nel Feed e non mostra dati della persona; nessuna riga
+nuova nell'informativa.
+
+**Come è stato visto**: gli script veri della pagina del video fatti
+girare in Chrome sul Mac hanno prodotto tre MP4 interi (Running · Before,
+Neck, Hips & pelvis), che si aprono e si leggono fotogramma per
+fotogramma; fogli, video e attrezzi in `out/TASK-520/f/` del checkout
+principale (`tools/README.txt` dice come rifarlo).
+
+**Simulatore** (iPhone 17e, Expo Go, turno del Coordinatore, 2026-11-28):
+nella pagina vera di «Running · Before» la pastiglia «Export video» passa
+a «Making the video… 0%» fino a 100%, poi si apre il foglio di
+condivisione con «MuW-stretching · Video · 2,6 MB»; chiuso il foglio la
+pastiglia torna com'era, senza righe d'errore. Il WebView del simulatore
+ha codificato il video in circa 12 secondi: 19,2 secondi, 1080 × 1920,
+H.264, tirato fuori dalla cache dell'app e guardato fotogramma per
+fotogramma, uguale a quello fatto in Chrome. Schermate e video in
+`out/TASK-520/f/` (`sim-*`). Non visti: le tinte chiare, una routine
+lunga (16 esercizi), il video salvato in Foto su un telefono vero.
+
+Strumenti fuori dal repository, nel checkout principale: fogli delle pose
+e generatori in `out/stretching-nuovo/pose/` e `out/stretching-nuovo/c/`;
+tabelle dei testi `out/stretching-nuovo/testi-{d,e}.psv`; schermate e
+attrezzi del simulatore in `out/TASK-520/{b,d,e}/` (l'app di prova
+`Harness520*.tsx.txt`, `rec.sh`, gli script Swift dei fotogrammi).
 
 ---
 

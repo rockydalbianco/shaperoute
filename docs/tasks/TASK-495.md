@@ -180,9 +180,19 @@ I test sono in un file nuovo (`test_group_outings.py`), non in
 solo `test_record_only.py`, che voleva `group_runs_activity_check` senza
 «skiing».
 
-Parte C2 (l'app, dopo TASK-309 B2 in `main`) e parte D (Explore): elenchi
-proposti in `out/TASK-495/PARTE-0-C-D.md` del checkout principale; si
-scrivono qui col sì del Coordinatore. Parte E e la privacy: dopo.
+Parte D (Explore; via del Coordinatore il 2026-11-27, prima di C2: usa
+solo `GET /groups`, già sul server; i documenti in una PR a parte):
+```
+apps/mobile/src/groups/groupsApi.ts         (findGroups, isGroupsFound) e il suo test
+apps/mobile/src/groups/ExploreGroups.tsx    (nuovo: la fila e la ricerca dietro «See all») e il suo test
+apps/mobile/src/explore/ExploreScreen.tsx   (la fila nel piede della lista, la ricerca sopra la pagina)
+apps/mobile/src/i18n/{de,es,fr,it}.ts       (sei testi)
+docs/GRUPPI.md, questo file                 (PR di soli documenti)
+```
+
+Parte C2 (l'app, dopo TASK-309 B2 in `main`): elenco proposto in
+`out/TASK-495/PARTE-0-C-D.md` del checkout principale; si scrive qui col
+sì del Coordinatore. Parte E e la privacy: dopo.
 
 ## Fuori scope
 
@@ -261,3 +271,16 @@ restano come in `EVENTI.md`.
   dall'utente** («Sì, approvo»), come sono in #1704: en «{name} planned a
   new outing in {group}: {title}», it «{name} ha organizzato una nuova
   uscita in {group}: {title}», più de, es, fr. CI di #1704 verde.
+- 2026-11-27 · **scelta dell'utente D** («Sì, però in fondo ad Explore»,
+  poi «Proprio in fondo»): la fila «GROUPS NEAR YOU» sta alla fine di
+  Explore, dopo tutto il catalogo, con «See all» che apre la ricerca per
+  nome e sport. #1704 e #1705 in `main`. Il Coordinatore dà il via a D
+  subito (usa solo `GET /groups`, già sul server).
+- 2026-11-27 · parte D scritta, PR **#1718**; provata al simulatore
+  (iPhone 17e, API del worktree con un database di prova: la fila, «See
+  all», nome, sport, la pagina del gruppo; schermate in
+  `out/TASK-495/d/`). **Sei testi approvati dall'utente** («Sì,
+  approvo»): «GROUPS NEAR YOU», «See all», «No groups near you yet.»,
+  «No group found.», «Write at least {count} letters of a group's name.»,
+  «The groups could not load. Check the connection and try again.», nelle
+  cinque lingue col «tu».

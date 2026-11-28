@@ -621,12 +621,12 @@ lasciando le righe d'indice.
 - ADR-0177, aggiunta F (TASK-214) — Dopo un percorso che lascia la pagina del motore oltre 700 MB, senza richieste in attesa, la pagina si chiude e la richiesta dopo ne apre una nuova: la memoria di Pyodide non scende mai · 2026-11-26 · Attiva
 - ADR-0264, aggiunta D (TASK-496) — In una giornata di sci o un volo registrati, alla mappa vanno solo i punti nuovi dell'ultimo tratto finché la divisione in tratti resta la stessa · 2026-11-26 · Attiva
 - ADR-0414 — Le coordinate delle linee intere che l'API risponde all'app a 6 decimali, ognuna dentro la sua cella da 5: il nome della linea (`line_key`, il `favoriteKey` dell'app) non cambia; l'SQL resta a 15 cifre · 2026-11-27 · Attiva
-- ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Proposta
+- ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching dopo la palestra entra nell'allenamento; le routine proprie si compongono in «Draw», si salvano nell'account e si pubblicano nel Feed come le schede palestra · 2026-11-26 · Attiva per C, Proposta per E
 - ADR-0177, aggiunta G (TASK-214) — Una zona che il server non ha intorno al telefono la prepara da solo, come un luogo tenuto (TASK-334): il telefono la trova all'apertura dopo; il log non scrive mai il nome della zona · 2026-11-26 · Attiva
 - ADR-0279, aggiunta (TASK-498) — La chat aperta chiede solo i messaggi nuovi (`latest` nella pagina, `?after=` sulla stessa rotta), più piano nel silenzio (5 s, 15 s, 30 s: scelta dell'utente); la pagina intera una volta al minuto; una risposta uguale non ridisegna · 2026-11-26 · Attiva
 - ADR-0413 — «Surprise me»: forma e distanza scelte dall'app fra i percorsi del catalogo vicini alla partenza (10 km), chiesti al primo tocco; fuori dal catalogo le forme di riserva; le sorprese venute sotto il 90% ricordate sul telefono · 2026-11-26 · Attiva
 - ADR-0415 — Lo stretching rifatto (TASK-520): una home a categorie con routine composte da un solo elenco di esercizi, i movimenti come respiro largo, la stessa figura vista anche di fronte, gli esercizi nuovi in file nuovi con chiavi stabili · 2026-11-27 · Attiva
-- ADR-0397, precisazione 8 — Il controllo del peso (TASK-489 K1): pesate, obiettivo e tappe dell'account e non del telefono, l'ultima pesata diventa il peso del corpo da quel giorno, obiettivo mai sotto un BMI di 18,5 né prima dei 18 anni, congratulazioni per le tappe dell'utente e la costanza, mai per la velocità · 2026-11-27 · Proposta
+- ADR-0397, precisazione 8 — Il controllo del peso (TASK-489 K1): pesate, obiettivo e tappe dell'account e non del telefono, l'ultima pesata diventa il peso del corpo da quel giorno, obiettivo mai sotto un BMI di 18,5 né prima dei 18 anni, congratulazioni per le tappe dell'utente e la costanza, mai per la velocità · 2026-11-27 · Attiva
 - ADR-0340, precisazione E — Il meteo del post: MET Norway chiesto dal server al salvataggio, entro 3 ore dalla fine, col punto di partenza a ~1 km; neve esclusa; chiesto una volta · 2026-11-27 · Attiva
 - ADR-0397, precisazione 6 — Gli anelli di «Nutrition» in rosso e verde: consumate nel rosso delle calorie (`energy`), mangiate in un verde nuovo (`food`), mai come unico segno e mai come giudizio su surplus e deficit; anelli disegnati con le viste, senza dipendenze nuove; nessuna stima dell'obiettivo nell'anno in cui si compiono 18 anni · 2026-11-26 · Attiva
 - ADR-0397, precisazione 7 — Le ricette in «Nutrition»: un ricettario di MuW fatto dei cibi della tabella, numeri calcolati dall'app, la ricetta si cambia e resta sul telefono, entra nel diario come i suoi ingredienti; frasi per chef e supermercati che aprono la posta; niente copiato, niente promesso · 2026-11-27 · Proposta
@@ -635,12 +635,208 @@ lasciando le righe d'indice.
 - ADR-0388, aggiunta E2b (TASK-479) — La quota sul mare su Android: in volo si toglie il geoide EGM96 da una tabella a 1° nel codice (griglia 15' di NGA, pubblico dominio, copia di PROJ), interpolata bilineare; nelle Alpi al massimo 2,4 m dalla griglia piena; iOS e gli altri sport invariati · 2026-11-27 · Attiva
 - ADR-0293, precisazione (TASK-509) — La figura delle pagine vuote si disegna una volta e resta intera; una pagina vuota ha il suo pulsante quando c'è una cosa da fare; una tessera senza percorso mostra la sagoma della forma in grigio · 2026-11-26 · Attiva
 - ADR-0418 — Le lettere dicono cosa disegnano a penna alzata (`pen`, TASK-522): la A tonda con la punta, la Q tonda con l'anello; la parola chiusa resta la stessa; le parole a penna alzata con A o Q tenute a parte con «+L2» sull'impronta, le altre restano (SAME_ROUTES_AS) · 2026-11-27 · Attiva
-- ADR-0417 — Lo stile delle pagine in tutta l'app (TASK-523): il vetro di 469 a barre, tab e fogli e lo stile nuovo al contenuto; un colore per sezione come token suoi (`section`), stesso valore dove la tinta c'è già; un kit di soli file nuovi in `ui/` col velo tinto opaco al 12%; nella barra delle schede il colore sta nella capsula della scheda aperta, non nel tratto delle icone · 2026-11-27 · Attiva
+- ADR-0417 — Lo stile delle pagine in tutta l'app (TASK-523): il vetro di 469 a barre, tab e fogli e lo stile nuovo al contenuto; un colore per sezione come token suoi (`section`), stesso valore dove la tinta c'è già; un kit di soli file nuovi in `ui/` col velo tinto opaco al 12%; la barra delle schede: vedi la precisazione · 2026-11-27 · Attiva
 - ADR-0416 — Il catalogo di «Explore» guardato a occhio: oltre al filtro, le strade fatte due volte entro 8 punti sopra la mediana della forma, poi un voto a occhio da 0 a 3 su ogni disegno; 499 tolti, 3120 nuovi, la classifica per voto e misura; gli id dei percorsi cambiano · 2026-11-27 · Accettata
 - ADR-0419 — «Rifai meglio» (TASK-451): a fine corsa, se almeno 200 m del percorso prima del punto dove ci si è fermati sono rimasti a più di 40 m dalla traccia, «Save & redo» salva la corsa e riapre «Draw» con la stessa forma o parola, gli stessi km e la stessa partenza; il motore ripianifica come sempre; solo sport su strade e sentieri · 2026-11-27 · Attiva
+- ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione: l'utente ha tolto la capsula colorata dopo averla vista nel simulatore; il colore di sezione sta solo nel contenuto delle pagine · 2026-11-27 · Attiva
+- ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro: 3:1 come forme in ogni tono, 4,5:1 come scritte solo nel tono scuro; dove non reggono come scritte il nome del gruppo è nel colore del testo (`inkOn`, tutte le sezioni insieme) · 2026-11-27 · Attiva
+- ADR-0370 — «Segui subito» (TASK-459): un interruttore dell'account, «Approve followers»; spento si segue subito, acceso la richiesta come oggi; parte spento, acceso per gli account di oggi con almeno un post «Followers»; spegnerlo accetta le richieste in attesa; notifica nuova `new_follower` · 2026-11-28 · Accettata
+- ADR-0415, aggiunta F (TASK-520) — Il video di una routine di stretching è una scena fatta coi disegni che la pagina del video della corsa sa già fare (linee, punti, riquadri, parole): la pagina non si tocca; ogni esercizio una volta sola, 3 secondi che scendono fino a 1,5; si apre dalla pagina della categoria, senza testi nuovi; niente esce dal telefono · 2026-11-28 · Attiva
 
 
 ## Voci nuove
+
+## ADR-0415, aggiunta F (TASK-520) — Il video di una routine: una scena fatta coi disegni che la pagina del video sa già fare
+
+**Stato**: Attiva · 2026-11-28 · TASK-520 parte F. Aggiunta ad ADR-0415,
+che resta com'è (punto 7: «il video nasce nella pagina del video della
+corsa, con una scena sua»). **Scelte dell'utente**: il video si apre dalla
+pagina della categoria («Pagina categoria», 2026-11-27); nessun testo
+nuovo, si riusano quelli del video della corsa e dello stretching («Sì,
+nessun testo nuovo», 2026-11-27); i fotogrammi e tre video interi («Sì,
+approvo», 2026-11-28). **Decise dall'agente su delega dell'utente** le
+scelte tecniche qui sotto. Codice: #1732.
+
+**Contesto**: la figura dello stretching è fatta di View girate
+(ADR-0147), e la pagina nascosta che fa i video (`share/videoPage.ts`,
+ADR-0254) non ha View: disegna su un canvas un elenco di cose per ogni
+fotogramma. Quella pagina è lunga, provata sui telefoni e usata dal video
+della corsa.
+
+**Decisione**:
+
+1. **La pagina non si tocca.** Il video della routine è una `VideoScene`
+   come quella di una corsa, senza mappa, senza animale e senza musica,
+   fatta solo di quello che la pagina disegna già: `line`, `dot`, `rect`,
+   `text` (`stretch/routineVideo.ts`). `RunVideo` la monta com'è; ha in più
+   una sola prop facoltativa, il nome del file («MuW-stretching.mp4»).
+2. **La figura si ridisegna dagli stessi numeri** dell'app (`poses.ts`,
+   `posesFront.ts`): un arto è una linea sola che passa per le sue
+   giunture, tonda in punta e dove si piega; la testa è un punto; gli arti
+   lontani al 40%. Quanto il bacino sta sopra il pavimento e di quanto una
+   posa lunga scivola per restare intera si calcolano come li calcola
+   `Figure`. Le linee uguali fra un fotogramma e l'altro si scrivono una
+   volta.
+3. **Ogni esercizio una volta sola**, nell'ordine in cui compare, anche
+   quando la routine fa due giri: il video dice di cosa è fatta la
+   routine. Tre secondi l'uno; quando sono tanti il tempo scende, così che
+   tutti insieme stiano in 24 secondi, mai sotto 1,5 (il massimo oggi è 16
+   esercizi diversi). Con l'apertura (2 s) e il logo (2,2 s) un video dura
+   da 16 a 28 secondi.
+4. **Il respiro o il movimento torna sempre alla posa**: nel suo tempo
+   l'esercizio va e torna un numero intero di volte, al ritmo più vicino
+   al suo. Di un esercizio «each side» si vede un lato. Fra un esercizio e
+   il successivo la figura sfuma via e torna: nel video non si alza in
+   piedi fra due pose come fa nell'app.
+5. **I colori sono quelli dell'app in quel momento**, dai token: fondo,
+   testo, il giallo solo sul logo, il colore del gruppo per la barra, il
+   tempo e il cerchio tenue dietro la figura.
+6. **Privacy ricontrollata**: il video si fa sul telefono, non passa dal
+   server e non entra nel Feed; esce solo se la persona lo condivide dal
+   foglio del telefono. Non mostra nomi, luoghi né dati della persona:
+   solo la routine. Nessuna riga nuova nell'informativa.
+
+**Motivo**: una scena in più non mette a rischio il video della corsa e
+si prova tutta coi test, senza telefono; una pagina cambiata no. Mostrare
+ogni esercizio una volta tiene il video corto abbastanza da condividerlo.
+
+**Conseguenze**: nessuna dipendenza, nessuna build nativa, nessun passo
+sul server, nessun testo nuovo. La scena pesa circa 1 MB e passa alla
+pagina in una chiamata sola. La pagina del video carica comunque MapLibre
+all'avvio anche se qui non serve: senza rete il video si fa lo stesso.
+Senza telefono si guarda facendo girare gli script della pagina in Chrome
+(`out/TASK-520/f/tools/` nel checkout principale).
+
+## ADR-0370 — «Segui subito»: un interruttore dell'account, «Approve followers», spento per chi non ha post «Followers»
+
+**Stato**: Accettata · 2026-11-28 · TASK-459 (parte 0). Scelte
+dell'utente, una domanda alla volta; il resto deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: dal TASK-211 (ADR-0173) ogni «Follow» è una richiesta che
+l'altro accetta o rifiuta; conta solo quella accettata, anche per chi vede
+i post «Followers». Nella prova del 2026-11-11 (S14) l'utente ha scelto
+«Segui subito»: su un profilo aperto «Follow» segue subito. Un «profilo
+pubblico» in MuW non esisteva: la visibilità è post per post (`everyone`,
+`followers`, `only_me`). Con «Segui subito» chi tocca «Follow» vede anche
+i post «Followers».
+
+**Decisione**:
+
+1. Un interruttore dell'account in «Settings», «Approve followers» (it
+   «Approva chi ti segue»), tenuto dall'API in `users.approve_followers`
+   (migrazione `0091`). Spento: `POST /users/{id}/follow` scrive subito
+   `accepted` e risponde `following`. Acceso: la richiesta come oggi.
+   (Utente: «Interruttore».)
+2. Parte spento per i nuovi iscritti e per gli account di oggi, tranne chi
+   ha almeno un post «Followers»: per loro parte acceso, perché quei post
+   non si aprano a chi segue senza una loro scelta. (Utente: «Spento,
+   tranne Follower».)
+3. Quando l'interruttore è spento, alla partenza o perché il proprietario
+   lo spegne, le richieste in attesa diventano follower e chi aveva
+   chiesto riceve la notifica di oggi, `follow_accepted`. Le richieste
+   rifiutate prima restano cancellate. (Utente: «Accettate tutte».) Una
+   migrazione non manda notifiche: quelle della partenza le manda un
+   comando una tantum dopo il passo del server (deciso dall'agente).
+4. Un follow subito avvisa il seguito con un tipo nuovo, `new_follower`:
+   «{name} started following you.» (it «{name} ha iniziato a
+   seguirti.»), in push, campanella ed email delle novità. Il pulsante
+   resta «Follow» → «Following», senza testi nuovi. La nota della riga e
+   la frase della Privacy sono in `docs/tasks/TASK-459.md`. (Utente: «Sì,
+   vanno bene».)
+5. Restano come in ADR-0173 il blocco (404 attraverso un blocco), il
+   ritiro e lo «Stop following», le liste e i numeri: contano le righe
+   `accepted`, comunque ci siano arrivate.
+
+**Perché**: una regola scelta dal proprietario si spiega in una riga e non
+cambia da sola quando cambia la visibilità di un post; partire acceso per
+chi già usa «Followers» tiene la promessa fatta a quei post.
+
+**Conseguenze**: tre parti, A (API, migrazione `0091`, il comando una
+tantum), B (app: la riga in «Settings», solo con un'API che la conosce) e
+C (la frase della Privacy, nella coda dopo #1725 e #1713, online insieme
+al server di A). Un'app di prima riceve già `following` da `POST
+…/follow`: il suo pulsante va a «Following» senza aggiornarla.
+
+## ADR-0417, precisazione 2 (TASK-523) — I colori di sezione più vivi nel tono chiaro; il nome del gruppo nel colore del testo dove il colore non regge come scritta
+
+**Stato**: Attiva · 2026-11-27 · TASK-523 parte A3 (#1728). La scelta dei
+colori è dell'utente; il resto è deciso dall'agente su delega dell'utente.
+Cambia due punti di ADR-0417: «Contrasto» e «Stesso valore, token suo».
+
+**Contesto**: ADR-0417 chiedeva a ogni colore di sezione il 4,5:1 delle
+scritte su fondo e card, perché il nome di un gruppo era scritto nel suo
+colore. Nel tono chiaro questo li rendeva scuri e spenti (un marrone per
+l'albicocca, un oliva per la sabbia). L'utente, vista la barra e le
+tavole, ha chiesto colori più vivi nel tono chiaro: «Sì, più vivi».
+
+**Decisione**:
+- **Nel tono chiaro al gradino più luminoso** i cinque colori sono più
+  accesi: `draw` `#BA5B16`, `profile` `#7563E6`, `explore` `#007DAB`,
+  `feed` `#9A6F21`, `messages` `#168649`. Il gradino più scuro del tono
+  chiaro e il tono scuro non cambiano.
+- **La regola del contrasto**: 3:1 su `background`, `surface`,
+  `surfaceRaised` e `border` in ogni tono a ogni gradino (una forma: icona,
+  anello, quadrato); il 4,5:1 delle scritte solo nel tono scuro
+  (`sectionContrast.test.ts`, che fissa anche che il chiaro più luminoso
+  resti sotto 4,5:1 sulle card, perché non torni spento per sbaglio).
+- **Il nome del gruppo** e il titolo di una card sono nel colore della
+  sezione solo dove tutte le sezioni del tono reggono come scritte su
+  fondo, card e velo; altrimenti nel colore del testo (`inkOn` in
+  `ui/tint.ts`). Tutte o nessuna: una pagina non mescola nomi colorati e
+  nomi neri.
+- **Stesso valore di un token che c'è già** (`stretch.moments`,
+  `stretch.sports`, `food`): vale nel tono scuro. Nel chiaro le sezioni
+  hanno valori loro, più vivi di quanto quei token, scritti come parole,
+  possano essere.
+- **I valori sono il 4–11% più scuri di quelli della tavola approvata**:
+  quelli esatti scendevano sotto 3:1 sulla traccia dell'anello (2,34), sul
+  velo (2,97) e sull'alone del riquadro in alto (2,57). Ognuno è stato
+  scurito del minimo che porta tutti e tre a 3:1; l'utente è stato
+  avvisato e la tavola aggiornata.
+
+**Alternative scartate**:
+- *Tenere i valori della tavola e schiarire la traccia dell'anello*
+  (`surfaceRaised` al posto di `border`): l'icona sul velo e sull'alone
+  sarebbe rimasta sotto 3:1.
+- *Decidere colore per colore* se il nome è colorato: sul bianco quattro
+  sezioni su cinque passavano 4,5:1 e il viola no; la pagina avrebbe avuto
+  nomi di gruppo di due tipi.
+- *Un secondo token per le scritte* (`sectionText`): dieci valori in più
+  da tenere allineati, per dire quello che il colore del testo dice già.
+
+**Conseguenze**: nel tono chiaro il colore di sezione si vede su forme,
+anelli, icone e sul velo delle card, non nelle scritte. Una sezione nuova
+deve tenere 3:1 ovunque e, nel tono scuro, 4,5:1; se non lo fa, in quel
+tono i nomi di tutti i gruppi tornano nel colore del testo.
+
+## ADR-0417, precisazione (TASK-523) — La barra delle schede resta il vetro di 469, senza colore di sezione
+
+**Stato**: Attiva · 2026-11-27 · TASK-523 (parte T, tolta). Scelta
+dell'utente. Sostituisce il punto «La barra delle schede» di ADR-0417.
+
+**Contesto**: ADR-0417 metteva il colore di sezione nella capsula della
+scheda aperta, piena, con l'icona sopra («Sì, la capsula»), perché nel
+tratto delle icone un colore non tiene il contrasto sul vetro. La capsula
+è stata scritta e fotografata nel simulatore, in chiaro e in scuro. Le
+misure passavano: icona sulla capsula 9,5–12:1 in scuro e 6,1–7,5:1 in
+chiaro, uguali con «Aumenta contrasto».
+
+**Decisione** (utente, sulle foto): «manca il liquid glass della versione precedente forse meglio tenere senza i colori le icone del feed disegna ma teniamo solamente il liquid glass con le animazioni trasparenti».
+La barra delle schede resta com'è: il vetro di 469, la capsula trasparente
+della scheda aperta (`glass.selected`) e le sue animazioni, nessun colore
+di sezione. `tabs/TabBar.tsx` non cambia, il token `onSection` non entra,
+`App.tsx` non dà un colore alle schede. Il colore di sezione resta nel
+contenuto delle pagine (riquadro in alto, anelli, icone delle card).
+
+**Alternative scartate**: la capsula piena (copre proprio il vetro della
+scheda aperta, e all'utente è mancato il Liquid Glass); le icone colorate,
+il colore solo sull'icona aperta e il punto sotto l'icona (non tengono il
+contrasto sul vetro vero, vedi ADR-0417).
+
+**Conseguenze**: il codice della capsula non è stato pubblicato. Chi
+volesse riprovare un colore nella barra parte da qui: sul vetro un colore
+si legge solo su un pezzo pieno, e un pezzo pieno toglie il vetro.
 
 ## ADR-0419 — «Rifai meglio»: la stessa forma, gli stessi km e la stessa partenza dopo una corsa uscita di strada
 
@@ -679,6 +875,15 @@ evitare strade. La corsa salvata non tiene distanza chiesta né partenza.
 **Conseguenze**: 200 m e 40 m sono costanti da ritoccare dopo la prova sul
 telefono. Se servirà evitare i tratti sbagliati, sarà un task del motore a
 parte, con la prova dei percorsi uguali.
+
+**Precisazione (2026-11-28, #1726, deciso dall'agente su delega
+dell'utente)**: «dove ci si è fermati» non è il punto del percorso più
+vicino all'ultima posizione: su un giro chiuso partenza e arrivo
+coincidono, e chi taglia a metà e torna a casa sembrerebbe arrivato in
+fondo (o, al contrario, fermo all'inizio). Fra i passaggi del percorso
+vicini all'ultima posizione si prende il più avanti i cui **100 m prima**
+sono stati corsi per più di metà (campioni entro 40 m dalla traccia); se
+nessuno lo è, il primo. Lo ha trovato la prova nel simulatore.
 
 ## ADR-0418 — Le lettere dicono cosa disegnano a penna alzata: la A con la punta, la Q con l'anello
 
@@ -815,7 +1020,9 @@ pagina se ne inventi uno.
   nessuna dipendenza nuova, nessuna sfumatura (l'app non ha una libreria di
   disegno: l'alone del riquadro in alto è un cerchio di colore pieno). Con
   «Riduci movimento» tutto è fermo e completo.
-- **La barra delle schede** (utente, «Sì, la capsula»): il colore di
+- **La barra delle schede** — **sostituita lo stesso giorno dalla
+  precisazione di ADR-0417 qui sopra: la barra resta senza colore.** Com'era
+  scritta (utente, «Sì, la capsula»): il colore di
   sezione non va nel tratto delle icone. Sul vetro vero il fondo è la tinta
   del tono (60–68%) sopra la foto: per tenere 4,5:1 un'icona dovrebbe
   essere quasi bianca in scuro (L ≥ 0,893) e quasi nera in chiaro
@@ -846,7 +1053,7 @@ pagina se ne inventi uno.
 
 **Conseguenze**: le pagine rifatte prendono colori e pezzi dal kit; una
 sezione nuova aggiunge il suo token in `section` e passa da
-`sectionContrast.test.ts`. Le parti B–G e T rifanno una schermata alla
+`sectionContrast.test.ts`. Le parti B–G rifanno una schermata alla
 volta; diverse appartengono a task in corso (489, 466, 520, 495, 479) e si
 concordano col Coordinatore. Da decidere con l'utente nelle parti che li
 toccano: il giallo dell'Accesso, la riga di benvenuto (testo nuovo, cinque
@@ -1058,8 +1265,9 @@ c'era); la card arriva sui telefoni con un OTA.
 
 ## ADR-0397, precisazione 8 — Il controllo del peso: le pesate dell'account, il peso del corpo aggiornato, l'obiettivo dentro una soglia citata
 
-**Stato**: Proposta · 2026-11-27 · TASK-489 parte K1 (parte 0 chiusa,
-codice dopo la parte J in `main`). Numero dal Coordinatore (fork 3). Le
+**Stato**: Attiva · 2026-11-27 · TASK-489 parte K1 (codice #1679 in
+`main` a 6ab1a99d, spento con `NUTRITION_ON`; privacy e termini #1713
+in fila). Numero dal Coordinatore (fork 3). Le
 scelte di prodotto sono **dell'utente** (2026-11-27, in
 `tasks/TASK-489.md`, sezione «K1»); il come è **deciso dall'agente su
 delega dell'utente**. Precisa il punto 6 della precisazione 5.
@@ -1076,13 +1284,19 @@ peso con cui MuW conta, né quale soglia. Da TASK-507 D (ADR-0406) il corpo
    ogni quanto chiedere e il «Not now» stanno in un file per account
    (`ownedFile("weigh-ins.json")`, `body/weighIns.ts`), come il corpo. Un
    altro account sullo stesso telefono non li vede. Restano sul telefono e
-   non arrivano al server.
+   non arrivano al server; si cancellano dal telefono quando l'account
+   viene eliminato nell'app (`forgetOwnedFile` in `account/phoneOwners.ts`,
+   scelta dell'utente del 2026-11-27, «Sì, aggiungila»), a differenza del
+   resto di «Nutrition».
 2. **L'ultima pesata diventa il peso del corpo** (`saveBody`), da quel giorno
    in poi: riposo e calorie delle attività lo usano da lì; le calorie già
    salvate nei post non cambiano. Un peso cambiato a mano in «Settings» è
    una correzione e non entra nel grafico. Togliere l'ultima pesata non
    cambia il peso del corpo. «Recalculate» si offre solo a chi usa la stima
-   di MuW per l'obiettivo di calorie (parte J).
+   di MuW per l'obiettivo di calorie (parte J): il segno
+   `targetFromEstimate` delle impostazioni è vero solo se l'obiettivo è la
+   stima presa con «Use this number» e non cambiata; un file di prima di
+   K1 legge falso.
 3. **La soglia**: un BMI di 18,5, il sottopeso negli adulti per l'OMS
    (indicatore «Underweight among adults, BMI < 18.5») e per i CDC («Adult
    BMI Categories»), pagine lette il 2026-11-27 e citate in «How we
@@ -1101,10 +1315,11 @@ peso con cui MuW conta, né quale soglia. Da TASK-507 D (ADR-0406) il corpo
    compare solo aprendo «Nutrition». La notifica è una parte dopo K1,
    spenta di partenza.
 7. **Il grafico** è fatto con le viste e `Animated`, come gli anelli della
-   parte H: nessuna dipendenza nuova. Il peso ha un colore suo, il token
-   `weight` (un viola), aggiunto in `theme/tokens.ts` nel turno del
-   Coordinatore e riusato da TASK-523 per il Profilo; con «Riduci
-   movimento» niente si muove. Il colore non è mai l'unico segno.
+   parte H: nessuna dipendenza nuova. Il peso usa il colore del testo,
+   senza un token suo: il viola pensato all'inizio era troppo vicino a
+   quello dei carboidrati della parte L2 (`#B892FF`), che nel diario sta
+   subito sopra (scelta dell'utente del 2026-11-27, «Colore del testo»).
+   Con «Riduci movimento» niente si muove.
 
 **Alternative scartate**: le pesate nel file delle impostazioni di
 «Nutrition» (le vedrebbe un altro account: il difetto chiuso da TASK-507);
@@ -1113,8 +1328,9 @@ vecchio finché l'utente non lo riscrive); una soglia scritta a memoria o
 proposta all'utente senza fonte; le tappe proposte da MuW.
 
 **Conseguenze**: prima che K1 esca serve la PR di privacy e termini
-approvata dall'utente (le pesate nell'elenco di quello che resta sul
-telefono, il file per account, il limite dell'obiettivo detto giusto). Per
+approvata dall'utente (#1713: le pesate nell'elenco di quello che resta
+sul telefono, il file per account, la cancellazione con l'account, il
+limite dell'obiettivo detto giusto). Per
 Apple (linea guida 1.4.1), al taglio nativo le note per la revisione
 dicono che la soglia viene da una fonte citata.
 
@@ -1396,7 +1612,7 @@ telefono.
 
 ## ADR-0378, aggiunta C ed E (TASK-466) — Lo stretching in palestra e le routine pubblicate
 
-**Stato**: Proposta · 2026-11-26 · TASK-466 parti C ed E, parte 0.
+**Stato**: Attiva per C (C1 #1670, C2 #1697, 2026-11-27), Proposta per E · 2026-11-26 · TASK-466 parti C ed E, parte 0.
 **Scelte dell'utente** del 2026-11-26 (task file, «Parte 0 di C» e «Parte
 0 di E»); il modo **deciso dall'agente su delega**, file e forma dal
 Coordinatore.

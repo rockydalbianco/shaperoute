@@ -187,6 +187,24 @@ Sotto un percorso disegnato, «Export GPX» (TASK-024):
    `com.topografix.gpx`: File, AirDrop, Mail, e le app che dicono di aprire
    i GPX.
 
+### Il volo, IGC e GPX (TASK-479 parte F1, ADR-0388 aggiunta F)
+
+Sotto la scheda di fine volo, «Export IGC» ed «Export GPX»: il file si
+scrive **sul telefono** dalla copia del volo (`src/air/igcWrite.ts`,
+`src/air/flightGpx.ts`), senza passare dall'API, e va al foglio di
+condivisione.
+
+- **GPX 1.1**: una traccia `paragliding`, ogni punto con `<time>` e, se
+  c'è, `<ele>` (quota GPS sul geoide). Nome: `2026-07-14-flight.gpx`.
+- **IGC**: record A `AXXXMUWMuW` (costruttore senza codice), `HFDTE`,
+  `HFFTYFRTYPE:MuW,<versione>`, `HFGPSRECEIVER:Phone GPS`,
+  `HFDTMGPSDATUM:WGS84`, `HFALGALTGPS:GEO`, una riga L «NOT SIGNED», poi i
+  record B (quota di pressione 00000, V dove manca la quota GPS). **Nessun
+  record G**: il file non è firmato, e sotto i pulsanti c'è sempre «Not
+  signed: competitions and online contests may not accept it.». `HFPLT`
+  solo se il pilota scrive un nome (oggi nessun campo lo chiede). Nome:
+  `2026-07-14-XXX-MUW-01.igc`.
+
 ## Uso dalla CLI
 
 ```

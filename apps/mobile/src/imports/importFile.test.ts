@@ -65,6 +65,7 @@ describe("a file of another app made into a run", () => {
     expect(run.request.word).toBeNull();
     expect(run.request.title).toBeNull();
     expect(run.sport).toBe("running");
+    expect(run.flight).toBeNull();
     expect(run.line).toEqual(track.map((fix) => fix.point));
     const long = ok(importedRun(gpx(1000, MAY_2025)));
     expect(long.line).toHaveLength(PREVIEW_POINTS);
@@ -161,7 +162,7 @@ describe("a file that does not become a run", () => {
     });
   });
 
-  it("is refused when it is not GPX, TCX or FIT", () => {
+  it("is refused when it is not GPX, TCX, FIT or IGC", () => {
     for (const text of ["", "hello", '{"type":"FeatureCollection"}', "<kml></kml>"]) {
       expect(importedRun(bytesOf(text))).toEqual({
         kind: "problem",
@@ -202,12 +203,70 @@ describe("a file that does not become a run", () => {
     );
     expect(importProblemText("no_positions")).toBe("This file has no positions.");
     expect(importProblemText("not_activity_file")).toBe(
-      "This file is not GPX, TCX or FIT.",
+      "This file is not GPX, TCX, FIT or IGC.",
     );
     expect(importProblemText("too_big")).toBe("This file is too big (over 25 MB).");
     expect(importProblemText("too_old")).toBe(
       "Activities before 2020 cannot be added.",
     );
     expect(importProblemText("already_saved")).toBe("Already in My activities.");
+    expect(importProblemText("igc_no_points")).toBe(
+      "This IGC file has no track points.",
+    );
+  });
+});
+
+describe("GPX, TCX and FIT as before IGC came (TASK-479 part F1)", () => {
+  it.each(["strava-run.gpx", "garmin-ride.tcx", "garmin-run.fit"])(
+    "%s sends no heights and keeps no flight",
+    (name) => {
+      const run = ok(importedRun(fileOf(name)));
+      expect(run.flight).toBeNull();
+      expect(run.request.track.some((fix) => "altitude_m" in fix)).toBe(false);
+      expect(run.sport).not.toBe("paragliding");
+    },
+  );
+});
+
+describe("an IGC file (TASK-479 part F1)", () => {
+  // An invented flight; the pilot's name is never read.
+  const igc = (records: string[]) =>
+    bytesOf(
+      [
+        "AXXXabc Test Vario",
+        "HFDTEDATE:140726,01",
+        "HFPLTPILOTINCHARGE:Test Pilot",
+        ...records,
+      ].join("\r\n"),
+    );
+
+  it("is a flight, with its heights sent and kept whole for «Save»", () => {
+    const run = ok(
+      importedRun(
+        igc([
+          "B1000004543200N01050400EA0000001700",
+          "B1000014543300N01050400EV0000000000",
+          "B1000024543400N01050400EA0000001710",
+        ]),
+      ),
+    );
+    expect(run.sport).toBe("paragliding");
+    expect(run.request.source).toBe("file");
+    expect(run.request.track.map((fix) => fix.altitude_m)).toEqual([
+      1700,
+      undefined,
+      1710,
+    ]);
+    expect("altitude_m" in run.request.track[1]).toBe(false);
+    expect(run.flight?.map((fix) => fix.altM)).toEqual([1700, null, 1710]);
+    expect(run.flight?.[0].timeMs).toBe(Date.UTC(2026, 6, 14, 10, 0, 0));
+    expect(JSON.stringify(run)).not.toContain("Test Pilot");
+  });
+
+  it("says when it has no track points", () => {
+    expect(importedRun(igc(["LXXX only a comment"]))).toEqual({
+      kind: "problem",
+      problem: "igc_no_points",
+    });
   });
 });

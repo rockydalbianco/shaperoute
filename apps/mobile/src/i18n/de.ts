@@ -2746,14 +2746,15 @@ export const DE: Table = {
   // «Add past activity» from a GPX, TCX or FIT file, «Imported»)
   "Add past activity": "Frühere Aktivität hinzufügen",
   "From a file": "Aus einer Datei",
-  "GPX, TCX or FIT from Strava, Garmin, Komoot…":
-    "GPX, TCX oder FIT von Strava, Garmin, Komoot…",
+  "GPX, TCX, FIT or IGC from Strava, Garmin, Komoot…":
+    "GPX, TCX, FIT oder IGC von Strava, Garmin, Komoot…",
   "Export the activity as a file from the other app or its website, save it in Files, then pick it here.":
     "Exportiere die Aktivität als Datei aus der anderen App oder von ihrer Website, speichere sie in Dateien und wähle sie dann hier aus.",
   Imported: "Importiert",
   "Imported activities don't count for Play or contests.":
     "Importierte Aktivitäten zählen nicht für das Spiel und die Wettbewerbe.",
-  "This file is not GPX, TCX or FIT.": "Diese Datei ist weder GPX noch TCX noch FIT.",
+  "This file is not GPX, TCX, FIT or IGC.":
+    "Diese Datei ist weder GPX noch TCX noch FIT noch IGC.",
   "This file has no times: it is a route, not an activity.":
     "Diese Datei hat keine Zeiten: Sie ist eine Route, keine Aktivität.",
   "This file has no positions.": "Diese Datei hat keine Positionen.",
@@ -4106,4 +4107,9 @@ export const DE: Table = {
     "Schreibe mindestens {count} Buchstaben eines Gruppennamens.",
   "The groups could not load. Check the connection and try again.":
     "Die Gruppen konnten nicht geladen werden. Prüfe die Verbindung und versuche es noch einmal.",
+  // src/air/FlightExport.tsx, src/imports/ (TASK-479 part F1: approved by the user on 2026-11-21 and 2026-11-28)
+  "Export IGC": "IGC exportieren",
+  "Not signed: competitions and online contests may not accept it.":
+    "Nicht signiert: Wettbewerbe und Online-Contests akzeptieren es eventuell nicht.",
+  "This IGC file has no track points.": "Diese IGC-Datei hat keine Trackpunkte.",
 };

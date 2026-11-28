@@ -1,4 +1,4 @@
-import type { Activity, LatLon } from "@shaperoute/shared-types";
+import type { Activity, LatLon, RunActivity } from "@shaperoute/shared-types";
 
 /**
  * What a file of another app says of an activity (TASK-312, ADR-0272;
@@ -12,13 +12,18 @@ export type FilePoint = {
   point: LatLon | null;
   /** Milliseconds since 1970 (UTC); null: the point has no time. */
   timeMs: number | null;
+  /** Metres above the sea, from an IGC file (TASK-479 part F1); absent or
+   * null for the other files, whose heights are not read. */
+  altitudeM?: number | null;
 };
 
 export type FileTrack = {
   points: FilePoint[];
   /** What the file says the activity was, among MuW's sports; null when it
    * says nothing, or a sport MuW does not have (a walk, a swim). */
-  sport: Activity | null;
+  sport: RunActivity | null;
+  /** Read from an IGC file: a flight (TASK-479 part F1). */
+  igc?: true;
 };
 
 /** A position on the Earth, or null: out of range, or 0, 0, which a device

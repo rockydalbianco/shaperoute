@@ -20,7 +20,9 @@ import {
 import { runDistanceLabel } from "../units/format";
 import { speedUnit } from "../units/runFormat";
 import { AirspaceLogCard } from "./AirspaceLogCard";
+import { FlightExport } from "./FlightExport";
 import { flightNow, topSpeedMps } from "./flight";
+import { flightFixesOf } from "./flightArchive";
 import { flightParts, flightSplit, type FlightSide } from "./flightParts";
 import { airTopSpeedMps, flightKcal } from "./flightSplit";
 import { phaseMarksOf } from "./phaseMarks";
@@ -55,6 +57,8 @@ export function FlightFinishCard({ run, activity, onResume, onDone }: Props) {
     return last === undefined ? null : flightNow(track, last.timeMs).maxAltM;
   }, [track]);
   const top = useMemo(() => topSpeedMps(track), [track]);
+  // The flight whole, for «Export IGC» and «Export GPX» (TASK-479 F1).
+  const fixes = useMemo(() => flightFixesOf(track), [track]);
   const total = runDistanceLabel(track.distanceM, numbers.units);
   const parts = useMemo(() => {
     const first = track.fixes[0]?.timeMs;
@@ -155,6 +159,7 @@ export function FlightFinishCard({ run, activity, onResume, onDone }: Props) {
         </View>
       )}
       <AirspaceLogCard track={track} windows={airWindows} units={numbers.units} />
+      <FlightExport fixes={fixes} />
       <View style={styles.buttons}>
         <SharePostButton makeRun={() => postOfTrack(track)} />
         {onResume && (

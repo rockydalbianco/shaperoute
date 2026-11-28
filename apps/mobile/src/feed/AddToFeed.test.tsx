@@ -89,7 +89,9 @@ test("the «+» opens «Add to Feed» on the list, in the user's order", async (
   expect(screen.getByText("Start an activity now")).toBeTruthy();
   expect(screen.getByText("Post an activity from My activities")).toBeTruthy();
   expect(screen.getByText("Up to 10 photos, also from Instagram")).toBeTruthy();
-  expect(screen.getByText("GPX, TCX or FIT from Strava, Garmin, Komoot…")).toBeTruthy();
+  expect(
+    screen.getByText("GPX, TCX, FIT or IGC from Strava, Garmin, Komoot…"),
+  ).toBeTruthy();
   expect(screen.getByText("A workout you already did, written by hand")).toBeTruthy();
   expect(screen.getByText("Share one of your gym plans")).toBeTruthy();
   const ids = screen

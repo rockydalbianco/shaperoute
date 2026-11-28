@@ -82,7 +82,7 @@ export function addToFeedEntries({
       {
         id: "file",
         title: t("From a file"),
-        detail: t("GPX, TCX or FIT from Strava, Garmin, Komoot…"),
+        detail: t("GPX, TCX, FIT or IGC from Strava, Garmin, Komoot…"),
       },
     ],
     [

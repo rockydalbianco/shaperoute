@@ -7,7 +7,7 @@ L'utente, il 2026-10-27: «Possibilità di caricare anche attività che hanno
 già fatto in precedenza con altre app o instagram sul nostro feed». Le sue
 scelte, fra il 27 e il 28 ottobre 2026:
 
-- prima un **file** (GPX, TCX, FIT), poi **Apple Salute** in una parte
+- prima un **file** (GPX, TCX, FIT, IGC), poi **Apple Salute** in una parte
   dopo, e anche **Strava, Garmin e le app più famose**;
 - nel Feed anche **post di sole foto**, senza traccia;
 - la dipendenza nuova `expo-document-picker`, **come i contatti**
@@ -20,7 +20,7 @@ scelte, fra il 27 e il 28 ottobre 2026:
 
 | Che cosa | Da dove | Parte |
 |---|---|---|
-| Un'attività con la sua traccia | un file GPX, TCX o FIT esportato da un'altra app (Strava dal sito, Garmin Connect, Komoot, Polar Flow, Suunto, Coros, Wahoo…) e salvato in «File» | A (API), B (app) |
+| Un'attività con la sua traccia | un file GPX, TCX, FIT o IGC esportato da un'altra app (Strava dal sito, Garmin Connect, Komoot, Polar Flow, Suunto, Coros, Wahoo…) e salvato in «File» | A (API), B (app) |
 | Un post di sole foto | da 1 a 10 foto dal rullino, anche quelle già messe su Instagram | C |
 | Gli allenamenti già sul telefono | Apple Salute (iOS), Health Connect (Android) | D, prima uno studio (§7) |
 | Le attività di un account esterno | un collegamento diretto a Garmin, Polar, Suunto, Coros, Wahoo, Strava… | E, prima uno studio (§8) |
@@ -83,8 +83,19 @@ build dopo) «From a file» è nascosto e resta «Photos only».
    e si cambia (ADR-0387). Sopra il modulo, la scritta «Imported».
 7. **«Send to Strava» non c'è** per una corsa importata: viene da un'altra
    app, e spesso da Strava stessa. *Proposta, da confermare.*
+8. **Un file IGC è un volo** (TASK-479 parte F1, ADR-0388 aggiunta F;
+   supera la parte E di TASK-305): si riconosce dal record A e da un
+   record H; si leggono solo la data (`HFDTE`) e i record B (orario,
+   posizione, quota GPS o, se il file non ne ha, quella di pressione; un
+   punto marcato V non ha quota GPS). Il nome del pilota e della vela
+   (`HFPLT`, `HFCM2`, `HFGTY`, `HFGID`) non si leggono. Lo sport parte da
+   `paragliding`; le quote vanno con i fix (`altitude_m`, come una corsa
+   registrata). Con «Save» il volo intero resta anche sul telefono
+   (`src/air/flightArchive.ts`) per la sua analisi; con «Discard» no. Un
+   IGC senza record B: «This IGC file has no track points.».
 
-Il file non si tiene: resta solo la corsa, come la tiene l'API.
+Il file non si tiene: resta solo la corsa, come la tiene l'API (e, per un
+IGC, la copia del volo sul telefono).
 
 ## 4. Un post di sole foto
 
